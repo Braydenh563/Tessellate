@@ -2,11 +2,26 @@
 
 Generated 2026-10-31 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7205, frontend ids 2621, CSS sections 513, backend routes 632, backend modules 7952, test files 1695, tests 14714, plan headings 989.
+Counts: frontend functions 7391, frontend ids 2621, CSS sections 513, backend routes 632, backend modules 7952, test files 1698, tests 14725, plan headings 989.
 
-## Frontend functions (7205)
+## Frontend functions (7391)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
+
+### frontend/js/boot-guard.js (4)
+
+| Name | File:line |
+|---|---|
+| `foreignError` | frontend/js/boot-guard.js:89 |
+| `offerReload` | frontend/js/boot-guard.js:146 |
+| `report` | frontend/js/boot-guard.js:33 |
+| `say` | frontend/js/boot-guard.js:54 |
+
+### frontend/js/theme-boot.js (1)
+
+| Name | File:line |
+|---|---|
+| `pref` | frontend/js/theme-boot.js:34 |
 
 ### frontend/js/app.js (47)
 
@@ -1025,16 +1040,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `closeSketch` | frontend/js/media.js:103 |
-| `hideSketchOverlay` | frontend/js/media.js:111 |
+| `closeSketch` | frontend/js/media.js:105 |
+| `hideSketchOverlay` | frontend/js/media.js:113 |
 | `highlighterWidth` | frontend/js/media.js:48 |
-| `micAudioConstraints` | frontend/js/media.js:196 |
-| `openSketch` | frontend/js/media.js:91 |
-| `saveSketch` | frontend/js/media.js:119 |
-| `sketchHost` | frontend/js/media.js:67 |
-| `speakText` | frontend/js/media.js:359 |
-| `startMicLevelMeter` | frontend/js/media.js:206 |
-| `toggleDictation` | frontend/js/media.js:287 |
+| `micAudioConstraints` | frontend/js/media.js:198 |
+| `openSketch` | frontend/js/media.js:92 |
+| `saveSketch` | frontend/js/media.js:121 |
+| `sketchHost` | frontend/js/media.js:68 |
+| `speakText` | frontend/js/media.js:361 |
+| `startMicLevelMeter` | frontend/js/media.js:208 |
+| `toggleDictation` | frontend/js/media.js:289 |
 
 ### frontend/js/status.js (126)
 
@@ -2616,30 +2631,31 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `spaceDeleteNeedsName` | frontend/js/batch-space.js:91 |
 | `spaceDeleteSubmit` | frontend/js/batch-space.js:148 |
 
-### frontend/js/bg-art.js (36)
+### frontend/js/bg-art.js (37)
 
 | Name | File:line |
 |---|---|
-| `bgArtApplyPause` | frontend/js/bg-art.js:2346 |
-| `bgArtCovered` | frontend/js/bg-art.js:2421 |
-| `bgArtFrameRate` | frontend/js/bg-art.js:2308 |
-| `bgArtFreeze` | frontend/js/bg-art.js:2371 |
+| `bgArtApplyPause` | frontend/js/bg-art.js:2358 |
+| `bgArtCalm` | frontend/js/bg-art.js:2315 |
+| `bgArtCovered` | frontend/js/bg-art.js:2433 |
+| `bgArtFrameRate` | frontend/js/bg-art.js:2319 |
+| `bgArtFreeze` | frontend/js/bg-art.js:2383 |
 | `bgArtGenome` | frontend/js/bg-art.js:339 |
-| `bgArtHalt` | frontend/js/bg-art.js:2469 |
-| `bgArtMountStill` | frontend/js/bg-art.js:2515 |
-| `bgArtPreview` | frontend/js/bg-art.js:2725 |
-| `bgArtRetire` | frontend/js/bg-art.js:2459 |
-| `bgArtRun` | frontend/js/bg-art.js:2531 |
+| `bgArtHalt` | frontend/js/bg-art.js:2481 |
+| `bgArtMountStill` | frontend/js/bg-art.js:2527 |
+| `bgArtPreview` | frontend/js/bg-art.js:2737 |
+| `bgArtRetire` | frontend/js/bg-art.js:2471 |
+| `bgArtRun` | frontend/js/bg-art.js:2543 |
 | `bgArtSeedOf` | frontend/js/bg-art.js:363 |
 | `bgArtSeedText` | frontend/js/bg-art.js:400 |
-| `bgArtShouldFreeze` | frontend/js/bg-art.js:2292 |
+| `bgArtShouldFreeze` | frontend/js/bg-art.js:2293 |
 | `bgArtSpeciesName` | frontend/js/bg-art.js:388 |
 | `bgArtStrainCount` | frontend/js/bg-art.js:394 |
 | `bgArtStrains` | frontend/js/bg-art.js:372 |
-| `bgArtSurface` | frontend/js/bg-art.js:2324 |
-| `bgArtThaw` | frontend/js/bg-art.js:2406 |
-| `bgArtTier` | frontend/js/bg-art.js:2714 |
-| `bgArtWatch` | frontend/js/bg-art.js:2441 |
+| `bgArtSurface` | frontend/js/bg-art.js:2336 |
+| `bgArtThaw` | frontend/js/bg-art.js:2418 |
+| `bgArtTier` | frontend/js/bg-art.js:2726 |
+| `bgArtWatch` | frontend/js/bg-art.js:2453 |
 | `bgCapRgb` | frontend/js/bg-art.js:74 |
 | `bgClamp` | frontend/js/bg-art.js:281 |
 | `bgColourHue` | frontend/js/bg-art.js:229 |
@@ -2739,6 +2755,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `showCaptureCard` | frontend/js/capture-card.js:303 |
 | `wireCaptureCard` | frontend/js/capture-card.js:84 |
 
+### frontend/js/capture.js (6)
+
+| Name | File:line |
+|---|---|
+| `$` | frontend/js/capture.js:10 |
+| `call` | frontend/js/capture.js:31 |
+| `save` | frontend/js/capture.js:38 |
+| `status` | frontend/js/capture.js:25 |
+| `stored` | frontend/js/capture.js:16 |
+| `token` | frontend/js/capture.js:23 |
+
 ### frontend/js/categories-panel.js (30)
 
 | Name | File:line |
@@ -2796,15 +2823,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `chatPrivateStart` | frontend/js/chat-private.js:38 |
 | `chatPrivateToggle` | frontend/js/chat-private.js:48 |
 
-### frontend/js/chat-tasks.js (8)
+### frontend/js/chat-tasks.js (9)
 
 | Name | File:line |
 |---|---|
 | `followTaskLines` | frontend/js/chat-tasks.js:123 |
 | `paintLiveRunLines` | frontend/js/chat-tasks.js:162 |
-| `renderTaskHistory` | frontend/js/chat-tasks.js:178 |
+| `renderTaskHistory` | frontend/js/chat-tasks.js:185 |
 | `renderTasks` | frontend/js/chat-tasks.js:19 |
-| `settleStartedNotification` | frontend/js/chat-tasks.js:258 |
+| `settleStartedNotification` | frontend/js/chat-tasks.js:266 |
+| `taskEndingIsAppsOwn` | frontend/js/chat-tasks.js:181 |
 | `taskEndingIsUpkeep` | frontend/js/chat-tasks.js:173 |
 | `taskLinesWanted` | frontend/js/chat-tasks.js:119 |
 | `taskOriginWords` | frontend/js/chat-tasks.js:115 |
@@ -2850,6 +2878,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `chordGuideGroup` | frontend/js/chord-guide.js:43 |
 | `chordGuideKey` | frontend/js/chord-guide.js:76 |
 | `showTabJumpHint` | frontend/js/chord-guide.js:83 |
+
+### frontend/js/clip.js (8)
+
+| Name | File:line |
+|---|---|
+| `$` | frontend/js/clip.js:18 |
+| `call` | frontend/js/clip.js:81 |
+| `describe` | frontend/js/clip.js:41 |
+| `fromFragment` | frontend/js/clip.js:56 |
+| `save` | frontend/js/clip.js:88 |
+| `status` | frontend/js/clip.js:35 |
+| `stored` | frontend/js/clip.js:26 |
+| `token` | frontend/js/clip.js:33 |
 
 ### frontend/js/companion-menu.js (20)
 
@@ -2967,6 +3008,30 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dateFieldKey` | frontend/js/date-field.js:10 |
 | `dateFieldShift` | frontend/js/date-field.js:11 |
 | `dateFieldWire` | frontend/js/date-field.js:13 |
+
+### frontend/js/desk-companion.js (19)
+
+| Name | File:line |
+|---|---|
+| `$` | frontend/js/desk-companion.js:20 |
+| `ask` | frontend/js/desk-companion.js:50 |
+| `call` | frontend/js/desk-companion.js:42 |
+| `draw` | frontend/js/desk-companion.js:68 |
+| `hitRow` | frontend/js/desk-companion.js:205 |
+| `host` | frontend/js/desk-companion.js:49 |
+| `item` | frontend/js/desk-companion.js:104 |
+| `leave` | frontend/js/desk-companion.js:143 |
+| `noteStatus` | frontend/js/desk-companion.js:160 |
+| `openMenu` | frontend/js/desk-companion.js:117 |
+| `openPanel` | frontend/js/desk-companion.js:148 |
+| `plain` | frontend/js/desk-companion.js:198 |
+| `probe` | frontend/js/desk-companion.js:78 |
+| `rest` | frontend/js/desk-companion.js:154 |
+| `runSearch` | frontend/js/desk-companion.js:232 |
+| `saveNote` | frontend/js/desk-companion.js:166 |
+| `seed` | frontend/js/desk-companion.js:60 |
+| `show` | frontend/js/desk-companion.js:95 |
+| `token` | frontend/js/desk-companion.js:39 |
 
 ### frontend/js/diag-report.js (11)
 
@@ -4787,57 +4852,57 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `activityDetailText` | frontend/js/library.js:1373 |
 | `activitySettingValue` | frontend/js/library.js:1357 |
-| `allBookmarkGroups` | frontend/js/library.js:11245 |
-| `analyseMediaRow` | frontend/js/library.js:8295 |
+| `allBookmarkGroups` | frontend/js/library.js:11244 |
+| `analyseMediaRow` | frontend/js/library.js:8294 |
 | `applyLibraryMediaView` | frontend/js/library.js:3744 |
-| `attachBoardTick` | frontend/js/library.js:10898 |
+| `attachBoardTick` | frontend/js/library.js:10897 |
 | `binRoutes` | frontend/js/library.js:1145 |
 | `bookmarkAddress` | frontend/js/library.js:3950 |
-| `bookmarkRow` | frontend/js/library.js:11617 |
-| `bookmarkSiteSection` | frontend/js/library.js:11580 |
-| `bookmarkSort` | frontend/js/library.js:11507 |
-| `buildFileReadingSummary` | frontend/js/library.js:8453 |
-| `bulkDeleteLibraryBoards` | frontend/js/library.js:10937 |
-| `bulkDeleteLibraryLinks` | frontend/js/library.js:11141 |
-| `bulkDeleteLibraryMedia` | frontend/js/library.js:8596 |
-| `bulkMoveLibraryLinks` | frontend/js/library.js:11189 |
-| `bulkUpdateLibraryLinks` | frontend/js/library.js:11163 |
-| `clearLibraryBoardsSelection` | frontend/js/library.js:10929 |
-| `clearLibraryLinksSelection` | frontend/js/library.js:11089 |
-| `clearLibraryMediaSelection` | frontend/js/library.js:8590 |
+| `bookmarkRow` | frontend/js/library.js:11616 |
+| `bookmarkSiteSection` | frontend/js/library.js:11579 |
+| `bookmarkSort` | frontend/js/library.js:11506 |
+| `buildFileReadingSummary` | frontend/js/library.js:8452 |
+| `bulkDeleteLibraryBoards` | frontend/js/library.js:10936 |
+| `bulkDeleteLibraryLinks` | frontend/js/library.js:11140 |
+| `bulkDeleteLibraryMedia` | frontend/js/library.js:8595 |
+| `bulkMoveLibraryLinks` | frontend/js/library.js:11188 |
+| `bulkUpdateLibraryLinks` | frontend/js/library.js:11162 |
+| `clearLibraryBoardsSelection` | frontend/js/library.js:10928 |
+| `clearLibraryLinksSelection` | frontend/js/library.js:11088 |
+| `clearLibraryMediaSelection` | frontend/js/library.js:8589 |
 | `closeBinnedReader` | frontend/js/library.js:1744 |
 | `closeOcrWorkspace` | frontend/js/library.js:5722 |
-| `contentsBuildSection` | frontend/js/library.js:12350 |
-| `contentsDocRow` | frontend/js/library.js:12263 |
-| `contentsGlyph` | frontend/js/library.js:12198 |
-| `contentsGroupMark` | frontend/js/library.js:12334 |
-| `contentsGroups` | frontend/js/library.js:12042 |
-| `contentsMonthKey` | frontend/js/library.js:12035 |
-| `contentsNoteFacts` | frontend/js/library.js:12225 |
-| `contentsNoteMark` | frontend/js/library.js:12205 |
-| `contentsNoteName` | frontend/js/library.js:12138 |
-| `contentsNoteRow` | frontend/js/library.js:12237 |
-| `contentsOpenDocument` | frontend/js/library.js:12156 |
-| `contentsOrderedKeys` | frontend/js/library.js:12111 |
-| `contentsRenameTopic` | frontend/js/library.js:12425 |
-| `contentsRowBody` | frontend/js/library.js:12185 |
-| `contentsSectionLabel` | frontend/js/library.js:12091 |
-| `contentsSetAll` | frontend/js/library.js:12635 |
-| `contentsTopicNames` | frontend/js/library.js:12100 |
-| `contentsTreeItem` | frontend/js/library.js:12171 |
-| `contentsTreeKeys` | frontend/js/library.js:12650 |
-| `contentsWireTopicHeading` | frontend/js/library.js:12399 |
-| `createLibrarySelectbar` | frontend/js/library.js:10833 |
-| `deleteBookmarkGroup` | frontend/js/library.js:11284 |
-| `deleteBookmarksWithUndo` | frontend/js/library.js:11100 |
+| `contentsBuildSection` | frontend/js/library.js:12349 |
+| `contentsDocRow` | frontend/js/library.js:12262 |
+| `contentsGlyph` | frontend/js/library.js:12197 |
+| `contentsGroupMark` | frontend/js/library.js:12333 |
+| `contentsGroups` | frontend/js/library.js:12041 |
+| `contentsMonthKey` | frontend/js/library.js:12034 |
+| `contentsNoteFacts` | frontend/js/library.js:12224 |
+| `contentsNoteMark` | frontend/js/library.js:12204 |
+| `contentsNoteName` | frontend/js/library.js:12137 |
+| `contentsNoteRow` | frontend/js/library.js:12236 |
+| `contentsOpenDocument` | frontend/js/library.js:12155 |
+| `contentsOrderedKeys` | frontend/js/library.js:12110 |
+| `contentsRenameTopic` | frontend/js/library.js:12424 |
+| `contentsRowBody` | frontend/js/library.js:12184 |
+| `contentsSectionLabel` | frontend/js/library.js:12090 |
+| `contentsSetAll` | frontend/js/library.js:12634 |
+| `contentsTopicNames` | frontend/js/library.js:12099 |
+| `contentsTreeItem` | frontend/js/library.js:12170 |
+| `contentsTreeKeys` | frontend/js/library.js:12649 |
+| `contentsWireTopicHeading` | frontend/js/library.js:12398 |
+| `createLibrarySelectbar` | frontend/js/library.js:10832 |
+| `deleteBookmarkGroup` | frontend/js/library.js:11283 |
+| `deleteBookmarksWithUndo` | frontend/js/library.js:11099 |
 | `deleteSkillWithUndo` | frontend/js/library.js:2655 |
 | `duplicateSkill` | frontend/js/library.js:2627 |
-| `emptyBookmarkGroups` | frontend/js/library.js:11222 |
+| `emptyBookmarkGroups` | frontend/js/library.js:11221 |
 | `ensureLibraryGridStop` | frontend/js/library.js:1609 |
-| `fetchAllBookmarks` | frontend/js/library.js:11050 |
+| `fetchAllBookmarks` | frontend/js/library.js:11049 |
 | `fileMetaLine` | frontend/js/library.js:3931 |
-| `filterBookmarks` | frontend/js/library.js:11522 |
-| `filterLibraryImagesGallery` | frontend/js/library.js:8854 |
+| `filterBookmarks` | frontend/js/library.js:11521 |
+| `filterLibraryImagesGallery` | frontend/js/library.js:8853 |
 | `flashLibraryItem` | frontend/js/library.js:1789 |
 | `focusLibraryFile` | frontend/js/library.js:3878 |
 | `importLibraryDocuments` | frontend/js/library.js:3252 |
@@ -4852,46 +4917,46 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `libraryDocSort` | frontend/js/library.js:3228 |
 | `libraryDocsMatchesProperty` | frontend/js/library.js:3149 |
 | `libraryDocsPropertyOptions` | frontend/js/library.js:3134 |
-| `libraryImageOrigin` | frontend/js/library.js:8787 |
+| `libraryImageOrigin` | frontend/js/library.js:8786 |
 | `libraryImagesFingerprint` | frontend/js/library.js:3649 |
 | `libraryKeyOf` | frontend/js/library.js:306 |
-| `libraryLightboxItems` | frontend/js/library.js:8397 |
-| `libraryMediaBinItem` | frontend/js/library.js:8571 |
-| `libraryMediaRepaint` | frontend/js/library.js:8576 |
-| `libraryMediaSort` | frontend/js/library.js:8744 |
+| `libraryLightboxItems` | frontend/js/library.js:8396 |
+| `libraryMediaBinItem` | frontend/js/library.js:8570 |
+| `libraryMediaRepaint` | frontend/js/library.js:8575 |
+| `libraryMediaSort` | frontend/js/library.js:8743 |
 | `librarySelectedItems` | frontend/js/library.js:1223 |
 | `librarySorted` | frontend/js/library.js:484 |
 | `libraryTitleAndPreview` | frontend/js/library.js:1309 |
 | `libraryView` | frontend/js/library.js:302 |
 | `linkNoteFromLibrary` | frontend/js/library.js:1166 |
 | `loadLibrary` | frontend/js/library.js:322 |
-| `manageBookmarkGroups` | frontend/js/library.js:11310 |
+| `manageBookmarkGroups` | frontend/js/library.js:11309 |
 | `mediaFileIcon` | frontend/js/library.js:3892 |
 | `mediaFileKind` | frontend/js/library.js:3974 |
-| `mediaHasBeenRead` | frontend/js/library.js:8323 |
-| `mediaReading` | frontend/js/library.js:8319 |
-| `mediaReadingBadge` | frontend/js/library.js:8331 |
-| `mediaReadingSummary` | frontend/js/library.js:8360 |
-| `mediaRowDeleteEndpoint` | frontend/js/library.js:8564 |
-| `mediaRowKey` | frontend/js/library.js:8557 |
+| `mediaHasBeenRead` | frontend/js/library.js:8322 |
+| `mediaReading` | frontend/js/library.js:8318 |
+| `mediaReadingBadge` | frontend/js/library.js:8330 |
+| `mediaReadingSummary` | frontend/js/library.js:8359 |
+| `mediaRowDeleteEndpoint` | frontend/js/library.js:8563 |
+| `mediaRowKey` | frontend/js/library.js:8556 |
 | `metaLine` | frontend/js/library.js:3914 |
-| `newBookmarkGroup` | frontend/js/library.js:11288 |
-| `noteAnyImage` | frontend/js/library.js:12825 |
-| `noteFirstImage` | frontend/js/library.js:12814 |
+| `newBookmarkGroup` | frontend/js/library.js:11287 |
+| `noteAnyImage` | frontend/js/library.js:12824 |
+| `noteFirstImage` | frontend/js/library.js:12813 |
 | `ocrAllText` | frontend/js/library.js:7601 |
 | `ocrApplyFind` | frontend/js/library.js:6973 |
 | `ocrApplyPageCount` | frontend/js/library.js:5347 |
 | `ocrApplyZoom` | frontend/js/library.js:6249 |
 | `ocrAskRange` | frontend/js/library.js:7490 |
-| `ocrBase` | frontend/js/library.js:8214 |
-| `ocrBinField` | frontend/js/library.js:8270 |
-| `ocrBinPage` | frontend/js/library.js:8265 |
+| `ocrBase` | frontend/js/library.js:8213 |
+| `ocrBinField` | frontend/js/library.js:8269 |
+| `ocrBinPage` | frontend/js/library.js:8264 |
 | `ocrBuildPageRail` | frontend/js/library.js:5647 |
 | `ocrBuildScrollPages` | frontend/js/library.js:6468 |
 | `ocrCan` | frontend/js/library.js:6824 |
 | `ocrCanOpen` | frontend/js/library.js:5865 |
 | `ocrChooseReader` | frontend/js/library.js:6860 |
-| `ocrCleanLoops` | frontend/js/library.js:8278 |
+| `ocrCleanLoops` | frontend/js/library.js:8277 |
 | `ocrClearRegionSelection` | frontend/js/library.js:4913 |
 | `ocrCloseEdit` | frontend/js/library.js:7595 |
 | `ocrDockApply` | frontend/js/library.js:7295 |
@@ -4899,7 +4964,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `ocrDocumentReading` | frontend/js/library.js:5205 |
 | `ocrEmptyLine` | frontend/js/library.js:7536 |
 | `ocrFetchFileText` | frontend/js/library.js:5872 |
-| `ocrFieldText` | frontend/js/library.js:8229 |
+| `ocrFieldText` | frontend/js/library.js:8228 |
 | `ocrFillPageCaptions` | frontend/js/library.js:5294 |
 | `ocrFindMarkRegion` | frontend/js/library.js:6950 |
 | `ocrFindShowCurrent` | frontend/js/library.js:7000 |
@@ -4922,8 +4987,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `ocrMoveOverlays` | frontend/js/library.js:4905 |
 | `ocrNaturalScale` | frontend/js/library.js:6245 |
 | `ocrNoRendererLink` | frontend/js/library.js:5637 |
-| `ocrOfferBinUndo` | frontend/js/library.js:8249 |
-| `ocrOfferTextUndo` | frontend/js/library.js:8243 |
+| `ocrOfferBinUndo` | frontend/js/library.js:8248 |
+| `ocrOfferTextUndo` | frontend/js/library.js:8242 |
 | `ocrOpenEdit` | frontend/js/library.js:7585 |
 | `ocrOpenReaderSettings` | frontend/js/library.js:7420 |
 | `ocrOpenSibling` | frontend/js/library.js:6019 |
@@ -4952,7 +5017,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `ocrRenderRail` | frontend/js/library.js:5970 |
 | `ocrRenderRailSwitch` | frontend/js/library.js:5886 |
 | `ocrRenderRegions` | frontend/js/library.js:4450 |
-| `ocrRepaintReading` | frontend/js/library.js:8218 |
+| `ocrRepaintReading` | frontend/js/library.js:8217 |
 | `ocrRevealRegionsForPage` | frontend/js/library.js:6919 |
 | `ocrRoveKeys` | frontend/js/library.js:7556 |
 | `ocrRoveSync` | frontend/js/library.js:7547 |
@@ -4985,7 +5050,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `ocrSyncViewButtons` | frontend/js/library.js:6394 |
 | `ocrSyncZoomButtons` | frontend/js/library.js:6348 |
 | `ocrTearDownScroll` | frontend/js/library.js:6450 |
-| `ocrTextWriter` | frontend/js/library.js:8236 |
+| `ocrTextWriter` | frontend/js/library.js:8235 |
 | `ocrVisibleStages` | frontend/js/library.js:6152 |
 | `ocrWatchDock` | frontend/js/library.js:7353 |
 | `ocrWatchPane` | frontend/js/library.js:6211 |
@@ -4997,23 +5062,23 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openLibraryItem` | frontend/js/library.js:1629 |
 | `openOcrWorkspace` | frontend/js/library.js:6052 |
 | `openPageReader` | frontend/js/library.js:5768 |
-| `pushBookmarksPutUndo` | frontend/js/library.js:11153 |
+| `pushBookmarksPutUndo` | frontend/js/library.js:11152 |
 | `refreshLibraryPhrase` | frontend/js/library.js:1868 |
 | `refreshLibrarySemantic` | frontend/js/library.js:531 |
 | `refreshLibraryServerSearch` | frontend/js/library.js:1842 |
-| `remindAbout` | frontend/js/library.js:12776 |
-| `renameBookmarkGroup` | frontend/js/library.js:11257 |
-| `renderBookmarkGroupChips` | frontend/js/library.js:11414 |
-| `renderBookmarks` | frontend/js/library.js:11061 |
-| `renderContents` | frontend/js/library.js:12479 |
+| `remindAbout` | frontend/js/library.js:12775 |
+| `renameBookmarkGroup` | frontend/js/library.js:11256 |
+| `renderBookmarkGroupChips` | frontend/js/library.js:11413 |
+| `renderBookmarks` | frontend/js/library.js:11060 |
+| `renderContents` | frontend/js/library.js:12478 |
 | `renderIncrementally` | frontend/js/library.js:118 |
 | `renderLibrary` | frontend/js/library.js:605 |
 | `renderLibraryContextBars` | frontend/js/library.js:1185 |
 | `renderLibraryDocsPropertyFilter` | frontend/js/library.js:3166 |
 | `renderLibraryDocuments` | frontend/js/library.js:3301 |
 | `renderLibraryFilters` | frontend/js/library.js:406 |
-| `renderLibraryImageOrigins` | frontend/js/library.js:8805 |
-| `renderLibraryImagesGallery` | frontend/js/library.js:8633 |
+| `renderLibraryImageOrigins` | frontend/js/library.js:8804 |
+| `renderLibraryImagesGallery` | frontend/js/library.js:8632 |
 | `renderLibraryOverview` | frontend/js/library.js:384 |
 | `renderLibraryView` | frontend/js/library.js:310 |
 | `renderSkillCards` | frontend/js/library.js:2702 |
@@ -5022,24 +5087,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `reopenOcrWorkspace` | frontend/js/library.js:5741 |
 | `runLibrarySearch` | frontend/js/library.js:1881 |
 | `seedLibraryDocsAll` | frontend/js/library.js:3295 |
-| `setEmptyBookmarkGroups` | frontend/js/library.js:11233 |
+| `setEmptyBookmarkGroups` | frontend/js/library.js:11232 |
 | `setLibraryCardStop` | frontend/js/library.js:1605 |
 | `setLibraryMediaKind` | frontend/js/library.js:3816 |
 | `setLibraryMediaView` | frontend/js/library.js:3774 |
-| `showDetailDialog` | frontend/js/library.js:12727 |
-| `shownTicksIn` | frontend/js/library.js:10802 |
+| `showDetailDialog` | frontend/js/library.js:12726 |
+| `shownTicksIn` | frontend/js/library.js:10801 |
 | `skillCard` | frontend/js/library.js:2418 |
 | `skillColumnCount` | frontend/js/library.js:2681 |
 | `skillLastRunIndex` | frontend/js/library.js:2407 |
 | `skillSort` | frontend/js/library.js:2614 |
 | `startLibraryImagesPoll` | frontend/js/library.js:3679 |
 | `stopLibraryImagesPoll` | frontend/js/library.js:3692 |
-| `syncLibraryBoardsTicks` | frontend/js/library.js:10884 |
+| `syncLibraryBoardsTicks` | frontend/js/library.js:10883 |
 | `syncLibraryDocsSelectbar` | frontend/js/library.js:3567 |
 | `syncLibraryFilterButton` | frontend/js/library.js:1918 |
-| `syncLibraryMediaSelectbar` | frontend/js/library.js:8581 |
-| `syncSelectAllLabels` | frontend/js/library.js:10806 |
-| `syncSelectbarCount` | frontend/js/library.js:10779 |
+| `syncLibraryMediaSelectbar` | frontend/js/library.js:8580 |
+| `syncSelectAllLabels` | frontend/js/library.js:10805 |
+| `syncSelectbarCount` | frontend/js/library.js:10778 |
 | `toggleLibrarySelection` | frontend/js/library.js:1227 |
 | `trackOcrRead` | frontend/js/library.js:4118 |
 | `updateLibraryCreateButton` | frontend/js/library.js:2356 |
@@ -5615,13 +5680,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `objTrayChanged` | frontend/js/obj-tray.js:90 |
 | `objTrayClear` | frontend/js/obj-tray.js:80 |
 | `objTrayCountWords` | frontend/js/obj-tray.js:95 |
-| `objTrayDestination` | frontend/js/obj-tray.js:173 |
+| `objTrayDestination` | frontend/js/obj-tray.js:175 |
 | `objTrayDraw` | frontend/js/obj-tray.js:122 |
 | `objTrayKeepFocus` | frontend/js/obj-tray.js:63 |
 | `objTrayList` | frontend/js/obj-tray.js:115 |
-| `objTrayOffer` | frontend/js/obj-tray.js:194 |
+| `objTrayOffer` | frontend/js/obj-tray.js:196 |
 | `objTrayPaint` | frontend/js/obj-tray.js:99 |
-| `objTrayPaste` | frontend/js/obj-tray.js:179 |
+| `objTrayPaste` | frontend/js/obj-tray.js:181 |
 | `objTrayRead` | frontend/js/obj-tray.js:28 |
 | `objTrayRemove` | frontend/js/obj-tray.js:72 |
 | `objTrayRow` | frontend/js/obj-tray.js:151 |
@@ -5791,34 +5856,35 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `quickAccessTile` | frontend/js/quick-access.js:36 |
 | `saveQuickTint` | frontend/js/quick-access.js:471 |
 
-### frontend/js/quick-note.js (26)
+### frontend/js/quick-note.js (27)
 
 | Name | File:line |
 |---|---|
-| `announceSavedNote` | frontend/js/quick-note.js:255 |
-| `chatKeep` | frontend/js/quick-note.js:492 |
+| `announceSavedNote` | frontend/js/quick-note.js:258 |
+| `chatKeep` | frontend/js/quick-note.js:495 |
 | `clearQuickNote` | frontend/js/quick-note.js:246 |
-| `clipPastedLink` | frontend/js/quick-note.js:356 |
+| `clipPastedLink` | frontend/js/quick-note.js:359 |
 | `createNoteSafely` | frontend/js/quick-note.js:71 |
 | `flushNoteOutbox` | frontend/js/quick-note.js:93 |
+| `focusOpener` | frontend/js/quick-note.js:275 |
 | `keepQuickNoteDraft` | frontend/js/quick-note.js:236 |
 | `newNoteClientKey` | frontend/js/quick-note.js:51 |
 | `noteOutbox` | frontend/js/quick-note.js:30 |
 | `noteOutboxAdd` | frontend/js/quick-note.js:61 |
 | `noteServerGone` | frontend/js/quick-note.js:56 |
 | `openQuickNote` | frontend/js/quick-note.js:206 |
-| `pasteClipboardAsNote` | frontend/js/quick-note.js:421 |
+| `pasteClipboardAsNote` | frontend/js/quick-note.js:424 |
 | `quickNoteBox` | frontend/js/quick-note.js:196 |
-| `quickNoteReminder` | frontend/js/quick-note.js:317 |
+| `quickNoteReminder` | frontend/js/quick-note.js:320 |
 | `quickNoteStatus` | frontend/js/quick-note.js:200 |
-| `quickNoteToCapture` | frontend/js/quick-note.js:334 |
-| `reminderFromChatAnswer` | frontend/js/quick-note.js:536 |
+| `quickNoteToCapture` | frontend/js/quick-note.js:337 |
+| `reminderFromChatAnswer` | frontend/js/quick-note.js:539 |
 | `renderNoteOutbox` | frontend/js/quick-note.js:137 |
 | `renderPendingNoteRows` | frontend/js/quick-note.js:155 |
 | `returnNoteToCapture` | frontend/js/quick-note.js:127 |
-| `saveChatAnswerAsNote` | frontend/js/quick-note.js:508 |
-| `saveChatAsDocument` | frontend/js/quick-note.js:466 |
-| `saveQuickNote` | frontend/js/quick-note.js:281 |
+| `saveChatAnswerAsNote` | frontend/js/quick-note.js:511 |
+| `saveChatAsDocument` | frontend/js/quick-note.js:469 |
+| `saveQuickNote` | frontend/js/quick-note.js:284 |
 | `scheduleNoteOutboxFlush` | frontend/js/quick-note.js:85 |
 | `writeNoteOutbox` | frontend/js/quick-note.js:42 |
 
@@ -6367,6 +6433,161 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `sharedCaptureText` | frontend/js/shared-intake.js:20 |
 | `takeSharedIntake` | frontend/js/shared-intake.js:31 |
 
+### frontend/js/sketch-pad.js (143)
+
+| Name | File:line |
+|---|---|
+| `applyZoom` | frontend/js/sketch-pad.js:763 |
+| `arrowHead` | frontend/js/sketch-pad.js:1076 |
+| `brushWidth` | frontend/js/sketch-pad.js:903 |
+| `build` | frontend/js/sketch-pad.js:497 |
+| `buildActions` | frontend/js/sketch-pad.js:395 |
+| `buildColours` | frontend/js/sketch-pad.js:327 |
+| `buildFoot` | frontend/js/sketch-pad.js:489 |
+| `buildHead` | frontend/js/sketch-pad.js:273 |
+| `buildHelp` | frontend/js/sketch-pad.js:283 |
+| `buildStage` | frontend/js/sketch-pad.js:459 |
+| `buildStatus` | frontend/js/sketch-pad.js:474 |
+| `buildStroke` | frontend/js/sketch-pad.js:383 |
+| `buildTools` | frontend/js/sketch-pad.js:307 |
+| `camel` | frontend/js/sketch-pad.js:516 |
+| `cancelDrag` | frontend/js/sketch-pad.js:1415 |
+| `cancelPolygon` | frontend/js/sketch-pad.js:1139 |
+| `chordKey` | frontend/js/sketch-pad.js:1546 |
+| `clampBox` | frontend/js/sketch-pad.js:1311 |
+| `clampMenu` | frontend/js/sketch-pad.js:451 |
+| `clearInk` | frontend/js/sketch-pad.js:1470 |
+| `clearPreview` | frontend/js/sketch-pad.js:1012 |
+| `clearSelection` | frontend/js/sketch-pad.js:1540 |
+| `closeOwnHelp` | frontend/js/sketch-pad.js:1532 |
+| `closePolygon` | frontend/js/sketch-pad.js:1129 |
+| `closeStyle` | frontend/js/sketch-pad.js:359 |
+| `commitSelection` | frontend/js/sketch-pad.js:1356 |
+| `commitText` | frontend/js/sketch-pad.js:1245 |
+| `composite` | frontend/js/sketch-pad.js:1149 |
+| `deleteSelection` | frontend/js/sketch-pad.js:1368 |
+| `downloadPng` | frontend/js/sketch-pad.js:1657 |
+| `drawPaper` | frontend/js/sketch-pad.js:731 |
+| `drawPolygonPreview` | frontend/js/sketch-pad.js:1107 |
+| `drawSelection` | frontend/js/sketch-pad.js:1339 |
+| `dropText` | frontend/js/sketch-pad.js:1272 |
+| `endMarquee` | frontend/js/sketch-pad.js:1304 |
+| `endShape` | frontend/js/sketch-pad.js:1031 |
+| `endStroke` | frontend/js/sketch-pad.js:993 |
+| `fallbackMenu` | frontend/js/sketch-pad.js:414 |
+| `fillAt` | frontend/js/sketch-pad.js:1159 |
+| `finishClose` | frontend/js/sketch-pad.js:1762 |
+| `finishShape` | frontend/js/sketch-pad.js:1071 |
+| `fit` | frontend/js/sketch-pad.js:787 |
+| `fitZoom` | frontend/js/sketch-pad.js:781 |
+| `flatten` | frontend/js/sketch-pad.js:1646 |
+| `forgetColour` | frontend/js/sketch-pad.js:673 |
+| `forgetRecentKey` | frontend/js/sketch-pad.js:688 |
+| `growText` | frontend/js/sketch-pad.js:1229 |
+| `h` | frontend/js/sketch-pad.js:246 |
+| `highlighterWidth` | frontend/js/sketch-pad.js:913 |
+| `icon` | frontend/js/sketch-pad.js:257 |
+| `iconButton` | frontend/js/sketch-pad.js:265 |
+| `inSelection` | frontend/js/sketch-pad.js:1281 |
+| `inkEmpty` | frontend/js/sketch-pad.js:1464 |
+| `keepColour` | frontend/js/sketch-pad.js:646 |
+| `labelSize` | frontend/js/sketch-pad.js:601 |
+| `landPreview` | frontend/js/sketch-pad.js:1000 |
+| `liftSelection` | frontend/js/sketch-pad.js:1320 |
+| `mods` | frontend/js/sketch-pad.js:822 |
+| `moveMarquee` | frontend/js/sketch-pad.js:1296 |
+| `moveRing` | frontend/js/sketch-pad.js:889 |
+| `moveSelection` | frontend/js/sketch-pad.js:1332 |
+| `moveShape` | frontend/js/sketch-pad.js:1023 |
+| `moveStroke` | frontend/js/sketch-pad.js:956 |
+| `nudge` | frontend/js/sketch-pad.js:1388 |
+| `onCancelPointer` | frontend/js/sketch-pad.js:871 |
+| `onDouble` | frontend/js/sketch-pad.js:880 |
+| `onDown` | frontend/js/sketch-pad.js:826 |
+| `onEscape` | frontend/js/sketch-pad.js:1522 |
+| `onImagePicked` | frontend/js/sketch-pad.js:755 |
+| `onKey` | frontend/js/sketch-pad.js:1487 |
+| `onLeave` | frontend/js/sketch-pad.js:875 |
+| `onMove` | frontend/js/sketch-pad.js:845 |
+| `onRoveFocus` | frontend/js/sketch-pad.js:548 |
+| `onTextKey` | frontend/js/sketch-pad.js:1237 |
+| `onUp` | frontend/js/sketch-pad.js:862 |
+| `onWheel` | frontend/js/sketch-pad.js:805 |
+| `open` | frontend/js/sketch-pad.js:1707 |
+| `paintKeep` | frontend/js/sketch-pad.js:639 |
+| `paintRecent` | frontend/js/sketch-pad.js:699 |
+| `paintShape` | frontend/js/sketch-pad.js:1040 |
+| `paintWells` | frontend/js/sketch-pad.js:623 |
+| `pickColour` | frontend/js/sketch-pad.js:1180 |
+| `placeSwap` | frontend/js/sketch-pad.js:369 |
+| `placeText` | frontend/js/sketch-pad.js:1216 |
+| `placeTextInHand` | frontend/js/sketch-pad.js:1266 |
+| `plainKey` | frontend/js/sketch-pad.js:1576 |
+| `pngBlob` | frontend/js/sketch-pad.js:1653 |
+| `point` | frontend/js/sketch-pad.js:816 |
+| `polygonDown` | frontend/js/sketch-pad.js:1088 |
+| `polygonPoint` | frontend/js/sketch-pad.js:1102 |
+| `popPolygonPoint` | frontend/js/sketch-pad.js:1597 |
+| `queueStatus` | frontend/js/sketch-pad.js:1616 |
+| `redo` | frontend/js/sketch-pad.js:1454 |
+| `redrawStraight` | frontend/js/sketch-pad.js:981 |
+| `refreshRove` | frontend/js/sketch-pad.js:539 |
+| `rememberColour` | frontend/js/sketch-pad.js:661 |
+| `requestClose` | frontend/js/sketch-pad.js:1754 |
+| `reset` | frontend/js/sketch-pad.js:1728 |
+| `restoreLast` | frontend/js/sketch-pad.js:1438 |
+| `restorePrefs` | frontend/js/sketch-pad.js:1694 |
+| `roveItems` | frontend/js/sketch-pad.js:525 |
+| `roveKey` | frontend/js/sketch-pad.js:555 |
+| `saveNote` | frontend/js/sketch-pad.js:1668 |
+| `say` | frontend/js/sketch-pad.js:1627 |
+| `selectAll` | frontend/js/sketch-pad.js:1381 |
+| `selectDown` | frontend/js/sketch-pad.js:1286 |
+| `setColour` | frontend/js/sketch-pad.js:616 |
+| `setDirty` | frontend/js/sketch-pad.js:1637 |
+| `setImage` | frontend/js/sketch-pad.js:743 |
+| `setMode` | frontend/js/sketch-pad.js:716 |
+| `setPaper` | frontend/js/sketch-pad.js:725 |
+| `setSize` | frontend/js/sketch-pad.js:709 |
+| `setStop` | frontend/js/sketch-pad.js:530 |
+| `setTool` | frontend/js/sketch-pad.js:582 |
+| `setWell` | frontend/js/sketch-pad.js:607 |
+| `showBox` | frontend/js/sketch-pad.js:1611 |
+| `showPos` | frontend/js/sketch-pad.js:1606 |
+| `showPreviewAlpha` | frontend/js/sketch-pad.js:952 |
+| `snapshotInk` | frontend/js/sketch-pad.js:1430 |
+| `spArrow` | frontend/js/sketch-pad.js:134 |
+| `spBox` | frontend/js/sketch-pad.js:102 |
+| `spFillRun` | frontend/js/sketch-pad.js:171 |
+| `spFloodMask` | frontend/js/sketch-pad.js:148 |
+| `spGrow` | frontend/js/sketch-pad.js:189 |
+| `spHex` | frontend/js/sketch-pad.js:201 |
+| `spLineEnds` | frontend/js/sketch-pad.js:125 |
+| `spRgb` | frontend/js/sketch-pad.js:205 |
+| `spSnap45` | frontend/js/sketch-pad.js:116 |
+| `startShape` | frontend/js/sketch-pad.js:1019 |
+| `startStroke` | frontend/js/sketch-pad.js:920 |
+| `startText` | frontend/js/sketch-pad.js:1199 |
+| `stepZoom` | frontend/js/sketch-pad.js:799 |
+| `strokeCtx` | frontend/js/sketch-pad.js:937 |
+| `styleStroke` | frontend/js/sketch-pad.js:941 |
+| `swapColours` | frontend/js/sketch-pad.js:653 |
+| `swatch` | frontend/js/sketch-pad.js:377 |
+| `textPx` | frontend/js/sketch-pad.js:1192 |
+| `toggleFit` | frontend/js/sketch-pad.js:792 |
+| `toggleStyle` | frontend/js/sketch-pad.js:350 |
+| `tracePolygon` | frontend/js/sketch-pad.js:1113 |
+| `typingIn` | frontend/js/sketch-pad.js:1515 |
+| `undo` | frontend/js/sketch-pad.js:1443 |
+| `wireHelp` | frontend/js/sketch-pad.js:567 |
+
+### frontend/js/standalone-undo.js (2)
+
+| Name | File:line |
+|---|---|
+| `announce` | frontend/js/standalone-undo.js:15 |
+| `offer` | frontend/js/standalone-undo.js:40 |
+
 ### frontend/js/statistics.js (25)
 
 | Name | File:line |
@@ -6767,14 +6988,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `analyseWebPage` | frontend/js/web-clip.js:183 |
 | `clearWebAnalysis` | frontend/js/web-clip.js:142 |
 | `markWebTerms` | frontend/js/web-clip.js:154 |
-| `readerBookmark` | frontend/js/web-clip.js:299 |
-| `readerBookmarkMark` | frontend/js/web-clip.js:310 |
+| `readerBookmark` | frontend/js/web-clip.js:297 |
+| `readerBookmarkMark` | frontend/js/web-clip.js:308 |
 | `renderWebClip` | frontend/js/web-clip.js:31 |
 | `saveWebPageAsNote` | frontend/js/web-clip.js:274 |
 | `showWebReader` | frontend/js/web-clip.js:54 |
 | `webClipBookmarklet` | frontend/js/web-clip.js:15 |
-| `webFollowUp` | frontend/js/web-clip.js:332 |
-| `webFollowUpRefers` | frontend/js/web-clip.js:328 |
+| `webFollowUp` | frontend/js/web-clip.js:330 |
+| `webFollowUpRefers` | frontend/js/web-clip.js:326 |
 
 ### frontend/js/whiteboard-commands.js (68)
 
@@ -14291,70 +14512,70 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `Candidate` | src/tessellate/ai/facts.py:179 |
-| `_Similar` | src/tessellate/ai/facts.py:809 |
-| `_answered_ids` | src/tessellate/ai/facts.py:1120 |
+| `_Similar` | src/tessellate/ai/facts.py:812 |
+| `_answered_ids` | src/tessellate/ai/facts.py:1123 |
 | `_answered_next` | src/tessellate/ai/facts.py:278 |
-| `_answers_by_rule` | src/tessellate/ai/facts.py:1191 |
-| `_asked_notes` | src/tessellate/ai/facts.py:1170 |
-| `_due_questions` | src/tessellate/ai/facts.py:1163 |
+| `_answers_by_rule` | src/tessellate/ai/facts.py:1194 |
+| `_asked_notes` | src/tessellate/ai/facts.py:1173 |
+| `_due_questions` | src/tessellate/ai/facts.py:1166 |
 | `_entries_to_read` | src/tessellate/ai/facts.py:502 |
 | `_fingerprint` | src/tessellate/ai/facts.py:423 |
-| `_for_the_model` | src/tessellate/ai/facts.py:1157 |
-| `_forgotten_event_type` | src/tessellate/ai/facts.py:1478 |
-| `_heading` | src/tessellate/ai/facts.py:1129 |
-| `_judge` | src/tessellate/ai/facts.py:785 |
-| `_known_pairs` | src/tessellate/ai/facts.py:914 |
+| `_for_the_model` | src/tessellate/ai/facts.py:1160 |
+| `_forgotten_event_type` | src/tessellate/ai/facts.py:1481 |
+| `_heading` | src/tessellate/ai/facts.py:1132 |
+| `_judge` | src/tessellate/ai/facts.py:788 |
+| `_known_pairs` | src/tessellate/ai/facts.py:917 |
 | `_line_around` | src/tessellate/ai/facts.py:269 |
-| `_links` | src/tessellate/ai/facts.py:1148 |
-| `_local_answer` | src/tessellate/ai/facts.py:767 |
-| `_local_disagreement` | src/tessellate/ai/facts.py:746 |
+| `_links` | src/tessellate/ai/facts.py:1151 |
+| `_local_answer` | src/tessellate/ai/facts.py:770 |
+| `_local_disagreement` | src/tessellate/ai/facts.py:749 |
 | `_narrow` | src/tessellate/ai/facts.py:447 |
-| `_open_claims_and_questions` | src/tessellate/ai/facts.py:932 |
-| `_pair_fact` | src/tessellate/ai/facts.py:946 |
-| `_pair_json` | src/tessellate/ai/facts.py:1414 |
-| `_pair_key` | src/tessellate/ai/facts.py:909 |
-| `_pair_passes` | src/tessellate/ai/facts.py:981 |
-| `_plain_words` | src/tessellate/ai/facts.py:742 |
+| `_open_claims_and_questions` | src/tessellate/ai/facts.py:935 |
+| `_pair_fact` | src/tessellate/ai/facts.py:949 |
+| `_pair_json` | src/tessellate/ai/facts.py:1417 |
+| `_pair_key` | src/tessellate/ai/facts.py:912 |
+| `_pair_passes` | src/tessellate/ai/facts.py:984 |
+| `_plain_words` | src/tessellate/ai/facts.py:745 |
 | `_pref_key` | src/tessellate/ai/facts.py:99 |
 | `_proposed` | src/tessellate/ai/facts.py:350 |
 | `_qa_pairs` | src/tessellate/ai/facts.py:360 |
 | `_release` | src/tessellate/ai/facts.py:487 |
 | `_retire_not_own_questions` | src/tessellate/ai/facts.py:395 |
-| `_rule_answer` | src/tessellate/ai/facts.py:1179 |
-| `_rule_notes` | src/tessellate/ai/facts.py:1136 |
-| `_run_json` | src/tessellate/ai/facts.py:1251 |
+| `_rule_answer` | src/tessellate/ai/facts.py:1182 |
+| `_rule_notes` | src/tessellate/ai/facts.py:1139 |
+| `_run_json` | src/tessellate/ai/facts.py:1254 |
 | `_sentence_spans` | src/tessellate/ai/facts.py:122 |
 | `_template_questions` | src/tessellate/ai/facts.py:338 |
-| `_terms` | src/tessellate/ai/facts.py:732 |
-| `_visible` | src/tessellate/ai/facts.py:1329 |
-| `_words_alike` | src/tessellate/ai/facts.py:738 |
-| `_written` | src/tessellate/ai/facts.py:937 |
-| `as_json` | src/tessellate/ai/facts.py:1395 |
+| `_terms` | src/tessellate/ai/facts.py:735 |
+| `_visible` | src/tessellate/ai/facts.py:1332 |
+| `_words_alike` | src/tessellate/ai/facts.py:741 |
+| `_written` | src/tessellate/ai/facts.py:940 |
+| `as_json` | src/tessellate/ai/facts.py:1398 |
 | `candidates` | src/tessellate/ai/facts.py:372 |
-| `edit` | src/tessellate/ai/facts.py:1432 |
+| `edit` | src/tessellate/ai/facts.py:1435 |
 | `enabled` | src/tessellate/ai/facts.py:230 |
 | `fingerprint_of` | src/tessellate/ai/facts.py:434 |
-| `forget` | src/tessellate/ai/facts.py:1533 |
-| `json_payload_value` | src/tessellate/ai/facts.py:1235 |
+| `forget` | src/tessellate/ai/facts.py:1536 |
+| `json_payload_value` | src/tessellate/ai/facts.py:1238 |
 | `kept_question` | src/tessellate/ai/facts.py:327 |
-| `latest_card` | src/tessellate/ai/facts.py:1297 |
-| `listing` | src/tessellate/ai/facts.py:1347 |
+| `latest_card` | src/tessellate/ai/facts.py:1300 |
+| `listing` | src/tessellate/ai/facts.py:1350 |
 | `own_question` | src/tessellate/ai/facts.py:289 |
-| `remove` | src/tessellate/ai/facts.py:1452 |
-| `reset` | src/tessellate/ai/facts.py:1442 |
-| `restore` | src/tessellate/ai/facts.py:1472 |
+| `remove` | src/tessellate/ai/facts.py:1455 |
+| `reset` | src/tessellate/ai/facts.py:1445 |
+| `restore` | src/tessellate/ai/facts.py:1475 |
 | `run` | src/tessellate/ai/facts.py:538 |
-| `run_facts` | src/tessellate/ai/facts.py:1276 |
-| `runner_enabled` | src/tessellate/ai/facts.py:1575 |
+| `run_facts` | src/tessellate/ai/facts.py:1279 |
+| `runner_enabled` | src/tessellate/ai/facts.py:1578 |
 | `sentences` | src/tessellate/ai/facts.py:238 |
 | `set_switches` | src/tessellate/ai/facts.py:215 |
-| `snapshot` | src/tessellate/ai/facts.py:1485 |
+| `snapshot` | src/tessellate/ai/facts.py:1488 |
 | `stored_switches` | src/tessellate/ai/facts.py:192 |
 | `switches` | src/tessellate/ai/facts.py:200 |
-| `tombstoned` | src/tessellate/ai/facts.py:1458 |
-| `unforget` | src/tessellate/ai/facts.py:1506 |
-| `visible` | src/tessellate/ai/facts.py:1388 |
-| `visible_counts` | src/tessellate/ai/facts.py:1266 |
+| `tombstoned` | src/tessellate/ai/facts.py:1461 |
+| `unforget` | src/tessellate/ai/facts.py:1509 |
+| `visible` | src/tessellate/ai/facts.py:1391 |
+| `visible_counts` | src/tessellate/ai/facts.py:1269 |
 
 ### src/tessellate/ai/fence.py (6)
 
@@ -20073,30 +20294,30 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `Run` | src/tessellate/core/jobruns.py:249 |
 | `_bump` | src/tessellate/core/jobruns.py:174 |
-| `_calling` | src/tessellate/core/jobruns.py:741 |
+| `_calling` | src/tessellate/core/jobruns.py:743 |
 | `_clip` | src/tessellate/core/jobruns.py:100 |
 | `_database` | src/tessellate/core/jobruns.py:133 |
 | `_failure_reason` | src/tessellate/core/jobruns.py:105 |
-| `_named` | src/tessellate/core/jobruns.py:750 |
-| `_open_call` | src/tessellate/core/jobruns.py:757 |
-| `_purpose` | src/tessellate/core/jobruns.py:721 |
-| `_seconds` | src/tessellate/core/jobruns.py:733 |
-| `active` | src/tessellate/core/jobruns.py:706 |
+| `_named` | src/tessellate/core/jobruns.py:752 |
+| `_open_call` | src/tessellate/core/jobruns.py:759 |
+| `_purpose` | src/tessellate/core/jobruns.py:723 |
+| `_seconds` | src/tessellate/core/jobruns.py:735 |
+| `active` | src/tessellate/core/jobruns.py:708 |
 | `begin` | src/tessellate/core/jobruns.py:537 |
-| `bound` | src/tessellate/core/jobruns.py:696 |
+| `bound` | src/tessellate/core/jobruns.py:698 |
 | `clear_finished` | src/tessellate/core/jobruns.py:202 |
 | `clear_live` | src/tessellate/core/jobruns.py:221 |
 | `current` | src/tessellate/core/jobruns.py:237 |
 | `describe_night_pass` | src/tessellate/core/jobruns.py:668 |
 | `finished` | src/tessellate/core/jobruns.py:196 |
-| `for_request` | src/tessellate/core/jobruns.py:713 |
+| `for_request` | src/tessellate/core/jobruns.py:715 |
 | `job_run` | src/tessellate/core/jobruns.py:547 |
 | `last_runs` | src/tessellate/core/jobruns.py:626 |
 | `live` | src/tessellate/core/jobruns.py:230 |
 | `mark_interrupted` | src/tessellate/core/jobruns.py:597 |
 | `merged_history` | src/tessellate/core/jobruns.py:508 |
-| `model_call` | src/tessellate/core/jobruns.py:770 |
-| `model_stream` | src/tessellate/core/jobruns.py:807 |
+| `model_call` | src/tessellate/core/jobruns.py:772 |
+| `model_stream` | src/tessellate/core/jobruns.py:809 |
 | `note_finished` | src/tessellate/core/jobruns.py:569 |
 | `peek_database` | src/tessellate/core/jobruns.py:137 |
 | `set_database_source` | src/tessellate/core/jobruns.py:126 |
@@ -21845,7 +22066,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:336 |
 | `settings_from` | src/tessellate/search/websearch.py:321 |
 
-## Tests (14714)
+## Tests (14725)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -21882,6 +22103,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_alembic_baseline.py | 7 |
 | tests/test_alembic_full_chain.py | 3 |
 | tests/test_all_spaces_indexes.py | 2 |
+| tests/test_announce_saved_note_z7.py | 3 |
 | tests/test_answer_pictures_502.py | 11 |
 | tests/test_answer_support.py | 10 |
 | tests/test_answer_support_cleared.py | 1 |
@@ -21960,7 +22182,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_bars_618.py | 7 |
 | tests/test_bench_spec.py | 7 |
 | tests/test_bg_art_1436.py | 8 |
-| tests/test_bg_art_styles.py | 24 |
+| tests/test_bg_art_styles.py | 25 |
 | tests/test_bgtasks.py | 22 |
 | tests/test_bidi_controls_n20.py | 2 |
 | tests/test_bin_documents_reminders_row30.py | 6 |
@@ -22057,6 +22279,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_code_file_chords.py | 8 |
 | tests/test_code_ide_b42.py | 9 |
 | tests/test_code_vscode.py | 23 |
+| tests/test_codemap_closure_z10.py | 3 |
 | tests/test_codemap_fresh.py | 1 |
 | tests/test_codemap_routes.py | 1 |
 | tests/test_codeql_shapes.py | 2 |
@@ -22646,6 +22869,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_janitor_short.py | 5 |
 | tests/test_janitor_warm.py | 2 |
 | tests/test_job_backpressure.py | 2 |
+| tests/test_job_notices_z4.py | 3 |
 | tests/test_job_runs.py | 50 |
 | tests/test_jobruns_no_raw_exceptions.py | 1 |
 | tests/test_jobs_durable_kinds.py | 14 |
@@ -22911,7 +23135,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_obj_order.py | 9 |
 | tests/test_obj_ref.py | 6 |
 | tests/test_obj_review_1031.py | 20 |
-| tests/test_obj_tray.py | 11 |
+| tests/test_obj_tray.py | 12 |
 | tests/test_object_actions.py | 8 |
 | tests/test_ocr.py | 20 |
 | tests/test_ocr_clean_loops.py | 7 |
