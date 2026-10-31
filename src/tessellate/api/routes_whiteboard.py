@@ -569,6 +569,13 @@ class WhiteboardObjectData(BaseModel):
         Annotated[str, StringConstraints(pattern=r"^(up|heart|star|question|check|fire)$")],
         Annotated[int, Field(ge=1, le=999)],
     ] | None = None
+    #: **Which of those are yours** (INBOX 1493): a press on a stamp is a
+    #: toggle per person, so the stamps this notebook's owner put on the topic
+    #: are named here, each one counted in `stamps` too. Private to this
+    #: install: the exports carry the counts, not whose they are.
+    stamped: list[Annotated[str, StringConstraints(pattern=r"^(up|heart|star|question|check|fire)$")]] | None = Field(
+        default=None, max_length=6
+    )
     #: **Markers** (MINDMAP_PLAN decision 34): a priority 1 to 5, how far
     #: along it is (0 to 100, the menu offers quarters), a flag, and up to six
     #: Phosphor glyph names drawn before the label. Content, not a look: a
@@ -703,6 +710,16 @@ class WhiteboardObjectData(BaseModel):
             pairs = (part.split(":", 1) for part in value.split(",") if ":" in part)
             return {name.strip(): count.strip() for name, count in pairs}
         return value
+
+    @field_validator("stamped")
+    @classmethod
+    def _stamped_have_a_count(cls, value, info):
+        """A stamp with no count cannot be yours; the rest is kept in order."""
+        if not value:
+            return value
+        counted = info.data.get("stamps") or {}
+        kept = [name for name in dict.fromkeys(value) if name in counted]
+        return kept or None
 
     @field_validator("icon")
     @classmethod

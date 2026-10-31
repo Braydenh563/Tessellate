@@ -4656,11 +4656,15 @@ html[data-chrome="native"] #top-bar #brand-logo {
 /* The status strip. Quiet by design: it is the line you glance at, never the
    line you read, so it takes the smallest type in the app and the muted ink,
    and its own controls only gain weight when there is something to say. */
+/* One row at every width: the counts give way with an ellipsis so the
+   controls keep their words and targets. Wrapping put the file type picker
+   (INBOX 1482) on a second 44px row at 700px and squeezed the editor under
+   its 260px floor (E2E editor-keys, "toolbar is one row"). */
 .doc-statusbar {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   margin-top: var(--space-2);
   padding: var(--space-1) var(--space-2);
   border: 1px solid var(--glass-border);
@@ -4671,6 +4675,15 @@ html[data-chrome="native"] #top-bar #brand-logo {
 .doc-statusbar-fact {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+.doc-statusbar > * {
+  flex: 0 0 auto;
+}
+#doc-counts {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .doc-statusbar-spacer {
   flex: 1 1 auto;

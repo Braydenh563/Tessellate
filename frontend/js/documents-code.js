@@ -2378,6 +2378,23 @@ function docStickyHeaders(symbols, pos, topLine, max = 3) {
     .slice(-max);
 }
 
+//: **A plugin never asks for a measure from inside CodeMirror's measure loop**
+//: (INBOX 1492, "Measure loop restarted more than 5 times"). `geometryChanged`,
+//: `viewportChanged` and `heightChanged` are set on the updates the loop itself
+//: produces, so a `requestMeasure` from `update` on one of them adds a pass to
+//: the loop it is in, and a document whose lines take four passes to settle
+//: reaches the sixth. This asks once per frame instead, from outside the loop:
+//: any number of calls in a frame are one request (`plugin.measureFrame` is
+//: the pending frame), and a destroyed plugin's is dropped. The class is
+//: pinned by tests/test_cm_measure_loop_1031.py.
+function docMeasureNextFrame(plugin, view, spec) {
+  if (plugin.measureFrame) return;
+  plugin.measureFrame = requestAnimationFrame(() => {
+    plugin.measureFrame = 0;
+    if (!plugin.measureDead) view.requestMeasure(spec);
+  });
+}
+
 //: **Sticky scroll** (INBOX 402, VS Code's): while the view is scrolled into
 //: a function, a class or a rule, its first line stays pinned at the top of
 //: the pane, and the lines of the scopes around it above that, so the reader
@@ -2401,15 +2418,17 @@ function docStickyScroll(CM) {
         this.symbols = null;
         this.tree = null;
         this.key = "";
+        this.spec = { key: this, read: () => this.read(), write: (m) => this.write(m) };
         this.onScroll = () => this.schedule();
         view.scrollDOM.addEventListener("scroll", this.onScroll, { passive: true });
         this.schedule();
       }
       update(update) {
-        if (update.docChanged || update.viewportChanged || update.geometryChanged) this.schedule();
+        if (update.docChanged) this.schedule();
+        else if (update.viewportChanged || update.geometryChanged) docMeasureNextFrame(this, this.view, this.spec);
       }
       schedule() {
-        this.view.requestMeasure({ key: this, read: () => this.read(), write: (m) => this.write(m) });
+        this.view.requestMeasure(this.spec);
       }
       read() {
         const view = this.view;
@@ -2470,6 +2489,7 @@ function docStickyScroll(CM) {
         );
       }
       destroy() {
+        this.measureDead = true;
         this.view.scrollDOM.removeEventListener("scroll", this.onScroll);
         this.dom.remove();
       }

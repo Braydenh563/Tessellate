@@ -109,6 +109,7 @@ from tessellate.ai.provider import ProviderError
 from tessellate.api.routes_auth import require_unlock
 from tessellate.api.this_computer import is_another_device
 from tessellate.core import (
+    afterunlock,
     backup,
     bgtasks,
     deadline,
@@ -1202,9 +1203,16 @@ def _start_services() -> Path:
     # A job record still saying "running" belongs to the process that just
     # ended; say so before anything new can be mistaken for it.
     jobruns.mark_interrupted()
+    #: **A launch with a password holds its heavy work until the first unlock**
+    #: (INBOX 1492: `/auth/unlock` 5072 ms, `/models/status` 3743 ms in the
+    #: owner's lag log): the search model's load, the speller, the day's
+    #: housekeeping and the queued jobs start after the unlock answer has
+    #: gone (core/afterunlock.py), never beside it.
+    if _has_password():
+        afterunlock.arm()
     # The durable jobs (core/jobstore.py): the readings and filings a closed
     # or killed process left queued or half done are queued again, once.
-    jobs.resume()
+    afterunlock.defer("resume-jobs", jobs.resume)
     ledger_path = deps.get_config().data_dir / egress.LEDGER_NAME
     # Keep the ledger current as connections happen, not only on a receipt
     # read and at a clean shutdown, so a killed process loses at most
@@ -1237,19 +1245,38 @@ def _start_services() -> Path:
         deps.get_config().get_preference("season_locale", ""),
     )
     if deps.get_config().get_preference("warm_search_model_at_launch", True):
-        embeddings.start_warmup(deps.get_embeddings(), deps.get_db().session)
-        #: The speller's lists and the UK/US pairs (INBOX 895), about a
-        #: second built once on the job pool, so the first question does not
-        #: wait for them.
-        from tessellate.ai import spelling
-
-        spelling.warm_in_background()
+        afterunlock.defer("search-warmup", _warm_search_at_launch)
     # The filing model's warm-up and the retry of stand-ins are *not* started
     # here: `create_app` runs for every test app too, and a model call at
     # construction was an extra round on every fake model in the suite. The
     # page asks for both once it is unlocked (`POST /models/warm-filing`).
     startup_status.set_phase("Starting the server…")
     return ledger_path
+
+
+def _has_password() -> bool:
+    """Whether this notebook has a password to give (a lock screen to wait
+    for). An unreadable database answers no: the work then runs at launch."""
+    try:
+        from sqlalchemy import select
+
+        from tessellate.core.database import User
+
+        with deps.get_db().session() as session:
+            return session.scalar(select(User.id)) is not None
+    except Exception:  # noqa: BLE001  # nothing to wait for is the old behaviour
+        return False
+
+
+def _warm_search_at_launch() -> None:
+    """The search model's load (the session factory is handed in so
+    embeddings never has to import the dependency container) and the speller's
+    lists and the UK/US pairs (INBOX 895), about a second built once on the
+    job pool, so the first question does not wait for them."""
+    embeddings.start_warmup(deps.get_embeddings(), deps.get_db().session)
+    from tessellate.ai import spelling
+
+    spelling.warm_in_background()
 
 
 def _add_middleware(app: FastAPI) -> None:
@@ -1612,7 +1639,7 @@ def create_app() -> FastAPI:
         # tests/test_flaw_class_lints.py): it is the app's housekeeping, a
         # quiet kind, after the server is up (ARCH-19).
         routes_models.prewarm_installed()
-        jobs.enqueue("maintenance", _startup_maintenance, name="startup maintenance")
+        afterunlock.defer("maintenance", lambda: jobs.enqueue("maintenance", _startup_maintenance, name="startup maintenance"))
         yield
         # Never raises: `stop_all` swallows per-job failures itself, and a
         # shutdown that fails to shut down is worse than one that leaves a
