@@ -55,9 +55,11 @@ tier: max (three agents at once, one Opus or Fable); Fable only as the owner's n
 - [x] CodeQL 1876 to 1884 fixed and threads resolved
 - [x] Blind test 1, 2, 11: mind map template focus, Dashboard blank after unlock (agent blindfix-1031)
 - [x] Blind test 3 to 10: Ask "only note", custom order hint, Guide topics, questions feedback, notifications (agent blindux-1031)
-- [ ] Mind map press at 390/200 under 80 ms: text-edit flush, incremental render, edge cache (agent wbpress-1031 round 2)
+- [x] Mind map press at 390/200 under 80 ms: text-edit flush, incremental render, edge cache (agent wbpress-1031 round 2)
 - [ ] Composer leftovers: Z58 rest, run distance naming, closing quotes, casing, overview routing, F13, F14 (agent composer3-1031)
-- [ ] Blind-test leftovers: double first-steps fetch, bell Get started, unclear labels, back to writing, real drag (agent labels-1031)
+- [x] Blind-test leftovers: double first-steps fetch, bell Get started, unclear labels, back to writing, real drag (agent labels-1031)
+- [ ] Mind map at phone width: template framing, toasts, title, fab overlap (agent mapphone-1031)
+- [ ] Boot and tab duplicate fetches, avatar fallback, Notes sub-tab memory (agent dupfetch-1031)
 - [ ] Plan phases (ROADMAP table order)
 - [ ] BACKLOG
 - [>] Graph G3/S2 2,000-note layout (merged e154ab9); docs audit 1028 rows (merged ece0113); shellux and wb1313 agents running
