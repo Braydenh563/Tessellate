@@ -32,6 +32,8 @@ tier: max (three agents at once, one Opus or Fable); Fable only as the owner's n
 - [x] Speed pass 2: graph open, Library and Timeline opens, notes-list compile (agent speed2-1031)
 - [ ] Notes list and Timeline windowing, S16 and S53 (agent listwin-1031)
 - [x] Ask answer foot sections with no model, INBOX 1466 rest (agent askfoot-1031)
+- [ ] Review of the 1031 merges (reviewer) and UX audit of drag, tray, Ask foot (ux-auditor)
+- [ ] S3 rest: avatars.js and atlas.js off the boot path (agent bootlazy-1031)
 - [x] Chat attachment leftovers: reloaded chat keeps its map (agent fixes-1031, merged)
 - [x] Search negated operators -tag: -kind: -is: -title: (hub, S50 leftover)
 - [x] INBOX 1467 drag reorder, copy, drag anywhere, tray (agent objmove-1031)
