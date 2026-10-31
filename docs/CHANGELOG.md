@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Dashboard (blind test 1031): the Dashboard no longer opens blank after unlock when the notebook last saved another tab (it was blank in 2 of 3 logins, 0 of 13 now): the boot loaded the saved tab's data under the Dashboard every load opens on, so no statistics or cards were fetched; it now loads the tab on screen.
 - Dashboard (dashcls 1031): going back to the Dashboard no longer shifts the page (layout shift 0.34 on a revisit at 1440, 0.03 at 390, to 0.000 over five revisits): the cards were sized while the tab was hidden, which stacked them until they were measured again, and the Digest card counted as drawn before its day lines arrived, so it grew a fetch later and pushed the cards below it
 - Help popovers (dashcls 1031): Escape in a help popover closes only the popover and puts focus back on its "?" button, and a second Escape closes the dialog (in Settings, one Escape closed the whole of Settings with the popover, and the same for the agent panel; the shared handler now spends the press, so every dialog behaves alike)
 - CodeQL (PR 211, alerts 1876 to 1884): the Writing room's heading and bullet patterns match the line with its tail cut and no `s*$` after `.*S`, so a long run of tabs is linear (it was quadratic); a blank text has no sentences (it raised); the timeline strip no longer reads an unset `labels`; one `ctypes` import form; three test lints.

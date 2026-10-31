@@ -2,7 +2,7 @@
 
 Generated 2026-10-31 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7007, frontend ids 2596, CSS sections 506, backend routes 632, backend modules 7722, test files 1648, tests 14263, plan headings 990.
+Counts: frontend functions 7007, frontend ids 2596, CSS sections 506, backend routes 632, backend modules 7722, test files 1649, tests 14265, plan headings 990.
 
 ## Frontend functions (7007)
 
@@ -19,46 +19,46 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `apiPagedList` | frontend/js/app.js:581 |
 | `askPasswordPrompt` | frontend/js/app.js:763 |
 | `authToken` | frontend/js/app.js:172 |
-| `chip` | frontend/js/app.js:1349 |
-| `chipWords` | frontend/js/app.js:1344 |
+| `chip` | frontend/js/app.js:1356 |
+| `chipWords` | frontend/js/app.js:1351 |
 | `clearApiCache` | frontend/js/app.js:642 |
-| `confirmDialog` | frontend/js/app.js:1437 |
-| `confirmVerb` | frontend/js/app.js:1430 |
-| `ensureModule` | frontend/js/app.js:2002 |
+| `confirmDialog` | frontend/js/app.js:1444 |
+| `confirmVerb` | frontend/js/app.js:1437 |
+| `ensureModule` | frontend/js/app.js:2009 |
 | `enterWithoutPassword` | frontend/js/app.js:721 |
 | `hide` | frontend/js/app.js:168 |
 | `hideBootSplash` | frontend/js/app.js:954 |
 | `initAuth` | frontend/js/app.js:967 |
-| `installStandIns` | frontend/js/app.js:2210 |
+| `installStandIns` | frontend/js/app.js:2217 |
 | `kickBackgroundTaskPoll` | frontend/js/app.js:611 |
-| `lazyAssetStamp` | frontend/js/app.js:1941 |
-| `lazyScript` | frontend/js/app.js:1982 |
+| `lazyAssetStamp` | frontend/js/app.js:1948 |
+| `lazyScript` | frontend/js/app.js:1989 |
 | `lockFieldForPin` | frontend/js/app.js:861 |
 | `lockNow` | frontend/js/app.js:928 |
 | `mediaSrc` | frontend/js/app.js:255 |
-| `mountNoteSurfaceNow` | frontend/js/app.js:2037 |
-| `onDomReady` | frontend/js/app.js:1973 |
-| `promptDialog` | frontend/js/app.js:1547 |
+| `mountNoteSurfaceNow` | frontend/js/app.js:2044 |
+| `onDomReady` | frontend/js/app.js:1980 |
+| `promptDialog` | frontend/js/app.js:1554 |
 | `purgeLockedContent` | frontend/js/app.js:914 |
 | `recordBrowserLog` | frontend/js/app.js:23 |
 | `refreshActiveTab` | frontend/js/app.js:1194 |
 | `refuseStagedUrls` | frontend/js/app.js:232 |
 | `replaceMissingMedia` | frontend/js/app.js:303 |
 | `resumeWithoutPassword` | frontend/js/app.js:731 |
-| `setBusy` | frontend/js/app.js:1389 |
-| `setLabel` | frontend/js/app.js:1263 |
-| `settingsModalOpen` | frontend/js/app.js:1337 |
+| `setBusy` | frontend/js/app.js:1396 |
+| `setLabel` | frontend/js/app.js:1270 |
+| `settingsModalOpen` | frontend/js/app.js:1344 |
 | `settleLockPrompt` | frontend/js/app.js:742 |
 | `show` | frontend/js/app.js:167 |
 | `showLockScreen` | frontend/js/app.js:809 |
-| `smallButton` | frontend/js/app.js:1724 |
-| `spinnerEl` | frontend/js/app.js:1380 |
-| `stagePrimary` | frontend/js/app.js:1373 |
+| `smallButton` | frontend/js/app.js:1731 |
+| `spinnerEl` | frontend/js/app.js:1387 |
+| `stagePrimary` | frontend/js/app.js:1380 |
 | `stagedImageByUrl` | frontend/js/app.js:200 |
 | `startApp` | frontend/js/app.js:1015 |
 | `startWithoutPassword` | frontend/js/app.js:706 |
-| `whenScriptsLoaded` | frontend/js/app.js:1922 |
-| `wireBackdropClose` | frontend/js/app.js:1712 |
+| `whenScriptsLoaded` | frontend/js/app.js:1929 |
+| `wireBackdropClose` | frontend/js/app.js:1719 |
 | `zoomWheelDelta` | frontend/js/app.js:249 |
 
 ### frontend/js/prefs.js (6)
@@ -21313,7 +21313,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:336 |
 | `settings_from` | src/tessellate/search/websearch.py:321 |
 
-## Tests (14263)
+## Tests (14265)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -21697,6 +21697,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_dash_map_feature.py | 4 |
 | tests/test_dash_widget_stall.py | 3 |
 | tests/test_dashboard_art_offscreen_1029.py | 3 |
+| tests/test_dashboard_blank_after_unlock_1031.py | 2 |
 | tests/test_dashboard_boot_race.py | 1 |
 | tests/test_dashboard_default_wide.py | 2 |
 | tests/test_dashboard_empty_actions.py | 5 |
