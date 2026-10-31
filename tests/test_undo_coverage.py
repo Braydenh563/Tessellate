@@ -611,6 +611,7 @@ EXEMPT: dict[str, str] = {
     "lightbox.js:renderInlineAction": "read: asks the model about a note",
     "margin-reader.js:marginAsk": "read: reads or asks the model; shows a result, writes nothing",
     "meetings.js:meetingSummarise": "read: asks the model for a summary",
+    "meetings.js:meetingTakeFinish": "send: closes the take started by meetingTakeBegin; the finished recording is the step (Undo bins it)",
     "meetings.js:meetingTakeBegin": "job: opens the recording's object when a take starts; the finished recording is the step (Undo bins it)",
     "model-bench.js:benchRow": "settings: a setting with its own Reset or the settings history",
     "model-bench.js:runModelBench": "job: starts or stops work or a model; deletes no user data",
