@@ -4,9 +4,10 @@ how they are referred based on context or percieved user speech patterns or
 emotion etc.").
 
 One rule table (`composer_digest._SAY_WHEN`), each row by several phrasings:
-the base form is the date and how far back; "when did I" and "what date"
-get the date first; "how long ago" the distance first; a casual question
-the relative form; the person's own time words said back ("last week" for
+the base form leads with how far back (INBOX 1483: "three weeks ago, on 8
+October", never "on 8 October (three weeks ago)"); "when did I" and "what
+date" get the date first ("on 8 October, about three weeks ago"); "how long
+ago" the distance first; a casual question the relative form; the person's own time words said back ("last week" for
 "last week"); today and yesterday relative only; a distant day by its month.
 
 Fixed clock: Friday 30 October 2026 (weeks start on Monday).
@@ -14,6 +15,7 @@ Fixed clock: Friday 30 October 2026 (weeks start on Monday).
 
 from __future__ import annotations
 
+import contextvars
 import re
 from datetime import date
 
@@ -30,9 +32,14 @@ def _monday_first(monkeypatch):
 
 
 def _said(question: str, text: str, written: date) -> str:
-    composer_digest._TODAY.set(TODAY)
-    composer_digest._set_timing(question)
-    return composer_digest._pin(text, written)
+    #: In a copy of the context: the timing set here never reaches the
+    #: next test in this worker (`test_gold_answers` pins against its own day).
+    def run() -> str:
+        composer_digest._TODAY.set(TODAY)
+        composer_digest._set_timing(question)
+        return composer_digest._pin(text, written)
+
+    return contextvars.copy_context().run(run)
 
 
 EVERY = ["tell me about the bus", "yooo what's up with the bus", "when did I miss the bus",
@@ -61,7 +68,8 @@ def test_their_this_month_is_said_back(question):
 @pytest.mark.parametrize("question", ["when did I miss the bus last week", "what day last week did I miss the bus",
                                       "which day did I miss the bus last week"])
 def test_when_with_their_words_gives_the_date_then_their_words(question):
-    assert _said(question, "I missed the bus today", date(2026, 10, 20)) == "I missed the bus on 20 October (last week)"
+    #: INBOX 1483: their words after the date, not in brackets.
+    assert _said(question, "I missed the bus today", date(2026, 10, 20)) == "I missed the bus on 20 October, last week"
 
 
 @pytest.mark.parametrize("question", ["how long ago did I miss the bus", "how long since I missed the bus",
@@ -80,7 +88,8 @@ def test_a_distant_day_is_said_by_its_month(question):
 
 @pytest.mark.parametrize("question", ["when did I miss the bus", "what date did I miss the bus"])
 def test_a_distant_day_still_has_its_date_when_asked_when(question):
-    assert _said(question, "I missed the bus today", date(2026, 3, 10)) == "I missed the bus on 10 March (seven months ago)"
+    #: INBOX 1483: "about eight months ago" (234 days, rounded), not "(seven months ago)".
+    assert _said(question, "I missed the bus today", date(2026, 3, 10)) == "I missed the bus on 10 March, about eight months ago"
 
 
 @pytest.mark.parametrize("question", ["tell me about uni", "what have I saved about uni", "uni"])

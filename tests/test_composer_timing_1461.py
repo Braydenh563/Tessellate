@@ -5,10 +5,12 @@ Three classes, each tested several ways:
 
 1. A note's own time words ("this week", "today", "last week") are said
    against the day the note was written, in the past tense once that day
-   has gone, as the date and how far back ("both", the owner's decision),
-   in the register of the question: the exact date first for "when did
-   I" and "what date"; the relative form for a casual question; close days
-   relative only; distant ones by month in a casual answer.
+   has gone, in the register of the question: the exact date first for
+   "when did I" and "what date"; the relative form for a casual question;
+   close days relative only. INBOX 1483 (the owner, newer: "it sounds wierd
+   and not natural") moved how both are said: the relative time leads and
+   the date follows only where it helps ("three weeks ago, on 8 October",
+   "back in July"), never "on 8 October (three weeks ago)".
 2. A title-less note is named by a clean noun phrase ("your note on design
    class for prototyping"), never "the had design class today ...".
 3. A group line names two or three notes, then "and N more"; a count is
@@ -19,6 +21,7 @@ Fixed clock: Friday 30 October 2026, 10:00.
 
 from __future__ import annotations
 
+import contextvars
 import datetime as dt
 import re
 from datetime import date
@@ -70,9 +73,14 @@ def ask(client, session, monkeypatch):
 
 
 def _pinned(question: str, text: str, written: date) -> str:
-    composer_digest._TODAY.set(TODAY)
-    composer_digest._set_timing(question)
-    return composer_digest._pin(text, written)
+    #: In a copy of the context: the timing set here never reaches the
+    #: next test in this worker (`test_gold_answers` pins against its own day).
+    def run() -> str:
+        composer_digest._TODAY.set(TODAY)
+        composer_digest._set_timing(question)
+        return composer_digest._pin(text, written)
+
+    return contextvars.copy_context().run(run)
 
 
 PLAIN = ["What have I saved about courses & study?", "tell me about uni", "what are my notes on design class",
@@ -84,10 +92,11 @@ EXACT = ["when did I have design class", "what date was my design class", "when 
 
 
 @pytest.mark.parametrize("question", PLAIN)
-def test_plain_says_the_date_and_how_far_back(question):
+def test_plain_leads_with_how_far_back(question):
+    #: INBOX 1483 moved this intent: was "on 20 July (three months ago)".
     assert _pinned(question, "had design class today for prototyping", date(2026, 7, 20)) == \
-        "had design class on 20 July (three months ago) for prototyping"
-    assert _pinned(question, "I missed the bus today", date(2026, 10, 8)) == "I missed the bus on 8 October (three weeks ago)"
+        "had design class back in July for prototyping"
+    assert _pinned(question, "I missed the bus today", date(2026, 10, 8)) == "I missed the bus three weeks ago, on 8 October"
     #: Close: the relative word alone.
     assert _pinned(question, "I missed the bus today", date(2026, 10, 29)) == "I missed the bus yesterday"
 
@@ -105,8 +114,9 @@ def test_when_did_i_gets_the_exact_date_first(question):
     #: Yesterday goes without its date even here: the owner's rule of
     #: 2026-10-31 (composer-1031), "today and yesterday said relatively only".
     assert _pinned(question, "I missed the bus today", date(2026, 10, 29)) == "I missed the bus yesterday"
-    assert _pinned(question, "I missed the bus today", date(2026, 10, 8)) == "I missed the bus on 8 October (three weeks ago)"
-    assert _pinned(question, "had design class today", date(2026, 7, 20)) == "had design class on 20 July (three months ago)"
+    #: The date first, then how far back in words (INBOX 1483: never bracketed).
+    assert _pinned(question, "I missed the bus today", date(2026, 10, 8)) == "I missed the bus on 8 October, about three weeks ago"
+    assert _pinned(question, "had design class today", date(2026, 7, 20)) == "had design class on 20 July, about three months ago"
 
 
 @pytest.mark.parametrize("question", PLAIN[:2] + CASUAL[:2] + EXACT[:2])
@@ -118,30 +128,36 @@ def test_today_in_todays_note_stays_today(question, text):
 
 @pytest.mark.parametrize("question", PLAIN[:3])
 @pytest.mark.parametrize(("text", "said"), [
-    ("my uni days this week are tuesday and thursday", "my uni days in the week of 13 July (three months ago) were tuesday and thursday"),
-    ("the lab is today", "the lab was on 20 July (three months ago)"),
-    ("my shifts this week are long", "my shifts in the week of 13 July (three months ago) were long"),
+    #: INBOX 1483: a time months back is said by its month, not "in the week
+    #: of 13 July (three months ago)".
+    ("my uni days this week are tuesday and thursday", "my uni days back in July were tuesday and thursday"),
+    ("the lab is today", "the lab was back in July"),
+    ("my shifts this week are long", "my shifts back in July were long"),
 ])
 def test_a_time_gone_by_is_said_in_the_past(question, text, said):
     written = date(2026, 7, 17) if "week" in text else date(2026, 7, 20)
     assert _pinned(question, text, written) == said
 
 
-@pytest.mark.parametrize(("first", "monday"), [(0, "13 July"), (6, "19 July")])
-def test_last_week_counts_from_the_persons_first_day(monkeypatch, first, monday):
+@pytest.mark.parametrize(("first", "monday", "back"), [(0, "13 July", "four"), (6, "19 July", "three")])
+def test_last_week_counts_from_the_persons_first_day(monkeypatch, first, monday, back):
     """"last week" in a note of Sunday 26 July: the week of 13 July where
     weeks start on Monday, of 19 July where they start on Sunday."""
     monkeypatch.setattr(composer_digest, "_week_first", lambda: first)
-    said = _pinned("tell me about uni", "I had three lectures last week", date(2026, 7, 26))
-    assert said == f"I had three lectures in the week of {monday} (three months ago)", said
+    #: Asked "when", so the week is said by its first day (a plain question
+    #: says "back in July" since INBOX 1483, which hides the first day).
+    said = _pinned("when did I have three lectures", "I had three lectures last week", date(2026, 7, 26))
+    #: 109 and 103 days back, rounded as "about" rounds.
+    assert said == f"I had three lectures in the week of {monday}, about {back} months ago", said
 
 
 @pytest.mark.parametrize("question", ["What have I saved about courses & study?", "tell me about courses & study",
                                       "what have I got on courses & study"])
 def test_the_owners_question_reads_in_the_past_with_both(ask, question):
     said = ask(NOTES, question)
-    assert "In the week of 13 July (three months ago), your uni days were Tuesday and Thursday." in said, said
-    assert "On 20 July (three months ago), you had design class for prototyping." in said, said
+    #: INBOX 1483 moved this from "In the week of 13 July (three months ago), ...".
+    assert "Back in July, your uni days were Tuesday and Thursday." in said, said
+    assert "Back in July, you had design class for prototyping." in said, said
     assert not re.search(r"\b(?:this week|today)\b", said), said
 
 
