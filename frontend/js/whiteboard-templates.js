@@ -287,6 +287,7 @@ function wbBoardThumbSpec(element, opts = {}) {
       }
       if (data.noStroke) a.stroke = "none";
       else {
+        if (data.opacity != null && data.opacity < 1) a["stroke-opacity"] = String(data.opacity);
         const width = placed && data.width > 0 ? data.width : strokeW;
         a.stroke = ink;
         a["stroke-width"] = R(width);

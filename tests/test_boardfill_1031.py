@@ -15,6 +15,8 @@ INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 FORMAT_JS = (ROOT / "frontend" / "js" / "whiteboard-format.js").read_text(encoding="utf-8")
 INTERCHANGE_JS = (ROOT / "frontend" / "js" / "whiteboard-interchange.js").read_text(encoding="utf-8")
 WB_CSS = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+#: What only the board draws is in the lazy bundle's sheet, out of the boot budget.
+LAZY_CSS = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
 
 
 def _wb_js() -> str:
@@ -38,7 +40,9 @@ def test_fill_and_line_opacity_have_the_five_presets():
 
 def test_a_zero_percent_slider_is_not_read_as_a_hundred():
     # `Number(0) || 100` turned "see through" into "solid" the moment it was chosen.
-    assert "|| 100))" not in FORMAT_JS.split('on("wb-fmt-fillalpha", "change"')[1][:600]
+    line = next(row for row in FORMAT_JS.splitlines() if "const alphaPct" in row)
+    assert "|| 100" not in line and "Number.isFinite" in line
+    assert "Math.max(5," not in FORMAT_JS.split("const setFillAlpha")[1][:900]
 
 
 def test_the_line_opacity_row_is_offered_to_shapes_and_lines_and_stored_as_opacity():
@@ -81,7 +85,7 @@ def test_a_shape_keeps_its_opacities_through_the_server(client):
 def test_the_help_names_the_new_rows():
     topics = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8") + (
         ROOT / "src" / "tessellate" / "ai" / "help_chat.py").read_text(encoding="utf-8")
-    assert "fill opacity" in topics.lower()
+    assert "line opacity" in topics.lower()
 
 
 # --- a press inside a selection's bounds ------------------------------------------
@@ -113,5 +117,10 @@ def test_a_drawn_shape_hands_the_cursor_back_to_the_tool():
     enter = src.split('.attr("class", "sketch-group")')[1][:400]
     assert '.style("cursor"' not in enter, "an inline cursor written once, at creation, outlives the tool"
     rule = re.search(r'#whiteboard-container:not\(\[data-current-tool="select"\]\):not\(\[data-current-tool="pan"\]\)\s*:is\(([^)]*)\)\s*\{\s*cursor: inherit;', WB_CSS)
-    assert rule and ".sketch-group" in rule.group(1) and ".sketch-path" in rule.group(1)
-    assert re.search(r'\[data-current-tool="select"\][^{]*\.sketch-group[^{]*\{\s*cursor: pointer', WB_CSS)
+    # the path and hit band inherit it from their group, which has no cursor of its own now
+    assert rule and ".sketch-group" in rule.group(1)
+    assert re.search(r'\[data-current-tool="select"\][^{]*\.sketch-group[^{]*\{\s*cursor: pointer', LAZY_CSS)
+
+
+def test_the_opacity_presets_are_styled_by_the_lazy_sheet_not_boot_css():
+    assert ".wb-fmt-presets button" in LAZY_CSS and ".wb-fmt-presets" not in WB_CSS

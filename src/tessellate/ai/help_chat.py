@@ -1500,7 +1500,7 @@ HELP_TOPICS.extend(
             ),
             "body": (
                 (
-                    "Whiteboard selection: Shift+click adds, Ctrl+A selects all, Ctrl+D "
+                    "Whiteboard selection: drag inside a selection's box to move it all; Shift+click adds, Ctrl+A selects all, Ctrl+D "
                     "duplicates, Alt-drag copies, Ctrl+V pastes a step along (Ctrl+Shift+V in place), the arrows "
                     "nudge (Shift: further; Ctrl+Shift: resize), Shift+H and Shift+V flip, "
                     "Shift and drag keeps to one axis, Shift and a corner keeps "
@@ -1518,8 +1518,7 @@ HELP_TOPICS.extend(
                     "Comment…, starts a thread. View, Present frames: one frame at a "
                     "time, the bar lists pages; ? shows every key; Ctrl+K finds any board action by name. Menus: Insert, Edit, "
                     "Arrange (align, distribute, size, flip, order, group, lock), View (panels, background, grid, "
-                    "snap, zoom; full screen on a phone) and Board (rename, new, export, kind, clear, delete,"
-                    " keys)."
+                    "snap, zoom) and Board (rename, new, export)."
                 )
             ),
             "badge": {"label": "Library", "tab": "library"},
@@ -1646,7 +1645,7 @@ HELP_TOPICS.extend(
                 "The top bar's Format button, Ctrl+Shift+P or View > Format panel opens "
                 "the Format panel on the right, with three tabs. Style: line colour, width and pattern, "
                 "your own dashes (a dash and a gap in line widths, like 8 4), rounded corners, flow (dashes that move), "
-                "fill (gradient, hatch, dots or zigzag; how solid), opacity, shadow (offset, blur), box corner radii and padding, a picture's crop to a shape, and for a connector its line shape (curved, straight or elbow), "
+                "fill (gradient, hatch, dots or zigzag), fill and line opacity (presets 0 to 100), opacity, shadow (offset, blur), box corner radii and padding, a picture's crop to a shape, and for a connector its line shape (curved, straight or elbow), "
                 "its line jumps (it hops over a line under it with an arc, a gap or a "
                 "sharp peak, of a size you set), a gap to stop short of the shape at each end, its two ends (twenty-one marks, from open and "
                 "filled arrows to circles, diamonds, a cross and a crow's foot, "
