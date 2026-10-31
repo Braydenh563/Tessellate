@@ -1,6 +1,5 @@
 {
  "account-recovery.js::mutation-observer": 1,
- "app.js::mutation-observer": 1,
  "appearance-panel.js::raf": 1,
  "ask-chart.js::resize-observer": 1,
  "ask-compose.js::mutation-observer": 1,
@@ -84,6 +83,7 @@
  "settings-panes.js::mutation-observer": 1,
  "settings-panes.js::raf": 2,
  "settings-panes.js::resize-observer": 1,
+ "settings-wiring.js::mutation-observer": 1,
  "settings.js::mutation-observer": 1,
  "settings.js::raf": 6,
  "settings.js::resize-observer": 1,

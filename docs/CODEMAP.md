@@ -2,7 +2,7 @@
 
 Generated 2026-10-31 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7413, frontend ids 2621, CSS sections 513, backend routes 632, backend modules 8015, test files 1718, tests 14922, plan headings 989.
+Counts: frontend functions 7413, frontend ids 2621, CSS sections 513, backend routes 632, backend modules 8015, test files 1719, tests 14926, plan headings 989.
 
 ## Frontend functions (7413)
 
@@ -34,44 +34,44 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `apiPagedList` | frontend/js/app.js:581 |
 | `askPasswordPrompt` | frontend/js/app.js:742 |
 | `authToken` | frontend/js/app.js:172 |
-| `chip` | frontend/js/app.js:1335 |
-| `chipWords` | frontend/js/app.js:1330 |
+| `chip` | frontend/js/app.js:1316 |
+| `chipWords` | frontend/js/app.js:1311 |
 | `clearApiCache` | frontend/js/app.js:621 |
-| `confirmDialog` | frontend/js/app.js:1423 |
-| `confirmVerb` | frontend/js/app.js:1416 |
-| `ensureModule` | frontend/js/app.js:1971 |
+| `confirmDialog` | frontend/js/app.js:1404 |
+| `confirmVerb` | frontend/js/app.js:1397 |
+| `ensureModule` | frontend/js/app.js:1952 |
 | `enterWithoutPassword` | frontend/js/app.js:700 |
 | `hide` | frontend/js/app.js:168 |
-| `hideBootSplash` | frontend/js/app.js:933 |
-| `initAuth` | frontend/js/app.js:946 |
-| `installStandIns` | frontend/js/app.js:2179 |
-| `lazyAssetStamp` | frontend/js/app.js:1928 |
-| `lazyScript` | frontend/js/app.js:1950 |
-| `lockFieldForPin` | frontend/js/app.js:840 |
-| `lockNow` | frontend/js/app.js:907 |
+| `hideBootSplash` | frontend/js/app.js:914 |
+| `initAuth` | frontend/js/app.js:927 |
+| `installStandIns` | frontend/js/app.js:2160 |
+| `lazyAssetStamp` | frontend/js/app.js:1909 |
+| `lazyScript` | frontend/js/app.js:1931 |
+| `lockFieldForPin` | frontend/js/app.js:816 |
+| `lockNow` | frontend/js/app.js:888 |
 | `mediaSrc` | frontend/js/app.js:255 |
-| `mountNoteSurfaceNow` | frontend/js/app.js:2006 |
-| `promptDialog` | frontend/js/app.js:1533 |
-| `purgeLockedContent` | frontend/js/app.js:893 |
+| `mountNoteSurfaceNow` | frontend/js/app.js:1987 |
+| `promptDialog` | frontend/js/app.js:1514 |
+| `purgeLockedContent` | frontend/js/app.js:869 |
 | `recordBrowserLog` | frontend/js/app.js:23 |
-| `refreshActiveTab` | frontend/js/app.js:1173 |
+| `refreshActiveTab` | frontend/js/app.js:1154 |
 | `refuseStagedUrls` | frontend/js/app.js:232 |
 | `replaceMissingMedia` | frontend/js/app.js:303 |
 | `resumeWithoutPassword` | frontend/js/app.js:710 |
-| `setBusy` | frontend/js/app.js:1375 |
-| `setLabel` | frontend/js/app.js:1249 |
-| `settingsModalOpen` | frontend/js/app.js:1323 |
+| `setBusy` | frontend/js/app.js:1356 |
+| `setLabel` | frontend/js/app.js:1230 |
+| `settingsModalOpen` | frontend/js/app.js:1304 |
 | `settleLockPrompt` | frontend/js/app.js:721 |
 | `show` | frontend/js/app.js:167 |
-| `showLockScreen` | frontend/js/app.js:788 |
-| `smallButton` | frontend/js/app.js:1710 |
-| `spinnerEl` | frontend/js/app.js:1366 |
-| `stagePrimary` | frontend/js/app.js:1359 |
+| `showLockScreen` | frontend/js/app.js:764 |
+| `smallButton` | frontend/js/app.js:1691 |
+| `spinnerEl` | frontend/js/app.js:1347 |
+| `stagePrimary` | frontend/js/app.js:1340 |
 | `stagedImageByUrl` | frontend/js/app.js:200 |
-| `startApp` | frontend/js/app.js:994 |
+| `startApp` | frontend/js/app.js:975 |
 | `startWithoutPassword` | frontend/js/app.js:685 |
-| `whenScriptsLoaded` | frontend/js/app.js:1909 |
-| `wireBackdropClose` | frontend/js/app.js:1698 |
+| `whenScriptsLoaded` | frontend/js/app.js:1890 |
+| `wireBackdropClose` | frontend/js/app.js:1679 |
 | `zoomWheelDelta` | frontend/js/app.js:249 |
 
 ### frontend/js/prefs.js (6)
@@ -1339,51 +1339,51 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `_isChatComposer` | frontend/js/settings-wiring.js:1835 |
-| `activeOverlay` | frontend/js/settings-wiring.js:905 |
-| `captureCountText` | frontend/js/settings-wiring.js:1632 |
-| `captureShortcutKey` | frontend/js/settings-wiring.js:1403 |
-| `clearStagedImages` | frontend/js/settings-wiring.js:2002 |
-| `closeOverlaysForChord` | frontend/js/settings-wiring.js:1202 |
-| `closeShortcuts` | frontend/js/settings-wiring.js:1433 |
-| `comboFromEvent` | frontend/js/settings-wiring.js:1238 |
-| `commitCaptureImages` | frontend/js/settings-wiring.js:1987 |
-| `fileDropBox` | frontend/js/settings-wiring.js:1844 |
-| `flashSaved` | frontend/js/settings-wiring.js:446 |
-| `handleFileUpload` | frontend/js/settings-wiring.js:2034 |
-| `hideChordGuide` | frontend/js/settings-wiring.js:1220 |
-| `inEditable` | frontend/js/settings-wiring.js:903 |
-| `loadForgottenOrder` | frontend/js/settings-wiring.js:1510 |
-| `loadShortcuts` | frontend/js/settings-wiring.js:1079 |
-| `localizeStaticChords` | frontend/js/settings-wiring.js:1122 |
-| `lockFail` | frontend/js/settings-wiring.js:248 |
-| `lockRequest` | frontend/js/settings-wiring.js:325 |
-| `mapEditorShown` | frontend/js/settings-wiring.js:900 |
-| `matchesShortcut` | frontend/js/settings-wiring.js:1256 |
-| `maybeShowOnboarding` | frontend/js/settings-wiring.js:926 |
-| `notebookLocked` | frontend/js/settings-wiring.js:431 |
+| `_isChatComposer` | frontend/js/settings-wiring.js:1863 |
+| `activeOverlay` | frontend/js/settings-wiring.js:933 |
+| `captureCountText` | frontend/js/settings-wiring.js:1660 |
+| `captureShortcutKey` | frontend/js/settings-wiring.js:1431 |
+| `clearStagedImages` | frontend/js/settings-wiring.js:2030 |
+| `closeOverlaysForChord` | frontend/js/settings-wiring.js:1230 |
+| `closeShortcuts` | frontend/js/settings-wiring.js:1461 |
+| `comboFromEvent` | frontend/js/settings-wiring.js:1266 |
+| `commitCaptureImages` | frontend/js/settings-wiring.js:2015 |
+| `fileDropBox` | frontend/js/settings-wiring.js:1872 |
+| `flashSaved` | frontend/js/settings-wiring.js:474 |
+| `handleFileUpload` | frontend/js/settings-wiring.js:2062 |
+| `hideChordGuide` | frontend/js/settings-wiring.js:1248 |
+| `inEditable` | frontend/js/settings-wiring.js:931 |
+| `loadForgottenOrder` | frontend/js/settings-wiring.js:1538 |
+| `loadShortcuts` | frontend/js/settings-wiring.js:1107 |
+| `localizeStaticChords` | frontend/js/settings-wiring.js:1150 |
+| `lockFail` | frontend/js/settings-wiring.js:276 |
+| `lockRequest` | frontend/js/settings-wiring.js:353 |
+| `mapEditorShown` | frontend/js/settings-wiring.js:928 |
+| `matchesShortcut` | frontend/js/settings-wiring.js:1284 |
+| `maybeShowOnboarding` | frontend/js/settings-wiring.js:954 |
+| `notebookLocked` | frontend/js/settings-wiring.js:459 |
 | `persistSavedSearches` | frontend/js/settings-wiring.js:53 |
-| `renderCaptureFiles` | frontend/js/settings-wiring.js:1597 |
-| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1577 |
-| `renderInstallRow` | frontend/js/settings-wiring.js:1756 |
+| `renderCaptureFiles` | frontend/js/settings-wiring.js:1625 |
+| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1605 |
+| `renderInstallRow` | frontend/js/settings-wiring.js:1784 |
 | `renderSavedSearches` | frontend/js/settings-wiring.js:17 |
-| `resetShortcuts` | frontend/js/settings-wiring.js:1370 |
-| `restampShortcutHints` | frontend/js/settings-wiring.js:1132 |
-| `rewriteStagedUrls` | frontend/js/settings-wiring.js:1975 |
-| `runShortcut` | frontend/js/settings-wiring.js:1261 |
+| `resetShortcuts` | frontend/js/settings-wiring.js:1398 |
+| `restampShortcutHints` | frontend/js/settings-wiring.js:1160 |
+| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2003 |
+| `runShortcut` | frontend/js/settings-wiring.js:1289 |
 | `saveCurrentSearch` | frontend/js/settings-wiring.js:61 |
-| `saveShortcutOverrides` | frontend/js/settings-wiring.js:1226 |
-| `saveWhatIsInFront` | frontend/js/settings-wiring.js:509 |
+| `saveShortcutOverrides` | frontend/js/settings-wiring.js:1254 |
+| `saveWhatIsInFront` | frontend/js/settings-wiring.js:537 |
 | `savedSearches` | frontend/js/settings-wiring.js:13 |
-| `setShortcutStatus` | frontend/js/settings-wiring.js:1387 |
-| `setShortcutStatusError` | frontend/js/settings-wiring.js:1394 |
-| `singleKeysOn` | frontend/js/settings-wiring.js:2173 |
-| `stagedImageUrl` | frontend/js/settings-wiring.js:1952 |
-| `stampShortcutTitles` | frontend/js/settings-wiring.js:1108 |
-| `submitLockForm` | frontend/js/settings-wiring.js:255 |
-| `textCounts` | frontend/js/settings-wiring.js:1622 |
-| `uploadStagedFiles` | frontend/js/settings-wiring.js:2011 |
-| `wordCount` | frontend/js/settings-wiring.js:1617 |
+| `setShortcutStatus` | frontend/js/settings-wiring.js:1415 |
+| `setShortcutStatusError` | frontend/js/settings-wiring.js:1422 |
+| `singleKeysOn` | frontend/js/settings-wiring.js:2201 |
+| `stagedImageUrl` | frontend/js/settings-wiring.js:1980 |
+| `stampShortcutTitles` | frontend/js/settings-wiring.js:1136 |
+| `submitLockForm` | frontend/js/settings-wiring.js:283 |
+| `textCounts` | frontend/js/settings-wiring.js:1650 |
+| `uploadStagedFiles` | frontend/js/settings-wiring.js:2039 |
+| `wordCount` | frontend/js/settings-wiring.js:1645 |
 
 ### frontend/js/spaces-find.js (25)
 
@@ -22171,7 +22171,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:336 |
 | `settings_from` | src/tessellate/search/websearch.py:321 |
 
-## Tests (14922)
+## Tests (14926)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23070,6 +23070,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_local_service_h4.py | 9 |
 | tests/test_lock_boundary.py | 9 |
 | tests/test_lock_device_wait.py | 3 |
+| tests/test_lock_document_panels_1031.py | 4 |
 | tests/test_lock_reveal.py | 1 |
 | tests/test_locked_downloads.py | 2 |
 | tests/test_log_console.py | 45 |

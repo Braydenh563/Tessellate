@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Lock: locking empties every panel that shows the notebook's words (the document AI diff, replace list, outline, crumbs, lists, writing suggestions and the dashboard's cards; a `data-holds-notebook` marker covers new ones), and open panels such as the AI assistant are closed under the lock screen, so the Unlock button can be clicked (audit 1031 DC1, DC2)
 - Words: one word count in Python (`core/cjk.word_count`) and one in the browser (`wordCount`); the two parallel counts are gone, and full-width punctuation (the colon, comma, brackets) is not a word in either (INBOX 1495, notes audit N29)
 - Composer: a compare opens with "Of these notes," or "Going by these notes," instead of claiming a search ("the notes I looked at", "this batch"), and its side headings start with a capital (audit 1031 C24)
 - Composer: "summarise my social notes" summarises every note filed under "Social connections" (a category that opens on the words asked), and a summary no longer shows the note's own emphasis as asterisks (audit 1031 C23)

@@ -761,30 +761,6 @@ function askPasswordPrompt({ title, message, submitLabel, submit }) {
   });
 }
 
-//: Modal dialogs and popovers sit in the top layer, above the lock screen,
-//: and make it inert: a lock left them readable and the password field
-//: untypeable. They are put away while it shows and back, as they were,
-//: after it, so a half-written dialog loses nothing.
-const lockStash = [];
-let lockReturn;
-new MutationObserver(() => {
-  if ($("lock-overlay").classList.contains("hidden")) {
-    lockReturn = lockReturn?.focus(); // focus() returns undefined: forgets it too
-    for (const el of lockStash) {
-      try { if (el.isConnected) el.popover ? el.showPopover() : el.showModal(); } catch { /* reopened meanwhile */ }
-    }
-    lockStash.length = 0;
-  } else {
-    lockReturn ||= document.activeElement;
-    for (const el of document.querySelectorAll("dialog:modal, :popover-open")) {
-      lockStash.push(el);
-      el.popover ? el.hidePopover() : el.close();
-    }
-    // Focus goes to the field here, after closing a dialog hands it back to its opener.
-    $("lock-password").focus();
-  }
-}).observe($("lock-overlay"), { attributes: true, attributeFilter: ["class"] });
-
 function showLockScreen(setupMode) {
   settleLockPrompt(false);
   $("lock-overlay").classList.remove("hidden");
@@ -894,6 +870,11 @@ function purgeLockedContent() {
   for (const id of LOCK_PURGE_IDS) {
     const el = $(id);
     if (el) el.replaceChildren();
+  }
+  //: `data-holds-notebook` marks a panel that shows the notebook's words (1031 DC1).
+  for (const el of document.querySelectorAll("[data-holds-notebook]")) {
+    if (el.matches("input, textarea")) el.value = "";
+    else el.replaceChildren();
   }
   // A textarea's text lives in `.value`, which `replaceChildren` never
   // touches: the document editor would otherwise keep the whole document
