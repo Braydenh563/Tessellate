@@ -26,7 +26,7 @@ from sqlalchemy.orm import Session
 from tessellate.ai import librarian, note_rank, personal, skills, toolrank, toolwords
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.ai.provider import set_write_tools
-from tessellate.core import activity, deps, events
+from tessellate.core import activity, deps, events, private_turn
 from tessellate.core.database import LIKE_ESCAPE, Category, Entry, Reminder, like_escape
 from tessellate.core.logbuffer import safe_value
 from tessellate.entry import link_wording, manager, paths
@@ -2526,6 +2526,10 @@ def _save_user_preference(session: Session, args: dict) -> dict:
     """
     from tessellate.core.database import UserPreference
 
+    if private_turn.active():
+        #: The agent is not offered this tool in a private chat; this is the
+        #: write's own refusal, for a path that offers the whole registry.
+        raise ToolError("Nothing is saved from a private chat.")
     pref = str(args.get("preference") or "").strip()
     if not pref:
         raise ToolError("Must provide 'preference'.")

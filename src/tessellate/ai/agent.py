@@ -31,6 +31,7 @@ from tessellate.ai.ollama_client import (
     ToolsUnsupportedError,
 )
 from tessellate.ai.provider import tools_unsupported_message
+from tessellate.core import private_turn
 from tessellate.search.snippet import clip_words
 
 # A runaway model must not loop forever on a local machine.
@@ -1905,7 +1906,6 @@ def _prepare_turn(
     images: list[str] | None,
     model_override: str | None,
     image_context: str | None,
-    private: bool = False,
 ) -> _TurnPlan:
     """Stage one: decide everything the round loop will run on.
 
@@ -1937,7 +1937,7 @@ def _prepare_turn(
     #: Read from `SIZE_TIERS` (H3), the one table every size decision below
     #: comes from; a name that gives no size is the large tier.
     tier = size_tier(agent_model)
-    persona = memory.persona_with_memory(session, persona_prompt, private=private)
+    persona = memory.persona_with_memory(session, persona_prompt)
 
     system_chars = context.weighted_len(
         f"{persona} "
@@ -3297,7 +3297,6 @@ def run_agent(
     image_context: str | None = None,
     show_plan: bool = True,
     approved: bool = False,
-    private: bool = False,
 ) -> Iterator[dict]:
     """Yields event dicts:
     {"type": "unsupported", "model": ..., "message": ...}, model can't do
@@ -3329,7 +3328,7 @@ def run_agent(
         history=history,
         persona_prompt=persona_prompt,
         allowed_tools=allowed_tools,
-        blocked_tools=frozenset(blocked_tools or ()) | PRIVATE_BLOCKED if private else blocked_tools,
+        blocked_tools=(frozenset(blocked_tools or ()) | PRIVATE_BLOCKED) if private_turn.active() else blocked_tools,
         max_rounds=max_rounds,
         earned_rounds=earned_rounds,
         mode=mode,
@@ -3337,7 +3336,6 @@ def run_agent(
         images=images,
         model_override=model_override,
         image_context=image_context,
-        private=private,
     )
     state = _TurnState(messages=plan.messages, offered=plan.offered, named_hosts=_hosts_named(question), approved=approved)
     # SEC-02: a note retrieved for the question that was clipped from the web
