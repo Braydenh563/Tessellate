@@ -54,7 +54,9 @@ def test_one_line_under_the_controls_and_the_refine_field_say_what_works_with_no
 def test_the_gate_runs_at_load_and_on_every_change_of_model():
     assert 'document.addEventListener("mm-model-gate", syncDraftGate);\nsyncDraftGate();' in DESK
     app = (ROOT / "frontend" / "js" / "app.js").read_text(encoding="utf-8")
-    assert '"saveDraftAsNote", "draftSaveMenuInit"]' in app and '"writingDesk", navigator' in app
+    # The desk is fetched with the boot's early modules (the library bundle left
+    # that list in perf 1031 row 21), so its gate runs without a first click.
+    assert '"saveDraftAsNote", "draftSaveMenuInit"]' in app and '"writingDesk"].forEach(ensureModule)' in app
 
 
 def test_a_note_menu_offers_translate_only_with_a_model():

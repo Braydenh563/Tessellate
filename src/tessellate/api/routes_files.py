@@ -1098,18 +1098,17 @@ def safe_filename(name: str) -> str:
     return cleaned[:120]
 
 
-#: What an export name that reaches outside the exports folder is told.
-NAME_REFUSED = "That filename can't be used."
-
-
-def _within(base_dir: Path, name: str, detail: str = "That file can't be used.") -> Path:
+def _within(base_dir: Path, name: str, *, typed: bool = False) -> Path:
     """`base_dir / name` through `paths.contained`, a 422 when it reaches
     outside. The one containment check for exports, uploads and media; the
-    CodeQL history of its shape is in `core/paths.py`."""
+    CodeQL history of its shape is in `core/paths.py`. `typed`: the name is
+    one the person wrote (an export), so the sentence says filename."""
     try:
         return paths.contained(base_dir, name)
     except paths.OutsideFolder:
-        raise HTTPException(status_code=422, detail=detail) from None
+        if typed:
+            raise HTTPException(status_code=422, detail="That filename can't be used.") from None
+        raise HTTPException(status_code=422, detail="That file can't be used.") from None
 
 
 @router.post("/files/save", dependencies=[Depends(this_computer_only)])
@@ -1125,13 +1124,13 @@ def save_generated_file(body: SaveFileBody) -> dict:
     exports = _exports_dir()
     exports.mkdir(parents=True, exist_ok=True)
     name = safe_filename(body.filename)
-    target = _within(exports, name, NAME_REFUSED)
+    target = _within(exports, name, typed=True)
     # Never silently overwrite: two exports of the same chat on the same day
     # are two files someone may want to compare.
     if target.exists():
         stem, suffix = target.stem, target.suffix
         stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-        target = _within(exports, f"{stem}-{stamp}{suffix}", NAME_REFUSED)
+        target = _within(exports, f"{stem}-{stamp}{suffix}", typed=True)
     #: A half-written export is worse than no export: it lands in the folder
     #: Settings lists, under the name the person chose, and opens as a
     #: truncated file rather than as an obvious failure. `write_bytes`
@@ -1203,7 +1202,7 @@ def download_export(filename: str) -> FileResponse:
     """One exported file, as a download. `safe_filename` and `_within`
     are the same two locks the write went through, in the same order."""
     exports = _exports_dir()
-    target = _within(exports, safe_filename(filename), NAME_REFUSED)
+    target = _within(exports, safe_filename(filename), typed=True)
     if not target.is_file():
         raise HTTPException(status_code=404, detail="That export is no longer there.")
     return FileResponse(str(target), filename=target.name)

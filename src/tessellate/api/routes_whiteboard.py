@@ -3458,12 +3458,12 @@ class ItemsSaveMany(BaseModel):
     objects: list[SaveManyObject] = Field(default_factory=list, max_length=5000)
 
 
-def _rows_by_id(db: Session, model, ids: list[int], missing: str) -> dict[int, object]:
+def _rows_by_id(db: Session, model, ids: list[int], noun: str) -> dict[int, object]:
     if len(set(ids)) != len(ids):
         raise HTTPException(status_code=422, detail="Each item is saved once per batch.")
     rows = {row.id: row for row in db.scalars(select(model).where(model.id.in_(ids)))} if ids else {}
     if len(rows) != len(ids):
-        raise HTTPException(status_code=404, detail=missing)
+        raise HTTPException(status_code=404, detail=f"That {noun} could not be found.")
     return rows
 
 
@@ -3481,9 +3481,9 @@ def save_items(body: ItemsSaveMany, db: Session = Depends(get_session)) -> dict:
     every id and board and note checked before anything is written, and
     whatever it records folds into the one event `events.writes` opens.
     """
-    nodes = _rows_by_id(db, WhiteboardNode, [n.id for n in body.nodes], "That node could not be found.")
-    sketches = _rows_by_id(db, WhiteboardSketch, [n.id for n in body.sketches], "That sketch could not be found.")
-    objects = _rows_by_id(db, WhiteboardObject, [n.id for n in body.objects], "That item could not be found.")
+    nodes = _rows_by_id(db, WhiteboardNode, [n.id for n in body.nodes], "node")
+    sketches = _rows_by_id(db, WhiteboardSketch, [n.id for n in body.sketches], "sketch")
+    objects = _rows_by_id(db, WhiteboardObject, [n.id for n in body.objects], "item")
     for board_id in {item.board_id for item in (*body.nodes, *body.sketches, *body.objects)}:
         _require_board(db, board_id)
     for entry_id in {n.entry_id for n in body.nodes}:
