@@ -10,7 +10,7 @@ frontmatter, 316-character title, duplicates, nested lists) = 199 notes at the s
 (AI filing wording, tag suggest, Tidy repairs, entity pages, meaning search, model-on chat) is unverified. Rows are
 `run` (reproduced on this head by driving the app or the API) or `code` (read, not run).
 
-Method: 14 Playwright drives (`scratchpad/na/d1.js` to `d14.js`, outputs beside them) at 1440x900 and 390x844, dark and
+Method: 21 Playwright drives (`scratchpad/na/d1.js` to `d19.js`, `d10b.js`, `d10c.js`, outputs beside them in the session scratch dir, not the repo) at 1440x900 and 390x844, dark and
 light, mouse, keyboard and touch emulation, 1x and 4x CPU (`Emulation.setCPUThrottlingRate`), long tasks by
 `PerformanceObserver`, `errors.js` and `axe.js` sweeps, `GET /logs/lag`; API probes with `curl` and `scratchpad/na/p1.py`.
 Older rows re-verified rather than re-listed: audit-1029-notes N1 to N22 (all marked fixed in the ranked file; N11, N16,
