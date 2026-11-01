@@ -282,3 +282,137 @@ def test_the_exports_read_the_walker():
         source = inspect.getsource(fn)
         assert "walk(session" in source, fn.__name__
         assert "select(Entry)" not in source and "select(Document)" not in source, fn.__name__
+
+
+# --- content3: a binned document is exported like a binned note ----------------
+
+
+def _folder_export(session):
+    import io
+    import json
+    import zipfile
+
+    from tessellate.core import deps
+    from tessellate.entry import export_folder
+
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as archive:
+        export_folder.export(session, deps.get_config().uploads_dir, archive)
+    folder = zipfile.ZipFile(io.BytesIO(buffer.getvalue()))
+    return folder, json.loads(folder.read("index.json"))
+
+
+def test_the_folder_export_carries_a_binned_note_and_a_binned_document(client):
+    """The decision (row 2a): a binned document is walked like a binned note,
+    so the folder export never silently drops what the bin still holds."""
+    from tessellate.core import deps
+
+    kept_note, gone_note = _note(client, "a kept note"), _note(client, "a binned note")
+    kept_doc, gone_doc = _document(client), _document(client)
+    reply = client.delete(f"/entries/{gone_note}")
+    assert reply.status_code == 200
+    reply = client.delete(f"/documents/{gone_doc}")
+    assert reply.status_code == 200
+    session = deps.get_db().session()
+    try:
+        folder, index = _folder_export(session)
+    finally:
+        session.close()
+    names = folder.namelist()
+    assert any(n.startswith(f"notes/_recycle-bin/{gone_note}-") for n in names)
+    assert index["counts"]["documents"] == 2
+    ids = {d["id"] for d in index["documents"]}
+    assert ids == {kept_doc, gone_doc}
+    binned = [d for d in index["documents"] if d["id"] == gone_doc][0]
+    assert binned["md"].startswith("documents/_recycle-bin/")
+    assert kept_note and folder.read(binned["md"]).decode() == "first words"
+
+
+def test_a_reimport_does_not_duplicate_a_binned_document(client):
+    """`_existing_documents` reads the bin, so the same folder read in again
+    merges its binned document rather than making a second copy."""
+    from sqlalchemy import select
+
+    from tessellate.core import deps
+    from tessellate.core.database import Document
+    from tessellate.entry import export_folder
+    from tessellate.entry.bin import including_binned
+
+    gone = _document(client)
+    reply = client.delete(f"/documents/{gone}")
+    assert reply.status_code == 200
+    session = deps.get_db().session()
+    try:
+        folder, _ = _folder_export(session)
+        files = [(n, folder.read(n)) for n in folder.namelist()]
+        notes, _skipped, extra = export_folder.read(files)
+        result = type("R", (), {"notes": notes, "extra": extra})()
+        export_folder.write(session, result, deps.get_config().uploads_dir)
+        session.commit()
+        with including_binned(session):
+            assert len(list(session.scalars(select(Document)))) == 1
+    finally:
+        session.close()
+
+
+# --- content3: the reminder and recording write routes ask the same guard ------
+
+
+def _notification_act(client, rid):
+    from tessellate.core import deps, reminder_token
+
+    token = reminder_token.mint(rid, data_dir=deps.get_config().data_dir)["token"]
+    return client.post(f"/reminders/{rid}/notification-act", json={"token": token, "action": "done"})
+
+
+REMINDER_WRITES = {
+    "put": lambda client, rid: client.put(f"/reminders/{rid}", json={"text": "rewritten"}),
+    "complete": lambda client, rid: client.post(f"/reminders/{rid}/complete"),
+    "notification-act": _notification_act,
+    "delete": lambda client, rid: client.delete(f"/reminders/{rid}"),
+}
+
+RECORDING_WRITES = {
+    "patch": lambda client, rid: client.patch(f"/recordings/{rid}", json={"title": "rewritten"}),
+    "finish": lambda client, rid: client.post(f"/recordings/{rid}/finish", json={}),
+    "transcribe": lambda client, rid: client.post(f"/recordings/{rid}/transcribe"),
+    "transcribe-start": lambda client, rid: client.post(f"/recordings/{rid}/transcribe/start"),
+    "transcribe-stop": lambda client, rid: client.post(f"/recordings/{rid}/transcribe/stop"),
+    "speakers-name": lambda client, rid: client.post(f"/recordings/{rid}/speakers"),
+    "speakers-rename": lambda client, rid: client.put(
+        f"/recordings/{rid}/speakers", json={"from_name": "A", "to_name": "B"}),
+    "delete": lambda client, rid: client.delete(f"/recordings/{rid}"),
+}
+
+
+@pytest.mark.parametrize("write", sorted(REMINDER_WRITES))
+def test_a_binned_reminder_refuses_every_write_with_the_guards_409(client, write):
+    rid = _reminder(client)
+    reply = client.delete(f"/reminders/{rid}")
+    assert reply.status_code == 200
+    r = REMINDER_WRITES[write](client, rid)
+    assert r.status_code == 409, r.text
+    assert r.json()["detail"] == "This reminder is in the bin. Restore it first."
+    reply = client.get(f"/reminders/{rid}/export.ics")
+    assert reply.status_code == 404, "a read keeps its 404"
+
+
+@pytest.mark.parametrize("write", sorted(RECORDING_WRITES))
+def test_a_binned_recording_refuses_every_write_with_the_guards_409(client, write):
+    rid = _recording(client)
+    reply = client.delete(f"/recordings/{rid}")
+    assert reply.status_code == 200
+    r = RECORDING_WRITES[write](client, rid)
+    assert r.status_code == 409, r.text
+    assert r.json()["detail"] == "This recording is in the bin. Restore it first."
+    reply = client.get(f"/recordings/{rid}")
+    assert reply.status_code == 404, "a read keeps its 404"
+
+
+@pytest.mark.parametrize("kind", ["reminder", "recording"])
+def test_an_unknown_reminder_or_recording_write_is_404_in_the_guards_words(client, kind):
+    writes = REMINDER_WRITES if kind == "reminder" else RECORDING_WRITES
+    for name, write in writes.items():
+        r = write(client, 987654)
+        assert r.status_code == 404, (name, r.text)
+        assert r.json()["detail"] == f"That {kind} could not be found.", name

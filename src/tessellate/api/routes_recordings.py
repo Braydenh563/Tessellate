@@ -77,8 +77,13 @@ def _get(session: Session, recording_id: int, binned: bool = False) -> Recording
         if row is not None and row.deleted_at is not None:
             row = None
     if row is None:
-        raise HTTPException(status_code=404, detail="That recording isn't there any more.")
+        raise HTTPException(status_code=404, detail="That recording could not be found.")
     return row
+
+
+def _writable(session: Session, recording_id: int) -> Recording:
+    """A write's row: 404 for none, 409 for one in the bin (`repo/content`)."""
+    return content_repo.RECORDINGS.writable(session, recording_id)
 
 
 #: A page of the library; the screen asks for the largest and filters it itself.
@@ -184,7 +189,7 @@ def append_chunk(
     size the sender thinks the file has: a retried slice that already landed
     is answered, not written twice, and one out of step is refused (audit
     1030 Y1)."""
-    row = _get(session, recording_id)
+    row = _writable(session, recording_id)
     if row.state != "recording":
         raise HTTPException(status_code=409, detail="That recording is already finished.")
     room = recordings.MAX_RECORDING_BYTES - row.size_bytes
@@ -210,7 +215,7 @@ def append_chunk(
 def finish_recording(
     recording_id: int, body: RecordingFinish, session: Session = Depends(get_session)
 ) -> dict:
-    row = _get(session, recording_id)
+    row = _writable(session, recording_id)
     if not row.size_bytes:
         recordings.purge(session, row)
         session.commit()
@@ -233,7 +238,7 @@ def read_recording(recording_id: int, session: Session = Depends(get_session)) -
 def update_recording(
     recording_id: int, body: RecordingPatch, session: Session = Depends(get_session)
 ) -> dict:
-    row = _get(session, recording_id)
+    row = _writable(session, recording_id)
     if body.title is not None:
         row.title = body.title.strip()[:200]
     if body.markers is not None:
@@ -247,7 +252,7 @@ def update_recording(
 @router.delete("/recordings/{recording_id}")
 def bin_recording(recording_id: int, session: Session = Depends(get_session)) -> dict:
     """Into the bin, audio and all; Restore brings it back as it was."""
-    row = _get(session, recording_id)
+    row = _writable(session, recording_id)
     row.deleted_at = utcnow()
     log_action(session, "binned", "recording", row.id)
     session.commit()
@@ -277,7 +282,7 @@ def transcribe_recording(recording_id: int, session: Session = Depends(get_sessi
     """The kept audio, transcribed by the optional add-on (decision 4), its
     segments kept with their times on the recording (28.5 row 7). With no
     add-on: 503 and the hint, and the recording is unaffected."""
-    row = _get(session, recording_id)
+    row = _writable(session, recording_id)
     if not voice.whisper_available():
         raise HTTPException(status_code=503, detail=voice.INSTALL_HINT)
     path = recordings.path_of(row)
@@ -310,7 +315,7 @@ def start_transcription(recording_id: int, session: Session = Depends(get_sessio
     returns at once, closing the dialog or the tab never stops it, the row
     and the running panel show how far it is, and Stop ends it between two
     segments, keeping nothing. 409 while one is already running."""
-    row = _get(session, recording_id)
+    row = _writable(session, recording_id)
     if not voice.whisper_available():
         raise HTTPException(status_code=503, detail=voice.INSTALL_HINT)
     path = recordings.path_of(row)
@@ -331,7 +336,7 @@ def start_transcription(recording_id: int, session: Session = Depends(get_sessio
 
 @router.post("/recordings/{recording_id}/transcribe/stop")
 def stop_transcription(recording_id: int, session: Session = Depends(get_session)) -> dict:
-    _get(session, recording_id)
+    _writable(session, recording_id)
     run = recordings.transcription_of(recording_id)
     if not run or run.get("state") != "running":
         return {"stopped": False, "detail": "Nothing is transcribing that recording."}
@@ -409,8 +414,8 @@ def _named(session: Session, row: Recording, segments: list[dict]) -> list[dict]
         return segments
 
 
-def _segments_of(session: Session, recording_id: int) -> tuple[Recording, list[dict]]:
-    row = _get(session, recording_id)
+def _segments_of(session: Session, recording_id: int, *, write: bool = False) -> tuple[Recording, list[dict]]:
+    row = _writable(session, recording_id) if write else _get(session, recording_id)
     segments = transcript.loads(row.segments)
     if not segments:
         raise HTTPException(status_code=404, detail="That recording has no transcript yet. Transcribe it first.")
@@ -430,7 +435,7 @@ def name_speakers(recording_id: int, session: Session = Depends(get_session)) ->
     """Name the turns of a transcript made while the model was off (row 11).
     Behind the model gate: with none, 503 and the sentence the menu never
     needs to show, since it offers this only when a model is on."""
-    row, segments = _segments_of(session, recording_id)
+    row, segments = _segments_of(session, recording_id, write=True)
     if not deps.get_ollama().is_running():
         raise HTTPException(status_code=503, detail="Naming the speakers needs the local AI, which is off.")
     named = _named(session, row, [{**seg, "speaker": None} for seg in segments])
@@ -449,7 +454,7 @@ def rename_speaker(recording_id: int, body: RenameSpeakerBody, session: Session 
     """Rename one speaker everywhere in a transcript (ledger 1514): the model's
     "Speaker A" becomes "Priya", or a wrong guess is corrected. An empty new
     name drops the label from those turns. No model needed."""
-    _row, segments = _segments_of(session, recording_id)
+    _row, segments = _segments_of(session, recording_id, write=True)
     old = " ".join(body.from_name.split())
     new = " ".join(body.to_name.split()) or None
     if not any(seg["speaker"] == old for seg in segments):
