@@ -818,6 +818,43 @@ function docEventFromCm(target) {
   return Boolean(docCmView && target instanceof Node && docCmView.dom.contains(target));
 }
 
+//: **One document-level listener per event type for what only the editor
+//: needs** (audit 1028 D21). `input`, `selectionchange`, `mouseover` and the
+//: rest were registered once each, for the life of the app, and ran on every
+//: other tab: measured with the Documents bundle loaded and Notes on screen,
+//: a pointer move cost 9.9 us against 3.6 us without it, a key 83 us against
+//: 64 and a caret move 82 us against 40, each handler doing its own lookups
+//: before finding the target was not an editor. Handlers that start from the
+//: editor's own surface (`docToolsBoxFor`, `docEventFromCm`, a mark in the
+//: view) register here instead: one listener per type and phase, which does
+//: nothing while the Documents tab is hidden and otherwise runs them in the
+//: order they were added. The table is a property of the function, as
+//: `watchDocToolbarWidth` keeps its observer: the shared scope is capped.
+function docListen(type, handler, capture = false) {
+  docListen.table ||= new Map();
+  const key = `${type}:${capture}`;
+  let handlers = docListen.table.get(key);
+  if (!handlers) {
+    docListen.table.set(key, (handlers = []));
+    document.addEventListener(
+      type,
+      (event) => {
+        if ($("tab-documents")?.classList.contains("hidden")) return;
+        //: Each as its own listener would have been: one that throws is reported, and the rest still run.
+        for (const run of handlers) {
+          try {
+            run(event);
+          } catch (error) {
+            (window.reportError || console.error)(error);
+          }
+        }
+      },
+      capture
+    );
+  }
+  handlers.push(handler);
+}
+
 //: An element, a surface, or nothing, as a surface. Call sites handed an
 //: `event.target` need this; ones that already hold a surface pass through.
 function asSurface(box) {
@@ -2693,7 +2730,11 @@ function docCrumbsEl() {
     //: caret moves into a deeper section, with no window resize to hang a
     //: recalculation off, and a strip whose fade is only recomputed on resize
     //: keeps whichever mask it had when it was last measured.
-    new ResizeObserver(() => window.syncEdgeFade?.(nav)).observe(nav);
+    //: Kept (audit 1028 D37), and let go before a second one is made, so wiring the
+    //: strip again (a rebuilt nav) cannot leave two watching it.
+    docCrumbsEl.resize?.disconnect();
+    docCrumbsEl.resize = new ResizeObserver(() => window.syncEdgeFade?.(nav));
+    docCrumbsEl.resize.observe(nav);
   }
   return nav;
 }
@@ -10878,13 +10919,12 @@ function docHistoryReady() {
   return lazyScript("/js/documents-history.js");
 }
 
-async function docHistoryLazy(name) {
-  if (!(await docHistoryReady())) return toast("The history could not be loaded.", true, { action: ["Try again", () => docHistoryLazy(name)] });
-  return window[name]();
+for (const [id, name] of [["doc-history", "openDocHistory"], ["doc-history-name", "docNameCurrentVersion"]]) {
+  $(id)?.addEventListener("click", async () => {
+    if (!(await docHistoryReady())) return toast("The history could not be loaded.", true, { action: ["Try again", () => $(id).click()] });
+    return window[name]();
+  });
 }
-
-$("doc-history")?.addEventListener("click", () => docHistoryLazy("openDocHistory"));
-$("doc-history-name")?.addEventListener("click", () => docHistoryLazy("docNameCurrentVersion"));
 //: The AI assistant's own model. `openFeatureModelSheet` lives in app.js,
 //: which loads first, and is the same sheet the Chat tab and the writing desk
 //: open: one picker, three ways in.
@@ -13556,12 +13596,12 @@ function watchDocToolbarContents(bar) {
   //: a clone of the capture strip and a data attribute would arrive with it,
   //: so the clone would think it was already watched. A property of this
   //: function, for the same hoisting reason as the width observer's.
-  watchDocToolbarContents.seen ||= new WeakSet();
+  //: A map from the strip to its observer (audit 1028 D37): the handle is kept, not dropped.
+  watchDocToolbarContents.seen ||= new WeakMap();
   if (watchDocToolbarContents.seen.has(bar)) return;
-  watchDocToolbarContents.seen.add(bar);
   let sig = docToolbarLayoutSignature(bar);
   let queued = false;
-  new MutationObserver(() => {
+  const observer = new MutationObserver(() => {
     if (queued) return;
     queued = true;
     requestAnimationFrame(() => {
@@ -13571,7 +13611,9 @@ function watchDocToolbarContents(bar) {
       sig = next;
       fitDocToolbarRow(bar);
     });
-  }).observe(bar, {
+  });
+  watchDocToolbarContents.seen.set(bar, observer);
+  observer.observe(bar, {
     childList: true,
     subtree: true,
     characterData: true,
@@ -16087,7 +16129,7 @@ function docToolsBoxFor(target) {
   return docEventFromCm(target) ? docSurface() : null;
 }
 
-document.addEventListener("input", (event) => {
+docListen("input", (event) => {
   //: CodeMirror raises its own `input` on the contenteditable *and* tells us
   //: through the update listener, and the update listener is the one that
   //: also sees scripted changes. Running both would do every pass twice.
@@ -16122,7 +16164,7 @@ function docTableTab(event, box) {
   return true;
 }
 
-document.addEventListener("keydown", (event) => {
+docListen("keydown", (event) => {
   const box = docToolsBoxFor(event.target);
   if (!box) return;
   //: Before anything else this editor binds: Tab and the arrows mean the
@@ -16137,12 +16179,12 @@ document.addEventListener("keydown", (event) => {
 //: keyboard, the mouse *and* by script, a `keyup`/`click` pair misses the
 //: third, which is how a status bar drifts out of step with the caret it is
 //: describing.
-document.addEventListener("selectionchange", () => {
+docListen("selectionchange", () => {
   if (!docToolsBoxFor(document.activeElement)) return;
   renderDocCaret();
 });
 
-document.addEventListener("focusout", (event) => {
+docListen("focusout", (event) => {
   //: Only when focus is leaving the editor entirely: moving from one live-view
   //: block to the next must not close a popup that is about to be reopened.
   if (!docToolsBoxFor(event.target)) return;
@@ -16307,7 +16349,7 @@ function docFindingOfMark(el) {
 //: it, not on the word that was double-clicked. Read in the capture phase,
 //: before the engine handles the press and before anything moves.
 let docFirstPress = null;
-document.addEventListener(
+docListen(
   "mousedown",
   (event) => {
     if (!docCmView || event.detail !== 1 || event.button !== 0) return;
@@ -16413,7 +16455,7 @@ function docOpenSuggestAtCaret(box, point = null, focus = true, pressed = null) 
   return docOpenSuggestFor(finding, focus, point);
 }
 
-document.addEventListener("dblclick", (event) => {
+docListen("dblclick", (event) => {
   const box = docToolsBoxFor(event.target);
   const pressed = docFirstPress && performance.now() - docFirstPress.at < 1000 ? docFirstPress.pos : null;
   if (box) docOpenSuggestAtCaret(box, { x: event.clientX, y: event.clientY }, true, pressed);
@@ -16437,7 +16479,7 @@ document.addEventListener("dblclick", (event) => {
 //:     stealing focus would send their next keystrokes to a button. The menu
 //:     opens beside the word and the caret stays where they put it, so typing
 //:     just carries on and the menu closes on the next edit.
-document.addEventListener("click", (event) => {
+docListen("click", (event) => {
   if (event.detail > 1 || event.altKey || event.ctrlKey || event.metaKey) return;
   const box = docToolsBoxFor(event.target);
   if (!box) return;
@@ -16649,7 +16691,7 @@ function docTableGripMenu(grip, x, y) {
 //: the plain click, so typing carries on; prose keeps click and right-click.
 const DOC_HOVER_SUGGEST_MS = 450;
 const docHoverSuggest = { timer: 0, mark: null };
-document.addEventListener("mouseover", (event) => {
+docListen("mouseover", (event) => {
   const mark = event.target instanceof Element ? event.target.closest(".cm-finding") : null;
   if (mark === docHoverSuggest.mark) return;
   clearTimeout(docHoverSuggest.timer);
@@ -16747,7 +16789,7 @@ document.addEventListener("keydown", (event) => {
 //: An edit moves every offset after it, so the menu that is open is about a
 //: span that may no longer be there. Closed rather than refreshed: the person
 //: has started typing, which is an answer to the suggestion.
-document.addEventListener("input", (event) => {
+docListen("input", (event) => {
   if (!docToolsBoxFor(event.target)) return;
   if (!$("doc-suggest-menu")?.classList.contains("hidden")) closeDocSuggest();
 });
@@ -19821,7 +19863,7 @@ function docBlockDelete(span) {
 }
 
 //: The top-level block under the pointer, in the preview only.
-document.addEventListener("mouseover", (event) => {
+docListen("mouseover", (event) => {
   const preview = $("doc-preview");
   if (!preview || preview.classList.contains("hidden")) return;
   if (!(event.target instanceof Element)) return;
@@ -20047,7 +20089,9 @@ function docWatchLock() {
   //: A password prompt borrows the overlay (`askPasswordPrompt`, app.js) and
   //: is not a lock, so it leaves the open document alone. `data-mode` is
   //: watched too, so a prompt that turns into a real lock still purges.
-  new MutationObserver(() => {
+  //: Kept (audit 1028 D37), and let go before a second one is made.
+  docWatchLock.observer?.disconnect();
+  docWatchLock.observer = new MutationObserver(() => {
     if (overlay.classList.contains("hidden")) return;
     if (overlay.dataset.mode === "prompt") return;
     if (!docCmView) return;
@@ -20060,7 +20104,8 @@ function docWatchLock() {
     //: text, and so does a board step's payload.
     if (typeof undoStoreClear === "function") undoStoreClear();
     docResetDocument("");
-  }).observe(overlay, { attributes: true, attributeFilter: ["class", "data-mode"] });
+  });
+  docWatchLock.observer.observe(overlay, { attributes: true, attributeFilter: ["class", "data-mode"] });
 }
 docWatchLock();
 

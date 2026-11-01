@@ -147,3 +147,68 @@ console.log(JSON.stringify({ runs, again: again[0].start, other: other[0].end, f
     )
     # first: 1 run; again: memo; other text: 1 run; fresh: 1 run; a dismissal changes the key: 1 run
     assert got == {"runs": 4, "again": 0, "other": 15, "fresh": 1, "ignored": 1}
+
+
+@needs_node
+def test_editor_listeners_are_one_per_type_and_idle_on_another_tab():
+    """D21: what only the editor needs registers through `docListen`: one document
+    listener per type and phase, nothing run while the Documents tab is hidden, the
+    handlers in the order added, one that throws not stopping the rest."""
+    source = (JS / "documents.js").read_text(encoding="utf-8")
+    got = _node(
+        """
+let hidden = false;
+const registered = [];
+const document = { addEventListener(type, fn, capture) { registered.push([type, capture, fn]); } };
+const $ = () => ({ classList: { contains: () => hidden } });
+const reported = [];
+globalThis.window = { reportError: (e) => reported.push(e.message) };
+"""
+        + _function(source, "function docListen(")
+        + """
+const ran = [];
+docListen("input", () => ran.push("a"));
+docListen("input", () => { ran.push("b"); throw new Error("boom"); });
+docListen("input", () => ran.push("c"));
+docListen("keydown", () => ran.push("k"), true);
+docListen("keydown", () => ran.push("k2"), false);
+const input = registered.find(([t]) => t === "input")[2];
+hidden = true; input({});
+const whileHidden = ran.length;
+hidden = false; input({});
+for (const key of ["a", "b", "c"]) docListen("selectionchange", () => {});
+console.log(JSON.stringify({ listeners: registered.length, types: registered.map(([t, c]) => t + ":" + c), whileHidden, ran, reported }));
+"""
+    )
+    assert got["listeners"] == 4 and got["types"] == ["input:false", "keydown:true", "keydown:false", "selectionchange:false"]
+    assert got["whileHidden"] == 0 and got["ran"] == ["a", "b", "c"] and got["reported"] == ["boom"]
+
+
+def test_the_editor_only_listeners_go_through_docListen():
+    source = (JS / "documents.js").read_text(encoding="utf-8")
+    raw = re.findall(r'^document\.addEventListener\(\s*"(input|selectionchange|focusout|dblclick|mouseover)"', source, re.M)
+    assert not raw, f"{raw}: register editor-only handlers with docListen (D21)"
+    assert len(re.findall(r"^docListen\(", source, re.M)) >= 10
+
+
+@needs_node
+def test_a_watcher_wired_twice_leaves_one_observer():
+    """D37: the lock watcher keeps its observer and lets go of the old one before a
+    second, so wiring it again cannot stack observers (the live count stays 1)."""
+    source = (JS / "documents.js").read_text(encoding="utf-8")
+    got = _node(
+        """
+const live = new Set(); let made = 0;
+class MutationObserver { constructor() { made += 1; } observe() { live.add(this); } disconnect() { live.delete(this); } }
+globalThis.MutationObserver = MutationObserver;
+const overlay = { classList: { contains: () => true }, dataset: {} };
+const document = { getElementById: () => overlay };
+let docCmView = null, docHistoryOwner = null, docHistories = new Map();
+"""
+        + _function(source, "function docWatchLock(")
+        + """
+for (let i = 0; i < 5; i++) docWatchLock();
+console.log(JSON.stringify({ made, live: live.size }));
+"""
+    )
+    assert got == {"made": 5, "live": 1}
