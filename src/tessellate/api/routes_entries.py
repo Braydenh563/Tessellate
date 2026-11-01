@@ -8,6 +8,7 @@ calls run (plan §4).
 from __future__ import annotations
 
 import contextlib
+import functools
 import json
 import logging
 import threading
@@ -231,14 +232,32 @@ def _open_suggestions(entry) -> list[str]:  # noqa: ANN001
     ]
 
 
+#: Longest note whose reasons are remembered: the cache holds the text as its key.
+REASONS_CACHE_CHARS = 20_000
+
+
 def _tag_reasons(content: str, tags: list[str]) -> dict[str, str]:
-    """Each offered tag's one line for its chip (decision 5: each explained)."""
+    """Each offered tag's one line for its chip (decision 5: each explained).
+
+    A pure function of the text and the tags (the taxonomy is read once per
+    process), so a list that reads the same two hundred notes on every load
+    remembers the answers: 5 ms a note was 2.2 of 3.4 profiled seconds of
+    `GET /entries?limit=200` at 530 notes (BK10)."""
     if not tags or not content:
         return {}
+    if len(content) > REASONS_CACHE_CHARS:
+        return dict(_reasons_for(content, tuple(tags)))
+    return dict(_cached_reasons(content, tuple(tags)))
+
+
+def _reasons_for(content: str, tags: tuple[str, ...]) -> tuple[tuple[str, str], ...]:
     from tessellate.ai import tagging, taxonomy
 
     hits = taxonomy.topic_hits(tagging.clean(content))
-    return {tag: why for tag in tags if (why := tagging.reason(tag, content, hits))}
+    return tuple((tag, why) for tag in tags if (why := tagging.reason(tag, content, hits)))
+
+
+_cached_reasons = functools.lru_cache(maxsize=1024)(_reasons_for)
 
 
 def _keep_suggestions(session: Session, entry, filed_by: str | None) -> None:  # noqa: ANN001
@@ -2494,6 +2513,26 @@ ENTRIES_PAGE_SIZE_MAX = 5000
 ENTRIES_BY_IDS_MAX = 200
 
 
+#: The most characters `?preview=` may ask for: past it a caller wants the text.
+ENTRIES_PREVIEW_MAX = 2000
+
+
+def _previewed(rows: list[EntryOut], preview: int) -> list[EntryOut]:
+    """`rows` with each note's text cut to `preview` characters (0 keeps it
+    whole), at the last space before the cut when there is one, and
+    `content_truncated` set so a caller knows it holds a part. `content_hash`
+    stays the whole text's, so a save is still checked against the note as it
+    is. A list that draws a row's first lines never needs the rest (BK10)."""
+    if not preview:
+        return rows
+    for row in rows:
+        if len(row.content) > preview:
+            cut = row.content[:preview]
+            row.content = (cut.rsplit(None, 1)[0] if " " in cut or "\n" in cut else cut).rstrip()
+            row.content_truncated = True
+    return rows
+
+
 @router.get("", response_model=list[EntryOut])
 def list_entries(
     response: Response,
@@ -2531,6 +2570,11 @@ def list_entries(
     # list against this one. No side effect: unlike `GET /entries/{id}`,
     # this is not opening the note.
     ids: str = Query(default="", description="Comma-separated note ids"),
+    #: **Each note's first characters, not all of it** (audit 1031 BK10): 0
+    #: keeps the whole text, which every caller in the app that holds the list
+    #: for search and the card body still asks for. `content_truncated` marks
+    #: a clipped row; `content_hash` stays the whole text's.
+    preview: int = Query(default=0, ge=0, le=ENTRIES_PREVIEW_MAX),
     session: Session = Depends(get_session),
 ) -> list[EntryOut]:
     """Normal list, the recycle bin when ?deleted=true, the archive when
@@ -2588,7 +2632,7 @@ def list_entries(
         # second threshold here was a different number for the same job.
         matched = [e for e, _score in results if e.id in scope_ids]
         response.headers["X-Total-Count"] = str(len(matched))
-        return _to_out_bulk(session, matched)
+        return _previewed(_to_out_bulk(session, matched), preview)
 
     if ids:
         parts = [part.strip() for part in ids.split(",") if part.strip()]
@@ -2604,7 +2648,7 @@ def list_entries(
         wanted = [int(part) for part in parts]
         entries = manager.list_entries(session, boards=boards, ids=wanted)
         response.headers["X-Total-Count"] = str(manager.count_notes(session, include_archived=False, boards=boards, include_drafts=True))
-        return _to_out_bulk(session, entries)
+        return _previewed(_to_out_bulk(session, entries), preview)
 
     if deleted or archived:
         # The bin and the archive page by position: both are short, both sort
@@ -2639,7 +2683,7 @@ def list_entries(
             )
         total = manager.count_notes(session, include_archived=False, boards=boards, include_drafts=True)
     response.headers["X-Total-Count"] = str(total)
-    return _to_out_bulk(session, entries)
+    return _previewed(_to_out_bulk(session, entries), preview)
 
 
 # Declared before /{entry_id} so "most-accessed" isn't parsed as an id.
