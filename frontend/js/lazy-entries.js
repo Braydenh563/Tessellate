@@ -43,6 +43,7 @@ Object.assign(LAZY_MODULES, {
   //: the first edit of a rendered `$...$` and the guided equation editor both fetch it.
   mathField: ["/css/math-field-lazy.css", "/vendor/mathlive/mathlive.min.js", "/js/math-field.js"],
   //: The guided equation editor (math-editor.js's header; DOCUMENTS_PLAN 16), on the same field.
+  //: The guided equation editor (math-editor.js's header; DOCUMENTS_PLAN 16), on the same field.
   mathEditor: ["/css/math-field-lazy.css", "/vendor/mathlive/mathlive.min.js", "/js/math-field.js", "/css/math-editor-lazy.css", "/js/math-editor.js"],
   //: The model badge's spec panel, editing an answer, a note's Explain row, the extract preview's Save (gesture-kit.js's header).
   gestureKit: ["/js/gesture-kit.js"],
@@ -204,7 +205,7 @@ function nameMarkBuddyShowing() {
   try {
     choice = prefs.get("avatar-buddy", null) || "off";
   } catch (e) {
-    choice = "off";
+    //: Unreadable stays off.
   }
   return choice !== "off" || !!document.getElementById("nm-buddy");
 }
@@ -231,41 +232,42 @@ function onDomReady(fn) {
 //: The library bundle (boards, documents, d3: 72 scripts, 4.9 MB decoded) is
 //: not fetched at boot at all (perf 1031 row 21, PF4: 103 scripts and 6.5 MB
 //: parsed in the first nine seconds on a tab that opened nothing). It is warmed
-//: at the first idle moment after the person first touches the page, and only
-//: with four cores or more and no data saving (audit 1030 Y16); a visit to a
-//: surface that needs it fetches it on the spot (`ensureModule`).
+//: after the person first touches the page, and only with four cores or more
+//: and no data saving (audit 1030 Y16); a visit to a surface that needs it
+//: fetches it on the spot (`ensureModule`). **One file at a time, in a lull,
+//: the graph's first** (INBOX 1516: twenty scripts ran in the first press's
+//: frames, a tab switch read as 223 ms of script with no source file): each
+//: waits for 2.5 s without a press.
 function warmLibraryAfterInput() {
   if (navigator.connection?.saveData || (navigator.hardwareConcurrency || 2) < 4) return;
+  let calmAt = 0;
+  const files = [...LAZY_MODULES.graph, ...LAZY_MODULES.library];
+  const warmNext = () =>
+    Date.now() < calmAt ? setTimeout(warmNext, 600) : files[0] && lazyScript(files.shift()).then(() => setTimeout(warmNext, 600));
   const warm = (event) => {
     //: Typing the password is not the person arriving: the lock screen is over
     //: the page until they are in.
     if (event.target?.closest?.("#lock-overlay")) return;
-    for (const type of ["pointerdown", "keydown"]) window.removeEventListener(type, warm, true);
-    (window.requestIdleCallback || ((fn) => setTimeout(fn, 1500)))(() => ensureModule("library"), { timeout: 8000 });
+    calmAt || setTimeout(warmNext);
+    calmAt = Date.now() + 2500;
   };
   for (const type of ["pointerdown", "keydown"]) window.addEventListener(type, warm, { capture: true, passive: true });
 }
 warmLibraryAfterInput();
 
+//: One helper for the three "fetch it before it is wanted" doors: `bundle` is
+//: fetched the first time `type` reaches a target matching `selector`.
+function warmOnFirst(type, selector, bundle) {
+  document.addEventListener(type, function warm(event) {
+    if (!event.target?.closest?.(selector)) return;
+    document.removeEventListener(type, warm);
+    ensureModule(bundle);
+  });
+}
 //: The chat turn's code is fetched while the person types, so Send finds it in.
-document.addEventListener("focusin", function warmChatTurn(event) {
-  if (event.target?.id !== "chat-input") return;
-  document.removeEventListener("focusin", warmChatTurn);
-  ensureModule("chatTurn");
-});
+warmOnFirst("focusin", "#chat-input", "chatTurn");
 //: The popup agent's box takes typing for commands too, so its turn is fetched at the first key, not the first focus.
-document.addEventListener("input", function warmAgentTurn(event) {
-  if (event.target?.id !== "command-palette-input") return;
-  document.removeEventListener("input", warmAgentTurn);
-  ensureModule("chatTurn");
-});
-
-//: How a reply is drawn and grounded (answer-kit.js) is in every bundle that draws one.
-for (const bundle of ["askCompose", "askHistory", "helpChat"]) LAZY_MODULES[bundle].unshift("/js/answer-kit.js");
+warmOnFirst("input", "#command-palette-input", "chatTurn");
 
 //: A note card's ... menu rows are fetched when the pointer first reaches a card, so the first press finds them in.
-document.addEventListener("pointerover", function warmEntryMenu(event) {
-  if (!event.target?.closest?.("li[data-id] .menu-wrap")) return;
-  document.removeEventListener("pointerover", warmEntryMenu);
-  ensureModule("entryMenu");
-});
+warmOnFirst("pointerover", "li[data-id] .menu-wrap", "entryMenu");

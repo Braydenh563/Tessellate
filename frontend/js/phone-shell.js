@@ -376,6 +376,12 @@ for (const button of document.querySelectorAll("#tab-bar button")) {
     //: (INBOX 1314): a phone's convention, and on a long list the bar is
     //: the one control always under the thumb.
     const again = button.classList.contains("active") && matchMedia(PHONE_TABS).matches;
+    //: A press on Notes paints the page first and draws a list that went stale behind another
+    //: tab after it (INBOX 1516: the draw was inside the press, 650 ms at 4x before the page showed).
+    if (button.dataset.tab === "notes" && $("entry-list").dataset.stale) {
+      $("entry-list").dataset.stale = "";
+      afterFrames(renderEntries);
+    }
     switchTab(button.dataset.tab);
     if (again) tabPageScroller(button.dataset.tab)?.scrollTo({ top: 0, behavior: reducedMotionWanted() ? "auto" : "smooth" });
     if (event.detail > 0) focusTabPage(button);

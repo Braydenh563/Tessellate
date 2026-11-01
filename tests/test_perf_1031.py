@@ -156,8 +156,11 @@ def test_the_library_bundle_is_not_fetched_at_boot_or_by_the_password():
     js = frontend_text("app.js")
     warm = _between(frontend_text("lazy-entries.js"), "function warmLibraryAfterInput() {", "warmLibraryAfterInput();")
     assert 'event.target?.closest?.("#lock-overlay")' in warm
-    assert "requestIdleCallback" in warm
-    assert 'ensureModule("library")' in warm
+    # INBOX 1516: one file at a time, in a lull after the last press (not one idle
+    # callback that ran all twenty scripts in a press's frames).
+    assert "setTimeout(warmNext" in warm
+    assert "lazyScript(files.shift())" in warm
+    assert "LAZY_MODULES.library" in warm
     boot = next(row for row in js.splitlines() if '"dragEdge", "search"' in row and "setTimeout" in row)
     assert "library" not in boot
 
