@@ -187,6 +187,33 @@ def attached_to_entry(session: Session, entry_id: int) -> list[Document]:
         .order_by(Document.title)
     ))
 
+def link_pairs(session: Session, entry_ids) -> list:  # noqa: ANN001
+    """Every (document_id, entry_id) saved link to one of these notes: the
+    graph's document edges."""
+    return list(session.execute(
+        select(DocumentLink.document_id, DocumentLink.entry_id).where(DocumentLink.entry_id.in_(entry_ids))
+    ))
+
+
+def unshelved(session: Session, limit: int) -> list[Document]:
+    """The unshelved documents, newest edit first, up to `limit`: the graph's
+    document nodes."""
+    return list(session.scalars(
+        select(Document).where(Document.archived_at.is_(None)).order_by(Document.updated_at.desc()).limit(limit)
+    ))
+
+
+def held(session: Session, ids) -> list[Document]:  # noqa: ANN001
+    """These documents that are not in the bin."""
+    return list(session.scalars(select(Document).where(Document.id.in_(ids), Document.deleted_at.is_(None))))
+
+
+def pinned(session: Session) -> list[Document]:
+    """The documents not in the bin that hold a graph position."""
+    return list(session.scalars(
+        select(Document).where(Document.deleted_at.is_(None), Document.graph_pin_x.is_not(None))
+    ))
+
 # --- history ---------------------------------------------------------------------
 
 

@@ -28,9 +28,10 @@ from tessellate.ai.embeddings import bytes_to_vector, similar_pairs
 from tessellate.api import bounds
 from tessellate.core import cjk
 from tessellate.core import deps
-from tessellate.core.database import Attachment, Document, EmbeddingRecord, Entry, EntryLink, EntryProperty, NoteType
+from tessellate.core.database import Attachment, EmbeddingRecord, Entry, EntryLink, EntryProperty, NoteType
 from tessellate.core.deps import get_session
 from tessellate.entry import manager, paths
+from tessellate.repo import documents as documents_repo
 from tessellate.repo import relation_types
 from tessellate.entry import topics as topic_finder
 from tessellate.search import search_manager
@@ -455,15 +456,7 @@ def _add_document_nodes(
     `DocumentLink`, and nothing wired into centrality or the path index,
     both of which are built entirely around Entry.
     """
-    from tessellate.core.database import Document, DocumentLink
-
-    doc_links = list(
-        session.execute(
-            select(DocumentLink.document_id, DocumentLink.entry_id).where(
-                DocumentLink.entry_id.in_(node_ids)
-            )
-        )
-    )
+    doc_links = documents_repo.link_pairs(session, node_ids)
     #: **Every live document, not only the attached ones** (the owner: "the
     #: documents toggle in the graph doesnt do anything"). It used to add a
     #: document only when a note was linked to it, so a notebook whose
@@ -472,17 +465,9 @@ def _add_document_nodes(
     #: document is drawn alone (the "Hide unlinked" switch hides it like any
     #: other lone node); the attached ones keep their edges. Capped, newest
     #: first, so a large library cannot swamp the map or the payload.
-    documents = {
-        d.id: d
-        for d in session.scalars(
-            select(Document)
-            .where(Document.archived_at.is_(None))
-            .order_by(Document.updated_at.desc())
-            .limit(GRAPH_DOCUMENT_CAP)
-        )
-    }
+    documents = {d.id: d for d in documents_repo.unshelved(session, GRAPH_DOCUMENT_CAP)}
     for extra in {link.document_id for link in doc_links} - set(documents):
-        linked = session.get(Document, extra)
+        linked = documents_repo.find(session, extra)
         if linked is not None and linked.archived_at is None:
             documents[extra] = linked
     if documents:
@@ -1888,7 +1873,7 @@ def pin_node(
         raise HTTPException(status_code=404, detail="That node cannot be pinned.")
     kind, number = target
     if kind == "document":
-        document = session.get(Document, number)
+        document = documents_repo.find(session, number)
         if document is None or document.deleted_at is not None:
             raise HTTPException(status_code=404, detail="No such document.")
         document.graph_pin_x = body.x
@@ -1940,11 +1925,7 @@ def pin_nodes(body: PinsBody, session: Session = Depends(get_session)) -> dict:
     for entry in entries:
         entry.graph_pin_x = notes[entry.id].x
         entry.graph_pin_y = notes[entry.id].y
-    held = (
-        session.query(Document)
-        .filter(Document.id.in_(documents), Document.deleted_at.is_(None))
-        .all()
-    )
+    held = documents_repo.held(session, documents)
     for document in held:
         document.graph_pin_x = documents[document.id].x
         document.graph_pin_y = documents[document.id].y
@@ -1971,11 +1952,7 @@ def unpin_all_nodes(session: Session = Depends(get_session)) -> dict:
         .filter(Entry.is_deleted == False, Entry.graph_pin_x.is_not(None))  # noqa: E712
         .all()
     )
-    held = (
-        session.query(Document)
-        .filter(Document.deleted_at.is_(None), Document.graph_pin_x.is_not(None))
-        .all()
-    )
+    held = documents_repo.pinned(session)
     # Every pin cleared, documents and nodes a filter hides included, so the
     # Undo puts back exactly what this released (K9, K10).
     released = [{"id": e.id, "x": e.graph_pin_x, "y": e.graph_pin_y} for e in pinned]

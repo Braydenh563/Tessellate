@@ -8,3 +8,5 @@ Branch agent/docrepo-1101; port 8871.
 - next: routes_entries (find x2, mention_rows, attached_to), then routes_graph, routes_library, timeline/diag/debug/code_assist/documents
 - done: 7bed0ab second group; routes_entries in the commit after
 - next: routes_graph (link_pairs, unshelved, held, pinned), routes_library, timeline/diag/debug/code_assist/documents (python3 scratchpad/groups.py graph|library|rest)
+- done: b7ef14b routes_entries; routes_graph in the commit after
+- next: routes_library, timeline/diag/debug/code_assist/documents, then MOVED gains Document and DocumentLink (python3 scratchpad/groups.py library|rest)

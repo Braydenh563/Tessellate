@@ -33,7 +33,7 @@ CROSS_RESOURCE = {"routes_spaces.py"}
 #: reminders to repo/reminders.py (its router, the timeline, meetings, debug
 #: and two chat readers): 843; documents' history and AI-edit log and the
 #: document list, contents and write verbs to repo/documents.py: 811.
-ORM_CALLS_CAP = 786
+ORM_CALLS_CAP = 778
 
 _ORM = re.compile(
     r"\b(?:session|db)\.(?:query|get|execute|scalar|scalars|add|add_all|delete|merge)\("
