@@ -2327,7 +2327,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `attachmentPeek` | frontend/js/attachment-peek.js:16 |
+| `attachmentPeek` | frontend/js/attachment-peek.js:17 |
 
 ### frontend/js/autocorrect.js (15)
 
@@ -3054,7 +3054,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `renderOrphanNotesWidget` | frontend/js/dash-orphans.js:3 |
+| `renderOrphanNotesWidget` | frontend/js/dash-orphans.js:4 |
 
 ### frontend/js/date-field.js (3)
 
@@ -4244,7 +4244,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `editConflictPrompt` | frontend/js/edit-conflict.js:6 |
+| `editConflictPrompt` | frontend/js/edit-conflict.js:7 |
 
 ### frontend/js/embed-choices.js (11)
 
@@ -6097,10 +6097,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `announceReminders` | frontend/js/reminder-notify.js:86 |
-| `launcherNotifies` | frontend/js/reminder-notify.js:15 |
-| `listenToReminderWorker` | frontend/js/reminder-notify.js:25 |
-| `showReminderNotification` | frontend/js/reminder-notify.js:35 |
+| `announceReminders` | frontend/js/reminder-notify.js:87 |
+| `launcherNotifies` | frontend/js/reminder-notify.js:16 |
+| `listenToReminderWorker` | frontend/js/reminder-notify.js:26 |
+| `showReminderNotification` | frontend/js/reminder-notify.js:36 |
 
 ### frontend/js/reply-kit.js (41)
 

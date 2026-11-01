@@ -46,7 +46,9 @@ TOP_LEVEL_LETS_CAP = 699
 #: dash-night.js wrapped whole, one export each, freed 23. Z1 added
 #: space-swap.js (two entry points, wrapped); run-debug.js wrapped: 9,875;
 #: ai1518's companion-remark.js and attachment-actions.js wrapped, one export each: 9870.
-GLOBAL_NAMES_CAP = 9870
+#: gaps1521-1101: reminder-notify.js, dash-orphans.js, edit-conflict.js and attachment-peek.js
+#: wrapped, one export each (measured 9,866).
+GLOBAL_NAMES_CAP = 9866
 
 
 def _code() -> dict[str, str]:
