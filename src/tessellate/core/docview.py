@@ -56,6 +56,7 @@ import zipfile
 from dataclasses import dataclass
 from html.parser import HTMLParser
 from pathlib import Path
+from xml.etree.ElementTree import ParseError
 
 from tessellate.core import pdfpages
 
@@ -390,7 +391,7 @@ def _docx_parts(path: Path):  # noqa: ANN202
     somebody's upload and an XML bomb is a real shape to refuse."""
     try:
         from defusedxml import ElementTree as DefusedET
-    except Exception:  # noqa: BLE001 - defusedxml is a dependency, not an extra
+    except ImportError:  # defusedxml is a dependency, not an extra
         return None
     try:
         with zipfile.ZipFile(path) as archive:
@@ -404,7 +405,7 @@ def _docx_parts(path: Path):  # noqa: ANN202
         return None
     try:
         return DefusedET.fromstring(raw), rels, numbering
-    except Exception:  # noqa: BLE001
+    except (ParseError, ValueError):  # not XML, or refused (an entity or DTD): no text
         return None
 
 
