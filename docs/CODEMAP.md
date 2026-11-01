@@ -2,9 +2,9 @@
 
 Generated 2026-11-01 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7544, frontend ids 2633, CSS sections 517, backend routes 639, backend modules 8283, test files 1797, tests 15450, plan headings 990, app scripts 28, boot scripts 37, script files 220.
+Counts: frontend functions 7543, frontend ids 2633, CSS sections 517, backend routes 639, backend modules 8283, test files 1797, tests 15450, plan headings 990, app scripts 28, boot scripts 37, script files 220.
 
-## Frontend functions (7544)
+## Frontend functions (7543)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -2965,12 +2965,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkViewerNear` | frontend/js/companion-menu.js:478 |
 | `openNameMarkViewer` | frontend/js/companion-menu.js:34 |
 
-### frontend/js/companion-remark.js (2)
+### frontend/js/companion-remark.js (1)
 
 | Name | File:line |
 |---|---|
-| `nameMarkBuddyRemark` | frontend/js/companion-remark.js:25 |
-| `nameMarkBuddyRemarkSeen` | frontend/js/companion-remark.js:16 |
+| `nameMarkBuddyRemark` | frontend/js/companion-remark.js:16 |
 
 ### frontend/js/companion-throw.js (21)
 

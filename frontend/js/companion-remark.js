@@ -13,15 +13,6 @@
 (() => {
   const NMB_REMARK_SEEN = "nm-buddy-remarks-seen";
 
-  function nameMarkBuddyRemarkSeen() {
-    try {
-      const kept = JSON.parse(localStorage.getItem(NMB_REMARK_SEEN) || "[]");
-      return Array.isArray(kept) ? kept : [];
-    } catch (e) {
-      return [];
-    }
-  }
-
   async function nameMarkBuddyRemark() {
     let body;
     try {
@@ -29,17 +20,13 @@
     } catch (e) {
       return;
     }
-    const seen = nameMarkBuddyRemarkSeen();
+    const seen = prefs.json(NMB_REMARK_SEEN, []);
     const next = (body.remarks || []).find((r) => r.text && !seen.includes(r.key));
     const buddy = document.getElementById("nm-buddy");
     //: It may have been picked up, hidden or put to sleep while the call ran.
     if (!next || !buddy?.isConnected || nameMarkBuddyStill() || document.hidden) return;
     if (buddy.classList.contains("nm-buddy-dragging") || buddy.classList.contains("nmb-sleep")) return;
-    try {
-      localStorage.setItem(NMB_REMARK_SEEN, JSON.stringify([...seen, next.key].slice(-80)));
-    } catch (e) {
-      /* kept or not, it was said */
-    }
+    prefs.setJSON(NMB_REMARK_SEEN, [...seen, next.key].slice(-80));
     nameMarkBuddyExpress("happy", 2400);
     nameMarkSay(buddy, next.text, Math.min(12000, 2500 + 60 * next.text.length));
   }
