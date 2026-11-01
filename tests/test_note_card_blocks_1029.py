@@ -74,7 +74,7 @@ def test_the_card_hands_a_block_to_the_page_renderer() -> None:
 
 def test_the_card_prose_changes_skip_a_fence() -> None:
     """The heading hashes and list dashes the card strips are source in a code fence."""
-    cards = (JS / "note-cards.js").read_text(encoding="utf-8")
+    cards = ((JS / "note-cards.js").read_text(encoding="utf-8") + (JS / "entry-card.js").read_text(encoding="utf-8"))
     fill = cards[cards.index("const fillContent = () => renderNoteText(") :]
     fill = fill[: fill.index("fillContent();")]
     # The strip is passed to renderNoteText as the prose step, after the terms, not run over the whole note first.

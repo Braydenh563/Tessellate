@@ -51,7 +51,7 @@ def test_show_more_the_rail_menus_and_the_board_grips_meet_the_floor():
 
 
 def test_a_suggested_tags_controls_are_buttons_not_spans_with_a_role():
-    text = (JS / "note-cards.js").read_text(encoding="utf-8")
+    text = ((JS / "note-cards.js").read_text(encoding="utf-8") + (JS / "entry-card.js").read_text(encoding="utf-8"))
     block = text.split("const suggestions = options.actions", 1)[1].split("meta.appendChild(group)", 1)[0]
     assert 'const take = document.createElement("button")' in block
     assert 'const discard = document.createElement("button")' in block

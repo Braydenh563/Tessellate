@@ -60,12 +60,12 @@ def test_the_notes_filter_has_is_review():
     app = notes
     # One rule for "needs a look", read by the card's chip and the filter.
     assert "function entryNeedsReview(" in app
-    cards = (ROOT / "frontend" / "js" / "note-cards.js").read_text(encoding="utf-8")
+    cards = ((ROOT / "frontend" / "js" / "note-cards.js").read_text(encoding="utf-8") + (ROOT / "frontend" / "js" / "entry-card.js").read_text(encoding="utf-8"))
     assert "entryNeedsReview(entry)" in cards
 
 
 def test_a_card_in_the_queue_offers_accept_refile_and_split():
-    cards = (ROOT / "frontend" / "js" / "note-cards.js").read_text(encoding="utf-8")
+    cards = ((ROOT / "frontend" / "js" / "note-cards.js").read_text(encoding="utf-8") + (ROOT / "frontend" / "js" / "entry-card.js").read_text(encoding="utf-8"))
     block = cards.split("function noteReviewActions", 1)[1].split("\n}\n", 1)[0]
     for label in ("ph:check Accept", "ph:folder-open Refile", "ph:scissors Split"):
         assert label in block

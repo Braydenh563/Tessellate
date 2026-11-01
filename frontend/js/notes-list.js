@@ -2379,6 +2379,18 @@ function rememberNoteFilter(words) {
 
 //: `appendOnly` (a page arriving into a long list) draws nothing unless the rows can be added.
 function renderEntries(appendOnly = false) {
+  //: A card is drawn by `entryItem` (entry-card.js: lazy, for the boot gzip ratchet), fetched
+  //: when the app goes idle. A draw asked before it is in waits for it and happens once, whole.
+  if (!window.entryItem) {
+    if (!renderEntries.waiting) {
+      renderEntries.waiting = true;
+      ensureModule("entryCard").then((ok) => {
+        renderEntries.waiting = false;
+        if (ok) renderEntries();
+      });
+    }
+    return;
+  }
   const list = $("entry-list");
   rememberNoteFilter(noteSearch);
   // Drafts stay out of All/category views entirely, user-reported: they

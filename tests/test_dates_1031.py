@@ -40,6 +40,6 @@ def test_next_month_alone_is_still_a_month():
 
 
 def test_the_chip_shows_a_month_as_the_month():
-    cards = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "note-cards.js").read_text()
+    cards = ((Path(__file__).resolve().parents[1] / "frontend" / "js" / "note-cards.js").read_text() + (Path(__file__).resolve().parents[1] / "frontend" / "js" / "entry-card.js").read_text())
     assert '`${when.precision} of ${dayLabel}`' not in cards
     assert 'when.precision === "month"' in cards

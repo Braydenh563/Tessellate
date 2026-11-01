@@ -1755,9 +1755,9 @@ const LAZY_MODULES = {
   //: The menus a note card's category and tag chips open: see chip-menus.js.
   chipMenus: ["/js/chip-menus.js"],
   noteHistory: ["/js/note-history.js"],
-  askHistory: ["/js/citation-peek.js", "/js/answer-kit.js", "/js/ask-history.js", "/js/ask-chart.js"],
+  askHistory: ["/js/citation-peek.js", "/js/entry-card.js", "/js/answer-kit.js", "/js/ask-history.js", "/js/ask-chart.js"],
   //: The Ask box's Use AI switch (ask-compose.js), preloaded below.
-  askCompose: ["/css/ask-compose-lazy.css", "/js/citation-peek.js", "/js/answer-kit.js", "/js/ask-compose.js"],
+  askCompose: ["/css/ask-compose-lazy.css", "/js/citation-peek.js", "/js/entry-card.js", "/js/answer-kit.js", "/js/ask-compose.js"],
   //: Notes, Questions (questions-view.js), behind two stand-ins.
   questionsView: ["/css/questions-lazy.css", "/js/questions-view.js"],
   settingsData: ["/js/settings-data.js"],
@@ -1805,7 +1805,7 @@ const LAZY_MODULES = {
   //: The web panel: web-clip.js, and its search, result rows and recents (web-results.js).
   webClip: ["/js/web-clip.js", "/js/web-results.js"],
   appImport: ["/js/app-import.js"],
-  usageLedger: ["/css/usage-lazy.css", "/js/app-features.js", "/js/usage-ledger.js"],
+  usageLedger: ["/css/usage-lazy.css", "/js/usage-ledger.js"],
   //: The Library list without the editors (audit FE-03(c)): they were about
   //: 900 KB gzipped. A document or a board brings the whole `library` surface.
   libraryList: ["/css/library-lazy.css", "/js/library.js"],
@@ -1814,7 +1814,7 @@ const LAZY_MODULES = {
   meetings: ["/css/meetings-lazy.css", "/js/meetings.js"],
   quickAdd: ["/css/quickadd-lazy.css", "/js/quickadd.js"],
   //: The Statistics page and This week (statistics.js's header).
-  statistics: ["/css/utilities-lazy.css", "/js/app-features.js", "/js/ask-chart.js", "/js/statistics.js"],
+  statistics: ["/css/utilities-lazy.css", "/js/ask-chart.js", "/js/statistics.js"],
   utilities: ["/js/utility-tools.js"],
   //: Live captions (captions.js's header; Brief 82).
   captions: ["/css/captions-lazy.css", "/js/captions.js"],
@@ -1826,7 +1826,7 @@ const LAZY_MODULES = {
   //: boot's, the motion arrives with the first figure that mounts.
   atlasMotion: ["/js/atlas-motion.js"],
   //: Atlas the Guide as a chat (help-chat.js's header), on first ask.
-  helpChat: ["/css/help-chat-lazy.css", "/js/citation-peek.js", "/js/answer-kit.js", "/js/help-chat.js"],
+  helpChat: ["/css/help-chat-lazy.css", "/js/citation-peek.js", "/js/entry-card.js", "/js/answer-kit.js", "/js/help-chat.js"],
   //: Atlas's mood cues and bold small-size brows (atlas.js `atlasSheet`).
   atlasFaces: ["/css/atlas-lazy.css"],
   //: A selection's Move to space (batch-space.js's header).

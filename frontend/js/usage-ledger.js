@@ -15,7 +15,9 @@
 const USAGE_TABS = ["dashboard", "notes", "chat", "graph", "library", "timeline", "reminders"];
 const SIMPLE_HIDDEN_TABS = ["graph", "timeline", "reminders"];
 
-function usageLabels() {
+async function usageLabels() {
+  //: The palette's rows (`paletteCommands`) are in app-features.js, lazy.
+  await lazyScript("/js/app-features.js");
   const labels = {};
   for (const tab of USAGE_TABS) {
     const button = document.querySelector(`#tab-bar button[data-tab="${tab}"]`);
@@ -33,7 +35,7 @@ async function renderUsage() {
   const most = $("usage-most");
   const unused = $("usage-unused");
   if (!most) return;
-  const labels = usageLabels();
+  const labels = await usageLabels();
   let summary;
   try {
     summary = await apiJson("/usage/summary", { method: "POST", body: JSON.stringify({ known: Object.keys(labels) }) });

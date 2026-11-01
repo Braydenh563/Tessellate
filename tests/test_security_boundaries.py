@@ -947,7 +947,7 @@ def test_every_url_sink_the_audit_named_goes_through_safe_href():
 
     root = Path(__file__).resolve().parents[1] / "frontend" / "js"
     for name, needle in (
-        ("note-cards.js", "window.open(safeHref(entry.source_url)"),
+        ("entry-card.js", "window.open(safeHref(entry.source_url)"),  # moved out of note-cards.js (boot diet 3)
         ("answer-kit.js", "card.href = safeHref(source.url)"),
         ("palette.js", "row.href = safeHref(source.url)"),
         ("markdown.js", "card.href = safeHref(url)"),

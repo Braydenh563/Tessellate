@@ -42,7 +42,7 @@ VERTICAL_KEBABS = {
     "documents-codekit.js": 1,  # a saved snippet's row in the code panel's narrow column (INBOX 788)
     "documents-history.js": 1,  # a history version's row (Brief 76)
     "link-types.js": 1,  # the relation types list
-    "note-cards.js": 1,  # a note's connection rows
+    "entry-card.js": 1,  # a note's connection rows (moved out of note-cards.js, boot diet 3)
     "note-properties.js": 1,  # the note types list
     "notes-list.js": 1,  # the Notes categories rail
     "search.js": 1,  # the saved searches under the Notes categories rail (Brief 47)

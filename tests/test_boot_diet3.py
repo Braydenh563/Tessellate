@@ -26,6 +26,7 @@ MOVED = {
     "paletteCommands": ("app-features.js", "featureRows"),
     "quickCatalogue": ("app-features.js", "featureRows"),
     "renderQuickLinks": ("app-features.js", "featureRows"),
+    "entryItem": ("entry-card.js", "entryCard"),
 }
 
 

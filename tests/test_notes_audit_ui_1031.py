@@ -66,7 +66,7 @@ def test_the_phone_note_page_drops_the_title_its_head_already_says():
 
 
 def test_a_link_menu_is_never_nameless():
-    assert re.search(r"Actions for the link to \$\{label \|\| ", (JS / "note-cards.js").read_text())
+    assert re.search(r"Actions for the link to \$\{label \|\| ", ((JS / "note-cards.js").read_text() + (JS / "entry-card.js").read_text()))
 
 
 def test_the_capture_card_and_quick_note_are_editor_surfaces():
