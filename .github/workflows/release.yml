@@ -197,6 +197,19 @@ jobs:
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "/DMyAppVersion=$version" packaging\windows\installer.iss
           if ($LASTEXITCODE -ne 0) { throw "ISCC exited $LASTEXITCODE" }
 
+      # The app pins the owner's public key (core/update_verify.py), so an
+      # update without a `.sig` that verifies is refused by every install that
+      # has it. A release with no `UPDATE_SIGNING_KEY` secret stops here
+      # rather than shipping an update those installs cannot take (INBOX 1500).
+      # The secret reaches the script as an environment variable, never as an
+      # argument, so it is not in a process list or this log.
+      - name: Sign the installer for the updater
+        shell: bash
+        env:
+          UPDATE_SIGNING_KEY: ${{ secrets.UPDATE_SIGNING_KEY }}
+        run: |
+          python packaging/sign_release.py dist/installer/Tessellate-Setup-*.exe
+
       # The MSI ships alongside the .exe, not instead of it (the owner's
       # explicit call): the .exe stays the simplest no-terminal path, the
       # MSI is for `msiexec /quiet`, Group Policy deployment and Windows
@@ -237,6 +250,7 @@ jobs:
           # complete, working release either way.
           files: |
             dist/installer/Tessellate-Setup-*.exe
+            dist/installer/Tessellate-Setup-*.exe.sig
 
   build-linux-package:
     name: Build Linux package

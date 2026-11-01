@@ -26,10 +26,10 @@ from pathlib import Path
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
 
-#: Pinned release-signing keys (hex Ed25519 public keys). Empty until the
-#: owner generates a pair and adds the signing step to the release workflow;
-#: see INBOX 1500.
-PUBLIC_KEYS: tuple[str, ...] = ()
+#: Pinned release-signing keys (hex Ed25519 public keys). The owner's key,
+#: 2026-11-01 (INBOX 1500); the release workflow signs with its private half,
+#: the `UPDATE_SIGNING_KEY` secret (packaging/sign_release.py).
+PUBLIC_KEYS: tuple[str, ...] = ("d8ba6aafbb33b6bda0303c7f626d47a89473b8709911738f1f16ca08e9b4d668",)
 
 CHUNK = 1 << 20
 UNCHECKABLE = "The update could not be checked, so it was not installed. Download it from the releases page instead."

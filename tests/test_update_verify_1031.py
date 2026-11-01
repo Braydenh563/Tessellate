@@ -200,3 +200,15 @@ def test_the_release_signature_is_what_the_app_verifies(tmp_path, monkeypatch):
     assert signer.main([str(installer)]) == 1
     monkeypatch.setenv("UPDATE_SIGNING_KEY", "not hex")
     assert signer.main([str(installer)]) == 1
+
+
+def test_the_owners_key_is_pinned_and_the_release_signs_and_uploads_the_signature():
+    # Pinned and signing land together: a pinned key with an unsigned release
+    # would make every install refuse the next update.
+    root = Path(__file__).resolve().parents[1]
+    assert update_verify.PUBLIC_KEYS and all(len(bytes.fromhex(k)) == 32 for k in update_verify.PUBLIC_KEYS)
+    release = (root / ".github" / "workflows" / "release.yml").read_text(encoding="utf-8")
+    assert "UPDATE_SIGNING_KEY: ${{ secrets.UPDATE_SIGNING_KEY }}" in release
+    assert "python packaging/sign_release.py dist/installer/Tessellate-Setup-*.exe" in release
+    assert "dist/installer/Tessellate-Setup-*.exe.sig" in release
+    assert release.index("sign_release.py") < release.index("Upload installers to the release")

@@ -17,7 +17,13 @@ from tessellate.api import routes_update
 
 
 @pytest.fixture(autouse=True)
-def _clean_update_state():
+def _clean_update_state(monkeypatch):
+    # These tests are about fetching and launching: their fake installers are
+    # checked by digest (`_listed`) and carry no signature. The pinned key and
+    # its signature are tests/test_update_verify_1031.py's (INBOX 1500).
+    from tessellate.core import update_verify
+
+    monkeypatch.setattr(update_verify, "PUBLIC_KEYS", ())
     routes_update.reset_for_tests()
     yield
     routes_update.reset_for_tests()
