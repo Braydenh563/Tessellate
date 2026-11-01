@@ -12988,79 +12988,69 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `run` | src/tessellate/ai/commands.py:1777 |
 | `summarise_done` | src/tessellate/ai/commands.py:1217 |
 
-### src/tessellate/ai/composer.py (69)
+### src/tessellate/ai/composer.py (59)
 
 | Name | File:line |
 |---|---|
-| `_absent` | src/tessellate/ai/composer.py:609 |
-| `_acknowledged` | src/tessellate/ai/composer.py:937 |
-| `_answer_dict` | src/tessellate/ai/composer.py:1206 |
-| `_answer_turn` | src/tessellate/ai/composer.py:963 |
-| `_answer_views` | src/tessellate/ai/composer.py:1319 |
-| `_as_phrase` | src/tessellate/ai/composer.py:598 |
-| `_as_typed` | src/tessellate/ai/composer.py:627 |
-| `_bare_title` | src/tessellate/ai/composer.py:633 |
-| `_best_dated_title` | src/tessellate/ai/composer.py:1098 |
-| `_brief_text` | src/tessellate/ai/composer.py:1455 |
-| `_by_the_day` | src/tessellate/ai/composer.py:1163 |
-| `_cannot_untick` | src/tessellate/ai/composer.py:1039 |
-| `_checklist_or_until` | src/tessellate/ai/composer.py:985 |
-| `_clarify` | src/tessellate/ai/composer.py:175 |
-| `_compose` | src/tessellate/ai/composer.py:1279 |
-| `_correction_order` | src/tessellate/ai/composer.py:1053 |
-| `_day_terms` | src/tessellate/ai/composer.py:1131 |
-| `_did_you_mean` | src/tessellate/ai/composer.py:590 |
-| `_early_answer` | src/tessellate/ai/composer.py:999 |
-| `_fill_by_shape` | src/tessellate/ai/composer.py:1245 |
-| `_fill_selected` | src/tessellate/ai/composer.py:1174 |
-| `_filtered` | src/tessellate/ai/composer.py:573 |
-| `_fit_terms` | src/tessellate/ai/composer.py:242 |
-| `_fresh_answer` | src/tessellate/ai/composer.py:1234 |
-| `_from_dialogue` | src/tessellate/ai/composer.py:976 |
-| `_help_result` | src/tessellate/ai/composer.py:897 |
-| `_is_broad` | src/tessellate/ai/composer.py:1158 |
-| `_label_line` | src/tessellate/ai/composer.py:317 |
-| `_meaning_maker` | src/tessellate/ai/composer.py:1073 |
-| `_meant` | src/tessellate/ai/composer.py:235 |
-| `_month` | src/tessellate/ai/composer.py:397 |
-| `_multi` | src/tessellate/ai/composer.py:135 |
-| `_names_app` | src/tessellate/ai/composer.py:891 |
-| `_note_views` | src/tessellate/ai/composer.py:1049 |
-| `_note_words` | src/tessellate/ai/composer.py:929 |
-| `_nothing` | src/tessellate/ai/composer.py:750 |
-| `_nothing_parts` | src/tessellate/ai/composer.py:788 |
-| `_overview_answer` | src/tessellate/ai/composer.py:353 |
-| `_overview_bullets` | src/tessellate/ai/composer.py:494 |
-| `_overview_groups` | src/tessellate/ai/composer.py:478 |
-| `_overview_lead` | src/tessellate/ai/composer.py:453 |
-| `_overview_links` | src/tessellate/ai/composer.py:511 |
-| `_overview_name_chip` | src/tessellate/ai/composer.py:537 |
-| `_overview_next` | src/tessellate/ai/composer.py:523 |
-| `_overview_over_broad` | src/tessellate/ai/composer.py:427 |
-| `_overview_rest` | src/tessellate/ai/composer.py:389 |
-| `_overview_subject` | src/tessellate/ai/composer.py:404 |
-| `_overview_tag_chip` | src/tessellate/ai/composer.py:549 |
-| `_planned` | src/tessellate/ai/composer.py:1270 |
-| `_raw` | src/tessellate/ai/composer.py:1355 |
-| `_read_in_dialogue` | src/tessellate/ai/composer.py:911 |
-| `_readings` | src/tessellate/ai/composer.py:214 |
-| `_recall` | src/tessellate/ai/composer.py:284 |
-| `_recall_next` | src/tessellate/ai/composer.py:561 |
-| `_refusal` | src/tessellate/ai/composer.py:1262 |
-| `_span_of` | src/tessellate/ai/composer.py:440 |
-| `_steer_to_correction` | src/tessellate/ai/composer.py:1064 |
-| `_subject_stems` | src/tessellate/ai/composer.py:421 |
-| `_unfinished_act` | src/tessellate/ai/composer.py:1016 |
-| `_window_gate` | src/tessellate/ai/composer.py:1081 |
-| `_with_matched` | src/tessellate/ai/composer.py:344 |
-| `_write_body` | src/tessellate/ai/composer.py:1140 |
-| `_written_when` | src/tessellate/ai/composer.py:1111 |
-| `brief` | src/tessellate/ai/composer.py:1361 |
-| `compose` | src/tessellate/ai/composer.py:808 |
-| `empty_window` | src/tessellate/ai/composer.py:719 |
-| `open_note_answer` | src/tessellate/ai/composer.py:1481 |
-| `split_parts` | src/tessellate/ai/composer.py:118 |
-| `window_said` | src/tessellate/ai/composer.py:619 |
+| `_acknowledged` | src/tessellate/ai/composer.py:704 |
+| `_answer_dict` | src/tessellate/ai/composer.py:973 |
+| `_answer_turn` | src/tessellate/ai/composer.py:730 |
+| `_answer_views` | src/tessellate/ai/composer.py:1086 |
+| `_best_dated_title` | src/tessellate/ai/composer.py:865 |
+| `_brief_text` | src/tessellate/ai/composer.py:1222 |
+| `_by_the_day` | src/tessellate/ai/composer.py:930 |
+| `_cannot_untick` | src/tessellate/ai/composer.py:806 |
+| `_checklist_or_until` | src/tessellate/ai/composer.py:752 |
+| `_clarify` | src/tessellate/ai/composer.py:177 |
+| `_compose` | src/tessellate/ai/composer.py:1046 |
+| `_correction_order` | src/tessellate/ai/composer.py:820 |
+| `_day_terms` | src/tessellate/ai/composer.py:898 |
+| `_early_answer` | src/tessellate/ai/composer.py:766 |
+| `_fill_by_shape` | src/tessellate/ai/composer.py:1012 |
+| `_fill_selected` | src/tessellate/ai/composer.py:941 |
+| `_fit_terms` | src/tessellate/ai/composer.py:244 |
+| `_fresh_answer` | src/tessellate/ai/composer.py:1001 |
+| `_from_dialogue` | src/tessellate/ai/composer.py:743 |
+| `_help_result` | src/tessellate/ai/composer.py:664 |
+| `_is_broad` | src/tessellate/ai/composer.py:925 |
+| `_label_line` | src/tessellate/ai/composer.py:319 |
+| `_meaning_maker` | src/tessellate/ai/composer.py:840 |
+| `_meant` | src/tessellate/ai/composer.py:237 |
+| `_month` | src/tessellate/ai/composer.py:399 |
+| `_multi` | src/tessellate/ai/composer.py:137 |
+| `_names_app` | src/tessellate/ai/composer.py:658 |
+| `_note_views` | src/tessellate/ai/composer.py:816 |
+| `_note_words` | src/tessellate/ai/composer.py:696 |
+| `_overview_answer` | src/tessellate/ai/composer.py:355 |
+| `_overview_bullets` | src/tessellate/ai/composer.py:496 |
+| `_overview_groups` | src/tessellate/ai/composer.py:480 |
+| `_overview_lead` | src/tessellate/ai/composer.py:455 |
+| `_overview_links` | src/tessellate/ai/composer.py:513 |
+| `_overview_name_chip` | src/tessellate/ai/composer.py:539 |
+| `_overview_next` | src/tessellate/ai/composer.py:525 |
+| `_overview_over_broad` | src/tessellate/ai/composer.py:429 |
+| `_overview_rest` | src/tessellate/ai/composer.py:391 |
+| `_overview_subject` | src/tessellate/ai/composer.py:406 |
+| `_overview_tag_chip` | src/tessellate/ai/composer.py:551 |
+| `_planned` | src/tessellate/ai/composer.py:1037 |
+| `_raw` | src/tessellate/ai/composer.py:1122 |
+| `_read_in_dialogue` | src/tessellate/ai/composer.py:678 |
+| `_readings` | src/tessellate/ai/composer.py:216 |
+| `_recall` | src/tessellate/ai/composer.py:286 |
+| `_recall_next` | src/tessellate/ai/composer.py:563 |
+| `_refusal` | src/tessellate/ai/composer.py:1029 |
+| `_span_of` | src/tessellate/ai/composer.py:442 |
+| `_steer_to_correction` | src/tessellate/ai/composer.py:831 |
+| `_subject_stems` | src/tessellate/ai/composer.py:423 |
+| `_unfinished_act` | src/tessellate/ai/composer.py:783 |
+| `_window_gate` | src/tessellate/ai/composer.py:848 |
+| `_with_matched` | src/tessellate/ai/composer.py:346 |
+| `_write_body` | src/tessellate/ai/composer.py:907 |
+| `_written_when` | src/tessellate/ai/composer.py:878 |
+| `brief` | src/tessellate/ai/composer.py:1128 |
+| `compose` | src/tessellate/ai/composer.py:575 |
+| `open_note_answer` | src/tessellate/ai/composer.py:1248 |
+| `split_parts` | src/tessellate/ai/composer.py:120 |
 
 ### src/tessellate/ai/composer_ack.py (3)
 
@@ -13620,6 +13610,21 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `asked` | src/tessellate/ai/composer_doings.py:215 |
 | `doings` | src/tessellate/ai/composer_doings.py:143 |
 | `first` | src/tessellate/ai/composer_doings.py:237 |
+
+### src/tessellate/ai/composer_empty.py (10)
+
+| Name | File:line |
+|---|---|
+| `_absent` | src/tessellate/ai/composer_empty.py:61 |
+| `_as_phrase` | src/tessellate/ai/composer_empty.py:50 |
+| `_as_typed` | src/tessellate/ai/composer_empty.py:79 |
+| `_bare_title` | src/tessellate/ai/composer_empty.py:85 |
+| `_did_you_mean` | src/tessellate/ai/composer_empty.py:42 |
+| `_filtered` | src/tessellate/ai/composer_empty.py:25 |
+| `_nothing` | src/tessellate/ai/composer_empty.py:214 |
+| `_nothing_parts` | src/tessellate/ai/composer_empty.py:252 |
+| `empty_window` | src/tessellate/ai/composer_empty.py:183 |
+| `window_said` | src/tessellate/ai/composer_empty.py:71 |
 
 ### src/tessellate/ai/composer_extra.py (4)
 
