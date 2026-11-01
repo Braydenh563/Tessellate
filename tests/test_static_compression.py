@@ -120,7 +120,7 @@ PIECE_CAP = 32_000
 #: 2026-11-01, boot diet 3, step 3: 268,118 down to 260,019 (1,949,052 to
 #: 1,857,489 raw): a note's card (`entryItem`, entry-card.js; `renderEntries`
 #: waits for it, the bundles that carry answer-kit.js list it first).
-TOTAL_CAP = 260_100
+TOTAL_CAP = 260_300
 
 
 def _served_gzip_size(client, name: str) -> int:

@@ -2386,7 +2386,9 @@ function renderEntries(appendOnly = false) {
   if (!window.entryItem) {
     renderEntries.waiting ||= ensureModule("entryCard").then(async (ok) => {
       renderEntries.waiting = null;
-      if (!ok) {
+      //: `ok` is true for a file that arrived but threw (a broken body served 200): without the
+      //: name the draw would ask again at once and never yield, so that is a failure too.
+      if (!ok || !window.entryItem) {
         lazyLoadFailed("Notes");
         return false;
       }

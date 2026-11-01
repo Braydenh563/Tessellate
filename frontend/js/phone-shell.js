@@ -1064,7 +1064,7 @@ function dropRepeatedTitle(root, title) {
 function openNotePage(entry, returnFocus = null) {
   if (!entry || notePageOpenId === entry.id) return;
   //: The card is `entryItem` (entry-card.js, lazy): in by the time any list was drawn, fetched here if not.
-  if (!window.entryItem) return ensureModule("entryCard").then((ok) => (ok ? openNotePage(entry, returnFocus) : lazyLoadFailed("Notes")));
+  if (!window.entryItem) return ensureModule("entryCard").then((ok) => (ok && window.entryItem ? openNotePage(entry, returnFocus) : lazyLoadFailed("Notes")));
   expandedNotes.add(entry.id);
   notePageOpenId = entry.id;
   const title = entry.title || noteNamePlain(entry.content, 80) || "Note";
@@ -1115,7 +1115,7 @@ function refreshNotePage(ids) {
   const old = document.querySelector('.sheet-overlay[data-sheet="note"] .note-page-list .entry-content');
   if (!entry || !old) return;
   //: An open note page was drawn by `entryItem`, so the file is in; fetched here all the same.
-  if (!window.entryItem) return ensureModule("entryCard").then((ok) => (ok ? refreshNotePage(ids) : lazyLoadFailed("Notes")));
+  if (!window.entryItem) return ensureModule("entryCard").then((ok) => (ok && window.entryItem ? refreshNotePage(ids) : lazyLoadFailed("Notes")));
   const fresh = entryItem(entry, { actions: true }).querySelector(".entry-content");
   if (!fresh) return;
   fresh.classList.remove("entry-clamped");
