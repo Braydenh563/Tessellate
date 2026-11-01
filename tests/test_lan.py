@@ -260,9 +260,9 @@ def test_a_job_queued_for_a_phone_runs_as_the_phone():
     from tessellate.core import jobs
 
     with origin.acting_for(True):
-        job = jobs._Job(1, "embed", print, (), {}, "x")
+        job = jobs.Job(1, "embed", print, (), {}, "x")
     assert job.another_device is True
-    assert jobs._Job(2, "embed", print, (), {}, "y").another_device is False
+    assert jobs.Job(2, "embed", print, (), {}, "y").another_device is False
 
 
 # --- the routes ------------------------------------------------------------------------

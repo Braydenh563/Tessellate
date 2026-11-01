@@ -195,6 +195,11 @@ def version() -> int:
     return _version
 
 
+def origin_now() -> str:
+    """Who started the work on this thread, as `started_by` set it, or ""."""
+    return getattr(_origin, "value", "")
+
+
 @contextmanager
 def started_by(origin: str):  # noqa: ANN201
     """Runs opened on this thread inside the block say who started them,
@@ -284,7 +289,7 @@ class Run:
         #: The plain words for this one run ("Answering 'what is a mouse'"),
         #: where the kind's label says only what sort of job it is.
         self.title = _clip(title) or KINDS.get(kind, kind)
-        self.origin = origin or getattr(_origin, "value", "")
+        self.origin = origin or origin_now()
         #: False for a run seen only at its end (`note_finished`): its
         #: ending is already in `taskhistory`, and the ledger would list it twice.
         self._ledger = ledger

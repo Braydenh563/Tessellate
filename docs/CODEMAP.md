@@ -2,7 +2,7 @@
 
 Generated 2026-11-01 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7475, frontend ids 2637, CSS sections 517, backend routes 633, backend modules 8161, test files 1762, tests 15236, plan headings 990, app scripts 28, boot scripts 36, script files 208.
+Counts: frontend functions 7475, frontend ids 2637, CSS sections 517, backend routes 633, backend modules 8161, test files 1763, tests 15242, plan headings 990, app scripts 28, boot scripts 36, script files 208.
 
 ## Frontend functions (7475)
 
@@ -20604,59 +20604,59 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `wait_until_answering` | src/tessellate/core/instance_lock.py:241 |
 | `write_lock` | src/tessellate/core/instance_lock.py:98 |
 
-### src/tessellate/core/jobruns.py (32)
+### src/tessellate/core/jobruns.py (33)
 
 | Name | File:line |
 |---|---|
-| `Run` | src/tessellate/core/jobruns.py:264 |
+| `Run` | src/tessellate/core/jobruns.py:269 |
 | `_bump` | src/tessellate/core/jobruns.py:189 |
-| `_calling` | src/tessellate/core/jobruns.py:760 |
+| `_calling` | src/tessellate/core/jobruns.py:765 |
 | `_clip` | src/tessellate/core/jobruns.py:115 |
 | `_database` | src/tessellate/core/jobruns.py:148 |
 | `_failure_reason` | src/tessellate/core/jobruns.py:120 |
-| `_named` | src/tessellate/core/jobruns.py:769 |
-| `_open_call` | src/tessellate/core/jobruns.py:776 |
-| `_purpose` | src/tessellate/core/jobruns.py:740 |
-| `_seconds` | src/tessellate/core/jobruns.py:752 |
-| `active` | src/tessellate/core/jobruns.py:725 |
-| `begin` | src/tessellate/core/jobruns.py:554 |
-| `bound` | src/tessellate/core/jobruns.py:715 |
-| `clear_finished` | src/tessellate/core/jobruns.py:217 |
-| `clear_live` | src/tessellate/core/jobruns.py:236 |
-| `current` | src/tessellate/core/jobruns.py:252 |
-| `describe_night_pass` | src/tessellate/core/jobruns.py:685 |
-| `finished` | src/tessellate/core/jobruns.py:211 |
-| `for_request` | src/tessellate/core/jobruns.py:732 |
-| `job_run` | src/tessellate/core/jobruns.py:564 |
+| `_named` | src/tessellate/core/jobruns.py:774 |
+| `_open_call` | src/tessellate/core/jobruns.py:781 |
+| `_purpose` | src/tessellate/core/jobruns.py:745 |
+| `_seconds` | src/tessellate/core/jobruns.py:757 |
+| `active` | src/tessellate/core/jobruns.py:730 |
+| `begin` | src/tessellate/core/jobruns.py:559 |
+| `bound` | src/tessellate/core/jobruns.py:720 |
+| `clear_finished` | src/tessellate/core/jobruns.py:222 |
+| `clear_live` | src/tessellate/core/jobruns.py:241 |
+| `current` | src/tessellate/core/jobruns.py:257 |
+| `describe_night_pass` | src/tessellate/core/jobruns.py:690 |
+| `finished` | src/tessellate/core/jobruns.py:216 |
+| `for_request` | src/tessellate/core/jobruns.py:737 |
+| `job_run` | src/tessellate/core/jobruns.py:569 |
 | `lane_of` | src/tessellate/core/jobruns.py:105 |
-| `last_runs` | src/tessellate/core/jobruns.py:643 |
-| `live` | src/tessellate/core/jobruns.py:245 |
-| `mark_interrupted` | src/tessellate/core/jobruns.py:614 |
-| `merged_history` | src/tessellate/core/jobruns.py:523 |
-| `model_call` | src/tessellate/core/jobruns.py:789 |
-| `model_stream` | src/tessellate/core/jobruns.py:826 |
-| `note_finished` | src/tessellate/core/jobruns.py:586 |
+| `last_runs` | src/tessellate/core/jobruns.py:648 |
+| `live` | src/tessellate/core/jobruns.py:250 |
+| `mark_interrupted` | src/tessellate/core/jobruns.py:619 |
+| `merged_history` | src/tessellate/core/jobruns.py:528 |
+| `model_call` | src/tessellate/core/jobruns.py:794 |
+| `model_stream` | src/tessellate/core/jobruns.py:831 |
+| `note_finished` | src/tessellate/core/jobruns.py:591 |
+| `origin_now` | src/tessellate/core/jobruns.py:198 |
 | `peek_database` | src/tessellate/core/jobruns.py:152 |
 | `set_database_source` | src/tessellate/core/jobruns.py:141 |
-| `started_by` | src/tessellate/core/jobruns.py:199 |
+| `started_by` | src/tessellate/core/jobruns.py:204 |
 | `version` | src/tessellate/core/jobruns.py:194 |
 
-### src/tessellate/core/jobs.py (12)
+### src/tessellate/core/jobs.py (11)
 
 | Name | File:line |
 |---|---|
-| `Pool` | src/tessellate/core/jobs.py:273 |
-| `_Job` | src/tessellate/core/jobs.py:235 |
+| `Job` | src/tessellate/core/jobs.py:227 |
+| `Pool` | src/tessellate/core/jobs.py:327 |
 | `_cpu_width` | src/tessellate/core/jobs.py:66 |
-| `_ledger_run` | src/tessellate/core/jobs.py:189 |
-| `_start_heartbeat` | src/tessellate/core/jobs.py:201 |
-| `enqueue` | src/tessellate/core/jobs.py:644 |
-| `forget` | src/tessellate/core/jobs.py:663 |
-| `pending` | src/tessellate/core/jobs.py:655 |
-| `pool` | src/tessellate/core/jobs.py:630 |
-| `resubmit` | src/tessellate/core/jobs.py:659 |
-| `resume` | src/tessellate/core/jobs.py:671 |
-| `shutdown` | src/tessellate/core/jobs.py:686 |
+| `_start_heartbeat` | src/tessellate/core/jobs.py:189 |
+| `enqueue` | src/tessellate/core/jobs.py:701 |
+| `forget` | src/tessellate/core/jobs.py:720 |
+| `pending` | src/tessellate/core/jobs.py:712 |
+| `pool` | src/tessellate/core/jobs.py:687 |
+| `resubmit` | src/tessellate/core/jobs.py:716 |
+| `resume` | src/tessellate/core/jobs.py:728 |
+| `shutdown` | src/tessellate/core/jobs.py:743 |
 
 ### src/tessellate/core/jobstore.py (35)
 
@@ -22440,7 +22440,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15236)
+## Tests (15242)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23268,6 +23268,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_job_backpressure.py | 2 |
 | tests/test_job_notices_z4.py | 3 |
 | tests/test_job_runs.py | 50 |
+| tests/test_job_type.py | 6 |
 | tests/test_jobruns_no_raw_exceptions.py | 1 |
 | tests/test_jobs_durable_kinds.py | 14 |
 | tests/test_jobs_pool.py | 11 |

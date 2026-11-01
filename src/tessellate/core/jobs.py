@@ -186,18 +186,6 @@ OWN_RUN_KINDS = frozenset({
 LEDGER_KINDS = {"vision": "vision_ocr", "vision-pdf": "vision_ocr"}
 
 
-def _ledger_run(job: "_Job"):  # noqa: ANN202
-    """The process ledger's run for one pool job (INBOX 805), or None."""
-    if job.kind in OWN_RUN_KINDS:
-        return None
-    label = LABELS.get(job.kind, job.kind.replace("-", " ").capitalize())
-    run = jobruns.Run(LEDGER_KINDS.get(job.kind, job.kind), None, title=f"{label}: {job.name}" if job.name else label)
-    #: Its row on the running list is the pool's own; the run adds lines.
-    run.listed = True
-    run.start()
-    return run
-
-
 def _start_heartbeat(target):  # noqa: ANN001, ANN202
     """The durable store's lease heartbeat (`jobstore._beat`), started here so
     job threads have one home. It ends itself once no lease is held."""
@@ -232,42 +220,108 @@ LABELS: dict[str, str] = {
 }
 
 
-class _Job:
-    """One queued piece of work. A plain object rather than a dataclass so
-    `__slots__` keeps 200 of them cheap during a bulk upload."""
+#: Who started a job that a phone or another computer asked for (`core/origin.py`).
+ANOTHER_DEVICE = "another-device"
+
+
+class Job:
+    """One piece of background work, wherever it runs (INBOX 1502, audit AR6).
+
+    The pool queues it, a reading runs it on the request's thread, a watcher
+    runs it on a thread of its own: the `seat` says which. Every one carries
+    the same four answers the panel and a shutdown ask:
+
+    - `lane`: `user` or `background` (`jobruns.lane_of`), derived from the
+      kind, so the durable `jobs` table needs no column for it;
+    - `owner`: who started it, a `jobruns.ORIGINS` key or `another-device`;
+    - `cancel`: the token, a `threading.Event`; `stop()` sets it and calls the
+      job's own stopper (a flag or a child process), never kills a thread;
+    - `run`: its `jobruns.Run` record while it runs, or None.
+
+    `__slots__` rather than a dataclass keeps 200 of them cheap during a bulk
+    upload.
+    """
 
     __slots__ = (
-        "seq", "kind", "func", "args", "kwargs", "name", "queued_at", "started_at", "dedupe_key", "durable_id", "durable_db",
-        "another_device",
+        "seq", "kind", "func", "args", "kwargs", "name", "lane", "owner", "cancel", "run", "stopper", "seat",
+        "queued_at", "started_at", "dedupe_key", "durable_id", "durable_db", "detail", "thread",
     )
 
     def __init__(
         self,
         seq: int,
         kind: str,
-        func: Callable[..., object],
-        args: tuple,
-        kwargs: dict,
-        name: str,
+        func: Callable[..., object] | None,
+        args: tuple = (),
+        kwargs: dict | None = None,
+        name: str = "",
+        *,
+        seat: str = "pool",
+        stopper: Callable[[], None] | None = None,
     ) -> None:
         self.seq = seq
         self.kind = kind
         self.func = func
         self.args = args
-        self.kwargs = kwargs
+        self.kwargs = kwargs or {}
         self.name = name
+        self.seat = seat
+        #: Read off the row kind, as `/tasks` reads it: a pool job's `job-ocr`
+        #: is background even though a person's own `ocr` run is not.
+        self.lane = jobruns.lane_of(self.row_kind)
+        #: Queued while serving another device (core/origin.py): the job runs
+        #: as that device, so it cannot start an install on this computer.
+        self.owner = ANOTHER_DEVICE if origin.from_another_device() else (jobruns.origin_now() or "app")
+        self.cancel = threading.Event()
+        self.stopper = stopper
+        self.run: jobruns.Run | None = None
         self.dedupe_key: object = None
         #: The `jobs` row behind this job (`core/jobstore.py`), or None for
         #: a job only this process knows about.
         self.durable_id: int | None = None
         self.durable_db: object = None
+        self.detail = ""
+        self.thread: threading.Thread | None = None
         self.queued_at = time.time()
         #: When a worker took it, for the panel's elapsed time (INBOX 696):
         #: a running row counts from here, a waiting one from `queued_at`.
         self.started_at = 0.0
-        #: Queued while serving another device (core/origin.py): the job runs
-        #: as that device, so it cannot start an install on this computer.
-        self.another_device = origin.from_another_device()
+
+    @property
+    def row_kind(self) -> str:
+        """The kind on its `/tasks` row: `job-<kind>`, `file-<kind>`, or the bare kind."""
+        return {"pool": f"job-{self.kind}", "here": f"file-{self.kind}"}.get(self.seat, self.kind)
+
+    @property
+    def another_device(self) -> bool:
+        return self.owner == ANOTHER_DEVICE
+
+    @property
+    def stoppable(self) -> bool:
+        return self.stopper is not None
+
+    def stop(self) -> bool:
+        """Set the cancel token and ask the job's stopper; True when it has one."""
+        self.cancel.set()
+        if self.stopper is None:
+            return False
+        self.stopper()
+        return True
+
+    def open_run(self) -> "jobruns.Run | None":
+        """The process ledger's run for a pool job (INBOX 805), kept on the
+        job as `run`; None for a kind that opens its own."""
+        if self.kind in OWN_RUN_KINDS:
+            return None
+        label = LABELS.get(self.kind, self.kind.replace("-", " ").capitalize())
+        run = jobruns.Run(
+            LEDGER_KINDS.get(self.kind, self.kind), None, title=f"{label}: {self.name}" if self.name else label
+        )
+        #: Its row on the running list is the pool's own; the run adds lines.
+        run.listed = True
+        run.start()
+        self.run = run
+        return run
 
 
 class Pool:
@@ -291,8 +345,8 @@ class Pool:
         self._queues: dict[str, queue.Queue] = {lane: queue.Queue() for lane in self._widths}
         self._lock = threading.Lock()
         self._workers: list[threading.Thread] = []
-        self._queued: dict[int, _Job] = {}
-        self._running: dict[int, _Job] = {}
+        self._queued: dict[int, Job] = {}
+        self._running: dict[int, Job] = {}
         self._seq = 0
         self._started = False
         self._stopping = threading.Event()
@@ -396,7 +450,7 @@ class Pool:
                         break
             if duplicate is None:
                 self._seq += 1
-                job = _Job(self._seq, kind, func, args, kwargs, name)
+                job = Job(self._seq, kind, func, args, kwargs, name)
                 job.dedupe_key = dedupe_key
                 self._queued[job.seq] = job
         if duplicate is not None:
@@ -450,7 +504,7 @@ class Pool:
                         self._running.pop(job.seq, None)
                     continue
                 error = ""
-                run = _ledger_run(job)
+                run = job.open_run()
                 try:
                     with origin.acting_for(job.another_device), jobruns.bound(run):
                         job.func(*job.args, **job.kwargs)
@@ -478,7 +532,7 @@ class Pool:
             finally:
                 work_queue.task_done()
 
-    def _admit(self, job: _Job) -> bool:
+    def _admit(self, job: Job) -> bool:
         """Move a job from queued to running, once the pool is not held; False
         when the pool is stopping."""
         while True:
@@ -553,7 +607,9 @@ class Pool:
                     continue
             rows.append(
                 {
-                    "kind": f"job-{job.kind}",
+                    "kind": job.row_kind,
+                    "lane": job.lane,
+                    "owner": job.owner,
                     "name": job.name,
                     "label": label,
                     "detail": f"{job.name} (queued)" if waiting and job.name else (job.name or ("queued" if waiting else "")),
@@ -573,6 +629,7 @@ class Pool:
             rows.append(
                 {
                     "kind": f"job-{kind}",
+                    "lane": "background",
                     "name": "",
                     "label": LABELS.get(kind, "Background job"),
                     "detail": f"{count:,} more queued",
