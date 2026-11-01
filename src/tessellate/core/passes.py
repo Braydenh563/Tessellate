@@ -30,7 +30,7 @@ from tessellate.core import jobruns
 logger = logging.getLogger("tessellate.passes")
 
 #: The scheduled passes, by their `jobruns` kind, in the overview's order.
-PASS_KINDS = ("autonomous", "night-shift", "backup", "resurface", "embeddings-backfill", "maintenance")
+PASS_KINDS = ("autonomous", "night-shift", "learned-audit", "backup", "resurface", "embeddings-backfill", "maintenance")
 
 #: Passes Stop can end part way, at their next step.
 STOPPABLE = frozenset({"autonomous", "maintenance", "embeddings-backfill"})
@@ -61,6 +61,7 @@ def schedule(kind: str) -> str:
         return f"Every {hours} hour{'' if hours == 1 else 's'} while switched on."
     return {
         "night-shift": "With each autonomous pass, when the night shift is on.",
+        "learned-audit": "With each autonomous pass, after the night shift: what it learned is re-read against its notes.",
         "backup": "Once a day, at the first start of the day.",
         "resurface": "Once a day, the first time fading notes are shown.",
         "embeddings-backfill": "At each start, once search by meaning is ready.",
@@ -116,6 +117,12 @@ def _night_shift() -> None:
         routes_night.run_now(routes_night.RunBody(), session)
     finally:
         session.close()
+
+
+def run_learned_audit() -> None:
+    from tessellate.ai import learned_audit_run
+
+    learned_audit_run.run_job()
 
 
 def _backup() -> None:
@@ -205,6 +212,7 @@ def _maintenance() -> None:
 #: kind -> the function a Run now queues. A dict so a test can stand in.
 RUNNERS: dict[str, Callable[[], object]] = {
     "night-shift": _night_shift,
+    "learned-audit": run_learned_audit,
     "backup": _backup,
     "resurface": _resurface,
     "embeddings-backfill": _backfill,

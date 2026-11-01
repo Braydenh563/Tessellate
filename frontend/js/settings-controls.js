@@ -4148,3 +4148,145 @@ for (const button of document.querySelectorAll("#privacy-range [data-range]")) {
   });
 }
 
+
+// ---- Check what it learned (CHAT_PLAN decision 68) ----
+//
+// The button on What it learned's bar runs `POST /learned/audit/run`: every
+// open claim and question is re-read against its note, what no longer holds is
+// retired (a tombstone, with its reason) or flagged. Here, and not in the boot
+// files, because the panel cannot be seen before Settings opens. What a check
+// retired, a scheduled one included, is read back from `GET /learned/audit/last`
+// so its Undo is in the panel whoever ran it; a flag is a mark on the list's row.
+const LEARNED_CHECK = { flags: {}, loaded: false };
+
+function learnedCheckSentence(words) {
+  const text = String(words || "").trim();
+  return text ? `${text.charAt(0).toUpperCase()}${text.slice(1)}.` : "";
+}
+
+function learnedCheckLine(item) {
+  const li = document.createElement("li");
+  li.className = "entry-item learned-row";
+  const text = document.createElement("p");
+  text.className = "learned-text";
+  text.textContent = item.text;
+  const why = document.createElement("p");
+  why.className = "muted learned-meta";
+  why.textContent = `Retired: ${item.reason}`;
+  li.append(text, why);
+  return li;
+}
+
+//: The box: the sentence, what the last check retired, and its Undo.
+function learnedCheckShow(last, summary) {
+  const box = $("learned-check-result");
+  if (!box) return;
+  const retired = last?.retired || [];
+  const flagged = Object.keys(LEARNED_CHECK.flags).length;
+  let words = summary;
+  if (!words && retired.length) words = `The last check retired ${nounCount(retired.length, "thing")}.`;
+  if (!words && flagged) words = `${nounCount(flagged, "thing is", "things are")} flagged below for your eye.`;
+  box.classList.toggle("hidden", !words);
+  $("learned-check-summary").textContent = words || "";
+  $("learned-check-list").replaceChildren(...retired.map(learnedCheckLine));
+  const undo = $("learned-check-undo");
+  undo.classList.toggle("hidden", !retired.length);
+  undo.dataset.run = last?.run || "";
+  undo.dataset.count = String(retired.length);
+}
+
+//: A flagged row says why, beside its own words.
+function learnedCheckMark() {
+  for (const li of document.querySelectorAll("#learned-list [data-fact-id]")) {
+    const reason = LEARNED_CHECK.flags[li.dataset.factId];
+    if (!reason || li.querySelector(".learned-flag")) continue;
+    const note = document.createElement("p");
+    note.className = "muted learned-meta learned-flag";
+    note.textContent = `Check this: ${reason}`;
+    li.appendChild(note);
+  }
+}
+
+async function learnedCheckRefresh(summary = "") {
+  const last = await apiJson("/learned/audit/last").catch(() => null);
+  const flags = await apiJson("/learned/audit/flags").catch(() => null);
+  LEARNED_CHECK.flags = flags?.flags || {};
+  learnedCheckShow(last, summary);
+  learnedCheckMark();
+}
+
+async function learnedCheckRun() {
+  const button = $("learned-check");
+  button.disabled = true;
+  const refresh = () => {
+    renderLearnedList();
+    return learnedCheckRefresh();
+  };
+  try {
+    const done = await apiJson("/learned/audit/run", { method: "POST" });
+    const run = { run: done.run };
+    if (done.retired.length) {
+      pushRoutePairUndo(
+        `Check what it learned, ${nounCount(done.retired.length, "thing")} retired`,
+        ["/learned/audit/undo", "POST", run],
+        ["/learned/audit/redo", "POST", run],
+        refresh
+      );
+    }
+    await learnedCheckRefresh(learnedCheckSentence(done.summary));
+    renderLearnedList();
+  } catch (error) {
+    toast(error.message, true);
+  } finally {
+    button.disabled = false;
+  }
+}
+
+//: The box's Undo: put back what the last check retired, whoever ran it, and
+//: leave a step on the stack that retires it again.
+async function learnedCheckPutBack() {
+  const button = $("learned-check-undo");
+  const run = { run: button.dataset.run };
+  const count = Number(button.dataset.count) || 0;
+  const post = (path) => apiJson(path, { method: "POST", body: JSON.stringify(run) });
+  const refresh = () => {
+    renderLearnedList();
+    return learnedCheckRefresh();
+  };
+  try {
+    await post("/learned/audit/undo");
+  } catch (error) {
+    toast(error.message, true);
+    return;
+  }
+  pushUndo(
+    `Put back ${nounCount(count, "thing")} the check retired`,
+    async () => {
+      await post("/learned/audit/redo");
+      await refresh();
+    },
+    async () => {
+      await post("/learned/audit/undo");
+      await refresh();
+    }
+  );
+  toast(`Put back ${nounCount(count, "thing")}.`);
+  await refresh();
+}
+
+$("learned-check")?.addEventListener("click", learnedCheckRun);
+$("learned-check-undo")?.addEventListener("click", learnedCheckPutBack);
+//: The list is drawn on every filter, page and edit (`renderLearnedList`, a
+//: boot file that cannot know this one): the draw is wrapped, so the marks
+//: follow it, and the first draw reads what the last check did (a scheduled
+//: one too). A wrapper and not a MutationObserver: nothing here may add a wake source.
+const learnedListDrawn = renderLearnedList;
+renderLearnedList = async function renderLearnedListMarked() {
+  const drawn = await learnedListDrawn();
+  if (LEARNED_CHECK.loaded) learnedCheckMark();
+  else {
+    LEARNED_CHECK.loaded = true;
+    await learnedCheckRefresh();
+  }
+  return drawn;
+};
