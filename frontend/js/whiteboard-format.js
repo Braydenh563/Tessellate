@@ -300,7 +300,9 @@ async function wbFmtSizeAxis(axis, target) {
   if (!e.bbox) return;
   const dim = axis === "w" ? "width" : "height";
   const size = axis === "w" ? e.bbox.maxX - e.bbox.minX : e.bbox.maxY - e.bbox.minY;
-  if (size > 0 && Math.abs(size - target) >= 0.5) await wbSizeItemTo(e, dim, target, target / size);
+  const rows = [];
+  if (size > 0 && Math.abs(size - target) >= 0.5) wbSizeItemTo(e, dim, target, target / size, rows);
+  await wbSaveMany(rows);
 }
 
 //: X and Y move the selection to the number; W and H size one item to it.
@@ -314,10 +316,9 @@ async function wbFmtGeometry(axis, value) {
       const dx = axis === "x" ? value - box.minX : 0;
       const dy = axis === "y" ? value - box.minY : 0;
       if (!dx && !dy) return;
-      for (const e of entries) {
-        if (wbFmtKind(e) === "link") continue;
-        await wbMoveItemBy(e.kind, e.id, e.item, dx, dy);
-      }
+      const rows = [];
+      for (const e of entries) if (wbFmtKind(e) !== "link") wbMoveItemBy(e.kind, e.id, e.item, dx, dy, rows);
+      await wbSaveMany(rows);
       return;
     }
     const target = Math.max(8, value);
@@ -401,17 +402,19 @@ async function wbFmtFlip(axis) {
   const entries = wbFmtEntries().filter((e) => e.kind === "sketch" && !wbIsLocked(e.kind, e.item));
   if (!entries.length) return;
   await wbRecordGesture(async () => {
+    const rows = [];
     for (const e of entries) {
       const parsed = wbSketchParsedData(e.item);
       if (!parsed) continue;
-      const d = wbTransformPathD(parsed.d, {
+      wbSketchSetD(e.item, wbTransformPathD(parsed.d, {
         sx: axis === "h" ? -1 : 1,
         sy: axis === "v" ? -1 : 1,
         anchorX: (e.bbox.minX + e.bbox.maxX) / 2,
         anchorY: (e.bbox.minY + e.bbox.maxY) / 2,
-      });
-      await wbSaveSketchD(e.item, d);
+      }));
+      rows.push({ kind: "sketch", item: e.item });
     }
+    await wbSaveMany(rows);
   });
   wbScheduleRender();
   wbAnnounce(axis === "h" ? "Flipped left to right." : "Flipped top to bottom.");
@@ -1204,20 +1207,23 @@ function wbRemoveFromGroup() {
   return wbRecordGesture(async () => {
     const leaving = wbFmtEntries().filter((e) => e.item.group_id);
     if (!leaving.length) return;
+    const rows = [];
     for (const e of leaving) {
       const chain = wbGroupChain(e.item);
       chain.pop();
       e.item.group_id = chain.length ? chain.join(WB_GROUP_SEP) : null;
-      await wbSaveGroupMember(e.kind, e.item);
+      rows.push({ kind: e.kind, item: e.item });
     }
-    await wbDropLoneGroups();
+    wbDropLoneGroups(rows);
+    await wbSaveMany(rows);
     wbAnnounce("Removed from the group.");
     wbUpdateContextBar();
   });
 }
 
-//: Each group id held by one item only is taken off it.
-async function wbDropLoneGroups() {
+//: Each group id held by one item only is taken off it; the items it changed
+//: go onto `rows`, which the caller saves once with the rest.
+function wbDropLoneGroups(rows) {
   const all = wbItemsWithGroupPrefix([]);
   const count = new Map();
   for (const { item } of all) for (const seg of wbGroupChain(item)) count.set(seg, (count.get(seg) || 0) + 1);
@@ -1226,7 +1232,7 @@ async function wbDropLoneGroups() {
     const kept = chain.filter((seg) => count.get(seg) > 1);
     if (kept.length === chain.length) continue;
     item.group_id = kept.length ? kept.join(WB_GROUP_SEP) : null;
-    await wbSaveGroupMember(kind, item);
+    rows.push({ kind, item });
   }
 }
 
@@ -1251,11 +1257,13 @@ function wbPasteSize() {
   const clip = wbFmtState.sizeClip;
   return wbRecordGesture(async () => {
     const entries = wbFmtEntries().filter((e) => !wbIsLocked(e.kind, e.item) && e.bbox && wbFmtKind(e) !== "topic");
+    const rows = [];
     for (const e of entries) {
       for (const [dim, target, size] of [["width", Math.max(8, clip.w), e.bbox.maxX - e.bbox.minX], ["height", Math.max(8, clip.h), e.bbox.maxY - e.bbox.minY]]) {
-        if (size > 0 && Math.abs(size - target) >= 0.5) await wbSizeItemTo(e, dim, target, target / size);
+        if (size > 0 && Math.abs(size - target) >= 0.5) wbSizeItemTo(e, dim, target, target / size, rows);
       }
     }
+    await wbSaveMany(rows);
     wbAnnounce(`Size ${clip.w} by ${clip.h} pasted.`);
   }).then(() => wbScheduleRender());
 }
@@ -1358,20 +1366,22 @@ function wbReversedLinkFields(parsed) {
 function wbReverseSelection() {
   return wbRecordGesture(async () => {
     let turned = 0;
+    const rows = [];
     for (const e of wbFmtEntries().filter((x) => x.kind === "sketch" && !wbIsLocked(x.kind, x.item))) {
       const kind = wbFmtKind(e);
       const parsed = wbFmtSketch(e);
+      let patch = null;
       if (kind === "link") {
-        await wbSaveSketchProps(e.item, wbReversedLinkFields(parsed));
+        patch = wbReversedLinkFields(parsed);
       } else if (kind === "arrow") {
         const caps = wbSketchCaps(parsed);
-        const swapped = { startCap: caps.endCap, endCap: caps.startCap, startSize: caps.endSize, endSize: caps.startSize };
-        await wbSaveSketchProps(e.item, wbFmtCapFields("arrow", parsed, swapped));
-      } else {
-        continue;
+        patch = wbFmtCapFields("arrow", parsed, { startCap: caps.endCap, endCap: caps.startCap, startSize: caps.endSize, endSize: caps.startSize });
       }
+      if (!patch || !wbSketchSetProps(e.item, patch)) continue;
+      rows.push({ kind: "sketch", item: e.item });
       turned += 1;
     }
+    await wbSaveMany(rows);
     if (turned) wbAnnounce("Reversed.");
     else toast("Select a connector or an arrow to reverse it.");
   }).then(() => wbScheduleRender());

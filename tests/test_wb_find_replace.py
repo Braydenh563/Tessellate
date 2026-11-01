@@ -46,7 +46,12 @@ def test_find_reads_labels_and_replace_is_one_step():
     assert '"sketch"' in run
     replace = WB[WB.index("async function wbBoardReplaceAll(") :]
     replace = replace[: replace.index("\n}\n")]
-    assert "wbPushMoveBatch(" in replace and "wbSaveSketchProps(" in replace and "wbSaveObject(" in replace
+    #: One undo step and one save for the lot (BD2): `wbCommitMoves` saves the rows
+    #: and pushes the batch; `wbReplaceWrite` writes a hit into a sketch or an object.
+    assert "wbCommitMoves(" in replace and "wbReplaceWrite(" in replace
+    write = WB[WB.index("function wbReplaceWrite(") :]
+    write = write[: write.index("\n}\n")]
+    assert "wbSketchSetProps(" in write and 'kind === "object"' in write
 
 
 def test_replace_all_rewrites_data_values_that_find_matches():

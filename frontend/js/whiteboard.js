@@ -1791,8 +1791,8 @@ async function wbSetVotes(entries, change) {
       if (votes) data.votes = votes;
       else delete data.votes;
       e.item.data = data;
-      await wbSaveObject(e.item);
     }
+    await wbSaveMany(entries.map((e) => ({ kind: "object", item: e.item })));
   });
   wbScheduleRender();
 }
@@ -2524,15 +2524,9 @@ function wbItemsWithGroupPrefix(prefix) {
   return out;
 }
 
-function wbSaveGroupMember(kind, item) {
-  if (kind === "sketch") return wbSaveSketchProps(item, {});
-  if (kind === "node") return wbSaveNode(item);
-  return wbSaveObject(item);
-}
-
 //: An id too long to nest under (a 36-character one from before chains) is
 //: swapped for a short one on every item that carries it.
-async function wbShortenGroupIds(entries) {
+function wbShortenGroupIds(entries, rows) {
   const long = new Set();
   for (const e of entries) for (const seg of wbGroupChain(e.item)) if (seg.length > 8) long.add(seg);
   for (const seg of long) {
@@ -2541,7 +2535,7 @@ async function wbShortenGroupIds(entries) {
       const chain = wbGroupChain(item);
       if (!chain.includes(seg)) continue;
       item.group_id = chain.map((c) => (c === seg ? short : c)).join(WB_GROUP_SEP);
-      await wbSaveGroupMember(kind, item);
+      rows.push({ kind, item });
     }
   }
 }
@@ -2554,7 +2548,8 @@ async function wbGroupSelection() {
   }
   const groupId = wbNewGroupId();
   await wbRecordGesture(async () => {
-    await wbShortenGroupIds(entries);
+    const rows = [];
+    wbShortenGroupIds(entries, rows);
     const chains = entries.map((e) => [groupId, ...wbGroupChain(e.item)].join(WB_GROUP_SEP));
     if (chains.some((c) => c.length > WB_GROUP_MAX_LEN)) {
       toast("Groups nest five deep at most.");
@@ -2562,8 +2557,9 @@ async function wbGroupSelection() {
     }
     for (let i = 0; i < entries.length; i += 1) {
       entries[i].item.group_id = chains[i];
-      await wbSaveGroupMember(entries[i].kind, entries[i].item);
+      rows.push({ kind: entries[i].kind, item: entries[i].item });
     }
+    await wbSaveMany(rows);
     toast("Grouped.");
   });
   wbUpdateContextBar();
@@ -2596,12 +2592,12 @@ async function wbUngroupSelection() {
   if (!prefix.length) return;
   const depth = prefix.length - 1;
   await wbRecordGesture(async () => {
-    for (const { kind, item } of entries) {
+    for (const { item } of entries) {
       const chain = wbGroupChain(item);
       chain.splice(depth, 1);
       item.group_id = chain.length ? chain.join(WB_GROUP_SEP) : null;
-      await wbSaveGroupMember(kind, item);
     }
+    await wbSaveMany(entries);
   });
   toast("Ungrouped.");
   wbUpdateContextBar();
@@ -3717,6 +3713,13 @@ function wbReplaceInProps(props, find, to, opts = {}) {
   return { props: out, count };
 }
 
+//: A Replace all hit written into its item in memory (the caller saves the lot).
+function wbReplaceWrite(kind, item, { text, values, grid }) {
+  const props = values.count ? { props: values.props } : {};
+  if (kind === "object") item.data = { ...item.data, content: text.text, ...props, ...(grid.count ? { cells: grid.cells } : {}) };
+  else wbSketchSetProps(item, { label: text.text, ...props });
+}
+
 //: **Replace all** (canvasdepth; WHITEBOARD_PLAN section 9): text boxes,
 //: shape labels and connector labels, one undo step. A card is a note and
 //: keeps its words; the announcement says how many cards hold the words.
@@ -3729,6 +3732,7 @@ async function wbBoardReplaceAll(find, to) {
     return 0;
   }
   const undo = [];
+  const rows = [];
   let changes = 0, cards = 0;
   for (const kind of ["object", "sketch", "node"]) {
     for (const item of wbState[WB_LIST_BY_KIND[kind]] || []) {
@@ -3747,16 +3751,12 @@ async function wbBoardReplaceAll(find, to) {
       const done = { count: text.count + values.count + grid.count };
       if (!done.count) continue;
       undo.push({ action: "move", kind, id: item.id, before: WB_KIND_INFO[kind].payload(item) });
-      if (kind === "object") {
-        item.data = { ...item.data, content: text.text, ...(values.count ? { props: values.props } : {}), ...(grid.count ? { cells: grid.cells } : {}) };
-        await wbSaveObject(item);
-      } else {
-        await wbSaveSketchProps(item, { label: text.text, ...(values.count ? { props: values.props } : {}) });
-      }
+      wbReplaceWrite(kind, item, { text, values, grid });
+      rows.push({ kind, item });
       changes += done.count;
     }
   }
-  wbPushMoveBatch(undo);
+  await wbCommitMoves(rows, undo);
   wbScheduleRender();
   const said = `Replaced ${nounCount(changes, "time")} in ${nounCount(undo.length, "item")}`
     + `${cards ? `; ${nounCount(cards, "card")} hold it too, edited in their note` : ""}.`;
@@ -5129,22 +5129,28 @@ function wbSelectionEntries() {
 }
 
 //: Moves one item by (dx, dy): a sketch by transforming its path, anything
-//: else by its own x/y, saves it, and returns the "move" undo entry for
-//: it. Shared by nudge/align/distribute, each of which moves a set of items
-//: as one user action and needs one entry per item to bundle into a batch.
-async function wbMoveItemBy(kind, id, item, dx, dy) {
+//: else by its own x/y, and returns the "move" undo entry for it. It does not
+//: save: the item goes onto `rows` and the caller saves the whole set once
+//: (`wbCommitMoves`, audit 1031 BD2: a selection is one request, not one per
+//: item). Shared by nudge/align/distribute/tidy, each of which moves a set of
+//: items as one user action and needs one entry per item to bundle into a batch.
+function wbMoveItemBy(kind, id, item, dx, dy, rows) {
   const before = WB_KIND_INFO[kind].payload(item);
   if (kind === "sketch") {
-    const parsed = wbSketchParsedData(item);
-    const newD = wbTransformPathD(parsed.d, { dx, dy });
-    await wbSaveSketchD(item, newD);
+    wbSketchSetD(item, wbTransformPathD(wbSketchParsedData(item).d, { dx, dy }));
   } else {
     item.x = (item.x || 0) + dx;
     item.y = (item.y || 0) + dy;
-    if (kind === "node") await wbSaveNode(item);
-    else await wbSaveObject(item);
   }
+  rows.push({ kind, item });
   return { action: "move", kind, id, before };
+}
+
+//: The tail every selection action shares: the changed items saved in one
+//: request, then their undo entries pushed as one step.
+async function wbCommitMoves(rows, entries) {
+  await wbSaveMany(rows);
+  wbPushMoveBatch(entries);
 }
 
 //: Pushes N per-item move entries as the one undo step the user actually
@@ -5203,6 +5209,7 @@ async function wbAlignSelection(edge) {
     hcenter: (box.minX + box.maxX) / 2, vcenter: (box.minY + box.maxY) / 2 }[edge];
 
   const pushed = [];
+  const rows = [];
   for (const e of moving) {
     let dx = 0, dy = 0;
     if (edge === "left") dx = target - e.bbox.minX;
@@ -5212,9 +5219,9 @@ async function wbAlignSelection(edge) {
     else if (edge === "bottom") dy = target - e.bbox.maxY;
     else if (edge === "vcenter") dy = target - (e.bbox.minY + e.bbox.maxY) / 2;
     if (dx === 0 && dy === 0) continue;
-    pushed.push(await wbMoveItemBy(e.kind, e.id, e.item, dx, dy));
+    pushed.push(wbMoveItemBy(e.kind, e.id, e.item, dx, dy, rows));
   }
-  wbPushMoveBatch(pushed);
+  await wbCommitMoves(rows, pushed);
 }
 
 // Distribute: asked for as part of the same "alignment tools" request.
@@ -5249,6 +5256,7 @@ async function wbDistributeSelection(axis) {
   const gap = (span - used) / (entries.length - 1);
 
   const pushed = [];
+  const rows = [];
   let cursor = maxOf(first) + gap;
   for (let i = 1; i < entries.length - 1; i++) {
     const e = entries[i];
@@ -5260,9 +5268,9 @@ async function wbDistributeSelection(axis) {
     if (Math.abs(delta) < 0.5) continue;
     const dx = axis === "horizontal" ? delta : 0;
     const dy = axis === "horizontal" ? 0 : delta;
-    pushed.push(await wbMoveItemBy(e.kind, e.id, e.item, dx, dy));
+    pushed.push(wbMoveItemBy(e.kind, e.id, e.item, dx, dy, rows));
   }
-  wbPushMoveBatch(pushed);
+  await wbCommitMoves(rows, pushed);
 }
 
 //: **A grid of N across** (CHAT_PLAN section 2, the board's acts: "arrange
@@ -5287,13 +5295,14 @@ async function wbArrangeGridSelection(columns) {
   const top = Math.min(...entries.map((e) => e.bbox.minY));
   const { gap } = WB_PASTE_STICKY;
   const pushed = [];
+  const rows = [];
   for (const [i, e] of entries.entries()) {
     const dx = left + (i % across) * (width + gap) - e.bbox.minX;
     const dy = top + Math.floor(i / across) * (height + gap) - e.bbox.minY;
     if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) continue;
-    pushed.push(await wbMoveItemBy(e.kind, e.id, e.item, dx, dy));
+    pushed.push(wbMoveItemBy(e.kind, e.id, e.item, dx, dy, rows));
   }
-  wbPushMoveBatch(pushed);
+  await wbCommitMoves(rows, pushed);
 }
 
 //: The connectors with both ends in `entries`, as `[from, to]` member keys
@@ -5358,6 +5367,7 @@ async function wbTidySelection(direction = "down") {
   const left = Math.min(...entries.map((e) => e.bbox.minX));
   const top = Math.min(...entries.map((e) => e.bbox.minY));
   const pushed = [];
+  const rows = [];
   for (const n of points) {
     const e = byKey.get(n.data.key);
     const cellX = down ? n.x - low : (n.depth - 1) * rank;
@@ -5365,9 +5375,9 @@ async function wbTidySelection(direction = "down") {
     const dx = left + cellX + (width - (e.bbox.maxX - e.bbox.minX)) / 2 - e.bbox.minX;
     const dy = top + cellY + (height - (e.bbox.maxY - e.bbox.minY)) / 2 - e.bbox.minY;
     if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) continue;
-    pushed.push(await wbMoveItemBy(e.kind, e.id, e.item, dx, dy));
+    pushed.push(wbMoveItemBy(e.kind, e.id, e.item, dx, dy, rows));
   }
-  wbPushMoveBatch(pushed);
+  await wbCommitMoves(rows, pushed);
   toast(`Tidied ${nounCount(entries.length, "item")} as a tree.`);
 }
 
@@ -5440,13 +5450,14 @@ async function wbSameSizeSelection(dim) {
   const sizeOf = (e) => (dim === "width" ? e.bbox.maxX - e.bbox.minX : e.bbox.maxY - e.bbox.minY);
   const target = Math.max(...entries.map(sizeOf));
   const pushed = [];
+  const rows = [];
   for (const e of entries) {
     const size = sizeOf(e);
     if (size <= 0 || Math.abs(size - target) < 0.5) continue;
-    const done = await wbSizeItemTo(e, dim, target, target / size);
+    const done = wbSizeItemTo(e, dim, target, target / size, rows);
     if (done) pushed.push(done);
   }
-  wbPushMoveBatch(pushed);
+  await wbCommitMoves(rows, pushed);
 }
 
 //: One item resized, in `wbMoveItemBy`'s shape and for the same reason: the
@@ -5454,27 +5465,25 @@ async function wbSameSizeSelection(dim) {
 //: undoes through exactly the same PUT a move does (see
 //: `wbApplyHistoryEntry`). A drawn shape is a path, so it scales about its own
 //: top-left corner rather than taking a width field it does not have.
-async function wbSizeItemTo(entry, dim, target, factor) {
+function wbSizeItemTo(entry, dim, target, factor, rows) {
   const { kind, id, item, bbox } = entry;
   const before = WB_KIND_INFO[kind].payload(item);
   if (kind === "sketch") {
     const parsed = wbSketchParsedData(item);
     if (!parsed) return null;
-    const scaled = wbTransformPathD(parsed.d, {
+    wbSketchSetD(item, wbTransformPathD(parsed.d, {
       sx: dim === "width" ? factor : 1,
       sy: dim === "height" ? factor : 1,
       anchorX: bbox.minX,
       anchorY: bbox.minY,
-    });
-    await wbSaveSketchD(item, scaled);
+    }));
   } else {
     // Rounded: both columns are integers on the row, and a card whose stored
     // width is 219.99997 reads back as a different number than it was set to.
     if (dim === "width") item.width = Math.round(target);
     else item.height = Math.round(target);
-    if (kind === "node") await wbSaveNode(item);
-    else await wbSaveObject(item);
   }
+  rows.push({ kind, item });
   return { action: "move", kind, id, before };
 }
 
@@ -5485,6 +5494,7 @@ async function wbResizeSelectionBy(dw, dh) {
   const dim = dw ? "width" : "height";
   const delta = dw || dh;
   const pushed = [];
+  const rows = [];
   for (const e of wbFmtEntries()) {
     if (!e.bbox || wbIsLocked(e.kind, e.item) || (e.kind === "object" && WB_MAP_KINDS.has(e.item.kind))) continue;
     if (e.kind === "sketch" && !["shape", "line", "arrow"].includes(wbFmtKind(e))) continue;
@@ -5492,10 +5502,10 @@ async function wbResizeSelectionBy(dw, dh) {
     const from = e.kind === "sketch" ? size : e.item[dim] || size;
     const target = Math.max(WB_OBJECT_MIN_SIZE, from + delta);
     if (from <= 0 || Math.abs(target - from) < 0.5) continue;
-    const done = await wbSizeItemTo(e, dim, target, target / from);
+    const done = wbSizeItemTo(e, dim, target, target / from, rows);
     if (done) pushed.push(done);
   }
-  wbPushMoveBatch(pushed);
+  await wbCommitMoves(rows, pushed);
   wbScheduleRender();
 }
 
@@ -5752,28 +5762,30 @@ async function wbPasteCopiedStyle() {
 
   let applied = 0;
   let skipped = 0;
+  const rows = [];
   for (const entry of entries) {
     const list = wbState[WB_LIST_BY_KIND[entry.kind]] || [];
     const item = list.find((i) => i.id === entry.id);
     if (!item) continue;
     if (wbCopiedStyle.kind === "topic") {
       if (entry.kind === "object" && WB_MAP_KINDS.has(item.kind)) {
-        await wbMapSetNodeStyle(item, { ...wbCopiedStyle.style });
+        await wbMapSetNodeStyle(item, { ...wbCopiedStyle.style }, { rows });
         applied += 1;
       } else {
         skipped += 1;
       }
     } else if (entry.kind === "sketch" && wbCopiedStyle.kind === "sketch") {
-      await wbSaveSketchProps(item, { ...wbCopiedStyle.style });
+      if (wbSketchSetProps(item, { ...wbCopiedStyle.style })) rows.push({ kind: "sketch", item });
       applied += 1;
     } else if (entry.kind === "object" && wbCopiedStyle.kind === "object" && item.kind === "text") {
       item.data = { ...item.data, ...wbCopiedStyle.style };
-      await wbSaveObject(item);
+      rows.push({ kind: "object", item });
       applied += 1;
     } else {
       skipped += 1;
     }
   }
+  await wbSaveMany(rows);
   wbScheduleRender();
   wbUpdateContextBar();
   if (!applied) return toast("That style does not fit what you selected.");
@@ -5825,29 +5837,32 @@ async function wbResetSelectedStyle() {
   if (!entries.length) return toast("Select something to reset its style.");
   let reset = 0;
   await wbRecordGesture(async () => {
+    const rows = [];
     for (const entry of entries) {
       const item = (wbState[WB_LIST_BY_KIND[entry.kind]] || []).find((i) => i.id === entry.id);
       if (!item || wbIsLocked(entry.kind, item)) continue;
       if (entry.kind === "object" && WB_MAP_KINDS.has(item.kind)) {
         const patch = {};
         for (const key of WB_MAP_STYLE_KEYS) patch[key] = null;
-        await wbMapSetNodeStyle(item, patch, { undo: false });
+        await wbMapSetNodeStyle(item, patch, { undo: false, rows });
         reset += 1;
       } else if (entry.kind === "sketch") {
         let parsed = null;
         try { parsed = JSON.parse(item.data); } catch { parsed = null; }
         const patch = wbSketchStyleReset(parsed);
         if (!patch) continue;
-        await wbSaveSketchProps(item, patch);
+        wbSketchSetProps(item, patch);
+        rows.push({ kind: "sketch", item });
         reset += 1;
       } else if (entry.kind === "object") {
         const data = wbObjectStyleReset(item);
         if (!data) continue;
         item.data = data;
-        await wbSaveObject(item);
+        rows.push({ kind: "object", item });
         reset += 1;
       }
     }
+    await wbSaveMany(rows);
   });
   wbScheduleRender();
   wbUpdateContextBar();
@@ -6262,14 +6277,16 @@ async function wbArrangeMindMap(rootId, kind) {
   // my board") actually asked for.
   const rootPos = positions.get(rootId);
   const dx = root.x - rootPos.x, dy = root.y - rootPos.y;
+  const rows = [];
   for (const [id, pos] of positions) {
     if (id === rootId) continue;
     const node = wbState.nodes.find((n) => n.id === id);
     if (!node) continue;
     node.x = wbSnap(pos.x + dx);
     node.y = wbSnap(pos.y + dy);
-    await wbSaveNode(node);
+    rows.push({ kind: "node", item: node });
   }
+  await wbSaveMany(rows);
 
   // Cached for the Tab/Enter branch-entry commands below, so a card added
   // right after an arrange lands in the layout it was just shown, not a
@@ -7676,31 +7693,16 @@ function wbZOrderPeers(kind, item) {
   return wbStackOrder().filter((e) => wbStackBand(e.kind, e.item) === band);
 }
 
-//: Moves one item to the front/back of its own layer and saves it, mirroring
-//: `wbMoveItemBy`'s shape (capture `before`, mutate, save, return a "move"
-//: undo entry) so it plugs into the same undo/redo stack without a new
-//: action type.
-async function wbSetZOrder(kind, item, toFront) {
+//: Moves one item to the front/back of its own layer and returns a "move"
+//: undo entry (`wbMoveItemBy`'s shape, so it plugs into the same undo/redo
+//: stack without a new action type). It does not save: the item goes onto
+//: `rows`, which the caller saves once for the whole selection (BD2).
+function wbSetZOrder(kind, item, toFront, rows) {
   //: Within its band (`wbStackBand`): a frame to the front of the frames,
   //: never over the cards it holds (decision 14).
   const zs = wbZOrderPeers(kind, item).map((e) => Number(e.item.z) || 0);
   const next = toFront ? Math.max(0, ...zs) + 1 : Math.min(0, ...zs) - 1;
-  if ((item.z || 0) === next) return null;
-  const before = WB_KIND_INFO[kind].payload(item);
-  item.z = next;
-  try {
-    const saved = await apiJson(`${WB_KIND_INFO[kind].base}/${item.id}`, {
-      method: "PUT",
-      body: JSON.stringify(WB_KIND_INFO[kind].payload(item)),
-    });
-    Object.assign(item, saved);
-  } catch {
-    recordBrowserLog("WARN", [`[Whiteboard] ${kind} ${item.id} is stale: reloading the board`]);
-    await fetchWhiteboardState();
-    wbScheduleRender();
-    return null;
-  }
-  return { action: "move", kind, id: item.id, before };
+  return wbWriteZ(kind, item, next, rows);
 }
 
 //: **One step, not the whole way** (FEAT-07, the features audit 2026-10-05:
@@ -7794,41 +7796,29 @@ async function wbStepSelectionZOrder(dir) {
   if (!targets.length) return;
   targets.sort((a, b) => ((b.item.z || 0) - (a.item.z || 0)) * dir);
   const entries = [];
+  const rows = [];
   for (const { kind, item } of targets) {
     const peers = wbZOrderStepPeers(kind, item);
     const byKey = new Map(peers.map((p) => [p.key, p]));
     for (const [key, z] of wbZOrderStepPlan(peers, wbMultiKey(kind, item.id), dir)) {
       const peer = byKey.get(key);
-      const entry = peer && await wbWriteZ(peer.kind, peer.row, z);
+      const entry = peer && wbWriteZ(peer.kind, peer.row, z, rows);
       if (entry) entries.push(entry);
     }
   }
-  if (entries.length === 1) wbPushUndo(entries[0]);
-  else if (entries.length > 1) wbPushUndo({ action: "batch", entries });
-  if (entries.length) wbScheduleRender();
+  await wbCommitMoves(rows, entries);
   wbAnnounce(entries.length
     ? (dir > 0 ? "Brought forward one step." : "Sent backward one step.")
     : (dir > 0 ? "Already in front of what it overlaps." : "Already behind what it overlaps."));
 }
 
-//: One z write with its undo entry: `wbSetZOrder`'s save, for a value
-//: chosen elsewhere.
-async function wbWriteZ(kind, item, z) {
+//: One z change with its undo entry, for a value chosen elsewhere; the item
+//: goes onto `rows` to be saved with the rest of its selection.
+function wbWriteZ(kind, item, z, rows) {
   if ((item.z || 0) === z) return null;
   const before = WB_KIND_INFO[kind].payload(item);
   item.z = z;
-  try {
-    const saved = await apiJson(`${WB_KIND_INFO[kind].base}/${item.id}`, {
-      method: "PUT",
-      body: JSON.stringify(WB_KIND_INFO[kind].payload(item)),
-    });
-    Object.assign(item, saved);
-  } catch {
-    recordBrowserLog("WARN", [`[Whiteboard] ${kind} ${item.id} is stale: reloading the board`]);
-    await fetchWhiteboardState();
-    wbScheduleRender();
-    return null;
-  }
+  rows.push({ kind, item });
   return { action: "move", kind, id: item.id, before };
 }
 
@@ -7855,13 +7845,12 @@ async function wbSendSelectionZOrder(toFront) {
   const targets = wbZOrderTargets();
   if (!targets.length) return;
   const entries = [];
+  const rows = [];
   for (const { kind, item } of targets) {
-    const entry = await wbSetZOrder(kind, item, toFront);
+    const entry = wbSetZOrder(kind, item, toFront, rows);
     if (entry) entries.push(entry);
   }
-  if (entries.length === 1) wbPushUndo(entries[0]);
-  else if (entries.length > 1) wbPushUndo({ action: "batch", entries });
-  if (entries.length) wbScheduleRender();
+  await wbCommitMoves(rows, entries);
   wbAnnounce(toFront ? "Brought to the front." : "Sent to the back.");
 }
 
@@ -8541,6 +8530,7 @@ async function wbCarryWaypoints(primary, origin) {
   const moved = new Set(origin.keys());
   if (primary) moved.add(wbMultiKey(primary.kind, primary.id));
   const out = [];
+  const rows = [];
   for (const sketch of wbState.sketches || []) {
     let data = null;
     try {
@@ -8552,9 +8542,11 @@ async function wbCarryWaypoints(primary, origin) {
     const ends = [[data.sourceKind || "node", data.sourceId], [data.targetKind || "node", data.targetId]];
     if (!ends.every(([kind, id]) => id != null && moved.has(wbMultiKey(kind, id)))) continue;
     const before = WB_KIND_INFO.sketch.payload(sketch);
-    await wbSaveSketchProps(sketch, { points: data.points.map((p) => ({ x: Math.round(p.x + dx), y: Math.round(p.y + dy) })) });
+    wbSketchSetProps(sketch, { points: data.points.map((p) => ({ x: Math.round(p.x + dx), y: Math.round(p.y + dy) })) });
+    rows.push({ kind: "sketch", item: sketch });
     out.push({ action: "move", kind: "sketch", id: sketch.id, before });
   }
+  await wbSaveMany(rows);
   return out;
 }
 
@@ -11665,13 +11657,14 @@ async function wbSetStickyPaper(value) {
     ? [...wbMultiSelection].filter((key) => key.startsWith("object:")).map((key) => wbFindItem("object", Number(key.slice(7))))
     : [wbSelectedTextObjectOrNull()];
   const stickies = targets.filter((obj) => obj && wbIsSticky(obj));
+  const undo = [];
   for (const obj of stickies) {
-    wbPushUndo({ action: "move", kind: "object", id: obj.id, before: WB_KIND_INFO.object.payload(obj) });
+    undo.push({ action: "move", kind: "object", id: obj.id, before: WB_KIND_INFO.object.payload(obj) });
     const data = { ...obj.data, bg: value, sticky: true };
     delete data.border_color;
     obj.data = data;
-    await wbSaveObject(obj);
   }
+  await wbCommitMoves(stickies.map((item) => ({ kind: "object", item })), undo);
   wbScheduleRender();
   const group = document.querySelector('#wb-context [data-wb-ctx="paper"]');
   if (group && stickies[0]) wbFillPaperPicker(group, stickies[0]);
@@ -11733,24 +11726,31 @@ function wbLockedItems() {
 //: One undo step for the lot: each item's whole state before, which the
 //: "move" entry restores (its payload carries the flag).
 async function wbSetLocked(entries, on) {
+  return wbSetItemFlag(entries, on, "locked", wbIsLocked);
+}
+
+//: Lock and hide share this: a card keeps the flag as a field, an object and a
+//: drawn shape in their data blob; every change is saved in one request (BD2).
+async function wbSetItemFlag(entries, on, flag, isOn) {
   const undo = [];
+  const rows = [];
   for (const [kind, item] of entries) {
-    if (wbIsLocked(kind, item) === on) continue;
+    if (isOn(kind, item) === on) continue;
     undo.push({ action: "move", kind, id: item.id, before: WB_KIND_INFO[kind].payload(item) });
     if (kind === "node") {
-      item.locked = on;
-      await wbSaveNode(item);
+      item[flag] = on;
     } else if (kind === "object") {
       const data = { ...item.data };
-      if (on) data.locked = true;
-      else delete data.locked;
+      if (on) data[flag] = true;
+      else delete data[flag];
       item.data = data;
-      await wbSaveObject(item);
-    } else {
-      await wbSaveSketchProps(item, { locked: on || undefined });
+    } else if (!wbSketchSetProps(item, { [flag]: on || undefined })) {
+      undo.pop();
+      continue;
     }
+    rows.push({ kind, item });
   }
-  wbPushMoveBatch(undo);
+  await wbCommitMoves(rows, undo);
   return undo.length;
 }
 
@@ -11843,25 +11843,7 @@ function wbPaintHidden() {
 
 //: Hide or show, one undo step for the lot (`wbSetLocked`'s shape).
 async function wbSetHidden(entries, on) {
-  const undo = [];
-  for (const [kind, item] of entries) {
-    if (wbItemHidden(kind, item) === on) continue;
-    undo.push({ action: "move", kind, id: item.id, before: WB_KIND_INFO[kind].payload(item) });
-    if (kind === "node") {
-      item.hidden = on;
-      await wbSaveNode(item);
-    } else if (kind === "object") {
-      const data = { ...item.data };
-      if (on) data.hidden = true;
-      else delete data.hidden;
-      item.data = data;
-      await wbSaveObject(item);
-    } else {
-      await wbSaveSketchProps(item, { hidden: on || undefined });
-    }
-  }
-  wbPushMoveBatch(undo);
-  return undo.length;
+  return wbSetItemFlag(entries, on, "hidden", wbItemHidden);
 }
 
 function wbPaintLocks() {
@@ -23038,7 +23020,15 @@ async function wbSaveObject(d) {
 //: body plus its id (`PUT /whiteboard/items/save-many`, one transaction, all
 //: or nothing). One item, or a topic still being created, goes the old way.
 async function wbSaveMany(rows) {
-  const ready = rows.filter((r) => r.item && !r.item._creating);
+  //: An item twice (width then height on one card) is one row: the server
+  //: refuses a batch that names an id twice.
+  const seen = new Set();
+  const ready = rows.filter((r) => {
+    const key = `${r.kind}:${r.item?.id}`;
+    if (!r.item || r.item._creating || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
   const waiting = rows.filter((r) => r.item?._creating);
   for (const { kind, item } of waiting) await wbSaveRow(kind, item);
   if (ready.length < 2) {
