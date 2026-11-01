@@ -77,6 +77,8 @@ def test_deleting_the_open_space_keeps_its_undo() -> None:
 #: Module-level collections fed by a request that are not a space's data, each
 #: with the reason. A name belongs here only when a row from another space can
 #: never be in it.
+#: docs-1101: the history dialog's list, texts and open diff moved into documents-history.js's closure,
+#: which lets go of them when the dialog closes, so they are no longer module-level names here.
 EXEMPT = {
     "uiStateOnServer": "the notebook's mirrored settings",
     "paletteUsage": "which palette commands were used, per notebook",
@@ -94,7 +96,6 @@ EXEMPT = {
     "docPropsDrawn": "a flag",
     "docVariantFor": "a document's variant key, cleared with the document",
     "docFocusSavedWatch": "a flag",
-    "docHistoryOpenDiff": "an open diff, closed with the document",
     "storageInfo": "disk use of the whole notebook",
     "editorDocumentCache": "the editor's script, not a row",
     "entityPageClose": "a callback",
@@ -153,8 +154,6 @@ EXEMPT = {
     "_apiCache": "cleared by clearApiCache() in the swap",
     "currentDoc": "closed by the swap (showNoDocument)",
     "docDirty": "saved and reset by the swap",
-    "docHistoryEntries": "reset in the documents row",
-    "docHistoryContent": "reset in the documents row",
     "docBlockTextCache": "reset in the documents row",
     "docsMadeThisSession": "reset in the documents row",
     "docs": "reset in the documents row",
@@ -280,7 +279,7 @@ const ctx = {
   graphHiddenKeys: new Set([1]), graphGroupOf: new Map([[1, 1]]), graphPopupId: 3, gcTopicSummaries: new Map([[1, 1]]),
   libraryItems: [1], libraryCounts: { a: 1 }, libraryOverview: { a: 1 }, libraryTruncated: { a: 1 }, libraryDocsAll: [1], libraryImagesCache: [1], bookmarksCache: [1],
   librarySelection: new Set([1]), libraryDocsSelection: new Set([1]), libraryMediaSelection: new Map([[1, 1]]), libraryBoardsSelection: new Map([[1, 1]]), libraryLinksSelection: new Map([[1, 1]]),
-  docs: [1], docBlockTextCache: new Map([[1, 1]]), docHistoryEntries: [1], docHistoryContent: new Map([[1, 1]]), docHistories: new Map([[1, 1]]), docsMadeThisSession: new Set([1]),
+  docs: [1], docBlockTextCache: new Map([[1, 1]]), docHistories: new Map([[1, 1]]), docsMadeThisSession: new Set([1]),
   docDirty: false, currentDoc: null,
   saveDocument: async () => { log.push("saveDocument"); ctx.docDirty = false; },
   showNoDocument: () => { log.push("showNoDocument"); ctx.currentDoc = null; },
