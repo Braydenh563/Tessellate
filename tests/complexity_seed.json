@@ -90,7 +90,6 @@
  "src/tessellate/api/routes_board_history.py::_board_events": 20,
  "src/tessellate/api/routes_board_history.py::_states_at": 21,
  "src/tessellate/api/routes_board_library.py::import_library": 16,
- "src/tessellate/api/routes_board_library.py::list_library": 33,
  "src/tessellate/api/routes_board_library.py::new_board_from_template": 17,
  "src/tessellate/api/routes_board_library.py::place_library_item": 18,
  "src/tessellate/api/routes_board_library.py::transform_path": 20,
