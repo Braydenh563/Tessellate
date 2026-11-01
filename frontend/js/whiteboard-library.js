@@ -860,18 +860,20 @@ async function wbLibApplyPalette(entry, colour) {
   }
   const entries = wbMultiSelection.size ? wbSelectionEntries() : [{ ...wbSelectedItem, item: wbFindItem(wbSelectedItem.kind, wbSelectedItem.id) }];
   await wbRecordGesture(async () => {
+    const rows = [];
     for (const e of entries) {
       const item = e.item;
       if (!item) continue;
       if (e.kind === "sketch") {
         const parsed = wbSketchParsedData(item);
         const shape = parsed && WB_FILLABLE_SHAPES.has(parsed.shape);
-        await wbSaveSketchProps(item, shape ? { fill: colour, fillOpacity: parsed.fillOpacity ?? 1 } : { color: colour });
+        if (wbSketchSetProps(item, shape ? { fill: colour, fillOpacity: parsed.fillOpacity ?? 1 } : { color: colour })) rows.push({ kind: "sketch", item });
       } else if (e.kind === "object" && item.kind === "text") {
         item.data = { ...item.data, [item.data?.bg ? "bg" : "color"]: colour };
-        await wbSaveObject(item);
+        rows.push({ kind: "object", item });
       }
     }
+    await wbSaveMany(rows);
   });
   wbScheduleRender();
   wbAnnounce(`Coloured ${colour}.`);
@@ -1773,6 +1775,7 @@ async function wbMoveSelectionToLayer(layerId) {
     return 0;
   }
   const undo = [];
+  const rows = [];
   for (const [kind, item] of movable) {
     if (wbNamedLayerOf(kind, item) === layerId) continue;
     undo.push({ action: "move", kind, id: item.id, before: WB_KIND_INFO[kind].payload(item) });
@@ -1781,12 +1784,13 @@ async function wbMoveSelectionToLayer(layerId) {
       if (layerId) data.layer = layerId;
       else delete data.layer;
       item.data = data;
-      await wbSaveObject(item);
-    } else {
-      await wbSaveSketchProps(item, { layer: layerId || undefined });
+    } else if (!wbSketchSetProps(item, { layer: layerId || undefined })) {
+      undo.pop();
+      continue;
     }
+    rows.push({ kind, item });
   }
-  wbPushMoveBatch(undo);
+  await wbCommitMoves(rows, undo);
   wbScheduleRender();
   wbRenderLayers();
   const name = (wbState.layers || []).find((x) => x.id === layerId)?.name;
@@ -2158,17 +2162,14 @@ async function wbLayerRestack(li, target, above) {
   order.splice(above ? at + 1 : at, 0, item);
   const kindOf = new Map(peers.map((p) => [p.row, p.kind]));
   const entries = [];
+  const rows = [];
   let z = Math.min(...order.map((r) => r.z || 0));
   for (const row of order) {
-    if ((row.z || 0) !== z) {
-      const entry = await wbWriteZ(kindOf.get(row), row, z);
-      if (entry) entries.push(entry);
-    }
+    const entry = wbWriteZ(kindOf.get(row), row, z, rows);
+    if (entry) entries.push(entry);
     z += 1;
   }
-  if (entries.length === 1) wbPushUndo(entries[0]);
-  else if (entries.length > 1) wbPushUndo({ action: "batch", entries });
-  wbScheduleRender();
+  await wbCommitMoves(rows, entries);
   wbAnnounce(`${wbLayerName(kind, item)} moved ${above ? "in front of" : "behind"} ${wbLayerName(b[0], b[1])}.`);
   wbRenderLayers();
   wbLayerFocus(li.dataset.key);
@@ -2354,11 +2355,13 @@ async function wbPageMove(id, to) {
   const [moved] = frames.splice(from, 1);
   frames.splice(to, 0, moved);
   await wbRecordGesture(async () => {
+    const rows = [];
     for (const [i, frame] of frames.entries()) {
       if (frame.data?.page === i + 1) continue;
       frame.data = { ...frame.data, page: i + 1 };
-      await wbSaveObject(frame);
+      rows.push({ kind: "object", item: frame });
     }
+    await wbSaveMany(rows);
   });
   wbRenderPages();
   wbPageFocus(id);

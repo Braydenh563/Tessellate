@@ -1517,7 +1517,7 @@ async function wbMapSortChildren(id, dir = 1) {
   const word = (o) => String(wbMapLabel(o) || "");
   const sorted = [...kids].sort((x, y) => dir * word(x).localeCompare(word(y), undefined, { numeric: true, sensitivity: "base" }) || x.id - y.id);
   sorted.forEach((kid, at) => { kid.data = { ...kid.data, order: at + 1 }; });
-  await Promise.all(sorted.map((kid) => wbSaveObject(kid)));
+  await wbSaveMany(sorted.map((item) => ({ kind: "object", item })));
   if (wbMapLayout() === "free") toast("Sorted in the outline. This map's layout is Free, so the canvas stays as it is.");
   else await wbMapTidyBranch(id);
   renderWhiteboardNow();
@@ -2727,20 +2727,15 @@ function wbMapStartResizeDrag(grip, event, d) {
 }
 
 //: Open every folded branch on the map (§12.1 item 7's third route, after the
-//: badge and the chevron). One PUT per folded node rather than a bulk call,
-//: which is the same bargain `wbSaveBulkMove` makes and for the same reason:
-//: there is no bulk endpoint, and the number of *folded* nodes on a map is
-//: small even when the map is not.
+//: badge and the chevron), saved in one request (`wbSaveMany`, BD2).
 async function wbMapExpandAll() {
   const folded = wbMapIndex().nodes.filter((o) => o.data?.collapsed);
   if (!folded.length) {
     toast("Nothing is folded away on this map.");
     return;
   }
-  for (const node of folded) {
-    node.data = { ...node.data, collapsed: false };
-    await wbSaveObject(node);
-  }
+  for (const node of folded) node.data = { ...node.data, collapsed: false };
+  await wbSaveMany(folded.map((item) => ({ kind: "object", item })));
   renderWhiteboardNow();
   wbSyncMapToolState();
   toast(`Opened ${folded.length} branch${folded.length === 1 ? "" : "es"}.`);
@@ -7540,7 +7535,7 @@ const WB_MAP_TEXT_MAX = 44;
 //: every card and sketch, the "glitchy and slow to update" report this file
 //: already carries) and re-places the strip, whose width changes with what it
 //: now says.
-async function wbMapSetNodeStyle(node, patch, { undo = true } = {}) {
+async function wbMapSetNodeStyle(node, patch, { undo = true, rows = null } = {}) {
   if (!node) return;
   //: Every map-topic look goes through here (the strip, the rings, edge
   //: bends, reset to branch), so undo is recorded once here rather than at
@@ -7550,7 +7545,9 @@ async function wbMapSetNodeStyle(node, patch, { undo = true } = {}) {
   node.data = { ...node.data, ...patch };
   const el = document.querySelector(`.wb-object[data-id="${node.id}"]`);
   if (el) wbPaintMapNodeStyle(el, node);
-  await wbSaveObject(node);
+  //: A selection passes `rows` and saves them once (BD2: one request, not one per topic).
+  if (rows) rows.push({ kind: "object", item: node });
+  else await wbSaveObject(node);
   wbUpdateSelectionBar();
 }
 
