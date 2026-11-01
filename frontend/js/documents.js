@@ -1561,11 +1561,15 @@ async function docLinkMention(row, button) {
       });
       loadEntries();
     } else {
-      await apiJson(`/documents/${row.id}`, {
+      const saved = await apiJson(`/documents/${row.id}`, {
         method: "PUT",
         body: JSON.stringify({ content: next }),
       });
-      await loadDocuments(currentDoc?.id);
+      //: The answer is the row (DC7): patched in place, read only when it is not in the list.
+      if (docs.some((d) => d.id === saved.id)) {
+        docs = docs.map((d) => (d.id === saved.id ? { ...d, ...saved } : d));
+        renderDocList();
+      } else await loadDocuments(currentDoc?.id);
     }
     mentionUndo();
     toast(`Linked from ${row.title}.`);
@@ -10641,14 +10645,23 @@ function docPutFields(id, fields) {
 
 async function renameDocumentWithUndo(doc, next) {
   const before = doc.title || "Untitled";
-  const put = async (title) => {
-    await docPutFields(doc.id, { title });
-    if (currentDoc?.id === doc.id) $("doc-title").value = title;
-    await loadDocuments(currentDoc?.id);
+  //: **A write's answer is the row** (audit 1031 DC7, second half): the PUT
+  //: returns the document, so the list takes it in place, and the open
+  //: document's title box and record follow, where a read of the whole list
+  //: (two pages at 230 documents) and a reopen of the open one used to.
+  const settle = (saved, title) => {
+    if (currentDoc?.id === saved.id) {
+      $("doc-title").value = title;
+      currentDoc = { ...currentDoc, title: saved.title, updated_at: saved.updated_at };
+    }
+    if (!docs.some((d) => d.id === saved.id)) return loadDocuments(currentDoc?.id);
+    docs = docs.map((d) => (d.id === saved.id ? { ...d, ...saved } : d));
+    renderDocList();
   };
-  await docPutFields(doc.id, { title: next });
+  const put = async (title) => settle(await docPutFields(doc.id, { title }), title);
+  const saved = await docPutFields(doc.id, { title: next });
   offerUndo(`Renamed “${clipText(before, 40)}”`, `Renamed to “${clipText(next, 40)}”.`, () => put(before), () => put(next));
-  await loadDocuments(currentDoc?.id);
+  await settle(saved, next);
 }
 
 async function archiveDocumentWithUndo(doc) {
