@@ -594,25 +594,45 @@ def week_review(notes: list[dict], *, today: date, unlinked: set[int] | None = N
     if not views:
         v.t("v_review_none")
         return v.done("week_review")
-    oldest = min(w.written for w in views)
+    _review_span(v, views, today)
+    _review_filed(v, views)
+    ordered = sorted(views, key=lambda w: (w.written, -w.rank), reverse=True)
+    _review_standouts(v, _standouts(ordered))
+    _review_open(v, ordered)
+    loose = [w for w in ordered if unlinked and w.id in unlinked][:4]
+    if loose:
+        v.t("para", "v_review_loose").names(loose).t("stop")
+    return v.done("week_review")
+
+
+def _review_span(v: _Voice, views: list[NoteView], today: date) -> None:
+    """"You wrote three notes in the last seven days, from 30 September to today."""
     if len(views) == 1:
         v.t("v_review_lead_one")
     else:
         v.t("v_review_lead").m(_count_word(len(views))).t("v_review_notes")
+    oldest = min(w.written for w in views)
     v.t("v_review_span").m(v.day(oldest)).t("to_span").m(v.day(today)).t("stop")
+
+
+def _review_filed(v: _Voice, views: list[NoteView]) -> None:
+    """" Most went under **Work** (three), then **Travel** (two)." Not for two
+    notes or fewer, where it would only repeat the count."""
     cats = Counter(str(w.note.get("category")) for w in views if w.note.get("category"))
-    if len(views) > 2 and cats:
-        top = cats.most_common(2)
-        v.t("v_review_most")
-        for i, (cat, n) in enumerate(top):
-            if i:
-                v.t("v_review_then")
-            first = next(w for w in views if str(w.note.get("category")) == cat)
-            v.t("bold").filed(cat, first.id).t("bold", "open_paren").m(_count_word(n)).t("close_paren")
-        v.t("stop")
-    # Standouts: the newest note of each category first, so the week's spread
-    # shows, then the newest of the rest.
-    ordered = sorted(views, key=lambda w: (w.written, -w.rank), reverse=True)
+    if len(views) <= 2 or not cats:
+        return
+    v.t("v_review_most")
+    for i, (cat, n) in enumerate(cats.most_common(2)):
+        if i:
+            v.t("v_review_then")
+        first = next(w for w in views if str(w.note.get("category")) == cat)
+        v.t("bold").filed(cat, first.id).t("bold", "open_paren").m(_count_word(n)).t("close_paren")
+    v.t("stop")
+
+
+def _standouts(ordered: list[NoteView]) -> list[NoteView]:
+    """The newest note of each category first, so the week's spread shows,
+    then the newest of the rest; only notes with a sentence to lead with."""
     picks: list[NoteView] = []
     seen_cats: set[str] = set()
     for w in ordered:
@@ -620,23 +640,24 @@ def week_review(notes: list[dict], *, today: date, unlinked: set[int] | None = N
         if cat not in seen_cats and lead(w):
             seen_cats.add(cat)
             picks.append(w)
-    for w in ordered:
-        if w not in picks and lead(w):
-            picks.append(w)
-    picks = picks[:REVIEW_POINTS]
+    picks += [w for w in ordered if w not in picks and lead(w)]
+    return picks[:REVIEW_POINTS]
+
+
+def _review_standouts(v: _Voice, picks: list[NoteView]) -> None:
     if picks:
         v.t("para", "v_review_stand")
-        for w in picks:
-            v.t("line", "bullet").name(w).dated(w).t("colon").quoted(lead(w))
+    for w in picks:
+        v.t("line", "bullet").name(w).dated(w).t("colon").quoted(lead(w))
+
+
+def _review_open(v: _Voice, ordered: list[NoteView]) -> None:
+    """The week's open tasks, newest note first, at most `REVIEW_OPEN`."""
     open_items = [(w, s) for w in ordered for s in w.sentences if s.kind == "task" and not s.done][:REVIEW_OPEN]
     if open_items:
         v.t("para", "v_review_open")
-        for w, s in open_items:
-            v.t("line", "task_open").q(_clip(s), []).t("v_review_open_in").name(w)
-    loose = [w for w in ordered if unlinked and w.id in unlinked][:4]
-    if loose:
-        v.t("para", "v_review_loose").names(loose).t("stop")
-    return v.done("week_review")
+    for w, s in open_items:
+        v.t("line", "task_open").q(_clip(s), []).t("v_review_open_in").name(w)
 
 
 # --- Find anything, titles, suggestions ----------------------------------------------

@@ -1,0 +1,4389 @@
+{
+ "full_week": {
+  "grounding": [
+   {
+    "chunk_ordinal": 0,
+    "end": 58,
+    "kind": "note",
+    "label": "Garden shed roof leaks in the north corner after the rain.",
+    "note_id": 6,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Garden shed roof leaks in the north corner after the rain.",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 0,
+    "terms": [],
+    "title": "",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 82,
+    "kind": "note",
+    "label": "# Harbor launch plan Ship the mobile app to the public…",
+    "note_id": 1,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Ship the mobile app to the public on the 14th of next month.",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 22,
+    "terms": [],
+    "title": "Harbor launch plan",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 22,
+    "kind": "note",
+    "label": "# Shopping - [ ] Milk - [ ] Bread - [x] Eggs",
+    "note_id": 7,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Milk",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 18,
+    "terms": [],
+    "title": "Shopping",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 67,
+    "kind": "note",
+    "label": "# Dentist Check-up booked for the 21st, ask about the night…",
+    "note_id": 3,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Check-up booked for the 21st, ask about the night guard.",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 11,
+    "terms": [],
+    "title": "Dentist",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 131,
+    "kind": "note",
+    "label": "# Harbor launch plan Ship the mobile app to the public…",
+    "note_id": 1,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Store listing copy",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 113,
+    "terms": [],
+    "title": "Harbor launch plan",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 159,
+    "kind": "note",
+    "label": "# Harbor launch plan Ship the mobile app to the public…",
+    "note_id": 1,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Pricing page sign off",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 138,
+    "terms": [],
+    "title": "Harbor launch plan",
+    "verdict": "supported"
+   }
+  ],
+  "key": "620fe13b9027",
+  "kind": "week_review",
+  "parts": [
+   [
+    "template",
+    "You wrote "
+   ],
+   [
+    "measure",
+    "eight"
+   ],
+   [
+    "template",
+    " notes"
+   ],
+   [
+    "template",
+    " in the last seven days, from "
+   ],
+   [
+    "measure",
+    "30 September"
+   ],
+   [
+    "template",
+    " to "
+   ],
+   [
+    "measure",
+    "today"
+   ],
+   [
+    "template",
+    "."
+   ],
+   [
+    "template",
+    " Most went under "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "filed",
+    "Work",
+    1
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "three"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ", then "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "filed",
+    "Travel",
+    4
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "two"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    "."
+   ],
+   [
+    "template",
+    "\n\n"
+   ],
+   [
+    "template",
+    "What stands out:"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- "
+   ],
+   [
+    "template",
+    "your note"
+   ],
+   [
+    "template",
+    " from "
+   ],
+   [
+    "measure",
+    "today"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "today"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ": "
+   ],
+   [
+    "template",
+    "“"
+   ],
+   [
+    "quote",
+    "Garden shed roof leaks in the north corner after the rain.",
+    6
+   ],
+   [
+    "template",
+    "”"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Harbor launch plan",
+    1
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "yesterday"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ": "
+   ],
+   [
+    "template",
+    "“"
+   ],
+   [
+    "quote",
+    "Ship the mobile app to the public on the 14th of next month.",
+    1
+   ],
+   [
+    "template",
+    "”"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Shopping",
+    7
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "4 October"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ": "
+   ],
+   [
+    "template",
+    "“"
+   ],
+   [
+    "quote",
+    "Milk",
+    7
+   ],
+   [
+    "template",
+    "”"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Dentist",
+    3
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "3 October"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ": "
+   ],
+   [
+    "template",
+    "“"
+   ],
+   [
+    "quote",
+    "Check-up booked for the 21st, ask about the night guard.",
+    3
+   ],
+   [
+    "template",
+    "”"
+   ],
+   [
+    "template",
+    "\n\n"
+   ],
+   [
+    "template",
+    "Still open:"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- [ ] "
+   ],
+   [
+    "quote",
+    "Store listing copy",
+    1
+   ],
+   [
+    "template",
+    ", in "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Harbor launch plan",
+    1
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- [ ] "
+   ],
+   [
+    "quote",
+    "Pricing page sign off",
+    1
+   ],
+   [
+    "template",
+    ", in "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Harbor launch plan",
+    1
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- [ ] "
+   ],
+   [
+    "quote",
+    "Milk",
+    7
+   ],
+   [
+    "template",
+    ", in "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Shopping",
+    7
+   ],
+   [
+    "template",
+    "**"
+   ]
+  ],
+  "sources": [
+   1,
+   4,
+   6,
+   7,
+   3
+  ],
+  "text": "You wrote eight notes in the last seven days, from 30 September to today. Most went under **Work** (three), then **Travel** (two).\n\nWhat stands out:\n- your note from today (today): “Garden shed roof leaks in the north corner after the rain.”\n- **Harbor launch plan** (yesterday): “Ship the mobile app to the public on the 14th of next month.”\n- **Shopping** (4 October): “Milk”\n- **Dentist** (3 October): “Check-up booked for the 21st, ask about the night guard.”\n\nStill open:\n- [ ] Store listing copy, in **Harbor launch plan**\n- [ ] Pricing page sign off, in **Harbor launch plan**\n- [ ] Milk, in **Shopping**"
+ },
+ "full_week_unlinked": {
+  "grounding": [
+   {
+    "chunk_ordinal": 0,
+    "end": 58,
+    "kind": "note",
+    "label": "Garden shed roof leaks in the north corner after the rain.",
+    "note_id": 6,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Garden shed roof leaks in the north corner after the rain.",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 0,
+    "terms": [],
+    "title": "",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 82,
+    "kind": "note",
+    "label": "# Harbor launch plan Ship the mobile app to the public…",
+    "note_id": 1,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Ship the mobile app to the public on the 14th of next month.",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 22,
+    "terms": [],
+    "title": "Harbor launch plan",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 22,
+    "kind": "note",
+    "label": "# Shopping - [ ] Milk - [ ] Bread - [x] Eggs",
+    "note_id": 7,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Milk",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 18,
+    "terms": [],
+    "title": "Shopping",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 67,
+    "kind": "note",
+    "label": "# Dentist Check-up booked for the 21st, ask about the night…",
+    "note_id": 3,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Check-up booked for the 21st, ask about the night guard.",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 11,
+    "terms": [],
+    "title": "Dentist",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 131,
+    "kind": "note",
+    "label": "# Harbor launch plan Ship the mobile app to the public…",
+    "note_id": 1,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Store listing copy",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 113,
+    "terms": [],
+    "title": "Harbor launch plan",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 159,
+    "kind": "note",
+    "label": "# Harbor launch plan Ship the mobile app to the public…",
+    "note_id": 1,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Pricing page sign off",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 138,
+    "terms": [],
+    "title": "Harbor launch plan",
+    "verdict": "supported"
+   }
+  ],
+  "key": "f077fddeff01",
+  "kind": "week_review",
+  "parts": [
+   [
+    "template",
+    "You wrote "
+   ],
+   [
+    "measure",
+    "eight"
+   ],
+   [
+    "template",
+    " notes"
+   ],
+   [
+    "template",
+    " in the last seven days, from "
+   ],
+   [
+    "measure",
+    "30 September"
+   ],
+   [
+    "template",
+    " to "
+   ],
+   [
+    "measure",
+    "today"
+   ],
+   [
+    "template",
+    "."
+   ],
+   [
+    "template",
+    " Most went under "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "filed",
+    "Work",
+    1
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "three"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ", then "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "filed",
+    "Travel",
+    4
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "two"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    "."
+   ],
+   [
+    "template",
+    "\n\n"
+   ],
+   [
+    "template",
+    "What stands out:"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- "
+   ],
+   [
+    "template",
+    "your note"
+   ],
+   [
+    "template",
+    " from "
+   ],
+   [
+    "measure",
+    "today"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "today"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ": "
+   ],
+   [
+    "template",
+    "“"
+   ],
+   [
+    "quote",
+    "Garden shed roof leaks in the north corner after the rain.",
+    6
+   ],
+   [
+    "template",
+    "”"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Harbor launch plan",
+    1
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "yesterday"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ": "
+   ],
+   [
+    "template",
+    "“"
+   ],
+   [
+    "quote",
+    "Ship the mobile app to the public on the 14th of next month.",
+    1
+   ],
+   [
+    "template",
+    "”"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Shopping",
+    7
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "4 October"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ": "
+   ],
+   [
+    "template",
+    "“"
+   ],
+   [
+    "quote",
+    "Milk",
+    7
+   ],
+   [
+    "template",
+    "”"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Dentist",
+    3
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "3 October"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ": "
+   ],
+   [
+    "template",
+    "“"
+   ],
+   [
+    "quote",
+    "Check-up booked for the 21st, ask about the night guard.",
+    3
+   ],
+   [
+    "template",
+    "”"
+   ],
+   [
+    "template",
+    "\n\n"
+   ],
+   [
+    "template",
+    "Still open:"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- [ ] "
+   ],
+   [
+    "quote",
+    "Store listing copy",
+    1
+   ],
+   [
+    "template",
+    ", in "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Harbor launch plan",
+    1
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- [ ] "
+   ],
+   [
+    "quote",
+    "Pricing page sign off",
+    1
+   ],
+   [
+    "template",
+    ", in "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Harbor launch plan",
+    1
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- [ ] "
+   ],
+   [
+    "quote",
+    "Milk",
+    7
+   ],
+   [
+    "template",
+    ", in "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Shopping",
+    7
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    "\n\n"
+   ],
+   [
+    "template",
+    "Linked to nothing yet: "
+   ],
+   [
+    "template",
+    "your note"
+   ],
+   [
+    "template",
+    " from "
+   ],
+   [
+    "measure",
+    "today"
+   ],
+   [
+    "template",
+    ", "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Beta feedback",
+    2
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    ", "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Shopping",
+    7
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " and "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Lisbon",
+    4
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    "."
+   ]
+  ],
+  "sources": [
+   1,
+   4,
+   6,
+   7,
+   3,
+   2
+  ],
+  "text": "You wrote eight notes in the last seven days, from 30 September to today. Most went under **Work** (three), then **Travel** (two).\n\nWhat stands out:\n- your note from today (today): “Garden shed roof leaks in the north corner after the rain.”\n- **Harbor launch plan** (yesterday): “Ship the mobile app to the public on the 14th of next month.”\n- **Shopping** (4 October): “Milk”\n- **Dentist** (3 October): “Check-up booked for the 21st, ask about the night guard.”\n\nStill open:\n- [ ] Store listing copy, in **Harbor launch plan**\n- [ ] Pricing page sign off, in **Harbor launch plan**\n- [ ] Milk, in **Shopping**\n\nLinked to nothing yet: your note from today, **Beta feedback**, **Shopping** and **Lisbon**."
+ },
+ "long_lead_clipped": {
+  "grounding": [
+   {
+    "chunk_ordinal": 0,
+    "end": 345,
+    "kind": "note",
+    "label": "# Long This sentence is far too long to fit. word word word…",
+    "note_id": 13,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "This sentence is far too long to fit. word word word word word word word word word word word word word word word word word word word word…",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 8,
+    "terms": [],
+    "title": "Long",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 339,
+    "kind": "note",
+    "label": "# Tasks only - [x] Done one - [ ] Open word word word word…",
+    "note_id": 14,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Open word word word word word word word word word word word word word word word word word word word word word word word word word word word…",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 35,
+    "terms": [],
+    "title": "Tasks only",
+    "verdict": "supported"
+   }
+  ],
+  "key": "544304c0468e",
+  "kind": "week_review",
+  "parts": [
+   [
+    "template",
+    "You wrote "
+   ],
+   [
+    "measure",
+    "two"
+   ],
+   [
+    "template",
+    " notes"
+   ],
+   [
+    "template",
+    " in the last seven days, from "
+   ],
+   [
+    "measure",
+    "4 October"
+   ],
+   [
+    "template",
+    " to "
+   ],
+   [
+    "measure",
+    "today"
+   ],
+   [
+    "template",
+    "."
+   ],
+   [
+    "template",
+    "\n\n"
+   ],
+   [
+    "template",
+    "What stands out:"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Long",
+    13
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "yesterday"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ": "
+   ],
+   [
+    "template",
+    "“"
+   ],
+   [
+    "quote",
+    "This sentence is far too long to fit. word word word word word word word word word word word word word word word word word word word word…",
+    13
+   ],
+   [
+    "template",
+    "”"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Tasks only",
+    14
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "4 October"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ": "
+   ],
+   [
+    "template",
+    "“"
+   ],
+   [
+    "quote",
+    "Open word word word word word word word word word word word word word word word word word word word word word word word word word word word…",
+    14
+   ],
+   [
+    "template",
+    "”"
+   ],
+   [
+    "template",
+    "\n\n"
+   ],
+   [
+    "template",
+    "Still open:"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- [ ] "
+   ],
+   [
+    "quote",
+    "Open word word word word word word word word word word word word word word word word word word word word word word word word word word word…",
+    14
+   ],
+   [
+    "template",
+    ", in "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Tasks only",
+    14
+   ],
+   [
+    "template",
+    "**"
+   ]
+  ],
+  "sources": [
+   13,
+   14
+  ],
+  "text": "You wrote two notes in the last seven days, from 4 October to today.\n\nWhat stands out:\n- **Long** (yesterday): “This sentence is far too long to fit. word word word word word word word word word word word word word word word word word word word word…”\n- **Tasks only** (4 October): “Open word word word word word word word word word word word word word word word word word word word word word word word word word word word…”\n\nStill open:\n- [ ] Open word word word word word word word word word word word word word word word word word word word word word word word word word word word…, in **Tasks only**"
+ },
+ "none": {
+  "grounding": [],
+  "key": "ef8fe82c412b",
+  "kind": "week_review",
+  "parts": [
+   [
+    "template",
+    "Nothing was saved in the last 7 days."
+   ]
+  ],
+  "sources": [],
+  "text": "Nothing was saved in the last 7 days."
+ },
+ "none_old_only": {
+  "grounding": [],
+  "key": "ef8fe82c412b",
+  "kind": "week_review",
+  "parts": [
+   [
+    "template",
+    "Nothing was saved in the last 7 days."
+   ]
+  ],
+  "sources": [],
+  "text": "Nothing was saved in the last 7 days."
+ },
+ "one": {
+  "grounding": [
+   {
+    "chunk_ordinal": 0,
+    "end": 82,
+    "kind": "note",
+    "label": "# Harbor launch plan Ship the mobile app to the public…",
+    "note_id": 1,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Ship the mobile app to the public on the 14th of next month.",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 22,
+    "terms": [],
+    "title": "Harbor launch plan",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 131,
+    "kind": "note",
+    "label": "# Harbor launch plan Ship the mobile app to the public…",
+    "note_id": 1,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Store listing copy",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 113,
+    "terms": [],
+    "title": "Harbor launch plan",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 159,
+    "kind": "note",
+    "label": "# Harbor launch plan Ship the mobile app to the public…",
+    "note_id": 1,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Pricing page sign off",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 138,
+    "terms": [],
+    "title": "Harbor launch plan",
+    "verdict": "supported"
+   }
+  ],
+  "key": "bc39adc0dd2e",
+  "kind": "week_review",
+  "parts": [
+   [
+    "template",
+    "You wrote one note"
+   ],
+   [
+    "template",
+    " in the last seven days, from "
+   ],
+   [
+    "measure",
+    "yesterday"
+   ],
+   [
+    "template",
+    " to "
+   ],
+   [
+    "measure",
+    "today"
+   ],
+   [
+    "template",
+    "."
+   ],
+   [
+    "template",
+    "\n\n"
+   ],
+   [
+    "template",
+    "What stands out:"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Harbor launch plan",
+    1
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "yesterday"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ": "
+   ],
+   [
+    "template",
+    "“"
+   ],
+   [
+    "quote",
+    "Ship the mobile app to the public on the 14th of next month.",
+    1
+   ],
+   [
+    "template",
+    "”"
+   ],
+   [
+    "template",
+    "\n\n"
+   ],
+   [
+    "template",
+    "Still open:"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- [ ] "
+   ],
+   [
+    "quote",
+    "Store listing copy",
+    1
+   ],
+   [
+    "template",
+    ", in "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Harbor launch plan",
+    1
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- [ ] "
+   ],
+   [
+    "quote",
+    "Pricing page sign off",
+    1
+   ],
+   [
+    "template",
+    ", in "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Harbor launch plan",
+    1
+   ],
+   [
+    "template",
+    "**"
+   ]
+  ],
+  "sources": [
+   1
+  ],
+  "text": "You wrote one note in the last seven days, from yesterday to today.\n\nWhat stands out:\n- **Harbor launch plan** (yesterday): “Ship the mobile app to the public on the 14th of next month.”\n\nStill open:\n- [ ] Store listing copy, in **Harbor launch plan**\n- [ ] Pricing page sign off, in **Harbor launch plan**"
+ },
+ "one_untitled": {
+  "grounding": [
+   {
+    "chunk_ordinal": 0,
+    "end": 58,
+    "kind": "note",
+    "label": "Garden shed roof leaks in the north corner after the rain.",
+    "note_id": 6,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Garden shed roof leaks in the north corner after the rain.",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 0,
+    "terms": [],
+    "title": "",
+    "verdict": "supported"
+   }
+  ],
+  "key": "3e5c04d3039e",
+  "kind": "week_review",
+  "parts": [
+   [
+    "template",
+    "You wrote one note"
+   ],
+   [
+    "template",
+    " in the last seven days, from "
+   ],
+   [
+    "measure",
+    "today"
+   ],
+   [
+    "template",
+    " to "
+   ],
+   [
+    "measure",
+    "today"
+   ],
+   [
+    "template",
+    "."
+   ],
+   [
+    "template",
+    "\n\n"
+   ],
+   [
+    "template",
+    "What stands out:"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- "
+   ],
+   [
+    "template",
+    "your note"
+   ],
+   [
+    "template",
+    " from "
+   ],
+   [
+    "measure",
+    "today"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "today"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ": "
+   ],
+   [
+    "template",
+    "“"
+   ],
+   [
+    "quote",
+    "Garden shed roof leaks in the north corner after the rain.",
+    6
+   ],
+   [
+    "template",
+    "”"
+   ]
+  ],
+  "sources": [
+   6
+  ],
+  "text": "You wrote one note in the last seven days, from today to today.\n\nWhat stands out:\n- your note from today (today): “Garden shed roof leaks in the north corner after the rain.”"
+ },
+ "only_done_tasks": {
+  "grounding": [
+   {
+    "chunk_ordinal": 0,
+    "end": 32,
+    "kind": "note",
+    "label": "# Done list - [x] Paid the bill - [x] Sent the form",
+    "note_id": 15,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Paid the bill",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 19,
+    "terms": [],
+    "title": "Done list",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 67,
+    "kind": "note",
+    "label": "# Dentist Check-up booked for the 21st, ask about the night…",
+    "note_id": 3,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Check-up booked for the 21st, ask about the night guard.",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 11,
+    "terms": [],
+    "title": "Dentist",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 90,
+    "kind": "note",
+    "label": "# Dentist Check-up booked for the 21st, ask about the night…",
+    "note_id": 3,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Call to confirm",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 75,
+    "terms": [],
+    "title": "Dentist",
+    "verdict": "supported"
+   }
+  ],
+  "key": "4049f710f2ac",
+  "kind": "week_review",
+  "parts": [
+   [
+    "template",
+    "You wrote "
+   ],
+   [
+    "measure",
+    "three"
+   ],
+   [
+    "template",
+    " notes"
+   ],
+   [
+    "template",
+    " in the last seven days, from "
+   ],
+   [
+    "measure",
+    "3 October"
+   ],
+   [
+    "template",
+    " to "
+   ],
+   [
+    "measure",
+    "today"
+   ],
+   [
+    "template",
+    "."
+   ],
+   [
+    "template",
+    " Most went under "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "filed",
+    "Home",
+    15
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "two"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ", then "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "filed",
+    "Health",
+    3
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "one"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    "."
+   ],
+   [
+    "template",
+    "\n\n"
+   ],
+   [
+    "template",
+    "What stands out:"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Done list",
+    15
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "yesterday"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ": "
+   ],
+   [
+    "template",
+    "“"
+   ],
+   [
+    "quote",
+    "Paid the bill",
+    15
+   ],
+   [
+    "template",
+    "”"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Dentist",
+    3
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "3 October"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ": "
+   ],
+   [
+    "template",
+    "“"
+   ],
+   [
+    "quote",
+    "Check-up booked for the 21st, ask about the night guard.",
+    3
+   ],
+   [
+    "template",
+    "”"
+   ],
+   [
+    "template",
+    "\n\n"
+   ],
+   [
+    "template",
+    "Still open:"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- [ ] "
+   ],
+   [
+    "quote",
+    "Call to confirm",
+    3
+   ],
+   [
+    "template",
+    ", in "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Dentist",
+    3
+   ],
+   [
+    "template",
+    "**"
+   ]
+  ],
+  "sources": [
+   15,
+   3
+  ],
+  "text": "You wrote three notes in the last seven days, from 3 October to today. Most went under **Home** (two), then **Health** (one).\n\nWhat stands out:\n- **Done list** (yesterday): “Paid the bill”\n- **Dentist** (3 October): “Check-up booked for the 21st, ask about the night guard.”\n\nStill open:\n- [ ] Call to confirm, in **Dentist**"
+ },
+ "three_no_category": {
+  "grounding": [
+   {
+    "chunk_ordinal": 0,
+    "end": 58,
+    "kind": "note",
+    "label": "Garden shed roof leaks in the north corner after the rain.",
+    "note_id": 6,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Garden shed roof leaks in the north corner after the rain.",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 0,
+    "terms": [],
+    "title": "",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 52,
+    "kind": "note",
+    "label": "Plain words about the bike chain, it needs oil soon.",
+    "note_id": 10,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Plain words about the bike chain, it needs oil soon.",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 0,
+    "terms": [],
+    "title": "",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 58,
+    "kind": "note",
+    "label": "Another plain one about the kettle descaling this weekend.",
+    "note_id": 11,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Another plain one about the kettle descaling this weekend.",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 0,
+    "terms": [],
+    "title": "",
+    "verdict": "supported"
+   }
+  ],
+  "key": "4f8ed54ad510",
+  "kind": "week_review",
+  "parts": [
+   [
+    "template",
+    "You wrote "
+   ],
+   [
+    "measure",
+    "three"
+   ],
+   [
+    "template",
+    " notes"
+   ],
+   [
+    "template",
+    " in the last seven days, from "
+   ],
+   [
+    "measure",
+    "4 October"
+   ],
+   [
+    "template",
+    " to "
+   ],
+   [
+    "measure",
+    "today"
+   ],
+   [
+    "template",
+    "."
+   ],
+   [
+    "template",
+    "\n\n"
+   ],
+   [
+    "template",
+    "What stands out:"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- "
+   ],
+   [
+    "template",
+    "your note"
+   ],
+   [
+    "template",
+    " from "
+   ],
+   [
+    "measure",
+    "today"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "today"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ": "
+   ],
+   [
+    "template",
+    "“"
+   ],
+   [
+    "quote",
+    "Garden shed roof leaks in the north corner after the rain.",
+    6
+   ],
+   [
+    "template",
+    "”"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- "
+   ],
+   [
+    "template",
+    "your note"
+   ],
+   [
+    "template",
+    " from "
+   ],
+   [
+    "measure",
+    "yesterday"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "yesterday"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ": "
+   ],
+   [
+    "template",
+    "“"
+   ],
+   [
+    "quote",
+    "Plain words about the bike chain, it needs oil soon.",
+    10
+   ],
+   [
+    "template",
+    "”"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- "
+   ],
+   [
+    "template",
+    "your note"
+   ],
+   [
+    "template",
+    " from "
+   ],
+   [
+    "measure",
+    "4 October"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "4 October"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ": "
+   ],
+   [
+    "template",
+    "“"
+   ],
+   [
+    "quote",
+    "Another plain one about the kettle descaling this weekend.",
+    11
+   ],
+   [
+    "template",
+    "”"
+   ]
+  ],
+  "sources": [
+   6,
+   10,
+   11
+  ],
+  "text": "You wrote three notes in the last seven days, from 4 October to today.\n\nWhat stands out:\n- your note from today (today): “Garden shed roof leaks in the north corner after the rain.”\n- your note from yesterday (yesterday): “Plain words about the bike chain, it needs oil soon.”\n- your note from 4 October (4 October): “Another plain one about the kettle descaling this weekend.”"
+ },
+ "three_one_category": {
+  "grounding": [
+   {
+    "chunk_ordinal": 0,
+    "end": 82,
+    "kind": "note",
+    "label": "# Harbor launch plan Ship the mobile app to the public…",
+    "note_id": 1,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Ship the mobile app to the public on the 14th of next month.",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 22,
+    "terms": [],
+    "title": "Harbor launch plan",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 91,
+    "kind": "note",
+    "label": "# Beta feedback 41 testers active. The top complaint…",
+    "note_id": 2,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "The top complaint is the sign-up flow with nine fields.",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 36,
+    "terms": [],
+    "title": "Beta feedback",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 88,
+    "kind": "note",
+    "label": "# Sync rewrite The sync rewrite now keeps both versions…",
+    "note_id": 9,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "The sync rewrite now keeps both versions and asks, merged behind a flag.",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 16,
+    "terms": [],
+    "title": "Sync rewrite",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 131,
+    "kind": "note",
+    "label": "# Harbor launch plan Ship the mobile app to the public…",
+    "note_id": 1,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Store listing copy",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 113,
+    "terms": [],
+    "title": "Harbor launch plan",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 159,
+    "kind": "note",
+    "label": "# Harbor launch plan Ship the mobile app to the public…",
+    "note_id": 1,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Pricing page sign off",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 138,
+    "terms": [],
+    "title": "Harbor launch plan",
+    "verdict": "supported"
+   }
+  ],
+  "key": "74b1318f6109",
+  "kind": "week_review",
+  "parts": [
+   [
+    "template",
+    "You wrote "
+   ],
+   [
+    "measure",
+    "three"
+   ],
+   [
+    "template",
+    " notes"
+   ],
+   [
+    "template",
+    " in the last seven days, from "
+   ],
+   [
+    "measure",
+    "30 September"
+   ],
+   [
+    "template",
+    " to "
+   ],
+   [
+    "measure",
+    "today"
+   ],
+   [
+    "template",
+    "."
+   ],
+   [
+    "template",
+    " Most went under "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "filed",
+    "Work",
+    1
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "three"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    "."
+   ],
+   [
+    "template",
+    "\n\n"
+   ],
+   [
+    "template",
+    "What stands out:"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Harbor launch plan",
+    1
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "yesterday"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ": "
+   ],
+   [
+    "template",
+    "“"
+   ],
+   [
+    "quote",
+    "Ship the mobile app to the public on the 14th of next month.",
+    1
+   ],
+   [
+    "template",
+    "”"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Beta feedback",
+    2
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "4 October"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ": "
+   ],
+   [
+    "template",
+    "“"
+   ],
+   [
+    "quote",
+    "The top complaint is the sign-up flow with nine fields.",
+    2
+   ],
+   [
+    "template",
+    "”"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Sync rewrite",
+    9
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "30 September"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ": "
+   ],
+   [
+    "template",
+    "“"
+   ],
+   [
+    "quote",
+    "The sync rewrite now keeps both versions and asks, merged behind a flag.",
+    9
+   ],
+   [
+    "template",
+    "”"
+   ],
+   [
+    "template",
+    "\n\n"
+   ],
+   [
+    "template",
+    "Still open:"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- [ ] "
+   ],
+   [
+    "quote",
+    "Store listing copy",
+    1
+   ],
+   [
+    "template",
+    ", in "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Harbor launch plan",
+    1
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- [ ] "
+   ],
+   [
+    "quote",
+    "Pricing page sign off",
+    1
+   ],
+   [
+    "template",
+    ", in "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Harbor launch plan",
+    1
+   ],
+   [
+    "template",
+    "**"
+   ]
+  ],
+  "sources": [
+   1,
+   2,
+   9
+  ],
+  "text": "You wrote three notes in the last seven days, from 30 September to today. Most went under **Work** (three).\n\nWhat stands out:\n- **Harbor launch plan** (yesterday): “Ship the mobile app to the public on the 14th of next month.”\n- **Beta feedback** (4 October): “The top complaint is the sign-up flow with nine fields.”\n- **Sync rewrite** (30 September): “The sync rewrite now keeps both versions and asks, merged behind a flag.”\n\nStill open:\n- [ ] Store listing copy, in **Harbor launch plan**\n- [ ] Pricing page sign off, in **Harbor launch plan**"
+ },
+ "title_only_alone": {
+  "grounding": [],
+  "key": "1a2afcc3d228",
+  "kind": "week_review",
+  "parts": [
+   [
+    "template",
+    "You wrote one note"
+   ],
+   [
+    "template",
+    " in the last seven days, from "
+   ],
+   [
+    "measure",
+    "yesterday"
+   ],
+   [
+    "template",
+    " to "
+   ],
+   [
+    "measure",
+    "today"
+   ],
+   [
+    "template",
+    "."
+   ]
+  ],
+  "sources": [],
+  "text": "You wrote one note in the last seven days, from yesterday to today."
+ },
+ "title_only_no_lead": {
+  "grounding": [
+   {
+    "chunk_ordinal": 0,
+    "end": 91,
+    "kind": "note",
+    "label": "# Beta feedback 41 testers active. The top complaint…",
+    "note_id": 2,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "The top complaint is the sign-up flow with nine fields.",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 36,
+    "terms": [],
+    "title": "Beta feedback",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 67,
+    "kind": "note",
+    "label": "# Dentist Check-up booked for the 21st, ask about the night…",
+    "note_id": 3,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Check-up booked for the 21st, ask about the night guard.",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 11,
+    "terms": [],
+    "title": "Dentist",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 90,
+    "kind": "note",
+    "label": "# Dentist Check-up booked for the 21st, ask about the night…",
+    "note_id": 3,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Call to confirm",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 75,
+    "terms": [],
+    "title": "Dentist",
+    "verdict": "supported"
+   }
+  ],
+  "key": "b44c2f985ed9",
+  "kind": "week_review",
+  "parts": [
+   [
+    "template",
+    "You wrote "
+   ],
+   [
+    "measure",
+    "three"
+   ],
+   [
+    "template",
+    " notes"
+   ],
+   [
+    "template",
+    " in the last seven days, from "
+   ],
+   [
+    "measure",
+    "3 October"
+   ],
+   [
+    "template",
+    " to "
+   ],
+   [
+    "measure",
+    "today"
+   ],
+   [
+    "template",
+    "."
+   ],
+   [
+    "template",
+    " Most went under "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "filed",
+    "Work",
+    12
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "two"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ", then "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "filed",
+    "Health",
+    3
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "one"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    "."
+   ],
+   [
+    "template",
+    "\n\n"
+   ],
+   [
+    "template",
+    "What stands out:"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Beta feedback",
+    2
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "4 October"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ": "
+   ],
+   [
+    "template",
+    "“"
+   ],
+   [
+    "quote",
+    "The top complaint is the sign-up flow with nine fields.",
+    2
+   ],
+   [
+    "template",
+    "”"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Dentist",
+    3
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "3 October"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ": "
+   ],
+   [
+    "template",
+    "“"
+   ],
+   [
+    "quote",
+    "Check-up booked for the 21st, ask about the night guard.",
+    3
+   ],
+   [
+    "template",
+    "”"
+   ],
+   [
+    "template",
+    "\n\n"
+   ],
+   [
+    "template",
+    "Still open:"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- [ ] "
+   ],
+   [
+    "quote",
+    "Call to confirm",
+    3
+   ],
+   [
+    "template",
+    ", in "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Dentist",
+    3
+   ],
+   [
+    "template",
+    "**"
+   ]
+  ],
+  "sources": [
+   12,
+   3,
+   2
+  ],
+  "text": "You wrote three notes in the last seven days, from 3 October to today. Most went under **Work** (two), then **Health** (one).\n\nWhat stands out:\n- **Beta feedback** (4 October): “The top complaint is the sign-up flow with nine fields.”\n- **Dentist** (3 October): “Check-up booked for the 21st, ask about the night guard.”\n\nStill open:\n- [ ] Call to confirm, in **Dentist**"
+ },
+ "two_no_category_line": {
+  "grounding": [
+   {
+    "chunk_ordinal": 0,
+    "end": 82,
+    "kind": "note",
+    "label": "# Harbor launch plan Ship the mobile app to the public…",
+    "note_id": 1,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Ship the mobile app to the public on the 14th of next month.",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 22,
+    "terms": [],
+    "title": "Harbor launch plan",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 91,
+    "kind": "note",
+    "label": "# Beta feedback 41 testers active. The top complaint…",
+    "note_id": 2,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "The top complaint is the sign-up flow with nine fields.",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 36,
+    "terms": [],
+    "title": "Beta feedback",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 131,
+    "kind": "note",
+    "label": "# Harbor launch plan Ship the mobile app to the public…",
+    "note_id": 1,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Store listing copy",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 113,
+    "terms": [],
+    "title": "Harbor launch plan",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 159,
+    "kind": "note",
+    "label": "# Harbor launch plan Ship the mobile app to the public…",
+    "note_id": 1,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Pricing page sign off",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 138,
+    "terms": [],
+    "title": "Harbor launch plan",
+    "verdict": "supported"
+   }
+  ],
+  "key": "61086a362476",
+  "kind": "week_review",
+  "parts": [
+   [
+    "template",
+    "You wrote "
+   ],
+   [
+    "measure",
+    "two"
+   ],
+   [
+    "template",
+    " notes"
+   ],
+   [
+    "template",
+    " in the last seven days, from "
+   ],
+   [
+    "measure",
+    "4 October"
+   ],
+   [
+    "template",
+    " to "
+   ],
+   [
+    "measure",
+    "today"
+   ],
+   [
+    "template",
+    "."
+   ],
+   [
+    "template",
+    "\n\n"
+   ],
+   [
+    "template",
+    "What stands out:"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Harbor launch plan",
+    1
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "yesterday"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ": "
+   ],
+   [
+    "template",
+    "“"
+   ],
+   [
+    "quote",
+    "Ship the mobile app to the public on the 14th of next month.",
+    1
+   ],
+   [
+    "template",
+    "”"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Beta feedback",
+    2
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "4 October"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ": "
+   ],
+   [
+    "template",
+    "“"
+   ],
+   [
+    "quote",
+    "The top complaint is the sign-up flow with nine fields.",
+    2
+   ],
+   [
+    "template",
+    "”"
+   ],
+   [
+    "template",
+    "\n\n"
+   ],
+   [
+    "template",
+    "Still open:"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- [ ] "
+   ],
+   [
+    "quote",
+    "Store listing copy",
+    1
+   ],
+   [
+    "template",
+    ", in "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Harbor launch plan",
+    1
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- [ ] "
+   ],
+   [
+    "quote",
+    "Pricing page sign off",
+    1
+   ],
+   [
+    "template",
+    ", in "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Harbor launch plan",
+    1
+   ],
+   [
+    "template",
+    "**"
+   ]
+  ],
+  "sources": [
+   1,
+   2
+  ],
+  "text": "You wrote two notes in the last seven days, from 4 October to today.\n\nWhat stands out:\n- **Harbor launch plan** (yesterday): “Ship the mobile app to the public on the 14th of next month.”\n- **Beta feedback** (4 October): “The top complaint is the sign-up flow with nine fields.”\n\nStill open:\n- [ ] Store listing copy, in **Harbor launch plan**\n- [ ] Pricing page sign off, in **Harbor launch plan**"
+ },
+ "unlinked_empty": {
+  "grounding": [
+   {
+    "chunk_ordinal": 0,
+    "end": 58,
+    "kind": "note",
+    "label": "Garden shed roof leaks in the north corner after the rain.",
+    "note_id": 6,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Garden shed roof leaks in the north corner after the rain.",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 0,
+    "terms": [],
+    "title": "",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 82,
+    "kind": "note",
+    "label": "# Harbor launch plan Ship the mobile app to the public…",
+    "note_id": 1,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Ship the mobile app to the public on the 14th of next month.",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 22,
+    "terms": [],
+    "title": "Harbor launch plan",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 22,
+    "kind": "note",
+    "label": "# Shopping - [ ] Milk - [ ] Bread - [x] Eggs",
+    "note_id": 7,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Milk",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 18,
+    "terms": [],
+    "title": "Shopping",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 67,
+    "kind": "note",
+    "label": "# Dentist Check-up booked for the 21st, ask about the night…",
+    "note_id": 3,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Check-up booked for the 21st, ask about the night guard.",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 11,
+    "terms": [],
+    "title": "Dentist",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 131,
+    "kind": "note",
+    "label": "# Harbor launch plan Ship the mobile app to the public…",
+    "note_id": 1,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Store listing copy",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 113,
+    "terms": [],
+    "title": "Harbor launch plan",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 159,
+    "kind": "note",
+    "label": "# Harbor launch plan Ship the mobile app to the public…",
+    "note_id": 1,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Pricing page sign off",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 138,
+    "terms": [],
+    "title": "Harbor launch plan",
+    "verdict": "supported"
+   }
+  ],
+  "key": "620fe13b9027",
+  "kind": "week_review",
+  "parts": [
+   [
+    "template",
+    "You wrote "
+   ],
+   [
+    "measure",
+    "eight"
+   ],
+   [
+    "template",
+    " notes"
+   ],
+   [
+    "template",
+    " in the last seven days, from "
+   ],
+   [
+    "measure",
+    "30 September"
+   ],
+   [
+    "template",
+    " to "
+   ],
+   [
+    "measure",
+    "today"
+   ],
+   [
+    "template",
+    "."
+   ],
+   [
+    "template",
+    " Most went under "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "filed",
+    "Work",
+    1
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "three"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ", then "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "filed",
+    "Travel",
+    4
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "two"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    "."
+   ],
+   [
+    "template",
+    "\n\n"
+   ],
+   [
+    "template",
+    "What stands out:"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- "
+   ],
+   [
+    "template",
+    "your note"
+   ],
+   [
+    "template",
+    " from "
+   ],
+   [
+    "measure",
+    "today"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "today"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ": "
+   ],
+   [
+    "template",
+    "“"
+   ],
+   [
+    "quote",
+    "Garden shed roof leaks in the north corner after the rain.",
+    6
+   ],
+   [
+    "template",
+    "”"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Harbor launch plan",
+    1
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "yesterday"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ": "
+   ],
+   [
+    "template",
+    "“"
+   ],
+   [
+    "quote",
+    "Ship the mobile app to the public on the 14th of next month.",
+    1
+   ],
+   [
+    "template",
+    "”"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Shopping",
+    7
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "4 October"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ": "
+   ],
+   [
+    "template",
+    "“"
+   ],
+   [
+    "quote",
+    "Milk",
+    7
+   ],
+   [
+    "template",
+    "”"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Dentist",
+    3
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "3 October"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ": "
+   ],
+   [
+    "template",
+    "“"
+   ],
+   [
+    "quote",
+    "Check-up booked for the 21st, ask about the night guard.",
+    3
+   ],
+   [
+    "template",
+    "”"
+   ],
+   [
+    "template",
+    "\n\n"
+   ],
+   [
+    "template",
+    "Still open:"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- [ ] "
+   ],
+   [
+    "quote",
+    "Store listing copy",
+    1
+   ],
+   [
+    "template",
+    ", in "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Harbor launch plan",
+    1
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- [ ] "
+   ],
+   [
+    "quote",
+    "Pricing page sign off",
+    1
+   ],
+   [
+    "template",
+    ", in "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Harbor launch plan",
+    1
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- [ ] "
+   ],
+   [
+    "quote",
+    "Milk",
+    7
+   ],
+   [
+    "template",
+    ", in "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Shopping",
+    7
+   ],
+   [
+    "template",
+    "**"
+   ]
+  ],
+  "sources": [
+   1,
+   4,
+   6,
+   7,
+   3
+  ],
+  "text": "You wrote eight notes in the last seven days, from 30 September to today. Most went under **Work** (three), then **Travel** (two).\n\nWhat stands out:\n- your note from today (today): “Garden shed roof leaks in the north corner after the rain.”\n- **Harbor launch plan** (yesterday): “Ship the mobile app to the public on the 14th of next month.”\n- **Shopping** (4 October): “Milk”\n- **Dentist** (3 October): “Check-up booked for the 21st, ask about the night guard.”\n\nStill open:\n- [ ] Store listing copy, in **Harbor launch plan**\n- [ ] Pricing page sign off, in **Harbor launch plan**\n- [ ] Milk, in **Shopping**"
+ },
+ "unlinked_none_this_week": {
+  "grounding": [
+   {
+    "chunk_ordinal": 0,
+    "end": 58,
+    "kind": "note",
+    "label": "Garden shed roof leaks in the north corner after the rain.",
+    "note_id": 6,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Garden shed roof leaks in the north corner after the rain.",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 0,
+    "terms": [],
+    "title": "",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 82,
+    "kind": "note",
+    "label": "# Harbor launch plan Ship the mobile app to the public…",
+    "note_id": 1,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Ship the mobile app to the public on the 14th of next month.",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 22,
+    "terms": [],
+    "title": "Harbor launch plan",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 22,
+    "kind": "note",
+    "label": "# Shopping - [ ] Milk - [ ] Bread - [x] Eggs",
+    "note_id": 7,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Milk",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 18,
+    "terms": [],
+    "title": "Shopping",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 67,
+    "kind": "note",
+    "label": "# Dentist Check-up booked for the 21st, ask about the night…",
+    "note_id": 3,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Check-up booked for the 21st, ask about the night guard.",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 11,
+    "terms": [],
+    "title": "Dentist",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 131,
+    "kind": "note",
+    "label": "# Harbor launch plan Ship the mobile app to the public…",
+    "note_id": 1,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Store listing copy",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 113,
+    "terms": [],
+    "title": "Harbor launch plan",
+    "verdict": "supported"
+   },
+   {
+    "chunk_ordinal": 0,
+    "end": 159,
+    "kind": "note",
+    "label": "# Harbor launch plan Ship the mobile app to the public…",
+    "note_id": 1,
+    "said": "quoted",
+    "score": 0.0,
+    "sentence": "Pricing page sign off",
+    "signals": {
+     "bm25": 1.0,
+     "cosine": null,
+     "graph": null
+    },
+    "start": 138,
+    "terms": [],
+    "title": "Harbor launch plan",
+    "verdict": "supported"
+   }
+  ],
+  "key": "620fe13b9027",
+  "kind": "week_review",
+  "parts": [
+   [
+    "template",
+    "You wrote "
+   ],
+   [
+    "measure",
+    "eight"
+   ],
+   [
+    "template",
+    " notes"
+   ],
+   [
+    "template",
+    " in the last seven days, from "
+   ],
+   [
+    "measure",
+    "30 September"
+   ],
+   [
+    "template",
+    " to "
+   ],
+   [
+    "measure",
+    "today"
+   ],
+   [
+    "template",
+    "."
+   ],
+   [
+    "template",
+    " Most went under "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "filed",
+    "Work",
+    1
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "three"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ", then "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "filed",
+    "Travel",
+    4
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "two"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    "."
+   ],
+   [
+    "template",
+    "\n\n"
+   ],
+   [
+    "template",
+    "What stands out:"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- "
+   ],
+   [
+    "template",
+    "your note"
+   ],
+   [
+    "template",
+    " from "
+   ],
+   [
+    "measure",
+    "today"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "today"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ": "
+   ],
+   [
+    "template",
+    "“"
+   ],
+   [
+    "quote",
+    "Garden shed roof leaks in the north corner after the rain.",
+    6
+   ],
+   [
+    "template",
+    "”"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Harbor launch plan",
+    1
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "yesterday"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ": "
+   ],
+   [
+    "template",
+    "“"
+   ],
+   [
+    "quote",
+    "Ship the mobile app to the public on the 14th of next month.",
+    1
+   ],
+   [
+    "template",
+    "”"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Shopping",
+    7
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "4 October"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ": "
+   ],
+   [
+    "template",
+    "“"
+   ],
+   [
+    "quote",
+    "Milk",
+    7
+   ],
+   [
+    "template",
+    "”"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Dentist",
+    3
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    " ("
+   ],
+   [
+    "measure",
+    "3 October"
+   ],
+   [
+    "template",
+    ")"
+   ],
+   [
+    "template",
+    ": "
+   ],
+   [
+    "template",
+    "“"
+   ],
+   [
+    "quote",
+    "Check-up booked for the 21st, ask about the night guard.",
+    3
+   ],
+   [
+    "template",
+    "”"
+   ],
+   [
+    "template",
+    "\n\n"
+   ],
+   [
+    "template",
+    "Still open:"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- [ ] "
+   ],
+   [
+    "quote",
+    "Store listing copy",
+    1
+   ],
+   [
+    "template",
+    ", in "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Harbor launch plan",
+    1
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- [ ] "
+   ],
+   [
+    "quote",
+    "Pricing page sign off",
+    1
+   ],
+   [
+    "template",
+    ", in "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Harbor launch plan",
+    1
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- [ ] "
+   ],
+   [
+    "quote",
+    "Milk",
+    7
+   ],
+   [
+    "template",
+    ", in "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Shopping",
+    7
+   ],
+   [
+    "template",
+    "**"
+   ]
+  ],
+  "sources": [
+   1,
+   4,
+   6,
+   7,
+   3
+  ],
+  "text": "You wrote eight notes in the last seven days, from 30 September to today. Most went under **Work** (three), then **Travel** (two).\n\nWhat stands out:\n- your note from today (today): “Garden shed roof leaks in the north corner after the rain.”\n- **Harbor launch plan** (yesterday): “Ship the mobile app to the public on the 14th of next month.”\n- **Shopping** (4 October): “Milk”\n- **Dentist** (3 October): “Check-up booked for the 21st, ask about the night guard.”\n\nStill open:\n- [ ] Store listing copy, in **Harbor launch plan**\n- [ ] Pricing page sign off, in **Harbor launch plan**\n- [ ] Milk, in **Shopping**"
+ }
+}

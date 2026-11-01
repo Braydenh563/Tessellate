@@ -159,51 +159,86 @@ def _score(shape: str, terms: list[str], views: list[NoteView]) -> list[Sentence
     pool = [s for view in views for s in view.sentences]
     if not pool:
         return []
-    stems = [_stem(t) for t in terms]
-    term_weight = _term_weights(stems)
-    frequency: Counter[str] = Counter()
+    scorer = _Scorer(shape, terms, views, pool)
     for s in pool:
-        frequency.update(set(s.words))
-    total = len(pool)
-    average = sum(len(s.words) for s in pool) / total
-    by_id = {view.id: view for view in views}
-    outdated = _outdated(terms, views)
-    dated = sorted((v for v in views if v.written), key=lambda v: v.written, reverse=True)
-    recency = {v.id: 1.0 - i / max(1, len(dated)) for i, v in enumerate(dated)}
-    for s in pool:
+        s.score = scorer.score(s)
+    return [s for s in pool if s.score > 0]
+
+
+class _Scorer:
+    """What scoring one question's sentences needs, worked out once: the
+    stemmed terms and their weights, each term's words (itself and its
+    synonyms), how many sentences hold each word, the notes' recency and the
+    notes a newer one corrects. `score` is then one sentence's number."""
+
+    def __init__(self, shape: str, terms: list[str], views: list[NoteView], pool: list[Sentence]) -> None:
+        self.shape = shape
+        self.stems = [_stem(t) for t in terms]
+        self.term_weight = _term_weights(self.stems)
+        self.whole_title = sum(self.term_weight[term] for term in self.stems)
+        self.forms = [((term, 1.0), *((alt, SYNONYM_WEIGHT) for alt in _alternatives(term))) for term in self.stems]
+        self.frequency: Counter[str] = Counter()
+        for s in pool:
+            self.frequency.update(set(s.words))
+        self.total = len(pool)
+        self.average = sum(len(s.words) for s in pool) / self.total
+        self.idf: dict[str, float] = {}
+        self.by_id = {view.id: view for view in views}
+        self.headings: dict[int, tuple[float, float]] = {}
+        self.outdated = _outdated(terms, views)
+        dated = sorted((v for v in views if v.written), key=lambda v: v.written, reverse=True)
+        self.recency = {v.id: 1.0 - i / max(1, len(dated)) for i, v in enumerate(dated)}
+
+    def _idf(self, word: str) -> float:
+        idf = self.idf.get(word)
+        if idf is None:
+            n = self.frequency[word]
+            idf = self.idf[word] = math.log(1 + (self.total - n + 0.5) / (n + 0.5))
+        return idf
+
+    def bm25(self, s: Sentence) -> float:
+        """Each term's best form (itself, or a synonym at `SYNONYM_WEIGHT`), summed by the term's weight."""
         counts = Counter(s.words)
-        bm25 = 0.0
-        for term in stems:
+        length = 0.25 + 0.75 * len(s.words) / self.average
+        total = 0.0
+        for term, forms in zip(self.stems, self.forms):
             best = 0.0
-            for word, weight in ((term, 1.0), *((alt, SYNONYM_WEIGHT) for alt in _alternatives(term))):
+            for word, weight in forms:
                 tf = counts.get(word, 0)
                 if tf:
-                    idf = math.log(1 + (total - frequency[word] + 0.5) / (frequency[word] + 0.5))
-                    best = max(best, weight * idf * tf * 2.2 / (tf + 1.2 * (0.25 + 0.75 * len(s.words) / average)))
-            bm25 += best * term_weight[term]
-        view = by_id[s.note_id]
-        #: A sentence under a heading that names the subject is about it even
-        #: when it does not repeat the words: "It was not the database." is
-        #: the answer to "why did the list feel slow" because its note is
-        #: called "Why the list felt slow".
-        title_hits, filed_hits = _heading_hits(view, stems, term_weight)
-        relevance = bm25 + TITLE_WEIGHT * title_hits + FILED_WEIGHT * filed_hits
-        if stems and title_hits == sum(term_weight[term] for term in stems):
+                    best = max(best, weight * self._idf(word) * tf * 2.2 / (tf + 1.2 * length))
+            total += best * self.term_weight[term]
+        return total
+
+    def relevance(self, s: Sentence, view: NoteView) -> float:
+        """BM25 plus the note's headings. A sentence under a heading that
+        names the subject is about it even when it does not repeat the words:
+        "It was not the database." is the answer to "why did the list feel
+        slow" because its note is called "Why the list felt slow"."""
+        hits = self.headings.get(view.id)
+        if hits is None:
+            hits = self.headings[view.id] = _heading_hits(view, self.stems, self.term_weight)
+        title_hits, filed_hits = hits
+        relevance = self.bm25(s) + TITLE_WEIGHT * title_hits + FILED_WEIGHT * filed_hits
+        if self.stems and title_hits == self.whole_title:
             relevance += TITLE_WEIGHT
-        if stems and relevance <= 0:
-            s.score = 0.0
-            continue
-        s.score = relevance + _cue(shape, s.text) + 0.4 / (1 + s.rank)
+        return relevance
+
+    def score(self, s: Sentence) -> float:
+        view = self.by_id[s.note_id]
+        relevance = self.relevance(s, view)
+        if self.stems and relevance <= 0:
+            return 0.0
+        score = relevance + _cue(self.shape, s.text) + 0.4 / (1 + s.rank)
         #: A sentence that only names the subject ("Store listing copy", a
         #: task on someone's checklist) says nothing about it: measured on
         #: the voice eval, it led "what did I decide about the store
         #: listing" over the note called "Store listing".
-        if len(stems) >= 2 and len([w for w in s.words if w not in stems]) <= 1:
-            s.score *= 0.5
-        if shape == "status":
-            s.score += recency.get(s.note_id, 0.0)
-        s.score *= _view_factor(view, outdated)
-    return [s for s in pool if s.score > 0]
+        if len(self.stems) >= 2 and len([w for w in s.words if w not in self.stems]) <= 1:
+            score *= 0.5
+        if self.shape == "status":
+            score += self.recency.get(s.note_id, 0.0)
+        return score * _view_factor(view, self.outdated)
 
 
 def _outdated(terms: list[str], views: list[NoteView]) -> set[int]:

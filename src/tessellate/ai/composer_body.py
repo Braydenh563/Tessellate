@@ -35,6 +35,19 @@ _OPENERS = (
 )
 
 
+#: Each shape's openers, the empty one a bare quote. A count's and a date's
+#: openers promise a number or a date, so they are offered only when the
+#: sentence holds one (`_OPENER_NEEDS`); otherwise the plain ones are.
+_OPENERS_BY_SHAPE = {
+    "count": ("", "open_figure", "open_notes"),
+    "when": ("", "open_date"),
+    "explain": ("", "open_put", "open_notes"),
+    "where": ("", "open_where", "open_notes"),
+}
+_PLAIN_OPENERS = ("", "open_notes", "open_wrote")
+_OPENER_NEEDS = {"count": _NUMBER_CUE.search, "when": when_words.find}
+
+
 def _opening(out: _Answer, s: Sentence, shape: str, question: str) -> None:
     """What comes before the strongest sentence on the first line, which is
     the answer: often nothing, the sentence itself, or a short opener chosen
@@ -44,42 +57,41 @@ def _opening(out: _Answer, s: Sentence, shape: str, question: str) -> None:
     if out.brief and shape not in ("yesno", "when"):
         #: Asked for briefly: the sentence itself, nothing before it.
         return
-    if shape == "count" and _NUMBER_CUE.search(s.text):
-        options = ["", "open_figure", "open_notes"]
-    elif shape == "when" and when_words.find(s.text):
-        options = ["", "open_date"]
-    elif shape == "when" and view.written:
+    if shape == "when" and view.written and not when_words.find(s.text):
         #: No date in the sentence: the day the note was written is the one
         #: date the app knows, and it is said as that and nothing more.
         out.t("wrote_on_a").m(out.day(view.written)).t("wrote_on_b")
         return
-    elif shape == "yesno":
-        #: A sentence that holds every word the question is about answers it
-        #: in the note's own words: "Going by your notes, the deposit is
-        #: paid." Never a yes or a no of the app's own (INBOX 688's rule).
-        stems = out.subject
-        if stems and _says_every(stems, s, view):
-            options = ["going_by", "notes_have"]
-        else:
-            options = ["closest_a", "closest_b"]
-    elif shape == "explain":
-        options = ["", "open_put", "open_notes"]
-    elif shape == "where":
-        options = ["", "open_where", "open_notes"]
-    else:
-        options = ["", "open_notes", "open_wrote"]
-    #: Not the opener the turn before opened with, and after a turn that
-    #: opened with a bare quote, a worded one when there is one: two answers
-    #: in a row never start alike (INBOX 741, vary openers across turns).
-    fresh = [o for o in options if not (o and _said_before(out, o))]
-    if out.previous and not any(_said_before(out, o) for o in _OPENERS):
-        fresh = [o for o in fresh if o] or fresh
-    key = _pick(question, "lead", fresh or options)
+    options = _opener_options(out, s, shape, view)
+    key = _pick(question, "lead", _fresh_openers(out, options))
     if key == "going_by" and _lowered(s):
         out.t("going_by", "comma")
         out.lower_next = True
     elif key:
         out.t("notes_have" if key == "going_by" else key)
+
+
+def _opener_options(out: _Answer, s: Sentence, shape: str, view: NoteView) -> tuple[str, ...]:
+    if shape == "yesno":
+        #: A sentence that holds every word the question is about answers it
+        #: in the note's own words: "Going by your notes, the deposit is
+        #: paid." Never a yes or a no of the app's own (INBOX 688's rule).
+        stems = out.subject
+        return ("going_by", "notes_have") if stems and _says_every(stems, s, view) else ("closest_a", "closest_b")
+    needs = _OPENER_NEEDS.get(shape)
+    if needs is not None and not needs(s.text):
+        return _PLAIN_OPENERS
+    return _OPENERS_BY_SHAPE.get(shape, _PLAIN_OPENERS)
+
+
+def _fresh_openers(out: _Answer, options: tuple[str, ...]) -> list[str] | tuple[str, ...]:
+    """Not the opener the turn before opened with, and after a turn that
+    opened with a bare quote, a worded one when there is one: two answers
+    in a row never start alike (INBOX 741, vary openers across turns)."""
+    fresh = [o for o in options if not (o and _said_before(out, o))]
+    if out.previous and not any(_said_before(out, o) for o in _OPENERS):
+        fresh = [o for o in fresh if o] or fresh
+    return fresh or options
 
 
 def _span(out: _Answer, views: list[NoteView]) -> None:
@@ -179,6 +191,11 @@ def _clusters(meaning: _Meaning, units: list[list[Sentence]]) -> list[list[list[
     return groups
 
 
+def _by_note(sentences: list[Sentence]) -> list[int]:
+    """The notes the sentences come from, in the order they first appear."""
+    return list(dict.fromkeys(s.note_id for s in sentences))
+
+
 def _others(out: _Answer, meaning: _Meaning, lead: Sentence, rest: list[Sentence], terms: list[str], question: str) -> None:
     """The other notes, one sentence group each, as prose: each joined to
     what came before by how it relates to it (also, later, separately), each
@@ -187,13 +204,8 @@ def _others(out: _Answer, meaning: _Meaning, lead: Sentence, rest: list[Sentence
     rest = _with_context(out, [s for s in rest if s.kind == "prose" or s.kind.startswith("picture")])
     if not rest:
         return
-    order: list[int] = []
-    for s in rest:
-        if s.note_id not in order:
-            order.append(s.note_id)
-    units = [sorted((s for s in rest if s.note_id == i), key=lambda s: s.order) for i in order]
+    units = [sorted((s for s in rest if s.note_id == i), key=lambda s: s.order) for i in _by_note(rest)]
     said = [s for s in out.views[lead.note_id].sentences if s.key in out.cited]
-    last = ""
     used: set[str] = set()
     for group in _clusters(meaning, units):
         for g, unit in enumerate(group):
@@ -202,40 +214,45 @@ def _others(out: _Answer, meaning: _Meaning, lead: Sentence, rest: list[Sentence
             out.t("space" if g % 2 else "para")
             view = out.views[unit[0].note_id]
             relation = _relation(out, meaning, unit[0], said or [lead], lead)
-            if unit[0].kind.startswith("picture") and len(unit) == 1:
-                #: A picture's reading names its note itself ("The picture
-                #: in **Sketches** shows ..."): no joiner before it.
-                _quotes(out, unit, terms)
-            elif relation == "later":
-                #: "Later, on" once, "And on" once, then the sentence alone:
-                #: newer notes are not in date order among themselves here,
-                #: so "Then on" (which says "after that") is never used.
-                last = next((k for k in ("later_on", "and_on") if k not in used), "")
-                if last:
-                    used.add(last)
-                    _joined(out, [last], unit, terms, view.written)
-                else:
-                    _quotes(out, unit, terms)
-            else:
-                #: The same subject mostly needs no joiner: the sentence and
-                #: its citation are enough, and a pile of "also" is what the
-                #: owner read as a template (INBOX 741). Never the same
-                #: joining words twice in one answer. A joiner for the same subject only where the quote can
-                #: follow it after a comma: "On top of that: Subject: ..." is
-                #: two colons and no sentence.
-                pool = ["", "and_join", "on_top"] if relation == "also" and _lowered(unit[0]) else [""]
-                if relation != "also":
-                    pool = ["separately", "elsewhere", "another_note"]
-                options = [o for o in pool if o not in used] or [""]
-                last = _pick(f"{question}:{view.id}", "join", options)
-                if last:
-                    used.add(last)
-                if last:
-                    _joined(out, [last], unit, terms)
-                else:
-                    _quotes(out, unit, terms)
+            _other(out, unit, relation, used, terms, f"{question}:{view.id}", view.written)
             out.cite(view)
             said.extend(unit)
+
+
+def _other(out: _Answer, unit: list[Sentence], relation: str, used: set[str], terms: list[str], salt: str, written: date | None) -> None:
+    """One other note's sentences, after the joiner its relation earns, if
+    any; `used` holds the joiners already said: never the same joining
+    words twice in one answer."""
+    if unit[0].kind.startswith("picture") and len(unit) == 1:
+        #: A picture's reading names its note itself ("The picture
+        #: in **Sketches** shows ..."): no joiner before it.
+        _quotes(out, unit, terms)
+        return
+    if relation == "later":
+        #: "Later, on" once, "And on" once, then the sentence alone:
+        #: newer notes are not in date order among themselves here,
+        #: so "Then on" (which says "after that") is never used.
+        joiner = next((k for k in ("later_on", "and_on") if k not in used), "")
+    else:
+        joiner = _pick(salt, "join", [o for o in _joiners(relation, unit[0]) if o not in used] or [""])
+    if not joiner:
+        _quotes(out, unit, terms)
+        return
+    used.add(joiner)
+    _joined(out, [joiner], unit, terms, written if relation == "later" else None)
+
+
+def _joiners(relation: str, first: Sentence) -> list[str]:
+    """The joiners a note "also" or "separately" related may take.
+
+    The same subject mostly needs no joiner: the sentence and its citation
+    are enough, and a pile of "also" is what the owner read as a template
+    (INBOX 741). A joiner for the same subject only where the quote can
+    follow it after a comma: "On top of that: Subject: ..." is two colons
+    and no sentence."""
+    if relation != "also":
+        return ["separately", "elsewhere", "another_note"]
+    return ["", "and_join", "on_top"] if _lowered(first) else [""]
 
 
 def _timeline(out: _Answer, sentences: list[Sentence], terms: list[str]) -> None:
@@ -244,10 +261,7 @@ def _timeline(out: _Answer, sentences: list[Sentence], terms: list[str]) -> None
     sentences = _with_context(out, [s for s in sentences if s.kind != "task"])
     if not sentences:
         return
-    order: list[int] = []
-    for s in sentences:
-        if s.note_id not in order:
-            order.append(s.note_id)
+    order = _by_note(sentences)
     order.sort(key=lambda note_id: out.views[note_id].written or date.min)
     out.t("para", "timeline")
     for note_id in order:
@@ -264,10 +278,7 @@ def _earlier(out: _Answer, sentences: list[Sentence], terms: list[str]) -> None:
     """A "latest" question's older notes, newest first, as prose that walks
     back: "Before that, on 12 September, three workstreams ... [**Q4 roadmap**]"."""
     sentences = _with_context(out, [s for s in sentences if s.kind == "prose" or s.kind.startswith("picture")])
-    order: list[int] = []
-    for s in sentences:
-        if s.note_id not in order:
-            order.append(s.note_id)
+    order = _by_note(sentences)
     order.sort(key=lambda note_id: out.views[note_id].written or date.min, reverse=True)
     for i, note_id in enumerate(order):
         view = out.views[note_id]
