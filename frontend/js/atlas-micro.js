@@ -54,11 +54,10 @@ function atlasMicroMay(box) {
   for (const c of buddy.classList) if (c.startsWith("nmb-act-") || c === "nmb-sleep" || c === "nmb-walking" || c === "nm-buddy-dragging") return false;
   return true;
 }
-//: Plays `frames` on `el`, added to whatever else moves that property
-//: (`add`, which the compositor cannot run, so only a gesture of a fraction
-//: of a second) or, with `add` false, in place of it.
-function atlasMicroPlay(el, frames, ms, add = true) {
-  el?.animate?.(frames, { duration: ms, easing: "ease-in-out", ...(add ? { composite: "add" } : {}) });
+//: Plays `frames` on `el`, in place of whatever else moves that property
+//: (never added to it: `composite: "add"` is not the compositor's).
+function atlasMicroPlay(el, frames, ms) {
+  el?.animate?.(frames, { duration: ms, easing: "ease-in-out" });
 }
 function atlasMicroGlance(box) {
   const field = document.activeElement;
@@ -87,7 +86,7 @@ function atlasMicroDo(kind, box) {
       //: composite; `transform` on it is the compositor's, and the head has
       //: none of its own, so the tilt replaces it (audit 1031 row 17).
       const a = `rotate(${(d * (k ? 1.3 : 1)).toFixed(2)}deg)`;
-      atlasMicroPlay(head, [{ transform: "none" }, { transform: a, offset: 0.3 }, { transform: a, offset: 0.72 }, { transform: "none" }], ms, false);
+      atlasMicroPlay(head, [{ transform: "none" }, { transform: a, offset: 0.3 }, { transform: a, offset: 0.72 }, { transform: "none" }], ms);
     });
     return;
   }
@@ -100,7 +99,7 @@ function atlasMicroDo(kind, box) {
     //: for its two to three seconds (60 style recalcs a second, measured).
     //: The body has no translate of its own, so a replacing one needs no add.
     const a = { translate: `${dx.toFixed(2)}px 0px` };
-    atlasMicroPlay(box.querySelector(".atl-lw-body"), [{ translate: "0px 0px" }, { ...a, offset: 0.4 }, { ...a, offset: 0.65 }, { translate: "0px 0px" }], 2000 + Math.random() * 1400, false);
+    atlasMicroPlay(box.querySelector(".atl-lw-body"), [{ translate: "0px 0px" }, { ...a, offset: 0.4 }, { ...a, offset: 0.65 }, { translate: "0px 0px" }], 2000 + Math.random() * 1400);
     return;
   }
   if (kind === "ear") {
@@ -109,10 +108,18 @@ function atlasMicroDo(kind, box) {
     if (!ear) return;
     ear.style.transformBox = "fill-box";
     ear.style.transformOrigin = "50% 90%";
-    const a = `${(sign * (3.5 + Math.random() * 2)).toFixed(1)}deg`;
+    //: **The flick replaces the crest's `transform`** (audit 1101, row 17's
+    //: leftover): it added an individual `rotate` over it (`composite: "add"`),
+    //: which is the main thread's, so each flick put the figure's loops back
+    //: there for its third of a second. The ear's own turn (`--atl-crest`,
+    //: mirrored on the left ear: 08-consistency.css) is written into the
+    //: keyframes, so the ear tips from where the mood holds it and back.
+    const turn = (deg) => ({ transform: `rotate(calc(var(--atl-crest) * ${ear.classList.contains("atl-ear-l") ? -1 : 1} + ${deg}deg))` });
+    const a = Number((sign * (3.5 + Math.random() * 2)).toFixed(1));
     const ms = 220 + Math.random() * 160;
-    atlasMicroPlay(ear, [{ rotate: "0deg" }, { rotate: a, offset: 0.35 }, { rotate: "0deg" }], ms);
-    if (Math.random() < 0.3) setTimeout(() => atlasMicroPlay(ear, [{ rotate: "0deg" }, { rotate: a, offset: 0.35 }, { rotate: "0deg" }], ms), ms + 90);
+    const frames = [turn(0), { ...turn(a), offset: 0.35 }, turn(0)];
+    atlasMicroPlay(ear, frames, ms);
+    if (Math.random() < 0.3) setTimeout(() => atlasMicroPlay(ear, frames, ms), ms + 90);
     return;
   }
   if (kind === "blink") {

@@ -25,11 +25,12 @@ JS = ROOT / "frontend" / "js"
 MICRO = (JS / "atlas-micro.js").read_text(encoding="utf-8")
 LAZY = (ROOT / "frontend" / "css" / "atlas-lazy.css").read_text(encoding="utf-8")
 
-#: `composite: "add"` call sites today, outside comments: the micro ear flick (a third of
-#: a second), and the companion's short gestures (a glide, a beat, a manner, a menu nudge).
+#: `composite: "add"` call sites today, outside comments: the companion's short gestures (a
+#: glide, a beat, a manner, a menu nudge). The micro behaviours have none (the ear flick went
+#: with audit 1101).
 #: A new one is a seconds-long loop on the main thread unless it is as short as these;
 #: lower this when one goes, never raise it for a loop.
-ADD_SITES = 11
+ADD_SITES = 7
 
 
 def _code_lines(path: Path) -> list[str]:
@@ -48,9 +49,9 @@ def test_a_micro_shift_and_tilt_replace_what_the_loops_leave_alone() -> None:
     # The body's loop owns `rotate`: the shift moves `translate` only, and does not add.
     body = [ln for ln in shift.group(0).splitlines() if not ln.lstrip().startswith("//")]
     assert not any("rotate" in ln for ln in body), "the body's sway loop owns rotate"
-    assert any('querySelector(".atl-lw-body")' in ln and ln.rstrip().endswith("false);") for ln in body)
+    assert any('querySelector(".atl-lw-body")' in ln for ln in body)
     # The head's `rotate` is the rig's: the tilt animates `transform`, replacing.
-    assert "transform:" in tilt.group(0) and ", false);" in tilt.group(0)
+    assert "transform:" in tilt.group(0)
 
 
 def test_an_away_companion_pauses_its_roots_too() -> None:
@@ -58,3 +59,13 @@ def test_an_away_companion_pauses_its_roots_too() -> None:
     # `.nm-atlas *` did not match them, so they ran under `visibility: hidden` (67 animations
     # live off-tab, 5 now).
     assert re.search(r"#nm-buddy\.nmb-away :is\(\.nm-atlas, \.nm-atlas \*, ", LAZY)
+
+
+def test_the_micro_behaviours_never_add_and_the_ear_flick_replaces_transform() -> None:
+    code = "\n".join(_code_lines(JS / "atlas-micro.js"))
+    assert "composite" not in code, "a micro behaviour replaces; add is the main thread's"
+    ear = re.search(r'if \(kind === "ear"\) \{.*?\n  \}', MICRO, re.S)
+    assert ear
+    body = "\n".join(ln for ln in ear.group(0).splitlines() if not ln.lstrip().startswith("//"))
+    # An svg part's individual `rotate` is the main thread's: the flick turns `transform`, from the crest's turn.
+    assert "rotate:" not in body and "transform:" in body and "--atl-crest" in body

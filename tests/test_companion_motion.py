@@ -381,7 +381,10 @@ def test_the_size_handle_shows_only_when_asked_for() -> None:
     # at 10Hz, 119 and 60 left free (atlasmoodfx.js, INJECT=1).
     tempo = _fn("nameMarkBuddyTempo")
     assert 'a.effect.target.closest("svg.atl-layer")' in tempo
-    assert "if (beat || !nmbTempo.slow.has(anim)) anim.currentTime = t;" in tempo
+    # (Each beat asks `nameMarkBuddyDue`, which keeps that rule and gives a prop's loop
+    # its own gap: audit 1101, `test_idle_restyle_1101.py`.)
+    assert "if (nameMarkBuddyDue(anim, beat)) anim.currentTime = t;" in tempo
+    assert "return beat || !nmbTempo.slow.has(anim);" in _fn("nameMarkBuddyDue")
 
 
 def test_the_benches_carry_no_inline_style() -> None:
@@ -537,7 +540,10 @@ def test_it_keeps_out_of_the_tours_ring() -> None:
     # and card are popups it gets out of the way of, looked at again once a
     # step has settled, measured by the drawn figure's box.
     assert '"tour-spot", "tour-card"' in re.search(r"^const NMB_POPUP_IDS = \[(.*)\];$", AV, re.M).group(1)
-    assert "nmbDodgeLate = setTimeout(nameMarkBuddyDodge, 700);" in AV
+    # (The late look is `look`: `nameMarkBuddyDodge`, or the cheaper typing look for a plain
+    # character in a field, audit 1101.)
+    assert "nmbDodgeLate = setTimeout(look, 700);" in AV
+    assert "const look = nameMarkBuddyTypingKey(e) ? nameMarkBuddyDodgeTyping : nameMarkBuddyDodge;" in AV
     assert 'buddy.querySelector(".nm-figure")' in _fn("nameMarkBuddyDodge")
 
 

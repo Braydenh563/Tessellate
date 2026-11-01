@@ -3884,15 +3884,42 @@ function nameMarkBuddyDodge() {
 }
 let nmbDodgeTimer = 0;
 let nmbDodgeLate = 0;
+//: **A letter typed in a field does not look at the page** (audit 1101, row
+//: 23's CE3 leftover). The look walks every menu and dialog class in the
+//: document (`nameMarkBuddyPopupEls`: live collections that rescan the whole
+//: DOM after each edit, 19ms a look at 4x CPU in a 7,000-line file, twice per
+//: key burst). A plain character cannot open a menu (`/` and `@` can), and a
+//: list it does open (completions, suggestions) hangs from the caret's left
+//: edge, rightwards and down (or up where there is no room), so the look is
+//: made only when the companion is inside that area (the attention box's own
+//: 48px to the left, `NMB_TYPING_REACH` right, up and down) or is already
+//: faded. Its own box is its placed position, not a layout read: a caret box
+//: is the one read.
+const NMB_TYPING_REACH = 300;
+const NMB_TYPING_REACH_RIGHT = 440;
+function nameMarkBuddyTypingKey(e) {
+  if (e.type !== "keyup" || e.ctrlKey || e.metaKey || e.altKey || !/^[^/@]$/.test(e.key || "")) return false;
+  return !!e.target?.closest?.("input, textarea, [contenteditable='true'], .cm-content");
+}
+function nameMarkBuddyTypingFar() {
+  const buddy = document.getElementById("nm-buddy");
+  if (!buddy || buddy.classList.contains("nmb-dodge") || !Number.isFinite(nmb.x) || nmb.anim?.playState === "running") return false;
+  const shape = nameMarkBuddyShape(nmb.x, nmb.y, nmb.pose, nmb.legs);
+  return !nameMarkBuddyAttention().some((a) => shape.some((p) => p.left < a.right + NMB_TYPING_REACH_RIGHT && p.right > a.left && p.top < a.bottom + NMB_TYPING_REACH && p.bottom > a.top - NMB_TYPING_REACH));
+}
+function nameMarkBuddyDodgeTyping() {
+  if (!nameMarkBuddyTypingFar()) nameMarkBuddyDodge();
+}
 for (const type of ["click", "keyup"]) {
-  document.addEventListener(type, () => {
+  document.addEventListener(type, (e) => {
     if (!document.getElementById("nm-buddy")) return;
     clearTimeout(nmbDodgeTimer);
     clearTimeout(nmbDodgeLate);
-    nmbDodgeTimer = setTimeout(nameMarkBuddyDodge, 80);
+    const look = nameMarkBuddyTypingKey(e) ? nameMarkBuddyDodgeTyping : nameMarkBuddyDodge;
+    nmbDodgeTimer = setTimeout(look, 80);
     //: And once the page has settled: a tour step that changes tab, or a
     //: panel that slides in, lands its box after the first look.
-    nmbDodgeLate = setTimeout(nameMarkBuddyDodge, 700);
+    nmbDodgeLate = setTimeout(look, 700);
   }, { passive: true, capture: true });
 }
 
@@ -5309,7 +5336,33 @@ const NMB_HOLD_SHOWN = '[data-pose="hang"], [data-travel="climb"], .nm-buddy-dra
 //: The long, still acts are rest, and paced as rest: a stance, a nap, a
 //: book, a seat. Full rate is for the short ones, where it is moving.
 const NMB_RESTING_ACTS = new Set(["lie", "read", "beanbag", "chair", "nap", "peek", "peekdown", "meditate", ...Object.keys(NMB_STANCES)]);
-const nmbTempo = { held: true, timer: 0, anims: [], at: 0, seen: 0, clock: new WeakMap(), slow: new WeakSet(), ticks: 0 };
+const nmbTempo = { held: true, timer: 0, anims: [], at: 0, seen: 0, clock: new WeakMap(), slow: new WeakSet(), gap: new WeakMap(), ticks: 0 };
+//: **A prop's slow loop is stepped slowly** (audit 1101, row 17's pacer
+//: leftover). Each step of an animation inside the drawing restyles the whole
+//: figure (5,800 elements at rest, 134 ms of style a second at 4x CPU with
+//: ONE paced animation: the coil's 3 s breath, 1 to 1.06 times, a fraction of
+//: a pixel a step) and the 20Hz beat gave a loop of seconds forty steps a
+//: cycle. A prop's loop (`atl-prop`, atlas-life.js) is stepped about sixteen
+//: times a cycle instead, no oftener than 20Hz and no seldomer than 5Hz, so a
+//: quick one (a zap, a twinkle) keeps its rate and a slow one stops costing.
+const NMB_PROP_STEPS = 16;
+const NMB_PROP_GAP_MAX = 4;
+function nameMarkBuddyPropGaps(anims) {
+  const gaps = new WeakMap();
+  for (const anim of anims) {
+    if (anim.id !== "atl-prop") continue;
+    const ticks = Math.round(anim.effect.getTiming().duration / NMB_PROP_STEPS / NMB_TEMPO_MS);
+    gaps.set(anim, Math.max(1, Math.min(NMB_PROP_GAP_MAX, ticks)));
+  }
+  return gaps;
+}
+//: Whether this beat steps `anim`: a prop's own gap, else every beat, or every
+//: other for what animates inside one of Atlas's layers (10Hz).
+function nameMarkBuddyDue(anim, beat) {
+  const gap = nmbTempo.gap.get(anim);
+  if (gap) return nmbTempo.ticks % gap === 0;
+  return beat || !nmbTempo.slow.has(anim);
+}
 function nameMarkBuddyTempo() {
   nmbTempo.timer = 0;
   const buddy = document.getElementById("nm-buddy");
@@ -5357,6 +5410,7 @@ function nameMarkBuddyTempo() {
     //: whatever animates inside a layer next.)
     //: Not a limb's gesture in a move (`nameMarkBuddyLimbs`): 20Hz, not 10.
     nmbTempo.slow = new WeakSet(nmbTempo.anims.filter((a) => a.id !== "nmb-limb" && a.effect.target.closest("svg.atl-layer")));
+    nmbTempo.gap = nameMarkBuddyPropGaps(nmbTempo.anims);
   }
   nmbTempo.ticks += 1;
   const beat = nmbTempo.ticks % 2 === 0;
@@ -5416,7 +5470,7 @@ function nameMarkBuddyTempo() {
       //: At the animation's own rate (a stride's, a manner's).
       const t = (nmbTempo.clock.get(anim) ?? 0) + step * (anim.playbackRate || 1);
       nmbTempo.clock.set(anim, t);
-      if (beat || !nmbTempo.slow.has(anim)) anim.currentTime = t;
+      if (nameMarkBuddyDue(anim, beat)) anim.currentTime = t;
     }
   });
   nmbTempo.at = now;
@@ -9339,10 +9393,24 @@ document.addEventListener("visibilitychange", () => {
 
 // --- building it ----------------------------------------------------------------
 
+//: **A removed figure's Web Animations stop first** (audit 1101, idle restyles).
+//: An infinite animation on a node that has left the page does not end with
+//: it while anything still points at it (the pacer's list, a figure's loop
+//: array, a pending promise): it keeps ticking, and every tick schedules a
+//: style recalc on the document. Measured with the companion switched from
+//: Atlas to Off on the chat tab: 28 running animations on detached targets,
+//: 60 style recalcs a second for as long as the page stayed open; cancelled,
+//: 2. Read the list before the node goes (a detached node reports none).
+function dropAnimations(root) {
+  if (!root || typeof root.getAnimations !== "function") return;
+  for (const anim of root.getAnimations({ subtree: true })) anim.cancel();
+}
+
 //: Hidden from its menu: off in Appearance, gone from the page, and a toast
 //: that says where it comes back from.
 //: Off the page: every timer it had stops and nothing is followed.
 function nameMarkBuddyGone() {
+  nmbTempo.anims = [];
   clearTimeout(nmb.timer);
   clearTimeout(nmb.placeTimer);
   clearTimeout(nmb.awayTimer);
@@ -9394,6 +9462,7 @@ function nameMarkBuddyHide(buddy) {
   const select = document.getElementById("avatar-buddy");
   if (select) select.value = "off";
   nameMarkBuddyLeave(buddy, () => {
+    dropAnimations(buddy);
     buddy?.remove();
     //: Every copy: a stray second mount left its glow and grip behind.
     for (const stray of document.querySelectorAll("#nm-buddy, .nmb-burst")) stray.remove();
@@ -9988,6 +10057,7 @@ function syncNameMarkBuddy() {
   const seed = nameMarkBuddySeed();
   let buddy = document.getElementById("nm-buddy");
   if (!seed) {
+    dropAnimations(buddy);
     buddy?.remove();
     nameMarkBuddyGone();
     return;
@@ -10001,7 +10071,9 @@ function syncNameMarkBuddy() {
     nmb.reading = nameMood(seed);
     buddy.dataset.feel = nmb.reading?.mood || "";
     const char = buddy.querySelector(".nm-buddy-char");
-    char.querySelector(".nm-figure")?.remove();
+    const old = char.querySelector(".nm-figure");
+    dropAnimations(old);
+    old?.remove();
     char.prepend(characterFor(seed).figure());
     //: A new face starts from its own look.
     nmb.expr = "";
