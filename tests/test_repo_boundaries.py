@@ -20,6 +20,7 @@ API = Path(__file__).resolve().parents[1] / "src" / "tessellate" / "api"
 MOVED = {
     "bookmarks": {"Bookmark", "EntryBookmark", "DocumentBookmark"},
     "relation_types": {"RelationType"},
+    "reminders": {"Reminder"},
 }
 
 #: A route that deletes every row of a space walks every model at once; the
@@ -27,8 +28,10 @@ MOVED = {
 CROSS_RESOURCE = {"routes_spaces.py"}
 
 #: 876 at arch1518; the voice reads (the dashboard line, the companion's remarks)
-#: moved to repo/voice.py: 872; the board bin guard to repo/content.py: 870.
-ORM_CALLS_CAP = 870
+#: moved to repo/voice.py: 872; the board bin guard to repo/content.py: 870;
+#: reminders to repo/reminders.py (its router, the timeline, meetings, debug
+#: and two chat readers): 843.
+ORM_CALLS_CAP = 843
 
 _ORM = re.compile(
     r"\b(?:session|db)\.(?:query|get|execute|scalar|scalars|add|add_all|delete|merge)\("

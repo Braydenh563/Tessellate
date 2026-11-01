@@ -31,7 +31,8 @@ from sqlalchemy.orm import Session
 from tessellate import __version__
 from tessellate.api import routes_tasks
 from tessellate.core import deps, jobs, logbuffer, taskhistory
-from tessellate.core.database import Attachment, Document, Entry, MediaUpload, Reminder
+from tessellate.core.database import Attachment, Document, Entry, MediaUpload
+from tessellate.repo import reminders as reminder_repo
 from tessellate.core.deps import get_session
 
 router = APIRouter(prefix="/debug", tags=["debug"])
@@ -134,7 +135,7 @@ def debug_health(session: Session = Depends(get_session)) -> dict:
         "documents": session.scalar(select(func.count(Document.id))) or 0,
         "media": session.scalar(select(func.count(MediaUpload.id))) or 0,
         "attachments": session.scalar(select(func.count(Attachment.id))) or 0,
-        "reminders": session.scalar(select(func.count(Reminder.id))) or 0,
+        "reminders": reminder_repo.count(session),
     }
 
     running_jobs = routes_tasks.collect()

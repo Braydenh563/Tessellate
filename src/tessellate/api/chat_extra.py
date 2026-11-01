@@ -13,7 +13,8 @@ from sqlalchemy.orm import Session
 from tessellate.ai import activity, composer_digest, composer_extra, realise
 from tessellate.ai.composer_study import Ctx
 from tessellate.ai.tools._common import _visible
-from tessellate.core.database import Category, Entry, Reminder
+from tessellate.core.database import Category, Entry
+from tessellate.repo import reminders as reminder_repo
 
 NOTE_LIMIT = 400
 log = logging.getLogger("tessellate.chat")
@@ -29,7 +30,7 @@ def _notes(session: Session) -> list[dict]:
 
 
 def _reminders(session: Session) -> list[dict]:
-    rows = session.query(Reminder).filter(Reminder.done == False).order_by(Reminder.due_at).limit(300).all()  # noqa: E712
+    rows = reminder_repo.every(session, limit=300)
     return [{"id": r.id, "text": r.text, "due_at": r.due_at, "done": r.done, "entry_id": r.entry_id, "priority": r.priority} for r in rows]
 
 
