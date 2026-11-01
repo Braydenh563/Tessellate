@@ -193,6 +193,9 @@
   }
 
   // --- Quick search ------------------------------------------------------------
+  //: This page loads no chat.js, so it spells the cap itself: chat.js's
+  //: `QUESTION_CAP` and `search/query.py`'s, held equal by tests/test_warm12_1101.py.
+  const DESK_QUESTION_CAP = 4000;
   let searchTimer = 0;
   let searchSeq = 0;
   const plain = (text) =>
@@ -239,7 +242,7 @@
       return;
     }
     try {
-      const response = await call(`/search?q=${encodeURIComponent(q)}&limit=6`);
+      const response = await call(`/search?q=${encodeURIComponent(q.slice(0, DESK_QUESTION_CAP))}&limit=6`);
       if (mine !== searchSeq) return;
       if (response.status === 401) {
         list.replaceChildren();

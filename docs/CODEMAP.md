@@ -2,9 +2,9 @@
 
 Generated 2026-11-01 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7547, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8417, test files 1812, tests 15550, plan headings 990, app scripts 28, boot scripts 37, script files 222.
+Counts: frontend functions 7548, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8417, test files 1813, tests 15560, plan headings 990, app scripts 28, boot scripts 37, script files 222.
 
-## Frontend functions (7547)
+## Frontend functions (7548)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -416,68 +416,69 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `watchFiling` | frontend/js/capture-ask.js:52 |
 | `withTitle` | frontend/js/capture-ask.js:447 |
 
-### frontend/js/chat.js (58)
+### frontend/js/chat.js (59)
 
 | Name | File:line |
 |---|---|
-| `aiWritingTrace` | frontend/js/chat.js:1330 |
-| `applyCompression` | frontend/js/chat.js:1211 |
-| `askAboutPage` | frontend/js/chat.js:632 |
-| `atlasSuggestion` | frontend/js/chat.js:173 |
-| `batteryModeOn` | frontend/js/chat.js:1253 |
-| `bodyTextWithCitations` | frontend/js/chat.js:58 |
-| `chatEmptySettle` | frontend/js/chat.js:194 |
-| `chatTranscriptText` | frontend/js/chat.js:1143 |
-| `citeWebPage` | frontend/js/chat.js:689 |
-| `clearChatEmptyState` | frontend/js/chat.js:323 |
-| `clearWebSearchHistory` | frontend/js/chat.js:622 |
-| `clipFor` | frontend/js/chat.js:44 |
-| `closeWebReader` | frontend/js/chat.js:393 |
-| `compactTokens` | frontend/js/chat.js:72 |
-| `compressChatContext` | frontend/js/chat.js:1171 |
-| `compressSizeText` | frontend/js/chat.js:1192 |
-| `copyToClipboard` | frontend/js/chat.js:123 |
-| `copyViaTextarea` | frontend/js/chat.js:83 |
-| `fillPersonaMark` | frontend/js/chat.js:946 |
-| `flashCopied` | frontend/js/chat.js:105 |
-| `loadResponseModes` | frontend/js/chat.js:901 |
-| `loadWebSearchHistory` | frontend/js/chat.js:611 |
-| `mountChatActionsMenu` | frontend/js/chat.js:1087 |
-| `openWebReader` | frontend/js/chat.js:649 |
-| `personaOptions` | frontend/js/chat.js:963 |
-| `progressMotionWanted` | frontend/js/chat.js:1282 |
-| `progressPhaseText` | frontend/js/chat.js:1526 |
-| `refreshWebSearxngStrip` | frontend/js/chat.js:566 |
-| `regenerateFromBubble` | frontend/js/chat.js:161 |
-| `regenerateLastAnswer` | frontend/js/chat.js:166 |
-| `renderChatContextMeter` | frontend/js/chat.js:1041 |
-| `renderChatEmptyState` | frontend/js/chat.js:204 |
-| `renderChatTurnCount` | frontend/js/chat.js:1067 |
-| `renderChatUsage` | frontend/js/chat.js:1024 |
-| `renderCompressionState` | frontend/js/chat.js:1224 |
-| `renderModelContextBox` | frontend/js/chat.js:762 |
-| `renderModelHealthNote` | frontend/js/chat.js:864 |
-| `renderModelSpec` | frontend/js/chat.js:792 |
-| `renderWebPageAttachment` | frontend/js/chat.js:716 |
-| `renderWebPanelMenu` | frontend/js/chat.js:500 |
-| `scheduleThinkingWordTick` | frontend/js/chat.js:1444 |
-| `setResponseMode` | frontend/js/chat.js:924 |
-| `setWebEngineDot` | frontend/js/chat.js:486 |
-| `setWebSearxngRunning` | frontend/js/chat.js:551 |
-| `showCompressReview` | frontend/js/chat.js:1199 |
-| `startThinkingWordRotation` | frontend/js/chat.js:1472 |
-| `stopThinkingWordRotation` | frontend/js/chat.js:1494 |
-| `stopWebRequest` | frontend/js/chat.js:378 |
-| `togglePersonaPrompt` | frontend/js/chat.js:1016 |
-| `toggleWebPanel` | frontend/js/chat.js:406 |
-| `typingDots` | frontend/js/chat.js:1548 |
-| `webEngineWords` | frontend/js/chat.js:469 |
-| `webPageMarkdown` | frontend/js/chat.js:656 |
-| `webReaderIsOpen` | frontend/js/chat.js:389 |
-| `webRequestEnd` | frontend/js/chat.js:368 |
-| `webRequestStart` | frontend/js/chat.js:359 |
-| `wheelScrollsHorizontally` | frontend/js/chat.js:1379 |
-| `wireHorizontalWheelScrolling` | frontend/js/chat.js:1412 |
+| `afterAnswerFrame` | frontend/js/chat.js:62 |
+| `aiWritingTrace` | frontend/js/chat.js:1350 |
+| `applyCompression` | frontend/js/chat.js:1231 |
+| `askAboutPage` | frontend/js/chat.js:652 |
+| `atlasSuggestion` | frontend/js/chat.js:193 |
+| `batteryModeOn` | frontend/js/chat.js:1273 |
+| `bodyTextWithCitations` | frontend/js/chat.js:78 |
+| `chatEmptySettle` | frontend/js/chat.js:214 |
+| `chatTranscriptText` | frontend/js/chat.js:1163 |
+| `citeWebPage` | frontend/js/chat.js:709 |
+| `clearChatEmptyState` | frontend/js/chat.js:343 |
+| `clearWebSearchHistory` | frontend/js/chat.js:642 |
+| `clipFor` | frontend/js/chat.js:52 |
+| `closeWebReader` | frontend/js/chat.js:413 |
+| `compactTokens` | frontend/js/chat.js:92 |
+| `compressChatContext` | frontend/js/chat.js:1191 |
+| `compressSizeText` | frontend/js/chat.js:1212 |
+| `copyToClipboard` | frontend/js/chat.js:143 |
+| `copyViaTextarea` | frontend/js/chat.js:103 |
+| `fillPersonaMark` | frontend/js/chat.js:966 |
+| `flashCopied` | frontend/js/chat.js:125 |
+| `loadResponseModes` | frontend/js/chat.js:921 |
+| `loadWebSearchHistory` | frontend/js/chat.js:631 |
+| `mountChatActionsMenu` | frontend/js/chat.js:1107 |
+| `openWebReader` | frontend/js/chat.js:669 |
+| `personaOptions` | frontend/js/chat.js:983 |
+| `progressMotionWanted` | frontend/js/chat.js:1302 |
+| `progressPhaseText` | frontend/js/chat.js:1546 |
+| `refreshWebSearxngStrip` | frontend/js/chat.js:586 |
+| `regenerateFromBubble` | frontend/js/chat.js:181 |
+| `regenerateLastAnswer` | frontend/js/chat.js:186 |
+| `renderChatContextMeter` | frontend/js/chat.js:1061 |
+| `renderChatEmptyState` | frontend/js/chat.js:224 |
+| `renderChatTurnCount` | frontend/js/chat.js:1087 |
+| `renderChatUsage` | frontend/js/chat.js:1044 |
+| `renderCompressionState` | frontend/js/chat.js:1244 |
+| `renderModelContextBox` | frontend/js/chat.js:782 |
+| `renderModelHealthNote` | frontend/js/chat.js:884 |
+| `renderModelSpec` | frontend/js/chat.js:812 |
+| `renderWebPageAttachment` | frontend/js/chat.js:736 |
+| `renderWebPanelMenu` | frontend/js/chat.js:520 |
+| `scheduleThinkingWordTick` | frontend/js/chat.js:1464 |
+| `setResponseMode` | frontend/js/chat.js:944 |
+| `setWebEngineDot` | frontend/js/chat.js:506 |
+| `setWebSearxngRunning` | frontend/js/chat.js:571 |
+| `showCompressReview` | frontend/js/chat.js:1219 |
+| `startThinkingWordRotation` | frontend/js/chat.js:1492 |
+| `stopThinkingWordRotation` | frontend/js/chat.js:1514 |
+| `stopWebRequest` | frontend/js/chat.js:398 |
+| `togglePersonaPrompt` | frontend/js/chat.js:1036 |
+| `toggleWebPanel` | frontend/js/chat.js:426 |
+| `typingDots` | frontend/js/chat.js:1568 |
+| `webEngineWords` | frontend/js/chat.js:489 |
+| `webPageMarkdown` | frontend/js/chat.js:676 |
+| `webReaderIsOpen` | frontend/js/chat.js:409 |
+| `webRequestEnd` | frontend/js/chat.js:388 |
+| `webRequestStart` | frontend/js/chat.js:379 |
+| `wheelScrollsHorizontally` | frontend/js/chat.js:1399 |
+| `wireHorizontalWheelScrolling` | frontend/js/chat.js:1432 |
 
 ### frontend/js/chat-agent.js (43)
 
@@ -2089,19 +2090,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `announceAskFoot` | frontend/js/ask-compose.js:1430 |
+| `announceAskFoot` | frontend/js/ask-compose.js:1434 |
 | `askAiOffCause` | frontend/js/ask-compose.js:38 |
 | `askAnswerFrom` | frontend/js/ask-compose.js:46 |
 | `askAnswerMenu` | frontend/js/ask-compose.js:641 |
-| `askAsOf` | frontend/js/ask-compose.js:1443 |
+| `askAsOf` | frontend/js/ask-compose.js:1447 |
 | `askFromNotesFold` | frontend/js/ask-compose.js:865 |
 | `askKeepAsDocument` | frontend/js/ask-compose.js:673 |
 | `askKeepAsMap` | frontend/js/ask-compose.js:695 |
 | `askKeptTitle` | frontend/js/ask-compose.js:668 |
 | `askPreAnswerCard` | frontend/js/ask-compose.js:855 |
-| `askQuestion` | frontend/js/ask-compose.js:907 |
-| `askStatusBusy` | frontend/js/ask-compose.js:1368 |
-| `askStatusText` | frontend/js/ask-compose.js:1455 |
+| `askQuestion` | frontend/js/ask-compose.js:909 |
+| `askStatusBusy` | frontend/js/ask-compose.js:1372 |
+| `askStatusText` | frontend/js/ask-compose.js:1459 |
 | `citationVerdictRow` | frontend/js/ask-compose.js:612 |
 | `digestMore` | frontend/js/ask-compose.js:457 |
 | `digestOffer` | frontend/js/ask-compose.js:495 |
@@ -2114,13 +2115,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderActCard` | frontend/js/ask-compose.js:193 |
 | `renderAskBoth` | frontend/js/ask-compose.js:844 |
 | `renderAskFollowups` | frontend/js/ask-compose.js:794 |
-| `renderAskHint` | frontend/js/ask-compose.js:1405 |
+| `renderAskHint` | frontend/js/ask-compose.js:1409 |
 | `renderAskInsights` | frontend/js/ask-compose.js:722 |
 | `renderAskUseAi` | frontend/js/ask-compose.js:51 |
 | `renderAskWhy` | frontend/js/ask-compose.js:746 |
-| `renderChatMeta` | frontend/js/ask-compose.js:1273 |
+| `renderChatMeta` | frontend/js/ask-compose.js:1277 |
 | `renderWebSources` | frontend/js/ask-compose.js:275 |
-| `setAsking` | frontend/js/ask-compose.js:1464 |
+| `setAsking` | frontend/js/ask-compose.js:1468 |
 | `wireAskUseAi` | frontend/js/ask-compose.js:69 |
 
 ### frontend/js/ask-history.js (10)
@@ -2839,32 +2840,32 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addBubble` | frontend/js/chat-turn.js:2371 |
-| `agentTimeline` | frontend/js/chat-turn.js:1194 |
-| `appendRunResumeControls` | frontend/js/chat-turn.js:2265 |
-| `assistantMessageActions` | frontend/js/chat-turn.js:2429 |
-| `chatAttachmentStrip` | frontend/js/chat-turn.js:2140 |
+| `addBubble` | frontend/js/chat-turn.js:2374 |
+| `agentTimeline` | frontend/js/chat-turn.js:1197 |
+| `appendRunResumeControls` | frontend/js/chat-turn.js:2268 |
+| `assistantMessageActions` | frontend/js/chat-turn.js:2432 |
+| `chatAttachmentStrip` | frontend/js/chat-turn.js:2143 |
 | `chatSendTurn` | frontend/js/chat-turn.js:11 |
-| `commitStagedImages` | frontend/js/chat-turn.js:2043 |
-| `continueRunControls` | frontend/js/chat-turn.js:2578 |
-| `deleteChatTurn` | frontend/js/chat-turn.js:2528 |
-| `forkFromBubble` | frontend/js/chat-turn.js:2623 |
-| `manualPauseControls` | frontend/js/chat-turn.js:2652 |
-| `markFollowup` | frontend/js/chat-turn.js:2678 |
-| `mountChatTimer` | frontend/js/chat-turn.js:2092 |
-| `offerFollowups` | frontend/js/chat-turn.js:1978 |
-| `offerReminder` | frontend/js/chat-turn.js:1917 |
-| `paintChatTimer` | frontend/js/chat-turn.js:2079 |
-| `removeChatBubble` | frontend/js/chat-turn.js:2702 |
-| `renderAgentQuestion` | frontend/js/chat-turn.js:1705 |
-| `renderMemoryProposal` | frontend/js/chat-turn.js:1789 |
-| `renderRecordsDetails` | frontend/js/chat-turn.js:2488 |
-| `revalidateSelection` | frontend/js/chat-turn.js:1861 |
-| `saveFollowups` | frontend/js/chat-turn.js:2064 |
-| `selectionContextBlock` | frontend/js/chat-turn.js:2016 |
-| `settlePendingAgentQuestion` | frontend/js/chat-turn.js:2124 |
-| `startChatTimer` | frontend/js/chat-turn.js:2105 |
-| `stopChatTimer` | frontend/js/chat-turn.js:2114 |
+| `commitStagedImages` | frontend/js/chat-turn.js:2046 |
+| `continueRunControls` | frontend/js/chat-turn.js:2581 |
+| `deleteChatTurn` | frontend/js/chat-turn.js:2531 |
+| `forkFromBubble` | frontend/js/chat-turn.js:2626 |
+| `manualPauseControls` | frontend/js/chat-turn.js:2655 |
+| `markFollowup` | frontend/js/chat-turn.js:2681 |
+| `mountChatTimer` | frontend/js/chat-turn.js:2095 |
+| `offerFollowups` | frontend/js/chat-turn.js:1981 |
+| `offerReminder` | frontend/js/chat-turn.js:1920 |
+| `paintChatTimer` | frontend/js/chat-turn.js:2082 |
+| `removeChatBubble` | frontend/js/chat-turn.js:2705 |
+| `renderAgentQuestion` | frontend/js/chat-turn.js:1708 |
+| `renderMemoryProposal` | frontend/js/chat-turn.js:1792 |
+| `renderRecordsDetails` | frontend/js/chat-turn.js:2491 |
+| `revalidateSelection` | frontend/js/chat-turn.js:1864 |
+| `saveFollowups` | frontend/js/chat-turn.js:2067 |
+| `selectionContextBlock` | frontend/js/chat-turn.js:2019 |
+| `settlePendingAgentQuestion` | frontend/js/chat-turn.js:2127 |
+| `startChatTimer` | frontend/js/chat-turn.js:2108 |
+| `stopChatTimer` | frontend/js/chat-turn.js:2117 |
 
 ### frontend/js/chat-undo.js (10)
 
@@ -3076,17 +3077,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `ask` | frontend/js/desk-companion.js:50 |
 | `call` | frontend/js/desk-companion.js:42 |
 | `draw` | frontend/js/desk-companion.js:68 |
-| `hitRow` | frontend/js/desk-companion.js:205 |
+| `hitRow` | frontend/js/desk-companion.js:208 |
 | `host` | frontend/js/desk-companion.js:49 |
 | `item` | frontend/js/desk-companion.js:104 |
 | `leave` | frontend/js/desk-companion.js:143 |
 | `noteStatus` | frontend/js/desk-companion.js:160 |
 | `openMenu` | frontend/js/desk-companion.js:117 |
 | `openPanel` | frontend/js/desk-companion.js:148 |
-| `plain` | frontend/js/desk-companion.js:198 |
+| `plain` | frontend/js/desk-companion.js:201 |
 | `probe` | frontend/js/desk-companion.js:78 |
 | `rest` | frontend/js/desk-companion.js:154 |
-| `runSearch` | frontend/js/desk-companion.js:232 |
+| `runSearch` | frontend/js/desk-companion.js:235 |
 | `saveNote` | frontend/js/desk-companion.js:166 |
 | `seed` | frontend/js/desk-companion.js:60 |
 | `show` | frontend/js/desk-companion.js:95 |
@@ -12342,7 +12343,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/statistics/ask` | POST | `ask_statistics` | src/tessellate/api/routes_statistics.py:39 |
 | `/stats` | GET | `ask_history_stats` | src/tessellate/api/routes_ask_history.py:84 |
 | `/stats` | GET | `stats` | src/tessellate/api/routes_insights.py:35 |
-| `/stats` | GET | `stats` | src/tessellate/api/routes_search.py:184 |
+| `/stats` | GET | `stats` | src/tessellate/api/routes_search.py:189 |
 | `/status` | GET | `status` | src/tessellate/api/routes_auth.py:794 |
 | `/status` | GET | `status` | src/tessellate/api/routes_models.py:453 |
 | `/status` | GET | `status` | src/tessellate/api/routes_translate.py:22 |
@@ -17893,41 +17894,41 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `ChatRequest` | src/tessellate/api/chat_request.py:108 |
-| `ChatResponse` | src/tessellate/api/chat_request.py:660 |
-| `ChatTurn` | src/tessellate/api/chat_request.py:68 |
-| `CommandRunBody` | src/tessellate/api/chat_request.py:751 |
-| `CompressBody` | src/tessellate/api/chat_request.py:848 |
-| `FollowupBody` | src/tessellate/api/chat_request.py:39 |
-| `PlanRun` | src/tessellate/api/chat_request.py:85 |
-| `RememberBody` | src/tessellate/api/chat_request.py:35 |
-| `ScreenBody` | src/tessellate/api/chat_request.py:98 |
-| `ToolExecuteBody` | src/tessellate/api/chat_request.py:854 |
-| `_StreamRequest` | src/tessellate/api/chat_request.py:696 |
-| `_Turn` | src/tessellate/api/chat_request.py:759 |
-| `_apply_open` | src/tessellate/api/chat_request.py:430 |
-| `_apply_open_this` | src/tessellate/api/chat_request.py:460 |
-| `_apply_scope` | src/tessellate/api/chat_request.py:321 |
-| `_attached_only` | src/tessellate/api/chat_request.py:358 |
-| `_category_note_ids` | src/tessellate/api/chat_request.py:340 |
-| `_chat_model_sees_images` | src/tessellate/api/chat_request.py:560 |
-| `_check_refs` | src/tessellate/api/chat_request.py:301 |
-| `_composed` | src/tessellate/api/chat_request.py:744 |
-| `_event` | src/tessellate/api/chat_request.py:790 |
-| `_first_more_is_this` | src/tessellate/api/chat_request.py:351 |
-| `_image_caption_context` | src/tessellate/api/chat_request.py:573 |
-| `_in_full` | src/tessellate/api/chat_request.py:739 |
-| `_linked_labels` | src/tessellate/api/chat_request.py:56 |
-| `_meta_event` | src/tessellate/api/chat_request.py:794 |
-| `_named_note` | src/tessellate/api/chat_request.py:383 |
-| `_nothing_open` | src/tessellate/api/chat_request.py:475 |
-| `_open_surface` | src/tessellate/api/chat_request.py:418 |
-| `_resolve_chat_images` | src/tessellate/api/chat_request.py:520 |
-| `_resolve_mode` | src/tessellate/api/chat_request.py:481 |
-| `_resolve_persona` | src/tessellate/api/chat_request.py:497 |
-| `_resolve_skill` | src/tessellate/api/chat_request.py:634 |
-| `_small_model_mode` | src/tessellate/api/chat_request.py:613 |
-| `_titled_note` | src/tessellate/api/chat_request.py:402 |
+| `ChatRequest` | src/tessellate/api/chat_request.py:109 |
+| `ChatResponse` | src/tessellate/api/chat_request.py:661 |
+| `ChatTurn` | src/tessellate/api/chat_request.py:69 |
+| `CommandRunBody` | src/tessellate/api/chat_request.py:752 |
+| `CompressBody` | src/tessellate/api/chat_request.py:849 |
+| `FollowupBody` | src/tessellate/api/chat_request.py:40 |
+| `PlanRun` | src/tessellate/api/chat_request.py:86 |
+| `RememberBody` | src/tessellate/api/chat_request.py:36 |
+| `ScreenBody` | src/tessellate/api/chat_request.py:99 |
+| `ToolExecuteBody` | src/tessellate/api/chat_request.py:855 |
+| `_StreamRequest` | src/tessellate/api/chat_request.py:697 |
+| `_Turn` | src/tessellate/api/chat_request.py:760 |
+| `_apply_open` | src/tessellate/api/chat_request.py:431 |
+| `_apply_open_this` | src/tessellate/api/chat_request.py:461 |
+| `_apply_scope` | src/tessellate/api/chat_request.py:322 |
+| `_attached_only` | src/tessellate/api/chat_request.py:359 |
+| `_category_note_ids` | src/tessellate/api/chat_request.py:341 |
+| `_chat_model_sees_images` | src/tessellate/api/chat_request.py:561 |
+| `_check_refs` | src/tessellate/api/chat_request.py:302 |
+| `_composed` | src/tessellate/api/chat_request.py:745 |
+| `_event` | src/tessellate/api/chat_request.py:791 |
+| `_first_more_is_this` | src/tessellate/api/chat_request.py:352 |
+| `_image_caption_context` | src/tessellate/api/chat_request.py:574 |
+| `_in_full` | src/tessellate/api/chat_request.py:740 |
+| `_linked_labels` | src/tessellate/api/chat_request.py:57 |
+| `_meta_event` | src/tessellate/api/chat_request.py:795 |
+| `_named_note` | src/tessellate/api/chat_request.py:384 |
+| `_nothing_open` | src/tessellate/api/chat_request.py:476 |
+| `_open_surface` | src/tessellate/api/chat_request.py:419 |
+| `_resolve_chat_images` | src/tessellate/api/chat_request.py:521 |
+| `_resolve_mode` | src/tessellate/api/chat_request.py:482 |
+| `_resolve_persona` | src/tessellate/api/chat_request.py:498 |
+| `_resolve_skill` | src/tessellate/api/chat_request.py:635 |
+| `_small_model_mode` | src/tessellate/api/chat_request.py:614 |
+| `_titled_note` | src/tessellate/api/chat_request.py:403 |
 
 ### src/tessellate/api/chat_said.py (56)
 
@@ -19589,13 +19590,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `WarmBody` | src/tessellate/api/routes_search.py:32 |
-| `_corrected_query` | src/tessellate/api/routes_search.py:162 |
+| `_corrected_query` | src/tessellate/api/routes_search.py:167 |
 | `_notices_for` | src/tessellate/api/routes_search.py:90 |
 | `_scope_of` | src/tessellate/api/routes_search.py:60 |
-| `_with_categories` | src/tessellate/api/routes_search.py:141 |
+| `_with_categories` | src/tessellate/api/routes_search.py:146 |
 | `_with_typo_fix` | src/tessellate/api/routes_search.py:69 |
 | `search` | src/tessellate/api/routes_search.py:99 |
-| `stats` | src/tessellate/api/routes_search.py:185 |
+| `stats` | src/tessellate/api/routes_search.py:190 |
 | `warm` | src/tessellate/api/routes_search.py:37 |
 
 ### src/tessellate/api/routes_settings.py (110)
@@ -22773,80 +22774,80 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Understood` | src/tessellate/search/query.py:50 |
-| `_constrained` | src/tessellate/search/query.py:579 |
-| `_empty_filters` | src/tessellate/search/query.py:45 |
-| `_has_content` | src/tessellate/search/query.py:584 |
-| `_parse_date_operator` | src/tessellate/search/query.py:376 |
-| `_parse_operators` | src/tessellate/search/query.py:404 |
-| `_read_window` | src/tessellate/search/query.py:479 |
-| `_split_values` | src/tessellate/search/query.py:394 |
-| `_strip_scaffolding` | src/tessellate/search/query.py:232 |
-| `_strip_trailing_scaffold` | src/tessellate/search/query.py:218 |
-| `_take_categories` | src/tessellate/search/query.py:334 |
-| `_take_negated` | src/tessellate/search/query.py:360 |
-| `_take_tag_count` | src/tessellate/search/query.py:349 |
-| `_tidy` | src/tessellate/search/query.py:167 |
-| `is_topic_word` | src/tessellate/search/query.py:627 |
-| `operator_notices` | src/tessellate/search/query.py:455 |
-| `search_terms` | src/tessellate/search/query.py:637 |
-| `understand` | src/tessellate/search/query.py:508 |
+| `Understood` | src/tessellate/search/query.py:57 |
+| `_constrained` | src/tessellate/search/query.py:586 |
+| `_empty_filters` | src/tessellate/search/query.py:52 |
+| `_has_content` | src/tessellate/search/query.py:591 |
+| `_parse_date_operator` | src/tessellate/search/query.py:383 |
+| `_parse_operators` | src/tessellate/search/query.py:411 |
+| `_read_window` | src/tessellate/search/query.py:486 |
+| `_split_values` | src/tessellate/search/query.py:401 |
+| `_strip_scaffolding` | src/tessellate/search/query.py:239 |
+| `_strip_trailing_scaffold` | src/tessellate/search/query.py:225 |
+| `_take_categories` | src/tessellate/search/query.py:341 |
+| `_take_negated` | src/tessellate/search/query.py:367 |
+| `_take_tag_count` | src/tessellate/search/query.py:356 |
+| `_tidy` | src/tessellate/search/query.py:174 |
+| `is_topic_word` | src/tessellate/search/query.py:634 |
+| `operator_notices` | src/tessellate/search/query.py:462 |
+| `search_terms` | src/tessellate/search/query.py:644 |
+| `understand` | src/tessellate/search/query.py:515 |
 
 ### src/tessellate/search/search_manager.py (52)
 
 | Name | File:line |
 |---|---|
-| `Retrieval` | src/tessellate/search/search_manager.py:992 |
-| `_append_connected` | src/tessellate/search/search_manager.py:1377 |
-| `_candidates` | src/tessellate/search/search_manager.py:1265 |
-| `_category_named_whole` | src/tessellate/search/search_manager.py:1169 |
-| `_category_notes` | src/tessellate/search/search_manager.py:1224 |
-| `_category_only` | src/tessellate/search/search_manager.py:1218 |
-| `_category_scope` | src/tessellate/search/search_manager.py:1394 |
+| `Retrieval` | src/tessellate/search/search_manager.py:993 |
+| `_append_connected` | src/tessellate/search/search_manager.py:1378 |
+| `_candidates` | src/tessellate/search/search_manager.py:1266 |
+| `_category_named_whole` | src/tessellate/search/search_manager.py:1170 |
+| `_category_notes` | src/tessellate/search/search_manager.py:1225 |
+| `_category_only` | src/tessellate/search/search_manager.py:1219 |
+| `_category_scope` | src/tessellate/search/search_manager.py:1395 |
 | `_corrected_terms` | src/tessellate/search/search_manager.py:269 |
-| `_dated_candidates` | src/tessellate/search/search_manager.py:1407 |
-| `_early_answer` | src/tessellate/search/search_manager.py:1241 |
-| `_fuse` | src/tessellate/search/search_manager.py:737 |
-| `_latest_about` | src/tessellate/search/search_manager.py:1415 |
-| `_learned_order` | src/tessellate/search/search_manager.py:1539 |
-| `_linked_neighbours` | src/tessellate/search/search_manager.py:776 |
+| `_dated_candidates` | src/tessellate/search/search_manager.py:1408 |
+| `_early_answer` | src/tessellate/search/search_manager.py:1242 |
+| `_fuse` | src/tessellate/search/search_manager.py:738 |
+| `_latest_about` | src/tessellate/search/search_manager.py:1416 |
+| `_learned_order` | src/tessellate/search/search_manager.py:1540 |
+| `_linked_neighbours` | src/tessellate/search/search_manager.py:777 |
 | `_load_later` | src/tessellate/search/search_manager.py:410 |
-| `_match_info` | src/tessellate/search/search_manager.py:1359 |
+| `_match_info` | src/tessellate/search/search_manager.py:1360 |
 | `_meaningful_terms` | src/tessellate/search/search_manager.py:351 |
-| `_named_category` | src/tessellate/search/search_manager.py:1184 |
-| `_narrow_to_range` | src/tessellate/search/search_manager.py:1281 |
+| `_named_category` | src/tessellate/search/search_manager.py:1185 |
+| `_narrow_to_range` | src/tessellate/search/search_manager.py:1282 |
 | `_near_words` | src/tessellate/search/search_manager.py:307 |
-| `_nothing_matched` | src/tessellate/search/search_manager.py:1327 |
-| `_outside_window` | src/tessellate/search/search_manager.py:1305 |
-| `_rank` | src/tessellate/search/search_manager.py:1093 |
-| `_rank_inner` | src/tessellate/search/search_manager.py:1106 |
-| `_recency_pin_ranking` | src/tessellate/search/search_manager.py:711 |
-| `_retrieve` | src/tessellate/search/search_manager.py:1469 |
-| `_score_from_matrix` | src/tessellate/search/search_manager.py:578 |
-| `_score_from_table` | src/tessellate/search/search_manager.py:617 |
+| `_nothing_matched` | src/tessellate/search/search_manager.py:1328 |
+| `_outside_window` | src/tessellate/search/search_manager.py:1306 |
+| `_rank` | src/tessellate/search/search_manager.py:1094 |
+| `_rank_inner` | src/tessellate/search/search_manager.py:1107 |
+| `_recency_pin_ranking` | src/tessellate/search/search_manager.py:712 |
+| `_retrieve` | src/tessellate/search/search_manager.py:1470 |
+| `_score_from_matrix` | src/tessellate/search/search_manager.py:579 |
+| `_score_from_table` | src/tessellate/search/search_manager.py:618 |
 | `_substring_entries` | src/tessellate/search/search_manager.py:222 |
 | `_user_today` | src/tessellate/search/search_manager.py:45 |
-| `_when_nothing_ranked` | src/tessellate/search/search_manager.py:1440 |
-| `_within` | src/tessellate/search/search_manager.py:976 |
-| `_without_private` | src/tessellate/search/search_manager.py:1593 |
+| `_when_nothing_ranked` | src/tessellate/search/search_manager.py:1441 |
+| `_within` | src/tessellate/search/search_manager.py:977 |
+| `_without_private` | src/tessellate/search/search_manager.py:1594 |
 | `_word_for_stem` | src/tessellate/search/search_manager.py:324 |
-| `_written_at` | src/tessellate/search/search_manager.py:935 |
-| `clip_query` | src/tessellate/search/search_manager.py:1461 |
+| `_written_at` | src/tessellate/search/search_manager.py:936 |
+| `clip_query` | src/tessellate/search/search_manager.py:1462 |
 | `configured_thresholds` | src/tessellate/search/search_manager.py:356 |
-| `day_mentions` | src/tessellate/search/search_manager.py:946 |
+| `day_mentions` | src/tessellate/search/search_manager.py:947 |
 | `entries_between` | src/tessellate/search/search_manager.py:102 |
-| `graph_expansion` | src/tessellate/search/search_manager.py:841 |
-| `in_range` | src/tessellate/search/search_manager.py:907 |
+| `graph_expansion` | src/tessellate/search/search_manager.py:842 |
+| `in_range` | src/tessellate/search/search_manager.py:908 |
 | `is_exact_term` | src/tessellate/search/search_manager.py:262 |
-| `is_recency_ask` | src/tessellate/search/search_manager.py:1146 |
+| `is_recency_ask` | src/tessellate/search/search_manager.py:1147 |
 | `keyword_search` | src/tessellate/search/search_manager.py:129 |
-| `last_search` | src/tessellate/search/search_manager.py:1088 |
-| `note_search_mode` | src/tessellate/search/search_manager.py:1101 |
+| `last_search` | src/tessellate/search/search_manager.py:1089 |
+| `note_search_mode` | src/tessellate/search/search_manager.py:1102 |
 | `query_vector` | src/tessellate/search/search_manager.py:385 |
 | `recent_entries` | src/tessellate/search/search_manager.py:80 |
-| `retrieve` | src/tessellate/search/search_manager.py:1058 |
-| `retrieve_detailed` | src/tessellate/search/search_manager.py:1029 |
-| `semantic_search` | src/tessellate/search/search_manager.py:473 |
+| `retrieve` | src/tessellate/search/search_manager.py:1059 |
+| `retrieve_detailed` | src/tessellate/search/search_manager.py:1030 |
+| `semantic_search` | src/tessellate/search/search_manager.py:474 |
 | `warm` | src/tessellate/search/search_manager.py:445 |
 
 ### src/tessellate/search/searxng_docker.py (8)
@@ -23001,7 +23002,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15550)
+## Tests (15560)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24671,6 +24672,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_voice_models.py | 2 |
 | tests/test_voice_tables.py | 5 |
 | tests/test_waiting_cards.py | 4 |
+| tests/test_warm12_1101.py | 10 |
 | tests/test_wb2_1025.py | 14 |
 | tests/test_wb3_format_1026.py | 2 |
 | tests/test_wb3_paste_1026.py | 3 |

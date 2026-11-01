@@ -36,14 +36,30 @@ let chatSummary = null; // { text, covered }
 //: being wider than the bubble it belongs to.
 const MSG_ACTIONS_VISIBLE = 5;
 
-//: **What the server takes, in one place** (audit 1031 AI10): a long question
-//: sent whole to a speculative route came back 422 twice per question. Each
+//: **What the server takes, in one place** (audit 1031 AI10, AI9): a long
+//: question sent whole to a speculative route came back 422 twice per question,
+//: and one sent to the finder cost 2.2 s of search at 20,000 characters. Each
 //: route's cap is here, and a request clips to it before it is sent.
-const CLIP_LIMITS = { warm: 2000, followQuestion: 2000, followAnswer: 20000 };
+//: `cap` is `search/query.py`'s `QUESTION_CAP` (a test holds them equal): the
+//: most of a question any search, warm or follow-up reads. The chat send
+//: itself keeps its own 20,000 (`chatTooLong`): the model gets the whole
+//: question. `warmMax`: the warm (`/search/warm`) is for a sentence typed on
+//: a pause; a pasted passage is not worth a vector made ahead of Enter, so it
+//: is not sent at all. One object, so no new names in the shared scope.
+const CLIP_LIMITS = ((cap) => ({ cap, warmMax: 500, warm: cap, search: cap, question: cap, followQuestion: cap, followAnswer: 20000 }))(4000);
 
 function clipFor(route, text) {
   return String(text ?? "").slice(0, CLIP_LIMITS[route]);
 }
+
+//: **Work that follows an answer waits for the answer's frame** (audit 1031
+//: AI9): the quick-access lists, the follow-up chips and the reminder offer
+//: started in the same task that painted the last token, so the first frame
+//: after the answer carried them too (a 4x phone send: 922 ms in 9 long tasks).
+//: The browser's idle time, and no later than a second and a half; without
+//: `requestIdleCallback`, a short timer. A property of `CLIP_LIMITS`, not a
+//: name of its own: the shared scope's name count only goes down.
+CLIP_LIMITS.afterAnswer = (fn) => (window.requestIdleCallback || ((later) => setTimeout(later, 120)))(fn, { timeout: 1500 });
 
 //: **One action list for an assistant message, wherever it was built.**
 //:

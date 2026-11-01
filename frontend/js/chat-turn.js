@@ -1168,13 +1168,16 @@ async function chatSendTurn(preset, opts = {}) {
   } catch {
     toast("Couldn't save this chat turn.", true);
   }
-  loadRecentQuestions();
-  loadMostUsed();
   // Last, and deliberately not awaited: the answer is already on screen and
   // saved, and this is a second model call. See offerFollowups. A composed
-  // answer (no model running) brings its own next questions (INBOX 725).
-  offerFollowups(bubble, question, answerRaw, meta?.composed ? composedNext : null);
-  offerReminder(bubble, question);
+  // answer (no model running) brings its own next questions (INBOX 725). One
+  // frame later (`CLIP_LIMITS.afterAnswer`), not in the task that painted the answer.
+  CLIP_LIMITS.afterAnswer(() => {
+    loadRecentQuestions();
+    loadMostUsed();
+    offerFollowups(bubble, question, answerRaw, meta?.composed ? composedNext : null);
+    offerReminder(bubble, question);
+  });
 }
 
 // --- the agent's run, as an ordered timeline --------------------------------------

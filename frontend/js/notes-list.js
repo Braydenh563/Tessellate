@@ -228,7 +228,7 @@ async function enginePages(q, kind) {
   const ids = new Set();
   let more = false;
   for (let page = 1; page <= 10; page++) {
-    const body = await apiJson(`/search?q=${encodeURIComponent(q)}${kind}&limit=50&page=${page}`, { silent: true });
+    const body = await apiJson(`/search?q=${encodeURIComponent(clipFor("search", q))}${kind}&limit=50&page=${page}`, { silent: true });
     for (const hit of body.hits || []) if (hit.kind === "note") ids.add(hit.id);
     if (!(more = Boolean(body.more))) break;
   }
@@ -3094,7 +3094,7 @@ async function _loadEntries() {
     //: by id, which is also what keeps the bin, the archive and the boards out
     //: of it (the index holds them, flagged), and put in the engine's order.
     const asked = noteSearch;
-    const found = await apiJson(`/search?q=${encodeURIComponent(asked)}&kind=note&limit=50`);
+    const found = await apiJson(`/search?q=${encodeURIComponent(clipFor("search", asked))}&kind=note&limit=50`);
     const order = (found.hits || []).map((hit) => hit.id);
     const rows = order.length ? await apiJson(`/entries?ids=${order.join(",")}`) : [];
     if (generation !== _entriesLoadGeneration) return; // a newer load took over

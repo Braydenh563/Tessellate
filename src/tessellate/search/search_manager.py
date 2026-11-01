@@ -459,6 +459,7 @@ def warm(session: Session, query: str, embeddings: EmbeddingService) -> bool:
     if not embeddings.is_ready():
         _load_later(embeddings)
         return False
+    query = clip_query(query)
     #: The focus call carries no words: nothing to embed, so nothing to look up
     #: in the database for the user's "today" either.
     if not query:
@@ -1455,7 +1456,7 @@ def _when_nothing_ranked(session: Session, entries: list, asked, mentioned: set,
 #: tool query 1,612 ms. The rest of a long question is context for the model,
 #: which still gets all of it; a search over 300 words finds what 2,000 would.
 SEARCH_QUERY_WORDS = 300
-SEARCH_QUERY_CHARS = 4000
+SEARCH_QUERY_CHARS = query_understanding.QUESTION_CAP
 
 
 def clip_query(query: str) -> str:

@@ -886,7 +886,9 @@ async function fetchComposedPeek(question, history, body) {
   let text = "";
   try {
     await streamChatEvents({
-      question,
+      //: Clipped: the peek is a second read of the same question, and the
+      //: server searches the first 4,000 characters of it either way.
+      question: clipFor("question", question),
       history,
       notesOnly: true,
       peek: true,
@@ -1230,17 +1232,19 @@ async function askQuestion(preset) {
       //: answer composed from the notes brings its own (INBOX 725), built
       //: from what it found and did not say, and asks no model for them.
       const followups = () => renderAskFollowups(question, answerRaw, answerMeta?.composed ? composedNext : null);
-      ensureModule("askCompose").then(followups).catch(() => {}).then(announceAskFoot);
+      CLIP_LIMITS.afterAnswer(() => ensureModule("askCompose").then(followups).catch(() => {}).then(announceAskFoot));
     }
     askStatusText("");
     // Asking changes both quick-access lists, and, for a real (non-hint)
-    // answer: the browsable history too.
-    loadRecentQuestions();
-    loadMostUsed();
-    if (!hinted) {
-      loadAskHistoryBadge();
-      if (askHistoryOpen) loadAskHistoryPage(true);
-    }
+    // answer: the browsable history too. One frame after the answer's own.
+    CLIP_LIMITS.afterAnswer(() => {
+      loadRecentQuestions();
+      loadMostUsed();
+      if (!hinted) {
+        loadAskHistoryBadge();
+        if (askHistoryOpen) loadAskHistoryPage(true);
+      }
+    });
   } catch (error) {
     if (error.name === "AbortError") {
       stopped = true;

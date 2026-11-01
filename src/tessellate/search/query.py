@@ -35,6 +35,13 @@ from datetime import date, datetime, timedelta
 from tessellate.ai import recognise
 from tessellate.core import clock
 
+#: **How much of a question anything reads** (audit 1031 AI9, HR7): the one
+#: number the search, the warm, the finder routes, the follow-up route and the
+#: page's `QUESTION_CAP` (chat.js, a test holds them equal) all use. A 20,000
+#: character query took 2,233 ms to search over 160 notes; the rest of a long
+#: question is context for the model, which still gets all of it.
+QUESTION_CAP = 4000
+
 #: The filter keys `understand()` always returns, so every caller can index
 #: the dict rather than `.get()` it. Named here rather than inline because
 #: `search/engine.py` iterates the same list to decide which filters it knows

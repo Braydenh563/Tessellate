@@ -30,7 +30,7 @@ router = APIRouter(prefix="/search", tags=["search"])
 
 
 class WarmBody(BaseModel):
-    q: str = Field(default="", max_length=2000)
+    q: str = Field(default="", max_length=search_query.QUESTION_CAP)
 
 
 @router.post("/warm")
@@ -114,6 +114,11 @@ def search(
     answers and a bare empty list renders them identically, the same
     reasoning `/entries/tensions` states for its own status field.
     """
+    from tessellate.search import search_manager
+
+    #: The first words only (audit 1031 AI9): a 20,000-character query took
+    #: 2,233 ms to search, and the finder's box can be pasted into.
+    q = search_manager.clip_query(q)
     kinds = [part.strip() for part in kind.split(",") if part.strip() in search_index.KINDS]
     ctx = _scope_of(entry_id, space)
     #: Paged by ranking deeper and slicing: one more than the page asks for,

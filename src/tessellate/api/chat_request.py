@@ -30,6 +30,7 @@ from tessellate.api.chat_attach import _attached_boards, _attached_documents, _a
 from tessellate.api.schemas import EntryOut
 from tessellate.core import activity, deps
 from tessellate.core.database import Category, Entry, like_escape, LIKE_ESCAPE, MediaUpload
+from tessellate.search import query as search_query
 
 
 class RememberBody(BaseModel):
@@ -45,7 +46,7 @@ class FollowupBody(BaseModel):
     model prompt.
     """
 
-    question: str = Field(default="", max_length=2000)
+    question: str = Field(default="", max_length=search_query.QUESTION_CAP)
     answer: str = Field(default="", max_length=20000)
 
 

@@ -1843,7 +1843,7 @@ document.addEventListener("input", (event) => {
   clearTimeout(warmState.timer);
   warmState.timer = setTimeout(() => {
     const q = box.value.trim();
-    if (q.split(/\s+/).length < 3 || q === warmState.last || !authToken()) return;
+    if (q.length >= CLIP_LIMITS.warmMax || q.split(/\s+/).length < 3 || q === warmState.last || !authToken()) return;
     warmState.last = q;
     apiJson("/search/warm", { method: "POST", body: JSON.stringify({ q: clipFor("warm", q) }), silent: true }).catch(backgroundWriteFailed);
   }, 600);

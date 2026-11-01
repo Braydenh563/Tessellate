@@ -121,7 +121,7 @@ async function refreshNoteSearchWhy() {
     // box shows a page, not a notebook, and a note past the fiftieth best
     // match simply carries no reason chip rather than a wrong one.
     body = await apiJson(
-      `/search?q=${encodeURIComponent(asked)}&kind=note,board,map&limit=50` +
+      `/search?q=${encodeURIComponent(clipFor("search", asked))}&kind=note,board,map&limit=50` +
         (open ? `&entry_id=${open}` : "")
     );
   } catch {

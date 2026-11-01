@@ -652,7 +652,7 @@ async function refreshLibrarySemantic() {
   }
   if (query === librarySemanticQuery) return; // already have this one
   try {
-    const found = await apiJson(`/search?q=${encodeURIComponent(query)}&kind=note&limit=50`);
+    const found = await apiJson(`/search?q=${encodeURIComponent(clipFor("search", query))}&kind=note&limit=50`);
     librarySemanticIds = new Set((found.hits || []).map((hit) => hit.id));
     librarySemanticQuery = query;
   } catch {

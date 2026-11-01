@@ -161,7 +161,7 @@ async function finderSearch(append = false) {
   //: of them.
   const kindParam = finderKind && finderKind !== "action" ? `&kind=${finderKind}` : "";
   const body = await apiJson(
-    `/search?q=${encodeURIComponent(query)}${kindParam}&limit=30&page=${finderState.page}`,
+    `/search?q=${encodeURIComponent(clipFor("search", query))}${kindParam}&limit=30&page=${finderState.page}`,
     { silent: true }
   ).catch(() => null);
   clearTimeout(slow);
@@ -347,7 +347,7 @@ async function finderSpellingOffer(query) {
   if (!words.size || wrong < 0) return null;
   for (const spelled of finderSpellings(said[wrong], words).slice(0, 3)) {
     const guess = said.map((w, i) => (i === wrong ? spelled : w)).join(" ");
-    const body = await apiJson(`/search?q=${encodeURIComponent(guess)}&limit=1`, { silent: true }).catch(() => null);
+    const body = await apiJson(`/search?q=${encodeURIComponent(clipFor("search", guess))}&limit=1`, { silent: true }).catch(() => null);
     if (body?.hits?.length) return { label: `ph:text-aa Search for “${guess}”`, run: () => finderUse(guess) };
   }
   return null;

@@ -68,7 +68,7 @@ function paletteAskNotes(query) {
   if (state.query === typed) return;
   const run = ++state.run;
   state.timer = setTimeout(async () => {
-    const body = await apiJson(`/search?q=${encodeURIComponent(typed)}&kind=note&limit=${PALETTE_NOTE_ASK}`, { silent: true }).catch(() => null);
+    const body = await apiJson(`/search?q=${encodeURIComponent(clipFor("search", typed))}&kind=note&limit=${PALETTE_NOTE_ASK}`, { silent: true }).catch(() => null);
     if (run !== state.run || !body) return;
     const words = typed.toLowerCase().split(/\s+/).filter(Boolean);
     const hits = (body.hits || []).filter((hit) => {

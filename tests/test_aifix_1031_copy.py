@@ -127,11 +127,14 @@ def test_ai10_requests_are_clipped_to_the_server_caps_before_they_go():
     from tessellate.api import routes_chat, routes_search
 
     chat = _text("chat.js")
-    caps = dict(re.findall(r"(\w+): (\d+)", re.search(r"const CLIP_LIMITS = \{([^}]*)\}", chat).group(1)))
-    assert int(caps["warm"]) == routes_search.WarmBody.model_fields["q"].metadata[0].max_length
+    #: One shared question cap (audit 1031 AI9, tests/test_warm12_1101.py): the
+    #: routes' numbers are `search/query.py`'s, and the page's is `CLIP_LIMITS.cap`.
+    cap = int(re.search(r"\}\)\)\((\d+)\);", re.search(r"const CLIP_LIMITS = .*", chat).group(0)).group(1))
+    answer = int(re.search(r"followAnswer: (\d+)", chat).group(1))
+    assert cap == routes_search.WarmBody.model_fields["q"].metadata[0].max_length
     follow = routes_chat.FollowupBody.model_fields
-    assert int(caps["followQuestion"]) == follow["question"].metadata[0].max_length
-    assert int(caps["followAnswer"]) == follow["answer"].metadata[0].max_length
+    assert cap == follow["question"].metadata[0].max_length
+    assert answer == follow["answer"].metadata[0].max_length
     assert 'clipFor("warm", q)' in _text("navigation.js")
     for name in ("chat-attach.js", "ask-compose.js"):
         assert 'clipFor("followQuestion", question)' in _text(name) and 'clipFor("followAnswer", answer)' in _text(name)
