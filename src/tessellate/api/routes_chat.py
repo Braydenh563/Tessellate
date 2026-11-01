@@ -13,7 +13,8 @@ the two flows above and what tests patch here (`user_now`, `_prepare`,
 `_retrieve_for`) or read here. The helpers it calls were moved out whole and
 are re-exported here; each imports only the layers before it in this list,
 never this file: `chat_attach` (the attachments), `chat_request` (the request),
-`chat_pool` (the note pool), `chat_recent` (the suggestion rows).
+`chat_pool` (the note pool), `chat_recent` (the suggestion rows), `chat_web`
+(the web).
 """
 
 from __future__ import annotations
@@ -36,7 +37,7 @@ from sqlalchemy import or_, select
 from sqlalchemy import text as sql_text
 from sqlalchemy.orm import Session
 
-from tessellate.ai import budget as run_budget, capability, fact_check, filed_name, composer, composer_social, composer_unplaced, note_language, composer_plan, composer_aware, composer_compose, composer_digest, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, composer_money, composer_slots, find_it, glossary, list_pool, note_rank, note_recency, personal, phrasing, realise, verdicts, toolwords, vocative, why
+from tessellate.ai import budget as run_budget, capability, fact_check, filed_name, composer, composer_social, composer_unplaced, note_language, composer_plan, composer_aware, composer_compose, composer_digest, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, composer_slots, find_it, glossary, list_pool, note_rank, note_recency, personal, phrasing, realise, verdicts, vocative, why
 from tessellate.ai import ask_chips
 from tessellate.ai import recognise
 from tessellate.ai import (
@@ -92,6 +93,7 @@ from tessellate.api.chat_attach import ATTACHED_MAP_CHARS, _MEDIA_REF, _attached
 from tessellate.api.chat_request import ChatRequest, ChatResponse, ChatTurn, CommandRunBody, CompressBody, FollowupBody, MAX_COMPRESS_TURNS, RememberBody, ToolExecuteBody, _NOTE_LINK, _NOT_A_NAME, _NOT_A_SUBJECT, _RELATED_LIMIT, _StreamRequest, _Turn, _apply_open, _apply_scope, _chat_model_sees_images, _check_refs, _composed, _event, _image_caption_context, _in_full, _meta_event, _named_note, _nothing_open, _resolve_chat_images, _resolve_mode, _resolve_persona, _resolve_skill, _small_model_mode  # noqa: F401  (moved; re-exported)
 from tessellate.api.chat_pool import _Found, _NoteCtx, _chat_payload, _composer_reads, _detect_intent, _document_row, _filed_under, _frame_matches, _glossary, _holding, _holds_read_text, _in_window, _keep_window, _note_content, _whole_pool, _widened, _with_each_side, _with_neighbours, _with_records, _with_sources  # noqa: F401  (moved; re-exported)
 from tessellate.api.chat_recent import AGENT_SURFACE, ASK_SURFACE, STARTER_SUGGESTIONS, _NAMES, _about, _asked_key, _feature_for, _fill, _recent_questions  # noqa: F401  (moved; re-exported)
+from tessellate.api.chat_web import WEB_PAGES, _can_start_searxng, _home_place, _link_events, _offer_events, _search_service, _unmatched_recents, _web_allowed, _web_chip, _web_first, _web_page_row, _web_pref_on  # noqa: F401  (moved; re-exported)
 
 
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -954,75 +956,9 @@ def _assist(req: _StreamRequest, prepared: dict) -> None:
         }
 
 
-#: How many web pages an answer with no model reads, and how much of each:
-#: enough for a sentence that answers, never a crawl (decision 37).
-WEB_PAGES = 3
-WEB_PAGE_CHARS = 4000
-
-
-def _unmatched_recents(req: _StreamRequest, prepared: dict) -> bool:
-    """A question with subject words that matched no note, answered by the
-    "never look empty" fallback of the newest notes: those are not evidence,
-    and a model prompt carrying about 6 KB of them answers from the wrong
-    notes (audit 1030 A12). A question with no subject ("my latest notes",
-    "what is in my notebook"), or one with notes attached, keeps them."""
-    if not str(prepared.get("search_mode") or "") == "recent" or req.body.note_ids or req.images_raw or req.skill:
-        return False
-    if not req.ollama.is_running() or _composed(req, True):
-        return False
-    from tessellate.search.search_manager import is_recency_ask
-
-    #: Two or more subject words is a topic ("mortgage rate zebra paddock");
-    #: one is as often the notebook itself ("tell me about my notebook").
-    return not is_recency_ask(req.question or "") and len(note_rank.subject(req.question or "")) >= 2
-
-
-def _web_first(req: _StreamRequest, prepared: dict) -> bool:
-    """The web before the notes: when no note matched, or when the turn asks
-    for the web outright ("search the web for ...")."""
-    return toolwords.asks_web(req.question) or (not prepared["notes"] and composer_unplaced.worthy(req.question or ""))
-
-
-def _web_allowed(req: _StreamRequest) -> bool:
-    """Web sources only when the person turned web search on in Settings and
-    the turn may use tools (decision 43: never fetched without the toggle)."""
-    try:
-        on = bool(deps.get_config().get_preference("web_search_enabled", False)) and bool(req.use_tools)
-        #: A spending total is the notes' sum: the web cannot know it.
-        q = req.question or ""
-        #: A first-person question is the person's own record: only an
-        #: explicit "search the web for" sends it out (audit 1030 A1, A2).
-        own = personal.about_own_notes(q) or composer_money.asks(q) or (personal.about_own_record(q) and not toolwords.asks_web(q))
-        return on and not own
-    except Exception:  # noqa: BLE001  # no preference is off
-        return False
-
-
-def _web_pref_on() -> bool:
-    """Settings, Web search is on (whatever this turn's mode can do with it)."""
-    try:
-        return bool(deps.get_config().get_preference("web_search_enabled", False))
-    except Exception:  # noqa: BLE001  # no preference is off
-        return False
-
-
 #: One shared deadline for reading the hits, so three slow pages cost about
 #: this and not three times a page's own timeout (audit 1030 A4: 14.7 s).
 WEB_PAGES_DEADLINE = 6.0
-
-
-def _web_page_row(i: int, hit: dict, page: dict) -> dict | None:
-    text = str(page.get("text") or "")[:WEB_PAGE_CHARS]
-    title = " ".join(str(page.get("title") or hit.get("title") or page.get("domain") or "A web page").split())
-    if not text.strip():
-        return None
-    return {
-        "id": -(i + 1), "kind": "web", "url": str(page.get("url") or hit.get("url")), "domain": page.get("domain", ""),
-        "content": f"{title}\n\n{text}",
-        #: The result's one line for the panel: the engine's snippet,
-        #: else the page's opening.
-        "snippet": " ".join(str(hit.get("snippet") or text[:200]).split())[:200],
-    }
 
 
 def _web_pages(websearch, results: list[dict]) -> list[dict]:  # noqa: ANN001
@@ -1060,13 +996,6 @@ def _web_pages(websearch, results: list[dict]) -> list[dict]:  # noqa: ANN001
             if row:
                 pages.append(row)
     return pages
-
-
-def _home_place(config) -> str:  # noqa: ANN001
-    """The person's city, read off their reported timezone ("Australia/Brisbane"
-    is Brisbane), for a local web search; "" for none or a bare zone (UTC)."""
-    name = str(config.get_preference("timezone", "") or "").strip()
-    return name.rsplit("/", 1)[-1].replace("_", " ") if "/" in name and not name.startswith("Etc/") else ""
 
 
 def _web_answer(req: _StreamRequest, question: str) -> tuple[dict, list[dict]] | None:
@@ -1526,43 +1455,6 @@ def _app_said(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list
     return None
 
 
-def _offer_events(found: dict) -> list[dict]:
-    """A reply with the one button it offers (an `open` offer: the setting)."""
-    events: list[dict] = [{"type": "answer", "delta": found["text"]}]
-    if found.get("offer"):
-        events.append({"type": "offer", "offer": found["offer"]})
-    return events
-
-
-def _search_service() -> tuple[str, str]:
-    """(SearXNG address, provider) as Settings has them, for a failure's wording."""
-    from tessellate.search import websearch
-
-    try:
-        return websearch.settings_from(deps.get_config())
-    except Exception:  # noqa: BLE001  # an unreadable setting is no address
-        return "", ""
-
-
-def _can_start_searxng() -> bool:
-    """Whether the app can launch the search service itself (`composer_web.can_start`)."""
-    return composer_web.can_start(*_search_service())
-
-
-def _link_events(req: _StreamRequest, url: str) -> list[dict]:
-    """A pasted link to be read (`composer_web`): fetched and told back when
-    web access is on, else the setting that allows it. Never a notes search."""
-    from tessellate.search import websearch
-
-    if not _web_allowed(req):
-        return _offer_events(composer_web.web_off(url))
-    try:
-        page = websearch.fetch_readable_cached(url)
-    except websearch.WebSearchError as exc:
-        return _offer_events(composer_web.unreadable(url, str(exc)))
-    return _offer_events(composer_web.page_summary(page, url))
-
-
 def _suggest_events(found: dict) -> list[dict]:
     events: list[dict] = [{"type": "answer", "delta": found["text"]}]
     if found["asks"]:
@@ -1962,18 +1854,6 @@ def _personal_unsearched(req: _StreamRequest, ollama_running: bool) -> str:
         return ""
     own = personal.answer(req.question, lambda: personal.notes_of(req.session), user_now(deps.get_config()).date())
     return str(own["text"]) if own else ""
-
-
-def _web_chip(req: _StreamRequest) -> list[dict]:
-    """A miss on an ask that names the person's notes: the web is a chip to
-    press, never the first stop (INBOX 1490), and only with web search on."""
-    asked = req.question or ""
-    if not (_web_pref_on() and composer_unplaced.says_notes(asked)) or toolwords.asks_web(asked):
-        return []
-    terms = composer.plan(asked).terms
-    if not terms:
-        return []
-    return [{"type": "offer", "offer": {"kind": "ask", "label": "", "asks": [f"Search the web for {' '.join(terms[:3])}"]}}]
 
 
 def _unplaced_events(req: _StreamRequest) -> list[dict]:
