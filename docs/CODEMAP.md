@@ -2,7 +2,7 @@
 
 Generated 2026-11-01 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7537, frontend ids 2633, CSS sections 517, backend routes 638, backend modules 8266, test files 1791, tests 15421, plan headings 990, app scripts 28, boot scripts 37, script files 218.
+Counts: frontend functions 7537, frontend ids 2633, CSS sections 517, backend routes 638, backend modules 8266, test files 1791, tests 15423, plan headings 990, app scripts 28, boot scripts 37, script files 218.
 
 ## Frontend functions (7537)
 
@@ -3036,12 +3036,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `nightFactRow` | frontend/js/dash-night.js:15 |
-| `nightKindLine` | frontend/js/dash-night.js:107 |
-| `nightKindWords` | frontend/js/dash-night.js:3 |
-| `nightRunSummary` | frontend/js/dash-night.js:8 |
-| `renderNightCard` | frontend/js/dash-night.js:192 |
-| `renderNightWidget` | frontend/js/dash-night.js:162 |
+| `nightFactRow` | frontend/js/dash-night.js:16 |
+| `nightKindLine` | frontend/js/dash-night.js:108 |
+| `nightKindWords` | frontend/js/dash-night.js:4 |
+| `nightRunSummary` | frontend/js/dash-night.js:9 |
+| `renderNightCard` | frontend/js/dash-night.js:193 |
+| `renderNightWidget` | frontend/js/dash-night.js:163 |
 
 ### frontend/js/dash-orphans.js (1)
 
@@ -4243,17 +4243,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `embedChoiceInstall` | frontend/js/embed-choices.js:175 |
-| `embedChoiceRow` | frontend/js/embed-choices.js:49 |
-| `embedChoiceUninstall` | frontend/js/embed-choices.js:193 |
-| `embedChoiceUse` | frontend/js/embed-choices.js:318 |
-| `embedFoundRow` | frontend/js/embed-choices.js:208 |
-| `embedLegacyRemove` | frontend/js/embed-choices.js:274 |
-| `embedLegacyRow` | frontend/js/embed-choices.js:253 |
-| `embedPullTyped` | frontend/js/embed-choices.js:290 |
-| `embedToast` | frontend/js/embed-choices.js:19 |
-| `renderEmbedChoices` | frontend/js/embed-choices.js:24 |
-| `renderEmbedLegacy` | frontend/js/embed-choices.js:244 |
+| `embedChoiceInstall` | frontend/js/embed-choices.js:176 |
+| `embedChoiceRow` | frontend/js/embed-choices.js:50 |
+| `embedChoiceUninstall` | frontend/js/embed-choices.js:194 |
+| `embedChoiceUse` | frontend/js/embed-choices.js:319 |
+| `embedFoundRow` | frontend/js/embed-choices.js:209 |
+| `embedLegacyRemove` | frontend/js/embed-choices.js:275 |
+| `embedLegacyRow` | frontend/js/embed-choices.js:254 |
+| `embedPullTyped` | frontend/js/embed-choices.js:291 |
+| `embedToast` | frontend/js/embed-choices.js:20 |
+| `renderEmbedChoices` | frontend/js/embed-choices.js:25 |
+| `renderEmbedLegacy` | frontend/js/embed-choices.js:245 |
 
 ### frontend/js/entity-page.js (10)
 
@@ -5527,13 +5527,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `benchFailureText` | frontend/js/model-bench.js:17 |
-| `benchPercent` | frontend/js/model-bench.js:13 |
-| `benchRow` | frontend/js/model-bench.js:22 |
-| `benchShowReport` | frontend/js/model-bench.js:81 |
-| `benchStatusLine` | frontend/js/model-bench.js:88 |
-| `renderModelBench` | frontend/js/model-bench.js:101 |
-| `runModelBench` | frontend/js/model-bench.js:139 |
+| `benchFailureText` | frontend/js/model-bench.js:18 |
+| `benchPercent` | frontend/js/model-bench.js:14 |
+| `benchRow` | frontend/js/model-bench.js:23 |
+| `benchShowReport` | frontend/js/model-bench.js:82 |
+| `benchStatusLine` | frontend/js/model-bench.js:89 |
+| `renderModelBench` | frontend/js/model-bench.js:102 |
+| `runModelBench` | frontend/js/model-bench.js:140 |
 
 ### frontend/js/model-menu.js (17)
 
@@ -22788,7 +22788,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15421)
+## Tests (15423)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23471,7 +23471,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_gate_staged_once.py | 3 |
 | tests/test_get_started_1301.py | 7 |
 | tests/test_glass_controls_1027.py | 5 |
-| tests/test_global_scope_ratchet.py | 3 |
+| tests/test_global_scope_ratchet.py | 5 |
 | tests/test_glossary_b7.py | 7 |
 | tests/test_gold_answers.py | 32 |
 | tests/test_grammar_classes_1026.py | 14 |
