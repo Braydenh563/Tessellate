@@ -2,9 +2,9 @@
 
 Generated 2026-11-01 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7509, frontend ids 2643, CSS sections 517, backend routes 638, backend modules 8207, test files 1775, tests 15336, plan headings 990, app scripts 28, boot scripts 37, script files 213.
+Counts: frontend functions 7510, frontend ids 2643, CSS sections 517, backend routes 638, backend modules 8207, test files 1775, tests 15336, plan headings 990, app scripts 28, boot scripts 37, script files 214.
 
-## Frontend functions (7509)
+## Frontend functions (7510)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -104,61 +104,52 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `afterCharacters` | frontend/js/lazy-entries.js:134 |
-| `charactersLost` | frontend/js/lazy-entries.js:143 |
-| `emblemHead` | frontend/js/lazy-entries.js:151 |
-| `installCharacterStandIns` | frontend/js/lazy-entries.js:180 |
-| `lazyLoadFailed` | frontend/js/lazy-entries.js:213 |
-| `loadCharactersIdle` | frontend/js/lazy-entries.js:174 |
-| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:200 |
-| `onDomReady` | frontend/js/lazy-entries.js:224 |
-| `plainHead` | frontend/js/lazy-entries.js:157 |
-| `runCharacterJob` | frontend/js/lazy-entries.js:165 |
-| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:235 |
+| `afterCharacters` | frontend/js/lazy-entries.js:136 |
+| `charactersLost` | frontend/js/lazy-entries.js:145 |
+| `emblemHead` | frontend/js/lazy-entries.js:153 |
+| `installCharacterStandIns` | frontend/js/lazy-entries.js:182 |
+| `lazyLoadFailed` | frontend/js/lazy-entries.js:215 |
+| `loadCharactersIdle` | frontend/js/lazy-entries.js:176 |
+| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:202 |
+| `onDomReady` | frontend/js/lazy-entries.js:226 |
+| `plainHead` | frontend/js/lazy-entries.js:159 |
+| `runCharacterJob` | frontend/js/lazy-entries.js:167 |
+| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:237 |
 
-### frontend/js/note-cards.js (39)
+### frontend/js/note-cards.js (30)
 
 | Name | File:line |
 |---|---|
-| `answerTags` | frontend/js/note-cards.js:140 |
-| `askAtlasAboutNote` | frontend/js/note-cards.js:2487 |
-| `askAtlasAboutThing` | frontend/js/note-cards.js:2494 |
-| `binNoteWithUndo` | frontend/js/note-cards.js:1195 |
-| `deducedStrength` | frontend/js/note-cards.js:2554 |
-| `entryCardControls` | frontend/js/note-cards.js:2507 |
-| `entryItem` | frontend/js/note-cards.js:1423 |
-| `entryListFocusStop` | frontend/js/note-cards.js:2520 |
-| `entryListSetStop` | frontend/js/note-cards.js:2525 |
-| `favouriteButton` | frontend/js/note-cards.js:1155 |
-| `fitNoteMetas` | frontend/js/note-cards.js:1265 |
-| `formatFileSize` | frontend/js/note-cards.js:1109 |
-| `libraryListsBoard` | frontend/js/note-cards.js:1033 |
-| `loadMapBoardIndex` | frontend/js/note-cards.js:968 |
-| `makeUnlinkAccessible` | frontend/js/note-cards.js:2538 |
-| `mapBoardById` | frontend/js/note-cards.js:996 |
-| `mapBoardRows` | frontend/js/note-cards.js:1022 |
-| `mapBoardTitled` | frontend/js/note-cards.js:1008 |
-| `mapChip` | frontend/js/note-cards.js:906 |
-| `mapCountLabel` | frontend/js/note-cards.js:857 |
-| `mapPreview` | frontend/js/note-cards.js:381 |
-| `mapPreviewEdge` | frontend/js/note-cards.js:262 |
-| `mapPreviewFitText` | frontend/js/note-cards.js:164 |
-| `mapPreviewMeasurer` | frontend/js/note-cards.js:115 |
-| `mapPreviewOnColour` | frontend/js/note-cards.js:207 |
-| `mapPreviewOnPaper` | frontend/js/note-cards.js:182 |
-| `mapPreviewOverlaps` | frontend/js/note-cards.js:189 |
-| `mapPreviewSketch` | frontend/js/note-cards.js:301 |
-| `mapPreviewTextWidth` | frontend/js/note-cards.js:144 |
-| `meetingGlance` | frontend/js/note-cards.js:1399 |
-| `noteIsMeeting` | frontend/js/note-cards.js:1151 |
-| `noteMetaMore` | frontend/js/note-cards.js:1358 |
-| `noteReviewActions` | frontend/js/note-cards.js:2440 |
-| `notesSpanSpaces` | frontend/js/note-cards.js:1216 |
-| `publishDraft` | frontend/js/note-cards.js:1344 |
-| `renderAttachmentCards` | frontend/js/note-cards.js:1229 |
-| `round2` | frontend/js/note-cards.js:242 |
-| `showNoteInGraph` | frontend/js/note-cards.js:2479 |
-| `tagAddChipKind` | frontend/js/note-cards.js:1381 |
+| `answerTags` | frontend/js/note-cards.js:30 |
+| `askAtlasAboutNote` | frontend/js/note-cards.js:1682 |
+| `askAtlasAboutThing` | frontend/js/note-cards.js:1689 |
+| `binNoteWithUndo` | frontend/js/note-cards.js:390 |
+| `deducedStrength` | frontend/js/note-cards.js:1749 |
+| `entryCardControls` | frontend/js/note-cards.js:1702 |
+| `entryItem` | frontend/js/note-cards.js:618 |
+| `entryListFocusStop` | frontend/js/note-cards.js:1715 |
+| `entryListSetStop` | frontend/js/note-cards.js:1720 |
+| `favouriteButton` | frontend/js/note-cards.js:350 |
+| `fitNoteMetas` | frontend/js/note-cards.js:460 |
+| `formatFileSize` | frontend/js/note-cards.js:304 |
+| `libraryListsBoard` | frontend/js/note-cards.js:228 |
+| `loadMapBoardIndex` | frontend/js/note-cards.js:163 |
+| `makeUnlinkAccessible` | frontend/js/note-cards.js:1733 |
+| `mapBoardById` | frontend/js/note-cards.js:191 |
+| `mapBoardRows` | frontend/js/note-cards.js:217 |
+| `mapBoardTitled` | frontend/js/note-cards.js:203 |
+| `mapChip` | frontend/js/note-cards.js:101 |
+| `mapCountLabel` | frontend/js/note-cards.js:52 |
+| `mapPreview` | frontend/js/note-cards.js:38 |
+| `meetingGlance` | frontend/js/note-cards.js:594 |
+| `noteIsMeeting` | frontend/js/note-cards.js:346 |
+| `noteMetaMore` | frontend/js/note-cards.js:553 |
+| `noteReviewActions` | frontend/js/note-cards.js:1635 |
+| `notesSpanSpaces` | frontend/js/note-cards.js:411 |
+| `publishDraft` | frontend/js/note-cards.js:539 |
+| `renderAttachmentCards` | frontend/js/note-cards.js:424 |
+| `showNoteInGraph` | frontend/js/note-cards.js:1674 |
+| `tagAddChipKind` | frontend/js/note-cards.js:576 |
 
 ### frontend/js/menus.js (33)
 
@@ -5236,6 +5227,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `manualTopicEl` | frontend/js/manual.js:44 |
 | `manualWords` | frontend/js/manual.js:16 |
 | `openManual` | frontend/js/manual.js:145 |
+
+### frontend/js/map-preview.js (10)
+
+| Name | File:line |
+|---|---|
+| `mapPreviewDraw` | frontend/js/map-preview.js:356 |
+| `mapPreviewEdge` | frontend/js/map-preview.js:237 |
+| `mapPreviewFitText` | frontend/js/map-preview.js:139 |
+| `mapPreviewMeasurer` | frontend/js/map-preview.js:95 |
+| `mapPreviewOnColour` | frontend/js/map-preview.js:182 |
+| `mapPreviewOnPaper` | frontend/js/map-preview.js:157 |
+| `mapPreviewOverlaps` | frontend/js/map-preview.js:164 |
+| `mapPreviewSketch` | frontend/js/map-preview.js:276 |
+| `mapPreviewTextWidth` | frontend/js/map-preview.js:119 |
+| `round2` | frontend/js/map-preview.js:217 |
 
 ### frontend/js/margin-reader.js (9)
 

@@ -50,6 +50,8 @@ Object.assign(LAZY_MODULES, {
   chatTurn: ["/js/answer-kit.js", "/js/chat-turn.js"],
   //: A note card's ... menu rows (entry-menu.js): the first press awaits it, a pointer over a card warms it.
   entryMenu: ["/js/entry-menu.js"],
+  //: A board's miniature (map-preview.js): `mapPreview` returns the empty svg and draws into it once this is in.
+  mapPreview: ["/js/map-preview.js"],
   //: A row's expand chevron and the bell's untagged and review nudges (notes-lazy.js).
   notesLazy: ["/js/notes-lazy.js"],
   //: Every ```mermaid fence, in documents, chat and Ask (mermaid-draw.js). The 5 MB
