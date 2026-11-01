@@ -35,6 +35,7 @@ says which of the three it is.
 from __future__ import annotations
 
 import re
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -410,27 +411,45 @@ REACHED_AFTER_LOAD = {
 LAZY_REACHED_AFTER_LOAD: dict[str, str] = {
     "answer-kit.js:agentTimeline": "addAssistantBubble has two callers: chat-turn.js (its own file) and sheets-selects.js's replay, after `await ensureModule(\"chatTurn\")` (line 1991)",
     "answer-kit.js:nameMark": "inside the afterCharacters callback (avatarHead and chatHead paths) or reached from it",
+    "app-features.js:paletteCaught": "popupToolEquation's one caller (settings-panes.js) awaits ensureModule(\"appPalette\") first, and the palette passes its own caught",
     "app-palette.js:quickAddPaletteRow": "typeof-guarded optional first row; null is the designed answer without it (the act row only exists once quickadd.js or the board is loaded)",
     "app-palette.js:wbPaletteActRow": "typeof-guarded optional first row; null is the designed answer without it (the act row only exists once quickadd.js or the board is loaded)",
+    "appearance-panel.js:paintSettingRow": "the panel is opened only by openAppearancePanel, which awaits settingsControls and settings-rows.js (line 265) before it sets APPEARANCE_PANEL.open, and this returns while it is not open",
     "appearance-panel.js:releaseThemeHold": "closeAppearancePanel returns unless APPEARANCE_PANEL.open, and openAppearancePanel awaits settingsControls before it sets it (line 265)",
+    "appearance-panel.js:settingDefaults": "the panel is opened only by openAppearancePanel, which awaits settingsControls and settings-rows.js (line 265) before it sets APPEARANCE_PANEL.open, and this returns while it is not open",
+    "appearance-panel.js:settingRowsIn": "the panel is opened only by openAppearancePanel, which awaits settingsControls and settings-rows.js (line 265) before it sets APPEARANCE_PANEL.open, and this returns while it is not open",
+    "appearance-panel.js:settingsControlState": "the panel is opened only by openAppearancePanel, which awaits settingsControls and settings-rows.js (line 265) before it sets APPEARANCE_PANEL.open, and closeAppearancePanel returns while it is not open",
     "ask-compose.js:wbMapTidyFresh": "after `await openWhiteboardBoard(...)`, a stand-in that loads the library bundle (whiteboard-map.js) first",
     "atlas-motion.js:atlasRigLower": "`if (rig.lower)`: only atlasRigLowerAttach (atlas-life.js) sets it, and the atlasLife bundle carries atlas-motion.js",
     "atlas.js:atlasTailFrame": "reached only through a tail atlasTailAttach (atlas-life.js) made, as the line above says",
     "avatars.js:companionPathPlan": "typeof-guarded (INBOX 1305): a far move walks until the companion's mind has fetched companion-menu.js",
     "captions.js:translateAsk": "captionTranslate.on is set only after `await ensureModule(\"translate\")` in captionToggleTranslate",
+    "capture-card.js:renderCaptureThumbs": "behind `captureCard.root.dataset.extras`, which only mountCaptureExtras (capture-card-more.js) sets",
+    "capture-card.js:syncCaptureExtras": "behind `captureCard.root.dataset.extras`, which only mountCaptureExtras (capture-card-more.js) sets",
+    "capture-card.js:uploadCapturePictures": "behind `captureCard.pictures.length`: a picture is added only by capture-card-more.js",
     "categories-panel.js:manageCountButton": "the panel's opener awaits ensureModule(\"tagManager\") (line 29) before it renders a row",
     "categories-panel.js:manageRecent": "the panel's opener awaits ensureModule(\"tagManager\") (line 29) before it renders a row",
     "categories-panel.js:manageSorted": "the panel's opener awaits ensureModule(\"tagManager\") (line 29) before it renders a row",
     "chat-turn.js:docSurfaceById": "typeof-guarded with a designed fallback (the textarea's own text) when documents.js has never loaded",
     "chat-turn.js:setAtlasMood": "typeof-guarded cue: a mood is stale a moment later, and there is no face to move before the characters arrive",
+    "documents-export.js:mermaidInlineForExport": "after `await lazyModuleLoads.get(\"mermaid\")`: undefined (never asked for) skips it, a pending load is awaited",
     "documents.js:mermaidSettled": "after `await lazyModuleLoads.get(\"mermaid\")`: undefined (never asked for) skips it, a pending load is awaited",
     "graph-canvas.js:refreshBoardList": "typeof-guarded refresh of a list that exists only once the library bundle is on screen (lazy-entries.js rule 2)",
     "graph-canvas.js:wbMapTidyFresh": "after `await openWhiteboardBoard(...)`, a stand-in that loads the library bundle (whiteboard-map.js) first",
     "graph.js:fillSearchSuggest": "inside `typeof searchSuggest !== \"undefined\" && searchSuggest?.input === box`: the object is search-suggest.js's own",
+    "lan-watch.js:lanAllowHere": "lanDrawPanel's only caller is the panel's opener, which awaits ensureModule(\"settingsControls\") (line 289) before it draws",
+    "lan-watch.js:lanEmptyRow": "lanDrawPanel's only caller is the panel's opener, which awaits ensureModule(\"settingsControls\") (line 289) before it draws",
+    "lan-watch.js:lanNetworkRows": "lanDrawPanel's only caller is the panel's opener, which awaits ensureModule(\"settingsControls\") (line 289) before it draws",
+    "lan-watch.js:lanSwitch": "lanDrawPanel's only caller is the panel's opener, which awaits ensureModule(\"settingsControls\") (line 289) before it draws",
+    "lan-watch.js:lanTrustNetwork": "lanDrawPanel's only caller is the panel's opener, which awaits ensureModule(\"settingsControls\") (line 289) before it draws",
+    "lan-watch.js:renderLanAddresses": "lanDrawPanel's only caller is the panel's opener, which awaits ensureModule(\"settingsControls\") (line 289) before it draws",
     "library.js:showTopicInGraph": "after `await switchTab(\"graph\")`, which fetches the graph bundle first",
     "lightbox-view.js:loadLibrary": "typeof-guarded refresh of the Library's list: skipping is right when it was never opened, and opening it loads and renders it (lazy-entries.js rule 2)",
     "lightbox-view.js:renderLibrary": "typeof-guarded refresh of the Library's list: skipping is right when it was never opened, and opening it loads and renders it (lazy-entries.js rule 2)",
     "lightbox-view.js:renderLibraryImagesGallery": "typeof-guarded refresh of the Library's list: skipping is right when it was never opened, and opening it loads and renders it (lazy-entries.js rule 2)",
+    "manual.js:meaningAlts": "meaning.js is fetched by openManual (`await lazyScript(\"/js/meaning.js\")`, line 149) before the search box can be typed in",
+    "manual.js:meaningHolds": "meaning.js is fetched by openManual (`await lazyScript(\"/js/meaning.js\")`, line 149) before the search box can be typed in",
+    "manual.js:meaningNamed": "meaning.js is fetched by openManual (`await lazyScript(\"/js/meaning.js\")`, line 149) before the search box can be typed in",
     "math-editor.js:docMathRender": "typeof-guarded tile face: the glyph is the designed fallback until the library bundle's renderer is in",
     "meetings.js:holdLiveCaptions": "behind `meetingLive.on`, which meetingLiveWordsStart sets only after `await ensureModule(\"captions\")`",
     "meetings.js:loadLibrary": "typeof-guarded refresh of the Library's list: skipping is right when it was never opened, and opening it loads and renders it (lazy-entries.js rule 2)",
@@ -438,7 +457,22 @@ LAZY_REACHED_AFTER_LOAD: dict[str, str] = {
     "note-edit-panels.js:noteOffersAttach": "typeof-guarded: a form opened before quickadd.js (preloaded three seconds after boot) has no offers, by design",
     "note-properties.js:applyGraphHighlight": "behind `typeof renderGraph`/`typeof applyGraphHighlight` guards, both graph.js's: with the graph never loaded there is no map to colour",
     "note-properties.js:graphColourMode": "behind `typeof renderGraph`/`typeof applyGraphHighlight` guards, both graph.js's: with the graph never loaded there is no map to colour",
+    "obj-carry.js:wbIsMap": "behind `window.wbCommandsLive?.()`, true only once the board's files (whiteboard-commands.js, whiteboard-map.js, whiteboard.js, one bundle) are in",
+    "obj-clip.js:wbAnnounce": "behind `window.wbCommandsLive?.()` in the board renderer, true only once the board's files (one bundle) are in",
+    "obj-clip.js:wbClientToBoard": "behind `window.wbCommandsLive?.()` in the board renderer, true only once the board's files (one bundle) are in",
+    "obj-clip.js:wbCreateCopies": "behind `window.wbCommandsLive?.()` in the board renderer, true only once the board's files (one bundle) are in",
+    "obj-clip.js:wbIsMap": "behind `window.wbCommandsLive?.()` in the board renderer, true only once the board's files (one bundle) are in",
+    "obj-clip.js:wbPasteTextBoxItem": "behind `window.wbCommandsLive?.()` in the board renderer, true only once the board's files (one bundle) are in",
+    "obj-clip.js:wbPlaceNote": "behind `window.wbCommandsLive?.()` in the board renderer, true only once the board's files (one bundle) are in",
+    "obj-clip.js:wbRecordGesture": "behind `window.wbCommandsLive?.()` in the board renderer, true only once the board's files (one bundle) are in",
+    "obj-clip.js:wbSelectMade": "behind `window.wbCommandsLive?.()` in the board renderer, true only once the board's files (one bundle) are in",
+    "obj-clip.js:wbViewCentre": "behind `window.wbCommandsLive?.()` in the board renderer, true only once the board's files (one bundle) are in",
+    "obj-reorder.js:LIBRARY_DOC_SORTS": "a surface's `all()` runs for a reorder inside a list the Library drew (#library-docs-list holds items only after library.js ran)",
+    "obj-reorder.js:LIBRARY_MEDIA_SORTS": "a surface's `all()` runs for a reorder inside a list the Library drew (#library-images-grid holds tiles only after library.js ran)",
+    "obj-reorder.js:libraryDocSort": "a surface's `all()` runs for a reorder inside a list the Library drew (#library-docs-list holds items only after library.js ran)",
+    "obj-reorder.js:libraryMediaSort": "a surface's `all()` runs for a reorder inside a list the Library drew (#library-images-grid holds tiles only after library.js ran)",
     "quickadd.js:renderPalette": "behind `!$(\"palette-overlay\").classList.contains(\"hidden\")`: only openPalette shows it, and its stand-in loads app-palette.js",
+    "reveal-targets.js:libraryKind": "a reveal target's `open` runs after `module: \"library\"` has loaded the library bundle (the target table's own rule)",
     "reveal-targets.js:renderDocShortcutSheet": "typeof-guarded; the section says where its rows come from when the library bundle is not in (the note beside it)",
     "reveal-targets.js:renderLibrary": "a reveal target: `await switchTab(target.tab)` (line 563), revealDocument, revealBoard or revealBoardsGallery has loaded the library bundle first",
     "reveal-targets.js:renderLibraryFilters": "a reveal target: `await switchTab(target.tab)` (line 563), revealDocument, revealBoard or revealBoardsGallery has loaded the library bundle first",
@@ -450,15 +484,20 @@ LAZY_REACHED_AFTER_LOAD: dict[str, str] = {
     "run-core.js:docCsvTableHtml": "the run bundle is fetched only by documents-code.js (`ensureModule(\"run\")`, runDocument), which defines it",
     "search.js:paletteFind": "finderActions is called after `await ensureModule(\"appPalette\")` (search.js lines 187 and 357)",
     "settings-controls.js:atlasLookReason": "inside the afterCharacters callback",
+    "settings-data.js:SEARCH_RECENT_PREFIX": "searchRecentAll's callers await ensureModule(\"searchSuggest\") first (renderSettingsClear, the clear-recents handler)",
+    "settings-data.js:helpChatHistory": "restoreGuideTurns' one caller awaits ensureModule(\"helpChat\") first (the undo handler, `kept.kind === \"guide\"`)",
     "settings-data.js:helpChatNewChat": "restoreGuideTurns' one caller awaits ensureModule(\"helpChat\") first (the undo handler, `kept.kind === \"guide\"`)",
     "settings-data.js:renderHelpChatMessage": "restoreGuideTurns' one caller awaits ensureModule(\"helpChat\") first (the undo handler, `kept.kind === \"guide\"`)",
     "settings-data.js:renderLanAddresses": "typeof-guarded, else the row is hidden; renderPrivacy runs in a Settings window that awaited settingsControls",
+    "settings-data.js:searchRecent": "searchRecentAll, searchRecentClearAll and searchRecentRestore are called only after `await ensureModule(\"searchSuggest\")` (lines 751, 828, 1108)",
+    "space-swap.js:gcTopicSummaries": "behind `typeof graphStructure` (graph.js): graph-canvas.js is the next file of the same graph bundle",
     "space-swap.js:showNoDocument": "behind `typeof currentDoc`/`typeof wbFlushNudge` guards: with documents.js or the board never loaded there is nothing open to put away",
     "space-swap.js:wbFlushNudge": "behind `typeof currentDoc`/`typeof wbFlushNudge` guards: with documents.js or the board never loaded there is nothing open to put away",
     "statistics.js:overlayClosed": "typeof-guarded back-stack note: router-overlays.js is in the quickNote bundle, preloaded three seconds after boot, and without it no overlay entry was pushed to pop",
     "whiteboard-commands.js:renderPalette": "behind `!$(\"palette-overlay\").classList.contains(\"hidden\")`: only openPalette shows it, and its stand-in loads app-palette.js",
     "whiteboard-interchange.js:mermaidKnown": "typeof-guarded with a designed fallback (no picture, the plain placeholder) until mermaid-draw.js is in",
     "whiteboard.js:nameMarkBuddyCanvasZoom": "typeof-guarded sync of the companion's zoom: with no companion loaded there is nothing to scale",
+    "whiteboard.js:nmb": "behind `!charactersLoaded ||`, set only once the characters bundle (avatars.js) is in (lazy-entries.js)",
 }
 
 GUARD = re.compile(r'typeof\s+(\w+)\s*===?\s*["\']function["\']')
@@ -670,37 +709,137 @@ def _defined_any_form(path: Path) -> set[str]:
     return names
 
 
+def _top_level_bindings(path: Path) -> tuple[set[str], set[str]]:
+    """Column-zero functions, and column-zero const/let/class names (`const a = 1, b`
+    chains and destructuring are not read: a name a lint cannot see is one it cannot flag)."""
+    source = path.read_text(encoding="utf-8")
+    funcs = set(re.findall(r"^(?:async )?function\*? ([A-Za-z_$][\w$]*)", source, re.M))
+    data = set(re.findall(r"^(?:const|let|class) ([A-Za-z_$][\w$]*)", source, re.M))
+    return funcs, data
+
+
+def _loader_chains() -> list[tuple[str, list[str]]]:
+    """`[...js files].forEach(lazyScript)`: `(host file, files in load order)`. The
+    obj-* scripts load this way (obj-ref.js, a chain of six): `lazyScript` keeps dynamic
+    scripts in document order, so a later file is not there yet while an earlier one runs."""
+    out = []
+    for path in sorted((FRONTEND / "js").glob("*.js")):
+        text = path.read_text(encoding="utf-8")
+        for body in re.findall(r"\[((?:\s*\"/(?:js|css)/[A-Za-z0-9._-]+\",?)+)\s*\]\s*\.(?:forEach|map)\(lazyScript\)", text):
+            files = re.findall(r'"/js/([A-Za-z0-9._-]+\.js)"', body)
+            if files:
+                out.append((path.name, files))
+    return out
+
+
+def _direct_loads() -> dict[str, list[tuple[str, frozenset[str]]]]:
+    """Files loaded by a literal `lazyScript("/js/x.js")`: file to one `(asker, bundles it
+    awaited first)` per call site. A call site that follows `await ensureModule("library")`
+    in the same function loads the file with that whole bundle in."""
+    out: dict[str, list[tuple[str, frozenset[str]]]] = {}
+    for path in sorted((FRONTEND / "js").glob("*.js")):
+        lines = path.read_text(encoding="utf-8").split("\n")
+        for number, line in enumerate(lines):
+            for m in re.finditer(r'lazyScript\("/js/([A-Za-z0-9._-]+\.js)"\)', line):
+                name = m.group(1)
+                if name == path.name or not (FRONTEND / "js" / name).exists():
+                    continue
+                start = number
+                while start > 0 and not FUNCTION_START.match(lines[start]):
+                    start -= 1
+                before = "\n".join(lines[start:number]) + "\n" + line[: m.start()]
+                out.setdefault(name, []).append((path.name, frozenset(re.findall(r'ensureModule\("(\w+)"\)', before))))
+    return out
+
+
+STRING_LITERAL = re.compile(r"\"(?:[^\"\\]|\\.)*\"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`")
+
+
 def lazy_to_lazy_gaps(used: set[str] | None = None) -> list[str]:
-    """One lazy file calling a function that only another bundle defines, where
-    its own bundle (plus declared dependencies) does not carry it, no stand-in
-    stands for it, and nothing before the call awaits it. `progressLine` in Ask,
-    the Guide and first-run was this: answer-kit.js left three bundles."""
+    """One lazy file reading a name that only another lazy file defines, where the
+    files that loaded it (its bundle, the files before it in its `forEach(lazyScript)`
+    chain, the file that asked for it by `lazyScript("/js/x.js")`) do not carry it, no
+    stand-in stands for it, and nothing before the read awaits it. A read is a call
+    or, for a top-level const/let/class, the bare name. `progressLine` in Ask, the Guide
+    and first-run was this: answer-kit.js left three bundles. `OBJ_EDITABLE` was the
+    chain case: obj-reorder.js read a const obj-clip.js, loaded after it, defined."""
     lazy = _lazy_files()
     entries = _entry_points()
     always: set[str] = set().union(*entries.values())
     for name in _boot_scripts():
         always |= _defined_any_form(FRONTEND / "js" / name)
-    defined_in: dict[str, set[str]] = {}
-    for bundle, files in lazy.items():
-        for file_name in files:
-            if file_name.endswith(".js") and (FRONTEND / "js" / file_name).exists():
-                for symbol in _top_level_functions(FRONTEND / "js" / file_name):
-                    defined_in.setdefault(symbol, set()).add(file_name)
+    chains = _loader_chains()
+    direct = _direct_loads()
+    boot = set(_boot_scripts())
+    bundled = {f for files in lazy.values() for f in files if f.endswith(".js")}
+    universe = sorted(bundled | {f for _, files in chains for f in files} | set(direct))
+    universe = [f for f in universe if f not in boot and (FRONTEND / "js" / f).exists()]
+    names_of = {f: _defined_any_form(FRONTEND / "js" / f) for f in universe + sorted(boot)}
+    for _, files in chains:
+        for f in files:
+            names_of.setdefault(f, _defined_any_form(FRONTEND / "js" / f))
+    funcs_in: dict[str, set[str]] = {}
+    data_in: dict[str, set[str]] = {}
+    for file_name in universe:
+        funcs, data = _top_level_bindings(FRONTEND / "js" / file_name)
+        for symbol in funcs:
+            funcs_in.setdefault(symbol, set()).add(file_name)
+        for symbol in data:
+            data_in.setdefault(symbol, set()).add(file_name)
+    defined_in = {**data_in, **{k: v | data_in.get(k, set()) for k, v in funcs_in.items()}}
+    routes_memo: dict[str, list[set[str]]] = {}
+
+    def routes(file_name: str, seen: frozenset = frozenset()) -> list[set[str]]:
+        """The name sets a file can be loaded with: one per way it arrives. A file
+        reached only by a route that carries a name may read it; one arriving by any
+        route that does not may not."""
+        if file_name in routes_memo:
+            return routes_memo[file_name]
+        out: list[set[str]] = []
+        for bundle, files in lazy.items():
+            if file_name in files:
+                out.append(set().union(*(names_of.get(f) or _defined_any_form(FRONTEND / "js" / f) for f in files if f.endswith(".js") and (FRONTEND / "js" / f).exists())))
+        for host, files in chains:
+            if file_name in files and file_name != host:
+                before = set().union(*(names_of[f] for f in files[: files.index(file_name) + 1]))
+                out += [before | names_of.get(host, set()) | r for r in (host_routes(host, seen) or [set()])]
+        if True:
+            for host, awaited in direct.get(file_name, ()):
+                loaded = set().union(set(), *(set().union(*(names_of.get(f) or _defined_any_form(FRONTEND / "js" / f) for f in lazy[b] if f.endswith(".js"))) for b in awaited if b in lazy))
+                out += [names_of.get(file_name, set()) | names_of.get(host, set()) | loaded | r for r in (host_routes(host, seen) or [set()])]
+        routes_memo[file_name] = out
+        return out
+
+    def host_routes(host: str, seen: frozenset) -> list[set[str]]:
+        return [] if host in boot or host in seen else routes(host, seen | {host})
+
     candidates = {s for s in defined_in if s not in always}
-    call = re.compile(r"(?<![\w$.])(" + "|".join(sorted(map(re.escape, candidates))) + r")\s*\(")
+    fn_candidates = {s for s in candidates if s in funcs_in}
+    data_candidates = {s for s in candidates if s in data_in and s not in funcs_in}
+    word = re.compile(r"(?<![\w$.])([A-Za-z_$][\w$]*)")
+
+    def reads(code: str):
+        """`(name, offset)` for each call of a function, or bare use of a top-level
+        const/let/class, a lazy file defines. A name before a colon is an object key."""
+        for m in word.finditer(code):
+            name = m.group(1)
+            if name in fn_candidates and re.match(r"\s*\(", code[m.end() :]):
+                yield name, m.start()
+            elif name in data_candidates and not re.match(r"\s*:(?!:)", code[m.end() :]):
+                yield name, m.start()
+
     arrives_with = {s: {b for b, files in lazy.items() if files and set(files) & defined_in[s]} for s in candidates}
     gaps: list[str] = []
-    for file_name in sorted({f for files in lazy.values() for f in files if f.endswith(".js")}):
-        bundles = [b for b, files in lazy.items() if file_name in files]
+    for file_name in universe:
+        route_sets = routes(file_name)
         own = _defined_any_form(FRONTEND / "js" / file_name)
-        carried = [set().union(*(_defined_any_form(FRONTEND / "js" / f) for f in lazy[b] if f.endswith(".js"))) for b in bundles]
         lines = (FRONTEND / "js" / file_name).read_text(encoding="utf-8").split("\n")
         for number, line in enumerate(lines, 1):
             if line.lstrip().startswith(("//", "*", "/*")):
                 continue
-            for match in call.finditer(line):
-                symbol = match.group(1)
-                if symbol in own or all(symbol in c for c in carried):
+            code = STRING_LITERAL.sub(lambda m: m.group(0) if "${" in m.group(0) else m.group(0)[0] + " " * (len(m.group(0)) - 2) + m.group(0)[0], line)
+            for symbol, offset in reads(code):
+                if symbol in own or all(symbol in c for c in route_sets):
                     continue
                 if f"{file_name}:{symbol}" in LAZY_REACHED_AFTER_LOAD:
                     if used is not None:
@@ -709,13 +848,19 @@ def lazy_to_lazy_gaps(used: set[str] | None = None) -> list[str]:
                 start = number - 1
                 while start > 0 and not FUNCTION_START.match(lines[start]):
                     start -= 1
-                before = "\n".join(lines[start : number - 1]) + "\n" + line[: match.start()]
+                before = "\n".join(lines[start : number - 1]) + "\n" + line[:offset]
+                #: A `typeof name` or `window.name` test earlier in the same function (or on this line) is a
+                #: guard, and so is one on another name the same script defines (the file
+                #: arrives whole): space-swap.js tests one graph.js variable, then clears its siblings.
+                siblings = {symbol}.union(*(names_of.get(f, set()) for f in defined_in[symbol]))
+                if any(name in siblings for name in re.findall(r"(?:typeof\s+|window\??\.)([\w$]+)", before + code)):
+                    continue
                 if any(f'ensureModule("{b}")' in before for b in arrives_with[symbol]):
                     continue
                 if any(f'lazyScript("/js/{f}")' in before for f in defined_in[symbol]):
                     continue
-                missing = sorted(b for b, c in zip(bundles, carried) if symbol not in c)
-                gaps.append(f"{file_name}:{number}: {symbol}() is defined only in {sorted(defined_in[symbol])} ('{sorted(arrives_with[symbol])}'); bundle(s) {missing} do not carry it")
+                missing = len([c for c in route_sets if symbol not in c])
+                gaps.append(f"{file_name}:{number}: {symbol} is defined only in {sorted(defined_in[symbol])}; {missing} of {len(route_sets)} ways this file loads do not carry it")
     return gaps
 
 
@@ -724,3 +869,32 @@ def test_no_lazy_file_calls_a_name_only_another_bundle_defines():
     gaps = lazy_to_lazy_gaps(used)
     assert not gaps, "\n".join(gaps)
     assert used == set(LAZY_REACHED_AFTER_LOAD), f"no longer needed, take out: {sorted(set(LAZY_REACHED_AFTER_LOAD) - used)}"
+
+
+def _probe_gaps(tmp_path, monkeypatch, defined_in: str) -> list[str]:
+    """A copy of the frontend where obj-reorder.js reads a const that `defined_in` holds."""
+    import shutil
+
+    shutil.copytree(FRONTEND / "js", tmp_path / "js")
+    shutil.copy(FRONTEND / "index.html", tmp_path / "index.html")
+    with (tmp_path / "js" / defined_in).open("a", encoding="utf-8") as handle:
+        handle.write("\nconst OBJ_PROBE_CONST = 1;\n")
+    with (tmp_path / "js" / "obj-reorder.js").open("a", encoding="utf-8") as handle:
+        handle.write("\nfunction objProbeRead() {\n  return OBJ_PROBE_CONST;\n}\n")
+    monkeypatch.setattr(sys.modules[__name__], "FRONTEND", tmp_path)
+    return [gap for gap in lazy_to_lazy_gaps() if "OBJ_PROBE_CONST" in gap]
+
+
+def test_a_const_read_from_a_file_later_in_the_chain_is_a_gap(tmp_path, monkeypatch):
+    """The 2026-11-01 E2E pageerror (`OBJ_EDITABLE is not defined`): obj-reorder.js
+    read a top-level const obj-clip.js, which loads after it, defined. The same
+    read is fine from a file that loads first (obj-ref.js, obj-order.js)."""
+    late = _probe_gaps(tmp_path / "late", monkeypatch, "obj-clip.js")
+    assert late and late[0].startswith("obj-reorder.js:"), late
+    assert not _probe_gaps(tmp_path / "early", monkeypatch, "obj-ref.js")
+    assert not _probe_gaps(tmp_path / "earlier", monkeypatch, "obj-drag.js")
+
+
+def test_the_object_move_chain_is_read_in_load_order():
+    chains = dict(_loader_chains())
+    assert chains["obj-ref.js"] == ["obj-order.js", "obj-drag.js", "obj-reorder.js", "obj-clip.js", "obj-carry.js", "obj-tray.js"]

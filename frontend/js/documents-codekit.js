@@ -850,7 +850,7 @@ async function docAssistAsk(action) {
       body: JSON.stringify({ action, code: target.text, question, diagnostic }),
     });
     //: The proposal is drawn as a diff, which documents-history.js holds.
-    await docHistoryReady();
+    await lazyScript("/js/documents-history.js");
     docAssistShow(body, action, target);
   } catch (error) {
     if (error.name !== "AbortError") docAssistSay(error.message, { error: true });

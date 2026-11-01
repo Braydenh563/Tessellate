@@ -91,7 +91,7 @@ def test_version_history_names_versions_and_compares_side_by_side():
     assert "offerUndo(" in _body("docNameCurrentVersion")
     assert "docDiffSplitLayout(host, opts.split)" in _body("docRenderDiff")
     assert 'docHistoryFilter === "named"' in _body("renderDocHistoryList")
-    assert "docIdeCompareWith(entry.id" in _body("docHistoryRowMenu")
+    assert "docIdeCall(\"docIdeCompareWith\", entry.id" in _body("docHistoryRowMenu")
     assert "modal.appendChild(overlay)" in _body("docPromptInModal")
     assert "docPromptInModal(" in _body("docNameCurrentVersion")
     from tests._app_js import INDEX_HTML

@@ -3232,9 +3232,9 @@ const DOC_COMMANDS = [
   //: Brief 42 (documents-ide.js). The two fold chords are CodeMirror's
   //: `foldKeymap`, bound since Phase 2; Ctrl+Shift+M is VS Code's.
   { id: "fold-all", icon: "ph:arrows-in-line-vertical", label: "Fold every block in a code file", keys: "Ctrl+Alt+[",
-    code: true, run: () => docIdeFoldAll(false) },
+    code: true, run: () => docIdeCall("docIdeFoldAll", false) },
   { id: "unfold-all", icon: "ph:arrows-out-line-vertical", label: "Unfold every block in a code file", keys: "Ctrl+Alt+]",
-    code: true, run: () => docIdeFoldAll(true) },
+    code: true, run: () => docIdeCall("docIdeFoldAll", true) },
   { id: "problems", icon: "ph:warning-circle", label: "List every problem in this file", keys: "Ctrl+Shift+M",
     code: true, run: () => docPanelToggle("problems") },
   //: Brief 71 (I3, D8): the panel and its Console on VS Code's chords, the
@@ -3248,21 +3248,21 @@ const DOC_COMMANDS = [
   { id: "debug-panel", icon: "ph:bug", label: "Open the Debug tab: variables, watches, the call stack and breakpoints", keys: "Ctrl+Shift+D",
     code: true, run: () => docPanelToggle("debug") },
   { id: "command-palette", icon: "ph:command", label: "Run an editor command by name (also F1)", keys: "Ctrl+Shift+P",
-    code: true, run: () => docIdeOpenPalette() },
+    code: true, run: () => docIdeCall("docIdeOpenPalette") },
   { id: "split", icon: "ph:columns", label: "Split the editor: this file again, beside itself", keys: "Ctrl+\\",
-    code: true, run: () => docIdeToggleSplit() },
+    code: true, run: () => docIdeCall("docIdeToggleSplit") },
   { id: "outline", icon: "ph:tree-view", label: "Show the outline: this file's symbols, following the caret", keys: "none",
     code: true, run: () => showDocSidebarSection("outline") },
   { id: "keybindings", icon: "ph:keyboard", label: "Every editor command and its key", keys: "Ctrl+K Ctrl+S",
-    code: true, run: () => docIdeOpenKeys() },
+    code: true, run: () => docIdeCall("docIdeOpenKeys") },
   { id: "minimap", icon: "ph:sidebar-simple", label: "Show the minimap in a code file", keys: "none",
-    code: true, run: () => docIdeToggleMinimap() },
+    code: true, run: () => docIdeCall("docIdeToggleMinimap") },
   { id: "compare-version", icon: "ph:git-diff", label: "Compare with a saved version", keys: "none",
-    code: true, run: () => docIdeCompareMenu() },
+    code: true, run: () => docIdeCall("docIdeCompareMenu") },
   { id: "compare-revert", icon: "ph:arrow-counter-clockwise", label: "Put back the compared hunk at the caret", keys: "none",
-    code: true, run: () => docIdeRevertAtCaret() },
+    code: true, run: () => docIdeCall("docIdeRevertAtCaret") },
   { id: "compare-stop", icon: "ph:x", label: "Stop comparing with a saved version", keys: "none",
-    code: true, run: () => docIdeStopCompare() },
+    code: true, run: () => docIdeCall("docIdeStopCompare") },
 ];
 
 // DOC-COMMANDS-END
@@ -10821,7 +10821,7 @@ let docAiController = null;
 //: function of that name the file defines.
 async function docAiLazy(name, ...args) {
   //: With the diff library beside it: the panel draws its proposal with `docRenderDiff`.
-  if (!(await Promise.all([lazyScript("/js/documents-ai.js"), docHistoryReady()])).every(Boolean)) return toast("The Atlas panel could not be loaded.", true, { action: ["Try again", () => docAiLazy(name, ...args)] });
+  if (!(await Promise.all([lazyScript("/js/documents-ai.js"), lazyScript("/js/documents-history.js")])).every(Boolean)) return toast("The Atlas panel could not be loaded.", true, { action: ["Try again", () => docAiLazy(name, ...args)] });
   return window[name](...args);
 }
 
@@ -10925,16 +10925,12 @@ async function openDocAiHistory() {
 
 //: The version history dialog and the line diff are documents-history.js,
 //: fetched on the first press of the dock's History or Name this version
-//: (audit 1031 DC13). `docHistoryReady` is the one way in: the AI edit panel,
-//: the code assistant and the edit-conflict prompt wait on it before they draw
-//: a diff, so none of them can run ahead of `docRenderDiff`.
-function docHistoryReady() {
-  return lazyScript("/js/documents-history.js");
-}
-
+//: (audit 1031 DC13). The AI edit panel, the code assistant and the edit-conflict
+//: prompt wait on the same `lazyScript` before they draw a diff, so none of them
+//: can run ahead of `docRenderDiff`.
 for (const [id, name] of [["doc-history", "openDocHistory"], ["doc-history-name", "docNameCurrentVersion"]]) {
   $(id)?.addEventListener("click", async () => {
-    if (!(await docHistoryReady())) return toast("The history could not be loaded.", true, { action: ["Try again", () => $(id).click()] });
+    if (!(await lazyScript("/js/documents-history.js"))) return toast("The history could not be loaded.", true, { action: ["Try again", () => $(id).click()] });
     return window[name]();
   });
 }
@@ -19026,6 +19022,12 @@ function docTableCellClick(event, view) {
 //: (documents-ide.js, Brief 42), fetched as this file runs rather than listed
 //: in app.js's bundle table, whose gzipped size is ratcheted. A code file
 //: opened before it lands gets its tools again once it has.
+//: The palette rows and the history menu reach documents-ide.js through here, so
+//: one pressed before the file has landed waits for it instead of throwing.
+function docIdeCall(name, ...args) {
+  return lazyScript("/js/documents-ide.js").then((ok) => ok && window[name](...args));
+}
+
 lazyScript("/js/documents-ide.js").then(() => {
   const CM = window.CM6;
   if (docCmView && CM && docCmParts.code && !docFileType().previewable) {

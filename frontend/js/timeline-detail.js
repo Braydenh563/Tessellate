@@ -90,6 +90,8 @@ async function timelineRowDetail(detail, row) {
   //: A picture here takes the same grip and align menu as in the note form
   //: (image-layout.js), and the view draws itself again with the saved text.
   body.dataset.imageEdit = String(row.id);
+  await lazyScript("/js/image-layout.js");
+  if (!detail.isConnected) return;
   imageWireAll(body);
   //: The save repaints the feed, which closes an open row: it is opened
   //: again (it reads the saved note), or drawn again when it stayed open.

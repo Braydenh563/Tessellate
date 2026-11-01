@@ -8,7 +8,7 @@
 // The AI edit panel, the code assistant's proposal and the edit-conflict
 // prompt draw their changes with the same model, so they wait for this file.
 //
-// **Loaded on the first press**, by `docHistoryReady` in documents.js (the way
+// **Loaded on the first press**, by `lazyScript` in documents.js (the way
 // documents-replace.js is): the dock's History and Name this version buttons
 // are wired there and fetch it, `docAiLazy` and the code assistant's reply
 // fetch it before they draw a diff, and edit-conflict.js fetches it for its
@@ -575,7 +575,7 @@
       items.push(
         makeMenuItem("ph:git-diff Compare in the editor", "Show this version against the editor's text, change by change", () => {
           $("doc-history-dialog").close();
-          docIdeCompareWith(entry.id, whenText(entry.created_at));
+          docIdeCall("docIdeCompareWith", entry.id, whenText(entry.created_at));
         })
       );
     }
