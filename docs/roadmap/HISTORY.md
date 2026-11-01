@@ -7,6 +7,10 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## INBOX resolved, 2026-11-01 (1524)
+
+- **1524, an overview counted four notes and told two; source 2 listed between 11 and 12; a quote's marker inside its bracket; no gap under a fold.** Built in 3823209 and 2cfa099: a label line holds one note's words (audit 1031 C5 for every label: notes written the same day were glued into one sentence under one citation); up to three untold notes are named ("The others are ..."), more are counted; Matching records sort by citation number; a full-width close ends a quote with no ASCII stop and the mark after it; `.long-fold` keeps its bottom gap. Measured on :8798: order 1 to 14, fold gap 6.4px. `tests/test_overview_counts_1524.py`.
+
 ## Moved from the agent-remaining lists, 2026-11-01 (ux1518-1101: shell, ux, extras)
 
 - **Built:** S36 import preview (INBOX 1520: `importPreview` in app-import.js, `dry_run` and `exclude` on `POST /import/app`, markdown previewed in the browser; DESIGN.md's recipe and `tests/test_import_preview.py`), CE7 (a page preview's phone sheet is 52dvh, frame 87 to 323 px at 390), the Guide's documents topic at 1,893 of 1,900 (replace in every document is `documents-replace`), objmove L2 (`aria-keyshortcuts` on a card stop), L6 (Already attached for every kind, `OBJ_STAGED`), the phone tray sheet's first focus, uxfix item 14 (the grip's title).
