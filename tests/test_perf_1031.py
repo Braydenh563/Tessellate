@@ -146,7 +146,7 @@ def test_the_open_suggestions_panel_is_redrawn_at_most_every_400ms_while_typing(
     soon = _between(js, "function docProsePanelSoon() {", "function renderDocProsePanel() {")
     assert "docCmView?.hasFocus" in soon  # a click in the panel is not typing: at once
     assert "DOC_PROSE_PANEL_GAP_MS" in soon and "clearTimeout(soon.timer)" in soon
-    render = _between(js, "function renderDocProse() {", "function docProsePanelSoon() {")
+    render = _between(js, "function renderDocProse(", "function docProsePanelSoon() {")
     assert "docProsePanelSoon();" in render and "renderDocProsePanel();" not in render
 
 
