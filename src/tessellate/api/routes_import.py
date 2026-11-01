@@ -2,9 +2,10 @@
 (WORLD_CLASS_PLAN H6, row 25). The readers and the writer are
 `entry/app_import.py`; this is the door, the size caps and the job line.
 
-One step, as every import in Settings is (INBOX 464 (18)): the files arrive
-with the press that chose them, and the answer carries the ids so the
-toast's Undo can bin exactly these notes.
+Two calls, the preview step (INBOX 1520): `dry_run=1` reads and lists what
+would come in and writes nothing; the run then carries the keys the person
+unticked as `exclude`. The answer carries the ids so the toast's Undo can bin
+exactly these notes.
 """
 
 from __future__ import annotations
@@ -15,7 +16,9 @@ import time
 import zipfile
 from pathlib import Path
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, UploadFile
+import json
+
+from fastapi import APIRouter, BackgroundTasks, Depends, Form, HTTPException, Query, Response, UploadFile
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
@@ -60,10 +63,27 @@ def _summary(written: dict, label: str) -> str:
         f", {written['already']} already here" if written["already"] else "")
 
 
+def _excluded(text: str) -> set[str]:
+    """The keys the preview's person unticked: a JSON list, refused whole when
+    it is anything else, before a byte is read or written."""
+    if not text:
+        return set()
+    try:
+        keys = json.loads(text)
+    except ValueError:
+        keys = None
+    if not isinstance(keys, list) or not all(isinstance(k, str) for k in keys):
+        raise HTTPException(status_code=422, detail="The list of notes to leave out did not read.")
+    return set(keys)
+
+
 @router.post("/import/app", status_code=201)
 def import_app(
     files: list[UploadFile],
+    response: Response,
     source: str = Query(pattern="^(notion|obsidian|evernote|apple|memorymap)$"),
+    dry_run: bool = Query(False),
+    exclude: str = Form(""),
     session: Session = Depends(get_session),
 ) -> dict:
     """Read, write, and keep a report. The write is a job with progress and
@@ -71,6 +91,7 @@ def import_app(
     before then stays, since each one is committed as it is made."""
     from tessellate.api.routes_settings import _parse_frontmatter
 
+    left_out = _excluded(exclude)
     raw = _received(files)
     label = app_import.LABELS[source]
     t0 = time.perf_counter()
@@ -78,6 +99,11 @@ def import_app(
         read = app_import.read(source, raw, parse_frontmatter=_parse_frontmatter)
     except app_import.TooBig as exc:
         raise HTTPException(status_code=413, detail=str(exc)) from exc
+    if dry_run:
+        response.status_code = 200  # nothing was made
+        return {"source": source, "label": label, "found": len(read.notes), "skipped": read.skipped[:50],
+                **app_import.preview(session, source, read.notes)}
+    read.notes = [note for note in read.notes if note.key not in left_out]
     with jobruns.job_run("import", title=f"Importing from {label}", origin="you") as run, activity.track(
         "import", f"Importing from {label}", ledger=False
     ) as job:

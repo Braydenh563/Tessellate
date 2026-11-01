@@ -141,7 +141,6 @@ function editorSurfaceFor(box) {
 //: find out whether the feature exists.
 let editorSurfaceModulePending = null;
 function editorEnsureSurfaceModule(box) {
-  if (typeof ensureModule !== "function") return;
   const el = box && box.nodeType === 1 ? box : null;
   if (!el || !(el.id in EDITOR_SURFACES)) return;
   if (!editorSurfaceModulePending) {

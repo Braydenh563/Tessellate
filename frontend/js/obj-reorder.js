@@ -250,7 +250,19 @@ function objOrderHints() {
   }
 }
 
+//: **The keys are named on the card that has them** (UX audit 1031 L2): a screen
+//: reader hears "Alt+ArrowUp Alt+ArrowDown" on the stop, so the move is not a
+//: secret. Set when the stop takes focus, since the cards are drawn again after
+//: every move and a field inside one (a rename box) has no such keys.
+function objReorderKeysNamed(event) {
+  const target = event.target;
+  if (!target?.closest || target.hasAttribute("aria-keyshortcuts") || target.closest(OBJ_EDITABLE)) return;
+  const hit = objSurfaceAt(target);
+  if (hit && objUnitRef(hit.unit)) target.setAttribute("aria-keyshortcuts", "Alt+ArrowUp Alt+ArrowDown");
+}
+
 //: Capture, ahead of the lists' own arrow-key walking, which would move the focus instead.
 window.addEventListener("keydown", objReorderKey, true);
+window.addEventListener("focusin", objReorderKeysNamed, true);
 objOrderHints();
 objReorderKick();

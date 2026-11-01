@@ -3267,7 +3267,8 @@ function loop() {
   tickMs = ticks === steps ? cost / steps : tickMs * 0.9 + (cost / steps) * 0.1;
   clampToWorld();
   const overBudget = !dragging && Date.now() - settleFrom > SETTLE_BUDGET_MS;
-  const settled = !dragging && (simulation.alpha() < simulation.alphaMin() || overBudget);
+  const calmed = !dragging && calmPass(nodes, simulation.alpha(), ramp.n > 0 || shuffle.left > 0);
+  const settled = !dragging && (simulation.alpha() < simulation.alphaMin() || overBudget) || calmed;
   //: At rest and not yet untangled: the passes, their relax and the cleanup
   //: run out of sight (`pending`) and the map moves to the result in one glide.
   if (settled && !dragging && untangleOwed()) {
@@ -3331,9 +3332,48 @@ function loopYield(cost) {
   return Math.min(120, cost * (dragging ? 2 : 1)) * rest;
 }
 
+//: **A layout ends when its motion stops, not when its alpha does** (INBOX
+//: 1519: draws and ticks for seconds after the notes had stopped moving
+//: anywhere the eye can tell). The cooling to `alphaMin` is a fixed 300
+//: ticks and the last third of them move the median note 0.35 world units a
+//: post (500 notes, measured), so on a big map the tail is seconds of ticks
+//: and frames for nothing. A pass is calm when at most a tenth of the notes
+//: moved more than `STILL_STEP` world units since the pass before (about half
+//: a pixel at the fit's usual scale; the first ten notes are never the
+//: ignored ones, so a note being eased into place keeps its map moving);
+//: `STILL_PASSES` calm passes in a row,
+//: with the heat already low and not climbing, end the layout as the floor
+//: would have. A drag, a ramp or a pass with real motion starts the count
+//: again. The first pass only records where the notes are.
+const STILL_STEP = 1;
+const STILL_SHARE = 0.1;
+const STILL_SMALL = 10;
+const STILL_PASSES = 3;
+const STILL_ALPHA = 0.006;
+const calm = { n: 0, xs: null, ys: null };
+function calmPass(nodeList, alpha, hot) {
+  const count = nodeList.length;
+  const first = !calm.xs || calm.xs.length !== count;
+  if (first) {
+    calm.xs = new Float32Array(count);
+    calm.ys = new Float32Array(count);
+  }
+  let moved = 0;
+  for (let i = 0; i < count; i++) {
+    const node = nodeList[i];
+    if (!first && Math.abs(node.x - calm.xs[i]) + Math.abs(node.y - calm.ys[i]) > STILL_STEP) moved++;
+    calm.xs[i] = node.x;
+    calm.ys[i] = node.y;
+  }
+  const quiet = !first && !hot && alpha < STILL_ALPHA && moved <= Math.max(0, Math.floor((count - STILL_SMALL) * STILL_SHARE));
+  calm.n = quiet ? calm.n + 1 : 0;
+  return calm.n >= STILL_PASSES;
+}
+
 //: Every message that moves the layout comes through here, so this is where
 //: the settle budget starts again.
 function run() {
+  calm.n = 0;
   settleFrom = Date.now();
   if (timer === null && simulation) timer = setTimeout(loop, 0);
 }

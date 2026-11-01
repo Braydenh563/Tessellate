@@ -1592,7 +1592,7 @@ function openReminderCompose() {
   if (!form) return;
   // The sentence box: its times need no model (UX-01).
   const field = () => $("reminder-magic") || $("reminder-text");
-  if (!window.matchMedia(REMINDER_SHEET).matches || typeof openSheet !== "function") {
+  if (!window.matchMedia(REMINDER_SHEET).matches) {
     field()?.focus();
     return;
   }

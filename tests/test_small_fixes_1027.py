@@ -52,12 +52,15 @@ def test_a_lasting_toast_steps_aside_for_the_buttons_of_the_section_in_use():
     question (kept up until answered) covered the composer's Save, and the
     click landed on the toast for 90 s. A toast without a timer fades for
     the buttons of the focused control's form or section, and the check
-    runs again when a toast arrives over a control already focused."""
+    runs again when a toast arrives over a control already focused.
+    E2E import, 2026-11-01: an open dialog counts as the section in use (the
+    same question covered the import preview's Import press)."""
     js = (ROOT / "frontend/js/status.js").read_text(encoding="utf-8")
     body = js[js.index("function toastYield(target = document.activeElement) {"):]
     body = body[: body.index("\n}\n")]
-    assert 'target.closest("form, section")?.querySelectorAll("button")' in body
-    assert "!el.toastTimer && work.some(" in body
+    assert 'const area = target.closest("form, section, [role=dialog]");' in body
+    assert 'area?.querySelectorAll("button")' in body
+    assert '(area?.role == "dialog" || !el.toastTimer) && work.some(' in body
     stack = js[js.index("function toastStack(box, change) {"):]
     assert 'if (box.id === "toast-box") toastYield();' in stack[: stack.index("\n}\n")]
 

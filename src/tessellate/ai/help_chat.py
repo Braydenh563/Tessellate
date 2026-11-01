@@ -1901,7 +1901,6 @@ HELP_TOPICS.extend(
                 "read aloud", "accessibility check", "grammar", "word goal",
                 "typewriter", "focus mode", "find and replace", "replace all",
                 "docx", "word document", "microsoft word", "find in every document",
-                "replace in every document", "replace across documents",
             ),
             "body": (
                 "Document editor keys (Library, Documents; Ctrl+Shift+D starts "
@@ -1914,9 +1913,8 @@ HELP_TOPICS.extend(
                 "indent and outdent, Ctrl+/ comments the selection, Alt+Up / "
                 "Alt+Down moves the block at the caret, and typing / opens "
                 "the blocks menu. Ctrl+F finds and Ctrl+H (Mac: Cmd+Option+F) replaces (Enter or F3 next, "
-                "Shift+Enter previous, Esc closes), Ctrl+Shift+F finds in every "
-                "document, and Replace in every document (the ⋯ menu or Ctrl+K) replaces in "
-                "all in one undo step. Views: Edit, where Live renders as you write, Source "
+                "Shift+Enter previous, Esc closes), and Ctrl+Shift+F finds in every "
+                "document (replacing across documents has its own topic). Views: Edit, where Live renders as you write, Source "
                 "is the markdown and Split puts a preview beside it, or Read. The "
                 "sidebar's Outline lists the headings (with a filter when there "
                 "are many), and headings fold. Focus mode (the corners button on "
@@ -1937,6 +1935,24 @@ HELP_TOPICS.extend(
                 "lists and links; Ctrl+Shift+V pastes plain text. With nothing "
                 "selected, Ctrl+C and Ctrl+X copy and cut the whole line, and "
                 "pasting that line puts it above the one you are on."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
+            "id": "documents-replace",
+            "keywords": (
+                "replace in every document", "replace across documents",
+                "replace all documents", "replace in all documents",
+                "find and replace everywhere", "bulk replace",
+            ),
+            "body": (
+                "Replace in every document (the document's ⋯ menu or Ctrl+K). "
+                "Type what to find, and the list shows every document that has "
+                "it, with the first match in its line. Untick a document to "
+                "leave it out. When more than one document would change, the "
+                "first press of Replace all asks and the second does it; the "
+                "toast's Undo takes every document back at once. A pattern that "
+                "does not read says so before anything runs."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

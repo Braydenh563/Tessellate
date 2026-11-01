@@ -5,6 +5,8 @@ and a drop that changes nothing on screen."""
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from tests._objmove_node import JS, needs_node, run
 
 FILES = ["obj-ref.js", "obj-clip.js", "obj-drag.js", "obj-order.js", "obj-reorder.js", "obj-carry.js", "obj-tray.js"]
@@ -323,3 +325,37 @@ def test_the_notes_card_menu_gets_the_card_rows_and_a_links_own_menu_does_not() 
     assert "window.objKebabRows?.(menu);" in menus
     clip = (JS / "obj-clip.js").read_text(encoding="utf-8")
     assert '.link-connection' in clip
+
+
+def test_a_reorderable_card_stop_names_its_move_keys_to_a_screen_reader():
+    # UX audit 1031 L2: the Alt+Up and Alt+Down move had no name on the stop that has it.
+    js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "obj-reorder.js").read_text(encoding="utf-8")
+    body = js.split("function objReorderKeysNamed(event)", 1)[1].split("\n}\n", 1)[0]
+    assert '"aria-keyshortcuts", "Alt+ArrowUp Alt+ArrowDown"' in body
+    assert "OBJ_EDITABLE" in body and "objUnitRef(hit.unit)" in body
+    assert 'window.addEventListener("focusin", objReorderKeysNamed, true)' in js
+
+
+@needs_node
+def test_a_second_paste_of_any_kind_into_the_chat_says_already_attached() -> None:
+    # UX audit 1031 L6: only a note said it; a document, board, map, file or picture stayed silent.
+    out = run(FILES, STUBS + """
+    attachedDocuments = [{ id: 7 }]; attachedBoards = [{ id: 8 }, { id: 9 }]; attachedFiles = [{ id: 4 }];
+    attachedImages.push({ id: 3 });
+    const chat = { type: "chat", el: {} };
+    for (const [kind, id] of [["document", 7], ["board", 8], ["map", 9], ["file", 4], ["image", 3]]) objPasteAt(objRef(kind, id, "X"), chat);
+    __out(toasts);
+    """)
+    assert out == ["Already attached"] * 5
+
+
+def test_the_phone_tray_sheet_focuses_its_first_item_not_its_close_button():
+    js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "obj-tray.js").read_text(encoding="utf-8")
+    body = js.split("function objTraySheet()", 1)[1].split("\n}\n", 1)[0]
+    assert "[data-sheet=\"obj-tray\"] .obj-tray-use" in body and ".focus()" in body
+
+
+def test_the_picture_grip_says_a_note_card_ignores_the_width():
+    # uxfix-1031 item 14: "Width set on a note card does nothing visible" (a thumbnail ignores it by design).
+    js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "image-layout.js").read_text(encoding="utf-8")
+    assert "A note card shows it the same size whatever the width." in js

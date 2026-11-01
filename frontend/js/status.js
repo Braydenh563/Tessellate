@@ -987,7 +987,9 @@ document.addEventListener("keydown", (e) => lockFieldWants(e)?.focus(), true);
 //: steps aside for the buttons of the form or section being worked in: at
 //: 1280 by 720 the search-by-meaning question sat on the composer's Save
 //: and Save as draft for as long as it went unanswered (E2E first-run,
-//: 2026-10-27). Checked again when a toast arrives over a focused control.
+//: 2026-10-27), and the dialog's too: the search-by-meaning question sat on
+//: the import preview's Import press (E2E import, 2026-11-01). Checked again
+//: when a toast arrives over a focused control.
 function toastYield(target = document.activeElement) {
   const box = $("toast-box");
   if (!box?.children.length || !target || box.contains(target) || target === document.body) return box?.classList.remove("is-yielding");
@@ -996,10 +998,14 @@ function toastYield(target = document.activeElement) {
   //: A target that fills the window (the sketch's drawing area) hides nothing a toast could cover, and it ghosted every toast there (audit 1029 N16).
   const wide = focused.width > innerWidth / 2 && focused.height > innerHeight / 2;
   //: Skipped content-visibility buttons are not drawn; measuring one lays it out alone (INBOX 1415).
-  const work = [...(target.closest("form, section")?.querySelectorAll("button") || [])].map((el) => el.checkVisibility({ contentVisibilityAuto: true }) && el.getBoundingClientRect());
+  const area = target.closest("form, section, [role=dialog]");
+  const work = [...(area?.querySelectorAll("button") || [])].map((el) => el.checkVisibility({ contentVisibilityAuto: true }) && el.getBoundingClientRect());
+  //: In a dialog a timed toast steps aside too: the pointer resting on it
+  //: holds its timer, so the last import's Undo sat on the next preview's
+  //: Import for as long as the press was tried (E2E import, 2026-11-01).
   box.classList.toggle("is-yielding", [...box.children].some((el) => {
     const b = el.getBoundingClientRect();
-    return (!wide && meets(b, focused)) || (!el.toastTimer && work.some((r) => meets(b, r)));
+    return (!wide && meets(b, focused)) || ((area?.role == "dialog" || !el.toastTimer) && work.some((r) => meets(b, r)));
   }));
 }
 document.addEventListener("focusin", (e) => toastYield(e.target));
@@ -1825,7 +1831,7 @@ const settingsReadouts = {};
 //: per chosen model in this browser; Settings, Models keeps the why.
 function sayChatModelChosen(status) {
   const why = status?.chat_model_chosen_why;
-  if (!why || typeof toastAction !== "function") return;
+  if (!why) return;
   const key = `chatModelChosen:${status.chat_model}`;
   if (prefs.get(key)) return;
   if (!prefs.set(key, "1")) return;

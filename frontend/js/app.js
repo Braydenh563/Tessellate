@@ -1741,9 +1741,9 @@ const LAZY_MODULES = {
   //: The menus a note card's category and tag chips open: see chip-menus.js.
   chipMenus: ["/js/chip-menus.js"],
   noteHistory: ["/js/note-history.js"],
-  askHistory: ["/js/ask-history.js", "/js/ask-chart.js"],
+  askHistory: ["/js/answer-kit.js", "/js/ask-history.js", "/js/ask-chart.js"],
   //: The Ask box's Use AI switch (ask-compose.js), preloaded below.
-  askCompose: ["/css/ask-compose-lazy.css", "/js/ask-compose.js"],
+  askCompose: ["/css/ask-compose-lazy.css", "/js/answer-kit.js", "/js/ask-compose.js"],
   //: Notes, Questions (questions-view.js), behind two stand-ins.
   questionsView: ["/css/questions-lazy.css", "/js/questions-view.js"],
   settingsData: ["/js/settings-data.js"],
@@ -1812,7 +1812,7 @@ const LAZY_MODULES = {
   //: boot's, the motion arrives with the first figure that mounts.
   atlasMotion: ["/js/atlas-motion.js"],
   //: Atlas the Guide as a chat (help-chat.js's header), on first ask.
-  helpChat: ["/css/help-chat-lazy.css", "/js/help-chat.js"],
+  helpChat: ["/css/help-chat-lazy.css", "/js/answer-kit.js", "/js/help-chat.js"],
   //: Atlas's mood cues and bold small-size brows (atlas.js `atlasSheet`).
   atlasFaces: ["/css/atlas-lazy.css"],
   //: A selection's Move to space (batch-space.js's header).

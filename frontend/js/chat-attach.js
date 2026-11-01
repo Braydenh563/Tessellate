@@ -1110,7 +1110,7 @@ function openChatDockMore() {
   const button = $("chat-dock-more-btn");
   panel.classList.remove("hidden");
   button.setAttribute("aria-expanded", "true");
-  if (!window.matchMedia(PHONE_TABS).matches || typeof openSheet !== "function") return;
+  if (!window.matchMedia(PHONE_TABS).matches) return;
   const home = panel.parentElement;
   chatDockMoreSheetClose = openSheet({
     label: "How it answers",

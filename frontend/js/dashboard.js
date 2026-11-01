@@ -2361,9 +2361,11 @@ function categoryHue(name) {
   const sector = Math.max(r, g, b) === r ? ((g - b) / spread) % 6 : Math.max(r, g, b) === g ? (b - r) / spread + 2 : (r - g) / spread + 4;
   return Math.round(sector * 60 + 360) % 360;
 }
-//: A colour chosen while the dashboard is showing redraws it.
+//: A colour chosen while the dashboard is showing redraws it, after the frames
+//: (INBOX 1516: asked by its class, not by `checkVisibility`, a layout flush
+//: that was billed to the list's `loadCategories` continuation).
 document.addEventListener("categorycolours", () => {
-  if ($("dash-grid")?.checkVisibility?.()) renderDashboard();
+  if (!$("tab-dashboard")?.classList.contains("hidden")) afterFrames(renderDashboard);
 });
 
 // A deterministic seed from the category names + counts: the sky is

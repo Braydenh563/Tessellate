@@ -180,7 +180,7 @@ function imageWireEdit(frame, options, host) {
   grip.tabIndex = 0;
   grip.setAttribute("role", "slider");
   grip.setAttribute("aria-label", "Picture width");
-  grip.title = "Drag to resize the picture, or use the arrow keys";
+  grip.title = "Drag to resize the picture, or use the arrow keys. A note card shows it the same size whatever the width.";
   frame.appendChild(grip);
   const shown = () => Math.round(frame.getBoundingClientRect().width);
   const setValue = () => {

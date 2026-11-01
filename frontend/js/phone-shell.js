@@ -737,7 +737,7 @@ const PHONE_STATUS_ROWS = [
 
 function initPhoneHeaderMore() {
   const home = document.querySelector("#top-bar .header-cluster-end");
-  if (!home || typeof kebabMenu !== "function") return;
+  if (!home) return;
   const menu = kebabMenu(
     [
       ...PHONE_STATUS_ROWS.map((row) => ({

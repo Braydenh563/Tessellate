@@ -4608,6 +4608,14 @@ button.ghost.doc-template-choice.wb-template-choice {
   .cm-editor:has(.cm-run-panel) .cm-scroller {
     padding-bottom: min(24dvh, 220px);
   }
+  /* A page the file makes (HTML, SVG, CSS) gets a taller sheet: the frame
+     was 87 px in a 202 px sheet at 390 (CE7). */
+  html .cm-editor .cm-run-panel.is-page {
+    height: min(52dvh, 460px);
+  }
+  .cm-editor:has(.cm-run-panel.is-page) .cm-scroller {
+    padding-bottom: min(52dvh, 460px);
+  }
 }
 
 /* The panel's head on a phone (Brief 69): the row wraps rather than running
