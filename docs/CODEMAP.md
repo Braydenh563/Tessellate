@@ -2,7 +2,7 @@
 
 Generated 2026-11-01 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7543, frontend ids 2633, CSS sections 517, backend routes 639, backend modules 8321, test files 1801, tests 15478, plan headings 990, app scripts 28, boot scripts 37, script files 220.
+Counts: frontend functions 7543, frontend ids 2633, CSS sections 517, backend routes 639, backend modules 8328, test files 1802, tests 15483, plan headings 990, app scripts 28, boot scripts 37, script files 220.
 
 ## Frontend functions (7543)
 
@@ -12525,7 +12525,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8321)
+## Backend modules (8328)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -17030,26 +17030,33 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `topic_weights` | src/tessellate/ai/taxonomy.py:534 |
 | `weak_terms` | src/tessellate/ai/taxonomy.py:97 |
 
-### src/tessellate/ai/tensions.py (16)
+### src/tessellate/ai/tensions.py (23)
 
 | Name | File:line |
 |---|---|
-| `Tension` | src/tessellate/ai/tensions.py:114 |
-| `_AllSpaces` | src/tessellate/ai/tensions.py:322 |
-| `_clean_explanation` | src/tessellate/ai/tensions.py:162 |
-| `_excerpt` | src/tessellate/ai/tensions.py:154 |
-| `_finding` | src/tessellate/ai/tensions.py:370 |
-| `_gap_days` | src/tessellate/ai/tensions.py:200 |
-| `_stamp` | src/tessellate/ai/tensions.py:257 |
-| `compare_pair` | src/tessellate/ai/tensions.py:206 |
-| `derive` | src/tessellate/ai/tensions.py:376 |
-| `listing` | src/tessellate/ai/tensions.py:532 |
-| `order_by_time` | src/tessellate/ai/tensions.py:261 |
-| `pair_key` | src/tessellate/ai/tensions.py:303 |
-| `rebuild` | src/tessellate/ai/tensions.py:513 |
-| `record_event` | src/tessellate/ai/tensions.py:310 |
-| `refresh` | src/tessellate/ai/tensions.py:526 |
-| `sources_version` | src/tessellate/ai/tensions.py:344 |
+| `Tension` | src/tessellate/ai/tensions.py:115 |
+| `_AllSpaces` | src/tessellate/ai/tensions.py:323 |
+| `_Sources` | src/tessellate/ai/tensions.py:378 |
+| `_clean_explanation` | src/tessellate/ai/tensions.py:163 |
+| `_excerpt` | src/tessellate/ai/tensions.py:155 |
+| `_finding` | src/tessellate/ai/tensions.py:371 |
+| `_gap_days` | src/tessellate/ai/tensions.py:201 |
+| `_link_event_id` | src/tessellate/ai/tensions.py:480 |
+| `_night_fact_pair` | src/tessellate/ai/tensions.py:432 |
+| `_read_events` | src/tessellate/ai/tensions.py:399 |
+| `_read_links` | src/tessellate/ai/tensions.py:500 |
+| `_read_night_facts` | src/tessellate/ai/tensions.py:444 |
+| `_stamp` | src/tessellate/ai/tensions.py:258 |
+| `_status` | src/tessellate/ai/tensions.py:523 |
+| `compare_pair` | src/tessellate/ai/tensions.py:207 |
+| `derive` | src/tessellate/ai/tensions.py:533 |
+| `listing` | src/tessellate/ai/tensions.py:576 |
+| `order_by_time` | src/tessellate/ai/tensions.py:262 |
+| `pair_key` | src/tessellate/ai/tensions.py:304 |
+| `rebuild` | src/tessellate/ai/tensions.py:557 |
+| `record_event` | src/tessellate/ai/tensions.py:311 |
+| `refresh` | src/tessellate/ai/tensions.py:570 |
+| `sources_version` | src/tessellate/ai/tensions.py:345 |
 
 ### src/tessellate/ai/timetravel.py (13)
 
@@ -22885,7 +22892,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15478)
+## Tests (15483)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24412,6 +24419,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_taxonomy_pack.py | 64 |
 | tests/test_template_draft.py | 4 |
 | tests/test_tensions.py | 14 |
+| tests/test_tensions_derive_paths.py | 5 |
 | tests/test_tensions_table_b4.py | 7 |
 | tests/test_terms.py | 2 |
 | tests/test_test_imports.py | 1 |

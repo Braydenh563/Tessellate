@@ -66,7 +66,6 @@
  "src/tessellate/ai/source_check.py::unbacked_claims": 18,
  "src/tessellate/ai/taxonomy.py::_analyze_topics": 25,
  "src/tessellate/ai/taxonomy.py::extract_entities": 25,
- "src/tessellate/ai/tensions.py::derive": 33,
  "src/tessellate/ai/tools/__init__.py::_count_notes": 20,
  "src/tessellate/ai/tools/__init__.py::_find_contradictions": 17,
  "src/tessellate/ai/tools/__init__.py::_list_notes": 25,

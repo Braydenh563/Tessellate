@@ -60,8 +60,9 @@ from __future__ import annotations
 
 import logging
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Any
 
 from tessellate.ai import model_manager as model_manager_module
 from tessellate.ai import ollama_client as ollama_client_module
@@ -373,134 +374,177 @@ def _finding(key: str, earlier: int, later: int, **fields) -> dict:  # noqa: ANN
     return row
 
 
-def derive(session) -> list[dict]:  # noqa: ANN001, C901
-    """The table's rows, from the sources alone, in pair order. Reads and
-    returns, so `rebuild` and the determinism test share it."""
-    import json
+@dataclass(slots=True)
+class _Sources:
+    """What `derive` has read so far: every finding by pair, and the verdicts
+    that decide each pair's status. Filled by the three readers below, in the
+    order of the three sources, and read once by `_rows`."""
 
+    #: Notes' creation times, for telling which side of a pair came later.
+    written: dict[int, Any]
+    findings: dict[str, list[tuple]] = field(default_factory=dict)
+    accepted_events: set[str] = field(default_factory=set)
+    dismissed: set[str] = field(default_factory=set)
+    linked: dict[str, Any] = field(default_factory=dict)
+
+    def ordered(self, a: int, b: int) -> tuple[int, int]:
+        """`(earlier, later)` by the notes' creation times; a note with no
+        known time, or two written at the same instant, order by id."""
+        at_a, at_b = self.written.get(a), self.written.get(b)
+        if at_a is None or at_b is None or at_a == at_b:
+            return (min(a, b), max(a, b))
+        return (b, a) if at_b < at_a else (a, b)
+
+
+def _read_events(session, found: _Sources) -> None:  # noqa: ANN001
+    """1. The events, oldest first: a found pair is a finding; accepted,
+    dismissed and reopened move the pair's verdict in the order they happened."""
     from sqlalchemy import select
 
-    from tessellate.core.database import AuditLog, DerivedFact, Entry, EntryLink
+    from tessellate.core.database import AuditLog
 
-    findings: dict[str, list[tuple]] = {}
-    accepted_events: set[str] = set()
-    dismissed: set[str] = set()
-    linked: dict[str, EntryLink] = {}
-
-    with _AllSpaces(session):
-        written = dict(session.execute(select(Entry.id, Entry.created_at)).all())
-
-        def ordered(a: int, b: int) -> tuple[int, int]:
-            at_a, at_b = written.get(a), written.get(b)
-            if at_a is None or at_b is None or at_a == at_b:
-                return (min(a, b), max(a, b))
-            return (b, a) if at_b < at_a else (a, b)
-
-        # 1. The events, oldest first.
-        for event in session.scalars(
-            select(AuditLog).where(AuditLog.entity_type == EVENT_TYPE).order_by(AuditLog.id)
-        ):
-            body = event.payload or {}
-            try:
-                a, b = int(body["earlier_id"]), int(body["later_id"])
-            except (KeyError, TypeError, ValueError):
-                continue
-            key = pair_key(a, b)
-            if event.action == FOUND:
-                findings.setdefault(key, []).append((
-                    event.created_at, _SOURCE_RANK["scan"], event.id,
-                    _finding(
-                        key, a, b, reason=str(body.get("reason") or ""), model=str(body.get("model") or "local"),
-                        confidence=float(body.get("confidence") or 0.0), computed_at=event.created_at,
-                        source="scan", source_id=None, event_id=event.id,
-                    ),
-                ))
-            elif event.action == ACCEPTED:
-                accepted_events.add(key)
-                dismissed.discard(key)
-            elif event.action == DISMISSED:
-                dismissed.add(key)
-            elif event.action == REOPENED:
-                accepted_events.discard(key)
-                dismissed.discard(key)
-
-        # 2. The night shift's tension facts (a tombstone is a dismissal).
-        for fact in session.scalars(
-            select(DerivedFact).where(DerivedFact.kind == "tension").order_by(DerivedFact.id)
-        ):
-            try:
-                other = int((json.loads(fact.payload or "{}") or {})["other_entry_id"])
-                reason = str((json.loads(fact.payload or "{}") or {}).get("reason") or "")
-            except (KeyError, TypeError, ValueError):
-                continue
-            if other == fact.entry_id:
-                continue
-            key = pair_key(fact.entry_id, other)
-            earlier, later = ordered(other, fact.entry_id)
-            #: The version it read: the later note's newest event at the time.
-            event_id = session.scalar(
-                select(AuditLog.id)
-                .where(
-                    AuditLog.entity_type == "entry",
-                    AuditLog.entity_id == later,
-                    AuditLog.created_at <= fact.computed_at,
-                )
-                .order_by(AuditLog.id.desc())
-                .limit(1)
-            )
-            findings.setdefault(key, []).append((
-                fact.computed_at, _SOURCE_RANK["night"], fact.id,
+    for event in session.scalars(select(AuditLog).where(AuditLog.entity_type == EVENT_TYPE).order_by(AuditLog.id)):
+        body = event.payload or {}
+        try:
+            a, b = int(body["earlier_id"]), int(body["later_id"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        key = pair_key(a, b)
+        if event.action == FOUND:
+            found.findings.setdefault(key, []).append((
+                event.created_at, _SOURCE_RANK["scan"], event.id,
                 _finding(
-                    key, earlier, later, reason=reason, model=fact.model or "local",
-                    confidence=float(fact.confidence or 0.0), computed_at=fact.computed_at,
-                    source="night", source_id=fact.id, event_id=event_id,
+                    key, a, b, reason=str(body.get("reason") or ""), model=str(body.get("model") or "local"),
+                    confidence=float(body.get("confidence") or 0.0), computed_at=event.created_at,
+                    source="scan", source_id=None, event_id=event.id,
                 ),
             ))
-            if fact.deleted_at is not None:
-                dismissed.add(key)
+        elif event.action == ACCEPTED:
+            found.accepted_events.add(key)
+            found.dismissed.discard(key)
+        elif event.action == DISMISSED:
+            found.dismissed.add(key)
+        elif event.action == REOPENED:
+            found.accepted_events.discard(key)
+            found.dismissed.discard(key)
 
-        # 3. The links: a `contradicts` link is the accepted state, whoever made it.
-        for link in session.scalars(
-            select(EntryLink).where(EntryLink.link_type == "contradicts").order_by(EntryLink.id)
-        ):
-            linked.setdefault(pair_key(link.source_entry_id, link.target_entry_id), link)
-        for key, link in linked.items():
-            if key in findings:
-                continue
-            earlier, later = ordered(link.source_entry_id, link.target_entry_id)
-            event_id = None
-            for event in session.scalars(
-                select(AuditLog)
-                .where(
-                    AuditLog.entity_type == "entry",
-                    AuditLog.entity_id == link.source_entry_id,
-                    AuditLog.action == "linked",
-                )
-                .order_by(AuditLog.id)
-            ):
-                if ((event.payload or {}).get("after") or {}).get("link_id") == link.id:
-                    event_id = event.id
-                    break
-            findings[key] = [(
-                link.created_at, _SOURCE_RANK["link"], link.id,
-                _finding(
-                    key, earlier, later, reason="", model="person", confidence=1.0,
-                    computed_at=link.created_at, source="link", source_id=link.id, event_id=event_id,
-                ),
-            )]
+
+def _night_fact_pair(fact) -> tuple[int, str] | None:  # noqa: ANN001
+    """`(other note id, reason)` from a tension fact's payload, or None when
+    the payload does not name another note (a bad row is skipped, not raised)."""
+    import json
+
+    try:
+        body = json.loads(fact.payload or "{}") or {}
+        return int(body["other_entry_id"]), str(body.get("reason") or "")
+    except (KeyError, TypeError, ValueError):
+        return None
+
+
+def _read_night_facts(session, found: _Sources) -> None:  # noqa: ANN001
+    """2. The night shift's tension facts (a tombstone is a dismissal)."""
+    from sqlalchemy import select
+
+    from tessellate.core.database import AuditLog, DerivedFact
+
+    for fact in session.scalars(select(DerivedFact).where(DerivedFact.kind == "tension").order_by(DerivedFact.id)):
+        named = _night_fact_pair(fact)
+        if named is None or named[0] == fact.entry_id:
+            continue
+        other, reason = named
+        key = pair_key(fact.entry_id, other)
+        earlier, later = found.ordered(other, fact.entry_id)
+        #: The version it read: the later note's newest event at the time.
+        event_id = session.scalar(
+            select(AuditLog.id)
+            .where(
+                AuditLog.entity_type == "entry",
+                AuditLog.entity_id == later,
+                AuditLog.created_at <= fact.computed_at,
+            )
+            .order_by(AuditLog.id.desc())
+            .limit(1)
+        )
+        found.findings.setdefault(key, []).append((
+            fact.computed_at, _SOURCE_RANK["night"], fact.id,
+            _finding(
+                key, earlier, later, reason=reason, model=fact.model or "local",
+                confidence=float(fact.confidence or 0.0), computed_at=fact.computed_at,
+                source="night", source_id=fact.id, event_id=event_id,
+            ),
+        ))
+        if fact.deleted_at is not None:
+            found.dismissed.add(key)
+
+
+def _link_event_id(session, link) -> int | None:  # noqa: ANN001
+    """The `linked` event that made this link, or None for a link with none."""
+    from sqlalchemy import select
+
+    from tessellate.core.database import AuditLog
+
+    for event in session.scalars(
+        select(AuditLog)
+        .where(
+            AuditLog.entity_type == "entry",
+            AuditLog.entity_id == link.source_entry_id,
+            AuditLog.action == "linked",
+        )
+        .order_by(AuditLog.id)
+    ):
+        if ((event.payload or {}).get("after") or {}).get("link_id") == link.id:
+            return event.id
+    return None
+
+
+def _read_links(session, found: _Sources) -> None:  # noqa: ANN001
+    """3. The links: a `contradicts` link is the accepted state, whoever made
+    it. A link whose pair nothing else found becomes a finding of its own."""
+    from sqlalchemy import select
+
+    from tessellate.core.database import EntryLink
+
+    for link in session.scalars(select(EntryLink).where(EntryLink.link_type == "contradicts").order_by(EntryLink.id)):
+        found.linked.setdefault(pair_key(link.source_entry_id, link.target_entry_id), link)
+    for key, link in found.linked.items():
+        if key in found.findings:
+            continue
+        earlier, later = found.ordered(link.source_entry_id, link.target_entry_id)
+        found.findings[key] = [(
+            link.created_at, _SOURCE_RANK["link"], link.id,
+            _finding(
+                key, earlier, later, reason="", model="person", confidence=1.0,
+                computed_at=link.created_at, source="link", source_id=link.id,
+                event_id=_link_event_id(session, link),
+            ),
+        )]
+
+
+def _status(key: str, found: _Sources) -> str:
+    if key in found.linked:
+        return "accepted"
+    if key in found.dismissed or key in found.accepted_events:
+        # Accepted once and the link since taken away is the person
+        # changing their mind; it is not offered again either.
+        return "dismissed"
+    return "open"
+
+
+def derive(session) -> list[dict]:  # noqa: ANN001
+    """The table's rows, from the sources alone, in pair order. Reads and
+    returns, so `rebuild` and the determinism test share it."""
+    from sqlalchemy import select
+
+    with _AllSpaces(session):
+        found = _Sources(written=dict(session.execute(select(Entry.id, Entry.created_at)).all()))
+        _read_events(session, found)
+        _read_night_facts(session, found)
+        _read_links(session, found)
 
     rows = []
-    for key in sorted(findings, key=lambda k: tuple(int(x) for x in k.split(":"))):
-        first = min(findings[key], key=lambda f: (f[0] is None, f[0] or datetime.min, f[1], f[2]))[3]
-        if key in linked:
-            status = "accepted"
-        elif key in dismissed or key in accepted_events:
-            # Accepted once and the link since taken away is the person
-            # changing their mind; it is not offered again either.
-            status = "dismissed"
-        else:
-            status = "open"
-        rows.append({**first, "status": status})
+    for key in sorted(found.findings, key=lambda k: tuple(int(x) for x in k.split(":"))):
+        first = min(found.findings[key], key=lambda f: (f[0] is None, f[0] or datetime.min, f[1], f[2]))[3]
+        rows.append({**first, "status": _status(key, found)})
     return rows
 
 
