@@ -64,7 +64,8 @@ def test_a_diagram_pass_is_drawn_under_the_draft_with_the_shared_mermaid_recipe(
 def test_the_ask_answer_and_its_foot_are_announced_with_counts():
     ask = _js("ask-compose.js")  # askQuestion and announceAskFoot moved here (boot diet)
     assert "function announceAskFoot()" in ask
-    assert ".then(followups).catch(() => {}).then(announceAskFoot);" in ask
+    # The chain runs after the answer frame (warm12-1101, audit 1031 AI9); the foot is still announced after the chips.
+    assert 'CLIP_LIMITS.afterAnswer(() => ensureModule("askCompose").then(followups).catch(() => {}).then(announceAskFoot));' in ask
     body = ask[ask.index("function announceAskFoot"):].split("\n}\n")[0]
     for part in ("#ask-answer-related .answer-related-chip", "#ask-answer-sources .chat-source-card", "#ask-followups .chip-interactive", "Answer ready."):
         assert part in body
