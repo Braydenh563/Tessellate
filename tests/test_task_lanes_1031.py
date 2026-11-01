@@ -97,7 +97,7 @@ class El {
 }
 const els = { "task-history-box": new El("div"), "task-history": new El("ul") };
 globalThis.$ = (id) => els[id];
-globalThis.document = { createElement: (t) => new El(t) };
+globalThis.document = { createElement: (t) => new El(t), getElementById: (id) => els[id] };
 globalThis.QUIET_TASK_KINDS = new Set();
 globalThis.settleStartedNotification = () => false;
 globalThis.recordNotification = (n) => log.bell.push(n.title);

@@ -309,7 +309,8 @@ function nameMarkBuddyMenu(buddy, at = null) {
       ...(nameMarkBuddyMade("me") ? [] : [{ label: "ph:user-circle-plus Create your avatar", run: () => nameMarkBuddyMakeIt("me") }]),
     ],
   });
-  const look = document.getElementById("atlas-look")?.value || "auto";
+  //: The saved look, not the select's value: Settings' body is not built until it opens (INBOX 1501).
+  const look = appearancePref("atlas-look");
   items.push({
     group: "who",
     label: "ph:coat-hanger Atlas look",

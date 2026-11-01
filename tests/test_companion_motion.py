@@ -29,14 +29,14 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from tests._app_js import app_js_text, frontend_text
+from tests._app_js import app_js_text, frontend_text, with_pieces
 
 ROOT = Path(__file__).resolve().parents[1]
 #: avatars.js and its lazy half, companion-menu.js (the menu and the enlarged
 #: view), read as one.
 AV = "\n".join((ROOT / "frontend" / "js" / name).read_text(encoding="utf-8") for name in ("avatars.js", "companion-menu.js"))
 APP = app_js_text()
-SETTINGS = (ROOT / "frontend" / "js" / "settings.js").read_text(encoding="utf-8")
+SETTINGS = with_pieces("settings.js")  # the body listeners are in settings-controls.js since INBOX 1501
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 
 

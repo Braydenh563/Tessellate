@@ -10062,6 +10062,9 @@ Link to another note with [[its first few words]]."></textarea>
           </div>
         </nav>
         <div class="modal-content" tabindex="-1">
+          <!-- Built on the first open, or the first lookup of one of its ids (`settingsBodyBuild`,
+               settings-body.js; INBOX 1501): 2,700 nodes that cost every boot and none of its views. -->
+          <template id="settings-body-template">
 
           <!-- Models -->
           <section class="settings-section" id="settings-models">
@@ -15110,6 +15113,7 @@ Link to another note with [[its first few words]]."></textarea>
             </div>
           </section>
 
+          </template>
         </div>
       </div>
     </div>
@@ -15763,6 +15767,7 @@ Link to another note with [[its first few words]]."></textarea>
        kick-offs, initNotesSubtabs() and initAuth(), are the last lines of
        spaces-find.js for that reason. agent-activity.js (split first) runs
        after all of them. -->
+  <script src="/js/settings-body.js?v=0.6.2"></script>
   <script src="/js/app.js?v=0.6.2"></script>
   <script src="/js/prefs.js?v=0.6.2"></script>
   <script src="/js/store.js?v=0.6.2"></script>

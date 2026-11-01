@@ -113,16 +113,19 @@ def test_css_comment_lines_leave_no_empty_lines_behind():
 
 
 def test_html_comments_go_but_not_inside_text_elements_or_attributes():
+    #: A `<template>` is not on that list since INBOX 1501: Settings' body sits
+    #: in one, and its content is markup like the rest of the page, so its
+    #: comments go too (62 KB of the served page).
     src = (
         "<div>\n  <!-- a note -->\n  <p title=\"<!-- not -->\">a<!-- x -->b</p>\n"
         "<pre><!-- kept --></pre><textarea><!-- kept --></textarea>"
-        "<template><!-- kept --><template><!-- kept --></template></template>"
+        "<template><!-- gone --><template><!-- gone --></template></template>"
         "<script src=\"/a.js\"></script><!-- gone --></div>\n"
     )
     assert strip_html(src) == (
         "<div>\n\n  <p title=\"<!-- not -->\">ab</p>\n"
         "<pre><!-- kept --></pre><textarea><!-- kept --></textarea>"
-        "<template><!-- kept --><template><!-- kept --></template></template>"
+        "<template><template></template></template>"
         "<script src=\"/a.js\"></script></div>\n"
     )
 
@@ -244,7 +247,9 @@ def test_vendored_files_are_served_as_they_are(client, cold):
 
 def test_the_page_is_served_without_comments_and_stamped_by_content(client):
     html = client.get("/").text
-    assert "<!--" not in html.split("<template", 1)[0]
+    assert "<!--" not in html.split("<script", 1)[0]
+    # Settings' body is in a template (INBOX 1501), and its comments go too.
+    assert "<!--" not in html.split('id="settings-body-template"', 1)[1].split("</template>", 1)[0]
     stamp = asset_hash(FRONTEND_DIR / "js" / "app.js")
     assert f'/js/app.js?v={__version__}-{stamp}"' in html
     css_stamp = asset_hash(FRONTEND_DIR / "css" / "08-consistency.css")

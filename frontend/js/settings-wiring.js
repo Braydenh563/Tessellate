@@ -79,7 +79,6 @@ $("history-close").addEventListener("click", () =>
 
 $("shortcuts-reset").addEventListener("click", resetShortcuts);
 
-wirePrefsDirtyMarks();
 
 //: **Ctrl+S on the Preferences section**, which the section's own copy has
 //: promised for a long time ("Ctrl+S saves too") without anything in the app
@@ -136,27 +135,6 @@ $("improve-custom-input").addEventListener("keydown", (e) => {
   }
 });
 $("link-suggest-btn").addEventListener("click", () => openSuggestionsInbox("links"));
-// Mark a picker as "user has a pending choice" so the status poll stops
-// resetting it (Wave N bug fix).
-for (const id of ["chat-model-select", "embedding-model-select"]) {
-  $(id).addEventListener("change", () => ($(id).dataset.userChosen = "1"));
-}
-for (const radio of document.querySelectorAll('input[name="emb-backend"]')) {
-  radio.addEventListener("change", () => {
-    $("embedding-model-select").dataset.userChosen = "1";
-    // The radio itself needs the latch too: the choice isn't saved until
-    // "Apply & re-index", and without this the next status poll put the old
-    // backend back the instant focus left the radio.
-    radio.dataset.userChosen = "1";
-    //: The picker's enabled state follows the radio immediately rather than
-    //: waiting for the next status poll: choosing Ollama and finding the
-    //: model list still greyed for a second reads as the choice not having
-    //: taken. It says which backend is *selected*, which is the question the
-    //: control is about; whether it is applied is what Apply is for.
-    syncEmbeddingPickerState();
-    if (radio.checked && radio.value === "fastembed") applyEmbeddingBackend();
-  });
-}
 $("status-back").addEventListener("click", () => stepTabHistory(-1));
 $("status-forward").addEventListener("click", () => stepTabHistory(1));
 $("status-back").addEventListener("contextmenu", (event) => {
@@ -1211,6 +1189,10 @@ function restampShortcutHints() {
 }
 localizeStaticChords();
 restampShortcutHints();
+onSettingsBody(() => {
+  localizeStaticChords();
+  stampShortcutTitles();
+});
 // Sets the status-bar Undo/Redo buttons' icons and "nothing to undo yet"
 // tooltips on load: both stacks are empty at this point, so this only
 // establishes the disabled state the HTML already carries, not a real render.
@@ -1830,7 +1812,7 @@ if ("serviceWorker" in navigator) {
 // iPhone has no such event, so the row says how instead of offering a button.
 const installPrompt = { event: null };
 function renderInstallRow() {
-  const row = $("about-install-row");
+  const row = document.getElementById("about-install-row");
   if (!row) return;
   const installed =
     window.matchMedia?.("(display-mode: standalone)").matches || navigator.standalone === true;
@@ -1853,15 +1835,8 @@ window.addEventListener("appinstalled", () => {
   installPrompt.event = null;
   renderInstallRow();
 });
-$("about-install")?.addEventListener("click", async () => {
-  const offered = installPrompt.event;
-  if (!offered) return;
-  installPrompt.event = null; // the event can be used once
-  offered.prompt();
-  await offered.userChoice.catch(() => {});
-  renderInstallRow();
-});
-renderInstallRow();
+//: The Install row paints when the body is built (the button is wired in settings-controls.js).
+onSettingsBody(renderInstallRow);
 
 // The generative brand emblem's initial draw (Wave O) moved to settings.js's
 // own tail (§88.3 item 4): renderBrandLogo() itself stays here (used far
@@ -2254,7 +2229,6 @@ function singleKeysOn() {
   }
 }
 
-$("pref-single-keys").checked = singleKeysOn();
 
 //: Ctrl+K types ahead while the lazy palette loads (CI, 2026-10-06): the
 //: overlay opens at once; app-palette.js keeps the words and runs an Enter.

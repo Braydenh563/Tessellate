@@ -24,7 +24,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from tests._app_js import app_js_text
+from tests._app_js import app_js_text, with_pieces
 
 ROOT = Path(__file__).resolve().parents[1]
 APP = (ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
@@ -462,7 +462,7 @@ def test_atlas_style_is_a_choice_that_every_atlas_follows() -> None:
     # companion's figure and a mood change all branch on it, and a change of
     # style redraws what is on the page.
     atlas = (ROOT / "frontend" / "js" / "atlas.js").read_text(encoding="utf-8")
-    settings = (ROOT / "frontend" / "js" / "settings.js").read_text(encoding="utf-8")
+    settings = with_pieces("settings.js")  # the body listeners are in settings-controls.js since INBOX 1501
     index = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert '"atlas-style": "character"' in settings
     assert "\"avatar-buddy\", \"avatar-buddy-size\", \"avatar-buddy-actions\", \"atlas-style\", \"assistant-avatar\", \"atlas-look\", \"face-look\", \"dash-mark\"" in settings, "Reset forgets the choice"
@@ -481,7 +481,7 @@ def test_atlas_look_says_when_it_follows_face_looks() -> None:
     # too, not only Face looks, and the owner asked what it meant); picking it, or changing Face looks while it is picked, redraws
     # every Atlas on the page.
     atlas = (ROOT / "frontend" / "js" / "atlas.js").read_text(encoding="utf-8")
-    settings = (ROOT / "frontend" / "js" / "settings.js").read_text(encoding="utf-8")
+    settings = with_pieces("settings.js")  # the body listeners are in settings-controls.js since INBOX 1501
     index = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     select = index[index.index('<select id="atlas-look"') :]
     select = select[: select.index("</select>")]

@@ -378,6 +378,8 @@ function syncNotifBlocked() {
   for (const line of document.querySelectorAll(".notif-blocked")) line.classList.toggle("hidden", !blocked);
 }
 
+onSettingsBody(syncNotifBlocked);
+
 function askNotificationPermission() {
   if ("Notification" in window && Notification.permission === "default") {
     Notification.requestPermission().then(syncNotifBlocked, syncNotifBlocked);
@@ -2103,6 +2105,8 @@ document.addEventListener(
   true
 );
 
+//: The body's own controls are gated when it is built (settings-body.js), not before.
+onSettingsBody(() => syncModelGatedControls());
 function syncModelGatedControls(status = modelStatus) {
   const off = status ? status.ollama_running === false : false;
   for (const control of document.querySelectorAll("[data-needs-model]")) {
@@ -2134,8 +2138,8 @@ function syncModelGatedControls(status = modelStatus) {
   //: feature already has an override of its own, which must stay visible so it
   //: can be cleared (WORLD_CLASS_PLAN 20).
   const holdsOverride = Number(status?.feature_models_overridden || 0) > 0;
-  $("feature-models-config")?.classList.toggle("hidden", off && !holdsOverride);
-  const sampling = $("sampling-box");
+  document.getElementById("feature-models-config")?.classList.toggle("hidden", off && !holdsOverride);
+  const sampling = document.getElementById("sampling-box");
   (sampling?.parentElement?.classList.contains("fold-help-wrap") ? sampling.parentElement : sampling)?.classList.toggle("hidden", off);
   //: The badge is a span, not a button, so `disabled` does nothing to it
   //: (see its own comment in `renderTimelineEntry`). Explicitly hidden here so

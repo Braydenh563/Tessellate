@@ -428,7 +428,8 @@ def test_the_install_row_is_in_about_with_its_help_and_stays_hidden_until_offere
 
 
 def test_the_install_prompt_is_held_and_the_row_follows_installed_state():
-    wiring = (FRONTEND / "js" / "settings-wiring.js").read_text(encoding="utf-8")
+    # The row's button is wired in settings-controls.js, with the lazy Settings body (INBOX 1501).
+    wiring = "\n".join((FRONTEND / "js" / name).read_text(encoding="utf-8") for name in ("settings-wiring.js", "settings-controls.js"))
     assert 'addEventListener("beforeinstallprompt"' in wiring and "event.preventDefault()" in wiring
     assert 'addEventListener("appinstalled"' in wiring
     assert "(display-mode: standalone)" in wiring and "navigator.standalone" in wiring

@@ -38,7 +38,7 @@ import re
 #: Bumped whenever the output for the same input changes, so a cached copy
 #: from an older stripper (memory, `<data dir>/cache/static-gz`, and the
 #: content-hash stamp the browser caches against) is never reused.
-STRIP_VERSION = "2"
+STRIP_VERSION = "3"
 
 _IDENT_CHAR = re.compile(r"[\w$]")
 #: After these words a `/` starts a regex literal, not a division.
@@ -321,7 +321,10 @@ def strip_css(text: str) -> str:
 _HTML_NEXT = re.compile(r"<(!--|/?[a-zA-Z])")
 #: Elements whose content is not markup (raw text) or must keep its comments
 #: as written: everything inside is passed over to the matching close tag.
-_HTML_OPAQUE = ("script", "style", "textarea", "title", "pre", "template", "xmp")
+#: Not `template`: its content is ordinary markup, and Settings' body (62 KB of
+#: comments in 317 KB) sits in one (INBOX 1501), so its comments go like the
+#: page's own.
+_HTML_OPAQUE = ("script", "style", "textarea", "title", "pre", "xmp")
 _TAG_NAME = re.compile(r"[a-zA-Z][a-zA-Z0-9-]*")
 
 

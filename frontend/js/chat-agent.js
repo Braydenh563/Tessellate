@@ -387,7 +387,7 @@ function paintUserMarks() {
       holder.replaceChildren(nameMark(seed, Number(holder.dataset.userMark) || 18));
     }
   });
-  const head = $("profile-head-name");
+  const head = document.getElementById("profile-head-name");
   if (head) head.textContent = ((prefsCache && prefsCache.display_name) || "").trim() || "Your profile";
   //: The companion, when it is you (INBOX 426 d, the owner: "I changed my
   //: name but the companion which was me didnt update"): it redraws when

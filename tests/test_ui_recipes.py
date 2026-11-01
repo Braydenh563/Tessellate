@@ -4134,7 +4134,7 @@ def test_an_assistant_head_asks_one_function_for_its_face() -> None:
     guide = js["help-chat.js"]
     assert guide.count("assistantHeadRow(GUIDE_NAME)") == 4, "a guide row, its pending row, the streamed one and the revealed one each open with the head"
     #: The setting: a default, a control, a live repaint and a reset.
-    settings = js["settings.js"]
+    settings = with_pieces("settings.js")  # the listener moved to settings-controls.js with the lazy body (INBOX 1501)
     assert '"assistant-avatar": "atlas"' in settings
     assert "repaintAssistantAvatars()" in settings[settings.index('$("assistant-avatar").addEventListener') :][:300]
     index = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")

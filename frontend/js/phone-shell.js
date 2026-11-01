@@ -242,6 +242,12 @@ const EMBLEM_SLOTS = [
   ["about-emblem", 96, true],
 ];
 
+//: The About page's emblem is in Settings' body: drawn when the body is built (INBOX 1501).
+onSettingsBody(() => {
+  const holder = document.getElementById("about-emblem");
+  if (holder) renderEmblemWhenShown(holder, 96, true);
+});
+
 function renderBrandLogo() {
   //: Until the page has loaded the calls become one, after it: drawing needs
   //: to know which slots have a box, which lays the whole page out in the
@@ -254,7 +260,7 @@ function renderBrandLogo() {
     return;
   }
   for (const [id, size, animate] of EMBLEM_SLOTS) {
-    const holder = $(id);
+    const holder = document.getElementById(id);
     if (holder) renderEmblemWhenShown(holder, size, animate);
   }
   //: The assistant heads that wear the emblem take the new colour or motion.
