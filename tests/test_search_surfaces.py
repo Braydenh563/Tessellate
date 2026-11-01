@@ -227,3 +227,28 @@ def test_the_filter_words_survive_a_reload_in_the_tab():
     assert 'sessionStorage.getItem("note-filter")' in text
     assert "rememberNoteFilter(noteSearch);" in _function(text, "renderEntries")
     assert text.index('sessionStorage.getItem("note-filter")') < text.index("function renderEntries(")
+
+
+def test_tag_counts_and_negated_categories_in_the_finder(client):
+    def note(content, category, tags):
+        reply = client.post("/entries", json={"content": content, "category": category, "tags": tags})
+        assert reply.status_code in (200, 201), reply.text
+        return reply.json()["id"]
+
+    none = note("orchid watering notes", "Garden", [])
+    one = note("orchid repotting notes", "Garden", ["plants"])
+    two = note("orchid feeding notes", "Home", ["plants", "weekly"])
+    three = note("orchid shelf notes", "Home", ["plants", "weekly", "shelf"])
+    every = {none, one, two, three}
+    assert set(_engine_ids(client, "orchid tags:<2")) == {none, one}
+    assert set(_engine_ids(client, "orchid tags:0")) == {none}
+    assert set(_engine_ids(client, "orchid tags:>=2")) == {two, three}
+    assert set(_engine_ids(client, "orchid tags:2")) == {two}
+    assert set(_engine_ids(client, "orchid tags:<=1")) == {none, one}
+    assert set(_engine_ids(client, "orchid tags:>1")) == {two, three}
+    assert set(_engine_ids(client, "orchid -cat:Garden")) == {two, three}
+    assert set(_engine_ids(client, "orchid -category:Home")) == {none, one}
+    assert set(_engine_ids(client, "orchid cat:Home tags:3")) == {three}
+    # With no words at all the filters still answer, and a plain word is not read as an operator.
+    assert set(_engine_ids(client, "tags:0 cat:Garden")) >= {none}
+    assert set(_engine_ids(client, "orchid")) >= every

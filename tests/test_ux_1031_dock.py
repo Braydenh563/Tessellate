@@ -1,8 +1,8 @@
-"""Audit 1031 class 26 (N27, N37, N46): the Notes dock keeps its list controls.
+"""Audit 1031 class 26 (N27, N37, N46): a dock keeps its list controls.
 
 N27: Sort, Cards or Rows and Select sat in the dock's ⋯ at 1440 (a count
-rule: past seven items a dock folds). The Notes dock now folds by width alone,
-below 900. N37: a suggested tag is a button (class 28 made it one), and a batch
+rule: past seven items a dock folds). Every dock now folds by width alone
+(INBOX 1520). N37: a suggested tag is a button (class 28 made it one), and a batch
 act hands focus back to Select. N46: a note opened from the list is a step of
 the one history, so Back names the view before it."""
 
@@ -17,16 +17,15 @@ def _js(name: str) -> str:
     return (ROOT / "frontend" / "js" / name).read_text(encoding="utf-8")
 
 
-def test_the_notes_dock_folds_by_width_below_900_and_never_by_count():
+def test_every_dock_folds_by_width_and_never_by_count():
+    """INBOX 1520 (the owner, N27): items fold into the ⋯ only when the row runs out of room."""
     text = _js("phone-shell.js")
-    assert 'const DOCK_KEEPS_ABOVE = "(min-width: 900px)";' in text
-    arrange = text.split("function foldDockArrange(narrow)", 1)[1].split("\n}\n", 1)[0]
-    assert 'const keeps = dock.dataset.dockName === "notes";' in arrange
-    assert "keeps ? !roomy : narrow || dockItemCount(dock) > DOCK_FOLD_PAST" in arrange
-    # Select is not pulled into the ⋯ by the second fold either.
-    assert 'dock.dataset.dockName !== "notes" && dockItemCount(dock, false) > DOCK_FOLD_PAST' in text
-    # And the 900 line re-decides when a window is dragged across it.
-    assert 'window.matchMedia(DOCK_KEEPS_ABOVE).addEventListener("change"' in text
+    assert "DOCK_FOLD_PAST" not in text and "dockItemCount" not in text and "DOCK_KEEPS_ABOVE" not in text
+    fit = text.split("function fitDock(dock)", 1)[1].split("\n}\n", 1)[0]
+    # Everything shown first, so the answer depends on the width alone; then the arrange zone, then the actions.
+    assert fit.index("foldDockArrange(dock, false)") < fit.index("dockTight(dock)") < fit.index("foldDockArrange(dock, true)")
+    assert "if (dockTight(dock)) foldDockActions(dock, true)" in fit
+    assert "new ResizeObserver" in text and "contentRect.width" in text
 
 
 def test_a_batch_act_hands_focus_back_to_select():

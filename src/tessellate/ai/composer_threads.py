@@ -173,13 +173,28 @@ _MONTHS = ("January", "February", "March", "April", "May", "June", "July", "Augu
            "November", "December")
 
 
-def picture_name(written: object) -> str:
+def _day_said(note: dict) -> str:
+    """"12 October" from the note's ISO `created_at` or the route's `written`
+    words ("Monday 12 October 2026, 18:00"); "" when it has neither."""
+    iso = re.match(r"(\d{4})-(\d{2})-(\d{2})", str(note.get("created_at") or ""))
+    if iso:
+        return f"{int(iso.group(3))} {_MONTHS[int(iso.group(2)) - 1]}"
+    words = re.search(rf"\b(\d{{1,2}}) ({'|'.join(_MONTHS)})\b", str(note.get("written") or ""))
+    return f"{int(words.group(1))} {words.group(2)}" if words else ""
+
+
+def picture_name(note: dict) -> str:
     """A note that is only a picture, named by its day ("your picture from
     12 October"), never by its markdown ("your ![](/media/cat.png) note")."""
-    day = re.match(r"(\d{4})-(\d{2})-(\d{2})", str(written or ""))
-    if not day:
-        return "your picture with no title"
-    return f"your picture from {int(day.group(3))} {_MONTHS[int(day.group(2)) - 1]}"
+    day = _day_said(note)
+    return f"your picture from {day}" if day else "your picture with no title"
+
+
+def note_from(note: dict) -> str:
+    """A note named by its day ("your note from 12 October") when its own
+    words are quoted on the line after: the name must not say them twice."""
+    day = _day_said(note)
+    return f"your note from {day}" if day else "a note of yours"
 
 
 # --- group and link lines -----------------------------------------------------
@@ -279,3 +294,60 @@ def lead_said(threads: list[str], seed: int = 0) -> str:
     count = realise.count_word(len(named))
     frame = LEAD_FRAMES[seed % len(LEAD_FRAMES)]
     return frame.format(count=count, Count=count.capitalize(), names=realise.join_items(named))
+
+
+# --- a quote is the note's own words -------------------------------------------
+
+_QUOTED = lazy_compile(r"“([^”\n]{3,600})”")
+_PIECE_END = lazy_compile(r"(?<=[.!?])\s+")
+_MARK_CHARS = lazy_compile(r"[*_`#>~]|!\[[^\]\n]*\]\([^)\n]*\)")
+_TOKEN = lazy_compile(r"[a-z0-9']+")
+#: How much of a piece's words a note's sentence must hold to be what the
+#: piece was made from.
+_SAME_SENTENCE = 0.6
+
+
+def _flat(text: str) -> str:
+    text = _MARK_CHARS.sub(" ", text).replace("’", "'").replace("‘", "'").lower()
+    return " ".join(text.split()).strip(" .…!?:;,")
+
+
+def _original(piece: str, raws: list[str]) -> str:
+    """The note's own sentence the app's re-worded `piece` came from, or the
+    piece itself when no sentence is close enough."""
+    mine = set(_TOKEN.findall(piece.lower()))
+    if len(mine) < 3:
+        return piece
+    best, score = "", 0.0
+    for raw in raws:
+        theirs = set(_TOKEN.findall(raw.lower()))
+        near = len(mine & theirs) / len(mine | theirs) if theirs else 0.0
+        if near > score:
+            best, score = raw, near
+    return best if score >= _SAME_SENTENCE else piece
+
+
+def own_words(line: str, sources: list[str]) -> str:
+    """`line` with every “quote” made the note's own words (INBOX 1515: “Bake
+    at 230C. You rested the dough” held the app's re-voicing of the note's
+    "Rested the dough"): a quote the notes (or their link reasons) do not hold
+    whole is mended sentence by sentence from the sentence it was made from.
+    A quote that matches nothing is left as it is."""
+    if "“" not in line or not sources:
+        return line
+    held = " | ".join(_flat(s) for s in sources)
+    raws: list[str] = []
+
+    def mend(found: re.Match) -> str:
+        quote = found.group(1)
+        if _flat(quote) in held:
+            return found.group(0)
+        if not raws:
+            raws.extend(p.strip(" -*•") for s in sources for ln in s.splitlines() for p in _PIECE_END.split(ln) if p.strip(" -*•"))
+        pieces = _PIECE_END.split(quote)
+        mended = [p if _flat(p) in held else _original(p, raws) for p in pieces]
+        if mended and not quote.rstrip().endswith((".", "!", "?")):
+            mended[-1] = mended[-1].rstrip(".")
+        return "“" + " ".join(mended) + "”"
+
+    return _QUOTED.sub(mend, line)

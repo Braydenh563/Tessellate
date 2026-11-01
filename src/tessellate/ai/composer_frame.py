@@ -28,6 +28,7 @@ from collections import Counter
 from dataclasses import dataclass, field
 
 from tessellate.ai import composer_threads, realise
+from tessellate.core import cjk
 
 #: A group leads as "the closest" only when its notes score this far above
 #: every note outside it; nearer than that, no group is closer than another.
@@ -191,6 +192,9 @@ def note_words(content: str | None) -> int:
     rather than says anything in it. The one counter for "how long is this
     note", "which is longer" and "your longest note" (audit 1030 Z10)."""
     body = re.sub(r"\A\s*#{1,6}[ \t][^\n]*", "", str(content or ""))
+    #: A script with no spaces counts by character, as every other count does (N15).
+    if cjk.has(body):
+        return cjk.word_count(body)
     return sum(1 for token in body.split() if _HAS_ALNUM(token))
 
 
@@ -247,6 +251,9 @@ def _plain(text: str) -> str:
     return _SPLIT_HYPHEN.sub("-", _MARK.sub("", text)).strip()
 
 
+_LIST_ITEM = re.compile(r"(?:[-*+•]\s|\d+[.)]\s|\[[ xX]\]\s)")
+
+
 def _title_of(content: str) -> str:
     """A first line that names the note ("# Trains", "**The Complete Social
     Skills Guide**", "Ice Breakers:" over its list), or ""."""
@@ -255,11 +262,26 @@ def _title_of(content: str) -> str:
         return ""
     first = lines[0].strip()
     marked = bool(re.match(r"#{1,6}\s|(\*\*|__)\S.*\1:?$", first))
+    if not marked and _LIST_ITEM.match(first):
+        #: "[x] Milk" and "- eggs" are the first of a list, not its name.
+        return ""
     if not marked and _PREFIX.match(_plain(first)):
         #: "Pros: more time" opens a section; it does not name the note (C8).
         return ""
     name = _plain(re.sub(r"^#{1,6}\s+", "", first)).rstrip(".").rstrip(":").strip()
+    if not marked and (_said_line(name) or re.search(r"[,;!?]", name)):
+        #: "Went to the gym today" over its details is what the person did,
+        #: never the note's name (1515); "Legs day" is a name.
+        return ""
     return name if name and len(name.split()) <= (10 if marked else 6) else ""
+
+
+def title_line(content: str) -> str:
+    """**The one reader of a note's own name for every answer shape** (INBOX
+    1515: the frame, the sections and the lists each read it their own way):
+    a heading, a bold line, a short plain first line over the note's body, or
+    a one-line note that is only a name; "" for a note that has none."""
+    return _title_of(content) or own_title(content)
 
 
 def _titled(title: str) -> str:
@@ -353,6 +375,19 @@ def lower_name(text: str) -> str:
 NON_LATIN = lazy_compile(r"[\u0400-\u052f\u0590-\u06ff\u0900-\u097f\u0e00-\u0e7f\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af]")
 
 
+#: A time or a day inside a line makes it a plan, never a name ("Pottery class
+#: on Thursday at 6pm"): the note says something, so it is quoted (1515).
+_WHEN_IN_LINE = lazy_compile(
+    r"\b\d{1,2}(?::\d\d)?\s?(?:am|pm)\b|\b(?:on|at|by|every|next|this)\s+(?:mon|tues?|wed(?:nes)?|thu(?:rs)?|fri|sat(?:ur)?|sun)(?:day)?\b"
+    r"|\b(?:on|by)\s+\d{1,2}(?:st|nd|rd|th)?\s+(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)", re.I)
+
+
+def _said_line(line: str) -> bool:
+    """A line that says something (a verb, an order, a first-person start,
+    what the person did) and so cannot name a note."""
+    return bool(_FINITE.search(line) or _IMPERATIVE.match(line) or re.match(r"i\b", line, re.I) or _DIARY_VERB.match(line))
+
+
 def own_title(content: str) -> str:
     """A one-line note that is only a name ("Atlas retro meeting"): short,
     no sentence marks, not an instruction and not the person's own "I";
@@ -366,11 +401,11 @@ def own_title(content: str) -> str:
     #: note's words, quoted whole, never "only a title" (audit 1031 C10).
     if NON_LATIN.search(line):
         return ""
-    if _FINITE.search(line):
+    if _FINITE.search(line) or _WHEN_IN_LINE.search(line):
         #: "Intro to Cloud Computing starts Monday" says something: a
         #: sentence, never a name ("the Intro to ... starts Monday names it").
         return ""
-    return "" if _IMPERATIVE.match(line) or re.match(r"i\b", line, re.I) else line
+    return "" if _said_line(line) else line
 
 
 def _presented(body: str) -> str:
@@ -449,14 +484,17 @@ def short_name(note: dict, lower=_lower) -> str:  # noqa: ANN001
     about; quoted when it is an instruction ("go to the gym at 9pm") or a
     sentence of the person's own; never a phrase cut mid-thought (1420)."""
     content = str(note.get("content") or "").strip()
+    if note.get("_by_day"):
+        return composer_threads.note_from(note)
     if _ONLY_PICTURES.fullmatch(content.split("\n", 1)[0].strip()):
-        return composer_threads.picture_name(note.get("created_at"))
-    diary = "" if "\n" in content else _diary_name(_first_line(content), lower)
-    if diary:
-        return diary
-    title = _title_of(content) or own_title(content)
+        return composer_threads.picture_name(note)
+    title = title_line(content)
     if title:
         return _titled(title)
+    #: A diary line is named by what it is about, over its details or alone.
+    diary = _diary_name(_first_line(content), lower)
+    if diary:
+        return diary
     label = note_label(note)
     if label:
         return f"the {lower(label)} note"
@@ -582,11 +620,30 @@ def _group_clause(group: Group, topic: str, theme: str, by_id: dict[int, dict], 
     return f"Closest to {topic}, {line}" if group.band == "closest" else line
 
 
-def group_line(group: Group, notes: list[dict], topic: str, lower=_lower, i: int = 0) -> str:  # noqa: ANN001
+def echoed(group: Group, notes: list[dict], told: str) -> set[int]:
+    """The group's notes its line names by a quote of all their words that the
+    lines told after it quote again (INBOX 1515: "the note that starts
+    “Climbing gym membership renewed for a year”" then "You wrote “Climbing
+    gym membership renewed for a year”"); such a note is named by its day."""
+    by_id = {n["id"]: n for n in notes}
+    said = _flat_quote(told)
+    found = set()
+    for i in group.ids:
+        quote = re.search(r"“([^”…]+)”", short_name(by_id[i]))
+        if quote and len(quote.group(1).split()) >= 2 and _flat_quote(quote.group(1)) in said:
+            found.add(i)
+    return found
+
+
+def _flat_quote(text: str) -> str:
+    return " ".join(_plain(text).lower().replace("’", "'").split()).rstrip(".")
+
+
+def group_line(group: Group, notes: list[dict], topic: str, lower=_lower, i: int = 0, by_day: frozenset | set = frozenset()) -> str:  # noqa: ANN001
     """One line saying why a group answers the question and how its notes go
     together: "Your gym notes go together: the Gym Routine Overview and
     “go to the gym at 9pm on Tuesday”, both tagged #gym."."""
-    by_id = {n["id"]: n for n in notes}
+    by_id = {n["id"]: ({**n, "_by_day": True} if n["id"] in by_day else n) for n in notes}
     if group.band == "loose":
         return f"More loosely related to {topic}: {_names(group.ids, by_id, lower)}."
     linked = _link_said(group, by_id, lower, i)

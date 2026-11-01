@@ -1916,9 +1916,9 @@ initPrimaryFab();
 // The grammar Phase 8 settled already says what to drop first. Identity,
 // search and the one primary action are what a narrow surface must keep;
 // order and view are settings you change occasionally, and the dock already
-// owns a place for a control used occasionally, its `...` menu. So below
-// 1100 the `.dock-arrange` zone moves into that menu, and above 1100 it moves
-// back out.
+// owns a place for a control used occasionally, its `...` menu. So when the
+// row runs out of width the `.dock-arrange` zone moves into that menu, and
+// when there is room again it moves back out (`fitDock`, INBOX 1520).
 //
 // **Moved, not cloned, and never hidden.** Two rules this phase is explicitly
 // held to, and both have bitten this codebase before. Cloning a control
@@ -1928,7 +1928,6 @@ initPrimaryFab();
 // responsive design, it is a smaller app. Moving the same nodes keeps every
 // listener, every id and every enhanced `<select>` shell intact, and the
 // controls stay one tap away behind a button that is always in the row.
-const DOCK_FOLD_BELOW = "(max-width: 1099.98px)";
 
 // Where the zone came back to. A comment node would be tidier, but a marker
 // element can be found again after any re-render of the dock around it.
@@ -2015,64 +2014,47 @@ function foldSiblingsIntoMenu(dock, menu, fold) {
   }
 }
 
-//: **Fold by count as well as by width** (UI_MODERNISATION 13.1 row 2, OPEN
-//: row 568): a dock folds past seven items. At 1440 six docks showed eight to
-//: ten (Notes 10, Graph 9, Library 9, Chat 8, Timeline 8, Boards 8) while the
-//: phone folded every one by width; one rule now, the same move.
-const DOCK_FOLD_PAST = 7;
-
+//: **A dock folds by width, never by count** (INBOX 1520, the owner: N27, OPEN
+//: row 568): Sort, Cards or Rows and Select stay in the row whenever they
+//: fit, and items go into the ⋯ only when the row runs out of room. The old
+//: rule folded a dock past seven items at every width, so at 1440 the controls
+//: used most sat two clicks away in a row with space to spare. `fitDock` asks
+//: the layout: with everything shown, is the row tight (`dockTight`)? If not, the
+//: arrange zone folds; if they still do not, the secondary actions fold too.
 const dockShown = (el) => !el.hidden && !el.matches(".hidden, .dock-native-hidden, .visually-hidden, .dock-arrange-slot, .dock-action-slot")
   && getComputedStyle(el).display !== "none";
 
-//: Every item the dock has, wherever a fold put it, so the decision does not
-//: change because it was taken. Without `arrange`, what is left in the row
-//: once sort and view have folded: the second fold's question.
-function dockItemCount(dock, arrange = true) {
-  let count = dock.querySelectorAll(".dock-menu-list > .dock-folded-action").length;
-  for (const zone of ["dock-identity", "dock-find", "dock-arrange", "dock-actions"]) {
-    if (zone === "dock-arrange" && !arrange) continue;
-    const el = dock.querySelector(`:scope > .${zone}`) || (zone === "dock-arrange" ? dock.querySelector(".dock-menu-list > .dock-arrange") : null);
-    if (el) count += [...el.children].filter(dockShown).length;
+//: Whether the row has run out of room: a zone wrapped onto a second row, a
+//: zone squeezed until its own words wrap (over 8px taller than the lowest zone) or
+//: overflow (`scrollWidth`), or the row itself overflows. Zones shrink
+//: (`min-width: 0`), so "the zones share one row" alone passes a cramped bar.
+function dockTight(dock) {
+  const zones = [...dock.children].filter(dockShown);
+  if (zones.length < 2) return false;
+  const boxes = zones.map((el) => el.getBoundingClientRect());
+  const firstRowBottom = Math.min(...boxes.map((b) => b.bottom));
+  const lowest = Math.min(...boxes.map((b) => b.height));
+  return boxes.some((b) => b.top >= firstRowBottom - 1 || b.height > lowest + 8)
+    || zones.some((el) => el.scrollWidth > el.clientWidth + 1)
+    || dock.scrollWidth > dock.clientWidth + 1;
+}
+
+function foldDockArrange(dock, fold) {
+  const menu = dock.querySelector(":scope > .dock-actions > .dock-more > .dock-menu-list");
+  if (menu) {
+    foldZoneIntoMenu(dock, menu, fold);
+    return;
   }
-  return count + (arrange ? dock.querySelectorAll(".dock-menu-list > [data-folded-from]").length : 0);
+  // A dock whose only overflow menu lives *inside* the arrange zone cannot
+  // fold the zone into it, because the zone contains the destination. The
+  // Timeline is the one: Phase 8 gave it an `Options` menu in the arrange
+  // group and no `...` in the actions group. Folding its siblings into that
+  // menu is the same move by the same rule, and it leaves the row at
+  // identity + Options + Today + help.
+  const inner = dock.querySelector(":scope > .dock-arrange .dock-menu > .dock-menu-list");
+  if (inner) foldSiblingsIntoMenu(dock, inner, fold);
 }
 
-//: **The Notes dock keeps its three list controls** (1031 N27: Sort, Cards or
-//: Rows and Select folded into the ⋯ at 1440 and from 1100 down, two clicks
-//: away for the controls used most). Past 900 its row fits them, so it folds
-//: by width alone, at 900, and never by item count.
-const DOCK_KEEPS_ABOVE = "(min-width: 900px)";
-
-function foldDockArrange(narrow) {
-  const roomy = window.matchMedia(DOCK_KEEPS_ABOVE).matches;
-  for (const dock of document.querySelectorAll(".dock[data-dock-name]")) {
-    const keeps = dock.dataset.dockName === "notes";
-    const fold = keeps ? !roomy : narrow || dockItemCount(dock) > DOCK_FOLD_PAST;
-    const menu = dock.querySelector(":scope > .dock-actions > .dock-more > .dock-menu-list");
-    if (menu) {
-      foldZoneIntoMenu(dock, menu, fold);
-      continue;
-    }
-    // A dock whose only overflow menu lives *inside* the arrange zone cannot
-    // fold the zone into it, because the zone contains the destination. The
-    // Timeline is the one: Phase 8 gave it an `Options` menu in the arrange
-    // group and no `...` in the actions group. Folding its siblings into that
-    // menu is the same move by the same rule, and it leaves the row at
-    // identity + Options + Today + help.
-    const inner = dock.querySelector(":scope > .dock-arrange .dock-menu > .dock-menu-list");
-    if (inner) foldSiblingsIntoMenu(dock, inner, fold);
-  }
-}
-
-function initDockFolding() {
-  const query = window.matchMedia(DOCK_FOLD_BELOW);
-  foldDockArrange(query.matches);
-  // A window dragged across the boundary, or a tablet rotated, re-decides.
-  query.addEventListener("change", (event) => foldDockArrange(event.matches));
-  window.matchMedia(DOCK_KEEPS_ABOVE).addEventListener("change", () => foldDockArrange(query.matches));
-}
-
-initDockFolding();
 
 //: **The second fold: a dock's secondary actions, at a phone's width.**
 //: The Boards & maps dock was four rows and 198px at 390, where every other
@@ -2089,72 +2071,91 @@ initDockFolding();
 //: In the menu it is a menu row (`.doc-dock-menu-item`), and an icon-only
 //: control gets its accessible name written beside its icon, since a row of
 //: bare icons in a list is a row of guesses.
-const DOCK_ACTIONS_FOLD_BELOW = "(max-width: 599.98px)";
-
-function foldDockActions(narrow) {
-  for (const dock of document.querySelectorAll(".dock[data-dock-name]")) {
-    const menu = dock.querySelector(":scope > .dock-actions > .dock-more > .dock-menu-list");
-    if (!menu) continue;
-    //: Still past seven once sort and view have gone: the same second fold
-    //: at any width (OPEN row 568).
-    const fold = narrow || (dock.dataset.dockName !== "notes" && dockItemCount(dock, false) > DOCK_FOLD_PAST);
-    if (fold) {
-      const moving = [...dock.querySelectorAll(":scope > .dock-actions > [data-fold-narrow]")];
-      let after = null;
-      for (const control of moving) {
-        const slot = document.createElement("span");
-        slot.className = "dock-action-slot";
-        slot.hidden = true;
-        slot.dataset.for = control.id;
-        control.replaceWith(slot);
-        control.dataset.rowClass = control.className;
-        control.className = "doc-dock-menu-item dock-folded-action";
-        //: A worded control (Select) shows its own short word in the menu, not
-        //: its title as a second one: the title ran 437px wide on a phone and
-        //: pushed the menu off the window (audit 1028 S21).
-        const own = control.querySelector(".dock-word");
-        if (own) {
-          own.classList.replace("dock-word", "dock-folded-word");
-          own.dataset.folded = "1";
-        } else if (!control.querySelector(".toolbar-word, .dock-folded-word")) {
-          const word = document.createElement("span");
-          word.className = "dock-folded-word";
-          word.textContent = control.getAttribute("aria-label") || control.title || "";
-          control.append(" ", word);
-        }
-        if (after) after.after(control);
-        else menu.prepend(control);
-        after = control;
+function foldDockActions(dock, fold) {
+  const menu = dock.querySelector(":scope > .dock-actions > .dock-more > .dock-menu-list");
+  if (!menu) return;
+  if (fold) {
+    const moving = [...dock.querySelectorAll(":scope > .dock-actions > [data-fold-narrow]")];
+    let after = null;
+    for (const control of moving) {
+      const slot = document.createElement("span");
+      slot.className = "dock-action-slot";
+      slot.hidden = true;
+      slot.dataset.for = control.id;
+      control.replaceWith(slot);
+      control.dataset.rowClass = control.className;
+      control.className = "doc-dock-menu-item dock-folded-action";
+      //: A worded control (Select) shows its own short word in the menu, not
+      //: its title as a second one: the title ran 437px wide on a phone and
+      //: pushed the menu off the window (audit 1028 S21).
+      const own = control.querySelector(".dock-word");
+      if (own) {
+        own.classList.replace("dock-word", "dock-folded-word");
+        own.dataset.folded = "1";
+      } else if (!control.querySelector(".toolbar-word, .dock-folded-word")) {
+        const word = document.createElement("span");
+        word.className = "dock-folded-word";
+        word.textContent = control.getAttribute("aria-label") || control.title || "";
+        control.append(" ", word);
       }
-    } else {
-      for (const control of menu.querySelectorAll(":scope > .dock-folded-action")) {
-        const slot = dock.querySelector(`:scope > .dock-actions > .dock-action-slot[data-for="${control.id}"]`);
-        if (!slot) continue;
-        control.className = control.dataset.rowClass || "";
-        delete control.dataset.rowClass;
-        const kept = control.querySelector(":scope > .dock-folded-word[data-folded]");
-        if (kept) {
-          kept.classList.replace("dock-folded-word", "dock-word");
-          delete kept.dataset.folded;
-        } else control.querySelector(":scope > .dock-folded-word")?.remove();
-        //: The space `append(" ", word)` put before the word, left behind as
-        //: a trailing text node that would widen the icon button by a glyph.
-        if (control.lastChild?.nodeType === Node.TEXT_NODE && !control.lastChild.data.trim()) {
-          control.lastChild.remove();
-        }
-        slot.replaceWith(control);
+      if (after) after.after(control);
+      else menu.prepend(control);
+      after = control;
+    }
+  } else {
+    for (const control of menu.querySelectorAll(":scope > .dock-folded-action")) {
+      const slot = dock.querySelector(`:scope > .dock-actions > .dock-action-slot[data-for="${control.id}"]`);
+      if (!slot) continue;
+      control.className = control.dataset.rowClass || "";
+      delete control.dataset.rowClass;
+      const kept = control.querySelector(":scope > .dock-folded-word[data-folded]");
+      if (kept) {
+        kept.classList.replace("dock-folded-word", "dock-word");
+        delete kept.dataset.folded;
+      } else control.querySelector(":scope > .dock-folded-word")?.remove();
+      //: The space `append(" ", word)` put before the word, left behind as
+      //: a trailing text node that would widen the icon button by a glyph.
+      if (control.lastChild?.nodeType === Node.TEXT_NODE && !control.lastChild.data.trim()) {
+        control.lastChild.remove();
       }
+      slot.replaceWith(control);
     }
   }
 }
 
-function initDockActionFolding() {
-  const query = window.matchMedia(DOCK_ACTIONS_FOLD_BELOW);
-  foldDockActions(query.matches);
-  query.addEventListener("change", (event) => foldDockActions(event.matches));
+//: Everything shown first, then the least that makes the row fit, so the
+//: answer depends on the width alone and not on what was folded before.
+function fitDock(dock) {
+  if (!dock.offsetParent) return; // not on screen: nothing to measure; the observer fires when it shows
+  foldDockArrange(dock, false);
+  foldDockActions(dock, false);
+  if (!dockTight(dock)) return;
+  foldDockArrange(dock, true);
+  if (dockTight(dock)) foldDockActions(dock, true);
 }
 
-initDockActionFolding();
+function initDockFolding() {
+  //: The dock and its title, search and action zones: a count that arrives
+  //: late ("12 reminders") or a window dragged wider re-decides. Width only,
+  //: so the fold's own change of height does not; never the arrange zone,
+  //: which spends its life inside the menu it would be measured in.
+  const widths = new WeakMap();
+  const watcher = new ResizeObserver((entries) => {
+    const docks = new Set();
+    for (const { target, contentRect } of entries) {
+      if (widths.get(target) === contentRect.width) continue;
+      widths.set(target, contentRect.width);
+      docks.add(target.closest(".dock[data-dock-name]"));
+    }
+    docks.forEach(fitDock);
+  });
+  for (const dock of document.querySelectorAll(".dock[data-dock-name]")) {
+    watcher.observe(dock);
+    for (const zone of dock.querySelectorAll(":scope > .dock-identity, :scope > .dock-find, :scope > .dock-actions")) watcher.observe(zone);
+  }
+}
+
+initDockFolding();
 watchOverlays(); // page behind a dialog must not scroll
 initAutoGrow(); // capture + magic-add boxes follow their content
 // Used to reopen on whichever tab was last active, with only the very

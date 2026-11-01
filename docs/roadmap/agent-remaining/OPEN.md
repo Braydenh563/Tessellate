@@ -637,7 +637,7 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 565 | INBOX 731 (the Guide failing with a model): not touched; the model-path fallback in help_chat.answer_stream still needs the log line read. | docs/roadmap/agent-remaining/OPEN.md:2612 | S | unassigned |
 | 566 | Row 9 (rule 12): "a board AI act as one chat tool (summarise this board; a board from a note)". Not built: a tool under src/memorymap/ai/tools/ with... | docs/roadmap/agent-remaining/OPEN.md:2651 | M | unassigned |
 | 567 | Eight dialogs open as centred cards at 390 and should be bottom sheets (extract, history, connections, binned, run a skill, board keys, meeting... | docs/roadmap/agent-remaining/OPEN.md:2674 | S | unassigned |
-| 568 | Six of 14 content docks show more than seven items at 1440 (Notes 10, Graph 9, Library 9, Chat 8, Timeline 8, Boards 8); fold by count, 13.1 row 2... | docs/roadmap/agent-remaining/OPEN.md:2675 | S | unassigned |
+| 568 | Fixed 8c2e4e5 (docks fold by width). Six of 14 content docks show more than seven items at 1440 (Notes 10, Graph 9, Library 9, Chat 8, Timeline 8, Boards 8); fold by count, 13.1 row 2... | docs/roadmap/agent-remaining/OPEN.md:2675 | S | done 8c2e4e5 |
 | 569 | The README tour still has two gaps. The chat screenshot shows an empty conversation (no model in the sandbox), so a machine with Ollama should retake... | docs/roadmap/agent-remaining/OPEN.md:2739 | M | unassigned |
 | 570 | guideia.md: the Guide is a modal sheet whose scrim dims the app, so "Open the Reminders tab" cannot be read against the tab. [guideia] *Needs: a... | docs/roadmap/agent-remaining/OPEN.md:2796 | S | unassigned |
 | 571 | uipolish-0924.md: the surface-by-surface pass (its item D) is already a row above. Triaged: deadbtn.js's findings for Chat's #chat-export and... | docs/roadmap/agent-remaining/OPEN.md:2841 | M | unassigned |
@@ -2690,7 +2690,7 @@ Code editor (Brief 69, I1 built):
 
 - 110 distinct controls show no change on keyboard focus (`a11yname.js`, 312 stops over 14 surfaces): every `.status-item`, the `.ghost.small` buttons, the status bar; a focus ring rule in the stylesheet's grammar (Brief 57).
 - Eight dialogs open as centred cards at 390 and should be bottom sheets (extract, history, connections, binned, run a skill, board keys, meeting notes, features): Brief 59.
-- Six of 14 content docks show more than seven items at 1440 (Notes 10, Graph 9, Library 9, Chat 8, Timeline 8, Boards 8); fold by count, 13.1 row 2 (Brief 57).
+- **Fixed 8c2e4e5.** Six of 14 content docks show more than seven items at 1440 (Notes 10, Graph 9, Library 9, Chat 8, Timeline 8, Boards 8); fold by count, 13.1 row 2 (Brief 57).
 - The markup has 18 overlays plus the built confirm and the tour card, not the plan's 15; `$S/design/hierarchy.json` lists each with its size (Brief 59 reads it first).
 - Not measured by Brief 56: 1024 and 820 widths, dark-theme counts, a Chat with a conversation, the document AI panel, a board with a selection.
 - The 13.0 gate's "every offence per decision" for decisions 9 to 17 are stylesheet counts from the plan's method paragraph, not from the sweep; still to be read from code (Brief 57).
