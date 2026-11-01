@@ -27,8 +27,8 @@ MOVED = {
 CROSS_RESOURCE = {"routes_spaces.py"}
 
 #: 876 at arch1518; the voice reads (the dashboard line, the companion's remarks)
-#: moved to repo/voice.py: 872.
-ORM_CALLS_CAP = 872
+#: moved to repo/voice.py: 872; the board bin guard to repo/content.py: 870.
+ORM_CALLS_CAP = 870
 
 _ORM = re.compile(
     r"\b(?:session|db)\.(?:query|get|execute|scalar|scalars|add|add_all|delete|merge)\("

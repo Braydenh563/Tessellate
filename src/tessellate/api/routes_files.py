@@ -34,6 +34,7 @@ from sqlalchemy.orm import Session
 from tessellate.ai import captioning, docreader, vision_ocr
 from tessellate.api.routes_entries import _existing_entry, _to_out
 from tessellate.api.schemas import EntryOut
+from tessellate.repo.content import FILES
 from tessellate.core import (
     deps,
     diskspace,
@@ -636,7 +637,7 @@ def analyse_attachment(
     vision path rasterises PDF pages so a scan with no text layer at all
     still has something a model can look at.
     """
-    attachment = _existing_attachment(session, attachment_id)
+    attachment = FILES.writable(session, attachment_id)
     path = _within(deps.get_config().uploads_dir, attachment.stored_name)
     suffix = Path(attachment.filename).suffix.lower()
     is_image = suffix in captioning.CAPTION_SUFFIXES
@@ -761,7 +762,7 @@ def save_attached_file_text(
     a client is not the authority on what may be overwritten, and the file can
     have been replaced between the two calls.
     """
-    attachment = _existing_attachment(session, attachment_id)
+    attachment = FILES.writable(session, attachment_id)
     path = _within(deps.get_config().uploads_dir, attachment.stored_name)
     viewed = docview.extract(path)
     editable, edit_message = docview.editability(path, viewed)
@@ -951,7 +952,7 @@ def delete_file(
     reason, same default. An attached image can be embedded in the note it is
     attached to (`![](/files/12)`), and deleting the file used to leave that
     markdown behind forever."""
-    attachment = _existing_attachment(session, attachment_id)
+    attachment = FILES.writable(session, attachment_id)
     entry = _existing_entry(session, attachment.entry_id)
     config = deps.get_config()
     changed: dict = {}
@@ -1027,7 +1028,7 @@ def rename_file(
       CLAUDE.md's review section warns about: the guard here is new, but the
       boundary it enforces already exists elsewhere in the app.
     """
-    attachment = _existing_attachment(session, attachment_id)
+    attachment = FILES.writable(session, attachment_id)
     entry = _existing_entry(session, attachment.entry_id)
     if entry.is_private:
         raise HTTPException(

@@ -41,6 +41,7 @@ from tessellate.core.database import LIKE_ESCAPE, Entry, WhiteboardNode, Whitebo
 from tessellate.core.deps import get_session
 from tessellate.core.validation_copy import Said
 from tessellate.entry.manager import apply_title, extract_title, update_entry
+from tessellate.repo.content import BOARDS
 
 router = APIRouter(prefix="/whiteboard", tags=["whiteboard"])
 
@@ -1093,9 +1094,7 @@ def _require_board(session: Session, board_id: int | None) -> None:
     """
     if board_id is None:
         return
-    entry = session.get(Entry, board_id)
-    if entry is None or entry.is_deleted:
-        raise HTTPException(status_code=404, detail="That board could not be found.")
+    entry = BOARDS.writable(session, board_id)
     if not entry.is_board:
         entry.is_board = True
         session.commit()
@@ -3129,9 +3128,7 @@ def rename_board(board_id: int, body: BoardRename, db: Session = Depends(get_ses
     applied: the same shape `PATCH` would have, kept as `PUT` because the
     route, the client call and this function's name already existed.
     """
-    entry = db.get(Entry, board_id) if board_id > 0 else None
-    if entry is None or entry.is_deleted:
-        raise HTTPException(status_code=404, detail="That board could not be found.")
+    entry = BOARDS.writable(db, board_id)
     entry.is_board = True
     if body.type is not None or body.layout is not None:
         before = dict(zip(("type", "layout"), _board_settings(entry)))
