@@ -803,10 +803,9 @@ def lazy_to_lazy_gaps(used: set[str] | None = None) -> list[str]:
             if file_name in files and file_name != host:
                 before = set().union(*(names_of[f] for f in files[: files.index(file_name) + 1]))
                 out += [before | names_of.get(host, set()) | r for r in (host_routes(host, seen) or [set()])]
-        if True:
-            for host, awaited in direct.get(file_name, ()):
-                loaded = set().union(set(), *(set().union(*(names_of.get(f) or _defined_any_form(FRONTEND / "js" / f) for f in lazy[b] if f.endswith(".js"))) for b in awaited if b in lazy))
-                out += [names_of.get(file_name, set()) | names_of.get(host, set()) | loaded | r for r in (host_routes(host, seen) or [set()])]
+        for host, awaited in direct.get(file_name, ()):
+            loaded = set().union(set(), *(set().union(*(names_of.get(f) or _defined_any_form(FRONTEND / "js" / f) for f in lazy[b] if f.endswith(".js"))) for b in awaited if b in lazy))
+            out += [names_of.get(file_name, set()) | names_of.get(host, set()) | loaded | r for r in (host_routes(host, seen) or [set()])]
         routes_memo[file_name] = out
         return out
 
