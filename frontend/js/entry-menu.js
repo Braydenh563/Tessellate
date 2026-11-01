@@ -116,6 +116,7 @@ function fillEntryMenu(menu, entry) {
   //: BACKLOG "The composer does Improve writing and Generate title").
   const off = aiIsOff();
   const aiItems = [
+    ...(entry.is_private ? [] : [
     {
       //: **Named for what it does, not for what it is called internally**
       //: (INBOX 292, the owner: "i feel like it is more than just
@@ -155,6 +156,38 @@ function fillEntryMenu(menu, entry) {
           },
         ]
       : []),
+    ]),
+    //: Every act Atlas does is here, whichever thing it acts on (INBOX 1518,
+    //: N20): reading, mapping, asking and translating, with no model where
+    //: the app does it itself.
+    //: Section 17 row 6: the note read aloud, then what it links to and why.
+    { label: "ph:speaker-high Explain this note", title: "Read it aloud, then what it links to and why", run: () => explainNote(entry) },
+    //: OPEN row 566: the note's headings and lists as a mind map, the same
+    //: build as the agent's `map_from_note`, so no model is needed.
+    ...(entry.is_private ? [] : [{
+      label: "ph:tree-structure Make a mind map",
+      title: "A mind map of this note: its title in the centre, its headings and lists as branches",
+      run: async () => {
+        try {
+          const board = await apiJson(`/whiteboard/maps/from-note/${entry.id}`, { method: "POST" });
+          pushBinPairUndo("Made a mind map from a note", `/entries/${board.id}`, `/entries/${board.id}/restore`, true, () => refreshEntries([board.id]));
+          await openWhiteboardBoard(board.id);
+        } catch (err) {
+          toast(err.message || "Couldn't make a mind map of this note.", true);
+        }
+      },
+    }]),
+    {
+      label: "ph:chat-circle Ask Atlas about this note",
+      title: "Start a chat about this note and what it connects to",
+      run: () => askAtlasAboutNote(entry),
+    },
+    //: Left off with no model: translating needs one (INBOX 1488).
+    ...(aiIsOff() ? [] : [{
+      label: "ph:translate Translate",
+      title: "Open this note in the Writing room, set to translate",
+      run: () => translateNoteInDesk(entry),
+    }]),
   ];
 
   const connectItems = [
@@ -187,17 +220,6 @@ function fillEntryMenu(menu, entry) {
       run: () => expandNoteIntoDocument(entry),
     },
     { label: "ph:link Link to another", run: () => beginOrCompleteLink(entry) },
-    //: A meeting's sheet (INBOX 644): its action items, decisions,
-    //: Summarise and Record into it. The meeting chip opens the same.
-    ...(noteIsMeeting(entry)
-      ? [{ label: "ph:users-three Meeting", run: () => openMeetingSheet(entry.id) }]
-      : []),
-    //: KG4: the note's properties and type, as a table.
-    {
-      label: "ph:list-bullets Properties",
-      title: "Fields at the top of this note (status, due, a type's fields), kept in its text",
-      run: () => openNotePropertiesSheet(entry),
-    },
     //: The way to point at this note from another one, ready to paste
     //: (INBOX 432: there was no copy link at all). Its name as `[[` finds
     //: it, the title or the first words.
@@ -231,35 +253,20 @@ function fillEntryMenu(menu, entry) {
       title: "Open the graph centred on this note, its links lit",
       run: () => showNoteInGraph(entry.id),
     },
-    {
-      label: "ph:chat-circle Ask Atlas about this note",
-      title: "Start a chat about this note and what it connects to",
-      run: () => askAtlasAboutNote(entry),
-    },
-    //: Left off with no model: translating needs one (INBOX 1488).
-    ...(aiIsOff() ? [] : [{
-      label: "ph:translate Translate",
-      title: "Open this note in the Writing room, set to translate",
-      run: () => translateNoteInDesk(entry),
-    }]),
   ];
 
   const addItems = [
-    //: OPEN row 566: the note's headings and lists as a mind map, the same
-    //: build as the agent's `map_from_note`, so no model is needed.
-    ...(entry.is_private ? [] : [{
-      label: "ph:tree-structure Make a mind map",
-      title: "A mind map of this note: its title in the centre, its headings and lists as branches",
-      run: async () => {
-        try {
-          const board = await apiJson(`/whiteboard/maps/from-note/${entry.id}`, { method: "POST" });
-          pushBinPairUndo("Made a mind map from a note", `/entries/${board.id}`, `/entries/${board.id}/restore`, true, () => refreshEntries([board.id]));
-          await openWhiteboardBoard(board.id);
-        } catch (err) {
-          toast(err.message || "Couldn't make a mind map of this note.", true);
-        }
-      },
-    }]),
+    //: A meeting's sheet (INBOX 644): its action items, decisions,
+    //: Summarise and Record into it. The meeting chip opens the same.
+    ...(noteIsMeeting(entry)
+      ? [{ label: "ph:users-three Meeting", run: () => openMeetingSheet(entry.id) }]
+      : []),
+    //: KG4: the note's properties and type, as a table.
+    {
+      label: "ph:list-bullets Properties",
+      title: "Fields at the top of this note (status, due, a type's fields), kept in its text",
+      run: () => openNotePropertiesSheet(entry),
+    },
     //: Section 17 row 1: settle a filing from the note itself.
     ...(entryNeedsReview(entry)
       ? [{
@@ -279,8 +286,6 @@ function fillEntryMenu(menu, entry) {
         },
       }]
       : []),
-    //: Section 17 row 6: the note read aloud, then what it links to and why.
-    { label: "ph:speaker-high Explain this note", title: "Read it aloud, then what it links to and why", run: () => explainNote(entry) },
     {
       label: "ph:plus Add context",
       title: "Append detail: Atlas may refile it",
@@ -371,7 +376,7 @@ function fillEntryMenu(menu, entry) {
   //: A private note never goes to a model: the server refuses retitling
   //: and re-filing one, so the menu does not offer what would only toast
   //: a refusal (sweep 1004).
-  if (!entry.is_private) menu.appendChild(buildMenuGroupButton("ph:sparkle AI actions", aiItems));
+  if (aiItems.length) menu.appendChild(buildMenuGroupButton("ph:sparkle AI actions", aiItems));
   menu.appendChild(buildMenuGroupButton("ph:link Connect", [connections, ...connectItems]));
   menu.appendChild(buildMenuGroupButton("ph:plus Add", addItems));
   menu.appendChild(rule());

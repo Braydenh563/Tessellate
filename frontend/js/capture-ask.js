@@ -1110,14 +1110,26 @@ function scheduleCitationPeekClose() {
   citationPeekState.closeTimer = setTimeout(() => closeCitationPeek(), 220);
 }
 
-function citationPeekText(content, start, end) {
+//: Where the note's words begin once its title line is said above them (audit
+//: 1031 N14, INBOX 1518): the heading or bold first line whose words are the
+//: card's title is not repeated as the first line of the body. 0 when the
+//: first line is not the title.
+function citationTitleEnd(text, title) {
+  const at = text.indexOf("\n");
+  const first = plainText(at < 0 ? text : text.slice(0, at));
+  const named = plainText(String(title || "")).replace(/…$/, "");
+  return at > 0 && first && named && (first === named || named.startsWith(first) || first.startsWith(named)) ? at + 1 : 0;
+}
+
+function citationPeekText(content, start, end, title = "") {
   const text = String(content || "");
+  const lead = citationTitleEnd(text, title);
   const hasPassage = Number.isInteger(start) && Number.isInteger(end) && end > start && end <= text.length;
   if (!hasPassage) {
-    const opening = plainText(text);
+    const opening = plainText(text.slice(lead));
     return { before: "", passage: "", after: opening.length > 280 ? `${opening.slice(0, 279)}…` : opening };
   }
-  const from = Math.max(0, start - CITATION_PEEK_CONTEXT);
+  const from = Math.max(start >= lead ? lead : 0, start - CITATION_PEEK_CONTEXT);
   const to = Math.min(text.length, end + CITATION_PEEK_CONTEXT);
   //: `plainText` trims, so the spacing at each join is put back from the
   //: note itself: a space where the note had one, none where the passage
@@ -1127,7 +1139,7 @@ function citationPeekText(content, start, end) {
   const gapBefore = /\s/.test(text[start - 1] || "") ? " " : "";
   const gapAfter = /\s/.test(text[end] || "") ? " " : "";
   return {
-    before: before ? `${from > 0 ? "…" : ""}${before}${gapBefore}` : "",
+    before: before ? `${from > lead ? "…" : ""}${before}${gapBefore}` : "",
     passage: plainText(text.slice(start, end)),
     after: after ? `${gapAfter}${after}${to < text.length ? "…" : ""}` : "",
   };
@@ -1171,7 +1183,7 @@ function openCitationPeek(link, source, { pinned }) {
   head.append(number, title);
   const body = document.createElement("span");
   body.className = "citation-peek-body";
-  const { before, passage, after } = citationPeekText(content, source.start, source.end);
+  const { before, passage, after } = citationPeekText(content, source.start, source.end, title.textContent);
   const mark = document.createElement("mark");
   mark.textContent = passage;
   body.append(before, ...(passage ? [mark] : []), after);

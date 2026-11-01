@@ -729,7 +729,7 @@ function renderEvidenceView(view, sentences, support, rawResults, answerEl, numb
       const title = noteLabel({ content }, 60);
       head.append(evidenceSpan("citation-peek-number", number), evidenceSpan("citation-peek-title", title));
       const quote = evidenceSpan("citation-peek-body answer-evidence-quote");
-      const { before, passage, after } = citationPeekText(content, g.start, g.end);
+      const { before, passage, after } = citationPeekText(content, g.start, g.end, title);
       quote.append(before, ...(passage ? [evidenceSpan("", passage, "mark")] : []), after);
       card.append(head, quote);
       const evidence = evidenceBlock(g);
