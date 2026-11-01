@@ -20,7 +20,7 @@ JS = ROOT / "js"
 
 
 def _registry() -> list[dict]:
-    text = (JS / "settings-panes.js").read_text()
+    text = (JS / "settings-panes.js").read_text() + (JS / "app-features.js").read_text()
     body = text.split("const POPUP_TOOLS = [", 1)[1].split("\n];", 1)[0]
     tools = []
     for block in re.split(r"\n  \},?\n", body):
@@ -47,8 +47,7 @@ def test_every_entry_is_complete_and_has_a_guide_topic():
 
 def test_every_surface_reads_the_registry():
     reads = {
-        "settings-panes.js": ["...POPUP_TOOLS.map"],
-        "app-features.js": ["of POPUP_TOOLS", "function renderToolShortcutList"],
+        "app-features.js": ["...POPUP_TOOLS.map", "of POPUP_TOOLS", "function renderToolShortcutList"],
         "reveal-targets.js": ['renderToolShortcutList($("shortcut-list-tools"))'],
         "editor.js": ["POPUP_TOOLS.filter", 'keys: "Alt+="'],
     }

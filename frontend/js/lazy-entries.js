@@ -56,6 +56,10 @@ Object.assign(LAZY_MODULES, {
   entryMenu: ["/js/entry-menu.js"],
   //: A board's miniature (map-preview.js): `mapPreview` returns the empty svg and draws into it once this is in.
   mapPreview: ["/js/map-preview.js"],
+  //: The palette's rows (`paletteCommands`) and the dashboard's Quick access draw (app-features.js): `renderQuickLinks` is its stand-in.
+  featureRows: ["/js/app-features.js"],
+  //: The bar a table in a reply or a note wears (table-block.js): the table render (navigation.js) swaps it in when it arrives.
+  tableBlock: ["/js/table-block.js"],
   //: A row's expand chevron and the bell's untagged and review nudges (notes-lazy.js).
   notesLazy: ["/js/notes-lazy.js"],
   //: Every ```mermaid fence, in documents, chat and Ask (mermaid-draw.js). The 5 MB
@@ -91,6 +95,7 @@ installStandIns({
   gestureKit: ["openChatModelPanel", "editChatAnswer", "explainNote", "commitExtractPreview"],
   notesLazy: ["toggleRowExpanded", "nudgeUntaggedNotes", "nudgeReviewQueue", "refreshNoteSearchWhy", "noMatchHint", "liveQueryBar"],
   quickAdd: ["reminderComposeAdd"],
+  featureRows: ["renderQuickLinks"],
   loadFailed: ["surfaceFailed"],
   appearancePanel: ["openAppearancePanel"],
 });

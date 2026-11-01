@@ -1335,43 +1335,6 @@ function quickLinkButton(link, tint = "") {
   return button;
 }
 
-//: **Quick access** (INBOX 461; the owner of the Start something row: "make
-//: this a quick access section ... what is there can be default"). Up to
-//: `QUICK_ACCESS_MAX` tiles, the same five as before until the person
-//: arranges them. A tile is one of `QUICK_START` or a command from the
-//: palette's own registry (`paletteCommands`, settings-panes.js): any row that
-//: declares a `tab` or `reveal` has a stable key (`tab:x`, `reveal:x`) and the
-//: one line it already says about itself, so nothing here is a second list of
-//: what the app can do. A key that no longer names a command is dropped, and a
-//: list that resolves to nothing is the default five.
-function quickCatalogue() {
-  const out = new Map();
-  const abouts = paletteAbouts();
-  let rows = [];
-  try {
-    rows = paletteCommands();
-  } catch {
-    // A command that cannot be built must not take the dashboard with it.
-  }
-  for (const row of rows) {
-    //: A row that is an act (no tab, no reveal) is a tile only when it says so
-    //: with `quick`, a short stable name: Live captions is one (libr-1011 1220).
-    const key = row.keys ? "" : row.tab ? `tab:${row.tab}` : row.reveal ? `reveal:${row.reveal}` : row.quick ? `act:${row.quick}` : "";
-    const parts = key && paletteRowParts(row, abouts);
-    if (parts && parts.about && !out.has(key)) out.set(key, { id: key, icon: parts.icon.replace(/^(ph:)?/, "ph:"), label: parts.label, hint: parts.about, run: row.run });
-  }
-  return out;
-}
-
-function quickAccessItems(saved, catalogue) {
-  const links = [];
-  for (const id of Array.isArray(saved) ? saved : []) {
-    const link = QUICK_START.find((l) => l.id === id) || catalogue.get(id);
-    if (link && !links.includes(link)) links.push(link);
-  }
-  return (links.length ? links : QUICK_START).slice(0, QUICK_ACCESS_MAX);
-}
-
 async function saveQuickAccess(ids) {
   prefsCache = await apiJson("/preferences", { method: "PUT", body: JSON.stringify({ dashboard_quick_access: ids }) }).catch(() => prefsCache);
 }
@@ -1388,40 +1351,6 @@ async function saveQuickTints(tints) {
 //: True while the row is being arranged: the editing view and its picker are
 //: quick-access.js (lazy: only a person who customises pays for it).
 let quickEditing = false;
-
-function quickAccessCurrent() {
-  return quickAccessItems(prefsCache?.dashboard_quick_access, quickCatalogue());
-}
-
-function renderQuickLinks() {
-  const box = $("dash-quicklinks");
-  if (!box) return;
-  if (quickEditing) return quickAccessEdit();
-  //: The tiles' lines come from the lazy catalogue (app-features.js), already in
-  //: by the idle load; a first paint ahead of it waits and draws once.
-  if (typeof featureCatalog !== "function") return void lazyScript("/js/app-features.js").then(renderQuickLinks);
-  const heading = document.createElement("p");
-  heading.className = "launch-label";
-  heading.textContent = "Quick access";
-  const head = document.createElement("div");
-  head.className = "launch-head";
-  //: **Its own ⋯ on the title's line, at the right** (the owner, 2026-10-10:
-  //: "a subtle like meatball icon in the top right on the same line as the
-  //: quick access title ... for easier and more intuitive access to these
-  //: buttons"): the Quick access half of Customise (Edit, Reset highlights,
-  //: Reset), the same items, so the two cannot disagree. On the heading's
-  //: line it covers nothing, which was the fault of the ⋯ this row had once.
-  head.append(heading, kebabMenu(dashCustomiseItems().filter((item) => item.group === "quick"), "Quick access options"));
-  const row = document.createElement("div");
-  row.className = "launch-row launch-row-start edge-fade";
-  const tints = quickTints();
-  quickAccessCurrent().forEach((link, index) => row.appendChild(quickLinkButton(link, quickTintKey(link.id, index, tints))));
-  const group = document.createElement("div");
-  group.className = "launch-group";
-  group.append(head, row);
-  box.replaceChildren(group);
-  window.edgeFadeWire?.(row);
-}
 
 //: **The note you were last in**, the menu's Continue row (INBOX 60). Most
 //: recently *touched*, where touching is opening or editing, and not created.

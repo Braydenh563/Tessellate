@@ -92,7 +92,7 @@ def test_the_strip_names_the_six_sections_and_each_target_exists():
 
 
 def test_it_opens_from_the_palette_the_top_bar_and_the_settings_page():
-    panes = (JS / "settings-panes.js").read_text(encoding="utf-8")
+    panes = (JS / "settings-panes.js").read_text(encoding="utf-8") + (JS / "app-features.js").read_text(encoding="utf-8")
     assert re.search(r'label: "ph:palette Appearance panel".*act: \(\) => openAppearancePanel\(\)', panes)
     settings = (JS / "settings.js").read_text(encoding="utf-8")
     assert '$("theme-btn").addEventListener("contextmenu"' in settings and "openAppearancePanel()" in settings

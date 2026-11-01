@@ -1780,7 +1780,7 @@ const LAZY_MODULES = {
   //: The app emblem as an assistant head (INBOX 463 (2)): assistant-avatar.js.
   assistantAvatar: ["/js/assistant-avatar.js"],
   //: Arranging the dashboard's Quick access row (INBOX 461): quick-access.js.
-  quickAccess: ["/css/quick-access-lazy.css", "/js/quick-access.js"],
+  quickAccess: ["/css/quick-access-lazy.css", "/js/app-features.js", "/js/quick-access.js"],
   notesRail: ["/js/notes-rail-spy.js"],
   //: The dashboard's Boards & maps widget (INBOX 553(d)): see dash-boards.js.
   dashBoards: ["/js/pick-row.js", "/js/dash-boards.js"],
@@ -1805,7 +1805,7 @@ const LAZY_MODULES = {
   //: The web panel: web-clip.js, and its search, result rows and recents (web-results.js).
   webClip: ["/js/web-clip.js", "/js/web-results.js"],
   appImport: ["/js/app-import.js"],
-  usageLedger: ["/css/usage-lazy.css", "/js/usage-ledger.js"],
+  usageLedger: ["/css/usage-lazy.css", "/js/app-features.js", "/js/usage-ledger.js"],
   //: The Library list without the editors (audit FE-03(c)): they were about
   //: 900 KB gzipped. A document or a board brings the whole `library` surface.
   libraryList: ["/css/library-lazy.css", "/js/library.js"],
@@ -1814,7 +1814,7 @@ const LAZY_MODULES = {
   meetings: ["/css/meetings-lazy.css", "/js/meetings.js"],
   quickAdd: ["/css/quickadd-lazy.css", "/js/quickadd.js"],
   //: The Statistics page and This week (statistics.js's header).
-  statistics: ["/css/utilities-lazy.css", "/js/ask-chart.js", "/js/statistics.js"],
+  statistics: ["/css/utilities-lazy.css", "/js/app-features.js", "/js/ask-chart.js", "/js/statistics.js"],
   utilities: ["/js/utility-tools.js"],
   //: Live captions (captions.js's header; Brief 82).
   captions: ["/css/captions-lazy.css", "/js/captions.js"],

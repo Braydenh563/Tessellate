@@ -554,7 +554,21 @@ function renderMarkdown(container, text, depth = 0) {
       const scroller = document.createElement("div");
       scroller.className = "md-table-wrap";
       scroller.appendChild(table);
-      container.appendChild(buildTableBlock(scroller, headers, bodyRows, rawTable));
+      //: The table comes back inside a plain host at once, so every caller places it and it is
+      //: readable; the bar with Copy, Markdown, CSV and Full view (`buildTableBlock`, table-block.js:
+      //: lazy, for the boot gzip ratchet) replaces the host when that file is in. A host whose
+      //: render was thrown away before then (a streaming answer redrawn) is left alone.
+      if (window.buildTableBlock) {
+        container.appendChild(window.buildTableBlock(scroller, headers, bodyRows, rawTable));
+      } else {
+        const host = document.createElement("div");
+        host.className = "md-table-host";
+        host.appendChild(scroller);
+        ensureModule("tableBlock").then((ok) => {
+          if (ok && host.parentNode) host.replaceWith(buildTableBlock(scroller, headers, bodyRows, rawTable));
+        });
+        container.appendChild(host);
+      }
       continue;
     }
 

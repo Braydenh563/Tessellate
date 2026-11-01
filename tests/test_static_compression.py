@@ -113,7 +113,11 @@ PIECE_CAP = 32_000
 #: 273,700 gzipped (1,953,036 to 1,943,654 raw): the citation peek, 198 lines
 #: only a reply, a composed answer or an attachment card opens
 #: (citation-peek.js, listed ahead of its callers in every bundle that carries them).
-TOTAL_CAP = 275_400
+#: 2026-11-01, boot diet 3, step 2: 273,700 down to 268,118: the table bar
+#: (table-block.js) and the palette's rows with the dashboard's Quick access
+#: draw (`paletteCommands`, `renderQuickLinks`: app-features.js, which the
+#: dashboard fetches beside the preferences anyway).
+TOTAL_CAP = 268_200
 
 
 def _served_gzip_size(client, name: str) -> int:

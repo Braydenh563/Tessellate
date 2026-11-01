@@ -515,7 +515,7 @@ def test_the_companion_shows_and_hides_from_anywhere() -> None:
     wiring = (ROOT / "frontend" / "js" / "settings-wiring.js").read_text(encoding="utf-8")
     assert 'toggleCompanion: { keys: "Ctrl+Shift+Y"' in wiring
     assert "nameMarkBuddyToggle()" in wiring
-    panes = (ROOT / "frontend" / "js" / "settings-panes.js").read_text(encoding="utf-8")
+    panes = (ROOT / "frontend" / "js" / "settings-panes.js").read_text(encoding="utf-8") + (ROOT / "frontend" / "js" / "app-features.js").read_text(encoding="utf-8")
     # The row names which it will do (tests/test_companion_toggle.py).
     assert "Show companion\", chord: \"toggleCompanion\", act: () => nameMarkBuddyToggle()" in panes
     toggle = _fn("nameMarkBuddyToggle")

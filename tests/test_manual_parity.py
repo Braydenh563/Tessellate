@@ -160,7 +160,7 @@ def test_every_utility_has_its_way_in_and_a_guide_topic():
     #: Each palette row carries its one line of help (`about`), the palette's
     #: in-place help; the Statistics page and Settings, Templates also have a
     #: '?' popover (`data-help-for`).
-    panes = (FRONTEND / "js" / "settings-panes.js").read_text(encoding="utf-8")
+    panes = (FRONTEND / "js" / "settings-panes.js").read_text(encoding="utf-8") + (FRONTEND / "js" / "app-features.js").read_text(encoding="utf-8")
     for label in ("Statistics", "Count words", "Live captions"):
         row = next((line for line in panes.splitlines() if 'label: "ph:' in line and f' {label}"' in line), "")
         assert "about:" in row, f"the palette's {label} row has no line of help"

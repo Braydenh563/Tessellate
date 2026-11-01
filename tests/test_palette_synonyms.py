@@ -18,7 +18,7 @@ from tests._app_js import frontend_text
 _JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
 #: The row registry stays in settings-panes.js (boot); the palette's own
 #: window, `paletteMatches` with it, moved to the lazy app-palette.js.
-SOURCE = (_JS / "settings-panes.js").read_text(encoding="utf-8") + (_JS / "app-palette.js").read_text(
+SOURCE = (_JS / "settings-panes.js").read_text(encoding="utf-8") + (_JS / "app-features.js").read_text(encoding="utf-8") + (_JS / "app-palette.js").read_text(
     encoding="utf-8"
 )
 

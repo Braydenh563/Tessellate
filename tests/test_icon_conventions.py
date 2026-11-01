@@ -171,7 +171,7 @@ AGENT_ICON_PLACES = {
     "answer-kit.js": 1,  # a past turn answered in Agent mode (chat.js's bubble meta line, moved)
     "editor.js": 1,  # the chat palette's Agent mode row
     "phone-more.js": 2,  # More sheet: Ask the agent, Agent activity (moved out of phone-shell.js, INBOX 1314)
-    "settings-panes.js": 1,  # the command palette's Ask the agent anything
+    "app-features.js": 1,  # the command palette's Ask the agent anything (paletteCommands moved here, boot diet 3)
     "settings-wiring.js": 1,  # the tools popup's Popup agent
     "skills.js": 1,  # the nudge to switch to Agent mode
     "status.js": 2,  # the status bar's agent button, a run's notification

@@ -14,7 +14,7 @@ JS = ROOT / "frontend" / "js"
 
 
 def test_the_palette_and_find_anything_have_an_open_the_manual_command():
-    panes = (JS / "settings-panes.js").read_text(encoding="utf-8")
+    panes = (JS / "settings-panes.js").read_text(encoding="utf-8") + (JS / "app-features.js").read_text(encoding="utf-8")
     assert '{ label: "ph:book-open-text Open the manual", reveal: "manual" }' in panes
     targets = (JS / "reveal-targets.js").read_text(encoding="utf-8")
     assert 'manual: { open: () => lazyScript("/js/manual.js")' in targets and 'built: "openManual"' in targets

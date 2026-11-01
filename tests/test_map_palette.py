@@ -13,7 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 MAP_JS = (JS / "whiteboard-map.js").read_text(encoding="utf-8")
-PANES = (JS / "settings-panes.js").read_text(encoding="utf-8")
+PANES = (JS / "settings-panes.js").read_text(encoding="utf-8") + (JS / "app-features.js").read_text(encoding="utf-8")
 WB_JS = (JS / "whiteboard.js").read_text(encoding="utf-8")
 
 
