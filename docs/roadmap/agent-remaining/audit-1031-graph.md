@@ -36,15 +36,15 @@ below; the new rows are the ones still open plus what it did not see.
 | G9 legend clipped | fixed | `scrollWidth` 1286 = `clientWidth` 1286, 10 items |
 | G10 search cost | open, GR3 | |
 | G11 search count, Enter, Esc | fixed | "28 matches", Enter pans (x 409 to 490), Esc clears and keeps focus |
-| G12 light contrast | not re-measured | |
+| G12 light contrast | fixed | 13 graph texts in light, worst 5.91:1 (gperf1518-1101 `g12.js`) |
 | G13 touch slop | fixed | `GC_SLOP_PX` 20 on coarse pointers; a tap on a 3.8 px hub opens its panel |
 | G14, G15 refit on dock, link by drop | not re-run | |
 | G16 orphan links | fixed (claimed d82fbfe) | not re-run |
 | G17, G18 topic chip, hover copy | not re-run | |
 | G19 Esc focus | fixed | focus returns to `#graph-box` |
-| G20 tab stops before the map | open | Tab from the box: zoom in, out, fit, fullscreen, then the status bar |
-| G21 toggles 32 x 18 | not seen | options panel holds selects and sliders, no checkboxes found |
-| G22 "No kind 64" chip | not seen | filter fold text has no such chip |
+| G20 tab stops before the map | fixed (23f9faf) | Tab from the box: zoom strip is one stop, then the status bar (4 stops to 1) |
+| G21 toggles 32 x 18 | not seen again | 19 checkboxes in the options panel, all 0x0 while it is folded |
+| G22 "No kind 64" chip | not seen again | no "No kind" text in the tab |
 | G23 help clipped | fixed | 467 px panel, `scrollHeight` 465, ends at 583 of 900 |
 | G24 furniture overlaps | fixed in the run | a toast overlapped neither zoom, minimap nor legend |
 | G25 popup follows in x only | fixed | follows both axes (406, 388 after a 60, 60 drag) |
