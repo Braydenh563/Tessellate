@@ -469,3 +469,14 @@ def test_the_switch_for_remembering_panels_is_findable_from_the_panel_and_the_pa
     )
     assert "Panels open where you left them" in topic["body"] and "names it" in topic["body"]
     assert {"remember panel position", "panel position"} <= set(topic["keywords"])
+
+
+def test_a_focus_brought_by_a_press_adopts_after_the_press_ends():
+    """The Guide E2E flake: adopting adds the grip's row, so a bottom-anchored
+    sheet rose 20px between pointerdown and pointerup and the send click landed
+    on the card (reproduced 6 of 6 at a 6x CPU throttle)."""
+    text = (ROOT / "frontend" / "js" / "panel-movable.js").read_text(encoding="utf-8")
+    focus = text.split('document.addEventListener("focusin"', 1)[1].split("}, true);", 1)[0]
+    assert "if (p && press.down) press.wait.add(p);" in focus
+    assert 'window.addEventListener("pointerup", adoptWaiting, true);' in text
+    assert "setTimeout(() => panels.forEach(panelAdopt), 0);" in text

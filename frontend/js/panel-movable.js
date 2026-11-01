@@ -996,7 +996,26 @@ function panelWindowResized() {
   }, 120);
 }
 if (typeof document !== "undefined" && document.addEventListener) {
-  document.addEventListener("focusin", (e) => { const p = panelOf(e.target); if (p) panelAdopt(p); }, true);
+  //: Adopting adds the grip's row, and a bottom-anchored sheet grows upward by
+  //: it (measured: the Guide's send button rose 20px). A focus that a press
+  //: brings waits for the press to end: adopted between pointerdown and
+  //: pointerup, the button left the pointer and the click went to the card.
+  const press = { down: false, wait: new Set() };
+  const adoptWaiting = () => {
+    press.down = false;
+    if (!press.wait.size) return;
+    const panels = [...press.wait];
+    press.wait.clear();
+    setTimeout(() => panels.forEach(panelAdopt), 0);
+  };
+  document.addEventListener("pointerdown", () => { press.down = true; }, true);
+  window.addEventListener("pointerup", adoptWaiting, true);
+  window.addEventListener("pointercancel", adoptWaiting, true);
+  document.addEventListener("focusin", (e) => {
+    const p = panelOf(e.target);
+    if (p && press.down) press.wait.add(p);
+    else if (p) panelAdopt(p);
+  }, true);
   document.addEventListener("keydown", panelMinKey, true);
   //: A pill rides above the page the reader is on: put it back after a tab change.
   document.addEventListener("click", () => { if (PANEL_MIN.size) setTimeout(panelMinPlace, 250); }, true);

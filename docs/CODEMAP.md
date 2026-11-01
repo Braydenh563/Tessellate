@@ -1,8 +1,8 @@
 # Code map
 
-Generated 2026-10-31 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
+Generated 2026-11-01 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7465, frontend ids 2623, CSS sections 517, backend routes 633, backend modules 8156, test files 1754, tests 15207, plan headings 989, app scripts 28, boot scripts 36, script files 208.
+Counts: frontend functions 7465, frontend ids 2623, CSS sections 517, backend routes 633, backend modules 8156, test files 1754, tests 15208, plan headings 989, app scripts 28, boot scripts 36, script files 208.
 
 ## Frontend functions (7465)
 
@@ -22411,7 +22411,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15207)
+## Tests (15208)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23561,7 +23561,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_palette_guide_after_action_1449.py | 4 |
 | tests/test_palette_head_gap.py | 2 |
 | tests/test_palette_synonyms.py | 5 |
-| tests/test_panel_movable.py | 24 |
+| tests/test_panel_movable.py | 25 |
 | tests/test_panel_movable_whole_1448.py | 1 |
 | tests/test_panel_scrim_lift_1029.py | 3 |
 | tests/test_passes.py | 7 |
