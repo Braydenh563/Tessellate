@@ -4,6 +4,7 @@
   "tools": {
     "find_contradictions": "where do my notes contradict each other",
     "audit_link_reasons": "audit the vague link reasons in my graph",
+    "check_learned": "check what you learned about me against my notes",
     "save_user_preference": "remember that I prefer short answers",
     "ask_user": "ask me which one I meant before you choose",
     "search_notes": "what did I write about the boiler",

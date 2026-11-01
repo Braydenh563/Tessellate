@@ -177,7 +177,11 @@ def test_the_strip_offers_a_preview_and_a_way_back():
     # unchanged; the helper is where the three steps now live, and it is
     # tested by being the only route any of the three call sites take.
     assert "focusLibraryFile(" in strip, "the card must offer a way back to the Library"
-    assert 'switchTab("documents")' in strip and "openDocument(" in strip
+    #: A document card is drawn by `notebookCard` from `NOTEBOOK_KINDS`, which
+    #: stayed in chat-agent.js when the strip moved to the lazy chat-turn.js.
+    kinds = source.split("const NOTEBOOK_KINDS = {")[1].split("\n};")[0]
+    assert "notebookCard(" in strip
+    assert 'switchTab("documents")' in kinds and "openDocument(" in kinds
 
 
 def test_the_ids_are_persisted_by_the_send_path():

@@ -20938,8 +20938,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `LazyPattern` | src/tessellate/core/lazyre.py:21 |
-| `lazy_compile` | src/tessellate/core/lazyre.py:43 |
+| `LazyPattern` | src/tessellate/core/lazyre.py:22 |
+| `lazy_compile` | src/tessellate/core/lazyre.py:44 |
 
 ### src/tessellate/core/logbuffer.py (15)
 
