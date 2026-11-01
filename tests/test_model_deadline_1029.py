@@ -117,6 +117,7 @@ def test_a_utility_route_answers_within_its_deadline_and_cuts_the_model(app_stat
     monkeypatch.setitem(deadline.DEADLINES, ("POST", "/drafts/title"), 0.6)
     deps.override_ai(ollama=ollama_client.OllamaClient(base_url=hanging.url))
     api = TestClient(create_app())
+    api.get("/health")  # the app's first request pays its own warm-up; time the route alone
     started = time.monotonic()
     response = api.post("/drafts/title", json={"draft": "A draft about the garden and the spring plan."})
     took = time.monotonic() - started
