@@ -2,7 +2,7 @@
 
 Generated 2026-11-01 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7475, frontend ids 2637, CSS sections 517, backend routes 633, backend modules 8159, test files 1760, tests 15229, plan headings 990, app scripts 28, boot scripts 36, script files 208.
+Counts: frontend functions 7475, frontend ids 2637, CSS sections 517, backend routes 633, backend modules 8161, test files 1762, tests 15235, plan headings 990, app scripts 28, boot scripts 36, script files 208.
 
 ## Frontend functions (7475)
 
@@ -1229,69 +1229,69 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `buildSettingsJumpList` | frontend/js/phone-shell.js:1756 |
-| `clearAppCache` | frontend/js/phone-shell.js:2197 |
-| `closeNotePageIfGone` | frontend/js/phone-shell.js:1099 |
-| `dockArrangeLabel` | frontend/js/phone-shell.js:1920 |
-| `dockArrangeSlot` | frontend/js/phone-shell.js:1909 |
-| `dockChatAttachments` | frontend/js/phone-shell.js:1231 |
-| `dockChatTools` | frontend/js/phone-shell.js:1289 |
-| `dockItemCount` | frontend/js/phone-shell.js:2004 |
-| `dockPhoneStatus` | frontend/js/phone-shell.js:801 |
-| `dockShown` | frontend/js/phone-shell.js:1998 |
-| `dockTabBar` | frontend/js/phone-shell.js:640 |
-| `dropRepeatedTitle` | frontend/js/phone-shell.js:1034 |
-| `echoSettingsPaneTitle` | frontend/js/phone-shell.js:1748 |
+| `buildSettingsJumpList` | frontend/js/phone-shell.js:1770 |
+| `clearAppCache` | frontend/js/phone-shell.js:2211 |
+| `closeNotePageIfGone` | frontend/js/phone-shell.js:1110 |
+| `dockArrangeLabel` | frontend/js/phone-shell.js:1934 |
+| `dockArrangeSlot` | frontend/js/phone-shell.js:1923 |
+| `dockChatAttachments` | frontend/js/phone-shell.js:1242 |
+| `dockChatTools` | frontend/js/phone-shell.js:1300 |
+| `dockItemCount` | frontend/js/phone-shell.js:2018 |
+| `dockPhoneStatus` | frontend/js/phone-shell.js:812 |
+| `dockShown` | frontend/js/phone-shell.js:2012 |
+| `dockTabBar` | frontend/js/phone-shell.js:651 |
+| `dropRepeatedTitle` | frontend/js/phone-shell.js:1045 |
+| `echoSettingsPaneTitle` | frontend/js/phone-shell.js:1762 |
 | `emblemArt` | frontend/js/phone-shell.js:117 |
 | `emblemHsl` | frontend/js/phone-shell.js:67 |
 | `emblemPalette` | frontend/js/phone-shell.js:88 |
 | `emblemSetBusy` | frontend/js/phone-shell.js:165 |
 | `ensureP5` | frontend/js/phone-shell.js:34 |
-| `floatPrimaryActions` | frontend/js/phone-shell.js:1846 |
+| `floatPrimaryActions` | frontend/js/phone-shell.js:1860 |
 | `focusTabPage` | frontend/js/phone-shell.js:395 |
-| `foldDockActions` | frontend/js/phone-shell.js:2068 |
-| `foldDockArrange` | frontend/js/phone-shell.js:2020 |
-| `foldSiblingsIntoMenu` | frontend/js/phone-shell.js:1964 |
-| `foldZoneIntoMenu` | frontend/js/phone-shell.js:1932 |
-| `forceReloadApp` | frontend/js/phone-shell.js:2212 |
-| `initBottomTabBar` | frontend/js/phone-shell.js:671 |
-| `initDockActionFolding` | frontend/js/phone-shell.js:2125 |
-| `initDockFolding` | frontend/js/phone-shell.js:2041 |
+| `foldDockActions` | frontend/js/phone-shell.js:2082 |
+| `foldDockArrange` | frontend/js/phone-shell.js:2034 |
+| `foldSiblingsIntoMenu` | frontend/js/phone-shell.js:1978 |
+| `foldZoneIntoMenu` | frontend/js/phone-shell.js:1946 |
+| `forceReloadApp` | frontend/js/phone-shell.js:2226 |
+| `initBottomTabBar` | frontend/js/phone-shell.js:682 |
+| `initDockActionFolding` | frontend/js/phone-shell.js:2139 |
+| `initDockFolding` | frontend/js/phone-shell.js:2055 |
 | `initHeaderHeightToken` | frontend/js/phone-shell.js:567 |
-| `initKeyboardInset` | frontend/js/phone-shell.js:1672 |
-| `initNotePage` | frontend/js/phone-shell.js:1104 |
-| `initNotesSubtabHeightToken` | frontend/js/phone-shell.js:590 |
-| `initOcrPhonePage` | frontend/js/phone-shell.js:1191 |
-| `initPhoneChatRow` | frontend/js/phone-shell.js:1344 |
-| `initPhoneHeaderMore` | frontend/js/phone-shell.js:715 |
-| `initPhoneStatus` | frontend/js/phone-shell.js:837 |
-| `initPrimaryFab` | frontend/js/phone-shell.js:1872 |
-| `initRowSwipe` | frontend/js/phone-shell.js:932 |
-| `mountPhoneSidebarOpeners` | frontend/js/phone-shell.js:871 |
-| `nameFoldedButton` | frontend/js/phone-shell.js:1952 |
-| `ocrPhonePage` | frontend/js/phone-shell.js:1155 |
-| `openNotePage` | frontend/js/phone-shell.js:1041 |
-| `openSheet` | frontend/js/phone-shell.js:1384 |
-| `phoneMoreDueCount` | frontend/js/phone-shell.js:1625 |
-| `phoneMoreRunCount` | frontend/js/phone-shell.js:1590 |
-| `phoneSheetDialogs` | frontend/js/phone-shell.js:1210 |
-| `quitApp` | frontend/js/phone-shell.js:2164 |
-| `refreshNotePage` | frontend/js/phone-shell.js:1087 |
+| `initKeyboardInset` | frontend/js/phone-shell.js:1683 |
+| `initNotePage` | frontend/js/phone-shell.js:1115 |
+| `initNotesSubtabHeightToken` | frontend/js/phone-shell.js:601 |
+| `initOcrPhonePage` | frontend/js/phone-shell.js:1202 |
+| `initPhoneChatRow` | frontend/js/phone-shell.js:1355 |
+| `initPhoneHeaderMore` | frontend/js/phone-shell.js:726 |
+| `initPhoneStatus` | frontend/js/phone-shell.js:848 |
+| `initPrimaryFab` | frontend/js/phone-shell.js:1886 |
+| `initRowSwipe` | frontend/js/phone-shell.js:943 |
+| `mountPhoneSidebarOpeners` | frontend/js/phone-shell.js:882 |
+| `nameFoldedButton` | frontend/js/phone-shell.js:1966 |
+| `ocrPhonePage` | frontend/js/phone-shell.js:1166 |
+| `openNotePage` | frontend/js/phone-shell.js:1052 |
+| `openSheet` | frontend/js/phone-shell.js:1395 |
+| `phoneMoreDueCount` | frontend/js/phone-shell.js:1636 |
+| `phoneMoreRunCount` | frontend/js/phone-shell.js:1601 |
+| `phoneSheetDialogs` | frontend/js/phone-shell.js:1221 |
+| `quitApp` | frontend/js/phone-shell.js:2178 |
+| `refreshNotePage` | frontend/js/phone-shell.js:1098 |
 | `releaseDetachedEmblems` | frontend/js/phone-shell.js:201 |
 | `releaseEmblem` | frontend/js/phone-shell.js:184 |
 | `renderBrandLogo` | frontend/js/phone-shell.js:245 |
 | `renderEmblem` | frontend/js/phone-shell.js:207 |
 | `renderEmblemWhenShown` | frontend/js/phone-shell.js:273 |
-| `renderExportsList` | frontend/js/phone-shell.js:2223 |
-| `sheetRow` | frontend/js/phone-shell.js:1564 |
+| `renderExportsList` | frontend/js/phone-shell.js:2237 |
+| `sheetRow` | frontend/js/phone-shell.js:1575 |
 | `syncEmblemBusy` | frontend/js/phone-shell.js:153 |
-| `syncPhoneMoreButton` | frontend/js/phone-shell.js:1634 |
-| `syncPhoneMoreRuns` | frontend/js/phone-shell.js:1599 |
+| `syncPhoneMoreButton` | frontend/js/phone-shell.js:1645 |
+| `syncPhoneMoreRuns` | frontend/js/phone-shell.js:1610 |
 | `tabFromTop` | frontend/js/phone-shell.js:501 |
 | `tabPageScroller` | frontend/js/phone-shell.js:407 |
-| `toggleAutonomousPanel` | frontend/js/phone-shell.js:2259 |
+| `toggleAutonomousPanel` | frontend/js/phone-shell.js:2273 |
 | `watchEmblemVisibility` | frontend/js/phone-shell.js:16 |
-| `watchStatusBarIdle` | frontend/js/phone-shell.js:783 |
+| `watchStatusBarIdle` | frontend/js/phone-shell.js:794 |
 
 ### frontend/js/wiring.js (35)
 
@@ -11163,8 +11163,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 
 | Section | File:line |
 |---|---|
-| "Tools it can use": the row, measured against a normal one | frontend/css/03-dashboard-widgets.css:4320 |
-| "how are these connected?" | frontend/css/02-chat-graph.css:3758 |
+| "Tools it can use": the row, measured against a normal one | frontend/css/03-dashboard-widgets.css:4325 |
+| "how are these connected?" | frontend/css/02-chat-graph.css:3759 |
 | 08-consistency.css - one recipe per repeated shape | frontend/css/08-consistency.css:1 |
 | 1. One menu row | frontend/css/08-consistency.css:24 |
 | 1. touch targets, one step, one block | frontend/css/07-whiteboard-misc.css:9657 |
@@ -11176,7 +11176,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | 6. One toggle-row recipe: the switch says on, not the row | frontend/css/08-consistency.css:852 |
 | 7. Meta looks like meta | frontend/css/08-consistency.css:1049 |
 | 8. A panel head is identity, one fact, then the actions, and it does not | frontend/css/08-consistency.css:2390 |
-| A CALMER TOP, NOTHING TAKEN AWAY (Full view) | frontend/css/03-dashboard-widgets.css:4493 |
+| A CALMER TOP, NOTHING TAKEN AWAY (Full view) | frontend/css/03-dashboard-widgets.css:4498 |
 | A card's date is in the same corner on every card (INBOX 719) | frontend/css/08-consistency.css:10609 |
 | A chip's x: a round target inset evenly (INBOX 403) | frontend/css/08-consistency.css:4751 |
 | A dialog's head: title, its '?', icon-only actions, Close last | frontend/css/08-consistency.css:9087 |
@@ -11193,7 +11193,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Atlas, the app's guide (INBOX 224) | frontend/css/08-consistency.css:1800 |
 | Atlas, the assistant's own character (atlas.js) | frontend/css/08-consistency.css:6643 |
 | BOARD NAVIGATOR AND BOARD SEARCH | frontend/css/07-whiteboard-misc.css:6346 |
-| BREADCRUMBS: WHERE THE CARET IS | frontend/css/05-sidebars-themes.css:6035 |
+| BREADCRUMBS: WHERE THE CARET IS | frontend/css/05-sidebars-themes.css:6023 |
 | Boards, 2026-10-10 (boardmap-1010): lazy with the board, off the boot | frontend/css/library-lazy.css:4404 |
 | Capture: the add tools as a quiet toolbar (INBOX 395) | frontend/css/08-consistency.css:4561 |
 | Capture: the two labelled rows under the note box | frontend/css/07-whiteboard-misc.css:2797 |
@@ -11220,14 +11220,14 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Inline AI (editor.js) | frontend/css/07-whiteboard-misc.css:6452 |
 | Lagoon: indigo and teal together | frontend/css/05-sidebars-themes.css:3363 |
 | Library -> Contents: an outline (INBOX 496) | frontend/css/01-forms-settings.css:2453 |
-| Library → Documents | frontend/css/03-dashboard-widgets.css:3985 |
-| Library → Whiteboards | frontend/css/03-dashboard-widgets.css:4010 |
+| Library → Documents | frontend/css/03-dashboard-widgets.css:3990 |
+| Library → Whiteboards | frontend/css/03-dashboard-widgets.css:4015 |
 | Live preview | frontend/css/04-chat-dock-appearance.css:4560 |
 | MICRO-ANIMATIONS | frontend/css/07-whiteboard-misc.css:668 |
 | Midnight: deep navy and gold (Brief 95, INBOX 858: "truly good themes"). | frontend/css/05-sidebars-themes.css:3520 |
 | Ocean: cool teal and deep blue. Crisp rather than cosy. | frontend/css/05-sidebars-themes.css:3328 |
 | On paper (DOCUMENTS_PLAN Phase 5 item 4, the print stylesheet) | frontend/css/09-editor.css:859 |
-| On this day | frontend/css/03-dashboard-widgets.css:4270 |
+| On this day | frontend/css/03-dashboard-widgets.css:4275 |
 | One sidebar row recipe for every rail (INBOX 702) | frontend/css/08-consistency.css:10562 |
 | One ⋯ opener, styled once (INBOX 722) | frontend/css/08-consistency.css:10638 |
 | PLAN.md D1: the documents dock's formatting strip hides entirely | frontend/css/07-whiteboard-misc.css:8001 |
@@ -11250,8 +11250,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Phase 11 items 2 and 3: no rail on a phone, an opener in the head | frontend/css/10-responsive.css:1354 |
 | Phase 5: quick access + toasts | frontend/css/01-forms-settings.css:2806 |
 | Phase 5: the three things a map says about itself | frontend/css/07-whiteboard-misc.css:4458 |
-| Phones (roadmap §8: the layout had breakpoints but had never been driven at | frontend/css/05-sidebars-themes.css:3972 |
-| Placed at the end of this file on purpose. A panel keeps its original class | frontend/css/03-dashboard-widgets.css:4020 |
+| Phones (roadmap §8: the layout had breakpoints but had never been driven at | frontend/css/05-sidebars-themes.css:3960 |
+| Placed at the end of this file on purpose. A panel keeps its original class | frontend/css/03-dashboard-widgets.css:4025 |
 | Plum: deep violet and magenta. The most saturated. | frontend/css/05-sidebars-themes.css:3450 |
 | Progress that keeps moving (INBOX 95) | frontend/css/08-consistency.css:2211 |
 | Quick access, and arranging it (INBOX 461) | frontend/css/03-dashboard-widgets.css:1692 |
@@ -11284,7 +11284,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | THE WRITING PHASE: nodes, and an edge drawing itself | frontend/css/01-forms-settings.css:4931 |
 | Technical mono: a cool graphite ground, monospace for the numbers and | frontend/css/05-sidebars-themes.css:3681 |
 | Templates (INBOX 715) | frontend/css/library-lazy.css:3544 |
-| Text on accent-coloured surfaces (roadmap §7: colour contrast was listed as | frontend/css/05-sidebars-themes.css:4089 |
+| Text on accent-coloured surfaces (roadmap §7: colour contrast was listed as | frontend/css/05-sidebars-themes.css:4077 |
 | The Activity popup (the Tasks popup) | frontend/css/popup-anatomy-lazy.css:113 |
 | The Ask tab's records speak in the Notes list's voice (INBOX 510) | frontend/css/08-consistency.css:10072 |
 | The Library's hover tick says what it is (INBOX 722) | frontend/css/library-lazy.css:4376 |
@@ -11305,7 +11305,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | The note surface (DOCUMENTS_PLAN Phase 8): one editor everywhere | frontend/css/09-editor.css:758 |
 | The properties panel (DOCUMENTS_PLAN Phase 3 item 4) | frontend/css/09-editor.css:113 |
 | The reference's glass, the parts that keep the words readable | frontend/css/popup-anatomy-lazy.css:131 |
-| The second level: `.tabs-line` (INBOX 522) | frontend/css/05-sidebars-themes.css:4129 |
+| The second level: `.tabs-line` (INBOX 522) | frontend/css/05-sidebars-themes.css:4117 |
 | The surface model pickers on a phone | frontend/css/10-responsive.css:2224 |
 | The target floor (audit 1031 class 28): WCAG 2.5.8's 24 px. Each control | frontend/css/08-consistency.css:10897 |
 | The thumb bar (DESIGN.md's recipe index: a bar of actions above the | frontend/css/09-editor.css:697 |
@@ -11330,15 +11330,15 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Wave I: skeletons, focus, reduced motion | frontend/css/02-chat-graph.css:1775 |
 | Wave J: accent presets + appearance picker | frontend/css/05-sidebars-themes.css:1 |
 | Wave J: generative art + note tools + undo toast | frontend/css/02-chat-graph.css:1880 |
-| Wave K: empty states, mobile tap targets, high-contrast | frontend/css/02-chat-graph.css:2313 |
-| Wave L: skip link, action menus, contrast + type polish | frontend/css/02-chat-graph.css:2438 |
-| Wave M: graph filters, thumbnails, lightbox, batch bar | frontend/css/02-chat-graph.css:2882 |
+| Wave K: empty states, mobile tap targets, high-contrast | frontend/css/02-chat-graph.css:2314 |
+| Wave L: skip link, action menus, contrast + type polish | frontend/css/02-chat-graph.css:2439 |
+| Wave M: graph filters, thumbnails, lightbox, batch bar | frontend/css/02-chat-graph.css:2883 |
 | Wave N: improve-writing, link suggestions, tasks | frontend/css/03-dashboard-widgets.css:1 |
 | Wave O: AI Tools toggles | frontend/css/03-dashboard-widgets.css:684 |
 | Wave O: brand logo + a more present background | frontend/css/03-dashboard-widgets.css:270 |
 | Wave O: expanded appearance (theme/size/density/glass) | frontend/css/03-dashboard-widgets.css:334 |
 | Whiteboard chrome, restructured: one top bar, a centred tool dock, a | frontend/css/07-whiteboard-misc.css:6746 |
-| Writing pace | frontend/css/03-dashboard-widgets.css:4279 |
+| Writing pace | frontend/css/03-dashboard-widgets.css:4284 |
 | [[wiki links]] | frontend/css/05-sidebars-themes.css:771 |
 | `.seg-multi`'s word, and the width that decides it | frontend/css/10-responsive.css:580 |
 | `.seg-multi`: one well, independent toggles | frontend/css/03-dashboard-widgets.css:402 |
@@ -11373,18 +11373,18 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | a settings row where nothing squashes anything else | frontend/css/07-whiteboard-misc.css:4161 |
 | a sheet (DESIGN.md's recipe index, "A sheet") | frontend/css/10-responsive.css:807 |
 | a sticker (MINDMAP_PLAN decision 44, INBOX 642) | frontend/css/library-lazy.css:3486 |
-| a stored file that is no longer stored | frontend/css/02-chat-graph.css:4151 |
+| a stored file that is no longer stored | frontend/css/02-chat-graph.css:4152 |
 | a traced path (§9) | frontend/css/graph-lazy.css:283 |
-| a turn that is still working says so, for as long as it is | frontend/css/03-dashboard-widgets.css:4090 |
+| a turn that is still working says so, for as long as it is | frontend/css/03-dashboard-widgets.css:4095 |
 | a zone that cannot shrink says so, instead of spilling | frontend/css/10-responsive.css:1085 |
 | account & security | frontend/css/01-forms-settings.css:3425 |
 | activity heatmap + tag cloud widgets | frontend/css/03-dashboard-widgets.css:1846 |
 | activity log | frontend/css/01-forms-settings.css:2781 |
 | activity, as a timeline rather than as cards | frontend/css/library-lazy.css:3211 |
-| an embedded document, drawn as a card (INBOX 421 b) | frontend/css/05-sidebars-themes.css:6147 |
-| and inside a small phone | frontend/css/05-sidebars-themes.css:5921 |
+| an embedded document, drawn as a card (INBOX 421 b) | frontend/css/05-sidebars-themes.css:6135 |
+| and inside a small phone | frontend/css/05-sidebars-themes.css:5909 |
 | appearance settings: grouped, scannable rows | frontend/css/04-chat-dock-appearance.css:1948 |
-| assistant message layout | frontend/css/05-sidebars-themes.css:4415 |
+| assistant message layout | frontend/css/05-sidebars-themes.css:4403 |
 | attaching notes to a chat message | frontend/css/04-chat-dock-appearance.css:2789 |
 | back / forward through pages | frontend/css/00-tokens-shell.css:4083 |
 | back-to-top button | frontend/css/04-chat-dock-appearance.css:2608 |
@@ -11403,7 +11403,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | chat dock density pass (§37C) | frontend/css/04-chat-dock-appearance.css:1282 |
 | chat page layout | frontend/css/04-chat-dock-appearance.css:480 |
 | chat panel: answer and raw records side by side | frontend/css/01-forms-settings.css:1053 |
-| chat polish | frontend/css/03-dashboard-widgets.css:3221 |
+| chat polish | frontend/css/03-dashboard-widgets.css:3226 |
 | chat tab (Wave C) | frontend/css/02-chat-graph.css:1 |
 | chat, de-vibecoded | frontend/css/08-consistency.css:3071 |
 | chat: an organised sidebar, readable code, correctable answers | frontend/css/05-sidebars-themes.css:2472 |
@@ -11435,8 +11435,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | forms | frontend/css/01-forms-settings.css:224 |
 | glass reaches the floating chrome that sat outside it | frontend/css/08-consistency.css:2656 |
 | glass restraint (UI_MODERNISATION_PLAN.md, Phase 3) | frontend/css/07-whiteboard-misc.css:7874 |
-| graph minimap | frontend/css/02-chat-graph.css:3610 |
-| graph polish | frontend/css/03-dashboard-widgets.css:3442 |
+| graph minimap | frontend/css/02-chat-graph.css:3611 |
+| graph polish | frontend/css/03-dashboard-widgets.css:3447 |
 | graph: depth, halos and legible labels | frontend/css/04-chat-dock-appearance.css:1517 |
 | graph: physics sliders + node popup | frontend/css/04-chat-dock-appearance.css:1554 |
 | heading hierarchy (§35L) | frontend/css/01-forms-settings.css:1 |
@@ -11476,10 +11476,10 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | narrow windows | frontend/css/sketch-pad.css:646 |
 | note card density (§36B) | frontend/css/06-timeline-dialogs.css:1551 |
 | note history | frontend/css/05-sidebars-themes.css:1740 |
-| notes page polish | frontend/css/03-dashboard-widgets.css:2029 |
+| notes page polish | frontend/css/03-dashboard-widgets.css:2034 |
 | nothing interactive is bare text | frontend/css/07-whiteboard-misc.css:3980 |
 | notifications | frontend/css/08-consistency.css:3713 |
-| numbered citations inside an answer | frontend/css/02-chat-graph.css:3820 |
+| numbered citations inside an answer | frontend/css/02-chat-graph.css:3821 |
 | one control height per Library header row | frontend/css/07-whiteboard-misc.css:5371 |
 | one gap under every card heading | frontend/css/01-forms-settings.css:4822 |
 | one line of facts: a note's meta row | frontend/css/08-consistency.css:2688 |
@@ -11493,7 +11493,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | radio groups as choices, not as a list of dots (§35L) | frontend/css/06-timeline-dialogs.css:1237 |
 | reading a scan against its own pages | frontend/css/lightbox-lazy.css:82 |
 | rebindable shortcuts | frontend/css/05-sidebars-themes.css:705 |
-| reminders page polish | frontend/css/03-dashboard-widgets.css:2709 |
+| reminders page polish | frontend/css/03-dashboard-widgets.css:2714 |
 | reminders, de-vibecoded | frontend/css/08-consistency.css:3139 |
 | reminders: "when" is one decision, so it is one group | frontend/css/07-whiteboard-misc.css:3660 |
 | resizable sidebars | frontend/css/05-sidebars-themes.css:1771 |
@@ -11539,12 +11539,12 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the Library, second pass: cards in reading order, one anatomy | frontend/css/library-lazy.css:304 |
 | the OCR rail's own switch | frontend/css/07-whiteboard-misc.css:6546 |
 | the Skills dropdown | frontend/css/04-chat-dock-appearance.css:1142 |
-| the Sources panel | frontend/css/02-chat-graph.css:4335 |
+| the Sources panel | frontend/css/02-chat-graph.css:4336 |
 | the accessible card: the title opens it (INBOX 433) | frontend/css/08-consistency.css:2974 |
 | the agent activity panel: nothing scrolls sideways, nothing folds onto | frontend/css/07-whiteboard-misc.css:10524 |
 | the agent's run, as a timeline | frontend/css/02-chat-graph.css:584 |
-| the app emblem, reused across the UI | frontend/css/03-dashboard-widgets.css:2948 |
-| the app's one help popover | frontend/css/03-dashboard-widgets.css:4029 |
+| the app emblem, reused across the UI | frontend/css/03-dashboard-widgets.css:2953 |
+| the app's one help popover | frontend/css/03-dashboard-widgets.css:4034 |
 | the app's own dropdown | frontend/css/07-whiteboard-misc.css:3753 |
 | the arrange zone, once it is inside the overflow menu | frontend/css/07-whiteboard-misc.css:9771 |
 | the assistant's head and its three verbs (the owner, 2026-09-24: | frontend/css/04-chat-dock-appearance.css:4816 |
@@ -11561,9 +11561,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the bottom docks | frontend/css/07-whiteboard-misc.css:9723 |
 | the chat dock follows its own width (INBOX 694) | frontend/css/10-responsive.css:2550 |
 | the chat page fills its height (§36A) | frontend/css/06-timeline-dialogs.css:1326 |
-| the chat sidebar on a phone | frontend/css/02-chat-graph.css:4862 |
+| the chat sidebar on a phone | frontend/css/02-chat-graph.css:4863 |
 | the chat toolbar, grouped (§36B) | frontend/css/06-timeline-dialogs.css:1445 |
-| the citation peek (INBOX 80) | frontend/css/02-chat-graph.css:3882 |
+| the citation peek (INBOX 80) | frontend/css/02-chat-graph.css:3883 |
 | the code editor: gutter + monospace | frontend/css/04-chat-dock-appearance.css:4419 |
 | the code panel, one compact header and a padded body (the owner, | frontend/css/library-lazy.css:5015 |
 | the composer dock (asked for directly) | frontend/css/04-chat-dock-appearance.css:886 |
@@ -11580,14 +11580,14 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the dock (UI_MODERNISATION_PLAN.md Phase 8) | frontend/css/07-whiteboard-misc.css:9217 |
 | the dock above the editor | frontend/css/04-chat-dock-appearance.css:4099 |
 | the dock row below 1100 | frontend/css/07-whiteboard-misc.css:9822 |
-| the document editor's instruments | frontend/css/05-sidebars-themes.css:4649 |
+| the document editor's instruments | frontend/css/05-sidebars-themes.css:4637 |
 | the document history, side by side (DOCUMENTS 24 row 4, Brief 76) | frontend/css/library-lazy.css:4840 |
 | the document toolbar's two folds | frontend/css/07-whiteboard-misc.css:5294 |
 | the documents editor | frontend/css/library-lazy.css:3299 |
 | the documents sidebar's vertical budget (§41) | frontend/css/07-whiteboard-misc.css:2166 |
 | the documents sidebar, redrawn as one tree (the owner, 2026-10-10: | frontend/css/library-lazy.css:4887 |
 | the export dialog (WHITEBOARD_PLAN.md Phase 3, decision 4) | frontend/css/06-timeline-dialogs.css:2561 |
-| the faded notes card (WORLD_CLASS_PLAN 15, I4) | frontend/css/03-dashboard-widgets.css:4429 |
+| the faded notes card (WORLD_CLASS_PLAN 15, I4) | frontend/css/03-dashboard-widgets.css:4434 |
 | the field: the glyph inside, Stop only while something is loading | frontend/css/03-dashboard-widgets.css:1057 |
 | the file picker, in the app's own clothes | frontend/css/08-consistency.css:8929 |
 | the file type picker (INBOX 1482) | frontend/css/library-lazy.css:7717 |
@@ -11605,10 +11605,10 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the help popover is a popover, not a page (INBOX 206) | frontend/css/08-consistency.css:2536 |
 | the in-app confirm dialog (§35F) | frontend/css/06-timeline-dialogs.css:1105 |
 | the lightbox on a phone (INBOX 430) | frontend/css/10-responsive.css:2249 |
-| the live action line | frontend/css/02-chat-graph.css:4182 |
+| the live action line | frontend/css/02-chat-graph.css:4183 |
 | the lock screen | frontend/css/08-consistency.css:3749 |
 | the log console (§1) | frontend/css/06-timeline-dialogs.css:700 |
-| the map is the tab, and its controls float over it | frontend/css/02-chat-graph.css:4886 |
+| the map is the tab, and its controls float over it | frontend/css/02-chat-graph.css:4887 |
 | the mind map's outline and markers (MINDMAP_PLAN decisions 33, 34) | frontend/css/library-lazy.css:2980 |
 | the node edit strip (MINDMAP_PLAN.md §12.1 item 2) | frontend/css/07-whiteboard-misc.css:8573 |
 | the node radial (MINDMAP_PLAN.md §12.1 item 3) | frontend/css/07-whiteboard-misc.css:8838 |
@@ -11624,7 +11624,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the page scrollers scroll on the compositor | frontend/css/08-consistency.css:4336 |
 | the page shell (§35L) | frontend/css/00-tokens-shell.css:3593 |
 | the palette on a touch screen (INBOX 464) | frontend/css/10-responsive.css:2536 |
-| the phone header fits inside the phone | frontend/css/05-sidebars-themes.css:5890 |
+| the phone header fits inside the phone | frontend/css/05-sidebars-themes.css:5878 |
 | the picker itself | frontend/css/05-sidebars-themes.css:3774 |
 | the primary action floats, where a dock has one | frontend/css/07-whiteboard-misc.css:10284 |
 | the quick-nav chord's guide | frontend/css/10-responsive.css:456 |
@@ -11644,19 +11644,19 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the status bar on a small phone | frontend/css/00-tokens-shell.css:3476 |
 | the status bar's Other devices icon and panel (INBOX 896) | frontend/css/lan-lazy.css:77 |
 | the status line and the recent searches | frontend/css/03-dashboard-widgets.css:1126 |
-| the step group (Perplexity's "Finished N steps") | frontend/css/02-chat-graph.css:4255 |
+| the step group (Perplexity's "Finished N steps") | frontend/css/02-chat-graph.css:4256 |
 | the strip's three doors (MINDMAP_PLAN.md §13b) | frontend/css/07-whiteboard-misc.css:8671 |
 | the strips that appear only when they apply | frontend/css/00-tokens-shell.css:1880 |
 | the structural blocks (INBOX 421 b) | frontend/css/05-sidebars-themes.css:1432 |
-| the suggestion menu, the dictionary, and the goal | frontend/css/05-sidebars-themes.css:5179 |
+| the suggestion menu, the dictionary, and the goal | frontend/css/05-sidebars-themes.css:5167 |
 | the switch's hit target (MODERNISATION_AUDIT.md Brief 8) | frontend/css/07-whiteboard-misc.css:7980 |
 | the tab strip is centred on the window, not on whatever is left of it | frontend/css/07-whiteboard-misc.css:7703 |
 | the timeline, de-vibecoded | frontend/css/08-consistency.css:3122 |
 | the tool rail (WHITEBOARD_PLAN.md Phase 1, decision 1) | frontend/css/07-whiteboard-misc.css:10594 |
 | the tools panel, sorted into what each group of icons does | frontend/css/06-timeline-dialogs.css:2716 |
-| the touch floor, for the two surfaces the dock rule cannot reach | frontend/css/03-dashboard-widgets.css:4393 |
+| the touch floor, for the two surfaces the dock rule cannot reach | frontend/css/03-dashboard-widgets.css:4398 |
 | the trace strip | frontend/css/04-chat-dock-appearance.css:1 |
-| the two radio-backed segmented bars | frontend/css/03-dashboard-widgets.css:3524 |
+| the two radio-backed segmented bars | frontend/css/03-dashboard-widgets.css:3529 |
 | the two whiteboard controls that never joined the strip | frontend/css/07-whiteboard-misc.css:3357 |
 | the web-search engine picker | frontend/css/04-chat-dock-appearance.css:2510 |
 | the whiteboard top bar and the documents editor join the families | frontend/css/07-whiteboard-misc.css:7908 |
@@ -11665,7 +11665,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the writing room | frontend/css/04-chat-dock-appearance.css:3361 |
 | tools & features browser | frontend/css/03-dashboard-widgets.css:1774 |
 | tools and page | frontend/css/sketch-pad.css:390 |
-| top bar polish | frontend/css/05-sidebars-themes.css:4370 |
+| top bar polish | frontend/css/05-sidebars-themes.css:4358 |
 | transcluded notes (![[note]]) | frontend/css/05-sidebars-themes.css:1591 |
 | two-up cards in tablet portrait | frontend/css/07-whiteboard-misc.css:9989 |
 | type to filter a long list (row 1643, `listFilter` in sheets-selects.js) | frontend/css/08-consistency.css:10732 |
@@ -11675,7 +11675,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | what it learned (WORLD_CLASS_PLAN I9) | frontend/css/01-forms-settings.css:5535 |
 | what the AI remembers (ROADMAP §39B) | frontend/css/07-whiteboard-misc.css:2004 |
 | what the agent found, as things you can open | frontend/css/07-whiteboard-misc.css:5330 |
-| what the answering model is | frontend/css/02-chat-graph.css:4689 |
+| what the answering model is | frontend/css/02-chat-graph.css:4690 |
 | what the phone block assumed, and the sheet undoes | frontend/css/07-whiteboard-misc.css:10002 |
 | whiteboard fixes (§41) | frontend/css/07-whiteboard-misc.css:2109 |
 | whiteboard objects: images and text boxes, neither tied to a note | frontend/css/07-whiteboard-misc.css:1 |
@@ -11687,10 +11687,10 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 |---|---|
 | frontend/css/00-tokens-shell.css | 4291 |
 | frontend/css/01-forms-settings.css | 6242 |
-| frontend/css/02-chat-graph.css | 5295 |
-| frontend/css/03-dashboard-widgets.css | 4812 |
+| frontend/css/02-chat-graph.css | 5296 |
+| frontend/css/03-dashboard-widgets.css | 4817 |
 | frontend/css/04-chat-dock-appearance.css | 6491 |
-| frontend/css/05-sidebars-themes.css | 6280 |
+| frontend/css/05-sidebars-themes.css | 6268 |
 | frontend/css/06-timeline-dialogs.css | 3673 |
 | frontend/css/07-whiteboard-misc.css | 11793 |
 | frontend/css/08-consistency.css | 10914 |
@@ -11713,7 +11713,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/first-run-lazy.css | 121 |
 | frontend/css/forced-colors-lazy.css | 28 |
 | frontend/css/glass-controls-lazy.css | 23 |
-| frontend/css/graph-lazy.css | 577 |
+| frontend/css/graph-lazy.css | 584 |
 | frontend/css/help-chat-lazy.css | 38 |
 | frontend/css/icon-picker.css | 121 |
 | frontend/css/improve-lazy.css | 110 |
@@ -12395,7 +12395,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (8159)
+## Backend modules (8161)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -12405,67 +12405,68 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `_adopt_old_environment` | src/tessellate/__init__.py:12 |
 
-### src/tessellate/__main__.py (57)
+### src/tessellate/__main__.py (58)
 
 | Name | File:line |
 |---|---|
-| `_ancestor_console_hwnds` | src/tessellate/__main__.py:1345 |
-| `_apply_console_visibility` | src/tessellate/__main__.py:1476 |
-| `_attach_desk_companion` | src/tessellate/__main__.py:2087 |
-| `_boot_and_swap` | src/tessellate/__main__.py:1009 |
-| `_bootloader_splash` | src/tessellate/__main__.py:662 |
-| `_bring_forward` | src/tessellate/__main__.py:1676 |
-| `_capture` | src/tessellate/__main__.py:2682 |
-| `_claim_notebook` | src/tessellate/__main__.py:988 |
-| `_close_bootloader_splash` | src/tessellate/__main__.py:700 |
-| `_close_launch_splash` | src/tessellate/__main__.py:759 |
-| `_console_window_targets` | src/tessellate/__main__.py:1461 |
-| `_desktop_port` | src/tessellate/__main__.py:932 |
-| `_ensure_std_streams` | src/tessellate/__main__.py:433 |
-| `_existing_instance` | src/tessellate/__main__.py:1687 |
-| `_export_markdown` | src/tessellate/__main__.py:2521 |
-| `_finish_splash_start_step` | src/tessellate/__main__.py:788 |
-| `_focus_window` | src/tessellate/__main__.py:1062 |
-| `_get_console_hwnd` | src/tessellate/__main__.py:1094 |
-| `_hand_off_to_running` | src/tessellate/__main__.py:1701 |
-| `_loading_html` | src/tessellate/__main__.py:368 |
-| `_mark_start_step_done` | src/tessellate/__main__.py:858 |
-| `_maybe_relaunch_hidden` | src/tessellate/__main__.py:1306 |
-| `_open_window_onto` | src/tessellate/__main__.py:1733 |
-| `_password_exists` | src/tessellate/__main__.py:2560 |
+| `_ancestor_console_hwnds` | src/tessellate/__main__.py:1365 |
+| `_apply_console_visibility` | src/tessellate/__main__.py:1496 |
+| `_attach_desk_companion` | src/tessellate/__main__.py:2107 |
+| `_boot_and_swap` | src/tessellate/__main__.py:1029 |
+| `_bootloader_splash` | src/tessellate/__main__.py:682 |
+| `_bring_forward` | src/tessellate/__main__.py:1696 |
+| `_capture` | src/tessellate/__main__.py:2702 |
+| `_claim_notebook` | src/tessellate/__main__.py:1008 |
+| `_close_bootloader_splash` | src/tessellate/__main__.py:720 |
+| `_close_launch_splash` | src/tessellate/__main__.py:779 |
+| `_console_window_targets` | src/tessellate/__main__.py:1481 |
+| `_desktop_port` | src/tessellate/__main__.py:952 |
+| `_ensure_std_streams` | src/tessellate/__main__.py:453 |
+| `_existing_instance` | src/tessellate/__main__.py:1707 |
+| `_export_markdown` | src/tessellate/__main__.py:2541 |
+| `_finish_splash_start_step` | src/tessellate/__main__.py:808 |
+| `_focus_window` | src/tessellate/__main__.py:1082 |
+| `_get_console_hwnd` | src/tessellate/__main__.py:1114 |
+| `_hand_off_to_running` | src/tessellate/__main__.py:1721 |
+| `_loading_html` | src/tessellate/__main__.py:388 |
+| `_loading_motion` | src/tessellate/__main__.py:341 |
+| `_mark_start_step_done` | src/tessellate/__main__.py:878 |
+| `_maybe_relaunch_hidden` | src/tessellate/__main__.py:1326 |
+| `_open_window_onto` | src/tessellate/__main__.py:1753 |
+| `_password_exists` | src/tessellate/__main__.py:2580 |
 | `_port_from_env` | src/tessellate/__main__.py:45 |
-| `_port_holder` | src/tessellate/__main__.py:874 |
-| `_push_status_to_window` | src/tessellate/__main__.py:841 |
-| `_pythonw_path` | src/tessellate/__main__.py:1112 |
-| `_recolour_loading_page` | src/tessellate/__main__.py:335 |
-| `_relaunch_argv` | src/tessellate/__main__.py:1218 |
-| `_repair_install` | src/tessellate/__main__.py:2643 |
-| `_replace_process` | src/tessellate/__main__.py:1552 |
-| `_reset_password` | src/tessellate/__main__.py:2573 |
-| `_run_desktop` | src/tessellate/__main__.py:1760 |
-| `_run_mcp` | src/tessellate/__main__.py:2495 |
-| `_run_server` | src/tessellate/__main__.py:460 |
-| `_run_server_holding_lock` | src/tessellate/__main__.py:2808 |
-| `_serve_with_lan` | src/tessellate/__main__.py:541 |
-| `_serves_this_notebook` | src/tessellate/__main__.py:915 |
-| `_spawn_desktop` | src/tessellate/__main__.py:1123 |
-| `_spawn_detached` | src/tessellate/__main__.py:1236 |
-| `_splash_status` | src/tessellate/__main__.py:685 |
-| `_start_frozen_splash` | src/tessellate/__main__.py:718 |
-| `_start_reminder_notifier` | src/tessellate/__main__.py:2112 |
-| `_start_tray` | src/tessellate/__main__.py:2142 |
-| `_stop_background_work` | src/tessellate/__main__.py:1512 |
-| `_stop_lingering_worker_threads` | src/tessellate/__main__.py:597 |
-| `_wait_for_exit` | src/tessellate/__main__.py:1291 |
-| `_wait_for_server` | src/tessellate/__main__.py:633 |
-| `_wait_for_server_with_progress` | src/tessellate/__main__.py:960 |
-| `_warn_webview2_missing` | src/tessellate/__main__.py:1642 |
-| `_webview2_runtime_missing` | src/tessellate/__main__.py:1578 |
-| `_window_class_name` | src/tessellate/__main__.py:1445 |
-| `main` | src/tessellate/__main__.py:2700 |
+| `_port_holder` | src/tessellate/__main__.py:894 |
+| `_push_status_to_window` | src/tessellate/__main__.py:861 |
+| `_pythonw_path` | src/tessellate/__main__.py:1132 |
+| `_recolour_loading_page` | src/tessellate/__main__.py:354 |
+| `_relaunch_argv` | src/tessellate/__main__.py:1238 |
+| `_repair_install` | src/tessellate/__main__.py:2663 |
+| `_replace_process` | src/tessellate/__main__.py:1572 |
+| `_reset_password` | src/tessellate/__main__.py:2593 |
+| `_run_desktop` | src/tessellate/__main__.py:1780 |
+| `_run_mcp` | src/tessellate/__main__.py:2515 |
+| `_run_server` | src/tessellate/__main__.py:480 |
+| `_run_server_holding_lock` | src/tessellate/__main__.py:2828 |
+| `_serve_with_lan` | src/tessellate/__main__.py:561 |
+| `_serves_this_notebook` | src/tessellate/__main__.py:935 |
+| `_spawn_desktop` | src/tessellate/__main__.py:1143 |
+| `_spawn_detached` | src/tessellate/__main__.py:1256 |
+| `_splash_status` | src/tessellate/__main__.py:705 |
+| `_start_frozen_splash` | src/tessellate/__main__.py:738 |
+| `_start_reminder_notifier` | src/tessellate/__main__.py:2132 |
+| `_start_tray` | src/tessellate/__main__.py:2162 |
+| `_stop_background_work` | src/tessellate/__main__.py:1532 |
+| `_stop_lingering_worker_threads` | src/tessellate/__main__.py:617 |
+| `_wait_for_exit` | src/tessellate/__main__.py:1311 |
+| `_wait_for_server` | src/tessellate/__main__.py:653 |
+| `_wait_for_server_with_progress` | src/tessellate/__main__.py:980 |
+| `_warn_webview2_missing` | src/tessellate/__main__.py:1662 |
+| `_webview2_runtime_missing` | src/tessellate/__main__.py:1598 |
+| `_window_class_name` | src/tessellate/__main__.py:1465 |
+| `main` | src/tessellate/__main__.py:2720 |
 | `page_host` | src/tessellate/__main__.py:35 |
-| `restart_app` | src/tessellate/__main__.py:1267 |
-| `restart_in_console_mode` | src/tessellate/__main__.py:1195 |
+| `restart_app` | src/tessellate/__main__.py:1287 |
+| `restart_in_console_mode` | src/tessellate/__main__.py:1215 |
 
 ### src/tessellate/ai/act_registry.py (11)
 
@@ -14549,40 +14550,41 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `suggest_title` | src/tessellate/ai/drafter.py:525 |
 | `was_offline` | src/tessellate/ai/drafter.py:38 |
 
-### src/tessellate/ai/embeddings.py (30)
+### src/tessellate/ai/embeddings.py (31)
 
 | Name | File:line |
 |---|---|
 | `EmbeddingCacheBroken` | src/tessellate/ai/embeddings.py:52 |
 | `EmbeddingNeedsConsent` | src/tessellate/ai/embeddings.py:56 |
-| `EmbeddingService` | src/tessellate/ai/embeddings.py:789 |
-| `_PinnedModels` | src/tessellate/ai/embeddings.py:1428 |
-| `_backfill_chunks` | src/tessellate/ai/embeddings.py:412 |
-| `_backfill_missing` | src/tessellate/ai/embeddings.py:330 |
-| `_digest` | src/tessellate/ai/embeddings.py:598 |
-| `_download_and_open` | src/tessellate/ai/embeddings.py:770 |
+| `EmbeddingService` | src/tessellate/ai/embeddings.py:796 |
+| `_PinnedModels` | src/tessellate/ai/embeddings.py:1435 |
+| `_backfill_chunks` | src/tessellate/ai/embeddings.py:419 |
+| `_backfill_missing` | src/tessellate/ai/embeddings.py:337 |
+| `_digest` | src/tessellate/ai/embeddings.py:605 |
+| `_download_and_open` | src/tessellate/ai/embeddings.py:777 |
 | `_engine_missing` | src/tessellate/ai/embeddings.py:80 |
-| `_fetch_model_as_a_task` | src/tessellate/ai/embeddings.py:779 |
-| `_notebook_has_notes` | src/tessellate/ai/embeddings.py:136 |
-| `_open_snapshot` | src/tessellate/ai/embeddings.py:750 |
+| `_fetch_model_as_a_task` | src/tessellate/ai/embeddings.py:786 |
+| `_notebook_has_notes` | src/tessellate/ai/embeddings.py:143 |
+| `_open_snapshot` | src/tessellate/ai/embeddings.py:757 |
 | `_package_present` | src/tessellate/ai/embeddings.py:67 |
-| `_quiet_engine_log` | src/tessellate/ai/embeddings.py:739 |
-| `_register` | src/tessellate/ai/embeddings.py:711 |
+| `_quiet_engine_log` | src/tessellate/ai/embeddings.py:746 |
+| `_register` | src/tessellate/ai/embeddings.py:718 |
 | `_wait_for_idle` | src/tessellate/ai/embeddings.py:125 |
-| `backfill_missing` | src/tessellate/ai/embeddings.py:298 |
-| `bytes_to_vector` | src/tessellate/ai/embeddings.py:609 |
-| `chunk_text` | src/tessellate/ai/embeddings.py:585 |
-| `clean_orphaned_vectors` | src/tessellate/ai/embeddings.py:455 |
-| `cosine_similarity` | src/tessellate/ai/embeddings.py:615 |
-| `embed_threads` | src/tessellate/ai/embeddings.py:288 |
-| `embedding_text` | src/tessellate/ai/embeddings.py:500 |
+| `backfill_missing` | src/tessellate/ai/embeddings.py:305 |
+| `bytes_to_vector` | src/tessellate/ai/embeddings.py:616 |
+| `chunk_text` | src/tessellate/ai/embeddings.py:592 |
+| `clean_orphaned_vectors` | src/tessellate/ai/embeddings.py:462 |
+| `cosine_similarity` | src/tessellate/ai/embeddings.py:622 |
+| `embed_threads` | src/tessellate/ai/embeddings.py:295 |
+| `embedding_text` | src/tessellate/ai/embeddings.py:507 |
 | `note_request` | src/tessellate/ai/embeddings.py:119 |
-| `similar_pairs` | src/tessellate/ai/embeddings.py:636 |
-| `start_warmup` | src/tessellate/ai/embeddings.py:156 |
-| `vector_to_bytes` | src/tessellate/ai/embeddings.py:602 |
-| `warm_then_backfill` | src/tessellate/ai/embeddings.py:322 |
-| `warmup_failed` | src/tessellate/ai/embeddings.py:451 |
-| `warmup_running` | src/tessellate/ai/embeddings.py:447 |
+| `similar_pairs` | src/tessellate/ai/embeddings.py:643 |
+| `start_warmup` | src/tessellate/ai/embeddings.py:163 |
+| `vector_to_bytes` | src/tessellate/ai/embeddings.py:609 |
+| `wait_for_quiet` | src/tessellate/ai/embeddings.py:136 |
+| `warm_then_backfill` | src/tessellate/ai/embeddings.py:329 |
+| `warmup_failed` | src/tessellate/ai/embeddings.py:458 |
+| `warmup_running` | src/tessellate/ai/embeddings.py:454 |
 
 ### src/tessellate/ai/entities.py (10)
 
@@ -22237,58 +22239,58 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Retrieval` | src/tessellate/search/search_manager.py:976 |
-| `_append_connected` | src/tessellate/search/search_manager.py:1361 |
-| `_candidates` | src/tessellate/search/search_manager.py:1249 |
-| `_category_named_whole` | src/tessellate/search/search_manager.py:1153 |
-| `_category_notes` | src/tessellate/search/search_manager.py:1208 |
-| `_category_only` | src/tessellate/search/search_manager.py:1202 |
-| `_category_scope` | src/tessellate/search/search_manager.py:1378 |
+| `Retrieval` | src/tessellate/search/search_manager.py:992 |
+| `_append_connected` | src/tessellate/search/search_manager.py:1377 |
+| `_candidates` | src/tessellate/search/search_manager.py:1265 |
+| `_category_named_whole` | src/tessellate/search/search_manager.py:1169 |
+| `_category_notes` | src/tessellate/search/search_manager.py:1224 |
+| `_category_only` | src/tessellate/search/search_manager.py:1218 |
+| `_category_scope` | src/tessellate/search/search_manager.py:1394 |
 | `_corrected_terms` | src/tessellate/search/search_manager.py:269 |
-| `_dated_candidates` | src/tessellate/search/search_manager.py:1391 |
-| `_early_answer` | src/tessellate/search/search_manager.py:1225 |
-| `_fuse` | src/tessellate/search/search_manager.py:721 |
-| `_latest_about` | src/tessellate/search/search_manager.py:1399 |
-| `_learned_order` | src/tessellate/search/search_manager.py:1523 |
-| `_linked_neighbours` | src/tessellate/search/search_manager.py:760 |
-| `_load_later` | src/tessellate/search/search_manager.py:408 |
-| `_match_info` | src/tessellate/search/search_manager.py:1343 |
+| `_dated_candidates` | src/tessellate/search/search_manager.py:1407 |
+| `_early_answer` | src/tessellate/search/search_manager.py:1241 |
+| `_fuse` | src/tessellate/search/search_manager.py:737 |
+| `_latest_about` | src/tessellate/search/search_manager.py:1415 |
+| `_learned_order` | src/tessellate/search/search_manager.py:1539 |
+| `_linked_neighbours` | src/tessellate/search/search_manager.py:776 |
+| `_load_later` | src/tessellate/search/search_manager.py:410 |
+| `_match_info` | src/tessellate/search/search_manager.py:1359 |
 | `_meaningful_terms` | src/tessellate/search/search_manager.py:351 |
-| `_named_category` | src/tessellate/search/search_manager.py:1168 |
-| `_narrow_to_range` | src/tessellate/search/search_manager.py:1265 |
+| `_named_category` | src/tessellate/search/search_manager.py:1184 |
+| `_narrow_to_range` | src/tessellate/search/search_manager.py:1281 |
 | `_near_words` | src/tessellate/search/search_manager.py:307 |
-| `_nothing_matched` | src/tessellate/search/search_manager.py:1311 |
-| `_outside_window` | src/tessellate/search/search_manager.py:1289 |
-| `_rank` | src/tessellate/search/search_manager.py:1077 |
-| `_rank_inner` | src/tessellate/search/search_manager.py:1090 |
-| `_recency_pin_ranking` | src/tessellate/search/search_manager.py:695 |
-| `_retrieve` | src/tessellate/search/search_manager.py:1453 |
-| `_score_from_matrix` | src/tessellate/search/search_manager.py:562 |
-| `_score_from_table` | src/tessellate/search/search_manager.py:601 |
+| `_nothing_matched` | src/tessellate/search/search_manager.py:1327 |
+| `_outside_window` | src/tessellate/search/search_manager.py:1305 |
+| `_rank` | src/tessellate/search/search_manager.py:1093 |
+| `_rank_inner` | src/tessellate/search/search_manager.py:1106 |
+| `_recency_pin_ranking` | src/tessellate/search/search_manager.py:711 |
+| `_retrieve` | src/tessellate/search/search_manager.py:1469 |
+| `_score_from_matrix` | src/tessellate/search/search_manager.py:578 |
+| `_score_from_table` | src/tessellate/search/search_manager.py:617 |
 | `_substring_entries` | src/tessellate/search/search_manager.py:222 |
 | `_user_today` | src/tessellate/search/search_manager.py:45 |
-| `_when_nothing_ranked` | src/tessellate/search/search_manager.py:1424 |
-| `_within` | src/tessellate/search/search_manager.py:960 |
-| `_without_private` | src/tessellate/search/search_manager.py:1577 |
+| `_when_nothing_ranked` | src/tessellate/search/search_manager.py:1440 |
+| `_within` | src/tessellate/search/search_manager.py:976 |
+| `_without_private` | src/tessellate/search/search_manager.py:1593 |
 | `_word_for_stem` | src/tessellate/search/search_manager.py:324 |
-| `_written_at` | src/tessellate/search/search_manager.py:919 |
-| `clip_query` | src/tessellate/search/search_manager.py:1445 |
+| `_written_at` | src/tessellate/search/search_manager.py:935 |
+| `clip_query` | src/tessellate/search/search_manager.py:1461 |
 | `configured_thresholds` | src/tessellate/search/search_manager.py:356 |
-| `day_mentions` | src/tessellate/search/search_manager.py:930 |
+| `day_mentions` | src/tessellate/search/search_manager.py:946 |
 | `entries_between` | src/tessellate/search/search_manager.py:102 |
-| `graph_expansion` | src/tessellate/search/search_manager.py:825 |
-| `in_range` | src/tessellate/search/search_manager.py:891 |
+| `graph_expansion` | src/tessellate/search/search_manager.py:841 |
+| `in_range` | src/tessellate/search/search_manager.py:907 |
 | `is_exact_term` | src/tessellate/search/search_manager.py:262 |
-| `is_recency_ask` | src/tessellate/search/search_manager.py:1130 |
+| `is_recency_ask` | src/tessellate/search/search_manager.py:1146 |
 | `keyword_search` | src/tessellate/search/search_manager.py:129 |
-| `last_search` | src/tessellate/search/search_manager.py:1072 |
-| `note_search_mode` | src/tessellate/search/search_manager.py:1085 |
-| `query_vector` | src/tessellate/search/search_manager.py:383 |
+| `last_search` | src/tessellate/search/search_manager.py:1088 |
+| `note_search_mode` | src/tessellate/search/search_manager.py:1101 |
+| `query_vector` | src/tessellate/search/search_manager.py:385 |
 | `recent_entries` | src/tessellate/search/search_manager.py:80 |
-| `retrieve` | src/tessellate/search/search_manager.py:1042 |
-| `retrieve_detailed` | src/tessellate/search/search_manager.py:1013 |
-| `semantic_search` | src/tessellate/search/search_manager.py:457 |
-| `warm` | src/tessellate/search/search_manager.py:433 |
+| `retrieve` | src/tessellate/search/search_manager.py:1058 |
+| `retrieve_detailed` | src/tessellate/search/search_manager.py:1029 |
+| `semantic_search` | src/tessellate/search/search_manager.py:473 |
+| `warm` | src/tessellate/search/search_manager.py:445 |
 
 ### src/tessellate/search/searxng_docker.py (8)
 
@@ -22438,7 +22440,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15229)
+## Tests (15235)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23288,7 +23290,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_lag_layout_reads.py | 8 |
 | tests/test_lag_log.py | 6 |
 | tests/test_lan.py | 126 |
-| tests/test_launch_splash.py | 24 |
+| tests/test_launch_splash.py | 25 |
 | tests/test_launch_status.py | 25 |
 | tests/test_launcher_scripts.py | 96 |
 | tests/test_launcher_update_settings.py | 27 |
@@ -23605,6 +23607,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_perf3_1031.py | 7 |
 | tests/test_perf3_graph_1031.py | 4 |
 | tests/test_perf_1031.py | 15 |
+| tests/test_perf_1101_leftovers.py | 1 |
 | tests/test_perf_2000.py | 2 |
 | tests/test_perf_budget.py | 2 |
 | tests/test_perf_hot_paths.py | 10 |
@@ -23859,7 +23862,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_space_menu_axe_1029.py | 2 |
 | tests/test_spaces.py | 28 |
 | tests/test_speakers_81.py | 7 |
-| tests/test_speculative_retrieval.py | 4 |
+| tests/test_speculative_retrieval.py | 5 |
 | tests/test_spell_contractions.py | 2 |
 | tests/test_spelling_dialects.py | 5 |
 | tests/test_spelling_variants.py | 6 |
@@ -24203,6 +24206,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_writing_offline_view_1488.py | 7 |
 | tests/test_xfix_1031.py | 10 |
 | tests/test_xmind_import.py | 3 |
+| tests/test_zoom_frame_1508.py | 3 |
 | tests/test_zoom_wheel_delta.py | 3 |
 
 ## Plan headings (990)
@@ -24910,7 +24914,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1276 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:289 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:280 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4186 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
