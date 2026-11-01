@@ -516,7 +516,8 @@ function setTitleView(view) {
 //: throttled, and a reminder made on another device is not in this list.
 //: A one-shot timeout, not a second interval: it wakes the page once per
 //: due reminder and never at rest.
-const reminderDueTimer = { id: 0 };
+//: `stop` is the minute tick's stopper (off while hidden), kept here with the other timer.
+const reminderDueTimer = { id: 0, stop: null };
 function armReminderTimer(list) {
   clearTimeout(reminderDueTimer.id);
   const now = Date.now();
@@ -534,12 +535,39 @@ function armReminderTimer(list) {
   reminderDueTimer.id = setTimeout(checkDueReminders, next - now + 250);
 }
 
+//: **One poll for every tab, and none while hidden** (audit 1031 BK12). Each
+//: tab used to ask `/reminders` once a minute, hidden or not: ten tabs, ten
+//: asks. Now whichever visible tab ticks first asks (a Web Lock makes the
+//: claim atomic; a shared timestamp says another tab asked in the last 45 s),
+//: and hands the list to the others over a BroadcastChannel so their badge,
+//: title count and due timer are the same without asking. Announcing stays
+//: with the tab that asked, after the announced ids are written. A hidden
+//: tab's minute tick is off, its due-time timer still fires (`armReminderTimer`),
+//: and coming back asks at once unless a tab has asked since.
+const reminderChannel = window.BroadcastChannel ? new BroadcastChannel("memorymap-reminders") : null;
+if (reminderChannel) reminderChannel.onmessage = (event) => authToken() && paintReminderList(event.data);
+
+function pollReminders() {
+  const ask = (lock) => lock && Date.now() - prefs.get("reminderPolledAt", 0) > 45e3 && checkDueReminders();
+  return navigator.locks ? navigator.locks.request("memorymap-reminder-poll", { ifAvailable: true }, ask) : ask(1);
+}
+
+//: What every tab does with a fresh list, the one that asked and the ones told.
+function paintReminderList(all) {
+  const due = all.filter((r) => !r.done && new Date(r.due_at).getTime() <= Date.now());
+  armReminderTimer(all);
+  updateReminderBadge(all);
+  setTitleCount(due.length);
+  return due;
+}
+
 async function checkDueReminders() {
   // Before the unlock there is no token, and asking anyway is a guaranteed 401
   // on every load: visible in the browser's network log, and in the server's
   // own log, where it looks like an auth failure worth investigating.
   if (!authToken()) return;
   syncNotifBlocked();
+  prefs.set("reminderPolledAt", Date.now());
   //: Open ones only. The route orders by `due_at` ascending with ticked-off
   //: rows included by default, so this poll's one page was the *oldest*
   //: reminders, done or not: a notebook whose oldest two hundred were done
@@ -548,12 +576,10 @@ async function checkDueReminders() {
   //: asks, and it is smaller.
   const all = await apiJson("/reminders?include_done=false", { silent: true }).catch(() => null);
   if (!all) return; // server asleep or locked, say nothing rather than guess
+  const due = paintReminderList(all);
+  //: Painting only: announcing stays with the tab that asked.
+  reminderChannel?.postMessage(all);
   const now = Date.now();
-  const due = all.filter((r) => !r.done && new Date(r.due_at).getTime() <= now);
-  armReminderTimer(all);
-  updateReminderBadge(all);
-  setTitleCount(due.length);
-
   const already = announcedReminders();
   //: An early alert (TIMELINE_PLAN 11 row 8) is announced once, under its
   //: own key, with how long is left; the due time is announced as before.
@@ -623,21 +649,22 @@ function startReminderWatch() {
   reminderWatchStarted = true;
   //: One minute tick for both: the reminders, and the Local chip every
   //: fifth (PRIVACY_CHIP_MS), rather than a second interval waking the page.
+  //: On the shared minute tick (startMinuteTicker), off while the tab is
+  //: hidden. Its first paint is the check this function has just made, which
+  //: stamped the shared timestamp, so that one asks nothing.
   let ticks = 0;
-  //: On the shared minute tick (startMinuteTicker), whose first paint is the
-  //: check this function has just made, so that one is skipped.
-  let first = true;
-  startMinuteTicker(() => {
-    if (first) return void (first = false);
-    checkDueReminders();
+  const tick = () => {
+    pollReminders();
     if (++ticks % (PRIVACY_CHIP_MS / REMINDER_POLL_MS) === 0) refreshPrivacyChip();
-  });
+  };
+  reminderDueTimer.stop = document.hidden ? null : startMinuteTicker(tick);
   // A machine that was asleep wakes up with reminders long past due, and the
   // interval will not have run. Checking on focus catches that immediately
   // rather than up to a minute later.
-  window.addEventListener("focus", () => checkDueReminders());
+  window.addEventListener("focus", pollReminders);
   document.addEventListener("visibilitychange", () => {
-    if (!document.hidden) checkDueReminders();
+    reminderDueTimer.stop?.();
+    reminderDueTimer.stop = document.hidden ? null : startMinuteTicker(tick);
   });
 }
 
