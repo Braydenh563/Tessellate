@@ -211,8 +211,10 @@ def _sweep_expired(idle_ttl: int) -> None:
         ]
         for token in dead:
             _active_tokens.pop(token, None)
-        if dead:
-            _forget_dead_tickets()
+        #: Every sweep, not only one that dropped a session: a session ended
+        #: elsewhere (sign-out) while a ticket was being granted leaves that
+        #: ticket behind, and the table is a few rows, so the check is cheap.
+        _forget_dead_tickets()
     if dead:
         # The key goes with the last session that gave the password, even
         # while a session without it is still live (tests/test_vault_sessions).
@@ -322,6 +324,11 @@ def _grant_media(request: Request, response: Response, token: str) -> None:
     # boot path asks again every time) until the session ends.
     ticket = secrets.token_urlsafe(32)
     with _token_lock:
+        #: A session swept between its unlock and this grant gets no ticket:
+        #: one stored for it would outlive it, since a sweep forgets tickets
+        #: only when it drops a session (race seen in CI, test_token_tables_1031).
+        if token not in _active_tokens:
+            return
         for stale in [t for t, owner in list(_media_tickets.items()) if owner == token]:
             _media_tickets.pop(stale, None)
         _media_tickets[ticket] = token
