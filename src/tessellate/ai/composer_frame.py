@@ -254,6 +254,14 @@ def _plain(text: str) -> str:
 _LIST_ITEM = re.compile(r"(?:[-*+•]\s|\d+[.)]\s|\[[ xX]\]\s)")
 
 
+def _opens_section(line: str) -> bool:
+    """`_PREFIX.match(line)` by string steps: "Pros: more time". The label
+    before the first colon is 2 to 40 characters with no sentence stop, and
+    words follow the colon after a space."""
+    label, colon, rest = line.partition(":")
+    return bool(colon and 2 <= len(label) <= 40 and not any(c in label for c in ".!?\n") and rest[:1].isspace() and rest.strip())
+
+
 def _title_of(content: str) -> str:
     """A first line that names the note ("# Trains", "**The Complete Social
     Skills Guide**", "Ice Breakers:" over its list), or ""."""
@@ -261,11 +269,16 @@ def _title_of(content: str) -> str:
     if len(lines) < 2 or not "".join(lines[1:]).strip():
         return ""
     first = lines[0].strip()
-    marked = bool(re.match(r"#{1,6}\s|(\*\*|__)\S.*\1:?$", first))
+    #: A bold line is checked by its ends, not by a backreference regex, which
+    #: backtracks on a long line of markers (CodeQL polynomial ReDoS).
+    shut = first[:-1] if first.endswith(":") else first
+    marked = bool(re.match(r"#{1,6}\s", first)) or (
+        first[:2] in ("**", "__") and len(shut) > 4 and not first[2].isspace() and shut.endswith(first[:2])
+    )
     if not marked and _LIST_ITEM.match(first):
         #: "[x] Milk" and "- eggs" are the first of a list, not its name.
         return ""
-    if not marked and _PREFIX.match(_plain(first)):
+    if not marked and _opens_section(_plain(first)):
         #: "Pros: more time" opens a section; it does not name the note (C8).
         return ""
     name = _plain(re.sub(r"^#{1,6}\s+", "", first)).rstrip(".").rstrip(":").strip()

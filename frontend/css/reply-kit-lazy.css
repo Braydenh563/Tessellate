@@ -279,8 +279,14 @@
 /* **A long block, folded** (`replyFoldLong`, INBOX 1300 C08): the web
    fold's look, shut, its summary the block's gist and its length; open, the
    block reads in the same inset panel, capped and scrolling. */
+/* A gap under it as under any answer paragraph: the line after it sat flush
+   against the shut fold (INBOX 1524). */
 .long-fold {
-  margin: var(--space-2) 0 0;
+  margin: var(--space-2) 0;
+}
+
+.long-fold:last-child {
+  margin-bottom: 0;
 }
 
 .long-fold[open] {

@@ -31,4 +31,9 @@ def test_every_caller_of_reevaluate_entry_is_gated_on_privacy() -> None:
         if re.search(r"\breevaluateEntry\(entry\)", path.read_text()) and path.name not in ("lightbox.js", "lightbox-actions.js"):
             callers.append(path.name)
     assert sorted(callers) == ["entry-menu.js", "note-cards.js"], callers
-    assert 'if (!entry.is_private) menu.appendChild(buildMenuGroupButton("ph:sparkle AI actions"' in MENUS.read_text()
+    #: The gate sits on the AI rows themselves since the menu was grouped by
+    #: task (N20): Tag and file is inside the private guard, not after it.
+    text = MENUS.read_text()
+    gate = text.index("...(entry.is_private ? [] : [")
+    call = text.index("run: () => reevaluateEntry(entry)")
+    assert gate < call and "])," not in text[gate:call], "Tag and file is outside the private-note gate"

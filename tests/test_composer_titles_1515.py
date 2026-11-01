@@ -6,6 +6,7 @@ from __future__ import annotations
 import json
 import os
 import re
+from pathlib import Path
 from datetime import datetime
 
 import pytest
@@ -130,7 +131,7 @@ def test_own_words_mends_a_reworded_sentence_and_leaves_the_rest():
 
 @pytest.mark.skipif(not os.environ.get("COMPOSER_1515_DUMP"), reason="dump, run by hand")
 def test_dump(client, make):
-    spec = json.load(open(os.environ["COMPOSER_1515_DUMP"]))
+    spec = json.loads(Path(os.environ["COMPOSER_1515_DUMP"]).read_text(encoding="utf-8"))
     make([(c, t) for c, t in spec["notes"]])
     for q in spec["questions"]:
         print("\n## " + q + "\n" + ask(client, q))

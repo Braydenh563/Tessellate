@@ -61,6 +61,7 @@ _BASE = {
     "who_many": "{name} comes up in {count}‹, {span}›.",
     "pick": "The {side}, by your notes: {why}.",
     "more_right": "{count} more on the right.",
+    "more_named": "The others are {names}.",
     "more_show": "Show {count} more",
     "overview_names": "They include {names}.",
     "stands_for": "{abbr} is short for {phrase}, from {name}‹, written on {day}›.",
@@ -2029,7 +2030,7 @@ def _one_note_lines(groups: dict[str, list[Fact]]) -> list[tuple[str, list[Fact]
     notes were glued into one sentence with commas)."""
     items: list[tuple[str, list[Fact]]] = []
     for label, held in groups.items():
-        if label == PHRASES["also"] and len({f.view.id for f in held}) > 1:
+        if len({f.view.id for f in held}) > 1:
             by_note: dict[int, list[Fact]] = {}
             for f in held:
                 by_note.setdefault(f.view.id, []).append(f)
@@ -3204,9 +3205,18 @@ def _overview_tail(out: _Out, kind: str, members, today: date, moved, shown: int
     pattern = "" if moved else _pattern(members, today)
     if pattern:
         out.closing.append(pattern)
-    hidden = len(members) - len({r["note_id"] for r in out.rows})
-    if kind == "overview" and hidden > 0 and shown > LINES[kind]:
-        out.lines.append(PHRASES["more_right"].format(count=_count(hidden).capitalize()))
+    told = {r["note_id"] for r in out.rows}
+    hidden = [v for v in members if v.id not in told]
+    if kind != "overview" or not hidden:
+        return
+    #: Every note the opening counts is told, named or counted (INBOX 1524:
+    #: "it said 4 notes but only showed or mentioned 2"): a few untold notes
+    #: by name, more than that as a count.
+    if len(hidden) <= 3 and shown <= LINES[kind]:
+        names = [composer_frame.short_name(v.note, _heading_said) for v in hidden]
+        out.lines.append(PHRASES["more_named"].format(names=realise.join_items(list(dict.fromkeys(names)))))
+    else:
+        out.lines.append(PHRASES["more_right"].format(count=_count(len(hidden)).capitalize()))
 
 
 #: A name a summary line can carry: a title or a short noun phrase, never a
@@ -3264,6 +3274,8 @@ def _overview(out: _Out, question: str, members, facts, today: date, kind: str) 
     _overview_tail(out, kind, counted or members, today, moved, len(shown_notes))
 
 
+_CJK_ENDS = "。！？）」』】〕"
+_CJK_STOP = re.compile(r"([。！？）」』】〕\u3040-\u30ff\u4e00-\u9fff])\.(?!\.)")
 _GOING = re.compile(r"\bhow(?:'s| is| are) .+ going\b|\bprogress\b|\bhow am i (?:going|doing)\b", re.I)
 #: The word a measure is of: "squats" in "squats up to 90 kg".
 _MEASURE_OF = re.compile(r"\b([a-z]+)(?: up to| down to| at)? $", re.I)
@@ -5089,8 +5101,10 @@ def _result(out: _Out, kind: str, question: str) -> dict:
     paragraphs = list(out.lines) + out.more + out.closing[: 2 + len(out.insights)]
     if out.offer:
         paragraphs.append(out.offer["label"])
-    #: A full-width stop already ends the quoted sentence; no ASCII one follows it.
-    text = re.sub(r"([。！？])\.", r"\1", "\n\n".join(paragraphs))
+    #: A full-width stop or closing bracket already ends the quoted sentence,
+    #: so no ASCII stop follows it ("（笑）." read as a stray dot, INBOX 1524);
+    #: after a bare CJK character the stop is the full-width one.
+    text = _CJK_STOP.sub(lambda m: m.group(1) + ("" if m.group(1) in _CJK_ENDS else "。"), "\n\n".join(paragraphs))
     n = len(out.rows)
     return {
         "text": text,

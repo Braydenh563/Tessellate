@@ -1027,7 +1027,7 @@ const CITATION_WORD_CHAR = /[\p{L}\p{N}]/u;
 //: Where the marker goes once the sentence's last letter is found: after the
 //: punctuation that closes it, and outside any bold or italic the sentence
 //: ended inside, so the digit is not drawn bold because the last word was.
-const CITATION_CLOSING = /[.!?:;,)\]"'”’]/;
+const CITATION_CLOSING = /[.!?:;,)\]"'”’。！？）」』】〕]/
 const CITATION_INLINE_TAGS = new Set(["STRONG", "EM", "B", "I", "A", "CODE", "MARK", "S", "DEL", "SPAN"]);
 //: **One mark per run, at its end** (the owner, 2026-09-24: "the amount of
 //: intext referencing like with the 1's is a little excessive"; a four-sentence

@@ -176,6 +176,10 @@ def test_the_cache_is_by_revision():
 
 
 def test_twenty_notes_are_read_in_under_fifty_milliseconds():
+    #: The patterns compile once per process (`core/lazyre.py`), on the first
+    #: note read: about 100 ms on a loaded machine when this test runs first.
+    #: That is start-up, not reading, so it is paid before the clock starts.
+    factgraph.facts(SEED["notes"][0])
     factgraph._CACHE.clear()
     started = time.perf_counter()
     for note in SEED["notes"]:

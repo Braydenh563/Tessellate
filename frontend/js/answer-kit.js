@@ -458,6 +458,12 @@ function numberMatchingRecords(target, numberFor) {
     li.classList.add("is-numbered");
     li.insertBefore(mark, li.firstChild);
   }
+  //: In number order, the uncited after them (INBOX 1524: the search ranked
+  //: source 2 between 11 and 12, so "2" read as missing).
+  const rows = [...list.querySelectorAll(":scope > li[data-id]")];
+  const at = (li) => Number(li.querySelector(":scope > .record-index")?.textContent) || Infinity;
+  const sorted = rows.map((li, i) => [at(li), i, li]).sort((x, y) => x[0] - y[0] || x[1] - y[1]);
+  if (sorted.some(([, i], k) => i !== k)) rows[0].before(...sorted.map(([, , li]) => li));
 }
 
 //: How much of an answer the notebook backed, said out loud (CHAT_PLAN

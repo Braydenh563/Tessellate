@@ -1,6 +1,6 @@
 """Audit 1028 D35: a document that cannot be fetched says so and the list
 goes back to the document still on screen, instead of returning silently."""
-from _app_js import documents_text
+from tests._app_js import documents_text
 
 
 def test_a_failed_fetch_toasts_and_repaints_the_list() -> None:
