@@ -491,6 +491,15 @@ def icon_corpus() -> str:
     return "\n".join(parts)
 
 
+def _sandbox_text() -> str:
+    """The Run sandbox: its module and the page and worker files beside it
+    (`api/run_sandbox_assets/`, moved out of the module by audit 1031 CE9)."""
+    base = SRC / "api"
+    parts = [_read(base / "run_sandbox.py")]
+    parts += [_read(p) for p in sorted((base / "run_sandbox_assets").glob("*"))]
+    return "\n".join(parts)
+
+
 def _live_lines(text: str) -> str:
     """The text without whole-line comments, so a comment cannot count as a call."""
     keep = []
@@ -646,7 +655,7 @@ SQLJS_METHODS = [
 def sqljs_report() -> Report:
     """The SQL runner. It runs inside the sandbox page, so its calls are in
     `api/run_sandbox.py`'s worker text, not in a frontend script."""
-    text = _live_lines(_read(SRC / "api" / "run_sandbox.py"))
+    text = _live_lines(_sandbox_text())
     #: The runner's own names for a database, a statement and the iterator,
     #: so a regular expression's `.exec(` is not counted as SQL.
     called = [m for m in SQLJS_METHODS if re.search(rf"(?:new SQL\.|\b(?:db|stmt|ins|it)\.){m}\(", text)]
@@ -666,7 +675,7 @@ JSINTERP_METHODS = [
 def jsinterpreter_report() -> Report:
     """The JavaScript debugger (DOCUMENTS_PLAN 23, D3). It steps inside the
     sandbox page, so its calls are in `api/run_sandbox.py`'s worker text."""
-    text = _live_lines(_read(SRC / "api" / "run_sandbox.py"))
+    text = _live_lines(_sandbox_text())
     called = [m for m in JSINTERP_METHODS if re.search(rf"\b(?:interp|it|this)\.{m}\(", text)]
     return Report("jsinterpreter", "JS-Interpreter", list(JSINTERP_METHODS), called, {"methods": list(JSINTERP_METHODS)})
 

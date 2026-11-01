@@ -2,10 +2,14 @@
 
 from pathlib import Path
 
+from tests._app_js import documents_text
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
 def _js(name: str) -> str:
+    if name == "documents.js":
+        return documents_text()
     return (ROOT / "frontend" / "js" / name).read_text(encoding="utf-8")
 
 

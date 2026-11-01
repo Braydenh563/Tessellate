@@ -1867,6 +1867,7 @@ const LAZY_MODULES = {
     "/js/library.js",
     "/js/documents-code.js",
     "/js/documents-prose.js",
+    "/js/documents-cm.js",
     "/js/autocorrect.js",
     "/js/documents.js",
     "/js/margin-reader.js",

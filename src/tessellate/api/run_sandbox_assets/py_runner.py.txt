@@ -1,0 +1,479 @@
+
+import sys, traceback
+
+class _MMOut:
+    encoding = "utf-8"
+
+    def __init__(self, level, emit):
+        self.level, self.emit, self.buf, self.line = level, emit, "", None
+
+    @staticmethod
+    def _where():
+        frame = sys._getframe(2)
+        while frame is not None and frame.f_code.co_filename != "<document>":
+            frame = frame.f_back
+        return frame.f_lineno if frame is not None else None
+
+    def write(self, text):
+        text = str(text)
+        if text and self.line is None:
+            self.line = self._where()
+        self.buf += text
+        while "\n" in self.buf:
+            row, self.buf = self.buf.split("\n", 1)
+            self.emit(self.level, row, self.line, False)
+            self.line = self._where() if self.buf else None
+        return len(text)
+
+    def flush(self):
+        if self.buf:
+            self.emit(self.level, self.buf, self.line, False)
+        self.buf, self.line = "", None
+
+    def isatty(self):
+        return False
+
+
+#: Asks the panel for a line mid-run (Brief 70): set by a run when the page
+#: has SharedArrayBuffer, so the worker can wait for the answer. One list,
+#: not a global rebinding, so the helpers below share it.
+_MM_ASK = [None]
+
+
+def _mm_input(prompt=""):
+    """`input()` answered from the panel's Input box (D9): each call takes
+    the next line, and the prompt and the answer show as one row, as a
+    terminal shows them. Once the box is used up, the panel asks for the
+    line there and then, where the page can wait for it (D2's buffer)."""
+    if prompt:
+        sys.stdout.write(str(prompt))
+    line = sys.stdin.readline()
+    if not line and _MM_ASK[0] is not None:
+        answer = _MM_ASK[0](str(prompt))
+        line = None if answer is None else str(answer) + "\n"
+    if not line:
+        sys.stdout.flush()
+        raise EOFError("input() asked for more lines than the Input box holds: add a line there and run again.")
+    line = line.rstrip("\n")
+    sys.stdout.write(line + "\n")
+    return line
+
+
+# The namespace the last run left, for the console (D8).
+_MM_NS = {}
+
+
+def _mm_run(code, emit, offset=0, stdin="", ask=None):
+    import io
+
+    out, err = _MMOut("log", emit), _MMOut("error", emit)
+    saved = sys.stdout, sys.stderr, sys.stdin
+    sys.stdout, sys.stderr, sys.stdin = out, err, io.StringIO(str(stdin or ""))
+    _MM_ASK[0] = ask
+    namespace = {"__name__": "__main__", "input": _mm_input}
+    _MM_NS["ns"] = namespace
+    try:
+        # Blank lines for the document above a selection or a cell, so every
+        # line number is the document's.
+        exec(compile("\n" * max(0, int(offset)) + code, "<document>", "exec"), namespace)
+    except SystemExit as stop:
+        out.flush(); err.flush()
+        if stop.code not in (None, 0):
+            emit("info", f"Exited with {stop.code}.", None, False)
+    except BaseException as exc:
+        out.flush(); err.flush()
+        line = None
+        if isinstance(exc, SyntaxError) and exc.filename == "<document>":
+            line = exc.lineno
+        for frame in traceback.extract_tb(exc.__traceback__):
+            if frame.filename == "<document>":
+                line = frame.lineno
+        text = traceback.format_exception_only(type(exc), exc)[-1].strip()
+        emit("error", text, line, True)
+    finally:
+        out.flush(); err.flush()
+        sys.stdout, sys.stderr, sys.stdin = saved
+        _MM_ASK[0] = None
+
+
+def _mm_eval(code, emit):
+    """The console (D8): one line in the namespace the last run left (a
+    fresh one before any run). An expression's value is echoed as the
+    Python prompt echoes it (`single` mode, through `sys.displayhook`);
+    several statements run as a block."""
+    import io
+
+    out, err = _MMOut("log", emit), _MMOut("error", emit)
+    saved = sys.stdout, sys.stderr, sys.stdin
+    sys.stdout, sys.stderr, sys.stdin = out, err, io.StringIO("")
+    namespace = _MM_NS.setdefault("ns", {"__name__": "__main__", "input": _mm_input})
+    try:
+        try:
+            compiled = compile(code, "<console>", "single")
+        except SyntaxError:
+            compiled = compile(code, "<console>", "exec")
+        exec(compiled, namespace)
+    except SystemExit:
+        pass
+    except BaseException as exc:
+        out.flush(); err.flush()
+        emit("error", traceback.format_exception_only(type(exc), exc)[-1].strip(), _mm_line(exc), True)
+    finally:
+        out.flush(); err.flush()
+        sys.stdout, sys.stderr, sys.stdin = saved
+
+
+def _mm_line(exc):
+    """The document's line an exception was raised from (its innermost
+    `<document>` frame), or None."""
+    line = None
+    if isinstance(exc, SyntaxError) and exc.filename == "<document>":
+        line = exc.lineno
+    for frame in traceback.extract_tb(exc.__traceback__):
+        if frame.filename == "<document>":
+            line = frame.lineno
+    return line
+
+
+def _mm_tests(code, emit, emit_test, offset=0, stopped=None):
+    """Tests are a kind of run (D7): every `unittest.TestCase` in the
+    document, and every plain `test*` function (pytest's shape, bare
+    `assert`, without pytest), in the order they are written. Each sends
+    `emit_test(name, state, ms, text, line)`; the totals come back.
+    Under Debug, `stopped()` says Stop was pressed: the test it stopped in
+    is not reported and the rest do not run."""
+    import time
+    import unittest
+
+    out, err = _MMOut("log", emit), _MMOut("error", emit)
+    saved = sys.stdout, sys.stderr
+    sys.stdout, sys.stderr = out, err
+    counts = {"passed": 0, "failed": 0, "skipped": 0}
+    space = {"__name__": "__mm_tests__"}
+    try:
+        try:
+            exec(compile("\n" * max(0, int(offset)) + code, "<document>", "exec"), space)
+        except BaseException as exc:
+            out.flush(); err.flush()
+            emit("error", traceback.format_exception_only(type(exc), exc)[-1].strip(), _mm_line(exc), True)
+            return counts
+
+        class Result(unittest.TestResult):
+            outcome = ("pass", "", None)
+
+            def _note(self, state, err_info):
+                exc = err_info[1]
+                text = "".join(traceback.format_exception_only(type(exc), exc)).strip()
+                self.outcome = (state, text, _mm_line(exc))
+
+            def addFailure(self, test, err_info):
+                super().addFailure(test, err_info)
+                self._note("fail", err_info)
+
+            def addError(self, test, err_info):
+                super().addError(test, err_info)
+                self._note("fail", err_info)
+
+            def addSkip(self, test, reason):
+                super().addSkip(test, reason)
+                self.outcome = ("skip", str(reason), None)
+
+            def addUnexpectedSuccess(self, test):
+                super().addUnexpectedSuccess(test)
+                self.outcome = ("fail", "Passed, but it was marked as expected to fail.", None)
+
+        def first_line(fn):
+            import inspect
+
+            # A decorated test (`unittest.skip`) is found by the function it wraps.
+            fn = inspect.unwrap(getattr(fn, "__func__", fn))
+            code_obj = getattr(fn, "__code__", None)
+            return code_obj.co_firstlineno if code_obj and code_obj.co_filename == "<document>" else None
+
+        found = []
+        loader = unittest.TestLoader()
+        for value in list(space.values()):
+            if isinstance(value, type) and issubclass(value, unittest.TestCase) and value.__module__ == "__mm_tests__":
+                for name in loader.getTestCaseNames(value):
+                    found.append((first_line(getattr(value, name)) or 0, f"{value.__name__}.{name}", value(name)))
+            elif callable(value) and not isinstance(value, type) and getattr(value, "__name__", "").startswith("test"):
+                line = first_line(value)
+                if line is not None:
+                    found.append((line, value.__name__, value))
+        if not found:
+            emit("info", "No tests found: a test is a unittest.TestCase method, or a function whose name starts with test.", None, False)
+            return counts
+        for line, name, test in sorted(found, key=lambda row: row[0]):
+            start = time.perf_counter()
+            if isinstance(test, unittest.TestCase):
+                result = Result()
+                test(result)
+                state, text, where = result.outcome
+            else:
+                state, text, where = "pass", "", None
+                try:
+                    test()
+                except bdb.BdbQuit:
+                    break
+                except BaseException as exc:  # a plain test fails on anything it raises
+                    state, where = "fail", _mm_line(exc)
+                    text = "".join(traceback.format_exception_only(type(exc), exc)).strip()
+                    if isinstance(exc, AssertionError) and not str(exc):
+                        text = "AssertionError: the assert on this line was false."
+            out.flush(); err.flush()
+            if stopped and stopped():
+                break
+            ms = round((time.perf_counter() - start) * 1000)
+            counts[{"pass": "passed", "fail": "failed", "skip": "skipped"}[state]] += 1
+            emit_test(name, state, ms, text, where or line or None)
+        return counts
+    finally:
+        out.flush(); err.flush()
+        sys.stdout, sys.stderr = saved
+
+
+import bdb
+
+#: What a stop shows of a value, and how many names a scope lists.
+_MM_REPR = 200
+_MM_NAMES = 200
+
+
+def _mm_show(value):
+    try:
+        text = repr(value)
+    except BaseException as exc:  # a broken __repr__ is the user's, not ours
+        text = f"<repr failed: {type(exc).__name__}>"
+    return text if len(text) <= _MM_REPR else text[: _MM_REPR - 3] + "..."
+
+
+#: A container opens one level into this many children (VS Code's tree,
+#: OPEN row 1058); a child's own children are its repr.
+_MM_CHILDREN = 50
+
+
+def _mm_children(value):
+    import itertools
+    import types
+
+    try:
+        if isinstance(value, (str, bytes, bytearray, type, types.ModuleType)) or callable(value):
+            return None
+        if isinstance(value, dict):
+            pairs = ((repr(k), v) for k, v in value.items())
+        elif isinstance(value, (list, tuple, set, frozenset)):
+            pairs = ((f"[{i}]", v) for i, v in enumerate(value))
+        elif hasattr(value, "__dict__") and isinstance(vars(value), dict):
+            pairs = ((str(k), v) for k, v in vars(value).items() if not str(k).startswith("__"))
+        else:
+            return None
+        rows = [{"name": n, "value": _mm_show(v), "type": type(v).__name__}
+                for n, v in itertools.islice(pairs, _MM_CHILDREN)]
+        more = len(value) - _MM_CHILDREN if hasattr(value, "__len__") and not hasattr(value, "__dict__") else 0
+    except BaseException:  # a container that cannot be walked shows its repr only
+        return None
+    if more > 0:
+        rows.append({"name": "...", "value": f"{more} more", "type": ""})
+    return rows or None
+
+
+def _mm_names(space, skip=()):
+    rows = []
+    for name, value in list(space.items()):
+        if (name.startswith("__") and name.endswith("__")) or name in skip:
+            continue
+        row = {"name": str(name), "value": _mm_show(value), "type": type(value).__name__}
+        children = _mm_children(value)
+        if children:
+            row["children"] = children
+        rows.append(row)
+        if len(rows) >= _MM_NAMES:
+            break
+    return rows
+
+
+class _MMDebugger(bdb.Bdb):
+    """D2: `bdb` itself, not a re-implementation. Each stop goes up as one
+    message (line, locals, globals, the stack, the watch list evaluated in the
+    stopped frame) through `exchange`, which blocks the worker on
+    `Atomics.wait` until the panel's action comes back: continue, over, in,
+    out, stop, or `eval` (new watches or breakpoints, answered with a fresh
+    stop). Only the document's own frames stop; the runtime's and the
+    standard library's run through."""
+
+    def __init__(self, exchange, breaks, watches):
+        super().__init__()
+        self.exchange, self.watches, self.first = exchange, list(watches or []), True
+        self.ended_by_stop = False
+        self.set_breaks(breaks)
+
+    def set_breaks(self, breaks):
+        self.clear_all_breaks()
+        for row in breaks or []:
+            line = int(row.get("line") or 0)
+            cond = str(row.get("cond") or "").strip() or None
+            if line > 0:
+                self.set_break("<document>", line, cond=cond)
+
+    def stop_here(self, frame):
+        return frame.f_code.co_filename == "<document>" and super().stop_here(frame)
+
+    def user_call(self, frame, args):
+        pass
+
+    def user_line(self, frame):
+        if self.first:
+            # Debug runs to the first breakpoint, as VS Code's does: the
+            # first line stops only when it has one.
+            self.first = False
+            here = self.break_here_now(frame)
+            if not here or bdb.effective("<document>", frame.f_lineno, frame)[0] is None:
+                self.set_continue()
+                return
+        self.interaction(frame, "breakpoint" if self.break_here_now(frame) else "step")
+
+    def break_here_now(self, frame):
+        return bool(self.get_breaks("<document>", frame.f_lineno))
+
+    def snapshot(self, frame, reason, stack, text=""):
+        module = frame.f_code.co_name == "<module>"
+        watches = []
+        for expr in self.watches:
+            try:
+                watches.append({"expr": expr, "value": _mm_show(eval(expr, frame.f_globals, frame.f_locals))})
+            except BaseException as exc:
+                watches.append({"expr": expr, "error": f"{type(exc).__name__}: {exc}"})
+        return {
+            "t": "stop",
+            "reason": reason,
+            "line": frame.f_lineno,
+            "text": text,
+            "locals": _mm_names(frame.f_locals, ("input",) if module else ()),
+            "globals": [] if module else _mm_names(frame.f_globals, ("input",)),
+            "stack": stack,
+            "watches": watches,
+        }
+
+    def stack_of(self, frame):
+        rows = []
+        while frame is not None:
+            if frame.f_code.co_filename == "<document>":
+                name = frame.f_code.co_name
+                rows.append({"name": "module" if name == "<module>" else name, "line": frame.f_lineno})
+            frame = frame.f_back
+        return rows
+
+    def interaction(self, frame, reason, text="", stack=None):
+        import json
+
+        sys.stdout.flush(); sys.stderr.flush()
+        while True:
+            reply = self.exchange(json.dumps(self.snapshot(frame, reason, stack or self.stack_of(frame), text)))
+            try:
+                action = json.loads(str(reply)) if reply else {"cmd": "stop"}
+            except ValueError:
+                action = {"cmd": "stop"}
+            if "breaks" in action:
+                self.set_breaks(action["breaks"])
+            if "watches" in action:
+                self.watches = [str(w) for w in action["watches"]][:50]
+            cmd = action.get("cmd")
+            if cmd == "eval":
+                continue
+            if reason == "exception":
+                return
+            if cmd == "over":
+                self.set_next(frame)
+            elif cmd == "in":
+                self.set_step()
+            elif cmd == "out":
+                self.set_return(frame)
+            elif cmd == "continue":
+                self.set_continue()
+            else:
+                self.ended_by_stop = True
+                self.set_quit()
+            return
+
+
+#: The totals of the last file of tests run under Debug, for the worker's
+#: `tests-done` row.
+_MM_DEBUG_TESTS = [None]
+
+
+def _mm_debug(code, emit, exchange, offset=0, stdin="", breaks="[]", watches="[]", emit_test=None):
+    """Run the document under `_MMDebugger`. An exception nothing caught
+    stops at the line that raised it, in the frame that raised it, with the
+    traceback's text, before the run ends (the frame's locals are kept by
+    the traceback). Returns how the run ended: done, stopped or error.
+    With `emit_test`, a file of tests runs through `_mm_tests` under the
+    debugger, so a breakpoint in a test stops there (OPEN row 563)."""
+    import io
+    import json
+    import linecache
+
+    source = "\n" * max(0, int(offset)) + code
+    # `set_break` checks the line exists through linecache; the document has
+    # no file, so its lines are put there under its name.
+    linecache.cache["<document>"] = (len(source), None, source.splitlines(True), "<document>")
+    out, err = _MMOut("log", emit), _MMOut("error", emit)
+    saved = sys.stdout, sys.stderr, sys.stdin
+    sys.stdout, sys.stderr, sys.stdin = out, err, io.StringIO(str(stdin or ""))
+
+    def ask(prompt):
+        reply = exchange(json.dumps({"t": "input", "prompt": str(prompt)}))
+        try:
+            value = json.loads(str(reply)) if reply else None
+        except ValueError:
+            value = None
+        return value.get("line") if isinstance(value, dict) else None
+
+    _MM_ASK[0] = ask
+    _MM_DEBUG_TESTS[0] = None
+    debugger = _MMDebugger(exchange, json.loads(breaks or "[]"), json.loads(watches or "[]"))
+    try:
+        # `Bdb.run` swallows the BdbQuit that Stop raises, so it is asked.
+        if emit_test is not None:
+            _MM_DEBUG_TESTS[0] = debugger.runcall(_mm_tests, code, emit, emit_test, offset, lambda: debugger.ended_by_stop)
+        else:
+            debugger.run(compile(source, "<document>", "exec"), {"__name__": "__main__", "input": _mm_input})
+        return "stopped" if debugger.ended_by_stop else "done"
+    except SystemExit as stop:
+        out.flush(); err.flush()
+        if stop.code not in (None, 0):
+            emit("info", f"Exited with {stop.code}.", None, False)
+        return "done"
+    except BaseException as exc:
+        sys.settrace(None)
+        out.flush(); err.flush()
+        text = traceback.format_exception_only(type(exc), exc)[-1].strip()
+        frames = [(f, n) for f, n in traceback.walk_tb(exc.__traceback__) if f.f_code.co_filename == "<document>"]
+        if frames:
+            stack = [{"name": "module" if f.f_code.co_name == "<module>" else f.f_code.co_name, "line": n} for f, n in reversed(frames)]
+            # The traceback as the document's own: its frames, its lines,
+            # none of the runner's or bdb's.
+            told = ["Traceback (most recent call last):"]
+            for f, n in frames:
+                told.append(f"  line {n}, in {'module' if f.f_code.co_name == '<module>' else f.f_code.co_name}")
+                said = linecache.getline("<document>", n).strip()
+                if said:
+                    told.append(f"    {said}")
+            told.append(text)
+            frame, line = frames[-1]
+            debugger.interaction(_MMFrameAt(frame, line), "exception", "\n".join(told)[-4000:], stack)
+        emit("error", text, _mm_line(exc), True)
+        return "error"
+    finally:
+        out.flush(); err.flush()
+        sys.stdout, sys.stderr, sys.stdin = saved
+        _MM_ASK[0] = None
+        linecache.cache.pop("<document>", None)
+
+
+class _MMFrameAt:
+    """A finished frame seen at the line the traceback names: a frame's own
+    `f_lineno` after it has unwound is where it stopped, which for an
+    exception is the raise, but the traceback's line is the one to trust."""
+
+    def __init__(self, frame, line):
+        self.f_code, self.f_globals, self.f_locals, self.f_lineno, self.f_back = frame.f_code, frame.f_globals, frame.f_locals, line, None

@@ -25,7 +25,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from tests._app_js import app_js_text
+from tests._app_js import app_js_text, documents_text
 
 ROOT = Path(__file__).resolve().parents[1]
 APP_JS = ROOT / "frontend" / "js" / "app.js"
@@ -215,7 +215,7 @@ def test_the_live_callout_shows_its_kind_once_and_no_markers():
     and showed `> [!note]` whenever the caret was on the line. The kind is its
     icon (a menu: a caret beside it), the word only stands in for a missing
     title, the markers never show, and an empty body gets a hint."""
-    docs = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     widget = docs[docs.index("class DocCalloutWidget") : docs.index("class DocCalloutHintWidget")]
     assert "if (!this.titled) chip.append(word)" in widget
     assert "cm-md-callout-caret" in widget

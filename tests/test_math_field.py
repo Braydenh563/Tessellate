@@ -12,6 +12,8 @@ undo run in a browser in `tests-e2e/specs/math-field.spec.js`.
 
 from __future__ import annotations
 
+from tests._app_js import documents_text
+
 import json
 import re
 import shutil
@@ -123,7 +125,7 @@ def test_nothing_comes_from_a_cdn_and_the_policy_is_not_loosened() -> None:
 
 
 def test_the_widget_click_goes_through_the_one_in_place_door() -> None:
-    docs = (JS / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     assert 'ensureModule("mathField")' in docs and "openMathInPlace({ view, host, from, to, delim, tex: this.tex })" in docs
     assert "view.posAtDOM(host)" in docs
 

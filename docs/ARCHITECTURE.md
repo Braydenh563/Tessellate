@@ -1592,7 +1592,7 @@ waker, before and after, with its period:
 | Waker | Period | Notes |
 | --- | --- | --- |
 | `refreshModelStatus` | 30s idle, doubling to 120s while the answer does not change; 1s while a job runs, 3s with Settings open, 120s hidden | Is the model runner up, which model, and any running job |
-| `checkDueReminders` | 60s, visible or hidden | The one thing a background tab *should* keep doing |
+| `checkDueReminders` | 60s, one tab in all of them (`pollReminders`), off while hidden | A hidden tab keeps only its due-time timeout; the answer reaches other tabs over a BroadcastChannel |
 | `refreshBackgroundTasks` | every other status tick when idle | Notices a job started somewhere else |
 | `minuteTick` (three clocks) | on the minute | Was two 1s intervals and one 30s one |
 | `libraryImagesPoll` | 6s, only while the Library's image gallery is the open sub-tab | Captioning runs on a background thread and has nothing to push with |

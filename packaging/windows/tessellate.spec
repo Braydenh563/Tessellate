@@ -172,6 +172,9 @@ a = Analysis(
         # The taxonomy pack filing reads (ai/taxonomy.py `DATA_DIR`): JSON
         # beside the module, so it goes where the module's package is.
         (str(REPO_ROOT / "src" / "tessellate" / "ai" / "data" / "taxonomy"), "tessellate/ai/data/taxonomy"),
+        # The Run sandbox's pages, workers and Python runner (api/run_sandbox.py
+        # reads them at import from beside the module).
+        (str(REPO_ROOT / "src" / "tessellate" / "api" / "run_sandbox_assets"), "tessellate/api/run_sandbox_assets"),
         *TZDATA_FILES,
     ],
     hiddenimports=[

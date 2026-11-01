@@ -9,10 +9,12 @@ aside, and no bullet beside a task box.
 
 from pathlib import Path
 
+from tests._app_js import documents_text
+
 ROOT = Path(__file__).resolve().parents[1]
 EDITOR_CSS = (ROOT / "frontend/css/09-editor.css").read_text(encoding="utf-8")
 MISC_CSS = (ROOT / "frontend/css/07-whiteboard-misc.css").read_text(encoding="utf-8")
-DOCS_JS = (ROOT / "frontend/js/documents.js").read_text(encoding="utf-8")
+DOCS_JS = documents_text()
 
 
 def test_the_task_box_is_drawn_once_with_its_own_checked_state():

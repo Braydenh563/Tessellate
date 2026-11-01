@@ -277,6 +277,8 @@ class EntryDateOut(BaseModel):
 class EntryOut(BaseModel):
     id: int
     content: str
+    #: `content` is the first part only (`GET /entries?preview=`).
+    content_truncated: bool = False
     #: The hash of `content` (api/edit_conflicts.py): an editor sends it back
     #: as `base_hash` so a save over a newer text is refused, not lost.
     content_hash: str = ""

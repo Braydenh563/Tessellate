@@ -128,3 +128,14 @@ def stand_ins_source() -> str:
     app = APP_JS.read_text(encoding="utf-8")
     extra = LAZY_ENTRIES.read_text(encoding="utf-8")
     return _block(app, "const LAZY_ENTRY_POINTS = {", "\n};\n") + "\n" + _block(extra, "installStandIns({", "\n});\n")
+
+
+#: documents.js and the pieces split out of it that hold part of the editor's
+#: own text (`docLivePlugin`, `docCmTheme`; audit 1031 DC13): a test that means
+#: "the documents editor's code" reads them joined, so a piece moving between
+#: these files does not move its tests.
+DOCUMENTS_PIECES = ("documents.js", "documents-cm.js")
+
+
+def documents_text() -> str:
+    return "\n".join((JS_DIR / name).read_text(encoding="utf-8") for name in DOCUMENTS_PIECES)

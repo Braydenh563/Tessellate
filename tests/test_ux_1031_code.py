@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from tests._app_js import documents_text
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -48,7 +50,7 @@ def test_the_run_panel_is_a_sheet_on_a_phone():
 
 
 def test_shift_tab_stays_in_a_code_file_with_nothing_to_outdent():
-    js = _text("frontend", "js", "documents.js")
+    js = documents_text()
     body = js.split("A code file keeps Shift+Tab with nothing to outdent", 1)[1].split("},", 1)[0]
     assert "return !docFileType().previewable;" in body
 
@@ -62,7 +64,7 @@ def test_the_same_line_again_is_one_row_with_a_count():
 
 
 def test_a_code_card_says_lines_and_type():
-    docs = _text("frontend", "js", "documents.js")
+    docs = documents_text()
     # The rule and the type table live in library.js: the Library's list draws
     # before the editors load.
     size = _text("frontend", "js", "library.js").split("function docSizeText(doc, withKind = false)", 1)[1].split("\n}\n", 1)[0]
@@ -86,7 +88,7 @@ def test_a_csv_shows_as_a_read_only_table():
     assert 'source: docCsvTableHtml(request.source, request.path)' in run.split("\n  csv: {", 1)[1].split("\n  },", 1)[0]
     assert 'type.ext === "csv" ? docRunExtension(CM) : []' in js
     # A page with nothing printed gives its frame the whole body.
-    assert '".cm-run-panel.is-page .cm-run-log:empty": { display: "none" }' in _text("frontend", "js", "documents.js")
+    assert '".cm-run-panel.is-page .cm-run-log:empty": { display: "none" }' in documents_text()
 
 
 def test_a_summary_carries_the_line_count(client):

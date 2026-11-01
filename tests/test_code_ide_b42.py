@@ -129,7 +129,7 @@ def test_the_output_panel_has_the_sidebar_grip_with_keys_and_a_height_per_docume
 
 
 def test_stop_is_disabled_once_a_script_has_nothing_left_to_run() -> None:
-    sandbox = (ROOT / "src" / "tessellate" / "api" / "run_sandbox.py").read_text(encoding="utf-8")
+    sandbox = (ROOT / "src" / "tessellate" / "api" / "run_sandbox_assets" / "sandbox_page.html").read_text(encoding="utf-8")
     #: The worker counts its own timers and says when the last one is gone.
     assert "t:'idle'" in sandbox and "pending:" in sandbox
     code = (JS / "documents-code.js").read_text(encoding="utf-8")

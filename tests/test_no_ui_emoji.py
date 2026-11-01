@@ -136,6 +136,8 @@ ALLOWED: dict[str, list[tuple[str, str]]] = {
     "frontend/js/documents.js": [
         ("block:const DOC_MATH_LETTERS", "character data: what the math macros mean"),
         ("block:const DOC_MATH_OPERATORS", "character data: what the math macros mean"),
+    ],
+    "frontend/js/documents-cm.js": [
         (
             r'replace(/\{\s*\}/g, "{\u25a1}")',
             "an empty slot inside a TeX string, drawn by the math renderer (the equation field's dotted box), not the UI",
