@@ -275,6 +275,14 @@ def _as_typed_case(said: str, rest: str) -> str:
     return said[:1].lower() + said[1:] if rest[:1].islower() else said
 
 
+def _bare_reminder(head: str) -> dict | None:
+    """"set a reminder" alone is asked what and when (INBOX 1507); "ping me"
+    alone is not yet a request."""
+    if "reminder" not in head:
+        return None
+    return {"intent": "reminder", "text": "", "said": "", "due_at": None, "time_given": False, "no_subject": ""}
+
+
 def _reminder(text: str, now: datetime, locale: str | None = None) -> dict | None:
     text, head = _reminder_head(text)
     if head is None:
@@ -285,10 +293,7 @@ def _reminder(text: str, now: datetime, locale: str | None = None) -> dict | Non
     about = rest.lower().startswith("about ")
     rest = _without_lead(rest, ("to ", "2 ", "about ", "that ", "for "))
     if not rest:
-        if "reminder" not in head:
-            return None  # "ping me" alone is not yet a request
-        #: "set a reminder" alone: asked what and when (INBOX 1507).
-        return {"intent": "reminder", "text": "", "said": "", "due_at": None, "time_given": False, "no_subject": ""}
+        return _bare_reminder(head)
     rest = reminder_parser.unhedged(rest)
     parsed = reminder_parser.parse_relative(rest, now) or when.parse_reminder_text(rest, now, locale=locale)
     if parsed is not None:
