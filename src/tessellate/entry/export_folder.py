@@ -14,6 +14,7 @@ reminders were lost on the way in again. This writes, inside one zip:
     notes/<category>/<id>-<title>/...  its attachments, linked from the .md
     notes/_recycle-bin/...             binned notes, never silently dropped
     documents/<id>-<title>.md, .json   each document and its sidecar
+    documents/_recycle-bin/...         binned documents, like binned notes
     boards/<id>-<title>.json           each board: its note and its canvas
 
 **The sidecar wins.** On the way in (`read`, the "memorymap" source of
@@ -397,7 +398,8 @@ def _write_documents(archive: zipfile.ZipFile, session, related: _Related) -> li
     rows = []
     for _adapter, document in walk(session, ("document",)):
         record = document_record(document, related)
-        base = f"documents/{document.id}-{paths.slug(document.title)}"
+        folder = f"documents/{BIN_FOLDER}" if document.deleted_at else "documents"
+        base = f"{folder}/{document.id}-{paths.slug(document.title)}"
         archive.writestr(f"{base}.md", document.content or "")
         archive.writestr(f"{base}.json", json.dumps(record, ensure_ascii=False, indent=1))
         rows.append({"id": document.id, "md": f"{base}.md", "sidecar": f"{base}.json"})
@@ -834,8 +836,11 @@ def _existing_documents(session) -> set:  # noqa: ANN001
     from sqlalchemy import select
 
     from tessellate.core.database import Document
+    from tessellate.entry.bin import including_binned
 
-    return {(_fingerprint(d.created_at, d.content), d.title) for d in session.scalars(select(Document))}
+    #: The bin too: the export carries binned documents, so a re-import merges them.
+    with including_binned(session):
+        return {(_fingerprint(d.created_at, d.content), d.title) for d in session.scalars(select(Document))}
 
 
 def _write_documents_in(session, records: list[dict], idmap: dict, said: list[str]) -> tuple[int, int]:  # noqa: ANN001

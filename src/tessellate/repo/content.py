@@ -216,15 +216,23 @@ _TABLES = ((Entry, (NOTES, BOARDS)), (Document, (DOCUMENTS,)), (Attachment, (FIL
 
 def walk(session: Session, kinds: Iterable[str] | None = None) -> Iterator[tuple[Content, object]]:
     """Every row of every kind (or of `kinds`), each with its adapter, in one
-    order: **the one export walker** (audit 1031 row 2a). It reads what the
-    session reads: a binned note is walked (the exports keep the bin, under
-    `_recycle-bin`), while a binned document, reminder or recording stays
-    under the bin floor (`core/database._hide_binned`) as it always has."""
+    order: **the one export walker** (audit 1031 row 2a). A binned note and
+    a binned document are both walked (the exports keep the bin, under
+    `_recycle-bin`; decided in content3-1101, so an export never drops what
+    the bin still holds); a binned reminder or recording stays under the bin
+    floor (`core/database._hide_binned`) as it always has."""
+    from tessellate.entry.bin import including_binned
+
     wanted = set(KINDS) if kinds is None else set(kinds)
     for model, adapters in _TABLES:
         if not wanted & {a.kind for a in adapters}:
             continue
-        for row in session.scalars(select(model).order_by(model.id)):
+        if model is Document:
+            with including_binned(session):
+                rows = list(session.scalars(select(model).order_by(model.id)))
+        else:
+            rows = session.scalars(select(model).order_by(model.id))
+        for row in rows:
             adapter = adapters[-1] if model is Entry and row.is_board else adapters[0]
             if adapter.kind in wanted:
                 yield adapter, row

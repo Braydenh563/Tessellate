@@ -207,6 +207,11 @@ def _existing(session: Session, reminder_id: int):  # noqa: ANN202
     return reminder_repo.get(session, reminder_id)
 
 
+def _writable(session: Session, reminder_id: int):  # noqa: ANN202
+    """A write's row: 404 for none, 409 for one in the bin (`repo/content`)."""
+    return content_repo.REMINDERS.writable(session, reminder_id)
+
+
 #: A page of the reminder list, not a ceiling on how many reminders may
 #: exist: `X-Total-Count` says the real size and `offset` reaches the rest,
 #: the same shape `GET /entries` uses. 200 because the Reminders tab groups
@@ -685,7 +690,7 @@ def _is_its_own_time(new: datetime, current: datetime) -> bool:
 def update_reminder(
     reminder_id: int, body: ReminderUpdate, session: Session = Depends(get_session)
 ) -> dict:
-    reminder = _existing(session, reminder_id)
+    reminder = _writable(session, reminder_id)
     if body.text is not None:
         reminder.text = body.text
     #: Its own time handed back (the edit form's minute) changes nothing, so a
@@ -729,7 +734,7 @@ def complete_reminder(
     are the person's (`tz_offset_minutes`, minutes east of UTC): 9am Monday
     in Auckland is Sunday evening in UTC. The answer keeps the time it was
     due, for the undo."""
-    reminder = _existing(session, reminder_id)
+    reminder = _writable(session, reminder_id)
     was = reminder.due_at.isoformat()
     reminder_repo.complete(session, reminder, tz_offset_minutes)
     session.commit()
@@ -767,7 +772,7 @@ def act_from_notification(
     nothing about which reminders exist. The answer carries no reminder."""
     if not reminder_token.verify(body.token, reminder_id, body.action, data_dir=deps.get_config().data_dir):
         raise HTTPException(status_code=401, detail="That notification can no longer do this.")
-    reminder = _existing(session, reminder_id)
+    reminder = _writable(session, reminder_id)
     if body.action == "done":
         reminder_repo.complete(session, reminder, body.tz_offset_minutes)
     else:
@@ -780,7 +785,7 @@ def act_from_notification(
 def delete_reminder(reminder_id: int, session: Session = Depends(get_session)) -> dict:
     """To the recycle bin (WORLD_CLASS_PLAN 5 item 10): hidden, not fired,
     restorable with its id and its target until purged."""
-    reminder_repo.move_to_bin(session, _existing(session, reminder_id))
+    reminder_repo.move_to_bin(session, _writable(session, reminder_id))
     session.commit()
     return {"deleted": True, "binned": True}
 
