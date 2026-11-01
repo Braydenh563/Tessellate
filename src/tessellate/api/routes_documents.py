@@ -38,7 +38,8 @@ from tessellate.core.database import (
     like_escape,
 )
 from tessellate.core.deps import get_session
-from tessellate.entry import link_offers, repo
+from tessellate.entry import link_offers
+from tessellate.repo.content import DOCUMENTS, unshelved
 from tessellate.repo import bookmarks as bookmark_repo
 from tessellate.entry.mentions import (
     BACKLINK_ROWS_MAX,
@@ -267,7 +268,7 @@ def document_bookmarks(document_id: int, session: Session = Depends(get_session)
 def attach_bookmark(
     document_id: int, body: AttachBookmarkBody, session: Session = Depends(get_session)
 ) -> dict:
-    _existing(session, document_id)
+    DOCUMENTS.writable(session, document_id)
     if bookmark_repo.attach_to_document(session, document_id, body.bookmark_id):
         session.commit()
     return {"attached": True}
@@ -277,7 +278,7 @@ def attach_bookmark(
 def detach_bookmark(
     document_id: int, bookmark_id: int, session: Session = Depends(get_session)
 ) -> dict:
-    _existing(session, document_id)
+    DOCUMENTS.writable(session, document_id)
     bookmark_repo.detach_from_document(session, document_id, bookmark_id)
     session.commit()
     return {"detached": True}
@@ -573,7 +574,7 @@ def write_contents(body: ContentBatch, session: Session = Depends(get_session)) 
     ids = [item.id for item in body.documents]
     if len(set(ids)) != len(ids):
         raise HTTPException(status_code=422, detail="A document is listed twice.")
-    documents = {doc.id: doc for doc in (_existing(session, doc_id) for doc_id in ids)}
+    documents = {doc.id: doc for doc in (DOCUMENTS.writable(session, doc_id) for doc_id in ids)}
     _refuse_unwritable(body.documents, documents)
     updated = []
     for item in body.documents:
@@ -726,7 +727,7 @@ def get_document(document_id: int, session: Session = Depends(get_session)) -> d
 def update_document(
     document_id: int, body: DocumentPatch, session: Session = Depends(get_session)
 ) -> dict:
-    document = repo.writable_document(session, document_id, unarchive=body.unarchive)
+    document = unshelved(DOCUMENTS.writable(session, document_id), unarchive=body.unarchive)
     #: Two windows, one document (WORLD_CLASS_PLAN 22.1 item 5), checked
     #: before anything is written, the title included.
     refuse_if_stale(
@@ -883,7 +884,7 @@ def archive_document(document_id: int, session: Session = Depends(get_session)) 
     same shape as `routes_entries.archive_entry`: never deleted, never
     auto-cleared, drops out of the Documents list, still reachable from
     the Library's Shelved filter."""
-    document = _existing(session, document_id)
+    document = DOCUMENTS.writable(session, document_id)
     if not document.archived_at:
         document.archived_at = utcnow()
         log_action(session, "archived", "document", document.id, document.title[:80])
@@ -893,7 +894,7 @@ def archive_document(document_id: int, session: Session = Depends(get_session)) 
 
 @router.put("/{document_id}/unarchive")
 def unarchive_document(document_id: int, session: Session = Depends(get_session)) -> dict:
-    document = _existing(session, document_id)
+    document = DOCUMENTS.writable(session, document_id)
     if document.archived_at:
         document.archived_at = None
         log_action(session, "unarchived", "document", document.id, document.title[:80])
@@ -910,7 +911,7 @@ def attach_note(
     document_id: int, body: LinkBody, session: Session = Depends(get_session)
 ) -> dict:
     """Attach an existing note to this document."""
-    document = _existing(session, document_id)
+    document = DOCUMENTS.writable(session, document_id)
     entry = get_entry(session, body.entry_id)
     if entry is None or entry.is_deleted:
         raise HTTPException(status_code=404, detail="That note could not be found.")
@@ -924,7 +925,7 @@ def detach_note(
 ) -> dict:
     """Detach a note. The note itself is untouched, this is a connection,
     not ownership."""
-    document = _existing(session, document_id)
+    document = DOCUMENTS.writable(session, document_id)
     unlink_document(session, document.id, entry_id)
     return _full(document, session)
 
@@ -1379,7 +1380,7 @@ def name_current_version(
     """Name the document as it stands now (DOCUMENTS 24 row 4, Google Docs's
     "Name current version"): a revision holding the current text, never
     coalesced into by the edits after it."""
-    document = _existing(session, document_id)
+    document = DOCUMENTS.writable(session, document_id)
     name = body.name.strip()
     if not name:
         raise HTTPException(status_code=422, detail="A version needs a name.")
@@ -1403,7 +1404,7 @@ def rename_version(
     session: Session = Depends(get_session),
 ) -> dict:
     """Name, rename or un-name one version; the text it holds is untouched."""
-    _existing(session, document_id)
+    DOCUMENTS.writable(session, document_id)
     row = session.get(DocumentRevision, revision_id)
     if row is None or row.document_id != document_id:
         raise HTTPException(status_code=404, detail="That revision could not be found.")
@@ -1423,7 +1424,7 @@ def restore_document_revision(
     want to restore. Marked `source="restore"` so the history says what
     happened rather than looking like an ordinary rewrite.
     """
-    document = _existing(session, document_id)
+    document = DOCUMENTS.writable(session, document_id)
     row = session.get(DocumentRevision, revision_id)
     if row is None or row.document_id != document_id:
         raise HTTPException(status_code=404, detail="That revision could not be found.")
@@ -1490,7 +1491,7 @@ def record_ai_edit(
     the oldest entries past `MAX_AI_EDIT_LOG_PER_DOCUMENT` so a heavily
     AI-edited document doesn't keep an unbounded pile of full-text
     snapshots forever."""
-    _existing(session, document_id)  # 404s if the document is gone
+    DOCUMENTS.writable(session, document_id)  # 404 gone, 409 binned
     selection = body.selection.strip()
     excerpt = selection[:SELECTION_EXCERPT_CHARS]
     if len(selection) > SELECTION_EXCERPT_CHARS:
@@ -1546,7 +1547,7 @@ def revert_ai_edit(document_id: int, entry_id: int, session: Session = Depends(g
     truthful record of everything that happened, including the revert
     itself, and a revert can itself be reverted.
     """
-    document = _existing(session, document_id)
+    document = DOCUMENTS.writable(session, document_id)
     entry = deps.get_or_404(session, DocumentAiEdit, entry_id, "That AI edit could not be found.")
     if entry.document_id != document_id:
         raise HTTPException(status_code=404, detail="That AI edit could not be found.")

@@ -24,7 +24,8 @@ from tessellate.ai.ollama_client import OllamaError
 from tessellate.api import chat_extra
 from tessellate.api.chat_request import ChatRequest, _StreamRequest, _Turn, _composed, _meta_event
 from tessellate.core import clock, private_turn
-from tessellate.core.database import AskTurn, Conversation, Document, Entity, Entry, EntryLink, like_escape, LIKE_ESCAPE, Reminder
+from tessellate.core.database import AskTurn, Conversation, Document, Entity, Entry, EntryLink, like_escape, LIKE_ESCAPE
+from tessellate.repo import reminders as reminder_repo
 from tessellate.core.logbuffer import safe_value
 
 
@@ -146,12 +147,7 @@ def _related_elsewhere(session: Session, question: str) -> list[dict]:
         lambda c: c.id,
     )
     _add(
-        session.scalars(
-            select(Reminder)
-            .where(_any_word(Reminder.text))
-            .order_by(Reminder.due_at.desc())
-            .limit(_RELATED_LIMIT)
-        ).all(),
+        reminder_repo.matching(session, _any_word, _RELATED_LIMIT),
         "reminder",
         lambda r: r.text,
         lambda r: r.id,

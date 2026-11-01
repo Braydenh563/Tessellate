@@ -460,13 +460,13 @@ def remarks(session: Session = Depends(get_session)) -> dict:
     (a hash of its words) so the page never says one twice, and the notes it
     names; no model, and private and binned notes are never read."""
     from tessellate.ai import composer_voice
-    from tessellate.repo import voice
+    from tessellate.repo import reminders as reminder_repo, voice
 
     today = user_now(deps.get_config()).date()
     recent = voice.recent(session)
     ids = {e.id for e in recent}
     notes = voice.as_notes(session, [*recent, *(e for e in voice.this_day_before(session, today) if e.id not in ids)])
-    reminders = voice.due_by(session, today)
+    reminders = reminder_repo.due_by(session, today)
     found = composer_voice.remarks(notes, today=today, reminders=reminders)[:6]
     return {"remarks": [{"text": r["text"].replace("**", ""), "key": r["key"], "kind": r["kind"], "sources": r["sources"]} for r in found]}
 

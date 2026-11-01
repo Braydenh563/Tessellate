@@ -1,17 +1,18 @@
 """What the composer's voice may read, for the dashboard's line and the
 companion's remarks (INBOX 743): notes that are not private, drafts, boards
-or binned, as the plain dicts `composer_voice` takes, and the reminders due.
+or binned, as the plain dicts `composer_voice` takes (the reminders due are
+`repo/reminders.due_by`).
 Read only; see `repo/__init__.py` for the rules every repository keeps.
 """
 
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.core.database import Category, Entry, Reminder
+from tessellate.core.database import Category, Entry
 from tessellate.entry import manager
 
 #: No private note, draft, board or bin.
@@ -45,12 +46,3 @@ def this_day_before(session: Session, today: date, limit: int = 10) -> list[Entr
         .order_by(Entry.created_at.desc())
         .limit(limit)
     ).all())
-
-
-def due_by(session: Session, today: date, limit: int = 10) -> list[dict]:
-    """Open reminders due by the end of tomorrow, soonest first."""
-    due = session.scalars(
-        select(Reminder).where(Reminder.done == False, Reminder.due_at <= datetime.combine(today + timedelta(days=1), datetime.max.time()))  # noqa: E712
-        .order_by(Reminder.due_at).limit(limit)
-    ).all()
-    return [{"id": r.id, "text": r.text, "due_at": r.due_at.date().isoformat(), "done": False, "entry_id": r.entry_id} for r in due]

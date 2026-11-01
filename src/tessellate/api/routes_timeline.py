@@ -33,7 +33,8 @@ from sqlalchemy import Select, String, and_, func, or_, select
 from sqlalchemy.orm import Session, aliased
 
 from tessellate.core import cjk
-from tessellate.core.database import Document, Entry, EntryDate, EntryProperty, Reminder, Space, utcnow
+from tessellate.core.database import Document, Entry, EntryDate, EntryProperty, Space, utcnow
+from tessellate.repo import reminders as reminder_repo
 from tessellate.core.deps import get_session
 from tessellate.entry import manager
 from tessellate.entry import properties as note_properties
@@ -595,13 +596,13 @@ def _source_pages(session: Session, kinds, query: Select, in_range, marks: dict,
             session, _document_scan(in_range, Document), Document.created_at, Document.id, marks, "document", limit
         )
 
-    reminders_found: list[Reminder] = []
+    reminders_found: list = []
     if "reminder" in kinds:
         #: Placed by `due_at`, not by when it was typed: a reminder is *about*
         #: the day it is due, which is the same claim a note makes when it
         #: mentions a date, and the row says so the same way (`placed_by`).
         reminders_found = _page_of(
-            session, in_range(select(Reminder), Reminder.due_at), Reminder.due_at, Reminder.id, marks, "reminder", limit
+            session, reminder_repo.due_in(in_range), *reminder_repo.ORDER, marks, "reminder", limit
         )
     return entries_found, documents_found, reminders_found
 
@@ -616,10 +617,8 @@ def _add_source_density(session: Session, kinds, in_range, density: dict[str, in
             day = created.date().isoformat()
             density[day] = density.get(day, 0) + 1
     if "reminder" in kinds:
-        for (due,) in session.execute(
-            in_range(select(Reminder.due_at), Reminder.due_at)
-        ).all():
-            day = due.date().isoformat()
+        for due in reminder_repo.due_days(session, in_range):
+            day = due.isoformat()
             density[day] = density.get(day, 0) + 1
 
 

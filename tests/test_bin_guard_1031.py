@@ -4,7 +4,7 @@ document is not rewritten by a PUT.
 `GET` on a binned note answered 404 while `PUT` answered 200 and rewrote it,
 so the client never learned it was editing something it could not see. Every
 content type had its own bin, so the guard was missing on the one that forgot.
-`entry/repo.py` owns the answer ("This is in the bin. Restore it first.") and
+`repo/content.py` (once `entry/repo.py`) owns the answer ("This is in the bin. Restore it first.") and
 the routes that write to a note or a document ask it."""
 
 from __future__ import annotations
@@ -105,6 +105,6 @@ def test_an_unknown_file_type_is_refused_naming_the_valid_ones(client):
 
 
 def test_the_guard_lives_in_one_module():
-    from tessellate.entry import repo
+    from tessellate.repo import content
 
-    assert callable(repo.writable_entry) and callable(repo.writable_document)
+    assert callable(content.NOTES.writable) and callable(content.DOCUMENTS.writable)
