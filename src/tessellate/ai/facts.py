@@ -993,6 +993,163 @@ def _pair_fact(kind: str, row: DerivedFact, other: DerivedFact, pair: str, reaso
     )
 
 
+@dataclass(slots=True)
+class _PairPass:
+    """What passes 4 and 5 share while they compare: the budget they spend,
+    the pairs already decided, and the tally of what they found. One record
+    rather than a dozen arguments, so each pass reads as the loop it is."""
+
+    session: Session
+    night: Any  # NightRun
+    provider: Any
+    model: str
+    counts: dict[str, int]
+    models_used: set[str]
+    budget: int
+    spent: int
+    derived: int
+    similar: _Similar
+    known: set[str]
+    written: dict[int, datetime]
+    progress: Any
+
+    def judged_by_model(self) -> bool:
+        return self.provider is not None and bool(self.model)
+
+    def afford(self, first: str, second: str) -> bool:
+        """Charge one comparison, or say the budget cannot cover it. A model
+        costs by the length of the pair; the local rules cost a flat two."""
+        if self.judged_by_model():
+            cost = int((len(first) + len(second) + 200) * TOKENS_PER_CHAR)
+        else:
+            cost = TOKENS_PER_PAIR
+        if self.spent + cost > self.budget:
+            return False
+        self.spent += cost
+        return True
+
+    def record(self, kind: str, row: Any, other: DerivedFact, pair: str, found: tuple[str, str, float], score: float) -> None:
+        """Store one tension or answer on `row`'s side and count it."""
+        decided_by, reason, confidence = found
+        self.session.add(_pair_fact(kind, row, other, pair, reason, decided_by, confidence, self.night.id, score))
+        self.derived += 1
+        self.counts[kind] = self.counts.get(kind, 0) + 1
+        self.models_used.add(decided_by)
+
+
+def _later_and_earlier(written: dict[int, datetime], claim: DerivedFact, other: DerivedFact) -> tuple[DerivedFact, DerivedFact]:
+    """Which of two claims sits in the note written later. A tie, or a note
+    with no known date, keeps the claim being compared as the later one."""
+    if written.get(other.entry_id) and written.get(claim.entry_id) and written[other.entry_id] > written[claim.entry_id]:
+        return other, claim
+    return claim, other
+
+
+def _tension_between(pairs: _PairPass, earlier: DerivedFact, later: DerivedFact) -> tuple[str, str, float] | None:
+    """`(decided_by, reason, confidence)` when the two claims cannot both be
+    true: the model's word when there is one, else the local number-or-"not"
+    rule. The session is released before the model is asked, never held."""
+    if pairs.judged_by_model():
+        _release(pairs.session)
+        model_gate.yield_to_interactive()
+        judged = _judge(pairs.provider, pairs.model, _JUDGE_TENSION, earlier.text, later.text)
+        if judged and judged[0] == "incompatible":
+            return pairs.model, judged[1], 0.7
+        return None
+    reason = _local_disagreement(earlier.text, later.text)
+    return ("local", reason, 0.5) if reason else None
+
+
+def _claim_pairs(pairs: _PairPass, claim: DerivedFact) -> bool:
+    """One new claim against its nearest claims in other notes. True when the
+    budget ran out part-way, which ends the whole pass."""
+
+    def other_note(row: DerivedFact) -> bool:
+        return row.entry_id != claim.entry_id
+
+    for score, other in pairs.similar.nearest(claim.text, other_note):
+        pair = _pair_key("tension", claim.id, other.id)
+        if pair in pairs.known:
+            continue
+        if not pairs.afford(claim.text, other.text):
+            return True
+        pairs.known.add(pair)
+        later, earlier = _later_and_earlier(pairs.written, claim, other)
+        found = _tension_between(pairs, earlier, later)
+        if found:
+            pairs.record("tension", later, earlier, pair, found, score)
+    return False
+
+
+def _compare_claims(pairs: _PairPass, new_claims: list[DerivedFact]) -> bool:
+    """Pass 4: each new claim against the claims of other notes. True on a budget stop."""
+    for claim_index, claim in enumerate(new_claims):
+        pairs.progress.step(claim_index, len(new_claims), "Comparing claims")
+        if _claim_pairs(pairs, claim):
+            return True
+    return False
+
+
+def _answered_question_ids(session: Session) -> set[int]:
+    """The questions that already have a standing answer (a dismissed one is a
+    tombstone and does not count, so it can be answered again by another claim)."""
+    return {
+        int(json_payload_value(row.payload, "other_fact_id") or 0)
+        for row in session.scalars(
+            select(DerivedFact).where(DerivedFact.kind == "answered", DerivedFact.deleted_at.is_(None))
+        ).all()
+    }
+
+
+def _answer_to(pairs: _PairPass, question: DerivedFact, asked_at: datetime) -> tuple[bool, bool]:
+    """Look for the claim that answers one question. Returns `(answered,
+    out_of_budget)`: the first claim the model says answers it ends the search."""
+
+    def written_later(row: DerivedFact) -> bool:
+        at = pairs.written.get(row.entry_id)
+        return (
+            row.entry_id != question.entry_id
+            and at is not None
+            and at > asked_at
+            and (question.run_id == pairs.night.id or row.run_id == pairs.night.id)
+        )
+
+    for score, claim in pairs.similar.nearest(question.text, written_later):
+        pair = _pair_key("answered", question.id, claim.id)
+        if pair in pairs.known:
+            continue
+        if not pairs.afford(question.text, claim.text):
+            return False, True
+        pairs.known.add(pair)
+        _release(pairs.session)
+        model_gate.yield_to_interactive()
+        judged = _judge(pairs.provider, pairs.model, _JUDGE_ANSWER, question.text, claim.text)
+        if judged and judged[0] == "yes":
+            pairs.record("answered", claim, question, pair, (pairs.model, judged[1], 0.7), score)
+            return True, False
+    return False, False
+
+
+def _match_questions(pairs: _PairPass, questions: list[DerivedFact], questions_on: bool) -> bool:
+    """Pass 5: open questions against claims written later, in other notes,
+    judged by the model (with none, `_answers_by_rule` did this already).
+    True on a budget stop."""
+    answered = _answered_question_ids(pairs.session)
+    pending = _for_the_model(questions, questions_on, pairs.provider, pairs.model)
+    pairs.progress.step(0, len(pending) or None, "Matching questions to answers")
+    for question_index, question in enumerate(pending):
+        pairs.progress.step(question_index, len(pending))
+        asked_at = pairs.written.get(question.entry_id)
+        if question.id in answered or asked_at is None:
+            continue
+        found, out_of_budget = _answer_to(pairs, question, asked_at)
+        if out_of_budget:
+            return True
+        if found:
+            answered.add(question.id)
+    return False
+
+
 def _pair_passes(
     session: Session,
     night,  # noqa: ANN001  # NightRun
@@ -1030,101 +1187,25 @@ def _pair_passes(
         f"Comparing {len(new_claims)} new claim{'' if len(new_claims) == 1 else 's'} "
         f"and {len(new_questions)} question{'' if len(new_questions) == 1 else 's'} against the rest of your notes."
     )
-    similar = _Similar(embeddings, claims)
-    known = _known_pairs(session)
-    written = _written(session, {row.entry_id for row in claims + questions})
-    derived = by_rule
-
-    def charge(first: str, second: str) -> int:
-        if provider is not None and model:
-            return int((len(first) + len(second) + 200) * TOKENS_PER_CHAR)
-        return TOKENS_PER_PAIR
-
-    # Pass 4: each new claim against the claims of other notes.
-    for claim_index, claim in enumerate(new_claims):
-        progress.step(claim_index, len(new_claims), "Comparing claims")
-
-        def other_note(row, claim=claim):  # noqa: ANN001, ANN202
-            return row.entry_id != claim.entry_id
-
-        for score, other in similar.nearest(claim.text, other_note):
-            pair = _pair_key("tension", claim.id, other.id)
-            if pair in known:
-                continue
-            cost = charge(claim.text, other.text)
-            if spent + cost > budget:
-                return spent, derived, "budget"
-            spent += cost
-            known.add(pair)
-            later, earlier = (claim, other)
-            if written.get(other.entry_id) and written.get(claim.entry_id) and written[other.entry_id] > written[claim.entry_id]:
-                later, earlier = other, claim
-            found: tuple[str, str, float] | None = None
-            if provider is not None and model:
-                _release(session)
-                model_gate.yield_to_interactive()
-                judged = _judge(provider, model, _JUDGE_TENSION, earlier.text, later.text)
-                if judged and judged[0] == "incompatible":
-                    found = (model, judged[1], 0.7)
-            else:
-                reason = _local_disagreement(earlier.text, later.text)
-                if reason:
-                    found = ("local", reason, 0.5)
-            if found:
-                session.add(_pair_fact("tension", later, earlier, pair, found[1], found[0], found[2], night.id, score))
-                derived += 1
-                counts["tension"] = counts.get("tension", 0) + 1
-                models_used.add(found[0])
-
-    # Pass 5: open questions against claims written later, in other notes,
-    # judged by the model (with none, `_answers_by_rule` did this above).
-    answered = {
-        int(json_payload_value(row.payload, "other_fact_id") or 0)
-        for row in session.scalars(
-            select(DerivedFact).where(DerivedFact.kind == "answered", DerivedFact.deleted_at.is_(None))
-        ).all()
-    }
-    pending_questions = _for_the_model(questions, questions_on, provider, model)
-    progress.step(0, len(pending_questions) or None, "Matching questions to answers")
-    for question_index, question in enumerate(pending_questions):
-        progress.step(question_index, len(pending_questions))
-        if question.id in answered:
-            continue
-        asked_at = written.get(question.entry_id)
-        if asked_at is None:
-            continue
-
-        def written_later(row, question=question, asked_at=asked_at):  # noqa: ANN001, ANN202
-            at = written.get(row.entry_id)
-            return (
-                row.entry_id != question.entry_id
-                and at is not None
-                and at > asked_at
-                and (question.run_id == night.id or row.run_id == night.id)
-            )
-
-        for score, claim in similar.nearest(question.text, written_later):
-            pair = _pair_key("answered", question.id, claim.id)
-            if pair in known:
-                continue
-            cost = charge(question.text, claim.text)
-            if spent + cost > budget:
-                return spent, derived, "budget"
-            spent += cost
-            known.add(pair)
-            _release(session)
-            model_gate.yield_to_interactive()
-            judged = _judge(provider, model, _JUDGE_ANSWER, question.text, claim.text)
-            found = (model, judged[1], 0.7) if judged and judged[0] == "yes" else None
-            if found:
-                session.add(_pair_fact("answered", claim, question, pair, found[1], found[0], found[2], night.id, score))
-                derived += 1
-                counts["answered"] = counts.get("answered", 0) + 1
-                models_used.add(found[0])
-                answered.add(question.id)
-                break
-    progress.say(f"Finished comparing: {derived} pairing{'' if derived == 1 else 's'} found.")
-    return spent, derived, "done"
+    pairs = _PairPass(
+        session=session,
+        night=night,
+        provider=provider,
+        model=model,
+        counts=counts,
+        models_used=models_used,
+        budget=budget,
+        spent=spent,
+        derived=by_rule,
+        similar=_Similar(embeddings, claims),
+        known=_known_pairs(session),
+        written=_written(session, {row.entry_id for row in claims + questions}),
+        progress=progress,
+    )
+    if _compare_claims(pairs, new_claims) or _match_questions(pairs, questions, questions_on):
+        return pairs.spent, pairs.derived, "budget"
+    progress.say(f"Finished comparing: {pairs.derived} pairing{'' if pairs.derived == 1 else 's'} found.")
+    return pairs.spent, pairs.derived, "done"
 
 
 #: The most later notes one rule pass reads for answers, newest first.
