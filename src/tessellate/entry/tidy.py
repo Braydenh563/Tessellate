@@ -30,7 +30,7 @@ those, whatever a switch says.
 
 The link reason pass (`respecify_all`) is also a durable job (`jobstore`
 kind `tidy-link-reasons`), in chunks, stopped between chunks by
-`request_stop` (the Tasks panel's Quit, `core/bgtasks`).
+`request_stop` (the Tasks panel's Quit, `jobs.CANCELLERS`).
 """
 
 from __future__ import annotations
@@ -1195,7 +1195,7 @@ _running = threading.Event()
 
 
 def request_stop() -> bool:
-    """Ask the running pass to stop at its next chunk (`bgtasks`). Also
+    """Ask the running pass to stop at its next chunk (`jobs.CANCELLERS`). Also
     stops a pass that has not started yet."""
     _stop.set()
     return _running.is_set()
@@ -1245,3 +1245,18 @@ def respecify_all(workspace_id: str = "default", chunk: int = 200) -> dict:
         _running.clear()
         link_facts.forget()
     return {"named": len(named), "stopped": stopped, "undo_id": undo_id}
+
+
+def cancel_link_reasons(_name: str = "") -> tuple[bool, str]:
+    """Quit on the link reason pass (INBOX 691): a queued one is cancelled, a
+    running one stops at its next chunk with what it named kept (and undoable
+    from Tidy's history)."""
+    from tessellate.core import jobstore
+
+    queued = jobstore.cancel_queued("tidy-link-reasons")
+    if is_running():
+        request_stop()
+        return True, "Asked the link reason pass to stop."
+    if queued:
+        return True, "Stopped before it started."
+    return False, "Nothing is naming link reasons."

@@ -1143,7 +1143,7 @@ def current() -> InstallState:
     return _state
 
 
-def cancel() -> tuple[bool, str]:
+def cancel(_name: str = "") -> tuple[bool, str]:
     """Stop the running pip, if there is one. Returns (stopped, message).
 
     **Terminate, not a flag.** Everything else in this app that can be quit

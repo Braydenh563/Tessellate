@@ -27,7 +27,7 @@ from sqlalchemy.orm import Session
 from tessellate.ai import speakers, voice
 from tessellate.api import paging
 from tessellate.api.downloads import attachment_headers
-from tessellate.core import activity, background, deps, recordings, transcript
+from tessellate.core import activity, deps, jobs, recordings, transcript
 from tessellate.core.database import LIKE_ESCAPE, Entry, Recording, like_escape, utcnow
 from tessellate.core.deps import get_session
 from tessellate.entry import bin as other_bin
@@ -324,9 +324,9 @@ def start_transcription(recording_id: int, session: Session = Depends(get_sessio
         raise HTTPException(status_code=409, detail="That recording is already being transcribed.")
     work = (row.id, Path(path), row.duration_ms, deps.get_config().get_preference("voice_model", "base"),
             session.info.get("workspace_id"), job)
-    #: Registered (core/background.py, decision 58); the Stop route ends it between
+    #: A thread Job (`jobs.thread`, decision 58); the Stop route ends it between
     #: two segments, so the registry entry has no stopper of its own.
-    background.start(f"transcribe-{row.id}", lambda: _transcribe_in_background(*work))
+    jobs.thread(f"transcribe-{row.id}", lambda: _transcribe_in_background(*work))
     return {"id": row.id, "job_id": job.id, "transcription": recordings.transcription_of(row.id)}
 
 

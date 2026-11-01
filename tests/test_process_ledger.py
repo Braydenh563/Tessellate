@@ -129,11 +129,11 @@ def test_a_tracked_job_that_opens_its_own_run_is_not_doubled():
 
 
 def test_a_pool_job_is_a_run_and_a_pass_is_not_wrapped_twice():
-    job = pool._Job(1, "file-entry", lambda: None, (), {}, "Shopping list")
-    run = pool._ledger_run(job)
+    job = pool.Job(1, "file-entry", lambda: None, (), {}, "Shopping list")
+    run = job.open_run()
     assert run is not None and run.title == "Filing a note: Shopping list" and run.listed
     run.finish()
-    assert pool._ledger_run(pool._Job(2, "pass", lambda: None, (), {}, "Backup")) is None
+    assert pool.Job(2, "pass", lambda: None, (), {}, "Backup").open_run() is None
 
 
 def test_running_lists_a_chat_answer_with_its_lines(client):

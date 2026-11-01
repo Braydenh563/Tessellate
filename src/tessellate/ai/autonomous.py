@@ -975,3 +975,37 @@ def run_pass(scheduled: bool = False) -> None:
             _vacuum()
         except Exception:  # noqa: BLE001
             logger.error("database maintenance error", exc_info=True)
+
+
+#: How long a *scheduled* pass stays off after a quit-time stop. Short on
+#: purpose: quitting the app is not the same statement as quitting a pass, and
+#: the next launch should behave normally.
+_QUIT_SNOOZE_SECONDS = 60
+
+
+def stop_pass(_name: str = "") -> tuple[bool, str]:
+    """Quit on the autonomous row (`jobs.CANCELLERS`): (acted, message)."""
+    if not request_stop():
+        return False, "No pass is running."
+    held = snoozed_for()
+    hours, minutes = divmod(max(1, round(held / 60)), 60)
+    when = f"{hours}h" if hours and not minutes else (f"{hours}h {minutes}m" if hours else f"{minutes} minutes")
+    # Reported: *"The auto ai optimisation didnt instantly quit?? what does
+    # quitting safely mean??"*. The pass is a loop of model calls, abandoned
+    # between them rather than killed mid-call: nothing more is asked of the
+    # model the moment this is pressed, and what is left is the reply already
+    # in flight, which may be part-way through writing to the notebook. A
+    # half-applied edit is worse than a slow stop, so the sentence says so.
+    return True, (
+        "Stopping: nothing more will be asked of the model. The reply "
+        "already in flight has to arrive first, so this can take a few "
+        f"seconds. It won't start again for {when}."
+    )
+
+
+def stop_for_quit() -> str:
+    """At quit (`jobs.stop_all`): hold the scheduler off briefly and join it,
+    so a pass part-way through a write finishes that write. Says nothing stopped."""
+    request_stop(snooze_seconds=_QUIT_SNOOZE_SECONDS)
+    stop()
+    return ""

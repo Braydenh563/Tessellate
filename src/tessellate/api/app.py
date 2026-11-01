@@ -112,7 +112,6 @@ from tessellate.api.this_computer import is_another_device
 from tessellate.core import (
     afterunlock,
     backup,
-    bgtasks,
     concurrency,
     deadline,
     deps,
@@ -1148,7 +1147,7 @@ def _content_length(scope) -> int | None:  # noqa: ANN001
 #: How long shutdown waits for the background pool's workers. Short: the only
 #: thing that can still be running is one job (a Tesseract pass or a model
 #: call), the workers are daemons, and a quit that waits for a vision read of
-#: a 20-page scan is the hang `core/bgtasks.py` was written to prevent.
+#: a 20-page scan is the hang `jobs.stop_all` was written to prevent.
 _JOB_SHUTDOWN_SECONDS = 3.0
 
 
@@ -1684,12 +1683,10 @@ def create_app() -> FastAPI:
         # Never raises: `stop_all` swallows per-job failures itself, and a
         # shutdown that fails to shut down is worse than one that leaves a
         # line in the log.
-        bgtasks.stop_all()
-        # The registry of threads that are not jobs (`core/background.py`):
-        # its watchers name how they stop, and quitting is when to ask.
-        from tessellate.core import background
-
-        background.stop_all()
+        jobs.stop_all()
+        # The thread Jobs (`jobs.thread`): their watchers name how they
+        # stop, and quitting is when to ask.
+        jobs.stop_threads()
         # The reminder notifier's loop is a job on that pool, so it is told to
         # end first: otherwise a quit waits the pool's whole deadline for it.
         from tessellate.core import reminder_notifier

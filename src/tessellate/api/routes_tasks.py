@@ -33,7 +33,7 @@ from pydantic import BaseModel, Field
 
 from tessellate.ai import embeddings as embeddings_module
 from tessellate.ai import model_manager as jobs
-from tessellate.core import bgtasks, deps, embedmodels, extras, filejobs, jobruns, jobstore, taskhistory
+from tessellate.core import deps, embedmodels, extras, jobruns, jobstore, taskhistory
 from tessellate.core import jobs as bgpool
 from tessellate.api.this_computer import is_another_device, this_computer_only
 from tessellate.entry import import_report
@@ -165,7 +165,7 @@ def _pool_rows() -> list[dict]:
     of 200 pictures looked exactly like an idle app (WORLD_CLASS_PLAN A3)."""
     from tessellate.ai import captioning, janitor
 
-    rows = list(filejobs.running())
+    rows = bgpool.readings()
     #: A caption that is running is already a row above, with the picture's
     #: own name ("Captioning sketch-..."); the pool's row for the same job
     #: ("Describing an image") made one caption look like two (owner's
@@ -432,7 +432,7 @@ def _mark_cancellable(tasks: list[dict]) -> None:
     """**One table decides, not eight hard-coded booleans.** Every entry used
     to carry its own `"cancellable": True/False`, and six of them said False
     because nothing could stop them, which was true when they were written and
-    stopped being true when `core/bgtasks.py` gave each one a canceller. A flag
+    stopped being true when each kind got a canceller (`jobs.CANCELLERS`). A flag
     repeated at eight call sites is a flag that drifts; this reads the same
     table the cancel endpoint dispatches through, so the button appears
     exactly where pressing it does something."""
@@ -440,7 +440,7 @@ def _mark_cancellable(tasks: list[dict]) -> None:
 
     for task in tasks:
         task["cancellable"] = (
-            task["kind"] in bgtasks.CANCELLABLE_KINDS
+            task["kind"] in bgpool.CANCELLABLE_KINDS
             # A running pass that has a step to stop at (INBOX 713).
             or (task["kind"] == "job-pass" and not task.get("queued") and passes.kind_for_label(task.get("name", "")) in passes.STOPPABLE)
             or task["kind"] in FILING_KINDS
@@ -543,8 +543,8 @@ def _stamp_started(tasks: list[dict]) -> None:
 
 
 #: The filing rows (the pool's "Filing a note" and janitor's late-answer
-#: row), stopped here rather than through `bgtasks.CANCELLERS`: those also
-#: run at shutdown (`bgtasks.stop_all`), and quitting the app must not file
+#: row), stopped here rather than through `jobs.CANCELLERS`: those also
+#: run at shutdown (`jobs.stop_all`), and quitting the app must not file
 #: every waiting note by meaning and take it out of Atlas's hands.
 FILING_KINDS = frozenset({"job-file-entry", "filing-late"})
 
@@ -754,7 +754,7 @@ def cancel_task(body: CancelTaskBody) -> dict:
             logging.getLogger(__name__).warning("couldn't stop filing", exc_info=True)
             stopped, detail = False, "Couldn't stop filing, see Settings, Logs."
         return {"status": "ok", "stopped": stopped, "detail": detail}
-    stopped, detail = bgtasks.cancel(body.kind.strip(), body.name.strip())
+    stopped, detail = bgpool.cancel_kind(body.kind.strip(), body.name.strip())
     return {"status": "ok", "stopped": stopped, "detail": detail}
 
 

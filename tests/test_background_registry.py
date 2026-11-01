@@ -2,7 +2,7 @@
 
 A thread nobody can list or stop is the bug behind "the app would not quit"
 and "a second embedding pass started under the first". Decision 58 puts the
-registry in `core/background.py`, with `core/jobs.py` and `core/jobruns.py`
+registry in `core/jobs.py` (`jobs.thread`, once `core/background.py`), with `core/jobruns.py`
 as the only modules allowed to start work themselves. That module is
 built (`start`, `running`, `stop_all`; the embedding warm-up is its first
 entry), and this test holds the line for the rest:
@@ -23,7 +23,7 @@ from tests._repo_files import repo_files
 SRC = Path(__file__).resolve().parents[1] / "src" / "tessellate"
 
 #: The modules whose job is to start work.
-OWNERS = {"core/jobs.py", "core/jobruns.py", "core/background.py"}
+OWNERS = {"core/jobs.py", "core/jobruns.py"}
 
 _KINDS = {
     "Thread": "thread",
@@ -120,8 +120,8 @@ def sites() -> set[str]:
 def test_no_unregistered_background_site() -> None:
     new = sites() - SEED
     assert not new, (
-        "a thread, timer, executor or task started outside core/jobs.py, core/jobruns.py "
-        "and core/background.py; route it through the pool or register it:\n  " + "\n  ".join(sorted(new))
+        "a thread, timer, executor or task started outside core/jobs.py and core/jobruns.py; "
+        "route it through the pool or `jobs.thread`:\n  " + "\n  ".join(sorted(new))
     )
 
 

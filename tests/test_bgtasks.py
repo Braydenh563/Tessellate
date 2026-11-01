@@ -1,6 +1,6 @@
 """Quitting background work, and quitting the app (§ tasks).
 
-Two reports, one mechanism, see `core/bgtasks.py`'s docstring:
+Two reports, one mechanism, see `core/jobs.py`'s cancel section (was `core/jobs.py`):
 
     "allow the quitting/killing of background tasks as well"
     "and if it is an automated bg task, make sure it doesnt instantly start
@@ -23,7 +23,7 @@ from pathlib import Path
 import pytest
 
 from tessellate.ai import autonomous
-from tessellate.core import bgtasks, embedmodels, extras
+from tessellate.core import embedmodels, extras, jobs
 
 # The cancellers read the config (`autonomous.request_stop`), which without an
 # app state builds one in the repo's own `data/` folder and leaves it alive for
@@ -59,7 +59,7 @@ def test_every_cancellable_kind_has_a_canceller():
     """The panel's Quit button is rendered from `CANCELLABLE_KINDS`, which is
     derived from the table rather than repeated, so this cannot drift, and
     the test says why the two must stay the same object."""
-    assert set(bgtasks.CANCELLABLE_KINDS) == set(bgtasks.CANCELLERS)
+    assert set(jobs.CANCELLABLE_KINDS) == set(jobs.CANCELLERS)
 
 
 def test_the_kinds_match_the_ones_tasks_reports():
@@ -68,12 +68,12 @@ def test_the_kinds_match_the_ones_tasks_reports():
     from tessellate.api import routes_tasks
 
     source = _source_of(routes_tasks)
-    for kind in bgtasks.CANCELLERS:
+    for kind in jobs.CANCELLERS:
         assert f'"kind": "{kind}"' in source, f"nothing in /tasks reports kind={kind}"
 
 
 def test_an_unknown_kind_is_an_answer_not_an_error():
-    acted, detail = bgtasks.cancel("no-such-job")
+    acted, detail = jobs.cancel_kind("no-such-job")
     assert acted is False
     assert detail
 
@@ -81,8 +81,8 @@ def test_an_unknown_kind_is_an_answer_not_an_error():
 def test_every_canceller_is_safe_with_nothing_running():
     """`stop_all` calls all of them at shutdown without checking which are
     live, so "nothing to do" must never raise."""
-    for kind in bgtasks.CANCELLERS:
-        acted, detail = bgtasks.cancel(kind)
+    for kind in jobs.CANCELLERS:
+        acted, detail = jobs.cancel_kind(kind)
         assert detail, f"{kind} answered with nothing"
 
 
@@ -91,7 +91,7 @@ def test_every_canceller_is_safe_with_nothing_running():
 
 def test_quitting_a_pass_holds_the_scheduler_off():
     autonomous._working.set()
-    acted, detail = bgtasks.cancel("autonomous")
+    acted, detail = jobs.cancel_kind("autonomous")
     assert acted is True
     assert autonomous.cancelled() is True
     assert autonomous.snoozed_for() > 0
@@ -206,17 +206,17 @@ def test_stop_all_is_wired_into_the_apps_shutdown():
 
     source = _source_of(app_module)
     assert "lifespan=lifespan" in source
-    assert "bgtasks.stop_all()" in source
+    assert "jobs.stop_all()" in source
 
 
 def test_stop_all_never_raises_with_nothing_running():
-    assert isinstance(bgtasks.stop_all(), list)
+    assert isinstance(jobs.stop_all(), list)
 
 
 def test_stop_all_holds_the_scheduler_only_briefly():
     """Quitting the app is not the same statement as quitting a pass: the
     next launch should behave normally."""
-    bgtasks.stop_all()
+    jobs.stop_all()
     assert 0 < autonomous.snoozed_for() <= autonomous.MIN_SNOOZE_SECONDS
 
 
@@ -233,9 +233,9 @@ def test_the_task_list_marks_the_kinds_that_can_be_quit(ai_client):
     from tessellate.api import routes_tasks
 
     # The filing rows are stopped by `/tasks/cancel` itself, not a canceller:
-    # `bgtasks.stop_all` runs every canceller at shutdown, and quitting must
+    # `jobs.stop_all` runs every canceller at shutdown, and quitting must
     # not file every waiting note by meaning (routes_tasks.FILING_KINDS).
-    quittable = bgtasks.CANCELLABLE_KINDS | routes_tasks.FILING_KINDS
+    quittable = jobs.CANCELLABLE_KINDS | routes_tasks.FILING_KINDS
     body = ai_client.get("/tasks").json()
     for task in body["tasks"]:
         assert task["cancellable"] == (task["kind"] in quittable)
@@ -247,7 +247,7 @@ def test_the_warmup_says_why_it_has_no_quit_button():
 
     source = _source_of(routes_tasks)
     assert "can't be " in source and "stopped part-way" in source
-    assert "embeddings" not in bgtasks.CANCELLABLE_KINDS
+    assert "embeddings" not in jobs.CANCELLABLE_KINDS
 
 
 def test_a_quit_pass_is_skipped_by_the_scheduler_until_the_hold_expires():

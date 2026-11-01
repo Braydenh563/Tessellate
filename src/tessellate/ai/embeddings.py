@@ -25,7 +25,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai.model_manager import ModelManager
 from tessellate.ai.ollama_client import OllamaClient, OllamaError
-from tessellate.core import background
+from tessellate.core import jobs
 from tessellate.core.database import Attachment, Category, ChunkVector, EmbeddingRecord, Entry
 from tessellate.core.logbuffer import safe_value
 
@@ -259,7 +259,7 @@ def start_warmup(service: "EmbeddingService", session_factory=None) -> None:  # 
     # process, it runs once at startup, and putting it on the shared queue
     # would make the first search of a session wait behind whatever OCR a
     # bulk import had already queued. One is not a concurrency problem.
-    background.start("embedding-warmup", run)
+    jobs.thread("embedding-warmup", run)
 
 
 # How many gaps to close per startup. Bounded so a huge notebook doesn't spend
@@ -954,7 +954,7 @@ class EmbeddingService:
     def _watch_idle(self) -> None:
         """One registered thread per loaded model: checks every five minutes and
         ends when it has unloaded (the next load starts a new one)."""
-        from tessellate.core import background
+        from tessellate.core import jobs
 
         if self._idle_watch_started:
             return
@@ -969,7 +969,7 @@ class EmbeddingService:
             finally:
                 self._idle_watch_started = False
 
-        background.start("embedder-idle-watch", run, stop=stop.set)
+        jobs.thread("embedder-idle-watch", run, stop=stop.set)
 
     def embed_text(self, text: str) -> np.ndarray | None:
         """Vector for one text, or None if the backend is unavailable.

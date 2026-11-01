@@ -294,9 +294,9 @@ def test_every_abrupt_exit_lets_go_of_the_lock(tmp_path, monkeypatch):
     behind, it named a dead pid that Windows soon reuses, and a restart's
     new process could read the dying server as live."""
     from tessellate import __main__ as launcher
-    from tessellate.core import bgtasks
+    from tessellate.core import jobs
 
-    monkeypatch.setattr(bgtasks, "stop_all", lambda *a, **k: None)
+    monkeypatch.setattr(jobs, "stop_all", lambda *a, **k: None)
     il.claim(tmp_path, 8123)
     try:
         launcher._stop_background_work()

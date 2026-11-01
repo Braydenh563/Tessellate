@@ -16,7 +16,7 @@ when it runs, starting one now, and stopping one that is going.
   cancel, housekeeping between its steps, the embeddings backfill between
   its batches. A pass that is one call with no
   step between (a backup, the fading-notes scores) says it cannot be stopped
-  part way, which is the truth `core/bgtasks.py` tells for the same shape.
+  part way, which is the truth `jobs.cancel_kind` tells for the same shape.
 """
 
 from __future__ import annotations
@@ -266,9 +266,9 @@ def run_now(kind: str) -> tuple[bool, str]:
 def stop(kind: str) -> tuple[bool, str]:
     """Stop `kind` at its next step. Returns (acted, message)."""
     if kind == "autonomous":
-        from tessellate.core import bgtasks
+        from tessellate.core import jobs as pool
 
-        return bgtasks.cancel("autonomous", "")
+        return pool.cancel_kind("autonomous", "")
     if not running(kind):
         return False, "It had already finished."
     if kind not in STOPPABLE:
