@@ -21,226 +21,231 @@
 // `spaceEnterFor` takes the person back there before it runs.
 
 //: `const`, not two `let`s: the global-scope ratchet counts top-level lets.
-const spaceState = { epoch: 0, running: null };
+(() => {
+  const spaceState = { epoch: 0, running: null };
 
-//: Every cache a space's data leaves in memory, by surface. A lazy surface's
-//: row starts with a `typeof` guard: its names do not exist until its file is in.
-const SPACE_SCOPED = {
-  notes() {
-    allEntries = [];
-    entriesEverLoaded = false;
-    entriesComplete = false;
-    activeCategory = null;
-    draftsOnly = false;
-    favouritesOnly = false;
-    editingId = null;
-    inlineAction = null;
-    linkSource = null;
-    noteSearch = "";
-    noteSearchCorrection = null;
-    notesCurrentPage = 1;
-    noteSearchWhy.clear();
-    attachmentMetaCache.clear();
-    categoryMeta = new Map();
-    notesRailCache.clear();
-    referenceCountsCache.clear();
-    reminderCountsCache.clear();
-    noteTopicsCache.clear();
-    thumbUrlCache.clear();
-    mapBoardIndexCache = null;
-    mapBoardIndexAt = 0;
-    mapBoardIndexWalk = null;
-    if (typeof objOrderCache !== "undefined") objOrderCache.clear();
-    const box = $("note-search");
-    if (box) box.value = "";
-  },
-  dashboard() {
-    dashStatsInflight = null;
-    dashGraphInflight = null;
-    dashRemindersInflight = null;
-    dashStatsAt = dashGraphAt = dashRemindersAt = 0;
-  },
-  chat() {
-    attachedNoteIds = [];
-    attachedImages = [];
-    attachedDocuments = [];
-    attachedBoards = [];
-    attachedFiles = [];
-    renderAttachments();
-    renderImageAttachments();
-    renderDocumentAttachments();
-    renderBoardAttachments();
-    renderFileAttachments();
-    captureDocumentList = [];
-    captureDocumentTitles = new Map();
-    captureDocuments.clear();
-    //: The open thread belongs to the space it was held in.
-    if (typeof newChatConversation === "function" && chatConv?.id != null) newChatConversation();
-    if (typeof newChat === "function" && conversation.length) newChat();
-  },
-  search() {
-    if (typeof finderHits === "undefined") return;
-    finderHits = [];
-    finderCounts = {};
-    finderIndexTotals = {};
-  },
-  timeline() {
-    if (typeof timelineRows === "undefined") return;
-    timelineRows = [];
-    timelineById = new Map();
-    timelineDensity = {};
-    timelineGroupNames = [];
-    timelineNextCursor = null;
-  },
-  graph() {
-    if (typeof graphStructure === "undefined") return;
-    graphStructure = null;
-    graphAdjacency = null;
-    graphTrace = null;
-    graphTraceRoutes = [];
-    graphHighlightIds = null;
-    graphHiddenCategories = new Set();
-    graphHiddenKeys = new Set();
-    graphGroupOf = new Map();
-    graphPopupId = null;
-    gcTopicSummaries.clear();
-    window.gcStop?.();
-  },
-  library() {
-    if (typeof libraryItems === "undefined") return;
-    libraryItems = [];
-    libraryCounts = {};
-    libraryOverview = {};
-    libraryTruncated = {};
-    libraryDocsAll = [];
-    libraryImagesCache = [];
-    bookmarksCache = [];
-    ocrSiblingCache = null;
-    librarySelection.clear();
-    libraryDocsSelection.clear();
-    libraryMediaSelection.clear();
-    libraryBoardsSelection.clear();
-    libraryLinksSelection.clear();
-    window.wbBoardsAll = [];
-    if (typeof libraryBoardsLast !== "undefined") [libraryBoardsLast, libraryBoardsLastText] = [null, ""];
-    window.wbLastCreatedBoard = null;
-  },
-  documents() {
-    if (typeof docs === "undefined") return;
-    docs = [];
-    docBlockTextCache.clear();
-    docHistoryEntries = [];
-    docHistoryContent.clear();
-    docHistories.clear();
-    docsMadeThisSession.clear();
-  },
-};
+  //: Every cache a space's data leaves in memory, by surface. A lazy surface's
+  //: row starts with a `typeof` guard: its names do not exist until its file is in.
+  const SPACE_SCOPED = {
+    notes() {
+      allEntries = [];
+      entriesEverLoaded = false;
+      entriesComplete = false;
+      activeCategory = null;
+      draftsOnly = false;
+      favouritesOnly = false;
+      editingId = null;
+      inlineAction = null;
+      linkSource = null;
+      noteSearch = "";
+      noteSearchCorrection = null;
+      notesCurrentPage = 1;
+      noteSearchWhy.clear();
+      attachmentMetaCache.clear();
+      categoryMeta = new Map();
+      notesRailCache.clear();
+      referenceCountsCache.clear();
+      reminderCountsCache.clear();
+      noteTopicsCache.clear();
+      thumbUrlCache.clear();
+      mapBoardIndexCache = null;
+      mapBoardIndexAt = 0;
+      mapBoardIndexWalk = null;
+      if (typeof objOrderCache !== "undefined") objOrderCache.clear();
+      const box = $("note-search");
+      if (box) box.value = "";
+    },
+    dashboard() {
+      dashStatsInflight = null;
+      dashGraphInflight = null;
+      dashRemindersInflight = null;
+      dashStatsAt = dashGraphAt = dashRemindersAt = 0;
+    },
+    chat() {
+      attachedNoteIds = [];
+      attachedImages = [];
+      attachedDocuments = [];
+      attachedBoards = [];
+      attachedFiles = [];
+      renderAttachments();
+      renderImageAttachments();
+      renderDocumentAttachments();
+      renderBoardAttachments();
+      renderFileAttachments();
+      captureDocumentList = [];
+      captureDocumentTitles = new Map();
+      captureDocuments.clear();
+      //: The open thread belongs to the space it was held in.
+      if (typeof newChatConversation === "function" && chatConv?.id != null) newChatConversation();
+      if (typeof newChat === "function" && conversation.length) newChat();
+    },
+    search() {
+      if (typeof finderHits === "undefined") return;
+      finderHits = [];
+      finderCounts = {};
+      finderIndexTotals = {};
+    },
+    timeline() {
+      if (typeof timelineRows === "undefined") return;
+      timelineRows = [];
+      timelineById = new Map();
+      timelineDensity = {};
+      timelineGroupNames = [];
+      timelineNextCursor = null;
+    },
+    graph() {
+      if (typeof graphStructure === "undefined") return;
+      graphStructure = null;
+      graphAdjacency = null;
+      graphTrace = null;
+      graphTraceRoutes = [];
+      graphHighlightIds = null;
+      graphHiddenCategories = new Set();
+      graphHiddenKeys = new Set();
+      graphGroupOf = new Map();
+      graphPopupId = null;
+      gcTopicSummaries.clear();
+      window.gcStop?.();
+    },
+    library() {
+      if (typeof libraryItems === "undefined") return;
+      libraryItems = [];
+      libraryCounts = {};
+      libraryOverview = {};
+      libraryTruncated = {};
+      libraryDocsAll = [];
+      libraryImagesCache = [];
+      bookmarksCache = [];
+      ocrSiblingCache = null;
+      librarySelection.clear();
+      libraryDocsSelection.clear();
+      libraryMediaSelection.clear();
+      libraryBoardsSelection.clear();
+      libraryLinksSelection.clear();
+      window.wbBoardsAll = [];
+      if (typeof libraryBoardsLast !== "undefined") [libraryBoardsLast, libraryBoardsLastText] = [null, ""];
+      window.wbLastCreatedBoard = null;
+    },
+    documents() {
+      if (typeof docs === "undefined") return;
+      docs = [];
+      docBlockTextCache.clear();
+      docHistoryEntries = [];
+      docHistoryContent.clear();
+      docHistories.clear();
+      docsMadeThisSession.clear();
+    },
+  };
 
-//: Panes of a tab that is not on screen, emptied so a visit paints from the new
-//: space or from nothing, never from the old rows. Each tab's visit loads its own
-//: data; the Dashboard rebuilds when its grid has no widget in it.
-const SPACE_PANES = ["dash-grid", "library-grid", "doc-list", "reminder-groups", "timeline-feed"];
+  //: Panes of a tab that is not on screen, emptied so a visit paints from the new
+  //: space or from nothing, never from the old rows. Each tab's visit loads its own
+  //: data; the Dashboard rebuilds when its grid has no widget in it.
+  const SPACE_PANES = ["dash-grid", "library-grid", "doc-list", "reminder-groups", "timeline-feed"];
 
-//: What is open in the old space is saved and put away, with the header still on it.
-async function spaceLeave() {
-  if (typeof docDirty !== "undefined" && docDirty) await saveDocument({ silent: true }).catch(() => {});
-  if (typeof wbFlushNudge === "function") await wbFlushNudge().catch(() => {});
-  if (typeof currentDoc !== "undefined" && currentDoc) {
-    docDirty = false;
-    showNoDocument();
-  }
-  if (window.currentBoardId != null && typeof wbShowBoardsLanding === "function") {
-    window.currentBoardId = null;
-    wbShowBoardsLanding();
-  }
-  for (const dialog of document.querySelectorAll("dialog[open]")) dialog.close();
-  closeSpaceMenu();
-}
-
-//: The steps `startApp` runs for the data that is not a tab's own. Each is isolated:
-//: one broken endpoint must not leave the rest on the old space.
-function spaceReload() {
-  const steps = [
-    ["notes", loadEntries],
-    ["recent questions", loadRecentQuestions],
-    ["the ask history badge", loadAskHistoryBadge],
-    ["suggestions", loadSuggestions],
-    ["your most-used items", loadMostUsed],
-    ["the spaces", loadSpaces],
-    ["conversations", loadConversationList],
-    ["reminders", () => pollReminders()],
-  ];
-  return Promise.all(
-    steps.map(([label, run]) =>
-      Promise.resolve()
-        .then(run)
-        .catch((error) => {
-          if (!error?.isLockout) toast(`Couldn't load ${label}: ${error.message}`, true);
-        })
-    )
-  );
-}
-
-async function swapSpace(id) {
-  //: One switch at a time: a second press while the first reads waits its turn.
-  if (spaceState.running) {
-    await spaceState.running;
-    return id === activeSpaceId() ? undefined : swapSpace(id);
-  }
-  if (id === activeSpaceId()) {
+  //: What is open in the old space is saved and put away, with the header still on it.
+  async function spaceLeave() {
+    if (typeof docDirty !== "undefined" && docDirty) await saveDocument({ silent: true }).catch(() => {});
+    if (typeof wbFlushNudge === "function") await wbFlushNudge().catch(() => {});
+    if (typeof currentDoc !== "undefined" && currentDoc) {
+      docDirty = false;
+      showNoDocument();
+    }
+    if (window.currentBoardId != null && typeof wbShowBoardsLanding === "function") {
+      window.currentBoardId = null;
+      wbShowBoardsLanding();
+    }
+    for (const dialog of document.querySelectorAll("dialog[open]")) dialog.close();
     closeSpaceMenu();
+  }
+
+  //: The steps `startApp` runs for the data that is not a tab's own. Each is isolated:
+  //: one broken endpoint must not leave the rest on the old space.
+  function spaceReload() {
+    const steps = [
+      ["notes", loadEntries],
+      ["recent questions", loadRecentQuestions],
+      ["the ask history badge", loadAskHistoryBadge],
+      ["suggestions", loadSuggestions],
+      ["your most-used items", loadMostUsed],
+      ["the spaces", loadSpaces],
+      ["conversations", loadConversationList],
+      ["reminders", () => pollReminders()],
+    ];
+    return Promise.all(
+      steps.map(([label, run]) =>
+        Promise.resolve()
+          .then(run)
+          .catch((error) => {
+            if (!error?.isLockout) toast(`Couldn't load ${label}: ${error.message}`, true);
+          })
+      )
+    );
+  }
+
+  async function swapSpace(id) {
+    //: One switch at a time: a second press while the first reads waits its turn.
+    if (spaceState.running) {
+      await spaceState.running;
+      return id === activeSpaceId() ? undefined : swapSpace(id);
+    }
+    if (id === activeSpaceId()) {
+      closeSpaceMenu();
+      return undefined;
+    }
+    spaceState.running = spaceSwapNow(id);
+    try {
+      await spaceState.running;
+    } finally {
+      spaceState.running = null;
+    }
     return undefined;
   }
-  spaceState.running = spaceSwapNow(id);
-  try {
-    await spaceState.running;
-  } finally {
-    spaceState.running = null;
-  }
-  return undefined;
-}
 
-async function spaceSwapNow(id) {
-  const from = activeSpaceId();
-  await spaceLeave();
-  prefs.set("spaceId", id);
-  spaceState.epoch += 1;
-  clearApiCache();
-  for (const [surface, forget] of Object.entries(SPACE_SCOPED)) {
+  async function spaceSwapNow(id) {
+    const from = activeSpaceId();
+    await spaceLeave();
+    prefs.set("spaceId", id);
+    spaceState.epoch += 1;
+    clearApiCache();
+    for (const [surface, forget] of Object.entries(SPACE_SCOPED)) {
+      try {
+        forget();
+      } catch (error) {
+        console.error(`Forgetting ${surface} for the space switch failed:`, error);
+      }
+    }
+    const active = document.body.dataset.tab || "dashboard";
+    for (const pane of SPACE_PANES) {
+      const node = $(pane);
+      if (node && !node.closest(`#tab-${active}`)) node.replaceChildren();
+    }
+    renderSpaceMenu();
+    updateCaptureSpaceLabel();
+    document.dispatchEvent(new CustomEvent("spacechange", { detail: { id, from, epoch: spaceState.epoch } }));
+    const entries = spaceReload();
+    //: After the notes, as `startApp` does: every tab wants them, none should guess.
+    await entries;
+    if (id !== activeSpaceId()) return;
     try {
-      forget();
+      await refreshActiveTab();
     } catch (error) {
-      console.error(`Forgetting ${surface} for the space switch failed:`, error);
+      toast(`Couldn't load this tab: ${error.message}`, true);
     }
   }
-  const active = document.body.dataset.tab || "dashboard";
-  for (const pane of SPACE_PANES) {
-    const node = $(pane);
-    if (node && !node.closest(`#tab-${active}`)) node.replaceChildren();
-  }
-  renderSpaceMenu();
-  updateCaptureSpaceLabel();
-  document.dispatchEvent(new CustomEvent("spacechange", { detail: { id, from, epoch: spaceState.epoch } }));
-  const entries = spaceReload();
-  //: After the notes, as `startApp` does: every tab wants them, none should guess.
-  await entries;
-  if (id !== activeSpaceId()) return;
-  try {
-    await refreshActiveTab();
-  } catch (error) {
-    toast(`Couldn't load this tab: ${error.message}`, true);
-  }
-}
 
-//: An Undo from another space: say so and go back there first, because the
-//: server answers an id of another space with 404. "All spaces" sees every row,
-//: so an entry made there, or an Undo run from there, needs no switch. Resolves
-//: true when the entry may run now.
-async function spaceEnterFor(action) {
-  const here = activeSpaceId();
-  if (!action.space || action.space === here || here === SPACE_ALL) return true;
-  const name = action.space === SPACE_ALL ? "All spaces" : spacesCache.find((s) => s.id === action.space)?.name || action.space;
-  toast(`That was in ${name}. Switching back to it.`);
-  await swapSpace(action.space);
-  return activeSpaceId() === action.space;
-}
+  //: An Undo from another space: say so and go back there first, because the
+  //: server answers an id of another space with 404. "All spaces" sees every row,
+  //: so an entry made there, or an Undo run from there, needs no switch. Resolves
+  //: true when the entry may run now.
+  async function spaceEnterFor(action) {
+    const here = activeSpaceId();
+    if (!action.space || action.space === here || here === SPACE_ALL) return true;
+    const name = action.space === SPACE_ALL ? "All spaces" : spacesCache.find((s) => s.id === action.space)?.name || action.space;
+    toast(`That was in ${name}. Switching back to it.`);
+    await swapSpace(action.space);
+    return activeSpaceId() === action.space;
+  }
+
+  //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
+  Object.assign(window, { swapSpace, spaceEnterFor });
+})();

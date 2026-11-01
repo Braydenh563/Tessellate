@@ -251,7 +251,13 @@ def _plain(text: str) -> str:
     return _SPLIT_HYPHEN.sub("-", _MARK.sub("", text)).strip()
 
 
-_LIST_ITEM = re.compile(r"(?:[-*+•]\s|\d+[.)]\s|\[[ xX]\]\s)")
+def _list_item(line: str) -> bool:
+    """"- eggs", "2) milk", "[x] bread": the first of a list, by string steps:
+    CodeQL reads `\\d+[.)]` as backtracking on a run of digits."""
+    rest = line.lstrip("0123456789")
+    if len(rest) < len(line) and rest[:1] in (".", ")"):
+        return rest[1:2].isspace()
+    return (line[:1] in "-*+•" and line[1:2].isspace()) or (line[:1] == "[" and line[1:2] in " xX" and line[2:3] == "]" and line[3:4].isspace())
 
 
 def _opens_section(line: str) -> bool:
@@ -280,7 +286,7 @@ def _title_of(content: str) -> str:
         return ""
     first = lines[0].strip()
     marked = _marked(first)
-    if not marked and _LIST_ITEM.match(first):
+    if not marked and _list_item(first):
         #: "[x] Milk" and "- eggs" are the first of a list, not its name.
         return ""
     if not marked and _opens_section(_plain(first)):
