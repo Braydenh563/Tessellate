@@ -250,6 +250,71 @@ function carryForce(alpha) {
   }
 }
 carryForce.initialize = () => {};
+//: **A small drag is a local nudge** (INBOX 1517, the owner: "the more I
+//: slightly move nodes on the graph, all of it really starts to bunch up and
+//: get closer together until they are all really close"). A drag reheats the
+//: whole simulation, and a map the untangle passes arranged is not the force
+//: layout's own resting shape, so every nudge let all of it relax toward that
+//: shape a little: ten 8 unit drags changed the layout's size by 7% at 40 notes
+//: and the notes 150+ units away from the held one moved 3.8px a drag (a
+//: control with no drag moved nothing; tests/test_graph_drag_local_1517.py).
+//: Now the notes beyond the held one's neighbourhood (two links, or
+//: `NUDGE_RADIUS` world units) are held where they stood until the map rests,
+//: by a share of `1 - smoothstep(reach / DRAG_FULL_DISTANCE)`: whole for a
+//: nudge, none once the note has been carried a real distance, so a deliberate
+//: move still reorganises the map around it.
+const NUDGE_RADIUS = 150;
+const NUDGE_HOPS = 2;
+const nudge = { held: [], w: 0, reach: 0 };
+function nudgeStart(node) {
+  nudge.held = [];
+  nudge.reach = 0;
+  nudge.w = 1;
+  const links = simulation && simulation.force("link") ? simulation.force("link").links() : [];
+  const near = new Set([node]);
+  let frontier = [node];
+  for (let hop = 0; hop < NUDGE_HOPS && frontier.length; hop++) {
+    const next = [];
+    for (const link of links) {
+      for (const [a, b] of [[link.source, link.target], [link.target, link.source]]) {
+        if (typeof a !== "object" || typeof b !== "object") continue;
+        if (frontier.includes(a) && !near.has(b)) {
+          near.add(b);
+          next.push(b);
+        }
+      }
+    }
+    frontier = next;
+  }
+  for (const other of nodes) {
+    if (near.has(other) || other.fx != null || !Number.isFinite(other.x)) continue;
+    if (Math.hypot(other.x - node.x, other.y - node.y) <= NUDGE_RADIUS) continue;
+    nudge.held.push({ node: other, x: other.x, y: other.y });
+  }
+}
+function nudgeReach(distance) {
+  nudge.reach = Math.max(nudge.reach, distance);
+  const t = Math.min(1, nudge.reach / DRAG_FULL_DISTANCE);
+  nudge.w = 1 - t * t * (3 - 2 * t);
+}
+function nudgeEnd() {
+  nudge.held = [];
+  nudge.w = 0;
+}
+function nudgeForce() {
+  const w = nudge.w;
+  if (!w) return;
+  const keep = 1 - w;
+  for (const f of nudge.held) {
+    const n = f.node;
+    if (n.fx != null) continue;
+    n.x = f.x + (n.x - f.x) * keep;
+    n.y = f.y + (n.y - f.y) * keep;
+    n.vx *= keep;
+    n.vy *= keep;
+  }
+}
+nudgeForce.initialize = () => {};
 let dragOrigin = null;
 function dragHeat(x, y) {
   if (!dragOrigin) return DRAG_ALPHA;
@@ -1776,9 +1841,38 @@ function untanglePasses() {
   return nodes.length > UNTANGLE_BIG ? UNTANGLE_BIG_PASSES : UNTANGLE_PASSES;
 }
 const UNTANGLE_MAX_EDGES = 4000;
-const untangle = { holding: false, margin: 0, cleaned: false, widest: 8, edges: [], incident: [], done: false, passes: 0, ea: null, eb: null, xs: null, ys: null, mark: null };
+const untangle = { holding: false, margin: 0, cleaned: false, widest: 8, edges: [], incident: [], done: false, passes: 0, ea: null, eb: null, xs: null, ys: null, mark: null, run: null, tidy: null };
+
+//: **The passes and the cleanup run in slices** (INBOX 1514). A pass was one
+//: call of up to `UNTANGLE_MS_MAX` (600 ms at 500 notes) and the cleanup
+//: another, so a drag or new settings sent while they ran waited for the
+//: call to end, and the map showed nothing for all of it. They are
+//: generators now, with a checkpoint (`if (sliceOver()) yield;`) at each
+//: note, turn and push; `settleUntangled` resumes one for a slice
+//: (`PENDING_SLICE_MS`) at a time, and the sync callers drive it to the end
+//: (`untangleLayout`, `untangleCleanup`), unchanged. Their budgets run on
+//: `workNow`, the time spent inside slices, so a pass gets the same work
+//: (and finds the same moves) whether it is cut into slices or not.
+const sliceClock = { spent: 0, since: 0, end: Infinity };
+function workNow() {
+  return sliceClock.spent + Date.now() - sliceClock.since;
+}
+function sliceOver() {
+  return Date.now() >= sliceClock.end;
+}
+//: One slice of `gen` ending at `end`: its result in `{ value }`, or null when it yielded.
+function sliceRun(gen, end) {
+  sliceClock.since = Date.now();
+  sliceClock.end = end;
+  const step = gen.next();
+  sliceClock.spent += Date.now() - sliceClock.since;
+  sliceClock.end = Infinity;
+  return step.done ? { value: step.value } : null;
+}
 
 function untangleSetup(edges) {
+  untangle.run = null;
+  untangle.tidy = null;
   untangle.edges = [];
   untangle.incident = nodes.map(() => []);
   untangle.done = false;
@@ -1864,7 +1958,7 @@ const UNTANGLE_TURN_STEPS = 8;
 //: Within the pass's budget (`until`, audit 1029 row 35): each turn counts the
 //: crossings on all of a category's lines, and at 2,000 notes the 10 x 16
 //: turns took 7.2 s in one call against a budget of 0.6 s.
-function untangleGroups(still, until = Infinity) {
+function* untangleGroupsSteps(still, until = Infinity) {
   const groups = new Map();
   nodes.forEach((node, i) => {
     if (still(node)) return;
@@ -1873,7 +1967,8 @@ function untangleGroups(still, until = Infinity) {
   });
   let gained = 0;
   for (const members of groups.values()) {
-    if (Date.now() >= until) break;
+    if (workNow() >= until) break;
+    if (sliceOver()) yield;
     if (members.length < 2) continue;
     const lines = [...new Set(members.flatMap((i) => untangle.incident[i]))];
     if (!lines.length) continue;
@@ -1885,8 +1980,9 @@ function untangleGroups(still, until = Infinity) {
     let best = before;
     let bestAt = null;
     for (let mirror = 0; mirror < 2; mirror++) {
-      for (let step = 0; step < UNTANGLE_TURN_STEPS && Date.now() < until; step++) {
+      for (let step = 0; step < UNTANGLE_TURN_STEPS && workNow() < until; step++) {
         if (!mirror && !step) continue;
+        if (sliceOver()) yield;
         const angle = (2 * Math.PI * step) / UNTANGLE_TURN_STEPS;
         const cos = Math.cos(angle);
         const sin = Math.sin(angle);
@@ -2371,9 +2467,17 @@ function untangleStepOff(i) {
 }
 
 function untangleCleanup() {
+  sliceClock.since = Date.now();
+  sliceClock.end = Infinity;
+  const step = untangleCleanupSteps().next();
+  sliceClock.spent += Date.now() - sliceClock.since;
+  return step.value;
+}
+
+function* untangleCleanupSteps() {
   // Each half of the cleanup (the pushes, the step-offs) gets half of what a pass gets.
   const half = untangleBudget() / 2;
-  const until = Date.now() + half;
+  const until = workNow() + half;
   const free = (node) => node.fx == null && !node.placed;
   const startX = nodes.map((n) => n.x);
   const startY = nodes.map((n) => n.y);
@@ -2410,9 +2514,10 @@ function untangleCleanup() {
       if (Math.hypot(nodes[i].x - nodes[j].x, nodes[i].y - nodes[j].y) < need + 2 * UNTANGLE_CLEAN_SLACK) meet.push([i, j, need]);
     }
   }
-  for (let iter = 0; stuck && iter < UNTANGLE_CLEAN_ITERS && Date.now() < until; iter++) {
+  for (let iter = 0; stuck && iter < UNTANGLE_CLEAN_ITERS && workNow() < until; iter++) {
     let moved = false;
     for (const at of pairs) {
+      if (sliceOver()) yield;
       const k = Math.floor(at / nodes.length);
       const m = at % nodes.length;
       const a = nodes[ea[k]];
@@ -2474,6 +2579,7 @@ function untangleCleanup() {
     // turns: the lines have the last word, nothing ticks after them (`untangle.holding`).
     if (iter < UNTANGLE_CLEAN_ITERS * 0.75) {
       for (const [pi, qi, need] of meet) {
+        if (sliceOver()) yield;
         const p = nodes[pi];
         const q = nodes[qi];
         const dx = q.x - p.x;
@@ -2511,12 +2617,13 @@ function untangleCleanup() {
   untangleReach();
   lineGridBuild(untangle.widest + UNTANGLE_CLEAN_MARGIN + UNTANGLE_CLEAN_SLACK);
   nodeGridBuild(untangle.widest + COLLIDE_PAD / 2 + UNTANGLE_CLEAN_MARGIN);
-  const stepUntil = Date.now() + half;
+  const stepUntil = workNow() + half;
   // A sweep that moved a note may have opened room for one it could not move: the notes still on a line go again while the clock lasts.
-  for (let sweep = 0, any = true; any && sweep < UNTANGLE_CLEAN_SWEEPS && Date.now() < stepUntil; sweep++) {
+  for (let sweep = 0, any = true; any && sweep < UNTANGLE_CLEAN_SWEEPS && workNow() < stepUntil; sweep++) {
     any = false;
     for (const i of untangleStepOrder(free)) {
-      if (Date.now() >= stepUntil) break;
+      if (workNow() >= stepUntil) break;
+      if (sliceOver()) yield;
       // An earlier step may have cleared this one's line.
       if (!untangleOnLine(i)) continue;
       const x0 = nodes[i].x;
@@ -2642,21 +2749,30 @@ function untangleInside(node) {
 }
 
 function untangleLayout() {
+  sliceClock.since = Date.now();
+  sliceClock.end = Infinity;
+  const step = untangleLayoutSteps().next();
+  sliceClock.spent += Date.now() - sliceClock.since;
+  return step.value;
+}
+
+function* untangleLayoutSteps() {
   // Organic only: Clusters places its hubs at each category's heart and its
   // bridges on the rim (`hubForce`, `rimOffset`), Galaxy by degree; a move
   // here would undo what those shapes are for.
   if (untangle.done || !untangle.edges.length || ring.shape !== "organic") return 0;
   untangle.done = true;
-  const until = Date.now() + untangleBudget();
+  const until = workNow() + untangleBudget();
   const still = (node) => node.fx != null || node.placed;
   const startX = nodes.map((n) => n.x);
   const startY = nodes.map((n) => n.y);
   untangleReach();
   untangle.total = crossingsOn(untangle.edges.map((_, i) => i));
   untangle.gain = 0;
-  for (let round = 0; round < UNTANGLE_ROUNDS && Date.now() < until; round++) {
-    let gained = untangleGroups(still, until);
-    for (let i = 0; i < nodes.length && Date.now() < until; i++) {
+  for (let round = 0; round < UNTANGLE_ROUNDS && workNow() < until; round++) {
+    let gained = yield* untangleGroupsSteps(still, until);
+    for (let i = 0; i < nodes.length && workNow() < until; i++) {
+      if (sliceOver()) yield;
       const node = nodes[i];
       const mine = untangle.incident[i];
       if (still(node) || !mine.length) continue;
@@ -2669,6 +2785,7 @@ function untangleLayout() {
       }
       near.sort((p, q) => p[0] - q[0]);
       for (const [, j] of near.slice(0, UNTANGLE_NEAR)) {
+        if (sliceOver()) yield;
         const other = nodes[j];
         const both = [...new Set([...mine, ...untangle.incident[j]])];
         const before = crossingsOn(both);
@@ -2698,6 +2815,7 @@ function untangleLayout() {
         for (let ring = 1; ring <= UNTANGLE_HUB_RINGS; ring++) {
           const r = (home.far * UNTANGLE_REACH * ring) / UNTANGLE_HUB_RINGS;
           for (let t = 0; t < UNTANGLE_TURNS; t++) {
+            if (sliceOver()) yield;
             const angle = (2 * Math.PI * t) / UNTANGLE_TURNS;
             node.x = home.cx + Math.cos(angle) * r;
             node.y = home.cy + Math.sin(angle) * r;
@@ -2718,6 +2836,7 @@ function untangleLayout() {
         const reach = Math.max(1, Math.hypot(x0 - other.x, y0 - other.y));
         const from = Math.atan2(y0 - other.y, x0 - other.x);
         for (let t = mine.length === 1 ? 1 : 0; t < UNTANGLE_TURNS; t++) {
+          if (sliceOver()) yield;
           const angle = from + (2 * Math.PI * t) / UNTANGLE_TURNS;
           node.x = other.x + Math.cos(angle) * reach;
           node.y = other.y + Math.sin(angle) * reach;
@@ -2795,15 +2914,22 @@ function untangleOwed() {
 function settleUntangled(until, deadline, cap) {
   if (!coolToRest(until)) return false;
   const late = () => deadline && Date.now() + untangleBudget() > deadline;
-  while (!untangle.done || (untangle.passes > 0 && untangle.passes < untanglePasses())) {
-    if (late()) return "late";
-    if (cap && Date.now() + 2 * untangleBudget() > cap) {
-      untangle.done = true;
-      untangle.passes = UNTANGLE_PASSES;
-      break;
+  while (untangle.run || !untangle.done || (untangle.passes > 0 && untangle.passes < untanglePasses())) {
+    if (!untangle.run) {
+      if (late()) return "late";
+      if (cap && Date.now() + 2 * untangleBudget() > cap) {
+        untangle.done = true;
+        untangle.passes = UNTANGLE_PASSES;
+        break;
+      }
+      untangle.done = false;
+      untangle.run = untangleLayoutSteps();
     }
-    untangle.done = false;
-    if (!untangleLayout()) break;
+    //: A pass in progress is resumed for the rest of this slice (`sliceRun`).
+    const out = sliceRun(untangle.run, until);
+    if (!out) return false;
+    untangle.run = null;
+    if (!out.value) break;
     landTargets();
     untangle.passes += 1;
     if (untangle.gain < Math.max(2, untangle.total * UNTANGLE_MIN_SHARE)) untangle.passes = UNTANGLE_PASSES;
@@ -2814,10 +2940,19 @@ function settleUntangled(until, deadline, cap) {
   }
   untangle.done = true;
   if (untangle.passes > 0 && !untangle.cleaned) {
-    if (late()) return "late";
-    untangle.cleaned = true;
-    // No links past the cap (G1): nothing to clear, but marked cleaned so it is not owed again.
-    if (untangle.edges.length && untangleCleanup()) landTargets();
+    if (!untangle.tidy) {
+      if (late()) return "late";
+      // No links past the cap (G1): nothing to clear, but marked cleaned so it is not owed again.
+      if (untangle.edges.length) untangle.tidy = untangleCleanupSteps();
+      else untangle.cleaned = true;
+    }
+    if (untangle.tidy) {
+      const out = sliceRun(untangle.tidy, until);
+      if (!out) return false;
+      untangle.tidy = null;
+      untangle.cleaned = true;
+      if (out.value) landTargets();
+    }
   }
   for (const node of nodes) {
     node.vx = 0;
@@ -2894,13 +3029,37 @@ function settleGlideCancel() {
 //: no pass begins after `PENDING_MAX_MS` less the cleanup's time, and one
 //: still cooling at `PENDING_CUT_MS` is shown as it is (less motion waits
 //: for the settled map, to `PENDING_STILL_MS` and `PENDING_STILL_CUT_MS`).
-const PENDING_SLICE_MS = 12;
+const PENDING_SLICE_MS = 30;
 const PENDING_TICKS = 150;
 const PENDING_MAX_MS = 4000;
 const PENDING_CUT_MS = 6000;
 const PENDING_STILL_MS = 2400;
 const PENDING_STILL_CUT_MS = 3000;
-const pending = { on: false, open: false, record: false, bloom: false, from: 0, sx: null, sy: null, alpha: 0, untangle: null };
+const pending = { on: false, open: false, record: false, bloom: false, from: 0, sx: null, sy: null, snapX: null, snapY: null, alpha: 0, untangle: null };
+
+//: The last map that was whole: between slices and never mid-pass, where
+//: notes stand on trial places. Where a pass or cleanup that is given up
+//: (`pendingAbandon`) puts the notes back.
+function pendingSnap() {
+  if (untangle.run || untangle.tidy) return;
+  nodes.forEach((node, i) => {
+    pending.snapX[i] = node.x;
+    pending.snapY[i] = node.y;
+  });
+}
+
+function pendingAbandon() {
+  if (!untangle.run && !untangle.tidy) return;
+  untangle.run = null;
+  untangle.tidy = null;
+  nodes.forEach((node, i) => {
+    node.tx = undefined;
+    node.ty = undefined;
+    if (node.fx != null) return;
+    node.x = pending.snapX[i];
+    node.y = pending.snapY[i];
+  });
+}
 
 function pendingStart(open, record, bloom) {
   pending.on = true;
@@ -2910,6 +3069,8 @@ function pendingStart(open, record, bloom) {
   pending.from = Date.now();
   pending.sx = nodes.map((n) => n.x);
   pending.sy = nodes.map((n) => n.y);
+  pending.snapX = Float64Array.from(pending.sx);
+  pending.snapY = Float64Array.from(pending.sy);
   pending.alpha = simulation.alpha();
   pending.untangle = { done: untangle.done, passes: untangle.passes, cleaned: untangle.cleaned };
   simulation.alphaDecay(1 - Math.pow(0.001, 1 / PENDING_TICKS));
@@ -2928,6 +3089,8 @@ function pendingEnd() {
 function pendingCancel() {
   if (!pending.on) return;
   pendingEnd();
+  untangle.run = null;
+  untangle.tidy = null;
   nodes.forEach((node, i) => {
     node.tx = undefined;
     node.ty = undefined;
@@ -2957,24 +3120,32 @@ function pendingStep() {
     else settleGlideFrom(pending.sx, pending.sy);
     return;
   }
+  pendingSnap();
   const spent = Date.now() - pending.from;
-  if (pending.open && !still && (done === "late" || (spent > WARM_MS && untangle.passes > 0))) {
+  const whole = !untangle.run && !untangle.tidy;
+  //: Cooled but not untangled by the budget; shown once the pass in hand is done (it ran whole before).
+  const late = pending.open && !still && (done === "late" || (spent > WARM_MS && untangle.passes > 0));
+  if (late && whole) {
     // Cooled but not untangled by the budget (300 notes): shown as it
     // stands, the rest worked out of sight and glided to (`settleGlideFrom`).
     pending.open = false;
     pending.sx = nodes.map((n) => n.x);
     pending.sy = nodes.map((n) => n.y);
+    pending.snapX = Float64Array.from(pending.sx);
+    pending.snapY = Float64Array.from(pending.sy);
     pending.alpha = simulation.alpha();
     pending.untangle = { done: untangle.done, passes: untangle.passes, cleaned: untangle.cleaned };
     post(false);
-  } else if (pending.open && spent > (still ? PENDING_STILL_CUT_MS : WARM_MS)) {
+  } else if (!late && pending.open && spent > (still ? PENDING_STILL_CUT_MS : WARM_MS)) {
     // Too big to cool out of sight: shown as it is, the rest cooled live.
+    pendingAbandon();
     pendingEnd();
     untangle.holding = false;
     post(false);
   } else if (!pending.open && spent > PENDING_CUT_MS) {
     // Still cooling well past the cap (thousands of notes): what the passes
     // moved lands, the rest is given up, one glide.
+    pendingAbandon();
     pendingEnd();
     untangle.done = true;
     untangle.passes = UNTANGLE_PASSES;
@@ -2994,14 +3165,14 @@ function clampToWorld() {
   }
 }
 
-function post(final) {
+function post(final, xs = null, ys = null) {
   if (inFlight > MAX_IN_FLIGHT && !final) return;
   const wanted = nodes.length * 2;
   let buffer = pool.pop();
   if (!buffer || buffer.length !== wanted) buffer = new Float32Array(wanted);
   for (let i = 0; i < nodes.length; i++) {
-    buffer[i * 2] = nodes[i].x;
-    buffer[i * 2 + 1] = nodes[i].y;
+    buffer[i * 2] = xs ? xs[i] : nodes[i].x;
+    buffer[i * 2 + 1] = ys ? ys[i] : nodes[i].y;
   }
   inFlight += 1;
   self.postMessage(
@@ -3106,6 +3277,7 @@ function loop() {
     return;
   }
   if (settled) {
+    nudgeEnd();
     post(true);
     self.postMessage({ type: "end", alpha: simulation.alpha(), epoch });
     return;
@@ -3186,6 +3358,7 @@ self.onmessage = (event) => {
       dragging = false;
       carry.node = null;
       carry.followers = [];
+      nudgeEnd();
       perf = message.perf === true;
       still = message.still === true;
       ramp.n = 0;
@@ -3342,6 +3515,7 @@ self.onmessage = (event) => {
         .force("hub", hubForce)
         .force("tether", tetherForce)
         .force("carry", carryForce)
+        .force("nudge", nudgeForce)
         .force("shape", shapeForce)
         .force("leaf", leafForce)
         .force(
@@ -3398,6 +3572,7 @@ self.onmessage = (event) => {
       break;
     }
     case "params":
+      nudgeEnd();
       untangle.done = false;
       untangle.passes = 0;
       untangle.cleaned = false;
@@ -3422,6 +3597,7 @@ self.onmessage = (event) => {
         untangle.holding = false;
         dragOrigin = { x: node.x, y: node.y };
         markFollowers(node, true);
+        nudgeStart(node);
         if (ring.params) applyGrouping(ring.params);
         const heat = dragHeat(message.x, message.y);
         simulation.alphaTarget(heat).alpha(Math.max(simulation.alpha(), heat));
@@ -3430,6 +3606,7 @@ self.onmessage = (event) => {
       } else if (message.phase === "move") {
         node.fx = message.x;
         node.fy = message.y;
+        if (dragOrigin) nudgeReach(Math.hypot(message.x - dragOrigin.x, message.y - dragOrigin.y));
         const heat = dragHeat(message.x, message.y);
         simulation.alphaTarget(heat).alpha(Math.max(simulation.alpha(), heat));
       } else {
@@ -3509,6 +3686,7 @@ self.onmessage = (event) => {
       break;
     case "reshuffle":
       if (!simulation) break;
+      nudgeEnd();
       if (message.still !== undefined) still = message.still === true;
       untangle.done = false;
       untangle.passes = 0;
@@ -3519,6 +3697,7 @@ self.onmessage = (event) => {
       break;
     case "stop":
       stopLoop();
+      nudgeEnd();
       dragging = false;
       carry.node = null;
       carry.followers = [];

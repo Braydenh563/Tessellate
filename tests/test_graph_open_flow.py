@@ -143,7 +143,7 @@ def test_less_motion_gets_the_settled_map_as_its_one_and_only_frame() -> None:
     # No pass is begun that would leave the cleanup no time before the cap.
     settle = _fn("settleUntangled")
     assert "if (cap && Date.now() + 2 * untangleBudget() > cap) {" in settle
-    assert settle.index("2 * untangleBudget() > cap") < settle.index("untangleCleanup()")
+    assert settle.index("2 * untangleBudget() > cap") < settle.index("untangleCleanupSteps()")
 
 
 def test_a_layout_settled_live_is_untangled_out_of_sight_and_glided_to_once() -> None:
