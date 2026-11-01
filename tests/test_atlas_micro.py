@@ -29,7 +29,7 @@ let seed = 7;
 const rnd = () => ((seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296);
 const timers = [];
 const calls = { anim: [], aim: [], mood: [], blink: 0, raf: 0 };
-const animEl = (name) => ({ name, style: {}, animate(frames, opts) { calls.anim.push({ name, frames, opts }); return { cancel() {} }; } });
+const animEl = (name) => ({ name, style: {}, classList: { contains: () => false }, animate(frames, opts) { calls.anim.push({ name, frames, opts }); return { cancel() {} }; } });
 const heads = [animEl("head"), animEl("hair")];
 const body = animEl("body");
 const ears = [animEl("ear-l"), animEl("ear-r")];

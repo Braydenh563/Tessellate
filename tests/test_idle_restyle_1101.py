@@ -123,3 +123,48 @@ def test_the_dodge_listener_uses_the_typing_look_for_typing_keys() -> None:
     src = AVATARS[AVATARS.index("for (const type of [\"click\", \"keyup\"])") :][:900]
     assert "nameMarkBuddyTypingKey(e) ? nameMarkBuddyDodgeTyping : nameMarkBuddyDodge" in src
     assert "setTimeout(look, 80)" in src and "setTimeout(look, 700)" in src
+
+
+@needs_node
+def test_a_props_slow_loop_is_stepped_about_sixteen_times_a_cycle() -> None:
+    out = _run(
+        r"""
+const NMB_TEMPO_MS = 50;
+"""
+        + re.search(r"^const NMB_PROP_STEPS = .*;$", AVATARS, re.M).group(0)
+        + re.search(r"^const NMB_PROP_GAP_MAX = .*;$", AVATARS, re.M).group(0)
+        + _fn(AVATARS, "nameMarkBuddyPropGaps")
+        + r"""
+const mk = (id, duration) => ({ id, effect: { getTiming: () => ({ duration }) } });
+const list = [mk("atl-prop", 3000), mk("atl-prop", 900), mk("atl-prop", 600), mk("atl-prop", 20000), mk("nmb-limb", 3000)];
+const gaps = nameMarkBuddyPropGaps(list);
+process.stdout.write(JSON.stringify(list.map((a) => gaps.get(a) ?? null)));
+"""
+    )
+    # The coil's 3 s breath every 4th beat (5Hz), a 900 ms twinkle every beat, a 20 s one no seldomer than 5Hz,
+    # and anything that is not a prop's loop has no gap of its own.
+    assert out == [4, 1, 1, 4, None]
+
+
+@needs_node
+def test_a_beat_steps_a_prop_by_its_gap_and_the_rest_as_before() -> None:
+    out = _run(
+        r"""
+const nmbTempo = { ticks: 0, gap: new WeakMap(), slow: new WeakSet() };
+"""
+        + _fn(AVATARS, "nameMarkBuddyDue")
+        + r"""
+const prop = {}; const layer = {}; const plain = {};
+nmbTempo.gap.set(prop, 4); nmbTempo.slow.add(layer);
+const ran = { prop: 0, layer: 0, plain: 0 };
+for (let t = 1; t <= 40; t += 1) {
+  nmbTempo.ticks = t;
+  const beat = t % 2 === 0;
+  if (nameMarkBuddyDue(prop, beat)) ran.prop += 1;
+  if (nameMarkBuddyDue(layer, beat)) ran.layer += 1;
+  if (nameMarkBuddyDue(plain, beat)) ran.plain += 1;
+}
+process.stdout.write(JSON.stringify(ran));
+"""
+    )
+    assert out == {"prop": 10, "layer": 20, "plain": 40}

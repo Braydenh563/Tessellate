@@ -60,6 +60,7 @@ global.toast = (m) => said.push(m);
 global.toastAction = (m, label) => said.push(`${m} [${label}]`);
 global.nameMarkBuddyLeave = (b, then) => then();
 global.nameMarkBuddyGone = () => {};
+global.dropAnimations = () => {};
 """
         + shortcuts
         + "\n"

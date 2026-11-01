@@ -5336,7 +5336,33 @@ const NMB_HOLD_SHOWN = '[data-pose="hang"], [data-travel="climb"], .nm-buddy-dra
 //: The long, still acts are rest, and paced as rest: a stance, a nap, a
 //: book, a seat. Full rate is for the short ones, where it is moving.
 const NMB_RESTING_ACTS = new Set(["lie", "read", "beanbag", "chair", "nap", "peek", "peekdown", "meditate", ...Object.keys(NMB_STANCES)]);
-const nmbTempo = { held: true, timer: 0, anims: [], at: 0, seen: 0, clock: new WeakMap(), slow: new WeakSet(), ticks: 0 };
+const nmbTempo = { held: true, timer: 0, anims: [], at: 0, seen: 0, clock: new WeakMap(), slow: new WeakSet(), gap: new WeakMap(), ticks: 0 };
+//: **A prop's slow loop is stepped slowly** (audit 1101, row 17's pacer
+//: leftover). Each step of an animation inside the drawing restyles the whole
+//: figure (5,800 elements at rest, 134 ms of style a second at 4x CPU with
+//: ONE paced animation: the coil's 3 s breath, 1 to 1.06 times, a fraction of
+//: a pixel a step) and the 20Hz beat gave a loop of seconds forty steps a
+//: cycle. A prop's loop (`atl-prop`, atlas-life.js) is stepped about sixteen
+//: times a cycle instead, no oftener than 20Hz and no seldomer than 5Hz, so a
+//: quick one (a zap, a twinkle) keeps its rate and a slow one stops costing.
+const NMB_PROP_STEPS = 16;
+const NMB_PROP_GAP_MAX = 4;
+function nameMarkBuddyPropGaps(anims) {
+  const gaps = new WeakMap();
+  for (const anim of anims) {
+    if (anim.id !== "atl-prop") continue;
+    const ticks = Math.round(anim.effect.getTiming().duration / NMB_PROP_STEPS / NMB_TEMPO_MS);
+    gaps.set(anim, Math.max(1, Math.min(NMB_PROP_GAP_MAX, ticks)));
+  }
+  return gaps;
+}
+//: Whether this beat steps `anim`: a prop's own gap, else every beat, or every
+//: other for what animates inside one of Atlas's layers (10Hz).
+function nameMarkBuddyDue(anim, beat) {
+  const gap = nmbTempo.gap.get(anim);
+  if (gap) return nmbTempo.ticks % gap === 0;
+  return beat || !nmbTempo.slow.has(anim);
+}
 function nameMarkBuddyTempo() {
   nmbTempo.timer = 0;
   const buddy = document.getElementById("nm-buddy");
@@ -5384,6 +5410,7 @@ function nameMarkBuddyTempo() {
     //: whatever animates inside a layer next.)
     //: Not a limb's gesture in a move (`nameMarkBuddyLimbs`): 20Hz, not 10.
     nmbTempo.slow = new WeakSet(nmbTempo.anims.filter((a) => a.id !== "nmb-limb" && a.effect.target.closest("svg.atl-layer")));
+    nmbTempo.gap = nameMarkBuddyPropGaps(nmbTempo.anims);
   }
   nmbTempo.ticks += 1;
   const beat = nmbTempo.ticks % 2 === 0;
@@ -5443,7 +5470,7 @@ function nameMarkBuddyTempo() {
       //: At the animation's own rate (a stride's, a manner's).
       const t = (nmbTempo.clock.get(anim) ?? 0) + step * (anim.playbackRate || 1);
       nmbTempo.clock.set(anim, t);
-      if (beat || !nmbTempo.slow.has(anim)) anim.currentTime = t;
+      if (nameMarkBuddyDue(anim, beat)) anim.currentTime = t;
     }
   });
   nmbTempo.at = now;
