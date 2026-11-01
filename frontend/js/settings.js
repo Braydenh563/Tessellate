@@ -427,7 +427,7 @@ async function openSettingsModal(section = "models", scrollToId = null) {
       // This was the one of the three flash call sites with no cleanup, and it
       // looked harmless because the animation ends on `transparent`, so on an
       // ordinary machine the highlight does fade and the stuck class is
-      // invisible. Under `prefers-reduced-motion: reduce` the stylesheet
+      // invisible. Under reduced motion (`data-motion="reduced"`) the stylesheet
       // deliberately swaps the animation for a *static* outline and background
       // (see .flash-target.flash there), and with nothing ever removing the
       // class that static highlight is permanent. A value that is only wrong

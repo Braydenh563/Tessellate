@@ -18,7 +18,7 @@
 //:   smoke   a puff, gone; a puff there, back
 //:   edge    off the nearest side of the window, in from the side nearest there
 //:   walk    on foot (avatars.js's own: a level way, or a climb across levels)
-//:   fade    Reduce motion: a crossfade, and nothing else
+//:   fade    reduced motion: a crossfade, and nothing else
 //: Every move is one animation of the host's `translate` and `opacity`, on the
 //: compositor, plus a few small elements for the rings and the puffs (the lazy
 //: sheet). **It never passes through a bar** (INBOX 1463, the owner: "the

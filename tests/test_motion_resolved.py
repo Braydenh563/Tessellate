@@ -50,6 +50,35 @@ def test_the_raw_query_is_written_only_by_the_boot() -> None:
     assert not found, "the one resolved value is `data-motion` (reducedMotionWanted in script): " + "; ".join(found)
 
 
+def _code_only(text: str) -> str:
+    """The text with `//` lines, `/* */` and `<!-- -->` comments removed."""
+    text = re.sub(r"/\*.*?\*/|<!--.*?-->", "", text, flags=re.S)
+    return re.sub(r"(?m)^\s*//.*$|(?<=\s)//\s.*$", "", text)
+
+
+def test_no_script_or_page_names_the_raw_query_in_code() -> None:
+    """The first test reads `matchMedia` calls on one line; a query held in a
+    constant, split over lines or written in a second page would slip past it.
+    No code outside the boot says the raw name at all (comments may)."""
+    found = [
+        path.name
+        for path in sorted([*(FRONTEND / "js").glob("*.js"), *FRONTEND.glob("*.html"), FRONTEND / "sw.js"])
+        if path != BOOT and RAW in _code_only(path.read_text(encoding="utf-8"))
+    ]
+    assert not found, f"read `data-motion` (reducedMotionWanted in script), not the query: {found}"
+
+
+def test_the_old_switch_name_is_gone_from_scripts_and_pages() -> None:
+    """"Reduce motion" was the on/off switch; Motion is three choices now, so a
+    comment or a catalogue row that says it describes a control that is gone."""
+    found = [
+        f"{path.name}: {m.group(0)}"
+        for path in sorted([*(FRONTEND / "js").glob("*.js"), *FRONTEND.glob("*.html")])
+        for m in re.finditer(r"[Rr]educe[ -]motion", path.read_text(encoding="utf-8"))
+    ]
+    assert not found, "name the Motion setting or say reduced motion: " + "; ".join(found[:8])
+
+
 def test_the_boot_reads_the_query_once_and_scripts_ask_one_helper() -> None:
     boot = BOOT.read_text(encoding="utf-8")
     assert len(re.findall(r'matchMedia\("\(' + RAW, boot)) == 1

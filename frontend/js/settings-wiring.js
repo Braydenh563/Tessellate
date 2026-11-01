@@ -514,7 +514,7 @@ function notebookLocked() {
 //: keyboard save is visibly a save rather than a key that did nothing. The
 //: class is removed on the animation's own end rather than on a timer, so
 //: two presses in a row both show, and at once under
-//: `prefers-reduced-motion` (the rule carries no animation there).
+//: reduced motion (the rule carries no animation there).
 function flashSaved(el) {
   if (!el) return;
   el.classList.remove("just-saved");

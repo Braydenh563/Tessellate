@@ -228,7 +228,7 @@ function renderEmblem(holder, size = 34, { animate = false } = {}) {
 
 // Every emblem on the page, by element id and size. Every slot animates (the
 // owner: "make sure it is never static"); still is the person's own choice,
-// Reduce motion or Interface animations off, which hold the final frame.
+// Reduced motion or Interface animations off, which hold the final frame.
 const EMBLEM_SLOTS = [
   // Not the top bar any more: that is the favicon now, so the app's icon in
   // the tab strip and the mark above it are the same thing. The generated

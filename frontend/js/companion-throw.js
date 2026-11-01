@@ -361,7 +361,7 @@ function companionThrowLift(y, vy, g) {
 //: anything; the frames only draw the path. Measured (throw5.js, Atlas,
 //: 1440x900): the landing was worked out in the frame it came to rest, 11
 //: to 40ms at 1x CPU and 217ms (122 of it forced layout) at 4x, in a frame
-//: the drawing had already dirtied. Reduce motion: the plain flight, no fates.
+//: the drawing had already dirtied. Reduced motion: the plain flight, no fates.
 function companionThrowPlan(x, y, vx, vy, world) {
   const rand = companionThrowSeed.seed ? companionThrowRng(companionThrowSeed.seed) : Math.random;
   const speed = Math.hypot(vx, vy);
@@ -411,7 +411,7 @@ function companionThrowAtTime(path, ms) {
 
 //: The throw itself (moved here from avatars.js, INBOX 882): `plan` from
 //: `companionThrowPlan` (made here when a sweep throws it), drawn a frame
-//: at a time on transforms only, then its place. Reduce motion: straight
+//: at a time on transforms only, then its place. Reduced motion: straight
 //: to where it comes down, a crossfade.
 function nameMarkBuddyThrow(buddy, vx, vy, world, plan = companionThrowPlan(nmb.x, nmb.y, vx, vy, world)) {
   nmb.flight?.stop();

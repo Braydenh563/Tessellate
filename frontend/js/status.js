@@ -2408,7 +2408,7 @@ function aiStatusState() {
 // colour vision deficiency, and fails everyone in high-contrast mode, so the
 // shape carries the same meaning the colour does.
 // "…" for connecting rather than a spinner: a spinner has to be animated to
-// read as one, and under prefers-reduced-motion a frozen spinner looks like a
+// read as one, and under reduced motion a frozen spinner looks like a
 // rendering fault. The ellipsis says "waiting" while perfectly still.
 const AI_STATUS_GLYPH = { idle: "…", ok: "✓", warn: "!", error: "✕", off: "" };
 

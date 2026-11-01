@@ -26,7 +26,7 @@
 //    frame in software, 34ms at "high" smoothing, measured at 1440x900);
 //    the pixel density is never above 1; and the loop draws 30 frames a
 //    second, 20 on a small machine or on battery.
-// 3. Still (Reduce motion, Movement "Still", Performance or Battery mode):
+// 3. Still (reduced motion, Movement "Still", Performance or Battery mode):
 //    a canvas style renders one frame off the page, the frame is captured
 //    to an image (`toBlob` to an object URL), and the image becomes the CSS
 //    background of one fixed element. No loop runs and no canvas is left in

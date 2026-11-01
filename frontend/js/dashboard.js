@@ -2619,8 +2619,8 @@ async function startArt(holder) {
   //: This read the media query and nothing else, so the two generative
   //: pictures in the app disagreed about the same question: the background
   //: art (`startBgArt`, settings.js) resolves motion from the app's own
-  //: Reduce motion switch and from Performance mode as well, and this one
-  //: ignored both. Turn on Reduce motion and the background froze while this
+  //: Motion setting and from Performance mode as well, and this one
+  //: ignored both. Set Motion to Off and the background froze while this
   //: widget kept running; turn on Performance mode, which DESIGN.md rule 12
   //: says stops every animation but the progress indicators, and this was
   //: the thing that kept going. The background art's own comment notes it
