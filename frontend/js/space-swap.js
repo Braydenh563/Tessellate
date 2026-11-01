@@ -182,17 +182,19 @@
     );
   }
 
-  async function swapSpace(id) {
+  //: `heard`: another window made this switch and wrote the pref already, so this one
+  //: must not write it again (it could overwrite a later switch there).
+  async function swapSpace(id, heard = false) {
     //: One switch at a time: a second press while the first reads waits its turn.
     if (spaceState.running) {
       await spaceState.running;
-      return id === activeSpaceId() ? undefined : swapSpace(id);
+      return id === activeSpaceId() ? undefined : swapSpace(id, heard);
     }
     if (id === activeSpaceId()) {
       closeSpaceMenu();
       return undefined;
     }
-    spaceState.running = spaceSwapNow(id);
+    spaceState.running = spaceSwapNow(id, heard);
     try {
       await spaceState.running;
     } finally {
@@ -201,10 +203,12 @@
     return undefined;
   }
 
-  async function spaceSwapNow(id) {
+  async function spaceSwapNow(id, heard) {
     const from = activeSpaceId();
     await spaceLeave();
-    prefs.set("spaceId", id);
+    //: This window's own space first, then the pref other windows and new ones read.
+    api.space = id;
+    if (!heard) prefs.set("spaceId", id);
     //: Reads still in flight under the old space are dropped when they land (`api()`).
     api.epoch += 1;
     clearApiCache();

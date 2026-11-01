@@ -576,6 +576,21 @@ function initSpaceSwitcher() {
 
 initSpaceSwitcher();
 
+//: **A second window hears the switch.** The pref is in localStorage, so the browser
+//: tells every other window of this origin when one changes it, whatever wrote it
+//: (a BroadcastChannel would be a second copy of the same fact). The window swaps in
+//: place to the new space; until then it keeps asking its own (`activeSpaceId`), so a
+//: window on another space goes on working. A hidden tab waits until it is seen.
+{
+  const follow = () => {
+    const id = prefs.get("spaceId", "");
+    if (id && id !== activeSpaceId()) swapSpace(id, true);
+  };
+  window.addEventListener("storage", (event) => {
+    if (event.key === "spaceId") document.hidden ? document.addEventListener("visibilitychange", follow, { once: true }) : follow();
+  });
+}
+
 // --- capture templates, Settings pane (extends Wave B) ------------------------------
 //
 // Every template is editable, the built-ins included (INBOX 409, "templates

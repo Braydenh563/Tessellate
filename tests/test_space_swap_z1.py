@@ -244,7 +244,7 @@ const ctx = {
   api: { epoch: 0 },
   prefs: { get: (key, dflt) => (key in store ? store[key] : dflt), set: (key, value) => { store[key] = value; log.push(["pref", key, value]); } },
   SPACE_ALL: "all",
-  activeSpaceId: () => store.spaceId || "all",
+  activeSpaceId: () => ctx.api.space ?? (store.spaceId || "all"),
   clearApiCache: () => log.push("clearApiCache"),
   closeSpaceMenu: () => log.push("closeSpaceMenu"),
   renderSpaceMenu: () => log.push("renderSpaceMenu"),
@@ -286,15 +286,15 @@ const ctx = {
   showNoDocument: () => { log.push("showNoDocument"); ctx.currentDoc = null; },
   wbFlushNudge: async () => { log.push("wbFlushNudge"); },
   wbShowBoardsLanding: () => log.push("wbShowBoardsLanding"),
-  loadEntries: async () => { log.push(["loadEntries", store.spaceId]); },
-  loadRecentQuestions: async () => { log.push(["loadRecentQuestions", store.spaceId]); },
-  loadAskHistoryBadge: async () => { log.push(["loadAskHistoryBadge", store.spaceId]); },
-  loadSuggestions: async () => { log.push(["loadSuggestions", store.spaceId]); },
-  loadMostUsed: async () => { log.push(["loadMostUsed", store.spaceId]); },
-  loadSpaces: async () => { log.push(["loadSpaces", store.spaceId]); },
-  loadConversationList: async () => { log.push(["loadConversationList", store.spaceId]); },
-  pollReminders: () => { log.push(["pollReminders", store.spaceId]); },
-  refreshActiveTab: async () => { log.push(["refreshActiveTab", store.spaceId]); },
+  loadEntries: async () => { log.push(["loadEntries", ctx.activeSpaceId()]); },
+  loadRecentQuestions: async () => { log.push(["loadRecentQuestions", ctx.activeSpaceId()]); },
+  loadAskHistoryBadge: async () => { log.push(["loadAskHistoryBadge", ctx.activeSpaceId()]); },
+  loadSuggestions: async () => { log.push(["loadSuggestions", ctx.activeSpaceId()]); },
+  loadMostUsed: async () => { log.push(["loadMostUsed", ctx.activeSpaceId()]); },
+  loadSpaces: async () => { log.push(["loadSpaces", ctx.activeSpaceId()]); },
+  loadConversationList: async () => { log.push(["loadConversationList", ctx.activeSpaceId()]); },
+  pollReminders: () => { log.push(["pollReminders", ctx.activeSpaceId()]); },
+  refreshActiveTab: async () => { log.push(["refreshActiveTab", ctx.activeSpaceId()]); },
   undoStack: [{ label: "kept" }], objTray: [{ id: 1 }],
 };
 ctx.window = ctx;
@@ -468,3 +468,105 @@ def test_the_swap_bumps_the_epoch_the_request_helper_reads() -> None:
         assert "isStale" in _text(name), f"{name} would log a dropped read as an unhandled rejection"
     toast = re.search(r"^function toast\(.*?^\}", _text("status.js"), re.S | re.M).group(0)
     assert 'endsWith("Space changed.")' in toast
+
+
+# --- a toast's own Undo goes back to its space first -------------------------------
+
+TOAST_HARNESS = r"""
+const vm = require("vm");
+const fs = require("fs");
+const text = fs.readFileSync(process.argv[1], "utf8");
+const start = text.indexOf("function keepToastAction(");
+const source = text.slice(start, text.indexOf("\n}\n", start) + 3);
+const log = [];
+let here = "alpha";
+const ctx = {
+  Date, Promise, log, noticeLive: new Map(), undoStack: [], NOTICE_UNDO_MS: 1000,
+  recordNotification: () => 1, activeSpaceId: () => here, toast: (m, e) => log.push(["toast", m, e]),
+  spaceEnterFor: async (a) => { log.push(["enter", a.space]); return a.space !== "gone"; },
+};
+vm.createContext(ctx);
+vm.runInContext(source, ctx);
+ctx.__out = (v) => process.stdout.write(JSON.stringify(v));
+ctx.__here = (v) => { here = v; };
+vm.runInContext("(async () => {" + process.argv[2] + "})()", ctx).catch((e) => { console.error(e); process.exit(1); });
+"""
+
+
+@needs_node
+def test_a_toast_undo_pressed_after_a_switch_enters_its_space_first() -> None:
+    proc = subprocess.run(
+        ["node", "-e", TOAST_HARNESS, str(JS_DIR / "status.js"), """
+    const ran = () => log.push(["ran"]);
+    const undo = keepToastAction("Deleted", "Undo", ran);
+    __here("beta");
+    await undo();
+    const open = keepToastAction("Saved", "Open it", ran);
+    await open();
+    const bare = keepToastAction("Deleted", "Undo", ran, { record: false });
+    await bare();
+    __here("gone");
+    const lost = keepToastAction("Deleted", "Undo", ran);
+    __here("beta");
+    await lost();
+    __out(log);
+    """],
+        capture_output=True,
+        text=True,
+    )
+    assert proc.returncode == 0, proc.stderr[-2000:]
+    assert json.loads(proc.stdout) == [
+        ["enter", "alpha"], ["ran"],
+        ["ran"],
+        ["enter", "beta"], ["ran"],
+        ["enter", "gone"], ["toast", "Couldn't go back to the space it was made in.", True],
+    ]
+
+
+# --- a second window hears the switch ----------------------------------------------
+
+@needs_node
+def test_a_heard_switch_follows_in_place_and_does_not_write_the_pref_again() -> None:
+    out = _run("""
+    store.spaceId = "alpha";
+    await swapSpace("beta", true);
+    __out({ pref: log.filter((e) => e[0] === "pref"), space: activeSpaceId(), reads: log.filter((e) => e[0] === "loadEntries") });
+    """)
+    assert out["pref"] == [], "the window that made the switch wrote the pref; this one only follows"
+    assert out["space"] == "beta" and out["reads"] == [["loadEntries", "beta"]]
+
+
+def test_the_window_keeps_its_own_space_until_it_has_heard_the_storage_event() -> None:
+    app = _code(_text("app.js"))
+    reader = re.search(r"^function activeSpaceId\(\) \{.*?^\}", app, re.S | re.M).group(0)
+    assert "api.space ??=" in reader, "the header must name this window's space, not the pref another window wrote"
+    assert "prefs.set(" not in reader
+
+
+@needs_node
+def test_the_storage_event_for_the_space_pref_swaps_and_a_hidden_tab_waits() -> None:
+    text = _code(_text("spaces-find.js"))
+    block = text[text.index("{\n  const follow") : text.index("\n}\n", text.index("{\n  const follow")) + 3]
+    harness = r"""
+    const vm = require("vm");
+    const calls = [], listeners = {}, doc = { hidden: false, addEventListener: (t, f) => { listeners[t] = f; } };
+    const ctx = {
+      document: doc, prefs: { get: () => ctx.__pref }, __pref: "beta",
+      activeSpaceId: () => ctx.__here, __here: "alpha",
+      swapSpace: (id, heard) => calls.push([id, heard]),
+      window: { addEventListener: (t, f) => { listeners[t] = f; } },
+    };
+    vm.createContext(ctx);
+    vm.runInContext(process.argv[1], ctx);
+    listeners.storage({ key: "other" });
+    listeners.storage({ key: "spaceId" });
+    ctx.__here = "beta"; listeners.storage({ key: "spaceId" });
+    doc.hidden = true; ctx.__here = "alpha"; delete listeners.visibilitychange;
+    listeners.storage({ key: "spaceId" });
+    const waited = calls.length === 1 && typeof listeners.visibilitychange === "function";
+    doc.hidden = false; listeners.visibilitychange();
+    process.stdout.write(JSON.stringify({ calls, waited }));
+    """
+    proc = subprocess.run(["node", "-e", harness, block], capture_output=True, text=True)
+    assert proc.returncode == 0, proc.stderr[-2000:]
+    assert json.loads(proc.stdout) == {"calls": [["beta", True], ["beta", True]], "waited": True}

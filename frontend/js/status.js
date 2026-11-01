@@ -337,6 +337,12 @@ const NOTICE_UNDO_MS = 5 * 60 * 1000;
 function keepToastAction(message, label, run, { go = null, record = true, kind = "" } = {}) {
   const once = !go;
   const undo = once && /\b(undo|put it back)\b/i.test(label);
+  //: An Undo pressed after a space switch goes back to its own space first, as the stack's
+  //: entries do (`spaceEnterFor`); the bell's row runs the same function.
+  if (undo) {
+    const [space, inner] = [activeSpaceId(), run];
+    run = async () => ((await spaceEnterFor({ space })) ? inner() : toast("Couldn't go back to the space it was made in.", true));
+  }
   if (!record) return () => run();
   const id = recordNotification({
     kind: kind || (undo ? "undo" : "done"),

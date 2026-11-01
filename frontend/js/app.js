@@ -397,8 +397,12 @@ const SPACE_ALL = "all";
 //: the first one is made at load, before spaces-find.js (a later classic
 //: script) has run ("activeSpaceId is not defined" on GET /health). prefs.js
 //: also loads after this file, so its absence reads as the default space.
+//: The space THIS window shows (`api.space`, read once from the pref, set by space-swap.js),
+//: not the pref itself: another window's switch writes the pref, and this window's open
+//: work must go on reaching its own space until it has heard and swapped (spaces-find.js).
 function activeSpaceId() {
-  return (typeof prefs !== "undefined" && prefs.get("spaceId", null)) || SPACE_ALL;
+  if (typeof prefs === "undefined") return SPACE_ALL;
+  return (api.space ??= prefs.get("spaceId", null) || SPACE_ALL);
 }
 
 async function api(path, options = {}) {
