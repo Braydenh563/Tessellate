@@ -301,8 +301,7 @@ _LOADING_HTML = """<!doctype html>
     // reduced motion the fade goes and the text simply swaps.
     var mmTip = document.getElementById("tip");
     var mmTipAt = Math.floor(Math.random() * window.__mmTips.length);
-    var mmReduced = window.matchMedia
-      && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var mmReduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     function mmShowTip() {
       mmTip.textContent = window.__mmTips[mmTipAt % window.__mmTips.length];
       mmTipAt++;
@@ -332,6 +331,26 @@ _LOADING_LOOKS = {
 _LOOK_PALETTES = {"utilitarian": "utilitarian", "paper": "paper", "mono": "mono", "default": "default"}
 
 
+#: The loading page's two raw reduced-motion reads: the stylesheet's block and
+#: the tip fade's script. They live here, not in `frontend/`, because the page is
+#: shown from `html=` before the app and cannot read the app's `data-motion`.
+_LOADING_MOTION_CSS = "@media (prefers-reduced-motion: reduce) {"
+_LOADING_MOTION_JS = 'window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches'
+
+
+def _loading_motion(html: str, choice: object) -> str:
+    """The loading page under the person's Motion choice (INBOX 1506), which the
+    app mirrors to `ui_state` as "follow", "on" or "off" (older words "auto" and
+    "reduced" read as follow and off, as `MOTION.choice` in theme-boot.js does).
+    "off" holds the page still, "on" keeps it moving whatever the system asks,
+    and anything else leaves it following the system's request, as written."""
+    if choice == "on":
+        return html.replace(_LOADING_MOTION_CSS, "@media not all {").replace(_LOADING_MOTION_JS, "false")
+    if choice in ("off", "reduced"):
+        return html.replace(_LOADING_MOTION_CSS, "@media all {").replace(_LOADING_MOTION_JS, "true")
+    return html
+
+
 def _recolour_loading_page(html: str, data_dir: str | None) -> str:
     """The loading page in the look the app will open in (owner: "some popup
     ui's havent followed the theme change like the loading screen").
@@ -349,6 +368,7 @@ def _recolour_loading_page(html: str, data_dir: str | None) -> str:
         state = ConfigManager(data_dir or None).get_preference("ui_state", {}) or {}
     except Exception:  # noqa: BLE001  # a cosmetic read must never stop the launch
         return html
+    html = _loading_motion(html, state.get("motion"))
     # The same order as `appearancePref` (settings.js): a palette chosen by
     # hand, then the chosen look's palette, then the default look's.
     preset = state.get("themePreset")

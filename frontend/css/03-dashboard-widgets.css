@@ -1891,6 +1891,11 @@ header#top-bar select,
   overflow-x: auto;
   overflow-y: hidden;
   padding-bottom: 0.25rem;
+  /* Below the fold on a first visit: its 373 cells are skipped until it nears
+     the window (INBOX 1508: 47% of the Dashboard reveal's elements). Already a
+     scroll box, so nothing it paints is clipped that was not. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 6rem;
 }
 
 .heat-cell {

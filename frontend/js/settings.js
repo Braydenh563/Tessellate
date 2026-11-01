@@ -1463,13 +1463,13 @@ const APPEARANCE_DEFAULTS = {
   //: copies; the *default* is what differs, and the reason is the whole point
   //: of the setting. Reported with a screenshot of a frozen "Thinking…":
   //: "the thinking and writing animation is completely broken, doesn't move."
-  //: The app's Reduce motion had turned it into one static italic word, 
+  //: Reduced motion (the app's own Motion choice, Off, or the system's) had turned it into one static italic word, 
   //: which is also exactly what a hung app shows, so the setting had made the
   //: interface unable to tell the user whether anything was happening.
   //:
   //: Turning off "animations and transitions" is a statement about chrome. A
   //: spinner is not chrome. "always" keeps progress moving through this app's
-  //: own Reduce motion; the *operating system's* accessibility setting is
+  //: Motion choice, Off; the *operating system's* accessibility request is
   //: still obeyed (see `progressMotionWanted` in chat.js), and the indicator
   //: steps through a colour rather than freezing when it is.
   "progress-motion": "always", // always | auto | still
@@ -2708,7 +2708,7 @@ function renderAppearance() {
 // "Moving" will override it.
 //: The one case where this setting is *not* in charge, said where the choice
 //: is made rather than left to be discovered. "Always move" overrides this
-//: app's own Reduce motion; it deliberately does not override the operating
+//: app's own Motion choice, Off; it deliberately does not override the operating
 //: system's, which can be on for a medical reason. `typingDots` still steps
 //: the dots through a colour there, so the indicator is never dead.
 function renderProgressMotionHint() {

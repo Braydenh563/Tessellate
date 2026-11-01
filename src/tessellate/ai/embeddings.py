@@ -122,8 +122,8 @@ def note_request() -> None:
     _pulse["at"] = time.monotonic()
 
 
-def _wait_for_idle() -> None:
-    deadline = time.monotonic() + WARMUP_MAX_WAIT_SECONDS
+def _wait_for_idle(max_wait: float | None = None) -> None:
+    deadline = time.monotonic() + (WARMUP_MAX_WAIT_SECONDS if max_wait is None else max_wait)
     while time.monotonic() < deadline:
         if _pulse["at"] == 0.0:
             return
@@ -131,6 +131,13 @@ def _wait_for_idle() -> None:
         if quiet >= WARMUP_IDLE_SECONDS:
             return
         _idle_wait.wait(min(0.5, max(0.01, WARMUP_IDLE_SECONDS - quiet)))
+
+
+def wait_for_quiet(max_wait: float) -> None:
+    """Return once no request has arrived for `WARMUP_IDLE_SECONDS`, or after
+    `max_wait`: for a model load a request started, which must not run inside
+    the burst of requests it came with."""
+    _wait_for_idle(max_wait)
 
 
 def _notebook_has_notes(session_factory) -> bool:  # noqa: ANN001

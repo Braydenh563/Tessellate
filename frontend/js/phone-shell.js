@@ -567,13 +567,24 @@ initResizableSidebars();
 function initHeaderHeightToken() {
   const bar = $("top-bar");
   if (!bar || typeof ResizeObserver === "undefined") return;
+  const root = document.documentElement;
+  //: Written in rem, not px (INBOX 1508): a px value had to be rewritten on
+  //: every Ctrl +/- step, and a custom property changed on <html> restyles
+  //: the whole document a second time (661 elements, 90 to 125ms at 4x, half
+  //: of the zoom frame). In rem the zoom carries it, so a step whose measured
+  //: height is the same bar within a pixel writes nothing.
+  let written = 0;
   const write = () => {
     const h = Math.round(bar.getBoundingClientRect().height);
     // Zero while the bar is display:none (the lock screen) would collapse
     // every sticky sidebar to the full window height and hand the sheet a
     // top of 0. Leave the stylesheet's value standing until there is a real
     // one to replace it with.
-    if (h > 0) document.documentElement.style.setProperty("--header-h", `${h}px`);
+    if (!(h > 0)) return;
+    const em = parseFloat(getComputedStyle(root).fontSize) || 16;
+    if (written && Math.abs(h - written * em) <= 1) return;
+    written = h / em;
+    root.style.setProperty("--header-h", `${Math.round(written * 1000) / 1000}rem`);
   };
   new ResizeObserver(write).observe(bar);
   write();
@@ -1708,8 +1719,11 @@ function initKeyboardInset() {
   document.addEventListener("focusin", (event) => {
     if (event.target.closest?.(fieldSelector)) settle();
   });
+  //: Touch only, like `settle`: the `window.scrollY` read below is a layout
+  //: read, and every tab switch that took Chat's composer off the page paid
+  //: it 350ms later at desktop width too (INBOX 1508: 10ms at 4x, 74 objects).
   document.addEventListener("focusout", (event) => {
-    if (!event.target.closest?.(fieldSelector)) return;
+    if (!touchy.matches || !event.target.closest?.(fieldSelector)) return;
     settle();
     setTimeout(() => {
       if (!document.activeElement?.closest?.(fieldSelector) && window.scrollY) window.scrollTo(0, 0);

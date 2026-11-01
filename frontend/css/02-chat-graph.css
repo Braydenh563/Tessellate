@@ -2135,7 +2135,7 @@ kbd {
    only thing that wins is naming the animation again. Keeping the pairs next
    to each other in one block is the mitigation: a duration changed in one
    place and not the other is visible here rather than three files away.
-   `@media (prefers-reduced-motion: reduce)` blocks elsewhere in the
+   `:root[data-motion="reduced"]` blocks elsewhere in the
    stylesheet still stop these individually; the instruction was explicit
    that progress should move anyway, so those are overridden by the
    `!important` here too. */
@@ -2201,8 +2201,9 @@ kbd {
   animation: spinner-turn var(--spinner-turn) linear infinite !important;
 }
 /* The shimmer is a sweep across the whole bar, so unlike the spinner it
-   follows the OS reduced-motion setting by default: it runs under "always"
-   only when the system allows motion, or when "Always move" was chosen
+   follows the resolved Motion setting by default: it runs under "always"
+   only when motion is on (`data-motion`, which the system's request sets under
+   Follow the system), or when "Always move" was chosen
    explicitly (data-progress-chosen, settings.js). */
 :root[data-progress-chosen][data-progress-motion="always"] .skeleton,
 :root[data-progress-chosen][data-progress-motion="always"] .entry-list li.skeleton {
