@@ -20,11 +20,12 @@ from urllib.parse import quote, urlencode
 
 from tessellate.ai import recognise as rec
 from tessellate.core import deps, ics_import, reminder_token
-from tessellate.core.database import Document, Entry, utcnow
+from tessellate.core.database import Entry, utcnow
 from tessellate.core.deps import get_session
 from tessellate.entry.manager import extract_title, log_action, plain_label, readable_content
 from tessellate.entry.properties import strip as strip_properties
 from tessellate.repo import content as content_repo
+from tessellate.repo import documents as documents_repo
 from tessellate.repo import reminders as reminder_repo
 
 router = APIRouter(prefix="/reminders", tags=["reminders"])
@@ -123,7 +124,7 @@ def _target(session: Session, reminder) -> tuple[str | None, str | None]:
     target a note (row 15). (None, None) when it is about nothing, or about
     something since deleted."""
     if reminder.document_id is not None:
-        document = session.get(Document, reminder.document_id)
+        document = documents_repo.find(session, reminder.document_id)
         if document is None or getattr(document, "deleted_at", None) is not None:
             return None, None
         return "document", document.title or "Untitled"
@@ -522,7 +523,7 @@ def create_reminder(body: ReminderCreate, session: Session = Depends(get_session
     if body.entry_id is not None:
         deps.get_or_404(session, Entry, body.entry_id, "That note could not be found.")
     if body.document_id is not None:
-        document = session.get(Document, body.document_id)
+        document = documents_repo.find(session, body.document_id)
         if document is None or getattr(document, "deleted_at", None) is not None:
             raise HTTPException(status_code=404, detail="That document could not be found.")
     twin = reminder_repo.twin(session, body.text, body.due_at)

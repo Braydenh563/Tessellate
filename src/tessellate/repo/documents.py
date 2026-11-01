@@ -140,6 +140,29 @@ def mentioning_any(session: Session, words: list[str], limit: int) -> list[Docum
     ))
 
 
+def by_ids(session: Session, ids: set[int] | list[int]) -> list[Document]:
+    """The documents with these ids (none for an empty set, with no query)."""
+    if not ids:
+        return []
+    return list(session.scalars(select(Document).where(Document.id.in_(ids))))
+
+
+def largest_id(session: Session) -> int | None:
+    """The id of the document with the most text: the bench opens it."""
+    return session.scalar(select(Document.id).order_by(func.length(Document.content).desc()).limit(1))
+
+
+def mentioning_names(session: Session, likes: list[str], limit: int) -> list[Document]:
+    """Unshelved documents whose text matches any of the LIKE patterns, newest
+    edit first: a note's backlinks from documents, under every name it has."""
+    return list(session.scalars(
+        select(Document)
+        .where(Document.archived_at.is_(None), or_(*[Document.content.ilike(like, escape=LIKE_ESCAPE) for like in likes]))
+        .order_by(*_NEWEST)
+        .limit(limit)
+    ))
+
+
 # --- history ---------------------------------------------------------------------
 
 

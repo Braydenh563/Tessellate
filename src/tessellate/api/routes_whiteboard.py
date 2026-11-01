@@ -3728,12 +3728,14 @@ def _require_reference(db: Session, kind: str, ref_id: int | None) -> None:
 
 def _referenced(db: Session, kind: str, ref_id: int):
     """The document, file or bookmark a reference node points at, or None."""
-    from tessellate.core.database import Attachment, Document
-    from tessellate.repo import bookmarks
+    from tessellate.core.database import Attachment
+    from tessellate.repo import bookmarks, documents
 
     if kind == "link":
         return bookmarks.find(db, ref_id)
-    return db.get(Document if kind == "document" else Attachment, ref_id)
+    if kind == "document":
+        return documents.find(db, ref_id)
+    return db.get(Attachment, ref_id)
 
 
 def _reference_label(db: Session, kind: str, ref_id: int | None, fallback: str) -> str:

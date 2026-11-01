@@ -89,13 +89,14 @@ def heavy_ids(session) -> dict[str, int]:  # noqa: ANN001
     works on any notebook."""
     from sqlalchemy import func, select
 
-    from tessellate.core.database import Document, WhiteboardObject
+    from tessellate.core.database import WhiteboardObject
+    from tessellate.repo import documents
 
     board = session.execute(
         select(WhiteboardObject.board_id).where(WhiteboardObject.board_id.is_not(None))
         .group_by(WhiteboardObject.board_id).order_by(func.count().desc()).limit(1)
     ).scalar()
-    document = session.execute(select(Document.id).order_by(func.length(Document.content).desc()).limit(1)).scalar()
+    document = documents.largest_id(session)
     return {"board": board or 0, "document": document or 0}
 
 
