@@ -32,7 +32,8 @@ def test_a_note_cards_task_line_is_a_box_not_brackets():
     assert 'buffer.push("");' in body
     css = (CSS / "01-forms-settings.css").read_text(encoding="utf-8")
     box = _rule(css, '#entry-list .entry-content .entry-task > input[type="checkbox"]:disabled')
-    assert "min-height: 0" in box and "width: 1.1em" in box
+    # 1.125rem since the target floor (audit 1031 class 28, test_ux_1031_targets).
+    assert "min-height: 0" in box and "width: 1.125rem" in box
     assert "line-through" in _rule(css, ".entry-task:has(> input:checked)")
 
 

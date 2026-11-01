@@ -77,6 +77,9 @@ globalThis.document = {{ addEventListener() {{}}, querySelectorAll: () => [] }};
 globalThis.navigator = {{ platform: "Linux" }};
 const fs = require("fs");
 eval(fs.readFileSync({str(PREFS)!r}, "utf8") + "; globalThis.prefs = prefs; globalThis.prefsStore = prefsStore;");
+//: prefs.js records its schema migrations at load (`prefs-versions`): the
+//: store these tests count starts empty after that.
+store.clear();
 eval(fs.readFileSync({str(SUGGEST)!r}, "utf8") + "; globalThis.searchRecent = searchRecent; globalThis.SEARCH_RECENT_PREFIX = SEARCH_RECENT_PREFIX; globalThis.searchSuggestItems = searchSuggestItems;");
 //: The "every box at once" helpers live in settings-data.js (lazy): lifted by name.
 const data = fs.readFileSync({str(DATA)!r}, "utf8");

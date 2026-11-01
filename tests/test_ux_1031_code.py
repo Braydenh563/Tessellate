@@ -63,13 +63,15 @@ def test_the_same_line_again_is_one_row_with_a_count():
 
 def test_a_code_card_says_lines_and_type():
     docs = _text("frontend", "js", "documents.js")
-    size = docs.split("function docSizeText(doc, withKind = false)", 1)[1].split("\n}\n", 1)[0]
+    # The rule and the type table live in library.js: the Library's list draws
+    # before the editors load.
+    size = _text("frontend", "js", "library.js").split("function docSizeText(doc, withKind = false)", 1)[1].split("\n}\n", 1)[0]
     assert 'nounCount(doc.lines, "line")' in size and "!kind.previewable" in size and "kind.label" in size
     # The library card and the sidebar row say it by the one rule, and the
     # library waits for the type table (it can open before Documents does).
     card = _text("frontend", "js", "library.js").split("A code file is its lines and its type", 1)[1].split("const when =", 1)[0]
     assert "docSizeText(doc, true)" in card
-    assert "await loadDocFileTypes()" in _text("frontend", "js", "library.js")
+    assert "await loadDocTypeTable()" in _text("frontend", "js", "library.js")
     assert "docSizeText(doc)" in docs.split("doc-item-type", 1)[1]
 
 
@@ -80,7 +82,8 @@ def test_a_csv_shows_as_a_read_only_table():
     assert "docSqlCsvRows(text, DOC_RUN_MAX_ROWS + 2" in html and 'esc(cell)' in html
     assert '"\\t"' in html and "<thead>" in html
     # Run sends the table as an HTML page; the panel exists for a CSV too.
-    assert 'request.ext = "html";' in js and "docCsvTableHtml(source, currentDoc?.title)" in js
+    run = _text("frontend", "js", "run-core.js")
+    assert 'source: docCsvTableHtml(request.source, request.path)' in run.split("\n  csv: {", 1)[1].split("\n  },", 1)[0]
     assert 'type.ext === "csv" ? docRunExtension(CM) : []' in js
     # A page with nothing printed gives its frame the whole body.
     assert '".cm-run-panel.is-page .cm-run-log:empty": { display: "none" }' in _text("frontend", "js", "documents.js")

@@ -129,7 +129,8 @@ def test_the_drawer_opener_says_what_it_holds_and_closes_on_a_choice():
     assert "Categories and tags" not in shell
     close = shell[shell.index('("category-list")?.addEventListener("click"'):]
     close = close[: close.index("\n});")]
-    assert 'classList.remove("sidebar-sheet-open")' in close
+    # Through the one setter, which keeps the sidebar's inert in step (sheets-selects.js).
+    assert "setSidebarSheet(aside, false)" in close
     assert 'setAttribute("aria-expanded", "false")' in close
 
 

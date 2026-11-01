@@ -61,7 +61,7 @@ def _extract(path: str, *heads: str) -> str:
 
 
 def test_timeline_count_line_pluralises_and_marks_a_page():
-    body = _extract("timeline.js", "function timelineUnitText(", "function timelineCountLine(")
+    body = _extract("timeline.js", "function timelineUnitText(", "function timelineKindsText(", "function timelineCountLine(")
     script = (
         "let timelineNextCursor = null;\n"
         + body

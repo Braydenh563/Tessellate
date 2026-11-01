@@ -80,6 +80,28 @@
 //    (whiteboard.js) and renderLibraryImagesGallery()/renderLibraryDocuments()
 //    (this file) exactly as before; only the listener's *location* changed.
 
+//: [{ext, label, line_comment, block_comment, indent, previewable}], server
+//: order preserved: the picker's order is a decision (see filetypes.py) and
+//: sorting it here would quietly undo it. Here, not in documents.js: the
+//: Library's list (library.js alone, `libraryList`) names a code file's lines
+//: and kind before the editors load, and documents.js reads it after.
+let docFileTypes = [];
+//: The table, fetched once a session is unlocked (documents.js
+//: `loadDocFileTypes` says why not at load); a failed fetch asks again next time.
+async function loadDocTypeTable() {
+  if (docFileTypes.length) return;
+  const body = await apiJson("/documents/file-types", { silent: true }).catch(() => null);
+  docFileTypes = (body && body.types) || [];
+}
+
+//: How big a list row says a document is: a code file's lines, a prose
+//: document's words (1031 CE8: "19 words" for a script). Both lists use it.
+function docSizeText(doc, withKind = false) {
+  const kind = docFileTypes.find((t) => t.ext === doc.file_type);
+  if (kind && !kind.previewable && typeof doc.lines === "number") return withKind ? `${nounCount(doc.lines, "line")} · ${kind.label}` : nounCount(doc.lines, "line");
+  return typeof doc.words === "number" ? nounCount(doc.words, "word") : "";
+}
+
 // --- incremental list rendering (ROADMAP §85.4 items 3 and 4; moved here from
 // notes-list.js when the Notes list was windowed, audit 1029 N9, so the
 // Library is its one caller) ---------------
@@ -3312,7 +3334,7 @@ async function renderLibraryDocuments() {
   showSkeletons(list, 4, "li");
   //: The type table names a code card's kind; the library can open before
   //: the Documents tab has asked for it.
-  await loadDocFileTypes();
+  await loadDocTypeTable();
   try {
     // `q` searches title *and* content server-side (routes_documents.py): 
     // client-side filtering alone could only ever match a title, since a

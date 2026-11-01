@@ -4458,10 +4458,6 @@ async function docRunCode(options = {}) {
     path: currentDoc?.title || "",
     stdin: docRun.stdin?.value || "",
   };
-  if (type.ext === "csv") {
-    request.ext = "html";
-    request.source = docCsvTableHtml(source, currentDoc?.title);
-  }
   if (type.ext === "sql") {
     try {
       request.tables = await docSqlCsvTables(source);

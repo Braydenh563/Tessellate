@@ -88,10 +88,12 @@ _MAX_NOTES = 50
 _POLITE = ("please ", "pls ", "plz ", "kindly ", "can you ", "could you ", "would you ", "will you ", "can u ", "could u ",
            "i want you to ", "i need you to ", "i'd like you to ", "i would like you to ", "i want to ",
            "i'd like to ", "i would like to ", "go ahead and ", "if you could ", "if you can ", "when you can, ", "when you can ",
-           "let's ", "lets ", "ok so ", "okay so ", "ok ", "okay ", "just ", "also ", "so ", "and ", "then ",
-           #: A wish said casually is the same request (INBOX 1507: "i wanna make a
-           #: note" was searched for, not made). "let me know" stays a question.
-           "i wanna ", "i wana ", "wanna ", "i'd love to ", "i would love to ", "can i ", "could i ", "may i ",
+           "let's ", "lets ", "ok so ", "okay so ", "ok ", "okay ", "just ", "also ", "so ", "and ", "then ")
+#: A wish said casually is the same request (INBOX 1507: "i wanna make a note"
+#: was searched for, not made). Tried only when the whole sentence reads as no
+#: act: "I need to call the bank, remind me" is a reminder whose task keeps its
+#: lead (INBOX 1459). "let me know" stays a question.
+_CASUAL = ("i wanna ", "i wana ", "wanna ", "i'd love to ", "i would love to ", "can i ", "could i ", "may i ",
            "lemme ", "let me ", "i need to ", "help me ", "i gotta ", "i have to ", "i'm gonna ", "im gonna ",
            "i'm going to ", "im going to ", "gonna ")
 _TRAILING = (" please", " pls", " plz", " for me", " thanks", " thank you so much", " thank you", " ty", " thx", " now", " if you can",
@@ -277,8 +279,8 @@ def _as_typed_case(said: str, rest: str) -> str:
 
 def _bare_reminder(head: str) -> dict | None:
     """"set a reminder" alone is asked what and when (INBOX 1507); "ping me"
-    alone is not yet a request."""
-    if "reminder" not in head:
+    alone is not yet a request, and the bare word lists them (INBOX 1357 B)."""
+    if "reminder" not in head or head.strip(" .").lower() in ("reminder", "reminders", "a reminder"):
         return None
     return {"intent": "reminder", "text": "", "said": "", "due_at": None, "time_given": False, "no_subject": ""}
 
@@ -1041,6 +1043,14 @@ def read(text: str, now: datetime, locale: str | None = None) -> dict | None:
     if re.match(r"(?i)archive\b", command):
         #: Decision 42: archiving stays a UI action; no act archives.
         return None
+    found = _read_folded(command, question, polite, urgent, now, locale)
+    lead = next((w for w in _CASUAL if command.lower().startswith(w)), None)
+    if found is None and lead:
+        found = _read_folded(command[len(lead):].lstrip(" ,"), question, True, urgent, now, locale)
+    return found
+
+
+def _read_folded(command: str, question: bool, polite: bool, urgent: bool, now: datetime, locale: str | None) -> dict | None:
     for reader in (_meeting, lambda t: _reminder(t, now, locale), lambda t: task_acts.read_add(t, lambda r: _reminder(r, now, locale)),
                    task_acts.read_complete, task_acts.read_cancel, lambda t: task_acts.read_snooze(t, lambda w: _time_of(w, now, locale)), _new_note, _untag, _tag, _move, _delete, _pin, _link, _rename,
                    _append, _summarise, _navigate, _find):

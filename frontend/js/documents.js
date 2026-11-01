@@ -46,10 +46,9 @@ let docSaveTimer = null;
 // mode of the two disagreeing is Ctrl+/ inserting the wrong comment marker
 // into someone's file. So: fetched once, cached here.
 
-//: [{ext, label, line_comment, block_comment, indent, previewable}], server
-//: order preserved: the picker's order is a decision (see filetypes.py) and
-//: sorting it here would quietly undo it.
-let docFileTypes = [];
+//: The served file-type table, `docFileTypes`, lives in library.js with its
+//: loader: the Library's list names a code file's lines and kind before the
+//: editors load (1031 CE8).
 //: The picker's state: `pending` is the type a blank page was started as (New's
 //: caret, or the foot's button before anything is typed; null means markdown,
 //: cleared when a document is shown); `menu` and `opener` are the foot's own.
@@ -81,20 +80,10 @@ const DEFAULT_FILE_TYPE = {
 // and a failed one is retried the next time you open the tab instead of
 // poisoning the cache for good.
 async function loadDocFileTypes() {
-  if (docFileTypes.length) return;
-  const body = await apiJson("/documents/file-types", { silent: true }).catch(() => null);
-  docFileTypes = (body && body.types) || [];
+  await loadDocTypeTable();
   if (!docFileTypes.length) return;
   docTypeMount();
   syncDocFileType();
-}
-
-//: How big a list row says a document is: a code file's lines, a prose
-//: document's words (1031 CE8: "19 words" for a script). Both lists use it.
-function docSizeText(doc, withKind = false) {
-  const kind = docFileTypes.find((t) => t.ext === doc.file_type);
-  if (kind && !kind.previewable && typeof doc.lines === "number") return withKind ? `${nounCount(doc.lines, "line")} · ${kind.label}` : nounCount(doc.lines, "line");
-  return typeof doc.words === "number" ? nounCount(doc.words, "word") : "";
 }
 
 //: The open document's type, never null. Falls back to markdown for a

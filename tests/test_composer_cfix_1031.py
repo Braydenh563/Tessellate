@@ -952,7 +952,8 @@ def test_only_an_owed_sentence_is_a_to_do(text, owed):
 ])
 def test_my_social_notes_summarises_every_note_filed_under_social_connections(notebook, question):
     said, _ = notebook(question)
-    assert "6 matching notes" in said and "Ice Breakers" in said and "Complete Social Skills Guide" in said, said
+    # Either of composer_study's two phrasings ("multihead" varies by seed).
+    assert ("6 matching notes" in said or "6 notes match" in said) and "Ice Breakers" in said and "Complete Social Skills Guide" in said, said
 
 
 @pytest.mark.parametrize("question", [

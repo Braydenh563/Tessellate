@@ -41,7 +41,7 @@ def _seed(session, written=None) -> None:
     notes = [
         manager.create_entry(
             session,
-            "# Harbor launch plan\n\nShip the mobile app to the public on 14 November. "
+            f"# Harbor launch plan\n\nShip the mobile app to the public on {NEXT_14}. "
             "Three gates before then: beta feedback closed and the pricing page signed off.",
         ),
         manager.create_entry(session, "# Dentist\n\nCheck-up booked for the 21st. Ask about the night guard."),

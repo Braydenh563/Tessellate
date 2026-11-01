@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Fixed: the Library list drew a code file with editor code it had not loaded; Run on a CSV goes through its own row in the run table; "I need to call the bank, remind me" is a reminder again, and a bare "reminder" lists them.
 - Fixed: a press inside a sheet no longer moves it under the pointer; the first focus waits for the release before the resize grip is added (the Guide send click missed).
 - Motion leftovers (INBOX 1506): the graph's Generate from path chevron turns open (graph-lazy.css), the loading page shown by `__main__.py` follows the saved Motion choice (Follow the system, Always on, Off) instead of a raw reduced-motion query, and the stale "Reduce motion" wording in comments (settings.js, status.js, 02-chat-graph.css) names the Motion setting
 - First Chat open after boot (INBOX 1508): the search model's load, asked for by focusing the Chat or Ask box, waits for the request burst it came with to go quiet (at most 10 s) instead of running inside it, and the focus call with no words no longer reads the database; measured here with no model, `/search/warm` 15 ms, `/chat/suggestions` 12 ms and `/preferences` 6 ms with 1 to 5 ms of browser queueing, so the 3.3 to 4.5 s in the owner's log is a real model load or a slow disk the app cannot be measured against in this sandbox

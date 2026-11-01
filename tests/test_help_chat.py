@@ -249,9 +249,12 @@ def test_no_tab_behaves_exactly_as_before(ai_client, fake_ollama):
     ai_client.post("/help/ask", json={"question": "how do I set a reminder?"})
     sent = fake_ollama.chat_calls[-1]
     assert not [m for m in sent if "tab open" in m["content"]]
-    assert help_chat.topics_for("how do I set a reminder?") == help_chat._matching_topics(
-        "how do I set a reminder?"
-    )
+    # No tab adds nothing to what the words reach: the keyword rules plus the
+    # reading band's act line (decision 59; "set a reminder" reads as an act
+    # since INBOX 1507).
+    q = "how do I set a reminder?"
+    assert help_chat.topics_for(q) == (help_chat._aliased_topics(q) or help_chat._reading_topics(q))
+    assert [t["id"] for t in help_chat.topics_for(q)][:2] == ["reminders", "act-reminder"]
 
 
 # --- INBOX 204: the guide has a name, and knows what it is -------------------

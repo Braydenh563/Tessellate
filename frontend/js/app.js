@@ -1863,6 +1863,8 @@ const LAZY_MODULES = {
     //: The Attach picker's row, drawn synchronously by the board pickers.
     "/js/pick-row.js",
     "/js/image-layout.js",
+    //: Before the editors: it holds the file-type table they read.
+    "/js/library.js",
     "/js/documents-code.js",
     "/js/documents-prose.js",
     "/js/autocorrect.js",
@@ -1877,7 +1879,6 @@ const LAZY_MODULES = {
     "/js/whiteboard-format.js",
     "/js/whiteboard-interchange.js",
     "/js/whiteboard-history.js",
-    "/js/library.js",
   ],
 };
 
