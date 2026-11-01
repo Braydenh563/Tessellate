@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Board zoom keys (INBOX 1509): while the board has the focus, Ctrl or Cmd with + or = and with - zoom the board alone about the selection's centre, or the view's centre, and the app no longer zooms with it (one Ctrl+= measured app 100% to 105% and board 1x to 1.2x before, now app 100% and board 1.2x, the selection's centre still to the pixel); Ctrl+0 fits and Ctrl+1 is 100%, as in InDesign (Shift+1 still fits); typing in a box leaves the keys to the app zoom; the Keys sheet, menus, button titles and the Guide say so
 - Board (INBOX 1510(b)): a floating bar or popover tied to a board item closes when the item leaves the board; the text-format bar stayed over the board after the box a quick-add arrow made was deleted (reproduced for a note card and a text box, now hidden in both), and comments, a topic's note, markers and the topic rings close the same way after a delete, undo, cut or board switch
 - Chat acts said casually (INBOX 1507): "i wanna make a note", "can i add a reminder", "lemme jot something down" are the act, not a search of the notes; a note or reminder with nothing said asks for its words ("What should the note say?")
 - Complexity (ranked row 24): the no-model check for `/chat` lives in `_composes_offline`, so the handler is back under its seed (19 to 17) and the ratchet is green

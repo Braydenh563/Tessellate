@@ -2908,6 +2908,57 @@ function wbZoomStep(factor, { duration = 160, usePointer = true } = {}) {
   d3.select(container).transition().duration(duration).call(wbZoom.scaleBy, factor, wbZoomAnchor({ usePointer }));
 }
 
+//: **The camera from the keyboard, as InDesign has it** (the owner,
+//: 2026-11-01, INBOX 1509: "ctrl +/- to zoom out and zoom in foccused on
+//: selected objects or in general on the whiteboard if focused on it like
+//: with adobe indesign"). Ctrl or Cmd with + or = steps in and with - steps
+//: out by the zoom buttons' own factors, about the selection's centre when
+//: something is selected, else the view's centre (`wbZoomAnchor`, the
+//: pointer left out: a key is not aimed). Ctrl+0 fits the board, Ctrl+1 is
+//: 100% about the same point. Measured before: one Ctrl+= zoomed the board
+//: 1.2x and the whole app from 100% to 105% as well, because the app zoom's
+//: capture listener took the same key; while the board has the focus the key
+//: is the board's alone, so this stops it there. Never while typing (the
+//: app zoom keeps the key then), and not while a dialog or a panel outside
+//: the board holds the focus. `e.code`, because Ctrl+= arrives as "+" or "="
+//: depending on the layout.
+const WB_ZOOM_KEYS = {
+  Equal: () => wbZoomStep(1.2, { usePointer: false }),
+  NumpadAdd: () => wbZoomStep(1.2, { usePointer: false }),
+  Minus: () => wbZoomStep(0.8, { usePointer: false }),
+  NumpadSubtract: () => wbZoomStep(0.8, { usePointer: false }),
+  Digit0: () => wbZoomToFit(),
+  Numpad0: () => wbZoomToFit(),
+  Digit1: () => wbZoomTo100(),
+  Numpad1: () => wbZoomTo100(),
+};
+
+function wbBoardHasFocus() {
+  const view = document.getElementById("library-view-whiteboard");
+  if (!view || view.classList.contains("hidden") || !view.getClientRects().length) return false;
+  if (document.querySelector("dialog[open]")) return false;
+  const active = document.activeElement;
+  if (!active || active === document.body) return true;
+  if (!view.contains(active)) return false;
+  const tag = active.tagName.toLowerCase();
+  return !(tag === "input" || tag === "textarea" || tag === "select" || active.isContentEditable);
+}
+
+function wbZoomKey(e) {
+  if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+  const run = WB_ZOOM_KEYS[e.code];
+  if (!run || (e.shiftKey && /[01]$/.test(e.code)) || !wbBoardHasFocus()) return;
+  e.preventDefault();
+  e.stopPropagation();
+  run();
+}
+
+function wbZoomTo100() {
+  const container = document.getElementById("whiteboard-container");
+  if (!container) return;
+  d3.select(container).transition().duration(160).call(wbZoom.scaleTo, 1, wbZoomAnchor({ usePointer: false }));
+}
+
 //: **Zoom to the selection** (Shift+2, draw.io's and Figma's key): the
 //: selected items fill the free canvas, magnified up to 2x so one small
 //: shape is readable, never past it.
@@ -14853,7 +14904,7 @@ async function initWhiteboard() {
   // under a button labelled "Fit to Screen". See `wbZoomToFit`.
   document.getElementById("wb-zoom-fit").addEventListener("click", () => wbZoomToFit());
   //: The level itself is the 100% button, as in Figma and draw.io.
-  document.getElementById("wb-zoom-level").addEventListener("click", () => container.transition().duration(160).call(wbZoom.scaleTo, 1));
+  document.getElementById("wb-zoom-level").addEventListener("click", wbZoomTo100);
 
   // **An arrow, not the function directly.** `addEventListener` passes the
   // click event as the first argument, which would land in
@@ -14953,9 +15004,7 @@ async function initWhiteboard() {
   $("wb-map-numbered")?.addEventListener("change", (e) => wbMapSetNumbered(e.target.checked));
   $("wb-map-dim")?.addEventListener("change", (e) => wbMapSetDim(e.target.checked));
   $("wb-map-stats-item")?.addEventListener("click", wbShowMapStats);
-  $("wb-zoom-actual")?.addEventListener("click", () =>
-    d3.select(document.getElementById("whiteboard-container")).transition().duration(160).call(wbZoom.scaleTo, 1)
-  );
+  $("wb-zoom-actual")?.addEventListener("click", wbZoomTo100);
   $("wb-map-expand-all")?.addEventListener("click", wbMapExpandAll);
   $("wb-map-focus-less")?.addEventListener("click", () => wbMapStepFocus(-1));
   $("wb-map-focus-more")?.addEventListener("click", () => wbMapStepFocus(1));
@@ -16834,6 +16883,9 @@ async function initWhiteboard() {
     if (!container.node()?.contains(e.target)) wbMapKeysArmed = false;
   });
 
+  //: On `window`, capturing, so it runs before the app zoom's own capture
+  //: listener on `document` (settings-panes.js) and can stop it.
+  window.addEventListener("keydown", wbZoomKey, true);
   document.addEventListener("keydown", (e) => {
     if (typeof e.key !== "string") return; // a keydown with no key (see the ring's handler above)
     const view = document.getElementById("library-view-whiteboard");
@@ -17131,32 +17183,7 @@ async function initWhiteboard() {
       }, 120);
       return;
     }
-    //: **The camera from the keyboard** (the conventions pass: Figma, Miro,
-    //: tldraw and Excalidraw share these). Ctrl+0 is 100%, Ctrl+= and Ctrl+-
-    //: step in and out by the zoom buttons' own factors, Shift+1 fits the
-    //: board. Ctrl+0 and Ctrl+= are also the browser's page zoom; on a board
-    //: the board's zoom is the one people mean, so they are taken here and
-    //: left to the browser everywhere else. `e.code` for the digits and the
-    //: plus key, because Shift+1 arrives as "!" and Ctrl+= as "+" or "="
-    //: depending on the layout.
-    if ((e.ctrlKey || e.metaKey) && !e.altKey) {
-      const camera = d3.select(document.getElementById("whiteboard-container"));
-      if (e.code === "Digit0" || e.code === "Numpad0") {
-        e.preventDefault();
-        camera.transition().duration(160).call(wbZoom.scaleTo, 1);
-        return;
-      }
-      if (e.code === "Equal" || e.code === "NumpadAdd") {
-        e.preventDefault();
-        wbZoomStep(1.2);
-        return;
-      }
-      if (e.code === "Minus" || e.code === "NumpadSubtract") {
-        e.preventDefault();
-        wbZoomStep(0.8);
-        return;
-      }
-    }
+    //: Ctrl/Cmd with +, -, 0 and 1 are `wbZoomKey`'s, taken before this.
     if (e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey && e.code === "Digit1") {
       e.preventDefault();
       wbZoomToFit();
@@ -17960,7 +17987,6 @@ async function initWhiteboard() {
   //: learnt.
   const openBoardCanvasMenu = (clientX, clientY) => {
     const [x, y] = getLogicalMouse({ clientX, clientY });
-    const camera = d3.select(containerEl);
     const items = [];
     if (wbClipboard) {
       const count = wbClipboard.things;
@@ -17976,7 +18002,7 @@ async function initWhiteboard() {
       makeMenuItem("ph:note Add a sticky note here", "N", () => wbCreateSticky(x, y)),
       makeMenuItem("ph:frame-corners Add a frame here", "F", () => wbCreateFrame(x, y)),
       makeMenuItem("ph:selection-all Select all", "Ctrl+A", () => wbSelectAllItems()),
-      makeMenuItem("ph:magnifying-glass Zoom to 100%", "Ctrl+0", () => camera.transition().duration(160).call(wbZoom.scaleTo, 1)),
+      makeMenuItem("ph:magnifying-glass Zoom to 100%", "Ctrl+1", wbZoomTo100),
       makeMenuItem("ph:frame-corners Fit everything", "Shift+1", () => wbZoomToFit()),
     );
     //: The way back to a locked item (decision 15): it lets the pointer

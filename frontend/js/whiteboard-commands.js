@@ -260,8 +260,8 @@ const WB_COMMANDS = [
   { id: "format-panel", group: "View", icon: "ph:sliders-horizontal", label: "Format panel (top bar button)", menu: "Format panel", keys: "Ctrl+Shift+P", surface: "board", run: () => wbFormatToggle() },
   { id: "zoom-in", group: "View", icon: "ph:magnifying-glass-plus", label: "Zoom in", keys: "Ctrl+=", surface: "both", run: wbClickId("wb-zoom-in") },
   { id: "zoom-out", group: "View", icon: "ph:magnifying-glass-minus", label: "Zoom out", keys: "Ctrl+-", surface: "both", run: wbClickId("wb-zoom-out") },
-  { id: "zoom-100", group: "View", icon: "ph:magnifying-glass", label: "Zoom to 100%", keys: "Ctrl+0", surface: "both", run: wbClickId("wb-zoom-actual") },
-  { id: "zoom-fit", group: "View", icon: "ph:frame-corners", label: "Fit everything", keys: "Shift+1", surface: "both", run: () => wbZoomToFit() },
+  { id: "zoom-100", group: "View", icon: "ph:magnifying-glass", label: "Zoom to 100%", keys: "Ctrl+1", surface: "both", run: wbClickId("wb-zoom-actual") },
+  { id: "zoom-fit", group: "View", icon: "ph:frame-corners", label: "Fit everything", keys: "Ctrl+0", surface: "both", run: () => wbZoomToFit() },
   { id: "zoom-selection", group: "View", icon: "ph:selection", label: "Zoom to the selection", keys: "Shift+2", surface: "both", needs: "selection", run: () => wbZoomToSelection() },
   { id: "overview", group: "View", icon: "ph:map-trifold", label: "Board overview", keys: "Shift+N", surface: "both", run: () => wbToggleNavigator() },
   //: The View menu's background, grid and colour rows (row 9), each pressing
@@ -653,7 +653,7 @@ const WB_HELP_SECTIONS = [
     { icon: "ph:arrows-horizontal", label: "Pan sideways", keys: ["Shift+wheel"] },
     { icon: "ph:hand-grabbing", label: "Pan with any tool", keys: ["Space+drag"] },
     { icon: "ph:magnifying-glass-plus", label: "Zoom", keys: ["wheel", "pinch"] },
-    { cmd: "zoom-in" }, { cmd: "zoom-out" }, { cmd: "zoom-100" }, { cmd: "zoom-fit" },
+    { cmd: "zoom-in" }, { cmd: "zoom-out" }, { cmd: "zoom-100" }, { cmd: "zoom-fit", also: ["Shift+1"] },
     { cmd: "overview" }, { cmd: "find" },
     { icon: "ph:keyboard", label: "Walk the board's items", keys: ["Tab", "Shift+Tab"] },
   ] },
@@ -702,7 +702,8 @@ function wbHelpRows(section) {
       if (!row.cmd) return row;
       const command = WB_COMMAND_BY_ID.get(row.cmd);
       if (!command || !command.keys) return null;
-      return { icon: command.icon, label: command.label, keys: [command.keys] };
+      //: `also`: a second key for the same command (Fit: Ctrl+0 and Shift+1).
+      return { icon: command.icon, label: command.label, keys: [command.keys, ...(row.also || [])] };
     })
     .filter(Boolean);
 }

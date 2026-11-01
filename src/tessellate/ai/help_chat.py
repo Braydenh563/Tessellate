@@ -1481,7 +1481,7 @@ HELP_TOPICS.extend(
             "id": "whiteboard-controls",
             "keywords": (
                 "lasso", "highlighter", "eraser", "connector", "snap to grid",
-                "snap", "grid", "pan", "zoom", "zoom to fit",
+                "snap", "grid", "pan", "zoom", "zoom to fit", "ctrl plus", "ctrl minus", "zoom keys", "zoom on the selection",
                 "board overview", "find a card", "find and replace", "replace all", "whole word", "regular expression", "pattern", "tool",
                 "select all shapes", "select all connectors", "select similar", "turn 90 degrees", "remove from group", "copy size", "paste size", "reverse a connector", "auto size",
             ),
@@ -1491,12 +1491,10 @@ HELP_TOPICS.extend(
                 "eraser, B fill, L line, A arrow, R rectangle, O circle, G "
                 "triangle, D diamond, T text, N sticky note (Ctrl+Enter in one starts the next beside it), F frame, C connector (Shift+C "
                 "curved), I image, X delete. An arrow (A) or a line (L) that starts or ends on a shape, card or topic is a "
-                "connector bound to it and follows it when it moves. A drawn shape is selected and Select returns (not the pen). Shapes draw corner to corner (Shift: square, circle, 45 degree line, straight pen; Alt: centred). The Shapes button's flyout also has a rounded "
-                "rectangle, ellipse, hexagon, parallelogram, star, cylinder, cloud, speech "
-                "bubble and block arrow. Moving around: the wheel "
+                "connector bound to it and follows it when it moves. A drawn shape is selected and Select returns (not the pen). Shapes draw corner to corner (Shift: square, circle, 45 degree line, straight pen; Alt: centred). The Shapes flyout has more (star, cloud, cylinder and others). Moving around: the wheel "
                 "zooms about the pointer, two trackpad fingers pan, Shift+wheel pans sideways, a pinch "
-                "zooms too, a drag on empty canvas boxes (Shift adds), a right or middle drag or Space and drag pans (a plain right-click opens the menu), a drag to an edge pans, Ctrl+= and Ctrl+- zoom, "
-                "Ctrl+0 is 100%, Shift+1 fits all, Shift+2 zooms to the selection, Shift+N shows the "
+                "zooms too, a drag on empty canvas boxes (Shift adds), a right or middle drag or Space and drag pans (a plain right-click opens the menu), a drag to an edge pans, Ctrl+= and Ctrl+- zoom the board about the selection's centre (else the view's), "
+                "Ctrl+0 fits all (or Shift+1), Ctrl+1 is 100%, Shift+2 zooms to the selection, Shift+N shows the "
                 "overview, / or Ctrl+F finds, Ctrl+H replaces, Tab walks the "
                 "items. Ctrl+K also finds select all shapes or connectors, select similar, turn 90 degrees, remove from "
                 "the group, copy and paste the size, grow to fit the words, reverse a connector and clear its bends. "

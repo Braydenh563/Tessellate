@@ -51672,6 +51672,8 @@ Fixed:
 
 1507. **Owner, 2026-11-01 (screenshot, Chat with no model, Agent mode):** "i wanna make a note" was answered "You previously noted: ..." over a social skills guide. Two classes: a casual lead ("i wanna", "can i", "lemme", "help me") was not taken off the front, so the act under it was never read; and an act with nothing to write ("make a note", "set a reminder") was not an act, so it was searched for. Fixed: the leads join `_POLITE`, a bare note asks "What should the note say?", and a bare reminder asks what and when (tests/test_casual_acts_1507.py).
 
+1509. **Owner, 2026-11-01 (whiteboard zoom):** "I want to be able to ctrl +/- to zoom out and zoom in foccused on selected objects ot in general on the whiteboard if focused on it like with adobe indesign". Recommendation taken: while the board has focus, Ctrl/Cmd with + or = zooms in and with - zooms out by the board's own zoom steps, `preventDefault` so the browser page does not zoom; centred on the selection's box when something is selected, else the view centre; Ctrl+0 fits, Ctrl+1 is 100%, as in InDesign. Shown in the board's Keys sheet and the Guide. Agent next. **Fixed in agent board-1101's zoom-keys commit.** Measured (probe-zoom sweep, 1440): Ctrl+= app 100% to 105% plus board 1.2x before, board 1.2x alone after; a selected item's centre at (748, 452) before and after Ctrl+=; Ctrl+= while typing leaves the board at 1.44.
+
 ## Moved from HANDOVER (2026-10-31): the PR 149 plan and session records to 2026-09-26
 
 ## How to proceed after PR 149 (the owner asked, 2026-09-14)

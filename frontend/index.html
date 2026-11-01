@@ -7089,11 +7089,11 @@ Link to another note with [[its first few words]]."></textarea>
             <!-- Zoom in and Zoom out are the zoom bar's two buttons already,
                  one click away at the foot of the canvas, so they are not
                  here a second time; what the bar has no button for (100%)
-                 and what is worth its key (Shift+1, Ctrl+0) is. -->
+                 and what is worth its key (Ctrl+0, Ctrl+1) is. -->
             <div class="wb-menu-section" role="group" aria-label="Zoom">
-              <button type="button" class="wb-menu-item" data-wb-click="wb-zoom-fit"><i class="ph ph-frame-corners ph-lead" aria-hidden="true"></i><span>Fit everything</span><kbd>Shift+1</kbd></button>
+              <button type="button" class="wb-menu-item" data-wb-click="wb-zoom-fit"><i class="ph ph-frame-corners ph-lead" aria-hidden="true"></i><span>Fit everything</span><kbd>Ctrl+0</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="zoom-selection"><i class="ph ph-selection ph-lead" aria-hidden="true"></i><span>Zoom to the selection</span><kbd>Shift+2</kbd></button>
-              <button type="button" class="wb-menu-item" id="wb-zoom-actual"><i class="ph ph-magnifying-glass ph-lead" aria-hidden="true"></i><span>Zoom to 100%</span><kbd>Ctrl+0</kbd></button>
+              <button type="button" class="wb-menu-item" id="wb-zoom-actual"><i class="ph ph-magnifying-glass ph-lead" aria-hidden="true"></i><span>Zoom to 100%</span><kbd>Ctrl+1</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-click="wb-fullscreen"><i class="ph ph-arrows-out ph-lead" aria-hidden="true"></i><span>Full screen</span><kbd>Esc leaves</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-fn="present" data-wb-surface="board" title="Show the board's frames one at a time, full screen"><i class="ph ph-presentation ph-lead" aria-hidden="true"></i><span>Present frames</span><kbd>arrows · Esc</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-fn="present" data-wb-surface="map" title="Show the map one branch at a time, full screen"><i class="ph ph-presentation ph-lead" aria-hidden="true"></i><span>Present branches</span><kbd>arrows · Esc</kbd></button>
@@ -7382,7 +7382,7 @@ Link to another note with [[its first few words]]."></textarea>
           <p>
             The canvas itself: double-click it for a new trunk, right-click
             it for the map's own menu. Escape takes back a drag you have not
-            let go of yet; Shift+1 fits the whole map and Ctrl+0 shows it at
+            let go of yet; Ctrl+0 or Shift+1 fits the whole map and Ctrl+1 shows it at
             100%. The canvas's own background colour is in View, in the top
             bar, and PNG or SVG export keeps whatever it is set to.
           </p>
@@ -7662,9 +7662,9 @@ Link to another note with [[its first few words]]."></textarea>
 
     <div class="whiteboard-floating-panel bottom-right card glass" data-panel-id="zoom">
       <button id="wb-zoom-out" class="ghost small icon-only" title="Zoom out (Ctrl+-)" aria-label="Zoom out"><i class="ph ph-minus" aria-hidden="true"></i></button>
-      <button id="wb-zoom-level" type="button" class="ghost small wb-zoom-level" title="Zoom level; press for 100% (Ctrl+0)" aria-label="100%, zoom level, press for 100%">100%</button>
+      <button id="wb-zoom-level" type="button" class="ghost small wb-zoom-level" title="Zoom level; press for 100% (Ctrl+1)" aria-label="100%, zoom level, press for 100%">100%</button>
       <button id="wb-zoom-in" class="ghost small icon-only" title="Zoom in (Ctrl+=)" aria-label="Zoom in"><i class="ph ph-plus" aria-hidden="true"></i></button>
-      <button id="wb-zoom-fit" class="ghost small icon-only" title="Fit to screen (Shift+1)" aria-label="Fit to screen"><i class="ph ph-frame-corners" aria-hidden="true"></i></button>
+      <button id="wb-zoom-fit" class="ghost small icon-only" title="Fit to screen (Ctrl+0)" aria-label="Fit to screen"><i class="ph ph-frame-corners" aria-hidden="true"></i></button>
     </div>
 
     <!-- **The context bar** (WHITEBOARD_PLAN.md decision 2): one surface in
