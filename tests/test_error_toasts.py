@@ -80,6 +80,9 @@ EXPECTED = {
         '"Save the document first."',
         '"This window has no speech voices to read with."',
     ],
+    'documents-history.js': [
+        '"Open a document first."',
+    ],
     'documents.js': [
         '`${what} is not available here.`',
         '"That section cannot go inside itself."',
@@ -87,7 +90,6 @@ EXPECTED = {
         '"Put the caret in a paragraph first."',
         '"That block is not in this document any more."',
         '`Nothing called "${name}" yet.`',
-        '"Open a document first."',
         '"Full screen is not available in this window."',
         '"That text has changed, the list is refreshed."',
         '"Nothing left to fix."',
@@ -237,9 +239,12 @@ FAULTS = {
     'documents-code.js': {
         '"Emmet could not be loaded, so nothing was wrapped."': 'the Emmet module failed to load: a broken asset',
     },
+    'documents-history.js': {
+        '"Couldn\'t open that version."': 'fetching a saved version failed',
+    },
     'documents.js': {
         '"The Word writer could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
-        '"Couldn\'t open that version."': 'fetching a saved version failed',
+        '"The history could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"Could not open that document. The one on screen is unchanged."': 'fetching a document failed (audit 1028 D35); the editor keeps the one it had',
         '"Replace in every document could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"The export could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
