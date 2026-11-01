@@ -12,7 +12,8 @@ Plain `def` so the blocking LLM call runs in FastAPI's threadpool.
 the two flows above and what tests patch here (`user_now`, `_prepare`,
 `_retrieve_for`) or read here. The helpers it calls were moved out whole and
 are re-exported here; each imports only the layers before it in this list,
-never this file: `chat_attach` (the attachments), `chat_request` (the request).
+never this file: `chat_attach` (the attachments), `chat_request` (the request),
+`chat_pool` (the note pool).
 """
 
 from __future__ import annotations
@@ -24,7 +25,6 @@ import re
 import time
 from collections import OrderedDict
 from collections.abc import Iterator
-from dataclasses import dataclass, field
 from dataclasses import replace as with_changes
 from datetime import date, datetime, timezone
 from itertools import chain
@@ -36,7 +36,7 @@ from sqlalchemy import or_, select
 from sqlalchemy import text as sql_text
 from sqlalchemy.orm import Session
 
-from tessellate.ai import budget as run_budget, capability, fact_check, filed_name, composer, composer_social, composer_unplaced, note_language, composer_plan, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, composer_money, composer_slots, composer_sum, composer_versus, find_it, glossary, list_pool, neighbours, note_rank, note_recency, personal, phrasing, realise, verdicts, toolwords, vocative, why
+from tessellate.ai import budget as run_budget, capability, fact_check, filed_name, composer, composer_social, composer_unplaced, note_language, composer_plan, composer_aware, composer_compose, composer_digest, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, composer_money, composer_slots, find_it, glossary, list_pool, note_rank, note_recency, personal, phrasing, realise, verdicts, toolwords, vocative, why
 from tessellate.ai import ask_chips
 from tessellate.ai import recognise
 from tessellate.ai import (
@@ -77,7 +77,6 @@ from tessellate.core.database import (
     Entity,
     Entry,
     EntryLink,
-    MediaUpload,
     Reminder,
     like_escape,
 )
@@ -86,12 +85,12 @@ from tessellate.core.deps import get_session
 from tessellate.core.logbuffer import safe_value
 from tessellate.entry import manager
 from tessellate.entry.manager import UNCATEGORISED
-from tessellate.search import engine
 from tessellate.search import chunks as search_chunks
 from tessellate.search import search_manager
 from sqlalchemy import func
-from tessellate.api.chat_attach import ATTACHED_MAP_CHARS, _MEDIA_REF, _attached_boards, _attached_documents, _attached_files, _attached_notes, _attachment_readings, _files_on, _grounding_candidates, _media_readings, _mostly_pictures, _named_sources, _note_dates, _one_line, _picture_alts, _picture_sizes, _time_words  # noqa: F401  (moved; re-exported)
+from tessellate.api.chat_attach import ATTACHED_MAP_CHARS, _MEDIA_REF, _attached_boards, _attached_documents, _attached_files, _attached_notes, _attachment_readings, _files_on, _grounding_candidates, _media_readings, _note_dates, _one_line, _picture_alts, _time_words  # noqa: F401  (moved; re-exported)
 from tessellate.api.chat_request import ChatRequest, ChatResponse, ChatTurn, CommandRunBody, CompressBody, FollowupBody, MAX_COMPRESS_TURNS, RememberBody, ToolExecuteBody, _NOTE_LINK, _NOT_A_NAME, _NOT_A_SUBJECT, _RELATED_LIMIT, _StreamRequest, _Turn, _apply_open, _apply_scope, _chat_model_sees_images, _check_refs, _composed, _event, _image_caption_context, _in_full, _meta_event, _named_note, _nothing_open, _resolve_chat_images, _resolve_mode, _resolve_persona, _resolve_skill, _small_model_mode  # noqa: F401  (moved; re-exported)
+from tessellate.api.chat_pool import _Found, _NoteCtx, _chat_payload, _composer_reads, _detect_intent, _document_row, _filed_under, _frame_matches, _glossary, _holding, _holds_read_text, _in_window, _keep_window, _note_content, _whole_pool, _widened, _with_each_side, _with_neighbours, _with_records, _with_sources  # noqa: F401  (moved; re-exported)
 
 
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -361,205 +360,6 @@ def _resolve_plan(body: ChatRequest) -> dict | None:
     }
 
 
-#: A topic asked about as a whole reads this many notes (INBOX 787): "games
-#: notes" answered from the five a similarity search ranked counted five, and
-#: the overview says how many there are.
-OVERVIEW_LIMIT = 24
-#: Notes found by what their pictures show or say, beside retrieval.
-PICTURE_MATCHES = 3
-
-
-#: The person's abbreviations, learned once per state of the notebook (the
-#: count and the newest edit), not once per question.
-_GLOSSARY: dict[str, object] = {"key": None, "terms": {}}
-
-
-def _glossary(session: Session) -> dict[str, str]:
-    """`ai/glossary.learn` over every note (CHAT_PLAN B7): "CC" is Cloud
-    Computing because the notes say so, or name it in full beside it."""
-    live = Entry.is_deleted == False  # noqa: E712
-    key = session.execute(select(func.count(Entry.id), func.max(Entry.updated_at)).where(live)).one()
-    if _GLOSSARY["key"] != tuple(key):
-        texts = session.execute(select(Entry.content).where(live)).scalars()
-        _GLOSSARY.update(key=tuple(key), terms=glossary.learn(texts))
-    return _GLOSSARY["terms"]  # type: ignore[return-value]
-
-
-def _widened(session: Session, question: str, entries: list, scope: str = "") -> list:
-    """The retrieved notes, plus the notes whose pictures match the question
-    (keyword search reads a note's words, not its pictures' readings: "what
-    did I note about binary search trees" missed the lecture slide), plus,
-    for a topic asked about as a whole, its notes by keyword and by tag."""
-    from tessellate.ai import composer_overview
-
-    extra = _picture_notes(session, composer.subject_terms(question))
-    subject = composer_overview.topic(question)
-    if subject:
-        #: The notes filed under the subject (its category, its tag) come first:
-        #: a keyword rank by how often a word repeats put a note that says
-        #: "reading" nine times above the Books note (audit 1031 C4).
-        filed = _filed_under(session, composer.subject_terms(subject))
-        said = filed + search_manager.keyword_search(session, subject, limit=OVERVIEW_LIMIT)
-        extra += said if len({e.id for e in said}) >= 2 else said + _by_synonym(session, subject)
-    seen = {entry.id for entry in entries}
-    out = list(entries)
-    for entry in extra:
-        #: A question scoped to a category ("my notes in Health") keeps its
-        #: answer there: "notes in Health" reads as a topic too, and its word
-        #: "notes" matched an Ideas note.
-        if scope and manager.category_name_for(session, entry) != scope:
-            continue
-        if entry.id not in seen and not entry.is_deleted and not entry.is_private:
-            seen.add(entry.id)
-            out.append(entry)
-    return out[: max(len(entries), OVERVIEW_LIMIT)]
-
-
-#: Notes read for "the topic whole" come from the first of the retrieved
-#: ones that rank at the top, never from every graph neighbour.
-NEIGHBOUR_SEEDS = 3
-#: Past this many retrieved notes the topic is already read whole.
-NEIGHBOUR_ROOM = 6
-
-
-def _with_neighbours(session: Session, question: str, entries: list, scope: str = "") -> list:
-    """The retrieved notes plus, for a question about a topic as a whole, the
-    notes sharing a rare tag with the best of them (`ai/neighbours.py`: the
-    keyword search wants every word, so "how's the gym going?" never read the
-    second gym note)."""
-    if neighbours.asks_left(question) and not scope:
-        return _with_open(session, question, entries)
-    if not entries or scope or len(entries) > NEIGHBOUR_ROOM or not neighbours.reads_whole(question):
-        return entries
-    rows = session.execute(
-        select(Entry.id, Entry.tags)
-        .where(Entry.is_deleted == False, Entry.is_private == False, Entry.is_board == False, Entry.tags != "[]")  # noqa: E712
-        .order_by(Entry.created_at.desc())
-        .limit(2000)
-    ).all()
-    chosen = neighbours.pick([e.id for e in entries[:NEIGHBOUR_SEEDS]], [(i, manager.tags_from_json(t)) for i, t in rows])
-    have = {e.id for e in entries}
-    extra = [session.get(Entry, i) for i in chosen if i not in have]
-    return entries + [e for e in extra if e is not None]
-
-
-def _with_open(session: Session, question: str, entries: list) -> list:
-    """For "what do I need to buy" and "what's left", the notes that hold
-    something still open: an unticked box, "still to" or "need to", and, for
-    buying, the shopping notes by tag or category. Search by the words of the
-    question ("buy") finds none of them."""
-    clauses = [Entry.content.like("%- [ ]%"), Entry.content.like("%still to %"), Entry.content.like("%need to %")]
-    if re.search(r"\b(buy|shop|get)\b", question, re.I):
-        shops = ("grocer", "shopping", "shop list")
-        clauses += [func.lower(Entry.tags).like(f"%{like_escape(w)}%", escape=LIKE_ESCAPE) for w in shops]
-        named = select(Category.id).where(or_(*(func.lower(Category.name).like(f"%{like_escape(w)}%", escape=LIKE_ESCAPE) for w in shops)))
-        clauses.append(Entry.category_id.in_(named))
-    found = session.scalars(
-        select(Entry)
-        .where(Entry.is_deleted == False, Entry.is_private == False, Entry.is_board == False, or_(*clauses))  # noqa: E712
-        .order_by(Entry.created_at.desc())
-        .limit(NEIGHBOUR_ROOM)
-    )
-    have = {e.id for e in entries}
-    return entries + [e for e in found if e.id not in have]
-
-
-def _by_synonym(session: Session, subject: str) -> list:
-    """The notes that name a topic by another word ("uni" for "university"):
-    read only when the topic's own word finds fewer than two, which is no
-    overview (`composer_overview.members`)."""
-    found: list = []
-    for word in composer.subject_terms(subject)[:3]:
-        for other in sorted(a for a in composer._alternatives(composer._stem(word)) if len(a) >= 3 and a.isalpha()):  # noqa: SLF001
-            found += search_manager.keyword_search(session, other, limit=OVERVIEW_LIMIT) + _filed_under(session, [other])
-    return found
-
-
-def _filed_under(session: Session, terms: list[str]) -> list:
-    """Notes tagged with, or filed in a category named for, a word of the
-    topic ("games" finds the notes tagged games that never say the word)."""
-    words = [t.lower() for t in terms if len(t) >= 3][:3]
-    if not words:
-        return []
-    clauses = [func.lower(Entry.tags).like(f'%"{like_escape(w.rstrip("s"))}%', escape=LIKE_ESCAPE) for w in words]
-    #: A word at the start of the name or after a space in it ("study" is in "Courses & study").
-    said = [like_escape(w.rstrip("s")) for w in words]
-    named = select(Category.id).where(or_(*(func.lower(Category.name).like(pattern, escape=LIKE_ESCAPE) for w in said for pattern in (f"{w}%", f"% {w}%"))))
-    clauses.append(Entry.category_id.in_(named))
-    query = (
-        select(Entry)
-        .where(Entry.is_deleted == False, Entry.is_private == False, or_(*clauses))  # noqa: E712
-        .order_by(Entry.created_at.desc())
-        .limit(OVERVIEW_LIMIT)
-    )
-    return list(session.scalars(query))
-
-
-def _picture_notes(session: Session, terms: list[str]) -> list:
-    """Notes holding a picture whose caption or read text has every word of
-    the question's subject, at most `PICTURE_MATCHES`."""
-    words = [t.lower() for t in terms if len(t) >= 3][:4]
-    if not words:
-        return []
-    said = func.lower(func.coalesce(MediaUpload.caption, "") + " " + func.coalesce(MediaUpload.vision_ocr_text, "") + " " + func.coalesce(MediaUpload.ocr_text, ""))
-    names = list(session.scalars(
-        select(MediaUpload.filename).where(*(said.like(f"%{like_escape(w)}%", escape=LIKE_ESCAPE) for w in words)).limit(PICTURE_MATCHES)
-    ))
-    if not names:
-        return []
-    holding = or_(*(Entry.content.like(f"%{like_escape(name)}%", escape=LIKE_ESCAPE) for name in names))
-    return list(session.scalars(select(Entry).where(Entry.is_deleted == False, holding).limit(PICTURE_MATCHES)))  # noqa: E712
-
-
-@dataclass
-class _Found:
-    """What `_prepare` learns about one question, filled in stage by stage."""
-
-    detected: str
-    stats: object = None
-    entries: list = field(default_factory=list)
-    mode: str = "none"
-    meaning_loading: bool = False
-    meaning_off: bool = False
-    #: Notes that mention the one day asked about (E6).
-    mentioned: set = field(default_factory=set)
-    #: Ids that are here because they are *connected* to a match rather than
-    #: because they matched. The user asked about one thing and is shown notes
-    #: about another; without saying why, the panel looks like the search
-    #: misfired, and the model, told nothing, would report them as results.
-    connected_ids: set = field(default_factory=set)
-    match_info: dict = field(default_factory=dict)
-    when_phrase: str = ""
-    #: As of a date: per note, the revision its text came from.
-    as_of_then: dict = field(default_factory=dict)
-
-
-@dataclass
-class _NoteCtx:
-    """What turning an entry into a prompt row needs besides the entry."""
-
-    session: Session
-    found: _Found
-    attached_ids: set
-    zone: object
-    today: object
-    time_words: dict
-    files_on: dict
-    as_of: "date | None"
-
-
-def _detect_intent(question: str, force_notes_intent: bool, *attachments: list) -> str:
-    detected = intent.classify(question)
-    # `body.answering_agent` (Tier 1 section 4): a reply to the agent's own
-    # question is about the notebook by construction, however smalltalk-shaped
-    # the reply itself reads ("yes", "ok"). Attaching a note (or a document) is
-    # likewise a statement that this is about the notebook, so it overrides the
-    # classifier: the client already knows what the request actually is.
-    if force_notes_intent or any(attachments):
-        return intent.NOTES
-    return detected
-
-
 def _worked_out(question: str):
     """**Worked out, like a count** (CHAT_PLAN decision 41): a sum, a
     conversion, the time. Its sentence is exact and needs no model, so it
@@ -632,36 +432,6 @@ def _computed_answer(session: Session, question: str, detected: str, as_of, atta
     return detected, stats
 
 
-def _in_window(found: _Found, session: Session, asked, question: str) -> None:  # noqa: ANN001
-    """The window's own notes are the pool: a time recall, or a question whose
-    only words are its window and the question's verb."""
-    archived = question_noise.asks_archived(question)
-    if asked.kind == "recall":
-        found.entries = search_manager.entries_between(session, asked.window[0], asked.window[1], archived=archived)
-    else:
-        #: "How much did I save in October": the question's own verb is no
-        #: term, so nothing was searched; the window's notes are the pool the
-        #: readers ask (audit 1031 C3).
-        stems = composer.window_verb_stems(question, asked.window_phrase)
-        window = search_manager.entries_between(session, asked.window[0], asked.window[1], limit=1000 if stems else 40, archived=archived)
-        found.entries = [e for e in window if composer.holds_any(stems, e.content or "")][:40] if stems else window
-    found.mode, found.connected_ids, found.match_info, found.when_phrase = "window", set(), {}, asked.window_phrase
-
-
-def _keep_window(found: _Found, asked) -> None:  # noqa: ANN001
-    """**A subject inside a window keeps the window** (1324): "what did I
-    write about sourdough last week" was answered with sourdough notes from
-    six weeks, under a header that said "last week". The notes inside the
-    window are the answer when there are any."""
-    inside = [
-        e for e in found.entries
-        if e.id in found.mentioned or (e.created_at and asked.window[0] <= e.created_at.date() <= asked.window[1])
-    ]
-    if inside:
-        found.entries = inside
-        found.when_phrase = found.when_phrase or asked.window_phrase
-
-
 def _recall_window(session: Session, question: str, found: _Found) -> None:
     #: **A recall by time reads the window, not a ranking** (CHAT_PLAN decision
     #: 31): "what did I do last week" is every note of that week, newest first,
@@ -673,101 +443,6 @@ def _recall_window(session: Session, question: str, found: _Found) -> None:
         _in_window(found, session, asked, question)
     elif found.entries:
         _keep_window(found, asked)
-
-
-def _with_each_side(session: Session, question: str, entries: list, locale: str | None) -> list:  # noqa: ANN001
-    """A comparison needs both things in hand: a search for "Lisbon vs Porto"
-    can fill its few slots with one side, so each side is searched on its own
-    and the best of each is added."""
-    sides = composer.compare_sides(question)
-    if not sides:
-        return entries
-    merged = list(entries)
-    seen = {e.id for e in merged}
-    for side in sides:
-        #: A side named by a title is that note, first (audit 1031 C50): at 207
-        #: notes the five likest "dentist" were filler that said the word.
-        titled = _titled_entry(session, side)
-        if titled is not None:
-            merged = [titled, *(e for e in merged if e.id != titled.id)]
-            seen.add(titled.id)
-        for entry in search_manager.retrieve_detailed(session, side, deps.get_embeddings(), limit=3, locale=locale).entries:
-            if entry.id not in seen:
-                seen.add(entry.id)
-                merged.append(entry)
-    return merged
-
-
-def _titled_entry(session: Session, side: str):  # noqa: ANN202
-    """The note whose title is `side` ("the dentist", "Lisbon trip"), or None."""
-    core = re.sub(r"^(?:the|my|our)\s+|\s+notes?$", "", " ".join(side.lower().split()), flags=re.I).strip()
-    if len(core) < 3:
-        return None
-    rows = session.scalars(
-        select(Entry).where(
-            Entry.content.ilike(f"#%{like_escape(core)}%", escape=LIKE_ESCAPE), Entry.is_deleted.is_(False), Entry.deleted_at.is_(None), Entry.is_private.is_(False),
-        ).limit(20)
-    ).all()
-    return next((e for e in rows if re.sub(r"^(?:the|a|an)\s+", "", composer_frame.note_title(e.content).lower().strip()) == core), None)
-
-
-def _with_records(session: Session, question: str, entries: list, locale: str | None) -> list:  # noqa: ANN001
-    """An open checklist item may be done in a later note ("Renewed my library
-    membership today" beside "[ ] Renew library membership"): a question
-    about the checklist's state also fetches the notes that name its open
-    items, so the answer reads one state for the item (second eye F3)."""
-    if not composer_slots.asks_open(question):
-        return entries
-    doings = [d for e in entries for d in composer_slots.open_doings(e.content or "")][:6]
-    merged, seen = list(entries), {e.id for e in entries}
-    for doing in doings:
-        for entry in search_manager.retrieve_detailed(session, doing, deps.get_embeddings(), limit=2, locale=locale).entries:
-            if entry.id not in seen:
-                seen.add(entry.id)
-                merged.append(entry)
-    return merged
-
-
-_CHECKBOX = re.compile(r"^\s*[-*]\s*\[[ xX]\]", re.M)
-
-
-def _whole_pool(session: Session, question: str, found: _Found) -> None:
-    """"How much have I spent", "my biggest expense", "what's unpacked": the
-    answer is over every note that records the thing (spending, an amount, a
-    checklist), which the five likest never were ("spent" does not match
-    "Spending October"; 2026-10-30 sweep). None at all keeps the ordinary
-    retrieval, so the answer can say no note holds it."""
-    mode = "money"
-    if composer_money.asks(question) or composer_sum.asks_most(question):
-        holds = lambda text: composer_money.records_amounts(text) or composer_sum.holds_amount(question, text)  # noqa: E731
-    elif composer_slots.asks_state(question):
-        holds, mode = (lambda text: bool(_CHECKBOX.search(text))), "checklist"  # noqa: E731
-    else:
-        return
-    if recorded := _scan_notes(session, holds):
-        found.entries = recorded
-        found.mode, found.connected_ids, found.match_info = mode, set(), {}
-
-
-def _scan_notes(session: Session, holds) -> list:  # noqa: ANN001
-    """The newest notes `holds` is true of, page by page and stopping at the
-    scan's hit cap, never at the first page (a notebook past 400 notes
-    answered "no amounts"; second eye F1)."""
-    found: list = []
-    offset = 0
-    while len(found) < composer_money.SCAN_HITS:
-        page = manager.list_entries(session, limit=composer_money.SCAN_PAGE, offset=offset)
-        found += [e for e in page if holds(e.content or "")]
-        if len(page) < composer_money.SCAN_PAGE:
-            break
-        offset += composer_money.SCAN_PAGE
-    return found[: composer_money.SCAN_HITS]
-
-
-def _composer_reads(question: str) -> bool:
-    """Whether a counted-notes request is one the composer answers whole
-    (a ranking, an order, a count at one end of it) and so reads its own pool."""
-    return composer_versus.asks(question) or bool(composer_lists.list_order(question) or composer_lists.counted_order(question))
 
 
 def _search_notes(session: Session, question: str, found: _Found, attached: list, as_of, locale: str | None, composed: bool = False) -> None:  # noqa: ANN001
@@ -842,38 +517,6 @@ def _rewind_as_of(session: Session, question: str, found: _Found, as_of, locale:
         )
 
 
-#: Text this app read out of a picture or an attached file and put under a
-#: note (`_media_readings`, `_attachment_readings`) is not the person's words:
-#: a note carrying it taints the turn like a clipped page (audit 1028 E4).
-_READ_TEXT_MARKERS = ('text in it: "', "[Files attached to this note, as this app read them:")
-
-
-def _holds_read_text(content: str) -> bool:
-    return any(marker in content for marker in _READ_TEXT_MARKERS)
-
-
-def _note_content(ctx: _NoteCtx, entry) -> str:  # noqa: ANN001
-    session, found = ctx.session, ctx.found
-    content = found.as_of_then[entry.id].text if entry.id in found.as_of_then else entry.content
-    if entry.id in ctx.attached_ids:
-        # Only for notes the user picked by hand. A retrieved note is a
-        # candidate; an attached one is the subject of the question, and that is
-        # worth the extra characters: doing this for all ten search hits would
-        # spend the notes budget on pictures nobody asked about.
-        return f"{content}{_media_readings(session, content)}{_attachment_readings(session, entry.id)}"
-    if _mostly_pictures(content):
-        return f"{content}{_media_readings(session, content)}"
-    if _MEDIA_REF.search(content or ""):
-        #: **A picture's caption is the note's content** (CHAT_PLAN decision
-        #: 37; the owner: "Note captions arent counted as note content"): every
-        #: retrieved note with a picture brings what its pictures show, one line
-        #: each, so an answer can quote the caption. The text read in them stays
-        #: for a note that is mostly pictures or was picked by hand: it can run
-        #: to pages.
-        return f"{content}{_media_readings(session, content, captions_only=True)}"
-    return content
-
-
 def _context_note(ctx: _NoteCtx, entry) -> dict:  # noqa: ANN001
     found, as_of = ctx.found, ctx.as_of
     content = _note_content(ctx, entry)
@@ -914,26 +557,6 @@ def _context_note(ctx: _NoteCtx, entry) -> dict:  # noqa: ANN001
     }
 
 
-def _document_row(document, session: Session | None = None) -> dict:  # noqa: ANN001
-    # The same shape `_context_note` builds, by hand rather than through it: a
-    # Document has no category/tags and its id lives in a different table than
-    # Entry's, so folding it through the Entry-shaped helper would be the wrong
-    # abstraction, not a shortcut. `connected`/`match_info` are never true for a
-    # hand-picked document, same as an attached note.
-    return {
-        "id": document.id,
-        "content": f"{document.title}\n\n{document.content}",
-        "created_at": document.created_at.isoformat() if document.created_at else None,
-        "category": "Document",
-        "kind": "document",
-        #: An imported document's text is somebody else's (audit 1028 E4).
-        "from_outside": bool(session is not None and manager.document_came_from_outside(session, document.id)),
-        "attached": True,
-        "connected": False,
-        "match_info": None,
-    }
-
-
 def _context_notes(session: Session, found: _Found, attached: list, attached_docs: list, attached_files: list, attached_boards: list, as_of) -> list[dict]:  # noqa: ANN001
     # Attached notes come first and are never dropped by the retrieval limit.
     # Anything retrieval also found is de-duplicated against them.
@@ -958,180 +581,6 @@ def _context_notes(session: Session, found: _Found, attached: list, attached_doc
     notes.extend(attached_files)
     notes.extend(attached_boards)
     return notes
-
-
-def _stats_out(stats) -> dict | None:  # noqa: ANN001
-    #: The computed answer, when this was a question about the notebook's shape
-    #: rather than its contents. `text` is already a complete answer, which is
-    #: what makes these work with the model stopped.
-    if stats is None:
-        return None
-    return {"kind": stats.kind, "text": stats.text, "facts": stats.facts, "offer": stats.offer}
-
-
-def _raw_results(session: Session, found: _Found) -> list:
-    from tessellate.api.routes_entries import _to_out  # avoids a route-module cycle
-
-    rows = []
-    for entry in found.entries:
-        out = _to_out(session, entry)
-        if entry.id in found.as_of_then:
-            out = out.model_copy(update={"content": found.as_of_then[entry.id].text})
-        rows.append(out)
-    return rows
-
-
-def _chat_payload(session: Session, found: _Found, notes: list[dict], config, as_of) -> dict:  # noqa: ANN001
-    return {
-        "notes": notes,
-        "intent": found.detected,
-        "stats": _stats_out(found.stats),
-        #: The search model was still loading, so this one read words only
-        #: (`search_manager.query_vector`): said in Why, and when nothing
-        #: matched, said with the answer.
-        "meaning_loading": found.meaning_loading,
-        "meaning_off": found.meaning_off,
-        "raw_results": _raw_results(session, found),
-        #: The day asked about and, per note, the revision its text came from
-        #: (None for a note that read the same then as now).
-        "as_of": as_of.isoformat() if as_of is not None else None,
-        "as_of_revisions": {str(i): then.revision_id for i, then in found.as_of_then.items()},
-        #: Words for each retrieved note's pictures, for the thumbnails an
-        #: answer draws beside a citation (INBOX 502, `_picture_alts`).
-        "picture_alts": _picture_alts(session, found.entries),
-        "picture_sizes": _picture_sizes(found.entries),
-        "search_mode": found.mode,
-        # Sent beside the results rather than as a field on EntryOut: it is a
-        # fact about this search, not about the note, and every other route that
-        # returns an entry would otherwise carry a field that is always false.
-        "connected_ids": sorted(found.connected_ids),
-        # str() keys: JSON object keys are always strings and Pydantic's
-        # dict[str, dict] won't silently coerce an int key.
-        "match_info": {str(k): v for k, v in found.match_info.items()},
-        "when_phrase": found.when_phrase,
-        "style": config.get_preference("communication_style", "friendly"),
-        # The name and the capped "About me", or nothing while the profile
-        # switch is off: `librarian.profile_from_config` decides.
-        "profile": librarian.profile_from_config(config),
-    }
-
-
-def _frame_matches(session: Session, question: str, notes: list[dict], match_info: dict, mode: str) -> None:
-    """Why each Matching records card is there, in words, and which shown
-    notes the person linked (INBOX 1310, the owner: "it has no frame of
-    reference for how related each shown matching record is or why it was
-    shown and how the shown notes link"). Each note gets `linked_to`, the
-    shown notes it is linked to; each entry's `match_info` gets `why`, made
-    for a note that came by date or recency too. Facts either way: the model
-    reads them as context, the composer says them (decision 75)."""
-    ids = [n["id"] for n in notes]
-    if not ids:
-        return
-    linked: dict[int, list[int]] = {i: [] for i in ids}
-    rows = session.query(EntryLink.source_entry_id, EntryLink.target_entry_id, EntryLink.reason).filter(
-        EntryLink.source_entry_id.in_(ids), EntryLink.target_entry_id.in_(ids)
-    )
-    reasons: dict[int, dict[int, str]] = {i: {} for i in ids}
-    for a, b, reason in rows:
-        #: Once each: two notes linked both ways are one link to the reader.
-        if b not in linked[a]:
-            linked[a].append(b)
-        if a not in linked[b]:
-            linked[b].append(a)
-        if reason:
-            reasons[a].setdefault(b, reason)
-            reasons[b].setdefault(a, reason)
-    for note in notes:
-        note["linked_to"] = linked[note["id"]]
-        #: What the person wrote of each link, for "why did I link these" (audit 1031 C49).
-        note["link_reasons"] = reasons[note["id"]]
-    for key, reason in composer_frame.reasons(question, notes, mode).items():
-        match_info.setdefault(int(key), {})["why"] = reason
-    for note in notes:
-        note["match_info"] = match_info.get(note["id"])
-
-
-def _named_rows(session: Session, question: str) -> list[dict]:
-    """A document, board or map the question names by title, read first as
-    itself (not as an attachment the person picked)."""
-    named_docs, named_boards = _named_sources(session, question)
-    #: Said by its title and words, as a note is (`_board_rows`).
-    boards = _board_rows(_attached_boards(session, named_boards))
-    named = [_document_row(d, session) for d in named_docs] + boards
-    for row in named:
-        row["attached"] = False
-        row["named"] = True
-    return named
-
-
-#: How many boards, maps and documents a question's words may bring in.
-MATCHED_SOURCES = 3
-
-
-def _holds_every(text: str, terms: list[str]) -> bool:
-    """Every term is a word (or the start of one) in `text`."""
-    words = re.findall(r"[a-z0-9]+", (text or "").lower())
-    return all(any(w.startswith(t.lower()) for w in words) for t in terms)
-
-
-def _board_rows(boards: list[dict], terms: list[str] | None = None) -> list[dict]:
-    """Attached-board rows said as notes are: the title and its words, without
-    the "Mind map: X (4 nodes)" head that is for a model. With `terms`, only
-    those holding every term."""
-    kept = []
-    for row in boards:
-        head, _, outline = row["content"].partition("\n\n")
-        title = head.split(": ", 1)[-1].splitlines()[0]
-        if terms is not None and not _holds_every(f"{title} {outline}", terms):
-            continue
-        row["content"] = f"# {title}\n\n{outline}"
-        kept.append(row)
-    return kept
-
-
-def _holding(session: Session, hits: list, terms: list[str], skip: set[tuple[str, int]]) -> tuple[list, list[int]]:
-    """The documents and board ids among search `hits` not yet in, a document
-    kept only where its text holds every term."""
-    docs, boards = [], []
-    for hit in hits:
-        if ("document" if hit.kind == "document" else "board", hit.ref_id) in skip:
-            continue
-        doc = session.get(Document, hit.ref_id) if hit.kind == "document" else None
-        if doc is not None and doc.deleted_at is None and _holds_every(f"{doc.title} {doc.content}", terms):
-            docs.append(doc)
-        elif hit.kind != "document":
-            boards.append(hit.ref_id)
-    return docs, boards
-
-
-def _matched_rows(session: Session, question: str, skip: set[tuple[str, int]]) -> list[dict]:
-    """Boards, maps and documents whose own words hold the question's words
-    (composer work list 1: "tell me about IaaS" found nothing when IaaS was a
-    node on a map, because the note search reads notes). Found by the one
-    search index, then kept only where every term is really in the text, so a
-    partial match does not bring a source in. Read as the named ones are, so
-    the answer says the kind ("on your Cloud map"). `skip` holds
-    (document or board, id) pairs already in."""
-    terms = [t for t in search_manager._meaningful_terms(question or "") if t not in composer._ASKING_WORDS]  # noqa: SLF001
-    if not terms or len(question or "") > 300:
-        return []
-    hits = engine.search(session, " ".join(terms), kinds=["board", "map", "document"], limit=8, hybrid=False)
-    docs, boards = _holding(session, hits, terms, skip)
-    rows = [_document_row(d, session) for d in docs] + _board_rows(_attached_boards(session, boards), terms)
-    for row in rows:
-        row["attached"] = False
-        row["named"] = True
-    return rows[:MATCHED_SOURCES]
-
-
-def _with_sources(session: Session, question: str, notes: list[dict], mode: str) -> list[dict]:
-    """The notes with the boards, maps and documents the question names or
-    whose words hold it. Where the note search found nothing by its words, a
-    source that holds them leads; where it did, the notes lead and it follows."""
-    named = _named_rows(session, question)
-    taken = {("document" if r["kind"] == "document" else "board", r["id"]) for r in named}
-    matched = _matched_rows(session, question, taken)
-    return named + (matched + notes if mode in ("recent", "none") else notes + matched)
 
 
 def _retrieve_ranked(session: Session, question: str, found: "_Found", attached: list, attached_notes_only: bool, as_of: "date | None", locale: str | None, composed: bool = False) -> None:
