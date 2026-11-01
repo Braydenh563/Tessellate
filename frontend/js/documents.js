@@ -2614,13 +2614,17 @@ function setDocWordGoal(id, goal) {
 //: four places that mean "the document changed", and because a goal is
 //: per-document state while the counts are pure arithmetic over the box.
 function renderDocStats() {
-  const { words } = textCounts(docText());
-  const goal = currentDoc ? getDocWordGoal(currentDoc.id) : 0;
   const button = $("doc-word-goal");
   const label = $("doc-goal-label");
   if (!button || !label) return;
-  //: A word-count goal is for writing: a code file has no use for one.
-  button.classList.toggle("hidden", docIsCodeFile());
+  //: A word-count goal is for writing: a code file has no use for one, so it
+  //: also skips the word count (a whole-document pass: about 200 ms a pause
+  //: on a 7,000-line file at 4x CPU, audit 1031 row 23 CE3).
+  const code = docIsCodeFile();
+  button.classList.toggle("hidden", code);
+  if (code) return;
+  const { words } = textCounts(docText());
+  const goal = currentDoc ? getDocWordGoal(currentDoc.id) : 0;
   button.setAttribute("aria-pressed", String(goal > 0));
   button.classList.toggle("has-findings", goal > 0 && words >= goal);
   if (!goal) {
@@ -17382,6 +17386,14 @@ function runDocFacts() {
   renderDocProperties();
 }
 
+//: **A big code file waits longer for its facts** (audit 1031 row 23 CE3).
+//: The outline and counts are a whole-file pass; at 120 ms a pause they ran
+//: between nearly every burst of keys in a 7,000-line file. Prose keeps 120.
+function docFactsDelay() {
+  const len = docCmView ? docCmView.state.doc.length : 0;
+  return len > 120000 && docIsCodeFile() ? 600 : 120;
+}
+
 function scheduleDocFacts() {
   clearTimeout(docFactsTimer);
   docFactsTimer = setTimeout(() => {
@@ -17407,7 +17419,7 @@ function scheduleDocFacts() {
         run();
       }, { timeout: 300 });
     } else requestAnimationFrame(run);
-  }, 120);
+  }, docFactsDelay());
 }
 
 // --- the prose check ----------------------------------------------------------
@@ -18134,14 +18146,19 @@ function docProseFindings(text) {
 //: tree, everything else blanked at the same length so every offset still
 //: names the document's characters: a string's prefix (f, r, b, u) and quotes
 //: and a comment's marker are blanked too, and so is an f-string's `{expr}`.
-function docCodeProseMask(text) {
+//: `win`, past DOC_PROSE_WINDOW_CHARS, is the window the pass reads (audit 1031
+//: CE3: the whole-file mask was 517 ms of a 20-key run in a 7,000-line file at
+//: 4x): only the tree and the text inside it, and the mask returned is that
+//: window's.
+function docCodeProseMask(text, win = null) {
   const CM = window.CM6;
   if (!CM || !docCmView || docCmView.state.doc.length !== text.length) return "";
   const state = docCmView.state;
-  const tree = CM.language.ensureSyntaxTree(state, state.doc.length, 50) || CM.language.syntaxTree(state);
+  const tree = win ? CM.language.syntaxTree(state) : CM.language.ensureSyntaxTree(state, state.doc.length, 50) || CM.language.syntaxTree(state);
   const keep = new Uint8Array(text.length);
   const blank = (from, length) => keep.fill(0, from, from + length);
   tree.iterate({
+    ...(win ? { from: win.from, to: win.to } : {}),
     enter(node) {
       if (/Interpolation|Escape|FormatReplacement/i.test(node.name)) {
         blank(node.from, node.to - node.from);
@@ -18165,17 +18182,18 @@ function docCodeProseMask(text) {
       return undefined;
     },
   });
-  let masked = "";
-  for (let i = 0; i < text.length; i += 1) masked += keep[i] || text[i] === "\n" ? text[i] : " ";
-  return masked;
+  const parts = [];
+  for (let i = win ? win.from : 0, end = win ? win.to : text.length; i < end; i += 1) parts.push(keep[i] || text[i] === "\n" ? text[i] : " ");
+  return parts.join("");
 }
 
-function docCodeSpellFindings(text) {
+function docCodeSpellFindings(text, win = null) {
   if (!text.trim()) return [];
   docLoadWordlist();
   if (!docWordlistReady()) return [];
-  const masked = docCodeProseMask(text);
+  const masked = docCodeProseMask(text, win);
   if (!masked.trim()) return [];
+  const shift = win ? win.from : 0;
   const found = [];
   const dictionary = docDictionary();
   const word = /[A-Za-z']+/g;
@@ -18184,7 +18202,7 @@ function docCodeSpellFindings(text) {
     const lower = hit[0].toLowerCase();
     if (dictionary.has(lower)) continue;
     const at = hit.index;
-    const base = { start: at, end: at + hit[0].length, text: hit[0], rule: "spelling" };
+    const base = { start: at + shift, end: at + shift + hit[0].length, text: hit[0], rule: "spelling" };
     const better = DOC_AUTOCORRECT[lower];
     if (better) {
       found.push({ ...base, message: `“${hit[0]}” is probably “${better}”`, replacement: docMatchCase(hit[0], better) });
@@ -18217,6 +18235,18 @@ const docProse = { hidden: false, panelView: "list", win: null, timer: null };
 //: pause is the window and not the document. Measured at 100,800 characters:
 //: see docs/roadmap/agent-remaining/docux-1028.md.
 const DOC_PROSE_WINDOW_CHARS = 30000;
+
+//: A code file's window (CE3): the same size and the same centre as the
+//: prose one, cut at line ends (a blank line or a fence means nothing in code).
+function docCodeWindow(text) {
+  if (text.length <= DOC_PROSE_WINDOW_CHARS) return null;
+  const ranges = docCmView ? docCmView.visibleRanges : [];
+  const mid = ranges.length ? (ranges[0].from + ranges[ranges.length - 1].to) >> 1 : 0;
+  const to = Math.min(text.length, Math.max(0, mid - DOC_PROSE_WINDOW_CHARS / 2) + DOC_PROSE_WINDOW_CHARS);
+  const start = Math.max(0, to - DOC_PROSE_WINDOW_CHARS);
+  const end = to < text.length ? text.indexOf("\n", to) : -1;
+  return { from: start ? text.lastIndexOf("\n", start) + 1 : 0, to: end < 0 ? text.length : end };
+}
 
 function docProseWindow(text) {
   if (text.length <= DOC_PROSE_WINDOW_CHARS) return null;
@@ -18274,9 +18304,9 @@ function renderDocProse() {
   //: A long document is checked a window at a time (audit 1028 D7): the pass
   //: walks every rule and word, and at 100k characters that was a visible
   //: pause on each 150ms stop. The window follows the view (`docProseScrolled`).
-  const win = isCode ? null : docProseWindow(text);
+  const win = isCode ? docCodeWindow(text) : docProseWindow(text);
   docProse.win = win;
-  if (isCode) docProseFound = docCodeSpellFindings(text);
+  if (isCode) docProseFound = docCodeSpellFindings(text, win);
   else if (win) {
     const part = text.slice(win.from, win.to);
     const near = docProseExtras(part, docProseFindings(part));
