@@ -931,6 +931,43 @@ SOURCE_LIMIT = 8
 SOURCE_SNIPPET_CHARS = 220
 
 
+def _source_row(title: object, url: object, snippet: object) -> dict:
+    return {"title": clip_words(title, SOURCE_SNIPPET_CHARS), "url": url, "snippet": clip_words(snippet, SOURCE_SNIPPET_CHARS)}
+
+
+def _search_sources(result: dict) -> list[dict]:
+    """One row per web hit; a hit with no title is named by its address."""
+    rows = []
+    for hit in (result.get("results") or [])[:SOURCE_LIMIT]:
+        if isinstance(hit, dict):
+            url = str(hit.get("url") or "")
+            row = _source_row(hit.get("title"), url, hit.get("snippet"))
+            rows.append({**row, "title": row["title"] or url})
+    return rows
+
+
+def _page_source(result: dict) -> list[dict]:
+    """The page a read opened: itself, named by its address when it has no title."""
+    url = str(result.get("url") or "")
+    row = _source_row(result.get("title"), url, result.get("text"))
+    return [{**row, "title": row["title"] or url}]
+
+
+def _file_sources(result: dict) -> list[dict]:
+    """The files a read or search drew on: one row per match, or the one file
+    a plain read opened (which carries its own path rather than a match list)."""
+    matches = result.get("matches") or result.get("results") or []
+    if isinstance(matches, list) and matches:
+        return [
+            _source_row(hit.get("path") or hit.get("name"), "", hit.get("snippet") or hit.get("text"))
+            for hit in matches[:SOURCE_LIMIT]
+            if isinstance(hit, dict)
+        ]
+    if result.get("path") or result.get("name"):
+        return [_source_row(result.get("path") or result.get("name"), "", result.get("text") or result.get("content"))]
+    return []
+
+
 def _tool_sources(name: str, result: dict) -> list[dict]:
     """The pages and files one read-only call actually consulted, as
     ``{title, url, snippet}`` rows for the chat's Sources panel.
@@ -947,51 +984,14 @@ def _tool_sources(name: str, result: dict) -> list[dict]:
     """
     if not isinstance(result, dict) or "error" in result:
         return []
-    rows: list[dict] = []
-
-    def _clip_text(value: object) -> str:
-        return clip_words(value, SOURCE_SNIPPET_CHARS)
-
     if name == "web_search":
-        for hit in (result.get("results") or [])[:SOURCE_LIMIT]:
-            if not isinstance(hit, dict):
-                continue
-            rows.append(
-                {
-                    "title": _clip_text(hit.get("title")) or str(hit.get("url") or ""),
-                    "url": str(hit.get("url") or ""),
-                    "snippet": _clip_text(hit.get("snippet")),
-                }
-            )
+        rows = _search_sources(result)
     elif name == "read_url":
-        rows.append(
-            {
-                "title": _clip_text(result.get("title")) or str(result.get("url") or ""),
-                "url": str(result.get("url") or ""),
-                "snippet": _clip_text(result.get("text")),
-            }
-        )
+        rows = _page_source(result)
     elif name in {"read_file", "search_files"}:
-        matches = result.get("matches") or result.get("results") or []
-        if isinstance(matches, list) and matches:
-            for hit in matches[:SOURCE_LIMIT]:
-                if not isinstance(hit, dict):
-                    continue
-                rows.append(
-                    {
-                        "title": _clip_text(hit.get("path") or hit.get("name")),
-                        "url": "",
-                        "snippet": _clip_text(hit.get("snippet") or hit.get("text")),
-                    }
-                )
-        elif result.get("path") or result.get("name"):
-            rows.append(
-                {
-                    "title": _clip_text(result.get("path") or result.get("name")),
-                    "url": "",
-                    "snippet": _clip_text(result.get("text") or result.get("content")),
-                }
-            )
+        rows = _file_sources(result)
+    else:
+        rows = []
     #: A row with nothing to say is not a source. Dropping it here keeps the
     #: "is there anything to show" test in the front end a length check.
     return [row for row in rows if row["title"] or row["url"]]

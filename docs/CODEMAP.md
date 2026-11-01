@@ -2,7 +2,7 @@
 
 Generated 2026-11-01 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7543, frontend ids 2633, CSS sections 517, backend routes 639, backend modules 8350, test files 1805, tests 15499, plan headings 990, app scripts 28, boot scripts 37, script files 220.
+Counts: frontend functions 7543, frontend ids 2633, CSS sections 517, backend routes 639, backend modules 8354, test files 1806, tests 15505, plan headings 990, app scripts 28, boot scripts 37, script files 220.
 
 ## Frontend functions (7543)
 
@@ -12525,7 +12525,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8350)
+## Backend modules (8354)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -12744,7 +12744,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `plan_now` | src/tessellate/ai/agent.py:190 |
 | `run_agent` | src/tessellate/ai/agent.py:1198 |
 
-### src/tessellate/ai/agent_policy.py (26)
+### src/tessellate/ai/agent_policy.py (30)
 
 | Name | File:line |
 |---|---|
@@ -12756,15 +12756,19 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_change_note_id` | src/tessellate/ai/agent_policy.py:1045 |
 | `_change_reminder_id` | src/tessellate/ai/agent_policy.py:1085 |
 | `_check_sources` | src/tessellate/ai/agent_policy.py:222 |
+| `_file_sources` | src/tessellate/ai/agent_policy.py:956 |
 | `_hint_in` | src/tessellate/ai/agent_policy.py:695 |
 | `_hosts_named` | src/tessellate/ai/agent_policy.py:1354 |
 | `_labelled` | src/tessellate/ai/agent_policy.py:234 |
 | `_page_key` | src/tessellate/ai/agent_policy.py:1333 |
+| `_page_source` | src/tessellate/ai/agent_policy.py:949 |
 | `_recovery_hint` | src/tessellate/ai/agent_policy.py:701 |
 | `_result_summary` | src/tessellate/ai/agent_policy.py:767 |
 | `_result_urls` | src/tessellate/ai/agent_policy.py:1359 |
+| `_search_sources` | src/tessellate/ai/agent_policy.py:938 |
 | `_seen_ids` | src/tessellate/ai/agent_policy.py:887 |
-| `_tool_sources` | src/tessellate/ai/agent_policy.py:934 |
+| `_source_row` | src/tessellate/ai/agent_policy.py:934 |
+| `_tool_sources` | src/tessellate/ai/agent_policy.py:971 |
 | `_touched_items` | src/tessellate/ai/agent_policy.py:824 |
 | `_touched_kind` | src/tessellate/ai/agent_policy.py:806 |
 | `announces_unacted_tool` | src/tessellate/ai/agent_policy.py:285 |
@@ -22914,7 +22918,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15499)
+## Tests (15505)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24495,6 +24499,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_tool_say_coverage.py | 3 |
 | tests/test_tool_say_realistic.py | 1 |
 | tests/test_tool_sources.py | 9 |
+| tests/test_tool_sources_paths.py | 6 |
 | tests/test_tool_switch_save.py | 3 |
 | tests/test_tool_verifiers.py | 8 |
 | tests/test_toolbar_sizes_are_tokens_s44.py | 1 |
