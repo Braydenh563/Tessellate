@@ -19,7 +19,7 @@ from sqlalchemy.orm import Session
 from tessellate.ai import composer, composer_frame, composer_lists, composer_money, composer_slots, composer_sum, composer_versus, glossary, intent, librarian, neighbours, question_noise
 from tessellate.api.chat_attach import _MEDIA_REF, _attached_boards, _attachment_readings, _media_readings, _mostly_pictures, _named_sources, _picture_alts, _picture_sizes
 from tessellate.core import deps
-from tessellate.core.database import Category, Document, Entry, EntryLink, LIKE_ESCAPE, like_escape, MediaUpload
+from tessellate.core.database import Category, Document, Entry, EntryLink, like_escape, LIKE_ESCAPE, MediaUpload
 from tessellate.entry import manager
 from tessellate.search import engine, search_manager
 

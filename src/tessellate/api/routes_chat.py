@@ -14,7 +14,7 @@ the two flows above and what tests patch here (`user_now`, `_prepare`,
 are re-exported here; each imports only the layers before it in this list,
 never this file: `chat_attach` (the attachments), `chat_request` (the request),
 `chat_pool` (the note pool), `chat_recent` (the suggestion rows), `chat_web`
-(the web).
+(the web), `chat_agent` (the agent's turn).
 """
 
 from __future__ import annotations
@@ -37,12 +37,11 @@ from sqlalchemy import or_, select
 from sqlalchemy import text as sql_text
 from sqlalchemy.orm import Session
 
-from tessellate.ai import budget as run_budget, capability, fact_check, filed_name, composer, composer_social, composer_unplaced, note_language, composer_plan, composer_aware, composer_compose, composer_digest, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, composer_slots, find_it, glossary, list_pool, note_rank, note_recency, personal, phrasing, realise, verdicts, vocative, why
+from tessellate.ai import capability, fact_check, filed_name, composer, composer_social, composer_unplaced, note_language, composer_plan, composer_aware, composer_compose, composer_digest, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, composer_slots, find_it, glossary, list_pool, note_rank, note_recency, personal, phrasing, realise, verdicts, vocative, why
 from tessellate.ai import ask_chips
 from tessellate.ai import recognise
 from tessellate.ai import (
     acts,
-    agent,
     context,
     fence,
     followups,
@@ -51,7 +50,6 @@ from tessellate.ai import (
     notebook_stats,
     presets,
     question_noise,
-    skill_runner,
     skills,
     source_check,
     starter_acts,
@@ -90,10 +88,11 @@ from tessellate.search import chunks as search_chunks
 from tessellate.search import search_manager
 from sqlalchemy import func
 from tessellate.api.chat_attach import ATTACHED_MAP_CHARS, _MEDIA_REF, _attached_boards, _attached_documents, _attached_files, _attached_notes, _attachment_readings, _files_on, _grounding_candidates, _media_readings, _note_dates, _one_line, _picture_alts, _time_words  # noqa: F401  (moved; re-exported)
-from tessellate.api.chat_request import ChatRequest, ChatResponse, ChatTurn, CommandRunBody, CompressBody, FollowupBody, MAX_COMPRESS_TURNS, RememberBody, ToolExecuteBody, _NOTE_LINK, _NOT_A_NAME, _NOT_A_SUBJECT, _RELATED_LIMIT, _StreamRequest, _Turn, _apply_open, _apply_scope, _chat_model_sees_images, _check_refs, _composed, _event, _image_caption_context, _in_full, _meta_event, _named_note, _nothing_open, _resolve_chat_images, _resolve_mode, _resolve_persona, _resolve_skill, _small_model_mode  # noqa: F401  (moved; re-exported)
+from tessellate.api.chat_request import ChatRequest, ChatResponse, ChatTurn, CommandRunBody, CompressBody, FollowupBody, MAX_COMPRESS_TURNS, RememberBody, ToolExecuteBody, _NOTE_LINK, _NOT_A_NAME, _NOT_A_SUBJECT, _RELATED_LIMIT, _StreamRequest, _Turn, _apply_open, _apply_scope, _chat_model_sees_images, _check_refs, _composed, _event, _image_caption_context, _in_full, _meta_event, _named_note, _nothing_open, _resolve_chat_images, _resolve_mode, _resolve_persona, _resolve_skill  # noqa: F401  (moved; re-exported)
 from tessellate.api.chat_pool import _Found, _NoteCtx, _chat_payload, _composer_reads, _detect_intent, _document_row, _filed_under, _frame_matches, _glossary, _holding, _holds_read_text, _in_window, _keep_window, _note_content, _whole_pool, _widened, _with_each_side, _with_neighbours, _with_records, _with_sources  # noqa: F401  (moved; re-exported)
 from tessellate.api.chat_recent import AGENT_SURFACE, ASK_SURFACE, STARTER_SUGGESTIONS, _NAMES, _about, _asked_key, _feature_for, _fill, _recent_questions  # noqa: F401  (moved; re-exported)
 from tessellate.api.chat_web import WEB_PAGES, _can_start_searxng, _home_place, _link_events, _offer_events, _search_service, _unmatched_recents, _web_allowed, _web_chip, _web_first, _web_page_row, _web_pref_on  # noqa: F401  (moved; re-exported)
+from tessellate.api.chat_agent import _agent_events, _close_quietly, _first_agent_event, _refuse_failed, _refuse_if_off, _starter_read  # noqa: F401  (moved; re-exported)
 
 
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -2815,14 +2814,6 @@ def _first_events(req: _StreamRequest, prepared: dict, ollama_running: bool, too
     return _plain_events(req, prepared, ollama_running)
 
 
-def _starter_read(req: _StreamRequest, model_ready: bool) -> tuple[str, dict] | None:
-    """A popup agent starter the engine answers when no model can (AGENT_SKILLS_REFORM
-    "Deepened 2026-10-10" row 1); with a model the agent has it."""
-    if model_ready or req.skill or req.body.notes_only:
-        return None
-    return starter_acts.read(req.question)
-
-
 def _starter_events(req: _StreamRequest, starter: tuple[str, dict]) -> Iterator[dict]:
     """The starter's answer line, then its act card (`ai/starter_acts.py`)."""
     kind, slots = starter
@@ -2845,101 +2836,6 @@ def run_command(body: CommandRunBody, session: Session = Depends(get_session)) -
         raise HTTPException(status_code=404, detail="That names a step this app does not run from Chat.")
     done = acts.run(session, body.steps, body.skipped)
     return {"ok": done["ok"], "summary": done["summary"], "undo": done["undo"], "open": done.get("open")}
-
-
-def _agent_events(req: _StreamRequest, prepared: dict, tools_provider) -> Iterator[dict]:  # noqa: ANN001
-    """The event stream of a skill run or an agent turn for this request.
-
-    Lifted from `_stream_lines` with no behaviour change (audit 2026-10-05,
-    ARCH-22: it was 334 lines)."""
-    shared = {
-        "style": prepared["style"],
-        "profile": prepared["profile"],
-        "history": req.history,
-        "persona_prompt": req.persona_prompt,
-    }
-    if req.skill:
-        # A skill runs step by step, the runner emits the plan, ticks
-        # each step, and ends with what changed. Its first event has
-        # the same meaning as the agent's, so the fallback below is
-        # unchanged.
-        agent_events = skill_runner.run_skill(
-            req.session,
-            req.skill["skill"],
-            req.body.skill_inputs or {},
-            prepared["notes"],
-            req.model_manager,
-            req.ollama,
-            start_at=req.body.skill_from_step,
-            only_step=req.body.skill_only_step,
-            step_text=req.body.skill_step_text,
-            manual=req.body.skill_manual,
-            manual_note=req.body.skill_manual_note,
-            small_model=_small_model_mode(),
-            # The run's own budget (Brief 13), read from the user's
-            # settings here rather than inside the runner so that the
-            # runner stays testable without app state and so a caller
-            # with its own budget (an eval, a background job) can pass
-            # one instead.
-            #: The step count goes with it: the token allowance is per
-            #: step, and a nine-step skill held to one step's worth is how
-            #: a correct run came to stop after three of them.
-            #: And the skill's own declared caps on top (Phase E, decision 3).
-            budget=_stoppable(run_budget.for_skill(deps.get_config(), req.skill["skill"]), req),
-            **shared,
-        )
-    else:
-        agent_events = agent.run_agent(
-            req.session,
-            _in_full(req),
-            prepared.get("model_notes", prepared["notes"]),
-            req.model_manager,
-            tools_provider,
-            mode=req.mode,
-            allowed_tools=req.allowed_tools,
-            images=req.images,
-            image_context=req.image_context,
-            **shared,
-        )
-    return agent_events
-
-
-def _first_agent_event(req: _StreamRequest, agent_events: Iterator[dict]) -> dict | None:
-    """The stream's first event, or an answer saying what went wrong if the
-    run failed before it could yield one. Lifted from `_stream_lines` (ARCH-22)."""
-    # Everything `agent.run_agent`/`skill_runner.run_skill` themselves
-    # expect to go wrong (OllamaError, ToolsUnsupportedError) is
-    # already caught inside them and turned into a real event, this
-    # is the outer boundary, for whatever isn't. Reported directly: a
-    # skill run that "failed before even completing the first step
-    # ... no answer and no tool call", an exception here had nothing
-    # catching it, so it killed the generator and the stream just
-    # ended with nothing rendered, no error, the plan card (if any)
-    # never even reaching the page. Silence was the bug, not the
-    # underlying failure, which is why this doesn't try to guess
-    # which failure it was, it says what actually happened and stays
-    # on stage instead of vanishing.
-    try:
-        first = next(agent_events, None)
-    except Exception as exc:  # noqa: BLE001  # the outer boundary
-        logging.getLogger("tessellate.chat").exception(
-            "%s: unhandled error before the first event: %s",
-            "skill run" if req.skill else "agent turn",
-            exc,
-        )
-        first = {
-            "type": "answer",
-            # CodeQL #419, the same finding as #296 one branch over: this
-            # arm was written before `safe_value` existed and kept `exc`'s
-            # own str(), which can carry a file path or a connection
-            # detail out to the browser. The sanitiser the mid-stream arm
-            # below already trusts.
-            "delta": (
-                "Something went wrong before it could start: "
-                f"{safe_value(exc)}"
-            ),
-        }
-    return first
 
 
 def _spoken_act(req: _StreamRequest) -> str | None:
@@ -3774,21 +3670,6 @@ async def _stop_when_gone(req, lines):  # noqa: ANN001
         req.stop.set()
 
 
-def _close_quietly(source) -> None:  # noqa: ANN001
-    close = getattr(source, "close", None)
-    try:
-        if close is not None:
-            close()
-    except Exception as exc:  # noqa: BLE001 - the turn has ended; nothing waits on this
-        logging.getLogger("tessellate.chat").debug("chat: closing the stopped stream failed: %s", exc)
-
-
-def _stoppable(spend, req):  # noqa: ANN001, ANN202
-    """The run's budget, wired to this turn's Stop."""
-    spend.stop_event = req.stop
-    return spend
-
-
 def _interactive_lines(req):  # noqa: ANN001, ANN202
     """`_stream_lines`, marked as an interactive model call while it runs, so
     background model work waits between its calls (`core/model_gate.py`,
@@ -4012,24 +3893,3 @@ def execute_confirmed_tool(
     return {"label": str(result.get("label") or ""), "undo": result.get("undo")}
 
 
-def _refuse_if_off(names) -> None:
-    """A tool switched off in Settings is refused for that reason. It used to
-    reach `_refuse_failed`, whose sentence ("the note may have changed") is
-    about a different cause and sent the person looking in the wrong place."""
-    if not all(tools.tool_enabled(name) for name in names):
-        raise HTTPException(status_code=409, detail="That tool is turned off in Settings, Tools it can use.")
-
-
-def _refuse_failed(name: str, result: dict) -> None:
-    """A failed confirmed call is a 400 with a sentence about the click.
-    `result["error"]` is written for the model (it names the tool and its
-    arguments), so it goes to the log, not to the person."""
-    if "error" not in result:
-        return
-    logging.getLogger("tessellate.chat").warning(
-        "confirmed tool %r failed: %s", safe_value(name, 40), safe_value(result["error"], 300)
-    )
-    raise HTTPException(
-        status_code=400,
-        detail="That couldn't be done. The note or item may have changed since you asked, so check it and try again.",
-    )
