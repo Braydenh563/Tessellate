@@ -685,6 +685,18 @@ def _audit(result: dict, args: dict) -> Said:
     return f"Rewrote the reasons on {count_noun(n, 'link')} to say why the notes connect.", "", _chips(("Open the graph", GRAPH))
 
 
+def _learned_checked(result: dict, args: dict) -> Said:
+    retired, flagged = int(result.get("retired") or 0), int(result.get("flagged") or 0)
+    chips = _chips(("Open What it learned", settings_at("learned")))
+    if not (retired or flagged):
+        return f"Checked {count_noun(int(result.get('checked') or 0), 'thing')} Atlas learned, and all of them still hold.", "", chips
+    parts = [part for part in (f"retired {retired}" if retired else "", f"flagged {flagged}" if flagged else "") if part]
+    rows = [[{"retire": "Retired", "flag": "Flagged"}.get(row.get("action"), ""), cut_title(str(row.get("text", "")), 80), row.get("reason", "")] for row in result.get("items") or []]
+    body = _table(["What", "Learned", "Why"], rows) if rows else ""
+    undo = " Undo for the retired ones is in Settings, What it learned." if retired else ""
+    return f"Checked what Atlas learned: {' and '.join(parts)}.{undo}", body, chips
+
+
 def _category(result: dict, args: dict) -> Said:
     moved = int(result.get("notes_moved") or 0)
     notes = count_noun(moved, "note")
@@ -847,7 +859,7 @@ SAYERS: dict[str, Callable[[dict, dict], Said]] = {
     "read_whiteboard": _whiteboard, "search_whiteboard": _search_board, "read_mindmap": _mindmap,
     "list_library": _library, "check_answer": _check, "propose_act": _propose, "web_search": _web, "read_url": _read_url,
     "create_note": _created_note, "edit_note": _edited_note, "tag_note": _tagged, "pin_note": _pinned,
-    "link_notes": _linked, "unlink_notes": _linked, "audit_link_reasons": _audit,
+    "link_notes": _linked, "unlink_notes": _linked, "audit_link_reasons": _audit, "check_learned": _learned_checked,
     "create_category": _category, "rename_category": _category, "merge_categories": _category, "delete_category": _category,
     "rename_tag": _tag, "delete_tag": _tag, "create_document": _created_document, "delete_document": _deleted_document,
     "create_mindmap": _mindmap_made, "map_from_note": _map_from_note, "move_notes": _moved, "add_map_node": _map_node, "link_map_nodes": _map_link,

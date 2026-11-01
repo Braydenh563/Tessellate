@@ -62,6 +62,8 @@ KINDS: dict[str, str] = {
     #: The whole notebook as a markdown folder (WORLD_CLASS 25b).
     "export": "Notebook export",
     "night-shift": "Night shift",
+    #: Decision 68: the learned store re-read against its notes (ai/learned_audit_run.py).
+    "learned-audit": "Check what it learned",
     "model-bench": "Model bench",
     "autonomous": "Autonomous optimisation",
     "resurface": "Resurfacing",

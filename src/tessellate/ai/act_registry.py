@@ -263,6 +263,7 @@ TOOL_CUES: tuple[tuple[str, str], ...] = (
     ("make_plan", r"\bmake (?:me )?a plan\b|\bplan (?:the steps|out)\b"),
     ("search_chat_history", r"\b(?:earlier|previous|past|last|old) (?:chat|conversation)s?\b|\bwhat did we (?:talk|chat) about\b"),
     ("find_contradictions", r"\bcontradict|\bdisagree\b|\binconsisten"),
+    ("check_learned", r"\b(?:check|audit|clean up|re-?read)\b.*\bwhat (?:you|it|atlas) (?:have |has |had )?learned\b|\bcheck what it learned\b"),
     ("audit_link_reasons", r"\b(?:audit|check|fix)\b.*\blink reasons?\b"),
     ("path_between", r"\bhow (?:is|are) .+ (?:related|connected) to\b|\bpath between\b"),
     ("related_notes", r"\bwhat(?:'s| is) (?:connected|linked) to\b|\b(?:connected|linked) to the .+ note\b"),

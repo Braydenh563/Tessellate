@@ -576,7 +576,7 @@ gate** (`routes_auth.require_unlock`). Routers are grouped by feature area:
 | `routes_whiteboard` | `/whiteboard` | note cards and freehand sketches on a pannable canvas (§39C). A *board* is itself an entry, so it is searchable and filable like anything else; `board_id IS NULL` is the unnamed scratch board |
 | `routes_debug` | `/debug` | `GET /debug/health`: one cheap, under-20ms read across data that already exists elsewhere (running jobs, task history, the log), for "is this notebook okay" in one glance |
 | `routes_search` | `/search` | one search over every kind of thing (WORLD_CLASS_PLAN B3) |
-| `routes_learned` · `routes_night` · `routes_resurface` | `/learned`, `/night`, `/resurface` | what the notebook worked out for itself (facts you can correct), the night pass on demand, three notes a day slipping out of reach |
+| `routes_learned` · `routes_learned_audit` · `routes_night` · `routes_resurface` | `/learned`, `/learned/audit`, `/night`, `/resurface` | what the notebook worked out for itself (facts you can correct), the night pass on demand, three notes a day slipping out of reach |
 | `routes_mentions` | `/entries/{id}/backlinks`, `/entries/{id}/mentions/link` | a note's backlinks with their sentence and its unlinked mentions, one click to a [[link]] (GRAPH_PLAN KG1; the scanner is `entry/mentions.py`, shared with documents) |
 | `routes_inbox` | `/suggestions`, `/suggestions/merges/*`, `/suggestions/types/*` | the suggestions inbox's entity merges and link types (`ai/inbox.py`), and every decision on them as a correction (GRAPH_PLAN KG9) |
 | `routes_entities` | `/entities`, `/entities/{id}`, `/entities/{id}/merge` | the entity layer: the list, an entity's page (mentions in context, co-mentions, dates), kind, rename, other names and a merge by hand (GRAPH_PLAN KG5) |
@@ -639,7 +639,7 @@ job is not a task, and a screen that accumulates them is the Logs screen.
 `ai/tools/` (a package now: `__init__.py` plus `categories.py`,
 `documents.py`, `files.py`, `whiteboard.py`, `_common.py`, split out once the
 registry outgrew one file) defines a registry the chat model can call:
-**72 tools**. Read-only tools run inline; the **destructive** ones (marked
+**73 tools**. Read-only tools run inline; the **destructive** ones (marked
 ⚠️ below) emit a confirmation event to the UI instead of executing. The
 registry's `destructive` flag is the one list: a change after a turn has read
 text from outside (a web page, a clipped or imported note) waits for the same
@@ -1517,7 +1517,7 @@ style, optional AI profile, …) live in `data/preferences.json`, managed by
 
 ## 12. Testing & CI
 
-- **Run locally:** `PYTHONPATH=src pytest -n auto` (about 1,400 files, 14,300+ tests,
+- **Run locally:** `PYTHONPATH=src pytest -n auto` (about 1,400 files, 15,000+ tests,
   under nine minutes on four cores and about 25 serially). Uses a throwaway database and fakes every AI call
   (`tests/fakes.py` + `tests/conftest.py`), so it is fully offline. The
   routine local gate is `bash scripts/gate.sh --changed` (the lint set,

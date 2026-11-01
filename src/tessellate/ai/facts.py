@@ -357,6 +357,22 @@ def _proposed(content: str, questions_on: bool, templates: set[str]) -> list[Can
     ]
 
 
+def _in_context(entry: Entry, proposed: list[Candidate]) -> list[Candidate]:
+    """Decision 67: a sentence is learned only in its context. What
+    `learned_audit.context_reason` would retire afterwards (a note tagged joke,
+    quote, fiction, test or draft; a sentence inside a quote or a Q-and-A list)
+    is not proposed in the first place."""
+    from tessellate.ai import learned_audit as audit
+
+    if not proposed:
+        return proposed
+    note = audit.NoteView(id=entry.id, content=entry.content or "", tags=audit.entry_tags(entry))
+    return [
+        item for item in proposed
+        if audit.context_reason(audit.FactView(0, entry.id, item.kind, item.text, (item.start, item.end)), note) is None
+    ]
+
+
 def _qa_pairs(content: str) -> int:
     """How many lines end in a question answered by the line after."""
     pairs = 0
@@ -616,7 +632,7 @@ def run(
             progress.step(scanned, reachable)
             if scanned % 25 == 0:
                 progress.say(f"Read {scanned} of {reachable} notes, {derived} fact{'' if derived == 1 else 's'} found so far.")
-            proposed = _proposed(content, questions_on, templates)
+            proposed = _in_context(entry, _proposed(content, questions_on, templates))
             if not proposed:
                 continue
 

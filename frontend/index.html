@@ -11209,6 +11209,8 @@ Link to another note with [[its first few words]]."></textarea>
             <div class="dock settings-pane-title" data-dock-name="settings-learned">
               <div class="dock-identity"><h3>What it learned</h3></div>
               <div class="dock-actions">
+                <button type="button" id="learned-check" class="ghost small"
+                  title="Re-read what it learned against your notes as they are now"><i class="ph ph-seal-check ph-lead" aria-hidden="true"></i> Check what it learned</button>
                 <button type="button" class="icon-only ghost small graph-help-toggle"
                   data-help-for="learned-help" aria-controls="learned-help" aria-expanded="false"
                   title="About what it learned" aria-label="About what it learned">
@@ -11218,6 +11220,17 @@ Link to another note with [[its first few words]]."></textarea>
             </div>
             <p class="muted">Everything Atlas worked out on its own, yours to correct, delete or switch off.</p>
             <p class="muted hidden" id="learned-from-you" role="status"></p>
+            <!-- Decision 68: what the last check retired (with its Undo) and the
+                 count it flagged; the lines of a running check come up in the
+                 job line. Drawn by settings-controls.js (`learnedCheckShow`). -->
+            <p class="status job-line" role="status" data-job-line="learned-audit"></p>
+            <div class="settings-group hidden" id="learned-check-result">
+              <p class="status" id="learned-check-summary" role="status"></p>
+              <ul id="learned-check-list" class="entry-list"></ul>
+              <div class="row">
+                <button type="button" id="learned-check-undo" class="ghost small hidden"><i class="ph ph-arrow-counter-clockwise ph-lead" aria-hidden="true"></i> Undo</button>
+              </div>
+            </div>
             <div class="help-body hidden" id="learned-help" role="dialog" aria-label="About what it learned">
               <p>
                 "What it remembers" is what you told it. This is what it
@@ -11232,6 +11245,15 @@ Link to another note with [[its first few words]]."></textarea>
                 delete one and the same thing is never worked out again, or
                 switch the whole thing off and keep your notes exactly as
                 they are.
+              </p>
+              <p>
+                "Check what it learned" re-reads every claim and question
+                against its note as the note says it now. It retires what no
+                longer holds, with its reason and an Undo: a note that was
+                edited or deleted, a joke, quote, fiction, test or draft, a
+                sentence you marked wrong, a repeat. It flags, and keeps, what
+                needs your eye: two notes that disagree, a date that has passed.
+                It also runs by itself with each background pass.
               </p>
               <p>
                 "Learned from you" counts your corrections (a note moved to

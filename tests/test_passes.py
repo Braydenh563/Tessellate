@@ -36,7 +36,7 @@ def _wait(check, seconds=10):
 
 def test_the_overview_names_every_scheduled_pass_with_its_schedule(client):
     runs = {run["kind"]: run for run in client.get("/jobs/last-runs").json()["jobs"]}
-    for kind in ("autonomous", "night-shift", "backup", "resurface", "embeddings-backfill", "maintenance"):
+    for kind in ("autonomous", "night-shift", "learned-audit", "backup", "resurface", "embeddings-backfill", "maintenance"):
         assert kind in runs, kind
         assert runs[kind]["schedule"], kind
         assert runs[kind]["can_run"] is True, kind

@@ -472,6 +472,19 @@ def _stage_night_shift(config, run: "jobruns.Run") -> None:  # noqa: ANN001
         logger.error("night shift failed: %s", exc, exc_info=True)
 
 
+def _stage_learned_audit(config) -> None:  # noqa: ANN001
+    """Decision 68: after the night shift read the notes, re-read what it
+    learned against them. Under the night shift's own switch, so the learned
+    store is touched only while it may be."""
+    try:
+        from tessellate.ai import facts, learned_audit_run
+
+        if facts.enabled(config, "night_shift"):
+            learned_audit_run.run_job()
+    except Exception as exc:  # noqa: BLE001  # top of a worker thread
+        logger.error("learned audit failed: %s", exc, exc_info=True)
+
+
 def _stopped_before(what: str, run: "jobruns.Run") -> bool:
     """True, with the run marked cancelled, when someone quit this pass."""
     if not _cancel.is_set():
@@ -662,6 +675,7 @@ def _optimization_pass(started: float, run: "jobruns.Run") -> None:
         _stage_words_review()
 
         _stage_night_shift(config, run)
+        _stage_learned_audit(config)
 
         if _stopped_before("the agent pass", run):
             return

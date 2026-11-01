@@ -1245,6 +1245,33 @@ BUILTIN_SKILLS: list[dict] = [
     },
 
     {
+        "name": "Check what it learned",
+        "prompt": (
+            "Check what you learned about me against my notes as they are now, "
+            "retire what no longer holds and tell me what needs my eye."
+        ),
+        "description": "Re-reads what Atlas learned against its notes and retires what no longer holds.",
+        "when_to_use": (
+            "When I ask you to check, audit or clean up what you learned about me, "
+            "or when something you say I think or said is wrong."
+        ),
+        #: The same pair as the link-reason audit, for the same reason: the
+        #: check changes learned rows and no note, and `count_notes` is what makes
+        #: "your notes were not touched" a checked claim.
+        "tools": ["check_learned", "count_notes"],
+        "verify": {"tool": "count_notes", "expect": {"unchanged": True}},
+        "steps": [
+            _step("Run the check_learned tool.", "tool_called", "check_learned"),
+            _step(
+                "Say how many things it checked, what it retired and what it "
+                "flagged, each with its reason. Say the retired ones can be "
+                "put back from Settings, What it learned.",
+                "answer_only",
+            ),
+        ],
+    },
+
+    {
         "name": "Find where I disagreed with myself",
         "prompt": (
             "Look for places where my own notes contradict each other, a decision I "

@@ -255,7 +255,7 @@ MORE_TOPICS: list[dict] = [
         "keywords": (
             "what it learned", "learned", "worked out", "derived", "forget everything learned",
             "learned from you", "filing accuracy",
-            "read my notes now", "export what it learned",
+            "read my notes now", "export what it learned", "check what it learned", "retired", "flagged",
             "while you were away", "disagree", "contradict", "answered later",
         ),
         "body": (
@@ -270,7 +270,16 @@ MORE_TOPICS: list[dict] = [
             "says which note it came from, which model decided it and how sure "
             "it was. Edit a row and no later run overwrites it; delete one and "
             "it is never worked out again. What may run switches each kind off; "
-            "Read my notes now runs it; Export what it learned and Forget "
+            "Read my notes now runs it. Check what it learned, on the bar, re-reads "
+            "every claim and question against its note as the note says it now: it "
+            "retires what no longer holds, each with its reason and an Undo (a note "
+            "edited or deleted; a note tagged joke, quote, fiction, test or draft, "
+            "or a sentence inside a quote or a list of questions and answers; a "
+            "sentence you marked wrong; a repeat), and flags what needs your eye "
+            "(two notes that disagree, a date that has passed), marked on the row "
+            "with a Check this line. It also runs after each background pass, as a "
+            "job in Settings, Background jobs with its lines, and as the skill "
+            "Check what it learned. Export what it learned and Forget "
             "everything learned act on all of it and never touch your notes. "
             "The Learned from you line under the title counts your corrections "
             "and gives filing accuracy, the share of the notes Atlas filed that "
