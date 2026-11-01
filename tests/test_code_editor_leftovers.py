@@ -106,7 +106,8 @@ def test_a_code_file_prints_one_row_per_line_without_a_phantom_last_row():
 def test_a_code_file_has_a_print_row_and_prints_its_own_listing():
     hidden = re.search(r'for \(const id of \[([^\]]*)\]\) \$\(id\)\?\.classList\.toggle\("hidden", docIsCodeFile\(\)\)', DOCS_JS)
     assert hidden and "doc-export-pdf" not in hidden.group(1)
-    assert "docCodeExportRefused" not in _function(DOCS_JS, "exportDocumentPdf")
+    export = (FRONTEND / "js" / "documents-export.js").read_text(encoding="utf-8")
+    assert "docCodeExportRefused" not in _function(export, "docExportPdfRun")
     begin = _function(DOCS_JS, "docPrintBegin")
     assert "docIsCodeFile()" in begin and "docCodePrintFill()" in begin
     fill = _function(DOCS_JS, "docCodePrintFill")

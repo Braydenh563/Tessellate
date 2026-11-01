@@ -4090,8 +4090,8 @@ body .chip.item-label,
 }
 /* 17. The Boards & maps dock at a phone's width was four rows (198px): the
        title, then New board and New mind map, then refresh, help and the
-       menu, then search. It is now one New menu (a filled summary holding
-       Whiteboard and Mind map, WORLD_CLASS_PLAN 507) and refresh folds into
+       menu, then search. It is now one New split button (INBOX 1520: a press
+       makes a board, the arrow holds the kinds) and refresh folds into
        the ⋯ (`foldDockActions`, phone-shell.js). New keeps its icon and
        hides its word, the `.toolbar-word` recipe (DESIGN.md: hidden, not
        dropped; its aria-label and title still name it), so the title, New,
@@ -4115,59 +4115,13 @@ body .chip.item-label,
   #wb-boards-new-menu .ph-lead:has(~ .toolbar-word) {
     translate: none;
   }
-  #wb-boards-new-menu > summary {
+  #wb-boards-new-menu > .split-button-main {
     min-width: var(--target-min);
     padding-inline: var(--space-3);
   }
-  #wb-boards-new-menu > summary > .ph-lead {
+  #wb-boards-new-menu > .split-button-main > .ph-lead {
     margin-inline-end: 0;
   }
-}
-/* A dock menu whose summary is the dock's one filled action (the Boards and
-   maps dock's New: a primary with a choice inside it). It wears the filled
-   button's ground, weight and radius from the same tokens, so it reads as the
-   primary beside the ghost summaries; the caret takes the text colour rather
-   than the muted one a ghost summary's has. The selectors are as long as they
-   are because the quiet summary rules in this file (`.dock > * > details >
-   summary`, and its `[open]` and `:hover` forms) are (0,4,3): a shorter one
-   keeps the transparent ground, measured. */
-.dock > * > details.dock-menu > summary.dock-menu-primary:not(.icon-only):not(.icon-button) {
-  --button-ground: var(--accent-surface);
-  background: var(--button-ground);
-  color: var(--on-accent);
-  border: none;
-  border-radius: var(--radius-md);
-  padding-inline: var(--space-4);
-  font-weight: 600;
-  box-shadow: var(--shadow-accent-glow);
-}
-.dock > * > details.dock-menu > summary.dock-menu-primary:not(.icon-only):not(.icon-button):hover,
-.dock > * > details.dock-menu[open] > summary.dock-menu-primary:not(.icon-only):not(.icon-button),
-.dock > * > details.dock-menu > summary.dock-menu-primary:not(.icon-only):not(.icon-button):is(:focus-visible, :has(:focus-visible)) {
-  --button-ground: var(--accent-surface-hover);
-  background: var(--button-ground);
-  color: var(--on-accent);
-}
-.dock-menu > summary.dock-menu-primary > .dock-menu-caret {
-  color: inherit;
-}
-/* Each row of that menu says what it makes (MINDMAP_PLAN INBOX 24: "each
-   with its icon and a one-line hint"): the word, and under it one muted
-   line at the small type step. A tooltip alone is never seen on a touch
-   screen, and two kinds of the same thing are told apart by what they are
-   for, not by their names. */
-.dock-menu-item-text {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-1);
-  padding-block: var(--space-1);
-  text-align: left;
-}
-.dock-menu-item-hint {
-  font-size: var(--text-xs);
-  font-weight: 400;
-  color: var(--muted);
 }
 /* 18. In the Notes list's select mode a card is the checkbox, so a
        Shift+click on it is a range (app.js, "the conventions a list is

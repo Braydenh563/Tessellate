@@ -1,9 +1,11 @@
-"""INBOX 1482: one grouped type picker, drawn in two places.
+"""INBOX 1482: one grouped type picker, drawn in three places.
 
 The owner's screenshots showed a type button in a document's foot opening a
 list grouped by kind, each row with its glyph. Here that is `docTypeMenu`, a
 `kebabMenu` of the served file-type table (groups Documents, Data, Code), used
-by the foot's button and by New's caret and by nothing else.
+by the foot's button, by the Documents list's New caret and by the Library's New
+document caret, and by nothing else. It lives in library.js beside the table (the
+file the Library loads alone), so both lists can draw it before documents.js loads.
 """
 
 from __future__ import annotations
@@ -16,11 +18,13 @@ from tests._app_js import app_js_text
 ROOT = Path(__file__).resolve().parents[1]
 HTML = (ROOT / "frontend/index.html").read_text(encoding="utf-8")
 DOCS_JS = (ROOT / "frontend/js/documents.js").read_text(encoding="utf-8")
+LIBRARY_JS = (ROOT / "frontend/js/library.js").read_text(encoding="utf-8")
 
 
 def _function(name: str) -> str:
-    start = DOCS_JS.index(f"function {name}(")
-    return DOCS_JS[start : DOCS_JS.index("\n}\n", start)]
+    source = LIBRARY_JS if f"function {name}(" in LIBRARY_JS else DOCS_JS
+    start = source.index(f"function {name}(")
+    return source[start : source.index("\n}\n", start)]
 
 
 def test_the_picker_is_a_kebab_menu_of_the_served_table() -> None:

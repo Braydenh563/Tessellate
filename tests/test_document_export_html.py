@@ -33,11 +33,14 @@ BEGIN = "// DOC-EXPORT-HTML-BEGIN"
 END = "// DOC-EXPORT-HTML-END"
 
 
+EXPORT_JS = ROOT / "frontend" / "js" / "documents-export.js"
+
+
 def export_source() -> str:
-    text = DOCUMENTS_JS.read_text(encoding="utf-8")
+    text = EXPORT_JS.read_text(encoding="utf-8")
     start = text.find(BEGIN)
     stop = text.find(END)
-    assert start != -1, f"{BEGIN} marker is missing from documents.js"
+    assert start != -1, f"{BEGIN} marker is missing from documents-export.js"
     assert stop > start, f"{END} marker is missing or before {BEGIN}"
     return text[start + len(BEGIN) : stop]
 

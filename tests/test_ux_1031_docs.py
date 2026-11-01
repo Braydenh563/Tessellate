@@ -14,7 +14,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def _docs() -> str:
-    return (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    from tests._app_js import documents_text
+
+    return documents_text()
 
 
 def test_a_replace_across_documents_stays_on_the_undo_stack():

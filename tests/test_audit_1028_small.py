@@ -10,7 +10,7 @@ JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
 def test_the_empty_documents_library_offers_one_new_document():
     """U29: the head's New document hides while the empty state shows its own."""
     src = (JS / "library.js").read_text(encoding="utf-8")
-    assert 'getElementById("library-docs-new")?.classList.toggle("hidden", !docs.length && !isFilteredEmpty)' in src
+    assert 'getElementById("library-docs-new")?.closest(".split-button")?.classList.toggle("hidden", !docs.length && !isFilteredEmpty)' in src
 
 
 def test_one_relative_time_helper_for_the_past():

@@ -372,7 +372,7 @@ const REVEAL_TARGETS = {
       if (typeof docView !== "undefined" && docView === "rendered") setDocView(lastEditView);
       toggleDocFindBar(true);
     },
-    sel: "#doc-find-bar, #doc-panes .cm-search",
+    sel: "#doc-panes .cm-search",
     built: "toggleDocFindBar",
     fallback: "doc-new",
   },
@@ -396,7 +396,8 @@ const REVEAL_TARGETS = {
     fallback: "doc-new",
   },
 
-  // Boards and maps
+  // Boards and maps. New is a split button (INBOX 1520): its press makes a
+  // blank board, its arrow holds the kinds and the templates.
   "board-new": {
     open: () => revealBoardsGallery(),
     el: "wb-boards-new-menu",
