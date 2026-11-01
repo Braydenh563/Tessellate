@@ -42,7 +42,7 @@ def test_a_private_note_still_gets_no_model_acts_but_keeps_the_group_for_what_st
 def test_a_source_card_does_not_say_the_title_twice():
     """Audit 1031 N14 (INBOX 1518): the card's head is the title, so the body starts after the title line."""
     root = Path(__file__).resolve().parents[1] / "frontend" / "js"
-    ask = (root / "capture-ask.js").read_text(encoding="utf-8")
+    ask = (root / "citation-peek.js").read_text(encoding="utf-8")
     assert "function citationTitleEnd(text, title)" in ask
     assert "citationPeekText(content, source.start, source.end, title.textContent)" in ask
     assert "citationPeekText(content, g.start, g.end, title)" in (root / "answer-kit.js").read_text(encoding="utf-8")

@@ -2,7 +2,7 @@
 
 Generated 2026-11-01 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7537, frontend ids 2633, CSS sections 517, backend routes 638, backend modules 8249, test files 1789, tests 15411, plan headings 990, app scripts 28, boot scripts 37, script files 217.
+Counts: frontend functions 7537, frontend ids 2633, CSS sections 517, backend routes 638, backend modules 8249, test files 1789, tests 15411, plan headings 990, app scripts 28, boot scripts 37, script files 218.
 
 ## Frontend functions (7537)
 
@@ -363,24 +363,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wireCategoryDropTarget` | frontend/js/notes-list.js:2920 |
 | `wireSidebarRowKeys` | frontend/js/notes-list.js:2852 |
 
-### frontend/js/capture-ask.js (53)
+### frontend/js/capture-ask.js (48)
 
 | Name | File:line |
 |---|---|
 | `announce` | frontend/js/capture-ask.js:835 |
 | `captureCategoryChip` | frontend/js/capture-ask.js:512 |
-| `citationPeekText` | frontend/js/capture-ask.js:1124 |
-| `citationTitleEnd` | frontend/js/capture-ask.js:1117 |
-| `clearAskAnswerFoot` | frontend/js/capture-ask.js:1347 |
+| `clearAskAnswerFoot` | frontend/js/capture-ask.js:1148 |
 | `clearCaptureStatusOnInput` | frontend/js/capture-ask.js:582 |
 | `clearCaptureTagSuggestions` | frontend/js/capture-ask.js:499 |
-| `closeCitationPeek` | frontend/js/capture-ask.js:1237 |
-| `copyAnswer` | frontend/js/capture-ask.js:1540 |
+| `copyAnswer` | frontend/js/capture-ask.js:1341 |
 | `createDocumentNamed` | frontend/js/capture-ask.js:291 |
 | `evidenceBlock` | frontend/js/capture-ask.js:1092 |
 | `evidenceSignals` | frontend/js/capture-ask.js:1070 |
 | `evidenceSpan` | frontend/js/capture-ask.js:1063 |
-| `evidenceSwitchReset` | frontend/js/capture-ask.js:1313 |
+| `evidenceSwitchReset` | frontend/js/capture-ask.js:1114 |
 | `filedByText` | frontend/js/capture-ask.js:224 |
 | `filingOutcomeText` | frontend/js/capture-ask.js:185 |
 | `flashCategory` | frontend/js/capture-ask.js:1000 |
@@ -388,36 +385,34 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `flashReminder` | frontend/js/capture-ask.js:974 |
 | `focusCaptureBox` | frontend/js/capture-ask.js:462 |
 | `heldOffline` | frontend/js/capture-ask.js:596 |
-| `holdPictureTokens` | frontend/js/capture-ask.js:1330 |
-| `liveMarkdownRenderer` | frontend/js/capture-ask.js:1445 |
-| `loadAskHistoryBadge` | frontend/js/capture-ask.js:1576 |
+| `holdPictureTokens` | frontend/js/capture-ask.js:1131 |
+| `liveMarkdownRenderer` | frontend/js/capture-ask.js:1246 |
+| `loadAskHistoryBadge` | frontend/js/capture-ask.js:1377 |
 | `loadCaptureDocuments` | frontend/js/capture-ask.js:280 |
-| `loadSuggestions` | frontend/js/capture-ask.js:1546 |
-| `loadTemplates` | frontend/js/capture-ask.js:1640 |
-| `newChat` | frontend/js/capture-ask.js:1521 |
+| `loadSuggestions` | frontend/js/capture-ask.js:1347 |
+| `loadTemplates` | frontend/js/capture-ask.js:1441 |
+| `newChat` | frontend/js/capture-ask.js:1322 |
 | `noteSurfaceIfAny` | frontend/js/capture-ask.js:427 |
 | `noteTemplateForUse` | frontend/js/capture-ask.js:409 |
 | `noteTemplateText` | frontend/js/capture-ask.js:398 |
 | `offerJumpToNewNote` | frontend/js/capture-ask.js:12 |
-| `openCitationPeek` | frontend/js/capture-ask.js:1148 |
 | `openDocumentFromNote` | frontend/js/capture-ask.js:431 |
 | `openNoteAtPassage` | frontend/js/capture-ask.js:969 |
-| `pictureItems` | frontend/js/capture-ask.js:1305 |
-| `renderAskTrail` | frontend/js/capture-ask.js:1495 |
+| `pictureItems` | frontend/js/capture-ask.js:1106 |
+| `renderAskTrail` | frontend/js/capture-ask.js:1296 |
 | `renderCaptureDocumentAdder` | frontend/js/capture-ask.js:354 |
 | `renderCaptureDocuments` | frontend/js/capture-ask.js:316 |
 | `renderCaptureTagSuggestions` | frontend/js/capture-ask.js:528 |
 | `resetCaptureForm` | frontend/js/capture-ask.js:469 |
-| `retryAnswer` | frontend/js/capture-ask.js:1536 |
+| `retryAnswer` | frontend/js/capture-ask.js:1337 |
 | `saveEntry` | frontend/js/capture-ask.js:610 |
 | `saveEntryAsDraft` | frontend/js/capture-ask.js:735 |
 | `scheduleCaptureTagSuggestions` | frontend/js/capture-ask.js:556 |
-| `scheduleCitationPeekClose` | frontend/js/capture-ask.js:1105 |
 | `scrollEditingEntryIntoView` | frontend/js/capture-ask.js:859 |
 | `settleCaptureStatus` | frontend/js/capture-ask.js:129 |
-| `showAskAsOf` | frontend/js/capture-ask.js:1613 |
+| `showAskAsOf` | frontend/js/capture-ask.js:1414 |
 | `stampDate` | frontend/js/capture-ask.js:396 |
-| `stopAnswer` | frontend/js/capture-ask.js:1487 |
+| `stopAnswer` | frontend/js/capture-ask.js:1288 |
 | `watchFiling` | frontend/js/capture-ask.js:52 |
 | `withTitle` | frontend/js/capture-ask.js:447 |
 
@@ -2921,6 +2916,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `chordGuideGroup` | frontend/js/chord-guide.js:43 |
 | `chordGuideKey` | frontend/js/chord-guide.js:76 |
 | `showTabJumpHint` | frontend/js/chord-guide.js:83 |
+
+### frontend/js/citation-peek.js (5)
+
+| Name | File:line |
+|---|---|
+| `citationPeekText` | frontend/js/citation-peek.js:31 |
+| `citationTitleEnd` | frontend/js/citation-peek.js:24 |
+| `closeCitationPeek` | frontend/js/citation-peek.js:144 |
+| `openCitationPeek` | frontend/js/citation-peek.js:55 |
+| `scheduleCitationPeekClose` | frontend/js/citation-peek.js:12 |
 
 ### frontend/js/clip.js (8)
 
