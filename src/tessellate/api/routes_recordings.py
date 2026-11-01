@@ -34,6 +34,7 @@ from tessellate.entry import bin as other_bin
 from tessellate.entry import manager
 from tessellate.entry import meetings as meeting_shape
 from tessellate.entry.manager import log_action
+from tessellate.repo import content as content_repo
 
 router = APIRouter(tags=["recordings"])
 #: `<audio src>` sends the media cookie, never the X-Auth-Token header, so
@@ -255,14 +256,12 @@ def bin_recording(recording_id: int, session: Session = Depends(get_session)) ->
 
 @router.post("/recordings/{recording_id}/restore")
 def restore_recording(recording_id: int, session: Session = Depends(get_session)) -> dict:
-    row = _get(session, recording_id, binned=True)
-    row.deleted_at = None
-    log_action(session, "restored", "recording", row.id)
+    row, _was_binned = content_repo.restore(session, "recording", recording_id)
     session.commit()
     return recordings.as_dict(row)
 
 
-@router.post("/recordings/{recording_id}/purge")
+@router.delete("/recordings/{recording_id}/purge")
 def purge_recording(recording_id: int, session: Session = Depends(get_session)) -> dict:
     with other_bin.including_binned(session):
         row = _get(session, recording_id, binned=True)

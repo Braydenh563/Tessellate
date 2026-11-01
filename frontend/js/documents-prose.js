@@ -312,9 +312,9 @@ function docGrammarRequest(text) {
   docGrammarAsking = text;
   docGrammarAsk(text).then((lints) => {
     docGrammarAsking = null;
-    if (lints === null) return renderDocProse();
+    if (lints === null) return renderDocProse(true);
     docGrammarCache = { text, findings: docGrammarFindings(lints, text), linkText: docCheckLinkText() };
-    renderDocProse();
+    renderDocProse(true);
   });
 }
 
@@ -412,7 +412,7 @@ async function docLinkOfferAsk(text, docId) {
   state.doc = docId;
   state.text = text;
   state.findings = docLinkOfferFindings(body.offers);
-  renderDocProse();
+  renderDocProse(true);
 }
 
 //: Ask once the writer pauses, unless this text is already answered or on its

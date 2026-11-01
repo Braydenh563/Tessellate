@@ -24,6 +24,7 @@ from tessellate.core.database import Document, Entry, utcnow
 from tessellate.core.deps import get_session
 from tessellate.entry.manager import extract_title, log_action, plain_label, readable_content
 from tessellate.entry.properties import strip as strip_properties
+from tessellate.repo import content as content_repo
 from tessellate.repo import reminders as reminder_repo
 
 router = APIRouter(prefix="/reminders", tags=["reminders"])
@@ -786,8 +787,7 @@ def delete_reminder(reminder_id: int, session: Session = Depends(get_session)) -
 
 @router.post("/{reminder_id}/restore")
 def restore_reminder(reminder_id: int, session: Session = Depends(get_session)) -> dict:
-    reminder = reminder_repo.get_any(session, reminder_id)
-    reminder_repo.restore(session, reminder)
+    reminder, _was_binned = content_repo.restore(session, "reminder", reminder_id)
     session.commit()
     return _to_out(session, reminder)
 

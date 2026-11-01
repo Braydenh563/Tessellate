@@ -2561,6 +2561,13 @@ def _thumb_board(db: Session, board_id: int) -> None:
         _board_entry(db, board_id)
 
 
+def _thumb_writable(db: Session, board_id: int) -> None:
+    """A thumbnail PUT is a write: a binned board answers the bin guard's 409
+    (audit 1031 row 2a), where a read of it keeps its 404."""
+    if board_id != DEFAULT_BOARD_THUMB_ID:
+        BOARDS.writable(db, board_id)
+
+
 def _current_thumb_fp(db: Session, board_id: int) -> str:
     entry = db.get(Entry, board_id) if board_id > 0 else None
     palette_name = (_board_theme(entry).get("palette") if entry else None) or "classic"
@@ -2589,7 +2596,7 @@ async def put_thumbnail(
     #: The lookup and the write go to the thread pool, and the body grows in a
     #: bytearray (audit 1028 K18): in the event loop they stalled every other
     #: request while a board list's thumbnails came in.
-    await run_in_threadpool(_thumb_board, db, board_id)
+    await run_in_threadpool(_thumb_writable, db, board_id)
     if not board_thumbs.valid_fp(fp):
         raise HTTPException(status_code=422, detail="That thumbnail version is not valid.")
     declared = int(request.headers.get("content-length") or 0)

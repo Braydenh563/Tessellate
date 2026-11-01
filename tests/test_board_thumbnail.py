@@ -132,6 +132,7 @@ def test_the_upload_keeps_its_disk_and_database_work_off_the_event_loop():
     from tessellate.api import routes_whiteboard
 
     source = inspect.getsource(routes_whiteboard.put_thumbnail)
-    assert "await run_in_threadpool(_thumb_board, db, board_id)" in source
+    # The lookup is the bin guard since audit 1031 row 2a; still off the loop.
+    assert "await run_in_threadpool(_thumb_writable, db, board_id)" in source
     assert "await run_in_threadpool(board_thumbs.save," in source
     assert "data = bytearray()" in source

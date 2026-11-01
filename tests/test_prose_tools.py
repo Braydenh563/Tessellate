@@ -110,7 +110,8 @@ def test_a_grammar_finding_is_drawn_filed_and_answered() -> None:
     assert 'return "grammar";' in _body("docFindingKind")
     assert '["grammar", "Grammar"]' in DOCUMENTS
     assert "finding.alternatives" in _body("docSuggestAlternatives")
-    assert "docProseExtras(text, docProseFindings(text))" in _body("renderDocProse")
+    #: The rules reach the extras through `docProse.rules`, which keeps the last pass for an answer that changes nothing (D18 to D20).
+    assert "docProseExtras(text, docProse.rules(text, again))" in _body("renderDocProse")
 
 
 def test_the_note_boxes_get_the_grammar_plugin() -> None:

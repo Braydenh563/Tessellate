@@ -290,21 +290,22 @@ def _link_ends(data: str | None, places: dict) -> dict | None:
 
 def snapshot(session, uploads_dir: Path) -> dict:  # noqa: ANN001
     """Every record the export writes, keyed by id: what the round-trip test
-    compares, field by field, before and after."""
-    from sqlalchemy import select
-
-    from tessellate.core.database import Document, Entry
+    compares, field by field, before and after. Rows come from the one
+    export walker (`repo/content.walk`), as the export's do."""
+    from tessellate.repo.content import walk
 
     related = _related(session)
-    notes, boards = {}, {}
-    for entry in session.scalars(select(Entry).order_by(Entry.id)):
-        record = note_record(entry, related, uploads_dir)
-        if entry.is_board:
-            record["canvas"] = board_canvas(session, entry.id)
-            boards[entry.id] = record
+    notes, boards, documents = {}, {}, {}
+    for adapter, row in walk(session, ("note", "board", "document")):
+        if adapter.kind == "document":
+            documents[row.id] = document_record(row, related)
+            continue
+        record = note_record(row, related, uploads_dir)
+        if adapter.kind == "board":
+            record["canvas"] = board_canvas(session, row.id)
+            boards[row.id] = record
         else:
-            notes[entry.id] = record
-    documents = {d.id: document_record(d, related) for d in session.scalars(select(Document).order_by(Document.id))}
+            notes[row.id] = record
     return {"notes": notes, "boards": boards, "documents": documents}
 
 
@@ -391,12 +392,10 @@ def _categories(session) -> list[dict]:  # noqa: ANN001
 
 
 def _write_documents(archive: zipfile.ZipFile, session, related: _Related) -> list[dict]:  # noqa: ANN001
-    from sqlalchemy import select
-
-    from tessellate.core.database import Document
+    from tessellate.repo.content import walk
 
     rows = []
-    for document in session.scalars(select(Document).order_by(Document.id)):
+    for _adapter, document in walk(session, ("document",)):
         record = document_record(document, related)
         base = f"documents/{document.id}-{paths.slug(document.title)}"
         archive.writestr(f"{base}.md", document.content or "")
@@ -408,19 +407,17 @@ def _write_documents(archive: zipfile.ZipFile, session, related: _Related) -> li
 def export(session, uploads_dir: Path, archive: zipfile.ZipFile, progress=None) -> ExportResult:  # noqa: ANN001
     """Write the whole notebook into `archive`. `progress(done, total)` is
     called after every note, for the job's bar."""
-    from sqlalchemy import select
-
     from tessellate import __version__
-    from tessellate.core.database import Entry
+    from tessellate.repo.content import walk
 
     t0 = time.perf_counter()
     related = _related(session)
     stored = _stored_names(related)
-    entries = list(session.scalars(select(Entry).order_by(Entry.id)))
+    entries = list(walk(session, ("note", "board")))
     notes, boards, missing = [], [], []
-    for done, entry in enumerate(entries, 1):
+    for done, (adapter, entry) in enumerate(entries, 1):
         record = note_record(entry, related, uploads_dir)
-        if entry.is_board:
+        if adapter.kind == "board":
             record["canvas"] = board_canvas(session, entry.id)
             path = f"boards/{entry.id}-{paths.slug(record['content'])}.json"
             archive.writestr(path, json.dumps(record, ensure_ascii=False, indent=1))

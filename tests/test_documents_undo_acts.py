@@ -12,14 +12,15 @@ import re
 
 from tests._app_js import JS_DIR, app_js_text
 
-APP = app_js_text() + (JS_DIR / "documents.js").read_text(encoding="utf-8")
+#: documents-history.js holds the history dialog (docs-1101, DC13): one closure, so its functions are indented.
+APP = app_js_text() + (JS_DIR / "documents.js").read_text(encoding="utf-8") + (JS_DIR / "documents-history.js").read_text(encoding="utf-8")
 
 
 def _body(name: str) -> str:
-    match = re.search(rf"^(?:async\s+)?function\s+{name}\s*\(", APP, re.M)
+    match = re.search(rf"^ *(?:async\s+)?function\s+{name}\s*\(", APP, re.M)
     assert match, f"{name} is missing"
     rest = APP[match.end():]
-    end = re.search(r"^(?:async\s+)?function\s", rest, re.M)
+    end = re.search(r"^ *(?:async\s+)?function\s", rest, re.M)
     return rest[: end.start() if end else len(rest)]
 
 

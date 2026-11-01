@@ -47,8 +47,9 @@ TOP_LEVEL_LETS_CAP = 699
 #: space-swap.js (two entry points, wrapped); run-debug.js wrapped: 9,875;
 #: ai1518's companion-remark.js and attachment-actions.js wrapped, one export each: 9870.
 #: gaps1521-1101: reminder-notify.js, dash-orphans.js, edit-conflict.js and attachment-peek.js
-#: wrapped, one export each (measured 9,866).
-GLOBAL_NAMES_CAP = 9866
+#: wrapped, one export each (measured 9,866). docs-1101: the version history dialog and the
+#: line diff (documents-history.js, 710 lines) wrapped whole, seven exports (measured 9,848).
+GLOBAL_NAMES_CAP = 9848
 
 
 def _code() -> dict[str, str]:
