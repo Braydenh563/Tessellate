@@ -28,6 +28,10 @@ let currentDoc = null;   // {id, title, content, ...}
 let docDirty = false;
 //: Which `openDocument` call is the newest (see there).
 let docOpenSeq = 0;
+//: The `docOpenSeq` the tab's loader last settled at. Anything asked since,
+//: including before the loader started, is an open the loader must not
+//: override with the last document (DC7).
+const docLoadSeen = { seq: 0 };
 let docSaveTimer = null;
 
 // --- what kind of file this document is ----------------------------------------
@@ -1012,9 +1016,9 @@ async function loadDocuments(selectId = null) {
 }
 
 async function loadDocumentsNow(selectId) {
-  //: Whether anything asked for a document while this list loaded (a link to
-  //: `#/docs/2`, New document): then that is the one to show, not the last.
-  const opensBefore = docOpenSeq;
+  //: Whether anything asked for a document since the loader last settled (a
+  //: link to `#/docs/2`, New document), before or while this list loads: then
+  //: that is the one to show, not the last.
   // Before the list, not after: the file-type table decides how the editor
   // behaves, and openDocument below reads it. Awaited rather than fired off,
   // so the picker is never briefly empty on the first visit to this tab.
@@ -1035,8 +1039,12 @@ async function loadDocumentsNow(selectId) {
   surfaceRecovered(document.getElementById("doc-empty"));
   docs = loaded;
   renderDocList();
-  if (selectId) return openDocument(selectId);
-  if (!currentDoc && docs.length && docOpenSeq === opensBefore) return openDocument(docs[0].id);
+  //: The loader's own opens count as settled, so only a person's request moves it.
+  const asked = docOpenSeq !== docLoadSeen.seq;
+  const opened = selectId ? selectId : !currentDoc && docs.length && !asked ? docs[0].id : null;
+  const opening = opened ? openDocument(opened) : null;
+  docLoadSeen.seq = docOpenSeq;
+  if (opening) return opening;
   if (!docs.length) showNoDocument();
 }
 
