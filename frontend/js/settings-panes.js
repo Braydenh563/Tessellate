@@ -1120,24 +1120,17 @@ function catalogueRun(row) {
 //: read it; tests/test_popup_tools.py fails for a tool missing from any.
 const POPUP_TOOLS = [
   {
-    id: "equation", name: "Equation", icon: "ph:function", group: "Capture & notes",
-    keywords: "equation math maths formula symbol fraction greek matrix integral latex alt word",
-    about: "Build a formula with a live preview; Alt+= opens it in a note, document, board text, Chat or Ask box.",
-    keys: "Alt+=", where: "Equation, in text boxes",
-    guide: "equation-editor", open: () => ensureModule("appPalette").then(() => popupToolEquation()),
-  },
-  {
-    id: "calculator", name: "Calculator", icon: "ph:calculator", group: "Ask & chat",
-    keywords: "calculator calc sum maths math work out percent convert units currency keypad",
-    about: "Sums, percentages and unit or currency conversions, with no model; /calc does the same in a chat.",
-    keys: "/calc", where: "Calculator, or type it in Chat",
-    guide: "calculator", open: () => ensureModule("replyKit").then(() => openCalculator()),
+    id: "calculator", name: "Calculator and equations", icon: "ph:calculator", group: "Ask & chat",
+    keywords: "calculator calc sum maths math work out percent convert units currency keypad equation formula symbol fraction greek matrix integral latex alt word",
+    about: "Sums, conversions and equations in one dialog, with no model; Alt+= opens the equation tab in a text box, /calc the calculator in Chat.",
+    keys: "Alt+= or /calc", where: "Equation in text boxes, Calculator in Chat",
+    guide: "calculator", open: () => ensureModule("appPalette").then(() => popupToolMaths()),
   },
   {
     id: "convert", name: "Convert units", icon: "ph:ruler", group: "Ask & chat",
     keywords: "convert conversion unit units miles km kg pounds celsius fahrenheit litres currency",
-    about: "Length, weight, temperature, volume and currency, with no model; the Calculator's second tab.",
-    keys: "/calc", where: "Convert units, in the Calculator",
+    about: "Length, weight, temperature, volume and currency, with no model; the second tab of Calculator and equations.",
+    keys: "/calc", where: "Convert units, in Calculator and equations",
     guide: "calculator", open: () => ensureModule("replyKit").then(() => openCalculator("", "convert")),
   },
   {

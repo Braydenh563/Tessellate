@@ -113,7 +113,7 @@ def test_the_calculator_is_one_sheet_reached_three_ways():
     conversions"."""
     kit = (JS / "reply-kit.js").read_text(encoding="utf-8")
     assert "calculator: (event) => replyCalcPanel(event)" in kit
-    assert 'function openCalculator(input = "", mode = "work")' in kit and 'name: "calculator"' in kit and "openSheet({" in kit
+    assert 'function openCalculator(input = "", mode = "work", { target = null } = {})' in kit and 'name: "calculator"' in kit and "openSheet({" in kit
     #: Accessible: a live result, a keypad that is one Tab stop walked by the
     #: arrows, keys named for what they do, a mode switch that says which is on.
     assert 'out.setAttribute("aria-live", "polite")' in kit
@@ -126,8 +126,8 @@ def test_the_calculator_is_one_sheet_reached_three_ways():
     panes = (JS / "settings-panes.js").read_text(encoding="utf-8")
     #: The row now comes from the `POPUP_TOOLS` registry (K27), which the
     #: palette, Features, the "/" menus and the Guide all read.
-    entry = panes[panes.index('id: "calculator", name: "Calculator"'):][:600]
-    assert "about:" in entry and 'ensureModule("replyKit").then(() => openCalculator())' in entry
+    entry = panes[panes.index('id: "calculator", name: "Calculator and equations"'):][:900]
+    assert "about:" in entry and "popupToolMaths()" in entry
 
 
 def test_a_note_a_reply_gives_is_previewed_on_every_surface():

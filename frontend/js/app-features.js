@@ -250,17 +250,13 @@ function featureCommandRows(groups) {
   return { group: "More commands", items };
 }
 
-//: The popup tools (settings-panes.js `POPUP_TOOLS`): Equation over the box the palette was opened from, else Capture; and the shortcuts dialog's Tools list.
-async function popupToolEquation(caught = paletteCaught) {
-  let target = caught.target;
+//: The popup tools (settings-panes.js `POPUP_TOOLS`): Calculator and equations over the box the palette was opened from (its Insert buttons write there), else on its own; and the shortcuts dialog's Tools list.
+async function popupToolMaths(caught = paletteCaught) {
+  const target = caught.target;
   const fit = target?.isConnected && (target.id === "question" || (typeof editorSurfaceKind === "function" && editorSurfaceKind(target)));
-  if (!fit) {
-    await switchTab("notes");
-    showNotesSection("capture");
-    target = $("entry-content");
-  }
-  target?.focus();
-  openMathEditor({ target });
+  if (fit) target.focus();
+  await ensureModule("replyKit");
+  openCalculator("", "work", { target: fit ? target : null });
 }
 
 function renderToolShortcutList(list) {
@@ -270,9 +266,11 @@ function renderToolShortcutList(list) {
     const li = document.createElement("li");
     const keys = document.createElement("span");
     keys.className = "shortcut-keys";
-    const kbd = document.createElement("kbd");
-    kbd.textContent = tool.keys.startsWith("/") ? tool.keys : (typeof chordLabel === "function" ? chordLabel(tool.keys) : tool.keys);
-    keys.appendChild(kbd);
+    for (const chord of tool.keys.split(" or ")) {
+      const kbd = document.createElement("kbd");
+      kbd.textContent = chord.startsWith("/") ? chord : (typeof chordLabel === "function" ? chordLabel(chord) : chord);
+      keys.appendChild(kbd);
+    }
     const words = document.createElement("span");
     words.textContent = tool.where;
     li.append(keys, words);

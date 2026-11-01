@@ -4,19 +4,21 @@
 // "word equations ... edit the boxes where stuff goes ... I want latex as well").
 //
 // One lazy module (lazy-entries.js `LAZY_MODULES.mathEditor`, with
-// math-editor-lazy.css and the field it is built on, math-field.js), and every
-// surface is a thin caller of `openMathEditor({target, anchor})`: the "/"
-// menu's Equation row in Notes, Documents, a board's text and the Chat box, the
-// document's Insert menu, and Alt+= (Word's key) in any of those and in the
-// Ask box.
+// math-editor-lazy.css and the field it is built on, math-field.js). It is the
+// Calculator's Equation tab (INBOX 1527, the owner: "the equations and
+// calculator should be integrated together"): reply-kit.js's dialog hosts it
+// through `mathEditorMount`, and every surface is a thin caller of
+// `openMathEditor({target})`, which opens that dialog on the Equation tab:
+// the "/" menu's Equation row in Notes, Documents, a board's text and the Chat
+// box, the document's Insert menu, and Alt+= (Word's key) in any of those and
+// in the Ask box.
 //
 // What it writes is TeX between `$` (inline) or `$$` (display), the dialect
 // the one renderer already draws (`docMathRender`, documents.js), so a note
 // stays plain text and the editor adds no second format. Its anatomy is the
-// icon picker's, from the recipe index: the popover shell lifted to <body>,
-// the dialog head with its '?' and X, a `.tabs-line` of Inline and Display, the
-// equation field, a `.search-field`, the palette's groups under pinned heads,
-// and the dialog foot (Cancel, Insert).
+// icon picker's, from the recipe index: a `.tabs-line` of Inline and Display,
+// the '?' and the equation field, a `.search-field`, the palette's groups
+// under pinned heads, and the dialog foot (Cancel, Insert).
 //
 // **The equation is a MathLive field, as Word's is** (math-field.js): a
 // structure drawn as it will read with dotted boxes where things go, which
@@ -179,12 +181,6 @@ function mathEditorSpan(value, start, end) {
   return null;
 }
 // MATH-EDITOR-CORE-END
-
-const mathEditorState = { open: null };
-
-function closeMathEditor() {
-  mathEditorState.open?.close();
-}
 
 //: The surface the editor writes into: an editor adapter as it is, an
 //: element through `editorSurfaceFor`, or the element itself (the Ask box).
@@ -353,13 +349,6 @@ function mathEditorFoot(onCancel, onInsert, label) {
   return { foot, insert };
 }
 
-//: Where the panel hangs: from the button that asked, else the middle.
-function mathEditorPlace(panel, anchor) {
-  const rect = anchor?.getBoundingClientRect?.();
-  if (rect && (rect.width || rect.height)) placeHelpPopover(panel, anchor);
-  else panel.classList.add("math-editor-centred");
-}
-
 //: What the editor opens on: the equation the selection is in, or the
 //: selection as TeX, or nothing.
 function mathEditorStart(surface) {
@@ -382,66 +371,87 @@ function mathEditorBlockText(value, from, to, text) {
   return lead + text + trail;
 }
 
-function mathEditorWrite(surface, start, tex, display) {
-  const oneLine = surface?.tagName === "INPUT";
-  let text = mathEditorOutput(tex, display);
-  if (!text || !surface) return false;
+//: **Writes `tex` into `target`** (a text box or an editor surface): as an
+//: equation between dollars at `start` (`{from, to, editing}`, the equation
+//: being edited), or, with `plain`, as it is at the selection (what the
+//: Calculator's Insert buttons call, reply-kit.js; a caret inside a drawn
+//: equation is not replaced, that is what the Equation tab edits). Returns
+//: whether anything was written.
+function mathEditorWrite(target, tex, { display = false, start = null, plain = false } = {}) {
+  const surface = target ? mathEditorSurface(target) : null;
+  let text = plain ? String(tex || "") : mathEditorOutput(tex, display);
+  if (!surface || !text.trim()) return false;
   const value = String(surface.value || "");
-  if (display && !oneLine && !start.editing) text = mathEditorBlockText(value, start.from, start.to, text);
+  const caret = surface.selectionStart ?? value.length;
+  const at = start || { from: caret, to: surface.selectionEnd ?? caret, editing: false };
+  if (display && !plain && surface.tagName !== "INPUT" && !at.editing) text = mathEditorBlockText(value, at.from, at.to, text);
   if (surface.kind || surface.setSelectionRange) {
-    editorSplice(surface, start.from, start.to, text, { from: text.length, to: text.length });
+    editorSplice(surface, at.from, at.to, text, { from: text.length, to: text.length });
   } else {
-    surface.value = value.slice(0, start.from) + text + value.slice(start.to);
+    surface.value = value.slice(0, at.from) + text + value.slice(at.to);
     surface.dispatchEvent?.(new Event("input", { bubbles: true }));
   }
   return true;
 }
 
-//: The line under the head: what to do, and the button that shows the TeX.
-function mathEditorLede(toggle) {
+//: The line under the field's tabs: what to do, then the '?' and the button
+//: that shows the TeX.
+function mathEditorLede(help, toggle) {
   const row = document.createElement("div");
   row.className = "math-editor-lede-row";
   const lede = document.createElement("p");
   lede.className = "muted math-editor-lede";
   lede.textContent = "Click a box to fill it, or pick a structure; it is written as TeX.";
-  row.append(lede, toggle);
+  const tools = document.createElement("span");
+  tools.className = "math-editor-lede-tools";
+  tools.append(help, toggle);
+  row.append(lede, tools);
   return row;
 }
 
-//: **Opens the editor** for `target` (an editor surface or a text box),
-//: hung from `anchor` when given. Returns `{close, panel}`.
-function openMathEditor({ target = null, anchor = null } = {}) {
-  closeMathEditor();
+//: **Every surface calls this** (Alt+=, the "/" rows, a document's Insert
+//: menu, the palette): the editor is the Calculator's Equation tab now
+//: (INBOX 1527), so it opens that dialog over `target`. Returns once it is up.
+function openMathEditor({ target = null } = {}) {
+  return ensureModule("replyKit").then(() => openCalculator("", "equation", { target }));
+}
+
+//: **Builds the editor into `host`**, the Equation tab's pane (reply-kit.js
+//: `replyCalcEquation`), for `target` (an editor surface or a text box; none
+//: and Insert becomes Copy). `done` closes the dialog; `note` is an element
+//: for the value line, and `onTex(tex)` hears each change. Returns
+//: `{close, focus}`, or null while the field's library is not loaded.
+function mathEditorMount({ host, target = null, done = () => {}, note = null, onTex = () => {} }) {
   if (!mathFieldConfigure()) return null;
-  const surface = mathEditorSurface(target || document.activeElement);
-  const start = mathEditorStart(surface);
+  const surface = target ? mathEditorSurface(target) : null;
+  const start = surface ? mathEditorStart(surface) : { from: 0, to: 0, tex: "", display: false, editing: false };
   let display = start.display;
-  const returnFocus = document.activeElement;
 
-  const panel = document.createElement("div");
-  panel.className = "help-popover math-editor";
-  panel.setAttribute("role", "dialog");
-  panel.setAttribute("aria-label", "Equation");
+  host.classList.add("math-editor");
   const { help, body: helpBody } = mathEditorHelp();
-  const close = (back = true) => {
-    if (!panel.isConnected) return;
-    document.removeEventListener("pointerdown", outside, true);
-    panel.remove();
+  const close = () => {
     helpBody.remove();
-    if (mathEditorState.open?.panel === panel) mathEditorState.open = null;
-    if (back) (returnFocus?.isConnected ? returnFocus : surface)?.focus?.({ preventScroll: true });
+    done();
   };
-  const head = dialogHead(start.editing ? "Edit equation" : "Equation", () => close());
-  head.querySelector(".dialog-head-title")?.after(help);
-
   const view = {
     insert: () => {
-      if (mathEditorWrite(surface, start, pane.tex(), display)) close(false);
+      if (!surface) {
+        const text = mathEditorOutput(pane.tex(), display);
+        if (!text) return pane.focus();
+        navigator.clipboard?.writeText(text).then(() => toast("Equation copied."), () => toast("Couldn't copy the equation.", "info"));
+        return;
+      }
+      if (mathEditorWrite(target, pane.tex(), { display, start })) close();
       else pane.focus();
     },
   };
-  const escape = () => (helpBody.classList.contains("hidden") ? close() : help.click());
-  const pane = mathFieldPane({ tex: start.tex, label: "Equation", onKey: mathEditorKeys(() => pane, () => view.insert(), escape) });
+  const escape = () => (helpBody.classList.contains("hidden") ? done() : help.click());
+  const pane = mathFieldPane({
+    tex: start.tex,
+    label: "Equation",
+    onChange: () => onTex(pane.tex()),
+    onKey: mathEditorKeys(() => pane, () => view.insert(), escape),
+  });
   pane.field.setAttribute("aria-describedby", "math-editor-help");
   const mode = mathEditorModes(display, (on, refocus = true) => {
     display = on;
@@ -453,48 +463,21 @@ function openMathEditor({ target = null, anchor = null } = {}) {
   list.className = "math-editor-list";
   const search = mathEditorSearch((q) => mathEditorPalette(list, q));
   mathEditorPalette(list, "");
-  const { foot } = mathEditorFoot(() => close(), view.insert, start.editing ? "Update" : "Insert");
+  const label = !surface ? "Copy" : start.editing ? "Update" : "Insert";
+  const { foot } = mathEditorFoot(() => done(), view.insert, label);
 
   list.addEventListener("click", (event) => {
     const tile = event.target.closest(".math-editor-tile");
     if (tile) pane.insert(tile._item.tex);
   });
-
-  //: **No key leaves the panel** (the icon picker's rule): an Enter or a
+  //: **No key leaves the pane** (the icon picker's rule): an Enter or a
   //: letter here must not reach the canvas or the editor behind it.
-  panel.addEventListener("keydown", (event) => {
-    event.stopPropagation();
-    //: Escape from the field itself was taken (or left to MathLive) above.
-    if (event.key !== "Escape" || event.target === pane.field) return;
-    event.preventDefault();
-    escape();
-  });
-  //: An outside press closes it only while nothing has been typed: a
-  //: half-written equation is not thrown away by a stray click.
-  const outside = (event) => {
-    if (panel.contains(event.target) || helpBody.contains(event.target) || mathFieldOwns(event.target)) return;
-    if (pane.tex() && pane.tex() !== start.tex) return;
-    close(false);
-  };
-  document.addEventListener("pointerdown", outside, true);
+  host.addEventListener("keydown", (event) => event.stopPropagation());
 
-  panel.append(head, helpBody, mode.tabs, mathEditorLede(pane.toggle), pane.el, search, list, foot);
-  document.body.appendChild(panel);
-  initHelpToggles(panel);
-  mathEditorPlace(panel, anchor);
+  //: The foot sits under the field, not under the palette: the dialog is a sheet two thirds of the window high, and Insert must not be a scroll away.
+  host.replaceChildren(mode.tabs, mathEditorLede(help, pane.toggle), helpBody, pane.el, ...(note ? [note] : []), foot, search, list);
+  initHelpToggles(host);
   pane.start();
-  //: For a moment after opening, focus that lands outside comes back: an
-  //: editor behind can mount and take it a frame later (the icon picker
-  //: measured 127ms on the note composer's first use).
-  const openedAt = performance.now();
-  const keepFocus = (event) => {
-    if (!panel.isConnected || performance.now() - openedAt > 800) {
-      document.removeEventListener("focusin", keepFocus, true);
-      return;
-    }
-    if (!panel.contains(event.target) && !helpBody.contains(event.target)) pane.focus();
-  };
-  document.addEventListener("focusin", keepFocus, true);
-  mathEditorState.open = { panel, close };
-  return { close, panel };
+  onTex(pane.tex());
+  return { close, focus: () => pane.focus() };
 }
