@@ -118,7 +118,7 @@ def test_a_note_left_on_a_line_is_pushed_off_it_and_the_map_ends_there() -> None
     assert settle.index("untangleCleanup()") < settle.index("untangle.holding = true;")
     assert "settled && !dragging && untangleOwed()" in loop
     assert "nodes.length <= UNTANGLE_BIG" not in loop and "nodes.length <= UNTANGLE_BIG" not in settle
-    assert loop.index("if (untangle.holding) {") < loop.index("simulation.tick();")
+    assert loop.index("if (untangle.holding) {") < loop.index("tickOnce();")  # the loop steps through `tickOnce` (1513: eased heat)
     drag = WORKER[WORKER.index('if (message.phase === "start") {') :]
     drag = drag[: drag.index('} else if (message.phase === "move")')]
     assert "untangle.cleaned = true;" in drag and "untangle.holding = false;" in drag

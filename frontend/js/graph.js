@@ -4864,7 +4864,7 @@ $("graph-curved")?.addEventListener("change", (event) => {
   //: The layout keeps dots clear of the lines as drawn (the worker's
   //: `clearanceForce`, INBOX 693), and a curve and a straight line pass
   //: different dots, so the forces hear about it and the map eases round.
-  if (!gcTab.tree) gcPost({ type: "params", params: gcWorkerParams(gcTab) });
+  if (!gcTab.tree) gcPost({ type: "params", params: gcWorkerParams(gcTab), still: gcStill() });
   gcRequestDraw();
 });
 
