@@ -2,9 +2,9 @@
 
 Generated 2026-11-01 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7486, frontend ids 2638, CSS sections 517, backend routes 633, backend modules 8167, test files 1768, tests 15275, plan headings 990, app scripts 28, boot scripts 37, script files 209.
+Counts: frontend functions 7488, frontend ids 2638, CSS sections 517, backend routes 633, backend modules 8157, test files 1769, tests 15279, plan headings 990, app scripts 28, boot scripts 37, script files 209.
 
-## Frontend functions (7486)
+## Frontend functions (7488)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -1062,136 +1062,138 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `startMicLevelMeter` | frontend/js/media.js:206 |
 | `toggleDictation` | frontend/js/media.js:287 |
 
-### frontend/js/status.js (126)
+### frontend/js/status.js (128)
 
 | Name | File:line |
 |---|---|
-| `agentActivityNotice` | frontend/js/status.js:672 |
-| `agentActivityQuiet` | frontend/js/status.js:664 |
-| `agentModeAvailable` | frontend/js/status.js:2782 |
-| `aiIsOff` | frontend/js/status.js:2058 |
-| `aiOffGlyph` | frontend/js/status.js:2427 |
-| `aiOfflineDismissed` | frontend/js/status.js:2228 |
-| `aiOfflineNoticeHidden` | frontend/js/status.js:2224 |
-| `aiStatusState` | frontend/js/status.js:2313 |
+| `agentActivityNotice` | frontend/js/status.js:699 |
+| `agentActivityQuiet` | frontend/js/status.js:691 |
+| `agentModeAvailable` | frontend/js/status.js:2809 |
+| `aiIsOff` | frontend/js/status.js:2085 |
+| `aiOffGlyph` | frontend/js/status.js:2454 |
+| `aiOfflineDismissed` | frontend/js/status.js:2255 |
+| `aiOfflineNoticeHidden` | frontend/js/status.js:2251 |
+| `aiStatusState` | frontend/js/status.js:2340 |
 | `announcedReminders` | frontend/js/status.js:42 |
-| `appStackIsNewer` | frontend/js/status.js:1588 |
-| `armReminderTimer` | frontend/js/status.js:520 |
+| `appStackIsNewer` | frontend/js/status.js:1615 |
+| `armReminderTimer` | frontend/js/status.js:521 |
 | `askNotificationPermission` | frontend/js/status.js:383 |
-| `backendLabel` | frontend/js/status.js:2845 |
-| `boardHistoryActive` | frontend/js/status.js:1553 |
-| `checkDueReminders` | frontend/js/status.js:537 |
-| `closeModelGate` | frontend/js/status.js:2077 |
+| `backendLabel` | frontend/js/status.js:2872 |
+| `boardHistoryActive` | frontend/js/status.js:1580 |
+| `checkDueReminders` | frontend/js/status.js:564 |
+| `closeModelGate` | frontend/js/status.js:2104 |
 | `closeNotifications` | frontend/js/status.js:358 |
-| `dismissAiOffline` | frontend/js/status.js:2236 |
-| `dismissToast` | frontend/js/status.js:903 |
+| `dismissAiOffline` | frontend/js/status.js:2263 |
+| `dismissToast` | frontend/js/status.js:930 |
 | `dismissedNotificationIds` | frontend/js/status.js:232 |
-| `embeddingProblemDetail` | frontend/js/status.js:2498 |
-| `embeddingToastDue` | frontend/js/status.js:2504 |
+| `embeddingProblemDetail` | frontend/js/status.js:2525 |
+| `embeddingToastDue` | frontend/js/status.js:2531 |
 | `forcedReadIds` | frontend/js/status.js:187 |
 | `forcedUnreadIds` | frontend/js/status.js:156 |
-| `insightLine` | frontend/js/status.js:1470 |
-| `insightSend` | frontend/js/status.js:1441 |
-| `insightVerdictItems` | frontend/js/status.js:1436 |
-| `insightVerdicts` | frontend/js/status.js:1447 |
-| `integrityWords` | frontend/js/status.js:1272 |
+| `insightLine` | frontend/js/status.js:1497 |
+| `insightSend` | frontend/js/status.js:1468 |
+| `insightVerdictItems` | frontend/js/status.js:1463 |
+| `insightVerdicts` | frontend/js/status.js:1474 |
+| `integrityWords` | frontend/js/status.js:1299 |
 | `isNotificationUnread` | frontend/js/status.js:211 |
-| `jobsRunning` | frontend/js/status.js:1900 |
+| `jobsRunning` | frontend/js/status.js:1927 |
 | `keepToastAction` | frontend/js/status.js:337 |
-| `kickBackgroundTaskPoll` | frontend/js/status.js:3011 |
-| `lastAnswerLine` | frontend/js/status.js:2449 |
-| `loadMostUsed` | frontend/js/status.js:1764 |
-| `loadRecentQuestions` | frontend/js/status.js:1737 |
-| `lockFieldWants` | frontend/js/status.js:959 |
-| `noteDamagedNotebook` | frontend/js/status.js:1276 |
-| `noteServerDown` | frontend/js/status.js:1332 |
-| `noteServerUp` | frontend/js/status.js:1341 |
-| `noticeTaskTransitions` | frontend/js/status.js:3111 |
-| `noticeUnwatchedAnswer` | frontend/js/status.js:707 |
-| `notificationsMuted` | frontend/js/status.js:649 |
+| `kickBackgroundTaskPoll` | frontend/js/status.js:3038 |
+| `lastAnswerLine` | frontend/js/status.js:2476 |
+| `loadMostUsed` | frontend/js/status.js:1791 |
+| `loadRecentQuestions` | frontend/js/status.js:1764 |
+| `lockFieldWants` | frontend/js/status.js:986 |
+| `noteDamagedNotebook` | frontend/js/status.js:1303 |
+| `noteServerDown` | frontend/js/status.js:1359 |
+| `noteServerUp` | frontend/js/status.js:1368 |
+| `noticeTaskTransitions` | frontend/js/status.js:3138 |
+| `noticeUnwatchedAnswer` | frontend/js/status.js:734 |
+| `notificationsMuted` | frontend/js/status.js:676 |
 | `notificationsReadAt` | frontend/js/status.js:138 |
 | `notify` | frontend/js/status.js:464 |
-| `nudgeEmbeddingProblem` | frontend/js/status.js:2514 |
-| `offerUndo` | frontend/js/status.js:1495 |
-| `openLanPanel` | frontend/js/status.js:601 |
-| `openModelGate` | frontend/js/status.js:2087 |
-| `paintPrivacyChip` | frontend/js/status.js:3209 |
-| `paintStatusItem` | frontend/js/status.js:2570 |
+| `nudgeEmbeddingProblem` | frontend/js/status.js:2541 |
+| `offerUndo` | frontend/js/status.js:1522 |
+| `openLanPanel` | frontend/js/status.js:627 |
+| `openModelGate` | frontend/js/status.js:2114 |
+| `paintPrivacyChip` | frontend/js/status.js:3236 |
+| `paintReminderList` | frontend/js/status.js:556 |
+| `paintStatusItem` | frontend/js/status.js:2597 |
 | `paintTitle` | frontend/js/status.js:497 |
-| `paintUndoDoor` | frontend/js/status.js:1687 |
-| `performRedo` | frontend/js/status.js:1609 |
-| `performRedoNow` | frontend/js/status.js:1638 |
-| `performUndo` | frontend/js/status.js:1603 |
-| `performUndoNow` | frontend/js/status.js:1615 |
-| `plainHttpError` | frontend/js/status.js:1030 |
+| `paintUndoDoor` | frontend/js/status.js:1714 |
+| `performRedo` | frontend/js/status.js:1636 |
+| `performRedoNow` | frontend/js/status.js:1665 |
+| `performUndo` | frontend/js/status.js:1630 |
+| `performUndoNow` | frontend/js/status.js:1642 |
+| `plainHttpError` | frontend/js/status.js:1057 |
 | `playReminderChime` | frontend/js/status.js:426 |
-| `pollServerHealth` | frontend/js/status.js:1369 |
+| `pollReminders` | frontend/js/status.js:550 |
+| `pollServerHealth` | frontend/js/status.js:1396 |
 | `primeReminderAudio` | frontend/js/status.js:399 |
-| `pushEntryPutUndo` | frontend/js/status.js:1528 |
-| `pushUndo` | frontend/js/status.js:1406 |
+| `pushEntryPutUndo` | frontend/js/status.js:1555 |
+| `pushUndo` | frontend/js/status.js:1433 |
 | `recordNotification` | frontend/js/status.js:97 |
-| `refreshBackgroundTasks` | frontend/js/status.js:3030 |
-| `refreshModelStatus` | frontend/js/status.js:1928 |
-| `refreshPrivacyChip` | frontend/js/status.js:3223 |
+| `refreshBackgroundTasks` | frontend/js/status.js:3057 |
+| `refreshModelStatus` | frontend/js/status.js:1955 |
+| `refreshPrivacyChip` | frontend/js/status.js:3250 |
 | `rememberAnnounced` | frontend/js/status.js:50 |
 | `reminderNoticeKey` | frontend/js/status.js:228 |
-| `renderAgentActivityMode` | frontend/js/status.js:743 |
-| `renderAiOfflineNotice` | frontend/js/status.js:2251 |
-| `renderAiPill` | frontend/js/status.js:2457 |
-| `renderChatModeSeg` | frontend/js/status.js:2786 |
+| `renderAgentActivityMode` | frontend/js/status.js:770 |
+| `renderAiOfflineNotice` | frontend/js/status.js:2278 |
+| `renderAiPill` | frontend/js/status.js:2484 |
+| `renderChatModeSeg` | frontend/js/status.js:2813 |
 | `renderNotifMuteToggle` | frontend/js/status.js:267 |
 | `renderNotificationBadge` | frontend/js/status.js:247 |
-| `renderSettings` | frontend/js/status.js:2856 |
-| `renderStatusBar` | frontend/js/status.js:2613 |
-| `renderUndoBar` | frontend/js/status.js:1669 |
-| `reopenAnswerPanel` | frontend/js/status.js:722 |
-| `resetStatusCadence` | frontend/js/status.js:1851 |
-| `retryServerNow` | frontend/js/status.js:1382 |
-| `sayChatModelChosen` | frontend/js/status.js:1814 |
-| `scheduleServerDownRetry` | frontend/js/status.js:1356 |
-| `scheduleUndoBar` | frontend/js/status.js:1661 |
-| `setChatMode` | frontend/js/status.js:2829 |
+| `renderSettings` | frontend/js/status.js:2883 |
+| `renderStatusBar` | frontend/js/status.js:2640 |
+| `renderUndoBar` | frontend/js/status.js:1696 |
+| `reopenAnswerPanel` | frontend/js/status.js:749 |
+| `resetStatusCadence` | frontend/js/status.js:1878 |
+| `retryServerNow` | frontend/js/status.js:1409 |
+| `sayChatModelChosen` | frontend/js/status.js:1841 |
+| `scheduleServerDownRetry` | frontend/js/status.js:1383 |
+| `scheduleUndoBar` | frontend/js/status.js:1688 |
+| `setChatMode` | frontend/js/status.js:2856 |
 | `setForcedReadIds` | frontend/js/status.js:196 |
 | `setForcedUnreadIds` | frontend/js/status.js:165 |
 | `setTitleCount` | frontend/js/status.js:502 |
 | `setTitleView` | frontend/js/status.js:507 |
-| `settingsOpen` | frontend/js/status.js:1867 |
+| `settingsOpen` | frontend/js/status.js:1894 |
 | `settleNotification` | frontend/js/status.js:116 |
-| `settleUndoFromToast` | frontend/js/status.js:1516 |
-| `showAgentNoModelHint` | frontend/js/status.js:2824 |
-| `showServerDownBanner` | frontend/js/status.js:1315 |
-| `startPrivacyChip` | frontend/js/status.js:3233 |
-| `startReminderWatch` | frontend/js/status.js:612 |
+| `settleUndoFromToast` | frontend/js/status.js:1543 |
+| `showAgentNoModelHint` | frontend/js/status.js:2851 |
+| `showServerDownBanner` | frontend/js/status.js:1342 |
+| `startPrivacyChip` | frontend/js/status.js:3260 |
+| `startReminderWatch` | frontend/js/status.js:638 |
 | `storedNotifications` | frontend/js/status.js:84 |
-| `surfaceHistory` | frontend/js/status.js:1570 |
-| `syncAgentPaletteAvailability` | frontend/js/status.js:2295 |
-| `syncModelGatedControls` | frontend/js/status.js:2110 |
+| `surfaceHistory` | frontend/js/status.js:1597 |
+| `syncAgentPaletteAvailability` | frontend/js/status.js:2322 |
+| `syncModelGatedControls` | frontend/js/status.js:2137 |
 | `syncNotifBlocked` | frontend/js/status.js:376 |
 | `taskEndingWords` | frontend/js/status.js:130 |
-| `taskKey` | frontend/js/status.js:3091 |
-| `toast` | frontend/js/status.js:1106 |
-| `toastAction` | frontend/js/status.js:1248 |
-| `toastActionButton` | frontend/js/status.js:1228 |
-| `toastActions` | frontend/js/status.js:1219 |
-| `toastAtTop` | frontend/js/status.js:767 |
-| `toastCloseButton` | frontend/js/status.js:924 |
-| `toastHold` | frontend/js/status.js:913 |
-| `toastHost` | frontend/js/status.js:999 |
-| `toastLayout` | frontend/js/status.js:781 |
-| `toastLive` | frontend/js/status.js:771 |
-| `toastMark` | frontend/js/status.js:850 |
-| `toastMerge` | frontend/js/status.js:824 |
-| `toastName` | frontend/js/status.js:1094 |
-| `toastProgress` | frontend/js/status.js:1183 |
-| `toastReduced` | frontend/js/status.js:862 |
-| `toastStack` | frontend/js/status.js:866 |
-| `toastYield` | frontend/js/status.js:979 |
-| `toggleAiStatusPopup` | frontend/js/status.js:2756 |
+| `taskKey` | frontend/js/status.js:3118 |
+| `toast` | frontend/js/status.js:1133 |
+| `toastAction` | frontend/js/status.js:1275 |
+| `toastActionButton` | frontend/js/status.js:1255 |
+| `toastActions` | frontend/js/status.js:1246 |
+| `toastAtTop` | frontend/js/status.js:794 |
+| `toastCloseButton` | frontend/js/status.js:951 |
+| `toastHold` | frontend/js/status.js:940 |
+| `toastHost` | frontend/js/status.js:1026 |
+| `toastLayout` | frontend/js/status.js:808 |
+| `toastLive` | frontend/js/status.js:798 |
+| `toastMark` | frontend/js/status.js:877 |
+| `toastMerge` | frontend/js/status.js:851 |
+| `toastName` | frontend/js/status.js:1121 |
+| `toastProgress` | frontend/js/status.js:1210 |
+| `toastReduced` | frontend/js/status.js:889 |
+| `toastStack` | frontend/js/status.js:893 |
+| `toastYield` | frontend/js/status.js:1006 |
+| `toggleAiStatusPopup` | frontend/js/status.js:2783 |
 | `toggleNotificationMute` | frontend/js/status.js:283 |
 | `unreadNotifications` | frontend/js/status.js:241 |
-| `voiceLine` | frontend/js/status.js:1100 |
-| `whenText` | frontend/js/status.js:1089 |
-| `withoutEndStop` | frontend/js/status.js:2494 |
+| `voiceLine` | frontend/js/status.js:1127 |
+| `whenText` | frontend/js/status.js:1116 |
+| `withoutEndStop` | frontend/js/status.js:2521 |
 
 ### frontend/js/ai-tools.js (36)
 
@@ -11914,11 +11916,11 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/dismissed` | GET | `dismissed_suggestions` | src/tessellate/api/routes_inbox.py:240 |
 | `/dismissed/clear` | POST | `clear_dismissed_suggestions` | src/tessellate/api/routes_inbox.py:254 |
 | `/dismissed/restore` | POST | `restore_dismissed_suggestions` | src/tessellate/api/routes_inbox.py:281 |
-| `/documents/run-jobs` | POST | `start_run_job` | src/tessellate/api/run_sandbox.py:1661 |
-| `/documents/run-jobs/{job_id}` | DELETE | `end_run_job` | src/tessellate/api/run_sandbox.py:1681 |
-| `/documents/run-jobs/{job_id}/beat` | POST | `beat_run_job` | src/tessellate/api/run_sandbox.py:1673 |
-| `/documents/run-sandbox` | GET | `run_sandbox` | src/tessellate/api/run_sandbox.py:735 |
-| `/documents/run-sandbox/python` | GET | `run_sandbox_python` | src/tessellate/api/run_sandbox.py:1562 |
+| `/documents/run-jobs` | POST | `start_run_job` | src/tessellate/api/run_sandbox.py:336 |
+| `/documents/run-jobs/{job_id}` | DELETE | `end_run_job` | src/tessellate/api/run_sandbox.py:356 |
+| `/documents/run-jobs/{job_id}/beat` | POST | `beat_run_job` | src/tessellate/api/run_sandbox.py:348 |
+| `/documents/run-sandbox` | GET | `run_sandbox` | src/tessellate/api/run_sandbox.py:147 |
+| `/documents/run-sandbox/python` | GET | `run_sandbox_python` | src/tessellate/api/run_sandbox.py:237 |
 | `/documents/{document_id}/code-assist` | POST | `code_assist_route` | src/tessellate/api/routes_code_assist.py:34 |
 | `/done` | POST | `done_insight` | src/tessellate/api/routes_insights.py:539 |
 | `/embedding-backend` | POST | `set_embedding_backend` | src/tessellate/api/routes_models.py:1143 |
@@ -12410,9 +12412,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}` | DELETE | `delete_ask_turn` | src/tessellate/api/routes_ask_history.py:172 |
 | `/{turn_id}` | GET | `get_ask_turn` | src/tessellate/api/routes_ask_history.py:92 |
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
-| `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
+| `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8167)
+## Backend modules (8157)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -19772,31 +19774,21 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `update_object` | src/tessellate/api/routes_whiteboard.py:3460 |
 | `update_sketch` | src/tessellate/api/routes_whiteboard.py:3357 |
 
-### src/tessellate/api/run_sandbox.py (21)
+### src/tessellate/api/run_sandbox.py (11)
 
 | Name | File:line |
 |---|---|
-| `RunJobBody` | src/tessellate/api/run_sandbox.py:1648 |
-| `_MMDebugger` | src/tessellate/api/run_sandbox.py:1097 |
-| `_MMFrameAt` | src/tessellate/api/run_sandbox.py:1275 |
-| `_MMOut` | src/tessellate/api/run_sandbox.py:806 |
-| `_mm_children` | src/tessellate/api/run_sandbox.py:1057 |
-| `_mm_debug` | src/tessellate/api/run_sandbox.py:1206 |
-| `_mm_eval` | src/tessellate/api/run_sandbox.py:901 |
-| `_mm_input` | src/tessellate/api/run_sandbox.py:845 |
-| `_mm_line` | src/tessellate/api/run_sandbox.py:928 |
-| `_mm_names` | src/tessellate/api/run_sandbox.py:1082 |
-| `_mm_run` | src/tessellate/api/run_sandbox.py:868 |
-| `_mm_show` | src/tessellate/api/run_sandbox.py:1044 |
-| `_mm_tests` | src/tessellate/api/run_sandbox.py:940 |
-| `_run_job` | src/tessellate/api/run_sandbox.py:1652 |
-| `beat_run_job` | src/tessellate/api/run_sandbox.py:1674 |
-| `end_run_job` | src/tessellate/api/run_sandbox.py:1682 |
-| `pyodide_file` | src/tessellate/api/run_sandbox.py:1593 |
-| `python_csp` | src/tessellate/api/run_sandbox.py:782 |
-| `run_sandbox` | src/tessellate/api/run_sandbox.py:736 |
-| `run_sandbox_python` | src/tessellate/api/run_sandbox.py:1563 |
-| `start_run_job` | src/tessellate/api/run_sandbox.py:1662 |
+| `RunJobBody` | src/tessellate/api/run_sandbox.py:323 |
+| `_asset` | src/tessellate/api/run_sandbox.py:53 |
+| `_fill` | src/tessellate/api/run_sandbox.py:57 |
+| `_run_job` | src/tessellate/api/run_sandbox.py:327 |
+| `beat_run_job` | src/tessellate/api/run_sandbox.py:349 |
+| `end_run_job` | src/tessellate/api/run_sandbox.py:357 |
+| `pyodide_file` | src/tessellate/api/run_sandbox.py:268 |
+| `python_csp` | src/tessellate/api/run_sandbox.py:194 |
+| `run_sandbox` | src/tessellate/api/run_sandbox.py:148 |
+| `run_sandbox_python` | src/tessellate/api/run_sandbox.py:238 |
+| `start_run_job` | src/tessellate/api/run_sandbox.py:337 |
 
 ### src/tessellate/api/schemas.py (14)
 
@@ -22448,7 +22440,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15275)
+## Tests (15279)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23731,6 +23723,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_reminder_form_1028b.py | 3 |
 | tests/test_reminder_magic_hard_2210.py | 6 |
 | tests/test_reminder_notifier.py | 14 |
+| tests/test_reminder_poll_shared.py | 3 |
 | tests/test_reminder_row_kebab.py | 2 |
 | tests/test_reminder_scoped_token.py | 16 |
 | tests/test_reminder_snooze_row34.py | 4 |
@@ -23767,7 +23760,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_run_debug_js.py | 10 |
 | tests/test_run_debugger.py | 16 |
 | tests/test_run_protocol.py | 17 |
-| tests/test_run_sandbox.py | 16 |
+| tests/test_run_sandbox.py | 17 |
 | tests/test_run_skill.py | 41 |
 | tests/test_run_stop_mid_call.py | 4 |
 | tests/test_sample_notebook.py | 3 |
