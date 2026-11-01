@@ -570,7 +570,7 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
    the whole of <main> and the conversation waits behind it. The ✕ is right
    there, which is what makes that acceptable, it is one click back. */
 @media (max-width: 1099.98px) {
-  #tab-chat .layout>.tab-main:has(#web-panel:not(.hidden))>#chat-main {
+  #tab-chat .layout>.tab-main.web-open>#chat-main {
     display: none;
   }
 
@@ -6428,8 +6428,10 @@ button.manage-cat-count:is(:focus-visible, :has(:focus-visible)) {
    the panel's search). Not reproduced headless (a pointer grid over the
    panel and a keyboard walk out of it both left every row hidden), so this
    holds the outcome rather than one trigger: while the panel is open the
-   rows stay hidden and take no pointer. */
-#tab-chat:has(#note-picker-panel:not(.hidden)) .msg-actions {
+   rows stay hidden and take no pointer. A class on the tab, set where the
+   panel opens and closes, not a `:has()` on it: a `:has()` on the tab root
+   made every change under it a style check of 230 invalidations per send. */
+#tab-chat.note-picker-open .msg-actions {
   visibility: hidden;
   pointer-events: none;
 }

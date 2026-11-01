@@ -407,6 +407,8 @@ function toggleWebPanel(force) {
   const panel = $("web-panel");
   const show = force ?? panel.classList.contains("hidden");
   panel.classList.toggle("hidden", !show);
+  //: A class the narrow layout's CSS reads, not a `:has()` on the column (AI9).
+  panel.closest(".tab-main")?.classList.toggle("web-open", show);
   if (show) {
     // Say up front when searching cannot work, rather than after a search has
     // failed. Web access is off by default, this is a local-first app and
