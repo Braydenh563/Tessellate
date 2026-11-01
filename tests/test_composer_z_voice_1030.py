@@ -4,6 +4,8 @@ when it is true (docs/roadmap/agent-remaining/audit-1030-composer.md)."""
 
 from __future__ import annotations
 
+import re
+
 import pytest
 
 from tessellate.ai import composer_frame
@@ -41,7 +43,9 @@ def test_z2_a_note_to_self_or_a_we_is_quoted_or_reported_not_spoken_for_the_writ
 
 def test_z2_an_imperative_is_quoted_with_its_capital(ask):
     said = _said(ask, "what do I know about sourdough")
-    assert "Your note says “Feed the starter" in said, said
+    #: Quoted whole with its capital; the frame is no longer an unnamed
+    #: "Your note says" (INBOX 1512: "Your note says" with no note named).
+    assert re.search(r"\bYou (?:wrote|noted down|put down) “Feed the starter", said), said
 
 
 @pytest.mark.parametrize("question", ["what do I know about books", "tell me about Tom", "what do I know about the Tokyo trip"])

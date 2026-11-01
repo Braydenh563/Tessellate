@@ -70,7 +70,8 @@ def _hobbies(notes: list[dict] | None = None) -> str:
 def test_the_answer_groups_its_notes_by_theme_and_says_why_each_group_answers():
     text = _hobbies()
     paragraphs = text.split("\n\n")
-    gym = next(i for i, p in enumerate(paragraphs) if "gym notes go together" in p.lower())
+    #: Found by its tag, not its frame: the frames vary group to group (INBOX 1512).
+    gym = next(i for i, p in enumerate(paragraphs) if "gym notes" in p.lower() and "#gym" in p)
     gaming = next(i for i, p in enumerate(paragraphs) if "gaming notes" in p.lower() and "#gaming" in p)
     loose = next(i for i, p in enumerate(paragraphs) if "loosely" in p.lower())
     #: Equal scores: the bigger theme first; the loose notes last.

@@ -43,7 +43,7 @@ from datetime import date, datetime, time, timedelta
 from functools import lru_cache, wraps
 from pathlib import Path
 
-from tessellate.ai import composer, composer_doings, composer_frame, composer_lists, composer_money, composer_slots, composer_sum, composer_tables, filed_name, glossary, question_noise, realise, verdicts
+from tessellate.ai import composer, composer_doings, composer_frame, composer_threads, composer_lists, composer_money, composer_slots, composer_sum, composer_tables, filed_name, glossary, question_noise, realise, verdicts
 from tessellate.ai.composer_lists import clean
 from tessellate.ai import recognise as recogniser
 from tessellate.ai import when as when_words
@@ -1283,28 +1283,23 @@ def _context_facts(view: composer.NoteView) -> list[Fact]:
     return [Fact(view, view.sentences[0], label, body.strip().rstrip("."), "")] if view.sentences else []
 
 
-_PICTURE_KIND = re.compile(
-    r"^(?:an?|the|this|one)?\s*(picture|photo|photograph|image|screenshot|drawing|sketch|diagram|illustration|painting|scan|snapshot|selfie)\s+(?:of|showing|that shows)\s+(?=\S)",
-    re.I,
-)
-
-
 def _picture_fact(view: composer.NoteView, shown: list, read: list) -> Fact:
     """A picture is one fact, what it shows and the words in it, the words
     quoted as read (INBOX 787: never run into the caption)."""
     #: A note that is mostly its picture ("League stats" and a screenshot):
     #: the words in it are what the note says.
     mostly = sum(1 for s in view.sentences if s.kind not in ("picture", "picture_text")) <= 1
-    what = shown[0].text.strip().rstrip(".") if shown else ""
+    what = composer_threads.caption_said(shown[0].text.strip()) if shown else ""
     words = realise.join_items([f"“{r.text.strip()}”" for r in read[:3]]) if (_ASKS_WORDS.get() or not shown or mostly) else ""
-    #: A caption that names its own kind ("a photo of a hill") is said once, as
-    #: it is: never "a picture of a photo of a hill" (INBOX 1496).
-    kind = _PICTURE_KIND.match(what)
-    if kind:
-        noun = kind.group(1).lower()
-        body = f"{'an' if noun[0] in 'aeiou' else 'a'} {noun} of {_fragment(what[kind.end():], set())}" + (f" reading {words}" if words else "")
-        return Fact(view, (shown or read)[0], "", body, "")
-    body = (f"a picture of {_fragment(what, set())}" if what else "a picture") + (f" reading {words}" if words else "")
+    #: Said as what it shows, past the captioner's frame, never as the
+    #: person's words ("Your note says “A picture of ...”", "a picture of a
+    #: photo depicts", INBOX 787, 1496, 1512): a note that is its picture by
+    #: its name, a picture beside words as "its picture".
+    name = _your_note(view)
+    subject = "its picture" if not mostly else name if name.startswith("your picture") else f"the picture in {name}"
+    body = f"{subject} shows {_fragment(what, set())}" if what else ""
+    if words:
+        body = f"{body}, reading {words}" if body else f"{subject} reads {words}"
     return Fact(view, (shown or read)[0], "", body, "")
 
 
@@ -1474,7 +1469,7 @@ def _facts(view: composer.NoteView, names: set[str], subject: set[str] | None = 
     if _context_note(view):
         return _context_facts(view)
     picture = _picture_of(view)
-    out: list[Fact] = [picture] if picture else []
+    out: list[Fact] = []
     note_label = ""
     #: Verdicts are on notes: a document's id is another table's.
     known = _KNOWN.get() if composer.source_kind(view.note) == "note" else None
@@ -1486,7 +1481,20 @@ def _facts(view: composer.NoteView, names: set[str], subject: set[str] | None = 
         if i == 0 and split.titled:
             note_label = split.label
         out += _sentence_facts(view, s, split, note_label, subject, pinned)
-    return out
+    return _with_picture(out, picture)
+
+
+def _with_picture(out: list[Fact], picture: Fact | None) -> list[Fact]:
+    """The picture said after the note's first sentence ("You bought a new
+    gaming mouse ... Its picture shows ..."), or first when the note is its
+    picture (INBOX 1512)."""
+    if picture is None:
+        return out
+    if not out:
+        return [picture]
+    first = out[0].sentence.key
+    at = next((n for n, f in enumerate(out) if f.sentence.key != first), len(out))
+    return [*out[:at], picture, *out[at:]]
 
 
 def _subject_facts(members: list[composer.NoteView], names: set[str], subject: set[str], kind: str = "overview") -> list[Fact]:
@@ -1868,10 +1876,15 @@ def _wrote(body: str, i: int) -> str:
         #: Quoted as written, capital and all: it is the note's sentence.
         said = _DAY_NAME.sub(lambda m: m.group(0).capitalize(), body[:1].upper() + body[1:].rstrip("."))
         said, pinned = _unpinned(said)
-        return f"your note says “{said}”{pinned}"
+        return f"{_QUOTED_AS[i % len(_QUOTED_AS)]} “{said}”{pinned}"
     #: A noun phrase is what the note says, not a speech act ("You jotted
-    #: down Dentist appointment on 4 November": audit 1031 C32).
-    return f"your note says “{body[:1].upper() + body[1:].rstrip('.')}”"
+    #: down Dentist appointment on 4 November": audit 1031 C32). The quote
+    #: is the note, so no unnamed "Your note says" (INBOX 1512).
+    return f"{_QUOTED_AS[i % len(_QUOTED_AS)]} “{body[:1].upper() + body[1:].rstrip('.')}”"
+
+
+#: A note's own words quoted whole, a wording a line in turn (INBOX 1512).
+_QUOTED_AS = ("you wrote", "you noted down", "you put down")
 
 
 def _past_verb(word: str) -> bool:
@@ -1888,7 +1901,7 @@ _LIST_HEADING = re.compile(r"your .+? note lists \w+ (?:items|questions to ask)\
 def _said_as_written(line_body: str, i: int, written: date | None = None) -> str:
     """The body as reported speech: shorthand noted, a statement about something else written, else retold."""
     #: "What your notes leave out is how ...": a clause of its own, its verb late.
-    if _LIST_HEADING.match(line_body):
+    if _LIST_HEADING.match(line_body) or composer_threads.said_whole(line_body):
         #: A list's heading is not speech ("You mentioned that questions to ask: ...", C32).
         return line_body
     asked_clause = bool(_WH_SUBJECT.match(line_body) and _FINITE.search(line_body))
@@ -2347,12 +2360,15 @@ def _section_line(label: str, view, bodies: list[str], today: date | None, same:
     head = _fragment(label.strip(), _NAMES.get())
     items = _section_items(bodies)
     first = view.sentences[0].text.strip().lower() if view.sentences else ""
-    if not view.titled and first.startswith(label.strip().lower()):
+    if composer_threads.label_is_sentence(label):
+        #: Its own words, said as the note's (INBOX 1512).
+        line = f"{'it also says' if same else _your_note(view) + ' says'} {composer_threads.voiced(head)}: {items}"
+    elif not view.titled and first.startswith(label.strip().lower()):
         line = _noted_section(head, items, view, today)
     elif same:
-        line = f"it also has {head}: {items}"
+        line = f"it also has {composer_threads.with_article(head)}: {items}"
     else:
-        line = f"{_your_note(view)} has {head}: {items}"
+        line = f"{_your_note(view)} has {composer_threads.with_article(head)}: {items}"
     return line[0].upper() + line[1:]
 
 
@@ -3154,8 +3170,12 @@ def _framed(out: _Out, question: str, members, facts, today: date, groups: list)
     notes = [v.note for v in members]
     topic = _topic(question, members)
     budget = LINES["overview"]
-    for group in groups:
-        (out.lines if budget > 0 else out.more).append(composer_frame.group_line(group, notes, topic, _heading_said))
+    lead = composer_frame.lead_line(groups, notes, len(members))
+    if lead and out.lines:
+        out.lines[0] = f"{out.lines[0]} {lead}"
+    for n, group in enumerate(groups):
+        line = composer_frame.group_line(group, notes, topic, _heading_said, n)
+        (out.lines if budget > 0 else out.more).append(line)
         held = [f for f in facts if f.view.id in group.ids]
         told: set = set()
         for i in group.ids:
