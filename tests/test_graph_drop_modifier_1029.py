@@ -10,6 +10,8 @@ selection does not move the camera under the next click.
 
 from __future__ import annotations
 
+from tests._help_text import help_chat_text
+
 import json
 import re
 import shutil
@@ -22,7 +24,7 @@ ROOT = Path(__file__).resolve().parent.parent
 CANVAS = (ROOT / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8")
 GRAPH = (ROOT / "frontend" / "js" / "graph.js").read_text(encoding="utf-8")
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-HELP_CHAT = (ROOT / "src" / "tessellate" / "ai" / "help_chat.py").read_text(encoding="utf-8")
+HELP_CHAT = help_chat_text()
 
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 

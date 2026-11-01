@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from tests._help_text import help_chat_text
+
 import json
 from pathlib import Path
 import re
@@ -286,7 +288,7 @@ def test_the_reshuffle_control_sits_beside_unpin_all_and_is_explained():
     assert "function gcReshuffle(" in canvas
     assert 'type: "reshuffle"' in canvas
     assert 'case "reshuffle"' in WORKER
-    help_text = (ROOT / "src" / "tessellate" / "ai" / "help_chat.py").read_text(encoding="utf-8")
+    help_text = help_chat_text()
     assert "Reshuffle layout" in help_text
 
 
@@ -333,7 +335,7 @@ def test_the_shape_control_is_saved_and_reaches_the_worker():
     canvas = (JS / "graph-canvas.js").read_text(encoding="utf-8")
     assert "shape: gcShape(s)," in canvas
     assert 'const SHAPES = new Set(["organic", "clusters", "galaxy"]);' in WORKER
-    help_text = (ROOT / "src" / "tessellate" / "ai" / "help_chat.py").read_text(encoding="utf-8")
+    help_text = help_chat_text()
     assert "Shape (Organic, Clusters or Galaxy;" in help_text
 
 
@@ -365,7 +367,7 @@ def test_shape_is_dimmed_with_its_reason_off_the_force_layout():
     assert '$("graph-shape-row")?.classList.toggle("is-disabled", !applies);' in body
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert 'class="graph-option-row graph-physics" id="graph-shape-row"' in html
-    help_text = (ROOT / "src" / "tessellate" / "ai" / "help_chat.py").read_text(encoding="utf-8")
+    help_text = help_chat_text()
     assert "the Force layout's own, dimmed under the others" in help_text
 
 

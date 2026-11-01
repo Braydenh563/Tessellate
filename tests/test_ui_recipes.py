@@ -19,6 +19,8 @@ a fix removes an entry, a new offender fails the build.
 
 from __future__ import annotations
 
+from tests._help_text import help_chat_text
+
 import re
 from html.parser import HTMLParser
 from pathlib import Path
@@ -4196,7 +4198,7 @@ def test_a_frame_is_one_kind_reached_three_ways() -> None:
     assert "wbCaptureBulkMoveOrigin(null, keys)" in wb[wb.index("function wbFrameDragOrigin(") :][:400]
     frame_rule = css[css.index(".wb-object-frame {") :][:600]
     assert "pointer-events: none;" in frame_rule and "background: transparent;" in frame_rule
-    guide = re.sub(r'"\s*\n\s*"', "", (ROOT / "src" / "tessellate" / "ai" / "help_chat.py").read_text(encoding="utf-8"))
+    guide = re.sub(r'"\s*\n\s*"', "", help_chat_text())
     assert "F frame" in guide and "title drags it and what is inside it" in guide
     assert "Ctrl+Shift+L locks the selection" in guide
 
@@ -4277,7 +4279,7 @@ def test_presenting_is_one_mode_with_one_bar() -> None:
     keys = wb[wb.index("let wbPresent = null;") :]
     assert "event.stopImmediatePropagation();" in keys and "}, true);" in keys
     assert ".wb-board-menu [data-wb-surface]" in (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
-    guide = (ROOT / "src" / "tessellate" / "ai" / "help_chat.py").read_text(encoding="utf-8")
+    guide = help_chat_text()
     assert "Present frames: one frame" in guide
 
 
@@ -4347,7 +4349,7 @@ def test_a_comment_thread_is_one_popover_reached_three_ways() -> None:
     assert "wbPaintCommentMarks();" in wb[wb.index("function wbQueueSelectionBar()") :][:300]
     assert '".wb-comment-pin",' in wb[wb.index("const WB_INV_ZOOM_GRIPS") :][:200]
     assert "#library-view-whiteboard.wb-presenting .wb-comment-marks {\n  display: none;" in css
-    guide = re.sub(r'"\s*\n\s*"', "", (ROOT / "src" / "tessellate" / "ai" / "help_chat.py").read_text(encoding="utf-8"))
+    guide = re.sub(r'"\s*\n\s*"', "", help_chat_text())
     assert "Right-click an item, Comment…" in guide and "Comment… starts a thread" in guide
 
 
@@ -6459,7 +6461,7 @@ def test_the_shared_picture_control_is_in_the_index_and_the_guide() -> None:
     assert "width: 24px" in grip and "height: 24px" in grip, "a 24px hit area on every pointer"
     layout = (ROOT / "frontend" / "js" / "image-layout.js").read_text(encoding="utf-8")
     assert 'addEventListener("focusin"' in layout, "the control exists before the pointer does"
-    topics = (ROOT / "src" / "tessellate" / "ai" / "help_chat.py").read_text(encoding="utf-8")
+    topics = help_chat_text()
     assert "Tab to the corner and use the arrow keys" in topics
 
 
@@ -6504,7 +6506,7 @@ def test_a_live_view_mark_reveals_per_span() -> None:
     assert documents.count("touched(doc.lineAt(from).from, doc.lineAt(to).to)") == 1, (
         "an inline span reveals by its line again; the line-wide rule is only `blockRevealed`"
     )
-    topics = (ROOT / "src" / "tessellate" / "ai" / "help_chat.py").read_text(encoding="utf-8")
+    topics = help_chat_text()
     assert '"id": "live-view-marks"' in topics
     assert "shows its markdown only while the caret" in topics
 

@@ -10,12 +10,14 @@ wiring.
 
 from __future__ import annotations
 
+from tests._help_text import help_chat_text
+
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DOCS = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-HELP = (ROOT / "src" / "tessellate" / "ai" / "help_chat.py").read_text(encoding="utf-8")
+HELP = help_chat_text()
 
 
 def test_the_dock_has_a_labelled_formatting_button_with_its_key():

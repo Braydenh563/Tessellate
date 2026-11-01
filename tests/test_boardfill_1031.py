@@ -5,6 +5,8 @@ the server owns; the measured Playwright numbers are in the commit message."""
 
 from __future__ import annotations
 
+from tests._help_text import help_chat_text
+
 import json
 import re
 from pathlib import Path
@@ -85,8 +87,7 @@ def test_a_shape_keeps_its_opacities_through_the_server(client):
 
 
 def test_the_help_names_the_new_rows():
-    topics = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8") + (
-        ROOT / "src" / "tessellate" / "ai" / "help_chat.py").read_text(encoding="utf-8")
+    topics = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8") + help_chat_text()
     assert "line opacity" in topics.lower()
 
 
