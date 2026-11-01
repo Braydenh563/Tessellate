@@ -162,6 +162,7 @@ _clock = time.monotonic
 
 def _mark_down(base_url: str) -> None:
     _down_until[base_url] = _clock() + DOWN_TTL_SECONDS
+    _down_until.pop(_up_key(base_url), None)
 
 
 def _mark_up(base_url: str) -> None:
@@ -193,6 +194,30 @@ def _quiet_key(base_url: str) -> str:
 
 def mark_quiet(base_url: str) -> None:
     _down_until[_quiet_key(base_url)] = _clock() + QUIET_TTL_SECONDS
+    _down_until.pop(_up_key(base_url), None)
+
+
+#: How long a probe that was answered is believed (INBOX 1516: `/models/status`
+#: 3198 ms). `is_running` is asked by every liveness check (the embedding
+#: service's `is_ready` on a dozen routes, the status poll, a turn's steps), and
+#: each one made a real GET: free against a runner that answers, up to the whole
+#: probe timeout against one that is busy loading a model. A runner that was
+#: heard from this second is still there; one that is not fails its real request
+#: and is marked down then, as before.
+UP_TTL_SECONDS = 2.0
+
+
+def _up_key(base_url: str) -> str:
+    return f"up:{base_url}"
+
+
+def remember_up(base_url: str) -> None:
+    """Note that `base_url` answered a probe just now (see `UP_TTL_SECONDS`)."""
+    _down_until[_up_key(base_url)] = _clock() + UP_TTL_SECONDS
+
+
+def recently_up(base_url: str) -> bool:
+    return _is_down(_up_key(base_url))  # "down until" is just a deadline map: here it holds the up deadline
 
 
 def is_quiet(base_url: str) -> bool:
@@ -463,11 +488,14 @@ class OllamaClient(Provider):
         just to discover Ollama is off (plan §6.5)."""
         if _is_down(self.base_url) or is_quiet(self.base_url):
             return False
+        if recently_up(self.base_url):
+            return True
         try:
             response = requests.get(f"{self.base_url}/api/tags", timeout=(CONNECT_TIMEOUT_SECONDS, PROBE_READ_SECONDS))
             response.raise_for_status()
             _mark_up(self.base_url)
             forget_quiet(self.base_url)
+            remember_up(self.base_url)
             return True
         except requests.RequestException as exc:
             if _is_refusal(exc):

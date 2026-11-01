@@ -223,7 +223,7 @@ def test_y16_the_library_preload_waits_when_the_browser_saves_data():
     body = js.split("function warmLibraryAfterInput() {", 1)[1].split("\n}\n", 1)[0]
     assert "navigator.connection?.saveData" in body
     assert "hardwareConcurrency" in body
-    assert 'ensureModule("library")' in body
+    assert "LAZY_MODULES.library" in body  # INBOX 1516: the paced warm names the files, not ensureModule
     line = next(row for row in js.splitlines() if '"dragEdge", "search"' in row and "setTimeout" in row)
     assert '"library"' not in line  # not at boot
     assert line.rstrip().endswith(".forEach(ensureModule), 3000);")

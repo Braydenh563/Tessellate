@@ -744,3 +744,90 @@ def test_the_loaded_models_question_is_asked_once_while_it_is_out(client, monkey
     routes_models._loaded_names()
     assert len(asked) == 1
     release.set()
+
+
+def test_status_does_not_probe_the_runner_a_second_time_for_embedding_ready(client, monkeypatch):
+    """INBOX 1516: `/models/status` 3198 ms. On the Ollama embedding backend
+    `EmbeddingService.is_ready` made its own GET of the runner on every poll,
+    which waits out the probe timeout when the runner is busy loading a model.
+    The poll already asked (the model-list flight), so it reads that answer."""
+    from tessellate.ai import ollama_client
+    from tessellate.ai.ollama_client import OllamaClient
+    from tessellate.core import deps
+
+    ollama = OllamaClient("http://127.0.0.1:9")
+    monkeypatch.setattr(deps, "get_ollama", lambda: ollama)
+    monkeypatch.setattr(ollama, "list_models", lambda: [{"name": "model-a", "size": 1}])
+    manager = deps.get_model_manager()
+    monkeypatch.setattr(manager, "embedding_backend", lambda: "ollama")
+    probes: list[str] = []
+    monkeypatch.setattr(ollama_client.requests, "get", lambda url, **kw: probes.append(url) or (_ for _ in ()).throw(AssertionError(url)))
+    monkeypatch.setattr(deps.get_embeddings(), "_ollama", ollama)
+    client.get("/models/status")  # starts the list flight
+    body = client.get("/models/status").json()
+    assert body["ollama_running"] is True
+    assert body["embedding_ready"] is True
+    assert probes == []
+
+
+def test_an_answered_probe_is_believed_for_a_moment_and_a_failure_clears_it(monkeypatch):
+    """INBOX 1516: every liveness check made a real GET, free against a runner
+    that answers and the whole probe timeout against one that is busy."""
+    from tessellate.ai import ollama_client
+    from tessellate.ai.ollama_client import OllamaClient
+
+    now = [100.0]
+    monkeypatch.setattr(ollama_client, "_clock", lambda: now[0])
+    ollama_client._down_until.clear()
+    gets: list[str] = []
+
+    class Ok:
+        def raise_for_status(self):
+            return None
+
+    monkeypatch.setattr(ollama_client.requests, "get", lambda url, **kw: gets.append(url) or Ok())
+    runner = OllamaClient("http://127.0.0.1:9")
+    assert runner.is_running() and runner.is_running() and runner.is_running()
+    assert len(gets) == 1
+    now[0] += ollama_client.UP_TTL_SECONDS + 0.1
+    assert runner.is_running()
+    assert len(gets) == 2
+    ollama_client.mark_quiet(runner.base_url)
+    assert not ollama_client.recently_up(runner.base_url)
+    assert runner.is_running() is False
+    assert len(gets) == 2
+    ollama_client._down_until.clear()
+
+
+def test_polls_behind_a_silent_runner_do_not_each_wait_the_budget_again(client, monkeypatch):
+    """INBOX 1516: the refresh wait is counted from the request's start, so a
+    runner silent for a while costs the polls behind it nothing (53 to 62 ms
+    a poll measured against a runner that takes 5 s)."""
+    import threading
+    import time
+
+    from tessellate.ai.ollama_client import OllamaClient
+    from tessellate.api import routes_models
+    from tessellate.core import deps
+
+    ollama = OllamaClient("http://127.0.0.1:9")
+    monkeypatch.setattr(deps, "get_ollama", lambda: ollama)
+    monkeypatch.setattr(routes_models, "INSTALLED_REFRESH_BUDGET", 0.4)
+    release = threading.Event()
+    calls: list[int] = []
+
+    def list_models():
+        calls.append(1)
+        if len(calls) > 1:
+            release.wait(30)
+        return [{"name": "model-a", "size": 1}]
+
+    monkeypatch.setattr(ollama, "list_models", list_models)
+    client.get("/models/status")
+    client.get("/models/status")  # starts the stuck flight, pays the budget once
+    started = time.monotonic()
+    for _ in range(5):
+        client.get("/models/status")
+    elapsed = time.monotonic() - started
+    release.set()
+    assert elapsed < 0.4

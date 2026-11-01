@@ -10,6 +10,7 @@ import functools
 
 import logging
 import threading
+import time
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -142,6 +143,7 @@ class _ListFlight:
 
     def __init__(self) -> None:
         self.done = threading.Event()
+        self.started = time.monotonic()
         self.result: list[dict] | None = None  # None: the runner did not answer
         self.error: BaseException | None = None
 
@@ -215,7 +217,11 @@ def _installed_state(client, *, patient: bool = True) -> tuple[list[dict] | None
     #: fall back to the shipped figures, which is better than a blank card list.
     cold = bool(patient and not has_known)
     wait = (0 if key in _installed_cold_paid else INSTALLED_COLD_BUDGET) if cold else INSTALLED_REFRESH_BUDGET
-    flight.done.wait(wait)
+    #: Counted from when the request was sent, not from this poll: a runner that
+    #: has been silent for a second is not given another 50 ms by every poll
+    #: that arrives behind it (INBOX 1516: measured 53 to 62 ms a poll against a
+    #: runner that takes 5 s, 3 ms with the wait spent once).
+    flight.done.wait(max(0.0, wait - (time.monotonic() - flight.started)))
     if not flight.done.is_set():
         if cold:
             _installed_cold_paid.add(key)
@@ -432,6 +438,14 @@ def _effective_chat_model(running: bool, installed: list[dict], provider: str, c
     return chat_model
 
 
+def _embedding_ready(manager, embeddings, running: bool) -> bool:  # noqa: ANN001
+    """`EmbeddingService.is_ready`, without its own probe of the runner on the
+    Ollama backend: this poll already asked (`_installed_state`), and a second
+    GET made it wait out the probe timeout whenever the runner was busy loading
+    a model (INBOX 1516: `/models/status` 3198 ms, 1,228 ms reproduced)."""
+    return running if manager.embedding_backend() == "ollama" else embeddings.is_ready()
+
+
 def _overridden_count(manager) -> int:  # noqa: ANN001
     return sum(1 for row in manager.feature_rows() if row["overridden"])
 
@@ -594,7 +608,7 @@ def status(session: Session = Depends(get_session)) -> dict:
         # itself the first time the built-in model is needed (after a yes),
         # and said so only in the log.
         **_builtin_embedding_install_state(),
-        "embedding_ready": embeddings.is_ready(),
+        "embedding_ready": _embedding_ready(manager, embeddings, running),
         # Lets the UI tell "still loading" from "failed" (pill fix).
         "embedding_warming": embeddings_module.warmup_running(),
         "embedding_warming_failed": embeddings_module.warmup_failed(),
