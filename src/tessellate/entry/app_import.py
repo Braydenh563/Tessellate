@@ -491,6 +491,33 @@ def _make(session, note: Imported, key: str):  # noqa: ANN001, ANN202
     return entry
 
 
+#: The most rows one preview lists: a vault can hold tens of thousands, and a
+#: list nobody can scroll is not a preview. Notes past it still import.
+PREVIEW_LIMIT = 1000
+
+
+def preview(session, source: str, notes: list[Imported], limit: int = PREVIEW_LIMIT) -> dict:  # noqa: ANN001
+    """What a run would make, without making it (INBOX 1520, S36): a row per
+    note with its title, the first words, where it came from and whether it is
+    already here, so the person can untick before anything is written."""
+    shown = notes[:limit]
+    existing = _already_here(session, [source_key(source, n.key) for n in shown])
+    rows = []
+    for note in shown:
+        body = " ".join(note.body.split())
+        if body.startswith(note.title):
+            body = body[len(note.title):].strip()
+        rows.append({
+            "key": note.key,
+            "title": note.title or "Untitled",
+            "snippet": body[:140],
+            "path": note.path,
+            "tags": note.tags[:5],
+            "already": source_key(source, note.key) in existing,
+        })
+    return {"notes": rows, "more": max(0, len(notes) - len(shown))}
+
+
 def write(session, source: str, notes: list[Imported], progress=None) -> dict:  # noqa: ANN001
     """Make the notes that are not already here. Returns the counts and ids.
 

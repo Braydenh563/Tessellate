@@ -127,6 +127,18 @@ const OBJ_STAGE = {
   },
 };
 
+//: Whether the composer already holds a reference, by kind, on the lists the
+//: attach functions above keep: a second paste says so instead of doing nothing
+//: (UX audit 1031 L6; only a note said it).
+const OBJ_STAGED = {
+  note: (ref) => attachedNoteIds.includes(ref.id),
+  document: (ref) => attachedDocuments.some((row) => row.id === ref.id),
+  board: (ref) => attachedBoards.some((row) => row.id === ref.id),
+  map: (ref) => attachedBoards.some((row) => row.id === ref.id),
+  file: (ref) => attachedFiles.some((row) => row.id === ref.id),
+  image: (ref) => attachedImages.some((row) => String(row.id) === String(ref.id)),
+};
+
 //: Text goes in through the browser's edit pipeline, so the field's own Ctrl+Z
 //: still works and a note or document editor sees an `input` event (its dirty
 //: flag, autogrow, CodeMirror's state).

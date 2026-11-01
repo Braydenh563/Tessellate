@@ -99,3 +99,11 @@ def test_a_summary_carries_the_line_count(client):
     rows = {row["id"]: row for row in client.get("/documents").json()}
     assert rows[code["id"]]["lines"] == 3
     assert rows[empty["id"]]["lines"] == 0
+
+
+def test_a_page_preview_gets_a_taller_sheet_on_a_phone():
+    # CE7: the HTML preview frame was 87 px tall in the 24dvh sheet at 390.
+    css = _text("frontend", "css", "library-lazy.css")
+    block = css.split("The output is a sheet over the editor on a phone", 1)[1].split("/* The panel's head", 1)[0]
+    assert ".cm-run-panel.is-page" in block and "min(52dvh, 460px)" in block
+    assert block.count("min(52dvh, 460px)") == 2  # the sheet and the editor's end padding

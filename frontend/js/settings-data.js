@@ -567,6 +567,29 @@ function undoImport(result, status) {
   offerUndo(`Imported ${nounCount(n, "note")}`, importSummary(result), binThem, restoreThem);
 }
 
+//: The files to send, or null when the person closed the preview. The rows
+//: are read here (the first 400 characters of each), since a markdown file
+//: has nothing the server knows that the browser does not.
+async function markdownPreview(files, status) {
+  if (!(await ensureModule("appImport"))) return files;
+  const shown = files.slice(0, 1000);
+  const rows = await Promise.all(shown.map(async (file, at) => {
+    const name = (file.webkitRelativePath || file.name).replace(/\.(md|markdown|txt)$/i, "");
+    const text = (await file.slice(0, 400).text().catch(() => "")).replace(/^---[\s\S]*?\n---\s*/, "").trimStart();
+    //: A first line that is a heading names the note, as the server's title does.
+    const heading = /^#{1,6}\s+([^\n]+)\n?/.exec(text);
+    const body = heading ? text.slice(heading[0].length) : text;
+    return { key: String(at), title: heading ? heading[1].trim() : name.split("/").pop(), snippet: body.replace(/\s+/g, " ").trim().slice(0, 140), already: false };
+  }));
+  const left = await importPreview({ label: "your files", rows, more: files.length - shown.length });
+  if (left === null) {
+    status.textContent = "Nothing was imported.";
+    return null;
+  }
+  const skip = new Set(left);
+  return files.filter((file, at) => !skip.has(String(at)));
+}
+
 async function importMarkdown(inputId = "import-md-files") {
   const input = $(inputId);
   const status = $("import-md-status");
@@ -594,11 +617,15 @@ async function importMarkdown(inputId = "import-md-files") {
     status.textContent = "No markdown files in that folder.";
     return;
   }
-  for (const file of chosen) {
+  input.value = "";
+  //: The preview step (INBOX 1520, S36): each file's name and first words, a
+  //: tick on each; the files left unticked are never sent.
+  const keep = await markdownPreview(chosen, status);
+  if (!keep) return;
+  for (const file of keep) {
     form.append("files", file, file.webkitRelativePath || file.name);
   }
-  input.value = "";
-  setLabel(status, `ph:spin Importing ${nounCount(chosen.length, "file")}…`);
+  setLabel(status, `ph:spin Importing ${nounCount(keep.length, "file")}…`);
   try {
     // `api.upload` (F5): the multipart type from the browser, and
     // X-Workspace-ID, without which the notes land in the default space.
