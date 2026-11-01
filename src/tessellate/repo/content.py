@@ -25,8 +25,10 @@ own route does.
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Iterator
 from typing import Protocol, runtime_checkable
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.core.database import Attachment, Document, Entry, Recording, Reminder
@@ -201,6 +203,29 @@ def restore(session: Session, kind: str, row_id: int) -> tuple[object, bool]:
     if binned:
         adapter.restore(session, row)
     return row, binned
+
+
+#: The walk's order: notes and boards share one pass over their table, in id
+#: order, so an export writes them as it always has; then documents, files,
+#: reminders and recordings.
+_TABLES = ((Entry, (NOTES, BOARDS)), (Document, (DOCUMENTS,)), (Attachment, (FILES,)),
+           (Reminder, (REMINDERS,)), (Recording, (RECORDINGS,)))
+
+
+def walk(session: Session, kinds: Iterable[str] | None = None) -> Iterator[tuple[Content, object]]:
+    """Every row of every kind (or of `kinds`), each with its adapter, in one
+    order: **the one export walker** (audit 1031 row 2a). It reads what the
+    session reads: a binned note is walked (the exports keep the bin, under
+    `_recycle-bin`), while a binned document, reminder or recording stays
+    under the bin floor (`core/database._hide_binned`) as it always has."""
+    wanted = set(KINDS) if kinds is None else set(kinds)
+    for model, adapters in _TABLES:
+        if not wanted & {a.kind for a in adapters}:
+            continue
+        for row in session.scalars(select(model).order_by(model.id)):
+            adapter = adapters[-1] if model is Entry and row.is_board else adapters[0]
+            if adapter.kind in wanted:
+                yield adapter, row
 
 
 def unshelved(document: Document, *, unarchive: bool) -> Document:

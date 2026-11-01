@@ -241,3 +241,44 @@ def test_every_kind_purges_by_the_method_the_library_sends(client, kind):
     purged = client.delete(bin_route.format(row) + "/purge")
     assert purged.status_code == 200, purged.text
 
+
+# --- step (3): one export walker ---------------------------------------------
+
+
+def test_walk_yields_every_kind_in_one_order(session):
+    """Notes and boards in id order (one pass, as the folder export writes
+    them), then documents, then files: every row the session reads, a binned
+    note included, each with its adapter."""
+    from tessellate.core.database import Attachment, Document, Entry, utcnow
+    from tessellate.repo import content
+
+    note = Entry(content="a note")
+    board = Entry(content="a board", is_board=True)
+    binned = Entry(content="binned", is_deleted=True, deleted_at=utcnow())
+    session.add_all([note, board, binned])
+    session.flush()
+    doc = Document(title="Plan", content="words")
+    session.add(doc)
+    session.flush()
+    session.add(Attachment(entry_id=note.id, filename="a.md", stored_name="walk-a.md"))
+    session.commit()
+    walked = [(adapter.kind, row.id) for adapter, row in content.walk(session)]
+    files = [(k, i) for k, i in walked if k == "file"]
+    assert walked[:3] == [("note", note.id), ("board", board.id), ("note", binned.id)]
+    assert walked.index(("document", doc.id)) < walked.index(files[0])
+    some = [(adapter.kind, row.id) for adapter, row in content.walk(session, ("document",))]
+    assert some == [("document", doc.id)]
+
+
+def test_the_exports_read_the_walker():
+    """The folder export, its snapshot and the JSON, CSV and Markdown exports
+    walk `repo/content.walk` rather than each selecting its own rows."""
+    import inspect
+
+    from tessellate.api import routes_settings
+    from tessellate.entry import export_folder
+
+    for fn in (export_folder.snapshot, export_folder.export, export_folder._write_documents, routes_settings._export_rows):
+        source = inspect.getsource(fn)
+        assert "walk(session" in source, fn.__name__
+        assert "select(Entry)" not in source and "select(Document)" not in source, fn.__name__

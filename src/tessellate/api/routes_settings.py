@@ -41,6 +41,7 @@ from tessellate.core.database import AuditLog, Category, Entry, EntryLink, utcno
 from tessellate.core.deps import get_session
 from tessellate.entry import importer, manager
 from tessellate.repo import relation_types
+from tessellate.repo.content import walk as content_walk
 from tessellate.entry.cleantext import import_path
 from tessellate.search import searxng_manager, websearch
 from tessellate.api.this_computer import REFUSAL, is_another_device, this_computer_only
@@ -2685,9 +2686,10 @@ def _models_status_snapshot() -> dict:
 
 def _export_rows(session: Session) -> tuple[list[Category], list[Entry], list[EntryLink]]:
     """Everything the user owns, including binned entries, an export
-    should never silently drop data."""
+    should never silently drop data. The notes and boards come from the one
+    export walker (`repo/content.walk`), the folder export's own."""
     categories = list(session.scalars(select(Category).order_by(Category.id)))
-    entries = list(session.scalars(select(Entry).order_by(Entry.id)))
+    entries = [row for _adapter, row in content_walk(session, ("note", "board"))]
     links = list(session.scalars(select(EntryLink).order_by(EntryLink.id)))
     return categories, entries, links
 
