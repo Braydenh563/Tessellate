@@ -2,7 +2,7 @@
 
 Generated 2026-11-01 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7518, frontend ids 2643, CSS sections 517, backend routes 638, backend modules 8212, test files 1776, tests 15342, plan headings 990, app scripts 28, boot scripts 37, script files 214.
+Counts: frontend functions 7518, frontend ids 2643, CSS sections 517, backend routes 638, backend modules 8212, test files 1776, tests 15343, plan headings 990, app scripts 28, boot scripts 37, script files 214.
 
 ## Frontend functions (7518)
 
@@ -1752,8 +1752,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `hexToHsl` | frontend/js/settings.js:1790 |
 | `hexToRgbParts` | frontend/js/settings.js:2092 |
 | `hslToHex` | frontend/js/settings.js:1811 |
-| `jobDurationWords` | frontend/js/settings.js:4220 |
-| `jobRunLine` | frontend/js/settings.js:4231 |
+| `jobDurationWords` | frontend/js/settings.js:4229 |
+| `jobRunLine` | frontend/js/settings.js:4240 |
 | `learnedBulk` | frontend/js/settings.js:3730 |
 | `learnedDelete` | frontend/js/settings.js:3940 |
 | `learnedEdit` | frontend/js/settings.js:3893 |
@@ -1781,11 +1781,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `noticePerfMode` | frontend/js/settings.js:3312 |
 | `openSettingsModal` | frontend/js/settings.js:267 |
 | `paintIntegrity` | frontend/js/settings.js:495 |
-| `paintJobLine` | frontend/js/settings.js:4263 |
+| `paintJobLine` | frontend/js/settings.js:4272 |
 | `perfModeOn` | frontend/js/settings.js:2249 |
 | `perfModeReason` | frontend/js/settings.js:2258 |
-| `placeFoldHelp` | frontend/js/settings.js:4164 |
-| `refreshJobRuns` | frontend/js/settings.js:4279 |
+| `placeFoldHelp` | frontend/js/settings.js:4171 |
+| `refreshJobRuns` | frontend/js/settings.js:4288 |
 | `renderActiveLogView` | frontend/js/settings.js:983 |
 | `renderAppearance` | frontend/js/settings.js:2598 |
 | `renderBgMotionHint` | frontend/js/settings.js:2749 |
@@ -1794,7 +1794,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderCopyLogsLabel` | frontend/js/settings.js:1158 |
 | `renderCustomThemes` | frontend/js/settings.js:1996 |
 | `renderGlassRows` | frontend/js/settings.js:2585 |
-| `renderJobOverview` | frontend/js/settings.js:4308 |
+| `renderJobOverview` | frontend/js/settings.js:4317 |
 | `renderLearned` | frontend/js/settings.js:4101 |
 | `renderLearnedFromYou` | frontend/js/settings.js:4092 |
 | `renderLearnedList` | frontend/js/settings.js:3853 |
@@ -1840,7 +1840,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `toggleBgArt` | frontend/js/settings.js:3146 |
 | `toggleTheme` | frontend/js/settings.js:1273 |
 | `updatePeekAvailability` | frontend/js/settings.js:255 |
-| `wireFoldHelps` | frontend/js/settings.js:4175 |
+| `wireFoldHelps` | frontend/js/settings.js:4184 |
 | `wireLearnedSection` | frontend/js/settings.js:4035 |
 | `wireSettingsFolds` | frontend/js/settings.js:4128 |
 
@@ -22690,7 +22690,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15342)
+## Tests (15343)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23735,7 +23735,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_needle_provider.py | 17 |
 | tests/test_needle_shortlist.py | 3 |
 | tests/test_neighbours_1018.py | 9 |
-| tests/test_nested_interactive.py | 11 |
+| tests/test_nested_interactive.py | 12 |
 | tests/test_nested_surfaces_1489.py | 5 |
 | tests/test_new_document_opens_new.py | 9 |
 | tests/test_new_untitled.py | 2 |
