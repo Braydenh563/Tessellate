@@ -114,7 +114,6 @@ from tessellate.ai.agent_turn import (  # noqa: F401
     _CATEGORY_TREE_TOOLS,
     _FENCE_TEXT,
     _FILING_REQUEST,
-    _HANDOFF_RECOVERY,
     _IMPERATIVE,
     _INFORMATION_QUESTION,
     _LOCATING_TOOLS,
@@ -149,6 +148,7 @@ from tessellate.ai.agent_turn import (  # noqa: F401
     _TurnPlan,
     _TurnState,
     build_agent_messages,
+    recovery_for,
 )
 from tessellate.ai.model_manager import ModelManager
 from tessellate.ai.ollama_client import (
@@ -410,12 +410,7 @@ def _handoff_refused(
         {
             "role": "tool",
             "tool_name": name,
-            "content": json.dumps(
-                {
-                    "error": str(exc),
-                    "what_to_do": _HANDOFF_RECOVERY.get(name, _HANDOFF_RECOVERY["ask_user"]),
-                }
-            ),
+            "content": json.dumps({"error": str(exc), "what_to_do": recovery_for(name)}),
         }
     )
     yield {

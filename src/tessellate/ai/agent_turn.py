@@ -221,6 +221,12 @@ _HANDOFF_RECOVERY = {
     ),
 }
 
+
+def recovery_for(name: str) -> str:
+    """The advice for a malformed handover by `name`; a bad question's for any other."""
+    return _HANDOFF_RECOVERY.get(name, _HANDOFF_RECOVERY["ask_user"])
+
+
 # What the model is told when a destructive call is parked for approval.
 AWAITING_CONFIRMATION = {
     "status": "awaiting_user_confirmation",
