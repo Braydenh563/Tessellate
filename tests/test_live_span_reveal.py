@@ -18,9 +18,9 @@ import subprocess
 
 import pytest
 
-from tests._app_js import JS_DIR
+from tests._app_js import documents_text
 
-DOCUMENTS_JS = (JS_DIR / "documents.js").read_text(encoding="utf-8")
+DOCUMENTS_JS = documents_text()
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
 

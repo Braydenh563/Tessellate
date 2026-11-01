@@ -25,8 +25,10 @@ itself is `doctable290.js`, 10 of 10.
 import re
 from pathlib import Path
 
+from tests._app_js import documents_text
+
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+SOURCE = documents_text()
 
 
 def _widget_body() -> str:

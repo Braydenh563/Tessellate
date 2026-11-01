@@ -22,7 +22,7 @@ from pathlib import Path
 import pytest
 
 from tessellate.core import filetypes
-from tests._app_js import with_pieces
+from tests._app_js import with_pieces, documents_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -31,7 +31,7 @@ NODE = shutil.which("node") or "/opt/node22/bin/node"
 
 def _templates() -> list[dict]:
     """DOC_TEMPLATES, evaluated by node, each filled as the button fills it."""
-    source = (JS / "documents.js").read_text(encoding="utf-8")
+    source = documents_text()
     start = source.index("const DOC_TEMPLATES = [")
     end = source.index("\n];\n", start) + 4
     fill_start = source.index("function docTemplateFill(")
@@ -176,7 +176,7 @@ def test_the_boards_library_leaves_snippets_out(client):
 
 def test_the_code_panel_is_lazy_and_its_ways_in_load_it():
     index = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-    docs = (JS / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     assert 'src="/js/documents-codekit.js' not in index, "lazy: never a boot script"
     assert 'lazyScript("/js/documents-codekit.js")' in docs
     assert 'id="doc-code-snippets-open"' in index and 'data-side="snippets"' in index
@@ -432,7 +432,7 @@ def test_the_panel_draws_a_row_with_children_as_a_disclosure():
     row = _fn(code, "docDebugValueRow")
     assert 'createElement("details")' in row and "cm-debug-children" in row
     assert code.count("row.children") >= 2
-    theme = (JS / "documents.js").read_text(encoding="utf-8")
+    theme = documents_text()
     assert '".cm-debug-children"' in theme
 
 
@@ -678,7 +678,7 @@ def test_the_stdlib_table_answers_after_an_imported_modules_dot():
 
 # Row 1088: a word touching a suggestion's marker was never a spelling finding.
 def test_a_suggestion_marker_is_a_word_boundary_for_the_spelling_check():
-    docs = (JS / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     prelude = _fn(docs, "docSpellable")
     cases = {
         "inserted": ["{++faque++}", 3, 8],
@@ -725,7 +725,7 @@ const D = global.docx;
     assert '<pre class="language-py">x = 1\nprint(x)</pre>' in html and "<pre>plain</pre>" in html
     assert "const lang = docWordCodeLang(el);" in word and "ctx.langs.add(lang)" in word
     #: The paste converter fences a language-named block with its language.
-    docs = (JS / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     assert 'out.push("```" + lang + "\\n" + code + "\\n```");' in docs
 
 
@@ -804,7 +804,7 @@ def test_every_written_inline_mark_reads_back_through_inline_md():
         " return [k, Boolean(m && m[0] === text)]; })",
     )
     assert got and all(ok for _, ok in got), got
-    docs = (JS / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     actions = docs[docs.index("const MD_ACTIONS = {") :]
     for name, _ in got:
         assert re.search(rf"\n  {name}: \{{ wrap: MD_INLINE_MARKS\.{name},", actions), name
@@ -822,7 +822,7 @@ def test_the_flowchart_starter_is_one_the_live_view_can_draw(tmp_path):
     editor = (JS / "editor.js").read_text(encoding="utf-8")
     row = re.search(r'add\(\{ id: "flowchart".*?run: \(t\) => editorBlock\(t, "```mermaid\\n(.*?)\\n```"', editor)
     assert row, "the Flowchart row has moved"
-    docs = (JS / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     start = docs.index("const MERMAID_")
     end = docs.index("\n}\n", docs.index("function mermaidFlowParse(")) + 2
     helpers = docs[start:end]
@@ -877,7 +877,7 @@ def test_the_sweep_boot_passes_service_workers_through():
 def test_a_code_file_spell_checks_comments_and_strings_only():
     """Owner 2026-10-11: identifiers and an f-string's prefix were underlined by
     the browser; the app's own check masks to comment and string nodes."""
-    docs = (JS / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     # A code file takes the masked check, windowed like prose since CE3 (the
     # whole-file mask was 517 ms of a 20-key run in a 7,000-line file at 4x).
     assert "if (isCode) docProseFound = docCodeSpellFindings(text, win);" in docs
@@ -892,7 +892,7 @@ def test_a_code_file_spell_checks_comments_and_strings_only():
 # Audit 1028 D8: the ASCII word regex split "café" into "caf" and "naïve" into
 # "na" and "ve"; a piece next to an accented letter is never checked.
 def test_a_piece_of_an_accented_word_is_not_a_spelling_finding():
-    docs = (JS / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     prelude = _fn(docs, "docSpellable")
     cases = {
         "cafe": ["the café was shut", 4, 7],

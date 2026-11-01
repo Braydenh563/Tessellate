@@ -22,7 +22,7 @@ from __future__ import annotations
 import re
 from html.parser import HTMLParser
 from pathlib import Path
-from tests._app_js import app_js_family, app_js_text, frontend_text, with_pieces
+from tests._app_js import app_js_family, app_js_text, frontend_text, with_pieces, documents_text
 
 ROOT = Path(__file__).resolve().parent.parent
 CSS = sorted((ROOT / "frontend" / "css").glob("*.css"))
@@ -138,7 +138,7 @@ def test_a_long_kebab_menu_is_grouped() -> None:
     is a JavaScript array literal of objects each carrying `id:`, which is a
     shape this file can count without running anything.
     """
-    docs = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     table = docs[docs.index("const DOC_TABLE_COMMANDS = ["):]
     table = table[: table.index("\n];")]
     rows = re.findall(r'^\s{2}\{\n\s+id: "([a-z-]+)",\n\s+group: "([a-z]+)",', table, re.M)
@@ -1296,7 +1296,7 @@ def test_a_list_row_answers_in_place_rather_than_opening_a_popover() -> None:
     3. the answers must come from the one builder the menu also uses, because
        two sets of the same four actions is how the panel came to have none.
     """
-    js = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    js = documents_text()
     css = "\n".join(path.read_text(encoding="utf-8") for path in CSS)
 
     for name in ("docProseGroupList", "docProseRowAnswers"):
@@ -1459,7 +1459,7 @@ def test_a_viewport_popup_leaves_the_surfaces_that_can_blur() -> None:
        is cause-agnostic: the next property CSS invents that creates a
        containing block is covered the day it ships.
     """
-    js = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    js = documents_text()
     app = app_js_text()
 
     lifts = {
@@ -1522,7 +1522,7 @@ def test_one_writing_finding_is_drawn_by_one_builder() -> None:
     are built once (`docSuggestAnswers`), so the panel row and the floating menu
     cannot drift apart again by being edited one at a time.
     """
-    js = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    js = documents_text()
 
     for name in ("docProseGroupList", "openDocSuggest"):
         assert "docFindingLine(" in _function_body(js, name), (
@@ -1642,7 +1642,7 @@ def test_the_rendered_blocks_carry_the_line_they_came_from() -> None:
     short of where the probe asked it to scroll, not the map.
     """
     app_js = app_js_text()
-    documents_js = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    documents_js = documents_text()
     assert "dataset.srcLine = String(" in app_js, (
         "renderMarkdown must stamp each block with the source line it came "
         "from, or the split view has nothing to line its panes up by"
@@ -2834,7 +2834,7 @@ def test_code_diagnostics_are_drawn_in_the_apps_ink() -> None:
     #: out of documents.js on 2026-09-24), joined.
     docs = "\n".join(
         (ROOT / "frontend" / "js" / name).read_text(encoding="utf-8")
-        for name in ("documents.js", "documents-code.js")
+        for name in ("documents.js", "documents-code.js", "documents-cm.js")
     )
     theme = docs.split("function docCmTheme(CM) {", 1)[1].split("\nfunction ", 1)[0]
     for selector in (
@@ -3161,7 +3161,7 @@ def test_a_template_preview_is_the_page_the_row_would_make() -> None:
     the preview is drawn by the function that creates the thing, so it cannot
     describe a template differently from what it is, and it is inert and
     hidden from a screen reader, which has each row's own hint."""
-    docs = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     body = _function_body(docs, "showDocTemplatePreview")
     assert "docTemplateFill(template)" in body and "renderMarkdown(" in body
     page = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
@@ -3315,7 +3315,7 @@ def test_a_whole_window_mode_leaves_one_fading_dock_with_a_way_out() -> None:
         assert props <= {"opacity", "pointer-events"}, f"the idle dock changes more than its opacity: {props}"
     assert reduced, "the floating dock's fade has no reduced-motion block"
 
-    docs = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     handler = docs.split('if (event.key !== "Escape" || event.defaultPrevented) return;', 1)
     assert len(handler) == 2, "focus mode's Escape no longer checks that the editor did not spend it"
     body = handler[1].split("});", 1)[0]
@@ -4806,7 +4806,7 @@ def test_a_notes_strip_is_one_icon_row_that_never_folds() -> None:
     assert "<strong>B</strong>" not in strip and "<em>I</em>" not in strip
     for icon in ("ph-text-b", "ph-text-italic", "ph-text-strikethrough", "ph-code-simple"):
         assert icon in strip
-    docs = _function_body((ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8"), "applyDocToolbarCollapsed")
+    docs = _function_body(documents_text(), "applyDocToolbarCollapsed")
     assert 'collapsed && !bar.classList.contains("note-toolbar")' in docs
     css = (ROOT / "frontend" / "css" / "05-sidebars-themes.css").read_text(encoding="utf-8")
     rule = css.index(".note-toolbar .toolbar-word {")
@@ -6294,7 +6294,7 @@ def test_a_text_run_is_the_documented_recipe_and_never_a_style_attribute() -> No
     """INBOX 1403: part of a card's text is a run in the text, set from the
     selection bar's Text style through the colour popover's own element."""
     design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
-    docs = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     board = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
     assert "**A run**" in design and "wbOpenRunMenu" in design, "DESIGN.md lost the text-run recipe"
     style = docs[docs.index("function mdRunNode(") : docs.index("\n}\n", docs.index("function mdRunNode(")) + 3]
@@ -6499,7 +6499,7 @@ def test_a_live_view_mark_reveals_per_span() -> None:
     js = ROOT / "frontend" / "js"
     defined = [p.name for p in js.glob("*.js") if "function docLiveSpanTouched(" in p.read_text(encoding="utf-8")]
     assert defined == ["documents.js"], f"the span rule is defined in {defined}; one recipe, one place"
-    documents = (js / "documents.js").read_text(encoding="utf-8")
+    documents = documents_text()
     assert documents.count("touched(doc.lineAt(from).from, doc.lineAt(to).to)") == 1, (
         "an inline span reveals by its line again; the line-wide rule is only `blockRevealed`"
     )

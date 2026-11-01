@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parents[2]
 SURFACES = {
     "notes list": ["notes-list.js", "note-cards.js", "selection.js", "tag-manager.js", "tidy.js", "batch-space.js"],
     "note editor": ["editor.js", "note-edit-panels.js", "note-panels.js", "note-properties.js", "note-history.js", "note-templates.js", "quick-note.js"],
-    "documents": ["documents.js", "documents-code.js", "documents-prose.js"],
+    "documents": ["documents.js", "documents-code.js", "documents-prose.js", "documents-cm.js"],
     "whiteboard": ["whiteboard.js", "whiteboard-library.js", "whiteboard-templates.js", "whiteboard-commands.js", "whiteboard-format.js", "whiteboard-history.js", "whiteboard-interchange.js"],
     "mind map": ["whiteboard-map.js"],
     "graph": ["graph.js", "graph-canvas.js", "link-types.js"],

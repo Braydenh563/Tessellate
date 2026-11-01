@@ -549,7 +549,7 @@ if (reminderChannel) reminderChannel.onmessage = (event) => authToken() && paint
 
 function pollReminders() {
   const ask = (lock) => lock && Date.now() - prefs.get("reminderPolledAt", 0) > 45e3 && checkDueReminders();
-  return navigator.locks ? navigator.locks.request("memorymap-reminder-poll", { ifAvailable: true }, ask) : ask(1);
+  return navigator.locks ? navigator.locks.request("memorymap-reminders", { ifAvailable: true }, ask) : ask(1);
 }
 
 //: What every tab does with a fresh list, the one that asked and the ones told.
