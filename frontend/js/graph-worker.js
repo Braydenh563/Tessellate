@@ -1249,6 +1249,7 @@ const CLEAR_CELL = 40;
 //: (a note flung far out) the cell doubles instead.
 const CLEAR_GRID_MAX = 1 << 18;
 const clearPts = new Float64Array(10);
+const clearInv = new Float64Array(5);
 const clear = {
   curved: true,
   stamp: 0,
@@ -1268,6 +1269,7 @@ function clearCurve(a, b) {
     clearPts[1] = a.y;
     clearPts[2] = b.x;
     clearPts[3] = b.y;
+    clearChordInv(2);
     return 2;
   }
   const dx = b.x - a.x;
@@ -1281,31 +1283,54 @@ function clearCurve(a, b) {
     clearPts[i * 2] = (1 - u) * (1 - u) * a.x + 2 * (1 - u) * u * cx + u * u * b.x;
     clearPts[i * 2 + 1] = (1 - u) * (1 - u) * a.y + 2 * (1 - u) * u * cy + u * u * b.y;
   }
+  clearChordInv(5);
   return 5;
 }
 
 //: The nearest point of the drawn line to `node`: [squared distance, x, y,
-//: how far along the line (0 at `a`, 1 at `b`)].
+//: how far along the line (0 at `a`, 1 at `b`)]. The nearest chord is found
+//: on distance alone and its foot point worked out once, not for each chord
+//: on the way (the force asks this for about 25 notes a line a tick at
+//: 2,000 notes). It reads each chord's 1 / length squared from `clearInv`,
+//: made once a line (not once a note) by whoever fills `clearPts`:
+//: `clearCurve`, or `clearChordInv` after a copy from the line grid.
 const clearNear = [0, 0, 0, 0];
+function clearChordInv(count) {
+  for (let i = 1; i < count; i++) {
+    const dx = clearPts[i * 2] - clearPts[i * 2 - 2];
+    const dy = clearPts[i * 2 + 1] - clearPts[i * 2 - 1];
+    clearInv[i] = 1 / (dx * dx + dy * dy || 1);
+  }
+}
 function clearNearest(node, count) {
-  clearNear[0] = Infinity;
+  const x = node.x;
+  const y = node.y;
+  let best = Infinity;
+  let at = 1;
+  let along = 0;
   for (let i = 1; i < count; i++) {
     const ax = clearPts[i * 2 - 2];
     const ay = clearPts[i * 2 - 1];
     const dx = clearPts[i * 2] - ax;
     const dy = clearPts[i * 2 + 1] - ay;
-    const l2 = dx * dx + dy * dy || 1;
-    const u = Math.max(0, Math.min(1, ((node.x - ax) * dx + (node.y - ay) * dy) / l2));
-    const qx = ax + u * dx;
-    const qy = ay + u * dy;
-    const d = (node.x - qx) ** 2 + (node.y - qy) ** 2;
-    if (d < clearNear[0]) {
-      clearNear[0] = d;
-      clearNear[1] = qx;
-      clearNear[2] = qy;
-      clearNear[3] = (i - 1 + u) / (count - 1);
+    let u = (x - ax) * dx + (y - ay) * dy;
+    u *= clearInv[i];
+    u = u < 0 ? 0 : u > 1 ? 1 : u;
+    const ex = x - ax - u * dx;
+    const ey = y - ay - u * dy;
+    const d = ex * ex + ey * ey;
+    if (d < best) {
+      best = d;
+      at = i;
+      along = u;
     }
   }
+  const px = clearPts[at * 2 - 2];
+  const py = clearPts[at * 2 - 1];
+  clearNear[0] = best;
+  clearNear[1] = px + along * (clearPts[at * 2] - px);
+  clearNear[2] = py + along * (clearPts[at * 2 + 1] - py);
+  clearNear[3] = (at - 1 + along) / (count - 1);
 }
 
 function clearPush(node, a, b) {
@@ -1436,15 +1461,14 @@ function clearanceForce() {
       const ay = clearPts[c * 2 - 1];
       const dx = clearPts[c * 2] - ax;
       const dy = clearPts[c * 2 + 1] - ay;
-      const l2 = dx * dx + dy * dy || 1;
+      const inv = clearInv[c];
+      const slope = dx ? dy / dx : 0;
       const lo = Math.min(ax, ax + dx);
       const hi = Math.max(ax, ax + dx);
       const x1 = Math.min(Math.floor((hi + reach) / cell), gx0 + cols - 1);
       for (let gx = Math.max(Math.floor((lo - reach) / cell), gx0); gx <= x1; gx++) {
-        const u0 = dx ? (Math.max(lo, gx * cell - reach) - ax) / dx : 0;
-        const u1 = dx ? (Math.min(hi, (gx + 1) * cell + reach) - ax) / dx : 1;
-        const ya = ay + dy * u0;
-        const yb = ay + dy * u1;
+        const ya = dx ? ay + slope * (Math.max(lo, gx * cell - reach) - ax) : ay;
+        const yb = dx ? ay + slope * (Math.min(hi, (gx + 1) * cell + reach) - ax) : ay + dy;
         const y1 = Math.min(Math.floor((Math.max(ya, yb) + reach + 1) / cell), gy0 + rows - 1);
         const column = (gx - gx0) * rows - gy0;
         for (let gy = Math.max(Math.floor((Math.min(ya, yb) - reach - 1) / cell), gy0); gy <= y1; gy++) {
@@ -1456,7 +1480,7 @@ function clearanceForce() {
             // finds it in its own corridor.
             const px = sx[k] - ax;
             const py = sy[k] - ay;
-            let u = (px * dx + py * dy) / l2;
+            let u = (px * dx + py * dy) * inv;
             u = u < 0 ? 0 : u > 1 ? 1 : u;
             const ex = px - u * dx;
             const ey = py - u * dy;
@@ -2409,6 +2433,7 @@ function lineGridGap(note, k) {
   const grid = lineGrid;
   const count = grid.count[k];
   for (let i = 0; i < count * 2; i++) clearPts[i] = grid.pts[k * 10 + i];
+  clearChordInv(count);
   clearNearest(note, count);
   return Math.min(clearNear[0], untangleChordD2(note, nodes[untangle.ea[k]], nodes[untangle.eb[k]]));
 }
@@ -2531,6 +2556,7 @@ function* untangleCleanupSteps() {
       if (!lineGridTouches(node, k)) continue;
       // The nearest point of the drawn line (curve or chord, whichever is nearer), from the points filed with it.
       for (let c = 0; c < lineGrid.count[k] * 2; c++) clearPts[c] = lineGrid.pts[k * 10 + c];
+      clearChordInv(lineGrid.count[k]);
       clearNearest(node, lineGrid.count[k]);
       let qx = clearNear[1];
       let qy = clearNear[2];
