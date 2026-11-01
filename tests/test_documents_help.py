@@ -52,7 +52,7 @@ DOCK_MENU_WORDS = {
     "doc-suggest-reject-all": "Reject all changes",
     "doc-read-aloud": "Read aloud",
 }
-VIEW_WORDS = ("Live", "Source", "Split", "Plain", "Read", "Formatting", "AI edit", "Focus", "Run", "Format", "Assistant", "Snippets")
+VIEW_WORDS = ("Live", "Source", "Split", "Plain", "Read", "Formatting", "AI edit", "Focus", "Run", "Format", "Assistant", "Snippets", "Find and replace", "Replace all", "Replace in every document", "Shift+Enter", "Esc")
 
 #: popover id -> (the section it is in, the words it must carry)
 SECTIONS = {
@@ -65,10 +65,6 @@ SECTIONS = {
         ("Outline", "Comments", "Linked from", "Notes it draws on", "References", "Attach a bookmark", "Where are my documents kept?"),
     ),
     "doc-dock-help": ('class="row space-between doc-dock"', VIEW_WORDS),
-    "doc-find-help": (
-        'id="doc-find-bar"',
-        ("Find", "Replace", "Replace all", "Replace in every document", "Shift+Enter", "Esc"),
-    ),
     "doc-ai-verb-help": (
         'id="doc-ai-panel"',
         ("Edit", "Write", "Remove", "Suggest an edit", "Stop", "Replace with this", "Cancel", "History"),

@@ -1375,7 +1375,7 @@ function runShortcut(id) {
     save: () => saveWhatIsInFront(),
     // Same "which surface depends on the tab" dispatch as `save` above.
     // The Documents tab keeps its own, more capable find-and-replace
-    // (`#doc-find-bar`), it can see inside the editor's own textarea,
+    // (the editor's search panel), it can see inside the editor's own text,
     // which no generic DOM search can. Everywhere else opens the global
     // one below, scoped to whichever tab-page is currently visible.
     find: () => {

@@ -5192,6 +5192,7 @@ Link to another note with [[its first few words]]."></textarea>
                 Go to line (Ctrl+G), Assistant and Snippets; on a phone the bar at
                 the foot holds Tab, Undo and the brackets instead of the writing buttons. Beside prose, Snippets reads Sections.
                 Focus hides everything but the page (F11).</p>
+              <p>Find and replace (Ctrl+F, the magnifier) opens the editor's search: every match is marked, Enter goes to the next and Shift+Enter to the previous, Replace all is one undo step, and Esc closes it. To change a word across every document, use Replace in every document in the ⋯ menu.</p>
               <p>The type button in the foot (Markdown, Python and so on) opens the list of file types, Documents, Data and Code, with a filter field; Markdown is the rich text editor. The ⋯ menu holds Connections, History, Replace in
                 every document, Copy app link, Paste special, Model for this feature, Extract
                 notes and Map the headings; the downloads (.md, .html, with images,
@@ -5464,7 +5465,7 @@ Link to another note with [[its first few words]]."></textarea>
             </div>
           </details>
           <span class="doc-toolbar-sep" aria-hidden="true"></span>
-          <button type="button" id="doc-find-toggle" data-shortcut="find" class="icon-only" title="Find and replace" aria-expanded="false" aria-controls="doc-find-bar" aria-label="Find and replace"><i class="ph ph-magnifying-glass" aria-hidden="true"></i></button>
+          <button type="button" id="doc-find-toggle" data-shortcut="find" class="icon-only" title="Find and replace" aria-expanded="false" aria-label="Find and replace"><i class="ph ph-magnifying-glass" aria-hidden="true"></i></button>
           <!-- **The reading width, as a control rather than a constant.**
                Reported: "idk why the document rendered views are so thin??", 
                and they were 736px in a 1132px pane, because a measure cap
@@ -5532,32 +5533,6 @@ Link to another note with [[its first few words]]."></textarea>
           <button type="button" class="doc-code-key" data-code-key="/" title="Slash" aria-label="Slash">/</button>
           <button type="button" class="doc-code-key" data-code-key="#" title="Hash" aria-label="Hash">#</button>
           <button type="button" class="doc-code-key" data-code-key="_" title="Underscore" aria-label="Underscore">_</button>
-        </div>
-        <!-- A textarea's own content is never in the DOM as searchable text
-             (that's why the browser's native Ctrl+F can't reach into one),
-             so a document past a screen or two of text had no way to find
-             a word again short of scrolling and reading. -->
-        <div class="doc-find-bar hidden" id="doc-find-bar" role="search">
-          <input type="text" id="doc-find-input" placeholder="Find" aria-label="Find">
-          <span id="doc-find-count" class="muted doc-find-count"></span>
-          <button type="button" id="doc-find-prev" class="ghost small icon-only" title="Previous match (Shift+Enter)" aria-label="Previous match (Shift+Enter)"><i class="ph ph-caret-up" aria-hidden="true"></i></button>
-          <button type="button" id="doc-find-next" class="ghost small icon-only" title="Next match (Enter)" aria-label="Next match (Enter)"><i class="ph ph-caret-down" aria-hidden="true"></i></button>
-          <input type="text" id="doc-replace-input" placeholder="Replace with" aria-label="Replace with">
-          <button type="button" id="doc-replace-one" class="ghost small">Replace</button>
-          <button type="button" id="doc-replace-all" class="ghost small">Replace all</button>
-          <button type="button" class="icon-only ghost small graph-help-toggle"
-            data-help-for="doc-find-help" aria-controls="doc-find-help" aria-expanded="false"
-            title="About find and replace" aria-label="About find and replace"><i class="ph ph-question" aria-hidden="true"></i></button>
-          <button type="button" id="doc-find-close" class="ghost small icon-only" title="Close (Esc)" aria-label="Close find and replace"><i class="ph ph-x" aria-hidden="true"></i></button>
-        </div>
-        <div class="help-body hidden" id="doc-find-help" role="dialog" aria-label="About find and replace">
-          <p>Type in Find and the first match is selected, with a count of them all;
-            Enter goes to the next match and Shift+Enter to the previous, or use
-            the arrows. Replace changes the selected match and moves to the next
-            one, and Replace all changes every match in this document as one undo
-            step.</p>
-          <p>To change a word across every document, use Replace in every document
-            in the ⋯ menu. Esc closes the bar.</p>
         </div>
         <!-- Where the caret is, in the document's own structure. Filled by
              `renderDocCrumbs` (documents.js) from the outline's heading list and
@@ -6416,8 +6391,11 @@ Link to another note with [[its first few words]]."></textarea>
                 </div>
               </div>
             </details>
-            <button id="library-docs-new" data-shortcut="newDocument" class="small" type="button"
-              title="Start a new document"><i class="ph ph-plus ph-lead" aria-hidden="true"></i> New document</button>
+            <div class="split-button">
+              <button id="library-docs-new" data-shortcut="newDocument" class="small split-button-main" type="button"
+                title="Start a new document"><i class="ph ph-plus ph-lead" aria-hidden="true"></i> New document</button>
+              <span id="library-docs-new-slot" class="split-button-slot"></span>
+            </div>
           </div>
         </div>
         <p class="muted library-lede">
@@ -15124,10 +15102,9 @@ Link to another note with [[its first few words]]."></textarea>
 
   <!-- **Find, everywhere.** Asked for directly: "add a ctrl+f or equivalent
        text search... make the find feature available on all tabs." The
-       document editor already had its own Ctrl+F (`#doc-find-bar`,
-       documents.js): real find-and-replace over the editor's own
-       `<textarea>`, which no generic DOM search can see the content of at
-       all. Ctrl+F still opens that one when the Documents tab is showing;
+       document editor already had its own Ctrl+F (CodeMirror's search
+       panel, documents.js): real find-and-replace over the editor's own
+       text, which no generic DOM search can see the content of at all. Ctrl+F still opens that one when the Documents tab is showing;
        everywhere else (Notes, Chat, Library, Timeline, Reminders, Graph,
        Dashboard) it opens this instead, which walks whatever tab-page is
        currently visible. One overlay, fixed so it works regardless of

@@ -94,6 +94,98 @@ async function loadDocTypeTable() {
   docFileTypes = (body && body.types) || [];
 }
 
+//: **One picker for a file's type, drawn in three places** (INBOX 1482, the
+//: owner's screenshots of a type button in a document's foot opening a list
+//: grouped Documents, Data, Code, each row with its glyph). `docTypeMenu` is a
+//: `kebabMenu` of the served table (`group` and `icon` come from filetypes.py),
+//: with the group names drawn as headings and a filter field, because
+//: thirty-odd rows are found by typing; the foot's button
+//: (`#doc-type-slot`) changes the open document's type and New's caret
+//: (`#doc-new-type-slot`) starts a blank file of one, and so does the Library's
+//: New document caret (`#library-docs-new-slot`); the picker sits beside the
+//: table here because library.js is the file the Library loads alone.
+//: Never a second list.
+function docTypeItems(onPick) {
+  return docFileTypes.map((type) => ({
+    label: `ph:${type.icon || "file-code"} ${type.label}`,
+    title:
+      type.ext === "md"
+        ? "Markdown (.md): the rich text editor, formatted as you type"
+        : `${type.label} (.${type.ext})`,
+    group: type.group || "Code",
+    run: () => onPick(type.ext),
+  }));
+}
+
+//: The hairlines `kebabMenu` draws between groups become a heading over each
+//: group here (rows and headings are one-to-one with the table, in its order).
+function docTypeHeadings(menu) {
+  menu.querySelectorAll(":scope > .menu-sep").forEach((rule) => rule.remove());
+  let last = null;
+  menu.querySelectorAll(":scope > .menu-item").forEach((row, i) => {
+    const type = docFileTypes[i];
+    row.dataset.docType = type.ext;
+    row.dataset.group = type.group || "Code";
+    if (row.dataset.group === last) return;
+    last = row.dataset.group;
+    const heading = document.createElement("div");
+    heading.className = "menu-heading";
+    heading.setAttribute("role", "presentation");
+    heading.dataset.group = last;
+    heading.textContent = last;
+    row.before(heading);
+  });
+}
+
+//: A heading with every row under it filtered out goes too.
+function docTypeHeadingsFit(menu) {
+  const shown = new Set();
+  for (const row of menu.querySelectorAll(":scope > .menu-item:not([hidden])")) shown.add(row.dataset.group);
+  for (const heading of menu.querySelectorAll(":scope > .menu-heading")) heading.hidden = !shown.has(heading.dataset.group);
+}
+
+function docTypeFilterKey(event, menu) {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    menu.querySelector(":scope > .menu-item:not([hidden])")?.click();
+  } else if (event.key === "Home" || event.key === "End") {
+    //: The menu's own Home and End walk the rows; in the field they move the caret.
+    event.stopPropagation();
+  }
+}
+
+//: Typing narrows the list through `listFilter`, the app's one filter field
+//: (it hides rows and says when none match; Escape clears it first). The field
+//: takes the focus when the menu opens (not on a phone, where that would raise
+//: the keyboard over the list) and a letter typed on a row goes to it; the
+//: arrows leave the field for the rows through the menu's own keys.
+function docTypeFilter(menu, opener) {
+  const filter = listFilter(menu, { label: "Filter types", threshold: 0, rows: ":scope > .menu-item", inside: true });
+  const { input, refresh } = filter;
+  input.addEventListener("input", () => docTypeHeadingsFit(menu));
+  input.addEventListener("keydown", (event) => docTypeFilterKey(event, menu));
+  menu.addEventListener("keydown", (event) => {
+    if (event.target !== input && event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) input.focus();
+  });
+  opener.addEventListener("click", () => {
+    if (input.value) {
+      input.value = "";
+      refresh();
+      docTypeHeadingsFit(menu);
+    }
+    if (window.matchMedia("(hover: hover)").matches) input.focus();
+  });
+}
+
+function docTypeMenu(onPick, ariaLabel) {
+  const wrap = kebabMenu(docTypeItems(onPick), ariaLabel);
+  const menu = wrap.querySelector(":scope > .action-menu");
+  const opener = wrap.querySelector(":scope > button");
+  docTypeHeadings(menu);
+  docTypeFilter(menu, opener);
+  return { wrap, menu, opener };
+}
+
 //: How big a list row says a document is: a code file's lines, a prose
 //: document's words (1031 CE8: "19 words" for a script). Both lists use it.
 function docSizeText(doc, withKind = false) {
@@ -3322,6 +3414,41 @@ function seedLibraryDocsAll() {
     .catch(() => {});
 }
 
+//: New document, and its caret's file types (typepick-1031). switchTab first,
+//: then open, the same fix openDoc() needed ("the documents subtab document
+//: cards don't even do anything"): the document was created and loaded into
+//: the editor correctly, but the Documents page stayed hidden behind the
+//: Library tab, so nothing seemed to happen.
+async function libraryNewDocument(fileType = null) {
+  //: Another type starts the way the Documents list's own caret does: a blank
+  //: page of that type, made by the first keystroke (`startBlankDocument`).
+  if (fileType && fileType !== "md") {
+    await ensureModule("library");
+    switchTab("documents");
+    await startBlankDocument(fileType);
+    return;
+  }
+  const doc = await createDocumentNamed();
+  if (doc) {
+    switchTab("documents");
+    openDocument(doc.id);
+  }
+}
+
+//: The caret beside New document: the Documents list's own type picker, built
+//: once the table is in (renderLibraryDocuments loads it).
+function libraryDocsNewMount() {
+  const slot = $("library-docs-new-slot");
+  if (!slot || slot.firstChild || !docFileTypes.length) return;
+  const { wrap, opener } = docTypeMenu((ext) => libraryNewDocument(ext), "Start a document of another type");
+  opener.id = "library-docs-new-type";
+  opener.classList.remove("icon-only", "ghost");
+  opener.classList.add("split-button-caret");
+  setLabel(opener, "ph:caret-down");
+  opener.title = "New document of another type";
+  slot.replaceChildren(wrap);
+}
+
 async function renderLibraryDocuments() {
   const list = document.getElementById("library-docs-list");
   const empty = document.getElementById("library-docs-empty");
@@ -3336,6 +3463,7 @@ async function renderLibraryDocuments() {
   //: The type table names a code card's kind; the library can open before
   //: the Documents tab has asked for it.
   await loadDocTypeTable();
+  libraryDocsNewMount();
   try {
     // `q` searches title *and* content server-side (routes_documents.py): 
     // client-side filtering alone could only ever match a title, since a
@@ -3385,7 +3513,7 @@ async function renderLibraryDocuments() {
   empty?.classList.toggle("hidden", docs.length > 0 || isFilteredEmpty);
   //: One New document at a time: the empty state's own button is the action
   //: while there is nothing, so the head's copy steps aside (audit 1028 U29).
-  document.getElementById("library-docs-new")?.classList.toggle("hidden", !docs.length && !isFilteredEmpty);
+  document.getElementById("library-docs-new")?.closest(".split-button")?.classList.toggle("hidden", !docs.length && !isFilteredEmpty);
   noMatch?.classList.toggle("hidden", !isFilteredEmpty);
   if (noMatch && isFilteredEmpty) {
     //: Which of the two narrowings came up empty, said by name: "no documents
@@ -10581,18 +10709,7 @@ onDomReady(() => {
     libraryImagesSearchTimer = setTimeout(filterLibraryImagesGallery, 150);
   });
   $("library-docs-refresh")?.addEventListener("click", renderLibraryDocuments);
-  $("library-docs-new")?.addEventListener("click", async () => {
-    const doc = await createDocumentNamed();
-    // switchTab first, then open, the same fix openDoc() above needed
-    // ("the documents subtab document cards don't even do anything"): the
-    // document was created and loaded into the editor correctly, but the
-    // Documents page stayed hidden behind the Library tab, so nothing
-    // seemed to happen.
-    if (doc) {
-      switchTab("documents");
-      openDocument(doc.id);
-    }
-  });
+  $("library-docs-new")?.addEventListener("click", () => libraryNewDocument());
   //: **Import a file as a document** (BACKLOG section 99, "an upload documents
   //: option in the documents tab in the library"). `POST /documents/import`
   //: extracts a Word file, PDF, spreadsheet, Markdown or code file to text

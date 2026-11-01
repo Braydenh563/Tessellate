@@ -3269,6 +3269,8 @@ function docDebugView() {
   add.className = "cm-debug-watch-add";
   add.placeholder = "Add an expression to watch";
   add.setAttribute("aria-label", "Add an expression to watch");
+  //: 815: a JavaScript watch is worked out over the paused values, not stepped (api/run_sandbox.py `evaluate`), so the limit is said where it is typed.
+  add.title = "A watch reads the values at this stop. In JavaScript it does not call your own functions or change the program.";
   add.spellcheck = false;
   add.addEventListener("keydown", (event) => {
     if (event.key !== "Enter" || !add.value.trim()) return;
@@ -3637,7 +3639,9 @@ function docRunPanel(view) {
   consoleInput.className = "cm-console-input";
   consoleInput.spellcheck = false;
   consoleInput.autocomplete = "off";
-  consoleInput.placeholder = python ? "A line of Python, in what the last run left" : "A line of JavaScript, in what the last run left";
+  //: 817: on a page, style or data file the console is a worker of its own, not the page's window, so it does not say it holds what the run left.
+  const aloneConsole = !python && !["js", "ts"].includes(docFileType().ext);
+  consoleInput.placeholder = python ? "A line of Python, in what the last run left" : aloneConsole ? "A line of JavaScript, run on its own (the page is out of reach)" : "A line of JavaScript, in what the last run left";
   consoleInput.setAttribute("aria-label", python ? "Python console: a line to evaluate" : "JavaScript console: a line to evaluate");
   consoleInput.addEventListener("keydown", (event) => docConsoleKey(event));
   consoleForm.append(prompt, consoleInput);
@@ -4025,12 +4029,17 @@ function docRunJobArm(id) {
   if (!docRun) return;
   const run = docRun;
   docRunJobEnd(run);
+  //: D38: the end of a job bumps `jobSeq`, so an answer that lands after the
+  //: panel closed (the run still going) finds its own generation gone and
+  //: starts no beat: the run's state alone could not tell.
+  const seq = run.jobSeq;
+  const live = () => docRun === run && run.id === id && run.running && run.jobSeq === seq;
   run.jobWait = setTimeout(async () => {
-    if (docRun !== run || run.id !== id || !run.running) return;
+    if (!live()) return;
     const label = `Running ${currentDoc?.title || "a code document"}`.slice(0, 120);
     const body = await docRunJobCall("/documents/run-jobs", { method: "POST", body: JSON.stringify({ label }) });
     if (!body?.id) return;
-    if (docRun !== run || run.id !== id || !run.running) {
+    if (!live()) {
       docRunJobCall(`/documents/run-jobs/${encodeURIComponent(body.id)}`, { method: "DELETE" });
       return;
     }
@@ -4039,13 +4048,14 @@ function docRunJobArm(id) {
       const job = run.job;
       if (!job) return;
       const beat = await docRunJobCall(`/documents/run-jobs/${encodeURIComponent(job)}/beat`, { method: "POST" });
-      if (beat?.stopped && docRun === run && run.id === id && run.job === job) docRunStop("Stopped from Activity.");
+      if (beat?.stopped && live() && run.job === job) docRunStop("Stopped from Activity.");
     }, DOC_RUN_JOB_BEAT_MS);
   }, DOC_RUN_JOB_AFTER_MS);
 }
 
 function docRunJobEnd(run) {
   if (!run) return;
+  run.jobSeq = (run.jobSeq || 0) + 1;
   clearTimeout(run.jobWait);
   clearInterval(run.jobBeat);
   const job = run.job;

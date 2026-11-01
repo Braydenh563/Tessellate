@@ -100,95 +100,6 @@ function docFileType() {
   return docFileTypes.find((t) => t.ext === ext) || DEFAULT_FILE_TYPE;
 }
 
-//: **One picker for a file's type, drawn in two places** (INBOX 1482, the
-//: owner's screenshots of a type button in a document's foot opening a list
-//: grouped Documents, Data, Code, each row with its glyph). `docTypeMenu` is a
-//: `kebabMenu` of the served table (`group` and `icon` come from filetypes.py),
-//: with the group names drawn as headings and a filter field, because
-//: thirty-odd rows are found by typing; the foot's button
-//: (`#doc-type-slot`) changes the open document's type and New's caret
-//: (`#doc-new-type-slot`) starts a blank file of one. Never a second list.
-function docTypeItems(onPick) {
-  return docFileTypes.map((type) => ({
-    label: `ph:${type.icon || "file-code"} ${type.label}`,
-    title:
-      type.ext === "md"
-        ? "Markdown (.md): the rich text editor, formatted as you type"
-        : `${type.label} (.${type.ext})`,
-    group: type.group || "Code",
-    run: () => onPick(type.ext),
-  }));
-}
-
-//: The hairlines `kebabMenu` draws between groups become a heading over each
-//: group here (rows and headings are one-to-one with the table, in its order).
-function docTypeHeadings(menu) {
-  menu.querySelectorAll(":scope > .menu-sep").forEach((rule) => rule.remove());
-  let last = null;
-  menu.querySelectorAll(":scope > .menu-item").forEach((row, i) => {
-    const type = docFileTypes[i];
-    row.dataset.docType = type.ext;
-    row.dataset.group = type.group || "Code";
-    if (row.dataset.group === last) return;
-    last = row.dataset.group;
-    const heading = document.createElement("div");
-    heading.className = "menu-heading";
-    heading.setAttribute("role", "presentation");
-    heading.dataset.group = last;
-    heading.textContent = last;
-    row.before(heading);
-  });
-}
-
-//: A heading with every row under it filtered out goes too.
-function docTypeHeadingsFit(menu) {
-  const shown = new Set();
-  for (const row of menu.querySelectorAll(":scope > .menu-item:not([hidden])")) shown.add(row.dataset.group);
-  for (const heading of menu.querySelectorAll(":scope > .menu-heading")) heading.hidden = !shown.has(heading.dataset.group);
-}
-
-function docTypeFilterKey(event, menu) {
-  if (event.key === "Enter") {
-    event.preventDefault();
-    menu.querySelector(":scope > .menu-item:not([hidden])")?.click();
-  } else if (event.key === "Home" || event.key === "End") {
-    //: The menu's own Home and End walk the rows; in the field they move the caret.
-    event.stopPropagation();
-  }
-}
-
-//: Typing narrows the list through `listFilter`, the app's one filter field
-//: (it hides rows and says when none match; Escape clears it first). The field
-//: takes the focus when the menu opens (not on a phone, where that would raise
-//: the keyboard over the list) and a letter typed on a row goes to it; the
-//: arrows leave the field for the rows through the menu's own keys.
-function docTypeFilter(menu, opener) {
-  const filter = listFilter(menu, { label: "Filter types", threshold: 0, rows: ":scope > .menu-item", inside: true });
-  const { input, refresh } = filter;
-  input.addEventListener("input", () => docTypeHeadingsFit(menu));
-  input.addEventListener("keydown", (event) => docTypeFilterKey(event, menu));
-  menu.addEventListener("keydown", (event) => {
-    if (event.target !== input && event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) input.focus();
-  });
-  opener.addEventListener("click", () => {
-    if (input.value) {
-      input.value = "";
-      refresh();
-      docTypeHeadingsFit(menu);
-    }
-    if (window.matchMedia("(hover: hover)").matches) input.focus();
-  });
-}
-
-function docTypeMenu(onPick, ariaLabel) {
-  const wrap = kebabMenu(docTypeItems(onPick), ariaLabel);
-  const menu = wrap.querySelector(":scope > .action-menu");
-  const opener = wrap.querySelector(":scope > button");
-  docTypeHeadings(menu);
-  docTypeFilter(menu, opener);
-  return { wrap, menu, opener };
-}
-
 //: What the foot's button does: on an open document the type changes and is
 //: saved at once (a mode that has visibly switched but not persisted is one
 //: reload away from silently reverting); on a blank page it is the type the
@@ -266,6 +177,7 @@ function docTypeSync(type) {
 function syncDocFileType({ prose = true } = {}) {
   const type = docFileType();
   docTypeSync(type);
+  docSetPlaceholder(docPlaceholderFor(type));
 
   // A code file has no rendered form. Offering Live and Split for one is
   // offering to show a wall of escaped source, so those two options are
@@ -628,9 +540,24 @@ function docBoxEl() {
 let docPlaceholderText = "";
 
 function docSetPlaceholder(text) {
+  if (text === docPlaceholderText) return;
   docPlaceholderText = text;
   const el = docBoxEl();
   if (el) el.placeholder = text;
+  //: CodeMirror builds its placeholder once; the compartment is how a later
+  //: text (a code file's, a New caret's type) reaches the view.
+  const CM = window.CM6;
+  if (docCmView && CM && docCmParts.placeholder) {
+    docCmView.dispatch({ effects: docCmParts.placeholder.reconfigure(CM.view.placeholder(text)) });
+  }
+}
+
+//: What an empty page says, by the file type it holds (typepick-1031: an empty
+//: .py file said "Markdown works here"). A blank page asks `docBlankPlaceholder`.
+function docPlaceholderFor(type) {
+  if (!currentDoc) return docBlankPlaceholder();
+  if (type.previewable) return "# Start writing\n\nMarkdown works here, headings, **bold**, lists, tables, links.";
+  return `An empty .${type.ext} file. Start typing, or paste ${type.label} here.`;
 }
 
 //: Surfaces are cached per element so `onChange` cannot stack a second
@@ -1214,9 +1141,6 @@ async function openDocument(id) {
   //: paint. Failing is not an error path: `ensureDocEditor` resolves to null
   //: and everything below carries on against the textarea.
   await ensureDocEditor();
-  docSetPlaceholder(
-    "# Start writing\n\nMarkdown works here, headings, **bold**, lists, tables, links."
-  );
   const doc = await apiJson(`/documents/${id}`).catch(() => null);
   if (!doc || seq !== docOpenSeq) return;
   // ROADMAP.md item 13: "opening/closing a document" was the one remaining
@@ -2662,91 +2586,11 @@ function promptDocWordGoal() {
   $("doc-word-goal-input").focus();
 }
 
-// --- find and replace (16b: "a bunch of missing features", this is the
-// concrete first one; browser Ctrl+F never worked here because a
-// textarea's own text isn't part of the searchable page DOM at all, only
-// its *value* is) ---------------------------------------------------------
-let docFindIndex = -1; // which match the Prev/Next cursor is currently on
-
-function docFindMatches() {
-  const term = $("doc-find-input").value;
-  if (!term) return [];
-  const text = docText();
-  const needle = term.toLowerCase();
-  const haystack = text.toLowerCase();
-  const matches = [];
-  let from = 0;
-  while (true) {
-    const at = haystack.indexOf(needle, from);
-    if (at === -1) break;
-    matches.push(at);
-    from = at + needle.length;
-  }
-  return matches;
-}
-
-function docFindSelect(index, matches) {
-  const term = $("doc-find-input").value;
-  const box = docSurface();
-  if (!matches.length || index < 0 || index >= matches.length) {
-    $("doc-find-count").textContent = term ? "No matches" : "";
-    return;
-  }
-  docFindIndex = index;
-  const start = matches[index];
-  box.focus();
-  box.setSelectionRange(start, start + term.length);
-  $("doc-find-count").textContent = `${index + 1} of ${matches.length}`;
-}
-
-function docFindStep(delta) {
-  const matches = docFindMatches();
-  if (!matches.length) {
-    docFindIndex = -1;
-    $("doc-find-count").textContent = $("doc-find-input").value ? "No matches" : "";
-    return;
-  }
-  const next = ((docFindIndex + delta) % matches.length + matches.length) % matches.length;
-  docFindSelect(next, matches);
-}
-
-function docReplaceOne() {
-  const box = docSurface();
-  const term = $("doc-find-input").value;
-  if (!term) return;
-  const selected = box.value.slice(box.selectionStart, box.selectionEnd);
-  // Only replace what's actually selected and actually a match, Replace
-  // clicked with nothing found selected first should find, not guess.
-  if (selected.toLowerCase() !== term.toLowerCase()) {
-    docFindStep(1);
-    return;
-  }
-  const replacement = $("doc-replace-input").value;
-  const start = box.selectionStart;
-  box.setRangeText(replacement, start, box.selectionEnd, "end");
-  box.dispatchEvent(new Event("input", { bubbles: true }));
-  docFindIndex = -1;
-  docFindStep(1);
-}
-
-function docReplaceAll() {
-  const term = $("doc-find-input").value;
-  if (!term) return;
-  const replacement = $("doc-replace-input").value;
-  const box = docSurface();
-  const pattern = new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
-  const before = box.value;
-  const count = (before.match(pattern) || []).length;
-  if (!count) {
-    $("doc-find-count").textContent = "No matches";
-    return;
-  }
-  box.value = before.replace(pattern, replacement);
-  box.dispatchEvent(new Event("input", { bubbles: true }));
-  $("doc-find-count").textContent = `Replaced ${count}`;
-  docFindIndex = -1;
-}
-
+// --- find and replace: the editor's own search panel (DC10) ----------------
+// The textarea fallback's hand-built find bar is gone (it only ever showed
+// when CodeMirror failed to load, and a failed load has bigger problems):
+// Ctrl+F, the toolbar button and Escape reach CodeMirror's panel, which marks
+// every match, takes regular expressions and replaces as one undo step.
 function docOpenReplace() {
   toggleDocFindBar(true);
   docCmView?.dom.querySelector(".cm-search input[name=replace]")?.focus();
@@ -2754,36 +2598,23 @@ function docOpenReplace() {
 }
 
 function toggleDocFindBar(open) {
-  //: **CodeMirror's own search panel, where the engine is mounted**
-  //: (DOCUMENTS_PLAN Phase 2 decision 7). It is not a nicer version of the
-  //: bar below, it is a different class of thing: it searches the *document*
-  //: through the editor's own index, highlights every match at once, knows
-  //: about regular expressions and whole-word matching, and replaces through
-  //: transactions so one Ctrl+Z undoes a Replace all. The bar below stays for
-  //: the fallback textarea, which has none of that and never will.
-  //:
-  //: One entry point, so Ctrl+F, the toolbar button and Escape all reach
-  //: whichever of the two is real without any of them knowing which.
+  //: **CodeMirror's own search panel** (DOCUMENTS_PLAN Phase 2 decision 7): it
+  //: searches the *document* through the editor's own index, highlights every
+  //: match at once, knows about regular expressions and whole-word matching,
+  //: and replaces through transactions so one Ctrl+Z undoes a Replace all.
+  //: One entry point, so Ctrl+F, the toolbar button and Escape all reach it.
+  //: With no engine (the textarea fallback after a failed load) the app's
+  //: find over the page is the answer: it reads the text the page holds.
   const CM = window.CM6;
-  if (docCmView && CM) {
-    const open_ = open ?? !docCmView.dom.querySelector(".cm-search");
-    if (open_) CM.search.openSearchPanel(docCmView);
-    else CM.search.closeSearchPanel(docCmView);
-    $("doc-find-toggle")?.setAttribute("aria-expanded", String(open_));
-    if (!open_) docCmView.focus();
+  if (!docCmView || !CM) {
+    if (open !== false) openGlobalFind();
     return;
   }
-  const bar = $("doc-find-bar");
-  const show = open ?? bar.classList.contains("hidden");
-  bar.classList.toggle("hidden", !show);
-  $("doc-find-toggle").setAttribute("aria-expanded", String(show));
-  if (show) {
-    $("doc-find-input").focus();
-    $("doc-find-input").select();
-  } else {
-    docFindIndex = -1;
-    docSurface().focus();
-  }
+  const open_ = open ?? !docCmView.dom.querySelector(".cm-search");
+  if (open_) CM.search.openSearchPanel(docCmView);
+  else CM.search.closeSearchPanel(docCmView);
+  $("doc-find-toggle")?.setAttribute("aria-expanded", String(open_));
+  if (!open_) docCmView.focus();
 }
 
 // A table of contents built from the document's own headings. Past a couple
@@ -14568,7 +14399,7 @@ document.addEventListener("keydown", (event) => {
   const menuOpen = [...document.querySelectorAll('[role="menu"], .cm-tooltip')]
     .some((el) => el.getClientRects().length > 0);
   if (menuOpen) return;
-  if (event.target instanceof Element && event.target.closest("#doc-prose-panel, #doc-find-bar, .cm-search, .cm-goto-line")) return;
+  if (event.target instanceof Element && event.target.closest("#doc-prose-panel, .cm-search, .cm-goto-line")) return;
   //: The sidebar panel is the innermost layer, so it takes the first Escape
   //: and the mode leaves on the next. The focus goes to its toggle only when
   //: it was inside the panel, which is about to stop being drawn.
@@ -14673,10 +14504,6 @@ docBoxEl().addEventListener("keydown", (event) => {
   // surfaces is mounted is not something a writer knows or should have to.
   if (event.key === "Escape") docTabEscapes = true;
   else if (event.key !== "Tab" && event.key !== "Shift") docTabEscapes = false;
-  if (event.key === "Escape" && !$("doc-find-bar").classList.contains("hidden")) {
-    toggleDocFindBar(false);
-    return;
-  }
   // Tab indents rather than leaving the field, in prose as well as in code.
   // An Escape immediately before it hands the key back to the browser, which
   // is the way out; `docTabEscapes` carries the whole reasoning.
@@ -14725,23 +14552,6 @@ docBoxEl().addEventListener("keydown", (event) => {
   else if (key === "f") { event.preventDefault(); toggleDocFindBar(true); }
 });
 $("doc-find-toggle").addEventListener("click", () => toggleDocFindBar());
-$("doc-find-close").addEventListener("click", () => toggleDocFindBar(false));
-$("doc-find-input").addEventListener("input", () => {
-  docFindIndex = -1;
-  docFindStep(1);
-});
-$("doc-find-input").addEventListener("keydown", (event) => {
-  if (event.key === "Enter") {
-    event.preventDefault();
-    docFindStep(event.shiftKey ? -1 : 1);
-  } else if (event.key === "Escape") {
-    toggleDocFindBar(false);
-  }
-});
-$("doc-find-next").addEventListener("click", () => docFindStep(1));
-$("doc-find-prev").addEventListener("click", () => docFindStep(-1));
-$("doc-replace-one").addEventListener("click", docReplaceOne);
-$("doc-replace-all").addEventListener("click", docReplaceAll);
 $("doc-replace-everywhere").addEventListener("click", () => openDocReplace());
 
 //: Leaving with unsaved edits would lose them; autosave hasn't fired yet.
@@ -20314,6 +20124,8 @@ const docCmParts = {
   //: A code file's diagnostics and completions (`docCodeTools`); empty for
   //: prose and in Plain.
   code: null,
+  //: The empty page's words, which follow the file type (`docPlaceholderFor`).
+  placeholder: null,
 };
 
 //: How the prose findings tell the view to repaint. A `StateEffect` rather
@@ -20639,14 +20451,10 @@ function docCmKeymap(CM) {
     {
       key: "Escape",
       run: () => {
-        //: Arms the Tab escape hatch (see `docTabEscapes`) whatever else this
-        //: Escape goes on to do: it is set before the find bar is consulted
-        //: so that closing the bar and leaving the editor are one gesture
-        //: away from each other rather than two.
+        //: Arms the Tab escape hatch (see `docTabEscapes`); the search panel's
+        //: own keymap closes itself on Escape, so this one never consumes it.
         docTabEscapes = true;
-        if ($("doc-find-bar")?.classList.contains("hidden") !== false) return false;
-        toggleDocFindBar(false);
-        return true;
+        return false;
       },
     },
     //: Tab indents, in prose as well as code, with Escape-then-Tab as the way
@@ -20777,6 +20585,7 @@ function docCmExtensions(CM) {
   docCmParts.spell = new CM.state.Compartment();
   docCmParts.reading = new CM.state.Compartment();
   docCmParts.code = new CM.state.Compartment();
+  docCmParts.placeholder = new CM.state.Compartment();
   if (!docFindingsEffect) docFindingsEffect = CM.state.StateEffect.define();
   return [
     //: First, so its gutter is the leftmost: the error mark sits outside the
@@ -20828,7 +20637,7 @@ function docCmExtensions(CM) {
     docCmParts.language.of(docCmViewLanguage(CM)),
     docCmParts.theme.of(docCmTheme(CM)),
     docCmHighlight(CM),
-    CM.view.placeholder(docPlaceholderText || ""),
+    docCmParts.placeholder.of(CM.view.placeholder(docPlaceholderText || "")),
     //: This app's chords first, then CodeMirror's own defaults, so a binding
     //: the editor already had wins over the library's.
     docRedoChord(CM),

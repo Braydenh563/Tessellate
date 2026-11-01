@@ -3611,7 +3611,7 @@ def test_a_dialog_head_title_out_ranks_the_card_heading_margin():
 # or a search's own clear. They keep their own 28px ghost until their panels
 # are folded into the recipe. May only shrink.
 IN_PAGE_CLOSE_DRIFT = {
-    "ask-history-close", "notes-rail-close", "web-panel-close", "doc-find-close",
+    "ask-history-close", "notes-rail-close", "web-panel-close",
     "wb-search-close", "wb-empty-hint-close", "global-find-close",
 }
 

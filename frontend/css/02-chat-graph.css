@@ -3104,8 +3104,7 @@ html {
      `max-width` capped that demand at 14rem but left it rigid, so the input
      could never give a pixel back when the row ran short. A basis of the same
      14rem with `shrink: 1` asks for exactly as much and yields under
-     pressure: the pattern `.doc-find-bar input[type="text"]` already uses
-     for the editor's own find field. No `grow`: this is a search box in a
+     pressure: the same pattern the editor's find field once used. No `grow`: this is a search box in a
      centred toolbar, not the row's filler.
      This does not stop the row wrapping, and it is not meant to.
      `.lightbox-actions` is `flex-wrap: wrap` on purpose, and flexbox wraps

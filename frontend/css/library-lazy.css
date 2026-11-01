@@ -645,7 +645,6 @@ textarea.has-gutter {
      waiting to be found on a printed page. */
   body.printing-doc #doc-statusbar,
   body.printing-doc #doc-crumbs,
-  body.printing-doc #doc-find-bar,
   body.printing-doc #doc-prose-panel,
   body.printing-doc .doc-phone-bar,
   body.printing-doc #doc-title {

@@ -372,7 +372,7 @@ const REVEAL_TARGETS = {
       if (typeof docView !== "undefined" && docView === "rendered") setDocView(lastEditView);
       toggleDocFindBar(true);
     },
-    sel: "#doc-find-bar, #doc-panes .cm-search",
+    sel: "#doc-panes .cm-search",
     built: "toggleDocFindBar",
     fallback: "doc-new",
   },
