@@ -2052,7 +2052,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `appearanceBuild` | frontend/js/appearance-panel.js:131 |
 | `appearanceHeadButton` | frontend/js/appearance-panel.js:120 |
-| `appearanceHost` | frontend/js/appearance-panel.js:227 |
+| `appearanceHost` | frontend/js/appearance-panel.js:229 |
 | `appearanceIcon` | frontend/js/appearance-panel.js:113 |
 | `appearanceJump` | frontend/js/appearance-panel.js:70 |
 | `appearanceMark` | frontend/js/appearance-panel.js:62 |
@@ -2063,9 +2063,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `appearanceSpy` | frontend/js/appearance-panel.js:82 |
 | `appearanceTarget` | frontend/js/appearance-panel.js:52 |
 | `appearanceTop` | frontend/js/appearance-panel.js:57 |
-| `appearanceUnhost` | frontend/js/appearance-panel.js:246 |
-| `closeAppearancePanel` | frontend/js/appearance-panel.js:280 |
-| `openAppearancePanel` | frontend/js/appearance-panel.js:253 |
+| `appearanceUnhost` | frontend/js/appearance-panel.js:248 |
+| `closeAppearancePanel` | frontend/js/appearance-panel.js:282 |
+| `openAppearancePanel` | frontend/js/appearance-panel.js:255 |
 
 ### frontend/js/ask-chart.js (15)
 
@@ -5835,12 +5835,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `panelAboveBy` | frontend/js/panel-movable.js:102 |
 | `panelAdopt` | frontend/js/panel-movable.js:540 |
 | `panelApply` | frontend/js/panel-movable.js:349 |
-| `panelChip` | frontend/js/panel-movable.js:897 |
+| `panelChip` | frontend/js/panel-movable.js:900 |
 | `panelClamp` | frontend/js/panel-movable.js:385 |
 | `panelClampMove` | frontend/js/panel-movable.js:53 |
 | `panelClampSize` | frontend/js/panel-movable.js:59 |
 | `panelClipBox` | frontend/js/panel-movable.js:155 |
-| `panelCloseBtn` | frontend/js/panel-movable.js:855 |
+| `panelCloseBtn` | frontend/js/panel-movable.js:858 |
 | `panelContains` | frontend/js/panel-movable.js:152 |
 | `panelDock` | frontend/js/panel-movable.js:467 |
 | `panelFit` | frontend/js/panel-movable.js:452 |
@@ -5857,10 +5857,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `panelLayout` | frontend/js/panel-movable.js:308 |
 | `panelMakesContext` | frontend/js/panel-movable.js:115 |
 | `panelMinHost` | frontend/js/panel-movable.js:827 |
-| `panelMinKey` | frontend/js/panel-movable.js:958 |
-| `panelMinPlace` | frontend/js/panel-movable.js:884 |
-| `panelMinTray` | frontend/js/panel-movable.js:870 |
-| `panelMinimise` | frontend/js/panel-movable.js:926 |
+| `panelMinKey` | frontend/js/panel-movable.js:961 |
+| `panelMinPlace` | frontend/js/panel-movable.js:887 |
+| `panelMinTray` | frontend/js/panel-movable.js:873 |
+| `panelMinimise` | frontend/js/panel-movable.js:929 |
 | `panelMovableOn` | frontend/js/panel-movable.js:313 |
 | `panelOf` | frontend/js/panel-movable.js:323 |
 | `panelPinned` | frontend/js/panel-movable.js:219 |
@@ -5868,11 +5868,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `panelPushOn` | frontend/js/panel-movable.js:216 |
 | `panelPushSide` | frontend/js/panel-movable.js:228 |
 | `panelPushSync` | frontend/js/panel-movable.js:231 |
-| `panelPushToggle` | frontend/js/panel-movable.js:968 |
-| `panelReopen` | frontend/js/panel-movable.js:859 |
+| `panelPushToggle` | frontend/js/panel-movable.js:971 |
+| `panelReopen` | frontend/js/panel-movable.js:862 |
 | `panelReset` | frontend/js/panel-movable.js:507 |
 | `panelResetSize` | frontend/js/panel-movable.js:520 |
-| `panelRestore` | frontend/js/panel-movable.js:942 |
+| `panelRestore` | frontend/js/panel-movable.js:945 |
 | `panelRestoreOn` | frontend/js/panel-movable.js:256 |
 | `panelSafe` | frontend/js/panel-movable.js:181 |
 | `panelSave` | frontend/js/panel-movable.js:532 |
@@ -5893,7 +5893,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `panelTopLayer` | frontend/js/panel-movable.js:105 |
 | `panelUnsnap` | frontend/js/panel-movable.js:472 |
 | `panelWatchOpen` | frontend/js/panel-movable.js:486 |
-| `panelWindowResized` | frontend/js/panel-movable.js:980 |
+| `panelWindowResized` | frontend/js/panel-movable.js:983 |
 | `panelZoneFor` | frontend/js/panel-movable.js:252 |
 | `panelZoneRect` | frontend/js/panel-movable.js:80 |
 

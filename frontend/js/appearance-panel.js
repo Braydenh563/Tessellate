@@ -165,7 +165,9 @@ function appearanceBuild() {
     }),
     appearanceHeadButton("Close (Esc)", "x", () => closeAppearancePanel())
   );
-  tools.append(help, peek, actions);
+  //: Peek, the panel's one worded action, leads; then the row's tools
+  //: (`panelHeadSettle` puts the reset before the '?'), then the window's.
+  tools.append(peek, help, actions);
   head.append(title, tools);
 
   const strip = document.createElement("nav");

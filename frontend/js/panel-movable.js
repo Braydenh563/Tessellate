@@ -845,7 +845,10 @@ function panelHeadSettle(panel, st) {
   const tail = closeBtn.parentElement;
   if (st.min && st.min.nextElementSibling !== closeBtn) tail.insertBefore(st.min, closeBtn);
   let host = [...head.querySelectorAll("[data-help-for], .menu-wrap, .atlas-menu")].find((el) => !el.closest(".panel-reset, .panel-push"));
-  while (host && host.parentElement !== head && host.parentElement !== tail) host = host.parentElement;
+  //: Stops at the row that also holds Close: climbing past it to the head put
+  //: the reset beside the title, floating mid-head (Appearance, the owner
+  //: 2026-11-01: "this header's arrangement is wierd").
+  while (host && host.parentElement !== head && host.parentElement !== tail && !host.parentElement.contains(tail)) host = host.parentElement;
   const ref = host || st.min || closeBtn;
   const box = ref.parentElement;
   if (ref.previousElementSibling === st.reset && st.reset.previousElementSibling === st.push) return;
