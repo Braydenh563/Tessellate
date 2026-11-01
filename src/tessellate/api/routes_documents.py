@@ -30,17 +30,16 @@ from tessellate.core import activity, cjk, deps, docexport, docmeta, docview, fi
 from tessellate.core.config import user_now
 from tessellate.core.database import (
     LIKE_ESCAPE,
-    Bookmark,
     Document,
     Entry,
     DocumentAiEdit,
-    DocumentBookmark,
     DocumentRevision,
     utcnow,
     like_escape,
 )
 from tessellate.core.deps import get_session
 from tessellate.entry import link_offers, repo
+from tessellate.repo import bookmarks as bookmark_repo
 from tessellate.entry.mentions import (
     BACKLINK_ROWS_MAX,
     BACKLINK_SOURCES_MAX,
@@ -257,13 +256,7 @@ def document_bookmarks(document_id: int, session: Session = Depends(get_session)
     note's own `/entries/{id}/bookmarks` (asked about directly: "should
     bookmarks show in documents... as well?")."""
     _existing(session, document_id)
-    rows = (
-        session.query(Bookmark)
-        .join(DocumentBookmark, DocumentBookmark.bookmark_id == Bookmark.id)
-        .filter(DocumentBookmark.document_id == document_id)
-        .order_by(DocumentBookmark.created_at)
-        .all()
-    )
+    rows = bookmark_repo.attached_to_document(session, document_id)
     return [
         {"id": b.id, "url": b.url, "title": b.title, "group_name": b.group_name}
         for b in rows
@@ -275,14 +268,7 @@ def attach_bookmark(
     document_id: int, body: AttachBookmarkBody, session: Session = Depends(get_session)
 ) -> dict:
     _existing(session, document_id)
-    deps.get_or_404(session, Bookmark, body.bookmark_id, "That bookmark could not be found.")
-    already = (
-        session.query(DocumentBookmark)
-        .filter_by(document_id=document_id, bookmark_id=body.bookmark_id)
-        .first()
-    )
-    if not already:
-        session.add(DocumentBookmark(document_id=document_id, bookmark_id=body.bookmark_id))
+    if bookmark_repo.attach_to_document(session, document_id, body.bookmark_id):
         session.commit()
     return {"attached": True}
 
@@ -292,9 +278,7 @@ def detach_bookmark(
     document_id: int, bookmark_id: int, session: Session = Depends(get_session)
 ) -> dict:
     _existing(session, document_id)
-    session.query(DocumentBookmark).filter_by(
-        document_id=document_id, bookmark_id=bookmark_id
-    ).delete()
+    bookmark_repo.detach_from_document(session, document_id, bookmark_id)
     session.commit()
     return {"detached": True}
 
@@ -1037,12 +1021,7 @@ def document_connections(document_id: int, session: Session = Depends(get_sessio
     document = _existing(session, document_id)
     bookmarks = [
         {"id": row.id, "title": row.title, "url": row.url}
-        for row in session.scalars(
-            select(Bookmark)
-            .join(DocumentBookmark, DocumentBookmark.bookmark_id == Bookmark.id)
-            .where(DocumentBookmark.document_id == document.id)
-            .order_by(Bookmark.title)
-        )
+        for row in bookmark_repo.attached_to_document(session, document.id, by_title=True)
     ]
     notes = _linked_notes(session, document.id)
     files = _connected_files(session, document.content)
