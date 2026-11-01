@@ -43,9 +43,8 @@ function takeSharedIntake() {
   box.value = box.value ? `${box.value}\n\n${content}` : content;
   box.dispatchEvent(new Event("input", { bubbles: true }));
   box.focus();
-  const mounted =
-    typeof mountNoteSurface === "function" ? mountNoteSurface(box) : Promise.resolve(null);
-  mounted.then((surface) => surface?.focus()).catch(() => {});
+  //: app.js's door fetches the library bundle first; a bare mountNoteSurface is documents.js's, which may not be in yet.
+  mountNoteSurfaceNow(box).then((surface) => surface?.focus()).catch(() => {});
   toast("Shared to your notebook. Save it when it reads right.");
 }
 

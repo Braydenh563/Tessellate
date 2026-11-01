@@ -2,7 +2,7 @@
 
 Generated 2026-11-01 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7546, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8417, test files 1810, tests 15537, plan headings 990, app scripts 28, boot scripts 37, script files 222.
+Counts: frontend functions 7546, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8417, test files 1810, tests 15538, plan headings 990, app scripts 28, boot scripts 37, script files 222.
 
 ## Frontend functions (7546)
 
@@ -104,18 +104,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `afterCharacters` | frontend/js/lazy-entries.js:146 |
-| `charactersLost` | frontend/js/lazy-entries.js:155 |
-| `emblemHead` | frontend/js/lazy-entries.js:163 |
-| `installCharacterStandIns` | frontend/js/lazy-entries.js:192 |
-| `lazyLoadFailed` | frontend/js/lazy-entries.js:225 |
-| `loadCharactersIdle` | frontend/js/lazy-entries.js:186 |
-| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:213 |
-| `onDomReady` | frontend/js/lazy-entries.js:236 |
-| `plainHead` | frontend/js/lazy-entries.js:169 |
-| `runCharacterJob` | frontend/js/lazy-entries.js:177 |
-| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:248 |
-| `warmOnFirst` | frontend/js/lazy-entries.js:267 |
+| `afterCharacters` | frontend/js/lazy-entries.js:147 |
+| `charactersLost` | frontend/js/lazy-entries.js:156 |
+| `emblemHead` | frontend/js/lazy-entries.js:164 |
+| `installCharacterStandIns` | frontend/js/lazy-entries.js:193 |
+| `lazyLoadFailed` | frontend/js/lazy-entries.js:226 |
+| `loadCharactersIdle` | frontend/js/lazy-entries.js:187 |
+| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:214 |
+| `onDomReady` | frontend/js/lazy-entries.js:237 |
+| `plainHead` | frontend/js/lazy-entries.js:170 |
+| `runCharacterJob` | frontend/js/lazy-entries.js:178 |
+| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:249 |
+| `warmOnFirst` | frontend/js/lazy-entries.js:268 |
 
 ### frontend/js/note-cards.js (30)
 
@@ -2724,8 +2724,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `captureItemsToLines` | frontend/js/capture-card.js:211 |
 | `captureLinesToItems` | frontend/js/capture-card.js:207 |
 | `captureModeSeg` | frontend/js/capture-card.js:37 |
-| `captureReminderText` | frontend/js/capture-card.js:390 |
-| `captureTagList` | frontend/js/capture-card.js:396 |
+| `captureReminderText` | frontend/js/capture-card.js:392 |
+| `captureTagList` | frontend/js/capture-card.js:398 |
 | `closeCaptureCard` | frontend/js/capture-card.js:314 |
 | `fillCaptureItems` | frontend/js/capture-card.js:219 |
 | `finishCaptureSave` | frontend/js/capture-card.js:378 |
@@ -23000,7 +23000,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15537)
+## Tests (15538)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23878,7 +23878,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_launch_status.py | 25 |
 | tests/test_launcher_scripts.py | 96 |
 | tests/test_launcher_update_settings.py | 27 |
-| tests/test_lazy_bundle_calls.py | 4 |
+| tests/test_lazy_bundle_calls.py | 5 |
 | tests/test_lazy_css.py | 3 |
 | tests/test_lazy_heavy_imports.py | 4 |
 | tests/test_lazy_listener_refs.py | 1 |
@@ -25522,7 +25522,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1276 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:235 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:229 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4186 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |

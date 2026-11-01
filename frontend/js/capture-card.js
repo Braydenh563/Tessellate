@@ -384,7 +384,9 @@ async function finishCaptureSave(result, draft) {
     return;
   }
   const slots = draft.due ? { title: draft.title.trim() || captureReminderText(draft), due: new Date(draft.due), recurring: "none" } : null;
-  announceSavedNote(result.saved, slots ? await quickNoteReminder(result.saved.id, slots) : "");
+  //: The arguments run before announceSavedNote's stand-in can fetch quick-note.js, so the reminder's own file is awaited here.
+  const reminder = slots && (await ensureModule("quickNote")) ? await quickNoteReminder(result.saved.id, slots) : "";
+  announceSavedNote(result.saved, reminder);
 }
 
 function captureReminderText(draft) {

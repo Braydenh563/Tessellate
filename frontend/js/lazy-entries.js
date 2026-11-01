@@ -128,14 +128,15 @@ document.addEventListener("keydown", (event) => {
 //:    is no before they arrive (whiteboard.js).
 //:
 //: A bundle that reaches into them at once, not from a call of theirs, lists
-//: the files first (`CHARACTER_DEPENDENTS`: the welcome card's Atlas);
+//: the files first (`CHARACTER_DEPENDENTS`: the welcome card's Atlas, and the
+//: companion's own menu, throws, remarks and Atlas's motion and tail, which call
+//: avatars.js and atlas.js by name: tests/test_lazy_bundle_calls.py reads the list);
 //: `characters-ready.js`, last in the list, reports the arrival whichever
-//: bundle asked for the files. The companion's own bundles (menu, throws)
-//: are asked for by avatars.js, so they find it in.
+//: bundle asked for the files.
 let charactersLoaded = false;
 const characterWaiters = new Set();
 const characterBacklog = new Map();
-const CHARACTER_DEPENDENTS = ["onboarding", "companionSettings"];
+const CHARACTER_DEPENDENTS = ["onboarding", "companionSettings", "companionMenu", "companionThrow", "companionRemark", "atlasLife", "atlasMotion"];
 for (const name of CHARACTER_DEPENDENTS) LAZY_MODULES[name] = [...LAZY_MODULES.characters, ...LAZY_MODULES[name]];
 
 //: `fallback` is a face that needs no bundle (`plainHead`, or the app's emblem): it
