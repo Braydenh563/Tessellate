@@ -6698,31 +6698,12 @@ Link to another note with [[its first few words]]."></textarea>
                 <button id="wb-boards-import" class="doc-dock-menu-item" type="button" title="Import a mind map from an OPML, FreeMind, XMind, Markdown or plain-text outline, or drop the file on this page"><i class="ph ph-upload-simple ph-lead" aria-hidden="true"></i> Import outline…</button>
               </div>
             </details>
-            <!-- **One New, with the two kinds inside** (WORLD_CLASS_PLAN 507,
-                 the dock audit: eight controls at 1440, one over the grammar's
-                 seven). It was a filled New board and a ghost New mind map
-                 side by side; the filled control is now this menu's summary,
-                 which hides its word at a phone's width like every dock
-                 primary (the `.toolbar-word` recipe; its `aria-label` is the
-                 name). A map is a
-                 board with a `type` (MINDMAP_PLAN.md §4 option B), so the two
-                 rows are the same dialog with the Mind map segment already
-                 chosen, not two creation paths. The two rows keep the ids the
-                 buttons had (`wb-boards-new`, `wb-boards-new-map`), so
-                 whiteboard.js, the Library's and the Dashboard's "New board"
-                 and the tour reach them as before. Each row says what it
-                 makes in a muted second line (`.dock-menu-item-hint`), the
-                 "one-line hint" MINDMAP_PLAN INBOX 24's decision asked for:
-                 a tooltip alone is never seen on a touch screen. -->
-            <details class="doc-dock-menu dock-menu dock-menu-flip" id="wb-boards-new-menu">
-              <summary class="small dock-menu-primary" title="Start a new whiteboard or mind map" aria-label="New">
-                <i class="ph ph-plus ph-lead" aria-hidden="true"></i> <span class="toolbar-word">New</span> <i class="ph ph-caret-down dock-menu-caret" aria-hidden="true"></i></summary>
-              <div class="doc-dock-menu-list dock-menu-list">
-                <button id="wb-boards-new" class="doc-dock-menu-item" type="button" title="Start an empty canvas you arrange by hand"><i class="ph ph-note-pencil ph-lead" aria-hidden="true"></i> <span class="dock-menu-item-text">Whiteboard <span class="dock-menu-item-hint">An empty canvas you arrange by hand</span></span></button>
-                <button id="wb-boards-new-template" class="doc-dock-menu-item" type="button" title="Start a whiteboard or mind map from a template"><i class="ph ph-squares-four ph-lead" aria-hidden="true"></i> <span class="dock-menu-item-text">From a template <span class="dock-menu-item-hint">Kanban, planner, SWOT and more, or your own</span></span></button>
-                <button id="wb-boards-new-map" class="doc-dock-menu-item" type="button" title="Start a mind map from one central idea"><i class="ph ph-tree-structure ph-lead" aria-hidden="true"></i> <span class="dock-menu-item-text">Mind map <span class="dock-menu-item-hint">Topics branching from one central idea</span></span></button>
-              </div>
-            </details>
+            <!-- A split button (INBOX 1520, DESIGN.md): New makes a blank board in one
+                 press; the arrow, built by `wbNewMenuMount`, holds the kinds and templates. -->
+            <div class="split-button" id="wb-boards-new-menu">
+              <button id="wb-boards-new" class="small split-button-main" type="button" title="Start an empty canvas you arrange by hand" aria-label="New board"><i class="ph ph-plus ph-lead" aria-hidden="true"></i> <span class="toolbar-word">New</span></button>
+              <span id="wb-boards-new-slot" class="split-button-slot"></span>
+            </div>
           </div>
         </div>
         <div class="help-body hidden" id="wb-boards-intro" role="dialog" aria-label="What is this?">

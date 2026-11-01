@@ -2220,7 +2220,8 @@ const LIBRARY_CREATE_BY_KIND = {
     run: async () => {
       document.querySelector('#library-subtabs button[data-target="library-view-whiteboard"]')?.click();
       await ensureModule("library");
-      $("wb-boards-new-map")?.click();
+      //: New's arrow rows are built by whiteboard.js (`wbNewMenuMount`), so the map is made by its function.
+      await wbNewUntitledBoard("map");
     },
   },
   board: {

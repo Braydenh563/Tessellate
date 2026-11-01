@@ -2577,7 +2577,7 @@ TOPIC_META: dict[str, dict] = {
     "board-history": {"title": "A board's history, and putting it back", "path": "A board, Board, History…"},
     "board-library": {"title": "The board's library, layers and pages", "path": "A board, the Sidebar button in its top bar"},
     "board-library-saving": {"title": "Saving to the board's library", "path": "A board, Ctrl+Shift+S or right-click, Library"},
-    "board-templates": {"title": "Board and map templates", "path": "Library tab, Boards & maps, New, From a template"},
+    "board-templates": {"title": "Board and map templates", "path": "Library tab, Boards & maps, New's arrow, From a template"},
     "board-format": {"title": "The board's Format panel", "path": "A board, Ctrl+Shift+P or the selection's More menu"},
     "board-connectors": {"title": "Connector bends, connection points and importing diagrams", "path": "A board, Insert, Mermaid, draw.io or board SVG"},
     "board-workshop": {"title": "Voting dots and a workshop timer", "path": "A board, Board menu, Workshop"},

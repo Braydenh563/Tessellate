@@ -1433,7 +1433,7 @@ HELP_TOPICS.extend(
                 "make a mind map", "map from a note",
             ),
             "body": (
-                "Mind maps live in the Library, under Boards & maps; New, then Mind "
+                "Mind maps live in the Library, under Boards & maps; New's arrow, then Mind "
                 "map, opens Untitled map N with its central topic ready to type over "
                 "(what you type names the map too). A note's ⋮ menu, Make a mind map, "
                 "builds one from that note: its title in the centre, its headings and "
@@ -1576,8 +1576,8 @@ HELP_TOPICS.extend(
                 "project plan", "goal breakdown", "weekly review", "essay outline",
             ),
             "body": (
-                "New, Whiteboard (the Boards and maps dock) opens Untitled board N, its name ready to type "
-                "over in the top bar (Enter keeps it, Escape the old one). New, From a template (or Board, "
+                "New (the Boards and maps dock) opens Untitled board N, its name ready to type "
+                "over in the top bar (Enter keeps it, Escape the old one). New's arrow, then From a template (or Board, "
                 "New board) opens one dialog: Board or Mind map in the tab "
                 "strip under its title, the name, then the templates grouped by purpose (Plan and track, "
                 "Weigh and decide, Find the cause, Meet and review, Study and create, then your own), each "

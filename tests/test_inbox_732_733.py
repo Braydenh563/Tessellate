@@ -119,19 +119,23 @@ def test_a_caller_already_on_the_canvas_does_not_reveal_it_again():
 
 def test_the_library_menu_names_its_kind_and_does_not_show_the_canvas_itself():
     """New whiteboard and New mind map make an untitled one at once (Brief 77
-    row 2, MINDMAP_PLAN 15 row 1); From a template is the dialog."""
+    row 2, MINDMAP_PLAN 15 row 1); From a template is the dialog. The main New
+    press and the empty tab's button bind a listener; the caret's rows (INBOX
+    1520) are `kebabMenu` rows with a `run`."""
     for button, call in (
         ("wb-boards-new", "wbNewUntitledBoard()"),
-        ("wb-boards-new-map", 'wbNewUntitledBoard("map")'),
         ("library-boards-new-map", 'wbNewUntitledBoard("map")'),
     ):
         start = WB.index(f'$("{button}")?.addEventListener("click"')
         line = WB[start : WB.index("\n", start)]
         assert call in line, line
         assert "wbShowCanvasView" not in line, line
-    start = WB.index('$("wb-boards-new-template")?.addEventListener("click"')
-    handler = WB[start : WB.index("\n  });", start)]
-    assert 'createNewBoard("board", { reveal: true })' in handler, handler
+    mount = WB[WB.index("function wbNewMenuMount(") :]
+    mount = mount[: mount.index("\n}\n")]
+    assert 'run: () => wbNewUntitledBoard("map")' in mount
+    assert 'run: () => wbNewUntitledBoard()' in mount
+    assert 'createNewBoard("board", { reveal: true })' in mount
+    assert "wbShowCanvasView" not in mount
 
 
 # --- 733: the deleted empty card -------------------------------------------------

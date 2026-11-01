@@ -296,7 +296,7 @@ const TOUR_SECTIONS = [
         library: "library-view-whiteboard",
         wb: "landing",
         title: "New board",
-        text: "New, then Whiteboard, starts an empty canvas that you arrange by hand. Every board and map you make is listed below it.",
+        text: "New starts an empty canvas; its arrow holds mind maps and templates. Every board and map you make is listed below it.",
       },
       {
         target: "#wb-tool-group",
@@ -341,12 +341,12 @@ const TOUR_SECTIONS = [
         library: "library-view-whiteboard",
         wb: "landing",
         title: "New mind map",
-        text: "New, then Mind map, starts from one central idea. Inside it, Tab adds a branch and Enter adds one beside it.",
+        text: "New's arrow, then Mind map, starts from one central idea. Inside it, Tab adds a branch and Enter adds one beside it.",
         //: Said instead when the notebook has no map yet (INBOX 426 y): the
         //: map's own cards are dropped from the run then, and this card is
         //: the one that says why and what to press.
         unless: "map",
-        unlessText: "You have no mind map yet. New, then Mind map, starts one from a central idea; its own tools show once you have one.",
+        unlessText: "You have no mind map yet. New's arrow, then Mind map, starts one from a central idea; its own tools show once you have one.",
       },
       {
         target: "#wb-map-add-root",

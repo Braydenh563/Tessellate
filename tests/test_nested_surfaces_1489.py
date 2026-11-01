@@ -149,7 +149,4 @@ def test_the_accent_glow_is_painted_by_the_filled_button_alone() -> None:
         for _sheet, selector, body in _rules()
         if re.search(r"box-shadow:\s*var\(--shadow-accent-glow\)", body)
     }
-    assert users == {
-        "button",
-        ".dock > * > details.dock-menu > summary.dock-menu-primary:not(.icon-only):not(.icon-button)",
-    }, sorted(users)
+    assert users == {"button"}, sorted(users)

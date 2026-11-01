@@ -19,7 +19,7 @@ const WIDTH = Number(process.env.WIDTH || 1440);
   await page.waitForTimeout(1500);
   const before = await page.evaluate(() => window.currentBoardId || null);
   // The New menu's summary is the menu's opener, not a choice; counted apart.
-  await page.click('#wb-boards-new-menu > summary'); r.menuOpen = 1; await page.waitForTimeout(200);
+  r.menuOpen = 0; // New is a split button: its press is the whole path (INBOX 1520)
   const t0 = Date.now();
   await page.click('#wb-boards-new'); r.clicks++;
   await page.waitForFunction((b) => window.currentBoardId && window.currentBoardId !== b

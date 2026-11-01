@@ -160,7 +160,7 @@ def test_a_later_visit_opens_the_last_document_again_after_a_settled_ask():
     assert out["open"] == 3, out
 
 
-@pytest.mark.parametrize("kind, button", [("board", "wb-boards-new"), ("mindmap", "wb-boards-new-map")])
+@pytest.mark.parametrize("kind, button", [("board", '$("wb-boards-new")'), ("mindmap", 'wbNewUntitledBoard("map")')])
 def test_new_board_and_new_mind_map_wait_for_the_boards_code(kind, button):
     """The same shape for boards (found by tests-e2e/specs/boards.spec.js):
     Create, New board pressed `#wb-boards-new` straight after opening the
@@ -172,7 +172,7 @@ def test_new_board_and_new_mind_map_wait_for_the_boards_code(kind, button):
     start = source.index(f"  {kind}: {{\n")
     row = source[start : source.index("\n  },", start)]
     wait = row.find('await ensureModule("library")')
-    press = row.find(f'$("{button}")')
+    press = row.find(button)
     assert 0 <= wait < press, row
 
 

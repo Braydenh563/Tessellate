@@ -24597,13 +24597,39 @@ async function dragEndNode(event, d) {
   }
 }
 
+//: **New's arrow** (INBOX 1520): the main press makes a blank board, and this
+//: menu holds the other starts. A map is made at once and named "Untitled map
+//: N" (MINDMAP_PLAN 15 row 1); From a template is the dialog, whose Mind map
+//: tab holds the map templates. The rows keep the ids the old menu's rows had,
+//: so the Library's and the Dashboard's New board and New mind map reach them.
+function wbNewMenuMount() {
+  const slot = $("wb-boards-new-slot");
+  if (!slot || slot.firstChild) return;
+  const wrap = kebabMenu([
+    { label: "ph:note-pencil Whiteboard", title: "An empty canvas you arrange by hand", run: () => wbNewUntitledBoard() },
+    { label: "ph:tree-structure Mind map", title: "Topics branching from one central idea", run: () => wbNewUntitledBoard("map") },
+    { label: "ph:squares-four From a template", title: "Kanban, planning and decision boards, and map shapes", run: () => createNewBoard("board", { reveal: true }) },
+  ], "Other ways to start a board");
+  const opener = wrap.querySelector(":scope > button");
+  const menu = wrap.querySelector(":scope > .action-menu");
+  const rows = menu.querySelectorAll(".menu-item");
+  rows[1].id = "wb-boards-new-map";
+  rows[2].id = "wb-boards-new-template";
+  opener.id = "wb-boards-new-more";
+  opener.classList.remove("icon-only", "ghost");
+  opener.classList.add("split-button-caret");
+  setLabel(opener, "ph:caret-down");
+  opener.title = "More ways to start: a mind map or a template";
+  slot.replaceChildren(wrap);
+}
+
 // The Whiteboards sub-tab's own two controls. This DOMContentLoaded
 // listener used to also hold the #library-subtabs switcher and the
 // Documents/Media sub-tabs' refresh/search/upload wiring: none of that is
 // whiteboard's own code (it switches between and wires OTHER Library
 // sub-tabs), and it has moved to library.js, which is the Library's actual
 // home now (ROADMAP.md §88.3 flagged this as "an accident worth fixing
-// while splitting"). Only these two survive here, unchanged.
+// while splitting"). Only its listeners survive here, unchanged.
 onDomReady(() => {
   //: "Whiteboard" says Board whatever kind was made last (INBOX 733: it
   //: opened on Mind map after a map), and the canvas is shown by the dialog's
@@ -24613,12 +24639,7 @@ onDomReady(() => {
   //: the empty state is drawn by this file, and the boot scripts are capped.
   $("library-boards-new-map")?.addEventListener("click", () => wbNewUntitledBoard("map"));
   $("wb-boards-new")?.addEventListener("click", () => wbNewUntitledBoard());
-  $("wb-boards-new-template")?.addEventListener("click", async () => {
-    await createNewBoard("board", { reveal: true });
-  });
-  //: Made at once and named "Untitled map N" (row 1 of MINDMAP_PLAN 15);
-  //: the map templates are the From a template row, one row up.
-  $("wb-boards-new-map")?.addEventListener("click", () => wbNewUntitledBoard("map"));
+  wbNewMenuMount();
   //: Import (§5 item 17). The button opens the hidden input, the input does
   //: the work: the app's own file-picking pattern (`pickJsonFile`,
   //: `importMarkdown`), so a file arrives the same way here as everywhere
