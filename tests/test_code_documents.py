@@ -764,7 +764,7 @@ const D = global.docx;
 
 # Row 1073: the Evidence checks switch was stored and shown and gated nothing.
 def test_the_evidence_checks_switch_hides_the_answers_evidence_view():
-    ask = (JS / "capture-ask.js").read_text(encoding="utf-8")
+    ask = with_pieces("capture-ask.js")
     prelude = "\n".join(
         [
             "let evidenceSwitchLoad = null; let evidenceChecksKnown = null; let calls = 0; let reply = { evidence_checks: false };",

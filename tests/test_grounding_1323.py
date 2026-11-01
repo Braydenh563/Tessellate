@@ -6,6 +6,7 @@ note-label chip, so the strip lives there.
 """
 
 from pathlib import Path
+from tests._app_js import with_pieces
 
 ROOT = Path(__file__).resolve().parent.parent
 JS = ROOT / "frontend" / "js"
@@ -13,7 +14,7 @@ CSS = ROOT / "frontend" / "css"
 
 
 def test_note_labels_skip_front_matter():
-    text = (JS / "chat-attach.js").read_text(encoding="utf-8")
+    text = with_pieces("chat-attach.js")
     body = text[text.index("function flattenNoteMarkdown(md) {"):][:400]
     assert "stripFrontmatter(md)" in body
 
@@ -34,7 +35,7 @@ def test_grounded_in_is_one_native_fold_shared_by_ask_and_chat():
     from pathlib import Path
 
     root = Path(__file__).resolve().parents[1]
-    src = (root / "frontend" / "js" / "capture-ask.js").read_text(encoding="utf-8")
+    src = with_pieces("capture-ask.js")
     start = src.index("function renderAnswerGrounding(")
     body = src[start : start + 5000]
     assert 'fold.className = "agent-step grounding-fold"' in body

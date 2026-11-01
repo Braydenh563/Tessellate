@@ -12,6 +12,7 @@ from __future__ import annotations
 import re
 
 from tests._app_js import INDEX_HTML, JS_DIR, app_js_text, lazy_modules_source, stand_ins_source
+from tests._app_js import with_pieces
 
 PRIVATE_JS = (JS_DIR / "chat-private.js").read_text(encoding="utf-8")
 
@@ -101,5 +102,5 @@ def test_the_code_is_a_lazy_file_with_its_stylesheet_and_stand_ins():
     for name in ("chatPrivateStart", "chatPrivateToggle", "chatPrivateLeave"):
         assert name in stand_ins
     # nothing at boot defines them: the boot scripts only call upward into the stand-ins
-    boot_text = (JS_DIR / "chat-attach.js").read_text(encoding="utf-8") + (JS_DIR / "chat.js").read_text(encoding="utf-8")
+    boot_text = with_pieces("chat-attach.js") + with_pieces("chat.js")
     assert not re.search(r"function chatPrivate(Start|Toggle|Leave)\(", boot_text)

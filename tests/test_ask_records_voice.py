@@ -15,10 +15,11 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._app_js import with_pieces
 
 ROOT = Path(__file__).resolve().parent.parent
 CSS = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
-ASK = (ROOT / "frontend" / "js" / "capture-ask.js").read_text(encoding="utf-8")
+ASK = with_pieces("capture-ask.js")
 
 
 def _rule(selector: str) -> str:

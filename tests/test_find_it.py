@@ -11,6 +11,7 @@ import re
 from pathlib import Path
 
 from tessellate.ai import find_it
+from tests._app_js import with_pieces
 
 ROOT = Path(__file__).resolve().parents[1]
 GOLD = json.loads((ROOT / "tests" / "fixtures" / "find_it_gold.json").read_text(encoding="utf-8"))
@@ -98,5 +99,5 @@ def test_the_page_opens_a_reveal_link_and_a_choice():
     body = js[js.index("function digestOffer"):js.index("//: **Wrong fact and Pin as true")]
     assert 'offer.surface.startsWith("reveal:")' in body and "revealFeature(" in body
     assert "offer.also" in body
-    chat = (ROOT / "frontend" / "js" / "chat-attach.js").read_text(encoding="utf-8")
+    chat = with_pieces("chat-attach.js")
     assert "onOffer:" in chat and "digestOffer(" in chat

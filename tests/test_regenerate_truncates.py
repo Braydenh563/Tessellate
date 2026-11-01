@@ -16,6 +16,7 @@ import pytest
 
 from tessellate.ai import agent
 from tests._app_js import JS_DIR
+from tests._app_js import with_pieces
 
 pytestmark = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
@@ -29,7 +30,7 @@ def _fn(source: str, name: str, is_async: bool = True) -> str:
 
 def _run(turns: int, regen_index: int, ran_write: bool, confirm: bool = True) -> dict:
     edit = (JS_DIR / "chat-edit.js").read_text(encoding="utf-8")
-    agent_js = (JS_DIR / "chat-agent.js").read_text(encoding="utf-8")
+    agent_js = with_pieces("chat-agent.js")
     code = "\n".join(
         [
             _fn(agent_js, "dropChatBubble", False),

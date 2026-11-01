@@ -1244,6 +1244,8 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
   const shortAsk = text.length > 48 ? `${text.slice(0, 47).trimEnd()}…` : text;
   setLabel($("command-palette-status"), `ph:spin Working on: ${shortAsk}`);
   try {
+    //: The plan's timeline (`agentTimeline`) is in the chat turn's lazy file.
+    if (!(await ensureModule("chatTurn"))) return lazyLoadFailed();
     await streamChat({
       progress: askLine,
       question: text,

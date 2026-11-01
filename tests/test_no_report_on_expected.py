@@ -32,7 +32,7 @@ def test_dictation_without_the_add_on_says_where_to_get_it_not_report_this():
 
 
 def test_nothing_to_compress_is_not_an_error():
-    body = _function((JS / "chat.js").read_text(encoding="utf-8"), "async function compressChatContext(")
+    body = _function(with_pieces("chat.js"), "async function compressChatContext(")
     assert 'toast("There isn\'t enough conversation to compress yet.")' in body
 
 

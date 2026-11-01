@@ -60,7 +60,7 @@ EXPECTED = {
         '"Name the new category first."',
         '"Tick the notes to move first."',
     ],
-    'chat-attach.js': [
+    'chat-turn.js': [
         '"The model returned nothing that time. Try again."',
     ],
     'chat.js': [
@@ -227,9 +227,11 @@ FAULTS = {
     'app.js': {
         '"Can\'t reach the Tessellate server. Is it running?"': 'network failure: the server cannot be reached',
     },
-    'chat-attach.js': {
+    'chat-turn.js': {
         '"Couldn\'t save this chat turn."': 'saving a chat turn failed after the model answered: lost data',
         '"Couldn\'t delete that message."': 'delete request failed',
+    },
+    'chat-attach.js': {
         '"Couldn\'t delete this chat."': 'delete request failed',
     },
     'documents-code.js': {

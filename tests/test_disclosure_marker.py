@@ -7,6 +7,7 @@ outlines drew the 16px Phosphor caret. Every fold now draws the caret.
 """
 import re
 from pathlib import Path
+from tests._app_js import with_pieces
 
 CSS_DIR = Path(__file__).resolve().parents[1] / "frontend" / "css"
 CSS = {p.name: p.read_text(encoding="utf-8") for p in CSS_DIR.glob("*.css")}
@@ -85,7 +86,7 @@ def test_the_sources_fold_shows_its_state_and_starts_shut():
     assert ".chat-sources[open] > .chat-sources-summary::before" in CSS["08-consistency.css"]
     body = re.search(r"\.chat-sources-body \{([^}]*)\}", CSS["02-chat-graph.css"]).group(1)
     assert "border-left: 1px solid var(--border)" in body
-    js = (CSS_DIR.parent / "js" / "chat-agent.js").read_text(encoding="utf-8")
+    js = with_pieces("chat-agent.js")
     panel = js[js.index("function chatSourcesPanel(") :]
     panel = panel[: panel.index("\n}\n")]
     assert "details.open" not in panel

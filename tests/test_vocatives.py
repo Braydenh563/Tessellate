@@ -19,6 +19,7 @@ from pathlib import Path
 import pytest
 
 from tessellate.ai import vocative
+from tests._app_js import with_pieces
 
 GOLD = json.loads((Path(__file__).parent / "fixtures" / "vocatives_gold.json").read_text(encoding="utf-8"))
 KNOWN = frozenset(GOLD["known"])
@@ -116,8 +117,8 @@ def test_a_nickname_on_small_talk_is_small_talk(client):
 
 def test_the_chips_are_drawn_by_the_follow_up_strip():
     root = Path(__file__).resolve().parents[1] / "frontend" / "js"
-    ask = (root / "capture-ask.js").read_text(encoding="utf-8")
-    chat = (root / "chat-attach.js").read_text(encoding="utf-8")
+    ask = with_pieces("capture-ask.js")
+    chat = with_pieces("chat-attach.js")
     compose = (root / "ask-compose.js").read_text(encoding="utf-8")
     body = compose[compose.index("function digestOffer"):]
     #: In Chat the bubble's own strip, saved later by `offerFollowups` (a save

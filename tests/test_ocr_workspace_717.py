@@ -37,13 +37,14 @@ import re
 from pathlib import Path
 
 from tests._app_js import frontend_text
+from tests._app_js import with_pieces
 
 ROOT = Path(__file__).resolve().parents[1]
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 JS = ROOT / "frontend" / "js"
 LIBRARY = (JS / "library.js").read_text(encoding="utf-8")
 ENGINE = (JS / "ocr-engine.js").read_text(encoding="utf-8")
-CHAT_ATTACH = (JS / "chat-attach.js").read_text(encoding="utf-8")
+CHAT_ATTACH = with_pieces("chat-attach.js")
 CSS = "\n".join(p.read_text(encoding="utf-8") for p in sorted((ROOT / "frontend" / "css").glob("*.css")))
 
 

@@ -23,10 +23,11 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._app_js import with_pieces
 
 ROOT = Path(__file__).resolve().parent.parent
 JS = ROOT / "frontend" / "js"
-CHAT_AGENT = (JS / "chat-agent.js").read_text(encoding="utf-8")
+CHAT_AGENT = with_pieces("chat-agent.js")
 STATUS = (JS / "status.js").read_text(encoding="utf-8")
 DASHBOARD = (JS / "dashboard.js").read_text(encoding="utf-8")
 REMINDERS = (JS / "shell-reminders.js").read_text(encoding="utf-8")

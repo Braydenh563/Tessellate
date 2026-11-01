@@ -14,6 +14,7 @@ import re
 from pathlib import Path
 
 from tests._app_js import app_js_text
+from tests._app_js import with_pieces
 
 APP = app_js_text()
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
@@ -35,7 +36,7 @@ def test_a_write_goes_on_the_stack_with_its_undo_and_its_redo():
 def test_chat_and_the_agent_panel_both_push_each_write():
     pushes = r"pushAgentChangeUndo\(event\??\.change, event\)"
     for name in ("chat-attach.js", "palette.js"):
-        assert len(re.findall(pushes, (JS / name).read_text("utf-8"))) == 1, name
+        assert len(re.findall(pushes, with_pieces(name))) == 1, name
 
 
 def test_a_rows_own_undo_takes_its_entry_off_the_stack():

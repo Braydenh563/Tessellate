@@ -10,10 +10,11 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._app_js import with_pieces
 
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
-AGENT = (JS / "chat-agent.js").read_text("utf-8")
-ATTACH = (JS / "chat-attach.js").read_text("utf-8")
+AGENT = with_pieces("chat-agent.js")
+ATTACH = with_pieces("chat-attach.js")
 
 
 def _listed() -> list[str]:
@@ -29,7 +30,8 @@ def _listed() -> list[str]:
 
 def test_each_listed_card_is_drawn_by_the_helper_in_chat():
     for name in _listed():
-        sites = [m.start() for m in re.finditer(rf"\b{name}\b", ATTACH)]
+        #: The card builders moved into chat-turn.js with the turn, so the text holds the definition too.
+        sites = [m.start() for m in re.finditer(rf"\b{name}\b", ATTACH) if not ATTACH[: m.start()].endswith("function ")]
         assert sites, f"{name} is never drawn in chat-attach.js"
         for at in sites:
             assert ATTACH[max(0, at - 80) : at].rstrip().endswith("showWaiting(recordsHolder,") or "showWaiting(event.type" in ATTACH[max(0, at - 80) : at], name

@@ -7,11 +7,11 @@ that only adds runs and carries its Undo. `tools.CHANGE_TOOLS` and
 
 from __future__ import annotations
 
-from pathlib import Path
 
 from tessellate.ai import agent, tools
 
 from tests.test_injection_fence import _FakeModels, _FakeOllama, _Session
+from tests._app_js import with_pieces
 
 
 def _run(monkeypatch, calls):
@@ -71,6 +71,6 @@ def test_the_settings_group_says_which_tools_ask_first():
 
 
 def test_the_tip_matches_the_gate():
-    text = Path("frontend/js/chat.js").read_text("utf-8")
+    text = with_pieces("chat.js")
     assert "says so before it does" not in text
     assert "asks before changing a note" in text

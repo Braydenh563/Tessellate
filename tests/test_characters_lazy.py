@@ -21,6 +21,7 @@ import re
 from pathlib import Path
 
 from tessellate.api.asset_strip import strip_js
+from tests._app_js import with_pieces
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -121,8 +122,8 @@ def test_a_head_has_a_plain_face_when_the_bundle_cannot_be_fetched():
     app's emblem for its own voice, the name's initial for a persona or you."""
     assert re.search(r"ensureModule\(\"characters\"\)\.then\(\(ok\) => ok \|\| charactersLost\(\)\)", ENTRIES)
     assert "function afterCharacters(fn, fallback)" in ENTRIES
-    chat_agent = (JS / "chat-agent.js").read_text(encoding="utf-8")
+    chat_agent = with_pieces("chat-agent.js")
     assert "() => emblemHead(holder, size)" in chat_agent
     assert "() => plainHead(holder, name)" in chat_agent
     assert "() => plainHead(mark, userMarkSeed())" in chat_agent
-    assert "() => plainHead(holder, name)" in (JS / "chat.js").read_text(encoding="utf-8")
+    assert "() => plainHead(holder, name)" in with_pieces("chat.js")

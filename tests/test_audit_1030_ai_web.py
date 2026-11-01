@@ -12,6 +12,7 @@ import pytest
 
 from tessellate.ai import personal, tools
 from tessellate.api import routes_chat
+from tests._app_js import with_pieces
 
 OWN = [
     "who is my sister", "what is my dog called", "how much do I weigh", "how have I been feeling",
@@ -56,6 +57,7 @@ def test_a_first_person_question_sends_no_query(client, session, monkeypatch):
     """The route end to end (A2): the search service sees no private question."""
     from tessellate.core import deps
     from tessellate.search import websearch
+
     from tests.test_composer_route_688 import _ask
 
     calls: list[str] = []
@@ -72,6 +74,7 @@ def test_unreadable_pages_fall_back_to_the_result_snippets(client, session, monk
     """A4: results came back, no page reads: the snippets are the answer, not "found nothing"."""
     from tessellate.core import deps
     from tessellate.search import websearch
+
     from tests.test_composer_route_688 import _ask
 
     hits = [{"title": "Tides", "url": "https://example.org/tides", "snippet": "Tides are caused by the pull of the moon.", "domain": "example.org", "engine": "t"}]
@@ -91,6 +94,7 @@ def test_pages_are_read_in_parallel_under_one_deadline(monkeypatch):
     import time
 
     from tessellate.search import websearch
+
 
     monkeypatch.setattr(routes_chat, "WEB_PAGES_DEADLINE", 0.5)
 
@@ -145,6 +149,7 @@ def test_ask_with_web_on_does_not_ask_to_turn_it_on(client, session):
 def test_an_unknown_search_provider_is_a_422(client, monkeypatch):
     """A11: a provider the app does not have is refused, never silently swapped."""
     from tessellate.search import websearch
+
 
     client.put("/preferences", json={"web_search_enabled": True})
     seen: list[str] = []
@@ -253,9 +258,6 @@ def test_a_web_search_says_its_words_before_they_leave(ai_client, fake_ollama, m
     import json as _json
 
     from tessellate.search import websearch
-    from pathlib import Path
-
-    root = Path(__file__).resolve().parent.parent
 
     seen: list[str] = []
     monkeypatch.setattr(websearch, "search_web", lambda q, **kw: seen.append(q) or [])
@@ -267,5 +269,5 @@ def test_a_web_search_says_its_words_before_they_leave(ai_client, fake_ollama, m
     said = next(i for i, e in enumerate(events) if e.get("stage") == "web")
     assert events[said]["query"] == "tide times lisbon"
     assert not seen or said < kinds.index("tool")
-    js = (root / "frontend" / "js" / "capture-ask.js").read_text("utf-8")
+    js = with_pieces("capture-ask.js")
     assert events[said]["said"] == "searching the web for “tide times lisbon”" and "event.said" in js

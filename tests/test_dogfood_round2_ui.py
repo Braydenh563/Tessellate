@@ -7,6 +7,7 @@ Chromium (numbers in the commit).
 from __future__ import annotations
 
 from pathlib import Path
+from tests._app_js import with_pieces
 
 JS = Path(__file__).resolve().parent.parent / "frontend" / "js"
 
@@ -52,7 +53,7 @@ def test_create_with_an_empty_title_is_answered_and_the_h1_is_not_doubled():
     # document began with a "# Title" line under its own title field.
     app = (JS / "app.js").read_text()
     assert app.count("input.reportValidity() && close(input.value.trim())") == 2
-    assert "required = true" in (JS / "capture-ask.js").read_text()
+    assert "required = true" in with_pieces("capture-ask.js")
     for name in ("capture-ask.js", "editor.js"):
         assert "content: `# ${" not in (JS / name).read_text().split("apiJson(\"/documents\"")[1][:200]
     assert "A blank line is inside nothing" in (JS / "documents.js").read_text()

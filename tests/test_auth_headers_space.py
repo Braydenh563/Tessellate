@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._app_js import with_pieces
 
 JS = Path(__file__).resolve().parent.parent / "frontend" / "js"
 
@@ -50,7 +51,7 @@ def test_every_token_header_literal_carries_the_space():
 
 
 def test_chat_attach_imports_use_the_shared_headers():
-    text = (JS / "chat-attach.js").read_text(encoding="utf-8")
+    text = with_pieces("chat-attach.js")
     call = text[text.index('"/documents/import"') :][:200]
     assert "authHeaders()" in call
 

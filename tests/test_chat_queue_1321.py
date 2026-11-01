@@ -18,7 +18,7 @@ def test_a_send_mid_answer_queues_and_the_end_of_a_turn_sends_the_next():
     send = text[text.index("async function sendChatMessage("):text.index("function chatQueueShow(")]
     assert 'if (!$("chat-stop").classList.contains("hidden"))' in send and "chatQueue.push(typed)" in send
     assert "sendChatMessage(chatQueue.shift())" in send and "!chatQueueState.held" in send
-    turn = text[text.index("async function chatSendTurn("):][:6000]
+    turn = _read("chat-turn.js")[:6000]  # moved out of chat-attach.js (boot diet)
     assert "input.disabled = true" not in turn
 
 

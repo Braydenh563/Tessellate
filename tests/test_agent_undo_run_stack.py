@@ -13,10 +13,11 @@ from __future__ import annotations
 import re
 
 from tests._app_js import JS_DIR
+from tests._app_js import with_pieces
 
 
 def test_the_run_undo_settles_the_stack_entries_and_the_rows():
-    source = (JS_DIR / "chat-agent.js").read_text(encoding="utf-8")
+    source = with_pieces("chat-agent.js")
     assert "undoSkillRun(span, all, settleRun)" in source
     settle = re.search(r"const settleRun = \(\) => \{.*?\n          \};", source, re.S)
     assert settle, "settleRun is gone"
