@@ -3957,18 +3957,6 @@ button.is-on {
   outline: 2px solid var(--accent);
   outline-offset: -2px;
 }
-.graph-node.graph-keyfocus .graph-core {
-  stroke: var(--accent);
-  stroke-width: 3px;
-  paint-order: stroke;
-}
-.graph-node.graph-keyfocus .graph-halo {
-  opacity: 0.55;
-}
-.graph-node.graph-keyfocus .graph-label {
-  font-weight: 700;
-  fill: var(--ink);
-}
 /* ================================================================================
    Phones (roadmap §8: the layout had breakpoints but had never been driven at
    phone width, and at a true 390px viewport every single tab overflowed
