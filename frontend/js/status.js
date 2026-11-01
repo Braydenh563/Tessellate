@@ -1122,6 +1122,8 @@ function voiceLine(key, slots = {}) {
 }
 
 function toast(message, isError = false, { exempt = false, action = null } = {}) {
+  //: A read dropped by a space switch (app.js, the request helper) is nothing to report.
+  if (isError && String(message).endsWith("Space changed.")) return;
   if (isError === "info" || (isError === true && [...toast.refused].some((m) => String(message).includes(m)))) {
     isError = false;
     exempt = true;

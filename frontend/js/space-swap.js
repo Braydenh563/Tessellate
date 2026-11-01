@@ -22,7 +22,7 @@
 
 //: `const`, not two `let`s: the global-scope ratchet counts top-level lets.
 (() => {
-  const spaceState = { epoch: 0, running: null };
+  const spaceState = { running: null };
 
   //: Every cache a space's data leaves in memory, by surface. A lazy surface's
   //: row starts with a `typeof` guard: its names do not exist until its file is in.
@@ -205,7 +205,8 @@
     const from = activeSpaceId();
     await spaceLeave();
     prefs.set("spaceId", id);
-    spaceState.epoch += 1;
+    //: Reads still in flight under the old space are dropped when they land (`api()`).
+    api.epoch += 1;
     clearApiCache();
     for (const [surface, forget] of Object.entries(SPACE_SCOPED)) {
       try {
@@ -221,7 +222,7 @@
     }
     renderSpaceMenu();
     updateCaptureSpaceLabel();
-    document.dispatchEvent(new CustomEvent("spacechange", { detail: { id, from, epoch: spaceState.epoch } }));
+    document.dispatchEvent(new CustomEvent("spacechange", { detail: { id, from, epoch: api.epoch } }));
     const entries = spaceReload();
     //: After the notes, as `startApp` does: every tab wants them, none should guess.
     await entries;

@@ -241,6 +241,7 @@ const ctx = {
   store, dialog,
   console, Math, Number, Object, Set, Map, JSON, Date, Array, String, Promise, Boolean, Error, CustomEvent: class { constructor(type, init) { this.type = type; this.detail = init && init.detail; } },
   log, events,
+  api: { epoch: 0 },
   prefs: { get: (key, dflt) => (key in store ? store[key] : dflt), set: (key, value) => { store[key] = value; log.push(["pref", key, value]); } },
   SPACE_ALL: "all",
   activeSpaceId: () => store.spaceId || "all",
@@ -396,3 +397,74 @@ def test_undo_from_another_space_says_so_and_goes_back_first() -> None:
     assert out["here"] and out["fromAll"] and out["noSpace"], "same space, All spaces and an old entry need no switch"
     assert out["back"] and out["space"] == "alpha"
     assert out["toasts"] == ["That was in Alpha. Switching back to it."]
+
+
+# --- a read still in flight from the old space is dropped --------------------------
+
+API_HARNESS = r"""
+const vm = require("vm");
+const fs = require("fs");
+const text = fs.readFileSync(process.argv[1], "utf8");
+const start = text.indexOf("async function api(path, options = {}) {");
+const source = text.slice(start, text.indexOf("\n}\n", start) + 3);
+const toasts = [];
+let release = null;
+const ctx = {
+  console, Error, Object, Promise, TypeError, Set, JSON, setTimeout, clearTimeout, FormData: class {}, AbortController,
+  toasts, JOB_STARTING_PATH: /^$/,
+  refuseStagedUrls() {}, clearApiCache() {}, authToken: () => "t", activeSpaceId: () => "alpha",
+  noteServerUp() {}, noteServerDown() {}, showLockScreen() {}, recordBrowserLog() {}, plainHttpError: () => "bad",
+  kickBackgroundTaskPoll() {}, setActiveSpace() {}, SPACE_ALL: "all",
+  toast: Object.assign((m) => toasts.push(m), { refused: new Set() }),
+  //: A fetch that answers when the test says so, with the kind of body it is told.
+  fetch: () => new Promise((resolve) => { release = (type) => resolve({ ok: true, status: 200, headers: { get: () => type }, json: async () => ({}) }); }),
+};
+vm.createContext(ctx);
+vm.runInContext(source + "\napi.retries = 0; api.epoch = 0;", ctx);
+ctx.__out = (value) => process.stdout.write(JSON.stringify(value));
+ctx.__release = (type) => release(type);
+vm.runInContext("(async () => {" + process.argv[2] + "})()", ctx).catch((e) => { console.error(e); process.exit(1); });
+"""
+
+
+def _run_api(body: str):
+    proc = subprocess.run(["node", "-e", API_HARNESS, str(JS_DIR / "app.js"), body], capture_output=True, text=True)
+    assert proc.returncode == 0, proc.stderr[-2000:]
+    return json.loads(proc.stdout)
+
+
+@needs_node
+def test_a_read_that_started_before_a_switch_is_refused_when_it_lands() -> None:
+    out = _run_api("""
+    const outcome = async (options, type, switched) => {
+      const call = api("/entries", options).then(() => "applied", (e) => (e.isStale ? "stale" : "other:" + e.message));
+      await new Promise((r) => setTimeout(r, 0));
+      if (switched) api.epoch += 1;
+      __release(type);
+      return call;
+    };
+    __out({
+      read: await outcome({}, "application/json", true),
+      readNoSwitch: await outcome({}, "application/json", false),
+      write: await outcome({ method: "POST" }, "application/json", true),
+      readOnlyPost: await outcome({ method: "POST", readOnly: true }, "application/json", true),
+      file: await outcome({}, "image/png", true),
+    });
+    """)
+    assert out == {
+        "read": "stale",
+        "readNoSwitch": "applied",
+        "write": "applied",
+        "readOnlyPost": "stale",
+        "file": "applied",
+    }, "a JSON read from the old space is dropped; a write and a file are not"
+
+
+def test_the_swap_bumps_the_epoch_the_request_helper_reads() -> None:
+    swap, app = _code(SWAP.read_text(encoding="utf-8")), _code(_text("app.js"))
+    assert "api.epoch += 1" in swap and "spaceState.epoch" not in swap
+    assert "sentAt !== api.epoch" in app
+    for name in ("app.js", "lag-watch.js", "boot-guard.js"):
+        assert "isStale" in _text(name), f"{name} would log a dropped read as an unhandled rejection"
+    toast = re.search(r"^function toast\(.*?^\}", _text("status.js"), re.S | re.M).group(0)
+    assert 'endsWith("Space changed.")' in toast

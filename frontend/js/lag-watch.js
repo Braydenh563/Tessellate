@@ -306,7 +306,7 @@ function lagErrorsStart() {
     if (r.level === "ERROR") lagNoteError(r.message.slice(0, 200), r.message);
   }
   window.addEventListener("error", (e) => e.filename && lagNoteError(e.message, e.error?.stack || `${e.filename}:${e.lineno}`));
-  window.addEventListener("unhandledrejection", (e) => lagNoteError(`Unhandled rejection: ${e.reason?.message || e.reason}`, e.reason?.stack));
+  window.addEventListener("unhandledrejection", (e) => e.reason?.isStale || lagNoteError(`Unhandled rejection: ${e.reason?.message || e.reason}`, e.reason?.stack));
   const original = console.error;
   console.error = (...parts) => {
     const said = (p) => (typeof p === "string" ? p : p?.message || JSON.stringify(p) || String(p));

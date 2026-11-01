@@ -130,6 +130,7 @@
   // often already handled by a toast. The log is the right place for it.
   window.addEventListener("unhandledrejection", function (event) {
     var reason = event.reason;
+    if (reason && reason.isStale) return;
     report(
       "unhandledrejection",
       (reason && (reason.stack || reason.message)) || String(reason),
