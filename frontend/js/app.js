@@ -1841,7 +1841,7 @@ const LAZY_MODULES = {
   //: The panel the "m" chord opens: chord-guide.js says why it is preloaded.
   chordGuide: ["/js/chord-guide.js"],
   //: Atlas's living tail and its rings' loops (the gzip budget): see atlas-life.js.
-  atlasLife: ["/js/atlas-life.js"],
+  atlasLife: ["/js/atlas-motion.js", "/js/atlas-life.js"],
   //: The companion's menu and a face's enlarged view (companion-menu.js's header).
   companionMenu: ["/js/companion-menu.js"],
   //: A throw and what can happen on the way (companion-throw.js's header).

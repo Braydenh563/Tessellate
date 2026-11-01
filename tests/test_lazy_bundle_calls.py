@@ -66,6 +66,12 @@ def _lazy_files() -> dict[str, list[str]]:
     for text in blocks:
         for name, files in re.findall(r"^\s*(\w+):\s*\[(.*?)\],", text, re.M | re.S):
             out[name] = re.findall(r'"/js/([A-Za-z0-9._-]+\.js)"', files)
+    #: A bundle that lists the characters first (lazy-entries.js's
+    #: `CHARACTER_DEPENDENTS`) carries their files too, at run time.
+    deps = re.search(r"const CHARACTER_DEPENDENTS = \[(.*?)\];", extra, re.S)
+    assert deps, "CHARACTER_DEPENDENTS not found in lazy-entries.js; has it moved?"
+    for name in re.findall(r'"(\w+)"', deps.group(1)):
+        out[name] = out["characters"] + [f for f in out[name] if f not in out["characters"]]
     return out
 
 
@@ -398,6 +404,63 @@ REACHED_AFTER_LOAD = {
     "asSurface": "editor.js warms the bundle on focus and replays the keystroke",
 }
 
+#: Lazy-to-lazy (INBOX 1521): a call in a lazy file to a name that only another
+#: bundle defines. `file:name` keys, each with the line that proves the call is
+#: reached only after the file that defines the name is in.
+LAZY_REACHED_AFTER_LOAD: dict[str, str] = {
+    "answer-kit.js:agentTimeline": "addAssistantBubble has two callers: chat-turn.js (its own file) and sheets-selects.js's replay, after `await ensureModule(\"chatTurn\")` (line 1991)",
+    "answer-kit.js:nameMark": "inside the afterCharacters callback (avatarHead and chatHead paths) or reached from it",
+    "app-palette.js:quickAddPaletteRow": "typeof-guarded optional first row; null is the designed answer without it (the act row only exists once quickadd.js or the board is loaded)",
+    "app-palette.js:wbPaletteActRow": "typeof-guarded optional first row; null is the designed answer without it (the act row only exists once quickadd.js or the board is loaded)",
+    "appearance-panel.js:releaseThemeHold": "closeAppearancePanel returns unless APPEARANCE_PANEL.open, and openAppearancePanel awaits settingsControls before it sets it (line 265)",
+    "ask-compose.js:wbMapTidyFresh": "after `await openWhiteboardBoard(...)`, a stand-in that loads the library bundle (whiteboard-map.js) first",
+    "atlas-motion.js:atlasRigLower": "`if (rig.lower)`: only atlasRigLowerAttach (atlas-life.js) sets it, and the atlasLife bundle carries atlas-motion.js",
+    "atlas.js:atlasTailFrame": "reached only through a tail atlasTailAttach (atlas-life.js) made, as the line above says",
+    "avatars.js:companionPathPlan": "typeof-guarded (INBOX 1305): a far move walks until the companion's mind has fetched companion-menu.js",
+    "captions.js:translateAsk": "captionTranslate.on is set only after `await ensureModule(\"translate\")` in captionToggleTranslate",
+    "categories-panel.js:manageCountButton": "the panel's opener awaits ensureModule(\"tagManager\") (line 29) before it renders a row",
+    "categories-panel.js:manageRecent": "the panel's opener awaits ensureModule(\"tagManager\") (line 29) before it renders a row",
+    "categories-panel.js:manageSorted": "the panel's opener awaits ensureModule(\"tagManager\") (line 29) before it renders a row",
+    "chat-turn.js:docSurfaceById": "typeof-guarded with a designed fallback (the textarea's own text) when documents.js has never loaded",
+    "chat-turn.js:setAtlasMood": "typeof-guarded cue: a mood is stale a moment later, and there is no face to move before the characters arrive",
+    "documents.js:mermaidSettled": "after `await lazyModuleLoads.get(\"mermaid\")`: undefined (never asked for) skips it, a pending load is awaited",
+    "graph-canvas.js:refreshBoardList": "typeof-guarded refresh of a list that exists only once the library bundle is on screen (lazy-entries.js rule 2)",
+    "graph-canvas.js:wbMapTidyFresh": "after `await openWhiteboardBoard(...)`, a stand-in that loads the library bundle (whiteboard-map.js) first",
+    "graph.js:fillSearchSuggest": "inside `typeof searchSuggest !== \"undefined\" && searchSuggest?.input === box`: the object is search-suggest.js's own",
+    "library.js:showTopicInGraph": "after `await switchTab(\"graph\")`, which fetches the graph bundle first",
+    "lightbox-view.js:loadLibrary": "typeof-guarded refresh of the Library's list: skipping is right when it was never opened, and opening it loads and renders it (lazy-entries.js rule 2)",
+    "lightbox-view.js:renderLibrary": "typeof-guarded refresh of the Library's list: skipping is right when it was never opened, and opening it loads and renders it (lazy-entries.js rule 2)",
+    "lightbox-view.js:renderLibraryImagesGallery": "typeof-guarded refresh of the Library's list: skipping is right when it was never opened, and opening it loads and renders it (lazy-entries.js rule 2)",
+    "math-editor.js:docMathRender": "typeof-guarded tile face: the glyph is the designed fallback until the library bundle's renderer is in",
+    "meetings.js:holdLiveCaptions": "behind `meetingLive.on`, which meetingLiveWordsStart sets only after `await ensureModule(\"captions\")`",
+    "meetings.js:loadLibrary": "typeof-guarded refresh of the Library's list: skipping is right when it was never opened, and opening it loads and renders it (lazy-entries.js rule 2)",
+    "meetings.js:stopRecorderWords": "behind `meetingLive.on`, which meetingLiveWordsStart sets only after `await ensureModule(\"captions\")`",
+    "note-edit-panels.js:noteOffersAttach": "typeof-guarded: a form opened before quickadd.js (preloaded three seconds after boot) has no offers, by design",
+    "note-properties.js:applyGraphHighlight": "behind `typeof renderGraph`/`typeof applyGraphHighlight` guards, both graph.js's: with the graph never loaded there is no map to colour",
+    "note-properties.js:graphColourMode": "behind `typeof renderGraph`/`typeof applyGraphHighlight` guards, both graph.js's: with the graph never loaded there is no map to colour",
+    "quickadd.js:renderPalette": "behind `!$(\"palette-overlay\").classList.contains(\"hidden\")`: only openPalette shows it, and its stand-in loads app-palette.js",
+    "reveal-targets.js:renderDocShortcutSheet": "typeof-guarded; the section says where its rows come from when the library bundle is not in (the note beside it)",
+    "reveal-targets.js:renderLibrary": "a reveal target: `await switchTab(target.tab)` (line 563), revealDocument, revealBoard or revealBoardsGallery has loaded the library bundle first",
+    "reveal-targets.js:renderLibraryFilters": "a reveal target: `await switchTab(target.tab)` (line 563), revealDocument, revealBoard or revealBoardsGallery has loaded the library bundle first",
+    "reveal-targets.js:renderWbShortcutSheet": "typeof-guarded; the section says where its rows come from when the library bundle is not in (the note beside it)",
+    "reveal-targets.js:setDocView": "a reveal target: `await switchTab(target.tab)` (line 563), revealDocument, revealBoard or revealBoardsGallery has loaded the library bundle first",
+    "reveal-targets.js:wbCommandsLive": "typeof-guarded; the section says where its rows come from when the library bundle is not in (the note beside it)",
+    "reveal-targets.js:wbExportBoard": "a reveal target: `await switchTab(target.tab)` (line 563), revealDocument, revealBoard or revealBoardsGallery has loaded the library bundle first",
+    "reveal-targets.js:wbNewUntitledBoard": "a reveal target: `await switchTab(target.tab)` (line 563), revealDocument, revealBoard or revealBoardsGallery has loaded the library bundle first",
+    "run-core.js:docCsvTableHtml": "the run bundle is fetched only by documents-code.js (`ensureModule(\"run\")`, runDocument), which defines it",
+    "search.js:paletteFind": "finderActions is called after `await ensureModule(\"appPalette\")` (search.js lines 187 and 357)",
+    "settings-controls.js:atlasLookReason": "inside the afterCharacters callback",
+    "settings-data.js:helpChatNewChat": "restoreGuideTurns' one caller awaits ensureModule(\"helpChat\") first (the undo handler, `kept.kind === \"guide\"`)",
+    "settings-data.js:renderHelpChatMessage": "restoreGuideTurns' one caller awaits ensureModule(\"helpChat\") first (the undo handler, `kept.kind === \"guide\"`)",
+    "settings-data.js:renderLanAddresses": "typeof-guarded, else the row is hidden; renderPrivacy runs in a Settings window that awaited settingsControls",
+    "space-swap.js:showNoDocument": "behind `typeof currentDoc`/`typeof wbFlushNudge` guards: with documents.js or the board never loaded there is nothing open to put away",
+    "space-swap.js:wbFlushNudge": "behind `typeof currentDoc`/`typeof wbFlushNudge` guards: with documents.js or the board never loaded there is nothing open to put away",
+    "statistics.js:overlayClosed": "typeof-guarded back-stack note: router-overlays.js is in the quickNote bundle, preloaded three seconds after boot, and without it no overlay entry was pushed to pop",
+    "whiteboard-commands.js:renderPalette": "behind `!$(\"palette-overlay\").classList.contains(\"hidden\")`: only openPalette shows it, and its stand-in loads app-palette.js",
+    "whiteboard-interchange.js:mermaidKnown": "typeof-guarded with a designed fallback (no picture, the plain placeholder) until mermaid-draw.js is in",
+    "whiteboard.js:nameMarkBuddyCanvasZoom": "typeof-guarded sync of the companion's zoom: with no companion loaded there is nothing to scale",
+}
+
 GUARD = re.compile(r'typeof\s+(\w+)\s*===?\s*["\']function["\']')
 
 
@@ -443,7 +506,7 @@ def test_no_boot_file_silently_depends_on_a_lazy_bundle():
             for match in call.finditer(line):
                 symbol = match.group(1)
                 bundle = candidates[symbol]
-                if symbol in entries.get(bundle, set()):
+                if any(symbol in entries.get(b, set()) for b in arrives_with[symbol]):
                     continue
                 if symbol in REACHED_AFTER_LOAD or f"{name}:{symbol}" in REACHED_AFTER_LOAD:
                     continue
@@ -541,7 +604,7 @@ def test_a_boot_listener_cannot_reach_a_lazy_function_before_its_bundle():
     for bundle, files in lazy.items():
         for file_name in files:
             for symbol in _top_level_functions(FRONTEND / "js" / file_name):
-                if symbol not in boot_defined and symbol not in entries.get(bundle, set()):
+                if symbol not in boot_defined and not any(symbol in names for names in entries.values()):
                     lazy_only.setdefault(symbol, bundle)
     call = re.compile(r"(?<![\w$.])(" + "|".join(sorted(map(re.escape, lazy_only))) + r")\s*\(")
     on_lazy_page = _ids_on_lazy_pages()
@@ -596,3 +659,68 @@ def test_the_graph_canvas_is_not_desynchronized():
     source = (Path(__file__).resolve().parent.parent / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8")
     code = "\n".join(line for line in source.splitlines() if not line.lstrip().startswith("//"))
     assert "desynchronized" not in code
+
+
+def _defined_any_form(path: Path) -> set[str]:
+    """Every name a file binds at any depth: functions, const/let/var, classes."""
+    source = path.read_text(encoding="utf-8")
+    names = set(re.findall(r"(?:^|\s)(?:async )?function\*? ([A-Za-z_$][\w$]*)\s*\(", source))
+    names |= set(re.findall(r"\b(?:const|let|var|class)\s+([A-Za-z_$][\w$]*)", source))
+    names |= set(re.findall(r"\bwindow\.([A-Za-z_$][\w$]*)\s*=[^=]", source))
+    return names
+
+
+def lazy_to_lazy_gaps(used: set[str] | None = None) -> list[str]:
+    """One lazy file calling a function that only another bundle defines, where
+    its own bundle (plus declared dependencies) does not carry it, no stand-in
+    stands for it, and nothing before the call awaits it. `progressLine` in Ask,
+    the Guide and first-run was this: answer-kit.js left three bundles."""
+    lazy = _lazy_files()
+    entries = _entry_points()
+    always: set[str] = set().union(*entries.values())
+    for name in _boot_scripts():
+        always |= _defined_any_form(FRONTEND / "js" / name)
+    defined_in: dict[str, set[str]] = {}
+    for bundle, files in lazy.items():
+        for file_name in files:
+            if file_name.endswith(".js") and (FRONTEND / "js" / file_name).exists():
+                for symbol in _top_level_functions(FRONTEND / "js" / file_name):
+                    defined_in.setdefault(symbol, set()).add(file_name)
+    candidates = {s for s in defined_in if s not in always}
+    call = re.compile(r"(?<![\w$.])(" + "|".join(sorted(map(re.escape, candidates))) + r")\s*\(")
+    arrives_with = {s: {b for b, files in lazy.items() if files and set(files) & defined_in[s]} for s in candidates}
+    gaps: list[str] = []
+    for file_name in sorted({f for files in lazy.values() for f in files if f.endswith(".js")}):
+        bundles = [b for b, files in lazy.items() if file_name in files]
+        own = _defined_any_form(FRONTEND / "js" / file_name)
+        carried = [set().union(*(_defined_any_form(FRONTEND / "js" / f) for f in lazy[b] if f.endswith(".js"))) for b in bundles]
+        lines = (FRONTEND / "js" / file_name).read_text(encoding="utf-8").split("\n")
+        for number, line in enumerate(lines, 1):
+            if line.lstrip().startswith(("//", "*", "/*")):
+                continue
+            for match in call.finditer(line):
+                symbol = match.group(1)
+                if symbol in own or all(symbol in c for c in carried):
+                    continue
+                if f"{file_name}:{symbol}" in LAZY_REACHED_AFTER_LOAD:
+                    if used is not None:
+                        used.add(f"{file_name}:{symbol}")
+                    continue
+                start = number - 1
+                while start > 0 and not FUNCTION_START.match(lines[start]):
+                    start -= 1
+                before = "\n".join(lines[start : number - 1]) + "\n" + line[: match.start()]
+                if any(f'ensureModule("{b}")' in before for b in arrives_with[symbol]):
+                    continue
+                if any(f'lazyScript("/js/{f}")' in before for f in defined_in[symbol]):
+                    continue
+                missing = sorted(b for b, c in zip(bundles, carried) if symbol not in c)
+                gaps.append(f"{file_name}:{number}: {symbol}() is defined only in {sorted(defined_in[symbol])} ('{sorted(arrives_with[symbol])}'); bundle(s) {missing} do not carry it")
+    return gaps
+
+
+def test_no_lazy_file_calls_a_name_only_another_bundle_defines():
+    used: set[str] = set()
+    gaps = lazy_to_lazy_gaps(used)
+    assert not gaps, "\n".join(gaps)
+    assert used == set(LAZY_REACHED_AFTER_LOAD), f"no longer needed, take out: {sorted(set(LAZY_REACHED_AFTER_LOAD) - used)}"
