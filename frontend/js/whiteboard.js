@@ -2615,13 +2615,38 @@ async function wbUngroupSelection() {
 //: not held on to.
 const wbItemElCache = new Map();
 
+//: **A miss is as cheap as a hit** (audit 1031 BD3). Opening the 302-item
+//: board asked for every item's element before the first render had made one,
+//: and each miss walked the whole document: 115 of the open's 848 ms at 4x. The
+//: cards and objects are the children of `#wb-html-layer`, so one pass over
+//: them builds a key index, rebuilt when the layer's child count moves or a
+//: render empties the cache; a lookup is then one `Map.get`.
+const wbItemElIndex = { byKey: new Map(), count: -1, last: null };
+
+function wbItemElIndexed(key, retry = true) {
+  const layer = document.getElementById("wb-html-layer");
+  if (!layer) return null;
+  const index = wbItemElIndex;
+  if (index.count !== layer.childElementCount || index.last !== layer.lastElementChild) {
+    index.byKey.clear();
+    for (const child of layer.children) {
+      const kind = child.classList.contains("node-card") ? "node" : child.classList.contains("wb-object") ? "object" : "";
+      if (kind) index.byKey.set(`${kind}:${child.dataset.id}`, child);
+    }
+    index.count = layer.childElementCount;
+    index.last = layer.lastElementChild;
+  }
+  const el = index.byKey.get(key);
+  if (!el || el.isConnected) return el || null;
+  index.count = -1;
+  return retry ? wbItemElIndexed(key, false) : null;
+}
+
 function wbItemElement(kind, id) {
   const key = `${kind}:${id}`;
   const cached = wbItemElCache.get(key);
   if (cached && cached.isConnected) return cached;
-  const el = document.querySelector(
-    kind === "node" ? `.node-card[data-id="${id}"]` : `.wb-object[data-id="${id}"]`
-  );
+  const el = wbItemElIndexed(key);
   if (el) wbItemElCache.set(key, el);
   else wbItemElCache.delete(key);
   return el;
@@ -6590,6 +6615,7 @@ function wbApplySelectionHighlight() {
   //: outline stays: the member is still visibly one of the selected things
   //: (INBOX 278, and the earlier report it has to keep answering).
   for (const [el, grouped] of wanted) {
+    if (!grouped) wbEnsureHandles(el);
     if (!el.classList.contains("wb-selected")) el.classList.add("wb-selected");
     if (el.classList.contains("wb-in-group") !== grouped) el.classList.toggle("wb-in-group", grouped);
   }
@@ -10489,6 +10515,36 @@ const WB_KIND_INFO = {
 //: Pointing every such drag at the item's own parent is a no-op for the
 //: handles that were already fine (a stable origin either way) and a fix for
 //: the ones that were not.
+//: **Resize and turn handles are built the first time an item wants them**
+//: (audit 1031 BD3: the 302-item board held 2,718 handle elements, each with
+//: its attributes and a drag behaviour, built on every open: 679 of the
+//: 848 ms the render took at 4x, and every style and layout pass after it
+//: walked them too). A handle shows for a hovered, focused or selected item
+//: only, so `wbArmHandles` keeps the builder, and the pointer reaching the
+//: item, focus entering it or the selection naming it calls `wbEnsureHandles`.
+const WB_HANDLE_BUILDERS = new WeakMap();
+
+function wbArmHandles(el, build) {
+  WB_HANDLE_BUILDERS.set(el, build);
+}
+
+function wbEnsureHandles(el) {
+  const build = WB_HANDLE_BUILDERS.get(el);
+  if (!build) return;
+  WB_HANDLE_BUILDERS.delete(el);
+  build();
+}
+
+onDomReady(() => {
+  const board = document.getElementById("whiteboard-container");
+  const reach = (e) => {
+    const el = e.target?.closest?.(".wb-object, .node-card");
+    if (el) wbEnsureHandles(el);
+  };
+  board?.addEventListener("pointerover", reach, { passive: true });
+  board?.addEventListener("focusin", reach);
+});
+
 function wbStableDragContainer(itemSelector) {
   return function () {
     return this.closest(itemSelector)?.parentNode || this.parentNode;
@@ -21857,6 +21913,7 @@ function renderWhiteboard() {
   //: from the previous set is about to describe something that is gone.
   wbClearMapNodeSizeCache();
   wbItemElCache.clear();
+  wbItemElIndex.count = -1;
   //: And the overview's items were drawn from that set: the next pan frame
   //: redraws them rather than only moving its rectangle.
   wbNavState.stale = true;
@@ -22632,19 +22689,24 @@ function renderWhiteboard() {
     });
   });
 
-  for (const handle of ["nw", "n", "ne", "e", "se", "s", "sw", "w"]) {
-    nodeEnter.append("div")
-      .attr("class", "wb-resize-handle")
-      .attr("data-handle", handle)
-      //: The same title the object handles carry, for the same reason: the
-      //: double-click-to-fit gesture had nothing on screen saying it existed.
-      .attr("title", "Drag to resize: Shift keeps the proportions, double-click fits the card to its note")
-      .call(nodeResizeDrag(handle));
-  }
-  nodeEnter.append("div")
-    .attr("class", "wb-rotate-handle")
-    .attr("title", "Drag to rotate: Shift snaps to 15°, double-click stands it upright")
-    .call(nodeRotateDrag());
+  nodeEnter.each(function () {
+    const card = d3.select(this);
+    wbArmHandles(this, () => {
+      for (const handle of ["nw", "n", "ne", "e", "se", "s", "sw", "w"]) {
+        card.append("div")
+          .attr("class", "wb-resize-handle")
+          .attr("data-handle", handle)
+          //: The same title the object handles carry, for the same reason: the
+          //: double-click-to-fit gesture had nothing on screen saying it existed.
+          .attr("title", "Drag to resize: Shift keeps the proportions, double-click fits the card to its note")
+          .call(nodeResizeDrag(handle));
+      }
+      card.append("div")
+        .attr("class", "wb-rotate-handle")
+        .attr("title", "Drag to rotate: Shift snaps to 15°, double-click stands it upright")
+        .call(nodeRotateDrag());
+    });
+  });
 
   wbWireContextMenu(nodeEnter, "node");
 
@@ -23827,6 +23889,12 @@ function renderWbObjects(canvas) {
     // The eight handles and the rotate grip also sit exactly where the
     // chevron and the `+` do, and would swallow both.
     if (WB_MAP_KINDS.has(d.kind)) return;
+    wbArmHandles(this, () => wbBuildObjectHandles(el, d.kind));
+  });
+
+  //: The eight sizes and the turn grip of one object, built on first need
+  //: (`wbArmHandles`).
+  function wbBuildObjectHandles(el, kind) {
     for (const handle of ["nw", "n", "ne", "e", "se", "s", "sw", "w"]) {
       el.append("div")
         .attr("class", "wb-resize-handle")
@@ -23836,18 +23904,18 @@ function renderWbObjects(canvas) {
         //: these had none, so double-tapping to fit was real and invisible,
         //: which is indistinguishable from missing and was duly reported as
         //: missing.
-        .attr("title", wbResizeHandleTitle(d.kind))
+        .attr("title", wbResizeHandleTitle(kind))
         .call(resizeDrag(handle));
     }
     //: A table's grid holds nothing square once turned. A frame does turn
     //: (INBOX 1327, reversing decision 14's "no rotation"), and what lies
     //: wholly inside it turns with it (decision 42, `wbFrameTurnOrigin`).
-    if (d.kind === "table") return;
+    if (kind === "table") return;
     el.append("div")
       .attr("class", "wb-rotate-handle")
-      .attr("title", wbRotateGripTitle(d.kind))
+      .attr("title", wbRotateGripTitle(kind))
       .call(objectRotateDrag());
-  });
+  }
 
   wbWireContextMenu(objectEnter, "object");
 

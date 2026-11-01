@@ -166,7 +166,7 @@ def test_frames_turn_and_a_click_on_a_panel_selects_it() -> None:
     """INBOX 1327. Browser half (measured): a tinted panel's body, a plain frame's edge and a
     panel's title select (object ids returned), a plain frame's body and bare board do not,
     and dragging a frame's rotate handle stored rotation 90."""
-    assert 'if (d.kind === "table") return;\n    el.append("div")\n      .attr("class", "wb-rotate-handle")' in SOURCE
+    assert 'if (kind === "table") return;\n    el.append("div")\n      .attr("class", "wb-rotate-handle")' in SOURCE
     assert "function wbSelectFrameAt(" in SOURCE
     assert "wbSelectFrameAt(...getLogicalMouse(e)" in SOURCE
 
