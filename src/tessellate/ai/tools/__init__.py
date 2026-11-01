@@ -1590,9 +1590,9 @@ def _pin_note(session: Session, args: dict) -> dict:
 LINK_TYPE_DESCRIPTION_CHARS = 420
 
 _LINK_TYPE_LEAD = (
-    "Optional kind of link, read as note_id <kind> the other note. One of: "
+    "Optional: note_id <kind> the other note. One of: "
 )
-_LINK_TYPE_TAIL = ". Leave it out when unsure."
+_LINK_TYPE_TAIL = ". Omit when unsure."
 
 
 def link_type_description(types: dict[str, dict]) -> str:
@@ -2741,10 +2741,8 @@ TOOLS: dict[str, ToolSpec] = {
 
         ToolSpec(
             "check_learned",
-            "Check what the app learned about the user: re-read every claim and question it worked out "
-            "against its note as written now, retire what no longer holds (note edited or deleted, a joke, "
-            "quote or draft, marked wrong, repeated) and flag what needs a look (two notes disagree, a "
-            "date that has passed). The retired ones can be undone in Settings, What it learned.",
+            "Re-check what was learned about the user against the notes as they are now: retire "
+            "what no longer holds, flag what needs a look (two notes disagree, a date passed).",
             {"type": "object", "properties": {}},
             _check_learned,
         ),
@@ -2876,9 +2874,8 @@ TOOLS: dict[str, ToolSpec] = {
         ToolSpec(
             "list_notes",
             "Walk the user's notes, newest first, optionally by category, tag, age or "
-            "untagged. One page at a time: while has_more, call again with next_offset. "
-            "untagged:true for 'tag my untagged notes'. search_notes finds something "
-            "specific.",
+            "untagged; while has_more, call again with next_offset. untagged:true for "
+            "'tag my untagged notes'; search_notes finds something specific.",
             {
                 "type": "object",
                 "properties": {
@@ -2893,8 +2890,7 @@ TOOLS: dict[str, ToolSpec] = {
                     },
                     "since": {
                         "type": "string",
-                        "description": "A window in the user's words: 'this week', 'since Friday', 'last "
-                        "month', or a number of days (optional)",
+                        "description": "Optional window: 'this week', 'since Friday', 'last month', or a number of days",
                     },
                     "limit": {
                         "type": "integer",
@@ -2933,8 +2929,7 @@ TOOLS: dict[str, ToolSpec] = {
                     },
                     "since": {
                         "type": "string",
-                        "description": "A window in the user's words: 'this week', 'since Friday', 'last "
-                        "month', or a number of days (optional)",
+                        "description": "Optional window: 'this week', 'since Friday', 'last month', or a number of days",
                     },
                 },
             },
@@ -2993,8 +2988,7 @@ TOOLS: dict[str, ToolSpec] = {
         ToolSpec(
             "read_file",
             "Everything the app knows about one file: its caption and the text read from it. "
-            "Takes `kind` and `id` exactly as search_files gave them. The text is capped: for"
-            " a long file, pass query.",
+            "Takes `kind` and `id` as search_files gave them. Long text is capped: pass query.",
             {
                 "type": "object",
                 "properties": {
@@ -3064,15 +3058,14 @@ TOOLS: dict[str, ToolSpec] = {
         ),
         ToolSpec(
             "read_whiteboard",
-            "Read a whiteboard: the notes placed as cards, text boxes, how many images, and "
-            "which cards link to which. Use it for 'what's on my project board?' or before "
-            "adding, so nothing is duplicated.",
+            "Read a whiteboard: its cards, text boxes, image count and which cards link. Use "
+            "it for 'what's on my board?' or before adding, so nothing is duplicated.",
             {
                 "type": "object",
                 "properties": {
                     "board_id": {
                         "type": "integer",
-                        "description": "The board's own note id. Omit for the default board.",
+                        "description": "The board's note id; omit for the default board.",
                     },
                 },
             },
@@ -3102,7 +3095,7 @@ TOOLS: dict[str, ToolSpec] = {
                     "note_id": _NOTE_ID,
                     "board_id": {
                         "type": "integer",
-                        "description": "The board's own note id. Omit for the default board.",
+                        "description": "The board's note id; omit for the default board.",
                     },
                     "x": {"type": "number", "description": "Board x position (optional)"},
                     "y": {"type": "number", "description": "Board y position (optional)"},
@@ -3129,9 +3122,9 @@ TOOLS: dict[str, ToolSpec] = {
         ToolSpec(
             "generate_diagram",
             "Place a tree of notes on a board in one call. Each node is a new note ('title') "
-            "or an existing one ('note_id'), with a short 'ref' that children name as their "
-            "'parent_ref'. One node has no parent_ref (the root), or parent_ref is card:<id> "
-            "to grow from a card on the board. Never invent x/y. "
+            "or an existing one ('note_id') with a short 'ref'; children name it as "
+            "'parent_ref'. The root has none, or card:<id> to grow from a board card. "
+            "Never invent x/y. "
             f"Up to {MAX_DIAGRAM_NODES} nodes.",
             {
                 "type": "object",
@@ -3151,7 +3144,7 @@ TOOLS: dict[str, ToolSpec] = {
                     },
                     "board_id": {
                         "type": "integer",
-                        "description": "The board's own note id. Omit for the default board.",
+                        "description": "The board's note id; omit for the default board.",
                     },
                     "layout": {
                         "type": "string",
@@ -3172,9 +3165,9 @@ TOOLS: dict[str, ToolSpec] = {
         # thing they never ask the model for is a coordinate.
         ToolSpec(
             "read_mindmap",
-            "Read a mindmap as an indented outline: title, then each node with its id, kind "
-            "and the note or document it stands for. Use it before adding to a map. Needs "
-            "board_id; search_whiteboard finds it by name.",
+            "Read a mindmap as an indented outline: each node's id, kind and the note or "
+            "document it stands for. Use it before adding. Needs board_id; search_whiteboard "
+            "finds it.",
             {
                 "type": "object",
                 "properties": {
@@ -3206,9 +3199,9 @@ TOOLS: dict[str, ToolSpec] = {
         ),
         ToolSpec(
             "map_from_note",
-            "A mind map from one note in one call ('turn this note into a map'): its title "
-            "the centre, its headings and lists the branches. Use it instead of "
-            "create_mindmap plus add_map_node for one note's outline.",
+            "A mind map from one note in one call ('turn this note into a map'): title the "
+            "centre, headings and lists the branches. Use it, not create_mindmap plus "
+            "add_map_node, for one note's outline.",
             {
                 "type": "object",
                 "properties": {
@@ -3356,9 +3349,8 @@ TOOLS: dict[str, ToolSpec] = {
         ToolSpec(
             "list_library",
             "Find shapes, flowchart symbols, arrows, frames (Kanban, SWOT, "
-            "retrospective), icons and the person's own saved items in the "
-            "board's object library, by a word. Gives each a ref for "
-            "place_library_item.",
+            "retrospective), icons and the person's saved items in the board "
+            "library by a word; each has a ref for place_library_item.",
             {
                 "type": "object",
                 "properties": {
@@ -3471,9 +3463,8 @@ TOOLS: dict[str, ToolSpec] = {
             # Offered by cue, not in CORE_TOOLS (§34's "the registry should
             # stop growing", this only needs to be on the wire for the rare
             # turn that's actually about the chat getting long).
-            "Summarise the older part of this conversation to free context. Your turn ENDS: "
-            "the user edits the summary before it replaces anything. Only when asked to "
-            "shorten the chat itself, not to summarise notes.",
+            "Summarise the older part of this chat to free context. Your turn ENDS: the user "
+            "edits the summary first. Only when asked to shorten the chat, not to summarise notes.",
             {"type": "object", "properties": {}},
             _compress_chat,
             ends_turn=True,
@@ -3568,8 +3559,8 @@ TOOLS: dict[str, ToolSpec] = {
         ToolSpec(
             "calculate",
             "Work out a sum, percentage, unit or currency conversion, or count "
-            "of days, the way the app does. Use it for every number you would "
-            "otherwise compute; say the result and how it was read.",
+            "of days, as the app does. Use it for every number; say the result "
+            "and how it was read.",
             {"type": "object", "properties": {"question": {"type": "string", "description": "e.g. 15% of 240, 5 km in miles, days until 25 December"}},
              "required": ["question"]},
             _calculate,

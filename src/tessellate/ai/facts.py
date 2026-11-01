@@ -53,6 +53,7 @@ import hashlib
 import logging
 import re
 from collections import Counter
+from collections.abc import Iterable
 from types import SimpleNamespace
 from dataclasses import dataclass
 from datetime import datetime
@@ -359,18 +360,13 @@ def _proposed(content: str, questions_on: bool, templates: set[str]) -> list[Can
 
 def _in_context(entry: Entry, proposed: list[Candidate]) -> list[Candidate]:
     """Decision 67: a sentence is learned only in its context. What
-    `learned_audit.context_reason` would retire afterwards (a note tagged joke,
-    quote, fiction, test or draft; a sentence inside a quote or a Q-and-A list)
-    is not proposed in the first place."""
-    from tessellate.ai import learned_audit as audit
-
+    `context_reason` says is not a claim (a note tagged joke, quote, fiction,
+    test or draft; a sentence inside a quote or a Q-and-A list) is not
+    proposed, and the learned-store check retires it by the same rule."""
     if not proposed:
         return proposed
-    note = audit.NoteView(id=entry.id, content=entry.content or "", tags=audit.entry_tags(entry))
-    return [
-        item for item in proposed
-        if audit.context_reason(audit.FactView(0, entry.id, item.kind, item.text, (item.start, item.end)), note) is None
-    ]
+    content, tags = entry.content or "", entry_tags(entry)
+    return [item for item in proposed if context_reason(item.text, (item.start, item.end), content, tags) is None]
 
 
 def _qa_pairs(content: str) -> int:
@@ -1606,3 +1602,75 @@ def runner_enabled(name: str) -> bool:
         return enabled(deps.get_config(), name)
     except Exception:  # noqa: BLE001  # no app state: nothing has been switched off
         return True
+
+
+CONTEXT_TAGS = frozenset({"joke", "quote", "fiction", "test", "draft"})
+
+
+def entry_tags(entry) -> tuple[str, ...]:  # noqa: ANN001  # an Entry
+    """The note's tags as stored (a JSON list), or none when they do not parse."""
+    import json
+
+    try:
+        tags = json.loads(entry.tags or "[]")
+    except ValueError:
+        return ()
+    return tuple(str(tag) for tag in tags) if isinstance(tags, list) else ()
+
+
+def tag_words(tags: Iterable[str]) -> set[str]:
+    """The words a note's tags say, lower case, `#` and plurals dropped:
+    "#Jokes" and "jokes/dad" both say joke."""
+    words: set[str] = set()
+    for tag in tags:
+        for part in re.split(r"[/\s_-]+", str(tag).lstrip("#").lower()):
+            if part:
+                words.add(part[:-1] if part.endswith("s") and len(part) > 3 else part)
+    return words
+
+
+def context_reason(text: str, span: tuple[int, int], content: str, tags: Iterable[str]) -> str | None:
+    """Why this sentence is not a claim about the person, or None (decision 67):
+    the note is tagged joke, quote, fiction, test or draft; the sentence is
+    inside a quote; the note is a Q-and-A list and the sentence is a line of it."""
+    hit = sorted(tag_words(tags) & CONTEXT_TAGS)
+    if hit:
+        return f"The note is tagged {hit[0]}, so this is not a claim about you."
+    if _quoted(text, span, content):
+        return "The sentence sits inside a quote."
+    if _in_qa_list(text, span, content):
+        return "The note is a list of questions and answers."
+    return None
+
+
+def _located(text: str, span: tuple[int, int], content: str) -> tuple[int, int]:
+    """Where the fact's words are in the note now: its span when it still
+    points at them, else the first place they are."""
+    start, end = span
+    if content[start:end] == text:
+        return start, end
+    found = content.find(text)
+    return (found, found + len(text)) if found >= 0 else (-1, -1)
+
+
+def _quoted(text: str, span: tuple[int, int], content: str) -> bool:
+    start, end = _located(text, span, content)
+    if start < 0:
+        return False
+    line, before, _ = _line_around(content, start, end)
+    if line.lstrip().startswith(">") or text.lstrip()[:1] in _QUOTES:
+        return True
+    return sum(before.count(mark) for mark in _QUOTES) % 2 == 1
+
+
+def _in_qa_list(text: str, span: tuple[int, int], content: str) -> bool:
+    if _qa_pairs(content) < 2:
+        return False
+    start, end = _located(text, span, content)
+    if start < 0:
+        return False
+    line, _before, _end = _line_around(content, start, end)
+    if line.rstrip().endswith("?"):
+        return True
+    above = content[: max(content.rfind("\n", 0, start), 0)].rstrip()
+    return above.split("\n")[-1].rstrip().endswith("?")

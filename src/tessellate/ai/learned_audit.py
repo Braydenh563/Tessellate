@@ -26,13 +26,13 @@ from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 
 from tessellate.ai import facts
+from tessellate.ai.facts import CONTEXT_TAGS, entry_tags, tag_words  # noqa: F401  (moved; re-exported)
 from tessellate.ai.verdicts import Known, norm
 
 RETIRE = "retire"
 FLAG = "flag"
 
 #: Tags that mark a note as not the person's own claims (decision 67).
-CONTEXT_TAGS = frozenset({"joke", "quote", "fiction", "test", "draft"})
 
 #: A date this many days gone, spoken of as ahead, is stale.
 STALE_DAYS = 30
@@ -111,73 +111,11 @@ class _Judged:
         return True
 
 
-def entry_tags(entry) -> tuple[str, ...]:  # noqa: ANN001  # an Entry
-    """The note's tags as stored (a JSON list), or none when they do not parse."""
-    import json
-
-    try:
-        tags = json.loads(entry.tags or "[]")
-    except ValueError:
-        return ()
-    return tuple(str(tag) for tag in tags) if isinstance(tags, list) else ()
-
-
-def tag_words(tags: Iterable[str]) -> set[str]:
-    """The words a note's tags say, lower case, `#` and plurals dropped:
-    "#Jokes" and "jokes/dad" both say joke."""
-    words: set[str] = set()
-    for tag in tags:
-        for part in re.split(r"[/\s_-]+", str(tag).lstrip("#").lower()):
-            if part:
-                words.add(part[:-1] if part.endswith("s") and len(part) > 3 else part)
-    return words
-
-
 def context_reason(fact: FactView, note: NoteView) -> str | None:
-    """Why this sentence is not a claim about the person, or None (decision 67):
-    the note is tagged joke, quote, fiction, test or draft; the sentence is
-    inside a quote; the note is a Q-and-A list and the sentence is a line of it."""
-    hit = sorted(tag_words(note.tags) & CONTEXT_TAGS)
-    if hit:
-        return f"The note is tagged {hit[0]}, so this is not a claim about you."
-    if _quoted(fact, note.content):
-        return "The sentence sits inside a quote."
-    if _in_qa_list(fact, note.content):
-        return "The note is a list of questions and answers."
-    return None
-
-
-def _located(fact: FactView, content: str) -> tuple[int, int]:
-    """Where the fact's words are in the note now: its span when it still
-    points at them, else the first place they are."""
-    start, end = fact.span
-    if content[start:end] == fact.text:
-        return start, end
-    found = content.find(fact.text)
-    return (found, found + len(fact.text)) if found >= 0 else (-1, -1)
-
-
-def _quoted(fact: FactView, content: str) -> bool:
-    start, end = _located(fact, content)
-    if start < 0:
-        return False
-    line, before, _ = facts._line_around(content, start, end)
-    if line.lstrip().startswith(">") or fact.text.lstrip()[:1] in facts._QUOTES:
-        return True
-    return sum(before.count(mark) for mark in facts._QUOTES) % 2 == 1
-
-
-def _in_qa_list(fact: FactView, content: str) -> bool:
-    if facts._qa_pairs(content) < 2:
-        return False
-    start, end = _located(fact, content)
-    if start < 0:
-        return False
-    line, _before, _end = facts._line_around(content, start, end)
-    if line.rstrip().endswith("?"):
-        return True
-    above = content[: max(content.rfind("\n", 0, start), 0)].rstrip()
-    return above.split("\n")[-1].rstrip().endswith("?")
+    """Why this sentence is not a claim about the person, or None (decision 67);
+    the rule is `facts.context_reason`, which the night shift reads before it
+    proposes a sentence at all."""
+    return facts.context_reason(fact.text, fact.span, note.content, note.tags)
 
 
 def _note_check(judged: _Judged, fact: FactView, note: NoteView | None, known: Known) -> None:

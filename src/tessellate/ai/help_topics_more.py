@@ -278,7 +278,7 @@ MORE_TOPICS: list[dict] = [
             "sentence you marked wrong; a repeat), and flags what needs your eye "
             "(two notes that disagree, a date that has passed), marked on the row "
             "with a Check this line. It also runs after each background pass, as a "
-            "job in Settings, Background jobs with its lines, and as the skill "
+            "job in Settings, Background tasks with its lines, and as the skill "
             "Check what it learned. Export what it learned and Forget "
             "everything learned act on all of it and never touch your notes. "
             "The Learned from you line under the title counts your corrections "

@@ -291,7 +291,7 @@ def test_check_what_it_learned_is_in_the_guide_the_panel_help_and_the_skill():
     from tessellate.ai import help_chat, skills
 
     topic = next(t for t in help_chat.HELP_TOPICS if t["id"] == "learned")
-    for words in ("Check what it learned", "retires", "Undo", "flags", "Background jobs", "joke, quote, fiction, test or draft"):
+    for words in ("Check what it learned", "retires", "Undo", "flags", "Background tasks", "joke, quote, fiction, test or draft"):
         assert words in topic["body"] or words.lower() in topic["body"].lower(), words
     html = (FRONTEND / "index.html").read_text(encoding="utf-8")
     help_body = html[html.index('id="learned-help"') :][:3000]
