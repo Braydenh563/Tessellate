@@ -6198,14 +6198,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `runDebugClass` | frontend/js/run-debug.js:101 |
-| `runDebugDefaults` | frontend/js/run-debug.js:76 |
-| `runDebugEdit` | frontend/js/run-debug.js:45 |
-| `runDebugKids` | frontend/js/run-debug.js:57 |
-| `runDebugLower` | frontend/js/run-debug.js:173 |
-| `runDebugPlainDefault` | frontend/js/run-debug.js:67 |
-| `runDebugQuote` | frontend/js/run-debug.js:52 |
-| `runDebugSuperCall` | frontend/js/run-debug.js:146 |
+| `runDebugClass` | frontend/js/run-debug.js:102 |
+| `runDebugDefaults` | frontend/js/run-debug.js:77 |
+| `runDebugEdit` | frontend/js/run-debug.js:46 |
+| `runDebugKids` | frontend/js/run-debug.js:58 |
+| `runDebugLower` | frontend/js/run-debug.js:174 |
+| `runDebugPlainDefault` | frontend/js/run-debug.js:68 |
+| `runDebugQuote` | frontend/js/run-debug.js:53 |
+| `runDebugSuperCall` | frontend/js/run-debug.js:147 |
 
 ### frontend/js/run-tests.js (3)
 
@@ -6749,11 +6749,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `spaceEnterFor` | frontend/js/space-swap.js:239 |
-| `spaceLeave` | frontend/js/space-swap.js:145 |
-| `spaceReload` | frontend/js/space-swap.js:162 |
-| `spaceSwapNow` | frontend/js/space-swap.js:203 |
-| `swapSpace` | frontend/js/space-swap.js:184 |
+| `spaceEnterFor` | frontend/js/space-swap.js:240 |
+| `spaceLeave` | frontend/js/space-swap.js:146 |
+| `spaceReload` | frontend/js/space-swap.js:163 |
+| `spaceSwapNow` | frontend/js/space-swap.js:204 |
+| `swapSpace` | frontend/js/space-swap.js:185 |
 
 ### frontend/js/standalone-undo.js (2)
 

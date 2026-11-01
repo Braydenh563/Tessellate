@@ -43,8 +43,9 @@ TOP_LEVEL_LETS_CAP = 699
 #: Ranked row 37a, 2026-11-01: every name a script adds to the shared scope
 #: (`tests/_js_scope.py`: a wrapped file's exports, any other file's top-level
 #: declarations). 9,905 before; embed-choices.js, model-bench.js and
-#: dash-night.js wrapped whole, one export each, freed 23.
-GLOBAL_NAMES_CAP = 9882
+#: dash-night.js wrapped whole, one export each, freed 23. Z1 added
+#: space-swap.js (two entry points, wrapped); run-debug.js wrapped: 9,875.
+GLOBAL_NAMES_CAP = 9875
 
 
 def _code() -> dict[str, str]:
