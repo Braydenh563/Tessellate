@@ -13,7 +13,7 @@ async function openMaths(page) {
   await openApp(page);
   const made = await api(page, "/documents", { method: "POST", body: JSON.stringify({ title: `Maths field ${Date.now() % 100000}`, content: BODY }) });
   await openApp(page, `/#/docs/${made.id}`);
-  await page.waitForFunction(() => typeof docCmView !== "undefined" && docCmView.state.doc.length > 20);
+  await page.waitForFunction(() => typeof docCmView !== "undefined" && docCmView?.state.doc.length > 20);
   await page.evaluate(() => {
     if (typeof setDocView === "function") setDocView("live");
     docCmView.focus();
