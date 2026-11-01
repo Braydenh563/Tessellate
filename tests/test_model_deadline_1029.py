@@ -243,3 +243,20 @@ def test_the_searxng_status_does_not_wait_on_a_docker_that_hangs(app_state, monk
     assert _wait(lambda: api.get("/websearch/searxng/status").status_code == 200)
     second, took = _timed(api, "/websearch/searxng/status")
     assert second.status_code == 200 and took < 1.0
+
+
+def test_the_non_streaming_chat_answers_after_its_deadline_and_cuts_the_model(app_state, hanging, monkeypatch):
+    """Audit 1031 HR3: `POST /chat` waited the hung runner's whole 25 s."""
+    from tessellate.api.app import create_app
+
+    assert deadline.seconds_for("POST", "/chat") == 60.0
+    monkeypatch.setitem(deadline.DEADLINES, ("POST", "/chat"), 0.6)
+    deps.override_ai(ollama=ollama_client.OllamaClient(base_url=hanging.url))
+    api = TestClient(create_app(), raise_server_exceptions=False)
+    api.post("/entries", json={"content": "The sourdough starter needs feeding every morning."})
+    started = time.monotonic()
+    response = api.post("/chat", json={"question": "what did I write about the starter", "use_tools": False})
+    took = time.monotonic() - started
+    assert response.status_code in (200, 504), response.text[:200]
+    assert took < 5.0
+    assert hanging.held >= 1 and _wait(lambda: hanging.closed_by_client >= 1)

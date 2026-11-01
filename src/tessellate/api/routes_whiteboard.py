@@ -39,6 +39,7 @@ from sqlalchemy.orm import Session
 from tessellate.core import board_thumbs, deps, events
 from tessellate.core.database import LIKE_ESCAPE, Entry, WhiteboardNode, WhiteboardObject, WhiteboardSketch
 from tessellate.core.deps import get_session
+from tessellate.core.validation_copy import Said
 from tessellate.entry.manager import apply_title, extract_title, update_entry
 
 router = APIRouter(prefix="/whiteboard", tags=["whiteboard"])
@@ -367,6 +368,57 @@ class WhiteboardSketchBase(BaseModel):
     y: Coord = 0.0
     z: Layer = 0
     group_id: str | None = Field(default=None, max_length=GROUP_ID_MAX_LEN)
+
+
+#: What a sketch's JSON may say about its look (audit 1031 BD14). The page
+#: draws these into SVG attributes, so each is a short value of a known shape,
+#: checked on the way in; a row stored before this is read as it is.
+_PATH_RE = re.compile(r"^[MmLlHhVvCcSsQqTtAaZz0-9eE.,+\-\s]*$")
+_COLOUR_RE = re.compile(r"^[#A-Za-z0-9(),.%\s/-]{0,60}$")
+_SKETCH_NUMBERS = {"width": (0, 400), "opacity": (0, 1)}
+_SKETCH_COLOURS = ("color", "fill", "label_color")
+
+
+def _bad_sketch_field(parsed: dict) -> str | None:
+    """The first field of a sketch's JSON that is not a value the page can draw."""
+    path = parsed.get("d")
+    if path is not None and not (isinstance(path, str) and _PATH_RE.match(path)):
+        return "d"
+    for key in _SKETCH_COLOURS:
+        value = parsed.get(key)
+        if value is not None and not (isinstance(value, str) and _COLOUR_RE.match(value) and "url(" not in value.lower()):
+            return key
+    for key, (low, high) in _SKETCH_NUMBERS.items():
+        value = parsed.get(key)
+        if value is not None and not (isinstance(value, (int, float)) and not isinstance(value, bool) and low <= value <= high):
+            return key
+    return None
+
+
+def check_sketch_data(data: str) -> str:
+    """`data` unchanged when it is safe to store: a bare path or list is left
+    to the page's own parse, an object has its path, colours, width and
+    opacity bounded, and a nest too deep to parse is refused."""
+    try:
+        parsed = json.loads(data)
+    except RecursionError as exc:
+        raise Said("This drawing is nested too deeply to save.") from exc
+    except ValueError:
+        return data
+    bad = _bad_sketch_field(parsed) if isinstance(parsed, dict) else None
+    if bad:
+        raise Said(f"The drawing's {bad} is not something the board can draw.")
+    return data
+
+
+class WhiteboardSketchIn(WhiteboardSketchBase):
+    """A sketch as a client sends it: checked. Reading one back
+    (`WhiteboardSketchOut`) never refuses a row that is already stored."""
+
+    @field_validator("data")
+    @classmethod
+    def _drawable(cls, value: str) -> str:
+        return check_sketch_data(value)
 
 
 class WhiteboardSketchOut(WhiteboardSketchBase):
@@ -3269,7 +3321,7 @@ def delete_node(node_id: int, db: Session = Depends(get_session)) -> dict:
 @router.post("/sketches", response_model=WhiteboardSketchOut)
 @events.writes("whiteboard_sketch", "created")
 def create_sketch(
-    sketch_in: WhiteboardSketchBase, db: Session = Depends(get_session)
+    sketch_in: WhiteboardSketchIn, db: Session = Depends(get_session)
 ) -> WhiteboardSketch:
     _require_board(db, sketch_in.board_id)
     sketch = WhiteboardSketch(**sketch_in.model_dump())
@@ -3299,7 +3351,7 @@ def create_sketch(
 @router.put("/sketches/{sketch_id}", response_model=WhiteboardSketchOut)
 @events.writes("whiteboard_sketch", "edited")
 def update_sketch(
-    sketch_id: int, sketch_in: WhiteboardSketchBase, db: Session = Depends(get_session)
+    sketch_id: int, sketch_in: WhiteboardSketchIn, db: Session = Depends(get_session)
 ) -> WhiteboardSketch:
     sketch = deps.get_or_404(db, WhiteboardSketch, sketch_id, "That sketch could not be found.")
     _require_board(db, sketch_in.board_id)
@@ -3309,7 +3361,7 @@ def update_sketch(
     return sketch
 
 
-def _save_sketch(db: Session, sketch: WhiteboardSketch, sketch_in: WhiteboardSketchBase) -> None:
+def _save_sketch(db: Session, sketch: WhiteboardSketch, sketch_in: WhiteboardSketchIn) -> None:
     """What `PUT /sketches/{id}` writes, shared with `save-many`."""
     before = _sketch_state(sketch)
     sketch.data = sketch_in.data
@@ -3442,7 +3494,7 @@ class SaveManyNode(WhiteboardNodeBase):
     id: int
 
 
-class SaveManySketch(WhiteboardSketchBase):
+class SaveManySketch(WhiteboardSketchIn):
     id: int
 
 

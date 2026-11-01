@@ -53,7 +53,7 @@ from tessellate.api.routes_whiteboard import (
     MEDIA_URL_RE,
     WhiteboardObjectBase,
     WhiteboardObjectData,
-    WhiteboardSketchBase,
+    WhiteboardSketchIn,
     _require_board,
     _require_object_data,
     _board_settings,
@@ -1226,7 +1226,7 @@ class PasteItem(BaseModel):
 
     key: str = Field(min_length=1, max_length=40)
     object: WhiteboardObjectBase | None = None
-    sketch: WhiteboardSketchBase | None = None
+    sketch: WhiteboardSketchIn | None = None
     src: str | None = Field(default=None, max_length=40)
     dst: str | None = Field(default=None, max_length=40)
 

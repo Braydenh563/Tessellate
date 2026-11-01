@@ -1204,7 +1204,8 @@ HELP_TOPICS.extend(
             "id": "troubleshooting",
             "keywords": ("not working", "isnt working", "doesnt work", "broken", "error", "no model", "cant connect", "cannot connect", "stuck", "crash", "fails", "logs", "not answering", "isnt answering", "not replying", "doesnt answer", "get an error", "out of date", "looks wrong", "clear cache", "clear the cache", "app cache", "stale", "after an update"),
             "body": (
-                "If Atlas does not answer, open Settings, Models: it says whether a "
+                "If Atlas does not answer, the message says why and has Try again and "
+                "Settings, Models beside it: Models says whether a "
                 "model is connected. Start Ollama (or LM Studio, or a llama.cpp "
                 "server), pick a model and press Connect. Everything except Chat, "
                 "drafting and skills works without one, and Notes, Ask answers from "
