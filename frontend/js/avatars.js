@@ -3884,15 +3884,42 @@ function nameMarkBuddyDodge() {
 }
 let nmbDodgeTimer = 0;
 let nmbDodgeLate = 0;
+//: **A letter typed in a field does not look at the page** (audit 1101, row
+//: 23's CE3 leftover). The look walks every menu and dialog class in the
+//: document (`nameMarkBuddyPopupEls`: live collections that rescan the whole
+//: DOM after each edit, 19ms a look at 4x CPU in a 7,000-line file, twice per
+//: key burst). A plain character cannot open a menu (`/` and `@` can), and a
+//: list it does open (completions, suggestions) hangs from the caret's left
+//: edge, rightwards and down (or up where there is no room), so the look is
+//: made only when the companion is inside that area (the attention box's own
+//: 48px to the left, `NMB_TYPING_REACH` right, up and down) or is already
+//: faded. Its own box is its placed position, not a layout read: a caret box
+//: is the one read.
+const NMB_TYPING_REACH = 300;
+const NMB_TYPING_REACH_RIGHT = 440;
+function nameMarkBuddyTypingKey(e) {
+  if (e.type !== "keyup" || e.ctrlKey || e.metaKey || e.altKey || !/^[^/@]$/.test(e.key || "")) return false;
+  return !!e.target?.closest?.("input, textarea, [contenteditable='true'], .cm-content");
+}
+function nameMarkBuddyTypingFar() {
+  const buddy = document.getElementById("nm-buddy");
+  if (!buddy || buddy.classList.contains("nmb-dodge") || !Number.isFinite(nmb.x) || nmb.anim?.playState === "running") return false;
+  const shape = nameMarkBuddyShape(nmb.x, nmb.y, nmb.pose, nmb.legs);
+  return !nameMarkBuddyAttention().some((a) => shape.some((p) => p.left < a.right + NMB_TYPING_REACH_RIGHT && p.right > a.left && p.top < a.bottom + NMB_TYPING_REACH && p.bottom > a.top - NMB_TYPING_REACH));
+}
+function nameMarkBuddyDodgeTyping() {
+  if (!nameMarkBuddyTypingFar()) nameMarkBuddyDodge();
+}
 for (const type of ["click", "keyup"]) {
-  document.addEventListener(type, () => {
+  document.addEventListener(type, (e) => {
     if (!document.getElementById("nm-buddy")) return;
     clearTimeout(nmbDodgeTimer);
     clearTimeout(nmbDodgeLate);
-    nmbDodgeTimer = setTimeout(nameMarkBuddyDodge, 80);
+    const look = nameMarkBuddyTypingKey(e) ? nameMarkBuddyDodgeTyping : nameMarkBuddyDodge;
+    nmbDodgeTimer = setTimeout(look, 80);
     //: And once the page has settled: a tour step that changes tab, or a
     //: panel that slides in, lands its box after the first look.
-    nmbDodgeLate = setTimeout(nameMarkBuddyDodge, 700);
+    nmbDodgeLate = setTimeout(look, 700);
   }, { passive: true, capture: true });
 }
 

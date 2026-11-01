@@ -2,7 +2,7 @@
 // 20 keys, KEY_MS apart, mid-file, at CPU rate RATE (CDP): long tasks and
 // long animation frames per key, how often the outline's work runs
 // (renderDocOutline, docCodeSymbols), and the per-key dispatch-to-paint time.
-// Env: BASE, RATES (1,4), LINES (7000), KEY_MS (120), KEYS (20), BEFORE_DIR (OVERRIDE_JS of the base files)
+// Env: BASE, RATES (1,4), LINES (7000), KEY_MS (120), KEYS (20), AV (the companion, e.g. atlas: its keyup dodge runs only with one), BEFORE_DIR (OVERRIDE_JS of the base files)
 //   BASE=http://127.0.0.1:8784 node scratchpad/ui-sweeps/codetype1101.js
 const { boot } = require('./lib.js');
 const LINES = Number(process.env.LINES || 7000);
@@ -28,6 +28,7 @@ function source(n) {
   for (const rate of (process.env.RATES || '1,4').split(',').map(Number)) {
     const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
     const cdp = await page.context().newCDPSession(page);
+    if (process.env.AV) await page.evaluate((v) => { const b = document.getElementById('avatar-buddy'); b.value = v; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.AV);
     await page.evaluate(async (c) => {
       const d = await apiJson('/documents', { method: 'POST', body: JSON.stringify({ title: 'big.js', content: c, file_type: 'js' }) });
       switchTab('documents');
@@ -44,6 +45,7 @@ function source(n) {
     await page.evaluate(() => {
       window.__n = { outline: 0, symbols: 0, tasks: [], loaf: [], keys: [] };
       const ro = renderDocOutline; renderDocOutline = function (...a) { window.__n.outline += 1; return ro.apply(this, a); };
+      const dg = nameMarkBuddyDodge; nameMarkBuddyDodge = function (...a) { const t = performance.now(); const r = dg.apply(this, a); window.__n.dodgeMs = (window.__n.dodgeMs || 0) + performance.now() - t; window.__n.dodges = (window.__n.dodges || 0) + 1; return r; };
       const sy = docCodeSymbols; docCodeSymbols = function (...a) { window.__n.symbols += 1; return sy.apply(this, a); };
       new PerformanceObserver((l) => { for (const e of l.getEntries()) window.__n.tasks.push(Math.round(e.duration)); }).observe({ type: 'longtask', buffered: false });
       try { new PerformanceObserver((l) => { for (const e of l.getEntries()) window.__n.loaf.push(Math.round(e.duration)); }).observe({ type: 'long-animation-frame', buffered: false }); } catch (e) {}
@@ -68,7 +70,7 @@ function source(n) {
     const sum = (a) => a.reduce((x, y) => x + y, 0);
     const sorted = [...n.keys].sort((a, b) => a - b);
     rows.push({ rate, lines: LINES, keys: KEYS, outlineCalls: n.outline, symbolCalls: n.symbols, longTasks: n.tasks.length, longTaskMs: sum(n.tasks), maxTaskMs: Math.max(0, ...n.tasks), loafN: n.loaf.length, loafMs: sum(n.loaf),
-      keyP50: sorted[Math.floor(sorted.length / 2)], keyMax: sorted[sorted.length - 1], keyMean: Math.round(sum(n.keys) / Math.max(1, n.keys.length)) });
+      keyP50: sorted[Math.floor(sorted.length / 2)], keyMax: sorted[sorted.length - 1], keyMean: Math.round(sum(n.keys) / Math.max(1, n.keys.length)), dodges: n.dodges || 0, dodgeMs: Math.round(n.dodgeMs || 0) });
     await browser.close();
   }
   console.log(JSON.stringify(rows, null, 1));
