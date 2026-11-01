@@ -235,7 +235,7 @@ const log = [];
 const events = [];
 const store = {};
 const dialog = { close: () => log.push("dialog.close") };
-const grid = (id) => ({ id, replaceChildren: () => log.push("clear:" + id), closest: (sel) => (sel === "#tab-" + ctx.document.body.dataset.tab ? (id === ctx.__activePane ? {} : null) : null) });
+const grid = (id) => ({ id, classList: { add: (name) => log.push(["hide:" + id, name]) }, replaceChildren: () => log.push("clear:" + id), closest: (sel) => (sel === "#tab-" + ctx.document.body.dataset.tab ? (id === ctx.__activePane ? {} : null) : null) });
 const ctx = {
   store, dialog,
   console, Math, Number, Object, Set, Map, JSON, Date, Array, String, Promise, Boolean, Error, CustomEvent: class { constructor(type, init) { this.type = type; this.detail = init && init.detail; } },
@@ -285,6 +285,7 @@ const ctx = {
   showNoDocument: () => { log.push("showNoDocument"); ctx.currentDoc = null; },
   wbFlushNudge: async () => { log.push("wbFlushNudge"); },
   wbShowBoardsLanding: () => log.push("wbShowBoardsLanding"),
+  showEntrySkeletons: () => log.push("skeletons"),
   loadEntries: async () => { log.push(["loadEntries", ctx.activeSpaceId()]); },
   loadRecentQuestions: async () => { log.push(["loadRecentQuestions", ctx.activeSpaceId()]); },
   loadAskHistoryBadge: async () => { log.push(["loadAskHistoryBadge", ctx.activeSpaceId()]); },
@@ -569,3 +570,18 @@ def test_the_storage_event_for_the_space_pref_swaps_and_a_hidden_tab_waits() -> 
     proc = subprocess.run(["node", "-e", harness, block], capture_output=True, text=True)
     assert proc.returncode == 0, proc.stderr[-2000:]
     assert json.loads(proc.stdout) == {"calls": [["beta", True], ["beta", True]], "waited": True}
+
+
+@needs_node
+def test_the_visible_notes_list_is_emptied_at_the_flip_with_its_skeletons() -> None:
+    """The old rows must not stand under the new space's name until the load lands (z1c-1101:
+    1 to 6 frames of the old space's rows, 4.1 a switch over 10 switches, 0 after). The panes above
+    stay left to their loads; the notes list is the one that has its own loading recipe."""
+    out = _run("""
+    store.spaceId = "alpha"; globalThis.document.body.dataset.tab = "notes"; globalThis.__activePane = "entry-list";
+    await swapSpace("beta");
+    __out(log.map((e) => (typeof e === "string" ? e : e[0])));
+    """)
+    assert "clear:entry-list" in out and "skeletons" in out
+    assert out.index("clear:entry-list") < out.index("skeletons") < out.index("loadEntries")
+    assert "hide:empty-message" in out and "hide:no-match-message" in out

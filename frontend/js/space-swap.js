@@ -54,6 +54,17 @@
       if (typeof objOrderCache !== "undefined") objOrderCache.clear();
       const box = $("note-search");
       if (box) box.value = "";
+      //: The list is drawn from `allEntries`, not read from it, so emptying the array left the old
+      //: space's rows on screen under the new name until the load landed (24 to 75 ms measured).
+      //: The list's own loading recipe stands in: its skeletons, drawn here at the flip, and the
+      //: render that follows the load replaces them. The two notices are the old space's too.
+      const list = $("entry-list");
+      if (list) {
+        list.replaceChildren();
+        $("empty-message")?.classList.add("hidden");
+        $("no-match-message")?.classList.add("hidden");
+        if (typeof showEntrySkeletons === "function") showEntrySkeletons();
+      }
     },
     dashboard() {
       dashStatsInflight = null;

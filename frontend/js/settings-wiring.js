@@ -1719,8 +1719,31 @@ function captureCountText(text) {
   document.addEventListener("visibilitychange", () => document.hidden && flush());
 }
 
-$("entry-content").addEventListener("input", (e) => {
-  $("entry-count").textContent = captureCountText(e.target.value);
+//: **The shown count costs the same on every key** (z1c-1101): counting reads the whole text, 0.36 ms a
+//: key at 20,000 characters and 3 ms at 200,000. Up to `CAPTURE_COUNT_SYNC` characters it is counted
+//: on the key (0.04 ms); past that one count runs per `CAPTURE_COUNT_GAP` ms from the box as it is
+//: THEN, so the last key's number always lands and a key in between only checks a timer.
+{
+  const CAPTURE_COUNT_SYNC = 2000;
+  const CAPTURE_COUNT_GAP = 150;
+  const box = $("entry-content");
+  const shown = $("entry-count");
+  let timer = 0;
+  box.addEventListener("input", () => {
+    if (box.value.length <= CAPTURE_COUNT_SYNC) {
+      clearTimeout(timer);
+      timer = 0;
+      shown.textContent = captureCountText(box.value);
+    } else if (!timer) {
+      timer = setTimeout(() => {
+        timer = 0;
+        shown.textContent = captureCountText(box.value);
+      }, CAPTURE_COUNT_GAP);
+    }
+  });
+}
+
+$("entry-content").addEventListener("input", () => {
   // Keep a draft so a half-typed thought survives a reload or a stray tab
   // switch: losing one is the most annoying thing this app could do.
   renderEntryAttachmentChips();

@@ -2,7 +2,7 @@
 
 Generated 2026-11-01 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7546, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8417, test files 1810, tests 15536, plan headings 990, app scripts 28, boot scripts 37, script files 222.
+Counts: frontend functions 7546, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8417, test files 1810, tests 15537, plan headings 990, app scripts 28, boot scripts 37, script files 222.
 
 ## Frontend functions (7546)
 
@@ -1218,18 +1218,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `_isChatComposer` | frontend/js/settings-wiring.js:1906 |
+| `_isChatComposer` | frontend/js/settings-wiring.js:1929 |
 | `activeOverlay` | frontend/js/settings-wiring.js:955 |
 | `captureCountText` | frontend/js/settings-wiring.js:1690 |
 | `captureShortcutKey` | frontend/js/settings-wiring.js:1461 |
-| `clearStagedImages` | frontend/js/settings-wiring.js:2073 |
+| `clearStagedImages` | frontend/js/settings-wiring.js:2096 |
 | `closeOverlaysForChord` | frontend/js/settings-wiring.js:1256 |
 | `closeShortcuts` | frontend/js/settings-wiring.js:1491 |
 | `comboFromEvent` | frontend/js/settings-wiring.js:1292 |
-| `commitCaptureImages` | frontend/js/settings-wiring.js:2058 |
-| `fileDropBox` | frontend/js/settings-wiring.js:1915 |
+| `commitCaptureImages` | frontend/js/settings-wiring.js:2081 |
+| `fileDropBox` | frontend/js/settings-wiring.js:1938 |
 | `flashSaved` | frontend/js/settings-wiring.js:496 |
-| `handleFileUpload` | frontend/js/settings-wiring.js:2105 |
+| `handleFileUpload` | frontend/js/settings-wiring.js:2128 |
 | `hideChordGuide` | frontend/js/settings-wiring.js:1274 |
 | `inEditable` | frontend/js/settings-wiring.js:953 |
 | `loadForgottenOrder` | frontend/js/settings-wiring.js:1568 |
@@ -1245,11 +1245,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `persistSavedSearches` | frontend/js/settings-wiring.js:53 |
 | `renderCaptureFiles` | frontend/js/settings-wiring.js:1655 |
 | `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1635 |
-| `renderInstallRow` | frontend/js/settings-wiring.js:1834 |
+| `renderInstallRow` | frontend/js/settings-wiring.js:1857 |
 | `renderSavedSearches` | frontend/js/settings-wiring.js:17 |
 | `resetShortcuts` | frontend/js/settings-wiring.js:1428 |
 | `restampShortcutHints` | frontend/js/settings-wiring.js:1182 |
-| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2046 |
+| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2069 |
 | `runShortcut` | frontend/js/settings-wiring.js:1319 |
 | `saveCurrentSearch` | frontend/js/settings-wiring.js:61 |
 | `saveShortcutOverrides` | frontend/js/settings-wiring.js:1280 |
@@ -1257,12 +1257,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `savedSearches` | frontend/js/settings-wiring.js:13 |
 | `setShortcutStatus` | frontend/js/settings-wiring.js:1445 |
 | `setShortcutStatusError` | frontend/js/settings-wiring.js:1452 |
-| `singleKeysOn` | frontend/js/settings-wiring.js:2244 |
-| `stagedImageUrl` | frontend/js/settings-wiring.js:2023 |
+| `singleKeysOn` | frontend/js/settings-wiring.js:2267 |
+| `stagedImageUrl` | frontend/js/settings-wiring.js:2046 |
 | `stampShortcutTitles` | frontend/js/settings-wiring.js:1158 |
 | `submitLockForm` | frontend/js/settings-wiring.js:305 |
 | `textCounts` | frontend/js/settings-wiring.js:1680 |
-| `uploadStagedFiles` | frontend/js/settings-wiring.js:2082 |
+| `uploadStagedFiles` | frontend/js/settings-wiring.js:2105 |
 | `wordCount` | frontend/js/settings-wiring.js:1675 |
 
 ### frontend/js/spaces-find.js (25)
@@ -6768,11 +6768,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `spaceEnterFor` | frontend/js/space-swap.js:243 |
-| `spaceLeave` | frontend/js/space-swap.js:144 |
-| `spaceReload` | frontend/js/space-swap.js:161 |
-| `spaceSwapNow` | frontend/js/space-swap.js:204 |
-| `swapSpace` | frontend/js/space-swap.js:185 |
+| `spaceEnterFor` | frontend/js/space-swap.js:254 |
+| `spaceLeave` | frontend/js/space-swap.js:155 |
+| `spaceReload` | frontend/js/space-swap.js:172 |
+| `spaceSwapNow` | frontend/js/space-swap.js:215 |
+| `swapSpace` | frontend/js/space-swap.js:196 |
 
 ### frontend/js/standalone-undo.js (2)
 
@@ -23000,7 +23000,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15536)
+## Tests (15537)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24464,7 +24464,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_space_delete_safe_1029.py | 4 |
 | tests/test_space_dialogs_1028b.py | 2 |
 | tests/test_space_menu_axe_1029.py | 2 |
-| tests/test_space_swap_z1.py | 19 |
+| tests/test_space_swap_z1.py | 20 |
 | tests/test_spaces.py | 28 |
 | tests/test_speakers_81.py | 7 |
 | tests/test_speculative_retrieval.py | 5 |
@@ -25395,7 +25395,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E3 · Model calls are scattered across request handlers, background threads and module singletons, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:666 |
 | E4 · The honest positives, so the section is not one-sided (read) | docs/roadmap/MODERNISATION_AUDIT.md:676 |
 | Earlier morning summary (away run 2026-10-18b, branch claude/magical-feynman-7bgj7j, PR 192, 0.6.0) | docs/roadmap/HANDOVER.md:38 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:572 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:574 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4280 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |
