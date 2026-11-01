@@ -31,7 +31,7 @@ ATTACH_OWN = (JS / "chat-attach.js").read_text(encoding="utf-8") + (JS / "chat-t
 KIT = (JS / "answer-kit.js").read_text(encoding="utf-8")
 PALETTE = (JS / "palette.js").read_text(encoding="utf-8")
 HELP = (JS / "help-chat.js").read_text(encoding="utf-8")
-DOCS = (JS / "documents.js").read_text(encoding="utf-8")
+DOCS = (JS / "documents.js").read_text(encoding="utf-8") + (JS / "documents-ai.js").read_text(encoding="utf-8")
 
 
 def _table_in_node(names: list[str]) -> dict:

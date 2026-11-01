@@ -10762,11 +10762,11 @@ async function deleteCurrentDocument() {
 // --- AI editing ---
 let docAiController = null;
 
-//: The AI panel's code is documents-ai.js, fetched on the first press of any
+//: The Atlas panel's code is documents-ai.js, fetched on the first press of any
 //: of its controls (audit 1031 DC13): `docAiLazy` loads it, then calls the
 //: function of that name the file defines.
 async function docAiLazy(name, ...args) {
-  if (!(await lazyScript("/js/documents-ai.js"))) return toast("The AI panel could not be loaded.", true, { action: ["Try again", () => docAiLazy(name, ...args)] });
+  if (!(await lazyScript("/js/documents-ai.js"))) return toast("The Atlas panel could not be loaded.", true, { action: ["Try again", () => docAiLazy(name, ...args)] });
   return window[name](...args);
 }
 

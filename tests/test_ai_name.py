@@ -256,7 +256,7 @@ def test_the_copy_scanner_still_sees_the_whole_file():
     for name, needle in (
         ("app.js", "Ask Atlas about this"),
         ("whiteboard.js", "wb-expanded-nodes"),
-        ("documents.js", "Applied Atlas's edit."),
+        ("documents.js", "The code panel could not be loaded."),
     ):
         source = frontend_text(name)
         bodies = _js_string_bodies(source)
