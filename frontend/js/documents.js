@@ -14611,9 +14611,18 @@ const DOC_PROSE_SKIP = [
 //: Settings, Writing, "Check link text" turns the check back on.
 const DOC_PROSE_SKIP_LINK_TEXT = [/!?\[(?!\[)[^\][\n]*\](?=\([^)\n]*\)|\[[^\]\n]*\])/g];
 
+//: **One mask per text** (prose-1101): the rule pass, the extras' filter and the
+//: grammar answer each asked for the mask of the same string, three regex walks
+//: for one result. `docProseSkipMask.memo` holds the last one, keyed by the
+//: string and the link-text setting; a reader only reads it. The keystroke path
+//: (`docProse.near`) stores the mask it assembled for the new text here too.
 function docProseSkipMask(text) {
+  const link = docCheckLinkText();
+  const memo = docProseSkipMask.memo;
+  if (memo && memo.link === link && memo.text === text) return memo.mask;
   const mask = new Uint8Array(text.length);
-  const sources = docCheckLinkText() ? DOC_PROSE_SKIP : DOC_PROSE_SKIP.concat(DOC_PROSE_SKIP_LINK_TEXT);
+  docProseSkipMask.memo = { text, link, mask };
+  const sources = link ? DOC_PROSE_SKIP : DOC_PROSE_SKIP.concat(DOC_PROSE_SKIP_LINK_TEXT);
   for (const source of sources) {
     //: A fresh regex per pass, for the reason the rules' own loop gives:
     //: `lastIndex` survives on a shared object and silently skips half the
@@ -14898,12 +14907,98 @@ const docProse = {
   win: null,
   timer: null,
   memo: null,
+  //: **A key reads the paragraph it edited, not the window** (prose-1101). A
+  //: pass made for a keystroke (`typing`) or for an answer to one (`again`)
+  //: whose text differs from the last pass's by one small edit inside a
+  //: paragraph keeps every finding outside that paragraph (moved by the length
+  //: difference) and runs the rules on the paragraph alone; the mask is made
+  //: the same way. Typing at 4x in a 5,000-line document read 14,000
+  //: characters per key for the rules and the mask, now about 300. What it
+  //: does not see (a finding that crosses a paragraph, the sentence before a
+  //: blank line) is made good by `settle`: a full pass once the writer pauses,
+  //: so the settled findings are the full pass's (`tests/test_prose_near_1101.py`).
+  //: Anything that could change a paragraph's neighbours (a new line, a fence,
+  //: frontmatter or a suggestion mark's characters, a paste) takes the full pass.
+  typing: false,
+  dirty: false,
+  nearMin: 8000,
   rules(part, again) {
     const key = [docProseIgnored.size, docWordlist ? docWordlist.size : -1, docDictionary().size, docSpellingVariant(), docCheckLinkText()].join("|");
-    if (!(again && this.memo && this.memo.part === part && this.memo.key === key)) {
-      this.memo = { part, key, found: docProseFindings(part) };
+    const memo = this.memo;
+    if (!((again || this.typing) && memo && memo.part === part && memo.key === key)) {
+      const near = (this.typing || again) && memo && memo.key === key && part.length >= this.nearMin && memo.part !== part ? this.near(memo, part) : null;
+      if (near) {
+        this.memo = { part, key, found: near.found, mask: near.mask };
+        this.dirty = true;
+        this.settle();
+      } else {
+        const found = docProseFindings(part);
+        //: Kept here, not read back from `docProseSkipMask.memo`: a grammar
+        //: answer for an older text replaces that one between two keys.
+        this.memo = { part, key, found, mask: part.length >= this.nearMin ? docProseSkipMask(part) : null };
+        this.dirty = false;
+      }
     }
     return this.memo.found.map((finding) => ({ ...finding }));
+  },
+  //: The findings and mask of `part` made from the last pass's (`last`), or
+  //: null when the edit is not one a paragraph can hold.
+  near(last, part) {
+    const { part: old, found, mask: before } = last;
+    if (!before || before.length !== old.length) return null;
+    const limit = Math.min(old.length, part.length);
+    let head = 0;
+    while (head < limit && old.charCodeAt(head) === part.charCodeAt(head)) head += 1;
+    let tail = 0;
+    while (tail < limit - head && old.charCodeAt(old.length - 1 - tail) === part.charCodeAt(part.length - 1 - tail)) tail += 1;
+    const gone = old.slice(head, old.length - tail);
+    const put = part.slice(head, part.length - tail);
+    if (gone.length > 200 || put.length > 200 || /[\n`~{}+-]/.test(gone + put)) return null;
+    let from = part.lastIndexOf("\n\n", head);
+    from = from < 0 ? 0 : from + 2;
+    let to = part.indexOf("\n\n", head + put.length);
+    if (to < 0) to = part.length;
+    if (to - from > 4000) {
+      //: A paragraph that long (notes with no blank lines) is read three lines at a time.
+      const first = from;
+      from = part.lastIndexOf("\n", Math.max(0, head - 1)) + 1;
+      if (from > first) from = part.lastIndexOf("\n", from - 2) + 1;
+      const next = part.indexOf("\n", head + put.length);
+      const after = next < 0 ? -1 : part.indexOf("\n", next + 1);
+      to = after < 0 ? to : Math.min(to, after);
+    }
+    const zone = part.slice(from, to);
+    if (/```|~~~/.test(zone)) return null;
+    let fences = 0;
+    for (const _ of part.slice(0, from).matchAll(/^(?:```|~~~)/gm)) fences += 1;
+    if (fences % 2 === 1) return null;
+    const shift = part.length - old.length;
+    const stop = to - shift;
+    const inside = docProseFindings(zone);
+    const mask = new Uint8Array(part.length);
+    mask.set(before.subarray(0, from), 0);
+    mask.set(docProseSkipMask(zone), from);
+    mask.set(before.subarray(stop), to);
+    docProseSkipMask.memo = { text: part, link: docCheckLinkText(), mask };
+    const out = [];
+    for (const finding of found) {
+      if (finding.end <= from) out.push(finding);
+      else if (finding.start >= stop) out.push(shift ? { ...finding, start: finding.start + shift, end: finding.end + shift } : finding);
+    }
+    for (const finding of inside) out.push({ ...finding, start: finding.start + from, end: finding.end + from });
+    return { found: out.sort((a, b) => a.start - b.start), mask };
+  },
+  //: The full pass, once the writer has paused: when the browser is idle, at
+  //: the latest 1.5 s after.
+  settle() {
+    clearTimeout(this.settleTimer);
+    this.settleTimer = setTimeout(() => {
+      const run = () => {
+        if (this.dirty) renderDocProse();
+      };
+      if (typeof requestIdleCallback === "function") requestIdleCallback(run, { timeout: 1500 });
+      else run();
+    }, 700);
   },
 };
 //: "list" is the suggestions, "dismissed" is the ones put away in this document.
@@ -14945,16 +15040,20 @@ function docProseWindow(text) {
   let from = Math.max(0, to - view);
   if (from > 0) {
     //: Cut at a blank line, and never inside a fence: a window that began in
-    //: the middle of a code block would read its code as prose.
+    //: the middle of a code block would read its code as prose. A blank line
+    //: more than a view away (a long list, notes with no blank lines at all)
+    //: is no cut: the window was then the whole document, 391,000 characters
+    //: read on every key, so the cut is the nearest line end instead.
     const cut = text.lastIndexOf("\n\n", from);
-    from = cut < 0 ? 0 : cut + 2;
+    from = cut >= 0 && from - cut < view ? cut + 2 : text.lastIndexOf("\n", from) + 1;
     let open = -1;
     for (const fence of text.slice(0, from).matchAll(/^(?:```|~~~)/gm)) open = open < 0 ? fence.index : -1;
     if (open >= 0) from = open;
   }
   if (to < text.length) {
     const cut = text.indexOf("\n\n", to);
-    to = cut < 0 ? text.length : cut;
+    const line = text.indexOf("\n", to);
+    to = cut >= 0 && cut - to < view ? cut : line < 0 ? text.length : line;
   }
   return { from, to };
 }
@@ -16116,7 +16215,14 @@ function docToolsOnInput(box) {
   //: Still well over the gap between two keystrokes of ordinary typing, so
   //: this does not run mid-word.
   clearTimeout(docProseTimer);
-  docProseTimer = setTimeout(renderDocProse, DOC_PROSE_DEBOUNCE_MS);
+  docProseTimer = setTimeout(() => {
+    docProse.typing = true;
+    try {
+      renderDocProse();
+    } finally {
+      docProse.typing = false;
+    }
+  }, DOC_PROSE_DEBOUNCE_MS);
   clearTimeout(docVocabTimer);
   docVocabTimer = setTimeout(() => {
     docCompleteWords = null;
