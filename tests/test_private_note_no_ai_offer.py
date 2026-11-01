@@ -13,7 +13,7 @@ import re
 from pathlib import Path
 
 CARDS = Path(__file__).resolve().parents[1] / "frontend" / "js" / "note-cards.js"
-MENUS = Path(__file__).resolve().parents[1] / "frontend" / "js" / "menus.js"
+MENUS = Path(__file__).resolve().parents[1] / "frontend" / "js" / "entry-menu.js"
 
 
 def test_the_tag_with_atlas_chip_is_not_drawn_for_a_private_note() -> None:
@@ -30,5 +30,5 @@ def test_every_caller_of_reevaluate_entry_is_gated_on_privacy() -> None:
     for path in (Path(__file__).resolve().parents[1] / "frontend" / "js").glob("*.js"):
         if re.search(r"\breevaluateEntry\(entry\)", path.read_text()) and path.name not in ("lightbox.js", "lightbox-actions.js"):
             callers.append(path.name)
-    assert sorted(callers) == ["menus.js", "note-cards.js"], callers
+    assert sorted(callers) == ["entry-menu.js", "note-cards.js"], callers
     assert 'if (!entry.is_private) menu.appendChild(buildMenuGroupButton("ph:sparkle AI actions"' in MENUS.read_text()

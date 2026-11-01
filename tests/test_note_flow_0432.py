@@ -114,7 +114,7 @@ def test_one_note_moves_from_its_chip_and_its_menu():
     assert "openCategoryChipMenu(categoryEl, entry)" in chip_block
     assert "chooseNoteCategory([entry.id], name)" in _read("chip-menus.js")
     assert 'setAttribute("role", "button")' in chip_block
-    assert "Move to category" in _read("menus.js")
+    assert "Move to category" in _read("entry-menu.js")
 
 
 def test_the_batch_move_lists_empty_categories():
@@ -145,7 +145,7 @@ def test_leaving_a_changed_form_asks_and_an_empty_one_is_refused():
     assert "A note needs some text" in form
     assert "noteFormMayClose()" in _function(notes, "openNoteEditor")
     # Every edit entry point goes through the guard.
-    for name in ("note-cards.js", "menus.js", "chat-agent.js"):
+    for name in ("note-cards.js", "entry-menu.js", "chat-agent.js"):
         source = _read(name)
         assert "openNoteEditor(" in source, name
         assert not re.search(r"editingId = (entry|item|copy)\.id;\s*\n\s*renderEntries\(\)", source), name
@@ -229,7 +229,7 @@ def test_category_rename_and_merge_can_be_undone_and_redraw_the_panel():
 
 
 def test_archive_and_duplicate_behave():
-    menus = _read("menus.js")
+    menus = _read("entry-menu.js")
     archive = menus[menus.index('label: "ph:archive Archive"'):][:1200]
     assert "pushUndo(" in archive
     duplicate = menus[menus.index('label: "ph:copy Duplicate"'):][:1500]
@@ -244,7 +244,7 @@ def test_recently_edited_sort_copy_link_and_list_keys():
     for key in ('"Home"', '"End"', '"Delete"', '"F2"'):
         assert key in keys, key
     assert "binNoteWithUndo(entry)" in keys
-    assert "Copy wiki link" in _read("menus.js") and "appLinkMenuItem(\"note\"" in _read("menus.js")
+    assert "Copy wiki link" in _read("entry-menu.js") and "appLinkMenuItem(\"note\"" in _read("entry-menu.js")
 
 
 def test_the_notes_chrome_says_less():

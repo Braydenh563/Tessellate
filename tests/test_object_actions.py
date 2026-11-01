@@ -75,7 +75,7 @@ def test_the_shared_row_says_the_same_thing_everywhere():
 def test_duplicate_sits_with_the_notes_own_actions_not_under_add():
     """Audit 1028 S12: Duplicate lived in the Add flyout, beside "Make a mind
     map" and "Accept the filing", where nobody looks for a copy."""
-    menus = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "menus.js").read_text(encoding="utf-8")
+    menus = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "entry-menu.js").read_text(encoding="utf-8")
     top = menus.index("const topLevel = [")
     add = menus.index("const addItems = [")
     duplicate = menus.index('label: "ph:copy Duplicate"')

@@ -160,7 +160,7 @@ def test_the_copy_helper_writes_the_full_address_through_the_shared_clipboard_he
 #: Where "Copy app link" must be offered: the file, and what it calls (a built
 #: menu calls `appLinkMenuItem(kind, id)`, a markup menu's button its own handler).
 COPY_LINK_SITES = [
-    ("menus.js", 'appLinkMenuItem("note", entry.id)'),
+    ("entry-menu.js", 'appLinkMenuItem("note", entry.id)'),
     ("library.js", "appLinkMenuItem(kind, id)"),
     ("whiteboard.js", 'appLinkMenuItem(board.type === "map" ? "map" : "board", board.id)'),
     ("documents.js", 'appLinkMenuItem("document", doc.id)'),
@@ -188,7 +188,7 @@ def test_the_app_link_row_is_one_recipe_and_the_wiki_row_is_named_apart():
     router = ROUTER.read_text(encoding="utf-8")
     assert '"ph:link Copy app link"' in router
     # Where a wiki link is copied the two rows must be told apart (INBOX 483).
-    for name in ("menus.js", "library.js"):
+    for name in ("entry-menu.js", "library.js"):
         source = (ROOT / "frontend" / "js" / name).read_text(encoding="utf-8")
         assert "Copy wiki link" in source and "Copy [[link]]" not in source
 

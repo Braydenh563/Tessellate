@@ -5638,7 +5638,7 @@ def test_note_name_plain_is_defined_once_and_used_by_the_name_sites() -> None:
     text = with_pieces("chat-attach.js")
     assert len(re.findall(r"^function noteNamePlain\(", text, flags=re.M)) == 1
     used = {p.name for p in JS if "noteNamePlain(" in p.read_text(encoding="utf-8")}
-    for name in ("whiteboard.js", "dashboard.js", "graph.js", "menus.js", "palette.js", "notes-list.js", "phone-shell.js", "note-cards.js"):
+    for name in ("whiteboard.js", "dashboard.js", "graph.js", "entry-menu.js", "palette.js", "notes-list.js", "phone-shell.js", "note-cards.js"):
         assert name in used, name
 
 

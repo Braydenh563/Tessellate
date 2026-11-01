@@ -58,7 +58,7 @@ def test_generate_title_takes_one_from_the_notes_words_with_no_model(client, ses
 
 
 def test_the_menu_names_the_app_not_the_ai_when_no_model_runs():
-    menus = (ROOT / "frontend" / "js" / "menus.js").read_text(encoding="utf-8")
+    menus = (ROOT / "frontend" / "js" / "entry-menu.js").read_text(encoding="utf-8")
     assert 'off ? "ph:text-aa Proofread" : "ph:sparkle Improve writing"' in menus
     assert 'off ? "ph:text-h Title from its words"' in menus
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")

@@ -48,6 +48,8 @@ Object.assign(LAZY_MODULES, {
   gestureKit: ["/js/gesture-kit.js"],
   //: One chat turn (chat-turn.js): `sendChatMessage` awaits it; the chat box's focus warms it.
   chatTurn: ["/js/chat-turn.js"],
+  //: A note card's ... menu rows (entry-menu.js): the first press awaits it, a pointer over a card warms it.
+  entryMenu: ["/js/entry-menu.js"],
   //: A row's expand chevron and the bell's untagged and review nudges (notes-lazy.js).
   notesLazy: ["/js/notes-lazy.js"],
   //: Every ```mermaid fence, in documents, chat and Ask (mermaid-draw.js). The 5 MB
@@ -248,4 +250,11 @@ document.addEventListener("focusin", function warmChatTurn(event) {
   if (event.target?.id !== "chat-input") return;
   document.removeEventListener("focusin", warmChatTurn);
   ensureModule("chatTurn");
+});
+
+//: A note card's ... menu rows are fetched when the pointer first reaches a card, so the first press finds them in.
+document.addEventListener("pointerover", function warmEntryMenu(event) {
+  if (!event.target?.closest?.("li[data-id] .menu-wrap")) return;
+  document.removeEventListener("pointerover", warmEntryMenu);
+  ensureModule("entryMenu");
 });

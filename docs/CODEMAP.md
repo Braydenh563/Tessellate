@@ -2,9 +2,9 @@
 
 Generated 2026-11-01 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7508, frontend ids 2643, CSS sections 517, backend routes 638, backend modules 8207, test files 1775, tests 15336, plan headings 990, app scripts 28, boot scripts 37, script files 211.
+Counts: frontend functions 7509, frontend ids 2643, CSS sections 517, backend routes 638, backend modules 8207, test files 1775, tests 15336, plan headings 990, app scripts 28, boot scripts 37, script files 212.
 
-## Frontend functions (7508)
+## Frontend functions (7509)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -104,17 +104,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `afterCharacters` | frontend/js/lazy-entries.js:132 |
-| `charactersLost` | frontend/js/lazy-entries.js:141 |
-| `emblemHead` | frontend/js/lazy-entries.js:149 |
-| `installCharacterStandIns` | frontend/js/lazy-entries.js:178 |
-| `lazyLoadFailed` | frontend/js/lazy-entries.js:211 |
-| `loadCharactersIdle` | frontend/js/lazy-entries.js:172 |
-| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:198 |
-| `onDomReady` | frontend/js/lazy-entries.js:222 |
-| `plainHead` | frontend/js/lazy-entries.js:155 |
-| `runCharacterJob` | frontend/js/lazy-entries.js:163 |
-| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:233 |
+| `afterCharacters` | frontend/js/lazy-entries.js:134 |
+| `charactersLost` | frontend/js/lazy-entries.js:143 |
+| `emblemHead` | frontend/js/lazy-entries.js:151 |
+| `installCharacterStandIns` | frontend/js/lazy-entries.js:180 |
+| `lazyLoadFailed` | frontend/js/lazy-entries.js:213 |
+| `loadCharactersIdle` | frontend/js/lazy-entries.js:174 |
+| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:200 |
+| `onDomReady` | frontend/js/lazy-entries.js:224 |
+| `plainHead` | frontend/js/lazy-entries.js:157 |
+| `runCharacterJob` | frontend/js/lazy-entries.js:165 |
+| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:235 |
 
 ### frontend/js/note-cards.js (39)
 
@@ -181,7 +181,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `generateEntryTitle` | frontend/js/menus.js:1235 |
 | `historyActorLabel` | frontend/js/menus.js:1169 |
 | `inlineActionIs` | frontend/js/menus.js:8 |
-| `isEditConflict` | frontend/js/menus.js:1986 |
+| `isEditConflict` | frontend/js/menus.js:1612 |
 | `menuClippingAncestor` | frontend/js/menus.js:586 |
 | `menuExitMs` | frontend/js/menus.js:718 |
 | `menuSidePlan` | frontend/js/menus.js:428 |
@@ -4255,6 +4255,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openEntitiesSheet` | frontend/js/entity-page.js:201 |
 | `openEntityPage` | frontend/js/entity-page.js:61 |
 | `toastEntityMerge` | frontend/js/entity-page.js:33 |
+
+### frontend/js/entry-menu.js (1)
+
+| Name | File:line |
+|---|---|
+| `fillEntryMenu` | frontend/js/entry-menu.js:8 |
 
 ### frontend/js/extract-preview.js (2)
 
