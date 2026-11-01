@@ -82,7 +82,7 @@ QUOTED = re.compile(r"\"[^\"\n]{0,1200}(?:\n[^\"\n]{0,1200}){0,12}\"|“[^”]{0
 #: Not: `memorymap.db` (the old database name, renamed once at start), `memorymap.spec`
 #: (the PyInstaller spec files), `memorymap.local` (a host name),
 #: `memorymap.desktop.app.1` (the Windows taskbar id pinned shortcuts carry),
-#: `memorymap.ocr.*` (browser keys, migrated in the app head), file formats
+#: `memorymap.ocr.*` (browser keys, read once and removed by library.js), file formats
 #: (`memorymap-board`, `memorymap-library-set`, `memorymap-clip`).
 PACKAGE_PARTS = ("ai", "api", "core", "entry", "search", "vendor", "__main__",
                  "__init__", "__version__", "mcp_server", "SUPPORT_EMAIL")

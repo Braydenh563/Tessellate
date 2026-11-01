@@ -6399,7 +6399,21 @@ function ocrSyncZoomButtons() {
 //:
 //: The mode is remembered, because it is a preference about how you read
 //: rather than a property of this document.
-const OCR_VIEW_KEY = "memorymap.ocr.view";
+const OCR_VIEW_KEY = "tessellate.ocr.view";
+//: The two keys had the product's old name (`memorymap.ocr.*`). A value stored
+//: under it is copied once and the old key removed, here beside the only
+//: reader of both, so a person's reader and view choice survive the rename.
+(function ocrMigrateKeys() {
+  for (const name of ["view", "reader"]) {
+    try {
+      const old = prefs.get(`memorymap.ocr.${name}`, null);
+      if (old !== null && !prefs.has(`tessellate.ocr.${name}`)) prefs.set(`tessellate.ocr.${name}`, old);
+      if (old !== null) prefs.remove(`memorymap.ocr.${name}`);
+    } catch {
+      //: Blocked storage: nothing to carry over.
+    }
+  }
+})();
 let ocrViewMode = "page";
 //: Set while the code is doing the scrolling, so the observer that watches
 //: which page is on screen does not answer its own scroll by scrolling again.
@@ -6625,7 +6639,7 @@ let ocrReadersLoading = Promise.resolve();
 //: Where the workspace remembers the reader (INBOX 717), and whether this
 //: session has already applied it: a reader changed by hand is not overruled
 //: by the memory on the next refresh of the list (an install finishing).
-const OCR_READER_KEY = "memorymap.ocr.reader";
+const OCR_READER_KEY = "tessellate.ocr.reader";
 
 function ocrLoadReaders() {
   ocrReadersLoading = ocrLoadReadersNow();
