@@ -160,22 +160,20 @@ async function spaceDeleteSubmit() {
       }
     }
     const query = moveTo ? `?move_to=${encodeURIComponent(moveTo)}` : "?purge=1";
-    const wasOpen = activeSpaceId() === id;
     const gone = await apiJson(`/spaces/${encodeURIComponent(id)}${query}`, { method: "DELETE" });
     //: The moved notes by id (`refreshEntries` reads the notebook whole
     //: if it cannot patch them in safely).
     if (moveTo) await refreshEntries(gone?.restore?.moved?.entries || []);
     $("space-delete-dialog").close();
-    // Standing in the space you just deleted has to move you somewhere real,
-    // and reload() alone would leave the header naming a space that is gone.
-    if (activeSpaceId() === id) setActiveSpace("default");
+    // Standing in the space you just deleted has to move you somewhere real.
+    if (activeSpaceId() === id) await setActiveSpace("default");
     else await loadSpaces();
     //: Undo (undo-1005) when the delete lost nothing: an empty space, or one
     //: whose contents moved, which go back row by row. A delete that took
     //: the contents with it has no Undo (`restore` is null): its files are
-    //: gone from the disk, which is why the dialog asks first. Deleting the
-    //: open space reloads the page, which empties the stack, so none then.
-    let restore = wasOpen ? null : gone?.restore;
+    //: gone from the disk, which is why the dialog asks first. The open space too:
+    //: the switch to the default space keeps the stack (space-swap.js).
+    let restore = gone?.restore;
     if (restore) {
       const remake = async () => {
         await apiJson("/spaces/restore", { method: "POST", body: JSON.stringify(restore) });

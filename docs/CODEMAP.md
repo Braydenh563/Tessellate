@@ -2,9 +2,9 @@
 
 Generated 2026-11-01 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7537, frontend ids 2633, CSS sections 517, backend routes 638, backend modules 8251, test files 1790, tests 15414, plan headings 990, app scripts 28, boot scripts 37, script files 218.
+Counts: frontend functions 7542, frontend ids 2633, CSS sections 517, backend routes 638, backend modules 8251, test files 1791, tests 15427, plan headings 990, app scripts 28, boot scripts 37, script files 219.
 
-## Frontend functions (7537)
+## Frontend functions (7542)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -104,18 +104,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `afterCharacters` | frontend/js/lazy-entries.js:136 |
-| `charactersLost` | frontend/js/lazy-entries.js:145 |
-| `emblemHead` | frontend/js/lazy-entries.js:153 |
-| `installCharacterStandIns` | frontend/js/lazy-entries.js:182 |
-| `lazyLoadFailed` | frontend/js/lazy-entries.js:214 |
-| `loadCharactersIdle` | frontend/js/lazy-entries.js:176 |
-| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:202 |
-| `onDomReady` | frontend/js/lazy-entries.js:225 |
-| `plainHead` | frontend/js/lazy-entries.js:159 |
-| `runCharacterJob` | frontend/js/lazy-entries.js:167 |
-| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:237 |
-| `warmOnFirst` | frontend/js/lazy-entries.js:256 |
+| `afterCharacters` | frontend/js/lazy-entries.js:139 |
+| `charactersLost` | frontend/js/lazy-entries.js:148 |
+| `emblemHead` | frontend/js/lazy-entries.js:156 |
+| `installCharacterStandIns` | frontend/js/lazy-entries.js:185 |
+| `lazyLoadFailed` | frontend/js/lazy-entries.js:217 |
+| `loadCharactersIdle` | frontend/js/lazy-entries.js:179 |
+| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:205 |
+| `onDomReady` | frontend/js/lazy-entries.js:228 |
+| `plainHead` | frontend/js/lazy-entries.js:162 |
+| `runCharacterJob` | frontend/js/lazy-entries.js:170 |
+| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:240 |
+| `warmOnFirst` | frontend/js/lazy-entries.js:259 |
 
 ### frontend/js/note-cards.js (30)
 
@@ -942,26 +942,26 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `agentActivityNotice` | frontend/js/status.js:699 |
 | `agentActivityQuiet` | frontend/js/status.js:691 |
-| `agentModeAvailable` | frontend/js/status.js:2800 |
-| `aiIsOff` | frontend/js/status.js:2076 |
-| `aiOffGlyph` | frontend/js/status.js:2445 |
-| `aiOfflineDismissed` | frontend/js/status.js:2246 |
-| `aiOfflineNoticeHidden` | frontend/js/status.js:2242 |
-| `aiStatusState` | frontend/js/status.js:2331 |
+| `agentModeAvailable` | frontend/js/status.js:2803 |
+| `aiIsOff` | frontend/js/status.js:2079 |
+| `aiOffGlyph` | frontend/js/status.js:2448 |
+| `aiOfflineDismissed` | frontend/js/status.js:2249 |
+| `aiOfflineNoticeHidden` | frontend/js/status.js:2245 |
+| `aiStatusState` | frontend/js/status.js:2334 |
 | `announcedReminders` | frontend/js/status.js:42 |
 | `appStackIsNewer` | frontend/js/status.js:1606 |
 | `armReminderTimer` | frontend/js/status.js:521 |
 | `askNotificationPermission` | frontend/js/status.js:383 |
-| `backendLabel` | frontend/js/status.js:2863 |
+| `backendLabel` | frontend/js/status.js:2866 |
 | `boardHistoryActive` | frontend/js/status.js:1571 |
 | `checkDueReminders` | frontend/js/status.js:564 |
-| `closeModelGate` | frontend/js/status.js:2095 |
+| `closeModelGate` | frontend/js/status.js:2098 |
 | `closeNotifications` | frontend/js/status.js:358 |
-| `dismissAiOffline` | frontend/js/status.js:2254 |
+| `dismissAiOffline` | frontend/js/status.js:2257 |
 | `dismissToast` | frontend/js/status.js:915 |
 | `dismissedNotificationIds` | frontend/js/status.js:232 |
-| `embeddingProblemDetail` | frontend/js/status.js:2516 |
-| `embeddingToastDue` | frontend/js/status.js:2522 |
+| `embeddingProblemDetail` | frontend/js/status.js:2519 |
+| `embeddingToastDue` | frontend/js/status.js:2525 |
 | `forcedReadIds` | frontend/js/status.js:187 |
 | `forcedUnreadIds` | frontend/js/status.js:156 |
 | `insightLine` | frontend/js/status.js:1488 |
@@ -970,31 +970,31 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `insightVerdicts` | frontend/js/status.js:1465 |
 | `integrityWords` | frontend/js/status.js:1290 |
 | `isNotificationUnread` | frontend/js/status.js:211 |
-| `jobsRunning` | frontend/js/status.js:1918 |
+| `jobsRunning` | frontend/js/status.js:1921 |
 | `keepToastAction` | frontend/js/status.js:337 |
-| `kickBackgroundTaskPoll` | frontend/js/status.js:3029 |
-| `lastAnswerLine` | frontend/js/status.js:2467 |
-| `loadMostUsed` | frontend/js/status.js:1782 |
-| `loadRecentQuestions` | frontend/js/status.js:1755 |
+| `kickBackgroundTaskPoll` | frontend/js/status.js:3032 |
+| `lastAnswerLine` | frontend/js/status.js:2470 |
+| `loadMostUsed` | frontend/js/status.js:1785 |
+| `loadRecentQuestions` | frontend/js/status.js:1758 |
 | `lockFieldWants` | frontend/js/status.js:971 |
 | `noteDamagedNotebook` | frontend/js/status.js:1294 |
 | `noteServerDown` | frontend/js/status.js:1350 |
 | `noteServerUp` | frontend/js/status.js:1359 |
-| `noticeTaskTransitions` | frontend/js/status.js:3129 |
+| `noticeTaskTransitions` | frontend/js/status.js:3132 |
 | `notificationsMuted` | frontend/js/status.js:676 |
 | `notificationsReadAt` | frontend/js/status.js:138 |
 | `notify` | frontend/js/status.js:464 |
-| `nudgeEmbeddingProblem` | frontend/js/status.js:2532 |
+| `nudgeEmbeddingProblem` | frontend/js/status.js:2535 |
 | `offerUndo` | frontend/js/status.js:1513 |
 | `openLanPanel` | frontend/js/status.js:627 |
-| `openModelGate` | frontend/js/status.js:2105 |
-| `paintPrivacyChip` | frontend/js/status.js:3227 |
+| `openModelGate` | frontend/js/status.js:2108 |
+| `paintPrivacyChip` | frontend/js/status.js:3230 |
 | `paintReminderList` | frontend/js/status.js:556 |
-| `paintStatusItem` | frontend/js/status.js:2588 |
+| `paintStatusItem` | frontend/js/status.js:2591 |
 | `paintTitle` | frontend/js/status.js:497 |
-| `paintUndoDoor` | frontend/js/status.js:1705 |
+| `paintUndoDoor` | frontend/js/status.js:1708 |
 | `performRedo` | frontend/js/status.js:1627 |
-| `performRedoNow` | frontend/js/status.js:1656 |
+| `performRedoNow` | frontend/js/status.js:1658 |
 | `performUndo` | frontend/js/status.js:1621 |
 | `performUndoNow` | frontend/js/status.js:1633 |
 | `plainHttpError` | frontend/js/status.js:1048 |
@@ -1005,45 +1005,45 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `pushEntryPutUndo` | frontend/js/status.js:1546 |
 | `pushUndo` | frontend/js/status.js:1424 |
 | `recordNotification` | frontend/js/status.js:97 |
-| `refreshBackgroundTasks` | frontend/js/status.js:3048 |
-| `refreshModelStatus` | frontend/js/status.js:1946 |
-| `refreshPrivacyChip` | frontend/js/status.js:3241 |
+| `refreshBackgroundTasks` | frontend/js/status.js:3051 |
+| `refreshModelStatus` | frontend/js/status.js:1949 |
+| `refreshPrivacyChip` | frontend/js/status.js:3244 |
 | `rememberAnnounced` | frontend/js/status.js:50 |
 | `reminderNoticeKey` | frontend/js/status.js:228 |
 | `renderAgentActivityMode` | frontend/js/status.js:755 |
-| `renderAiOfflineNotice` | frontend/js/status.js:2269 |
-| `renderAiPill` | frontend/js/status.js:2475 |
-| `renderChatModeSeg` | frontend/js/status.js:2804 |
+| `renderAiOfflineNotice` | frontend/js/status.js:2272 |
+| `renderAiPill` | frontend/js/status.js:2478 |
+| `renderChatModeSeg` | frontend/js/status.js:2807 |
 | `renderNotifMuteToggle` | frontend/js/status.js:267 |
 | `renderNotificationBadge` | frontend/js/status.js:247 |
-| `renderSettings` | frontend/js/status.js:2874 |
-| `renderStatusBar` | frontend/js/status.js:2631 |
-| `renderUndoBar` | frontend/js/status.js:1687 |
+| `renderSettings` | frontend/js/status.js:2877 |
+| `renderStatusBar` | frontend/js/status.js:2634 |
+| `renderUndoBar` | frontend/js/status.js:1690 |
 | `reopenAnswerPanel` | frontend/js/status.js:734 |
-| `resetStatusCadence` | frontend/js/status.js:1869 |
+| `resetStatusCadence` | frontend/js/status.js:1872 |
 | `retryServerNow` | frontend/js/status.js:1400 |
-| `sayChatModelChosen` | frontend/js/status.js:1832 |
+| `sayChatModelChosen` | frontend/js/status.js:1835 |
 | `scheduleServerDownRetry` | frontend/js/status.js:1374 |
-| `scheduleUndoBar` | frontend/js/status.js:1679 |
-| `setChatMode` | frontend/js/status.js:2847 |
+| `scheduleUndoBar` | frontend/js/status.js:1682 |
+| `setChatMode` | frontend/js/status.js:2850 |
 | `setForcedReadIds` | frontend/js/status.js:196 |
 | `setForcedUnreadIds` | frontend/js/status.js:165 |
 | `setTitleCount` | frontend/js/status.js:502 |
 | `setTitleView` | frontend/js/status.js:507 |
-| `settingsOpen` | frontend/js/status.js:1885 |
+| `settingsOpen` | frontend/js/status.js:1888 |
 | `settleNotification` | frontend/js/status.js:116 |
 | `settleUndoFromToast` | frontend/js/status.js:1534 |
-| `showAgentNoModelHint` | frontend/js/status.js:2842 |
+| `showAgentNoModelHint` | frontend/js/status.js:2845 |
 | `showServerDownBanner` | frontend/js/status.js:1333 |
-| `startPrivacyChip` | frontend/js/status.js:3251 |
+| `startPrivacyChip` | frontend/js/status.js:3254 |
 | `startReminderWatch` | frontend/js/status.js:638 |
 | `storedNotifications` | frontend/js/status.js:84 |
 | `surfaceHistory` | frontend/js/status.js:1588 |
-| `syncAgentPaletteAvailability` | frontend/js/status.js:2313 |
-| `syncModelGatedControls` | frontend/js/status.js:2128 |
+| `syncAgentPaletteAvailability` | frontend/js/status.js:2316 |
+| `syncModelGatedControls` | frontend/js/status.js:2131 |
 | `syncNotifBlocked` | frontend/js/status.js:376 |
 | `taskEndingWords` | frontend/js/status.js:130 |
-| `taskKey` | frontend/js/status.js:3109 |
+| `taskKey` | frontend/js/status.js:3112 |
 | `toast` | frontend/js/status.js:1124 |
 | `toastAction` | frontend/js/status.js:1266 |
 | `toastActionButton` | frontend/js/status.js:1246 |
@@ -1061,12 +1061,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `toastReduced` | frontend/js/status.js:874 |
 | `toastStack` | frontend/js/status.js:878 |
 | `toastYield` | frontend/js/status.js:993 |
-| `toggleAiStatusPopup` | frontend/js/status.js:2774 |
+| `toggleAiStatusPopup` | frontend/js/status.js:2777 |
 | `toggleNotificationMute` | frontend/js/status.js:283 |
 | `unreadNotifications` | frontend/js/status.js:241 |
 | `voiceLine` | frontend/js/status.js:1118 |
 | `whenText` | frontend/js/status.js:1107 |
-| `withoutEndStop` | frontend/js/status.js:2512 |
+| `withoutEndStop` | frontend/js/status.js:2515 |
 
 ### frontend/js/ai-tools.js (35)
 
@@ -1272,28 +1272,28 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `applyStatusBarSlots` | frontend/js/spaces-find.js:20 |
 | `applyStatusClock` | frontend/js/spaces-find.js:41 |
 | `authHeaders` | frontend/js/spaces-find.js:205 |
-| `closeSpaceMenu` | frontend/js/spaces-find.js:409 |
+| `closeSpaceMenu` | frontend/js/spaces-find.js:403 |
 | `closeStatusClockDetail` | frontend/js/spaces-find.js:128 |
-| `customTemplates` | frontend/js/spaces-find.js:603 |
+| `customTemplates` | frontend/js/spaces-find.js:596 |
 | `hiddenStatusSlots` | frontend/js/spaces-find.js:14 |
-| `initSpaceSwitcher` | frontend/js/spaces-find.js:482 |
-| `loadSpaces` | frontend/js/spaces-find.js:440 |
-| `openSpaceCreate` | frontend/js/spaces-find.js:420 |
-| `openSpaceEdit` | frontend/js/spaces-find.js:429 |
+| `initSpaceSwitcher` | frontend/js/spaces-find.js:476 |
+| `loadSpaces` | frontend/js/spaces-find.js:434 |
+| `openSpaceCreate` | frontend/js/spaces-find.js:414 |
+| `openSpaceEdit` | frontend/js/spaces-find.js:423 |
 | `openStatusClockDetail` | frontend/js/spaces-find.js:99 |
 | `paintStatusClock` | frontend/js/spaces-find.js:32 |
 | `paintStatusClockDetail` | frontend/js/spaces-find.js:70 |
-| `renderSpaceMenu` | frontend/js/spaces-find.js:346 |
-| `renderTemplateSettings` | frontend/js/spaces-find.js:692 |
-| `saveTemplateList` | frontend/js/spaces-find.js:637 |
-| `setActiveSpace` | frontend/js/spaces-find.js:212 |
-| `spaceIconPicker` | frontend/js/spaces-find.js:224 |
-| `spaceMenuOption` | frontend/js/spaces-find.js:250 |
-| `startEditingTemplate` | frontend/js/spaces-find.js:607 |
-| `stopEditingTemplate` | frontend/js/spaces-find.js:626 |
-| `templateRow` | frontend/js/spaces-find.js:651 |
-| `toggleSpaceHidden` | frontend/js/spaces-find.js:313 |
-| `updateCaptureSpaceLabel` | frontend/js/spaces-find.js:469 |
+| `renderSpaceMenu` | frontend/js/spaces-find.js:340 |
+| `renderTemplateSettings` | frontend/js/spaces-find.js:685 |
+| `saveTemplateList` | frontend/js/spaces-find.js:630 |
+| `setActiveSpace` | frontend/js/spaces-find.js:214 |
+| `spaceIconPicker` | frontend/js/spaces-find.js:218 |
+| `spaceMenuOption` | frontend/js/spaces-find.js:244 |
+| `startEditingTemplate` | frontend/js/spaces-find.js:600 |
+| `stopEditingTemplate` | frontend/js/spaces-find.js:619 |
+| `templateRow` | frontend/js/spaces-find.js:644 |
+| `toggleSpaceHidden` | frontend/js/spaces-find.js:307 |
+| `updateCaptureSpaceLabel` | frontend/js/spaces-find.js:463 |
 
 ### frontend/js/agent-activity.js (17)
 
@@ -6744,6 +6744,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `typingIn` | frontend/js/sketch-pad.js:1515 |
 | `undo` | frontend/js/sketch-pad.js:1443 |
 | `wireHelp` | frontend/js/sketch-pad.js:567 |
+
+### frontend/js/space-swap.js (5)
+
+| Name | File:line |
+|---|---|
+| `spaceEnterFor` | frontend/js/space-swap.js:239 |
+| `spaceLeave` | frontend/js/space-swap.js:145 |
+| `spaceReload` | frontend/js/space-swap.js:162 |
+| `spaceSwapNow` | frontend/js/space-swap.js:203 |
+| `swapSpace` | frontend/js/space-swap.js:184 |
 
 ### frontend/js/standalone-undo.js (2)
 
@@ -15145,50 +15155,50 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_about_the_guide` | src/tessellate/ai/help_chat.py:3005 |
-| `_act_of` | src/tessellate/ai/help_chat.py:2744 |
-| `_aliased_topics` | src/tessellate/ai/help_chat.py:2783 |
-| `_aware` | src/tessellate/ai/help_chat.py:3482 |
-| `_beyond` | src/tessellate/ai/help_chat.py:3291 |
-| `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:2675 |
-| `_guide_lead` | src/tessellate/ai/help_chat.py:3379 |
-| `_guide_opening` | src/tessellate/ai/help_chat.py:3395 |
-| `_help_sentences` | src/tessellate/ai/help_chat.py:3362 |
-| `_keyword_in` | src/tessellate/ai/help_chat.py:2665 |
-| `_keyword_pattern` | src/tessellate/ai/help_chat.py:2597 |
-| `_keyword_regex` | src/tessellate/ai/help_chat.py:2661 |
-| `_lead_topic_first` | src/tessellate/ai/help_chat.py:3452 |
-| `_matching_topics` | src/tessellate/ai/help_chat.py:2823 |
-| `_meaning_topics` | src/tessellate/ai/help_chat.py:2903 |
-| `_normalise_keys` | src/tessellate/ai/help_chat.py:2620 |
-| `_nothing_matched` | src/tessellate/ai/help_chat.py:3215 |
-| `_off_topic` | src/tessellate/ai/help_chat.py:3055 |
-| `_outside_the_app` | src/tessellate/ai/help_chat.py:3023 |
-| `_place` | src/tessellate/ai/help_chat.py:3336 |
-| `_preference` | src/tessellate/ai/help_chat.py:3418 |
-| `_prompt_for` | src/tessellate/ai/help_chat.py:3118 |
-| `_read_as` | src/tessellate/ai/help_chat.py:3565 |
-| `_reading_topics` | src/tessellate/ai/help_chat.py:2766 |
-| `_repaired` | src/tessellate/ai/help_chat.py:2812 |
-| `_second_sentence` | src/tessellate/ai/help_chat.py:3366 |
-| `_state_line` | src/tessellate/ai/help_chat.py:3427 |
-| `_stated_lead` | src/tessellate/ai/help_chat.py:3436 |
-| `_tab_topics` | src/tessellate/ai/help_chat.py:3104 |
-| `answer` | src/tessellate/ai/help_chat.py:3645 |
-| `answer_stream` | src/tessellate/ai/help_chat.py:3580 |
-| `badges_for` | src/tessellate/ai/help_chat.py:2991 |
-| `composed_answer` | src/tessellate/ai/help_chat.py:3463 |
-| `help_block_for` | src/tessellate/ai/help_chat.py:3726 |
-| `help_listing` | src/tessellate/ai/help_chat.py:2962 |
-| `help_sentences` | src/tessellate/ai/help_chat.py:3345 |
-| `names_app` | src/tessellate/ai/help_chat.py:3710 |
-| `offline_answer` | src/tessellate/ai/help_chat.py:3511 |
-| `social_reply` | src/tessellate/ai/help_chat.py:3295 |
-| `source_names` | src/tessellate/ai/help_chat.py:2958 |
-| `system_answer` | src/tessellate/ai/help_chat.py:2940 |
-| `topic_title` | src/tessellate/ai/help_chat.py:2926 |
-| `topics_for` | src/tessellate/ai/help_chat.py:3062 |
-| `with_asks` | src/tessellate/ai/help_chat.py:3500 |
+| `_about_the_guide` | src/tessellate/ai/help_chat.py:3006 |
+| `_act_of` | src/tessellate/ai/help_chat.py:2745 |
+| `_aliased_topics` | src/tessellate/ai/help_chat.py:2784 |
+| `_aware` | src/tessellate/ai/help_chat.py:3483 |
+| `_beyond` | src/tessellate/ai/help_chat.py:3292 |
+| `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:2676 |
+| `_guide_lead` | src/tessellate/ai/help_chat.py:3380 |
+| `_guide_opening` | src/tessellate/ai/help_chat.py:3396 |
+| `_help_sentences` | src/tessellate/ai/help_chat.py:3363 |
+| `_keyword_in` | src/tessellate/ai/help_chat.py:2666 |
+| `_keyword_pattern` | src/tessellate/ai/help_chat.py:2598 |
+| `_keyword_regex` | src/tessellate/ai/help_chat.py:2662 |
+| `_lead_topic_first` | src/tessellate/ai/help_chat.py:3453 |
+| `_matching_topics` | src/tessellate/ai/help_chat.py:2824 |
+| `_meaning_topics` | src/tessellate/ai/help_chat.py:2904 |
+| `_normalise_keys` | src/tessellate/ai/help_chat.py:2621 |
+| `_nothing_matched` | src/tessellate/ai/help_chat.py:3216 |
+| `_off_topic` | src/tessellate/ai/help_chat.py:3056 |
+| `_outside_the_app` | src/tessellate/ai/help_chat.py:3024 |
+| `_place` | src/tessellate/ai/help_chat.py:3337 |
+| `_preference` | src/tessellate/ai/help_chat.py:3419 |
+| `_prompt_for` | src/tessellate/ai/help_chat.py:3119 |
+| `_read_as` | src/tessellate/ai/help_chat.py:3566 |
+| `_reading_topics` | src/tessellate/ai/help_chat.py:2767 |
+| `_repaired` | src/tessellate/ai/help_chat.py:2813 |
+| `_second_sentence` | src/tessellate/ai/help_chat.py:3367 |
+| `_state_line` | src/tessellate/ai/help_chat.py:3428 |
+| `_stated_lead` | src/tessellate/ai/help_chat.py:3437 |
+| `_tab_topics` | src/tessellate/ai/help_chat.py:3105 |
+| `answer` | src/tessellate/ai/help_chat.py:3646 |
+| `answer_stream` | src/tessellate/ai/help_chat.py:3581 |
+| `badges_for` | src/tessellate/ai/help_chat.py:2992 |
+| `composed_answer` | src/tessellate/ai/help_chat.py:3464 |
+| `help_block_for` | src/tessellate/ai/help_chat.py:3727 |
+| `help_listing` | src/tessellate/ai/help_chat.py:2963 |
+| `help_sentences` | src/tessellate/ai/help_chat.py:3346 |
+| `names_app` | src/tessellate/ai/help_chat.py:3711 |
+| `offline_answer` | src/tessellate/ai/help_chat.py:3512 |
+| `social_reply` | src/tessellate/ai/help_chat.py:3296 |
+| `source_names` | src/tessellate/ai/help_chat.py:2959 |
+| `system_answer` | src/tessellate/ai/help_chat.py:2941 |
+| `topic_title` | src/tessellate/ai/help_chat.py:2927 |
+| `topics_for` | src/tessellate/ai/help_chat.py:3063 |
+| `with_asks` | src/tessellate/ai/help_chat.py:3501 |
 
 ### src/tessellate/ai/help_topics_more.py (2)
 
@@ -22763,7 +22773,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15414)
+## Tests (15427)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24211,6 +24221,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_space_delete_safe_1029.py | 4 |
 | tests/test_space_dialogs_1028b.py | 2 |
 | tests/test_space_menu_axe_1029.py | 2 |
+| tests/test_space_swap_z1.py | 13 |
 | tests/test_spaces.py | 28 |
 | tests/test_speakers_81.py | 7 |
 | tests/test_speculative_retrieval.py | 5 |

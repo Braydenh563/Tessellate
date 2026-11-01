@@ -5,8 +5,8 @@
 // is a card like any other, so the carry mode takes it), or clicked to paste
 // where you were typing, or removed. The tray holds references only, in memory
 // and in `sessionStorage` (try/catch: it can come back empty), so it survives
-// a page change, a reload of the tab and a switch of space (which reloads the
-// page) but not the browser. One tray for the notebook (audit 1031 Z1): a
+// a page change, a reload of the tab and a switch of space (done in place,
+// space-swap.js) but not the browser. One tray for the notebook (audit 1031 Z1): a
 // space is a filter, and "somewhere else" is most often another space.
 
 const OBJ_TRAY_KEY = "obj-tray";

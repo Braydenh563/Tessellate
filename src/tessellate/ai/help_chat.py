@@ -413,8 +413,9 @@ HELP_TOPICS: list[dict] = [
             "happens to its contents: move everything to another space (the "
             "default choice, with a count of what is inside), or delete everything in it "
             "(this skips the bin and cannot be undone, so you type the space's name to confirm); "
-            "a category both spaces have is merged. Switching space reloads the "
-            "app, which clears Undo; the tray keeps what it holds."
+            "a category both spaces have is merged. Switching space swaps what you "
+            "see in place, with no reload, so the tray and Undo carry across: an Undo made in another space "
+            "takes you back to it first."
         ),
         "badge": {"label": "Account & security", "section": "account"},
     },
