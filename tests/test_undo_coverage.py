@@ -587,7 +587,6 @@ EXEMPT: dict[str, str] = {
     "documents-word.js:docWordUploadPicture": "job: a picture inside a Word file being imported goes to the media store; the imported document is the step (Undo bins it)",
     "documents.js:docDesktopFullscreenToggle": "job: starts or stops work or a model; deletes no user data",
     "documents.js:docDictionaryWrite": "settings: a setting with its own Reset or the settings history",
-    "documents.js:docPutFields": "board: document field write; its callers push their own undo",
     "documents.js:docSuggestAnswers": "read: reads or asks the model; shows a result, writes nothing",
     "documents.js:ensureDocumentExists": "board: creates the document being typed into; the editor's history starts there",
     "documents.js:openDocAiHistory": "inverse: reverts an AI edit from its log, which is itself the undo",
