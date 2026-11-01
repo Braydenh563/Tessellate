@@ -7,7 +7,8 @@ compiled pattern does (`search`, `sub`, `finditer`, `pattern`, `flags`) and
 compiles once, on the first call that needs the engine.
 
 It is not a `re.Pattern`: pass it to its own methods (`P.sub(...)`), never as
-the first argument of `re.sub(P, ...)`.
+the first argument of `re.sub(P, ...)`, and compare a match's `.re` with
+`P.compiled()`, never with `P` itself.
 """
 
 from __future__ import annotations

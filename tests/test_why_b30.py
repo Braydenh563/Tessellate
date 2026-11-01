@@ -93,7 +93,7 @@ def test_chat_and_the_popup_agent_draw_the_same_fold_from_the_same_event():
     """OPEN row 6 (B30): the `why` event is not Ask's alone. Chat's bubble and
     the popup agent keep its lines and draw `drawWhyTrail` (the one fold
     builder, `renderAskWhy`) once the answer is final, in the lazy bundle."""
-    chat = (ROOT / "frontend/js/chat-attach.js").read_text(encoding="utf-8")
+    chat = (ROOT / "frontend/js/chat-turn.js").read_text(encoding="utf-8")
     palette = (ROOT / "frontend/js/palette.js").read_text(encoding="utf-8")
     lazy = (ROOT / "frontend/js/ask-compose.js").read_text(encoding="utf-8")
     assert "onWhy: (event) => { whyLines = event.lines; }," in chat

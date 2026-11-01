@@ -284,7 +284,7 @@ def _read_which(question: str):  # noqa: ANN202
     note_noun = any(w in ("note", "notes", "entry", "entries") for w in nouns)
     #: "what is the latest on the sync rewrite" asks for the news, not for a
     #: ranking: a "what is the newest ..." ranks only when it names a note.
-    if found.re is _WHAT and not note_noun:
+    if found.re is _WHAT.compiled() and not note_noun:
         return None
     rel = relation(found.group("rel"), note_noun or not named.get("a"))
     subject = [w for w in nouns if w not in _NOT_SUBJECT]
