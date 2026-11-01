@@ -8,7 +8,7 @@
  "src/tessellate/ai/agent.py::build_agent_messages": 16,
  "src/tessellate/ai/commands.py::_plan_one": 16,
  "src/tessellate/ai/commands.py::run": 17,
- "src/tessellate/ai/composer.py::Dialogue.record": 16,
+ "src/tessellate/ai/composer_dialogue.py::Dialogue.record": 16,
  "src/tessellate/ai/composer.py::_clarify": 20,
  "src/tessellate/ai/composer.py::_fit_terms": 22,
  "src/tessellate/ai/composer_body.py::_lead_block": 21,
