@@ -1342,29 +1342,9 @@ def _run_skill(
         before_reading, _why = _reading(session, skill["verify"])
     steps = skill.get("steps") or []
     specs = skills.step_specs(skill)
-    #: **Run one step, optionally reworded** (AGENT_SKILLS_REFORM.md Phase D:
-    #: "edit a step's text and re-run just that step"). The other two thirds of
-    #: recovery were already here, `start_at` resumes and `_unmet_reason` says
-    #: in one sentence which contract was not met, and this is the third: a run
-    #: that stalled on step 4 because the step was written for a bigger model
-    #: is fixed by rewriting step 4, and the only way to find out whether the
-    #: rewrite works was to run the whole skill again, every earlier step of
-    #: which writes to the notebook.
-    #:
-    #: The text is overridden here rather than in the caller so the `plan` event
-    #: below carries the step that is actually about to run: a plan card
-    #: showing the old wording beside a step running the new one is the drift
-    #: this reform exists to stop. The step's *contract* is untouched, which is
-    #: the point of separating the two: rewording an instruction must not
-    #: quietly drop the condition it has to meet.
-    if only_step is not None:
-        only_step = min(max(0, only_step), len(steps) - 1) if steps else None
+    only_step = _clamp_only_step(only_step, steps)
     if only_step is not None and step_text:
-        steps = list(steps)
-        steps[only_step] = step_text
-        specs = list(specs)
-        specs[only_step] = {**specs[only_step], "text": step_text}
-        skill = {**skill, "steps": steps, "step_specs": specs}
+        skill, steps, specs = _reword_step(skill, steps, specs, only_step, step_text)
     allowed = skill.get("tools") or None
     if small_model is None:
         # "Auto": the model's own name is the only size hint available before a
@@ -1372,101 +1352,19 @@ def _run_skill(
         # when the name says nothing, and None means off, narrowing a capable
         # model's toolbox on a guess is the worse mistake of the two.
         small_model = bool(model_manager.chat_model_is_small())
-    plan = {
-        "type": "plan",
-        "skill": skill["name"],
-        # Strings, for ever: `plan.steps` is rendered straight into `<li>`
-        # textContent by the frontend, so anything else here is a plan card
-        # full of "[object Object]". The contracts travel beside it.
-        "steps": steps,
-        "step_specs": specs,
-        "tools": skill.get("tools") or [],
-        "small_model": bool(small_model),
-        # Which shape of run this is, so the UI can title it. A saved skill and
-        # a plan the model drew for one request (§35K) both run through here.
-        "kind": skill.get("kind") or "skill",
-        #: Where this run actually begins, which a single-step re-run moves
-        #: (Phase D): the plan card draws its earlier steps from this, so a
-        #: card that read 0 while the run started at step 2 would show two
-        #: steps as pending that were never going to run.
-        "start_at": only_step if only_step is not None else max(0, start_at),
-        #: Each step's writes, listed before the first runs (row 3).
-        "writes": agent._plan_writes(session, steps),
-        "step_tools": _plan_step_tools(session, skill, steps),
-    }
+    plan = _plan_event(session, skill, steps, specs, small_model, start_at, only_step)
     changes: list[dict] = []
     # What the run knows so far, as ids rather than as prose, carried into
     # every later step's instruction and returned with the result.
     state: dict = {}
-
-    def turn(
-        question: str,
-        turn_history: list[dict],
-        note: str | None,
-        offered: list[str] | None = allowed,
-    ) -> Iterator[dict]:
-        return agent.run_agent(
-            session,
-            question,
-            notes,
-            model_manager,
-            ollama,
-            style=style,
-            profile=profile,
-            history=turn_history,
-            persona_prompt=persona_prompt,
-            allowed_tools=offered,
-            # A run may not start another run. A skill that *declares* its
-            # tools is already safe (`skills.NEVER_IN_A_SKILL` refuses these at
-            # save time), but a skill with no allowlist, and every ad-hoc plan
-            #, is offered the whole registry, `make_plan` included. A plan
-            # step that plans again would nest runs with fresh rounds each.
-            blocked_tools=tools.RUN_STARTERS,
-            max_rounds=STEP_ROUNDS if steps else agent.MAX_ROUNDS,
-            earned_rounds=STEP_EARNED_ROUNDS if steps else agent.EARNED_ROUNDS,
-            exhausted_note=note,
-            # The run draws its own card; a step's rounds are not a second one.
-            show_plan=False,
-            approved=True,
-        )
+    turn = _turn_for(
+        session, notes, model_manager, ollama, style, profile, persona_prompt, allowed, bool(steps)
+    )
 
     if not steps:
-        # No steps declared: one turn on the whole instruction, as before.
-        events = turn(skills.run_instruction(skill, values), list(history or []), None)
-        first = next(events, None)
-        if first is None:
-            yield plan
-            return
-        if first.get("type") == "unsupported":
-            yield first
-            return
-        yield plan
-        for event in _collect(chain([first], events), changes, state):
-            yield event
-        # No steps to resume from, so no `stopped_at`: a stepless skill is one
-        # turn, and re-running it is the only way to continue it. The turn's
-        # own `limit` event is still there, and the chat's Continue button
-        # reads that.
-        # One turn, so the only way it can have stopped early is the budget;
-        # `_collect` has already passed the `limit` event through to the
-        # caller, and the verification is what says so in the result.
-        spent_out = bool(budget and budget.stopped)
-        checked = verify(session, skill, before_reading, budget.stopped if spent_out else "")
-        yield checked.as_event()
-        _record_run(session, skill, changes, None, 0, False)
-        yield {
-            "type": "result",
-            "changes": changes,
-            "stopped_at": None,
-            "steps": 0,
-            "paused": False,
-            "truncated": False,
-            "stopped_by": "budget" if spent_out else "",
-            "verification": checked.as_event(),
-            "undo_available": all(change.get("undo") for change in changes),
-            "state": state,
-            "budget": _usage(budget),
-        }
+        yield from _run_stepless(
+            session, skill, values, history, plan, turn, changes, state, before_reading, budget
+        )
         return
 
     #: A single-step run starts at that step, whatever `start_at` said: the two
@@ -1493,16 +1391,185 @@ def _run_skill(
         changes=changes,
         known=state,
     )
-    for index in range(resume_from):
+    yield from _walk_steps(setup, run)
+    yield from _close_run(session, skill, run, plan, before_reading, budget)
+
+
+def _clamp_only_step(only_step: int | None, steps: list[str]) -> int | None:
+    """**Run one step, optionally reworded** (AGENT_SKILLS_REFORM.md Phase D:
+    "edit a step's text and re-run just that step"). The other two thirds of
+    recovery were already here, `start_at` resumes and `_unmet_reason` says
+    in one sentence which contract was not met, and this is the third: a run
+    that stalled on step 4 because the step was written for a bigger model
+    is fixed by rewriting step 4, and the only way to find out whether the
+    rewrite works was to run the whole skill again, every earlier step of
+    which writes to the notebook. A step past either end is the nearest one,
+    and a skill with no steps has nothing to single out."""
+    if only_step is None:
+        return None
+    return min(max(0, only_step), len(steps) - 1) if steps else None
+
+
+def _reword_step(
+    skill: dict, steps: list[str], specs: list[dict], index: int, text: str
+) -> tuple[dict, list[str], list[dict]]:
+    """The skill with step `index` saying `text`, in both of its two copies.
+
+    The text is overridden before the `plan` event is built so that event
+    carries the step that is actually about to run: a plan card showing the
+    old wording beside a step running the new one is the drift this reform
+    exists to stop. The step's *contract* is untouched, which is the point of
+    separating the two: rewording an instruction must not quietly drop the
+    condition it has to meet."""
+    steps = list(steps)
+    steps[index] = text
+    specs = list(specs)
+    specs[index] = {**specs[index], "text": text}
+    return {**skill, "steps": steps, "step_specs": specs}, steps, specs
+
+
+def _plan_event(
+    session: Session,
+    skill: dict,
+    steps: list[str],
+    specs: list[dict],
+    small_model: bool,
+    start_at: int,
+    only_step: int | None,
+) -> dict:
+    """The `plan` event, built once so every exit of the run yields the same one."""
+    return {
+        "type": "plan",
+        "skill": skill["name"],
+        # Strings, for ever: `plan.steps` is rendered straight into `<li>`
+        # textContent by the frontend, so anything else here is a plan card
+        # full of "[object Object]". The contracts travel beside it.
+        "steps": steps,
+        "step_specs": specs,
+        "tools": skill.get("tools") or [],
+        "small_model": bool(small_model),
+        # Which shape of run this is, so the UI can title it. A saved skill and
+        # a plan the model drew for one request (§35K) both run through here.
+        "kind": skill.get("kind") or "skill",
+        #: Where this run actually begins, which a single-step re-run moves
+        #: (Phase D): the plan card draws its earlier steps from this, so a
+        #: card that read 0 while the run started at step 2 would show two
+        #: steps as pending that were never going to run.
+        "start_at": only_step if only_step is not None else max(0, start_at),
+        #: Each step's writes, listed before the first runs (row 3).
+        "writes": agent._plan_writes(session, steps),
+        "step_tools": _plan_step_tools(session, skill, steps),
+    }
+
+
+def _turn_for(
+    session: Session,
+    notes: list[dict],
+    model_manager: ModelManager,
+    ollama: OllamaClient,
+    style: str,
+    profile: str,
+    persona_prompt: str | None,
+    allowed: list[str] | None,
+    has_steps: bool,
+) -> Callable[..., Iterator[dict]]:
+    """One agent turn, bound to this run's notes, style, persona and allowlist."""
+
+    def turn(
+        question: str,
+        turn_history: list[dict],
+        note: str | None,
+        offered: list[str] | None = allowed,
+    ) -> Iterator[dict]:
+        return agent.run_agent(
+            session,
+            question,
+            notes,
+            model_manager,
+            ollama,
+            style=style,
+            profile=profile,
+            history=turn_history,
+            persona_prompt=persona_prompt,
+            allowed_tools=offered,
+            # A run may not start another run. A skill that *declares* its
+            # tools is already safe (`skills.NEVER_IN_A_SKILL` refuses these at
+            # save time), but a skill with no allowlist, and every ad-hoc plan
+            #, is offered the whole registry, `make_plan` included. A plan
+            # step that plans again would nest runs with fresh rounds each.
+            blocked_tools=tools.RUN_STARTERS,
+            max_rounds=STEP_ROUNDS if has_steps else agent.MAX_ROUNDS,
+            earned_rounds=STEP_EARNED_ROUNDS if has_steps else agent.EARNED_ROUNDS,
+            exhausted_note=note,
+            # The run draws its own card; a step's rounds are not a second one.
+            show_plan=False,
+            approved=True,
+        )
+
+    return turn
+
+
+def _run_stepless(
+    session: Session,
+    skill: dict,
+    values: dict | None,
+    history: list[dict] | None,
+    plan: dict,
+    turn: Callable[..., Iterator[dict]],
+    changes: list[dict],
+    state: dict,
+    before_reading: int | None,
+    budget: run_budget.RunBudget | None,
+) -> Iterator[dict]:
+    """No steps declared: one turn on the whole instruction, as before."""
+    events = turn(skills.run_instruction(skill, values), list(history or []), None)
+    first = next(events, None)
+    if first is None:
+        yield plan
+        return
+    if first.get("type") == "unsupported":
+        yield first
+        return
+    yield plan
+    yield from _collect(chain([first], events), changes, state)
+    # No steps to resume from, so no `stopped_at`: a stepless skill is one
+    # turn, and re-running it is the only way to continue it. The turn's
+    # own `limit` event is still there, and the chat's Continue button
+    # reads that.
+    # One turn, so the only way it can have stopped early is the budget;
+    # `_collect` has already passed the `limit` event through to the
+    # caller, and the verification is what says so in the result.
+    spent_out = bool(budget and budget.stopped)
+    checked = verify(session, skill, before_reading, budget.stopped if spent_out else "")
+    yield checked.as_event()
+    _record_run(session, skill, changes, None, 0, False)
+    yield {
+        "type": "result",
+        "changes": changes,
+        "stopped_at": None,
+        "steps": 0,
+        "paused": False,
+        "truncated": False,
+        "stopped_by": "budget" if spent_out else "",
+        "verification": checked.as_event(),
+        "undo_available": all(change.get("undo") for change in changes),
+        "state": state,
+        "budget": _usage(budget),
+    }
+
+
+def _walk_steps(setup: _RunSetup, run: _RunState) -> Iterator[dict]:
+    """Mark the steps before `resume_from` earlier, then run the rest in order."""
+    for index in range(setup.resume_from):
         # Done in the run this one is resuming, so it is neither re-run nor
         # claimed as this run's work. The plan card shows it ticked in a
         # quieter state, because a step somebody watched succeed ten
         # minutes ago is not the same as one this run just did.
         if not run.started:
-            yield plan
+            yield setup.plan
             run.started = True
         yield {"type": "step", "index": index, "state": "earlier", "text": run.steps[index]}
-    index = resume_from
+    index = setup.resume_from
     #: A `while`, not a `for`: a re-planned step is run again at the same
     #: index with new text, and "again" without advancing is what that is.
     while index < len(run.steps):
@@ -1512,35 +1579,46 @@ def _run_skill(
         if move == "next":
             index += 1
 
-    if not run.started:  # every step failed before producing anything
-        yield plan
-    #: **Why the run ended, in one word for the app and one sentence for the
-    #: person.** `stopped_at` alone cannot tell a budget stop from a stalled
-    #: step from a manual pause, and all three want a different button.
-    stopped_by = (
-        "budget"
-        if run.out_of_budget
-        else "paused"
-        if run.paused
-        else "step"
-        if run.stopped_at is not None
-        else ""
-    )
-    checked = verify(
-        session,
-        skill,
-        before_reading,
-        run.out_of_budget
-        or (
+
+def _stopped_by(run: _RunState) -> str:
+    """**Why the run ended, in one word for the app.** `stopped_at` alone
+    cannot tell a budget stop from a stalled step from a manual pause, and all
+    three want a different button. "" when the run reached the end."""
+    if run.out_of_budget:
+        return "budget"
+    if run.paused:
+        return "paused"
+    return "step" if run.stopped_at is not None else ""
+
+
+def _unchecked_reason(run: _RunState) -> str:
+    """**Why the postcondition was not checked, in one sentence for the
+    person.** A budget stop already carries its own sentence; a stall and a
+    pause each need theirs; a finished run needs none."""
+    if run.out_of_budget:
+        return run.out_of_budget
+    if run.paused:
+        return "the run is paused part-way through, so its postcondition was not checked"
+    if run.stopped_at is not None:
+        return (
             f"the run stopped at step {run.stopped_at + 1} of {len(run.steps)}, so its "
             "postcondition was not checked"
-            if run.stopped_at is not None and not run.paused
-            else "the run is paused part-way through, so its postcondition was "
-            "not checked"
-            if run.paused
-            else ""
-        ),
-    )
+        )
+    return ""
+
+
+def _close_run(
+    session: Session,
+    skill: dict,
+    run: _RunState,
+    plan: dict,
+    before_reading: int | None,
+    budget: run_budget.RunBudget | None,
+) -> Iterator[dict]:
+    """Verification, the record, and the `result` event, after the last step."""
+    if not run.started:  # every step failed before producing anything
+        yield plan
+    checked = verify(session, skill, before_reading, _unchecked_reason(run))
     yield checked.as_event()
     _record_run(session, skill, run.changes, run.stopped_at, len(run.steps), run.paused)
     # `stopped_at` is the index the run did not get past, None when it
@@ -1561,7 +1639,7 @@ def _run_skill(
         # otherwise. The `verification` is repeated here as well as on its own
         # event because a client that reads only the result (a replay, the
         # skill log) must not have to reconstruct it.
-        "stopped_by": stopped_by,
+        "stopped_by": _stopped_by(run),
         "verification": checked.as_event(),
         # Can everything this run did be put back? A run that changed nothing
         # trivially can; a change with no undo call beside it cannot, and that
