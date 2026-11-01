@@ -36,9 +36,6 @@ from tessellate.core.database import (
     EntryLink,
     EntryProperty,
     EntryRevision,
-    LINK_TYPE_INVERSES,
-    LINK_TYPES,
-    RelationType,
     NoteScore,
     Reminder,
     WhiteboardNode,
@@ -52,6 +49,7 @@ from tessellate.core.lookahead import Ahead
 from tessellate.entry import link_facts, timewords
 from tessellate.entry.cleantext import clean_name, is_blank, name_key
 from tessellate.entry.tagnames import normalise_tags
+from tessellate.repo import relation_types
 
 # Where entries land when no AI is available or the AI can't decide.
 UNCATEGORISED = "Uncategorised"
@@ -2294,50 +2292,11 @@ def set_link_reason(session: Session, link: EntryLink, reason: str | None) -> En
     return link
 
 
-def relation_types(session: Session) -> dict[str, dict]:
-    """Every kind of link this notebook knows, by key: the six built-ins
-    (`LINK_TYPES`, with `LINK_TYPE_INVERSES`) then the ones a person added
-    (`RelationType`, GRAPH_PLAN KG3). Kept on the session for the request
-    (a notes list reads it once per note); the routes that change a type
-    drop it (`forget_relation_types`)."""
-    cached = session.info.get("relation_types")
-    if cached is not None:
-        return cached
-    out: dict[str, dict] = {}
-    for key, label in LINK_TYPES.items():
-        inverse = LINK_TYPE_INVERSES.get(key)
-        out[key] = {
-            "key": key,
-            "name": label.split(":", 1)[0],
-            "description": label.split(":", 1)[-1].strip(),
-            "inverse": inverse,
-            "directed": inverse is not None,
-            "colour": None,
-            "built_in": True,
-        }
-    for row in session.scalars(select(RelationType).order_by(RelationType.name)):
-        out[row.key] = {
-            "key": row.key,
-            "name": row.name,
-            "description": "",
-            "inverse": row.inverse,
-            "directed": bool(row.directed),
-            "colour": row.colour,
-            "built_in": False,
-        }
-    session.info["relation_types"] = out
-    return out
-
-
-def forget_relation_types(session: Session) -> None:
-    session.info.pop("relation_types", None)
-
-
 def is_link_type(session: Session, key: str | None) -> bool:
     """A built-in or a custom type's key (KG3)."""
     if not key:
         return False
-    return key in relation_types(session)
+    return key in relation_types.kinds(session)
 
 
 def relation_label(types: dict[str, dict], link_type: str | None, outgoing: bool) -> str | None:

@@ -144,11 +144,11 @@ def _links_ids(session: Session, term: Term, _everyone: dict[int, Entry]) -> set
 
 
 def _rel_ids(session: Session, term: Term, _everyone: dict[int, Entry]) -> set[int]:
-    from tessellate.entry import manager
+    from tessellate.repo import relation_types
 
     want = term.value.casefold()
     keys = {
-        key for key, kind in manager.relation_types(session).items()
+        key for key, kind in relation_types.kinds(session).items()
         if want in (key.casefold(), kind["name"].casefold(), (kind["inverse"] or "").casefold())
     }
     if not keys:

@@ -49,3 +49,10 @@ class Conflict(HTTPException):
 
     def __init__(self, detail: str) -> None:
         super().__init__(status_code=409, detail=detail)
+
+
+class ReadOnly(HTTPException):
+    """The row is built in and cannot be changed (400)."""
+
+    def __init__(self, detail: str) -> None:
+        super().__init__(status_code=400, detail=detail)

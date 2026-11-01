@@ -40,6 +40,7 @@ from tessellate.core.config import default_preferences
 from tessellate.core.database import AuditLog, Category, Entry, EntryLink, utcnow
 from tessellate.core.deps import get_session
 from tessellate.entry import importer, manager
+from tessellate.repo import relation_types
 from tessellate.entry.cleantext import import_path
 from tessellate.search import searxng_manager, websearch
 from tessellate.api.this_computer import REFUSAL, is_another_device, this_computer_only
@@ -2775,7 +2776,7 @@ def export_json(session: Session = Depends(get_session)) -> Response:
     ]
     payload["relation_types"] = [
         {k: v for k, v in kind.items() if k != "description"}
-        for kind in manager.relation_types(session).values()
+        for kind in relation_types.kinds(session).values()
     ]
     manager.log_action(session, "exported", "data", detail="json")
     session.commit()

@@ -1,38 +1,22 @@
 """Kinds of link a person adds (GRAPH_PLAN KG3, INBOX 528).
 
-The six built-ins (`LINK_TYPES`) stay in code and are listed first; a person
-adds their own here, each with the name it has from the other end ("Part of"
-/ "Has part", "Cites" / "Cited by"). A custom type's key is its name made
-safe (`part_of`), which is what `EntryLink.link_type` stores, so a rename
-never touches a link. Deleting one leaves its links untyped, never gone.
+The six built-ins stay in code and are listed first; a person adds their own
+here, each with the name it has from the other end ("Part of" / "Has part").
+The routes read the request and shape the answer; every query, the key a
+name makes and the delete that leaves links untyped are
+`repo/relation_types.py`'s (INBOX 1499).
 """
 
 from __future__ import annotations
 
-import re
-
-from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from fastapi import APIRouter, Depends, Query, Response
 from pydantic import BaseModel, Field
-from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
-from tessellate.core.database import EntryLink, RelationType
 from tessellate.core.deps import get_session
-from tessellate.entry import manager
+from tessellate.repo import relation_types
 
 router = APIRouter(prefix="/relation-types", tags=["relation-types"])
-
-#: A type's colour is a palette key or `#rrggbb`, as a category's is.
-_COLOUR = re.compile(r"^(#[0-9a-fA-F]{6}|[a-z]{3,12})$")
-
-
-def _key(name: str) -> str:
-    return re.sub(r"[^a-z0-9]+", "_", name.casefold()).strip("_")[:24]
-
-
-def _clean(text: str | None) -> str | None:
-    text = " ".join((text or "").split())
-    return text[:60] or None
 
 
 class RelationIn(BaseModel):
@@ -56,94 +40,43 @@ class RelationPatch(BaseModel):
     colour: str | None = Field(default=None, max_length=16)
 
 
-def _colour(value: str | None) -> str | None:
-    if value and not _COLOUR.match(value):
-        raise HTTPException(status_code=422, detail="A colour is a palette name or #rrggbb.")
-    return value or None
-
-
 @router.get("")
 def list_types(
     response: Response,
     limit: int = Query(default=500, ge=1, le=500),
     session: Session = Depends(get_session),
 ) -> list[dict]:
-    rows = list(manager.relation_types(session).values())
+    rows = list(relation_types.kinds(session).values())
     response.headers["X-Total-Count"] = str(len(rows))
     return rows[:limit]
 
 
 @router.post("", status_code=201)
 def create_type(body: RelationIn, session: Session = Depends(get_session)) -> dict:
-    name = _clean(body.name)
-    key = _key(name or "")
-    if body.restore and body.key:
-        key = _key(body.key)
-    if not name or not key:
-        raise HTTPException(status_code=422, detail="A kind of link needs a name.")
-    known = manager.relation_types(session)
-    if key in known or any(k["name"].casefold() == name.casefold() for k in known.values()):
-        raise HTTPException(status_code=409, detail="There is already a kind of link with that name.")
-    row = RelationType(key=key, name=name, inverse=_clean(body.inverse), directed=body.directed, colour=_colour(body.colour))
-    session.add(row)
-    if body.restore and body.link_ids:
-        links = EntryLink.__table__  # every space's, as the delete was
-        for start in range(0, len(body.link_ids), 500):
-            chunk = body.link_ids[start:start + 500]
-            session.execute(
-                update(links).where(links.c.id.in_(chunk), links.c.link_type.is_(None)).values(link_type=key)
-            )
+    restore = body.restore and bool(body.key)
+    made = relation_types.create(
+        session,
+        name=body.name,
+        inverse=body.inverse,
+        directed=body.directed,
+        colour=body.colour,
+        key=body.key if restore else None,
+        link_ids=body.link_ids if body.restore else (),
+    )
     session.commit()
-    manager.forget_relation_types(session)
-    return manager.relation_types(session)[key]
-
-
-def _custom(session: Session, key: str) -> RelationType:
-    row = session.scalar(select(RelationType).where(RelationType.key == key))
-    if row is None:
-        if key in manager.relation_types(session):
-            raise HTTPException(status_code=400, detail="The built-in kinds of link can't be changed.")
-        raise HTTPException(status_code=404, detail="That kind of link could not be found.")
-    return row
+    return made
 
 
 @router.patch("/{key}")
 def patch_type(key: str, body: RelationPatch, session: Session = Depends(get_session)) -> dict:
-    row = _custom(session, key)
-    sent = body.model_fields_set
-    if "name" in sent:
-        name = _clean(body.name)
-        if not name:
-            raise HTTPException(status_code=422, detail="A kind of link needs a name.")
-        row.name = name
-    if "inverse" in sent:
-        row.inverse = _clean(body.inverse)
-    if "directed" in sent and body.directed is not None:
-        row.directed = body.directed
-    if "colour" in sent:
-        row.colour = _colour(body.colour)
+    changed = relation_types.update(session, key, {name: getattr(body, name) for name in body.model_fields_set})
     session.commit()
-    manager.forget_relation_types(session)
-    return manager.relation_types(session)[key]
+    return changed
 
 
 @router.delete("/{key}")
 def delete_type(key: str, session: Session = Depends(get_session)) -> dict:
-    row = _custom(session, key)
-    # Everything Undo needs to put it back exactly (undo-1005): the row and
-    # which links carried it, since after this they carry nothing.
-    #
-    # On the table, not the mapped class: a kind is the whole notebook's, and
-    # an ORM statement here took the request's space filter, so a delete made
-    # while one space was open left that kind on every other space's links.
-    links = EntryLink.__table__
-    link_ids = list(session.scalars(select(links.c.id).where(links.c.link_type == key)))
-    restore = {
-        "key": row.key, "name": row.name, "inverse": row.inverse,
-        "directed": bool(row.directed), "colour": row.colour, "link_ids": link_ids,
-    }
-    untyped = session.execute(update(links).where(links.c.link_type == key).values(link_type=None)).rowcount
-    session.delete(row)
+    """Delete a custom kind; its links stay, untyped (`relation_types.delete`)."""
+    untyped, restore = relation_types.delete(session, key)
     session.commit()
-    manager.forget_relation_types(session)
-    return {"deleted": key, "links_untyped": untyped or 0, "restore": restore}
+    return {"deleted": key, "links_untyped": untyped, "restore": restore}

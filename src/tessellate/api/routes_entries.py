@@ -66,6 +66,7 @@ from tessellate.core.database import LIKE_ESCAPE
 from tessellate.core.deps import get_session
 from tessellate.entry import duplicates, link_facts, manager, repo
 from tessellate.repo import bookmarks as bookmark_repo
+from tessellate.repo import relation_types
 from tessellate.entry.mentions import MENTION_MIN_TITLE_CHARS, names_label
 from tessellate.entry import meetings as meeting_shape
 from tessellate.entry import properties as note_properties
@@ -185,7 +186,7 @@ def _to_out(
                 direction="out" if link.source_entry_id == entry.id else "in",
                 link_type=link.link_type,
                 link_label=manager.relation_label(
-                    manager.relation_types(session), link.link_type, link.source_entry_id == entry.id
+                    relation_types.kinds(session), link.link_type, link.source_entry_id == entry.id
                 ),
                 props=link.props,
             )
@@ -3914,7 +3915,7 @@ def _stored_connections(session: Session, entry: Entry) -> tuple[list[dict], lis
             #: KG3: the kind, named from this end, and the link's properties.
             "link_type": link.link_type,
             "link_label": manager.relation_label(
-                manager.relation_types(session), link.link_type, link.source_entry_id == entry.id
+                relation_types.kinds(session), link.link_type, link.source_entry_id == entry.id
             ),
             "props": link.props,
         }

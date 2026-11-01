@@ -3,8 +3,8 @@
 A resource moved behind its repository (`src/tessellate/repo/<resource>.py`)
 is queried nowhere else under `api/`: no router imports its models. And the
 ORM calls still left in the routers are counted, a ratchet that only goes
-down as each resource moves (seeded 2026-11-01 at 884 after bookmarks moved;
-910 before, counting `session.`/`db.` query, get, execute, scalar(s), add,
+down as each resource moves (seeded 2026-11-01 at 884 after bookmarks moved,
+876 after relation types; 910 before, counting `session.`/`db.` query, get, execute, scalar(s), add,
 delete, merge, and `select(`/`sa_delete(`/`sa_update(`).
 """
 
@@ -19,13 +19,14 @@ API = Path(__file__).resolve().parents[1] / "src" / "tessellate" / "api"
 #: Each moved resource and the models only its repository may name.
 MOVED = {
     "bookmarks": {"Bookmark", "EntryBookmark", "DocumentBookmark"},
+    "relation_types": {"RelationType"},
 }
 
 #: A route that deletes every row of a space walks every model at once; the
 #: spaces repository will own it when spaces move (row 3a, step order).
 CROSS_RESOURCE = {"routes_spaces.py"}
 
-ORM_CALLS_CAP = 884
+ORM_CALLS_CAP = 876
 
 _ORM = re.compile(
     r"\b(?:session|db)\.(?:query|get|execute|scalar|scalars|add|add_all|delete|merge)\("
