@@ -641,6 +641,10 @@ function docSuggestCodeMask(text) {
 //: span of what it suggests (between the three-character markers).
 function docSuggestParse(text) {
   const src = String(text == null ? "" : text);
+  //: Most documents hold no mark: two scans for the opener, not the code mask
+  //: and the pattern, which the plugin and the status chip each ran over the
+  //: whole text on every key.
+  if (!src.includes("{++") && !src.includes("{--")) return [];
   const code = docSuggestCodeMask(src);
   const pattern = /\{\+\+([\s\S]*?)\+\+\}|\{--([\s\S]*?)--\}/g;
   const out = [];
