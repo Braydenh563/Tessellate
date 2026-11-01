@@ -6718,3 +6718,27 @@ def test_close_is_the_last_control_of_every_popup_head() -> None:
             fill = re.search(r"(?:^|;)\s*background(?:-color)?:\s*([^;]+)", body)
             if rest and fill and not re.fullmatch(r"none|transparent|inherit|initial|unset", fill.group(1).strip()):
                 raise AssertionError(f"{path.name}: {rest[0][:70]} fills a head button at rest ({fill.group(1).strip()[:40]})")
+
+
+def test_the_format_panel_is_one_grid_of_helped_groups():
+    """INBOX 1510(a), DESIGN.md's properties-panel row: every row is a label,
+    a field and a unit track; X and Y, W and H are pairs on one three-column
+    track with the lock between W and H; each group has an icon head and a
+    '?' whose popover names its controls; spinners only under the pointer or
+    the focus."""
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    panel = html[html.index('<aside id="wb-format"') : html.index("</aside>", html.index('<aside id="wb-format"'))]
+    assert "wb-fmt-grid" not in panel
+    for row in re.findall(r'<(?:div|label) class="wb-fmt-row"[^>]*>(<[^>]+>)', panel):
+        assert 'class="wb-fmt-label"' in row, row
+    groups = re.findall(r'data-fmt-group="([\w-]+)">\s*<h4 class="wb-fmt-head"><i class="ph ph-[\w-]+" aria-hidden="true"></i><span>[^<]+</span><button[^>]*data-help-for="wb-fmt-help-\1"', panel)
+    assert len(groups) == panel.count('class="wb-fmt-group"') >= 10, groups
+    for gid in groups:
+        assert f'class="help-body hidden" id="wb-fmt-help-{gid}"' in panel, gid
+    assert panel.count('class="wb-fmt-pair"') + panel.count('class="wb-fmt-pair wb-fmt-pair-linked"') == 2 and 'id="wb-fmt-link" class="ghost small icon-only wb-fmt-lock"' in panel
+    css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+    row = css[css.index(".wb-fmt-row {") :]
+    assert "grid-template-columns: 6rem minmax(0, 1fr) 1.25rem;" in row[: row.index("}")]
+    assert 'input[type="number"]::-webkit-inner-spin-button {\n  opacity: 0;' in css
+    assert ":is(:hover, :focus-visible)::-webkit-inner-spin-button" in css
+    assert ".wb-fmt-row" not in (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")

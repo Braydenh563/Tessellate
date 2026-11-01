@@ -331,6 +331,27 @@ async function wbFmtGeometry(axis, value) {
   wbFormatSyncSoon();
 }
 
+//: **A size preset** (draw.io's Arrange tab, INBOX 1510(a)): the height
+//: set from the width to a common ratio, one undo step, and a kept ratio
+//: moves to the new one so a later W or H change keeps it. The menu goes
+//: back to its prompt: a preset is an action, not a state.
+async function wbFmtAspect(ratio) {
+  const select = document.getElementById("wb-fmt-aspect");
+  const name = select?.selectedOptions?.[0]?.textContent || "chosen";
+  if (select) select.value = "";
+  const entries = wbFmtEntries().filter((e) => !wbIsLocked(e.kind, e.item));
+  const box = wbFmtBox(entries);
+  if (!(ratio > 0) || !box) return;
+  const key = wbFmtLinkKey(entries);
+  const kept = wbFmtState.links.has(key);
+  wbFmtState.links.delete(key);
+  await wbRecordGesture(() => wbFmtSizeAxis("h", Math.max(8, Math.round((box.maxX - box.minX) / ratio))));
+  if (kept) wbFmtState.links.set(key, { ratio });
+  wbScheduleRender();
+  wbAnnounce(`Height set for ${name}.`);
+  wbFormatSyncSoon();
+}
+
 //: One axis of a selection's box set to a number: every member's position
 //: on that axis and its size scale by the same factor about the box's top
 //: left, the arithmetic the group's own edge grips use. A connector follows
@@ -522,6 +543,14 @@ function wbFmtShowMixed(el, isMixed, value) {
   }
 }
 
+//: A group's head shows while one of its rows does (INBOX 1510(a)): a
+//: line's Style tab has no Fill head over nothing.
+function wbFmtShowGroups(panel) {
+  for (const group of panel.querySelectorAll(".wb-fmt-group")) {
+    group.hidden = !group.querySelector("[data-fmt]:not([hidden]), .wb-fmt-commands:not([hidden])");
+  }
+}
+
 function wbFormatSync() {
   const panel = wbFormatPanel();
   if (!panel || panel.classList.contains("hidden")) return;
@@ -567,6 +596,7 @@ function wbFormatSync() {
   const arrange = document.getElementById("wb-format-commands");
   if (arrange) arrange.hidden = !entries.length || map;
   wbSyncCommandRows(arrange);
+  wbFmtShowGroups(panel);
   if (fields.has("props")) wbFmtSyncProps(entries);
   const first = entries.find((e) => wbFmtKind(e) && wbFmtKind(e) !== "topic");
   if (!first) return;
@@ -763,7 +793,10 @@ function wbFormatCommandButtons() {
   if (!host || host.childElementCount) return;
   const groups = [
     ["Order", ["order-front", "order-forward", "order-backward", "order-back"]],
-    ["Align", ["align-left", "align-hcenter", "align-right", "align-top", "align-vcenter", "align-bottom"]],
+    //: Three a row, so every run fits the field column beside its name
+    //: (INBOX 1510(a), one grid): six in one run wrapped under the label.
+    ["Align across", ["align-left", "align-hcenter", "align-right"]],
+    ["Align down", ["align-top", "align-vcenter", "align-bottom"]],
     ["Space and size", ["distribute-h", "distribute-v", "same-width", "same-height"]],
     ["Group and lock", ["group", "ungroup", "lock"]],
   ];
@@ -1072,6 +1105,7 @@ onDomReady(() => {
     on(`wb-fmt-${axis}`, "change", (e) => wbFmtGeometry(axis, Number(e.target.value)));
   }
   on("wb-fmt-angle", "change", (e) => wbFmtAngle(Number(e.target.value) || 0));
+  on("wb-fmt-aspect", "change", (e) => wbFmtAspect(Number(e.target.value)));
   on("wb-fmt-flip-h", "click", () => wbFmtFlip("h"));
   on("wb-fmt-flip-v", "click", () => wbFmtFlip("v"));
   on("wb-fmt-save-style", "click", () => wbRunCommand("save-style"));
