@@ -6,12 +6,87 @@
 // Loaded when that section opens (settings.js). The readers are
 // entry/app_import.py behind `POST /import/app?source=`.
 //
-// One step, the recipe every import here follows (DESIGN.md, "Choosing files
-// to bring in"): each button opens its picker, choosing starts the import,
-// and the toast's Undo bins exactly the notes it made (`undoImport`,
-// settings-data.js). Importing the same export again makes nothing new: each
-// note remembers where it came from, and the status line says how many were
+// Two steps, the recipe every multi-note import here follows (DESIGN.md,
+// "Choosing files to bring in"; INBOX 1520, the owner): each button opens its
+// picker, choosing shows the preview (`importPreview`: what will come in,
+// every note a tick), and the press that follows runs it. The toast's Undo
+// then bins exactly the notes it made (`undoImport`, settings-data.js).
+// Importing the same export again makes nothing new: each note remembers
+// where it came from, and the preview and the status line say how many were
 // already here.
+
+//: **The preview step** (audit 1031 S36). `rows` are `{key, title, snippet,
+//: already}`; answers the keys the person left unticked, or null when they
+//: closed it. A note already here starts unticked: the run would skip it.
+function importPreview({ label, rows, more = 0 }) {
+  return new Promise((resolve) => {
+    let answered = false;
+    const answer = (value) => {
+      if (answered) return;
+      answered = true;
+      resolve(value);
+    };
+    const boxes = [];
+    openSheet({
+      label: "Import preview",
+      sub: `${nounCount(rows.length + more, "note")} from ${label}. Untick any you do not want.`,
+      name: "import-preview",
+      onClose: () => answer(null),
+      build: (card, close) => {
+        card.classList.add("import-report-card");
+        const summary = document.createElement("p");
+        summary.className = "import-report-counts";
+        summary.setAttribute("aria-live", "polite");
+        const run = smallButton("ph:check Import", "Bring the ticked notes in", () => {
+          answer(rows.filter((row, at) => !boxes[at].checked).map((row) => row.key));
+          close();
+        }, false);
+        run.classList.add("accent");
+        const refresh = () => {
+          const n = boxes.filter((box) => box.checked).length + more;
+          summary.textContent = `${nounCount(n, "note")} will be imported.` + (more ? ` The ${more} past the first ${rows.length} come too.` : "");
+          setLabel(run, `ph:check Import ${n}`);
+          run.disabled = n === 0;
+        };
+        const all = (on) => () => {
+          boxes.forEach((box) => { box.checked = on; });
+          refresh();
+        };
+        const tools = document.createElement("div");
+        tools.className = "row";
+        tools.append(
+          smallButton("Select all", "Tick every note", all(true)),
+          smallButton("Select none", "Untick every note", all(false)),
+        );
+        const list = document.createElement("ul");
+        list.className = "entry-list import-report-list";
+        rows.forEach((row) => {
+          const li = document.createElement("li");
+          const tick = document.createElement("label");
+          tick.className = "row align-center checkbox-label small";
+          const box = document.createElement("input");
+          box.type = "checkbox";
+          box.checked = !row.already;
+          box.addEventListener("change", refresh);
+          boxes.push(box);
+          const name = document.createElement("strong");
+          name.textContent = row.title || "Untitled";
+          tick.append(box, name);
+          const detail = document.createElement("p");
+          detail.className = "muted task-detail";
+          detail.textContent = (row.already ? "Already here. " : "") + (row.snippet || "");
+          li.append(tick, detail);
+          list.appendChild(li);
+        });
+        const actions = document.createElement("div");
+        actions.className = "row right space-dialog-actions";
+        actions.append(smallButton("Cancel", "Import nothing", close), run);
+        card.append(summary, tools, list, actions);
+        refresh();
+      },
+    });
+  });
+}
 
 const APP_IMPORTS = [
   { source: "notion", button: "import-notion", input: "import-notion-file", label: "Notion" },
@@ -35,6 +110,26 @@ async function importFromApp(spec) {
   }
   const form = new FormData();
   for (const file of files) form.append("files", file, file.webkitRelativePath || file.name);
+  setLabel(status, `ph:spin Reading ${spec.label}…`);
+  let left = [];
+  try {
+    const seen = await (await api.upload(`/import/app?source=${spec.source}&dry_run=1`, form)).json();
+    if (!seen.found) {
+      status.textContent = `No ${spec.label} notes in what you chose.`;
+      return;
+    }
+    const chosen = await importPreview({ label: spec.label, rows: seen.notes, more: seen.more });
+    if (chosen === null) {
+      status.textContent = "Nothing was imported.";
+      return;
+    }
+    left = chosen;
+  } catch (error) {
+    status.textContent = error.message || `Couldn't read ${spec.label}.`;
+    status.classList.add("error");
+    return;
+  }
+  if (left.length) form.append("exclude", JSON.stringify(left));
   setLabel(status, `ph:spin Importing from ${spec.label}…`);
   try {
     //: `api.upload` throws the server's own words on a refusal; the catch

@@ -1,4 +1,6 @@
-"""Importing is one step, with an undo (INBOX 464 (18)).
+"""Importing starts from one button over a hidden picker, and ends with an
+undo (INBOX 464 (18)); a preview step sits between them since INBOX 1520
+(`tests/test_import_preview.py`).
 
 Settings, Data had three two-step imports: "Choose files" then "Import",
 "Choose files" then "Import folder", "Choose file" then "Import". Each is now

@@ -2,9 +2,9 @@
 
 Generated 2026-11-01 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7526, frontend ids 2643, CSS sections 517, backend routes 638, backend modules 8231, test files 1779, tests 15363, plan headings 990, app scripts 28, boot scripts 37, script files 214.
+Counts: frontend functions 7528, frontend ids 2643, CSS sections 517, backend routes 638, backend modules 8233, test files 1780, tests 15369, plan headings 990, app scripts 28, boot scripts 37, script files 214.
 
-## Frontend functions (7526)
+## Frontend functions (7528)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -1986,15 +1986,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `popupToolEquation` | frontend/js/app-features.js:254 |
 | `renderToolShortcutList` | frontend/js/app-features.js:266 |
 
-### frontend/js/app-import.js (5)
+### frontend/js/app-import.js (6)
 
 | Name | File:line |
 |---|---|
-| `importFromApp` | frontend/js/app-import.js:24 |
-| `importReportButton` | frontend/js/app-import.js:77 |
-| `importReportCounts` | frontend/js/app-import.js:109 |
-| `importReportSection` | frontend/js/app-import.js:83 |
-| `openImportReport` | frontend/js/app-import.js:117 |
+| `importFromApp` | frontend/js/app-import.js:99 |
+| `importPreview` | frontend/js/app-import.js:21 |
+| `importReportButton` | frontend/js/app-import.js:172 |
+| `importReportCounts` | frontend/js/app-import.js:204 |
+| `importReportSection` | frontend/js/app-import.js:178 |
+| `openImportReport` | frontend/js/app-import.js:212 |
 
 ### frontend/js/app-palette.js (45)
 
@@ -6357,24 +6358,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `toolGroupBoxes` | frontend/js/settings-controls.js:3576 |
 | `waitForRestart` | frontend/js/settings-controls.js:1709 |
 
-### frontend/js/settings-data.js (51)
+### frontend/js/settings-data.js (52)
 
 | Name | File:line |
 |---|---|
 | `backupNow` | frontend/js/settings-data.js:492 |
 | `backupScheduleWords` | frontend/js/settings-data.js:256 |
-| `clearPreviews` | frontend/js/settings-data.js:705 |
-| `dismissedWords` | frontend/js/settings-data.js:771 |
-| `guideTurns` | frontend/js/settings-data.js:711 |
+| `clearPreviews` | frontend/js/settings-data.js:732 |
+| `dismissedWords` | frontend/js/settings-data.js:798 |
+| `guideTurns` | frontend/js/settings-data.js:738 |
 | `humanBytes` | frontend/js/settings-data.js:427 |
 | `importDirectory` | frontend/js/settings-data.js:503 |
-| `importDocument` | frontend/js/settings-data.js:625 |
-| `importMarkdown` | frontend/js/settings-data.js:570 |
+| `importDocument` | frontend/js/settings-data.js:652 |
+| `importMarkdown` | frontend/js/settings-data.js:593 |
 | `importSummary` | frontend/js/settings-data.js:528 |
-| `noteSettingChange` | frontend/js/settings-data.js:949 |
-| `paintClearRow` | frontend/js/settings-data.js:716 |
-| `previewCaches` | frontend/js/settings-data.js:691 |
-| `previewCount` | frontend/js/settings-data.js:700 |
+| `markdownPreview` | frontend/js/settings-data.js:573 |
+| `noteSettingChange` | frontend/js/settings-data.js:976 |
+| `paintClearRow` | frontend/js/settings-data.js:743 |
+| `previewCaches` | frontend/js/settings-data.js:718 |
+| `previewCount` | frontend/js/settings-data.js:727 |
 | `privacyAddressLine` | frontend/js/settings-data.js:39 |
 | `privacyDestinationRow` | frontend/js/settings-data.js:47 |
 | `privacyGroups` | frontend/js/settings-data.js:23 |
@@ -6386,31 +6388,31 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderIntegrityNotice` | frontend/js/settings-data.js:467 |
 | `renderPrivacyRange` | frontend/js/settings-data.js:93 |
 | `renderPrivacyReceipt` | frontend/js/settings-data.js:141 |
-| `renderSettingsClear` | frontend/js/settings-data.js:723 |
-| `renderSettingsHistory` | frontend/js/settings-data.js:1175 |
+| `renderSettingsClear` | frontend/js/settings-data.js:750 |
+| `renderSettingsHistory` | frontend/js/settings-data.js:1202 |
 | `renderStorageBreakdown` | frontend/js/settings-data.js:212 |
 | `renderStorageSpaceNotice` | frontend/js/settings-data.js:446 |
-| `restoreGuideTurns` | frontend/js/settings-data.js:833 |
+| `restoreGuideTurns` | frontend/js/settings-data.js:860 |
 | `saveBackupCopyDir` | frontend/js/settings-data.js:297 |
-| `searchRecentAll` | frontend/js/settings-data.js:978 |
-| `searchRecentClearAll` | frontend/js/settings-data.js:990 |
-| `searchRecentRestore` | frontend/js/settings-data.js:996 |
-| `settingChangeWords` | frontend/js/settings-data.js:914 |
-| `settingListWords` | frontend/js/settings-data.js:897 |
-| `settingName` | frontend/js/settings-data.js:890 |
-| `settingShown` | frontend/js/settings-data.js:879 |
-| `settingsClearCount` | frontend/js/settings-data.js:685 |
-| `settingsClearDone` | frontend/js/settings-data.js:785 |
-| `settingsHistoryAdd` | frontend/js/settings-data.js:1037 |
-| `settingsHistoryApply` | frontend/js/settings-data.js:1053 |
-| `settingsHistoryEntry` | frontend/js/settings-data.js:1018 |
-| `settingsHistoryFind` | frontend/js/settings-data.js:1048 |
-| `settingsHistoryLoad` | frontend/js/settings-data.js:1007 |
-| `settingsHistoryRedo` | frontend/js/settings-data.js:1128 |
-| `settingsHistoryRow` | frontend/js/settings-data.js:1141 |
-| `settingsHistorySave` | frontend/js/settings-data.js:1011 |
-| `settingsHistoryUndo` | frontend/js/settings-data.js:1114 |
-| `settingsPrefsSeen` | frontend/js/settings-data.js:928 |
+| `searchRecentAll` | frontend/js/settings-data.js:1005 |
+| `searchRecentClearAll` | frontend/js/settings-data.js:1017 |
+| `searchRecentRestore` | frontend/js/settings-data.js:1023 |
+| `settingChangeWords` | frontend/js/settings-data.js:941 |
+| `settingListWords` | frontend/js/settings-data.js:924 |
+| `settingName` | frontend/js/settings-data.js:917 |
+| `settingShown` | frontend/js/settings-data.js:906 |
+| `settingsClearCount` | frontend/js/settings-data.js:712 |
+| `settingsClearDone` | frontend/js/settings-data.js:812 |
+| `settingsHistoryAdd` | frontend/js/settings-data.js:1064 |
+| `settingsHistoryApply` | frontend/js/settings-data.js:1080 |
+| `settingsHistoryEntry` | frontend/js/settings-data.js:1045 |
+| `settingsHistoryFind` | frontend/js/settings-data.js:1075 |
+| `settingsHistoryLoad` | frontend/js/settings-data.js:1034 |
+| `settingsHistoryRedo` | frontend/js/settings-data.js:1155 |
+| `settingsHistoryRow` | frontend/js/settings-data.js:1168 |
+| `settingsHistorySave` | frontend/js/settings-data.js:1038 |
+| `settingsHistoryUndo` | frontend/js/settings-data.js:1141 |
+| `settingsPrefsSeen` | frontend/js/settings-data.js:955 |
 | `undoImport` | frontend/js/settings-data.js:538 |
 
 ### frontend/js/settings-find.js (36)
@@ -12012,7 +12014,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/export.ics` | GET | `export_ics` | src/tessellate/api/routes_reminders.py:382 |
 | `/export/backup` | GET | `export_backup` | src/tessellate/api/routes_settings.py:2695 |
 | `/export/csv` | GET | `export_csv` | src/tessellate/api/routes_settings.py:3411 |
-| `/export/folder` | GET | `export_notebook_folder` | src/tessellate/api/routes_import.py:121 |
+| `/export/folder` | GET | `export_notebook_folder` | src/tessellate/api/routes_import.py:147 |
 | `/export/json` | GET | `export_json` | src/tessellate/api/routes_settings.py:2719 |
 | `/export/markdown` | GET | `export_markdown` | src/tessellate/api/routes_settings.py:2847 |
 | `/extract/commit` | POST | `extract_commit` | src/tessellate/api/routes_entries.py:4339 |
@@ -12080,11 +12082,11 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/images` | GET | `list_images` | src/tessellate/api/routes_whiteboard.py:2840 |
 | `/import` | POST | `import_document` | src/tessellate/api/routes_documents.py:631 |
 | `/import.ics` | POST | `import_ics` | src/tessellate/api/routes_reminders.py:472 |
-| `/import/app` | POST | `import_app` | src/tessellate/api/routes_import.py:63 |
+| `/import/app` | POST | `import_app` | src/tessellate/api/routes_import.py:80 |
 | `/import/directory` | POST | `import_directory` | src/tessellate/api/routes_settings.py:3188 |
 | `/import/document` | POST | `import_document` | src/tessellate/api/routes_settings.py:3315 |
 | `/import/markdown` | POST | `import_markdown` | src/tessellate/api/routes_settings.py:3208 |
-| `/import/reports/{report_id}` | GET | `import_report_page` | src/tessellate/api/routes_import.py:112 |
+| `/import/reports/{report_id}` | GET | `import_report_page` | src/tessellate/api/routes_import.py:138 |
 | `/improve` | POST | `improve_writing` | src/tessellate/api/routes_entries.py:1737 |
 | `/inspect` | POST | `inspect_model` | src/tessellate/api/routes_models.py:891 |
 | `/instance` | GET | `instance` | src/tessellate/api/app.py:1579 |
@@ -12487,7 +12489,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8231)
+## Backend modules (8233)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -15162,8 +15164,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3058 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3184 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3061 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3187 |
 
 ### src/tessellate/ai/inbox.py (8)
 
@@ -18978,16 +18980,17 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `sample_notebook_state` | src/tessellate/api/routes_help.py:132 |
 | `topics` | src/tessellate/api/routes_help.py:62 |
 
-### src/tessellate/api/routes_import.py (6)
+### src/tessellate/api/routes_import.py (7)
 
 | Name | File:line |
 |---|---|
-| `_progress` | src/tessellate/api/routes_import.py:46 |
-| `_received` | src/tessellate/api/routes_import.py:32 |
-| `_summary` | src/tessellate/api/routes_import.py:57 |
-| `export_notebook_folder` | src/tessellate/api/routes_import.py:122 |
-| `import_app` | src/tessellate/api/routes_import.py:64 |
-| `import_report_page` | src/tessellate/api/routes_import.py:113 |
+| `_excluded` | src/tessellate/api/routes_import.py:66 |
+| `_progress` | src/tessellate/api/routes_import.py:49 |
+| `_received` | src/tessellate/api/routes_import.py:35 |
+| `_summary` | src/tessellate/api/routes_import.py:60 |
+| `export_notebook_folder` | src/tessellate/api/routes_import.py:148 |
+| `import_app` | src/tessellate/api/routes_import.py:81 |
+| `import_report_page` | src/tessellate/api/routes_import.py:139 |
 
 ### src/tessellate/api/routes_inbox.py (18)
 
@@ -21718,7 +21721,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `set_fullscreen_handler` | src/tessellate/core/window_hook.py:33 |
 | `toggle` | src/tessellate/core/window_hook.py:49 |
 
-### src/tessellate/entry/app_import.py (26)
+### src/tessellate/entry/app_import.py (27)
 
 | Name | File:line |
 |---|---|
@@ -21740,13 +21743,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_with_title` | src/tessellate/entry/app_import.py:161 |
 | `expand` | src/tessellate/entry/app_import.py:101 |
 | `people_and_places` | src/tessellate/entry/app_import.py:435 |
+| `preview` | src/tessellate/entry/app_import.py:499 |
 | `read` | src/tessellate/entry/app_import.py:362 |
 | `read_apple` | src/tessellate/entry/app_import.py:342 |
 | `read_evernote` | src/tessellate/entry/app_import.py:303 |
 | `read_notion` | src/tessellate/entry/app_import.py:203 |
 | `read_obsidian` | src/tessellate/entry/app_import.py:240 |
 | `source_key` | src/tessellate/entry/app_import.py:450 |
-| `write` | src/tessellate/entry/app_import.py:494 |
+| `write` | src/tessellate/entry/app_import.py:521 |
 | `written_on` | src/tessellate/entry/app_import.py:423 |
 
 ### src/tessellate/entry/bin.py (6)
@@ -22722,7 +22726,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15363)
+## Tests (15369)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23532,6 +23536,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_import_markdown_links.py | 3 |
 | tests/test_import_module_cycles.py | 2 |
 | tests/test_import_one_step.py | 5 |
+| tests/test_import_preview.py | 6 |
 | tests/test_import_report.py | 5 |
 | tests/test_inbox_431_visuals.py | 3 |
 | tests/test_inbox_434_capture.py | 8 |
