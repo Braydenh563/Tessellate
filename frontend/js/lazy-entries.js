@@ -47,7 +47,7 @@ Object.assign(LAZY_MODULES, {
   //: The model badge's spec panel, editing an answer, a note's Explain row, the extract preview's Save (gesture-kit.js's header).
   gestureKit: ["/js/gesture-kit.js"],
   //: One chat turn (chat-turn.js): `sendChatMessage` awaits it; the chat box's focus warms it.
-  chatTurn: ["/js/chat-turn.js"],
+  chatTurn: ["/js/answer-kit.js", "/js/chat-turn.js"],
   //: A note card's ... menu rows (entry-menu.js): the first press awaits it, a pointer over a card warms it.
   entryMenu: ["/js/entry-menu.js"],
   //: A row's expand chevron and the bell's untagged and review nudges (notes-lazy.js).
@@ -251,6 +251,15 @@ document.addEventListener("focusin", function warmChatTurn(event) {
   document.removeEventListener("focusin", warmChatTurn);
   ensureModule("chatTurn");
 });
+//: The popup agent's box takes typing for commands too, so its turn is fetched at the first key, not the first focus.
+document.addEventListener("input", function warmAgentTurn(event) {
+  if (event.target?.id !== "command-palette-input") return;
+  document.removeEventListener("input", warmAgentTurn);
+  ensureModule("chatTurn");
+});
+
+//: How a reply is drawn and grounded (answer-kit.js) is in every bundle that draws one.
+for (const bundle of ["askCompose", "askHistory", "helpChat"]) LAZY_MODULES[bundle].unshift("/js/answer-kit.js");
 
 //: A note card's ... menu rows are fetched when the pointer first reaches a card, so the first press finds them in.
 document.addEventListener("pointerover", function warmEntryMenu(event) {

@@ -593,14 +593,6 @@ function attachedNotes() {
     .filter(Boolean);
 }
 
-//: The notes an answer named, as short titles, sent back on its history turn
-//: so "delete the other one" can name the note (`reading.follow`, decision 57).
-function chatTurnObjects(sources) {
-  return (sources || []).filter((s) => s.kind === "note").slice(0, 5)
-    .map((s) => String(s.label || "").replace(/…$/, "").split(/[:.!?]/)[0].trim().slice(0, 80))
-    .filter(Boolean);
-}
-
 function noteLabel(entry, length = 40) {
   const text = notePreviewText(entry.content).replace(/\s+/g, " ").trim();
   return text.length > length ? `${text.slice(0, length - 1)}…` : text || "(empty note)";
@@ -1189,87 +1181,8 @@ function chatQueueShow() {
 //: change the person meant to take back stayed.
 const CHAT_UNDO_WORDS = /^(undo|redo)( that| it)?\.?$/i;
 
-// The strip itself, shared by the live path above and the reopen path in
-// `openConversation`, two renderers would be two chances for a saved chip to
-// look unlike a fresh one.
-function renderFollowups(bubble, picks) {
-  if (!bubble || !Array.isArray(picks) || !picks.length) return;
-  // Stored, not only drawn: deleting the newest turn brings the previous
-  // turn's chips back without asking the model again (the owner's report).
-  bubble.dataset.followups = JSON.stringify(picks);
-  refreshFollowupVisibility();
-}
-
-// Exactly one strip in the thread, on the last answer in it.
-//
-// Chips under an older answer are an invitation to fork the conversation
-// backwards: clicking one sends its question as a *new* message at the end, so
-// the suggestion and the place the reply lands are three exchanges apart. Only
-// the newest answer is still the end of the thread, so only it gets them.
-function refreshFollowupVisibility() {
-  const bubbles = [...$("chat-messages").querySelectorAll(".msg.assistant")];
-  const last = bubbles.at(-1);
-  for (const bubble of bubbles) {
-    const strip = bubble.querySelector(".chat-followups");
-    if (bubble !== last) {
-      strip?.remove();
-      continue;
-    }
-    if (strip) continue; // already showing this turn's chips
-    let picks = [];
-    try {
-      picks = JSON.parse(bubble.dataset.followups || "[]");
-    } catch {
-      picks = [];
-    }
-    if (picks.length) buildFollowupStrip(bubble, picks);
-  }
-}
-
-function buildFollowupStrip(bubble, picks) {
-  const strip = document.createElement("div");
-  strip.className = "chat-followups";
-  const label = document.createElement("span");
-  label.className = "muted";
-  label.textContent = "Next:";
-  strip.appendChild(label);
-  for (const pick of picks) {
-    // chip()'s second argument is a class, not a tooltip, passing prose there
-    // would put a sentence into `className`.
-    strip.appendChild(chip(pick, "", () => sendChatMessage(pick, { followupOf: followupParent(bubble) })));
-  }
-  bubble.appendChild(strip);
-  chatScrollToEnd();
-}
-
-// --- where a follow-up came from (INBOX 490: "hyperlinked bread crumbs") ----
-// A chip's question keeps the one it was offered under (`followup_of` on the
-// turn, words not an index, which a deleted turn would shift); its bubble
-// links the chain back, a press scrolling to that question and lighting it.
-function followupParent(bubble) {
-  let el = bubble.previousElementSibling;
-  while (el && !el.matches(".msg.user")) el = el.previousElementSibling;
-  return el?.dataset.sent || "";
-}
-
 //: Saved content may carry Plan mode's block after the words.
 const followupMatches = (sent, ref) => Boolean(sent) && (sent === ref || sent.startsWith(ref));
-
-function followupChain(userBubble) {
-  const users = [...$("chat-messages").querySelectorAll(".msg.user")];
-  const chain = [];
-  let at = users.indexOf(userBubble);
-  let ref = userBubble.dataset.followupOf;
-  while (ref && at > 0 && chain.length < 8) {
-    let i = at - 1;
-    while (i >= 0 && !followupMatches(users[i].dataset.sent, ref)) i -= 1;
-    if (i < 0) break;
-    chain.unshift(users[i]);
-    at = i;
-    ref = users[i].dataset.followupOf;
-  }
-  return chain;
-}
 
 //: Chat's and Ask's trail; `open(i)` is a press on the i-th question.
 function followupTrail(questions, open) {
@@ -1340,27 +1253,6 @@ function releaseChatComposer({ announce = true } = {}) {
       `Still answering in “${chatStreaming.title}”: the reply will appear there.`
     );
   }
-}
-
-//: True when the conversation being opened is the one still being written to.
-function isStreamingConversation(id) {
-  return Boolean(chatController && chatStreaming && chatStreaming.conv.id === id);
-}
-
-//: Put the in-flight turn back on screen, still streaming.
-//:
-//: The nodes were never destroyed, `openConversation` detached them with
-//: `replaceChildren()` and this re-appends the same elements, so whatever the
-//: stream has written since is already in them and whatever it writes next
-//: lands in front of the reader. That is the difference between the reported
-//: "the response only shows after it is completed" and watching it arrive.
-function reattachStreamingTurn() {
-  if (!chatStreaming) return false;
-  const host = $("chat-messages");
-  clearChatEmptyState();
-  for (const node of chatStreaming.nodes) host.appendChild(node);
-  chatScrollToEnd();
-  return true;
 }
 
 //: A private chat with messages asks before it is left (chat-private.js).

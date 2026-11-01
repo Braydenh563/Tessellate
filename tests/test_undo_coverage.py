@@ -533,7 +533,7 @@ EXEMPT: dict[str, str] = {
     "media.js:toggleDictation": "read: transcribes speech into the box being typed in",
     "documents.js:docImageUpload": "send: uploads the picked image; the embed it writes is in the document's own undo (Ctrl+Z takes it out)",
     "documents.js:docAiReview": "read: asks the model to check a document, shows a result",
-    "capture-ask.js:streamChatEvents": "send: streams the Ask box's answer; the question is kept in Ask history",
+    "answer-kit.js:streamChatEvents": "send: streams the Ask box's answer; the question is kept in Ask history",
     "account-recovery.js:openResetLogs": "auth: sign-in, recovery or lock; no user data",
     "account-recovery.js:requestResetCode": "auth: sign-in, recovery or lock; no user data",
     "account-recovery.js:onMake": "auth: sign-in, recovery or lock; no user data",
@@ -562,11 +562,11 @@ EXEMPT: dict[str, str] = {
     "captions.js:captionSendNext": "read: reads or asks the model; shows a result, writes nothing",
     "captions.js:startLiveCaptions": "read: reads or asks the model; shows a result, writes nothing",
     "captions.js:stopLiveCaptions": "read: reads or asks the model; shows a result, writes nothing",
-    "capture-ask.js:renderAnswerGrounding": "telemetry: a click on a source records that the note was opened after the question, to rank later answers; there is nothing to take back",
+    "answer-kit.js:renderAnswerGrounding": "telemetry: a click on a source records that the note was opened after the question, to rank later answers; there is nothing to take back",
     "ask-compose.js:renderAskFollowups": "read: reads or asks the model; shows a result, writes nothing",
     "capture-ask.js:scheduleCaptureTagSuggestions": "read: reads or asks the model; shows a result, writes nothing",
     "categories-panel.js:propose": "read: asks for a split proposal",
-    "chat-agent.js:renderToolConfirm": "send: runs a tool the agent asked for, in the chat's own turn history",
+    "answer-kit.js:renderToolConfirm": "send: runs a tool the agent asked for, in the chat's own turn history",
     "chat-turn.js:commitStagedImages": "send: uploads the pictures of a chat message at the moment it is sent; the message is in the chat's own turn history",
     "chat-turn.js:offerFollowups": "read: reads or asks the model; shows a result, writes nothing",
     "chat-attach.js:openExtractPreview": "read: reads or asks the model; shows a result, writes nothing",
@@ -706,7 +706,7 @@ EXEMPT: dict[str, str] = {
     "whiteboard.js:wbSaveNode": "board: low-level board save; its callers push wbPushUndo",
     "whiteboard.js:wbSaveObject": "board: low-level board save; its callers push wbPushUndo",
     "whiteboard.js:wbSaveSketchProps": "board: low-level board save; its callers push wbPushUndo",
-    "wiring.js:applyPendingChatTitle": "send: names a chat as its first message creates it; renaming a chat afterwards has Undo",
+    "answer-kit.js:applyPendingChatTitle": "send: names a chat as its first message creates it; renaming a chat afterwards has Undo",
 }
 
 

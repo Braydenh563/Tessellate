@@ -79,7 +79,7 @@ def test_with_a_model_up_the_lines_name_it_and_its_context(ai_client, fake_ollam
 
 
 def test_the_ask_box_draws_the_lines_in_one_fold():
-    js = (ROOT / "frontend/js/capture-ask.js").read_text(encoding="utf-8")
+    js = (ROOT / "frontend/js/answer-kit.js").read_text(encoding="utf-8")
     html = (ROOT / "frontend/index.html").read_text(encoding="utf-8")
     assert 'id="ask-why"' in html
     assert 'else if (event.type === "why" && onWhy) onWhy(event);' in js

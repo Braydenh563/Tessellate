@@ -80,7 +80,7 @@ def test_growth_under_a_following_pane_never_lets_go_only_a_scroll_up_does():
     fell behind the answer (`data-stuck` "0", the pill up) with no one having
     touched it."""
     source = with_pieces("chat-agent.js")
-    code = _between(source, "const SCROLL_STICK_SLACK", "function chatScrollToEnd")
+    code = _between(source, "const SCROLL_STICK_SLACK", "//: **What the notebook gave a message, as one card**")
     script = (
         code
         + """

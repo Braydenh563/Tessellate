@@ -45,7 +45,7 @@ def test_one_card_builder_serves_the_bubble_and_the_composer() -> None:
     card = _between(agent, "function notebookCard(", "\nfunction ")
     assert "attachmentChip(" in card
     assert "attachmentPeek" in card
-    strip = _between(agent, "function chatAttachmentStrip(", "\nfunction notebookCard(")
+    strip = _between(agent, "function chatAttachmentStrip(", "\n}\n")
     assert "notebookCard(" in strip
     for old in ("msg-attachment-note", "msg-attachment-doc", "ph:paperclip", "mapChip("):
         assert old not in strip, old

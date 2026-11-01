@@ -731,21 +731,6 @@ function agentActivityNotice(message, { isError = false, kind = "task", detail =
 //: gone and the id finds nothing, so it opens the panel and stops there.
 const ANSWER_PANEL_NAMES = { agent: "Popup agent", guide: "Atlas" };
 
-function noticeUnwatchedAnswer(panel, question, answerId, { failed = false } = {}) {
-  const who = ANSWER_PANEL_NAMES[panel];
-  if (!who) return;
-  const action = { panel, answer: answerId || "" };
-  agentActivityNotice(
-    failed ? `${who} could not answer: ${agentRunTitle(question)}` : `${who} answered: ${agentRunTitle(question)}`,
-    {
-      isError: failed,
-      detail: "Open it to read the answer.",
-      action,
-      onOpen: () => reopenAnswerPanel(action),
-    },
-  );
-}
-
 function reopenAnswerPanel({ panel, answer } = {}) {
   let list = null;
   if (panel === "agent") {

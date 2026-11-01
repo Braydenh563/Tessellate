@@ -4114,7 +4114,7 @@ def test_an_assistant_head_asks_one_function_for_its_face() -> None:
     #: Each reply head's holder is painted by the persona painter, which sends
     #: the app's own voice through the decider.
     for name, call in (
-        ("chat-agent.js", "paintPersonaAvatar(avatar,"),
+        ("answer-kit.js", "paintPersonaAvatar(avatar,"),
         ("palette.js", "paintPersonaAvatar(agentAvatar,"),
     ):
         assert call in js[name], f"{name}'s reply head no longer asks paintPersonaAvatar"
@@ -5597,7 +5597,7 @@ def test_answer_shape_is_lifted_in_one_place():
     assert builders == ["ask-compose.js"], builders
     more = text[text.index("function digestMore"):text.index("//: The digest's one offer")]
     assert 'className = "linklike digest-more"' in more and "aria-expanded" in more and ".hidden = true" in more
-    ask = (ROOT / "frontend/js/capture-ask.js").read_text(encoding="utf-8")
+    ask = (ROOT / "frontend/js/answer-kit.js").read_text(encoding="utf-8")
     assert "digestShape(answerEl, support.shape, support.figure)" in ask and "digestMore(answerEl, support.more)" in ask
 
 
@@ -5611,7 +5611,7 @@ def test_answer_shape_is_lifted_in_one_place():
 # not a name; a new one fails the build.
 FIRST_LINE_SPLIT = re.compile(r'\.split\("\\n"\)\[0\]')
 FIRST_LINE_NOT_A_NAME = {
-    "capture-ask.js": 1,  # a figure caption's own words, not a note
+    "answer-kit.js": 1,  # a figure caption's own words, not a note (placeAnswerFigures, moved from capture-ask.js)
     "documents-code.js": 3,  # parser messages and a search seed from code
     "documents-codekit.js": 2,  # a snippet's first line of code
     "documents-prose.js": 1,  # a prose-check option's text

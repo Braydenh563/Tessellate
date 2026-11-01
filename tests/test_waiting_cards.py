@@ -14,7 +14,10 @@ from tests._app_js import with_pieces
 
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
 AGENT = with_pieces("chat-agent.js")
-ATTACH = with_pieces("chat-attach.js")
+#: The turn's own text (chat-attach.js and chat-turn.js, where the cards are drawn):
+#: answer-kit.js holds the builders' definitions and their comments, not their sites.
+_JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
+ATTACH = (_JS / "chat-attach.js").read_text(encoding="utf-8") + (_JS / "chat-turn.js").read_text(encoding="utf-8")
 
 
 def _listed() -> list[str]:
