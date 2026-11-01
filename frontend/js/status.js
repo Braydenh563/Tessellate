@@ -854,7 +854,7 @@ function toastMark(note, key, { act = null, life = 0, text = "" } = {}) {
   note.toastText = text;
 }
 
-//: Reduced motion (the system's, or Appearance's Reduce motion) keeps the
+//: Reduced motion (`data-motion="reduced"`: the system's request under Follow the system, or Appearance's Motion, Off) keeps the
 //: fades, which are the polish set's and follow Interface animations, but
 //: never slides the stack (the owner 2026-10-11).
 function toastReduced() {

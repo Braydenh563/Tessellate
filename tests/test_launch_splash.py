@@ -343,3 +343,27 @@ def test_the_splash_has_minimise_and_close_in_its_top_right_corner():
     close = text[text.index("$btnClose.Add_Click({"):][:400]
     assert '($StatusFile + ".cancel")' in close and "$form.Close()" in close
     assert "$btnMin, $btnClose))" in text
+
+
+def test_the_loading_page_follows_the_saved_motion_choice(tmp_path):
+    """INBOX 1506: the page is shown before the app, so it cannot read
+    `data-motion`; the choice is mirrored to `ui_state` and read from there,
+    as the look is. Follow the system leaves the page's own query in place."""
+    from tessellate import __main__ as main
+    from tessellate.core.config import ConfigManager
+
+    def page(choice):
+        state = {} if choice is None else {"motion": choice}
+        ConfigManager(str(tmp_path)).set_preference("ui_state", state)
+        return main._recolour_loading_page(main._LOADING_HTML, str(tmp_path))
+
+    for choice in (None, "follow", "auto"):
+        followed = page(choice)
+        assert "@media (prefers-reduced-motion: reduce) {" in followed
+        assert 'window.matchMedia("(prefers-reduced-motion: reduce)").matches;' in followed
+    off = page("off")
+    assert "@media all {" in off and "var mmReduced = true;" in off
+    assert page("reduced") == off  # the stored word before the three choices
+    on = page("on")
+    assert "@media not all {" in on and "var mmReduced = false;" in on
+    assert "prefers-reduced-motion" not in on and "prefers-reduced-motion" not in off
