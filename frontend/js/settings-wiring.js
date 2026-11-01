@@ -1693,16 +1693,36 @@ function captureCountText(text) {
   return words ? `${head} · ${read}` : head;
 }
 
+//: The draft is written after a 400 ms pause, not on every key (that copied the whole text into
+//: storage, 5 ms a key at 200,000 characters), from the box as it is THEN, so a save or reset
+//: that cleared it in the pause writes nothing. A pending write also goes when the page is
+//: hidden or closed; nothing pending, nothing written, so a window with an empty box never
+//: removes another window's draft.
+{
+  const box = $("entry-content");
+  const flush = () => {
+    if (!box.draftTimer) return;
+    clearTimeout(box.draftTimer);
+    box.draftTimer = 0;
+    //: Whitespace alone is not a draft (INBOX 431 follow-up: the box came
+    //: back holding three blank lines after a reload, which hid the empty
+    //: placeholder). Newlines left behind by a removed image or a stray Enter
+    //: must not be kept and restored as if they were writing.
+    if (box.value.trim()) prefs.set("captureDraft", box.value);
+    else prefs.remove("captureDraft");
+  };
+  box.addEventListener("input", () => {
+    clearTimeout(box.draftTimer);
+    box.draftTimer = setTimeout(flush, 400);
+  });
+  window.addEventListener("pagehide", flush);
+  document.addEventListener("visibilitychange", () => document.hidden && flush());
+}
+
 $("entry-content").addEventListener("input", (e) => {
   $("entry-count").textContent = captureCountText(e.target.value);
   // Keep a draft so a half-typed thought survives a reload or a stray tab
   // switch: losing one is the most annoying thing this app could do.
-  //: Whitespace alone is not a draft (INBOX 431 follow-up: the box came
-  //: back holding three blank lines after a reload, which hid the empty
-  //: placeholder). Newlines left behind by a removed image or a stray Enter
-  //: must not be kept and restored as if they were writing.
-  if (e.target.value.trim()) prefs.set("captureDraft", e.target.value);
-  else prefs.remove("captureDraft");
   renderEntryAttachmentChips();
   // The "go to it" link belongs to the note you just saved, not the one you
   // are now writing: drop it as soon as typing starts.

@@ -87,7 +87,7 @@ window.addEventListener("error", (e) =>
   ])
 );
 window.addEventListener("unhandledrejection", (e) =>
-  recordBrowserLog("ERROR", [
+  e.reason?.isStale || recordBrowserLog("ERROR", [
     "Unhandled promise rejection:",
     e.reason?.stack || String(e.reason),
   ])
@@ -397,8 +397,12 @@ const SPACE_ALL = "all";
 //: the first one is made at load, before spaces-find.js (a later classic
 //: script) has run ("activeSpaceId is not defined" on GET /health). prefs.js
 //: also loads after this file, so its absence reads as the default space.
+//: The space THIS window shows (`api.space`, read once from the pref, set by space-swap.js),
+//: not the pref itself: another window's switch writes the pref, and this window's open
+//: work must go on reaching its own space until it has heard and swapped (spaces-find.js).
 function activeSpaceId() {
-  return (typeof prefs !== "undefined" && prefs.get("spaceId", null)) || SPACE_ALL;
+  if (typeof prefs === "undefined") return SPACE_ALL;
+  return (api.space ??= prefs.get("spaceId", null) || SPACE_ALL);
 }
 
 async function api(path, options = {}) {
@@ -421,6 +425,8 @@ async function api(path, options = {}) {
   refuseStagedUrls(fetchOptions.body);
   // Any write invalidates the read cache above, see clearApiCache().
   if (!readOnly && fetchOptions.method && fetchOptions.method !== "GET") clearApiCache();
+  //: Which space switch this request started under (`api.epoch`, bumped by space-swap.js).
+  const sentAt = api.epoch;
   let timer = null;
   if (timeoutMs) {
     const controller = new AbortController();
@@ -482,6 +488,13 @@ async function api(path, options = {}) {
   //: server answered: the fastest sign it is back after being down, ahead of
   //: the retry poll's own backoff.
   noteServerUp();
+  //: **A read that started in the old space is dropped here, for every loader at once.**
+  //: Its rows are the old space's: applied after a switch they would sit in the new one's
+  //: lists. The error is quiet (`isStale`: no toast, no log line), and a write is never
+  //: refused, it happened.
+  if (sentAt !== api.epoch && (!fetchOptions.method || fetchOptions.method === "GET" || readOnly) && /json/.test(response.headers.get("content-type"))) {
+    throw Object.assign(new Error("Space changed."), { isStale: true });
+  }
   if (response.status === 401 && !ownsAuthErrors) {
     //: A silent read stays quiet, but a silent write (a setting changed after
     //: the server restarted) got "Locked" in a toast with no lock screen.
@@ -551,6 +564,7 @@ async function api(path, options = {}) {
   return response;
 }
 api.retries = 0;
+api.epoch = 0;
 // F5 (tests/test_no_bare_fetch.py)
 api.upload = (path, body, options) => api(path, { method: "POST", body, ...options });
 api.stream = api;

@@ -241,9 +241,10 @@ const ctx = {
   store, dialog,
   console, Math, Number, Object, Set, Map, JSON, Date, Array, String, Promise, Boolean, Error, CustomEvent: class { constructor(type, init) { this.type = type; this.detail = init && init.detail; } },
   log, events,
+  api: { epoch: 0 },
   prefs: { get: (key, dflt) => (key in store ? store[key] : dflt), set: (key, value) => { store[key] = value; log.push(["pref", key, value]); } },
   SPACE_ALL: "all",
-  activeSpaceId: () => store.spaceId || "all",
+  activeSpaceId: () => ctx.api.space ?? (store.spaceId || "all"),
   clearApiCache: () => log.push("clearApiCache"),
   closeSpaceMenu: () => log.push("closeSpaceMenu"),
   renderSpaceMenu: () => log.push("renderSpaceMenu"),
@@ -285,15 +286,15 @@ const ctx = {
   showNoDocument: () => { log.push("showNoDocument"); ctx.currentDoc = null; },
   wbFlushNudge: async () => { log.push("wbFlushNudge"); },
   wbShowBoardsLanding: () => log.push("wbShowBoardsLanding"),
-  loadEntries: async () => { log.push(["loadEntries", store.spaceId]); },
-  loadRecentQuestions: async () => { log.push(["loadRecentQuestions", store.spaceId]); },
-  loadAskHistoryBadge: async () => { log.push(["loadAskHistoryBadge", store.spaceId]); },
-  loadSuggestions: async () => { log.push(["loadSuggestions", store.spaceId]); },
-  loadMostUsed: async () => { log.push(["loadMostUsed", store.spaceId]); },
-  loadSpaces: async () => { log.push(["loadSpaces", store.spaceId]); },
-  loadConversationList: async () => { log.push(["loadConversationList", store.spaceId]); },
-  pollReminders: () => { log.push(["pollReminders", store.spaceId]); },
-  refreshActiveTab: async () => { log.push(["refreshActiveTab", store.spaceId]); },
+  loadEntries: async () => { log.push(["loadEntries", ctx.activeSpaceId()]); },
+  loadRecentQuestions: async () => { log.push(["loadRecentQuestions", ctx.activeSpaceId()]); },
+  loadAskHistoryBadge: async () => { log.push(["loadAskHistoryBadge", ctx.activeSpaceId()]); },
+  loadSuggestions: async () => { log.push(["loadSuggestions", ctx.activeSpaceId()]); },
+  loadMostUsed: async () => { log.push(["loadMostUsed", ctx.activeSpaceId()]); },
+  loadSpaces: async () => { log.push(["loadSpaces", ctx.activeSpaceId()]); },
+  loadConversationList: async () => { log.push(["loadConversationList", ctx.activeSpaceId()]); },
+  pollReminders: () => { log.push(["pollReminders", ctx.activeSpaceId()]); },
+  refreshActiveTab: async () => { log.push(["refreshActiveTab", ctx.activeSpaceId()]); },
   undoStack: [{ label: "kept" }], objTray: [{ id: 1 }],
 };
 ctx.window = ctx;
@@ -396,3 +397,176 @@ def test_undo_from_another_space_says_so_and_goes_back_first() -> None:
     assert out["here"] and out["fromAll"] and out["noSpace"], "same space, All spaces and an old entry need no switch"
     assert out["back"] and out["space"] == "alpha"
     assert out["toasts"] == ["That was in Alpha. Switching back to it."]
+
+
+# --- a read still in flight from the old space is dropped --------------------------
+
+API_HARNESS = r"""
+const vm = require("vm");
+const fs = require("fs");
+const text = fs.readFileSync(process.argv[1], "utf8");
+const start = text.indexOf("async function api(path, options = {}) {");
+const source = text.slice(start, text.indexOf("\n}\n", start) + 3);
+const toasts = [];
+let release = null;
+const ctx = {
+  console, Error, Object, Promise, TypeError, Set, JSON, setTimeout, clearTimeout, FormData: class {}, AbortController,
+  toasts, JOB_STARTING_PATH: /^$/,
+  refuseStagedUrls() {}, clearApiCache() {}, authToken: () => "t", activeSpaceId: () => "alpha",
+  noteServerUp() {}, noteServerDown() {}, showLockScreen() {}, recordBrowserLog() {}, plainHttpError: () => "bad",
+  kickBackgroundTaskPoll() {}, setActiveSpace() {}, SPACE_ALL: "all",
+  toast: Object.assign((m) => toasts.push(m), { refused: new Set() }),
+  //: A fetch that answers when the test says so, with the kind of body it is told.
+  fetch: () => new Promise((resolve) => { release = (type) => resolve({ ok: true, status: 200, headers: { get: () => type }, json: async () => ({}) }); }),
+};
+vm.createContext(ctx);
+vm.runInContext(source + "\napi.retries = 0; api.epoch = 0;", ctx);
+ctx.__out = (value) => process.stdout.write(JSON.stringify(value));
+ctx.__release = (type) => release(type);
+vm.runInContext("(async () => {" + process.argv[2] + "})()", ctx).catch((e) => { console.error(e); process.exit(1); });
+"""
+
+
+def _run_api(body: str):
+    proc = subprocess.run(["node", "-e", API_HARNESS, str(JS_DIR / "app.js"), body], capture_output=True, text=True)
+    assert proc.returncode == 0, proc.stderr[-2000:]
+    return json.loads(proc.stdout)
+
+
+@needs_node
+def test_a_read_that_started_before_a_switch_is_refused_when_it_lands() -> None:
+    out = _run_api("""
+    const outcome = async (options, type, switched) => {
+      const call = api("/entries", options).then(() => "applied", (e) => (e.isStale ? "stale" : "other:" + e.message));
+      await new Promise((r) => setTimeout(r, 0));
+      if (switched) api.epoch += 1;
+      __release(type);
+      return call;
+    };
+    __out({
+      read: await outcome({}, "application/json", true),
+      readNoSwitch: await outcome({}, "application/json", false),
+      write: await outcome({ method: "POST" }, "application/json", true),
+      readOnlyPost: await outcome({ method: "POST", readOnly: true }, "application/json", true),
+      file: await outcome({}, "image/png", true),
+    });
+    """)
+    assert out == {
+        "read": "stale",
+        "readNoSwitch": "applied",
+        "write": "applied",
+        "readOnlyPost": "stale",
+        "file": "applied",
+    }, "a JSON read from the old space is dropped; a write and a file are not"
+
+
+def test_the_swap_bumps_the_epoch_the_request_helper_reads() -> None:
+    swap, app = _code(SWAP.read_text(encoding="utf-8")), _code(_text("app.js"))
+    assert "api.epoch += 1" in swap and "spaceState.epoch" not in swap
+    assert "sentAt !== api.epoch" in app
+    for name in ("app.js", "lag-watch.js", "boot-guard.js"):
+        assert "isStale" in _text(name), f"{name} would log a dropped read as an unhandled rejection"
+    toast = re.search(r"^function toast\(.*?^\}", _text("status.js"), re.S | re.M).group(0)
+    assert 'endsWith("Space changed.")' in toast
+
+
+# --- a toast's own Undo goes back to its space first -------------------------------
+
+TOAST_HARNESS = r"""
+const vm = require("vm");
+const fs = require("fs");
+const text = fs.readFileSync(process.argv[1], "utf8");
+const start = text.indexOf("function keepToastAction(");
+const source = text.slice(start, text.indexOf("\n}\n", start) + 3);
+const log = [];
+let here = "alpha";
+const ctx = {
+  Date, Promise, log, noticeLive: new Map(), undoStack: [], NOTICE_UNDO_MS: 1000,
+  recordNotification: () => 1, activeSpaceId: () => here, toast: (m, e) => log.push(["toast", m, e]),
+  spaceEnterFor: async (a) => { log.push(["enter", a.space]); return a.space !== "gone"; },
+};
+vm.createContext(ctx);
+vm.runInContext(source, ctx);
+ctx.__out = (v) => process.stdout.write(JSON.stringify(v));
+ctx.__here = (v) => { here = v; };
+vm.runInContext("(async () => {" + process.argv[2] + "})()", ctx).catch((e) => { console.error(e); process.exit(1); });
+"""
+
+
+@needs_node
+def test_a_toast_undo_pressed_after_a_switch_enters_its_space_first() -> None:
+    proc = subprocess.run(
+        ["node", "-e", TOAST_HARNESS, str(JS_DIR / "status.js"), """
+    const ran = () => log.push(["ran"]);
+    const undo = keepToastAction("Deleted", "Undo", ran);
+    __here("beta");
+    await undo();
+    const open = keepToastAction("Saved", "Open it", ran);
+    await open();
+    const bare = keepToastAction("Deleted", "Undo", ran, { record: false });
+    await bare();
+    __here("gone");
+    const lost = keepToastAction("Deleted", "Undo", ran);
+    __here("beta");
+    await lost();
+    __out(log);
+    """],
+        capture_output=True,
+        text=True,
+    )
+    assert proc.returncode == 0, proc.stderr[-2000:]
+    assert json.loads(proc.stdout) == [
+        ["enter", "alpha"], ["ran"],
+        ["ran"],
+        ["enter", "beta"], ["ran"],
+        ["enter", "gone"], ["toast", "Couldn't go back to the space it was made in.", True],
+    ]
+
+
+# --- a second window hears the switch ----------------------------------------------
+
+@needs_node
+def test_a_heard_switch_follows_in_place_and_does_not_write_the_pref_again() -> None:
+    out = _run("""
+    store.spaceId = "alpha";
+    await swapSpace("beta", true);
+    __out({ pref: log.filter((e) => e[0] === "pref"), space: activeSpaceId(), reads: log.filter((e) => e[0] === "loadEntries") });
+    """)
+    assert out["pref"] == [], "the window that made the switch wrote the pref; this one only follows"
+    assert out["space"] == "beta" and out["reads"] == [["loadEntries", "beta"]]
+
+
+def test_the_window_keeps_its_own_space_until_it_has_heard_the_storage_event() -> None:
+    app = _code(_text("app.js"))
+    reader = re.search(r"^function activeSpaceId\(\) \{.*?^\}", app, re.S | re.M).group(0)
+    assert "api.space ??=" in reader, "the header must name this window's space, not the pref another window wrote"
+    assert "prefs.set(" not in reader
+
+
+@needs_node
+def test_the_storage_event_for_the_space_pref_swaps_and_a_hidden_tab_waits() -> None:
+    text = _code(_text("spaces-find.js"))
+    block = text[text.index("{\n  const follow") : text.index("\n}\n", text.index("{\n  const follow")) + 3]
+    harness = r"""
+    const vm = require("vm");
+    const calls = [], listeners = {}, doc = { hidden: false, addEventListener: (t, f) => { listeners[t] = f; } };
+    const ctx = {
+      document: doc, prefs: { get: () => ctx.__pref }, __pref: "beta",
+      activeSpaceId: () => ctx.__here, __here: "alpha",
+      swapSpace: (id, heard) => calls.push([id, heard]),
+      window: { addEventListener: (t, f) => { listeners[t] = f; } },
+    };
+    vm.createContext(ctx);
+    vm.runInContext(process.argv[1], ctx);
+    listeners.storage({ key: "other" });
+    listeners.storage({ key: "spaceId" });
+    ctx.__here = "beta"; listeners.storage({ key: "spaceId" });
+    doc.hidden = true; ctx.__here = "alpha"; delete listeners.visibilitychange;
+    listeners.storage({ key: "spaceId" });
+    const waited = calls.length === 1 && typeof listeners.visibilitychange === "function";
+    doc.hidden = false; listeners.visibilitychange();
+    process.stdout.write(JSON.stringify({ calls, waited }));
+    """
+    proc = subprocess.run(["node", "-e", harness, block], capture_output=True, text=True)
+    assert proc.returncode == 0, proc.stderr[-2000:]
+    assert json.loads(proc.stdout) == {"calls": [["beta", True], ["beta", True]], "waited": True}

@@ -323,7 +323,8 @@ HELP_TOPICS: list[dict] = [
             "(this skips the bin and cannot be undone, so you type the space's name to confirm); "
             "a category both spaces have is merged. Switching space swaps what you "
             "see in place, with no reload, so the tray and Undo carry across: an Undo made in another space "
-            "takes you back to it first."
+            "(from the list or the toast's own button) takes you back to it first. A second window of the app follows a "
+            "switch made in the first, and an answer still on its way from the old space is dropped."
         ),
         "badge": {"label": "Account & security", "section": "account"},
     },

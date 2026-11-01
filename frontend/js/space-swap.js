@@ -22,7 +22,7 @@
 
 //: `const`, not two `let`s: the global-scope ratchet counts top-level lets.
 (() => {
-  const spaceState = { epoch: 0, running: null };
+  const spaceState = { running: null };
 
   //: Every cache a space's data leaves in memory, by surface. A lazy surface's
   //: row starts with a `typeof` guard: its names do not exist until its file is in.
@@ -182,17 +182,19 @@
     );
   }
 
-  async function swapSpace(id) {
+  //: `heard`: another window made this switch and wrote the pref already, so this one
+  //: must not write it again (it could overwrite a later switch there).
+  async function swapSpace(id, heard = false) {
     //: One switch at a time: a second press while the first reads waits its turn.
     if (spaceState.running) {
       await spaceState.running;
-      return id === activeSpaceId() ? undefined : swapSpace(id);
+      return id === activeSpaceId() ? undefined : swapSpace(id, heard);
     }
     if (id === activeSpaceId()) {
       closeSpaceMenu();
       return undefined;
     }
-    spaceState.running = spaceSwapNow(id);
+    spaceState.running = spaceSwapNow(id, heard);
     try {
       await spaceState.running;
     } finally {
@@ -201,11 +203,14 @@
     return undefined;
   }
 
-  async function spaceSwapNow(id) {
+  async function spaceSwapNow(id, heard) {
     const from = activeSpaceId();
     await spaceLeave();
-    prefs.set("spaceId", id);
-    spaceState.epoch += 1;
+    //: This window's own space first, then the pref other windows and new ones read.
+    api.space = id;
+    if (!heard) prefs.set("spaceId", id);
+    //: Reads still in flight under the old space are dropped when they land (`api()`).
+    api.epoch += 1;
     clearApiCache();
     for (const [surface, forget] of Object.entries(SPACE_SCOPED)) {
       try {
@@ -221,7 +226,7 @@
     }
     renderSpaceMenu();
     updateCaptureSpaceLabel();
-    document.dispatchEvent(new CustomEvent("spacechange", { detail: { id, from, epoch: spaceState.epoch } }));
+    document.dispatchEvent(new CustomEvent("spacechange", { detail: { id, from, epoch: api.epoch } }));
     const entries = spaceReload();
     //: After the notes, as `startApp` does: every tab wants them, none should guess.
     await entries;
