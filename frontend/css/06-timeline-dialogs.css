@@ -833,6 +833,24 @@
 .log-list .log-trace {
   grid-column: 1 / -1;
 }
+/* On a phone the time, the level and the 44 px copy button left the message
+   71 px of a 282 px row: a one-line record stood 1,100 px tall and a list of
+   52 records was 62,000 px to lay out (HR23). The time and the level share
+   the first line with the copy button; the message takes the row's width
+   beneath them. */
+@media (max-width: 599.98px) {
+  .log-list li {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+  .log-list .log-line {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .log-list .log-copy {
+    grid-column: 3;
+    grid-row: 1;
+  }
+}
 .log-copy {
   opacity: 0;
   flex: 0 0 auto;
