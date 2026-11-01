@@ -377,6 +377,8 @@ def configured_thresholds() -> tuple[float, float]:
 #: Kept on the embedding service itself, so two services (a reindex to a new
 #: width, a test's fake) can never be handed each other's vectors.
 _QUERY_VECTOR_CACHE = 64
+#: How long a model load asked for by a request waits for the requests to stop.
+LOAD_LATER_MAX_WAIT_SECONDS = 10.0
 _query_lock = threading.Lock()
 
 
@@ -419,6 +421,16 @@ def _load_later(embeddings: EmbeddingService) -> None:
 
     def load() -> None:
         try:
+            #: **Not inside the burst that asked for it** (INBOX 1508: the first
+            #: Chat open after boot waited 3.3 to 4.5 s for `/search/warm`,
+            #: `/chat/suggestions` and `/preferences`, none of which measured
+            #: slow here without a model). Focusing the box is the first
+            #: request of a burst (the tab's own fetches), and the engine's
+            #: import and the weights hold the interpreter for seconds, so the
+            #: load waits for the same quiet the launch warm-up does, at most
+            #: `LOAD_LATER_MAX_WAIT_SECONDS`. A question asked meanwhile reads
+            #: by words, as it always did while the model loaded.
+            embedding_service.wait_for_quiet(LOAD_LATER_MAX_WAIT_SECONDS)
             embeddings.embed_text("warm up")
         except Exception:  # noqa: BLE001  # the real search reports a broken model
             logger.debug("warm: the embedding model did not load", exc_info=True)
@@ -446,6 +458,10 @@ def warm(session: Session, query: str, embeddings: EmbeddingService) -> bool:
     """
     if not embeddings.is_ready():
         _load_later(embeddings)
+        return False
+    #: The focus call carries no words: nothing to embed, so nothing to look up
+    #: in the database for the user's "today" either.
+    if not query:
         return False
     asked = query_understanding.understand(query, _user_today(session))
     subject = asked.subject or query

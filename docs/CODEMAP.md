@@ -2,7 +2,7 @@
 
 Generated 2026-11-01 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7465, frontend ids 2623, CSS sections 517, backend routes 633, backend modules 8156, test files 1755, tests 15210, plan headings 989, app scripts 28, boot scripts 36, script files 208.
+Counts: frontend functions 7465, frontend ids 2623, CSS sections 517, backend routes 633, backend modules 8157, test files 1755, tests 15211, plan headings 989, app scripts 28, boot scripts 36, script files 208.
 
 ## Frontend functions (7465)
 
@@ -11140,7 +11140,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Section | File:line |
 |---|---|
 | "Tools it can use": the row, measured against a normal one | frontend/css/03-dashboard-widgets.css:4325 |
-| "how are these connected?" | frontend/css/02-chat-graph.css:3758 |
+| "how are these connected?" | frontend/css/02-chat-graph.css:3759 |
 | 08-consistency.css - one recipe per repeated shape | frontend/css/08-consistency.css:1 |
 | 1. One menu row | frontend/css/08-consistency.css:24 |
 | 1. touch targets, one step, one block | frontend/css/07-whiteboard-misc.css:9657 |
@@ -11306,9 +11306,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Wave I: skeletons, focus, reduced motion | frontend/css/02-chat-graph.css:1775 |
 | Wave J: accent presets + appearance picker | frontend/css/05-sidebars-themes.css:1 |
 | Wave J: generative art + note tools + undo toast | frontend/css/02-chat-graph.css:1880 |
-| Wave K: empty states, mobile tap targets, high-contrast | frontend/css/02-chat-graph.css:2313 |
-| Wave L: skip link, action menus, contrast + type polish | frontend/css/02-chat-graph.css:2438 |
-| Wave M: graph filters, thumbnails, lightbox, batch bar | frontend/css/02-chat-graph.css:2882 |
+| Wave K: empty states, mobile tap targets, high-contrast | frontend/css/02-chat-graph.css:2314 |
+| Wave L: skip link, action menus, contrast + type polish | frontend/css/02-chat-graph.css:2439 |
+| Wave M: graph filters, thumbnails, lightbox, batch bar | frontend/css/02-chat-graph.css:2883 |
 | Wave N: improve-writing, link suggestions, tasks | frontend/css/03-dashboard-widgets.css:1 |
 | Wave O: AI Tools toggles | frontend/css/03-dashboard-widgets.css:684 |
 | Wave O: brand logo + a more present background | frontend/css/03-dashboard-widgets.css:270 |
@@ -11349,7 +11349,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | a settings row where nothing squashes anything else | frontend/css/07-whiteboard-misc.css:4161 |
 | a sheet (DESIGN.md's recipe index, "A sheet") | frontend/css/10-responsive.css:807 |
 | a sticker (MINDMAP_PLAN decision 44, INBOX 642) | frontend/css/library-lazy.css:3486 |
-| a stored file that is no longer stored | frontend/css/02-chat-graph.css:4151 |
+| a stored file that is no longer stored | frontend/css/02-chat-graph.css:4152 |
 | a traced path (§9) | frontend/css/graph-lazy.css:283 |
 | a turn that is still working says so, for as long as it is | frontend/css/03-dashboard-widgets.css:4095 |
 | a zone that cannot shrink says so, instead of spilling | frontend/css/10-responsive.css:1085 |
@@ -11411,7 +11411,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | forms | frontend/css/01-forms-settings.css:224 |
 | glass reaches the floating chrome that sat outside it | frontend/css/08-consistency.css:2656 |
 | glass restraint (UI_MODERNISATION_PLAN.md, Phase 3) | frontend/css/07-whiteboard-misc.css:7874 |
-| graph minimap | frontend/css/02-chat-graph.css:3610 |
+| graph minimap | frontend/css/02-chat-graph.css:3611 |
 | graph polish | frontend/css/03-dashboard-widgets.css:3447 |
 | graph: depth, halos and legible labels | frontend/css/04-chat-dock-appearance.css:1517 |
 | graph: physics sliders + node popup | frontend/css/04-chat-dock-appearance.css:1554 |
@@ -11455,7 +11455,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | notes page polish | frontend/css/03-dashboard-widgets.css:2034 |
 | nothing interactive is bare text | frontend/css/07-whiteboard-misc.css:3980 |
 | notifications | frontend/css/08-consistency.css:3713 |
-| numbered citations inside an answer | frontend/css/02-chat-graph.css:3820 |
+| numbered citations inside an answer | frontend/css/02-chat-graph.css:3821 |
 | one control height per Library header row | frontend/css/07-whiteboard-misc.css:5371 |
 | one gap under every card heading | frontend/css/01-forms-settings.css:4822 |
 | one line of facts: a note's meta row | frontend/css/08-consistency.css:2688 |
@@ -11515,7 +11515,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the Library, second pass: cards in reading order, one anatomy | frontend/css/library-lazy.css:304 |
 | the OCR rail's own switch | frontend/css/07-whiteboard-misc.css:6546 |
 | the Skills dropdown | frontend/css/04-chat-dock-appearance.css:1142 |
-| the Sources panel | frontend/css/02-chat-graph.css:4335 |
+| the Sources panel | frontend/css/02-chat-graph.css:4336 |
 | the accessible card: the title opens it (INBOX 433) | frontend/css/08-consistency.css:2974 |
 | the agent activity panel: nothing scrolls sideways, nothing folds onto | frontend/css/07-whiteboard-misc.css:10524 |
 | the agent's run, as a timeline | frontend/css/02-chat-graph.css:584 |
@@ -11537,9 +11537,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the bottom docks | frontend/css/07-whiteboard-misc.css:9723 |
 | the chat dock follows its own width (INBOX 694) | frontend/css/10-responsive.css:2550 |
 | the chat page fills its height (§36A) | frontend/css/06-timeline-dialogs.css:1326 |
-| the chat sidebar on a phone | frontend/css/02-chat-graph.css:4862 |
+| the chat sidebar on a phone | frontend/css/02-chat-graph.css:4863 |
 | the chat toolbar, grouped (§36B) | frontend/css/06-timeline-dialogs.css:1445 |
-| the citation peek (INBOX 80) | frontend/css/02-chat-graph.css:3882 |
+| the citation peek (INBOX 80) | frontend/css/02-chat-graph.css:3883 |
 | the code editor: gutter + monospace | frontend/css/04-chat-dock-appearance.css:4419 |
 | the code panel, one compact header and a padded body (the owner, | frontend/css/library-lazy.css:5015 |
 | the composer dock (asked for directly) | frontend/css/04-chat-dock-appearance.css:886 |
@@ -11581,10 +11581,10 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the help popover is a popover, not a page (INBOX 206) | frontend/css/08-consistency.css:2536 |
 | the in-app confirm dialog (§35F) | frontend/css/06-timeline-dialogs.css:1105 |
 | the lightbox on a phone (INBOX 430) | frontend/css/10-responsive.css:2249 |
-| the live action line | frontend/css/02-chat-graph.css:4182 |
+| the live action line | frontend/css/02-chat-graph.css:4183 |
 | the lock screen | frontend/css/08-consistency.css:3749 |
 | the log console (§1) | frontend/css/06-timeline-dialogs.css:700 |
-| the map is the tab, and its controls float over it | frontend/css/02-chat-graph.css:4886 |
+| the map is the tab, and its controls float over it | frontend/css/02-chat-graph.css:4887 |
 | the mind map's outline and markers (MINDMAP_PLAN decisions 33, 34) | frontend/css/library-lazy.css:2980 |
 | the node edit strip (MINDMAP_PLAN.md §12.1 item 2) | frontend/css/07-whiteboard-misc.css:8573 |
 | the node radial (MINDMAP_PLAN.md §12.1 item 3) | frontend/css/07-whiteboard-misc.css:8838 |
@@ -11620,7 +11620,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the status bar on a small phone | frontend/css/00-tokens-shell.css:3476 |
 | the status bar's Other devices icon and panel (INBOX 896) | frontend/css/lan-lazy.css:77 |
 | the status line and the recent searches | frontend/css/03-dashboard-widgets.css:1126 |
-| the step group (Perplexity's "Finished N steps") | frontend/css/02-chat-graph.css:4255 |
+| the step group (Perplexity's "Finished N steps") | frontend/css/02-chat-graph.css:4256 |
 | the strip's three doors (MINDMAP_PLAN.md §13b) | frontend/css/07-whiteboard-misc.css:8671 |
 | the strips that appear only when they apply | frontend/css/00-tokens-shell.css:1880 |
 | the structural blocks (INBOX 421 b) | frontend/css/05-sidebars-themes.css:1432 |
@@ -11651,7 +11651,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | what it learned (WORLD_CLASS_PLAN I9) | frontend/css/01-forms-settings.css:5535 |
 | what the AI remembers (ROADMAP §39B) | frontend/css/07-whiteboard-misc.css:2004 |
 | what the agent found, as things you can open | frontend/css/07-whiteboard-misc.css:5330 |
-| what the answering model is | frontend/css/02-chat-graph.css:4689 |
+| what the answering model is | frontend/css/02-chat-graph.css:4690 |
 | what the phone block assumed, and the sheet undoes | frontend/css/07-whiteboard-misc.css:10002 |
 | whiteboard fixes (§41) | frontend/css/07-whiteboard-misc.css:2109 |
 | whiteboard objects: images and text boxes, neither tied to a note | frontend/css/07-whiteboard-misc.css:1 |
@@ -11663,7 +11663,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 |---|---|
 | frontend/css/00-tokens-shell.css | 4291 |
 | frontend/css/01-forms-settings.css | 6242 |
-| frontend/css/02-chat-graph.css | 5295 |
+| frontend/css/02-chat-graph.css | 5296 |
 | frontend/css/03-dashboard-widgets.css | 4817 |
 | frontend/css/04-chat-dock-appearance.css | 6491 |
 | frontend/css/05-sidebars-themes.css | 6268 |
@@ -11689,7 +11689,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/first-run-lazy.css | 121 |
 | frontend/css/forced-colors-lazy.css | 28 |
 | frontend/css/glass-controls-lazy.css | 23 |
-| frontend/css/graph-lazy.css | 577 |
+| frontend/css/graph-lazy.css | 584 |
 | frontend/css/help-chat-lazy.css | 38 |
 | frontend/css/icon-picker.css | 121 |
 | frontend/css/improve-lazy.css | 110 |
@@ -12371,7 +12371,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (8156)
+## Backend modules (8157)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14525,40 +14525,41 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `suggest_title` | src/tessellate/ai/drafter.py:525 |
 | `was_offline` | src/tessellate/ai/drafter.py:38 |
 
-### src/tessellate/ai/embeddings.py (30)
+### src/tessellate/ai/embeddings.py (31)
 
 | Name | File:line |
 |---|---|
 | `EmbeddingCacheBroken` | src/tessellate/ai/embeddings.py:52 |
 | `EmbeddingNeedsConsent` | src/tessellate/ai/embeddings.py:56 |
-| `EmbeddingService` | src/tessellate/ai/embeddings.py:789 |
-| `_PinnedModels` | src/tessellate/ai/embeddings.py:1428 |
-| `_backfill_chunks` | src/tessellate/ai/embeddings.py:412 |
-| `_backfill_missing` | src/tessellate/ai/embeddings.py:330 |
-| `_digest` | src/tessellate/ai/embeddings.py:598 |
-| `_download_and_open` | src/tessellate/ai/embeddings.py:770 |
+| `EmbeddingService` | src/tessellate/ai/embeddings.py:796 |
+| `_PinnedModels` | src/tessellate/ai/embeddings.py:1435 |
+| `_backfill_chunks` | src/tessellate/ai/embeddings.py:419 |
+| `_backfill_missing` | src/tessellate/ai/embeddings.py:337 |
+| `_digest` | src/tessellate/ai/embeddings.py:605 |
+| `_download_and_open` | src/tessellate/ai/embeddings.py:777 |
 | `_engine_missing` | src/tessellate/ai/embeddings.py:80 |
-| `_fetch_model_as_a_task` | src/tessellate/ai/embeddings.py:779 |
-| `_notebook_has_notes` | src/tessellate/ai/embeddings.py:136 |
-| `_open_snapshot` | src/tessellate/ai/embeddings.py:750 |
+| `_fetch_model_as_a_task` | src/tessellate/ai/embeddings.py:786 |
+| `_notebook_has_notes` | src/tessellate/ai/embeddings.py:143 |
+| `_open_snapshot` | src/tessellate/ai/embeddings.py:757 |
 | `_package_present` | src/tessellate/ai/embeddings.py:67 |
-| `_quiet_engine_log` | src/tessellate/ai/embeddings.py:739 |
-| `_register` | src/tessellate/ai/embeddings.py:711 |
+| `_quiet_engine_log` | src/tessellate/ai/embeddings.py:746 |
+| `_register` | src/tessellate/ai/embeddings.py:718 |
 | `_wait_for_idle` | src/tessellate/ai/embeddings.py:125 |
-| `backfill_missing` | src/tessellate/ai/embeddings.py:298 |
-| `bytes_to_vector` | src/tessellate/ai/embeddings.py:609 |
-| `chunk_text` | src/tessellate/ai/embeddings.py:585 |
-| `clean_orphaned_vectors` | src/tessellate/ai/embeddings.py:455 |
-| `cosine_similarity` | src/tessellate/ai/embeddings.py:615 |
-| `embed_threads` | src/tessellate/ai/embeddings.py:288 |
-| `embedding_text` | src/tessellate/ai/embeddings.py:500 |
+| `backfill_missing` | src/tessellate/ai/embeddings.py:305 |
+| `bytes_to_vector` | src/tessellate/ai/embeddings.py:616 |
+| `chunk_text` | src/tessellate/ai/embeddings.py:592 |
+| `clean_orphaned_vectors` | src/tessellate/ai/embeddings.py:462 |
+| `cosine_similarity` | src/tessellate/ai/embeddings.py:622 |
+| `embed_threads` | src/tessellate/ai/embeddings.py:295 |
+| `embedding_text` | src/tessellate/ai/embeddings.py:507 |
 | `note_request` | src/tessellate/ai/embeddings.py:119 |
-| `similar_pairs` | src/tessellate/ai/embeddings.py:636 |
-| `start_warmup` | src/tessellate/ai/embeddings.py:156 |
-| `vector_to_bytes` | src/tessellate/ai/embeddings.py:602 |
-| `warm_then_backfill` | src/tessellate/ai/embeddings.py:322 |
-| `warmup_failed` | src/tessellate/ai/embeddings.py:451 |
-| `warmup_running` | src/tessellate/ai/embeddings.py:447 |
+| `similar_pairs` | src/tessellate/ai/embeddings.py:643 |
+| `start_warmup` | src/tessellate/ai/embeddings.py:163 |
+| `vector_to_bytes` | src/tessellate/ai/embeddings.py:609 |
+| `wait_for_quiet` | src/tessellate/ai/embeddings.py:136 |
+| `warm_then_backfill` | src/tessellate/ai/embeddings.py:329 |
+| `warmup_failed` | src/tessellate/ai/embeddings.py:458 |
+| `warmup_running` | src/tessellate/ai/embeddings.py:454 |
 
 ### src/tessellate/ai/entities.py (10)
 
@@ -22210,58 +22211,58 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Retrieval` | src/tessellate/search/search_manager.py:976 |
-| `_append_connected` | src/tessellate/search/search_manager.py:1361 |
-| `_candidates` | src/tessellate/search/search_manager.py:1249 |
-| `_category_named_whole` | src/tessellate/search/search_manager.py:1153 |
-| `_category_notes` | src/tessellate/search/search_manager.py:1208 |
-| `_category_only` | src/tessellate/search/search_manager.py:1202 |
-| `_category_scope` | src/tessellate/search/search_manager.py:1378 |
+| `Retrieval` | src/tessellate/search/search_manager.py:992 |
+| `_append_connected` | src/tessellate/search/search_manager.py:1377 |
+| `_candidates` | src/tessellate/search/search_manager.py:1265 |
+| `_category_named_whole` | src/tessellate/search/search_manager.py:1169 |
+| `_category_notes` | src/tessellate/search/search_manager.py:1224 |
+| `_category_only` | src/tessellate/search/search_manager.py:1218 |
+| `_category_scope` | src/tessellate/search/search_manager.py:1394 |
 | `_corrected_terms` | src/tessellate/search/search_manager.py:269 |
-| `_dated_candidates` | src/tessellate/search/search_manager.py:1391 |
-| `_early_answer` | src/tessellate/search/search_manager.py:1225 |
-| `_fuse` | src/tessellate/search/search_manager.py:721 |
-| `_latest_about` | src/tessellate/search/search_manager.py:1399 |
-| `_learned_order` | src/tessellate/search/search_manager.py:1523 |
-| `_linked_neighbours` | src/tessellate/search/search_manager.py:760 |
-| `_load_later` | src/tessellate/search/search_manager.py:408 |
-| `_match_info` | src/tessellate/search/search_manager.py:1343 |
+| `_dated_candidates` | src/tessellate/search/search_manager.py:1407 |
+| `_early_answer` | src/tessellate/search/search_manager.py:1241 |
+| `_fuse` | src/tessellate/search/search_manager.py:737 |
+| `_latest_about` | src/tessellate/search/search_manager.py:1415 |
+| `_learned_order` | src/tessellate/search/search_manager.py:1539 |
+| `_linked_neighbours` | src/tessellate/search/search_manager.py:776 |
+| `_load_later` | src/tessellate/search/search_manager.py:410 |
+| `_match_info` | src/tessellate/search/search_manager.py:1359 |
 | `_meaningful_terms` | src/tessellate/search/search_manager.py:351 |
-| `_named_category` | src/tessellate/search/search_manager.py:1168 |
-| `_narrow_to_range` | src/tessellate/search/search_manager.py:1265 |
+| `_named_category` | src/tessellate/search/search_manager.py:1184 |
+| `_narrow_to_range` | src/tessellate/search/search_manager.py:1281 |
 | `_near_words` | src/tessellate/search/search_manager.py:307 |
-| `_nothing_matched` | src/tessellate/search/search_manager.py:1311 |
-| `_outside_window` | src/tessellate/search/search_manager.py:1289 |
-| `_rank` | src/tessellate/search/search_manager.py:1077 |
-| `_rank_inner` | src/tessellate/search/search_manager.py:1090 |
-| `_recency_pin_ranking` | src/tessellate/search/search_manager.py:695 |
-| `_retrieve` | src/tessellate/search/search_manager.py:1453 |
-| `_score_from_matrix` | src/tessellate/search/search_manager.py:562 |
-| `_score_from_table` | src/tessellate/search/search_manager.py:601 |
+| `_nothing_matched` | src/tessellate/search/search_manager.py:1327 |
+| `_outside_window` | src/tessellate/search/search_manager.py:1305 |
+| `_rank` | src/tessellate/search/search_manager.py:1093 |
+| `_rank_inner` | src/tessellate/search/search_manager.py:1106 |
+| `_recency_pin_ranking` | src/tessellate/search/search_manager.py:711 |
+| `_retrieve` | src/tessellate/search/search_manager.py:1469 |
+| `_score_from_matrix` | src/tessellate/search/search_manager.py:578 |
+| `_score_from_table` | src/tessellate/search/search_manager.py:617 |
 | `_substring_entries` | src/tessellate/search/search_manager.py:222 |
 | `_user_today` | src/tessellate/search/search_manager.py:45 |
-| `_when_nothing_ranked` | src/tessellate/search/search_manager.py:1424 |
-| `_within` | src/tessellate/search/search_manager.py:960 |
-| `_without_private` | src/tessellate/search/search_manager.py:1577 |
+| `_when_nothing_ranked` | src/tessellate/search/search_manager.py:1440 |
+| `_within` | src/tessellate/search/search_manager.py:976 |
+| `_without_private` | src/tessellate/search/search_manager.py:1593 |
 | `_word_for_stem` | src/tessellate/search/search_manager.py:324 |
-| `_written_at` | src/tessellate/search/search_manager.py:919 |
-| `clip_query` | src/tessellate/search/search_manager.py:1445 |
+| `_written_at` | src/tessellate/search/search_manager.py:935 |
+| `clip_query` | src/tessellate/search/search_manager.py:1461 |
 | `configured_thresholds` | src/tessellate/search/search_manager.py:356 |
-| `day_mentions` | src/tessellate/search/search_manager.py:930 |
+| `day_mentions` | src/tessellate/search/search_manager.py:946 |
 | `entries_between` | src/tessellate/search/search_manager.py:102 |
-| `graph_expansion` | src/tessellate/search/search_manager.py:825 |
-| `in_range` | src/tessellate/search/search_manager.py:891 |
+| `graph_expansion` | src/tessellate/search/search_manager.py:841 |
+| `in_range` | src/tessellate/search/search_manager.py:907 |
 | `is_exact_term` | src/tessellate/search/search_manager.py:262 |
-| `is_recency_ask` | src/tessellate/search/search_manager.py:1130 |
+| `is_recency_ask` | src/tessellate/search/search_manager.py:1146 |
 | `keyword_search` | src/tessellate/search/search_manager.py:129 |
-| `last_search` | src/tessellate/search/search_manager.py:1072 |
-| `note_search_mode` | src/tessellate/search/search_manager.py:1085 |
-| `query_vector` | src/tessellate/search/search_manager.py:383 |
+| `last_search` | src/tessellate/search/search_manager.py:1088 |
+| `note_search_mode` | src/tessellate/search/search_manager.py:1101 |
+| `query_vector` | src/tessellate/search/search_manager.py:385 |
 | `recent_entries` | src/tessellate/search/search_manager.py:80 |
-| `retrieve` | src/tessellate/search/search_manager.py:1042 |
-| `retrieve_detailed` | src/tessellate/search/search_manager.py:1013 |
-| `semantic_search` | src/tessellate/search/search_manager.py:457 |
-| `warm` | src/tessellate/search/search_manager.py:433 |
+| `retrieve` | src/tessellate/search/search_manager.py:1058 |
+| `retrieve_detailed` | src/tessellate/search/search_manager.py:1029 |
+| `semantic_search` | src/tessellate/search/search_manager.py:473 |
+| `warm` | src/tessellate/search/search_manager.py:445 |
 
 ### src/tessellate/search/searxng_docker.py (8)
 
@@ -22411,7 +22412,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15210)
+## Tests (15211)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23829,7 +23830,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_space_menu_axe_1029.py | 2 |
 | tests/test_spaces.py | 28 |
 | tests/test_speakers_81.py | 7 |
-| tests/test_speculative_retrieval.py | 4 |
+| tests/test_speculative_retrieval.py | 5 |
 | tests/test_spell_contractions.py | 2 |
 | tests/test_spelling_dialects.py | 5 |
 | tests/test_spelling_variants.py | 6 |

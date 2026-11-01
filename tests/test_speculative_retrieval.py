@@ -62,9 +62,18 @@ def test_the_boxes_send_their_words_on_a_pause():
     assert 'box?.id !== "question" && box?.id !== "chat-input"' in js
 
 
-def test_a_model_not_yet_loaded_starts_loading_in_the_background(session):
+def test_a_model_not_yet_loaded_starts_loading_in_the_background(session, monkeypatch):
     """Measured on a fresh install: the first question paid the embedding
-    model's cold load. Focus in the box now starts it, without waiting."""
+    model's cold load. Focus in the box now starts it, without waiting.
+
+    INBOX 1508: the load itself waits for the requests that came with the
+    focus to stop (`wait_for_quiet`), so the engine's import does not run
+    inside the burst; the request still returns at once. The wait is stubbed
+    here (the process-wide request pulse is whatever earlier tests left)."""
+    from tessellate.ai import embeddings as embedding_service
+
+    order: list[str] = []
+    monkeypatch.setattr(embedding_service, "wait_for_quiet", lambda max_wait: order.append(f"quiet {max_wait}"))
 
     class Cold:
         def __init__(self):
@@ -77,6 +86,7 @@ def test_a_model_not_yet_loaded_starts_loading_in_the_background(session):
             return "cold"
 
         def embed_text(self, text):
+            order.append("embed")
             self.calls.append(text)
             time.sleep(0.05)
             return None
@@ -90,3 +100,15 @@ def test_a_model_not_yet_loaded_starts_loading_in_the_background(session):
             break
         time.sleep(0.01)
     assert cold.calls == ["warm up"]
+    assert order == [f"quiet {search_manager.LOAD_LATER_MAX_WAIT_SECONDS}", "embed"]
+
+
+def test_the_focus_call_with_no_words_does_not_touch_the_database(session, fake_embeddings):
+    """INBOX 1508: `q: ""` has nothing to embed, so a ready model returns
+    before the user's "today" is read."""
+
+    class NoSession:
+        def __getattr__(self, name):
+            raise AssertionError("the database was read for an empty question")
+
+    assert search_manager.warm(NoSession(), "", fake_embeddings) is False

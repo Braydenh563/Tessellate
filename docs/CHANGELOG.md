@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- First Chat open after boot (INBOX 1508): the search model's load, asked for by focusing the Chat or Ask box, waits for the request burst it came with to go quiet (at most 10 s) instead of running inside it, and the focus call with no words no longer reads the database; measured here with no model, `/search/warm` 15 ms, `/chat/suggestions` 12 ms and `/preferences` 6 ms with 1 to 5 ms of browser queueing, so the 3.3 to 4.5 s in the owner's log is a real model load or a slow disk the app cannot be measured against in this sandbox
 - Zoom and tab frames (INBOX 1508): Ctrl +/- in Chat costs one whole-document style pass instead of two (the top bar's `--header-h` is written in rem, so a step that leaves the bar the same height writes nothing; 155 to 200 ms of style at 4x became 57 to 106), the Dashboard's year heatmap is skipped until it nears the window (796 to 422 elements in the reveal, 55 to 63 ms of style and layout became 38 to 45), and the keyboard scroll reset in `phone-shell.js` reads layout on touch devices only
 - Dead CSS: the unused `.graph-keyfocus` rules
 - Chat composer (INBOX 1508): the app's Ctrl +/- zoom no longer measures the composer (75 to 118 ms of forced layout a step at 4x CPU) or saves the zoomed height as one you dragged; only a pointer down on the box records a height
