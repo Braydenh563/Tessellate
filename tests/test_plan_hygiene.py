@@ -105,6 +105,17 @@ def test_inbox_is_a_tray_not_a_backlog() -> None:
     assert count < 20, f"INBOX has {count} items; place the rest in their plans (Placed from INBOX)"
 
 
+def test_an_inbox_item_is_listed_once_and_not_also_in_history() -> None:
+    """A merge that keeps both sides of INBOX.md left three copies of 1508 and
+    put back 1506, 1509 and 1510 after they had moved to HISTORY (2026-11-01)."""
+    numbers = re.findall(r"(?m)^(\d+)\. \*\*", (ROADMAP / "INBOX.md").read_text(encoding="utf-8"))
+    twice = sorted({n for n in numbers if numbers.count(n) > 1})
+    assert not twice, f"INBOX lists {twice} more than once; keep the newest entry"
+    history = (ROADMAP / "HISTORY.md").read_text(encoding="utf-8")
+    moved = [n for n in numbers if re.search(rf"(?m)^{n}\. \*\*Owner", history)]
+    assert not moved, f"INBOX still lists {moved}, already moved to HISTORY.md"
+
+
 def test_no_conflict_marker_survives_a_merge():
     """A merge conflict must never reach the branch.
 

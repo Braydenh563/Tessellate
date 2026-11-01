@@ -2,7 +2,7 @@
 
 Generated 2026-11-01 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7475, frontend ids 2637, CSS sections 517, backend routes 633, backend modules 8161, test files 1762, tests 15235, plan headings 990, app scripts 28, boot scripts 36, script files 208.
+Counts: frontend functions 7475, frontend ids 2637, CSS sections 517, backend routes 633, backend modules 8161, test files 1762, tests 15236, plan headings 990, app scripts 28, boot scripts 36, script files 208.
 
 ## Frontend functions (7475)
 
@@ -22440,7 +22440,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15235)
+## Tests (15236)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23625,7 +23625,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_pin_unlock.py | 22 |
 | tests/test_placed_0909_row31.py | 6 |
 | tests/test_plain_errors.py | 3 |
-| tests/test_plan_hygiene.py | 7 |
+| tests/test_plan_hygiene.py | 8 |
 | tests/test_plural_helper.py | 3 |
 | tests/test_polish5_1031.py | 5 |
 | tests/test_polish_1028b.py | 4 |
