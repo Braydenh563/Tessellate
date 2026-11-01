@@ -31,6 +31,7 @@ from tessellate.core import deps
 from tessellate.core.database import Attachment, Document, EmbeddingRecord, Entry, EntryLink, EntryProperty, NoteType
 from tessellate.core.deps import get_session
 from tessellate.entry import manager, paths
+from tessellate.repo import relation_types
 from tessellate.entry import topics as topic_finder
 from tessellate.search import search_manager
 
@@ -744,7 +745,7 @@ def _payload_key(session: Session, similarity: bool, include_maps: bool, include
             .order_by(WhiteboardObject.id)
         )
     )
-    digest.update(repr(sorted(manager.relation_types(session).items())).encode())
+    digest.update(repr(sorted(relation_types.kinds(session).items())).encode())
     config = deps.get_config()
     with_similarity = similarity and not config.get_preference("battery_efficient_mode")
     if with_similarity:
@@ -967,7 +968,7 @@ def _note_nodes(session: Session, entries: list, node_ids: set[int]) -> list[dic
 
 def _link_edges(session: Session, node_ids: set[int], taken: set[frozenset[int]]) -> list[dict]:
     edges: list[dict] = []
-    types = manager.relation_types(session)
+    types = relation_types.kinds(session)
     for link in session.execute(
         select(
             EntryLink.id,

@@ -27,9 +27,10 @@ from tessellate.ai import librarian, memory, note_rank, personal, skills, toolra
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.ai.provider import set_write_tools
 from tessellate.core import activity, deps, events, private_turn
-from tessellate.core.database import LIKE_ESCAPE, Category, Entry, Reminder, like_escape
+from tessellate.core.database import LIKE_ESCAPE, LINK_TYPES, Category, Entry, Reminder, like_escape
 from tessellate.core.logbuffer import safe_value
 from tessellate.entry import link_wording, manager, paths
+from tessellate.repo import relation_types
 from tessellate.entry.properties import strip as strip_properties
 from tessellate.search import search_manager
 
@@ -1597,7 +1598,7 @@ _LINK_TYPE_TAIL = ". Omit when unsure."
 
 def link_type_description(types: dict[str, dict]) -> str:
     """The `link_type` parameter's text for these relation types
-    (`manager.relation_types`): the built-ins first, then the person's own,
+    (`relation_types.kinds`): the built-ins first, then the person's own,
     cut to `LINK_TYPE_DESCRIPTION_CHARS` with a count of what was left out."""
     keys = list(types)
     room = LINK_TYPE_DESCRIPTION_CHARS - len(_LINK_TYPE_LEAD) - len(_LINK_TYPE_TAIL)
@@ -1624,7 +1625,7 @@ def _resolve_link_type(session: Session, wanted: object) -> str | None:
     text = " ".join(str(wanted or "").split())
     if not text:
         return None
-    types = manager.relation_types(session)
+    types = relation_types.kinds(session)
     folded = text.casefold()
     snake = folded.replace(" ", "_").replace("-", "_")
     for key, row in types.items():
@@ -3729,7 +3730,7 @@ TOOLS: dict[str, ToolSpec] = {
                     "link_type": {
                         "type": "string",
                         "description": link_type_description(
-                            {key: {} for key in manager.LINK_TYPES}
+                            {key: {} for key in LINK_TYPES}
                         ),
                     },
                 },
@@ -4597,7 +4598,7 @@ def with_relation_types(offered: list[dict], session: Session) -> list[dict]:
         if function.get("name") != "link_notes" or "link_type" not in props:
             continue
         try:
-            kinds = manager.relation_types(session)
+            kinds = relation_types.kinds(session)
         except Exception:  # noqa: BLE001
             # A session that cannot list kinds (a test double, a closed
             # session) keeps the registry's own description: the built-ins.

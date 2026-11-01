@@ -47,13 +47,11 @@ from tessellate.core.events import ACTOR_USER_AND_AI
 from tessellate.core.validation_copy import Said
 from tessellate.core.database import (  # noqa: F401 (EntryLink used in link_suggestions)
     AuditLog,
-    Bookmark,
     DerivedTension,
     Document,
     DocumentLink,
     EmbeddingRecord,
     Entry,
-    EntryBookmark,
     Entity,
     EntityMention,
     EntryLink,
@@ -67,6 +65,8 @@ from tessellate.core.database import (  # noqa: F401 (EntryLink used in link_sug
 from tessellate.core.database import LIKE_ESCAPE
 from tessellate.core.deps import get_session
 from tessellate.entry import duplicates, link_facts, manager, repo
+from tessellate.repo import bookmarks as bookmark_repo
+from tessellate.repo import relation_types
 from tessellate.entry.mentions import MENTION_MIN_TITLE_CHARS, names_label
 from tessellate.entry import meetings as meeting_shape
 from tessellate.entry import properties as note_properties
@@ -186,7 +186,7 @@ def _to_out(
                 direction="out" if link.source_entry_id == entry.id else "in",
                 link_type=link.link_type,
                 link_label=manager.relation_label(
-                    manager.relation_types(session), link.link_type, link.source_entry_id == entry.id
+                    relation_types.kinds(session), link.link_type, link.source_entry_id == entry.id
                 ),
                 props=link.props,
             )
@@ -2453,13 +2453,7 @@ def entry_bookmarks(entry_id: int, session: Session = Depends(get_session)) -> l
     needs this, and `_to_out_bulk`'s per-list-page bulk fetch shouldn't grow
     a query for something most renders of a note never show."""
     _existing_entry(session, entry_id)
-    rows = (
-        session.query(Bookmark)
-        .join(EntryBookmark, EntryBookmark.bookmark_id == Bookmark.id)
-        .filter(EntryBookmark.entry_id == entry_id)
-        .order_by(EntryBookmark.created_at)
-        .all()
-    )
+    rows = bookmark_repo.attached_to_entry(session, entry_id)
     return [
         {"id": b.id, "url": b.url, "title": b.title, "group_name": b.group_name}
         for b in rows
@@ -2471,17 +2465,7 @@ def attach_bookmark(
     entry_id: int, body: AttachBookmarkBody, session: Session = Depends(get_session)
 ) -> dict:
     repo.writable_entry(session, entry_id)
-    deps.get_or_404(session, Bookmark, body.bookmark_id, "That bookmark could not be found.")
-    already = (
-        session.query(EntryBookmark)
-        .filter_by(entry_id=entry_id, bookmark_id=body.bookmark_id)
-        .first()
-    )
-    if not already:
-        row = EntryBookmark(entry_id=entry_id, bookmark_id=body.bookmark_id)
-        if body.created_at is not None:
-            row.created_at = body.created_at.replace(tzinfo=None)
-        session.add(row)
+    if bookmark_repo.attach_to_entry(session, entry_id, body.bookmark_id, created_at=body.created_at):
         session.commit()
     return {"attached": True}
 
@@ -2491,14 +2475,10 @@ def detach_bookmark(
     entry_id: int, bookmark_id: int, session: Session = Depends(get_session)
 ) -> dict:
     repo.writable_entry(session, entry_id)
-    row = session.query(EntryBookmark).filter_by(entry_id=entry_id, bookmark_id=bookmark_id).first()
     # When it was attached, so Undo puts it back in its place in the list.
-    created_at = row.created_at.isoformat() if row is not None and row.created_at else None
-    session.query(EntryBookmark).filter_by(
-        entry_id=entry_id, bookmark_id=bookmark_id
-    ).delete()
+    attached = bookmark_repo.detach_from_entry(session, entry_id, bookmark_id)
     session.commit()
-    return {"detached": True, "created_at": created_at}
+    return {"detached": True, "created_at": attached.isoformat() if attached else None}
 
 
 #: A page of the plain list, not a hard ceiling on notebook size, the
@@ -3935,7 +3915,7 @@ def _stored_connections(session: Session, entry: Entry) -> tuple[list[dict], lis
             #: KG3: the kind, named from this end, and the link's properties.
             "link_type": link.link_type,
             "link_label": manager.relation_label(
-                manager.relation_types(session), link.link_type, link.source_entry_id == entry.id
+                relation_types.kinds(session), link.link_type, link.source_entry_id == entry.id
             ),
             "props": link.props,
         }

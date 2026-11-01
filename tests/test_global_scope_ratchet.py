@@ -17,6 +17,7 @@ from collections import Counter
 from pathlib import Path
 
 from tessellate.api.asset_strip import strip_js
+from tests import _js_scope
 
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
 
@@ -39,6 +40,11 @@ JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
 #: (276 to 270) came out.
 GUARDS_CAP = 270
 TOP_LEVEL_LETS_CAP = 699
+#: Ranked row 37a, 2026-11-01: every name a script adds to the shared scope
+#: (`tests/_js_scope.py`: a wrapped file's exports, any other file's top-level
+#: declarations). 9,905 before; embed-choices.js, model-bench.js and
+#: dash-night.js wrapped whole, one export each, freed 23.
+GLOBAL_NAMES_CAP = 9882
 
 
 def _code() -> dict[str, str]:
@@ -70,3 +76,34 @@ def test_no_two_files_define_the_same_function():
         names.update(re.findall(r"^(?:async\s+)?function\s*\*?\s*([A-Za-z_$][\w$]*)", code, re.M))
     twice = sorted(n for n, c in names.items() if c > 1)
     assert not twice, f"defined twice in the one global scope: {twice}"
+
+
+def _sources() -> dict[str, str]:
+    return {
+        p.name: p.read_text(encoding="utf-8")
+        for p in sorted(JS.glob("*.js"))
+        if not p.name.endswith("-worker.js")  # a worker has its own scope
+    }
+
+
+def test_global_names_only_go_down():
+    count = sum(len(_js_scope.global_names(source)) for source in _sources().values())
+    assert count <= GLOBAL_NAMES_CAP, (
+        f"{count} names in the shared scope (cap {GLOBAL_NAMES_CAP}): wrap a file whole in "
+        "`(() => {` ... `})();` and export only what other files call (ranked row 37a)"
+    )
+
+
+def test_a_wrapped_file_exports_only_what_it_defines_and_others_call():
+    """An export the file does not define is a stand-in that resolves to
+    nothing; one nothing else names is a private name back in the shared scope."""
+    sources = _sources()
+    code = _code()
+    wrong = []
+    for name, source in sources.items():
+        for export in sorted(_js_scope.listed(source)):
+            if not re.search(rf"^  (?:async\s+)?(?:function\s+|const\s+|class\s+){re.escape(export)}\b", source, re.M):
+                wrong.append(f"{name} exports {export} but does not define it at its top")
+            elif not any(re.search(rf"(?<![\w$.]){re.escape(export)}(?![\w$])", other) for other_name, other in code.items() if other_name != name):
+                wrong.append(f"{name} exports {export}, which no other file names")
+    assert not wrong, "; ".join(wrong)

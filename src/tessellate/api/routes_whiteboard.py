@@ -3712,20 +3712,24 @@ def _require_reference(db: Session, kind: str, ref_id: int | None) -> None:
     every map tool in `ai/tools/whiteboard.py` calls before it writes, and
     `read_mindmap`, which will not read a private note's text back out.
     """
-    from tessellate.core.database import Attachment, Bookmark, Document
-
     if ref_id is None:
         raise HTTPException(status_code=422, detail=f"A {kind} node needs to point at an existing {kind}.")
     if kind == "note":
         _require_entry(db, ref_id)
         return
-    model, label = {
-        "document": (Document, "document"),
-        "file": (Attachment, "file"),
-        "link": (Bookmark, "bookmark"),
-    }[kind]
-    if db.get(model, ref_id) is None:
+    label = {"document": "document", "file": "file", "link": "bookmark"}[kind]
+    if _referenced(db, kind, ref_id) is None:
         raise HTTPException(status_code=404, detail=f"That {label} could not be found.")
+
+
+def _referenced(db: Session, kind: str, ref_id: int):
+    """The document, file or bookmark a reference node points at, or None."""
+    from tessellate.core.database import Attachment, Document
+    from tessellate.repo import bookmarks
+
+    if kind == "link":
+        return bookmarks.find(db, ref_id)
+    return db.get(Document if kind == "document" else Attachment, ref_id)
 
 
 def _reference_label(db: Session, kind: str, ref_id: int | None, fallback: str) -> str:
@@ -3759,18 +3763,16 @@ def _note_reference_label(db: Session, ref_id: int, fallback: str) -> str:
 
 def _other_reference_label(db: Session, kind: str, ref_id: int) -> str:
     """A document, file or link reference's name, "" when it has none."""
-    from tessellate.core.database import Attachment, Bookmark, Document
-
+    if kind not in ("document", "file", "link"):
+        return ""
+    row = _referenced(db, kind, ref_id)
+    if row is None:
+        return ""
     if kind == "document":
-        document = db.get(Document, ref_id)
-        return document.title if document is not None else ""
+        return row.title
     if kind == "file":
-        attachment = db.get(Attachment, ref_id)
-        return attachment.filename if attachment is not None else ""
-    if kind == "link":
-        bookmark = db.get(Bookmark, ref_id)
-        return (bookmark.title or bookmark.url) if bookmark is not None else ""
-    return ""
+        return row.filename
+    return row.title or row.url
 
 
 def _reference_facets(db: Session, kind: str, ref_id: int | None) -> dict:
