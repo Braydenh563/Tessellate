@@ -29,7 +29,7 @@ from tessellate.api import bounds
 from tessellate.api.chat_attach import _attached_notes
 from tessellate.api.schemas import EntryOut
 from tessellate.core import activity, deps
-from tessellate.core.database import Category, Entry, like_escape, LIKE_ESCAPE, MediaUpload
+from tessellate.core.database import Category, Entry, LIKE_ESCAPE, like_escape, MediaUpload
 
 
 class RememberBody(BaseModel):
