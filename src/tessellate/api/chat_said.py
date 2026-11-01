@@ -24,7 +24,8 @@ from tessellate.ai.ollama_client import OllamaError
 from tessellate.api import chat_extra
 from tessellate.api.chat_request import ChatRequest, _StreamRequest, _Turn, _composed, _meta_event
 from tessellate.core import clock, private_turn
-from tessellate.core.database import AskTurn, Conversation, Document, Entity, Entry, EntryLink, like_escape, LIKE_ESCAPE
+from tessellate.core.database import AskTurn, Conversation, Entity, Entry, EntryLink, like_escape, LIKE_ESCAPE
+from tessellate.repo import documents as documents_repo
 from tessellate.repo import reminders as reminder_repo
 from tessellate.core.logbuffer import safe_value
 
@@ -125,12 +126,7 @@ def _related_elsewhere(session: Session, question: str) -> list[dict]:
         )
 
     _add(
-        session.scalars(
-            select(Document)
-            .where(_any_word(Document.title, Document.content))
-            .order_by(Document.updated_at.desc())
-            .limit(_RELATED_LIMIT)
-        ).all(),
+        documents_repo.mentioning_any(session, words, _RELATED_LIMIT),
         "document",
         lambda d: d.title or "Untitled",
         lambda d: d.id,
@@ -701,9 +697,9 @@ def _open_title(session: Session, body: ChatRequest) -> str:
     from tessellate.ai.tools._common import _visible
 
     if body.screen and body.screen.open_doc_id:
-        doc = session.query(Document.title).filter(Document.id == body.screen.open_doc_id, Document.deleted_at.is_(None)).first()
-        if doc and str(doc[0] or "").strip():
-            return str(doc[0]).strip()
+        doc_title = documents_repo.title_of(session, body.screen.open_doc_id)
+        if doc_title and doc_title.strip():
+            return doc_title.strip()
     if body.open_note_id:
         row = session.query(Entry.content).filter(Entry.id == body.open_note_id, *_visible()).first()
         if row:
@@ -760,8 +756,8 @@ def _cited_titles(session: Session, result: dict) -> list[str]:
     titles: list[str] = []
     for kind, nid in _cited_ids(result)[:3]:
         if kind == "document":
-            doc = session.query(Document.title).filter(Document.id == nid, Document.deleted_at.is_(None)).first()
-            title = realise.cut_title(str(doc[0] or "").strip(), 60) if doc else ""
+            doc_title = documents_repo.title_of(session, nid)
+            title = realise.cut_title(doc_title.strip(), 60) if doc_title is not None else ""
         else:
             row = session.query(Entry.content).filter(Entry.id == nid, *_visible()).first()
             title = _closing_name(str(row[0] or "")) if row else ""
@@ -775,8 +771,8 @@ def _name_documents(session: Session, rows: list[dict]) -> None:
     rows do, so the page can draw it as a source card (INBOX 1466)."""
     for row in rows:
         if row.get("kind") == "document" and not row.get("title"):
-            doc = session.query(Document.title).filter(Document.id == row.get("note_id"), Document.deleted_at.is_(None)).first()
-            row["title"] = str(doc[0] or "Untitled") if doc else ""
+            doc_title = documents_repo.title_of(session, row.get("note_id"))
+            row["title"] = (doc_title or "Untitled") if doc_title is not None else ""
 
 
 def _linked_notes(session: Session, result: dict) -> list[dict]:

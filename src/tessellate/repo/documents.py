@@ -14,7 +14,7 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy import delete as sa_delete
 from sqlalchemy.orm import Session
 
@@ -23,6 +23,7 @@ from tessellate.core.database import (
     Document,
     DocumentAiEdit,
     DocumentRevision,
+    like_escape,
     utcnow,
 )
 from tessellate.repo import NotFound
@@ -84,8 +85,6 @@ def page(
         if until is not None:
             filters.append(Document.updated_at < until)
     if term:
-        from tessellate.core.database import like_escape
-
         like = f"%{like_escape(term)}%"
         filters.append(Document.title.ilike(like, escape=LIKE_ESCAPE) | Document.content.ilike(like, escape=LIKE_ESCAPE))
     total = session.scalar(select(func.count(Document.id)).where(*filters)) or 0
@@ -109,6 +108,34 @@ def mentioning(session: Session, document_id: int, like: str, limit: int) -> lis
         select(Document)
         .where(Document.id != document_id, Document.archived_at.is_(None), Document.content.ilike(like, escape=LIKE_ESCAPE))
         .order_by(*_NEWEST)
+        .limit(limit)
+    ))
+
+
+def recent(session: Session, limit: int) -> list[Document]:
+    """The documents not in the bin, newest edit first, shelved ones too: the
+    chat's title match reads this."""
+    return list(session.scalars(
+        select(Document).where(Document.deleted_at.is_(None)).order_by(Document.updated_at.desc()).limit(limit)
+    ))
+
+
+def title_of(session: Session, document_id: int) -> str | None:
+    """A document's title, or None when it is gone or binned."""
+    return session.scalar(select(Document.title).where(Document.id == document_id, Document.deleted_at.is_(None)))
+
+
+def mentioning_any(session: Session, words: list[str], limit: int) -> list[Document]:
+    """Documents whose title or text holds any of the words, newest edit first:
+    one OR across the words, not one scan per word (the chat's related panel)."""
+    return list(session.scalars(
+        select(Document)
+        .where(or_(*(
+            col.ilike(f"%{like_escape(word)}%", escape=LIKE_ESCAPE)
+            for col in (Document.title, Document.content)
+            for word in words
+        )))
+        .order_by(Document.updated_at.desc())
         .limit(limit)
     ))
 

@@ -19,7 +19,8 @@ from sqlalchemy.orm import Session
 from tessellate.ai import composer, composer_frame, composer_lists, composer_money, composer_slots, composer_sum, composer_versus, glossary, librarian, neighbours, question_noise
 from tessellate.api.chat_attach import _MEDIA_REF, _attached_boards, _attachment_readings, _media_readings, _mostly_pictures, _named_sources, _picture_alts, _picture_sizes
 from tessellate.core import deps
-from tessellate.core.database import Category, Document, Entry, EntryLink, like_escape, LIKE_ESCAPE, MediaUpload
+from tessellate.core.database import Category, Entry, EntryLink, like_escape, LIKE_ESCAPE, MediaUpload
+from tessellate.repo import documents as documents_repo
 from tessellate.entry import manager
 from tessellate.search import engine, search_manager
 
@@ -528,7 +529,7 @@ def _holding(session: Session, hits: list, terms: list[str], skip: set[tuple[str
     for hit in hits:
         if ("document" if hit.kind == "document" else "board", hit.ref_id) in skip:
             continue
-        doc = session.get(Document, hit.ref_id) if hit.kind == "document" else None
+        doc = documents_repo.find(session, hit.ref_id) if hit.kind == "document" else None
         if doc is not None and doc.deleted_at is None and _holds_every(f"{doc.title} {doc.content}", terms):
             docs.append(doc)
         elif hit.kind != "document":
