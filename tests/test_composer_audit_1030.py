@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from tessellate.ai import composer, spelling
+from tessellate.ai import composer, composer_ask, spelling
 
 
 def test_z65_a_typo_is_spell_checked_once_per_question(monkeypatch):
@@ -11,7 +11,9 @@ def test_z65_a_typo_is_spell_checked_once_per_question(monkeypatch):
     unknown word against the whole list, uncached."""
     calls = []
     real = composer.rephrase
-    monkeypatch.setattr(composer, "rephrase", lambda q: calls.append(q) or real(q))
+    # `compare_sides` and `rephrase` moved together to `composer_ask` (AR3):
+    # patched where it is looked up.
+    monkeypatch.setattr(composer_ask, "rephrase", lambda q: calls.append(q) or real(q))
     composer.compare_sides("recepie for banan bread")
     assert len(calls) == 1
     assert hasattr(spelling._candidates, "cache_info")  # noqa: SLF001

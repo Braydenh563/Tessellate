@@ -358,4 +358,5 @@ def test_f13_no_second_reader_of_a_notes_name_in_ai():
 
     root = Path(__file__).resolve().parents[1] / "src" / "tessellate" / "ai"
     found = {p.name for p in root.glob("*.py") if re.search(r"^def _title\(", p.read_text(encoding="utf-8"), re.M)}
-    assert found == {"composer.py", "composer_lists.py", "questions.py"}, found
+    # The engine's split moved whole from composer.py to composer_read.py (AR3).
+    assert found == {"composer_read.py", "composer_lists.py", "questions.py"}, found

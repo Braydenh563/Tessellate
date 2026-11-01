@@ -33,7 +33,9 @@ def test_a_quoted_suggestion_is_lifted_as_the_question_to_ask(text, chips):
 def _templates():
     """Every plain string in the composer's and the Guide's wording that names a
     thing with a placeholder and suggests asking."""
-    for name in ("composer_lines.py", "composer_aware.py", "composer.py", "help_chat.py", "help_topics_more.py", "guide_intent.py"):
+    #: `composer.py`'s wording, including the layers moved out of it whole (audit AR3).
+    moved = sorted(p.name for p in SRC.glob("composer_*.py") if "Moved whole from `composer.py`" in p.read_text(encoding="utf-8"))
+    for name in ("composer_lines.py", "composer_aware.py", "composer.py", *moved, "help_chat.py", "help_topics_more.py", "guide_intent.py"):
         tree = ast.parse((SRC / name).read_text(encoding="utf-8"))
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and "{" in node.value:
