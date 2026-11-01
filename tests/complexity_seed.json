@@ -61,7 +61,6 @@
  "src/tessellate/ai/skill_runner.py::_absorb": 22,
  "src/tessellate/ai/skill_runner.py::verify": 18,
  "src/tessellate/ai/skills.py::_one_step_spec": 16,
- "src/tessellate/ai/skills.py::normalise": 32,
  "src/tessellate/ai/skills.py::verify_spec": 19,
  "src/tessellate/ai/source_check.py::unbacked_claims": 18,
  "src/tessellate/ai/taxonomy.py::_analyze_topics": 25,

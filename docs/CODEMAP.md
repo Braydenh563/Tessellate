@@ -2,7 +2,7 @@
 
 Generated 2026-11-01 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7543, frontend ids 2633, CSS sections 517, backend routes 639, backend modules 8347, test files 1804, tests 15493, plan headings 990, app scripts 28, boot scripts 37, script files 220.
+Counts: frontend functions 7543, frontend ids 2633, CSS sections 517, backend routes 639, backend modules 8350, test files 1805, tests 15499, plan headings 990, app scripts 28, boot scripts 37, script files 220.
 
 ## Frontend functions (7543)
 
@@ -12525,7 +12525,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8347)
+## Backend modules (8350)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -16632,39 +16632,42 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `run_skill` | src/tessellate/ai/skill_runner.py:728 |
 | `verify` | src/tessellate/ai/skill_runner.py:250 |
 
-### src/tessellate/ai/skills.py (30)
+### src/tessellate/ai/skills.py (33)
 
 | Name | File:line |
 |---|---|
 | `SkillError` | src/tessellate/ai/skills.py:170 |
-| `_checked_folder_skill` | src/tessellate/ai/skills.py:1852 |
-| `_declared_blocks` | src/tessellate/ai/skills.py:602 |
+| `_check_placeholders` | src/tessellate/ai/skills.py:546 |
+| `_checked_folder_skill` | src/tessellate/ai/skills.py:1867 |
+| `_clean_inputs` | src/tessellate/ai/skills.py:520 |
+| `_clean_tools` | src/tessellate/ai/skills.py:492 |
+| `_declared_blocks` | src/tessellate/ai/skills.py:617 |
 | `_one_step_spec` | src/tessellate/ai/skills.py:227 |
-| `_step` | src/tessellate/ai/skills.py:873 |
+| `_step` | src/tessellate/ai/skills.py:888 |
 | `_step_specs` | src/tessellate/ai/skills.py:189 |
 | `_text` | src/tessellate/ai/skills.py:182 |
 | `_verify_args` | src/tessellate/ai/skills.py:334 |
-| `ad_hoc_plan` | src/tessellate/ai/skills.py:642 |
-| `budget_caps` | src/tessellate/ai/skills.py:615 |
-| `builtins` | src/tessellate/ai/skills.py:1815 |
-| `catalog` | src/tessellate/ai/skills.py:1827 |
+| `ad_hoc_plan` | src/tessellate/ai/skills.py:657 |
+| `budget_caps` | src/tessellate/ai/skills.py:630 |
+| `builtins` | src/tessellate/ai/skills.py:1830 |
+| `catalog` | src/tessellate/ai/skills.py:1842 |
 | `contract_nudge` | src/tessellate/ai/skills.py:402 |
-| `fill` | src/tessellate/ai/skills.py:677 |
-| `find` | src/tessellate/ai/skills.py:1890 |
-| `folder_skills` | src/tessellate/ai/skills.py:1860 |
-| `held_back_reason` | src/tessellate/ai/skills.py:1806 |
-| `input_values` | src/tessellate/ai/skills.py:704 |
-| `is_action` | src/tessellate/ai/skills.py:637 |
-| `larger_model_reason` | src/tessellate/ai/skills.py:1773 |
-| `measured_rates` | src/tessellate/ai/skills.py:1764 |
-| `missing_inputs` | src/tessellate/ai/skills.py:693 |
-| `normalise` | src/tessellate/ai/skills.py:492 |
-| `run_instruction` | src/tessellate/ai/skills.py:715 |
-| `small_class` | src/tessellate/ai/skills.py:1790 |
+| `fill` | src/tessellate/ai/skills.py:692 |
+| `find` | src/tessellate/ai/skills.py:1905 |
+| `folder_skills` | src/tessellate/ai/skills.py:1875 |
+| `held_back_reason` | src/tessellate/ai/skills.py:1821 |
+| `input_values` | src/tessellate/ai/skills.py:719 |
+| `is_action` | src/tessellate/ai/skills.py:652 |
+| `larger_model_reason` | src/tessellate/ai/skills.py:1788 |
+| `measured_rates` | src/tessellate/ai/skills.py:1779 |
+| `missing_inputs` | src/tessellate/ai/skills.py:708 |
+| `normalise` | src/tessellate/ai/skills.py:561 |
+| `run_instruction` | src/tessellate/ai/skills.py:730 |
+| `small_class` | src/tessellate/ai/skills.py:1805 |
 | `state_line` | src/tessellate/ai/skills.py:456 |
-| `step_instruction` | src/tessellate/ai/skills.py:762 |
+| `step_instruction` | src/tessellate/ai/skills.py:777 |
 | `step_specs` | src/tessellate/ai/skills.py:377 |
-| `stored` | src/tessellate/ai/skills.py:1822 |
+| `stored` | src/tessellate/ai/skills.py:1837 |
 | `verify_spec` | src/tessellate/ai/skills.py:269 |
 
 ### src/tessellate/ai/slash.py (15)
@@ -22911,7 +22914,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15493)
+## Tests (15499)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24349,6 +24352,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_skill_composer.py | 11 |
 | tests/test_skill_evals.py | 3 |
 | tests/test_skill_fixtures.py | 11 |
+| tests/test_skill_normalise_paths.py | 6 |
 | tests/test_skill_run_undo.py | 5 |
 | tests/test_skill_runner_paths.py | 3 |
 | tests/test_skills.py | 83 |
