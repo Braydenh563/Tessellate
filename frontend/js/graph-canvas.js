@@ -2690,15 +2690,36 @@ function gcDrawLight(s) {
   ctx.globalAlpha = 1;
 }
 
+//: **A moving map strokes its thin links as hairlines** (GR1 and GR2 1101).
+//: A link is 1.3 CSS px wide at every zoom, and a stroke wider than one
+//: device pixel is outlined before it is filled: one bucket of 1,879 curved
+//: links was 21 ms of raster at 1x, a 2,000-note drag at 4x spent 3.6 s of
+//: its 4.7 s of draws there. One device pixel is the raster's hairline, 0.9
+//: ms for the same links, and with the alpha scaled by the width it lays
+//: within 3% of the ink. Only while the map moves (a layout running, a
+//: drag), the same rule as the plain frames (`gcLightFrame`); the frame at
+//: rest strokes at the true width (`hairDrawn`, redrawn at `end`). A dashed
+//: line keeps its stroke: a hairline drops the dash's ends.
+const GC_HAIR_PX = 1.5;
+function gcSetStroke(ctx, s, width, k, alpha, dashed) {
+  const device = width * (s.dpr || 1);
+  const hair = s.strokeMoving && !dashed && device > 1 && device <= GC_HAIR_PX;
+  ctx.lineWidth = (hair ? 1 / (s.dpr || 1) : width) / k;
+  ctx.globalAlpha = hair ? Math.min(1, alpha * device) : alpha;
+  if (hair) s.hairDrawn = true;
+}
+
 function gcDraw(s = gcTab) {
   if (!s.ctx || !s.canvas) return;
   if (gcTabHidden(s)) return;
   if (gcLightFrame(s)) return gcDrawLight(s);
   if (!s.paintMode && gcDrawComposed(s)) return;
+  s.strokeMoving = Boolean(s.layoutRunning || s.dragNode);
   //: `paintMode` (`gcDrawComposed`): null paints the frame whole; "rest" and
   //: "dim" paint a scene layer offscreen; "over" paints the hover on top.
   const over = s.paintMode === "over";
   const layer = s.paintMode === "rest" || s.paintMode === "dim";
+  if (!over) s.hairDrawn = false;
   if (!s.paintMode) s.scene = null;
   const started = performance.now();
   //: Advanced once, before anything is measured, so every radius in this frame
@@ -2874,15 +2895,15 @@ function gcDraw(s = gcTab) {
     ctx.strokeStyle = bucket.tint || gcTokens[style.colour] || gcTokens.muted;
     // `.graph-edge.graph-dim` is opacity 0.06 in the stylesheet; kept, because
     // a dimmed edge that is still readable defeats the spotlight.
-    ctx.globalAlpha = (over ? 0 : 0.06) + (style.alpha - (over ? 0 : 0.06)) * (bucket.level / 10);
+    const alpha = (over ? 0 : 0.06) + (style.alpha - (over ? 0 : 0.06)) * (bucket.level / 10);
     //: An arrowed link thins from its source half to its target half.
-    ctx.lineWidth = (style.width * widthScale * (bucket.wide ? 0.8 : 1)) / k;
+    gcSetStroke(ctx, s, style.width * widthScale * (bucket.wide ? 0.8 : 1), k, alpha, !!style.dash);
     ctx.setLineDash(style.dash ? style.dash.map((v) => v / k) : []);
     ctx.stroke(bucket.path);
     if (bucket.wide) {
-      ctx.lineWidth = (style.width * widthScale * 1.25) / k;
+      gcSetStroke(ctx, s, style.width * widthScale * 1.25, k, alpha, !!style.dash);
       ctx.stroke(bucket.wide);
-      gcFillSparks(ctx, bucket, ctx.globalAlpha);
+      gcFillSparks(ctx, bucket, alpha);
     }
   };
   for (const bucket of simBuckets.values()) strokeBucket(bucket);
@@ -5404,6 +5425,8 @@ function gcStartWorker(nodes, edges, world, s = gcTab, viewSeed = null) {
         //: inputs can hold it instead of settling it again (`gcStartWorker`).
         s.settledSig = s.layoutSig;
         gcSavePositions(s);
+        //: Links drawn as hairlines while moving (`gcSetStroke`) are true at rest.
+        if (s.hairDrawn) gcRequestDraw(s);
         if (s.size === "full") graphMinimapQueuePaint();
         if (!gcAutoFitDone(s) && s.nodes.length) {
           gcSetAutoFitDone(s, true);

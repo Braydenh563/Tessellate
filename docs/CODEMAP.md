@@ -2,9 +2,9 @@
 
 Generated 2026-11-01 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7510, frontend ids 2643, CSS sections 517, backend routes 638, backend modules 8207, test files 1776, tests 15338, plan headings 990, app scripts 28, boot scripts 37, script files 211.
+Counts: frontend functions 7511, frontend ids 2643, CSS sections 517, backend routes 638, backend modules 8207, test files 1776, tests 15339, plan headings 990, app scripts 28, boot scripts 37, script files 211.
 
-## Frontend functions (7510)
+## Frontend functions (7511)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -4326,14 +4326,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `explainNote` | frontend/js/gesture-kit.js:239 |
 | `openChatModelPanel` | frontend/js/gesture-kit.js:54 |
 
-### frontend/js/graph-canvas.js (178)
+### frontend/js/graph-canvas.js (179)
 
 | Name | File:line |
 |---|---|
-| `gcAdditionHolds` | frontend/js/graph-canvas.js:5266 |
+| `gcAdditionHolds` | frontend/js/graph-canvas.js:5287 |
 | `gcAimNodes` | frontend/js/graph-canvas.js:2185 |
-| `gcArmTouchLasso` | frontend/js/graph-canvas.js:4473 |
-| `gcArriving` | frontend/js/graph-canvas.js:6963 |
+| `gcArmTouchLasso` | frontend/js/graph-canvas.js:4494 |
+| `gcArriving` | frontend/js/graph-canvas.js:6986 |
 | `gcArrows` | frontend/js/graph-canvas.js:873 |
 | `gcAutoFitDone` | frontend/js/graph-canvas.js:192 |
 | `gcAutoFitTurnedOn` | frontend/js/graph-canvas.js:1927 |
@@ -4341,33 +4341,33 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `gcBornAlpha` | frontend/js/graph-canvas.js:1971 |
 | `gcBowPoint` | frontend/js/graph-canvas.js:887 |
 | `gcBoxLineCount` | frontend/js/graph-canvas.js:744 |
-| `gcBoxPoints` | frontend/js/graph-canvas.js:4490 |
-| `gcCachedPositions` | frontend/js/graph-canvas.js:5595 |
+| `gcBoxPoints` | frontend/js/graph-canvas.js:4511 |
+| `gcCachedPositions` | frontend/js/graph-canvas.js:5618 |
 | `gcClampBox` | frontend/js/graph-canvas.js:658 |
-| `gcClickNode` | frontend/js/graph-canvas.js:5093 |
+| `gcClickNode` | frontend/js/graph-canvas.js:5114 |
 | `gcClipEdge` | frontend/js/graph-canvas.js:731 |
-| `gcCloseNodeMenu` | frontend/js/graph-canvas.js:4748 |
+| `gcCloseNodeMenu` | frontend/js/graph-canvas.js:4769 |
 | `gcCooling` | frontend/js/graph-canvas.js:2205 |
 | `gcCurvedLinks` | frontend/js/graph-canvas.js:842 |
-| `gcDraw` | frontend/js/graph-canvas.js:2693 |
+| `gcDraw` | frontend/js/graph-canvas.js:2712 |
 | `gcDrawComposed` | frontend/js/graph-canvas.js:2506 |
-| `gcDrawDrift` | frontend/js/graph-canvas.js:3576 |
-| `gcDrawEdgeHover` | frontend/js/graph-canvas.js:3589 |
+| `gcDrawDrift` | frontend/js/graph-canvas.js:3597 |
+| `gcDrawEdgeHover` | frontend/js/graph-canvas.js:3610 |
 | `gcDrawHeld` | frontend/js/graph-canvas.js:2237 |
-| `gcDrawLabels` | frontend/js/graph-canvas.js:3649 |
+| `gcDrawLabels` | frontend/js/graph-canvas.js:3670 |
 | `gcDrawLeaving` | frontend/js/graph-canvas.js:2034 |
 | `gcDrawLeavingLines` | frontend/js/graph-canvas.js:2025 |
 | `gcDrawLight` | frontend/js/graph-canvas.js:2614 |
 | `gcDrawNebulae` | frontend/js/graph-canvas.js:1197 |
-| `gcDrawPill` | frontend/js/graph-canvas.js:3626 |
-| `gcDrawSelection` | frontend/js/graph-canvas.js:4529 |
+| `gcDrawPill` | frontend/js/graph-canvas.js:3647 |
+| `gcDrawSelection` | frontend/js/graph-canvas.js:4550 |
 | `gcDrawTick` | frontend/js/graph-canvas.js:2215 |
 | `gcDrawTopicHulls` | frontend/js/graph-canvas.js:1360 |
-| `gcDrawTrace` | frontend/js/graph-canvas.js:3825 |
+| `gcDrawTrace` | frontend/js/graph-canvas.js:3846 |
 | `gcDrawTreemap` | frontend/js/graph-canvas.js:1246 |
-| `gcDropTargetFor` | frontend/js/graph-canvas.js:5088 |
+| `gcDropTargetFor` | frontend/js/graph-canvas.js:5109 |
 | `gcEaseOut` | frontend/js/graph-canvas.js:2059 |
-| `gcEdgeAtWorld` | frontend/js/graph-canvas.js:3908 |
+| `gcEdgeAtWorld` | frontend/js/graph-canvas.js:3929 |
 | `gcEdgeLook` | frontend/js/graph-canvas.js:910 |
 | `gcEdgeStyle` | frontend/js/graph-canvas.js:945 |
 | `gcEl` | frontend/js/graph-canvas.js:2347 |
@@ -4376,138 +4376,139 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `gcExportPng` | frontend/js/graph-canvas.js:2418 |
 | `gcFadeStep` | frontend/js/graph-canvas.js:2139 |
 | `gcFadeToward` | frontend/js/graph-canvas.js:2126 |
-| `gcFillSparks` | frontend/js/graph-canvas.js:3556 |
+| `gcFillSparks` | frontend/js/graph-canvas.js:3577 |
 | `gcFilterChip` | frontend/js/graph-canvas.js:1455 |
 | `gcFitInsets` | frontend/js/graph-canvas.js:1889 |
-| `gcForcesKey` | frontend/js/graph-canvas.js:5262 |
-| `gcFrameIntro` | frontend/js/graph-canvas.js:5610 |
+| `gcForcesKey` | frontend/js/graph-canvas.js:5283 |
+| `gcFrameIntro` | frontend/js/graph-canvas.js:5633 |
 | `gcGlideFinish` | frontend/js/graph-canvas.js:2264 |
 | `gcGlideStep` | frontend/js/graph-canvas.js:2245 |
 | `gcHexToRgb` | frontend/js/graph-canvas.js:1092 |
 | `gcHideTopic` | frontend/js/graph-canvas.js:1532 |
 | `gcHighlight` | frontend/js/graph-canvas.js:2372 |
-| `gcHoverCardEl` | frontend/js/graph-canvas.js:4910 |
-| `gcHoverCardFacts` | frontend/js/graph-canvas.js:4875 |
-| `gcHoverCardFill` | frontend/js/graph-canvas.js:4933 |
-| `gcHoverCardFrame` | frontend/js/graph-canvas.js:4988 |
+| `gcHoverCardEl` | frontend/js/graph-canvas.js:4931 |
+| `gcHoverCardFacts` | frontend/js/graph-canvas.js:4896 |
+| `gcHoverCardFill` | frontend/js/graph-canvas.js:4954 |
+| `gcHoverCardFrame` | frontend/js/graph-canvas.js:5009 |
 | `gcHoverChanged` | frontend/js/graph-canvas.js:2067 |
 | `gcHoverGrow` | frontend/js/graph-canvas.js:2078 |
 | `gcHoverStep` | frontend/js/graph-canvas.js:2086 |
 | `gcHubSpokeMin` | frontend/js/graph-canvas.js:408 |
 | `gcIsNote` | frontend/js/graph-canvas.js:380 |
 | `gcKeyboardId` | frontend/js/graph-canvas.js:204 |
-| `gcLabelCut` | frontend/js/graph-canvas.js:3786 |
+| `gcLabelCut` | frontend/js/graph-canvas.js:3807 |
 | `gcLabelPlates` | frontend/js/graph-canvas.js:854 |
-| `gcLabelText` | frontend/js/graph-canvas.js:3796 |
-| `gcLabelWidth` | frontend/js/graph-canvas.js:3754 |
+| `gcLabelText` | frontend/js/graph-canvas.js:3817 |
+| `gcLabelWidth` | frontend/js/graph-canvas.js:3775 |
 | `gcLabelZoom` | frontend/js/graph-canvas.js:861 |
-| `gcLegendEdgeKey` | frontend/js/graph-canvas.js:6388 |
-| `gcLegendSizeKey` | frontend/js/graph-canvas.js:6434 |
+| `gcLegendEdgeKey` | frontend/js/graph-canvas.js:6411 |
+| `gcLegendSizeKey` | frontend/js/graph-canvas.js:6457 |
 | `gcLightFrame` | frontend/js/graph-canvas.js:2607 |
 | `gcLineGrid` | frontend/js/graph-canvas.js:675 |
 | `gcLinkKindHidden` | frontend/js/graph-canvas.js:1446 |
 | `gcLinkKindRows` | frontend/js/graph-canvas.js:1471 |
-| `gcLinkSpark` | frontend/js/graph-canvas.js:3511 |
+| `gcLinkSpark` | frontend/js/graph-canvas.js:3532 |
 | `gcLinkWidth` | frontend/js/graph-canvas.js:867 |
 | `gcLitAlpha` | frontend/js/graph-canvas.js:2132 |
 | `gcMarkLeaving` | frontend/js/graph-canvas.js:1990 |
 | `gcMaxDegree` | frontend/js/graph-canvas.js:248 |
 | `gcMixRgb` | frontend/js/graph-canvas.js:1108 |
 | `gcMs` | frontend/js/graph-canvas.js:343 |
-| `gcNodeAtWorld` | frontend/js/graph-canvas.js:3884 |
+| `gcNodeAtWorld` | frontend/js/graph-canvas.js:3905 |
 | `gcNodeSprite` | frontend/js/graph-canvas.js:1143 |
 | `gcNoteDrawCost` | frontend/js/graph-canvas.js:2163 |
-| `gcOpenNodeTarget` | frontend/js/graph-canvas.js:5140 |
+| `gcOpenNodeTarget` | frontend/js/graph-canvas.js:5161 |
 | `gcOpenTopic` | frontend/js/graph-canvas.js:1752 |
-| `gcOrphansLabel` | frontend/js/graph-canvas.js:5718 |
+| `gcOrphansLabel` | frontend/js/graph-canvas.js:5741 |
 | `gcOverlayBoxes` | frontend/js/graph-canvas.js:1867 |
 | `gcPaintCore` | frontend/js/graph-canvas.js:1121 |
 | `gcPaintLayer` | frontend/js/graph-canvas.js:2488 |
-| `gcPinSelection` | frontend/js/graph-canvas.js:4584 |
+| `gcPinSelection` | frontend/js/graph-canvas.js:4605 |
 | `gcPlaceLabels` | frontend/js/graph-canvas.js:501 |
 | `gcPlacePill` | frontend/js/graph-canvas.js:791 |
 | `gcPlateAtWorld` | frontend/js/graph-canvas.js:1724 |
 | `gcPlateTitle` | frontend/js/graph-canvas.js:1731 |
-| `gcPointInPolygon` | frontend/js/graph-canvas.js:4452 |
-| `gcPositionsSig` | frontend/js/graph-canvas.js:5580 |
-| `gcPost` | frontend/js/graph-canvas.js:5172 |
+| `gcPointInPolygon` | frontend/js/graph-canvas.js:4473 |
+| `gcPositionsSig` | frontend/js/graph-canvas.js:5603 |
+| `gcPost` | frontend/js/graph-canvas.js:5193 |
 | `gcPruneSimilarity` | frontend/js/graph-canvas.js:444 |
-| `gcQuadAt` | frontend/js/graph-canvas.js:3501 |
+| `gcQuadAt` | frontend/js/graph-canvas.js:3522 |
 | `gcRadius` | frontend/js/graph-canvas.js:264 |
 | `gcReadTokens` | frontend/js/graph-canvas.js:322 |
 | `gcRefitForPanels` | frontend/js/graph-canvas.js:1919 |
-| `gcRelinkPairs` | frontend/js/graph-canvas.js:6943 |
+| `gcRelinkPairs` | frontend/js/graph-canvas.js:6966 |
 | `gcRenameTopicInline` | frontend/js/graph-canvas.js:1653 |
 | `gcRenderFilterChips` | frontend/js/graph-canvas.js:1484 |
 | `gcRequestDraw` | frontend/js/graph-canvas.js:2303 |
 | `gcRequestMinimapFrame` | frontend/js/graph-canvas.js:2329 |
-| `gcReshuffle` | frontend/js/graph-canvas.js:5225 |
+| `gcReshuffle` | frontend/js/graph-canvas.js:5246 |
 | `gcResize` | frontend/js/graph-canvas.js:958 |
-| `gcReveal` | frontend/js/graph-canvas.js:6988 |
-| `gcRevealAfterBalance` | frontend/js/graph-canvas.js:6976 |
+| `gcReveal` | frontend/js/graph-canvas.js:7011 |
+| `gcRevealAfterBalance` | frontend/js/graph-canvas.js:6999 |
 | `gcRimShare` | frontend/js/graph-canvas.js:1116 |
-| `gcRuleDomain` | frontend/js/graph-canvas.js:6174 |
-| `gcRuleKey` | frontend/js/graph-canvas.js:6156 |
-| `gcRuleScale` | frontend/js/graph-canvas.js:6180 |
-| `gcSavePositions` | frontend/js/graph-canvas.js:5583 |
+| `gcRuleDomain` | frontend/js/graph-canvas.js:6197 |
+| `gcRuleKey` | frontend/js/graph-canvas.js:6179 |
+| `gcRuleScale` | frontend/js/graph-canvas.js:6203 |
+| `gcSavePositions` | frontend/js/graph-canvas.js:5606 |
 | `gcSaveTopicName` | frontend/js/graph-canvas.js:1625 |
 | `gcSearchOver` | frontend/js/graph-canvas.js:2361 |
 | `gcSeatTopicPlates` | frontend/js/graph-canvas.js:1308 |
-| `gcSeedBesideNeighbours` | frontend/js/graph-canvas.js:5752 |
-| `gcSelectedNodes` | frontend/js/graph-canvas.js:4608 |
-| `gcSelectionChanged` | frontend/js/graph-canvas.js:4562 |
+| `gcSeedBesideNeighbours` | frontend/js/graph-canvas.js:5775 |
+| `gcSelectedNodes` | frontend/js/graph-canvas.js:4629 |
+| `gcSelectionChanged` | frontend/js/graph-canvas.js:4583 |
 | `gcSetAutoFitDone` | frontend/js/graph-canvas.js:196 |
 | `gcSetHovered` | frontend/js/graph-canvas.js:208 |
-| `gcShape` | frontend/js/graph-canvas.js:5208 |
-| `gcShowEmpty` | frontend/js/graph-canvas.js:5692 |
-| `gcShowEveryNote` | frontend/js/graph-canvas.js:5727 |
-| `gcShowNodeMenu` | frontend/js/graph-canvas.js:4805 |
+| `gcSetStroke` | frontend/js/graph-canvas.js:2704 |
+| `gcShape` | frontend/js/graph-canvas.js:5229 |
+| `gcShowEmpty` | frontend/js/graph-canvas.js:5715 |
+| `gcShowEveryNote` | frontend/js/graph-canvas.js:5750 |
+| `gcShowNodeMenu` | frontend/js/graph-canvas.js:4826 |
 | `gcShowTopic` | frontend/js/graph-canvas.js:1538 |
 | `gcSimilarityBand` | frontend/js/graph-canvas.js:487 |
 | `gcSimilarityCutoff` | frontend/js/graph-canvas.js:821 |
 | `gcSmooth` | frontend/js/graph-canvas.js:2121 |
-| `gcSpawnWorker` | frontend/js/graph-canvas.js:5278 |
-| `gcStartWorker` | frontend/js/graph-canvas.js:5291 |
+| `gcSpawnWorker` | frontend/js/graph-canvas.js:5299 |
+| `gcStartWorker` | frontend/js/graph-canvas.js:5312 |
 | `gcStill` | frontend/js/graph-canvas.js:353 |
-| `gcStop` | frontend/js/graph-canvas.js:5176 |
+| `gcStop` | frontend/js/graph-canvas.js:5197 |
 | `gcSurface` | frontend/js/graph-canvas.js:43 |
 | `gcTabHidden` | frontend/js/graph-canvas.js:2286 |
 | `gcTickDraw` | frontend/js/graph-canvas.js:2224 |
 | `gcTickSettles` | frontend/js/graph-canvas.js:2212 |
 | `gcTickSnaps` | frontend/js/graph-canvas.js:2166 |
-| `gcTogglePin` | frontend/js/graph-canvas.js:4427 |
-| `gcTooltip` | frontend/js/graph-canvas.js:5040 |
-| `gcTooltipMatches` | frontend/js/graph-canvas.js:5065 |
+| `gcTogglePin` | frontend/js/graph-canvas.js:4448 |
+| `gcTooltip` | frontend/js/graph-canvas.js:5061 |
+| `gcTooltipMatches` | frontend/js/graph-canvas.js:5086 |
 | `gcTopicColour` | frontend/js/graph-canvas.js:1759 |
 | `gcTopicCore` | frontend/js/graph-canvas.js:1746 |
 | `gcTopicMembers` | frontend/js/graph-canvas.js:1739 |
 | `gcTreeFrameNodes` | frontend/js/graph-canvas.js:1240 |
-| `gcTreeIndex` | frontend/js/graph-canvas.js:3870 |
+| `gcTreeIndex` | frontend/js/graph-canvas.js:3891 |
 | `gcTweenFromPrior` | frontend/js/graph-canvas.js:1941 |
 | `gcUnframed` | frontend/js/graph-canvas.js:2299 |
-| `gcUnlinkPairs` | frontend/js/graph-canvas.js:6936 |
+| `gcUnlinkPairs` | frontend/js/graph-canvas.js:6959 |
 | `gcVisibleAtTime` | frontend/js/graph-canvas.js:2405 |
-| `gcWireInteraction` | frontend/js/graph-canvas.js:3960 |
-| `gcWireLasso` | frontend/js/graph-canvas.js:4494 |
-| `gcWireNodeMenu` | frontend/js/graph-canvas.js:4752 |
-| `gcWireSelectionDock` | frontend/js/graph-canvas.js:4612 |
-| `gcWorkerParams` | frontend/js/graph-canvas.js:5183 |
-| `gcWorldFor` | frontend/js/graph-canvas.js:5643 |
-| `gcWorldPoint` | frontend/js/graph-canvas.js:3894 |
-| `gcWriteUnresolved` | frontend/js/graph-canvas.js:5155 |
-| `graphLegendRove` | frontend/js/graph-canvas.js:6199 |
-| `graphPaneColour` | frontend/js/graph-canvas.js:6728 |
-| `graphPaneDocumentNote` | frontend/js/graph-canvas.js:6864 |
-| `graphPaneEnsure` | frontend/js/graph-canvas.js:6706 |
-| `graphPaneFollow` | frontend/js/graph-canvas.js:6818 |
-| `graphPaneWire` | frontend/js/graph-canvas.js:6873 |
-| `graphRenderLegend` | frontend/js/graph-canvas.js:6216 |
-| `graphRenderStats` | frontend/js/graph-canvas.js:6458 |
-| `graphSyncLayoutChip` | frontend/js/graph-canvas.js:6506 |
-| `graphSyncTimeSlider` | frontend/js/graph-canvas.js:6533 |
-| `graphWireTimePlay` | frontend/js/graph-canvas.js:6572 |
-| `renderGraphCanvas` | frontend/js/graph-canvas.js:5783 |
-| `renderGraphPane` | frontend/js/graph-canvas.js:6734 |
+| `gcWireInteraction` | frontend/js/graph-canvas.js:3981 |
+| `gcWireLasso` | frontend/js/graph-canvas.js:4515 |
+| `gcWireNodeMenu` | frontend/js/graph-canvas.js:4773 |
+| `gcWireSelectionDock` | frontend/js/graph-canvas.js:4633 |
+| `gcWorkerParams` | frontend/js/graph-canvas.js:5204 |
+| `gcWorldFor` | frontend/js/graph-canvas.js:5666 |
+| `gcWorldPoint` | frontend/js/graph-canvas.js:3915 |
+| `gcWriteUnresolved` | frontend/js/graph-canvas.js:5176 |
+| `graphLegendRove` | frontend/js/graph-canvas.js:6222 |
+| `graphPaneColour` | frontend/js/graph-canvas.js:6751 |
+| `graphPaneDocumentNote` | frontend/js/graph-canvas.js:6887 |
+| `graphPaneEnsure` | frontend/js/graph-canvas.js:6729 |
+| `graphPaneFollow` | frontend/js/graph-canvas.js:6841 |
+| `graphPaneWire` | frontend/js/graph-canvas.js:6896 |
+| `graphRenderLegend` | frontend/js/graph-canvas.js:6239 |
+| `graphRenderStats` | frontend/js/graph-canvas.js:6481 |
+| `graphSyncLayoutChip` | frontend/js/graph-canvas.js:6529 |
+| `graphSyncTimeSlider` | frontend/js/graph-canvas.js:6556 |
+| `graphWireTimePlay` | frontend/js/graph-canvas.js:6595 |
+| `renderGraphCanvas` | frontend/js/graph-canvas.js:5806 |
+| `renderGraphPane` | frontend/js/graph-canvas.js:6757 |
 
 ### frontend/js/graph-worker.js (103)
 
@@ -22662,7 +22663,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15338)
+## Tests (15339)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23363,7 +23364,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_graph_fit_balance.py | 7 |
 | tests/test_graph_furniture_1029b.py | 5 |
 | tests/test_graph_glide.py | 2 |
-| tests/test_graph_gr1_1101.py | 2 |
+| tests/test_graph_gr1_1101.py | 3 |
 | tests/test_graph_grouping.py | 2 |
 | tests/test_graph_help_does_not_refit.py | 2 |
 | tests/test_graph_hover_card.py | 7 |
