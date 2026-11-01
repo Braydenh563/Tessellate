@@ -160,8 +160,8 @@
   display: none;
 }
 
-/* **The calculator** (`openCalculator`): the sheet recipe's card, a `.seg`
-   for its two modes, the box, the result as a live region (the figure large,
+/* **The calculator** (`openCalculator`): the sheet recipe's card, a tab strip
+   for its three modes (Work out, Convert units, the Equation editor), the box, the result as a live region (the figure large,
    how it was read muted under it), a four-column keypad of square-ish keys
    as ghost buttons (operators in the accent's text colour, = the filled one),
    then the last results as ghost buttons. */
@@ -196,6 +196,11 @@
 .calc-result-row .calc-result {
   flex: 1;
   min-width: 0;
+}
+
+/* Insert and Insert as equation, under the result when the dialog has a box. */
+.calc-insert-row {
+  flex-wrap: wrap;
 }
 
 .calc-figure {

@@ -1074,20 +1074,29 @@ MORE_TOPICS: list[dict] = [
         "keywords": (
             "calculator", "open the calculator", "keypad", "unit converter",
             "convert units", "currency converter", "work out a sum",
+            "calculator and equations", "equation tab", "insert as equation",
         ),
         "body": (
-            "The calculator works out sums, percentages and conversions with no "
-            "model, the same way /calc does. Open it from the command palette "
-            "(Ctrl+K, Calculator, or Convert units for the conversion tab; both "
-            "are also in the / menu), by typing /calc with nothing after it, or "
-            "with Open the calculator under an answer that worked something "
-            "out. Work out takes a sum typed or keyed (12 * (3 + 4), 15% of 80, "
-            "5 km to miles), shows the result as you type and says how it read "
-            "it; Enter or = keeps it in the list of earlier results, and Copy "
-            "result copies it. The keypad is one Tab stop: the arrow keys move "
-            "around it. Convert units picks a kind (length, weight, currency "
-            "and more), an amount and two units, with a swap button; currency "
-            "rates are set by hand and dated, not today's rate."
+            "Calculator and equations is one dialog with three tabs: Work out, "
+            "Convert units and Equation. Open it from the command palette "
+            "(Ctrl+K, Calculator and equations, or Convert units for the "
+            "conversion tab; both are also in the / menu), by typing /calc with "
+            "nothing after it, with Open the calculator under an answer that "
+            "worked something out, or with Alt+= in a note, a document, a "
+            "board's text, Chat or Ask, which opens it on the Equation tab over "
+            "that box. Work out takes a sum typed or keyed (12 * (3 + 4), 15% of "
+            "80, 5 km to miles), shows the result as you type and says how it "
+            "read it; Enter or = keeps it in the list of earlier results, and "
+            "Copy result copies it. When the dialog was opened from a text box, "
+            "Insert writes the result there and Insert as equation writes the sum "
+            "with its result as an equation. The keypad is one Tab stop: the "
+            "arrow keys move around it. Convert units picks a kind (length, "
+            "weight, currency and more), an amount and two units, with a swap "
+            "button; currency rates are set by hand and dated, not today's rate. "
+            "The Equation tab is the equation editor (see Equation editor): when "
+            "an equation is made of numbers, its value is shown under it, worked "
+            "out the same way as Work out. The arrow keys, Home and End move "
+            "between the tabs."
         ),
         "badge": {"label": "Chat", "tab": "chat"},
     },
@@ -2502,7 +2511,7 @@ TOPIC_META: dict[str, dict] = {
     "statistics": {"title": "Statistics", "path": "Dashboard, Activity heatmap, Statistics"},
     "chat-private": {"title": "Private chat", "path": "Chat, the gear under the message box, Private chat"},
     "timer": {"title": "Timer and stopwatch", "path": "Command palette, timer"},
-    "calculator": {"title": "The calculator", "path": "Command palette, Calculator"},
+    "calculator": {"title": "Calculator and equations", "path": "Command palette, Calculator and equations; Alt+= in a text box; /calc in Chat"},
     "manual": {"title": "The manual", "path": "Settings, Help, Open the manual"},
     "first-steps": {"title": "First steps and the sample notebook", "path": "Dashboard, Get started"},
     "live-captions": {"title": "How do I get live captions", "path": "Library, Recordings, Captions"},
@@ -3275,11 +3284,13 @@ MORE_TOPICS.append({
         "symbol", "integral", "matrix", "latex", "tex", "alt+=", "alt equals",
     ),
     "body": (
-        "The equation editor opens from /equation in a note, a document, a "
+        "The equation editor is the Equation tab of Calculator and equations "
+        "(see that topic). It opens from /equation in a note, a document, a "
         "board's text or the Chat box, from a document's Insert menu, or with "
-        "Alt+= there and in the Ask box (the same as Word's Alt+=); Ctrl+K, "
-        "Equation opens it over the box you were in, and the shortcuts list "
-        "has it under Tools. The equation is drawn as it will read, with "
+        "Alt+= there and in the Ask box (the same as Word's Alt+=), each over "
+        "the box you were in; Ctrl+K, Calculator and equations opens the same "
+        "dialog on Work out, and the shortcuts list has it under Tools. The "
+        "equation is drawn as it will read, with "
         "dotted boxes where things go: click a box to fill it, Tab goes to the "
         "next one and the arrows move through the equation. Type it plainly: "
         "a/b makes a fraction, ^ and _ a power or a subscript, and LaTeX such "
@@ -3292,10 +3303,12 @@ MORE_TOPICS.append({
         "the two stay in step. A drawn equation in a note or a document is "
         "edited where it stands: click it, Enter or a click outside keeps the "
         "change as one undo step, Escape leaves it as it was. Inline sits in "
-        "the sentence, Display on its own line; Ctrl+Enter inserts. It writes "
+        "the sentence, Display on its own line; Ctrl+Enter inserts, and with no "
+        "box behind the dialog the button copies the equation instead. An "
+        "equation made of numbers shows its value under the field. It writes "
         "TeX between dollar signs, so the note stays plain text. On a touch "
         "screen the field offers its own keyboard."
     ),
     "badge": {"label": "Library", "tab": "library"},
 })
-TOPIC_META["equation-editor"] = {"title": "Equation editor", "path": "Type /equation, or Alt+=, in a note, a document, a board's text or Chat"}
+TOPIC_META["equation-editor"] = {"title": "Equation editor", "path": "Calculator and equations, Equation tab; type /equation, or Alt+=, in a note, a document, a board's text or Chat"}
