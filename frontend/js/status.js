@@ -2992,7 +2992,7 @@ function renderSettings() {
   // The search engine is always adjustable: its recommended option is the
   // built-in one, which needs no Ollama. Only the Ollama half of it depends
   // on Ollama being up.
-  renderEmbeddingPicker(status);
+  if (typeof renderEmbeddingPicker === "function") renderEmbeddingPicker(status);
   //: Always, not only while a backend answers: the rows come from saved
   //: settings, and a person with the server down still needs to see and clear
   //: an override (WORLD_CLASS_PLAN 20, "Still open").

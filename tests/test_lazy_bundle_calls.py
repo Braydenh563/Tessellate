@@ -279,6 +279,7 @@ REACHED_AFTER_LOAD = {
     #: The installed models moved beside it (op4-1005): the same poll branch,
     #: the same reason; the box is hidden until a call draws it.
     "renderInstalledModels": "settingsUi, beside renderSuggested in the same status-poll branch, and Settings awaits the bundle first",
+    "renderEmbeddingPicker": "settingsUi, called from renderSettings beside renderSuggested, only while Settings is open, and Settings awaits the bundle first",
     #: editConflictPrompt's Compare awaits `ensureModule("library")` on the
     #: line before, so the diff builder is in the page when it is called.
     "docRenderDiff": "library, called by editConflictPrompt only after it awaits ensureModule('library')",

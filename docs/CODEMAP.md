@@ -1195,46 +1195,45 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `whenText` | frontend/js/status.js:1116 |
 | `withoutEndStop` | frontend/js/status.js:2521 |
 
-### frontend/js/ai-tools.js (36)
+### frontend/js/ai-tools.js (35)
 
 | Name | File:line |
 |---|---|
 | `_namesSignature` | frontend/js/ai-tools.js:60 |
-| `applyEmbeddingBackend` | frontend/js/ai-tools.js:773 |
+| `applyEmbeddingBackend` | frontend/js/ai-tools.js:692 |
 | `applyFeatureModel` | frontend/js/ai-tools.js:360 |
-| `applyPalette` | frontend/js/ai-tools.js:1185 |
-| `applyRestoredLook` | frontend/js/ai-tools.js:1120 |
-| `clearEmbeddingBackendLatch` | frontend/js/ai-tools.js:820 |
+| `applyPalette` | frontend/js/ai-tools.js:1104 |
+| `applyRestoredLook` | frontend/js/ai-tools.js:1039 |
+| `clearEmbeddingBackendLatch` | frontend/js/ai-tools.js:739 |
 | `featureModelChoiceLabel` | frontend/js/ai-tools.js:354 |
 | `featureModelMenuItem` | frontend/js/ai-tools.js:397 |
 | `featureModelRow` | frontend/js/ai-tools.js:336 |
 | `featureModelState` | frontend/js/ai-tools.js:344 |
 | `fillModelSelect` | frontend/js/ai-tools.js:64 |
-| `lookFromOtherWindow` | frontend/js/ai-tools.js:1155 |
-| `looksLikeEmbeddingModel` | frontend/js/ai-tools.js:769 |
-| `mirroredUiKeys` | frontend/js/ai-tools.js:933 |
+| `lookFromOtherWindow` | frontend/js/ai-tools.js:1074 |
+| `looksLikeEmbeddingModel` | frontend/js/ai-tools.js:688 |
+| `mirroredUiKeys` | frontend/js/ai-tools.js:852 |
 | `placeChatModelPanel` | frontend/js/ai-tools.js:216 |
-| `pullLookFromNotebook` | frontend/js/ai-tools.js:1141 |
+| `pullLookFromNotebook` | frontend/js/ai-tools.js:1060 |
 | `renderAutonomousModelPicker` | frontend/js/ai-tools.js:528 |
 | `renderChatActiveModelBadge` | frontend/js/ai-tools.js:141 |
 | `renderChatModelPicker` | frontend/js/ai-tools.js:97 |
-| `renderEmbeddingPicker` | frontend/js/ai-tools.js:543 |
 | `renderFeatureModels` | frontend/js/ai-tools.js:383 |
 | `renderOcrModelPicker` | frontend/js/ai-tools.js:509 |
-| `renderReindex` | frontend/js/ai-tools.js:705 |
+| `renderReindex` | frontend/js/ai-tools.js:624 |
 | `renderUtilityModelPicker` | frontend/js/ai-tools.js:261 |
 | `renderVisionModelPicker` | frontend/js/ai-tools.js:284 |
-| `saveUiState` | frontend/js/ai-tools.js:991 |
-| `seedUiStateFromServer` | frontend/js/ai-tools.js:1068 |
-| `syncEmbeddingPickerState` | frontend/js/ai-tools.js:642 |
+| `saveUiState` | frontend/js/ai-tools.js:910 |
+| `seedUiStateFromServer` | frontend/js/ai-tools.js:987 |
+| `syncEmbeddingPickerState` | frontend/js/ai-tools.js:561 |
 | `syncFeatureModelSelects` | frontend/js/ai-tools.js:431 |
 | `taskElapsed` | frontend/js/ai-tools.js:31 |
-| `uiStateFingerprint` | frontend/js/ai-tools.js:980 |
-| `uiStatePayload` | frontend/js/ai-tools.js:967 |
-| `uiStateRememberSynced` | frontend/js/ai-tools.js:1109 |
-| `watchMirroredUiKeys` | frontend/js/ai-tools.js:1036 |
+| `uiStateFingerprint` | frontend/js/ai-tools.js:899 |
+| `uiStatePayload` | frontend/js/ai-tools.js:886 |
+| `uiStateRememberSynced` | frontend/js/ai-tools.js:1028 |
+| `watchMirroredUiKeys` | frontend/js/ai-tools.js:955 |
 | `wireFeatureModelSelects` | frontend/js/ai-tools.js:491 |
-| `wireReindexButton` | frontend/js/ai-tools.js:684 |
+| `wireReindexButton` | frontend/js/ai-tools.js:603 |
 
 ### frontend/js/phone-shell.js (63)
 
@@ -6416,7 +6415,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderHealthBlock` | frontend/js/settings-health.js:3 |
 | `renderSamplingRows` | frontend/js/settings-health.js:83 |
 
-### frontend/js/settings-models.js (33)
+### frontend/js/settings-models.js (34)
 
 | Name | File:line |
 |---|---|
@@ -6449,6 +6448,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `putModelHardware` | frontend/js/settings-models.js:688 |
 | `refreshModelHardware` | frontend/js/settings-models.js:661 |
 | `renderCustomCards` | frontend/js/settings-models.js:727 |
+| `renderEmbeddingPicker` | frontend/js/settings-models.js:819 |
 | `renderInstalledModels` | frontend/js/settings-models.js:513 |
 | `renderSuggested` | frontend/js/settings-models.js:529 |
 | `saveModelHardware` | frontend/js/settings-models.js:694 |

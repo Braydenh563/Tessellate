@@ -890,10 +890,10 @@ function askOpenContext() {
   const out = {};
   //: A document or board in front of the person is what "this" means, the
   //: subject the popup agent already names (`agentOpenSubject`, palette.js).
-  const subject = typeof agentOpenSubject === "function" ? agentOpenSubject() : null;
-  if (subject?.kind === "document") out.open_document_id = subject.id;
-  else if (subject?.kind === "map" || subject?.kind === "board") out.open_board_id = subject.id;
-  if (out.open_document_id || out.open_board_id) {
+  const subject = agentOpenSubject();
+  const key = { document: "open_document_id", map: "open_board_id", board: "open_board_id" }[subject?.kind];
+  if (key) {
+    out[key] = subject.id;
     if (activeCategory) out.open_category = activeCategory;
     return out;
   }
