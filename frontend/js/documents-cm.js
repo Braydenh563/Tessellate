@@ -601,7 +601,7 @@ function docLivePlugin(CM) {
     //: and a copy per visible line would be a copy per keystroke per line.
     let sourceText = null;
     const source = () => {
-      if (sourceText === null) sourceText = doc.toString();
+      if (sourceText === null) sourceText = docStr(doc);
       return sourceText;
     };
     //: A table is drawn once, from whichever of its lines the viewport reaches
@@ -1103,7 +1103,7 @@ function docLivePlugin(CM) {
         let tocEntries = null;
         scan(/^[ \t]*\[toc\][ \t]*$/gim, (match, from, to) => {
           if (rangeRevealed(from, to)) return;
-          if (!tocEntries) tocEntries = mdTocEntries(doc.toString());
+          if (!tocEntries) tocEntries = mdTocEntries(docStr(doc));
           ranges.push(Decoration.replace({ widget: new DocTocWidget(tocEntries) }).range(from, to));
         });
       }

@@ -49,9 +49,11 @@ class Content(Protocol):
     def find_any(self, session: Session, row_id: int) -> object | None:
         """The row, binned or not, or None if there is none to this caller."""
 
-    def is_binned(self, session: Session, row: object) -> bool: ...
+    def is_binned(self, session: Session, row: object) -> bool:
+        """Whether the row sits in the bin."""
 
-    def writable(self, session: Session, row_id: int) -> object: ...
+    def writable(self, session: Session, row_id: int) -> object:
+        """The live row, or a 404 for none and a 409 for one in the bin."""
 
     def restore(self, session: Session, row: object) -> None:
         """Out of the bin, logged; flushes, never commits. Only called on a

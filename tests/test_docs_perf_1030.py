@@ -100,3 +100,115 @@ def test_visible_tab_runs_the_facts_pass_once_for_two_pauses():
 def test_entering_the_tab_runs_a_stale_pass():
     source = (JS / "documents.js").read_text(encoding="utf-8")
     assert "if (docFactsStale && currentDoc) runDocFacts();" in _function(source, "async function loadDocuments(")
+
+
+def test_the_live_view_reads_the_text_through_the_per_version_cache():
+    """D18: a table or [TOC] in view joined the whole document on every keystroke
+    (and again for the facts pass); `docStr` makes it one join per version."""
+    cm = (JS / "documents-cm.js").read_text(encoding="utf-8")
+    assert not re.search(r"\bdoc\.toString\(\)", cm), "documents-cm.js reads the text through docStr(doc)"
+    assert "sourceText = docStr(doc)" in cm and "mdTocEntries(docStr(doc))" in cm
+
+
+def test_a_long_document_waits_longer_for_its_facts_and_the_prose_window_is_the_view():
+    """D20: the wait grows with the text (one pass per burst, not per key), and the
+    prose pass reads 14,000 characters around the view, not the 30,000 it once did."""
+    source = (JS / "documents.js").read_text(encoding="utf-8")
+    assert "return len > 120000 ? 600 : len > 40000 ? 300 : 120;" in _function(source, "function docFactsDelay(")
+    window = _function(source, "function docProseWindow(")
+    assert "const view = 14000;" in window and "DOC_PROSE_WINDOW_CHARS / 2" not in window
+
+
+@needs_node
+def test_the_rule_pass_is_kept_only_for_an_answer_that_changes_nothing():
+    """D18 to D20: the grammar and link-offer answers repaint with `again`, and get
+    the findings the key's own pass made; any other caller runs the rules afresh."""
+    source = (JS / "documents.js").read_text(encoding="utf-8")
+    start = source.index("const docProse = {")
+    body = source[start : source.index("\n};\n", start) + 4]
+    got = _node(
+        """
+const docProseIgnored = new Set(); let docWordlist = new Set(["a"]);
+const docDictionary = () => new Set(), docSpellingVariant = () => "us", docCheckLinkText = () => true;
+let runs = 0;
+const docProseFindings = (t) => { runs += 1; return [{ start: 0, end: t.length }]; };
+"""
+        + body
+        + """
+const first = docProse.rules("some text", false);
+first[0].start += 100;                       // the caller shifts offsets: the memo must not move
+const again = docProse.rules("some text", true);
+const other = docProse.rules("some other text", true);
+const fresh = docProse.rules("some other text", false);
+docProseIgnored.add("x");
+const ignored = docProse.rules("some other text", true);
+console.log(JSON.stringify({ runs, again: again[0].start, other: other[0].end, fresh: fresh.length, ignored: ignored.length }));
+"""
+    )
+    # first: 1 run; again: memo; other text: 1 run; fresh: 1 run; a dismissal changes the key: 1 run
+    assert got == {"runs": 4, "again": 0, "other": 15, "fresh": 1, "ignored": 1}
+
+
+@needs_node
+def test_editor_listeners_are_one_per_type_and_idle_on_another_tab():
+    """D21: what only the editor needs registers through `docListen`: one document
+    listener per type and phase, nothing run while the Documents tab is hidden, the
+    handlers in the order added, one that throws not stopping the rest."""
+    source = (JS / "documents.js").read_text(encoding="utf-8")
+    got = _node(
+        """
+let hidden = false;
+const registered = [];
+const document = { addEventListener(type, fn, capture) { registered.push([type, capture, fn]); } };
+const $ = () => ({ classList: { contains: () => hidden } });
+const reported = [];
+globalThis.window = { reportError: (e) => reported.push(e.message) };
+"""
+        + _function(source, "function docListen(")
+        + """
+const ran = [];
+docListen("input", () => ran.push("a"));
+docListen("input", () => { ran.push("b"); throw new Error("boom"); });
+docListen("input", () => ran.push("c"));
+docListen("keydown", () => ran.push("k"), true);
+docListen("keydown", () => ran.push("k2"), false);
+const input = registered.find(([t]) => t === "input")[2];
+hidden = true; input({});
+const whileHidden = ran.length;
+hidden = false; input({});
+for (const key of ["a", "b", "c"]) docListen("selectionchange", () => {});
+console.log(JSON.stringify({ listeners: registered.length, types: registered.map(([t, c]) => t + ":" + c), whileHidden, ran, reported }));
+"""
+    )
+    assert got["listeners"] == 4 and got["types"] == ["input:false", "keydown:true", "keydown:false", "selectionchange:false"]
+    assert got["whileHidden"] == 0 and got["ran"] == ["a", "b", "c"] and got["reported"] == ["boom"]
+
+
+def test_the_editor_only_listeners_go_through_docListen():
+    source = (JS / "documents.js").read_text(encoding="utf-8")
+    raw = re.findall(r'^document\.addEventListener\(\s*"(input|selectionchange|focusout|dblclick|mouseover)"', source, re.M)
+    assert not raw, f"{raw}: register editor-only handlers with docListen (D21)"
+    assert len(re.findall(r"^docListen\(", source, re.M)) >= 10
+
+
+@needs_node
+def test_a_watcher_wired_twice_leaves_one_observer():
+    """D37: the lock watcher keeps its observer and lets go of the old one before a
+    second, so wiring it again cannot stack observers (the live count stays 1)."""
+    source = (JS / "documents.js").read_text(encoding="utf-8")
+    got = _node(
+        """
+const live = new Set(); let made = 0;
+class MutationObserver { constructor() { made += 1; } observe() { live.add(this); } disconnect() { live.delete(this); } }
+globalThis.MutationObserver = MutationObserver;
+const overlay = { classList: { contains: () => true }, dataset: {} };
+const document = { getElementById: () => overlay };
+let docCmView = null, docHistoryOwner = null, docHistories = new Map();
+"""
+        + _function(source, "function docWatchLock(")
+        + """
+for (let i = 0; i < 5; i++) docWatchLock();
+console.log(JSON.stringify({ made, live: live.size }));
+"""
+    )
+    assert got == {"made": 5, "live": 1}

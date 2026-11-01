@@ -849,6 +849,8 @@ async function docAssistAsk(action) {
       signal: docAssist.controller.signal,
       body: JSON.stringify({ action, code: target.text, question, diagnostic }),
     });
+    //: The proposal is drawn as a diff, which documents-history.js holds.
+    await docHistoryReady();
     docAssistShow(body, action, target);
   } catch (error) {
     if (error.name !== "AbortError") docAssistSay(error.message, { error: true });
