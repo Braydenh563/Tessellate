@@ -22,7 +22,9 @@ def _block(source: str, start: str, end: str) -> str:
 
 
 def test_a_note_card_reaches_the_graph_and_the_chat():
-    menu = _block(APP, 'label: "ph:hourglass-medium Forgotten notes like this"', "const addItems = [")
+    # The menu is grouped by task (audit 1031 N20): Ask sits in the first
+    # group, the graph in the last, both before the Add rows.
+    menu = _block(APP, "function fillEntryMenu(menu, entry) {", "const addItems = [")
     assert "showNoteInGraph(entry.id)" in menu
     assert "askAtlasAboutNote(entry)" in menu
 
