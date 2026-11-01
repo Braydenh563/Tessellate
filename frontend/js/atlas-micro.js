@@ -54,9 +54,11 @@ function atlasMicroMay(box) {
   for (const c of buddy.classList) if (c.startsWith("nmb-act-") || c === "nmb-sleep" || c === "nmb-walking" || c === "nm-buddy-dragging") return false;
   return true;
 }
-//: Plays `frames` on `el`, added to whatever else moves that property.
-function atlasMicroPlay(el, frames, ms) {
-  el?.animate?.(frames, { duration: ms, easing: "ease-in-out", composite: "add" });
+//: Plays `frames` on `el`, added to whatever else moves that property
+//: (`add`, which the compositor cannot run, so only a gesture of a fraction
+//: of a second) or, with `add` false, in place of it.
+function atlasMicroPlay(el, frames, ms, add = true) {
+  el?.animate?.(frames, { duration: ms, easing: "ease-in-out", ...(add ? { composite: "add" } : {}) });
 }
 function atlasMicroGlance(box) {
   const field = document.activeElement;
@@ -80,15 +82,25 @@ function atlasMicroDo(kind, box) {
     const d = sign * (1.8 + Math.random() * 2.4);
     const ms = 1700 + Math.random() * 1900;
     (box.atlasRig?.heads || []).forEach((head, k) => {
-      const a = `${(d * (k ? 1.3 : 1)).toFixed(2)}deg`;
-      atlasMicroPlay(head, [{ rotate: "0deg" }, { rotate: a, offset: 0.3 }, { rotate: a, offset: 0.72 }, { rotate: "0deg" }], ms);
+      //: The head's own `rotate` is the rig's (written every wake), and an
+      //: svg part's individual `rotate` is the main thread's whatever the
+      //: composite; `transform` on it is the compositor's, and the head has
+      //: none of its own, so the tilt replaces it (audit 1031 row 17).
+      const a = `rotate(${(d * (k ? 1.3 : 1)).toFixed(2)}deg)`;
+      atlasMicroPlay(head, [{ transform: "none" }, { transform: a, offset: 0.3 }, { transform: a, offset: 0.72 }, { transform: "none" }], ms, false);
     });
     return;
   }
   if (kind === "shift") {
     const dx = sign * (0.5 + Math.random() * 0.6);
-    const a = { translate: `${dx.toFixed(2)}px 0px`, rotate: `${(dx * 0.7).toFixed(2)}deg` };
-    atlasMicroPlay(box.querySelector(".atl-lw-body"), [{ translate: "0px 0px", rotate: "0deg" }, { ...a, offset: 0.4 }, { ...a, offset: 0.65 }, { translate: "0px 0px", rotate: "0deg" }], 2000 + Math.random() * 1400);
+    //: **A shift moves only `translate`, and replaces** (audit 1031 row 17):
+    //: the body's sway loop owns `rotate`, and a Web Animation that adds to
+    //: it (`composite: "add"`) or shares its property cannot be composited,
+    //: so every shift put the whole figure's loops back on the main thread
+    //: for its two to three seconds (60 style recalcs a second, measured).
+    //: The body has no translate of its own, so a replacing one needs no add.
+    const a = { translate: `${dx.toFixed(2)}px 0px` };
+    atlasMicroPlay(box.querySelector(".atl-lw-body"), [{ translate: "0px 0px" }, { ...a, offset: 0.4 }, { ...a, offset: 0.65 }, { translate: "0px 0px" }], 2000 + Math.random() * 1400, false);
     return;
   }
   if (kind === "ear") {

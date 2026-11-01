@@ -68,7 +68,7 @@
    every tab but its own, see `atlasMotionOK`): not drawn, so nothing of it
    runs. Carried or thrown, as above. */
 :root[data-atlas-lite] .atl-figure-box :is(.atl-orbit-arm, .atl-orbiter, .atl-lw-neb, .atl-lw-neb-front, .atl-lw-tail, .atl-lw-hair, .atl-lw-lower, .atl-layer-neb, .atl-layer-neb-front, .atl-layer-lower, .atl-layer-front, .atl-ring-spin),
-#nm-buddy.nmb-away :is(.nm-atlas *, .atl-lw, .atl-lw-breathe, .atl-figure-box, .atl-orbits *),
+#nm-buddy.nmb-away :is(.nm-atlas, .nm-atlas *, .atl-lw, .atl-lw-breathe, .atl-figure-box, .atl-orbits *),
 #nm-buddy.nm-buddy-dragging :is(.atl-lw, .atl-lw-breathe, .atl-orbit-arm, .atl-orbiter) { animation-play-state: paused !important; }
 :root[data-atlas-lite] .atl-orbiter :is(.atl-orbiter-glow, .atl-orbiter-swirl) { display: none; }
 

@@ -2,7 +2,7 @@
 
 Generated 2026-11-01 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7465, frontend ids 2623, CSS sections 517, backend routes 633, backend modules 8159, test files 1757, tests 15218, plan headings 989, app scripts 28, boot scripts 36, script files 208.
+Counts: frontend functions 7465, frontend ids 2623, CSS sections 517, backend routes 633, backend modules 8159, test files 1758, tests 15221, plan headings 989, app scripts 28, boot scripts 36, script files 208.
 
 ## Frontend functions (7465)
 
@@ -2185,14 +2185,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `atlasMicroDo` | frontend/js/atlas-micro.js:76 |
+| `atlasMicroDo` | frontend/js/atlas-micro.js:78 |
 | `atlasMicroGap` | frontend/js/atlas-micro.js:27 |
-| `atlasMicroGlance` | frontend/js/atlas-micro.js:61 |
+| `atlasMicroGlance` | frontend/js/atlas-micro.js:63 |
 | `atlasMicroMay` | frontend/js/atlas-micro.js:50 |
 | `atlasMicroPick` | frontend/js/atlas-micro.js:31 |
-| `atlasMicroPlay` | frontend/js/atlas-micro.js:58 |
-| `atlasMicroStart` | frontend/js/atlas-micro.js:130 |
-| `atlasMicroTick` | frontend/js/atlas-micro.js:118 |
+| `atlasMicroPlay` | frontend/js/atlas-micro.js:60 |
+| `atlasMicroStart` | frontend/js/atlas-micro.js:142 |
+| `atlasMicroTick` | frontend/js/atlas-micro.js:130 |
 
 ### frontend/js/atlas-motion.js (18)
 
@@ -22414,7 +22414,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15218)
+## Tests (15221)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -22490,6 +22490,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_asset_strip.py | 20 |
 | tests/test_atlas_access.py | 6 |
 | tests/test_atlas_breath_687.py | 4 |
+| tests/test_atlas_composite_1101.py | 3 |
 | tests/test_atlas_frame_reads.py | 5 |
 | tests/test_atlas_idle_cost_1031.py | 6 |
 | tests/test_atlas_lids_1301.py | 5 |
