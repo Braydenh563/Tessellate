@@ -107,8 +107,14 @@ def test_the_focus_call_with_no_words_does_not_touch_the_database(session, fake_
     """INBOX 1508: `q: ""` has nothing to embed, so a ready model returns
     before the user's "today" is read."""
 
+    touched: list[str] = []
+
     class NoSession:
+        #: Records, then refuses, every attribute read; the list catches a
+        #: read that a `getattr(..., default)` would otherwise swallow.
         def __getattr__(self, name):
-            raise AssertionError("the database was read for an empty question")
+            touched.append(name)
+            raise AttributeError(name)
 
     assert search_manager.warm(NoSession(), "", fake_embeddings) is False
+    assert not touched, f"the database was read for an empty question: {touched}"
