@@ -27,7 +27,8 @@ from tessellate.ai.model_manager import (
 )
 from tessellate.ai import ollama_client
 from tessellate.ai.ollama_client import OllamaError
-from tessellate.core import background, deps, hardware, ocr, security
+from tessellate.core import deps, hardware, ocr, security
+from tessellate.core import jobs as bgpool
 from tessellate.core.deps import get_session
 from tessellate.core.logbuffer import safe_value
 from tessellate.entry.manager import log_action
@@ -173,7 +174,7 @@ def prewarm_installed() -> None:
 def _start_flight(client, key: tuple[str, str]) -> "_ListFlight":  # noqa: ANN001
     """Begin the one list request for `key`; the caller holds `_installed_lock`."""
     flight = _installed_flights[key] = _ListFlight()
-    background.start("models-list", functools.partial(_run_list_flight, client, key, flight))
+    bgpool.thread("models-list", functools.partial(_run_list_flight, client, key, flight))
     return flight
 
 
@@ -340,7 +341,7 @@ def warm_filing() -> dict:
     #: The graphics card is read by starting a program (up to 3s, cached five
     #: minutes): read it now, so Settings' first model list does not wait on it
     #: (INBOX 1415).
-    background.start("gpu-probe", hardware.detect_gpus)
+    bgpool.thread("gpu-probe", hardware.detect_gpus)
     ollama = deps.get_ollama()
     #: Only when a model answers: with none the job returned at once, yet
     #: still showed "Warming up the filing model" in the bell and Activity on

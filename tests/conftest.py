@@ -16,7 +16,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from tessellate.ai import model_manager, spelling
-from tessellate.core import background, deps, extras, jobs, taskhistory, vault
+from tessellate.core import deps, extras, jobs, taskhistory, vault
 
 #: Loaded for what they register (the typed reader, the help topics), which a
 #: test that classifies a question without the chat route would otherwise miss.
@@ -124,7 +124,7 @@ def app_state(tmp_path, monkeypatch):
     # caption job after an attach) would otherwise rebuild the app state from
     # the repo's `data/` once it is reset.
     jobs.shutdown(2.0)
-    background.join_all()
+    jobs.join_threads()
     extras.reset_for_tests()
     vault.close()
     deps.reset_app_state()

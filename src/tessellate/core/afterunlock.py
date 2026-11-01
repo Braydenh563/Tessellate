@@ -22,7 +22,7 @@ import threading
 import time
 from collections.abc import Callable
 
-from tessellate.core import background
+from tessellate.core import jobs
 
 logger = logging.getLogger("tessellate.afterunlock")
 
@@ -69,7 +69,7 @@ def fire() -> None:
         work = list(_pending)
         _pending.clear()
     if work:
-        background.start("after-unlock", lambda: _run_all(work))
+        jobs.thread("after-unlock", lambda: _run_all(work))
 
 
 def _run_all(work: list[tuple[str, Callable[[], None]]]) -> None:

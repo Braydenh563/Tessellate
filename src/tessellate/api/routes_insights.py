@@ -20,7 +20,7 @@ from sqlalchemy.orm import Session
 from tessellate.ai import backend_hint, greeting_compose, librarian
 from tessellate.ai.answer_trim import trim_assistant_padding
 from tessellate.ai.ollama_client import OllamaError
-from tessellate.core import background, deps
+from tessellate.core import deps, jobs
 from tessellate.core.config import days_from_today, user_now
 from tessellate.core.database import Category, Entry, utcnow
 from tessellate.core.deps import get_session
@@ -216,7 +216,7 @@ def _greeting_within(config, ollama, block: str, fallback: dict) -> dict:  # noq
             return flight.result()
         except Exception:  # noqa: BLE001  # a failed late call is the composed greeting
             return fallback
-    flight = background.future("greeting", _ai_greeting, config, ollama, block, fallback)
+    flight = jobs.future("greeting", _ai_greeting, config, ollama, block, fallback)
     _GREETING_FLIGHT[block] = flight
     try:
         result = flight.result(timeout=GREETING_WAIT)

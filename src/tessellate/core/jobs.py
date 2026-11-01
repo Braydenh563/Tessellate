@@ -58,6 +58,7 @@ import queue
 import threading
 import time
 from collections.abc import Callable, Iterator
+from concurrent.futures import Future
 
 from tessellate.core import jobruns, jobstore, model_gate, origin
 
@@ -750,6 +751,85 @@ def readings() -> list[dict]:
         }
         for job in _seated("here")
     ]
+
+
+# -- jobs off the pool: a thread of its own (WORLD_CLASS_PLAN 26.2, decision 58)
+#
+# A thread nobody can list or stop is the bug behind "the app would not quit"
+# and "a second embedding pass started under the first". Work with progress
+# goes through the pool and `jobruns`; a one-shot or a watcher that does not
+# is a `thread` Job: `thread(name, target, stop=...)` runs `target` on a
+# daemon thread and keeps the Job until it returns, so the Tasks panel and a
+# shutdown can ask what is running and ask it to stop. `stop` is optional on
+# purpose: a thread that ends by itself within seconds (a DNS probe) has
+# nothing to stop; a long-lived one names how it stops.
+
+
+def thread(name: str, target: Callable[[], None], stop: Callable[[], None] | None = None) -> threading.Thread:
+    """Run `target` on a named daemon thread, listed as a Job until it returns."""
+    job = Job(next(_side_seq), name, None, name=name, seat="thread", stopper=stop)
+
+    def run() -> None:
+        try:
+            target()
+        finally:
+            _unseat(job)
+
+    job.thread = threading.Thread(target=run, name=name, daemon=True)
+    _seat(job)
+    job.thread.start()
+    return job.thread
+
+
+def future(name: str, fn: Callable, *args) -> Future:  # noqa: ANN002
+    """`fn(*args)` on a listed daemon thread, its result in a Future: a call
+    that may hang (a model, a web page) waits under a deadline and is then
+    left to finish, never holding the app open when it quits."""
+    out: Future = Future()
+
+    def run() -> None:
+        try:
+            out.set_result(fn(*args))
+        except Exception as exc:  # noqa: BLE001  # carried to whoever reads the result
+            out.set_exception(exc)
+
+    thread(name, run)
+    return out
+
+
+def threads() -> list[dict]:
+    """The thread Jobs running now: name, seconds up, and whether one can be stopped."""
+    now = time.time()
+    return [
+        {"name": job.name, "seconds": round(now - job.queued_at, 1), "stoppable": job.stoppable}
+        for job in _seated("thread")
+        if job.thread is not None and job.thread.is_alive()
+    ]
+
+
+def stop_threads() -> list[str]:
+    """Ask every thread Job that can stop to do so; the names asked."""
+    asked = []
+    for job in _seated("thread"):
+        if not job.stoppable:
+            continue
+        try:
+            job.stop()
+            asked.append(job.name)
+        except Exception:  # noqa: BLE001  # one stuck stopper must not keep the others running
+            logger.warning("could not stop %s", job.name, exc_info=True)
+    return asked
+
+
+def join_threads(timeout: float = 5.0) -> None:
+    """Wait up to `timeout` seconds for the one-shot thread Jobs (no stopper,
+    they end by themselves): a test that tears the app state down must not
+    leave one to rebuild it (and a `./data` folder) from the thread. A
+    long-lived watcher names its own stop and is skipped."""
+    deadline = time.time() + timeout
+    for job in _seated("thread"):
+        if job.thread is not None and not job.stoppable:
+            job.thread.join(max(0.0, deadline - time.time()))
 
 
 # -- the app's one pool -------------------------------------------------------

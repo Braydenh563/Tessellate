@@ -73,7 +73,7 @@ from tessellate.ai.grounding import (
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.api import chat_extra
 from tessellate.api.schemas import EntryOut
-from tessellate.core import activity, background, clock, deps, docview, model_gate, private_turn
+from tessellate.core import activity, clock, deps, docview, jobs, model_gate, private_turn
 from tessellate.core.database import (
     LIKE_ESCAPE,
     Attachment,
@@ -2961,7 +2961,7 @@ def _web_pages(websearch, results: list[dict]) -> list[dict]:  # noqa: ANN001
         except websearch.WebSearchError:
             return None
 
-    futures = [background.future("web page", read, hit) for hit in hits]
+    futures = [jobs.future("web page", read, hit) for hit in hits]
     deadline = time.monotonic() + WEB_PAGES_DEADLINE
     pages: list[dict] = []
     for i, (hit, future) in enumerate(zip(hits, futures)):

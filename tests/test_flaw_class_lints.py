@@ -37,10 +37,10 @@ THREAD_SITES = {
     "api/app.py": 1,
     "api/routes_update.py": 2,
     "core/embedmodels.py": 1,
-    "core/background.py": 1,  # the registry: `start` is the one place a registered thread begins
     "core/lanserve.py": 1,  # lan-first-byte: one selector thread for every connection waiting on its first byte, started on the first wait
     # core/extras.py: 0 since INBOX 595, its installs run on the pool's `install` lane
-    "core/jobs.py": 2,  # the pool itself and the durable leases' heartbeat: the one place this is the design
+    #: 3 since INBOX 1502: background.py's one call moved here with its registry (`jobs.thread`); the total is unchanged.
+    "core/jobs.py": 3,  # the pool, the durable leases' heartbeat, and `jobs.thread`: the one place this is the design
     "core/security.py": 1,
     "search/searxng_install.py": 1,
     "search/searxng_manager.py": 1,

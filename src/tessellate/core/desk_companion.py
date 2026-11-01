@@ -36,7 +36,7 @@ import sys
 import threading
 from typing import Any, Callable
 
-from tessellate.core import background
+from tessellate.core import jobs
 
 logger = logging.getLogger(__name__)
 
@@ -221,7 +221,7 @@ class DeskCompanion:
         #: Where `sync` runs when a window event asks for it: pywebview waits
         #: for a new window to be shown, which on the thread that is handling
         #: an event of the main window would wait for itself.
-        self._dispatch = dispatch or background.start
+        self._dispatch = dispatch or jobs.thread
         self.window: Any = None
         self.main_hidden = False
         self.closing = False

@@ -143,11 +143,10 @@ THREAD_SITES = {
     "api/routes_update.py": "collect: app-update",
     "api/app.py": "jobruns: backup",
     "__main__.py": "infrastructure: the server and the tray icon",
-    "core/jobs.py": "collect: job- kinds (the pool) and its heartbeat",
+    "core/jobs.py": "collect: job- kinds (the pool) and its heartbeat; `jobs.thread`, the thread Jobs: threads() lists, stop_threads() at quit; callers reach Activity (transcription: activity.start, warm-up: collect embeddings)",
     "core/embedmodels.py": "collect: embedding-model",
     "core/security.py": "infrastructure: a DNS probe of two seconds",
     "core/lanserve.py": "infrastructure: the one select thread that waits for a LAN connection first byte",
-    "core/background.py": "the registry: running() lists, stop_all() at quit; callers reach Activity (transcription: activity.start, warm-up: collect embeddings)",
 }
 
 
