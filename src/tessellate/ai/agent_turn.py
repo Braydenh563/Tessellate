@@ -220,7 +220,6 @@ _HANDOFF_RECOVERY = {
         "just answer without calling this."
     ),
 }
-_ASK_RECOVERY = _HANDOFF_RECOVERY["ask_user"]  # kept: named in tests and §33
 
 # What the model is told when a destructive call is parked for approval.
 AWAITING_CONFIRMATION = {

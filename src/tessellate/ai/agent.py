@@ -27,7 +27,6 @@ from tessellate.ai.agent_policy import (  # noqa: F401  (every name still reache
     _CARRIED_ON,
     _CATEGORY_NAME_FIELD,
     _CLAIM_MATCHERS,
-    _CLAIM_PATTERN,
     _CLAIMANT,
     _CLAIMED_ACTIONS,
     _CONDITIONAL,
@@ -39,8 +38,6 @@ from tessellate.ai.agent_policy import (  # noqa: F401  (every name still reache
     _INTENT_PATTERN,
     _NOTE_ID_FIELD,
     _OUTBOUND_TOOLS,
-    _OUTSIDE_TOOLS,
-    _PARK_WHEN_TAINTED,
     _PASSIVE,
     _PASSIVE_MATCHERS,
     _RECOVERY_HINTS,
@@ -104,12 +101,14 @@ from tessellate.ai.agent_policy import (  # noqa: F401  (every name still reache
     _touched_kind,
     _TurnCard,
     announces_unacted_tool,
+    claims_a_write,
+    parks_when_tainted,
+    reads_outside,
     size_tier,
     tools_guide,
     unsupported_claims,
 )
 from tessellate.ai.agent_turn import (  # noqa: F401
-    _ASK_RECOVERY,
     _CANVAS_TOOLS,
     _CANVAS_WRITE,
     _CATEGORY_TREE_TOOLS,
@@ -287,7 +286,7 @@ def _run_and_record(
         # Its result is now in the messages above, and stays valid
         # until something writes.
         state.fresh_reads.add(signature)
-    if "error" not in result and name in _OUTSIDE_TOOLS:
+    if "error" not in result and reads_outside(name):
         state.outside = True
     if "error" not in result and name == "web_search":
         state.result_pages |= _result_urls(result)
@@ -412,7 +411,10 @@ def _handoff_refused(
             "role": "tool",
             "tool_name": name,
             "content": json.dumps(
-                {"error": str(exc), "what_to_do": _HANDOFF_RECOVERY.get(name, _ASK_RECOVERY)}
+                {
+                    "error": str(exc),
+                    "what_to_do": _HANDOFF_RECOVERY.get(name, _HANDOFF_RECOVERY["ask_user"]),
+                }
             ),
         }
     )
@@ -541,7 +543,7 @@ def _dispatch_call(
             tools.needs_confirm(name, arguments, state.approved)
             or (
                 state.tainted
-                and name in _PARK_WHEN_TAINTED
+                and parks_when_tainted(name)
                 and not _cleared_page(state, name, arguments)
             )
         )
@@ -578,9 +580,7 @@ def _dispatch_call(
     elif spec is not None and (
         tools.needs_confirm(name, arguments, state.approved)
         or (
-            state.tainted
-            and name in _PARK_WHEN_TAINTED
-            and not _cleared_page(state, name, arguments)
+            state.tainted and parks_when_tainted(name) and not _cleared_page(state, name, arguments)
         )
     ):
         # Park it for the user, never auto-run a destructive tool, nor a
@@ -1040,7 +1040,7 @@ def _claim_notice(state: _TurnState, answer: str, unsupported: list[str]) -> lis
                 ),
             }
         ]
-    if not state.did_write and _CLAIM_PATTERN.search(answer):
+    if not state.did_write and claims_a_write(answer):
         # The looser net, for a claim with no recognisable action in it ("new
         # note titled..."). Only when nothing was written, since it can't say
         # which action it means.

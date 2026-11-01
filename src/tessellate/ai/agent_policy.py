@@ -1300,6 +1300,19 @@ _OUTBOUND_TOOLS = frozenset({"read_url", "web_search"})
 #: result's `from_outside`, or a retrieved note's, see `run_agent`).
 _PARK_WHEN_TAINTED = _OUTBOUND_TOOLS | frozenset(_WRITE_TOOLS)
 
+
+def parks_when_tainted(name: str) -> bool:
+    return name in _PARK_WHEN_TAINTED
+
+
+def reads_outside(name: str) -> bool:
+    return name in _OUTSIDE_TOOLS
+
+
+def claims_a_write(answer: str) -> bool:
+    return bool(_CLAIM_PATTERN.search(answer))
+
+
 #: **Which pages a tainted turn may still open without a card** (SEC-02's last
 #: step). Parking every `read_url` once outside text is in the turn stopped a
 #: page sending the notebook anywhere, and made every research turn a stack of
