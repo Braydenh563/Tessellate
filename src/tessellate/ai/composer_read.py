@@ -228,6 +228,9 @@ def _title(content: str) -> tuple[str, int]:
     if heading is None and end != -1 and content[end:].strip():
         colon = _COLON_TITLE.match(first.strip(" \t"))
         heading = colon.group(1) if colon and len(colon.group(1).split()) <= 6 else None
+        #: A short plain first line over the body names it the way the frame
+        #: names it ("Legs day", INBOX 1515: one reader for every shape).
+        heading = heading or composer_frame.title_line(content) or None
     if heading is not None:
         name = plain_words(_MARKS.sub("", heading).strip().strip("#").strip())
         if name:

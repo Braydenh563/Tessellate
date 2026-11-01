@@ -3175,12 +3175,18 @@ def _framed(out: _Out, question: str, members, facts, today: date, groups: list)
         out.lines[0] = f"{out.lines[0]} {lead}"
     for n, group in enumerate(groups):
         line = composer_frame.group_line(group, notes, topic, _heading_said, n)
-        (out.lines if budget > 0 else out.more).append(line)
+        shelf = out.lines if budget > 0 else out.more
+        shelf.append(line)
+        at, from_lines, from_more = len(shelf) - 1, len(out.lines), len(out.more)
         held = [f for f in facts if f.view.id in group.ids]
         told: set = set()
         for i in group.ids:
             told |= _narrate(out, by_id[i], held, today)
         budget -= min(max(budget, 0), _lines(out, held, max(budget, 0), skip=told, by_day=today, more=True, weave=True))
+        #: A quote the group's line made of a whole note is not said again.
+        again = composer_frame.echoed(group, notes, " ".join(out.lines[from_lines:] + out.more[from_more:]))
+        if again:
+            shelf[at] = composer_frame.group_line(group, notes, topic, _heading_said, n, again)
 
 
 def _counted_groups(question: str, members, kind: str) -> tuple[list, list | None]:  # noqa: ANN001
@@ -4949,8 +4955,10 @@ def _polish_out(out: _Out, kind: str) -> None:
             #: Said without its "Joke:" label, so the words alone are kept too.
             head = _PREFIX.match(text)
             keep += [text, head.group(2)] if head else [text]
+    #: A quote is the note's own words, whatever frame said it (INBOX 1515).
+    pool = [t for v in _VIEWS.get() for t in (str(v.note.get("content") or ""), *map(str, (v.note.get("link_reasons") or {}).values()))]
     for lines in (out.lines, out.more, out.closing, out.next):
-        lines[:] = [polish(line, keep) for line in lines]
+        lines[:] = [composer_threads.own_words(polish(line, keep), pool) for line in lines]
     if out.offer and out.offer.get("label"):
         out.offer = {**out.offer, "label": polish(str(out.offer["label"]), keep)}
 
