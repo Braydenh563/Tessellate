@@ -1238,6 +1238,42 @@ def _by_category(session: Session, rows: list, asked) -> list:  # noqa: ANN001
     return [row for row in rows if row["kind"] in search_index.ENTRY_KINDS and filed.get(row["ref_id"]) in wanted]
 
 
+_COUNTED = {
+    "<": lambda have, want: have < want,
+    "<=": lambda have, want: have <= want,
+    ">": lambda have, want: have > want,
+    ">=": lambda have, want: have >= want,
+    "=": lambda have, want: have == want,
+}
+
+
+def _by_tag_count(rows: list, asked) -> list:  # noqa: ANN001
+    """Only the notes whose number of tags `tags:<2` (and its kin) names."""
+    if asked.tag_count is None:
+        return rows
+    compare, want = _COUNTED[asked.tag_count[0]], asked.tag_count[1]
+    return [row for row in rows if compare(len((row["tags"] or "").split()), want)]
+
+
+def _without_categories(session: Session, rows: list, asked) -> list:  # noqa: ANN001
+    """Less the notes filed under a category `-cat:` ruled out."""
+    ruled_out = {name.casefold() for name in asked.without_categories}
+    if not ruled_out:
+        return rows
+    from tessellate.core.database import Category, Entry
+
+    ids = [row["ref_id"] for row in rows if row["kind"] in search_index.ENTRY_KINDS]
+    filed = {}
+    if ids:
+        filed = {
+            entry_id: str(name).casefold()
+            for entry_id, name in session.execute(
+                select(Entry.id, Category.name).join(Category, Category.id == Entry.category_id).where(Entry.id.in_(ids))
+            )
+        }
+    return [row for row in rows if filed.get(row["ref_id"]) not in ruled_out]
+
+
 def _candidate_rows(session: Session, q: str, subject: str, terms: list, asked, wanted_kinds: list, space, hybrid: bool, limit: int, depth: int) -> tuple:  # noqa: ANN001
     """The rows the words (or, with none, the filters) select, and the terms
     after any typo fix."""
@@ -1308,7 +1344,8 @@ def _filter_rows(session: Session, rows: list, asked) -> list:  # noqa: ANN001
     rows = _by_flags_and_title(rows, asked, wanted_is)
     if wanted_has:
         rows = _having(session, rows, wanted_has)
-    return _without(_by_tags(_by_category(session, rows, asked), asked), asked)
+    rows = _without_categories(session, _by_tag_count(_by_category(session, rows, asked), asked), asked)
+    return _without(_by_tags(rows, asked), asked)
 
 
 #: How a negated operator rules a row out, matched as the positive ones match.
@@ -1410,7 +1447,7 @@ def search(
     # be the search box answering a question nobody put. The Notes list is
     # already showing every note when the box is empty; a search that also
     # returns every note is not an answer, it is noise with a scrollbar.
-    if not (terms or asked.phrases or any(asked.filters.values()) or asked.categories or asked.has_range):
+    if not (terms or asked.phrases or any(asked.filters.values()) or asked.categories or asked.without_categories or asked.tag_count is not None or asked.has_range):
         return []
     rows, terms = _candidate_rows(session, q, subject, terms, asked, wanted_kinds, space, hybrid, limit, depth)
     rows = _filter_rows(session, rows, asked) if rows else rows

@@ -105,6 +105,11 @@ class Understood:
     #: treated `cat:` as a word). Not in `filters` because the index has no
     #: category column: the engine checks them against the notes themselves.
     categories: list[str] = field(default_factory=list)
+    #: `-cat:Work`: notes filed under any of these are dropped (audit 1031
+    #: N1, the filter box's `-cat:`), and `tags:<2`, `tags:0`, `tags:>=3`: how
+    #: many tags a note carries, as `(operator, number)`.
+    without_categories: list[str] = field(default_factory=list)
+    tag_count: tuple[str, int] | None = None
 
     @property
     def has_range(self) -> bool:
@@ -118,6 +123,8 @@ class Understood:
             or bool(self.excluded)
             or any(self.without.values())
             or bool(self.categories)
+            or bool(self.without_categories)
+            or self.tag_count is not None
         )
 
 
@@ -319,19 +326,35 @@ _EXCLUDED = re.compile(r"(?<!\S)-([\w][\w'-]*)")
 _NEGATED = re.compile(r'(?<!\S)-(' + "|".join(_OPERATOR_NAMES) + r'):(?:"([^"]*)"|(\S+))', re.IGNORECASE)
 
 
-_CATEGORY = re.compile(r'(?<!\S)(?:cat|category):(?:"([^"]*)"|(\S+))', re.IGNORECASE)
+_CATEGORY = re.compile(r'(?<!\S)(-?)(?:cat|category):(?:"([^"]*)"|(\S+))', re.IGNORECASE)
+#: `tags:<2`, `tags:0`, `tags:>=3`: a count of tags, never a tag name (`tag:` is that).
+_TAG_COUNT = re.compile(r"(?<!\S)tags:(<=|>=|<|>|=)?(\d+)(?!\S)", re.IGNORECASE)
 
 
-def _take_categories(text: str) -> tuple[str, list[str]]:
-    """Lift `cat:` and `category:` out of a query: the rest and the names."""
-    names: list[str] = []
+def _take_categories(text: str) -> tuple[str, list[str], list[str]]:
+    """Lift `cat:`, `category:` and their `-` forms out of a query: the rest,
+    the names wanted and the names ruled out."""
+    wanted: list[str] = []
+    ruled_out: list[str] = []
 
     def take(match: re.Match) -> str:
-        raw = match.group(1) if match.group(1) is not None else match.group(2)
-        names.extend(name for name in _split_values(raw) if name not in names)
+        raw = match.group(2) if match.group(2) is not None else match.group(3)
+        into = ruled_out if match.group(1) else wanted
+        into.extend(name for name in _split_values(raw) if name not in into)
         return " "
 
-    return _CATEGORY.sub(take, text), names
+    return _CATEGORY.sub(take, text), wanted, ruled_out
+
+
+def _take_tag_count(text: str) -> tuple[str, tuple[str, int] | None]:
+    """Lift `tags:<2` out of a query: the rest and the (operator, number)."""
+    found: list[tuple[str, int]] = []
+
+    def take(match: re.Match) -> str:
+        found.append((match.group(1) or "=", int(match.group(2))))
+        return " "
+
+    return _TAG_COUNT.sub(take, text), (found[-1] if found else None)
 
 
 def _take_negated(text: str) -> tuple[str, dict[str, list[str]]]:
@@ -498,7 +521,8 @@ def understand(question: str, now: datetime | date | None = None, locale: str | 
     # Operators first: they carry their own dates, and a `before:2026-01-01`
     # left in the text would be read a second time by the time pass below.
     text, without = _take_negated(text)
-    text, categories = _take_categories(text)
+    text, categories, without_categories = _take_categories(text)
+    text, tag_count = _take_tag_count(text)
     remainder, filters, phrases, excluded, since, until = _parse_operators(text)
     operator_dates = since is not None or until is not None
     kept = remainder
@@ -524,7 +548,7 @@ def understand(question: str, now: datetime | date | None = None, locale: str | 
     # range: `kind:document before:2026-01-01` has a constraint to apply, and
     # answering it with "every note in the window" would drop the one thing
     # the person actually typed.
-    time_only = since is not None and not _has_content(subject) and not _constrained(filters, without, phrases, excluded, categories)
+    time_only = since is not None and not _has_content(subject) and not _constrained(filters, without, phrases, excluded, categories + without_categories, tag_count)
     return Understood(
         subject=subject if _has_content(subject) else "",
         since=since,
@@ -538,6 +562,8 @@ def understand(question: str, now: datetime | date | None = None, locale: str | 
         without=without,
         notices=operator_notices(remainder, filters),
         categories=categories,
+        without_categories=without_categories,
+        tag_count=tag_count,
     )
 
 
@@ -550,9 +576,9 @@ _FILLER = frozenset(
 )
 
 
-def _constrained(filters: dict, without: dict, phrases: list, excluded: list, categories: list) -> bool:
+def _constrained(filters: dict, without: dict, phrases: list, excluded: list, categories: list, tag_count: tuple | None = None) -> bool:
     """Whether the query named any operator, phrase or unwanted word."""
-    return any(filters.values()) or any(without.values()) or bool(phrases) or bool(excluded) or bool(categories)
+    return any(filters.values()) or any(without.values()) or bool(phrases) or bool(excluded) or bool(categories) or tag_count is not None
 
 
 def _has_content(subject: str) -> bool:
