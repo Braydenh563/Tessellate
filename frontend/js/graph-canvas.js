@@ -2289,11 +2289,20 @@ function gcTabHidden(s) {
   return !!page && page.classList.contains("hidden");
 }
 
+//: **A map hidden until its first fit is not drawn** (GR1 1101). Behind the
+//: first fade the camera is still the default one (zoom 1, the starting spiral
+//: spilling far past the card), so a frame there is the costliest there is and
+//: shows nothing: 2,000 notes at 4x CPU drew 15 such frames, a 1 to 2 s raster
+//: each, back to back, and the worker's start and first tick waited behind
+//: them (first tick at 25 s). The fit draws (`gcRevealAfterBalance`), and so
+//: does `gcReveal`, whatever shows the map.
+const gcUnframed = (s) => s.canvas?.style.opacity === "0" && !s.fittedOnce;
+
 //: `cheap`: only the camera or the hover changed, so the frame may be composed
 //: from the scene layers (`gcDrawComposed`); anything else repaints them.
 function gcRequestDraw(s = gcTab, cheap = false) {
   if (!cheap) s.sceneStale = true;
-  if (s.drawQueued || !s.ctx || gcTabHidden(s)) return;
+  if (s.drawQueued || !s.ctx || gcTabHidden(s) || gcUnframed(s)) return;
   s.drawQueued = true;
   requestAnimationFrame(() => {
     s.drawQueued = false;
@@ -5260,15 +5269,28 @@ function gcAdditionHolds(s, nodes, prior, viewPositions) {
   if (!added.length || added.length > GC_ADD_MAX || added.length >= nodes.length) return null;
   return nodes.filter((n) => prior.has(n.id) && n.fx == null).map((n) => n.id);
 }
+//: **The layout worker is asked for before the map's data** (GR1 1101). A
+//: dedicated worker's script is loaded through tasks on this thread, so one
+//: started after the data waited behind the first frames: 2,000 notes at 4x
+//: CPU, 20 to 22 s from `new Worker` to the worker hearing `init` (22 ms on an
+//: idle page). Started while the data is on its way, it is there for the init.
+//: An error before `gcStartWorker` binds its handlers is kept, not lost.
+function gcSpawnWorker(s = gcTab) {
+  if (s.worker) return;
+  // Version-stamped for the same reason index.html's script tags are
+  // (tests/test_asset_cache_busting.py): a desktop wrapper with its own
+  // cache can otherwise go on running yesterday's worker forever, and a
+  // stale worker is invisible, nothing logs, the map just behaves like the
+  // build before last. The stamp is the worker file's own, from the map
+  // the served page carries (`lazyAssetStamp`, app.js).
+  s.worker = new Worker(`/js/graph-worker.js${lazyAssetStamp("/js/graph-worker.js")}`);
+  s.worker.onerror = () => {
+    s.workerFailed = true;
+  };
+}
 function gcStartWorker(nodes, edges, world, s = gcTab, viewSeed = null) {
-  if (!s.worker) {
-    // Version-stamped for the same reason index.html's script tags are
-    // (tests/test_asset_cache_busting.py): a desktop wrapper with its own
-    // cache can otherwise go on running yesterday's worker forever, and a
-    // stale worker is invisible, nothing logs, the map just behaves like the
-    // build before last. The stamp is the worker file's own, from the map
-    // the served page carries (`lazyAssetStamp`, app.js).
-    s.worker = new Worker(`/js/graph-worker.js${lazyAssetStamp("/js/graph-worker.js")}`);
+  if (!s.worker?.onmessage) {
+    gcSpawnWorker(s);
     s.worker.onmessage = (event) => {
       const message = event.data || {};
       //: A message from a simulation that no longer matches what is on screen
@@ -5412,6 +5434,7 @@ function gcStartWorker(nodes, edges, world, s = gcTab, viewSeed = null) {
       gcRequestDraw(s);
       gcReveal(s);
     };
+    if (s.workerFailed) s.worker.onerror();
   }
   s.fittedOnce = false;
   s.intro = false;
@@ -5795,6 +5818,7 @@ async function renderGraphCanvas(s = gcTab) {
   //: has its glow (`gcArriving`).
   const stats = s.shown ? document.getElementById("graph-stats") : null;
   const slow = stats && setTimeout(() => stats.setAttribute("aria-busy", "true"), 400);
+  gcSpawnWorker(s);
   const data = await apiJson(endpoint).then(graphFill).catch(() => null);
   clearTimeout(slow);
   stats?.removeAttribute("aria-busy");
@@ -6970,5 +6994,6 @@ function gcReveal(s) {
     //: Interface animations, which play under the system hint.
     s.canvas.style.transition = gcStill() ? "none" : "opacity calc(var(--ui-slow) * 2) var(--ease-out)";
     s.canvas.style.opacity = "";
+    gcRequestDraw(s);
   }
 }
