@@ -24,6 +24,8 @@ from __future__ import annotations
 import functools
 import hashlib
 import re
+
+from tessellate.core.lazyre import lazy_compile
 import sys
 from datetime import date, datetime
 from typing import NamedTuple
@@ -79,21 +81,21 @@ def _patterns(name: str) -> tuple:
 
 # --- the clock, dates, chance ----------------------------------------------------------
 
-_CLOCK = re.compile(r"^(?:what(?:'s| is) the time|what time is it|whats the time|the time|time)(?: now| right now)?$", re.I)
-_TODAY = re.compile(
+_CLOCK = lazy_compile(r"^(?:what(?:'s| is) the time|what time is it|whats the time|the time|time)(?: now| right now)?$", re.I)
+_TODAY = lazy_compile(
     r"^(?:what(?:'s| is) (?:the )?(?:date|day)(?: today| it)?|what day is it(?: today)?|what(?:'s| is) today(?:'s date)?|"
     r"today'?s date|what date is it(?: today)?|what(?:'s| is) the date today)$",
     re.I,
 )
-_YEAR = re.compile(r"^what (?:year|month) is it(?: now)?$", re.I)
+_YEAR = lazy_compile(r"^what (?:year|month) is it(?: now)?$", re.I)
 #: "15% of 240" (CHAT_PLAN section 7 row 1: it quoted a note instead of 36).
-_PERCENT = re.compile(r"^(?:what(?:'s| is)\s+|work out\s+|calculate\s+)?(-?\d+(?:\.\d+)?)\s*(?:%|percent|per cent)\s+of\s+(-?\d[\d,]*(?:\.\d+)?)$", re.I)
-_WEEKDAY_OF = re.compile(r"^what day(?: of the week)? (?:is|was|will be|falls on) (\S.*)$", re.I)
-_DIE = re.compile(r"^(?:roll|throw)\s+(?:a\s+|one\s+|the\s+)?(?:die|dice|d6)$|^roll\s+(\d{1,2})?d(\d{1,3})$", re.I)
-_COIN = re.compile(r"^(?:flip|toss)\s+a\s+coin$|^heads or tails$", re.I)
-_PICK = re.compile(r"^(?:pick|choose|give me)\s+a\s+(?:random\s+)?number\s+(?:between|from)\s+(-?\d{1,6})\s+(?:and|to)\s+(-?\d{1,6})$", re.I)
-_WEATHER = re.compile(r"\b(?:weather|forecast|temperature outside|going to rain|will it rain)\b", re.I)
-_TRANSLATE = re.compile(r"^(?:translate|say) \S.* (?:in|into|to) (?:french|spanish|german|italian|portuguese|dutch|japanese|chinese|korean|arabic|russian|hindi|greek|swedish|polish|turkish)$", re.I)
+_PERCENT = lazy_compile(r"^(?:what(?:'s| is)\s+|work out\s+|calculate\s+)?(-?\d+(?:\.\d+)?)\s*(?:%|percent|per cent)\s+of\s+(-?\d[\d,]*(?:\.\d+)?)$", re.I)
+_WEEKDAY_OF = lazy_compile(r"^what day(?: of the week)? (?:is|was|will be|falls on) (\S.*)$", re.I)
+_DIE = lazy_compile(r"^(?:roll|throw)\s+(?:a\s+|one\s+|the\s+)?(?:die|dice|d6)$|^roll\s+(\d{1,2})?d(\d{1,3})$", re.I)
+_COIN = lazy_compile(r"^(?:flip|toss)\s+a\s+coin$|^heads or tails$", re.I)
+_PICK = lazy_compile(r"^(?:pick|choose|give me)\s+a\s+(?:random\s+)?number\s+(?:between|from)\s+(-?\d{1,6})\s+(?:and|to)\s+(-?\d{1,6})$", re.I)
+_WEATHER = lazy_compile(r"\b(?:weather|forecast|temperature outside|going to rain|will it rain)\b", re.I)
+_TRANSLATE = lazy_compile(r"^(?:translate|say) \S.* (?:in|into|to) (?:french|spanish|german|italian|portuguese|dutch|japanese|chinese|korean|arabic|russian|hindi|greek|swedish|polish|turkish)$", re.I)
 
 _WEEKDAY_NAMES = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
 _MONTH_NAMES = ("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
@@ -283,16 +285,16 @@ def _sum_of(question: str, text: str) -> str | None:
 
 #: A list's average and friends (CHAT_PLAN A1): "average of 3, 8, 10",
 #: "what's the median of 1, 5, 9 and 12", "add up 10, 20, 30".
-_LIST_OF = re.compile(
+_LIST_OF = lazy_compile(
     r"^(?:what(?:'?s| is) )?(?:the )?(?P<what>average|mean|median|sum|total|biggest|largest|smallest|max(?:imum)?|min(?:imum)?|range)"
     r"(?: number)? (?:of|in|for) (?P<nums>.+)$|^add (?:up |together )?(?P<add>.+)$",
     re.I,
 )
 _LIST_WORDS = {"average": "mean", "biggest": "largest", "max": "largest", "maximum": "largest", "smallest": "smallest", "min": "smallest", "minimum": "smallest", "total": "sum"}
-_ROOT = re.compile(r"^(?:what(?:'?s| is) )?(?:the )?(square|cube) root of (-?\d+(?:\.\d+)?)$", re.I)
-_MONTH_DAYS = re.compile(r"^how many days (?:are )?(?:there )?in (?P<month>[a-z]+)(?: (?P<year>\d{4}))?$", re.I)
-_BORN = re.compile(r"^how old (?:is (?:someone|somebody|a person)|would i be|am i|are you)(?: if (?:i was|you were))? born in (?P<year>\d{4})$", re.I)
-_CLOCK_SWAP = re.compile(
+_ROOT = lazy_compile(r"^(?:what(?:'?s| is) )?(?:the )?(square|cube) root of (-?\d+(?:\.\d+)?)$", re.I)
+_MONTH_DAYS = lazy_compile(r"^how many days (?:are )?(?:there )?in (?P<month>[a-z]+)(?: (?P<year>\d{4}))?$", re.I)
+_BORN = lazy_compile(r"^how old (?:is (?:someone|somebody|a person)|would i be|am i|are you)(?: if (?:i was|you were))? born in (?P<year>\d{4})$", re.I)
+_CLOCK_SWAP = lazy_compile(
     r"^(?:what(?:'?s| is) )?(?P<time>\d{1,2}(?::\d{2})? ?(?:am|pm)?|noon|midnight) (?:in )?(?P<a>[a-z][a-z .'-]{1,40}?)(?: time)? (?:in|to|for) (?P<b>[a-z][a-z .'-]{1,40}?)(?: time)?$",
     re.I,
 )
@@ -500,7 +502,7 @@ SEVERAL_ZONES: dict[str, tuple[tuple[str, str], ...]] = {
 for _alias in ("us", "america", "united states", "united states of america"):
     SEVERAL_ZONES[_alias] = SEVERAL_ZONES["usa"]
 
-_CLOCK_IN = re.compile(
+_CLOCK_IN = lazy_compile(
     r"^(?:(?:(?:and|so) )?(?:what|how) about )?"
     r"(?:what(?:'s| is) the (?:current )?time|what time is it|whats the time|(?:the |current )?time)"
     r"(?: now| right now)? (?:in|at|over in) (?:the )?(?P<place>[a-z][a-z .'-]{1,40}?)(?: now| right now)?$",
@@ -576,7 +578,7 @@ def zone_for(place: str) -> str | None:
 
 #: "what time is it in am/pm", "the time in 12 hour": the clock in the
 #: 12-hour form (the owner, 2026-10-12: it could only say 18:53).
-_TWELVE = re.compile(r"(?: (?:in|as|with|using))? (?:am ?/ ?pm|am ?pm|a\.m\.?/p\.m\.?|12-?h(?:ou)?r?(?: (?:time|clock|format))?)$", re.I)
+_TWELVE = lazy_compile(r"(?: (?:in|as|with|using))? (?:am ?/ ?pm|am ?pm|a\.m\.?/p\.m\.?|12-?h(?:ou)?r?(?: (?:time|clock|format))?)$", re.I)
 
 
 def _twelve(text: str) -> tuple[str, bool]:
@@ -657,11 +659,11 @@ def _clock(text: str, now: datetime) -> list[tuple]:
 
 # --- asking whether the web can be searched (INBOX 801 and 808) -----------------------
 
-_WEB_ASK = re.compile(
+_WEB_ASK = lazy_compile(
     r"\b(?:search|look (?:it |things )?up|google|browse|use|access|go)\b.*\b(?:the web|online|the internet|internet)\b|\bweb search\b",
     re.I,
 )
-_WEB_FILLER = re.compile(
+_WEB_FILLER = lazy_compile(
     r"\b(?:can|could|would|will|do|does|are|is|you|u|please|search|look|up|it|things|stuff|google|browse|use|"
     r"access|go|on|in|the|web|online|internet|have|has|a|able|to|for|me|there|turned)\b|[?.!,]",
     re.I,
@@ -849,9 +851,9 @@ def _swap_answer(found: re.Match, a: str, b: str, now: datetime) -> list[tuple] 
 
 #: Words a minute for "reading time": the rate the editor has always used.
 READING_WPM = 220
-_ATX = re.compile(r"^(#{1,6})[ \t]+(.+?)[ \t#]*$")
-_SETEXT = re.compile(r"^\s*(=+|-{2,})\s*$")
-_NOT_PARAGRAPH = re.compile(r"^\s*(#{1,6}\s|[-*+]\s|\d+[.)]\s|>|\|)")
+_ATX = lazy_compile(r"^(#{1,6})[ \t]+(.+?)[ \t#]*$")
+_SETEXT = lazy_compile(r"^\s*(=+|-{2,})\s*$")
+_NOT_PARAGRAPH = lazy_compile(r"^\s*(#{1,6}\s|[-*+]\s|\d+[.)]\s|>|\|)")
 
 
 def counts(text: str) -> dict:

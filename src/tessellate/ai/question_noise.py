@@ -32,6 +32,8 @@ from __future__ import annotations
 
 import math
 import re
+
+from tessellate.core.lazyre import lazy_compile
 from collections import Counter
 
 from tessellate.ai import act_registry, spelling
@@ -399,14 +401,14 @@ SLANG.update({
 })
 
 #: Laughter typed long ("hahahaha", "lmaooo", "lollll").
-_LAUGH = re.compile(r"^(?:(?:ha|he|ah){2,}h?|lo+l+(?:o+l+)*|lmf?a+o+|xd+)$", re.I)
+_LAUGH = lazy_compile(r"^(?:(?:ha|he|ah){2,}h?|lo+l+(?:o+l+)*|lmf?a+o+|xd+)$", re.I)
 #: One range for the supplementary symbols block: a second range inside it
 #: (U+1F900 to U+1F9FF) was redundant (CodeQL #551, overly large range).
-_EMOJI = re.compile(
+_EMOJI = lazy_compile(
     "[\U0001F000-\U0001FAFF\U00002600-\U000027BF\U00002300-\U000023FF\U0000FE0F\U0000200D]+"
 )
 #: Emoticons, read as small talk too.
-_EMOTICON = re.compile(r"(?:^|\s)(?:[:;=8][-']?[)(DPp/\\|*]+|<3|\^_?\^)(?=\s|$)")
+_EMOTICON = lazy_compile(r"(?:^|\s)(?:[:;=8][-']?[)(DPp/\\|*]+|<3|\^_?\^)(?=\s|$)")
 
 
 #: Keys hit by accident at a sentence's edge (INBOX 801, the owner: "it
@@ -415,11 +417,11 @@ _EMOTICON = re.compile(r"(?:^|\s)(?:[:;=8][-']?[)(DPp/\\|*]+|<3|\^_?\^)(?=\s|$)"
 #: semicolon is an emoticon (":\\", ";|") and stays.
 _STRAY_KEYS = "\\|`~^"
 _BEFORE_STRAY = "?.!)\"'"
-_STRAY_HEAD = re.compile(r"^\s*[\\|`~^]+(?=\w)")
-_RUN_OF_SPACES = re.compile(r"[ \t]{2,}")
+_STRAY_HEAD = lazy_compile(r"^\s*[\\|`~^]+(?=\w)")
+_RUN_OF_SPACES = lazy_compile(r"[ \t]{2,}")
 
 
-_ARCHIVED_WORD = re.compile(r"\barchived\b", re.I)
+_ARCHIVED_WORD = lazy_compile(r"\barchived\b", re.I)
 
 
 def asks_archived(question: str) -> bool:
@@ -479,7 +481,7 @@ def strip_symbols(text: str) -> str:
 
 #: The asking words before a topic ("what is there about", "search my notes
 #: for"), taken off to leave the topic a search_notes call is given.
-_ASKING_HEAD = re.compile(
+_ASKING_HEAD = lazy_compile(
     r"^(?:(?:can|could|would) you |please )?(?:what(?:'s| is)? (?:there |do i have |have i got |did i write )?(?:about|on)|"
     r"search (?:my |the )?(?:notes? )?(?:for|about)|search|find (?:my )?(?:notes? )?(?:about|on)?|look (?:for|up)|"
     r"(?:show|list) (?:me )?(?:my )?notes? (?:about|on)|notes? (?:about|on)|anything (?:about|on))(?:\s+|$)",
@@ -1951,8 +1953,8 @@ SOCIAL.update({
 
 
 #: A letter typed three times or more ("yooooo", "heyyy", "thxxx").
-_STRETCH = re.compile(r"([A-Za-z])\1{2,}")
-_LETTERS = re.compile(r"[A-Za-z]+")
+_STRETCH = lazy_compile(r"([A-Za-z])\1{2,}")
+_LETTERS = lazy_compile(r"[A-Za-z]+")
 
 
 def _unstretched(word: str) -> str:
@@ -1986,12 +1988,12 @@ def destretch(text: str) -> str:
 
 #: Sounds typed while thinking ("errrmmm", "umm", "uhh", "hmm"): read past,
 #: never searched for (INBOX 1485). Not "er", "um" inside a word, or "hum".
-_FILLER = re.compile(r"^(?:u+m+|u+h+m*|e+r+m+|e+r{2,}|h+m+|m{2,}|e+h+m+|a+h+m+)$", re.I)
+_FILLER = lazy_compile(r"^(?:u+m+|u+h+m*|e+r+m+|e+r{2,}|h+m+|m{2,}|e+h+m+|a+h+m+)$", re.I)
 #: A whitespace-bounded run is one word; the shape check is on that run alone
 #: (letters, then the punctuation typed after them), so no pattern scans a long
 #: run twice (CodeQL 1890, 1894).
-_WORD_RUN = re.compile(r"\S+")
-_FILLER_SHAPE = re.compile(r"([A-Za-z]+)[.,;:!…]*")
+_WORD_RUN = lazy_compile(r"\S+")
+_FILLER_SHAPE = lazy_compile(r"([A-Za-z]+)[.,;:!…]*")
 
 
 def is_filler(word: str) -> bool:
@@ -2021,7 +2023,7 @@ def _without_filler(run: re.Match[str]) -> str:
 #: "What am I reading", "what have I been reading lately": the books the
 #: notes keep, not the words "reading" sits in (a question inside an
 #: ice-breakers note; audit 1031 C18). "reading" alone names no kind of note.
-_READING_NOW = re.compile(
+_READING_NOW = lazy_compile(
     r"(?P<lead>(?:and |so |ok |okay )?what)(?P<mid> am i(?: currently)?) reading"
     r"(?P<tail>(?: (?:right now|at the moment|lately|these days|currently|now|at present|recently|at this time))?[?.!\s]*)",
     re.I,
@@ -2058,7 +2060,7 @@ def drop_filler(text: str) -> str:
 #: 1485). Read at the end of the message, after any lead-in ("whoa, stop
 #: right there"). "are u ok" stays a how-are-you.
 _WHAT_I_AM = r"(?:an? )?(?:real )?(?:ai|a i|bot|robot|human|person|real|machine|program|computer|chatbot|llm|chatgpt|gpt|human being|actual person)"
-_IDENTITY = re.compile(
+_IDENTITY = lazy_compile(
     rf"(?:^| )(?:are|r) (?:you|u|ya) (?:even |actually |really |just )?{_WHAT_I_AM}(?: or (?:not|what|an? \w+|\w+))?(?: (?:lol|haha|though|tho|then|too|right|now|or what))*$"
     rf"|^(?:who|what) (?:are|r) (?:you|u|ya)(?: (?:exactly|even|actually|really|then|again|lol|anyway))*$"
     rf"|(?:^| )am i (?:talking|speaking|chatting|texting) (?:to|with) {_WHAT_I_AM}(?: or \w+(?: \w+)?)?$"
@@ -2076,7 +2078,7 @@ def asks_identity(message: str) -> bool:
 #: look in (audit 1031 C21): "do you like me", "what do you think", "how do
 #: you feel". Whole message only: "what do you think about Lisbon"
 #: names a subject and is a question about the notes.
-_OPINION_ASK = re.compile(
+_OPINION_ASK = lazy_compile(
     r"^(?:(?:do|did|would|will|can|could|does) (?:you|u|ya) (?:even |actually |really |still |ever )?"
     r"(?:like|love|hate|know|trust|miss|want|care about|care|believe|think|feel|reckon|enjoy|mind|get|understand|see|hear|have feelings)"
     r"(?: (?:me|us|so|i am|im|i'm|that|this|it|anything|a thing))?"
@@ -2272,7 +2274,7 @@ def _split(word: str) -> str | None:
 
 
 #: A comma with no space after it ("mindmap,a nd"): the space typed late.
-_COMMA_RUN = re.compile(r"(?<=[A-Za-z]),(?=[A-Za-z])")
+_COMMA_RUN = lazy_compile(r"(?<=[A-Za-z]),(?=[A-Za-z])")
 
 
 def repair(text: str, report: list | None = None, known=frozenset(), fixed: list | None = None) -> str:  # noqa: ANN001

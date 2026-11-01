@@ -16,6 +16,8 @@ rank by. Nothing here imports the composer at load (it imports this).
 from __future__ import annotations
 
 import re
+
+from tessellate.core.lazyre import lazy_compile
 from dataclasses import dataclass
 from datetime import date
 
@@ -66,7 +68,7 @@ _SUPERLATIVE = {
 #: Said of notes, these rank by the day written, not by a day ahead.
 _NOTE_AGE = {"earliest": "oldest", "latest": "newest", "first": "oldest", "last": "newest"}
 _WORD = "|".join(sorted((*_RELATIONS, *_NOTE_AGE), key=len, reverse=True))
-_WHICH = re.compile(
+_WHICH = lazy_compile(
     rf"^which\s+(?:(?P<a>(?!(?:is|are|was|were|comes?)\b)[\w'-]+(?:\s(?!(?:is|are|was|were|comes?)\b)[\w'-]+){{0,2}})\s+)?"
     rf"(?:is|are|was|were|comes?)\s+(?:(?:written|made|saved|created|added|started)\s+)?(?:the\s+)?(?P<rel>{_WORD})(?:\s+(?P<b>(?!(?:about|on|for|regarding|with|in|of)\b)[\w'-]+(?:\s(?!(?:about|on|for|regarding|with|in|of)\b)[\w'-]+){{0,2}}?))?"
     r"(?:\s+(?:about|on|for|regarding|with|in|of)\s+(?:my\s+|the\s+)?(?P<topic>[\w'-]+(?:\s[\w'-]+){0,3}))?\W*$",
@@ -74,14 +76,14 @@ _WHICH = re.compile(
 )
 #: "What is my newest baking note", "what's the oldest note about baking".
 _PREP = r"(?:about|on|for|regarding|with|in|of)"
-_WHAT = re.compile(
+_WHAT = lazy_compile(
     rf"^what(?:'s|\s+is|\s+was)\s+(?:my\s+|the\s+)?(?P<rel>{_WORD})(?:\s+(?P<b>(?!{_PREP}\b)[\w'-]+(?:\s(?!{_PREP}\b)[\w'-]+){{0,2}}?))?"
     rf"(?:\s+{_PREP}\s+(?:my\s+|the\s+)?(?P<topic>[\w'-]+(?:\s[\w'-]+){{0,3}}))?\W*$",
     re.I,
 )
 _NOT_SUBJECT = frozenset({"note", "notes", "entry", "entries", "one", "ones", "thing", "things", "my", "the", "of", "a", "an"})
 #: The figure a sentence leads with when it names a cost.
-_COST_CUE = re.compile(r"\b(?:cost|costs|budget|price|priced|total|paid|pay|fee|fees|worth)\b", re.I)
+_COST_CUE = lazy_compile(r"\b(?:cost|costs|budget|price|priced|total|paid|pay|fee|fees|worth)\b", re.I)
 #: A figure is only ranked against one in the same money.
 #: What each template key says; the composer's `PHRASES` take these, and the
 #: digest's one-line form (`line`) says the same words.
@@ -145,7 +147,7 @@ def figure_of(view, shared: str | None = None):  # noqa: ANN001, ANN202
     return amount, text, money, at
 
 
-_DAY_AND_MONTH = re.compile(r"\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b", re.I)
+_DAY_AND_MONTH = lazy_compile(r"\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b", re.I)
 
 
 def fact_day(fact, today: date, tense: str) -> date:  # noqa: ANN001  # a factgraph fact

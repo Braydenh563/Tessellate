@@ -23,6 +23,8 @@ from __future__ import annotations
 import hashlib
 import re
 
+from tessellate.core.lazyre import lazy_compile
+
 from tessellate.ai import recognise
 
 PHRASES: dict[str, str] = {
@@ -87,8 +89,8 @@ _GENERIC = frozenset(
 #: sits in the sentence, or opens on the verb ("Book the tram"). A sentence
 #: that merely holds one of the verbs ("Flights cost $420 return") is a fact,
 #: not a thing left to do (audit 1031 C29).
-_OWED = re.compile(r"\b(?:need to|needs to|have to|has to|must|should|remember to|don't forget|do not forget|todo|to do|next step)\b", re.I)
-_COMMAND = re.compile(
+_OWED = lazy_compile(r"\b(?:need to|needs to|have to|has to|must|should|remember to|don't forget|do not forget|todo|to do|next step)\b", re.I)
+_COMMAND = lazy_compile(
     r"^(?:then |also |and |please )?(?:book|buy|call|email|send|ask|check|finish|write|pay|order|renew|schedule|plan|prepare|fix|bring|take|pack|get|pick up|"
     r"collect|print|submit|sign|confirm|cancel|return|reply|clean|wash|charge)\b",
     re.I,
@@ -99,7 +101,7 @@ def _to_do(text: str) -> bool:
     return bool(_OWED.search(text) or _COMMAND.match(text.strip()))
 
 
-_NAME = re.compile(r"[A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,})?")
+_NAME = lazy_compile(r"[A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,})?")
 _NOT_NAMES = frozenset(
     "The This That These Those There Then They Their Here What When Where Which While With Without Will Would Should Could "
     "January February March April May June July August September October November December Monday Tuesday Wednesday Thursday "

@@ -31,6 +31,8 @@ checked against the note it came from.
 from __future__ import annotations
 
 import re
+
+from tessellate.core.lazyre import lazy_compile
 from datetime import date, datetime
 
 from tessellate.search.snippet import clip_words
@@ -81,19 +83,19 @@ _PHRASE_RES = tuple((re.compile(p), r) for p, r in _PHRASES)
 #: A "was" that shares the writer's "I" across "and": "I walked and was 20
 #: minutes late" is "you walked and were" (INBOX 1420: "you walked and was").
 #: Up to four words between, none of them another subject.
-_AND_WAS = re.compile(
+_AND_WAS = lazy_compile(
     r"\bI((?: (?!(?:he|she|it|they|we|you|there|this|that)\b)[a-z']+){1,4},? (?:and|but|or|then)(?: then)?) was(n't)?\b"
 )
 #: "Sam and I", "Sam and me": the person first, as people say it of others.
-_AND_I = re.compile(r"\b([A-Z][a-z]+(?: [A-Z][a-z]+)?) and (?:I|me)\b")
+_AND_I = lazy_compile(r"\b([A-Z][a-z]+(?: [A-Z][a-z]+)?) and (?:I|me)\b")
 #: A sentence's opening word is not a person: "Then Sam and I" is Sam.
 _NOT_A_NAME = frozenset(
     "Then And But So When After Before Yesterday Today Tomorrow Later Also Now Once Last This Next Finally".split()
 )
 _WORDS = {"i": "you", "me": "you", "my": "your", "mine": "yours", "myself": "yourself"}
-_WORD_RE = re.compile(r"\b(I|me|my|mine|myself|Me|My|Mine|Myself|MY)\b")
+_WORD_RE = lazy_compile(r"\b(I|me|my|mine|myself|Me|My|Mine|Myself|MY)\b")
 #: Where someone else's words start: a quotation mark, or "said:"-like.
-_THEIRS = re.compile(r"[\"“][^\"“”]*[\"”]|\b(?:said|says|wrote|writes|told me|asked|replied)\s*:.*$", re.S)
+_THEIRS = lazy_compile(r"[\"“][^\"“”]*[\"”]|\b(?:said|says|wrote|writes|told me|asked|replied)\s*:.*$", re.S)
 
 
 def _case_like(word: str, said: str) -> str:
@@ -109,7 +111,7 @@ def _case_like(word: str, said: str) -> str:
 #: Where a first-person word is not the writer: an idiom ("let me know",
 #: "oh my", "my bad") or a numeral ("Part I", "World War I", "I/O"). Said as
 #: written; each has a pair in the tests.
-_KEEP = re.compile(
+_KEEP = lazy_compile(
     r"(?i:\b(?:let|excuse|trust|believe|pardon|beats)\s+me\b|\boh my\b|\bmy (?:god|goodness|gosh|bad)\b)"
     r"|\b(?:Part|Chapter|Book|War|Phase|Season|Volume|Act|Henry|Elizabeth|Charles|George|Louis|Type|Level|Grade|Class)\s+I\b"
     r"|\bI/O\b|\bI-\d",
@@ -119,7 +121,7 @@ _KEEP = re.compile(
 #: "I live in Perth and I work at the cafe": a place after a preposition,
 #: then a new clause, is not a person beside the writer (found 2026-10-11:
 #: it read "you live in you and Perth work").
-_PLACE_BEFORE = re.compile(r"\b(?:in|at|to|from|near|for|on|of|by|into|around|across|outside|inside|visit|visited)\s+$", re.I)
+_PLACE_BEFORE = lazy_compile(r"\b(?:in|at|to|from|near|for|on|of|by|into|around|across|outside|inside|visit|visited)\s+$", re.I)
 
 
 def _with_you(match: re.Match) -> str:
@@ -286,8 +288,8 @@ _DANGLING = frozenset("a an the and or but nor of to in on at for with by from a
 
 #: A run of Han or kana: a line in it has no spaces to cut at, and each of its
 #: characters says what a word does (INBOX 1495).
-_SPACELESS = re.compile(r"[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]{6}")
-_CLAUSE_MARK = re.compile(r"[：:、，,。！？!?（(]")
+_SPACELESS = lazy_compile(r"[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]{6}")
+_CLAUSE_MARK = lazy_compile(r"[：:、，,。！？!?（(]")
 
 
 def _clip_spaceless(flat: str, limit: int) -> str:
@@ -323,8 +325,8 @@ def drop_dangling(words: list[str]) -> list[str]:
     return words
 
 
-_STOP_AFTER_STOP = re.compile(r"([?!])\.(?!\.)")
-_COMMA_AFTER_STOP = re.compile(r"([?!]),(\s+)(\w)")
+_STOP_AFTER_STOP = lazy_compile(r"([?!])\.(?!\.)")
+_COMMA_AFTER_STOP = lazy_compile(r"([?!]),(\s+)(\w)")
 
 
 def mend_stops(text: str) -> str:

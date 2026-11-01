@@ -22,6 +22,8 @@ digest hands in what it needs, so this module joins no import cycle.
 from __future__ import annotations
 
 import re
+
+from tessellate.core.lazyre import lazy_compile
 from collections import Counter
 from dataclasses import dataclass, field
 
@@ -37,9 +39,9 @@ _STOP = frozenset(
     "is are was were tell show list give all of on in for to with from notes note written wrote you your "
     "know there so far".split()
 )
-_PREFIX = re.compile(r"^([^:.!?\n]{2,40}):\s+(\S.*)$", re.S)
-_DOING = re.compile(r"^(?:i'?m |i was |been )?(?:(?:thinking|looking|planning|hoping|considering|saving|trying)\s+(?:of|about|at|for|to|on)?\s*)+(?:buying|getting|doing|trying|playing|making)?\s*", re.I)
-_IMPERATIVE = re.compile(r"^(?:go|buy|call|book|get|ask|read|pay|send|bring|try|do|check|remember)\b", re.I)
+_PREFIX = lazy_compile(r"^([^:.!?\n]{2,40}):\s+(\S.*)$", re.S)
+_DOING = lazy_compile(r"^(?:i'?m |i was |been )?(?:(?:thinking|looking|planning|hoping|considering|saving|trying)\s+(?:of|about|at|for|to|on)?\s*)+(?:buying|getting|doing|trying|playing|making)?\s*", re.I)
+_IMPERATIVE = lazy_compile(r"^(?:go|buy|call|book|get|ask|read|pay|send|bring|try|do|check|remember)\b", re.I)
 
 
 @dataclass
@@ -161,7 +163,7 @@ def groups(notes: list[dict]) -> list[Group]:
     return out
 
 
-_MARKS = re.compile(r"(?m)^\s*(?:#{1,6}\s+|[-*+]\s+(?:\[[ xX]\]\s+)?|\d+[.)]\s+)|\*\*|__|`")
+_MARKS = lazy_compile(r"(?m)^\s*(?:#{1,6}\s+|[-*+]\s+(?:\[[ xX]\]\s+)?|\d+[.)]\s+)|\*\*|__|`")
 
 
 def plain_snippet(content: str | None, limit: int = 60) -> str:
@@ -180,7 +182,7 @@ def plain_snippet(content: str | None, limit: int = 60) -> str:
 
 #: `[^\W_]` is exactly `str.isalnum` (letters and digits, not the underscore); a
 #: compiled search per token is a quarter faster than `any(c.isalnum() ...)`.
-_HAS_ALNUM = re.compile(r"[^\W_]").search
+_HAS_ALNUM = lazy_compile(r"[^\W_]").search
 
 
 def note_words(content: str | None) -> int:
@@ -222,20 +224,20 @@ def _plain_lower(text: str) -> str:
 
 #: What a note's first line is when it is a name: a heading's or bold
 #: marks, the colon after "Ice Breakers:", a split "Follow- Up" (INBOX 1420).
-_MARK = re.compile(r"[*_`]")
-_SPLIT_HYPHEN = re.compile(r"(?<=[A-Za-z])- (?=[A-Z][a-z])")
-_ARTICLE = re.compile(r"(?:the|a|an)\b", re.I)
+_MARK = lazy_compile(r"[*_`]")
+_SPLIT_HYPHEN = lazy_compile(r"(?<=[A-Za-z])- (?=[A-Z][a-z])")
+_ARTICLE = lazy_compile(r"(?:the|a|an)\b", re.I)
 #: "Here are some refined, non-corny pickup ... starters that work ...": the
 #: words that present a list, and where the thing presented ends.
-_PRESENTING = re.compile(r"^(?:here(?:'s| is| are)|these are|this is|below are)\s+(?:some|a few|a list of|my|a|an)?\s*", re.I)
-_PRESENTED_END = re.compile(r"(?<!\s)\s+(?:that|which|who|to|for|i|you|we)\b|:", re.I)
+_PRESENTING = lazy_compile(r"^(?:here(?:'s| is| are)|these are|this is|below are)\s+(?:some|a few|a list of|my|a|an)?\s*", re.I)
+_PRESENTED_END = lazy_compile(r"(?<!\s)\s+(?:that|which|who|to|for|i|you|we)\b|:", re.I)
 #: Where a long first sentence can end on a whole clause: "I had work today
 #: and a friend was sad | so I stayed with her".
-_CLAUSE_BREAK = re.compile(r"\s+(?:so|but|because|then|and then|which|and)\s+", re.I)
+_CLAUSE_BREAK = lazy_compile(r"\s+(?:so|but|because|then|and then|which|and)\s+", re.I)
 #: "My uni days this week are Tuesday and Thursday": a sentence about
 #: something is named by its subject, "the note on your uni days this week".
-_SUBJECT_VERB = re.compile(r"^((?:[\w'-]+\s+){0,5}?[\w'-]+)\s+(?:is|are|was|were|means|refers to)\b", re.I)
-_EMOTICON_END = re.compile(r"\s*(?:[:;=][-']?[()DPpOo/|\\]+|<3)\s*$")
+_SUBJECT_VERB = lazy_compile(r"^((?:[\w'-]+\s+){0,5}?[\w'-]+)\s+(?:is|are|was|were|means|refers to)\b", re.I)
+_EMOTICON_END = lazy_compile(r"\s*(?:[:;=][-']?[()DPpOo/|\\]+|<3)\s*$")
 #: The longest first clause a name may quote whole.
 _NAME_WORDS = 7
 _QUOTE_WORDS = 12
@@ -305,7 +307,7 @@ def clipped_name(note: dict) -> str:
 
 #: A verb that makes a short line a sentence, after its first word (the
 #: first is the imperative's or the dropped "I"'s, read by own_title's guards).
-_FINITE = re.compile(r"\s(?:is|are|was|were|has|had|starts|started|begins|began|ends|ended|opens|closes|"
+_FINITE = lazy_compile(r"\s(?:is|are|was|were|has|had|starts|started|begins|began|ends|ended|opens|closes|"
                      r"comes|came|goes|went|looks|sent|wants|needs|says|said|gets|got|takes|took|"
                      #: A regular past with its place or time after it: "Group
                      #: project meeting moved to Friday" says something (1461).
@@ -348,7 +350,7 @@ def lower_name(text: str) -> str:
     return _lower(text)
 
 
-NON_LATIN = re.compile(r"[\u0400-\u052f\u0590-\u06ff\u0900-\u097f\u0e00-\u0e7f\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af]")
+NON_LATIN = lazy_compile(r"[\u0400-\u052f\u0590-\u06ff\u0900-\u097f\u0e00-\u0e7f\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af]")
 
 
 def own_title(content: str) -> str:
@@ -383,7 +385,7 @@ def _presented(body: str) -> str:
 
 #: A diary line with its "I" dropped opens on a verb in the past: "had
 #: design class today", "went to the gym", "finished my assignment".
-_DIARY_VERB = re.compile(
+_DIARY_VERB = lazy_compile(
     r"^(?:had|went|met|got|made|did|saw|took|ate|bought|came|felt|found|gave|heard|kept|left|lost|paid|ran|sent|"
     r"slept|spent|told|wore|won|wrote|began|brought|caught|drove|flew|forgot|knew|rode|sat|sold|spoke|swam|"
     r"taught|woke|built|held|"
@@ -401,13 +403,13 @@ _DIARY_VERB = re.compile(
 )
 #: Words of when, said by the sentence and never by a name ("today" is the
 #: note's own day; the digest says it as a date, INBOX 1461).
-_WHEN_WORDS = re.compile(r"\s*\b(?:today|yesterday|tonight|this (?:morning|afternoon|evening|week)|last (?:night|week))\b", re.I)
-_TRAILING_PARTICLE = re.compile(r"\s+(?:back|up|out|off|again|too)$", re.I)
+_WHEN_WORDS = lazy_compile(r"\s*\b(?:today|yesterday|tonight|this (?:morning|afternoon|evening|week)|last (?:night|week))\b", re.I)
+_TRAILING_PARTICLE = lazy_compile(r"\s+(?:back|up|out|off|again|too)$", re.I)
 
 
 #: "Felt really good after the run today": the note is about what the feeling
 #: followed, "your note on the run", never the feeling itself.
-_FEELING = re.compile(
+_FEELING = lazy_compile(
     r"^(?:felt|feel|feeling|was|am|were)\s+(?:\w+\s+){0,3}?(?:after|about|during|before|at|from|with)\s+(?P<what>.+)$", re.I)
 
 
