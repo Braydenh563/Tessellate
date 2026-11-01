@@ -143,6 +143,13 @@ LINTS=(tests/test_style_scale.py tests/test_ui_signatures.py tests/test_css_brac
   # A request inside an assert: CodeQL flags each new one on push.
   tests/test_codeql_shapes.py
   tests/test_plan_hygiene.py tests/test_readme_freshness.py tests/test_vendor_licences.py
+  # Per-file ledgers that go stale when code moves between files or a split
+  # lowers a function: each turned CI red once on 2026-11-01 after a gate had
+  # passed (the complexity seed only shrinks, a toast or kebab table names the
+  # file it lives in, storage goes through prefs, a module's line cap). About
+  # 30 seconds, most of it the complexity walk.
+  tests/test_complexity.py tests/test_error_toasts.py tests/test_icon_conventions.py
+  tests/test_prefs_module.py tests/test_module_line_caps.py
   # Mirror drift (docs/CHANGELOG.md and friends) belongs here rather than in
   # --changed: the file that goes stale is a `.md` at the repo root, and the
   # changed-test heuristic matches on a test naming a changed *source* file, so
