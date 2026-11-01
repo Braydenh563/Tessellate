@@ -32,7 +32,9 @@ WRITE = re.compile(
     r"|\bapiJson\([^;]*?method:\s*[\"'](?:PUT|PATCH)[\"']"
     r"|\bwbMapSetNodeStyle\((?![^;]*\brows\b)"
 )
-LOOP = re.compile(r"\bfor\s*\([^)]*\b(?:of|in)\b[^)]*\)|\bfor\s*\(\s*let\b[^)]*\)|\.forEach\(|\.map\(")
+#: A loop's opening: its head is read by balance, not by `[^)]*`, so a head
+#: holding a call (`of es.entries()`) still reaches the body (review 1101).
+LOOP = re.compile(r"\b(?:for|while)\s*\(|\.(?:forEach|map|reduce)\(")
 
 #: function name -> why a loop in it may write one item at a time.
 ALLOWED = {
@@ -59,9 +61,19 @@ def _braced(text: str, at: int) -> str:
     return text[at:end]
 
 
+def _close(text: str, start: int) -> int:
+    """The index just past the `)` that closes a `(` opened before `start`."""
+    depth, end = 1, start
+    while end < len(text) and depth:
+        depth += {"(": 1, ")": -1}.get(text[end], 0)
+        end += 1
+    return end
+
+
 def _body(text: str, start: int, is_for: bool) -> str:
     """The loop's body: its braces, its one statement, or `.map(`'s parentheses."""
     if is_for:
+        start = _close(text, start)
         rest = text[start:].lstrip()
         at = len(text) - len(rest)
         return _braced(text, at) if rest.startswith("{") else text[at:text.find(";", at) + 1]
@@ -78,7 +90,7 @@ def loops_that_write(text: str) -> set[str]:
     names = [(m.start(), m.group(1)) for m in re.finditer(r"^(?:async\s+)?function\s+(\w+)", text, re.M)]
     found: set[str] = set()
     for m in LOOP.finditer(text):
-        if WRITE.search(_body(text, m.end(), m.group(0).startswith("for"))):
+        if WRITE.search(_body(text, m.end(), not m.group(0).startswith("."))):
             found.add(next((n for p, n in reversed(names) if p <= m.start()), "?"))
     return found
 
@@ -117,5 +129,12 @@ def test_the_rule_sees_what_it_is_meant_to():
         "    await wbMapSetNodeStyle(item, { a: 1 }, { rows });\n    rows.push(item);\n  }\n  await wbSaveMany(rows);\n}\n"
     )
     assert loops_that_write(good) == set()
+    headed = (
+        "async function wbH(es) {\n  for (const [i, e] of es.entries()) {\n    e.item.x = i;\n"
+        "    await wbSaveObject(e.item);\n  }\n}\n"
+    )
+    assert loops_that_write(headed) == {"wbH"}
+    looped = "async function wbW(q) {\n  while (q.length) {\n    await wbSaveNode(q.pop());\n  }\n}\n"
+    assert loops_that_write(looped) == {"wbW"}
     once = "async function wbO(item) {\n  await wbSaveObject(item);\n}\n"
     assert loops_that_write(once) == set()

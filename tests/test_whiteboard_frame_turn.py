@@ -48,7 +48,8 @@ def test_a_cancelled_turn_puts_the_contents_back() -> None:
 
 
 def test_the_grip_title_names_the_contents_and_ctrl() -> None:
-    assert "wbRotateGripTitle(d.kind)" in WB
+    # BD3 builds the grip lazily from the item kind (`wbEnsureHandles`).
+    assert ".attr(\"title\", wbRotateGripTitle(kind))" in WB
     assert "Ctrl turns the frame alone" in _fn("wbRotateGripTitle")
 
 

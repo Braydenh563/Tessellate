@@ -89,7 +89,7 @@ def test_tidy_as_a_tree_follows_the_connectors_and_shows_only_when_it_applies():
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     tidy = _function(WB, "wbTidySelection")
     # Laid out with d3.tree along the drawn direction, one move batch for Undo.
-    assert "d3.tree().nodeSize([breadth, rank])" in tidy and "wbPushMoveBatch(pushed)" in tidy
+    assert "d3.tree().nodeSize([breadth, rank])" in tidy and "wbCommitMoves(rows, pushed)" in tidy  # BD2: one save, one undo step
     assert "!into.has(k)" in tidy  # a box no connector points into is a root
     for cmd in ("tidy-down", "tidy-right"):
         assert f'id: "{cmd}"' in cmds and 'needs: "tree"' in cmds.split(f'id: "{cmd}"')[1].split("\n")[0]

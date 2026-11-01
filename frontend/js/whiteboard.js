@@ -2552,6 +2552,9 @@ async function wbGroupSelection() {
     wbShortenGroupIds(entries, rows);
     const chains = entries.map((e) => [groupId, ...wbGroupChain(e.item)].join(WB_GROUP_SEP));
     if (chains.some((c) => c.length > WB_GROUP_MAX_LEN)) {
+      //: The shortened ids above are already on the items; they are saved
+      //: even when the group is refused, or the board and the server differ.
+      if (rows.length) await wbSaveMany(rows);
       toast("Groups nest five deep at most.");
       return;
     }
@@ -5174,8 +5177,8 @@ function wbMoveItemBy(kind, id, item, dx, dy, rows) {
 //: The tail every selection action shares: the changed items saved in one
 //: request, then their undo entries pushed as one step.
 async function wbCommitMoves(rows, entries) {
-  await wbSaveMany(rows);
-  wbPushMoveBatch(entries);
+  //: A refused batch has reloaded the board, so there is nothing to undo.
+  if (await wbSaveMany(rows)) wbPushMoveBatch(entries);
 }
 
 //: Pushes N per-item move entries as the one undo step the user actually
@@ -23095,16 +23098,30 @@ async function wbSaveMany(rows) {
   for (const { kind, item } of waiting) await wbSaveRow(kind, item);
   if (ready.length < 2) {
     for (const { kind, item } of ready) await wbSaveRow(kind, item);
-    return;
+    return true;
   }
+  //: The route takes at most 5,000 of a kind a request; a larger selection
+  //: goes in slices of that size (each slice all or nothing, like move-many).
+  for (let at = 0; at < ready.length; at += WB_SAVE_MANY_MAX) {
+    if (!(await wbSaveManyBatch(ready.slice(at, at + WB_SAVE_MANY_MAX)))) return false;
+  }
+  return true;
+}
+
+const WB_SAVE_MANY_MAX = 5000;
+
+//: One `save-many` request. False (after reloading the board) when it fails.
+async function wbSaveManyBatch(slice) {
   const body = { nodes: [], sketches: [], objects: [] };
-  for (const { kind, item } of ready) body[WB_KIND_INFO[kind].list].push({ id: item.id, ...WB_KIND_INFO[kind].payload(item) });
+  for (const { kind, item } of slice) body[WB_KIND_INFO[kind].list].push({ id: item.id, ...WB_KIND_INFO[kind].payload(item) });
   try {
     await apiJson("/whiteboard/items/save-many", { method: "PUT", body: JSON.stringify(body) });
+    return true;
   } catch {
     recordBrowserLog("WARN", ["[Whiteboard] a selection is stale: reloading the board"]);
     await fetchWhiteboardState();
     wbScheduleRender();
+    return false;
   }
 }
 
