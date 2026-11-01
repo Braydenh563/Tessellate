@@ -745,15 +745,8 @@ def _apply_open(session: Session, body: ChatRequest) -> None:
         return
     _first_more_is_this(body)
     if composer_digest.about_this(body.question):
-        if _open_surface(session, body):
-            _attached_only(body)
+        if _apply_open_this(session, body):
             return
-        #: A note binned or made private since it was opened is not read;
-        #: the open category stands in (`_attached_notes`' own rule).
-        if body.open_note_id and _attached_notes(session, [body.open_note_id]):
-            body.note_ids = [body.open_note_id]
-        elif body.open_category:
-            body.note_ids = _category_note_ids(session, body.open_category)
     elif body.open_note_id and composer_open.kind(body.question):
         #: "What's left to do?" with a note open is about that note (the
         #: 22-10 bug doc: Ask gave one reply for every note), unless the
@@ -768,6 +761,21 @@ def _apply_open(session: Session, body: ChatRequest) -> None:
             body.note_ids = _category_note_ids(session, named)
     if body.note_ids:
         body.attached_notes_only = True
+
+
+def _apply_open_this(session: Session, body: ChatRequest) -> bool:
+    """"Summarise this": the open document or board alone (True, done), else
+    the open note, else the open category."""
+    if _open_surface(session, body):
+        _attached_only(body)
+        return True
+    #: A note binned or made private since it was opened is not read;
+    #: the open category stands in (`_attached_notes`' own rule).
+    if body.open_note_id and _attached_notes(session, [body.open_note_id]):
+        body.note_ids = [body.open_note_id]
+    elif body.open_category:
+        body.note_ids = _category_note_ids(session, body.open_category)
+    return False
 
 
 def _nothing_open(body: ChatRequest) -> bool:
