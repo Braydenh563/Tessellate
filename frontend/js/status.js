@@ -341,7 +341,11 @@ function keepToastAction(message, label, run, { go = null, record = true, kind =
   //: entries do (`spaceEnterFor`); the bell's row runs the same function.
   if (undo) {
     const [space, inner] = [activeSpaceId(), run];
-    run = async () => ((await spaceEnterFor({ space })) ? inner() : toast("Couldn't go back to the space it was made in.", true));
+    run = async function backThenRun() {
+      if (await spaceEnterFor({ space })) return inner();
+      //: The space may have been deleted since: a situation, not a fault.
+      toast("Couldn't go back to the space it was made in.", "info", { action: ["Try again", backThenRun] });
+    };
   }
   if (!record) return () => run();
   const id = recordNotification({

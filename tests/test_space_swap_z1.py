@@ -519,7 +519,7 @@ def test_a_toast_undo_pressed_after_a_switch_enters_its_space_first() -> None:
         ["enter", "alpha"], ["ran"],
         ["ran"],
         ["enter", "beta"], ["ran"],
-        ["enter", "gone"], ["toast", "Couldn't go back to the space it was made in.", True],
+        ["enter", "gone"], ["toast", "Couldn't go back to the space it was made in.", "info"],
     ]
 
 
