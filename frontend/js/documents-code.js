@@ -2257,9 +2257,16 @@ function docIndentGuides(CM, unit) {
   //: they are.
   const size = unit === "\t" ? 0 : Math.max(1, Math.min(8, unit.length));
   const mark = Decoration.mark({ class: size ? `cm-indent-guide cm-indent-w${size}` : "cm-indent-guide" });
+  //: The space's width is the face's, so it is measured when the face
+  //: changes, not on every geometry change (a key that adds a line is one;
+  //: 173 ms of a 20-key run at 4x, audit 1031 CE3).
   const measureSpace = (view) => {
+    const font = getComputedStyle(view.contentDOM).font;
+    const seen = (docIndentGuides.fonts ||= new WeakMap());
+    if (seen.get(view.contentDOM) === font) return;
+    seen.set(view.contentDOM, font);
     const ctx = (docIndentGuides.canvas ||= document.createElement("canvas")).getContext("2d");
-    ctx.font = getComputedStyle(view.contentDOM).font;
+    ctx.font = font;
     view.contentDOM.style.setProperty("--doc-space-w", `${ctx.measureText(" ").width}px`);
   };
   const build = (view) => {
@@ -2334,15 +2341,36 @@ function docBracketColours(CM) {
     const found = docBracketDepths(view.state.sliceDoc(0, end), ranges[0].from, inCode);
     return Decoration.set(found.map(([i, depth]) => marks[depth % 3].range(i, i + 1)));
   };
+  //: **Mapped on a keystroke, counted again once the typing pauses** (audit
+  //: 1031 CE3: this pass runs from the top of the file to the end of what is
+  //: shown, with a tree lookup per bracket: 567 ms of a 20-key run in a
+  //: 7,000-line file at 4x). Each key moves the colours already drawn with the
+  //: change, so a bracket typed is plain and a depth that moved is stale for
+  //: a fifth of a second; a scroll still counts at once, since nothing is
+  //: drawn yet where it lands.
   docBracketColourCache = ViewPlugin.fromClass(
     class {
       constructor(view) {
+        this.view = view;
+        this.timer = 0;
         this.decorations = build(view);
       }
       update(update) {
-        if (update.docChanged || update.viewportChanged || CM.language.syntaxTree(update.startState) !== CM.language.syntaxTree(update.state)) {
-          this.decorations = build(update.view);
-        }
+        const moved = CM.language.syntaxTree(update.startState) !== CM.language.syntaxTree(update.state);
+        if (update.docChanged) this.decorations = this.decorations.map(update.changes);
+        if (update.docChanged || moved) this.later();
+        else if (update.viewportChanged) this.decorations = build(update.view);
+      }
+      later() {
+        clearTimeout(this.timer);
+        this.timer = setTimeout(() => {
+          this.timer = 0;
+          this.decorations = build(this.view);
+          this.view.dispatch({});
+        }, 200);
+      }
+      destroy() {
+        clearTimeout(this.timer);
       }
     },
     { decorations: (p) => p.decorations }
@@ -2362,9 +2390,13 @@ function docBracketColours(CM) {
 //: run of lines, a function is not.
 const DOC_SYMBOL_EXTS = new Set(["js", "ts", "py", "css"]);
 
-function docCodeSymbols(CM, state, ext) {
+//: `at`, when given, is a window of one position: only the symbols that
+//: contain it, found by walking down to it rather than over the whole tree
+//: (sticky scroll asks about the top line on every scroll and keystroke: the
+//: full pass over a 7,000-line file was 57 ms a key at 4x, audit 1031 CE3).
+function docCodeSymbols(CM, state, ext, at = null) {
   if (!DOC_SYMBOL_EXTS.has(ext)) return [];
-  const tree = CM.language.ensureSyntaxTree(state, state.doc.length, 50) || CM.language.syntaxTree(state);
+  const tree = at === null ? CM.language.ensureSyntaxTree(state, state.doc.length, 50) || CM.language.syntaxTree(state) : CM.language.syntaxTree(state);
   const text = (node) => state.sliceDoc(node.from, node.to);
   const nameOf = (node, ...kinds) => {
     for (const kind of kinds) {
@@ -2376,6 +2408,7 @@ function docCodeSymbols(CM, state, ext) {
   const found = [];
   const stack = [];
   tree.iterate({
+    ...(at === null ? {} : { from: at, to: at }),
     enter: (ref) => {
       const node = ref.node;
       let label = "";
@@ -2479,8 +2512,6 @@ function docStickyScroll(CM) {
         this.dom.className = "cm-sticky hidden";
         this.dom.setAttribute("aria-hidden", "true");
         view.dom.appendChild(this.dom);
-        this.symbols = null;
-        this.tree = null;
         this.key = "";
         this.spec = { key: this, read: () => this.read(), write: (m) => this.write(m) };
         this.onScroll = () => this.schedule();
@@ -2496,23 +2527,21 @@ function docStickyScroll(CM) {
       }
       read() {
         const view = this.view;
-        const tree = CM.language.syntaxTree(view.state);
-        if (tree !== this.tree) {
-          this.tree = tree;
-          this.symbols = docCodeSymbols(CM, view.state, docFileType().ext);
-        }
+        //: Only what contains the top line, not the file's whole list (CE3).
+        const ext = docFileType().ext;
+        const headersAt = (pos) => docStickyHeaders(docCodeSymbols(CM, view.state, ext, pos), pos, view.state.doc.lineAt(pos).number);
         const scroller = view.scrollDOM.getBoundingClientRect();
         const outer = view.dom.getBoundingClientRect();
         const content = view.contentDOM.getBoundingClientRect();
         const lineHeight = view.defaultLineHeight;
         let top = view.lineBlockAtHeight(Math.max(0, scroller.top - view.documentTop));
-        let headers = docStickyHeaders(this.symbols, top.from, view.state.doc.lineAt(top.from).number);
+        let headers = headersAt(top.from);
         //: The pinned lines cover the lines under them: ask again from the
         //: first line they leave showing, so a scope that ends under the
         //: overlay is not still pinned.
         if (headers.length) {
           top = view.lineBlockAtHeight(Math.max(0, scroller.top - view.documentTop + headers.length * lineHeight));
-          headers = docStickyHeaders(this.symbols, top.from, view.state.doc.lineAt(top.from).number);
+          headers = headersAt(top.from);
         }
         //: The code's own face and line box, and its lines' left padding, so
         //: a pinned line sits column for column over the line it repeats.
