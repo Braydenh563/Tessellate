@@ -1005,6 +1005,8 @@ async function agentCommitFiles() {
 }
 
 async function cmdPaletteAsk(text, { plan = null } = {}) {
+  //: The reply's drawing (chat-turn.js, answer-kit.js) is lazy; fetched at the first key typed here (lazy-entries.js).
+  if (!(await ensureModule("chatTurn"))) return lazyLoadFailed();
   const sentFiles = await agentCommitFiles();
   if (!sentFiles) {
     cmdPaletteInput.value = text;
@@ -1245,8 +1247,6 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
   const shortAsk = text.length > 48 ? `${text.slice(0, 47).trimEnd()}…` : text;
   setLabel($("command-palette-status"), `ph:spin Working on: ${shortAsk}`);
   try {
-    //: The plan's timeline (`agentTimeline`) is in the chat turn's lazy file.
-    if (!(await ensureModule("chatTurn"))) return lazyLoadFailed();
     await streamChat({
       progress: askLine,
       question: text,

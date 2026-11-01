@@ -60,7 +60,7 @@ def test_the_gate_runs_at_load_and_on_every_change_of_model():
 
 
 def test_a_note_menu_offers_translate_only_with_a_model():
-    menu = (ROOT / "frontend" / "js" / "menus.js").read_text(encoding="utf-8")
+    menu = (ROOT / "frontend" / "js" / "entry-menu.js").read_text(encoding="utf-8")
     assert re.search(r"\.\.\.\(aiIsOff\(\) \? \[\] : \[\{\n\s+label: \"ph:translate Translate\"", menu)
 
 

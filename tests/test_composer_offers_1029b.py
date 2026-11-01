@@ -153,7 +153,7 @@ def _citation_names(contents: list[str]) -> list[str]:
     node = shutil.which("node")
     if not node:
         pytest.skip("node is not installed")
-    text = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "capture-ask.js").read_text(encoding="utf-8")
+    text = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "answer-kit.js").read_text(encoding="utf-8")
     start = text.index("function citationName(")
     body = text[start : text.index("\n}\n", start) + 2]
     script = (

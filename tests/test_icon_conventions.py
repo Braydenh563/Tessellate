@@ -167,7 +167,7 @@ AGENT_ICON_PLACES = {
     "index.html": 7,  # the popup agent's head and input, Agent mode (toggle, segment), the Activity popup's Agent runs tab and its This session card (INBOX 1478); Activity wears ph-activity (decision 70)
     "agent-activity.js": 1,  # the status bar's runs
     "chat-turn.js": 1,  # an agent turn's run in the activity panel
-    "chat.js": 1,  # a past turn answered in Agent mode
+    "answer-kit.js": 1,  # a past turn answered in Agent mode (chat.js's bubble meta line, moved)
     "editor.js": 1,  # the chat palette's Agent mode row
     "phone-more.js": 2,  # More sheet: Ask the agent, Agent activity (moved out of phone-shell.js, INBOX 1314)
     "settings-panes.js": 1,  # the command palette's Ask the agent anything

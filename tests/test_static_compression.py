@@ -106,7 +106,10 @@ PIECE_CAP = 32_000
 #: the chat turn with its bubbles, timeline and run controls (chat-turn.js,
 #: bundle `chatTurn`) and `askQuestion` with its helpers (ask-compose.js).
 #: The cap is that total rounded up to the next 100.
-TOTAL_CAP = 301_600
+#: 2026-11-01, boot diet 2: 301,539 down to 275,355: the note card's menu rows
+#: (entry-menu.js), 87 answer-drawing functions only a reply, popup or Guide
+#: chat reaches (answer-kit.js) and a board's miniature (map-preview.js).
+TOTAL_CAP = 275_400
 
 
 def _served_gzip_size(client, name: str) -> int:

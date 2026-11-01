@@ -1,5 +1,7 @@
 {
  "account-recovery.js::mutation-observer": 1,
+ "answer-kit.js::interval": 1,
+ "answer-kit.js::raf": 2,
  "appearance-panel.js::raf": 1,
  "ask-chart.js::resize-observer": 1,
  "ask-compose.js::mutation-observer": 1,
@@ -21,10 +23,8 @@
  "captions.js::raf": 1,
  "capture-ask.js::raf": 5,
  "categories-panel.js::raf": 4,
- "chat-agent.js::raf": 2,
  "chat-time.js::mutation-observer": 1,
  "chat-turn.js::interval": 1,
- "chat.js::interval": 1,
  "chat.js::raf": 2,
  "chat.js::resize-observer": 1,
  "companion-menu.js::mutation-observer": 1,

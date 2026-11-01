@@ -168,15 +168,6 @@ function runSkill(skill) {
   startSkill(skill, {});
 }
 
-// A plan the model drew for the last request, run the way a skill is run
-// (§35K). The steps are sent back rather than parked on the server, for the
-// same reason `ask_user`'s answer is: nothing to expire, nothing lost on a
-// reload, and the run is a message in the conversation like any other.
-function startPlannedRun(goal, steps) {
-  switchTab("chat"); // same reason as startSkill: the run happens in the chat
-  sendChatMessage(goal, { plan: { goal, steps }, skipPlanMode: true });
-}
-
 async function startSkill(skill, values) {
   // Both entry points land here, the Skill dropdown and a run the agent started
   // itself (§33): so the dashboard's recent-skill buttons cover both.

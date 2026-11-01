@@ -741,24 +741,6 @@ async function renameCurrentConversation() {
   }
 }
 
-//: Called by both places that create a conversation from the composer. Silent
-//: and best-effort: a title that fails to stick is worth a wrong name in the
-//: sidebar, not an error over the answer that just arrived.
-function applyPendingChatTitle(conversationId, viewing) {
-  const wanted = chatPendingTitle;
-  chatPendingTitle = null;
-  if (!wanted) return false;
-  if (viewing) $("chat-title").textContent = wanted;
-  apiJson(`/conversations/${conversationId}`, {
-    method: "PUT",
-    body: JSON.stringify({ title: wanted }),
-    silent: true,
-  })
-    .then(() => loadConversationList())
-    .catch(() => {});
-  return true;
-}
-
 //: Built once, at boot, the header's ⋯ is the same for every conversation,
 //: unlike a note card's, which is rebuilt per row.
 mountChatActionsMenu();
@@ -1422,14 +1404,6 @@ function renderPlanToggle() {
   button.title = planModeOn
     ? "Plan mode is on, your next message is planned first, and the steps are shown before anything touches your notes. Click to turn off."
     : `Plan mode: plan the request first, ${aiNameNow()} draws the steps and shows them before it starts`;
-}
-
-// Applied by sendChatMessage on the way out, so every route into it, the Send
-// button, Enter, a suggestion chip, goes through planning when the mode is on.
-// Reading the flag at send time rather than at click time is the whole point.
-function applyPlanMode(question) {
-  if (!planModeOn) return null;
-  return `${question}\n\n${PLAN_PREFIX}`;
 }
 
 $("chat-plan").addEventListener("click", async () => {
