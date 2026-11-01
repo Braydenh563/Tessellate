@@ -14984,6 +14984,27 @@ const docProse = {
     for (const finding of inside) out.push({ ...finding, start: finding.start + from, end: finding.end + from });
     return { found: out.sort((a, b) => a.start - b.start), mask };
   },
+  //: **The findings move with the text** (INBOX 1526). `docProseFound` is made
+  //: for one text and the pass for the next one is a pause away, so between a
+  //: key and that pass every offset past the caret was stale and the plugin
+  //: drew none of them: the underlines below the line being typed on went out
+  //: and came back 150 ms later. Moved here through the edit's changes instead
+  //: (a copy per finding: the grammar cache's own objects are shared with the
+  //: list). A finding the edit went into no longer reads its text and is not
+  //: drawn; the start moves right of an insertion at it and the end stays left.
+  remap(changes) {
+    docProseFound = docProseFound.map((finding) => ({
+      ...finding,
+      start: changes.mapPos(finding.start, 1),
+      end: changes.mapPos(finding.end, -1),
+    }));
+  },
+  //: What the marks say, to know whether a repaint would draw anything new.
+  sig() {
+    return docProseFound.map((f) => `${f.rule}:${f.start}:${f.end}:${f.text}:${f.message}`).join("|");
+  },
+  painted: null,
+  frame: 0,
   //: The full pass, once the writer has paused: when the browser is idle, at
   //: the latest 1.5 s after.
   settle() {
@@ -15113,7 +15134,7 @@ function renderDocProse(again = false) {
   //: through an effect rather than by rebuilding anything: the decorations are
   //: computed from `docProseFound` over the visible lines, so the repaint is a
   //: screenful whatever the document's length.
-  docCmRepaintFindings();
+  docCmRepaintFindings(again);
   renderDocSuggestState();
   if (!panel.classList.contains("hidden")) docProsePanelSoon();
 }
@@ -19362,11 +19383,11 @@ function docFindingsPlugin(CM) {
   const { Decoration, ViewPlugin } = CM.view;
 
   function build(view) {
-    const text = docStr(view.state.doc);
+    const doc = view.state.doc;
     const ranges = [];
     docProseFound.forEach((finding, index) => {
       if (DOC_FINDING_SKIP.has(finding.rule)) return;
-      if (text.slice(finding.start, finding.end) !== finding.text) return;
+      if (doc.sliceString(finding.start, finding.end) !== finding.text) return;
       const visible = view.visibleRanges.some(
         (range) => finding.start < range.to && finding.end > range.from
       );
@@ -19381,6 +19402,7 @@ function docFindingsPlugin(CM) {
         }).range(finding.start, finding.end)
       );
     });
+    docProse.painted = docProse.sig();
     return Decoration.set(ranges, true);
   }
 
@@ -19395,6 +19417,7 @@ function docFindingsPlugin(CM) {
           update.transactions.some((tr) =>
             tr.effects.some((effect) => effect.is(docFindingsEffect))
           );
+        if (update.docChanged) docProse.remap(update.changes);
         if (update.docChanged || update.viewportChanged || told) {
           this.decorations = build(update.view);
         }
@@ -19405,12 +19428,30 @@ function docFindingsPlugin(CM) {
   return docFindingsPluginCache;
 }
 
-//: `renderDocProse` calls this whenever the list changes. Cheap enough to be
-//: unconditional: the rebuild walks `docProseFound`, which is rarely past a
-//: few dozen entries, and draws only what is on screen.
-function docCmRepaintFindings() {
+//: `renderDocProse` calls this whenever the list changes. The rebuild walks
+//: `docProseFound`, which is rarely past a few dozen entries, and draws only
+//: what is on screen. **It sends nothing when the marks would be the ones
+//: already drawn** (INBOX 1526): the plugin moves them with every edit, so the
+//: pass that follows a key mostly finds them where they are, and a grammar or
+//: link answer that changed nothing was a dispatch, a layout and 9 ms (4x) for
+//: no mark. Answers (`soon`) share a 16 ms beat (a timer, not a new frame loop:
+//: the wake-source census counts those): two that land together paint once.
+function docCmRepaintFindings(soon = false) {
   if (!docCmView || !docFindingsEffect) return;
-  docCmView.dispatch({ effects: docFindingsEffect.of(null) });
+  const send = () => {
+    docProse.frame = 0;
+    if (!docCmView || !docFindingsEffect) return;
+    const sig = docProse.sig();
+    if (sig === docProse.painted) return;
+    docProse.painted = sig;
+    docCmView.dispatch({ effects: docFindingsEffect.of(null) });
+  };
+  if (soon === true && !document.hidden) {
+    if (!docProse.frame) docProse.frame = setTimeout(send, 16);
+    return;
+  }
+  clearTimeout(docProse.frame);
+  send();
 }
 
 //: Build the view, hand the document over to it, and take the textarea out of

@@ -9,6 +9,7 @@ that answers "has this been done?" before anyone starts.
 
 ## INBOX resolved, 2026-11-01 (1524)
 
+- **1526, underlines after the caret dropped until the next render; each grammar answer a repaint of its own (found in prose-1101).** Built in the find1526 commit: `docProse.remap` moves `docProseFound` through each edit's changes, the plugin reads spans with `doc.sliceString`, and `docCmRepaintFindings` sends nothing when the marks are the ones drawn and lets answers share a 16 ms beat. Measured on :8889 vs the base on :8890, 4x, 50 digits in a 5,000-line document: repaint dispatches 104 to 1, underlines after the caret right after a key 0 of 6 in 7 of 10 probes to 6 of 6 in 10 of 10, long tasks 4,022 ms to 2,145 ms. `tests/test_find_repaint_1526.py`.
 - **1524, an overview counted four notes and told two; source 2 listed between 11 and 12; a quote's marker inside its bracket; no gap under a fold.** Built in 3823209 and 2cfa099: a label line holds one note's words (audit 1031 C5 for every label: notes written the same day were glued into one sentence under one citation); up to three untold notes are named ("The others are ..."), more are counted; Matching records sort by citation number; a full-width close ends a quote with no ASCII stop and the mark after it; `.long-fold` keeps its bottom gap. Measured on :8798: order 1 to 14, fold gap 6.4px. `tests/test_overview_counts_1524.py`.
 
 ## Moved from the agent-remaining lists, 2026-11-01 (ux1518-1101: shell, ux, extras)
