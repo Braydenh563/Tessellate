@@ -11,3 +11,5 @@ _score is hot (per candidate): timeit over 2,000 candidates before and after.
 - note: tests/test_composer*.py is about 10,000 tests, two hours at -n 2 under this load: run once at the end on the final head; per step the golden tests, voice, complexity and line caps
 - done: _opening, _others and _score characterisation (tests/test_composer_body_paths.py 1,327 cases, tests/test_select_score_paths.py 242 cases; every line of the three)
 - next: _opening and _others split (new code parked in scratchpad cmpcc/body_new.py), composer_body.py:38 and :182
+- done: _opening 28 and _others 30 to under 15 (composer_body.py `_opener_options`, `_fresh_openers`, `_OPENERS_BY_SHAPE`; `_other`, `_joiners`, `_by_note` also in `_timeline` and `_earlier`); not hot
+- next: _score split (new code in scratchpad cmpcc/select_new.py, bench cmpcc/bench_score.py), composer_select.py:150
