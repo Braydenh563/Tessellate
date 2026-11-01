@@ -2,7 +2,7 @@
 
 Generated 2026-11-01 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7526, frontend ids 2643, CSS sections 517, backend routes 638, backend modules 8231, test files 1779, tests 15361, plan headings 990, app scripts 28, boot scripts 37, script files 214.
+Counts: frontend functions 7526, frontend ids 2643, CSS sections 517, backend routes 638, backend modules 8231, test files 1779, tests 15363, plan headings 990, app scripts 28, boot scripts 37, script files 214.
 
 ## Frontend functions (7526)
 
@@ -11268,7 +11268,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | A chip's x: a round target inset evenly (INBOX 403) | frontend/css/08-consistency.css:4751 |
 | A dialog's head: title, its '?', icon-only actions, Close last | frontend/css/08-consistency.css:9087 |
 | A diff of two versions of the same text (DOCUMENTS_PLAN Phase 5 items 2, 3) | frontend/css/09-editor.css:499 |
-| A member of a group selection shows that it is selected, not how to | frontend/css/library-lazy.css:5273 |
+| A member of a group selection shows that it is selected, not how to | frontend/css/library-lazy.css:5281 |
 | A note card's text leads; its metadata steps back (INBOX 505) | frontend/css/08-consistency.css:10021 |
 | A note's buttons stay while its own menu is open (INBOX 679) | frontend/css/08-consistency.css:10463 |
 | A note's time: the same corner on every card | frontend/css/08-consistency.css:8472 |
@@ -11446,7 +11446,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | a help popover opens over the surface that asked for it (INBOX 205) | frontend/css/08-consistency.css:2563 |
 | a label that lost its capitals keeps its rank | frontend/css/08-consistency.css:4382 |
 | a list of rows reads as a list | frontend/css/07-whiteboard-misc.css:4393 |
-| a map line's end grips and the topic shapes (K31) | frontend/css/library-lazy.css:7239 |
+| a map line's end grips and the topic shapes (K31) | frontend/css/library-lazy.css:7247 |
 | a map's levels and a solid fill (MINDMAP_PLAN §14, decisions 38, 39) | frontend/css/library-lazy.css:3452 |
 | a menu is one column: rows, section labels and icons (INBOX 403) | frontend/css/08-consistency.css:8696 |
 | a model per feature (Settings, Models) | frontend/css/01-forms-settings.css:5582 |
@@ -11548,16 +11548,16 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | motion: a menu or popover grows from what opened it (INBOX 103, 2026-10-05) | frontend/css/10-responsive.css:230 |
 | motion: a note's hover card fades in (INBOX 1462) | frontend/css/graph-lazy.css:433 |
 | motion: a page arrives (INBOX 459 (2), 580) | frontend/css/08-consistency.css:9783 |
-| motion: a plus becomes a minus (INBOX 1506 B; the vocabulary is in | frontend/css/library-lazy.css:7780 |
+| motion: a plus becomes a minus (INBOX 1506 B; the vocabulary is in | frontend/css/library-lazy.css:7788 |
 | motion: a popup arrives, and leaves the way it came (INBOX 580, 2026-10-05) | frontend/css/08-consistency.css:9894 |
 | motion: a sidebar's contents arrive from its edge (INBOX 459 (2)) | frontend/css/08-consistency.css:9708 |
-| motion: an Insert menu's chevron turns open, as a select's does | frontend/css/library-lazy.css:7776 |
+| motion: an Insert menu's chevron turns open, as a select's does | frontend/css/library-lazy.css:7784 |
 | motion: one sliding indicator for every strip (INBOX 459 (2), 2026-10-05) | frontend/css/08-consistency.css:9566 |
 | motion: one vocabulary for what opens and folds (INBOX 1506 B) | frontend/css/08-consistency.css:9934 |
 | motion: the floating panels join the menu's recipe (INBOX 1415) | frontend/css/10-responsive.css:300 |
 | motion: the opening curtain lifts (INBOX 577) | frontend/css/08-consistency.css:9955 |
-| moved from 07-whiteboard-misc.css (boot CSS cap, 2026-10-17): the OCR workspace's own rules, whose selectors name only ocr-* classes and ids that no boot rule | frontend/css/library-lazy.css:6418 |
-| moved from 07-whiteboard-misc.css (canvasui, the boot CSS budget): board-only rules whose class names no boot file draws and no later boot rule competes with, in their old order | frontend/css/library-lazy.css:5082 |
+| moved from 07-whiteboard-misc.css (boot CSS cap, 2026-10-17): the OCR workspace's own rules, whose selectors name only ocr-* classes and ids that no boot rule | frontend/css/library-lazy.css:6426 |
+| moved from 07-whiteboard-misc.css (canvasui, the boot CSS budget): board-only rules whose class names no boot file draws and no later boot rule competes with, in their old order | frontend/css/library-lazy.css:5090 |
 | moved from the boot sheets (Brief 101a, room under the boot CSS cap): rules whose selectors name only the Library | frontend/css/library-lazy.css:16 |
 | moved from the boot sheets (the boot CSS budget, test_boot_budget.py): rules only the Library | frontend/css/library-lazy.css:830 |
 | narrow windows | frontend/css/sketch-pad.css:646 |
@@ -11641,9 +11641,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the bar: colours, size and style, the sheet | frontend/css/sketch-pad.css:114 |
 | the block bar (INBOX 421 b) | frontend/css/09-editor.css:948 |
 | the board panel, sorted into the questions it answers | frontend/css/07-whiteboard-misc.css:4976 |
-| the board picker's face on a phone (polish5-1031) | frontend/css/library-lazy.css:7676 |
+| the board picker's face on a phone (polish5-1031) | frontend/css/library-lazy.css:7684 |
 | the board's bar takes the floor of the whole touch band, not just 600 | frontend/css/10-responsive.css:2139 |
-| the board's context bar, wrapped (`wbUpdateSelectionBar`) | frontend/css/library-lazy.css:6903 |
+| the board's context bar, wrapped (`wbUpdateSelectionBar`) | frontend/css/library-lazy.css:6911 |
 | the boot splash: one progress indicator, not two | frontend/css/08-consistency.css:4305 |
 | the bottom docks | frontend/css/07-whiteboard-misc.css:9723 |
 | the chat dock follows its own width (INBOX 694) | frontend/css/10-responsive.css:2550 |
@@ -11652,12 +11652,12 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the chat toolbar, grouped (§36B) | frontend/css/06-timeline-dialogs.css:1445 |
 | the citation peek (INBOX 80) | frontend/css/02-chat-graph.css:3883 |
 | the code editor: gutter + monospace | frontend/css/04-chat-dock-appearance.css:4428 |
-| the code panel, one compact header and a padded body (the owner, | frontend/css/library-lazy.css:5015 |
+| the code panel, one compact header and a padded body (the owner, | frontend/css/library-lazy.css:5023 |
 | the composer dock (asked for directly) | frontend/css/04-chat-dock-appearance.css:886 |
 | the composer, as one surface | frontend/css/04-chat-dock-appearance.css:5203 |
 | the connections rail (WORLD_CLASS_PLAN D2; `renderNotesRail`) | frontend/css/04-chat-dock-appearance.css:290 |
 | the context bar (WHITEBOARD_PLAN.md Phase 2, decision 2) | frontend/css/07-whiteboard-misc.css:7070 |
-| the context bar's folded groups (`wbFoldContextBar`) | frontend/css/library-lazy.css:6936 |
+| the context bar's folded groups (`wbFoldContextBar`) | frontend/css/library-lazy.css:6944 |
 | the dashboard and the labels, de-vibecoded | frontend/css/08-consistency.css:3030 |
 | the dashboard's greeting banner, on a phone | frontend/css/07-whiteboard-misc.css:10416 |
 | the dashboard's quick actions stop wrapping | frontend/css/07-whiteboard-misc.css:10390 |
@@ -11668,16 +11668,16 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the dock above the editor | frontend/css/04-chat-dock-appearance.css:4108 |
 | the dock row below 1100 | frontend/css/07-whiteboard-misc.css:9822 |
 | the document editor's instruments | frontend/css/05-sidebars-themes.css:4637 |
-| the document history, side by side (DOCUMENTS 24 row 4, Brief 76) | frontend/css/library-lazy.css:4840 |
+| the document history, side by side (DOCUMENTS 24 row 4, Brief 76) | frontend/css/library-lazy.css:4848 |
 | the document toolbar's two folds | frontend/css/07-whiteboard-misc.css:5294 |
 | the documents editor | frontend/css/library-lazy.css:3299 |
 | the documents sidebar's vertical budget (§41) | frontend/css/07-whiteboard-misc.css:2166 |
-| the documents sidebar, redrawn as one tree (the owner, 2026-10-10: | frontend/css/library-lazy.css:4887 |
+| the documents sidebar, redrawn as one tree (the owner, 2026-10-10: | frontend/css/library-lazy.css:4895 |
 | the export dialog (WHITEBOARD_PLAN.md Phase 3, decision 4) | frontend/css/06-timeline-dialogs.css:2561 |
 | the faded notes card (WORLD_CLASS_PLAN 15, I4) | frontend/css/03-dashboard-widgets.css:4434 |
 | the field: the glyph inside, Stop only while something is loading | frontend/css/03-dashboard-widgets.css:1057 |
 | the file picker, in the app's own clothes | frontend/css/08-consistency.css:8929 |
-| the file type picker (INBOX 1482) | frontend/css/library-lazy.css:7717 |
+| the file type picker (INBOX 1482) | frontend/css/library-lazy.css:7725 |
 | the first steps (first-run.js; the head row, the fold and the bar are | frontend/css/05-sidebars-themes.css:3891 |
 | the flat looks carry no glow on a button | frontend/css/08-consistency.css:3690 |
 | the flat looks: a selected tab is a place, not an action | frontend/css/08-consistency.css:2896 |
@@ -11806,7 +11806,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/improve-lazy.css | 110 |
 | frontend/css/inbox-lazy.css | 306 |
 | frontend/css/lan-lazy.css | 131 |
-| frontend/css/library-lazy.css | 8053 |
+| frontend/css/library-lazy.css | 8061 |
 | frontend/css/lightbox-lazy.css | 425 |
 | frontend/css/manual-lazy.css | 161 |
 | frontend/css/math-editor-lazy.css | 99 |
@@ -15113,57 +15113,57 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_about_the_guide` | src/tessellate/ai/help_chat.py:2989 |
-| `_act_of` | src/tessellate/ai/help_chat.py:2728 |
-| `_aliased_topics` | src/tessellate/ai/help_chat.py:2767 |
-| `_aware` | src/tessellate/ai/help_chat.py:3466 |
-| `_beyond` | src/tessellate/ai/help_chat.py:3275 |
-| `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:2659 |
-| `_guide_lead` | src/tessellate/ai/help_chat.py:3363 |
-| `_guide_opening` | src/tessellate/ai/help_chat.py:3379 |
-| `_help_sentences` | src/tessellate/ai/help_chat.py:3346 |
-| `_keyword_in` | src/tessellate/ai/help_chat.py:2649 |
-| `_keyword_pattern` | src/tessellate/ai/help_chat.py:2581 |
-| `_keyword_regex` | src/tessellate/ai/help_chat.py:2645 |
-| `_lead_topic_first` | src/tessellate/ai/help_chat.py:3436 |
-| `_matching_topics` | src/tessellate/ai/help_chat.py:2807 |
-| `_meaning_topics` | src/tessellate/ai/help_chat.py:2887 |
-| `_normalise_keys` | src/tessellate/ai/help_chat.py:2604 |
-| `_nothing_matched` | src/tessellate/ai/help_chat.py:3199 |
-| `_off_topic` | src/tessellate/ai/help_chat.py:3039 |
-| `_outside_the_app` | src/tessellate/ai/help_chat.py:3007 |
-| `_place` | src/tessellate/ai/help_chat.py:3320 |
-| `_preference` | src/tessellate/ai/help_chat.py:3402 |
-| `_prompt_for` | src/tessellate/ai/help_chat.py:3102 |
-| `_read_as` | src/tessellate/ai/help_chat.py:3549 |
-| `_reading_topics` | src/tessellate/ai/help_chat.py:2750 |
-| `_repaired` | src/tessellate/ai/help_chat.py:2796 |
-| `_second_sentence` | src/tessellate/ai/help_chat.py:3350 |
-| `_state_line` | src/tessellate/ai/help_chat.py:3411 |
-| `_stated_lead` | src/tessellate/ai/help_chat.py:3420 |
-| `_tab_topics` | src/tessellate/ai/help_chat.py:3088 |
-| `answer` | src/tessellate/ai/help_chat.py:3629 |
-| `answer_stream` | src/tessellate/ai/help_chat.py:3564 |
-| `badges_for` | src/tessellate/ai/help_chat.py:2975 |
-| `composed_answer` | src/tessellate/ai/help_chat.py:3447 |
-| `help_block_for` | src/tessellate/ai/help_chat.py:3710 |
-| `help_listing` | src/tessellate/ai/help_chat.py:2946 |
-| `help_sentences` | src/tessellate/ai/help_chat.py:3329 |
-| `names_app` | src/tessellate/ai/help_chat.py:3694 |
-| `offline_answer` | src/tessellate/ai/help_chat.py:3495 |
-| `social_reply` | src/tessellate/ai/help_chat.py:3279 |
-| `source_names` | src/tessellate/ai/help_chat.py:2942 |
-| `system_answer` | src/tessellate/ai/help_chat.py:2924 |
-| `topic_title` | src/tessellate/ai/help_chat.py:2910 |
-| `topics_for` | src/tessellate/ai/help_chat.py:3046 |
-| `with_asks` | src/tessellate/ai/help_chat.py:3484 |
+| `_about_the_guide` | src/tessellate/ai/help_chat.py:3005 |
+| `_act_of` | src/tessellate/ai/help_chat.py:2744 |
+| `_aliased_topics` | src/tessellate/ai/help_chat.py:2783 |
+| `_aware` | src/tessellate/ai/help_chat.py:3482 |
+| `_beyond` | src/tessellate/ai/help_chat.py:3291 |
+| `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:2675 |
+| `_guide_lead` | src/tessellate/ai/help_chat.py:3379 |
+| `_guide_opening` | src/tessellate/ai/help_chat.py:3395 |
+| `_help_sentences` | src/tessellate/ai/help_chat.py:3362 |
+| `_keyword_in` | src/tessellate/ai/help_chat.py:2665 |
+| `_keyword_pattern` | src/tessellate/ai/help_chat.py:2597 |
+| `_keyword_regex` | src/tessellate/ai/help_chat.py:2661 |
+| `_lead_topic_first` | src/tessellate/ai/help_chat.py:3452 |
+| `_matching_topics` | src/tessellate/ai/help_chat.py:2823 |
+| `_meaning_topics` | src/tessellate/ai/help_chat.py:2903 |
+| `_normalise_keys` | src/tessellate/ai/help_chat.py:2620 |
+| `_nothing_matched` | src/tessellate/ai/help_chat.py:3215 |
+| `_off_topic` | src/tessellate/ai/help_chat.py:3055 |
+| `_outside_the_app` | src/tessellate/ai/help_chat.py:3023 |
+| `_place` | src/tessellate/ai/help_chat.py:3336 |
+| `_preference` | src/tessellate/ai/help_chat.py:3418 |
+| `_prompt_for` | src/tessellate/ai/help_chat.py:3118 |
+| `_read_as` | src/tessellate/ai/help_chat.py:3565 |
+| `_reading_topics` | src/tessellate/ai/help_chat.py:2766 |
+| `_repaired` | src/tessellate/ai/help_chat.py:2812 |
+| `_second_sentence` | src/tessellate/ai/help_chat.py:3366 |
+| `_state_line` | src/tessellate/ai/help_chat.py:3427 |
+| `_stated_lead` | src/tessellate/ai/help_chat.py:3436 |
+| `_tab_topics` | src/tessellate/ai/help_chat.py:3104 |
+| `answer` | src/tessellate/ai/help_chat.py:3645 |
+| `answer_stream` | src/tessellate/ai/help_chat.py:3580 |
+| `badges_for` | src/tessellate/ai/help_chat.py:2991 |
+| `composed_answer` | src/tessellate/ai/help_chat.py:3463 |
+| `help_block_for` | src/tessellate/ai/help_chat.py:3726 |
+| `help_listing` | src/tessellate/ai/help_chat.py:2962 |
+| `help_sentences` | src/tessellate/ai/help_chat.py:3345 |
+| `names_app` | src/tessellate/ai/help_chat.py:3710 |
+| `offline_answer` | src/tessellate/ai/help_chat.py:3511 |
+| `social_reply` | src/tessellate/ai/help_chat.py:3295 |
+| `source_names` | src/tessellate/ai/help_chat.py:2958 |
+| `system_answer` | src/tessellate/ai/help_chat.py:2940 |
+| `topic_title` | src/tessellate/ai/help_chat.py:2926 |
+| `topics_for` | src/tessellate/ai/help_chat.py:3062 |
+| `with_asks` | src/tessellate/ai/help_chat.py:3500 |
 
 ### src/tessellate/ai/help_topics_more.py (2)
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3057 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3183 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3058 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3184 |
 
 ### src/tessellate/ai/inbox.py (8)
 
@@ -22722,7 +22722,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15361)
+## Tests (15363)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24328,10 +24328,10 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_ux1005_copy.py | 6 |
 | tests/test_ux_1031_ask.py | 8 |
 | tests/test_ux_1031_board.py | 5 |
-| tests/test_ux_1031_code.py | 8 |
+| tests/test_ux_1031_code.py | 9 |
 | tests/test_ux_1031_counts.py | 5 |
 | tests/test_ux_1031_dock.py | 3 |
-| tests/test_ux_1031_docs.py | 4 |
+| tests/test_ux_1031_docs.py | 5 |
 | tests/test_ux_1031_focus.py | 6 |
 | tests/test_ux_1031_graph.py | 3 |
 | tests/test_ux_1031_names.py | 7 |

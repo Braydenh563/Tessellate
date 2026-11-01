@@ -62,3 +62,12 @@ def test_the_word_goal_reports_its_own_limits():
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     field = html.split('id="doc-word-goal-input"', 1)[1].split(">", 1)[0]
     assert 'min="0"' in field and 'max="1000000"' in field
+
+
+def test_the_guide_says_replace_all_asks_before_more_than_one_document():
+    # Left out of documents-controls (1,893 of 1,900 characters) in 1031: it has a topic of its own now.
+    from tessellate.ai import help_chat
+
+    topics = {t["id"]: t["body"] for t in help_chat.HELP_TOPICS}
+    assert "second" in topics["documents-replace"] and "Undo" in topics["documents-replace"]
+    assert len(topics["documents-controls"]) < 1900
