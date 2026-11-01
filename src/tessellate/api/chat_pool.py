@@ -16,7 +16,7 @@ from datetime import date
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import composer, composer_frame, composer_lists, composer_money, composer_slots, composer_sum, composer_versus, glossary, intent, librarian, neighbours, question_noise
+from tessellate.ai import composer, composer_frame, composer_lists, composer_money, composer_slots, composer_sum, composer_versus, glossary, librarian, neighbours, question_noise
 from tessellate.api.chat_attach import _MEDIA_REF, _attached_boards, _attachment_readings, _media_readings, _mostly_pictures, _named_sources, _picture_alts, _picture_sizes
 from tessellate.core import deps
 from tessellate.core.database import Category, Document, Entry, EntryLink, like_escape, LIKE_ESCAPE, MediaUpload
@@ -213,18 +213,6 @@ class _NoteCtx:
     time_words: dict
     files_on: dict
     as_of: "date | None"
-
-
-def _detect_intent(question: str, force_notes_intent: bool, *attachments: list) -> str:
-    detected = intent.classify(question)
-    # `body.answering_agent` (Tier 1 section 4): a reply to the agent's own
-    # question is about the notebook by construction, however smalltalk-shaped
-    # the reply itself reads ("yes", "ok"). Attaching a note (or a document) is
-    # likewise a statement that this is about the notebook, so it overrides the
-    # classifier: the client already knows what the request actually is.
-    if force_notes_intent or any(attachments):
-        return intent.NOTES
-    return detected
 
 
 def _in_window(found: _Found, session: Session, asked, question: str) -> None:  # noqa: ANN001
