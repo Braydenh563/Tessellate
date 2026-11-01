@@ -33,7 +33,7 @@ from pydantic import BaseModel, Field
 
 from tessellate.ai import embeddings as embeddings_module
 from tessellate.ai import model_manager as jobs
-from tessellate.core import bgtasks, deps, embedmodels, extras, filejobs, jobruns, jobstore, taskhistory
+from tessellate.core import bgtasks, deps, embedmodels, extras, jobruns, jobstore, taskhistory
 from tessellate.core import jobs as bgpool
 from tessellate.api.this_computer import is_another_device, this_computer_only
 from tessellate.entry import import_report
@@ -165,7 +165,7 @@ def _pool_rows() -> list[dict]:
     of 200 pictures looked exactly like an idle app (WORLD_CLASS_PLAN A3)."""
     from tessellate.ai import captioning, janitor
 
-    rows = list(filejobs.running())
+    rows = bgpool.readings()
     #: A caption that is running is already a row above, with the picture's
     #: own name ("Captioning sketch-..."); the pool's row for the same job
     #: ("Describing an image") made one caption look like two (owner's

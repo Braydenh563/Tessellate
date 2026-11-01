@@ -288,7 +288,6 @@ Tessellate/
 │   │   ├── bgtasks.py       # quitting background work: one job, or all
 │   │   ├── taskhistory.py   # "recently finished" (in memory) for Settings >
 │   │   │                    #   Background tasks
-│   │   ├── filejobs.py      # which files the models are reading right now
 │   │   ├── media_process.py # where OCR, captioning and vision OCR are
 │   │   │                    #   triggered for an upload
 │   │   ├── ocr.py           # local Tesseract OCR; `engine_status` reports

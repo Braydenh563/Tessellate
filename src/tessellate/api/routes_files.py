@@ -38,7 +38,7 @@ from tessellate.core import (
     deps,
     diskspace,
     docview,
-    filejobs,
+    jobs,
     media_gc,
     media_process,
     ocr,
@@ -485,7 +485,7 @@ def _read_locally(
     extractor for everything else: a .docx or a text-layer PDF has real text
     in it that no OCR pass should be guessing at.
 
-    Registered with `filejobs` even though no model is involved: Tesseract on
+    Announced as a reading (`jobs.reading`) even though no model is involved: Tesseract on
     a long scan is one of the slowest things this app does, and "is it
     working or is it stuck" is the same question whether the work is a model
     or a binary.
@@ -493,7 +493,7 @@ def _read_locally(
     choice = _checked_engine(body.engine) if is_image else ""
     if is_image and (reason := ocr.unavailable_reason(choice)):
         raise HTTPException(status_code=409, detail=reason)
-    with filejobs.reading("ocr", attachment.id, attachment.filename):
+    with jobs.reading("ocr", attachment.id, attachment.filename):
         if is_image:
             text = _local_text(path, choice)
         else:
@@ -557,7 +557,7 @@ def _describe_from_text(
         if not deps.get_ollama().is_running():
             raise HTTPException(status_code=409, detail="The AI model isn't running.")
         models = deps.get_model_manager()
-        with filejobs.reading("describe", attachment.id, attachment.filename, models.utility_model()):
+        with jobs.reading("describe", attachment.id, attachment.filename, models.utility_model()):
             described = captioning.describe_document(readable, models, deps.get_ollama())
         attachment.caption = described or None
         attachment.caption_model = models.utility_model() if described else None
@@ -592,7 +592,7 @@ def _caption_with_vision(attachment: Attachment, path: Path, is_image: bool, mod
     # `vision_reader` contract), not an object with a `.read`: calling
     # `.read(path)` on it was the reported 500 on "generate a caption" for
     # a PDF ("'function' object has no attribute 'read'").
-    with filejobs.reading("describe", attachment.id, attachment.filename, model):
+    with jobs.reading("describe", attachment.id, attachment.filename, model):
         text = (
             captioning.caption_text(path, model, ollama)
             if is_image
@@ -608,7 +608,7 @@ def _read_with_vision(attachment: Attachment, path: Path, is_image: bool, model:
     # A PDF is rasterised page by page (`pdf_vision_reader`), which is
     # the whole point for a scan, where there is no text layer to read
     # and Tesseract has already found nothing.
-    with filejobs.reading("vision", attachment.id, attachment.filename, model):
+    with jobs.reading("vision", attachment.id, attachment.filename, model):
         text = (
             vision_ocr.vision_ocr_text(path, model, ollama)
             if is_image

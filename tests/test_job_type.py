@@ -61,3 +61,11 @@ def test_a_pending_row_carries_lane_and_owner():
     finally:
         release.set()
         pool.shutdown(deadline=2)
+
+
+def test_a_reading_is_a_job_on_the_callers_thread():
+    with jobs.reading("describe", 7, "", "fake-utility") as job:
+        assert (job.seat, job.row_kind, job.lane) == ("here", "file-describe", "background")
+        [row] = [row for row in jobs.readings() if row["kind"] == "file-describe"]
+        assert row["name"] == "file 7" and row["detail"] == "file 7 (fake-utility)"
+    assert not [row for row in jobs.readings() if row["name"] == "file 7"]

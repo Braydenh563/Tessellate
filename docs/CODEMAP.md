@@ -2,7 +2,7 @@
 
 Generated 2026-11-01 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7475, frontend ids 2637, CSS sections 517, backend routes 633, backend modules 8161, test files 1763, tests 15242, plan headings 990, app scripts 28, boot scripts 36, script files 208.
+Counts: frontend functions 7475, frontend ids 2637, CSS sections 517, backend routes 633, backend modules 8164, test files 1763, tests 15243, plan headings 990, app scripts 28, boot scripts 36, script files 208.
 
 ## Frontend functions (7475)
 
@@ -12395,7 +12395,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (8161)
+## Backend modules (8164)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -20513,13 +20513,6 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `status` | src/tessellate/core/extras.py:974 |
 | `unavailable_reason` | src/tessellate/core/extras.py:1131 |
 
-### src/tessellate/core/filejobs.py (2)
-
-| Name | File:line |
-|---|---|
-| `reading` | src/tessellate/core/filejobs.py:51 |
-| `running` | src/tessellate/core/filejobs.py:77 |
-
 ### src/tessellate/core/filetypes.py (6)
 
 | Name | File:line |
@@ -20642,21 +20635,26 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `started_by` | src/tessellate/core/jobruns.py:204 |
 | `version` | src/tessellate/core/jobruns.py:194 |
 
-### src/tessellate/core/jobs.py (11)
+### src/tessellate/core/jobs.py (16)
 
 | Name | File:line |
 |---|---|
-| `Job` | src/tessellate/core/jobs.py:227 |
-| `Pool` | src/tessellate/core/jobs.py:327 |
-| `_cpu_width` | src/tessellate/core/jobs.py:66 |
-| `_start_heartbeat` | src/tessellate/core/jobs.py:189 |
-| `enqueue` | src/tessellate/core/jobs.py:701 |
-| `forget` | src/tessellate/core/jobs.py:720 |
-| `pending` | src/tessellate/core/jobs.py:712 |
-| `pool` | src/tessellate/core/jobs.py:687 |
-| `resubmit` | src/tessellate/core/jobs.py:716 |
-| `resume` | src/tessellate/core/jobs.py:728 |
-| `shutdown` | src/tessellate/core/jobs.py:743 |
+| `Job` | src/tessellate/core/jobs.py:228 |
+| `Pool` | src/tessellate/core/jobs.py:328 |
+| `_cpu_width` | src/tessellate/core/jobs.py:67 |
+| `_seat` | src/tessellate/core/jobs.py:708 |
+| `_seated` | src/tessellate/core/jobs.py:718 |
+| `_start_heartbeat` | src/tessellate/core/jobs.py:190 |
+| `_unseat` | src/tessellate/core/jobs.py:713 |
+| `enqueue` | src/tessellate/core/jobs.py:775 |
+| `forget` | src/tessellate/core/jobs.py:794 |
+| `pending` | src/tessellate/core/jobs.py:786 |
+| `pool` | src/tessellate/core/jobs.py:761 |
+| `reading` | src/tessellate/core/jobs.py:724 |
+| `readings` | src/tessellate/core/jobs.py:737 |
+| `resubmit` | src/tessellate/core/jobs.py:790 |
+| `resume` | src/tessellate/core/jobs.py:802 |
+| `shutdown` | src/tessellate/core/jobs.py:817 |
 
 ### src/tessellate/core/jobstore.py (35)
 
@@ -22440,7 +22438,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15242)
+## Tests (15243)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23268,7 +23266,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_job_backpressure.py | 2 |
 | tests/test_job_notices_z4.py | 3 |
 | tests/test_job_runs.py | 50 |
-| tests/test_job_type.py | 6 |
+| tests/test_job_type.py | 7 |
 | tests/test_jobruns_no_raw_exceptions.py | 1 |
 | tests/test_jobs_durable_kinds.py | 14 |
 | tests/test_jobs_pool.py | 11 |

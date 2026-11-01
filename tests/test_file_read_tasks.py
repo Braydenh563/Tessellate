@@ -18,11 +18,11 @@ from __future__ import annotations
 import pytest
 
 from tessellate.api import routes_files, routes_tasks
-from tessellate.core import deps, filejobs
+from tessellate.core import deps, jobs
 
 
 def test_a_reading_in_flight_is_listed():
-    with filejobs.reading("describe", 7, "handout.md", "fake-utility"):
+    with jobs.reading("describe", 7, "handout.md", "fake-utility"):
         rows = {task["kind"]: task for task in routes_tasks.collect()}
         assert "file-describe" in rows
         assert rows["file-describe"]["label"] == "Describing a file"
@@ -31,7 +31,7 @@ def test_a_reading_in_flight_is_listed():
 
 
 def test_a_finished_reading_leaves_the_list():
-    with filejobs.reading("ocr", 7, "scan.pdf"):
+    with jobs.reading("ocr", 7, "scan.pdf"):
         pass
     assert all(not task["kind"].startswith("file-") for task in routes_tasks.collect())
 
@@ -53,7 +53,7 @@ def test_a_reading_that_raises_leaves_the_list():
     # (no Ollama, an unreadable file) leaving a row on the panel for the rest
     # of the session.
     with pytest.raises(ValueError):
-        with filejobs.reading("vision", 7, "scan.pdf", "fake-vision"):
+        with jobs.reading("vision", 7, "scan.pdf", "fake-vision"):
             _the_model_falls_over()
     assert all(not task["kind"].startswith("file-") for task in routes_tasks.collect())
 
@@ -61,8 +61,8 @@ def test_a_reading_that_raises_leaves_the_list():
 def test_two_readings_of_one_file_are_two_rows():
     # Keyed on (kind, id), not the id: describing a scan and OCR-ing it are two
     # different readings of one file and a person can start both.
-    with filejobs.reading("describe", 7, "scan.pdf"):
-        with filejobs.reading("ocr", 7, "scan.pdf"):
+    with jobs.reading("describe", 7, "scan.pdf"):
+        with jobs.reading("ocr", 7, "scan.pdf"):
             kinds = [t["kind"] for t in routes_tasks.collect() if t["kind"].startswith("file-")]
     assert sorted(kinds) == ["file-describe", "file-ocr"]
 
@@ -70,7 +70,7 @@ def test_two_readings_of_one_file_are_two_rows():
 def test_a_file_reading_is_not_offered_a_quit_button():
     # A single blocking model call owns nothing interruptible, and a Quit
     # button that did nothing would be worse than no button.
-    with filejobs.reading("describe", 7, "handout.md"):
+    with jobs.reading("describe", 7, "handout.md"):
         rows = {task["kind"]: task for task in routes_tasks.collect()}
         assert rows["file-describe"].get("cancellable") in (None, False)
 

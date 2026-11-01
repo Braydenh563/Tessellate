@@ -45,12 +45,13 @@ user cares about. Workers are daemons, so the process still exits on time;
 
 **The activity panel needs no new frontend.** `pending()` returns rows in
 `/tasks`'s shape (`routes_tasks.collect`), so queued and running jobs appear
-in the panel that already lists the readings `core/filejobs.py` announces.
+in the panel beside the file readings (`reading`, a Job on the request's thread).
 """
 
 from __future__ import annotations
 
 import contextlib
+import itertools
 import logging
 import os
 import queue
@@ -581,7 +582,7 @@ class Pool:
     def pending(self) -> list[dict]:
         """Queued and running jobs as `/tasks` rows, oldest first.
 
-        Oldest first for the same reason `filejobs.running` is: the panel
+        Oldest first for the same reason `readings` is: the panel
         reads as a queue, and the job someone is wondering about is the one
         that has been waiting longest.
         """
@@ -676,6 +677,79 @@ class Pool:
                 f" ({', '.join(alive)})" if alive else "",
             )
         return not alive
+
+
+# -- jobs off the pool: a reading on the request's thread ---------------------
+#
+# *"the describe with ai feature needs to show in background process, same for
+# all ocr processes"*. `/files/{id}/analyse` runs the model on the request's
+# own thread and returns the reading in the response, which the frontend is
+# built around; FastAPI serves `/tasks` on another worker thread, so a request
+# busy inside a model call can still be listed. A reading is therefore a `here`
+# Job: announced when the work starts, gone when it ends (`finally`, so a
+# model that raises never leaves a row behind). It has no stopper: a single
+# blocking call into a local model owns no flag and no child process, and a
+# Quit button that did nothing would be worse than none.
+
+#: What each reading is called on screen. The panel shows the verb, because
+#: the file's own name is the `detail` line underneath it.
+READING_LABELS = {
+    "describe": "Describing a file",
+    "ocr": "Reading text from a file",
+    "vision": "Reading a file with the vision model",
+}
+
+_side_lock = threading.Lock()
+#: `here` and `thread` Jobs, by seq: what runs outside the pool's lanes.
+_side: dict[int, Job] = {}
+_side_seq = itertools.count(1)
+
+
+def _seat(job: Job) -> None:
+    with _side_lock:
+        _side[job.seq] = job
+
+
+def _unseat(job: Job) -> None:
+    with _side_lock:
+        _side.pop(job.seq, None)
+
+
+def _seated(seat: str) -> list[Job]:
+    with _side_lock:
+        return sorted((job for job in _side.values() if job.seat == seat), key=lambda job: job.queued_at)
+
+
+@contextlib.contextmanager
+def reading(kind: str, attachment_id: int, filename: str, model: str = "") -> Iterator[Job]:
+    """Announce that `kind` is reading this file for as long as the block."""
+    job = Job(next(_side_seq), kind, None, name=filename or f"file {int(attachment_id)}", seat="here")
+    #: The model is worth naming: on a local machine "which model is this
+    #: going through" is most of the answer to "why is it taking so long".
+    job.detail = f"{job.name} ({model})" if model else job.name
+    _seat(job)
+    try:
+        yield job
+    finally:
+        _unseat(job)
+
+
+def readings() -> list[dict]:
+    """Every reading in flight, oldest first (the panel reads as a queue), as `/tasks` rows."""
+    return [
+        {
+            "kind": job.row_kind,
+            "lane": job.lane,
+            "name": job.name,
+            "label": READING_LABELS.get(job.kind, "Reading a file"),
+            "detail": job.detail,
+            #: One model call reports no progress: `None` is the panel's own
+            #: "running, no percentage" state; a fake bar would be worse.
+            "progress": None,
+            "log": [],
+        }
+        for job in _seated("here")
+    ]
 
 
 # -- the app's one pool -------------------------------------------------------
