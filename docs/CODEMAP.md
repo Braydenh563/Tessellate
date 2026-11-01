@@ -22445,12 +22445,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `Content` | src/tessellate/repo/content.py:34 |
-| `_Adapter` | src/tessellate/repo/content.py:48 |
-| `_Boards` | src/tessellate/repo/content.py:73 |
-| `_Documents` | src/tessellate/repo/content.py:83 |
-| `_Files` | src/tessellate/repo/content.py:96 |
-| `_Notes` | src/tessellate/repo/content.py:63 |
-| `unshelved` | src/tessellate/repo/content.py:123 |
+| `_Adapter` | src/tessellate/repo/content.py:50 |
+| `_Boards` | src/tessellate/repo/content.py:75 |
+| `_Documents` | src/tessellate/repo/content.py:85 |
+| `_Files` | src/tessellate/repo/content.py:98 |
+| `_Notes` | src/tessellate/repo/content.py:65 |
+| `unshelved` | src/tessellate/repo/content.py:125 |
 
 ### src/tessellate/repo/relation_types.py (10)
 
