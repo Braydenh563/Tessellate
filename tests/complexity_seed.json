@@ -99,7 +99,7 @@
  "src/tessellate/api/routes_board_library.py::transform_path": 20,
  "src/tessellate/api/routes_categories.py::_ai_groups": 26,
  "src/tessellate/api/routes_categories.py::propose_split": 19,
- "src/tessellate/api/routes_chat.py::_media_readings": 16,
+ "src/tessellate/api/chat_attach.py::_media_readings": 16,
  "src/tessellate/api/routes_chat.py::chat": 17,
  "src/tessellate/api/routes_conversations.py::_turn_messages": 23,
  "src/tessellate/api/routes_documents.py::ai_edit": 16,

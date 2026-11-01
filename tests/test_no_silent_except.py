@@ -37,7 +37,7 @@ src/tessellate/ai/tools/__init__.py::with_relation_types::1
 src/tessellate/ai/vision_ocr.py::pdf_reader_or_none::1
 src/tessellate/ai/vision_ocr.py::pdf_vision_ocr_and_store::1
 src/tessellate/api/app.py::out_of_space_body::1
-src/tessellate/api/routes_chat.py::_attachment_readings::1
+src/tessellate/api/chat_attach.py::_attachment_readings::1
 src/tessellate/api/routes_chat.py::_composer_embed::1
 src/tessellate/api/routes_models.py::_tools_engine::1
 src/tessellate/core/docview.py::_docx_part::1
