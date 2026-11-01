@@ -146,7 +146,7 @@ def test_alt_arrow_inside_a_field_is_the_fields_own() -> None:
       objReorderKey({ key: "ArrowUp", altKey: true, target, preventDefault() { prevented = true; }, stopPropagation() {} });
       return { reached, prevented };
     };
-    const field = { closest: (sel) => (sel === OBJ_EDITABLE ? {} : null) };
+    const field = { closest: (sel) => (sel.includes(".cm-editor") ? {} : null) };
     const card = { closest: () => null };
     __out({ field: press(field), card: press(card) });
     """)
@@ -293,7 +293,7 @@ def test_ctrl_c_on_a_cards_tick_copies_the_card() -> None:
     const tick = { dataset: { id: "5" }, querySelector: () => null, matches: (sel) => sel === OBJ_TICK || sel === "#entry-list > li[data-id]" };
     const card = { dataset: { id: "5" }, querySelector: () => null, matches: (sel) => sel === "#entry-list > li[data-id]" };
     card.closest = (sel) => (sel.includes("#entry-list > li[data-id]") ? card : null);
-    tick.closest = (sel) => (sel === OBJ_EDITABLE ? tick : sel.includes("#entry-list > li[data-id]") ? card : null);
+    tick.closest = (sel) => (sel.includes(".cm-editor") ? tick : sel.includes("#entry-list > li[data-id]") ? card : null);
     window.getSelection = () => ({ toString: () => "" });
     document.activeElement = tick;
     const event = { clipboardData: { setData() {} }, preventDefault() { this.stopped = true; } };
@@ -332,7 +332,7 @@ def test_a_reorderable_card_stop_names_its_move_keys_to_a_screen_reader():
     js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "obj-reorder.js").read_text(encoding="utf-8")
     body = js.split("function objReorderKeysNamed(event)", 1)[1].split("\n}\n", 1)[0]
     assert '"aria-keyshortcuts", "Alt+ArrowUp Alt+ArrowDown"' in body
-    assert "OBJ_EDITABLE" in body and "objUnitRef(hit.unit)" in body
+    assert "objInField(target)" in body and "objUnitRef(hit.unit)" in body
     assert 'window.addEventListener("focusin", objReorderKeysNamed, true)' in js
 
 

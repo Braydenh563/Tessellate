@@ -13,6 +13,13 @@
 // read from there instead of being given a second attribute, so the boot
 // scripts did not grow.
 
+//: The field a key or a paste belongs to, or null. Here, not in obj-clip.js: obj-reorder.js
+//: loads first and its key handlers can run before obj-clip.js arrives (a
+//: ReferenceError on the edit form, E2E on 0c5c718).
+function objInField(el) {
+  return el?.closest?.("input, textarea, select, [contenteditable='true'], .cm-editor") ?? null;
+}
+
 const OBJ_KINDS = ["note", "document", "board", "map", "image", "file"];
 const OBJ_NOUN = { note: "Note", document: "Document", board: "Board", map: "Mind map", image: "Image", file: "File" };
 

@@ -14,8 +14,6 @@
 
 let objClip = null;
 
-const OBJ_EDITABLE = "input, textarea, select, [contenteditable='true'], .cm-editor";
-
 function objToastCopied(ref) {
   const name = ref.title.length > 40 ? `${ref.title.slice(0, 39)}…` : ref.title;
   toast(`Copied “${name}”`);
@@ -51,7 +49,7 @@ const OBJ_TICK = "input[type='checkbox'], input[type='radio']";
 
 document.addEventListener("copy", (event) => {
   const el = document.activeElement;
-  const field = el?.closest?.(OBJ_EDITABLE);
+  const field = objInField(el);
   if ((field && !field.matches(OBJ_TICK)) || window.getSelection()?.toString()) return;
   const hit = objCardAt(el);
   if (!hit) return;
@@ -64,7 +62,7 @@ document.addEventListener("copy", (event) => {
 function objPasteDestination(target) {
   const dest = objDestinationAt(target);
   if (dest && dest.type !== "text" && dest.type !== "tray" && dest.type !== "board") return dest;
-  if (dest?.type === "text" || target?.closest?.(OBJ_EDITABLE)) return null;
+  if (dest?.type === "text" || objInField(target)) return null;
   //: A mind map has its own outline paste, which runs when this lets go.
   if (!window.wbCommandsLive?.() || window.wbIsMap?.()) return null;
   return { type: "board", el: $("whiteboard-container") };

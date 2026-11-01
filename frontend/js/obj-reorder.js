@@ -168,7 +168,7 @@ function objReorderKey(event) {
   const dir = { ArrowUp: -1, ArrowDown: 1 }[event.key];
   if (!dir || !event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || event.defaultPrevented) return;
   //: A field's own Alt+Arrow (a rename box inside a card) is not a move.
-  if (event.target?.closest?.(OBJ_EDITABLE)) return;
+  if (objInField(event.target)) return;
   const hit = objSurfaceAt(document.activeElement);
   if (!hit || !objUnitRef(hit.unit)) return;
   event.preventDefault();
@@ -256,7 +256,7 @@ function objOrderHints() {
 //: every move and a field inside one (a rename box) has no such keys.
 function objReorderKeysNamed(event) {
   const target = event.target;
-  if (!target?.closest || target.hasAttribute("aria-keyshortcuts") || target.closest(OBJ_EDITABLE)) return;
+  if (!target?.closest || target.hasAttribute("aria-keyshortcuts") || objInField(target)) return;
   const hit = objSurfaceAt(target);
   if (hit && objUnitRef(hit.unit)) target.setAttribute("aria-keyshortcuts", "Alt+ArrowUp Alt+ArrowDown");
 }

@@ -2,9 +2,9 @@
 
 Generated 2026-11-01 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7546, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8417, test files 1811, tests 15542, plan headings 990, app scripts 28, boot scripts 37, script files 222.
+Counts: frontend functions 7547, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8417, test files 1811, tests 15542, plan headings 990, app scripts 28, boot scripts 37, script files 222.
 
-## Frontend functions (7546)
+## Frontend functions (7547)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -5728,15 +5728,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `objArranging` | frontend/js/obj-clip.js:148 |
-| `objBoardText` | frontend/js/obj-clip.js:94 |
-| `objClipPut` | frontend/js/obj-clip.js:28 |
-| `objCopyByEvent` | frontend/js/obj-clip.js:37 |
-| `objKebabRows` | frontend/js/obj-clip.js:121 |
-| `objMenuRow` | frontend/js/obj-clip.js:153 |
-| `objPasteAt` | frontend/js/obj-clip.js:84 |
-| `objPasteDestination` | frontend/js/obj-clip.js:64 |
-| `objToastCopied` | frontend/js/obj-clip.js:19 |
+| `objArranging` | frontend/js/obj-clip.js:146 |
+| `objBoardText` | frontend/js/obj-clip.js:92 |
+| `objClipPut` | frontend/js/obj-clip.js:26 |
+| `objCopyByEvent` | frontend/js/obj-clip.js:35 |
+| `objKebabRows` | frontend/js/obj-clip.js:119 |
+| `objMenuRow` | frontend/js/obj-clip.js:151 |
+| `objPasteAt` | frontend/js/obj-clip.js:82 |
+| `objPasteDestination` | frontend/js/obj-clip.js:62 |
+| `objToastCopied` | frontend/js/obj-clip.js:17 |
 
 ### frontend/js/obj-drag.js (21)
 
@@ -5779,22 +5779,23 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `objOrderRank` | frontend/js/obj-order.js:37 |
 | `objOrderSave` | frontend/js/obj-order.js:31 |
 
-### frontend/js/obj-ref.js (12)
+### frontend/js/obj-ref.js (13)
 
 | Name | File:line |
 |---|---|
-| `objCardAt` | frontend/js/obj-ref.js:67 |
-| `objCardTitle` | frontend/js/obj-ref.js:59 |
-| `objDefaultTitle` | frontend/js/obj-ref.js:30 |
-| `objDestinationAt` | frontend/js/obj-ref.js:103 |
-| `objInsertText` | frontend/js/obj-ref.js:145 |
-| `objKey` | frontend/js/obj-ref.js:44 |
-| `objLinkText` | frontend/js/obj-ref.js:84 |
-| `objNoteTitle` | frontend/js/obj-ref.js:54 |
-| `objParseKey` | frontend/js/obj-ref.js:49 |
-| `objRef` | frontend/js/obj-ref.js:37 |
-| `objRefFromCard` | frontend/js/obj-ref.js:77 |
-| `objRender` | frontend/js/obj-ref.js:161 |
+| `objCardAt` | frontend/js/obj-ref.js:74 |
+| `objCardTitle` | frontend/js/obj-ref.js:66 |
+| `objDefaultTitle` | frontend/js/obj-ref.js:37 |
+| `objDestinationAt` | frontend/js/obj-ref.js:110 |
+| `objInField` | frontend/js/obj-ref.js:19 |
+| `objInsertText` | frontend/js/obj-ref.js:152 |
+| `objKey` | frontend/js/obj-ref.js:51 |
+| `objLinkText` | frontend/js/obj-ref.js:91 |
+| `objNoteTitle` | frontend/js/obj-ref.js:61 |
+| `objParseKey` | frontend/js/obj-ref.js:56 |
+| `objRef` | frontend/js/obj-ref.js:44 |
+| `objRefFromCard` | frontend/js/obj-ref.js:84 |
+| `objRender` | frontend/js/obj-ref.js:168 |
 
 ### frontend/js/obj-reorder.js (21)
 
