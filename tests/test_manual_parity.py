@@ -39,6 +39,7 @@ MANUAL = {
     "link_notes": ("graph-canvas.js", 'method: "POST", body: JSON.stringify({ target', "Graph, drag one note to another"),
     "unlink_notes": ("graph.js", '/links/${edge.id}`, { method: "DELETE" })', "Graph, click a link, Remove"),
     "audit_link_reasons": ("note-cards.js", "/reason`", "a note's links, Edit reason"),
+    "check_learned": ("settings-controls.js", 'apiJson("/learned/audit/run"', "Settings, What it learned, Check what it learned"),
     "delete_note": ("note-cards.js", "async function binNoteWithUndo(entry)", "a note's menu, Move to bin"),
     "restore_note": ("note-cards.js", '/restore`, { method: "POST"', "the recycle bin, Restore"),
     "set_reminder": ("shell-reminders.js", 'async function addReminder(text, dueValue', "Reminders, New reminder"),
@@ -282,3 +283,18 @@ def test_the_board_zoom_keys_are_in_the_keys_sheet_and_the_guide() -> None:
     body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "whiteboard-controls"))
     assert "Ctrl+0 fits all" in body and "Ctrl+1 is 100%" in body
     assert "zoom the board about the selection's centre" in body
+
+
+def test_check_what_it_learned_is_in_the_guide_the_panel_help_and_the_skill():
+    """Decision 68: the bar's button, the Guide's learned topic, the panel's own
+    help and the skill say the same thing and use the button's own words."""
+    from tessellate.ai import help_chat, skills
+
+    topic = next(t for t in help_chat.HELP_TOPICS if t["id"] == "learned")
+    for words in ("Check what it learned", "retires", "Undo", "flags", "Background jobs", "joke, quote, fiction, test or draft"):
+        assert words in topic["body"] or words.lower() in topic["body"].lower(), words
+    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    help_body = html[html.index('id="learned-help"') :][:3000]
+    assert '"Check what it learned"' in help_body and "Undo" in help_body
+    assert "Check what it learned</button>" in html
+    assert any(item["name"] == "Check what it learned" for item in skills.BUILTIN_SKILLS)

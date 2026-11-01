@@ -2617,6 +2617,27 @@ def _audit_link_reasons(session: Session, args: dict) -> dict:
     updated = links.audit_vague_links(session, deps.get_model_manager(), deps.get_ollama(), limit)
     return {"updated": updated, "message": f"Successfully audited and rewrote {updated} link reasons."}
 
+def _check_learned(session: Session, args: dict) -> dict:
+    """Check what it learned (decision 68, `ai/learned_audit_run.py`): re-read
+    every learned claim and question against its note, retire what no longer
+    holds and flag what needs a look. Every retirement is a tombstone with its
+    run's stamp, which Settings, What it learned can undo."""
+    from tessellate.ai import learned_audit_run
+    from tessellate.core import jobruns
+
+    with jobruns.job_run("learned-audit") as run:
+        done = learned_audit_run.run_check(session)
+        session.commit()
+        learned_audit_run.say_lines(run, done)
+        run.result = learned_audit_run.summary_words(done)
+    shown = done["lines"][:10]
+    return {
+        "checked": done["checked"], "retired": len(done["retired"]), "flagged": len(done["flagged"]),
+        "items": [{"action": row["action"], "text": row["text"][:200], "reason": row["reason"]} for row in shown],
+        "run": done["run"], "message": f"Checked {run.result.removeprefix('checked ')}.",
+    }
+
+
 def _find_contradictions(session: Session, args: dict) -> dict:
     """Notes that appear to contradict each other (see `ai.tensions`).
 
@@ -2718,6 +2739,15 @@ TOOLS: dict[str, ToolSpec] = {
             _find_contradictions,
         ),
 
+        ToolSpec(
+            "check_learned",
+            "Check what the app learned about the user: re-read every claim and question it worked out "
+            "against its note as written now, retire what no longer holds (note edited or deleted, a joke, "
+            "quote or draft, marked wrong, repeated) and flag what needs a look (two notes disagree, a "
+            "date that has passed). The retired ones can be undone in Settings, What it learned.",
+            {"type": "object", "properties": {}},
+            _check_learned,
+        ),
         ToolSpec(
             "audit_link_reasons",
             "Audits vague graph link reasons (like 'similar in meaning') and rewrites them by deducing a specific reason based on both notes.",
@@ -3941,6 +3971,7 @@ TOOLS: dict[str, ToolSpec] = {
 # which skills act rather than answer, one list, so the two can't disagree.
 WRITE_TOOLS = {
     "audit_link_reasons",
+    "check_learned",
     "create_note",
     "edit_note",
     "tag_note",
@@ -4001,6 +4032,7 @@ set_write_tools(WRITE_TOOLS)
 #:
 #: `tests/test_write_gate_h2.py` fails when a write tool is in none of them.
 CHANGE_TOOLS = frozenset({
+    "check_learned",
     "edit_note",
     "unlink_notes",
     "rename_tag",

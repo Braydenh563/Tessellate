@@ -180,6 +180,18 @@ def _links_audited(session: Session, args: dict, result: dict) -> str | None:
     return None
 
 
+def _learned_checked(session: Session, args: dict, result: dict) -> str | None:
+    from tessellate.ai import learned_audit_run
+
+    retired = result.get("retired")
+    if not isinstance(retired, int) or retired < 0:
+        return "it did not say how many learned things it retired"
+    kept = learned_audit_run.last_run(session)
+    if retired and (kept["run"] != result.get("run") or len(kept["retired"]) != retired):
+        return f"it claims {retired} retired and the learned list shows {len(kept['retired'])}"
+    return None
+
+
 def _skill_names() -> set[str]:
     stored = deps.get_config().get_preference("skills", []) or []
     return {str(skill.get("name")) for skill in stored if isinstance(skill, dict)}
@@ -217,6 +229,7 @@ VERIFIERS: dict[str, Verifier] = {
     "delete_board_item": _item_removed,
     "place_library_item": _library_placed,
     "audit_link_reasons": _links_audited,
+    "check_learned": _learned_checked,
     "save_skill": _skill_saved,
     "delete_skill": _skill_deleted,
 }

@@ -25,7 +25,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import facts, verdicts
-from tessellate.ai.learned_audit import RETIRE, FactView, Finding, NoteView, check
+from tessellate.ai.learned_audit import RETIRE, FactView, Finding, NoteView, check, entry_tags
 from tessellate.core import clock
 from tessellate.core.database import DerivedFact, Entry, utcnow
 
@@ -44,14 +44,6 @@ def _payload(row: DerivedFact) -> dict:
 
 def _mark(row: DerivedFact) -> dict:
     return _payload(row).get("audit") or {}
-
-
-def _tags(entry: Entry) -> tuple[str, ...]:
-    try:
-        tags = json.loads(entry.tags or "[]")
-    except ValueError:
-        return ()
-    return tuple(str(tag) for tag in tags) if isinstance(tags, list) else ()
 
 
 def _view(row: DerivedFact) -> FactView:
@@ -78,7 +70,7 @@ def load(session: Session) -> tuple[list[FactView], dict[int, NoteView]]:
             continue
         rows.append(_view(fact))
         notes[entry.id] = NoteView(
-            id=entry.id, content=entry.content or "", tags=_tags(entry), written=entry.created_at, gone=bool(entry.is_deleted)
+            id=entry.id, content=entry.content or "", tags=entry_tags(entry), written=entry.created_at, gone=bool(entry.is_deleted)
         )
     return rows, notes
 

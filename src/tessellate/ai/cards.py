@@ -338,6 +338,7 @@ PROJECTIONS: dict[str, tuple[_Where, ...]] = {
     "rename_tag": (),
     "delete_tag": (),
     "audit_link_reasons": (),  # a count of reasons written
+    "check_learned": (),  # counts and the rows' own words, which What it learned lists
     "search_chat_history": (),  # conversations, which the Library lists
     "list_skills": (),  # skills, which Settings lists
     "save_skill": (),

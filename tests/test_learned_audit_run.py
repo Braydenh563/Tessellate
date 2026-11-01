@@ -3,6 +3,7 @@ its job, its undo and its routes. A fixed day throughout."""
 
 from __future__ import annotations
 
+import re
 from datetime import date, datetime
 
 from sqlalchemy import select
@@ -181,3 +182,44 @@ def test_run_now_runs_the_pass_as_a_job(client, session):
     assert ran["result"] == "checked 2, retired 1" and ran["can_run"] is True
     session.expire_all()
     assert session.get(DerivedFact, joke_id).deleted_at is not None
+
+
+def test_the_agent_tool_checks_says_it_and_is_verified(client, session):
+    from tessellate.ai import tool_say, tools
+    from tessellate.ai.tools import verify
+
+    _seed(session)
+    result = tools.execute_tool(session, "check_learned", {})
+    assert (result["checked"], result["retired"], result["flagged"]) == (2, 1, 0)
+    said = tool_say.say("check_learned", result, {})
+    assert said["text"].startswith("Checked what Atlas learned: retired 1.")
+    assert "Undo for the retired ones is in Settings, What it learned." in said["text"]
+    assert "Retired" in said["body"] and "tagged joke" in said["body"]
+    assert verify.check(session, "check_learned", {}, result) is None
+    assert verify.check(session, "check_learned", {}, {**result, "retired": 4}) is not None
+    nothing = tool_say.say("check_learned", {"checked": 3, "retired": 0, "flagged": 0, "items": []}, {})
+    assert nothing["text"].startswith("Checked three things Atlas learned, and all of them still hold.")
+    assert "#/settings/learned" in nothing["text"]
+
+
+def test_the_skill_names_the_tool_and_the_phrase_reaches_it():
+    from tessellate.ai import act_registry, skills
+
+    skill = next(item for item in skills.BUILTIN_SKILLS if item["name"] == "Check what it learned")
+    assert skill["tools"][0] == "check_learned" and skill["steps"][0]["tools"] == ["check_learned"]
+    for phrase in ("check what it learned", "can you audit what you learned about me", "check what you have learned"):
+        names = [name for name, pattern in act_registry.TOOL_CUES if re.search(pattern, phrase, re.I)]
+        assert "check_learned" in names, phrase
+    assert not [name for name, pattern in act_registry.TOOL_CUES if name == "check_learned" and re.search(pattern, "what did I learn this week", re.I)]
+
+
+def test_the_night_shift_does_not_learn_out_of_context_in_the_first_place(session):
+    """Decision 67, the forward half: the same notes the check retires are never read into claims."""
+    _note(session, JOKE, tags=["Jokes"])
+    _note(session, '> I always take the early train to work, said the man in the story.')
+    _note(session, REAL, tags=["work"])
+    facts.run(session, force=True)
+    session.commit()
+    learned = {row.text for row in session.scalars(select(DerivedFact))}
+    assert REAL in learned and JOKE not in learned
+    assert not [text for text in learned if "said the man" in text or "early train to work, said" in text]

@@ -111,6 +111,17 @@ class _Judged:
         return True
 
 
+def entry_tags(entry) -> tuple[str, ...]:  # noqa: ANN001  # an Entry
+    """The note's tags as stored (a JSON list), or none when they do not parse."""
+    import json
+
+    try:
+        tags = json.loads(entry.tags or "[]")
+    except ValueError:
+        return ()
+    return tuple(str(tag) for tag in tags) if isinstance(tags, list) else ()
+
+
 def tag_words(tags: Iterable[str]) -> set[str]:
     """The words a note's tags say, lower case, `#` and plurals dropped:
     "#Jokes" and "jokes/dad" both say joke."""
@@ -238,14 +249,10 @@ def _contradictions(judged: _Judged, rows: list[FactView], notes: dict[int, Note
 
 
 def _dates_in(text: str) -> list[date]:
-    found: list[date] = []
-    for match in _ISO_DATE.finditer(text):
-        found.append(_make_date(match.group(1), match.group(2), match.group(3)))
-    for match in _DAY_MONTH_YEAR.finditer(text):
-        found.append(_make_date(match.group(3), _MONTHS[match.group(2).lower()], match.group(1)))
-    for match in _MONTH_DAY_YEAR.finditer(text):
-        found.append(_make_date(match.group(3), _MONTHS[match.group(1).lower()], match.group(2)))
-    return [day for day in found if day is not None]  # type: ignore[misc]
+    found = [_make_date(m.group(1), m.group(2), m.group(3)) for m in _ISO_DATE.finditer(text)]
+    found += [_make_date(m.group(3), _MONTHS[m.group(2).lower()], m.group(1)) for m in _DAY_MONTH_YEAR.finditer(text)]
+    found += [_make_date(m.group(3), _MONTHS[m.group(1).lower()], m.group(2)) for m in _MONTH_DAY_YEAR.finditer(text)]
+    return [day for day in found if day is not None]
 
 
 def _make_date(year, month, day) -> date | None:  # noqa: ANN001
