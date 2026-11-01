@@ -115,4 +115,7 @@ def test_an_export_name_keeps_a_code_files_extension():
 def test_the_word_goal_is_not_offered_in_a_code_file():
     source = DOCS_JS.read_text(encoding="utf-8")
     body = source[source.index("function renderDocStats()") :].split("\n}\n")[0]
-    assert 'button.classList.toggle("hidden", docIsCodeFile())' in body
+    # CE3 (audit 1031 row 23) keeps the answer in `code` so a code file also
+    # skips the word count; the goal button still hides on it.
+    assert "const code = docIsCodeFile();" in body
+    assert 'button.classList.toggle("hidden", code)' in body

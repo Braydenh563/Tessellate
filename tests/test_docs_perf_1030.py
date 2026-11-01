@@ -55,10 +55,11 @@ def test_no_editor_state_is_joined_directly_in_the_documents_files():
 
 def _facts_script(hidden: bool) -> str:
     source = (JS / "documents.js").read_text(encoding="utf-8")
-    body = "\n".join(_function(source, head) for head in ("function runDocFacts(", "function scheduleDocFacts("))
+    body = "\n".join(_function(source, head) for head in ("function runDocFacts(", "function docFactsDelay(", "function scheduleDocFacts("))
     return (
         f"""
-let docFactsTimer = null, docFactsStale = false, docFactsIdle = 0;
+let docFactsTimer = null, docFactsStale = false, docFactsIdle = 0, docCmView = null;
+const docIsCodeFile = () => false;
 const calls = [];
 for (const n of ["Stats", "Outline", "Counts", "Comments", "Properties"]) globalThis["renderDoc" + n] = () => calls.push(n);
 let hidden = {str(hidden).lower()};
