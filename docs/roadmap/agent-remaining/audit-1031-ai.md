@@ -67,3 +67,14 @@ Head bac9cf2 on `agent/audit-suite-1031`. Port 8852, data dir `/tmp/claude-0/a-s
 - Anything a real model decides: tool calls, refusals, injection resistance, citations, streaming cost (A42), context totals (A43), attached-note answers (A44). Every model answer here was "ok".
 - Read aloud (headless Chromium has no voices), web results and the reader (no network), SearXNG start and install.
 - The companion's work while the tab is really hidden (`document.hidden` was simulated; rAF pauses in a real background tab).
+
+## Status after ai1518-1101
+
+Detail and numbers in `ai1518-1101.md`. Rows not listed here are fixed in aifix-1031 (ranked rows 17, 28, 29, 44, 47) or open as written above.
+
+| id | state |
+|---|---|
+| A24 | fixed, re-checked as built: `pushWebSearchHistory` runs after a successful search; the list shows only while the query box is empty, so it is empty beside results by design |
+| AI1, AI3, AI17, AI20, AI22 | fixed, re-checked as built (aifix-1031) |
+| AI9 | client half fixed: two `:has()` rules rooted on `#tab-chat` and `.tab-main` became classes (`web-open`, `note-picker-open`), style recalculation per phone send 389 to 534 ms down to 345 and 349 ms at 4x; the server half (the 2,000 ms question) was fixed earlier |
+| AI23 | partly fixed: `help_chat.py` 3,740 to 1,370 lines (`help_topics_core.py`) and `agent.py` into `agent_policy.py`, `agent_turn.py` and the hub (pure moves, line caps in `tests/test_module_line_caps.py`); `avatars.js`, `atlas.js`, `chat-attach.js`, `chat.js` and `routes_conversations.py` remain |

@@ -246,9 +246,10 @@ def test_the_hint_is_counted_in_the_budget():
     because the number is only reachable through a live turn; what matters is
     that the two lists of pieces stay the same list.
     """
-    from pathlib import Path
 
-    source = Path("src/tessellate/ai/agent.py").read_text(encoding="utf-8")
+    from tests._help_text import agent_text
+
+    source = agent_text()
     # `context.weighted_len` since ARCH-15 (CJK counts about a token a
     # character); the pieces measured are what this guards, not the measure.
     measurement = source.split("system_chars = context.weighted_len(")[1].split("budget = context.plan")[0]

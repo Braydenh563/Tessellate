@@ -202,9 +202,8 @@ def test_a_narrowed_turn_tells_the_model_the_list_is_a_suggestion():
 def test_the_note_is_only_added_when_the_list_was_actually_narrowed():
     """On a broad request the model already has everything, so a note saying
     the list is partial would simply be untrue."""
-    source = (
-        __import__("pathlib").Path("src/tessellate/ai/agent.py")
-        .read_text(encoding="utf-8")
-    )
+    from tests._help_text import agent_text
+
+    source = agent_text()
     block = source.split("focused_only = allowed_tools is None")[1][:500]
     assert "focus_names is not None" in block

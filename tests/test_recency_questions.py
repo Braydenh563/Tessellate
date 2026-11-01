@@ -119,8 +119,10 @@ def test_every_note_path_carries_time_words_with_their_distance():
 
     assert days_from_today(date(2026, 9, 25), date(2026, 10, 3)) == "8 days ago"
     assert days_from_today(date(2026, 10, 4), date(2026, 10, 3)) == "tomorrow"
+    from tests._help_text import agent_text
+
     root = Path(__file__).resolve().parent.parent / "src" / "tessellate"
-    assert "librarian._dates_hint(note)" in (root / "ai" / "agent.py").read_text(encoding="utf-8")
+    assert "librarian._dates_hint(note)" in agent_text()
     assert '"when": days_from_today(' in (root / "ai" / "tools" / "_common.py").read_text(encoding="utf-8")
     assert "days_from_today(d.at.date(), now.date())" in (root / "api" / "routes_insights.py").read_text(encoding="utf-8")
     assert '"dates": _time_words(' in (root / "api" / "routes_chat.py").read_text(encoding="utf-8")

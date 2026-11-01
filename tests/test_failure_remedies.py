@@ -146,7 +146,9 @@ def test_ollama_client_forwards_a_message_not_a_bare_event():
     nothing renders *wrong*, it renders *nothing*, which is exactly how this
     one survived until the 2026-09-21 survey.
     """
-    agent_src = _read("src/tessellate/ai/agent.py")
+    from tests._help_text import agent_text
+
+    agent_src = agent_text()
     assert '"message": tools_unsupported_message(agent_model, getattr(exc, "declared", True))' in agent_src
     routes_src = _read("src/tessellate/api/routes_chat.py")
     # The branch that used to be `pass` must now hand the enriched event back

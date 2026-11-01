@@ -51779,6 +51779,53 @@ in HISTORY.md, "Moved from HANDOVER, 2026-09-26".
 1516. **(the owner, 2026-11-01, pasted log):** `frame 202ms on dashboard: notes-list.js Response.json.then 113ms (forced layout 54ms) [apiJson /chat/recent from dashboard.js]`; `request 3198ms on dashboard: /models/status`; `input 320ms on notes: pointerup on span.tab-label in #tab-btn-notes`; `frame 224ms on notes: 223ms of script with no source file`; `frame 218ms on graph: 172ms of script with no source file, then 46ms rendering`. The no-source frames are not only the cold load (1513's finding): they come after a tab switch. Recommendation: attribute the no-source script (eval, `new Function`, an inline or blob script, a lazy bundle's first evaluation) per tab, take the forced layout out of the /chat/recent paint, and keep /models/status off the critical path. **Agent lag1516-1101 (74979b8, 3f0a495):** `/models/status` answers from the poll's own state (no second probe, answered probes believed for 2 s); the library and graph bundles warm one file at a time in a lull; a stale Notes list draws after the press (4x press maxInput 1032/936/648 to 392/424/400 ms). Left: the dashboard forced-layout frame did not reproduce on seeded data (hypothesis: `categoryColoursChanged` dispatches `categorycolours`, whose dashboard listener runs `renderDashboard()` inside notes-list's continuation; the fix is a deferral in dashboard.js, which has no boot-gzip headroom), and the graph's first visit within 4 s of a press is not better on input. See `agent-remaining/lag1516-1101.md`. **Fixed 031d50e (gperf1518-1101) for (a):** the listeners ask the page class and redraw after two frames (dirtied layout: `checkVisibility` 10 to 28 ms, class 0.02 ms). The Graph's first visit within 4 s of a press stays in `agent-remaining/lag1516-1101.md`.
 1515. **Found 2026-11-01 (comp1512-1101):** composer naming left after 1512 (detail in `agent-remaining/comp1512-1101.md`): a note named in a group line by its whole first line is quoted again on its own line; a title-only note with a time reads "You started your Pottery class on Thursday at 6pm note"; a first-line title over a blank line ("Legs day") reads "Your warm up note" because the two title readers disagree; a quote can hold the composer's own rewording inside it. Recommendation: one title reader for every answer shape, and a quote is always the note's own words. **Fixed 0608585 (cmp1518-1101).** One reader, `composer_frame.title_line` (a heading, a bold line, a short plain first line over a body, or a one-line note that is only a name; a sentence, a time-bearing line or a list item is never a name), read by `composer_read._title`, the frame, the sections and the lists; a last-pass guard (`composer_threads.own_words`, in `composer_digest._polish_out`) mends any quote the note does not hold whole; a whole-note quote in a group line is not said again (`composer_frame.echoed`). Measured on the four left cases (tests/test_composer_titles_1515.py, 37 cases over five note shapes and several phrasings): "Your Legs day note has a warm up" (was "your warm up note"), "You wrote “Pottery class on Thursday at 6pm”" (was "You started your Pottery class on Thursday at 6pm note"), the group line says "your note from 1 October" (was the whole first line twice), and a quote is the note's words (was a reworded “Bake at 230C for forty minutes”). Found on the way: a note written 2 October that says "Flight on 20 October" answered "377 days ago" on 1 November, now 12.
 
+741. **The owner, 2026-10-06, verbatim**: "will the composer get better at writing,
+     sentence structure, more variations and natural language, betetr to understand,
+     more biological. more social, more engaging, better at responding and answering
+     questions correctly". Not covered by the three composer agents running
+     (model context, composer acts, composer everywhere). Recommendation, taken: a
+     fourth Opus track, "composer voice", once one finishes: question understanding
+     (indirect and casual phrasings, synonyms, a clarifying question when
+     ambiguous), more question kinds answered (why, how, how many, comparisons,
+     yes or no as "your notes say"), a first-line-answers check, a larger tested
+     phrasebook of joins and openers, turn-aware follow-ons, length fit to the
+     question, the app voice; facts stay quoted. Measured on the 725 eval grown
+     to about 100 questions with variety and readability scores.
+     Then, verbatim: "rn the ask chat messages just say, ur note starting with this
+     says this. also ur not starting with this says this, furthermore, ur note
+     starting with this says this." Cause: `ai/composer.py` PHRASES (`says`,
+     `also_says`, `says_a_end`): every sentence is introduced by its note's
+     opening words plus "says:". First fix in the voice track: name a note by
+     its title or topic once, then speak the content directly ("You planned
+     Lisbon for May; the hotel is booked") with the citation as a marker.
+     Owner: composer-voice-1006.md (merged: no "your note starting with ... says", casual phrasings, typos, 847 slang entries, voices) and CHAT_PLAN Phase 6, Brief 39 (the realiser). Open: speak the content directly with the citation as a marker (measured today: Ask now answers "Also, the hobbies I want to try: ..." with no "says"); the remaining eval numbers are in that file.
+     **Fixed (re-checked as built, ai1518-1101).** `python -m tests._composer_eval --voice`: 90 voice questions plus the 25 showcase, grounded 1.0, kind right 90 of 90, `says_colon` 0, `named_by_first_words` 0 (tests/test_composer_eval_741.py gates it).
+743. **The owner, 2026-10-07, verbatim**: "and I want more mouse interaction with the
+     companion like rubbing its head. flipping it upside down?? doing things or
+     event triggers that get it to change emotion ro behavior. \"ro\" is an or
+     misspell. also the behaviour of the companion is not often reflected in the
+     enlarged view. better popup messages and more varied. more life and natural
+     biological behaviour and transitions and actions and movement etc."
+     With 742 (moods rarely change), one next-PR track: pointer gestures (rub
+     the head by moving back and forth over it, drag and flip upside down, hold,
+     poke, toss), app events as mood triggers, the enlarged view mirroring the
+     corner companion's live state, the composer's companion remarks
+     (`composer_voice.py`, built, not yet on screen) as its bubbles, and
+     springy, interruptible transitions between poses. "ro" for "or" is in the
+     typo table (question_noise.py).
+     Then, verbatim, with Atlas in the onboarding welcome card and an oval
+     frame: "atlas goes out of the border". The figure's tail, swirl and orbit
+     spill past the oval's ring: either clip the figure to the frame
+     (`overflow: clip` with the frame's radius, as the mini avatar now is) or
+     scale it to fit inside with a margin; same for every framed Atlas.
+     Then, verbatim: "the show companion notification button was poorly shown
+     but I didnt screenshot it in time". Not seen yet: reproduce the notice
+     that offers to show the companion (first run, after hiding it, or a
+     notification with a Show companion action), measure its button against
+     the toast-with-action recipe in DESIGN.md, and fix what is off.
+     Tail done 2026-10-18 (uxfix5-1018): welcome Atlas spill 4 px to 0 to 1 px by holder padding; no oval frame exists on that card; every other framed Atlas (persona, profile, atlas-mark) already clips; the Show companion notice meets the toast recipe (actions row, accent text 600, close alone in its corner at 1440 and 390). Gestures remain.
+     Owner: Brief 34 (companion), second part, and OPEN.md Atlas rows (INBOX 752): gestures, the enlarged view mirroring the corner, the framed Atlas clipped to its oval, the Show companion notice measured against the toast recipe.
+     **Fixed fd69455.** The remarks on screen: `GET /insights/remarks` and the lazy `companion-remark.js` (a reminder due, this day in an earlier year, an open item; its own switch, a 3 h cool-down, never a key already said, private notes never read); driven at 1440, "Ring the landlord about the boiler is due today." in a 256 px bubble inside the window, gone after its time. The rest (rub, flip, toss, pet, app events, the enlarged view, framed Atlas, the Show companion notice) re-checked as built in ai1518-1101. Wording quality needs a real look.
 
 ## Moved from the plans, 2026-11-01 (board1518-1101: board, documents and code editor rows)
 
