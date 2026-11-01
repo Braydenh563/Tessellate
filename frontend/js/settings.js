@@ -302,11 +302,12 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   //: section's own count of the same thing, and the two disagreed.
   const aboutHealth = await apiJson("/health").catch(() => null);
   $("about-version").textContent = aboutHealth?.version ? `Version ${aboutHealth.version}` : "Version not available right now";
-  if (typeof nameMarkBuddyMotion === "function") {
+  //: The line waits for the companion's file (`afterCharacters`), not a `typeof` that skipped it.
+  afterCharacters(() => {
     const { mode, reason } = nameMarkBuddyMotion();
     const word = { full: "moves freely", fades: "fades only", still: "stays still" }[mode];
     $("about-motion").textContent = `Companion motion: ${word}${reason && NMB_MOTION_WHY[reason] ? `. ${NMB_MOTION_WHY[reason]}` : "."}`;
-  }
+  });
   $("pref-update-check").checked = Boolean(prefsCache?.update_check_enabled);
   $("pref-auto-update").checked = Boolean(prefsCache?.auto_update_enabled);
   $("pref-update-bar").checked = prefsCache?.show_update_bar !== false;
