@@ -27,7 +27,7 @@ from tessellate.core.lazyre import lazy_compile
 from collections import Counter
 from dataclasses import dataclass, field
 
-from tessellate.ai import realise
+from tessellate.ai import composer_threads, realise
 
 #: A group leads as "the closest" only when its notes score this far above
 #: every note outside it; nearer than that, no group is closer than another.
@@ -439,11 +439,18 @@ def _diary_name(line: str, lower) -> str:  # noqa: ANN001
     return "your note on " + re.sub(r"\bmy\b", "your", rest, flags=re.I)
 
 
+#: A first line that is only pictures ("![](/media/cat.png)"): no words to
+#: name the note by, never its markdown (INBOX 1512).
+_ONLY_PICTURES = lazy_compile(r"(?:!\[[^\]\n]*\]\([^)\s]*\)\s*)+")
+
+
 def short_name(note: dict, lower=_lower) -> str:  # noqa: ANN001
     """A note as a list names it: its title, its own label, or what it is
     about; quoted when it is an instruction ("go to the gym at 9pm") or a
     sentence of the person's own; never a phrase cut mid-thought (1420)."""
     content = str(note.get("content") or "").strip()
+    if _ONLY_PICTURES.fullmatch(content.split("\n", 1)[0].strip()):
+        return composer_threads.picture_name(note.get("created_at"))
     diary = "" if "\n" in content else _diary_name(_first_line(content), lower)
     if diary:
         return diary
@@ -531,25 +538,22 @@ def _names(ids: list[int], by_id: dict[int, dict], lower) -> str:  # noqa: ANN00
     return ", ".join(said[:-1]) + " and " + said[-1]
 
 
-_SMALL = frozenset({"the", "a", "an", "both", "it", "this", "these", "they", "we", "i", "each", "one"})
-
-
 def reason_said(reason: str) -> str:
-    """A link's reason as one clause: its first word lowered when it is a plain word."""
-    text = " ".join(str(reason or "").split()).strip(" .")
-    first, _, rest = text.partition(" ")
-    return f"{first.lower()} {rest}".strip() if first.lower() in _SMALL else text
+    """A link's reason as one clause, in the second person or quoted as the
+    person's own (`composer_threads.reason_said`, INBOX 1512)."""
+    return composer_threads.reason_said(reason)
 
 
-def _link_said(group: Group, by_id: dict[int, dict], lower) -> str:  # noqa: ANN001
-    """"You linked the Trains to the Lisbon note.", its own sentence, so the
-    group's line does not run on through a third "and" (INBOX 1420)."""
+def _link_said(group: Group, by_id: dict[int, dict], lower, i: int = 0) -> str:  # noqa: ANN001
+    """The group's link as its own sentence, so the group's line does not run
+    on through a third "and" (INBOX 1420); back to "them" when the group is
+    just the pair the line named, a wording of its own each group (1512)."""
     if not group.links:
         return ""
     a, b = group.links[0]
     reason = (by_id[a].get("link_reasons") or {}).get(b) or (by_id[b].get("link_reasons") or {}).get(a)
-    tail = f": {reason_said(reason)}" if reason else ""
-    return f"You linked {short_name(by_id[a], lower)} to {short_name(by_id[b], lower)}{tail}."
+    back = len(group.ids) == 2 and {a, b} == set(group.ids)
+    return composer_threads.link_said(short_name(by_id[a], lower), short_name(by_id[b], lower), reason or "", i, back)
 
 
 def _shared_line(group: Group, theme: str, by_id: dict[int, dict], lower) -> str:  # noqa: ANN001
@@ -563,8 +567,8 @@ def _shared_line(group: Group, theme: str, by_id: dict[int, dict], lower) -> str
     return line
 
 
-def _group_clause(group: Group, topic: str, theme: str, by_id: dict[int, dict], lower) -> str:  # noqa: ANN001
-    """The group's line before its capital and stop."""
+def _group_clause(group: Group, topic: str, theme: str, by_id: dict[int, dict], lower, i: int = 0) -> str:  # noqa: ANN001
+    """The group's line before its capital and stop, worded by its place `i`."""
     names = _names(group.ids, by_id, lower)
     joined = "" if group.joined_by == "linked" else group.joined_by
     tail = f", {joined}" if joined else ""
@@ -574,22 +578,42 @@ def _group_clause(group: Group, topic: str, theme: str, by_id: dict[int, dict], 
     if group.joined_by.startswith("share "):
         line = _shared_line(group, theme, by_id, lower)
     else:
-        line = f"{theme} go together: {names}{tail}"
+        line = composer_threads.group_said(theme, names, tail, 0 if group.band == "closest" else i)
     return f"Closest to {topic}, {line}" if group.band == "closest" else line
 
 
-def group_line(group: Group, notes: list[dict], topic: str, lower=_lower) -> str:  # noqa: ANN001
+def group_line(group: Group, notes: list[dict], topic: str, lower=_lower, i: int = 0) -> str:  # noqa: ANN001
     """One line saying why a group answers the question and how its notes go
     together: "Your gym notes go together: the Gym Routine Overview and
     “go to the gym at 9pm on Tuesday”, both tagged #gym."."""
     by_id = {n["id"]: n for n in notes}
     if group.band == "loose":
         return f"More loosely related to {topic}: {_names(group.ids, by_id, lower)}."
-    linked = _link_said(group, by_id, lower)
+    linked = _link_said(group, by_id, lower, i)
     theme = f"your {group.name} notes" if group.name else "two of your notes" if len(group.ids) == 2 else "some of your notes"
-    line = _group_clause(group, topic, theme, by_id, lower)
+    line = _group_clause(group, topic, theme, by_id, lower, i)
     line = line[:1].upper() + line[1:] + "."
     return f"{line} {linked}" if linked else line
+
+
+_MEDIA = lazy_compile(r"!\[[^\]\n]*\]\([^)\n]*\)|\[Pictures in this note, as this app read them:")
+
+
+def thread_name(group: Group, by_id: dict[int, dict]) -> str:
+    """What a group is about, for the lead (INBOX 1512): its tag, or the word
+    its notes and their link's reason share ("sketches"), or ""."""
+    if group.name:
+        return group.name
+    texts = [_MEDIA.sub(" ", str(by_id[i].get("content") or "")) for i in group.ids]
+    texts += [str(r) for i in group.ids for r in (by_id[i].get("link_reasons") or {}).values()]
+    return composer_threads.thread_word(texts)
+
+
+def lead_line(groups: list[Group], notes: list[dict], seed: int = 0) -> str:
+    """"They fall into three threads: gaming, art and gym.", or "" for fewer
+    than two named threads."""
+    by_id = {n["id"]: n for n in notes}
+    return composer_threads.lead_said([thread_name(g, by_id) for g in groups if g.band != "loose"], seed)
 
 
 def topic_words(question: str) -> str:
