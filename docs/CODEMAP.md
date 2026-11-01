@@ -20599,35 +20599,35 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `ViewedFile` | src/tessellate/core/docview.py:152 |
-| `_DocxLines` | src/tessellate/core/docview.py:586 |
-| `_HtmlToMarkdown` | src/tessellate/core/docview.py:181 |
-| `_clip` | src/tessellate/core/docview.py:696 |
-| `_docx_flag` | src/tessellate/core/docview.py:428 |
-| `_docx_heading` | src/tessellate/core/docview.py:532 |
-| `_docx_hyperlink` | src/tessellate/core/docview.py:461 |
-| `_docx_inline` | src/tessellate/core/docview.py:481 |
-| `_docx_is_mono` | src/tessellate/core/docview.py:421 |
-| `_docx_links` | src/tessellate/core/docview.py:411 |
-| `_docx_list_item` | src/tessellate/core/docview.py:500 |
-| `_docx_list_kinds` | src/tessellate/core/docview.py:353 |
-| `_docx_paragraph` | src/tessellate/core/docview.py:540 |
-| `_docx_part` | src/tessellate/core/docview.py:341 |
-| `_docx_parts` | src/tessellate/core/docview.py:386 |
-| `_docx_revision` | src/tessellate/core/docview.py:471 |
-| `_docx_run_text` | src/tessellate/core/docview.py:435 |
-| `_docx_style_and_numbering` | src/tessellate/core/docview.py:521 |
-| `_docx_table` | src/tessellate/core/docview.py:563 |
-| `_extract_converted` | src/tessellate/core/docview.py:805 |
-| `_read_text_file` | src/tessellate/core/docview.py:702 |
-| `docx_has_revisions` | src/tessellate/core/docview.py:374 |
-| `docx_to_markdown` | src/tessellate/core/docview.py:635 |
-| `editability` | src/tessellate/core/docview.py:724 |
-| `effective_suffix` | src/tessellate/core/docview.py:92 |
-| `extract` | src/tessellate/core/docview.py:776 |
-| `html_to_markdown` | src/tessellate/core/docview.py:311 |
-| `kind_for` | src/tessellate/core/docview.py:682 |
-| `write_text_file` | src/tessellate/core/docview.py:761 |
+| `ViewedFile` | src/tessellate/core/docview.py:153 |
+| `_DocxLines` | src/tessellate/core/docview.py:587 |
+| `_HtmlToMarkdown` | src/tessellate/core/docview.py:182 |
+| `_clip` | src/tessellate/core/docview.py:697 |
+| `_docx_flag` | src/tessellate/core/docview.py:429 |
+| `_docx_heading` | src/tessellate/core/docview.py:533 |
+| `_docx_hyperlink` | src/tessellate/core/docview.py:462 |
+| `_docx_inline` | src/tessellate/core/docview.py:482 |
+| `_docx_is_mono` | src/tessellate/core/docview.py:422 |
+| `_docx_links` | src/tessellate/core/docview.py:412 |
+| `_docx_list_item` | src/tessellate/core/docview.py:501 |
+| `_docx_list_kinds` | src/tessellate/core/docview.py:354 |
+| `_docx_paragraph` | src/tessellate/core/docview.py:541 |
+| `_docx_part` | src/tessellate/core/docview.py:342 |
+| `_docx_parts` | src/tessellate/core/docview.py:387 |
+| `_docx_revision` | src/tessellate/core/docview.py:472 |
+| `_docx_run_text` | src/tessellate/core/docview.py:436 |
+| `_docx_style_and_numbering` | src/tessellate/core/docview.py:522 |
+| `_docx_table` | src/tessellate/core/docview.py:564 |
+| `_extract_converted` | src/tessellate/core/docview.py:806 |
+| `_read_text_file` | src/tessellate/core/docview.py:703 |
+| `docx_has_revisions` | src/tessellate/core/docview.py:375 |
+| `docx_to_markdown` | src/tessellate/core/docview.py:636 |
+| `editability` | src/tessellate/core/docview.py:725 |
+| `effective_suffix` | src/tessellate/core/docview.py:93 |
+| `extract` | src/tessellate/core/docview.py:777 |
+| `html_to_markdown` | src/tessellate/core/docview.py:312 |
+| `kind_for` | src/tessellate/core/docview.py:683 |
+| `write_text_file` | src/tessellate/core/docview.py:762 |
 
 ### src/tessellate/core/egress.py (30)
 
