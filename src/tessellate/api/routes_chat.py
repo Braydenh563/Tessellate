@@ -82,7 +82,7 @@ from tessellate.api.chat_pool import _Found, _NoteCtx, _chat_payload, _composer_
 from tessellate.api.chat_recent import AGENT_SURFACE, ASK_SURFACE, STARTER_SUGGESTIONS, _NAMES, _about, _asked_key, _feature_for, _fill, _recent_questions  # noqa: F401  (moved; re-exported)
 from tessellate.api.chat_web import WEB_PAGES, _can_start_searxng, _home_place, _link_events, _offer_events, _search_service, _unmatched_recents, _web_allowed, _web_chip, _web_first, _web_page_row, _web_pref_on  # noqa: F401  (moved; re-exported)
 from tessellate.api.chat_agent import _agent_events, _close_quietly, _first_agent_event, _refuse_failed, _refuse_if_off, _starter_read  # noqa: F401  (moved; re-exported)
-from tessellate.api.chat_said import MODEL_STOPPED_NOTE, _CANNOT, _HOW_TO, _ROWS_KEPT, _app_answers, _asked_before, _asks_capability, _asks_only_a_time, _awareness, _chart_line, _chat_topic, _cited_titles, _composed_lines, _current_notes, _diagram_events, _engine_counts, _engine_stands, _filed_or_counted_events, _first_cited_has_list, _held_reply, _help_events, _in_notes, _late_panel, _linked_notes, _listed_below, _model_said, _name_documents, _newest_titles, _newest_word, _open_note_answer, _ping_offer, _related_elsewhere, _related_sentence, _remember_rows, _reminder_window, _reply_seed, _row_source, _rows_key, _run_title, _said_events, _save_ask_turn, _saved_joke_reply, _search_footer, _sees, _slash_chart, _stats_chart, _stats_listed, _suggest_events, _with_words_only, reply_panel  # noqa: F401  (moved; re-exported)
+from tessellate.api.chat_said import MODEL_STOPPED_NOTE, _says_cannot, _HOW_TO, _ROWS_KEPT, _app_answers, _asked_before, _asks_capability, _asks_only_a_time, _awareness, _chart_line, _chat_topic, _cited_titles, _composed_lines, _current_notes, _diagram_events, _engine_counts, _engine_stands, _filed_or_counted_events, _first_cited_has_list, _held_reply, _help_events, _in_notes, _late_panel, _linked_notes, _listed_below, _model_said, _name_documents, _newest_titles, _newest_word, _open_note_answer, _ping_offer, _related_elsewhere, _related_sentence, _remember_rows, _reminder_window, _reply_seed, _row_source, _rows_key, _run_title, _said_events, _save_ask_turn, _saved_joke_reply, _search_footer, _sees, _slash_chart, _stats_chart, _stats_listed, _suggest_events, _with_words_only, reply_panel  # noqa: F401  (moved; re-exported)
 from tessellate.api.chat_turn import _COUNT_WORDS, _LEAD_IN, _asks_change, _chat_reply, _checks_grounding, _cited_scope, _composes_offline, _detect_intent, _engine_answers, _facts_turn, _fold_event, _insight_level, _insight_memory, _is_composing, _log_question, _may_digest, _meaning_loading, _model_stream_events, _note_kind, _note_with_hint, _notes_first, _notes_messages, _relay_events, _searched_question, _social_line, _trim_answer, _uncut, _verdicts, _why, _will_answer  # noqa: F401  (moved; re-exported)
 
 
@@ -1354,7 +1354,7 @@ def _answerable_chips(chips: list, current: list, today) -> list:  # noqa: ANN00
         except Exception:  # noqa: BLE001 - a chip that cannot be tried is not offered
             logging.getLogger("tessellate.chat").warning("a follow-up chip could not be tried, so it is not offered: %r", chip, exc_info=True)
             continue
-        if trial.get("grounding") and not _CANNOT.search(str(trial.get("text") or "")):
+        if trial.get("grounding") and not _says_cannot(str(trial.get("text") or "")):
             kept.append(chip)
     return kept
 

@@ -694,6 +694,11 @@ _CANNOT = re.compile(
 )
 
 
+def _says_cannot(text: str) -> bool:
+    """The answer says the notes do not hold it, in any of the model's ways."""
+    return bool(_CANNOT.search(text))
+
+
 def _open_title(session: Session, body: ChatRequest) -> str:
     """The title of the plain note or document open, "" for anything else: a
     private, binned or board note is never named (composer_aware's rule)."""
