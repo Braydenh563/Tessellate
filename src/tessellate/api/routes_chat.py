@@ -577,6 +577,10 @@ class ChatRequest(BaseModel):
     #: or narrow any other; `_apply_open` turns it into `note_ids`.
     open_note_id: int | None = None
     open_category: str | None = Field(default=None, max_length=100)
+    #: The document or board in front of the person (`agentOpenSubject`): read
+    #: like `open_note_id`, by "Summarise this" only, and ahead of it.
+    open_document_id: int | None = None
+    open_board_id: int | None = None
     #: Who writes a notes-only answer (INBOX 688): "notes" asks for the answer
     #: composed from the notes' own sentences (`ai/composer.py`) even while a
     #: model runs; anything else is the model's, when one runs. The Ask box's
@@ -717,6 +721,18 @@ def _titled_note(session: Session, body: ChatRequest, name: str) -> bool:
     return True
 
 
+def _open_surface(session: Session, body: ChatRequest) -> bool:
+    """The open document or board is what "Summarise this" means; one that is
+    gone (or a private board) falls through to the open note, then category."""
+    if body.open_document_id and _attached_documents(session, [body.open_document_id]):
+        body.document_ids = [body.open_document_id]
+    elif body.open_board_id and _attached_boards(session, [body.open_board_id]):
+        body.board_ids = [body.open_board_id]
+    else:
+        return False
+    return True
+
+
 def _apply_open(session: Session, body: ChatRequest) -> None:
     """"Summarise this" on any tab (CHAT_PLAN B10): the open note, else the
     open category, becomes the closed set the answer reads; "summarise
@@ -729,6 +745,9 @@ def _apply_open(session: Session, body: ChatRequest) -> None:
         return
     _first_more_is_this(body)
     if composer_digest.about_this(body.question):
+        if _open_surface(session, body):
+            _attached_only(body)
+            return
         #: A note binned or made private since it was opened is not read;
         #: the open category stands in (`_attached_notes`' own rule).
         if body.open_note_id and _attached_notes(session, [body.open_note_id]):
@@ -1947,7 +1966,7 @@ def _search_notes(session: Session, question: str, found: _Found, attached: list
         _whole_pool(session, question, found)
 
 
-def _retrieve_for(session: Session, question: str, found: _Found, attached: list, attached_notes_only: bool, as_of, locale: str | None, composed: bool = False) -> None:  # noqa: ANN001
+def _retrieve_for(session: Session, question: str, found: _Found, attached: list, attached_notes_only: bool, as_of, locale: str | None, composed: bool = False, held: bool = False) -> None:  # noqa: ANN001
     # `attached_notes_only`: the caller has already chosen the exact, closed set
     # of notes this turn should see; retrieval on top would only add notes
     # nobody asked for, matched against whatever the turn's own instruction
@@ -1957,7 +1976,7 @@ def _retrieve_for(session: Session, question: str, found: _Found, attached: list
         # Nothing to retrieve: the answer is a count, and five notes about
         # whatever the question sounded like would only be noise beside it.
         found.mode = "stats"
-    elif intent.needs_retrieval(found.detected) and not (attached_notes_only and attached):
+    elif intent.needs_retrieval(found.detected) and not (attached_notes_only and (attached or held)):
         _search_notes(session, question, found, attached, as_of, locale, composed)
 
 
@@ -2281,8 +2300,9 @@ def _with_sources(session: Session, question: str, notes: list[dict], mode: str)
     return named + (matched + notes if mode in ("recent", "none") else notes + matched)
 
 
-def _retrieve_ranked(session: Session, question: str, found: "_Found", attached: list, attached_notes_only: bool, as_of: "date | None", locale: str | None, composed: bool = False) -> None:
-    _retrieve_for(session, question, found, attached, attached_notes_only, as_of, locale, composed)
+def _retrieve_ranked(session: Session, question: str, found: "_Found", attached: list, attached_notes_only: bool, as_of: "date | None", locale: str | None, composed: bool = False, held: bool = False) -> None:
+    #: `held`: a document or board is attached, so it is the closed set too.
+    _retrieve_for(session, question, found, attached, attached_notes_only, as_of, locale, composed, held)
     _rewind_as_of(session, question, found, as_of, locale)
     #: One ranker for every shape (audit 1029 C19): the note the subject
     #: names, then the one that defines it, then the rest as retrieved.
@@ -2346,7 +2366,7 @@ def _prepare(
     #: plan, a countdown, a quiz), so the search and the hydration of every
     #: hit (0.1 to 1 s on 300 notes) are not paid for an answer that ignores them.
     if not skip_search:
-        _retrieve_ranked(session, question, found, attached, attached_notes_only, as_of, locale, composed)
+        _retrieve_ranked(session, question, found, attached, attached_notes_only, as_of, locale, composed, bool(attached_docs or attached_boards))
     notes = _context_notes(session, found, attached, attached_docs, attached_files, attached_boards, as_of)
     #: Only the notes: a document or a file row has another table's id.
     _frame_matches(session, question, notes[: len(found.entries)], found.match_info, found.mode)

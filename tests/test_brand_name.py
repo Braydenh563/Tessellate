@@ -99,3 +99,10 @@ def test_a_copy_started_before_the_rename_is_recognised():
         assert '*"Tessellate"*|*"MemoryMap AI"*' in (ROOT / launcher).read_text(encoding="utf-8")
     for launcher in ("start.bat", "uninstall.bat"):
         assert 'findstr /C:"Tessellate" /C:"MemoryMap AI"' in (ROOT / launcher).read_text(encoding="utf-8")
+
+
+def test_the_ocr_browser_keys_are_tessellate_and_the_old_ones_move_once():
+    text = (ROOT / "frontend" / "js" / "library.js").read_text(encoding="utf-8")
+    assert 'OCR_VIEW_KEY = "tessellate.ocr.view"' in text
+    assert 'OCR_READER_KEY = "tessellate.ocr.reader"' in text
+    assert "prefs.remove(`memorymap.ocr.${name}`)" in text
