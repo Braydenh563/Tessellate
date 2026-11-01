@@ -17,7 +17,10 @@ const { boot } = require('./lib.js');
   await ev(() => switchTab('documents')); await page.waitForTimeout(700);
   await ev((id) => loadDocuments(id), id); await page.waitForTimeout(1800);
   const out = {};
-  await ev(() => openDocHistory()); await page.waitForTimeout(900);
+  //: Through the dock's button: the dialog's code is documents-history.js (docs-1101), fetched by this press.
+  out.beforePress = await ev(() => typeof docRenderDiff);
+  await ev(() => document.getElementById('doc-history').click()); await page.waitForTimeout(1500);
+  out.afterPress = await ev(() => typeof docRenderDiff);
   await page.click('#doc-history-name');
   await page.waitForTimeout(500);
   const prompt = await ev(() => { const o = document.querySelector('.confirm-overlay'); return o ? { inDialog: !!o.closest('dialog[open]'), reachable: document.elementFromPoint(innerWidth / 2, innerHeight / 2)?.closest('.confirm-overlay') != null } : null; });

@@ -58,6 +58,8 @@
         drawing = true;
         try {
           await ensureModule("library");
+          //: The diff is drawn by documents-history.js, which the bundle does not carry.
+          await lazyScript("/js/documents-history.js");
         } finally {
           drawing = false;
         }

@@ -130,8 +130,6 @@
       if (typeof docs === "undefined") return;
       docs = [];
       docBlockTextCache.clear();
-      docHistoryEntries = [];
-      docHistoryContent.clear();
       docHistories.clear();
       docsMadeThisSession.clear();
     },
