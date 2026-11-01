@@ -37,7 +37,7 @@ console.log(JSON.stringify(out));
 def _cool(probes: str) -> dict:
     source = (JS_DIR / "graph-canvas.js").read_text(encoding="utf-8")
     consts = re.findall(r"^const GC_COOL_\w+ = [\d.]+;\n", source, re.M)
-    funcs = [re.search(rf"^function {name}\(.*?^\}}\n", source, re.S | re.M).group(0) for name in ("gcDrawTick", "gcTickDraw", "gcDrawHeld")]
+    funcs = [re.search(rf"^function {name}\(.*?^\}}\n", source, re.S | re.M).group(0) for name in ("gcDrawTick", "gcCoolGap", "gcTickDraw", "gcDrawHeld")]
     funcs.append("const gcCooling = (s) => s.alpha < GC_COOL_ALPHA && !s.dragNode;\n")
     script = COOL % {"source": "".join(consts) + "".join(funcs), "probes": probes}
     done = subprocess.run(["node", "-e", script], capture_output=True, text=True, timeout=30, check=True)
@@ -53,12 +53,26 @@ for (let t = 0; t < 10; t++) tick(hot, 3, t * 16);
 out.hot = draws.length;
 draws.length = 0;
 const cool = { alpha: 0.004, transform: { k: 1 }, lastTickDraw: 1000 };
-for (let t = 0; t < 63; t++) tick(cool, 4, 1000 + t * 16);   // one second of 16 ms ticks
+for (let t = 0; t < 63; t++) tick(cool, 0.2, 1000 + t * 16);   // one second of 16 ms ticks, slow drift
 out.cool = draws.length;
+draws.length = 0;
+timers.length = 0;
+const moving = { alpha: 0.004, transform: { k: 1 }, lastTickDraw: 1000, drawCost: 8 };
+for (let t = 0; t < 63; t++) tick(moving, 4, 1000 + t * 16);  // INBOX 1513: motion the eye follows, an 8 ms draw
+out.moving = draws.length;
+draws.length = 0;
+timers.length = 0;
+const cheap = { alpha: 0.004, transform: { k: 1 }, lastTickDraw: 1000, drawCost: 1 };
+for (let t = 0; t < 63; t++) tick(cheap, 4, 1000 + t * 16);   // a 1 ms draw: every tick
+out.cheap = draws.length;
 """
     )
     assert out["hot"] == 10
-    assert 9 <= out["cool"] <= 14  # one every 80 to 96 ms (a tick), not 63
+    # Stated intent kept for the slow drift it was written for (one draw every 80 to 96 ms, not 63).
+    # The drift used to be 4 a tick; a tick that moves a note that far is now drawn (1513, less mechanical).
+    assert 9 <= out["cool"] <= 14
+    assert 18 <= out["moving"] <= 23  # one every 48 ms (six times the draw), not 12 a second
+    assert out["cheap"] >= 60
 
 
 @needs_node
@@ -84,7 +98,7 @@ def test_a_draw_held_back_is_made_when_its_time_is_up_and_at_rest():
     out = _cool(
         """
 const s = { alpha: 0.004, transform: { k: 1 }, lastTickDraw: 100 };
-tick(s, 5, 110);          // too soon after the last draw: held
+tick(s, 1, 110);          // too soon after the last draw: held
 out.heldAt = draws.length;
 tick(s, 0, 190);          // 100 + 80 passed: the held draw is made
 out.made = draws.length;

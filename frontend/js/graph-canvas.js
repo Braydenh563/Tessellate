@@ -2179,6 +2179,17 @@ function gcTickSnaps(s) {
 const GC_COOL_ALPHA = 0.05;
 const GC_COOL_MOVE_PX = 0.5;
 const GC_COOL_DRAW_MS = 80;
+//: **Motion the eye can follow is drawn about as often as it can be paid
+//: for** (INBOX 1513: "less mechanical"). The 80 ms cap above was a flat rule,
+//: so a cooling layout still moving 3 to 5 px a tick stepped at 12 Hz (500
+//: notes, `gmo/gm.js`). A tick that carries a note `GC_COOL_SNAP_PX` (screen
+//: px, summed since the last draw) is drawn after `GC_COOL_SHARE` times the
+//: last full draw's cost (a sixth of the main thread at most), never sooner
+//: than a display frame; the 80 ms cap holds for the slow drift it was
+//: written for.
+const GC_COOL_SNAP_PX = 1.5;
+const GC_COOL_SHARE = 6;
+const GC_COOL_MIN_MS = 16;
 
 //: Points every note at the tick's position and answers how far (document
 //: units) the one furthest from where it was last drawn now is.
@@ -2221,11 +2232,17 @@ function gcDrawTick(s, now) {
 //: What a tick asks of the canvas. `heldDrift` adds up what ticks moved the
 //: notes since the last draw (more than the true gap, never less), so a map
 //: that settles at each tick (`gcTickSettles`) cannot wander off unseen.
+function gcCoolGap(s, seen) {
+  if (seen < GC_COOL_SNAP_PX) return GC_COOL_DRAW_MS;
+  return Math.min(GC_COOL_DRAW_MS, Math.max(GC_COOL_MIN_MS, (s.drawCost || 0) * GC_COOL_SHARE));
+}
+
 function gcTickDraw(s, now, drift) {
   s.heldDrift = (s.heldDrift || 0) + drift;
   if (!gcCooling(s)) return gcDrawTick(s, now);
-  if (s.heldDrift * (s.transform?.k || 1) < GC_COOL_MOVE_PX || s.coolTimer) return;
-  const wait = (s.lastTickDraw || 0) + GC_COOL_DRAW_MS - now;
+  const seen = s.heldDrift * (s.transform?.k || 1);
+  if (seen < GC_COOL_MOVE_PX || s.coolTimer) return;
+  const wait = (s.lastTickDraw || 0) + gcCoolGap(s, seen) - now;
   if (wait <= 0) return gcDrawTick(s, now);
   s.coolTimer = setTimeout(() => {
     s.coolTimer = 0;
@@ -5255,6 +5272,7 @@ function gcReshuffle(s = gcTab) {
       type: "reshuffle",
       seed: s.layoutSeed,
       animate: !gcStill(),
+      still: gcStill(),
     },
     s
   );
@@ -5493,6 +5511,7 @@ function gcStartWorker(nodes, edges, world, s = gcTab, viewSeed = null) {
     // Performance mode (settings.js): the physics yields twice as long
     // between ticks, half the CPU for a layout that converges a little later.
     perf: document.documentElement.dataset.perf === "on",
+    still: gcStill(),
     nodes: nodes.map((n) => ({
       id: n.id,
       x: n.x,

@@ -138,6 +138,61 @@ function alphaDecayFor(count) {
   const ticks = Math.max(SETTLE_TICKS_BIG, Math.round((300 * SETTLE_FULL_TICKS_UP_TO) / count));
   return 1 - Math.pow(0.001, 1 / ticks);
 }
+//: **Heat comes up and goes down along curves, never a step** (INBOX 1513,
+//: the owner: "make the graph adjustments be more smooth and less
+//: mechanical"). A change of settings, a filter or a reheat used to set
+//: alpha to its full value at once, so the first tick shoved every note with
+//: the whole force (66 px a note in the first quarter second, measured
+//: 500 notes, `gmo/gm.js`), and the cooling then ran at whatever pace the
+//: loop could make. Now alpha rises to its target over `RAMP_TICKS` along a
+//: smoothstep (from rest, no first frame that jumps), the physics' friction
+//: firms up along a smoothstep as the heat falls (`damping`, the last drift
+//: dies instead of crawling), and less motion skips both (`still`).
+//: A map already placed re-lays out from this heat, not from 1: the notes
+//: keep their neighbourhoods (500 notes, Spread 50 to 80: mean move 91 px
+//: against 74, the path walked 833 against 617, the same overlaps, crossings
+//: and link length) and the settle is shorter.
+const RELAYOUT_ALPHA = 0.5;
+const RAMP_TICKS = 14;
+const RAMP_FROM = 0.1;
+const VELOCITY_DECAY_REST = 0.55;
+const DAMP_BAND = 0.08;
+const ramp = { n: 0, i: 0, from: 0, to: 0 };
+let still = false;
+
+//: The simulation's own alpha is the target at once (what a direct tick and
+//: every reader of `alpha()` have always seen); `tickOnce` plays the climb.
+function heatTo(target) {
+  if (!simulation) return;
+  const now = simulation.alpha();
+  if (!ramp.n && now >= target) return;
+  if (still || dragging) {
+    ramp.n = 0;
+    simulation.alpha(Math.max(now, target));
+    return;
+  }
+  ramp.to = Math.max(target, ramp.n ? ramp.to : 0);
+  ramp.n = RAMP_TICKS;
+  ramp.i = 0;
+  ramp.from = Math.min(ramp.to, Math.max(now, ramp.to * RAMP_FROM));
+  simulation.alpha(ramp.to);
+}
+
+//: One step of the live layout: the ramp's alpha when heat is coming up,
+//: the eased friction when it is going down, then d3's own tick.
+function tickOnce() {
+  if (ramp.n) {
+    ramp.i += 1;
+    simulation.alpha(ramp.from + (ramp.to - ramp.from) * smoothstep(ramp.i / ramp.n));
+    if (ramp.i >= ramp.n) ramp.n = 0;
+  }
+  if (!dragging && !still) {
+    const cool = ramp.n ? 0 : smoothstep(1 - simulation.alpha() / DAMP_BAND);
+    simulation.velocityDecay(VELOCITY_DECAY + (VELOCITY_DECAY_REST - VELOCITY_DECAY) * cool);
+  }
+  simulation.tick();
+}
+
 //: The alphaTarget a drag raises the simulation to, and the plan's number.
 //: High enough that the neighbourhood reorganises around where you put the
 //: node, low enough that the rest of the map is not thrown into the air.
@@ -1619,13 +1674,13 @@ function applyForces(params) {
 //: is given a new starting place near its category's new place (a hub near
 //: the middle, a leaf further out, at a seeded random angle), and the layout
 //: starts again from there at full heat. The move to the new places is
-//: drawn, not jumped: `SHUFFLE_STEPS` frames, each closing a quarter of
-//: what is left (an ease-out), before the simulation takes over, so the
-//: eye can follow each note to where it went. A pinned note stays put: a
+//: drawn, not jumped: `SHUFFLE_STEPS` frames along one smoothstep (from
+//: rest, to rest; a quarter of what was left in the first frame was a lurch,
+//: 2,400 px in one draw at 500 notes), before the simulation takes over, so
+//: the eye can follow each note to where it went. A pinned note stays put: a
 //: pin is the person's own decision about where it goes.
-const SHUFFLE_STEPS = 18;
-const SHUFFLE_EASE = 0.25;
-const shuffle = { left: 0 };
+const SHUFFLE_STEPS = 36;
+const shuffle = { left: 0, total: 1 };
 
 function reshuffle(seed, animate) {
   setRingSeed(seed || 1);
@@ -1643,23 +1698,28 @@ function reshuffle(seed, animate) {
     const reach = (at ? at.r * 0.8 : 18 * Math.sqrt(size)) * (1 - 0.7 * (node.hub || 0));
     const angle = rand() * 2 * Math.PI;
     const r = reach * Math.sqrt(rand());
+    node.sx = Number.isFinite(node.x) ? node.x : cx;
+    node.sy = Number.isFinite(node.y) ? node.y : cy;
     node.tx = cx + (at ? at.x : 0) + Math.cos(angle) * r;
     node.ty = cy + (at ? at.y : 0) + Math.sin(angle) * r;
   }
   orbit.reach = null;
   orbit.tick = 0;
-  shuffle.left = animate ? SHUFFLE_STEPS : 1;
-  simulation.alphaTarget(0).alpha(1);
+  shuffle.total = animate ? SHUFFLE_STEPS : 1;
+  shuffle.left = shuffle.total;
+  simulation.alphaTarget(0).alpha(0);
+  heatTo(1);
 }
 
 //: One frame of the drawn move; the last one lands every note exactly.
 function shuffleStep() {
   shuffle.left -= 1;
   const last = shuffle.left === 0;
+  const e = smoothstep(1 - shuffle.left / shuffle.total);
   for (const node of nodes) {
     if (node.tx === undefined) continue;
-    node.x = last ? node.tx : node.x + (node.tx - node.x) * SHUFFLE_EASE;
-    node.y = last ? node.ty : node.y + (node.ty - node.y) * SHUFFLE_EASE;
+    node.x = last ? node.tx : node.sx + (node.tx - node.sx) * e;
+    node.y = last ? node.ty : node.sy + (node.ty - node.sy) * e;
     node.vx = 0;
     node.vy = 0;
     if (last) {
@@ -2853,6 +2913,9 @@ function pendingStart(open, record, bloom) {
   pending.alpha = simulation.alpha();
   pending.untangle = { done: untangle.done, passes: untangle.passes, cleaned: untangle.cleaned };
   simulation.alphaDecay(1 - Math.pow(0.001, 1 / PENDING_TICKS));
+  if (ramp.n) simulation.alpha(ramp.to);
+  ramp.n = 0;
+  simulation.velocityDecay(VELOCITY_DECAY);
 }
 
 function pendingEnd() {
@@ -2946,7 +3009,9 @@ function post(final) {
       type: "tick",
       epoch,
       positions: buffer,
-      alpha: simulation ? simulation.alpha() : 0,
+      //: The heat it is climbing to while it climbs: a layout in its first ticks
+      //: is hot, not cooling (the page throttles draws and waits to fit by this).
+      alpha: simulation ? (ramp.n ? ramp.to : simulation.alpha()) : 0,
       // How many times the simulation has stepped since `init`. Posted because
       // a frame the main thread paints and a step the worker takes are no
       // longer the same event, and a slow layout could otherwise be either
@@ -2961,7 +3026,7 @@ function post(final) {
 }
 
 const LIVE_STEP_MS = 8;
-const LIVE_MAX_STEPS = 40;
+const LIVE_MAX_STEPS = 4;
 
 function stopLoop() {
   if (timer !== null) {
@@ -3017,12 +3082,16 @@ function loop() {
   //: settings: the runs `untangle` waits on); a drag and the ease after a
   //: drop keep one tick a frame, their pace is the pointer's.
   const quick = !dragging && untangleOwed() && simulation.alpha() < WARM_ALPHA;
+  //: Ticks a frame grow with the cooling along a smoothstep (1 at `WARM_ALPHA`),
+  //: not from one to forty at once: a speed-up that starts as a lurch is what
+  //: the end of a settle looked like (INBOX 1513).
+  const cap = ramp.n ? 1 : 1 + Math.round((LIVE_MAX_STEPS - 1) * smoothstep(1 - simulation.alpha() / WARM_ALPHA));
   let steps = 0;
   do {
-    simulation.tick();
+    tickOnce();
     ticks += 1;
     steps += 1;
-  } while (quick && steps < LIVE_MAX_STEPS && Date.now() - started < LIVE_STEP_MS && simulation.alpha() >= simulation.alphaMin());
+  } while (quick && steps < cap && Date.now() - started < LIVE_STEP_MS && simulation.alpha() >= simulation.alphaMin());
   const cost = Date.now() - started;
   tickMs = ticks === steps ? cost / steps : tickMs * 0.9 + (cost / steps) * 0.1;
   clampToWorld();
@@ -3118,6 +3187,8 @@ self.onmessage = (event) => {
       carry.node = null;
       carry.followers = [];
       perf = message.perf === true;
+      still = message.still === true;
+      ramp.n = 0;
       epoch = message.epoch || 0;
       ticks = 0;
       inFlight = 0;
@@ -3289,7 +3360,18 @@ self.onmessage = (event) => {
         simulation.force("y").y(cy);
       }
       applyGrouping(message.params);
-      simulation.alpha(message.alpha == null ? 1 : message.alpha);
+      //: A map that is already on screen heats up along the ramp; an opening
+      //: (`warm`) is out of sight and starts hot.
+      //: Counted from the message: d3 places every note without a spot when it is built.
+      const placed = (message.nodes || []).filter((n) => Number.isFinite(n.x)).length;
+      const again = placed * 2 > nodes.length && !message.warm;
+      const heat = message.alpha == null ? 1 : again ? Math.min(message.alpha, RELAYOUT_ALPHA) : message.alpha;
+      simulation.velocityDecay(VELOCITY_DECAY);
+      if (message.warm || heat < 0.2) simulation.alpha(heat);
+      else {
+        simulation.alpha(0);
+        heatTo(heat);
+      }
       // New notes: a playback, glide or settle of the old ones is dropped, not restored.
       intro.frames = [];
       intro.alphas = [];
@@ -3321,7 +3403,8 @@ self.onmessage = (event) => {
       untangle.cleaned = false;
       untangle.holding = false;
       applyForces(message.params);
-      if (simulation) simulation.alpha(Math.max(simulation.alpha(), 0.3));
+      if (message.still !== undefined) still = message.still === true;
+      heatTo(0.3);
       run();
       break;
     case "drag": {
@@ -3331,6 +3414,7 @@ self.onmessage = (event) => {
       const node = nodes[index];
       if (message.phase === "start") {
         dragging = true;
+        ramp.n = 0;
         // A note the reader moves is not followed by a reshuffle of others.
         untangle.done = true;
         untangle.passes = UNTANGLE_PASSES;
@@ -3414,17 +3498,18 @@ self.onmessage = (event) => {
       if (index === undefined) break;
       nodes[index].fx = null;
       nodes[index].fy = null;
-      if (simulation) simulation.alpha(Math.max(simulation.alpha(), 0.2));
+      heatTo(0.2);
       run();
       break;
     }
     case "reheat":
       if (!simulation) break;
-      simulation.alpha(Math.max(simulation.alpha(), message.alpha || 0.3));
+      heatTo(message.alpha || 0.3);
       run();
       break;
     case "reshuffle":
       if (!simulation) break;
+      if (message.still !== undefined) still = message.still === true;
       untangle.done = false;
       untangle.passes = 0;
       untangle.cleaned = false;
