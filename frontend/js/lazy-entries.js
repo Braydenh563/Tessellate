@@ -68,9 +68,13 @@ Object.assign(LAZY_MODULES, {
   loadFailed: ["/js/load-failed.js"],
   //: The generated faces, the companion and Atlas (see "The characters" below).
   characters: ["/js/avatars.js", "/js/atlas.js", "/js/characters-ready.js"],
+  //: What a person does to the companion on purpose: the Settings controls, Show or
+  //: hide, Call back, the Look repaint (companion-settings.js's header; audit AI23).
+  companionSettings: ["/js/companion-settings.js"],
 });
 setTimeout(() => ["loadFailed", "modelMenu"].forEach(ensureModule), 3000);
 installStandIns({
+  companionSettings: ["mountBuddyCustom", "mountBuddyActivities", "mountProfileLook", "nameMarkBuddyMakeIt", "nameMarkBuddyHide", "nameMarkBuddyToggle", "nameMarkBuddyCallBack", "nameMarkRepaintAll"],
   spaceSwap: ["swapSpace", "spaceEnterFor"],
   companionRemark: ["nameMarkBuddyRemark"],
   chatPrivate: ["chatPrivateStart", "chatPrivateToggle", "chatPrivateLeave"],
@@ -131,7 +135,7 @@ document.addEventListener("keydown", (event) => {
 let charactersLoaded = false;
 const characterWaiters = new Set();
 const characterBacklog = new Map();
-const CHARACTER_DEPENDENTS = ["onboarding"];
+const CHARACTER_DEPENDENTS = ["onboarding", "companionSettings"];
 for (const name of CHARACTER_DEPENDENTS) LAZY_MODULES[name] = [...LAZY_MODULES.characters, ...LAZY_MODULES[name]];
 
 //: `fallback` is a face that needs no bundle (`plainHead`, or the app's emblem): it
@@ -198,8 +202,8 @@ installCharacterStandIns(["nameMarkBuddyNoteOpened", "atlasOn", "nameMarkBuddyCu
 //: Syncs and one-offs: the companion's settings, Atlas's look, a streak, the
 //: Show or Hide row.
 installCharacterStandIns([
-  "syncNameMarkBuddy", "mountBuddyCustom", "mountBuddyActivities", "nameMarkBuddyMotionApply", "nameMarkBuddySizeSelect",
-  "nameMarkBuddySetSize", "nameMarkBuddyCallBack", "nameMarkBuddyToggle", "nameMarkBuddyHint", "nameMarkRepaintAll",
+  "syncNameMarkBuddy", "nameMarkBuddyMotionApply", "nameMarkBuddySizeSelect",
+  "nameMarkBuddySetSize", "nameMarkBuddyHint",
   "atlasRepaint", "atlasStreak", "nameMarkBuddyStreak",
 ], true);
 

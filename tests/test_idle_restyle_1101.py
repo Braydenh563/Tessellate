@@ -19,7 +19,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-AVATARS = (JS / "avatars.js").read_text(encoding="utf-8")
+AVATARS = "\n".join((JS / n).read_text(encoding="utf-8") for n in ("avatars.js", "companion-settings.js"))
 ATLAS = (JS / "atlas.js").read_text(encoding="utf-8")
 
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")

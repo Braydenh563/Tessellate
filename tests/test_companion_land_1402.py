@@ -18,7 +18,8 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-AV = (ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
+#: The companion's code: avatars.js and the lazy files its settings and throw moved to (audit AI23).
+AV = "\n".join((ROOT / "frontend" / "js" / n).read_text(encoding="utf-8") for n in ("avatars.js", "companion-throw.js"))
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
 

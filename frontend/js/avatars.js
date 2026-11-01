@@ -362,34 +362,11 @@ function nameMarkBuddyCustom() {
   return nameMarkBuddyCustomCache;
 }
 
-function nameMarkBuddyKeepCustom(custom) {
-  nameMarkBuddyCustomCache = null;
-  try {
-    prefs.set("avatar-buddy-custom", JSON.stringify({ name: custom.name, style: custom.style }));
-  } catch (e) {
-    // Kept for this visit only.
-  }
-  const buddy = document.getElementById("nm-buddy");
-  if (buddy) {
-    delete buddy.dataset.seed;
-    syncNameMarkBuddy();
-  }
-}
-
 //: The look a generated face takes when its name gives no cue: null for
 //: Neutral (stored as "mixed"), or one of the two.
 function nameMarkLookLean() {
   const lean = typeof appearancePref === "function" ? appearancePref("face-look", "mixed") : "mixed";
   return lean === "feminine" || lean === "masculine" ? lean : null;
-}
-
-//: Every generated face on the page drawn again (a change of Face looks):
-//: every size read first, then every face replaced, so it costs one layout.
-function nameMarkRepaintAll() {
-  const faces = [...document.querySelectorAll(".name-mark[data-nm-seed]:not(.nm-atlas)")].filter((el) => !el.closest("#nm-buddy"));
-  const sizes = faces.map((el) => Math.round(el.getBoundingClientRect().width) || 20);
-  faces.forEach((el, i) => el.replaceWith(nameMark(el.dataset.nmSeed, sizes[i])));
-  repaintOwnFace();
 }
 
 function nameMood(name) {
@@ -2692,7 +2669,6 @@ function nameCharacterHeld(kind, arm, t) {
   }
 }
 
-
 // --- what a face does when you meet it ------------------------------------
 //: The owner: "maybe the eyes and heads can tilt slightly to follow the
 //: user's mouse if toggled?? and they can do something if clicked?? can
@@ -2952,58 +2928,6 @@ const PROFILE_LOOK_PARTS = [
   ["eyewear", "Eyewear", () => NAME_MARK_EYEWEAR_KINDS],
   ["hand", "Holding", () => Object.keys(NAME_MOOD_LEXICON.hands)],
 ];
-const PROFILE_LOOK_WORDS = {
-  hat: "wizard hat", chefhat: "chef's hat", partyhat: "party hat", flowercrown: "flower crown", tricorn: "pirate hat",
-  squareglasses: "square glasses", threed: "3D glasses", starglasses: "star shades", heartglasses: "heart shades", visor: "cyber visor",
-  thumbsup: "thumbs up", mug: "hot drink", fishingrod: "fishing rod", tableflip: "table flip",
-  tee: "T-shirt", scoop: "scoop neck", collar: "shirt and tie", sweater: "jumper", uwu: "uwu",
-  crop: "textured crop", sweep: "side-swept fringe", quiff: "soft quiff", messy: "tousled", curls: "short curls",
-  wavy: "wavy, to the chin", long: "long and straight", waves: "long waves",
-};
-
-function repaintOwnFace() {
-  if (typeof paintUserMarks === "function") paintUserMarks();
-  const buddy = document.getElementById("nm-buddy");
-  if (buddy) {
-    delete buddy.dataset.seed;
-    syncNameMarkBuddy();
-  }
-  if (typeof paintDashEmblem === "function") paintDashEmblem();
-}
-
-//: The part pickers, one select per part, for Your look and for your own
-//: companion alike: `read` gives the style as it is, `write` keeps a
-//: changed one.
-function nameMarkLookPickers(host, prefix, autoLabel, read, write) {
-  for (const [key, label, options] of PROFILE_LOOK_PARTS) {
-    const row = document.createElement("label");
-    row.className = "profile-look-part";
-    const text = document.createElement("span");
-    text.className = "muted";
-    text.textContent = label;
-    const select = document.createElement("select");
-    select.className = "small-select";
-    select.id = `${prefix}${key}`;
-    select.dataset.part = key;
-    const auto = new Option(autoLabel, "");
-    const none = new Option("None", "none");
-    //: A face always has a skin and its hair a colour: no "None" for those.
-    select.append(auto);
-    if (key !== "skin" && key !== "hairtone") select.append(none);
-    for (const value of options()) {
-      const word = PROFILE_LOOK_WORDS[value] || value.replace(/([a-z])([A-Z])/g, "$1 $2");
-      select.append(new Option(word.charAt(0).toUpperCase() + word.slice(1), value));
-    }
-    if (key === "mood") none.textContent = "Plain";
-    select.addEventListener("change", () => {
-      const style = read();
-      style[key] = select.value;
-      write(style);
-    });
-    row.append(text, select);
-    host.appendChild(row);
-  }
-}
 
 //: Appearance's "Your own character" companion: shown only while it is
 //: the choice, its pickers built once.
@@ -3023,94 +2947,6 @@ function nameMarkBuddyMade(kind) {
   }
   return true;
 }
-//: Where to make it: your face in Profile, your character here in
-//: Appearance under the companion's own row.
-function nameMarkBuddyMakeIt(kind) {
-  if (typeof openSettingsModal !== "function") return;
-  if (kind === "me") openSettingsModal("preferences", "profile-look");
-  else openSettingsModal("appearance", "avatar-buddy-custom");
-}
-//: The line under the companion's select: shown only while the choice is a
-//: face you have not made.
-function nameMarkBuddyMakeHint() {
-  const hint = document.getElementById("avatar-buddy-make");
-  if (!hint) return;
-  const kind = typeof appearancePref === "function" ? appearancePref("avatar-buddy", "off") : "off";
-  const show = (kind === "me" || kind === "custom") && !nameMarkBuddyMade(kind);
-  hint.classList.toggle("hidden", !show);
-  if (!show) return;
-  document.getElementById("avatar-buddy-make-text").textContent = kind === "me"
-    ? "It wears a face read from your name until you make your own."
-    : "It wears a face read from its name until you give it one below.";
-  const go = document.getElementById("avatar-buddy-make-go");
-  go.textContent = kind === "me" ? "Create your avatar" : "Make your character";
-  go.onclick = () => nameMarkBuddyMakeIt(kind);
-}
-
-function mountBuddyCustom() {
-  nameMarkBuddyMakeHint();
-  const box = document.getElementById("avatar-buddy-custom");
-  if (!box) return;
-  const on = (typeof appearancePref === "function" ? appearancePref("avatar-buddy", "off") : "off") === "custom";
-  box.classList.toggle("hidden", !on);
-  const host = document.getElementById("avatar-buddy-parts");
-  const input = document.getElementById("avatar-buddy-name");
-  if (host && !host.childElementCount) {
-    nameMarkLookPickers(host, "avatar-buddy-look-", "From its name", () => ({ ...nameMarkBuddyCustom().style }), (style) => {
-      nameMarkBuddyKeepCustom({ name: nameMarkBuddyCustom().name, style });
-    });
-    let typing = 0;
-    input?.addEventListener("input", () => {
-      clearTimeout(typing);
-      typing = setTimeout(() => nameMarkBuddyKeepCustom({ name: input.value, style: nameMarkBuddyCustom().style }), 300);
-    });
-    document.getElementById("avatar-buddy-shuffle")?.addEventListener("click", () => {
-      const custom = nameMarkBuddyCustom();
-      nameMarkBuddyKeepCustom({ name: custom.name, style: { ...custom.style, variant: ((Number(custom.style.variant) || 0) + 1) % 10000 } });
-    });
-  }
-  const custom = nameMarkBuddyCustom();
-  if (input && document.activeElement !== input) input.value = custom.name;
-  for (const [key] of PROFILE_LOOK_PARTS) {
-    const select = document.getElementById(`avatar-buddy-look-${key}`);
-    if (select) select.value = custom.style[key] || "";
-  }
-}
-
-function mountProfileLook() {
-  const host = document.getElementById("profile-look-parts");
-  if (!host) return;
-  if (!host.childElementCount) {
-    nameMarkLookPickers(host, "profile-look-", "From your name", ownNameMarkStyle, (style) => {
-      setOwnNameMarkStyle(style);
-      repaintOwnFace();
-      markPrefsDirty();
-    });
-    document.getElementById("profile-look-shuffle")?.addEventListener("click", () => {
-      const style = ownNameMarkStyle();
-      style.variant = ((Number(style.variant) || 0) + 1) % 10000;
-      setOwnNameMarkStyle(style);
-      repaintOwnFace();
-      markPrefsDirty();
-    });
-    document.getElementById("profile-look-reset")?.addEventListener("click", () => {
-      setOwnNameMarkStyle({});
-      syncProfileLook();
-      repaintOwnFace();
-      markPrefsDirty();
-    });
-  }
-  syncProfileLook();
-}
-
-function syncProfileLook() {
-  const style = ownNameMarkStyle();
-  for (const [key] of PROFILE_LOOK_PARTS) {
-    const select = document.getElementById(`profile-look-${key}`);
-    if (select) select.value = style[key] || "";
-  }
-}
-
 
 // --- the companion ----------------------------------------------------------
 //: **A character, not a disc, with somewhere to be on every page** (INBOX
@@ -3381,57 +3217,6 @@ function nameMarkBuddyEmote(kind) {
     { opacity: 1, transform: "translate(2px, -7px) scale(1)", offset: 0.8 },
     { opacity: 0, transform: "translate(3px, -10px) scale(0.95)" },
   ], { duration: 1600, easing: "ease-out" });
-}
-
-function mountBuddyActivities() {
-  mountBuddyShowy();
-  const host = document.getElementById("avatar-buddy-activities");
-  if (!host || host.childElementCount) return;
-  const off = nameMarkBuddyActivitiesOff();
-  for (const [key, label] of NMB_ACTIVITIES) {
-    const row = document.createElement("label");
-    row.className = "setting-check";
-    const input = document.createElement("input");
-    input.type = "checkbox";
-    input.checked = !off.has(key);
-    input.dataset.activity = key;
-    const text = document.createElement("span");
-    text.textContent = label;
-    row.append(input, text);
-    host.appendChild(row);
-  }
-  host.addEventListener("change", (event) => {
-    const input = event.target.closest?.("input[data-activity]");
-    if (!input) return;
-    const now = nameMarkBuddyActivitiesOff();
-    if (input.checked) now.delete(input.dataset.activity);
-    else now.add(input.dataset.activity);
-    try {
-      prefs.set("avatar-buddy-acts-off", [...now].join(","));
-    } catch (e) {
-      // Kept for this visit only.
-    }
-    //: Turned off while it is doing it: it stops, the way it always does.
-    if (nmb.act && nameMarkBuddyActOff(nmb.act, now)) nameMarkBuddyAct("");
-    const buddy = document.getElementById("nm-buddy");
-    if (buddy) nameMarkBuddyToggles(buddy);
-  });
-}
-
-//: Companion > Showy entrances (INBOX 1463): off unless chosen.
-function mountBuddyShowy() {
-  const box = document.getElementById("avatar-buddy-showy");
-  if (!box) return;
-  box.checked = nameMarkBuddyShowy();
-  if (box.dataset.wired) return;
-  box.dataset.wired = "1";
-  box.addEventListener("change", () => {
-    try {
-      prefs.set("avatar-buddy-entrances", box.checked ? "showy" : "quiet");
-    } catch (e) {
-      // Kept for this visit only.
-    }
-  });
 }
 
 function nameMarkBuddyActions() {
@@ -6190,21 +5975,6 @@ const NMB_TOSS_SPEED = 0.6;
 const NMB_THROW = { max: 2.3, g: 0.0032, air: 0.0011, ground: 0.006, bounce: 0.4, wall: 0.12, stick: 0.35, tilt: 14, ms: 1200 };
 const NMB_PET_MS = 1100;
 
-//: **Never the same flight twice** (Brief 88 (b), the owner: "it just
-//: bounces off a panel and back to the top, I want it to do that, but vary
-//: how much it does that"). Each throw draws its own bounce, floor grip and
-//: air from a range by `roll` (three draws in [0, 1)), and one thrown hard
-//: (past 1.9 px/ms) tumbles head over heels instead of leaning, by its speed.
-function nameMarkBuddyThrowFeel(roll, speed, k = NMB_THROW) {
-  return {
-    ...k,
-    bounce: +(0.28 + roll[0] * 0.24).toFixed(3),
-    ground: +(0.0045 + roll[1] * 0.0035).toFixed(5),
-    air: +(0.0009 + roll[2] * 0.0004).toFixed(5),
-    spin: speed > 1.9 ? 0.3 : 0,
-  };
-}
-
 //: The speed it is let go at, px per ms, from `samples` ([x, y, ms], oldest
 //: first): over the pointer's last 80ms only, so a slow start to a quick
 //: flick does not slow the flick, and clamped to `k.max`. Null when the
@@ -6225,70 +5995,6 @@ function nameMarkBuddyReleaseVelocity(samples, now, k = NMB_THROW) {
   return [vx * cut, vy * cut];
 }
 
-//: One step of a flight, pure: `s` its corner (`x`, `y`), speed (`vx`,
-//: `vy`), lean (`rot`, degrees), time flown (`t`), what it slides on (`on`:
-//: a ledge, "floor" or null) and `rest`; `dt` ms; `world` the box its corner
-//: stays in (`left`, `right`, `top`, `floor`) and the `ledges` it can come
-//: down on ({left, right, y}, for its corner). `hit` is the speed of a
-//: landing this step, for the squash.
-function nameMarkBuddyFlightStep(s, dt, world, k = NMB_THROW) {
-  const n = { ...s, t: s.t + dt, hit: 0 };
-  if (n.rest) return n;
-  const ease = Math.min(1, dt / 90);
-  if (n.on) {
-    n.vx *= Math.exp(-k.ground * dt);
-    //: Down from a tumble: it rolls the short way up, never unwinds.
-    n.rot = (((n.rot + 180) % 360) + 360) % 360 - 180;
-    n.rot -= n.rot * ease;
-  } else {
-    n.vy += k.g * dt;
-    const drag = Math.exp(-k.air * dt);
-    n.vx *= drag;
-    n.vy *= drag;
-    const fast = Math.min(1, k.max / Math.hypot(n.vx, n.vy));
-    n.vx *= fast;
-    n.vy *= fast;
-    if (k.spin) n.rot += n.vx * k.spin * dt;
-    else n.rot += (Math.max(-40, Math.min(40, n.vx * k.tilt)) - n.rot) * ease;
-  }
-  const py = n.y;
-  n.x += n.vx * dt;
-  n.y += n.on ? 0 : n.vy * dt;
-  if (n.x < world.left || n.x > world.right) {
-    //: Off a side: back at `bounce` of its speed, but never faster than
-    //: `wall` px per ms (a hard throw thuds against it and drops).
-    const left = n.x < world.left;
-    const back = Math.min(Math.abs(n.vx) * k.bounce, k.wall);
-    n.x = left ? world.left : world.right;
-    n.vx = left ? back : -back;
-  }
-  if (n.y < world.top) {
-    n.y = world.top;
-    n.vy = -n.vy * k.bounce;
-  }
-  //: Off the end of the ledge it slid along: it falls again.
-  if (n.on && n.on !== "floor" && (n.x < n.on.left || n.x > n.on.right)) n.on = null;
-  if (!n.on && n.vy > 0) {
-    let land = null;
-    for (const l of world.ledges || []) {
-      if (py < l.y && n.y >= l.y && n.x >= l.left && n.x <= l.right && (!land || l.y < land.y)) land = l;
-    }
-    if (land || n.y >= world.floor) {
-      n.y = land ? land.y : world.floor;
-      n.hit = n.vy;
-      if (n.vy > k.stick) {
-        n.vy = -n.vy * k.bounce;
-        n.vx *= 0.85;
-      } else {
-        n.vy = 0;
-        n.on = land || "floor";
-      }
-    }
-  }
-  if ((n.on && Math.abs(n.vx) < 0.02 && Math.abs(n.rot) < 1) || n.t >= k.ms) n.rest = true;
-  return n;
-}
-
 //: The room a throw flies in, for its corner: the window's sides, the top
 //: bar's underside, the bottom bar (or the window's foot) as the floor, and
 //: the top of every panel on the tab at least its width wide as a ledge.
@@ -6300,25 +6006,6 @@ function nameMarkBuddyWorld(tab) {
     .filter((e) => e.type === "top" && e.kind !== "bar" && e.right - e.left >= NMB_W && e.y > roof + NMB_FEET && e.y < base)
     .map((e) => ({ left: e.left - NMB_W / 2, right: e.right - NMB_W / 2, y: e.y - NMB_FEET + 1 }));
   return { left: 0, right: innerWidth - NMB_W, top: roof, floor: base - NMB_FEET + 1, ledges };
-}
-
-//: The throw itself, and what can happen on the way: companion-throw.js
-//: (lazy, fetched on the first carry; INBOX 1301 D6).
-//: Come down at `s`: the nearest place to there, as if dropped there, kept
-//: as your spot on `tab`, the tab it was thrown on. Never the tab's own
-//: choice near there: on Notes with 24 notes, thrown right from x 44 and
-//: left from x 1168, both came down on one dock perch at x 763 (throw.js).
-//: Worked out once, at the release (`companionThrowPlan`), on the surfaces
-//: the release has just indexed for the flight's world, on one measure.
-function nameMarkBuddyThrowSpot(s) {
-  let spot = nameMarkBuddyDrop(s.x, s.y);
-  //: Landed where it cannot stand: along that surface a little way first,
-  //: not up to the top bar (INBOX 1302); further than that, the nearest
-  //: open air (`nameMarkBuddyLandNear`), never across the screen.
-  if (s.on && spot.y < s.y - 40) spot = nameMarkBuddyDrop(s.x, s.y, NMB_LAND_NEAR);
-  spot = nameMarkBuddyLandNear(s.x, s.y, spot);
-  if (spot.y >= s.y + 2) spot.falls = true;
-  return spot;
 }
 
 //: **It settles where it lands** (INBOX 1402, the owner: "ill trow the
@@ -6353,22 +6040,6 @@ function nameMarkBuddyLandNear(x, y, spot) {
     }
   }
   return spot;
-}
-function nameMarkBuddyThrowLand(buddy, s, tab, spot) {
-  nmb.thrown = { ...nmb.thrown, to: [Math.round(s.x), Math.round(s.y)] };
-  nmb.placedAt = Date.now();
-  nmb.afterLand = true;
-  nameMarkBuddyMoveTo(buddy, spot);
-  //: Its landing act a frame later, not in this one: the move's restyle and
-  //: the act's were one 27 to 81ms frame (throw5.js), two now. A one-shot
-  //: timer, not a frame request (the wake-source ratchet).
-  setTimeout(() => {
-    if (nmb.spot === spot && !nmb.flight && (!nmb.anim || nmb.anim.playState !== "running")) nameMarkBuddyAct("land");
-  }, 16);
-  const spots = nameMarkBuddySpots();
-  delete spots["*"];
-  spots[tab] = nameMarkBuddySpotFor(spot);
-  nameMarkBuddyKeepSpots(spots);
 }
 
 //: The pointer on it (`dwellMs` how long): awake, a look, a small lean, a
@@ -7364,26 +7035,6 @@ function nameMarkBuddyWalkIn(buddy, dx, duration, shown) {
   walk.oncancel = done;
 }
 
-//: **Out the same way, or dissolving** (INBOX 430): hidden from its menu or
-//: by Ctrl+Shift+Y it dematerialises into starlight rather than vanishing.
-function nameMarkBuddyLeave(buddy, then) {
-  if (!buddy || typeof buddy.animate !== "function") {
-    then();
-    return;
-  }
-  //: Less motion is a fade, never a cut.
-  if (nameMarkBuddyNoTravel()) {
-    buddy.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 260, easing: "ease-in", fill: "forwards" });
-    setTimeout(then, 280);
-    return;
-  }
-  const char = buddy.querySelector(".nm-buddy-char");
-  nmb.anim?.cancel();
-  nameMarkBuddyBurst(buddy, 0, 0, 120);
-  char?.animate([{ scale: "1", opacity: 1 }, { scale: "1.05", opacity: 1, offset: 0.25 }, { scale: "0.45", opacity: 0 }], { duration: 380, easing: "ease-in", fill: "forwards" });
-  setTimeout(then, 400);
-}
-
 //: The window changed size: held panels are followed at once, a pinned
 //: place is worked out again for the new size, a place on a bar keeps to
 //: the bar, and anything left off screen is brought back inside at once.
@@ -7428,35 +7079,6 @@ function nameMarkBuddyRefitClear(buddy) {
   if (!nameMarkBuddyHits(nmb.x, nmb.y, nmb.pose, nameMarkBuddyNear(nmb.x, nmb.y, nmb.pose, nmb.legs), nmb.legs)) return false;
   placeNameMarkBuddy(buddy, false, [nmb.x, nmb.y]);
   return true;
-}
-
-//: **Called back** (INBOX 426 k, the owner: "the companion just went off
-//: the screen and I cant get it back now ... there needs to be some way to
-//: reset the position and recall the companion"). From its menu, from
-//: Appearance and from the command palette: every place you gave it is
-//: forgotten and it comes to the tab's best perch, walking there when it
-//: can be seen, arriving there when it could not. With no companion on, it
-//: opens the setting that turns one on.
-function nameMarkBuddyCallBack() {
-  nmb.home = null;
-  const buddy = document.getElementById("nm-buddy");
-  if (!buddy) {
-    if (typeof revealFeature === "function") revealFeature("set-companion");
-    return;
-  }
-  nameMarkBuddyKeepSpots({});
-  nmb.pinned = false;
-  nmb.anim?.cancel();
-  nmb.hopAnim?.cancel();
-  buddy.style.translate = "";
-  buddy.classList.remove("nm-buddy-dragging", "nmb-poofing", "nmb-walking");
-  const box = buddy.getBoundingClientRect();
-  const seen = !nmb.outOfSight && box.right > 0 && box.left < innerWidth && box.bottom > 0 && box.top < innerHeight;
-  nameMarkBuddyIndexReset();
-  placeNameMarkBuddy(buddy, !seen);
-  //: Out of sight, it comes in the way it would to a tab (`nameMarkBuddyEnter`).
-  if (!seen && nmb.spot) nmb.enteredBy = nameMarkBuddyEnter(buddy, nmb.spot);
-  nameMarkSay(buddy, "Here I am.");
 }
 
 // --- its behaviours -----------------------------------------------------------
@@ -9138,7 +8760,6 @@ function nameMarkBuddyChatErrand() {
   return false;
 }
 
-
 // --- what is going on around it ---------------------------------------------
 //: **Context, from events only** (the owner: "go to sleep if the user goes
 //: afk for too long, or putting on headphones if music or sound is playing
@@ -9456,78 +9077,7 @@ function nameMarkBuddyGone() {
   nmb.easeUntil = 0;
 }
 
-function nameMarkBuddyHide(buddy) {
-  let was = null;
-  try {
-    //: Which companion it was, so the hotkey brings the same one back.
-    was = prefs.get("avatar-buddy", null);
-    if (was && was !== "off") prefs.set("nm-buddy-last", was);
-    prefs.set("avatar-buddy", "off");
-  } catch (e) {
-    // Hidden for this session at least.
-  }
-  const select = document.getElementById("avatar-buddy");
-  if (select) select.value = "off";
-  nameMarkBuddyLeave(buddy, () => {
-    dropAnimations(buddy);
-    buddy?.remove();
-    //: Every copy: a stray second mount left its glow and grip behind.
-    for (const stray of document.querySelectorAll("#nm-buddy, .nmb-burst")) stray.remove();
-    nameMarkBuddyGone();
-  });
-  //: The chord as it is bound now (it is rebindable), not as it shipped.
-  const keys = typeof shortcuts === "object" ? shortcuts?.toggleCompanion?.keys : "";
-  //: **The way back is a button, not a sentence** (INBOX 743, the owner:
-  //: "the show companion notification button was poorly shown"). The toast
-  //: named a chord and a Settings path in prose, with nothing to press; the
-  //: toast-with-action recipe puts the one press beside its first line.
-  const back = was && was !== "off" ? was : "me";
-  toastAction(
-    keys ? `Companion hidden. ${keys} brings it back too.` : "Companion hidden.",
-    "Show it",
-    () => {
-      try {
-        prefs.set("avatar-buddy", back);
-      } catch (e) {
-        // Back for this visit.
-      }
-      const choice = document.getElementById("avatar-buddy");
-      if (choice) choice.value = back;
-      syncNameMarkBuddy();
-    },
-    { record: false }
-  );
-}
-
 //: Whether it is out (chosen in Appearance, or still on the page): `nameMarkBuddyShowing`, lazy-entries.js.
-
-//: **Show or hide it from anywhere** (INBOX 430, the owner: "a show/hide
-//: companion hotkey, and palette action"): Ctrl+Shift+Y (`toggleCompanion`
-//: in the shortcut registry), the command palette and Find anything, whose
-//: row says which it will do (`nameMarkBuddyShowing`). Hidden, it comes back
-//: as whichever companion it was (`nm-buddy-last`), or Atlas.
-function nameMarkBuddyToggle() {
-  if (nameMarkBuddyShowing()) {
-    nameMarkBuddyHide(document.getElementById("nm-buddy"));
-    return;
-  }
-  let back = "atlas";
-  try {
-    back = prefs.get("nm-buddy-last", null) || "atlas";
-    prefs.set("avatar-buddy", back);
-  } catch (e) {
-    // Shown for this session at least.
-  }
-  //: Through the Appearance select's own change, so a custom companion is
-  //: mounted and the size control follows, as when it is picked there.
-  const select = document.getElementById("avatar-buddy");
-  if (select) {
-    select.value = back;
-    select.dispatchEvent(new Event("change", { bubbles: true }));
-  } else {
-    syncNameMarkBuddy();
-  }
-}
 
 function nameMarkBuddyBuild() {
   const buddy = document.createElement("div");

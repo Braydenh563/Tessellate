@@ -61,6 +61,7 @@ SCRIPTS = (
     "timeline.js",
     "palette.js",
     "avatars.js",
+    "companion-settings.js",
     "atlas.js",
     #: The rest of the whiteboard bundle (app.js LAZY_MODULES): its palette
     #: rows live in whiteboard-commands.js.
