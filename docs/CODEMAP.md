@@ -2,7 +2,7 @@
 
 Generated 2026-11-01 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7518, frontend ids 2643, CSS sections 517, backend routes 638, backend modules 8231, test files 1777, tests 15352, plan headings 990, app scripts 28, boot scripts 37, script files 214.
+Counts: frontend functions 7518, frontend ids 2643, CSS sections 517, backend routes 638, backend modules 8231, test files 1777, tests 15353, plan headings 990, app scripts 28, boot scripts 37, script files 214.
 
 ## Frontend functions (7518)
 
@@ -22714,7 +22714,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15352)
+## Tests (15353)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24309,7 +24309,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_update_beta.py | 7 |
 | tests/test_update_channel_packaged.py | 2 |
 | tests/test_update_dialogs_x12.py | 3 |
-| tests/test_update_verify_1031.py | 12 |
+| tests/test_update_verify_1031.py | 13 |
 | tests/test_upgrade_keeps_data_folder.py | 6 |
 | tests/test_usage_ledger.py | 8 |
 | tests/test_user_profile_context.py | 8 |

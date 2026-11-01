@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import hashlib
 import time
+from pathlib import Path
 
 import pytest
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
@@ -175,3 +176,27 @@ def test_with_a_pinned_key_the_signature_file_decides(client, app_state, monkeyp
     assert launched == [] and state["outcome"] == "failed"
     launched, state = _apply(client, app_state, monkeypatch, tmp_path, digest=DIGEST, sig_asset=None, keys=(public,))
     assert launched == [] and state["outcome"] == "failed"
+
+
+def test_the_release_signature_is_what_the_app_verifies(tmp_path, monkeypatch):
+    # packaging/sign_release.py is the release signer (INBOX 1500): what it
+    # writes must pass `refusal` under the matching public key, and a release
+    # with no key, or a malformed one, must stop rather than ship unsigned.
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("sign_release", Path(__file__).resolve().parents[1] / "packaging" / "sign_release.py")
+    signer = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(signer)
+    private = Ed25519PrivateKey.generate()
+    seed = private.private_bytes(serialization.Encoding.Raw, serialization.PrivateFormat.Raw, serialization.NoEncryption()).hex()
+    public = private.public_key().public_bytes(serialization.Encoding.Raw, serialization.PublicFormat.Raw).hex()
+    installer = tmp_path / "Tessellate-Setup-9.9.9.exe"
+    installer.write_bytes(b"an installer" * 1000)
+    monkeypatch.setenv("UPDATE_SIGNING_KEY", seed)
+    assert signer.main([str(installer)]) == 0
+    signature = (tmp_path / "Tessellate-Setup-9.9.9.exe.sig").read_bytes()
+    assert update_verify.refusal(installer, digest=None, signature=signature, keys=(public,)) is None
+    monkeypatch.setenv("UPDATE_SIGNING_KEY", "")
+    assert signer.main([str(installer)]) == 1
+    monkeypatch.setenv("UPDATE_SIGNING_KEY", "not hex")
+    assert signer.main([str(installer)]) == 1
