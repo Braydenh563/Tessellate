@@ -1730,7 +1730,7 @@ function graphCategoryScale(categories) {
   return (name) => categoryColour(name, scale(name));
 }
 document.addEventListener("categorycolours", () => {
-  if (document.getElementById("graph-canvas")?.checkVisibility?.()) renderGraph();
+  if (!document.getElementById("tab-graph")?.classList.contains("hidden")) afterFrames(renderGraph);
 });
 
 async function renderGraph() {
