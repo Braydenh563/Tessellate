@@ -4161,14 +4161,23 @@ function wireSettingsFolds() {
 //: (36px, 44, 46, 50 measured; `scratchpad/ui-sweeps/foldhelp.js`); a
 //: `ResizeObserver` on the wrapper and the summary re-places it whenever
 //: either changes size, which is also when a hidden pane is first shown.
+//: **The rects are divided by the dialog's own scale** (INBOX 1514): Settings
+//: rises from `scale: 0.985` over 240ms (08-consistency.css, the dialog
+//: motion), the observer fires on the first laid-out frame, and a bounding
+//: rect is drawn size, so the offsets came out short of the real ones (up to
+//: 9.8px at 1440) and stayed, because a scale changes no layout size and the
+//: observer never fires again. The wrapper's computed `width` is its layout
+//: width, the same on every frame, so the ratio is the scale at that moment.
 function placeFoldHelp(wrap) {
   const help = wrap.querySelector(":scope > .fold-help");
   const slot = wrap.querySelector(":scope > details > summary .fold-help-slot");
   if (!help || !slot || !slot.offsetParent) return;
   const box = wrap.getBoundingClientRect();
   const at = slot.getBoundingClientRect();
-  help.style.top = `${at.top - box.top}px`;
-  help.style.left = `${at.left - box.left}px`;
+  const layoutWidth = parseFloat(getComputedStyle(wrap).width);
+  const scale = layoutWidth > 0 && box.width > 0 ? box.width / layoutWidth : 1;
+  help.style.top = `${(at.top - box.top) / scale}px`;
+  help.style.left = `${(at.left - box.left) / scale}px`;
   help.style.right = "auto";
 }
 
