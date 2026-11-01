@@ -6,8 +6,10 @@
 //: maybe even the chance to go off one side and come back on the other").
 //: A lazy file (`companionThrow` in app.js's LAZY_MODULES), fetched on the
 //: first carry, so boot pays nothing for it; a let-go before it arrives is
-//: a drop. The flight's physics stays avatars.js's (`nameMarkBuddyFlightStep`,
-//: INBOX 882); `companionThrowStep` wraps each step and, the first time the
+//: a drop. The flight's physics (`nameMarkBuddyFlightStep`, INBOX 882, with its
+//: feel, its landing spot and its settling) came here from avatars.js on
+//: 2026-11-01 (audit AI23): only this file calls them. `companionThrowStep`
+//: wraps each step and, the first time the
 //: flight meets the top bar, a side of the window or a panel's top edge from
 //: below, rolls once for what happens there:
 //: - the top bar's underside, met going up: caught, it hangs there (`hang`);
@@ -562,4 +564,119 @@ function companionThrowSettleSoon(buddy, s, spot, rand) {
   setTimeout(() => {
     if (nmb.spot === spot && !nmb.act && !nmb.flight && !nameMarkBuddyStill() && buddy.isConnected) nameMarkBuddyAct(act);
   }, 900);
+}
+
+//: **Never the same flight twice** (Brief 88 (b), the owner: "it just
+//: bounces off a panel and back to the top, I want it to do that, but vary
+//: how much it does that"). Each throw draws its own bounce, floor grip and
+//: air from a range by `roll` (three draws in [0, 1)), and one thrown hard
+//: (past 1.9 px/ms) tumbles head over heels instead of leaning, by its speed.
+function nameMarkBuddyThrowFeel(roll, speed, k = NMB_THROW) {
+  return {
+    ...k,
+    bounce: +(0.28 + roll[0] * 0.24).toFixed(3),
+    ground: +(0.0045 + roll[1] * 0.0035).toFixed(5),
+    air: +(0.0009 + roll[2] * 0.0004).toFixed(5),
+    spin: speed > 1.9 ? 0.3 : 0,
+  };
+}
+
+//: One step of a flight, pure: `s` its corner (`x`, `y`), speed (`vx`,
+//: `vy`), lean (`rot`, degrees), time flown (`t`), what it slides on (`on`:
+//: a ledge, "floor" or null) and `rest`; `dt` ms; `world` the box its corner
+//: stays in (`left`, `right`, `top`, `floor`) and the `ledges` it can come
+//: down on ({left, right, y}, for its corner). `hit` is the speed of a
+//: landing this step, for the squash.
+function nameMarkBuddyFlightStep(s, dt, world, k = NMB_THROW) {
+  const n = { ...s, t: s.t + dt, hit: 0 };
+  if (n.rest) return n;
+  const ease = Math.min(1, dt / 90);
+  if (n.on) {
+    n.vx *= Math.exp(-k.ground * dt);
+    //: Down from a tumble: it rolls the short way up, never unwinds.
+    n.rot = (((n.rot + 180) % 360) + 360) % 360 - 180;
+    n.rot -= n.rot * ease;
+  } else {
+    n.vy += k.g * dt;
+    const drag = Math.exp(-k.air * dt);
+    n.vx *= drag;
+    n.vy *= drag;
+    const fast = Math.min(1, k.max / Math.hypot(n.vx, n.vy));
+    n.vx *= fast;
+    n.vy *= fast;
+    if (k.spin) n.rot += n.vx * k.spin * dt;
+    else n.rot += (Math.max(-40, Math.min(40, n.vx * k.tilt)) - n.rot) * ease;
+  }
+  const py = n.y;
+  n.x += n.vx * dt;
+  n.y += n.on ? 0 : n.vy * dt;
+  if (n.x < world.left || n.x > world.right) {
+    //: Off a side: back at `bounce` of its speed, but never faster than
+    //: `wall` px per ms (a hard throw thuds against it and drops).
+    const left = n.x < world.left;
+    const back = Math.min(Math.abs(n.vx) * k.bounce, k.wall);
+    n.x = left ? world.left : world.right;
+    n.vx = left ? back : -back;
+  }
+  if (n.y < world.top) {
+    n.y = world.top;
+    n.vy = -n.vy * k.bounce;
+  }
+  //: Off the end of the ledge it slid along: it falls again.
+  if (n.on && n.on !== "floor" && (n.x < n.on.left || n.x > n.on.right)) n.on = null;
+  if (!n.on && n.vy > 0) {
+    let land = null;
+    for (const l of world.ledges || []) {
+      if (py < l.y && n.y >= l.y && n.x >= l.left && n.x <= l.right && (!land || l.y < land.y)) land = l;
+    }
+    if (land || n.y >= world.floor) {
+      n.y = land ? land.y : world.floor;
+      n.hit = n.vy;
+      if (n.vy > k.stick) {
+        n.vy = -n.vy * k.bounce;
+        n.vx *= 0.85;
+      } else {
+        n.vy = 0;
+        n.on = land || "floor";
+      }
+    }
+  }
+  if ((n.on && Math.abs(n.vx) < 0.02 && Math.abs(n.rot) < 1) || n.t >= k.ms) n.rest = true;
+  return n;
+}
+
+//: The throw itself, and what can happen on the way: companion-throw.js
+//: (lazy, fetched on the first carry; INBOX 1301 D6).
+//: Come down at `s`: the nearest place to there, as if dropped there, kept
+//: as your spot on `tab`, the tab it was thrown on. Never the tab's own
+//: choice near there: on Notes with 24 notes, thrown right from x 44 and
+//: left from x 1168, both came down on one dock perch at x 763 (throw.js).
+//: Worked out once, at the release (`companionThrowPlan`), on the surfaces
+//: the release has just indexed for the flight's world, on one measure.
+function nameMarkBuddyThrowSpot(s) {
+  let spot = nameMarkBuddyDrop(s.x, s.y);
+  //: Landed where it cannot stand: along that surface a little way first,
+  //: not up to the top bar (INBOX 1302); further than that, the nearest
+  //: open air (`nameMarkBuddyLandNear`), never across the screen.
+  if (s.on && spot.y < s.y - 40) spot = nameMarkBuddyDrop(s.x, s.y, NMB_LAND_NEAR);
+  spot = nameMarkBuddyLandNear(s.x, s.y, spot);
+  if (spot.y >= s.y + 2) spot.falls = true;
+  return spot;
+}
+
+function nameMarkBuddyThrowLand(buddy, s, tab, spot) {
+  nmb.thrown = { ...nmb.thrown, to: [Math.round(s.x), Math.round(s.y)] };
+  nmb.placedAt = Date.now();
+  nmb.afterLand = true;
+  nameMarkBuddyMoveTo(buddy, spot);
+  //: Its landing act a frame later, not in this one: the move's restyle and
+  //: the act's were one 27 to 81ms frame (throw5.js), two now. A one-shot
+  //: timer, not a frame request (the wake-source ratchet).
+  setTimeout(() => {
+    if (nmb.spot === spot && !nmb.flight && (!nmb.anim || nmb.anim.playState !== "running")) nameMarkBuddyAct("land");
+  }, 16);
+  const spots = nameMarkBuddySpots();
+  delete spots["*"];
+  spots[tab] = nameMarkBuddySpotFor(spot);
+  nameMarkBuddyKeepSpots(spots);
 }
