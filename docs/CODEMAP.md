@@ -2,7 +2,7 @@
 
 Generated 2026-11-01 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7546, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8399, test files 1810, tests 15536, plan headings 990, app scripts 28, boot scripts 37, script files 221.
+Counts: frontend functions 7546, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8400, test files 1810, tests 15536, plan headings 990, app scripts 28, boot scripts 37, script files 221.
 
 ## Frontend functions (7546)
 
@@ -12534,7 +12534,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8399)
+## Backend modules (8400)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14309,24 +14309,25 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `act_line` | src/tessellate/ai/composer_replies.py:451 |
 
-### src/tessellate/ai/composer_select.py (15)
+### src/tessellate/ai/composer_select.py (16)
 
 | Name | File:line |
 |---|---|
-| `_Meaning` | src/tessellate/ai/composer_select.py:320 |
+| `_Meaning` | src/tessellate/ai/composer_select.py:355 |
+| `_Scorer` | src/tessellate/ai/composer_select.py:168 |
 | `_heading_hits` | src/tessellate/ai/composer_select.py:113 |
-| `_jaccard` | src/tessellate/ai/composer_select.py:234 |
-| `_outdated` | src/tessellate/ai/composer_select.py:209 |
+| `_jaccard` | src/tessellate/ai/composer_select.py:269 |
+| `_outdated` | src/tessellate/ai/composer_select.py:244 |
 | `_score` | src/tessellate/ai/composer_select.py:150 |
 | `_term_weights` | src/tessellate/ai/composer_select.py:105 |
 | `_timing_stems` | src/tessellate/ai/composer_select.py:86 |
 | `_verb_stems` | src/tessellate/ai/composer_select.py:101 |
-| `_view_factor` | src/tessellate/ai/composer_select.py:213 |
-| `_was_said` | src/tessellate/ai/composer_select.py:219 |
-| `centrality` | src/tessellate/ai/composer_select.py:377 |
+| `_view_factor` | src/tessellate/ai/composer_select.py:248 |
+| `_was_said` | src/tessellate/ai/composer_select.py:254 |
+| `centrality` | src/tessellate/ai/composer_select.py:412 |
 | `correcting` | src/tessellate/ai/composer_select.py:130 |
-| `disagree` | src/tessellate/ai/composer_select.py:410 |
-| `select` | src/tessellate/ai/composer_select.py:239 |
+| `disagree` | src/tessellate/ai/composer_select.py:445 |
+| `select` | src/tessellate/ai/composer_select.py:274 |
 | `superseded` | src/tessellate/ai/composer_select.py:139 |
 
 ### src/tessellate/ai/composer_sides.py (7)

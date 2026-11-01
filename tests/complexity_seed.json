@@ -11,7 +11,6 @@
  "src/tessellate/ai/composer.py::_fit_terms": 22,
  "src/tessellate/ai/composer_body.py::_lead_block": 21,
  "src/tessellate/ai/composer.py::_readings": 17,
- "src/tessellate/ai/composer_select.py::_score": 28,
  "src/tessellate/ai/composer.py::brief": 23,
  "src/tessellate/ai/composer_read.py::read_note": 20,
  "src/tessellate/ai/composer_select.py::select": 24,

@@ -13,3 +13,5 @@ _score is hot (per candidate): timeit over 2,000 candidates before and after.
 - next: _opening and _others split (new code parked in scratchpad cmpcc/body_new.py), composer_body.py:38 and :182
 - done: _opening 28 and _others 30 to under 15 (composer_body.py `_opener_options`, `_fresh_openers`, `_OPENERS_BY_SHAPE`; `_other`, `_joiners`, `_by_note` also in `_timeline` and `_earlier`); not hot
 - next: _score split (new code in scratchpad cmpcc/select_new.py, bench cmpcc/bench_score.py), composer_select.py:150
+- done: _score 28 to under 15 (composer_select.py `_Scorer`); cpu ms per call, 2,000 candidates (10,028 sentences), 4 question shapes, scores equal, median of 30 interleaved: before 136.9, after 104.7
+- next: tests/test_composer*.py once on the final head, then the report
