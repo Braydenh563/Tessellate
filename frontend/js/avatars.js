@@ -9339,10 +9339,24 @@ document.addEventListener("visibilitychange", () => {
 
 // --- building it ----------------------------------------------------------------
 
+//: **A removed figure's Web Animations stop first** (audit 1101, idle restyles).
+//: An infinite animation on a node that has left the page does not end with
+//: it while anything still points at it (the pacer's list, a figure's loop
+//: array, a pending promise): it keeps ticking, and every tick schedules a
+//: style recalc on the document. Measured with the companion switched from
+//: Atlas to Off on the chat tab: 28 running animations on detached targets,
+//: 60 style recalcs a second for as long as the page stayed open; cancelled,
+//: 2. Read the list before the node goes (a detached node reports none).
+function dropAnimations(root) {
+  if (!root || typeof root.getAnimations !== "function") return;
+  for (const anim of root.getAnimations({ subtree: true })) anim.cancel();
+}
+
 //: Hidden from its menu: off in Appearance, gone from the page, and a toast
 //: that says where it comes back from.
 //: Off the page: every timer it had stops and nothing is followed.
 function nameMarkBuddyGone() {
+  nmbTempo.anims = [];
   clearTimeout(nmb.timer);
   clearTimeout(nmb.placeTimer);
   clearTimeout(nmb.awayTimer);
@@ -9394,6 +9408,7 @@ function nameMarkBuddyHide(buddy) {
   const select = document.getElementById("avatar-buddy");
   if (select) select.value = "off";
   nameMarkBuddyLeave(buddy, () => {
+    dropAnimations(buddy);
     buddy?.remove();
     //: Every copy: a stray second mount left its glow and grip behind.
     for (const stray of document.querySelectorAll("#nm-buddy, .nmb-burst")) stray.remove();
@@ -9988,6 +10003,7 @@ function syncNameMarkBuddy() {
   const seed = nameMarkBuddySeed();
   let buddy = document.getElementById("nm-buddy");
   if (!seed) {
+    dropAnimations(buddy);
     buddy?.remove();
     nameMarkBuddyGone();
     return;
@@ -10001,7 +10017,9 @@ function syncNameMarkBuddy() {
     nmb.reading = nameMood(seed);
     buddy.dataset.feel = nmb.reading?.mood || "";
     const char = buddy.querySelector(".nm-buddy-char");
-    char.querySelector(".nm-figure")?.remove();
+    const old = char.querySelector(".nm-figure");
+    dropAnimations(old);
+    old?.remove();
     char.prepend(characterFor(seed).figure());
     //: A new face starts from its own look.
     nmb.expr = "";

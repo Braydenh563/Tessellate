@@ -2,9 +2,9 @@
 
 Generated 2026-11-01 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7478, frontend ids 2637, CSS sections 517, backend routes 633, backend modules 8162, test files 1764, tests 15244, plan headings 990, app scripts 28, boot scripts 36, script files 208.
+Counts: frontend functions 7479, frontend ids 2637, CSS sections 517, backend routes 633, backend modules 8162, test files 1765, tests 15247, plan headings 990, app scripts 28, boot scripts 36, script files 208.
 
-## Frontend functions (7478)
+## Frontend functions (7479)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -2245,7 +2245,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasDraw` | frontend/js/atlas.js:3192 |
 | `atlasDrawFigure` | frontend/js/atlas.js:2847 |
 | `atlasDressMarks` | frontend/js/atlas.js:3255 |
-| `atlasDrift` | frontend/js/atlas.js:3689 |
+| `atlasDrift` | frontend/js/atlas.js:3692 |
 | `atlasDrop` | frontend/js/atlas.js:1536 |
 | `atlasEars` | frontend/js/atlas.js:1805 |
 | `atlasExtras` | frontend/js/atlas.js:1647 |
@@ -2281,13 +2281,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasMirror` | frontend/js/atlas.js:871 |
 | `atlasMirrorPoints` | frontend/js/atlas.js:389 |
 | `atlasNightcap` | frontend/js/atlas.js:1636 |
-| `atlasOn` | frontend/js/atlas.js:3650 |
+| `atlasOn` | frontend/js/atlas.js:3653 |
 | `atlasOrbits` | frontend/js/atlas.js:3030 |
 | `atlasPaw` | frontend/js/atlas.js:884 |
 | `atlasPivot` | frontend/js/atlas.js:163 |
-| `atlasPlay` | frontend/js/atlas.js:3637 |
+| `atlasPlay` | frontend/js/atlas.js:3640 |
 | `atlasRepaint` | frontend/js/atlas.js:3515 |
-| `atlasRestingMood` | frontend/js/atlas.js:3560 |
+| `atlasRestingMood` | frontend/js/atlas.js:3563 |
 | `atlasRetune` | frontend/js/atlas.js:1366 |
 | `atlasRing` | frontend/js/atlas.js:2166 |
 | `atlasRings` | frontend/js/atlas.js:3099 |
@@ -2303,7 +2303,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasStem` | frontend/js/atlas.js:282 |
 | `atlasStemEdge` | frontend/js/atlas.js:403 |
 | `atlasStemSides` | frontend/js/atlas.js:184 |
-| `atlasStreak` | frontend/js/atlas.js:3710 |
+| `atlasStreak` | frontend/js/atlas.js:3713 |
 | `atlasStyle` | frontend/js/atlas.js:3364 |
 | `atlasTail` | frontend/js/atlas.js:1853 |
 | `atlasTailMasks` | frontend/js/atlas.js:2514 |
@@ -2315,10 +2315,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasTuneSegs` | frontend/js/atlas.js:1053 |
 | `atlasTuneStyle` | frontend/js/atlas.js:2808 |
 | `atlasTurnAbout` | frontend/js/atlas.js:968 |
-| `atlasWake` | frontend/js/atlas.js:3741 |
+| `atlasWake` | frontend/js/atlas.js:3744 |
 | `atlasWatchFigure` | frontend/js/atlas.js:3305 |
-| `charactersArrived` | frontend/js/atlas.js:3828 |
-| `setAtlasMood` | frontend/js/atlas.js:3580 |
+| `charactersArrived` | frontend/js/atlas.js:3831 |
+| `setAtlasMood` | frontend/js/atlas.js:3583 |
 
 ### frontend/js/attach-to.js (4)
 
@@ -2366,7 +2366,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `autocorrectSurface` | frontend/js/autocorrect.js:284 |
 | `autocorrectUndo` | frontend/js/autocorrect.js:117 |
 
-### frontend/js/avatars.js (264)
+### frontend/js/avatars.js (265)
 
 | Name | File:line |
 |---|---|
@@ -2374,6 +2374,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `characterFor` | frontend/js/avatars.js:1255 |
 | `characterRendererFor` | frontend/js/avatars.js:1238 |
 | `drawCharacter` | frontend/js/avatars.js:1728 |
+| `dropAnimations` | frontend/js/avatars.js:9350 |
 | `isAtlasSeed` | frontend/js/avatars.js:1249 |
 | `mountBuddyActivities` | frontend/js/avatars.js:3385 |
 | `mountBuddyCustom` | frontend/js/avatars.js:3050 |
@@ -2400,7 +2401,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyBlend` | frontend/js/avatars.js:8643 |
 | `nameMarkBuddyBody` | frontend/js/avatars.js:3589 |
 | `nameMarkBuddyBoredom` | frontend/js/avatars.js:8759 |
-| `nameMarkBuddyBuild` | frontend/js/avatars.js:9456 |
+| `nameMarkBuddyBuild` | frontend/js/avatars.js:9471 |
 | `nameMarkBuddyBurst` | frontend/js/avatars.js:6494 |
 | `nameMarkBuddyCallBack` | frontend/js/avatars.js:7385 |
 | `nameMarkBuddyCalmAllows` | frontend/js/avatars.js:8603 |
@@ -2450,12 +2451,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyGlue` | frontend/js/avatars.js:4997 |
 | `nameMarkBuddyGlueBand` | frontend/js/avatars.js:5034 |
 | `nameMarkBuddyGo` | frontend/js/avatars.js:5869 |
-| `nameMarkBuddyGone` | frontend/js/avatars.js:9345 |
+| `nameMarkBuddyGone` | frontend/js/avatars.js:9358 |
 | `nameMarkBuddyHalt` | frontend/js/avatars.js:7744 |
 | `nameMarkBuddyHasAtlas` | frontend/js/avatars.js:7693 |
 | `nameMarkBuddyHeadAt` | frontend/js/avatars.js:8903 |
-| `nameMarkBuddyHide` | frontend/js/avatars.js:9384 |
-| `nameMarkBuddyHint` | frontend/js/avatars.js:10078 |
+| `nameMarkBuddyHide` | frontend/js/avatars.js:9398 |
+| `nameMarkBuddyHint` | frontend/js/avatars.js:10096 |
 | `nameMarkBuddyHits` | frontend/js/avatars.js:4013 |
 | `nameMarkBuddyHold` | frontend/js/avatars.js:8181 |
 | `nameMarkBuddyHover` | frontend/js/avatars.js:6321 |
@@ -2493,7 +2494,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyNoteOpen` | frontend/js/avatars.js:8293 |
 | `nameMarkBuddyNoteOpened` | frontend/js/avatars.js:8286 |
 | `nameMarkBuddyNotice` | frontend/js/avatars.js:8913 |
-| `nameMarkBuddyNudge` | frontend/js/avatars.js:9976 |
+| `nameMarkBuddyNudge` | frontend/js/avatars.js:9991 |
 | `nameMarkBuddyObstacles` | frontend/js/avatars.js:3697 |
 | `nameMarkBuddyOnBoard` | frontend/js/avatars.js:5542 |
 | `nameMarkBuddyOrigin` | frontend/js/avatars.js:3969 |
@@ -2578,7 +2579,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyThrowSpot` | frontend/js/avatars.js:6258 |
 | `nameMarkBuddyTick` | frontend/js/avatars.js:7995 |
 | `nameMarkBuddyTilt` | frontend/js/avatars.js:7672 |
-| `nameMarkBuddyToggle` | frontend/js/avatars.js:9433 |
+| `nameMarkBuddyToggle` | frontend/js/avatars.js:9448 |
 | `nameMarkBuddyToggles` | frontend/js/avatars.js:3365 |
 | `nameMarkBuddyTraits` | frontend/js/avatars.js:7809 |
 | `nameMarkBuddyTravel` | frontend/js/avatars.js:5859 |
@@ -2631,7 +2632,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `registerCharacter` | frontend/js/avatars.js:1232 |
 | `repaintOwnFace` | frontend/js/avatars.js:2964 |
 | `setOwnNameMarkStyle` | frontend/js/avatars.js:294 |
-| `syncNameMarkBuddy` | frontend/js/avatars.js:9987 |
+| `syncNameMarkBuddy` | frontend/js/avatars.js:10002 |
 | `syncProfileLook` | frontend/js/avatars.js:3106 |
 | `watchNameMark` | frontend/js/avatars.js:1119 |
 
@@ -22444,7 +22445,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15244)
+## Tests (15247)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23236,6 +23237,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_icon_picker_kaomoji.py | 4 |
 | tests/test_ics.py | 7 |
 | tests/test_ide_shell_b71.py | 16 |
+| tests/test_idle_restyle_1101.py | 3 |
 | tests/test_image_layout.py | 10 |
 | tests/test_image_read_once.py | 8 |
 | tests/test_import_bin_clock.py | 1 |

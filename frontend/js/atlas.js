@@ -3524,7 +3524,10 @@ function atlasRepaint() {
     //: figure is redrawn once, whole (INBOX 430).
     if (svg.classList.contains("atl-layer")) {
       const box = svg.closest(".atl-figure-box");
-      if (box && box.isConnected) box.replaceWith(atlasFigure());
+      if (box && box.isConnected) {
+        dropAnimations(box);
+        box.replaceWith(atlasFigure());
+      }
       continue;
     }
     const size = Number(svg.getAttribute("height")) || 20;
