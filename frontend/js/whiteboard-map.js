@@ -3353,31 +3353,29 @@ function wbMapFacingSide(node, size, x, y) {
   return dy < 0 ? "top" : "bottom";
 }
 
-//: Both ends with at least one pinned. The end left on Auto faces the
-//: pinned one's point, so a line pinned to a parent's top still arrives at
-//: whichever side of the child looks back at it.
-function wbMapPinnedAnchors(parent, p, child, c, from, to) {
-  let s1 = from;
-  let s2 = to;
-  if (!s1) {
-    const b = wbMapSidePoint(child, c, s2);
-    s1 = wbMapFacingSide(parent, p, b.x, b.y);
-  }
-  if (!s2) {
-    const a = wbMapSidePoint(parent, p, s1);
-    s2 = wbMapFacingSide(child, c, a.x, a.y);
-  }
-  const a = wbMapSidePoint(parent, p, s1);
-  const b = wbMapSidePoint(child, c, s2);
-  return { horizontal: s1 === "left" || s1 === "right", pinned: true, s1, s2, x1: a.x, y1: a.y, x2: b.x, y2: b.y };
-}
-
 function wbMapEdgeAnchors(parent, child, mapLayout) {
   const p = wbMapNodeSize(parent);
   const c = wbMapNodeSize(child);
   const from = WB_MAP_SIDES[child?.data?.edge_from] ? child.data.edge_from : null;
   const to = WB_MAP_SIDES[child?.data?.edge_to] ? child.data.edge_to : null;
-  if (from || to) return wbMapPinnedAnchors(parent, p, child, c, from, to);
+  if (from || to) {
+    //: Both ends with at least one pinned. The end left on Auto faces the
+    //: pinned one's point, so a line pinned to a parent's top still arrives at
+    //: whichever side of the child looks back at it.
+    let s1 = from;
+    let s2 = to;
+    if (!s1) {
+      const b = wbMapSidePoint(child, c, s2);
+      s1 = wbMapFacingSide(parent, p, b.x, b.y);
+    }
+    if (!s2) {
+      const a = wbMapSidePoint(parent, p, s1);
+      s2 = wbMapFacingSide(child, c, a.x, a.y);
+    }
+    const a = wbMapSidePoint(parent, p, s1);
+    const b = wbMapSidePoint(child, c, s2);
+    return { horizontal: s1 === "left" || s1 === "right", pinned: true, s1, s2, x1: a.x, y1: a.y, x2: b.x, y2: b.y };
+  }
   //: Inside a branch with its own structure, that structure's lines, and its
   //: top topic is the "root" the column layouts measure from.
   const layout = child._bl || mapLayout;

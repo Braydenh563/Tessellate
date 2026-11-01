@@ -9971,8 +9971,12 @@ header#top-bar {
   /* The content keeps the rail clear, so the opener never lands on a card's
      own edge. Written from the sidebar rather than from the layout, because
      `test_style_scale.py` reads any rule whose selector starts with `.layout`
-     or `.doc-layout` as the page container setting its own outer gutter. */
-  .sidebar-panel ~ * {
+     or `.doc-layout` as the page container setting its own outer gutter.
+     The subject names the three columns that follow a sidebar rather than
+     being `*`: a universal subject made every restyled node on the page walk
+     its preceding siblings for a sidebar (a mind map's topics are siblings in
+     one layer). `:where()` keeps the specificity the universal rule had. */
+  .sidebar-panel ~ :where(.tab-main, .doc-main, .notes-rail) {
     padding-left: calc(max(var(--sidebar-toggle-size), var(--target-min)) + 2 * var(--sidebar-toggle-inset));
   }
   /* Skill logs comes after `main` in the DOM (it sits on the right at
