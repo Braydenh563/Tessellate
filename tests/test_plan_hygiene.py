@@ -112,7 +112,7 @@ def test_an_inbox_item_is_listed_once_and_not_also_in_history() -> None:
     twice = sorted({n for n in numbers if numbers.count(n) > 1})
     assert not twice, f"INBOX lists {twice} more than once; keep the newest entry"
     history = (ROADMAP / "HISTORY.md").read_text(encoding="utf-8")
-    moved = [n for n in numbers if re.search(rf"(?m)^{n}\. \*\*Owner", history)]
+    moved = [n for n in numbers if re.search(rf"(?m)^{n}\. \*\*", history)]
     assert not moved, f"INBOX still lists {moved}, already moved to HISTORY.md"
 
 
