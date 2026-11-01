@@ -12,6 +12,7 @@ import pytest
 
 from tessellate.ai import composer_aware as aware
 from tessellate.entry import manager
+from tests._app_js import with_pieces
 
 ACTIONS = ["Added a mark", "Cleared a box", "Moved a note to the bin", "Renamed a speaker"]
 
@@ -141,7 +142,7 @@ def test_the_client_sends_the_screen_with_ask_and_the_guide():
     from pathlib import Path
 
     js = Path(__file__).resolve().parents[1] / "frontend" / "js"
-    ask = (js / "capture-ask.js").read_text(encoding="utf-8")
+    ask = with_pieces("capture-ask.js")
     assert 'body.screen = await screenContext(notesOnly ? "ask" : "")' in ask
     lazy = (js / "screen-context.js").read_text(encoding="utf-8")
     assert "function screenContext(" in lazy and "undoStack.slice(-3)" in lazy

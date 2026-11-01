@@ -16,6 +16,11 @@
 // - With no model running "From your notes" is the answer whatever is stored,
 //   so the switch shows off and disabled with the exact cause (askAiOffCause); the stored choice is
 //   left alone, and the switch comes back the moment a model does.
+// - `askQuestion` and the helpers only it uses (`setAsking`, `askStatusText`,
+//   `renderChatMeta`, ...) moved here from capture-ask.js on 2026-11-01 (boot
+//   diet, audit row 21): a click on Ask, Enter in the box or a recent question
+//   is a `LAZY_ENTRY_POINTS`-style stand-in (lazy-entries.js) that fetches this
+//   file first. Nobody reads its return.
 // - Lazy and preloaded three seconds after boot (app.js), because the boot
 //   scripts are at their gzip cap; until the first status lands the markup's
 //   neutral state (unchecked, enabled) stands, and the server composes
@@ -897,4 +902,567 @@ async function fetchComposedPeek(question, history, body) {
     body.textContent = "Could not read your notes just now.";
     body.closest("details").dataset.failed = "1";
   }
+}
+
+async function askQuestion(preset) {
+  const status = $("ask-status");
+  const questionBox = $("question");
+
+  const question = (preset ?? questionBox.value).trim();
+  if (!question) {
+    //: Sentence case and no exclamation mark: DESIGN.md's copy rule, and
+    //: `tests/test_no_em_dashes.py`'s neighbour rules exist because this one
+    //: kept coming back.
+    askStatusText("Type a question first.");
+    status.classList.add("error");
+    return;
+  }
+  //: A chip's question takes its parent's chain plus the parent; asking the
+  //: same question again (Retry) keeps the chain; anything typed starts afresh.
+  if (askTrailPending) askTrail = askTrailPending;
+  else if (question !== lastQuestion) askTrail = [];
+  askTrailPending = null;
+  renderAskTrail();
+  lastQuestion = question;
+  //: A chip, a follow-up or Retry asks without typing: the box shows it
+  //: anyway (K29, "I forgot instantly"), the one place the question is said;
+  //: a "You asked:" line above the answer said it twice (INBOX 1301).
+  if (preset != null) questionBox.value = question;
+
+  // A new answer is coming, hide the suggestion/recent chips and the
+  // per-answer action buttons until it lands.
+  $("suggested-questions").classList.add("hidden");
+  hide("copy-btn", "speak-btn", "ask-answer-more");
+  //: Regenerate stays and shows the ring while it runs (INBOX 1423).
+  const retryBtn = $("retry-btn");
+  if (!retryBtn.classList.contains("hidden")) setBusy(retryBtn, true, "");
+  askKept = null;
+  setAsking(true);
+  status.classList.remove("error");
+  // Reset the output areas for the new answer.
+  const answerBox = $("ai-answer");
+  const thinkingHost = $("thinking-box");
+  const thinkingBox = thinkingFoldIn(thinkingHost);
+  const thinkingText = thinkingBox.querySelector(".thinking");
+  answerBox.textContent = "";
+  $("ask-pre").textContent = $("ask-notes").textContent = "";
+  //: A counting or trend question gets its chart beside the answer
+  //: (WORLD_CLASS_PLAN section 17 row 4): asked in parallel, from the
+  //: records, so it lands whether or not the model answers.
+  const chartHost = $("ask-chart");
+  if (chartHost) {
+    chartHost.replaceChildren();
+    chartHost.classList.add("hidden");
+    if (question.length <= 500) ensureModule("askHistory").then(() => renderAskChart(question, chartHost, () => lastQuestion === question)).catch(() => {});
+  }
+  //: After the reset, not before it: the progress line lives inside the
+  //: answer box now, so creating it first would only have it wiped.
+  //: No words of its own: `streamChat` drives the phase line from the events
+  //: (INBOX 649), "Reaching Atlas…" until the server says it is searching.
+  const progress = askStatusBusy(null);
+  //: **The wait is on screen** (INBOX 727, the owner: "there's no searching
+  //: animation or indicator for when I enter a search in the ask tab and
+  //: nothing has shown yet"). The phase line was drawn inside a results grid
+  //: still hidden until the first event (measured: 0x0 for the whole wait),
+  //: so the grid opens now, the records column saying it is searching until
+  //: `onMeta` replaces the row.
+  const searching = document.createElement("li");
+  searching.className = "muted";
+  setLabel(searching, "ph:spin Searching your notes…");
+  $("raw-results").replaceChildren(searching);
+  document.querySelector(".chat-half:last-child")?.classList.remove("hidden");
+  $("chat-results").classList.remove("hidden");
+  $("ask-idle")?.classList.add("hidden");
+  $("ai-answer-grounding").replaceChildren();
+  $("ai-answer-grounding").classList.add("hidden");
+  //: The whole foot goes with it, not only the grounding chips: a sources
+  //: disclosure left open from the previous question is a list of notes that
+  //: have nothing to do with the one being asked.
+  clearAskAnswerFoot();
+  thinkingText.textContent = "";
+  thinkingBox.thinkingRaw = "";
+  thinkingHost.classList.add("hidden");
+  thinkingBox.open = false;
+
+  //: **On before the request, off in the `finally`.** The ring marks the
+  //: thing producing the output for as long as it is being produced: added on
+  //: the first token instead, it says nothing during the wait that is the
+  //: part actually worth marking, which is the Chat tab's own recorded bug
+  //: one surface over.
+  answerBox.classList.add("is-generating");
+  let answerRaw = "";
+  let stopped = false;
+  let groundingRawResults = []; // set by onMeta, read by onGrounding
+  let groundedSupport = null; // how much of the answer the notes backed
+  let groundedInsights = []; // the lines it volunteered (decision 73)
+  let answerWhy = []; // how it was made (B30)
+  let answerOffer = null; // a counted answer's offer (decision 70)
+  const answerPanels = []; // the app's panels under the answer (INBOX 1300 C06)
+  let composedNext = []; // a composed answer's own next questions (INBOX 725)
+  //: Kept beyond the callback that receives them, because the answer element
+  //: is rebuilt after the stream ends and the markers have to be put back.
+  let groundedSentences = [];
+  //: Kept for the same reason: the answer object (CHAT_PLAN decision 3) is
+  //: built once, after the stream, from every event the turn produced, and
+  //: three of those events arrive long before the last token.
+  let relatedItems = [];
+  let answerStats = null;
+  let answerMeta = null;
+  // The box explained itself instead of answering, so the final markdown
+  // pass, the saved turn and the answer actions all sit this one out.
+  let hinted = false;
+  //: **Numbered while it streams** (INBOX 320, the owner: "the numbers only
+  //: appear after the ai response is finished"). The backend now grounds each
+  //: sentence as it completes and sends the rows so far (`grounding_live`);
+  //: the records column is numbered from them at once, and the markers are
+  //: put back into the prose after every live paint, which rebuilds it. The
+  //: numbering is the same `citationNumbers` over the same source order the
+  //: finished answer uses (`chatSourcesFrom` over this turn's meta), so a
+  //: digit that appears mid-answer is the digit it keeps.
+  let liveSources = null;
+  const placeLiveCitations = () => {
+    if (groundedSentences.length) {
+      addInlineCitations(answerBox, groundedSentences, groundingRawResults, liveSources);
+    }
+  };
+  const renderLive = liveMarkdownRenderer(answerBox, placeLiveCitations);
+  askController = new AbortController();
+  try {
+    // Stream: raw results arrive first, then thinking/answer tokens live.
+    await streamChat({
+      progress,
+      question,
+      history: conversation.slice(-MAX_CLIENT_HISTORY),
+      // Sent per turn now that this box has its own picker. It always obeyed
+      // the *saved* mode via the server's fallback; carrying it explicitly is
+      // what makes changing the box's dropdown affect the very next answer
+      // rather than only the one after the preference round-trips.
+      mode: $("ask-mode-select")?.value || null,
+      useTools: false, // the quick-ask box is pure Q&A; actions live in the Chat tab
+      // This box interrogates the notebook and nothing else (§35A). Sent as a
+      // flag rather than left to the classifier, which is right about "hey"
+      // being small talk: it is this surface that doesn't want small talk.
+      notesOnly: true,
+      scope: askScope || null,
+      asOf: askAsOf(),
+      signal: askController.signal,
+      onMeta: (meta) => {
+        renderChatMeta(meta);
+        answerMeta = meta;
+        groundingRawResults = meta.raw_results || [];
+      },
+      onThinking: (delta) => {
+        //: Only a stray placeholder, never the progress line itself: that is
+        //: the thing saying what is happening, and it stays until the first
+        //: answer token replaces it.
+        for (const stray of answerBox.querySelectorAll(".typing-dots, .typing-label")) {
+          if (!progress || !progress.contains(stray)) stray.remove();
+        }
+        // Auto-expand while the model reasons (user request).
+        thinkingHost.classList.remove("hidden");
+        thinkingBox.open = true;
+        thinkingBox.thinkingRaw = (thinkingBox.thinkingRaw || "") + delta;
+        thinkingPaint(thinkingBox, thinkingBox.thinkingRaw); // follows the newest line
+      },
+      onAnswer: (delta) => {
+        //: The first answer token is the moment "waiting" becomes "writing",
+        //: so the indicator changes with it. `setPhase` is idempotent, so
+        //: calling it on every delta costs nothing.
+        answerBox.querySelector(".typing-dots")?.setPhase?.("writing");
+        if (thinkingBox.open) thinkingBox.open = false; // reasoning done → tuck away
+        answerRaw += delta;
+        // Same caret the Chat tab's timeline gets, for the same reason, see
+        // `.is-streaming` in 01-forms-settings.css. Set here rather than
+        // before the request because the dots own the "nothing yet" state.
+        answerBox.classList.add("is-streaming", "is-generating");
+        renderLive(answerRaw); // markdown renders AS it streams (user request)
+        //: The indicator's shape and words follow the stage (`streamChat`
+        //: sets "writing" before this runs): a three-dot "thinking" animation
+        //: beside the sentence "writing" is the mismatch reported of Chat.
+        if (progress && progress.previousElementSibling !== answerBox) answerBox.after(progress);
+      },
+      onHint: (event) => {
+        // Not an answer, so it does not go through the markdown renderer or
+        // into the conversation: it is the box explaining itself.
+        hinted = true;
+        renderAskHint(answerBox, event);
+        askStatusText("");
+      },
+      //: Collected, not drawn: it is a field of the answer object and is
+      //: rendered with the rest of the foot once the stream is over. Drawing
+      //: it here is what put it inside `#ai-answer-grounding`, which the
+      //: grounding event then cleared out from under it.
+      onRelated: (event) => {
+        relatedItems = event.items || [];
+      },
+      onStats: (event) => {
+        answerStats = event;
+      },
+      //: The server took a greeting or a sign-off off the answer, so the text
+      //: on screen is not the text anything else will use. Repainted from the
+      //: trimmed version, and `answerRaw` moves with it: the grounding markers
+      //: placed a moment later are offsets into *this* string.
+      onAnswerFinal: (event) => {
+        answerRaw = event.text || answerRaw;
+        renderLive(answerRaw);
+      },
+      onGroundingLive: (event) => {
+        groundedSentences = event.sentences || [];
+        liveSources = chatSourcesFrom({ meta: answerMeta, toolEvents: [], touched: [], sentences: groundedSentences });
+        numberMatchingRecords(
+          $("ai-answer-grounding"),
+          citationNumbers(groundedSentences, liveSources)
+        );
+        placeLiveCitations();
+      },
+      onGrounding: (event) => {
+        //: **Remembered here, drawn once at the end.** This used to draw the
+        //: chips and the markers the moment the event arrived, which is
+        //: before the answer has finished streaming and before the Sources
+        //: panel exists. Both were then wrong in the way the owner reported:
+        //: the markers were placed into prose that was still growing (and
+        //: thrown away by the final markdown pass a moment later), and the
+        //: chips were numbered with nothing to agree with, so the digits did
+        //: not match the panel the foot drew underneath them.
+        groundedSentences = event.sentences || [];
+        //: Remembered with them and drawn in the same pass, for the same
+        //: reason: the answer is still streaming when this arrives, so a
+        //: notice placed now would sit above prose that is still growing.
+        groundedSupport = event.support || null;
+        groundedInsights = Array.isArray(event.insights) ? event.insights : [];
+        composedNext = Array.isArray(event.next) ? event.next : [];
+      },
+      onOffer: (event) => {
+        answerOffer = event.offer || null;
+      },
+      //: Drawn with the foot, once the answer's text is final.
+      onPanel: (event) => answerPanels.push(event),
+      //: The web pages a composed answer read, as cards (decision 66), drawn
+      //: with the panels for the same reason.
+      onWebSources: (event) => answerPanels.push({ web: event.sources }),
+      onWhy: (event) => {
+        answerWhy = Array.isArray(event.lines) ? event.lines : [];
+      },
+    });
+
+    //: **The live renderer's armed paint is cancelled before anything else**
+    //: (`liveMarkdownRenderer`'s own `stop`, and the same call the Chat tab's
+    //: `finalise` has made since INBOX 40). Reported as *"grounding and
+    //: in-text referencing not working now"* and, more precisely, *"doesn't
+    //: stick"*: measured, the markers were placed, all three of them, and a
+    //: `setTimeout` armed up to `LIVE_RENDER_INTERVAL_MS` before the stream
+    //: ended then fired and repainted this box from the raw markdown, which
+    //: removes every one of them. The prose is identical either way, so
+    //: nothing about it looks like a race; only the little numbers go.
+    //:
+    //: The Ask tab was the one caller of this renderer that never stopped it.
+    //: The fix is the call, not a delay: a timer cancelled cannot fire late,
+    //: whereas a longer wait only makes the race rarer.
+    renderLive.stop();
+    // Final render (catches anything after the last animation frame).
+    if (!hinted) renderMarkdown(answerBox, answerRaw);
+    //: **And the citations go back in.** Reported: *"in the ask tab, no inline
+    //: or grounding links to the notes viewed and referenced appear."* The
+    //: markers were being inserted, `onGrounding` fires during the stream and
+    //: `addInlineCitations` writes them straight into the answer, and then
+    //: the line above rebuilt the whole answer element from the raw markdown
+    //: and threw every one of them away. The grounding event arrives *before*
+    //: `done`, so this was true of every answer that had any: the feature ran,
+    //: correctly, and its output survived for a few milliseconds.
+    //:
+    //: Applied once, here, rather than during the stream, because the live
+    //: render is what makes the answer readable as it arrives and the markers
+    //: simply have to be the last thing written, against the finished text.
+    if (!hinted) {
+      //: The notes this answer cited ride with the turn, as Chat's do, so
+      //: "how much does it cost" after an Ask answer names what "it" was.
+      conversation.push({ question, answer: answerRaw, objects: chatTurnObjects(liveSources) });
+      show("retry-btn", "copy-btn", "speak-btn", "new-chat-btn");
+      //: What the ⋯ keeps (B12): the answer as written, and the notes it cites.
+      askKept = {
+        question,
+        text: answerRaw,
+        noteIds: [...new Set(groundedSentences.map((row) => row.note_id).filter((id) => Number.isInteger(id)))],
+      };
+      ensureModule("askCompose").then(() => askAnswerMenu()).catch(() => {});
+      show("ask-answer-more");
+      //: **The answer object, rendered** (CHAT_PLAN Phase 3). Built after the
+      //: stream rather than updated event by event, because two of its fields
+      //: (the sentences and the sources they came from) are only complete when
+      //: the last event has arrived, and a foot that rearranges itself under a
+      //: reader mid-answer is worse than one that appears when the answer does.
+      //: Built before the grounding is drawn rather than after, so the chips
+      //: and the markers can be numbered from the panel's own list of sources
+      //: (`citationNumbers`). The Chat tab has done this since the panel
+      //: existed; the Ask tab numbered each of the three for itself, which is
+      //: the "numbers wont match the grounding" that was reported.
+      const answer = answerObject({
+        question,
+        text: answerRaw,
+        grounding: groundedSentences,
+        meta: answerMeta,
+        related: relatedItems,
+        stats: answerStats,
+      });
+      if (groundedSentences.length) {
+        renderAnswerGrounding(
+          $("ai-answer-grounding"),
+          groundedSentences,
+          groundingRawResults,
+          answerBox,
+          question,
+          answer.sources,
+          groundedSupport,
+          answerMeta?.picture_alts || null
+        );
+      }
+      placeAnswerFigures(answerBox, answerMeta, question);
+      renderAskAnswerFoot(answer, answerMeta);
+      ensureModule("askCompose").then(() => renderAskInsights(groundedInsights)).catch(() => {});
+      ensureModule("askCompose").then(() => { renderAskWhy(answerWhy); renderAskBoth(question, answerMeta, answerPanels); }).catch(() => {});
+      if (answerOffer) ensureModule("askCompose").then(() => digestOffer(answerBox, answerOffer)).catch(() => {});
+      if (answerPanels.length) drawAnswerPanels(answerBox, answerPanels);
+      //: `composed`, and `match_info` for each record's reason (INBOX 1310,
+      //: `replyRecordReasons`); only these, so a new meta key cannot steer it.
+      finishReply(answerBox, { composed: answerMeta?.composed, match_info: answerMeta?.match_info });
+      //: Not awaited: it is a second model call, and the answer is already on
+      //: screen. The same contract `offerFollowups` has in the Chat tab. An
+      //: answer composed from the notes brings its own (INBOX 725), built
+      //: from what it found and did not say, and asks no model for them.
+      const followups = () => renderAskFollowups(question, answerRaw, answerMeta?.composed ? composedNext : null);
+      ensureModule("askCompose").then(followups).catch(() => {}).then(announceAskFoot);
+    }
+    askStatusText("");
+    // Asking changes both quick-access lists, and, for a real (non-hint)
+    // answer: the browsable history too.
+    loadRecentQuestions();
+    loadMostUsed();
+    if (!hinted) {
+      loadAskHistoryBadge();
+      if (askHistoryOpen) loadAskHistoryPage(true);
+    }
+  } catch (error) {
+    if (error.name === "AbortError") {
+      stopped = true;
+      //: Same reason as the success path above: Stop is an exit too, and an
+      //: armed paint outlives the turn it belongs to.
+      renderLive.stop();
+      renderMarkdown(answerBox, answerRaw); // keep what streamed so far
+      askStatusText("Stopped.");
+      show("retry-btn", "copy-btn", "speak-btn");
+    } else {
+      askStatusText(error.message);
+      status.classList.add("error");
+    }
+  } finally {
+    // Every exit path, including Stop and an error: a caret still blinking on
+    // an answer that stopped arriving is worse than never showing one.
+    answerBox.classList.remove("is-streaming", "is-generating");
+    progress?.remove();
+    setBusy($("retry-btn"), false);
+    askController = null;
+    setAsking(false);
+    // The question used to be cleared here, which left an answer on screen with
+    // nothing saying what it answered (user-reported). It stays in the box, 
+    // ready to refine and re-ask, and is echoed above the answer so the pair
+    // reads together even after you start typing the next one.
+    if (!stopped) questionBox.select();
+  }
+}
+
+function renderChatMeta(meta) {
+  $("search-mode").textContent = SEARCH_MODE_LABELS[meta.search_mode] || meta.search_mode;
+  // "offline" only when Ollama is genuinely down, not merely because a
+  // question found nothing to answer from.
+  //: A composed answer (INBOX 688) says so on the chip, and its card takes
+  //: the quote style the composer's lead is drawn in (`.answer-composed`).
+  $("ai-answer").classList.toggle("answer-composed", !!meta.composed);
+  //: "Atlas" heads the answer; the chip says where it came from (CHAT_PLAN
+  //: decision 36): "From your notes" with no model, the model's name with one.
+  if (meta.composed) setAnsweredBy("From your notes", "Atlas answered from your notes, with no model: every sentence comes from a note");
+  else if (meta.answered_by) setAnsweredBy(meta.answered_by, `Answered by ${meta.answered_by}`);
+  else if (meta.ollama_running === false) {
+    setAnsweredBy("chat model offline", "The chat model is not running, so nothing answered this");
+  } else setAnsweredBy("", "");
+  const rawList = $("raw-results");
+  rawList.replaceChildren();
+  if (meta.raw_results.length === 0 && meta.search_mode === "none") {
+    // Nothing was searched for, the message was not a question about the
+    // notes. "No matching records" would report a failed search that never
+    // happened, which is the half of the greeting case that read as broken.
+    $("chat-results").classList.remove("hidden");
+  $("ask-idle")?.classList.add("hidden");
+    document.querySelector(".chat-half:last-child")?.classList.add("hidden");
+    return;
+  }
+  document.querySelector(".chat-half:last-child")?.classList.remove("hidden");
+  if (meta.search_mode === "outside_range" && meta.raw_results.length) {
+    // Matched what was asked about, not when it was asked about, the note
+    // is real, the stated time was just wrong (reported directly: a joke
+    // asked about as "two weeks ago" that was actually three). Said before
+    // the results, not folded silently into them, so this never reads as a
+    // date-scoped answer it isn't.
+    const li = document.createElement("li");
+    li.className = "muted";
+    li.textContent = meta.when_phrase
+      ? `Nothing about this in “${meta.when_phrase}”: here's what matched from another time:`
+      : "Nothing in that time range, here's what matched from another time:";
+    rawList.appendChild(li);
+  }
+  if (meta.raw_results.length === 0) {
+    const li = document.createElement("li");
+    li.className = "muted";
+    // A dated question that found nothing has *two* facts to report, and only
+    // saying the first is what makes an empty result look like a broken
+    // search: nothing matched, **and** the window you named is why it was
+    // looking so narrowly. Naming the phrase is also the fastest route to the
+    // fix, because the next thing to try is asking again without it.
+    li.textContent =
+      meta.search_mode === "dated" && meta.when_phrase
+        ? `Nothing matching “${meta.when_phrase}”. Try asking without it.`
+        : "No matching records.";
+    rawList.appendChild(li);
+  }
+  // Notes that came along because they are *connected* to a match are labelled
+  // as such. Without it the panel shows notes about something else with no
+  // explanation, which reads as the search having misfired, and the whole
+  // point of pulling them in is that the person can see the connection.
+  const connected = new Set(meta.connected_ids || []);
+  const matchInfo = meta.match_info || {};
+  //: **A percentage on every card or on none** (INBOX 728, the owner: "how
+  //: come only some of the ask tab matching records notes green arrows have %
+  //: number similarity and others dont show a number??"). A row that came by
+  //: recency or a date has no score; beside it a number on its neighbours
+  //: read as a missing one. Then the chips keep their words and the number
+  //: moves to the title.
+  const scored = everyRowScored(meta.raw_results, matchInfo, connected);
+  for (const entry of meta.raw_results) {
+    const row = clickableResult(entry);
+    const badge = matchReasonBadge(matchInfo[entry.id], scored);
+    if (badge) {
+      if (connected.has(entry.id)) row.classList.add("result-connected");
+      if (matchInfo[entry.id]?.type === "connected_2hop") row.classList.add("result-connected-2hop");
+      //: In the facts line, after the date, as one more quiet fact (INBOX
+      //: 510): on a row of its own it was a filled pill louder than the note.
+      placeResultBadge(row, badge);
+    }
+    rawList.appendChild(row);
+  }
+  //: The reference count is a fact the card draws from a cache the *note
+  //: list* fills, so a result row rendered before that list has been opened
+  //: had nowhere to read it from and drew nothing. The same patch-in the
+  //: note list uses, pointed at this list: one implementation, and a second
+  //: one is how the two would come to disagree about what "linked by" counts.
+  ensureCardCounts(rawList, _entriesLoadGeneration);
+  $("chat-results").classList.remove("hidden");
+  $("ask-idle")?.classList.add("hidden");
+}
+
+//: Returns the progress line itself, because the caller drives it: `setStatus`
+//: for the words and `setPhase("writing")` for the moment the dots become the
+//: writing trace. A fresh one per turn, since the component owns timers that
+//: stop themselves when it leaves the page.
+//: **The progress line belongs in the bubble it is filling** (the owner,
+//: 2026-09-21): in `#ai-answer`, where the answer will appear, not in
+//: `#ask-status` above the whole block, and with no second set of dots.
+function askStatusBusy(text) {
+  const box = $("ai-answer");
+  if (!box) return null;
+  $("ask-status")?.classList.remove("error");
+  $("ask-status")?.replaceChildren();
+  box.replaceChildren();
+  //: No `persona` to pass: the Ask box has no persona picker of its own, it
+  //: always answers in the notebook's own voice, so `thinkingWordsFor(null)`
+  //: resolving to that default persona's list is already the right answer.
+  const line = progressLine(text, { words: true });
+  line.classList.add("ask-progress");
+  box.appendChild(line);
+  //: **And brought into view, because it is now further down the page than
+  //: the old one was.** `#ask-status` sat directly under the question box, so
+  //: it was always in sight; the answer bubble is below the asked question
+  //: and below the thinking disclosure, which expands as the model reasons and
+  //: pushes the bubble further down. Reported as "nothing happens except the
+  //: send button changing to stop": the indicator was there and off screen,
+  //: which is the same thing as not having one.
+  requestAnimationFrame(() => {
+    try {
+      line.scrollIntoView({ block: "nearest", behavior: reducedMotionWanted() ? "auto" : "smooth" });
+    } catch {
+      //: An older engine without the options object still gets the default.
+      line.scrollIntoView();
+    }
+  });
+  return line;
+}
+
+// The Ask box's "that isn't a question about your notes" card (§35A).
+//
+// Deliberately not rendered as an answer. Reported after the first version:
+// a paragraph of instructions where the answer goes, next to a results panel
+// saying "No matching records", reads as the app having broken rather than as
+// guidance. Here the examples are buttons, a way forward from the same place,
+// which also teaches the shape of a question that works.
+function renderAskHint(box, hint) {
+  box.replaceChildren();
+  const card = document.createElement("div");
+  card.className = "ask-hint";
+  const text = document.createElement("p");
+  text.className = "ask-hint-text";
+  text.textContent = hint.text;
+  card.appendChild(text);
+  const row = document.createElement("div");
+  row.className = "row ask-hint-examples";
+  for (const example of hint.examples || []) {
+    row.appendChild(
+      smallButton(example, `Ask: ${example}`, () => {
+        $("question").value = example;
+        askQuestion(example);
+      })
+    );
+  }
+  if (row.childElementCount) card.appendChild(row);
+  box.appendChild(card);
+}
+
+//: **The answer and its foot are said aloud** (UX review 1031, M11): the box
+//: has no live region, so nothing told a screen reader an answer, its related
+//: notes, sources or follow-ups had arrived. Counts are of what is showing.
+function announceAskFoot() {
+  const shown = (selector) => [...document.querySelectorAll(selector)].filter((el) => !el.closest(".hidden")).length;
+  const parts = [
+    ["related note", shown("#ask-answer-related .answer-related-chip")],
+    ["source", shown("#ask-answer-sources .chat-source-card")],
+    ["follow-up question", shown("#ask-followups .chip-interactive")],
+  ].filter(([, count]) => count);
+  announce(["Answer ready.", ...parts.map(([noun, count]) => `${nounCount(count, noun)}.`)].join(" "));
+}
+
+//: Time travel on Ask (WORLD_CLASS_PLAN I5, row 23): the day the next answer
+//: reads the notebook as of, or null. Only while the line is showing, so
+//: "Back to now" needs nothing else to undo.
+function askAsOf() {
+  const row = $("ask-as-of-row");
+  const value = $("ask-as-of")?.value || "";
+  return row && !row.classList.contains("hidden") && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : null;
+}
+
+//: **What the Ask tab shows while the model works** (INBOX 298: 250 of 250
+//: streaming frames had nothing moving). The Chat tab's two components, not
+//: a new control: `.is-generating` from before the request to its `finally`,
+//: and one `progressLine` for the whole turn, returned so the caller drives
+//: `setStatus` and `setPhase("writing")`; fresh per turn, its timers stop
+//: themselves when it leaves the page.
+function askStatusText(text = "") {
+  const status = $("ask-status");
+  if (!status) return null;
+  status.replaceChildren();
+  status.textContent = text;
+  return status;
+}
+
+// Ask ⇄ Stop while a stream is in flight.
+function setAsking(active) {
+  $("ask-btn").classList.toggle("hidden", active);
+  $("stop-btn").classList.toggle("hidden", !active);
+  $("question").disabled = active;
 }

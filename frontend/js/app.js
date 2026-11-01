@@ -2085,6 +2085,8 @@ const LAZY_ENTRY_POINTS = {
   packages: ["renderExtras"],
   embedChoices: ["renderEmbedChoices"],
   chordGuide: ["showTabJumpHint"],
+  //: A click on Ask, Enter in its box, an example or a recent question; nobody reads its return.
+  askCompose: ["askQuestion"],
   //: The icon and emoji picker: reached through `pickIconOrEmoji` (editor.js).
   iconPicker: ["openIconPicker"],
   //: Async, and reached from a Settings pane drawn before the window's own await.

@@ -4,9 +4,9 @@ back to the chat I started until the ai response has finished"). Before, the
 row was written at the first agent round or at the end, so a plain answer left
 the chat out of the list while it streamed."""
 
-from pathlib import Path
+from tests._app_js import with_pieces
 
-JS = (Path(__file__).resolve().parent.parent / "frontend" / "js" / "chat-attach.js").read_text(encoding="utf-8")
+JS = with_pieces("chat-attach.js")
 
 
 def test_a_new_chat_is_checkpointed_when_it_is_sent():

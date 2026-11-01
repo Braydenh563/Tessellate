@@ -18,6 +18,7 @@ import time
 from pathlib import Path
 
 from tessellate.api import routes_entries
+from tests._app_js import with_pieces
 
 ROOT = Path(__file__).resolve().parent.parent
 FRONTEND = ROOT / "frontend"
@@ -351,7 +352,7 @@ def test_saving_before_the_preferences_arrive_still_saves():
     # Scan 2026-10-11: with `prefsCache` still null (the preferences request
     # refused or slow at boot) Save threw "Cannot read properties of null
     # (reading 'background_filing')" and nothing was saved, with no message.
-    save = (FRONTEND / "js" / "capture-ask.js").read_text(encoding="utf-8")
+    save = with_pieces("capture-ask.js")
     assert "prefsCache?.background_filing ?? true" in save
     assert "prefsCache.background_filing" not in save
 

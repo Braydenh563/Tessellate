@@ -101,7 +101,12 @@ PIECE_CAP = 32_000
 #: lazy shared-intake.js and `renderMemorySettings` is in settings-controls.js,
 #: behind stand-ins. App.js 14,045, total 319,920.
 #: And after the model panel, answer edit and Explain row moved to the lazy gesture-kit.js: 318,631.
-TOTAL_CAP = 320_600
+#: 2026-11-01, the boot diet (audit row 21, PF4): 320,255 down to 301,539 by
+#: moving what only a gesture or an opened chat reaches into two lazy files:
+#: the chat turn with its bubbles, timeline and run controls (chat-turn.js,
+#: bundle `chatTurn`) and `askQuestion` with its helpers (ask-compose.js).
+#: The cap is that total rounded up to the next 100.
+TOTAL_CAP = 301_600
 
 
 def _served_gzip_size(client, name: str) -> int:

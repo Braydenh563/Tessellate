@@ -18,12 +18,13 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._app_js import with_pieces
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-CHAT = (JS / "chat.js").read_text(encoding="utf-8")
-ASK = (JS / "capture-ask.js").read_text(encoding="utf-8")
-ATTACH = (JS / "chat-attach.js").read_text(encoding="utf-8")
+CHAT = with_pieces("chat.js")
+ASK = with_pieces("capture-ask.js")
+ATTACH = with_pieces("chat-attach.js")
 PALETTE = (JS / "palette.js").read_text(encoding="utf-8")
 HELP = (JS / "help-chat.js").read_text(encoding="utf-8")
 DOCS = (JS / "documents.js").read_text(encoding="utf-8")

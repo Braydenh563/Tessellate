@@ -10,6 +10,7 @@ import subprocess
 import pytest
 
 from tests._app_js import JS_DIR
+from tests._app_js import with_pieces
 
 pytestmark = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
@@ -48,6 +49,6 @@ act().then(() => process.stdout.write(JSON.stringify({{ ...out, afterSave: box.v
 
 
 def test_send_checks_the_length_before_anything_is_cleared():
-    attach = (JS_DIR / "chat-attach.js").read_text(encoding="utf-8")
+    attach = with_pieces("chat-attach.js")
     guard = attach.index("question.length > 2e4")
     assert guard < attach.index("lastChatQuestion = question;")

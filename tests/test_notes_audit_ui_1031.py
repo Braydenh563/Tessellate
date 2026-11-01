@@ -15,6 +15,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._app_js import with_pieces
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -131,7 +132,7 @@ def test_the_flush_sends_edits_as_puts_and_the_form_holds_on_a_dead_server():
 
 def test_a_missing_note_puts_the_address_back_and_clears_the_live_line():
     """N48."""
-    body = (JS / "capture-ask.js").read_text()
+    body = with_pieces("capture-ask.js")
     branch = body[body.index('if (!card) {') :][:500]
     assert 'recordTabVisit("notes", "browse", "", { refine: true })' in branch
     assert 'announce("")' in branch and 'toast("No such note.")' in branch
@@ -149,7 +150,7 @@ def test_the_bin_has_an_address_and_the_palette_opens_the_bin_itself():
 
 def test_a_template_date_is_written_in_words():
     """N24: "Oct 31, 2026", not the numeric locale date, in a template and the "/" menu."""
-    ask = (JS / "capture-ask.js").read_text()
+    ask = with_pieces("capture-ask.js")
     assert "stampDate(now)" in ask and 'month: "short", day: "numeric", year: "numeric"' in ask
     assert "stampDate(now)" in (JS / "editor.js").read_text()
     assert "now.toLocaleDateString()" not in ask

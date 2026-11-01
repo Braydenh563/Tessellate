@@ -1987,6 +1987,8 @@ async function openConversation(id) {
   if (chatLeaveHeld(() => openConversation(id))) return;
   const full = await apiJson(`/conversations/${id}`).catch(() => null);
   if (!full) return;
+  //: The replayed run is drawn by `agentTimeline`, in the chat turn's lazy file.
+  if (!(await ensureModule("chatTurn"))) return lazyLoadFailed();
   // Before the pane is rebuilt, not after: this reads the composer state that
   // belongs to the conversation being left.
   releaseChatComposer();

@@ -3330,7 +3330,7 @@ def test_a_citation_mark_previews_its_source_on_the_help_popover_recipe() -> Non
     as a `.help-popover` placed by `placeHelpPopover`, so the peek cannot
     grow a shell, caret or tier of its own. Measured by
     `scratchpad/ui-sweeps/citepeek.js` at 1440 and 390."""
-    source = (ROOT / "frontend" / "js" / "capture-ask.js").read_text(encoding="utf-8")
+    source = with_pieces("capture-ask.js")
     marker = source[source.index("function citationMarker(") :]
     marker = marker[: marker.index("\n}\n")]
     assert "flashEntry(" not in marker, "a citation mark navigates on its own press again"
@@ -3740,7 +3740,7 @@ def test_the_attach_picker_is_a_panel_on_the_dialog_recipe() -> None:
     assert 'class="tabs-line popup-kinds note-picker-sources"' in panel
     assert 'class="row space-dialog-actions note-picker-foot"' in panel
     assert 'id="note-picker-clear" class="ghost"' in panel and 'id="note-picker-done" class="accent"' in panel
-    js = (ROOT / "frontend" / "js" / "chat-attach.js").read_text(encoding="utf-8")
+    js = with_pieces("chat-attach.js")
     assert 'cat.className = "chip"' not in js and 'kind.className = "chip"' not in js, (
         "a picker row's category or kind is quiet text on the second line, not a filled chip"
     )
@@ -3770,7 +3770,7 @@ def test_the_attach_panel_rows_are_one_renderer_with_keys() -> None:
     picture, the name over one muted line, a check at the right, the real
     checkbox visually hidden), pictures are a grid, and the keys walk it:
     arrows, Home and End, Enter is Done, the tabs' arrows switch source."""
-    js = (ROOT / "frontend" / "js" / "chat-attach.js").read_text(encoding="utf-8")
+    js = with_pieces("chat-attach.js")
     # The list renderer is lazy (attach-to.js, op4-1005); the row is lazy too
     # (pick-row.js), named by the attachTo and library bundles.
     lazy = (ROOT / "frontend" / "js" / "attach-to.js").read_text(encoding="utf-8") + "\nfunction "
@@ -3798,7 +3798,7 @@ def test_enter_on_an_attach_row_ticks_it_and_keeps_focus() -> None:
     """INBOX 1300 C09: arrows down the list then Enter did nothing the owner
     expected (it closed the panel as Done with the row unticked). Enter on a
     row ticks it like Space; Enter in the search field is still Done."""
-    js = (ROOT / "frontend" / "js" / "chat-attach.js").read_text(encoding="utf-8")
+    js = with_pieces("chat-attach.js")
     keys = _function_body(js, "notePickerKeydown")
     enter = keys[keys.index('event.key === "Enter"', keys.index("if (at < 0) return;")) :]
     enter = enter[: enter.index("} else if")]
@@ -4055,10 +4055,10 @@ def test_one_builder_draws_a_thinking_fold() -> None:
     assert bodies == ["chat-agent.js"], f"the reasoning body is built in {bodies}"
     #: Every surface that shows reasoning asks the builder.
     for name, call in (
-        ("chat-agent.js", "const el = thinkingFold();"),
+        ("chat-turn.js", "const el = thinkingFold();"),
         ("palette.js", "thinkingBox = thinkingFold();"),
         ("help-chat.js", "const think = thinkingFold();"),
-        ("capture-ask.js", 'thinkingFoldIn(thinkingHost)'),
+        ("ask-compose.js", 'thinkingFoldIn(thinkingHost)'),
         ("writing-desk.js", 'thinkingFoldIn(thinkingHost)'),
     ):
         assert call in js[name], f"{name} no longer draws its reasoning with the one fold"
@@ -5510,7 +5510,7 @@ def test_an_insights_verdicts_are_one_compact_pair_on_the_sentences_row() -> Non
         m.group(0) for m in re.finditer(r"\.insight-verdict\s*\{[^}]*\}", (ROOT / "frontend" / "css" / "04-chat-dock-appearance.css").read_text(encoding="utf-8"))
     )
     assert "border: 0" in css and "background: transparent" in css, "the pair is quiet at rest"
-    for name in ("chat-attach.js", "tidy.js"):
+    for name in ("chat-turn.js", "tidy.js"):
         assert "insightLine(" in (ROOT / "frontend" / "js" / name).read_text(encoding="utf-8"), name
 
 
@@ -5635,7 +5635,7 @@ def test_a_note_is_named_through_note_name_plain_not_its_first_line() -> None:
 
 
 def test_note_name_plain_is_defined_once_and_used_by_the_name_sites() -> None:
-    text = (ROOT / "frontend" / "js" / "chat-attach.js").read_text(encoding="utf-8")
+    text = with_pieces("chat-attach.js")
     assert len(re.findall(r"^function noteNamePlain\(", text, flags=re.M)) == 1
     used = {p.name for p in JS if "noteNamePlain(" in p.read_text(encoding="utf-8")}
     for name in ("whiteboard.js", "dashboard.js", "graph.js", "menus.js", "palette.js", "notes-list.js", "phone-shell.js", "note-cards.js"):

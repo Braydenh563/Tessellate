@@ -12,6 +12,7 @@ from datetime import date, datetime
 
 from tessellate.ai import composer_digest, composer_frame
 from tessellate.entry import manager
+from tests._app_js import with_pieces
 
 TODAY = date(2026, 10, 19)
 
@@ -168,7 +169,7 @@ def test_the_records_card_draws_the_reason_on_the_why_this_result_line():
     assert "if (opts.match_info) replyRecordReasons(opts.match_info);" in kit
     body = kit.split("function replyRecordReasons(info) {", 1)[1].split("\n}\n", 1)[0]
     assert '"entry-why"' in body and "result-reason-chip result-reason-why" in body and ".why" in body
-    assert "finishReply(answerBox, { composed: answerMeta?.composed, match_info: answerMeta?.match_info });" in (js / "capture-ask.js").read_text(encoding="utf-8")
+    assert "finishReply(answerBox, { composed: answerMeta?.composed, match_info: answerMeta?.match_info });" in with_pieces("capture-ask.js")
 
 
 def test_two_notes_linked_both_ways_list_each_other_once(session):

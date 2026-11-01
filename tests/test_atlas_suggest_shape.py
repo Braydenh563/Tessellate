@@ -7,10 +7,11 @@ says its question shorter (one line, 214x44). Desktop keeps the pill.
 """
 import re
 from pathlib import Path
+from tests._app_js import with_pieces
 
 ROOT = Path(__file__).resolve().parents[1]
 CSS = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
-CHAT = (ROOT / "frontend" / "js" / "chat.js").read_text(encoding="utf-8")
+CHAT = with_pieces("chat.js")
 
 
 def test_on_a_phone_the_offer_takes_a_buttons_corner():

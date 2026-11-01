@@ -16,6 +16,7 @@ from tessellate.core import deps
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
 from tests.test_insights import GOLF, TODAY
+from tests._app_js import with_pieces
 
 RUNS = 20
 
@@ -166,9 +167,8 @@ def test_a_later_note_retires_a_confirmed_drift_fact(session):
 
 
 def _js(name: str) -> str:
-    from pathlib import Path
 
-    return (Path(__file__).resolve().parent.parent / "frontend" / "js" / name).read_text(encoding="utf-8")
+    return with_pieces(name)
 
 
 def test_chat_shows_the_insight_rows_a_digest_answer_hid():

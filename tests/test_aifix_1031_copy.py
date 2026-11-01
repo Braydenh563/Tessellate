@@ -9,6 +9,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._app_js import with_pieces
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -16,7 +17,7 @@ needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
 
 def _text(name: str) -> str:
-    return (JS / name).read_text(encoding="utf-8")
+    return with_pieces(name)
 
 
 def test_ai12_the_guide_gives_one_instruction_per_switch_state(app_state):

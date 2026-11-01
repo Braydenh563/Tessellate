@@ -8,12 +8,13 @@ import re
 from pathlib import Path
 
 from tests import _composer_eval
+from tests._app_js import with_pieces
 
 FRONTEND = Path(__file__).resolve().parents[1] / "frontend"
 SHEET = (FRONTEND / "css" / "ask-compose-lazy.css").read_text(encoding="utf-8")
 ASK_COMPOSE = (FRONTEND / "js" / "ask-compose.js").read_text(encoding="utf-8")
 APP_JS = (FRONTEND / "js" / "app.js").read_text(encoding="utf-8")
-CAPTURE_ASK = (FRONTEND / "js" / "capture-ask.js").read_text(encoding="utf-8")
+CAPTURE_ASK = with_pieces("capture-ask.js")
 
 
 def _rule(selector: str) -> str:

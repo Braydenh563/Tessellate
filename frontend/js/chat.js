@@ -134,150 +134,6 @@ function bodyTextWithCitations(node) {
   }
 }
 
-function assistantMessageActions({ bubble, text, question, onEdit }) {
-  const off = aiIsOff();
-  return chatMessageActions([
-    {
-      label: "ph:copy",
-      title: "Copy message",
-      onClick: async (e) => {
-        const button = e.currentTarget;
-        await ensureModule("gestureKit"); // chatTurnTranscript lives there, off the boot scripts
-        copyToClipboard(chatTurnTranscript(bubble, text), button);
-      },
-    },
-    {
-      label: "ph:arrow-clockwise",
-      title: "Regenerate from here",
-      onClick: () => regenerateFromBubble(bubble),
-    },
-    off ? null : {
-      label: "ph:scissors",
-      title: "Rewrite this shorter",
-      onClick: () =>
-        rewriteAnswerWith(
-          "Rewrite your last answer to be shorter, keep every fact, cut the padding.",
-          "Make that shorter."
-        ),
-    },
-    off ? null : {
-      label: "ph:student",
-      title: "Explain it more simply",
-      onClick: () =>
-        rewriteAnswerWith(
-          "Explain your last answer again in plain language, short sentences, no jargon.",
-          "Explain that more simply."
-        ),
-    },
-    {
-      label: "ph:git-branch",
-      title: "Fork the conversation from here",
-      onClick: () => forkFromBubble(bubble),
-    },
-    { label: "ph:speaker-high", title: "Read aloud", onClick: () => speakText(text) },
-    {
-      label: "ph:note-pencil",
-      title: "Save this answer as a draft note",
-      onClick: () => saveChatAnswerAsNote(question, text),
-    },
-    //: Under a sentence there is no outline to draw (the server says 422).
-    String(text || "").trim().split(/\s+/).length < 4 ? null : { label: "ph:tree-structure", title: "Mind map this", onClick: () => chatKeep("map", text) },
-    { label: "ph:alarm", title: "Set a reminder from this answer", onClick: () => reminderFromChatAnswer(text) },
-    ...(onEdit ? [{ label: "ph:pencil-simple", title: "Edit this answer", onClick: onEdit }] : []),
-    {
-      label: "ph:trash",
-      title: "Delete this message",
-      danger: true,
-      onClick: () => deleteChatTurn(bubble),
-    },
-  ]);
-}
-
-// The offer to carry on, shown under a turn that stopped before it was done.
-//
-// Reported twice in the same breath: *"the agent struggles with long tasks
-// like skills then cuts out half way through and has to restart, or it hits a
-// limit for tool calls."* Both ended in a paragraph telling the user to ask it
-// to continue: so continuing meant typing the request out again from memory,
-// and resuming a six-step skill meant re-running the three steps that had
-// already changed the notebook. This is one button for each case.
-//: `also` is a second, quieter action on the same row (Phase D's "edit a
-//: step's text and re-run just that step"). A row rather than a menu because
-//: there are two of them and both are the answer to the same question, "this
-//: run stopped, now what": one carries on, the other changes the step that
-//: stopped it and tries that alone.
-function continueRunControls({ label, hint, onClick, also = null }) {
-  const row = document.createElement("div");
-  row.className = "run-continue";
-  const button = document.createElement("button");
-  button.type = "button";
-  button.className = "small";
-  // continueRunControls is called with "ph:arrow-clockwise Resume from step N".
-  setLabel(button, label);
-  button.addEventListener("click", () => {
-    // One press only: a second would start a duplicate run over the same
-    // notes, and every step of it writes.
-    button.disabled = true;
-    onClick();
-  });
-  row.appendChild(button);
-  if (also) {
-    const second = document.createElement("button");
-    second.type = "button";
-    second.className = "ghost small";
-    setLabel(second, also.label);
-    second.title = also.title || "";
-    second.addEventListener("click", () => {
-      second.disabled = true;
-      //: Re-enabled when the dialog is dismissed without a rewrite, because
-      //: nothing ran and the offer is still good. The primary above cannot do
-      //: this: pressing it starts a run there and then.
-      Promise.resolve(also.onClick()).then((ran) => {
-        if (!ran) second.disabled = false;
-      });
-    });
-    row.appendChild(second);
-  }
-  if (hint) {
-    const why = document.createElement("span");
-    why.className = "muted";
-    why.textContent = hint;
-    row.appendChild(why);
-  }
-  return row;
-}
-
-// Manual (step-through) mode's pause card: a text box to add what the agent
-// missed or answer a question it raised, and a Continue button, the answer
-// to "a manual mode" asked for directly, and the single most-requested
-// unbuilt thing on the roadmap. `onContinue(note)` gets whatever was typed,
-// or an empty string if nothing was.
-function manualPauseControls({ onContinue }) {
-  const row = document.createElement("div");
-  row.className = "run-continue run-continue-manual";
-  const note = document.createElement("input");
-  note.type = "text";
-  note.placeholder = "Add anything before the next step (optional)…";
-  note.maxLength = 500;
-  const button = document.createElement("button");
-  button.type = "button";
-  button.className = "small";
-  setLabel(button, "ph:play Continue");
-  button.addEventListener("click", () => {
-    button.disabled = true;
-    note.disabled = true;
-    onContinue(note.value.trim());
-  });
-  note.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") button.click();
-  });
-  const why = document.createElement("span");
-  why.className = "muted";
-  why.textContent = "Paused: step by step mode.";
-  row.append(why, note, button);
-  return row;
-}
-
 // A small "what this answer cost" line under an assistant bubble: which model
 // answered, how long it took, and, when Ollama reports them, token counts
 // and generation speed.
@@ -475,19 +331,6 @@ function compactTokens(n) {
   return n >= 1000 ? `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k` : String(n);
 }
 
-// Remove a message from the live transcript. A saved conversation stores
-// question/answer pairs, so deleting either half drops the whole exchange, 
-// otherwise the missing half would reappear on reopening the chat.
-// Deleting from a user bubble drops the same exchange as deleting from the
-// answer below it, so both buttons route through one implementation.
-function removeChatBubble(bubble) {
-  const assistant = bubble.classList.contains("user")
-    ? bubble.nextElementSibling
-    : bubble;
-  if (!assistant?.classList.contains("assistant")) return;
-  return deleteChatTurn(assistant);
-}
-
 // Copying has to work in three descending steps. `navigator.clipboard` exists
 // only in a SECURE CONTEXT: fine on http://localhost, `undefined` on a LAN
 // address or a tunnel, which made every copy button a no-op (worst on the Logs
@@ -586,34 +429,6 @@ const regenerateFromBubble = (bubble) => lazyScript("/js/chat-edit.js").then(() 
 function rewriteAnswerWith(instruction, said) {
   if (chatController) return toast("Wait for the current answer to finish.");
   sendChatMessage(instruction, { displayText: said });
-}
-
-//: **Fork from this point in the conversation.** The server already copies a
-//: conversation up to a turn (`POST /conversations/{id}/fork`, `up_to`), this
-//: is the door to it from the message you are actually looking at, which is
-//: where "try a different direction from here" is decided.
-async function forkFromBubble(bubble) {
-  if (!chatConv || chatConv.id === null) {
-    return toast("Nothing to fork yet, ask something first.");
-  }
-  //: Which turn this is: count the assistant bubbles before it. `up_to` is a
-  //: turn index on the server, and a turn is one question and its answer.
-  const bubbles = [...$("chat-messages").querySelectorAll(".msg.assistant")];
-  const index = bubbles.indexOf(bubble);
-  if (index === -1) return;
-  try {
-    const fork = await apiJson(`/conversations/${chatConv.id}/fork`, {
-      method: "POST",
-      body: JSON.stringify({ up_to: index + 1 }),
-    });
-    await loadConversationList();
-    chatWriteRecord("chatForkUndo", fork);
-    toastAction(`Forked at this message → “${fork.title}”.`, "Open it", () =>
-      openConversation(fork.id), { go: { open: "conversation", id: fork.id } }
-    );
-  } catch (error) {
-    toast(error.message || "Couldn't fork from here.", true);
-  }
 }
 
 //: How many times the last question has been asked again (`retries`, kept on

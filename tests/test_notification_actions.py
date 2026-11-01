@@ -126,7 +126,7 @@ def test_already_recorded_notices_do_not_record_twice():
 #: Openers that name a target the app can find again after a reload. Each
 #: caller passes `go`, plain data for localStorage.
 OPENERS = {
-    "chat.js": ['go: { open: "conversation", id: fork.id }'],
+    "chat-turn.js": ['go: { open: "conversation", id: fork.id }'],
     #: Save an answer (ask-compose.js) or a chat (quick-note.js, e4b220e) as a document.
     "ask-compose.js": ['go: { open: "doc", id: doc.id }'],
     "wiring.js": ['go: { open: "conversation", id: fork.id }'],

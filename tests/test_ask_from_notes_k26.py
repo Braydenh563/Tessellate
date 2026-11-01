@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 
 from tessellate.entry import manager
+from tests._app_js import with_pieces
 
 
 def _ask(client, question: str, **body) -> dict:
@@ -73,7 +74,7 @@ def test_the_page_wires_both_answers():
     from pathlib import Path
 
     root = Path(__file__).resolve().parent.parent / "frontend"
-    ask = (root / "js" / "capture-ask.js").read_text(encoding="utf-8")
+    ask = with_pieces("capture-ask.js")
     compose = (root / "js" / "ask-compose.js").read_text(encoding="utf-8")
     assert "peek, answer_from" in ask
     assert "renderAskBoth(" in ask

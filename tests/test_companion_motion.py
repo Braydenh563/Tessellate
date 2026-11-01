@@ -470,7 +470,7 @@ def test_every_way_to_a_note_counts_as_opening_it() -> None:
     # graph and chat all go to a note through flashEntry (capture-ask.js);
     # the companion reads along from there too (companionreact.js: the
     # palette's jump to a long note reads along).
-    ask = (ROOT / "frontend" / "js" / "capture-ask.js").read_text(encoding="utf-8")
+    ask = with_pieces("capture-ask.js")
     flash = ask[ask.index("function flashEntry(") :]
     flash = flash[: flash.index("\n}\n")]
     # Unguarded since Brief 86 dropped the redundant typeof guards on eager-file functions (avatars.js is eager).

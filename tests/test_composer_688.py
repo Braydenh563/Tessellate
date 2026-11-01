@@ -16,6 +16,7 @@ import pytest
 
 from tessellate.ai import composer
 from tests import _composer_eval as ev
+from tests._app_js import with_pieces
 
 TODAY = date(2026, 10, 6)
 #: Spelled by its code point: the lint reads this file too.
@@ -460,7 +461,7 @@ def test_an_answer_no_model_wrote_says_so_in_its_support_notice() -> None:
 
     routes = Path("src/tessellate/api/routes_chat.py").read_text(encoding="utf-8")
     assert routes.count('"by_model": False') >= 1
-    js = Path("frontend/js/capture-ask.js").read_text(encoding="utf-8")
+    js = with_pieces("capture-ask.js")
     body = js[js.index("function renderAnswerSupport") :]
     body = body[: body.index("\n}\n")]
     assert "support.by_model === false" in body and "no model wrote any of it" in body
@@ -484,6 +485,6 @@ def test_a_cited_name_opens_its_note_and_never_the_sources_panel() -> None:
     body = body[: body.index("\n}\n")]
     assert "flashEntry(g.note_id)" in body and "scheduleCitationPeek(" in body
     assert "source" not in body.lower().replace("citationsource", "")
-    caller = Path("frontend/js/capture-ask.js").read_text(encoding="utf-8")
+    caller = with_pieces("capture-ask.js")
     assert "linkCitedTitles(targets, sentences, byId, numberFor);" in caller
     assert caller.index('ensureModule("askCompose").then(() => {') < caller.index("linkCitedTitles(targets, sentences, byId, numberFor);")

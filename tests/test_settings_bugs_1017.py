@@ -11,6 +11,7 @@ import re
 from pathlib import Path
 
 from tests._css_paths import CSS_FILES
+from tests._app_js import with_pieces
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -234,6 +235,6 @@ def test_b56_timeline_bucket_auto_names_the_bucket_it_chose():
 
 
 def test_b56_context_window_placeholder_carries_what_auto_found():
-    js = (ROOT / "frontend" / "js" / "chat.js").read_text(encoding="utf-8")
+    js = with_pieces("chat.js")
     box = js[js.index("function renderModelContextBox") :][:1200]
     assert 'box.placeholder = usable ? `Auto (${Number(usable).toLocaleString()})` : "Auto";' in box

@@ -11,6 +11,7 @@ from pathlib import Path
 import pytest
 
 from tests._app_js import JS_DIR
+from tests._app_js import with_pieces
 
 SOURCE = (JS_DIR / "search-suggest.js").read_text(encoding="utf-8")
 
@@ -190,7 +191,7 @@ def test_every_search_box_names_its_scope_and_the_web_panel_shares_the_store() -
 def test_the_suggestions_are_a_lazy_bundle_called_from_a_boot_listener() -> None:
     app = (JS / "app.js").read_text(encoding="utf-8")
     assert 'searchSuggest: ["/js/search-suggest.js"]' in app
-    capture = (JS / "capture-ask.js").read_text(encoding="utf-8")
+    capture = with_pieces("capture-ask.js")
     assert "input[data-search-scope]" in capture
     assert 'ensureModule("searchSuggest").then(() => openSearchSuggest(box))' in capture
 

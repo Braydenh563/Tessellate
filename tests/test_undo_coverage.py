@@ -33,6 +33,7 @@ import os
 import re
 from functools import lru_cache
 from pathlib import Path
+from tests._app_js import with_pieces
 
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
 
@@ -450,7 +451,7 @@ EXEMPT: dict[str, str] = {
     "capture-card-more.js:askCaptureSuggestions": "read: asks for tag suggestions for the capture card's words (/entries/suggest-tags); writes nothing",
     "capture-card-more.js:uploadCapturePictures": "send: part of saving the capture card; stores the pictures the new note links; the note's own Undo (announceSavedNote) takes the note back",
     "quick-note.js:createNoteSafely": "inverse: the one door for saving a new note; each caller offers the saved note's Undo (announceSavedNote, pushEntryCreateUndo, the paste toast's Bin); a held note is not on the server yet",
-    "chat-attach.js:offerReminder": "read: reads a reminder out of the message (/reminders/suggest); the chip that makes one pushes Undo",
+    "chat-turn.js:offerReminder": "read: reads a reminder out of the message (/reminders/suggest); the chip that makes one pushes Undo",
     "lightbox-view.js:openLightbox": "auth: a two-minute link to one file for the system browser; no user data",
     "statistics.js:ask": "read: a counted answer to a question about the notebook (readOnly); nothing is written",
     "whiteboard-interchange.js:wbThumbFlush": "board: stores the board's preview picture, rebuilt from the board itself; nothing of the person's changes",
@@ -566,11 +567,11 @@ EXEMPT: dict[str, str] = {
     "capture-ask.js:scheduleCaptureTagSuggestions": "read: reads or asks the model; shows a result, writes nothing",
     "categories-panel.js:propose": "read: asks for a split proposal",
     "chat-agent.js:renderToolConfirm": "send: runs a tool the agent asked for, in the chat's own turn history",
-    "chat-attach.js:commitStagedImages": "send: uploads the pictures of a chat message at the moment it is sent; the message is in the chat's own turn history",
-    "chat-attach.js:offerFollowups": "read: reads or asks the model; shows a result, writes nothing",
+    "chat-turn.js:commitStagedImages": "send: uploads the pictures of a chat message at the moment it is sent; the message is in the chat's own turn history",
+    "chat-turn.js:offerFollowups": "read: reads or asks the model; shows a result, writes nothing",
     "chat-attach.js:openExtractPreview": "read: reads or asks the model; shows a result, writes nothing",
-    "chat-attach.js:saveFollowups": "telemetry: stores suggested follow-up chips",
-    "chat-attach.js:writeCheckpoint": "send: a chat message, kept by the chat's own turn history",
+    "chat-turn.js:saveFollowups": "telemetry: stores suggested follow-up chips",
+    "chat-turn.js:writeCheckpoint": "send: a chat message, kept by the chat's own turn history",
     "chat.js:setResponseMode": "settings: a setting with its own Reset or the settings history",
     "chat.js:setWebSearxngRunning": "job: starts or stops work or a model; deletes no user data",
     "dash-night.js:renderNightCard": "job: starts or stops work or a model; deletes no user data",
@@ -812,7 +813,7 @@ def test_no_redo_list_only_shrinks():
 def test_the_standalone_windows_put_what_they_save_on_an_undo():
     frontend = JS.parent
     for name in ("capture.js", "clip.js"):
-        text = (JS / name).read_text(encoding="utf-8")
+        text = with_pieces(name)
         assert "standaloneUndo.announce(" in text and "standaloneUndo.offer(" in text, name
     for page in ("capture.html", "clip.html"):
         html = (frontend / page).read_text(encoding="utf-8")

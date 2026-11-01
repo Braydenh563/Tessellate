@@ -46,6 +46,8 @@ Object.assign(LAZY_MODULES, {
   mathEditor: ["/css/math-field-lazy.css", "/vendor/mathlive/mathlive.min.js", "/js/math-field.js", "/css/math-editor-lazy.css", "/js/math-editor.js"],
   //: The model badge's spec panel, editing an answer, a note's Explain row, the extract preview's Save (gesture-kit.js's header).
   gestureKit: ["/js/gesture-kit.js"],
+  //: One chat turn (chat-turn.js): `sendChatMessage` awaits it; the chat box's focus warms it.
+  chatTurn: ["/js/chat-turn.js"],
   //: A row's expand chevron and the bell's untagged and review nudges (notes-lazy.js).
   notesLazy: ["/js/notes-lazy.js"],
   //: Every ```mermaid fence, in documents, chat and Ask (mermaid-draw.js). The 5 MB
@@ -240,3 +242,10 @@ function warmLibraryAfterInput() {
   for (const type of ["pointerdown", "keydown"]) window.addEventListener(type, warm, { capture: true, passive: true });
 }
 warmLibraryAfterInput();
+
+//: The chat turn's code is fetched while the person types, so Send finds it in.
+document.addEventListener("focusin", function warmChatTurn(event) {
+  if (event.target?.id !== "chat-input") return;
+  document.removeEventListener("focusin", warmChatTurn);
+  ensureModule("chatTurn");
+});

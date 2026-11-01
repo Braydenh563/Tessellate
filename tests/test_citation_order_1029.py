@@ -33,6 +33,7 @@ from tessellate.core import config
 from tessellate.entry import manager
 from tests.test_composer_frames_1029 import FAMILIES, _notes, _questions
 from tests.test_composer_route_688 import _ask
+from tests._app_js import with_pieces
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -45,8 +46,8 @@ def _fn(text: str, name: str) -> str:
 
 
 def _run(cases: list[dict]) -> list:
-    agent = (JS / "chat-agent.js").read_text(encoding="utf-8")
-    ask = (JS / "capture-ask.js").read_text(encoding="utf-8")
+    agent = with_pieces("chat-agent.js")
+    ask = with_pieces("capture-ask.js")
     script = (
         _fn(agent, "sourcesByFirstMention")
         + _fn(ask, "citeKey")
@@ -118,7 +119,7 @@ def test_note_7_and_document_7_in_one_answer_keep_their_own_numbers():
 
 def test_no_surface_reads_a_citation_number_by_bare_note_id():
     for name in ("capture-ask.js", "ask-compose.js", "chat-agent.js", "chat-attach.js"):
-        text = (JS / name).read_text(encoding="utf-8")
+        text = with_pieces(name)
         assert not re.search(r"numberFor\.(?:get|has|set)\((?:[a-z]+\.note_id|noteId)\b", text), name
 
 
@@ -149,7 +150,7 @@ def test_every_surface_numbers_from_the_sentences_it_marks():
         "palette.js": 1,  # the popup's markers
     }
     for name, expected in calls.items():
-        text = (JS / name).read_text(encoding="utf-8")
+        text = with_pieces(name)
         found = [m.group(0) for m in re.finditer(r"chatSourcesFrom\(\{[^}]*\}\)|chatSourcesFrom\(savedInput\)", text)]
         with_sentences = [c for c in found if "sentences" in c]
         assert len(with_sentences) >= expected, (name, found)
@@ -160,7 +161,7 @@ def test_every_surface_numbers_from_the_sentences_it_marks():
     #: The live path recomputes on every event: a list cached at the first
     #: sentence would number later ones by relevance.
     for name in ("chat-attach.js", "capture-ask.js"):
-        assert "liveSources ??= chatSourcesFrom" not in (JS / name).read_text(encoding="utf-8")
+        assert "liveSources ??= chatSourcesFrom" not in with_pieces(name)
 
 
 @pytest.fixture

@@ -13,6 +13,7 @@ from datetime import datetime
 from pathlib import Path
 
 from tessellate.ai import reading
+from tests._app_js import with_pieces
 
 DATA = json.loads((Path(__file__).parent / "fixtures" / "composer" / "spoken_1010.json").read_text(encoding="utf-8"))
 NOW = datetime.fromisoformat(DATA["now"])
@@ -98,7 +99,7 @@ def test_the_other_one_reads_the_titles_chat_sends(ai_client, fake_ollama, sessi
 def test_chat_sends_an_answers_note_titles_on_its_turn():
     import subprocess
 
-    js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "chat-attach.js").read_text("utf-8")
+    js = with_pieces("chat-attach.js")
     start = js.index("function chatTurnObjects")
     fn = js[start:js.index("\n}\n", start) + 2]
     probe = fn + """
