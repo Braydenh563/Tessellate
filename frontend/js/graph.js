@@ -4788,6 +4788,29 @@ function graphZoomBy(factor) {
   if (typeof gcTab !== "undefined" && gcTab.svg === graphSvg) gcTab.userZoomed = true;
   graphSvg.transition().duration(graphGlideMs(200)).call(graphZoom.scaleBy, factor);
 }
+//: **The zoom strip is one Tab stop** (audit 1031 G20: Tab from the map's box
+//: walked zoom in, zoom out, fit and full screen, four stops, before the status
+//: bar). The focused button is the stop; the arrows, Home and End move between
+//: them, as a toolbar does (`wireToolbarRoving`, which the Library's editor
+//: owns and this tab may not have loaded).
+function graphZoomRoving(strip) {
+  const buttons = [...strip.querySelectorAll("button")];
+  const rove = (to) => buttons.forEach((button) => { button.tabIndex = button === to ? 0 : -1; });
+  strip.setAttribute("role", "toolbar");
+  strip.setAttribute("aria-orientation", "vertical");
+  rove(buttons[0]);
+  strip.addEventListener("focusin", (event) => {
+    if (buttons.includes(event.target)) rove(event.target);
+  });
+  strip.addEventListener("keydown", (event) => {
+    const at = buttons.indexOf(event.target);
+    const to = { ArrowDown: at + 1, ArrowRight: at + 1, ArrowUp: at - 1, ArrowLeft: at - 1, Home: 0, End: buttons.length - 1 }[event.key];
+    if (at < 0 || to === undefined || !buttons[to]) return;
+    event.preventDefault();
+    buttons[to].focus();
+  });
+}
+graphZoomRoving($("graph-zoom"));
 $("graph-zoom-in").addEventListener("click", () => graphZoomBy(1.3));
 $("graph-zoom-out").addEventListener("click", () => graphZoomBy(1 / 1.3));
 $("graph-zoom-fit").addEventListener("click", () => {
