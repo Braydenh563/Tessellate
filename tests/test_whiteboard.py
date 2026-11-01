@@ -413,6 +413,9 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         "font_family": None,
         "underline": None,
         "strike": None,
+        # Added with the Format panel's Direction and Text opacity (INBOX 1510a).
+        "text_dir": None,
+        "text_alpha": None,
         # Added with the mind map's pinned line ends (K31); None until pinned.
         "edge_from": None,
         "edge_to": None,

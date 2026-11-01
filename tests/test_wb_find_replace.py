@@ -70,7 +70,8 @@ def test_the_find_bar_sits_above_the_format_panel():
     right end (elementFromPoint), at 700px its Replace row."""
     import re
 
-    css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    # The Format panel's rules moved to the board's lazy sheet (INBOX 1510a).
+    css = "".join((ROOT / "frontend" / "css" / f).read_text(encoding="utf-8") for f in ("07-whiteboard-misc.css", "library-lazy.css"))
 
     def z(selector: str) -> int:
         return int(re.search(r"\n" + re.escape(selector) + r" \{[^}]*?z-index: (\d+);", css).group(1))
