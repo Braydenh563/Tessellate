@@ -1,5 +1,5 @@
 mode: continue
-status: active (fix agents resumed at the owner's word; the Fable suite runs and merges as files land)
+status: stopped (user, 2026-11-01: /work stop)
 max-continues: 400
 max-idle-minutes: 60
 finish-up: 98%
