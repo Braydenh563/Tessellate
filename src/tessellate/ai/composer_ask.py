@@ -36,6 +36,11 @@ def user_today() -> date:
 _MONTHS = "January February March April May June July August September October November December".split()
 
 
+def month_name(month: int) -> str:
+    """The month's name for its number, 1 to 12."""
+    return _MONTHS[month - 1]
+
+
 # --- the question -------------------------------------------------------------
 
 #: The shapes a question comes in, read from its wording alone, first match
