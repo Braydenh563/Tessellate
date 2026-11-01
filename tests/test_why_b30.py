@@ -87,3 +87,19 @@ def test_the_ask_box_draws_the_lines_in_one_fold():
     body = lazy[lazy.index("function renderAskWhy("):]
     body = body[: body.index("\n}\n")]
     assert 'fold.className = "agent-step why-fold"' in body and 'summary.className = "fold-summary"' in body
+
+
+def test_chat_and_the_popup_agent_draw_the_same_fold_from_the_same_event():
+    """OPEN row 6 (B30): the `why` event is not Ask's alone. Chat's bubble and
+    the popup agent keep its lines and draw `drawWhyTrail` (the one fold
+    builder, `renderAskWhy`) once the answer is final, in the lazy bundle."""
+    chat = (ROOT / "frontend/js/chat-attach.js").read_text(encoding="utf-8")
+    palette = (ROOT / "frontend/js/palette.js").read_text(encoding="utf-8")
+    lazy = (ROOT / "frontend/js/ask-compose.js").read_text(encoding="utf-8")
+    assert "onWhy: (event) => { whyLines = event.lines; }," in chat
+    assert 'ensureModule("askCompose").then(() => drawWhyTrail(recordsHolder, whyLines))' in chat
+    assert "onWhy: (event) => (trail = event.lines)," in palette
+    assert 'ensureModule("askCompose").then(() => drawWhyTrail(agentMsg, trail, actionRow))' in palette
+    assert "function drawWhyTrail(parent, lines, before = null)" in lazy and "renderAskWhy(lines, holder)" in lazy
+    for text in (chat, palette):
+        assert "why-fold" not in text and "why-lines" not in text

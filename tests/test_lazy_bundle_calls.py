@@ -166,6 +166,7 @@ REACHED_AFTER_LOAD = {
     "askAnswerMenu": "askCompose, called in the .then of ensureModule('askCompose') in askQuestion",
     "renderAskInsights": "askCompose, called in the .then of ensureModule('askCompose') in askQuestion",
     "renderAskWhy": "askCompose, called in the .then of ensureModule('askCompose') in askQuestion",
+    "drawWhyTrail": "askCompose, called in the .then of ensureModule('askCompose') by Chat's send and the popup agent (B30)",
     "renderAskBoth": "askCompose, called in the .then of ensureModule('askCompose') in askQuestion",
     "renderAskFollowups": "askCompose, passed to the .then of ensureModule('askCompose') in askQuestion",
     #: B12: an answer's mind map is tidied after `await openWhiteboardBoard`,

@@ -1909,7 +1909,8 @@ MORE_TOPICS.extend(
                 "transparent", "process lines",
             ),
             "body": (
-                "Under an answer in Ask, Why this answer opens the lines that "
+                "Under an answer in Ask, in a Chat reply and in the popup agent's "
+                "answer, Why this answer opens the lines that "
                 "made it, each with the seconds since you asked: what the "
                 "question was read as, what was searched and how many notes "
                 "matched, who wrote it (Atlas from your notes with no model, "
@@ -2621,7 +2622,7 @@ TOPIC_META: dict[str, dict] = {
     "answers-from-notes": {"title": "Answers from your notes, no AI", "path": "Notes tab, Ask, the AI switch", "steps": (
         "Open Ask on the Notes tab.", "Turn the AI switch off beside the answer length.", "Ask: the answer is quoted from your notes, with no AI.")},
     "follow-up-trail": {"title": "Where a follow-up came from", "path": "Chat tab, or Ask in the Notes tab, under an answer"},
-    "why-this-answer": {"title": "Why this answer", "path": "Notes tab, Ask, under an answer"},
+    "why-this-answer": {"title": "Why this answer", "path": "Chat tab, the popup agent, or Ask in the Notes tab, under an answer"},
     "line-verdicts": {"title": "Wrong fact and Pin as true", "path": "Ask or Chat, a numbered mark in an answer"},
     "answer-pictures": {"title": "Pictures in answers", "path": "Chat tab, or Ask in the Notes tab, Grounded in"},
     "library-skills": {"title": "AI skills in the Library", "path": "Library tab, AI skills"},

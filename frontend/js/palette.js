@@ -1212,6 +1212,7 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
   let meta = null;
   let stats = null;
   const panels = []; // the app's panels under the answer (INBOX 1300 C06)
+  let trail = null; // the why event (B30)
   let thinkingRaw = "";
   //: In-text numbers, Chat's own call (`addInlineCitations`) on the `grounding`
   //: rows (BACKLOG, the owner 2026-10-12: popup answers had a Sources list and
@@ -1373,6 +1374,7 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
       onUnsupported: (e) => (why = e?.message || why),
       onPanel: (event) => panels.push(event),
       onWebSources: (event) => panels.push({ web: event.sources }),
+      onWhy: (event) => (trail = event.lines),
       onHint: (e) => (why = why || e?.text || ""),
       onGrounding: cite,
       onGroundingLive: cite,
@@ -1442,6 +1444,8 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
       persona: askedPersona,
     });
     if (metaRow) agentMsg.insertBefore(metaRow, actionRow);
+    //: Why this answer (B30), the Ask box's own fold, last above the actions.
+    if (trail) ensureModule("askCompose").then(() => drawWhyTrail(agentMsg, trail, actionRow)).catch(() => {});
     keepAtBottom(cmdPaletteResults);
   } catch (err) {
     if (err?.name === "AbortError") {

@@ -1686,6 +1686,7 @@ async function chatSendTurn(preset, opts = {}) {
   // this treatment already for the same reported-missing-on-reload reason.
   let groundingSentences = null;
   let chatOffer = null;
+  let whyLines = null; // the why event (B30), drawn last
   let composedNext = []; // a composed answer's own next questions (INBOX 725)
   //: **Numbered while it streams, as the Ask tab is** (INBOX 320, the
   //: askcite row): the backend sends the rows so far each time a sentence
@@ -2113,6 +2114,7 @@ async function chatSendTurn(preset, opts = {}) {
         chatScrollToEnd();
       },
       onOffer: (event) => { chatOffer = event.offer || null; },
+      onWhy: (event) => { whyLines = event.lines; },
       onStats: (event) => {
         // A round finished. Asked for directly: *"a new chat should be saved
         // after agent turns as well, not after the whole response is
@@ -2306,6 +2308,8 @@ async function chatSendTurn(preset, opts = {}) {
     sources: turnSources,
   });
   if (sourcesPanel) recordsHolder.appendChild(sourcesPanel);
+  //: Why this answer (B30), the Ask box's own fold, after the sources.
+  if (whyLines) ensureModule("askCompose").then(() => drawWhyTrail(recordsHolder, whyLines)).catch(() => {});
   // INBOX 272 part 1: drawn once the stream is over, same reason
   // `groundingSentences` waits (a notice inserted mid-stream is inside a
   // bubble the live renderer is about to rebuild from raw markdown).

@@ -737,8 +737,8 @@ function renderAskInsights(found) {
 //: matched, who wrote it and in what shape, what it cited, how long it
 //: took), each stamped with the seconds since the question. Folded under
 //: the answer in the Thinking fold's look (`.why-fold`), shut until wanted.
-function renderAskWhy(lines) {
-  const holder = $("ask-why");
+//: Chat's bubble and the popup agent's draw the same fold (`drawWhyTrail`).
+function renderAskWhy(lines, holder = $("ask-why")) {
   if (!holder) return;
   holder.replaceChildren();
   holder.classList.toggle("hidden", !(lines || []).length);
@@ -763,7 +763,17 @@ function renderAskWhy(lines) {
   }
   fold.append(summary, list);
   holder.appendChild(fold);
-  $("ask-answer-foot")?.classList.remove("hidden");
+  holder.closest("#ask-answer-foot")?.classList.remove("hidden");
+}
+
+//: The same fold under a Chat bubble or a popup agent's answer: a holder
+//: placed in `parent` (before `before`), filled by `renderAskWhy`.
+function drawWhyTrail(parent, lines, before = null) {
+  if (!(lines || []).length) return;
+  const holder = document.createElement("div");
+  holder.className = "why-trail";
+  parent.insertBefore(holder, before);
+  renderAskWhy(lines, holder);
 }
 
 //: **A follow-up is a question that keeps the answer above it** (decision 8:
