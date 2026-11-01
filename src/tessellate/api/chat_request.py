@@ -692,24 +692,6 @@ class ChatResponse(BaseModel):
     sentence_grounding: list[dict] = []
 
 
-# **"Nothing in your notes" should not be the end of the answer.**
-#
-# Asked for directly: "idk if the ai should be able to look for related
-# semantic results for alternate items like reminders, chat sessions, docs etc
-# related to the notes if no notes are found?? like similar items??"
-#
-# Retrieval only ever searched notes, so a question whose answer sits in a
-# document, a saved chat or a reminder came back as a flat "I couldn't find
-# any saved notes matching that question", true, useless, and on a notebook
-# that has grown documents and chats, misleading about how much the app holds.
-#
-# Keyword matching on purpose rather than embeddings: this runs *only* on the
-# already-empty path, where being slightly less clever costs nothing and
-# another model round trip would just buy a second wait for a second
-# disappointment. Workspace scoping comes from `WorkspaceMixin`, as everywhere.
-_RELATED_LIMIT = 4
-
-
 @dataclass(slots=True)
 class _StreamRequest:
     """Everything one `/chat/stream` call settles before it opens the stream.
@@ -764,10 +746,6 @@ def _composed(req: _StreamRequest, ollama_running: bool) -> bool:
     Ask-box turn that asked for it, or any Ask-box turn with no model to ask.
     The Chat tab composes too, but only when no model runs (`_plain_events`)."""
     return bool(req.body.notes_only) and (req.body.answer_from == "notes" or not ollama_running)
-
-
-#: A note's kind, not what it is about ("Idea: build a bird feeder").
-_NOT_A_SUBJECT = frozenset("idea ideas note notes todo todos reminder thought thoughts list draft remember".split())
 
 
 class CommandRunBody(BaseModel):

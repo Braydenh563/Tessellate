@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 from datetime import date
 
 from tessellate.ai import composer_frame, composer_tables, realise, recognise as rec
-from tessellate.ai.composer_ask import _MONTHS, _MONTH_INDEX, _WEEKDAYS, _words
+from tessellate.ai.composer_ask import _MONTHS, _words
 from tessellate.core.docmeta import block_end
 
 
@@ -30,6 +30,12 @@ UNTITLED_WORDS = 6
 
 
 # --- the notes, as sentences ---------------------------------------------------
+
+
+_WEEKDAYS = {"monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"}
+
+
+_MONTH_INDEX = {name.lower(): i + 1 for i, name in enumerate(_MONTHS)}
 
 
 @dataclass

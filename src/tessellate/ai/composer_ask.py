@@ -33,18 +33,7 @@ def user_today() -> date:
     return user_now().date()
 
 
-#: Number words for counts a reader takes in at a glance. Measured values,
-#: spelled the way a sentence spells them; past twelve the digits read better.
-_NUMBER_WORDS = ("no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve")
-
-
 _MONTHS = "January February March April May June July August September October November December".split()
-
-
-_MONTH_INDEX = {name.lower(): i + 1 for i, name in enumerate(_MONTHS)}
-
-
-_WEEKDAYS = {"monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"}
 
 
 # --- the question -------------------------------------------------------------
@@ -657,6 +646,11 @@ _WHEN_NOISE = frozenset(
     "day date time created create creating start started starting began begun note notes page entry entries "
     "made make making added add saved save wrote write written put together jotted typed".split()
 )
+
+
+def when_terms(terms: list[str]) -> list[str]:
+    """The terms of "when did I write about X" that name X, not the asking."""
+    return [t for t in terms if t.lower() not in _WHEN_NOISE]
 
 
 def asks_time(question: str | None) -> bool:

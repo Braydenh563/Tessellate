@@ -22,7 +22,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import notebook_stats
-from tessellate.ai.composer import _MONTHS, _NUMBER_WORDS
+from tessellate.ai.composer import _MONTHS
+from tessellate.ai.composer_answer import _NUMBER_WORDS
 from tessellate.ai.recognise import recognise, window
 
 _I = r"(?:i|we)"

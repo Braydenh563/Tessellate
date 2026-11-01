@@ -25,7 +25,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import facts, verdicts
-from tessellate.ai.learned_audit import RETIRE, FactView, Finding, NoteView, check, entry_tags
+from tessellate.ai.facts import entry_tags
+from tessellate.ai.learned_audit import RETIRE, FactView, Finding, NoteView, check
 from tessellate.core import clock
 from tessellate.core.database import DerivedFact, Entry, utcnow
 

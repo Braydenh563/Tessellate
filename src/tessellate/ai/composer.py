@@ -87,19 +87,19 @@ from datetime import date, datetime
 from tessellate.ai import act_registry, composer_ack, composer_links, composer_open, composer_tables, composer_versus, grounding, phrasing, question_noise, spelling, utilities
 from tessellate.ai import recognise as rec
 from tessellate.ai.composer_phrases import PHRASES, phrase_options  # noqa: F401  (moved; re-exported)
-from tessellate.ai.composer_ask import IRREGULAR_PAST, SHAPES, SYNONYM_GROUPS, _ASKING_WORDS, _ASKS_FIRST, _BIN_WORDS, _COMPARE_SIDES, _CONTRACTIONS, _DEFINE, _IF, _KNOWN, _MONTHS, _MONTH_INDEX, _NUMBER_WORDS, _SHAPE_RULES, _TRAILERS, _WEEKDAYS, _WHEN_NOISE, _WRAPPERS, _alternatives, _build_synonyms, _guessing_recent, _holds, _overview, _stem, _still_recent, _without_command, _words, asks_time, asks_written_when, classify, compare_sides, rephrase, subject_terms, user_now, user_today, what_is  # noqa: F401  (moved; re-exported)
+from tessellate.ai.composer_ask import IRREGULAR_PAST, SHAPES, SYNONYM_GROUPS, _ASKING_WORDS, _ASKS_FIRST, _BIN_WORDS, _COMPARE_SIDES, _CONTRACTIONS, _DEFINE, _IF, _KNOWN, _MONTHS, _SHAPE_RULES, _TRAILERS, _WRAPPERS, _alternatives, _build_synonyms, _guessing_recent, _holds, _overview, _stem, _still_recent, _without_command, _words, asks_time, asks_written_when, classify, compare_sides, rephrase, subject_terms, user_now, user_today, what_is, when_terms  # noqa: F401  (moved; re-exported)
 from tessellate.ai.composer_read import LEAD_INS, LEAD_INS_BARE, MAX_QUOTE_CHARS, NoteView, Sentence, _HEADING_LEAD, _ITEM, _LEAD_IN, _MARKS, _PICTURES_HEAD, _SPLIT, _SPLIT_HYPHEN, _WHERE_CUE, _cue, _depth, _discourse, _distinct_ids, _heading_text, _picture_groups, _picture_spans, _picture_text_breaks, _short_fact, _title, _unit, _written, plain_words, read_note, source_kind  # noqa: F401  (moved; re-exported)
 from tessellate.ai.composer_select import KIND_WORDS, MAX_PER_NOTE, MAX_POINTS, MEANING_POOL, NEAR_DUPLICATE, RELATIVE_FLOOR, _ASKS_NOW, _FIGURE, _Meaning, _NEGATION, _score, _term_weights, centrality, correcting, disagree, select, superseded  # noqa: F401  (moved; re-exported)
-from tessellate.ai.composer_answer import _Answer, _LEARNED, _NOW_WORDS, _REGISTER, _RELATIVE_DAYS, _SESSION, _count_word, _due, figures_of  # noqa: F401  (moved; re-exported)
-from tessellate.ai.composer_quote import _OPENERS, _checklist_count, _joined, _lowered, _pick, _quotes, _sentence_case  # noqa: F401  (moved; re-exported)
+from tessellate.ai.composer_answer import _Answer, asks_now, _RELATIVE_DAYS, _SESSION, _count_word, _due, figures_of  # noqa: F401  (moved; re-exported)
+from tessellate.ai.composer_quote import _checklist_count, _joined, _lowered, _pick, _quotes, _sentence_case  # noqa: F401  (moved; re-exported)
 from tessellate.ai.composer_unfound import _FRAME_WORDS, _frame_stems, _missing, _seen  # noqa: F401  (moved; re-exported)
-from tessellate.ai.composer_body import BROAD_NOTES, FULL_POINTS, _BROAD, _NOTE_NOUNS, _asked_span, _body, _compare, _confirmed_lead, _days_named, _disagreement, _disagreements, _insight_close, _insight_lead, _insights_for, _kinds, _mentions, _newest, _notes_named_by, _opening, _others, _relation, _span, _still_open, _summary, _timeline, _until_note, _versus_answer, heading_name, length_wish, told_as_past  # noqa: F401  (moved; re-exported)
+from tessellate.ai.composer_body import BROAD_NOTES, FULL_POINTS, _NOTE_NOUNS, _asked_span, _body, _compare, _confirmed_lead, _days_named, _disagreement, _disagreements, _insight_close, _insight_lead, _insights_for, _kinds, _mentions, _newest, _notes_named_by, _opening, _others, _relation, _span, _still_open, _summary, _timeline, _until_note, _versus_answer, heading_name, length_wish, _LEARNED, told_as_past  # noqa: F401  (moved; re-exported)
 from tessellate.ai.composer_dialogue import Dialogue, NEXT_MAX_CHARS, _BARE, _BOLD, _MORE, _ORDINAL, _ORDINALS, _PRONOUN, _RESTATES, _follow_pronoun, _named_notes, _next_questions, _standing, follow_on, refers_back  # noqa: F401  (moved; re-exported)
 from tessellate.ai.composer_smalltalk import INVITES, NEXT_STEPS, NEXT_STEPS_PROFESSIONAL, SOCIAL, SOCIAL_PROFESSIONAL, _social_line, call, call_asks, greeting_ask, invitation, social, social_kind, social_surfaces  # noqa: F401  (moved; re-exported)
 from tessellate.ai.composer_intent import PLAN_CHARS, Plan, _ACT_VERBS, _TAGGED, _WHY, _lead_act_verb, _plan_window, _time_phrase, holds_any, plan, window_verb_stems  # noqa: F401  (moved; re-exported)
 from tessellate.ai.composer_help import _act_sentence, _clauses, _feature_instead, _help_act, _help_act_stems, _help_answer, _in_window, _result, _utility, help_line, offered  # noqa: F401  (moved; re-exported)
-from tessellate.ai.composer_empty import _absent, _as_phrase, _as_typed, _bare_title, _did_you_mean, _filtered, _nothing, empty_window, window_said  # noqa: F401  (moved; re-exported)
-from tessellate.ai.composer_recall import _month, _overview_answer, _recall, _recall_next, _span_of, _subject_stems  # noqa: F401  (moved; re-exported)
+from tessellate.ai.composer_empty import _absent, _as_phrase, _as_typed, _bare_title, _did_you_mean, _filtered, _nothing, empty_window, _REGISTER, window_said  # noqa: F401  (moved; re-exported)
+from tessellate.ai.composer_recall import _BROAD, _month, _overview_answer, _recall, _recall_next, _span_of, _subject_stems  # noqa: F401  (moved; re-exported)
 
 
 # --- a question in two parts, and one that could mean two things -------------
@@ -333,7 +333,7 @@ def compose(
     known = _LEARNED.set(learned)
     words = _note_words(notes)
     owned = _KNOWN.set(words)
-    current = _ASKS_NOW.set(bool(_NOW_WORDS.search(question)))
+    current = _ASKS_NOW.set(asks_now(question))
     try:
         result = _answer_turn(question, notes, today=today, recent=recent, embed=embed, said=said, previous=previous,
                               voice=voice, now=now, salt=salt, turn=turn, dialogue=dialogue, prefer=prefer)
@@ -584,7 +584,7 @@ def _written_when(out: "_Answer", question: str, p, views_list: list):  # noqa: 
     one note's name holds what it names."""
     if p.window or not asks_written_when(question) or not p.terms:
         return None
-    stems = {_stem(t) for t in p.terms if t.lower() not in _WHEN_NOISE}
+    stems = {_stem(t) for t in when_terms(p.terms)}
     if not stems:
         return None
     best = _best_dated_title(stems, views_list)

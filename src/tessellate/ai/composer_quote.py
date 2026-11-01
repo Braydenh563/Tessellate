@@ -286,12 +286,6 @@ def _list_block(out: _Answer, view: NoteView, items: list[Sentence], terms: list
         out.item(s, terms)
 
 
-_OPENERS = (
-    "open_notes", "open_wrote", "open_put", "open_figure", "open_date", "open_where",
-    "closest_a", "closest_b", "going_by", "notes_have", "wrote_on_a",
-)
-
-
 def _unlike_before(out: _Answer, keys: list[str]) -> list[str]:
     """`keys` less any the turn before opened with, in their order; all of
     them when every one did."""

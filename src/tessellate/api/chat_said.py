@@ -22,10 +22,32 @@ from sqlalchemy.orm import Session
 from tessellate.ai import capability, composer, composer_aware, composer_digest, composer_lists, composer_open, composer_plan, composer_social, fact_check, filed_name, intent, phrasing, realise
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.api import chat_extra
-from tessellate.api.chat_request import ChatRequest, _NOT_A_SUBJECT, _RELATED_LIMIT, _StreamRequest, _Turn, _composed, _meta_event
+from tessellate.api.chat_request import ChatRequest, _StreamRequest, _Turn, _composed, _meta_event
 from tessellate.core import clock, private_turn
 from tessellate.core.database import AskTurn, Conversation, Document, Entity, Entry, EntryLink, like_escape, LIKE_ESCAPE, Reminder
 from tessellate.core.logbuffer import safe_value
+
+
+# **"Nothing in your notes" should not be the end of the answer.**
+#
+# Asked for directly: "idk if the ai should be able to look for related
+# semantic results for alternate items like reminders, chat sessions, docs etc
+# related to the notes if no notes are found?? like similar items??"
+#
+# Retrieval only ever searched notes, so a question whose answer sits in a
+# document, a saved chat or a reminder came back as a flat "I couldn't find
+# any saved notes matching that question", true, useless, and on a notebook
+# that has grown documents and chats, misleading about how much the app holds.
+#
+# Keyword matching on purpose rather than embeddings: this runs *only* on the
+# already-empty path, where being slightly less clever costs nothing and
+# another model round trip would just buy a second wait for a second
+# disappointment. Workspace scoping comes from `WorkspaceMixin`, as everywhere.
+_RELATED_LIMIT = 4
+
+
+#: A note's kind, not what it is about ("Idea: build a bird feeder").
+_NOT_A_SUBJECT = frozenset("idea ideas note notes todo todos reminder thought thoughts list draft remember".split())
 
 
 def _save_ask_turn(

@@ -9,17 +9,24 @@ the layer list in `composer.py`'s docstring, never back to `composer`.
 
 from __future__ import annotations
 
+import contextvars
 import re
 from datetime import date
 
 from tessellate.ai import composer_compose, composer_lines, composer_tables, grounding, recognise as rec
-from tessellate.ai.composer_answer import _Answer, _REGISTER, _SESSION
+from tessellate.ai.composer_answer import _Answer, _SESSION
 from tessellate.ai.composer_ask import _holds, _stem, user_today
 from tessellate.ai.composer_intent import Plan
 from tessellate.ai.composer_phrases import PHRASES
 from tessellate.ai.composer_quote import _pick
 from tessellate.ai.composer_read import NoteView
 from tessellate.ai.composer_unfound import _MISSING_MIN
+
+
+#: The chat's own voice (natural, professional, playful or plain, a persona's
+#: cue included) while `compose` runs: the no-answer is composed in it
+#: (composer8). Empty means the two registers the callers already pass.
+_REGISTER: contextvars.ContextVar[str] = contextvars.ContextVar("composer_register", default="")
 
 
 def _filtered(views: list[NoteView], p: Plan) -> tuple[list[NoteView], tuple | None]:

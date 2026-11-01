@@ -30,7 +30,7 @@ import re
 from datetime import date
 from pathlib import Path
 
-from tessellate.ai import composer
+from tessellate.ai import composer, composer_answer
 
 FIXTURE = Path(__file__).parent / "fixtures" / "composer" / "showcase_725.json"
 
@@ -58,7 +58,7 @@ def _flat(text: str) -> str:
 
 
 def _count_word(n: int) -> str:
-    words = composer._NUMBER_WORDS
+    words = composer_answer._NUMBER_WORDS
     return words[n] if 0 <= n < len(words) else str(n)
 
 

@@ -10,16 +10,29 @@ the layer list in `composer.py`'s docstring, never back to `composer`.
 
 from __future__ import annotations
 
+import contextvars
 import re
 from datetime import date
 
 from tessellate.ai import composer_frame, composer_versus, question_noise, recognise as rec, utilities, when as when_words
-from tessellate.ai.composer_answer import _Answer, _LEARNED
+from tessellate.ai.composer_answer import _Answer
 from tessellate.ai.composer_ask import _holds, _overview, _stem, _words, subject_terms
-from tessellate.ai.composer_quote import _ENDED, _OPENERS, _joined, _list_block, _lowered, _pick, _quotes, _said_before, _sentence_case, _unlike_before, _with_context, decap
+from tessellate.ai.composer_quote import _ENDED, _joined, _list_block, _lowered, _pick, _quotes, _said_before, _sentence_case, _unlike_before, _with_context, decap
 from tessellate.ai.composer_read import NoteView, Sentence, _NUMBER_CUE, _cue
 from tessellate.ai.composer_select import _Meaning, _was_said, centrality, disagree, select
 from tessellate.ai.composer_unfound import _says_every
+
+
+#: What the person said of insights (decision 60, `insights.Memory`), set by
+#: `compose` for one answer: dismissed ones are not said, confirmed ones are
+#: said as their own word.
+_LEARNED: contextvars.ContextVar = contextvars.ContextVar("composer_learned", default=None)
+
+
+_OPENERS = (
+    "open_notes", "open_wrote", "open_put", "open_figure", "open_date", "open_where",
+    "closest_a", "closest_b", "going_by", "notes_have", "wrote_on_a",
+)
 
 
 def _opening(out: _Answer, s: Sentence, shape: str, question: str) -> None:
@@ -457,20 +470,6 @@ def _compare_side(out: _Answer, label: str, side: list, side_terms) -> None:  # 
         return
     for s in side:
         out.t("line").item(s, side_terms).cite(out.views[s.note_id], again=True)
-
-
-#: A question that asks for everything on a subject rather than one fact:
-#: answered by how many notes mention it, then the sentence most of them lean
-#: towards (`centrality`), then one sentence from each other note.
-_BROAD = re.compile(
-    r"^\s*(?:what (?:do|did|have) (?:i|we|my notes|you) (?:know|say|said|written|write|wrote|got|have)\b"
-    r"|what(?:'s| is) in my notes\b|tell me (?:about|everything)\b|everything (?:about|on)\b"
-    r"|summari[sz]e\b|give me an overview\b|(?:an )?overview of\b"
-    r"|(?:is there )?anything (?:about|on)\b|do i have (?:any )?(?:notes? )?(?:about|on)\b"
-    r"|have i (?:written|got|noted) (?:anything |down )?(?:about|on)\b|what(?: is|'s)? the deal with\b"
-    r"|what do (?:i|you) have on\b|how many (?:of my )?notes\b|catch me up on\b|fill me in on\b|bring me up to speed on\b)",
-    re.I,
-)
 
 
 #: "briefly", "in short", "quick": the lead note alone. "in detail",

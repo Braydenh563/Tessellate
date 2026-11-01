@@ -14,7 +14,7 @@ from datetime import date, timedelta
 
 import pytest
 
-from tessellate.ai import composer
+from tessellate.ai import composer, composer_read
 from tests import _composer_eval as ev
 from tests._app_js import with_pieces
 
@@ -196,7 +196,7 @@ def test_when_lists_the_other_notes_in_the_order_they_were_written():
     heading = next(w for w in composer.phrase_options("timeline") if w in text)
     timeline = text.split(heading, 1)[1]
     days = re.findall(r"^- (\d+ \w+): ", timeline, re.M)
-    parsed = [date(2026, composer._MONTH_INDEX[d.split()[1].lower()], int(d.split()[0])) for d in days]
+    parsed = [date(2026, composer_read._MONTH_INDEX[d.split()[1].lower()], int(d.split()[0])) for d in days]
     assert len(parsed) == 2 and parsed == sorted(parsed)
 
 

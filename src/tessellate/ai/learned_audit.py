@@ -26,7 +26,6 @@ from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 
 from tessellate.ai import facts
-from tessellate.ai.facts import CONTEXT_TAGS, entry_tags, tag_words  # noqa: F401  (moved; re-exported)
 from tessellate.ai.verdicts import Known, norm
 
 RETIRE = "retire"

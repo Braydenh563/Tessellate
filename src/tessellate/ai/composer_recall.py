@@ -16,7 +16,7 @@ from datetime import date
 from tessellate.ai import composer_tables
 from tessellate.ai.composer_answer import _Answer
 from tessellate.ai.composer_ask import _MONTHS, _holds, _overview, _stem, _words, asks_time, compare_sides, rephrase, subject_terms
-from tessellate.ai.composer_body import _BROAD, _overview_line
+from tessellate.ai.composer_body import _overview_line
 from tessellate.ai.composer_dialogue import Dialogue, NEXT_MAX_CHARS
 from tessellate.ai.composer_empty import _as_typed, window_said
 from tessellate.ai.composer_help import _in_window, _result
@@ -31,6 +31,20 @@ RECALL_NOTES = 8
 
 #: A question about the act of writing: only the day a note was made answers it.
 _WROTE_VERB = re.compile(r"\b(?:wrote|write|written|made|created|added|saved|captured|jotted|typed)\b", re.I)
+
+
+#: A question that asks for everything on a subject rather than one fact:
+#: answered by how many notes mention it, then the sentence most of them lean
+#: towards (`centrality`), then one sentence from each other note.
+_BROAD = re.compile(
+    r"^\s*(?:what (?:do|did|have) (?:i|we|my notes|you) (?:know|say|said|written|write|wrote|got|have)\b"
+    r"|what(?:'s| is) in my notes\b|tell me (?:about|everything)\b|everything (?:about|on)\b"
+    r"|summari[sz]e\b|give me an overview\b|(?:an )?overview of\b"
+    r"|(?:is there )?anything (?:about|on)\b|do i have (?:any )?(?:notes? )?(?:about|on)\b"
+    r"|have i (?:written|got|noted) (?:anything |down )?(?:about|on)\b|what(?: is|'s)? the deal with\b"
+    r"|what do (?:i|you) have on\b|how many (?:of my )?notes\b|catch me up on\b|fill me in on\b|bring me up to speed on\b)",
+    re.I,
+)
 
 
 def _recall(out: _Answer, p: Plan, views: list[NoteView], question: str) -> None:

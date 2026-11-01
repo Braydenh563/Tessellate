@@ -15,13 +15,18 @@ import re
 from datetime import date
 
 from tessellate.ai import composer_tables, grounding, realise, recognise as rec
-from tessellate.ai.composer_ask import _MONTHS, _NUMBER_WORDS, _stem
+from tessellate.ai.composer_ask import _MONTHS, _stem
 from tessellate.ai.composer_phrases import PHRASES
 from tessellate.ai.composer_read import NoteView, Sentence
 from tessellate.search import query as query_understanding
 
 
 # --- composition ------------------------------------------------------------------
+
+
+#: Number words for counts a reader takes in at a glance. Measured values,
+#: spelled the way a sentence spells them; past twelve the digits read better.
+_NUMBER_WORDS = ("no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve")
 
 
 class _Answer:
@@ -336,18 +341,6 @@ def _count_word(n: int) -> str:
 _SESSION: contextvars.ContextVar[str] = contextvars.ContextVar("composer_session", default="")
 
 
-#: The chat's own voice (natural, professional, playful or plain, a persona's
-#: cue included) while `compose` runs: the no-answer is composed in it
-#: (composer8). Empty means the two registers the callers already pass.
-_REGISTER: contextvars.ContextVar[str] = contextvars.ContextVar("composer_register", default="")
-
-
-#: What the person said of insights (decision 60, `insights.Memory`), set by
-#: `compose` for one answer: dismissed ones are not said, confirmed ones are
-#: said as their own word.
-_LEARNED: contextvars.ContextVar = contextvars.ContextVar("composer_learned", default=None)
-
-
 def figures_of(text: str) -> frozenset:
     """The amounts `text` names ("run 8 km"), as (dimension, base value). The
     search drops a lone digit, so a sentence that holds the same amount is
@@ -356,6 +349,11 @@ def figures_of(text: str) -> frozenset:
 
 
 _NOW_WORDS = re.compile(r"\b(?:now|currently|current|latest|these days|any ?more|new one)\b", re.I)
+
+
+def asks_now(question: str) -> bool:
+    """The question asks what holds now ("what's my current address")."""
+    return bool(_NOW_WORDS.search(question))
 
 
 _RELATIVE_DAYS = frozenset({"today", "yesterday", "tomorrow"})
