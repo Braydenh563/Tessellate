@@ -2239,8 +2239,11 @@ function gcCoolGap(s, seen) {
 
 function gcTickDraw(s, now, drift) {
   s.heldDrift = (s.heldDrift || 0) + drift;
-  if (!gcCooling(s)) return gcDrawTick(s, now);
   const seen = s.heldDrift * (s.transform?.k || 1);
+  //: **A frame is owed only to motion the eye can see** (INBOX 1519): a hot
+  //: layout that has not moved a note half a pixel (a reheat of a placed map)
+  //: is no more drawn than a cooling one. A note in the hand always is.
+  if (!gcCooling(s)) return s.dragNode || seen >= GC_COOL_MOVE_PX ? gcDrawTick(s, now) : undefined;
   if (seen < GC_COOL_MOVE_PX || s.coolTimer) return;
   const wait = (s.lastTickDraw || 0) + gcCoolGap(s, seen) - now;
   if (wait <= 0) return gcDrawTick(s, now);
@@ -2304,6 +2307,17 @@ function gcTabHidden(s) {
   if (s.size !== "full") return false;
   const page = document.getElementById("tab-graph");
   return !!page && page.classList.contains("hidden");
+}
+
+//: Whether the camera is within `GC_COOL_MOVE_PX` of where the last frame
+//: drew it: a pan or zoom of the whole map by less than half a pixel (the
+//: scale's share is the width of the map it scales, at the canvas's edge).
+function gcCameraStill(s) {
+  const was = s.drawnCamera;
+  const t = s.transform;
+  if (!was || !t) return false;
+  const edge = Math.max(s.dims?.w || 0, s.dims?.h || 0);
+  return Math.max(Math.abs(t.x - was.x), Math.abs(t.y - was.y), Math.abs(t.k - was.k) * edge) < GC_COOL_MOVE_PX;
 }
 
 //: **A map hidden until its first fit is not drawn** (GR1 1101). Behind the
@@ -2729,6 +2743,9 @@ function gcSetStroke(ctx, s, width, k, alpha, dashed) {
 function gcDraw(s = gcTab) {
   if (!s.ctx || !s.canvas) return;
   if (gcTabHidden(s)) return;
+  //: Where the camera is for this frame, whichever way it is painted (`gcCameraStill`).
+  const cam = s.transform || d3.zoomIdentity;
+  s.drawnCamera = { x: cam.x, y: cam.y, k: cam.k };
   if (gcLightFrame(s)) return gcDrawLight(s);
   if (!s.paintMode && gcDrawComposed(s)) return;
   s.strokeMoving = Boolean(s.layoutRunning || s.dragNode);
@@ -4057,6 +4074,13 @@ function gcWireInteraction(s = gcTab) {
       s.transform = event.transform;
       //: The camera alone moved: the frame is the scene, moved (`gcDrawComposed`).
       s.cameraAt = performance.now();
+      //: **A glide's sub-pixel steps are not drawn** (INBOX 1519): an eased
+      //: fit spends a tenth of its frames at each end moving the map under half
+      //: a pixel. The "end" event draws wherever the camera came to rest.
+      if (!event.sourceEvent && gcCameraStill(s)) {
+        s.minimapQueued = s.size === "full";
+        return;
+      }
       gcRequestMinimapFrame(s);
     })
     .on("end", () => {
