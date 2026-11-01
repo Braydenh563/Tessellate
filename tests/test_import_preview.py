@@ -79,3 +79,17 @@ def test_the_recipe_names_the_preview_and_its_lint():
     row = next(line for line in design.splitlines() if line.startswith("| Choosing files to bring in"))
     assert "importPreview" in row and "dry_run=1" in row and "tests/test_import_preview.py" in row
     assert "**One step**" not in row
+
+
+def test_every_reader_lists_before_it_writes(client):
+    from tests.test_app_import import APPLE, ENEX, NOTION
+
+    for source, name, data, expected in (
+        ("notion", "export.zip", NOTION, 2), ("evernote", "Home.enex", ENEX, 2), ("apple", "notes.zip", APPLE, 2),
+    ):
+        body = client.post(
+            f"/import/app?source={source}&dry_run=1", files=[("files", (name, data, "application/octet-stream"))]
+        ).json()
+        assert body["found"] == expected == len(body["notes"]), source
+        assert all(n["title"] for n in body["notes"]), source
+    assert _entries(client) == []

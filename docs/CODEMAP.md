@@ -2,9 +2,9 @@
 
 Generated 2026-11-01 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7528, frontend ids 2643, CSS sections 517, backend routes 638, backend modules 8233, test files 1780, tests 15369, plan headings 990, app scripts 28, boot scripts 37, script files 214.
+Counts: frontend functions 7529, frontend ids 2643, CSS sections 517, backend routes 638, backend modules 8233, test files 1780, tests 15374, plan headings 990, app scripts 28, boot scripts 37, script files 214.
 
-## Frontend functions (7528)
+## Frontend functions (7529)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -5741,16 +5741,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `objCardTitle` | frontend/js/obj-ref.js:59 |
 | `objDefaultTitle` | frontend/js/obj-ref.js:30 |
 | `objDestinationAt` | frontend/js/obj-ref.js:103 |
-| `objInsertText` | frontend/js/obj-ref.js:133 |
+| `objInsertText` | frontend/js/obj-ref.js:145 |
 | `objKey` | frontend/js/obj-ref.js:44 |
 | `objLinkText` | frontend/js/obj-ref.js:84 |
 | `objNoteTitle` | frontend/js/obj-ref.js:54 |
 | `objParseKey` | frontend/js/obj-ref.js:49 |
 | `objRef` | frontend/js/obj-ref.js:37 |
 | `objRefFromCard` | frontend/js/obj-ref.js:77 |
-| `objRender` | frontend/js/obj-ref.js:149 |
+| `objRender` | frontend/js/obj-ref.js:161 |
 
-### frontend/js/obj-reorder.js (20)
+### frontend/js/obj-reorder.js (21)
 
 | Name | File:line |
 |---|---|
@@ -5762,6 +5762,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `objReorderDrop` | frontend/js/obj-reorder.js:149 |
 | `objReorderGrab` | frontend/js/obj-reorder.js:103 |
 | `objReorderKey` | frontend/js/obj-reorder.js:167 |
+| `objReorderKeysNamed` | frontend/js/obj-reorder.js:257 |
 | `objReorderKick` | frontend/js/obj-reorder.js:217 |
 | `objReorderRelease` | frontend/js/obj-reorder.js:143 |
 | `objReorderRoute` | frontend/js/obj-reorder.js:157 |
@@ -5783,16 +5784,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `objTrayChanged` | frontend/js/obj-tray.js:90 |
 | `objTrayClear` | frontend/js/obj-tray.js:80 |
 | `objTrayCountWords` | frontend/js/obj-tray.js:95 |
-| `objTrayDestination` | frontend/js/obj-tray.js:175 |
+| `objTrayDestination` | frontend/js/obj-tray.js:178 |
 | `objTrayDraw` | frontend/js/obj-tray.js:122 |
 | `objTrayKeepFocus` | frontend/js/obj-tray.js:63 |
 | `objTrayList` | frontend/js/obj-tray.js:115 |
-| `objTrayOffer` | frontend/js/obj-tray.js:196 |
+| `objTrayOffer` | frontend/js/obj-tray.js:199 |
 | `objTrayPaint` | frontend/js/obj-tray.js:99 |
-| `objTrayPaste` | frontend/js/obj-tray.js:181 |
+| `objTrayPaste` | frontend/js/obj-tray.js:184 |
 | `objTrayRead` | frontend/js/obj-tray.js:28 |
 | `objTrayRemove` | frontend/js/obj-tray.js:72 |
-| `objTrayRow` | frontend/js/obj-tray.js:151 |
+| `objTrayRow` | frontend/js/obj-tray.js:154 |
 | `objTraySheet` | frontend/js/obj-tray.js:138 |
 | `objTraySpace` | frontend/js/obj-tray.js:23 |
 | `objTrayWrite` | frontend/js/obj-tray.js:43 |
@@ -22726,7 +22727,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15369)
+## Tests (15374)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23536,7 +23537,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_import_markdown_links.py | 3 |
 | tests/test_import_module_cycles.py | 2 |
 | tests/test_import_one_step.py | 5 |
-| tests/test_import_preview.py | 6 |
+| tests/test_import_preview.py | 7 |
 | tests/test_import_report.py | 5 |
 | tests/test_inbox_431_visuals.py | 3 |
 | tests/test_inbox_434_capture.py | 8 |
@@ -23840,7 +23841,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_obj_drag_hold.py | 3 |
 | tests/test_obj_order.py | 9 |
 | tests/test_obj_ref.py | 6 |
-| tests/test_obj_review_1031.py | 20 |
+| tests/test_obj_review_1031.py | 24 |
 | tests/test_obj_tray.py | 12 |
 | tests/test_object_actions.py | 8 |
 | tests/test_ocr.py | 20 |

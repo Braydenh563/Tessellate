@@ -7,6 +7,12 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the agent-remaining lists, 2026-11-01 (ux1518-1101: shell, ux, extras)
+
+- **Built:** S36 import preview (INBOX 1520: `importPreview` in app-import.js, `dry_run` and `exclude` on `POST /import/app`, markdown previewed in the browser; DESIGN.md's recipe and `tests/test_import_preview.py`), CE7 (a page preview's phone sheet is 52dvh, frame 87 to 323 px at 390), the Guide's documents topic at 1,893 of 1,900 (replace in every document is `documents-replace`), objmove L2 (`aria-keyshortcuts` on a card stop), L6 (Already attached for every kind, `OBJ_STAGED`), the phone tray sheet's first focus, uxfix item 14 (the grip's title).
+- **Found already built, measured in the running app (port 8796):** Z20 (d2da7ae: `DELETE /spaces/{id}` moves unless `purge=1`, the dialog says it skips the bin and asks for the name), Z1's tray half (d2da7ae: the tray survives a switch), Z2 and Z6 (e16c7ca), Z3 and Z11 (073cc0c), Z4 (b157b4a), Z9 (e213823), Z16 (bf2eba3), Z19 (5a467df), S3 (the served index.html has 0 comments, 792,529 bytes), S16 and S53 (96781b7), S42 (the first-steps card adds and removes the sample notes), S57 (the New note button leaves focus in the capture editor, 390 and 1440; the button hides over the composer), U6 (c288482), the back-to-top button over the New note button (0 px overlap at 390 on Notes and Library), a long map name (two-line face, `library-lazy.css`), a template map's phone frame (`wbMapFrameScales`, `tests/test_map_phone_1031.py`), help popover Escape and the dashboard revisit shift (dashcls-1031: CLS 0.342 to 0.000 at 1440), objmove L3 (the "Custom order is on" line under the list heading replaces the chip).
+- **Closed on evidence, no change:** faint-1031's `.modal-card > .dialog-head` (an opaque `--modal-bg-opaque` on a card of alpha 0.96 to 0.97: at most 3% of the backdrop, 0 changed pixels measured in 1031; the recipe would put `container-type` on every dialog head for no visible gain).
+
 ## OPEN.md rows closed, 2026-11-01 (open-1101)
 
 - **Built by this run:** row 33 (OCR browser keys, d6deab4), row 5's B10 half (Ask sends the open document or board), row 10 (a model's web search draws the web fold in Chat and the popup agent).
