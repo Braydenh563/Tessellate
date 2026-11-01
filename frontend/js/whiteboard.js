@@ -5791,9 +5791,9 @@ async function wbPasteCopiedStyle() {
 //: map and level (`wbMapResetToBranch`'s keys). One undo step for the lot.
 const WB_SKETCH_RESET_KEYS = [
   "color", "width", "dash", "fill", "fillOpacity", "opacity", "noStroke", "alpha", "shadow", "shadow_x", "shadow_y", "shadow_blur", "rough", "jumps", "round", "dashPattern", "flow", "gradient", "fillStyle", "jumpSize", "gapStart", "gapEnd",
-  "startCapSize", "endCapSize", "label_size", "label_color", "label_bold", "label_italic", "label_underline", "label_strike", "label_font", "label_align", "label_valign", "label_lh", "label_ls",
+  "startCapSize", "endCapSize", "label_size", "label_color", "label_bold", "label_italic", "label_underline", "label_strike", "label_font", "label_align", "label_valign", "label_lh", "label_ls", "label_dir", "label_alpha",
 ];
-const WB_OBJECT_RESET_KEYS = ["color", "bg", "border_color", "font_size", "bold", "italic", "underline", "strike", "font_family", "align", "valign", "line_height", "letter_spacing", "alpha", "shadow", "shadow_x", "shadow_y", "shadow_blur", "radii", "pad", "fold"];
+const WB_OBJECT_RESET_KEYS = ["color", "bg", "border_color", "font_size", "bold", "italic", "underline", "strike", "font_family", "align", "valign", "line_height", "letter_spacing", "text_dir", "text_alpha", "alpha", "shadow", "shadow_x", "shadow_y", "shadow_blur", "radii", "pad", "fold"];
 
 //: The reset fields for one sketch, or null for a drawing with nothing to
 //: reset (a highlighter's look is its tool). A line whose ends are drawn in
@@ -19770,7 +19770,7 @@ function wbLayoutShapeLabel(groupEl) {
   label.removeAttribute("transform");
   const placed = wbShapeLabelPlace(groupEl, label);
   if (!placed) return;
-  const { bbox, area } = placed;
+  const area = wbLabelBand(label, placed.area);
   const fontSize = label.dataset.fit ? wbFitShapeLabel(label, area) : parseFloat(getComputedStyle(label).fontSize) || 16;
   const lineHeight = fontSize * (Number(label.dataset.lh) || 1.25);
   //: The face, weight and letter spacing change the widths the wrap measures, so they key it.
@@ -19800,6 +19800,7 @@ function wbLayoutShapeLabel(groupEl) {
       : area.cy - block / 2;
   label.setAttribute("y", String(y));
   for (const span of label.children) span.setAttribute("x", String(x));
+  if (label.dataset.dir === "vertical") label.setAttribute("transform", `rotate(-90 ${area.cx} ${area.cy})`);
 }
 
 //: **Text that shrinks to fit its shape** (`label_fit`; draw.io's autosize
@@ -20017,6 +20018,28 @@ function wbPaintLabelSpacing(label, parsed) {
   if (parsed.label_lh > 0) label.dataset.lh = String(parsed.label_lh);
   else delete label.dataset.lh;
   label.style.letterSpacing = parsed.label_ls ? `${parsed.label_ls}px` : "";
+  wbPaintTextDir(label, parsed.label_dir, parsed.label_alpha);
+}
+
+//: Right to left or set vertically, and the words' own opacity (draw.io's
+//: Text tab; INBOX 1510(a)): inline, so an export keeps them. Only the two
+//: named values reach a style. A box's HTML text turns with `writing-mode`; a
+//: shape's SVG label is laid out in lines, so it is turned as draw.io turns
+//: one (`horizontal=0`): wrapped to the shape's height, then rotated a quarter
+//: back (`wbLayoutShapeLabel`).
+function wbPaintTextDir(el, dir, alpha) {
+  const svg = Boolean(el.namespaceURI?.endsWith("/svg"));
+  el.style.direction = dir === "rtl" ? "rtl" : "";
+  el.style.writingMode = dir === "vertical" && !svg ? "vertical-rl" : "";
+  if (svg && dir === "vertical") el.dataset.dir = "vertical";
+  else if (el.dataset) delete el.dataset.dir;
+  el.style.opacity = alpha > 0 && alpha < 1 ? String(alpha) : "";
+}
+
+//: The band a label wraps in: a turned label's lines run up the shape, so its
+//: width is the band's height (a band with no height keeps its width).
+function wbLabelBand(label, area) {
+  return label.dataset.dir === "vertical" ? { ...area, w: area.h || area.w, h: area.w } : area;
 }
 
 //: Adds, updates or removes a shape's label for one render.
@@ -23958,6 +23981,7 @@ function renderWbObjects(canvas) {
         .style("font-style", d.data.italic ? "italic" : "")
         .style("text-decoration", [d.data.underline && "underline", d.data.strike && "line-through"].filter(Boolean).join(" "))
         .style("font-family", WB_ITEM_FONTS[d.data.font_family] || "");
+      wbPaintTextDir(textEl.node(), d.data.text_dir, d.data.text_alpha);
       if (document.activeElement !== textEl.node()) wbPaintTextContent(textEl.node(), d);
     }
   });

@@ -188,6 +188,8 @@ function wbFmtValue(entry, field) {
     case "ink": return (kind === "shape" ? s.label_color : o.color) || "#1f2430";
     case "lh": return (kind === "shape" ? s.label_lh : o.line_height) || "";
     case "ls": return (kind === "shape" ? s.label_ls : o.letter_spacing) || "";
+    case "dir": return (kind === "shape" ? s.label_dir : o.text_dir) || "";
+    case "inkalpha": return Math.round(((kind === "shape" ? s.label_alpha : o.text_alpha) ?? 1) * 100);
     case "fillalpha": return Math.round((s ? s.fillOpacity ?? 1 : o?.bg_alpha ?? (kind === "diagram" ? wbDiagramFillShare() : 1)) * 100);
     case "strokealpha": return Math.round(((s ? s.opacity : o?.line_alpha) ?? 1) * 100);
     default: return null;
@@ -626,7 +628,7 @@ function wbFormatSync() {
     ["wb-fmt-pattern", "pattern", "pattern"], ["wb-fmt-round", "round", "round"], ["wb-fmt-crop", "crop", "crop"], ["wb-fmt-endcap", "endcap", "caps"], ["wb-fmt-startsize", "startsize", "caps"], ["wb-fmt-endsize", "endsize", "caps"], ["wb-fmt-label-t", "label-t", "label-t"], ["wb-fmt-size", "size", "text"],
     ["wb-fmt-shx", "shx", "shadowset"], ["wb-fmt-shy", "shy", "shadowset"], ["wb-fmt-shb", "shb", "shadowset"], ["wb-fmt-pad", "pad", "pad"],
     ["wb-fmt-r0", "r0", "radii"], ["wb-fmt-r1", "r1", "radii"], ["wb-fmt-r2", "r2", "radii"], ["wb-fmt-r3", "r3", "radii"],
-    ["wb-fmt-ink", "ink", "text"], ["wb-fmt-alpha", "alpha", "alpha"], ["wb-fmt-lh", "lh", "text"], ["wb-fmt-ls", "ls", "text"],
+    ["wb-fmt-ink", "ink", "text"], ["wb-fmt-alpha", "alpha", "alpha"], ["wb-fmt-lh", "lh", "text"], ["wb-fmt-ls", "ls", "text"], ["wb-fmt-dir", "dir", "text"], ["wb-fmt-inkalpha", "inkalpha", "text"],
   ]) {
     if (!takes.has(row)) continue;
     const el = document.getElementById(id);
@@ -1083,6 +1085,16 @@ onDomReady(() => {
     const ls = raw ? Math.max(-5, Math.min(30, Math.round(raw * 2) / 2)) : undefined;
     wbFmtApply("text", textPatch("label_ls", "letter_spacing", ls), ls ? `Letter spacing ${ls}px.` : "Letter spacing normal.");
   });
+  //: Direction and text opacity (draw.io's Text tab, INBOX 1510(a)): the
+  //: default is stored as no value, so a reset box and an untouched one match.
+  on("wb-fmt-dir", "change", (e) => {
+    const dir = e.target.value || undefined;
+    wbFmtApply("text", textPatch("label_dir", "text_dir", dir), dir ? `Text ${e.target.selectedOptions[0]?.textContent.toLowerCase()}.` : "Text left to right.");
+  });
+  on("wb-fmt-inkalpha", "change", (e) => {
+    const pct = Math.max(10, Math.min(100, Math.round(Number(e.target.value) || 100)));
+    wbFmtApply("text", textPatch("label_alpha", "text_alpha", pct === 100 ? undefined : pct / 100), `Text opacity ${pct}%.`);
+  });
   on("wb-fmt-fit", "click", () => wbToggleLabelFit());
   on("wb-fmt-align", "click", (e) => {
     const button = e.target.closest("[data-align]");
@@ -1125,8 +1137,8 @@ onDomReady(() => {
 //: text box is one step on the stack and an item with no text of its own is
 //: skipped.
 const WB_TEXT_LOOK_KEYS = {
-  shape: ["label_size", "label_color", "label_bold", "label_italic", "label_underline", "label_strike", "label_font", "label_align", "label_valign", "label_fit", "label_lh", "label_ls"],
-  text: ["font_size", "color", "bold", "italic", "underline", "strike", "font_family", "align", "valign", "line_height", "letter_spacing"],
+  shape: ["label_size", "label_color", "label_bold", "label_italic", "label_underline", "label_strike", "label_font", "label_align", "label_valign", "label_fit", "label_lh", "label_ls", "label_dir", "label_alpha"],
+  text: ["font_size", "color", "bold", "italic", "underline", "strike", "font_family", "align", "valign", "line_height", "letter_spacing", "text_dir", "text_alpha"],
 };
 
 //: Shrink to fit, on or off for every selected shape as one step: on unless

@@ -1654,7 +1654,7 @@ HELP_TOPICS.extend(
             "keywords": (
                 "format panel", "format", "exact position", "position", "x and y", "width and height", "aspect ratio", "size preset", "16:9", "square",
                 "angle", "rotate by", "flip", "mirror", "opacity", "transparency", "see through", "shadow", "shadow offset", "shadow blur", "corner radius", "padding",
-                "text size in a shape", "align text",
+                "text size in a shape", "align text", "text direction", "right to left", "vertical text", "text opacity",
                 "line shape", "line end", "line ends", "arrowhead", "arrow end", "diamond end", "label position",
                 "arrow size", "end size", "bigger arrowhead", "stealth arrow", "memorymap arrow", "signature arrow",
                 "reset style", "default style", "reset an object", "back to default", "underline", "strikethrough", "font family", "clear formatting", "rounded corners", "round corners", "dash pattern", "custom dashes", "flow animation", "marching ants", "jump size", "connector gap", "clear waypoints", "clear bends", "gradient", "hatch", "fill style", "pattern fill",
@@ -1666,9 +1666,9 @@ HELP_TOPICS.extend(
                 "your own dashes (a dash and a gap in line widths, like 8 4), rounded corners, flow (dashes that move), "
                 "fill (gradient, hatch, dots or zigzag), fill and line opacity (presets 0 to 100), opacity, shadow (offset, blur), box corner radii and padding, a picture's crop to a shape, and for a connector its line shape (curved, straight or elbow), "
                 "its line jumps (it hops over a line under it with an arc, a gap or a "
-                "sharp peak, of a size you set), a gap to stop short of the shape at each end, its two ends (twenty-one marks, "
-                "arrows to diamonds and a crow's foot, each small, medium or large) and where its label sits. Text: font (default, serif, monospace, wide sans, handwritten), size, colour, bold, italic, underline, strikethrough, "
-                "line and letter spacing, alignment and vertical place of a box's or shape's words; Clear text formatting and larger or smaller text are in the command palette. Arrange: Position (X, Y), Size (W, H; the chain between them keeps the ratio), an Aspect menu (1:1, 4:3, 16:9, A4), "
+                "sharp peak, of a size you set), a gap to stop short of the shape at each end, its two ends (twenty-one marks, three sizes) "
+                "and where its label sits. Text: font (default, serif, monospace, wide sans, handwritten), size, colour, bold, italic, underline, strikethrough, "
+                "line and letter spacing, direction (right to left or vertical), text opacity, alignment and vertical place of a box's or shape's words; Clear text formatting and larger or smaller text are in the command palette. Arrange: Position (X, Y), Size (W, H; the chain between them keeps the ratio), an Aspect menu (1:1, 4:3, 16:9, A4), "
                 "angle, flip, and the order, align, spacing, group and lock buttons. Each group's ? says what its controls do. With "
                 "several items selected it shows what they share, and a value they differ on reads Mixed. Every "
                 "change is one undo step. Reset style (right-click menu or Ctrl+K) restores the defaults. "

@@ -8582,6 +8582,8 @@ Link to another note with [[its first few words]]."></textarea>
               <p><b>Line spacing</b>: the gap between lines, as a multiple of the text size; empty is automatic.</p>
               <p><b>Letter spacing</b>: space added between letters, in pixels.</p>
               <p><b>Align, Vertical</b>: where the words sit across and down the box.</p>
+              <p><b>Direction</b>: left to right, right to left, or set vertically.</p>
+              <p><b>Text opacity</b>: how solid the words are; the box keeps its own.</p>
             </div>
             <div class="wb-fmt-row" data-fmt="fit"><span class="wb-fmt-label">Fit</span>
               <span class="wb-fmt-buttons">
@@ -8604,6 +8606,14 @@ Link to another note with [[its first few words]]."></textarea>
                 <button type="button" class="ghost small icon-only" data-valign="bottom" aria-pressed="false" title="Text at the bottom" aria-label="Text at the bottom"><i class="ph ph-align-bottom-simple" aria-hidden="true"></i></button>
               </span>
             </div>
+            <label class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Direction</span>
+              <select id="wb-fmt-dir" aria-label="Text direction" title="Which way the words run">
+                <option value="">Left to right</option>
+                <option value="rtl">Right to left</option>
+                <option value="vertical">Vertical</option>
+              </select>
+            </label>
+            <label class="wb-fmt-row" data-fmt="text" data-unit="%"><span class="wb-fmt-label">Text opacity</span><input type="number" id="wb-fmt-inkalpha" min="10" max="100" step="5" aria-label="Text opacity, in percent" title="How solid the words are; 100 is solid"></label>
           </div>
         </section>
         <section class="wb-fmt-section" data-format-panel="arrange" aria-label="Arrange" hidden>

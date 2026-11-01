@@ -459,6 +459,10 @@ class WhiteboardObjectData(BaseModel):
     #: letters in pixels (the Format panel's Text tab; WHITEBOARD_PLAN 1355).
     line_height: float | None = Field(default=None, ge=0.8, le=3)
     letter_spacing: float | None = Field(default=None, ge=-5, le=30)
+    #: Right to left or vertical, and the words' own opacity (draw.io's Text
+    #: tab; INBOX 1510(a)). Absent is left to right and solid.
+    text_dir: str | None = Field(default=None, pattern="^(rtl|vertical)$")
+    text_alpha: float | None = Field(default=None, ge=0.1, le=1)
     md: bool | None = None
     #: The Format panel's box rows (WHITEBOARD_PLAN 1355, wb5): each corner's
     #: radius in pixels as top-left, top-right, bottom-right, bottom-left; the

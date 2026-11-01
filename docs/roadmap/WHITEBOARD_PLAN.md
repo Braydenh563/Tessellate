@@ -998,7 +998,7 @@ the same three tabs (Style, Text, Arrange); fields per kind in
 | Opacity | yes (`wb-fmt-alpha`) | `createRelativeOption` `opacity` (Format.js 6385) | done | none |
 | Shadow | yes (`wb-fmt-shadow`) | `addEffects` (Format.js 7939) `shadow` | done | none |
 | Glass | no | `glass` effect (Format.js 7939) | drop: a skeuomorphic gloss the board's look does not use | none |
-| Sketch (hand-drawn) | no | `sketch` effect (Format.js 8004), rough.js | drop (matrix verdict, unchanged) | none |
+| Sketch (hand-drawn) | yes (`wb-fmt-rough`; the View menu for the whole board) | `sketch` effect (Format.js 8004), rough.js | drop (matrix verdict, unchanged) | none |
 | Flow animation on a connector | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `flowAnimation` effect (Format.js 7939) | `data.flow` adds a CSS class that animates `stroke-dashoffset`; export writes it static | S |
 | Edit style (raw string) | no | `editStyle` (Actions.js 1717), Ctrl+E | see section 3: the board's equivalent is "Edit data", a JSON view of `data` | M |
 | Copy style, paste style | yes (`copy-style`, `paste-style`, `wb-fmt-copy-style`) | `copyStyle`, `pasteStyle` (Menus.js 1028, 1049) | done | none |
@@ -1025,13 +1025,13 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | Vertical align (top, middle, bottom) | yes, 2026-10-10 (HISTORY) | `STYLE_VERTICAL_ALIGN` | `label_valign`; the SVG label block is positioned by it; Brief 36 carries it | S |
 | Font colour | yes (`wb-fmt-ink`) | `fontColor...` (Actions.js 1525) | done | none |
 | Label background and border colour | no | `labelBackgroundColor`, `labelBorderColor` (Format.js, Text tab) | `label_bg`, `label_border`: a rounded rect behind the label, which a connector label needs to stay readable over crossing lines | S |
-| Text opacity | no | `textOpacity` | `label_alpha` | S |
+| Text opacity | yes, 2026-11-01 (board-1101; HISTORY), `label_alpha`, `text_alpha` | `textOpacity` | `label_alpha` | S |
 | Text shadow | no | `textShadow` | drop | none |
 | Label position (inside, outside: above, below, left, right of the shape) | no | `labelPosition`, `verticalLabelPosition` | `label_pos` enum; the icon and swimlane use it | M |
-| Text direction, vertical text | no (Brief 36 names vertical text) | `textDirection`, `horizontal=0` (`vertical` action, Actions.js 1584) | `label_dir` (rtl, vertical-rl) applied as SVG `writing-mode` | S |
+| Text direction, vertical text | yes, 2026-11-01 (board-1101; HISTORY), `label_dir`, `text_dir` (rtl, vertical) | `textDirection`, `horizontal=0` (`vertical` action, Actions.js 1584) | `label_dir` (rtl, vertical-rl) applied as SVG `writing-mode` | S |
 | Word wrap, label width, padding | partly (shapes wrap inside `label_area`) | `whiteSpace=wrap`, `labelWidth`, `labelPadding` | `label_width`, `label_pad` on top of `label_area` | S |
 | Spacing: top, right, bottom, left, global | no | `spacing`, `spacingTop..Left` | `label_pad {t,r,b,l}` shares the row above | S |
-| Line height | no | `lineheight` in the text panel | `label_lh` | S |
+| Line height | yes (`wb-fmt-lh`) | `lineheight` in the text panel | `label_lh` | S |
 | Auto-size to text, fit text to shape | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `autosize` action (Actions.js 1001), `autosizeText`, `fitTextToShape` | one command `autosize` in `WB_COMMANDS`: measure the label with `getBBox`, resize the shape's box; grows only | S |
 | Formatted (HTML) text, lists, indent, links, horizontal rule | partly: text boxes are markdown with a slash menu; shapes plain | `formattedText` (Actions.js 1086), `html=1`, list and indent buttons | shapes keep plain text; markdown stays for text boxes; the Format panel shows the markdown toolbar for them | none |
 | Clear formatting | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `removeFormat` (Actions.js 1564) | one command: drop all `label_*` | S |
@@ -1041,7 +1041,7 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | Remove from group | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `removeFromGroup` (Actions.js 705) | one command: clear `group_id` on the selected member, keeping the group | S |
 | Copy size, paste size, swap | copy and paste size yes, 2026-10-18 (whiteboard-1018; HISTORY); swap no | `copySize`, `pasteSize`, `swap` (Actions.js 223, 238, 213) | `same-width`, `same-height` cover the multi-select case; copy size is two commands that remember w and h | S |
 | X, Y, width, height | yes (`wb-fmt-x/y/w/h`) | `addGeometry` (Format.js 3082) | done; resize from the centre is the one gap (matrix) | S |
-| Constrain proportions | no | `constrainProportions` checkbox (Format.js 3082) | `data.aspect` lock; shift-drag already keeps it | S |
+| Constrain proportions | yes (`wb-fmt-link`, the W/H lock); size presets (`wb-fmt-aspect`: 1:1, 4:3, 3:2, 16:9, 3:4, A4), 2026-11-01 (board-1101) | `constrainProportions` checkbox (Format.js 3082) | `data.aspect` lock; shift-drag already keeps it | S |
 | Rotation angle, flip horizontal and vertical | yes (`wb-fmt-angle`, `wb-fmt-flip-h/v`) | `addAngle` (Format.js 2913), `addFlip` (2612) | done | none |
 | Turn 90 degrees | yes, 2026-10-18 (whiteboard-1018; HISTORY), no Ctrl+R (the browser's reload) | `turn` action (Ctrl+R) | a command that adds 90 to `rotation` | S |
 | Align (six), distribute (two) | yes (eight commands) | `addAlign` (Format.js 2575), `addDistribute` (2856) | done | none |
@@ -1708,3 +1708,17 @@ Missing (items 1 to 5, zoom to the selection, tidy as a tree, change the shape, 
 ## Placed from INBOX, 2026-10-31
 
 1432. **Guarded, not reproduced** (cc5380d: nothing pans the board while the companion is held; a try is logged as "Lag: companion ... board pan refused" with its source. Chromium never panned, mouse or touch; the owner's answer: "when I move the companion the board pans a bit with it as well". Close when a log names the path or the owner confirms.) **The owner, 2026-10-29, verbatim.** "the companion is hard to move and throw on the whiteboard as it pans" **Again 2026-10-30, verbatim:** "als the companion just well down from the library roof but at like 3 spots along the way it looked like it went bhind parts of the elements and got cut in half for a split second??" (the same stacking class as 1453: check the companion's layer against every pinned bar and card it falls past, and whether a roof it lands on clips it)
+
+## Placed from INBOX, 2026-11-01 (1510(a), the draw.io Format panel gap list; board-1101)
+
+Read against draw.io's Style, Text and Arrange tabs; the rows in "The draw.io programme" sections 1 and 2 above carry the status. Present 47, built 3 (size presets, text direction, text opacity), placed 9, in this order of use:
+1. Label background and border (`label_bg`, `label_border`), so a connector's words read over crossing lines. S.
+2. Set as default style, and default for new connectors (`board.defaults`). S.
+3. Swatch grid in the colour picker (the board's recent and saved colours as one row of swatches). S.
+4. Word wrap off and a label width (`label_width`). S.
+5. Spacing per side (`label_pad {t,r,b,l}`), shared with Padding. S.
+6. Group padding on a frame. S.
+7. Label position outside the shape (above, below, left, right; `label_pos`). M.
+8. Edit style as text (the item's `data` JSON, validated on Apply, one undo step). M.
+9. Board-wide style presets (a "Board style" row with nothing selected). M.
+Dropped, as before: glass, text shadow, SVG image styles. Subscript and superscript wait on rich text in shapes (section 2's row).
