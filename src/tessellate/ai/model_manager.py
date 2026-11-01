@@ -1241,3 +1241,21 @@ def served_name(configured: str, listed: list[dict]) -> str:
     if only.lower().endswith(".gguf"):
         only = only.replace("\\", "/").rsplit("/", 1)[-1][: -len(".gguf")]
     return only
+
+
+def stop_reindex(_name: str = "") -> tuple[bool, str]:
+    """Quit on the re-index row (`jobs.CANCELLERS`): (acted, message)."""
+    if cancel_reindex():
+        return True, "Asked the re-index to stop."
+    return False, "Nothing is re-indexing."
+
+
+def stop_pulls(name: str = "") -> tuple[bool, str]:
+    """Quit on a model download; no name (a shutdown) stops every one rather than none."""
+    if not name:
+        stopped = [n for n, job in (pull_statuses() or {}).items()
+                   if job.get("status") == "running" and cancel_pull(n)]
+        return bool(stopped), f"Stopped {len(stopped)} download(s)." if stopped else "Nothing is downloading."
+    if cancel_pull(name):
+        return True, f"Asked the {name} download to stop."
+    return False, "That download isn't running."

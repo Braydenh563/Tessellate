@@ -1534,7 +1534,7 @@ def _stop_background_work() -> None:
 
     `os._exit` and `os.execv` both replace or end this process immediately:
     no `finally`, no atexit, no uvicorn shutdown, and so no lifespan handler.
-    The server's own lifespan calls `bgtasks.stop_all()` for the graceful
+    The server's own lifespan calls `jobs.stop_all()` for the graceful
     paths (`/shutdown`, Ctrl+C); this is the same call for the two paths that
     are deliberately abrupt.
 
@@ -1548,9 +1548,9 @@ def _stop_background_work() -> None:
 
     desk_companion.shutdown()
     try:
-        from tessellate.core import bgtasks
+        from tessellate.core import jobs
 
-        bgtasks.stop_all()
+        jobs.stop_all()
     except Exception as exc:  # noqa: BLE001  # best effort on the way out
         logger.warning("couldn't stop background work before exiting: %s", exc)
     # **And the notebook's lock is let go.** Every caller ends the process

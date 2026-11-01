@@ -201,7 +201,7 @@ def test_stopping_background_work_never_raises():
     leaves the window on screen."""
     block = SOURCE.split("def _stop_background_work()")[1].split("\ndef ")[0]
     assert "except Exception" in block
-    assert "bgtasks.stop_all()" in block
+    assert "jobs.stop_all()" in block
 
 
 # --- the menu lands on features, not just on tabs --------------------------------

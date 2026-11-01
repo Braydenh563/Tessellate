@@ -69,3 +69,27 @@ def test_a_reading_is_a_job_on_the_callers_thread():
         [row] = [row for row in jobs.readings() if row["kind"] == "file-describe"]
         assert row["name"] == "file 7" and row["detail"] == "file 7 (fake-utility)"
     assert not [row for row in jobs.readings() if row["name"] == "file 7"]
+
+
+def test_every_canceller_and_quit_step_resolves_to_its_owner():
+    """The table names each canceller by dotted path (no import, so no cycle):
+    a renamed function would otherwise be found only by a Quit that did nothing."""
+    import inspect
+
+    for kind, path in jobs.CANCELLERS.items():
+        fn = jobs._resolve(path)
+        assert callable(fn) and len(inspect.signature(fn).parameters) == 1, kind
+    for path in jobs.AT_QUIT:
+        assert callable(jobs._resolve(path)), path
+
+
+def test_a_thread_job_is_listed_until_it_returns():
+    release = threading.Event()
+    worker = jobs.thread("probe-1502", release.wait)
+    try:
+        [row] = [row for row in jobs.threads() if row["name"] == "probe-1502"]
+        assert row["stoppable"] is False
+    finally:
+        release.set()
+        worker.join(2)
+    assert not [row for row in jobs.threads() if row["name"] == "probe-1502"]

@@ -19,7 +19,7 @@ So this module holds the rest, in memory and for this process only:
 listed without its caller knowing; `GET /activity` merges this list with
 `collect()`'s rows and `POST /activity/{id}/stop` reaches either.
 
-**Stop is cooperative**, as `core/bgtasks.py` argues: a flag the job reads at
+**Stop is cooperative**, as `jobs.cancel_kind` argues: a flag the job reads at
 its next boundary, plus an optional `on_stop` for a job that can be cut from
 outside (a subprocess, an HTTP stream). Nothing here kills a thread.
 """

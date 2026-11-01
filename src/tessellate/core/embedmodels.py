@@ -839,7 +839,7 @@ def current() -> DownloadState:
     return _state
 
 
-def cancel() -> tuple[bool, str]:
+def cancel(_name: str = "") -> tuple[bool, str]:
     """Ask the running download to stop. Returns (asked, message).
 
     **Between attempts, not mid-file, and the message says so.**

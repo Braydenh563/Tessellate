@@ -91,7 +91,7 @@ flowchart TB
 
   subgraph Core["core/"]
     Deps["deps: config and singletons"]
-    Jobs["jobs, bgtasks, events, activity"]
+    Jobs["jobs, events, activity"]
     Gatekeep["model_gate, egress, crypto, backup"]
   end
 
@@ -275,9 +275,11 @@ Tessellate/
 │   │   │                    #   + store_quietly(): best-effort embed
 │   │   ├── events.py        # the event log: every change is a fact, the
 │   │   │                    #   tables are views (WORLD_CLASS_PLAN B1)
-│   │   ├── jobs.py          # the one bounded worker pool: two lanes (cpu for
-│   │   │                    #   Tesseract and extractors, one worker for the
-│   │   │                    #   model), every *_in_background enqueues
+│   │   ├── jobs.py          # the one `Job` type (lane, owner, cancel token,
+│   │   │                    #   run record) and its seats: the bounded worker
+│   │   │                    #   pool (every *_in_background enqueues), a file
+│   │   │                    #   reading on the request's thread, a watcher
+│   │   │                    #   thread; quitting one kind or all at quit
 │   │   ├── jobstore.py      # the durable half: a `jobs` row per queued
 │   │   │                    #   reading or filing, leased and heartbeated
 │   │   │                    #   while it runs, resumed at launch after a
@@ -285,7 +287,6 @@ Tessellate/
 │   │   ├── jobruns.py       # when each kind of job last ran and how it went:
 │   │   │                    #   one `job_runs` row per kind, written through
 │   │   │                    #   `job_run(kind)`, read by GET /jobs/last-runs
-│   │   ├── bgtasks.py       # quitting background work: one job, or all
 │   │   ├── taskhistory.py   # "recently finished" (in memory) for Settings >
 │   │   │                    #   Background tasks
 │   │   ├── media_process.py # where OCR, captioning and vision OCR are

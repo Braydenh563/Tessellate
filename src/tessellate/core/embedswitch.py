@@ -27,7 +27,7 @@ the notes the pass had reached, then keyword results for the rest.
 **Durable** (`core/jobstore.py`): the job is a named handler with plain-data
 arguments, so a quit or a crash part-way resumes at the next launch; staged
 rows already made for the same target are kept, so it picks up where it
-stopped. **Stop** (`core/bgtasks.py`, the Background tasks row) ends it
+stopped. **Stop** (`jobs.cancel_kind`, the Background tasks row) ends it
 between batches, drops the staged rows and leaves the old model in use: the
 one outcome a stop can never have is a notebook on two models.
 """
@@ -162,7 +162,7 @@ def _begin(backend: str, model: str) -> None:
     _state.cancel_requested = False
 
 
-def cancel() -> tuple[bool, str]:
+def cancel(_name: str = "") -> tuple[bool, str]:
     """Stop at the next batch; the old model stays in use."""
     if not _state.running:
         return False, "No model switch is running."

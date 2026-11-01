@@ -34,11 +34,11 @@ memory; the row is what the next launch reads to run it again.
 
 **Why jobs are dropped at shutdown rather than drained.** `shutdown` has a
 deadline because a shutdown that waits is the hang it exists to prevent
-(`core/bgtasks.py`'s docstring makes the same argument for cancellation).
+(`stop_all` below makes the same argument for cancellation).
 Nothing here is lost by dropping it: every job re-derives its result from a
 row that is already committed, so the next launch can redo it, and a caption
 that never arrives is a missing caption rather than a corrupt notebook. The
-job in flight is not interrupted, for the same reason `bgtasks` never kills a
+job in flight is not interrupted, for the same reason `cancel_kind` never kills a
 thread: Python cannot do it safely and the work writes to a notebook the
 user cares about. Workers are daemons, so the process still exits on time;
 `shutdown` returns False to say plainly that one was still running.
@@ -51,6 +51,7 @@ in the panel beside the file readings (`reading`, a Job on the request's thread)
 from __future__ import annotations
 
 import contextlib
+import importlib
 import itertools
 import logging
 import os
@@ -830,6 +831,84 @@ def join_threads(timeout: float = 5.0) -> None:
     for job in _seated("thread"):
         if job.thread is not None and not job.stoppable:
             job.thread.join(max(0.0, deadline - time.time()))
+
+
+# -- stopping a kind, or everything at quit (was core/bgtasks.py) -------------
+#
+# Two requests, one mechanism: *"allow the quitting/killing of background
+# tasks as well"* (the panel listed eight kinds and offered Quit on two) and
+# *"make sure that if the app is quit, all ai tasks and bg tasks stop as
+# well"* (a pip install is a child process that outlives its parent, and a
+# SearXNG build killed halfway leaves a half-written checkout). The kinds share
+# no implementation, only the `kind` string `/tasks` reports, so the table is
+# keyed on it and each canceller lives with the work it stops. They are named
+# by dotted path and resolved on use, as `jobstore.resolve` does: those owners
+# import this module, so a real import would close a cycle.
+#
+# A canceller takes the job's name, is safe to call when nothing runs
+# (`stop_all` calls every one) and returns `(acted, message)`; `False` with a
+# message is a normal answer. Nothing here kills a thread: a stop is a flag
+# checked at the next boundary or a `terminate()` on a child process.
+
+#: kind -> "module:function". `embeddings` is absent: the warm-up is one
+#: blocking model load with nothing to check a flag between, so the panel
+#: says so rather than offering a button that would do nothing.
+CANCELLERS: dict[str, str] = {
+    "reindex": "tessellate.ai.model_manager:stop_reindex",
+    "pull": "tessellate.ai.model_manager:stop_pulls",
+    "autonomous": "tessellate.ai.autonomous:stop_pass",
+    "extra": "tessellate.core.extras:cancel",
+    "embedding-model": "tessellate.core.embedmodels:cancel",
+    "embed-switch": "tessellate.core.embedswitch:cancel",
+    "searxng": "tessellate.search.searxng_manager:cancel_install",
+    "searxng-start": "tessellate.search.searxng_manager:cancel_start",
+    "tidy-link-reasons": "tessellate.entry.tidy:cancel_link_reasons",
+}
+
+#: What the panel puts a Quit button on, derived from the table so it cannot drift.
+CANCELLABLE_KINDS = frozenset(CANCELLERS)
+
+#: Asked at quit after every kind: the autonomous scheduler (joined, so a pass
+#: part-way through a write finishes it) and a SearXNG service this app started.
+#: Each returns the kind it stopped, or "".
+AT_QUIT = ("tessellate.ai.autonomous:stop_for_quit", "tessellate.search.searxng_manager:stop_for_quit")
+
+
+def _resolve(path: str) -> Callable[..., object]:
+    module, _, attr = path.partition(":")
+    return getattr(importlib.import_module(module), attr)
+
+
+def cancel_kind(kind: str, name: str = "") -> tuple[bool, str]:
+    """Stop one kind of job. Returns (acted, message): never raises."""
+    path = CANCELLERS.get(kind)
+    if path is None:
+        return False, "That job can't be stopped."
+    try:
+        return _resolve(path)(name)
+    except Exception as exc:  # noqa: BLE001  # a failed stop is a message
+        # `kind` arrives in a request body: untrusted text going into a log
+        # line (CodeQL py/log-injection). A newline could forge a record in the
+        # log Settings shows; a kind never legitimately holds one.
+        safe_kind = kind.replace("\r", "").replace("\n", "")
+        logger.warning("couldn't stop the %s job: %s", safe_kind, exc, exc_info=True)
+        return False, "Couldn't stop that job, see Settings, Logs."
+
+
+def stop_all() -> list[str]:
+    """Stop every kind of background work; what was actually stopped. Called
+    on the way out, so it is fast and never raises: a shutdown that hangs on a
+    stuck job is the thing it exists to prevent."""
+    stopped = [kind for kind in CANCELLERS if cancel_kind(kind)[0]]
+    for path in AT_QUIT:
+        try:
+            if kind := _resolve(path)():
+                stopped.append(kind)
+        except Exception as exc:  # noqa: BLE001  # one stuck stopper must not keep the others running
+            logger.warning("couldn't stop %s at quit: %s", path, exc)
+    if stopped:
+        logger.info("stopped background work at shutdown: %s", ", ".join(sorted(set(stopped))))
+    return stopped
 
 
 # -- the app's one pool -------------------------------------------------------

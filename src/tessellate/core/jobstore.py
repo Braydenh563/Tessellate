@@ -39,7 +39,7 @@ make an app worse than forgetting.
 
 **Cancel** stops a queued job (the row goes to `cancelled` and the worker's
 lease then fails). A running job is not interrupted, for the reason
-`core/bgtasks.py` gives: Python cannot stop a thread safely, and the work
+`jobs.cancel_kind` gives: Python cannot stop a thread safely, and the work
 writes to a notebook someone cares about. The answer says so.
 
 **Bookkeeping never breaks the job**, the rule `core/jobruns.py` set: every
