@@ -111,8 +111,9 @@ def test_a_note_quoted_in_its_group_line_is_not_quoted_again(client, make, line)
 def test_a_quote_is_the_notes_own_words(client, make, content):
     """The composer's re-voicing ("You rested the dough") never rides inside a quote (1515)."""
     make([(content, ["bread"]), ("Sourdough starter\n\nFed it twice", ["bread"])])
-    for question in ("Summarise my notes in Hobbies.", "What did I write about the dough?"):
-        for quoted in re.findall(r"“([^”]*)”", ask(client, question)):
+    for question in ("Summarise my notes in Hobbies.", "What did I write about bread?"):
+        #: A quoted word the question asked for is the question's; a quote of three words is a note's.
+        for quoted in (q for q in re.findall(r"“([^”]*)”", ask(client, question)) if len(q.split()) >= 3):
             assert re.sub(r"[.\s]+$", "", quoted) in content or quoted in content, quoted
 
 
@@ -133,3 +134,24 @@ def test_dump(client, make):
     make([(c, t) for c, t in spec["notes"]])
     for q in spec["questions"]:
         print("\n## " + q + "\n" + ask(client, q))
+
+
+def test_a_note_in_an_unsegmented_script_counts_by_character():
+    """INBOX 1518, audit 1031 N15: one word counter, not whitespace splits."""
+    from tessellate.ai import composer_frame
+
+    assert composer_frame.note_words("今日は雨が降っていたので、家にいました") > 10
+    assert composer_frame.note_words("ゴルフ") == 3
+    assert composer_frame.note_words("# Title line\n\nthree plain words") == 3
+
+
+@pytest.mark.parametrize("flight", ["Flight on 20 October to Lisbon", "Lisbon flight is 20 October", "Lisbon flight: 20 October, gate 14"])
+@pytest.mark.parametrize("question", ["how many days since my Lisbon flight?", "how long ago was my Lisbon flight?"])
+def test_a_day_with_no_year_is_the_nearer_one_to_when_it_was_written(client, make, flight, question):
+    """INBOX 1518: a note written 2 October that names "20 October" means the
+    one 18 days on, so on 1 November it is 12 days ago, never 377."""
+    make([("Some other note about something else entirely", ["y"]), (flight, ["x"])])
+    text = ask(client, question)
+    assert "2025" not in text and "377" not in text, text
+    if "since" in question:
+        assert re.search(r"\b12 days|twelve days", text), text

@@ -3078,7 +3078,9 @@ def _split_shape(view: composer.NoteView, own: list[Fact], days: list[str], rest
     title = (view.title or "").strip()
     head = next((f for f in own if f.body.strip() == title), None)
     shape = f"a {', '.join(days)} split" + (" with rest days" if rest else "")
-    if head and not re.match(r"(?:the|a|an|my|your)\b", title, re.I):
+    #: A first line the note's own name (INBOX 1515's one title reader) is
+    #: not among the body's facts, so the name does not need its fact.
+    if title and not re.match(r"(?:the|a|an|my|your)\b", title, re.I) and (head or view.titled):
         return f"you saved your {title}, {shape}", head
     return f"you saved {shape}", head
 

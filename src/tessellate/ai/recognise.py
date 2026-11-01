@@ -1751,7 +1751,13 @@ def _span_day_and_month(text: str, a: date, tense: str | None) -> Any:
     try:
         if year:
             return _one_day(date(year, month, int(day_word)))
-        return _one_day(_nearest([date(a.year + k, month, int(day_word)) for k in (-1, 0, 1)], a, tense))
+        options = [date(a.year + k, month, int(day_word)) for k in (-1, 0, 1)]
+        #: With no tense the nearer year by days wins, a tie going to the past
+        #: (notes mostly say what happened): "Flight on 20 October", written on
+        #: 2 October, is 18 days on, not 347 days back (INBOX 1518).
+        if tense is None:
+            return _one_day(min(options, key=lambda d: (abs((d - a).days), d > a)))
+        return _one_day(_nearest(options, a, tense))
     except ValueError:
         return None
 

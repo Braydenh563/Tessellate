@@ -28,6 +28,7 @@ from collections import Counter
 from dataclasses import dataclass, field
 
 from tessellate.ai import composer_threads, realise
+from tessellate.core import cjk
 
 #: A group leads as "the closest" only when its notes score this far above
 #: every note outside it; nearer than that, no group is closer than another.
@@ -191,6 +192,9 @@ def note_words(content: str | None) -> int:
     rather than says anything in it. The one counter for "how long is this
     note", "which is longer" and "your longest note" (audit 1030 Z10)."""
     body = re.sub(r"\A\s*#{1,6}[ \t][^\n]*", "", str(content or ""))
+    #: A script with no spaces counts by character, as every other count does (N15).
+    if cjk.has(body):
+        return cjk.word_count(body)
     return sum(1 for token in body.split() if _HAS_ALNUM(token))
 
 
@@ -247,6 +251,9 @@ def _plain(text: str) -> str:
     return _SPLIT_HYPHEN.sub("-", _MARK.sub("", text)).strip()
 
 
+_LIST_ITEM = re.compile(r"(?:[-*+•]\s|\d+[.)]\s|\[[ xX]\]\s)")
+
+
 def _title_of(content: str) -> str:
     """A first line that names the note ("# Trains", "**The Complete Social
     Skills Guide**", "Ice Breakers:" over its list), or ""."""
@@ -255,6 +262,9 @@ def _title_of(content: str) -> str:
         return ""
     first = lines[0].strip()
     marked = bool(re.match(r"#{1,6}\s|(\*\*|__)\S.*\1:?$", first))
+    if not marked and _LIST_ITEM.match(first):
+        #: "[x] Milk" and "- eggs" are the first of a list, not its name.
+        return ""
     if not marked and _PREFIX.match(_plain(first)):
         #: "Pros: more time" opens a section; it does not name the note (C8).
         return ""
