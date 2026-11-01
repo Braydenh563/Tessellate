@@ -39,7 +39,7 @@ def test_every_layer_says_why_it_is_there():
         assert layer.reason[0].isupper() and layer.reason.rstrip().endswith((".", ")")), layer.reason
 
 
-def test_the_built_app_runs_them_outermost_first():
+def test_the_built_app_runs_them_outermost_first(app_state):  # noqa: ARG001  (a data dir of its own)
     built = [m.cls.__name__ for m in create_app().user_middleware]
     assert built == list(reversed(EXPECTED_ORDER))
 
