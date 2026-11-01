@@ -262,6 +262,16 @@ def _opens_section(line: str) -> bool:
     return bool(colon and 2 <= len(label) <= 40 and not any(c in label for c in ".!?\n") and rest[:1].isspace() and rest.strip())
 
 
+def _marked(first: str) -> bool:
+    """A heading or a bold line. Bold is checked by its ends, not by a
+    backreference regex, which backtracks on a long line of markers (CodeQL
+    polynomial ReDoS)."""
+    shut = first[:-1] if first.endswith(":") else first
+    return bool(re.match(r"#{1,6}\s", first)) or (
+        first[:2] in ("**", "__") and len(shut) > 4 and not first[2].isspace() and shut.endswith(first[:2])
+    )
+
+
 def _title_of(content: str) -> str:
     """A first line that names the note ("# Trains", "**The Complete Social
     Skills Guide**", "Ice Breakers:" over its list), or ""."""
@@ -269,12 +279,7 @@ def _title_of(content: str) -> str:
     if len(lines) < 2 or not "".join(lines[1:]).strip():
         return ""
     first = lines[0].strip()
-    #: A bold line is checked by its ends, not by a backreference regex, which
-    #: backtracks on a long line of markers (CodeQL polynomial ReDoS).
-    shut = first[:-1] if first.endswith(":") else first
-    marked = bool(re.match(r"#{1,6}\s", first)) or (
-        first[:2] in ("**", "__") and len(shut) > 4 and not first[2].isspace() and shut.endswith(first[:2])
-    )
+    marked = _marked(first)
     if not marked and _LIST_ITEM.match(first):
         #: "[x] Milk" and "- eggs" are the first of a list, not its name.
         return ""
