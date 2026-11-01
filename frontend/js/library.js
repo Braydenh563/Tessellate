@@ -2312,8 +2312,8 @@ const LIBRARY_CREATE_BY_KIND = {
     run: async () => {
       document.querySelector('#library-subtabs button[data-target="library-view-whiteboard"]')?.click();
       await ensureModule("library");
-      //: New's arrow rows are built by whiteboard.js (`wbNewMenuMount`), so the map is made by its function.
-      await wbNewUntitledBoard("map");
+      //: New's arrow rows are built by whiteboard.js (`wbNewMenuMount`), so the map is made by its function (through `window`, as below).
+      await window.wbNewUntitledBoard("map");
     },
   },
   board: {
@@ -3425,7 +3425,9 @@ async function libraryNewDocument(fileType = null) {
   if (fileType && fileType !== "md") {
     await ensureModule("library");
     switchTab("documents");
-    await startBlankDocument(fileType);
+    //: Through `window`: the editors are in by now, and a bare name would ask the
+    //: list bundle for a stand-in it does not need (test_library_list_bundle.py).
+    await window.startBlankDocument(fileType);
     return;
   }
   const doc = await createDocumentNamed();

@@ -52,12 +52,15 @@ def test_an_unchanged_document_is_not_history(client):
 def test_the_dialog_replaces_through_one_request_and_one_undo_step():
     from tests._app_js import INDEX_HTML, JS_DIR
 
-    js = (JS_DIR / "documents.js").read_text(encoding="utf-8")
+    js = (JS_DIR / "documents-replace.js").read_text(encoding="utf-8")
     start = js.index("async function runDocReplace(")
     body = js[start: js.index("\n}\n", start)]
     assert "offerUndo(" in body and "docWriteContents(before, hashes)" in body
     assert '"/documents/contents"' in js
-    assert 'id: "replace-documents"' in js and "openDocReplace()" in js
+    from tests._app_js import documents_text
+
+    #: The palette's row stays with the other rows in documents.js.
+    assert 'id: "replace-documents"' in documents_text() and "openDocReplace()" in documents_text()
     html = INDEX_HTML.read_text(encoding="utf-8")
     for control in ("doc-replace-find", "doc-replace-with", "doc-replace-regex", "doc-replace-case", "doc-replace-run"):
         assert f'id="{control}"' in html, control
@@ -80,14 +83,16 @@ def test_every_documents_text_is_read_in_one_request(client):
 def test_the_scan_is_one_request_and_the_dock_menu_has_the_row():
     from tests._app_js import INDEX_HTML, JS_DIR
 
-    js = (JS_DIR / "documents.js").read_text(encoding="utf-8")
+    js = (JS_DIR / "documents-replace.js").read_text(encoding="utf-8")
     start = js.index("async function docReplaceScan(")
     body = js[start: js.index("\n}\n", start)]
     assert 'apiJson("/documents/contents")' in body and "/documents/${" not in body
     html = INDEX_HTML.read_text(encoding="utf-8")
     menu = html[html.index('id="doc-dock-menu"'): html.index("</details>", html.index('id="doc-dock-menu"'))]
     assert 'id="doc-replace-everywhere"' in menu
-    assert '$("doc-replace-everywhere")' in js
+    from tests._app_js import documents_text
+
+    assert '$("doc-replace-everywhere")' in documents_text()
 
 
 def test_an_undo_over_a_later_edit_writes_nothing(client):
@@ -145,7 +150,7 @@ def test_whole_word_rows_can_be_left_out_and_show_their_match():
     if not node:
         pytest.skip("node is not installed")
     assert 'id="doc-replace-word"' in INDEX_HTML.read_text(encoding="utf-8")
-    js = (JS_DIR / "documents.js").read_text(encoding="utf-8")
+    js = (JS_DIR / "documents-replace.js").read_text(encoding="utf-8")
 
     def fn(name):
         start = js.index(f"function {name}(")
@@ -165,3 +170,18 @@ process.stdout.write(JSON.stringify([text.match(p).length, text.match(plain).len
     got = json.loads(subprocess.run([node, "-e", script], capture_output=True, text=True, check=True).stdout)
     assert got[:2] == [2, 3], "whole word drops 'cafes' and keeps the two standalone words"
     assert got[2] == "…" + "x" * 25 + " the cafe here", "30 characters each side of the match"
+
+
+def test_typing_in_the_find_field_does_not_download_every_document_again():
+    """Audit 1028 D12: the scan ran on every pause. It now reads once per
+    opening, filters the held texts after that, and drops them when
+    the dialog closes."""
+    from tests._app_js import JS_DIR
+
+    js = (JS_DIR / "documents-replace.js").read_text(encoding="utf-8")
+    scan = js[js.index("async function docReplaceScan("): js.index("function docReplaceDisarm")]
+    assert "if (!docReplace.pool)" in scan
+    opener = js[js.index("async function docReplaceOpen()"): js.index("async function docReplaceScan(")]
+    assert "docReplace.pool = null;" in opener
+    assert 'addEventListener("close", () => { docReplace.pool = null; })' in js
+    assert "setTimeout(renderDocReplace, 250)" in js

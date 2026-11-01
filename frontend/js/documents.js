@@ -1142,7 +1142,14 @@ async function openDocument(id) {
   //: and everything below carries on against the textarea.
   await ensureDocEditor();
   const doc = await apiJson(`/documents/${id}`).catch(() => null);
-  if (!doc || seq !== docOpenSeq) return;
+  if (seq !== docOpenSeq) return;
+  //: A fetch that failed says so (audit 1028 D35): the editor stays on the
+  //: document it had, and the list goes back to marking that one.
+  if (!doc) {
+    toast("Could not open that document. The one on screen is unchanged.", true, { action: ["Try again", () => openDocument(id)] });
+    renderDocList();
+    return;
+  }
   // ROADMAP.md item 13: "opening/closing a document" was the one remaining
   // gap in back/forward nav after chat's own conv:<id> fix. Same shape,
   // recorded here (not at each of openDocument's several call sites) so
@@ -10264,6 +10271,13 @@ function exportDocumentBundle() {
   return downloadDocumentExport("export.zip", "document.zip");
 }
 
+//: Replace in every document: the dialog's code is documents-replace.js,
+//: fetched on the first press (audit 1031 DC13).
+async function openDocReplace() {
+  if (!(await lazyScript("/js/documents-replace.js"))) return toast("Replace in every document could not be loaded.", true, { action: ["Try again", openDocReplace] });
+  return docReplaceOpen();
+}
+
 //: Written in the browser by documents-word.js (Brief 42), loaded on the
 //: first press: no server extra to install, so no 501.
 async function exportDocumentDocx() {
@@ -10278,181 +10292,6 @@ function exportDocumentMarkdown() {
   return downloadDocumentExport("export.md", "document.md");
 }
 
-// DOC-EXPORT-HTML-BEGIN
-//: **A document as one HTML file that needs nothing else**
-//: (DOCUMENTS_PLAN Phase 7, the decision recorded in that plan's section 13).
-//:
-//: The short version, because the shape of this code only makes sense with it:
-//: there is no server-side markdown renderer in this app and the plan forbids
-//: adding one, so the only faithful source of a rendered document is the
-//: rendered document, which lives in `#doc-preview` in the browser. The export
-//: is therefore built here, from that DOM, exactly the way the whiteboard's PNG
-//: export is built from the canvas that is already drawn.
-//:
-//: "Self-contained" is the whole requirement and it is what most of this file
-//: is about: the page that lands in somebody's downloads folder must open with
-//: no network, no app, and no account. So the stylesheet is written out in
-//: full below rather than the app's eleven sheets being inlined (they are 400KB
-//: of tokens, docks and dialogs for a page with none of those in it), images
-//: become `data:` URIs, icons and controls are dropped rather than shipped
-//: broken, and a link that points back into this app loses its href and keeps
-//: its words. `tests/test_document_export_html.py` is what holds that line.
-
-//: Deliberately small and deliberately not the app's. The one thing it has to
-//: get right is the reading measure and the vertical rhythm; everything else
-//: is the browser's own defaults doing their job. Dark is a media query rather
-//: than a choice, because the file has no settings in it and the reader's
-//: system is the only preference there is.
-const DOC_EXPORT_CSS = `
-:root {
-  color-scheme: light dark;
-  --ink: #1c1d22;
-  --muted: #5b6070;
-  --ground: #ffffff;
-  --rule: #e2e4eb;
-  --inner: #f5f6f9;
-  --accent: #4f6df5;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --ink: #e8e9ee;
-    --muted: #a2a7b8;
-    --ground: #16171b;
-    --rule: #2c2e36;
-    --inner: #1e2026;
-    --accent: #8ea2ff;
-  }
-}
-* { box-sizing: border-box; }
-body {
-  margin: 0;
-  padding: 3rem 1.5rem 6rem;
-  background: var(--ground);
-  color: var(--ink);
-  font: 16px/1.65 "Iowan Old Style", Palatino, Georgia, "Times New Roman", serif;
-}
-main { max-width: 42rem; margin: 0 auto; }
-h1, h2, h3, h4, h5, h6 {
-  margin: 2.2em 0 0.6em;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  line-height: 1.25;
-}
-h1 { font-size: 2rem; margin-top: 0; }
-h2 { font-size: 1.5rem; }
-h3 { font-size: 1.2rem; }
-p, ul, ol, blockquote, table, pre { margin: 0 0 1.1em; }
-a { color: var(--accent); }
-img { max-width: 100%; height: auto; border-radius: 4px; }
-figure { margin: 1.5em 0; }
-figcaption { color: var(--muted); font-size: 0.9rem; text-align: center; }
-blockquote {
-  margin-left: 0;
-  padding: 0.2em 0 0.2em 1em;
-  border-left: 3px solid var(--rule);
-  color: var(--muted);
-}
-code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.92em; }
-code { padding: 0.1em 0.3em; border-radius: 3px; background: var(--inner); }
-pre {
-  padding: 1em;
-  overflow-x: auto;
-  border-radius: 6px;
-  background: var(--inner);
-}
-pre code { padding: 0; background: none; }
-table { width: 100%; border-collapse: collapse; font-size: 0.95em; }
-th, td { padding: 0.45em 0.7em; border: 1px solid var(--rule); text-align: left; }
-th { background: var(--inner); }
-hr { height: 1px; margin: 2.5em 0; border: 0; background: var(--rule); }
-ul.task-list, .task-list { list-style: none; padding-left: 1.2em; }
-input[type="checkbox"] { margin-right: 0.4em; }
-.callout {
-  margin: 1.5em 0;
-  padding: 0.8em 1em;
-  border-left: 3px solid var(--kind, var(--accent));
-  border-radius: 0 6px 6px 0;
-  background: var(--inner);
-}
-.callout-head { margin: 0 0 0.4em; font-weight: 700; list-style: none; }
-.callout-head::-webkit-details-marker { display: none; }
-details.callout > .callout-head::before { content: "\\25B8\\2002"; color: var(--muted); }
-details.callout[open] > .callout-head::before { content: "\\25BE\\2002"; }
-.callout-icon:empty { display: none; }
-.callout-body > :last-child { margin-bottom: 0; }
-.callout-success, .callout-tip, .callout-abstract { --kind: #2f9e6e; }
-.callout-warning, .callout-question { --kind: #c98a12; }
-.callout-danger, .callout-failure, .callout-bug { --kind: #d0443c; }
-.callout-example { --kind: #8a5cd6; }
-.callout-quote, .callout-toggle { --kind: var(--rule); }
-.callout-toggle { background: none; }
-.doc-cols { display: grid; grid-template-columns: repeat(var(--doc-cols, 2), minmax(0, 1fr)); gap: 1.5em; }
-.doc-cols.md-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.doc-col > :first-child { margin-top: 0; }
-@media (max-width: 600px) { .doc-cols { grid-template-columns: 1fr; } }
-.md-rule-thick { height: 3px; }
-.md-rule-dots { height: auto; background: none; text-align: center; color: var(--muted); }
-.md-rule-dots::before { content: "\\2022\\2003\\2022\\2003\\2022"; }
-.md-quote { margin: 1.5em 0; }
-.md-quote > blockquote { margin-bottom: 0.3em; }
-.md-quote-cite { padding-left: 1.2em; color: var(--muted); font-size: 0.9em; }
-.md-quote-cite::before { content: "\\2013\\2002"; }
-.md-toc { margin: 1.5em 0; padding: 0.8em 1em; border: 1px solid var(--rule); border-radius: 6px; }
-.md-toc-head { margin: 0 0 0.4em; color: var(--muted); font-size: 0.8em; text-transform: uppercase; letter-spacing: 0.04em; }
-.md-toc-list { margin: 0; padding: 0; list-style: none; }
-.md-toc-depth-1 { padding-left: 1.2em; }
-.md-toc-depth-2 { padding-left: 2.4em; }
-.md-toc-depth-3 { padding-left: 3.6em; }
-.md-math-block { margin: 1.5em 0; text-align: center; overflow-x: auto; }
-.md-page-break { break-before: page; height: 0; overflow: hidden; }
-.md-page-break > span { display: none; }
-.md-footnotes {
-  margin-top: 3em;
-  padding-top: 1em;
-  border-top: 1px solid var(--rule);
-  color: var(--muted);
-  font-size: 0.9em;
-}
-.doc-export-missing { color: var(--muted); font-style: italic; }
-.doc-export-link { border-bottom: 1px dotted var(--rule); }
-.doc-export-meta {
-  margin: 0 0 2.5em;
-  color: var(--muted);
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  font-size: 0.85rem;
-}
-.md-mermaid { margin: 1.2em 0; overflow-x: auto; color: var(--ink); }
-.md-mermaid img { display: block; max-width: 100%; height: auto; margin: 0 auto; }
-.md-mermaid-reason { color: var(--muted); font-size: 0.85em; }
-`;
-
-function docExportEscape(text) {
-  return String(text == null ? "" : text)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
-//: No `<h1>` of the title above the body: a document here almost always opens
-//: with its own heading, and printing the title again would give every
-//: exported page a duplicated first line. The name travels in `<title>`, which
-//: is what names a tab, a bookmark and a saved file.
-//:
-//: The meta line is one line and it is the provenance: what this was and when
-//: it was taken. Without it an exported page is undated, and a document that
-//: is edited weekly becomes several undated files with the same name.
-function docExportHtmlDocument(title, bodyHtml, savedOn) {
-  const name = docExportEscape(title || "Untitled document");
-  const meta = savedOn ? `<p class="doc-export-meta">${docExportEscape(savedOn)}</p>\n` : "";
-  return (
-    "<!doctype html>\n" +
-    '<html lang="en">\n<head>\n<meta charset="utf-8">\n' +
-    '<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
-    `<title>${name}</title>\n<style>${DOC_EXPORT_CSS}</style>\n</head>\n` +
-    `<body>\n<main>\n${meta}${bodyHtml}\n</main>\n</body>\n</html>\n`
-  );
-}
-// DOC-EXPORT-HTML-END
 
 //: What comes out of the app and what does not. Everything in this list is
 //: something that works only inside a running Tessellate: a button with a
@@ -10539,104 +10378,16 @@ function docExportClean(root) {
   return root;
 }
 
-//: Eight megabytes of data URIs is a file that opens; eighty is one that
-//: hangs the tab it is dropped into. Past the budget an image becomes its own
-//: alt text, which says what was there rather than drawing a broken frame.
-const DOC_EXPORT_IMAGE_BUDGET = 8 * 1024 * 1024;
-
-async function docExportInlineImages(root) {
-  let spent = 0;
-  let inlined = 0;
-  let dropped = 0;
-  for (const img of [...root.querySelectorAll("img")]) {
-    const src = img.getAttribute("src") || "";
-    if (src.startsWith("data:")) {
-      inlined++;
-      continue;
-    }
-    let dataUri = null;
-    if (src && !/^https?:/i.test(src) && spent < DOC_EXPORT_IMAGE_BUDGET) {
-      try {
-        // `api()` (F5), silent: a picture that will not load is dropped below.
-        const response = await api(src, { silent: true });
-        {
-          const blob = await response.blob();
-          if (spent + blob.size <= DOC_EXPORT_IMAGE_BUDGET) {
-            dataUri = `data:${blob.type || "application/octet-stream"};base64,${await blobToBase64(blob)}`;
-            spent += blob.size;
-          }
-        }
-      } catch {
-        // A file that cannot be read is a file that cannot be embedded; the
-        // alt text below says so rather than the export failing over it.
-      }
-    }
-    if (dataUri) {
-      img.setAttribute("src", dataUri);
-      img.removeAttribute("srcset");
-      img.removeAttribute("loading");
-      inlined++;
-    } else {
-      const note = document.createElement("span");
-      note.className = "doc-export-missing";
-      note.textContent = `[image: ${img.getAttribute("alt") || "not included"}]`;
-      img.replaceWith(note);
-      dropped++;
-    }
-  }
-  return { inlined, dropped, bytes: spent };
+//: The HTML and PDF exports live in documents-export.js, fetched on the first
+//: press of either (audit 1031 DC13).
+async function exportDocumentHtml() {
+  if (!(await lazyScript("/js/documents-export.js"))) return toast("The export could not be loaded.", true, { action: ["Try again", exportDocumentHtml] });
+  return docExportHtmlRun();
 }
 
-async function exportDocumentHtml() {
-  if (!currentDoc) return;
-  const status = $("doc-status");
-  //: No rendered form means the preview is empty: the page came out as the
-  //: title line alone. The source goes in as preformatted text instead.
-  if (!docFileType().previewable) {
-    const source = docSurface()?.value ?? currentDoc.content ?? "";
-    const savedOn = `${currentDoc.title || "Untitled"} · exported ${new Date().toLocaleDateString()}`;
-    const html = docExportHtmlDocument(currentDoc.title, `<pre><code>${docExportEscape(source)}</code></pre>`, savedOn);
-    await saveFile(docExportName(currentDoc.title, "html"), new Blob([html], { type: "text/html" }));
-    return;
-  }
-  //: The remarks travel as footnotes, exactly as they do in a PDF: a document
-  //: handed to somebody carries what was said about it rather than dropping it
-  //: silently. Set before `withDocPreviewShown`, which renders on the way in.
-  docPrintComments = true;
-  let done;
-  const finished = new Promise((resolve) => {
-    done = resolve;
-  });
-  withDocPreviewShown(async (restore) => {
-    try {
-      await docMermaidWhenDrawn();
-      const clone = $("doc-preview").cloneNode(true);
-      clone.removeAttribute("id");
-      clone.removeAttribute("class");
-      //: A saved file outlives this page's blob: URLs, so each diagram goes in as
-      //: a data: URL of its own SVG, before the image pass below can drop it.
-      if (await lazyModuleLoads.get("mermaid")) mermaidInlineForExport($("doc-preview"), clone);
-      docExportClean(clone);
-      const images = await docExportInlineImages(clone);
-      const savedOn = `${currentDoc.title || "Untitled"} · exported ${new Date().toLocaleDateString()}`;
-      const html = docExportHtmlDocument(currentDoc.title, clone.innerHTML, savedOn);
-      await saveFile(docExportName(currentDoc.title, "html"), new Blob([html], { type: "text/html" }));
-      if (images.dropped) {
-        toast(`Saved. ${images.dropped} image(s) could not be embedded and are named in the text.`);
-      }
-    } catch (error) {
-      if (status) {
-        status.classList.add("error");
-        status.textContent = error.message || "Couldn't export this document.";
-      }
-    } finally {
-      docPrintComments = false;
-      restore();
-      renderDocPreview();
-      done();
-    }
-  });
-  return finished;
+async function exportDocumentPdf() {
+  if (!(await lazyScript("/js/documents-export.js"))) return toast("The export could not be loaded.", true, { action: ["Try again", exportDocumentPdf] });
+  return docExportPdfRun();
 }
 
 //: **A plain Ctrl+P prints the document, not the application**
@@ -10805,163 +10556,6 @@ function docApplyPrintSetup(setup = docPrintSetupRead(), title = currentDoc?.tit
   return true;
 }
 
-//: The one step before the browser's dialog: four choices and Print.
-function docPrintSetupDialog() {
-  return new Promise((resolve) => {
-    const setup = docPrintSetupRead();
-    const overlay = document.createElement("div");
-    overlay.className = "modal-overlay confirm-overlay";
-    overlay.setAttribute("role", "dialog");
-    overlay.setAttribute("aria-modal", "true");
-    overlay.setAttribute("aria-label", "Print or save as PDF");
-    const card = document.createElement("div");
-    card.className = "card modal-card space-dialog doc-print-card";
-    const returnFocus = document.activeElement;
-    let settled = false;
-    const close = (go) => {
-      if (settled) return;
-      settled = true;
-      document.removeEventListener("keydown", onKey, true);
-      overlay.remove();
-      if (!go) returnFocus?.focus?.();
-      resolve(go ? setup : null);
-    };
-    const onKey = (event) => {
-      if (event.key === "Escape") {
-        event.stopPropagation();
-        close(false);
-      } else if (event.key === "Enter" && !(event.target instanceof HTMLButtonElement)) {
-        event.preventDefault();
-        event.stopPropagation();
-        close(true);
-      }
-    };
-    const seg = (label, key, options) => {
-      const row = document.createElement("div");
-      row.className = "doc-print-row";
-      const name = document.createElement("span");
-      name.className = "doc-print-label";
-      name.textContent = label;
-      const group = document.createElement("div");
-      group.className = "seg";
-      group.setAttribute("role", "group");
-      group.setAttribute("aria-label", label);
-      for (const [value, words] of options) {
-        const b = document.createElement("button");
-        b.type = "button";
-        b.textContent = words;
-        b.dataset.value = value;
-        b.setAttribute("aria-pressed", String(setup[key] === value));
-        b.addEventListener("click", () => {
-          setup[key] = value;
-          for (const other of group.children) other.setAttribute("aria-pressed", String(other === b));
-        });
-        group.appendChild(b);
-      }
-      row.append(name, group);
-      return row;
-    };
-    const numbers = document.createElement("label");
-    numbers.className = "setting-check doc-print-numbers";
-    const box = document.createElement("input");
-    box.type = "checkbox";
-    box.id = "doc-print-numbers";
-    const can = docPrintMarginBoxes();
-    box.checked = setup.numbers && can;
-    box.disabled = !can;
-    box.addEventListener("change", () => { setup.numbers = box.checked; });
-    const words = document.createElement("span");
-    words.textContent = "Page numbers and the title";
-    const small = document.createElement("small");
-    small.className = "muted";
-    small.textContent = can
-      ? "The number at the foot of each page, the title at the head."
-      : "This browser cannot print them; your print dialog's own headers and footers can.";
-    words.append(document.createElement("br"), small);
-    numbers.append(box, words);
-    const foot = document.createElement("div");
-    foot.className = "row space-dialog-actions";
-    const cancel = document.createElement("button");
-    cancel.type = "button";
-    cancel.className = "ghost";
-    cancel.textContent = "Cancel";
-    cancel.addEventListener("click", () => close(false));
-    const go = document.createElement("button");
-    go.type = "button";
-    go.id = "doc-print-go";
-    setLabel(go, "ph:printer Print");
-    go.addEventListener("click", () => close(true));
-    foot.append(cancel, go);
-    const body = document.createElement("div");
-    body.className = "doc-print-body";
-    body.append(
-      seg("Page size", "size", [["A4", "A4"], ["Letter", "Letter"]]),
-      seg("Orientation", "orientation", [["portrait", "Portrait"], ["landscape", "Landscape"]]),
-      seg("Margins", "margin", [["narrow", "Narrow"], ["normal", "Normal"], ["wide", "Wide"]]),
-      numbers,
-    );
-    card.append(dialogHead("Print or save as PDF", () => close(false)), body, foot);
-    overlay.appendChild(card);
-    wireBackdropClose(overlay, () => close(false));
-    document.addEventListener("keydown", onKey, true);
-    document.body.appendChild(overlay);
-    go.focus();
-  }).then((setup) => {
-    if (!setup) return null;
-    try {
-      prefs.set(DOC_PRINT_KEY, JSON.stringify(setup));
-    } catch {
-      /* this print still uses it */
-    }
-    return setup;
-  });
-}
-
-//: The menu's print of a code file: the listing in the preview pane, the
-//: print class on for as long as the browser's dialog is open.
-function docCodePrintNow() {
-  docCodePrintFill();
-  document.body.classList.add("printing-doc");
-  const cleanup = () => {
-    document.body.classList.remove("printing-doc");
-    docCodePrintClear();
-    window.removeEventListener("afterprint", cleanup);
-  };
-  window.addEventListener("afterprint", cleanup);
-  setTimeout(() => window.print(), 150);
-}
-
-// PDF via the browser's own print dialog: it renders the preview exactly as
-// shown and every platform already has "Save as PDF" there. Bundling a PDF
-// engine would add a heavy dependency to produce a worse-looking result.
-async function exportDocumentPdf() {
-  if (!currentDoc) return;
-  const setup = await docPrintSetupDialog();
-  if (!setup) return;
-  docApplyPrintSetup(setup);
-  //: A code file has no rendered form to show: it prints its listing.
-  if (docIsCodeFile()) return docCodePrintNow();
-  //: Set *before* `withDocPreviewShown`, which renders the pane on the way in:
-  //: the whole point of the flag is that the render it triggers is the one that
-  //: carries the footnotes (DOCUMENTS_PLAN Phase 5 item 1, "exported as
-  //: footnotes"). Cleared in the same place the print class is, and the pane is
-  //: drawn once more on the way out so what is left on screen after the dialog
-  //: closes is Read view again, without the remarks in it.
-  docPrintComments = true;
-  withDocPreviewShown((restore) => {
-    document.body.classList.add("printing-doc");
-    const cleanup = () => {
-      document.body.classList.remove("printing-doc");
-      docPrintComments = false;
-      restore();
-      renderDocPreview();
-      window.removeEventListener("afterprint", cleanup);
-    };
-    window.addEventListener("afterprint", cleanup);
-    //: A diagram still being drawn would print as its placeholder.
-    docMermaidWhenDrawn().then(() => setTimeout(() => window.print(), 150));
-  });
-}
 
 //: **A deleted document goes to the recycle bin** (WORLD_CLASS_PLAN 5 item
 //: 10), as a note does: `DELETE /documents/{id}` bins it, and Undo is
@@ -11166,206 +10760,14 @@ async function deleteCurrentDocument() {
 }
 
 // --- AI editing ---
-// Always a proposal. Writing straight into the document would be the most
-// destructive thing in the app. Three verbs (reskinned from a single
-// rewrite action into a small general assistant, asked for directly):
-// "edit" rewrites the target, "write" inserts a new passage without
-// touching what's there, "remove" deletes on request. All three go through
-// the same /ai-edit endpoint (routes_documents.py) with a `verb` field.
 let docAiController = null;
 
-function docAiVerb() {
-  return $("doc-ai-panel").querySelector('input[name="doc-ai-verb"]:checked')?.value || "edit";
-}
-
-//: **The result area is shown by the result arriving, and by nothing else**
-//: (INBOX 158). One function rather than a `classList` call at each of the four
-//: places that change the answer's state (opening, running, switching verb,
-//: clearing), because the bug this replaces was not a missing class, it was four
-//: places disagreeing about whether there was an answer: an empty 309px textarea
-//: under a label describing text that was not there, over a Replace button for
-//: nothing, in 43% of the dialog.
-function showDocAiResult(text) {
-  const block = $("doc-ai-result-block");
-  const result = $("doc-ai-result");
-  if (!block || !result) return;
-  result.value = text || "";
-  //: A "remove" whose answer is the passage with nothing left in it is still an
-  //: answer, and `acceptDocAiEdit` already treats that case as valid, so the
-  //: block is shown for an empty string and hidden only for nothing at all.
-  block.classList.toggle("hidden", text === null || text === undefined);
-  stagePrimary("doc-ai-run", "doc-ai-accept", !block.classList.contains("hidden"));
-  setDocAiProposal(text === null || text === undefined ? null : result.value);
-}
-
-//: **The proposal, as a change rather than as a wall of text**
-//: (DOCUMENTS_PLAN Phase 5 item 3). The panel used to hand back the model's
-//: whole answer in a textarea: for "tighten this" over a 900-word document
-//: that is nine hundred words to read to find the four it touched, and the
-//: only two answers available were all of it or none of it.
-//:
-//: The state here is two things and the textarea is the third: the *target*
-//: (what the model was asked to change, the selection or the document), the
-//: model's answer as a list of changes against it, and the set of changes the
-//: reader has skipped. The textarea always holds the text that pressing accept
-//: would apply, so the diff explains the textarea rather than competing with
-//: it, and `acceptDocAiEdit` needs no knowledge of any of this: it still reads
-//: the textarea, which is what it has always done.
-let docAiOps = [];
-let docAiHunks = [];
-let docAiSkips = new Set();
-let docAiTarget = null;
-let docAiDiffTimer = null;
-
-//: "Write" has no target: it inserts new text and changes nothing, so a diff
-//: of it is the whole answer marked as added, which says less than the answer
-//: itself. The block is hidden for that verb rather than drawn empty.
-function docAiDiffTarget() {
-  if (docAiVerb() === "write") return null;
-  const selection = $("doc-ai-panel").dataset.selection || "";
-  return selection || docSurface().text;
-}
-
-function setDocAiProposal(text) {
-  docAiTarget = text === null || text === undefined ? null : docAiDiffTarget();
-  if (docAiTarget === null) {
-    docAiOps = [];
-    docAiHunks = [];
-  } else {
-    docAiOps = docDiffLines(docAiTarget, text);
-    docAiHunks = docDiffHunks(docAiOps);
-  }
-  docAiSkips = new Set();
-  renderDocAiDiff();
-}
-
-function renderDocAiDiff() {
-  const block = $("doc-ai-diff-block");
-  const view = $("doc-ai-diff");
-  const head = $("doc-ai-diff-head");
-  if (!block || !view || !head) return;
-  if (!docAiOps.length) {
-    block.classList.add("hidden");
-    view.replaceChildren();
-    return;
-  }
-  block.classList.remove("hidden");
-  const stat = docDiffStat(docAiOps);
-  const count = docAiHunks.length;
-  head.textContent = !count
-    ? "No change: the model gave back the same text."
-    : count === 1
-      ? `One change, +${stat.added} −${stat.removed} lines. Skip it to leave the text as it is.`
-      : `${nounCount(count, "change")}, +${stat.added} −${stat.removed} lines. Skip any you don't want.`;
-  //: Kept across a redraw: toggling the fourth change of eight must not take
-  //: the reader back to the first.
-  const scroll = view.scrollTop;
-  docRenderDiff(view, docAiOps, {
-    hunks: docAiHunks,
-    skipped: docAiSkips,
-    onToggleHunk: toggleDocAiHunk,
-    emptyText: "No change: the model gave back the same text.",
-  });
-  view.scrollTop = scroll;
-}
-
-function toggleDocAiHunk(index) {
-  if (docAiSkips.has(index)) docAiSkips.delete(index);
-  else docAiSkips.add(index);
-  //: Setting `.value` from script fires no `input` event, which is what keeps
-  //: this and the listener below from chasing each other: a toggle writes the
-  //: textarea, a person typing rebuilds the diff, and neither triggers the
-  //: other.
-  $("doc-ai-result").value = docDiffApply(docAiOps, docAiHunks, docAiSkips);
-  renderDocAiDiff();
-}
-
-//: Edited by hand, the answer becomes the proposal: the diff is rebuilt
-//: against the same target and every change starts kept again, because a skip
-//: is a statement about a change that may no longer exist.
-function docAiResultEdited() {
-  if (docAiTarget === null) return;
-  docAiOps = docDiffLines(docAiTarget, $("doc-ai-result").value);
-  docAiHunks = docDiffHunks(docAiOps);
-  docAiSkips = new Set();
-  renderDocAiDiff();
-}
-
-$("doc-ai-result").addEventListener("input", () => {
-  if (docAiDiffTimer) clearTimeout(docAiDiffTimer);
-  docAiDiffTimer = setTimeout(docAiResultEdited, 300);
-});
-
-// The run button, the instruction placeholder, and the scope hint all read
-// differently per verb: kept in one place so switching verbs updates all
-// three together rather than three separate change listeners drifting.
-function syncDocAiPanel() {
-  const verb = docAiVerb();
-  const selection = ($("doc-ai-panel").dataset.selection || "").trim();
-  const selectionWords = wordCount(selection);
-
-  const runLabel = { edit: "Suggest an edit", write: "Write it", remove: "Remove it" }[verb];
-  setLabel($("doc-ai-run"), `ph:sparkle ${runLabel}`);
-
-  $("doc-ai-instruction").placeholder =
-    verb === "write"
-      ? "e.g. “add a conclusion”, “write an intro paragraph”"
-      : verb === "remove"
-        ? selection
-          ? "Optional: leave blank to remove the selection as-is"
-          : "e.g. “remove the paragraph about pricing”"
-        : "e.g. “tighten this”, “make it more formal”, “add a conclusion”";
-
-  if (verb === "write") {
-    $("doc-ai-scope").textContent = selection
-      ? `Inserting new text directly after the ${selectionWords} selected word(s).`
-      : "Inserting new text at the end of the document.";
-  } else if (verb === "remove") {
-    $("doc-ai-scope").textContent = selection
-      ? `Removing the ${selectionWords} selected word(s): or say what to remove from within them.`
-      : "Say what to remove from the whole document.";
-  } else {
-    $("doc-ai-scope").textContent = selection
-      ? `Rewriting the ${selectionWords} selected word(s).`
-      : "Rewriting the whole document. Select some text first to work on just that.";
-  }
-
-  const acceptLabel = { edit: "Replace with this", write: "Insert this", remove: "Remove it" }[verb];
-  $("doc-ai-accept").textContent = acceptLabel;
-}
-
-//: Switching verb throws the proposal away, and that is a fix rather than a
-//: tidy-up: the panel used to keep it, so a passage the model rewrote for "Edit"
-//: stayed on screen with "Remove it" under it, and pressing that button deleted
-//: the selection and replaced it with the rewrite. The status line says so,
-//: because a proposal vanishing with no explanation reads as a failure.
-function docAiVerbChanged() {
-  const had = !$("doc-ai-result-block").classList.contains("hidden");
-  showDocAiResult(null);
-  syncDocAiPanel();
-  if (had) {
-    const status = $("doc-ai-status");
-    status.classList.remove("error");
-    status.textContent = "Ask again: the last suggestion was for a different job.";
-  }
-}
-
-function openDocAiPanel() {
-  if (!currentDoc) return;
-  const box = docSurface();
-  const { from, to } = box.selection();
-  $("doc-ai-panel").dataset.selection = box.text.slice(from, to);
-  // Always opens back on "Edit", the panel's original, still-default
-  // behaviour: rather than remembering whatever verb was last used, so a
-  // stray "Remove it" click a moment after opening isn't primed by the
-  // previous document's choice.
-  const editRadio = $("doc-ai-panel").querySelector('input[name="doc-ai-verb"][value="edit"]');
-  if (editRadio) editRadio.checked = true;
-  showDocAiResult(null);
-  $("doc-ai-status").textContent = "";
-  syncDocAiPanel();
-  $("doc-ai-panel").classList.remove("hidden");
-  $("doc-ai-instruction").focus();
+//: The AI panel's code is documents-ai.js, fetched on the first press of any
+//: of its controls (audit 1031 DC13): `docAiLazy` loads it, then calls the
+//: function of that name the file defines.
+async function docAiLazy(name, ...args) {
+  if (!(await lazyScript("/js/documents-ai.js"))) return toast("The AI panel could not be loaded.", true, { action: ["Try again", () => docAiLazy(name, ...args)] });
+  return window[name](...args);
 }
 
 function closeDocAiPanel() {
@@ -11381,189 +10783,6 @@ function openDocExtractPreview() {
   const { from, to } = box.selection();
   const selection = box.text.slice(from, to).trim();
   openExtractPreview(selection || box.text, { sourceDocumentId: currentDoc.id });
-}
-
-async function runDocAiEdit() {
-  const verb = docAiVerb();
-  const instruction = $("doc-ai-instruction").value.trim();
-  const selection = $("doc-ai-panel").dataset.selection || "";
-  const status = $("doc-ai-status");
-  // Mirrors routes_documents.ai_edit's own validation exactly, so a bad
-  // request never reaches the network at all: "write" always needs words,
-  // "remove" can skip them only when a selection already says what to
-  // remove, "edit" is the original required-instruction behaviour.
-  if (verb === "write" && !instruction) {
-    status.classList.add("error");
-    status.textContent = "Say what to write.";
-    return;
-  }
-  if (verb === "remove" && !instruction && !selection.trim()) {
-    status.classList.add("error");
-    status.textContent = "Say what to remove, or select it first.";
-    return;
-  }
-  if (verb === "edit" && !instruction) {
-    status.classList.add("error");
-    status.textContent = "Say what you'd like changed.";
-    return;
-  }
-  status.classList.remove("error");
-  //: The same first phase the chat surfaces open with (INBOX 649); this call is
-  //: one request with no stream, so it has no later phase to move to.
-  setLabel(status, `ph:spin ${progressPhaseText("reaching")}`);
-  docAiController = new AbortController();
-  $("doc-ai-run").classList.add("hidden");
-  $("doc-ai-cancel-run").classList.remove("hidden");
-  try {
-    const body = await apiJson(`/documents/${currentDoc.id}/ai-edit`, {
-      method: "POST",
-      signal: docAiController.signal,
-      body: JSON.stringify({ instruction, selection, verb }),
-    });
-    showDocAiResult(body.revised);
-    status.textContent = body.message || "Read it over, then accept or cancel.";
-    if (body.message) status.classList.add("error");
-  } catch (error) {
-    if (error.name === "AbortError") {
-      status.textContent = "Stopped. The document is untouched.";
-    } else {
-      status.classList.add("error");
-      status.textContent = error.message;
-    }
-  } finally {
-    docAiController = null;
-    $("doc-ai-run").classList.remove("hidden");
-    $("doc-ai-cancel-run").classList.add("hidden");
-  }
-}
-
-// The undo/redo half of "allow edits made by the AI to be undone or
-// altered before and after they are set" (asked for directly): before
-// acceptance, the result textarea above already covers "altered" (edit
-// the AI's suggestion, then accept whatever's left). This is "undone...
-// after": pushed onto the app's existing global undo stack (an immediate
-// Ctrl+Z / status-bar Undo, session-only) alongside a durable per-document
-// changelog entry (ai-edit-log, survives reload, lists every edit with its
-// own Revert): see the dialog's own comment in index.html for why both.
-function pushDocAiUndo(docId, label, beforeContent, afterContent) {
-  const applyContent = async (content) => {
-    const title = currentDoc && currentDoc.id === docId ? currentDoc.title : undefined;
-    const saved = await apiJson(`/documents/${docId}`, {
-      method: "PUT",
-      body: JSON.stringify({ content, ...(title !== undefined ? { title } : {}) }),
-    });
-    if (currentDoc && currentDoc.id === docId) {
-      currentDoc = saved;
-      docSurface().text = content;
-      renderDocPreview();
-      docDirty = false;
-      $("doc-saved").textContent = "Saved";
-    }
-    docs = docs.map((d) => (d.id === docId ? { ...d, ...saved } : d));
-    renderDocList();
-  };
-  pushUndo(
-    label,
-    () => applyContent(beforeContent),
-    () => applyContent(afterContent)
-  );
-}
-
-async function recordDocAiEditLog(docId, verb, instruction, selection, beforeContent, afterContent) {
-  try {
-    await apiJson(`/documents/${docId}/ai-edit-log`, {
-      method: "POST",
-      body: JSON.stringify({
-        verb,
-        instruction,
-        selection,
-        before_content: beforeContent,
-        after_content: afterContent,
-      }),
-      silent: true,
-    });
-  } catch {
-    // Best-effort: the changelog is a record of an edit that has already
-    // happened (and is already undoable via the global stack above), a
-    // network hiccup writing the log entry must not read as the edit
-    // itself having failed.
-  }
-}
-
-//: **An answer far shorter than what it replaces is asked about first** (1031
-//: DC6: two characters replaced 1,272 in one click, the diff the only sign).
-//: Only a rewrite or a removal over a target of 200 characters or more, and
-//: only under a fifth of its length; a removal's own gap is not a short answer.
-const DOC_AI_SHORT_SHARE = 0.2;
-const DOC_AI_SHORT_FROM = 200;
-function docAiAnswerIsShort(verb, target, revised) {
-  if (verb === "write" || target.length < DOC_AI_SHORT_FROM) return false;
-  return revised.trim().length < target.length * DOC_AI_SHORT_SHARE;
-}
-
-async function acceptDocAiEdit() {
-  const revised = $("doc-ai-result").value;
-  if (!revised.trim() && docAiVerb() !== "remove") return;
-  const verb = docAiVerb();
-  const instruction = $("doc-ai-instruction").value.trim();
-  const selection = $("doc-ai-panel").dataset.selection || "";
-  const box = docSurface();
-  if (docAiAnswerIsShort(verb, selection || box.text, revised)) {
-    const ask = `The model sent much less than the text (${nounCount(revised.trim().length, "character")} for ${nounCount((selection || box.text).length, "character")}). Replace anyway?`;
-    if (!(await confirmDialog(ask, { confirmLabel: "Replace anyway" }))) return;
-  }
-  const beforeContent = box.text;
-  const docId = currentDoc.id;
-
-  if (verb === "write") {
-    // Inserts rather than replaces, the selection (if any) is only the
-    // anchor point, and stays exactly as it was.
-    if (selection) {
-      const at = box.text.indexOf(selection);
-      const insertAt = at === -1 ? box.text.length : at + selection.length;
-      const before = box.text.slice(0, insertAt);
-      const after = box.text.slice(insertAt);
-      const glue = before && !before.endsWith("\n\n") ? (before.endsWith("\n") ? "\n" : "\n\n") : "";
-      box.text = before + glue + revised + after;
-    } else {
-      const glue = box.text && !box.text.endsWith("\n\n") ? (box.text.endsWith("\n") ? "\n" : "\n\n") : "";
-      box.text = box.text + glue + revised;
-    }
-  } else if (selection) {
-    // "edit" and "remove" both replace the target with what the model
-    // returned: for "remove" that's the same text with the requested
-    // part gone, so no separate apply logic is needed.
-    const at = box.text.indexOf(selection);
-    box.text =
-      at === -1
-        ? box.text
-        : box.text.slice(0, at) + revised + box.text.slice(at + selection.length);
-  } else {
-    box.text = revised;
-  }
-
-  const afterContent = box.text;
-  closeDocAiPanel();
-  markDocDirty();
-  renderDocPreview();
-  saveDocument({ silent: true });
-
-  const label = { edit: "AI edit", write: "AI write", remove: "AI remove" }[verb];
-  pushDocAiUndo(
-    docId,
-    instruction ? `${label}: “${instruction.length > 40 ? instruction.slice(0, 39) + "…" : instruction}”` : label,
-    beforeContent,
-    afterContent
-  );
-  recordDocAiEditLog(docId, verb, instruction, selection, beforeContent, afterContent);
-
-  toast(
-    verb === "write"
-      ? "Inserted Atlas's text."
-      : verb === "remove"
-        ? "Removed."
-        : "Applied Atlas's edit."
-  );
 }
 
 // --- AI edit history (the changelog) ---------------------------------------
@@ -12332,186 +11551,6 @@ async function toggleDocHistoryDiff(entry, row, button, box) {
     box.appendChild(failed);
   }
 }
-
-// --- Replace in every document (DOCUMENTS 24 row 9) ---------------------------
-//
-// VS Code's replace across files: a pattern (plain or a regular expression,
-// matched with or without case), the documents it would change and how many
-// times, then Replace all. The texts are rebuilt here and written in one
-// request (`POST /documents/contents`), and the one undo step writes the
-// originals back the same way, so fifty documents change, or change back,
-// whole. Each changed document keeps the version it replaced in its history.
-const docReplace = { matches: [], skipped: new Set(), timer: 0 };
-
-function docReplacePattern() {
-  const find = $("doc-replace-find").value;
-  if (!find) return null;
-  const flags = $("doc-replace-case").checked ? "g" : "gi";
-  const source = $("doc-replace-regex").checked ? find : find.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  //: Whole word by letters in any script, not `\b`, which ends a word at "é" (D29).
-  const word = $("doc-replace-word").checked;
-  try {
-    return word ? new RegExp(`(?<![\\p{L}\\p{N}_])(?:${source})(?![\\p{L}\\p{N}_])`, `${flags}u`) : new RegExp(source, flags);
-  } catch (error) {
-    return { error: error.message };
-  }
-}
-
-async function openDocReplace() {
-  if (docDirty) await saveDocument({ silent: true });
-  const dialog = $("doc-replace-dialog");
-  if (!dialog) return;
-  if (!dialog.open) dialog.showModal();
-  const view = docCmView;
-  const picked = view && !view.state.selection.main.empty ? view.state.sliceDoc(view.state.selection.main.from, view.state.selection.main.to).split("\n")[0] : "";
-  if (picked) $("doc-replace-find").value = picked;
-  $("doc-replace-find").focus();
-  $("doc-replace-find").select();
-  await renderDocReplace();
-}
-
-//: The documents a replace would change, read fresh: the list's own rows hold
-//: no text, and a count from stale text would promise a change it cannot make.
-async function docReplaceScan(pattern) {
-  const out = [];
-  for (const doc of await apiJson("/documents/contents")) {
-    const count = doc.content.match(pattern)?.length || 0;
-    if (count) out.push({ ...doc, count });
-  }
-  return out;
-}
-
-function docReplaceDisarm() {
-  const run = $("doc-replace-run");
-  if (run?.dataset.armed !== "1") return;
-  run.dataset.armed = "";
-  run.textContent = "Replace all";
-  $("doc-replace-summary").textContent = run.dataset.was || "";
-}
-
-async function renderDocReplace() {
-  const summary = $("doc-replace-summary");
-  const list = $("doc-replace-list");
-  const run = $("doc-replace-run");
-  docReplaceDisarm();
-  const pattern = docReplacePattern();
-  list.replaceChildren();
-  run.disabled = true;
-  docReplace.matches = [];
-  if (!pattern || pattern.error) {
-    summary.textContent = pattern?.error ? `That pattern does not read: ${pattern.error}` : "Type what to find.";
-    return;
-  }
-  summary.textContent = "Searching…";
-  const matches = await docReplaceScan(pattern);
-  if (String(docReplacePattern()) !== String(pattern)) return;
-  docReplace.matches = matches;
-  const total = matches.reduce((sum, m) => sum + m.count, 0);
-  summary.textContent = matches.length
-    ? `${total} match${total === 1 ? "" : "es"} in ${nounCount(matches.length, "document")}.`
-    : "No document has it.";
-  docReplace.skipped = new Set();
-  for (const match of matches) list.appendChild(docReplaceRow(match, pattern));
-  run.disabled = !matches.length;
-}
-
-//: A row per document: a box to leave it out, and the first match in its
-//: line, so a pattern that catches the wrong thing shows before it runs (D29).
-function docReplaceRow(match, pattern) {
-  const row = document.createElement("li");
-  row.className = "doc-ai-history-entry doc-replace-row";
-  const label = document.createElement("label");
-  label.className = "row align-center checkbox-label small";
-  const box = document.createElement("input");
-  box.type = "checkbox";
-  box.checked = true;
-  box.addEventListener("change", () => {
-    docReplace.skipped[box.checked ? "delete" : "add"](match.id);
-    $("doc-replace-run").disabled = docReplace.matches.every((m) => docReplace.skipped.has(m.id));
-    docReplaceDisarm();
-  });
-  const name = document.createElement("span");
-  name.textContent = `${match.title || "Untitled"} · ${match.count}`;
-  label.append(box, name);
-  const snippet = document.createElement("span");
-  snippet.className = "muted text-sm doc-replace-snippet";
-  snippet.textContent = docReplaceSnippet(match.content, pattern);
-  row.append(label, snippet);
-  return row;
-}
-
-function docReplaceSnippet(text, pattern) {
-  pattern.lastIndex = 0;
-  const hit = pattern.exec(text);
-  pattern.lastIndex = 0;
-  if (!hit) return "";
-  const from = Math.max(0, hit.index - 30);
-  const to = Math.min(text.length, hit.index + hit[0].length + 30);
-  return `${from ? "…" : ""}${text.slice(from, to).replace(/\s+/g, " ")}${to < text.length ? "…" : ""}`;
-}
-
-//: Each write carries the hash of the text it was worked out from and keeps
-//: the hashes it gets back in `hashes`, so an undo or redo after one of these
-//: documents was edited is refused whole instead of writing over the edit
-//: (audit 1028 D11).
-async function docWriteContents(items, hashes, keep = false) {
-  const sent = items.map((item) => ({ ...item, base_hash: hashes[item.id] || null }));
-  const res = await apiJson("/documents/contents", { method: "POST", body: JSON.stringify({ documents: sent }) });
-  Object.assign(hashes, res.hashes || {});
-  const open = items.find((item) => item.id === currentDoc?.id);
-  if (open) docShowSaved(await apiJson(`/documents/${open.id}`), keep);
-  loadDocuments(currentDoc?.id);
-}
-
-async function runDocReplace() {
-  const pattern = docReplacePattern();
-  const chosen = docReplace.matches.filter((m) => !docReplace.skipped?.has(m.id));
-  if (!pattern || pattern.error || !chosen.length) return;
-  //: A plain replace is plain: `$&` and `$1` mean something only to a pattern.
-  const typed = $("doc-replace-with").value;
-  const replacement = $("doc-replace-regex").checked ? typed : typed.replace(/\$/g, "$$$$");
-  const before = chosen.map((m) => ({ id: m.id, content: m.content }));
-  const after = chosen.map((m) => ({ id: m.id, content: m.content.replace(pattern, replacement) }));
-  const total = chosen.reduce((sum, m) => sum + m.count, 0);
-  const hashes = Object.fromEntries(chosen.map((m) => [m.id, m.content_hash]));
-  //: More than one document changing is said before it happens (1031 DC4:
-  //: 357 matches in 3 documents ran at once, the toast's Undo the only guard).
-  //: In the dialog, on the button, because a confirm dialog opens behind a
-  //: modal one: the first press asks, the second replaces, and any change to
-  //: the find, the options or the ticks puts the label back.
-  const run = $("doc-replace-run");
-  if (after.length > 1 && run.dataset.armed !== "1") {
-    run.dataset.armed = "1";
-    run.dataset.was = $("doc-replace-summary").textContent;
-    run.textContent = `Replace in ${nounCount(after.length, "document")}`;
-    $("doc-replace-summary").textContent = `${nounCount(total, "match", "matches")} in ${nounCount(after.length, "document")} change. Press again to replace; Undo takes it all back.`;
-    return;
-  }
-  try {
-    await docWriteContents(after, hashes, true);
-  } catch (error) {
-    return toast(error.message || "Couldn't replace. Nothing was changed.", true);
-  }
-  docReplaceDisarm();
-  $("doc-replace-dialog").close();
-  offerUndo(
-    `Replaced ${total} in ${nounCount(after.length, "document")}`,
-    `Replaced ${total} in ${nounCount(after.length, "document")}. Undo takes it all back.`,
-    () => docWriteContents(before, hashes),
-    () => docWriteContents(after, hashes)
-  );
-}
-
-for (const id of ["doc-replace-find", "doc-replace-regex", "doc-replace-case", "doc-replace-word"]) {
-  $(id)?.addEventListener(id === "doc-replace-find" ? "input" : "change", () => {
-    clearTimeout(docReplace.timer);
-    docReplace.timer = setTimeout(renderDocReplace, 250);
-  });
-}
-$("doc-replace-run")?.addEventListener("click", runDocReplace);
-$("doc-replace-with")?.addEventListener("keydown", (event) => {
-  if (event.key === "Enter" && !$("doc-replace-run").disabled) runDocReplace();
-});
 
 $("doc-history")?.addEventListener("click", openDocHistory);
 $("doc-history-name")?.addEventListener("click", docNameCurrentVersion);
@@ -14466,7 +13505,7 @@ $("doc-export-docx").addEventListener("click", exportDocumentDocx);
 $("doc-export-pdf").addEventListener("click", exportDocumentPdf);
 $("doc-delete").addEventListener("click", deleteCurrentDocument);
 $("doc-attach-bookmark").addEventListener("click", attachBookmarkToDocument);
-$("doc-ai").addEventListener("click", openDocAiPanel);
+$("doc-ai").addEventListener("click", () => docAiLazy("openDocAiPanel"));
 //: A code document's Format: the selection when there is one, else the
 //: whole file (`docFormatCode`). The press takes the focus from the editor,
 //: so it is handed back: formatting is a step in the middle of typing.
@@ -14481,14 +13520,14 @@ $("doc-code-format").addEventListener("click", async () => {
 });
 $("doc-ai-close").addEventListener("click", closeDocAiPanel);
 $("doc-ai-cancel").addEventListener("click", closeDocAiPanel);
-$("doc-ai-run").addEventListener("click", runDocAiEdit);
+$("doc-ai-run").addEventListener("click", () => docAiLazy("runDocAiEdit"));
 $("doc-ai-cancel-run").addEventListener("click", () => docAiController?.abort());
-$("doc-ai-accept").addEventListener("click", acceptDocAiEdit);
+$("doc-ai-accept").addEventListener("click", () => docAiLazy("acceptDocAiEdit"));
 $("doc-ai-instruction").addEventListener("keydown", (e) => {
-  if (e.key === "Enter") { e.preventDefault(); runDocAiEdit(); }
+  if (e.key === "Enter") { e.preventDefault(); docAiLazy("runDocAiEdit"); }
 });
 for (const radio of document.querySelectorAll('input[name="doc-ai-verb"]')) {
-  radio.addEventListener("change", docAiVerbChanged);
+  radio.addEventListener("change", () => docAiLazy("docAiVerbChanged"));
 }
 $("doc-ai-history").addEventListener("click", openDocAiHistory);
 $("doc-extract").addEventListener("click", openDocExtractPreview);

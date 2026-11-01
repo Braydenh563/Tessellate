@@ -695,7 +695,7 @@ def test_every_export_format_names_the_file_the_same_way():
     assert names[:5] == ["Sleep-essay.docx", "ab-c.docx", "document.docx", "document.docx", "Caf\u00e9-notes.docx"]
     assert len(names[5]) == 65
     assert "docExportName(" in (root / "documents-word.js").read_text(encoding="utf-8")
-    assert "docExportName(currentDoc.title" in source
+    assert "docExportName(currentDoc.title" in source + (root / "documents-export.js").read_text(encoding="utf-8")
 
 
 def test_library_preview_reads_a_table_and_markers_as_plain_words(client):

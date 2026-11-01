@@ -5088,7 +5088,7 @@ SEG_IN_POPUPS = {
 }
 SEG_BUILT_IN_SCRIPT = {
     ("app.js", "seg seg-compact confirm-seg"): "promptDialog's `segment`, a value",
-    ("documents.js", "seg"): "the print setup's values",
+    ("documents-export.js", "seg"): "the print setup's values",
     ("skills.js", "seg seg-compact chat-skill-pace"): "a skill's pace, a value",
     ("whiteboard.js", "seg seg-compact wb-export-seg"): "Export this board: the format, a value",
     ("timeline-calendar.js", "seg seg-compact timeline-cal-span"): "not a popup: the calendar head's view mode (Month, Week, Day)",
@@ -5615,7 +5615,8 @@ FIRST_LINE_NOT_A_NAME = {
     "documents-code.js": 3,  # parser messages and a search seed from code
     "documents-codekit.js": 2,  # a snippet's first line of code
     "documents-prose.js": 1,  # a prose-check option's text
-    "documents.js": 2,  # an editor selection and a placeholder
+    "documents.js": 1,  # a placeholder
+    "documents-replace.js": 1,  # the editor selection that seeds the find field (moved out of documents.js, DC13)
     "editor.js": 2,  # the link target a [[wiki link]] resolves by (stored words, brackets stripped)
     "quick-note.js": 1,  # the quick-note field's own typed title
 }
@@ -6343,7 +6344,7 @@ PANEL_FIXED_JS = {
     "capture-ask.js": "an anchored panel",
     "chat-edit.js": "an inline edit overlay",
     "documents-code.js": "help bodies and anchored menus",
-    "documents.js": "an anchored overlay",
+    "documents-export.js": "an anchored overlay (the print setup)",
     "edit-conflict.js": "a blocking choice",
     "editor.js": "the formatting bar and an anchored overlay",
     "graph.js": "anchored node popups",
