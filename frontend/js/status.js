@@ -1423,7 +1423,7 @@ const UNDO_STACK_LIMIT = 50;
 
 function pushUndo(label, undo, redo) {
   //: `at`: a toast's Undo finds the entry it stands for (`keepToastAction`).
-  const action = { label, undo, redo, at: Date.now() };
+  const action = { label, undo, redo, at: Date.now(), space: activeSpaceId() };
   undoStack.push(action);
   if (undoStack.length > UNDO_STACK_LIMIT) undoStack.shift();
   // A fresh action invalidates whatever was available to redo, the same
@@ -1640,6 +1640,8 @@ async function performUndoNow() {
   const action = undoStack.pop();
   if (!action) return;
   try {
+    //: Made in another space: go back there first (space-swap.js).
+    if (action.space && !(await spaceEnterFor(action))) throw new Error("Couldn't go back to the space it was made in.");
     await action.undo();
     action.undoneAt = Date.now();
     redoStack.push(action);
@@ -1663,6 +1665,7 @@ async function performRedoNow() {
   const action = redoStack.pop();
   if (!action) return;
   try {
+    if (action.space && !(await spaceEnterFor(action))) throw new Error("Couldn't go back to the space it was made in.");
     await action.redo();
     undoStack.push(action);
     toast(`Redone: ${action.label}`);

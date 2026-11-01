@@ -209,16 +209,10 @@ function authHeaders() {
   };
 }
 
+//: Swaps the data in place, no reload (`swapSpace`, a stand-in that loads
+//: space-swap.js on the first switch): the tray and Undo carry across spaces (INBOX 1520, audit 1031 Z1).
 function setActiveSpace(id) {
-  prefs.set("spaceId", id);
-  // A full reload rather than a re-fetch of everything on the page. Every list,
-  // count, graph and sidebar in the app is scoped by the header, so a partial
-  // refresh would leave whichever one we forgot showing the old space, and a
-  // space that is half-switched is worse than one that took a second.
-  // What the reload costs, said once (audit 1031 Z1): the Undo stack is
-  // emptied (the delete-space dialog says so); the tray survives it, being
-  // kept in sessionStorage for the whole notebook (obj-tray.js).
-  window.location.reload();
+  return swapSpace(id);
 }
 
 function spaceIconPicker(container, hiddenInput) {
@@ -527,7 +521,6 @@ function initSpaceSwitcher() {
         body: JSON.stringify({ name, icon: $("space-create-icon").value }),
       });
       $("space-create-dialog").close();
-      //: Made in place, with no reload: a reload empties the session's Undo.
       //: Undo moves anything put in it meanwhile to the default space, then
       //: removes it; Redo makes it again under the id the server gives next.
       const made = { name, icon: $("space-create-icon").value };
@@ -536,7 +529,7 @@ function initSpaceSwitcher() {
         `Made the space “${name}”`,
         async () => {
           await api(`/spaces/${encodeURIComponent(live.id)}?move_to=default`, { method: "DELETE" });
-          if (activeSpaceId() === live.id) setActiveSpace("all");
+          if (activeSpaceId() === live.id) await setActiveSpace("all");
           else await loadSpaces();
         },
         async () => {
