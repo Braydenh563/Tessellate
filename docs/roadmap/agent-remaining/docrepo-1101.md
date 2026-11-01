@@ -6,3 +6,5 @@ Branch agent/docrepo-1101; port 8871.
 - next: routes_conversations, routes_whiteboard, routes_bench, routes_reminders, routes_mentions
 - done: 4dafc27 chat group; second group (routes_conversations, whiteboard, bench, reminders, mentions) in the commit after
 - next: routes_entries (find x2, mention_rows, attached_to), then routes_graph, routes_library, timeline/diag/debug/code_assist/documents
+- done: 7bed0ab second group; routes_entries in the commit after
+- next: routes_graph (link_pairs, unshelved, held, pinned), routes_library, timeline/diag/debug/code_assist/documents (python3 scratchpad/groups.py graph|library|rest)

@@ -22,6 +22,7 @@ from tessellate.core.database import (
     LIKE_ESCAPE,
     Document,
     DocumentAiEdit,
+    DocumentLink,
     DocumentRevision,
     like_escape,
     utcnow,
@@ -162,6 +163,29 @@ def mentioning_names(session: Session, likes: list[str], limit: int) -> list[Doc
         .limit(limit)
     ))
 
+
+def mention_rows(session: Session, likes: list[str]):  # noqa: ANN201
+    """Per unshelved document whose text matches any LIKE pattern, newest edit
+    first: (id, title, content, then one flag per pattern, in order), so one scan
+    answers every label. `like`, not `ilike`: SQLite folds ASCII case already and
+    `ilike` copies every row's text once per pattern (74 ms against 35 ms over 60
+    labels on 500 notes, same answers)."""
+    flags = [Document.content.like(like, escape=LIKE_ESCAPE) for like in likes]
+    return session.execute(
+        select(Document.id, Document.title, Document.content, *[f.label(f"m{i}") for i, f in enumerate(flags)])
+        .where(Document.archived_at.is_(None), or_(*flags))
+        .order_by(*_NEWEST)
+    )
+
+
+def attached_to_entry(session: Session, entry_id: int) -> list[Document]:
+    """The documents a note is attached to, by title."""
+    return list(session.scalars(
+        select(Document)
+        .join(DocumentLink, DocumentLink.document_id == Document.id)
+        .where(DocumentLink.entry_id == entry_id)
+        .order_by(Document.title)
+    ))
 
 # --- history ---------------------------------------------------------------------
 

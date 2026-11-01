@@ -48,8 +48,6 @@ from tessellate.core.validation_copy import Said
 from tessellate.core.database import (  # noqa: F401 (EntryLink used in link_suggestions)
     AuditLog,
     DerivedTension,
-    Document,
-    DocumentLink,
     EmbeddingRecord,
     Entry,
     Entity,
@@ -68,6 +66,7 @@ from tessellate.entry import duplicates, link_facts, manager
 from tessellate.repo import bookmarks as bookmark_repo
 from tessellate.repo import relation_types
 from tessellate.repo import content as content_repo
+from tessellate.repo import documents as documents_repo
 from tessellate.repo.content import NOTES
 from tessellate.entry.mentions import MENTION_MIN_TITLE_CHARS, names_label
 from tessellate.entry import meetings as meeting_shape
@@ -877,7 +876,7 @@ def _finish_new_entry(session: Session, entry, body: EntryCreate, defer: bool) -
     # that has since been deleted is skipped rather than refused: the note is
     # the thing being saved, and losing it over a stale id would be absurd.
     for document_id in dict.fromkeys(body.document_ids):
-        if session.get(Document, document_id) is not None:
+        if documents_repo.find(session, document_id) is not None:
             manager.link_document(session, document_id, entry.id)
 
     # A note is one of the three "committed" moments core/media_process.py
@@ -3391,12 +3390,7 @@ def _document_mentions(session: Session, distinct: list[str]) -> dict[str, list[
     #: once per label. Measured over 60 labels on 500 notes, same answers:
     #: 74 ms per call with `ilike`, 35 ms with `like`
     #: (`test_a_mention_matches_whatever_the_case...` pins the folding).
-    flags = [Document.content.like(_mention_like(label), escape=LIKE_ESCAPE) for label in distinct]
-    for row in session.execute(
-        select(Document.id, Document.title, Document.content, *[f.label(f"m{i}") for i, f in enumerate(flags)])
-        .where(Document.archived_at.is_(None), or_(*flags))
-        .order_by(Document.updated_at.desc(), Document.id.desc())
-    ):
+    for row in documents_repo.mention_rows(session, [_mention_like(label) for label in distinct]):
         for i, label in enumerate(distinct):
             if row[3 + i] and len(hits[label]) < REFERENCE_SOURCES_MAX and _names(row[2], label):
                 hits[label].append((row[0], row[1] or "Untitled", row[2] or ""))
@@ -3928,12 +3922,7 @@ def _attached_documents(session: Session, entry: Entry) -> list[dict]:
     """The documents this note is attached to, by title."""
     return [
         {"id": doc.id, "title": doc.title, "file_type": doc.file_type}
-        for doc in session.scalars(
-            select(Document)
-            .join(DocumentLink, DocumentLink.document_id == Document.id)
-            .where(DocumentLink.entry_id == entry.id)
-            .order_by(Document.title)
-        )
+        for doc in documents_repo.attached_to_entry(session, entry.id)
     ]
 
 
@@ -4346,7 +4335,7 @@ def extract_commit(body: ExtractCommitBody, session: Session = Depends(get_sessi
         created.append(entry)
 
     if body.source_document_id is not None:
-        document = session.get(Document, body.source_document_id)
+        document = documents_repo.find(session, body.source_document_id)
         # A document deleted between preview and commit is skipped rather
         # than refused: the notes are the thing being saved, same reasoning
         # `create_entry`'s own `document_ids` handling already uses.
