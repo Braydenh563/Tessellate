@@ -15,3 +15,5 @@ _score is hot (per candidate): timeit over 2,000 candidates before and after.
 - next: _score split (new code in scratchpad cmpcc/select_new.py, bench cmpcc/bench_score.py), composer_select.py:150
 - done: _score 28 to under 15 (composer_select.py `_Scorer`); cpu ms per call, 2,000 candidates (10,028 sentences), 4 question shapes, scores equal, median of 30 interleaved: before 136.9, after 104.7
 - next: tests/test_composer*.py once on the final head, then the report
+- done: tests/test_composer*.py plus voice, k3 and stats page on af1f932, -n 2: exit 0
+- next: nothing left from the brief
