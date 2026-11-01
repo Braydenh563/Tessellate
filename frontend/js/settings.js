@@ -2577,6 +2577,24 @@ function themeDefaultAccent() {
   return value;
 }
 
+//: **A setting that needs another one on is dimmed, never dead** (the owner,
+//: 2026-11-01: "why are the glass controls disabled, i wanna use them").
+//: `.dependent-off` stays usable, and using it turns its parent on
+//: (`glassWake`, settings-controls.js). Only Performance mode, which says
+//: why, still holds the glass rows down (`.disabled-row`).
+function renderGlassRows() {
+  const perf = perfModeOn();
+  const glassOff = appearancePref("glass") !== "on";
+  $("glass-row").classList.toggle("disabled-row", perf);
+  for (const id of ["glass-sheen-row", "glass-controls-row", "glass-blur-row", "glass-opacity-row"]) {
+    $(id).classList.toggle("disabled-row", perf);
+    $(id).classList.toggle("dependent-off", glassOff && !perf);
+  }
+  const sheenOff = glassOff || appearancePref("glass-sheen") !== "on";
+  $("glass-sheen-strength-row").classList.toggle("disabled-row", perf);
+  $("glass-sheen-strength-row").classList.toggle("dependent-off", sheenOff && !perf);
+}
+
 function renderAppearance() {
   renderThemePresets();
   const holder = $("accent-swatches");
@@ -2647,18 +2665,12 @@ function renderAppearance() {
   $("perf-mode-hint").textContent = perfWhy;
   $("perf-mode-hint").classList.toggle("hidden", !perfWhy);
   $("glass-toggle").checked = appearancePref("glass") === "on";
-  $("glass-row").classList.toggle("disabled-row", perfModeOn());
   $("glass-sheen-toggle").checked = appearancePref("glass-sheen") === "on";
   $("glass-controls-toggle").checked = appearancePref("glass-controls") === "on";
-  $("glass-controls-row").classList.toggle("disabled-row", appearancePref("glass") !== "on" || perfModeOn());
   if ($("page-wash-toggle")) $("page-wash-toggle").checked = appearancePref("page-wash") === "on";
-  $("glass-sheen-row").classList.toggle("disabled-row", appearancePref("glass") !== "on" || perfModeOn());
   $("glass-sheen-strength").value = appearancePref("glass-sheen-strength");
   $("glass-sheen-strength-value").textContent = `${appearancePref("glass-sheen-strength")}%`;
-  $("glass-sheen-strength-row").classList.toggle(
-    "disabled-row",
-    appearancePref("glass") !== "on" || appearancePref("glass-sheen") !== "on"
-  );
+  renderGlassRows();
   $("bg-intensity").value = appearancePref("bg-intensity");
   $("bg-intensity-value").textContent = `${appearancePref("bg-intensity")}%`;
   renderBgStyleGrid();
@@ -2677,12 +2689,8 @@ function renderAppearance() {
   $("accent-custom").value = prefs.get("accent-custom", null) || "#4664f0";
   $("page-bg-custom").value = prefs.get("page-bg", null) || "#f5f7fb";
   $("custom-css").value = prefs.get("custom-css", null) || "";
-  // Blur strength and opacity only matter while glass is on.
-  $("glass-blur-row").classList.toggle("disabled-row", appearancePref("glass") !== "on");
-  $("glass-opacity-row").classList.toggle("disabled-row", appearancePref("glass") !== "on");
-  // Style/intensity only matter while the background art is on.
-  const artOff = !bgArtOn();
-  $("bg-intensity-row").classList.toggle("disabled-row", artOff);
+  // Intensity only matters while the background art is on; using it turns the art on.
+  $("bg-intensity-row").classList.toggle("dependent-off", !bgArtOn());
   renderPaletteGrid();
   _segActive("theme-seg", "themeChoice", effectiveTheme());
   _segActive("fontsize-seg", "fontsize", appearancePref("fontsize"));
@@ -3383,7 +3391,11 @@ function collapseLongSettingHints(root) {
   // version of this ran, found nothing, and changed no measurement.
   //: `.setting-label` rows (a label word beside a select) carry the same
   //: hints; their long ones collapse the same way (Brief 4).
-  for (const hint of scope.querySelectorAll("label small.muted, .setting-label small.muted")) {
+  //: Not a hint with an id: that is a status line a render fills and empties
+  //: (`renderProgressMotionHint`, the perf, art and clear lines). Collapsed
+  //: while it had words, it left a stray '?' on a line of its own once the
+  //: render emptied it (the owner, 2026-11-01, Progress indicators).
+  for (const hint of scope.querySelectorAll("label small.muted:not([id]), .setting-label small.muted:not([id])")) {
     if (hint.dataset.collapsible) continue;
     const text = (hint.textContent || "").trim();
     if (text.length <= SETTINGS_HINT_INLINE_CHARS) continue;
@@ -4180,9 +4192,10 @@ function wireFoldHelps() {
   }
 }
 
-wireFoldHelps();
-
-wireSettingsFolds();
+//: The folds are in Settings' lazy body (settings-body.js), not in the page at
+//: boot: run when it is built, or the '?' is never placed and no fold remembers.
+onSettingsBody(wireFoldHelps);
+onSettingsBody(wireSettingsFolds);
 
 // --- Last run of each job (INBOX 438) ------------------------------------------
 //

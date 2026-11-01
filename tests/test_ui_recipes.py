@@ -2381,7 +2381,7 @@ def test_a_folded_settings_group_is_keyed_and_remembered() -> None:
         firsts.setdefault(pane, " open" in attrs)
     assert all(firsts.values()), f"a pane whose first fold starts closed: {firsts}"
     js = with_pieces("settings.js")
-    assert "wireSettingsFolds();" in js, "the folds' open state is remembered by wireSettingsFolds"
+    assert "onSettingsBody(wireSettingsFolds);" in js, "the folds' open state is remembered by wireSettingsFolds"
 
 
 def test_a_folded_group_of_settings_is_the_shared_disclosure_recipe() -> None:
@@ -6789,3 +6789,25 @@ def test_the_format_panel_is_one_grid_of_helped_groups():
     assert 'input[type="number"]::-webkit-inner-spin-button {\n  opacity: 0;' in css
     assert ":is(:hover, :focus-visible)::-webkit-inner-spin-button" in css
     assert ".wb-fmt-row" not in (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+
+
+def test_a_setting_under_an_off_parent_stays_usable():
+    # The owner, 2026-11-01: "why are the glass controls disabled, i wanna use
+    # them". A parent pref being off dims a row (`.dependent-off`), never
+    # stops it (`.disabled-row` has no pointer); using it turns the parent on.
+
+    settings = app_js_text() + frontend_text("settings.js") + frontend_text("settings-controls.js")
+    dead = re.findall(r'toggle\(\s*"disabled-row",\s*[^;]*(?:appearancePref|bgArtOn)\(', settings)
+    assert not dead, dead
+    assert "function glassWake(" in settings and "function renderGlassRows(" in settings
+    css = (ROOT / "frontend" / "css" / "04-chat-dock-appearance.css").read_text(encoding="utf-8")
+    rule = css[css.index(".dependent-off {") :]
+    assert "pointer-events" not in rule[: rule.index("}")]
+
+
+def test_a_status_line_a_render_fills_is_never_collapsed_behind_a_question_mark():
+    # The owner, 2026-11-01 ("this section is structured wierdly"): the
+    # Progress indicators line, long while Motion asked for less movement, was
+    # collapsed into a '?' and left that '?' alone on its own line once emptied.
+    body = frontend_text("settings.js").split("function collapseLongSettingHints(")[1].split("\n}\n")[0]
+    assert 'label small.muted:not([id]), .setting-label small.muted:not([id])' in body

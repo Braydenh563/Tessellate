@@ -3797,18 +3797,29 @@ $("page-wash-toggle")?.addEventListener("change", (e) => {
   prefs.set("page-wash", e.target.checked ? "on" : "off");
   applyAppearance();
 });
+//: Using a glass setting while the glass is off turns the glass on (and the
+//: sheen, for its strength): a dimmed row is a hint, not a wall
+//: (`renderGlassRows`, settings.js). Repaints the rows only when it woke one.
+function glassWake(sheen = false) {
+  const wake = [["glass", true], ["glass-sheen", sheen]].filter(([key, want]) => want && appearancePref(key) !== "on");
+  for (const [key] of wake) prefs.set(key, "on");
+  if (wake.length) renderAppearance();
+}
 $("glass-sheen-toggle").addEventListener("change", (e) => {
   prefs.set("glass-sheen", e.target.checked ? "on" : "off");
+  if (e.target.checked) glassWake();
   applyAppearance();
-  $("glass-sheen-strength-row")?.classList.toggle("disabled-row", !e.target.checked);
+  renderGlassRows();
 });
 $("glass-controls-toggle").addEventListener("change", (e) => {
   prefs.set("glass-controls", e.target.checked ? "on" : "off");
+  if (e.target.checked) glassWake();
   applyAppearance();
 });
 $("glass-sheen-strength").addEventListener("input", (e) => {
   prefs.set("glass-sheen-strength", e.target.value);
   $("glass-sheen-strength-value").textContent = `${e.target.value}%`;
+  glassWake(true);
   applyAppearance();
 });
 for (const btn of document.querySelectorAll("#motion-seg button")) {
@@ -3841,8 +3852,13 @@ $("ui-motion-toggle").addEventListener("change", (e) => {
 $("bg-intensity").addEventListener("input", (e) => {
   prefs.set("bg-intensity", e.target.value);
   $("bg-intensity-value").textContent = `${e.target.value}%`;
+  // Using it while the art is off turns the art on (`.dependent-off`, settings.js).
+  if (!bgArtOn()) {
+    toggleBgArt(true);
+    renderAppearance();
+  }
   applyAppearance();
-  if (bgArtOn()) startBgArt(); // intensity also drives particle density
+  startBgArt(); // intensity also drives particle density
 });
 // Corner rounding + glass blur: live sliders over CSS custom properties.
 $("radius-slider").addEventListener("input", (e) => {
@@ -3853,11 +3869,13 @@ $("radius-slider").addEventListener("input", (e) => {
 $("glass-blur").addEventListener("input", (e) => {
   prefs.set("glass-blur", e.target.value);
   $("glass-blur-value").textContent = `${e.target.value}px`;
+  glassWake();
   applyAppearance();
 });
 $("glass-opacity").addEventListener("input", (e) => {
   prefs.set("glass-opacity", e.target.value);
   $("glass-opacity-value").textContent = `${e.target.value}%`;
+  glassWake();
   applyAppearance();
 });
 // All four routes go through app.js's setZoom, so the slider, the buttons, the

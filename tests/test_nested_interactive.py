@@ -159,7 +159,7 @@ def test_the_button_is_placed_over_its_slot_and_still_opens_its_fold():
     place = _function(SETTINGS, "placeFoldHelp")
     assert ".fold-help-slot" in place and "getBoundingClientRect" in place
     assert "ResizeObserver" in _function(SETTINGS, "wireFoldHelps")
-    assert "wireFoldHelps();" in SETTINGS
+    assert "onSettingsBody(wireFoldHelps);" in SETTINGS
     folds = _function(SETTINGS, "wireSettingsFolds")
     assert ":scope.fold-help-wrap > .fold-help" in folds
     assert re.search(r"\.fold-help-wrap\s*\{[^}]*position:\s*relative", CSS)

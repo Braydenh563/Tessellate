@@ -103,6 +103,26 @@ def test_no_boot_script_asks_for_a_control_in_the_body_at_its_top_level():
     assert not found, "a boot script reads a control of Settings' body and would build it: " + "; ".join(found)
 
 
+def test_no_boot_script_sweeps_the_body_at_its_top_level():
+    # The same mistake by selector: `wireFoldHelps();` at the top of settings.js
+    # ran before the body existed, found no folds, and every fold's '?' sat
+    # unplaced over the head's corner. A function that queries Settings by
+    # selector runs from `onSettingsBody`, never as a bare top-level call.
+    funcs = {}
+    for script in _boot_scripts():
+        text = _src(script.rsplit("/", 1)[1])
+        for m in re.finditer(r"^(?:async )?function (\w+)\([^)]*\) \{\n(.*?)^\}", text, re.S | re.M):
+            funcs[m.group(1)] = m.group(2)
+    sweeps = re.compile(r"querySelector(?:All)?\(\s*[\"'`][^\"'`]*#settings-modal")
+    found = []
+    for script in _boot_scripts():
+        text = _src(script.rsplit("/", 1)[1])
+        for m in re.finditer(r"^(\w+)\(\);?$", text, re.M):
+            if sweeps.search(funcs.get(m.group(1), "")):
+                found.append(f"{script} {m.group(1)}()")
+    assert not found, "a boot script sweeps Settings' body before it is built: " + "; ".join(found)
+
+
 def test_every_boot_sweep_over_the_body_is_rerun_at_the_build():
     # What the page ran over every control at boot, for the controls that now
     # arrive late (the four a before/after snapshot of every section found).

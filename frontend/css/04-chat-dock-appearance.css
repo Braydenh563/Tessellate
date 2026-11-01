@@ -2248,10 +2248,19 @@ label.setting-check,
   line-height: 1.35;
 }
 
-/* A row whose parent control is switched off. */
+/* A row a stated reason holds down (Performance mode, a paused master). */
 .disabled-row {
   opacity: 0.45;
   pointer-events: none;
+}
+/* A row whose parent is off: dimmed, still usable, and using it turns the
+   parent on (`renderGlassRows`, settings.js). Full strength under the pointer
+   or the keyboard, so it reads as reachable. */
+.dependent-off {
+  opacity: 0.6;
+}
+.dependent-off:is(:hover, :focus-within) {
+  opacity: 1;
 }
 
 .advanced-css summary {
