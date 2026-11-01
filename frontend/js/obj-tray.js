@@ -146,6 +146,9 @@ function objTraySheet() {
       objTrayDraw(body);
     },
   });
+  //: The sheet's own first stop is its close button; the first item is where a
+  //: hand opening the tray is going (UX audit 1031, phone).
+  document.querySelector('[data-sheet="obj-tray"] .obj-tray-use')?.focus();
 }
 
 function objTrayRow(ref) {

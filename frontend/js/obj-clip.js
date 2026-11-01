@@ -82,7 +82,7 @@ document.addEventListener("paste", (event) => {
 //: The one landing for a paste, a drop and a tray click: renders, and says why
 //: when it could not.
 function objPasteAt(ref, dest) {
-  if (dest.type === "chat" && ref.kind === "note" && attachedNoteIds.includes(ref.id)) return toast("Already attached", "info");
+  if (dest.type === "chat" && OBJ_STAGED[ref.kind]?.(ref)) return toast("Already attached", "info");
   if (!objRender(ref, dest)) return toast(dest.type === "chat" ? "That message has all the attachments it takes." : "Nothing here takes that.", "info");
   if (dest.type === "chat") announce(`Attached ${ref.title} to the message.`);
 }
