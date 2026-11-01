@@ -2,7 +2,7 @@
 
 Generated 2026-11-01 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7546, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8394, test files 1808, tests 15534, plan headings 990, app scripts 28, boot scripts 37, script files 221.
+Counts: frontend functions 7546, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8394, test files 1810, tests 15536, plan headings 990, app scripts 28, boot scripts 37, script files 221.
 
 ## Frontend functions (7546)
 
@@ -22972,7 +22972,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15534)
+## Tests (15536)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23253,6 +23253,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_audit_1030.py | 9 |
 | tests/test_composer_aware_1025.py | 18 |
 | tests/test_composer_bare_title.py | 2 |
+| tests/test_composer_body_paths.py | 1 |
 | tests/test_composer_brief.py | 13 |
 | tests/test_composer_calc_1025.py | 5 |
 | tests/test_composer_cfix_1031.py | 138 |
@@ -24363,6 +24364,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_seed_examples.py | 6 |
 | tests/test_seg_pressed_1494.py | 4 |
 | tests/test_select_focus.py | 2 |
+| tests/test_select_score_paths.py | 1 |
 | tests/test_selection_actions_row30.py | 6 |
 | tests/test_selection_context.py | 7 |
 | tests/test_selection_menu.py | 13 |
