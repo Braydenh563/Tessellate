@@ -704,6 +704,7 @@ def test_the_first_poll_against_a_busy_runner_says_checking_instead_of_waiting(c
     routes_models._installed_known.pop(routes_models._flight_key(ollama), None)
     release = threading.Event()
     monkeypatch.setattr(ollama, "list_models", lambda: (release.wait(30), [{"name": "model-a", "size": 1}])[1])
+    client.get("/health")  # the app's first request pays its own warm-up (3.8 s on CI); time the poll alone
     started = time.monotonic()
     first = client.get("/models/status").json()
     assert time.monotonic() - started < 3
