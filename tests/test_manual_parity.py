@@ -263,3 +263,22 @@ def test_the_graph_search_count_and_keys_are_in_the_guide() -> None:
     assert "Enter jumps to the next match" in body and "Shift and Enter" in body and "Esc clears the search" in body
     html = (FRONTEND / "index.html").read_text(encoding="utf-8")
     assert 'id="graph-search-count"' in html
+
+
+def test_the_board_zoom_keys_are_in_the_keys_sheet_and_the_guide() -> None:
+    """INBOX 1509: Ctrl or Cmd with + or - zooms the board about the selection
+    (else the view's centre), Ctrl+0 fits and Ctrl+1 is 100%, as InDesign
+    has it. The command table (the Keys sheet's rows), the menus and the
+    Guide's keys topic all say the same keys."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    commands = (FRONTEND / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
+    assert 'label: "Zoom to 100%", keys: "Ctrl+1"' in commands
+    assert 'label: "Fit everything", keys: "Ctrl+0"' in commands
+    assert '{ cmd: "zoom-fit", also: ["Shift+1"] }' in commands
+    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    assert "<span>Zoom to 100%</span><kbd>Ctrl+1</kbd>" in html
+    assert "<span>Fit everything</span><kbd>Ctrl+0</kbd>" in html
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "whiteboard-controls"))
+    assert "Ctrl+0 fits all" in body and "Ctrl+1 is 100%" in body
+    assert "zoom the board about the selection's centre" in body

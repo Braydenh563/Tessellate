@@ -7089,11 +7089,11 @@ Link to another note with [[its first few words]]."></textarea>
             <!-- Zoom in and Zoom out are the zoom bar's two buttons already,
                  one click away at the foot of the canvas, so they are not
                  here a second time; what the bar has no button for (100%)
-                 and what is worth its key (Shift+1, Ctrl+0) is. -->
+                 and what is worth its key (Ctrl+0, Ctrl+1) is. -->
             <div class="wb-menu-section" role="group" aria-label="Zoom">
-              <button type="button" class="wb-menu-item" data-wb-click="wb-zoom-fit"><i class="ph ph-frame-corners ph-lead" aria-hidden="true"></i><span>Fit everything</span><kbd>Shift+1</kbd></button>
+              <button type="button" class="wb-menu-item" data-wb-click="wb-zoom-fit"><i class="ph ph-frame-corners ph-lead" aria-hidden="true"></i><span>Fit everything</span><kbd>Ctrl+0</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="zoom-selection"><i class="ph ph-selection ph-lead" aria-hidden="true"></i><span>Zoom to the selection</span><kbd>Shift+2</kbd></button>
-              <button type="button" class="wb-menu-item" id="wb-zoom-actual"><i class="ph ph-magnifying-glass ph-lead" aria-hidden="true"></i><span>Zoom to 100%</span><kbd>Ctrl+0</kbd></button>
+              <button type="button" class="wb-menu-item" id="wb-zoom-actual"><i class="ph ph-magnifying-glass ph-lead" aria-hidden="true"></i><span>Zoom to 100%</span><kbd>Ctrl+1</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-click="wb-fullscreen"><i class="ph ph-arrows-out ph-lead" aria-hidden="true"></i><span>Full screen</span><kbd>Esc leaves</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-fn="present" data-wb-surface="board" title="Show the board's frames one at a time, full screen"><i class="ph ph-presentation ph-lead" aria-hidden="true"></i><span>Present frames</span><kbd>arrows · Esc</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-fn="present" data-wb-surface="map" title="Show the map one branch at a time, full screen"><i class="ph ph-presentation ph-lead" aria-hidden="true"></i><span>Present branches</span><kbd>arrows · Esc</kbd></button>
@@ -7382,7 +7382,7 @@ Link to another note with [[its first few words]]."></textarea>
           <p>
             The canvas itself: double-click it for a new trunk, right-click
             it for the map's own menu. Escape takes back a drag you have not
-            let go of yet; Shift+1 fits the whole map and Ctrl+0 shows it at
+            let go of yet; Ctrl+0 or Shift+1 fits the whole map and Ctrl+1 shows it at
             100%. The canvas's own background colour is in View, in the top
             bar, and PNG or SVG export keeps whatever it is set to.
           </p>
@@ -7662,9 +7662,9 @@ Link to another note with [[its first few words]]."></textarea>
 
     <div class="whiteboard-floating-panel bottom-right card glass" data-panel-id="zoom">
       <button id="wb-zoom-out" class="ghost small icon-only" title="Zoom out (Ctrl+-)" aria-label="Zoom out"><i class="ph ph-minus" aria-hidden="true"></i></button>
-      <button id="wb-zoom-level" type="button" class="ghost small wb-zoom-level" title="Zoom level; press for 100% (Ctrl+0)" aria-label="100%, zoom level, press for 100%">100%</button>
+      <button id="wb-zoom-level" type="button" class="ghost small wb-zoom-level" title="Zoom level; press for 100% (Ctrl+1)" aria-label="100%, zoom level, press for 100%">100%</button>
       <button id="wb-zoom-in" class="ghost small icon-only" title="Zoom in (Ctrl+=)" aria-label="Zoom in"><i class="ph ph-plus" aria-hidden="true"></i></button>
-      <button id="wb-zoom-fit" class="ghost small icon-only" title="Fit to screen (Shift+1)" aria-label="Fit to screen"><i class="ph ph-frame-corners" aria-hidden="true"></i></button>
+      <button id="wb-zoom-fit" class="ghost small icon-only" title="Fit to screen (Ctrl+0)" aria-label="Fit to screen"><i class="ph ph-frame-corners" aria-hidden="true"></i></button>
     </div>
 
     <!-- **The context bar** (WHITEBOARD_PLAN.md decision 2): one surface in
@@ -8383,183 +8383,307 @@ Link to another note with [[its first few words]]."></textarea>
         <p id="wb-format-empty" class="muted empty-line">Select something on the board to format it.</p>
         <p id="wb-format-none" class="muted wb-lib-keys" hidden>Nothing on this tab for what is selected.</p>
         <section class="wb-fmt-section" data-format-panel="style" aria-label="Style">
-          <div class="wb-fmt-row" data-fmt="fill"><span class="wb-fmt-label">Fill</span>
-            <span class="wb-fmt-buttons"><label class="wb-snap-label" title="Filled"><input type="checkbox" id="wb-fmt-fill-on" aria-label="Filled"></label><input type="color" id="wb-fmt-fill" class="wb-color-picker" aria-label="Fill colour" title="Fill colour"></span>
+          <div class="wb-fmt-group" data-fmt-group="fill">
+            <h4 class="wb-fmt-head"><i class="ph ph-paint-bucket" aria-hidden="true"></i><span>Fill</span><button type="button" class="icon-only ghost small graph-help-toggle" data-help-for="wb-fmt-help-fill" aria-controls="wb-fmt-help-fill" aria-expanded="false" title="About fill" aria-label="About fill"><i class="ph ph-question" aria-hidden="true"></i></button></h4>
+            <div class="help-body hidden" id="wb-fmt-help-fill" role="dialog" aria-label="About fill">
+              <p><b>Fill</b>: the colour inside a shape or box; the tick turns it on or off.</p>
+              <p><b>Fill opacity</b>: how solid the fill is, 0 clear to 100 solid; the line keeps its own.</p>
+              <p><b>Fill style</b>: solid, or hatching, dots or dashes in the fill's colour.</p>
+              <p><b>Gradient</b>: the colour the fill fades to, and which way it fades.</p>
+            </div>
+            <div class="wb-fmt-row" data-fmt="fill"><span class="wb-fmt-label">Fill</span>
+              <span class="wb-fmt-buttons"><label class="wb-snap-label" title="Filled"><input type="checkbox" id="wb-fmt-fill-on" aria-label="Filled"></label><input type="color" id="wb-fmt-fill" class="wb-color-picker" aria-label="Fill colour" title="Fill colour"></span>
+            </div>
+            <div class="wb-fmt-row" data-fmt="fillalpha" role="group" aria-label="Fill opacity"><span class="wb-fmt-label">Fill opacity</span>
+              <span class="wb-fmt-stack"><span class="wb-fmt-buttons"><input type="range" id="wb-fmt-fillalpha" min="0" max="100" step="5" aria-label="Fill opacity" title="How solid the fill is; the line keeps its own"><output id="wb-fmt-fillalpha-out" for="wb-fmt-fillalpha" class="wb-fmt-out">100%</output></span>
+              <span class="wb-fmt-buttons wb-fmt-presets"><button type="button" class="ghost small" data-alpha-for="fillalpha" data-alpha-preset="0" aria-label="Fill opacity 0%" title="Fill opacity 0%">0</button><button type="button" class="ghost small" data-alpha-for="fillalpha" data-alpha-preset="25" aria-label="Fill opacity 25%" title="Fill opacity 25%">25</button><button type="button" class="ghost small" data-alpha-for="fillalpha" data-alpha-preset="50" aria-label="Fill opacity 50%" title="Fill opacity 50%">50</button><button type="button" class="ghost small" data-alpha-for="fillalpha" data-alpha-preset="75" aria-label="Fill opacity 75%" title="Fill opacity 75%">75</button><button type="button" class="ghost small" data-alpha-for="fillalpha" data-alpha-preset="100" aria-label="Fill opacity 100%" title="Fill opacity 100%">100</button></span></span>
+            </div>
+            <label class="wb-fmt-row" data-fmt="fillstyle"><span class="wb-fmt-label">Fill style</span>
+              <select id="wb-fmt-fillstyle" aria-label="Fill style" title="Fill the shape with lines or dots in its colour instead of a solid">
+                <option value="solid">Solid</option>
+                <option value="hatch">Hatch</option>
+                <option value="cross">Cross-hatch</option>
+                <option value="dots">Dots</option>
+                <option value="dashed">Dashes</option>
+                <option value="zigzag">Zigzag</option>
+              </select>
+            </label>
+            <div class="wb-fmt-row" data-fmt="gradient"><span class="wb-fmt-label">Gradient</span>
+              <span class="wb-fmt-buttons"><input type="color" id="wb-fmt-gradient" class="wb-color-picker" aria-label="Gradient second colour" title="The colour the fill fades to"><select id="wb-fmt-gradient-dir" aria-label="Gradient direction" title="Fade the fill into a second colour">
+                <option value="none">None</option>
+                <option value="s">Down</option>
+                <option value="n">Up</option>
+                <option value="e">Right</option>
+                <option value="w">Left</option>
+                <option value="radial">Radial</option>
+              </select></span>
+            </div>
           </div>
-          <div class="wb-fmt-row" data-fmt="fillalpha" role="group" aria-label="Fill opacity"><span class="wb-fmt-label">Fill opacity</span>
-            <span class="wb-fmt-stack"><span class="wb-fmt-buttons"><input type="range" id="wb-fmt-fillalpha" min="0" max="100" step="5" aria-label="Fill opacity" title="How solid the fill is; the line keeps its own"><output id="wb-fmt-fillalpha-out" for="wb-fmt-fillalpha" class="wb-fmt-out">100%</output></span>
-            <span class="wb-fmt-buttons wb-fmt-presets"><button type="button" class="ghost small" data-alpha-for="fillalpha" data-alpha-preset="0" aria-label="Fill opacity 0%" title="Fill opacity 0%">0</button><button type="button" class="ghost small" data-alpha-for="fillalpha" data-alpha-preset="25" aria-label="Fill opacity 25%" title="Fill opacity 25%">25</button><button type="button" class="ghost small" data-alpha-for="fillalpha" data-alpha-preset="50" aria-label="Fill opacity 50%" title="Fill opacity 50%">50</button><button type="button" class="ghost small" data-alpha-for="fillalpha" data-alpha-preset="75" aria-label="Fill opacity 75%" title="Fill opacity 75%">75</button><button type="button" class="ghost small" data-alpha-for="fillalpha" data-alpha-preset="100" aria-label="Fill opacity 100%" title="Fill opacity 100%">100</button></span></span>
+          <div class="wb-fmt-group" data-fmt-group="line">
+            <h4 class="wb-fmt-head"><i class="ph ph-pen-nib" aria-hidden="true"></i><span>Line</span><button type="button" class="icon-only ghost small graph-help-toggle" data-help-for="wb-fmt-help-line" aria-controls="wb-fmt-help-line" aria-expanded="false" title="About line" aria-label="About line"><i class="ph ph-question" aria-hidden="true"></i></button></h4>
+            <div class="help-body hidden" id="wb-fmt-help-line" role="dialog" aria-label="About line">
+              <p><b>Line, Border</b>: the colour of a line, or of a shape's or a box's edge.</p>
+              <p><b>Line opacity</b>: how solid the line is; the fill keeps its own.</p>
+              <p><b>Width</b>: how thick the line is, in pixels.</p>
+              <p><b>Pattern</b>: solid, dashed or dotted.</p>
+              <p><b>Dashes</b>: your own dash and gap lengths, such as 8 4.</p>
+              <p><b>Corners</b>: rounds the corners by this many pixels; 0 keeps them sharp.</p>
+              <p><b>Flow</b>: dashes that move along the line, to show a direction.</p>
+            </div>
+            <label class="wb-fmt-row" data-fmt="stroke"><span class="wb-fmt-label" id="wb-fmt-stroke-word">Line</span><input type="color" id="wb-fmt-stroke" class="wb-color-picker" aria-label="Line colour" title="Line colour"></label>
+            <div class="wb-fmt-row" data-fmt="strokealpha" role="group" aria-label="Line opacity"><span class="wb-fmt-label">Line opacity</span>
+              <span class="wb-fmt-stack"><span class="wb-fmt-buttons"><input type="range" id="wb-fmt-strokealpha" min="0" max="100" step="5" aria-label="Line opacity" title="How solid the line is; the fill keeps its own"><output id="wb-fmt-strokealpha-out" for="wb-fmt-strokealpha" class="wb-fmt-out">100%</output></span>
+              <span class="wb-fmt-buttons wb-fmt-presets"><button type="button" class="ghost small" data-alpha-for="strokealpha" data-alpha-preset="0" aria-label="Line opacity 0%" title="Line opacity 0%">0</button><button type="button" class="ghost small" data-alpha-for="strokealpha" data-alpha-preset="25" aria-label="Line opacity 25%" title="Line opacity 25%">25</button><button type="button" class="ghost small" data-alpha-for="strokealpha" data-alpha-preset="50" aria-label="Line opacity 50%" title="Line opacity 50%">50</button><button type="button" class="ghost small" data-alpha-for="strokealpha" data-alpha-preset="75" aria-label="Line opacity 75%" title="Line opacity 75%">75</button><button type="button" class="ghost small" data-alpha-for="strokealpha" data-alpha-preset="100" aria-label="Line opacity 100%" title="Line opacity 100%">100</button></span></span>
+            </div>
+            <label class="wb-fmt-row" data-fmt="width" data-unit="px"><span class="wb-fmt-label">Width</span><input type="number" id="wb-fmt-width" min="1" max="40" step="1" aria-label="Line width" title="Line width"></label>
+            <label class="wb-fmt-row" data-fmt="dash"><span class="wb-fmt-label">Pattern</span>
+              <select id="wb-fmt-dash" aria-label="Line pattern" title="Line pattern">
+                <option value="solid">Solid</option>
+                <option value="dashed">Dashed</option>
+                <option value="dotted">Dotted</option>
+              </select>
+            </label>
+            <label class="wb-fmt-row" data-fmt="pattern"><span class="wb-fmt-label">Dashes</span><input type="text" id="wb-fmt-pattern" inputmode="decimal" maxlength="40" placeholder="8 4" autocomplete="off" aria-label="Custom dash pattern" title="Your own dashes, in line widths: a dash, a gap, and so on, like 8 4. Empty uses the pattern above."></label>
+            <label class="wb-fmt-row" data-fmt="round" data-unit="px"><span class="wb-fmt-label">Corners</span><input type="number" id="wb-fmt-round" min="0" max="80" step="1" aria-label="Corner rounding" title="Round the corners by this much; 0 keeps them sharp"></label>
+            <div class="wb-fmt-row" data-fmt="flow"><span class="wb-fmt-label">Flow</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="Dashes that move along the line, for a flow or a direction. Exports draw them still."><input type="checkbox" id="wb-fmt-flow" aria-label="Flow animation"></label></span></div>
           </div>
-          <label class="wb-fmt-row" data-fmt="fillstyle"><span class="wb-fmt-label">Fill style</span>
-            <select id="wb-fmt-fillstyle" aria-label="Fill style" title="Fill the shape with lines or dots in its colour instead of a solid">
-              <option value="solid">Solid</option>
-              <option value="hatch">Hatch</option>
-              <option value="cross">Cross-hatch</option>
-              <option value="dots">Dots</option>
-              <option value="dashed">Dashes</option>
-              <option value="zigzag">Zigzag</option>
-            </select>
-          </label>
-          <div class="wb-fmt-row" data-fmt="gradient"><span class="wb-fmt-label">Gradient</span>
-            <span class="wb-fmt-buttons"><input type="color" id="wb-fmt-gradient" class="wb-color-picker" aria-label="Gradient second colour" title="The colour the fill fades to"><select id="wb-fmt-gradient-dir" aria-label="Gradient direction" title="Fade the fill into a second colour">
-              <option value="none">None</option>
-              <option value="s">Down</option>
-              <option value="n">Up</option>
-              <option value="e">Right</option>
-              <option value="w">Left</option>
-              <option value="radial">Radial</option>
-            </select></span>
+          <div class="wb-fmt-group" data-fmt-group="effects">
+            <h4 class="wb-fmt-head"><i class="ph ph-drop-half-bottom" aria-hidden="true"></i><span>Effects</span><button type="button" class="icon-only ghost small graph-help-toggle" data-help-for="wb-fmt-help-effects" aria-controls="wb-fmt-help-effects" aria-expanded="false" title="About effects" aria-label="About effects"><i class="ph ph-question" aria-hidden="true"></i></button></h4>
+            <div class="help-body hidden" id="wb-fmt-help-effects" role="dialog" aria-label="About effects">
+              <p><b>Opacity</b>: how see-through the whole item is.</p>
+              <p><b>Folded corner</b>: a sticky note's bottom corner drawn turned over.</p>
+              <p><b>Shadow, Shadow offset</b>: a soft shadow under it, how far it sits across and down, and its blur, in pixels.</p>
+              <p><b>Hand-drawn</b>: rough lines, as if sketched; the View menu sets it for the whole board.</p>
+            </div>
+            <label class="wb-fmt-row" data-fmt="alpha"><span class="wb-fmt-label">Opacity</span>
+              <span class="wb-fmt-buttons"><input type="range" id="wb-fmt-alpha" min="10" max="100" step="5" aria-label="Opacity" title="Opacity"><output id="wb-fmt-alpha-out" for="wb-fmt-alpha" class="wb-fmt-out">100%</output></span>
+            </label>
+            <div class="wb-fmt-row" data-fmt="fold"><span class="wb-fmt-label">Folded corner</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="Draw this note's bottom corner folded over; off, the paper is flat"><input type="checkbox" id="wb-fmt-fold" aria-label="Folded corner"></label></span></div>
+            <div class="wb-fmt-row" data-fmt="shadow"><span class="wb-fmt-label">Shadow</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="A soft shadow under it"><input type="checkbox" id="wb-fmt-shadow" aria-label="Shadow"></label></span></div>
+            <div class="wb-fmt-row" data-fmt="shadowset"><span class="wb-fmt-label">Shadow offset</span>
+              <span class="wb-fmt-quad">
+                <label class="wb-fmt-num"><span class="wb-fmt-label">X</span><input type="number" id="wb-fmt-shx" min="-60" max="60" step="1" placeholder="0" aria-label="Shadow offset across, in pixels" title="How far the shadow sits to the right; negative is left"></label>
+                <label class="wb-fmt-num"><span class="wb-fmt-label">Y</span><input type="number" id="wb-fmt-shy" min="-60" max="60" step="1" placeholder="2" aria-label="Shadow offset down, in pixels" title="How far the shadow sits down; negative is up"></label>
+                <label class="wb-fmt-num"><span class="wb-fmt-label">Blur</span><input type="number" id="wb-fmt-shb" min="0" max="60" step="1" placeholder="4" aria-label="Shadow blur, in pixels" title="How soft the shadow's edge is; 0 is sharp"></label>
+              </span>
+            </div>
+            <div class="wb-fmt-row" data-fmt="rough"><span class="wb-fmt-label">Hand-drawn</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="Draw its lines rough, as by hand; the View menu sets it for the whole board"><input type="checkbox" id="wb-fmt-rough" aria-label="Hand-drawn"></label></span></div>
           </div>
-          <label class="wb-fmt-row" data-fmt="stroke"><span class="wb-fmt-label" id="wb-fmt-stroke-word">Line</span><input type="color" id="wb-fmt-stroke" class="wb-color-picker" aria-label="Line colour" title="Line colour"></label>
-          <div class="wb-fmt-row" data-fmt="strokealpha" role="group" aria-label="Line opacity"><span class="wb-fmt-label">Line opacity</span>
-            <span class="wb-fmt-stack"><span class="wb-fmt-buttons"><input type="range" id="wb-fmt-strokealpha" min="0" max="100" step="5" aria-label="Line opacity" title="How solid the line is; the fill keeps its own"><output id="wb-fmt-strokealpha-out" for="wb-fmt-strokealpha" class="wb-fmt-out">100%</output></span>
-            <span class="wb-fmt-buttons wb-fmt-presets"><button type="button" class="ghost small" data-alpha-for="strokealpha" data-alpha-preset="0" aria-label="Line opacity 0%" title="Line opacity 0%">0</button><button type="button" class="ghost small" data-alpha-for="strokealpha" data-alpha-preset="25" aria-label="Line opacity 25%" title="Line opacity 25%">25</button><button type="button" class="ghost small" data-alpha-for="strokealpha" data-alpha-preset="50" aria-label="Line opacity 50%" title="Line opacity 50%">50</button><button type="button" class="ghost small" data-alpha-for="strokealpha" data-alpha-preset="75" aria-label="Line opacity 75%" title="Line opacity 75%">75</button><button type="button" class="ghost small" data-alpha-for="strokealpha" data-alpha-preset="100" aria-label="Line opacity 100%" title="Line opacity 100%">100</button></span></span>
+          <div class="wb-fmt-group" data-fmt-group="box">
+            <h4 class="wb-fmt-head"><i class="ph ph-frame-corners" aria-hidden="true"></i><span>Box and picture</span><button type="button" class="icon-only ghost small graph-help-toggle" data-help-for="wb-fmt-help-box" aria-controls="wb-fmt-help-box" aria-expanded="false" title="About box and picture" aria-label="About box and picture"><i class="ph ph-question" aria-hidden="true"></i></button></h4>
+            <div class="help-body hidden" id="wb-fmt-help-box" role="dialog" aria-label="About box and picture">
+              <p><b>Crop to</b>: cuts a picture to a shape; a square cropped to an ellipse is a circle.</p>
+              <p><b>Corner radii</b>: each corner's own rounding in pixels; all empty is the default.</p>
+              <p><b>Padding</b>: space between the box's edge and its words, in pixels.</p>
+            </div>
+            <label class="wb-fmt-row" data-fmt="crop"><span class="wb-fmt-label">Crop to</span>
+              <select id="wb-fmt-crop" aria-label="Crop the picture to a shape" title="Crop the picture to a shape; a square picture cropped to an ellipse is a circle">
+                <option value="">Rectangle</option>
+                <option value="ellipse">Ellipse</option>
+                <option value="diamond">Diamond</option>
+                <option value="hexagon">Hexagon</option>
+                <option value="triangle">Triangle</option>
+              </select>
+            </label>
+            <div class="wb-fmt-row" data-fmt="radii"><span class="wb-fmt-label">Corner radii</span>
+              <span class="wb-fmt-quad">
+                <label class="wb-fmt-num"><span class="wb-fmt-label">TL</span><input type="number" id="wb-fmt-r0" min="0" max="200" step="1" placeholder="Auto" aria-label="Top left corner radius" title="Top left corner radius in pixels; all four empty is the default"></label>
+                <label class="wb-fmt-num"><span class="wb-fmt-label">TR</span><input type="number" id="wb-fmt-r1" min="0" max="200" step="1" placeholder="Auto" aria-label="Top right corner radius" title="Top right corner radius in pixels"></label>
+                <label class="wb-fmt-num"><span class="wb-fmt-label">BL</span><input type="number" id="wb-fmt-r3" min="0" max="200" step="1" placeholder="Auto" aria-label="Bottom left corner radius" title="Bottom left corner radius in pixels"></label>
+                <label class="wb-fmt-num"><span class="wb-fmt-label">BR</span><input type="number" id="wb-fmt-r2" min="0" max="200" step="1" placeholder="Auto" aria-label="Bottom right corner radius" title="Bottom right corner radius in pixels"></label>
+              </span>
+            </div>
+            <label class="wb-fmt-row" data-fmt="pad" data-unit="px"><span class="wb-fmt-label">Padding</span><input type="number" id="wb-fmt-pad" min="0" max="80" step="1" placeholder="Auto" aria-label="Padding between the edge and the text, in pixels" title="Space between the box's edge and its text, in pixels; empty is the default"></label>
           </div>
-          <label class="wb-fmt-row" data-fmt="width"><span class="wb-fmt-label">Width</span><input type="number" id="wb-fmt-width" min="1" max="40" step="1" aria-label="Line width" title="Line width"></label>
-          <label class="wb-fmt-row" data-fmt="dash"><span class="wb-fmt-label">Pattern</span>
-            <select id="wb-fmt-dash" aria-label="Line pattern" title="Line pattern">
-              <option value="solid">Solid</option>
-              <option value="dashed">Dashed</option>
-              <option value="dotted">Dotted</option>
-            </select>
-          </label>
-          <label class="wb-fmt-row" data-fmt="pattern"><span class="wb-fmt-label">Dashes</span><input type="text" id="wb-fmt-pattern" inputmode="decimal" maxlength="40" placeholder="8 4" autocomplete="off" aria-label="Custom dash pattern" title="Your own dashes, in line widths: a dash, a gap, and so on, like 8 4. Empty uses the pattern above."></label>
-          <label class="wb-fmt-row" data-fmt="round"><span class="wb-fmt-label">Corners</span><input type="number" id="wb-fmt-round" min="0" max="80" step="1" aria-label="Corner rounding" title="Round the corners by this much; 0 keeps them sharp"></label>
-          <div class="wb-fmt-row" data-fmt="flow"><span class="wb-fmt-label">Flow</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="Dashes that move along the line, for a flow or a direction. Exports draw them still."><input type="checkbox" id="wb-fmt-flow" aria-label="Flow animation"></label></span></div>
-          <label class="wb-fmt-row" data-fmt="alpha"><span class="wb-fmt-label">Opacity</span>
-            <span class="wb-fmt-buttons"><input type="range" id="wb-fmt-alpha" min="10" max="100" step="5" aria-label="Opacity" title="Opacity"><output id="wb-fmt-alpha-out" for="wb-fmt-alpha" class="wb-fmt-out">100%</output></span>
-          </label>
-          <div class="wb-fmt-row" data-fmt="fold"><span class="wb-fmt-label">Folded corner</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="Draw this note's bottom corner folded over; off, the paper is flat"><input type="checkbox" id="wb-fmt-fold" aria-label="Folded corner"></label></span></div>
-          <div class="wb-fmt-row" data-fmt="shadow"><span class="wb-fmt-label">Shadow</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="A soft shadow under it"><input type="checkbox" id="wb-fmt-shadow" aria-label="Shadow"></label></span></div>
-          <div class="wb-fmt-row" data-fmt="shadowset"><span class="wb-fmt-label">Shadow offset</span>
-            <span class="wb-fmt-quad">
-              <label class="wb-fmt-num"><span class="wb-fmt-label">X</span><input type="number" id="wb-fmt-shx" min="-60" max="60" step="1" placeholder="0" aria-label="Shadow offset across, in pixels" title="How far the shadow sits to the right; negative is left"></label>
-              <label class="wb-fmt-num"><span class="wb-fmt-label">Y</span><input type="number" id="wb-fmt-shy" min="-60" max="60" step="1" placeholder="2" aria-label="Shadow offset down, in pixels" title="How far the shadow sits down; negative is up"></label>
-              <label class="wb-fmt-num"><span class="wb-fmt-label">Blur</span><input type="number" id="wb-fmt-shb" min="0" max="60" step="1" placeholder="4" aria-label="Shadow blur, in pixels" title="How soft the shadow's edge is; 0 is sharp"></label>
-            </span>
+          <div class="wb-fmt-group" data-fmt-group="connector">
+            <h4 class="wb-fmt-head"><i class="ph ph-flow-arrow" aria-hidden="true"></i><span>Connector</span><button type="button" class="icon-only ghost small graph-help-toggle" data-help-for="wb-fmt-help-connector" aria-controls="wb-fmt-help-connector" aria-expanded="false" title="About connector" aria-label="About connector"><i class="ph ph-question" aria-hidden="true"></i></button></h4>
+            <div class="help-body hidden" id="wb-fmt-help-connector" role="dialog" aria-label="About connector">
+              <p><b>Line shape</b>: curved, straight or elbow: the path the connector takes.</p>
+              <p><b>Line jumps</b>: a hop where this line crosses one under it; Jump size is its width.</p>
+              <p><b>Start gap, End gap</b>: stop this far short of the shape at each end.</p>
+              <p><b>Start, End</b>: the mark at each end of the line, and its size.</p>
+              <p><b>Label along</b>: where the connector's label sits along it.</p>
+            </div>
+            <label class="wb-fmt-row" data-fmt="route"><span class="wb-fmt-label">Line shape</span>
+              <select id="wb-fmt-route" aria-label="Line shape" title="Line shape">
+                <option value="curved">Curved</option>
+                <option value="straight">Straight</option>
+                <option value="elbow">Elbow</option>
+              </select>
+            </label>
+            <label class="wb-fmt-row" data-fmt="jumps"><span class="wb-fmt-label">Line jumps</span>
+              <select id="wb-fmt-jumps" aria-label="Line jumps where it crosses another line" title="Where this line crosses one under it, on its straight runs">
+                <option value="none">None</option>
+                <option value="arc">Arc</option>
+                <option value="gap">Gap</option>
+                <option value="sharp">Sharp</option>
+              </select>
+            </label>
+            <label class="wb-fmt-row" data-fmt="jumpsize" data-unit="px"><span class="wb-fmt-label">Jump size</span><input type="number" id="wb-fmt-jumpsize" min="2" max="40" step="1" placeholder="Auto" aria-label="Line jump size" title="How wide a hop is where this line crosses another; empty sizes it from the line width"></label>
+            <label class="wb-fmt-row" data-fmt="gapstart" data-unit="px"><span class="wb-fmt-label">Start gap</span><input type="number" id="wb-fmt-gapstart" min="0" max="60" step="1" aria-label="Gap at the start" title="Stop this far short of the shape at the start; 0 touches it"></label>
+            <label class="wb-fmt-row" data-fmt="gapend" data-unit="px"><span class="wb-fmt-label">End gap</span><input type="number" id="wb-fmt-gapend" min="0" max="60" step="1" aria-label="Gap at the end" title="Stop this far short of the shape at the end; 0 touches it"></label>
+            <label class="wb-fmt-row" data-fmt="caps"><span class="wb-fmt-label">Start</span>
+              <span class="wb-fmt-buttons"><select id="wb-fmt-startcap" aria-label="Line start" title="Line start"></select><select id="wb-fmt-startsize" class="wb-cap-size" aria-label="Start size" title="Size of the start mark"><option value="s">Small</option><option value="m" selected>Medium</option><option value="l">Large</option></select></span>
+            </label>
+            <label class="wb-fmt-row" data-fmt="caps"><span class="wb-fmt-label">End</span>
+              <span class="wb-fmt-buttons"><select id="wb-fmt-endcap" aria-label="Line end" title="Line end"></select><select id="wb-fmt-endsize" class="wb-cap-size" aria-label="End size" title="Size of the end mark"><option value="s">Small</option><option value="m" selected>Medium</option><option value="l">Large</option></select></span>
+            </label>
+            <label class="wb-fmt-row" data-fmt="label-t"><span class="wb-fmt-label">Label along</span>
+              <input type="range" id="wb-fmt-label-t" min="5" max="95" step="5" aria-label="Label position along the line" title="Label position along the line">
+            </label>
           </div>
-          <label class="wb-fmt-row" data-fmt="crop"><span class="wb-fmt-label">Crop to</span>
-            <select id="wb-fmt-crop" aria-label="Crop the picture to a shape" title="Crop the picture to a shape; a square picture cropped to an ellipse is a circle">
-              <option value="">Rectangle</option>
-              <option value="ellipse">Ellipse</option>
-              <option value="diamond">Diamond</option>
-              <option value="hexagon">Hexagon</option>
-              <option value="triangle">Triangle</option>
-            </select>
-          </label>
-          <div class="wb-fmt-row" data-fmt="radii"><span class="wb-fmt-label">Corner radii</span>
-            <span class="wb-fmt-quad">
-              <label class="wb-fmt-num"><span class="wb-fmt-label">TL</span><input type="number" id="wb-fmt-r0" min="0" max="200" step="1" placeholder="Auto" aria-label="Top left corner radius" title="Top left corner radius in pixels; all four empty is the default"></label>
-              <label class="wb-fmt-num"><span class="wb-fmt-label">TR</span><input type="number" id="wb-fmt-r1" min="0" max="200" step="1" placeholder="Auto" aria-label="Top right corner radius" title="Top right corner radius in pixels"></label>
-              <label class="wb-fmt-num"><span class="wb-fmt-label">BL</span><input type="number" id="wb-fmt-r3" min="0" max="200" step="1" placeholder="Auto" aria-label="Bottom left corner radius" title="Bottom left corner radius in pixels"></label>
-              <label class="wb-fmt-num"><span class="wb-fmt-label">BR</span><input type="number" id="wb-fmt-r2" min="0" max="200" step="1" placeholder="Auto" aria-label="Bottom right corner radius" title="Bottom right corner radius in pixels"></label>
-            </span>
-          </div>
-          <label class="wb-fmt-row" data-fmt="pad"><span class="wb-fmt-label">Padding</span><input type="number" id="wb-fmt-pad" min="0" max="80" step="1" placeholder="Auto" aria-label="Padding between the edge and the text, in pixels" title="Space between the box's edge and its text, in pixels; empty is the default"></label>
-          <div class="wb-fmt-row" data-fmt="rough"><span class="wb-fmt-label">Hand-drawn</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="Draw its lines rough, as by hand; the View menu sets it for the whole board"><input type="checkbox" id="wb-fmt-rough" aria-label="Hand-drawn"></label></span></div>
-          <label class="wb-fmt-row" data-fmt="route"><span class="wb-fmt-label">Line shape</span>
-            <select id="wb-fmt-route" aria-label="Line shape" title="Line shape">
-              <option value="curved">Curved</option>
-              <option value="straight">Straight</option>
-              <option value="elbow">Elbow</option>
-            </select>
-          </label>
-          <label class="wb-fmt-row" data-fmt="jumps"><span class="wb-fmt-label">Line jumps</span>
-            <select id="wb-fmt-jumps" aria-label="Line jumps where it crosses another line" title="Where this line crosses one under it, on its straight runs">
-              <option value="none">None</option>
-              <option value="arc">Arc</option>
-              <option value="gap">Gap</option>
-              <option value="sharp">Sharp</option>
-            </select>
-          </label>
-          <label class="wb-fmt-row" data-fmt="jumpsize"><span class="wb-fmt-label">Jump size</span><input type="number" id="wb-fmt-jumpsize" min="2" max="40" step="1" placeholder="Auto" aria-label="Line jump size" title="How wide a hop is where this line crosses another; empty sizes it from the line width"></label>
-          <label class="wb-fmt-row" data-fmt="gapstart"><span class="wb-fmt-label">Start gap</span><input type="number" id="wb-fmt-gapstart" min="0" max="60" step="1" aria-label="Gap at the start" title="Stop this far short of the shape at the start; 0 touches it"></label>
-          <label class="wb-fmt-row" data-fmt="gapend"><span class="wb-fmt-label">End gap</span><input type="number" id="wb-fmt-gapend" min="0" max="60" step="1" aria-label="Gap at the end" title="Stop this far short of the shape at the end; 0 touches it"></label>
-          <label class="wb-fmt-row" data-fmt="caps"><span class="wb-fmt-label">Start</span>
-            <span class="wb-fmt-buttons"><select id="wb-fmt-startcap" aria-label="Line start" title="Line start"></select><select id="wb-fmt-startsize" class="wb-cap-size" aria-label="Start size" title="Size of the start mark"><option value="s">Small</option><option value="m" selected>Medium</option><option value="l">Large</option></select></span>
-          </label>
-          <label class="wb-fmt-row" data-fmt="caps"><span class="wb-fmt-label">End</span>
-            <span class="wb-fmt-buttons"><select id="wb-fmt-endcap" aria-label="Line end" title="Line end"></select><select id="wb-fmt-endsize" class="wb-cap-size" aria-label="End size" title="Size of the end mark"><option value="s">Small</option><option value="m" selected>Medium</option><option value="l">Large</option></select></span>
-          </label>
-          <label class="wb-fmt-row" data-fmt="label-t"><span class="wb-fmt-label">Label along</span>
-            <input type="range" id="wb-fmt-label-t" min="5" max="95" step="5" aria-label="Label position along the line" title="Label position along the line">
-          </label>
-          <div class="wb-fmt-row" data-fmt="style-lib"><span class="wb-fmt-label">Style</span>
-            <span class="wb-fmt-buttons">
-              <button type="button" id="wb-fmt-copy-style" class="ghost small icon-only" title="Copy this item's style (Ctrl+Alt+C)" aria-label="Copy style"><i class="ph ph-eyedropper" aria-hidden="true"></i></button>
-              <button type="button" id="wb-fmt-paste-style" class="ghost small icon-only" title="Paste the copied style (Ctrl+Alt+V)" aria-label="Paste style"><i class="ph ph-paint-bucket" aria-hidden="true"></i></button>
-              <button type="button" id="wb-fmt-save-style" class="ghost small icon-only" title="Save this style to the library" aria-label="Save this style to the library"><i class="ph ph-paint-brush" aria-hidden="true"></i></button>
-            </span>
+          <div class="wb-fmt-group" data-fmt-group="style">
+            <h4 class="wb-fmt-head"><i class="ph ph-palette" aria-hidden="true"></i><span>Style</span><button type="button" class="icon-only ghost small graph-help-toggle" data-help-for="wb-fmt-help-style" aria-controls="wb-fmt-help-style" aria-expanded="false" title="About style" aria-label="About style"><i class="ph ph-question" aria-hidden="true"></i></button></h4>
+            <div class="help-body hidden" id="wb-fmt-help-style" role="dialog" aria-label="About style">
+              <p><b>Style</b>: copy this item's look (Ctrl+Alt+C), paste it on another (Ctrl+Alt+V), or save it to the library.</p>
+            </div>
+            <div class="wb-fmt-row" data-fmt="style-lib"><span class="wb-fmt-label">Style</span>
+              <span class="wb-fmt-buttons">
+                <button type="button" id="wb-fmt-copy-style" class="ghost small icon-only" title="Copy this item's style (Ctrl+Alt+C)" aria-label="Copy style"><i class="ph ph-eyedropper" aria-hidden="true"></i></button>
+                <button type="button" id="wb-fmt-paste-style" class="ghost small icon-only" title="Paste the copied style (Ctrl+Alt+V)" aria-label="Paste style"><i class="ph ph-paint-bucket" aria-hidden="true"></i></button>
+                <button type="button" id="wb-fmt-save-style" class="ghost small icon-only" title="Save this style to the library" aria-label="Save this style to the library"><i class="ph ph-paint-brush" aria-hidden="true"></i></button>
+              </span>
+            </div>
           </div>
         </section>
         <section class="wb-fmt-section" data-format-panel="text" aria-label="Text" hidden>
-          <label class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Size</span><input type="number" id="wb-fmt-size" min="8" max="200" step="1" aria-label="Text size" title="Text size"></label>
-          <label class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Colour</span><input type="color" id="wb-fmt-ink" class="wb-color-picker" aria-label="Text colour" title="Text colour"></label>
-          <label class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Font</span>
-            <select id="wb-fmt-font" aria-label="Font" title="The face the text is set in">
-              <option value="default">Default</option>
-              <option value="serif">Serif</option>
-              <option value="mono">Monospace</option>
-              <option value="wide">Wide sans</option>
-              <option value="hand">Handwritten</option>
-            </select>
-          </label>
-          <div class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Style</span>
-            <span class="wb-fmt-buttons">
-              <button type="button" id="wb-fmt-bold" class="ghost small icon-only" aria-pressed="false" title="Bold, the whole text" aria-label="Bold"><i class="ph ph-text-b" aria-hidden="true"></i></button>
-              <button type="button" id="wb-fmt-italic" class="ghost small icon-only" aria-pressed="false" title="Italic, the whole text" aria-label="Italic"><i class="ph ph-text-italic" aria-hidden="true"></i></button>
-              <button type="button" id="wb-fmt-underline" class="ghost small icon-only" aria-pressed="false" title="Underline, the whole text" aria-label="Underline"><i class="ph ph-text-underline" aria-hidden="true"></i></button>
-              <button type="button" id="wb-fmt-strike" class="ghost small icon-only" aria-pressed="false" title="Strikethrough, the whole text" aria-label="Strikethrough"><i class="ph ph-text-strikethrough" aria-hidden="true"></i></button>
-            </span>
+          <div class="wb-fmt-group" data-fmt-group="font">
+            <h4 class="wb-fmt-head"><i class="ph ph-text-aa" aria-hidden="true"></i><span>Font</span><button type="button" class="icon-only ghost small graph-help-toggle" data-help-for="wb-fmt-help-font" aria-controls="wb-fmt-help-font" aria-expanded="false" title="About font" aria-label="About font"><i class="ph ph-question" aria-hidden="true"></i></button></h4>
+            <div class="help-body hidden" id="wb-fmt-help-font" role="dialog" aria-label="About font">
+              <p><b>Size</b>: the text size, in pixels.</p>
+              <p><b>Colour</b>: the colour of the words.</p>
+              <p><b>Font</b>: the face the text is set in.</p>
+              <p><b>Style</b>: bold, italic, underline or strikethrough, for the whole text.</p>
+            </div>
+            <label class="wb-fmt-row" data-fmt="text" data-unit="px"><span class="wb-fmt-label">Size</span><input type="number" id="wb-fmt-size" min="8" max="200" step="1" aria-label="Text size" title="Text size"></label>
+            <label class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Colour</span><input type="color" id="wb-fmt-ink" class="wb-color-picker" aria-label="Text colour" title="Text colour"></label>
+            <label class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Font</span>
+              <select id="wb-fmt-font" aria-label="Font" title="The face the text is set in">
+                <option value="default">Default</option>
+                <option value="serif">Serif</option>
+                <option value="mono">Monospace</option>
+                <option value="wide">Wide sans</option>
+                <option value="hand">Handwritten</option>
+              </select>
+            </label>
+            <div class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Style</span>
+              <span class="wb-fmt-buttons">
+                <button type="button" id="wb-fmt-bold" class="ghost small icon-only" aria-pressed="false" title="Bold, the whole text" aria-label="Bold"><i class="ph ph-text-b" aria-hidden="true"></i></button>
+                <button type="button" id="wb-fmt-italic" class="ghost small icon-only" aria-pressed="false" title="Italic, the whole text" aria-label="Italic"><i class="ph ph-text-italic" aria-hidden="true"></i></button>
+                <button type="button" id="wb-fmt-underline" class="ghost small icon-only" aria-pressed="false" title="Underline, the whole text" aria-label="Underline"><i class="ph ph-text-underline" aria-hidden="true"></i></button>
+                <button type="button" id="wb-fmt-strike" class="ghost small icon-only" aria-pressed="false" title="Strikethrough, the whole text" aria-label="Strikethrough"><i class="ph ph-text-strikethrough" aria-hidden="true"></i></button>
+              </span>
+            </div>
           </div>
-          <div class="wb-fmt-row" data-fmt="fit"><span class="wb-fmt-label">Fit</span>
-            <span class="wb-fmt-buttons">
-              <button type="button" id="wb-fmt-fit" class="ghost small icon-only" aria-pressed="false" title="Shrink the text to fit the shape" aria-label="Shrink the text to fit the shape"><i class="ph ph-arrows-in-simple" aria-hidden="true"></i></button>
-            </span>
-          </div>
-          <label class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Line spacing</span><input type="number" id="wb-fmt-lh" min="0.8" max="3" step="0.05" placeholder="Auto" aria-label="Line spacing, as a multiple of the text size" title="Line spacing, as a multiple of the text size; empty is automatic"></label>
-          <label class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Letter spacing</span><input type="number" id="wb-fmt-ls" min="-5" max="30" step="0.5" placeholder="0" aria-label="Letter spacing in pixels" title="Space added between letters, in pixels; 0 is normal"></label>
-          <div class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Align</span>
-            <span id="wb-fmt-align" class="wb-fmt-buttons" role="group" aria-label="Text alignment">
-              <button type="button" class="ghost small icon-only" data-align="left" aria-pressed="false" title="Align left" aria-label="Align left"><i class="ph ph-text-align-left" aria-hidden="true"></i></button>
-              <button type="button" class="ghost small icon-only" data-align="center" aria-pressed="false" title="Align centre" aria-label="Align centre"><i class="ph ph-text-align-center" aria-hidden="true"></i></button>
-              <button type="button" class="ghost small icon-only" data-align="right" aria-pressed="false" title="Align right" aria-label="Align right"><i class="ph ph-text-align-right" aria-hidden="true"></i></button>
-            </span>
-          </div>
-          <div class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Vertical</span>
-            <span id="wb-fmt-valign" class="wb-fmt-buttons" role="group" aria-label="Vertical alignment">
-              <button type="button" class="ghost small icon-only" data-valign="top" aria-pressed="false" title="Text at the top" aria-label="Text at the top"><i class="ph ph-align-top-simple" aria-hidden="true"></i></button>
-              <button type="button" class="ghost small icon-only" data-valign="middle" aria-pressed="false" title="Text in the middle" aria-label="Text in the middle"><i class="ph ph-align-center-horizontal-simple" aria-hidden="true"></i></button>
-              <button type="button" class="ghost small icon-only" data-valign="bottom" aria-pressed="false" title="Text at the bottom" aria-label="Text at the bottom"><i class="ph ph-align-bottom-simple" aria-hidden="true"></i></button>
-            </span>
+          <div class="wb-fmt-group" data-fmt-group="paragraph">
+            <h4 class="wb-fmt-head"><i class="ph ph-paragraph" aria-hidden="true"></i><span>Paragraph</span><button type="button" class="icon-only ghost small graph-help-toggle" data-help-for="wb-fmt-help-paragraph" aria-controls="wb-fmt-help-paragraph" aria-expanded="false" title="About paragraph" aria-label="About paragraph"><i class="ph ph-question" aria-hidden="true"></i></button></h4>
+            <div class="help-body hidden" id="wb-fmt-help-paragraph" role="dialog" aria-label="About paragraph">
+              <p><b>Fit</b>: shrinks the text until it fits the shape.</p>
+              <p><b>Line spacing</b>: the gap between lines, as a multiple of the text size; empty is automatic.</p>
+              <p><b>Letter spacing</b>: space added between letters, in pixels.</p>
+              <p><b>Align, Vertical</b>: where the words sit across and down the box.</p>
+              <p><b>Direction</b>: left to right, right to left, or set vertically.</p>
+              <p><b>Text opacity</b>: how solid the words are; the box keeps its own.</p>
+            </div>
+            <div class="wb-fmt-row" data-fmt="fit"><span class="wb-fmt-label">Fit</span>
+              <span class="wb-fmt-buttons">
+                <button type="button" id="wb-fmt-fit" class="ghost small icon-only" aria-pressed="false" title="Shrink the text to fit the shape" aria-label="Shrink the text to fit the shape"><i class="ph ph-arrows-in-simple" aria-hidden="true"></i></button>
+              </span>
+            </div>
+            <label class="wb-fmt-row" data-fmt="text" data-unit="×"><span class="wb-fmt-label">Line spacing</span><input type="number" id="wb-fmt-lh" min="0.8" max="3" step="0.05" placeholder="Auto" aria-label="Line spacing, as a multiple of the text size" title="Line spacing, as a multiple of the text size; empty is automatic"></label>
+            <label class="wb-fmt-row" data-fmt="text" data-unit="px"><span class="wb-fmt-label">Letter spacing</span><input type="number" id="wb-fmt-ls" min="-5" max="30" step="0.5" placeholder="0" aria-label="Letter spacing in pixels" title="Space added between letters, in pixels; 0 is normal"></label>
+            <div class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Align</span>
+              <span id="wb-fmt-align" class="wb-fmt-buttons" role="group" aria-label="Text alignment">
+                <button type="button" class="ghost small icon-only" data-align="left" aria-pressed="false" title="Align left" aria-label="Align left"><i class="ph ph-text-align-left" aria-hidden="true"></i></button>
+                <button type="button" class="ghost small icon-only" data-align="center" aria-pressed="false" title="Align centre" aria-label="Align centre"><i class="ph ph-text-align-center" aria-hidden="true"></i></button>
+                <button type="button" class="ghost small icon-only" data-align="right" aria-pressed="false" title="Align right" aria-label="Align right"><i class="ph ph-text-align-right" aria-hidden="true"></i></button>
+              </span>
+            </div>
+            <div class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Vertical</span>
+              <span id="wb-fmt-valign" class="wb-fmt-buttons" role="group" aria-label="Vertical alignment">
+                <button type="button" class="ghost small icon-only" data-valign="top" aria-pressed="false" title="Text at the top" aria-label="Text at the top"><i class="ph ph-align-top-simple" aria-hidden="true"></i></button>
+                <button type="button" class="ghost small icon-only" data-valign="middle" aria-pressed="false" title="Text in the middle" aria-label="Text in the middle"><i class="ph ph-align-center-horizontal-simple" aria-hidden="true"></i></button>
+                <button type="button" class="ghost small icon-only" data-valign="bottom" aria-pressed="false" title="Text at the bottom" aria-label="Text at the bottom"><i class="ph ph-align-bottom-simple" aria-hidden="true"></i></button>
+              </span>
+            </div>
+            <label class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Direction</span>
+              <select id="wb-fmt-dir" aria-label="Text direction" title="Which way the words run">
+                <option value="">Left to right</option>
+                <option value="rtl">Right to left</option>
+                <option value="vertical">Vertical</option>
+              </select>
+            </label>
+            <label class="wb-fmt-row" data-fmt="text" data-unit="%"><span class="wb-fmt-label">Text opacity</span><input type="number" id="wb-fmt-inkalpha" min="10" max="100" step="5" aria-label="Text opacity, in percent" title="How solid the words are; 100 is solid"></label>
           </div>
         </section>
         <section class="wb-fmt-section" data-format-panel="arrange" aria-label="Arrange" hidden>
-          <div class="wb-fmt-grid" data-fmt="geometry">
-            <label class="wb-fmt-num"><span class="wb-fmt-label">X</span><input type="number" id="wb-fmt-x" step="1" aria-label="X, from the left" title="X, from the left"></label>
-            <label class="wb-fmt-num"><span class="wb-fmt-label">Y</span><input type="number" id="wb-fmt-y" step="1" aria-label="Y, from the top" title="Y, from the top"></label>
+          <div class="wb-fmt-group" data-fmt-group="geometry">
+            <h4 class="wb-fmt-head"><i class="ph ph-bounding-box" aria-hidden="true"></i><span>Position and size</span><button type="button" class="icon-only ghost small graph-help-toggle" data-help-for="wb-fmt-help-geometry" aria-controls="wb-fmt-help-geometry" aria-expanded="false" title="About position and size" aria-label="About position and size"><i class="ph ph-question" aria-hidden="true"></i></button></h4>
+            <div class="help-body hidden" id="wb-fmt-help-geometry" role="dialog" aria-label="About position and size">
+              <p><b>Position</b>: X and Y of the top left corner, in board pixels.</p>
+              <p><b>Size</b>: width and height; the chain between them keeps the proportions, on for a shape it stays on.</p>
+              <p><b>Aspect</b>: sets the height from the width to a common ratio.</p>
+              <p><b>Angle</b>: turns it about its centre, in degrees.</p>
+              <p><b>Flip</b>: mirrors it left to right or top to bottom.</p>
+            </div>
+            <div class="wb-fmt-row" data-fmt="geometry" data-unit="px" role="group" aria-label="Position"><span class="wb-fmt-label">Position</span>
+              <span class="wb-fmt-pair">
+                <label class="wb-fmt-cell"><input type="number" id="wb-fmt-x" step="1" aria-label="X, from the left" title="X, from the left"><span class="wb-fmt-cap" aria-hidden="true">X</span></label>
+                <span class="wb-fmt-pair-gap" aria-hidden="true"></span>
+                <label class="wb-fmt-cell"><input type="number" id="wb-fmt-y" step="1" aria-label="Y, from the top" title="Y, from the top"><span class="wb-fmt-cap" aria-hidden="true">Y</span></label>
+              </span>
+            </div>
+            <div class="wb-fmt-row" data-fmt="geometry" data-unit="px" role="group" aria-label="Size"><span class="wb-fmt-label">Size</span>
+              <span class="wb-fmt-pair wb-fmt-pair-linked">
+                <label class="wb-fmt-cell"><input type="number" id="wb-fmt-w" min="8" step="1" aria-label="Width" title="Width"><span class="wb-fmt-cap" aria-hidden="true">W</span></label>
+                <button type="button" id="wb-fmt-link" class="ghost small icon-only wb-fmt-lock" aria-pressed="false" title="Keep proportions: changing one side scales the other, and a single shape keeps its ratio when you drag a corner" aria-label="Link width and height"><i class="ph ph-link-simple" aria-hidden="true"></i></button>
+                <label class="wb-fmt-cell"><input type="number" id="wb-fmt-h" min="8" step="1" aria-label="Height" title="Height"><span class="wb-fmt-cap" aria-hidden="true">H</span></label>
+              </span>
+            </div>
+            <label class="wb-fmt-row" data-fmt="geometry"><span class="wb-fmt-label">Aspect</span>
+              <select id="wb-fmt-aspect" aria-label="Aspect ratio" title="Set the height from the width to a common ratio">
+                <option value="">Choose a ratio</option>
+                <option value="1">Square, 1:1</option>
+                <option value="1.3333">4:3</option>
+                <option value="1.5">3:2</option>
+                <option value="1.7778">16:9</option>
+                <option value="0.75">3:4, upright</option>
+                <option value="0.7071">A4 upright</option>
+              </select>
+            </label>
+            <label class="wb-fmt-row" data-fmt="angle" data-unit="°"><span class="wb-fmt-label">Angle</span><input type="number" id="wb-fmt-angle" min="0" max="359" step="1" aria-label="Angle in degrees" title="Angle in degrees"></label>
+            <div class="wb-fmt-row" data-fmt="flip"><span class="wb-fmt-label">Flip</span>
+              <span class="wb-fmt-buttons">
+                <button type="button" id="wb-fmt-flip-h" class="ghost small icon-only" title="Flip left to right" aria-label="Flip left to right"><i class="ph ph-flip-horizontal" aria-hidden="true"></i></button>
+                <button type="button" id="wb-fmt-flip-v" class="ghost small icon-only" title="Flip top to bottom" aria-label="Flip top to bottom"><i class="ph ph-flip-vertical" aria-hidden="true"></i></button>
+              </span>
+            </div>
           </div>
-          <div class="wb-fmt-grid wb-fmt-grid-size" data-fmt="geometry">
-            <label class="wb-fmt-num"><span class="wb-fmt-label">W</span><input type="number" id="wb-fmt-w" min="8" step="1" aria-label="Width" title="Width"></label>
-            <button type="button" id="wb-fmt-link" class="ghost small icon-only" aria-pressed="false" title="Keep proportions: changing one side scales the other, and a single shape keeps its ratio when you drag a corner" aria-label="Link width and height"><i class="ph ph-link-simple" aria-hidden="true"></i></button>
-            <label class="wb-fmt-num"><span class="wb-fmt-label">H</span><input type="number" id="wb-fmt-h" min="8" step="1" aria-label="Height" title="Height"></label>
+          <div class="wb-fmt-group" data-fmt-group="order">
+            <h4 class="wb-fmt-head"><i class="ph ph-stack" aria-hidden="true"></i><span>Order and align</span><button type="button" class="icon-only ghost small graph-help-toggle" data-help-for="wb-fmt-help-order" aria-controls="wb-fmt-help-order" aria-expanded="false" title="About order and align" aria-label="About order and align"><i class="ph ph-question" aria-hidden="true"></i></button></h4>
+            <div class="help-body hidden" id="wb-fmt-help-order" role="dialog" aria-label="About order and align">
+              <p><b>Order</b>: to the front, one forward, one back, to the back.</p>
+              <p><b>Align across, Align down</b>: line the selection up by its edges or centres.</p>
+              <p><b>Space and size</b>: even gaps across or down, the same width or height.</p>
+              <p><b>Group and lock</b>: group, ungroup, and lock it where it is.</p>
+            </div>
+            <div id="wb-format-commands" class="wb-fmt-commands"></div>
           </div>
-          <label class="wb-fmt-row" data-fmt="angle"><span class="wb-fmt-label">Angle</span><input type="number" id="wb-fmt-angle" min="0" max="359" step="1" aria-label="Angle in degrees" title="Angle in degrees"></label>
-          <div class="wb-fmt-row" data-fmt="flip"><span class="wb-fmt-label">Flip</span>
-            <span class="wb-fmt-buttons">
-              <button type="button" id="wb-fmt-flip-h" class="ghost small icon-only" title="Flip left to right" aria-label="Flip left to right"><i class="ph ph-flip-horizontal" aria-hidden="true"></i></button>
-              <button type="button" id="wb-fmt-flip-v" class="ghost small icon-only" title="Flip top to bottom" aria-label="Flip top to bottom"><i class="ph ph-flip-vertical" aria-hidden="true"></i></button>
-            </span>
-          </div>
-          <div id="wb-format-commands" class="wb-fmt-commands"></div>
         </section>
         <!-- Edit data (draw.io's; canvasdepth2): an item's own named values. -->
         <section class="wb-fmt-section" data-format-panel="data" aria-label="Data" hidden>
-          <label class="wb-fmt-row" data-fmt="tip"><span class="wb-fmt-label">Tooltip</span><input type="text" id="wb-fmt-tip" maxlength="200" placeholder="Shown on hover" aria-label="Tooltip" title="Words shown when the pointer rests on this item"></label>
-          <div class="wb-fmt-props" data-fmt="props">
-            <p class="muted wb-lib-keys">Named values on this item, kept with it and in its exports. Type %name% in its text to show one.</p>
-            <ul id="wb-fmt-props" class="wb-fmt-prop-list" aria-label="Custom properties"></ul>
-            <button type="button" id="wb-fmt-prop-add" class="ghost small" aria-label="Add a property"><i class="ph ph-plus ph-lead" aria-hidden="true"></i>Add a property</button>
+          <div class="wb-fmt-group" data-fmt-group="data">
+            <h4 class="wb-fmt-head"><i class="ph ph-database" aria-hidden="true"></i><span>Data</span><button type="button" class="icon-only ghost small graph-help-toggle" data-help-for="wb-fmt-help-data" aria-controls="wb-fmt-help-data" aria-expanded="false" title="About data" aria-label="About data"><i class="ph ph-question" aria-hidden="true"></i></button></h4>
+            <div class="help-body hidden" id="wb-fmt-help-data" role="dialog" aria-label="About data">
+              <p><b>Tooltip</b>: words shown when the pointer rests on the item.</p>
+              <p><b>Properties</b>: named values kept with the item and in its exports; %name% in its text shows one.</p>
+            </div>
+            <label class="wb-fmt-row" data-fmt="tip"><span class="wb-fmt-label">Tooltip</span><input type="text" id="wb-fmt-tip" maxlength="200" placeholder="Shown on hover" aria-label="Tooltip" title="Words shown when the pointer rests on this item"></label>
+            <div class="wb-fmt-props" data-fmt="props">
+              <p class="muted wb-lib-keys">Named values on this item, kept with it and in its exports. Type %name% in its text to show one.</p>
+              <ul id="wb-fmt-props" class="wb-fmt-prop-list" aria-label="Custom properties"></ul>
+              <button type="button" id="wb-fmt-prop-add" class="ghost small" aria-label="Add a property"><i class="ph ph-plus ph-lead" aria-hidden="true"></i>Add a property</button>
+            </div>
           </div>
         </section>
       </div>

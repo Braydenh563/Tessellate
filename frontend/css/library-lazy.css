@@ -7807,3 +7807,247 @@ input[type="color"].wb-mixed {
 :is([aria-expanded="true"], [open] > summary) > .ui-pm::after {
   transform: rotate(90deg) scaleX(0);
 }
+
+/* The Format panel (WHITEBOARD_PLAN decision 19): the sidebar's mirror on the
+   board's right edge, between the top bar and the tool rail. Moved here from
+   07-whiteboard-misc.css: it opens only on a board, so the boot does not pay
+   for it. **One grid** (the owner, 2026-11-01, INBOX 1510(a): "the visual
+   arrangement and alignment of some things are hard to understand"): every
+   row is a label track, a field track and a unit track, so every field in a
+   tab starts on one line and every unit ends on one; a pair (X and Y, W and
+   H) splits the field track into the same two columns, captions under, so X
+   sits over W and Y over H; rows sit in groups under a head with an icon and
+   a '?' (`data-help-for`) that says each control in a line. Below 600 it
+   spans the board like the open sidebar does. */
+.wb-format {
+  position: absolute;
+  right: 0.5rem;
+  top: calc(0.5rem + var(--wb-h-topbar) + var(--space-3));
+  bottom: calc(var(--space-2) + var(--wb-h-tools) + var(--space-3));
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 18.5rem;
+  max-width: calc(100% - 1rem);
+  max-height: none;
+  margin: 0;
+  padding: var(--space-2);
+}
+.wb-format.hidden {
+  display: none;
+}
+.wb-format-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.wb-fmt-section,
+.wb-fmt-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.wb-fmt-section {
+  gap: var(--space-3);
+}
+.wb-fmt-section[hidden],
+.wb-fmt-group[hidden],
+.wb-fmt-row[hidden],
+.wb-fmt-commands[hidden] {
+  display: none;
+}
+/* A rule between groups, not above the first one shown. */
+.wb-fmt-group:not([hidden]) ~ .wb-fmt-group:not([hidden]) {
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--divider);
+}
+.wb-fmt-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text);
+}
+.wb-fmt-head > .ph {
+  color: var(--muted);
+}
+.wb-fmt-head > button {
+  margin-left: auto;
+}
+.wb-fmt-row {
+  display: grid;
+  grid-template-columns: 6rem minmax(0, 1fr) 1.25rem;
+  align-items: center;
+  column-gap: var(--space-2);
+  min-height: var(--control-h-body);
+  font-size: var(--text-sm);
+}
+/* The field takes the unit track too when it has no unit. */
+.wb-fmt-row > :nth-child(2) {
+  grid-column: 2 / -1;
+}
+.wb-fmt-row[data-unit] > :nth-child(2) {
+  grid-column: 2;
+}
+.wb-fmt-row[data-unit]::after {
+  content: attr(data-unit);
+  grid-column: 3;
+  color: var(--muted);
+  font-size: var(--text-xs);
+}
+/* A pair's captions sit under its fields: the name and the unit stay on the
+   fields' line, not the captions' middle. */
+.wb-fmt-row:has(> .wb-fmt-pair) {
+  align-items: start;
+}
+.wb-fmt-row:has(> .wb-fmt-pair) > .wb-fmt-label,
+.wb-fmt-row:has(> .wb-fmt-pair)::after {
+  line-height: var(--control-h-body);
+}
+.wb-fmt-label {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+.wb-fmt-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+}
+.wb-fmt-row select,
+.wb-fmt-row input[type="number"],
+.wb-fmt-row input[type="text"],
+.wb-fmt-row input[type="range"] {
+  width: 100%;
+  min-width: 0;
+}
+/* One height for every field in the panel: a number field drew taller than
+   the select beside it. */
+.wb-format input[type="number"] {
+  height: var(--control-h-body);
+  margin: 0;
+  -moz-appearance: textfield;
+}
+/* **Spinners only under the pointer or the focus** (INBOX 1510(a): the X
+   field's spinner sat over its number): at rest a number is all digits. */
+.wb-format input[type="number"]::-webkit-inner-spin-button {
+  opacity: 0;
+}
+.wb-format input[type="number"]:is(:hover, :focus-visible)::-webkit-inner-spin-button {
+  opacity: 1;
+}
+.wb-format input[type="number"]:is(:hover, :focus-visible) {
+  -moz-appearance: auto;
+}
+.wb-fmt-out {
+  min-width: 3ch;
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+/* The opacity slider gives way to its percentage, which stays on its line. */
+.wb-fmt-buttons input[type="range"] {
+  flex: 1 1 0;
+  width: auto;
+}
+.wb-fmt-buttons:has(> input[type="range"]) {
+  flex-wrap: nowrap;
+}
+/* X and Y, W and H: two equal columns either side of one lock's width, the
+   same three tracks in both rows, so the columns line up. */
+.wb-fmt-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max(var(--control-h-body), var(--target-min)) minmax(0, 1fr);
+  column-gap: var(--space-1);
+  min-width: 0;
+}
+.wb-fmt-cell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+.wb-fmt-cell input {
+  width: 100%;
+  min-width: 0;
+}
+.wb-fmt-cap {
+  color: var(--muted);
+  font-size: var(--text-xs);
+  text-align: center;
+}
+/* The lock joins W and H: a line from each field to the chain, dashed while
+   the sides are free, solid in the accent while they keep their ratio. */
+.wb-fmt-lock {
+  position: relative;
+  width: max(var(--control-h-body), var(--target-min));
+  height: var(--control-h-body);
+}
+.wb-fmt-lock::before,
+.wb-fmt-lock::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: calc(50% - 0.5rem);
+  border-top: 1px dashed var(--muted);
+  pointer-events: none;
+}
+.wb-fmt-lock::before {
+  left: calc(-1 * var(--space-1));
+}
+.wb-fmt-lock::after {
+  right: calc(-1 * var(--space-1));
+}
+.wb-fmt-lock[aria-pressed="true"] {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+.wb-fmt-lock[aria-pressed="true"]::before,
+.wb-fmt-lock[aria-pressed="true"]::after {
+  border-top: 1px solid var(--accent);
+}
+/* Several small numbers under one row name (shadow offset and blur, the four
+   corner radii): two columns, each label as wide as its own word. */
+.wb-fmt-quad {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-1) var(--space-2);
+}
+.wb-fmt-num {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-1);
+}
+.wb-fmt-num input {
+  width: 100%;
+  min-width: 0;
+}
+.wb-fmt-commands {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.wb-fmt-commands .wb-fmt-buttons {
+  flex-wrap: nowrap;
+}
+/* A pressed toggle (bold, italic, an alignment) on the selection's soft
+   ground, the sidebar tab's own state. */
+.wb-fmt-buttons button[aria-pressed="true"] {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+@media (max-width: 599.98px) {
+  .wb-format {
+    left: var(--space-2);
+    right: var(--space-2);
+    width: auto;
+  }
+}

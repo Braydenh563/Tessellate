@@ -2908,6 +2908,57 @@ function wbZoomStep(factor, { duration = 160, usePointer = true } = {}) {
   d3.select(container).transition().duration(duration).call(wbZoom.scaleBy, factor, wbZoomAnchor({ usePointer }));
 }
 
+//: **The camera from the keyboard, as InDesign has it** (the owner,
+//: 2026-11-01, INBOX 1509: "ctrl +/- to zoom out and zoom in foccused on
+//: selected objects or in general on the whiteboard if focused on it like
+//: with adobe indesign"). Ctrl or Cmd with + or = steps in and with - steps
+//: out by the zoom buttons' own factors, about the selection's centre when
+//: something is selected, else the view's centre (`wbZoomAnchor`, the
+//: pointer left out: a key is not aimed). Ctrl+0 fits the board, Ctrl+1 is
+//: 100% about the same point. Measured before: one Ctrl+= zoomed the board
+//: 1.2x and the whole app from 100% to 105% as well, because the app zoom's
+//: capture listener took the same key; while the board has the focus the key
+//: is the board's alone, so this stops it there. Never while typing (the
+//: app zoom keeps the key then), and not while a dialog or a panel outside
+//: the board holds the focus. `e.code`, because Ctrl+= arrives as "+" or "="
+//: depending on the layout.
+const WB_ZOOM_KEYS = {
+  Equal: () => wbZoomStep(1.2, { usePointer: false }),
+  NumpadAdd: () => wbZoomStep(1.2, { usePointer: false }),
+  Minus: () => wbZoomStep(0.8, { usePointer: false }),
+  NumpadSubtract: () => wbZoomStep(0.8, { usePointer: false }),
+  Digit0: () => wbZoomToFit(),
+  Numpad0: () => wbZoomToFit(),
+  Digit1: () => wbZoomTo100(),
+  Numpad1: () => wbZoomTo100(),
+};
+
+function wbBoardHasFocus() {
+  const view = document.getElementById("library-view-whiteboard");
+  if (!view || view.classList.contains("hidden") || !view.getClientRects().length) return false;
+  if (document.querySelector("dialog[open]")) return false;
+  const active = document.activeElement;
+  if (!active || active === document.body) return true;
+  if (!view.contains(active)) return false;
+  const tag = active.tagName.toLowerCase();
+  return !(tag === "input" || tag === "textarea" || tag === "select" || active.isContentEditable);
+}
+
+function wbZoomKey(e) {
+  if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+  const run = WB_ZOOM_KEYS[e.code];
+  if (!run || (e.shiftKey && /[01]$/.test(e.code)) || !wbBoardHasFocus()) return;
+  e.preventDefault();
+  e.stopPropagation();
+  run();
+}
+
+function wbZoomTo100() {
+  const container = document.getElementById("whiteboard-container");
+  if (!container) return;
+  d3.select(container).transition().duration(160).call(wbZoom.scaleTo, 1, wbZoomAnchor({ usePointer: false }));
+}
+
 //: **Zoom to the selection** (Shift+2, draw.io's and Figma's key): the
 //: selected items fill the free canvas, magnified up to 2x so one small
 //: shape is readable, never past it.
@@ -5740,9 +5791,9 @@ async function wbPasteCopiedStyle() {
 //: map and level (`wbMapResetToBranch`'s keys). One undo step for the lot.
 const WB_SKETCH_RESET_KEYS = [
   "color", "width", "dash", "fill", "fillOpacity", "opacity", "noStroke", "alpha", "shadow", "shadow_x", "shadow_y", "shadow_blur", "rough", "jumps", "round", "dashPattern", "flow", "gradient", "fillStyle", "jumpSize", "gapStart", "gapEnd",
-  "startCapSize", "endCapSize", "label_size", "label_color", "label_bold", "label_italic", "label_underline", "label_strike", "label_font", "label_align", "label_valign", "label_lh", "label_ls",
+  "startCapSize", "endCapSize", "label_size", "label_color", "label_bold", "label_italic", "label_underline", "label_strike", "label_font", "label_align", "label_valign", "label_lh", "label_ls", "label_dir", "label_alpha",
 ];
-const WB_OBJECT_RESET_KEYS = ["color", "bg", "border_color", "font_size", "bold", "italic", "underline", "strike", "font_family", "align", "valign", "line_height", "letter_spacing", "alpha", "shadow", "shadow_x", "shadow_y", "shadow_blur", "radii", "pad", "fold"];
+const WB_OBJECT_RESET_KEYS = ["color", "bg", "border_color", "font_size", "bold", "italic", "underline", "strike", "font_family", "align", "valign", "line_height", "letter_spacing", "text_dir", "text_alpha", "alpha", "shadow", "shadow_x", "shadow_y", "shadow_blur", "radii", "pad", "fold"];
 
 //: The reset fields for one sketch, or null for a drawing with nothing to
 //: reset (a highlighter's look is its tool). A line whose ends are drawn in
@@ -14853,7 +14904,7 @@ async function initWhiteboard() {
   // under a button labelled "Fit to Screen". See `wbZoomToFit`.
   document.getElementById("wb-zoom-fit").addEventListener("click", () => wbZoomToFit());
   //: The level itself is the 100% button, as in Figma and draw.io.
-  document.getElementById("wb-zoom-level").addEventListener("click", () => container.transition().duration(160).call(wbZoom.scaleTo, 1));
+  document.getElementById("wb-zoom-level").addEventListener("click", wbZoomTo100);
 
   // **An arrow, not the function directly.** `addEventListener` passes the
   // click event as the first argument, which would land in
@@ -14953,9 +15004,7 @@ async function initWhiteboard() {
   $("wb-map-numbered")?.addEventListener("change", (e) => wbMapSetNumbered(e.target.checked));
   $("wb-map-dim")?.addEventListener("change", (e) => wbMapSetDim(e.target.checked));
   $("wb-map-stats-item")?.addEventListener("click", wbShowMapStats);
-  $("wb-zoom-actual")?.addEventListener("click", () =>
-    d3.select(document.getElementById("whiteboard-container")).transition().duration(160).call(wbZoom.scaleTo, 1)
-  );
+  $("wb-zoom-actual")?.addEventListener("click", wbZoomTo100);
   $("wb-map-expand-all")?.addEventListener("click", wbMapExpandAll);
   $("wb-map-focus-less")?.addEventListener("click", () => wbMapStepFocus(-1));
   $("wb-map-focus-more")?.addEventListener("click", () => wbMapStepFocus(1));
@@ -16834,6 +16883,9 @@ async function initWhiteboard() {
     if (!container.node()?.contains(e.target)) wbMapKeysArmed = false;
   });
 
+  //: On `window`, capturing, so it runs before the app zoom's own capture
+  //: listener on `document` (settings-panes.js) and can stop it.
+  window.addEventListener("keydown", wbZoomKey, true);
   document.addEventListener("keydown", (e) => {
     if (typeof e.key !== "string") return; // a keydown with no key (see the ring's handler above)
     const view = document.getElementById("library-view-whiteboard");
@@ -17131,32 +17183,7 @@ async function initWhiteboard() {
       }, 120);
       return;
     }
-    //: **The camera from the keyboard** (the conventions pass: Figma, Miro,
-    //: tldraw and Excalidraw share these). Ctrl+0 is 100%, Ctrl+= and Ctrl+-
-    //: step in and out by the zoom buttons' own factors, Shift+1 fits the
-    //: board. Ctrl+0 and Ctrl+= are also the browser's page zoom; on a board
-    //: the board's zoom is the one people mean, so they are taken here and
-    //: left to the browser everywhere else. `e.code` for the digits and the
-    //: plus key, because Shift+1 arrives as "!" and Ctrl+= as "+" or "="
-    //: depending on the layout.
-    if ((e.ctrlKey || e.metaKey) && !e.altKey) {
-      const camera = d3.select(document.getElementById("whiteboard-container"));
-      if (e.code === "Digit0" || e.code === "Numpad0") {
-        e.preventDefault();
-        camera.transition().duration(160).call(wbZoom.scaleTo, 1);
-        return;
-      }
-      if (e.code === "Equal" || e.code === "NumpadAdd") {
-        e.preventDefault();
-        wbZoomStep(1.2);
-        return;
-      }
-      if (e.code === "Minus" || e.code === "NumpadSubtract") {
-        e.preventDefault();
-        wbZoomStep(0.8);
-        return;
-      }
-    }
+    //: Ctrl/Cmd with +, -, 0 and 1 are `wbZoomKey`'s, taken before this.
     if (e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey && e.code === "Digit1") {
       e.preventDefault();
       wbZoomToFit();
@@ -17960,7 +17987,6 @@ async function initWhiteboard() {
   //: learnt.
   const openBoardCanvasMenu = (clientX, clientY) => {
     const [x, y] = getLogicalMouse({ clientX, clientY });
-    const camera = d3.select(containerEl);
     const items = [];
     if (wbClipboard) {
       const count = wbClipboard.things;
@@ -17976,7 +18002,7 @@ async function initWhiteboard() {
       makeMenuItem("ph:note Add a sticky note here", "N", () => wbCreateSticky(x, y)),
       makeMenuItem("ph:frame-corners Add a frame here", "F", () => wbCreateFrame(x, y)),
       makeMenuItem("ph:selection-all Select all", "Ctrl+A", () => wbSelectAllItems()),
-      makeMenuItem("ph:magnifying-glass Zoom to 100%", "Ctrl+0", () => camera.transition().duration(160).call(wbZoom.scaleTo, 1)),
+      makeMenuItem("ph:magnifying-glass Zoom to 100%", "Ctrl+1", wbZoomTo100),
       makeMenuItem("ph:frame-corners Fit everything", "Shift+1", () => wbZoomToFit()),
     );
     //: The way back to a locked item (decision 15): it lets the pointer
@@ -19744,7 +19770,7 @@ function wbLayoutShapeLabel(groupEl) {
   label.removeAttribute("transform");
   const placed = wbShapeLabelPlace(groupEl, label);
   if (!placed) return;
-  const { bbox, area } = placed;
+  const area = wbLabelBand(label, placed.area);
   const fontSize = label.dataset.fit ? wbFitShapeLabel(label, area) : parseFloat(getComputedStyle(label).fontSize) || 16;
   const lineHeight = fontSize * (Number(label.dataset.lh) || 1.25);
   //: The face, weight and letter spacing change the widths the wrap measures, so they key it.
@@ -19774,6 +19800,7 @@ function wbLayoutShapeLabel(groupEl) {
       : area.cy - block / 2;
   label.setAttribute("y", String(y));
   for (const span of label.children) span.setAttribute("x", String(x));
+  if (label.dataset.dir === "vertical") label.setAttribute("transform", `rotate(-90 ${area.cx} ${area.cy})`);
 }
 
 //: **Text that shrinks to fit its shape** (`label_fit`; draw.io's autosize
@@ -19991,6 +20018,28 @@ function wbPaintLabelSpacing(label, parsed) {
   if (parsed.label_lh > 0) label.dataset.lh = String(parsed.label_lh);
   else delete label.dataset.lh;
   label.style.letterSpacing = parsed.label_ls ? `${parsed.label_ls}px` : "";
+  wbPaintTextDir(label, parsed.label_dir, parsed.label_alpha);
+}
+
+//: Right to left or set vertically, and the words' own opacity (draw.io's
+//: Text tab; INBOX 1510(a)): inline, so an export keeps them. Only the two
+//: named values reach a style. A box's HTML text turns with `writing-mode`; a
+//: shape's SVG label is laid out in lines, so it is turned as draw.io turns
+//: one (`horizontal=0`): wrapped to the shape's height, then rotated a quarter
+//: back (`wbLayoutShapeLabel`).
+function wbPaintTextDir(el, dir, alpha) {
+  const svg = Boolean(el.namespaceURI?.endsWith("/svg"));
+  el.style.direction = dir === "rtl" ? "rtl" : "";
+  el.style.writingMode = dir === "vertical" && !svg ? "vertical-rl" : "";
+  if (svg && dir === "vertical") el.dataset.dir = "vertical";
+  else if (el.dataset) delete el.dataset.dir;
+  el.style.opacity = alpha > 0 && alpha < 1 ? String(alpha) : "";
+}
+
+//: The band a label wraps in: a turned label's lines run up the shape, so its
+//: width is the band's height (a band with no height keeps its width).
+function wbLabelBand(label, area) {
+  return label.dataset.dir === "vertical" ? { ...area, w: area.h || area.w, h: area.w } : area;
 }
 
 //: Adds, updates or removes a shape's label for one render.
@@ -21679,6 +21728,29 @@ function wbScheduleRender() {
   });
 }
 
+//: **A floating bar or popover tied to an item closes when the item leaves
+//: the board** (INBOX 1510(b): the text-format bar stayed after the box a
+//: quick-add arrow made was deleted). Delete, undo, cut and a board switch
+//: all end in a render, so the render asks once: an editor whose element is
+//: gone (editor.js `editorCloseOrphans`), and each popover below whose item
+//: is no longer in the board's state. Read by item, not by element, because
+//: a render rebuilds the elements of items that are still here.
+const WB_ITEM_POPOVERS = [
+  { ref: () => wbCommentState && { kind: wbCommentState.kind, id: wbCommentState.id }, close: () => wbCloseComments() },
+  { ref: () => typeof wbMapNoteState !== "undefined" && wbMapNoteState && { kind: "object", id: wbMapNoteState.id }, close: () => wbMapCloseNote() },
+  { ref: () => typeof wbMarkerUi !== "undefined" && wbMarkerUi.pop && { kind: "object", id: wbMarkerUi.pop.id }, close: () => wbMapCloseMarkers() },
+  { ref: () => typeof wbMapRadialFor !== "undefined" && wbMapRadialFor != null && { kind: "object", id: wbMapRadialFor }, close: () => wbCloseMapRadial() },
+  { ref: () => typeof wbMapLinkRadialFor !== "undefined" && wbMapLinkRadialFor != null && { kind: "object", id: wbMapLinkRadialFor }, close: () => wbCloseMapLinkRadial() },
+];
+
+function wbCloseOrphanedPopovers() {
+  editorCloseOrphans();
+  for (const popover of WB_ITEM_POPOVERS) {
+    const ref = popover.ref();
+    if (ref && !wbFindItem(ref.kind, ref.id)) popover.close();
+  }
+}
+
 // The unbatched escape hatch. Prefer wbScheduleRender(); use this only when
 // the very next statement has to read the rendered DOM.
 function renderWhiteboardNow() {
@@ -22640,6 +22712,7 @@ function renderWhiteboard() {
   wbPaintLocks();
   wbPaintHidden();
   wbPaintCommentMarks();
+  wbCloseOrphanedPopovers();
 
   //: A frame later, not now: a fresh element has to be drawn once before it
   //: is culled, which is what gives `contain-intrinsic-size: auto` a size to
@@ -23908,6 +23981,7 @@ function renderWbObjects(canvas) {
         .style("font-style", d.data.italic ? "italic" : "")
         .style("text-decoration", [d.data.underline && "underline", d.data.strike && "line-through"].filter(Boolean).join(" "))
         .style("font-family", WB_ITEM_FONTS[d.data.font_family] || "");
+      wbPaintTextDir(textEl.node(), d.data.text_dir, d.data.text_alpha);
       if (document.activeElement !== textEl.node()) wbPaintTextContent(textEl.node(), d);
     }
   });
