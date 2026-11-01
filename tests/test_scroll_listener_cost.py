@@ -104,18 +104,22 @@ def test_the_feature_model_rows_are_rebuilt_only_when_they_change():
     assert 'dataset.sig = ""' in apply
 
 
-def test_the_constellation_rests_while_idle_and_resumes_where_it_stopped():
+def test_the_constellation_rests_when_unattended_and_resumes_where_it_stopped():
     """Idle work, not scroll work, found in the same pass (step 3): traced
     with nobody at the window, the Dashboard's constellation ran 600 p5
-    frames and 204ms of script every ten seconds, forever. It now rests
-    after the background art's two idle minutes and goes on at the next
-    input (measured: 60 frames in 2 s, 0 while resting, 60 after a pointer
-    move), with its drift clock moved on by the rest so nothing jumps."""
+    frames and 204ms of script every ten seconds, forever. It first rested
+    after the background art's two idle minutes; INBOX 1501 made the rest
+    the rule (it drifts for `ART_ATTEND_MS` after mounting, a Regenerate or
+    the pointer last on the card, then draws nothing until the pointer or a
+    focus returns), with its drift clock moved on by the rest so nothing
+    jumps. The old test read the page-wide idle stamp; the intent, rest when
+    unwatched and wake where it stopped, is the same with a shorter wait."""
     src = (JS / "dashboard.js").read_text(encoding="utf-8")
     draw = src[src.index("p.draw = () => {"):]
     draw = draw[: draw.index("scene(reduceMotion")]
-    assert "bgArtLastInput > BG_ART_IDLE_MS" in draw
-    assert "p.noLoop()" in draw and "p.loop()" in draw
+    assert "performance.now() > attendUntil" in draw
     assert "!reduceMotion" in draw, "a still sketch must not be woken into motion"
-    assert "artClock.epoch += performance.now() - rested" in draw
+    sketch = src[src.index("const rest = () => {"):src.index("p.draw = () => {")]
+    assert "p.noLoop()" in sketch and "p.loop()" in sketch
+    assert "artClock.epoch += performance.now() - p.rested" in sketch
     assert "const artClock = { epoch" in src
