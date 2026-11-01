@@ -28,6 +28,11 @@ const opts = JSON.parse(optsJson);
 const out = [];
 // The loop is stepped by hand below, so no timer ever fires.
 const ctx = { console, setTimeout: () => 1, clearTimeout: () => {}, setInterval: () => 1, clearInterval: () => {} };
+// A clock that moves a fixed step each read: the worker's time budgets
+// (the untangle passes) count the same work on a loaded machine as on an
+// idle one, so a seed lays out the same map every run.
+let clock = 0;
+ctx.Date = class extends Date { static now() { return (clock += 0.05); } };
 ctx.self = ctx;
 // The main thread hands every frame's buffer back (`recycle`), or the worker
 // stops posting frames once two are in flight.

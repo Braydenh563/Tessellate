@@ -452,25 +452,6 @@ def patterns(session: Session = Depends(get_session)) -> dict:
     return {"patterns": [insights.as_row(i, known) for i in found]}
 
 
-#: What the composer's voice may read: no private note, draft, board or bin.
-_SHOWN = (Entry.is_deleted == False, Entry.is_private == False, Entry.is_draft == False, Entry.is_board == False)  # noqa: E712
-
-
-def _voice_notes(session: Session, rows: list[Entry]) -> list[dict]:
-    """Notes as `composer_voice` reads them (id, content, day, tags, category)."""
-    cats = {c.id: c.name for c in session.scalars(select(Category)).all()}
-    return [
-        {
-            "id": e.id,
-            "content": e.content or "",
-            "created_at": e.created_at.date().isoformat() if e.created_at else "",
-            "tags": manager.shown_tags(e),
-            "category": "" if cats.get(e.category_id, "").lower().startswith("uncategori") else cats.get(e.category_id, ""),
-        }
-        for e in rows
-    ]
-
-
 @router.get("/remarks")
 def remarks(session: Session = Depends(get_session)) -> dict:
     """What the companion could say about the notebook, best first
@@ -479,23 +460,13 @@ def remarks(session: Session = Depends(get_session)) -> dict:
     (a hash of its words) so the page never says one twice, and the notes it
     names; no model, and private and binned notes are never read."""
     from tessellate.ai import composer_voice
-    from tessellate.core.database import Reminder
+    from tessellate.repo import voice
 
     today = user_now(deps.get_config()).date()
-    recent = session.scalars(select(Entry).where(*_SHOWN).order_by(Entry.created_at.desc()).limit(120)).all()
+    recent = voice.recent(session)
     ids = {e.id for e in recent}
-    older = session.scalars(
-        select(Entry)
-        .where(*_SHOWN, Entry.created_at < datetime(today.year, 1, 1), func.strftime("%m-%d", Entry.created_at) == today.strftime("%m-%d"))
-        .order_by(Entry.created_at.desc())
-        .limit(10)
-    ).all()
-    notes = _voice_notes(session, [*recent, *(e for e in older if e.id not in ids)])
-    due = session.scalars(
-        select(Reminder).where(Reminder.done == False, Reminder.due_at <= datetime.combine(today + timedelta(days=1), datetime.max.time()))  # noqa: E712
-        .order_by(Reminder.due_at).limit(10)
-    ).all()
-    reminders = [{"id": r.id, "text": r.text, "due_at": r.due_at.date().isoformat(), "done": False, "entry_id": r.entry_id} for r in due]
+    notes = voice.as_notes(session, [*recent, *(e for e in voice.this_day_before(session, today) if e.id not in ids)])
+    reminders = voice.due_by(session, today)
     found = composer_voice.remarks(notes, today=today, reminders=reminders)[:6]
     return {"remarks": [{"text": r["text"].replace("**", ""), "key": r["key"], "kind": r["kind"], "sources": r["sources"]} for r in found]}
 
@@ -508,9 +479,10 @@ def today_line(seed: int = 0, session: Session = Depends(get_session)) -> dict:
     private and binned notes are never read. `text` is empty for an empty
     notebook, so the page falls back to its counts."""
     from tessellate.ai import composer_voice
+    from tessellate.repo import voice
 
-    shown = _SHOWN
-    rows = session.scalars(select(Entry).where(*shown).order_by(Entry.created_at.desc()).limit(120)).all()
+    shown = voice.SHOWN
+    rows = voice.recent(session)
     #: The 120 rows are the sample the line names notes from; how many were
     #: written today and yesterday is counted in SQL, so a bulk import is not
     #: capped at the sample's size (audit 1028 S8).
@@ -521,7 +493,7 @@ def today_line(seed: int = 0, session: Session = Depends(get_session)) -> dict:
         date.fromisoformat(d): n
         for d, n in session.execute(select(day, func.count()).where(*shown, day.in_(asked)).group_by(day)).all()
     }
-    notes = _voice_notes(session, rows)
+    notes = voice.as_notes(session, rows)
     line = composer_voice.today_line(notes, today=today, seed=seed, counts=counts)
     if not line:
         #: An empty notebook is welcomed in words (CHAT_PLAN 1353), not left blank.

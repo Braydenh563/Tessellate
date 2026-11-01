@@ -171,7 +171,8 @@ def test_the_work_behind_the_menu_is_a_lazy_piece():
     entry_points = re.search(r"const LAZY_ENTRY_POINTS = \{(.*?)\n\};", APP_JS, re.S).group(1)
     assert re.search(r'attachments:\s*\["attachmentAction"\]', entry_points)
     actions = ACTIONS.read_text(encoding="utf-8")
-    assert re.search(r"^async function attachmentAction\(", actions, re.M)
+    #: Indented once the file is wrapped in one closure (ranked row 37a).
+    assert re.search(r"^\s*async function attachmentAction\(", actions, re.M)
     assert "function attachmentAction(" not in _boot_js()
 
 

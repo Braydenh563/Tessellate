@@ -44,8 +44,9 @@ TOP_LEVEL_LETS_CAP = 699
 #: (`tests/_js_scope.py`: a wrapped file's exports, any other file's top-level
 #: declarations). 9,905 before; embed-choices.js, model-bench.js and
 #: dash-night.js wrapped whole, one export each, freed 23. Z1 added
-#: space-swap.js (two entry points, wrapped); run-debug.js wrapped: 9,875.
-GLOBAL_NAMES_CAP = 9875
+#: space-swap.js (two entry points, wrapped); run-debug.js wrapped: 9,875;
+#: ai1518's companion-remark.js and attachment-actions.js wrapped, one export each: 9870.
+GLOBAL_NAMES_CAP = 9870
 
 
 def _code() -> dict[str, str]:

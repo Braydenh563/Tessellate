@@ -26,7 +26,9 @@ MOVED = {
 #: spaces repository will own it when spaces move (row 3a, step order).
 CROSS_RESOURCE = {"routes_spaces.py"}
 
-ORM_CALLS_CAP = 876
+#: 876 at arch1518; the voice reads (the dashboard line, the companion's remarks)
+#: moved to repo/voice.py: 872.
+ORM_CALLS_CAP = 872
 
 _ORM = re.compile(
     r"\b(?:session|db)\.(?:query|get|execute|scalar|scalars|add|add_all|delete|merge)\("
