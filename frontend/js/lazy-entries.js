@@ -192,8 +192,9 @@ function installCharacterStandIns(names, replay) {
     };
   }
 }
-//: Cues: the moment has passed by the time the bundle is in.
-installCharacterStandIns(["nameMarkBuddyNoteOpened", "atlasOn"], false);
+//: Cues: the moment has passed by the time the bundle is in (a bell, a toast, a
+//: saved note, the read-aloud's start and end, the perch check's nudge).
+installCharacterStandIns(["nameMarkBuddyNoteOpened", "atlasOn", "nameMarkBuddyCue", "nameMarkBuddySound", "nmbTickArm"], false);
 //: Syncs and one-offs: the companion's settings, Atlas's look, a streak, the
 //: Show or Hide row.
 installCharacterStandIns([

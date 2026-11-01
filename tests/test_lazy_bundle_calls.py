@@ -127,6 +127,29 @@ def _declared_anywhere(path: Path) -> set[str]:
 #: been loaded, with the reason each one is safe. A name here is a promise that
 #: somebody checked the path, not a way to quiet the test.
 REACHED_AFTER_LOAD = {
+    #: `file:name` keys (INBOX 1521): the same name is safe in one boot file and
+    #: not in another, so these are per file. Every one is a call that only runs
+    #: once the bundle is in, with the line that proves it.
+    "chat-agent.js:atlasAvatar": "assistantAvatar runs only from paintAssistantAvatar's afterCharacters (chat-agent.js)",
+    "chat-agent.js:atlasDraw": "assistantAvatar runs only from paintAssistantAvatar's afterCharacters (chat-agent.js)",
+    "chat-agent.js:atlasLook": "chatHeadKey is a cache key; its typeof guard only trims the key, and it is asked for a face only after afterCharacters",
+    "chat-agent.js:atlasStyle": "chatHeadKey is a cache key; its typeof guard only trims the key, and it is asked for a face only after afterCharacters",
+    "chat-agent.js:nameMark": "inside paintUserMarks's afterCharacters (chat-agent.js)",
+    "chat.js:nameMark": "the same line is the afterCharacters callback (chat.js)",
+    "chat.js:chatPrivateEmpty": "chatConv.private is set only by chat-private.js (chatPrivateStart, line 42), which the stand-in loads",
+    "dashboard.js:nameMarkLive": "paintDashFace is called only from paintDashEmblem's afterCharacters (dashboard.js)",
+    "palette.js:chatSourcesFrom": "called only inside cmdPaletteAsk, which awaits ensureModule('chatTurn') first (answer-kit.js rides in it)",
+    "palette.js:chatSourcesPanel": "called only inside cmdPaletteAsk, which awaits ensureModule('chatTurn') first (answer-kit.js rides in it)",
+    "palette.js:messageMetaLine": "called only inside cmdPaletteAsk, which awaits ensureModule('chatTurn') first (answer-kit.js rides in it)",
+    "settings-panes.js:atlasAvatar": "a palette row's optional face: typeof-guarded, and the row's icon is the designed fallback (face null)",
+    "settings-panes.js:mountProfileLook": "inside the afterCharacters callback that also calls setOwnNameMarkStyle",
+    "settings-panes.js:nameMark": "the same line is the afterCharacters callback (settings-panes.js, profile avatar)",
+    "settings-panes.js:setOwnNameMarkStyle": "inside the afterCharacters callback (settings-panes.js, renderProfile)",
+    "settings-panes.js:ownNameMarkStyle": "the save payload: without the bundle the look controls were never mounted, so there is no change to send and undefined omits the field",
+    "settings-wiring.js:improveReady": "a click on .improve-mode, which is inside #improve-overlay; that is hidden until openImprove (improve-panel.js:18) shows it",
+    "settings.js:nameMarkBuddyMotion": "inside the afterCharacters callback (settings.js, the About motion line)",
+    "settings.js:bgArtSeedText": "bgArtRefreshSeed returns early unless bgArtSeedUsed is defined, and that is declared in bg-art.js",
+    "settings.js:bgArtHalt": "halts what bgArtRun mounted, and bgArtRun runs only once bg-art.js is in (startBgArt's typeof gate)",
     "copyWebLink": "the web reader's Copy link listener (wiring.js), which awaits ensureModule('webClip') first",
     "openWebPageExternally": "the web reader's Open listener (wiring.js), which awaits ensureModule('webClip') first",
     #: INBOX 1301 D6: the release calls it only when `typeof nameMarkBuddyThrow
@@ -381,32 +404,7 @@ GUARD = re.compile(r'typeof\s+(\w+)\s*===?\s*["\']function["\']')
 #: Gaps the scan found when it first read lazy-entries.js (2026-11-01, INBOX 1521),
 #: as `file:name`. This set only shrinks: each is fixed (a stand-in, an awaited
 #: ensureModule, or a REACHED_AFTER_LOAD reason) and taken out; a new gap fails.
-KNOWN_GAPS_1521 = {
-    "app.js:nameMarkBuddyCue",
-    "chat-agent.js:atlasAvatar",
-    "chat-agent.js:atlasDraw",
-    "chat-agent.js:atlasLook",
-    "chat-agent.js:atlasStyle",
-    "chat-agent.js:nameMark",
-    "chat.js:chatPrivateEmpty",
-    "chat.js:nameMark",
-    "dashboard.js:nameMarkLive",
-    "media.js:nameMarkBuddySound",
-    "palette.js:chatSourcesFrom",
-    "palette.js:chatSourcesPanel",
-    "palette.js:messageMetaLine",
-    "settings-panes.js:atlasAvatar",
-    "settings-panes.js:mountProfileLook",
-    "settings-panes.js:nameMark",
-    "settings-panes.js:ownNameMarkStyle",
-    "settings-panes.js:setOwnNameMarkStyle",
-    "settings-wiring.js:improveReady",
-    "settings.js:bgArtHalt",
-    "settings.js:bgArtSeedText",
-    "settings.js:nameMarkBuddyMotion",
-    "status.js:nameMarkBuddyCue",
-    "status.js:nmbTickArm",
-}
+KNOWN_GAPS_1521: set[str] = set()
 
 
 FUNCTION_START = re.compile(r"^(?:async )?function [A-Za-z_$]")
@@ -447,7 +445,7 @@ def test_no_boot_file_silently_depends_on_a_lazy_bundle():
                 bundle = candidates[symbol]
                 if symbol in entries.get(bundle, set()):
                     continue
-                if symbol in REACHED_AFTER_LOAD:
+                if symbol in REACHED_AFTER_LOAD or f"{name}:{symbol}" in REACHED_AFTER_LOAD:
                     continue
                 if f"{name}:{symbol}" in KNOWN_GAPS_1521:
                     still_known.add(f"{name}:{symbol}")
