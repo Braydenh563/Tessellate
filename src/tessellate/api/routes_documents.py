@@ -39,6 +39,7 @@ from tessellate.core.database import (
 )
 from tessellate.core.deps import get_session
 from tessellate.entry import link_offers
+from tessellate.repo import content as content_repo
 from tessellate.repo.content import DOCUMENTS, unshelved
 from tessellate.repo import bookmarks as bookmark_repo
 from tessellate.entry.mentions import (
@@ -854,11 +855,8 @@ def _binned(session: Session, document_id: int) -> Document:
 @router.post("/{document_id}/restore")
 def restore_document(document_id: int, session: Session = Depends(get_session)) -> dict:
     """Out of the bin, with its id and everything that pointed at it."""
-    document = _binned(session, document_id)
-    if document.deleted_at is not None:
-        document.deleted_at = None
-        log_action(session, "restored", "document", document.id, document.title[:80])
-        session.commit()
+    document, _was_binned = content_repo.restore(session, "document", document_id)
+    session.commit()
     return _summary(document)
 
 

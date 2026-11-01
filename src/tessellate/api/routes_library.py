@@ -44,6 +44,7 @@ from tessellate.core.deps import get_session
 from tessellate.entry import highlights as note_highlights
 from tessellate.entry.manager import extract_title, join_blocks, remove_title, shown_tags, strip_inline_markdown
 from tessellate.entry.properties import strip as strip_properties
+from tessellate.repo import content as content_repo
 
 router = APIRouter(tags=["library"])
 
@@ -1101,3 +1102,14 @@ def library(
         "overview": overview,
         "truncated": truncated,
     }
+
+
+@router.post("/bin/{kind}/{item_id}/restore")
+def restore_from_bin(kind: str, item_id: int, session: Session = Depends(get_session)) -> dict:
+    """The Library bin's one Restore (audit 1031 row 2a): every kind the bin
+    lists comes back through `repo/content.restore`, so a new kind is an
+    adapter row, not a route here and a branch in `binRoutes`. `restored` is
+    False for a row that was already live."""
+    row, restored = content_repo.restore(session, kind, item_id)
+    session.commit()
+    return {"kind": kind, "id": row.id, "restored": restored}

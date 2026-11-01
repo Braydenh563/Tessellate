@@ -67,6 +67,7 @@ from tessellate.core.deps import get_session
 from tessellate.entry import duplicates, link_facts, manager
 from tessellate.repo import bookmarks as bookmark_repo
 from tessellate.repo import relation_types
+from tessellate.repo import content as content_repo
 from tessellate.repo.content import NOTES
 from tessellate.entry.mentions import MENTION_MIN_TITLE_CHARS, names_label
 from tessellate.entry import meetings as meeting_shape
@@ -3087,9 +3088,8 @@ def delete_entry(
 
 @router.post("/{entry_id}/restore", response_model=EntryOut)
 def restore_entry(entry_id: int, session: Session = Depends(get_session)) -> EntryOut:
-    entry = _existing_entry(session, entry_id)
-    if entry.is_deleted:
-        manager.restore_entry(session, entry)
+    entry, _was_binned = content_repo.restore(session, "note", entry_id)
+    session.commit()
     return _to_out(session, entry)
 
 

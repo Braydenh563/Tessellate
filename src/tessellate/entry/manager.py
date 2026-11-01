@@ -1085,6 +1085,8 @@ def soft_delete_entry(session: Session, entry: Entry) -> None:
 
 @events.writes("entry", "restored")
 def restore_entry(session: Session, entry: Entry) -> None:
+    """Out of the bin; flushes, never commits (audit 1031 row 2a): the caller
+    owns the transaction, as `repo/content.restore` does for every kind."""
     was = entry.deleted_at.isoformat() if entry.deleted_at else None
     entry.is_deleted = False
     entry.deleted_at = None
@@ -1098,7 +1100,7 @@ def restore_entry(session: Session, entry: Entry) -> None:
             "after": {"is_deleted": False, "deleted_at": None},
         },
     )
-    session.commit()
+    session.flush()
 
 
 @events.writes("entry", "archived")

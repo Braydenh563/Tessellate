@@ -570,7 +570,7 @@ HELP_TOPICS: list[dict] = [
         "keywords": ("undo", "redo", "recycle bin", "restore", "deleted", "trash"),
         "body": (
             "Undo and Redo cover everything you change in your notebook. A deleted "
-            "note, board, document, reminder or OCR reading goes to the bin, not gone "
+            "note, board, document, reminder, recording or OCR reading goes to the bin, not gone "
             "for good: restore it from the Library (Filter, Include the bin, or Open "
             "the bin from Ctrl+K), or press Undo in the toast right after, which also "
             "has a Go to bin button for a note. A deleted picture or file, a past "

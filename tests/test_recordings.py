@@ -128,7 +128,7 @@ def test_bin_restore_and_purge(client):
     response = client.get("/recordings")
     assert len(response.json()["recordings"]) == 1
     client.delete(f"/recordings/{made['id']}")
-    response = client.post(f"/recordings/{made['id']}/purge")
+    response = client.delete(f"/recordings/{made['id']}/purge")
     assert response.status_code == 200
     assert not path.exists()
 
@@ -195,10 +195,10 @@ def test_finish_transcribe_and_purge_by_id(client, monkeypatch):
     assert finished.json()["state"] == "saved"
     transcribed = client.post(f"/recordings/{rid}/transcribe")
     assert transcribed.status_code == 503
-    early = client.post(f"/recordings/{rid}/purge")
+    early = client.delete(f"/recordings/{rid}/purge")
     assert early.status_code == 409  # not in the bin yet
     client.delete(f"/recordings/{rid}")
-    purged = client.post(f"/recordings/{rid}/purge")
+    purged = client.delete(f"/recordings/{rid}/purge")
     assert purged.status_code == 200
 
 

@@ -10,10 +10,17 @@ one sentence per noun, and every write route of the four families fetches
 its row through its adapter's `writable`. A read keeps its 404: the bin floor
 is a read rule (`core/database.py`, `entry/bin.py`).
 
-An adapter is small on purpose: how to find a row with the bin included and
-whether that row is binned. `KINDS` is the table a new verb (restore by kind,
-the export walk) reads, so a new verb lands once for every kind. See
+An adapter is small on purpose: how to find a row with the bin included,
+whether that row is binned, and how to take it out of the bin. `KINDS` is the
+table a verb across kinds reads (**the undo table**: `restore(session, kind,
+id)` is the one way back out of the bin for every kind, and every restore
+route goes through it), so a new kind is one adapter row. See
 `repo/__init__.py` for the rules every repository keeps (flush, never commit).
+
+A binned OCR reading is not here on purpose: it is a former value of a file's
+text kept in `core/reading_bin.py`, not a row with a bin mark, and putting it
+back rewrites the file's reading, its region cache and its index, which its
+own route does.
 """
 
 from __future__ import annotations
@@ -22,7 +29,7 @@ from typing import Protocol, runtime_checkable
 
 from sqlalchemy.orm import Session
 
-from tessellate.core.database import Attachment, Document, Entry
+from tessellate.core.database import Attachment, Document, Entry, Recording, Reminder
 from tessellate.repo import Conflict, NotFound
 
 #: One sentence per noun, so the answer reads the same from every route.
@@ -43,6 +50,10 @@ class Content(Protocol):
     def is_binned(self, session: Session, row: object) -> bool: ...
 
     def writable(self, session: Session, row_id: int) -> object: ...
+
+    def restore(self, session: Session, row: object) -> None:
+        """Out of the bin, logged; flushes, never commits. Only called on a
+        binned row."""
 
 
 class _Adapter:
@@ -69,6 +80,11 @@ class _Notes(_Adapter):
     def is_binned(self, session: Session, row: Entry) -> bool:
         return bool(row.is_deleted)
 
+    def restore(self, session: Session, row: Entry) -> None:
+        from tessellate.entry import manager
+
+        manager.restore_entry(session, row)
+
 
 class _Boards(_Notes):
     """A board is a note with a canvas; ids at or below 0 name none (0 is the
@@ -92,6 +108,13 @@ class _Documents(_Adapter):
     def is_binned(self, session: Session, row: Document) -> bool:
         return row.deleted_at is not None
 
+    def restore(self, session: Session, row: Document) -> None:
+        from tessellate.entry.manager import log_action
+
+        row.deleted_at = None
+        log_action(session, "restored", "document", row.id, row.title[:80])
+        session.flush()
+
 
 class _Files(_Adapter):
     """An attachment is in the bin when its note is: binning a note carries its
@@ -110,14 +133,74 @@ class _Files(_Adapter):
     def is_binned(self, session: Session, row: Attachment) -> bool:
         return bool(session.get(Entry, row.entry_id).is_deleted)
 
+    def restore(self, session: Session, row: Attachment) -> None:
+        """A file is in its note's bin, so its way back is its note's."""
+        NOTES.restore(session, session.get(Entry, row.entry_id))
+
+
+class _Reminders(_Documents):
+    """A reminder's bin mark is `deleted_at`, like a document's."""
+
+    kind = noun = "reminder"
+
+    def find_any(self, session: Session, row_id: int) -> Reminder | None:
+        from tessellate.entry.bin import including_binned
+
+        with including_binned(session):
+            return session.get(Reminder, row_id)
+
+    def restore(self, session: Session, row: Reminder) -> None:
+        from tessellate.repo import reminders
+
+        reminders.restore(session, row)
+
+
+class _Recordings(_Documents):
+    kind = noun = "recording"
+
+    def find_any(self, session: Session, row_id: int) -> Recording | None:
+        from tessellate.entry.bin import including_binned
+
+        with including_binned(session):
+            return session.get(Recording, row_id)
+
+    def restore(self, session: Session, row: Recording) -> None:
+        from tessellate.entry.manager import log_action
+
+        row.deleted_at = None
+        log_action(session, "restored", "recording", row.id)
+        session.flush()
+
 
 NOTES = _Notes()
 BOARDS = _Boards()
 DOCUMENTS = _Documents()
 FILES = _Files()
+REMINDERS = _Reminders()
+RECORDINGS = _Recordings()
 
-#: Every content type by its kind name: the table a verb across kinds reads.
-KINDS: dict[str, Content] = {a.kind: a for a in (NOTES, BOARDS, DOCUMENTS, FILES)}
+#: Every content type by its kind name: the undo table, and the table any
+#: other verb across kinds reads.
+KINDS: dict[str, Content] = {a.kind: a for a in (NOTES, BOARDS, DOCUMENTS, FILES, REMINDERS, RECORDINGS)}
+
+#: The answer for a kind the table does not name.
+NO_KIND = "Nothing of that kind goes in the bin."
+
+
+def restore(session: Session, kind: str, row_id: int) -> tuple[object, bool]:
+    """The one way out of the bin: the row and whether it was binned. A live
+    row is left as it is (a second press of Restore changes nothing). Flushes,
+    never commits: the route owns the transaction."""
+    adapter = KINDS.get(kind)
+    if adapter is None:
+        raise NotFound(NO_KIND)
+    row = adapter.find_any(session, row_id)
+    if row is None:
+        raise NotFound(f"That {adapter.noun} could not be found.")
+    binned = adapter.is_binned(session, row)
+    if binned:
+        adapter.restore(session, row)
+    return row, binned
 
 
 def unshelved(document: Document, *, unarchive: bool) -> Document:

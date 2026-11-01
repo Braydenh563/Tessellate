@@ -110,6 +110,134 @@ def test_an_unknown_id_is_still_404_for_every_kind(client):
 def test_every_kind_is_one_adapter_behind_one_guard():
     from tessellate.repo import content
 
-    assert set(content.KINDS) == {"note", "board", "document", "file"}
+    assert set(content.KINDS) == {"note", "board", "document", "file", "reminder", "recording"}
     for adapter in content.KINDS.values():
         assert isinstance(adapter, content.Content)
+
+
+# --- step (2): one undo table ------------------------------------------------
+
+
+def _reminder(client) -> int:
+    r = client.post("/reminders", json={"text": "water the plants", "due_at": "2099-01-01T09:00:00"})
+    assert r.status_code in (200, 201), r.text
+    return r.json()["id"]
+
+
+def _recording(client) -> int:
+    r = client.post("/recordings", json={"title": "Standup", "mime": "audio/webm;codecs=opus"})
+    assert r.status_code in (200, 201), r.text
+    return r.json()["id"]
+
+
+#: kind: (make, the route that bins it).
+BINNABLE = {
+    "note": (_note, "/entries/{}"),
+    "board": (_board, "/entries/{}"),
+    "document": (_document, "/documents/{}"),
+    "reminder": (_reminder, "/reminders/{}"),
+    "recording": (_recording, "/recordings/{}"),
+}
+
+
+@pytest.mark.parametrize("kind", sorted(BINNABLE))
+def test_the_bin_restores_every_kind_through_one_route(client, kind):
+    make, bin_route = BINNABLE[kind]
+    row = make(client)
+    binned = client.delete(bin_route.format(row))
+    assert binned.status_code == 200
+    back = client.post(f"/bin/{kind}/{row}/restore")
+    assert back.status_code == 200, back.text
+    assert back.json() == {"kind": kind, "id": row, "restored": True}
+    again = client.post(f"/bin/{kind}/{row}/restore")
+    assert again.json()["restored"] is False, "a live row is left as it is"
+    rebinned = client.delete(bin_route.format(row))
+    assert rebinned.status_code == 200, "it was live again"
+
+
+def test_the_one_route_answers_404_for_no_row_and_no_kind(client):
+    missing = client.post("/bin/document/987654/restore")
+    assert missing.status_code == 404
+    unknown = client.post("/bin/spaceship/1/restore")
+    assert unknown.status_code == 404
+    assert unknown.json()["detail"] == "Nothing of that kind goes in the bin."
+
+
+@pytest.mark.parametrize("kind", ["note", "board", "document", "reminder", "recording"])
+def test_restore_flushes_and_never_commits(session, kind):
+    """The undo table is a repository verb: the caller's commit decides."""
+    from tessellate.core.database import Document, Entry, Recording, Reminder, utcnow
+    from tessellate.repo import content
+
+    if kind in ("note", "board"):
+        row = Entry(content="binned", is_deleted=True, deleted_at=utcnow(), is_board=kind == "board")
+    elif kind == "document":
+        row = Document(title="binned", content="", deleted_at=utcnow())
+    elif kind == "reminder":
+        row = Reminder(text="binned", due_at=utcnow(), deleted_at=utcnow())
+    else:
+        row = Recording(title="binned", deleted_at=utcnow())
+    session.add(row)
+    session.commit()
+    restored, was_binned = content.restore(session, kind, row.id)
+    assert restored is row and was_binned
+    assert not content.KINDS[kind].is_binned(session, row)
+    session.rollback()
+    session.expire_all()
+    assert content.KINDS[kind].is_binned(session, content.KINDS[kind].find_any(session, row.id))
+
+
+def test_manager_restore_entry_flushes_and_never_commits(session):
+    from tessellate.core.database import Entry, utcnow
+    from tessellate.entry import manager
+
+    entry = Entry(content="binned", is_deleted=True, deleted_at=utcnow())
+    session.add(entry)
+    session.commit()
+    manager.restore_entry(session, entry)
+    session.rollback()
+    session.expire_all()
+    assert session.get(Entry, entry.id).is_deleted
+
+
+def test_the_library_bin_restores_through_the_one_route():
+    """`binRoutes` named five restore routes; it names one (and readings keep
+    theirs: a binned reading is a former value of a file's text, not a row)."""
+    from pathlib import Path
+
+    js = (Path(__file__).resolve().parents[1] / "frontend/js/library.js").read_text(encoding="utf-8")
+    body = js.split("function binRoutes(item) {")[1].split("\n}\n")[0]
+    assert "restore: `/bin/${item.subtype}/${item.id}/restore`" in body
+    for old in ("/documents/${item.id}/restore", "/reminders/${item.id}/restore", "/recordings/${item.id}/restore", "/entries/${item.id}/restore"):
+        assert old not in body, old
+
+
+def test_a_binned_board_refuses_a_thumbnail_and_its_reads_stay_404(client):
+    """A thumbnail PUT is a write, so it answers the bin guard's 409; it used to
+    share the reads' lookup and say 404, as if the board were gone."""
+    bid = _board(client)
+    binned = client.delete(f"/entries/{bid}")
+    assert binned.status_code == 200
+    webp = b"RIFF" + (100).to_bytes(4, "little") + b"WEBP" + b"VP8 " + b"\x00" * 90
+    put = client.put(f"/whiteboard/boards/{bid}/thumbnail?fp={'a' * 16}", content=webp)
+    assert put.status_code == 409, put.text
+    assert put.json()["detail"] == "This board is in the bin. Restore it first."
+    state = client.get(f"/whiteboard/boards/{bid}/thumbnail/state")
+    assert state.status_code == 404
+    back = client.post(f"/bin/board/{bid}/restore")
+    assert back.status_code == 200
+    again = client.put(f"/whiteboard/boards/{bid}/thumbnail?fp={'a' * 16}", content=webp)
+    assert again.status_code == 200
+
+
+@pytest.mark.parametrize("kind", sorted(BINNABLE))
+def test_every_kind_purges_by_the_method_the_library_sends(client, kind):
+    """The Library's "Delete for good" sends DELETE to each kind's purge; a
+    recording's answered only POST, so it said 405 (driven on :8855)."""
+    make, bin_route = BINNABLE[kind]
+    row = make(client)
+    binned = client.delete(bin_route.format(row))
+    assert binned.status_code == 200
+    purged = client.delete(bin_route.format(row) + "/purge")
+    assert purged.status_code == 200, purged.text
+

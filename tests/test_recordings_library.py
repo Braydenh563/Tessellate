@@ -39,8 +39,10 @@ def test_a_recording_is_seekable_before_its_first_seek():
 
 
 def test_the_bin_restores_a_recording():
+    """The bin's one restore route covers a recording (audit 1031 row 2a);
+    `tests/test_content_protocol.py` drives it."""
     lib = (ROOT / "frontend/js/library.js").read_text(encoding="utf-8")
-    assert 'restore: `/recordings/${item.id}/restore`' in lib
+    assert 'if (kind === "recording") return { ...one, noun: "recording", bin: `/recordings/${item.id}`' in lib
 
 
 def test_a_recording_is_a_card_with_a_playhead_and_the_time():

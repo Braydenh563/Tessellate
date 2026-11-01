@@ -1086,7 +1086,7 @@ function libraryActions(item) {
       makeMenuItem("ph:arrow-u-up-left Restore", `Put this ${bin.noun} back`, async () => {
         const back = await apiJson(bin.restore, { method: "POST" }).catch((e) => toast(e.message, true));
         if (back && item.subtype !== "reading") {
-          pushBinPairUndo(`Restored “${item.title}” from the bin`, bin.restore.replace(/\/restore$/, ""), bin.restore, true, () => Promise.all([loadLibrary(), bin.reload()]));
+          pushBinPairUndo(`Restored “${item.title}” from the bin`, bin.bin, bin.restore, true, () => Promise.all([loadLibrary(), bin.reload()]));
         }
         toast("Restored.");
         reload();
@@ -1254,24 +1254,23 @@ function libraryActions(item) {
 
 //: **The bin holds five kinds** (WORLD_CLASS_PLAN 5 item 10): notes (with
 //: boards and maps), documents, reminders, OCR readings and recordings, told apart by `subtype`
-//: (`routes_library._archive`). Each has its own restore and purge route.
+//: (`routes_library._archive`). Restore is one route for every kind with a
+//: bin mark (`POST /bin/{kind}/{id}/restore`, audit 1031 row 2a); `bin` is
+//: the kind's own DELETE (Undo of a restore), and purge stays per kind.
 function binRoutes(item) {
-  if (item.subtype === "document") {
-    return { noun: "document", restore: `/documents/${item.id}/restore`, purge: `/documents/${item.id}/purge`, reload: () => {} };
-  }
-  if (item.subtype === "reminder") {
-    return { noun: "reminder", restore: `/reminders/${item.id}/restore`, purge: `/reminders/${item.id}/purge`, reload: () => loadReminders() };
-  }
+  const kind = item.subtype;
+  const one = { restore: `/bin/${item.subtype}/${item.id}/restore`, reload: () => {} };
   //: A deleted OCR reading (WORLD_CLASS_PLAN 28.4 row 2) goes back to the
-  //: page or the file it was read from.
-  //: A deleted recording (WORLD_CLASS_PLAN 28.5 row 6), its audio kept.
-  if (item.subtype === "recording") {
-    return { noun: "recording", restore: `/recordings/${item.id}/restore`, purge: `/recordings/${item.id}/purge`, reload: () => {} };
-  }
-  if (item.subtype === "reading") {
+  //: page or the file it was read from: a former value of a file's text, not
+  //: a row with a bin mark, so it keeps its own restore.
+  if (kind === "reading") {
     return { noun: "reading", restore: `/reading-bin/${item.id}/restore`, purge: `/reading-bin/${item.id}/purge`, reload: () => renderLibraryImagesGallery() };
   }
-  return { noun: "note", restore: `/entries/${item.id}/restore`, purge: `/entries/${item.id}/purge`, reload: () => refreshEntries([item.id]) };
+  if (kind === "document") return { ...one, noun: "document", bin: `/documents/${item.id}`, purge: `/documents/${item.id}/purge` };
+  if (kind === "reminder") return { ...one, noun: "reminder", bin: `/reminders/${item.id}`, purge: `/reminders/${item.id}/purge`, reload: () => loadReminders() };
+  //: A deleted recording (WORLD_CLASS_PLAN 28.5 row 6), its audio kept.
+  if (kind === "recording") return { ...one, noun: "recording", bin: `/recordings/${item.id}`, purge: `/recordings/${item.id}/purge` };
+  return { ...one, noun: "note", bin: `/entries/${item.id}`, purge: `/entries/${item.id}/purge`, reload: () => refreshEntries([item.id]) };
 }
 
 //: Link a Library note to another, chosen from a picker. The same route the
@@ -1803,7 +1802,7 @@ function openLibraryItem(item) {
         if (!yes) return;
         const back = await apiJson(bin.restore, { method: "POST" }).catch((e) => toast(e.message, true));
         if (back && item.subtype !== "reading") {
-          pushBinPairUndo(`Restored “${item.title}” from the bin`, bin.restore.replace(/\/restore$/, ""), bin.restore, true, () => Promise.all([loadLibrary(), bin.reload()]));
+          pushBinPairUndo(`Restored “${item.title}” from the bin`, bin.bin, bin.restore, true, () => Promise.all([loadLibrary(), bin.reload()]));
         }
         loadLibrary();
         bin.reload();
@@ -2122,7 +2121,7 @@ $("library-bulk-restore").addEventListener("click", async () => {
   if (back.length) {
     pushRoutePairUndo(
       `Restored ${nounCount(back.length, "item")} from the bin`,
-      back.map((item) => [binRoutes(item).restore.replace(/\/restore$/, ""), "DELETE"]),
+      back.map((item) => [binRoutes(item).bin, "DELETE"]),
       back.map((item) => [binRoutes(item).restore, "POST"]),
       () => Promise.all([loadLibrary(), loadEntries(), loadReminders()])
     );
