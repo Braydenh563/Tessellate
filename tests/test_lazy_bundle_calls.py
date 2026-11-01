@@ -52,14 +52,34 @@ def _boot_scripts() -> list[str]:
 
 
 def _lazy_files() -> dict[str, list[str]]:
-    """`LAZY_MODULES` as written in app.js: bundle name to its files."""
+    """`LAZY_MODULES` as written in app.js, plus the bundles lazy-entries.js
+    adds with `Object.assign(LAZY_MODULES, {...})`: bundle name to its files.
+    lazy-entries.js went unread until 2026-11-01, when a bundle there lost a
+    file and Ask threw `progressLine is not defined` on every question."""
     source = (FRONTEND / "js" / "app.js").read_text(encoding="utf-8")
     block = re.search(r"const LAZY_MODULES = \{(.*?)\n\};", source, re.S)
     assert block, "LAZY_MODULES not found in app.js; has the loader moved?"
+    blocks = [block.group(1)]
+    extra = (FRONTEND / "js" / "lazy-entries.js").read_text(encoding="utf-8")
+    blocks += re.findall(r"Object\.assign\(LAZY_MODULES, \{(.*?)\n\}\);", extra, re.S)
     out: dict[str, list[str]] = {}
-    for name, files in re.findall(r"^\s*(\w+):\s*\[(.*?)\],", block.group(1), re.M | re.S):
-        out[name] = re.findall(r'"/js/([A-Za-z0-9._-]+\.js)"', files)
+    for text in blocks:
+        for name, files in re.findall(r"^\s*(\w+):\s*\[(.*?)\],", text, re.M | re.S):
+            out[name] = re.findall(r'"/js/([A-Za-z0-9._-]+\.js)"', files)
     return out
+
+
+def test_no_bundle_list_is_changed_at_run_time():
+    """A bundle's files are what its definition says. A list grown at run time
+    (`LAZY_MODULES.x.unshift(...)`) is invisible to every test here, and its
+    loss is invisible too: the line that put answer-kit.js in front of the
+    Ask, Ask history and Guide bundles went in a byte trim, and only the
+    browser noticed (2026-11-01)."""
+    found = []
+    for path in sorted((FRONTEND / "js").glob("*.js")):
+        text = path.read_text(encoding="utf-8")
+        found += [f"{path.name}: {m}" for m in re.findall(r"LAZY_MODULES(?:\.\w+|\[[^\]]+\])\.(?:unshift|push|splice)\(", text)]
+    assert not found, found
 
 
 def _entry_points() -> dict[str, set[str]]:
@@ -73,6 +93,14 @@ def _entry_points() -> dict[str, set[str]]:
     #: which made the whole test fire on names that were listed all along.
     for name, names in re.findall(r"^\s*(\w+):\s*\[(.*?)\]", block.group(1), re.M | re.S):
         out[name] = set(re.findall(r'"(\w+)"', names))
+    #: lazy-entries.js's own stand-ins: `installStandIns({...})` blocks, and
+    #: `installCharacterStandIns([...])` for the characters bundle.
+    extra = (FRONTEND / "js" / "lazy-entries.js").read_text(encoding="utf-8")
+    for text in re.findall(r"installStandIns\(\{(.*?)\n\}\);", extra, re.S):
+        for name, names in re.findall(r"^\s*(\w+):\s*\[(.*?)\]", text, re.M | re.S):
+            out.setdefault(name, set()).update(re.findall(r'"(\w+)"', names))
+    for names in re.findall(r"installCharacterStandIns\(\[(.*?)\]", extra, re.S):
+        out.setdefault("characters", set()).update(re.findall(r'"(\w+)"', names))
     return out
 
 
@@ -350,6 +378,40 @@ REACHED_AFTER_LOAD = {
 GUARD = re.compile(r'typeof\s+(\w+)\s*===?\s*["\']function["\']')
 
 
+#: Gaps the scan found when it first read lazy-entries.js (2026-11-01, INBOX 1521),
+#: as `file:name`. This set only shrinks: each is fixed (a stand-in, an awaited
+#: ensureModule, or a REACHED_AFTER_LOAD reason) and taken out; a new gap fails.
+KNOWN_GAPS_1521 = {
+    "app.js:nameMarkBuddyCue",
+    "chat-agent.js:atlasAvatar",
+    "chat-agent.js:atlasDraw",
+    "chat-agent.js:atlasLook",
+    "chat-agent.js:atlasStyle",
+    "chat-agent.js:nameMark",
+    "chat.js:chatPrivateEmpty",
+    "chat.js:nameMark",
+    "dashboard.js:nameMarkLive",
+    "media.js:nameMarkBuddySound",
+    "palette.js:chatSourcesFrom",
+    "palette.js:chatSourcesPanel",
+    "palette.js:messageMetaLine",
+    "settings-panes.js:atlasAvatar",
+    "settings-panes.js:mountProfileLook",
+    "settings-panes.js:nameMark",
+    "settings-panes.js:ownNameMarkStyle",
+    "settings-panes.js:setOwnNameMarkStyle",
+    "settings-wiring.js:improveReady",
+    "settings.js:bgArtHalt",
+    "settings.js:bgArtSeedText",
+    "settings.js:nameMarkBuddyMotion",
+    "status.js:nameMarkBuddyCue",
+    "status.js:nmbTickArm",
+}
+
+
+FUNCTION_START = re.compile(r"^(?:async )?function [A-Za-z_$]")
+
+
 def test_no_boot_file_silently_depends_on_a_lazy_bundle():
     lazy = _lazy_files()
     entries = _entry_points()
@@ -361,16 +423,20 @@ def test_no_boot_file_silently_depends_on_a_lazy_bundle():
         boot_defined |= _declared_anywhere(FRONTEND / "js" / name)
 
     lazy_defined: dict[str, str] = {}
+    #: Every bundle a name arrives with: answer-kit.js rides in four.
+    arrives_with: dict[str, set[str]] = {}
     for bundle, files in lazy.items():
         for file_name in files:
             for symbol in _top_level_functions(FRONTEND / "js" / file_name):
                 lazy_defined.setdefault(symbol, bundle)
+                arrives_with.setdefault(symbol, set()).add(bundle)
 
     candidates = {s: b for s, b in lazy_defined.items() if s not in boot_defined}
     assert candidates, "no cross-bundle names at all; has the scan broken?"
     call = re.compile(r"(?<![\w$.])(" + "|".join(sorted(map(re.escape, candidates))) + r")\s*\(")
 
     unaccounted: list[str] = []
+    still_known: set[str] = set()
     for name in boot:
         lines = (FRONTEND / "js" / name).read_text(encoding="utf-8").split("\n")
         for number, line in enumerate(lines, 1):
@@ -382,6 +448,18 @@ def test_no_boot_file_silently_depends_on_a_lazy_bundle():
                 if symbol in entries.get(bundle, set()):
                     continue
                 if symbol in REACHED_AFTER_LOAD:
+                    continue
+                if f"{name}:{symbol}" in KNOWN_GAPS_1521:
+                    still_known.add(f"{name}:{symbol}")
+                    continue
+                #: Safe by construction: the enclosing top-level function waited
+                #: for a bundle that carries the name before this line
+                #: (`if (!(await ensureModule("chatTurn"))) return ...`).
+                start = number - 1
+                while start > 0 and not FUNCTION_START.match(lines[start]):
+                    start -= 1
+                before = "\n".join(lines[start:number - 1]) + "\n" + line[: match.start()]
+                if any(f'ensureModule("{b}")' in before for b in arrives_with[symbol]):
                     continue
                 #: A `typeof` guard in the four lines above is exactly the shape
                 #: that fails silently, so it does NOT make a call safe here. It
@@ -403,6 +481,7 @@ def test_no_boot_file_silently_depends_on_a_lazy_bundle():
                 )
 
     assert not unaccounted, "\n".join(unaccounted)
+    assert still_known == KNOWN_GAPS_1521, f"fixed, take out of KNOWN_GAPS_1521: {sorted(KNOWN_GAPS_1521 - still_known)}"
 
 
 #: The lazy tabs whose pages are drawn from index.html at boot, and so are on

@@ -43,7 +43,6 @@ Object.assign(LAZY_MODULES, {
   //: the first edit of a rendered `$...$` and the guided equation editor both fetch it.
   mathField: ["/css/math-field-lazy.css", "/vendor/mathlive/mathlive.min.js", "/js/math-field.js"],
   //: The guided equation editor (math-editor.js's header; DOCUMENTS_PLAN 16), on the same field.
-  //: The guided equation editor (math-editor.js's header; DOCUMENTS_PLAN 16), on the same field.
   mathEditor: ["/css/math-field-lazy.css", "/vendor/mathlive/mathlive.min.js", "/js/math-field.js", "/css/math-editor-lazy.css", "/js/math-editor.js"],
   //: The model badge's spec panel, editing an answer, a note's Explain row, the extract preview's Save (gesture-kit.js's header).
   gestureKit: ["/js/gesture-kit.js"],
@@ -201,13 +200,12 @@ installCharacterStandIns([
 //: and its toggle). Reads a setting and the page, so it lives here, not in the
 //: bundle the row has to be built before.
 function nameMarkBuddyShowing() {
-  let choice = "off";
   try {
-    choice = prefs.get("avatar-buddy", null) || "off";
+    if ((prefs.get("avatar-buddy", null) || "off") !== "off") return true;
   } catch (e) {
     //: Unreadable stays off.
   }
-  return choice !== "off" || !!document.getElementById("nm-buddy");
+  return !!document.getElementById("nm-buddy");
 }
 
 //: What a person reads when a lazy file could not be fetched; said once a few
@@ -234,10 +232,8 @@ function onDomReady(fn) {
 //: parsed in the first nine seconds on a tab that opened nothing). It is warmed
 //: after the person first touches the page, and only with four cores or more
 //: and no data saving (audit 1030 Y16); a visit to a surface that needs it
-//: fetches it on the spot (`ensureModule`). **One file at a time, in a lull,
-//: the graph's first** (INBOX 1516: twenty scripts ran in the first press's
-//: frames, a tab switch read as 223 ms of script with no source file): each
-//: waits for 2.5 s without a press.
+//: fetches it on the spot (`ensureModule`). One file at a time, the graph's
+//: first, each after 2.5 s without a press (INBOX 1516: a tab switch ran twenty).
 function warmLibraryAfterInput() {
   if (navigator.connection?.saveData || (navigator.hardwareConcurrency || 2) < 4) return;
   let calmAt = 0;

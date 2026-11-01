@@ -4,6 +4,14 @@
 const { test, expect } = require("@playwright/test");
 const { openApp, api, makeZip } = require("../helpers");
 
+// Choosing files shows the preview first (INBOX 1520, S36): every note a
+// tick, and its Import press runs it.
+async function confirmPreview(page, count) {
+  const sheet = page.locator('[data-sheet="import-preview"]');
+  await expect(sheet).toContainText(`${count} notes will be imported`, { timeout: 20_000 });
+  await sheet.getByRole("button", { name: `Import ${count}` }).click();
+}
+
 async function findNotes(page, word) {
   const found = await api(page, `/search?q=${encodeURIComponent(word)}&hybrid=false`);
   return found.hits.filter((h) => h.kind === "note");
@@ -17,6 +25,7 @@ test("Markdown files import as notes with their links, and importing them again 
     { name: "Binoculars.md", mimeType: "text/markdown", buffer: Buffer.from(`# Binoculars\n\n8x42 for the ${tag} season.\n`) },
   ];
   await page.setInputFiles("#import-md-files", files);
+  await confirmPreview(page, 2);
   await expect(page.locator("#import-md-status")).toContainText("Imported 2 notes", { timeout: 20_000 });
   await expect.poll(async () => (await findNotes(page, tag)).length).toBe(2);
 
@@ -27,6 +36,7 @@ test("Markdown files import as notes with their links, and importing them again 
 
   // The same two files again: nothing new.
   await page.setInputFiles("#import-md-files", files);
+  await confirmPreview(page, 2);
   await expect(page.locator("#import-md-status")).toContainText("2 already in your notebook", { timeout: 20_000 });
   expect((await findNotes(page, tag)).length).toBe(2);
 });
@@ -39,6 +49,7 @@ test("a Notion export zip imports its pages as notes", async ({ page }) => {
     "Export/Reading list fedcba9876543210fedcba9876543210.md": `# Reading list\n\nThe ${tag} chapter of the field guide.\n`,
   });
   await page.setInputFiles("#import-notion-file", { name: "notion-export.zip", mimeType: "application/zip", buffer: zip });
+  await confirmPreview(page, 2);
   await expect.poll(async () => (await findNotes(page, tag)).length, { timeout: 20_000 }).toBe(2);
   await expect(page.locator("#import-app-status")).not.toBeEmpty();
 });
