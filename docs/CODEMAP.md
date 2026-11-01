@@ -2,7 +2,7 @@
 
 Generated 2026-11-01 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7492, frontend ids 2638, CSS sections 517, backend routes 633, backend modules 8165, test files 1768, tests 15276, plan headings 990, app scripts 28, boot scripts 37, script files 209.
+Counts: frontend functions 7492, frontend ids 2638, CSS sections 517, backend routes 633, backend modules 8165, test files 1769, tests 15278, plan headings 990, app scripts 28, boot scripts 37, script files 209.
 
 ## Frontend functions (7492)
 
@@ -22562,7 +22562,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15276)
+## Tests (15278)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23585,6 +23585,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_models_api.py | 44 |
 | tests/test_models_composer_line_k13.py | 2 |
 | tests/test_models_doc_sizes.py | 4 |
+| tests/test_module_line_caps.py | 2 |
 | tests/test_motion_endings.py | 2 |
 | tests/test_motion_recipes.py | 6 |
 | tests/test_motion_resolved.py | 8 |
