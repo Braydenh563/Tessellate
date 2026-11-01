@@ -2,7 +2,7 @@
 
 Generated 2026-11-01 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7544, frontend ids 2633, CSS sections 517, backend routes 639, backend modules 8279, test files 1797, tests 15456, plan headings 990, app scripts 28, boot scripts 37, script files 220.
+Counts: frontend functions 7544, frontend ids 2633, CSS sections 517, backend routes 639, backend modules 8279, test files 1797, tests 15457, plan headings 990, app scripts 28, boot scripts 37, script files 220.
 
 ## Frontend functions (7544)
 
@@ -1218,18 +1218,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `_isChatComposer` | frontend/js/settings-wiring.js:1886 |
+| `_isChatComposer` | frontend/js/settings-wiring.js:1906 |
 | `activeOverlay` | frontend/js/settings-wiring.js:955 |
 | `captureCountText` | frontend/js/settings-wiring.js:1690 |
 | `captureShortcutKey` | frontend/js/settings-wiring.js:1461 |
-| `clearStagedImages` | frontend/js/settings-wiring.js:2053 |
+| `clearStagedImages` | frontend/js/settings-wiring.js:2073 |
 | `closeOverlaysForChord` | frontend/js/settings-wiring.js:1256 |
 | `closeShortcuts` | frontend/js/settings-wiring.js:1491 |
 | `comboFromEvent` | frontend/js/settings-wiring.js:1292 |
-| `commitCaptureImages` | frontend/js/settings-wiring.js:2038 |
-| `fileDropBox` | frontend/js/settings-wiring.js:1895 |
+| `commitCaptureImages` | frontend/js/settings-wiring.js:2058 |
+| `fileDropBox` | frontend/js/settings-wiring.js:1915 |
 | `flashSaved` | frontend/js/settings-wiring.js:496 |
-| `handleFileUpload` | frontend/js/settings-wiring.js:2085 |
+| `handleFileUpload` | frontend/js/settings-wiring.js:2105 |
 | `hideChordGuide` | frontend/js/settings-wiring.js:1274 |
 | `inEditable` | frontend/js/settings-wiring.js:953 |
 | `loadForgottenOrder` | frontend/js/settings-wiring.js:1568 |
@@ -1245,11 +1245,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `persistSavedSearches` | frontend/js/settings-wiring.js:53 |
 | `renderCaptureFiles` | frontend/js/settings-wiring.js:1655 |
 | `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1635 |
-| `renderInstallRow` | frontend/js/settings-wiring.js:1814 |
+| `renderInstallRow` | frontend/js/settings-wiring.js:1834 |
 | `renderSavedSearches` | frontend/js/settings-wiring.js:17 |
 | `resetShortcuts` | frontend/js/settings-wiring.js:1428 |
 | `restampShortcutHints` | frontend/js/settings-wiring.js:1182 |
-| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2026 |
+| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2046 |
 | `runShortcut` | frontend/js/settings-wiring.js:1319 |
 | `saveCurrentSearch` | frontend/js/settings-wiring.js:61 |
 | `saveShortcutOverrides` | frontend/js/settings-wiring.js:1280 |
@@ -1257,12 +1257,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `savedSearches` | frontend/js/settings-wiring.js:13 |
 | `setShortcutStatus` | frontend/js/settings-wiring.js:1445 |
 | `setShortcutStatusError` | frontend/js/settings-wiring.js:1452 |
-| `singleKeysOn` | frontend/js/settings-wiring.js:2224 |
-| `stagedImageUrl` | frontend/js/settings-wiring.js:2003 |
+| `singleKeysOn` | frontend/js/settings-wiring.js:2244 |
+| `stagedImageUrl` | frontend/js/settings-wiring.js:2023 |
 | `stampShortcutTitles` | frontend/js/settings-wiring.js:1158 |
 | `submitLockForm` | frontend/js/settings-wiring.js:305 |
 | `textCounts` | frontend/js/settings-wiring.js:1680 |
-| `uploadStagedFiles` | frontend/js/settings-wiring.js:2062 |
+| `uploadStagedFiles` | frontend/js/settings-wiring.js:2082 |
 | `wordCount` | frontend/js/settings-wiring.js:1675 |
 
 ### frontend/js/spaces-find.js (25)
@@ -22839,7 +22839,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15456)
+## Tests (15457)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23008,7 +23008,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_captions_live.py | 2 |
 | tests/test_captions_translate.py | 5 |
 | tests/test_capture_card_1479.py | 24 |
-| tests/test_capture_draft_blank.py | 2 |
+| tests/test_capture_draft_blank.py | 3 |
 | tests/test_capture_strip_first_paint.py | 4 |
 | tests/test_casual_acts_1507.py | 7 |
 | tests/test_catalogue_reveal.py | 7 |
