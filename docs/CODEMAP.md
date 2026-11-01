@@ -2,7 +2,7 @@
 
 Generated 2026-11-01 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7543, frontend ids 2633, CSS sections 517, backend routes 639, backend modules 8333, test files 1803, tests 15488, plan headings 990, app scripts 28, boot scripts 37, script files 220.
+Counts: frontend functions 7543, frontend ids 2633, CSS sections 517, backend routes 639, backend modules 8347, test files 1804, tests 15493, plan headings 990, app scripts 28, boot scripts 37, script files 220.
 
 ## Frontend functions (7543)
 
@@ -12525,7 +12525,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8333)
+## Backend modules (8347)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -20563,25 +20563,39 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `run` | src/tessellate/core/doctor.py:164 |
 | `search_model_row` | src/tessellate/core/doctor.py:109 |
 
-### src/tessellate/core/docview.py (15)
+### src/tessellate/core/docview.py (29)
 
 | Name | File:line |
 |---|---|
 | `ViewedFile` | src/tessellate/core/docview.py:152 |
+| `_DocxLines` | src/tessellate/core/docview.py:586 |
 | `_HtmlToMarkdown` | src/tessellate/core/docview.py:181 |
-| `_clip` | src/tessellate/core/docview.py:604 |
+| `_clip` | src/tessellate/core/docview.py:696 |
+| `_docx_flag` | src/tessellate/core/docview.py:428 |
+| `_docx_heading` | src/tessellate/core/docview.py:532 |
+| `_docx_hyperlink` | src/tessellate/core/docview.py:461 |
+| `_docx_inline` | src/tessellate/core/docview.py:481 |
+| `_docx_is_mono` | src/tessellate/core/docview.py:421 |
+| `_docx_links` | src/tessellate/core/docview.py:411 |
+| `_docx_list_item` | src/tessellate/core/docview.py:500 |
 | `_docx_list_kinds` | src/tessellate/core/docview.py:353 |
+| `_docx_paragraph` | src/tessellate/core/docview.py:540 |
 | `_docx_part` | src/tessellate/core/docview.py:341 |
-| `_extract_converted` | src/tessellate/core/docview.py:713 |
-| `_read_text_file` | src/tessellate/core/docview.py:610 |
+| `_docx_parts` | src/tessellate/core/docview.py:386 |
+| `_docx_revision` | src/tessellate/core/docview.py:471 |
+| `_docx_run_text` | src/tessellate/core/docview.py:435 |
+| `_docx_style_and_numbering` | src/tessellate/core/docview.py:521 |
+| `_docx_table` | src/tessellate/core/docview.py:563 |
+| `_extract_converted` | src/tessellate/core/docview.py:805 |
+| `_read_text_file` | src/tessellate/core/docview.py:702 |
 | `docx_has_revisions` | src/tessellate/core/docview.py:374 |
-| `docx_to_markdown` | src/tessellate/core/docview.py:386 |
-| `editability` | src/tessellate/core/docview.py:632 |
+| `docx_to_markdown` | src/tessellate/core/docview.py:635 |
+| `editability` | src/tessellate/core/docview.py:724 |
 | `effective_suffix` | src/tessellate/core/docview.py:92 |
-| `extract` | src/tessellate/core/docview.py:684 |
+| `extract` | src/tessellate/core/docview.py:776 |
 | `html_to_markdown` | src/tessellate/core/docview.py:311 |
-| `kind_for` | src/tessellate/core/docview.py:590 |
-| `write_text_file` | src/tessellate/core/docview.py:669 |
+| `kind_for` | src/tessellate/core/docview.py:682 |
+| `write_text_file` | src/tessellate/core/docview.py:761 |
 
 ### src/tessellate/core/egress.py (30)
 
@@ -22897,7 +22911,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15488)
+## Tests (15493)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23435,6 +23449,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_docux_1028.py | 6 |
 | tests/test_docview.py | 28 |
 | tests/test_docview_import.py | 7 |
+| tests/test_docx_markdown_paths.py | 5 |
 | tests/test_dogfood_round2_ui.py | 13 |
 | tests/test_download_filenames.py | 6 |
 | tests/test_draft_links.py | 6 |

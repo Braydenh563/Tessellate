@@ -132,7 +132,6 @@
  "src/tessellate/core/docmeta.py::properties": 19,
  "src/tessellate/core/docview.py::_HtmlToMarkdown.handle_starttag": 24,
  "src/tessellate/core/docview.py::_extract_converted": 20,
- "src/tessellate/core/docview.py::docx_to_markdown": 32,
  "src/tessellate/core/docview.py::docx_to_markdown.paragraph": 25,
  "src/tessellate/core/egress.py::_hook": 18,
  "src/tessellate/core/embedswitch.py::_swap": 19,
