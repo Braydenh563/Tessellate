@@ -1,6 +1,5 @@
 {
  "src/tessellate/__main__.py::_run_desktop": 20,
- "src/tessellate/ai/agent.py::_dispatch_call": 30,
  "src/tessellate/ai/agent_turn.py::_first_round_tools": 16,
  "src/tessellate/ai/agent_turn.py::_fit_result": 16,
  "src/tessellate/ai/agent.py::_run_and_record": 23,
