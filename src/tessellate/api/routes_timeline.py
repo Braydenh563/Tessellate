@@ -33,8 +33,10 @@ from sqlalchemy import Select, String, and_, func, or_, select
 from sqlalchemy.orm import Session, aliased
 
 from tessellate.core import cjk
-from tessellate.core.database import Document, Entry, EntryDate, EntryProperty, Space, utcnow
+from tessellate.core.database import Entry, EntryDate, EntryProperty, Space, utcnow
+from tessellate.repo import documents as documents_repo
 from tessellate.repo import reminders as reminder_repo
+from tessellate.repo.documents import Document
 from tessellate.core.deps import get_session
 from tessellate.entry import manager
 from tessellate.entry import properties as note_properties
@@ -578,13 +580,6 @@ def _page_of(session: Session, statement: Select, column, id_column, marks: dict
     )
 
 
-def _document_scan(in_range, *columns):  # noqa: ANN001
-    """Live documents in range: an archived document is "kept, out of the
-    way" (its own model says so), which is the one thing a journal of what
-    you were doing should not put back in front of you."""
-    return in_range(select(*columns).where(Document.archived_at.is_(None)), Document.created_at)
-
-
 def _source_pages(session: Session, kinds, query: Select, in_range, marks: dict, limit: int) -> tuple[list, list, list]:  # noqa: ANN001
     entries_found: list[Entry] = []
     if "note" in kinds or "board" in kinds:
@@ -593,7 +588,7 @@ def _source_pages(session: Session, kinds, query: Select, in_range, marks: dict,
     documents_found: list[Document] = []
     if "document" in kinds:
         documents_found = _page_of(
-            session, _document_scan(in_range, Document), Document.created_at, Document.id, marks, "document", limit
+            session, documents_repo.created_in(in_range), *documents_repo.CREATED, marks, "document", limit
         )
 
     reminders_found: list = []
@@ -613,7 +608,7 @@ def _add_source_density(session: Session, kinds, in_range, density: dict[str, in
     writing one long document would otherwise read as an empty week.
     Date-only queries, no content, the same shape `_density` itself uses."""
     if "document" in kinds:
-        for (created,) in session.execute(_document_scan(in_range, Document.created_at)).all():
+        for created in documents_repo.created_days(session, in_range):
             day = created.date().isoformat()
             density[day] = density.get(day, 0) + 1
     if "reminder" in kinds:

@@ -19,7 +19,9 @@ from sqlalchemy.orm import Session
 from tessellate.ai import starter_acts, vision_ocr
 from tessellate.core import deps, docview
 from tessellate.core.config import days_from_today
-from tessellate.core.database import Attachment, Document, Entry, MediaUpload
+from tessellate.core.database import Attachment, Entry, MediaUpload
+from tessellate.repo import documents as documents_repo
+from tessellate.repo.documents import Document
 from tessellate.core.imagesize import image_size
 from tessellate.entry import manager
 
@@ -98,7 +100,7 @@ def _attached_documents(session: Session, document_ids: list[int]) -> list[Docum
     """
     found = []
     for document_id in dict.fromkeys(document_ids):
-        document = session.get(Document, document_id)
+        document = documents_repo.find(session, document_id)
         if document is not None:
             found.append(document)
     return found
@@ -144,9 +146,7 @@ def _named_sources(session: Session, question: str) -> tuple[list, list[int]]:
         return bool(words) and words <= asked and (says_kind or len(words) >= 2)
 
     documents = [
-        d for d in session.scalars(
-            select(Document).where(Document.deleted_at.is_(None)).order_by(Document.updated_at.desc()).limit(400)
-        ) if named(d.title or "")
+        d for d in documents_repo.recent(session, 400) if named(d.title or "")
     ][:3]
     boards = [
         e.id for e in session.scalars(

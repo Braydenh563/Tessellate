@@ -12,9 +12,10 @@ name and is passed in, so it is defined where it is read.
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from datetime import datetime
 
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy import delete as sa_delete
 from sqlalchemy.orm import Session
 
@@ -22,7 +23,9 @@ from tessellate.core.database import (
     LIKE_ESCAPE,
     Document,
     DocumentAiEdit,
+    DocumentLink,
     DocumentRevision,
+    like_escape,
     utcnow,
 )
 from tessellate.repo import NotFound
@@ -84,8 +87,6 @@ def page(
         if until is not None:
             filters.append(Document.updated_at < until)
     if term:
-        from tessellate.core.database import like_escape
-
         like = f"%{like_escape(term)}%"
         filters.append(Document.title.ilike(like, escape=LIKE_ESCAPE) | Document.content.ilike(like, escape=LIKE_ESCAPE))
     total = session.scalar(select(func.count(Document.id)).where(*filters)) or 0
@@ -112,6 +113,150 @@ def mentioning(session: Session, document_id: int, like: str, limit: int) -> lis
         .limit(limit)
     ))
 
+
+def recent(session: Session, limit: int) -> list[Document]:
+    """The documents not in the bin, newest edit first, shelved ones too: the
+    chat's title match reads this."""
+    return list(session.scalars(
+        select(Document).where(Document.deleted_at.is_(None)).order_by(Document.updated_at.desc()).limit(limit)
+    ))
+
+
+def title_of(session: Session, document_id: int) -> str | None:
+    """A document's title, or None when it is gone or binned."""
+    return session.scalar(select(Document.title).where(Document.id == document_id, Document.deleted_at.is_(None)))
+
+
+def mentioning_any(session: Session, words: list[str], limit: int) -> list[Document]:
+    """Documents whose title or text holds any of the words, newest edit first:
+    one OR across the words, not one scan per word (the chat's related panel)."""
+    return list(session.scalars(
+        select(Document)
+        .where(or_(*(
+            col.ilike(f"%{like_escape(word)}%", escape=LIKE_ESCAPE)
+            for col in (Document.title, Document.content)
+            for word in words
+        )))
+        .order_by(Document.updated_at.desc())
+        .limit(limit)
+    ))
+
+
+def by_ids(session: Session, ids: set[int] | list[int]) -> list[Document]:
+    """The documents with these ids (none for an empty set, with no query)."""
+    if not ids:
+        return []
+    return list(session.scalars(select(Document).where(Document.id.in_(ids))))
+
+
+def largest_id(session: Session) -> int | None:
+    """The id of the document with the most text: the bench opens it."""
+    return session.scalar(select(Document.id).order_by(func.length(Document.content).desc()).limit(1))
+
+
+def mentioning_names(session: Session, likes: list[str], limit: int) -> list[Document]:
+    """Unshelved documents whose text matches any of the LIKE patterns, newest
+    edit first: a note's backlinks from documents, under every name it has."""
+    return list(session.scalars(
+        select(Document)
+        .where(Document.archived_at.is_(None), or_(*[Document.content.ilike(like, escape=LIKE_ESCAPE) for like in likes]))
+        .order_by(*_NEWEST)
+        .limit(limit)
+    ))
+
+
+def mention_rows(session: Session, likes: list[str]):  # noqa: ANN201
+    """Per unshelved document whose text matches any LIKE pattern, newest edit
+    first: (id, title, content, then one flag per pattern, in order), so one scan
+    answers every label. `like`, not `ilike`: SQLite folds ASCII case already and
+    `ilike` copies every row's text once per pattern (74 ms against 35 ms over 60
+    labels on 500 notes, same answers)."""
+    flags = [Document.content.like(like, escape=LIKE_ESCAPE) for like in likes]
+    return session.execute(
+        select(Document.id, Document.title, Document.content, *[f.label(f"m{i}") for i, f in enumerate(flags)])
+        .where(Document.archived_at.is_(None), or_(*flags))
+        .order_by(*_NEWEST)
+    )
+
+
+def attached_to_entry(session: Session, entry_id: int) -> list[Document]:
+    """The documents a note is attached to, by title."""
+    return list(session.scalars(
+        select(Document)
+        .join(DocumentLink, DocumentLink.document_id == Document.id)
+        .where(DocumentLink.entry_id == entry_id)
+        .order_by(Document.title)
+    ))
+
+def link_pairs(session: Session, entry_ids) -> list:  # noqa: ANN001
+    """Every (document_id, entry_id) saved link to one of these notes: the
+    graph's document edges."""
+    return list(session.execute(
+        select(DocumentLink.document_id, DocumentLink.entry_id).where(DocumentLink.entry_id.in_(entry_ids))
+    ))
+
+
+def unshelved(session: Session, limit: int) -> list[Document]:
+    """The unshelved documents, newest edit first, up to `limit`: the graph's
+    document nodes."""
+    return list(session.scalars(
+        select(Document).where(Document.archived_at.is_(None)).order_by(Document.updated_at.desc()).limit(limit)
+    ))
+
+
+def held(session: Session, ids) -> list[Document]:  # noqa: ANN001
+    """These documents that are not in the bin."""
+    return list(session.scalars(select(Document).where(Document.id.in_(ids), Document.deleted_at.is_(None))))
+
+
+def pinned(session: Session) -> list[Document]:
+    """The documents not in the bin that hold a graph position."""
+    return list(session.scalars(
+        select(Document).where(Document.deleted_at.is_(None), Document.graph_pin_x.is_not(None))
+    ))
+
+def listing(session: Session, like: str | None, limit: int) -> list[Document]:
+    """Every document, shelved ones too, newest edit first; `like` (an escaped
+    LIKE pattern) narrows to a title or text match: the Library's document rows."""
+    stmt = select(Document)
+    if like:
+        stmt = stmt.where(or_(Document.title.ilike(like, escape=LIKE_ESCAPE), Document.content.ilike(like, escape=LIKE_ESCAPE)))
+    return list(session.scalars(stmt.order_by(Document.updated_at.desc()).limit(limit)))
+
+
+def shelved(session: Session, limit: int) -> list[Document]:
+    """The shelved (archived) documents, most recently shelved first."""
+    return list(session.scalars(
+        select(Document).where(Document.archived_at.is_not(None)).order_by(Document.archived_at.desc()).limit(limit)
+    ))
+
+
+def count(session: Session) -> int:
+    """How many documents there are."""
+    return session.scalar(select(func.count(Document.id))) or 0
+
+
+def count_unbinned(session: Session) -> int:
+    """How many documents are not in the bin."""
+    return session.scalar(select(func.count(Document.id)).where(Document.deleted_at.is_(None))) or 0
+
+#: How the timeline pages documents: placed by when they were created, id as the tiebreak.
+CREATED = (Document.created_at, Document.id)
+
+
+def created_in(in_range: Callable):  # noqa: ANN201
+    """The statement for live documents placed by creation, for the timeline's
+    paged merge (`in_range` adds its window). An archived document is "kept, out
+    of the way", the one thing a journal of what you were doing should not put
+    back in front of you."""
+    return in_range(select(Document).where(Document.archived_at.is_(None)), Document.created_at)
+
+
+def created_days(session: Session, in_range: Callable) -> list[datetime]:
+    """When each live document in the window was created, for the timeline's density."""
+    return [created for (created,) in session.execute(
+        in_range(select(Document.created_at).where(Document.archived_at.is_(None)), Document.created_at)
+    ).all()]
 
 # --- history ---------------------------------------------------------------------
 

@@ -515,10 +515,9 @@ def _media_cards(session: Session, ids: set) -> dict:
 
 
 def _document_cards(session: Session, ids: set) -> dict:
-    from tessellate.core.database import Document
+    from tessellate.repo import documents
 
-    rows = session.query(Document).filter(Document.id.in_(ids)).all() if ids else []
-    return {d.id: {"id": d.id, "kind": "document", "name": d.title} for d in rows}
+    return {d.id: {"id": d.id, "kind": "document", "name": d.title} for d in documents.by_ids(session, ids)}
 
 
 def _file_cards(session: Session, ids: set) -> dict:

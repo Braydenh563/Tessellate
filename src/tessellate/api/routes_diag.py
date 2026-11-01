@@ -19,7 +19,8 @@ from sqlalchemy.orm import Session, aliased
 
 from tessellate import __version__
 from tessellate.core import deps, diagring, jobruns, lagwatch, maintenance
-from tessellate.core.database import Document, Entry, EntryLink
+from tessellate.core.database import Entry, EntryLink
+from tessellate.repo import documents as documents_repo
 from tessellate.entry import manager
 from tessellate.core.deps import get_session
 
@@ -46,7 +47,7 @@ def counts(session: Session) -> dict:
         value = {
             "notes": manager.count_notes(session),
             "boards": boards,
-            "docs": session.scalar(select(func.count(Document.id)).where(Document.deleted_at.is_(None))) or 0,
+            "docs": documents_repo.count_unbinned(session),
             #: Links between notes still in the notebook, the graph's own count: a binned
             #: note keeps its links for a restore, and counting them said 4,234 on 37 notes.
             "links": session.scalar(

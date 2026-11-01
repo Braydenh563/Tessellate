@@ -18,7 +18,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai import code_assist
 from tessellate.core import deps, filetypes
-from tessellate.core.database import Document
+from tessellate.repo import documents as documents_repo
 from tessellate.core.deps import get_session
 
 router = APIRouter(tags=["documents"])
@@ -33,7 +33,7 @@ class CodeAssistBody(BaseModel):
 
 @router.post("/documents/{document_id}/code-assist")
 def code_assist_route(document_id: int, body: CodeAssistBody, session: Session = Depends(get_session)) -> dict:
-    document = deps.get_or_404(session, Document, document_id, "That document could not be found.")
+    document = documents_repo.get(session, document_id)
     code = body.code if body.code.strip() else document.content or ""
     return code_assist.answer(
         body.action,

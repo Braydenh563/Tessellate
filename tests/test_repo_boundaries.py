@@ -21,7 +21,7 @@ MOVED = {
     "bookmarks": {"Bookmark", "EntryBookmark", "DocumentBookmark"},
     "relation_types": {"RelationType"},
     "reminders": {"Reminder"},
-    "documents": {"DocumentRevision", "DocumentAiEdit"},
+    "documents": {"Document", "DocumentLink", "DocumentRevision", "DocumentAiEdit"},
 }
 
 #: A route that deletes every row of a space walks every model at once; the
@@ -32,8 +32,10 @@ CROSS_RESOURCE = {"routes_spaces.py"}
 #: moved to repo/voice.py: 872; the board bin guard to repo/content.py: 870;
 #: reminders to repo/reminders.py (its router, the timeline, meetings, debug
 #: and two chat readers): 843; documents' history and AI-edit log and the
-#: document list, contents and write verbs to repo/documents.py: 811.
-ORM_CALLS_CAP = 811
+#: document list, contents and write verbs to repo/documents.py: 811; the
+#: other routers' reads of Document and DocumentLink (chat, graph, notes,
+#: library, timeline, bench, mentions) to repo/documents.py: 767.
+ORM_CALLS_CAP = 767
 
 _ORM = re.compile(
     r"\b(?:session|db)\.(?:query|get|execute|scalar|scalars|add|add_all|delete|merge)\("
