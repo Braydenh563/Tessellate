@@ -214,6 +214,31 @@ def pinned(session: Session) -> list[Document]:
         select(Document).where(Document.deleted_at.is_(None), Document.graph_pin_x.is_not(None))
     ))
 
+def listing(session: Session, like: str | None, limit: int) -> list[Document]:
+    """Every document, shelved ones too, newest edit first; `like` (an escaped
+    LIKE pattern) narrows to a title or text match: the Library's document rows."""
+    stmt = select(Document)
+    if like:
+        stmt = stmt.where(or_(Document.title.ilike(like, escape=LIKE_ESCAPE), Document.content.ilike(like, escape=LIKE_ESCAPE)))
+    return list(session.scalars(stmt.order_by(Document.updated_at.desc()).limit(limit)))
+
+
+def shelved(session: Session, limit: int) -> list[Document]:
+    """The shelved (archived) documents, most recently shelved first."""
+    return list(session.scalars(
+        select(Document).where(Document.archived_at.is_not(None)).order_by(Document.archived_at.desc()).limit(limit)
+    ))
+
+
+def count(session: Session) -> int:
+    """How many documents there are."""
+    return session.scalar(select(func.count(Document.id))) or 0
+
+
+def count_unbinned(session: Session) -> int:
+    """How many documents are not in the bin."""
+    return session.scalar(select(func.count(Document.id)).where(Document.deleted_at.is_(None))) or 0
+
 # --- history ---------------------------------------------------------------------
 
 

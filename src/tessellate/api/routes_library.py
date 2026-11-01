@@ -34,7 +34,6 @@ from tessellate.core.database import (
     AuditLog,
     Category,
     Conversation,
-    Document,
     Entry,
     LIKE_ESCAPE,
     like_escape,
@@ -45,6 +44,7 @@ from tessellate.entry import highlights as note_highlights
 from tessellate.entry.manager import extract_title, join_blocks, remove_title, shown_tags, strip_inline_markdown
 from tessellate.entry.properties import strip as strip_properties
 from tessellate.repo import content as content_repo
+from tessellate.repo import documents as documents_repo
 
 router = APIRouter(tags=["library"])
 
@@ -226,15 +226,7 @@ def _entry_kind(entry: Entry) -> str:
 
 
 def _documents(session: Session, q: str = "") -> list[dict]:
-    stmt = select(Document)
-    if q:
-        stmt = stmt.where(
-            or_(
-                Document.title.ilike(_like(q), escape=LIKE_ESCAPE),
-                Document.content.ilike(_like(q), escape=LIKE_ESCAPE),
-            )
-        )
-    rows = session.scalars(stmt.order_by(Document.updated_at.desc()).limit(PER_KIND_LIMIT))
+    rows = documents_repo.listing(session, _like(q) if q else None, PER_KIND_LIMIT)
     items = []
     for doc in rows:
         words = cjk.word_count(doc.content)
@@ -590,12 +582,7 @@ def _shelved(session: Session) -> list[dict]:
             "mime": None,
             "pinned": False,
         }
-        for doc in session.scalars(
-            select(Document)
-            .where(Document.archived_at.is_not(None))
-            .order_by(Document.archived_at.desc())
-            .limit(PER_KIND_LIMIT)
-        ).all()
+        for doc in documents_repo.shelved(session, PER_KIND_LIMIT)
     )
     return items
 
@@ -1050,7 +1037,7 @@ def _totals(session: Session) -> dict[str, int]:
         "note": count(
             select(func.count(Entry.id)).where(*_LIVE_NOTE, Entry.is_board == False)  # noqa: E712
         ),
-        "document": count(select(func.count(Document.id))),
+        "document": documents_repo.count(session),
         "chat": count(select(func.count(Conversation.id))),
     }
 
