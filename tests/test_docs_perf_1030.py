@@ -100,3 +100,50 @@ def test_visible_tab_runs_the_facts_pass_once_for_two_pauses():
 def test_entering_the_tab_runs_a_stale_pass():
     source = (JS / "documents.js").read_text(encoding="utf-8")
     assert "if (docFactsStale && currentDoc) runDocFacts();" in _function(source, "async function loadDocuments(")
+
+
+def test_the_live_view_reads_the_text_through_the_per_version_cache():
+    """D18: a table or [TOC] in view joined the whole document on every keystroke
+    (and again for the facts pass); `docStr` makes it one join per version."""
+    cm = (JS / "documents-cm.js").read_text(encoding="utf-8")
+    assert not re.search(r"\bdoc\.toString\(\)", cm), "documents-cm.js reads the text through docStr(doc)"
+    assert "sourceText = docStr(doc)" in cm and "mdTocEntries(docStr(doc))" in cm
+
+
+def test_a_long_document_waits_longer_for_its_facts_and_the_prose_window_is_the_view():
+    """D20: the wait grows with the text (one pass per burst, not per key), and the
+    prose pass reads 14,000 characters around the view, not the 30,000 it once did."""
+    source = (JS / "documents.js").read_text(encoding="utf-8")
+    assert "return len > 120000 ? 600 : len > 40000 ? 300 : 120;" in _function(source, "function docFactsDelay(")
+    window = _function(source, "function docProseWindow(")
+    assert "const view = 14000;" in window and "DOC_PROSE_WINDOW_CHARS / 2" not in window
+
+
+@needs_node
+def test_the_rule_pass_is_kept_only_for_an_answer_that_changes_nothing():
+    """D18 to D20: the grammar and link-offer answers repaint with `again`, and get
+    the findings the key's own pass made; any other caller runs the rules afresh."""
+    source = (JS / "documents.js").read_text(encoding="utf-8")
+    start = source.index("const docProse = {")
+    body = source[start : source.index("\n};\n", start) + 4]
+    got = _node(
+        """
+const docProseIgnored = new Set(); let docWordlist = new Set(["a"]);
+const docDictionary = () => new Set(), docSpellingVariant = () => "us", docCheckLinkText = () => true;
+let runs = 0;
+const docProseFindings = (t) => { runs += 1; return [{ start: 0, end: t.length }]; };
+"""
+        + body
+        + """
+const first = docProse.rules("some text", false);
+first[0].start += 100;                       // the caller shifts offsets: the memo must not move
+const again = docProse.rules("some text", true);
+const other = docProse.rules("some other text", true);
+const fresh = docProse.rules("some other text", false);
+docProseIgnored.add("x");
+const ignored = docProse.rules("some other text", true);
+console.log(JSON.stringify({ runs, again: again[0].start, other: other[0].end, fresh: fresh.length, ignored: ignored.length }));
+"""
+    )
+    # first: 1 run; again: memo; other text: 1 run; fresh: 1 run; a dismissal changes the key: 1 run
+    assert got == {"runs": 4, "again": 0, "other": 15, "fresh": 1, "ignored": 1}

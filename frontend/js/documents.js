@@ -14652,12 +14652,15 @@ function runDocFacts() {
   renderDocProperties();
 }
 
-//: **A big code file waits longer for its facts** (audit 1031 row 23 CE3).
-//: The outline and counts are a whole-file pass; at 120 ms a pause they ran
-//: between nearly every burst of keys in a 7,000-line file. Prose keeps 120.
+//: **A big document waits longer for its facts** (audit 1031 row 23 CE3, audit
+//: 1028 D20). The outline, counts and word goal are whole-document passes: at
+//: 120 ms a pause they ran between nearly every burst of keys in a 7,000-line
+//: file, and in a 20,000-word document (130,000 characters) one pass is about
+//: 17 ms, so a steady typist paid it on every key. The wait grows with the
+//: text, so the cost lands once after a burst; a short document keeps 120.
 function docFactsDelay() {
   const len = docCmView ? docCmView.state.doc.length : 0;
-  return len > 120000 && docIsCodeFile() ? 600 : 120;
+  return len > 120000 ? 600 : len > 40000 ? 300 : 120;
 }
 
 function scheduleDocFacts() {
@@ -15493,7 +15496,30 @@ let docProseFound = [];
 //: "Hide all suggestions for now": the marks, the count and the list go quiet
 //: for this sitting without touching the Settings switch or the dismissed
 //: list. Not stored, like a dismissal, so it can never be forgotten about.
-const docProse = { hidden: false, panelView: "list", win: null, timer: null };
+//: **`rules` keeps the rule pass for an answer that changes nothing it reads**
+//: (audit 1028 D18 to D20). The grammar worker's answer and the link offers'
+//: answer each repaint through `renderDocProse`, and the rules (a spelling
+//: lookup per word, the long-sentence scan) are the larger half of its cost:
+//: the repaint after the answer cost as much as the pass the key itself had
+//: paid, for the same text and the same findings. Those two callers pass
+//: `again`, and a pass that finds the same text under the same settings gets
+//: the findings it already made (copies, because the caller shifts their
+//: offsets). Every other caller (a key, a dismissal, a setting) runs afresh.
+//: A method here rather than a function of its own: the shared scope is capped.
+const docProse = {
+  hidden: false,
+  panelView: "list",
+  win: null,
+  timer: null,
+  memo: null,
+  rules(part, again) {
+    const key = [docProseIgnored.size, docWordlist ? docWordlist.size : -1, docDictionary().size, docSpellingVariant(), docCheckLinkText()].join("|");
+    if (!(again && this.memo && this.memo.part === part && this.memo.key === key)) {
+      this.memo = { part, key, found: docProseFindings(part) };
+    }
+    return this.memo.found.map((finding) => ({ ...finding }));
+  },
+};
 //: "list" is the suggestions, "dismissed" is the ones put away in this document.
 
 //: **Past this many characters the prose pass reads a window** (audit 1028
@@ -15502,8 +15528,8 @@ const docProse = { hidden: false, panelView: "list", win: null, timer: null };
 //: see docs/roadmap/agent-remaining/docux-1028.md.
 const DOC_PROSE_WINDOW_CHARS = 30000;
 
-//: A code file's window (CE3): the same size and the same centre as the
-//: prose one, cut at line ends (a blank line or a fence means nothing in code).
+//: A code file's window (CE3): the same centre as the prose one and the
+//: whole 30,000, cut at line ends (a blank line or a fence means nothing in code).
 function docCodeWindow(text) {
   if (text.length <= DOC_PROSE_WINDOW_CHARS) return null;
   const ranges = docCmView ? docCmView.visibleRanges : [];
@@ -15514,8 +15540,14 @@ function docCodeWindow(text) {
   return { from: start ? text.lastIndexOf("\n", start) + 1 : 0, to: end < 0 ? text.length : end };
 }
 
+//: **A prose window is the screen and a margin, not the whole 30,000** (audit
+//: 1028 D18 to D20): a prose pass is paid on every pause, and a screen of text
+//: is about 3,000 characters, so 14,000 keeps about two screens either side of
+//: the view checked while the pass costs under half of what 30,000 did.
+//: Scrolling out of it re-runs the pass (`docProseScrolled`).
 function docProseWindow(text) {
   if (text.length <= DOC_PROSE_WINDOW_CHARS) return null;
+  const view = 14000;
   let mid = 0;
   try {
     const ranges = docCmView ? docCmView.visibleRanges : [];
@@ -15523,8 +15555,8 @@ function docProseWindow(text) {
   } catch {
     mid = 0;
   }
-  let to = Math.min(text.length, Math.max(0, mid - DOC_PROSE_WINDOW_CHARS / 2) + DOC_PROSE_WINDOW_CHARS);
-  let from = Math.max(0, to - DOC_PROSE_WINDOW_CHARS);
+  let to = Math.min(text.length, Math.max(0, mid - view / 2) + view);
+  let from = Math.max(0, to - view);
   if (from > 0) {
     //: Cut at a blank line, and never inside a fence: a window that began in
     //: the middle of a code block would read its code as prose.
@@ -15553,7 +15585,8 @@ function docProseScrolled() {
   }, 250);
 }
 
-function renderDocProse() {
+function renderDocProse(again = false) {
+  again = again === true;
   const chip = $("doc-prose");
   const count = $("doc-prose-count");
   const panel = $("doc-prose-panel");
@@ -15575,14 +15608,14 @@ function renderDocProse() {
   if (isCode) docProseFound = docCodeSpellFindings(text, win);
   else if (win) {
     const part = text.slice(win.from, win.to);
-    const near = docProseExtras(part, docProseFindings(part));
+    const near = docProseExtras(part, docProse.rules(part, again));
     for (const finding of near) {
       finding.start += win.from;
       finding.end += win.from;
     }
     docProseFound = near.concat(docAiFindings(text)).sort((a, b) => a.start - b.start);
   } else {
-    docProseFound = docProseExtras(text, docProseFindings(text)).concat(docAiFindings(text)).sort((a, b) => a.start - b.start);
+    docProseFound = docProseExtras(text, docProse.rules(text, again)).concat(docAiFindings(text)).sort((a, b) => a.start - b.start);
   }
   if (docProse.hidden) docProseFound = [];
   chip.hidden = isCode;
