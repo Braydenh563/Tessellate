@@ -42,7 +42,7 @@ VERTICAL_KEBABS = {
     "documents-codekit.js": 1,  # a saved snippet's row in the code panel's narrow column (INBOX 788)
     "documents-history.js": 1,  # a history version's row (Brief 76)
     "link-types.js": 1,  # the relation types list
-    "note-cards.js": 1,  # a note's connection rows
+    "entry-card.js": 1,  # a note's connection rows (moved out of note-cards.js, boot diet 3)
     "note-properties.js": 1,  # the note types list
     "notes-list.js": 1,  # the Notes categories rail
     "search.js": 1,  # the saved searches under the Notes categories rail (Brief 47)
@@ -171,7 +171,7 @@ AGENT_ICON_PLACES = {
     "answer-kit.js": 1,  # a past turn answered in Agent mode (chat.js's bubble meta line, moved)
     "editor.js": 1,  # the chat palette's Agent mode row
     "phone-more.js": 2,  # More sheet: Ask the agent, Agent activity (moved out of phone-shell.js, INBOX 1314)
-    "settings-panes.js": 1,  # the command palette's Ask the agent anything
+    "app-features.js": 1,  # the command palette's Ask the agent anything (paletteCommands moved here, boot diet 3)
     "settings-wiring.js": 1,  # the tools popup's Popup agent
     "skills.js": 1,  # the nudge to switch to Agent mode
     "status.js": 2,  # the status bar's agent button, a run's notification

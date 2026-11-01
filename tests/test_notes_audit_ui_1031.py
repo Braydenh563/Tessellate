@@ -66,7 +66,7 @@ def test_the_phone_note_page_drops_the_title_its_head_already_says():
 
 
 def test_a_link_menu_is_never_nameless():
-    assert re.search(r"Actions for the link to \$\{label \|\| ", (JS / "note-cards.js").read_text())
+    assert re.search(r"Actions for the link to \$\{label \|\| ", ((JS / "note-cards.js").read_text() + (JS / "entry-card.js").read_text()))
 
 
 def test_the_capture_card_and_quick_note_are_editor_surfaces():
@@ -145,7 +145,7 @@ def test_the_bin_has_an_address_and_the_palette_opens_the_bin_itself():
     block = reveal[reveal.index('"library-bin": {') :][:700]
     assert 'libraryKind = "archived"' in block and 'recordTabVisit("library", "library-bin")' in block
     assert 'revealFeature("library-bin")' in (JS / "navigation.js").read_text() or 'await revealFeature("library-bin")' in (JS / "navigation.js").read_text()
-    assert "Unlock private notes" in (JS / "settings-panes.js").read_text()
+    assert "Unlock private notes" in (JS / "settings-panes.js").read_text() + (JS / "app-features.js").read_text()
 
 
 def test_a_template_date_is_written_in_words():

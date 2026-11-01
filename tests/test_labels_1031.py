@@ -37,7 +37,7 @@ def test_the_bell_row_names_what_is_left():
 
 
 def test_a_tag_suggestion_has_short_names_and_titles():
-    js = _js("note-cards.js")
+    js = (_js("note-cards.js") + _js("entry-card.js"))
     assert 'take.setAttribute("aria-label", `Add tag ${tag}`)' in js
     assert 'discard.setAttribute("aria-label", `Dismiss tag ${tag}`)' in js
     assert "`Add tag ${tag}. ${reason}`" in js
@@ -45,7 +45,7 @@ def test_a_tag_suggestion_has_short_names_and_titles():
 
 
 def test_the_date_chip_says_it_is_not_a_reminder():
-    assert "Dates this note mentions, not a reminder." in _js("note-cards.js")
+    assert "Dates this note mentions, not a reminder." in (_js("note-cards.js") + _js("entry-card.js"))
 
 
 def test_the_filter_menus_say_what_they_hold():
@@ -77,7 +77,7 @@ def test_help_names_the_new_words():
 
 
 def test_new_copy_has_no_em_dash_or_exclamation():
-    for text in (_js("first-run.js"), _js("note-cards.js")):
+    for text in (_js("first-run.js"), (_js("note-cards.js") + _js("entry-card.js"))):
         for line in ("Left: ", "Dates this note mentions", "Dismiss: stop suggesting"):
             for row in [r for r in text.splitlines() if line in r]:
                 assert chr(0x2014) not in row and "!" not in row.replace("!==", "").replace("!=", "").replace("!(", "").replace("!!", ""), row

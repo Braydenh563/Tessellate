@@ -95,7 +95,7 @@ def test_a_formatting_toolbar_is_one_tab_stop():
 
 def test_note_cards_show_list_markers_as_bullets_not_dashes():
     # 9: "- item" lines showed as raw text in the notes list.
-    assert '"$1•"' in (JS / "note-cards.js").read_text()
+    assert '"$1•"' in ((JS / "note-cards.js").read_text() + (JS / "entry-card.js").read_text())
 
 
 def test_the_toolbar_arrow_keys_are_written_down_in_help_and_both_shortcut_lists():

@@ -51,11 +51,17 @@ Object.assign(LAZY_MODULES, {
   //: The model badge's spec panel, editing an answer, a note's Explain row, the extract preview's Save (gesture-kit.js's header).
   gestureKit: ["/js/gesture-kit.js"],
   //: One chat turn (chat-turn.js): `sendChatMessage` awaits it; the chat box's focus warms it.
-  chatTurn: ["/js/citation-peek.js", "/js/answer-kit.js", "/js/chat-turn.js"],
+  chatTurn: ["/js/citation-peek.js", "/js/entry-card.js", "/js/answer-kit.js", "/js/chat-turn.js"],
   //: A note card's ... menu rows (entry-menu.js): the first press awaits it, a pointer over a card warms it.
   entryMenu: ["/js/entry-menu.js"],
   //: A board's miniature (map-preview.js): `mapPreview` returns the empty svg and draws into it once this is in.
   mapPreview: ["/js/map-preview.js"],
+  //: The palette's rows (`paletteCommands`) and the dashboard's Quick access draw (app-features.js): `renderQuickLinks` is its stand-in.
+  featureRows: ["/js/app-features.js"],
+  //: A note's card (entry-card.js, `entryItem`): `renderEntries` draws once it is in; fetched when the app goes idle.
+  entryCard: ["/js/entry-card.js"],
+  //: The bar a table in a reply or a note wears (table-block.js): the table render (navigation.js) swaps it in when it arrives.
+  tableBlock: ["/js/table-block.js"],
   //: A row's expand chevron and the bell's untagged and review nudges (notes-lazy.js).
   notesLazy: ["/js/notes-lazy.js"],
   //: Every ```mermaid fence, in documents, chat and Ask (mermaid-draw.js). The 5 MB
@@ -72,7 +78,7 @@ Object.assign(LAZY_MODULES, {
   //: hide, Call back, the Look repaint (companion-settings.js's header; audit AI23).
   companionSettings: ["/js/companion-settings.js"],
 });
-setTimeout(() => ["loadFailed", "modelMenu"].forEach(ensureModule), 3000);
+setTimeout(() => ["loadFailed", "modelMenu", "entryCard"].forEach(ensureModule), 3000);
 installStandIns({
   companionSettings: ["mountBuddyCustom", "mountBuddyActivities", "mountProfileLook", "nameMarkBuddyMakeIt", "nameMarkBuddyHide", "nameMarkBuddyToggle", "nameMarkBuddyCallBack", "nameMarkRepaintAll"],
   spaceSwap: ["swapSpace", "spaceEnterFor"],
@@ -91,6 +97,7 @@ installStandIns({
   gestureKit: ["openChatModelPanel", "editChatAnswer", "explainNote", "commitExtractPreview"],
   notesLazy: ["toggleRowExpanded", "nudgeUntaggedNotes", "nudgeReviewQueue", "refreshNoteSearchWhy", "noMatchHint", "liveQueryBar"],
   quickAdd: ["reminderComposeAdd"],
+  featureRows: ["renderQuickLinks"],
   loadFailed: ["surfaceFailed"],
   appearancePanel: ["openAppearancePanel"],
 });

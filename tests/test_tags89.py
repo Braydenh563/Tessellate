@@ -15,7 +15,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-CARDS = (ROOT / "frontend/js/note-cards.js").read_text(encoding="utf-8")
+CARDS = ((ROOT / "frontend/js/note-cards.js").read_text(encoding="utf-8") + (ROOT / "frontend/js/entry-card.js").read_text(encoding="utf-8"))
 SUGGEST = (ROOT / "frontend/js/tag-suggest.js").read_text(encoding="utf-8")
 
 

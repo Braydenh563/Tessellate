@@ -5282,7 +5282,7 @@ def test_a_note_cards_details_line_ends_the_card_and_keeps_the_space_before_edit
     assert ":not(.is-rows)" in card
     # The suffix keeps its space as a no-break space in its text (a plain
     # leading space collapses inside the date's inline flex box).
-    assert 'textContent: "\\u00a0· edited"' in (ROOT / "frontend" / "js" / "note-cards.js").read_text(encoding="utf-8")
+    assert 'textContent: "\\u00a0· edited"' in ((ROOT / "frontend" / "js" / "note-cards.js").read_text(encoding="utf-8") + (ROOT / "frontend" / "js" / "entry-card.js").read_text(encoding="utf-8"))
     # The phone rule that hides the suffix is still there.
     assert re.search(r"display\s*:\s*none", body(".entry-meta.note-meta .entry-edited"))
 def test_the_no_model_notice_is_one_row_on_the_notice_recipe() -> None:

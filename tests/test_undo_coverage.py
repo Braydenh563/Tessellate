@@ -616,7 +616,7 @@ EXEMPT: dict[str, str] = {
     "model-bench.js:benchRow": "settings: a setting with its own Reset or the settings history",
     "model-bench.js:runModelBench": "job: starts or stops work or a model; deletes no user data",
     "navigation.js:usageFlush": "telemetry: telemetry or a background warm-up; no user data",
-    "note-cards.js:entryItem": "job: stops the background filing pass on a note; the note's category changes are edits with their own Undo",
+    "entry-card.js:entryItem": "job: stops the background filing pass on a note; the note's category changes are edits with their own Undo",
     "note-history.js:toggleThenAndNow": "read: reads a comparison",
     "note-history.js:undoSkillRun": "inverse: reverses a skill run's writes after a confirm (existing UNFOLDED entry)",
     "ocr-engine.js:ocrEngineLanguagePicker": "settings: a setting with its own Reset or the settings history",

@@ -108,7 +108,7 @@ def test_one_note_moves_from_its_chip_and_its_menu():
     # LAZY_ENTRY_POINTS.
     assert "function chooseNoteCategory(" in _read("categories-panel.js")
     assert '"chooseNoteCategory"' in _read("app.js")
-    cards = _read("note-cards.js")
+    cards = (_read("note-cards.js") + _read("entry-card.js"))
     chip_block = cards[cards.index('const categoryEl = chip("", "category")'):][:3200]
     # INBOX 447 (5): the chip opens a menu (chip-menus.js), whose second row is the move.
     assert "openCategoryChipMenu(categoryEl, entry)" in chip_block
@@ -145,7 +145,7 @@ def test_leaving_a_changed_form_asks_and_an_empty_one_is_refused():
     assert "A note needs some text" in form
     assert "noteFormMayClose()" in _function(notes, "openNoteEditor")
     # Every edit entry point goes through the guard.
-    for name in ("note-cards.js", "entry-menu.js", "chat-agent.js"):
+    for name in ("entry-card.js", "entry-menu.js", "chat-agent.js"):
         source = _read(name)
         assert "openNoteEditor(" in source, name
         assert not re.search(r"editingId = (entry|item|copy)\.id;\s*\n\s*renderEntries\(\)", source), name
@@ -194,7 +194,7 @@ def test_tags_filter_from_a_chip_and_from_the_box():
     match = _function(notes, "matchesSearch")
     assert 'tag === t || tag.startsWith(`${t}/`)' in match
     assert 'flag === "draft"' in match
-    cards = _read("note-cards.js")
+    cards = (_read("note-cards.js") + _read("entry-card.js"))
     assert "filterNotesByTag(tag)" in cards
     assert "filterNotesByTag(tag)" in _read("dashboard.js")
 
@@ -249,7 +249,7 @@ def test_recently_edited_sort_copy_link_and_list_keys():
 
 def test_the_notes_chrome_says_less():
     # The space chip only when the notes in view span spaces.
-    cards = _read("note-cards.js")
+    cards = (_read("note-cards.js") + _read("entry-card.js"))
     assert "spacesCache.length > 1 && notesSpanSpaces()" in cards
     # Housekeeping does not open the activity panel or toast its finish.
     status = _read("status.js")

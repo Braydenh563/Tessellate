@@ -30,7 +30,7 @@ def test_paste_as_note_is_a_chord_left_to_the_browser_in_a_text_box():
     paste = _body((JS / "quick-note.js").read_text(encoding="utf-8"), "pasteClipboardAsNote")
     assert "navigator.clipboard.readText()" in paste and "createNoteSafely(" in paste
     assert "pushUndo(" in paste
-    panes = (JS / "settings-panes.js").read_text(encoding="utf-8")
+    panes = (JS / "settings-panes.js").read_text(encoding="utf-8") + (JS / "app-features.js").read_text(encoding="utf-8")
     assert 'chord: "pasteNote"' in panes
 
 

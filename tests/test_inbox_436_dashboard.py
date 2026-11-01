@@ -18,10 +18,11 @@ import re
 from pathlib import Path
 
 from tessellate.ai import help_chat
+from tests._app_js import with_pieces
 
 ROOT = Path(__file__).resolve().parents[1]
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-DASH = (ROOT / "frontend" / "js" / "dashboard.js").read_text(encoding="utf-8")
+DASH = with_pieces("dashboard.js")  # renderQuickLinks is in app-features.js (boot diet 3)
 CSS = re.sub(
     r"/\*.*?\*/", "", "\n".join(p.read_text(encoding="utf-8") for p in sorted((ROOT / "frontend" / "css").glob("*.css"))), flags=re.S
 )

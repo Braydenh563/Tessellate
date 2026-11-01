@@ -43,7 +43,8 @@ def test_one_builder_makes_the_wrap_toggle_and_it_is_a_pressed_toggle() -> None:
 
 
 def test_table_and_code_cards_both_wear_it_beside_copy() -> None:
-    markdown = _read(JS / "markdown.js")
+    #: `buildTableBlock` is in table-block.js (lazy, boot diet 3): same code, new file.
+    markdown = _read(JS / "markdown.js") + _read(JS / "table-block.js")
     assert 'wrapToggle(\n    "table"' in markdown
     table_actions = markdown[markdown.index("actions.append(\n    wrap.button,") :].split(");", 1)[0]
     assert table_actions.index("wrap.button") < table_actions.index('"ph:copy Copy"')
@@ -55,7 +56,7 @@ def test_table_and_code_cards_both_wear_it_beside_copy() -> None:
 
 def test_the_table_fit_row_left_the_menu_for_the_head() -> None:
     """Replace, do not layer: the ⋯ no longer carries a second copy of the switch."""
-    markdown = _read(JS / "markdown.js")
+    markdown = _read(JS / "markdown.js") + _read(JS / "table-block.js")
     assert "Fit to panel" not in re.sub(r"//:.*", "", markdown)
     assert "Actual size" not in re.sub(r"//:.*", "", markdown)
     assert "fit.click()" not in markdown

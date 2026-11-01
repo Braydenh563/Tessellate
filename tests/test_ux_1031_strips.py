@@ -41,7 +41,7 @@ def test_every_strip_that_scrolls_has_the_one_recipe():
         head = html.split(strip, 1)[0].rsplit("<", 1)[1]
         assert "edge-fade" in head + tag, strip
     # The rows a script builds say it and wire themselves.
-    for name in ("dashboard.js", "quick-access.js"):
+    for name in ("app-features.js", "quick-access.js"):
         text = _js(name)
         assert 'launch-row launch-row-start' in text and "edge-fade" in text
         assert "window.edgeFadeWire?.(row);" in text

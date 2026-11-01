@@ -40,7 +40,7 @@ MANUAL = {
     "pin_note": ("note-cards.js", 'button.classList.add("favourite-btn");', "a note's star"),
     "link_notes": ("graph-canvas.js", 'method: "POST", body: JSON.stringify({ target', "Graph, drag one note to another"),
     "unlink_notes": ("graph.js", '/links/${edge.id}`, { method: "DELETE" })', "Graph, click a link, Remove"),
-    "audit_link_reasons": ("note-cards.js", "/reason`", "a note's links, Edit reason"),
+    "audit_link_reasons": ("entry-card.js", "/reason`", "a note's links, Edit reason"),
     "check_learned": ("settings-controls.js", 'apiJson("/learned/audit/run"', "Settings, What it learned, Check what it learned"),
     "delete_note": ("note-cards.js", "async function binNoteWithUndo(entry)", "a note's menu, Move to bin"),
     "restore_note": ("note-cards.js", '/restore`, { method: "POST"', "the recycle bin, Restore"),
@@ -160,7 +160,7 @@ def test_every_utility_has_its_way_in_and_a_guide_topic():
     #: Each palette row carries its one line of help (`about`), the palette's
     #: in-place help; the Statistics page and Settings, Templates also have a
     #: '?' popover (`data-help-for`).
-    panes = (FRONTEND / "js" / "settings-panes.js").read_text(encoding="utf-8")
+    panes = (FRONTEND / "js" / "settings-panes.js").read_text(encoding="utf-8") + (FRONTEND / "js" / "app-features.js").read_text(encoding="utf-8")
     for label in ("Statistics", "Count words", "Live captions"):
         row = next((line for line in panes.splitlines() if 'label: "ph:' in line and f' {label}"' in line), "")
         assert "about:" in row, f"the palette's {label} row has no line of help"

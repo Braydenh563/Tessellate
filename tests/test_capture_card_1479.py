@@ -156,7 +156,7 @@ def test_tags_take_hashes_spaces_and_commas():
 
 
 def test_a_note_card_is_tinted_by_its_colour_with_the_swatch_hex_from_the_one_palette():
-    cards = (JS / "note-cards.js").read_text(encoding="utf-8")
+    cards = ((JS / "note-cards.js").read_text(encoding="utf-8") + (JS / "entry-card.js").read_text(encoding="utf-8"))
     assert "CATEGORY_PALETTE[entry.colour]" in cards and '"--swatch"' in cards
     css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
     assert '#entry-list li[data-colour]' in css and "color-mix(in srgb, var(--swatch) 10%" in css

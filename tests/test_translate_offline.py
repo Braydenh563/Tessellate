@@ -158,7 +158,7 @@ def test_the_worker_and_the_palette_row_are_wired():
     sheet = (JS / "translate.js").read_text(encoding="utf-8")
     assert "translate-worker.js" in sheet and "/translate/status" in sheet
     assert 'revealFeature("extra-row", "translate")' in sheet
-    panes = (JS / "settings-panes.js").read_text(encoding="utf-8")
+    panes = (JS / "settings-panes.js").read_text(encoding="utf-8") + (JS / "app-features.js").read_text(encoding="utf-8")
     assert "Translate this" in panes
     app = (JS / "app.js").read_text(encoding="utf-8")
     assert '"/js/translate.js"' in app

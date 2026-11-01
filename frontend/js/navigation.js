@@ -554,7 +554,18 @@ function renderMarkdown(container, text, depth = 0) {
       const scroller = document.createElement("div");
       scroller.className = "md-table-wrap";
       scroller.appendChild(table);
-      container.appendChild(buildTableBlock(scroller, headers, bodyRows, rawTable));
+      //: The block is the table's own element from the start (so its source line, a digest's
+      //: class and every reader of `.md-table-block` find it at once); its bar with Copy,
+      //: Markdown, CSV and Full view (`buildTableBlock`, table-block.js: lazy, for the boot gzip
+      //: ratchet) is filled into it when that file is in, at once if it already is.
+      const shell = document.createElement("div");
+      shell.className = "code-block md-table-block";
+      shell.appendChild(scroller);
+      container.appendChild(shell);
+      const barReady = window.buildTableBlock ? null : ensureModule("tableBlock");
+      const addBar = () => buildTableBlock(scroller, headers, bodyRows, rawTable, shell);
+      if (barReady) barReady.then((ok) => ok && addBar());
+      else addBar();
       continue;
     }
 

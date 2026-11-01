@@ -1493,10 +1493,15 @@ function editorRenderPreview(item) {
     renderMarkdown(sample, item.sample);
     //: A narrow pane: the bar's Copy is an icon like its ⋯, so the caption
     //: keeps one line and the two buttons sit side by side.
-    for (const copy of sample.querySelectorAll(".code-copy")) {
-      copy.classList.add("icon-only");
-      copy.querySelector(".ph-text")?.remove();
-    }
+    //: A table's Copy comes with its bar (table-block.js, lazy), so it is made so again when that is in.
+    const iconOnly = () => {
+      for (const copy of sample.querySelectorAll(".code-copy")) {
+        copy.classList.add("icon-only");
+        copy.querySelector(".ph-text")?.remove();
+      }
+    };
+    iconOnly();
+    ensureModule("tableBlock").then(iconOnly);
   }
   richPickerPreview(pane, {
     icon: editorMenuIcon(item),

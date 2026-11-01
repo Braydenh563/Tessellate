@@ -9277,7 +9277,8 @@ function docEmbedNode(target, name) {
     //: bare list item. The list around it is the card's other half.
     const list = document.createElement("ul");
     list.className = "entry-list";
-    list.appendChild(entryItem(target.entry));
+    //: The card is `entryItem` (entry-card.js, lazy): the list is placed at once and filled when the file is in.
+    ensureModule("entryCard").then((ok) => (ok ? list.appendChild(entryItem(target.entry)) : lazyLoadFailed("Notes")));
     return list;
   }
   //: A document is a card (`mdDocumentCard`, app.js), the one the Read view

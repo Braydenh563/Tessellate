@@ -2379,6 +2379,22 @@ function rememberNoteFilter(words) {
 
 //: `appendOnly` (a page arriving into a long list) draws nothing unless the rows can be added.
 function renderEntries(appendOnly = false) {
+  //: A card is drawn by `entryItem` (entry-card.js: lazy, for the boot gzip ratchet), fetched
+  //: when the app goes idle. A draw asked before it is in waits for it and happens once, whole,
+  //: and the promise this returns settles after it (false when the file never came): a caller that
+  //: reads a card straight after the draw (`flashEntry`) awaits it.
+  if (!window.entryItem) {
+    renderEntries.waiting ||= ensureModule("entryCard").then(async (ok) => {
+      renderEntries.waiting = null;
+      if (!ok) {
+        lazyLoadFailed("Notes");
+        return false;
+      }
+      await renderEntries();
+      return true;
+    });
+    return renderEntries.waiting;
+  }
   const list = $("entry-list");
   rememberNoteFilter(noteSearch);
   // Drafts stay out of All/category views entirely, user-reported: they

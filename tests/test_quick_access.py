@@ -141,7 +141,7 @@ def test_an_act_row_is_a_tile_only_when_it_opts_in_with_quick():
     its stable `act:` id; an act without it stays out of the picker."""
     catalogue = _block(DASH, "function quickCatalogue()", "\n}\n")
     assert "row.quick ? `act:${row.quick}`" in catalogue
-    panes = (ROOT / "frontend" / "js" / "settings-panes.js").read_text(encoding="utf-8")
+    panes = (ROOT / "frontend" / "js" / "settings-panes.js").read_text(encoding="utf-8") + (ROOT / "frontend" / "js" / "app-features.js").read_text(encoding="utf-8")
     row = panes[panes.index('label: "ph:closed-captioning Live captions"') :].split("\n", 1)[0]
     assert 'quick: "captions"' in row and "act: () => toggleLiveCaptions()" in row
     stats = panes[panes.index('label: "ph:chart-bar Statistics"') :].split("\n", 1)[0]
@@ -244,7 +244,7 @@ def test_it_is_stored_in_preferences_not_only_the_browser():
 
 
 def test_the_editing_view_is_lazy_and_reachable_before_it_loads():
-    assert 'quickAccess: ["/css/quick-access-lazy.css", "/js/quick-access.js"]' in APP
+    assert 'quickAccess: ["/css/quick-access-lazy.css", "/js/app-features.js", "/js/quick-access.js"]' in APP
     assert 'quickAccess: ["quickAccessEdit"]' in APP
     page = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert "quick-access.js" not in page, "it loads on first use, not at boot"

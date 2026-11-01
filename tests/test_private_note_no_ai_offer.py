@@ -12,7 +12,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-CARDS = Path(__file__).resolve().parents[1] / "frontend" / "js" / "note-cards.js"
+CARDS = Path(__file__).resolve().parents[1] / "frontend" / "js" / "entry-card.js"  # moved out of note-cards.js (boot diet 3)
 MENUS = Path(__file__).resolve().parents[1] / "frontend" / "js" / "entry-menu.js"
 
 
@@ -30,7 +30,7 @@ def test_every_caller_of_reevaluate_entry_is_gated_on_privacy() -> None:
     for path in (Path(__file__).resolve().parents[1] / "frontend" / "js").glob("*.js"):
         if re.search(r"\breevaluateEntry\(entry\)", path.read_text()) and path.name not in ("lightbox.js", "lightbox-actions.js"):
             callers.append(path.name)
-    assert sorted(callers) == ["entry-menu.js", "note-cards.js"], callers
+    assert sorted(callers) == ["entry-card.js", "entry-menu.js"], callers
     #: The gate sits on the AI rows themselves since the menu was grouped by
     #: task (N20): Tag and file is inside the private guard, not after it.
     text = MENUS.read_text()

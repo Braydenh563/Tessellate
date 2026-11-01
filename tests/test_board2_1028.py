@@ -73,7 +73,7 @@ def test_code_file_opens_the_template_dialog_on_the_code_group():
 
 
 def test_code_file_is_in_the_palette():
-    assert "New code file" in _read("settings-panes.js")
+    assert "New code file" in (_read("settings-panes.js") + _read("app-features.js"))
 
 
 # ---- B9: undo waits for an in-flight delete ---------------------------------

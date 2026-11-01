@@ -107,6 +107,7 @@ function statsOpenMonth(row) {
 function statsOpenFeature(name) {
   return statsGo(async () => {
     if (name.startsWith("tab:")) return switchTab(name.slice(4));
+    await lazyScript("/js/app-features.js");
     const command = paletteCommands().find((c) => usageFeatureName(c.label) === name);
     if (command) command.run();
   });
@@ -187,7 +188,7 @@ function statsWeekCard(week) {
 //: page knows what it offers, the ledger knows what was used.
 async function statsUnused(usage, asOf) {
   await ensureModule("usageLedger");
-  const labels = usageLabels();
+  const labels = await usageLabels();
   const cutoff = new Date(asOf);
   cutoff.setDate(cutoff.getDate() - (usage.unused_days || 90));
   const since = cutoff.toISOString().slice(0, 10);
