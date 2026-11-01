@@ -69,7 +69,7 @@ MOVED_OUT = {
     "notes-list.js": ("notes-lazy.js",),
     "sheets-selects.js": ("personas-pane.js", "gesture-kit.js"),
     "lightbox.js": ("lightbox-actions.js",),
-    "settings.js": ("settings-health.js",),
+    "settings.js": ("settings-health.js", "settings-controls.js"),
     "selection.js": ("library-pick.js",),
     "status.js": ("status-panels.js",),
     "dashboard.js": ("dash-day.js", "dash-night.js", "dash-orphans.js"),

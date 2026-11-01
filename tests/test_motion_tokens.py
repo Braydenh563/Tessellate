@@ -32,6 +32,7 @@ from __future__ import annotations
 
 import re
 
+from tests._app_js import with_pieces
 from tests._css_paths import CSS_DIR
 
 DECL = re.compile(
@@ -321,7 +322,7 @@ def test_the_switch_is_wired_from_boot_to_settings():
     assert 'dataset.uiMotion = pref("ui-motion", "on")' in boot, "theme-boot.js does not set data-ui-motion before first paint"
     prefs = (JS_DIR / "prefs.js").read_text(encoding="utf-8")
     assert re.search(r'"ui-motion":\s*\{\s*default:\s*"on"', prefs), "prefs.js has no default for ui-motion"
-    settings = (JS_DIR / "settings.js").read_text(encoding="utf-8")
+    settings = with_pieces("settings.js")  # the body listeners are in settings-controls.js since INBOX 1501
     assert 'root.dataset.uiMotion = appearancePref("ui-motion")' in settings
     assert '$("ui-motion-toggle").addEventListener("change"' in settings
     html = (CSS_DIR.parents[0] / "index.html").read_text(encoding="utf-8")
@@ -375,7 +376,7 @@ def test_the_skeleton_shimmer_follows_the_os_unless_always_was_chosen():
         assert "data-progress-chosen" in m.group(1) or in_media, (
             f"a forced shimmer ignores the OS reduced-motion setting: {' '.join(m.group(1).split())}"
         )
-    settings = (JS_DIR / "settings.js").read_text(encoding="utf-8")
+    settings = with_pieces("settings.js")
     assert 'toggleAttribute("data-progress-chosen"' in settings
 
 

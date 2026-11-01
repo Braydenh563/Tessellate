@@ -2585,9 +2585,88 @@ async function renderArtWidget(body) {
   return startArt(holder);
 }
 
+//: **One path and one fill per colour, not one per shape** (INBOX 1501's
+//: sweep: `scene` was 7 to 18 ms a frame at 4x, most of it a colour string
+//: and a stroke or two fills for every line and every star, a hundred stars
+//: and a few hundred lines thirty times a second). A line's alpha and a
+//: star's twinkle are cut into steps too fine to see (0.03 and a twelfth), so
+//: the lines and the glows fall into a handful of buckets, each drawn as one
+//: `Path2D` with one `strokeStyle`/`fillStyle`; the nearness test compares
+//: squares, and the bucket's colour string is made once (`ART_CSS`).
+const ART_CSS = new Map();
+const artCss = (hue, sat, light, alpha) => {
+  const key = `${hue}|${sat}|${light}|${alpha}`;
+  let css = ART_CSS.get(key);
+  if (!css) ART_CSS.set(key, (css = `hsla(${hue}, ${sat}%, ${light}%, ${alpha})`));
+  return css;
+};
+const ART_LINK = 70;
+const ART_LINE_STEP = 0.03;
+const ART_TWINKLE_STEPS = 12;
+//: A bucket is one colour's path, made on first use this frame. Its key is a
+//: number (`hue` times 100 plus the step, no string made per line or star);
+//: the bucket keeps the hue and step it stands for.
+const artBucket = (buckets, hue, step) => {
+  const key = hue * 100 + step;
+  let bucket = buckets.get(key);
+  if (!bucket) buckets.set(key, (bucket = { hue, step, path: new Path2D() }));
+  return bucket.path;
+};
+function artDrawLines(ctx, particles, lines, dark) {
+  if (lines <= 0) return;
+  const buckets = new Map();
+  for (let i = 0; i < particles.length; i++) {
+    const a = particles[i];
+    for (let j = i + 1; j < particles.length; j++) {
+      const b = particles[j];
+      const dx = a.x - b.x;
+      const dy = a.y - b.y;
+      const near = dx * dx + dy * dy;
+      if (near >= ART_LINK * ART_LINK) continue;
+      const alpha = 0.45 * (1 - Math.sqrt(near) / ART_LINK) * lines * Math.min(a.vis, b.vis);
+      const path = artBucket(buckets, a.hue, Math.round(alpha / ART_LINE_STEP));
+      path.moveTo(a.x, a.y);
+      path.lineTo(b.x, b.y);
+    }
+  }
+  ctx.lineWidth = 1;
+  for (const { hue, step, path } of buckets.values()) {
+    ctx.strokeStyle = artCss(hue, 65, dark ? 72 : 55, (step * ART_LINE_STEP).toFixed(3));
+    ctx.stroke(path);
+  }
+}
+//: The stars: a soft glow halo under a bright core, twinkling. Every halo is
+//: drawn, then every core, so a neighbour's halo never covers a core.
+function artDrawStars(ctx, dots, t, dark) {
+  const glows = new Map();
+  const cores = new Map();
+  for (const dot of dots) {
+    const twinkle = (0.6 + 0.4 * Math.sin(t * 2 + dot.phase)) * dot.vis;
+    const step = Math.round(twinkle * ART_TWINKLE_STEPS);
+    const glow = artBucket(glows, dot.hue, step);
+    glow.moveTo(dot.x + dot.drawSize * 2, dot.y);
+    glow.arc(dot.x, dot.y, dot.drawSize * 2, 0, Math.PI * 2);
+    const core = artBucket(cores, dot.hue, step);
+    core.moveTo(dot.x + dot.drawSize / 2, dot.y);
+    core.arc(dot.x, dot.y, dot.drawSize / 2, 0, Math.PI * 2);
+  }
+  for (const { hue, step, path } of glows.values()) {
+    ctx.fillStyle = artCss(hue, 75, dark ? 65 : 55, ((0.14 * step) / ART_TWINKLE_STEPS).toFixed(3));
+    ctx.fill(path);
+  }
+  for (const { hue, step, path } of cores.values()) {
+    ctx.fillStyle = artCss(hue, 80, dark ? 78 : artCoreLight(hue), (step / ART_TWINKLE_STEPS).toFixed(3));
+    ctx.fill(path);
+  }
+}
+
 //: What the dashboard's constellation draws at. See `p.setup` below for why
 //: thirty rather than the sixty p5 defaults to.
 const ART_FRAME_RATE = 30;
+//: How long the drift runs after the pointer was last on the card or Regenerate was
+//: pressed, and how long after the sketch mounts (see `attendUntil`).
+const ART_ATTEND_MS = 8000;
+const ART_SETTLE_MS = 1500;
 
 async function startArt(holder) {
   // Which run this is. `startArt` awaits /insights/stats before it mounts
@@ -2619,8 +2698,8 @@ async function startArt(holder) {
   //: This read the media query and nothing else, so the two generative
   //: pictures in the app disagreed about the same question: the background
   //: art (`startBgArt`, settings.js) resolves motion from the app's own
-  //: Reduce motion switch and from Performance mode as well, and this one
-  //: ignored both. Turn on Reduce motion and the background froze while this
+  //: Motion setting and from Performance mode as well, and this one
+  //: ignored both. Set Motion to Off and the background froze while this
   //: widget kept running; turn on Performance mode, which DESIGN.md rule 12
   //: says stops every animation but the progress indicators, and this was
   //: the thing that kept going. The background art's own comment notes it
@@ -2668,6 +2747,14 @@ async function startArt(holder) {
     let fade = null;
     //: When the card left the view (`sight` below), 0 while it is in view.
     let hiddenSince = 0;
+    //: **The drift runs while somebody is looking** (INBOX 1501: the scene was
+    //: 60 percent of the script on a Dashboard click at 4x, a loop nothing
+    //: needed). It runs `ART_SETTLE_MS` after the sketch mounts (the Dashboard
+    //: mounts a new one on every visit to the tab), and `ART_ATTEND_MS` after a
+    //: Regenerate and after the pointer last moved over the card, then the sketch
+    //: rests with its last frame on the canvas, no loop and no timer, and a
+    //: pointer over the card, a focus in it or a Regenerate wakes it.
+    let attendUntil = performance.now() + ART_SETTLE_MS;
     //: The wash's hue and gradient, made once: the accent and the height do not
     //: change for the life of a sketch (a theme change rebuilds it).
     let washHue = null;
@@ -2720,42 +2807,13 @@ async function startArt(holder) {
         dot.drawSize = from ? from.size + (dot.size - from.size) * e : dot.size;
       }
       const lines = u < 1 ? artLineFade(glide.lineFrom, u) : 1;
-      // Faint connecting lines between nearby stars (O(n²), but n is
-      // capped low enough that it stays cheap at 60fps).
-      ctx.lineWidth = 1;
-      const lineLight = dark ? 72 : 55;
-      for (let i = 0; lines > 0 && i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const a = particles[i];
-          const b = particles[j];
-          const d = Math.hypot(a.x - b.x, a.y - b.y);
-          if (d < 70) {
-            ctx.strokeStyle = `hsla(${a.hue}, 65%, ${lineLight}%, ${(0.45 * (1 - d / 70) * lines * Math.min(a.vis, b.vis)).toFixed(3)})`;
-            ctx.beginPath();
-            ctx.moveTo(a.x, a.y);
-            ctx.lineTo(b.x, b.y);
-            ctx.stroke();
-          }
-        }
-      }
+      artDrawLines(ctx, particles, lines, dark);
       //: Stars with no place in the new sky fade where they stand, gone by
       //: six tenths of the way so the arrivals are not crowded by them.
       const leaving = u < 1 ? glide.leaving : [];
       const out = artEaseOut(Math.min(1, u / 0.6));
       for (const dot of leaving) dot.vis = dot.from.vis * (1 - out);
-      //: The stars themselves: a soft glow halo + a bright core, twinkling.
-      const glowLight = dark ? 65 : 55;
-      for (const dot of leaving.concat(particles)) {
-        const twinkle = (0.6 + 0.4 * Math.sin(t * 2 + dot.phase)) * dot.vis;
-        ctx.fillStyle = `hsla(${dot.hue}, 75%, ${glowLight}%, ${(0.14 * twinkle).toFixed(3)})`;
-        ctx.beginPath();
-        ctx.arc(dot.x, dot.y, (dot.drawSize * 4) / 2, 0, Math.PI * 2); // glow
-        ctx.fill();
-        ctx.fillStyle = `hsla(${dot.hue}, 80%, ${dark ? 78 : artCoreLight(dot.hue)}%, ${twinkle.toFixed(3)})`;
-        ctx.beginPath();
-        ctx.arc(dot.x, dot.y, dot.drawSize / 2, 0, Math.PI * 2); // core
-        ctx.fill();
-      }
+      artDrawStars(ctx, leaving.concat(particles), t, dark);
       if (fade && !settled) {
         const k = 1 - Math.min(1, (now - fade.start) / ART_FADE_MS);
         ctx.save();
@@ -2770,6 +2828,7 @@ async function startArt(holder) {
     //: asked for (read now, not at build: the switch may have moved since).
     p.regenerate = () => {
       if (!width) return;
+      attend();
       p.randomSeed(artSeed(categories) + artNonce * 997);
       const next = buildArtParticles(p, categories, total, width, height);
       const now = p.millis();
@@ -2827,6 +2886,24 @@ async function startArt(holder) {
         p.noLoop();
       }
     };
+    //: Resting stops the loop and the drift clock with it: the time spent
+    //: resting is added to the epoch on waking, so the stars go on from where
+    //: they stood. `p.rested` is the moment it began, 0 while it draws.
+    const rest = () => {
+      p.noLoop();
+      p.rested ||= performance.now();
+    };
+    const wake = () => {
+      if (!p.rested) return;
+      artClock.epoch += performance.now() - p.rested;
+      p.rested = 0;
+      if (!hiddenSince) p.loop();
+    };
+    //: Somebody is at the card: the window starts again, and a rest ends.
+    const attend = () => {
+      attendUntil = performance.now() + ART_ATTEND_MS;
+      wake();
+    };
     //: Wall clock, not `frameCount`, so the drift runs at the speed it was
     //: chosen at whatever the frame rate happens to be, including whatever a
     //: browser throttles a background tab to. The two are the same number:
@@ -2837,21 +2914,8 @@ async function startArt(holder) {
         p.noLoop();
         return;
       }
-      //: **Rests when nobody is there**: after the background art's two idle
-      //: minutes (bg-art.js stamps every input), and goes on at the next
-      //: one. Traced idle on the Dashboard: 600 p5 frames and 204ms of
-      //: script every ten seconds, for a drift no one was watching.
-      if (!reduceMotion && !glide && !fade && typeof bgArtLastInput === "number" && performance.now() - bgArtLastInput > BG_ART_IDLE_MS) {
-        p.noLoop();
-        //: Stamped, so a listener left over from an earlier rest does nothing.
-        const rested = (p.rested = performance.now());
-        const wake = () => {
-          if (artInstance !== p || p.rested !== rested) return;
-          p.rested = 0;
-          artClock.epoch += performance.now() - rested;
-          p.loop();
-        };
-        for (const type of ["pointermove", "keydown", "wheel", "touchstart"]) window.addEventListener(type, wake, { once: true, passive: true });
+      if (!reduceMotion && !glide && !fade && performance.now() > attendUntil) {
+        rest();
         return;
       }
       scene(reduceMotion ? 0 : artDriftMs() * 0.0003);
@@ -2901,14 +2965,21 @@ async function startArt(holder) {
         return;
       }
       if (!hiddenSince) return;
-      artClock.epoch += performance.now() - hiddenSince;
+      //: A sketch that rested before it left the view keeps its rest's own count
+      //: of the time away (`wake`), so the two are not added twice.
+      if (!p.rested) artClock.epoch += performance.now() - hiddenSince;
       hiddenSince = 0;
-      if (!p.rested) p.loop();
+      //: Back in view with the window gone: no frame is drawn, the canvas
+      //: kept its last (a tab click costs the art nothing).
+      if (!p.rested) performance.now() > attendUntil ? rest() : p.loop();
     });
     sight.observe(holder);
+    const ATTEND_EVENTS = ["pointerenter", "pointermove", "focusin", "touchstart"];
+    for (const type of ATTEND_EVENTS) holder.addEventListener(type, attend, { passive: true });
     p.remove = ((original) => () => {
       observer.disconnect();
       sight.disconnect();
+      for (const type of ATTEND_EVENTS) holder.removeEventListener(type, attend);
       original.call(p);
     })(p.remove);
   };

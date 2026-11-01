@@ -749,7 +749,7 @@ function renderChatEmptyState() {
   }
   box.appendChild(empty);
   // Animated like the ai-mark: a new chat is the AI waiting, and the slow
-  // turn says so. Stills itself under Settings, Appearance → reduced motion.
+  // turn says so. Stills itself under Settings, Appearance, Motion.
   renderEmblem(emblem, 52, { animate: true }); // after insertion: see addAssistantBubble
   fitChatEmpty();
   //: **Watched, but never from inside the observer's own callback** (the
@@ -1711,7 +1711,7 @@ function renderCompressionState() {
 //: the dashboard's constellation keep drawing would reasonably call that
 //: broken, whatever the help text said. So it is a third input to the motion
 //: resolution `startArt` (dashboard.js) and `startBgArt` (settings.js)
-//: already share with Reduce motion and Performance mode, and the help text
+//: already share with reduced motion and Performance mode, and the help text
 //: says so now.
 //:
 //: Here rather than beside the other two because app.js is the first script

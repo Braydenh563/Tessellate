@@ -1490,11 +1490,17 @@ document.addEventListener(
   },
   true
 );
-for (const list of document.querySelectorAll(
-  "details.dock-menu:not([open]) > .dock-menu-list, details.doc-dock-menu:not(.doc-toolbar-menu):not([open]) > .doc-dock-menu-list"
-)) {
-  list.hidden = true;
+//: Run at boot and again for Settings' body when it is built (its Logs menu is
+//: one of these).
+function hideClosedDockMenuLists() {
+  for (const list of document.querySelectorAll(
+    "details.dock-menu:not([open]) > .dock-menu-list, details.doc-dock-menu:not(.doc-toolbar-menu):not([open]) > .doc-dock-menu-list"
+  )) {
+    list.hidden = true;
+  }
 }
+hideClosedDockMenuLists();
+onSettingsBody(hideClosedDockMenuLists);
 //: Escape closes an open dock menu and puts focus back on its button, 
 //: `<details>` does not do this on its own, whatever a comment elsewhere in
 //: this codebase once claimed; measured with a keyboard-only probe. Capture

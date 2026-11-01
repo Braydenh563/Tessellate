@@ -183,8 +183,8 @@ function taskEndingIsAppsOwn(item) {
 }
 
 function renderTaskHistory(history) {
-  const box = $("task-history-box");
-  const list = $("task-history");
+  const box = document.getElementById("task-history-box");
+  const list = document.getElementById("task-history");
   // A finished background job goes into the notifications centre whether or
   // not this screen is open, which is the point of the centre (§36E). These
   // jobs are long: an install or a re-index finishes minutes after you stopped

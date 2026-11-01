@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from tests._app_js import with_pieces
+
 ROOT = Path(__file__).resolve().parent.parent
 FRONTEND = ROOT / "frontend"
 
@@ -36,7 +38,7 @@ def test_auto_is_a_choice_in_appearance_and_clears_the_setting():
     seg = html[html.index('id="density-seg"') :]
     seg = seg[: seg.index("</select>")]
     assert 'value="auto"' in seg
-    settings = _text("settings.js")
+    settings = with_pieces("settings.js")  # the body listeners are in settings-controls.js since INBOX 1501
     assert 'if (e.target.value === "auto") prefs.remove("density");' in settings
     assert "window crosses 700px tall" in settings or "DENSITY_SHORT.addEventListener" in settings
 

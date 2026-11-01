@@ -22,7 +22,7 @@ function atlasBlink(box, slow = false) {
 //: page: every 3.4 to 7.6 seconds each one that is on screen, has its eyes
 //: open and may move blinks once, now and then twice; a drowsy or groggy companion
 //: blinks slowly and stays shut a moment. Avatar animation Off, the app's
-//: Reduce motion or the system's (unless the companion is set to Always)
+//: Reduced motion or the system's (unless the companion is set to Always)
 //: and a hidden tab hold the eyes still: no idle loop runs there.
 //: `atlasState` (the blink's timer, the rig's trace, the act's ease) is
 //: atlas.js's: the boot's `setAtlasMood` writes it before this file loads.

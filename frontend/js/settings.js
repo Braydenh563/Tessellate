@@ -277,6 +277,7 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   }
   overlayReturnFocus = document.activeElement;
   window.uiSettlingUntil = performance.now() + 400;
+  settingsBodyBuild();
   //: **The window's own listeners arrive before the window does** (the gzip
   //: budget, settings-controls.js). Only the first open waits, and only for
   //: that file: once its marker constant exists this stays synchronous, so a
@@ -427,7 +428,7 @@ async function openSettingsModal(section = "models", scrollToId = null) {
       // This was the one of the three flash call sites with no cleanup, and it
       // looked harmless because the animation ends on `transparent`, so on an
       // ordinary machine the highlight does fade and the stuck class is
-      // invisible. Under `prefers-reduced-motion: reduce` the stylesheet
+      // invisible. Under reduced motion (`data-motion="reduced"`) the stylesheet
       // deliberately swaps the animation for a *static* outline and background
       // (see .flash-target.flash there), and with nothing ever removing the
       // class that static highlight is permanent. A value that is only wrong
@@ -497,16 +498,6 @@ function paintIntegrity(check) {
     : "Not checked yet";
 }
 
-$("health-integrity-check")?.addEventListener("click", async () => {
-  const button = $("health-integrity-check");
-  setLabel(button, "ph:spin Checking");
-  try {
-    paintIntegrity(await apiJson("/debug/health/integrity", { method: "POST" }));
-  } catch (e) {
-    toast(`The integrity check could not run: ${e.message}`, true, { action: ["Try again", () => button.click()] });
-  }
-  setLabel(button, "Check now");
-});
 
 
 // --- finding a setting (§36B) ------------------------------------------------------
@@ -3153,104 +3144,11 @@ function toggleBgArt(on) {
 
 $("theme-btn").addEventListener("click", toggleTheme);
 $("theme-btn").addEventListener("contextmenu", (e) => { e.preventDefault(); openAppearancePanel(); });
-//: The one switch for every box's suggestions (Brief 86, CHAT_PLAN decision
-//: 69), kept on this device: absent reads as on.
-$("pref-search-suggest")?.addEventListener("change", (event) => {
-  prefs.set("searchSuggest", event.target.checked ? "on" : "off");
-  toast(event.target.checked ? "Search boxes suggest as you type." : "Search boxes no longer suggest.");
-});
-$("bg-art-toggle").addEventListener("change", (e) => {
-  toggleBgArt(e.target.checked);
-  renderAppearance(); // enable/disable the style + intensity rows
-});
-$("contrast-toggle").addEventListener("change", (e) => applyContrast(e.target.checked));
-
-// Wave O: expanded appearance controls.
-for (const b of document.querySelectorAll("#theme-seg button")) {
-  b.addEventListener("click", () => {
-    applyThemeChoice(b.dataset.themeChoice);
-    renderAppearance();
-  });
-}
-for (const b of document.querySelectorAll("#fontsize-seg button")) {
-  b.addEventListener("click", () => {
-    prefs.set("fontsize", b.dataset.fontsize);
-    applyAppearance();
-    renderAppearance();
-  });
-}
-$("font-seg").addEventListener("change", (e) => {
-  prefs.set("font", e.target.value);
-  applyAppearance();
-  renderAppearance();
-});
-$("density-seg").addEventListener("change", (e) => {
-  //: Auto is no choice at all: the window's height decides.
-  if (e.target.value === "auto") prefs.remove("density");
-  else prefs.set("density", e.target.value);
-  applyAppearance();
-  renderAppearance();
-});
-$("perf-mode").addEventListener("change", (e) => {
-  prefs.set("perf", e.target.value);
-  applyAppearance();
-  renderAppearance();
-});
 // The OS setting can change while the app is open; "auto" follows it.
 window.matchMedia("(prefers-reduced-transparency: reduce)").addEventListener("change", () => {
   applyAppearance();
   if (!$("settings-appearance").classList.contains("hidden")) renderAppearance();
 });
-$("glass-toggle").addEventListener("change", (e) => {
-  const turningOn = e.target.checked && appearancePref("glass") !== "on";
-  prefs.set("glass", e.target.checked ? "on" : "off");
-  // Asked for directly: switching glassmorphism on from off also turns the
-  // sheen on, so the full look shows up in one action, the sheen's own
-  // checkbox can still turn it back off afterward without touching this.
-  if (turningOn) prefs.set("glass-sheen", "on");
-  applyAppearance();
-  renderAppearance();
-});
-$("page-wash-toggle")?.addEventListener("change", (e) => {
-  prefs.set("page-wash", e.target.checked ? "on" : "off");
-  applyAppearance();
-});
-$("glass-sheen-toggle").addEventListener("change", (e) => {
-  prefs.set("glass-sheen", e.target.checked ? "on" : "off");
-  applyAppearance();
-  $("glass-sheen-strength-row")?.classList.toggle("disabled-row", !e.target.checked);
-});
-$("glass-controls-toggle").addEventListener("change", (e) => {
-  prefs.set("glass-controls", e.target.checked ? "on" : "off");
-  applyAppearance();
-});
-$("glass-sheen-strength").addEventListener("input", (e) => {
-  prefs.set("glass-sheen-strength", e.target.value);
-  $("glass-sheen-strength-value").textContent = `${e.target.value}%`;
-  applyAppearance();
-});
-for (const btn of document.querySelectorAll("#motion-seg button")) {
-  btn.addEventListener("click", () => {
-    const off = btn.dataset.motionChoice === "off";
-    prefs.set("motion", btn.dataset.motionChoice);
-    // The background-art picker has its own "Moving" override (see
-    // startBgArt()'s comment). Choosing Off here is a direct, explicit ask
-    // for stillness, and "Moving" silently surviving it read as the two
-    // settings being unrelated: Off selects "Still"; leaving Off only clears
-    // that if we set it, so an independent "Moving" choice isn't clobbered.
-    if (off) {
-      prefs.set("bg-motion", "still");
-    } else if (appearancePref("bg-motion") === "still") {
-      prefs.set("bg-motion", "auto");
-    }
-    if ($("bg-motion")) $("bg-motion").value = appearancePref("bg-motion");
-    applyAppearance();
-    renderAppearance();
-    if (reducedMotionWanted()) stopBgArt(); // a still UI shouldn't keep the art running
-    else if (bgArtOn()) startBgArt();
-    renderBrandLogo(); // start/stop the emblem's rotation to match
-  });
-}
 //: The system's request changed under an open page: repaint what reads it.
 document.addEventListener("motionchange", () => {
   applyAppearance();
@@ -3260,205 +3158,12 @@ document.addEventListener("motionchange", () => {
   else if (bgArtOn()) startBgArt();
   renderBrandLogo();
 });
-$("ui-motion-toggle").addEventListener("change", (e) => {
-  prefs.set("ui-motion", e.target.checked ? "on" : "off");
-  applyAppearance();
-});
-$("bg-intensity").addEventListener("input", (e) => {
-  prefs.set("bg-intensity", e.target.value);
-  $("bg-intensity-value").textContent = `${e.target.value}%`;
-  applyAppearance();
-  if (bgArtOn()) startBgArt(); // intensity also drives particle density
-});
-// Corner rounding + glass blur: live sliders over CSS custom properties.
-$("radius-slider").addEventListener("input", (e) => {
-  prefs.set("radius", e.target.value);
-  $("radius-value").textContent = `${e.target.value}px`;
-  applyAppearance();
-});
-$("glass-blur").addEventListener("input", (e) => {
-  prefs.set("glass-blur", e.target.value);
-  $("glass-blur-value").textContent = `${e.target.value}px`;
-  applyAppearance();
-});
-$("glass-opacity").addEventListener("input", (e) => {
-  prefs.set("glass-opacity", e.target.value);
-  $("glass-opacity-value").textContent = `${e.target.value}%`;
-  applyAppearance();
-});
-// All four routes go through app.js's setZoom, so the slider, the buttons, the
-// Ctrl+/- shortcut and the command palette cannot disagree about the range,
-// the step, or where the value is stored.
-$("zoom-slider").addEventListener("input", (e) => setZoom(Number(e.target.value)));
-$("zoom-in")?.addEventListener("click", () => nudgeZoom(1));
-$("zoom-out")?.addEventListener("click", () => nudgeZoom(-1));
-$("zoom-reset")?.addEventListener("click", () => setZoom(100));
-for (const btn of document.querySelectorAll("#border-style-seg button")) {
-  btn.addEventListener("click", () => {
-    prefs.set("border-style", btn.dataset.borderChoice);
-    applyAppearance();
-    renderAppearance();
-  });
-}
-$("shadow-intensity").addEventListener("input", (e) => {
-  prefs.set("shadow-intensity", e.target.value);
-  $("shadow-intensity-value").textContent = `${e.target.value}%`;
-  applyAppearance();
-});
-// Custom accent + page background.
-// A pick whose button words would read under 4.5:1 in the mode showing is
-// refused, not quietly altered: the row says the ratio and offers the
-// nearest shade that reads, one press to take it (Brief 95).
-function setCustomAccent(hex) {
-  $("accent-offer").classList.add("hidden");
-  prefs.set("accent-custom", hex);
-  applyCustomAccent(hex);
-  renderAppearance();
-  if (bgArtOn()) startBgArt();
-  renderBrandLogo();
-}
-$("accent-custom").addEventListener("input", (e) => {
-  const pick = e.target.value;
-  const dark = resolvedTheme() === "dark";
-  const tone = accentTone(pick, dark);
-  if (tone === pick) return setCustomAccent(pick);
-  const ratio = hexRatio(pick, accentInk(dark)).toFixed(1);
-  $("accent-offer-text").textContent =
-    `Words on ${pick} read at ${ratio}:1 in ${dark ? "dark" : "light"} mode, under the 4.5:1 they need.`;
-  $("accent-offer-dot").style.setProperty("--swatch", tone);
-  $("accent-offer-label").textContent = `Use ${tone} (${hexRatio(tone, accentInk(dark)).toFixed(1)}:1)`;
-  $("accent-offer-use").dataset.tone = tone;
-  $("accent-offer").classList.remove("hidden");
-});
-$("accent-offer-use").addEventListener("click", (e) => {
-  const tone = e.currentTarget.dataset.tone;
-  if (!tone) return;
-  $("accent-custom").value = tone;
-  setCustomAccent(tone);
-});
-$("accent-custom-clear").addEventListener("click", () => {
-  $("accent-offer").classList.add("hidden");
-  prefs.remove("accent-custom");
-  applyCustomAccent(null);
-  renderAppearance();
-  if (bgArtOn()) startBgArt();
-  renderBrandLogo();
-});
-$("page-bg-custom").addEventListener("input", (e) => {
-  prefs.set("page-bg", e.target.value);
-  applyPageBackground(e.target.value);
-});
-$("page-bg-clear").addEventListener("click", () => {
-  prefs.remove("page-bg");
-  prefs.remove("page-bg-dark");
-  applyPageBackground(null);
-  renderAppearance();
-});
-// Background art style.
-$("bg-art-style").closest("details")?.addEventListener("toggle", renderBgStyleGrid);
-$("avatar-follow").addEventListener("change", (e) => {
-  const value = e.target.checked ? "on" : "off";
-  prefs.set("avatar-follow", value);
-  document.documentElement.dataset.avatarFollow = value;
-});
-$("avatar-buddy").addEventListener("change", (e) => {
-  prefs.set("avatar-buddy", e.target.value);
-  mountBuddyCustom();
-  syncNameMarkBuddy();
-  nameMarkBuddySizeSelect();
-});
-$("avatar-buddy-size").addEventListener("change", (e) => nameMarkBuddySetSize(Number(e.target.value)));
-$("avatar-buddy-motion").addEventListener("change", (e) => {
-  try {
-    prefs.set("avatar-buddy-motion", e.target.value);
-  } catch (err) {
-    // For this visit only.
-  }
-  nameMarkBuddyMotionApply();
-});
-$("avatar-buddy-actions").addEventListener("change", (e) => {
-  try {
-    prefs.set("avatar-buddy-actions", e.target.value);
-  } catch (err) {
-    // This visit only.
-  }
-});
-try {
-  $("avatar-buddy-actions").value = prefs.get("avatar-buddy-actions", null) || "fewer";
-} catch (err) {
-  $("avatar-buddy-actions").value = "fewer";
-}
-$("avatar-buddy-recall").addEventListener("click", () => nameMarkBuddyCallBack());
-$("atlas-style").addEventListener("change", (e) => {
-  prefs.set("atlas-style", e.target.value);
-  atlasRepaint();
-});
-$("assistant-avatar").addEventListener("change", (e) => {
-  prefs.set("assistant-avatar", e.target.value);
-  repaintAssistantAvatars();
-});
-$("atlas-look").addEventListener("change", (e) => {
-  prefs.set("atlas-look", e.target.value);
-  atlasRepaint();
-});
-$("face-look").addEventListener("change", (e) => {
-  prefs.set("face-look", e.target.value);
-  nameMarkRepaintAll();
-  //: An Atlas on Auto takes its look from here (`atlasLook`).
-  atlasRepaint();
-});
-$("dash-mark").addEventListener("change", (e) => {
-  prefs.set("dash-mark", e.target.value);
-  paintDashEmblem();
-});
-$("avatar-motion").addEventListener("change", (e) => {
-  prefs.set("avatar-motion", e.target.value);
-  document.documentElement.dataset.avatarMotion = e.target.value;
-});
-$("progress-motion").addEventListener("change", (e) => {
-  prefs.set("progress-motion", e.target.value);
-  document.documentElement.dataset.progressMotion = e.target.value;
-  document.documentElement.toggleAttribute("data-progress-chosen", e.target.value === "always");
-  renderProgressMotionHint();
-});
-$("pref-show-thinking-words")?.addEventListener("change", (e) => {
-  prefs.set("show-thinking-words", e.target.checked ? "on" : "off");
-});
-$("bg-motion").addEventListener("change", (e) => {
-  prefs.set("bg-motion", e.target.value);
-  // Still vs moving is decided in setup, so the sketch has to be rebuilt.
-  if (bgArtOn()) startBgArt();
-});
-// Custom CSS (advanced).
-$("custom-css-apply").addEventListener("click", () => {
-  const css = $("custom-css").value;
-  prefs.set("custom-css", css);
-  applyCustomCss(css);
-  $("custom-css-status").textContent = "Applied.";
-});
-$("custom-css-clear").addEventListener("click", () => {
-  prefs.remove("custom-css");
-  $("custom-css").value = "";
-  applyCustomCss("");
-  $("custom-css-status").textContent = "Cleared.";
-});
-$("appearance-reset").addEventListener("click", resetAppearance);
-$("theme-reset").addEventListener("click", resetThemeOnly);
-
-$("theme-clear-overrides").addEventListener("click", clearManualOverrides);
 
 // Settings modal (Wave A).
 $("settings-btn").addEventListener("click", () => openSettingsModal());
 $("settings-close").addEventListener("click", closeSettingsModal);
 $("settings-peek").addEventListener("click", () => setSettingsPeek(!settingsPeekIsOn()));
 
-$("harmony-apply").addEventListener("click", applyHarmony);
-$("custom-theme-save").addEventListener("click", () => {
-  saveCurrentLook().catch((error) => toast(error.message, true));
-});
-$("custom-theme-name").addEventListener("keydown", (e) => {
-  if (e.key === "Enter") $("custom-theme-save").click();
-});
 
 wireBackdropClose($("settings-modal"), () => closeSettingsModal()); // backdrop click
 //: **A section chosen with the pointer hands the keys to the pane** (INBOX
@@ -3570,9 +3275,6 @@ document.addEventListener("click", (event) => {
 
 // Filters only re-draw what is already held, they never refetch, so changing
 // one mid-incident cannot lose the records you were looking at.
-$("log-source").addEventListener("change", renderActiveLogView);
-$("log-level").addEventListener("change", renderActiveLogView);
-$("log-requests").addEventListener("change", renderActiveLogView);
 //: **A finished task's log** (Background tasks' history, its Logs button):
 //: Logs, with the filter set to the most particular words the row has, the
 //: package or model in its brackets ("fastembed"), else the
@@ -3584,55 +3286,7 @@ function taskLogButton(item) {
 
 
 let logFilterDebounceTimeout;
-$("log-filter").addEventListener("input", (event) => {
-  if (event.isTrusted) settingsLook.logFilterFromRun = false;
-  clearTimeout(logFilterDebounceTimeout);
-  logFilterDebounceTimeout = setTimeout(renderActiveLogView, 150);
-});
-$("logs-copy").addEventListener("click", copyLogs);
-$("logs-clear").addEventListener("click", clearLogs);
-$("logs-bundle").addEventListener("click", downloadSupportBundle);
-$("logs-email-bundle").addEventListener("click", () => emailSupportReport(""));
 
-$("log-follow").addEventListener("change", (event) => {
-  logFollowPinned = event.target.checked;
-  if (event.target.checked) scrollLogToBottom();
-});
-
-// Scrolling up is how you say "stop moving, I am reading this", so it pauses
-// the follow rather than fighting you for the scroll position. Scrolling back
-// to the bottom resumes it, which is the same gesture every terminal uses.
-// Both containers get the listener, only one is ever visible at a time, but
-// whichever it is has to pause Follow the same way.
-for (const id of ["log-list", "log-terminal"]) {
-  $(id).addEventListener("scroll", () => {
-    if (!$("log-follow").checked) return;
-    logFollowPinned = nearLogBottom();
-    $("log-follow-label").classList.toggle("is-paused", !logFollowPinned);
-  });
-}
-
-for (const button of document.querySelectorAll("#log-view-toggle button")) {
-  button.addEventListener("click", () => {
-    logView = button.dataset.view;
-    prefs.set("logView", logView);
-    for (const b of document.querySelectorAll("#log-view-toggle button")) {
-      b.classList.toggle("active", b === button);
-    }
-    $("log-list").classList.toggle("hidden", logView !== "list");
-    $("log-terminal").classList.toggle("hidden", logView !== "terminal");
-    $("log-terminal-hint").classList.toggle("hidden", logView !== "terminal");
-    renderActiveLogView();
-    scrollLogToBottom();
-  });
-  // The markup hardcodes "List" as the active button; a returning visitor
-  // whose last choice (localStorage) was "terminal" needs that reflected
-  // here too, not just in which container renders.
-  button.classList.toggle("active", button.dataset.view === logView);
-}
-$("log-list").classList.toggle("hidden", logView !== "list");
-$("log-terminal").classList.toggle("hidden", logView !== "terminal");
-$("log-terminal-hint").classList.toggle("hidden", logView !== "terminal");
 
 // --- initial paint (relocated from app.js's own top-level wiring) ----------
 //
@@ -3694,18 +3348,6 @@ async function loadSamplingSettings() {
 }
 
 
-$("sampling-reset")?.addEventListener("click", async () => {
-  try {
-    await apiJson("/models/sampling", {
-      method: "PUT",
-      body: JSON.stringify({ overrides: {} }),
-    });
-    toast("Back to what each model recommends.");
-  } catch {
-    toast("Couldn't reset those settings.", true);
-  }
-  await loadSamplingSettings();
-});
 
 
 // --- settings rows: one shape, and the prose out of the way ------------------
@@ -3864,11 +3506,6 @@ const GUIDE_TITLE = `${GUIDE_NAME} guide`;
 //: the same thing and fits with room to spare; the CSS still ellipsises it,
 //: so a longer translation cannot put the second line back.
 const GUIDE_LINE = "Answers from the app's own help";
-//: The persona hint's "(Atlas)" follows the name too.
-{
-  const hint = document.getElementById("persona-placeholder-hint");
-  if (hint) hint.textContent = `Write {ai_name} where the name should go and it is replaced with ${AI_NAME}. Optional.`;
-}
 
 //: The header's '?' became the status bar's Guide slot with INBOX 207;
 //: app.js binds that one, because the status bar is its markup and it can
@@ -3876,7 +3513,6 @@ const GUIDE_LINE = "Answers from the app's own help";
 $("settings-guide-btn")?.addEventListener("click", () => openHelpChat());
 //: The avatar in the Settings head is the way to the profile from every pane.
 $("settings-profile-btn")?.addEventListener("click", () => showSettingsSection("preferences"));
-$("atlas-open")?.addEventListener("click", () => openHelpChat());
 
 
 // =============================================================================
@@ -4457,7 +4093,6 @@ async function renderLearned() {
   await renderLearnedFromYou();
 }
 
-wireLearnedSection();
 
 //: **Long Settings panes fold their tuned-once groups** (INBOX 424 m:
 //: Appearance was 4,115px with 151 controls). Each group is a

@@ -110,7 +110,7 @@
 //:   its starlight glinting, the tendril tips drifting, dust drifting round
 //:   the rings, a slow head sway and the glow pulsing. All of it is CSS
 //:   transform and opacity on this one SVG, runs only while the mark is on
-//:   screen and motion is on, slows under Reduce motion and stops under
+//:   screen and motion is on, slows under reduced motion and stops under
 //:   Avatar animation Off. The companion's figure (INBOX 540, 554, 564,
 //:   575) adds a rig: jointed arms eased on springs between the poses the
 //:   CSS names (`atlasRig`), a lid that sweeps down for a blink

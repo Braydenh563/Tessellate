@@ -839,7 +839,7 @@ function replyByline(head, facts) {
 //: animation"). A composed reply lands in one piece, so its blocks rise in
 //: turn, `REPLY_REVEAL_STEP` apart, as a streamed one grows: the same on
 //: Chat, Ask, the popup agent and the Guide. Opacity and a short lift only
-//: (DESIGN.md, "An animation of anything"). Reduce motion makes it a quick
+//: (DESIGN.md, "An animation of anything"). Reduced motion makes it a quick
 //: fade with no lift and no stagger; Interface animations off, or Settings,
 //: Appearance, Reveal replies off, and it simply appears.
 const REPLY_REVEAL_STEP = 60;

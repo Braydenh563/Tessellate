@@ -347,7 +347,7 @@ function gcMs(value) {
 }
 
 //: **Less motion, by every switch that means it** (Brief 100): the system's
-//: setting, and the app's own Reduce motion and Performance mode
+//: setting, and the app's own reduced motion and Performance mode
 //: (`data-motion`, settings.js). The canvas read only the first, so the app's
 //: switch left the map easing while the rest of the page stood still.
 function gcStill() {

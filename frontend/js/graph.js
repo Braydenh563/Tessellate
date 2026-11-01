@@ -4122,7 +4122,7 @@ function graphMinimapPaint() {
 //: 802: reset and recentre ease the view). The moves had seven durations of
 //: their own, 150 to 700ms, and only the fit asked about reduced motion, and
 //: only the system's: the zoom buttons, the arrow keys and Locate glided
-//: with the app's own Reduce motion on. Each keeps its length relative to the
+//: with the app's own reduced motion on. Each keeps its length relative to the
 //: others, scaled by `--ui-slow` (0.2s, `gcTokens.hoverMs`), and is 0 when
 //: either setting asks for less motion or the token is off.
 function graphGlideMs(base) {

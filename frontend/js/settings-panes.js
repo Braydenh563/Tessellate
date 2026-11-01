@@ -514,12 +514,6 @@ function watchOverlays() {
 
 let privacyRange = "launch";
 
-for (const button of document.querySelectorAll("#privacy-range [data-range]")) {
-  button.addEventListener("click", () => {
-    privacyRange = button.dataset.range;
-    renderPrivacyRange();
-  });
-}
 
 let prefsCache = null;
 // Set by savePrefs() to the PUT's own promise while it is in flight, and

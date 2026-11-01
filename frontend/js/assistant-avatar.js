@@ -11,7 +11,7 @@
 // replies did not hold 150 sketches. The tessellation mark (brief "logo",
 // 2026-10-11) is a handful of SVG layers (`emblemArt`, phone-shell.js), so
 // each head gets its own: 20 nodes, against Atlas's 115 a head. A head
-// breathes like every emblem and is still under Reduce motion or with
+// breathes like every emblem and is still under reduced motion or with
 // Interface animations off (CSS, `.emblem-art`), and it is left out of the
 // lift while the AI works (`head`). A change of accent redraws the heads
 // where they stand (`renderBrandLogo` calls `repaintAssistantAvatars`).

@@ -169,7 +169,7 @@ function featureCatalog() {
       { name: "Animated background", desc: "Aurora, constellations, blobs or particles behind the app.", reveal: "set-background" },
       { name: "A companion on screen", desc: "A small character that finds a free spot on each page and reacts to what you do.", reveal: "set-companion" },
       { name: "Your look", desc: "Shuffle the face drawn from your name, or choose its parts yourself.", reveal: "settings:preferences" },
-      { name: "Accessibility", desc: "High-contrast mode and reduce-motion.", reveal: "set-contrast" },
+      { name: "Accessibility", desc: "High-contrast mode and the Motion choice.", reveal: "set-contrast" },
       { name: "Custom CSS", desc: "For tinkerers: your own style overrides.", reveal: "set-custom-css" },
       { name: "Zoom the whole app", desc: "Ctrl with plus or minus scales every surface, and Ctrl+0 puts it back.", act: () => nudgeZoom(1) },
       { name: "Tray", desc: "Hold a few cards (notes, documents, boards, pictures) while you change page, then paste or drag them out.", act: () => $("status-tray")?.click() },

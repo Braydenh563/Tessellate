@@ -1094,7 +1094,7 @@ function nameMarkTitle(reading) {
 //: Motion is CSS only, keyed off classes set here: the eyes blink, the face
 //: breathes, and each mood has its own move (the tear falls, the "zz"
 //: drifts, the vein throbs, an excited face bounces). Settings, Appearance >
-//: Avatar animation chooses off, on hover, or always; Reduce motion wins.
+//: Avatar animation chooses off, on hover, or always; reduced motion wins.
 //: Each mark starts its loop at its own point (`--nm-delay`, from the seed),
 //: so a list of faces does not blink in unison.
 //:
@@ -2724,7 +2724,7 @@ function nameMarkLine(seed) {
 
 //: A face drawn to always move (the viewer, the companion, the dashboard):
 //: its wrapper is what the CSS reads, not the Avatar animation setting,
-//: which is for the faces that sit in lists. Off and Reduce motion still win.
+//: which is for the faces that sit in lists. Off and reduced motion still win.
 function nameMarkLive(seed, size) {
   const holder = document.createElement("span");
   holder.className = "nm-live";
@@ -2773,7 +2773,7 @@ const NMB_VISIT_SETTLE_MS = 700;
 //: a large face comes into view or the large view opens. Each act is a
 //: short Web Animation on a part the face already has (its eyes, its
 //: blinks, its arm), so nothing restyles the page. Off with Avatar
-//: animation off, Reduce motion, the companion's Reduce actions set to off,
+//: animation off, reduced motion, the companion's Reduce actions set to off,
 //: or the matching switch in What it does.
 const NM_IDLE_MIN = 48;
 let nameMarkIdleTimer = 0;
@@ -3145,7 +3145,7 @@ function syncProfileLook() {
 //:   CSS acts out on transforms. The app's events cue the rest: typing near
 //:   it makes it watch, a chat turn makes it think, a saved note makes it
 //:   cheer. Nothing runs while the window is hidden or the app is locked,
-//:   and Reduce motion or Avatar animation Off keeps it still: it simply
+//:   and reduced motion or Avatar animation Off keeps it still: it simply
 //:   appears at its perch.
 const NMB_W = 64;
 const NMB_H = 92;
@@ -3492,7 +3492,7 @@ const nmb = {
   anim: null, hopAnim: null, glue: null, heldTimer: 0, placeTimer: 0, movedAt: 0, pinned: false, menu: null, settle: [], checkFrame: 0,
 };
 
-//: The companion's own reading of Reduce motion and Avatar animation Off:
+//: The companion's own reading of reduced motion and Avatar animation Off:
 //: no travel and no behaviours, it simply appears where it is going. The
 //: system's own hint stops the travel too (a walk across the screen is the
 //: one motion here that moves something large), and leaves the small
@@ -5697,7 +5697,7 @@ function nameMarkBuddyAloft() {
 //: place (`nameMarkBuddyPut`); this plays the way from `dx`, `dy` back to
 //: it. Distances are in its own size (`NMB_W` times its scale), so a large
 //: companion takes a longer step before it needs a walk:
-//: Reduce motion is a crossfade; thrown or let go, the flight or the fall;
+//: Reduced motion is a crossfade; thrown or let go, the flight or the fall;
 //: from out of sight or very far, a poof; otherwise the way the geometry
 //: chooses (`nameMarkBuddyRoute`). Every one eases from rest to rest, or
 //: from the speed it already had, so its speed never jumps.
@@ -5728,7 +5728,7 @@ function nameMarkBuddyFlies(buddy) {
 }
 //: **A crossfade, never a blink out and back** (INBOX 443, the owner: "I
 //: also want companion transitions to be better even with reduced motion
-//: on"). Without travel (Reduce motion, Companion movement's Fades) or
+//: on"). Without travel (reduced motion, Companion movement's Fades) or
 //: carried asleep, it used to fade out where it was, be gone for a moment,
 //: then fade in where it went: at the middle there was no companion at all.
 //: Now a still copy stays where it was and fades out while it fades in where
@@ -5890,7 +5890,7 @@ function nameMarkBuddyGo(buddy, dx, dy, spot = {}, poseChanged = false, was = { 
   }
   nameMarkBuddyAct("");
   const char = buddy.querySelector(".nm-buddy-char");
-  //: **Always the way there, never a vanish** (INBOX 426 n). Reduce motion
+  //: **Always the way there, never a vanish** (INBOX 426 n). Reduced motion
   //: alone gets a short crossfade in place of the travel. **And a new view
   //: is no reason to cross the page** (INBOX 1463, the owner: it "comes
   //: tumbling from side screen across the screen ... when I am on a new
@@ -7051,7 +7051,7 @@ function nameMarkBuddySettle(tab, then) {
 //: 430: "walk on from the nearest screen edge, climb up from the bottom
 //: bar, climb down from the top bar to hang, or a soft materialise (a
 //: starlight shimmer resolving into it)"). Each is the host's `translate`
-//: and the character's `opacity`, the compositor's. With Reduce motion it
+//: and the character's `opacity`, the compositor's. With reduced motion it
 //: fades in where it is.
 //:
 //: **It comes in at its own size** (INBOX 577, the owner: "when loading
@@ -7092,7 +7092,7 @@ function nameMarkBuddyEnter(buddy, spot) {
   //: the first 40%, a small give at the bottom and settled at rest, so it
   //: ends where it stands with no jump. A tab switch never plays it: the
   //: flag is spent; hanging and bar perches already come out of their bar.
-  //: Under Avatar animation off and Reduce motion the fade above ran first.
+  //: Under Avatar animation off and reduced motion the fade above ran first.
   const hangs = spot.kind === "hang" || spot.pose === "hang" || spot.kind === "bar" || y + NMB_H > innerHeight - 110;
   if (nmb.unlockDrop && !hangs) {
     nmb.unlockDrop = false;
@@ -8199,7 +8199,7 @@ function nameMarkBuddyDrift() {
 //: **What it notices in the app** (round 5: "more contextual reactions that
 //: tie into real app events", "subtle and never intrusive"). Each is a real
 //: event, each has its own cooldown and none comes within 6s of another, and
-//: none runs under Reduce motion, Avatar animation Off, a hidden page, while
+//: none runs under reduced motion, Avatar animation Off, a hidden page, while
 //: it is carried, asleep or its menu is open:
 //:   read     a long note opened (Show more, or the phone's note page): it
 //:            puts its reading glasses on and follows along for a while;
@@ -8392,7 +8392,7 @@ function nameMarkBuddyCue(cue, from = "") {
 //: (the dots: chat, Ask, Improve writing, a draft); a caption is a look. When
 //: the last piece ends it nods, pleased, or holds up the note it filed; a
 //: failure is a puzzled face and a shrug. Atlas wears the same mood on every
-//: Atlas the app draws. Under Reduce motion, Avatar animation Off or a
+//: Atlas the app draws. Under reduced motion, Avatar animation Off or a
 //: hidden companion it does nothing (the cue and act gates below).
 const NMB_WORK = [
   ["POST", /^\/entries\/[^/]+\/reevaluate$/, "read"],

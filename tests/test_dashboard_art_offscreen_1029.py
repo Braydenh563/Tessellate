@@ -29,9 +29,12 @@ def test_a_draw_while_out_of_view_stops_the_loop():
     assert re.search(r"if \(hiddenSince\) \{\s*p\.noLoop\(\);\s*return;", draw[:200])
 
 
-def test_coming_back_moves_the_clock_on_and_restarts_unless_idle():
+def test_coming_back_moves_the_clock_on_and_restarts_only_while_attended():
+    """INBOX 1501: coming back to a card nobody is looking at draws no frame (a
+    Dashboard click cost the art a 7 to 18 ms frame thirty times a second at 4x);
+    the loop starts again only inside the attention window, and a rest keeps its
+    own count of the time away, so the clock is not moved on twice."""
     sight = SKETCH[SKETCH.index("const sight = new IntersectionObserver(") :]
     sight = sight[: sight.index("sight.observe(holder)")]
-    assert "artClock.epoch += performance.now() - hiddenSince" in sight
-    # The idle rest has its own wake (any input); this one must not undo it.
-    assert "if (!p.rested) p.loop();" in sight
+    assert "if (!p.rested) artClock.epoch += performance.now() - hiddenSince" in sight
+    assert "if (!p.rested) performance.now() > attendUntil ? rest() : p.loop();" in sight

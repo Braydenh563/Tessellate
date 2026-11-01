@@ -267,6 +267,7 @@ FAULTS = {
         '"Couldn\'t read this note\'s properties."': "reading a note's properties failed",
     },
     'settings-controls.js': {
+        '"Couldn\'t reset those settings."': 'resetting settings failed',
         '(status && status.textContent) || "Couldn\'t apply the update."': "the update step failed; the text is the step's own error",
         'status.textContent || "Couldn\'t install that version."': "the install step failed; the text is the step's own error",
         'wentAway ? "The app hasn\'t come back yet. Start it again by hand." : "The app didn\'t restart. Close and reopen it by hand."': "the restart did not happen or the app did not return; Try again restarts it",
@@ -274,9 +275,6 @@ FAULTS = {
     'settings-health.js': {
         '"Couldn\'t save that setting."': 'saving a setting failed',
         '"Couldn\'t reset that setting."': 'resetting a setting failed',
-    },
-    'settings.js': {
-        '"Couldn\'t reset those settings."': 'resetting settings failed',
     },
     'shell-reminders.js': {
         '"Could not load your reminders. Try again."': 'the reminders request failed before clearing the done ones',

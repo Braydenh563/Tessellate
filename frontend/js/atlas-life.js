@@ -59,7 +59,7 @@ function atlasRingLoops(box) {
 //: change is a jump. A slow drift on two clocks that never line up (11.3s,
 //: 17.9s) bends it a little more or less all the time. It draws 30 times
 //: a second while the figure is on screen and motion is on; off screen,
-//: on a hidden tab, with Avatar animation off or under Reduce motion, it
+//: on a hidden tab, with Avatar animation off or under reduced motion, it
 //: rests in its drawn shape and costs nothing. It is the tail's own layer
 //: that repaints (one small svg), nothing is laid out.
 const ATLAS_TAIL_N = 32;
@@ -566,7 +566,7 @@ function atlasPropsFrame(box, live, tick) {
 //: breath. By the clock, not by frames, so a slow machine does not step it
 //: more often than that. It rides the tail's loop, which already knows when the
 //: figure is off screen, on a hidden tab, or still by setting (Avatar
-//: animation Off, Reduce motion, the companion's own Full motion), and puts
+//: animation Off, reduced motion, the companion's own Full motion), and puts
 //: the chest back at rest then.
 //:
 //: On the rise's clock: the swell takes its phase from the box's own
