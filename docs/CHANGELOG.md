@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The timeline's document feed and density, the diagnostics and debug counts, code assist and the documents router read documents through `repo/documents.py` (audit 1031 row 2a, docrepo-1101): `created_in`, `created_days`, `count`, `count_unbinned`, `get`; `Document` and `DocumentLink` join `MOVED` in `tests/test_repo_boundaries.py` (only `routes_spaces`, the cross-resource wipe, still names them); ORM cap 773 to 767.
 - The Library's document rows, its shelved list and its document total read documents through `repo/documents.py` (audit 1031 row 2a, docrepo-1101): `listing`, `shelved`, `count`; `routes_library` no longer imports `Document`; same SQL and order, ORM cap 778 to 773.
 - The graph's document nodes, their saved-link edges and the pin routes read documents through `repo/documents.py` (audit 1031 row 2a, docrepo-1101): `link_pairs`, `unshelved`, `held`, `pinned`, `find`; `routes_graph` no longer imports `Document` or `DocumentLink`; same SQL and order, ORM cap 786 to 778.
 - A note's referenced-by rows, its attached documents, the create-time document links and the extract-notes source read documents through `repo/documents.py` (audit 1031 row 2a, docrepo-1101): `mention_rows`, `attached_to_entry`, `find`; `routes_entries` no longer imports `Document` or `DocumentLink`; same SQL and order, ORM cap 792 to 786.

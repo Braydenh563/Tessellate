@@ -30,7 +30,6 @@ from tessellate.core import activity, cjk, deps, docexport, docmeta, docview, fi
 from tessellate.core.config import user_now
 from tessellate.core.database import (
     LIKE_ESCAPE,
-    Document,
     Entry,
     utcnow,
     like_escape,
@@ -41,6 +40,7 @@ from tessellate.repo import content as content_repo
 from tessellate.repo.content import DOCUMENTS, unshelved
 from tessellate.repo import bookmarks as bookmark_repo
 from tessellate.repo import documents as document_repo
+from tessellate.repo.documents import Document
 from tessellate.entry.mentions import (
     BACKLINK_ROWS_MAX,
     BACKLINK_SOURCES_MAX,

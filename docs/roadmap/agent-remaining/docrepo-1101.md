@@ -12,3 +12,5 @@ Branch agent/docrepo-1101; port 8871.
 - next: routes_library, timeline/diag/debug/code_assist/documents, then MOVED gains Document and DocumentLink (python3 scratchpad/groups.py library|rest)
 - done: 032af9b routes_graph; routes_library in the commit after
 - next: timeline/diag/debug/code_assist/documents, then MOVED gains Document and DocumentLink (python3 scratchpad/groups.py rest)
+- done: 019029a routes_library; last group (timeline, diag, debug, code_assist, documents) plus MOVED in the commit after
+- next: nothing in the brief; routes_spaces.py:92 and :383 name Document and DocumentLink (CROSS_RESOURCE) when spaces move

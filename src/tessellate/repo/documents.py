@@ -12,6 +12,7 @@ name and is passed in, so it is defined where it is read.
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from datetime import datetime
 
 from sqlalchemy import func, or_, select
@@ -238,6 +239,24 @@ def count(session: Session) -> int:
 def count_unbinned(session: Session) -> int:
     """How many documents are not in the bin."""
     return session.scalar(select(func.count(Document.id)).where(Document.deleted_at.is_(None))) or 0
+
+#: How the timeline pages documents: placed by when they were created, id as the tiebreak.
+CREATED = (Document.created_at, Document.id)
+
+
+def created_in(in_range: Callable):  # noqa: ANN201
+    """The statement for live documents placed by creation, for the timeline's
+    paged merge (`in_range` adds its window). An archived document is "kept, out
+    of the way", the one thing a journal of what you were doing should not put
+    back in front of you."""
+    return in_range(select(Document).where(Document.archived_at.is_(None)), Document.created_at)
+
+
+def created_days(session: Session, in_range: Callable) -> list[datetime]:
+    """When each live document in the window was created, for the timeline's density."""
+    return [created for (created,) in session.execute(
+        in_range(select(Document.created_at).where(Document.archived_at.is_(None)), Document.created_at)
+    ).all()]
 
 # --- history ---------------------------------------------------------------------
 
