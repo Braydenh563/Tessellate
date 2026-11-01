@@ -881,12 +881,22 @@ function scrollEditingEntryIntoView(id) {
   if (rect.top < 0) window.scrollBy(0, rect.top - 8);
 }
 
-//: "Summarise this" on any tab (CHAT_PLAN B10): the note being edited;
+//: "Summarise this" on any tab (CHAT_PLAN B10): the open document or board;
+//: else the note being edited;
 //: else the category the Notes tab is filtered to, while it shows; else the
 //: last note opened. The category goes too, as the fallback for a note the
 //: server cannot read (binned or private since).
 function askOpenContext() {
   const out = {};
+  //: A document or board in front of the person is what "this" means, the
+  //: subject the popup agent already names (`agentOpenSubject`, palette.js).
+  const subject = typeof agentOpenSubject === "function" ? agentOpenSubject() : null;
+  if (subject?.kind === "document") out.open_document_id = subject.id;
+  else if (subject?.kind === "map" || subject?.kind === "board") out.open_board_id = subject.id;
+  if (out.open_document_id || out.open_board_id) {
+    if (activeCategory) out.open_category = activeCategory;
+    return out;
+  }
   const notesShowing = !$("tab-notes")?.classList.contains("hidden");
   const note = editingId || (notesShowing && activeCategory ? null : lastOpenedEntryId);
   if (note) out.open_note_id = note;

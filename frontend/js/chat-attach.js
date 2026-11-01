@@ -2039,10 +2039,12 @@ async function chatSendTurn(preset, opts = {}) {
         }
         if (event.ok) toolsActed = true;
         if (event.wrote) bubble.dataset.wrote = "1";
-        //: A page the model read opens in place under its step (INBOX 1300
-        //: C06): the web fold's reader, the same one a composed answer's
-        //: results use. Its search results are the Sources panel's cards.
+        //: A page the model read, or the results of a search it ran, are one
+        //: web fold under their step (INBOX 1300 C06, decision 66): the same
+        //: fold and in-place reader a composed answer's results use, folded
+        //: shut. The Sources panel still lists each page for the citations.
         if (event.ok && event.tool === "read_url") drawAnswerPanels(timeline.holder, [{ web: event.sources, read: true }]);
+        if (event.ok && event.tool === "web_search") drawAnswerPanels(timeline.holder, [{ web: event.sources }]);
         status.textContent = "The model is making changes…";
         chatScrollToEnd();
       },

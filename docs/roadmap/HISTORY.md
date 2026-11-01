@@ -7,6 +7,12 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## OPEN.md rows closed, 2026-11-01 (open-1101)
+
+- **Built by this run:** row 33 (OCR browser keys, d6deab4), row 5's B10 half (Ask sends the open document or board), row 10 (a model's web search draws the web fold in Chat and the popup agent).
+- **Found already built, evidence in OPEN.md:** rows 9, 16, 17, 24, 25, 26, 27, 29, 30, 31, 32, 34, 37, 38. Row 17's switch is Settings, Chat, "What Atlas adds of its own" (`insight_level`), scored and dismissal-raised by `composer_digest.insight_bar`.
+- **Left open on evidence:** row 6 (the Chat tab's bubble has no `why` handler: `grep -n why frontend/js/chat-attach.js` finds none; decision 68's audit is not built) and row 5's B12 flashcards (no flashcards feature).
+
 ## Session record 2026-10-28 and 29 (moved from HANDOVER 2026-10-29)
 
 ### Morning summary 2026-10-28

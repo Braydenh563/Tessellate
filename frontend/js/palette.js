@@ -1326,8 +1326,9 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
         //: same move Chat's timeline makes (`foldEarlierThinking`).
         if (thinkingBox) thinkingBox.open = false;
         addStep(event);
-        //: A page the model read opens in place above the answer (INBOX 1300 C06).
+        //: A page the model read, or the results of its search, open in place above the answer (INBOX 1300 C06).
         if (event.ok && event.tool === "read_url") drawAnswerPanels(stepsHolder, [{ web: event.sources, read: true }], answerBox);
+        if (event.ok && event.tool === "web_search") drawAnswerPanels(stepsHolder, [{ web: event.sources }], answerBox);
         keepAtBottom(cmdPaletteResults);
         // Something visible while a tool runs, so a long silence reads as
         // work rather than as nothing happening.
