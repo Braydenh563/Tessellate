@@ -2,7 +2,7 @@
 
 Generated 2026-11-01 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7546, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8389, test files 1808, tests 15534, plan headings 990, app scripts 28, boot scripts 37, script files 221.
+Counts: frontend functions 7546, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8394, test files 1808, tests 15534, plan headings 990, app scripts 28, boot scripts 37, script files 221.
 
 ## Frontend functions (7546)
 
@@ -12534,7 +12534,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8389)
+## Backend modules (8394)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14679,7 +14679,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `write` | src/tessellate/ai/composer_versus.py:338 |
 | `written_of` | src/tessellate/ai/composer_versus.py:196 |
 
-### src/tessellate/ai/composer_voice.py (24)
+### src/tessellate/ai/composer_voice.py (29)
 
 | Name | File:line |
 |---|---|
@@ -14693,18 +14693,23 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_on_this_day` | src/tessellate/ai/composer_voice.py:354 |
 | `_open_items` | src/tessellate/ai/composer_voice.py:377 |
 | `_patterns` | src/tessellate/ai/composer_voice.py:412 |
+| `_review_filed` | src/tessellate/ai/composer_voice.py:618 |
+| `_review_open` | src/tessellate/ai/composer_voice.py:654 |
+| `_review_span` | src/tessellate/ai/composer_voice.py:608 |
+| `_review_standouts` | src/tessellate/ai/composer_voice.py:647 |
 | `_salt` | src/tessellate/ai/composer_voice.py:308 |
+| `_standouts` | src/tessellate/ai/composer_voice.py:633 |
 | `_surface` | src/tessellate/ai/composer_voice.py:402 |
 | `_this_week` | src/tessellate/ai/composer_voice.py:398 |
 | `_today_opening` | src/tessellate/ai/composer_voice.py:556 |
 | `_views` | src/tessellate/ai/composer_voice.py:292 |
 | `_week_count` | src/tessellate/ai/composer_voice.py:455 |
-| `asks` | src/tessellate/ai/composer_voice.py:645 |
+| `asks` | src/tessellate/ai/composer_voice.py:666 |
 | `lead` | src/tessellate/ai/composer_voice.py:278 |
-| `one_line` | src/tessellate/ai/composer_voice.py:657 |
+| `one_line` | src/tessellate/ai/composer_voice.py:678 |
 | `remarks` | src/tessellate/ai/composer_voice.py:489 |
-| `suggested_searches` | src/tessellate/ai/composer_voice.py:736 |
-| `title_for` | src/tessellate/ai/composer_voice.py:708 |
+| `suggested_searches` | src/tessellate/ai/composer_voice.py:757 |
+| `title_for` | src/tessellate/ai/composer_voice.py:729 |
 | `today_line` | src/tessellate/ai/composer_voice.py:537 |
 | `week_review` | src/tessellate/ai/composer_voice.py:588 |
 
