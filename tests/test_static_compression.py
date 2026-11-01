@@ -109,6 +109,10 @@ PIECE_CAP = 32_000
 #: 2026-11-01, boot diet 2: 301,539 down to 275,355: the note card's menu rows
 #: (entry-menu.js), 87 answer-drawing functions only a reply, popup or Guide
 #: chat reaches (answer-kit.js) and a board's miniature (map-preview.js).
+#: 2026-11-01, boot diet 3: 275,520 (the branch had crept over the cap) down to
+#: 273,700 gzipped (1,953,036 to 1,943,654 raw): the citation peek, 198 lines
+#: only a reply, a composed answer or an attachment card opens
+#: (citation-peek.js, listed ahead of its callers in every bundle that carries them).
 TOTAL_CAP = 275_400
 
 

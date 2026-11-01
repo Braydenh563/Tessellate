@@ -211,7 +211,7 @@ function notebookCard(item, extra = {}) {
     onOpen: (event) => {
       const door = event.currentTarget;
       const keyboard = event.detail === 0;
-      Promise.all(["/css/reply-kit-lazy.css", "/js/attachment-peek.js"].map(lazyScript)).then(() => attachmentPeek({ ...item, name, entry, facts }, door, () => kind.open(item), keyboard));
+      Promise.all(["/css/reply-kit-lazy.css", "/js/citation-peek.js", "/js/attachment-peek.js"].map(lazyScript)).then(() => attachmentPeek({ ...item, name, entry, facts }, door, () => kind.open(item), keyboard));
     },
     ...extra,
   });

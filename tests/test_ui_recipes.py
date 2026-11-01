@@ -6340,8 +6340,8 @@ PANEL_FIXED_HTML = {
 }
 PANEL_FIXED_JS = {
     "app.js": "confirm and prompt dialogs: small, centred, answered at once",
-    "capture-ask.js": "an anchored panel",
     "chat-edit.js": "an inline edit overlay",
+    "citation-peek.js": "an anchored panel",
     "documents-code.js": "help bodies and anchored menus",
     "documents.js": "an anchored overlay",
     "edit-conflict.js": "a blocking choice",

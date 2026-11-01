@@ -97,7 +97,7 @@ def test_a_model_reads_the_verdicts_written_into_its_notes():
 
 
 def test_the_peek_carries_the_two_buttons():
-    js = (ROOT / "frontend/js/capture-ask.js").read_text(encoding="utf-8")
+    js = (ROOT / "frontend/js/citation-peek.js").read_text(encoding="utf-8")
     body = js[js.index("function openCitationPeek("):js.index("function closeCitationPeek(")]
     assert "citationVerdictRow(source, content)" in body
     #: The row itself is built in the lazy ask-compose.js (the boot ratchet).

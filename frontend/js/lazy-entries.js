@@ -27,7 +27,7 @@ Object.assign(LAZY_MODULES, {
   //: The dashboard's Loose ends, While you were away and day digest widgets.
   dashLazy: ["/css/dash-orphans-lazy.css", "/css/dash-night-lazy.css", "/js/dash-orphans.js", "/js/dash-night.js", "/js/dash-day.js"],
   //: What the app draws into a reply beside its words (reply-kit.js's header).
-  replyKit: ["/css/reply-kit-lazy.css", "/js/reply-kit.js"],
+  replyKit: ["/css/reply-kit-lazy.css", "/js/citation-peek.js", "/js/reply-kit.js"],
   //: The phone bar's More sheet (phone-more.js's header; INBOX 1314).
   phoneMore: ["/js/phone-more.js"],
   //: The generative background's styles and runtime (bg-art.js, 20 KB gzipped):
@@ -47,7 +47,7 @@ Object.assign(LAZY_MODULES, {
   //: The model badge's spec panel, editing an answer, a note's Explain row, the extract preview's Save (gesture-kit.js's header).
   gestureKit: ["/js/gesture-kit.js"],
   //: One chat turn (chat-turn.js): `sendChatMessage` awaits it; the chat box's focus warms it.
-  chatTurn: ["/js/answer-kit.js", "/js/chat-turn.js"],
+  chatTurn: ["/js/citation-peek.js", "/js/answer-kit.js", "/js/chat-turn.js"],
   //: A note card's ... menu rows (entry-menu.js): the first press awaits it, a pointer over a card warms it.
   entryMenu: ["/js/entry-menu.js"],
   //: A board's miniature (map-preview.js): `mapPreview` returns the empty svg and draws into it once this is in.
