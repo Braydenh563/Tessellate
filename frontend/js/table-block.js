@@ -2,7 +2,7 @@
 // Copy, Markdown, CSV, Full view, the view toggle and the column grips), moved
 // out of markdown.js on 2026-11-01 for the boot gzip budget
 // (tests/test_static_compression.py, audit row 21). The markdown
-// renderer (navigation.js) hands the table back at once and swaps this block in when the
+// renderer (navigation.js) places the block with its table at once and this adds the bar when the
 // bundle `tableBlock` (lazy-entries.js) has arrived.
 
 //: **A table the model wrote is something you can take away** (INBOX 172:
@@ -14,9 +14,11 @@
 //: copies the table as written, CSV saves it through the exports route, and
 //: Full view lifts the block into a viewport-sized panel (Escape or the same
 //: button puts it back) so a wide table reads without the bubble's scroll.
-function buildTableBlock(scroller, headers, bodyRows, rawTable) {
-  const block = document.createElement("div");
-  block.className = "code-block md-table-block";
+//: `shell` is the block the renderer already placed (navigation.js), so the bar is added to the
+//: element the page, its source line and its readers already hold; none is replaced.
+function buildTableBlock(scroller, headers, bodyRows, rawTable, shell = null) {
+  const block = shell || document.createElement("div");
+  block.classList.add("code-block", "md-table-block");
   const bar = document.createElement("div");
   bar.className = "code-bar";
   const label = document.createElement("span");
@@ -208,7 +210,8 @@ function buildTableBlock(scroller, headers, bodyRows, rawTable) {
   //: a class: a table in an answer is at its natural width and scrolls
   //: sideways unless the reader last chose to wrap.
   const bubbleView = () => (wrap.remembered() ? "fit" : "actual");
-  setTableView(bubbleView());
+  //: A view the renderer's caller already chose (a digest's comparison is fitted) stands.
+  setTableView(block.dataset.tableView || bubbleView());
   //: **The panel leaves the bubble to be full screen** (reported on the first
   //: cut, with a screenshot: "the table full view is behind a lot of stuff").
   //: A `position: fixed` element is laid out against the nearest ancestor

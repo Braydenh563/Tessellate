@@ -194,6 +194,8 @@ async function docWordPicture(img) {
 async function docWordBlob(D, title, text) {
   const marked = docWordMarkSuggestions(text);
   const holder = document.createElement("div");
+  //: A table's bar is added when table-block.js is in; waited for here so the strip below takes it out.
+  await ensureModule("tableBlock");
   renderMarkdown(holder, marked);
   //: The renderer's own chrome is not the document: a code block's and a
   //: table's bar (its label, Copy, Save) would be written as text.

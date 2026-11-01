@@ -881,7 +881,7 @@ function scrollEditingEntryIntoView(id) {
   if (rect.top < 0) window.scrollBy(0, rect.top - 8);
 }
 
-function flashEntry(id) {
+async function flashEntry(id) {
   lastOpenedEntryId = id;
   switchTab("notes");
   // The Notes tab is split into sub-tabs, and the note list lives in "browse".
@@ -915,8 +915,13 @@ function flashEntry(id) {
   expandedRows.add(id);
   renderSidebar();
   noteEngine.jumpId = id; // paint through the target: later rows only exist after a scroll
-  renderEntries();
-  noteEngine.jumpId = null;
+  //: Awaited: before entry-card.js is in the draw waits for it, and the target must still be
+  //: the one painted through when it comes (a deep link `#/notes/12` on a fresh load).
+  try {
+    if ((await renderEntries()) === false) return;
+  } finally {
+    noteEngine.jumpId = null;
+  }
   requestAnimationFrame(() => {
     const card = document.querySelector(`#entry-list li[data-id="${id}"]`);
     if (!card) {

@@ -554,21 +554,18 @@ function renderMarkdown(container, text, depth = 0) {
       const scroller = document.createElement("div");
       scroller.className = "md-table-wrap";
       scroller.appendChild(table);
-      //: The table comes back inside a plain host at once, so every caller places it and it is
-      //: readable; the bar with Copy, Markdown, CSV and Full view (`buildTableBlock`, table-block.js:
-      //: lazy, for the boot gzip ratchet) replaces the host when that file is in. A host whose
-      //: render was thrown away before then (a streaming answer redrawn) is left alone.
-      if (window.buildTableBlock) {
-        container.appendChild(window.buildTableBlock(scroller, headers, bodyRows, rawTable));
-      } else {
-        const host = document.createElement("div");
-        host.className = "md-table-host";
-        host.appendChild(scroller);
-        ensureModule("tableBlock").then((ok) => {
-          if (ok && host.parentNode) host.replaceWith(buildTableBlock(scroller, headers, bodyRows, rawTable));
-        });
-        container.appendChild(host);
-      }
+      //: The block is the table's own element from the start (so its source line, a digest's
+      //: class and every reader of `.md-table-block` find it at once); its bar with Copy,
+      //: Markdown, CSV and Full view (`buildTableBlock`, table-block.js: lazy, for the boot gzip
+      //: ratchet) is filled into it when that file is in, at once if it already is.
+      const shell = document.createElement("div");
+      shell.className = "code-block md-table-block";
+      shell.appendChild(scroller);
+      container.appendChild(shell);
+      const barReady = window.buildTableBlock ? null : ensureModule("tableBlock");
+      const addBar = () => buildTableBlock(scroller, headers, bodyRows, rawTable, shell);
+      if (barReady) barReady.then((ok) => ok && addBar());
+      else addBar();
       continue;
     }
 
