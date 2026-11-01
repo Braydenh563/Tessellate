@@ -22,6 +22,10 @@ ROOT = Path(__file__).resolve().parents[1] / "src" / "tessellate"
 CAPS = {
     "ai/composer.py": 962,
     "api/routes_chat.py": 2474,
+    #: The table moved out whole to help_topics_core.py (audit AI23): 3,740 lines before.
+    "ai/help_chat.py": 1370,
+    #: The rules and the turn plan moved out whole to agent_policy.py and agent_turn.py (audit AI23).
+    "ai/agent.py": 1316,
 }
 #: How far under its cap a file may fall before the cap must come down.
 SLACK = 50

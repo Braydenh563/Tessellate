@@ -5,6 +5,8 @@
 Object.assign(LAZY_MODULES, {
   //: A space switch, in place (space-swap.js).
   spaceSwap: ["/js/space-swap.js"],
+  //: What the companion says about the notebook now and then (companion-remark.js's header).
+  companionRemark: ["/js/companion-remark.js"],
   //: The capture bar's card (capture-card.js; notes-list.js opens it on the first focus).
   captureCard: ["/css/capture-card-lazy.css", "/js/capture-card.js"],
   chatPrivate: ["/css/chat-private-lazy.css", "/js/chat-private.js"],
@@ -70,6 +72,7 @@ Object.assign(LAZY_MODULES, {
 setTimeout(() => ["loadFailed", "modelMenu"].forEach(ensureModule), 3000);
 installStandIns({
   spaceSwap: ["swapSpace", "spaceEnterFor"],
+  companionRemark: ["nameMarkBuddyRemark"],
   chatPrivate: ["chatPrivateStart", "chatPrivateToggle", "chatPrivateLeave"],
   settingsPanes: ["renderTasks", "renderTaskHistory", "renderHealthBlock", "renderSamplingRows", "renderPersonas", "savePersonaList"],
   noteActions: ["openImprove", "closeImprove", "runImprove", "applyImprove", "reevaluateEntry", "attachFileTo", "attachFromLibrary"],

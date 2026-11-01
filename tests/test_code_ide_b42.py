@@ -7,6 +7,8 @@ run in node against the vendored bundle; the wiring is read from the source.
 
 from __future__ import annotations
 
+from tests._help_text import help_chat_text
+
 import json
 import re
 import shutil
@@ -108,7 +110,7 @@ def test_the_palette_rows_have_a_shortcut_or_say_none() -> None:
 
 
 def test_help_names_the_new_commands() -> None:
-    guide = (ROOT / "src" / "tessellate" / "ai" / "help_chat.py").read_text(encoding="utf-8")
+    guide = help_chat_text()
     for words in ("minimap", "Compare with a saved version", "Ctrl+Shift+M"):
         assert words in guide, words
 

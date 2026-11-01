@@ -7,6 +7,7 @@ held item each pan hundreds of pixels a second; the item stays under the
 pointer). These pin the wiring that measurement depends on.
 """
 
+from tests._help_text import help_chat_text
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -47,5 +48,5 @@ def test_the_pointer_is_replayed_after_each_step():
 
 
 def test_help_says_so():
-    help_text = (ROOT / "src" / "tessellate" / "ai" / "help_chat.py").read_text(encoding="utf-8")
+    help_text = help_chat_text()
     assert "a drag to an edge pans" in help_text

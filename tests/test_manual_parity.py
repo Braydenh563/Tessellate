@@ -15,6 +15,8 @@ panel (notes-list.js, `routes_categories.py`).
 
 from __future__ import annotations
 
+from tests._help_text import help_chat_text
+
 import json
 import shutil
 import subprocess
@@ -231,9 +233,9 @@ def test_the_open_packages_button_and_the_transcript_and_strip_controls_are_in_t
     """Standing order 13: the Open Packages button on package notices (fixes1),
     the transcript's copy controls (C40) and the strip's dates switch (C36) are
     named in the Guide and in Settings or the Timeline's own help."""
-    from tessellate.ai import help_chat, help_topics_more
+    from tessellate.ai import help_topics_more
 
-    text = Path(help_chat.__file__).read_text(encoding="utf-8") + Path(help_topics_more.__file__).read_text(encoding="utf-8")
+    text = help_chat_text() + Path(help_topics_more.__file__).read_text(encoding="utf-8")
     html = (FRONTEND / "index.html").read_text(encoding="utf-8")
     assert "Open Packages button" in text and "Open Packages button" in html
     assert "Shift-click picks a run of" in text

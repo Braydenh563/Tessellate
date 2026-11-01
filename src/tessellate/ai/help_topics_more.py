@@ -62,6 +62,26 @@ MORE_TOPICS: list[dict] = [
         "badge": {"label": "Corner companion", "section": "appearance", "target": "avatar-buddy-row"},
     },
     {
+        "id": "companion-remarks",
+        "keywords": (
+            "companion says something", "companion speech bubble", "companion talks",
+            "what the companion says", "companion remarks", "companion messages",
+            "companion popup messages", "companion mentions my notes",
+            "companion reminder", "stop the companion talking",
+        ),
+        "body": (
+            "Now and then, a few times a day at most, the corner companion says "
+            "something from your notes in its speech bubble: a reminder that is due, "
+            "a note from this day in an earlier year, something you left open, or "
+            "a quiet day. It is written from your notes with no model, never from a "
+            "private note, and never the same line twice. It stays quiet with "
+            "Motion off, while you carry it, or while it sleeps. To stop it, turn off "
+            "Say something from your notes in Settings, Appearance, Atlas and faces, "
+            "Corner companion, What it does on its own."
+        ),
+        "badge": {"label": "Corner companion", "section": "appearance", "target": "avatar-buddy-row"},
+    },
+    {
         "id": "companion-travel",
         "keywords": (
             "companion portal", "companion puff of smoke", "companion vanishes",
@@ -2513,6 +2533,7 @@ TOPIC_META: dict[str, dict] = {
     "image-viewer": {"title": "The picture and PDF viewer", "path": "Library, open a picture or PDF"},
     "companion-throw": {"title": "Throwing the companion", "path": "Settings, Appearance, Atlas and faces, Corner companion"},
     "companion-travel": {"title": "How the companion moves", "path": "Settings, Appearance, Atlas and faces, Corner companion"},
+    "companion-remarks": {"title": "What the companion says", "path": "Settings, Appearance, Atlas and faces, Corner companion"},
     "desktop-companion": {"title": "The companion on the desktop", "path": "Settings, About, Show the companion on the desktop"},
     "what-is-atlas": {"title": "What Atlas does", "path": "The Chat tab, or Ctrl+Shift+A over any tab"},
     "atlas-look": {"title": "How Atlas looks", "path": "Settings, Appearance, Atlas and faces, Atlas style and Atlas look"},
@@ -2693,7 +2714,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
     )),
     ("Look and feel", (
         "appearance", "appearance-panel", "themes", "simple-mode", "accessibility", "movable-panels", "performance", "background-art",
-        "statusbar", "companion", "companion-travel", "companion-throw", "atlas-look", "faces",
+        "statusbar", "companion", "companion-travel", "companion-remarks", "companion-throw", "atlas-look", "faces",
     )),
     ("Models and the AI", (
         "models", "what-is-atlas", "model-downloads", "model-bench", "tools-setting", "autonomous", "websearch",

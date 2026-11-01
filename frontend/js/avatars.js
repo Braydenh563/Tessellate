@@ -2742,7 +2742,7 @@ function nameMarkReact(svg) {
 }
 
 //: A speech bubble beside a face, for a moment.
-function nameMarkSay(anchor, text) {
+function nameMarkSay(anchor, text, ms = 2600) {
   if (!anchor) return;
   anchor.querySelector(".nm-say")?.remove();
   const bubble = document.createElement("span");
@@ -2755,7 +2755,7 @@ function nameMarkSay(anchor, text) {
   const box = bubble.getBoundingClientRect();
   const shift = Math.max(0, box.right - (innerWidth - 8)) || -Math.max(0, 8 - box.left);
   if (shift) bubble.style.left = `calc(50% - ${Math.ceil(shift)}px)`;
-  setTimeout(() => bubble.remove(), 2600);
+  setTimeout(() => bubble.remove(), ms);
 }
 
 //: How long after it arrives in the view a pointer it landed under is not
@@ -3350,6 +3350,7 @@ const NMB_ACTIVITIES = [
   ["wander", "Wander off now and then, and come back", ["wander"]],
   ["rub", "Lean into a rub (the pointer back and forth over it)", ["rub"]],
   ["flip", "Turn upside down when shaken while carried", ["flip"]],
+  ["remark", "Say something from your notes now and then", ["remark"]],
 ];
 function nameMarkBuddyActivitiesOff() {
   try {
@@ -8106,6 +8107,8 @@ function nameMarkBuddyTick() {
   //: an hour at most, `NMB_REACTIONS.yawn`). The yawn is this tick's act and
   //: its face, so it takes the place of the drift and the pick, not the mood.
   if (night && nameMarkBuddyReact("yawn")) return;
+  //: Now and then, about one tick in twenty, it says something from your notes.
+  if (Math.random() < 0.05 && !nameMarkBuddyActOff("remark") && nameMarkBuddyReact("remark")) return;
   if (Math.random() < 0.35) nameMarkBuddyDrift();
   //: **Its arms do not hang the whole time it stays** (the owner,
   //: 2026-10-10: "atlas's arm movements on both versions ... are basically
@@ -8271,6 +8274,8 @@ const NMB_REACTIONS = {
   yawn: { cool: 30 * 60 * 1000, ms: 2200 },
   private: { cool: 45 * 1000, ms: 2400 },
   toast: { cool: 8000, ms: 2000 },
+  //: Something from the notebook, in words (companion-remark.js), a few times a day at most.
+  remark: { cool: 3 * 60 * 60 * 1000, ms: 0 },
 };
 const NMB_REACT_GAP = 6000;
 function nameMarkBuddyReact(kind, target = null) {
@@ -8315,6 +8320,8 @@ function nameMarkBuddyReact(kind, target = null) {
     nameMarkBuddyAct("yawn");
   } else if (kind === "private") {
     nameMarkBuddyAct("hide", spec.ms);
+  } else if (kind === "remark") {
+    nameMarkBuddyRemark();
   }
   return true;
 }

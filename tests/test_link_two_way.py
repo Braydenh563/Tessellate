@@ -10,6 +10,8 @@ draws no arrow on it; the link menu's Two-way switch sets it.
 
 from __future__ import annotations
 
+from tests._help_text import help_chat_text
+
 import sqlite3
 from pathlib import Path
 
@@ -106,5 +108,5 @@ def test_the_canvas_draws_no_arrow_on_a_two_way_link_and_the_menu_switches_it():
     assert 'else if (arrows && edge.kind === "link" && !edge.two_way) {' in canvas
     assert 'JSON.stringify({ two_way: next })' in graph
     assert 'direction.setAttribute("aria-pressed"' in graph
-    help_text = (ROOT / "src" / "tessellate" / "ai" / "help_chat.py").read_text(encoding="utf-8")
+    help_text = help_chat_text()
     assert "Two-way" in help_text

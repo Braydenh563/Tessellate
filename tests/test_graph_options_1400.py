@@ -10,6 +10,8 @@ the structure that makes it possible is held.
 
 from __future__ import annotations
 
+from tests._help_text import help_chat_text
+
 import re
 from pathlib import Path
 
@@ -82,7 +84,7 @@ def test_the_guide_says_every_section_has_a_question_mark() -> None:
     from tessellate.ai import help_chat
 
     topics = {t["id"]: t for t in help_chat.HELP_TOPICS} if hasattr(help_chat, "HELP_TOPICS") else {}
-    body = topics.get("graph-options-help", {}).get("body", "") if topics else (ROOT / "src/tessellate/ai/help_chat.py").read_text(encoding="utf-8")
+    body = topics.get("graph-options-help", {}).get("body", "") if topics else help_chat_text()
     assert "beside its name" in str(body)
 
 

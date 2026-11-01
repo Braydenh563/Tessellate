@@ -8,6 +8,8 @@ same `/branches` route Branches from my notes uses.
 
 from __future__ import annotations
 
+from tests._help_text import help_chat_text
+
 NOTE = (
     "# Tomato pruning\n\nIntro text.\n\n## Side shoots\n\npinch them\n\n"
     "## Watering\n\nmorning\n\n### Drip lines\n\nsmall\n\n```\n# not a heading\n```\n"
@@ -136,5 +138,5 @@ def test_the_menu_the_palette_and_the_guide_name_it():
     assert 'id: "expand-from-note"' in commands and "notetopic: () => wbMapIsNoteTopic(" in commands
     board = (js / "whiteboard.js").read_text(encoding="utf-8")
     assert 'sub("Expand from my notes…"' in board and "if (wbMapIsNoteTopic(mapNode))" in board
-    guide = (root / "src" / "tessellate" / "ai" / "help_chat.py").read_text(encoding="utf-8")
+    guide = help_chat_text()
     assert "Expand from my notes…" in guide

@@ -1074,6 +1074,9 @@ function openNotePicker() {
     $("note-picker-search").focus();
     return;
   }
+  //: The floating popover hides the messages' action rows behind it (a class
+  //: the sheet's CSS reads; not a `:has()` on the tab, AI9).
+  $("tab-chat").classList.add("note-picker-open");
   $("note-picker-search").focus();
 }
 
@@ -1083,6 +1086,7 @@ function closeNotePicker() {
     return;
   }
   $("note-picker-panel").classList.add("hidden");
+  $("tab-chat").classList.remove("note-picker-open");
   $("attach-note").setAttribute("aria-expanded", "false");
 }
 

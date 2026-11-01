@@ -265,9 +265,10 @@ def test_the_chat_is_where_a_proposal_is_answered():
     """A lint: nothing here can see a rendered page. The card is only useful
     if the tool event carries the id, Settings alone was the write-only
     version of this feature with an extra step."""
-    from pathlib import Path
 
-    agent_src = Path("src/tessellate/ai/agent.py").read_text(encoding="utf-8")
+    from tests._help_text import agent_text
+
+    agent_src = agent_text()
     assert 'event["proposal"] = result["proposal"]' in agent_src
 
     app_js = app_js_text()

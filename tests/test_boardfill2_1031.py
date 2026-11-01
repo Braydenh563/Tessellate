@@ -7,6 +7,8 @@ messages; the colour maths is run in node here."""
 
 from __future__ import annotations
 
+from tests._help_text import help_chat_text
+
 import json
 import re
 import shutil
@@ -189,8 +191,7 @@ def test_a_text_box_paints_the_fill_at_its_opacity_and_a_zero_is_kept():
 
 
 def test_help_names_the_opacity_for_diagrams():
-    topics = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8") + (
-        ROOT / "src" / "tessellate" / "ai" / "help_chat.py").read_text(encoding="utf-8")
+    topics = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8") + help_chat_text()
     low = topics.lower()
     assert "diagram" in low and "fill opacity" in low
     assert "sticky's or text box's fill" in low

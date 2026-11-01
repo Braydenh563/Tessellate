@@ -86,3 +86,13 @@ Severity: high, med, low. Size: S under an hour, M a session, L a plan row.
 - Destructive tool confirmation and parking in the chat (the fake cannot be made to call `delete_note`).
 - Regenerate, model unload, embedding model switch, packages (extras) pane, support bundle download, autonomous trigger, and the Logs button's inline behaviour (HR21).
 - Real-model timings: every number here is against the fake.
+
+## Status after ai1518-1101
+
+Detail and numbers in `ai1518-1101.md`.
+
+| Row | State |
+| --- | --- |
+| HR18 | fixed, re-checked as built: Models pane at 390, 1x, 2 long tasks and 149 ms (was 9 of 53 to 95 ms) |
+| HR14, HR15, HR16, HR22 | fixed, re-checked as built (aifix-1031) |
+| HR23 | fixed where it was a bug: Logs at 390 had a row grid that left the message 71 px wide (52 records stood 62,573 px); now 5,090 px, opening at 4x 1,004 to 1,742 ms layout down to 431 to 505 ms. Memory's off-screen poof is not reproduced; Memory and Tools open at the shell's own cost |

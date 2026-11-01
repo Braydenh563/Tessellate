@@ -86,53 +86,6 @@ with its owner named in the entry.
      a run for Python first.
      Owner: DOCUMENTS_PLAN 23 decisions D1 to D9, Briefs 69 to 71; the vendoring candidates are Brief 75.
 
-741. **The owner, 2026-10-06, verbatim**: "will the composer get better at writing,
-     sentence structure, more variations and natural language, betetr to understand,
-     more biological. more social, more engaging, better at responding and answering
-     questions correctly". Not covered by the three composer agents running
-     (model context, composer acts, composer everywhere). Recommendation, taken: a
-     fourth Opus track, "composer voice", once one finishes: question understanding
-     (indirect and casual phrasings, synonyms, a clarifying question when
-     ambiguous), more question kinds answered (why, how, how many, comparisons,
-     yes or no as "your notes say"), a first-line-answers check, a larger tested
-     phrasebook of joins and openers, turn-aware follow-ons, length fit to the
-     question, the app voice; facts stay quoted. Measured on the 725 eval grown
-     to about 100 questions with variety and readability scores.
-     Then, verbatim: "rn the ask chat messages just say, ur note starting with this
-     says this. also ur not starting with this says this, furthermore, ur note
-     starting with this says this." Cause: `ai/composer.py` PHRASES (`says`,
-     `also_says`, `says_a_end`): every sentence is introduced by its note's
-     opening words plus "says:". First fix in the voice track: name a note by
-     its title or topic once, then speak the content directly ("You planned
-     Lisbon for May; the hotel is booked") with the citation as a marker.
-     Owner: composer-voice-1006.md (merged: no "your note starting with ... says", casual phrasings, typos, 847 slang entries, voices) and CHAT_PLAN Phase 6, Brief 39 (the realiser). Open: speak the content directly with the citation as a marker (measured today: Ask now answers "Also, the hobbies I want to try: ..." with no "says"); the remaining eval numbers are in that file.
-
-743. **The owner, 2026-10-07, verbatim**: "and I want more mouse interaction with the
-     companion like rubbing its head. flipping it upside down?? doing things or
-     event triggers that get it to change emotion ro behavior. \"ro\" is an or
-     misspell. also the behaviour of the companion is not often reflected in the
-     enlarged view. better popup messages and more varied. more life and natural
-     biological behaviour and transitions and actions and movement etc."
-     With 742 (moods rarely change), one next-PR track: pointer gestures (rub
-     the head by moving back and forth over it, drag and flip upside down, hold,
-     poke, toss), app events as mood triggers, the enlarged view mirroring the
-     corner companion's live state, the composer's companion remarks
-     (`composer_voice.py`, built, not yet on screen) as its bubbles, and
-     springy, interruptible transitions between poses. "ro" for "or" is in the
-     typo table (question_noise.py).
-     Then, verbatim, with Atlas in the onboarding welcome card and an oval
-     frame: "atlas goes out of the border". The figure's tail, swirl and orbit
-     spill past the oval's ring: either clip the figure to the frame
-     (`overflow: clip` with the frame's radius, as the mini avatar now is) or
-     scale it to fit inside with a margin; same for every framed Atlas.
-     Then, verbatim: "the show companion notification button was poorly shown
-     but I didnt screenshot it in time". Not seen yet: reproduce the notice
-     that offers to show the companion (first run, after hiding it, or a
-     notification with a Show companion action), measure its button against
-     the toast-with-action recipe in DESIGN.md, and fix what is off.
-     Tail done 2026-10-18 (uxfix5-1018): welcome Atlas spill 4 px to 0 to 1 px by holder padding; no oval frame exists on that card; every other framed Atlas (persona, profile, atlas-mark) already clips; the Show companion notice meets the toast recipe (actions row, accent text 600, close alone in its corner at 1440 and 390). Gestures remain.
-     Owner: Brief 34 (companion), second part, and OPEN.md Atlas rows (INBOX 752): gestures, the enlarged view mirroring the corner, the framed Atlas clipped to its oval, the Show companion notice measured against the toast recipe.
-
 810. **The owner, 2026-10-11, verbatim** (screenshots: the personas' quiet
      Edit and Delete text buttons; Keyboard shortcuts with a bordered tinted
      "Change" on every row; What it learned, three "Claim" cards with a large
