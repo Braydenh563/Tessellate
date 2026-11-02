@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7558, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8465, test files 1840, tests 15723, plan headings 990, app scripts 28, boot scripts 37, script files 230.
+Counts: frontend functions 7558, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8465, test files 1840, tests 15727, plan headings 990, app scripts 28, boot scripts 37, script files 230.
 
 ## Frontend functions (7558)
 
@@ -23230,7 +23230,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15723)
+## Tests (15727)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24126,7 +24126,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_lazy_css.py | 3 |
 | tests/test_lazy_heavy_imports.py | 4 |
 | tests/test_lazy_listener_refs.py | 1 |
-| tests/test_lazy_order_1530.py | 4 |
+| tests/test_lazy_order_1530.py | 8 |
 | tests/test_lazy_retry.py | 2 |
 | tests/test_lazy_skeletons_598.py | 7 |
 | tests/test_learned_accuracy.py | 5 |
