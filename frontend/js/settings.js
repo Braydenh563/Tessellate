@@ -1356,23 +1356,24 @@ function activeAccent() {
 // about the accent picker, so a curated palette changed every surface in the
 // app except the two canvases, leaving them wearing the previous theme. The
 // computed variable is the one source of truth once palettes can set it too.
-//: Kept until the root's data-* or inline style changes (no rule keys --accent on a class; INBOX 1534).
+//: Kept while what sets `--accent` stands: the root's palette, mode, theme and
+//: accent, its inline accent, the custom CSS and the system scheme. Read fresh
+//: it settled the style a press or a click had just dirtied (18 to 60ms at 4x,
+//: INBOX 1534), and a class, the motion or the density says nothing about the
+//: colour. Keyed on those values, not watched: a change made in this same task
+//: is seen at once.
 function currentAccentHex() {
-  const forget = () => (currentAccentHex.kept = "");
   if (!currentAccentHex.watched) {
     currentAccentHex.watched = true;
-    const moved = (records) => records.some((r) => r.attributeName !== "class") && forget();
-    currentAccentHex.watch = new MutationObserver(moved);
-    currentAccentHex.watch.observe(document.documentElement, { attributes: true });
-    matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", forget);
+    matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", () => (currentAccentHex.kept = null));
   }
-  //: A change made in this same task (`applyAccent` sets the colour, then redraws
-  //: the emblem) has not reached the observer's callback yet: take its records now.
-  if (currentAccentHex.kept && currentAccentHex.watch.takeRecords().some((r) => r.attributeName !== "class")) forget();
-  const computed = currentAccentHex.kept || getComputedStyle(document.documentElement)
-    .getPropertyValue("--accent")
-    .trim();
-  currentAccentHex.kept = computed;
+  const root = document.documentElement;
+  const key = ["data-palette", "data-mode", "data-theme", "data-accent"].map((n) => root.getAttribute(n)).join("|")
+    + root.style.getPropertyValue("--accent") + prefs.get("custom-css", "");
+  if (currentAccentHex.kept?.key !== key) {
+    currentAccentHex.kept = { key, value: getComputedStyle(root).getPropertyValue("--accent").trim() };
+  }
+  const computed = currentAccentHex.kept.value;
   if (computed) return computed;
   return (
     prefs.get("accent-custom", null) ||
@@ -2585,12 +2586,14 @@ function renderThemePresets() {
 //: The accent the theme wears with no accent chosen: read with the choice
 //: (the data-accent rule, an inline custom colour) lifted for one
 //: synchronous style read, so nothing paints in between.
-//: Kept for as long as nothing on the root but the accent itself, and the
-//: custom CSS, has changed: lifting the choice and putting it back is two
+//: Kept for as long as the palette, mode, theme and custom CSS stand: lifting the choice and putting it back is two
 //: whole-page style recalculations, once per Appearance open (the lag log).
 function themeDefaultAccent() {
   const root = document.documentElement;
-  const key = [...root.attributes].filter((a) => a.name !== "data-accent").map((a) => `${a.name}=${a.value.replace(/--accent:[^;]*;?/g, "")}`).join("|") + prefs.get("custom-css", "");
+  //: Only what a rule sets `--accent` from: the palette, the mode and the theme. Any other
+  //: attribute (`data-motion`, density, font) made a new key, and so a lift, a read and a
+  //: restore: 31ms of a motion choice at 4x (INBOX 1534).
+  const key = ["data-palette", "data-mode", "data-theme"].map((n) => root.getAttribute(n)).join("|") + prefs.get("custom-css", "");
   if (themeDefaultAccent.kept?.key === key) return themeDefaultAccent.kept.value;
   const chosen = root.dataset.accent;
   const inline = root.style.getPropertyValue("--accent");

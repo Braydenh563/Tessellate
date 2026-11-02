@@ -30,6 +30,9 @@ def test_the_chat_press_focuses_the_composer_after_the_first_paint():
 
 
 def test_the_accent_colour_is_kept_until_the_root_changes():
+    """Intent unchanged (kept, not read on every draw); the means moved from a watcher of
+    the root's attributes to a key of the values that set the colour (INBOX 1534)."""
     body = _body("currentAccentHex", frontend_text("settings.js"))
-    assert "currentAccentHex.kept" in body and "MutationObserver" in body
-    assert re.search(r"currentAccentHex\.kept \|\| getComputedStyle", body)
+    assert "currentAccentHex.kept" in body and "MutationObserver" not in body
+    assert re.search(r"kept\?\.key !== key", body)
+    assert '"data-palette", "data-mode", "data-theme", "data-accent"' in body

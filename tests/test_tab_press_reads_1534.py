@@ -17,11 +17,28 @@ def _body(text: str, head: str) -> str:
     return text[start:text.index("\n}\n", start)]
 
 
-def test_the_kept_accent_ignores_class_flips_and_sees_this_tasks_writes():
+def test_the_kept_accent_is_keyed_on_what_sets_it_not_on_every_attribute():
     body = _body(frontend_text("settings.js"), "function currentAccentHex(")
-    assert 'attributeName !== "class"' in body, "html.status-bar-idle flips forgot it every few seconds"
-    assert "observe(document.body" not in body, "no rule keys --accent on the body"
-    assert "takeRecords()" in body, "applyAccent redraws the emblem in the task that set the colour"
+    assert "getAttribute(n)" in body and 'root.style.getPropertyValue("--accent")' in body
+    assert "MutationObserver" not in body, "a watcher forgot it on every class flip and on a late task"
+    assert "[...root.attributes]" not in body, "data-motion and the density say nothing about the colour"
+
+
+def test_the_theme_default_accent_ignores_attributes_that_do_not_set_it():
+    body = _body(frontend_text("settings.js"), "function themeDefaultAccent(")
+    assert '["data-palette", "data-mode", "data-theme"]' in body
+    assert "root.attributes" not in body
+
+
+def test_the_brand_logo_is_drawn_after_the_frame_that_asked():
+    body = _body(frontend_text("phone-shell.js"), "function renderBrandLogo(")
+    assert body.index("renderBrandLogo.queued") < body.index("afterFrames(() => setTimeout(")
+    assert body.index("afterFrames(") < body.index("getElementById(id)")
+
+
+def test_the_notes_scroller_is_found_once_not_per_render():
+    body = _body(frontend_text("notes-list.js"), "function notesScroller(")
+    assert "notesScroller.kept?.contains(list)" in body
 
 
 def test_a_strip_is_measured_by_its_observer_not_where_it_is_wired():
@@ -43,3 +60,13 @@ def test_the_glide_is_placed_from_the_observers_report_not_a_timer():
     glide = js[js.index("function glideStrip("):js.index("function syncEdgeFade(")]
     assert "sized.unobserve(strip);\n    sized.observe(strip);" in glide
     assert "setTimeout" not in glide
+
+
+def test_a_dock_with_nothing_folded_is_not_written_to_before_it_is_read():
+    fit = _body(frontend_text("phone-shell.js"), "function fitDock(")
+    assert fit.index("dockTight(dock)) return") < fit.index("foldDockArrange(dock, false)")
+
+
+def test_the_notes_strip_token_is_written_after_the_frame_not_in_the_observers_report():
+    body = _body(frontend_text("phone-shell.js"), "function initNotesSubtabHeightToken(")
+    assert 'setTimeout(() => page.style.setProperty("--notes-sticky-top", h))' in body

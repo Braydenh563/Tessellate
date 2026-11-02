@@ -228,16 +228,25 @@ function renderBrandLogo() {
     }
     return;
   }
-  for (const [id, size, animate] of EMBLEM_SLOTS) {
-    const holder = document.getElementById(id);
-    if (holder) renderEmblemWhenShown(holder, size, animate);
-  }
-  //: The assistant heads that wear the emblem take the new colour or motion.
-  repaintAssistantAvatars(true);
-  //: The dashboard hero's mark is no slot above (it is sized by the density
-  //: and may be a face), so it was drawn once and kept its old colours until a
-  //: reload (B63).
-  if (typeof dashEmblemDrawn !== "undefined" && dashEmblemDrawn) paintDashEmblem();
+  //: After the frame that shows the change that asked: each slot is asked
+  //: whether it has a box, and asked inside the click it paid for the style the
+  //: click had just written (89ms of a motion choice at 4x, INBOX 1534). Calls
+  //: in one frame are one draw.
+  if (renderBrandLogo.queued) return;
+  renderBrandLogo.queued = 1;
+  afterFrames(() => setTimeout(() => {
+    renderBrandLogo.queued = 0;
+    for (const [id, size, animate] of EMBLEM_SLOTS) {
+      const holder = document.getElementById(id);
+      if (holder) renderEmblemWhenShown(holder, size, animate);
+    }
+    //: The assistant heads that wear the emblem take the new colour or motion.
+    repaintAssistantAvatars(true);
+    //: The dashboard hero's mark is no slot above (it is sized by the density
+    //: and may be a face), so it was drawn once and kept its old colours until a
+    //: reload (B63).
+    if (typeof dashEmblemDrawn !== "undefined" && dashEmblemDrawn) paintDashEmblem();
+  }), 1);
 }
 
 //: **An emblem nobody can see is drawn when it can be** (2026-09-27): a slot
@@ -597,7 +606,11 @@ function initNotesSubtabHeightToken() {
     if (!(box > 0)) return;
     const gap = parseFloat(getComputedStyle(strip).marginBottom) || 0;
     const h = `${Math.round(box + gap)}px`;
-    if (page.style.getPropertyValue("--notes-sticky-top") !== h) page.style.setProperty("--notes-sticky-top", h);
+    //: Written after this frame, for the next one to restyle: written here, in the
+    //: observer's report, it restyled the page again in this frame and the
+    //: next reader (`fitDock`) paid for it (47 to 99ms of a Notes press at 4x,
+    //: INBOX 1534).
+    if (page.style.getPropertyValue("--notes-sticky-top") !== h) setTimeout(() => page.style.setProperty("--notes-sticky-top", h));
   };
   //: No first call of its own: an observer reports a new target at once, and
   //: there the layout is clean (a direct read forced the page's first layout).
@@ -2107,6 +2120,10 @@ function foldDockActions(dock, fold) {
 //: answer depends on the width alone and not on what was folded before.
 function fitDock(dock) {
   if (!dock.offsetParent) return; // not on screen: nothing to measure; the observer fires when it shows
+  //: Nothing folded and the row fits: no write, so the read after it settles
+  //: nothing (36ms of style on a Notes press at 4x, INBOX 1534). This runs in
+  //: the observer's report, where the layout is clean.
+  if (!dock.querySelector(".dock-arrange-slot, .dock-action-slot, [data-folded-from]") && !dockTight(dock)) return;
   foldDockArrange(dock, false);
   foldDockActions(dock, false);
   if (!dockTight(dock)) return;

@@ -91,7 +91,7 @@
  "settings-panes.js::raf": 2,
  "settings-panes.js::resize-observer": 1,
  "settings-wiring.js::mutation-observer": 1,
- "settings.js::mutation-observer": 2,
+ "settings.js::mutation-observer": 1,
  "settings.js::raf": 6,
  "settings.js::resize-observer": 1,
  "sheets-selects.js::mutation-observer": 3,
