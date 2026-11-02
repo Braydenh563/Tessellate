@@ -187,10 +187,10 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 181 | B28 | low | image paste lacks URL and HTML paste and size cap | fixed 2026-11-02 (44ae01d) | S |
 | 182 | B29 | low | inline rich text in map topics unverified | new | S |
 | 183 | B33 | low | 24 NaN guards suggest NaN has leaked before | new | M |
-| 184 | D35 | low | openDocument silently returns when the fetch fails | new | S |
+| 184 | D35 | low | openDocument silently returns when the fetch fails | fixed (board1518-1101, reconciled 2026-11-02) | S |
 | 185 | D36 | low | failed DELETE in docDropIfUntouched is swallowed | fixed (this batch) | S |
 | 186 | D37 | low | anonymous observers never disconnected | docs/roadmap/DOCUMENTS_PLAN.md:1500 | S |
-| 187 | D38 | low | run heartbeat interval created after await, can outlive run | new | S |
+| 187 | D38 | low | run heartbeat interval created after await, can outlive run | fixed (board1518-1101, reconciled 2026-11-02) | S |
 | 188 | D41 | low | selection-only word count missing | docs/roadmap/UI_MODERNISATION_PLAN.md:1482 | S |
 | 189 | D42 | low | no spreadsheet grid view for CSV documents | new | L |
 | 190 | D43 | low | no real-time collaboration or presence | docs/roadmap/MINDMAP_PLAN.md:535 | L |
@@ -251,7 +251,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 245 | S69 | low | backup restore has no verify-before-restore summary | new | M |
 | 246 | S82 | low | segmented view toggle has no labels | new | S |
 | 247 | S83 | low | filter state not summarised when the menu is closed | new | S |
-| 248 | S84 | low | onboarding cannot be re-opened from Help | new | S |
+| 248 | S84 | low | onboarding cannot be re-opened from Help | fixed (already: Help pane calls renderTourReplay, settings.js:122, tour.js:1947; checked 2026-11-02) | S |
 | 249 | S85 | low | error toasts say what failed but not what to do | new | M |
 | 250 | S86 | low | library to note takes three clicks | new | S |
 | 251 | S87 | low | dashboard counts do not link to filtered views | new | S |

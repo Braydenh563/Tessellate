@@ -112,3 +112,5 @@ date | item | type | rung | rework | note
 2026-11-02 | six pre-existing reds from audit merges | ci | opus | 0 | 
 2026-11-02 | a28t clock panel 1551 1548 1553 | feature | sonnet | 1 | 
 2026-11-02 | 1533 search-by-meaning switch wording | bugfix | opus | 0 | 
+2026-11-02 | 1546 mermaid builder design | design | opus | 0 | 
+2026-11-02 | 1549 CM crash repro (none) | bug | opus | 0 | 
