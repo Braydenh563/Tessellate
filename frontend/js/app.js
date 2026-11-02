@@ -1736,7 +1736,7 @@ const LAZY_MODULES = {
   //: Tidy, the reviews with no AI (INBOX 691): tidy.js's header.
   tidy: ["/css/tidy-lazy.css", "/js/tidy.js"],
   semanticNotice: ["/css/semantic-notice-lazy.css", "/js/semantic-notice.js"],
-  //: The order the `<script>` tags had, kept: every cross-file call between these three is inside a function rather than at parse time, so it is not load-bearing, but it is the order the three files' own headers describe. documents-code.js and documents-prose.js were split out of documents.js (2026-09-24) and go *before* it, and that position is load-bearing: their own top level reads nothing from documents.js, while documents.js's top-level wiring names their functions, and each file here is followed by a microtask checkpoint before the next one runs. See their headers. documents-props.js, documents-mermaid.js and documents-math.js (DC13) go before it likewise, as does whiteboard-map.js before whiteboard.js.
+  //: The order the `<script>` tags had, kept: every cross-file call between these three is inside a function rather than at parse time, so it is not load-bearing, but it is the order the three files' own headers describe. documents-code.js and documents-prose.js were split out of documents.js (2026-09-24) and go *before* it, and that position is load-bearing: their own top level reads nothing from documents.js, while documents.js's top-level wiring names their functions, and each file here is followed by a microtask checkpoint before the next one runs. See their headers. documents-props.js, documents-mermaid.js, documents-math.js and documents-comments.js (DC13) go before it likewise, as does whiteboard-map.js before whiteboard.js.
   library: [
     //: d3 before whiteboard.js, whose top level calls `d3.zoom()`.
     "/vendor/d3.v7.min.js",
@@ -1755,6 +1755,7 @@ const LAZY_MODULES = {
     "/js/documents-props.js",
     "/js/documents-mermaid.js",
     "/js/documents-math.js",
+    "/js/documents-comments.js",
     "/js/autocorrect.js",
     "/js/documents.js",
     "/js/margin-reader.js",
