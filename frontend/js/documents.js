@@ -10693,8 +10693,9 @@ const DOC_PROSE_RULES = [
     id: "space-before-punctuation",
     //: Not before `![[embed]]`: that `!` is the embed's own, not punctuation.
     //: Nor before a dotfile or an extension (" .gitignore", " .env"): the dot
-    //: opens a name there (INBOX 1407).
-    test: /\s+([,.;:!?])(?!\[\[)(?!(?<=\.)[A-Za-z0-9])/g,
+    //: opens a name there (INBOX 1407). Nor the `!` of an image, `![alt](src)`
+    //: (audit 1102 DX19): markdown syntax, not punctuation.
+    test: /\s+([,.;:!?])(?!\[\[)(?!(?<=!)\[)(?!(?<=\.)[A-Za-z0-9])/g,
     message: "A space before punctuation",
     fix: (match) => match.trim(),
   },
@@ -11008,7 +11009,7 @@ function docSpellRoot(word) {
 //: meant that neighbour.
 const DOC_TWO_EDIT_FLOOR = 2;
 
-function docSpellGuesses(word, limit = DOC_SUGGEST_MAX) {
+function docSpellGuesses(word, limit = DOC_SUGGEST_MAX, quick = false) {
   if (!docWordlist) return [];
   const lower = docSpellRoot(word);
   const near = [];
@@ -11019,7 +11020,7 @@ function docSpellGuesses(word, limit = DOC_SUGGEST_MAX) {
   //: Two edits only when one found next to nothing. It costs the square of
   //: the work, and a word with any one-edit neighbour almost always meant one
   //: of those.
-  if (near.length < DOC_TWO_EDIT_FLOOR) {
+  if (!quick && near.length < DOC_TWO_EDIT_FLOOR) {
     const seen = new Set(near.map(([candidate]) => candidate));
     //: Two edits out, everything is equally weak evidence, so they all share
     //: one rank below every one-edit answer.
@@ -11049,6 +11050,17 @@ function docSpellGuesses(word, limit = DOC_SUGGEST_MAX) {
   if (contraction) words.unshift(contraction);
   return words.slice(0, limit);
 }
+
+//: **A misspelling's row names its nearest word** (audit 1102 DX19): "libary"
+//: and "tomorow" showed only "not in the dictionary" until the row was opened.
+//: One edit only (`quick`), cached on the finding, for the rows drawn; the menu
+//: still offers every candidate. Empty when the dictionary was sure (the row
+//: then has its own answer) or one edit finds nothing.
+docSpellGuesses.hint = (finding) => {
+  if (finding.rule !== "spelling" || finding.replacement !== null) return "";
+  finding.hint ??= docMatchCase(finding.text, docSpellGuesses(finding.text, 1, true)[0] || "");
+  return finding.hint;
+};
 
 //: **"whats" is "what's" with the apostrophe left out** (the owner,
 //: 2026-10-19: "this should have been picked up as what's"). The word list
@@ -14245,13 +14257,14 @@ function docFindingLine(finding, variant = "row") {
   words.textContent = docFindingLabel(finding);
   const why = document.createElement("span");
   why.className = "doc-finding-why";
-  why.textContent = finding.message;
+  const hint = variant === "row" ? docSpellGuesses.hint(finding) : "";
+  why.textContent = hint ? `Did you mean \u201c${hint}\u201d?` : finding.message;
   //: Both halves ellipsise in a narrow panel (INBOX 426 b), so each carries
   //: its whole text as a title: the nearest title is the one the pointer
   //: shows, so these win over the row button's "show me this" hint only
   //: where the words themselves are under it.
   words.title = words.textContent;
-  why.title = finding.message;
+  why.title = why.textContent;
   line.append(dot, words, why);
   return line;
 }
