@@ -7063,7 +7063,14 @@ function exportDocumentMarkdown() {
 //: listener that no longer exists, an icon whose font is not in the file, a
 //: link to `/documents/12`. Shipped as-is they would be an empty square, a
 //: dead control and a 404; dropped, the page reads.
-const DOC_EXPORT_STRIP = ".code-actions, select, textarea, script, iframe, object, embed, i.ph, .ph-lead";
+//: **One list of the renderer's chrome for the page, the file and the paper**
+//: (audit 1102 DX8, DX9): a code or table bar ("JS", "Copy", "Save"), a
+//: remote picture's "not loaded" note and a footnote's "Back" link are
+//: controls for the screen. The HTML export, the Word export
+//: (documents-word.js adds `button`) and the print rule
+//: (`body.printing-doc` in library-lazy.css) all drop these three, and
+//: `tests/test_docs_1102_dx.py` pins that the lists agree.
+const DOC_EXPORT_STRIP = ".code-bar, .entry-image-note, a.md-fn-back, .code-actions, select, textarea, script, iframe, object, embed, i.ph, .ph-lead";
 
 //: **A control goes; the words it was wrapped around stay.** A `[[wikilink]]`
 //: renders as a `button.wiki-link` here, because in the app it opens the thing
