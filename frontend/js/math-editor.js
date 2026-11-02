@@ -371,7 +371,9 @@ function mathEditorLede(toggle) {
 //: menu, the palette): the editor is the Calculator's Equation tab now
 //: (INBOX 1527), so it opens that dialog over `target`. Returns once it is up.
 function openMathEditor({ target = null } = {}) {
-  return ensureModule("replyKit").then(() => openCalculator("", "equation", { target }));
+  //: An editor box writes through its surface adapter (the library bundle), so Insert never meets a box without one.
+  const adapters = target?.id && typeof EDITOR_SURFACES === "object" && target.id in EDITOR_SURFACES ? ensureModule("library").catch(() => false) : null;
+  return Promise.all([ensureModule("replyKit"), adapters]).then(() => openCalculator("", "equation", { target }));
 }
 
 //: **Builds the editor into `host`**, the Equation tab's pane (reply-kit.js

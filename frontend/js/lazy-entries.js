@@ -113,7 +113,8 @@ window.addEventListener("blur", () => { document.altAlone = false; });
 document.addEventListener("keydown", (event) => {
   if (!event.altKey || event.ctrlKey || event.metaKey || event.code !== "Equal") return;
   const box = event.target;
-  const kind = typeof editorSurfaceKind === "function" ? editorSurfaceKind(box) : null;
+  //: By the box's id while the adapters are still on their way (maths1527: about 1 s after a fresh note box's first focus, Alt+= did nothing).
+  const kind = (typeof editorSurfaceKind === "function" ? editorSurfaceKind(box) : null) ?? (typeof EDITOR_SURFACES === "object" ? EDITOR_SURFACES[box?.id] ?? null : null);
   if (box?.id !== "question" && !["note", "document", "chat", "board"].includes(kind)) return;
   event.preventDefault();
   openMathEditor({ target: box });

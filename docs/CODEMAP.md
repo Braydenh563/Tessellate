@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7554, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8431, test files 1832, tests 15669, plan headings 990, app scripts 28, boot scripts 37, script files 225.
+Counts: frontend functions 7554, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8431, test files 1832, tests 15670, plan headings 990, app scripts 28, boot scripts 37, script files 225.
 
 ## Frontend functions (7554)
 
@@ -104,18 +104,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `afterCharacters` | frontend/js/lazy-entries.js:156 |
-| `charactersLost` | frontend/js/lazy-entries.js:165 |
-| `emblemHead` | frontend/js/lazy-entries.js:173 |
-| `installCharacterStandIns` | frontend/js/lazy-entries.js:202 |
-| `lazyLoadFailed` | frontend/js/lazy-entries.js:235 |
-| `loadCharactersIdle` | frontend/js/lazy-entries.js:196 |
-| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:223 |
-| `onDomReady` | frontend/js/lazy-entries.js:246 |
-| `plainHead` | frontend/js/lazy-entries.js:179 |
-| `runCharacterJob` | frontend/js/lazy-entries.js:187 |
-| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:258 |
-| `warmOnFirst` | frontend/js/lazy-entries.js:277 |
+| `afterCharacters` | frontend/js/lazy-entries.js:157 |
+| `charactersLost` | frontend/js/lazy-entries.js:166 |
+| `emblemHead` | frontend/js/lazy-entries.js:174 |
+| `installCharacterStandIns` | frontend/js/lazy-entries.js:203 |
+| `lazyLoadFailed` | frontend/js/lazy-entries.js:236 |
+| `loadCharactersIdle` | frontend/js/lazy-entries.js:197 |
+| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:224 |
+| `onDomReady` | frontend/js/lazy-entries.js:247 |
+| `plainHead` | frontend/js/lazy-entries.js:180 |
+| `runCharacterJob` | frontend/js/lazy-entries.js:188 |
+| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:259 |
+| `warmOnFirst` | frontend/js/lazy-entries.js:278 |
 
 ### frontend/js/note-cards.js (27)
 
@@ -5343,7 +5343,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `mathEditorKeys` | frontend/js/math-editor.js:296 |
 | `mathEditorLede` | frontend/js/math-editor.js:357 |
 | `mathEditorModes` | frontend/js/math-editor.js:254 |
-| `mathEditorMount` | frontend/js/math-editor.js:383 |
+| `mathEditorMount` | frontend/js/math-editor.js:385 |
 | `mathEditorOutput` | frontend/js/math-editor.js:151 |
 | `mathEditorPalette` | frontend/js/math-editor.js:220 |
 | `mathEditorSearch` | frontend/js/math-editor.js:276 |
@@ -23047,7 +23047,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15669)
+## Tests (15670)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24062,7 +24062,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_marquee_cost.py | 4 |
 | tests/test_math_editor.py | 5 |
 | tests/test_math_field.py | 5 |
-| tests/test_maths1527_leftovers.py | 3 |
+| tests/test_maths1527_leftovers.py | 4 |
 | tests/test_mcp_server.py | 31 |
 | tests/test_mcp_tool_parity.py | 2 |
 | tests/test_md_blocks.py | 12 |
