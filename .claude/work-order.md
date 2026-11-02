@@ -18,5 +18,5 @@ tier: max (three agents at once, one Opus); never Fable; owner away, all permiss
 - [~] Leftovers: guide1530 vocabulary closed, fix1525b merged b9864c2, picker thumb 1343e4d; open: guide1530 16 in-bundle gaps (judge), calc1530 320 px title (owner only)
 - [ ] INBOX open items, OPEN.md, BACKLOG (standing order 1)
 - [ ] Session end: full suite, HANDOVER morning summary, retro
-- [ ] CI reds on 0d86461: composer cold import 0.21-0.22 s on 3.11/3.12 (lazy regex in recognise, composer_ask, cjk: 0.12 to 0.083 s local); model pull status list (8a8f34b)
+- [x] CI reds on 0d86461 (e7fab01, 8a8f34b; pushed c43cc3f): composer cold import 0.21-0.22 s on 3.11/3.12 (lazy regex in recognise, composer_ask, cjk: 0.12 to 0.083 s local); model pull status list (8a8f34b)
 - [~] Row 3a: repo3a agent running (tags, properties, relations, categories)
