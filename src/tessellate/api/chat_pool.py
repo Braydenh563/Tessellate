@@ -19,8 +19,9 @@ from sqlalchemy.orm import Session
 from tessellate.ai import composer, composer_frame, composer_lists, composer_money, composer_slots, composer_sum, composer_versus, glossary, librarian, neighbours, question_noise
 from tessellate.api.chat_attach import _MEDIA_REF, _attached_boards, _attachment_readings, _media_readings, _mostly_pictures, _named_sources, _picture_alts, _picture_sizes
 from tessellate.core import deps
-from tessellate.core.database import Category, Entry, EntryLink, like_escape, LIKE_ESCAPE, MediaUpload
+from tessellate.core.database import Category, Entry, like_escape, LIKE_ESCAPE, MediaUpload
 from tessellate.repo import documents as documents_repo
+from tessellate.repo import relations as relations_repo
 from tessellate.repo import tags as tags_repo
 from tessellate.entry import manager
 from tessellate.search import engine, search_manager
@@ -457,9 +458,7 @@ def _frame_matches(session: Session, question: str, notes: list[dict], match_inf
     if not ids:
         return
     linked: dict[int, list[int]] = {i: [] for i in ids}
-    rows = session.query(EntryLink.source_entry_id, EntryLink.target_entry_id, EntryLink.reason).filter(
-        EntryLink.source_entry_id.in_(ids), EntryLink.target_entry_id.in_(ids)
-    )
+    rows = relations_repo.among(session, ids)
     reasons: dict[int, dict[int, str]] = {i: {} for i in ids}
     for a, b, reason in rows:
         #: Once each: two notes linked both ways are one link to the reader.
