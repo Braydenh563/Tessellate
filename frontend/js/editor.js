@@ -1068,7 +1068,7 @@ function editorCommands(context) {
   // before ours" ordering loadTemplates() already uses for the dropdown.
   const custom = (typeof prefsCache !== "undefined" && prefsCache?.custom_templates) || [];
   const builtin = typeof BUILTIN_TEMPLATES !== "undefined" ? BUILTIN_TEMPLATES : [];
-  for (const template of [...custom, ...builtin]) {
+  for (const template of [...custom, ...(context === "document" && typeof DOC_TEMPLATES !== "undefined" ? [] : builtin)]) {
     if (!template?.name || !template?.content) continue;
     commands.push({
       id: `template-${template.name}`,
@@ -1092,6 +1092,28 @@ function editorCommands(context) {
     });
   }
 
+  //: A document's Templates group is the gallery's own writing and planning
+  //: set (audit 1102 DX30), not the note shapes; its heading line is left to
+  //: the document's title, and code templates make their own document type.
+  if (context === "document" && typeof DOC_TEMPLATES !== "undefined") {
+    for (const template of DOC_TEMPLATES) {
+      if (!template.content || template.group === "code") continue;
+      const text = () => docTemplateFill(template, " ").content.replace(/^#\s+/, "");
+      commands.push({
+        id: `template-${template.id}`,
+        group: "Templates",
+        icon: "ph:file-text",
+        label: template.title,
+        about: template.hint || "Insert this template",
+        keywords: ["template", template.title],
+        sample: text().split("\n").slice(0, 8).join("\n"),
+        run: (textarea) => {
+          const filled = text();
+          editorSplice(textarea, textarea.selectionStart, textarea.selectionEnd, filled, { from: filled.length, to: filled.length });
+        },
+      });
+    }
+  }
   return commands;
 }
 

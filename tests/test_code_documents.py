@@ -907,3 +907,19 @@ def test_a_piece_of_an_accented_word_is_not_a_spelling_finding():
     expr = "Object.fromEntries(Object.entries(" + json.dumps(cases) + ").map(([k, [t, s, e]]) => [k, docSpellable(t, t.slice(s, e), s, e)]))"
     got = _node(prelude, expr)
     assert got == {"cafe": False, "naive_tail": False, "naive_head": False, "plain": True}
+
+
+def test_a_documents_slash_templates_are_the_gallerys_writing_and_planning_set():
+    """Audit 1102 DX30: the "/" Templates group in a document offered the note
+    shapes (Journal, Recipe, Contact) while the gallery held letter, report
+    and the rest. A document's group now comes from DOC_TEMPLATES, code
+    templates left out (they make their own document type), and the note
+    built-ins give way there; the person's own templates still come first."""
+    editor = (Path(__file__).resolve().parents[1] / "frontend/js/editor.js").read_text(encoding="utf-8")
+    start = editor.index("function editorCommands(context)")
+    body = editor[start : editor.index("\n}\n", start)]
+    assert 'context === "document" && typeof DOC_TEMPLATES !== "undefined" ? [] : builtin' in body
+    rows = body[body.index("for (const template of DOC_TEMPLATES)") :]
+    assert 'template.group === "code") continue' in rows
+    assert "docTemplateFill(template" in rows and 'group: "Templates"' in rows
+    assert body.index("...custom") < body.index("for (const template of DOC_TEMPLATES)")
