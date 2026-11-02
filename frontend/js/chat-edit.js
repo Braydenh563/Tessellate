@@ -21,6 +21,7 @@ function editAndResend(bubble, text) {
   if (bubble.querySelector(".msg-edit")) return; // already editing
   const body = bubble.querySelector(".msg-body");
   const actions = bubble.querySelector(".msg-actions");
+  const more = bubble.querySelector(":scope > .entry-more"); // a long question's Show more (addBubble)
   const original = text;
 
   const editor = document.createElement("div");
@@ -50,6 +51,7 @@ function editAndResend(bubble, text) {
     editor.remove();
     body.classList.remove("hidden");
     actions?.classList.remove("hidden");
+    more?.classList.remove("hidden");
   };
   //: Cancel and Esc give the keyboard back to the button that opened the editor (AI14).
   const cancelEdit = () => {
@@ -105,6 +107,7 @@ function editAndResend(bubble, text) {
 
   body.classList.add("hidden");
   actions?.classList.add("hidden");
+  more?.classList.add("hidden");
   bubble.appendChild(editor);
   box.focus();
   box.setSelectionRange(box.value.length, box.value.length);
@@ -256,7 +259,7 @@ function questionForBubble(bubble) {
   while (node) {
     node = node.previousElementSibling;
     if (node && node.classList.contains("msg") && node.classList.contains("user")) {
-      return { bubble: node, text: (node.querySelector(".msg-body")?.textContent || "").trim() };
+      return { bubble: node, text: (node.dataset.sent ?? node.querySelector(".msg-body")?.textContent ?? "").trim() };
     }
   }
   return null;

@@ -1168,7 +1168,8 @@ function chatTranscriptText() {
   for (const msg of $("chat-messages")?.querySelectorAll(".msg") || []) {
     const who = msg.classList.contains("user") ? "You" : msg.dataset.persona || aiNameNow();
     const body = msg.querySelector(".msg-body, .bubble-answer");
-    const text = body ? bodyTextWithCitations(body) : "";
+    //: A user bubble's words as sent: a long question's body is drawn clipped (`addBubble`).
+    const text = msg.dataset.sent ?? (body ? bodyTextWithCitations(body) : "");
     if (text) parts.push(`**${who}:** ${text}`);
   }
   return parts.join("\n\n");

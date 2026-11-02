@@ -2395,8 +2395,30 @@ function addBubble(role, text, attachments = null) {
   }
   const body = document.createElement("div");
   body.className = "msg-body";
-  body.textContent = text;
+  //: **A long question is drawn clipped** (warm12-1101): a 20,000-character question reached its
+  //: first token about 450 ms after a short one, all of it the browser laying out the whole text in
+  //: this bubble. Past `BUBBLE_CLIP` characters the first part shows, cut at a space, with the
+  //: notes' "Show more"; what reads the question back reads `dataset.sent`, never this body.
+  const BUBBLE_CLIP = 2000;
+  const long = role === "user" && typeof text === "string" && text.length > BUBBLE_CLIP * 1.2;
+  const space = long ? text.lastIndexOf(" ", BUBBLE_CLIP) : -1;
+  const clipped = long ? `${text.slice(0, space > BUBBLE_CLIP * 0.8 ? space : BUBBLE_CLIP).trimEnd()}\u2026` : text;
+  body.textContent = long ? clipped : text;
   bubble.append(label, body);
+  if (long) {
+    const more = document.createElement("button");
+    more.type = "button";
+    more.className = "entry-more";
+    more.textContent = "Show more";
+    more.setAttribute("aria-expanded", "false");
+    more.addEventListener("click", () => {
+      const open = more.getAttribute("aria-expanded") !== "true";
+      body.textContent = open ? text : clipped;
+      more.textContent = open ? "Show less" : "Show more";
+      more.setAttribute("aria-expanded", String(open));
+    });
+    bubble.append(more);
+  }
   //: **The person's own mark** (INBOX 409: "auto generate other icons in
   //: other places like potentially the user chat bubbles"). Generated from
   //: the profile name the way a persona's is, so it is theirs and the same

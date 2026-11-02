@@ -89,3 +89,4 @@ date | item | type | rung | rework | note
 2026-10-30 | wb1313-1030 merge rows 7 13 14, keep_ratio fix | feature | sonnet | 0 | 
 2026-11-02 | INBOX 1530 resolve | docs | opus | 0 | 
 2026-11-02 | maths1527 leftovers: Escape LaTeX, scrim, Alt+= | bugfix | opus | 1 | 
+2026-11-02 | z1c chips paced at 200k chars | perf | opus | 0 | 
