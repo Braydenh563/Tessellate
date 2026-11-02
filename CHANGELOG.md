@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+Chat and Writing room: a source list whose items carry a label or a citation is no longer split at a semicolon or lowercased, so names and years survive (audit 1028 E19).
 Chat: the Why trail counts a note the answer links or cites as matched, so a summary of a named note no longer says "Searched your notes: nothing matched" (audit 1028 E72). The "Done in N s" line is the owner's B30 design and stays.
 Chat: "untag my gym note" (or "tag my gym note") with no tag named asks which tag, listing the note's own tags to take off, instead of falling through to a note search; a note with no tags says so (audit 1028 E55).
 Chat: an act's confirmation starts every sentence with a capital whichever wording the voice picks ("Created", not "Done. created"); the filled frame, not the caller, decides where the lower-case verb is allowed (audit 1028 E27).

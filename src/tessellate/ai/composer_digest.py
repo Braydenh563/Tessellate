@@ -929,6 +929,9 @@ def _starts_a_title(text: str, verb: bool) -> bool:
     return any(text.startswith(t) for t in _titles())
 
 
+_CITED = re.compile(r"[A-Z][\w'-]+(?: [A-Z][\w'-]+)?,? \(?(?:1[5-9]|20)\d\d[a-z]?\b")
+
+
 def _fragment(text: str, names: set[str]) -> str:
     """`text` placed after other words ("you noted ..."): its first letter
     lowered only when that word is a plain dictionary word. A name, a title
@@ -940,7 +943,8 @@ def _fragment(text: str, names: set[str]) -> str:
     if not first:
         return text
     word = first.group(0)
-    if _keeps_capital(word, names):
+    #: An author and a year ("Hunter 1999", "Clark (2012), The ...") is a citation (E19).
+    if _keeps_capital(word, names) or _CITED.match(text):
         return text
     verb = _verb_led(text) or _did(word) or word.lower() in _FUNCTION_WORDS
     if _starts_a_title(text, bool(verb)):
