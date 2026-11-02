@@ -43,11 +43,7 @@ function recordBrowserLog(level, parts) {
   // `scrollLogToBottom` and `bumpLogErrorBadge` all live in settings.js now
   // (§88.3 item 4; previously later in this same file), which loads after
   // this one: so any `console.*` call during app.js's own early boot,
-  // before settings.js has run, needs the same typeof guard this line
-  // needed even when everything was one file. Confirmed live: this is
-  // exactly the path a `console.warn`/`console.error` fired from app.js's
-  // own startup would take, and it already degrades to "skip the live
-  // push" rather than throwing, same as before the split.
+  // before settings.js has run, skips the live push rather than throwing.
   if (typeof logRecords !== "undefined" && typeof logScreenOpen !== "undefined") {
     logRecords.push({ ...record, source: "browser", logger: "browser", key: `b-live-${Math.random()}` });
     //: The four are settings.js's, beside `logRecords`.
@@ -1010,7 +1006,7 @@ function startApp() {
       // Wave G: skills chips + the agent-mode toggle read the
       // same prefsCache that loadTemplates just filled.
       loadChatSkills();
-      $("tools-toggle").checked = !prefsCache || prefsCache.tools_enabled !== false;
+      $("tools-toggle").checked = prefsCache?.tools_enabled !== false;
       renderChatModeSeg();
       renderWebSearchToggle();
     })
@@ -1588,7 +1584,7 @@ const LAZY_MODULES = {
   appImport: ["/js/app-import.js"],
   usageLedger: ["/css/usage-lazy.css", "/js/usage-ledger.js"],
   //: The Library list without the editors (audit FE-03(c)): they were about 900 KB gzipped. A document or a board brings the whole `library` surface.
-  libraryList: ["/css/library-lazy.css", "/js/library.js"],
+  libraryList: ["/css/library-lazy.css", "/js/undo-store.js", "/js/library.js"],
   //: The Capture box's template picker (note-templates.js's header).
   noteTemplates: ["/js/note-templates.js"],
   meetings: ["/css/meetings-lazy.css", "/js/meetings.js"],
@@ -1636,11 +1632,11 @@ const LAZY_MODULES = {
   //: Tidy, the reviews with no AI (INBOX 691): tidy.js's header.
   tidy: ["/css/tidy-lazy.css", "/js/tidy.js"],
   semanticNotice: ["/css/semantic-notice-lazy.css", "/js/semantic-notice.js"],
-  //: The order the `<script>` tags had, kept: every cross-file call between these three is inside a function rather than at parse time, so it is not load-bearing, but it is the order the three files' own headers describe. documents-code.js and documents-prose.js were split out of documents.js (2026-09-24) and go *before* it, and that position is load-bearing: their own top level reads nothing from documents.js, while documents.js's top-level wiring names their functions, and each file here is followed by a microtask checkpoint before the next one runs. See their headers. documents-props.js, documents-mermaid.js, documents-math.js, documents-comments.js, documents-embeds.js, documents-tables.js, documents-columns.js, documents-print.js and documents-outline.js (DC13) go before it likewise, as does whiteboard-map.js before whiteboard.js.
+  //: The order the `<script>` tags had, kept: every cross-file call between these three is inside a function rather than at parse time, so it is not load-bearing, but it is the order the three files' own headers describe. documents-code.js and documents-prose.js were split out of documents.js (2026-09-24) and go *before* it, and that position is load-bearing: their own top level reads nothing from documents.js, while documents.js's top-level wiring names their functions, and each file here is followed by a microtask checkpoint before the next one runs. See their headers. The other documents-*.js files (DC13) go before it likewise, as does whiteboard-map.js before whiteboard.js.
   library: [
     "/vendor/d3.v7.min.js", //: Before whiteboard.js, whose top level calls `d3.zoom()`.
     "/css/library-lazy.css", //: The styles only this bundle's surfaces draw, out of the boot budget.
-    "/js/undo-store.js", //: First: the stored undo histories both editors read.
+    "/js/undo-store.js", //: First: both editors and the list read it.
     "/js/pick-row.js", //: The Attach picker's row, drawn synchronously by the board pickers.
     "/js/image-layout.js",
     //: Before the editors: it holds the file-type table they read.
