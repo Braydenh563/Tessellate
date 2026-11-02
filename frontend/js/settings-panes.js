@@ -1117,10 +1117,12 @@ function catalogueRun(row) {
 
 //: **The popup tools, one registry** (INBOX K27): the palette, Tools and
 //: features, the shortcuts dialog's Tools list, both "/" menus and the Guide
-//: read it; tests/test_popup_tools.py fails for a tool missing from any.
+//: read it; tests/test_popup_tools.py fails for a tool missing from any. `widget`
+//: names the dashboard widget that draws the tool inline (`POPUP_WIDGETS`,
+//: dashboard.js), or `widgetExempt` gives the reason it has none (INBOX 1558).
 const POPUP_TOOLS = [
   {
-    id: "calculator", name: "Calculator and equations", icon: "ph:calculator", group: "Ask & chat",
+    id: "calculator", name: "Calculator and equations", icon: "ph:calculator", group: "Ask & chat", widget: "calculator",
     keywords: "calculator calc sum maths math work out percent convert units currency keypad equation formula symbol fraction greek matrix integral latex alt word",
     about: "Sums, conversions and equations in one dialog, with no model; Alt+= opens the equation tab in a text box, /calc the calculator in Chat.",
     keys: "Alt+= or /calc", where: "Equation in text boxes, Calculator in Chat",
@@ -1128,28 +1130,28 @@ const POPUP_TOOLS = [
     guide: "calculator", open: (t) => ensureModule("appPalette").then(() => popupToolMaths({ target: t || null })),
   },
   {
-    id: "convert", name: "Convert units", icon: "ph:ruler", group: "Ask & chat",
+    id: "convert", name: "Convert units", icon: "ph:ruler", group: "Ask & chat", widget: "calculator",
     keywords: "convert conversion unit units miles km kg pounds celsius fahrenheit litres currency",
     about: "Length, weight, temperature, volume and currency, with no model; the second tab of Calculator and equations.",
     keys: "/calc", where: "Convert units, in Calculator and equations",
     guide: "calculator", open: () => ensureModule("replyKit").then(() => openCalculator("", "convert")),
   },
   {
-    id: "timer", name: "Start a timer", icon: "ph:timer", group: "Plan & focus",
+    id: "timer", name: "Start a timer", icon: "ph:timer", group: "Plan & focus", widget: "clock",
     keywords: "timer countdown pomodoro",
     about: "Opens the Clock.",
     keys: "Ctrl+K", where: "Start a timer",
     guide: "timer", open: () => ensureModule("utilities").then(() => openClockPanel("timer")),
   },
   {
-    id: "stopwatch", name: "Start a stopwatch", icon: "ph:timer", group: "Plan & focus",
+    id: "stopwatch", name: "Start a stopwatch", icon: "ph:timer", group: "Plan & focus", widget: "clock",
     keywords: "stopwatch count up",
     about: "Opens the Clock.",
     keys: "Ctrl+K", where: "Start a stopwatch",
     guide: "timer", open: () => ensureModule("utilities").then(() => openClockPanel("stopwatch")),
   },
   {
-    id: "alarm", name: "Set an alarm", icon: "ph:alarm", group: "Plan & focus",
+    id: "alarm", name: "Set an alarm", icon: "ph:alarm", group: "Plan & focus", widget: "clock",
     keywords: "alarm",
     about: "Opens the Clock.",
     keys: "Ctrl+K", where: "Set an alarm",

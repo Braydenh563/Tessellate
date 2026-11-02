@@ -1105,7 +1105,9 @@ MORE_TOPICS: list[dict] = [
             "The Equation tab is the equation editor (see Equation editor): when "
             "an equation is made of numbers, its value is shown under it, worked "
             "out the same way as Sum. The arrow keys, Home and End move "
-            "between the tabs."
+            "between the tabs. The Dashboard's Calculator widget (Customise, "
+            "Widgets) draws Sum and Units on the page, with Copy but no Insert. "
+            "Edit quick access can pin a tile for this tool and for each Clock tool."
         ),
         "badge": {"label": "Chat", "tab": "chat"},
     },
@@ -1159,6 +1161,8 @@ MORE_TOPICS: list[dict] = [
             "down the time so far and the lap, Pause holds it and Reset puts it "
             "back to its start. Alarm: pick a time and a label and press Set "
             "alarm; it makes an ordinary reminder, today or tomorrow. The "
+            "Dashboard's Clock widget (Customise, Widgets) draws the same tabs "
+            "on the page, over the same running clocks. The "
             "Dashboard's Focus timer is a separate ring timer: 5, 15, 25 or 50 "
             "minutes (or minus and plus), a chime at the end, Breaks, and the "
             "minutes focused today. While the app is locked nothing is "

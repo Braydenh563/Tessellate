@@ -693,3 +693,10 @@ button.answer-grounding-thumb:is(:focus-visible, :has(:focus-visible)) {
   white-space: nowrap;
   font-size: var(--text-sm);
 }
+
+/* **The Calculator as a dashboard widget** (`openCalculator.inline(host, mode)`; INBOX 1558): the dialog's strip, Sum and Units panes and Copy row in the widget body, which sizes to what is on it. */
+.calc-inline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
