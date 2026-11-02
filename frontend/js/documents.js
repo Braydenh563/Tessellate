@@ -15300,7 +15300,16 @@ function docTableGridRules() {
   const rules = {};
   for (let n = 1; n <= DOC_TABLE_GRID_MAX; n += 1) {
     rules[`.cm-md-cols-${n}`] = {
-      gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))`,
+      //: **A column has a floor** (audit 1102 DX2): a zero minimum let 14
+      //: columns share 594px as 42px tracks and stack "Column 0" one letter a
+      //: line. The floor is `--doc-table-col-min` (6em, a word and its inset;
+      //: 5em broke "Column" mid-word when measured) and the line is as wide as
+      //: its columns need, so a wide table scrolls the editor sideways as the
+      //: Read view does, every row the same width. The floor is a fixed
+      //: minimum, not `auto`, so a long unbroken word still wraps inside its
+      //: track instead of widening the table.
+      gridTemplateColumns: `repeat(${n}, minmax(var(--doc-table-col-min), 1fr))`,
+      minWidth: `calc(${n} * var(--doc-table-col-min))`,
       //: **An implicit row gets no height** (the owner, twice: "when I click
       //: on a header row in a table on the live view, another row appears
       //: below it until I click off"). Measured with the caret in the header

@@ -2511,6 +2511,7 @@ function docCmTheme(CM) {
       //: wrapping.
       ".cm-md-table": {
         display: "grid",
+        "--doc-table-col-min": "6em",
         borderLeft: "1px solid var(--border)",
         //: The cell menu is positioned against whichever row it is on.
         position: "relative",
@@ -2522,7 +2523,7 @@ function docCmTheme(CM) {
       //: show usefully in any case.
       ".cm-md-table-wide": {
         gridAutoFlow: "column",
-        gridAutoColumns: "minmax(0, 1fr)",
+        gridAutoColumns: "minmax(var(--doc-table-col-min), 1fr)",
       },
       ...docTableGridRules(),
       ".cm-md-table-head": {

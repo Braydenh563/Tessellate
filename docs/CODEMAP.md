@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7561, frontend ids 2642, CSS sections 517, backend routes 640, backend modules 8491, test files 1883, tests 15938, plan headings 991, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7561, frontend ids 2642, CSS sections 517, backend routes 640, backend modules 8491, test files 1884, tests 15939, plan headings 991, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7561)
 
@@ -3794,7 +3794,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `archiveDocumentWithUndo` | frontend/js/documents.js:7158 |
 | `asSurface` | frontend/js/documents.js:860 |
 | `attachBookmarkToDocument` | frontend/js/documents.js:1737 |
-| `calloutMenuItems` | frontend/js/documents.js:16783 |
+| `calloutMenuItems` | frontend/js/documents.js:16792 |
 | `chooseDocTemplate` | frontend/js/documents.js:2208 |
 | `clearInlineFormatting` | frontend/js/documents.js:6836 |
 | `closeDocAiPanel` | frontend/js/documents.js:7319 |
@@ -3818,20 +3818,20 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docAutocorrectEnabled` | frontend/js/documents.js:12583 |
 | `docBacklinkItem` | frontend/js/documents.js:1591 |
 | `docBlankPlaceholder` | frontend/js/documents.js:120 |
-| `docBlockBarClose` | frontend/js/documents.js:16421 |
-| `docBlockBarEl` | frontend/js/documents.js:16402 |
-| `docBlockBarShow` | frontend/js/documents.js:16450 |
-| `docBlockBarSoon` | frontend/js/documents.js:16416 |
+| `docBlockBarClose` | frontend/js/documents.js:16430 |
+| `docBlockBarEl` | frontend/js/documents.js:16411 |
+| `docBlockBarShow` | frontend/js/documents.js:16459 |
+| `docBlockBarSoon` | frontend/js/documents.js:16425 |
 | `docBlockBounds` | frontend/js/documents.js:5857 |
-| `docBlockDelete` | frontend/js/documents.js:16503 |
+| `docBlockDelete` | frontend/js/documents.js:16512 |
 | `docBlockDocumentText` | frontend/js/documents.js:6026 |
-| `docBlockEdit` | frontend/js/documents.js:16490 |
+| `docBlockEdit` | frontend/js/documents.js:16499 |
 | `docBlockEnsureIdEdits` | frontend/js/documents.js:5944 |
 | `docBlockFind` | frontend/js/documents.js:5972 |
 | `docBlockIdOf` | frontend/js/documents.js:5896 |
 | `docBlockIds` | frontend/js/documents.js:5909 |
 | `docBlockInFence` | frontend/js/documents.js:5843 |
-| `docBlockLines` | frontend/js/documents.js:16429 |
+| `docBlockLines` | frontend/js/documents.js:16438 |
 | `docBlockMoveCommand` | frontend/js/documents.js:3361 |
 | `docBlockMoveEdit` | frontend/js/documents.js:3180 |
 | `docBlockMoveRun` | frontend/js/documents.js:3343 |
@@ -3842,35 +3842,35 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docBookmarkWithUndo` | frontend/js/documents.js:7237 |
 | `docBoxEl` | frontend/js/documents.js:533 |
 | `docBuildVocabulary` | frontend/js/documents.js:12322 |
-| `docCalloutFold` | frontend/js/documents.js:16317 |
-| `docCalloutFoldRange` | frontend/js/documents.js:16306 |
-| `docCalloutFolded` | frontend/js/documents.js:16327 |
-| `docCalloutKindMenu` | frontend/js/documents.js:16546 |
+| `docCalloutFold` | frontend/js/documents.js:16326 |
+| `docCalloutFoldRange` | frontend/js/documents.js:16315 |
+| `docCalloutFolded` | frontend/js/documents.js:16336 |
+| `docCalloutKindMenu` | frontend/js/documents.js:16555 |
 | `docCanOutdent` | frontend/js/documents.js:4574 |
 | `docCaretPoint` | frontend/js/documents.js:10236 |
 | `docCaretStats` | frontend/js/documents.js:10253 |
 | `docCaretVisibleLine` | frontend/js/documents.js:3724 |
 | `docClipboardMenuItems` | frontend/js/documents.js:13249 |
-| `docCmApplySpellcheck` | frontend/js/documents.js:15798 |
-| `docCmChanged` | frontend/js/documents.js:16153 |
-| `docCmDrawFor` | frontend/js/documents.js:16066 |
-| `docCmExtensions` | frontend/js/documents.js:15665 |
-| `docCmGutter` | frontend/js/documents.js:16189 |
-| `docCmHighlight` | frontend/js/documents.js:15432 |
+| `docCmApplySpellcheck` | frontend/js/documents.js:15807 |
+| `docCmChanged` | frontend/js/documents.js:16162 |
+| `docCmDrawFor` | frontend/js/documents.js:16075 |
+| `docCmExtensions` | frontend/js/documents.js:15674 |
+| `docCmGutter` | frontend/js/documents.js:16198 |
+| `docCmHighlight` | frontend/js/documents.js:15441 |
 | `docCmIsolate` | frontend/js/documents.js:15041 |
-| `docCmKeymap` | frontend/js/documents.js:15517 |
-| `docCmLanguageEffects` | frontend/js/documents.js:16160 |
+| `docCmKeymap` | frontend/js/documents.js:15526 |
+| `docCmLanguageEffects` | frontend/js/documents.js:16169 |
 | `docCmLanguageFor` | frontend/js/documents.js:15214 |
 | `docCmPartIs` | frontend/js/documents.js:6112 |
-| `docCmRepaintFindings` | frontend/js/documents.js:15939 |
-| `docCmSearchCount` | frontend/js/documents.js:15381 |
-| `docCmSpellcheck` | frontend/js/documents.js:15787 |
-| `docCmSyncFileType` | frontend/js/documents.js:16101 |
-| `docCmSyncGutter` | frontend/js/documents.js:16175 |
-| `docCmSyncLanguage` | frontend/js/documents.js:16134 |
-| `docCmUpdate` | frontend/js/documents.js:15810 |
-| `docCmViewLanguage` | frontend/js/documents.js:16126 |
-| `docCmViewShown` | frontend/js/documents.js:16728 |
+| `docCmRepaintFindings` | frontend/js/documents.js:15948 |
+| `docCmSearchCount` | frontend/js/documents.js:15390 |
+| `docCmSpellcheck` | frontend/js/documents.js:15796 |
+| `docCmSyncFileType` | frontend/js/documents.js:16110 |
+| `docCmSyncGutter` | frontend/js/documents.js:16184 |
+| `docCmSyncLanguage` | frontend/js/documents.js:16143 |
+| `docCmUpdate` | frontend/js/documents.js:15819 |
+| `docCmViewLanguage` | frontend/js/documents.js:16135 |
+| `docCmViewShown` | frontend/js/documents.js:16737 |
 | `docCodeCommentAtCaret` | frontend/js/documents.js:4740 |
 | `docCodeCommentRun` | frontend/js/documents.js:4736 |
 | `docCodeCountsText` | frontend/js/documents.js:10427 |
@@ -3903,7 +3903,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docExportPromoteHeadings` | frontend/js/documents.js:7034 |
 | `docExportUnwrapControls` | frontend/js/documents.js:7010 |
 | `docFactsDelay` | frontend/js/documents.js:10535 |
-| `docFenceGutterOn` | frontend/js/documents.js:16171 |
+| `docFenceGutterOn` | frontend/js/documents.js:16180 |
 | `docFileType` | frontend/js/documents.js:96 |
 | `docFillAt` | frontend/js/documents.js:12387 |
 | `docFillBlankTitle` | frontend/js/documents.js:2428 |
@@ -3919,7 +3919,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docFindingMarks` | frontend/js/documents.js:12876 |
 | `docFindingOfMark` | frontend/js/documents.js:12966 |
 | `docFindingStep` | frontend/js/documents.js:13373 |
-| `docFindingsPlugin` | frontend/js/documents.js:15881 |
+| `docFindingsPlugin` | frontend/js/documents.js:15890 |
 | `docFocusFill` | frontend/js/documents.js:9128 |
 | `docFocusKey` | frontend/js/documents.js:9202 |
 | `docFocusOn` | frontend/js/documents.js:8997 |
@@ -3930,20 +3930,20 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docFocusToggleFullscreen` | frontend/js/documents.js:9259 |
 | `docFocusWake` | frontend/js/documents.js:9171 |
 | `docFocusWatch` | frontend/js/documents.js:9150 |
-| `docFoldMarkedCallouts` | frontend/js/documents.js:16582 |
+| `docFoldMarkedCallouts` | frontend/js/documents.js:16591 |
 | `docGoToFinding` | frontend/js/documents.js:13390 |
-| `docGoToFootnote` | frontend/js/documents.js:16599 |
-| `docGuardGlobalShortcuts` | frontend/js/documents.js:16032 |
+| `docGoToFootnote` | frontend/js/documents.js:16608 |
+| `docGuardGlobalShortcuts` | frontend/js/documents.js:16041 |
 | `docGutterPref` | frontend/js/documents.js:9585 |
 | `docGutterWanted` | frontend/js/documents.js:9593 |
 | `docGutters` | frontend/js/documents.js:4287 |
-| `docHeadingFold` | frontend/js/documents.js:16614 |
-| `docHistoryPersist` | frontend/js/documents.js:16711 |
-| `docHistoryRestore` | frontend/js/documents.js:16694 |
+| `docHeadingFold` | frontend/js/documents.js:16623 |
+| `docHistoryPersist` | frontend/js/documents.js:16720 |
+| `docHistoryRestore` | frontend/js/documents.js:16703 |
 | `docHistoryStamp` | frontend/js/documents.js:15067 |
 | `docHtmlIsRich` | frontend/js/documents.js:5046 |
 | `docHtmlToMarkdown` | frontend/js/documents.js:5071 |
-| `docIdeCall` | frontend/js/documents.js:15654 |
+| `docIdeCall` | frontend/js/documents.js:15663 |
 | `docIgnoreLabel` | frontend/js/documents.js:12098 |
 | `docImagePasteAsk` | frontend/js/documents.js:6602 |
 | `docImagePick` | frontend/js/documents.js:6542 |
@@ -3955,16 +3955,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docKeptDrafts` | frontend/js/documents.js:1332 |
 | `docKnownWords` | frontend/js/documents.js:13975 |
 | `docLiftToViewport` | frontend/js/documents.js:14407 |
-| `docLineClipboardEvent` | frontend/js/documents.js:16240 |
-| `docLineClipboardExtension` | frontend/js/documents.js:16267 |
-| `docLineClipboardRange` | frontend/js/documents.js:16228 |
+| `docLineClipboardEvent` | frontend/js/documents.js:16249 |
+| `docLineClipboardExtension` | frontend/js/documents.js:16276 |
+| `docLineClipboardRange` | frontend/js/documents.js:16237 |
 | `docLineCount` | frontend/js/documents.js:10417 |
-| `docLineOffset` | frontend/js/documents.js:16444 |
-| `docLinePasteEvent` | frontend/js/documents.js:16253 |
+| `docLineOffset` | frontend/js/documents.js:16453 |
+| `docLinePasteEvent` | frontend/js/documents.js:16262 |
 | `docLinkBack` | frontend/js/documents.js:1517 |
 | `docLinkMention` | frontend/js/documents.js:1532 |
 | `docLinksTo` | frontend/js/documents.js:1479 |
-| `docListGuides` | frontend/js/documents.js:15350 |
+| `docListGuides` | frontend/js/documents.js:15359 |
 | `docListen` | frontend/js/documents.js:833 |
 | `docLiveExtensions` | frontend/js/documents.js:6160 |
 | `docLiveRevealSame` | frontend/js/documents.js:6143 |
@@ -4000,7 +4000,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docPropsReadNode` | frontend/js/documents.js:4153 |
 | `docProseApply` | frontend/js/documents.js:12247 |
 | `docProseApplyWidth` | frontend/js/documents.js:13548 |
-| `docProseChord` | frontend/js/documents.js:15504 |
+| `docProseChord` | frontend/js/documents.js:15513 |
 | `docProseDismissed` | frontend/js/documents.js:11803 |
 | `docProseDockChoice` | frontend/js/documents.js:13533 |
 | `docProseDockSide` | frontend/js/documents.js:13542 |
@@ -4028,14 +4028,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docRectHolds` | frontend/js/documents.js:12906 |
 | `docRectUsable` | frontend/js/documents.js:12933 |
 | `docRedo` | frontend/js/documents.js:15096 |
-| `docRedoChord` | frontend/js/documents.js:15486 |
+| `docRedoChord` | frontend/js/documents.js:15495 |
 | `docRememberPosition` | frontend/js/documents.js:1307 |
 | `docRememberPositionNow` | frontend/js/documents.js:1288 |
 | `docRememberReading` | frontend/js/documents.js:8860 |
 | `docRenderBody` | frontend/js/documents.js:4038 |
 | `docRenderFlow` | frontend/js/documents.js:4109 |
 | `docReplaceRange` | frontend/js/documents.js:4493 |
-| `docResetDocument` | frontend/js/documents.js:16652 |
+| `docResetDocument` | frontend/js/documents.js:16661 |
 | `docResolveConflict` | frontend/js/documents.js:2511 |
 | `docRestorePosition` | frontend/js/documents.js:1396 |
 | `docRestoreReading` | frontend/js/documents.js:8883 |
@@ -4049,11 +4049,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docSaveToolPref` | frontend/js/documents.js:12690 |
 | `docScheduleSuggestFollow` | frontend/js/documents.js:14557 |
 | `docScrollAnchors` | frontend/js/documents.js:6238 |
-| `docSearchCountText` | frontend/js/documents.js:15372 |
+| `docSearchCountText` | frontend/js/documents.js:15381 |
 | `docSectionCount` | frontend/js/documents.js:1470 |
 | `docSelectedLines` | frontend/js/documents.js:4476 |
 | `docSetBookmark` | frontend/js/documents.js:7230 |
-| `docSetCalloutHead` | frontend/js/documents.js:16371 |
+| `docSetCalloutHead` | frontend/js/documents.js:16380 |
 | `docSetLiveDecorations` | frontend/js/documents.js:6117 |
 | `docSetNoteLink` | frontend/js/documents.js:7211 |
 | `docSetPlaceholder` | frontend/js/documents.js:542 |
@@ -4081,7 +4081,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docSurfaceInput` | frontend/js/documents.js:7554 |
 | `docSyncFormatShow` | frontend/js/documents.js:9747 |
 | `docTableCaretTo` | frontend/js/documents.js:4881 |
-| `docTableCellClick` | frontend/js/documents.js:15616 |
+| `docTableCellClick` | frontend/js/documents.js:15625 |
 | `docTableCommand` | frontend/js/documents.js:5449 |
 | `docTableCommandRun` | frontend/js/documents.js:5779 |
 | `docTableContext` | frontend/js/documents.js:4793 |
@@ -4106,9 +4106,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docTemplateFill` | frontend/js/documents.js:2085 |
 | `docTemplateListKeys` | frontend/js/documents.js:2231 |
 | `docText` | frontend/js/documents.js:794 |
-| `docTocJump` | frontend/js/documents.js:16346 |
-| `docToggleCalloutFold` | frontend/js/documents.js:16561 |
-| `docToggleCodeDraw` | frontend/js/documents.js:16075 |
+| `docTocJump` | frontend/js/documents.js:16355 |
+| `docToggleCalloutFold` | frontend/js/documents.js:16570 |
+| `docToggleCodeDraw` | frontend/js/documents.js:16084 |
 | `docToggleIcon` | frontend/js/documents.js:8674 |
 | `docToolPref` | frontend/js/documents.js:12681 |
 | `docToolbarCollapsed` | frontend/js/documents.js:9671 |
@@ -4131,8 +4131,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docVariantLookup` | frontend/js/documents.js:13784 |
 | `docViewMigrate` | frontend/js/documents.js:458 |
 | `docVisibleTopLine` | frontend/js/documents.js:3669 |
-| `docWatchAppearance` | frontend/js/documents.js:16050 |
-| `docWatchLock` | frontend/js/documents.js:16748 |
+| `docWatchAppearance` | frontend/js/documents.js:16059 |
+| `docWatchLock` | frontend/js/documents.js:16757 |
 | `docWhereLine` | frontend/js/documents.js:3757 |
 | `docWireReadTasks` | frontend/js/documents.js:4003 |
 | `docWordFragment` | frontend/js/documents.js:12356 |
@@ -4142,7 +4142,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docWordlistReady` | frontend/js/documents.js:10733 |
 | `docWriteOutsideHistory` | frontend/js/documents.js:7254 |
 | `downloadDocumentExport` | frontend/js/documents.js:6934 |
-| `ensureDocEditor` | frontend/js/documents.js:15991 |
+| `ensureDocEditor` | frontend/js/documents.js:16000 |
 | `ensureDocumentExists` | frontend/js/documents.js:2329 |
 | `expandNoteIntoDocument` | frontend/js/documents.js:2555 |
 | `exportDocumentBundle` | frontend/js/documents.js:6971 |
@@ -4178,7 +4178,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `mdRunFormat` | frontend/js/documents.js:7639 |
 | `mdRunNode` | frontend/js/documents.js:7648 |
 | `mdRunParse` | frontend/js/documents.js:7626 |
-| `mountDocEditor` | frontend/js/documents.js:15961 |
+| `mountDocEditor` | frontend/js/documents.js:15970 |
 | `mountDocToolbarControls` | frontend/js/documents.js:9845 |
 | `mountDocToolbarControlsFor` | frontend/js/documents.js:9771 |
 | `mountEditorToolbarExtras` | frontend/js/documents.js:7766 |
@@ -4187,7 +4187,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `noteSourceWanted` | frontend/js/documents.js:8265 |
 | `noteSurfaceExtensions` | frontend/js/documents.js:8100 |
 | `noteSurfaceFor` | frontend/js/documents.js:8073 |
-| `noteSurfaceGutter` | frontend/js/documents.js:16283 |
+| `noteSurfaceGutter` | frontend/js/documents.js:16292 |
 | `noteSurfaceKeymap` | frontend/js/documents.js:8189 |
 | `noteSurfaceMeta` | frontend/js/documents.js:8088 |
 | `noteSurfaceMirror` | frontend/js/documents.js:8311 |
@@ -23293,7 +23293,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (15938)
+## Tests (15939)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23838,6 +23838,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_dock_menu_closed_hidden.py | 2 |
 | tests/test_docker_env.py | 7 |
 | tests/test_docker_files.py | 4 |
+| tests/test_docs_1102_dx.py | 1 |
 | tests/test_docs_editor_1025.py | 9 |
 | tests/test_docs_layout.py | 5 |
 | tests/test_docs_links.py | 2 |
