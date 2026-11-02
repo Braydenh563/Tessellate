@@ -805,21 +805,11 @@ const LOCK_PURGE_IDS = [
 
 //: Empty everything the lock screen is covering.
 //:
-//: **The lock overlay was a visual cover, not a purge**, and the roadmap
-//: ranked auditing it first precisely because it is this app's only privacy
-//: boundary. Measured with the notebook locked: `#entry-list` still held 61
-//: notes and 3,431 characters of their text, `#library-grid` 5,089, the
-//: documents list 6,422: all of it one devtools click, one screen reader,
-//: or one browser extension away from being read.
+//: **The lock overlay was a visual cover, not a purge**, and the roadmap ranked auditing it first precisely because it is this app's only privacy boundary. Measured with the notebook locked: `#entry-list` still held 61 notes and 3,431 characters of their text, `#library-grid` 5,089, the documents list 6,422: all of it one devtools click, one screen reader, or one browser extension away from being read.
 //:
-//: The server side was already right (every endpoint answers 401 while
-//: locked, verified in the same audit), so this closes the client half.
+//: The server side was already right (every endpoint answers 401 while locked, verified in the same audit), so this closes the client half.
 //:
-//: Safe because unlocking runs `startApp()`, which re-fetches and re-renders
-//: all of it. The codebase already reasons this way elsewhere, 
-//: `hideBootSplash` removes itself from the DOM rather than leaving a hidden
-//: overlay, on the same principle that nothing should sit over the viewport
-//: invisibly.
+//: Safe because unlocking runs `startApp()`, which re-fetches and re-renders all of it. The codebase already reasons this way elsewhere, `hideBootSplash` removes itself from the DOM rather than leaving a hidden overlay, on the same principle that nothing should sit over the viewport invisibly.
 function purgeLockedContent() {
   for (const id of LOCK_PURGE_IDS) {
     const el = $(id);
@@ -1148,16 +1138,7 @@ async function refreshActiveTab() {
 // model are sentences, and `ph:link` in the middle of one is just noise the
 // reader has to decode.
 const PH_LABEL = /^ph:([a-z0-9-]{1,40})\s*/;
-//: **And one at the end**, for a label that carries its own action mark: a
-//: chip with a "remove" cross on the right is the shape the whole app uses
-//: for "this is attached, take it off", and before this the only way to draw
-//: it was to put the character U+2715 in the string. That reads as the app's
-//: icon set from a distance and is nothing of the kind up close: measured,
-//: the glyph came out system-ui 13.6px at weight 500 beside a Phosphor icon
-//: at 15.6px and weight 400, in the same chip (INBOX 263: "I want to strip
-//: all signs of being vibecoded by an ai from the ui"). One rule in the
-//: label grammar is cheaper than a hand-built chip per call site, which is
-//: standing order 11's whole point.
+//: **And one at the end**, for a label that carries its own action mark: a chip with a "remove" cross on the right is the shape the whole app uses for "this is attached, take it off", and before this the only way to draw it was to put the character U+2715 in the string. That reads as the app's icon set from a distance and is nothing of the kind up close: measured, the glyph came out system-ui 13.6px at weight 500 beside a Phosphor icon at 15.6px and weight 400, in the same chip (INBOX 263: "I want to strip all signs of being vibecoded by an ai from the ui"). One rule in the label grammar is cheaper than a hand-built chip per call site, which is standing order 11's whole point.
 const PH_LABEL_TRAILING = /\s*ph:([a-z0-9-]{1,40})$/;
 
 // Fills `el` with a label, turning a leading `ph:` marker into a real icon
@@ -1191,17 +1172,9 @@ function setLabel(el, label) {
     icon.setAttribute("aria-hidden", "true");
   }
   const rest = text.slice(match[0].length);
-  // **The gap is a margin, not a space, and it has to be.** A plain " " text
-  // node between the icon and the label is what this did first, and it worked
-  // everywhere except in a flex container, where CSS discards anonymous
-  // whitespace-only children outright. Half the labels in this app live in
-  // flex rows (chips, buttons, status items), so half of them rendered with
-  // the glyph jammed against the first letter and the other half did not,
-  // which reads as a random inconsistency rather than a rule.
+  // **The gap is a margin, not a space, and it has to be.** A plain " " text node between the icon and the label is what this did first, and it worked everywhere except in a flex container, where CSS discards anonymous whitespace-only children outright. Half the labels in this app live in flex rows (chips, buttons, status items), so half of them rendered with the glyph jammed against the first letter and the other half did not, which reads as a random inconsistency rather than a rule.
   //
-  // Only when there IS following text: an icon-only button must stay exactly
-  // as tight as it was, or every icon button in the app gains trailing space
-  // and stops being square.
+  // Only when there IS following text: an icon-only button must stay exactly as tight as it was, or every icon button in the app gains trailing space and stops being square.
   if (rest) icon.classList.add("ph-lead");
   el.replaceChildren(icon);
   if (rest) {
@@ -1663,7 +1636,7 @@ const LAZY_MODULES = {
   //: Tidy, the reviews with no AI (INBOX 691): tidy.js's header.
   tidy: ["/css/tidy-lazy.css", "/js/tidy.js"],
   semanticNotice: ["/css/semantic-notice-lazy.css", "/js/semantic-notice.js"],
-  //: The order the `<script>` tags had, kept: every cross-file call between these three is inside a function rather than at parse time, so it is not load-bearing, but it is the order the three files' own headers describe. documents-code.js and documents-prose.js were split out of documents.js (2026-09-24) and go *before* it, and that position is load-bearing: their own top level reads nothing from documents.js, while documents.js's top-level wiring names their functions, and each file here is followed by a microtask checkpoint before the next one runs. See their headers. documents-props.js, documents-mermaid.js, documents-math.js, documents-comments.js, documents-embeds.js, documents-tables.js, documents-columns.js and documents-print.js (DC13) go before it likewise, as does whiteboard-map.js before whiteboard.js.
+  //: The order the `<script>` tags had, kept: every cross-file call between these three is inside a function rather than at parse time, so it is not load-bearing, but it is the order the three files' own headers describe. documents-code.js and documents-prose.js were split out of documents.js (2026-09-24) and go *before* it, and that position is load-bearing: their own top level reads nothing from documents.js, while documents.js's top-level wiring names their functions, and each file here is followed by a microtask checkpoint before the next one runs. See their headers. documents-props.js, documents-mermaid.js, documents-math.js, documents-comments.js, documents-embeds.js, documents-tables.js, documents-columns.js, documents-print.js and documents-outline.js (DC13) go before it likewise, as does whiteboard-map.js before whiteboard.js.
   library: [
     "/vendor/d3.v7.min.js", //: Before whiteboard.js, whose top level calls `d3.zoom()`.
     "/css/library-lazy.css", //: The styles only this bundle's surfaces draw, out of the boot budget.
@@ -1675,6 +1648,7 @@ const LAZY_MODULES = {
     "/js/documents-code.js",
     "/js/documents-prose.js",
     "/js/documents-print.js",
+    "/js/documents-outline.js",
     "/js/documents-cm.js",
     "/js/documents-props.js",
     "/js/documents-mermaid.js",
@@ -1770,18 +1744,7 @@ function ensureModule(name) {
   return lazyModuleLoads.get(name);
 }
 
-//: **The note editor's door, kept at boot.** The rendering editor every note
-//: box gets (documents.js's `NOTE_SURFACES` table and `mountNoteSurface`)
-//: mounts on the box's first focus through a listener *in documents.js*,
-//: which is in the Library bundle now. So on a fresh boot the capture box,
-//: the edit form, the draft and the graph's popup all stayed bare textareas
-//: until the Library tab had been visited once (the owner: "the graph popup
-//: panels no longer auto render the md and images"). This listener is the
-//: half that has to live in the file that is always loaded: it fetches the
-//: bundle on the first focus of a note box and hands the mount over. Once
-//: the bundle is in, its own listener runs on every later focus and this
-//: one steps aside. `NOTE_SURFACE_IDS` mirrors the table's keys, and
-//: `tests/test_note_surface.py` fails when the two drift.
+//: **The note editor's door, kept at boot.** The rendering editor every note box gets (documents.js's `NOTE_SURFACES` table and `mountNoteSurface`) mounts on the box's first focus through a listener *in documents.js*, which is in the Library bundle now. So on a fresh boot the capture box, the edit form, the draft and the graph's popup all stayed bare textareas until the Library tab had been visited once (the owner: "the graph popup panels no longer auto render the md and images"). This listener is the half that has to live in the file that is always loaded: it fetches the bundle on the first focus of a note box and hands the mount over. Once the bundle is in, its own listener runs on every later focus and this one steps aside. `NOTE_SURFACE_IDS` mirrors the table's keys, and `tests/test_note_surface.py` fails when the two drift.
 const NOTE_SURFACE_IDS = new Set([
   "entry-content",
   "entry-edit-content",
@@ -1816,16 +1779,7 @@ document.addEventListener("focusin", (event) => {
   });
 });
 
-//: **Tab indents from the first keystroke** (owner, INBOX 392: "indenting and
-//: dedenting across the app also doesnt come in the form it should"). The
-//: editor that owns Tab and Shift+Tab (documents.js `indentDocSelection`)
-//: arrives with the Library bundle on a note box's first focus, and until it
-//: has, the box is a plain textarea: measured on a fresh boot, "- alpha"
-//: plus Tab moved focus to the tags field instead of indenting. This bridges
-//: that second or two with the same rule the editor applies: whole lines,
-//: two spaces, list items as blocks, Shift+Tab only when there is something
-//: to take off (so a flush-left caret still tabs backwards out of the box).
-//: Once the bundle is in, the textarea is replaced and this never runs.
+//: **Tab indents from the first keystroke** (owner, INBOX 392: "indenting and dedenting across the app also doesnt come in the form it should"). The editor that owns Tab and Shift+Tab (documents.js `indentDocSelection`) arrives with the Library bundle on a note box's first focus, and until it has, the box is a plain textarea: measured on a fresh boot, "- alpha" plus Tab moved focus to the tags field instead of indenting. This bridges that second or two with the same rule the editor applies: whole lines, two spaces, list items as blocks, Shift+Tab only when there is something to take off (so a flush-left caret still tabs backwards out of the box). Once the bundle is in, the textarea is replaced and this never runs.
 document.addEventListener("keydown", (event) => {
   const box = event.target;
   if (event.key !== "Tab" || event.ctrlKey || event.altKey || event.metaKey) return;

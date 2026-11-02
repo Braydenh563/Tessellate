@@ -57,6 +57,7 @@ SCRIPTS = (
     "documents-tables.js",
     "documents-columns.js",
     "documents-print.js",
+    "documents-outline.js",
     "library.js",
     "dashboard.js",
     "settings.js",
