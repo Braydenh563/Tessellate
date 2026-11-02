@@ -51962,3 +51962,112 @@ plans, 2026-09-13". The python-docx row is closed too: `core/extras.py` has
    `.docx` from the editor's model), both vendored under `frontend/vendor`
    with their notices in THIRD_PARTY.md. The python-docx extra, its route
    and `docexport.to_docx` are retired (Brief 42, docs42b, 2026-10-10).
+
+## Moved from the plans, 2026-11-02 (a30b: UI_MODERNISATION rows found built)
+
+From UI_MODERNISATION_PLAN.md, each checked against the code and its test on 2026-11-02 and found already built; the plan text is below as it stood.
+
+Evidence: indent guides, `docIndentGuides` (documents-code.js) with `tests/test_code_vscode.py` (section 6, lines 229 to 274); INBOX 760, `tests/test_ui_recipes.py::test_a_note_cards_details_line_ends_the_card_and_keeps_the_space_before_edited`; INBOX 761, `tests/test_note_order_1345.py` and `tests/test_search_maps.py` (a board is a board, not a note), CHANGELOG line "mind maps and boards no longer appear as notes"; INBOX 762, `tests/test_board_modified_time.py`; INBOX 767, `tests/test_ui_recipes.py::test_the_no_model_notice_is_one_row_on_the_notice_recipe`; the lightbox row, `tests/test_lightbox.py::test_the_lightbox_row_is_one_height`; INBOX 796, `tests/test_menus_close_others.py` (`GRAPH_HEAD_MENUS`, graph.js); T1 and T2, tidy.js (comments "(T1)", "(T2)"); T4, `tests/test_ui_recipes.py::test_a_menu_has_no_gap_at_its_ends`. All of these tests pass on this branch.
+
+- 8, indent guides in the code editor: Brief 42 (DOCUMENTS 25 row 3); the active line is built.
+- **INBOX 760, card dates.** The time floats mid-card on a card the grid stretched taller than its content (about 110px under it on the tallest card, 40px on short ones); "1 week ago· edited" has lost its space. Pin the details line to the card's bottom edge, measured on a row of unequal cards; the space restored. Carddate agent.
+- **INBOX 761, mind maps listed as notes.** The Ask results show a mind map as an Uncategorised note card; check every reader of notes (Ask, Notes, search, graph, timeline, dashboard counts, Find anything, palette) and exclude what a board keeps behind its topics, with a test per reader. Mapnotes agent.
+- **INBOX 762, "just now" on an untouched mind map.** The Library card's modified time moved without the owner; find what writes `updated_at` on a board when it is only opened, listed, indexed, searched or thumbnailed, stop it, and pin it with a test. Mapnotes agent.
+- **INBOX 767, the no-model notice.** One row at 1440 (icon, one short sentence, the action as a link-styled button, the X at the end), wraps to two only under 600px; the five surfaces share it (`renderAiOfflineNotice`). Measured: notice height equals one line height plus padding at 1440; copy under 90 characters. Notice agent.
+- "These elements in the lightbox aren’t the same height"
+  Recommendation: give lightbox controls one height token and measure their heights in the sweep. No brief carries it; Brief 41 (density) is the nearest.
+- INBOX 796, bug, graph, the owner 2026-10-10 23:00Z, two screenshots: "dropdown menus in the graph dont close when another is opened causing a visual clash and overlay for all 3 of these buttons" (the ?, settings and ⋯ menus in the graph head open on top of each other.) Owner: graphfeel.
+- T1. Tidy is one list of reviews with counts; a review opens in place with a back link (not a bordered button beside a small title), its one-line description, and its rows. An empty review says so in one line with no selection bar: All, None and the disabled action show only when there are rows.
+- T2. Recent runs is a quiet disclosure row (DESIGN "Row actions"), not a full-width bordered box.
+- T4. A menu's first and last items sit one menu padding from its edge, never a group label's or a separator's gap (owner: grammar57, with 813's one dropdown grammar).
+Rows: T1 and T2 (owner: voiceup, with V7's dialog work); T3 learnaudit; T4 grammar57.
+
+## Moved from the plans, 2026-11-02 (a30b: TIMELINE rail circle)
+
+From TIMELINE_PLAN.md "Placed from the owner's list, 2026-10-10", measured again as that row asked. Seeded 48 notes with a snippet under every title (`seed-timeline.js`, `seed-timeline.py`), `getBoundingClientRect` on the mark against the title's first line box: the mark's centre is 0 px from the first line's centre at 1440 and 390 (12 rows each), and the spine was 1 px left of the mark's centre at both widths because the rule ignored the row's 1px border and the spine's own width. Now 0.5 px from the spine's left edge, which is the centre of its 1px line (`.timeline-rows::before`, 06-timeline-dialogs.css; `tests/test_timeline_rail_centre.py`). Not verified: a 2x or 3x display, where the mark paints on the device grid.
+
+### Bugs
+
+- "The circle on the vertical line on the left isnt in line with the text line"
+  Recommendation: align the rail circle to the first line's centre in timeline.js and the timeline CSS, measured with getBoundingClientRect against the line box. Earlier notes on this fix were not verified; measure it again. Also carried by Brief 41 (timeline.js in its file list).
+
+
+## Moved from the plans, 2026-11-02 (a30b: GRAPH phases 1, 2, 3 and 6)
+
+From GRAPH_PLAN.md "5. Phases"; each phase was already marked built (the "Built" headings in the plan point at HISTORY.md, 2026-09-09 and 2026-09-13), and its spec text had stayed behind. Moved whole:
+
+### Phase 1: the canvas renderer and physical drag (1–2 sessions)
+Canvas 2D renderer behind the same `renderGraph()` entry; d3-force in a
+Worker; quadtree hit-testing; drag with `alphaTarget(0.3)` on start and
+decay on end, `forceCollide` from radius, `velocityDecay 0.4`, a weak
+centre force; node radius by degree (`4 + 2·√degree`, clamped); labels by
+zoom (`k > 1.4`) and on hover/selection; hover dims non-neighbours to
+20%; the existing search highlight, trace, focus mode, colour modes, time
+slider and saved views keep working through the new renderer.
+**Gate:** a 2,000-note fixture built by a script (`scratchpad/graph-
+fixture.js`) paints its first frame < 300 ms and holds ≥ 55 fps during a
+2 s drag (Playwright `requestAnimationFrame` counter); no frame > 16 ms
+on a 200-note board; `errors.js` 0.
+
+### Phase 2: the space (½ session)
+The graph fills the tab; the dock, legend, minimap and zoom strip float
+over it on the popover shell; the page does not scroll on Graph; the
+stats line becomes a chip in the dock's identity zone; fullscreen is
+just "hide the app chrome". Dark theme measured with `contrast.js`.
+
+### Phase 3: colour rules and groups (½ session)
+"Colour by" becomes a rule picker (category, tag, space, age, cluster,
+has a map, has a file) plus **groups**: a saved search → a colour, listed
+in the legend, stored with the view. Legend entries toggle visibility.
+
+### Phase 6: the node panel (½ session, INBOX 59)
+The popup that opens on a node is a form with nine equal buttons under it.
+Target: a header (title, category chip, the confidence as a small mark
+beside it, not a chip), one muted meta line (date, links, views), the
+attachment as a compact row, the content editor sized to its text (four
+lines minimum, grows), tags, and a single primary Save that appears only
+when something changed. Actions become one toolbar row of icon buttons
+with tooltips in three groups: read (Open, Similar, Trace), shape (Grow,
+Focus, Link, Remind), keep (Favourite; Bin last, separated, ghost). Open
+is the one filled button. Width and the dock grammar per DESIGN.md; the
+panel scrolls inside, never the page; measured at 1440 and 1024 and on
+390 as a sheet. Gate: `scratchpad/ui-sweeps/graph4b.js` plus a node-panel
+probe that counts buttons per row and the panel's own scrollHeight.
+
+
+## Moved from the plans, 2026-11-02 (a30b: UI_MODERNISATION Phase 7 items 1 to 5)
+
+From UI_MODERNISATION_PLAN.md "Phase 7"; the plan already said items 1, 3, 4 and 5 were built (HISTORY.md, "Moved from the plans, 2026-09-09") and item 2 was struck through, but their text had stayed behind. Moved whole:
+
+Each one was triaged against the running app this session; these are the ones
+that need building rather than fixing.
+
+1. **The lightbox is an image viewer showing a document.** Reported: "the
+   lightbox needs improving for file and pdf previews, no sections or info are
+   below it really compared to the images." An image gets caption, read text,
+   badges and usage under it; a PDF gets the page and nothing else. It should
+   carry the same block, plus what only a document has: page count, which pages
+   have been read, and a way into the OCR Workspace at that page.
+2. ~~**Line numbers as a setting, in all three editors.**~~ **Built** (HISTORY.md, "Moved from the plans, 2026-10-05 (docs hygiene before 0.4.0: UI_MODERNISATION_PLAN)"; `mountGutterFor`, `docGutterWanted` in documents.js).
+3. **Captioning for documents, not just photographs.** Reported: "image
+   captioning, how it is done and displayed needs to be refined for pdf
+   documents and other similar documents. with graphs, images and diagrams in
+   them." A page of slides is not a photograph: the caption prompt, and where
+   the answer is shown, both assume one image with one subject. Needs a
+   per-page, per-figure model and a place to show it that is not a single line
+   under a thumbnail.
+4. **Region select → read just that.** Asked as a question, and it is a good
+   one: "can there be a way for the user to manually outline and single out
+   regions on a pdf or similar document and then the ai will read what is in
+   those regions?? like maybe the user can outline a graph or diagram on a pdf
+   slide and then the user cna get the image or ocr model to analyse and caption
+   that thing." The workspace already draws region boxes from Tesseract and
+   already has a page raster; this is a drag-to-draw on that layer, a crop, and
+   the existing read/caption call on the crop. Scoped small, high value.
+5. **The Files sub-tab has to show more than a row can hold.** OCR text for a
+   long document does not fit where a photo's caption fits; the row needs a
+   summary plus a way to open the reading, not a clamped paragraph.
+
+## Moved from the plans, 2026-11-02 (a30b: UI_MODERNISATION focus ring, measured, not reproduced)
+
+From UI_MODERNISATION_PLAN.md Phase 12 "Open": "One focus ring at 1:1 (Chat, an `.active` button whose ring takes the ground's colour; `focusring.js`)." Re-measured on a seeded 48-note profile at 1440 with `scratchpad/ui-sweeps/focusring.js` (30 Tab stops on each of eight tabs, 239 stops): light 0 stops under 2px or 3:1, minimum 3.56:1; dark 0 under, minimum 7.03:1. The stops with no ring are the text fields that mark focus by their own border or caret (`#chat-input`, `#capture-card-body`, `.capture-card-tags`, and in dark the documents editor). Not verified: an `.active` button with a hover ring over a tinted ground on a real model-backed Chat (no model was connected here).
