@@ -1163,8 +1163,8 @@ MORE_TOPICS: list[dict] = [
             "minutes (or minus and plus), a chime at the end, Breaks, and the "
             "minutes focused today. While the app is locked nothing is "
             "announced; a timer that ran out speaks after you unlock. Settings, "
-            "Account, Show timers and reminders on the lock screen (off by "
-            "default, this device) lists timers and the next few reminders by "
+            "Account & security, Show timers and reminders on the lock screen "
+            "(off by default) lists timers and the next few reminders by "
             "title and time, except private notes', never a note's text."
         ),
         "badge": {"label": "Dashboard", "tab": "dashboard"},

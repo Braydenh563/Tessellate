@@ -34,6 +34,10 @@ with its owner named in the entry.
 
 ## Open items
 
+1557. **Owner, 2026-11-02, verbatim (screenshot: the Clock popup's duration box "10, 90s, 1h30m, 1:30" beside the Start button):** "these elements arent the same height in the timer popup". Recommendation: the field and its button share one control height token in every input-plus-button row (fix the class: find each row that pairs an input with a button and give them one height), with a lint.
+
+1556. **Owner, 2026-11-02, verbatim (screenshots: the Web panel saying "The SearXNG search failed. Check that SearXNG is running, then try again." with only Try again; its menu has Web search settings and Clear recent searches):** "no button to start up searxng". Recommendation: when SearXNG is down, the message offers Start SearXNG (the same start the Settings pane uses), then retries the search once it answers; where the app cannot start it, the message says why and links the setup.
+
 1552. **Found 2026-11-02 while building 1536 (`scratchpad/ui-sweeps/rim1536.js`, ONLY=se):** the Settings panel's corner grip dragged 20px up and left moves every edge but the bottom (left 208 to 216, right 1232 to 1224, top 54 to 66), where the right and bottom should move and the left and top hold, as the new edge resize does. The same at HEAD before 1536, so it is older. Recommendation: find why `panelGripDown`'s one-time `k` read misses on Settings (the press may land on the overlay rather than the grip: the hover there read no `data-rim` and an `auto` cursor), fix, and add the corner to rim1536.js's checks.
 
 
