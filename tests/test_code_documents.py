@@ -826,13 +826,11 @@ def test_the_flowchart_starter_is_one_the_live_view_can_draw(tmp_path):
     row = re.search(r'add\(\{ id: "flowchart".*?run: \(t\) => editorBlock\(t, "```mermaid\\n(.*?)\\n```"', editor)
     assert row, "the Flowchart row has moved"
     docs = documents_text()
-    start = docs.index("const MERMAID_")
-    #: documents-mermaid.js is one closure (doc23-1102), so the function ends at an indented brace.
-    end = docs.index("\n  }\n", docs.index("function mermaidFlowParse(")) + 5
-    helpers = docs[start:end]
+    #: 1546: the starter is read by the diagram model (documents-mermaid.js, DIAGRAM-MODEL region).
+    helpers = docs[docs.index("// DIAGRAM-MODEL-BEGIN") : docs.index("// DIAGRAM-MODEL-END")]
     source = row.group(1).replace("\\n", "\n")
-    graph = _node(helpers, f"mermaidFlowParse({json.dumps(source)})", tmp_path)
-    assert graph and len(graph["nodes"]) == 2, graph
+    graph = _node(helpers, f"diagramModel.parse({json.dumps(source)})", tmp_path)
+    assert graph and len(graph["nodes"]) == 2 and graph["kept"] == [], graph
 
 
 # Row 1139: p5.js names in a sketch, each one the vendored bundle has.

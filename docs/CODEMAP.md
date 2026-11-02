@@ -2,9 +2,9 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7562, frontend ids 2642, CSS sections 518, backend routes 641, backend modules 8493, test files 1903, tests 16037, plan headings 992, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7568, frontend ids 2642, CSS sections 518, backend routes 641, backend modules 8493, test files 1903, tests 16045, plan headings 992, app scripts 28, boot scripts 37, script files 234.
 
-## Frontend functions (7562)
+## Frontend functions (7568)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3496,19 +3496,27 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docMathTokens` | frontend/js/documents-math.js:81 |
 | `docMathTree` | frontend/js/documents-math.js:360 |
 
-### frontend/js/documents-mermaid.js (9)
+### frontend/js/documents-mermaid.js (17)
 
 | Name | File:line |
 |---|---|
-| `docMermaidBlocks` | frontend/js/documents-mermaid.js:327 |
-| `docMermaidField` | frontend/js/documents-mermaid.js:336 |
-| `docMermaidWhenDrawn` | frontend/js/documents-mermaid.js:317 |
-| `docRenderMermaidIn` | frontend/js/documents-mermaid.js:309 |
-| `mermaidFlowLayout` | frontend/js/documents-mermaid.js:151 |
-| `mermaidFlowLink` | frontend/js/documents-mermaid.js:75 |
-| `mermaidFlowNode` | frontend/js/documents-mermaid.js:59 |
-| `mermaidFlowParse` | frontend/js/documents-mermaid.js:100 |
-| `mermaidFlowUnquote` | frontend/js/documents-mermaid.js:52 |
+| `dgmChain` | frontend/js/documents-mermaid.js:150 |
+| `dgmDecode` | frontend/js/documents-mermaid.js:65 |
+| `dgmEscape` | frontend/js/documents-mermaid.js:70 |
+| `dgmFront` | frontend/js/documents-mermaid.js:240 |
+| `dgmLink` | frontend/js/documents-mermaid.js:134 |
+| `dgmParse` | frontend/js/documents-mermaid.js:247 |
+| `dgmPrint` | frontend/js/documents-mermaid.js:222 |
+| `dgmRef` | frontend/js/documents-mermaid.js:117 |
+| `dgmRows` | frontend/js/documents-mermaid.js:191 |
+| `dgmShapeText` | frontend/js/documents-mermaid.js:102 |
+| `dgmStatements` | frontend/js/documents-mermaid.js:81 |
+| `dgmSubgraph` | frontend/js/documents-mermaid.js:182 |
+| `dgmUnquote` | frontend/js/documents-mermaid.js:74 |
+| `docMermaidBlocks` | frontend/js/documents-mermaid.js:329 |
+| `docMermaidField` | frontend/js/documents-mermaid.js:338 |
+| `docMermaidWhenDrawn` | frontend/js/documents-mermaid.js:319 |
+| `docRenderMermaidIn` | frontend/js/documents-mermaid.js:311 |
 
 ### frontend/js/documents-outline.js (12)
 
@@ -7475,62 +7483,60 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbSnapshotRow` | frontend/js/whiteboard-history.js:434 |
 | `wbTakeChangeFromElsewhere` | frontend/js/whiteboard-history.js:315 |
 
-### frontend/js/whiteboard-interchange.js (52)
+### frontend/js/whiteboard-interchange.js (50)
 
 | Name | File:line |
 |---|---|
-| `wbBoardOutline` | frontend/js/whiteboard-interchange.js:323 |
-| `wbBoardRowsFromSvg` | frontend/js/whiteboard-interchange.js:816 |
-| `wbBoardSvgMetadata` | frontend/js/whiteboard-interchange.js:365 |
-| `wbBoardToDrawio` | frontend/js/whiteboard-interchange.js:716 |
-| `wbBoardToMermaid` | frontend/js/whiteboard-interchange.js:42 |
-| `wbBuildDiagram` | frontend/js/whiteboard-interchange.js:1408 |
-| `wbCardTitleForExport` | frontend/js/whiteboard-interchange.js:1039 |
-| `wbDiagramDataUrl` | frontend/js/whiteboard-interchange.js:1403 |
-| `wbDiagramFillColour` | frontend/js/whiteboard-interchange.js:1391 |
-| `wbDiagramFillShare` | frontend/js/whiteboard-interchange.js:1397 |
-| `wbDiagramLook` | frontend/js/whiteboard-interchange.js:1380 |
-| `wbDiagramPreview` | frontend/js/whiteboard-interchange.js:1473 |
-| `wbDiagramSize` | frontend/js/whiteboard-interchange.js:1436 |
-| `wbDiagramToShapes` | frontend/js/whiteboard-interchange.js:1508 |
-| `wbDrawioBox` | frontend/js/whiteboard-interchange.js:1150 |
-| `wbDrawioCells` | frontend/js/whiteboard-interchange.js:1102 |
-| `wbDrawioLook` | frontend/js/whiteboard-interchange.js:608 |
-| `wbDrawioModelCells` | frontend/js/whiteboard-interchange.js:1127 |
-| `wbDrawioPath` | frontend/js/whiteboard-interchange.js:800 |
-| `wbDrawioPlace` | frontend/js/whiteboard-interchange.js:1157 |
-| `wbDrawioPlan` | frontend/js/whiteboard-interchange.js:644 |
-| `wbDrawioShape` | frontend/js/whiteboard-interchange.js:628 |
-| `wbDrawioStyle` | frontend/js/whiteboard-interchange.js:567 |
-| `wbDrawioText` | frontend/js/whiteboard-interchange.js:586 |
-| `wbExportDrawio` | frontend/js/whiteboard-interchange.js:1068 |
-| `wbExportMermaid` | frontend/js/whiteboard-interchange.js:1058 |
-| `wbExportOutline` | frontend/js/whiteboard-interchange.js:1079 |
-| `wbExportRows` | frontend/js/whiteboard-interchange.js:832 |
-| `wbImportBoardRows` | frontend/js/whiteboard-interchange.js:865 |
-| `wbImportDrawio` | frontend/js/whiteboard-interchange.js:1202 |
-| `wbImportMermaid` | frontend/js/whiteboard-interchange.js:903 |
-| `wbImportMermaidSequence` | frontend/js/whiteboard-interchange.js:986 |
-| `wbImportText` | frontend/js/whiteboard-interchange.js:1249 |
-| `wbInsertDiagram` | frontend/js/whiteboard-interchange.js:1445 |
-| `wbMermaidCap` | frontend/js/whiteboard-interchange.js:952 |
-| `wbMermaidClassParse` | frontend/js/whiteboard-interchange.js:457 |
-| `wbMermaidFrameOf` | frontend/js/whiteboard-interchange.js:1046 |
-| `wbMermaidKind` | frontend/js/whiteboard-interchange.js:373 |
-| `wbMermaidLayout` | frontend/js/whiteboard-interchange.js:209 |
-| `wbMermaidLines` | frontend/js/whiteboard-interchange.js:383 |
-| `wbMermaidParse` | frontend/js/whiteboard-interchange.js:110 |
-| `wbMermaidPlaceNode` | frontend/js/whiteboard-interchange.js:959 |
-| `wbMermaidSequenceParse` | frontend/js/whiteboard-interchange.js:517 |
-| `wbMermaidStateParse` | frontend/js/whiteboard-interchange.js:392 |
-| `wbMermaidText` | frontend/js/whiteboard-interchange.js:33 |
-| `wbOpenDiagramDialog` | frontend/js/whiteboard-interchange.js:1457 |
-| `wbOpenImportDialog` | frontend/js/whiteboard-interchange.js:1087 |
-| `wbPaintDiagram` | frontend/js/whiteboard-interchange.js:1417 |
-| `wbSaveDiagramDialog` | frontend/js/whiteboard-interchange.js:1486 |
-| `wbThumbBoardId` | frontend/js/whiteboard-interchange.js:1297 |
-| `wbThumbFlush` | frontend/js/whiteboard-interchange.js:1307 |
-| `wbThumbMark` | frontend/js/whiteboard-interchange.js:1301 |
+| `wbBoardOutline` | frontend/js/whiteboard-interchange.js:220 |
+| `wbBoardRowsFromSvg` | frontend/js/whiteboard-interchange.js:713 |
+| `wbBoardSvgMetadata` | frontend/js/whiteboard-interchange.js:262 |
+| `wbBoardToDrawio` | frontend/js/whiteboard-interchange.js:613 |
+| `wbBoardToMermaid` | frontend/js/whiteboard-interchange.js:36 |
+| `wbBuildDiagram` | frontend/js/whiteboard-interchange.js:1307 |
+| `wbCardTitleForExport` | frontend/js/whiteboard-interchange.js:938 |
+| `wbDiagramDataUrl` | frontend/js/whiteboard-interchange.js:1302 |
+| `wbDiagramFillColour` | frontend/js/whiteboard-interchange.js:1290 |
+| `wbDiagramFillShare` | frontend/js/whiteboard-interchange.js:1296 |
+| `wbDiagramLook` | frontend/js/whiteboard-interchange.js:1279 |
+| `wbDiagramPreview` | frontend/js/whiteboard-interchange.js:1372 |
+| `wbDiagramSize` | frontend/js/whiteboard-interchange.js:1335 |
+| `wbDiagramToShapes` | frontend/js/whiteboard-interchange.js:1407 |
+| `wbDrawioBox` | frontend/js/whiteboard-interchange.js:1049 |
+| `wbDrawioCells` | frontend/js/whiteboard-interchange.js:1001 |
+| `wbDrawioLook` | frontend/js/whiteboard-interchange.js:505 |
+| `wbDrawioModelCells` | frontend/js/whiteboard-interchange.js:1026 |
+| `wbDrawioPath` | frontend/js/whiteboard-interchange.js:697 |
+| `wbDrawioPlace` | frontend/js/whiteboard-interchange.js:1056 |
+| `wbDrawioPlan` | frontend/js/whiteboard-interchange.js:541 |
+| `wbDrawioShape` | frontend/js/whiteboard-interchange.js:525 |
+| `wbDrawioStyle` | frontend/js/whiteboard-interchange.js:464 |
+| `wbDrawioText` | frontend/js/whiteboard-interchange.js:483 |
+| `wbExportDrawio` | frontend/js/whiteboard-interchange.js:967 |
+| `wbExportMermaid` | frontend/js/whiteboard-interchange.js:957 |
+| `wbExportOutline` | frontend/js/whiteboard-interchange.js:978 |
+| `wbExportRows` | frontend/js/whiteboard-interchange.js:729 |
+| `wbImportBoardRows` | frontend/js/whiteboard-interchange.js:762 |
+| `wbImportDrawio` | frontend/js/whiteboard-interchange.js:1101 |
+| `wbImportMermaid` | frontend/js/whiteboard-interchange.js:800 |
+| `wbImportMermaidSequence` | frontend/js/whiteboard-interchange.js:885 |
+| `wbImportText` | frontend/js/whiteboard-interchange.js:1148 |
+| `wbInsertDiagram` | frontend/js/whiteboard-interchange.js:1344 |
+| `wbMermaidCap` | frontend/js/whiteboard-interchange.js:851 |
+| `wbMermaidClassParse` | frontend/js/whiteboard-interchange.js:354 |
+| `wbMermaidFrameOf` | frontend/js/whiteboard-interchange.js:945 |
+| `wbMermaidKind` | frontend/js/whiteboard-interchange.js:270 |
+| `wbMermaidLayout` | frontend/js/whiteboard-interchange.js:106 |
+| `wbMermaidLines` | frontend/js/whiteboard-interchange.js:280 |
+| `wbMermaidPlaceNode` | frontend/js/whiteboard-interchange.js:858 |
+| `wbMermaidSequenceParse` | frontend/js/whiteboard-interchange.js:414 |
+| `wbMermaidStateParse` | frontend/js/whiteboard-interchange.js:289 |
+| `wbOpenDiagramDialog` | frontend/js/whiteboard-interchange.js:1356 |
+| `wbOpenImportDialog` | frontend/js/whiteboard-interchange.js:986 |
+| `wbPaintDiagram` | frontend/js/whiteboard-interchange.js:1316 |
+| `wbSaveDiagramDialog` | frontend/js/whiteboard-interchange.js:1385 |
+| `wbThumbBoardId` | frontend/js/whiteboard-interchange.js:1196 |
+| `wbThumbFlush` | frontend/js/whiteboard-interchange.js:1206 |
+| `wbThumbMark` | frontend/js/whiteboard-interchange.js:1200 |
 
 ### frontend/js/whiteboard-library.js (92)
 
@@ -23303,7 +23309,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16037)
+## Tests (16045)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23789,6 +23795,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_device_sizes.py | 11 |
 | tests/test_diag_report.py | 13 |
 | tests/test_diagnostics_1430.py | 9 |
+| tests/test_diagram_model.py | 12 |
 | tests/test_dialogue_b8.py | 1 |
 | tests/test_dictation_options.py | 8 |
 | tests/test_digest_structure.py | 24 |
@@ -23820,7 +23827,6 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_doc_link_chord_1559.py | 5 |
 | tests/test_doc_long.py | 5 |
 | tests/test_doc_math.py | 2 |
-| tests/test_doc_mermaid.py | 4 |
 | tests/test_doc_open_layout_1530.py | 6 |
 | tests/test_doc_outline_reuse.py | 2 |
 | tests/test_doc_page_break.py | 3 |

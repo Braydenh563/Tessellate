@@ -1,9 +1,9 @@
-// documents-mermaid.js: Mermaid fences, the in-house flowchart reader and the
-// Live figure widget (split out of documents.js, audit 1031 DC13 remainder).
+// documents-mermaid.js: Mermaid fences, the flowchart model and the Live
+// figure widget (split out of documents.js, audit 1031 DC13 remainder).
 //
-// What is here: the pure flowchart reader (`mermaidFlowParse`,
-// `mermaidFlowLayout`, bracketed by `DOC-MERMAID-BEGIN`/`END` for
-// `tests/test_doc_mermaid.py`), the hand-over of a fence to the lazy `mermaid`
+// What is here: the pure flowchart model (`diagramModel`: parse and print,
+// bracketed by `DIAGRAM-MODEL-BEGIN`/`END` for `tests/test_diagram_model.py`;
+// 1546 D1 to D4), the hand-over of a fence to the lazy `mermaid`
 // module (`docRenderMermaidIn`, `docMermaidWhenDrawn`) and the Live state field
 // that draws a fence as its figure (`docMermaidField`). What stayed in
 // documents.js: `docPhase2State` (shared with the embeds and the print sheet)
@@ -28,278 +28,280 @@
   //: hands a fence over (`docRenderMermaidIn`, the Live widget below) and waits
   //: for the picture when a page is printed or saved.
   //:
-  //: What stays here is the small in-house flowchart reader, pure and node-tested
-  //: (`tests/test_doc_mermaid.py`): `mermaidFlowParse` reads a flowchart fence
-  //: into nodes and links (flowchart or graph, TD, TB, BT, LR or RL, seven
-  //: shapes, six link kinds, labels, chains, fans) and `mermaidFlowLayout`
-  //: places it in layers (ranks by longest path with the cycles' back links
-  //: reversed, barycentre sweeps, each layer centred). They no longer draw
-  //: anything; the diagram verifier and a board import are what they are kept
-  //: for. Anything the reader does not read whole is still handed to Mermaid.
-  // DOC-MERMAID-BEGIN
-  const MERMAID_SHAPES = [
+  //: What stays here is the flowchart model below (1546), pure and node-tested.
+  // DIAGRAM-MODEL-BEGIN
+  //: **1546 D1, D2 and D4: the one flowchart grammar.** `parse(source)` reads a
+  //: flowchart fence into `{kind, dir, nodes: [{id, text, shape, group}], edges:
+  //: [{from, to, label, style, arrow}], subgraphs: [{id, title, parent}], kept:
+  //: [{at, line}], front}` and `print(model)` writes the whole source back in
+  //: one canonical order (the header, subgraphs with their nodes, loose nodes,
+  //: edges), so the source is the only state. No coordinates: Mermaid source has
+  //: none. A line this reader cannot place whole (`style`, `classDef`, `click`,
+  //: `%%` comments, `@{ }` shapes, markdown-string labels, a shape it has no name
+  //: for) is a `kept` line, printed verbatim where it stood (`at` counts the
+  //: nodes, edges and subgraphs written before it), never dropped. `front` holds
+  //: the lines ahead of the header (frontmatter, `%%{init}%%`). Labels are
+  //: quoted and `#`, `"`, `<`, `>` (and `|` in an edge label) written as
+  //: Mermaid's entity codes, as the composer does (composer_mermaid.py).
+  //: Pure and node-tested (tests/test_diagram_model.py). A text that is another
+  //: kind of diagram is null.
+  const DGM_MAX_NODES = 120;
+  const DGM_SHAPES = [
     ["([", "])", "stadium"], ["((", "))", "circle"], ["{{", "}}", "hexagon"],
     ["[", "]", "rect"], ["(", ")", "round"], ["{", "}", "diamond"],
   ];
-  const MERMAID_IGNORED = /^(style|classDef|class|linkStyle|click)\b/;
+  const DGM_UNREAD_SHAPE = /^(?:\[\[|\[\(|\[[/\\|]|\(\(\(|>|@\{|:::|\{\{\{)/;
+  const DGM_KEPT = /^(?:%%|(?:style|classDef|class|linkStyle|click|direction|default)\s|acc(?:Title|Descr)\b)/;
+  const DGM_OTHER = /^(?:sequenceDiagram|classDiagram|stateDiagram|erDiagram|journey|gantt|pie|mindmap|timeline|gitGraph|C4\w+|quadrantChart|requirementDiagram|sankey|xychart|block|packet|kanban|architecture|zenuml)\b/i;
   //: Longest first, so `-.->` is not read as `-.-` and a stray `>`.
-  const MERMAID_LINKS = [
+  const DGM_LINKS = [
     ["-.->", "dotted", true], ["==>", "thick", true], ["-->", "solid", true],
     ["-.-", "dotted", false], ["===", "thick", false], ["---", "solid", false],
   ];
-  const MERMAID_MAX_NODES = 120;
+  const DGM_WORDED = /^(--|-\.|==)\s*("[^"]*"|[^-.=|>"\s][^|>]*?)\s*(-->|\.->|==>|---|-\.-|===)/;
+  const DGM_ENTITY = { quot: '"', lt: "<", gt: ">", amp: "&" };
+  const DGM_CODE = { '"': "#quot;", "<": "#lt;", ">": "#gt;", "#": "#35;", "|": "#124;" };
 
-  function mermaidFlowUnquote(text) {
+  function dgmDecode(text) {
+    return text.replace(/#(quot|lt|gt|amp|\d{1,7});/g, (all, k) => DGM_ENTITY[k] ?? (Number(k) <= 0x10ffff ? String.fromCodePoint(Number(k)) : all));
+  }
+
+  //: A line break in a label stays the `<br/>` Mermaid reads; every other `<` is a code.
+  function dgmEscape(text, inBars = false) {
+    return String(text ?? "").replace(/\s*\n\s*/g, " ").replace(/<br\s*\/?>|[#"<>|]/gi, (c) => (c.length > 1 || (c === "|" && !inBars) ? c : DGM_CODE[c]));
+  }
+
+  function dgmUnquote(text) {
     const t = text.trim();
     return t.length >= 2 && t[0] === '"' && t[t.length - 1] === '"' ? t.slice(1, -1) : t;
   }
 
-  //: One node reference: an id and, optionally, its shape and text. Returns the
-  //: node and how many characters it took, or null.
-  function mermaidFlowNode(src, at) {
-    //: A hyphen only between word characters: `a-->b` is a, a link and b.
-    const id = /^[A-Za-z0-9_]+(?:-[A-Za-z0-9_]+)*/.exec(src.slice(at));
-    if (!id) return null;
-    let i = at + id[0].length;
-    for (const [open, close, shape] of MERMAID_SHAPES) {
-      if (src.startsWith(open, i)) {
-        const end = src.indexOf(close, i + open.length);
-        if (end === -1) return null;
-        const text = mermaidFlowUnquote(src.slice(i + open.length, end));
-        return { id: id[0], shape, text, end: end + close.length };
+  //: Lines and `;` statements. A `;` ends one only outside a quote and not as the
+  //: end of an entity code; a comment line is whole.
+  function dgmStatements(text) {
+    const out = [];
+    for (const line of text.split("\n")) {
+      const comment = line.trimStart().startsWith("%%");
+      let from = 0;
+      let quoted = false;
+      for (let i = 0; i < line.length && !comment; i++) {
+        if (line[i] === '"') quoted = !quoted;
+        else if (line[i] === ";" && !quoted && !/#\w{1,7}$/.test(line.slice(from, i))) {
+          out.push(line.slice(from, i));
+          from = i + 1;
+        }
       }
+      out.push(line.slice(from));
+    }
+    return out.map((s) => s.trim()).filter(Boolean);
+  }
+
+  //: The text of a shape from after its opening mark: quoted (a backtick right
+  //: after the quote is a markdown string, which is kept) or up to the closing
+  //: mark. Null when it is not whole.
+  function dgmShapeText(rest, close) {
+    const lead = rest.length - rest.trimStart().length;
+    if (rest[lead] !== '"') {
+      const end = rest.indexOf(close);
+      return end === -1 ? null : { text: dgmDecode(rest.slice(0, end).trim()), used: end + close.length };
+    }
+    const end = rest.indexOf('"', lead + 1);
+    if (end === -1 || rest[lead + 1] === "`") return null;
+    const after = rest.slice(end + 1);
+    const gap = after.length - after.trimStart().length;
+    if (!after.startsWith(close, gap)) return null;
+    return { text: dgmDecode(rest.slice(lead + 1, end)), used: end + 1 + gap + close.length };
+  }
+
+  //: One node reference: an id and, optionally, its shape and text.
+  function dgmRef(src, at) {
+    //: A hyphen only between word characters: `a-->b` is a, a link and b.
+    const id = /^[\p{L}\p{N}_]+(?:-[\p{L}\p{N}_]+)*/u.exec(src.slice(at));
+    if (!id) return null;
+    const i = at + id[0].length;
+    const tail = src.slice(i);
+    if (DGM_UNREAD_SHAPE.test(tail)) return null;
+    for (const [open, close, shape] of DGM_SHAPES) {
+      if (!tail.startsWith(open)) continue;
+      const body = dgmShapeText(tail.slice(open.length), close);
+      return body && { id: id[0], shape, text: body.text, end: i + open.length + body.used };
     }
     return { id: id[0], shape: null, text: null, end: i };
   }
 
-  function mermaidFlowLink(src, at) {
+  //: A link: `-->`, `-.->`, `==>` and their open forms, a label in bars after it
+  //: or written inside it (`-- yes -->`).
+  function dgmLink(src, at) {
     const rest = src.slice(at);
-    //: `-- text -->`, `-. text .->`, `== text ==>`.
-    const worded = /^(--|-\.|==)\s*([^-.=|>][^|>]*?)\s*(-->|\.->|==>|---|-\.-|===)/.exec(rest);
+    const worded = DGM_WORDED.exec(rest);
     if (worded) {
-      const head = MERMAID_LINKS.find(([s]) => s === worded[3] || (worded[3] === ".->" && s === "-.->"));
       const style = worded[1] === "-." ? "dotted" : worded[1] === "==" ? "thick" : "solid";
-      return { style, arrow: head ? head[2] : true, label: mermaidFlowUnquote(worded[2]), end: at + worded[0].length };
+      const arrow = worded[3] === "-->" || worded[3] === ".->" || worded[3] === "==>";
+      return { style, arrow, label: dgmDecode(dgmUnquote(worded[2])), end: at + worded[0].length };
     }
-    for (const [token, style, arrow] of MERMAID_LINKS) {
-      if (!rest.startsWith(token)) continue;
-      let end = at + token.length;
-      let label = "";
-      const piped = /^\s*\|([^|]*)\|/.exec(src.slice(end));
-      if (piped) {
-        label = mermaidFlowUnquote(piped[1]);
-        end += piped[0].length;
-      }
-      return { style, arrow, label, end };
-    }
-    return null;
+    const hit = DGM_LINKS.find(([token]) => rest.startsWith(token));
+    if (!hit) return null;
+    const piped = /^\s*\|("[^"]*"|[^|]*)\|/.exec(src.slice(at + hit[0].length));
+    return { style: hit[1], arrow: hit[2], label: piped ? dgmDecode(dgmUnquote(piped[1])) : "", end: at + hit[0].length + (piped ? piped[0].length : 0) };
   }
 
-  //: The text of a fence as nodes and edges, or null when it is not a flowchart
-  //: this reads whole.
-  function mermaidFlowParse(source) {
-    const lines = String(source || "").replace(/\r/g, "").split(/\n|;/).map((l) => l.replace(/%%.*$/, "").trim()).filter(Boolean);
-    if (!lines.length) return null;
-    const head = /^(flowchart|graph)(?:\s+(TD|TB|BT|LR|RL))?\s*$/i.exec(lines[0]);
-    if (!head) return null;
-    const dir = (head[2] || "TD").toUpperCase().replace("TB", "TD");
-    const nodes = new Map();
-    const edges = [];
-    const touch = (n) => {
-      const had = nodes.get(n.id);
-      if (!had) nodes.set(n.id, { id: n.id, shape: n.shape || "rect", text: n.text ?? n.id, order: nodes.size });
-      else if (n.shape) Object.assign(had, { shape: n.shape, text: n.text ?? had.text });
+  //: A node-and-link statement (chains `a --> b --> c`, fans `a & b --> c`) as
+  //: its references and links, or null when any part is not read whole.
+  function dgmChain(src) {
+    const refs = [];
+    const links = [];
+    let at = 0;
+    let group = [];
+    let pending = null;
+    const skip = () => {
+      while (at < src.length && /\s/.test(src[at])) at++;
     };
-    for (const line of lines.slice(1)) {
-      if (MERMAID_IGNORED.test(line)) continue;
-      let at = 0;
-      let group = [];
-      let pending = null;
-      const skip = () => {
-        while (at < line.length && /\s/.test(line[at])) at++;
-      };
-      for (;;) {
-        skip();
-        const node = mermaidFlowNode(line, at);
-        if (!node) return null;
-        touch(node);
-        group.push(node.id);
-        at = node.end;
-        skip();
-        if (line[at] === "&") {
-          at++;
-          continue;
-        }
-        if (pending) {
-          for (const from of pending.from) for (const to of group) edges.push({ from, to, style: pending.style, arrow: pending.arrow, label: pending.label });
-        }
-        if (at >= line.length) break;
-        const link = mermaidFlowLink(line, at);
-        if (!link) return null;
-        pending = { from: group, ...link };
-        group = [];
-        at = link.end;
+    for (;;) {
+      skip();
+      const ref = dgmRef(src, at);
+      if (!ref) return null;
+      refs.push(ref);
+      group.push(ref.id);
+      at = ref.end;
+      skip();
+      if (src[at] === "&") {
+        at++;
+        continue;
       }
-      if (nodes.size > MERMAID_MAX_NODES) return null;
+      if (pending) for (const from of pending.from) for (const to of group) links.push({ from, to, label: pending.label, style: pending.style, arrow: pending.arrow });
+      if (at >= src.length) return { refs, links };
+      const link = dgmLink(src, at);
+      if (!link) return null;
+      pending = { ...link, from: group };
+      group = [];
+      at = link.end;
     }
-    if (!nodes.size) return null;
-    return { dir, nodes: [...nodes.values()], edges };
   }
 
-  //: Layers, then places. `measure(text)` is a width in px; the default is an
-  //: estimate so node can run this.
-  function mermaidFlowLayout(graph, measure = (t) => t.length * 7.4) {
-    const across = graph.dir === "LR" || graph.dir === "RL";
-    const ids = graph.nodes.map((n) => n.id);
-    const out = new Map(ids.map((id) => [id, []]));
-    const into = new Map(ids.map((id) => [id, []]));
-    //: The back links of every cycle, found by a walk in the order the nodes
-    //: were written, are ranked as if reversed: a loop still draws, upward.
-    const state = new Map();
-    const back = new Set();
-    const visit = (id) => {
-      state.set(id, 1);
-      graph.edges.forEach((e, k) => {
-        if (e.from !== id || e.from === e.to) return;
-        if (state.get(e.to) === 1) back.add(k);
-        else if (!state.get(e.to)) visit(e.to);
+  //: `subgraph id [Title]`, `subgraph id["Title"]` or `subgraph Some title`.
+  function dgmSubgraph(rest, parent) {
+    const named = /^([A-Za-z0-9_][\w-]*)\s*\[\s*(.*?)\s*\]$/.exec(rest);
+    const id = named ? named[1] : dgmDecode(dgmUnquote(rest));
+    return { id, title: named ? dgmDecode(dgmUnquote(named[2])) || id : id, parent };
+  }
+
+  //: The canonical rows of a model, each `{depth, line, unit}` (`unit` null for an
+  //: `end`): subgraphs with their members first, then the loose nodes, then the
+  //: edges. Print writes them and parse counts them to place a kept line.
+  function dgmRows(m) {
+    const rows = [];
+    const ids = new Set(m.subgraphs.map((g) => g.id));
+    //: A parent that is missing or is itself leaves the subgraph at the top.
+    const parentOf = (g) => (ids.has(g.parent) && g.parent !== g.id ? g.parent : null);
+    const done = new Set();
+    const emit = (group, depth) => {
+      m.subgraphs.forEach((g, i) => {
+        if (parentOf(g) !== group || done.has(i)) return;
+        done.add(i);
+        const plain = /^[A-Za-z0-9_][\w-]*$/.test(g.id);
+        const line = plain && g.title !== g.id ? `subgraph ${g.id} ["${dgmEscape(g.title)}"]` : `subgraph ${g.id}`;
+        rows.push({ depth, line, unit: { t: "s", i } });
+        emit(g.id, depth + 1);
+        rows.push({ depth, line: "end", unit: null });
       });
-      state.set(id, 2);
+      m.nodes.forEach((n, i) => {
+        if ((ids.has(n.group) ? n.group : null) !== group) return;
+        const [open, close] = DGM_SHAPES.find((s) => s[2] === n.shape) || ["[", "]"];
+        rows.push({ depth, line: `${n.id}${open}"${dgmEscape(n.text)}"${close}`, unit: { t: "n", i } });
+      });
     };
-    for (const id of ids) if (!state.get(id)) visit(id);
-    graph.edges.forEach((e, k) => {
-      if (e.from === e.to) return;
-      const [a, b] = back.has(k) ? [e.to, e.from] : [e.from, e.to];
-      out.get(a).push(b);
-      into.get(b).push(a);
+    emit(null, 0);
+    m.edges.forEach((e, i) => {
+      const token = (DGM_LINKS.find(([, style, arrow]) => style === e.style && arrow === e.arrow) || DGM_LINKS[2])[0];
+      const label = e.label ? `|"${dgmEscape(e.label, true)}"|` : "";
+      rows.push({ depth: 0, line: `${e.from} ${token}${label} ${e.to}`, unit: { t: "e", i } });
     });
-    const rank = new Map();
-    const rankOf = (id, seen = new Set()) => {
-      if (rank.has(id)) return rank.get(id);
-      if (seen.has(id)) return 0;
-      seen.add(id);
-      const r = into.get(id).length ? Math.max(...into.get(id).map((p) => rankOf(p, seen) + 1)) : 0;
-      rank.set(id, r);
-      return r;
-    };
-    ids.forEach((id) => rankOf(id));
-    const layers = [];
-    for (const id of ids) (layers[rank.get(id)] ||= []).push(id);
-    const pos = new Map();
-    const reindex = () => layers.forEach((layer) => layer.forEach((id, i) => pos.set(id, i)));
-    reindex();
-    const bary = (id, side) => {
-      const near = side.get(id);
-      return near.length ? near.reduce((s, n) => s + pos.get(n), 0) / near.length : pos.get(id);
-    };
-    for (let sweep = 0; sweep < 4; sweep++) {
-      const down = sweep % 2 === 0;
-      const order = down ? layers.slice(1) : layers.slice(0, -1).reverse();
-      for (const layer of order) {
-        layer.sort((a, b) => bary(a, down ? into : out) - bary(b, down ? into : out) || pos.get(a) - pos.get(b));
-        layer.forEach((id, i) => pos.set(id, i));
-      }
-    }
-    const byId = new Map(graph.nodes.map((n) => [n.id, n]));
-    const size = new Map();
-    for (const n of graph.nodes) {
-      const w = Math.max(48, Math.ceil(measure(n.text)) + 28);
-      const h = 38;
-      if (n.shape === "diamond") size.set(n.id, { w: w + 28, h: h + 22 });
-      else if (n.shape === "circle") size.set(n.id, { w: Math.max(w, 60), h: Math.max(w, 60) });
-      else size.set(n.id, { w, h });
-    }
-    //: Main axis (down the ranks) and cross axis (along a rank), turned for LR.
-    const main = (s) => (across ? s.w : s.h);
-    const cross = (s) => (across ? s.h : s.w);
-    const gapMain = 56;
-    const gapCross = 28;
-    const pad = 12;
-    const rankSpan = layers.map((layer) => Math.max(...layer.map((id) => main(size.get(id)))));
-    const rankWidth = layers.map((layer) => layer.reduce((s, id) => s + cross(size.get(id)), 0) + gapCross * (layer.length - 1));
-    const widest = Math.max(...rankWidth);
-    const place = new Map();
-    let along = pad;
-    layers.forEach((layer, r) => {
-      let c = pad + (widest - rankWidth[r]) / 2;
-      for (const id of layer) {
-        const s = size.get(id);
-        const mid = along + rankSpan[r] / 2;
-        const cmid = c + cross(s) / 2;
-        place.set(id, across ? { x: mid, y: cmid } : { x: cmid, y: mid });
-        c += cross(s) + gapCross;
-      }
-      along += rankSpan[r] + gapMain;
-    });
-    const total = { main: along - gapMain + pad, cross: widest + pad * 2 };
-    let width = across ? total.main : total.cross;
-    let height = across ? total.cross : total.main;
-    //: BT and RL are TD and LR mirrored.
-    if (graph.dir === "BT") for (const p of place.values()) p.y = height - p.y;
-    if (graph.dir === "RL") for (const p of place.values()) p.x = width - p.x;
-    const boxes = graph.nodes.map((n) => ({ ...byId.get(n.id), ...place.get(n.id), ...size.get(n.id) }));
-    const at = new Map(boxes.map((b) => [b.id, b]));
-    //: Where a line meets a box: its outline on the line toward the other
-    //: point (a diamond's and a circle's own, a rectangle's for the rest).
-    const edgePoint = (b, toward) => {
-      const dx = toward.x - b.x;
-      const dy = toward.y - b.y;
-      if (!dx && !dy) return { x: b.x, y: b.y };
-      let s;
-      if (b.shape === "diamond") s = 1 / (Math.abs(dx) / (b.w / 2) + Math.abs(dy) / (b.h / 2));
-      else if (b.shape === "circle") s = (b.w / 2) / Math.hypot(dx, dy);
-      else s = Math.min(dx ? (b.w / 2) / Math.abs(dx) : Infinity, dy ? (b.h / 2) / Math.abs(dy) : Infinity);
-      return { x: b.x + dx * s, y: b.y + dy * s };
-    };
-    const lines = graph.edges.map((e) => {
-      const a = at.get(e.from);
-      const b = at.get(e.to);
-      if (e.from === e.to) {
-        const top = { x: a.x + a.w / 2, y: a.y - a.h / 4 };
-        return { ...e, d: `M${top.x} ${top.y} c 30 -20 30 ${a.h / 2 + 20} 0 ${a.h / 2}`, mid: { x: top.x + 26, y: a.y } };
-      }
-      //: **A line that would lie on another bows aside**: a link back up the
-      //: flow (a loop's return), the second of two links between one pair, and
-      //: one that skips a rank (it would cross the box between) are curves
-      //: whose middle is pushed off the straight line, to the right of the flow
-      //: for a return and to alternate sides for the rest.
-      const k = graph.edges.indexOf(e);
-      const twin = graph.edges.findIndex((o, j) => j < k && ((o.from === e.from && o.to === e.to) || (o.from === e.to && o.to === e.from)));
-      const backward = rank.get(e.to) <= rank.get(e.from);
-      const skips = Math.abs(rank.get(e.to) - rank.get(e.from)) > 1;
-      const bend = backward ? 46 : twin !== -1 ? -46 : skips ? 40 * (k % 2 ? -1 : 1) : 0;
-      if (!bend) {
-        const p = edgePoint(a, b);
-        const q = edgePoint(b, a);
-        const mid = { x: (p.x + q.x) / 2, y: (p.y + q.y) / 2 };
-        return { ...e, d: `M${p.x.toFixed(1)} ${p.y.toFixed(1)} L${q.x.toFixed(1)} ${q.y.toFixed(1)}`, mid };
-      }
-      const dx = b.x - a.x;
-      const dy = b.y - a.y;
-      const len = Math.hypot(dx, dy) || 1;
-      const c = { x: (a.x + b.x) / 2 - (dy / len) * bend * 2, y: (a.y + b.y) / 2 + (dx / len) * bend * 2 };
-      const p = edgePoint(a, c);
-      const q = edgePoint(b, c);
-      const mid = { x: 0.25 * p.x + 0.5 * c.x + 0.25 * q.x, y: 0.25 * p.y + 0.5 * c.y + 0.25 * q.y };
-      const f = (n) => n.toFixed(1);
-      return { ...e, d: `M${f(p.x)} ${f(p.y)} Q${f(c.x)} ${f(c.y)} ${f(q.x)} ${f(q.y)}`, mid };
-    });
-    //: A curve may bow past an edge: the box grows to hold it, on any side.
-    let x0 = 0;
-    let y0 = 0;
-    for (const line of lines) {
-      if (line.from === line.to) continue;
-      const nums = line.d.match(/-?[\d.]+/g).map(Number);
-      for (let i = 0; i + 1 < nums.length; i += 2) {
-        x0 = Math.min(x0, nums[i] - 12);
-        y0 = Math.min(y0, nums[i + 1] - 12);
-        width = Math.max(width, nums[i] + 12);
-        height = Math.max(height, nums[i + 1] + 12);
-      }
-    }
-    return { x0: Math.floor(x0), y0: Math.floor(y0), width: Math.ceil(width - x0), height: Math.ceil(height - y0), boxes, lines };
+    return rows;
   }
-  // DOC-MERMAID-END
+
+  function dgmPrint(m) {
+    const kept = (m.kept || []).map((k, i) => ({ ...k, i })).sort((a, b) => a.at - b.at || a.i - b.i);
+    const out = [...(m.front || []), `flowchart ${m.dir || "TD"}`];
+    const indent = (depth) => "  ".repeat(depth + 1);
+    let units = 0;
+    let next = 0;
+    const flush = (limit, depth) => {
+      while (next < kept.length && kept[next].at <= limit) out.push(indent(depth) + kept[next++].line);
+    };
+    for (const row of dgmRows(m)) {
+      if (row.unit) flush(units++, row.depth);
+      out.push(indent(row.depth) + row.line);
+    }
+    flush(Infinity, 0);
+    return out.join("\n") + "\n";
+  }
+
+  //: The lines of the text before its header: frontmatter and leading comments.
+  function dgmFront(text) {
+    const front = [];
+    const fm = /^---[ \t]*\n[\s\S]*?\n---[ \t]*(?:\n|$)/.exec(text);
+    if (fm) front.push(...fm[0].replace(/\n$/, "").split("\n"));
+    return { front, rest: fm ? text.slice(fm[0].length) : text };
+  }
+
+  function dgmParse(source) {
+    const { front, rest } = dgmFront(String(source ?? "").replace(/\r/g, ""));
+    const statements = dgmStatements(rest);
+    let at = 0;
+    while (at < statements.length && statements[at].startsWith("%%")) front.push(statements[at++]);
+    const head = /^(flowchart|graph)(?:\s+(TD|TB|BT|LR|RL))?$/i.exec(statements[at] || "");
+    if (!head && DGM_OTHER.test(statements[at] || "")) return null;
+    if (head) at++;
+    const m = { kind: "flowchart", dir: (head?.[2] || "TD").toUpperCase().replace("TB", "TD"), nodes: [], edges: [], subgraphs: [], kept: [], front };
+    const byId = new Map();
+    const born = new Map();
+    const open = [];
+    const snaps = [];
+    const touch = (ref) => {
+      let n = byId.get(ref.id);
+      if (!n) {
+        n = { id: ref.id, text: ref.text ?? ref.id, shape: ref.shape || "rect", group: null };
+        byId.set(ref.id, n);
+        born.set(ref.id, born.size);
+        m.nodes.push(n);
+      } else if (ref.shape) Object.assign(n, { shape: ref.shape, text: ref.text ?? n.text });
+      //: A node belongs to the first subgraph it is named inside.
+      if (n.group == null && open.length) n.group = open[open.length - 1];
+    };
+    const keep = (line) => {
+      m.kept.push({ at: 0, line });
+      snaps.push({ n: born.size, e: m.edges.length, s: m.subgraphs.length });
+    };
+    for (const s of statements.slice(at)) {
+      const sub = /^subgraph\s+(.+)$/.exec(s);
+      if (DGM_KEPT.test(s)) keep(s);
+      else if (sub) {
+        const g = dgmSubgraph(sub[1].trim(), open.length ? open[open.length - 1] : null);
+        if (!m.subgraphs.some((o) => o.id === g.id)) m.subgraphs.push(g);
+        open.push(g.id);
+      } else if (s === "end" && open.length) open.pop();
+      else {
+        const chain = s === "end" ? null : dgmChain(s);
+        if (!chain) keep(s);
+        else {
+          chain.refs.forEach(touch);
+          m.edges.push(...chain.links);
+        }
+      }
+    }
+    //: A subgraph named in an edge is the group, not a node of its own.
+    const groups = new Set(m.subgraphs.map((g) => g.id));
+    m.nodes = m.nodes.filter((n) => !groups.has(n.id));
+    const rows = dgmRows(m).filter((r) => r.unit);
+    const seen = (u, snap) => (u.t === "n" ? born.get(m.nodes[u.i].id) < snap.n : u.t === "e" ? u.i < snap.e : u.i < snap.s);
+    snaps.forEach((snap, k) => {
+      m.kept[k].at = rows.filter((r) => seen(r.unit, snap)).length;
+    });
+    return m;
+  }
+
+  const diagramModel = { MAX_NODES: DGM_MAX_NODES, parse: dgmParse, print: dgmPrint };
+  // DIAGRAM-MODEL-END
 
   //: Read (and so the print and the HTML export, which are drawn from it): each
   //: mermaid fence is handed to the lazy `mermaid` module (mermaid-draw.js), which
@@ -428,5 +430,5 @@
   }
 
   //: The file's whole surface: what documents.js and documents-export.js call.
-  Object.assign(window, { docRenderMermaidIn, docMermaidWhenDrawn, docMermaidField });
+  Object.assign(window, { docRenderMermaidIn, docMermaidWhenDrawn, docMermaidField, diagramModel });
 })();
