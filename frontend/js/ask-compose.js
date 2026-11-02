@@ -999,6 +999,7 @@ async function askQuestion(preset) {
   let groundedInsights = []; // the lines it volunteered (decision 73)
   let answerWhy = []; // how it was made (B30)
   let answerOffer = null; // a counted answer's offer (decision 70)
+  let answerTip = ""; // the pick-up line, under the answer as in Chat (audit 1028 E52)
   const answerPanels = []; // the app's panels under the answer (INBOX 1300 C06)
   let composedNext = []; // a composed answer's own next questions (INBOX 725)
   //: Kept beyond the callback that receives them, because the answer element
@@ -1137,6 +1138,7 @@ async function askQuestion(preset) {
       onOffer: (event) => {
         answerOffer = event.offer || null;
       },
+      onTip: (event) => { answerTip = event.text || ""; },
       //: Drawn with the foot, once the answer's text is final.
       onPanel: (event) => answerPanels.push(event),
       //: The web pages a composed answer read, as cards (decision 66), drawn
@@ -1223,6 +1225,7 @@ async function askQuestion(preset) {
       ensureModule("askCompose").then(() => renderAskInsights(groundedInsights)).catch(() => {});
       ensureModule("askCompose").then(() => { renderAskWhy(answerWhy); renderAskBoth(question, answerMeta, answerPanels); }).catch(() => {});
       if (answerOffer) ensureModule("askCompose").then(() => digestOffer(answerBox, answerOffer)).catch(() => {});
+      if (answerTip) answerBox.appendChild(Object.assign(document.createElement("p"), { className: "muted answer-tip", textContent: answerTip }));
       if (answerPanels.length) drawAnswerPanels(answerBox, answerPanels);
       //: `composed`, and `match_info` for each record's reason (INBOX 1310,
       //: `replyRecordReasons`); only these, so a new meta key cannot steer it.

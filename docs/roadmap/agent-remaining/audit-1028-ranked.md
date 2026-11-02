@@ -249,7 +249,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 243 | S63 | low | palette lacks note results with a preview | new | M |
 | 244 | S68 | low | import panel is long and dense | new | M |
 | 245 | S69 | low | backup restore has no verify-before-restore summary | new | M |
-| 246 | S82 | low | segmented view toggle has no labels | new | S |
+| 246 | S82 | low | segmented view toggle has no labels | fixed (already: each segmented toggle button has a title and aria-label, e.g. index.html:6031, 14490; checked 2026-11-02) | S |
 | 247 | S83 | low | filter state not summarised when the menu is closed | new | S |
 | 248 | S84 | low | onboarding cannot be re-opened from Help | fixed (already: Help pane calls renderTourReplay, settings.js:122, tour.js:1947; checked 2026-11-02) | S |
 | 249 | S85 | low | error toasts say what failed but not what to do | new | M |

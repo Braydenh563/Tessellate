@@ -48,3 +48,10 @@ def test_the_page_draws_the_tip_outside_the_answer():
     assert 'else if (event.type === "tip" && onTip) onTip(event);' in kit
     assert "onTip: (event) => { chatTip = event.text || \"\"; }," in kit
     assert 'tip.className = "muted answer-tip";' in kit and "recordsHolder.prepend(tip)" in kit
+
+
+def test_the_ask_tab_draws_it_too():
+    """The Ask box asks the same stream, so it takes the same tip (a28x left it dropped there)."""
+    ask = app_js_text()
+    assert 'onTip: (event) => { answerTip = event.text || ""; },' in ask
+    assert 'className: "muted answer-tip", textContent: answerTip' in ask
