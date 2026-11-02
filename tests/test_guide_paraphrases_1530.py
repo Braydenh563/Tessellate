@@ -8,13 +8,17 @@ topic, not this one."""
 
 from __future__ import annotations
 
+import importlib
 import json
 from pathlib import Path
 
 import pytest
 
 from tessellate.ai import help_chat
-from tessellate.api import app as _app  # noqa: F401  (registers the reading and the spelling repair, as the running app has them)
+
+#: The app module registers the reading and the spelling repair, as the
+#: running app has them; imported for that alone.
+importlib.import_module("tessellate.api.app")
 
 BANK = json.loads((Path(__file__).parent / "fixtures" / "guide_paraphrases_1530.json").read_text())
 
