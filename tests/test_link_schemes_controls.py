@@ -45,7 +45,10 @@ def test_ordinary_links_pass(url):
 
 
 def test_open_link_uses_the_allowlist():
-    body = _function((JS / "documents.js").read_text(encoding="utf-8"), "function docOpenLink(")
+    #: documents-embeds.js is one closure (doc23-1102), so the function ends at an indented brace.
+    source = (JS / "documents-embeds.js").read_text(encoding="utf-8")
+    start = source.index("function docOpenLink(")
+    body = source[start : source.index("\n  }\n", start) + 5]
     assert 'safeHref(clean) === "#"' in body
 
 

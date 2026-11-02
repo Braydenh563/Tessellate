@@ -101,7 +101,7 @@ def core_checks(tmp_path_factory) -> list[dict]:
     node = shutil.which("node")
     if not node:  # pragma: no cover - node is in the sandbox and in CI
         pytest.skip("node is not available")
-    docs = (JS / "documents.js").read_text(encoding="utf-8")
+    docs = (JS / "documents-math.js").read_text(encoding="utf-8")  # the parser moved out of documents.js (DC13 remainder, doc23-1102)
     source = _region(docs, "// DOC-MATH-BEGIN", "// DOC-MATH-END")
     source += _region(EDITOR, "// MATH-EDITOR-CORE-BEGIN", "// MATH-EDITOR-CORE-END")
     script = tmp_path_factory.mktemp("matheditor") / "run.js"

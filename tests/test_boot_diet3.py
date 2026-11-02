@@ -257,7 +257,7 @@ def test_a_file_that_never_arrives_says_so_instead_of_leaving_a_blank_list():
     for name, needle in (
         ("notes-list.js", 'lazyLoadFailed("Notes")'),
         ("phone-shell.js", 'ensureModule("entryCard").then((ok) => (ok && window.entryItem ? openNotePage(entry, returnFocus) : lazyLoadFailed('),
-        ("documents.js", 'ensureModule("entryCard").then((ok) => (ok && window.entryItem ? list.appendChild(entryItem(target.entry)) : lazyLoadFailed('),
+        ("documents-embeds.js", 'ensureModule("entryCard").then((ok) => (ok && window.entryItem ? list.appendChild(entryItem(target.entry)) : lazyLoadFailed('),
     ):
         assert needle in (JS / name).read_text(encoding="utf-8"), name
 

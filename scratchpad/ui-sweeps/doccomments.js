@@ -51,7 +51,7 @@ const seed = (title, content) => `(async () => {
     await new Promise((res) => setTimeout(res, 400));
     await openDocument(doc.id);
     await new Promise((res) => setTimeout(res, 2500));
-    return JSON.stringify({ comments: docComments().length });
+    return JSON.stringify({ comments: document.querySelectorAll("#doc-comments .doc-comment-item").length });
   }, CONTENT));
 
   // 1. The section, its count, and the rows.
@@ -364,7 +364,7 @@ const seed = (title, content) => `(async () => {
       caretInRemark: /%%%%/.test(text) && sel.from === text.indexOf("%%%%") + 2,
       wouldRead: typed.slice(0, 60),
       // An empty remark is not a comment yet, so nothing is listed for it.
-      comments: docComments().length,
+      comments: document.querySelectorAll("#doc-comments .doc-comment-item").length,
       menuItem: Boolean(document.querySelector('[data-md="annotate"]')),
     });
   });

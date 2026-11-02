@@ -824,7 +824,8 @@ def test_the_flowchart_starter_is_one_the_live_view_can_draw(tmp_path):
     assert row, "the Flowchart row has moved"
     docs = documents_text()
     start = docs.index("const MERMAID_")
-    end = docs.index("\n}\n", docs.index("function mermaidFlowParse(")) + 2
+    #: documents-mermaid.js is one closure (doc23-1102), so the function ends at an indented brace.
+    end = docs.index("\n  }\n", docs.index("function mermaidFlowParse(")) + 5
     helpers = docs[start:end]
     source = row.group(1).replace("\\n", "\n")
     graph = _node(helpers, f"mermaidFlowParse({json.dumps(source)})", tmp_path)

@@ -1,7 +1,7 @@
 """The in-house flowchart reader (DOCUMENTS_PLAN decisions 20.3 and 20.6, the
 audit's D3), kept pure after Mermaid itself took over the drawing.
 
-The marked region of documents.js (`DOC-MERMAID-BEGIN` to `-END`) reads a
+The marked region of documents-mermaid.js (`DOC-MERMAID-BEGIN` to `-END`) reads a
 flowchart fence and lays it out in layers; it draws nothing (the SVG-tree test
 went with the drawing it tested, when every kind began to be drawn by the
 vendored library, tests/test_mermaid_frame.py). Node runs it here. The rule
@@ -20,7 +20,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-DOCUMENTS_JS = ROOT / "frontend" / "js" / "documents.js"
+DOCUMENTS_JS = ROOT / "frontend" / "js" / "documents-mermaid.js"  # the reader moved out of documents.js (DC13 remainder, doc23-1102)
 
 
 def _run(body: str):
