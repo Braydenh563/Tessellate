@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents Word export (audit 1102 DX9): a diagram is a picture, a formula is a Word equation (fractions, roots, scripts, sums and integrals), a footnote is a real Word footnote, a task box is ☐ or ☑, and the footnote's "Back" and the remote-image note are no longer written; the HTML export and print drop the same chrome from one list (`DOC_EXPORT_STRIP`). Measured on a probe document: footnote references 0 to 2, drawings 0 to 1, `m:oMath` 0 to 2, "Back" and "Remote image not loaded" present to absent.
 - The Notes Filter button shows when meaning search is on, as the Library's does (audit 1028 S83).
 - The Stats widget's category counts open those notes, through the same door as the Categories widget (audit 1028 S87).
 - Closing the keyboard shortcuts sheet gives focus back to what opened it (audit 1028 S58; was BODY).

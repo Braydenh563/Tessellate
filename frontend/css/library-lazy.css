@@ -653,12 +653,12 @@ textarea.has-gutter {
 
 /* **The renderer's own chrome is not the document** (audit 1102 DX8). A code
      block's and a table's bar ("JS", "Copy", "Save", "TABLE, header and 2
-     rows") and a remote picture's "not loaded, open link" note printed on
-     paper, and the table's bar printed on page 1 with the table on page 2. The
-     Word export drops the same two things (`.code-bar` in documents-word.js,
-     which also drops every button) and `tests/test_docs_1102_dx.py` pins that
-     the lists agree, so the page and the file say the same words. */
-  body.printing-doc #doc-preview :is(.code-bar, .entry-image-note) {
+     rows"), a remote picture's "not loaded, open link" note and a footnote's
+     "Back" link printed on paper, and the table's bar printed on page 1 with the table on page 2. The
+     HTML and Word exports drop the same three things (`DOC_EXPORT_STRIP` in
+     documents.js, which Word adds every button to) and
+     `tests/test_docs_1102_dx.py` pins that the lists agree, so the page and the file say the same words. */
+  body.printing-doc #doc-preview :is(.code-bar, .entry-image-note, a.md-fn-back) {
     display: none !important;
   }
 

@@ -198,14 +198,22 @@ async function docWordBlob(D, title, text) {
   await ensureModule("tableBlock");
   renderMarkdown(holder, marked);
   //: The renderer's own chrome is not the document: a code block's and a
-  //: table's bar (its label, Copy, Save) would be written as text.
-  for (const chrome of holder.querySelectorAll(".code-bar, button")) chrome.remove();
+  //: table's bar (its label, Copy, Save), a remote picture's note and a
+  //: footnote's "Back" would be written as text. The list is the one the
+  //: HTML export and the print rule share (`DOC_EXPORT_STRIP`, documents.js).
+  for (const chrome of holder.querySelectorAll(`${DOC_EXPORT_STRIP}, button`)) chrome.remove();
   const pictures = new Map();
   for (const img of holder.querySelectorAll("img")) {
     const picture = await docWordPicture(img);
     if (picture) pictures.set(img, picture);
   }
-  const ctx = { mode: "", revision: 1, date: new Date().toISOString(), pictures, lists: 0, lines: marked.split("\n"), langs: new Set() };
+  //: A diagram is written as the picture the page shows, not as its source.
+  const diagrams = new Map();
+  for (const code of holder.querySelectorAll('pre code[data-lang="mermaid"]')) {
+    const picture = await docWordBlob.diagram(code.textContent);
+    if (picture) diagrams.set(code.closest("pre"), picture);
+  }
+  const ctx = { mode: "", revision: 1, date: new Date().toISOString(), pictures, diagrams, holder, footnotes: {}, lists: 0, lines: marked.split("\n"), langs: new Set() };
   const children = docWordBlocks(D, holder, 0, ctx);
   const levels = Array.from({ length: 9 }, (_, level) => ({
     level,
@@ -224,10 +232,93 @@ async function docWordBlob(D, title, text) {
       ],
     },
     numbering: { config: [{ reference: "mm-numbered", levels }] },
+    footnotes: ctx.footnotes,
     sections: [{ children: children.length ? children : [new D.Paragraph("")] }],
   });
   return D.Packer.toBlob(doc);
 }
+
+//: A diagram as a PNG for Word: the frame answers SVG (the page shows it as
+//: an <img>), so the SVG gets an explicit size from its viewBox and is drawn
+//: on a canvas at twice that, which keeps a label sharp when the page is
+//: zoomed. Null when the module, the frame or the canvas says no, and the
+//: fence stays the code lines it was.
+docWordBlob.diagram = async (source) => {
+  try {
+    if (!(await ensureModule("mermaid"))) return null;
+    const result = await mermaidRequest(source);
+    if (!result.svg) return null;
+    //: The root tag is edited as text: parsing the SVG into this page's
+    //: document would apply its `style` attributes under the page's policy.
+    const root = /<svg\b[^>]*>/.exec(result.svg)?.[0] || "";
+    const box = (/\sviewBox="([^"]+)"/.exec(root)?.[1] || "").trim().split(/[\s,]+/).map(Number);
+    const width = box[2];
+    const height = box[3];
+    if (!(width > 0 && height > 0)) return null;
+    const sized = result.svg.replace(root, `${root.replace(/\s(?:width|height)="[^"]*"/g, "").replace("<svg", `<svg width="${width}" height="${height}"`)}`);
+    const url = URL.createObjectURL(new Blob([sized], { type: "image/svg+xml" }));
+    try {
+      const img = new Image();
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = url;
+      });
+      const scale = Math.min(2, 2400 / width);
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(width * scale);
+      canvas.height = Math.round(height * scale);
+      canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+      const png = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+      if (!png) return null;
+      const shown = Math.max(1, Math.min(DOC_WORD_PAGE_PX, width));
+      return { type: "png", data: await png.arrayBuffer(), width: shown, height: Math.max(1, Math.round((height * shown) / width)), alt: mermaidAltFor(source) };
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  } catch {
+    return null;
+  }
+};
+
+//: A formula as Word's own maths (OMML): the renderer's MathML walked into
+//: docx's maths parts, so Word can edit it. Fractions, roots, scripts and
+//: sums and integrals are objects; a matrix, an accent or anything else is
+//: its symbols in a row, which reads right and loses only the layout.
+docWordBlob.math = (D, node) => {
+  const run = (text) => new D.MathRun(text);
+  const some = (parts) => (parts.length ? parts : [run("")]);
+  const NARY = { "\u2211": D.MathSum, "\u222B": D.MathIntegral };
+  const walk = (kids) => {
+    const out = [];
+    for (let i = 0; i < kids.length; i += 1) {
+      const el = kids[i];
+      const tag = el.localName;
+      const inner = [...el.children];
+      const nary = /^(msub|msup|msubsup|munder|mover|munderover)$/.test(tag) && inner[0] && NARY[inner[0].textContent.trim()];
+      if (nary) {
+        //: The big operator takes what follows it in the row as its body.
+        const lower = /^(msub|msubsup|munder|munderover)$/.test(tag) ? inner[1] : null;
+        const upper = /^(msup|mover)$/.test(tag) ? inner[1] : /^(msubsup|munderover)$/.test(tag) ? inner[2] : null;
+        out.push(new nary({ children: some(walk(kids.slice(i + 1))), subScript: lower ? walk([lower]) : undefined, superScript: upper ? walk([upper]) : undefined }));
+        break;
+      }
+      if (tag === "mfrac") out.push(new D.MathFraction({ numerator: some(walk([inner[0]])), denominator: some(walk([inner[1]])) }));
+      else if (tag === "msqrt") out.push(new D.MathRadical({ children: some(walk(inner)) }));
+      else if (tag === "mroot") out.push(new D.MathRadical({ children: some(walk([inner[0]])), degree: some(walk([inner[1]])) }));
+      else if (tag === "msup") out.push(new D.MathSuperScript({ children: some(walk([inner[0]])), superScript: some(walk([inner[1]])) }));
+      else if (tag === "msub") out.push(new D.MathSubScript({ children: some(walk([inner[0]])), subScript: some(walk([inner[1]])) }));
+      else if (tag === "msubsup") out.push(new D.MathSubSuperScript({ children: some(walk([inner[0]])), subScript: some(walk([inner[1]])), superScript: some(walk([inner[2]])) }));
+      else if (tag === "mspace" || tag === "annotation") continue;
+      else if (inner.length) out.push(...walk(inner));
+      else if (el.textContent) out.push(run(el.textContent));
+    }
+    return out;
+  };
+  const math = node.localName === "math" ? node : node.querySelector("math");
+  if (!math) return new D.TextRun({ text: node.dataset?.tex || node.textContent });
+  return new D.Math({ children: some(walk([...math.children])) });
+};
 
 async function docWordExport() {
   if (!currentDoc) return false;
@@ -273,7 +364,20 @@ function docWordRuns(D, node, style = {}, ctx = { mode: "", revision: 1, date: n
     else if (tag === "em" || tag === "i") runs.push(...docWordRuns(D, child, { ...style, italics: true }, ctx));
     else if (tag === "del" || tag === "s") runs.push(...docWordRuns(D, child, { ...style, strike: true }, ctx));
     else if (tag === "code") runs.push(...docWordRuns(D, child, { ...style, font: "Consolas" }, ctx));
-    else if (tag === "img") {
+    else if (tag === "input" && child.type === "checkbox") {
+      //: A task keeps its state: the box is a glyph Word can show, not a control.
+      runs.push(new D.TextRun({ text: child.checked ? "\u2611 " : "\u2610 ", ...style }));
+    } else if (/(?:^|\s)md-math-(inline|block)(?:\s|$)/.test(child.className || "")) {
+      runs.push(docWordBlob.math(D, child));
+    } else if (tag === "sup" && child.classList.contains("md-fn-ref") && ctx.holder) {
+      //: A footnote is a Word footnote: its reference here and its text at
+      //: the foot of the page. A note cited twice is written twice, since
+      //: Word numbers each reference.
+      const target = ctx.holder.querySelector(`#${CSS.escape((child.querySelector("a")?.getAttribute("href") || "#").slice(1))}`);
+      const id = Object.keys(ctx.footnotes).length + 1;
+      ctx.footnotes[id] = { children: [new D.Paragraph({ children: target ? docWordRuns(D, target, {}, ctx) : [] })] };
+      runs.push(new D.FootnoteReferenceRun(id));
+    } else if (tag === "img") {
       const alt = (child.getAttribute("alt") || "").replace(/\|.*$/, "").trim();
       const picture = ctx.pictures.get(child);
       runs.push(picture
@@ -314,10 +418,16 @@ function docWordBlocks(D, root, depth, ctx, instance = 0) {
     //: level the text wrote in its class (`md-h1`); Word wants that level.
     const level = /(?:^|\s)md-h([1-6])(?:\s|$)/.exec(el.className || "");
     const tag = level ? `h${level[1]}` : el.tagName.toLowerCase();
-    if (DOC_WORD_HEADINGS[tag]) out.push(new D.Paragraph({ heading: D.HeadingLevel[DOC_WORD_HEADINGS[tag]], children: docWordRuns(D, el, {}, ctx) }));
+    if (el.classList.contains("md-footnotes")) continue;
+    if (el.classList.contains("md-math-block")) {
+      out.push(new D.Paragraph({ alignment: D.AlignmentType.CENTER, children: [docWordBlob.math(D, el)] }));
+    } else if (DOC_WORD_HEADINGS[tag]) out.push(new D.Paragraph({ heading: D.HeadingLevel[DOC_WORD_HEADINGS[tag]], children: docWordRuns(D, el, {}, ctx) }));
     else if (tag === "p") out.push(new D.Paragraph({ children: docWordRuns(D, el, {}, ctx) }));
     else if (tag === "hr") out.push(new D.Paragraph({ thematicBreak: true, children: [] }));
-    else if (tag === "pre") {
+    else if (tag === "pre" && ctx.diagrams?.has(el)) {
+      const { alt, ...picture } = ctx.diagrams.get(el);
+      out.push(new D.Paragraph({ alignment: D.AlignmentType.CENTER, children: [new D.ImageRun({ type: picture.type, data: picture.data, transformation: { width: picture.width, height: picture.height }, altText: { name: "diagram", title: alt, description: alt } })] }));
+    } else if (tag === "pre") {
       //: One paragraph per line in the code style, so Word keeps the lines
       //: and the import (`DOC_WORD_STYLE_MAP`) reads them back as one block.
       const lang = docWordCodeLang(el);
