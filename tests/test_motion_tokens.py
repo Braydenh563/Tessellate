@@ -142,7 +142,7 @@ def test_every_transition_curve_is_a_token():
 def _rules(text: str):
     """Yield (line, selector, body) for every innermost rule."""
     text = _blank_comments(text)
-    for m in re.finditer(r"([^{}]+)\{([^{}]*)\}", text):
+    for m in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", text):
         selector = m.group(1).strip()
         if selector.startswith("@"):
             continue

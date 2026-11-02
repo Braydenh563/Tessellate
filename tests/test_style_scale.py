@@ -620,7 +620,7 @@ def test_every_indefinite_animation_answers_reduced_motion():
     # the declaration, since the branch turns the animation *off*.
     offenders = []
     for match in re.finditer(
-        r"([^{}]+)\{[^{}]*animation:[^;]*\binfinite\b[^;]*;[^{}]*\}", css
+        r"(?:(?<=[{}])|\A)([^{}]+)\{[^{}]*animation:[^;]*\binfinite\b[^;]*;[^{}]*\}", css
     ):
         selector = match.group(1).strip().split("\n")[-1].strip()
         if not selector or selector.startswith("@"):

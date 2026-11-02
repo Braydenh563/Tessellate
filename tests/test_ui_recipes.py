@@ -48,7 +48,7 @@ KNOWN_GLASS_DRIFT = set()
 
 def _rules(css: str):
     css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
-    for match in re.finditer(r"([^{}]+)\{([^{}]*)\}", css):
+    for match in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", css):
         yield match.group(1).strip(), match.group(2)
 
 
@@ -2557,7 +2557,7 @@ def _rule_bodies(css: str, selector: str) -> list[str]:
     """
     css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
     bodies = []
-    for match in re.finditer(r"([^{}]+)\{([^{}]*)\}", css):
+    for match in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", css):
         selectors = [part.strip() for part in match.group(1).split(",")]
         if any(part.split(":")[0].split(" ")[-1] == selector for part in selectors):
             bodies.append(match.group(2))
@@ -5370,7 +5370,7 @@ def _served_rules():
     for path in CSS:
         served = strip_for_path(path.name, path.read_bytes()).decode("utf-8")
         served = re.sub(r"@(media|supports|container)[^{]*\{", "", served)
-        for m in re.finditer(r"([^{}]+)\{([^{}]*)\}", served):
+        for m in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", served):
             yield path.name, [s.strip() for s in m.group(1).split(",")], m.group(2)
 
 
@@ -6645,7 +6645,7 @@ def test_a_popup_head_keeps_its_tools_with_close_at_the_end() -> None:
     assert title and re.search(r"flex:\s*1 1 auto", title.group(1)), "the sheet title must grow so the end group sits together"
     # No shared head recipe may spread its children: the end group would split.
     for path in sorted((ROOT / "frontend" / "css").glob("*.css")):
-        for sel, body in re.findall(r"([^{}]+)\{([^{}]*)\}", path.read_text(encoding="utf-8")):
+        for sel, body in re.findall(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", path.read_text(encoding="utf-8")):
             names = [s.strip() for s in sel.split(",")]
             if any(re.fullmatch(r"(?:\.[\w-]+ )*\.(?:sheet-head|dialog-head)(?: > \.(?:sheet-head|dialog-head))?", n.split("}")[-1].strip()) for n in names):
                 assert "space-between" not in body, f"{path.name}: {sel.strip()[:60]} spreads a shared popup head"
@@ -6751,7 +6751,7 @@ def test_the_motion_vocabulary_is_one_set() -> None:
     # A plus becomes a minus: the lazy sheet draws it from transforms only, the
     # still sheet removes the turn, and nothing in the frontend uses SMIL.
     lazy = css["library-lazy.css"]
-    pm = [(s, b) for s, b in re.findall(r"([^{}]*\.ui-pm[^{}]*)\{([^{}]*)\}", lazy)]
+    pm = [(s, b) for s, b in re.findall(r"(?:(?<=[{}])|\A)([^{}]*\.ui-pm[^{}]*)\{([^{}]*)\}", lazy)]
     assert len(pm) >= 4, "the .ui-pm recipe moved; point this lint at it"
     for selector, body in pm:
         for m in re.finditer(r"transition:\s*([^;]*);", body):

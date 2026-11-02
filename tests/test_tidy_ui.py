@@ -56,7 +56,7 @@ CSS = ROOT / "frontend" / "css" / "tidy-lazy.css"
 def _rule(css: str, selector: str) -> str:
     """The body of the first rule whose selector list contains `selector`."""
     css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
-    for match in re.finditer(r"([^{}]+)\{([^{}]*)\}", css):
+    for match in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", css):
         if selector in [s.strip() for s in match.group(1).split(",")]:
             return match.group(2)
     raise AssertionError(f"no rule for {selector}")

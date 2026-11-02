@@ -2096,14 +2096,29 @@ def addressed_kind(message: str) -> str | None:
     return "who" if _OPINION_ASK.search(text) else None
 
 
+_PHRASE_TABLE: list = []
+
+
+def _phrase_table() -> list:
+    """(phrase, kind, pattern) for every social phrase, longest first, built
+    once. Sorting and compiling the 380-odd patterns on every call, past the
+    `re` cache's 512 entries, was 17 of the dialogue eval's 42 s (CI time
+    1102). Rebuilt if the table grew since."""
+    if len(_PHRASE_TABLE) != len(SOCIAL_PHRASES):
+        _PHRASE_TABLE[:] = [
+            (phrase, SOCIAL_PHRASES[phrase], re.compile(rf"(?:^|\s){re.escape(phrase)}(?=\s|$)"))
+            for phrase in sorted(SOCIAL_PHRASES, key=len, reverse=True)
+        ]
+    return _PHRASE_TABLE
+
+
 def _social_phrases(text: str) -> tuple[list[str], str]:
     """The kinds of the social phrases in `text`, longest first, and the text without them."""
     kinds: list[str] = []
-    for phrase in sorted(SOCIAL_PHRASES, key=len, reverse=True):
-        pattern = rf"(?:^|\s){re.escape(phrase)}(?=\s|$)"
-        if re.search(pattern, text):
-            kinds.append(SOCIAL_PHRASES[phrase])
-            text = re.sub(pattern, " ", text)
+    for phrase, kind, pattern in _phrase_table():
+        if phrase in text and pattern.search(text):  # the substring test skips nearly every pattern
+            kinds.append(kind)
+            text = pattern.sub(" ", text)
     return kinds, text
 
 
@@ -2277,6 +2292,17 @@ def _split(word: str) -> str | None:
 _COMMA_RUN = lazy_compile(r"(?<=[A-Za-z]),(?=[A-Za-z])")
 
 
+_SMALL_TALK: dict = {}
+
+
+def _small_talk_words() -> frozenset:
+    """SLANG and SOCIAL's words, built once, not as a new set per question."""
+    size = len(SLANG) + len(SOCIAL)
+    if _SMALL_TALK.get("size") != size:
+        _SMALL_TALK.update(size=size, words=frozenset(SLANG.keys() | SOCIAL.keys()))
+    return _SMALL_TALK["words"]
+
+
 def repair(text: str, report: list | None = None, known=frozenset(), fixed: list | None = None) -> str:  # noqa: ANN001
     """Slang spelled out, asking words put right, run-together words split
     and split words joined, then every other misspelt word read as the word it
@@ -2287,7 +2313,7 @@ def repair(text: str, report: list | None = None, known=frozenset(), fixed: list
     spelled out) is added to `fixed` as (typed, chosen), which is what lets an
     answer say how it read the question."""
     #: A small-talk word is a word: "hi test" was glued into "hitest" (INBOX 1485).
-    tokens = spelling.rejoin(_COMMA_RUN.sub(", ", strip_symbols(text)).split(" "), known, SLANG.keys() | SOCIAL.keys(), fixed)
+    tokens = spelling.rejoin(_COMMA_RUN.sub(", ", strip_symbols(text)).split(" "), known, _small_talk_words(), fixed)
     tokens = [spelling.drop_stray(t, known, fixed) for t in tokens]
     out: list[str] = []
     i = 0

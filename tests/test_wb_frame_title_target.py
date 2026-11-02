@@ -24,7 +24,7 @@ WB_JS = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
 
 def _rules(selector: str) -> list[str]:
     text = re.sub(r"/\*.*?\*/", "", CSS, flags=re.S)
-    return [body for sels, body in re.findall(r"([^{}]+)\{([^{}]*)\}", text)
+    return [body for sels, body in re.findall(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", text)
             if selector in [s.strip() for s in sels.split(",")]]
 
 

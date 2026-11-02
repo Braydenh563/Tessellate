@@ -69,7 +69,7 @@ def offenders() -> list[str]:
     found = []
     for path in CSS:
         text = re.sub(r"/\*.*?\*/", "", path.read_text(encoding="utf-8"), flags=re.S)
-        for prelude in re.findall(r"([^{}]+)\{", text):
+        for prelude in re.findall(r"(?:(?<=[{}])|\A)([^{}]+)\{", text):
             if ":has(" not in prelude or prelude.strip().startswith("@"):
                 continue
             for selector in _split_top(prelude, ","):
@@ -109,7 +109,7 @@ def test_no_has_is_keyed_only_on_a_class_everything_wears():
     found = []
     for path in CSS:
         text = re.sub(r"/\*.*?\*/", "", path.read_text(encoding="utf-8"), flags=re.S)
-        for prelude in re.findall(r"([^{}]+)\{", text):
+        for prelude in re.findall(r"(?:(?<=[{}])|\A)([^{}]+)\{", text):
             if ":has(" not in prelude or prelude.strip().startswith("@"):
                 continue
             for selector in _split_top(prelude, ","):
@@ -136,7 +136,7 @@ def test_no_has_looks_for_a_contenteditable_attribute():
     found = []
     for path in CSS:
         text = re.sub(r"/\*.*?\*/", "", path.read_text(encoding="utf-8"), flags=re.S)
-        for prelude in re.findall(r"([^{}]+)\{", text):
+        for prelude in re.findall(r"(?:(?<=[{}])|\A)([^{}]+)\{", text):
             for has in re.findall(r":has\(([^()]*(?:\([^()]*\)[^()]*)*)\)", prelude):
                 if "contenteditable" in has:
                     found.append(f"{path.name}: {' '.join(prelude.split())}")
@@ -154,7 +154,7 @@ def test_a_tab_anchored_has_names_its_child_not_a_search_of_the_tab():
     found = []
     for path in CSS:
         text = re.sub(r"/\*.*?\*/", "", path.read_text(encoding="utf-8"), flags=re.S)
-        for prelude in re.findall(r"([^{}]+)\{", text):
+        for prelude in re.findall(r"(?:(?<=[{}])|\A)([^{}]+)\{", text):
             for selector in _split_top(prelude, ","):
                 selector = " ".join(selector.split())
                 if re.search(r"(?:\.tab-page|#tab-library):has\((?!>)", selector):

@@ -119,6 +119,13 @@ def app_state(tmp_path, monkeypatch):
     # "Installing ... (needle)" in `/tasks`.
     extras.reset_for_tests()
     deps.init_app_state(data_dir=tmp_path / "data")
+    # A sign-in from a new device on the network is held up to 45 s for this
+    # computer's Allow. No test answers it unless it means to, so each one
+    # that reached the hold sat out the whole wait (47 s for the IPv6 throttle
+    # test, CI time 1102). A test about the wait sets its own.
+    from tessellate.api import routes_auth
+
+    monkeypatch.setattr(routes_auth, "DEVICE_WAIT_SECONDS", 0.3)
     yield deps.get_config()
     # A worker the test started (the embedding warm-up after a capture, a
     # caption job after an attach) would otherwise rebuild the app state from

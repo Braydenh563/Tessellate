@@ -297,9 +297,16 @@ def _keyword_in(keyword: str, lowered: str) -> bool:
     match. All 2,200 patterns were compiled at import (about 0.5 s of the app's
     start, INBOX 1307); a pattern can only match where its literal stem occurs,
     so a substring test settles almost every keyword without a regex at all."""
+    return _keyword_stem(keyword) in lowered and _keyword_regex(keyword).search(lowered) is not None
+
+
+@functools.lru_cache(maxsize=None)
+def _keyword_stem(keyword: str) -> str:
+    """The literal a keyword's pattern needs, worked out once per keyword, not
+    once per keyword per question (1.5 million `_normalise_keys` calls in the
+    dialogue eval, CI time 1102)."""
     normal = _normalise_keys(keyword)
-    stem = normal[:-1] if len(normal) > 3 and normal.endswith("y") and normal[-2] not in "aeiou" else normal
-    return stem in lowered and _keyword_regex(keyword).search(lowered) is not None
+    return normal[:-1] if len(normal) > 3 and normal.endswith("y") and normal[-2] not in "aeiou" else normal
 
 
 def _edit_distance_at_most_one(a: str, b: str) -> bool:

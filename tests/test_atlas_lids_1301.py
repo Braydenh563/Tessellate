@@ -30,7 +30,7 @@ def lower_closed(low):
 
 
 def _rules():
-    for m in re.finditer(r"([^{}]*)\{([^{}]*--atl-(?:lid|low):[^{}]*)\}", CSS):
+    for m in re.finditer(r"(?:(?<=[{}])|\A)([^{}]*)\{([^{}]*--atl-(?:lid|low):[^{}]*)\}", CSS):
         yield m.group(1).strip(), m.group(2)
 
 

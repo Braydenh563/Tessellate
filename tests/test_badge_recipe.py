@@ -179,7 +179,7 @@ def test_a_status_label_is_a_tinted_pill_without_an_edge():
         rule = rule[: rule.index("}")]
         assert "background:" in rule and "border" not in rule, (tone, rule)
     bare = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
-    for selector, body in re.findall(r"([^{}]*item-label[^{}]*)\{([^}]*)\}", bare):
+    for selector, body in re.findall(r"(?:(?<=[{}])|\A)([^{}]*item-label[^{}]*)\{([^}]*)\}", bare):
         assert not re.search(r"border(?:-color)?\s*:(?!\s*(?:0|none|transparent)\b)", body), selector.strip()
     # The status badges that were drawn on their own now are the label, or its tint.
     js = _js()

@@ -26,7 +26,7 @@ GUARD = ':root:not([data-glass="off"])[data-glass-controls="on"] '
 
 def _rules():
     css = re.sub(r"/\*.*?\*/", "", CSS, flags=re.S)
-    return [(m.group(1).strip(), m.group(2)) for m in re.finditer(r"([^{}]+)\{([^{}]*)\}", css)]
+    return [(m.group(1).strip(), m.group(2)) for m in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", css)]
 
 
 def test_every_rule_is_glass_only_while_the_glass_look_and_the_switch_are_on():

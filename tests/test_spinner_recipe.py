@@ -66,7 +66,7 @@ def _keyframes(css: str) -> dict[str, str]:
 
 def _rules(css: str):
     """(selector, body) of each flat rule, at any media depth."""
-    for match in re.finditer(r"([^{}]+)\{([^{}]*)\}", css):
+    for match in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", css):
         yield match.group(1).strip(), match.group(2)
 
 

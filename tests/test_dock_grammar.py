@@ -418,7 +418,7 @@ def _rules(selector_pattern: str) -> list[str]:
     text = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
     return [
         m.group(2)
-        for m in re.finditer(r"([^{}]+)\{([^{}]*)\}", text)
+        for m in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", text)
         if re.search(selector_pattern, m.group(1))
     ]
 

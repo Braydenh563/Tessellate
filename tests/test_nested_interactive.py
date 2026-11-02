@@ -98,7 +98,7 @@ def test_the_overlay_covers_the_card_and_the_controls_sit_above_it():
         assert re.search(re.escape(host) + r"\s*\{[^}]*position:\s*relative", CSS), host
     # Above it: the ticks, the menus and any link in a preview.
     assert "z-index: 1" in after.group(1)
-    lifted = re.search(r"([^{}]*)\{\s*z-index:\s*2;\s*\}", CSS[CSS.index(".card-open::after") :])
+    lifted = re.search(r"(?:(?<=[{}])|\A)([^{}]*)\{\s*z-index:\s*2;\s*\}", CSS[CSS.index(".card-open::after") :])
     assert lifted, "nothing is lifted above the overlay"
     for control in (".library-card-tick", ".doc-list-tick", ".menu-wrap", ".library-card-preview a"):
         assert control in lifted.group(1), control
