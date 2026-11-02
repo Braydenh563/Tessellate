@@ -344,7 +344,8 @@
 button.ai-unavailable,
 input.ai-unavailable,
 textarea.ai-unavailable,
-select.ai-unavailable {
+select.ai-unavailable,
+.editor-menu-item.ai-unavailable {
   opacity: 0.5;
   cursor: not-allowed;
 }
