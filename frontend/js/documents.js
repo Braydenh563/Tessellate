@@ -2747,6 +2747,24 @@ function docRunControl(id, what) {
   el.click();
 }
 
+//: The icon for a `:ph-name:`, or null when the font has no such name: it stays
+//: text (INBOX 1545). Asked of the font's own stylesheet, once per name; a sheet
+//: not there or unreadable lets every name through, as before. Reading view
+//: (through `appendPlainText`, hook-only so notes-list.js stays small) and Live
+//: (documents-cm.js) both come here.
+appendPlainText.icon = (name) => {
+  const known = (appendPlainText.known ||= {});
+  if (known[name] === undefined) {
+    const sheet = [...document.styleSheets].find((s) => /\/phosphor\//.test(s.href));
+    try {
+      known[name] = !sheet || [...sheet.cssRules].some((r) => r.selectorText === `.ph.ph-${name}::before`);
+    } catch {
+      known[name] = true;
+    }
+  }
+  return !known[name] ? null : Object.assign(document.createElement("i"), { className: `ph ph-${name} md-inline-icon`, role: "img", ariaLabel: name.replace(/-/g, " ") });
+};
+
 //: The table. `keys` is the chord the editor already listens for, or "" where
 //: the action has no chord: the shortcut sheet draws the rows that have one
 //: and the palette draws all of them, which is the division the plan asks for
