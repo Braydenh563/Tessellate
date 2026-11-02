@@ -46,7 +46,7 @@ const MSG_ACTIONS_VISIBLE = 5;
 //: question. `warmMax`: the warm (`/search/warm`) is for a sentence typed on
 //: a pause; a pasted passage is not worth a vector made ahead of Enter, so it
 //: is not sent at all. One object, so no new names in the shared scope.
-const CLIP_LIMITS = ((cap) => ({ cap, warmMax: 500, warm: cap, search: cap, question: cap, followQuestion: cap, followAnswer: 20000 }))(4000);
+const CLIP_LIMITS = ((cap) => ({ cap, warmMax: 500, warm: cap, search: cap, question: cap, followQuestion: 500, followAnswer: 20000 }))(4000);
 
 //: Over the cap, the opening and the end are kept, not the opening alone
 //: (INBOX 1528): a paste with its ask under it reached the server without

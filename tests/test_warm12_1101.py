@@ -41,8 +41,13 @@ def test_one_question_cap_on_the_page_matches_the_server():
     assert made and int(made.group(2)) == search_query.QUESTION_CAP
     limits = made.group(1)
     assert "warmMax: 500" in limits
-    for route in ("warm", "search", "question", "followQuestion"):
+    for route in ("warm", "search", "question"):
         assert re.search(rf"\b{route}: cap\b", limits), route
+    #: warm12-1101 leftover: the follow-up route shows the model 500 characters of the question, so the page sends
+    #: no more (it sent the 4,000 cap). Changed from `followQuestion: cap`: the route's own read is the number now.
+    from tessellate.ai import followups
+
+    assert f"followQuestion: {followups.FOLLOWUP_QUESTION_CHARS}" in limits
 
 
 def test_the_warm_is_sent_only_for_a_short_question():

@@ -15176,7 +15176,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `_clean` | src/tessellate/ai/followups.py:101 |
 | `parse_followups` | src/tessellate/ai/followups.py:124 |
-| `suggest_followups` | src/tessellate/ai/followups.py:150 |
+| `suggest_followups` | src/tessellate/ai/followups.py:155 |
 
 ### src/tessellate/ai/glossary.py (8)
 
