@@ -3835,6 +3835,13 @@ function markDocOutline(known) {
 //: One mark per frame. A scroll fires far faster than anything needs to be
 //: repainted, and the work behind it is a hit test plus a class swap.
 function scheduleDocOutlineSpy() {
+  //: **Read in the engine's own measure pass** (DX1): asked from a frame of
+  //: its own, `coordsAtPos` laid the editor out a second time per key (357 ms
+  //: over 60 keys at 4x CPU in a 3,120-line document).
+  if (docCmView && docSurface()?.kind === "codemirror") {
+    docCmView.requestMeasure({ key: scheduleDocOutlineSpy, read: docWhereLine, write: (line) => markDocOutline(line) });
+    return;
+  }
   if (docOutlineSpyFrame) return;
   docOutlineSpyFrame = requestAnimationFrame(() => {
     docOutlineSpyFrame = 0;
@@ -7555,7 +7562,9 @@ function docSurfaceInput() {
   scheduleUndoBar();
   markDocDirty();
   scheduleDocPreview();
-  renderDocGutter();
+  //: Only the fallback's own column (DX1): the engine numbers its own lines,
+  //: and every note box's gutter was redrawn per key typed here.
+  if (!docCmView) renderDocGutter(docBoxEl());
 }
 //: Registered through the adapter rather than on the element, so the same
 //: line serves whichever engine is underneath. `mountDocEditor` says it
@@ -10514,10 +10523,16 @@ let docFactsTimer = null;
 let docFactsStale = false;
 let docFactsIdle = 0;
 
-function runDocFacts() {
+//: `typed`: the pause after typing, which skips the outline while every edit
+//: since the last pass left the heading, fence and task lines alone
+//: (`runDocFacts.outlineSame`, kept by `docCmUpdate`; DX1). Any other caller
+//: draws everything.
+function runDocFacts(typed = false) {
   docFactsStale = false;
+  const outlineSame = typed && runDocFacts.outlineSame === true;
+  runDocFacts.outlineSame = undefined;
   renderDocStats();
-  renderDocOutline();
+  if (!outlineSame) renderDocOutline();
   renderDocCounts();
   renderDocComments();
   //: The properties panel is drawn from the frontmatter's own text and
@@ -10539,6 +10554,18 @@ function docFactsDelay() {
 
 function scheduleDocFacts() {
   clearTimeout(docFactsTimer);
+  //: **A key cancels a pass still waiting** (DX1): the idle callback had a
+  //: 300 ms ceiling, so on a slow machine it ran between two keys of the same
+  //: burst, which is exactly when it was meant not to. Now it waits for a
+  //: real pause and for an idle moment, and the next key withdraws it.
+  if (docFactsIdle) {
+    cancelIdleCallback(docFactsIdle);
+    docFactsIdle = 0;
+  }
+  //: And never sooner than one and a half of this typist's own gap between
+  //: keys (`gap`, kept by `docToolsOnInput`), so a slow machine's long keys
+  //: are not pauses.
+  const gap = scheduleDocFacts.gap || 0;
   docFactsTimer = setTimeout(() => {
     docFactsTimer = null;
     const run = () => {
@@ -10551,7 +10578,7 @@ function scheduleDocFacts() {
         docFactsStale = true;
         return;
       }
-      runDocFacts();
+      runDocFacts(true);
     };
     //: One queued pass at most: a second pause that arrives before the idle
     //: callback has run replaces it, so a busy tab does not stack two.
@@ -10560,9 +10587,9 @@ function scheduleDocFacts() {
       docFactsIdle = requestIdleCallback(() => {
         docFactsIdle = 0;
         run();
-      }, { timeout: 300 });
+      });
     } else requestAnimationFrame(run);
-  }, docFactsDelay());
+  }, Math.max(docFactsDelay(), Math.min(600, 1.5 * gap)));
 }
 
 // --- the prose check ----------------------------------------------------------
@@ -12723,15 +12750,36 @@ function docToolsOnInput(box) {
   //: check that would fail on a slower machine while nothing was wrong.
   //: Still well over the gap between two keystrokes of ordinary typing, so
   //: this does not run mid-word.
+  //:
+  //: **Then an idle moment the next key withdraws** (DX1). On a slow machine
+  //: one key's own work outlasted the 150 ms, so the timer fired between two
+  //: keys of one burst, the pass (23 ms at 4x CPU in a 3,120-line document)
+  //: made the next gap longer still, and it ran on 29 of 60 keys. So the
+  //: pause is also counted in this typist's own rhythm: one and a half times
+  //: the recent gap between keys (`gap`, under a second), never less than 150.
+  const now = performance.now();
+  const gap = now - (docToolsOnInput.at || -1e9);
+  docToolsOnInput.gap = gap < 1000 ? (docToolsOnInput.gap ? docToolsOnInput.gap * 0.6 + gap * 0.4 : gap) : 0;
+  docToolsOnInput.at = now;
+  //: Shared with the facts pass and the grammar answer, which read them there.
+  scheduleDocFacts.gap = docToolsOnInput.gap;
+  docProse.typedAt = now;
   clearTimeout(docProseTimer);
-  docProseTimer = setTimeout(() => {
+  if (docToolsOnInput.idle) cancelIdleCallback(docToolsOnInput.idle);
+  docToolsOnInput.idle = 0;
+  const check = () => {
+    docToolsOnInput.idle = 0;
     docProse.typing = true;
     try {
       renderDocProse();
     } finally {
       docProse.typing = false;
     }
-  }, DOC_PROSE_DEBOUNCE_MS);
+  };
+  docProseTimer = setTimeout(() => {
+    if (window.requestIdleCallback) docToolsOnInput.idle = requestIdleCallback(check);
+    else check();
+  }, Math.max(DOC_PROSE_DEBOUNCE_MS, Math.min(600, 1.5 * docToolsOnInput.gap)));
   clearTimeout(docVocabTimer);
   docVocabTimer = setTimeout(() => {
     docCompleteWords = null;
@@ -12809,6 +12857,9 @@ docListen("keydown", (event) => {
 //: describing.
 docListen("selectionchange", () => {
   if (!docToolsBoxFor(document.activeElement)) return;
+  //: The engine's own update draws it for a caret in the view (`docCmUpdate`),
+  //: so this was a second pass per key there (DX1).
+  if (docEventFromCm(document.activeElement)) return;
   renderDocCaret();
 });
 
@@ -15810,6 +15861,7 @@ function docCmApplySpellcheck() {
 function docCmUpdate(update) {
   if (update.docChanged) {
     docHistoryStamp(update);
+    runDocFacts.outlineSame = runDocFacts.outlineSame !== false && outlineNeutral();
     docSurfaceChanged();
     docHistoryPersist();
     //: **Autocorrect, which never ran once under the engine.** The delegated
@@ -15851,13 +15903,46 @@ function docCmUpdate(update) {
     docScheduleSuggestFollow();
   }
   if (update.selectionSet) {
-    renderDocCaret();
+    //: An edit drew it already (`docToolsOnInput`).
+    if (!update.docChanged) renderDocCaret();
     //: The outline follows the caret too, on the same beat the breadcrumb
     //: does: an arrow key raises no scroll and no `input`, so without this the
     //: two rows that both answer "where am I" would disagree until the view
     //: moved. Scheduled, not marked, because a held-down arrow key fires far
-    //: faster than a class swap needs to be painted.
-    scheduleDocOutlineSpy();
+    //: faster than a class swap needs to be painted. Only when the caret's
+    //: line moved (DX1): a key typed on a line cannot move the outline's mark.
+    const line = update.state.doc.lineAt(update.state.selection.main.head).number;
+    if (line !== docCmUpdate.spyLine) {
+      docCmUpdate.spyLine = line;
+      scheduleDocOutlineSpy();
+    }
+  }
+
+  //: **Could this edit change the outline?** (DX1) The rows are drawn from
+  //: the heading lines (ATX, and a setext underline with the line above it),
+  //: the fences that hide headings, the task boxes that are counted and the
+  //: line numbers, so an edit inside one line touching none of those leaves
+  //: every row as it was. Measured before: the outline was rebuilt on every
+  //: pause in the typing, 93 ms per 22 keys at 1x in a 3,120-line document. A
+  //: code file's symbols can come from any line, so its edits always count.
+  //: Nested, not a global: the shared scope is at its cap.
+  function outlineNeutral() {
+    if (!docFileType().previewable) return false;
+    const mark = /^\s{0,3}#|^\s*(?:```|~~~)|\[[ xX]\]|^\s*(?:=+|-+)\s*$/;
+    const before = update.startState.doc;
+    const after = update.state.doc;
+    let neutral = true;
+    update.changes.iterChanges((fromA, toA, fromB, toB, inserted) => {
+      if (!neutral) return;
+      if (inserted.lines > 1 || before.sliceString(fromA, toA).includes("\n")) {
+        neutral = false;
+        return;
+      }
+      const line = after.lineAt(fromB);
+      const next = line.number < after.lines ? after.line(line.number + 1).text : "";
+      if (mark.test(before.lineAt(fromA).text) || mark.test(line.text) || /^\s*(?:=+|-+)\s*$/.test(next)) neutral = false;
+    });
+    return neutral;
   }
 }
 

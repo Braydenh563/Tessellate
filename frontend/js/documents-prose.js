@@ -310,11 +310,16 @@ function docGrammarRequest(text) {
   if (!text || !text.trim()) return;
   if (!docGrammarEnabled() || docGrammarAsking !== null || (docGrammarCache.text === text && docGrammarCache.linkText === docCheckLinkText())) return;
   docGrammarAsking = text;
+  const asked = performance.now();
   docGrammarAsk(text).then((lints) => {
     docGrammarAsking = null;
-    if (lints === null) return renderDocProse(true);
+    //: **Typed into since the ask: the pause will draw it** (DX1). Repainting
+    //: here asked again, so while keys kept coming every answer started a
+    //: prose pass of its own (37 passes in 60 keys at 4x CPU).
+    const typed = (docProse.typedAt || 0) > asked;
+    if (lints === null) return typed ? undefined : renderDocProse(true);
     docGrammarCache = { text, findings: docGrammarFindings(lints, text), linkText: docCheckLinkText() };
-    renderDocProse(true);
+    if (!typed) renderDocProse(true);
   });
 }
 
@@ -1048,7 +1053,7 @@ function docSuggestExtensions(CM) {
         const told = update.transactions.some((tr) => tr.effects.length);
         if (update.docChanged || told) {
           Object.assign(this, build(update.view));
-          renderDocSuggestState();
+          renderDocSuggestState(true);
         }
       }
     },
@@ -1145,9 +1150,15 @@ function docSuggestNext() {
 }
 
 //: The chip in the status bar and the rows in the ⋯ menu, from one count.
-function renderDocSuggestState() {
+//: `typed`: asked by an edit, which redraws nothing when the answer is the
+//: one on screen (DX1: `setLabel` rebuilt the chip's nodes on every key, a
+//: structural change in the status bar that the `:has()` rules re-check).
+function renderDocSuggestState(typed = false) {
   const on = docSuggestActive();
   const count = docCmView ? docSuggestParse(docStr(docCmView.state.doc)).length : 0;
+  const key = `${on}|${count}|${currentDoc?.id}|${docFileType().previewable}`;
+  if (typed === true && key === renderDocSuggestState.key) return;
+  renderDocSuggestState.key = key;
   const box = $("doc-suggest-mode");
   if (box) box.checked = on;
   const row = $("doc-suggest-row");

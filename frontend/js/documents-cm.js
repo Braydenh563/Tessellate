@@ -41,8 +41,11 @@ function docLivePlugin(CM) {
       this.from = from;
       this.to = to;
     }
+    //: The tick and the marker's length, not its place (DX1): with the start
+    //: in it, every box below a typed key was built again, per key. The click
+    //: asks the view where the box is now.
     eq(other) {
-      return other.checked === this.checked && other.from === this.from;
+      return other.checked === this.checked && other.to - other.from === this.to - this.from;
     }
     //: **The view is handed in, and the listener goes on the element.** The
     //: first version toggled from the plugin's own `mousedown` handler, which
@@ -71,9 +74,11 @@ function docLivePlugin(CM) {
       box.checked = this.checked;
       box.setAttribute("aria-label", this.checked ? "Done" : "Not done");
       hit.appendChild(box);
-      const { from, to } = this;
+      const size = this.to - this.from;
       hit.addEventListener("click", (event) => {
         event.preventDefault();
+        const from = view.posAtDOM(hit);
+        const to = from + size;
         const marker = view.state.doc.sliceString(from, to);
         //: The source is what changes, and the tick follows it on the next
         //: repaint. Writing the two separately is how they come to disagree.

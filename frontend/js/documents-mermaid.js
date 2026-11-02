@@ -346,8 +346,10 @@
         this.source = source;
         this.from = from;
       }
+      //: The source alone (DX1): with the start in it, a key typed above a diagram
+      //: moved every one below and each was drawn again, blob and image, per key.
       eq(other) {
-        return other.source === this.source && other.from === this.from;
+        return other.source === this.source;
       }
       //: What CodeMirror assumes for a widget it has not measured; the figure's
       //: placeholder is about this tall (mermaid-lazy.css), so the page does not jump.
@@ -373,7 +375,7 @@
         });
         figure.addEventListener("mousedown", (event) => {
           event.preventDefault();
-          const at = Math.min(this.from + 4, view.state.doc.length);
+          const at = Math.min(view.posAtDOM(figure) + 4, view.state.doc.length);
           view.dispatch({ selection: { anchor: at } });
           view.focus();
         });
@@ -395,11 +397,18 @@
         return note;
       }
     }
+    //: The fences once per text (DX1): a caret move rescanned the whole document.
+    const blocksOf = new WeakMap();
     const build = (state) => {
-      const text = docStr(state.doc);
-      if (!text.includes("```mermaid") && !/```[ \t]+mermaid/.test(text)) return Decoration.none;
+      let blocks = blocksOf.get(state.doc);
+      if (!blocks) {
+        const text = docStr(state.doc);
+        blocks = text.includes("```mermaid") || /```[ \t]+mermaid/.test(text) ? docMermaidBlocks(text) : [];
+        blocksOf.set(state.doc, blocks);
+      }
+      if (!blocks.length) return Decoration.none;
       const ranges = [];
-      for (const block of docMermaidBlocks(text)) {
+      for (const block of blocks) {
         //: A reason exists only once the module drew here (the widget above).
         const reason = docPhase2State.mermaidReady ? mermaidFailure(block.source) : "";
         //: A fence the frame refused stays the code it is, with its reason under it.
