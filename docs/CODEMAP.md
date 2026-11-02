@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7558, frontend ids 2638, CSS sections 517, backend routes 640, backend modules 8485, test files 1855, tests 15792, plan headings 991, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7558, frontend ids 2638, CSS sections 517, backend routes 640, backend modules 8485, test files 1856, tests 15793, plan headings 991, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7558)
 
@@ -4989,12 +4989,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `lagRafTop` | frontend/js/lag-watch.js:236 |
 | `lagRequest` | frontend/js/lag-watch.js:201 |
 | `lagScriptCause` | frontend/js/lag-watch.js:72 |
-| `lagSnapshot` | frontend/js/lag-watch.js:322 |
+| `lagSnapshot` | frontend/js/lag-watch.js:324 |
 | `lagStackOwner` | frontend/js/lag-watch.js:216 |
-| `lagStart` | frontend/js/lag-watch.js:357 |
+| `lagStart` | frontend/js/lag-watch.js:359 |
 | `lagTarget` | frontend/js/lag-watch.js:58 |
 | `lagView` | frontend/js/lag-watch.js:51 |
-| `lagWireSettings` | frontend/js/lag-watch.js:344 |
+| `lagWireSettings` | frontend/js/lag-watch.js:346 |
 
 ### frontend/js/lan-watch.js (19)
 
@@ -23280,7 +23280,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15792)
+## Tests (15793)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23898,6 +23898,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_entry_references.py | 32 |
 | tests/test_entry_writers_whole_1525.py | 4 |
 | tests/test_error_contract.py | 4 |
+| tests/test_error_log_1549.py | 1 |
 | tests/test_error_toasts.py | 8 |
 | tests/test_events.py | 25 |
 | tests/test_events_undo.py | 13 |
@@ -25847,7 +25848,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1300 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:239 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:241 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4186 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |

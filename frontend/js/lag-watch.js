@@ -312,7 +312,9 @@ function lagErrorsStart() {
     const said = (p) => (typeof p === "string" ? p : p?.message || JSON.stringify(p) || String(p));
     const stack = parts.find((p) => p?.stack)?.stack || new Error().stack;
     lagNoteError(parts.map(said).join(" "), stack.split("\n").filter((l) => !l.includes("lag-watch.js")).join("\n"));
-    original(...parts);
+    //: The app's log turns an Error into "{}" (INBOX 1549: "CodeMirror plugin
+    //: crashed: {}"), so it is handed on as its stack; app.js has no bytes to spare.
+    original(...parts.map((p) => (p instanceof Error ? p.stack || String(p) : p)));
   };
 }
 
