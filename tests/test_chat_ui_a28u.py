@@ -42,7 +42,8 @@ def test_e61_plan_and_agent_say_why_in_view_and_stay_reachable():
     # The visible line names both; Agent is aria-disabled (a Tab stop) with the model-offer popover.
     assert "Plan and Agent need a model." in js
     body = js[js.index("function renderChatModeSeg") :][:2600]
-    assert 'agentButton.setAttribute("aria-disabled", String(gated))' in body
+    #: `gated` itself since DX23 (audit 1102): setAttribute writes "true" or "false" either way.
+    assert 'agentButton.setAttribute("aria-disabled", gated)' in body
     assert "agentButton.disabled" not in body
     from tests._app_js import INDEX_HTML
 

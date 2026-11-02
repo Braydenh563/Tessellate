@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- No import cycles again (CI red on PR 212): the done-later checklist reading (fable-eye F15) is its own leaf, `ai/composer_done.py`, so `composer_quote` and `composer_plan` no longer import `composer_slots` back through the composer (two cycle groups to none).
 - A lasting toast steps aside for a sheet's buttons after the sheet settles (E2E import, 2026-11-02): the import preview's card re-centred after focus landed, so the search-by-meaning question sat on Import; the sheet runs the check again once its focus has settled (4 of 4 timings covered before, 0 of 4 after).
 - Document templates (audit 1102 DX30): the gallery is Writing, Planning and Code, and Writing gains a letter, a report, an essay, a CV and a one-page proposal (16 templates to 21).
 - The Guide's what-next line is a muted tip under the answer, not part of it (audit 1028 E52): it is no longer copied, read aloud or sent back as history, and its question is still a chip.

@@ -13,7 +13,7 @@ import hashlib
 import re
 from datetime import date
 
-from tessellate.ai import composer_tables, composer_tree
+from tessellate.ai import composer_done, composer_tables, composer_tree
 from tessellate.ai.composer_answer import _Answer, _SESSION
 from tessellate.ai.composer_phrases import PHRASES
 from tessellate.ai.composer_read import NoteView, Sentence
@@ -239,15 +239,11 @@ def _list_lead(out: _Answer, view: NoteView, lead: str) -> None:
 
 
 def _done_later(out: _Answer, view: NoteView, tasks: list[Sentence]) -> dict[int, tuple]:
-    from tessellate.ai import composer_slots  # noqa: PLC0415  (composer_slots imports composer, which imports this)
-
-    return composer_slots.done_later(list(out.views.values()), view, tasks)
+    return composer_done.done_later(list(out.views.values()), view, tasks)
 
 
 def _done_later_note(got: tuple, today) -> str:  # noqa: ANN001
-    from tessellate.ai import composer_slots  # noqa: PLC0415
-
-    return composer_slots.done_later_note(got, today)
+    return composer_done.done_later_note(got, today)
 
 
 def _checklist_count(out: _Answer, view: NoteView, tasks: list[Sentence], lead: str) -> None:

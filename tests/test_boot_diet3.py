@@ -78,7 +78,9 @@ class _Count(HTMLParser):
 #: same day: INBOX 1544, which the owner asked for (more ways to open the insert
 #: panels): Icon, Symbol and Calculator rows in the document's Insert menu and
 #: Symbol and Equation on the note strip (10, five buttons and their icons).
-BOOT_ELEMENTS_CAP = 7_911
+#: To 7,921 the same day: audit 1028 S68 folds three imports on the settings-fold
+#: recipe (11: a details, summary, help wrap and slot each; the pane 2,747 to 2,427 px).
+BOOT_ELEMENTS_CAP = 7_921
 
 
 def test_the_boot_document_does_not_grow():

@@ -18,7 +18,7 @@ import re
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 
-from tessellate.ai import recognise, study
+from tessellate.ai import composer_done, recognise, study
 from tessellate.ai import when as when_words
 from tessellate.ai import composer_compose as compose
 from tessellate.ai.composer_study import Ctx, Reply, pick
@@ -672,7 +672,6 @@ def _not_done_later(ctx: Ctx, tasks: list[tuple[str, dict]]) -> list[tuple[str, 
     notes are read only when there is an open line to check."""
     if not tasks:
         return tasks
-    from tessellate.ai import composer_slots  # noqa: PLC0415  (composer imports this module)
     from tessellate.ai.composer_read import read_note  # noqa: PLC0415
 
     views = [v for i, n in enumerate(ctx.notes[:300]) if (v := read_note(n, i))]
@@ -680,7 +679,7 @@ def _not_done_later(ctx: Ctx, tasks: list[tuple[str, dict]]) -> list[tuple[str, 
     done: set[tuple[object, str]] = set()
     for nid in {note.get("id") for _, note in tasks}:
         if view := by_id.get(nid):
-            done |= {(nid, study.clean(re.sub(r"^\s*[-*]?\s*\[[ xX]\]\s*", "", s.text))) for s in view.sentences if composer_slots.recorded_later(views, view, s)}
+            done |= {(nid, study.clean(re.sub(r"^\s*[-*]?\s*\[[ xX]\]\s*", "", s.text))) for s in view.sentences if composer_done.recorded_later(views, view, s)}
     return [(task, note) for task, note in tasks if (note.get("id"), task) not in done]
 
 

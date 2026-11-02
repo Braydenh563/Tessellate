@@ -16,7 +16,7 @@ from __future__ import annotations
 import re
 from datetime import date, timedelta
 
-from tessellate.ai import composer, composer_versus, filed_name, note_recency, realise, recognise, utilities
+from tessellate.ai import composer, composer_done, composer_versus, filed_name, note_recency, realise, recognise, utilities
 
 #: At most this many lines under the opening; the rest are on the right.
 SHOWN = 8
@@ -110,6 +110,7 @@ _h = _Helpers()
 
 def bind(day, row, fact, span, name) -> None:  # noqa: ANN001
     _h.day, _h.row, _h.fact, _h.span, _h.name = day, row, fact, span, name
+    composer_done._day = day
 
 
 def list_target(question: str) -> tuple[str, str] | None:
