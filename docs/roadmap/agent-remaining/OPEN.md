@@ -54,7 +54,7 @@ How to read it, and what it cannot promise:
 
 The older per-agent sections stay below this one, unchanged, as the long form of the OPEN rows (their text is the full detail behind each cut line).
 
-Totals: 1667 rows, 183 with an owner (running or queued), 1484 unassigned.
+Totals: 1667 rows, 183 with an owner (running or queued), 1484 unassigned. (2026-11-02: the 132 rows marked running belonged to agents that ended in October; their owner now reads "ended, unassigned".)
 
 | Source | Assigned | Unassigned | Total |
 | --- | --- | --- | --- |
@@ -72,148 +72,148 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 
 | id | item | source | size | owner |
 | --- | --- | --- | --- | --- |
-| 1 | INBOX 899: composer and agents pull from the notes' time words and time references | INBOX 899 (atlas branch) | M | atlas (running) |
-| 2 | Later rows for the queue: B20 to B27, B40. | agent/atlas-1011:docs/roadmap/archive/agent-remaining/atlas-1011.md:10 | S | atlas (running) |
-| 3 | Not verified: any real model; the non-stream /chat route (routes_chat.py ~1571) does not answer capability questions from the list. | agent/atlas-1011:docs/roadmap/archive/agent-remaining/atlas-1011.md:12 | S | atlas (running) |
-| 4 | Found, not fixed: a chat title keeps a trailing backslash ("what is there about a gaming mouse?\"); a digest answer has no Ask next chips except B9's... | agent/atlas-1011:docs/roadmap/archive/agent-remaining/atlas-1011.md:14 | L | atlas (running) |
-| 5 | B10 rest: a document or board open in the Library (agentOpenSubject knows it; the Ask body sends only the note and category). B12 rest: flashcards... **Built 2026-11-01: B10 done: the Ask body sends `open_document_id` and `open_board_id` (capture-ask.js `askOpenContext`), `_open_surface` in routes_chat reads them; B12 flashcards still open (no flashcards feature, gold Q20).** | agent/atlas-1011:docs/roadmap/archive/agent-remaining/atlas-1011.md:6 | M | atlas (running) |
-| 6 | B30 rest: the Chat tab's bubble draws the why event too. B31/B32 rest: decision 68's audit (not built) is to retire claims overlapping a wrong row... **Built 2026-11-01 (why-1101): the Chat bubble and the popup agent draw the why fold (`drawWhyTrail`, ask-compose.js); stubbed event, both themes, 360 wide: folded 28px (44px at 360), open 146px (345px at 360) in Chat, 183px (382px) in the popup, no overflow. Decision 68 stays open: see agent-remaining/why-1101.md.** | agent/atlas-1011:docs/roadmap/archive/agent-remaining/atlas-1011.md:7 | M | atlas (running) |
-| 7 | INBOX 895: the composer as a legitimately smart chatbot, gold answers (semester example), Atlas answers | brief assignment; INBOX 895 (atlas branch) | L | atlas (running) |
-| 8 | CHAT_PLAN decisions 65 to 70 and rows A1 to A8, B1 to B12, B30 to B32: Atlas as the app's assistant (A5 tool-result cards, A6 query clean-up, A3 history records, A7 background uses, A8 ghost text) | docs/roadmap/CHAT_PLAN.md:1765 | L | atlas (running) |
-| 9 | A question about Atlas is answered about Atlas. Questions about capability ("can you", "do you", "are you able", "what can I do here") route to the... **Built 2026-11-01: ai/capability.py; routes_chat.py `_capability_answer` (capability.asks).** | docs/roadmap/CHAT_PLAN.md:1776 | M | atlas (running), then queued: composer |
-| 10 | Web results are a source panel, and a page is read in place. A web search shows its results in a collapsible block, the thinking box's recipe: title... **Built 2026-11-01: `web_search` tool results draw the web fold (closed 28px, open 314px, no overflow, reader in place; /tmp sweep open-web.js) in chat-attach.js and palette.js, beside the Ask fold (`renderWebSources`); the Web tab's own list stays open on purpose.** | docs/roadmap/CHAT_PLAN.md:1781 | S | atlas (running), then queued: composer |
+| 1 | INBOX 899: composer and agents pull from the notes' time words and time references | INBOX 899 (atlas branch) | M | atlas (ended, unassigned) |
+| 2 | Later rows for the queue: B20 to B27, B40. | agent/atlas-1011:docs/roadmap/archive/agent-remaining/atlas-1011.md:10 | S | atlas (ended, unassigned) |
+| 3 | Not verified: any real model; the non-stream /chat route (routes_chat.py ~1571) does not answer capability questions from the list. | agent/atlas-1011:docs/roadmap/archive/agent-remaining/atlas-1011.md:12 | S | atlas (ended, unassigned) |
+| 4 | Found, not fixed: a chat title keeps a trailing backslash ("what is there about a gaming mouse?\"); a digest answer has no Ask next chips except B9's... | agent/atlas-1011:docs/roadmap/archive/agent-remaining/atlas-1011.md:14 | L | atlas (ended, unassigned) |
+| 5 | B10 rest: a document or board open in the Library (agentOpenSubject knows it; the Ask body sends only the note and category). B12 rest: flashcards... **Built 2026-11-01: B10 done: the Ask body sends `open_document_id` and `open_board_id` (capture-ask.js `askOpenContext`), `_open_surface` in routes_chat reads them; B12 flashcards still open (no flashcards feature, gold Q20).** | agent/atlas-1011:docs/roadmap/archive/agent-remaining/atlas-1011.md:6 | M | atlas (ended, unassigned) |
+| 6 | B30 rest: the Chat tab's bubble draws the why event too. B31/B32 rest: decision 68's audit (not built) is to retire claims overlapping a wrong row... **Built 2026-11-01 (why-1101): the Chat bubble and the popup agent draw the why fold (`drawWhyTrail`, ask-compose.js); stubbed event, both themes, 360 wide: folded 28px (44px at 360), open 146px (345px at 360) in Chat, 183px (382px) in the popup, no overflow. Decision 68 stays open: see agent-remaining/why-1101.md.** | agent/atlas-1011:docs/roadmap/archive/agent-remaining/atlas-1011.md:7 | M | atlas (ended, unassigned) |
+| 7 | INBOX 895: the composer as a legitimately smart chatbot, gold answers (semester example), Atlas answers | brief assignment; INBOX 895 (atlas branch) | L | atlas (ended, unassigned) |
+| 8 | CHAT_PLAN decisions 65 to 70 and rows A1 to A8, B1 to B12, B30 to B32: Atlas as the app's assistant (A5 tool-result cards, A6 query clean-up, A3 history records, A7 background uses, A8 ghost text) | docs/roadmap/CHAT_PLAN.md:1765 | L | atlas (ended, unassigned) |
+| 9 | A question about Atlas is answered about Atlas. Questions about capability ("can you", "do you", "are you able", "what can I do here") route to the... **Built 2026-11-01: ai/capability.py; routes_chat.py `_capability_answer` (capability.asks).** | docs/roadmap/CHAT_PLAN.md:1776 | M | atlas (ended), then queued: composer |
+| 10 | Web results are a source panel, and a page is read in place. A web search shows its results in a collapsible block, the thinking box's recipe: title... **Built 2026-11-01: `web_search` tool results draw the web fold (closed 28px, open 314px, no overflow, reader in place; /tmp sweep open-web.js) in chat-attach.js and palette.js, beside the Ask fold (`renderWebSources`); the Web tab's own list stays open on purpose.** | docs/roadmap/CHAT_PLAN.md:1781 | S | atlas (ended), then queued: composer |
 | 11 | A fact is learned only in its context. A note tagged joke, quote, fiction, test or draft, or a sentence inside a quote, a list of jokes or a Q-and-A... | docs/roadmap/CHAT_PLAN.md:1787 | M | atlas (running), then queued: composer **Built 2026-11-01 (audit68-1101, both halves): the night shift no longer reads a sentence into a claim when `learned_audit.context_reason` says it is out of context (`facts._in_context`: a note tagged joke, quote, fiction, test or draft, a sentence inside a quote or `>` line, a line of a Q-and-A list), and the check retires what was learned before (tests/test_learned_audit.py, test_learned_audit_run.py `test_the_night_shift_does_not_learn_out_of_context_in_the_first_place`; driven in the app: a joke-tagged note's claim retired with 'The note is tagged joke, so this is not a claim about you.'). Not built: a note's kind beyond tags (boards are not read as prose already).** |
 | 12 | The learned store audits itself. "Check what it learned" is a runnable pass. It runs as a scheduled background job (Settings, Schedules), as a skill... | docs/roadmap/CHAT_PLAN.md:1793 | M | atlas (running), then queued: composer **Built 2026-11-01 (audit68-1101): ai/learned_audit.py (pure: note gone or edited, out of context, marked wrong, repeats, pair side gone retire; disagreeing newer note and passed dates flag), ai/learned_audit_run.py (stamped tombstones, undo and redo by stamp), the `learned-audit` job (core/passes.py Run now, Settings Background jobs; each autonomous pass runs it after the night shift) with lines, /learned/audit/{run,last,flags,undo,redo}, the button on What it learned's bar with its result box, Undo and Check this marks (settings-controls.js), the agent tool and skill `check_learned` / Check what it learned, Guide topic learned. Driven in the app (Playwright, 1440 and 390): 6 checked, 1 retired (joke tag), 2 flagged (passed date, 900 vs 950 rent); Undo put it back, Ctrl+Z retired it again. Not built: a per-flag Keep it action; the model-read contradictions beyond a number or a not (the Tensions pass already offers those); a settings switch for the scheduled run (it follows the night shift's).** |
-| 13 | Completions are ghost text from the person's own words. In the capture box, the chat box and search: a greyed suggestion after the caret, Tab or... | docs/roadmap/CHAT_PLAN.md:1800 | L | atlas (running), then queued: composer |
-| 14 | The answer is judged against gold answers, not rule counts (INBOX 812: "you keep saying youve improved it but i still cant see much. I feel like Im... | docs/roadmap/CHAT_PLAN.md:1807 | L | atlas (running), then queued: composer |
-| 15 | Length adapts. The question's kind sets the answer's shape: a fact is one line, an overview is decision 70's shape, a compare is a table, a count is... | docs/roadmap/CHAT_PLAN.md:1853 | S | atlas (running), then queued: composer |
-| 16 | Voice is a setting. The presets are Warm and concise (the default), Neutral, Playful and Plain. One table of openings, joins and closings per preset... **Built 2026-11-01: index.html `#pref-voice` with `#pref-voice-sample`; ai/composer_voice.py.** | docs/roadmap/CHAT_PLAN.md:1858 | M | atlas (running), then queued: composer |
-| 17 | Volunteered insight is a switch, and dynamic. Off, one line, or as found. At "one line" the engine adds at most one gap, bridge, change or offer... **Built 2026-11-01: Settings, Chat `#pref-insight` (off, one line, all) saved as `insight_level`; routes_chat `_insight_level`; composer_digest `_volunteer`, `insight_bar`; tests/test_insight_b11.py.** | docs/roadmap/CHAT_PLAN.md:1862 | S | atlas (running), then queued: composer |
-| 18 | All four areas, in this order of build: answers (B1 to B12), trust (B30 to B32), utilities (rows A1 to A4), then the composer everywhere (B20 to... | docs/roadmap/CHAT_PLAN.md:1866 | M | atlas (running), then queued: composer |
-| 19 | Model up: it leads, the composer's facts are only labelled context (a test per surface); model down: the composer covers every act (the owner... | docs/roadmap/CHAT_PLAN.md:1870 | S | atlas (running), then queued: composer |
+| 13 | Completions are ghost text from the person's own words. In the capture box, the chat box and search: a greyed suggestion after the caret, Tab or... | docs/roadmap/CHAT_PLAN.md:1800 | L | atlas (ended), then queued: composer |
+| 14 | The answer is judged against gold answers, not rule counts (INBOX 812: "you keep saying youve improved it but i still cant see much. I feel like Im... | docs/roadmap/CHAT_PLAN.md:1807 | L | atlas (ended), then queued: composer |
+| 15 | Length adapts. The question's kind sets the answer's shape: a fact is one line, an overview is decision 70's shape, a compare is a table, a count is... | docs/roadmap/CHAT_PLAN.md:1853 | S | atlas (ended), then queued: composer |
+| 16 | Voice is a setting. The presets are Warm and concise (the default), Neutral, Playful and Plain. One table of openings, joins and closings per preset... **Built 2026-11-01: index.html `#pref-voice` with `#pref-voice-sample`; ai/composer_voice.py.** | docs/roadmap/CHAT_PLAN.md:1858 | M | atlas (ended), then queued: composer |
+| 17 | Volunteered insight is a switch, and dynamic. Off, one line, or as found. At "one line" the engine adds at most one gap, bridge, change or offer... **Built 2026-11-01: Settings, Chat `#pref-insight` (off, one line, all) saved as `insight_level`; routes_chat `_insight_level`; composer_digest `_volunteer`, `insight_bar`; tests/test_insight_b11.py.** | docs/roadmap/CHAT_PLAN.md:1862 | S | atlas (ended), then queued: composer |
+| 18 | All four areas, in this order of build: answers (B1 to B12), trust (B30 to B32), utilities (rows A1 to A4), then the composer everywhere (B20 to... | docs/roadmap/CHAT_PLAN.md:1866 | M | atlas (ended), then queued: composer |
+| 19 | Model up: it leads, the composer's facts are only labelled context (a test per surface); model down: the composer covers every act (the owner... | docs/roadmap/CHAT_PLAN.md:1870 | S | atlas (ended), then queued: composer |
 | 20 | INBOX placed log: INBOX 895 smart chatbot placed with atlas, then the composer agent (Briefs 104 and 97) | docs/roadmap/INBOX.md:277 | S | atlas, queued: composer |
-| 21 | Not verified: a real phone; the sweep's phone right flick is sometimes a drop here because the let-go reaches the page over 100 ms after the last... | agent/throw-1011:docs/roadmap/archive/agent-remaining/throw-1011.md:11 | S | throw (running) |
+| 21 | Not verified: a real phone; the sweep's phone right flick is sometimes a drop here because the let-go reaches the page over 100 ms after the last... | agent/throw-1011:docs/roadmap/archive/agent-remaining/throw-1011.md:11 | S | throw (ended, unassigned) |
 | 22 | Found, not fixed (pre-existing on the base): test_companion_motion.py::test_every_way_to_a_note_counts_as_opening_it (flashEntry lost its typeof... | agent/throw-1011:docs/roadmap/archive/agent-remaining/throw-1011.md:13 | M | done (checked 2026-11-02: passes on claude/next-queue-1102) |
-| 23 | INBOX 902 and Brief 88: companion physics (throw flight and feel, click arm, eased starts, resting pose) | docs/roadmap/SESSION_BRIEFS.md:1748 | L | throw (running) |
-| 24 | scripts/rebrand.py (idempotent; --check; --repo-url, default Braydenh563/Tessellate; --brand-only). The orchestrator re-runs it after every merge... **Built 2026-11-01: scripts/rebrand.py (tests/test_brand_name.py runs it).** | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:12 | S | rebrand (running) |
-| 25 | INBOX 903: rename the product to Tessellate, formerly MemoryMap AI (step 2: internal identifiers; docs; pages site) **Built 2026-11-01: the src/tessellate package.** | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:13 | L | rebrand (running) |
-| 26 | Former name noted: README top, Settings, About, the Guide's "name" topic, the Pages footer, both CHANGELOGs. **Built 2026-11-01: README.md:8 (`Formerly MemoryMap AI`).** | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:15 | S | rebrand (running) |
-| 27 | Kept on purpose, with brand: keep beside each: the LAN certificate subject, the bcrypt-input salt (memorymap-bcrypt-input), the stored caption... **Built 2026-11-01: routes_auth.py `MEDIA_COOKIE` and the bcrypt-input salt, kept with brand: keep (tests/test_brand_name.py).** | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:17 | M | rebrand (running) |
-| 28 | Shortcuts are renamed; the old ones go on upgrade and on uninstall. | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:22 | S | rebrand (running) |
-| 29 | /health says Tessellate; every check accepts both names (instance_lock.APP_NAMES, start/uninstall .sh/.bat). **Built 2026-11-01: core/instance_lock.py:206 `APP_NAMES`.** | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:23 | S | rebrand (running) |
-| 30 | Package src/tessellate; src/memorymap is a shim (a meta-path alias to the same module objects, and python -m memorymap). The memorymap console script... **Built 2026-11-01: the src/memorymap shim (`__init__.py`, `__main__.py`).** | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:28 | S | rebrand (running) |
-| 31 | TESSELLATE_* settings; core/envnames.py reads MEMORYMAP_* as the fallback; launchers, compose and CI do the same. **Built 2026-11-01: core/envnames.py.** | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:31 | S | rebrand (running) |
-| 32 | Data folder: an existing MemoryMap AI folder is used where it is (never moved); a new install gets Tessellate (config._default_data_dir... **Built 2026-11-01: core/config.py `_default_data_dir`; tests/test_upgrade_keeps_data_folder.py.** | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:33 | S | rebrand (running) |
-| 33 | Browser: memorymap.ocr.* keys move once when library.js loads, beside their only reader (the app head is at its size ratchet); the undo store... **Built 2026-11-01: library.js `OCR_VIEW_KEY` and `OCR_READER_KEY` are `tessellate.ocr.*`, the old keys copied once and removed (d6deab4); tests/test_brand_name.py.** | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:36 | S | rebrand (running) |
-| 34 | Kept, as names on disk or on the wire: memorymap.db, backups memorymap-*.db, the memorymap_media cookie, export and import formats (memorymap-folder... **Built 2026-11-01: routes_auth.py `MEDIA_COOKIE` and the salt kept by name.** | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:39 | M | rebrand (running) |
-| 35 | Windows: the installer, an upgrade from a pre-rename release, the .bat fallbacks and the package-check workflow. No Windows here; CI runs them. | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:47 | S | rebrand (running) |
-| 36 | A packaged (PyInstaller) build after the package rename. | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:49 | S | rebrand (running) |
-| 37 | The icons' own <title> (favicon.svg, icon-maskable.svg) still say the old name: the owner's logo pass owns them. **Built 2026-11-01: frontend/favicon.svg and icon-maskable.svg line 3 say `<title>Tessellate</title>`.** | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:50 | S | rebrand (running) |
-| 38 | Branches cut before the rename: merge, then python scripts/rebrand.py (rewrites memorymap. imports, MEMORYMAP_ names and copy), then git mv any new... **Built 2026-11-01: scripts/rebrand.py rewrites old imports, names and copy.** | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:55 | S | rebrand (running) |
-| 39 | New logo (favicon.svg and icon-maskable.svg titles still carry the old name) | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:30 | M | logo (running) |
-| 40 | Not verified in a browser: the Alert menu, Undo the run then Ctrl+Z, the timeline range change (source and node tests only). | agent/data101b-1011:docs/roadmap/archive/agent-remaining/data101b-1011.md:6 | S | data101b (running) |
-| 41 | tests/test_activity.py::test_every_thread_site_is_registered_with_activity fails on the base: core/lanserve.py starts a thread nothing lists. | agent/data101b-1011:docs/roadmap/archive/agent-remaining/data101b-1011.md:7 | S | data101b (running) |
-| 42 | Stop mid-call covers skill runs and write tools only; a plain Chat agent turn has no budget, so Stop there still lands at the next yield. | agent/data101b-1011:docs/roadmap/archive/agent-remaining/data101b-1011.md:8 | S | data101b (running) |
-| 43 | reminder_token.key sits beside the notes in the data folder: check backups and strip_leftovers do not need to leave it out. | agent/data101b-1011:docs/roadmap/archive/agent-remaining/data101b-1011.md:9 | S | data101b (running) |
-| 44 | Brief 101b: data fixes (import bin clock, monthly anchor day, Alert menu, timeline load-more, token key) and its leftovers | docs/roadmap/SESSION_BRIEFS.md:1823 | M | data101b (running) |
+| 23 | INBOX 902 and Brief 88: companion physics (throw flight and feel, click arm, eased starts, resting pose) | docs/roadmap/SESSION_BRIEFS.md:1748 | L | throw (ended, unassigned) |
+| 24 | scripts/rebrand.py (idempotent; --check; --repo-url, default Braydenh563/Tessellate; --brand-only). The orchestrator re-runs it after every merge... **Built 2026-11-01: scripts/rebrand.py (tests/test_brand_name.py runs it).** | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:12 | S | rebrand (ended, unassigned) |
+| 25 | INBOX 903: rename the product to Tessellate, formerly MemoryMap AI (step 2: internal identifiers; docs; pages site) **Built 2026-11-01: the src/tessellate package.** | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:13 | L | rebrand (ended, unassigned) |
+| 26 | Former name noted: README top, Settings, About, the Guide's "name" topic, the Pages footer, both CHANGELOGs. **Built 2026-11-01: README.md:8 (`Formerly MemoryMap AI`).** | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:15 | S | rebrand (ended, unassigned) |
+| 27 | Kept on purpose, with brand: keep beside each: the LAN certificate subject, the bcrypt-input salt (memorymap-bcrypt-input), the stored caption... **Built 2026-11-01: routes_auth.py `MEDIA_COOKIE` and the bcrypt-input salt, kept with brand: keep (tests/test_brand_name.py).** | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:17 | M | rebrand (ended, unassigned) |
+| 28 | Shortcuts are renamed; the old ones go on upgrade and on uninstall. | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:22 | S | rebrand (ended, unassigned) |
+| 29 | /health says Tessellate; every check accepts both names (instance_lock.APP_NAMES, start/uninstall .sh/.bat). **Built 2026-11-01: core/instance_lock.py:206 `APP_NAMES`.** | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:23 | S | rebrand (ended, unassigned) |
+| 30 | Package src/tessellate; src/memorymap is a shim (a meta-path alias to the same module objects, and python -m memorymap). The memorymap console script... **Built 2026-11-01: the src/memorymap shim (`__init__.py`, `__main__.py`).** | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:28 | S | rebrand (ended, unassigned) |
+| 31 | TESSELLATE_* settings; core/envnames.py reads MEMORYMAP_* as the fallback; launchers, compose and CI do the same. **Built 2026-11-01: core/envnames.py.** | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:31 | S | rebrand (ended, unassigned) |
+| 32 | Data folder: an existing MemoryMap AI folder is used where it is (never moved); a new install gets Tessellate (config._default_data_dir... **Built 2026-11-01: core/config.py `_default_data_dir`; tests/test_upgrade_keeps_data_folder.py.** | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:33 | S | rebrand (ended, unassigned) |
+| 33 | Browser: memorymap.ocr.* keys move once when library.js loads, beside their only reader (the app head is at its size ratchet); the undo store... **Built 2026-11-01: library.js `OCR_VIEW_KEY` and `OCR_READER_KEY` are `tessellate.ocr.*`, the old keys copied once and removed (d6deab4); tests/test_brand_name.py.** | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:36 | S | rebrand (ended, unassigned) |
+| 34 | Kept, as names on disk or on the wire: memorymap.db, backups memorymap-*.db, the memorymap_media cookie, export and import formats (memorymap-folder... **Built 2026-11-01: routes_auth.py `MEDIA_COOKIE` and the salt kept by name.** | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:39 | M | rebrand (ended, unassigned) |
+| 35 | Windows: the installer, an upgrade from a pre-rename release, the .bat fallbacks and the package-check workflow. No Windows here; CI runs them. | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:47 | S | rebrand (ended, unassigned) |
+| 36 | A packaged (PyInstaller) build after the package rename. | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:49 | S | rebrand (ended, unassigned) |
+| 37 | The icons' own <title> (favicon.svg, icon-maskable.svg) still say the old name: the owner's logo pass owns them. **Built 2026-11-01: frontend/favicon.svg and icon-maskable.svg line 3 say `<title>Tessellate</title>`.** | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:50 | S | rebrand (ended, unassigned) |
+| 38 | Branches cut before the rename: merge, then python scripts/rebrand.py (rewrites memorymap. imports, MEMORYMAP_ names and copy), then git mv any new... **Built 2026-11-01: scripts/rebrand.py rewrites old imports, names and copy.** | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:55 | S | rebrand (ended, unassigned) |
+| 39 | New logo (favicon.svg and icon-maskable.svg titles still carry the old name) | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:30 | M | logo (ended, unassigned) |
+| 40 | Not verified in a browser: the Alert menu, Undo the run then Ctrl+Z, the timeline range change (source and node tests only). | agent/data101b-1011:docs/roadmap/archive/agent-remaining/data101b-1011.md:6 | S | data101b (ended, unassigned) |
+| 41 | tests/test_activity.py::test_every_thread_site_is_registered_with_activity fails on the base: core/lanserve.py starts a thread nothing lists. | agent/data101b-1011:docs/roadmap/archive/agent-remaining/data101b-1011.md:7 | S | data101b (ended, unassigned) |
+| 42 | Stop mid-call covers skill runs and write tools only; a plain Chat agent turn has no budget, so Stop there still lands at the next yield. | agent/data101b-1011:docs/roadmap/archive/agent-remaining/data101b-1011.md:8 | S | data101b (ended, unassigned) |
+| 43 | reminder_token.key sits beside the notes in the data folder: check backups and strip_leftovers do not need to leave it out. | agent/data101b-1011:docs/roadmap/archive/agent-remaining/data101b-1011.md:9 | S | data101b (ended, unassigned) |
+| 44 | Brief 101b: data fixes (import bin clock, monthly anchor day, Alert menu, timeline load-more, token key) and its leftovers | docs/roadmap/SESSION_BRIEFS.md:1823 | M | data101b (ended, unassigned) |
 | 45 | Brief 101: the found-not-fixed ledger of 41 unplaced rows (room101 is 101a; data101b running; first101c queued) | docs/roadmap/SESSION_BRIEFS.md:1823 | L | data101b (running), queued: first101c |
 | 46 | INBOX placed log: INBOX 898 undo and redo universal sent to undoall | docs/roadmap/INBOX.md:275 | S | undoall2 |
-| 47 | whiteboard.js:createNewBoard POST /board-library/new-board | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:100 | S | undoall2 (running) |
-| 48 | whiteboard.js:finish PUT /whiteboard/boards/${boardId} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:101 | S | undoall2 (running) |
-| 49 | whiteboard.js:initWhiteboard POST /media/upload | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:102 | S | undoall2 (running) |
-| 50 | whiteboard.js:uploadToLibrary POST /media/upload | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:103 | S | undoall2 (running) |
-| 51 | whiteboard.js:wbClearBoard DELETE ${base}/${item.id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:104 | S | undoall2 (running) |
-| 52 | whiteboard.js:wbCloneConnect POST /whiteboard/sketches | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:105 | S | undoall2 (running) |
-| 53 | whiteboard.js:wbCreateBlankBoard POST /whiteboard/boards | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:106 | S | undoall2 (running) |
-| 54 | whiteboard.js:wbImportOutlineFile POST /whiteboard/boards/import | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:107 | S | undoall2 (running) |
-| 55 | whiteboard.js:wbNewUntitledBoard PUT /whiteboard/boards/${boardId} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:108 | S | undoall2 (running) |
-| 56 | whiteboard.js:wbPlaceUploadedImage POST /media/upload | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:109 | S | undoall2 (running) |
-| 57 | Open design: stand-alone capture.js and clip.js windows have no stack; the board library 'new library' and 'delete library'; board objects the board... | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:11 | S | undoall2 (running) |
-| 58 | whiteboard.js:wbRestoreLinks POST /whiteboard/sketches | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:110 | S | undoall2 (running) |
-| 59 | ask-history.js:clearAskHistory DELETE /ask-history | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:16 | S | undoall2 (running) |
-| 60 | ask-history.js:deleteAskHistoryTurn DELETE /ask-history/${id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:17 | S | undoall2 (running) |
-| 61 | ask-history.js:forgetRecentQuestion DELETE /chat/recent?question=${encodeURIComponent(quest | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:18 | S | undoall2 (running) |
-| 62 | attach-to.js:renderAttachToBoard POST /whiteboard/nodes | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:19 | S | undoall2 (running) |
-| 63 | attachment-actions.js:remove DELETE /files/${spec.attachment.id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:20 | S | undoall2 (running) |
-| 64 | capture-ask.js:renderAnswerGrounding POST /learned/corrections | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:21 | S | undoall2 (running) |
-| 65 | capture.js:save POST /entries | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:22 | S | undoall2 (running) |
-| 66 | categories-panel.js:drawCategoryTidy POST /tidy-proposals/dismiss | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:23 | S | undoall2 (running) |
-| 67 | chat-agent.js:answer POST /memory/${proposal.id}/answer | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:24 | S | undoall2 (running) |
-| 68 | chat-edit.js:editAndResend POST /conversations/${chatConv.id}/truncate | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:25 | S | undoall2 (running) |
-| 69 | clip.js:save POST /links/clip-page | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:26 | S | undoall2 (running) |
-| 70 | dashboard.js:nightFactRow POST /entries/tensions/accept | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:27 | S | undoall2 (running) |
-| 71 | dashboard.js:paintFadedNotes POST /learned/corrections | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:28 | S | undoall2 (running) |
-| 72 | documents.js:runDocAiEdit POST /documents/${currentDoc.id}/ai-edit | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:29 | S | undoall2 (running) |
-| 73 | INBOX 898: undo and redo universal, 89 GAP entries left in tests/test_undo_coverage.py EXEMPT | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:3 | L | undoall2 (running) |
-| 74 | editor.js:inlineAiSubmit POST /documents/${currentDoc.id}/ai-edit | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:30 | S | undoall2 (running) |
-| 75 | graph-canvas.js:gcDragEnd PUT /graph/pins | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:31 | S | undoall2 (running) |
-| 76 | graph-canvas.js:gcSaveTopicName PUT /graph/topics/name | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:32 | S | undoall2 (running) |
-| 77 | graph-canvas.js:gcTogglePin PUT /graph/pin/${node.id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:33 | S | undoall2 (running) |
-| 78 | graph-canvas.js:gcWireSelectionDock PUT /entries/${node.id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:34 | S | undoall2 (running) |
-| 79 | graph.js:renderGraphSvg PUT /graph/pin/${d.id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:35 | S | undoall2 (running) |
-| 80 | library.js:bulkDeleteLibraryMedia DELETE endpoint | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:36 | S | undoall2 (running) |
-| 81 | library.js:filterLibraryImagesGallery DELETE endpoint | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:37 | S | undoall2 (running) |
-| 82 | library.js:finish PUT /graph/topics/name | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:38 | S | undoall2 (running) |
-| 83 | library.js:libraryActions PUT /conversations/${item.id}/pin | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:39 | S | undoall2 (running) |
-| 84 | library.js:noteRead PUT /bookmarks/${bookmark.id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:40 | S | undoall2 (running) |
-| 85 | lightbox-view.js:readingDelete POST /media/${id}/${source === vision ? vision-ocr : | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:41 | S | undoall2 (running) |
-| 86 | lightbox-view.js:run PUT /media/${item.id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:42 | S | undoall2 (running) |
-| 87 | meetings.js:meetingTakeBegin POST /recordings | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:43 | S | undoall2 (running) |
-| 88 | meetings.js:meetingTakeDiscard DELETE /recordings/${id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:44 | S | undoall2 (running) |
-| 89 | meetings.js:meetingTakeFinish POST /recordings/${meetingTake.id}/finish | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:45 | S | undoall2 (running) |
-| 90 | note-cards.js:entryItem PUT /entries/${entry.id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:46 | S | undoall2 (running) |
-| 91 | notes-list.js:offerWikiRename POST /entries/${entryId}/wiki-rename | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:47 | S | undoall2 (running) |
-| 92 | quick-note.js:flushNoteOutbox POST /entries | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:48 | S | undoall2 (running) |
-| 93 | settings.js:learnedBulk POST /learned/bulk | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:49 | S | undoall2 (running) |
-| 94 | settings.js:learnedDelete DELETE /learned/${fact.id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:50 | S | undoall2 (running) |
-| 95 | settings.js:learnedForget DELETE /learned | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:51 | S | undoall2 (running) |
-| 96 | skills.js:saveFile POST /files/save | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:52 | S | undoall2 (running) |
-| 97 | spaces-find.js:initSpaceSwitcher POST /spaces | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:53 | S | undoall2 (running) |
-| 98 | suggestions-inbox.js:inboxCorrection POST /learned/corrections | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:54 | S | undoall2 (running) |
-| 99 | suggestions-inbox.js:inboxTypeRow POST /suggestions/types/accept | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:55 | S | undoall2 (running) |
-| 100 | suggestions-inbox.js:tensionCard POST /entries/tensions/accept | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:56 | S | undoall2 (running) |
-| 101 | tidy.js:tidyDismiss POST ${path}/dismiss | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:57 | S | undoall2 (running) |
-| 102 | wiring.js:applyPendingChatTitle PUT /conversations/${conversationId} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:58 | S | undoall2 (running) |
-| 103 | chat-attach.js:commitStagedImages POST /media/upload | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:62 | S | undoall2 (running) |
-| 104 | documents-word.js:docWordUploadPicture POST /media/upload | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:63 | S | undoall2 (running) |
-| 105 | library.js:(anonymous /media/upload) POST /media/upload | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:64 | S | undoall2 (running) |
-| 106 | media.js:saveSketch POST /media/upload | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:65 | S | undoall2 (running) |
-| 107 | settings-wiring.js:commitCaptureImages POST /media/upload | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:66 | S | undoall2 (running) |
-| 108 | settings-wiring.js:handleFileUpload POST /media/upload | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:67 | S | undoall2 (running) |
-| 109 | Not verified: nothing here was driven in a browser (Playwright); every helper is checked by node --check and the scanner only. Undo of a board step... | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:7 | S | undoall2 (running) |
-| 110 | whiteboard-interchange.js:post POST /whiteboard/sketches | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:71 | S | undoall2 (running) |
-| 111 | whiteboard-interchange.js:wbDrawioPlace POST /whiteboard/sketches | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:72 | S | undoall2 (running) |
-| 112 | whiteboard-interchange.js:wbImportBoardRows POST /whiteboard/sketches | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:73 | S | undoall2 (running) |
-| 113 | whiteboard-interchange.js:wbImportMermaid POST /whiteboard/sketches | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:74 | S | undoall2 (running) |
-| 114 | whiteboard-interchange.js:wbMermaidPlaceNode POST /whiteboard/sketches | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:75 | S | undoall2 (running) |
-| 115 | whiteboard-library.js:run DELETE /board-library/libraries/${lib.id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:76 | S | undoall2 (running) |
-| 116 | whiteboard-library.js:wbLibImportFile POST /board-library/import | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:77 | S | undoall2 (running) |
-| 117 | whiteboard-library.js:wbLibNewBoardFrom POST /board-library/new-board | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:78 | S | undoall2 (running) |
-| 118 | whiteboard-library.js:wbLibNewLibrary POST /board-library/libraries | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:79 | S | undoall2 (running) |
-| 119 | whiteboard-library.js:wbLibPlace POST /whiteboard/boards/${boardId}/place | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:80 | S | undoall2 (running) |
-| 120 | whiteboard-library.js:wbLibReplace PUT /board-library/${entry.ref.slice(5)} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:81 | S | undoall2 (running) |
-| 121 | whiteboard-map.js:wbMapAdoptProvisional POST /whiteboard/boards/${row.board_id}/nodes | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:82 | S | undoall2 (running) |
-| 122 | whiteboard-map.js:wbMapClearEveryTopic POST /whiteboard/boards/${boardId}/nodes/clear-style | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:83 | S | undoall2 (running) |
-| 123 | whiteboard-map.js:wbMapClearToOneTopic DELETE /whiteboard/objects/${root.id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:84 | S | undoall2 (running) |
-| 124 | whiteboard-map.js:wbMapCrossLinkToBranch DELETE /whiteboard/sketches/${sketchId} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:85 | S | undoall2 (running) |
-| 125 | whiteboard-map.js:wbMapCutCrossLink DELETE /whiteboard/sketches/${sketchId} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:86 | S | undoall2 (running) |
-| 126 | whiteboard-map.js:wbMapFromDocument POST /whiteboard/boards/import | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:87 | S | undoall2 (running) |
-| 127 | whiteboard-map.js:wbMapPasteText POST /whiteboard/boards/${boardId}/nodes/outline | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:88 | S | undoall2 (running) |
-| 128 | whiteboard-map.js:wbMapRemoveKeepingBranch PUT /whiteboard/boards/${boardId}/nodes/move-many | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:89 | S | undoall2 (running) |
-| 129 | Needs the server (no restore route): media/file deletes and uploads, ask-history delete/clear, learned delete/forget, tidy and tension dismiss... | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:9 | S | undoall2 (running) |
-| 130 | whiteboard-map.js:wbMapRestoreRows POST /whiteboard/boards/${boardId}/nodes | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:90 | S | undoall2 (running) |
-| 131 | whiteboard-map.js:wbMapReverseCrossLink PUT /whiteboard/sketches/${sketchId} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:91 | S | undoall2 (running) |
-| 132 | whiteboard-map.js:wbMapReverseEdge PUT /whiteboard/boards/${boardId}/nodes/${id}/move | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:92 | S | undoall2 (running) |
-| 133 | whiteboard-map.js:wbMapSetLayout PUT /whiteboard/boards/${boardId} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:93 | S | undoall2 (running) |
-| 134 | whiteboard-map.js:wbMapSetNumbered PUT /whiteboard/boards/${boardId} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:94 | S | undoall2 (running) |
-| 135 | whiteboard-map.js:wbMapSetTheme PUT /whiteboard/boards/${boardId} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:95 | S | undoall2 (running) |
-| 136 | whiteboard-map.js:wbMapSever PUT /whiteboard/boards/${boardId}/nodes/${id}/move | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:96 | S | undoall2 (running) |
-| 137 | whiteboard-map.js:wbMapTakePicture POST /media/upload | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:97 | S | undoall2 (running) |
-| 138 | whiteboard-map.js:wbMapWriteDocument POST /documents | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:98 | S | undoall2 (running) |
-| 139 | whiteboard.js:createConceptMap POST /whiteboard/boards | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:99 | S | undoall2 (running) |
+| 47 | whiteboard.js:createNewBoard POST /board-library/new-board | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:100 | S | undoall2 (ended, unassigned) |
+| 48 | whiteboard.js:finish PUT /whiteboard/boards/${boardId} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:101 | S | undoall2 (ended, unassigned) |
+| 49 | whiteboard.js:initWhiteboard POST /media/upload | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:102 | S | undoall2 (ended, unassigned) |
+| 50 | whiteboard.js:uploadToLibrary POST /media/upload | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:103 | S | undoall2 (ended, unassigned) |
+| 51 | whiteboard.js:wbClearBoard DELETE ${base}/${item.id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:104 | S | undoall2 (ended, unassigned) |
+| 52 | whiteboard.js:wbCloneConnect POST /whiteboard/sketches | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:105 | S | undoall2 (ended, unassigned) |
+| 53 | whiteboard.js:wbCreateBlankBoard POST /whiteboard/boards | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:106 | S | undoall2 (ended, unassigned) |
+| 54 | whiteboard.js:wbImportOutlineFile POST /whiteboard/boards/import | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:107 | S | undoall2 (ended, unassigned) |
+| 55 | whiteboard.js:wbNewUntitledBoard PUT /whiteboard/boards/${boardId} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:108 | S | undoall2 (ended, unassigned) |
+| 56 | whiteboard.js:wbPlaceUploadedImage POST /media/upload | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:109 | S | undoall2 (ended, unassigned) |
+| 57 | Open design: stand-alone capture.js and clip.js windows have no stack; the board library 'new library' and 'delete library'; board objects the board... | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:11 | S | undoall2 (ended, unassigned) |
+| 58 | whiteboard.js:wbRestoreLinks POST /whiteboard/sketches | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:110 | S | undoall2 (ended, unassigned) |
+| 59 | ask-history.js:clearAskHistory DELETE /ask-history | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:16 | S | undoall2 (ended, unassigned) |
+| 60 | ask-history.js:deleteAskHistoryTurn DELETE /ask-history/${id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:17 | S | undoall2 (ended, unassigned) |
+| 61 | ask-history.js:forgetRecentQuestion DELETE /chat/recent?question=${encodeURIComponent(quest | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:18 | S | undoall2 (ended, unassigned) |
+| 62 | attach-to.js:renderAttachToBoard POST /whiteboard/nodes | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:19 | S | undoall2 (ended, unassigned) |
+| 63 | attachment-actions.js:remove DELETE /files/${spec.attachment.id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:20 | S | undoall2 (ended, unassigned) |
+| 64 | capture-ask.js:renderAnswerGrounding POST /learned/corrections | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:21 | S | undoall2 (ended, unassigned) |
+| 65 | capture.js:save POST /entries | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:22 | S | undoall2 (ended, unassigned) |
+| 66 | categories-panel.js:drawCategoryTidy POST /tidy-proposals/dismiss | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:23 | S | undoall2 (ended, unassigned) |
+| 67 | chat-agent.js:answer POST /memory/${proposal.id}/answer | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:24 | S | undoall2 (ended, unassigned) |
+| 68 | chat-edit.js:editAndResend POST /conversations/${chatConv.id}/truncate | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:25 | S | undoall2 (ended, unassigned) |
+| 69 | clip.js:save POST /links/clip-page | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:26 | S | undoall2 (ended, unassigned) |
+| 70 | dashboard.js:nightFactRow POST /entries/tensions/accept | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:27 | S | undoall2 (ended, unassigned) |
+| 71 | dashboard.js:paintFadedNotes POST /learned/corrections | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:28 | S | undoall2 (ended, unassigned) |
+| 72 | documents.js:runDocAiEdit POST /documents/${currentDoc.id}/ai-edit | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:29 | S | undoall2 (ended, unassigned) |
+| 73 | INBOX 898: undo and redo universal, 89 GAP entries left in tests/test_undo_coverage.py EXEMPT | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:3 | L | undoall2 (ended, unassigned) |
+| 74 | editor.js:inlineAiSubmit POST /documents/${currentDoc.id}/ai-edit | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:30 | S | undoall2 (ended, unassigned) |
+| 75 | graph-canvas.js:gcDragEnd PUT /graph/pins | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:31 | S | undoall2 (ended, unassigned) |
+| 76 | graph-canvas.js:gcSaveTopicName PUT /graph/topics/name | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:32 | S | undoall2 (ended, unassigned) |
+| 77 | graph-canvas.js:gcTogglePin PUT /graph/pin/${node.id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:33 | S | undoall2 (ended, unassigned) |
+| 78 | graph-canvas.js:gcWireSelectionDock PUT /entries/${node.id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:34 | S | undoall2 (ended, unassigned) |
+| 79 | graph.js:renderGraphSvg PUT /graph/pin/${d.id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:35 | S | undoall2 (ended, unassigned) |
+| 80 | library.js:bulkDeleteLibraryMedia DELETE endpoint | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:36 | S | undoall2 (ended, unassigned) |
+| 81 | library.js:filterLibraryImagesGallery DELETE endpoint | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:37 | S | undoall2 (ended, unassigned) |
+| 82 | library.js:finish PUT /graph/topics/name | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:38 | S | undoall2 (ended, unassigned) |
+| 83 | library.js:libraryActions PUT /conversations/${item.id}/pin | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:39 | S | undoall2 (ended, unassigned) |
+| 84 | library.js:noteRead PUT /bookmarks/${bookmark.id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:40 | S | undoall2 (ended, unassigned) |
+| 85 | lightbox-view.js:readingDelete POST /media/${id}/${source === vision ? vision-ocr : | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:41 | S | undoall2 (ended, unassigned) |
+| 86 | lightbox-view.js:run PUT /media/${item.id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:42 | S | undoall2 (ended, unassigned) |
+| 87 | meetings.js:meetingTakeBegin POST /recordings | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:43 | S | undoall2 (ended, unassigned) |
+| 88 | meetings.js:meetingTakeDiscard DELETE /recordings/${id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:44 | S | undoall2 (ended, unassigned) |
+| 89 | meetings.js:meetingTakeFinish POST /recordings/${meetingTake.id}/finish | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:45 | S | undoall2 (ended, unassigned) |
+| 90 | note-cards.js:entryItem PUT /entries/${entry.id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:46 | S | undoall2 (ended, unassigned) |
+| 91 | notes-list.js:offerWikiRename POST /entries/${entryId}/wiki-rename | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:47 | S | undoall2 (ended, unassigned) |
+| 92 | quick-note.js:flushNoteOutbox POST /entries | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:48 | S | undoall2 (ended, unassigned) |
+| 93 | settings.js:learnedBulk POST /learned/bulk | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:49 | S | undoall2 (ended, unassigned) |
+| 94 | settings.js:learnedDelete DELETE /learned/${fact.id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:50 | S | undoall2 (ended, unassigned) |
+| 95 | settings.js:learnedForget DELETE /learned | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:51 | S | undoall2 (ended, unassigned) |
+| 96 | skills.js:saveFile POST /files/save | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:52 | S | undoall2 (ended, unassigned) |
+| 97 | spaces-find.js:initSpaceSwitcher POST /spaces | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:53 | S | undoall2 (ended, unassigned) |
+| 98 | suggestions-inbox.js:inboxCorrection POST /learned/corrections | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:54 | S | undoall2 (ended, unassigned) |
+| 99 | suggestions-inbox.js:inboxTypeRow POST /suggestions/types/accept | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:55 | S | undoall2 (ended, unassigned) |
+| 100 | suggestions-inbox.js:tensionCard POST /entries/tensions/accept | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:56 | S | undoall2 (ended, unassigned) |
+| 101 | tidy.js:tidyDismiss POST ${path}/dismiss | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:57 | S | undoall2 (ended, unassigned) |
+| 102 | wiring.js:applyPendingChatTitle PUT /conversations/${conversationId} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:58 | S | undoall2 (ended, unassigned) |
+| 103 | chat-attach.js:commitStagedImages POST /media/upload | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:62 | S | undoall2 (ended, unassigned) |
+| 104 | documents-word.js:docWordUploadPicture POST /media/upload | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:63 | S | undoall2 (ended, unassigned) |
+| 105 | library.js:(anonymous /media/upload) POST /media/upload | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:64 | S | undoall2 (ended, unassigned) |
+| 106 | media.js:saveSketch POST /media/upload | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:65 | S | undoall2 (ended, unassigned) |
+| 107 | settings-wiring.js:commitCaptureImages POST /media/upload | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:66 | S | undoall2 (ended, unassigned) |
+| 108 | settings-wiring.js:handleFileUpload POST /media/upload | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:67 | S | undoall2 (ended, unassigned) |
+| 109 | Not verified: nothing here was driven in a browser (Playwright); every helper is checked by node --check and the scanner only. Undo of a board step... | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:7 | S | undoall2 (ended, unassigned) |
+| 110 | whiteboard-interchange.js:post POST /whiteboard/sketches | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:71 | S | undoall2 (ended, unassigned) |
+| 111 | whiteboard-interchange.js:wbDrawioPlace POST /whiteboard/sketches | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:72 | S | undoall2 (ended, unassigned) |
+| 112 | whiteboard-interchange.js:wbImportBoardRows POST /whiteboard/sketches | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:73 | S | undoall2 (ended, unassigned) |
+| 113 | whiteboard-interchange.js:wbImportMermaid POST /whiteboard/sketches | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:74 | S | undoall2 (ended, unassigned) |
+| 114 | whiteboard-interchange.js:wbMermaidPlaceNode POST /whiteboard/sketches | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:75 | S | undoall2 (ended, unassigned) |
+| 115 | whiteboard-library.js:run DELETE /board-library/libraries/${lib.id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:76 | S | undoall2 (ended, unassigned) |
+| 116 | whiteboard-library.js:wbLibImportFile POST /board-library/import | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:77 | S | undoall2 (ended, unassigned) |
+| 117 | whiteboard-library.js:wbLibNewBoardFrom POST /board-library/new-board | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:78 | S | undoall2 (ended, unassigned) |
+| 118 | whiteboard-library.js:wbLibNewLibrary POST /board-library/libraries | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:79 | S | undoall2 (ended, unassigned) |
+| 119 | whiteboard-library.js:wbLibPlace POST /whiteboard/boards/${boardId}/place | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:80 | S | undoall2 (ended, unassigned) |
+| 120 | whiteboard-library.js:wbLibReplace PUT /board-library/${entry.ref.slice(5)} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:81 | S | undoall2 (ended, unassigned) |
+| 121 | whiteboard-map.js:wbMapAdoptProvisional POST /whiteboard/boards/${row.board_id}/nodes | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:82 | S | undoall2 (ended, unassigned) |
+| 122 | whiteboard-map.js:wbMapClearEveryTopic POST /whiteboard/boards/${boardId}/nodes/clear-style | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:83 | S | undoall2 (ended, unassigned) |
+| 123 | whiteboard-map.js:wbMapClearToOneTopic DELETE /whiteboard/objects/${root.id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:84 | S | undoall2 (ended, unassigned) |
+| 124 | whiteboard-map.js:wbMapCrossLinkToBranch DELETE /whiteboard/sketches/${sketchId} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:85 | S | undoall2 (ended, unassigned) |
+| 125 | whiteboard-map.js:wbMapCutCrossLink DELETE /whiteboard/sketches/${sketchId} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:86 | S | undoall2 (ended, unassigned) |
+| 126 | whiteboard-map.js:wbMapFromDocument POST /whiteboard/boards/import | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:87 | S | undoall2 (ended, unassigned) |
+| 127 | whiteboard-map.js:wbMapPasteText POST /whiteboard/boards/${boardId}/nodes/outline | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:88 | S | undoall2 (ended, unassigned) |
+| 128 | whiteboard-map.js:wbMapRemoveKeepingBranch PUT /whiteboard/boards/${boardId}/nodes/move-many | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:89 | S | undoall2 (ended, unassigned) |
+| 129 | Needs the server (no restore route): media/file deletes and uploads, ask-history delete/clear, learned delete/forget, tidy and tension dismiss... | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:9 | S | undoall2 (ended, unassigned) |
+| 130 | whiteboard-map.js:wbMapRestoreRows POST /whiteboard/boards/${boardId}/nodes | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:90 | S | undoall2 (ended, unassigned) |
+| 131 | whiteboard-map.js:wbMapReverseCrossLink PUT /whiteboard/sketches/${sketchId} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:91 | S | undoall2 (ended, unassigned) |
+| 132 | whiteboard-map.js:wbMapReverseEdge PUT /whiteboard/boards/${boardId}/nodes/${id}/move | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:92 | S | undoall2 (ended, unassigned) |
+| 133 | whiteboard-map.js:wbMapSetLayout PUT /whiteboard/boards/${boardId} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:93 | S | undoall2 (ended, unassigned) |
+| 134 | whiteboard-map.js:wbMapSetNumbered PUT /whiteboard/boards/${boardId} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:94 | S | undoall2 (ended, unassigned) |
+| 135 | whiteboard-map.js:wbMapSetTheme PUT /whiteboard/boards/${boardId} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:95 | S | undoall2 (ended, unassigned) |
+| 136 | whiteboard-map.js:wbMapSever PUT /whiteboard/boards/${boardId}/nodes/${id}/move | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:96 | S | undoall2 (ended, unassigned) |
+| 137 | whiteboard-map.js:wbMapTakePicture POST /media/upload | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:97 | S | undoall2 (ended, unassigned) |
+| 138 | whiteboard-map.js:wbMapWriteDocument POST /documents | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:98 | S | undoall2 (ended, unassigned) |
+| 139 | whiteboard.js:createConceptMap POST /whiteboard/boards | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:99 | S | undoall2 (ended, unassigned) |
 | 140 | INBOX placed log: INBOX 871 help search bar below the welcome tour sent to chattime; 872 restart fixed; 873 smooth transition placed | docs/roadmap/INBOX.md:280 | S | mergetrain (chattime) |
 | 141 | INBOX placed log: INBOX 897 sizes per device sent to devsize | docs/roadmap/INBOX.md:276 | S | mergetrain (devsize) |
-| 142 | Merge train: cifix2, chattime, phonegraph, phone2, room101, lansafe, restart, scan, ownerfix3, meaning94, voiceup, tags89, graph100, devsize, wbfix, small, themes95, wbcolour, secscan (19 branches) | git branch --list 'agent/*' | L | mergetrain (running) |
+| 142 | Merge train: cifix2, chattime, phonegraph, phone2, room101, lansafe, restart, scan, ownerfix3, meaning94, voiceup, tags89, graph100, devsize, wbfix, small, themes95, wbcolour, secscan (19 branches) | git branch --list 'agent/*' | L | mergetrain (ended, unassigned) |
 | 143 | INBOX 828, the owner 2026-10-11, verbatim (the Voice note dialog: transcribing, then "couldn't be transcribed"): "also if I record a meeting or audio... | docs/roadmap/UI_MODERNISATION_PLAN.md:1568 | L | mergetrain (voiceup) |
 | 144 | INBOX 829, the owner 2026-10-11, verbatim (the Focus timer widget): "can you redesign the focus timer as well??" (board and map previews are in... | docs/roadmap/UI_MODERNISATION_PLAN.md:1569 | L | mergetrain (voiceup) |
 | 145 | V2. Input: a device picker (every microphone the browser lists, remembered), noise suppression, echo cancellation and automatic gain as switches (the... | docs/roadmap/UI_MODERNISATION_PLAN.md:1575 | M | mergetrain (voiceup) |
@@ -1858,15 +1858,15 @@ Order to run them: Verification and Red tests batches first (cheap, they shrink 
 
 | branch | commits | last subject | state |
 | --- | --- | --- | --- |
-| agent/mergetrain-1011 | 52 | Merge agent/meaning94-1011; meaning.js listed as a lazy piece; one-off | mergetrain (running) |
-| agent/atlas-1011 | 25 | A3: "what did I search yesterday", "what ran overnight", "when did I l | atlas (running) |
+| agent/mergetrain-1011 | 52 | Merge agent/meaning94-1011; meaning.js listed as a lazy piece; one-off | mergetrain (ended, unassigned) |
+| agent/atlas-1011 | 25 | A3: "what did I search yesterday", "what ran overnight", "when did I l | atlas (ended, unassigned) |
 | agent/cifix-1010 | 13 | CI M: changelog line | unmerged, unassigned: check, may be on the branch by cherry-pick |
-| agent/data101b-1011 | 9 | Codemap and remaining list for data101b | data101b (running) |
+| agent/data101b-1011 | 9 | Codemap and remaining list for data101b | data101b (ended, unassigned) |
 | agent/cifix2-1011 | 8 | Search suggest places its list on a short timer instead of a frame loo | mergetrain (merging) |
 | agent/graph100-1011 | 6 | Brief 100: CHANGELOG lines and the remaining list (graph100-1011) | mergetrain (merging) |
 | agent/lansafe-1011 | 6 | lansafe-1011: remaining list (Brief 102) | mergetrain (merging) |
 | agent/ownerfix3-1011 | 6 | Hover grounds: a lint and a sweep for square corners; the remaining fi | mergetrain (merging) |
-| agent/throw-1011 | 6 | Atlas: its props read against its body and say what they are | throw (running) |
+| agent/throw-1011 | 6 | Atlas: its props read against its body and say what they are | throw (ended, unassigned) |
 | agent/voiceup-1011 | 6 | voiceup-1011: the remaining file with the commits | mergetrain (merging) |
 | agent/wbcolour-1011 | 6 | Whiteboard: one colour menu, and a selection's shared properties | mergetrain (merging) |
 | agent/scan-1011 | 4 | Scan 1011: what the full scan found and left (remaining file), changel | mergetrain (merging) |
@@ -1878,7 +1878,7 @@ Order to run them: Verification and Red tests batches first (cheap, they shrink 
 | agent/room101-1011 | 3 | Room under the caps: remaining ledger, two stale OPEN rows replaced | mergetrain (merging) |
 | agent/themes95-1011 | 3 | Themes: Parchment and Ember dark retoned; every look 0 low-contrast (B | mergetrain (merging) |
 | agent/devsize-1011 | 2 | INBOX 897 resolved: sizes per device measured and moved to HISTORY | mergetrain (merging) |
-| agent/undoall-1011 | 2 | undoall-1011: the remaining ledger (INBOX 898) | undoall2 (running) |
+| agent/undoall-1011 | 2 | undoall-1011: the remaining ledger (INBOX 898) | undoall2 (ended, unassigned) |
 | agent/wbfix-1011 | 2 | An undone shape on no layer comes back identical | mergetrain (merging) |
 | agent/cifix3-1010 | 1 | CI red on 142aa25f5: ten failures from the Brief 80, pickers and Brief | unmerged, unassigned: check, may be on the branch by cherry-pick |
 | agent/cifix4-1010 | 1 | CI fixes: /recordings takes a cursor, insight questions skip the overv | unmerged, unassigned: check, may be on the branch by cherry-pick |
@@ -1886,13 +1886,13 @@ Order to run them: Verification and Red tests batches first (cheap, they shrink 
 | agent/codeql-1010 | 1 | CodeQL-proof census.py and codemap.py: bounded route regex, case-insen | unmerged, unassigned: check, may be on the branch by cherry-pick |
 | agent/gzip-1010 | 1 | Boot gzip budget: MCP snippet and LAN state render move into the lazy  | unmerged, unassigned: check, may be on the branch by cherry-pick |
 | agent/placement-1010 | 1 | Placed from the owner's list, 2026-10-10: 133 items into the plans | unmerged, unassigned: check, may be on the branch by cherry-pick |
-| agent/rebrand-1011 | 1 | Rename the product to Tessellate, formerly MemoryMap AI (INBOX 903) | rebrand (running) |
+| agent/rebrand-1011 | 1 | Rename the product to Tessellate, formerly MemoryMap AI (INBOX 903) | rebrand (ended, unassigned) |
 | agent/restart-1011 | 1 | Restart works in every launch, and the new copy waits for the old one | mergetrain (merging) |
 | agent/review56-1010 | 1 | Brief 56 re-run: already built (021fd6c9c, 41655fc24); remaining list  | unmerged, unassigned: check, may be on the branch by cherry-pick |
 | agent/tags89-1011 | 1 | Notes: a "+ Tag" chip on notes with fewer than three tags, with sugges | mergetrain (merging) |
 | agent/first101c-1011 | 0 | INBOX 895 to 897: the composer's reach, the LAN status bar, sizes per  | queued: first101c |
 | agent/graphfeel100-1011 | 0 | Merge typos90b: 80 of the owner's typos understood (a stray semicolon, | unmerged, unassigned: check, may be on the branch by cherry-pick |
-| agent/logo-1011 | 0 | INBOX 895 to 902 placed: composer, sizes, undo, time words, LAN toggle | logo (running) |
+| agent/logo-1011 | 0 | INBOX 895 to 902 placed: composer, sizes, undo, time words, LAN toggle | logo (ended, unassigned) |
 
 Branches 76 of 111 (the -1010 round and most of -1011) are merged by content; their remaining files are the head's agent-remaining files and OPEN.md rows above.
 
