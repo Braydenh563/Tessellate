@@ -107,3 +107,6 @@ date | item | type | rung | rework | note
 2026-11-02 | 1554 companion menu choose before Settings | bugfix | opus | 0 | 
 2026-11-02 | 1555 caption cut at noun-verb; frame; link label | bugfix | opus | 0 | 
 2026-11-02 | a28m math panel 1537-1541 | feature | sonnet | 0 | 
+2026-11-02 | 1550 rest: percent, days between, web meta | bugfix | opus | 0 | 
+2026-11-02 | a28l lag 1534 second pass | perf | sonnet | 0 | 
+2026-11-02 | six pre-existing reds from audit merges | ci | opus | 0 | 
