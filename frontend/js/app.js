@@ -529,29 +529,11 @@ api.stream = api;
 
 // --- reading a paged list endpoint whole ---------------------------------------
 //
-// `GET /documents`, `GET /media`, `GET /reminders` and the rest each return a
-// page and an `X-Total-Count` header saying how big the selection really is
-// (INBOX 117; `GET /entries` has worked this way for longer, see
-// `loadEntries`). A caller that needs every row asks for the next page until it
-// has them all, which is the half that makes a cap safe: a cap with no offset
-// makes everything past it permanently unreachable, and that is exactly the
-// failure the old uncapped list was avoiding.
+// `GET /documents`, `GET /media`, `GET /reminders` and the rest each return a page and an `X-Total-Count` header saying how big the selection really is (INBOX 117; `GET /entries` has worked this way for longer, see `loadEntries`). A caller that needs every row asks for the next page until it has them all, which is the half that makes a cap safe: a cap with no offset makes everything past it permanently unreachable, and that is exactly the failure the old uncapped list was avoiding.
 //
-// **It lives here, immediately below `api()`, and that placement is the whole
-// of a crash report.** It used to live in documents.js, whose own comment
-// argued that "both call it from inside a function body, so load order is
-// satisfied either way". That stopped being true the moment app.js called it
-// from boot code: index.html loads app.js first and documents.js ten lines
-// later, so `initNotesSubtabs` running at the bottom of this file reached a
-// function that did not exist yet, and the Notes tab died with
-// `ReferenceError: apiPagedList is not defined` before it drew anything. Six
-// frontend files call this now; the file every one of them is loaded after is
-// this one. `tests/test_frontend_load_order.py` is the rule, so the next
-// shared helper cannot be put somewhere only some callers can see.
+// **It lives here, immediately below `api()`, and that placement is the whole of a crash report.** It used to live in documents.js, whose own comment argued that "both call it from inside a function body, so load order is satisfied either way". That stopped being true the moment app.js called it from boot code: index.html loads app.js first and documents.js ten lines later, so `initNotesSubtabs` running at the bottom of this file reached a function that did not exist yet, and the Notes tab died with `ReferenceError: apiPagedList is not defined` before it drew anything. Six frontend files call this now; the file every one of them is loaded after is this one. `tests/test_frontend_load_order.py` is the rule, so the next shared helper cannot be put somewhere only some callers can see.
 //
-// `options` is passed through to `api()` untouched (library.js wants
-// `{ silent: true }`). A page that comes back empty ends the loop whatever the
-// header says, so a stale or wrong total can never spin forever.
+// `options` is passed through to `api()` untouched (library.js wants `{ silent: true }`). A page that comes back empty ends the loop whatever the header says, so a stale or wrong total can never spin forever.
 async function apiPagedList(path, pageSize, options = {}) {
   const rows = [];
   let total = Infinity; // discovered from the first response's X-Total-Count
@@ -1681,7 +1663,7 @@ const LAZY_MODULES = {
   //: Tidy, the reviews with no AI (INBOX 691): tidy.js's header.
   tidy: ["/css/tidy-lazy.css", "/js/tidy.js"],
   semanticNotice: ["/css/semantic-notice-lazy.css", "/js/semantic-notice.js"],
-  //: The order the `<script>` tags had, kept: every cross-file call between these three is inside a function rather than at parse time, so it is not load-bearing, but it is the order the three files' own headers describe. documents-code.js and documents-prose.js were split out of documents.js (2026-09-24) and go *before* it, and that position is load-bearing: their own top level reads nothing from documents.js, while documents.js's top-level wiring names their functions, and each file here is followed by a microtask checkpoint before the next one runs. See their headers. documents-props.js, documents-mermaid.js, documents-math.js, documents-comments.js, documents-embeds.js, documents-tables.js and documents-columns.js (DC13) go before it likewise, as does whiteboard-map.js before whiteboard.js.
+  //: The order the `<script>` tags had, kept: every cross-file call between these three is inside a function rather than at parse time, so it is not load-bearing, but it is the order the three files' own headers describe. documents-code.js and documents-prose.js were split out of documents.js (2026-09-24) and go *before* it, and that position is load-bearing: their own top level reads nothing from documents.js, while documents.js's top-level wiring names their functions, and each file here is followed by a microtask checkpoint before the next one runs. See their headers. documents-props.js, documents-mermaid.js, documents-math.js, documents-comments.js, documents-embeds.js, documents-tables.js, documents-columns.js and documents-print.js (DC13) go before it likewise, as does whiteboard-map.js before whiteboard.js.
   library: [
     "/vendor/d3.v7.min.js", //: Before whiteboard.js, whose top level calls `d3.zoom()`.
     "/css/library-lazy.css", //: The styles only this bundle's surfaces draw, out of the boot budget.
@@ -1692,6 +1674,7 @@ const LAZY_MODULES = {
     "/js/library.js",
     "/js/documents-code.js",
     "/js/documents-prose.js",
+    "/js/documents-print.js",
     "/js/documents-cm.js",
     "/js/documents-props.js",
     "/js/documents-mermaid.js",
