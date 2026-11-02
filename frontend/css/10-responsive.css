@@ -1382,7 +1382,7 @@ header#top-bar[data-scrolled="1"],
   #skills-sidebar:not(.sidebar-sheet-open) > .sidebar-collapse-toggle {
     display: none;
   }
-  .sidebar-panel ~ * {
+  .sidebar-panel ~ :where(.tab-main, .doc-main, .notes-rail) {
     padding-left: 0;
   }
   /* Skill logs is after `main` in the DOM (RIGHT_SIDE_SIDEBARS, app.js), so

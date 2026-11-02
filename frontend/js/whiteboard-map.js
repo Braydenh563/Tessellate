@@ -3353,31 +3353,29 @@ function wbMapFacingSide(node, size, x, y) {
   return dy < 0 ? "top" : "bottom";
 }
 
-//: Both ends with at least one pinned. The end left on Auto faces the
-//: pinned one's point, so a line pinned to a parent's top still arrives at
-//: whichever side of the child looks back at it.
-function wbMapPinnedAnchors(parent, p, child, c, from, to) {
-  let s1 = from;
-  let s2 = to;
-  if (!s1) {
-    const b = wbMapSidePoint(child, c, s2);
-    s1 = wbMapFacingSide(parent, p, b.x, b.y);
-  }
-  if (!s2) {
-    const a = wbMapSidePoint(parent, p, s1);
-    s2 = wbMapFacingSide(child, c, a.x, a.y);
-  }
-  const a = wbMapSidePoint(parent, p, s1);
-  const b = wbMapSidePoint(child, c, s2);
-  return { horizontal: s1 === "left" || s1 === "right", pinned: true, s1, s2, x1: a.x, y1: a.y, x2: b.x, y2: b.y };
-}
-
 function wbMapEdgeAnchors(parent, child, mapLayout) {
   const p = wbMapNodeSize(parent);
   const c = wbMapNodeSize(child);
   const from = WB_MAP_SIDES[child?.data?.edge_from] ? child.data.edge_from : null;
   const to = WB_MAP_SIDES[child?.data?.edge_to] ? child.data.edge_to : null;
-  if (from || to) return wbMapPinnedAnchors(parent, p, child, c, from, to);
+  if (from || to) {
+    //: Both ends with at least one pinned. The end left on Auto faces the
+    //: pinned one's point, so a line pinned to a parent's top still arrives at
+    //: whichever side of the child looks back at it.
+    let s1 = from;
+    let s2 = to;
+    if (!s1) {
+      const b = wbMapSidePoint(child, c, s2);
+      s1 = wbMapFacingSide(parent, p, b.x, b.y);
+    }
+    if (!s2) {
+      const a = wbMapSidePoint(parent, p, s1);
+      s2 = wbMapFacingSide(child, c, a.x, a.y);
+    }
+    const a = wbMapSidePoint(parent, p, s1);
+    const b = wbMapSidePoint(child, c, s2);
+    return { horizontal: s1 === "left" || s1 === "right", pinned: true, s1, s2, x1: a.x, y1: a.y, x2: b.x, y2: b.y };
+  }
   //: Inside a branch with its own structure, that structure's lines, and its
   //: top topic is the "root" the column layouts measure from.
   const layout = child._bl || mapLayout;
@@ -3930,6 +3928,8 @@ function wbMapEdgesFor(id, ctx) {
 function wbUpdateMapEdges(edges) {
   for (const { parent, child, el, layout } of edges || []) {
     const d = wbMapEdgePathD(parent, child, layout);
+    //: Drawn by hand: the render's cache no longer holds what is on screen.
+    el._wbMoved = true;
     // The visible path is the ribbon where the edge has one; the hit twin is
     // always the centreline, which is what a person is actually pointing at.
     el.setAttribute("d", wbMapEdgeIsRibbon(child) ? wbMapRibbonD(parent, child, layout) : d);
@@ -4043,11 +4043,26 @@ function wbRenderMapEdges({ only = null } = {}) {
     //: after the server's answer to an add changes one topic's id and nothing's
     //: place; it drew every line again (22ms of 49 on 200 topics).
     if (!(only && drawn && !only.has(parent.id) && !only.has(child.id))) {
-      const geom = wbMapEdgeGeometry(parent, child, layout, colors);
-      if (!drawn) cache.set(key, (held = { wrap: wbMapEdgeElement(parent.id, child.id), paint: null }));
-      if (held.paint !== geom.paint) {
-        wbMapEdgeApply(held.wrap, geom);
-        held.paint = geom.paint;
+      //: **A line is worked out only when something it reads has changed**
+      //: (wbp2): the geometry is 75us a line (15ms at 200 topics) and the key
+      //: over its inputs is a string. A hand-drawn line (`wbUpdateMapEdges`
+      //: writes the path per drag frame and marks it) forgets what it holds.
+      if (drawn && held.path._wbMoved) {
+        held.path._wbMoved = false;
+        held.key = held.paint = null;
+      }
+      const geomKey = wbMapEdgeKey(parent, child, layout, colors);
+      if (!drawn) {
+        const wrap = wbMapEdgeElement(parent.id, child.id);
+        cache.set(key, (held = { wrap, path: wrap.querySelector("path.wb-map-edge"), key: null, paint: null }));
+      }
+      if (held.key !== geomKey) {
+        const geom = wbMapEdgeGeometry(parent, child, layout, colors);
+        held.key = geomKey;
+        if (held.paint !== geom.paint) {
+          wbMapEdgeApply(held.wrap, geom);
+          held.paint = geom.paint;
+        }
       }
     }
     const wrap = held.wrap;
@@ -4055,6 +4070,22 @@ function wbRenderMapEdges({ only = null } = {}) {
   });
   wbRenderMapEdgePluses(edges, layout, only);
   wbSyncMapEdgeHandles();
+}
+
+//: **Everything `wbMapEdgeGeometry` reads, as one string** (wbp2): both ends'
+//: place and rendered box, the layout and the branch's own, which end is the
+//: tree's root, the four themed fields the line's look resolves (the topic's
+//: own, its level's, the map's), the topic's own bend, pinned sides and label,
+//: and its branch colour. `tests/test_map_edge_cache.py` changes each in turn
+//: and fuzzes them together: an input the geometry starts reading goes here,
+//: or that test fails. Cheaper than the geometry by a factor of thirty, which
+//: is the whole of why it exists.
+function wbMapEdgeKey(parent, child, layout, colors) {
+  const p = wbMapNodeSize(parent);
+  const c = wbMapNodeSize(child);
+  const themed = wbMapThemedData(child);
+  const own = child.data || WB_MAP_NO_THEME;
+  return `${layout}|${child._bl}|${child._blTop}|${parent.id}|${parent.parent_id == null}|${parent.x},${parent.y},${p.w},${p.h}|${child.x},${child.y},${c.w},${c.h}|${themed.edge_style}|${themed.edge_dashed}|${themed.edge_width}|${themed.edge_arrow}|${own.edge_from}|${own.edge_to}|${own.edge_slide}|${own.edge_bend}|${own.edge_label}|${own.edge_label_dx}|${own.edge_label_dy}|${colors.get(child.id)}`;
 }
 
 //: Everything one tree edge draws, worked out from the two topics it joins,
