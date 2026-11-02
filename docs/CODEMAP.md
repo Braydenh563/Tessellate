@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7561, frontend ids 2642, CSS sections 517, backend routes 640, backend modules 8491, test files 1883, tests 15938, plan headings 991, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7561, frontend ids 2642, CSS sections 517, backend routes 640, backend modules 8491, test files 1884, tests 15939, plan headings 991, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7561)
 
@@ -1210,21 +1210,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `_isChatComposer` | frontend/js/settings-wiring.js:1948 |
+| `_isChatComposer` | frontend/js/settings-wiring.js:1952 |
 | `activeOverlay` | frontend/js/settings-wiring.js:955 |
-| `captureCountText` | frontend/js/settings-wiring.js:1709 |
+| `captureCountText` | frontend/js/settings-wiring.js:1713 |
 | `captureShortcutKey` | frontend/js/settings-wiring.js:1461 |
-| `clearStagedImages` | frontend/js/settings-wiring.js:2115 |
+| `clearStagedImages` | frontend/js/settings-wiring.js:2119 |
 | `closeOverlaysForChord` | frontend/js/settings-wiring.js:1256 |
 | `closeShortcuts` | frontend/js/settings-wiring.js:1491 |
 | `comboFromEvent` | frontend/js/settings-wiring.js:1292 |
-| `commitCaptureImages` | frontend/js/settings-wiring.js:2100 |
-| `fileDropBox` | frontend/js/settings-wiring.js:1957 |
+| `commitCaptureImages` | frontend/js/settings-wiring.js:2104 |
+| `fileDropBox` | frontend/js/settings-wiring.js:1961 |
 | `flashSaved` | frontend/js/settings-wiring.js:496 |
-| `handleFileUpload` | frontend/js/settings-wiring.js:2147 |
+| `handleFileUpload` | frontend/js/settings-wiring.js:2151 |
 | `hideChordGuide` | frontend/js/settings-wiring.js:1274 |
 | `inEditable` | frontend/js/settings-wiring.js:953 |
-| `loadForgottenOrder` | frontend/js/settings-wiring.js:1568 |
+| `loadForgottenOrder` | frontend/js/settings-wiring.js:1572 |
 | `loadShortcuts` | frontend/js/settings-wiring.js:1129 |
 | `localizeStaticChords` | frontend/js/settings-wiring.js:1172 |
 | `lockFail` | frontend/js/settings-wiring.js:269 |
@@ -1235,13 +1235,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `maybeShowOnboarding` | frontend/js/settings-wiring.js:976 |
 | `notebookLocked` | frontend/js/settings-wiring.js:481 |
 | `persistSavedSearches` | frontend/js/settings-wiring.js:53 |
-| `renderCaptureFiles` | frontend/js/settings-wiring.js:1674 |
-| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1641 |
-| `renderInstallRow` | frontend/js/settings-wiring.js:1876 |
+| `renderCaptureFiles` | frontend/js/settings-wiring.js:1678 |
+| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1645 |
+| `renderInstallRow` | frontend/js/settings-wiring.js:1880 |
 | `renderSavedSearches` | frontend/js/settings-wiring.js:17 |
 | `resetShortcuts` | frontend/js/settings-wiring.js:1428 |
 | `restampShortcutHints` | frontend/js/settings-wiring.js:1182 |
-| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2088 |
+| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2092 |
 | `runShortcut` | frontend/js/settings-wiring.js:1319 |
 | `saveCurrentSearch` | frontend/js/settings-wiring.js:61 |
 | `saveShortcutOverrides` | frontend/js/settings-wiring.js:1280 |
@@ -1249,13 +1249,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `savedSearches` | frontend/js/settings-wiring.js:13 |
 | `setShortcutStatus` | frontend/js/settings-wiring.js:1445 |
 | `setShortcutStatusError` | frontend/js/settings-wiring.js:1452 |
-| `singleKeysOn` | frontend/js/settings-wiring.js:2286 |
-| `stagedImageUrl` | frontend/js/settings-wiring.js:2065 |
+| `singleKeysOn` | frontend/js/settings-wiring.js:2290 |
+| `stagedImageUrl` | frontend/js/settings-wiring.js:2069 |
 | `stampShortcutTitles` | frontend/js/settings-wiring.js:1158 |
 | `submitLockForm` | frontend/js/settings-wiring.js:305 |
-| `textCounts` | frontend/js/settings-wiring.js:1699 |
-| `uploadStagedFiles` | frontend/js/settings-wiring.js:2124 |
-| `wordCount` | frontend/js/settings-wiring.js:1694 |
+| `textCounts` | frontend/js/settings-wiring.js:1703 |
+| `uploadStagedFiles` | frontend/js/settings-wiring.js:2128 |
+| `wordCount` | frontend/js/settings-wiring.js:1698 |
 
 ### frontend/js/spaces-find.js (25)
 
@@ -6213,7 +6213,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `buildShortcutList` | frontend/js/reveal-targets.js:718 |
-| `flashRevealed` | frontend/js/reveal-targets.js:818 |
+| `flashRevealed` | frontend/js/reveal-targets.js:821 |
 | `foldedText` | frontend/js/reveal-targets.js:635 |
 | `markNotePassage` | frontend/js/reveal-targets.js:664 |
 | `notePassageFor` | frontend/js/reveal-targets.js:621 |
@@ -23293,7 +23293,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (15938)
+## Tests (15939)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24788,6 +24788,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_shell_ux_1030.py | 1 |
 | tests/test_shortcut_chip_pencil.py | 3 |
 | tests/test_shortcut_hints.py | 9 |
+| tests/test_shortcuts_focus_s58.py | 1 |
 | tests/test_sidebar_head_1311.py | 2 |
 | tests/test_sidebar_peek_head.py | 2 |
 | tests/test_sidebar_rail_selector.py | 3 |
@@ -25761,7 +25762,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E3 · Model calls are scattered across request handlers, background threads and module singletons, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:666 |
 | E4 · The honest positives, so the section is not one-sided (read) | docs/roadmap/MODERNISATION_AUDIT.md:676 |
 | Earlier morning summary (away run 2026-10-18b, branch claude/magical-feynman-7bgj7j, PR 192, 0.6.0) | docs/roadmap/HANDOVER.md:38 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:580 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:582 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4280 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |

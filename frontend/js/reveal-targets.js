@@ -802,7 +802,10 @@ function openShortcuts() {
   } else if (boardNote) {
     boardNote.classList.remove("hidden");
   }
-  $("shortcuts-overlay").classList.remove("hidden");
+  //: Audit 1028 S58: what opened the sheet gets focus back when it closes.
+  const overlay = $("shortcuts-overlay");
+  if (overlay.classList.contains("hidden")) overlay.returnFocus = document.activeElement;
+  overlay.classList.remove("hidden");
   if (onBoard) $("shortcut-head-whiteboard")?.scrollIntoView({ block: "start" });
   $("shortcuts-close").focus();
 }

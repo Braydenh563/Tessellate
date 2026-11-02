@@ -1493,7 +1493,11 @@ function closeShortcuts() {
   // leaves the handler swallowing every keypress in the app, the shortcut you
   // just set appears dead, and so does everything else.
   capturingShortcut = null;
-  $("shortcuts-overlay").classList.add("hidden");
+  const overlay = $("shortcuts-overlay");
+  const wasOpen = !overlay.classList.contains("hidden");
+  overlay.classList.add("hidden");
+  if (wasOpen) focusBackTo(overlay.returnFocus, "#tab-bar [aria-selected='true']");
+  overlay.returnFocus = null;
 }
 
 $("shortcuts-close").addEventListener("click", closeShortcuts);
