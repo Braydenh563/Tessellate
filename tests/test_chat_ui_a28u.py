@@ -34,3 +34,13 @@ def test_e47_the_chat_list_has_a_search_field():
 
     topic = next(t for t in help_chat.HELP_TOPICS if t["id"] == "chat-list")
     assert "search box above it finds a chat" in topic["body"]
+
+
+def test_e61_plan_and_agent_say_why_in_view_and_stay_reachable():
+    js = app_js_text()
+    # The visible line names both; Agent is aria-disabled (a Tab stop) with the model-offer popover.
+    assert "Plan and Agent need a model." in js
+    body = js[js.index("function renderChatModeSeg") :][:2600]
+    assert 'setAttribute("aria-disabled", "true")' in body
+    assert "agentButton.disabled" not in body
+    assert "dataset.modelOffer" in body and "dataset.needsModel" in body

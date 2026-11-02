@@ -203,7 +203,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 197 | K23 | low | token and ticket dicts mutated from several threads | fixed 1031 (snapshots and pop) | S |
 | 198 | K38 | low | media-link tickets reusable and in URL query string | not reproduced 1031: `once` is redacted in the access line (QueryScrubFilter, tests/test_audit_1028_k_rows.py); reusable by design for PDF range requests | S |
 | 199 | E46 | low | chat sidebar sort covers only the first page | docs/roadmap/BACKLOG.md:1148 | S |
-| 200 | E47 | low | no search of chats in the chat sidebar | new | S |
+| 200 | E47 | low | no search of chats in the chat sidebar | fixed 2026-11-02 (bbc8003) | S |
 | 201 | E49 | low | editAndResend derives turn from DOM bubble index | fixed 2026-11-02 (c589253) | S |
 | 202 | E55 | low | untag with no tag named falls through to Q&A | new | S |
 | 203 | E56 | low | app-control phrases like timer and pomodoro parse to nothing | new | M |

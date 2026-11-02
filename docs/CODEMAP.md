@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7558, frontend ids 2634, CSS sections 517, backend routes 640, backend modules 8470, test files 1844, tests 15738, plan headings 990, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7558, frontend ids 2634, CSS sections 517, backend routes 640, backend modules 8470, test files 1844, tests 15739, plan headings 990, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7558)
 
@@ -946,7 +946,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `appStackIsNewer` | frontend/js/status.js:1618 |
 | `armReminderTimer` | frontend/js/status.js:531 |
 | `askNotificationPermission` | frontend/js/status.js:393 |
-| `backendLabel` | frontend/js/status.js:2878 |
+| `backendLabel` | frontend/js/status.js:2889 |
 | `boardHistoryActive` | frontend/js/status.js:1583 |
 | `checkDueReminders` | frontend/js/status.js:574 |
 | `closeModelGate` | frontend/js/status.js:2110 |
@@ -966,7 +966,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `isNotificationUnread` | frontend/js/status.js:211 |
 | `jobsRunning` | frontend/js/status.js:1933 |
 | `keepToastAction` | frontend/js/status.js:337 |
-| `kickBackgroundTaskPoll` | frontend/js/status.js:3044 |
+| `kickBackgroundTaskPoll` | frontend/js/status.js:3055 |
 | `lastAnswerLine` | frontend/js/status.js:2482 |
 | `loadMostUsed` | frontend/js/status.js:1797 |
 | `loadRecentQuestions` | frontend/js/status.js:1770 |
@@ -974,7 +974,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `noteDamagedNotebook` | frontend/js/status.js:1306 |
 | `noteServerDown` | frontend/js/status.js:1362 |
 | `noteServerUp` | frontend/js/status.js:1371 |
-| `noticeTaskTransitions` | frontend/js/status.js:3144 |
+| `noticeTaskTransitions` | frontend/js/status.js:3155 |
 | `notificationsMuted` | frontend/js/status.js:686 |
 | `notificationsReadAt` | frontend/js/status.js:138 |
 | `notify` | frontend/js/status.js:474 |
@@ -982,7 +982,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `offerUndo` | frontend/js/status.js:1525 |
 | `openLanPanel` | frontend/js/status.js:637 |
 | `openModelGate` | frontend/js/status.js:2120 |
-| `paintPrivacyChip` | frontend/js/status.js:3242 |
+| `paintPrivacyChip` | frontend/js/status.js:3253 |
 | `paintReminderList` | frontend/js/status.js:566 |
 | `paintStatusItem` | frontend/js/status.js:2603 |
 | `paintTitle` | frontend/js/status.js:507 |
@@ -999,9 +999,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `pushEntryPutUndo` | frontend/js/status.js:1558 |
 | `pushUndo` | frontend/js/status.js:1436 |
 | `recordNotification` | frontend/js/status.js:97 |
-| `refreshBackgroundTasks` | frontend/js/status.js:3063 |
+| `refreshBackgroundTasks` | frontend/js/status.js:3074 |
 | `refreshModelStatus` | frontend/js/status.js:1961 |
-| `refreshPrivacyChip` | frontend/js/status.js:3256 |
+| `refreshPrivacyChip` | frontend/js/status.js:3267 |
 | `rememberAnnounced` | frontend/js/status.js:50 |
 | `reminderNoticeKey` | frontend/js/status.js:228 |
 | `renderAgentActivityMode` | frontend/js/status.js:765 |
@@ -1010,7 +1010,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderChatModeSeg` | frontend/js/status.js:2819 |
 | `renderNotifMuteToggle` | frontend/js/status.js:267 |
 | `renderNotificationBadge` | frontend/js/status.js:247 |
-| `renderSettings` | frontend/js/status.js:2889 |
+| `renderSettings` | frontend/js/status.js:2900 |
 | `renderStatusBar` | frontend/js/status.js:2646 |
 | `renderUndoBar` | frontend/js/status.js:1702 |
 | `reopenAnswerPanel` | frontend/js/status.js:744 |
@@ -1019,7 +1019,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `sayChatModelChosen` | frontend/js/status.js:1847 |
 | `scheduleServerDownRetry` | frontend/js/status.js:1386 |
 | `scheduleUndoBar` | frontend/js/status.js:1694 |
-| `setChatMode` | frontend/js/status.js:2862 |
+| `setChatMode` | frontend/js/status.js:2873 |
 | `setForcedReadIds` | frontend/js/status.js:196 |
 | `setForcedUnreadIds` | frontend/js/status.js:165 |
 | `setTitleCount` | frontend/js/status.js:512 |
@@ -1027,9 +1027,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `settingsOpen` | frontend/js/status.js:1900 |
 | `settleNotification` | frontend/js/status.js:116 |
 | `settleUndoFromToast` | frontend/js/status.js:1546 |
-| `showAgentNoModelHint` | frontend/js/status.js:2857 |
+| `showAgentNoModelHint` | frontend/js/status.js:2868 |
 | `showServerDownBanner` | frontend/js/status.js:1345 |
-| `startPrivacyChip` | frontend/js/status.js:3266 |
+| `startPrivacyChip` | frontend/js/status.js:3277 |
 | `startReminderWatch` | frontend/js/status.js:648 |
 | `storedNotifications` | frontend/js/status.js:84 |
 | `surfaceHistory` | frontend/js/status.js:1600 |
@@ -1037,7 +1037,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `syncModelGatedControls` | frontend/js/status.js:2143 |
 | `syncNotifBlocked` | frontend/js/status.js:386 |
 | `taskEndingWords` | frontend/js/status.js:130 |
-| `taskKey` | frontend/js/status.js:3124 |
+| `taskKey` | frontend/js/status.js:3135 |
 | `toast` | frontend/js/status.js:1134 |
 | `toastAction` | frontend/js/status.js:1278 |
 | `toastActionButton` | frontend/js/status.js:1258 |
@@ -23256,7 +23256,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15738)
+## Tests (15739)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23469,7 +23469,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_chat_tab_has_ai9.py | 2 |
 | tests/test_chat_times.py | 8 |
 | tests/test_chat_transcript.py | 28 |
-| tests/test_chat_ui_a28u.py | 2 |
+| tests/test_chat_ui_a28u.py | 3 |
 | tests/test_chat_vision.py | 9 |
 | tests/test_chat_weather_1027.py | 4 |
 | tests/test_cheap_animations.py | 6 |

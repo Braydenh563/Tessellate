@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat with no model: the line above the box now says "Plan and Agent need a model", and Agent is a Tab stop that opens the same "Needs a model" popover Plan does (it was a disabled button explained only by a tooltip), dimmed as Plan is (audit 1028 E61): both at opacity 0.5, both with aria-disabled, none disabled.
 - Chat: the Chats list has a search box above it (the search-field recipe, and a "Finding and sorting your saved chats" Guide topic): it asks the server, which reads titles and what was said, shows up to 32 matches, says "No chats match that." when none do, and Escape clears it (audit 1028 E47). The list showed the last 8 chats with no way to reach older ones short of the Library.
 - Chat: Edit and resend reads the turn from the question's own bubble (`data-turn`, kept in step when an exchange is deleted), not from its place among the page's message nodes, so an extra node between bubbles no longer cuts the wrong turn (audit 1028 E49): a third question with two extra nodes above it cut at turn 3, now turn 2.
 - Chat without a model: a checklist line done in a later note now reads done in the note's checklist and leaves "what is still open", as "is it still on my list" already said (Fable eye F15).
