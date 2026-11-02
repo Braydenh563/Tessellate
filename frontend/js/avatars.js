@@ -6397,7 +6397,11 @@ for (const type of ["pointerdown", "keydown", "wheel", "resize"]) {
   (type === "resize" ? window : document).addEventListener(type, () => {
     if (type !== "resize") {
       nmbClock.inputAt = Date.now();
-      document.documentElement.classList.remove("is-idle");
+      //: Only when it is on (DX1): `remove` writes the attribute even when the
+      //: class is absent, so every key woke each observer of `<html>` (the
+      //: diagrams' theme redraw ran 13 times in 60 keys, a style read each).
+      const root = document.documentElement;
+      if (root.classList.contains("is-idle")) root.classList.remove("is-idle");
     }
     if (!nmb.checkDue) nmbTickArm(1500);
     nmb.checkDue = true;
