@@ -2548,7 +2548,7 @@ async function docSaveOnce(silent) {
       //: server (`currentDoc` is replaced by every save's answer), so a
       //: save over text another window has since saved is refused with 409
       //: rather than overwriting it (WORLD_CLASS_PLAN 22.1 item 5).
-      body: JSON.stringify({ title, content, file_type: currentDoc.file_type || "md", base_hash: currentDoc.content_hash }),
+      body: JSON.stringify({ title, content, file_type: currentDoc.file_type || "md", base_hash: currentDoc.content_hash, threads: renderDocComments.threads() }),
     });
     //: A name another document already has is said once per document and name, on the
     //: first save under it (a new document's first autosave, or a rename), and left as

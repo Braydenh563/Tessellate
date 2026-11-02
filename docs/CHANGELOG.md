@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: a comment is now a thread (audit 1102 DX24, audit 1028 D26). Each remark in the Outline tab's Comments shows who wrote it and when, takes replies (Reply, Enter posts), and Resolve keeps the thread under "Show N resolved" with Reopen; Ctrl+Z after a resolve brings the thread back with its replies. The remark stays the inline `%%remark%%` and the thread is a record beside the text (`documents.threads`, saved with the document, never in an export); remarks written before keep reading as they did. Row height with Reply and Resolve: 66px (85 for a three-line remark), the same as before; the comment styles moved to the lazy sheet (boot CSS 179,087 gzipped bytes, cap 179,300; a30h).
 - Plans: the focus ring that was said to take the ground's colour on an active button does not reproduce (239 Tab stops across eight tabs: none under 2px or 3:1, minimum 3.56:1 light and 7.03:1 dark), so its plan row is closed with the numbers (a30b).
 - Plans: GRAPH phases 1, 2, 3 and 6 and UI_MODERNISATION Phase 7 items 1 to 5, already built and pointed at HISTORY.md, no longer keep their spec text in the plans (a30b); CODEMAP regenerated.
 - Timeline: the spine now runs through the centre of every kind mark (it sat 1px left of it, ignoring the row's border and its own width); the mark was already level with the title's first line (0px at 1440 and 390).

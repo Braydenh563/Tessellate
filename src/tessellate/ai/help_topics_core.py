@@ -2871,6 +2871,34 @@ HELP_TOPICS.extend(
             "badge": {"label": "Library", "tab": "library"},
         },
         {
+            "id": "documents-comments",
+            "keywords": (
+                "document comments",
+                "remark",
+                "remarks",
+                "reply to a remark",
+                "resolve a remark",
+                "resolved remarks",
+                "reopen a remark",
+                "comment thread in a document",
+                "who wrote a comment",
+            ),
+            "body": (
+                "Comments in a document. Select words and choose Style, Comment: "
+                "they are highlighted and a remark follows them, kept in the text "
+                "as ==words== %%the remark%%, so it opens anywhere else the same. "
+                "The sidebar's Outline lists every remark with the words it is "
+                "about, who wrote it (your name from Settings, Profile) and when. "
+                "Reply on a row adds a line under it; Enter posts, Esc cancels. "
+                "Resolve takes the remark out of the text and keeps the thread: "
+                "Show resolved lists it, and Reopen puts the remark back on its "
+                "words (Ctrl+Z right after a resolve does the same). Replies and "
+                "bylines are saved with the document but are not in the text, so a "
+                "download shows each remark as a footnote and nothing more."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
             "id": "documents-turn-into",
             "keywords": (
                 "turn into",

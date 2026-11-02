@@ -8167,3 +8167,151 @@ input[type="color"].wb-mixed {
     background: transparent;
   }
 }
+
+/* --- documents: the comments panel (DOCUMENTS_PLAN Phase 5 item 1) ----------
+   **A comment row is a quoted subject, the remark, and one action**, in that
+   order down the row, which is the shape every review tool draws because it is
+   the order the two questions arrive in: what is this about, and what was said.
+   The subject is the quiet half (muted, one line, ellipsised) and the remark is
+   the half you read, which is the opposite of the weight a naive stack would
+   give them: the subject is a quotation of text that is already on screen a few
+   hundred pixels to the right.
+   The row is `.timeline-row`'s tone rather than its grid (DESIGN.md's row
+   recipe): a transparent 1px border so the hairline it gains under the pointer
+   moves nothing, the ground arriving with the pointer rather than an edge drawn
+   around every row, and `aria-current` painted as `--accent-soft` plus a weight
+   step, never a fill with an accent edge. It cannot be the grid itself, because
+   a mark/content/actions grid is one line high and a remark is prose. */
+.doc-comments {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.doc-comment-item {
+  padding: var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+}
+.doc-comment-item:hover,
+.doc-comment-item:is(:focus-visible, :has(:focus-visible)) {
+  background: var(--surface-3);
+  border-color: var(--divider);
+}
+/* The remark you are looking at, painted from the attribute `docGoToComment`
+   sets, so a mark that is only painted and never announced cannot happen: the
+   same pairing `.outline-link[aria-current]` above pays for. */
+.doc-comment-item[aria-current] {
+  background: var(--accent-soft);
+  border-color: transparent;
+}
+/* The subject line borrows `.outline-link` whole (its left edge, its radius,
+   its hover) so a comment row and an outline row start at the same pixel, and
+   overrides only the two things that differ: it is a quotation rather than a
+   destination, so it sits a size down, and it holds an icon beside its text, so
+   the ellipsis has to be on the text rather than on the flex box around it. */
+.doc-comment-open {
+  gap: var(--space-1);
+  padding-left: 0;
+  font-size: var(--text-base);
+}
+.doc-comment-context {
+  overflow: hidden;
+  min-width: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Which kind of remark this is, in the ink of the mark it draws in the text:
+   the accent for one anchored to a highlight, muted for a standing note on a
+   line. The icon is the only place the two are told apart, so it carries the
+   colour as well as the shape rather than colour alone. */
+.doc-comment-kind {
+  flex: 0 0 auto;
+  color: var(--muted);
+}
+.ph-highlighter.doc-comment-kind {
+  color: var(--accent-text);
+}
+/* The remark itself: the document's own ink at the list's size, three lines at
+   most. A comment long enough to fill the sidebar is a note, and this app has
+   notes; the whole remark is on the row's `title` either way. */
+.doc-comment-body {
+  margin: var(--space-1) 0 0;
+  /* The subject's own left edge, so the two lines of a row share one margin. */
+  padding-left: 0.25rem;
+  color: var(--ink);
+  font-size: var(--text-md);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+/* The action is always drawn rather than arriving with the pointer: a resolve
+   that appears on hover is a resolve a touch device cannot reach, and this panel
+   is a sheet on a tablet from Phase 6 onwards. Quiet until the row is under the
+   pointer, which is how it stays a row of remarks rather than a row of buttons:
+   `.ghost` already draws no fill, so all this takes is the muted ink. */
+.doc-comment-action {
+  color: var(--muted);
+}
+.doc-comment-item:hover .doc-comment-action,
+.doc-comment-action:focus-visible,
+.doc-comment-item:is(:focus-visible, :has(:focus-visible)) .doc-comment-action {
+  color: var(--accent-text);
+}
+/* A section of remarks is taller than a row of them, and it is the one in this
+   stack whose content is prose, so it is the one that has to be allowed to
+   scroll inside itself rather than push what links here off the panel. The
+   other three keep the 4rem floor `.doc-outline-wrap` sets. */
+.doc-comments-wrap {
+  max-height: 40vh;
+  overflow-y: auto;
+}
+/* **A thread is the remark plus who said it, when, and what was answered**
+   (DOCUMENTS_PLAN DX24t). The byline and a reply's byline are the quiet half in
+   `--muted`, the words stay the document's ink, and a reply steps in under the
+   remark with the sidebar's own hairline on its left rather than a card inside a
+   card. The reply field is the plain text input at the panel's width, the foot
+   one row of an input and a small button. The resolved shelf is the same list
+   in the same rows, folded behind one disclosure so a settled thread costs a
+   line until it is wanted back. */
+.doc-comment-who {
+  display: block;
+  margin-top: var(--space-1);
+  padding-left: 0.25rem;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+.doc-comment-replies {
+  margin: var(--space-1) 0 0 0.25rem;
+  padding: 0 0 0 var(--space-3);
+  border-left: 1px solid var(--divider);
+  list-style: none;
+}
+.doc-comment-replies .doc-comment-who {
+  margin-top: 0;
+  padding-left: 0;
+}
+.doc-comment-replies .doc-comment-body {
+  margin-top: 0;
+  padding-left: 0;
+}
+.doc-comment-reply + .doc-comment-reply {
+  margin-top: var(--space-2);
+}
+.doc-comment-reply-form {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+.doc-comment-reply-input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.doc-comments-resolved-toggle {
+  margin-top: var(--space-2);
+  color: var(--muted);
+}
+.doc-comment-resolved .doc-comment-body {
+  color: var(--muted);
+}
