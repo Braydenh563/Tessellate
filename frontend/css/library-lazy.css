@@ -7176,23 +7176,36 @@ input[type="color"].wb-mixed {
   font-variant-numeric: tabular-nums;
 }
 
-/* Reading progress: in the Read view a hairline at the top of the page fills
-   as the page scrolls. Drawn by the scroll itself (a scroll-driven animation),
-   so no script runs per scroll; a webview without the feature shows no line. */
-@supports (animation-timeline: scroll()) {
-  #doc-panes.reading > #doc-preview::before {
+/* Reading progress: in the Read view a hairline along the top edge of the
+   reading pane, under the breadcrumb row, fills as the page scrolls. Drawn by
+   the scroll itself (a named scroll timeline), so no script runs per scroll;
+   a webview without the feature shows no line. It was a sticky line inside
+   the preview, which sat 24px into the text column like a stray rule between
+   two paragraphs (INBOX 1535, the owner: "kinda just there and in the way");
+   on the pane's edge it is out of the text and spans the column. */
+@supports (animation-timeline: scroll()) and (timeline-scope: --a) {
+  #doc-panes.reading {
+    position: relative;
+    timeline-scope: --doc-read;
+  }
+  #doc-panes.reading > #doc-preview {
+    scroll-timeline: --doc-read block;
+  }
+  #doc-panes.reading::before {
     content: "";
-    display: block;
-    position: sticky;
-    top: 0;
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline: 0;
     z-index: 2;
     block-size: 2px;
-    margin: 0 0 -2px;
+    border-radius: var(--radius-pill);
     background: var(--accent);
+    opacity: 0.7;
+    pointer-events: none;
     transform: scaleX(0);
     transform-origin: left;
     animation: doc-read-progress linear both;
-    animation-timeline: scroll(nearest);
+    animation-timeline: --doc-read;
   }
   @keyframes doc-read-progress {
     to {
