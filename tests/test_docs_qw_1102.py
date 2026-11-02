@@ -98,3 +98,51 @@ def test_dx4_an_escape_that_closes_a_menu_does_not_arm_the_hatch():
     start = DOCS.index('      key: "Escape",')
     body = DOCS[start : DOCS.index('key: "Tab",', start)]
     assert "docTabEscapes = ![...document.querySelectorAll('[role=\"menu\"], .cm-tooltip')]" in body
+
+
+# DX7 -----------------------------------------------------------------------
+
+EDITOR = (JS / "editor.js").read_text(encoding="utf-8")
+
+
+@node
+def test_dx7_a_slash_command_runs_on_past_a_space_while_a_row_holds_the_words():
+    token = _slice(EDITOR, "function editorTokenAt(textarea, trigger) {", "\n}\n")
+    phrase = _slice(EDITOR, "editorTokenAt.phrase = ", "\n};\n")
+    stubs = (
+        "const rows=[{label:'Page break',keywords:['new page']},{label:'Heading 4',keywords:['h4']},"
+        "{label:'Link to a note',keywords:['wiki']}];"
+        "function editorCommands(){return rows;} function editorSurfaceKind(){return 'document';}"
+    )
+    out = _node(
+        """(() => {
+          const at = (text) => { const t = { value: text, selectionStart: text.length }; return editorTokenAt(t, "/"); };
+          return {
+            pageBreak: at("/page break"),
+            heading4: at("/heading 4"),
+            link: at("/link to a note"),
+            trailing: at("/heading "),
+            keyword: at("/new page"),
+            prose: at("/page and then"),
+            slashSpace: at("/ x"),
+            unknown: at("/zzz more"),
+            tooLong: at("/link to a note and more"),
+            word: at("/page"),
+          };
+        })()""",
+        stubs + token + phrase,
+    )
+    assert out["pageBreak"]["fragment"] == "page break"
+    assert out["heading4"]["fragment"] == "heading 4"
+    assert out["link"]["fragment"] == "link to a note"
+    assert out["trailing"]["fragment"] == "heading "
+    assert out["keyword"]["fragment"] == "new page"
+    assert out["word"]["fragment"] == "page"
+    for closed in ("prose", "slashSpace", "unknown", "tooLong"):
+        assert out[closed] is None, closed
+
+
+def test_dx7_heading_rows_four_to_six_are_in_the_menu():
+    for n in (4, 5, 6):
+        assert f'id: "h{n}", group: "Basic"' in EDITOR
+        assert f'run: act("h{n}")' in EDITOR

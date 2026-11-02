@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents slash menu (audit 1102 DX7): a command can be two to four words ("/page break", "/heading 4", "/link to a note") while a row holds them from a word boundary, letters-in-order matching is for abbreviations of up to three letters ("/file" no longer inserts the Failure callout), and Heading 4 to 6 are rows. p/dx7.js: 0 of 4 phrases kept the menu open, "/file" Enter inserted a callout; now 4 of 4 and Enter on an unknown word runs nothing. tests/test_md_blocks.py: "twcl" (four letters) no longer matches Two columns, "twc" does.
 - Documents: Escape then Tab leaves the editor only when nothing else happened between (audit 1102 DX4). The disarming handler is now highest precedence (a key the keymap handles, such as an arrow, ended the event before it ran) and an Escape that closes a menu or tooltip never arms the hatch. p/dx4.js: Escape, ArrowLeft, Tab left focus on the status bar and indented nothing; now indents.
 - Documents: a pasted block (heading, list, fence, table, quote, several paragraphs) starts its own line (audit 1102 DX3). `docRichPasteEvent.fit` pads with a blank line when words come before or after; "Pick here please" + h2 gave `please## Heading two`, now `please\n\n## Heading two`.
 - Ask tab draws the pick-up tip under the answer, as Chat does (audit 1028 E52); tests/test_utility_timers_1029.py stubs follow 1553 (page object, no lock card), assertions unchanged.
