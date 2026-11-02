@@ -31,7 +31,7 @@ function activityModelLine(model) {
     line.textContent = "No chat model is set.";
     return;
   }
-  const where = model.loaded === true ? "in memory" : model.loaded === false ? "not in memory" : "state unknown";
+  const where = model.loaded === true ? "ready now" : model.loaded === false ? "loads when you ask" : "state unknown";
   line.textContent = `Model: ${model.model}, ${where}.`;
 }
 

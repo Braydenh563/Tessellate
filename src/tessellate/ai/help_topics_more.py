@@ -591,7 +591,7 @@ MORE_TOPICS: list[dict] = [
             "palette (Activity). Its two tabs carry a glyph and a count, and each part is a card "
             "headed by a glyph and a title. Its Agent runs tab lists each run this session "
             "with its steps, and the log is in its menu. Stop the model, in the "
-            "menu and in Settings, Models beside Use this model, stops any answer "
+            "menu and in Settings, Models, stops any answer "
             "and unloads the model from memory (Ollama drops it at once; the chat's Stop reaches the model too); a server "
             "this app did not start keeps its own model, and the message says so."
         ),

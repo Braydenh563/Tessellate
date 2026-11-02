@@ -211,7 +211,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 205 | E60 | low | no regenerate with another model, no continue after Stop | new | M |
 | 206 | E62 | low | regenerate rewords but cannot widen retrieval | new | M |
 | 207 | E64 | low | internal ids and test notes in student-facing text | new | S |
-| 208 | E71 | low | read aloud has no stop or speed control, unverified | new | S |
+| 208 | E71 | low | read aloud has no stop or speed control, unverified | fixed 2026-11-02 (1f67c2b) | S |
 | 209 | S70 | low | no note count per tag chip | already built (tag chip counts, measured) | S |
 | 210 | S71 | low | no drag and drop of files into the list | new | M |
 | 211 | S72 | low | no quick-capture hint on first run | fixed (b8cfb46) | S |
@@ -228,7 +228,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 222 | D48 | low | controls hidden in dock-menu flyouts reparented to body | new | M |
 | 223 | D53 | low | code run output truncated silently at 4,000 chars | new | S |
 | 224 | E37 | low | AI status control reads as an error, red circle with x | new | S |
-| 225 | E41 | low | models pane jargon and redundant Use this model button | new | S |
+| 225 | E41 | low | models pane jargon and redundant Use this model button | fixed 2026-11-02 (HASH) | S |
 | 226 | E51 | low | citation mark lands mid-sentence, date-only source | docs/roadmap/CHAT_PLAN.md:1810 | S |
 | 227 | E52 | low | coaching tip appended inside answer text | new | S |
 | 228 | E53 | low | double greeting and last-time line from app-made note | new | S |

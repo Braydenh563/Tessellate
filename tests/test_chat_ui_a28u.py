@@ -77,3 +77,20 @@ def test_e71_read_aloud_stops_and_has_a_remembered_speed():
     for rate in ("0.75", "1", "1.25", "1.5"):
         assert f'<option value="{rate}">' in box
     assert 'data-help-for="read-aloud-help"' in box
+
+
+def test_e41_the_models_pane_speaks_plainly():
+    tools = (JS_DIR / "ai-tools.js").read_text(encoding="utf-8")
+    picker = tools[tools.index("function renderChatModelPicker") :][:4200]
+    # One installed model, already the one in use: Use this model would do nothing.
+    assert 'classList.toggle("hidden", names.length === 1 && names[0] === status.chat_model)' in picker
+    # The note says what is installed and when it loads, not where it sits in memory.
+    assert "which loads when you ask" in picker
+    assert '", not in memory"' not in picker and '", in memory now"' not in picker
+    panel = (JS_DIR / "activity-panel.js").read_text(encoding="utf-8")
+    assert "loads when you ask" in panel and "not in memory" not in panel
+    # The spec list: no "declared", no "in use".
+    chat = (JS_DIR / "chat.js").read_text(encoding="utf-8")
+    spec = chat[chat.index('["Size", spec.parameters]') :][:1500]
+    assert "Thinking mode declared" not in spec and '"Thinking switch"' in spec
+    assert "in use`" not in spec and '"Reads at once"' in spec
