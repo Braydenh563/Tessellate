@@ -247,43 +247,18 @@ function mathEditorPalette(list, query) {
   list.replaceChildren(...parts);
 }
 
-function mathEditorHelp() {
-  const help = document.createElement("button");
-  help.type = "button";
-  help.className = "icon-only ghost small dialog-head-btn";
-  help.setAttribute("data-help-for", "math-editor-help");
-  help.setAttribute("aria-controls", "math-editor-help");
-  help.setAttribute("aria-expanded", "false");
-  help.title = "About the equation editor";
-  help.setAttribute("aria-label", "About the equation editor");
-  const icon = document.createElement("i");
-  icon.className = "ph ph-question";
-  icon.setAttribute("aria-hidden", "true");
-  help.appendChild(icon);
-  const body = document.createElement("div");
-  body.className = "help-body hidden";
-  body.id = "math-editor-help";
-  body.setAttribute("role", "dialog");
-  body.setAttribute("aria-label", "About the equation editor");
-  const text = document.createElement("p");
-  text.textContent =
-    "Click a dotted box to fill it, Tab goes to the next box and the arrows move through the equation. Type it as you would write it: / makes a fraction, ^ and _ open a power or a subscript, and LaTeX such as \\frac or \\alpha turns into the symbol as you type it. Pick a structure or a symbol from the palette to insert it at the cursor; a selection goes into the first box. The LaTeX button shows the same equation as raw TeX to edit directly. Inline sits in a sentence, Display on its own line. Ctrl+Enter inserts. What is written is TeX between dollar signs, so the note stays plain text; click a drawn equation in a note, or put the cursor in one and open this again, to edit it.";
-  body.appendChild(text);
-  return { help, body };
-}
-
-//: **Inline or Display is a tab strip under the head, never a pill** (the
-//: recipe's "a popup chooses a kind" row, INBOX 715): one Tab stop, the
-//: arrows and Home and End walk it.
+//: **Inline or Display is a `.seg`** (DESIGN.md: two short exclusive choices,
+//: always in view; INBOX 1530 g L3 - it was a `.tabs-line`, which is for a
+//: popup that chooses a kind of thing, and read as a fourth tab of the
+//: dialog): `aria-pressed`, two ordinary Tab stops.
 function mathEditorModes(display, onChange) {
-  const tabs = document.createElement("div");
-  tabs.className = "tabs-line popup-kinds math-editor-mode";
-  tabs.setAttribute("role", "tablist");
-  tabs.setAttribute("aria-label", "Inline or display");
+  const seg = document.createElement("div");
+  seg.className = "seg math-editor-mode";
+  seg.setAttribute("role", "group");
+  seg.setAttribute("aria-label", "Inline or display");
   const buttons = [["inline", "Inline", "In the sentence"], ["display", "Display", "On its own line, centred"]].map(([value, label, title]) => {
     const b = document.createElement("button");
     b.type = "button";
-    b.setAttribute("role", "tab");
     b.dataset.value = value;
     b.textContent = label;
     b.title = title;
@@ -291,22 +266,11 @@ function mathEditorModes(display, onChange) {
     return b;
   });
   const sync = (on) => {
-    for (const b of buttons) {
-      const chosen = (b.dataset.value === "display") === on;
-      b.setAttribute("aria-selected", String(chosen));
-      b.tabIndex = chosen ? 0 : -1;
-    }
+    for (const b of buttons) b.setAttribute("aria-pressed", String((b.dataset.value === "display") === on));
   };
-  tabs.addEventListener("keydown", (event) => {
-    const to = { ArrowRight: 1, ArrowLeft: 0, Home: 0, End: 1 }[event.key];
-    if (to === undefined) return;
-    event.preventDefault();
-    onChange(to === 1, false);
-    buttons[to].focus();
-  });
-  tabs.append(...buttons);
+  seg.append(...buttons);
   sync(display);
-  return { tabs, sync };
+  return { seg, sync };
 }
 
 function mathEditorSearch(onInput) {
@@ -388,9 +352,9 @@ function mathEditorWrite(target, tex, { display = false, start = null, plain = f
   return true;
 }
 
-//: The line under the field's tabs: what to do, then the '?' and the button
-//: that shows the TeX.
-function mathEditorLede(help, toggle) {
+//: The line under Inline and Display: what to do, then the button that shows
+//: the TeX (the '?' is the dialog's, in its head).
+function mathEditorLede(toggle) {
   const row = document.createElement("div");
   row.className = "math-editor-lede-row";
   const lede = document.createElement("p");
@@ -398,7 +362,7 @@ function mathEditorLede(help, toggle) {
   lede.textContent = "Click a box to fill it, or pick a structure; it is written as TeX.";
   const tools = document.createElement("span");
   tools.className = "math-editor-lede-tools";
-  tools.append(help, toggle);
+  tools.append(toggle);
   row.append(lede, tools);
   return row;
 }
@@ -423,11 +387,7 @@ function mathEditorMount({ host, target = null, done = () => {}, note = null, on
   let display = start.display;
 
   host.classList.add("math-editor");
-  const { help, body: helpBody } = mathEditorHelp();
-  const close = () => {
-    helpBody.remove();
-    done();
-  };
+  const close = done;
   //: The calculator's action row calls these (reply-kit.js `replyCalcActions`); Ctrl+Enter is Insert with a box and Copy without one.
   const view = {
     copy: () => {
@@ -440,14 +400,14 @@ function mathEditorMount({ host, target = null, done = () => {}, note = null, on
       else pane.focus();
     },
   };
-  const escape = () => (helpBody.classList.contains("hidden") ? done() : help.click());
+  //: An open '?' takes the first Escape, in the sheet (phone-shell.js `openSheet`), before this runs.
+  const escape = () => done();
   const pane = mathFieldPane({
     tex: start.tex,
     label: "Equation",
     onChange: () => onTex(pane.tex()),
     onKey: mathEditorKeys(() => pane, () => (surface ? view.insert() : view.copy()), escape),
   });
-  pane.field.setAttribute("aria-describedby", "math-editor-help");
   const mode = mathEditorModes(display, (on, refocus = true) => {
     display = on;
     mode.sync(on);
@@ -506,8 +466,7 @@ function mathEditorMount({ host, target = null, done = () => {}, note = null, on
   host.addEventListener("keydown", (event) => event.stopPropagation());
 
   //: Copy and Insert are the dialog's action row, pinned under the panes (reply-kit.js), so neither is a scroll away.
-  host.replaceChildren(mode.tabs, mathEditorLede(help, pane.toggle), helpBody, pane.el, ...(note ? [note] : []), search, list);
-  initHelpToggles(host);
+  host.replaceChildren(mode.seg, mathEditorLede(pane.toggle), pane.el, ...(note ? [note] : []), search, list);
   if (focus) pane.start();
   onTex(pane.tex());
   return { close, focus: () => pane.focus(), copy: view.copy, insert: view.insert, ready: () => Boolean(pane.tex().trim()), label: start.editing ? "Update" : "Insert" };

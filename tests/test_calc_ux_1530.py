@@ -150,3 +150,62 @@ def test_the_palette_tiles_are_a_roving_tab_stop_per_group() -> None:
         assert key in roving
     assert "focusin" in roving
     assert "roving(list);" in editor
+
+
+# --- the head's '?' (M6) and Inline/Display as a .seg (L3) --------------------------
+
+
+def test_the_dialog_has_one_head_help_and_the_editor_has_none_of_its_own() -> None:
+    build = _build()
+    assert 'setAttribute("data-help-for", helpId)' in build and 'setAttribute("aria-controls", helpId)' in build
+    assert "dialog-head-btn" in build and "help-body hidden" in build
+    assert "REPLY_CALC_HELP" in _kit()
+    opener = _kit().split("function openCalculator(", 1)[1].split("function replyCalcBuild(", 1)[0]
+    assert "sub:" not in opener, "the sub line is replaced by the help"
+    editor = _read("math-editor.js")
+    assert "math-editor-help" not in editor and "mathEditorHelp" not in editor and "initHelpToggles" not in editor
+
+
+def test_inline_and_display_are_a_seg_of_pressed_buttons() -> None:
+    editor = _read("math-editor.js")
+    modes = editor.split("function mathEditorModes(", 1)[1].split("\n}\n", 1)[0]
+    assert 'className = "seg math-editor-mode"' in modes and 'setAttribute("role", "group")' in modes
+    assert "aria-pressed" in modes and "tablist" not in modes and '"tab"' not in modes
+
+
+# --- a preview that says so, and a live region that waits (L1) ----------------------
+
+
+def test_a_preview_is_worded_not_only_greyed() -> None:
+    kit = _kit()
+    result = kit.split("function replyCalcResult(", 1)[1].split("\n}\n", 1)[0]
+    assert "calc-tag" in result and "Preview" in kit
+    show = kit.split("function replyCalcShow(", 1)[1].split("\n}\n", 1)[0]
+    assert ".calc-tag\").hidden = final" in show
+
+
+def test_the_result_is_announced_once_it_settles_not_per_key() -> None:
+    kit = _kit()
+    result = kit.split("function replyCalcResult(", 1)[1].split("\n}\n", 1)[0]
+    assert 'out.setAttribute("aria-live"' not in result, "the visible figure is not the live region"
+    assert "visually-hidden" in result and 'role", "status"' in result.replace("'", '"') or 'setAttribute("role", "status")' in result
+    show = kit.split("function replyCalcShow(", 1)[1].split("\n}\n", 1)[0]
+    assert "setTimeout" in show and "clearTimeout" in show
+    #: Enter and = announce at once; typing waits for a pause.
+    assert "now" in show
+
+
+# --- Convert: a row that fits (L5) ---------------------------------------------------
+
+
+def test_convert_puts_the_amount_on_its_own_row_and_stacks_at_phone_width() -> None:
+    css = (CSS / "reply-kit-lazy.css").read_text(encoding="utf-8")
+    row = css.split(".calc-convert-row {", 1)[1].split("}", 1)[0]
+    #: Units get a row of their own (the openers measured 86 px at 320, clipping "kilometres an hour").
+    assert "minmax(0, 1fr) auto minmax(0, 1fr)" in row
+    assert ".calc-convert-row .calc-amount" in css
+    narrow = css.split("@media (max-width: 599.98px)", 1)[1]
+    assert ".calc-convert-row" in narrow and "grid-template-columns: minmax(0, 1fr)" in narrow
+    #: The DOM order is the visual order at every width: amount, from, swap, to.
+    pane = _kit().split("function replyCalcConvertPane(", 1)[1]
+    assert "row.append(amount, from, swap, to);" in pane

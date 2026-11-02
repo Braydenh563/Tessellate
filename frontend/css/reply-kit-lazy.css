@@ -252,6 +252,17 @@
   overflow-wrap: anywhere;
 }
 
+.calc-figure-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.calc-tag {
+  font-size: var(--text-sm);
+}
+
 .calc-figure {
   font-size: var(--text-lg);
   color: var(--ink);
@@ -299,11 +310,26 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* The amount on a row of its own and the two units under it, so a unit opener has half the card, not a fifth of it (INBOX 1530 g L5: 86 px at 320 and "kilometres an hour" clipped at 320, 390 and 1280). Under 600 px the units stack, one to a row. */
 .calc-convert-row {
   display: grid;
-  grid-template-columns: minmax(4rem, 1fr) minmax(0, 1.4fr) auto minmax(0, 1.4fr);
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   gap: var(--space-2);
   align-items: center;
+}
+
+.calc-convert-row .calc-amount {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 599.98px) {
+  .calc-convert-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .calc-convert-row .calc-swap {
+    justify-self: end;
+  }
 }
 
 .calc-convert-row .small-select,

@@ -319,6 +319,15 @@ function replyTimelinePanel(event) {
 //: `tabs`: the dialog's, in order: sums, conversions, and the equation editor, all named for what they hold (INBOX 1530 g L4: a verb, a verb and a noun read as three tools). `opened` numbers the dialogs, for ids that never collide with one still leaving.
 const replyCalc = { history: [], units: null, opened: 0, tabs: [["work", "Sum"], ["convert", "Units"], ["equation", "Equation"]] };
 
+//: The head '?' (INBOX 1530 g M6): the dialog is worked out by the app with no model; one line per tab, then where Insert writes.
+const REPLY_CALC_HELP = [
+  "Worked out by the app, with no model.",
+  "Sum: type or key a sum, a percentage or a conversion (12 * (3 + 4), 15% of 80, 5 km to miles). A preview shows as you type; Enter or = keeps it.",
+  "Units: pick a kind, an amount and two units. Currency rates are set by hand and dated, not today's rate.",
+  "Equation: click a dotted box to fill it. / makes a fraction, ^ and _ a power or a subscript, and LaTeX such as \\frac or \\alpha turns into the symbol as you type it. Pick a structure or a symbol from the palette; a selection goes into the first box. Inline sits in a sentence, Display on its own line. Click a drawn equation in a note, or open this with the cursor inside one, to edit it.",
+  "Insert writes into the text box you opened this from (Alt+= in a box, or Ctrl+K over one). With none open, Copy is the way out. Ctrl+Enter inserts an equation.",
+];
+
 const REPLY_CALC_KEYS = [
   ["C", "clear"], ["(", "("], [")", ")"], ["ph:divide", "/"],
   ["7", "7"], ["8", "8"], ["9", "9"], ["ph:x", "*"],
@@ -378,7 +387,6 @@ function openCalculator(input = "", mode = "work", { target = null } = {}) {
   }
   openSheet({
     label: "Calculator and equations",
-    sub: "Sums, conversions and equations, worked out by the app with no model.",
     name: "calculator",
     build: (card, close) => replyCalcBuild(card, input, mode, { target, close }),
   });
@@ -447,6 +455,40 @@ function replyCalcBuild(card, input, mode = "work", { target = null, close = () 
   modes.append(...tabs);
   wrap.append(...Object.values(panes));
   card.append(modes, wrap, actions.el);
+  //: **The head's '?'** (DESIGN.md, a dialog's head; INBOX 1530 g M6): what each tab does and where Insert writes, behind the title as every dialog's is. It replaces the sub line (a sentence the dialog carried at all times, 32 px of the card) and the Equation tab's own '?'.
+  const head = card.querySelector(".sheet-head");
+  if (head) {
+    const helpId = `calc-help-${n}`;
+    const help = document.createElement("button");
+    help.type = "button";
+    help.className = "icon-only ghost small dialog-head-btn";
+    help.setAttribute("data-help-for", helpId);
+    help.setAttribute("aria-controls", helpId);
+    help.setAttribute("aria-expanded", "false");
+    help.title = "About Calculator and equations";
+    help.setAttribute("aria-label", "About Calculator and equations");
+    const icon = document.createElement("i");
+    icon.className = "ph ph-question";
+    icon.setAttribute("aria-hidden", "true");
+    help.appendChild(icon);
+    const group = document.createElement("span");
+    group.className = "dialog-head-actions";
+    const closeButton = head.querySelector(".sheet-close");
+    if (closeButton) group.appendChild(closeButton);
+    head.querySelector(".sheet-title")?.after(help);
+    head.appendChild(group);
+    const body = document.createElement("div");
+    body.className = "help-body hidden";
+    body.id = helpId;
+    body.setAttribute("role", "dialog");
+    body.setAttribute("aria-label", "About Calculator and equations");
+    for (const line of REPLY_CALC_HELP) {
+      const p = document.createElement("p");
+      p.textContent = line;
+      body.appendChild(p);
+    }
+    head.after(body);
+  }
   const first = Math.max(0, replyCalc.tabs.findIndex(([key]) => key === mode));
   for (const [i, tab] of tabs.entries()) {
     tab.setAttribute("aria-selected", String(i === first));
@@ -587,15 +629,30 @@ const calcTex = {
 };
 // CALC-TEX-END
 
+//: **The result** (INBOX 1530 g L1). The figure is worded as a preview while it
+//: is one ("Preview. Enter keeps it."), not only greyed, and it is not itself
+//: the live region (an `<output>` is one by role, and it spoke on every key):
+//: a visually hidden status is set once the figure settles, at once for Enter
+//: and =, after a pause for typing (`replyCalcShow`).
 function replyCalcResult() {
-  const out = document.createElement("output");
+  const out = document.createElement("div");
   out.className = "calc-result";
-  out.setAttribute("aria-live", "polite");
+  const line = document.createElement("div");
+  line.className = "calc-figure-row";
   const figure = document.createElement("strong");
   figure.className = "calc-figure";
+  const tag = document.createElement("span");
+  tag.className = "muted calc-tag";
+  tag.textContent = "Preview. Enter keeps it.";
+  tag.hidden = true;
+  line.append(figure, tag);
   const read = document.createElement("span");
   read.className = "muted calc-read";
-  out.append(figure, read);
+  const say = document.createElement("span");
+  say.className = "visually-hidden";
+  say.setAttribute("role", "status");
+  say.setAttribute("aria-live", "polite");
+  out.append(line, read, say);
   return out;
 }
 
@@ -611,20 +668,27 @@ function calcFigure(answer, dropRates) {
   return j >= 0 ? a.slice(0, j) : a.slice(0, -1);
 }
 
-function replyCalcShow(out, got, { final = false } = {}) {
+function replyCalcShow(out, got, { final = false, now = false } = {}) {
   const figure = out.querySelector(".calc-figure");
   const read = out.querySelector(".calc-read");
+  const say = out.querySelector(".visually-hidden");
   out.classList.toggle("is-error", Boolean(got?.error));
   out.classList.toggle("is-preview", !final);
+  //: Said after a pause, so a key held or a sum typed is one announcement, not one per character.
+  clearTimeout(out._said);
+  const announce = (words) => (now ? (say.textContent = words) : (out._said = setTimeout(() => (say.textContent = words), 800)));
   if (!got) {
     figure.textContent = "";
     read.textContent = "";
-    return;
+    out.querySelector(".calc-tag").hidden = true;
+    return announce("");
   }
   //: The figure on its own ("84", not "12*(3+4) is 84."): the sum is in the
   //: box, and how the app read it is the line under.
   figure.textContent = got.error ? "" : calcFigure(got.answer, true);
   read.textContent = got.error ? got.error : got.read_as ? `Read as ${got.read_as}` : "";
+  out.querySelector(".calc-tag").hidden = final || Boolean(got.error);
+  announce([figure.textContent, read.textContent].filter(Boolean).join(". ") + (final || got.error ? "" : ". Preview"));
 }
 
 function replyCalcWorkPane(input, actions) {
@@ -652,7 +716,7 @@ function replyCalcWorkPane(input, actions) {
     try {
       const got = await replyCalcWork(box.value);
       if (mine !== asked) return;
-      replyCalcShow(out, got, { final });
+      replyCalcShow(out, got, { final, now: final });
       last = got?.answer && !got.error ? { input: box.value.trim(), answer: got.answer } : null;
       actions.sync();
       if (final && got?.answer) {
@@ -661,7 +725,7 @@ function replyCalcWorkPane(input, actions) {
       }
     } catch (error) {
       if (mine !== asked) return;
-      replyCalcShow(out, { error: error.message }, { final });
+      replyCalcShow(out, { error: error.message }, { final, now: final });
       last = null;
       actions.sync();
     }

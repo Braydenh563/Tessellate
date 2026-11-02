@@ -20,9 +20,10 @@
   font-size: var(--text-xs);
 }
 
-/* The kind strip spans the panel under its head, as the icon picker's does. */
+/* Inline and Display: a `.seg`, its own width, with the pane's gap under it and none of the well's own margin. */
 .math-editor-mode {
-  align-self: stretch;
+  align-self: flex-start;
+  margin-bottom: 0;
 }
 
 /* The line under the head: the hint, and the LaTeX button that shows the TeX. */

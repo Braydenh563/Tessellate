@@ -146,9 +146,11 @@ def test_every_surface_is_a_thin_caller() -> None:
     assert 'event.code !== "Equal"' in entries and 'box?.id !== "question"' in entries
 
 
-def test_its_help_is_the_popover_recipe_and_a_guide_topic() -> None:
-    assert 'setAttribute("data-help-for", "math-editor-help")' in EDITOR
-    assert 'body.id = "math-editor-help"' in EDITOR
+def test_its_help_is_the_dialogs_head_popover_and_a_guide_topic() -> None:
+    #: One '?' for the dialog, in its head (INBOX 1530 g M6), not one per tab.
+    kit = (JS / "reply-kit.js").read_text(encoding="utf-8")
+    assert 'setAttribute("data-help-for", helpId)' in kit and "Equation: click a dotted box" in kit
+    assert "mathEditorHelp" not in EDITOR
     from tessellate.ai import help_topics_more
 
     topic = next(t for t in help_topics_more.MORE_TOPICS if t["id"] == "equation-editor")

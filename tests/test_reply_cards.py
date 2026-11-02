@@ -116,7 +116,7 @@ def test_the_calculator_is_one_sheet_reached_three_ways():
     assert 'function openCalculator(input = "", mode = "work", { target = null } = {})' in kit and 'name: "calculator"' in kit and "openSheet({" in kit
     #: Accessible: a live result, a keypad that is one Tab stop walked by the
     #: arrows, keys named for what they do, a mode switch that says which is on.
-    assert 'out.setAttribute("aria-live", "polite")' in kit
+    assert 'say.setAttribute("aria-live", "polite")' in kit  # the result is still a live region, now a settled one (INBOX 1530 g L1)
     assert "key.tabIndex = i === 0 ? 0 : -1;" in kit and "ArrowDown: 4" in kit
     assert '"*": "Times"' in kit and 'modes.className = "tabs-line popup-kinds calc-modes";' in kit
     #: The same reader as /calc, and the units from the app's own tables.
