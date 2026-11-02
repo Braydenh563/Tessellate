@@ -161,12 +161,29 @@ LINTS=(tests/test_style_scale.py tests/test_ui_signatures.py tests/test_css_brac
 # is what every agent greps instead of reading files (the orient skill), and
 # `tests/test_codemap_fresh.py` fails when a function has moved since the last
 # build. A gate that left the map stale would turn that lint into a chore, so
-# the gate rebuilds it (about 2.5 s) and, under --staged, stages it so the
-# commit carries the map its code matches.
+# the gate rebuilds it (about 2.5 s). Under --staged it is built from a
+# checkout of the index and written into the index only, so the commit carries
+# the map of the code it holds: built from the folder, a commit made beside
+# other unstaged edits carried a map of code it did not hold, and the staged
+# lints failed on it (2026-11-02, tests/test_gate_staged_once.py).
 if [ -f "$ROOT/scripts/codemap.py" ]; then
-  "$PY" "$ROOT/scripts/codemap.py" > /dev/null 2>&1 || true
-  if [ "$STAGED" = 1 ] && ! git -C "$ROOT" diff --quiet -- docs/CODEMAP.md; then
-    git -C "$ROOT" add docs/CODEMAP.md
+  if [ "$STAGED" = 1 ]; then
+    map_tmp="$(mktemp -d -t mmgate.XXXXXX)"
+    if git -C "$ROOT" checkout-index -a --prefix="$map_tmp/" \
+      && "$PY" "$map_tmp/scripts/codemap.py" > /dev/null 2>&1 \
+      && [ -f "$map_tmp/docs/CODEMAP.md" ]; then
+      map_blob="$(git -C "$ROOT" hash-object -w "$map_tmp/docs/CODEMAP.md")"
+      if [ "$map_blob" != "$(git -C "$ROOT" rev-parse -q --verify :docs/CODEMAP.md)" ]; then
+        git -C "$ROOT" update-index --cacheinfo "100644,$map_blob,docs/CODEMAP.md"
+      fi
+      # With no other unstaged edit the folder's code is the index's, so its map is too.
+      if git -C "$ROOT" diff --quiet -- . ':(exclude)docs/CODEMAP.md'; then
+        cp "$map_tmp/docs/CODEMAP.md" "$ROOT/docs/CODEMAP.md"
+      fi
+    fi
+    rm -rf "$map_tmp"
+  else
+    "$PY" "$ROOT/scripts/codemap.py" > /dev/null 2>&1 || true
   fi
 fi
 

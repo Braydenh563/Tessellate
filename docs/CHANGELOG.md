@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- `scripts/gate.sh --staged` builds the code map from the staged code and writes it into the index, so a commit made beside other unstaged edits carries the map of what it holds (it was built from the folder, and the staged lints then failed on it).
 - The composer imports cold in 0.083 s, was 0.107 to 0.124 s here and 0.21 to 0.22 s on CI against its 0.2 s budget: the patterns of `ai/recognise.py`, `ai/composer_ask.py` and `core/cjk.py` compile on first use (`core/lazyre.py`).
 - The model status poll that reports a finished download lists the new model: it waits, once per download and at most 0.2 s, for a model list asked after the download ended, where it used to serve the list from before it on a busy machine (CI on PR 212).
 - Note properties behind a repository (audit 1031 row 3a, INBOX 1499, repo3a-1102): `repo/properties.py` owns the `EntryProperty` index reads (`find`, `get`, `page`, `types`, `meeting_dates`, `join_meeting_date`); the graph's note-type colours and the timeline's meeting dates and their window join read through it and `EntryProperty` joins `MOVED` (`routes_spaces.py` keeps it until spaces move); router ORM calls 765 to 757. Graph and timeline responses byte-identical over 10 requests (six notes, feed, window, month, graph, structure) against the base.

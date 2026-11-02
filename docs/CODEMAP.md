@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7558, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8442, test files 1838, tests 15708, plan headings 990, app scripts 28, boot scripts 37, script files 226.
+Counts: frontend functions 7558, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8442, test files 1838, tests 15711, plan headings 990, app scripts 28, boot scripts 37, script files 226.
 
 ## Frontend functions (7558)
 
@@ -23177,7 +23177,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15708)
+## Tests (15711)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23876,7 +23876,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_gate_changed_base.py | 5 |
 | tests/test_gate_lint_set.py | 2 |
 | tests/test_gate_owner_cache.py | 3 |
-| tests/test_gate_staged_once.py | 3 |
+| tests/test_gate_staged_once.py | 6 |
 | tests/test_get_started_1301.py | 8 |
 | tests/test_glass_controls_1027.py | 5 |
 | tests/test_global_scope_ratchet.py | 5 |
@@ -25600,7 +25600,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E3 · Model calls are scattered across request handlers, background threads and module singletons, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:666 |
 | E4 · The honest positives, so the section is not one-sided (read) | docs/roadmap/MODERNISATION_AUDIT.md:676 |
 | Earlier morning summary (away run 2026-10-18b, branch claude/magical-feynman-7bgj7j, PR 192, 0.6.0) | docs/roadmap/HANDOVER.md:38 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:586 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:588 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4280 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |
