@@ -95,3 +95,7 @@ date | item | type | rung | rework | note
 2026-11-02 | INBOX 1531 graph no-move release (g1531) | bugfix | opus | 1 | 
 2026-11-02 | Row 3a tags and properties repositories (repo3a) | refactor | sonnet | 0 | 
 2026-11-02 | OPEN.md stale running owners (3c7d13f) | docs | opus | 0 | 
+2026-11-02 | Row 22 documents.js splits: Mermaid, Math, Comments, Embeds (doc23) | refactor | sonnet | 0 | 
+2026-11-02 | gate --staged builds CODEMAP from the index (dc83607) | tooling | opus | 0 | 
+2026-11-02 | Lazy-bundle lint sees wrapped files (20dab9d) | tooling | opus | 0 | 
+2026-11-02 | CI red: notes menu title pin (fe48f81) | ci-fix | opus | 0 | 
