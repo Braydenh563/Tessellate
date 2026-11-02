@@ -1,5 +1,5 @@
 mode: continue
-status: active
+status: done
 pr: 212
 max-continues: 60
 max-idle-minutes: 60
@@ -16,7 +16,7 @@ tier: max (three agents at once, one Opus); never Fable; owner away, all permiss
 - [~] Leftovers: wbp2-1101 (translation-aware edge key; 200-topic restyle), warm12-1101 (bubble clipped 6ed40af; 450 ms cause still open, not the bubble or the composer input)
 - [~] Leftovers: prose-1101 closed (already remapped), z1c chips paced 14db081; open: lzc-1101 scope-aware lint, z1c Library grid at space switch, docrepo
 - [~] Leftovers: guide1530 vocabulary closed, fix1525b merged b9864c2, picker thumb 1343e4d; open: guide1530 16 in-bundle gaps (judge), calc1530 320 px title (owner only)
-- [ ] INBOX open items, OPEN.md, BACKLOG (standing order 1)
-- [ ] Session end: full suite, HANDOVER morning summary, retro
+- [x] INBOX open items, OPEN.md, BACKLOG (standing order 1; BACKLOG has no small open rows): 1534 tab clicks stale, 1549 waits on the owner's log; OPEN 2572 fixed (edaacde), 2314 2544 2553 checked; DX30 slash, phone help, DX29 agent running; BACKLOG next
+- [x] Session end: full suite (800f896 fixes), HANDOVER morning summary, retro (d0c94de)
 - [x] CI reds on 0d86461 (e7fab01, 8a8f34b; pushed c43cc3f): composer cold import 0.21-0.22 s on 3.11/3.12 (lazy regex in recognise, composer_ask, cjk: 0.12 to 0.083 s local); model pull status list (8a8f34b)
 - [~] Row 3a: repo3a agent running (tags, properties, relations, categories)

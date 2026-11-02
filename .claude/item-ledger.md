@@ -125,3 +125,10 @@ date | item | type | rung | rework | note
 2026-11-02 | 1557 timer input and button heights | ui-fix | sonnet | 0 | 
 2026-11-02 | 1558 utility widgets and pins | feature | sonnet | 1 | 
 2026-11-02 | 1547 documents deep audit (32 findings) | audit | opus | 0 | 
+2026-11-02 | S69 restore counts | fix | opus | 1 | 
+2026-11-02 | E52 guide tip | feature | opus | 1 | 
+2026-11-02 | DX30 templates and slash group | feature | opus | 0 | 
+2026-11-02 | E2E import toast yield | fix | opus | 3 | 
+2026-11-02 | import cycle composer_done leaf | fix | opus | 1 | 
+2026-11-02 | merges a29h a29i a29j a29k test fallout | chore | opus | 1 | 
+2026-11-02 | phone documents help in kebab | fix | opus | 1 | 
