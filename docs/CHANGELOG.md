@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- A diagram has a model (1546 P1): `diagramModel` in documents-mermaid.js parses a Mermaid flowchart to nodes, edges and groups and prints it back as the whole source, keeping any line it cannot place (styles, comments, `@{ }` shapes) where it stood and quoting labels so a quote, a hash, an angle bracket or a bar cannot end one; the board's Mermaid import reads it (one grammar instead of three, the dead document layout is gone), a `.mmd` document is a Mermaid diagram that opens in Split with its picture beside the source, and the Library lists it under a Diagrams chip. Parse plus print of a 120-node fence takes 1.1 ms.
 - A toast steps aside for an open sheet's buttons even when nothing is focused: on CI the focus never reached the import preview, so the search-by-meaning question kept the Import press (E2E import, red on both tries); the chat file tests find the chat's own model request, not the last call.
 - Full-suite fallout of the DX29 and INBOX 1545 merges: the drag grip's hover has its keyboard twin, the export's icon font fetch (static /vendor) is allowed, the wrap toggle test reads DX23's boolean.
 - Removed `createConceptMap` (whiteboard.js): it had no caller since maps moved to the board landing; its lazy stub name and writer-lint row went with it (OPEN 2572).
