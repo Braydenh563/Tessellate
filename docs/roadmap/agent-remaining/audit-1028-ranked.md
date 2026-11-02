@@ -255,8 +255,8 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 249 | S85 | low | error toasts say what failed but not what to do | new | M |
 | 250 | S86 | low | library to note takes three clicks | new | S |
 | 251 | S87 | low | dashboard counts do not link to filtered views | new | S |
-| 252 | S88 | low | search results lack term highlighting | new | S |
-| 253 | S89 | low | export has no format picker | new | S |
+| 252 | S88 | low | search results lack term highlighting | fixed (already: notes list search marks terms, highlightInto notes-list.js:1743 with terms; checked 2026-11-02) | S |
+| 253 | S89 | low | export has no format picker | fixed (already: Settings export offers JSON, CSV, Markdown zip, notebook folder and full backup, each titled, with an About help, index.html:13411; checked 2026-11-02) | S |
 | 254 | S91 | low | document title and language do not update per view | fixed (router.js routerPaintTitle, found already fixed 2026-11-02) | S |
 | 255 | S92 | low | no live region for list loading and counts | fixed 2026-11-02 (9da89c9) | S |
 | 256 | S94 | low | offline indicator does not say what still works | new | S |
