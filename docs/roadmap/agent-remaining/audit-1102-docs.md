@@ -6,6 +6,10 @@ Head 838429f (`claude/next-queue-1102`). Server on 8799 with its own data dir. P
 
 Already fixed today and not re-reported: a widget stays drawn while a selection crosses it (`docLiveSpanTouched.anchorIn`, documents.js:6153; `widgetRevealed`, documents-cm.js:574). Earlier docs rows (audit-1031 DC1 to DC13, 1028 D1 to D40) are not repeated unless they are still open on this head.
 
+## Status (2026-11-02)
+
+Built and merged: DX2 d6a84eb, DX3 99fcadb, DX4 5fefe3c, DX5 d25eef3, DX6 and DX26 a869211, DX7 face082, DX8 DX20 DX21 DX22 ee5f5a0, DX9 7e95c26, DX10 4c846ce, DX11 85c4405 (list bundle 2d4092c), DX14 DX15 43f6169, DX17 DX18 1c0c277, DX27 DX32 7af47c4. DX1 part built (3e93e9e: p95 136-202 to 119-187 ms at 4x, long tasks 49-55 to 21-27); the rest is with a29i. Running: a29h (DX12, DX13, DX25), a29i (DX1 rest), a29j (DX16, DX19, DX23, DX24 Enter, DX28, DX31). Open after those: DX24 threads, DX29 drag handle, DX30 templates.
+
 ## 1. Coverage
 
 | Inventory (CODEMAP) | Rows | Run | Code only | Not reached |
