@@ -50,6 +50,15 @@ def test_u48_the_export_dialog_opens_on_the_whole_board_when_nothing_is_selected
     assert 'let scope = hasSelection ? "selection" : "whole";' in block
 
 
+def test_b32_the_maps_timers_and_frames_are_kept_and_cancelled_on_a_board_switch():
+    """B32: whiteboard-map.js had two frames and two timers nothing could cancel."""
+    source = _js("whiteboard-map.js")
+    assert "setTimeout(" not in source.replace("else id = setTimeout(run);", "")
+    assert source.count("requestAnimationFrame(") == 1  # the one inside wbMapCache.defer
+    assert "cancelAnimationFrame(id)" in source and "clearTimeout(id)" in source
+    assert "wbMapCache.cancelAll();" in _between(_js("whiteboard.js"), "function wbCancelBoardTimers()", "return wbFlushNudge();")
+
+
 def test_s92_a_loaded_or_filtered_list_says_its_count_through_the_one_live_region():
     """S92: Notes and the Library announce their count, settled and once, through
     `announce` (the page's `#live-region`), not a region each."""

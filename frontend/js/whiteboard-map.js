@@ -229,7 +229,31 @@ const WB_MAP_HIERARCHIES = Object.freeze({
 //: per edge on every drag frame). `accentInk`: the ink for the accent, read once
 //: per accent (`wbMapAccentInk` keys it), since a computed-style read per topic
 //: inside the paint loop would force a style recalculation per topic.
-const wbMapCache = { levelById: new Map(), looksFor: null, looks: null, accentInk: null, accentFor: null };
+//: `defer`/`cancelAll`: the map's one-shot timers and frames (a rename's focus, the typed-ahead
+//: editor, the study bar's focus), kept so a board switch cancels what the old map left in
+//: flight (`wbCancelBoardTimers`, audit 1028 B32). `frames` 0 is a timer, n a frame n deep.
+const wbMapCache = {
+  levelById: new Map(), looksFor: null, looks: null, accentInk: null, accentFor: null,
+  pending: new Set(),
+  defer(fn, frames = 0) {
+    let id = 0;
+    const cancel = () => (frames ? cancelAnimationFrame(id) : clearTimeout(id));
+    const run = () => {
+      this.pending.delete(cancel);
+      fn();
+    };
+    const step = (left) => {
+      id = requestAnimationFrame(left > 1 ? () => step(left - 1) : run);
+    };
+    if (frames) step(frames);
+    else id = setTimeout(run);
+    this.pending.add(cancel);
+  },
+  cancelAll() {
+    for (const cancel of this.pending) cancel();
+    this.pending.clear();
+  },
+};
 
 //: **The level of every topic** (decision 38). The first root is the centre,
 //: as is any root with topics under it; a root with nothing under it is a
@@ -1907,12 +1931,12 @@ function wbBuildMapNode(el, d) {
       //: Tab and Enter already acted, and the name said. Only when nothing
       //: else took the focus: a press on another field keeps it.
       const label = wbMapLabel(live);
-      setTimeout(() => {
+      wbMapCache.defer(() => {
         const at = document.activeElement;
         if (at && at !== document.body) return;
         document.getElementById("whiteboard-container")?.focus({ preventScroll: true });
         wbAnnounce(label || "Untitled topic");
-      }, 0);
+      });
     });
     text.on("keydown", function (event) {
       if (!this.isContentEditable) return;
@@ -4927,7 +4951,7 @@ function mapPaletteCommands() {
   const canvas = document.getElementById("library-view-whiteboard");
   //: Showing, not merely present: another tab hides the Library, not this.
   if (typeof wbIsMap !== "function" || !wbIsMap() || !canvas?.getClientRects().length) return [];
-  const later = (fn) => () => setTimeout(fn);
+  const later = (fn) => () => wbMapCache.defer(fn);
   const rows = [];
   const node = wbSelectedMapNode();
   const row = (group, label, run, keys, about) => rows.push({ group, label, run: later(run), keys, about });
@@ -5499,7 +5523,7 @@ function wbMapEditNode(id, { now = false } = {}) {
     if (commit) el.blur();
   };
   if (now) open();
-  else requestAnimationFrame(open);
+  else wbMapCache.defer(open, 1);
 }
 
 //: **A reference node's own words** (B38). Its name is the item's, so a
@@ -9756,8 +9780,7 @@ function wbMapStartStudy() {
   wbStartPresenting();
   wbMapStudySyncBar();
   //: After the shell's own focus on Next (a frame on), so Enter shows.
-  requestAnimationFrame(() => requestAnimationFrame(() =>
-    document.getElementById("wb-study-show")?.focus({ preventScroll: true })));
+  wbMapCache.defer(() => document.getElementById("wb-study-show")?.focus({ preventScroll: true }), 2);
 }
 
 //: Show, then the two marks: the bar's study buttons follow the step.

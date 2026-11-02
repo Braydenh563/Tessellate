@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The map's one-shot timers and frames (a rename's focus and announcement, the typed-ahead editor, a palette row's run, the study bar's focus) are kept in `wbMapCache` and cancelled with the board's other timers when another board opens, where whiteboard-map.js had 2 frames and 2 timers nothing could cancel; queued three, they all ran when left alone and none after a board switch (audit 1028 B32).
 - The board export dialog opens on Whole board when nothing is selected, where it opened on On screen and put "(view)" in a first export's file name; with a selection it still opens on Selection, and On screen is one press away. Measured on a new board: the checked scope is Whole board with PNG at 2x (audit 1028 U48; the Guide's board topic says so).
 - A document title another document already has is said once, in a toast on its first save under that name (a new document's first autosave, or a rename), and left as typed: "Another document is called “Trip plan” too. Rename one if you want to tell them apart." Three autosaves of a third "Trip plan" gave one toast (audit 1028 U38).
 - Notes and the Library say their count to a screen reader after a load or a filter: one polite line through the page's live region (`announce` with `settle` and `once`), "All notes: 0 notes" after a filter, "Library: 0 items" on the Library (audit 1028 S92; the Guide's Accessibility topic says so).

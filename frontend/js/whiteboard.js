@@ -25136,6 +25136,7 @@ function wbCancelBoardTimers() {
   wbStickyDates.timer = 0;
   wbAddGate.panBarTimer = 0;
   wbMarkMoving.timer = 0;
+  wbMapCache.cancelAll();
   document.getElementById("wb-canvas-view")?.classList.remove("wb-moving");
   return wbFlushNudge();
 }
