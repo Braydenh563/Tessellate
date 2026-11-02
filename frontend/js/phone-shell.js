@@ -1398,18 +1398,15 @@ function openSheet({ label, sub = "", name, build, variant = "", modal = true, r
   overlay.className = `modal-overlay sheet-overlay${variant ? ` sheet-${variant}` : ""}`;
   overlay.dataset.sheet = name || "";
   overlay.setAttribute("role", "dialog");
-  overlay.setAttribute("aria-modal", "true");
   overlay.setAttribute("aria-label", label);
   //: **Modeless above 600** (`modal: false`, the Guide; guideia): no scrim,
   //: and presses pass through to the app, because the Guide's own answer is
   //: "Open the Reminders tab" and a dimmed app cannot be read against it.
   //: Escape still closes it, from inside it only. Below 600 the sheet is the
   //: window, so it stays modal there.
-  const modeless = modal === false && window.matchMedia("(min-width: 600px)").matches;
-  if (modeless) {
-    overlay.classList.add("sheet-modeless");
-    overlay.removeAttribute("aria-modal");
-  }
+  const modeless = modal === false && matchMedia("(min-width: 600px)").matches;
+  if (modeless) overlay.classList.add("sheet-modeless");
+  else overlay.setAttribute("aria-modal", "true");
   //: **Above whatever it was opened from.** A sheet is a `.modal-overlay`
   //: (1010), and a surface drawn higher than that opened its sheet behind
   //: itself: the lightbox (1020) on a phone, whose ⋯ "does nothing (no
@@ -1419,10 +1416,10 @@ function openSheet({ label, sub = "", name, build, variant = "", modal = true, r
   //: one up, through the CSSOM, which the CSP allows.
   let layer = 0;
   for (let el = returnFocus instanceof Element ? returnFocus : null; el && el !== document.body; el = el.parentElement) {
-    const z = Number.parseInt(getComputedStyle(el).zIndex, 10);
+    const z = parseInt(getComputedStyle(el).zIndex);
     if (Number.isFinite(z)) layer = Math.max(layer, z);
   }
-  if (layer >= 1010) overlay.style.zIndex = String(layer + 1);
+  if (layer >= 1010) overlay.style.zIndex = layer + 1;
 
   const card = document.createElement("div");
   card.className = `card modal-card sheet-card${variant ? ` sheet-card-${variant}` : ""}`;
@@ -1579,6 +1576,9 @@ function openSheet({ label, sub = "", name, build, variant = "", modal = true, r
       target.focus?.();
       if (document.activeElement === target) break;
     }
+    //: Again once focus has settled the card (a movable panel adopts it and it
+    //: re-centres): the focusin check measured Import where it was (E2E import, 2026-11-02).
+    toastYield();
   }), 1);
   return close;
 }
