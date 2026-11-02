@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7558, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8471, test files 1844, tests 15738, plan headings 990, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7558, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8472, test files 1844, tests 15738, plan headings 990, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7558)
 
@@ -12611,7 +12611,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8471)
+## Backend modules (8472)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -22970,47 +22970,48 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `vectors_by_id` | src/tessellate/search/engine.py:1705 |
 | `warm_vectors` | src/tessellate/search/engine.py:349 |
 
-### src/tessellate/search/index.py (37)
+### src/tessellate/search/index.py (38)
 
 | Name | File:line |
 |---|---|
 | `Row` | src/tessellate/search/index.py:123 |
 | `Source` | src/tessellate/search/index.py:140 |
 | `UnknownSource` | src/tessellate/search/index.py:161 |
-| `_ask_turn_row` | src/tessellate/search/index.py:928 |
-| `_attachment_row` | src/tessellate/search/index.py:831 |
-| `_board_words` | src/tessellate/search/index.py:589 |
-| `_boards_touched_by_objects` | src/tessellate/search/index.py:347 |
-| `_bookmark_row` | src/tessellate/search/index.py:868 |
-| `_conversation_row` | src/tessellate/search/index.py:897 |
-| `_document_row` | src/tessellate/search/index.py:816 |
-| `_entry_kind` | src/tessellate/search/index.py:569 |
-| `_entry_row` | src/tessellate/search/index.py:619 |
-| `_first_line` | src/tessellate/search/index.py:543 |
-| `_index_on_flush` | src/tessellate/search/index.py:299 |
-| `_media_row` | src/tessellate/search/index.py:853 |
+| `_ask_turn_row` | src/tessellate/search/index.py:931 |
+| `_attachment_row` | src/tessellate/search/index.py:834 |
+| `_board_words` | src/tessellate/search/index.py:592 |
+| `_boards_touched_by_objects` | src/tessellate/search/index.py:350 |
+| `_bookmark_row` | src/tessellate/search/index.py:871 |
+| `_changed` | src/tessellate/search/index.py:298 |
+| `_conversation_row` | src/tessellate/search/index.py:900 |
+| `_document_row` | src/tessellate/search/index.py:819 |
+| `_entry_kind` | src/tessellate/search/index.py:572 |
+| `_entry_row` | src/tessellate/search/index.py:622 |
+| `_first_line` | src/tessellate/search/index.py:546 |
+| `_index_on_flush` | src/tessellate/search/index.py:304 |
+| `_media_row` | src/tessellate/search/index.py:856 |
 | `_only_bookkeeping` | src/tessellate/search/index.py:291 |
-| `_recording_row` | src/tessellate/search/index.py:941 |
-| `_register_all` | src/tessellate/search/index.py:671 |
-| `_reminder_row` | src/tessellate/search/index.py:882 |
+| `_recording_row` | src/tessellate/search/index.py:944 |
+| `_register_all` | src/tessellate/search/index.py:674 |
+| `_reminder_row` | src/tessellate/search/index.py:885 |
 | `_rowid` | src/tessellate/search/index.py:231 |
-| `_scan_entries` | src/tessellate/search/index.py:657 |
+| `_scan_entries` | src/tessellate/search/index.py:660 |
 | `_table_missing` | src/tessellate/search/index.py:267 |
-| `_tagstext` | src/tessellate/search/index.py:553 |
+| `_tagstext` | src/tessellate/search/index.py:556 |
 | `_write` | src/tessellate/search/index.py:235 |
-| `_written` | src/tessellate/search/index.py:561 |
-| `counts` | src/tessellate/search/index.py:522 |
+| `_written` | src/tessellate/search/index.py:564 |
+| `counts` | src/tessellate/search/index.py:525 |
 | `ensure_table` | src/tessellate/search/index.py:210 |
-| `forget` | src/tessellate/search/index.py:449 |
-| `last_rebuild` | src/tessellate/search/index.py:487 |
-| `rebuild` | src/tessellate/search/index.py:491 |
-| `reconcile_boards` | src/tessellate/search/index.py:393 |
-| `reconcile_sources` | src/tessellate/search/index.py:971 |
+| `forget` | src/tessellate/search/index.py:452 |
+| `last_rebuild` | src/tessellate/search/index.py:490 |
+| `rebuild` | src/tessellate/search/index.py:494 |
+| `reconcile_boards` | src/tessellate/search/index.py:396 |
+| `reconcile_sources` | src/tessellate/search/index.py:974 |
 | `register` | src/tessellate/search/index.py:165 |
 | `source_for` | src/tessellate/search/index.py:182 |
 | `sources` | src/tessellate/search/index.py:199 |
 | `sources_for_kind` | src/tessellate/search/index.py:203 |
-| `touch` | src/tessellate/search/index.py:433 |
+| `touch` | src/tessellate/search/index.py:436 |
 
 ### src/tessellate/search/long_question.py (7)
 
@@ -25812,7 +25813,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1276 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:225 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:231 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4186 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |

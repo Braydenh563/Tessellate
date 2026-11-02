@@ -295,6 +295,11 @@ def _only_bookkeeping(obj: object) -> bool:
     return bool(changed) and changed <= _BOOKKEEPING
 
 
+def _changed(session: Session) -> list:
+    """What this flush added, and what it changed in a column a row reads."""
+    return [*session.new, *(obj for obj in session.dirty if not _only_bookkeeping(obj))]
+
+
 @event.listens_for(Session, "after_flush")
 def _index_on_flush(session: Session, flush_context) -> None:  # noqa: ANN001
     """Keep the index in step with whatever just changed, in the same
@@ -322,9 +327,7 @@ def _index_on_flush(session: Session, flush_context) -> None:  # noqa: ANN001
             ref_id = getattr(obj, "id", None)
             if ref_id is not None:
                 work.append((source, ref_id, None))
-    for obj in [*session.new, *session.dirty]:
-        if obj not in session.new and _only_bookkeeping(obj):
-            continue
+    for obj in _changed(session):
         for source in _BY_MODEL.get(type(obj), ()):
             ref_id = getattr(obj, "id", None)
             if ref_id is None:
