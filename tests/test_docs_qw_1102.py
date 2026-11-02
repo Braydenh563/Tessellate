@@ -185,6 +185,70 @@ def test_dx10_every_reader_asks_the_one_function():
     assert "readMinutes: total.minutes" in PROSE and "/ 238" not in PROSE
 
 
+# DX32 ----------------------------------------------------------------------
+
+
+@node
+def test_dx32_a_word_list_paragraph_is_a_list_item_with_or_without_its_style():
+    fn = _slice(DOCS, "function docWordListLine(el, styleOf, inline) {", "\n}\n")
+    out = _node(
+        """(() => {
+          const el = (text, { cls = "", styles = {} } = {}) => ({
+            textContent: text, childNodes: [{ nodeValue: text }], styles,
+            getAttribute: (name) => (name === "class" ? cls : ""),
+            querySelectorAll: () => [],
+          });
+          const styleOf = (e, prop) => e.styles[prop] || "";
+          const inline = (node) => node.nodeValue;
+          const line = (e) => docWordListLine(e, styleOf, inline);
+          return {
+            glyph: line(el("\\u00b7 first item")),
+            bullet: line(el("\\u2022\\u00a0\\u00a0two")),
+            cls: line(el("alpha", { cls: "MsoListParagraphCxSpFirst" })),
+            styled: line(el("kept", { styles: { "mso-list": "l0 level2 lfo1" } })),
+            indent: line(el("nested", { cls: "MsoListParagraph", styles: { "margin-left": "1.0in" } })),
+            o: line(el("o  nested bullet")),
+            plainO: line(el("o major point")),
+            plain: line(el("Just a paragraph")),
+            empty: line(el("\\u00b7 ")),
+          };
+        })()""",
+        fn,
+    )
+    assert out["glyph"] == "- first item"
+    assert out["bullet"] == "- two"
+    assert out["cls"] == "- alpha"
+    assert out["styled"] == "  - kept"
+    assert out["indent"] == "  - nested"
+    assert out["o"] == "- nested bullet"
+    assert out["plainO"] == "" and out["plain"] == "" and out["empty"] == ""
+
+
+def test_dx32_a_list_at_the_start_of_a_paste_is_kept():
+    # Before (p/dx32.js, 8791): a Word list that opened the paste was appended to `out[-1]` (both
+    # sides of the comparison were -1), so the converter returned "" and "· kept" arrived as text.
+    assert "if (wordRun >= 0 && wordRun === out.length - 1)" in DOCS
+    assert "|MsoList|mso-list/i;" in DOCS
+
+
+# DX27 ----------------------------------------------------------------------
+
+
+def test_dx27_a_version_preview_is_words_not_markup():
+    # The history list and the Library card share this one stripper (`/revisions` and
+    # `_summary`). Before: `==highlight==`, `[ ] task`, `:-:, --:, ---` and `[!note] A note`
+    # reached the row. The lines are still lines here; once joined they could not be told apart.
+    from tessellate.api.routes_documents import _preview
+
+    text = (
+        "# T\n\n==highlight== text\n\n- [ ] task one\n- [x] done two\n\n"
+        "| a | b | c |\n|:-:|--:|---|\n| 1 | 2 | 3 |\n\n---\n\n> [!note] A note\n> body\n\n1. first\n"
+    )
+    assert _preview(text) == "T · highlight text · task one · done two · a, b, c · 1, 2, 3 · A note · body · first"
+    assert _preview("***\nreal words") == "real words"
+    assert _preview("[brackets] stay and [ ] in the middle stay") == "[brackets] stay and [ ] in the middle stay"
+
+
 # DX14, DX15 ----------------------------------------------------------------
 
 

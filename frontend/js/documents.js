@@ -5034,7 +5034,7 @@ function docTablePasteEvent(event, view) {
 // (a heading, emphasis, a list, a link, a quote, code, a picture, a table):
 // a code editor's copy is coloured spans and divs, and turning those into
 // paragraphs would break the code it was copying.
-const DOC_RICH_TAGS = /<(h[1-6]|strong|b|em|i|a\s[^>]*href|ul|ol|blockquote|pre|code|img|table|del|s)[\s>]|mso-list/i;
+const DOC_RICH_TAGS = /<(h[1-6]|strong|b|em|i|a\s[^>]*href|ul|ol|blockquote|pre|code|img|table|del|s)[\s>]|<p[^>]*>(?:\s|&nbsp;)*[·•▪§Ø](?:\s|&nbsp;)|MsoList|mso-list/i;
 //: **Emphasis kept only in a span's style counts too** (dog3d-1026:7: a lone
 //: `<span style="font-weight:700">` arrived as plain text, because no tag in
 //: the list above was in it). Not when the copy is code: an editor's copy is a
@@ -5055,16 +5055,29 @@ let docPastePlain = false;
 //: list and "· item" arrived as plain text. Returns the Markdown line, indented
 //: by the item's level, or "" for any other paragraph.
 function docWordListLine(el, styleOf, inline) {
-  const list = styleOf(el, "mso-list");
-  if (!list || list === "none") return "";
-  const level = Number(/level(\d+)/.exec(list)?.[1] || 1);
+  const style = styleOf(el, "mso-list");
+  //: **A list paragraph with its `mso-list` style stripped is still a list**
+  //: (DX32, audit 1102): Word for the web, Outlook and a copy through another
+  //: editor keep the `MsoListParagraph` class or only the bullet glyph, and
+  //: "· item" arrived as a paragraph starting with a middle dot. One rule for
+  //: both: the style, the class, or a leading glyph (`·`, `•`, `▪`, `§`, or
+  //: Word's "o" set apart by two spaces) makes the paragraph an item.
+  const glyph = /^[\s\u00a0]*(?:[·•▪◦‣§Ø]|o(?=[\s\u00a0]{2}))[\s\u00a0]+\S/.test(el.textContent);
+  const styled = Boolean(style) && style !== "none";
+  if (!styled && !glyph && !/MsoList/i.test(el.getAttribute("class") || "")) return "";
+  const list = styled ? style : "";
+  //: Without the style the depth is the indent: Word steps a level by half an inch.
+  const inches = Number(/(\d*\.?\d+)in/.exec(styleOf(el, "margin-left"))?.[1] || 0);
+  const level = Number(/level(\d+)/.exec(list)?.[1] || (inches ? Math.round(inches / 0.5) : 1));
   //: The marker span is nested (`<span Symbol><span mso-list:Ignore>`), so it
   //: is found by its style wherever it sits, read, and taken out.
   const marks = [...el.querySelectorAll("[data-mm-style]")].filter((c) => styleOf(c, "mso-list") === "ignore");
   const mark = marks.map((c) => c.textContent).join("");
   marks.forEach((c) => c.remove());
   const number = /^\s*(\d+)[.)]/.exec(mark)?.[1] || (/^\s*[a-z]{1,4}[.)]/i.test(mark) ? "1" : "");
-  const text = [...el.childNodes].map(inline).join("").replace(/\s+/g, " ").trim();
+  let text = [...el.childNodes].map(inline).join("").replace(/\s+/g, " ").trim();
+  //: The glyph itself, when it was text rather than a marker span.
+  if (glyph && !marks.length) text = text.replace(/^(?:[·•▪◦‣§Ø]|o)\s+/, "");
   return text ? `${"  ".repeat(Math.max(0, level - 1))}${number ? `${number}.` : "-"} ${text}` : "";
 }
 
@@ -5165,7 +5178,8 @@ function docHtmlToMarkdown(html) {
       const heading = /^H([1-6])$/.exec(tag);
       if (wordItem) {
         //: Word's list paragraphs run together as one tight list.
-        if (wordRun === out.length - 1) out[wordRun] += `\n${wordItem}`;
+        //: `wordRun >= 0`: with nothing before it both sides were -1, and a list at the very start of a paste was appended to `out[-1]`, a property, and lost (DX32).
+        if (wordRun >= 0 && wordRun === out.length - 1) out[wordRun] += `\n${wordItem}`;
         else {
           out.push(wordItem);
           wordRun = out.length - 1;

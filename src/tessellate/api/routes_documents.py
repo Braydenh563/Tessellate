@@ -146,7 +146,15 @@ class AiEditBody(BaseModel):
 PREVIEW_CHARS = 240
 
 
-_TABLE_RULE = re.compile(r"^\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?$")
+#: `:-:` is an alignment cell too (one dash), and `---` on its own line is a rule.
+_TABLE_RULE = re.compile(r"^\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?$")
+_HORIZONTAL_RULE = re.compile(r"^\s*([-*_])(\s*\1){2,}\s*$")
+#: What is left of a line's syntax once its marker is off (DX27, audit 1102): an
+#: ordered number, a task box, a callout head, and `==highlight==`.
+_LEAD_ORDERED = re.compile(r"^\d{1,9}[.)]\s+")
+_LEAD_TASK = re.compile(r"^\[[ xX]\]\s+")
+_CALLOUT_HEAD = re.compile(r"^\[![\w-]+\][+-]?\s*")
+_HIGHLIGHT = re.compile(r"==([^=\n]+)==")
 
 
 def _preview_line(line: str) -> str:
@@ -157,7 +165,10 @@ def _preview_line(line: str) -> str:
         if _TABLE_RULE.match(line):
             return ""
         line = ", ".join(cell.strip() for cell in line.strip("|").split("|") if cell.strip())
-    return strip_inline_markdown(line).lstrip("#>-*+ \t")
+    if _HORIZONTAL_RULE.match(line):
+        return ""
+    line = strip_inline_markdown(_HIGHLIGHT.sub(r"\1", line)).lstrip("#>-*+ \t")
+    return _CALLOUT_HEAD.sub("", _LEAD_TASK.sub("", _LEAD_ORDERED.sub("", line)))
 
 
 def _preview(content: str) -> str:
