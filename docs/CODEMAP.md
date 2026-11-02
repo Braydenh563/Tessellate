@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7558, frontend ids 2638, CSS sections 517, backend routes 640, backend modules 8485, test files 1857, tests 15795, plan headings 991, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7558, frontend ids 2638, CSS sections 517, backend routes 640, backend modules 8485, test files 1859, tests 15799, plan headings 991, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7558)
 
@@ -1860,26 +1860,26 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `actNavigate` | frontend/js/answer-kit.js:2197 |
-| `addAssistantBubble` | frontend/js/answer-kit.js:1800 |
+| `actNavigate` | frontend/js/answer-kit.js:2198 |
+| `addAssistantBubble` | frontend/js/answer-kit.js:1801 |
 | `addInlineCitations` | frontend/js/answer-kit.js:195 |
-| `agentRunStep` | frontend/js/answer-kit.js:2756 |
-| `agentRunTitle` | frontend/js/answer-kit.js:2734 |
-| `agentRunTool` | frontend/js/answer-kit.js:2788 |
-| `answerFigure` | frontend/js/answer-kit.js:761 |
-| `answerObject` | frontend/js/answer-kit.js:854 |
-| `applyPendingChatTitle` | frontend/js/answer-kit.js:2708 |
-| `applyPlanMode` | frontend/js/answer-kit.js:2726 |
-| `askNotesOnTheRight` | frontend/js/answer-kit.js:948 |
+| `agentRunStep` | frontend/js/answer-kit.js:2757 |
+| `agentRunTitle` | frontend/js/answer-kit.js:2735 |
+| `agentRunTool` | frontend/js/answer-kit.js:2789 |
+| `answerFigure` | frontend/js/answer-kit.js:762 |
+| `answerObject` | frontend/js/answer-kit.js:855 |
+| `applyPendingChatTitle` | frontend/js/answer-kit.js:2709 |
+| `applyPlanMode` | frontend/js/answer-kit.js:2727 |
+| `askNotesOnTheRight` | frontend/js/answer-kit.js:949 |
 | `askOpenContext` | frontend/js/answer-kit.js:21 |
-| `assistantLabel` | frontend/js/answer-kit.js:1355 |
-| `buildFollowupStrip` | frontend/js/answer-kit.js:2617 |
-| `chatHistoryToSend` | frontend/js/answer-kit.js:1339 |
-| `chatMessageActions` | frontend/js/answer-kit.js:1360 |
-| `chatScrollToEnd` | frontend/js/answer-kit.js:1739 |
-| `chatSourcesFrom` | frontend/js/answer-kit.js:2239 |
-| `chatSourcesPanel` | frontend/js/answer-kit.js:2390 |
-| `chatTurnObjects` | frontend/js/answer-kit.js:2574 |
+| `assistantLabel` | frontend/js/answer-kit.js:1356 |
+| `buildFollowupStrip` | frontend/js/answer-kit.js:2618 |
+| `chatHistoryToSend` | frontend/js/answer-kit.js:1340 |
+| `chatMessageActions` | frontend/js/answer-kit.js:1361 |
+| `chatScrollToEnd` | frontend/js/answer-kit.js:1740 |
+| `chatSourcesFrom` | frontend/js/answer-kit.js:2240 |
+| `chatSourcesPanel` | frontend/js/answer-kit.js:2391 |
+| `chatTurnObjects` | frontend/js/answer-kit.js:2575 |
 | `citationInsertionPoint` | frontend/js/answer-kit.js:165 |
 | `citationKey` | frontend/js/answer-kit.js:123 |
 | `citationMarker` | frontend/js/answer-kit.js:290 |
@@ -1890,63 +1890,63 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `clearCitedPassage` | frontend/js/answer-kit.js:423 |
 | `clickableResult` | frontend/js/answer-kit.js:57 |
 | `collapseCitationRuns` | frontend/js/answer-kit.js:255 |
-| `deactivateControls` | frontend/js/answer-kit.js:2212 |
-| `drawAnswerPanels` | frontend/js/answer-kit.js:956 |
-| `everyRowScored` | frontend/js/answer-kit.js:985 |
+| `deactivateControls` | frontend/js/answer-kit.js:2213 |
+| `drawAnswerPanels` | frontend/js/answer-kit.js:957 |
+| `everyRowScored` | frontend/js/answer-kit.js:986 |
 | `evidenceChecksOn` | frontend/js/answer-kit.js:649 |
 | `evidenceRows` | frontend/js/answer-kit.js:695 |
 | `evidenceToggle` | frontend/js/answer-kit.js:663 |
-| `finishReply` | frontend/js/answer-kit.js:963 |
-| `followupChain` | frontend/js/answer-kit.js:2643 |
-| `followupParent` | frontend/js/answer-kit.js:2637 |
+| `finishReply` | frontend/js/answer-kit.js:964 |
+| `followupChain` | frontend/js/answer-kit.js:2644 |
+| `followupParent` | frontend/js/answer-kit.js:2638 |
 | `groundingThumbs` | frontend/js/answer-kit.js:513 |
-| `isStreamingConversation` | frontend/js/answer-kit.js:2660 |
-| `livingInterval` | frontend/js/answer-kit.js:1618 |
-| `markToolStep` | frontend/js/answer-kit.js:2058 |
-| `matchReasonBadge` | frontend/js/answer-kit.js:989 |
-| `messageMetaLine` | frontend/js/answer-kit.js:1443 |
-| `metaItem` | frontend/js/answer-kit.js:1409 |
+| `isStreamingConversation` | frontend/js/answer-kit.js:2661 |
+| `livingInterval` | frontend/js/answer-kit.js:1619 |
+| `markToolStep` | frontend/js/answer-kit.js:2059 |
+| `matchReasonBadge` | frontend/js/answer-kit.js:990 |
+| `messageMetaLine` | frontend/js/answer-kit.js:1444 |
+| `metaItem` | frontend/js/answer-kit.js:1410 |
 | `notePictures` | frontend/js/answer-kit.js:501 |
-| `noticeUnwatchedAnswer` | frontend/js/answer-kit.js:2690 |
+| `noticeUnwatchedAnswer` | frontend/js/answer-kit.js:2691 |
 | `numberMatchingRecords` | frontend/js/answer-kit.js:440 |
-| `paintNamedHead` | frontend/js/answer-kit.js:1780 |
-| `paintPersonaAvatar` | frontend/js/answer-kit.js:1768 |
-| `placeAnswerFigures` | frontend/js/answer-kit.js:796 |
+| `paintNamedHead` | frontend/js/answer-kit.js:1781 |
+| `paintPersonaAvatar` | frontend/js/answer-kit.js:1769 |
+| `placeAnswerFigures` | frontend/js/answer-kit.js:797 |
 | `placeResultBadge` | frontend/js/answer-kit.js:52 |
-| `planProposalCard` | frontend/js/answer-kit.js:1875 |
-| `planStepWrites` | frontend/js/answer-kit.js:1848 |
-| `progressLine` | frontend/js/answer-kit.js:1639 |
-| `pushAgentChangeUndo` | frontend/js/answer-kit.js:1856 |
-| `reattachStreamingTurn` | frontend/js/answer-kit.js:2671 |
-| `refreshAfterToolChanges` | frontend/js/answer-kit.js:2202 |
-| `refreshFollowupVisibility` | frontend/js/answer-kit.js:2597 |
+| `planProposalCard` | frontend/js/answer-kit.js:1876 |
+| `planStepWrites` | frontend/js/answer-kit.js:1849 |
+| `progressLine` | frontend/js/answer-kit.js:1640 |
+| `pushAgentChangeUndo` | frontend/js/answer-kit.js:1857 |
+| `reattachStreamingTurn` | frontend/js/answer-kit.js:2672 |
+| `refreshAfterToolChanges` | frontend/js/answer-kit.js:2203 |
+| `refreshFollowupVisibility` | frontend/js/answer-kit.js:2598 |
 | `renderAnswerGrounding` | frontend/js/answer-kit.js:548 |
 | `renderAnswerSupport` | frontend/js/answer-kit.js:475 |
-| `renderAskAnswerFoot` | frontend/js/answer-kit.js:894 |
+| `renderAskAnswerFoot` | frontend/js/answer-kit.js:895 |
 | `renderEvidenceView` | frontend/js/answer-kit.js:717 |
-| `renderFollowups` | frontend/js/answer-kit.js:2583 |
-| `renderToolConfirm` | frontend/js/answer-kit.js:2132 |
-| `restoreChatPosition` | frontend/js/answer-kit.js:1728 |
-| `rewriteAnswerWith` | frontend/js/answer-kit.js:1599 |
-| `savedPersona` | frontend/js/answer-kit.js:1764 |
+| `renderFollowups` | frontend/js/answer-kit.js:2584 |
+| `renderToolConfirm` | frontend/js/answer-kit.js:2133 |
+| `restoreChatPosition` | frontend/js/answer-kit.js:1729 |
+| `rewriteAnswerWith` | frontend/js/answer-kit.js:1600 |
+| `savedPersona` | frontend/js/answer-kit.js:1765 |
 | `scheduleCitationPeek` | frontend/js/answer-kit.js:377 |
-| `setAnsweredBy` | frontend/js/answer-kit.js:975 |
+| `setAnsweredBy` | frontend/js/answer-kit.js:976 |
 | `showCitedPassage` | frontend/js/answer-kit.js:392 |
-| `sourceLines` | frontend/js/answer-kit.js:2228 |
-| `sourcesByFirstMention` | frontend/js/answer-kit.js:2355 |
-| `startPlannedRun` | frontend/js/answer-kit.js:2685 |
-| `streamChat` | frontend/js/answer-kit.js:1009 |
-| `streamChatEvents` | frontend/js/answer-kit.js:1053 |
-| `toolCardChips` | frontend/js/answer-kit.js:1973 |
-| `toolCardsRow` | frontend/js/answer-kit.js:2032 |
-| `toolChip` | frontend/js/answer-kit.js:2063 |
-| `toolPhaseVerb` | frontend/js/answer-kit.js:1632 |
-| `toolPreviewBody` | frontend/js/answer-kit.js:1916 |
-| `toolPreviewPanel` | frontend/js/answer-kit.js:1951 |
-| `toolTouchedRow` | frontend/js/answer-kit.js:2046 |
-| `userMarkEl` | frontend/js/answer-kit.js:1751 |
-| `verificationRow` | frontend/js/answer-kit.js:2746 |
-| `webPageContextBlock` | frontend/js/answer-kit.js:1607 |
+| `sourceLines` | frontend/js/answer-kit.js:2229 |
+| `sourcesByFirstMention` | frontend/js/answer-kit.js:2356 |
+| `startPlannedRun` | frontend/js/answer-kit.js:2686 |
+| `streamChat` | frontend/js/answer-kit.js:1010 |
+| `streamChatEvents` | frontend/js/answer-kit.js:1054 |
+| `toolCardChips` | frontend/js/answer-kit.js:1974 |
+| `toolCardsRow` | frontend/js/answer-kit.js:2033 |
+| `toolChip` | frontend/js/answer-kit.js:2064 |
+| `toolPhaseVerb` | frontend/js/answer-kit.js:1633 |
+| `toolPreviewBody` | frontend/js/answer-kit.js:1917 |
+| `toolPreviewPanel` | frontend/js/answer-kit.js:1952 |
+| `toolTouchedRow` | frontend/js/answer-kit.js:2047 |
+| `userMarkEl` | frontend/js/answer-kit.js:1752 |
+| `verificationRow` | frontend/js/answer-kit.js:2747 |
+| `webPageContextBlock` | frontend/js/answer-kit.js:1608 |
 
 ### frontend/js/app-features.js (9)
 
@@ -2904,25 +2904,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `companionPathAt` | frontend/js/companion-menu.js:897 |
-| `companionPathEase` | frontend/js/companion-menu.js:889 |
-| `companionPathKind` | frontend/js/companion-menu.js:913 |
-| `companionPathPeak` | frontend/js/companion-menu.js:920 |
-| `companionPathPlan` | frontend/js/companion-menu.js:930 |
-| `mountBuddyPresets` | frontend/js/companion-menu.js:583 |
-| `nameMarkBuddyApplyPreset` | frontend/js/companion-menu.js:563 |
-| `nameMarkBuddyHome` | frontend/js/companion-menu.js:841 |
-| `nameMarkBuddyKeepPresets` | frontend/js/companion-menu.js:532 |
+| `companionPathAt` | frontend/js/companion-menu.js:901 |
+| `companionPathEase` | frontend/js/companion-menu.js:893 |
+| `companionPathKind` | frontend/js/companion-menu.js:917 |
+| `companionPathPeak` | frontend/js/companion-menu.js:924 |
+| `companionPathPlan` | frontend/js/companion-menu.js:934 |
+| `mountBuddyPresets` | frontend/js/companion-menu.js:587 |
+| `nameMarkBuddyApplyPreset` | frontend/js/companion-menu.js:567 |
+| `nameMarkBuddyHome` | frontend/js/companion-menu.js:845 |
+| `nameMarkBuddyKeepPresets` | frontend/js/companion-menu.js:536 |
 | `nameMarkBuddyMenu` | frontend/js/companion-menu.js:211 |
-| `nameMarkBuddyPresets` | frontend/js/companion-menu.js:524 |
-| `nameMarkBuddySavePreset` | frontend/js/companion-menu.js:540 |
-| `nameMarkBuddyVisit` | frontend/js/companion-menu.js:771 |
+| `nameMarkBuddyPresets` | frontend/js/companion-menu.js:528 |
+| `nameMarkBuddySavePreset` | frontend/js/companion-menu.js:544 |
+| `nameMarkBuddyVisit` | frontend/js/companion-menu.js:775 |
 | `nameMarkViewerActs` | frontend/js/companion-menu.js:177 |
-| `nameMarkViewerBlinks` | frontend/js/companion-menu.js:502 |
-| `nameMarkViewerFace` | frontend/js/companion-menu.js:483 |
-| `nameMarkViewerFit` | frontend/js/companion-menu.js:395 |
-| `nameMarkViewerFollow` | frontend/js/companion-menu.js:437 |
-| `nameMarkViewerNear` | frontend/js/companion-menu.js:478 |
+| `nameMarkViewerBlinks` | frontend/js/companion-menu.js:506 |
+| `nameMarkViewerFace` | frontend/js/companion-menu.js:487 |
+| `nameMarkViewerFit` | frontend/js/companion-menu.js:399 |
+| `nameMarkViewerFollow` | frontend/js/companion-menu.js:441 |
+| `nameMarkViewerNear` | frontend/js/companion-menu.js:482 |
 | `openNameMarkViewer` | frontend/js/companion-menu.js:34 |
 
 ### frontend/js/companion-remark.js (1)
@@ -14351,25 +14351,25 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `NoteView` | src/tessellate/ai/composer_read.py:71 |
 | `Sentence` | src/tessellate/ai/composer_read.py:42 |
-| `_cue` | src/tessellate/ai/composer_read.py:546 |
+| `_cue` | src/tessellate/ai/composer_read.py:548 |
 | `_depth` | src/tessellate/ai/composer_read.py:247 |
 | `_discourse` | src/tessellate/ai/composer_read.py:147 |
-| `_distinct_ids` | src/tessellate/ai/composer_read.py:414 |
+| `_distinct_ids` | src/tessellate/ai/composer_read.py:416 |
 | `_heading_text` | src/tessellate/ai/composer_read.py:178 |
-| `_line_units` | src/tessellate/ai/composer_read.py:492 |
-| `_not_prose` | src/tessellate/ai/composer_read.py:435 |
+| `_line_units` | src/tessellate/ai/composer_read.py:494 |
+| `_not_prose` | src/tessellate/ai/composer_read.py:437 |
 | `_picture_groups` | src/tessellate/ai/composer_read.py:317 |
-| `_picture_spans` | src/tessellate/ai/composer_read.py:371 |
-| `_picture_text_breaks` | src/tessellate/ai/composer_read.py:354 |
-| `_picture_units` | src/tessellate/ai/composer_read.py:389 |
+| `_picture_spans` | src/tessellate/ai/composer_read.py:373 |
+| `_picture_text_breaks` | src/tessellate/ai/composer_read.py:356 |
+| `_picture_units` | src/tessellate/ai/composer_read.py:391 |
 | `_short_fact` | src/tessellate/ai/composer_read.py:295 |
 | `_title` | src/tessellate/ai/composer_read.py:219 |
 | `_unit` | src/tessellate/ai/composer_read.py:253 |
 | `_written` | src/tessellate/ai/composer_read.py:160 |
 | `bold_line` | src/tessellate/ai/composer_read.py:204 |
 | `plain_words` | src/tessellate/ai/composer_read.py:210 |
-| `read_note` | src/tessellate/ai/composer_read.py:440 |
-| `source_kind` | src/tessellate/ai/composer_read.py:427 |
+| `read_note` | src/tessellate/ai/composer_read.py:442 |
+| `source_kind` | src/tessellate/ai/composer_read.py:429 |
 
 ### src/tessellate/ai/composer_recall.py (18)
 
@@ -14657,25 +14657,25 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_day_said` | src/tessellate/ai/composer_threads.py:176 |
-| `_flat` | src/tessellate/ai/composer_threads.py:310 |
-| `_original` | src/tessellate/ai/composer_threads.py:315 |
-| `_picture_frame` | src/tessellate/ai/composer_threads.py:132 |
+| `_day_said` | src/tessellate/ai/composer_threads.py:181 |
+| `_flat` | src/tessellate/ai/composer_threads.py:315 |
+| `_original` | src/tessellate/ai/composer_threads.py:320 |
+| `_picture_frame` | src/tessellate/ai/composer_threads.py:134 |
 | `_plain_word` | src/tessellate/ai/composer_threads.py:56 |
-| `_stem` | src/tessellate/ai/composer_threads.py:256 |
-| `caption_said` | src/tessellate/ai/composer_threads.py:147 |
-| `group_said` | src/tessellate/ai/composer_threads.py:233 |
+| `_stem` | src/tessellate/ai/composer_threads.py:261 |
+| `caption_said` | src/tessellate/ai/composer_threads.py:149 |
+| `group_said` | src/tessellate/ai/composer_threads.py:238 |
 | `label_is_sentence` | src/tessellate/ai/composer_threads.py:100 |
-| `lead_said` | src/tessellate/ai/composer_threads.py:288 |
-| `link_said` | src/tessellate/ai/composer_threads.py:237 |
+| `lead_said` | src/tessellate/ai/composer_threads.py:293 |
+| `link_said` | src/tessellate/ai/composer_threads.py:242 |
 | `lower_first` | src/tessellate/ai/composer_threads.py:65 |
-| `more_theme` | src/tessellate/ai/composer_threads.py:226 |
-| `note_from` | src/tessellate/ai/composer_threads.py:193 |
-| `own_words` | src/tessellate/ai/composer_threads.py:330 |
-| `picture_name` | src/tessellate/ai/composer_threads.py:186 |
+| `more_theme` | src/tessellate/ai/composer_threads.py:231 |
+| `note_from` | src/tessellate/ai/composer_threads.py:198 |
+| `own_words` | src/tessellate/ai/composer_threads.py:335 |
+| `picture_name` | src/tessellate/ai/composer_threads.py:191 |
 | `reason_said` | src/tessellate/ai/composer_threads.py:79 |
-| `said_whole` | src/tessellate/ai/composer_threads.py:168 |
-| `thread_word` | src/tessellate/ai/composer_threads.py:263 |
+| `said_whole` | src/tessellate/ai/composer_threads.py:173 |
+| `thread_word` | src/tessellate/ai/composer_threads.py:268 |
 | `voiced` | src/tessellate/ai/composer_threads.py:115 |
 | `with_article` | src/tessellate/ai/composer_threads.py:105 |
 
@@ -23280,7 +23280,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15795)
+## Tests (15799)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23448,6 +23448,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_budgets.py | 6 |
 | tests/test_calc_ux_1530.py | 16 |
 | tests/test_calculator_equations.py | 8 |
+| tests/test_caption_whole_1555.py | 3 |
 | tests/test_captioning.py | 17 |
 | tests/test_captions.py | 16 |
 | tests/test_captions_keep_audio.py | 6 |
@@ -23535,6 +23536,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_companion_body.py | 10 |
 | tests/test_companion_fall_split_1463.py | 3 |
 | tests/test_companion_land_1402.py | 7 |
+| tests/test_companion_menu_choose_1554.py | 1 |
 | tests/test_companion_mind.py | 8 |
 | tests/test_companion_motion.py | 108 |
 | tests/test_companion_near_1465.py | 5 |

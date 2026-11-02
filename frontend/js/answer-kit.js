@@ -732,7 +732,8 @@ function renderEvidenceView(view, sentences, support, rawResults, answerEl, numb
       card.type = "button";
       const head = evidenceSpan("citation-peek-head");
       const number = String(numberFor.get(citeKey(g.kind, g.note_id)) || "");
-      const title = noteLabel({ content }, 60);
+      //: The note's name, never its words run together (the owner: "random ahh sketch random ahh sketch").
+      const title = g.title || noteNamePlain(content, 60);
       head.append(evidenceSpan("citation-peek-number", number), evidenceSpan("citation-peek-title", title));
       const quote = evidenceSpan("citation-peek-body answer-evidence-quote");
       const fill = (text) => {
@@ -787,7 +788,7 @@ function answerFigure(entry, n, k, alts, sizes) {
   img.addEventListener("error", () => figure.remove());
   const caption = node("figcaption", "answer-figure-caption", figure);
   if (words) node("span", "muted answer-figure-words", caption, words.split("\n")[0]);
-  const from = node("button", "link-button answer-figure-from", caption, `From note ${n}: ${noteLabel(entry, 40)}`);
+  const from = node("button", "link-button answer-figure-from", caption, `From note ${n}: ${noteNamePlain(entry.content, 40)}`);
   from.type = "button";
   from.addEventListener("click", () => flashEntry(entry.id));
   return figure;

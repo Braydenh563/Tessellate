@@ -99,3 +99,8 @@ date | item | type | rung | rework | note
 2026-11-02 | gate --staged builds CODEMAP from the index (dc83607) | tooling | opus | 0 | 
 2026-11-02 | Lazy-bundle lint sees wrapped files (20dab9d) | tooling | opus | 0 | 
 2026-11-02 | CI red: notes menu title pin (fe48f81) | ci-fix | opus | 0 | 
+2026-11-02 | CodeQL 8 unused-import alerts PR 212 | fix | opus | 1 | 
+2026-11-02 | Chat tab press forced style (INBOX 1534 part) | perf | opus | 2 | 
+2026-11-02 | a28c composer rows E18 E25 E29 E64 E67 E24 + INBOX 1532 | fix | sonnet | 0 | 
+2026-11-02 | a28u chat UI rows E47 E49 E61 E68 E71 E41 | fix | sonnet | 0 | 
+2026-11-02 | a28s shell/board rows S62 S92 U38 U48 B32 B28 B34 D53 K35 | fix | sonnet | 0 | 

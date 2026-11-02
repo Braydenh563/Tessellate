@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The companion menu's choices (Atlas look Feminine among them) work before Settings has opened (INBOX 1554). A picture's caption is said whole and past "A photo of", and its link names the note once (INBOX 1555).
 - Chat works out "what is 7000 km in miles", "whats 50 usd in eur" and "how much is 12 stone in kg" on the device in every mode instead of searching the web (INBOX 1550): one lead before every conversion pattern. A browser error reaches the app log as its stack, not {} (INBOX 1549).
 - Popups resize from any edge or corner (INBOX 1536): the outer 6px name the edge with its resize cursor and a drag there resizes from that side with the opposite edge held still (Settings at 1440 by 900: left 208 to 148 with the right at 1232). A Chat tab press focuses the composer after the first paint (INBOX 1534: 392 to 164ms at 4x CPU). CodeQL: the split whiteboard and tool modules import from where each name lives.
 - Chat without a model: "new notes" lists the newest notes instead of asking what the note should say (INBOX 1532). New before a plural noun is read as newest, as latest and recent are ("show new notes", "see new notes", "any new notes please"); a singular "new note" with words still makes one, and a bare "new note" offers both.

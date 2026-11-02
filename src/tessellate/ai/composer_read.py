@@ -344,7 +344,9 @@ def _picture_groups(line: str) -> dict[str, tuple[str, int]] | None:
 #: contains a text excerpt ..."): read past, so the answer says "a text
 #: excerpt ..." and never "shows The image shows" (INBOX 787).
 _CAPTION_FRAME = re.compile(
-    r"^(?:the|this)\s+(?:image|picture|photo|photograph|screenshot)\s+(?:contains|shows|depicts|is of|is)\s+(?=\S)", re.I
+    r"^(?:(?:the|this)\s+(?:image|picture|photo|photograph|screenshot)\s+(?:contains|shows|depicts|is of|is)"
+    #: "A photo of a grassy hill": said "shows a grassy hill", never "shows A photo of" (INBOX 1555).
+    r"|(?:an?|the|this)\s+(?:image|picture|photo|photograph)\s+of)\s+(?=\S)", re.I
 )
 
 
