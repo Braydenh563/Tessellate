@@ -1356,9 +1356,7 @@ function activeAccent() {
 // about the accent picker, so a curated palette changed every surface in the
 // app except the two canvases, leaving them wearing the previous theme. The
 // computed variable is the one source of truth once palettes can set it too.
-//: Kept until the root, the body or the system scheme changes: read fresh, it
-//: settled the style a tab press had just dirtied (18ms of style and 9ms of
-//: layout a Chat press at 4x, INBOX 1534, `tabstyle1102.js`).
+//: Kept until the root or body changes (INBOX 1534: a read per draw forced style).
 function currentAccentHex() {
   const forget = () => (currentAccentHex.kept = "");
   if (!currentAccentHex.watched) {

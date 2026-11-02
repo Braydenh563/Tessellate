@@ -210,13 +210,8 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 204 | E59 | low | no per-answer thumbs feedback | new | M |
 | 205 | E60 | low | no regenerate with another model, no continue after Stop | new | M |
 | 206 | E62 | low | regenerate rewords but cannot widen retrieval | new | M |
-<<<<<<< HEAD
 | 207 | E64 | low | internal ids and test notes in student-facing text | fixed 2026-11-02 (9a750b3) | S |
-| 208 | E71 | low | read aloud has no stop or speed control, unverified | new | S |
-=======
-| 207 | E64 | low | internal ids and test notes in student-facing text | new | S |
 | 208 | E71 | low | read aloud has no stop or speed control, unverified | fixed 2026-11-02 (1f67c2b) | S |
->>>>>>> agent/a28u-1102
 | 209 | S70 | low | no note count per tag chip | already built (tag chip counts, measured) | S |
 | 210 | S71 | low | no drag and drop of files into the list | new | M |
 | 211 | S72 | low | no quick-capture hint on first run | fixed (b8cfb46) | S |
@@ -240,13 +235,8 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 229 | E54 | low | identity muddled between Atlas and Tessellate | docs/roadmap/CHAT_PLAN.md:460 | S |
 | 230 | E61 | low | disabled Plan and Agent explain need only on hover | fixed 2026-11-02 (1789f37) | S |
 | 231 | E63 | low | three clauses joined as a run-on, no list | new | S |
-<<<<<<< HEAD
 | 232 | E67 | low | next chip row offers a single chip | fixed 2026-11-02 (2f1213f) | S |
-| 233 | E68 | low | typing dots role=status, no aria-busy on transcript | new | S |
-=======
-| 232 | E67 | low | next chip row offers a single chip | new | S |
 | 233 | E68 | low | typing dots role=status, no aria-busy on transcript | fixed 2026-11-02 (ecb69a5) | S |
->>>>>>> agent/a28u-1102
 | 234 | E69 | low | chat autocorrect runs on names and codes unseen | new | S |
 | 235 | E72 | low | Why trail shows timing lines and a wrong nothing matched | new | S |
 | 236 | S55 | low | settings labels mix case against sentence case | new | S |
@@ -282,13 +272,8 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 266 | D45 | low | 871 KB wordlist fetched and dictionary built on main thread | new | M |
 | 267 | K32 | low | tabs poll all reminders every minute for a due check | won't fix (the poll already asks only open reminders; the timer, badge and early alerts need the rows, 2026-10-30) | S |
 | 268 | K33 | low | token sweep runs on every authenticated request | won't fix 1031: the per-request sweep is what drops the key the moment the last granted session expires (test_vault_sessions); O(tokens) with a handful of tokens | S |
-<<<<<<< HEAD
 | 269 | K34 | low | 200 MB uploads read into memory as bytes | won't fix 2026-11-02: capped at 200 MB and Starlette spools the upload; the importers parse bytes | M |
-| 270 | K35 | low | startup PRAGMA table_info for every table each launch | new | S |
-=======
-| 269 | K34 | low | 200 MB uploads read into memory as bytes | new | M |
 | 270 | K35 | low | startup PRAGMA table_info for every table each launch | fixed 2026-11-02 (06af068) | S |
->>>>>>> agent/a28s-1102
 | 271 | K36 | low | list_boards and list_images run per-board queries | new | M |
 | 272 | E58 | low | saved chat list rebuilt every checkpoint round | new | S |
 | 273 | E65 | low | NoteView not cached, notes re-read per question | measured 2026-11-02: read_note is not the cost; the 329 queries per answer were (now 96), see CHANGELOG | M |

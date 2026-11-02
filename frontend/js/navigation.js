@@ -1972,12 +1972,9 @@ async function switchTab(name) {
     //: The composer paints first (CHAT_PLAN 8 row 6): the welcome and the
     //: starter chips cost 60 to 120 ms of layout at 390 and were drawn
     //: before the frame that showed the box you came to type in.
-    //: After the page has painted (INBOX 1534): in the press, the focus settled
-    //: the style and layout the reveal had just dirtied, then the frame did it
-    //: again (100 to 140ms of forced style and layout a Chat press at 4x,
-    //: `scratchpad/ui-sweeps/tabstyle1102.js`). A press elsewhere in the gap keeps its own focus.
+    //: The focus too (INBOX 1534: in the press it forced 100 to 140ms of style at 4x).
     requestAnimationFrame(() => setTimeout(() => {
-      if ((prefs.get("activeTab", null) || "") !== "chat") return;
+      if (prefs.get("activeTab", null) !== "chat") return;
       //: **The composer takes the caret, but not the focus ring, on arrival.**
       //: Reported as "chat panel shadow". Measured on a freshly loaded Chat tab
       //: (`scratchpad/ui-sweeps/chatshadow.js`): `.chat-dock` computed
@@ -2679,9 +2676,6 @@ function initScrollTopButton() {
   let wasVisible = false;
   const update = () => {
     const tab = prefs.get("activeTab", null) || "dashboard";
-    //: A tab with no button reads no scroll: the read settled a page just
-    //: drawn (101ms of style on a Library press at 4x, INBOX 1534).
-    if (NO_SCROLL_TOP_TABS.has(tab) && !wasVisible && button.dataset.mode === (tab === "chat" ? "bottom" : "top")) return;
     const target = scrollTopTargetEl();
     const scrollTop = target?.scrollTop || 0;
     //: Chat flips the button over: it appears when you have scrolled *up*
