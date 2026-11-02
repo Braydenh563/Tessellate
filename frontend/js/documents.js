@@ -1169,6 +1169,9 @@ async function openDocument(id) {
   //: A document waiting on its conflict asks now (not silently): leaving is
   //: the moment the answer is owed, and the banner is about to go.
   if (docDirty) await saveDocument({ silent: !docConflictPending });
+  //: A document restored with the page can get here while the Library bundle is still
+  //: loading; the board code the steps below reach is later in it (INBOX 1530 f).
+  await ensureModule("library");
   docConflictPending = null;
   await docDropIfUntouched(id);
   //: **The engine is loaded here, and this is the only place it is.** Awaited
@@ -2327,6 +2330,7 @@ async function ensureDocumentExists() {
       method: "POST",
       body: JSON.stringify({ title: $("doc-title").value.trim() || docNextName(), content: "", file_type: docTypeState.pending || "md" }),
     });
+    await ensureModule("library"); // the list redraw below reaches board code later in the bundle (INBOX 1530 f)
     docTypeState.pending = null;
     currentDoc = doc;
     docsMadeThisSession.add(doc.id);
