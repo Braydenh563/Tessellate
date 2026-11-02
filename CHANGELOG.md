@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Board and map: on a phone the top bar is one row again, 54px instead of 104px (390x844, board and map), so the board's name gets about 103px beside the menus instead of being cut; the Format panel button leaves the bar and stays in More (audit 1028 U22, U23 title).
 - Board: the sidebar's tabs are 32px with a mouse (they were 28px); touch keeps its 44px (audit 1028 U16).
 - Mind map: a new or navigated-to topic within 24px of the canvas edge is brought in to that margin (it stayed 5px from the right edge, counted as in view); measured 5px before, 24px after at 1440x900 (audit 1028 U24).
 - Board: the Delete tool sits 10px from Undo and Redo in the dock (it was 2px, measured at 1440x900), and the side dock's grid is unchanged (audit 1028 U14).

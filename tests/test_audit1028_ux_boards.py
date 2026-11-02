@@ -82,3 +82,18 @@ def test_the_sidebar_tabs_are_32px_and_keep_the_touch_floor():
     assert "min-height: max(var(--button-min-h), var(--target-min))" in rule
     tokens = (CSS / "00-tokens-shell.css").read_text(encoding="utf-8")
     assert "--button-min-h: 2rem;" in tokens
+
+
+# U22 ------------------------------------------------------------------------
+
+
+def test_the_phone_bar_is_one_row_and_the_format_panel_stays_reachable_from_more():
+    start = LAZY.index("@media (max-width: 599.98px) {\n  .wb-topbar #wb-format-btn")
+    rule = LAZY[start : LAZY.index("\n}\n", start) + 3]
+    assert ".wb-topbar #wb-format-btn" in rule and ".wb-menu-caret" in rule and "display: none" in rule
+    assert ".wb-topbar .wb-topbar-right {\n    gap: 0;" in rule
+    # The button goes, the command stays: More lists every command the bar does not carry (wbPhoneCarries).
+    commands = (JS / "whiteboard-commands.js").read_text(encoding="utf-8")
+    assert 'id: "format-panel"' in commands and 'menu: "Format panel"' in commands
+    # The picker's phone face is the name alone and its tooltip the whole row.
+    assert "opt.dataset.faceNarrow = board.title;" in WB

@@ -8190,3 +8190,20 @@ input[type="color"].wb-mixed {
   min-width: max(var(--button-min-h), var(--target-min));
   min-height: max(var(--button-min-h), var(--target-min));
 }
+
+/* **One row on a phone, again** (U22: the bar had grown to 104px in two rows
+   at 390 and the board's name was cut). The Format button came to the bar
+   after the one-row rule above was measured, and its 44px put the right half
+   past the left half's 7.5rem; the More menu already carries "Format panel",
+   so on a phone the button goes (`wbPhoneCarries` reads this rule). The three
+   menu toggles drop their carets and the halves' gap, which gives the name the
+   room the carets used (82px before, about 110px). */
+@media (max-width: 599.98px) {
+  .wb-topbar #wb-format-btn,
+  .wb-topbar .wb-menu-toggle .wb-menu-caret {
+    display: none;
+  }
+  .wb-topbar .wb-topbar-right {
+    gap: 0;
+  }
+}
