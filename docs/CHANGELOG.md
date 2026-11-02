@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The model status poll that reports a finished download lists the new model: it waits, once per download and at most 0.2 s, for a model list asked after the download ended, where it used to serve the list from before it on a busy machine (CI on PR 212).
 - The note picker's preview shows a picture that sits past a list row's first 300 characters, read from the whole note (fix1525b finding).
 - A long question in Chat shows its first 2,000 characters with Show more: a 20,000-character question's bubble is 387 px tall, was 3,352, and lays out in 11 ms, was 21 ms at 4x; Edit, the transcript and Copy read the words as sent (warm12-1101 leftover).
 - `ai/tools/__init__.py` split by tool family (ranked row 36, gods3-1102): 5,282 lines to 48, the code moved whole into twelve `ai/tools/tool_*.py` modules (read, skills, write, web, turn, learn, sets, table, handoff, focus, schema, run), each importing only the layers above it; `tools.TOOLS`, `tools.execute_tool` and every name read elsewhere are re-exported. The registry (names, order, schemas, `ollama_tools()`) dumped before and after is identical, import cycles 0, `tests/test_module_line_caps.py` holds each module at its size.
