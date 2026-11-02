@@ -10589,7 +10589,7 @@ Link to another note with [[its first few words]]."></textarea>
               <div class="row help-head">
                 <label class="check-row">
                   <input type="checkbox" id="pref-semantic-auto-install">
-                  <span>Download search by meaning</span>
+                  <span id="semantic-auto-install-label">Download search by meaning</span>
                 </label>
                 <button type="button" class="icon-only ghost small graph-help-toggle"
                   data-help-for="semantic-auto-install-help" aria-controls="semantic-auto-install-help" aria-expanded="false"
@@ -10597,7 +10597,7 @@ Link to another note with [[its first few words]]."></textarea>
                   <i class="ph ph-question" aria-hidden="true"></i>
                 </button>
               </div>
-              <p class="muted small">Off, search uses keywords. About 130 MB, once, from huggingface.co and pypi.org.</p>
+              <p class="muted small" id="semantic-auto-install-hint">Off, search uses keywords. About 130 MB, once, from huggingface.co and pypi.org.</p>
               <div class="help-body hidden" id="semantic-auto-install-help" role="dialog" aria-label="About downloading search by meaning">
                 <p>
                   Search by meaning needs one Python package, fastembed, which
@@ -10618,6 +10618,10 @@ Link to another note with [[its first few words]]."></textarea>
                   left on this computer, with Remove.
                 </p>
                 <p>
+                  Once the model is on this computer the switch reads Repair search
+                  by meaning by itself: search matches by meaning either way, and on,
+                  a model with missing files is fetched again. Uninstall is in
+                  Embedding models.
                   Off, nothing is downloaded and search by keywords keeps working.
                   You can still install it yourself from Settings, Packages, or
                   pick an Ollama embedding model below instead.

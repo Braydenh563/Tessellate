@@ -401,13 +401,13 @@ MORE_TOPICS: list[dict] = [
         "body": (
             (
                 "Settings, Search and index. Search engine: the built-in one (recommended, about 300 MB "
-                "of memory while the app is open) or an Ollama embedding model such as nomic-embed-text. "
+                "of memory while open) or an Ollama model such as nomic-embed-text. "
                 "The built-in one needs the fastembed package (ONNX Runtime, no PyTorch) and a small model "
                 "from huggingface.co, about 130 MB in all. Nothing is downloaded without a yes: the first time a "
                 "save needs it Tessellate asks once, with Download and No thanks, and search uses "
                 "keywords until you say yes. The switch Download search by meaning turns it on later, "
-                "or off again, and Settings, Packages keeps a manual Install. Changing the engine re-reads every note in the background "
-                "(Background tasks shows it, with Stop) and search keeps using the current model until "
+                "or off (downloaded, it reads Repair search by meaning by itself); Settings, Packages keeps a manual Install. Changing the engine re-reads every note in the background "
+                "(Background tasks shows it, with Stop); search uses the current model until "
                 "the new one has read every note. Embedding models lists the choices, from MiniLM "
                 "(smallest, fastest) and BGE Small (the default) to multilingual ones (Multilingual E5, "
                 "BGE M3, Qwen3), with each one's size, languages, context and licence, and its state "

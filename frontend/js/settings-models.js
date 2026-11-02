@@ -834,6 +834,13 @@ function renderEmbeddingPicker(status) {
   //: by itself, once, the first time it is needed (after a yes): a download
   //: of about 60 MB that needs the internet. Said here, with the
   //: alternative that needs neither Python packages nor that download.
+  //: On disk, the switch downloads nothing (INBOX 1533, the owner: "it's already been downloaded so why
+  //: is it a toggle?"): it says what it still does, the repair `_fetch_again` runs.
+  const ready = status.embedding_ready && status.embedding_backend !== "ollama";
+  $("semantic-auto-install-label").textContent = ready ? "Repair search by meaning by itself" : "Download search by meaning";
+  $("semantic-auto-install-hint").textContent = ready
+    ? "The model is on this computer, so search matches by meaning. On, missing files are fetched again."
+    : "Off, search uses keywords. About 130 MB, once, from huggingface.co and pypi.org.";
   const note = $("builtin-embed-note");
   if (note) {
     let text = "";
