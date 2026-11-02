@@ -5223,6 +5223,20 @@ Link to another note with [[its first few words]]."></textarea>
                 title="More actions for this document"
                 aria-label="More actions for this document"><i class="ph ph-dots-three" aria-hidden="true"></i></summary>
               <div class="doc-dock-menu-list">
+                <!-- **On a phone the dock is one row** (audit 1102 DX13): back, the title,
+                     Edit / Read and this menu. What stood beside them (AI edit, Snippets,
+                     Focus, the other editing views) is a row here that presses the real
+                     button (`data-click-proxy`, documents.js), so no handler is duplicated.
+                     Hidden from 600 up, where the buttons are in the dock. -->
+                <button class="menu-item doc-dock-menu-item doc-phone-only" type="button" data-click-proxy="doc-ai"><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> AI edit</button>
+                <button class="menu-item doc-dock-menu-item doc-phone-only" type="button" data-click-proxy="doc-code-snippets-open"><i class="ph ph-puzzle-piece ph-lead" aria-hidden="true"></i> <span class="doc-code-only">Snippets</span><span class="doc-prose-only">Sections</span></button>
+                <button class="menu-item doc-dock-menu-item doc-phone-only" type="button" data-click-proxy="doc-focus-toggle"><i class="ph ph-corners-out ph-lead" aria-hidden="true"></i> Focus mode</button>
+                <button class="menu-item doc-dock-menu-item doc-phone-only doc-code-only" type="button" data-click-proxy="doc-code-format"><i class="ph ph-brackets-curly ph-lead" aria-hidden="true"></i> Format</button>
+                <button class="menu-item doc-dock-menu-item doc-phone-only doc-code-only" type="button" data-click-proxy="doc-code-assist-open"><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> Assistant</button>
+                <button class="menu-item doc-dock-menu-item doc-phone-only" type="button" data-click-proxy="#doc-view-menu [data-doc-view=live]"><i class="ph ph-article ph-lead" aria-hidden="true"></i> Edit as Live</button>
+                <button class="menu-item doc-dock-menu-item doc-phone-only" type="button" data-click-proxy="#doc-view-menu [data-doc-view=source]"><i class="ph ph-code ph-lead" aria-hidden="true"></i> Edit as Source</button>
+                <button class="menu-item doc-dock-menu-item doc-phone-only" type="button" data-click-proxy="#doc-view-menu [data-doc-view=split]"><i class="ph ph-columns ph-lead" aria-hidden="true"></i> Edit as Split</button>
+                <button class="menu-item doc-dock-menu-item doc-phone-only" type="button" data-click-proxy="#doc-view-menu [data-doc-view=plain]"><i class="ph ph-text-align-left ph-lead" aria-hidden="true"></i> Edit as Plain text</button>
                 <button id="doc-format-toggle" class="menu-item doc-dock-menu-item" type="button" aria-pressed="false"
                   title="Show the formatting toolbar above the editor (Ctrl+Shift+X)"><i class="ph ph-text-aa ph-lead" aria-hidden="true"></i> <span id="doc-format-toggle-label">Show formatting toolbar</span></button>
 

@@ -1834,7 +1834,7 @@ HELP_TOPICS.extend(
                 "is the markdown and Split puts a preview beside it, or Read. The "
                 "sidebar's Outline lists the headings (with a filter when there "
                 "are many), and headings fold. Focus mode (the corners button on "
-                "the dock, or F11) hides everything but the page, with a "
+                "the dock, or the ⋯ menu on a phone, or F11) hides everything but the page, with a "
                 "bar for the title, save state, a Sidebar button and Exit; drag a panel's edge "
                 "to resize. The formatting "
                 "toolbar hides and comes back: while it is hidden, the Formatting "
