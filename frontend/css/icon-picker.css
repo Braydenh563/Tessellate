@@ -14,11 +14,22 @@
   max-height: min(32rem, calc(100vh - var(--space-8)));
 }
 
-/* Opened with nothing to hang from (a command): the middle of the window. */
-.icon-picker.icon-picker-centred {
-  left: 50%;
+/* The middle of the window: opened with nothing to hang from (a command), and
+   the base every stored place is measured from (panel-movable.js
+   `panelRebase`). Centred by auto margins, never by a `translate`: a panel's
+   drag writes `translate` inline, and a centring one was dropped by the first
+   drag (measured: it jumped half the panel's width, 192px). No caret and no
+   grow: it is not at its opener, so it fades in where it stands (INBOX 1542). */
+.help-popover.popover-centred {
+  left: 0;
+  right: 0;
+  margin-inline: auto;
   top: var(--space-9);
-  translate: -50% 0;
+  animation-name: ui-fade;
+}
+.help-popover.popover-centred::before,
+.help-popover.popover-centred::after {
+  display: none;
 }
 
 /* The kind strip spans the panel under its head (INBOX 715). */

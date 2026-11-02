@@ -537,6 +537,22 @@ function panelSave(panel) {
   panelSync(panel);
   panelPushSync();
 }
+//: **A popover hung from a caret or a button is re-based on the middle of the
+//: window** (INBOX 1542), where every stored place is measured from: it keeps
+//: the place it was given (the offset is the difference in layout, so a grow in
+//: progress does not enter it), and a place saved later opens there whatever
+//: the caret is by then, in the first frame, not the caret's and then the saved.
+function panelRebase(panel, st) {
+  if (!panel.matches(".help-popover:not(.popover-centred)")) return;
+  const left = panel.offsetLeft;
+  const top = panel.offsetTop;
+  panel.style.left = panel.style.top = "";
+  panel.style.removeProperty("--help-caret-x");
+  panel.classList.add("popover-centred");
+  st.x = left - panel.offsetLeft;
+  st.y = top - panel.offsetTop;
+  panelApply(panel, st);
+}
 //: Adopt a panel once: restore, add the grip. Cheap to call again.
 function panelAdopt(panel) {
   if (!panel || !panelMovableOn()) return;
@@ -551,6 +567,7 @@ function panelAdopt(panel) {
     panel.classList.add("panel-movable-on");
     panel.addEventListener("pointermove", panelAdopt.rimHover);
     panelWatchOpen(panel);
+    panelRebase(panel, st);
     let saved = st.id && panelRestoreOn() ? panelStoreRead(st.id, panelLayout(panel)) : null;
     //: A stored entry that does not fit this panel opens it at the default and
     //: is forgotten, rather than applied and left broken (INBOX 1454).

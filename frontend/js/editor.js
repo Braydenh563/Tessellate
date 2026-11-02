@@ -460,7 +460,9 @@ function editorSplice(textarea, start, end, text, select) {
 //: (the map, the board, both editors) goes through. Resolves once the panel
 //: is open; a load that fails (offline, the file gone) does nothing.
 function pickIconOrEmoji(options) {
-  return openIconPicker(options);
+  //: The movable-panel module first, so the panel is placed once, in its final
+  //: place (INBOX 1542): adopted late, it was placed twice.
+  return Promise.all([ensureModule("panelMovable"), ensureModule("iconPicker")]).then(() => openIconPicker(options));
 }
 
 //: **An emoji or an icon at the caret** (MINDMAP_PLAN.md decision 46),

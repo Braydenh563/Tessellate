@@ -709,7 +709,7 @@ function openIconPicker({ anchor = null, onPick = null, modes = ["emoji", "icon"
   //: pressed) has no place to hang from: the middle of the window instead.
   const rect = anchor?.getBoundingClientRect?.();
   if (rect && (rect.width || rect.height)) placeHelpPopover(panel, anchor);
-  else panel.classList.add("icon-picker-centred");
+  else panel.classList.add("popover-centred");
   search.focus({ preventScroll: true });
   //: **The focus stays put while the panel settles.** On a first use an
   //: editor behind it can mount and take the focus a frame later (measured:

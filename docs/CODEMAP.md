@@ -2,9 +2,9 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7558, frontend ids 2638, CSS sections 517, backend routes 640, backend modules 8485, test files 1860, tests 15812, plan headings 991, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7559, frontend ids 2638, CSS sections 517, backend routes 640, backend modules 8485, test files 1861, tests 15815, plan headings 991, app scripts 28, boot scripts 37, script files 234.
 
-## Frontend functions (7558)
+## Frontend functions (7559)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -1327,86 +1327,86 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `agentCommands` | frontend/js/editor.js:699 |
-| `askAboutSelection` | frontend/js/editor.js:2234 |
+| `agentCommands` | frontend/js/editor.js:701 |
+| `askAboutSelection` | frontend/js/editor.js:2236 |
 | `calloutHint` | frontend/js/editor.js:385 |
 | `calloutKindOf` | frontend/js/editor.js:321 |
 | `calloutRewriteHead` | frontend/js/editor.js:335 |
-| `chatCommands` | frontend/js/editor.js:640 |
-| `chatSlashRows` | frontend/js/editor.js:615 |
-| `editorApplyAction` | frontend/js/editor.js:489 |
-| `editorApplyNamed` | frontend/js/editor.js:547 |
-| `editorBackOverTrail` | frontend/js/editor.js:983 |
-| `editorBareSlashRows` | frontend/js/editor.js:1651 |
-| `editorBlock` | frontend/js/editor.js:837 |
-| `editorBlockRows` | frontend/js/editor.js:878 |
-| `editorCaretPoint` | frontend/js/editor.js:1104 |
-| `editorChoiceDialog` | frontend/js/editor.js:2258 |
-| `editorCloseMenu` | frontend/js/editor.js:1166 |
-| `editorCloseOrphans` | frontend/js/editor.js:2148 |
-| `editorCodeLanguageRows` | frontend/js/editor.js:866 |
-| `editorCommands` | frontend/js/editor.js:996 |
+| `chatCommands` | frontend/js/editor.js:642 |
+| `chatSlashRows` | frontend/js/editor.js:617 |
+| `editorApplyAction` | frontend/js/editor.js:491 |
+| `editorApplyNamed` | frontend/js/editor.js:549 |
+| `editorBackOverTrail` | frontend/js/editor.js:985 |
+| `editorBareSlashRows` | frontend/js/editor.js:1653 |
+| `editorBlock` | frontend/js/editor.js:839 |
+| `editorBlockRows` | frontend/js/editor.js:880 |
+| `editorCaretPoint` | frontend/js/editor.js:1106 |
+| `editorChoiceDialog` | frontend/js/editor.js:2260 |
+| `editorCloseMenu` | frontend/js/editor.js:1168 |
+| `editorCloseOrphans` | frontend/js/editor.js:2150 |
+| `editorCodeLanguageRows` | frontend/js/editor.js:868 |
+| `editorCommands` | frontend/js/editor.js:998 |
 | `editorDocIsCode` | frontend/js/editor.js:82 |
 | `editorEnsureSurfaceModule` | frontend/js/editor.js:143 |
-| `editorFinishFence` | frontend/js/editor.js:1185 |
+| `editorFinishFence` | frontend/js/editor.js:1187 |
 | `editorFuzzyMatch` | frontend/js/editor.js:343 |
 | `editorFuzzyRank` | frontend/js/editor.js:364 |
-| `editorGroupStarts` | frontend/js/editor.js:1566 |
-| `editorHandleInput` | frontend/js/editor.js:1721 |
+| `editorGroupStarts` | frontend/js/editor.js:1568 |
+| `editorHandleInput` | frontend/js/editor.js:1723 |
 | `editorHintAllPlaceholders` | frontend/js/editor.js:231 |
 | `editorHintPlaceholder` | frontend/js/editor.js:203 |
-| `editorHomeMenu` | frontend/js/editor.js:1121 |
-| `editorInsertBlock` | frontend/js/editor.js:563 |
-| `editorInsertBoardObject` | frontend/js/editor.js:593 |
-| `editorInsertBookmarkLink` | frontend/js/editor.js:580 |
-| `editorLinkBox` | frontend/js/editor.js:1156 |
-| `editorLinkMatches` | frontend/js/editor.js:1232 |
-| `editorLoadFiles` | frontend/js/editor.js:1362 |
-| `editorMenuIcon` | frontend/js/editor.js:1402 |
-| `editorMenuList` | frontend/js/editor.js:1407 |
-| `editorNextGroupStart` | frontend/js/editor.js:1576 |
+| `editorHomeMenu` | frontend/js/editor.js:1123 |
+| `editorInsertBlock` | frontend/js/editor.js:565 |
+| `editorInsertBoardObject` | frontend/js/editor.js:595 |
+| `editorInsertBookmarkLink` | frontend/js/editor.js:582 |
+| `editorLinkBox` | frontend/js/editor.js:1158 |
+| `editorLinkMatches` | frontend/js/editor.js:1234 |
+| `editorLoadFiles` | frontend/js/editor.js:1364 |
+| `editorMenuIcon` | frontend/js/editor.js:1404 |
+| `editorMenuList` | frontend/js/editor.js:1409 |
+| `editorNextGroupStart` | frontend/js/editor.js:1578 |
 | `editorNotifyHost` | frontend/js/editor.js:411 |
-| `editorOpenMenu` | frontend/js/editor.js:1632 |
+| `editorOpenMenu` | frontend/js/editor.js:1634 |
 | `editorOpenMenuByShortcut` | frontend/js/editor.js:186 |
-| `editorPickGlyph` | frontend/js/editor.js:470 |
-| `editorPositionMenu` | frontend/js/editor.js:1126 |
-| `editorRankCommands` | frontend/js/editor.js:1225 |
-| `editorRecentIds` | frontend/js/editor.js:810 |
-| `editorRefreshMenu` | frontend/js/editor.js:1656 |
-| `editorRememberBlock` | frontend/js/editor.js:819 |
-| `editorRenderMenu` | frontend/js/editor.js:1411 |
-| `editorRenderPreview` | frontend/js/editor.js:1481 |
-| `editorRevealRow` | frontend/js/editor.js:1543 |
-| `editorRunItem` | frontend/js/editor.js:1588 |
-| `editorSetActive` | frontend/js/editor.js:1522 |
+| `editorPickGlyph` | frontend/js/editor.js:472 |
+| `editorPositionMenu` | frontend/js/editor.js:1128 |
+| `editorRankCommands` | frontend/js/editor.js:1227 |
+| `editorRecentIds` | frontend/js/editor.js:812 |
+| `editorRefreshMenu` | frontend/js/editor.js:1658 |
+| `editorRememberBlock` | frontend/js/editor.js:821 |
+| `editorRenderMenu` | frontend/js/editor.js:1413 |
+| `editorRenderPreview` | frontend/js/editor.js:1483 |
+| `editorRevealRow` | frontend/js/editor.js:1545 |
+| `editorRunItem` | frontend/js/editor.js:1590 |
+| `editorSetActive` | frontend/js/editor.js:1524 |
 | `editorSplice` | frontend/js/editor.js:436 |
 | `editorSurfaceFor` | frontend/js/editor.js:119 |
-| `editorSurfaceGone` | frontend/js/editor.js:2144 |
+| `editorSurfaceGone` | frontend/js/editor.js:2146 |
 | `editorSurfaceKind` | frontend/js/editor.js:86 |
-| `editorTokenAt` | frontend/js/editor.js:1201 |
+| `editorTokenAt` | frontend/js/editor.js:1203 |
 | `editorWarmSurfaceModule` | frontend/js/editor.js:258 |
-| `inlineAiAvailable` | frontend/js/editor.js:2654 |
-| `inlineAiClose` | frontend/js/editor.js:2693 |
-| `inlineAiDescribeScope` | frontend/js/editor.js:2596 |
-| `inlineAiElement` | frontend/js/editor.js:2490 |
-| `inlineAiIsCode` | frontend/js/editor.js:2617 |
-| `inlineAiOpen` | frontend/js/editor.js:2659 |
-| `inlineAiPosition` | frontend/js/editor.js:2575 |
-| `inlineAiRetry` | frontend/js/editor.js:2715 |
-| `inlineAiSubmit` | frontend/js/editor.js:2726 |
-| `inlineAiSyncModel` | frontend/js/editor.js:2625 |
-| `inlineAiUndo` | frontend/js/editor.js:2706 |
-| `isEditorSurface` | frontend/js/editor.js:2107 |
-| `offerToCreateWikiTarget` | frontend/js/editor.js:2323 |
+| `inlineAiAvailable` | frontend/js/editor.js:2656 |
+| `inlineAiClose` | frontend/js/editor.js:2695 |
+| `inlineAiDescribeScope` | frontend/js/editor.js:2598 |
+| `inlineAiElement` | frontend/js/editor.js:2492 |
+| `inlineAiIsCode` | frontend/js/editor.js:2619 |
+| `inlineAiOpen` | frontend/js/editor.js:2661 |
+| `inlineAiPosition` | frontend/js/editor.js:2577 |
+| `inlineAiRetry` | frontend/js/editor.js:2717 |
+| `inlineAiSubmit` | frontend/js/editor.js:2728 |
+| `inlineAiSyncModel` | frontend/js/editor.js:2627 |
+| `inlineAiUndo` | frontend/js/editor.js:2708 |
+| `isEditorSurface` | frontend/js/editor.js:2109 |
+| `offerToCreateWikiTarget` | frontend/js/editor.js:2325 |
 | `pickIconOrEmoji` | frontend/js/editor.js:462 |
-| `selectionBarElement` | frontend/js/editor.js:1939 |
-| `selectionBarHide` | frontend/js/editor.js:2015 |
-| `selectionBarShow` | frontend/js/editor.js:2020 |
-| `selectionBarSync` | frontend/js/editor.js:2111 |
-| `selectionContextFrom` | frontend/js/editor.js:2182 |
-| `selectionContextSource` | frontend/js/editor.js:2215 |
-| `selectionOffsets` | frontend/js/editor.js:2192 |
-| `skillCommands` | frontend/js/editor.js:722 |
+| `selectionBarElement` | frontend/js/editor.js:1941 |
+| `selectionBarHide` | frontend/js/editor.js:2017 |
+| `selectionBarShow` | frontend/js/editor.js:2022 |
+| `selectionBarSync` | frontend/js/editor.js:2113 |
+| `selectionContextFrom` | frontend/js/editor.js:2184 |
+| `selectionContextSource` | frontend/js/editor.js:2217 |
+| `selectionOffsets` | frontend/js/editor.js:2194 |
+| `skillCommands` | frontend/js/editor.js:724 |
 
 ### frontend/js/dashboard.js (131)
 
@@ -5950,40 +5950,40 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `showOnboardingTurn` | frontend/js/onboarding.js:410 |
 | `whenFirstRunClear` | frontend/js/onboarding.js:341 |
 
-### frontend/js/panel-movable.js (65)
+### frontend/js/panel-movable.js (66)
 
 | Name | File:line |
 |---|---|
 | `panelAbove` | frontend/js/panel-movable.js:134 |
 | `panelAboveBy` | frontend/js/panel-movable.js:102 |
-| `panelAdopt` | frontend/js/panel-movable.js:541 |
+| `panelAdopt` | frontend/js/panel-movable.js:557 |
 | `panelApply` | frontend/js/panel-movable.js:349 |
-| `panelChip` | frontend/js/panel-movable.js:935 |
+| `panelChip` | frontend/js/panel-movable.js:952 |
 | `panelClamp` | frontend/js/panel-movable.js:385 |
 | `panelClampMove` | frontend/js/panel-movable.js:53 |
 | `panelClampSize` | frontend/js/panel-movable.js:59 |
 | `panelClipBox` | frontend/js/panel-movable.js:155 |
-| `panelCloseBtn` | frontend/js/panel-movable.js:893 |
+| `panelCloseBtn` | frontend/js/panel-movable.js:910 |
 | `panelContains` | frontend/js/panel-movable.js:152 |
 | `panelDock` | frontend/js/panel-movable.js:467 |
 | `panelFit` | frontend/js/panel-movable.js:452 |
 | `panelFull` | frontend/js/panel-movable.js:503 |
-| `panelGripDown` | frontend/js/panel-movable.js:758 |
-| `panelGripKey` | frontend/js/panel-movable.js:816 |
-| `panelGripRoom` | frontend/js/panel-movable.js:640 |
-| `panelHeadDown` | frontend/js/panel-movable.js:649 |
+| `panelGripDown` | frontend/js/panel-movable.js:775 |
+| `panelGripKey` | frontend/js/panel-movable.js:833 |
+| `panelGripRoom` | frontend/js/panel-movable.js:657 |
+| `panelHeadDown` | frontend/js/panel-movable.js:666 |
 | `panelHeadOf` | frontend/js/panel-movable.js:381 |
-| `panelHeadSettle` | frontend/js/panel-movable.js:876 |
+| `panelHeadSettle` | frontend/js/panel-movable.js:893 |
 | `panelId` | frontend/js/panel-movable.js:334 |
 | `panelInset` | frontend/js/panel-movable.js:431 |
 | `panelKeyDelta` | frontend/js/panel-movable.js:259 |
 | `panelLayout` | frontend/js/panel-movable.js:308 |
 | `panelMakesContext` | frontend/js/panel-movable.js:115 |
-| `panelMinHost` | frontend/js/panel-movable.js:862 |
-| `panelMinKey` | frontend/js/panel-movable.js:996 |
-| `panelMinPlace` | frontend/js/panel-movable.js:922 |
-| `panelMinTray` | frontend/js/panel-movable.js:908 |
-| `panelMinimise` | frontend/js/panel-movable.js:964 |
+| `panelMinHost` | frontend/js/panel-movable.js:879 |
+| `panelMinKey` | frontend/js/panel-movable.js:1013 |
+| `panelMinPlace` | frontend/js/panel-movable.js:939 |
+| `panelMinTray` | frontend/js/panel-movable.js:925 |
+| `panelMinimise` | frontend/js/panel-movable.js:981 |
 | `panelMovableOn` | frontend/js/panel-movable.js:313 |
 | `panelOf` | frontend/js/panel-movable.js:323 |
 | `panelPinned` | frontend/js/panel-movable.js:219 |
@@ -5991,11 +5991,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `panelPushOn` | frontend/js/panel-movable.js:216 |
 | `panelPushSide` | frontend/js/panel-movable.js:228 |
 | `panelPushSync` | frontend/js/panel-movable.js:231 |
-| `panelPushToggle` | frontend/js/panel-movable.js:1006 |
-| `panelReopen` | frontend/js/panel-movable.js:897 |
+| `panelPushToggle` | frontend/js/panel-movable.js:1023 |
+| `panelRebase` | frontend/js/panel-movable.js:545 |
+| `panelReopen` | frontend/js/panel-movable.js:914 |
 | `panelReset` | frontend/js/panel-movable.js:507 |
 | `panelResetSize` | frontend/js/panel-movable.js:520 |
-| `panelRestore` | frontend/js/panel-movable.js:980 |
+| `panelRestore` | frontend/js/panel-movable.js:997 |
 | `panelRestoreOn` | frontend/js/panel-movable.js:256 |
 | `panelSafe` | frontend/js/panel-movable.js:181 |
 | `panelSave` | frontend/js/panel-movable.js:532 |
@@ -6012,11 +6013,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `panelStoreRead` | frontend/js/panel-movable.js:276 |
 | `panelStoreWrite` | frontend/js/panel-movable.js:284 |
 | `panelSync` | frontend/js/panel-movable.js:479 |
-| `panelTitle` | frontend/js/panel-movable.js:865 |
+| `panelTitle` | frontend/js/panel-movable.js:882 |
 | `panelTopLayer` | frontend/js/panel-movable.js:105 |
 | `panelUnsnap` | frontend/js/panel-movable.js:472 |
 | `panelWatchOpen` | frontend/js/panel-movable.js:486 |
-| `panelWindowResized` | frontend/js/panel-movable.js:1018 |
+| `panelWindowResized` | frontend/js/panel-movable.js:1035 |
 | `panelZoneFor` | frontend/js/panel-movable.js:252 |
 | `panelZoneRect` | frontend/js/panel-movable.js:80 |
 
@@ -11929,7 +11930,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/glass-controls-lazy.css | 23 |
 | frontend/css/graph-lazy.css | 584 |
 | frontend/css/help-chat-lazy.css | 38 |
-| frontend/css/icon-picker.css | 121 |
+| frontend/css/icon-picker.css | 132 |
 | frontend/css/improve-lazy.css | 110 |
 | frontend/css/inbox-lazy.css | 306 |
 | frontend/css/lan-lazy.css | 131 |
@@ -23280,7 +23281,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15812)
+## Tests (15815)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23787,6 +23788,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_doc_open_layout_1530.py | 6 |
 | tests/test_doc_outline_reuse.py | 2 |
 | tests/test_doc_page_break.py | 3 |
+| tests/test_doc_panels_1542.py | 3 |
 | tests/test_doc_paste.py | 15 |
 | tests/test_doc_properties.py | 10 |
 | tests/test_doc_prose_panel_fit.py | 4 |
