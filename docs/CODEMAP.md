@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7558, frontend ids 2642, CSS sections 517, backend routes 640, backend modules 8487, test files 1868, tests 15874, plan headings 991, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7558, frontend ids 2642, CSS sections 517, backend routes 640, backend modules 8487, test files 1869, tests 15877, plan headings 991, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7558)
 
@@ -13444,34 +13444,34 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `Mood` | src/tessellate/ai/composer_compose.py:125 |
-| `_clause` | src/tessellate/ai/composer_compose.py:317 |
+| `_clause` | src/tessellate/ai/composer_compose.py:323 |
 | `_fields` | src/tessellate/ai/composer_compose.py:215 |
 | `_fill` | src/tessellate/ai/composer_compose.py:230 |
 | `_fresh` | src/tessellate/ai/composer_compose.py:158 |
 | `_score` | src/tessellate/ai/composer_compose.py:145 |
 | `_slot_on` | src/tessellate/ai/composer_compose.py:205 |
 | `_stable` | src/tessellate/ai/composer_compose.py:118 |
-| `bridge` | src/tessellate/ai/composer_compose.py:268 |
-| `closer` | src/tessellate/ai/composer_compose.py:259 |
+| `bridge` | src/tessellate/ai/composer_compose.py:274 |
+| `closer` | src/tessellate/ai/composer_compose.py:265 |
 | `eligible` | src/tessellate/ai/composer_compose.py:187 |
 | `frame` | src/tessellate/ai/composer_compose.py:219 |
-| `greeted_as` | src/tessellate/ai/composer_compose.py:334 |
-| `head` | src/tessellate/ai/composer_compose.py:284 |
-| `join_facts` | src/tessellate/ai/composer_compose.py:274 |
+| `greeted_as` | src/tessellate/ai/composer_compose.py:340 |
+| `head` | src/tessellate/ai/composer_compose.py:290 |
+| `join_facts` | src/tessellate/ai/composer_compose.py:280 |
 | `mood_of` | src/tessellate/ai/composer_compose.py:137 |
-| `opener` | src/tessellate/ai/composer_compose.py:250 |
+| `opener` | src/tessellate/ai/composer_compose.py:256 |
 | `persona_cue` | src/tessellate/ai/composer_compose.py:83 |
 | `pick` | src/tessellate/ai/composer_compose.py:162 |
 | `read_emotion` | src/tessellate/ai/composer_compose.py:102 |
-| `say` | src/tessellate/ai/composer_compose.py:300 |
-| `sentence_case` | src/tessellate/ai/composer_compose.py:313 |
-| `span_phrase` | src/tessellate/ai/composer_compose.py:305 |
+| `say` | src/tessellate/ai/composer_compose.py:306 |
+| `sentence_case` | src/tessellate/ai/composer_compose.py:319 |
+| `span_phrase` | src/tessellate/ai/composer_compose.py:311 |
 | `surfaces` | src/tessellate/ai/composer_compose.py:175 |
-| `tail` | src/tessellate/ai/composer_compose.py:295 |
-| `time_of_day` | src/tessellate/ai/composer_compose.py:326 |
+| `tail` | src/tessellate/ai/composer_compose.py:301 |
+| `time_of_day` | src/tessellate/ai/composer_compose.py:332 |
 | `voice_for` | src/tessellate/ai/composer_compose.py:70 |
 | `voice_for_persona` | src/tessellate/ai/composer_compose.py:96 |
-| `welcome` | src/tessellate/ai/composer_compose.py:342 |
+| `welcome` | src/tessellate/ai/composer_compose.py:348 |
 
 ### src/tessellate/ai/composer_dialogue.py (30)
 
@@ -23286,7 +23286,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15874)
+## Tests (15877)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23380,6 +23380,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_audio_section.py | 4 |
 | tests/test_audit1028_e21.py | 1 |
 | tests/test_audit1028_e22.py | 2 |
+| tests/test_audit1028_e27.py | 3 |
 | tests/test_audit_1028_a28s.py | 9 |
 | tests/test_audit_1028_e_rows.py | 5 |
 | tests/test_audit_1028_e_rows_b.py | 6 |

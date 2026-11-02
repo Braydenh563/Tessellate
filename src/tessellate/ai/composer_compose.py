@@ -234,6 +234,12 @@ def _fill(text: str, facts: dict) -> str:
     span = facts.get("span")
     if isinstance(span, str) and not text.startswith("{span"):
         facts = {**facts, "span": recognise.mid_sentence(span)}
+    #: What an act did ("created ...") is written to follow a colon or "I
+    #: have"; where the frame starts a sentence with it, it takes a capital
+    #: (audit 1028 E27: "Done. created note ...").
+    what = facts.get("what")
+    if isinstance(what, str) and what[:1].islower() and re.search(r"(?:^|[.!?] )\{what\}", text):
+        facts = {**facts, "what": what[0].upper() + what[1:]}
     return text.format(**facts)
 
 
