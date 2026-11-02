@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Audit E33 (part): a Guide answer whose place starts with "The" reads as a sentence ("It's in the gear in the top bar", not "It's in The gear"); the path-first lead the audit asks for waits on an owner decision.
 - Audit E14: a follow-up names the last answer's notes by place or as a group: "pin the second one", "the last one", "what about the third", "which of those is first", "compare those" are resolved against the cited notes, with a model and without; a place the answer lacks, or a sentence with its own subject ("the second world war"), is left alone.
 - Audit E23: a quiz no longer turns a sentence about when, where or how much into a term question ("The exam is on 12 November" asked 'Which term means: "on 12 November, covers chapters 4 to 6"?'): only a sentence that says what a thing is, or a labelled line that names a kind, makes a define or term card.
 - Audit E16: comparing two named notes no longer gives both sides the same lines: a note whose name holds both sides' words belongs to the side its name opens with, and a line picked for both is said under the side it names, with what speaks of both, or not at all.

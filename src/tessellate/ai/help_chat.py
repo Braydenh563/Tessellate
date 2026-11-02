@@ -963,8 +963,8 @@ _COUNTS = ("no", "one", "two", "three", "four", "five", "six")
 
 
 def _place(path: str) -> str:
-    """"the Reminders tab" for "Reminders tab"; a Settings path as written."""
-    return f"the {path}" if path.endswith(" tab") and not path.startswith("The ") else path
+    """"the Reminders tab" for "Reminders tab", "the gear ..." for "The gear ..."; a Settings path as written."""
+    return f"the {path[4:]}" if path.startswith("The ") else (f"the {path}" if path.endswith(" tab") else path)
 
 
 #: A full stop that ends no sentence: "(e.g. Summarise)", "etc. and", "vs.".

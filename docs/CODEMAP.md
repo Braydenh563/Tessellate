@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7562, frontend ids 2642, CSS sections 518, backend routes 641, backend modules 8500, test files 1907, tests 16058, plan headings 992, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7562, frontend ids 2642, CSS sections 518, backend routes 641, backend modules 8500, test files 1908, tests 16060, plan headings 992, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7562)
 
@@ -23310,7 +23310,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16058)
+## Tests (16060)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24137,6 +24137,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_guide_gaps.py | 3 |
 | tests/test_guide_intent.py | 9 |
 | tests/test_guide_paraphrases_1530.py | 2 |
+| tests/test_guide_path_lead_e33.py | 2 |
 | tests/test_guide_social_1414.py | 18 |
 | tests/test_hardware_profile.py | 15 |
 | tests/test_harness_evals.py | 3 |

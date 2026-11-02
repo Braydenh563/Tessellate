@@ -50,7 +50,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 44 | D29 | med | replace dialog lacks whole-word and match preview | fixed (this batch) | M |
 | 45 | D30 | med | spellcheck is English only, no per-document language | new | L |
 | 46 | E13 | med | bare undo after an answer gets help text, not undo | fixed 1030 | S |
-| 47 | E14 | med | follow-ups like pin that note lose their referent | new | M |
+| 47 | E14 | med | follow-ups like pin that note lose their referent | fixed (e3acb8f) | M |
 | 48 | E15 | med | stats route steals questions that name a note subject | fixed 1030 | S |
 | 49 | E16 | med | compare gives identical lists for both sides | fixed (53e0454) | M |
 | 50 | E17 | med | digest says newest a day ago when written today | fixed 2026-11-02 (today, never a day ago) | S |
@@ -64,7 +64,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 58 | E26 | med | reminder with no subject; impossible dates accepted | fixed 1030 | S |
 | 59 | E31 | med | guide answers the wrong topic for realistic questions | fixed (490e3c3, reconciled 2026-10-30) | M |
 | 60 | E32 | med | ChatGPT question gets local model not running answer | fixed 1030 | S |
-| 61 | E33 | med | guide answers are verbatim topic chunks, no lead path | new | M |
+| 61 | E33 | med | guide answers are verbatim topic chunks, no lead path | partial (grammar only; path-first lead is an owner decision, see a30e-1102.md) | M |
 | 62 | E39 | med | model download has no timeout or disk check | fixed 1031 | S |
 | 63 | E48 | med | edit and resend destroys later replies, no branches | new | L |
 | 64 | E57 | med | context overflow drops early turns with no inline notice | new | M |
@@ -91,7 +91,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 85 | D32 | med | Mod-g means go to line in code and find-next in prose | fixed | S |
 | 86 | D33 | med | replace-in-all and find-in-all separate from CM find panel | new | M |
 | 87 | D34 | med | autosave failure is tiny status text, no banner or retry | fixed (this batch) | S |
-| 88 | E23 | med | quiz cloze questions cut the subject off | new | M |
+| 88 | E23 | med | quiz cloze questions cut the subject off | fixed (eab5bef) | M |
 | 89 | E27 | med | act summaries have lowercase verbs, ids and stale notice | fixed (b6c3e07) | S |
 | 90 | E28 | med | show my reminders not handled in the chat path | fixed 1030 | S |
 | 91 | E29 | med | identical reminders printed twice, no duplicate check | fixed 2026-11-02 (ca14588) | S |
