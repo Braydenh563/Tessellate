@@ -2784,12 +2784,21 @@ const DOC_COMMANDS = [
     run: () => wrapDocSelection("~~", "struck through") },
   { id: "code", icon: "ph:code", label: "Inline code", keys: "Ctrl+E",
     run: () => wrapDocSelection("`") },
-  { id: "h1", icon: "ph:text-h-one", label: "Heading 1", keys: "Ctrl+1",
+  //: `alt` is a second chord for the same row (INBOX 1559): Ctrl+1 to 3 are the
+  //: browser's tab switch, which a page cannot always take, so Ctrl+Alt+1 to 6
+  //: (Google Docs' set) are the ones that work everywhere.
+  { id: "h1", icon: "ph:text-h-one", label: "Heading 1", keys: "Ctrl+1", alt: "Ctrl+Alt+1",
     run: () => applyMarkdown("h1") },
-  { id: "h2", icon: "ph:text-h-two", label: "Heading 2", keys: "Ctrl+2",
+  { id: "h2", icon: "ph:text-h-two", label: "Heading 2", keys: "Ctrl+2", alt: "Ctrl+Alt+2",
     run: () => applyMarkdown("h2") },
-  { id: "h3", icon: "ph:text-h-three", label: "Heading 3", keys: "Ctrl+3",
+  { id: "h3", icon: "ph:text-h-three", label: "Heading 3", keys: "Ctrl+3", alt: "Ctrl+Alt+3",
     run: () => applyMarkdown("h3") },
+  { id: "h4", icon: "ph:text-h-four", label: "Heading 4", keys: "Ctrl+Alt+4",
+    run: () => applyMarkdown("h4") },
+  { id: "h5", icon: "ph:text-h-five", label: "Heading 5", keys: "Ctrl+Alt+5",
+    run: () => applyMarkdown("h5") },
+  { id: "h6", icon: "ph:text-h-six", label: "Heading 6", keys: "Ctrl+Alt+6",
+    run: () => applyMarkdown("h6") },
   { id: "comment", icon: "ph:chat-teardrop-text", label: "Comment on the selection", keys: "Ctrl+/",
     run: () => toggleDocComment(docSurface()) },
   { id: "indent", icon: "ph:text-indent", label: "Indent the line or list item", keys: "Tab", run: null },
@@ -2805,7 +2814,9 @@ const DOC_COMMANDS = [
   { id: "ol", icon: "ph:list-numbers", label: "Numbered list", keys: "Ctrl+Shift+7", run: () => applyMarkdown("ol") },
   { id: "task", icon: "ph:check-square", label: "Task list", keys: "Ctrl+Shift+9", run: () => applyMarkdown("task") },
   { id: "quote", icon: "ph:quotes", label: "Quote", keys: "none", run: () => applyMarkdown("quote") },
-  { id: "link", icon: "ph:link", label: "Link", keys: "none", run: () => applyMarkdown("link") },
+  //: Ctrl+K with a selection makes the link; with none the chord is the palette's
+  //: (`docLinkChord`, INBOX 1559). The row works from the palette either way.
+  { id: "link", icon: "ph:link", label: "Link (Ctrl+K on selected text)", keys: "Ctrl+K", run: () => applyMarkdown("link") },
   //: The insert panels (INBOX 1544): the picker on its three tabs, the equation
   //: editor and the calculator, pressed from here as from the Insert menu. The
   //: chords are bound for the document and every note box (`docCmKeymap.insert`).
@@ -3037,7 +3048,7 @@ function docPaletteCommands() {
   return DOC_COMMANDS.filter((command) => command.run && (!command.code || code) && (!command.prose || !code)).map((command) => ({
     group: "This document",
     label: `${command.icon} ${command.label}`,
-    keys: command.keys === "none" ? "" : command.keys,
+    keys: command.keys === "none" ? "" : (command.alt || command.keys),
     run: command.run,
   }));
 }
@@ -3056,10 +3067,13 @@ function renderDocShortcutSheet(list) {
     keys.className = "shortcut-keys";
     //: One `<kbd>` per key, the shape the hand-written rows above it use, so
     //: a generated row and a written one are the same thing on screen.
-    for (const part of command.keys.split(/\s*\+\s*/)) {
-      const kbd = document.createElement("kbd");
-      kbd.textContent = part;
-      keys.appendChild(kbd);
+    for (const chord of [command.keys, command.alt].filter(Boolean)) {
+      if (chord !== command.keys) keys.append(" or ");
+      for (const part of chord.split(/\s*\+\s*/)) {
+        const kbd = document.createElement("kbd");
+        kbd.textContent = part;
+        keys.appendChild(kbd);
+      }
     }
     const label = document.createElement("span");
     label.textContent = command.label;
@@ -9517,6 +9531,8 @@ docBoxEl().addEventListener("keydown", (event) => {
   // Ctrl+1/2/3 headings and Ctrl+E inline code, the Notion / Typora /
   // Word set, so the hand does not leave the keyboard for the strip.
   else if (key === "1" || key === "2" || key === "3") { event.preventDefault(); applyMarkdown(`h${key}`); }
+  else if (event.altKey && /^Digit[1-6]$/.test(event.code)) { event.preventDefault(); applyMarkdown(`h${event.code.slice(-1)}`); }
+  else if (key === "k" && docCmKeymap.link(docSurface())) event.preventDefault();
   else if (key === "e") { event.preventDefault(); wrapDocSelection("`"); }
   // The browser's own Ctrl+F can't search a textarea's content at all, it
   // only sees page DOM text, and a textarea's text is its *value*, not DOM
@@ -15627,6 +15643,11 @@ function docProseChord(run) {
 //: the shortcut sheet lists it; `apply(kind)` says how the caller runs a kind.
 docCmKeymap.insert = (apply) => [["Mod-;", "emoji"], ["Mod-Shift-;", "icon"], ["Mod-'", "symbol"], ["Mod-Shift-'", "calculator"]].map(([key, kind]) => ({ key, run: () => apply(kind) }));
 
+//: **Ctrl+K with a selection makes a link** (INBOX 1559). True when it did;
+//: false (no selection, or a code file, which keeps its own Ctrl+K chord)
+//: hands the key on to the command palette.
+docCmKeymap.link = (box) => !!box && docFileType().previewable && box.selectionStart !== box.selectionEnd && (applyMarkdown("link"), true);
+
 function docCmKeymap(CM) {
   const surface = () => docSurface();
   return [
@@ -15691,6 +15712,11 @@ function docCmKeymap(CM) {
     { key: "Mod-1", run: () => docProseChord(() => { applyMarkdown("h1"); }) },
     { key: "Mod-2", run: () => docProseChord(() => { applyMarkdown("h2"); }) },
     { key: "Mod-3", run: () => docProseChord(() => { applyMarkdown("h3"); }) },
+    //: Ctrl+Alt+1 to 6 (INBOX 1559): the browser keeps Ctrl+1 to 3 for its tabs.
+    //: Ctrl+K on selected text makes a link; with none it declines, and the
+    //: app's palette answers.
+    ...[1, 2, 3, 4, 5, 6].map((n) => ({ key: `Mod-Alt-${n}`, run: () => docProseChord(() => { applyMarkdown(`h${n}`); }) })),
+    { key: "Mod-k", run: () => docCmKeymap.link(docSurface()) },
     //: Google Docs' list chords; the base key is read, so Shift's `*` is 8.
     { key: "Mod-Shift-8", run: () => docProseChord(() => { applyMarkdown("ul"); }) },
     { key: "Mod-Shift-7", run: () => docProseChord(() => { applyMarkdown("ol"); }) },
