@@ -5217,16 +5217,31 @@ function docRichPasteEvent(event, view) {
   if (!markdown) return false;
   event.preventDefault();
   const sel = view.state.selection.main;
+  const doc = view.state.doc;
+  //: Padded to start (and end) its own line when it is a block (DX3).
+  const insert = docRichPasteEvent.fit(markdown, doc.lineAt(sel.from).text.slice(0, sel.from - doc.lineAt(sel.from).from), doc.lineAt(sel.to).text.slice(sel.to - doc.lineAt(sel.to).from));
   docUndoBreak();
   view.dispatch({
-    changes: { from: sel.from, to: sel.to, insert: markdown },
-    selection: { anchor: sel.from + markdown.length },
+    changes: { from: sel.from, to: sel.to, insert },
+    selection: { anchor: sel.from + insert.length },
     userEvent: "input.paste",
     scrollIntoView: true,
   });
-  docPasteOfferRich(view, sel.from, markdown, event.clipboardData.getData("text/plain"));
+  docPasteOfferRich(view, sel.from, insert, event.clipboardData.getData("text/plain"));
   return true;
 }
+
+//: **A pasted block starts its own line** (DX3, audit 1102). `## Heading` or a
+//: fence written after "please" is not a heading or a fence, it is text with
+//: marks in it. One rule for every block kind (heading, list, fence, table,
+//: quote, rule, or more than one paragraph): when words come before the caret
+//: on its line a blank line goes first, and when words follow the selection
+//: on its line one goes after. Inline pastes (bold, a link) are left alone.
+docRichPasteEvent.fit = (markdown, before, after) => {
+  const block = /^(#{1,6} |[-*+] |\d+[.)] |```|\||>|---)/.test(markdown) || markdown.includes("\n\n");
+  if (!block) return markdown;
+  return `${before.trim() ? "\n\n" : ""}${markdown}${after.trim() ? "\n\n" : ""}`;
+};
 
 //: The whole table, for the one command that is not an edit inside it. The
 //: newline after it goes too, or deleting a table leaves the blank line it was
