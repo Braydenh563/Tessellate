@@ -12011,11 +12011,11 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/boards/{board_id}/nodes/clear-style` | POST | `clear_map_node_styles` | src/tessellate/api/wb_map.py:522 |
 | `/boards/{board_id}/nodes/move-many` | PUT | `move_map_nodes` | src/tessellate/api/wb_map.py:385 |
 | `/boards/{board_id}/nodes/outline` | POST | `paste_map_outline` | src/tessellate/api/wb_map.py:192 |
-| `/boards/{board_id}/nodes/{node_id}/branches` | POST | `add_branches` | src/tessellate/api/routes_map_suggest.py:306 |
-| `/boards/{board_id}/nodes/{node_id}/expand` | POST | `expand_from_note` | src/tessellate/api/routes_map_suggest.py:271 |
+| `/boards/{board_id}/nodes/{node_id}/branches` | POST | `add_branches` | src/tessellate/api/routes_map_suggest.py:301 |
+| `/boards/{board_id}/nodes/{node_id}/expand` | POST | `expand_from_note` | src/tessellate/api/routes_map_suggest.py:266 |
 | `/boards/{board_id}/nodes/{node_id}/move` | PUT | `move_map_node` | src/tessellate/api/wb_map.py:268 |
-| `/boards/{board_id}/nodes/{node_id}/suggest` | POST | `suggest_branches` | src/tessellate/api/routes_map_suggest.py:146 |
-| `/boards/{board_id}/nodes/{node_id}/summary` | POST | `summarise_branch` | src/tessellate/api/routes_map_suggest.py:417 |
+| `/boards/{board_id}/nodes/{node_id}/suggest` | POST | `suggest_branches` | src/tessellate/api/routes_map_suggest.py:147 |
+| `/boards/{board_id}/nodes/{node_id}/summary` | POST | `summarise_branch` | src/tessellate/api/routes_map_suggest.py:412 |
 | `/boards/{board_id}/thumbnail` | PUT | `put_thumbnail` | src/tessellate/api/wb_preview.py:900 |
 | `/boards/{board_id}/thumbnail/state` | GET | `thumbnail_state` | src/tessellate/api/wb_preview.py:889 |
 | `/boards/{board_id}/tree` | GET | `board_tree` | src/tessellate/api/wb_map.py:30 |
@@ -19399,24 +19399,24 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `BranchItem` | src/tessellate/api/routes_map_suggest.py:297 |
-| `BranchesBody` | src/tessellate/api/routes_map_suggest.py:302 |
-| `_ask_for_summary` | src/tessellate/api/routes_map_suggest.py:391 |
-| `_ask_model` | src/tessellate/api/routes_map_suggest.py:120 |
-| `_branch_outline` | src/tessellate/api/routes_map_suggest.py:352 |
-| `_candidates` | src/tessellate/api/routes_map_suggest.py:81 |
-| `_heading_suggestions` | src/tessellate/api/routes_map_suggest.py:227 |
-| `_link_suggestions` | src/tessellate/api/routes_map_suggest.py:243 |
-| `_node_or_404` | src/tessellate/api/routes_map_suggest.py:74 |
-| `_note_behind` | src/tessellate/api/routes_map_suggest.py:215 |
-| `_refs_on_map` | src/tessellate/api/routes_map_suggest.py:203 |
-| `_said_plainly` | src/tessellate/api/routes_map_suggest.py:380 |
-| `_title_of` | src/tessellate/api/routes_map_suggest.py:197 |
-| `_topic_text` | src/tessellate/api/routes_map_suggest.py:59 |
-| `add_branches` | src/tessellate/api/routes_map_suggest.py:307 |
-| `expand_from_note` | src/tessellate/api/routes_map_suggest.py:272 |
-| `suggest_branches` | src/tessellate/api/routes_map_suggest.py:147 |
-| `summarise_branch` | src/tessellate/api/routes_map_suggest.py:418 |
+| `BranchItem` | src/tessellate/api/routes_map_suggest.py:292 |
+| `BranchesBody` | src/tessellate/api/routes_map_suggest.py:297 |
+| `_ask_for_summary` | src/tessellate/api/routes_map_suggest.py:386 |
+| `_ask_model` | src/tessellate/api/routes_map_suggest.py:121 |
+| `_branch_outline` | src/tessellate/api/routes_map_suggest.py:347 |
+| `_candidates` | src/tessellate/api/routes_map_suggest.py:82 |
+| `_heading_suggestions` | src/tessellate/api/routes_map_suggest.py:228 |
+| `_link_suggestions` | src/tessellate/api/routes_map_suggest.py:244 |
+| `_node_or_404` | src/tessellate/api/routes_map_suggest.py:75 |
+| `_note_behind` | src/tessellate/api/routes_map_suggest.py:216 |
+| `_refs_on_map` | src/tessellate/api/routes_map_suggest.py:204 |
+| `_said_plainly` | src/tessellate/api/routes_map_suggest.py:375 |
+| `_title_of` | src/tessellate/api/routes_map_suggest.py:198 |
+| `_topic_text` | src/tessellate/api/routes_map_suggest.py:60 |
+| `add_branches` | src/tessellate/api/routes_map_suggest.py:302 |
+| `expand_from_note` | src/tessellate/api/routes_map_suggest.py:267 |
+| `suggest_branches` | src/tessellate/api/routes_map_suggest.py:148 |
+| `summarise_branch` | src/tessellate/api/routes_map_suggest.py:413 |
 
 ### src/tessellate/api/routes_meetings.py (14)
 
