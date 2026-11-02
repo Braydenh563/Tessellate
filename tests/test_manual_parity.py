@@ -130,7 +130,7 @@ UTILITIES = {
     "timer": ("utility-tools.js", "function startUtilityTimer(minutes = 25)", "the palette's Start a timer, or timer 10 minutes", "timer"),
     "stopwatch": ("utility-tools.js", "function startStopwatch()", "the palette's Start a stopwatch", "timer"),
     #: INBOX 1551: the rows and the chip open one Clock panel (Timer, Stopwatch, Alarm).
-    "open the clock": ("utility-tools.js", '$("status-timer").addEventListener("click", () => openClockPanel());', "the status bar's timer chip", "timer"),
+    "open the clock": ("utility-tools.js", '$("status-timer").addEventListener("click", () => openClockPanel(utilityShown()?.kind', "the status bar's timer chip", "timer"),
     "clock panel": ("utility-tools.js", 'function openClockPanel(tab = "timer")', "the palette's Start a timer, Start a stopwatch and Set an alarm", "timer"),
     "alarm": ("settings-panes.js", 'id: "alarm", name: "Set an alarm"', "the palette's Set an alarm", "timer"),
     "no-model badge": ("reply-kit.js", "function replyByHelpPanel(kind)", "the From your notes badge", "ask-chat"),

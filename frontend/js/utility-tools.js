@@ -77,6 +77,7 @@ function utilityClockRun(kind, name, seconds = 0) {
   let n = utilityClocks.length;
   while (utilityClocks.some((c) => c.id === `${start}-${n}`)) n++;
   const clock = { id: `${start}-${n}`, kind, name, start, end: start + seconds * 1000 };
+  if (kind === "timer") clock.len = seconds * 1000;
   utilityClocks.push(clock);
   utilityOps.changed();
   return clock;
@@ -112,6 +113,7 @@ function utilityRestore() {
     if (!ok || utilityClocks.some((x) => x.id === String(c.id))) continue;
     const back = { id: String(c.id), kind: c.kind, name: String(c.name), start: c.start, end: c.end };
     if (Number.isFinite(c.paused)) back.paused = c.paused;
+    if (Number.isFinite(c.len)) back.len = c.len;
     const laps = Array.isArray(c.laps) ? c.laps.filter(Number.isFinite) : [];
     if (laps.length) back.laps = laps;
     utilityClocks.push(back);
@@ -223,6 +225,13 @@ const utilityOps = (() => {
     changed();
   }
 
+  //: Back to zero (a stopwatch, its laps cleared) or to the length it was set to (a timer), held there until Resume.
+  function reset(clock) {
+    delete clock.laps;
+    clock.paused = clock.kind === "timer" ? clock.len ?? clock.end - clock.start : 0;
+    changed();
+  }
+
   function lap(clock) {
     if (clock.kind !== "stopwatch") return;
     if (!clock.laps) clock.laps = [];
@@ -295,10 +304,11 @@ const utilityOps = (() => {
     body.appendChild(row);
   }
 
-  return { focusRow, minutesName, lapText, clocksLine, summary, changed, pause, play, lap, parseLength, soundOn, alarmValue, alarmSet };
+  return { focusRow, minutesName, lapText, clocksLine, summary, changed, pause, play, reset, lap, parseLength, soundOn, alarmValue, alarmSet };
 })();
 
-$("status-timer").addEventListener("click", () => openClockPanel());
+//: A press is a way into the panel (pause, lap, reset and stop are there), never a stop (INBOX 1551).
+$("status-timer").addEventListener("click", () => openClockPanel(utilityShown()?.kind === "stopwatch" ? "stopwatch" : "timer"));
 //: A page that closes with a clock running gets it back when this loads (spaces-find.js asks for the module at boot).
 utilityRestore();
 
@@ -372,7 +382,7 @@ async function insertTemplate(template, caught) {
   const CLOCK_TABS = [["timer", "Timer"], ["stopwatch", "Stopwatch"], ["alarm", "Alarm"]];
   const CLOCK_HELP = [
     "Timer: press a length or type one (10, 90s, 1h30m or 1:30). Several can run at once, and each has its own Pause and Stop in the list. A timer that runs out says so in a message, a notification and a chime (Sound at the end turns the chime off).",
-    "Stopwatch: Start counts up, Lap writes down the time so far, Pause holds it and Resume carries on without the time paused.",
+    "Stopwatch: Start counts up, Lap writes down the time so far, Pause holds it and Resume carries on without the time paused. Reset puts a stopwatch or a timer back to its start.",
     "Alarm: a reminder at a time, today or tomorrow. It is an ordinary reminder, so it rings as one does and shows in Reminders and on the Dashboard.",
     "Whatever is running also shows on the status bar. Press it to come back here. They are kept when the page reloads.",
   ];
@@ -453,7 +463,7 @@ async function insertTemplate(template, caught) {
     const pane = clockEl("div", "clock-pane");
     const start = smallButton("ph:play Start a stopwatch", "Start a stopwatch", () => startStopwatch(), false);
     start.dataset.clockFocus = "stopwatch";
-    pane.append(start, clockEl("p", "muted clock-note", "Lap, Pause and Stop are on its row below."));
+    pane.append(start, clockEl("p", "muted clock-note", "Lap, Pause, Reset and Stop are on its row below."));
     return pane;
   }
 
@@ -598,11 +608,15 @@ async function insertTemplate(template, caught) {
       const clock = find();
       if (clock) utilityOps.lap(clock);
     });
+    const reset = smallButton("ph:arrow-counter-clockwise", "Reset", () => {
+      const clock = find();
+      if (clock) utilityOps.reset(clock);
+    });
     const stop = smallButton("ph:stop", "Stop", () => stopUtilityClock(find()));
-    top.append(name, time, toggle, lap, stop);
+    top.append(name, time, toggle, lap, reset, stop);
     const laps = clockEl("ol", "clock-laps muted");
     el.append(top, laps);
-    return { el, name, time, toggle, lap, stop, laps };
+    return { el, name, time, toggle, lap, reset, stop, laps };
   }
 
   function clockRowPaint(row, clock, label) {
@@ -616,6 +630,7 @@ async function insertTemplate(template, caught) {
       setLabel(row.toggle, paused ? "ph:play" : "ph:pause");
       clockName(row.toggle, `${words} ${label}`);
     }
+    clockName(row.reset, `Reset ${label}`);
     clockName(row.stop, `Stop ${label}`);
     clockName(row.lap, `Lap ${label}`);
     row.lap.classList.toggle("hidden", clock.kind !== "stopwatch");

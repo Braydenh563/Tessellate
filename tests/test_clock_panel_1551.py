@@ -142,6 +142,49 @@ def test_pressing_the_chip_opens_the_panel_and_no_longer_only_stops_the_clock():
     assert got["opened"] == ["timer"] and got["n"] == 1, "a press on the chip leaves the clock running"
 
 
+@needs_node
+def test_pressing_a_stopwatch_chip_opens_the_stopwatch_tab_and_never_stops_it():
+    """The owner (INBOX 1551, a screenshot of "Stopwatch stopped at 1:13:25. Undo"):
+    "I clicked it and it just stoped. I wanted a panel to show so I could pause it
+    or lap it or reset it". A press on the chip is a way into the panel."""
+    got = _run("run('startStopwatch()'); now += 5_000; handlers.click(); out({n: run('utilityClocks.length'), paused: run('utilityClocks[0].paused')});")
+    assert got["opened"] == ["stopwatch"], "the stopwatch's own tab, not the timer's"
+    assert got["n"] == 1 and got.get("paused") is None, "still running"
+    assert not [t for t in got["toasts"] if "stopped" in t.lower()], "no Stopwatch stopped toast"
+
+
+@needs_node
+def test_pressing_a_timer_chip_opens_the_timer_tab_and_never_stops_it():
+    got = _run("run('startUtilityTimer(10)'); handlers.click(); out({n: run('utilityClocks.length')});")
+    assert got["opened"] == ["timer"] and got["n"] == 1
+    assert not [t for t in got["toasts"] if "stopped" in t.lower()]
+
+
+@needs_node
+def test_reset_puts_a_stopwatch_back_to_zero_and_a_timer_back_to_its_length_held():
+    got = _run(
+        "run('startStopwatch()'); now += 65_400; run('utilityOps.lap(utilityClocks[0])');"
+        "run('utilityOps.reset(utilityClocks[0])');"
+        "const watch = {secs: run('utilityClockSeconds(utilityClocks[0])'), laps: run('utilityClocks[0].laps ?? null'), paused: run('utilityClocks[0].paused')};"
+        "now += 30_000; const watchLater = run('utilityClockSeconds(utilityClocks[0])');"
+        "run('utilityOps.play(utilityClocks[0])'); now += 2_000; const watchGoing = run('utilityClockSeconds(utilityClocks[0])');"
+        "run('startUtilityTimer(10)'); now += 60_000; run('utilityOps.reset(utilityClocks[1])');"
+        "const timer = {secs: run('utilityClockSeconds(utilityClocks[1])'), paused: run('utilityClocks[1].paused')};"
+        "now += 3_600_000; tick();"
+        "out({watch, watchLater, watchGoing, timer, finished: toasts.filter((t) => t.startsWith('Time is up')).length});"
+    )
+    assert got["watch"] == {"secs": 0, "laps": None, "paused": 0}, "zero, no laps, held"
+    assert got["watchLater"] == 0, "held at zero until Resume"
+    assert got["watchGoing"] == 2, "Resume counts from zero"
+    assert got["timer"] == {"secs": 600, "paused": 600_000}, "the whole length, held"
+    assert got["finished"] == 0, "a held timer never runs out"
+
+
+def test_every_clock_row_has_a_reset_button():
+    row = SRC[SRC.index("function clockRow(id)"):][:1800]
+    assert '"ph:arrow-counter-clockwise"' in row and "utilityOps.reset(" in row
+
+
 # --- pause, resume, laps, several at once --------------------------------------
 
 @needs_node
