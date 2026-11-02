@@ -13,7 +13,7 @@ from __future__ import annotations
 import re
 from html.parser import HTMLParser
 
-from _css_paths import CSS_DIR, FRONTEND_DIR
+from tests._css_paths import CSS_DIR, FRONTEND_DIR
 
 RAIL = re.compile(r"\.sidebar-panel\s*~\s*(:where\(([^)]*)\)|[^\s{,]+)\s*\{")
 FILES = ("07-whiteboard-misc.css", "10-responsive.css")
