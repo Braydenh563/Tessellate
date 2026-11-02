@@ -183,3 +183,38 @@ def test_dx10_every_reader_asks_the_one_function():
     assert "docPlainText.counts(docCommentStrip(docText()))" in goal
     assert "docPlainText.counts(docCommentStrip(box.text.slice(range.from, range.to)))" in DOCS
     assert "readMinutes: total.minutes" in PROSE and "/ 238" not in PROSE
+
+
+# DX11 ----------------------------------------------------------------------
+
+UNDO = (JS / "undo-store.js").read_text(encoding="utf-8")
+LIBRARY = (JS / "library.js").read_text(encoding="utf-8")
+
+
+@node
+def test_dx11_a_purged_document_takes_its_history_its_kept_edit_and_its_position():
+    out = _node(
+        """(() => {
+          const deleted = [];
+          undoStoreRequest = (mode, act) => { act({ delete: (name) => { deleted.push(name); return {}; } }); return Promise.resolve(null); };
+          const store = { "doc-edit-drafts": { 7: { id: 7 }, 8: { id: 8 } }, "doc-positions": { 7: { top: 1 }, 9: { top: 2 } } };
+          globalThis.prefs = { json: (k, f) => store[k] ?? f, setJSON: (k, v) => { store[k] = v; } };
+          undoStoreClear.purged("document", 7);
+          undoStoreClear.purged("note", 12);
+          return { deleted, store };
+        })()""",
+        "var clearTimeout = () => {}; var undoStoreTimers = new Map();"
+        + _slice(UNDO, "function undoStoreRequest(", "\n}\n")
+        + _slice(UNDO, "function undoStoreClear() {", "\n}\n")
+        + _slice(UNDO, "undoStoreClear.one = ", "\n};\n")
+        + _slice(UNDO, "undoStoreClear.purged = ", "\n};\n"),
+    )
+    assert out["deleted"] == ["doc:7", "board:12"]
+    assert out["store"]["doc-edit-drafts"] == {"8": {"id": 8}}
+    assert out["store"]["doc-positions"] == {"9": {"top": 2}}
+
+
+def test_dx11_every_purge_path_forgets_what_this_device_kept():
+    # One item (the Library menu), the bulk delete, the bin's reader and emptying the bin.
+    assert LIBRARY.count("undoStoreClear.purged(") == 4
+    assert "for (const item of binned) undoStoreClear.purged(binRoutes(item).noun, item.id);" in LIBRARY
