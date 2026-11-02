@@ -754,6 +754,18 @@ function panelHeadDown(e) {
 //: edge held still. The right edge of a panel that scrolls is 3px, so its
 //: scrollbar keeps most of its width. The corner grip stays the keyboard route.
 //: A property, not a name: the shared scope is at its cap (test_global_scope_ratchet).
+//: The edge a point names: 6px on a side, 16px each way at a corner (INBOX
+//: 1552). The card's rounded corner clips hit testing, so the last few pixels
+//: of a corner belong to the backdrop; a corner reached from 16px in sits
+//: inside the curve, and a press on the backdrop inside the box still counts.
+panelAdopt.rimEdge = (r, x, y) => {
+  const c = (a, b) => (a < 16 && b < 16);
+  const [t, b, l, rt] = [y - r.top, r.bottom - y, x - r.left, r.right - x];
+  const corner = c(t, l) ? "nw" : c(t, rt) ? "ne" : c(b, l) ? "sw" : c(b, rt) ? "se" : "";
+  const v = t < 6 ? "n" : b < 6 ? "s" : "";
+  const h = l < 6 ? "w" : rt < (r.bar ? 3 : 6) ? "e" : "";
+  return corner || v + h;
+};
 panelAdopt.rimHover = (e) => {
   const panel = e.currentTarget;
   const st = panelSt(panel);
@@ -762,11 +774,7 @@ panelAdopt.rimHover = (e) => {
     const r = panel.getBoundingClientRect();
     st.rim = { top: r.top, bottom: r.bottom, left: r.left, right: r.right, bar: panel.scrollHeight > panel.clientHeight };
   }
-  const r = st.rim;
-  const [x, y, rim] = [e.clientX, e.clientY, 6];
-  const v = y - r.top < rim ? "n" : r.bottom - y < rim ? "s" : "";
-  const h = x - r.left < rim ? "w" : r.right - x < (r.bar ? 3 : rim) ? "e" : "";
-  const edge = e.target.closest(".panel-movable-on") === panel ? v + h : "";
+  const edge = e.target.closest(".panel-movable-on") === panel ? panelAdopt.rimEdge(st.rim, e.clientX, e.clientY) : "";
   if ((panel.dataset.rim || "") !== edge) {
     if (edge) panel.dataset.rim = edge;
     else delete panel.dataset.rim;
@@ -1103,6 +1111,20 @@ if (typeof document !== "undefined" && document.addEventListener) {
       panelGripDown(e, rim);
     }
     else if (e.target.closest(".dialog-head")) panelHeadDown(e);
+    else if (e.button === 0 && !e.target.closest(".panel-movable-on")) {
+      //: A press on the backdrop inside a panel's box: a rounded corner's clipped pixels (INBOX 1552).
+      const p = e.target.querySelector(".panel-movable-on");
+      const r = p && p.getBoundingClientRect();
+      const edge = r && e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom ? panelAdopt.rimEdge(r, e.clientX, e.clientY) : "";
+      if (!edge) return;
+      e.stopPropagation();
+      p.dataset.rim = edge;
+      panelGripDown(e, p);
+      //: The click that ends the drag lands on the backdrop, which may close the dialog.
+      const eat = (ev) => { ev.stopPropagation(); ev.preventDefault(); };
+      document.addEventListener("click", eat, { capture: true, once: true });
+      document.addEventListener("pointerup", () => setTimeout(() => document.removeEventListener("click", eat, true), 80), { capture: true, once: true });
+    }
   }, true);
   //: A press on a head must not take the focus from the control that has it
   //: nor start a text selection (a pointerdown handler cannot stop either).

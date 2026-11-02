@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Panels: a corner resizes from the corner (INBOX 1552). The rounded corner clipped hit testing, so a press there hit the backdrop; corners now take 16px each way and a backdrop press inside the box resizes. rim1536.js: Settings se moved l 208 to 216, now r and b move and l and t hold.
 - Learned settings section moved from boot settings.js into lazy settings-controls.js: boot settings.js gzip 68,790 to 61,561 bytes (eager headroom for the next boot change).
 - The block-based Mermaid diagram builder (INBOX 1546) is designed in DOCUMENTS_PLAN.md ("1546 design": the model, two-way sync, surfaces, interaction, budgets and five build rows); DOCUMENTS Phase 7's record moved to HISTORY.md.
 - Settings, Search and index: once the model is downloaded the switch reads "Repair search by meaning by itself" instead of offering a download, and a model the app cannot fetch is marked "Through Ollama" (INBOX 1533).

@@ -22,7 +22,10 @@ const { boot } = require('./lib.js');
     const h = await box();
     await page.mouse.down(); await page.mouse.move(px + ddx, py + ddy, { steps: 6 }); await page.mouse.up(); await page.waitForTimeout(120);
     const z = await box();
-    out.push(`${edge}: hover rim=${h.rim} cursor=${h.cur} | l ${a.l}->${z.l} t ${a.t}->${z.t} r ${a.r}->${z.r} b ${a.b}->${z.b}`);
+    //: The held edges stay within 1px; the moved ones move (INBOX 1552: the corner moved every edge).
+    const held = (k) => Math.abs(a[k] - z[k]) <= 1;
+    const ok = held(edge.includes('w') ? 'r' : 'l') && held(edge.includes('n') ? 'b' : 't') && (edge.includes('e') || edge.includes('w') ? !held(edge.includes('w') ? 'l' : 'r') : held('r')) && (edge.includes('n') || edge.includes('s') ? !held(edge.includes('n') ? 't' : 'b') : held('b'));
+    out.push(`${ok ? 'ok  ' : 'FAIL'} ${edge}: hover rim=${h.rim} cursor=${h.cur} | l ${a.l}->${z.l} t ${a.t}->${z.t} r ${a.r}->${z.r} b ${a.b}->${z.b}`);
   }
   console.log(out.join('\n'));
   await browser.close();
