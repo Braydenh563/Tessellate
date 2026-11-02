@@ -22,6 +22,7 @@ MOVED = {
     "relation_types": {"RelationType"},
     "reminders": {"Reminder"},
     "properties": {"EntryProperty"},
+    "relations": {"EntryLink"},
     "documents": {"Document", "DocumentLink", "DocumentRevision", "DocumentAiEdit"},
 }
 
@@ -39,7 +40,11 @@ CROSS_RESOURCE = {"routes_spaces.py"}
 #: tag read (notes sharing a rare tag) to repo/tags.py: 765. Tags are a JSON
 #: list in `Entry.tags`, not a table, so they have no model in `MOVED`; the
 #: properties index reads (the graph's note types, the timeline's meeting dates
-#: and their join) to repo/properties.py: 757.
+#: and their join) to repo/properties.py: 757; the links' reads (the graph's counts,
+#: columns and pairs, the entries routes' suggestions, tensions and link-by-id
+#: lookups, the inbox's untyped scan, the map's and the chat's neighbours, the
+#: backlinks' wiki sources, the diagnostics and export counts) to
+#: repo/relations.py: 717.
 ORM_CALLS_CAP = 717
 
 _ORM = re.compile(
