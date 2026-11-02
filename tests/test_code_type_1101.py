@@ -48,9 +48,11 @@ def test_a_code_file_spell_check_reads_a_window():
 
 def test_a_code_file_skips_the_word_count_and_waits_longer_when_big():
     stats = _fn(DOCS, "renderDocStats")
-    assert stats.index("if (code) return;") < stats.index("textCounts(")
+    #: One word count for the bar and Statistics since DX10 (audit 1102): `docPlainText.counts`.
+    assert stats.index("if (code) return;") < stats.index("docPlainText.counts(")
     delay = _fn(DOCS, "docFactsDelay")
     #: Was `len > 120000 && docIsCodeFile() ? 600 : 120`: the wait now grows with the
     #: length for prose as well (audit 1028 D20), a code file keeping its 600.
     assert re.search(r"len > 120000 \? 600 : len > 40000 \? 300 : 120", delay)
-    assert "}, docFactsDelay());" in DOCS
+    #: DX1 (audit 1102): the pass waits for a real pause, never less than this delay.
+    assert "}, Math.max(docFactsDelay(), " in DOCS
