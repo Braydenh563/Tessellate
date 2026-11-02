@@ -97,3 +97,18 @@ def test_the_phone_bar_is_one_row_and_the_format_panel_stays_reachable_from_more
     assert 'id: "format-panel"' in commands and 'menu: "Format panel"' in commands
     # The picker's phone face is the name alone and its tooltip the whole row.
     assert "opt.dataset.faceNarrow = board.title;" in WB
+
+
+# U25 ------------------------------------------------------------------------
+
+
+def test_the_fold_chevron_and_count_start_outside_the_topics_edge():
+    side = _block(LAZY, ".wb-map-collapse {\n  right: auto;", "}")
+    assert "left: calc(100% + var(--space-1))" in side
+    # Scaled from the inner edge: the zoom floor grows it away from the topic, never over it.
+    assert "transform-origin: 0 50%" in side
+    down = _block(LAZY, ".wb-map-down .wb-map-collapse {\n  right: auto;", "}")
+    assert "top: calc(100% + var(--space-1))" in down and "left: 50%" in down and "translate: -50% 0" in down
+    assert "transform-origin: 50% 0" in down
+    count = _block(LAZY, ".wb-map-count {\n  right: auto;", "}")
+    assert "left: calc(100% + var(--space-1))" in count
