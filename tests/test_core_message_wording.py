@@ -341,6 +341,8 @@ REVIEWED_COMPUTED: dict[tuple[str, str], str] = {
     ("routes_webclip.py", "str(exc)"): "ClipRefused from core/webclip.py",
     ("routes_maintenance.py", "refusal"): "core/maintenance.py SHORTCUT_REFUSALS, fixed sentences keyed by reason",
     ("routes_websearch.py", "str(exc)"): "WebSearchError (search/websearch.py) and SearxngError (search/searxng_*.py)",
+    # INBOX 1556: the same sentence, now beside its reason code so the panel can offer to start SearXNG.
+    ("routes_websearch.py", "detail"): "str(exc) of WebSearchError (search/websearch.py) and SearxngError (search/searxng_*.py), with exc.reason as `code`",
 }
 
 
