@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- One insert catalogue (audit 1102 DX6, DX26): the formatting toolbar's Insert is a button that opens the `/` menu, so every block (image, callout, flowchart, maths block, footnote, contents, columns, page break, Heading 4 to 6) is reachable from it with its icon and keycap, and the Block, Links and media and Heading menus and the H1 to H3 buttons are gone; Style (was Highlight) holds underline, superscript and subscript, More is worded in notes, and `/file` finds a File attachment row. The documents toolbar at 1440 is one row: 82.8 px and 26 controls before, 46.8 px and 19 after.
 - The Notes Filter button shows when meaning search is on, as the Library's does (audit 1028 S83).
 - The Stats widget's category counts open those notes, through the same door as the Categories widget (audit 1028 S87).
 - Closing the keyboard shortcuts sheet gives focus back to what opened it (audit 1028 S58; was BODY).
