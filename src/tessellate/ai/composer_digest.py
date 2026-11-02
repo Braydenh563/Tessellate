@@ -806,6 +806,7 @@ def _from_source(view, fact: str, today: date) -> str:  # noqa: ANN001
     noun = _KIND_NOUN.get(getattr(view, "kind", "note") or "note")
     #: "... that work in most settings:, from your note" (INBOX 1420).
     fact = fact.rstrip().rstrip(":;,").rstrip()
+    fact = _clause_list(fact) or fact
     if not noun and _title_only(view) and fact.lower() == view.title.strip().lower():
         return _only_a_title(view, today)
     if noun and view.title:
@@ -2046,6 +2047,16 @@ def _one_note_lines(groups: dict[str, list[Fact]]) -> list[tuple[str, list[Fact]
     return items
 
 
+def _clause_list(said: str) -> str:
+    """A sentence of three or more `;` clauses, each a few words, as bullets
+    (audit 1028 E63): one run-on line of 12 to 20 words a clause reads as a
+    wall. "" for a sentence that is not that."""
+    clauses = [c.strip() for c in said.rstrip(". ").split("; ")]
+    if len(clauses) < 3 or any(len(c.split()) < 3 for c in clauses):
+        return ""
+    return "\n".join(f"- {c[:1].upper() + c[1:]}" for c in clauses)
+
+
 def _lines(out: _Out, facts: list[Fact], limit: int, skip: set[tuple] | None = None, by_day: date | None = None, more: bool = False, weave: bool = False) -> int:
     """Facts grouped under their labels, oldest note first, one line a label;
     the line carries its first note for its one citation mark."""
@@ -2065,7 +2076,9 @@ def _lines(out: _Out, facts: list[Fact], limit: int, skip: set[tuple] | None = N
         if written:
             seen_days.append(written)
         said = said[:1].upper() + said[1:] if label == PHRASES["also"] else said
-        (out.lines if i < limit else out.more).append(f"{said}." if heading else f"**{label}:** {said}.")
+        listed = _clause_list(said)
+        (out.lines if i < limit else out.more).append(
+            (f"**{label}:**\n{listed}" if listed and not heading else listed or (f"{said}." if heading else f"**{label}:** {said}.")))
         out.rows.append(_line_row(line_body, held))
         shown += 1
     return shown
