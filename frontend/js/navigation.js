@@ -123,6 +123,8 @@ const ROW_MENU_HOSTS = [
   "#entry-list > li[data-id]",
   "#conversation-list > li",
   "#web-results .web-result",
+  //: A document's snippet rows (OPEN 244).
+  ".doc-snippet-item",
 ].join(", ");
 
 function rowMenuAtEvent(event) {

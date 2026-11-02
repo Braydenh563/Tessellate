@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7554, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8431, test files 1832, tests 15670, plan headings 990, app scripts 28, boot scripts 37, script files 225.
+Counts: frontend functions 7554, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8431, test files 1833, tests 15672, plan headings 990, app scripts 28, boot scripts 37, script files 225.
 
 ## Frontend functions (7554)
 
@@ -800,61 +800,61 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `aboveDockFab` | frontend/js/navigation.js:2490 |
-| `activeNotesSection` | frontend/js/navigation.js:2316 |
-| `arrowNavTarget` | frontend/js/navigation.js:206 |
-| `backgroundWriteFailed` | frontend/js/navigation.js:1832 |
-| `chatMessagesEl` | frontend/js/navigation.js:2462 |
-| `chatMidStream` | frontend/js/navigation.js:1764 |
-| `closeNavHistoryMenu` | frontend/js/navigation.js:927 |
-| `confirmLeavingUnsavedWork` | frontend/js/navigation.js:1794 |
-| `coversAFormPrimary` | frontend/js/navigation.js:2623 |
-| `entryLabel` | frontend/js/navigation.js:1025 |
-| `formPrimaryButtons` | frontend/js/navigation.js:2584 |
-| `goToTabHistory` | frontend/js/navigation.js:1116 |
-| `hasUnsavedWork` | frontend/js/navigation.js:1743 |
-| `hideClosedDockMenuLists` | frontend/js/navigation.js:1524 |
-| `initNotesSubtabs` | frontend/js/navigation.js:2376 |
-| `initScrollTopButton` | frontend/js/navigation.js:2643 |
-| `insideClosedDetails` | frontend/js/navigation.js:1579 |
-| `loadSurface` | frontend/js/navigation.js:1321 |
-| `measureSpacingPx` | frontend/js/navigation.js:2614 |
-| `menuOfOpener` | frontend/js/navigation.js:1601 |
-| `menuRowsOf` | frontend/js/navigation.js:1586 |
-| `mermaidSoon` | frontend/js/navigation.js:371 |
-| `openHistoryEntry` | frontend/js/navigation.js:1176 |
-| `openNavHistoryMenu` | frontend/js/navigation.js:947 |
-| `openRowMenu` | frontend/js/navigation.js:149 |
-| `openSelectionScope` | frontend/js/navigation.js:319 |
-| `paintTabHistory` | frontend/js/navigation.js:974 |
-| `placeDockMenuInWindow` | frontend/js/navigation.js:1392 |
-| `positionScrollTopForNested` | frontend/js/navigation.js:2499 |
-| `recordTabVisit` | frontend/js/navigation.js:1062 |
-| `recordingLive` | frontend/js/navigation.js:1771 |
-| `renderMarkdown` | frontend/js/navigation.js:380 |
-| `resetNavigationForNewSession` | frontend/js/navigation.js:2278 |
-| `resetNavigationToDefaults` | frontend/js/navigation.js:2297 |
-| `restoreSettingsScroll` | frontend/js/navigation.js:1163 |
-| `revealTab` | frontend/js/navigation.js:843 |
-| `rowMenuAtEvent` | frontend/js/navigation.js:128 |
-| `scrollTopTargetEl` | frontend/js/navigation.js:2466 |
-| `scrollingPage` | frontend/js/navigation.js:2415 |
-| `showNotesSection` | frontend/js/navigation.js:2321 |
-| `spacingPx` | frontend/js/navigation.js:2607 |
-| `stepTabHistory` | frontend/js/navigation.js:1106 |
-| `stripMarkdownPreview` | frontend/js/navigation.js:2205 |
-| `surfaceRecovered` | frontend/js/navigation.js:1299 |
-| `switchTab` | frontend/js/navigation.js:1881 |
-| `syncScrollLock` | frontend/js/navigation.js:2811 |
-| `tabLabel` | frontend/js/navigation.js:1013 |
-| `tabPlaceholder` | frontend/js/navigation.js:2141 |
-| `tabSkeletonBar` | frontend/js/navigation.js:2122 |
-| `tabSkeletonDock` | frontend/js/navigation.js:2132 |
-| `tabSkeletonPiece` | frontend/js/navigation.js:2111 |
-| `usageCount` | frontend/js/navigation.js:1842 |
-| `usageFeatureName` | frontend/js/navigation.js:1838 |
-| `usageFlush` | frontend/js/navigation.js:1846 |
-| `watchDockMenuPlacement` | frontend/js/navigation.js:1454 |
+| `aboveDockFab` | frontend/js/navigation.js:2492 |
+| `activeNotesSection` | frontend/js/navigation.js:2318 |
+| `arrowNavTarget` | frontend/js/navigation.js:208 |
+| `backgroundWriteFailed` | frontend/js/navigation.js:1834 |
+| `chatMessagesEl` | frontend/js/navigation.js:2464 |
+| `chatMidStream` | frontend/js/navigation.js:1766 |
+| `closeNavHistoryMenu` | frontend/js/navigation.js:929 |
+| `confirmLeavingUnsavedWork` | frontend/js/navigation.js:1796 |
+| `coversAFormPrimary` | frontend/js/navigation.js:2625 |
+| `entryLabel` | frontend/js/navigation.js:1027 |
+| `formPrimaryButtons` | frontend/js/navigation.js:2586 |
+| `goToTabHistory` | frontend/js/navigation.js:1118 |
+| `hasUnsavedWork` | frontend/js/navigation.js:1745 |
+| `hideClosedDockMenuLists` | frontend/js/navigation.js:1526 |
+| `initNotesSubtabs` | frontend/js/navigation.js:2378 |
+| `initScrollTopButton` | frontend/js/navigation.js:2645 |
+| `insideClosedDetails` | frontend/js/navigation.js:1581 |
+| `loadSurface` | frontend/js/navigation.js:1323 |
+| `measureSpacingPx` | frontend/js/navigation.js:2616 |
+| `menuOfOpener` | frontend/js/navigation.js:1603 |
+| `menuRowsOf` | frontend/js/navigation.js:1588 |
+| `mermaidSoon` | frontend/js/navigation.js:373 |
+| `openHistoryEntry` | frontend/js/navigation.js:1178 |
+| `openNavHistoryMenu` | frontend/js/navigation.js:949 |
+| `openRowMenu` | frontend/js/navigation.js:151 |
+| `openSelectionScope` | frontend/js/navigation.js:321 |
+| `paintTabHistory` | frontend/js/navigation.js:976 |
+| `placeDockMenuInWindow` | frontend/js/navigation.js:1394 |
+| `positionScrollTopForNested` | frontend/js/navigation.js:2501 |
+| `recordTabVisit` | frontend/js/navigation.js:1064 |
+| `recordingLive` | frontend/js/navigation.js:1773 |
+| `renderMarkdown` | frontend/js/navigation.js:382 |
+| `resetNavigationForNewSession` | frontend/js/navigation.js:2280 |
+| `resetNavigationToDefaults` | frontend/js/navigation.js:2299 |
+| `restoreSettingsScroll` | frontend/js/navigation.js:1165 |
+| `revealTab` | frontend/js/navigation.js:845 |
+| `rowMenuAtEvent` | frontend/js/navigation.js:130 |
+| `scrollTopTargetEl` | frontend/js/navigation.js:2468 |
+| `scrollingPage` | frontend/js/navigation.js:2417 |
+| `showNotesSection` | frontend/js/navigation.js:2323 |
+| `spacingPx` | frontend/js/navigation.js:2609 |
+| `stepTabHistory` | frontend/js/navigation.js:1108 |
+| `stripMarkdownPreview` | frontend/js/navigation.js:2207 |
+| `surfaceRecovered` | frontend/js/navigation.js:1301 |
+| `switchTab` | frontend/js/navigation.js:1883 |
+| `syncScrollLock` | frontend/js/navigation.js:2813 |
+| `tabLabel` | frontend/js/navigation.js:1015 |
+| `tabPlaceholder` | frontend/js/navigation.js:2143 |
+| `tabSkeletonBar` | frontend/js/navigation.js:2124 |
+| `tabSkeletonDock` | frontend/js/navigation.js:2134 |
+| `tabSkeletonPiece` | frontend/js/navigation.js:2113 |
+| `usageCount` | frontend/js/navigation.js:1844 |
+| `usageFeatureName` | frontend/js/navigation.js:1840 |
+| `usageFlush` | frontend/js/navigation.js:1848 |
+| `watchDockMenuPlacement` | frontend/js/navigation.js:1456 |
 | `wireLongPress` | frontend/js/navigation.js:24 |
 
 ### frontend/js/router.js (12)
@@ -23047,7 +23047,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15670)
+## Tests (15672)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24224,6 +24224,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_one_minute_tick_s38.py | 3 |
 | tests/test_one_reader.py | 2 |
 | tests/test_one_when_shape.py | 2 |
+| tests/test_open_244_snippet_menu.py | 2 |
 | tests/test_open_context_b10.py | 13 |
 | tests/test_open_document_failure_d35.py | 1 |
 | tests/test_openapi_gate.py | 3 |
@@ -25591,7 +25592,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1276 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:230 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:228 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4186 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |

@@ -315,7 +315,7 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 241 | App scripts at 320,589 of 320,600 gzipped (11 bytes); seven typeof guards removed on eager functions, each path not driven by hand. | docs/roadmap/agent-remaining/OPEN.md:2227 | S | unassigned |
 | 242 | Decisions 12 (layers, 115 literals), 13 (19 drop shadows), 16 (128 .important) are ratchets only; 13.R not started. | docs/roadmap/agent-remaining/OPEN.md:2250 | S | unassigned |
 | 243 | The run's budget usage is on the result event but not drawn in chat-agent.js's result box. | docs/roadmap/agent-remaining/OPEN.md:2316 | S | unassigned |
-| 244 | Right-click and long-press on a snippet row do not open its menu (needs navigation.js ROW_MENU_HOSTS, a boot file, and TOTAL_CAP had 35 bytes). | docs/roadmap/agent-remaining/OPEN.md:2348 | S | unassigned |
+| 244 | Right-click and long-press on a snippet row do not open its menu (needs navigation.js ROW_MENU_HOSTS, a boot file, and TOTAL_CAP had 35 bytes). **Fixed 2026-11-02:** `.doc-snippet-item` is a host; in the app `rowMenuAtEvent` on a real `docSnippetRow` finds the item and its ⋯. | docs/roadmap/agent-remaining/OPEN.md:2348 | S | done |
 | 245 | First interaction (about 4.4 s) is the slowest number; decision 54's 5,000-note list and search not re-measured; no Settings UI shows the budgets. | docs/roadmap/agent-remaining/OPEN.md:2389 | S | unassigned |
 | 246 | Guide topics whiteboard-controls (1915 of 1920) and mind-map-features are at the reply budget. | docs/roadmap/agent-remaining/OPEN.md:2416 | S | unassigned |
 | 247 | TOTAL_CAP (all app scripts) has 32 bytes of headroom; the next lever is the meeting overlay's listeners in settings-wiring.js. | docs/roadmap/agent-remaining/OPEN.md:2458 | S | unassigned |

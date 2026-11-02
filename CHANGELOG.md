@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- A document's snippet rows open their menu on right-click and long-press, as every other row does (OPEN 244).
 - Follow-up suggestions send the last 500 characters of the question, the part the model is shown (`FOLLOWUP_QUESTION_CHARS`), not 4,000 (warm12 leftover).
 - Alt+= opens the equation editor in a fresh note box at once (it did nothing for about a second, until the editor adapters arrived), and Insert writes through the adapter (maths1527 leftovers).
 - Calculator and equations: Escape in LaTeX mode returns to the formula instead of closing the dialog, and a press outside no longer drops a half-written equation (`openSheet` `hasWork`; maths1527 leftovers).
