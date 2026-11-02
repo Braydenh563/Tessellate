@@ -168,9 +168,14 @@
 /* **One height for the three tabs** (INBOX 1530 g M2). A bottom sheet grows
    upward, so a card that took each tab's own height moved the strip 188 px
    between Sum and Units. The card is one height, the strip and the action row
-   are pinned, and the panes between them scroll. */
+   are pinned, and the panes between them scroll. **Tall enough that Sum and
+   Units need no scroll** (INBOX 1537): the keypad's pane is 325px and the
+   head, strip and action row 219px, so 544px; 84dvh is 605px at 720 and the
+   cap 42rem (672px) keeps a tall window's card from outgrowing its panes. */
 .sheet-card.calc-card {
-  height: min(66dvh, 40rem);
+  height: min(84dvh, 42rem);
+  /* A sheet is two thirds of the window at most (10-responsive.css); this one is the exception the owner asked for. */
+  max-height: min(84dvh, 42rem);
   overflow: hidden;
 }
 

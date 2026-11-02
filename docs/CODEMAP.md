@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7558, frontend ids 2638, CSS sections 517, backend routes 640, backend modules 8485, test files 1854, tests 15789, plan headings 991, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7558, frontend ids 2638, CSS sections 517, backend routes 640, backend modules 8485, test files 1855, tests 15801, plan headings 991, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7558)
 
@@ -5408,25 +5408,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `closeMathInPlace` | frontend/js/math-field.js:247 |
-| `mathFieldAllowStyles` | frontend/js/math-field.js:102 |
-| `mathFieldBoxes` | frontend/js/math-field.js:66 |
-| `mathFieldChange` | frontend/js/math-field.js:74 |
-| `mathFieldConfigure` | frontend/js/math-field.js:123 |
-| `mathFieldCreate` | frontend/js/math-field.js:148 |
-| `mathFieldFoot` | frontend/js/math-field.js:265 |
+| `closeMathInPlace` | frontend/js/math-field.js:261 |
+| `mathFieldAllowStyles` | frontend/js/math-field.js:108 |
+| `mathFieldBoxes` | frontend/js/math-field.js:70 |
+| `mathFieldChange` | frontend/js/math-field.js:80 |
+| `mathFieldConfigure` | frontend/js/math-field.js:129 |
+| `mathFieldCreate` | frontend/js/math-field.js:154 |
+| `mathFieldFoot` | frontend/js/math-field.js:279 |
 | `mathFieldGroupEnd` | frontend/js/math-field.js:26 |
-| `mathFieldKeys` | frontend/js/math-field.js:330 |
-| `mathFieldLatexBox` | frontend/js/math-field.js:170 |
-| `mathFieldOwns` | frontend/js/math-field.js:243 |
-| `mathFieldPane` | frontend/js/math-field.js:190 |
-| `mathFieldPlace` | frontend/js/math-field.js:253 |
-| `mathFieldRead` | frontend/js/math-field.js:161 |
+| `mathFieldKeys` | frontend/js/math-field.js:344 |
+| `mathFieldLatexBox` | frontend/js/math-field.js:176 |
+| `mathFieldOwns` | frontend/js/math-field.js:257 |
+| `mathFieldPane` | frontend/js/math-field.js:196 |
+| `mathFieldPlace` | frontend/js/math-field.js:267 |
+| `mathFieldRead` | frontend/js/math-field.js:167 |
 | `mathFieldStored` | frontend/js/math-field.js:60 |
-| `mathFieldTouch` | frontend/js/math-field.js:86 |
+| `mathFieldTouch` | frontend/js/math-field.js:92 |
 | `mathFieldUnplace` | frontend/js/math-field.js:43 |
-| `mathFieldWrite` | frontend/js/math-field.js:165 |
-| `openMathInPlace` | frontend/js/math-field.js:282 |
+| `mathFieldWrite` | frontend/js/math-field.js:171 |
+| `openMathInPlace` | frontend/js/math-field.js:296 |
 
 ### frontend/js/meaning.js (18)
 
@@ -11952,7 +11952,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/quick-access-lazy.css | 105 |
 | frontend/css/quickadd-lazy.css | 35 |
 | frontend/css/recovery-lazy.css | 115 |
-| frontend/css/reply-kit-lazy.css | 628 |
+| frontend/css/reply-kit-lazy.css | 633 |
 | frontend/css/reveal-lazy.css | 10 |
 | frontend/css/search-lazy.css | 153 |
 | frontend/css/semantic-notice-lazy.css | 10 |
@@ -23280,7 +23280,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15789)
+## Tests (15801)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23446,6 +23446,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_brand_name.py | 10 |
 | tests/test_breakpoints.py | 3 |
 | tests/test_budgets.py | 6 |
+| tests/test_calc_panel_1102.py | 12 |
 | tests/test_calc_ux_1530.py | 16 |
 | tests/test_calculator_equations.py | 8 |
 | tests/test_captioning.py | 17 |
