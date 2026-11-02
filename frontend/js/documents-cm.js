@@ -211,12 +211,12 @@ function docLivePlugin(CM) {
       this.at = at;
     }
     eq(other) {
+      //: Not the place (DX1): the buttons ask the view for their line when pressed.
       return (
         other.kind === this.kind &&
-        other.at === this.at &&
         other.titled === this.titled &&
         !!other.fold === !!this.fold &&
-        (!this.fold || (other.fold.at === this.fold.at && other.fold.closed === this.fold.closed))
+        (!this.fold || other.fold.closed === this.fold.closed)
       );
     }
     ignoreEvent() {
@@ -376,14 +376,16 @@ function docLivePlugin(CM) {
       this.body = body;
       this.at = at;
     }
+    //: The words, not the place (DX1): a key above the pin no longer draws it again, and
+    //: the click asks the view where the pin is now.
     eq(other) {
-      return other.body === this.body && other.at === this.at;
+      return other.body === this.body;
     }
     //: A control, not text: CodeMirror must not put a caret inside it.
     ignoreEvent() {
       return true;
     }
-    toDOM() {
+    toDOM(view) {
       const pin = document.createElement("button");
       pin.type = "button";
       pin.className = "doc-comment-pin";
@@ -393,10 +395,9 @@ function docLivePlugin(CM) {
       icon.className = "ph ph-chat-teardrop-text";
       icon.setAttribute("aria-hidden", "true");
       pin.appendChild(icon);
-      const at = this.at;
       pin.addEventListener("click", (event) => {
         event.preventDefault();
-        docShowComment(at);
+        docShowComment(view ? view.posAtDOM(pin) : this.at);
       });
       return pin;
     }
@@ -618,9 +619,9 @@ function docLivePlugin(CM) {
     //: the note beside `cm-md-fence-quiet` below.
     const gutterOn = docFenceGutterOn();
     const tree = syntaxTree(state);
-    //: The document as one string, for the table model, and at most once per
-    //: build: the model works in document offsets so it needs the whole text,
-    //: and a copy per visible line would be a copy per keystroke per line.
+    //: The document as one string, at most once per build, for a table's menu
+    //: and the frontmatter; a table itself is parsed from its own lines
+    //: (`docTableParse.at`).
     let sourceText = null;
     const source = () => {
       if (sourceText === null) sourceText = docStr(doc);
@@ -1297,7 +1298,7 @@ function docLivePlugin(CM) {
         if (tableSeen.has(line.number)) continue;
         tableSeen.add(line.number);
         if (!docTableRowLike(line.text)) continue;
-        const table = docTableParse(source(), line.from);
+        const table = docTableParse.at(doc, line.from);
         if (!table) continue;
         for (const row of table.rows) tableSeen.add(doc.lineAt(row.from).number);
         record.selFree = false;
@@ -1532,6 +1533,78 @@ function docLivePlugin(CM) {
     return Decoration.set(ranges, true);
   }
 
+  //: **A key inside one paragraph rebuilds that paragraph** (audit 1102 DX1), with the line
+  //: above and below it for the blank-line gaps, instead of every visible line: 6 ms of a
+  //: key at 4x CPU in the 3,120-line document went on the visible rebuild. The rest of the
+  //: set is mapped through the edit. Only where nothing outside can depend on the
+  //: paragraph's words: the change has no line break, the caret starts and ends inside it,
+  //: the block is a paragraph or a task under nothing but lists both before and after (a
+  //: quote is out: a callout's kind is its first line), the block after it is unmoved, and
+  //: the lines hold no table row, no `$$` and no frontmatter. Anything else is null, and
+  //: the plugin rebuilds as before. `tests/test_doc_typing_dx1.py` compares the two.
+  const PATCH_LEAF = new Set(["Paragraph", "Task"]);
+  const PATCH_UNDER = new Set(["Document", "BulletList", "OrderedList", "ListItem"]);
+  const patchLeaf = (tree, from, to) => {
+    if (tree.length < to) return null;
+    for (const side of [1, -1]) {
+      for (let node = tree.resolveInner(from, side); node; node = node.parent) {
+        if (PATCH_LEAF.has(node.name)) {
+          if (node.from > from || node.to < to) break;
+          const chain = [];
+          for (let up = node.parent; up; up = up.parent) {
+            if (!PATCH_UNDER.has(up.name)) return null;
+            chain.push(up);
+          }
+          return { node, chain };
+        }
+      }
+    }
+    return null;
+  };
+  function patchRegion(update, visible) {
+    const { startState, state, changes, view } = update;
+    let fromA = Infinity, toA = -1, fromB = Infinity, toB = -1, broken = false;
+    changes.iterChanges((fa, ta, fb, tb, inserted) => {
+      if (inserted.lines > 1 || startState.doc.sliceString(fa, ta).includes("\n")) broken = true;
+      fromA = Math.min(fromA, fa);
+      toA = Math.max(toA, ta);
+      fromB = Math.min(fromB, fb);
+      toB = Math.max(toB, tb);
+    });
+    if (broken || toA < 0) return null;
+    const was = patchLeaf(syntaxTree(startState), fromA, toA);
+    const now = was && patchLeaf(syntaxTree(state), fromB, toB);
+    if (!now || was.node.name !== now.node.name || was.chain.length !== now.chain.length) return null;
+    const same = (a, b) => a.name === b.name && changes.mapPos(a.from, -1) === b.from && changes.mapPos(a.to, 1) === b.to;
+    if (!same(was.node, now.node) || was.chain.some((a, i) => !same(a, now.chain[i]))) return null;
+    const top = (hit) => (hit.chain.length > 1 ? hit.chain[hit.chain.length - 2] : hit.node);
+    const nextA = top(was).nextSibling;
+    const nextB = top(now).nextSibling;
+    if (!nextA !== !nextB || (nextA && !same(nextA, nextB))) return null;
+    const doc = state.doc;
+    const first = Math.max(1, doc.lineAt(now.node.from).number - 1);
+    const last = Math.min(doc.lines, doc.lineAt(now.node.to).number + 1);
+    const region = { from: doc.line(first).from, to: doc.line(last).to };
+    const old = { from: startState.doc.line(first).from, to: startState.doc.line(last).to };
+    const inside = (sel, r) => sel.ranges.every((range) => range.from >= r.from && range.to <= r.to);
+    if (!inside(startState.selection, old) || !inside(state.selection, region)) return null;
+    for (let n = first; n <= last; n += 1) if (docTableRowLike(doc.line(n).text)) return null;
+    if (doc.sliceString(region.from, region.to).includes("$$")) return null;
+    if (doc.length > 3 && doc.sliceString(0, 4) === "---\n") {
+      const fm = docFrontmatterParse(doc.sliceString(0, region.from));
+      if (!fm || fm.to >= region.from) return null;
+    }
+    //: The view's lines have to be the old ones moved by the edit, or lines the patch never
+    //: looks at would have come into view.
+    const ranges = [...view.visibleRanges, view.viewport];
+    if (ranges.length !== visible.length / 2) return null;
+    for (let i = 0; i < ranges.length; i += 1) {
+      if (changes.mapPos(visible[2 * i], -1) !== ranges[i].from || changes.mapPos(visible[2 * i + 1], 1) !== ranges[i].to) return null;
+    }
+    return { region, old };
+  }
+  const visibleOf = (view) => [...view.visibleRanges, view.viewport].flatMap((r) => [r.from, r.to]);
+
   docLivePluginCache = ViewPlugin.fromClass(
     class {
       constructor(view) {
@@ -1541,6 +1614,41 @@ function docLivePlugin(CM) {
       rebuild(view) {
         this.record = { probes: [], selFree: true };
         this.decorations = build(view, this.record);
+        this.visible = visibleOf(view);
+      }
+      //: The paragraph's decorations built again from a view that sees only its lines, laid
+      //: into the old set mapped through the edit (`patchRegion` says when that is exact).
+      patch(update) {
+        const hit = patchRegion(update, this.visible);
+        if (!hit) return false;
+        const { region, old } = hit;
+        const view = update.view;
+        const probes = [];
+        const was = this.record.probes;
+        for (let i = 0; i < was.length; i += 3) {
+          if (was[i] >= old.from && was[i + 1] <= old.to) continue;
+          probes.push(update.changes.mapPos(was[i], -1), update.changes.mapPos(was[i + 1], 1), was[i + 2]);
+        }
+        if (!docLiveRevealSame(probes, update.state.selection.ranges)) return false;
+        const record = { probes: [], selFree: true };
+        const part = build(
+          { state: update.state, hasFocus: view.hasFocus, dom: view.dom, contentDOM: view.contentDOM, visibleRanges: [region], viewport: region },
+          record
+        );
+        const add = [];
+        part.between(region.from, region.to, (from, to, value) => {
+          if (from >= region.from) add.push(value.range(from, to));
+        });
+        this.decorations = this.decorations.map(update.changes).update({
+          filter: (from) => from < region.from || from > region.to,
+          filterFrom: region.from,
+          filterTo: region.to,
+          add,
+          sort: true,
+        });
+        this.record = { probes: probes.concat(record.probes), selFree: this.record.selFree && record.selFree };
+        this.visible = visibleOf(view);
+        return true;
       }
       update(update) {
         //: Selection as well as document and viewport: the whole idea of this
@@ -1571,6 +1679,7 @@ function docLivePlugin(CM) {
         //: tree object, a pointer check, so a keystroke inside a stable tree
         //: costs nothing extra.
         const gutterOn = docFenceGutterOn();
+        if (update.docChanged && !update.focusChanged && gutterOn === this.gutterOn && this.patch(update)) return;
         const other = update.docChanged || update.viewportChanged || update.focusChanged
           || gutterOn !== this.gutterOn
           || syntaxTree(update.startState) !== syntaxTree(update.state);
@@ -1588,8 +1697,10 @@ function docLivePlugin(CM) {
     {
       decorations: (plugin) => plugin.decorations,
       eventHandlers: {
-        mousedown(event) {
+        mousedown(event, view) {
           const target = event.target;
+          //: A callout's line from where its button is drawn now, not where it was built.
+          const lineOf = (el, at) => (view ? view.state.doc.lineAt(view.posAtDOM(el)).from : Number(at));
           if (!(target instanceof Element)) return false;
           const wiki = target.closest("[data-doc-wiki]");
           if (wiki) {
@@ -1605,14 +1716,14 @@ function docLivePlugin(CM) {
             event.preventDefault();
             event.stopPropagation();
             const box = kindButton.getBoundingClientRect();
-            docCalloutKindMenu(Number(kindButton.dataset.docCalloutKind), box.left, box.bottom + 4);
+            docCalloutKindMenu(lineOf(kindButton, kindButton.dataset.docCalloutKind), box.left, box.bottom + 4);
             return true;
           }
           const fold = target.closest("[data-doc-callout-fold]");
           if (fold) {
             event.preventDefault();
             event.stopPropagation();
-            docToggleCalloutFold(Number(fold.dataset.docCalloutFold));
+            docToggleCalloutFold(lineOf(fold, fold.dataset.docCalloutFold));
             return true;
           }
           const note = target.closest("[data-doc-footnote]");

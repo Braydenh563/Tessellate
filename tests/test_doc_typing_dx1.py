@@ -223,3 +223,166 @@ def test_the_caret_readout_is_drawn_once_per_key_in_the_engine():
     assert "if (docEventFromCm(document.activeElement)) return;" in listener
     update = _function(DOCS, "function docCmUpdate(")
     assert "if (!update.docChanged) renderDocCaret();" in update
+
+
+# The three levers of the second pass (agent a29i): a key inside one paragraph
+# patches the Live set instead of rebuilding the visible lines, a table is
+# parsed from its own lines, and a fresh frame closure is known by its source.
+ROOT = JS.parent.parent
+CMJS = (JS / "documents-cm.js").read_text(encoding="utf-8")
+_LOAD = f"""
+const fs = require("fs"), vm = require("vm");
+const read = (f) => fs.readFileSync({json.dumps(str(ROOT / "frontend"))} + "/" + f, "utf8");
+const ctx = {{ console }};
+ctx.window = ctx;
+vm.createContext(ctx);
+vm.runInContext(read("vendor/codemirror/codemirror.min.js") + ";globalThis.CM6 = CM6;", ctx);
+vm.runInContext(read("js/documents-tables.js"), ctx);
+"""
+
+
+@needs_node
+def test_a_table_parsed_from_its_own_lines_is_the_whole_text_parse():
+    text = (
+        "Prose with a | pipe\n| Name | Notes |\n| --- | --- |\n| One | Two |\n\nMore prose\n\n"
+        "  | a | b |   \n  | --- | :---: |\n  | 1 | 2 |  \n| x | y |\n|---|---|\n| 3 | 4 |\n\n"
+        "Name | Notes\n--- | ---\nOne | Two\n| no | delimiter |\n| at | all |\n"
+    )
+    got = _node(
+        _LOAD
+        + f"const T = {json.dumps(text)};\n"
+        + """
+const out = vm.runInContext(`(() => {
+  const doc = CM6.state.Text.of(T.split("\\\\n"));
+  let tables = 0, diff = [];
+  for (let at = 0; at <= T.length; at += 1) {
+    const whole = JSON.stringify(docTableParse(T, at));
+    if (whole !== "null") tables += 1;
+    if (JSON.stringify(docTableParse.at(doc, at)) !== whole) diff.push(at);
+  }
+  return { tables, diff };
+})()`, Object.assign(ctx, { T }));
+console.log(JSON.stringify(out));
+"""
+    )
+    assert got["tables"] > 100 and got["diff"] == []
+    assert "docTableParse.at(doc, line.from)" in CMJS and "docTableParse(source()" not in CMJS
+    assert "docTableParse.at(doc, head)" in DOCS, "the grips plugin reads the caret's table the same way"
+
+
+_STUBS = """
+function docFenceGutterOn() { return false; }
+function docStr(d) { return d.toString(); }
+function mdTocEntries() { return []; }
+function docCalloutFolded() { return false; }
+function docMathLooksLikeMath() { return true; }
+function mdDividerKind() { return null; }
+function imageOptions(s) { return { name: s }; }
+function mediaSrc(s) { return s; }
+function wikiLinkTarget(n) { return n; }
+function docImageLive() { return true; }
+function docListGuides() { return []; }
+function asSurface() { return null; }
+function docSurface() { return null; }
+const LIST_DEPTH_MAX = 6;
+const DOC_BLOCK_ID_AT_END = /(?:^|[ \\t])\\^([a-z0-9-]+)[ \\t]*$/;
+"""
+
+_PATCH_DOCS = [
+    "# Title\n\nIntro with **bold**, *em* and a [link](https://x.y) and $x$.\nSecond line of it %%a pin%% here.\n\n"
+    "- one item\n- [ ] a task\n  - nested words\n1. first\n\n> [!note]- Kind\n> body words\n\n| a | b |\n|---|---|\n| 1 | 2 |\n\n"
+    "After the table.\n\n```js\nconst a = 1;\n```\n\nLast paragraph ==mark== end.\n",
+    "---\ntitle: x\n---\nfront para words\n\npara above table\n| a | b |\n|---|---|\n| 1 | 2 |\nafter table text\n\n"
+    "before fence\n```\ncode\n```\nafter fence\n\nmath para\n$$\nx^2\n$$\nmore words\n\nA para\n===\n\n> quote para\n> more\n\n"
+    "- item one\nlazy continuation\n- item two\n\n   indented para\n\n* a\n\n  b para in item\n",
+]
+
+
+@needs_node
+@pytest.mark.parametrize("text", _PATCH_DOCS, ids=["rich", "edges"])
+def test_a_patched_live_set_is_the_set_a_full_rebuild_draws(text):
+    """Keys typed and deleted at every few offsets: after each, the plugin's set
+    (patched where `patchRegion` allows) equals a fresh plugin's on the new state."""
+    helpers = "\n".join(_function(DOCS, h) for h in ("function docLiveSpanTouched(", "function docLiveRevealSame("))
+    anchor = re.search(r"^docLiveSpanTouched\.anchorIn = .*$", DOCS, re.M).group(0)
+    got = _node(
+        _LOAD
+        + 'vm.runInContext(read("js/documents-props.js"), ctx);\n'
+        + f"vm.runInContext({json.dumps(helpers + chr(10) + anchor + _STUBS)}, ctx);\n"
+        + 'vm.runInContext(read("js/documents-cm.js"), ctx);\n'
+        + f"ctx.DOC = {json.dumps(text)};\n"
+        + """
+const out = vm.runInContext(`(() => {
+  const CM = CM6, P = docLivePlugin(CM);
+  const md = CM.markdown.markdown({ base: CM.markdown.markdownLanguage });
+  const dom = { closest: () => ({}), querySelector: () => null };
+  const viewOf = (state) => ({ state, hasFocus: true, visibleRanges: [{ from: 0, to: state.doc.length }], viewport: { from: 0, to: state.doc.length }, dom, contentDOM: dom });
+  const snap = (set) => { const o = []; for (const it = set.iter(); it.value; it.next()) o.push([it.from, it.to, it.value]); return o; };
+  const same = (a, b) => a.length === b.length && a.every(([f, t, v]) => b.some(([f2, t2, v2]) => f2 === f && t2 === t && (v2 === v || v2.eq(v))));
+  let state = CM.state.EditorState.create({ doc: DOC, extensions: [md] });
+  const inst = P.create(viewOf(state));
+  let patched = 0, bad = [];
+  const pt = inst.patch;
+  inst.patch = function (u) { const r = pt.call(this, u); if (r) patched += 1; return r; };
+  for (let pos = 0; pos <= DOC.length; pos += 4) {
+    state = CM.state.EditorState.create({ doc: DOC, extensions: [md], selection: { anchor: pos } });
+    inst.rebuild(viewOf(state));
+    let at = pos;
+    for (const k of ["x", " ", "*", "y", "*", "|", "$", "=", "[", "]", "%", "#", "-", "\\\\n", "", "", "", ""]) {
+      if (!k && !at) continue;
+      const tr = k ? state.update({ changes: { from: at, insert: k }, selection: { anchor: at + k.length } })
+        : state.update({ changes: { from: at - 1, to: at }, selection: { anchor: at - 1 } });
+      at = tr.state.selection.main.head;
+      inst.update({ startState: state, state: tr.state, changes: tr.changes, transactions: [tr], docChanged: true, selectionSet: true, viewportChanged: true, focusChanged: false, view: viewOf(tr.state) });
+      state = tr.state;
+      if (!same(snap(inst.decorations), snap(P.create(viewOf(state)).decorations))) bad.push(pos + ":" + JSON.stringify(k));
+    }
+  }
+  return { patched, bad: bad.slice(0, 5) };
+})()`, ctx);
+console.log(JSON.stringify(out));
+"""
+    )
+    assert got["bad"] == [], got
+    assert got["patched"] > 100, "most keys inside a paragraph take the patch"
+
+
+def test_a_widget_moved_by_a_key_reads_its_place_when_pressed():
+    """A patched set keeps the widgets below a key as they were built, so none
+    may act on a position it was built with: the pin and the callout's buttons
+    ask the view (the task box already did)."""
+    comment = CMJS.split("class DocCommentWidget", 1)[1].split("\n  }\n", 1)[0]
+    assert "return other.body === this.body;" in comment
+    assert "docShowComment(view ? view.posAtDOM(pin) : this.at)" in comment
+    callout = CMJS.split("class DocCalloutWidget", 1)[1].split("\n  }\n", 1)[0]
+    assert "other.at" not in callout and "fold.at ===" not in callout
+    assert "view.state.doc.lineAt(view.posAtDOM(el)).from" in CMJS
+    assert "docCalloutKindMenu(lineOf(kindButton" in CMJS and "docToggleCalloutFold(lineOf(fold" in CMJS
+
+
+@needs_node
+def test_a_fresh_frame_closure_is_known_by_its_source():
+    lag = (JS / "lag-watch.js").read_text(encoding="utf-8")
+    fns = "\n".join(_function(lag, h) for h in ("function lagStackOwner(", "function lagRafOwner("))
+    const = re.search(r"^const LAG_RAF = .*$", lag, re.M).group(0)
+    got = _node(
+        const
+        + "\n"
+        + fns
+        + """
+let stacks = 0;
+const real = lagStackOwner;
+lagStackOwner = (s) => { stacks += 1; return real(s); };
+const owners = new Set();
+for (let i = 0; i < 64; i += 1) owners.add(lagRafOwner(() => i));
+const one = stacks;
+stacks = 0;
+let flip = 0;
+lagStackOwner = () => { stacks += 1; return flip++ % 2 ? "a.js tick" : "b.js tick"; };
+for (let i = 0; i < 96; i += 1) lagRafOwner(() => i + 1);
+console.log(JSON.stringify({ one, owners: owners.size, shared: stacks, mark: LAG_RAF.src.get("() => i + 1") }));
+"""
+    )
+    assert got["owners"] == 1
+    assert got["one"] <= 3, "64 fresh closures of one source take a stack at most once in 32"
+    assert got["mark"] == "" and got["shared"] > 50, "a source two owners share takes the stack every time once seen"
