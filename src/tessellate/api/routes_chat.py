@@ -60,7 +60,7 @@ from tessellate.ai.grounding import (
     support as grounding_support,
 )
 from tessellate.ai.ollama_client import OllamaError
-from tessellate.api import chat_extra
+from tessellate.api import chat_extra, chat_web
 from tessellate.core import activity, deps, jobs, model_gate, private_turn
 from tessellate.core.database import (
     AuditLog,
@@ -1496,10 +1496,11 @@ def _web_events_or_down(req: _StreamRequest, question: str) -> list | None:
     could not run; None when it ran and found nothing."""
     web = _web_answer(req, question)
     if web:
-        return list(_web_events(*web))
+        return [chat_web.NOT_NOTES, *_web_events(*web)]
     if req.web_down:
-        return _offer_events(composer_web.search_down(req.web_down, *_search_service(), can_start=_can_start_searxng()))
+        return [chat_web.NOT_NOTES, *_offer_events(composer_web.search_down(req.web_down, *_search_service(), can_start=_can_start_searxng()))]
     return None
+
 
 
 def _early_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list | None:

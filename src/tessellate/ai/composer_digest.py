@@ -4355,7 +4355,8 @@ def _show_checklist(out: _Out, view: composer.NoteView) -> None:
     tasks = [s for s in view.sentences if s.kind == "task"]
     #: A box never ticked but done in a later note is done here too, said as
     #: that note: one item, one state (fable-eye F15).
-    views, today = _VIEWS.get(), _TODAY.get() or date.today()
+    #: The answer's day, never the server's clock (audit 1030 Z: tests fix the clock).
+    views, today = _VIEWS.get(), _TODAY.get() or view.written or date.min
     later = composer_slots.done_later(views, view, tasks)
     ticked = sum(1 for s in tasks if s.done or id(s) in later)
     total = realise.count_word(len(tasks))

@@ -97,6 +97,17 @@ def _offer_events(found: dict) -> list[dict]:
     return events
 
 
+#: A web reply, answered or not, is not from the notes: this second meta
+#: replaces the first, so the badge is not "From your notes" and Sources does
+#: not list the ten notes searched first (INBOX 1550: "Sources: 10 notes"
+#: under "the search service ... is not answering").
+NOT_NOTES = {
+    "type": "meta", "web": True, "raw_results": [], "picture_alts": {}, "picture_sizes": {}, "search_mode": "web",
+    "connected_ids": [], "match_info": {}, "when_phrase": None, "as_of": None, "as_of_revisions": {},
+    "answered_by": None, "ollama_running": False, "composed": False,
+}
+
+
 def _search_service() -> tuple[str, str]:
     """(SearXNG address, provider) as Settings has them, for a failure's wording."""
     from tessellate.search import websearch

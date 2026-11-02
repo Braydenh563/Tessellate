@@ -92,7 +92,10 @@ _TODAY = lazy_compile(
 )
 _YEAR = lazy_compile(r"^what (?:year|month) is it(?: now)?$", re.I)
 #: "15% of 240" (CHAT_PLAN section 7 row 1: it quoted a note instead of 36).
-_PERCENT = lazy_compile(r"^(?:what(?:'s| is)\s+|work out\s+|calculate\s+)?(-?\d+(?:\.\d+)?)\s*(?:%|percent|per cent)\s+of\s+(-?\d[\d,]*(?:\.\d+)?)$", re.I)
+_PERCENT = lazy_compile(r"^(?:what(?:'s| is)\s+|whats\s+|how much is\s+|work out\s+|calculate\s+)?(-?\d+(?:\.\d+)?)\s*(?:%|percent|per cent)\s+of\s+(-?\d[\d,]*(?:\.\d+)?)$", re.I)
+#: "how many days between 1 March and 2 April" (INBOX 1550): two days the
+#: device can count between, so never the web or the notes.
+_BETWEEN = lazy_compile(r"^(?:how many\s+)?(days|weeks)\s+(?:are there\s+)?(?:between|from)\s+(\S.*?)\s+(?:and|to|until|till)\s+(\S.*)$", re.I)
 _WEEKDAY_OF = lazy_compile(r"^what day(?: of the week)? (?:is|was|will be|falls on) (\S.*)$", re.I)
 _DIE = lazy_compile(r"^(?:roll|throw)\s+(?:a\s+|one\s+|the\s+)?(?:die|dice|d6)$|^roll\s+(\d{1,2})?d(\d{1,3})$", re.I)
 _COIN = lazy_compile(r"^(?:flip|toss)\s+a\s+coin$|^heads or tails$", re.I)
@@ -272,6 +275,26 @@ def _dates(text: str, now: datetime) -> list[tuple] | None:
         return [("computed", f"{found[0].day} {_MONTH_NAMES[found[0].month - 1]} {found[0].year} {verb} a {_WEEKDAY_NAMES[found[0].weekday()]}."),
                 ("computed", f"\nRead as {match.group(1)}{which}.")]
     return None
+
+
+def _between(text: str, today: date) -> tuple[str, tuple[date, date]] | None:
+    """The unit and the two days of "days between A and B", or None."""
+    found = _BETWEEN.match(text)
+    if not found:
+        return None
+    a, b = (when_words.span(found.group(i), today, None) for i in (2, 3))
+    return (found.group(1).lower(), (a[0], b[0])) if a and b and a[2] == b[2] == "day" else None
+
+
+def _between_answer(unit: str, days_: tuple[date, date]) -> list[tuple]:
+    """"1 March to 2 April is 32 days", or in weeks and days when asked so."""
+    a, b = days_
+    days = abs((b - a).days)
+    said = _plural(days, "day")
+    if unit == "weeks":
+        rest = f" and {_plural(days % 7, 'day')}" if days % 7 else ""
+        said = f"{_plural(days // 7, 'week')}{rest}"
+    return [("computed", f"{_day_words(a)} to {_day_words(b)} is {said}."), ("computed", "\nRead as the days from the first to the second.")]
 
 
 def now_day() -> date:
@@ -460,6 +483,8 @@ def _date_kind(text: str) -> str | None:
         #: "how many days until the dentist": the date is in a note, which
         #: the composer reads (`composer._until_note`).
         return "dates" if when_words.span(asked[1], now_day(), asked[0]) else "until_note"
+    if _between(text, now_day()):
+        return "dates"
     if recognise.offset_question(text) or (_WEEKDAY_OF.match(text) and when_words.span(_WEEKDAY_OF.match(text).group(1), now_day(), "future")):
         return "dates"
     return None
@@ -819,7 +844,7 @@ _ANSWERERS = {
     "clock": lambda ask: _clock(ask.text, ask.now),
     "units": lambda ask: _convert(ask.text),
     "currency": lambda ask: _currency(ask.text, ask.rates or RATES, ask.rates_date or RATES_DATE),
-    "dates": lambda ask: _dates(ask.text, ask.now),
+    "dates": lambda ask: _between_answer(*b) if (b := _between(ask.text, ask.now.date())) else _dates(ask.text, ask.now),
     "chance": _answer_chance,
     "translate": lambda ask: [("phrase", "utility_translate")],
     "generate": lambda ask: [("phrase", "utility_generate")],
