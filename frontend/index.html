@@ -4280,6 +4280,7 @@ Link to another note with [[its first few words]]."></textarea>
                 <li>Link force: how hard each link pulls its two notes together.</li>
                 <li>Length by similarity: notes that match more closely in meaning sit nearer each other.</li>
                 <li>Group by category: each category gathers in a place of its own, and a note with no links sits with its category.</li>
+                <li>Tidy spacing (off by default): dots move off the lines they would sit on; a large notebook takes longer to settle.</li>
                 <li>Unpin all lets the notes you pinned move again, and Reshuffle layout lays the map out again from a new start.</li>
               </ul>
             </div>
@@ -4308,6 +4309,12 @@ Link to another note with [[its first few words]]."></textarea>
               <label class="graph-option-row tools-toggle" title="Each category's notes gather in a place of their own; a note with no links sits with its category instead of on the edge of the map">
                 <span>Group by category</span>
                 <input type="checkbox" id="graph-group" checked>
+              </label>
+              <!-- INBOX 1529: off by default, the clearance pass is the
+                   layout's dearest at 2,000 notes. -->
+              <label class="graph-option-row tools-toggle" title="Dots move off the lines they would sit on; slower to settle on a large notebook">
+                <span>Tidy spacing</span>
+                <input type="checkbox" id="graph-tidy">
               </label>
             </div>
             <button id="graph-unpin-all" class="doc-dock-menu-item" type="button"

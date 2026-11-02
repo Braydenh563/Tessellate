@@ -4688,7 +4688,7 @@ initGraphToastClearance();
 const GRAPH_STORED_SWITCHES = ["graph-curved", "graph-label-plates", "graph-nebula", "graph-length-score", "graph-group",
   "graph-focus-in", "graph-focus-out", "graph-focus-neighbours", "graph-pane-in", "graph-pane-out", "graph-pane-neighbours", "graph-autofit"];
 //: Off by default, so stored "1" means on; and the sliders' stored values.
-const GRAPH_STORED_OFF = ["graph-arrows"];
+const GRAPH_STORED_OFF = ["graph-arrows", "graph-tidy"];
 const GRAPH_STORED_SLIDERS = ["graph-label-fade", "graph-link-width", "graph-focus-depth", "graph-pane-depth"];
 function graphRestoreSwitches() {
   for (const id of GRAPH_STORED_SWITCHES) {
@@ -4904,6 +4904,11 @@ $("graph-length-score")?.addEventListener("change", (event) => {
   prefs.set("graph-length-score", event.target.checked ? "1" : "0");
   renderGraph();
 });
+//: Tidy spacing changes the forces too (graph-worker.js `tidyOn`).
+$("graph-tidy")?.addEventListener("change", (event) => {
+  prefs.set("graph-tidy", event.target.checked ? "1" : "0");
+  renderGraph();
+});
 //: Group by category changes the forces too (graph-worker.js `applyGrouping`).
 $("graph-group")?.addEventListener("change", (event) => {
   prefs.set("graph-group", event.target.checked ? "1" : "0");
@@ -5003,6 +5008,7 @@ const GRAPH_DEFAULTS = {
   "graph-nebula": true,
   "graph-length-score": true,
   "graph-group": true,
+  "graph-tidy": false,
   "graph-time-slider": "max",
   "graph-minimap-corner": "tl",
   "graph-minimap-size": "sm",

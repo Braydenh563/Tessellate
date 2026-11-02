@@ -2018,7 +2018,7 @@ HELP_TOPICS.extend(
                     "Shape (Organic, Clusters or Galaxy; the Force layout's own, dimmed under the others), Colour, Size, Match "
                     "strength (with Similarity on: raise it for closer matches), Trace, which "
                     "finds how two notes connect, and Legend, which hides the key. Then Physics (Unpin all, "
-                    "Reshuffle layout, Gravity, Spread, Link force, Length by similarity, Group by category),"
+                    "Reshuffle layout, Gravity, Spread, Tidy spacing; More graph controls has the rest),"
                     " the Show switches (Similarity, Entities, Documents, Boards, Tags, Attachments, "
                     "Unwritten links, Hide unlinked), Display (Labels, Label backgrounds, Curved links, "
                     "Cluster glow, Arrows, Fit on view change), a Time filter you can play, Groups that paint notes matching some words one "
@@ -2085,11 +2085,13 @@ HELP_TOPICS.extend(
                 "what does gravity do", "what does spread do", "what do the options do",
                 "options panel", "question mark", "what is physics", "what is minimap",
                 "what does filter do", "what is groups", "time slider", "play through time",
+                "tidy spacing", "dots on lines", "dots overlap lines",
             ),
             "body": (
                 "Every section of the graph's Options (View, Physics, Show, Display, Filter, Time, "
                 "Groups and Minimap) has a ? beside its name that says in a line what each of its "
-                "controls does to the map. Physics shapes only the Force layout. Show, "
+                "controls does to the map. Physics shapes only the Force layout; its Tidy spacing "
+                "(off by default) keeps dots off the lines but a large notebook settles slower. Show, "
                 "Display, Filter, Time, Groups and Minimap fold away; open one to change it, and "
                 "Reset to defaults puts them all back."
             ),

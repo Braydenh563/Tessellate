@@ -28,11 +28,12 @@ def main(numbers: list[str]) -> int:
         source, numbers = ROOT / numbers[1], numbers[2:]
     wanted = {int(n) for n in numbers}
     text = source.read_text(encoding="utf-8")
-    parts = re.split(r"(?m)^(?=\d+\. \*\*)", text)
+    # Both item shapes: "12. **" (the old numbered list) and "- **1529" (the bullets).
+    parts = re.split(r"(?m)^(?=\d+\. \*\*|- \*\*\d+)", text)
     kept, moved = [parts[0]], []
     for part in parts[1:]:
-        match = re.match(r"^(\d+)\. \*\*", part)
-        number = int(match.group(1)) if match else -1
+        match = re.match(r"^(?:(\d+)\. \*\*|- \*\*(\d+))", part)
+        number = int(match.group(1) or match.group(2)) if match else -1
         tail = ""
         section = re.search(r"(?m)^## ", part)
         if section:
