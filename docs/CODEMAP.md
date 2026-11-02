@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7558, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8442, test files 1838, tests 15708, plan headings 990, app scripts 28, boot scripts 37, script files 226.
+Counts: frontend functions 7558, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8456, test files 1839, tests 15715, plan headings 990, app scripts 28, boot scripts 37, script files 226.
 
 ## Frontend functions (7558)
 
@@ -12571,7 +12571,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8442)
+## Backend modules (8456)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -22739,6 +22739,25 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `kinds` | src/tessellate/repo/relation_types.py:44 |
 | `update` | src/tessellate/repo/relation_types.py:128 |
 
+### src/tessellate/repo/relations.py (14)
+
+| Name | File:line |
+|---|---|
+| `all_rows` | src/tessellate/repo/relations.py:119 |
+| `among` | src/tessellate/repo/relations.py:76 |
+| `columns` | src/tessellate/repo/relations.py:110 |
+| `count` | src/tessellate/repo/relations.py:124 |
+| `count_live` | src/tessellate/repo/relations.py:133 |
+| `find` | src/tessellate/repo/relations.py:36 |
+| `get_for_note` | src/tessellate/repo/relations.py:40 |
+| `newest` | src/tessellate/repo/relations.py:128 |
+| `pairs` | src/tessellate/repo/relations.py:49 |
+| `touching` | src/tessellate/repo/relations.py:54 |
+| `touching_any` | src/tessellate/repo/relations.py:86 |
+| `untyped` | src/tessellate/repo/relations.py:69 |
+| `wiki_sources` | src/tessellate/repo/relations.py:98 |
+| `with_type` | src/tessellate/repo/relations.py:65 |
+
 ### src/tessellate/repo/reminders.py (20)
 
 | Name | File:line |
@@ -23177,7 +23196,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15708)
+## Tests (15715)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24534,6 +24553,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_repo_files_helper.py | 6 |
 | tests/test_repo_properties.py | 4 |
 | tests/test_repo_relation_types.py | 5 |
+| tests/test_repo_relations.py | 7 |
 | tests/test_repo_reminders.py | 8 |
 | tests/test_repo_tags.py | 8 |
 | tests/test_reset_code.py | 16 |
