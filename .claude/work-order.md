@@ -1,5 +1,5 @@
 mode: continue
-status: done
+status: running
 pr: 212
 max-continues: 60
 max-idle-minutes: 60
@@ -20,3 +20,13 @@ tier: max (three agents at once, one Opus); never Fable; owner away, all permiss
 - [x] Session end: full suite (800f896 fixes), HANDOVER morning summary, retro (d0c94de)
 - [x] CI reds on 0d86461 (e7fab01, 8a8f34b; pushed c43cc3f): composer cold import 0.21-0.22 s on 3.11/3.12 (lazy regex in recognise, composer_ask, cjk: 0.12 to 0.083 s local); model pull status list (8a8f34b)
 - [~] Row 3a: repo3a agent running (tags, properties, relations, categories)
+
+## 2026-11-02q, the owner: "Finish all the audit stuff and fable findings" (and small plan rows, unslop pass)
+- [~] Agents a30a (1546 P1), a30b (small plan rows), a30d (small OPEN rows from a30c): merge, gate, push as each reports
+- [ ] Audit 1028 board UI batch (Sonnet): U12 U14 U15 U16 U17 U21 U22 U23 U24 U25 U26 U27 U28 U30 B12
+- [ ] Audit 1028 chat batch plus Fable (Sonnet): E14 E16 E20 E23 E33 E38 E50 E57, Fable F13 F14 F15 rest, Z57 Z58 Z70 (fable-fix-1030.md, composer-z-1030.md)
+- [ ] Audit 1028 perf batch (Sonnet high, measure before and after): B3 B4 U18 U19 U20 D18 E34 D12 D22
+- [ ] Audit 1028 docs batch: D26 D30 D33 with DX24 threads (audit-1102-docs.md); E48 branches (design call, judge)
+- [ ] Audit 1028 lows and infos (71 + 12, Haiku verify then Sonnet), 1029 rest, 1031 last row
+- [ ] Big refactors, judge design first then Sonnet slices (multi-session): B1 B2 K24 K25 E44 E45 D23 D25 B15 K5
+- [ ] ux-auditor unslop pass (layout, spacing, overflow measured; scanner tells already clean); BACKLOG condense
