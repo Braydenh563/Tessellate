@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Full-suite fallout of the DX29 and INBOX 1545 merges: the drag grip's hover has its keyboard twin, the export's icon font fetch (static /vendor) is allowed, the wrap toggle test reads DX23's boolean.
 - Removed `createConceptMap` (whiteboard.js): it had no caller since maps moved to the board landing; its lazy stub name and writer-lint row went with it (OPEN 2572).
 - Live has a drag handle for blocks (audit 1102 DX29): hover a paragraph, list item, fence or heading and a grip appears in the margin; dropping it moves the whole block as one undo step, the same move as Alt+Up and Alt+Down. Not on phones or code files.
 - A phone's Documents kebab has About these controls: the dock's ? is hidden below 600, and a proxied row now presses its button a task later, so the help it opens is not shut by the same click (a29h leftover).

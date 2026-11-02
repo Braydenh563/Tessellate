@@ -18,6 +18,17 @@
 
 ## Morning summary
 
+Run 2026-11-02 (owner asleep; weekly 41%), branch claude/next-queue-1102, PR 212 (not merged; the owner merges).
+
+- Done: documents audit 1102 at 31 of 32 rows (DX29 Live drag handle 234bf43; open: DX24 threads, DX1 4x gate) (a29c to a29k merged; DX30 slash Templates 558826d; phone dock help in the kebab b1abb78); audit-1028 S63 S68 S69 S85 D48 E52.
+- CI: import-cycle leaf `composer_done.py` (d572484), toast yield for sheets (52fbe39), kept-words spec follows DX31 (8206459), merge fallout in tests and the Guide.
+- Checked stale or fixed: INBOX 1534 tab clicks (7 to 13 ms at 4x, was 117 to 246); OPEN 2314 2544 2553; removed dead `createConceptMap` (OPEN 2572).
+- Full suite on 70a3f90: 5 failed of about 9,000; 3 fixed (hover twin, export font fetch, wrap literal), 2 need huggingface_hub, which CI gets with fastembed and this venv lacks. Disk filled once (pytest temp, 7 GB); 4.5 GB of merged agent worktrees in .claude/worktrees are left for the owner (removal was refused here).
+- Blocked: INBOX 1549 waits on the owner's next log (the logger now names the throw); DX1 4x typing gate not met (a29i-1102.md); import.spec flaky on CI (passes on retry).
+- Next: DX24t threads (DOCUMENTS_PLAN), the 2,257 unmarked OPEN.md rows need a triage pass (many are closed in fact), BACKLOG features.
+
+## Earlier morning summary (2026-10-30)
+
 Run 2026-10-30 (owner's line 80% weekly; stopped near it, the usage view stalled at 76%), branch claude/sharp-thompson-45hngp, PR 211, head 1b92202.
 
 - Built: quantities beyond money ("how far did I run", "how many hours did I spend on the deck", "what's my total distance") on the converter's unit table; goals are not counted.
