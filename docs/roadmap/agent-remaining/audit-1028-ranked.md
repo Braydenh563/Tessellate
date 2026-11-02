@@ -223,7 +223,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 217 | B26 | low | context menu builder is 453 lines with one-use items | new | M |
 | 218 | B27 | low | resize and rotation handle hit size unverified | docs/roadmap/WHITEBOARD_PLAN.md:1698 | S |
 | 219 | B34 | low | empty-board hint lost after dismiss, no inline cue | fixed 2026-11-02 (03e4a05) | S |
-| 220 | D39 | low | typo autocorrect rewrites silently with a 5s undo only | new | S |
+| 220 | D39 | low | typo autocorrect rewrites silently with a 5s undo only | stale 11-02: documents' #doc-autocorrect is off by default and never runs in code files; a correction is underlined with a menu, Ctrl+Z or Backspace puts it back | S |
 | 221 | D40 | low | no selection word count in the status bar | fixed (already: the caret line counts selected words; reconciled 2026-10-30) | S |
 | 222 | D48 | low | controls hidden in dock-menu flyouts reparented to body | new | M |
 | 223 | D53 | low | code run output truncated silently at 4,000 chars | fixed 2026-11-02 (711e8c5) | S |
@@ -237,7 +237,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 231 | E63 | low | three clauses joined as a run-on, no list | fixed (7cfe403) | S |
 | 232 | E67 | low | next chip row offers a single chip | fixed 2026-11-02 (2f1213f) | S |
 | 233 | E68 | low | typing dots role=status, no aria-busy on transcript | fixed 2026-11-02 (ecb69a5) | S |
-| 234 | E69 | low | chat autocorrect runs on names and codes unseen | new | S |
+| 234 | E69 | low | chat autocorrect runs on names and codes unseen | stale 11-02: autocorrect.js changes only table non-words (no acronyms, links, tags, code), underlines each change 5 s with keep/put back/edit and Undo; question_noise repairs asking words only, never the subject | S |
 | 235 | E72 | low | Why trail shows timing lines and a wrong nothing matched | fixed (f725872, wrong nothing matched only; timing lines are the owner's B30 design) | S |
 | 236 | S55 | low | settings labels mix case against sentence case | not reproduced 11-02: settings html and settings*.js labels scanned, title case only in names (Atlas, look presets) | S |
 | 237 | S56 | low | toast stack covers bottom nav at phone width | not reproduced 11-02: 390x844, three toasts, last bottom 780, #tab-bar top 787 | S |
@@ -253,7 +253,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 247 | S83 | low | filter state not summarised when the menu is closed | fixed 11-02: Notes Filter summary tint 0 to rgba(31,36,48,0.12), aria-pressed true when on (Library already did) | S |
 | 248 | S84 | low | onboarding cannot be re-opened from Help | fixed (already: Help pane calls renderTourReplay, settings.js:122, tour.js:1947; checked 2026-11-02) | S |
 | 249 | S85 | low | error toasts say what failed but not what to do | new | M |
-| 250 | S86 | low | library to note takes three clicks | new | S |
+| 250 | S86 | low | library to note takes three clicks | stale 11-02: one click on a card runs openLibraryItem then flashEntry, which opens Notes with the row expanded (expandedRows.add) | S |
 | 251 | S87 | low | dashboard counts do not link to filtered views | fixed 11-02: Stats chips were the one unlinked count; now role=button, click opens Notes filtered (tab notes, category Work) | S |
 | 252 | S88 | low | search results lack term highlighting | fixed (already: notes list search marks terms, highlightInto notes-list.js:1743 with terms; checked 2026-11-02) | S |
 | 253 | S89 | low | export has no format picker | fixed (already: Settings export offers JSON, CSV, Markdown zip, notebook folder and full backup, each titled, with an About help, index.html:13411; checked 2026-11-02) | S |
