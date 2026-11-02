@@ -93,6 +93,15 @@ def test_a_private_note_is_sent_whole_to_the_list_so_the_list_can_match_it(clien
     assert secret not in _ids(client, "marmalade")  # never read by the server: the list matches it
 
 
+def test_a_clipped_row_says_whether_the_whole_text_holds_a_wiki_link(client):
+    """`is:linked` reads a `[[wiki link]]` in the text (INBOX 432); past a clipped row's 300 characters only the server sees it."""
+    late = _note(client, "Plain start. " + "words to fill. " * 40 + "then [[Alpha project]] at the end")
+    none = _note(client, "Plain start. " + "words to fill. " * 40 + "and no link")
+    rows = {r["id"]: r for r in client.get("/entries", params={"preview": "300"}).json()}
+    assert rows[late]["content_truncated"] and "[[" not in rows[late]["content"]
+    assert rows[late]["wiki_linked"] is True and rows[none]["wiki_linked"] is False
+
+
 # --- the list ---------------------------------------------------------------
 
 
@@ -115,11 +124,11 @@ def _list_source() -> str:
     return "\n".join(out)
 
 
-def _matches(rows: list[dict], q: str, served) -> list[int]:
+def _matches(rows: list[dict], q: str, served, flags=()) -> list[int]:
     """The ids `matchesSearch` keeps for `q`, the server answering `served` (a list, or None for asking or failed)."""
     script = f"""
 let noteSearch = {json.dumps(q)};
-const NOTE_FLAGS = [];
+const NOTE_FLAGS = {json.dumps(list(flags))};
 const served = {json.dumps(served)};
 const noteEngine = {{ bodyIds: () => (served === null ? null : new Set(served)) }};
 const noteSemanticLoaded = () => false;
@@ -167,5 +176,17 @@ def test_an_exclusion_past_a_clipped_preview_is_the_servers_call():
 
 def test_a_null_answer_is_no_answer_not_every_note():
     text = with_pieces("notes-list.js")
-    body = text[text.index("  bodyIds(query) {") :][:600]
+    #: The ask moved into `literal`, which the pickers share (the `[[` menu, Attach notes); the rule is the same.
+    body = text[text.index("  literal(slot, text, redraw) {") :][:600]
     assert "ids: r.ids && new Set(r.ids)" in body and "new Set(r.ids) : true" not in body
+
+
+@needs_node
+def test_is_linked_trusts_the_servers_word_on_a_clipped_row():
+    rows = [
+        {"id": 1, "content": "Start [[Alpha]]", "tags": []},
+        {"id": 2, "content": "A clipped start", "tags": [], "content_truncated": True, "wiki_linked": True},
+        {"id": 3, "content": "A clipped start", "tags": [], "content_truncated": True, "wiki_linked": False},
+        {"id": 4, "content": "No link here", "tags": []},
+    ]
+    assert _matches(rows, "is:linked", None, ["linked"]) == [1, 2]

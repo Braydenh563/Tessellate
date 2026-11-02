@@ -55,6 +55,27 @@ function meetingGlance(entry) {
   return rows.length ? rows : [{ label: "", text: "Nothing written yet." }];
 }
 
+//: **Copy a note's text** (INBOX 1525 review). A clipped list row holds 300 characters, so the whole text is read first,
+//: and the clipboard takes a promise of it inside the press itself (a write after an await loses the press in Safari).
+//: A read that fails says why; with no `ClipboardItem` the text is read, then copied by `copyToClipboard`.
+entryItem.copyText = async (entry) => {
+  const clipped = entry.content_truncated;
+  const text = clipped ? fullEntry(entry.id).then((whole) => whole.content) : entry.content;
+  try {
+    if (!clipped || typeof ClipboardItem === "undefined" || !navigator.clipboard?.write) throw 0;
+    const blob = text.then((t) => new Blob([t], { type: "text/plain" }));
+    blob.catch(() => {});
+    await navigator.clipboard.write([new ClipboardItem({ "text/plain": blob })]);
+    toast("Note copied.");
+  } catch {
+    try {
+      if (await copyToClipboard(await text)) toast("Note copied.");
+    } catch (error) {
+      toast(error.message, true);
+    }
+  }
+};
+
 function entryItem(entry, options = {}) {
   const li = document.createElement("li");
   li.dataset.id = entry.id;
@@ -261,13 +282,16 @@ function entryItem(entry, options = {}) {
   //: on a "Show more" press, so an opened-out card, row or phone note page drawn again showed 300 characters with no
   //: way on. One way in for all of them: drawn open, the row's chevron, a press. The card's own `entry` becomes the
   //: whole note, so its menus and Copy read it too; "note-whole" tells a host that changed the text (the note page).
-  content.fillWhole = () => entry.content_truncated && fullEntry(entry.id).then((whole) => {
+  //: `clipped` is how the card was drawn: another reader's `fullEntry` fills the shared row, not this card's text.
+  let clipped = entry.content_truncated;
+  content.fillWhole = () => clipped && (content.whole ||= fullEntry(entry.id).then((whole) => {
+    clipped = false;
     entry = whole;
     body = bodyOf(whole);
     fillContent();
     if (content.unclip) noteClampFit.observe(content);
     content.dispatchEvent(new Event("note-whole"));
-  }, () => {});
+  }, () => void (content.whole = null)));
   if (expandedNotes.has(entry.id) || expandedRows.has(entry.id)) content.fillWhole();
   content.addEventListener("remove-inline-image", async (e) => {
     e.stopPropagation();
@@ -804,9 +828,7 @@ function entryItem(entry, options = {}) {
       favouriteButton(entry)
     );
     actions.appendChild(
-      smallButton("ph:clipboard", "Copy this note's text", async () => {
-        if (await copyToClipboard(entry.content_truncated ? (await fullEntry(entry.id)).content : entry.content)) toast("Note copied.");
-      })
+      smallButton("ph:clipboard", "Copy this note's text", () => entryItem.copyText(entry))
     );
     actions.appendChild(
       //: `openNoteEditor` scrolls the form into view after the redraw (the

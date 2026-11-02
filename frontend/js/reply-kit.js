@@ -1308,7 +1308,8 @@ function replyNoteCard(id, name) {
   title.textContent = content ? noteLabel({ content: head }, 60) : name || "A note";
   const facts = document.createElement("span");
   facts.className = "embed-card-meta";
-  const words = content ? wordCount(plainText(content)) : 0;
+  //: The server's count is over the whole note; a clipped list row holds its first 300 characters.
+  const words = entry?.word_count ?? (content ? wordCount(plainText(content)) : 0);
   facts.textContent = [
     "Note",
     entry?.category,

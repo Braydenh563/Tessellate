@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- A clipped Notes row no longer stands in for the whole note in eight more readers (INBOX 1525 review, item 7): the embed card's word count is the server's, a cited passage past character 300 is cut from the whole note and found by opening the card, the `[[` menu, Attach notes and the choose-a-note dialog match a word the server finds in the whole text (a failed answer keeps the local match, never every note), `is:linked` and the map chips use the server's `wiki_linked`, and Copy reads the whole note inside the press and says why when it cannot.
 - A document's snippet rows open their menu on right-click and long-press, as every other row does (OPEN 244).
 - Follow-up suggestions send the last 500 characters of the question, the part the model is shown (`FOLLOWUP_QUESTION_CHARS`), not 4,000 (warm12 leftover).
 - Alt+= opens the equation editor in a fresh note box at once (it did nothing for about a second, until the editor adapters arrived), and Insert writes through the adapter (maths1527 leftovers).
