@@ -289,12 +289,12 @@ const DOC_BLOCK_ID_AT_END = /(?:^|[ \\t])\\^([a-z0-9-]+)[ \\t]*$/;
 """
 
 _PATCH_DOCS = [
-    "# Title\n\nIntro with **bold**, *em* and a [link](https://x.y) and $x$.\nSecond line of it %%a pin%% here.\n\n"
+    ("# Title\n\nIntro with **bold**, *em* and a [link](https://x.y) and $x$.\nSecond line of it %%a pin%% here.\n\n"
     "- one item\n- [ ] a task\n  - nested words\n1. first\n\n> [!note]- Kind\n> body words\n\n| a | b |\n|---|---|\n| 1 | 2 |\n\n"
-    "After the table.\n\n```js\nconst a = 1;\n```\n\nLast paragraph ==mark== end.\n",
-    "---\ntitle: x\n---\nfront para words\n\npara above table\n| a | b |\n|---|---|\n| 1 | 2 |\nafter table text\n\n"
+    "After the table.\n\n```js\nconst a = 1;\n```\n\nLast paragraph ==mark== end.\n"),
+    ("---\ntitle: x\n---\nfront para words\n\npara above table\n| a | b |\n|---|---|\n| 1 | 2 |\nafter table text\n\n"
     "before fence\n```\ncode\n```\nafter fence\n\nmath para\n$$\nx^2\n$$\nmore words\n\nA para\n===\n\n> quote para\n> more\n\n"
-    "- item one\nlazy continuation\n- item two\n\n   indented para\n\n* a\n\n  b para in item\n",
+    "- item one\nlazy continuation\n- item two\n\n   indented para\n\n* a\n\n  b para in item\n"),
 ]
 
 

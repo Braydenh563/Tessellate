@@ -21,7 +21,7 @@ from tessellate.ai import composer, composer_doings, composer_lists, realise, re
 from tessellate.ai import when as when_words
 from tessellate.ai.composer_done import (  # noqa: F401  (moved; re-exported)
     _DOING_END, _FILLER, _INTENT, _UNDONE, _asked_thing, _done_later, _holds, _says_verb, _stems, _verb_forms,
-    done_later, done_later_note, recorded_later,
+    recorded_later,
 )
 
 _DID = re.compile(r"^(?:did|have|has)\s+(?:i|we)\s+(?:already\s+|yet\s+|ever\s+)?(.+)$", re.I)

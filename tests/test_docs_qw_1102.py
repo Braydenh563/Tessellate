@@ -28,9 +28,9 @@ def _slice(source: str, head: str, tail: str) -> str:
 
 def _node(script: str, *sources: str) -> dict:
     done = subprocess.run(
-        ["node", "-e", "const vm=require('node:vm');const ctx={};vm.createContext(ctx);"
-         "for (const s of JSON.parse(process.argv[1])) vm.runInContext(s, ctx);"
-         "console.log(JSON.stringify(vm.runInContext(process.argv[2], ctx)));",
+        ["node", "-e", ("const vm=require('node:vm');const ctx={};vm.createContext(ctx);"
+                        "for (const s of JSON.parse(process.argv[1])) vm.runInContext(s, ctx);"
+                        "console.log(JSON.stringify(vm.runInContext(process.argv[2], ctx)));"),
          json.dumps(list(sources)), script],
         capture_output=True,
         text=True,

@@ -43,7 +43,7 @@ from datetime import date, datetime, time, timedelta
 from functools import lru_cache, wraps
 from pathlib import Path
 
-from tessellate.ai import composer, composer_doings, composer_frame, composer_threads, composer_lists, composer_money, composer_slots, composer_sum, composer_tables, filed_name, glossary, question_noise, realise, verdicts
+from tessellate.ai import composer, composer_doings, composer_done, composer_frame, composer_threads, composer_lists, composer_money, composer_slots, composer_sum, composer_tables, filed_name, glossary, question_noise, realise, verdicts
 from tessellate.ai.composer_lists import clean
 from tessellate.ai import recognise as recogniser
 from tessellate.ai import when as when_words
@@ -4374,7 +4374,7 @@ def _show_checklist(out: _Out, view: composer.NoteView) -> None:
     #: that note: one item, one state (fable-eye F15).
     #: The answer's day, never the server's clock (audit 1030 Z: tests fix the clock).
     views, today = _VIEWS.get(), _TODAY.get() or view.written or date.min
-    later = composer_slots.done_later(views, view, tasks)
+    later = composer_done.done_later(views, view, tasks)
     ticked = sum(1 for s in tasks if s.done or id(s) in later)
     total = realise.count_word(len(tasks))
     name = _your_note(view)
@@ -4382,7 +4382,7 @@ def _show_checklist(out: _Out, view: composer.NoteView) -> None:
     opening = f"{name[0].upper()}{name[1:]} has {done} checklist items done"
     boxes = [
         f"- [{'x' if s.done else ' '}] {s.text[:1].upper()}{s.text[1:]}"
-        + (composer_slots.done_later_note(later[id(s)], today) if id(s) in later else "")
+        + (composer_done.done_later_note(later[id(s)], today) if id(s) in later else "")
         for s in tasks
     ]
     out.lines.append(opening + ":\n\n" + "\n".join(boxes))
