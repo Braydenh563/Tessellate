@@ -49,16 +49,6 @@ function toggleRowExpanded(id) {
   if (open) {
     expandedRows.add(id);
     notesRailId = id;
-    //: An opened-out row shows the whole note. The text swaps into the open
-    //: row in place (a list redraw cut its opening animation short); a row
-    //: not on screen draws whole next time from `allEntries`.
-    if (allEntries.find((e) => e.id === id)?.content_truncated) {
-      fullEntry(id).then((entry) => {
-        const shown = document.querySelector(`#entry-list > li[data-id="${id}"] .entry-content`);
-        const fresh = shown && window.entryItem && entryItem(entry, { actions: true }).querySelector(".entry-content");
-        if (fresh) shown.replaceWith(fresh);
-      }, () => {});
-    }
   } else {
     expandedRows.delete(id);
     //: Closing the note the rail is about closes the rail's subject with it:
@@ -83,6 +73,9 @@ function toggleRowExpanded(id) {
   const seen = parts.map((el) => (el.getAnimations().length ? +getComputedStyle(el).opacity : 0));
   for (const el of [li, ...parts]) for (const a of el.getAnimations()) if (a.id === "row") a.cancel();
   li.classList.toggle("row-expanded", open);
+  //: An opened-out row shows the whole note: its card fills itself in place (`fillWhole`, entry-card.js), so its
+  //: Show more stays bound to the text it shows and a list redraw does not cut the opening short (INBOX 1525 review).
+  if (open) li.querySelector(".entry-content")?.fillWhole?.();
   const button = li.querySelector(":scope > .row-expand");
   if (button) {
     button.title = open ? "Show less of this note" : "Show the whole note here";

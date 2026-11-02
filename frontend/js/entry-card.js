@@ -257,6 +257,18 @@ function entryItem(entry, options = {}) {
     (prose) => prose.replace(/^#{1,6}[ \t]+/gm, "").replace(/^( *)-(?= \w)/gm, "$1•")
   );
   fillContent();
+  //: **A card drawn open fills itself with the whole note** (INBOX 1525 review). A clipped row's card read the rest only
+  //: on a "Show more" press, so an opened-out card, row or phone note page drawn again showed 300 characters with no
+  //: way on. One way in for all of them: drawn open, the row's chevron, a press. The card's own `entry` becomes the
+  //: whole note, so its menus and Copy read it too; "note-whole" tells a host that changed the text (the note page).
+  content.fillWhole = () => entry.content_truncated && fullEntry(entry.id).then((whole) => {
+    entry = whole;
+    body = bodyOf(whole);
+    fillContent();
+    if (content.unclip) noteClampFit.observe(content);
+    content.dispatchEvent(new Event("note-whole"));
+  }, () => {});
+  if (expandedNotes.has(entry.id) || expandedRows.has(entry.id)) content.fillWhole();
   content.addEventListener("remove-inline-image", async (e) => {
     e.stopPropagation();
     if (!(await confirmDialog("Remove this image from the note?"))) return;
@@ -325,10 +337,7 @@ function entryItem(entry, options = {}) {
       content.classList.toggle("entry-clamped", !expandedNotes.has(entry.id));
       fillContent();
       toggle.textContent = label();
-      if (entry.content_truncated && expandedNotes.has(entry.id)) fullEntry(entry.id).then((whole) => {
-        body = bodyOf(whole);
-        fillContent();
-      }, () => {});
+      if (expandedNotes.has(entry.id)) content.fillWhole();
     });
     li.appendChild(toggle);
     // **Then check whether it was actually needed.** Reported: "a show
