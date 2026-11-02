@@ -1356,18 +1356,25 @@ function activeAccent() {
 // about the accent picker, so a curated palette changed every surface in the
 // app except the two canvases, leaving them wearing the previous theme. The
 // computed variable is the one source of truth once palettes can set it too.
-//: Kept until the root, the body or the system scheme changes: read fresh, it
-//: settled the style a tab press had just dirtied (18ms of style and 9ms of
-//: layout a Chat press at 4x, INBOX 1534, `tabstyle1102.js`).
+//: Kept until a `data-*` or the inline style of the root changes (the palette,
+//: mode and accent are the only things that set `--accent`: no rule keys it on
+//: a class or on the body) or the system scheme does: read fresh, it settled
+//: the style a tab press had just dirtied (18 to 60ms of style a press at 4x,
+//: INBOX 1534, `tabstyle1102.js`). A class on the root (`status-bar-idle`,
+//: `modal-open`) or the body (`scroll-top-visible`) flips often and says
+//: nothing about the colour.
 function currentAccentHex() {
   const forget = () => (currentAccentHex.kept = "");
   if (!currentAccentHex.watched) {
     currentAccentHex.watched = true;
-    const watch = new MutationObserver(forget);
-    watch.observe(document.documentElement, { attributes: true });
-    if (document.body) watch.observe(document.body, { attributes: true });
+    const moved = (records) => records.some((r) => r.attributeName !== "class") && forget();
+    currentAccentHex.watch = new MutationObserver(moved);
+    currentAccentHex.watch.observe(document.documentElement, { attributes: true });
     matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", forget);
   }
+  //: A change made in this same task (`applyAccent` sets the colour, then redraws
+  //: the emblem) has not reached the observer's callback yet: take its records now.
+  if (currentAccentHex.kept && currentAccentHex.watch.takeRecords().some((r) => r.attributeName !== "class")) forget();
   const computed = currentAccentHex.kept || getComputedStyle(document.documentElement)
     .getPropertyValue("--accent")
     .trim();

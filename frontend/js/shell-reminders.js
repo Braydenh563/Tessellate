@@ -411,7 +411,12 @@ function syncEdgeFade(bar) {
 function edgeFadeWire(bar) {
   if (!bar || bar.dataset.fadeWired) return;
   bar.dataset.fadeWired = "1";
-  syncEdgeFade(bar);
+  //: Told by the observer once the strip is laid out (and again when a hidden
+  //: one shows or its content changes width), never measured here: a strip a
+  //: script has just built read its width in the press that built it (21ms of
+  //: style and 14 of layout on a Dashboard press at 4x, INBOX 1534).
+  if (typeof ResizeObserver !== "undefined") new ResizeObserver(() => syncEdgeFade(bar)).observe(bar);
+  else syncEdgeFade(bar);
   bar.addEventListener("scroll", () => syncEdgeFade(bar), { passive: true });
   bar.addEventListener("click", (event) => {
     const pick = event.target.closest?.("button, [role=tab]");
@@ -419,14 +424,9 @@ function edgeFadeWire(bar) {
   });
 }
 
-for (const bar of document.querySelectorAll(".edge-fade")) {
-  edgeFadeWire(bar);
-  if (typeof ResizeObserver !== "undefined") {
-    // Fires when a hidden (0-width) strip becomes visible on tab switch,
-    // same as content changing width, no extra wiring needed per tab.
-    new ResizeObserver(() => syncEdgeFade(bar)).observe(bar);
-  }
-}
+// The observer in edgeFadeWire also fires when a hidden (0-width) strip becomes
+// visible on tab switch, same as content changing width.
+for (const bar of document.querySelectorAll(".edge-fade")) edgeFadeWire(bar);
 window.addEventListener("resize", () => {
   document.querySelectorAll(".edge-fade").forEach(syncEdgeFade);
 }, { passive: true });
