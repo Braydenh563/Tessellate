@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7563, frontend ids 2642, CSS sections 518, backend routes 640, backend modules 8491, test files 1895, tests 15994, plan headings 991, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7563, frontend ids 2642, CSS sections 518, backend routes 641, backend modules 8493, test files 1896, tests 15998, plan headings 991, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7563)
 
@@ -6476,58 +6476,58 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `backupNow` | frontend/js/settings-data.js:492 |
+| `backupNow` | frontend/js/settings-data.js:499 |
 | `backupScheduleWords` | frontend/js/settings-data.js:256 |
-| `clearPreviews` | frontend/js/settings-data.js:732 |
-| `dismissedWords` | frontend/js/settings-data.js:798 |
-| `guideTurns` | frontend/js/settings-data.js:738 |
-| `humanBytes` | frontend/js/settings-data.js:427 |
-| `importDirectory` | frontend/js/settings-data.js:503 |
-| `importDocument` | frontend/js/settings-data.js:652 |
-| `importMarkdown` | frontend/js/settings-data.js:593 |
-| `importSummary` | frontend/js/settings-data.js:528 |
-| `markdownPreview` | frontend/js/settings-data.js:573 |
-| `noteSettingChange` | frontend/js/settings-data.js:976 |
-| `paintClearRow` | frontend/js/settings-data.js:743 |
-| `previewCaches` | frontend/js/settings-data.js:718 |
-| `previewCount` | frontend/js/settings-data.js:727 |
+| `clearPreviews` | frontend/js/settings-data.js:739 |
+| `dismissedWords` | frontend/js/settings-data.js:805 |
+| `guideTurns` | frontend/js/settings-data.js:745 |
+| `humanBytes` | frontend/js/settings-data.js:434 |
+| `importDirectory` | frontend/js/settings-data.js:510 |
+| `importDocument` | frontend/js/settings-data.js:659 |
+| `importMarkdown` | frontend/js/settings-data.js:600 |
+| `importSummary` | frontend/js/settings-data.js:535 |
+| `markdownPreview` | frontend/js/settings-data.js:580 |
+| `noteSettingChange` | frontend/js/settings-data.js:983 |
+| `paintClearRow` | frontend/js/settings-data.js:750 |
+| `previewCaches` | frontend/js/settings-data.js:725 |
+| `previewCount` | frontend/js/settings-data.js:734 |
 | `privacyAddressLine` | frontend/js/settings-data.js:39 |
 | `privacyDestinationRow` | frontend/js/settings-data.js:47 |
 | `privacyGroups` | frontend/js/settings-data.js:23 |
 | `privacyWhen` | frontend/js/settings-data.js:10 |
 | `renderBackupCopyRow` | frontend/js/settings-data.js:287 |
-| `renderBackupRetention` | frontend/js/settings-data.js:479 |
+| `renderBackupRetention` | frontend/js/settings-data.js:486 |
 | `renderBackupSchedule` | frontend/js/settings-data.js:275 |
 | `renderBackups` | frontend/js/settings-data.js:319 |
-| `renderIntegrityNotice` | frontend/js/settings-data.js:467 |
+| `renderIntegrityNotice` | frontend/js/settings-data.js:474 |
 | `renderPrivacyRange` | frontend/js/settings-data.js:93 |
 | `renderPrivacyReceipt` | frontend/js/settings-data.js:141 |
-| `renderSettingsClear` | frontend/js/settings-data.js:750 |
-| `renderSettingsHistory` | frontend/js/settings-data.js:1202 |
+| `renderSettingsClear` | frontend/js/settings-data.js:757 |
+| `renderSettingsHistory` | frontend/js/settings-data.js:1209 |
 | `renderStorageBreakdown` | frontend/js/settings-data.js:212 |
-| `renderStorageSpaceNotice` | frontend/js/settings-data.js:446 |
-| `restoreGuideTurns` | frontend/js/settings-data.js:860 |
+| `renderStorageSpaceNotice` | frontend/js/settings-data.js:453 |
+| `restoreGuideTurns` | frontend/js/settings-data.js:867 |
 | `saveBackupCopyDir` | frontend/js/settings-data.js:297 |
-| `searchRecentAll` | frontend/js/settings-data.js:1005 |
-| `searchRecentClearAll` | frontend/js/settings-data.js:1017 |
-| `searchRecentRestore` | frontend/js/settings-data.js:1023 |
-| `settingChangeWords` | frontend/js/settings-data.js:941 |
-| `settingListWords` | frontend/js/settings-data.js:924 |
-| `settingName` | frontend/js/settings-data.js:917 |
-| `settingShown` | frontend/js/settings-data.js:906 |
-| `settingsClearCount` | frontend/js/settings-data.js:712 |
-| `settingsClearDone` | frontend/js/settings-data.js:812 |
-| `settingsHistoryAdd` | frontend/js/settings-data.js:1064 |
-| `settingsHistoryApply` | frontend/js/settings-data.js:1080 |
-| `settingsHistoryEntry` | frontend/js/settings-data.js:1045 |
-| `settingsHistoryFind` | frontend/js/settings-data.js:1075 |
-| `settingsHistoryLoad` | frontend/js/settings-data.js:1034 |
-| `settingsHistoryRedo` | frontend/js/settings-data.js:1155 |
-| `settingsHistoryRow` | frontend/js/settings-data.js:1168 |
-| `settingsHistorySave` | frontend/js/settings-data.js:1038 |
-| `settingsHistoryUndo` | frontend/js/settings-data.js:1141 |
-| `settingsPrefsSeen` | frontend/js/settings-data.js:955 |
-| `undoImport` | frontend/js/settings-data.js:538 |
+| `searchRecentAll` | frontend/js/settings-data.js:1012 |
+| `searchRecentClearAll` | frontend/js/settings-data.js:1024 |
+| `searchRecentRestore` | frontend/js/settings-data.js:1030 |
+| `settingChangeWords` | frontend/js/settings-data.js:948 |
+| `settingListWords` | frontend/js/settings-data.js:931 |
+| `settingName` | frontend/js/settings-data.js:924 |
+| `settingShown` | frontend/js/settings-data.js:913 |
+| `settingsClearCount` | frontend/js/settings-data.js:719 |
+| `settingsClearDone` | frontend/js/settings-data.js:819 |
+| `settingsHistoryAdd` | frontend/js/settings-data.js:1071 |
+| `settingsHistoryApply` | frontend/js/settings-data.js:1087 |
+| `settingsHistoryEntry` | frontend/js/settings-data.js:1052 |
+| `settingsHistoryFind` | frontend/js/settings-data.js:1082 |
+| `settingsHistoryLoad` | frontend/js/settings-data.js:1041 |
+| `settingsHistoryRedo` | frontend/js/settings-data.js:1162 |
+| `settingsHistoryRow` | frontend/js/settings-data.js:1175 |
+| `settingsHistorySave` | frontend/js/settings-data.js:1045 |
+| `settingsHistoryUndo` | frontend/js/settings-data.js:1148 |
+| `settingsPrefsSeen` | frontend/js/settings-data.js:962 |
+| `undoImport` | frontend/js/settings-data.js:545 |
 
 ### frontend/js/settings-find.js (36)
 
@@ -11979,7 +11979,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/web-lazy.css | 88 |
 | frontend/css/writing-desk-lazy.css | 27 |
 
-## Backend routes (640)
+## Backend routes (641)
 
 `@router.<method>(`, `@<name>_router.<method>(` and `@app.<method>(` decorators in `src/tessellate/api/*.py`, sorted by path. The line is the decorator's.
 
@@ -12031,14 +12031,15 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/audit/export.csv` | GET | `audit_export_csv` | src/tessellate/api/routes_settings.py:1853 |
 | `/auto` | PUT | `tidy_auto` | src/tessellate/api/routes_tidy.py:60 |
 | `/auto-session` | POST | `auto_session` | src/tessellate/api/routes_auth.py:1089 |
-| `/backups` | GET | `list_backups` | src/tessellate/api/routes_backups.py:111 |
-| `/backups` | POST | `backup_now` | src/tessellate/api/routes_backups.py:120 |
-| `/backups/bundle` | POST | `export_bundle` | src/tessellate/api/routes_backups.py:252 |
-| `/backups/bundle/restore` | POST | `restore_bundle` | src/tessellate/api/routes_backups.py:293 |
+| `/backups` | GET | `list_backups` | src/tessellate/api/routes_backups.py:122 |
+| `/backups` | POST | `backup_now` | src/tessellate/api/routes_backups.py:131 |
+| `/backups/bundle` | POST | `export_bundle` | src/tessellate/api/routes_backups.py:263 |
+| `/backups/bundle/restore` | POST | `restore_bundle` | src/tessellate/api/routes_backups.py:304 |
 | `/backups/integrity` | GET | `integrity_at_start` | src/tessellate/api/routes_backups.py:99 |
-| `/backups/restore` | POST | `restore_backup` | src/tessellate/api/routes_backups.py:189 |
-| `/backups/retention` | PUT | `set_retention` | src/tessellate/api/routes_backups.py:142 |
-| `/backups/{name:path}` | DELETE | `delete_backup` | src/tessellate/api/routes_backups.py:223 |
+| `/backups/restore` | POST | `restore_backup` | src/tessellate/api/routes_backups.py:200 |
+| `/backups/retention` | PUT | `set_retention` | src/tessellate/api/routes_backups.py:153 |
+| `/backups/summary` | GET | `backup_summary` | src/tessellate/api/routes_backups.py:111 |
+| `/backups/{name:path}` | DELETE | `delete_backup` | src/tessellate/api/routes_backups.py:234 |
 | `/bin/{kind}/{item_id}/restore` | POST | `restore_from_bin` | src/tessellate/api/routes_library.py:1093 |
 | `/board-library` | GET | `list_library` | src/tessellate/api/routes_board_library.py:538 |
 | `/board-library` | POST | `create_library_item` | src/tessellate/api/routes_board_library.py:597 |
@@ -12626,7 +12627,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8491)
+## Backend modules (8493)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -15378,8 +15379,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3150 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3276 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3151 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3277 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -18383,24 +18384,25 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `unlock_vault` | src/tessellate/api/routes_auth.py:1129 |
 | `untrust_network` | src/tessellate/api/routes_auth.py:1395 |
 
-### src/tessellate/api/routes_backups.py (15)
+### src/tessellate/api/routes_backups.py (16)
 
 | Name | File:line |
 |---|---|
-| `BundleBody` | src/tessellate/api/routes_backups.py:240 |
-| `RestoreBody` | src/tessellate/api/routes_backups.py:185 |
+| `BundleBody` | src/tessellate/api/routes_backups.py:251 |
+| `RestoreBody` | src/tessellate/api/routes_backups.py:196 |
 | `RetentionBody` | src/tessellate/api/routes_backups.py:41 |
-| `_jobs_held` | src/tessellate/api/routes_backups.py:161 |
+| `_jobs_held` | src/tessellate/api/routes_backups.py:172 |
 | `_retention` | src/tessellate/api/routes_backups.py:37 |
-| `_unlink_quietly` | src/tessellate/api/routes_backups.py:244 |
-| `backup_now` | src/tessellate/api/routes_backups.py:121 |
-| `delete_backup` | src/tessellate/api/routes_backups.py:224 |
-| `export_bundle` | src/tessellate/api/routes_backups.py:253 |
+| `_unlink_quietly` | src/tessellate/api/routes_backups.py:255 |
+| `backup_now` | src/tessellate/api/routes_backups.py:132 |
+| `backup_summary` | src/tessellate/api/routes_backups.py:112 |
+| `delete_backup` | src/tessellate/api/routes_backups.py:235 |
+| `export_bundle` | src/tessellate/api/routes_backups.py:264 |
 | `integrity_at_start` | src/tessellate/api/routes_backups.py:100 |
-| `list_backups` | src/tessellate/api/routes_backups.py:112 |
-| `restore_backup` | src/tessellate/api/routes_backups.py:190 |
-| `restore_bundle` | src/tessellate/api/routes_backups.py:294 |
-| `set_retention` | src/tessellate/api/routes_backups.py:143 |
+| `list_backups` | src/tessellate/api/routes_backups.py:123 |
+| `restore_backup` | src/tessellate/api/routes_backups.py:201 |
+| `restore_bundle` | src/tessellate/api/routes_backups.py:305 |
+| `set_retention` | src/tessellate/api/routes_backups.py:154 |
 | `storage_location` | src/tessellate/api/routes_backups.py:46 |
 
 ### src/tessellate/api/routes_bench.py (13)
@@ -20505,11 +20507,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `atomic_write_json` | src/tessellate/core/atomic_io.py:79 |
 | `atomic_write_text` | src/tessellate/core/atomic_io.py:53 |
 
-### src/tessellate/core/backup.py (31)
+### src/tessellate/core/backup.py (32)
 
 | Name | File:line |
 |---|---|
-| `DamagedNotebookError` | src/tessellate/core/backup.py:419 |
+| `DamagedNotebookError` | src/tessellate/core/backup.py:443 |
 | `_NoRun` | src/tessellate/core/backup.py:297 |
 | `_copy_aside` | src/tessellate/core/backup.py:218 |
 | `_discard_partial` | src/tessellate/core/backup.py:347 |
@@ -20519,24 +20521,25 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_record_path` | src/tessellate/core/backup.py:44 |
 | `_second_copy` | src/tessellate/core/backup.py:327 |
 | `_snapshots` | src/tessellate/core/backup.py:310 |
-| `_sweep_partials` | src/tessellate/core/backup.py:472 |
+| `_sweep_partials` | src/tessellate/core/backup.py:496 |
 | `_write_record` | src/tessellate/core/backup.py:48 |
 | `backup_files` | src/tessellate/core/backup.py:86 |
-| `backup_if_due` | src/tessellate/core/backup.py:501 |
-| `backup_is_due` | src/tessellate/core/backup.py:483 |
+| `backup_if_due` | src/tessellate/core/backup.py:525 |
+| `backup_is_due` | src/tessellate/core/backup.py:507 |
 | `backup_now` | src/tessellate/core/backup.py:246 |
 | `backup_path` | src/tessellate/core/backup.py:76 |
 | `backups_dir` | src/tessellate/core/backup.py:70 |
-| `check_at_boot` | src/tessellate/core/backup.py:384 |
+| `check_at_boot` | src/tessellate/core/backup.py:408 |
 | `copy_dir` | src/tessellate/core/backup.py:206 |
-| `damaged_notebook_words` | src/tessellate/core/backup.py:423 |
-| `forget_boot_check` | src/tessellate/core/backup.py:445 |
+| `damaged_notebook_words` | src/tessellate/core/backup.py:447 |
+| `forget_boot_check` | src/tessellate/core/backup.py:469 |
 | `forget_record` | src/tessellate/core/backup.py:65 |
 | `list_backups` | src/tessellate/core/backup.py:126 |
+| `notebook_counts` | src/tessellate/core/backup.py:372 |
 | `optimize_fts` | src/tessellate/core/backup.py:160 |
-| `prune` | src/tessellate/core/backup.py:451 |
-| `restore_backup` | src/tessellate/core/backup.py:519 |
-| `restore_file` | src/tessellate/core/backup.py:531 |
+| `prune` | src/tessellate/core/backup.py:475 |
+| `restore_backup` | src/tessellate/core/backup.py:543 |
+| `restore_file` | src/tessellate/core/backup.py:555 |
 | `snapshot` | src/tessellate/core/backup.py:185 |
 | `strip_leftovers` | src/tessellate/core/backup.py:174 |
 | `verify_copy` | src/tessellate/core/backup.py:357 |
@@ -23296,7 +23299,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (15994)
+## Tests (15998)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23425,6 +23428,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_backup_details.py | 7 |
 | tests/test_backup_roundtrip_full.py | 2 |
 | tests/test_backup_secrets.py | 3 |
+| tests/test_backup_summary_s69.py | 4 |
 | tests/test_backups_api.py | 14 |
 | tests/test_badge_recipe.py | 16 |
 | tests/test_bars_618.py | 7 |

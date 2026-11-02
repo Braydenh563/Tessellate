@@ -108,6 +108,17 @@ def integrity_at_start() -> dict:
     return result
 
 
+@router.get("/backups/summary")
+def backup_summary(name: str) -> dict:
+    """What a restore would bring back, next to what is here now (audit 1028
+    S69), so the confirm names the counts before anything is replaced."""
+    config = deps.get_config()
+    path = backup.backup_path(name, config.data_dir)
+    if path is None or not path.is_file():
+        raise HTTPException(status_code=404, detail="That backup was not found.")
+    return {"backup": backup.notebook_counts(path), "live": backup.notebook_counts(Path(config.db_path))}
+
+
 @router.get("/backups")
 def list_backups() -> list[dict]:
     # Unchanged shape (a plain list): `keep`/the retention bounds live on

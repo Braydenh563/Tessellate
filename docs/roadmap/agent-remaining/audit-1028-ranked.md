@@ -246,13 +246,13 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 240 | S60 | low | reduced-motion not applied to every animation | docs/roadmap/BACKLOG.md:1290 | S |
 | 241 | S61 | low | muted text contrast near threshold in dark theme | not reproduced 11-02: .muted 7.96:1 dark, 5.91:1 light (AA 4.5) | S |
 | 242 | S62 | low | palette empty state offers no suggestion | fixed 2026-11-02 (e0b77e9) | S |
-| 243 | S63 | low | palette lacks note results with a preview | new | M |
+| 243 | S63 | low | palette lacks note results with a preview | built (verify: app-palette.js note results with snippets) | M |
 | 244 | S68 | low | import panel is long and dense | new | M |
-| 245 | S69 | low | backup restore has no verify-before-restore summary | new | M |
+| 245 | S69 | low | backup restore has no verify-before-restore summary | built 11-02: GET /backups/summary, the confirm names the counts (the uploaded full-backup restore still cannot: sealed) | M |
 | 246 | S82 | low | segmented view toggle has no labels | fixed (already: each segmented toggle button has a title and aria-label, e.g. index.html:6031, 14490; checked 2026-11-02) | S |
 | 247 | S83 | low | filter state not summarised when the menu is closed | fixed 11-02: Notes Filter summary tint 0 to rgba(31,36,48,0.12), aria-pressed true when on (Library already did) | S |
 | 248 | S84 | low | onboarding cannot be re-opened from Help | fixed (already: Help pane calls renderTourReplay, settings.js:122, tour.js:1947; checked 2026-11-02) | S |
-| 249 | S85 | low | error toasts say what failed but not what to do | new | M |
+| 249 | S85 | low | error toasts say what failed but not what to do | built (status.js: every error toast carries one action, test_error_toasts.py) | M |
 | 250 | S86 | low | library to note takes three clicks | stale 11-02: one click on a card runs openLibraryItem then flashEntry, which opens Notes with the row expanded (expandedRows.add) | S |
 | 251 | S87 | low | dashboard counts do not link to filtered views | fixed 11-02: Stats chips were the one unlinked count; now role=button, click opens Notes filtered (tab notes, category Work) | S |
 | 252 | S88 | low | search results lack term highlighting | fixed (already: notes list search marks terms, highlightInto notes-list.js:1743 with terms; checked 2026-11-02) | S |
