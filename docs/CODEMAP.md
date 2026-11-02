@@ -2821,23 +2821,23 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `addBubble` | frontend/js/chat-turn.js:2374 |
 | `agentTimeline` | frontend/js/chat-turn.js:1197 |
 | `appendRunResumeControls` | frontend/js/chat-turn.js:2268 |
-| `assistantMessageActions` | frontend/js/chat-turn.js:2454 |
+| `assistantMessageActions` | frontend/js/chat-turn.js:2456 |
 | `chatAttachmentStrip` | frontend/js/chat-turn.js:2143 |
 | `chatSendTurn` | frontend/js/chat-turn.js:11 |
 | `commitStagedImages` | frontend/js/chat-turn.js:2046 |
-| `continueRunControls` | frontend/js/chat-turn.js:2603 |
-| `deleteChatTurn` | frontend/js/chat-turn.js:2553 |
-| `forkFromBubble` | frontend/js/chat-turn.js:2648 |
-| `manualPauseControls` | frontend/js/chat-turn.js:2677 |
-| `markFollowup` | frontend/js/chat-turn.js:2703 |
+| `continueRunControls` | frontend/js/chat-turn.js:2605 |
+| `deleteChatTurn` | frontend/js/chat-turn.js:2555 |
+| `forkFromBubble` | frontend/js/chat-turn.js:2650 |
+| `manualPauseControls` | frontend/js/chat-turn.js:2679 |
+| `markFollowup` | frontend/js/chat-turn.js:2705 |
 | `mountChatTimer` | frontend/js/chat-turn.js:2095 |
 | `offerFollowups` | frontend/js/chat-turn.js:1981 |
 | `offerReminder` | frontend/js/chat-turn.js:1920 |
 | `paintChatTimer` | frontend/js/chat-turn.js:2082 |
-| `removeChatBubble` | frontend/js/chat-turn.js:2727 |
+| `removeChatBubble` | frontend/js/chat-turn.js:2729 |
 | `renderAgentQuestion` | frontend/js/chat-turn.js:1708 |
 | `renderMemoryProposal` | frontend/js/chat-turn.js:1792 |
-| `renderRecordsDetails` | frontend/js/chat-turn.js:2513 |
+| `renderRecordsDetails` | frontend/js/chat-turn.js:2515 |
 | `revalidateSelection` | frontend/js/chat-turn.js:1864 |
 | `saveFollowups` | frontend/js/chat-turn.js:2067 |
 | `selectionContextBlock` | frontend/js/chat-turn.js:2019 |
@@ -25572,7 +25572,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E3 · Model calls are scattered across request handlers, background threads and module singletons, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:666 |
 | E4 · The honest positives, so the section is not one-sided (read) | docs/roadmap/MODERNISATION_AUDIT.md:676 |
 | Earlier morning summary (away run 2026-10-18b, branch claude/magical-feynman-7bgj7j, PR 192, 0.6.0) | docs/roadmap/HANDOVER.md:38 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:582 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:583 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4280 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |

@@ -2401,8 +2401,10 @@ function addBubble(role, text, attachments = null) {
   //: notes' "Show more"; what reads the question back reads `dataset.sent`, never this body.
   const BUBBLE_CLIP = 2000;
   const long = role === "user" && typeof text === "string" && text.length > BUBBLE_CLIP * 1.2;
-  const space = long ? text.lastIndexOf(" ", BUBBLE_CLIP) : -1;
-  const clipped = long ? `${text.slice(0, space > BUBBLE_CLIP * 0.8 ? space : BUBBLE_CLIP).trimEnd()}\u2026` : text;
+  //: Cut at the last space or line break before the limit; with none near it, never inside a surrogate pair.
+  const space = long ? Math.max(text.lastIndexOf(" ", BUBBLE_CLIP), text.lastIndexOf("\n", BUBBLE_CLIP)) : -1;
+  const hard = long && /[\ud800-\udbff]/.test(text[BUBBLE_CLIP - 1]) ? BUBBLE_CLIP - 1 : BUBBLE_CLIP;
+  const clipped = long ? `${text.slice(0, space > BUBBLE_CLIP * 0.8 ? space : hard).trimEnd()}\u2026` : text;
   body.textContent = long ? clipped : text;
   bubble.append(label, body);
   if (long) {

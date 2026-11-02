@@ -261,7 +261,11 @@ function entryItem(entry, options = {}) {
   //: on a "Show more" press, so an opened-out card, row or phone note page drawn again showed 300 characters with no
   //: way on. One way in for all of them: drawn open, the row's chevron, a press. The card's own `entry` becomes the
   //: whole note, so its menus and Copy read it too; "note-whole" tells a host that changed the text (the note page).
-  content.fillWhole = () => entry.content_truncated && fullEntry(entry.id).then((whole) => {
+  //: Asked of what THIS card drew, never of the row: `fullEntry` merges the whole note into the shared row, so a
+  //: second card of the same note (list and note page) found `content_truncated` false and kept its 300 characters.
+  let drawnClipped = !!entry.content_truncated;
+  content.fillWhole = () => drawnClipped && fullEntry(entry.id).then((whole) => {
+    drawnClipped = false;
     entry = whole;
     body = bodyOf(whole);
     fillContent();
