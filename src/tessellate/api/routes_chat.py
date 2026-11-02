@@ -200,7 +200,8 @@ def _worked_out(question: str):
     """**Worked out, like a count** (CHAT_PLAN decision 41): a sum, a
     conversion, the time. Its sentence is exact and needs no model, so it
     travels the counted answer's road: no retrieval, said as it is.
-    Translating is a model's job when one runs: that one is chat."""
+    Translating and writing (`utilities.GENERATIVE_VERBS`) are a model's job
+    when one runs: those are chat."""
     from tessellate.ai import utilities
 
     kind = utilities.kind_of(question)
@@ -211,7 +212,7 @@ def _worked_out(question: str):
         #: from the composer with a model up and Web on).
         return intent.NOTES, None
     worked = None
-    if kind != "translate" or not deps.get_ollama().is_running():
+    if kind not in ("translate", "generate") or not deps.get_ollama().is_running():
         now = user_now(deps.get_config())
         worked = composer.compose(question, [], today=now.date(), now=now.replace(tzinfo=None))
     if worked and worked["shape"] == "utility":
