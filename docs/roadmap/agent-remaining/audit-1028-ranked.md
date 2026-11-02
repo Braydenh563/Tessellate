@@ -228,7 +228,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 222 | D48 | low | controls hidden in dock-menu flyouts reparented to body | new | M |
 | 223 | D53 | low | code run output truncated silently at 4,000 chars | new | S |
 | 224 | E37 | low | AI status control reads as an error, red circle with x | new | S |
-| 225 | E41 | low | models pane jargon and redundant Use this model button | fixed 2026-11-02 (HASH) | S |
+| 225 | E41 | low | models pane jargon and redundant Use this model button | fixed 2026-11-02 (5ed769f) | S |
 | 226 | E51 | low | citation mark lands mid-sentence, date-only source | docs/roadmap/CHAT_PLAN.md:1810 | S |
 | 227 | E52 | low | coaching tip appended inside answer text | new | S |
 | 228 | E53 | low | double greeting and last-time line from app-made note | new | S |
