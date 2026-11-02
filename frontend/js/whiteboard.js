@@ -5543,19 +5543,20 @@ async function wbResizeSelectionBy(dw, dh) {
 // where they came from, not just to whatever else in the notebook they
 // happen to resemble. Reuses `wbSelectionEntries()`, same as align/
 // distribute above, rather than a second way of reading the selection.
-function wbExtractNotes() {
+async function wbExtractNotes() {
   const noteEntries = wbSelectionEntries().filter((e) => e.kind === "node");
   if (noteEntries.length === 0) {
     toast("Select at least one note card to extract from.");
     return;
   }
   const entryIds = [...new Set(noteEntries.map((e) => e.item.entry_id))];
-  const byId = new Map(allEntries.map((e) => [e.id, e]));
   // A card whose note isn't in `allEntries` yet (created elsewhere, cache
   // not refreshed) is skipped rather than sent as empty text, it still
-  // counts as a source id, just contributes nothing to read from.
-  const text = entryIds
-    .map((id) => byId.get(id)?.content)
+  // counts as a source id, just contributes nothing to read from. A clipped
+  // row is read whole (`fullEntry`).
+  const rows = await Promise.all(entryIds.map((id) => allEntries.some((e) => e.id === id) ? fullEntry(id).catch(() => null) : null));
+  const text = rows
+    .map((row) => row?.content)
     .filter(Boolean)
     .join("\n\n---\n\n");
   if (!text.trim()) {
@@ -6417,6 +6418,8 @@ function wbEditNodeText(nodeId, firstKey = "") {
   const content = card?.querySelector(".wb-card-content");
   if (!content) return;
   const entry = allEntries.find((e) => e.id === node.entry_id);
+  //: A clipped row is fetched whole first: the editor's text is what gets saved.
+  if (entry?.content_truncated) return void fullEntry(entry.id).then(() => wbEditNodeText(nodeId, firstKey), () => {});
   const original = entry?.content || "";
 
   const box = document.createElement("textarea");
@@ -22645,6 +22648,13 @@ function renderWhiteboard() {
       return;
     }
     renderMarkdown(contentEl, text);
+    //: A clipped row (first 300 characters) is drawn again with the whole note once it arrives.
+    if (entry.content_truncated) fullEntry(entry.id).then((whole) => {
+      if (!contentEl.isConnected || contentEl.querySelector("textarea")) return;
+      contentEl.replaceChildren();
+      renderMarkdown(contentEl, whole.content);
+      wbScheduleCardClampSync();
+    }, () => {});
     //: **Whether a note needs a "Show more" is a question about the box, not
     //: about the note.** This used to ask `text.length > LONG_NOTE_CHARS ||
     //: lines > LONG_NOTE_LINES`, the Notes list's own rule, and returned

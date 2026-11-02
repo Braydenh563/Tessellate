@@ -42,7 +42,7 @@ from tessellate.api.schemas import (
     LinkOut,
     SimilarOut,
 )
-from tessellate.core import deps, events, jobruns, jobs, vault
+from tessellate.core import cjk, deps, events, jobruns, jobs, vault
 from tessellate.core.events import ACTOR_USER_AND_AI
 from tessellate.core.validation_copy import Said
 from tessellate.core.database import (  # noqa: F401 (EntryLink used in link_suggestions)
@@ -2498,6 +2498,10 @@ ENTRIES_BY_IDS_MAX = 200
 ENTRIES_PREVIEW_MAX = 2000
 
 
+_TASK_OPEN = re.compile(r"^[ \t]*(?:[-*+]|\d+[.)])[ \t]+\[[ \t]\]", re.M)
+_TASK_DONE = re.compile(r"^[ \t]*(?:[-*+]|\d+[.)])[ \t]+\[[xX]\]", re.M)
+
+
 def _previewed(rows: list[EntryOut], preview: int) -> list[EntryOut]:
     """`rows` with each note's text cut to `preview` characters (0 keeps it
     whole), at the last space before the cut when there is one, and
@@ -2507,7 +2511,12 @@ def _previewed(rows: list[EntryOut], preview: int) -> list[EntryOut]:
     if not preview:
         return rows
     for row in rows:
-        if len(row.content) > preview:
+        #: The numbers a list draws from the whole text (the dashboard's words and open tasks), counted before the cut.
+        row.word_count = cjk.word_count(row.content)
+        row.tasks_open = len(_TASK_OPEN.findall(row.content))
+        row.tasks_done = len(_TASK_DONE.findall(row.content))
+        #: A meeting's card reads its sections from the whole text (`meetingGlance`), so a meeting is sent whole.
+        if len(row.content) > preview and "meeting" not in {v.lower() for v in row.properties.get("type", [])}:
             cut = row.content[:preview]
             row.content = (cut.rsplit(None, 1)[0] if " " in cut or "\n" in cut else cut).rstrip()
             row.content_truncated = True

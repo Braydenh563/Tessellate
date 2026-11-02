@@ -106,6 +106,8 @@ function restoreNoteControl(held) {
 //: never swapped for another note's without asking.
 async function openNoteEditor(id, { focusTags = false } = {}) {
   if (editingId !== null && editingId !== id && !(await noteFormMayClose())) return false;
+  //: The form edits the whole text, never a list row's preview (INBOX 1525).
+  if (allEntries.find((e) => e.id === id)?.content_truncated && !(await fullEntry(id).then(() => true, () => false))) return false;
   if (editingId !== id) {
     noteFormDirty = false;
     noteFormDraft = null;
@@ -231,20 +233,18 @@ const noteEngine = {
 //: The ids the engine gives for these operators, or null while it is asked.
 //: Notes only (`kind=note`) unless the terms name a kind themselves.
 //: Every page of the engine's answer, up to 500 notes (audit 1031 N16); `more` is true only if page ten had more.
-async function enginePages(q, kind) {
-  const ids = new Set();
-  let more = false;
-  for (let page = 1; page <= 10; page++) {
-    const body = await apiJson(`/search?q=${encodeURIComponent(clipFor("search", q))}${kind}&limit=50&page=${page}`, { silent: true });
-    for (const hit of body.hits || []) if (hit.kind === "note") ids.add(hit.id);
-    if (!(more = Boolean(body.more))) break;
-  }
-  return { ids, more };
-}
-
 function engineQueryIds(q) {
   const kind = /(^|\s)kind:/i.test(q) ? "" : "&kind=note";
-  return noteEngine.ask(noteEngine, q, () => enginePages(q, kind).then(({ ids, more }) => ({ ids, capped: more })), new Set());
+  return noteEngine.ask(noteEngine, q, async () => {
+    const ids = new Set();
+    let more = false;
+    for (let page = 1; page <= 10; page++) {
+      const body = await apiJson(`/search?q=${encodeURIComponent(clipFor("search", q))}${kind}&limit=50&page=${page}`, { silent: true });
+      for (const hit of body.hits || []) if (hit.kind === "note") ids.add(hit.id);
+      if (!(more = Boolean(body.more))) break;
+    }
+    return { ids, capped: more };
+  }, new Set());
 }
 
 // `tags:<2`, `tags:<=1`, `tags:0` and so on: "how many tags", not "which
@@ -3094,7 +3094,7 @@ async function _loadEntries() {
   let cursor = "";
   while (offset < total) {
     const after = cursor ? `&cursor=${encodeURIComponent(cursor)}` : "";
-    const response = await api(`/entries?limit=${ENTRIES_PAGE_SIZE}${after}`);
+    const response = await api(`/entries?limit=${ENTRIES_PAGE_SIZE}${after}&preview=300`);
     const page = await response.json();
     if (generation !== _entriesLoadGeneration) return; // superseded mid-load
 
@@ -3177,7 +3177,8 @@ async function refreshEntries(ids) {
   let rows;
   let total;
   try {
-    const response = await api(`/entries?ids=${wanted.join(",")}`);
+    //: A note being edited is read whole, the rest as a preview (a row with `content_truncated` holds a part: `fullEntry`).
+    const response = await api(`/entries?ids=${wanted.join(",")}${wanted.includes(editingId) ? "" : "&preview=300"}`);
     rows = await response.json();
     total = Number(response.headers.get("X-Total-Count"));
   } catch {
@@ -3628,94 +3629,10 @@ async function renderNotesRail() {
   const body = $("notes-rail-body");
   const key = `${entry.id}:${_entriesLoadGeneration}`;
   if (body.dataset.key === key) return;
-  const seq = ++notesRailSeq;
   body.setAttribute("aria-busy", "true");
-  //: The rows are drawn by connections.js (the sheet's own bundle).
+  //: The rows are drawn by connections.js (the sheet's own bundle), which also draws the answer (`drawNotesRail`).
   await lazyScript("/js/connections.js");
-  let answer = notesRailCache.get(key);
-  if (!answer) {
-    const [links, near, back] = await Promise.all([
-      apiJson(`/entries/${entry.id}/connections`, { silent: true }).catch(() => null),
-      apiJson(`/resurface/near/${entry.id}`, { silent: true }).catch(() => null),
-      apiJson(`/entries/${entry.id}/backlinks`, { silent: true }).catch(() => null),
-    ]);
-    answer = { links: withBacklinks(links, back, entry.id), near };
-    if (links) notesRailCache.set(key, answer);
-  }
-  if (seq !== notesRailSeq) return;
-  body.removeAttribute("aria-busy");
-  body.dataset.key = answer.links ? key : "";
-  body.replaceChildren();
-  const count = $("notes-rail-count");
-  if (!answer.links) {
-    const failed = document.createElement("p");
-    failed.className = "muted notes-rail-note";
-    failed.textContent = "Couldn't read this note's connections.";
-    body.appendChild(failed);
-    count.textContent = "";
-    count.hidden = true;
-    return;
-  }
-  const shown = buildConnectionGroups(body, "entries", answer.links);
-  //: Forgotten takes days: a note written minutes ago is not slipping away
-  //: (dog3-1026 row 14, "Forgotten" on notes seconds old).
-  const nearItems = ((answer.near && answer.near.items) || []).filter((item) => (item.age_days || 0) >= 3);
-  if (nearItems.length) body.appendChild(notesRailNearGroup(nearItems));
-  //: One chip, the panel head's one fact: how many things this note is
-  //: joined to. The forgotten notes are suggestions, not connections, so they
-  //: are not counted in it.
-  //: Unlinked mentions are offers, not links, so they are not counted.
-  const linked = shown - (answer.links.mentions || []).length;
-  count.textContent = linked === 1 ? "1 link" : `${linked} links`;
-  //: "0 links" over a list of suggestions read as a contradiction; the
-  //: empty line below says it once there is nothing at all (dog3-1026 row 14).
-  count.hidden = !linked;
-  if (!shown && !nearItems.length) {
-    const empty = document.createElement("p");
-    empty.className = "muted notes-rail-note";
-    empty.textContent =
-      "Nothing is joined to this note yet. Link it to another note, attach it to a document, or drop it on a whiteboard.";
-    body.appendChild(empty);
-  }
-  //: "We could not ask" is a different fact from "nothing is faded near
-  //: this", and only the first is worth a line: a notebook too small to rank
-  //: (`resurface.MIN_NOTEBOOK`) answers an empty list by design.
-  if (!answer.near) {
-    const failed = document.createElement("p");
-    failed.className = "muted notes-rail-note";
-    failed.textContent = "Couldn't look for forgotten notes near this one.";
-    body.appendChild(failed);
-  }
-}
-
-//: The forgotten notes, drawn as one more connection group so the column reads
-//: as one list with one row recipe. Each row carries the route's own sentence
-//: for why it was chosen ("120 days old, no links, never opened"), which is
-//: checkable where a score would not be.
-function notesRailNearGroup(items) {
-  const section = document.createElement("div");
-  section.className = "connection-group notes-rail-near";
-  const head = document.createElement("p");
-  head.className = "connection-heading";
-  setLabel(head, "ph:hourglass-medium Forgotten, and close to this");
-  const count = document.createElement("span");
-  count.className = "connection-count";
-  count.textContent = String(items.length);
-  head.appendChild(count);
-  section.appendChild(head);
-  const holder = document.createElement("div");
-  holder.className = "connection-rows";
-  for (const item of items) {
-    //: The route's own sentence is the row's subline, in the same list recipe
-    //: as every other connection row (`connectionRowEl`, menus.js).
-    const row = connectionRowEl(
-      "ph:note", item.title, item.reason ? `Open this note\nWhy: ${item.reason}` : "Open this note", item.reason || "",
-      () => flashEntry(item.id)
-    );
-    holder.appendChild(row);
-  }
-  section.appendChild(holder);
-  return section;
+  return drawNotesRail(entry, key);
 }
 
 //: Back to the note the column is about, in the list: where Escape and hiding

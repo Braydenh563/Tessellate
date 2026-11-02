@@ -6,11 +6,24 @@
 // (`notesLazy`, lazy-entries.js) fetch this file on first use. The empty-filter hint and the
 // engine query's bar moved here (audit 1031, gzip budget): both draw after a render.
 
+//: **The whole note behind a list row** (INBOX 1525, audit 1031 BK10). The list holds each note's first 300 characters
+//: (`content_truncated`), so an open, an edit or a save reads the text here first; the row is filled in place, so every
+//: holder of it sees the text. A row that is whole is returned as it is. Rejects when the note is gone or unreachable.
+async function fullEntry(id) {
+  const row = allEntries.find((e) => e.id === id);
+  if (row && !row.content_truncated) return row;
+  const [whole] = await apiJson(`/entries?ids=${id}`);
+  if (!whole) throw new Error("This note is no longer here.");
+  return row ? Object.assign(row, whole) : whole;
+}
+
 function toggleRowExpanded(id) {
   const open = !expandedRows.has(id);
   if (open) {
     expandedRows.add(id);
     notesRailId = id;
+    //: An opened-out row shows the whole note: the text arrives and the row is drawn again.
+    if (allEntries.find((e) => e.id === id)?.content_truncated) fullEntry(id).then(() => renderEntries(), () => {});
   } else {
     expandedRows.delete(id);
     //: Closing the note the rail is about closes the rail's subject with it:
@@ -206,7 +219,7 @@ async function loadSemanticEntries(asked, generation) {
   //: of it (the index holds them, flagged), and put in the engine's order.
   const found = await apiJson(`/search?q=${encodeURIComponent(clipFor("search", asked))}&kind=note&limit=50`);
   const order = (found.hits || []).map((hit) => hit.id);
-  const rows = order.length ? await apiJson(`/entries?ids=${order.join(",")}`) : [];
+  const rows = order.length ? await apiJson(`/entries?ids=${order.join(",")}&preview=300`) : [];
   if (generation !== _entriesLoadGeneration) return; // a newer load took over
   const byId = new Map(rows.map((row) => [row.id, row]));
   const results = order.filter((id) => byId.has(id)).map((id) => byId.get(id));

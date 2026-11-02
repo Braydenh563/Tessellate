@@ -4640,15 +4640,16 @@ async function renderUnfinishedWidget(body) {
   const entries = await dashEntries();
   const withTasks = [];
   for (const entry of entries) {
+    //: A list row holds a note's first 300 characters (INBOX 1525), so the server's counts of the whole text come first.
     const content = entry.content || "";
-    if (!content.includes("[")) continue; // cheap reject before two regexes
+    if (entry.tasks_open == null && !content.includes("[")) continue; // cheap reject before two regexes
     // `lastIndex` is shared state on a `g` regex, so these must be reset per
     // note or every second note silently scores zero, the classic one.
     DASH_OPEN_TASK.lastIndex = 0;
     DASH_DONE_TASK.lastIndex = 0;
-    const open = (content.match(DASH_OPEN_TASK) || []).length;
+    const open = entry.tasks_open ?? (content.match(DASH_OPEN_TASK) || []).length;
     if (!open) continue;
-    const done = (content.match(DASH_DONE_TASK) || []).length;
+    const done = entry.tasks_done ?? (content.match(DASH_DONE_TASK) || []).length;
     withTasks.push({ entry, open, done });
   }
   if (!withTasks.length) {
@@ -4894,7 +4895,7 @@ function renderPaceWidget(body) {
     if (Number.isNaN(at.getTime()) || at.getTime() < first) continue;
     const index = Math.floor((at.setHours(0, 0, 0, 0) - first) / 86400000);
     if (index < 0 || index >= days.length) continue;
-    days[index].words += wordCount(entry.content);
+    days[index].words += entry.word_count ?? wordCount(entry.content);
   }
   const total = days.reduce((sum, day) => sum + day.words, 0);
   if (!total) {

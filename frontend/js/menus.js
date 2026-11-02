@@ -1238,8 +1238,9 @@ async function generateEntryTitle(entry) {
     toast(regenerating ? "Regenerating the title…" : "Generating a title…", false, {
       exempt: true,
     });
+    const was = (await fullEntry(entry.id)).content; // the undo puts back the whole text, not a list row's first 300 characters
     const updated = await apiJson(`/entries/${entry.id}/generate-title`, { method: "POST" });
-    if (updated?.content) pushEntryPutUndo(entry.id, "Titled a note", { content: entry.content }, { content: updated.content });
+    if (updated?.content) pushEntryPutUndo(entry.id, "Titled a note", { content: was }, { content: updated.content });
     await refreshEntries([entry.id]);
     flashEntry(entry.id);
     const title = updated && updated.title;
@@ -1258,8 +1259,9 @@ async function generateEntryTitle(entry) {
 
 async function removeEntryTitle(entry) {
   try {
+    const was = (await fullEntry(entry.id)).content;
     const updated = await apiJson(`/entries/${entry.id}/remove-title`, { method: "POST" });
-    if (updated?.content) pushEntryPutUndo(entry.id, "Removed a title", { content: entry.content }, { content: updated.content });
+    if (updated?.content) pushEntryPutUndo(entry.id, "Removed a title", { content: was }, { content: updated.content });
     await refreshEntries([entry.id]);
     flashEntry(entry.id);
     // Said out loud: it was silent.

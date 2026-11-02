@@ -315,7 +315,8 @@ function pickEntryDialog(message) {
     };
     shell.search.addEventListener("input", paint);
     paint();
-    shell.open(resolve);
+    //: The list holds previews (INBOX 1525); what is chosen is read whole before any caller writes it back.
+    shell.open((row) => resolve(row ? fullEntry(row.id).catch(() => null) : row));
   });
 }
 

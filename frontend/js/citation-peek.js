@@ -62,6 +62,8 @@ function openCitationPeek(link, source, { pinned }) {
   }
   closeCitationPeek();
   const entry = source.entry || allEntries.find((e) => e.id === source.noteId) || null;
+  //: A clipped list row (INBOX 1525) cannot place a passage by offset: the whole note is fetched, then the peek opens.
+  if (entry?.content_truncated) return void fullEntry(entry.id).then((whole) => openCitationPeek(link, { ...source, entry: whole }, { pinned }), () => {});
   const content = entry?.content || source.label || "";
   const panel = document.createElement("div");
   panel.className = "help-popover citation-peek";
