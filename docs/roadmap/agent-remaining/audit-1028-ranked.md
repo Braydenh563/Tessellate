@@ -184,7 +184,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 178 | E43 | low | tools execute runs any tool after confirm, unsigned | new | M |
 | 179 | B22 | low | eight console calls are the only error surfacing | fixed (this batch) | S |
 | 180 | B25 | low | minimap redraws all items on any render | docs/roadmap/WHITEBOARD_PLAN.md:1219 | M |
-| 181 | B28 | low | image paste lacks URL and HTML paste and size cap | fixed 2026-11-02 (a28s-B28) | S |
+| 181 | B28 | low | image paste lacks URL and HTML paste and size cap | fixed 2026-11-02 (44ae01d) | S |
 | 182 | B29 | low | inline rich text in map topics unverified | new | S |
 | 183 | B33 | low | 24 NaN guards suggest NaN has leaked before | new | M |
 | 184 | D35 | low | openDocument silently returns when the fetch fails | new | S |
@@ -222,11 +222,11 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 216 | S77 | low | no manual sort order | new | L |
 | 217 | B26 | low | context menu builder is 453 lines with one-use items | new | M |
 | 218 | B27 | low | resize and rotation handle hit size unverified | docs/roadmap/WHITEBOARD_PLAN.md:1698 | S |
-| 219 | B34 | low | empty-board hint lost after dismiss, no inline cue | fixed 2026-11-02 (a28s-B34) | S |
+| 219 | B34 | low | empty-board hint lost after dismiss, no inline cue | fixed 2026-11-02 (03e4a05) | S |
 | 220 | D39 | low | typo autocorrect rewrites silently with a 5s undo only | new | S |
 | 221 | D40 | low | no selection word count in the status bar | fixed (already: the caret line counts selected words; reconciled 2026-10-30) | S |
 | 222 | D48 | low | controls hidden in dock-menu flyouts reparented to body | new | M |
-| 223 | D53 | low | code run output truncated silently at 4,000 chars | fixed 2026-11-02 (a28s-D53) | S |
+| 223 | D53 | low | code run output truncated silently at 4,000 chars | fixed 2026-11-02 (711e8c5) | S |
 | 224 | E37 | low | AI status control reads as an error, red circle with x | new | S |
 | 225 | E41 | low | models pane jargon and redundant Use this model button | new | S |
 | 226 | E51 | low | citation mark lands mid-sentence, date-only source | docs/roadmap/CHAT_PLAN.md:1810 | S |
@@ -245,7 +245,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 239 | S59 | low | no skip link to main content | fixed (already built; reconciled 2026-10-30) | S |
 | 240 | S60 | low | reduced-motion not applied to every animation | docs/roadmap/BACKLOG.md:1290 | S |
 | 241 | S61 | low | muted text contrast near threshold in dark theme | new | S |
-| 242 | S62 | low | palette empty state offers no suggestion | fixed 2026-11-02 (a28s-S62) | S |
+| 242 | S62 | low | palette empty state offers no suggestion | fixed 2026-11-02 (e0b77e9) | S |
 | 243 | S63 | low | palette lacks note results with a preview | new | M |
 | 244 | S68 | low | import panel is long and dense | new | M |
 | 245 | S69 | low | backup restore has no verify-before-restore summary | new | M |
@@ -258,28 +258,28 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 252 | S88 | low | search results lack term highlighting | new | S |
 | 253 | S89 | low | export has no format picker | new | S |
 | 254 | S91 | low | document title and language do not update per view | fixed (router.js routerPaintTitle, found already fixed 2026-11-02) | S |
-| 255 | S92 | low | no live region for list loading and counts | fixed 2026-11-02 (a28s-S92) | S |
+| 255 | S92 | low | no live region for list loading and counts | fixed 2026-11-02 (9da89c9) | S |
 | 256 | S94 | low | offline indicator does not say what still works | new | S |
-| 257 | U38 | low | duplicate document titles allowed silently | fixed 2026-11-02 (a28s-U38) | S |
+| 257 | U38 | low | duplicate document titles allowed silently | fixed 2026-11-02 (0300872) | S |
 | 258 | U41 | low | new-board toast persists and stacks with others | new | S |
 | 259 | U46 | low | hidden native board select is 1px wide | new | S |
-| 260 | U48 | low | export defaults to On screen, not whole board | fixed 2026-11-02 (a28s-U48) | S |
+| 260 | U48 | low | export defaults to On screen, not whole board | fixed 2026-11-02 (8e31ec3) | S |
 | 261 | U49 | low | board toolbar has 33 tab stops | new | M |
 | 262 | B23 | low | export SVG built from live DOM, blocks main thread | new | M |
 | 263 | B31 | low | timers and frames not cancelled on board switch | fixed | M |
-| 264 | B32 | low | whiteboard-map.js rAF and timers never cancelled | fixed 2026-11-02 (a28s-B32) | S |
+| 264 | B32 | low | whiteboard-map.js rAF and timers never cancelled | fixed 2026-11-02 (245ce80) | S |
 | 265 | B38 | low | single-object PUTs may still serve multi-select nudge | new | S |
 | 266 | D45 | low | 871 KB wordlist fetched and dictionary built on main thread | new | M |
 | 267 | K32 | low | tabs poll all reminders every minute for a due check | won't fix (the poll already asks only open reminders; the timer, badge and early alerts need the rows, 2026-10-30) | S |
 | 268 | K33 | low | token sweep runs on every authenticated request | won't fix 1031: the per-request sweep is what drops the key the moment the last granted session expires (test_vault_sessions); O(tokens) with a handful of tokens | S |
 | 269 | K34 | low | 200 MB uploads read into memory as bytes | new | M |
-| 270 | K35 | low | startup PRAGMA table_info for every table each launch | fixed 2026-11-02 (a28s-K35) | S |
+| 270 | K35 | low | startup PRAGMA table_info for every table each launch | fixed 2026-11-02 (06af068) | S |
 | 271 | K36 | low | list_boards and list_images run per-board queries | new | M |
 | 272 | E58 | low | saved chat list rebuilt every checkpoint round | new | S |
 | 273 | E65 | low | NoteView not cached, notes re-read per question | new | M |
 | 274 | S64 | low | mascot and avatar assets load even when disabled | new | S |
 | 275 | S65 | low | service worker precache not trimmed to critical assets | new | M |
-| 276 | S90 | low | palette rebuilds 103 commands on each open | closed 2026-11-02 (a28s-S90: rebuild measured 0.02 ms of an 11.4 ms open, no cache) | S |
+| 276 | S90 | low | palette rebuilds 103 commands on each open | closed 2026-11-02 (93be4ea: rebuild measured 0.02 ms of an 11.4 ms open, no cache) | S |
 | 277 | B24 | low | plan-history markers and decision numbers in code comments | new | S |
 | 278 | B30 | low | library, interchange and templates load up front | new | M |
 | 279 | B37 | low | routes_whiteboard.py is 6,123 lines in one router | new | M |
