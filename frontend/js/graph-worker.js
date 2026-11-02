@@ -258,15 +258,16 @@ carryForce.initialize = () => {};
 //: shape a little: ten 8 unit drags changed the layout's size by 7% at 40 notes
 //: and the notes 150+ units away from the held one moved 3.8px a drag (a
 //: control with no drag moved nothing; tests/test_graph_drag_local_1517.py).
-//: So every note but the held one is held until the map rests, by a share of
-//: `1 - smoothstep(reach / DRAG_FULL_DISTANCE)` (`nudge.w`): whole for a
-//: nudge, none once the note has been carried a real distance, so a
-//: deliberate move still reorganises the map around it. The notes it links
-//: to are held where they stood plus the held note's own travel, so a nudge
-//: carries its neighbourhood with it instead of letting it relax, until the
-//: release lets them ease round the drop (the page freezes all the others
-//: while the pointer is down, `gcDragBegin`), and a
-//: held note one of the moving notes runs into is let go to the collision.
+//: So every note but the held one is held where it stood until the map
+//: rests, by a share of `1 - smoothstep(reach / DRAG_FULL_DISTANCE)`
+//: (`nudge.w`): whole for a nudge, none once the note has been carried a real
+//: distance, so a deliberate move still reorganises the map around it. The
+//: notes it links to are let go on release, to ease round the drop (the page
+//: freezes all the others while the pointer is down, `gcDragBegin`), and a
+//: held note the moving one runs into is let go to the collision. Held
+//: neighbours, not carried ones: carried along, a nudge's neighbourhood
+//: stretched its links to the rest (ten 8 unit drags at 40 notes, mean link
+//: 1.004 to 1.018 by the layout, against 0.995 to 0.997 held).
 //:
 //: **A release that moved nothing leaves the map as it was** (INBOX 1531, a
 //: CI finding: with Tidy spacing off, ten releases with no movement shortened
@@ -277,7 +278,7 @@ carryForce.initialize = () => {};
 //: release leaves only the heat the drag's reach earns (`nudgeHeat`), so a
 //: nudge settles where it was let go.
 const NUDGE_STILL = 0.5;
-const nudge = { held: [], movers: [], w: 0, reach: 0, xs: null, ys: null, lead: null, ox: 0, oy: 0 };
+const nudge = { held: [], movers: [], w: 0, reach: 0, xs: null, ys: null };
 function nudgeStart(node, joining) {
   const links = simulation && simulation.force("link") ? simulation.force("link").links() : [];
   const near = new Set([node]);
@@ -286,9 +287,10 @@ function nudgeStart(node, joining) {
     else if (link.target === node && typeof link.source === "object") near.add(link.source);
   }
   //: A selection moved together sends a start for each note: one drag, one
-  //: snapshot, and none of the carried notes or their links held back.
+  //: snapshot, and none of the moved notes held back.
   if (joining && nudge.xs && nudge.xs.length === nodes.length) {
-    nudge.held = nudge.held.filter((f) => !near.has(f.node));
+    nudge.held = nudge.held.filter((f) => f.node !== node);
+    for (const f of nudge.held) if (near.has(f.node)) f.linked = true;
     nudge.movers.push(node);
     return;
   }
@@ -296,16 +298,11 @@ function nudgeStart(node, joining) {
   nudge.w = 1;
   nudge.xs = Float64Array.from(nodes, (n) => n.x);
   nudge.ys = Float64Array.from(nodes, (n) => n.y);
-  nudge.lead = node;
-  nudge.ox = node.x;
-  nudge.oy = node.y;
   nudge.held = [];
   nudge.movers = [node];
   for (const other of nodes) {
     if (other === node || other.fx != null || !Number.isFinite(other.x)) continue;
-    const carried = near.has(other);
-    if (carried) nudge.movers.push(other);
-    nudge.held.push({ node: other, x: other.x, y: other.y, carried });
+    nudge.held.push({ node: other, x: other.x, y: other.y, linked: near.has(other) });
   }
 }
 //: Every note back where the drag found it, at rest. A note the reader holds
@@ -331,7 +328,6 @@ function nudgeEnd() {
   nudge.w = 0;
   nudge.xs = null;
   nudge.ys = null;
-  nudge.lead = null;
 }
 //: The share of `RELEASE_ALPHA` a release leaves: what the hold gave up. From
 //: the reach, which outlives the hold: a carried note let go after the map
@@ -340,8 +336,9 @@ function nudgeHeat() {
   const t = Math.min(1, nudge.reach / DRAG_FULL_DISTANCE);
   return t * t * (3 - 2 * t);
 }
-//: A held note within collision reach of a moving one (the held note, the
-//: notes carried with it) is let go: held, the two would stay overlapped.
+//: A held note within collision reach of a moving one (the note in hand, or
+//: one carried with it in a selection) is let go: held, the two would stay
+//: overlapped.
 function nudgeBumped(n) {
   const r = collideRadius(n);
   for (const m of nudge.movers) {
@@ -353,21 +350,16 @@ function nudgeForce() {
   const w = nudge.w;
   if (!w) return;
   const keep = 1 - w;
-  const lead = nudge.lead;
-  const lx = lead ? (lead.fx != null ? lead.fx : lead.x) - nudge.ox : 0;
-  const ly = lead ? (lead.fy != null ? lead.fy : lead.y) - nudge.oy : 0;
   let bumped = false;
   for (const f of nudge.held) {
     const n = f.node;
     if (n.fx != null) continue;
-    if (!f.carried && nudgeBumped(n)) {
+    if (nudgeBumped(n)) {
       f.free = bumped = true;
       continue;
     }
-    const x = f.carried ? f.x + lx : f.x;
-    const y = f.carried ? f.y + ly : f.y;
-    n.x = x + (n.x - x) * keep;
-    n.y = y + (n.y - y) * keep;
+    n.x = f.x + (n.x - f.x) * keep;
+    n.y = f.y + (n.y - f.y) * keep;
     n.vx *= keep;
     n.vy *= keep;
   }
@@ -3792,7 +3784,7 @@ self.onmessage = (event) => {
           //: pulled a dropped one 296px back toward its category.
           node.placed = true;
           // Its own links ease round where it was put; the rest stay held.
-          nudge.held = nudge.held.filter((f) => !f.carried);
+          nudge.held = nudge.held.filter((f) => !f.linked);
           if (ring.params) applyGrouping(ring.params);
         }
       }
