@@ -131,7 +131,7 @@ def test_an_arrow_onto_equation_leaves_focus_on_the_tab() -> None:
     kit = _kit()
     assert "const mount = ({ focus = true } = {})" in kit
     editor = _read("math-editor.js")
-    assert "function mathEditorMount({ host, target = null, done = () => {}, note = null, onTex = () => {}, focus = true })" in editor
+    assert "function mathEditorMount({ host, target = null, done = () => {}, note = null, onTex = () => {}, focus = true, log = null })" in editor
     assert "if (focus) pane.start();" in editor
 
 

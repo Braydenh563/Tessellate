@@ -1,7 +1,7 @@
 """The Calculator and equations panel, five owner rows (INBOX 1537 to 1541, 2026-11-02).
 
-Measured in the browser (`scratchpad/ui-sweeps/calcpanel1102.js`); these tests
-hold what a file can say: the sizes the CSS asks for, the one place a slot's
+Measured in the browser (a Playwright sweep of the panel at 1440x900 and 1280x720;
+the numbers are in the CHANGELOG lines); these tests hold what a file can say: the sizes the CSS asks for, the one place a slot's
 empty state is decided, the glide's class, the palette's quick access, and the
 history's rules (pure, run in node). Everything here is written before the
 code it covers.
@@ -179,6 +179,11 @@ def test_every_answer_has_a_copy_button_and_a_row_has_its_three_actions() -> Non
         assert needle in history, f"the history is missing {needle}"
     #: A click puts the row back in the fields; Edit does too and the next keep replaces it.
     assert "restore(" in history and "replacing" in history
+
+
+def test_units_keeps_nothing_for_the_conversion_it_opens_with() -> None:
+    pane = KIT.split("function replyCalcConvertPane", 1)[1]
+    assert "let touched = false;" in pane and "if (last && touched)" in pane
 
 
 def test_the_equation_tab_can_load_a_row_back_into_the_field() -> None:
