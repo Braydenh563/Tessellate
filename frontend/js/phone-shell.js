@@ -1554,27 +1554,32 @@ function openSheet({ label, sub = "", name, build, variant = "", modal = true, r
   //: the sheet) read more (203ms of the Guide button's press at 4x, INBOX 1534). Not
   //: if the sheet has gone, or focus has gone into it by itself.
   afterFrames(() => setTimeout(() => {
-    if (!card.isConnected || card.contains(document.activeElement)) return;
-    const touchOnly = window.matchMedia("(hover: none), (pointer: coarse)").matches;
-    const field = touchOnly
-      ? [...card.querySelectorAll("input:not([type=hidden], [type=range], [type=checkbox], [type=radio]), textarea")].find(
-          (el) => el.offsetParent !== null
-        )
-      : card.querySelector("input:not([type=hidden]), select, textarea");
-    //: The first of these that actually takes focus: a field inside a closed
-    //: fold is `offsetParent`-visible to nobody and refuses the call, and
-    //: leaving the focus on the opener behind the sheet is the other failure.
-    if (!card.hasAttribute("tabindex")) card.tabIndex = -1;
-    for (const target of [
-      field,
-      card.querySelector('.sheet-row[aria-current="true"]'),
-      card.querySelector(".sheet-row"),
-      card.querySelector("button, [href]"),
-      card,
-    ]) {
-      if (!target) continue;
-      target.focus?.();
-      if (document.activeElement === target) break;
+    if (!card.isConnected) return;
+    //: Focus already inside still re-measures below: it came in before the
+    //: movable panel re-centred the card, so the focusin check saw Import where it
+    //: was not (E2E import, 2026-11-02: the card itself intercepted the first press).
+    if (!card.contains(document.activeElement)) {
+      const touchOnly = window.matchMedia("(hover: none), (pointer: coarse)").matches;
+      const field = touchOnly
+        ? [...card.querySelectorAll("input:not([type=hidden], [type=range], [type=checkbox], [type=radio]), textarea")].find(
+            (el) => el.offsetParent !== null
+          )
+        : card.querySelector("input:not([type=hidden]), select, textarea");
+      //: The first of these that actually takes focus: a field inside a closed
+      //: fold is `offsetParent`-visible to nobody and refuses the call, and
+      //: leaving the focus on the opener behind the sheet is the other failure.
+      if (!card.hasAttribute("tabindex")) card.tabIndex = -1;
+      for (const target of [
+        field,
+        card.querySelector('.sheet-row[aria-current="true"]'),
+        card.querySelector(".sheet-row"),
+        card.querySelector("button, [href]"),
+        card,
+      ]) {
+        if (!target) continue;
+        target.focus?.();
+        if (document.activeElement === target) break;
+      }
     }
     //: Again once focus has settled the card (a movable panel adopts it and it
     //: re-centres): the focusin check measured Import where it was (E2E import, 2026-11-02).

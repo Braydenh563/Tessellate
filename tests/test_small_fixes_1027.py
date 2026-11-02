@@ -66,7 +66,7 @@ def test_a_lasting_toast_steps_aside_for_the_buttons_of_the_section_in_use():
     sheet = (ROOT / "frontend/js/phone-shell.js").read_text(encoding="utf-8")
     opener = sheet[sheet.index("function openSheet(") :]
     opener = opener[: opener.index("\n}\n")]
-    assert "if (document.activeElement === target) break;\n    }\n" in opener and "    toastYield();\n  }), 1);" in opener
+    assert "if (document.activeElement === target) break;\n      }\n    }\n" in opener and "    toastYield();\n  }), 1);" in opener
     stack = js[js.index("function toastStack(box, change) {"):]
     assert 'if (box.id === "toast-box") toastYield();' in stack[: stack.index("\n}\n")]
 
@@ -234,3 +234,16 @@ def test_a_clause_split_ignores_semicolons_in_brackets():
     )
     clauses = composer._clauses(text)
     assert len(clauses) == 2 and clauses[0].count(";") == 2
+
+
+def test_a_sheet_focused_by_itself_still_measures_the_toasts():
+    """E2E import, 2026-11-02 (fifth head, new evidence): the first press met the
+    import card itself ("intercepts pointer events"), then the search-by-meaning
+    toast: the card moved after the focusin check. With focus already inside,
+    openSheet returned before its settled re-measure, so nothing measured Import
+    where it ended up. The re-measure runs whichever way the focus arrived."""
+    js = (ROOT / "frontend/js/phone-shell.js").read_text(encoding="utf-8")
+    tail = js[js.index("afterFrames(() => setTimeout(() => {\n    if (!card.isConnected"):]
+    tail = tail[: tail.index("}), 1);")]
+    assert "card.contains(document.activeElement)) return" not in tail
+    assert tail.rstrip().endswith("toastYield();")
