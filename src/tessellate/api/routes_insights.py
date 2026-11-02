@@ -22,8 +22,9 @@ from tessellate.ai.answer_trim import trim_assistant_padding
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.core import deps, jobs
 from tessellate.core.config import days_from_today, user_now
-from tessellate.core.database import Category, Entry, utcnow
+from tessellate.core.database import Entry, utcnow
 from tessellate.core.deps import get_session
+from tessellate.repo import categories as categories_repo
 from tessellate.entry import manager, paths
 from tessellate.repo import tags as tags_repo
 
@@ -42,13 +43,9 @@ def stats(session: Session = Depends(get_session)) -> dict:
     total = session.scalar(
         select(func.count(Entry.id)).where(Entry.is_deleted == False, Entry.is_draft == False, Entry.is_board == False)  # noqa: E712
     )
-    by_category = session.execute(
-        select(Category.name, func.count(Entry.id))
-        .join(Entry, Entry.category_id == Category.id)
-        .where(Entry.is_deleted == False, Entry.is_draft == False, Entry.is_board == False)  # noqa: E712
-        .group_by(Category.name)
-        .order_by(func.count(Entry.id).desc())
-    ).all()
+    by_category = categories_repo.note_counts(
+        session, Entry.is_deleted == False, Entry.is_draft == False, Entry.is_board == False  # noqa: E712
+    )
 
     # Entries per day for the activity strip, oldest day first.
     start = utcnow() - timedelta(days=ACTIVITY_DAYS - 1)

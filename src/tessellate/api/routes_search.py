@@ -153,17 +153,10 @@ def _with_categories(session: Session, hits: list) -> list[dict]:
     """The page's hits as JSON, each with the name of the category its note is
     filed under (`null` for anything that is not a note), one query for the
     page: a Group by category in Find anything needs it (INBOX 1332)."""
-    from sqlalchemy import select
-
-    from tessellate.core.database import Category, Entry
+    from tessellate.repo import categories as categories_repo
 
     ids = [hit.ref_id for hit in hits if hit.kind == "note"]
-    names: dict[int, str] = {}
-    if ids:
-        rows = session.execute(
-            select(Entry.id, Category.name).join(Category, Category.id == Entry.category_id).where(Entry.id.in_(ids))
-        )
-        names = {entry_id: name for entry_id, name in rows}
+    names = categories_repo.names_by_entry(session, ids)
     return [{**hit.as_dict(), "category": names.get(hit.ref_id) if hit.kind == "note" else None} for hit in hits]
 
 

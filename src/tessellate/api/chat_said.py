@@ -24,8 +24,9 @@ from tessellate.ai.ollama_client import OllamaError
 from tessellate.api import chat_extra
 from tessellate.api.chat_request import ChatRequest, _StreamRequest, _Turn, _composed, _meta_event
 from tessellate.core import clock, private_turn
-from tessellate.core.database import AskTurn, Conversation, Entity, Entry, EntryLink, like_escape, LIKE_ESCAPE
+from tessellate.core.database import AskTurn, Conversation, Entity, Entry, like_escape, LIKE_ESCAPE
 from tessellate.repo import documents as documents_repo
+from tessellate.repo import relations as relations_repo
 from tessellate.repo import reminders as reminder_repo
 from tessellate.core.logbuffer import safe_value
 
@@ -784,11 +785,7 @@ def _linked_notes(session: Session, result: dict) -> list[dict]:
     cited = {nid for kind, nid in _cited_ids(result) if kind == "entry"}
     if not cited:
         return []
-    links = session.execute(
-        select(EntryLink.source_entry_id, EntryLink.target_entry_id)
-        .where(or_(EntryLink.source_entry_id.in_(cited), EntryLink.target_entry_id.in_(cited)))
-        .order_by(EntryLink.id.desc())
-    ).all()
+    links = relations_repo.touching_any(session, cited)
     found: list[int] = []
     for pair in links:
         for other in pair:

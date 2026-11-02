@@ -30,6 +30,7 @@ from tessellate.api.chat_attach import _attached_boards, _attached_documents, _a
 from tessellate.api.schemas import EntryOut
 from tessellate.core import activity, deps
 from tessellate.core.database import Category, Entry, like_escape, LIKE_ESCAPE, MediaUpload
+from tessellate.repo import categories as categories_repo
 from tessellate.search import query as search_query
 
 
@@ -450,7 +451,7 @@ def _apply_open(session: Session, body: ChatRequest) -> None:
         if opened and composer_open.reads_note(body.question, {"content": opened[0].content}):
             body.note_ids = [body.open_note_id]
     else:
-        names = list(session.execute(select(Category.name)).scalars())
+        names = categories_repo.names(session)
         named = composer_digest.named_category(body.question, names)
         if named:
             body.note_ids = _category_note_ids(session, named)

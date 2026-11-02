@@ -161,16 +161,15 @@ def _reference_facets(db: Session, kind: str, ref_id: int | None) -> dict:
     in this notebook, and a private note contributes nothing at all, which is
     the same boundary its title is behind one function above.
     """
-    from tessellate.core.database import Category
+    from tessellate.repo import categories as categories_repo
 
     if kind != "note" or ref_id is None:
         return {}
     entry = db.get(Entry, ref_id)
     if entry is None or entry.is_deleted or entry.is_private:
         return {}
-    category = db.get(Category, entry.category_id) if entry.category_id is not None else None
     return {
-        "ref_category": category.name if category is not None else "Unfiled",
+        "ref_category": categories_repo.name_of(db, entry.category_id) or "Unfiled",
         # Naive UTC, as every timestamp in this database is: the client reads
         # it as UTC explicitly rather than letting the browser guess a zone.
         "ref_updated_at": entry.updated_at.isoformat() if entry.updated_at else None,
