@@ -71,6 +71,22 @@ def test_a_lasting_toast_steps_aside_for_the_buttons_of_the_section_in_use():
     assert 'if (box.id === "toast-box") toastYield();' in stack[: stack.index("\n}\n")]
 
 
+def test_with_nothing_focused_an_open_sheet_is_the_section_in_use():
+    """E2E import, 2026-11-02 (both tries, three heads): on CI the focus never
+    reached the import preview, so every check met the body and returned
+    before measuring; the box had no class at all and the search-by-meaning
+    question took the Import press for 90 s. With the body focused, the open
+    sheet is the area whose buttons a toast steps aside for (a drive with the
+    focus blurred: no class and the press blocked before, is-yielding and the
+    press landing after)."""
+    js = (ROOT / "frontend/js/status.js").read_text(encoding="utf-8")
+    body = js[js.index("function toastYield(target = document.activeElement) {"):]
+    body = body[: body.index("\n}\n")]
+    fallback = 'if (!target || target === document.body) target = [...document.querySelectorAll("[data-sheet][role=dialog]")].pop() || target;'
+    assert fallback in body
+    assert body.index(fallback) < body.index("return box?.classList.remove(")
+
+
 def test_a_connector_drag_never_leaves_the_delete_target_up():
     """INBOX 1405, the owner 2026-10-27: dragging a connector drawn between
     two cards brought up "Drop here to delete" and it stayed until another

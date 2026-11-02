@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- A toast steps aside for an open sheet's buttons even when nothing is focused: on CI the focus never reached the import preview, so the search-by-meaning question kept the Import press (E2E import, red on both tries); the chat file tests find the chat's own model request, not the last call.
 - Full-suite fallout of the DX29 and INBOX 1545 merges: the drag grip's hover has its keyboard twin, the export's icon font fetch (static /vendor) is allowed, the wrap toggle test reads DX23's boolean.
 - Removed `createConceptMap` (whiteboard.js): it had no caller since maps moved to the board landing; its lazy stub name and writer-lint row went with it (OPEN 2572).
 - Live has a drag handle for blocks (audit 1102 DX29): hover a paragraph, list item, fence or heading and a grip appears in the margin; dropping it moves the whole block as one undo step, the same move as Alt+Up and Alt+Down. Not on phones or code files.

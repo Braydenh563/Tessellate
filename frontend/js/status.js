@@ -1002,6 +1002,8 @@ document.addEventListener("keydown", (e) => lockFieldWants(e)?.focus(), true);
 //: when a toast arrives over a focused control.
 function toastYield(target = document.activeElement) {
   const box = $("toast-box");
+  //: Nothing focused: the open sheet is still where the work is. On CI the focus never reached the import preview, so the box was never measured (E2E import, 2026-11-02: no class at all).
+  if (!target || target === document.body) target = [...document.querySelectorAll("[data-sheet][role=dialog]")].pop() || target;
   if (!box?.children.length || !target || box.contains(target) || target === document.body) return box?.classList.remove("is-yielding");
   const meets = (b, r) => r.width > 0 && b.left < r.right && b.right > r.left && b.top < r.bottom && b.bottom > r.top;
   const focused = target.getBoundingClientRect();

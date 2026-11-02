@@ -24,7 +24,7 @@ Run 2026-11-02 (owner asleep; weekly 41%), branch claude/next-queue-1102, PR 212
 - CI: import-cycle leaf `composer_done.py` (d572484), toast yield for sheets (52fbe39), kept-words spec follows DX31 (8206459), merge fallout in tests and the Guide.
 - Checked stale or fixed: INBOX 1534 tab clicks (7 to 13 ms at 4x, was 117 to 246); OPEN 2314 2544 2553; removed dead `createConceptMap` (OPEN 2572).
 - Full suite on 70a3f90: 5 failed of about 9,000; 3 fixed (hover twin, export font fetch, wrap literal), 2 need huggingface_hub, which CI gets with fastembed and this venv lacks. Disk filled once (pytest temp, 7 GB); 4.5 GB of merged agent worktrees in .claude/worktrees are left for the owner (removal was refused here).
-- Blocked: INBOX 1549 waits on the owner's next log (the logger now names the throw); DX1 4x typing gate not met (a29i-1102.md); import.spec now fails both CI tries (a toast un-yielded over the preview's Import, after two fixes); no local repro at 1x or 6x CPU, so 4cc56ec prints the yield numbers in the next E2E log: fix from those. CodeQL threads fixed and resolved (c35b470).
+- Blocked: INBOX 1549 waits on the owner's next log (the logger now names the throw); DX1 4x typing gate not met (a29i-1102.md); import.spec red on both CI tries: fixed, the box had no class (focus on the body), so toastYield now falls back to the open sheet (reproduced by blurring the focus: blocked before, lands after). CodeQL threads fixed and resolved (c35b470).
 - Next: DX24t threads (DOCUMENTS_PLAN), the 2,257 unmarked OPEN.md rows need a triage pass (many are closed in fact), BACKLOG features.
 
 ## Earlier morning summary (2026-10-30)

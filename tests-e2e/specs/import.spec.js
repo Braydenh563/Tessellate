@@ -9,16 +9,6 @@ const { openApp, api, makeZip } = require("../helpers");
 async function confirmPreview(page, count) {
   const sheet = page.locator('[data-sheet="import-preview"]');
   await expect(sheet).toContainText(`${count} notes will be imported`, { timeout: 20_000 });
-  // What the toast stack measured when the press is tried: CI's toast stays
-  // un-yielded over Import (2026-11-02, three fixes in), and no local run
-  // reproduces it, so the run prints the numbers instead of a guess.
-  console.log("import-preview yield", JSON.stringify(await page.evaluate(() => {
-    const box = document.getElementById("toast-box");
-    const r = (el) => el && [...["x", "y", "width", "height"].map((k) => Math.round(el.getBoundingClientRect()[k]))];
-    const press = [...document.querySelectorAll('[data-sheet="import-preview"] button')].find((b) => /Import \d/.test(b.textContent));
-    const active = document.activeElement;
-    return { yielding: box.className, press: r(press), active: `${active?.tagName}.${active?.type || ""} in sheet ${!!active?.closest("[data-sheet]")}`, area: active?.closest("form, section, [role=dialog]")?.tagName, toasts: [...box.children].map((t) => [t.className, ...r(t), !!t.toastTimer]) };
-  })));
   await sheet.getByRole("button", { name: `Import ${count}` }).click();
 }
 
