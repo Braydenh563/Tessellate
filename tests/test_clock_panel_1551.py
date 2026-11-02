@@ -42,7 +42,8 @@ class FakeDate extends Date {
   static now() { return now; }
 }
 const sandbox = {
-  $: () => chip,
+  prefsCache: {}, authToken: () => 'token', performance: { now: () => 1000 },
+  $: (id) => (id === 'lock-overlay' ? null : chip),
   setLabel: (el, text) => { chip.label = text; },
   toast: (t) => toasts.push(t),
   offerUndo: () => {},
@@ -57,6 +58,7 @@ const sandbox = {
     bool: (k, d) => (store.has(k) ? store.get(k) === "1" : d),
     set: (k, v) => { store.set(k, String(v)); return true; },
     has: (k) => store.has(k),
+    get: (k, d) => (store.has(k) ? store.get(k) : d),
     remove: (k) => store.delete(k),
   },
   setInterval: (fn) => { const id = nextTimer++; timers.set(id, fn); return id; },
@@ -67,6 +69,7 @@ const sandbox = {
   Date: FakeDate,
   Math, Number, String, Object, Array, JSON, Infinity, isFinite,
 };
+sandbox.window = sandbox;
 vm.createContext(sandbox);
 vm.runInContext(__CODE__, sandbox);
 const run = (src) => vm.runInContext(src, sandbox);

@@ -145,9 +145,12 @@ def _target(session: Session, reminder) -> tuple[str | None, str | None]:
 
 def _to_out(session: Session, reminder) -> dict:
     entry_preview = None
+    #: About a private note: the lock screen's list (INBOX 1553) leaves such a reminder out.
+    private = False
     target_kind, target_title = _target(session, reminder)
     if reminder.entry_id is not None:
         entry = session.get(Entry, reminder.entry_id)
+        private = bool(entry is not None and entry.is_private)
         if entry is not None and not entry.is_deleted:
             # `readable_content`, not the raw column: a private note's
             # `content` is ciphertext at rest, and this preview showed that
@@ -164,6 +167,7 @@ def _to_out(session: Session, reminder) -> dict:
         "done": reminder.done,
         "entry_id": reminder.entry_id,
         "entry_preview": entry_preview,
+        "private": private,
         "document_id": reminder.document_id,
         "target_kind": target_kind,
         "target_title": target_title,

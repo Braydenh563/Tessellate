@@ -337,9 +337,13 @@ function docPrintSetupDialog() {
         b.textContent = words;
         b.dataset.value = value;
         b.setAttribute("aria-pressed", String(setup[key] === value));
+        b.classList.toggle("active", setup[key] === value);
         b.addEventListener("click", () => {
           setup[key] = value;
-          for (const other of group.children) other.setAttribute("aria-pressed", String(other === b));
+          for (const other of group.children) {
+            other.setAttribute("aria-pressed", String(other === b));
+            other.classList.toggle("active", other === b);
+          }
         });
         group.appendChild(b);
       }

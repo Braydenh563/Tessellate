@@ -400,6 +400,19 @@ button.stats-tile.is-link:is(:focus-visible, :has(:focus-visible)) {
   min-height: 0;
 }
 
+/* INBOX 1553: the lock card's list of timers and reminders (utility-tools.js, `paintLock`),
+   under the Unlock button; only while the switch in Settings, Account is on. */
+.lock-notices {
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-sm);
+  text-align: center;
+}
+.lock-notices li {
+  overflow-wrap: anywhere;
+}
+
 .clock-row {
   display: flex;
   flex-direction: column;

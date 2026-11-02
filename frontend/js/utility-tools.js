@@ -38,8 +38,11 @@ function utilityClockSeconds(clock) {
   return Math.floor((clock.paused ?? now - clock.start) / 1000);
 }
 
+//: The key is also what asks for this module at boot (spaces-find.js), so it stays, empty, while the
+//: lock screen's list is on (INBOX 1553).
 function utilitySave() {
   if (utilityClocks.length) prefs.set("utility-clocks", JSON.stringify(utilityClocks));
+  else if (utilityOps.lockOn()) prefs.set("utility-clocks", "[]");
   else prefs.remove("utility-clocks");
 }
 
@@ -52,7 +55,9 @@ function utilityShown() {
 }
 
 function paintUtilityChip() {
-  for (const clock of utilityClocks.filter((c) => c.kind === "timer" && c.paused == null && c.end <= Date.now())) utilityTimerDone(clock);
+  //: Behind the lock screen, or before the session is proven, a timer that ran out waits and speaks after the unlock (INBOX 1553).
+  const due = utilityOps.open() ? utilityClocks.filter((c) => c.kind === "timer" && c.paused == null && c.end <= Date.now()) : [];
+  for (const clock of due) utilityTimerDone(clock);
   const chip = $("status-timer");
   const clock = utilityShown();
   utilityTick.panel?.();
@@ -198,7 +203,81 @@ const utilityOps = (() => {
   function summary() {
     const line = document.getElementById?.("focus-clocks-text");
     if (line) line.textContent = clocksLine();
+    paintLock();
   }
+
+  //: **Behind the lock screen** (INBOX 1553). `covered`: the lock card is up (one borrowed for a
+  //: password prompt is not). `open`: not covered, and the session is proven (the preferences are
+  //: in; a token left from before a restart is stale, and `/auth/status` is still on its way at
+  //: boot while the card is hidden), or 20 s have passed with no card to say otherwise.
+  function covered() {
+    const lock = $("lock-overlay");
+    return Boolean(lock) && !lock.classList.contains("hidden") && lock.dataset.mode !== "prompt";
+  }
+
+  function open() {
+    return !covered() && (Boolean(prefsCache) || performance.now() > 2e4);
+  }
+
+  //: Settings, Account: off unless the person turned it on, kept on this device.
+  const noticesOn = () => prefs.get("lock-notices", null) === "on";
+
+  //: What the lock card may list: each timer by name and time left, then up to five reminders by
+  //: title and time, kept from the last time the notebook was open (`lockSave`). Never a note's text.
+  function lockRows() {
+    if (!noticesOn()) return [];
+    const now = Date.now();
+    const timers = utilityClocks
+      .filter((c) => c.kind === "timer")
+      .map((c) => `${c.name} timer, ${c.paused == null && c.end <= now ? "time is up" : `${utilityTimeText(utilityClockSeconds(c))} left${c.paused == null ? "" : ", paused"}`}`);
+    const when = { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" };
+    return [...timers, ...prefs.json("lock-digest", []).map((r) => `${r.t}, ${new Date(r.d).toLocaleString([], when)}`)];
+  }
+
+  //: Called with every list of open reminders the app reads. A reminder about a private note, a
+  //: done one and every field but the title and the due time are left out; off keeps nothing.
+  function lockSave(list) {
+    if (!noticesOn()) return void prefs.remove("lock-digest");
+    const rows = list.filter((r) => !r.done && !r.private).sort((a, b) => new Date(a.due_at) - new Date(b.due_at));
+    prefs.set("lock-digest", JSON.stringify(rows.slice(0, 5).map((r) => ({ t: String(r.text).slice(0, 80), d: r.due_at }))));
+  }
+
+  //: The list on the lock card, under the Unlock button; gone once the app is open or the switch is off.
+  function paintLock() {
+    let list = document.getElementById?.("lock-notices");
+    const lines = covered() && $("lock-overlay").dataset.mode === "unlock" ? lockRows() : [];
+    if (!lines.length) return list?.remove();
+    if (!list) {
+      list = document.createElement("ul");
+      list.id = "lock-notices";
+      list.className = "lock-notices muted";
+      list.setAttribute("aria-label", "Timers and reminders");
+      document.getElementById("lock-forgot").after(list);
+    }
+    list.replaceChildren(...lines.map((line) => Object.assign(document.createElement("li"), { textContent: line })));
+  }
+
+  //: The switch was just changed in Settings: read the reminders once now, or forget them.
+  function lockRefresh() {
+    if (noticesOn()) apiJson("/reminders?include_done=false", { silent: true }).then(lockSave).catch(() => {});
+    else lockSave([]);
+    utilitySave();
+  }
+
+  //: Two eager functions take one more step each from here, so the boot scripts carry none of it
+  //: (the gzip cap): every list of open reminders is kept for the lock card, and the card is drawn
+  //: whenever the lock screen is raised. It comes down with the next tick, or with the overlay's `hidden`.
+  for (const [name, step] of [["paintReminderList", lockSave], ["showLockScreen", paintLock]]) {
+    const was = window[name];
+    if (was) {
+      window[name] = (...args) => {
+        const result = was(...args);
+        step(...args);
+        return result;
+      };
+    }
+  }
+  window.lockNotices = { save: lockSave, rows: lockRows, paint: paintLock, refresh: lockRefresh };
 
   //: After any change to the list: saved, the tick re-armed, every view repainted.
   function changed() {
@@ -304,7 +383,7 @@ const utilityOps = (() => {
     body.appendChild(row);
   }
 
-  return { focusRow, minutesName, lapText, clocksLine, summary, changed, pause, play, reset, lap, parseLength, soundOn, alarmValue, alarmSet };
+  return { open, lockOn: noticesOn, focusRow, minutesName, lapText, clocksLine, summary, changed, pause, play, reset, lap, parseLength, soundOn, alarmValue, alarmSet };
 })();
 
 //: A press is a way into the panel (pause, lap, reset and stop are there), never a stop (INBOX 1551).

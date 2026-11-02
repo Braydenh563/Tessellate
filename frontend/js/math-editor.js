@@ -266,7 +266,10 @@ function mathEditorModes(display, onChange) {
     return b;
   });
   const sync = (on) => {
-    for (const b of buttons) b.setAttribute("aria-pressed", String((b.dataset.value === "display") === on));
+    for (const b of buttons) {
+      b.setAttribute("aria-pressed", String((b.dataset.value === "display") === on));
+      b.classList.toggle("active", (b.dataset.value === "display") === on);
+    }
   };
   seg.append(...buttons);
   sync(display);

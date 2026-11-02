@@ -1150,7 +1150,7 @@ const POPUP_TOOLS = [
   },
   {
     id: "alarm", name: "Set an alarm", icon: "ph:alarm", group: "Plan & focus",
-    keywords: "alarm wake",
+    keywords: "alarm",
     about: "Opens the Clock.",
     keys: "Ctrl+K", where: "Set an alarm",
     guide: "timer", open: () => ensureModule("utilities").then(() => openClockPanel("alarm")),
