@@ -67,7 +67,7 @@ def test_the_warm_route_refuses_past_the_cap_and_clips_what_it_embeds(client, mo
     assert all(len(text.split()) <= search_manager.SEARCH_QUERY_WORDS for text in seen)
 
 
-def test_the_finder_route_reads_the_first_words_of_a_long_query(client, monkeypatch):
+def test_the_finder_route_bounds_what_it_searches_of_a_long_query(client, monkeypatch):
     """GET /search read the whole query: 2,233 ms for 20,000 characters."""
     seen = []
     real = routes_search.engine.search

@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7549, frontend ids 2634, CSS sections 517, backend routes 640, backend modules 8419, test files 1821, tests 15597, plan headings 990, app scripts 28, boot scripts 37, script files 224.
+Counts: frontend functions 7549, frontend ids 2634, CSS sections 517, backend routes 640, backend modules 8426, test files 1822, tests 15602, plan headings 990, app scripts 28, boot scripts 37, script files 224.
 
 ## Frontend functions (7549)
 
@@ -12553,7 +12553,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8419)
+## Backend modules (8426)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -22784,6 +22784,18 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `sources_for_kind` | src/tessellate/search/index.py:203 |
 | `touch` | src/tessellate/search/index.py:418 |
 
+### src/tessellate/search/long_question.py (7)
+
+| Name | File:line |
+|---|---|
+| `_index_size` | src/tessellate/search/long_question.py:62 |
+| `_notes_with` | src/tessellate/search/long_question.py:66 |
+| `_over_words` | src/tessellate/search/long_question.py:120 |
+| `_sentences` | src/tessellate/search/long_question.py:46 |
+| `ask_of` | src/tessellate/search/long_question.py:50 |
+| `distinctive_terms` | src/tessellate/search/long_question.py:74 |
+| `search_text` | src/tessellate/search/long_question.py:108 |
+
 ### src/tessellate/search/query.py (18)
 
 | Name | File:line |
@@ -22811,58 +22823,58 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Retrieval` | src/tessellate/search/search_manager.py:993 |
-| `_append_connected` | src/tessellate/search/search_manager.py:1378 |
-| `_candidates` | src/tessellate/search/search_manager.py:1266 |
-| `_category_named_whole` | src/tessellate/search/search_manager.py:1170 |
-| `_category_notes` | src/tessellate/search/search_manager.py:1225 |
-| `_category_only` | src/tessellate/search/search_manager.py:1219 |
-| `_category_scope` | src/tessellate/search/search_manager.py:1395 |
-| `_corrected_terms` | src/tessellate/search/search_manager.py:269 |
-| `_dated_candidates` | src/tessellate/search/search_manager.py:1408 |
-| `_early_answer` | src/tessellate/search/search_manager.py:1242 |
-| `_fuse` | src/tessellate/search/search_manager.py:738 |
-| `_latest_about` | src/tessellate/search/search_manager.py:1416 |
-| `_learned_order` | src/tessellate/search/search_manager.py:1540 |
-| `_linked_neighbours` | src/tessellate/search/search_manager.py:777 |
-| `_load_later` | src/tessellate/search/search_manager.py:410 |
-| `_match_info` | src/tessellate/search/search_manager.py:1360 |
-| `_meaningful_terms` | src/tessellate/search/search_manager.py:351 |
-| `_named_category` | src/tessellate/search/search_manager.py:1185 |
-| `_narrow_to_range` | src/tessellate/search/search_manager.py:1282 |
-| `_near_words` | src/tessellate/search/search_manager.py:307 |
-| `_nothing_matched` | src/tessellate/search/search_manager.py:1328 |
-| `_outside_window` | src/tessellate/search/search_manager.py:1306 |
-| `_rank` | src/tessellate/search/search_manager.py:1094 |
-| `_rank_inner` | src/tessellate/search/search_manager.py:1107 |
-| `_recency_pin_ranking` | src/tessellate/search/search_manager.py:712 |
-| `_retrieve` | src/tessellate/search/search_manager.py:1470 |
-| `_score_from_matrix` | src/tessellate/search/search_manager.py:579 |
-| `_score_from_table` | src/tessellate/search/search_manager.py:618 |
-| `_substring_entries` | src/tessellate/search/search_manager.py:222 |
-| `_user_today` | src/tessellate/search/search_manager.py:45 |
-| `_when_nothing_ranked` | src/tessellate/search/search_manager.py:1441 |
-| `_within` | src/tessellate/search/search_manager.py:977 |
-| `_without_private` | src/tessellate/search/search_manager.py:1594 |
-| `_word_for_stem` | src/tessellate/search/search_manager.py:324 |
-| `_written_at` | src/tessellate/search/search_manager.py:936 |
-| `clip_query` | src/tessellate/search/search_manager.py:1462 |
-| `configured_thresholds` | src/tessellate/search/search_manager.py:356 |
-| `day_mentions` | src/tessellate/search/search_manager.py:947 |
-| `entries_between` | src/tessellate/search/search_manager.py:102 |
-| `graph_expansion` | src/tessellate/search/search_manager.py:842 |
-| `in_range` | src/tessellate/search/search_manager.py:908 |
-| `is_exact_term` | src/tessellate/search/search_manager.py:262 |
-| `is_recency_ask` | src/tessellate/search/search_manager.py:1147 |
-| `keyword_search` | src/tessellate/search/search_manager.py:129 |
-| `last_search` | src/tessellate/search/search_manager.py:1089 |
-| `note_search_mode` | src/tessellate/search/search_manager.py:1102 |
-| `query_vector` | src/tessellate/search/search_manager.py:385 |
-| `recent_entries` | src/tessellate/search/search_manager.py:80 |
-| `retrieve` | src/tessellate/search/search_manager.py:1059 |
-| `retrieve_detailed` | src/tessellate/search/search_manager.py:1030 |
-| `semantic_search` | src/tessellate/search/search_manager.py:474 |
-| `warm` | src/tessellate/search/search_manager.py:445 |
+| `Retrieval` | src/tessellate/search/search_manager.py:994 |
+| `_append_connected` | src/tessellate/search/search_manager.py:1379 |
+| `_candidates` | src/tessellate/search/search_manager.py:1267 |
+| `_category_named_whole` | src/tessellate/search/search_manager.py:1171 |
+| `_category_notes` | src/tessellate/search/search_manager.py:1226 |
+| `_category_only` | src/tessellate/search/search_manager.py:1220 |
+| `_category_scope` | src/tessellate/search/search_manager.py:1396 |
+| `_corrected_terms` | src/tessellate/search/search_manager.py:270 |
+| `_dated_candidates` | src/tessellate/search/search_manager.py:1409 |
+| `_early_answer` | src/tessellate/search/search_manager.py:1243 |
+| `_fuse` | src/tessellate/search/search_manager.py:739 |
+| `_latest_about` | src/tessellate/search/search_manager.py:1417 |
+| `_learned_order` | src/tessellate/search/search_manager.py:1543 |
+| `_linked_neighbours` | src/tessellate/search/search_manager.py:778 |
+| `_load_later` | src/tessellate/search/search_manager.py:411 |
+| `_match_info` | src/tessellate/search/search_manager.py:1361 |
+| `_meaningful_terms` | src/tessellate/search/search_manager.py:352 |
+| `_named_category` | src/tessellate/search/search_manager.py:1186 |
+| `_narrow_to_range` | src/tessellate/search/search_manager.py:1283 |
+| `_near_words` | src/tessellate/search/search_manager.py:308 |
+| `_nothing_matched` | src/tessellate/search/search_manager.py:1329 |
+| `_outside_window` | src/tessellate/search/search_manager.py:1307 |
+| `_rank` | src/tessellate/search/search_manager.py:1095 |
+| `_rank_inner` | src/tessellate/search/search_manager.py:1108 |
+| `_recency_pin_ranking` | src/tessellate/search/search_manager.py:713 |
+| `_retrieve` | src/tessellate/search/search_manager.py:1473 |
+| `_score_from_matrix` | src/tessellate/search/search_manager.py:580 |
+| `_score_from_table` | src/tessellate/search/search_manager.py:619 |
+| `_substring_entries` | src/tessellate/search/search_manager.py:223 |
+| `_user_today` | src/tessellate/search/search_manager.py:46 |
+| `_when_nothing_ranked` | src/tessellate/search/search_manager.py:1442 |
+| `_within` | src/tessellate/search/search_manager.py:978 |
+| `_without_private` | src/tessellate/search/search_manager.py:1597 |
+| `_word_for_stem` | src/tessellate/search/search_manager.py:325 |
+| `_written_at` | src/tessellate/search/search_manager.py:937 |
+| `clip_query` | src/tessellate/search/search_manager.py:1465 |
+| `configured_thresholds` | src/tessellate/search/search_manager.py:357 |
+| `day_mentions` | src/tessellate/search/search_manager.py:948 |
+| `entries_between` | src/tessellate/search/search_manager.py:103 |
+| `graph_expansion` | src/tessellate/search/search_manager.py:843 |
+| `in_range` | src/tessellate/search/search_manager.py:909 |
+| `is_exact_term` | src/tessellate/search/search_manager.py:263 |
+| `is_recency_ask` | src/tessellate/search/search_manager.py:1148 |
+| `keyword_search` | src/tessellate/search/search_manager.py:130 |
+| `last_search` | src/tessellate/search/search_manager.py:1090 |
+| `note_search_mode` | src/tessellate/search/search_manager.py:1103 |
+| `query_vector` | src/tessellate/search/search_manager.py:386 |
+| `recent_entries` | src/tessellate/search/search_manager.py:81 |
+| `retrieve` | src/tessellate/search/search_manager.py:1060 |
+| `retrieve_detailed` | src/tessellate/search/search_manager.py:1031 |
+| `semantic_search` | src/tessellate/search/search_manager.py:475 |
+| `warm` | src/tessellate/search/search_manager.py:446 |
 
 ### src/tessellate/search/searxng_docker.py (8)
 
@@ -23016,7 +23028,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15597)
+## Tests (15602)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23970,6 +23982,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_log_rows_phone_hr23.py | 1 |
 | tests/test_log_token_scrub.py | 2 |
 | tests/test_long_list_scroll.py | 6 |
+| tests/test_long_question_1528.py | 5 |
 | tests/test_long_runs.py | 12 |
 | tests/test_magic_add_wording.py | 2 |
 | tests/test_maintenance.py | 19 |
@@ -25549,7 +25562,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1276 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:234 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:232 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4186 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
