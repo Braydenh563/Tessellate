@@ -51962,3 +51962,13 @@ Evidence: indent guides, `docIndentGuides` (documents-code.js) with `tests/test_
 - T2. Recent runs is a quiet disclosure row (DESIGN "Row actions"), not a full-width bordered box.
 - T4. A menu's first and last items sit one menu padding from its edge, never a group label's or a separator's gap (owner: grammar57, with 813's one dropdown grammar).
 Rows: T1 and T2 (owner: voiceup, with V7's dialog work); T3 learnaudit; T4 grammar57.
+
+## Moved from the plans, 2026-11-02 (a30b: TIMELINE rail circle)
+
+From TIMELINE_PLAN.md "Placed from the owner's list, 2026-10-10", measured again as that row asked. Seeded 48 notes with a snippet under every title (`seed-timeline.js`, `seed-timeline.py`), `getBoundingClientRect` on the mark against the title's first line box: the mark's centre is 0 px from the first line's centre at 1440 and 390 (12 rows each), and the spine was 1 px left of the mark's centre at both widths because the rule ignored the row's 1px border and the spine's own width. Now 0.5 px from the spine's left edge, which is the centre of its 1px line (`.timeline-rows::before`, 06-timeline-dialogs.css; `tests/test_timeline_rail_centre.py`). Not verified: a 2x or 3x display, where the mark paints on the device grid.
+
+### Bugs
+
+- "The circle on the vertical line on the left isnt in line with the text line"
+  Recommendation: align the rail circle to the first line's centre in timeline.js and the timeline CSS, measured with getBoundingClientRect against the line box. Earlier notes on this fix were not verified; measure it again. Also carried by Brief 41 (timeline.js in its file list).
+
