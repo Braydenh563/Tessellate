@@ -114,3 +114,6 @@ date | item | type | rung | rework | note
 2026-11-02 | 1533 search-by-meaning switch wording | bugfix | opus | 0 | 
 2026-11-02 | 1546 mermaid builder design | design | opus | 0 | 
 2026-11-02 | 1549 CM crash repro (none) | bug | opus | 0 | 
+2026-11-02 | a28v companion lag: beat, mood, tail | perf | sonnet | 0 | 
+2026-11-02 | 1542-1545 doc insert panels | ui | sonnet | 0 | 
+2026-11-02 | Learned section lazy, boot gzip -7.2KB | perf | opus | 1 | 
