@@ -2407,19 +2407,30 @@ function addBubble(role, text, attachments = null) {
   const clipped = long ? `${text.slice(0, space > BUBBLE_CLIP * 0.8 ? space : hard).trimEnd()}\u2026` : text;
   body.textContent = long ? clipped : text;
   bubble.append(label, body);
-  if (long) {
-    const more = document.createElement("button");
-    more.type = "button";
-    more.className = "entry-more";
-    more.textContent = "Show more";
-    more.setAttribute("aria-expanded", "false");
-    more.addEventListener("click", () => {
-      const open = more.getAttribute("aria-expanded") !== "true";
-      body.textContent = open ? text : clipped;
-      more.textContent = open ? "Show less" : "Show more";
-      more.setAttribute("aria-expanded", String(open));
+  //: **A question past ten lines folds** (the owner, 2026-11-02, "auto collapse with the see more/see less
+  //: at about like 10 lines", as Perplexity does): the body is the notes' clamp (`entry-clamped`, ten lines
+  //: for a question in chat.css), faded at its foot, with the notes' "Show more" under it. Whether it
+  //: overflows is read once, the frame after the bubble is in the page; a long text is also cut, above.
+  if (role === "user" && typeof text === "string") {
+    body.classList.add("entry-clamped");
+    requestAnimationFrame(() => {
+      if (!long && body.scrollHeight <= body.clientHeight + 1) return body.classList.remove("entry-clamped");
+      body.classList.add("is-folded");
+      const more = document.createElement("button");
+      more.type = "button";
+      more.className = "entry-more";
+      more.textContent = "Show more";
+      more.setAttribute("aria-expanded", "false");
+      more.addEventListener("click", () => {
+        const open = more.getAttribute("aria-expanded") !== "true";
+        if (long) body.textContent = open ? text : clipped;
+        body.classList.toggle("entry-clamped", !open);
+        body.classList.toggle("is-folded", !open);
+        more.textContent = open ? "Show less" : "Show more";
+        more.setAttribute("aria-expanded", String(open));
+      });
+      body.after(more);
     });
-    bubble.append(more);
   }
   //: **The person's own mark** (INBOX 409: "auto generate other icons in
   //: other places like potentially the user chat bubbles"). Generated from

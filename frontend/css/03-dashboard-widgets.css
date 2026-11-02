@@ -3302,6 +3302,23 @@ button.answer-figure-open {
   font-size: var(--text-lg);
 }
 
+/* A question past ten lines folds (the owner, 2026-11-02): the notes' clamp at
+   ten lines, its last line faded into the bubble, "Show more" under it
+   (chat-turn.js addBubble). */
+.msg.user .msg-body {
+  --note-preview-lines: 10;
+}
+
+.msg.user .msg-body.is-folded {
+  -webkit-mask-image: linear-gradient(to bottom, currentColor calc(100% - 1.6em), transparent);
+  mask-image: linear-gradient(to bottom, currentColor calc(100% - 1.6em), transparent);
+}
+
+.msg.user > .entry-more {
+  color: inherit;
+  opacity: 0.8;
+}
+
 .msg.user .msg-role {
   color: var(--on-accent);
   opacity: 0.72;

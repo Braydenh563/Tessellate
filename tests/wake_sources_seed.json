@@ -25,6 +25,7 @@
  "categories-panel.js::raf": 4,
  "chat-time.js::mutation-observer": 1,
  "chat-turn.js::interval": 1,
+ "chat-turn.js::raf": 1,
  "chat.js::raf": 2,
  "chat.js::resize-observer": 1,
  "citation-peek.js::raf": 1,

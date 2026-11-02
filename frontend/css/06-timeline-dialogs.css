@@ -607,7 +607,8 @@
    cut off"); the blank lines between paragraphs are folded while clamped
    (note-cards.js fillContent, INBOX 458), so every counted line is text.
    `LONG_NOTE_LINES` (note-cards.js) is the same idea in the JS. */
-.entry-content.entry-clamped {
+.entry-content.entry-clamped,
+.msg.user .msg-body.entry-clamped {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: var(--note-preview-lines);
