@@ -11948,7 +11948,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 |  | GET | `list_types` | src/tessellate/api/routes_relations.py:43 |
 |  | GET | `search` | src/tessellate/api/routes_search.py:98 |
 |  | GET | `state` | src/tessellate/api/routes_bench.py:241 |
-|  | GET | `suggestions` | src/tessellate/api/routes_inbox.py:124 |
+|  | GET | `suggestions` | src/tessellate/api/routes_inbox.py:121 |
 |  | GET | `tidy_summary` | src/tessellate/api/routes_tidy.py:50 |
 |  | GET | `timeline` | src/tessellate/api/routes_timeline.py:376 |
 |  | GET | `today` | src/tessellate/api/routes_resurface.py:87 |
@@ -12064,9 +12064,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/digest` | POST | `weekly_digest` | src/tessellate/api/routes_insights.py:839 |
 | `/digest/stream` | POST | `weekly_digest_stream` | src/tessellate/api/routes_insights.py:766 |
 | `/dismiss` | POST | `dismiss_insight` | src/tessellate/api/routes_insights.py:537 |
-| `/dismissed` | GET | `dismissed_suggestions` | src/tessellate/api/routes_inbox.py:240 |
-| `/dismissed/clear` | POST | `clear_dismissed_suggestions` | src/tessellate/api/routes_inbox.py:254 |
-| `/dismissed/restore` | POST | `restore_dismissed_suggestions` | src/tessellate/api/routes_inbox.py:281 |
+| `/dismissed` | GET | `dismissed_suggestions` | src/tessellate/api/routes_inbox.py:237 |
+| `/dismissed/clear` | POST | `clear_dismissed_suggestions` | src/tessellate/api/routes_inbox.py:251 |
+| `/dismissed/restore` | POST | `restore_dismissed_suggestions` | src/tessellate/api/routes_inbox.py:278 |
 | `/documents/run-jobs` | POST | `start_run_job` | src/tessellate/api/run_sandbox.py:336 |
 | `/documents/run-jobs/{job_id}` | DELETE | `end_run_job` | src/tessellate/api/run_sandbox.py:356 |
 | `/documents/run-jobs/{job_id}/beat` | POST | `beat_run_job` | src/tessellate/api/run_sandbox.py:348 |
@@ -12251,8 +12251,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/memory/{preference_id}/answer` | POST | `answer_memory_proposal` | src/tessellate/api/routes_settings.py:1696 |
 | `/merge` | POST | `merge_notes` | src/tessellate/api/routes_duplicates.py:135 |
 | `/merge` | POST | `merge_tags` | src/tessellate/api/routes_tags.py:84 |
-| `/merges/accept` | POST | `accept_merge` | src/tessellate/api/routes_inbox.py:143 |
-| `/merges/dismiss` | POST | `dismiss_merge` | src/tessellate/api/routes_inbox.py:157 |
+| `/merges/accept` | POST | `accept_merge` | src/tessellate/api/routes_inbox.py:140 |
+| `/merges/dismiss` | POST | `dismiss_merge` | src/tessellate/api/routes_inbox.py:154 |
 | `/merges/{undo_id}/undo` | POST | `undo_merge_route` | src/tessellate/api/routes_entities.py:228 |
 | `/mermaid-frame` | GET | `mermaid_frame` | src/tessellate/api/app.py:1532 |
 | `/models/{size}` | DELETE | `remove_model` | src/tessellate/api/routes_voice.py:51 |
@@ -12426,8 +12426,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/transcribe-meeting` | POST | `transcribe_meeting` | src/tessellate/api/routes_voice.py:117 |
 | `/turned-down` | GET | `list_turned_down` | src/tessellate/api/routes_tags.py:126 |
 | `/turned-down/offer-again` | POST | `offer_tag_again` | src/tessellate/api/routes_tags.py:149 |
-| `/types/accept` | POST | `accept_type` | src/tessellate/api/routes_inbox.py:169 |
-| `/types/dismiss` | POST | `dismiss_type` | src/tessellate/api/routes_inbox.py:186 |
+| `/types/accept` | POST | `accept_type` | src/tessellate/api/routes_inbox.py:166 |
+| `/types/dismiss` | POST | `dismiss_type` | src/tessellate/api/routes_inbox.py:183 |
 | `/undo` | POST | `undo` | src/tessellate/api/routes_learned_audit.py:52 |
 | `/undo/{undo_id}` | POST | `tidy_undo` | src/tessellate/api/routes_tidy.py:70 |
 | `/unforget` | POST | `unforget_everything` | src/tessellate/api/routes_learned.py:264 |
@@ -19228,24 +19228,24 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `DismissedRestore` | src/tessellate/api/routes_inbox.py:205 |
-| `MergeAccept` | src/tessellate/api/routes_inbox.py:131 |
-| `MergeDismiss` | src/tessellate/api/routes_inbox.py:137 |
-| `TypeDecision` | src/tessellate/api/routes_inbox.py:164 |
-| `_merges` | src/tessellate/api/routes_inbox.py:49 |
-| `_sentence` | src/tessellate/api/routes_inbox.py:67 |
-| `_tension_keys` | src/tessellate/api/routes_inbox.py:233 |
-| `_turned_down_on_notes` | src/tessellate/api/routes_inbox.py:212 |
-| `_types` | src/tessellate/api/routes_inbox.py:83 |
-| `_visible` | src/tessellate/api/routes_inbox.py:38 |
-| `accept_merge` | src/tessellate/api/routes_inbox.py:144 |
-| `accept_type` | src/tessellate/api/routes_inbox.py:170 |
-| `clear_dismissed_suggestions` | src/tessellate/api/routes_inbox.py:255 |
-| `dismiss_merge` | src/tessellate/api/routes_inbox.py:158 |
-| `dismiss_type` | src/tessellate/api/routes_inbox.py:187 |
-| `dismissed_suggestions` | src/tessellate/api/routes_inbox.py:241 |
-| `restore_dismissed_suggestions` | src/tessellate/api/routes_inbox.py:282 |
-| `suggestions` | src/tessellate/api/routes_inbox.py:125 |
+| `DismissedRestore` | src/tessellate/api/routes_inbox.py:202 |
+| `MergeAccept` | src/tessellate/api/routes_inbox.py:128 |
+| `MergeDismiss` | src/tessellate/api/routes_inbox.py:134 |
+| `TypeDecision` | src/tessellate/api/routes_inbox.py:161 |
+| `_merges` | src/tessellate/api/routes_inbox.py:50 |
+| `_sentence` | src/tessellate/api/routes_inbox.py:68 |
+| `_tension_keys` | src/tessellate/api/routes_inbox.py:230 |
+| `_turned_down_on_notes` | src/tessellate/api/routes_inbox.py:209 |
+| `_types` | src/tessellate/api/routes_inbox.py:84 |
+| `_visible` | src/tessellate/api/routes_inbox.py:39 |
+| `accept_merge` | src/tessellate/api/routes_inbox.py:141 |
+| `accept_type` | src/tessellate/api/routes_inbox.py:167 |
+| `clear_dismissed_suggestions` | src/tessellate/api/routes_inbox.py:252 |
+| `dismiss_merge` | src/tessellate/api/routes_inbox.py:155 |
+| `dismiss_type` | src/tessellate/api/routes_inbox.py:184 |
+| `dismissed_suggestions` | src/tessellate/api/routes_inbox.py:238 |
+| `restore_dismissed_suggestions` | src/tessellate/api/routes_inbox.py:279 |
+| `suggestions` | src/tessellate/api/routes_inbox.py:122 |
 
 ### src/tessellate/api/routes_insights.py (30)
 

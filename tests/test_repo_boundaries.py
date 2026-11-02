@@ -40,7 +40,7 @@ CROSS_RESOURCE = {"routes_spaces.py"}
 #: list in `Entry.tags`, not a table, so they have no model in `MOVED`; the
 #: properties index reads (the graph's note types, the timeline's meeting dates
 #: and their join) to repo/properties.py: 757.
-ORM_CALLS_CAP = 755
+ORM_CALLS_CAP = 752
 
 _ORM = re.compile(
     r"\b(?:session|db)\.(?:query|get|execute|scalar|scalars|add|add_all|delete|merge)\("
