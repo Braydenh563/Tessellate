@@ -51972,3 +51972,79 @@ From TIMELINE_PLAN.md "Placed from the owner's list, 2026-10-10", measured again
 - "The circle on the vertical line on the left isnt in line with the text line"
   Recommendation: align the rail circle to the first line's centre in timeline.js and the timeline CSS, measured with getBoundingClientRect against the line box. Earlier notes on this fix were not verified; measure it again. Also carried by Brief 41 (timeline.js in its file list).
 
+
+## Moved from the plans, 2026-11-02 (a30b: GRAPH phases 1, 2, 3 and 6)
+
+From GRAPH_PLAN.md "5. Phases"; each phase was already marked built (the "Built" headings in the plan point at HISTORY.md, 2026-09-09 and 2026-09-13), and its spec text had stayed behind. Moved whole:
+
+### Phase 1: the canvas renderer and physical drag (1–2 sessions)
+Canvas 2D renderer behind the same `renderGraph()` entry; d3-force in a
+Worker; quadtree hit-testing; drag with `alphaTarget(0.3)` on start and
+decay on end, `forceCollide` from radius, `velocityDecay 0.4`, a weak
+centre force; node radius by degree (`4 + 2·√degree`, clamped); labels by
+zoom (`k > 1.4`) and on hover/selection; hover dims non-neighbours to
+20%; the existing search highlight, trace, focus mode, colour modes, time
+slider and saved views keep working through the new renderer.
+**Gate:** a 2,000-note fixture built by a script (`scratchpad/graph-
+fixture.js`) paints its first frame < 300 ms and holds ≥ 55 fps during a
+2 s drag (Playwright `requestAnimationFrame` counter); no frame > 16 ms
+on a 200-note board; `errors.js` 0.
+
+### Phase 2: the space (½ session)
+The graph fills the tab; the dock, legend, minimap and zoom strip float
+over it on the popover shell; the page does not scroll on Graph; the
+stats line becomes a chip in the dock's identity zone; fullscreen is
+just "hide the app chrome". Dark theme measured with `contrast.js`.
+
+### Phase 3: colour rules and groups (½ session)
+"Colour by" becomes a rule picker (category, tag, space, age, cluster,
+has a map, has a file) plus **groups**: a saved search → a colour, listed
+in the legend, stored with the view. Legend entries toggle visibility.
+
+### Phase 6: the node panel (½ session, INBOX 59)
+The popup that opens on a node is a form with nine equal buttons under it.
+Target: a header (title, category chip, the confidence as a small mark
+beside it, not a chip), one muted meta line (date, links, views), the
+attachment as a compact row, the content editor sized to its text (four
+lines minimum, grows), tags, and a single primary Save that appears only
+when something changed. Actions become one toolbar row of icon buttons
+with tooltips in three groups: read (Open, Similar, Trace), shape (Grow,
+Focus, Link, Remind), keep (Favourite; Bin last, separated, ghost). Open
+is the one filled button. Width and the dock grammar per DESIGN.md; the
+panel scrolls inside, never the page; measured at 1440 and 1024 and on
+390 as a sheet. Gate: `scratchpad/ui-sweeps/graph4b.js` plus a node-panel
+probe that counts buttons per row and the panel's own scrollHeight.
+
+
+## Moved from the plans, 2026-11-02 (a30b: UI_MODERNISATION Phase 7 items 1 to 5)
+
+From UI_MODERNISATION_PLAN.md "Phase 7"; the plan already said items 1, 3, 4 and 5 were built (HISTORY.md, "Moved from the plans, 2026-09-09") and item 2 was struck through, but their text had stayed behind. Moved whole:
+
+Each one was triaged against the running app this session; these are the ones
+that need building rather than fixing.
+
+1. **The lightbox is an image viewer showing a document.** Reported: "the
+   lightbox needs improving for file and pdf previews, no sections or info are
+   below it really compared to the images." An image gets caption, read text,
+   badges and usage under it; a PDF gets the page and nothing else. It should
+   carry the same block, plus what only a document has: page count, which pages
+   have been read, and a way into the OCR Workspace at that page.
+2. ~~**Line numbers as a setting, in all three editors.**~~ **Built** (HISTORY.md, "Moved from the plans, 2026-10-05 (docs hygiene before 0.4.0: UI_MODERNISATION_PLAN)"; `mountGutterFor`, `docGutterWanted` in documents.js).
+3. **Captioning for documents, not just photographs.** Reported: "image
+   captioning, how it is done and displayed needs to be refined for pdf
+   documents and other similar documents. with graphs, images and diagrams in
+   them." A page of slides is not a photograph: the caption prompt, and where
+   the answer is shown, both assume one image with one subject. Needs a
+   per-page, per-figure model and a place to show it that is not a single line
+   under a thumbnail.
+4. **Region select → read just that.** Asked as a question, and it is a good
+   one: "can there be a way for the user to manually outline and single out
+   regions on a pdf or similar document and then the ai will read what is in
+   those regions?? like maybe the user can outline a graph or diagram on a pdf
+   slide and then the user cna get the image or ocr model to analyse and caption
+   that thing." The workspace already draws region boxes from Tesseract and
+   already has a page raster; this is a drag-to-draw on that layer, a crop, and
+   the existing read/caption call on the crop. Scoped small, high value.
+5. **The Files sub-tab has to show more than a row can hold.** OCR text for a
+   long document does not fit where a photo's caption fits; the row needs a
+   summary plus a way to open the reading, not a clamped paragraph.

@@ -228,36 +228,7 @@ Moved whole to HISTORY.md ("Moved from the plans, 2026-10-05 (docs hygiene befor
 
 ## Phase 7: the reports from the v0.2.2 round that are still open
 
-Each one was triaged against the running app this session; these are the ones
-that need building rather than fixing.
-
-1. **The lightbox is an image viewer showing a document.** Reported: "the
-   lightbox needs improving for file and pdf previews, no sections or info are
-   below it really compared to the images." An image gets caption, read text,
-   badges and usage under it; a PDF gets the page and nothing else. It should
-   carry the same block, plus what only a document has: page count, which pages
-   have been read, and a way into the OCR Workspace at that page.
-2. ~~**Line numbers as a setting, in all three editors.**~~ **Built** (HISTORY.md, "Moved from the plans, 2026-10-05 (docs hygiene before 0.4.0: UI_MODERNISATION_PLAN)"; `mountGutterFor`, `docGutterWanted` in documents.js).
-3. **Captioning for documents, not just photographs.** Reported: "image
-   captioning, how it is done and displayed needs to be refined for pdf
-   documents and other similar documents. with graphs, images and diagrams in
-   them." A page of slides is not a photograph: the caption prompt, and where
-   the answer is shown, both assume one image with one subject. Needs a
-   per-page, per-figure model and a place to show it that is not a single line
-   under a thumbnail.
-4. **Region select → read just that.** Asked as a question, and it is a good
-   one: "can there be a way for the user to manually outline and single out
-   regions on a pdf or similar document and then the ai will read what is in
-   those regions?? like maybe the user can outline a graph or diagram on a pdf
-   slide and then the user cna get the image or ocr model to analyse and caption
-   that thing." The workspace already draws region boxes from Tesseract and
-   already has a page raster; this is a drag-to-draw on that layer, a crop, and
-   the existing read/caption call on the crop. Scoped small, high value.
-5. **The Files sub-tab has to show more than a row can hold.** OCR text for a
-   long document does not fit where a photo's caption fits; the row needs a
-   summary plus a way to open the reading, not a clamped paragraph.
-6. **The agent activity panel**, see
-   [AGENT_SKILLS_REFORM.md](AGENT_SKILLS_REFORM.md) Phase C, which owns it.
+Items 1 to 5 are built (below). Item 6, the agent activity panel, is owned by [AGENT_SKILLS_REFORM.md](AGENT_SKILLS_REFORM.md) Phase C.
 
 ### Built: items 1, 3, 4 and 5
 
