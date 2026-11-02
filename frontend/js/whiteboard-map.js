@@ -5437,7 +5437,12 @@ function wbMapRevealTopic(item) {
   const container = document.getElementById("whiteboard-container");
   if (!el || !container) return false;
   const free = typeof wbVisibleCanvasRect === "function" ? wbVisibleCanvasRect() : container.getBoundingClientRect();
-  if (!wbRectEscapes(el.getBoundingClientRect(), free)) return false;
+  //: **Inside the slide's own margin counts as at the edge** (audit 1028 U24:
+  //: the newest topic stood 5px from the canvas edge, "in view" to a plain
+  //: containment test, so the view never moved and it read as cut off).
+  const m = 24;
+  const inset = { left: free.left + m, top: free.top + m, right: free.right - m, bottom: free.bottom - m };
+  if (!wbRectEscapes(el.getBoundingClientRect(), inset)) return false;
   const box = wbItemBBox("object", item);
   if (!box) return false;
   //: With its parent when the two fit side by side (dog2 item 12): centring
@@ -5464,7 +5469,6 @@ function wbMapRevealTopic(item) {
     return true;
   }
   const t = d3.zoomTransform(container);
-  const m = 24;
   const slide = (lo, hi, a0, a1) => {
     let d = 0;
     if (hi > a1 - m) d = a1 - m - hi;

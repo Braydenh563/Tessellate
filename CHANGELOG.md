@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Mind map: a new or navigated-to topic within 24px of the canvas edge is brought in to that margin (it stayed 5px from the right edge, counted as in view); measured 5px before, 24px after at 1440x900 (audit 1028 U24).
 - Board: the Delete tool sits 10px from Undo and Redo in the dock (it was 2px, measured at 1440x900), and the side dock's grid is unchanged (audit 1028 U14).
 - Board: the Insert menu shows the key that does the thing (Sticky note N, it said click; Image I and Connector Shift+C, which showed none), read from the same key table the board binds, so every item that has a key says it (audit 1028 U12).
 - Plans: the focus ring that was said to take the ground's colour on an active button does not reproduce (239 Tab stops across eight tabs: none under 2px or 3:1, minimum 3.56:1 light and 7.03:1 dark), so its plan row is closed with the numbers (a30b).

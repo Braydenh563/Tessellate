@@ -55,3 +55,18 @@ def test_delete_stands_apart_from_undo_and_redo_in_the_dock_but_not_in_the_side_
     assert "margin-inline-end: var(--space-3)" in rule  # 2px gap + 8px = 10px, over the 8px the audit asks
     side = _block(LAZY, '[data-dock="side"] .wb-tool-section-row > [data-tool="delete"] {', "}")
     assert "margin-inline-end: 0" in side  # the side dock is a four-cell grid that spaces its own cells
+
+
+# U24 ------------------------------------------------------------------------
+
+MAP = (JS / "whiteboard-map.js").read_text(encoding="utf-8")
+
+
+def test_a_topic_inside_the_slide_margin_of_the_edge_is_revealed_not_left_there():
+    start = MAP.index("function wbMapRevealTopic(")
+    reveal = MAP[start : MAP.index("\n}\n", start)]
+    # One margin, declared once, used for both the "is it at the edge" test and the slide to it.
+    assert reveal.count("const m = 24;") == 1
+    assert reveal.index("const m = 24;") < reveal.index("wbRectEscapes(el.getBoundingClientRect(), inset)")
+    assert "right: free.right - m" in reveal and "left: free.left + m" in reveal
+    assert "wbRectEscapes(el.getBoundingClientRect(), free)" not in reveal
