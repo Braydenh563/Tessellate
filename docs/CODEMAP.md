@@ -1,6 +1,6 @@
 # Code map
 
-Generated 2026-11-01 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
+Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
 Counts: frontend functions 7548, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8417, test files 1817, tests 15584, plan headings 990, app scripts 28, boot scripts 37, script files 224.
 

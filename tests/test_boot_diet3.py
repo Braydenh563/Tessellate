@@ -159,8 +159,8 @@ def test_a_deep_link_paints_through_its_target_until_the_card_exists():
 def test_a_file_that_never_arrives_says_so_instead_of_leaving_a_blank_list():
     for name, needle in (
         ("notes-list.js", 'lazyLoadFailed("Notes")'),
-        ("phone-shell.js", 'ensureModule("entryCard").then((ok) => (ok ? openNotePage(entry, returnFocus) : lazyLoadFailed('),
-        ("documents.js", 'ensureModule("entryCard").then((ok) => (ok ? list.appendChild(entryItem(target.entry)) : lazyLoadFailed('),
+        ("phone-shell.js", 'ensureModule("entryCard").then((ok) => (ok && window.entryItem ? openNotePage(entry, returnFocus) : lazyLoadFailed('),
+        ("documents.js", 'ensureModule("entryCard").then((ok) => (ok && window.entryItem ? list.appendChild(entryItem(target.entry)) : lazyLoadFailed('),
     ):
         assert needle in (JS / name).read_text(encoding="utf-8"), name
 
