@@ -6157,7 +6157,10 @@ function docLiveRevealSame(probes, ranges) {
 //: A rendered widget turns to source only while a selection starts in it (INBOX 1547): a caret
 //: there, or a drag begun there; a selection that crosses it leaves it drawn, height and all.
 //: A property, not a name: the shared scope is at its cap (test_global_scope_ratchet).
-docLiveSpanTouched.anchorIn = (ranges, from, to) => ranges.some((range) => range.anchor >= from && range.anchor <= to);
+//: **A caret shows it only from strictly inside** (audit 1102 DX5): Up or Down lands a caret on a
+//: widget's edge (it has no inside to land in), and the edge revealing it moved the page 235px at
+//: `[TOC]`; Left or Right from the edge steps in. A drag begun at the edge still shows it.
+docLiveSpanTouched.anchorIn = (ranges, from, to) => ranges.some((range) => range.anchor >= from && range.anchor <= to && (!range.empty || (range.anchor > from && range.anchor < to)));
 
 
 //: Live is three extensions rather than one now, and all three go in the same
