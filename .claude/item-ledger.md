@@ -121,3 +121,7 @@ date | item | type | rung | rework | note
 2026-11-02 | 1547 Live widget flicker | ui | opus | 1 | 
 2026-11-02 | a28x audit E rows composer | bug | sonnet | 1 | 
 2026-11-02 | a28y companion forced styles | perf | sonnet | 0 | 
+2026-11-02 | 1556 SearXNG start action | ui-fix | sonnet | 1 | 
+2026-11-02 | 1557 timer input and button heights | ui-fix | sonnet | 0 | 
+2026-11-02 | 1558 utility widgets and pins | feature | sonnet | 1 | 
+2026-11-02 | 1547 documents deep audit (32 findings) | audit | opus | 0 | 
