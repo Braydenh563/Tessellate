@@ -15548,7 +15548,10 @@ function docCmKeymap(CM) {
       run: () => {
         //: Arms the Tab escape hatch (see `docTabEscapes`); the search panel's
         //: own keymap closes itself on Escape, so this one never consumes it.
-        docTabEscapes = true;
+        //: Not when this Escape is about to close a menu or a tooltip: it was
+        //: spent on that, and arming then threw the next Tab out of the editor
+        //: minutes later (DX4, audit 1102).
+        docTabEscapes = ![...document.querySelectorAll('[role="menu"], .cm-tooltip')].some((el) => el.getClientRects().length > 0);
         return false;
       },
     },
@@ -15752,11 +15755,13 @@ function docCmExtensions(CM) {
     //: The disarming half of the Escape-then-Tab hatch. Anything that is not
     //: part of that chord means the writer went back to writing, and a flag
     //: still armed then would send the next Tab to the toolbar instead of
-    //: into the line. Registered as a plain DOM handler rather than as more
-    //: keymap entries because a keymap can only match keys it names, and this
-    //: has to see the ones it does not. Never handles the event (always
-    //: false), so nothing downstream changes.
-    CM.view.EditorView.domEventHandlers({
+    //: into the line. A plain DOM handler, because a keymap can only match keys
+    //: it names, and at the highest precedence, because a key the keymap
+    //: handles (an arrow, a letter's own binding) ends the event before a
+    //: default-precedence handler is asked, which left the flag armed after
+    //: "Escape, arrow, Tab" (DX4, audit 1102). A pointer press disarms it too,
+    //: whatever else answers the press. Never handles the event (always false).
+    CM.state.Prec.highest(CM.view.EditorView.domEventHandlers({
       keydown: (event) => {
         if (event.key !== "Tab" && event.key !== "Shift" && event.key !== "Escape") {
           docTabEscapes = false;
@@ -15765,10 +15770,13 @@ function docCmExtensions(CM) {
         docPastePlain = (event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === "v";
         return false;
       },
-      mousedown: (event, view) => {
+      mousedown: () => {
         docTabEscapes = false;
-        return docTableCellClick(event, view);
+        return false;
       },
+    })),
+    CM.view.EditorView.domEventHandlers({
+      mousedown: (event, view) => docTableCellClick(event, view),
     }),
     //: Ahead of the markdown language's own paste-a-URL-as-a-link, which would
     //: take a web address over selected words first and leave no paste chip.

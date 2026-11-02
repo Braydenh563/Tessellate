@@ -77,3 +77,24 @@ def test_dx3_the_paste_writes_the_fitted_text_and_offers_it():
     assert "docRichPasteEvent.fit(markdown," in body
     assert "insert: markdown" not in body
     assert "docPasteOfferRich(view, sel.from, insert," in body
+
+
+# DX4 -----------------------------------------------------------------------
+
+
+def test_dx4_the_tab_hatch_is_disarmed_before_any_keymap_can_swallow_the_key():
+    # Before (p/dx4.js, 8791): Escape, ArrowLeft, Tab left the editor for the status bar and
+    # indented nothing, because the arrow was handled by the keymap before the disarming
+    # handler (default precedence) was asked. The handler is now Prec.highest.
+    start = DOCS.index("//: The disarming half of the Escape-then-Tab hatch.")
+    body = DOCS[start : DOCS.index("//: Ahead of the markdown language's own paste-a-URL", start)]
+    assert "CM.state.Prec.highest(CM.view.EditorView.domEventHandlers({" in body
+    assert 'event.key !== "Tab" && event.key !== "Shift" && event.key !== "Escape"' in body
+    assert "mousedown: () => {\n        docTabEscapes = false;" in body
+    assert "docTableCellClick(event, view)" in body
+
+
+def test_dx4_an_escape_that_closes_a_menu_does_not_arm_the_hatch():
+    start = DOCS.index('      key: "Escape",')
+    body = DOCS[start : DOCS.index('key: "Tab",', start)]
+    assert "docTabEscapes = ![...document.querySelectorAll('[role=\"menu\"], .cm-tooltip')]" in body

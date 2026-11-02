@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: Escape then Tab leaves the editor only when nothing else happened between (audit 1102 DX4). The disarming handler is now highest precedence (a key the keymap handles, such as an arrow, ended the event before it ran) and an Escape that closes a menu or tooltip never arms the hatch. p/dx4.js: Escape, ArrowLeft, Tab left focus on the status bar and indented nothing; now indents.
 - Documents: a pasted block (heading, list, fence, table, quote, several paragraphs) starts its own line (audit 1102 DX3). `docRichPasteEvent.fit` pads with a blank line when words come before or after; "Pick here please" + h2 gave `please## Heading two`, now `please\n\n## Heading two`.
 - Ask tab draws the pick-up tip under the answer, as Chat does (audit 1028 E52); tests/test_utility_timers_1029.py stubs follow 1553 (page object, no lock card), assertions unchanged.
 - Documents Live: a drag selection across a diagram or equation leaves it drawn (INBOX 1547); source shows only when a selection starts in it. flicker1547.js: 12 of 12 toggles and a 147px jump before, 0 and 0 after.
