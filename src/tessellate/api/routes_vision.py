@@ -36,6 +36,7 @@ from sqlalchemy.orm import Session
 from tessellate.core import deps
 from tessellate.core.database import AuditLog, Category, Entry, EntryOpen, utcnow
 from tessellate.core.deps import get_session
+from tessellate.repo import categories as categories_repo
 from tessellate.entry import manager
 
 router = APIRouter(tags=["vision"])
@@ -195,7 +196,7 @@ def _meaning_alike(names: list[str]) -> dict[tuple[int, int], float]:
 @router.get("/tidy-proposals")
 def tidy_proposals(session: Session = Depends(get_session)) -> dict:
     """Merges and removals the librarian proposes; nothing is changed here."""
-    categories = list(session.scalars(select(Category).order_by(Category.id)))
+    categories = categories_repo.all_rows(session)
     counts = dict(
         session.execute(
             select(Entry.category_id, func.count(Entry.id))

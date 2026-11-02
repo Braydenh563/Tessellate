@@ -40,7 +40,8 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.core.database import Category, Entry
+from tessellate.core.database import Entry
+from tessellate.repo import categories as categories_repo
 from tessellate.core.deps import get_session
 from tessellate.entry.properties import strip as strip_properties
 
@@ -267,7 +268,7 @@ def map_from_notes(body: MapFromNotes, db: Session = Depends(get_session)):
         if not entry.is_deleted and not entry.is_board
     }
     category_ids = {e.category_id for e in found.values() if e.category_id}
-    category_names = dict(db.execute(select(Category.id, Category.name).where(Category.id.in_(category_ids))).all()) if category_ids else {}
+    category_names = categories_repo.names_by_id(db, category_ids)
     rows = []
     for note_id in wanted:
         entry = found.get(note_id)

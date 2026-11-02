@@ -88,15 +88,11 @@ def _outline_from_filing(db: Session, rows: list[tuple[Entry, str, str]], name: 
     which of the two produced it rather than passing this off as the model's
     work.
     """
-    from tessellate.core.database import Category
+    from tessellate.repo import categories as categories_repo
 
     by_category: dict[str, list[str]] = {}
     for entry, title, _ in rows:
-        label = "Unfiled"
-        if entry.category_id is not None:
-            category = db.get(Category, entry.category_id)
-            if category is not None:
-                label = category.name
+        label = categories_repo.name_of(db, entry.category_id) or "Unfiled"
         by_category.setdefault(label, []).append(title)
     lines = [f"- {name}"]
     for label, titles in by_category.items():

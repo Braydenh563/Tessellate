@@ -33,7 +33,6 @@ from itertools import chain
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from starlette.concurrency import run_in_threadpool
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import capability, fact_check, composer, composer_social, composer_unplaced, note_language, composer_aware, composer_compose, composer_digest, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, note_rank, note_recency, personal, verdicts, vocative
@@ -65,11 +64,11 @@ from tessellate.api import chat_extra
 from tessellate.core import activity, deps, jobs, model_gate, private_turn
 from tessellate.core.database import (
     AuditLog,
-    Category,
     Entry,
 )
 from tessellate.core.config import user_now
 from tessellate.core.deps import get_session
+from tessellate.repo import categories as categories_repo
 from tessellate.core.logbuffer import safe_value
 from tessellate.entry import manager
 from tessellate.entry.manager import UNCATEGORISED
@@ -122,13 +121,7 @@ def remember_recent_question(body: RememberBody, session: Session = Depends(get_
 def suggestions(session: Session = Depends(get_session)) -> list[str]:
     """Recommended questions: content-aware ones built from the user's own
     categories, falling back to generic starters for an empty notebook."""
-    rows = session.execute(
-        select(Category.name, func.count(Entry.id))
-        .join(Entry, Entry.category_id == Category.id)
-        .where(Entry.is_deleted == False)  # noqa: E712
-        .group_by(Category.name)
-        .order_by(func.count(Entry.id).desc())
-    ).all()
+    rows = categories_repo.note_counts(session, Entry.is_deleted == False)  # noqa: E712
     categories = [name for name, _count in rows if name != UNCATEGORISED]
 
     asked = {_asked_key(question) for question in _recent_questions(session)}
@@ -1061,7 +1054,6 @@ def _no_notes_line(req: _StreamRequest, ollama_running: bool) -> str:
     #: much did I save in May" asks about what the notes hold (audit 1031 C3).
     if not planned.window or planned.terms or not planned.window_phrase or planned.kind != "recall":
         return librarian.NO_RESULTS_MESSAGE
-    from sqlalchemy import func
 
     from tessellate.ai.tools._common import _visible
     from tessellate.core.database import Entry

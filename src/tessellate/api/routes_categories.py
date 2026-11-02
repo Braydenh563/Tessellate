@@ -31,10 +31,11 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai.tools._common import ToolError
 from tessellate.ai.tools.categories import _create_category, _merge_categories
-from tessellate.core.database import Category, Entry
+from tessellate.core.database import Entry
 from tessellate.core import deps
 from tessellate.core.deps import get_session
 from tessellate.entry import manager, moving
+from tessellate.repo import categories as categories_repo
 
 router = APIRouter(prefix="/categories", tags=["categories"])
 
@@ -99,14 +100,14 @@ class SplitBody(BaseModel):
     entry_ids: list[int] = Field(min_length=1, max_length=5000)
 
 
-def _existing_category(session: Session, category_id: int) -> Category:
-    category = session.get(Category, category_id)
+def _existing_category(session: Session, category_id: int):  # noqa: ANN202
+    category = categories_repo.find(session, category_id)
     if category is None:
         raise HTTPException(status_code=400, detail="That category no longer exists.")
     return category
 
 
-def _same_space(source: Category, target: Category) -> None:
+def _same_space(source, target) -> None:  # noqa: ANN001
     """Refuse folding a category into one of another space.
 
     Only the "All spaces" view can even name both, and a merge there would
@@ -213,7 +214,7 @@ SPLIT_MAX_NOTES = 60
 logger = logging.getLogger("tessellate.categories")
 
 
-def _ai_groups(source: Category, entries: list) -> list[dict] | None:
+def _ai_groups(source, entries: list) -> list[dict] | None:
     """The utility model's split, or None when it is off or answers nonsense.
 
     Only note ids that are really in the category survive, each note in one

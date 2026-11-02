@@ -33,6 +33,7 @@ from tessellate.core.deps import get_session
 from tessellate.entry import manager, paths
 from tessellate.repo import documents as documents_repo
 from tessellate.repo import properties as properties_repo
+from tessellate.repo import categories as categories_repo
 from tessellate.repo import relation_types
 from tessellate.repo import relations as relations_repo
 from tessellate.entry import topics as topic_finder
@@ -695,7 +696,7 @@ def _payload_key(session: Session, similarity: bool, include_maps: bool, include
     the ORM so the space filter applies, as the payload's own reads do.
     """
     from tessellate.core import vault
-    from tessellate.core.database import Category, WhiteboardObject
+    from tessellate.core.database import WhiteboardObject
 
     digest = hashlib.blake2b(digest_size=16)
 
@@ -715,7 +716,7 @@ def _payload_key(session: Session, similarity: bool, include_maps: bool, include
             .order_by(Entry.id)
         )
     )
-    feed(session.execute(select(Category.id, Category.name).order_by(Category.id)))
+    feed(categories_repo.id_names(session))
     feed(relations_repo.columns(session, ordered=True))
     feed(session.execute(select(Attachment.entry_id).distinct().order_by(Attachment.entry_id)))
     feed(

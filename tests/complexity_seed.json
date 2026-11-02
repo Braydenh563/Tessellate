@@ -111,7 +111,7 @@
  "src/tessellate/api/routes_library.py::_shelved": 18,
  "src/tessellate/api/routes_map_from_notes.py::build_tree": 26,
  "src/tessellate/api/routes_map_from_notes.py::build_tree.grouping": 28,
- "src/tessellate/api/routes_map_from_notes.py::map_from_notes": 20,
+ "src/tessellate/api/routes_map_from_notes.py::map_from_notes": 19,
  "src/tessellate/api/routes_map_suggest.py::_candidates": 20,
  "src/tessellate/api/routes_map_suggest.py::suggest_branches": 17,
  "src/tessellate/api/routes_mentions.py::_backlinks": 22,
