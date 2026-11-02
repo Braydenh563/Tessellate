@@ -358,3 +358,31 @@ def test_a_widget_moved_by_a_key_reads_its_place_when_pressed():
     assert "other.at" not in callout and "fold.at ===" not in callout
     assert "view.state.doc.lineAt(view.posAtDOM(el)).from" in CMJS
     assert "docCalloutKindMenu(lineOf(kindButton" in CMJS and "docToggleCalloutFold(lineOf(fold" in CMJS
+
+
+@needs_node
+def test_a_fresh_frame_closure_is_known_by_its_source():
+    lag = (JS / "lag-watch.js").read_text(encoding="utf-8")
+    fns = "\n".join(_function(lag, h) for h in ("function lagStackOwner(", "function lagRafOwner("))
+    const = re.search(r"^const LAG_RAF = .*$", lag, re.M).group(0)
+    got = _node(
+        const
+        + "\n"
+        + fns
+        + """
+let stacks = 0;
+const real = lagStackOwner;
+lagStackOwner = (s) => { stacks += 1; return real(s); };
+const owners = new Set();
+for (let i = 0; i < 64; i += 1) owners.add(lagRafOwner(() => i));
+const one = stacks;
+stacks = 0;
+let flip = 0;
+lagStackOwner = () => { stacks += 1; return flip++ % 2 ? "a.js tick" : "b.js tick"; };
+for (let i = 0; i < 96; i += 1) lagRafOwner(() => i + 1);
+console.log(JSON.stringify({ one, owners: owners.size, shared: stacks, mark: LAG_RAF.src.get("() => i + 1") }));
+"""
+    )
+    assert got["owners"] == 1
+    assert got["one"] <= 3, "64 fresh closures of one source take a stack at most once in 32"
+    assert got["mark"] == "" and got["shared"] > 50, "a source two owners share takes the stack every time once seen"

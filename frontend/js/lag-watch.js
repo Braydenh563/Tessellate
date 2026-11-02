@@ -43,7 +43,7 @@ const LAG = { queue: [], timer: 0, lastInput: "", lastInputAt: 0, lastAt: {}, ba
 const LAG_RAF_BUDGET_MS = 120;
 const LAG_RAF_SECONDS = 3;
 const LAG_RECENT_MS = 5 * 60 * 1000;
-const LAG_RAF = { on: true, fns: new WeakMap(), bucket: new Map(), hot: new Map(), owners: new Map(), second: 0 };
+const LAG_RAF = { on: true, fns: new WeakMap(), src: new Map(), srcN: 0, bucket: new Map(), hot: new Map(), owners: new Map(), second: 0 };
 const LAG_FRAME_MS = 200;
 const LAG_INPUT_MS = 300;
 const LAG_REQUEST_MS = 3000;
@@ -222,13 +222,26 @@ function lagStackOwner(stack, skip) {
   return "unknown";
 }
 
+//: **A fresh closure is known by its source** (audit 1102 DX1): CodeMirror asks for a frame
+//: with a new arrow on every key, and a stack per arrow was 14 us at 1x, 1.3 ms of a key at
+//: 4x in the long-document probe. A short source seen before takes its owner; one call in 32
+//: still takes the stack, and a source two files share (the owners differ) is marked "" and
+//: takes the stack every time from then on.
 function lagRafOwner(fn) {
   let owner = LAG_RAF.fns.get(fn);
   if (owner) return owner;
-  const limit = Error.stackTraceLimit;
-  Error.stackTraceLimit = 5;
-  owner = lagStackOwner(new Error().stack);
-  Error.stackTraceLimit = limit;
+  const src = fn instanceof Function ? Function.prototype.toString.call(fn) : "";
+  const kept = src && src.length <= 160 ? LAG_RAF.src.get(src) : "";
+  LAG_RAF.srcN = (LAG_RAF.srcN + 1) % 32;
+  if (kept && LAG_RAF.srcN) owner = kept;
+  else {
+    const limit = Error.stackTraceLimit;
+    Error.stackTraceLimit = 5;
+    owner = lagStackOwner(new Error().stack);
+    Error.stackTraceLimit = limit;
+    if (kept === undefined && LAG_RAF.src.size < 500) LAG_RAF.src.set(src, owner);
+    else if (kept && kept !== owner) LAG_RAF.src.set(src, "");
+  }
   if (fn instanceof Function) LAG_RAF.fns.set(fn, owner);
   return owner;
 }
