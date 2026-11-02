@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat without a model: "new notes" lists the newest notes instead of asking what the note should say (INBOX 1532). New before a plural noun is read as newest, as latest and recent are ("show new notes", "see new notes", "any new notes please"); a singular "new note" with words still makes one, and a bare "new note" offers both.
 - Chat without a model: a generative ask (write me an essay intro, make a timetable, give me a study plan, draft an email, a poem, a speech, explain it simply) now says it needs a model and where to connect one, instead of quoting notes (audit 1028 E24). One list of generative verbs and things in utilities.py (GENERATIVE_VERBS, GENERATIVE_THINGS), the same gate as translate; with a model running the ask goes to chat.
 - Chat without a model: a due answer offers Next chips from its own items (audit 1028 E67): open the first note listed and set a reminder for it, beside Plan my week, instead of the one fixed chip; each chip is a sentence the app acts on, and a single-day answer has chips too.
 - Chat acts name a note by its title, never #14 (audit 1028 E64): the card items, the open-a-note line, linked-notes and tag lists, and the Cancelled, Restored and Snoozed reminder labels say the note's title or the reminder's words. A #tag stays a tag; the card's steps still carry the id.

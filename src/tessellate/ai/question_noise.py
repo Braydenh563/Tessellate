@@ -451,6 +451,27 @@ def _strip_stray_tail(text: str) -> str:
     return text
 
 
+#: "new notes", "show new notes", "any new notes please", "see new notes about
+#: uni": the newest notes, listed (INBOX 1532: "new notes" was answered with the
+#: prompt for making one). "New" before a plural noun is the order word
+#: "newest", read as the other four are ("latest", "recent" ...); a singular
+#: "new note" with words stays the create act.
+_NEW_NOTES = lazy_compile(
+    r"^(?P<lead>(?:(?:please|pls|can you|could you|would you)\s+)?(?:(?:show|see|list|give|get|display|open|find|view|read)(?:\s+me)?\s+)?"
+    r"(?:(?:any|all|my|the|some|of)\s+)*)new\s+(?P<noun>notes|entries)(?P<tail>(?:\s+(?:about|on|for|from|regarding)\s+\S.*?)?(?:\s+(?:please|pls|now|today))?)[?.!\s]*$",
+    re.I,
+)
+
+
+def new_notes_as_newest(text: str) -> str:
+    """`text` with "new notes" said as "newest notes" when the whole turn asks
+    for them; any other text as it came."""
+    found = _NEW_NOTES.match(text or "")
+    if not found:
+        return text
+    return f"{found.group('lead')}newest {found.group('noun')}{found.group('tail')}"
+
+
 def strip_strays(text: str) -> str:
     """Stray keys off a text's edges and runs of spaces made one; nothing
     else changes (a tool's argument, INBOX 808)."""
