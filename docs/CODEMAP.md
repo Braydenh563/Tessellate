@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7548, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8417, test files 1819, tests 15593, plan headings 990, app scripts 28, boot scripts 37, script files 224.
+Counts: frontend functions 7548, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8423, test files 1821, tests 15597, plan headings 990, app scripts 28, boot scripts 37, script files 224.
 
 ## Frontend functions (7548)
 
@@ -12551,7 +12551,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8417)
+## Backend modules (8423)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -15235,54 +15235,58 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `surface` | src/tessellate/ai/guide_intent.py:167 |
 | `topics` | src/tessellate/ai/guide_intent.py:257 |
 
-### src/tessellate/ai/help_chat.py (44)
+### src/tessellate/ai/help_chat.py (48)
 
 | Name | File:line |
 |---|---|
-| `_about_the_guide` | src/tessellate/ai/help_chat.py:635 |
-| `_act_of` | src/tessellate/ai/help_chat.py:374 |
-| `_aliased_topics` | src/tessellate/ai/help_chat.py:413 |
-| `_aware` | src/tessellate/ai/help_chat.py:1112 |
-| `_beyond` | src/tessellate/ai/help_chat.py:921 |
-| `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:305 |
-| `_guide_lead` | src/tessellate/ai/help_chat.py:1009 |
-| `_guide_opening` | src/tessellate/ai/help_chat.py:1025 |
-| `_help_sentences` | src/tessellate/ai/help_chat.py:992 |
+| `_about_the_guide` | src/tessellate/ai/help_chat.py:690 |
+| `_act_of` | src/tessellate/ai/help_chat.py:413 |
+| `_aliased_topics` | src/tessellate/ai/help_chat.py:452 |
+| `_aware` | src/tessellate/ai/help_chat.py:1167 |
+| `_beyond` | src/tessellate/ai/help_chat.py:976 |
+| `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:312 |
+| `_guide_lead` | src/tessellate/ai/help_chat.py:1064 |
+| `_guide_opening` | src/tessellate/ai/help_chat.py:1080 |
+| `_help_sentences` | src/tessellate/ai/help_chat.py:1047 |
 | `_keyword_in` | src/tessellate/ai/help_chat.py:295 |
 | `_keyword_pattern` | src/tessellate/ai/help_chat.py:227 |
 | `_keyword_regex` | src/tessellate/ai/help_chat.py:291 |
-| `_lead_topic_first` | src/tessellate/ai/help_chat.py:1082 |
-| `_matching_topics` | src/tessellate/ai/help_chat.py:453 |
-| `_meaning_topics` | src/tessellate/ai/help_chat.py:533 |
+| `_keyword_stem` | src/tessellate/ai/help_chat.py:304 |
+| `_lead_topic_first` | src/tessellate/ai/help_chat.py:1137 |
+| `_matching_topics` | src/tessellate/ai/help_chat.py:506 |
+| `_meaning_topics` | src/tessellate/ai/help_chat.py:588 |
 | `_normalise_keys` | src/tessellate/ai/help_chat.py:250 |
-| `_nothing_matched` | src/tessellate/ai/help_chat.py:845 |
-| `_off_topic` | src/tessellate/ai/help_chat.py:685 |
-| `_outside_the_app` | src/tessellate/ai/help_chat.py:653 |
-| `_place` | src/tessellate/ai/help_chat.py:966 |
-| `_preference` | src/tessellate/ai/help_chat.py:1048 |
-| `_prompt_for` | src/tessellate/ai/help_chat.py:748 |
-| `_read_as` | src/tessellate/ai/help_chat.py:1195 |
-| `_reading_topics` | src/tessellate/ai/help_chat.py:396 |
-| `_repaired` | src/tessellate/ai/help_chat.py:442 |
-| `_second_sentence` | src/tessellate/ai/help_chat.py:996 |
-| `_state_line` | src/tessellate/ai/help_chat.py:1057 |
-| `_stated_lead` | src/tessellate/ai/help_chat.py:1066 |
-| `_tab_topics` | src/tessellate/ai/help_chat.py:734 |
-| `answer` | src/tessellate/ai/help_chat.py:1275 |
-| `answer_stream` | src/tessellate/ai/help_chat.py:1210 |
-| `badges_for` | src/tessellate/ai/help_chat.py:621 |
-| `composed_answer` | src/tessellate/ai/help_chat.py:1093 |
-| `help_block_for` | src/tessellate/ai/help_chat.py:1356 |
-| `help_listing` | src/tessellate/ai/help_chat.py:592 |
-| `help_sentences` | src/tessellate/ai/help_chat.py:975 |
-| `names_app` | src/tessellate/ai/help_chat.py:1340 |
-| `offline_answer` | src/tessellate/ai/help_chat.py:1141 |
-| `social_reply` | src/tessellate/ai/help_chat.py:925 |
-| `source_names` | src/tessellate/ai/help_chat.py:588 |
-| `system_answer` | src/tessellate/ai/help_chat.py:570 |
-| `topic_title` | src/tessellate/ai/help_chat.py:556 |
-| `topics_for` | src/tessellate/ai/help_chat.py:692 |
-| `with_asks` | src/tessellate/ai/help_chat.py:1130 |
+| `_nothing_matched` | src/tessellate/ai/help_chat.py:900 |
+| `_off_topic` | src/tessellate/ai/help_chat.py:740 |
+| `_outside_the_app` | src/tessellate/ai/help_chat.py:708 |
+| `_phrase_band` | src/tessellate/ai/help_chat.py:492 |
+| `_phrase_words` | src/tessellate/ai/help_chat.py:383 |
+| `_place` | src/tessellate/ai/help_chat.py:1021 |
+| `_preference` | src/tessellate/ai/help_chat.py:1103 |
+| `_prompt_for` | src/tessellate/ai/help_chat.py:803 |
+| `_read_as` | src/tessellate/ai/help_chat.py:1250 |
+| `_reading_topics` | src/tessellate/ai/help_chat.py:435 |
+| `_repaired` | src/tessellate/ai/help_chat.py:481 |
+| `_second_sentence` | src/tessellate/ai/help_chat.py:1051 |
+| `_state_line` | src/tessellate/ai/help_chat.py:1112 |
+| `_stated_lead` | src/tessellate/ai/help_chat.py:1121 |
+| `_stem` | src/tessellate/ai/help_chat.py:379 |
+| `_tab_topics` | src/tessellate/ai/help_chat.py:789 |
+| `answer` | src/tessellate/ai/help_chat.py:1330 |
+| `answer_stream` | src/tessellate/ai/help_chat.py:1265 |
+| `badges_for` | src/tessellate/ai/help_chat.py:676 |
+| `composed_answer` | src/tessellate/ai/help_chat.py:1148 |
+| `help_block_for` | src/tessellate/ai/help_chat.py:1411 |
+| `help_listing` | src/tessellate/ai/help_chat.py:647 |
+| `help_sentences` | src/tessellate/ai/help_chat.py:1030 |
+| `names_app` | src/tessellate/ai/help_chat.py:1395 |
+| `offline_answer` | src/tessellate/ai/help_chat.py:1196 |
+| `social_reply` | src/tessellate/ai/help_chat.py:980 |
+| `source_names` | src/tessellate/ai/help_chat.py:643 |
+| `system_answer` | src/tessellate/ai/help_chat.py:625 |
+| `topic_title` | src/tessellate/ai/help_chat.py:611 |
+| `topics_for` | src/tessellate/ai/help_chat.py:747 |
+| `with_asks` | src/tessellate/ai/help_chat.py:1185 |
 
 ### src/tessellate/ai/help_topics_more.py (2)
 
@@ -16139,49 +16143,51 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `stems` | src/tessellate/ai/question_cues.py:152 |
 | `subject` | src/tessellate/ai/question_cues.py:158 |
 
-### src/tessellate/ai/question_noise.py (43)
+### src/tessellate/ai/question_noise.py (45)
 
 | Name | File:line |
 |---|---|
-| `_at_asking_place` | src/tessellate/ai/question_noise.py:2491 |
-| `_cosine` | src/tessellate/ai/question_noise.py:2607 |
-| `_is_spelt` | src/tessellate/ai/question_noise.py:2416 |
-| `_join_asking` | src/tessellate/ai/question_noise.py:2329 |
-| `_one_slip_from` | src/tessellate/ai/question_noise.py:2555 |
-| `_real_word_slips` | src/tessellate/ai/question_noise.py:2311 |
-| `_repair_by_speller` | src/tessellate/ai/question_noise.py:2461 |
-| `_repair_late_space` | src/tessellate/ai/question_noise.py:2365 |
-| `_repair_misspelt` | src/tessellate/ai/question_noise.py:2422 |
-| `_repair_slang` | src/tessellate/ai/question_noise.py:2385 |
-| `_repair_token` | src/tessellate/ai/question_noise.py:2338 |
-| `_report_alternative` | src/tessellate/ai/question_noise.py:2393 |
-| `_run_on_reading` | src/tessellate/ai/question_noise.py:2446 |
-| `_social_phrases` | src/tessellate/ai/question_noise.py:2099 |
-| `_speller_may_read` | src/tessellate/ai/question_noise.py:2410 |
-| `_split` | src/tessellate/ai/question_noise.py:2263 |
+| `_at_asking_place` | src/tessellate/ai/question_noise.py:2517 |
+| `_cosine` | src/tessellate/ai/question_noise.py:2633 |
+| `_is_spelt` | src/tessellate/ai/question_noise.py:2442 |
+| `_join_asking` | src/tessellate/ai/question_noise.py:2355 |
+| `_one_slip_from` | src/tessellate/ai/question_noise.py:2581 |
+| `_phrase_table` | src/tessellate/ai/question_noise.py:2102 |
+| `_real_word_slips` | src/tessellate/ai/question_noise.py:2337 |
+| `_repair_by_speller` | src/tessellate/ai/question_noise.py:2487 |
+| `_repair_late_space` | src/tessellate/ai/question_noise.py:2391 |
+| `_repair_misspelt` | src/tessellate/ai/question_noise.py:2448 |
+| `_repair_slang` | src/tessellate/ai/question_noise.py:2411 |
+| `_repair_token` | src/tessellate/ai/question_noise.py:2364 |
+| `_report_alternative` | src/tessellate/ai/question_noise.py:2419 |
+| `_run_on_reading` | src/tessellate/ai/question_noise.py:2472 |
+| `_small_talk_words` | src/tessellate/ai/question_noise.py:2298 |
+| `_social_phrases` | src/tessellate/ai/question_noise.py:2115 |
+| `_speller_may_read` | src/tessellate/ai/question_noise.py:2436 |
+| `_split` | src/tessellate/ai/question_noise.py:2278 |
 | `_strip_stray_tail` | src/tessellate/ai/question_noise.py:433 |
-| `_trigrams` | src/tessellate/ai/question_noise.py:2602 |
+| `_trigrams` | src/tessellate/ai/question_noise.py:2628 |
 | `_unstretched` | src/tessellate/ai/question_noise.py:1960 |
-| `_vector_cosine` | src/tessellate/ai/question_noise.py:2618 |
+| `_vector_cosine` | src/tessellate/ai/question_noise.py:2644 |
 | `_without_filler` | src/tessellate/ai/question_noise.py:2018 |
-| `_word_core` | src/tessellate/ai/question_noise.py:2403 |
-| `_word_kinds` | src/tessellate/ai/question_noise.py:2113 |
+| `_word_core` | src/tessellate/ai/question_noise.py:2429 |
+| `_word_kinds` | src/tessellate/ai/question_noise.py:2128 |
 | `addressed_kind` | src/tessellate/ai/question_noise.py:2090 |
-| `allowance` | src/tessellate/ai/question_noise.py:2201 |
-| `alternative` | src/tessellate/ai/question_noise.py:2248 |
+| `allowance` | src/tessellate/ai/question_noise.py:2216 |
+| `alternative` | src/tessellate/ai/question_noise.py:2263 |
 | `asks_archived` | src/tessellate/ai/question_noise.py:427 |
 | `asks_identity` | src/tessellate/ai/question_noise.py:2071 |
 | `destretch` | src/tessellate/ai/question_noise.py:1981 |
 | `drop_filler` | src/tessellate/ai/question_noise.py:2041 |
 | `filler_subject` | src/tessellate/ai/question_noise.py:2012 |
-| `guess_kind` | src/tessellate/ai/question_noise.py:2625 |
-| `guided` | src/tessellate/ai/question_noise.py:2535 |
+| `guess_kind` | src/tessellate/ai/question_noise.py:2651 |
+| `guided` | src/tessellate/ai/question_noise.py:2561 |
 | `is_filler` | src/tessellate/ai/question_noise.py:1999 |
 | `media_kind` | src/tessellate/ai/question_noise.py:2033 |
-| `nearest` | src/tessellate/ai/question_noise.py:2219 |
-| `repair` | src/tessellate/ai/question_noise.py:2280 |
-| `router_words` | src/tessellate/ai/question_noise.py:2519 |
-| `social_kind` | src/tessellate/ai/question_noise.py:2124 |
+| `nearest` | src/tessellate/ai/question_noise.py:2234 |
+| `repair` | src/tessellate/ai/question_noise.py:2306 |
+| `router_words` | src/tessellate/ai/question_noise.py:2545 |
+| `social_kind` | src/tessellate/ai/question_noise.py:2139 |
 | `strip_strays` | src/tessellate/ai/question_noise.py:454 |
 | `strip_symbols` | src/tessellate/ai/question_noise.py:475 |
 | `tidy` | src/tessellate/ai/question_noise.py:461 |
@@ -23012,7 +23018,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15593)
+## Tests (15597)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23437,6 +23443,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_css_body_has.py | 2 |
 | tests/test_css_braces.py | 1 |
 | tests/test_css_invalidation.py | 9 |
+| tests/test_css_regex_anchor.py | 2 |
 | tests/test_css_unused_names.py | 1 |
 | tests/test_daily_journal.py | 13 |
 | tests/test_daily_strip.py | 9 |
@@ -23789,6 +23796,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_guide_composed_787.py | 18 |
 | tests/test_guide_gaps.py | 3 |
 | tests/test_guide_intent.py | 9 |
+| tests/test_guide_paraphrases_1530.py | 2 |
 | tests/test_guide_social_1414.py | 17 |
 | tests/test_hardware_profile.py | 15 |
 | tests/test_harness_evals.py | 3 |

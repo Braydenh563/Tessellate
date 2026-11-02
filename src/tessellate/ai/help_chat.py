@@ -50,7 +50,7 @@ from collections.abc import Iterator
 
 from tessellate import SUPPORT_EMAIL
 from tessellate.ai import AI_NAME
-from tessellate.ai import act_registry, presets
+from tessellate.ai import act_registry, help_words, presets
 from tessellate.ai.help_topics_core import HELP_TOPICS  # the table, moved out whole (AI23)
 from tessellate.ai.help_topics_more import HELP_GROUPS, TOPIC_META
 from typing import TYPE_CHECKING
@@ -457,6 +457,9 @@ def _repaired(question: str) -> str:
 _WHERE_FIND = re.compile(r"\bwhere (?:do|can|would|should|will) (?:i|you|we) (?:find|locate|get to)\b")
 
 
+_WORD_BAND = help_words.WordBand(HELP_TOPICS, _WORD, _STOP, _keyword_in)
+
+
 def _matching_topics(question: str) -> list[dict]:
     """Which `HELP_TOPICS` entries this question is about, best first.
 
@@ -500,6 +503,7 @@ def _matching_topics(question: str) -> list[dict]:
                 and any(len(w) >= _TYPO_MIN - 1 and _edit_distance_at_most_one(w, keyword) for w in words)
             ):
                 score += 0.8 * rarity
+        score = max(score, _WORD_BAND.score(words, lowered, topic["id"]))
         if score > 0:
             scores[topic["id"]] = score
     if not scores:
