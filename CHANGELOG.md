@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Dashboard: the Clock (timers, stopwatch, alarm) and the Calculator (Sum and Units) can be added from Customise, Widgets and are drawn on the page, not opened as popups, through the popup's own build; every `POPUP_TOOLS` entry names its widget or gives a reason (tests/test_popup_widgets_1558.py), and each tool is a Quick access tile too (INBOX 1558). dashboard.js gzips 32,221 to 32,519 bytes.
 - Learned settings section moved from boot settings.js into lazy settings-controls.js: boot settings.js gzip 68,790 to 61,561 bytes (eager headroom for the next boot change).
 - The block-based Mermaid diagram builder (INBOX 1546) is designed in DOCUMENTS_PLAN.md ("1546 design": the model, two-way sync, surfaces, interaction, budgets and five build rows); DOCUMENTS Phase 7's record moved to HISTORY.md.
 - Settings, Search and index: once the model is downloaded the switch reads "Repair search by meaning by itself" instead of offering a download, and a model the app cannot fetch is marked "Through Ollama" (INBOX 1533).
