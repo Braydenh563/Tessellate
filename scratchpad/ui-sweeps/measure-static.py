@@ -9,10 +9,36 @@ import re
 import sys
 
 
+_EV = r"(?:e|ev|evt|event|ke|k)"
+#: `e.key`, `e.key.toLowerCase()` and `(e.key || "").toLowerCase()`: a key read.
+_KEY = r"(?:\(\s*" + _EV + r"\.key\s*\|\|\s*[\"']{2}\s*\)|" + _EV + r"\.key)(?:\.toLowerCase\(\))?"
+_CMP = r"\s*(?:===|==|!==|!=)\s*[\"']([^\"']*)[\"']"
+
+
+def key_checks(text):
+    """The key literals a source text checks (OPEN 1662): `e.key === "x"`,
+    `e.key.toLowerCase() === "x"`, a local read once (`const k = e.key...;`)
+    and compared later, and each `case "x":` of a `switch (e.key)`."""
+    found = [m.group(1) for m in re.finditer(_KEY + _CMP, text)]
+    names = re.findall(r"\b(?:const|let|var)\s+(\w+)\s*=\s*" + _KEY + r"\s*[;,]", text)
+    for name in names:
+        found += [m.group(1) for m in re.finditer(r"\b" + name + _CMP, text)]
+    for head in [_KEY] + [re.escape(n) for n in names]:
+        for sw in re.finditer(r"switch\s*\(\s*" + head + r"\s*\)\s*\{", text):
+            depth, i = 1, sw.end()
+            while i < len(text) and depth:
+                depth += (text[i] == "{") - (text[i] == "}")
+                i += 1
+            found += re.findall(r"\bcase\s+[\"']([^\"']*)[\"']\s*:", text[sw.end():i])
+    return found
+
+
 def keys():
     """measure-1010 item 5: key checks in frontend/js/*.js against DEFAULT_SHORTCUTS.
     python scratchpad/ui-sweeps/measure-keys.py
-    A 'check' is a `.key ===|==|!==|!= "X"` comparison (e.key, event.key, ev.key, evt.key ...), counted per occurrence.
+    A 'check' is a `.key ===|==|!==|!= "X"` comparison (e.key, event.key, ev.key, evt.key ...), a `.key.toLowerCase()`
+    one, a local read once and compared later, or a `case "X":` of a `switch (e.key)`, counted per occurrence
+    (`key_checks`).
     Groups: 'convention' = Escape/Tab/Enter/Arrow*/Home/End/Page*/Backspace/Delete/Space (the keys the table says are
     deliberately not rebindable); 'in table' = a single-character key that is the last key of a DEFAULT_SHORTCUTS chord
     (so it may be the dispatcher itself); 'other' = any other literal (letters, digits, symbols used as local shortcuts)."""
@@ -24,13 +50,11 @@ def keys():
     last = {c.split("+")[-1].lower() if not c.endswith("++") else "+" for c in chords}
     print("DEFAULT_SHORTCUTS entries:", len(chords), "last keys:", sorted(last))
     CONV = {"escape", "tab", "enter", "arrowup", "arrowdown", "arrowleft", "arrowright", "home", "end", "pageup", "pagedown", "backspace", "delete", " ", "space"}
-    pat = re.compile(r'\b(?:e|ev|evt|event|ke|k)\.key\s*(?:===|==|!==|!=)\s*["\']([^"\']*)["\']')
     tot = collections.Counter()
     per = collections.defaultdict(collections.Counter)
     other_keys = collections.defaultdict(collections.Counter)
     for f in sorted(glob.glob("frontend/js/*.js")):
-        for m in pat.finditer(Path(f).read_text(encoding="utf-8")):
-            k = m.group(1)
+        for k in key_checks(Path(f).read_text(encoding="utf-8")):
             g = "convention" if k.lower() in CONV else ("in table" if k.lower() in last else "other")
             per[f.split("/")[-1]][g] += 1
             tot[g] += 1

@@ -171,10 +171,19 @@ _NOTE_HEADS = re.compile(
 )
 
 
+#: A note by its number (OPEN 1522: "pin note 12", as "open note 12" already
+#: was); `about` keeps the words so a line that quotes it still reads.
+_NOTE_NUMBER = re.compile(r"(?:(?:the|this|my) )?(?:note|entry) ?#?(\d{1,9})", re.IGNORECASE)
+
+
 def _target(text: str) -> dict | None:
     """Which notes a phrase names: the attached ones ("these notes") or the
-    ones a search finds ("my notes about Z", "my Z notes"), or None."""
+    ones a search finds ("my notes about Z", "my Z notes"), one by its number
+    ("note 12"), or None."""
     low = text.lower().strip()
+    number = _NOTE_NUMBER.fullmatch(text.strip(" ."))
+    if number:
+        return {"about": f"note {number.group(1)}", "note_id": int(number.group(1)), "single": True}
     if low in _THESE:
         return {"these": True, "single": _THESE[low]}
     head = _NOTE_HEADS.match(text)
@@ -868,7 +877,8 @@ def _link(text: str) -> dict | None:
                 return None
             a, b = (_one_target(part.strip(), bare=True) for part in split)
             if a and b and a.get("about") and b.get("about"):
-                return {"intent": intent, "about": a["about"], "other": b["about"], "single": True}
+                numbered = {k: v for k, v in (("note_id", a.get("note_id")), ("other_id", b.get("note_id"))) if v is not None}
+                return {"intent": intent, "about": a["about"], "other": b["about"], "single": True, **numbered}
             return None
     return None
 
@@ -1124,7 +1134,7 @@ def parse(text: str, now: datetime) -> Command | None:
         obj = found.get("title") or "meeting"
     elif intent == "navigate":
         obj = found["surface"]
-    elif intent == "open" and found.get("note_id") is not None:
+    elif found.get("note_id") is not None:
         obj = f"note {found['note_id']}"
     else:
         obj = found.get("about") or ("these notes" if found.get("these") else "")
@@ -1211,6 +1221,8 @@ def _which(parsed: dict, session: Session, note_ids: list[int] | None) -> tuple[
     """The notes a tag or move names, and how to say which they are."""
     if parsed.get("these"):
         return _attached(session, note_ids), "the attached notes"
+    if parsed.get("note_id") is not None:
+        return _attached(session, [parsed["note_id"]]), f"numbered {parsed['note_id']}"
     about = parsed.get("about") or ""
     return _notes_about(session, about, bool(parsed.get("single"))), f"about “{about}”"
 
@@ -1597,9 +1609,13 @@ def _said(line: str) -> str:
     return line
 
 
-def _resolve_one(session: Session, about: str | None, note_ids: list[int] | None, these: bool) -> tuple[object | None, str]:
+def _resolve_one(session: Session, about: str | None, note_ids: list[int] | None, these: bool, number: int | None = None) -> tuple[object | None, str]:
     """The one note a single-note act names, or None and the question to ask
-    (decision 24's shape: one question, the candidates named)."""
+    (decision 24's shape: one question, the candidates named). `number`: the
+    note was named by its number ("pin note 12"), looked up, not searched."""
+    if number is not None:
+        found_one = _attached(session, [number])
+        return (found_one[0], "") if found_one else (None, f"I found no note numbered {number}.")
     if these:
         attached = _attached(session, note_ids)
         if len(attached) == 1:
@@ -1673,7 +1689,7 @@ def _plan_delete_all(session: Session, about: str) -> dict:
 def _plan_one(session: Session, parsed: dict, note_ids: list[int] | None) -> dict:
     """Delete, pin, rename, add to, link: one note, named or attached."""
     intent = parsed["intent"]
-    entry, question = _resolve_one(session, parsed.get("about"), note_ids, bool(parsed.get("these")))
+    entry, question = _resolve_one(session, parsed.get("about"), note_ids, bool(parsed.get("these")), parsed.get("note_id"))
     if entry is None:
         return {"line": question}
     ok, skipped = _split_allowed([entry])
@@ -1696,7 +1712,7 @@ def _plan_one(session: Session, parsed: dict, note_ids: list[int] | None) -> dic
         steps = [{"name": "edit_note", "arguments": {"note_id": entry.id, "content": new_content}}]
         label = f"Add “{_clip(parsed['content'], 80)}” to the end of {name}"
     else:
-        other, question = _resolve_one(session, parsed.get("other"), None, False)
+        other, question = _resolve_one(session, parsed.get("other"), None, False, parsed.get("other_id"))
         if other is None:
             return {"line": question}
         if other.id == entry.id:
