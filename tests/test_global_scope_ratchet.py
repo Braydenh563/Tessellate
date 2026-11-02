@@ -58,8 +58,10 @@ TOP_LEVEL_LETS_CAP = 699
 #: model (documents-tables.js, 676 lines) wrapped whole, 23 exports; measured 9,732. doc24-1102: the columns block
 #: (documents-columns.js, 267 lines) wrapped whole, three exports; measured 9,726. doc24-1102: a plain Ctrl+P and the page setup
 #: (documents-print.js, 186 lines) wrapped whole, six exports; measured 9,720. doc24-1102: the breadcrumb row and the outline's
-#: folds and filter (documents-outline.js, 327 lines) wrapped whole, ten exports; measured 9,714.
-GLOBAL_NAMES_CAP = 9714
+#: folds and filter (documents-outline.js, 327 lines) wrapped whole, ten exports; measured 9,714. a28z-1102 (INBOX 1556): the
+#: web panel's search and result rows (web-results.js, 400 lines) wrapped whole, eight exports, with the SearXNG start helper
+#: and failure row added inside it; measured 9,708.
+GLOBAL_NAMES_CAP = 9708
 
 
 def _code() -> dict[str, str]:

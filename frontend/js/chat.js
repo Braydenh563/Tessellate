@@ -541,7 +541,7 @@ function renderWebPanelMenu(engine) {
       items.push({
         label: "ph:stop-circle Stop SearXNG",
         title: "Stop the local SearXNG instance",
-        run: () => setWebSearxngRunning(false),
+        run: () => ensureModule("webClip").then(() => setWebSearxngRunning(false)),
       });
     } else {
       items.push({
@@ -550,7 +550,7 @@ function renderWebPanelMenu(engine) {
           engine.state === "absent"
             ? "Install SearXNG locally and start it, searches then never leave this machine"
             : "Start the local SearXNG instance",
-        run: () => setWebSearxngRunning(true),
+        run: () => ensureModule("webClip").then(() => setWebSearxngRunning(true)),
       });
     }
   }
@@ -570,21 +570,6 @@ function renderWebPanelMenu(engine) {
 }
 
 let webEngineInfo = null;
-
-async function setWebSearxngRunning(start) {
-  try {
-    await apiJson(`/websearch/searxng/${start ? "start" : "stop"}`, { method: "POST" });
-    toast(
-      //: The first-run wait only when there is a first run to wait for.
-      start
-        ? webEngineInfo?.state === "absent" ? "Setting SearXNG up… the first run downloads it, so give it a minute." : "Starting SearXNG…"
-        : "Stopping SearXNG."
-    );
-  } catch (error) {
-    toast(error.message, true);
-  }
-  refreshWebSearxngStrip();
-}
 
 async function refreshWebSearxngStrip() {
   const provider = (prefsCache && prefsCache.search_provider) || "auto";

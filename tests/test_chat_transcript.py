@@ -295,9 +295,11 @@ def test_web_pieces_of_the_owners_list():
     assert groups.index('key: "web"') < groups.index('key: "note"')
     #: The web panel's search code moved to the lazy web-results.js (AI6); the
     #: composer's status line stays in chat.js. The intent is unchanged.
-    assert 'smallButton("ph:arrow-clockwise Try again", "Search again", () => runWebSearch())' in frontend_text("web-results.js")
+    web = frontend_text("web-results.js")
+    assert 'smallButton("ph:arrow-clockwise Try again", "Search again", () => runWebSearch())' in web
+    #: INBOX 1556: the start flow moved into one helper in web-results.js; the first-run wait is still only said when it is the first run.
     chat = frontend_text("chat.js")
-    assert 'webEngineInfo?.state === "absent" ? "Setting SearXNG up…' in chat
+    assert 'startSearxng(webEngineInfo?.state === "absent", toast)' in web and 'first ? "Setting SearXNG up…' in web
     assert "the first run pulls the image" not in chat + frontend_text("settings-controls.js")
     clip = frontend_text("web-clip.js")
     assert "function readerBookmark()" in clip and 'button.classList.toggle("active", kept);' in clip

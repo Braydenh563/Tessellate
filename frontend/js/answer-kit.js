@@ -2062,6 +2062,16 @@ function markToolStep(node, step) {
 }
 
 function toolChip(label, ok = true, event = null) {
+  //: A web search that failed because SearXNG is down gets the same row the
+  //: web panel shows (INBOX 1556), told by the event's `reason`, not its words.
+  if (!ok && event?.reason === "searxng_down" && !event.downDrawn) {
+    const chip = toolChip(label, ok, { ...event, downDrawn: true });
+    const wrap = document.createElement("div");
+    wrap.className = "tool-chip-wrap";
+    wrap.append(chip);
+    ensureModule("webClip").then(() => searxngDownRow()).then((row) => wrap.append(row));
+    return markToolStep(wrap, chip.toolStep);
+  }
   const step = {
     kind: "tool",
     label,

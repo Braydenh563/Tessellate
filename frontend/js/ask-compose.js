@@ -542,10 +542,9 @@ function digestOffer(answerEl, offer) {
         //: The search service a web search needed (INBOX 1490): started
         //: through the door Settings uses, which also points web search at it.
         //: The line says what happened; the buttons beside it stay.
-        line.textContent = "Starting SearXNG… the first run downloads it, so give it a minute.";
         try {
-          const body = await apiJson("/websearch/searxng/start", { method: "POST" });
-          if (typeof prefsCache !== "undefined") prefsCache = await apiJson("/preferences").catch(() => prefsCache);
+          await ensureModule("webClip");
+          const body = await startSearxng(true, (text) => { line.textContent = text; });
           line.textContent = `SearXNG is running at ${body.url}. Ask again and web search will use it.`;
           line.classList.add("muted");
         } catch (error) {

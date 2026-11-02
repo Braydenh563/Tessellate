@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- A web search that fails because SearXNG is down (INBOX 1556) now offers Start SearXNG, or Install SearXNG when it is absent, in the Web panel and under a failed web-search tool chip, then searches again once it answers; on another device or where the app cannot set it up, one line says why and Web search settings sits beside it. The backend says so with a reason (`WebSearchError.reason`, `code: searxng_down` on the 502, `reason` on the tool event), never by matching the message; the four start flows are one helper (`startSearxng`, web-results.js). Sweep `inbox1556-searxng-down.js`: 12 checks, one start then one retry, row inside the panel (right edge 1403 of 1424).
 - Learned settings section moved from boot settings.js into lazy settings-controls.js: boot settings.js gzip 68,790 to 61,561 bytes (eager headroom for the next boot change).
 - The block-based Mermaid diagram builder (INBOX 1546) is designed in DOCUMENTS_PLAN.md ("1546 design": the model, two-way sync, surfaces, interaction, budgets and five build rows); DOCUMENTS Phase 7's record moved to HISTORY.md.
 - Settings, Search and index: once the model is downloaded the switch reads "Repair search by meaning by itself" instead of offering a download, and a model the app cannot fetch is marked "Through Ollama" (INBOX 1533).

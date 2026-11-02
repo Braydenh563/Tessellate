@@ -87,7 +87,18 @@ class ToolError(ValueError):
     is an internal detail. `execute_tool` distinguishes the two, which a single
     `except ValueError` could not. Subclassing `ValueError` keeps every existing
     caller that catches the base class working unchanged.
+
+    `reason` is a cause a front end acts on without reading the words
+    (`searxng_down`: the chip offers to start it, INBOX 1556).
     """
+
+    def __init__(self, message: str = "", reason: str | None = None) -> None:
+        super().__init__(message)
+        self.reason = reason
+
+    def result(self, name: str) -> dict:
+        """The tool's result for this failure: the words, and the `reason` when given."""
+        return {"error": f"{name}: {self}", **({"reason": self.reason} if self.reason else {})}
 
 
 @dataclass(frozen=True)

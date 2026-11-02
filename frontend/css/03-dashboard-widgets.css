@@ -1135,6 +1135,16 @@ header#top-bar select,
   display: none;
 }
 
+/* The way out of "SearXNG is down" (INBOX 1556): a line and its button under the
+   message, in the web panel and under a failed web-search tool chip. */
+.searxng-down {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
 /* Two lines by design: "12 results via SearXNG (local)" is the answer, and
    "nothing left your machine but the query" is the reassurance under it. Glued
    together with a " · " they wrapped mid-phrase in a narrow panel. */

@@ -950,14 +950,11 @@ $("searxng-start").addEventListener("click", async () => {
   //: "Give it a minute" only before the first run (the owner, 2026-10-10:
   //: "the notification said it takes a while to pull the first image for
   //: searxng but ive already used multiple times").
-  status.textContent = $("searxng-host-state").textContent === "Not installed"
-    ? "Setting SearXNG up… the first run downloads it, so give it a minute."
-    : "Starting SearXNG…";
   $("searxng-start").disabled = true;
   try {
-    const body = await apiJson("/websearch/searxng/start", { method: "POST" });
+    await ensureModule("webClip");
+    const body = await startSearxng($("searxng-host-state").textContent === "Not installed", (text) => { status.textContent = text; });
     $("pref-searxng").value = body.url;
-    prefsCache = await apiJson("/preferences").catch(() => prefsCache);
     status.textContent = `Running at ${body.url}: web search now uses it.`;
     toast("SearXNG is running.");
   } catch (error) {
