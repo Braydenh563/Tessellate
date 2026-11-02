@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7555, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8431, test files 1830, tests 15651, plan headings 990, app scripts 28, boot scripts 37, script files 225.
+Counts: frontend functions 7555, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8431, test files 1830, tests 15652, plan headings 990, app scripts 28, boot scripts 37, script files 225.
 
 ## Frontend functions (7555)
 
@@ -23048,7 +23048,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15651)
+## Tests (15652)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23655,7 +23655,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_entry_indexes.py | 5 |
 | tests/test_entry_list_keys_in_fields.py | 2 |
 | tests/test_entry_references.py | 32 |
-| tests/test_entry_writers_whole_1525.py | 3 |
+| tests/test_entry_writers_whole_1525.py | 4 |
 | tests/test_error_contract.py | 4 |
 | tests/test_error_toasts.py | 8 |
 | tests/test_events.py | 25 |
