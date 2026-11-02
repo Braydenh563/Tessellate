@@ -239,12 +239,12 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 233 | E68 | low | typing dots role=status, no aria-busy on transcript | fixed 2026-11-02 (ecb69a5) | S |
 | 234 | E69 | low | chat autocorrect runs on names and codes unseen | new | S |
 | 235 | E72 | low | Why trail shows timing lines and a wrong nothing matched | fixed (f725872, wrong nothing matched only; timing lines are the owner's B30 design) | S |
-| 236 | S55 | low | settings labels mix case against sentence case | new | S |
-| 237 | S56 | low | toast stack covers bottom nav at phone width | new | S |
+| 236 | S55 | low | settings labels mix case against sentence case | not reproduced 11-02: settings html and settings*.js labels scanned, title case only in names (Atlas, look presets) | S |
+| 237 | S56 | low | toast stack covers bottom nav at phone width | not reproduced 11-02: 390x844, three toasts, last bottom 780, #tab-bar top 787 | S |
 | 238 | S58 | low | modal return-focus target is not consistent | new | S |
 | 239 | S59 | low | no skip link to main content | fixed (already built; reconciled 2026-10-30) | S |
 | 240 | S60 | low | reduced-motion not applied to every animation | docs/roadmap/BACKLOG.md:1290 | S |
-| 241 | S61 | low | muted text contrast near threshold in dark theme | new | S |
+| 241 | S61 | low | muted text contrast near threshold in dark theme | not reproduced 11-02: .muted 7.96:1 dark, 5.91:1 light (AA 4.5) | S |
 | 242 | S62 | low | palette empty state offers no suggestion | fixed 2026-11-02 (e0b77e9) | S |
 | 243 | S63 | low | palette lacks note results with a preview | new | M |
 | 244 | S68 | low | import panel is long and dense | new | M |
