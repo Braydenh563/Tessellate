@@ -36,6 +36,8 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 DOCUMENTS_JS = ROOT / "frontend" / "js" / "documents.js"
+#: The frontmatter region moved to documents-props.js (DC13 remainder, doc22-1102).
+PROPS_JS = ROOT / "frontend" / "js" / "documents-props.js"
 
 
 def region(begin: str, end: str) -> str:
@@ -46,7 +48,7 @@ def region(begin: str, end: str) -> str:
     in the file and a `find` on the bare name extracts the comment instead of
     the code.
     """
-    text = DOCUMENTS_JS.read_text(encoding="utf-8")
+    text = DOCUMENTS_JS.read_text(encoding="utf-8") + "\n" + PROPS_JS.read_text(encoding="utf-8")
     start = text.find(f"// {begin}")
     stop = text.find(f"// {end}")
     assert start != -1, f"{begin} marker is missing from documents.js"
