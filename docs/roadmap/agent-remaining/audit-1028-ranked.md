@@ -254,7 +254,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 248 | S84 | low | onboarding cannot be re-opened from Help | fixed (already: Help pane calls renderTourReplay, settings.js:122, tour.js:1947; checked 2026-11-02) | S |
 | 249 | S85 | low | error toasts say what failed but not what to do | new | M |
 | 250 | S86 | low | library to note takes three clicks | new | S |
-| 251 | S87 | low | dashboard counts do not link to filtered views | new | S |
+| 251 | S87 | low | dashboard counts do not link to filtered views | fixed 11-02: Stats chips were the one unlinked count; now role=button, click opens Notes filtered (tab notes, category Work) | S |
 | 252 | S88 | low | search results lack term highlighting | fixed (already: notes list search marks terms, highlightInto notes-list.js:1743 with terms; checked 2026-11-02) | S |
 | 253 | S89 | low | export has no format picker | fixed (already: Settings export offers JSON, CSV, Markdown zip, notebook folder and full backup, each titled, with an About help, index.html:13411; checked 2026-11-02) | S |
 | 254 | S91 | low | document title and language do not update per view | fixed (router.js routerPaintTitle, found already fixed 2026-11-02) | S |

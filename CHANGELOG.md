@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The Stats widget's category counts open those notes, through the same door as the Categories widget (audit 1028 S87).
 - Closing the keyboard shortcuts sheet gives focus back to what opened it (audit 1028 S58; was BODY).
 - Ask tab draws the pick-up tip under the answer, as Chat does (audit 1028 E52); tests/test_utility_timers_1029.py stubs follow 1553 (page object, no lock card), assertions unchanged.
 - Documents Live: a drag selection across a diagram or equation leaves it drawn (INBOX 1547); source shows only when a selection starts in it. flicker1547.js: 12 of 12 toggles and a 147px jump before, 0 and 0 after.

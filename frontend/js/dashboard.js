@@ -2365,7 +2365,7 @@ async function renderStatsWidget(body) {
   const cats = document.createElement("div");
   cats.className = "entry-meta";
   for (const category of stats.categories.slice(0, 5)) {
-    cats.appendChild(chip(`${category.name} · ${category.count}`));
+    cats.appendChild(chip(`${category.name} · ${category.count}`, "", () => showCategoryNotes(category.name)));
   }
   strip.addEventListener("click", () => openStatistics());
   body.append(cats, dashStatsButton("stats-statistics"));
@@ -3027,13 +3027,7 @@ async function renderCategoriesWidget(body) {
     num.className = "cat-count";
     num.textContent = count;
     row.append(label, track, num);
-    row.addEventListener("click", () => {
-      activeCategory = name;
-      draftsOnly = false;
-      switchTab("notes");
-      renderEntries();
-      renderSidebar();
-    });
+    row.addEventListener("click", () => showCategoryNotes(name));
     list.appendChild(row);
   }
   body.appendChild(list);
