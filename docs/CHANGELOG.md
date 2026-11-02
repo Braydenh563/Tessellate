@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The block-based Mermaid diagram builder (INBOX 1546) is designed in DOCUMENTS_PLAN.md ("1546 design": the model, two-way sync, surfaces, interaction, budgets and five build rows); DOCUMENTS Phase 7's record moved to HISTORY.md.
 - Settings, Search and index: once the model is downloaded the switch reads "Repair search by meaning by itself" instead of offering a download, and a model the app cannot fetch is marked "Through Ollama" (INBOX 1533).
 - Chat counts "how many days between 1 March and 2 April" and works out "how much is 20% of 50" on the device; a web reply, answered or not, is no longer badged "From your notes" with the notes searched first as its sources (INBOX 1550). "What are my sketch notes" is about sketch, not "what are my sketch".
 - The companion menu's choices (Atlas look Feminine among them) work before Settings has opened (INBOX 1554). A picture's caption is said whole and past "A photo of", and its link names the note once (INBOX 1555).
