@@ -117,14 +117,15 @@ def search(
     """
     from tessellate.search import search_manager
 
+    if ids_only:
+        #: The Notes list's filter box (INBOX 1525): its rows hold a note's first characters, the
+        #: notes table the rest. Literal, so before any reading of the question: `null` says the
+        #: box names no term, and the list keeps its own answer.
+        return {"query": q, "ids": engine.match_ids(session, q)}
     #: Its ask and distinctive words, not the whole paste (audit 1031 AI9, INBOX 1528): a 20,000-character query took
     #: 2,233 ms to search, and the finder's box can be pasted into.
     q = search_manager.clip_query(session, q)
     kinds = [part.strip() for part in kind.split(",") if part.strip() in search_index.KINDS]
-    if ids_only:
-        #: The Notes list's filter box (INBOX 1525): its rows hold a note's first characters, the
-        #: index holds the rest. `null` says the box names no words, so the list stays whole.
-        return {"query": q, "ids": engine.match_ids(session, q, kinds or ["note"])}
     ctx = _scope_of(entry_id, space)
     #: Paged by ranking deeper and slicing: one more than the page asks for,
     #: so `more` is known without a count of the whole notebook.

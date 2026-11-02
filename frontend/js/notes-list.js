@@ -208,8 +208,8 @@ const ENGINE_QUERY_RE = /(^|\s)((?:kind|has|space|is(?=:(?:archived|done|open|ur
 //: `jumpId` is set by `flashEntry` while it renders: the first paint must reach that id.
 //: `ask` is the one way a query is put to the server: the answer is kept on `slot` under `q`, `null` comes back until it
 //: lands (the list is redrawn then), and `fail` stands in for a refused ask. `body` is a note's words asked of the index
-//: (INBOX 1525): the rows hold a preview, `/search?ids_only` the whole text, and the rows answer until it has; its `ids` is
-//: `true` for words that narrow nothing.
+//: (INBOX 1525): the rows hold a preview, `/search?ids_only` the whole text, and the rows answer until it has (and when
+//: it fails or says null).
 const noteEngine = {
   q: "", ids: null, pending: "", capped: false, semanticFor: "", rank: new Map(), jumpId: null,
   body: { q: "", ids: null, pending: "" },
@@ -226,7 +226,7 @@ const noteEngine = {
   },
   bodyIds(query) {
     const text = [...query.words, ...query.phrases.map((p) => `"${p}"`), ...query.exclude.map((w) => `-${w}`)].join(" ");
-    return noteEngine.ask(noteEngine.body, text, () => apiJson(`/search?q=${encodeURIComponent(clipFor("search", text))}&kind=note&ids_only=true`, { silent: true }).then((r) => ({ ids: r.ids ? new Set(r.ids) : true })), null);
+    return noteEngine.ask(noteEngine.body, text, () => apiJson(`/search?q=${encodeURIComponent(clipFor("search", text))}&kind=note&ids_only=true`, { silent: true }).then((r) => ({ ids: r.ids && new Set(r.ids) })), null);
   },
 };
 
@@ -453,16 +453,18 @@ function matchesSearch(entry) {
     if (flag === "review" && !entryNeedsReview(entry)) return false;
   }
   if (query.tagCount && !matchesTagCount(query.tagCount, tags.length)) return false;
-  const served = (query.words.length || query.phrases.length || query.exclude.length) && !noteSemanticLoaded() ? noteEngine.bodyIds(query) : null;
-  if (served) return served === true || served.has(entry.id);
-  if (query.exclude.some((word) => haystack.includes(word))) return false;
+  const unwanted = query.exclude.some((word) => haystack.includes(word));
   //: With Semantic on, the list *is* the engine's answer for these words, which
   //: includes notes that share none of them; testing the words again here
   //: would drop exactly the notes the toggle exists to find.
-  if (noteSemanticLoaded()) return true;
-  if (!query.phrases.every((phrase) => content.includes(phrase))) return false;
-  // Every word must appear somewhere, in any order.
-  return query.words.every((word) => haystack.includes(word));
+  if (noteSemanticLoaded() || !(query.words.length || query.phrases.length || query.exclude.length)) return !unwanted;
+  //: **Literal text, on both halves** (INBOX 1525 review): every word and phrase somewhere, in any order, inside a
+  //: word too. The row holds a note's first 300 characters and the server's literal match (`engine.match_ids`) the
+  //: whole text: a note is in when either finds it, and a server still asking, or failed, leaves the rows' own
+  //: answer, never every note. A `-word` can be past a clipped row's preview, so there the server decides.
+  const served = noteEngine.bodyIds(query);
+  const held = !unwanted && query.phrases.every((phrase) => content.includes(phrase)) && query.words.every((word) => haystack.includes(word));
+  return Boolean(served?.has(entry.id)) || (held && !(served && entry.content_truncated && query.exclude.length));
 }
 
 // The inline marks the writing side inserts (MD_ACTIONS' toolbars in
