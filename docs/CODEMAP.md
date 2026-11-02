@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7554, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8429, test files 1829, tests 15652, plan headings 990, app scripts 28, boot scripts 37, script files 225.
+Counts: frontend functions 7554, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8429, test files 1830, tests 15655, plan headings 990, app scripts 28, boot scripts 37, script files 225.
 
 ## Frontend functions (7554)
 
@@ -1106,66 +1106,66 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `buildSettingsJumpList` | frontend/js/phone-shell.js:1755 |
-| `clearAppCache` | frontend/js/phone-shell.js:2197 |
+| `buildSettingsJumpList` | frontend/js/phone-shell.js:1759 |
+| `clearAppCache` | frontend/js/phone-shell.js:2201 |
 | `closeNotePageIfGone` | frontend/js/phone-shell.js:1095 |
-| `dockArrangeLabel` | frontend/js/phone-shell.js:1918 |
-| `dockArrangeSlot` | frontend/js/phone-shell.js:1907 |
+| `dockArrangeLabel` | frontend/js/phone-shell.js:1922 |
+| `dockArrangeSlot` | frontend/js/phone-shell.js:1911 |
 | `dockChatAttachments` | frontend/js/phone-shell.js:1227 |
 | `dockChatTools` | frontend/js/phone-shell.js:1285 |
 | `dockPhoneStatus` | frontend/js/phone-shell.js:793 |
-| `dockShown` | frontend/js/phone-shell.js:1997 |
+| `dockShown` | frontend/js/phone-shell.js:2001 |
 | `dockTabBar` | frontend/js/phone-shell.js:632 |
-| `dockTight` | frontend/js/phone-shell.js:2004 |
+| `dockTight` | frontend/js/phone-shell.js:2008 |
 | `dropRepeatedTitle` | frontend/js/phone-shell.js:1026 |
-| `echoSettingsPaneTitle` | frontend/js/phone-shell.js:1747 |
+| `echoSettingsPaneTitle` | frontend/js/phone-shell.js:1751 |
 | `emblemArt` | frontend/js/phone-shell.js:86 |
 | `emblemHsl` | frontend/js/phone-shell.js:36 |
 | `emblemPalette` | frontend/js/phone-shell.js:57 |
 | `emblemSetBusy` | frontend/js/phone-shell.js:134 |
-| `fitDock` | frontend/js/phone-shell.js:2101 |
-| `floatPrimaryActions` | frontend/js/phone-shell.js:1845 |
+| `fitDock` | frontend/js/phone-shell.js:2105 |
+| `floatPrimaryActions` | frontend/js/phone-shell.js:1849 |
 | `focusTabPage` | frontend/js/phone-shell.js:376 |
-| `foldDockActions` | frontend/js/phone-shell.js:2047 |
-| `foldDockArrange` | frontend/js/phone-shell.js:2015 |
-| `foldSiblingsIntoMenu` | frontend/js/phone-shell.js:1962 |
-| `foldZoneIntoMenu` | frontend/js/phone-shell.js:1930 |
-| `forceReloadApp` | frontend/js/phone-shell.js:2212 |
+| `foldDockActions` | frontend/js/phone-shell.js:2051 |
+| `foldDockArrange` | frontend/js/phone-shell.js:2019 |
+| `foldSiblingsIntoMenu` | frontend/js/phone-shell.js:1966 |
+| `foldZoneIntoMenu` | frontend/js/phone-shell.js:1934 |
+| `forceReloadApp` | frontend/js/phone-shell.js:2216 |
 | `initBottomTabBar` | frontend/js/phone-shell.js:663 |
-| `initDockFolding` | frontend/js/phone-shell.js:2110 |
+| `initDockFolding` | frontend/js/phone-shell.js:2114 |
 | `initHeaderHeightToken` | frontend/js/phone-shell.js:548 |
-| `initKeyboardInset` | frontend/js/phone-shell.js:1668 |
+| `initKeyboardInset` | frontend/js/phone-shell.js:1672 |
 | `initNotePage` | frontend/js/phone-shell.js:1100 |
 | `initNotesSubtabHeightToken` | frontend/js/phone-shell.js:582 |
 | `initOcrPhonePage` | frontend/js/phone-shell.js:1187 |
 | `initPhoneChatRow` | frontend/js/phone-shell.js:1340 |
 | `initPhoneHeaderMore` | frontend/js/phone-shell.js:707 |
 | `initPhoneStatus` | frontend/js/phone-shell.js:829 |
-| `initPrimaryFab` | frontend/js/phone-shell.js:1871 |
+| `initPrimaryFab` | frontend/js/phone-shell.js:1875 |
 | `initRowSwipe` | frontend/js/phone-shell.js:924 |
 | `mountPhoneSidebarOpeners` | frontend/js/phone-shell.js:863 |
-| `nameFoldedButton` | frontend/js/phone-shell.js:1950 |
+| `nameFoldedButton` | frontend/js/phone-shell.js:1954 |
 | `ocrPhonePage` | frontend/js/phone-shell.js:1151 |
 | `openNotePage` | frontend/js/phone-shell.js:1033 |
 | `openSheet` | frontend/js/phone-shell.js:1380 |
-| `phoneMoreDueCount` | frontend/js/phone-shell.js:1621 |
-| `phoneMoreRunCount` | frontend/js/phone-shell.js:1586 |
+| `phoneMoreDueCount` | frontend/js/phone-shell.js:1625 |
+| `phoneMoreRunCount` | frontend/js/phone-shell.js:1590 |
 | `phoneSheetDialogs` | frontend/js/phone-shell.js:1206 |
-| `quitApp` | frontend/js/phone-shell.js:2164 |
+| `quitApp` | frontend/js/phone-shell.js:2168 |
 | `refreshNotePage` | frontend/js/phone-shell.js:1081 |
 | `releaseDetachedEmblems` | frontend/js/phone-shell.js:170 |
 | `releaseEmblem` | frontend/js/phone-shell.js:153 |
 | `renderBrandLogo` | frontend/js/phone-shell.js:220 |
 | `renderEmblem` | frontend/js/phone-shell.js:176 |
 | `renderEmblemWhenShown` | frontend/js/phone-shell.js:248 |
-| `renderExportsList` | frontend/js/phone-shell.js:2223 |
-| `sheetRow` | frontend/js/phone-shell.js:1560 |
+| `renderExportsList` | frontend/js/phone-shell.js:2227 |
+| `sheetRow` | frontend/js/phone-shell.js:1564 |
 | `syncEmblemBusy` | frontend/js/phone-shell.js:122 |
-| `syncPhoneMoreButton` | frontend/js/phone-shell.js:1630 |
-| `syncPhoneMoreRuns` | frontend/js/phone-shell.js:1595 |
+| `syncPhoneMoreButton` | frontend/js/phone-shell.js:1634 |
+| `syncPhoneMoreRuns` | frontend/js/phone-shell.js:1599 |
 | `tabFromTop` | frontend/js/phone-shell.js:482 |
 | `tabPageScroller` | frontend/js/phone-shell.js:388 |
-| `toggleAutonomousPanel` | frontend/js/phone-shell.js:2259 |
+| `toggleAutonomousPanel` | frontend/js/phone-shell.js:2263 |
 | `watchEmblemVisibility` | frontend/js/phone-shell.js:16 |
 | `watchStatusBarIdle` | frontend/js/phone-shell.js:775 |
 
@@ -6133,44 +6133,44 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `calcFigure` | frontend/js/reply-kit.js:661 |
-| `chatQueuePaint` | frontend/js/reply-kit.js:1336 |
+| `calcFigure` | frontend/js/reply-kit.js:663 |
+| `chatQueuePaint` | frontend/js/reply-kit.js:1338 |
 | `openCalculator` | frontend/js/reply-kit.js:373 |
 | `renderRelatedElsewhere` | frontend/js/reply-kit.js:68 |
 | `renderReplyPanel` | frontend/js/reply-kit.js:23 |
-| `renderToolsUnsupportedNotice` | frontend/js/reply-kit.js:1009 |
-| `replyByHelpPanel` | frontend/js/reply-kit.js:1060 |
-| `replyByHover` | frontend/js/reply-kit.js:1081 |
-| `replyByline` | frontend/js/reply-kit.js:1113 |
-| `replyBylineFacts` | frontend/js/reply-kit.js:1038 |
-| `replyCalcActions` | frontend/js/reply-kit.js:513 |
-| `replyCalcBuild` | frontend/js/reply-kit.js:395 |
-| `replyCalcConvertPane` | frontend/js/reply-kit.js:888 |
-| `replyCalcEquation` | frontend/js/reply-kit.js:757 |
-| `replyCalcHistory` | frontend/js/reply-kit.js:868 |
-| `replyCalcKeypad` | frontend/js/reply-kit.js:826 |
+| `renderToolsUnsupportedNotice` | frontend/js/reply-kit.js:1011 |
+| `replyByHelpPanel` | frontend/js/reply-kit.js:1062 |
+| `replyByHover` | frontend/js/reply-kit.js:1083 |
+| `replyByline` | frontend/js/reply-kit.js:1115 |
+| `replyBylineFacts` | frontend/js/reply-kit.js:1040 |
+| `replyCalcActions` | frontend/js/reply-kit.js:515 |
+| `replyCalcBuild` | frontend/js/reply-kit.js:397 |
+| `replyCalcConvertPane` | frontend/js/reply-kit.js:890 |
+| `replyCalcEquation` | frontend/js/reply-kit.js:759 |
+| `replyCalcHistory` | frontend/js/reply-kit.js:870 |
+| `replyCalcKeypad` | frontend/js/reply-kit.js:828 |
 | `replyCalcPanel` | frontend/js/reply-kit.js:349 |
-| `replyCalcResult` | frontend/js/reply-kit.js:637 |
-| `replyCalcShow` | frontend/js/reply-kit.js:671 |
+| `replyCalcResult` | frontend/js/reply-kit.js:639 |
+| `replyCalcShow` | frontend/js/reply-kit.js:673 |
 | `replyCalcWork` | frontend/js/reply-kit.js:363 |
-| `replyCalcWorkPane` | frontend/js/reply-kit.js:694 |
+| `replyCalcWorkPane` | frontend/js/reply-kit.js:696 |
 | `replyCompare` | frontend/js/reply-kit.js:173 |
 | `replyDrawAll` | frontend/js/reply-kit.js:34 |
 | `replyFillMeters` | frontend/js/reply-kit.js:193 |
-| `replyFinish` | frontend/js/reply-kit.js:974 |
-| `replyFoldLong` | frontend/js/reply-kit.js:1194 |
-| `replyGist` | frontend/js/reply-kit.js:1189 |
+| `replyFinish` | frontend/js/reply-kit.js:976 |
+| `replyFoldLong` | frontend/js/reply-kit.js:1196 |
+| `replyGist` | frontend/js/reply-kit.js:1191 |
 | `replyMeter` | frontend/js/reply-kit.js:160 |
 | `replyMonthName` | frontend/js/reply-kit.js:201 |
-| `replyNoteCard` | frontend/js/reply-kit.js:1287 |
-| `replyNoteEntry` | frontend/js/reply-kit.js:1236 |
-| `replyNoteId` | frontend/js/reply-kit.js:1231 |
-| `replyNotePreviews` | frontend/js/reply-kit.js:1240 |
+| `replyNoteCard` | frontend/js/reply-kit.js:1289 |
+| `replyNoteEntry` | frontend/js/reply-kit.js:1238 |
+| `replyNoteId` | frontend/js/reply-kit.js:1233 |
+| `replyNotePreviews` | frontend/js/reply-kit.js:1242 |
 | `replyPanelShell` | frontend/js/reply-kit.js:44 |
-| `replyPeekLink` | frontend/js/reply-kit.js:1259 |
-| `replyRecordReasons` | frontend/js/reply-kit.js:991 |
-| `replyReveal` | frontend/js/reply-kit.js:1159 |
-| `replyRevealWanted` | frontend/js/reply-kit.js:1154 |
+| `replyPeekLink` | frontend/js/reply-kit.js:1261 |
+| `replyRecordReasons` | frontend/js/reply-kit.js:993 |
+| `replyReveal` | frontend/js/reply-kit.js:1161 |
+| `replyRevealWanted` | frontend/js/reply-kit.js:1156 |
 | `replySpark` | frontend/js/reply-kit.js:136 |
 | `replyStatCard` | frontend/js/reply-kit.js:104 |
 | `replyStatCards` | frontend/js/reply-kit.js:206 |
@@ -23045,7 +23045,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15652)
+## Tests (15655)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24059,6 +24059,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_marquee_cost.py | 4 |
 | tests/test_math_editor.py | 5 |
 | tests/test_math_field.py | 5 |
+| tests/test_maths1527_leftovers.py | 3 |
 | tests/test_mcp_server.py | 31 |
 | tests/test_mcp_tool_parity.py | 2 |
 | tests/test_md_blocks.py | 12 |
@@ -25459,7 +25460,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E3 · Model calls are scattered across request handlers, background threads and module singletons, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:666 |
 | E4 · The honest positives, so the section is not one-sided (read) | docs/roadmap/MODERNISATION_AUDIT.md:676 |
 | Earlier morning summary (away run 2026-10-18b, branch claude/magical-feynman-7bgj7j, PR 192, 0.6.0) | docs/roadmap/HANDOVER.md:38 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:580 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:582 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4280 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |
@@ -25586,7 +25587,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1276 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:232 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:230 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4186 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |

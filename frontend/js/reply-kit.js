@@ -388,6 +388,8 @@ function openCalculator(input = "", mode = "work", { target = null } = {}) {
   openSheet({
     label: "Calculator and equations",
     name: "calculator",
+    //: A half-written equation survives a stray press outside (the popover it replaced ignored one, maths1527).
+    hasWork: () => [...document.querySelectorAll('[data-sheet="calculator"] math-field')].some((f) => f.value?.trim()),
     build: (card, close) => replyCalcBuild(card, input, mode, { target, close }),
   });
 }

@@ -1377,7 +1377,7 @@ initPhoneChatRow();
 //: is a class rather than a second recipe so everything else about a sheet,
 //: the scrim, the tier, the head with its X, Escape and the backdrop press,
 //: stays the one thing it already is.
-function openSheet({ label, sub = "", name, build, variant = "", modal = true, returnFocus = document.activeElement, onClose = null, onGone = null }) {
+function openSheet({ label, sub = "", name, build, variant = "", modal = true, returnFocus = document.activeElement, onClose = null, onGone = null, hasWork = null }) {
   const overlay = document.createElement("div");
   overlay.className = `modal-overlay sheet-overlay${variant ? ` sheet-${variant}` : ""}`;
   overlay.dataset.sheet = name || "";
@@ -1500,6 +1500,9 @@ function openSheet({ label, sub = "", name, build, variant = "", modal = true, r
     //: stayed up and the Settings window closed, INBOX 595's sweep).
     const menus = document.querySelectorAll(".action-menu:not(.hidden)");
     if ([...menus].some((menu) => !card.contains(menu))) return;
+    //: A math field in LaTeX mode takes its own Escape, back to the formula (maths1527: the sheet closed first).
+    const field = document.activeElement?.closest?.("math-field");
+    if (field && card.contains(field) && field.mode === "latex") return;
     event.stopPropagation();
     //: An open '?' popover takes the first Escape, the sheet the next.
     if (openHelpPopovers.size) {
@@ -1513,7 +1516,8 @@ function openSheet({ label, sub = "", name, build, variant = "", modal = true, r
   build(card, close);
 
   overlay.appendChild(card);
-  wireBackdropClose(overlay, close);
+  //: A stray press on the scrim does not throw away work the sheet holds (`hasWork`); Escape and the X still close it.
+  wireBackdropClose(overlay, () => hasWork?.() || close());
   document.addEventListener("keydown", onKey, true);
   document.body.appendChild(overlay);
   //: A '?' a sheet builds is wired here, once, for every sheet: the
