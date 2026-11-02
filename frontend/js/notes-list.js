@@ -107,7 +107,7 @@ function restoreNoteControl(held) {
 async function openNoteEditor(id, { focusTags = false } = {}) {
   if (editingId !== null && editingId !== id && !(await noteFormMayClose())) return false;
   //: The form edits the whole text, never a list row's preview (INBOX 1525).
-  if (allEntries.find((e) => e.id === id)?.content_truncated && !(await fullEntry(id).then(() => true, () => false))) return false;
+  if (allEntries.find((e) => e.id === id)?.content_truncated && !(await fullEntry(id).catch(() => null))) return false;
   if (editingId !== id) {
     noteFormDirty = false;
     noteFormDraft = null;

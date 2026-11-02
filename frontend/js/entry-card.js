@@ -258,13 +258,15 @@ function entryItem(entry, options = {}) {
   content.addEventListener("remove-inline-image", async (e) => {
     e.stopPropagation();
     if (!(await confirmDialog("Remove this image from the note?"))) return;
-    //: The PUT sends the whole text back, so the card's preview is made whole first (INBOX 1525).
-    if (!(await fullEntry(entry.id).then(() => true, (error) => (toast(error.message, true), false)))) return;
-    const contentBefore = entry.content;
-    entry.content = entry.content.replace(e.detail.originalText, "").replace(/\n{3,}/g, "\n\n").trim();
+    //: The PUT sends the whole text back, so it is built from the note `fullEntry` read, never the card's own row,
+    //: which a list refresh can have swapped for a clipped one meanwhile (INBOX 1525).
+    const whole = await fullEntry(entry.id).catch((error) => void toast(error.message, true));
+    if (!whole) return;
+    const contentBefore = whole.content;
+    const contentAfter = contentBefore.replace(e.detail.originalText, "").replace(/\n{3,}/g, "\n\n").trim();
     try {
-      await apiJson(`/entries/${entry.id}`, { method: "PUT", body: JSON.stringify({ content: entry.content }) });
-      pushEntryPutUndo(entry.id, "Removed an image from a note", { content: contentBefore }, { content: entry.content });
+      await apiJson(`/entries/${entry.id}`, { method: "PUT", body: JSON.stringify({ content: contentAfter }) });
+      pushEntryPutUndo(entry.id, "Removed an image from a note", { content: contentBefore }, { content: contentAfter });
       await refreshEntries([entry.id]);
       flashEntry(entry.id);
       toast("Image removed.");
