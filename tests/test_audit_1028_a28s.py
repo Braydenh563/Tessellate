@@ -7,7 +7,12 @@ measured in the sweep named in its CHANGELOG line.
 
 from __future__ import annotations
 
-from tests._app_js import app_js_text
+from tests._app_js import JS_DIR, app_js_text
+
+
+def _js(name: str) -> str:
+    """A lazy bundle's file, which `app_js_text()` (the boot scripts) does not hold."""
+    return (JS_DIR / name).read_text(encoding="utf-8")
 
 
 def _between(text: str, start: str, end: str) -> str:
@@ -29,3 +34,13 @@ def test_s91_the_window_title_follows_the_view_and_keeps_the_unread_count():
     text = app_js_text()
     assert "setTitleView([item, view].filter(Boolean).join(\" · \"))" in text
     assert "document.title = pageTitle.count > 0 ? `(${pageTitle.count}) ${base}` : base;" in text
+
+
+def test_s92_a_loaded_or_filtered_list_says_its_count_through_the_one_live_region():
+    """S92: Notes and the Library announce their count, settled and once, through
+    `announce` (the page's `#live-region`), not a region each."""
+    text = app_js_text()
+    assert 'announce(`${scope}: ${nounCount(visible.length, "note")}`, { settle: 600, once: true })' in text
+    assert 'announce(`Library: ${nounCount(items.length, "item")}`, { settle: 600, once: true })' in _js("library.js")
+    head = _between(text, "function announce(message,", "// Jump to an entry")
+    assert "settle" in head and "once" in head

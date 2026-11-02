@@ -258,7 +258,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 252 | S88 | low | search results lack term highlighting | new | S |
 | 253 | S89 | low | export has no format picker | new | S |
 | 254 | S91 | low | document title and language do not update per view | fixed (router.js routerPaintTitle, found already fixed 2026-11-02) | S |
-| 255 | S92 | low | no live region for list loading and counts | new | S |
+| 255 | S92 | low | no live region for list loading and counts | fixed 2026-11-02 (a28s-S92) | S |
 | 256 | S94 | low | offline indicator does not say what still works | new | S |
 | 257 | U38 | low | duplicate document titles allowed silently | new | S |
 | 258 | U41 | low | new-board toast persists and stacks with others | new | S |
