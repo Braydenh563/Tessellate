@@ -2655,35 +2655,23 @@ function initScrollTopButton() {
   button.addEventListener("click", () => {
     const smooth = !reducedMotionWanted();
     const target = scrollTopTargetEl();
-    //: **In a chat, the thing you have scrolled away from is the bottom.**
-    //: Reported: *"the back to top button in the chat should be a back to
-    //: bottom instead."* A transcript is written downwards and the newest
-    //: message, the one being streamed, is the last one; sending a reader
-    //: to the top sends them to the oldest question in the thread, which is
-    //: the one place nobody scrolled up to look for.
-    const toBottom = button.dataset.mode === "bottom";
-    target?.scrollTo({
-      top: toBottom ? target.scrollHeight : 0,
-      behavior: smooth ? "smooth" : "auto",
-    });
+    target?.scrollTo({ top: 0, behavior: smooth ? "smooth" : "auto" });
     // Send focus somewhere sensible rather than leaving it on a button that
     // is about to hide itself.
-    if (toBottom) $("chat-input")?.focus();
-    else document.querySelector(".tab-page:not(.hidden)")?.focus();
+    document.querySelector(".tab-page:not(.hidden)")?.focus();
   });
   document.body.appendChild(button);
 
   let wasVisible = false;
+  const scrolled = new WeakSet();
   const update = () => {
     const tab = prefs.get("activeTab", null) || "dashboard";
     const target = scrollTopTargetEl();
-    const scrollTop = target?.scrollTop || 0;
-    //: Chat flips the button over: it appears when you have scrolled *up*
-    //: away from the newest message, and it takes you back down. 200px rather
-    //: than 400 because a chat pane is shorter than a page and one message
-    //: scrolled past is already enough to lose the live one.
-    const chat = tab === "chat";
-    const fromBottom = target ? target.scrollHeight - target.clientHeight - scrollTop : 0;
+    //: A scroller that has sent no scroll event is at the top: the read would
+    //: settle the page a press has just shown (101ms of style on a Library
+    //: press at 4x, INBOX 1534). Chat never shows the button (`NO_SCROLL_TOP_TABS`),
+    //: so it has no "jump to the newest" mode and measures no distance from the bottom.
+    const scrollTop = target && scrolled.has(target) ? target.scrollTop : 0;
     //: **The dashboard shows it sooner, and that is the report.** The owner:
     //: "also no back to top button appears on the dashboard??" Measured on a
     //: seeded profile at 1440x900 it does appear, but only past 400px, and
@@ -2694,21 +2682,7 @@ function initScrollTopButton() {
     //: gets you back is still absent. 200px is chat's figure, for the same
     //: reason chat uses it: this pane is scrolled in short movements and one
     //: screen away is already lost.
-    const show = chat
-      ? fromBottom > 200
-      : scrollTop > (tab === "dashboard" ? 200 : 400) && !NO_SCROLL_TOP_TABS.has(tab);
-    //: Written only when they change: this runs on scroll, and a text or
-    //: attribute write on every frame invalidates style that the layout reads
-    //: just below (`coversAFormPrimary`, `positionScrollTopForNested`) then
-    //: have to recompute.
-    const mode = chat ? "bottom" : "top";
-    if (button.dataset.mode !== mode) {
-      button.dataset.mode = mode;
-      setLabel(button, chat ? "ph:arrow-down" : "ph:arrow-up");
-      const label = chat ? "Jump to the newest message" : "Back to top";
-      button.title = label;
-      button.setAttribute("aria-label", label);
-    }
+    const show = scrollTop > (tab === "dashboard" ? 200 : 400) && !NO_SCROLL_TOP_TABS.has(tab);
     const visible = show && !NO_SCROLL_TOP_TABS.has(tab) && !coversAFormPrimary(button);
     button.classList.toggle("visible", visible);
     //: INBOX 33: `--scroll-top-clearance` used to be unconditional
@@ -2752,7 +2726,7 @@ function initScrollTopButton() {
   //: Only the scroller this button follows (INBOX 1465: 28 runs a second): a
   //: capture listener hears every scroller in the page, and a list, a rail or
   //: the timeline scrolling inside the tab has no bearing on the button.
-  document.addEventListener("scroll", (e) => e.target === scrollTopTargetEl() && scheduleUpdate(), { passive: true, capture: true });
+  document.addEventListener("scroll", (e) => e.target === scrollTopTargetEl() && (scrolled.add(e.target), scheduleUpdate()), { passive: true, capture: true });
   window.addEventListener("resize", scheduleUpdate, { passive: true });
   update();
   //: Callers get the scheduled run (INBOX 1530 c): `revealTab` called this

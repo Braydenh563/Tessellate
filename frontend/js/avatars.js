@@ -3701,11 +3701,15 @@ for (const type of ["click", "keyup"]) {
     if (!document.getElementById("nm-buddy")) return;
     clearTimeout(nmbDodgeTimer);
     clearTimeout(nmbDodgeLate);
+    //: Looked after a frame has drawn what the press changed: the timer alone landed
+    //: between the press's writes and the frame, and its boxes settled the layout
+    //: (146 to 191ms at 4x, INBOX 1534).
     const look = nameMarkBuddyTypingKey(e) ? nameMarkBuddyDodgeTyping : nameMarkBuddyDodge;
-    nmbDodgeTimer = setTimeout(look, 80);
+    const afterPaint = () => afterFrames(() => setTimeout(look), 1);
+    nmbDodgeTimer = setTimeout(afterPaint, 80);
     //: And once the page has settled: a tour step that changes tab, or a
     //: panel that slides in, lands its box after the first look.
-    nmbDodgeLate = setTimeout(look, 700);
+    nmbDodgeLate = setTimeout(afterPaint, 700);
   }, { passive: true, capture: true });
 }
 
@@ -5157,7 +5161,8 @@ function nameMarkBuddyTempo() {
     return;
   }
   const now = performance.now();
-  if (now - nmbTempo.seen > 1000) {
+  //: Not while a page or popup is arriving: `getAnimations` flushes all the style it has dirtied (306ms at 4x, INBOX 1534).
+  if (now - nmbTempo.seen > 1000 && now >= (window.uiSettlingUntil || 0)) {
     nmbTempo.seen = now;
     //: Atlas's layer roots (atlas.js, `atlasDrawFigure`) animate on the
     //: compositor; stepping them here would put them back on the main

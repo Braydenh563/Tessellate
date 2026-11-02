@@ -228,16 +228,25 @@ function renderBrandLogo() {
     }
     return;
   }
-  for (const [id, size, animate] of EMBLEM_SLOTS) {
-    const holder = document.getElementById(id);
-    if (holder) renderEmblemWhenShown(holder, size, animate);
-  }
-  //: The assistant heads that wear the emblem take the new colour or motion.
-  repaintAssistantAvatars(true);
-  //: The dashboard hero's mark is no slot above (it is sized by the density
-  //: and may be a face), so it was drawn once and kept its old colours until a
-  //: reload (B63).
-  if (typeof dashEmblemDrawn !== "undefined" && dashEmblemDrawn) paintDashEmblem();
+  //: After the frame that shows the change that asked: each slot is asked
+  //: whether it has a box, and asked inside the click it paid for the style the
+  //: click had just written (89ms of a motion choice at 4x, INBOX 1534). Calls
+  //: in one frame are one draw.
+  if (renderBrandLogo.queued) return;
+  renderBrandLogo.queued = 1;
+  afterFrames(() => setTimeout(() => {
+    renderBrandLogo.queued = 0;
+    for (const [id, size, animate] of EMBLEM_SLOTS) {
+      const holder = document.getElementById(id);
+      if (holder) renderEmblemWhenShown(holder, size, animate);
+    }
+    //: The assistant heads that wear the emblem take the new colour or motion.
+    repaintAssistantAvatars(true);
+    //: The dashboard hero's mark is no slot above (it is sized by the density
+    //: and may be a face), so it was drawn once and kept its old colours until a
+    //: reload (B63).
+    if (typeof dashEmblemDrawn !== "undefined" && dashEmblemDrawn) paintDashEmblem();
+  }), 1);
 }
 
 //: **An emblem nobody can see is drawn when it can be** (2026-09-27): a slot
@@ -597,7 +606,11 @@ function initNotesSubtabHeightToken() {
     if (!(box > 0)) return;
     const gap = parseFloat(getComputedStyle(strip).marginBottom) || 0;
     const h = `${Math.round(box + gap)}px`;
-    if (page.style.getPropertyValue("--notes-sticky-top") !== h) page.style.setProperty("--notes-sticky-top", h);
+    //: Written after this frame, for the next one to restyle: written here, in the
+    //: observer's report, it restyled the page again in this frame and the
+    //: next reader (`fitDock`) paid for it (47 to 99ms of a Notes press at 4x,
+    //: INBOX 1534).
+    if (page.style.getPropertyValue("--notes-sticky-top") !== h) setTimeout(() => page.style.setProperty("--notes-sticky-top", h));
   };
   //: No first call of its own: an observer reports a new target at once, and
   //: there the layout is clean (a direct read forced the page's first layout).
@@ -1539,27 +1552,34 @@ function openSheet({ label, sub = "", name, build, variant = "", modal = true, r
   //: after the tap). A tap that opened a sheet asked for the sheet, not for
   //: its first choice (nor a slider or a tickbox, which a script focus helps
   //: nobody with); the pointer and the keyboard keep the old landing.
-  const touchOnly = window.matchMedia("(hover: none), (pointer: coarse)").matches;
-  const field = touchOnly
-    ? [...card.querySelectorAll("input:not([type=hidden], [type=range], [type=checkbox], [type=radio]), textarea")].find(
-        (el) => el.offsetParent !== null
-      )
-    : card.querySelector("input:not([type=hidden]), select, textarea");
-  //: The first of these that actually takes focus: a field inside a closed
-  //: fold is `offsetParent`-visible to nobody and refuses the call, and
-  //: leaving the focus on the opener behind the sheet is the other failure.
-  if (!card.hasAttribute("tabindex")) card.tabIndex = -1;
-  for (const target of [
-    field,
-    card.querySelector('.sheet-row[aria-current="true"]'),
-    card.querySelector(".sheet-row"),
-    card.querySelector("button, [href]"),
-    card,
-  ]) {
-    if (!target) continue;
-    target.focus?.();
-    if (document.activeElement === target) break;
-  }
+  //: After the first paint, not in the press that opened it: the focus settled the
+  //: whole page's style and layout, and its focus events (a movable panel adopting
+  //: the sheet) read more (203ms of the Guide button's press at 4x, INBOX 1534). Not
+  //: if the sheet has gone, or focus has gone into it by itself.
+  afterFrames(() => setTimeout(() => {
+    if (!card.isConnected || card.contains(document.activeElement)) return;
+    const touchOnly = window.matchMedia("(hover: none), (pointer: coarse)").matches;
+    const field = touchOnly
+      ? [...card.querySelectorAll("input:not([type=hidden], [type=range], [type=checkbox], [type=radio]), textarea")].find(
+          (el) => el.offsetParent !== null
+        )
+      : card.querySelector("input:not([type=hidden]), select, textarea");
+    //: The first of these that actually takes focus: a field inside a closed
+    //: fold is `offsetParent`-visible to nobody and refuses the call, and
+    //: leaving the focus on the opener behind the sheet is the other failure.
+    if (!card.hasAttribute("tabindex")) card.tabIndex = -1;
+    for (const target of [
+      field,
+      card.querySelector('.sheet-row[aria-current="true"]'),
+      card.querySelector(".sheet-row"),
+      card.querySelector("button, [href]"),
+      card,
+    ]) {
+      if (!target) continue;
+      target.focus?.();
+      if (document.activeElement === target) break;
+    }
+  }), 1);
   return close;
 }
 
@@ -2107,6 +2127,10 @@ function foldDockActions(dock, fold) {
 //: answer depends on the width alone and not on what was folded before.
 function fitDock(dock) {
   if (!dock.offsetParent) return; // not on screen: nothing to measure; the observer fires when it shows
+  //: Nothing folded and the row fits: no write, so the read after it settles
+  //: nothing (36ms of style on a Notes press at 4x, INBOX 1534). This runs in
+  //: the observer's report, where the layout is clean.
+  if (!dock.querySelector(".dock-arrange-slot, .dock-action-slot, [data-folded-from]") && !dockTight(dock)) return;
   foldDockArrange(dock, false);
   foldDockActions(dock, false);
   if (!dockTight(dock)) return;

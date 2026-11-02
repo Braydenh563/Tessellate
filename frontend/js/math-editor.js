@@ -555,7 +555,9 @@ function mathEditorMount({ host, target = null, done = () => {}, note = null, on
   //: Copy and Insert are the dialog's action row, pinned under the panes (reply-kit.js), so neither is a scroll away.
   host.replaceChildren(mode.seg, ledeRow, pane.el, ...(note ? [note] : []), ...(log ? [log] : []), search, jump, list);
   draw();
-  if (focus) pane.start();
+  //: After the first paint: the field's first focus laid out the pane and its tiles inside the press
+  //: that opened it (245ms at 4x, INBOX 1534).
+  if (focus) afterFrames(() => setTimeout(() => host.isConnected && pane.start()), 1);
   onTex(pane.tex());
   //: A history row is the TeX and whether it was display; `load` puts one back in the field and the pill.
   return {

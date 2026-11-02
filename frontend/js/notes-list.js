@@ -1969,12 +1969,17 @@ function windowRows(root, o) {
 
 const noteWindow = { win: null, fill: (li) => li, heights: new Map(), mode: "", items: null, list: null };
 
+//: Kept while it still holds the list: the walk read the computed style of every
+//: ancestor, which settled the page a Notes press had just drawn (88ms of style
+//: at 4x, INBOX 1534). A resize forgets it, as the one place the scroller moves.
 function notesScroller(list) {
+  if (notesScroller.kept?.contains(list)) return notesScroller.kept;
   for (let el = list.parentElement; el && el !== document.body; el = el.parentElement) {
-    if (/(auto|scroll)/.test(getComputedStyle(el).overflowY)) return el;
+    if (/(auto|scroll)/.test(getComputedStyle(el).overflowY)) return (notesScroller.kept = el);
   }
   return null;
 }
+window.addEventListener("resize", () => (notesScroller.kept = null), { passive: true });
 
 const NOTE_WINDOW_FIRST = 12;
 const noteRowStays = (li) => li.contains(document.activeElement) || Number(li.dataset.id) === editingId

@@ -703,14 +703,24 @@ function openIconPicker({ anchor = null, onPick = null, modes = ["emoji", "icon"
   };
   document.addEventListener("pointerdown", outside, true);
 
+  window.uiSettlingUntil = performance.now() + 400;
+  //: Read before the panel is drawn and added, while the layout is clean.
+  const rect = anchor?.getBoundingClientRect?.();
   draw();
   document.body.appendChild(panel);
-  //: An anchor that is not on screen (inside a menu that closed as it was
-  //: pressed) has no place to hang from: the middle of the window instead.
-  const rect = anchor?.getBoundingClientRect?.();
-  if (rect && (rect.width || rect.height)) placeHelpPopover(panel, anchor);
-  else panel.classList.add("icon-picker-centred");
-  search.focus({ preventScroll: true });
+  //: Placed and focused after the frame that lays the panel out, hidden until then: its
+  //: tiles are laid out by that frame, not inside the press that asked, where placing it
+  //: and focusing the search forced the layout of every tile (861ms at 4x, INBOX 1534).
+  panel.style.visibility = "hidden";
+  afterFrames(() => setTimeout(() => {
+    if (!panel.isConnected) return;
+    //: An anchor that is not on screen (inside a menu that closed as it was
+    //: pressed) has no place to hang from: the middle of the window instead.
+    if (rect && (rect.width || rect.height)) placeHelpPopover(panel, anchor);
+    else panel.classList.add("icon-picker-centred");
+    panel.style.visibility = "";
+    search.focus({ preventScroll: true });
+  }), 1);
   //: **The focus stays put while the panel settles.** On a first use an
   //: editor behind it can mount and take the focus a frame later (measured:
   //: the note composer's CodeMirror, 127ms after the search field had it, so

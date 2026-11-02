@@ -23,7 +23,12 @@ def test_every_dock_folds_by_width_and_never_by_count():
     assert "DOCK_FOLD_PAST" not in text and "dockItemCount" not in text and "DOCK_KEEPS_ABOVE" not in text
     fit = text.split("function fitDock(dock)", 1)[1].split("\n}\n", 1)[0]
     # Everything shown first, so the answer depends on the width alone; then the arrange zone, then the actions.
-    assert fit.index("foldDockArrange(dock, false)") < fit.index("dockTight(dock)") < fit.index("foldDockArrange(dock, true)")
+    #: A dock with nothing folded is already "everything shown", so it may ask
+    #: `dockTight` before the unfold and write nothing (INBOX 1534); a folded one
+    #: unfolds before it asks.
+    unfold = fit.index("foldDockArrange(dock, false)")
+    assert unfold < fit.index("dockTight(dock)", unfold) < fit.index("foldDockArrange(dock, true)")
+    assert '!dock.querySelector(".dock-arrange-slot, .dock-action-slot, [data-folded-from]") && !dockTight(dock)' in fit
     assert "if (dockTight(dock)) foldDockActions(dock, true)" in fit
     assert "new ResizeObserver" in text and "contentRect.width" in text
 
