@@ -119,7 +119,8 @@ def test_live_view_replaces_the_token_with_the_same_icon_unless_the_caret_is_in_
     scan = CM[CM.index("scan(/:ph-([a-z0-9-]{1,40}):/g") :]
     scan = scan[: scan.index("});") + 3]
     assert "appendPlainText.icon(match[1])" in scan
-    assert "rangeRevealed(from, to)" in scan
+    # The caret rule is the widget one since INBOX 1547 (source while a selection starts in it).
+    assert "widgetRevealed(from, to)" in scan
     assert "Decoration.replace({ widget: new DocIconWidget(match[1]) })" in scan
     # `scan` skips code, so a token in a code span or block stays text
     assert "const scan = " in CM or "function scan(" in CM

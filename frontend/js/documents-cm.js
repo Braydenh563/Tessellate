@@ -564,11 +564,14 @@ function docLivePlugin(CM) {
     //: that word or section", and an untouched document is the one case where
     //: nobody has clicked on anything at all.
     const focused = view.hasFocus;
-    const probe = (from, to) => {
-      const on = focused && docLiveSpanTouched(selRanges, from, to);
-      record.probes.push(from, to, on ? 1 : 0);
+    //: `held`: a rendered widget's rule (INBOX 1547), source only while a
+    //: selection starts in it, so a drag that crosses a diagram leaves it drawn.
+    const probe = (from, to, held = false) => {
+      const on = focused && (held ? docLiveSpanTouched.anchorIn(selRanges, from, to) : docLiveSpanTouched(selRanges, from, to));
+      record.probes.push(from, to, (on ? 1 : 0) | (held ? 2 : 0));
       return on;
     };
+    const widgetRevealed = (from, to) => probe(from, to, true);
     const touched = probe;
     const lineTouched = (pos) => {
       const line = doc.lineAt(pos);
@@ -721,7 +724,7 @@ function docLivePlugin(CM) {
             //: at the end of a note whose last line was the picture, so the
             //: line revealed as source and the picture went, which read as an
             //: image that never rendered. A widget after the source keeps it.
-            if (rangeRevealed(node.from, node.to)) {
+            if (widgetRevealed(node.from, node.to)) {
               ranges.push(
                 Decoration.widget({ widget: new DocImageWidget(src, text.slice(2, close), true), side: 1 }).range(node.to)
               );
@@ -1116,7 +1119,7 @@ function docLivePlugin(CM) {
       if (/\[toc\]/i.test(text)) {
         let tocEntries = null;
         scan(/^[ \t]*\[toc\][ \t]*$/gim, (match, from, to) => {
-          if (rangeRevealed(from, to)) return;
+          if (widgetRevealed(from, to)) return;
           if (!tocEntries) tocEntries = mdTocEntries(docStr(doc));
           ranges.push(Decoration.replace({ widget: new DocTocWidget(tocEntries) }).range(from, to));
         });
@@ -1124,7 +1127,7 @@ function docLivePlugin(CM) {
       scan(/%%([^\n]*?)%%/g, (match, from, to) => {
         const note = match[1].trim();
         if (!note) return;
-        if (rangeRevealed(from, to)) return;
+        if (widgetRevealed(from, to)) return;
         ranges.push(
           Decoration.replace({ widget: new DocCommentWidget(note, from) }).range(from, to)
         );
@@ -1145,7 +1148,7 @@ function docLivePlugin(CM) {
       scan(/\$\$([^$\n]{1,400})\$\$/g, (match, from, to) => {
         if (!docMathLooksLikeMath(match[1])) return;
         mathTaken.push([from, to]);
-        if (rangeRevealed(from, to)) return;
+        if (widgetRevealed(from, to)) return;
         ranges.push(
           Decoration.replace({ widget: new DocMathWidget(match[1], true) }).range(from, to)
         );
@@ -1153,7 +1156,7 @@ function docLivePlugin(CM) {
       scan(/\$([^$\n]{1,300})\$/g, (match, from, to) => {
         if (mathTaken.some(([start, end]) => from >= start && to <= end)) return;
         if (!docMathLooksLikeMath(match[1])) return;
-        if (rangeRevealed(from, to)) return;
+        if (widgetRevealed(from, to)) return;
         ranges.push(
           Decoration.replace({ widget: new DocMathWidget(match[1], false) }).range(from, to)
         );
@@ -1164,7 +1167,7 @@ function docLivePlugin(CM) {
       //: not have stays the text it is. Revealed as text under the caret.
       scan(/:ph-([a-z0-9-]{1,40}):/g, (match, from, to) => {
         const icon = appendPlainText.icon(match[1]);
-        if (!icon || rangeRevealed(from, to)) return;
+        if (!icon || widgetRevealed(from, to)) return;
         ranges.push(Decoration.replace({ widget: new DocIconWidget(match[1]) }).range(from, to));
       });
 
@@ -1221,7 +1224,7 @@ function docLivePlugin(CM) {
         //: `![[name]]` is the embed form, and the `!` is one character to the
         //: left of what this pattern matched.
         const embed = from > 0 && doc.sliceString(from - 1, from) === "!";
-        if (embed && !rangeRevealed(from - 1, to)) {
+        if (embed && !widgetRevealed(from - 1, to)) {
           ranges.push(
             Decoration.replace({ widget: new DocEmbedWidget(spec) }).range(from - 1, to)
           );

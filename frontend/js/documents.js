@@ -6142,10 +6142,15 @@ function docLiveSpanTouched(ranges, from, to) {
 //: decoration and the plugin keeps the set it has.
 function docLiveRevealSame(probes, ranges) {
   for (let i = 0; i < probes.length; i += 3) {
-    if (docLiveSpanTouched(ranges, probes[i], probes[i + 1]) !== Boolean(probes[i + 2])) return false;
+    const v = probes[i + 2];
+    if ((v & 2 ? docLiveSpanTouched.anchorIn : docLiveSpanTouched)(ranges, probes[i], probes[i + 1]) !== Boolean(v & 1)) return false;
   }
   return true;
 }
+//: A rendered widget turns to source only while a selection starts in it (INBOX 1547): a caret
+//: there, or a drag begun there; a selection that crosses it leaves it drawn, height and all.
+//: A property, not a name: the shared scope is at its cap (test_global_scope_ratchet).
+docLiveSpanTouched.anchorIn = (ranges, from, to) => ranges.some((range) => range.anchor >= from && range.anchor <= to);
 
 
 //: Live is three extensions rather than one now, and all three go in the same

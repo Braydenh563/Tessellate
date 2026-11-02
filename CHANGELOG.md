@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents Live: a drag selection across a diagram or equation leaves it drawn (INBOX 1547); source shows only when a selection starts in it. flicker1547.js: 12 of 12 toggles and a 147px jump before, 0 and 0 after.
 - Panels: a corner resizes from the corner (INBOX 1552). The rounded corner clipped hit testing, so a press there hit the backdrop; corners now take 16px each way and a backdrop press inside the box resizes. rim1536.js: Settings se moved l 208 to 216, now r and b move and l and t hold.
 - Learned settings section moved from boot settings.js into lazy settings-controls.js: boot settings.js gzip 68,790 to 61,561 bytes (eager headroom for the next boot change).
 - The block-based Mermaid diagram builder (INBOX 1546) is designed in DOCUMENTS_PLAN.md ("1546 design": the model, two-way sync, surfaces, interaction, budgets and five build rows); DOCUMENTS Phase 7's record moved to HISTORY.md.

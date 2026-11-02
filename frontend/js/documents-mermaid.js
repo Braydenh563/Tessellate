@@ -398,7 +398,6 @@
     const build = (state) => {
       const text = docStr(state.doc);
       if (!text.includes("```mermaid") && !/```[ \t]+mermaid/.test(text)) return Decoration.none;
-      const sel = state.selection.main;
       const ranges = [];
       for (const block of docMermaidBlocks(text)) {
         //: A reason exists only once the module drew here (the widget above).
@@ -408,7 +407,7 @@
           ranges.push(Decoration.widget({ widget: new DocMermaidReason(reason), block: true, side: 1 }).range(block.to));
           continue;
         }
-        if (sel.from <= block.to && sel.to >= block.from) continue;
+        if (docLiveSpanTouched.anchorIn(state.selection.ranges, block.from, block.to)) continue;
         ranges.push(Decoration.replace({ widget: new DocMermaidWidget(block.source, block.from), block: true }).range(block.from, block.to));
       }
       return Decoration.set(ranges, true);
