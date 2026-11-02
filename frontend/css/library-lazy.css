@@ -6660,6 +6660,52 @@ input[type="color"].wb-mixed {
   margin-top: calc(var(--space-1) / -2);
 }
 
+/* The drag handle beside a Live block (`docLiveExtensions.dragHandle`, audit
+   1102 DX29): a grip in the page margin, shown while the pointer is over the
+   block, and a bar where a drop will land. Pointer only: no hover, no grip. */
+.doc-block-handle {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  inline-size: var(--space-6);
+  translate: calc(-100% - var(--space-1)) 0;
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.doc-block-handle:hover,
+.doc-block-handle.is-dragging {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent-text);
+}
+
+.doc-block-handle.is-dragging {
+  cursor: grabbing;
+}
+
+.doc-block-drop {
+  position: absolute;
+  z-index: 2;
+  height: var(--space-1);
+  margin-top: calc(var(--space-1) / -2);
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  pointer-events: none;
+}
+
+@media (hover: none) {
+  .doc-block-handle,
+  .doc-block-drop {
+    display: none;
+  }
+}
+
 /* Ghost topics: the suggestions "Branches from my notes" and "Expand from my
    notes" offer, faded under the topic they would hang from (whiteboard-map.js
    `wbMapBranchPicker`). A fixed layer on <body> so the canvas never clips it, its

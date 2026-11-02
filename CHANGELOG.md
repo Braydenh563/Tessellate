@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Removed `createConceptMap` (whiteboard.js): it had no caller since maps moved to the board landing; its lazy stub name and writer-lint row went with it (OPEN 2572).
+- Live has a drag handle for blocks (audit 1102 DX29): hover a paragraph, list item, fence or heading and a grip appears in the margin; dropping it moves the whole block as one undo step, the same move as Alt+Up and Alt+Down. Not on phones or code files.
 - A phone's Documents kebab has About these controls: the dock's ? is hidden below 600, and a proxied row now presses its button a task later, so the help it opens is not shut by the same click (a29h leftover).
 - A document's "/" Templates group is the gallery's own writing and planning set (audit 1102 DX30), not the note shapes; your own templates still come first.
 - No import cycles again (CI red on PR 212): the done-later checklist reading (fable-eye F15) is its own leaf, `ai/composer_done.py`, so `composer_quote` and `composer_plan` no longer import `composer_slots` back through the composer (two cycle groups to none).
