@@ -71,7 +71,10 @@ class _Count(HTMLParser):
 #: audit). Every surface's DOM is in this page, so each tab pays on open: the
 #: next step is surfaces as `<template>`s stamped on first visit (row 21), and
 #: this number only goes down when that lands.
-BOOT_ELEMENTS_CAP = 7_879
+#: 7,879 to 7,897 on 2026-11-02: three audit 1028 fixes merged without moving it:
+#: E71 Read aloud speed (14, inside the inert Settings body template), E47 the
+#: saved-chat search (3), B34 an empty board's cue (1).
+BOOT_ELEMENTS_CAP = 7_897
 
 
 def test_the_boot_document_does_not_grow():
