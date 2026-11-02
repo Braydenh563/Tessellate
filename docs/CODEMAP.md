@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7548, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8417, test files 1819, tests 15592, plan headings 990, app scripts 28, boot scripts 37, script files 224.
+Counts: frontend functions 7548, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8417, test files 1819, tests 15593, plan headings 990, app scripts 28, boot scripts 37, script files 224.
 
 ## Frontend functions (7548)
 
@@ -900,10 +900,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `markPrefsDirty` | frontend/js/settings-panes.js:914 |
 | `markPrefsSaved` | frontend/js/settings-panes.js:930 |
 | `nudgeZoom` | frontend/js/settings-panes.js:1077 |
-| `paletteAbouts` | frontend/js/settings-panes.js:1178 |
-| `paletteCaughtNow` | frontend/js/settings-panes.js:1155 |
-| `paletteKeys` | frontend/js/settings-panes.js:1164 |
-| `paletteRowParts` | frontend/js/settings-panes.js:1189 |
+| `paletteAbouts` | frontend/js/settings-panes.js:1179 |
+| `paletteCaughtNow` | frontend/js/settings-panes.js:1156 |
+| `paletteKeys` | frontend/js/settings-panes.js:1165 |
+| `paletteRowParts` | frontend/js/settings-panes.js:1190 |
 | `refitComposer` | frontend/js/settings-panes.js:269 |
 | `renderAutonomousSettings` | frontend/js/settings-panes.js:684 |
 | `renderPrefs` | frontend/js/settings-panes.js:614 |
@@ -23012,7 +23012,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15592)
+## Tests (15593)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23177,7 +23177,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_brand_name.py | 10 |
 | tests/test_breakpoints.py | 3 |
 | tests/test_budgets.py | 6 |
-| tests/test_calculator_equations.py | 7 |
+| tests/test_calculator_equations.py | 8 |
 | tests/test_captioning.py | 17 |
 | tests/test_captions.py | 16 |
 | tests/test_captions_keep_audio.py | 6 |

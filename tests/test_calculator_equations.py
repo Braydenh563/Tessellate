@@ -116,7 +116,7 @@ def test_one_registry_row_carries_both_shortcuts() -> None:
     row = next(block for block in tools.split("\n  },") if 'id: "calculator"' in block)
     assert 'name: "Calculator and equations"' in row
     assert 'keys: "Alt+= or /calc"' in row
-    assert 'guide: "calculator"' in row and "popupToolMaths()" in row
+    assert 'guide: "calculator"' in row and "popupToolMaths(t ? { target: t } : undefined)" in row
     #: Nothing else in the registry claims Alt+=.
     assert tools.count('keys: "Alt+=') == 1
 
@@ -137,3 +137,15 @@ def test_the_guide_says_it_is_one_tool() -> None:
     equation = topics["equation-editor"]
     assert "Calculator" in equation and "Equation tab" in equation
     assert "Ctrl+K, Equation opens" not in equation
+
+
+def test_a_slash_row_hands_the_calculator_the_box_it_was_typed_in():
+    """The UX audit of d231b19: "/calc" in a note, after the palette was last opened over the
+    Ask box, inserted the result into the hidden Ask box (`paletteCaught` was stale)."""
+    from pathlib import Path
+
+    js = Path(__file__).resolve().parents[1] / "frontend" / "js"
+    editor = (js / "editor.js").read_text(encoding="utf-8")
+    assert 'run: (t) => tool.open(t) });' in editor
+    panes = (js / "settings-panes.js").read_text(encoding="utf-8")
+    assert "open: (t) => ensureModule(\"appPalette\").then(() => popupToolMaths(t ? { target: t } : undefined))," in panes

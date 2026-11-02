@@ -945,7 +945,7 @@ function editorBlockRows(context) {
   add({ id: "equation", group: "Media", icon: "ph:function", label: "Equation", about: "Build a formula from a palette, with a live preview", keys: "Alt+=", keywords: ["equation", "math", "maths", "formula", "symbol", "fraction", "greek", "matrix", "integral"], run: (t) => openMathEditor({ target: t }) });
   //: The other popup tools (settings-panes.js `POPUP_TOOLS`): a row each, so "/calc" and "/convert" find them in a note too.
   for (const tool of POPUP_TOOLS) {
-    add({ id: `tool-${tool.id}`, group: "Media", icon: tool.icon, label: tool.name, about: tool.about.split(";")[0], keys: tool.keys, keywords: tool.keywords.split(" "), run: () => tool.open() });
+    add({ id: `tool-${tool.id}`, group: "Media", icon: tool.icon, label: tool.name, about: tool.about.split(";")[0], keys: tool.keys, keywords: tool.keywords.split(" "), run: (t) => tool.open(t) });
   }
 
   // --- Embeds: other things in this notebook, and the web. ------------------

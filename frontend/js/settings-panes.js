@@ -1124,7 +1124,8 @@ const POPUP_TOOLS = [
     keywords: "calculator calc sum maths math work out percent convert units currency keypad equation formula symbol fraction greek matrix integral latex alt word",
     about: "Sums, conversions and equations in one dialog, with no model; Alt+= opens the equation tab in a text box, /calc the calculator in Chat.",
     keys: "Alt+= or /calc", where: "Equation in text boxes, Calculator in Chat",
-    guide: "calculator", open: () => ensureModule("appPalette").then(() => popupToolMaths()),
+    //: `t`: the box a slash row was typed in, which outranks the palette's last box (a stale one sent "/calc" in a note to the Ask box).
+    guide: "calculator", open: (t) => ensureModule("appPalette").then(() => popupToolMaths(t ? { target: t } : undefined)),
   },
   {
     id: "convert", name: "Convert units", icon: "ph:ruler", group: "Ask & chat",
