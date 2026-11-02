@@ -106,7 +106,8 @@ def test_the_desktop_companion_has_its_own_copy_of_the_cap():
     """Its page loads no chat.js, so `clipFor` is not there."""
     text = _js("desk-companion.js")
     assert re.search(r"const DESK_QUESTION_CAP = (\d+);", text).group(1) == str(search_query.QUESTION_CAP)
-    assert "/search?q=${encodeURIComponent(q.slice(0, DESK_QUESTION_CAP))}" in text
+    # INBOX 1528: the clip keeps the end too, the way chat.js `clipFor` does.
+    assert "/search?q=${encodeURIComponent(deskClip(q))}" in text
     assert "clipFor" not in text
 
 
