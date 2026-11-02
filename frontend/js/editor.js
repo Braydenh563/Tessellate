@@ -969,6 +969,8 @@ function editorBlockRows(context) {
   // --- Embeds: other things in this notebook, and the web. ------------------
   add({ id: "wikilink", group: "Embeds", icon: "ph:link", label: "Link to a note", about: "Pick a note, document or board to link", keys: "[[", keywords: ["link", "note", "wiki", "reference", "connect", "document"], run: (t) => { editorApplyAction(t, { insert: "[[" }); editorOpenMenu(t, "[["); } });
   add({ id: "embed", group: "Embeds", icon: "ph:paperclip", label: "Embed a note or document", about: "Its content, or a card for it, shown here", keys: "![[", keywords: ["embed", "transclude", "include", "inline", "note", "document", "card"], run: (t) => { editorApplyAction(t, { insert: "![[" }); editorOpenMenu(t, "[["); } });
+  //: DX7: "/file" used to land on the Failure callout. The `[[` picker already lists uploaded files beside notes, so this is its second door.
+  add({ id: "file-link", group: "Embeds", icon: "ph:file-arrow-up", label: "File attachment", about: "Pick an uploaded file to link here", keys: "[[", keywords: ["file", "attachment", "attach", "upload", "pdf", "document", "download"], run: (t) => { editorApplyAction(t, { insert: "[[" }); editorOpenMenu(t, "[["); } });
   add({ id: "board-object", group: "Embeds", icon: "ph:squares-four", label: "Board or mind map", about: "A live preview of it, here in the text", keys: "![[board:]]", keywords: ["board", "whiteboard", "map", "mindmap", "canvas", "object", "embed", "attach", "diagram"], run: (t) => editorInsertBoardObject(t) });
   //: A saved bookmark as a link where the caret is (owner, 0.3.31: "I want
   //: to attach bookmark links not just general links ... in notes and other

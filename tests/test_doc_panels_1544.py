@@ -128,10 +128,12 @@ def test_each_panel_is_a_markdown_action_the_toolbars_and_menus_press():
 
 
 def test_the_documents_insert_menu_lists_every_panel():
-    menu = INDEX[INDEX.index('id="doc-toolbar-insert"') :]
-    menu = menu[: menu.index("</details>")]
-    for kind in ("emoji", "icon", "symbol", "equation", "calculator"):
-        assert f'data-md="{kind}"' in menu, f"Insert menu lacks {kind}"
+    # Insert opens the "/" menu (DX6), so every panel is a row of that catalogue.
+    rows = (JS / "editor.js").read_text(encoding="utf-8")
+    rows = rows[rows.index("function editorBlockRows") : rows.index("function editorBackOverTrail")]
+    for row in ('id: "emoji"', 'id: "symbol"', 'id: "equation"', "id: `tool-${tool.id}`"):
+        assert row in rows, f"the slash catalogue lacks {row}"
+    assert 'data-md="insert"' in INDEX[INDEX.index('id="doc-toolbar-insert"') - 40 :][:200]
 
 
 def test_the_note_strip_has_symbols_and_equation_beside_the_emoji_button():

@@ -207,7 +207,7 @@ HELP_TOPICS: list[dict] = [
             "views: Live (renders as you write), Source, Split and Read. Enter "
             "in the title moves to the body. Code "
             "files get line numbers, Tab/Shift+Tab indenting and Ctrl+/ "
-            "commenting, in a monospace face. Insert has a second menu, Links and media (Image opens a "
+            "commenting, in a monospace face. Insert opens the / menu (Image opens a "
             "file picker). Unsaved words are kept per document for two weeks. \"Check with AI\" reviews a document for wording issues "
             "a spellchecker can't catch. The menu's Map the headings turns its "
             "headings into a new mind map. A mermaid code block (the \"/\" menu's "

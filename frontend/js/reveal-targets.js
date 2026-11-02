@@ -343,14 +343,13 @@ const REVEAL_TARGETS = {
   "doc-new": { tab: "documents", open: () => createDocument(), el: "doc-title", focus: true },
   "doc-templates": { tab: "documents", open: () => openDocTemplateDialog(), el: "doc-template-dialog", flash: false },
   "doc-insert": {
-    open: async () => (await revealDocument()) && (await revealStrip(), revealDetails("doc-toolbar-insert")),
+    open: async () => (await revealDocument()) && (await revealStrip()),
     el: "doc-toolbar-insert",
     fallback: "doc-new",
   },
   "doc-tables": {
-    open: async () => (await revealDocument()) && (await revealStrip(), revealDetails("doc-toolbar-insert")),
-    sel: '#doc-toolbar-insert [data-md="table"]',
-    built: "revealDetails",
+    open: async () => (await revealDocument()) && (await revealStrip()),
+    el: "doc-toolbar-insert",
     fallback: "doc-new",
   },
   "doc-outline": {

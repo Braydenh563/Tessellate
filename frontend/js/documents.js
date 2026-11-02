@@ -6454,6 +6454,8 @@ const MD_ACTIONS = {
   code: { wrap: MD_INLINE_MARKS.code, placeholder: "code" },
   highlight: { wrap: MD_INLINE_MARKS.highlight, placeholder: "highlighted" },
   clearformat: { custom: "clearformat" },
+  //: Opens the "/" menu (editor.js), the one insert catalogue (DX6).
+  insert: { custom: "insert" },
   //: The one icon and emoji picker (MINDMAP_PLAN decision 46).
   emoji: { custom: "emoji" },
   //: The picker's other two tabs and the calculator, each its own door (INBOX 1544).
@@ -6698,6 +6700,11 @@ function applyMarkdown(kind, boxId = "doc-content") {
   if (action.custom === "clearformat") {
     clearInlineFormatting(box);
     finishMarkdownEdit(box, boxId);
+    return;
+  }
+  if (action.custom === "insert") {
+    box.focus();
+    editorOpenMenuByShortcut();
     return;
   }
   if (["emoji", "icon", "symbol"].includes(action.custom)) {
@@ -7769,58 +7776,21 @@ function mdColourEdit(value, start, end, kind, colour) {
 //: appears in both, at the same size, in the same group, with the same
 //: tooltip: which is the thing that actually stops them drifting.
 //:
-//: Folded into `<details>` menus, matching the two the document toolbar
-//: already has: twenty-five controls do not fit on one row, and that measured
-//: fact is recorded in index.html beside the Colour and Insert menus.
+//: One `<details>` menu is left ("More": the three inline styles with no
+//: row in the "/" catalogue), worded like the Highlight menu beside it. Headings
+//: 4 to 6, quotes, code, tables, callouts, links, images, footnotes and
+//: comments are the "Insert" button's, which opens the "/" menu (DX6): one
+//: catalogue, `editorBlockRows`, instead of a menu of this table's own for each.
 const EDITOR_TOOLBAR_MENUS = [
   {
-    id: "headings",
-    icon: "ph:text-h",
-    label: "Heading",
-    title: "Headings, from title to smallest",
-    items: [
-      ["h1", "Heading 1"],
-      ["h2", "Heading 2"],
-      ["h3", "Heading 3"],
-      ["h4", "Heading 4"],
-      ["h5", "Heading 5"],
-      ["h6", "Heading 6"],
-    ],
-  },
-  {
-    id: "blocks",
-    icon: "ph:quotes",
-    label: "Block",
-    title: "Quotes, callouts, code and rules",
-    items: [
-      ["quote", "Quote"],
-      ["callout", "Callout"],
-      ["codeblock", "Code block"],
-      ["table", "Table"],
-      ["hr", "Divider"],
-      ["footnote", "Footnote"],
-    ],
-  },
-  {
     id: "inline",
-    icon: "ph:text-superscript",
+    icon: "ph:text-underline",
     label: "More",
-    title: "Underline, superscript, subscript and comments",
+    title: "Underline, superscript and subscript",
     items: [
       ["underline", "Underline"],
       ["sup", "Superscript"],
       ["sub", "Subscript"],
-      ["comment", "Comment (never rendered)"],
-    ],
-  },
-  {
-    id: "insert",
-    icon: "ph:plus-circle",
-    label: "Links and media",
-    title: "Links to notes and images",
-    items: [
-      ["wikilink", "Link to a note"],
-      ["image", "Image…"],
     ],
   },
 ];
@@ -7871,7 +7841,19 @@ function mountEditorToolbarExtras(bar) {
     setLabel(button, spec.icon);
     pair.appendChild(button);
   }
+  //: A strip without its own Insert (the notes' two) gets the same button.
+  if (!bar.querySelector('[data-md="insert"]')) {
+    const insert = document.createElement("button");
+    insert.type = "button";
+    insert.dataset.md = "insert";
+    insert.dataset.mdExtra = "1";
+    insert.title = "Insert a block, image, link, table, emoji or equation (or press /)";
+    setLabel(insert, "ph:plus Insert");
+    bar.appendChild(insert);
+  }
   for (const menu of EDITOR_TOOLBAR_MENUS) {
+    //: The document strip carries these rows in its Style menu already.
+    if (bar.querySelector(`[data-md="${menu.items[0][0]}"]`)) continue;
     const details = document.createElement("details");
     details.className = "doc-dock-menu doc-toolbar-menu";
     details.dataset.mdExtra = "1";
@@ -7887,7 +7869,7 @@ function mountEditorToolbarExtras(bar) {
     summary.className = "doc-dock-menu-btn doc-toolbar-menu-btn";
     summary.title = menu.title;
     summary.setAttribute("aria-label", `${menu.label}: ${menu.title}`);
-    setLabel(summary, menu.icon);
+    setLabel(summary, `${menu.icon} ${menu.label}`);
     const caret = document.createElement("i");
     caret.className = "ph ph-caret-down doc-toolbar-menu-caret";
     caret.setAttribute("aria-hidden", "true");
