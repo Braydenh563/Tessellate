@@ -40,8 +40,10 @@ from __future__ import annotations
 
 import importlib
 import itertools
+import json
 import logging
 import math
+import re
 import threading
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
@@ -51,7 +53,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai import variants
 from tessellate.core import cjk
-from tessellate.core.database import Attachment, EmbeddingRecord, Entry, EntryLink, Reminder
+from tessellate.core.database import LIKE_ESCAPE, Attachment, EmbeddingRecord, Entry, EntryLink, Reminder, like_escape
 from tessellate.entry.highlights import has_highlight
 from tessellate.entry.properties import strip as strip_properties
 from tessellate.search import chunks as search_chunks
@@ -1419,23 +1421,63 @@ def _rank_rows(session: Session, rows: list, subject: str, q: str, terms: list, 
     return hits
 
 
-def match_ids(session: Session, q: str, kinds: list[str] | None = None, depth: int = 20000) -> list[int] | None:
-    """Every note whose text holds all of `q`'s words (each as a prefix), its
-    phrases, and none of its `-words`: a filter, not a ranking (INBOX 1525).
+#: One term of the Notes list's filter box, read as written: a `-`, then a "quoted phrase" or a word.
+_LITERAL_TERM = re.compile(r'(-?)"([^"]+)"|(\S+)')
+#: Past this many terms a filter box is a paste, and every term still narrows: the rest are dropped.
+_LITERAL_TERMS_MAX = 24
 
-    The Notes list holds only the first characters of each note, so the words
-    it filters by are asked here instead, of the index that holds whole bodies.
-    None when `q` names nothing to match, so the caller keeps its whole list.
+
+def _literal_terms(q: str) -> tuple[list[str], list[str]]:
+    """The words and phrases `q` must hold and the ones it must not, lowercased, as typed."""
+    wanted, unwanted = [], []
+    for sign, phrase, word in _LITERAL_TERM.findall(q[:2000])[:_LITERAL_TERMS_MAX]:
+        if word.startswith("-") and len(word) > 1:
+            sign, word = "-", word[1:]
+        term = (phrase or word).strip().lower()
+        if term and term != "-":
+            (unwanted if sign else wanted).append(term)
+    return wanted, unwanted
+
+
+def _like(column, term: str):  # noqa: ANN001, ANN202
+    return column.like(f"%{like_escape(term)}%", escape=LIKE_ESCAPE)
+
+
+def match_ids(session: Session, q: str) -> list[int] | None:
+    """Every live note whose text or tags hold each word and phrase of `q` as
+    written (any case, inside a word too: "oadmap" finds "roadmap", "zeta150"
+    finds "zeta1500") and none of its `-words` (INBOX 1525 review).
+
+    The Notes list's filter box is a literal text filter over the whole
+    bodies its rows only hold the start of, never a question: no dates
+    ("roadmap yesterday" asks for both words), no scopes, no stop words
+    dropped ("the" is a word). The same rule as the list's own substring
+    match, so the two agree on what each can see. Private notes are not read
+    here (the list matches them on their own text). None when `q` names no
+    term, so the caller keeps its own answer.
     """
-    asked = query_understanding.understand(q)
-    subject, terms = _plan_terms(q, asked)
-    if not (terms or asked.phrases or asked.excluded):
+    wanted, unwanted = _literal_terms(q)
+    if not (wanted or unwanted):
         return None
-    wanted = [kind for kind in (kinds or asked.filters["kind"]) if kind in search_index.KINDS]
-    space = _search_space(session, {}, asked)
-    rows, _ = _candidate_rows(session, q, subject, terms, asked, wanted, space, False, depth, depth, strict=True)
-    rows = _filter_rows(session, rows, asked) if rows else rows
-    return sorted({row["ref_id"] for row in rows if row["kind"] in search_index.ENTRY_KINDS})
+    query = select(Entry.id, Entry.content, Entry.tags).where(
+        Entry.is_private == False,  # noqa: E712
+        Entry.is_deleted == False,  # noqa: E712
+        Entry.is_board == False,  # noqa: E712
+        Entry.archived_at.is_(None),
+    )
+    #: SQLite's LIKE folds ASCII case only, so it narrows by the ASCII terms and Python's `lower` decides.
+    for term in (t for t in wanted if t.isascii()):
+        query = query.where(or_(_like(Entry.content, term), _like(Entry.tags, term)))
+    found = []
+    for entry_id, content, tags in session.execute(query):
+        try:
+            tag_text = " ".join(str(tag) for tag in json.loads(tags or "[]"))
+        except (TypeError, ValueError):
+            tag_text = ""
+        held = f"{content or ''} {tag_text}".lower()
+        if all(term in held for term in wanted) and not any(term in held for term in unwanted):
+            found.append(entry_id)
+    return sorted(found)
 
 
 def search(

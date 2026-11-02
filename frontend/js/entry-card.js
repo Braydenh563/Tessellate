@@ -245,26 +245,31 @@ function entryItem(entry, options = {}) {
   //: A clamped card's two lines are text, not the blank line between its
   //: paragraphs (INBOX 458: "Tonight, I have work." then a lone "..."):
   //: folded, the paragraphs run on one line each; opened, the note as written.
-  const bodyText = () => (entry.title ? bodyWithoutTitleLine(entry.content) : stripFrontmatter(entry.content));
-  const fillContent = () => renderNoteText(
-    content,
-    content.classList.contains("entry-clamped") ? bodyText().replace(/\n[ \t\r]*(?:\n[ \t\r]*)+/g, "\n") : bodyText(),
-    searchHighlightTerms(),
-    //: Heading hashes are source, not words (dogfood item 18). Run on the
-    //: prose only, not the whole note: a code fence keeps its own `#` and `-`.
-    (prose) => prose.replace(/^#{1,6}[ \t]+/gm, "").replace(/^( *)-(?= \w)/gm, "$1•")
-  );
+  //: Read at each fill, not once: a clipped row's card is filled again with the whole note (INBOX 1525).
+  const fillContent = () => {
+    const body = entry.title ? bodyWithoutTitleLine(entry.content) : stripFrontmatter(entry.content);
+    renderNoteText(
+      content,
+      content.classList.contains("entry-clamped") ? body.replace(/\n[ \t\r]*(?:\n[ \t\r]*)+/g, "\n") : body,
+      searchHighlightTerms(),
+      //: Heading hashes are source, not words (dogfood item 18). Run on the
+      //: prose only, not the whole note: a code fence keeps its own `#` and `-`.
+      (prose) => prose.replace(/^#{1,6}[ \t]+/gm, "").replace(/^( *)-(?= \w)/gm, "$1•")
+    );
+  };
   fillContent();
   content.addEventListener("remove-inline-image", async (e) => {
     e.stopPropagation();
     if (!(await confirmDialog("Remove this image from the note?"))) return;
-    //: The PUT sends the whole text back, so the card's preview is made whole first (INBOX 1525).
-    if (!(await fullEntry(entry.id).then(() => true, (error) => (toast(error.message, true), false)))) return;
-    const contentBefore = entry.content;
-    entry.content = entry.content.replace(e.detail.originalText, "").replace(/\n{3,}/g, "\n\n").trim();
+    //: The PUT sends the whole text back, so it is built from the note `fullEntry` read, never the card's own row,
+    //: which a list refresh can have swapped for a clipped one meanwhile (INBOX 1525).
+    const whole = await fullEntry(entry.id).catch((error) => void toast(error.message, true));
+    if (!whole) return;
+    const contentBefore = whole.content;
+    const contentAfter = contentBefore.replace(e.detail.originalText, "").replace(/\n{3,}/g, "\n\n").trim();
     try {
-      await apiJson(`/entries/${entry.id}`, { method: "PUT", body: JSON.stringify({ content: entry.content }) });
-      pushEntryPutUndo(entry.id, "Removed an image from a note", { content: contentBefore }, { content: entry.content });
+      await apiJson(`/entries/${entry.id}`, { method: "PUT", body: JSON.stringify({ content: contentAfter }) });
+      pushEntryPutUndo(entry.id, "Removed an image from a note", { content: contentBefore }, { content: contentAfter });
       await refreshEntries([entry.id]);
       flashEntry(entry.id);
       toast("Image removed.");

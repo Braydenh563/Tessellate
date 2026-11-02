@@ -7,15 +7,42 @@
 // engine query's bar moved here (audit 1031, gzip budget): both draw after a render.
 
 //: **The whole note behind a list row** (INBOX 1525, audit 1031 BK10). The list holds each note's first 300 characters
-//: (`content_truncated`), so an open, an edit or a save reads the text here first; the row is filled in place, so every
-//: holder of it sees the text. A row that is whole is returned as it is. Rejects when the note is gone or unreachable.
-async function fullEntry(id) {
+//: (`content_truncated`), so an open, an edit or a save reads the text here first. Callers use the object this returns,
+//: never the row they held: a list refresh can replace that row with a clipped one while this is asked. The row in
+//: `allEntries` at the answer is filled in place, so every holder of it sees the text. A whole row is returned as it is.
+//: Asks in one tick go as one request (a board's clipped cards); `GET /entries/{id}` reaches what `?ids=` leaves out
+//: (archived notes, which document backlinks list). Rejects when the note is gone or unreachable.
+function fullEntry(id) {
   const row = allEntries.find((e) => e.id === id);
-  if (row && !row.content_truncated) return row;
-  const [whole] = await apiJson(`/entries?ids=${id}`);
-  if (!whole) throw new Error("This note is no longer here.");
-  return row ? Object.assign(row, whole) : whole;
+  if (row && !row.content_truncated) return Promise.resolve(row);
+  const asks = (fullEntry.asks ||= new Map());
+  if (!asks.has(id)) {
+    if (!asks.size) queueMicrotask(fullEntry.send);
+    const ask = {};
+    ask.promise = new Promise((resolve, reject) => Object.assign(ask, { resolve, reject }));
+    asks.set(id, ask);
+  }
+  return asks.get(id).promise;
 }
+
+fullEntry.send = async () => {
+  const asks = fullEntry.asks;
+  fullEntry.asks = new Map();
+  const ids = [...asks.keys()];
+  const got = new Map();
+  for (let at = 0; ids.length > 1 && at < ids.length; at += 200) {
+    for (const whole of await apiJson(`/entries?ids=${ids.slice(at, at + 200)}&boards=include`).catch(() => [])) got.set(whole.id, whole);
+  }
+  await Promise.all(ids.map(async (id) => {
+    try {
+      const whole = got.get(id) || (await apiJson(`/entries/${id}`));
+      const now = allEntries.find((e) => e.id === id);
+      asks.get(id).resolve(now ? Object.assign(now, whole) : whole);
+    } catch (error) {
+      asks.get(id).reject(error?.message ? error : new Error("This note is no longer here."));
+    }
+  }));
+};
 
 function toggleRowExpanded(id) {
   const open = !expandedRows.has(id);

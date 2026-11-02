@@ -6410,16 +6410,16 @@ async function wbMindMapAddCard(parentId, x, y) {
 //: "walk the items" (`wbWalkItems`), which would take the branch key away.
 const wbAddGate = { cardRetypeId: null, renderHold: null, barDeferred: false, barDeferredQueued: false, panBarHold: null, panBarTimer: 0 };
 
-function wbEditNodeText(nodeId, firstKey = "") {
+function wbEditNodeText(nodeId, firstKey = "", whole = null) {
   wbAddGate.cardRetypeId = null;
   const node = wbState.nodes.find((n) => n.id === nodeId);
   if (!node) return;
   const card = document.querySelector(`.node-card[data-id="${nodeId}"]`);
   const content = card?.querySelector(".wb-card-content");
   if (!content) return;
-  const entry = allEntries.find((e) => e.id === node.entry_id);
-  //: A clipped row is fetched whole first: the editor's text is what gets saved.
-  if (entry?.content_truncated) return void fullEntry(entry.id).then(() => wbEditNodeText(nodeId, firstKey), () => {});
+  const entry = whole || allEntries.find((e) => e.id === node.entry_id);
+  //: A clipped row is fetched whole first and edited from what `fullEntry` returns: the editor's text is what gets saved.
+  if (entry?.content_truncated) return void fullEntry(entry.id).then((read) => wbEditNodeText(nodeId, firstKey, read), (error) => toast(error.message, true));
   const original = entry?.content || "";
 
   const box = document.createElement("textarea");
