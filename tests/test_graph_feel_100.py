@@ -345,7 +345,7 @@ def test_the_constellation_keeps_its_room_and_fades_in_once():
     # 0px for 2.8s, then took 220px and full opacity in one frame. Now 220px
     # from the first frame and a fade with no pop.
     assert ".art-holder {\n  min-block-size: 220px;\n}" in CSS_GRAPH
-    assert "const height = 220;" in (ROOT / "frontend" / "js" / "dashboard.js").read_text(encoding="utf-8")
+    assert "const height = 220;" in (ROOT / "frontend" / "js" / "dash-art.js").read_text(encoding="utf-8")
     assert ".art-holder:empty {" in CSS_GRAPH
     start = CSS_GRAPH.index("@starting-style {\n  .art-holder > canvas:not(.art-veil) {\n    opacity: 0;")
     #: A theme change's sky, mounted after the veil that fades over it, starts opaque.

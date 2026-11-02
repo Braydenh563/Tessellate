@@ -20,13 +20,14 @@ from pathlib import Path
 
 import pytest
 
-SOURCE = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "dashboard.js").read_text(encoding="utf-8")
+#: Moved from dashboard.js (INBOX 1530 d), read at the margin: one IIFE, indented two spaces.
+SOURCE = re.sub(r"(?m)^  ", "", (Path(__file__).resolve().parents[1] / "frontend" / "js" / "dash-art.js").read_text(encoding="utf-8"))
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
 
 def _top(kind: str, name: str) -> str:
     match = re.search(rf"^{kind} {name}\b.*?^(?:\}}|\);|;)\s*$", SOURCE, re.S | re.M)
-    assert match, f"{name} is gone from dashboard.js"
+    assert match, f"{name} is gone from dash-art.js"
     return match.group(0)
 
 
@@ -99,7 +100,7 @@ def test_the_scene_draws_through_the_batches_and_no_colour_is_built_per_shape():
 
 
 def test_the_sketch_draws_only_while_attended_and_wakes_on_the_card():
-    sketch = SOURCE[SOURCE.index("const sketch = (p) =>") : SOURCE.index("artInstance = new p5(sketch, holder);")]
+    sketch = SOURCE[SOURCE.index("const sketch = (p) =>") : SOURCE.index("artInstance = live ? new p5(sketch, holder)")]
     assert "let attendUntil = performance.now() + ART_SETTLE_MS;" in sketch
     draw = sketch[sketch.index("p.draw = () => {") :]
     assert "performance.now() > attendUntil" in draw[:400] and "rest();" in draw[:400]

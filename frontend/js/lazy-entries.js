@@ -37,6 +37,7 @@ Object.assign(LAZY_MODULES, {
   //: The generative background's styles and runtime (bg-art.js, 20 KB gzipped):
   //: only a notebook with the art on, or an open Appearance grid, needs them.
   bgArt: ["/js/bg-art.js"],
+  dashArt: ["/js/dash-art.js"],
   //: The Appearance quick panel (appearance-panel.js, INBOX 1435).
   appearancePanel: ["/css/appearance-panel-lazy.css", "/css/appearance-panel-own-lazy.css", "/js/appearance-panel.js"],
   //: Settings, Appearance, Glass controls: the icon buttons' glass, fetched only while the switch is on.
@@ -90,6 +91,7 @@ installStandIns({
   statusPanels: ["renderSearchEngineHealth", "emailSupportReport", "renderBackendPicker", "openUndoHistoryMenu", "openModelOffer"],
   featureModelSheet: ["openFeatureModelSheet"],
   dashLazy: ["renderOrphanNotesWidget", "renderNightWidget", "renderDayDigest", "dashPatternBit", "dashTodayLine"],
+  dashArt: ["renderArtWidget"],
   phoneMore: ["openPhoneMoreSheet"],
   screenContext: ["screenContext"],
   mathEditor: ["openMathEditor"],

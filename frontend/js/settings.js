@@ -3149,6 +3149,8 @@ function toggleBgArt(on) {
   applyAppearance(); // updates data-bg-art so the cards adjust with it
   if (on) startBgArt();
   else stopBgArt();
+  //: The constellation moves only with it on (INBOX 1530 d).
+  refreshArtForTheme();
 }
 
 $("theme-btn").addEventListener("click", toggleTheme);

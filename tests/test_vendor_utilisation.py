@@ -56,7 +56,10 @@ CALLED_FLOOR = {
     "d3": 22,
     #: 12 since the Dashboard sky draws on the canvas context (its colour parsing was
     #: 426 ms of 540 ms busy idle at 4x CPU); p5 keeps the sketch, noise and timing.
-    "p5": 12,
+    #: 10 since INBOX 1530 d: with background art off the sky is a still picture
+    #: drawn without p5, so a category's hue is read from its hex (`artHexHue`)
+    #: and not through `p.color` and `p.hue`.
+    "p5": 10,
     "flashtext": 2,
     "stencils": 7,
     "mammoth": 2,

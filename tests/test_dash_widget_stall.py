@@ -5,7 +5,9 @@ request; one that never answered left all three empty, which the CSS shows as
 request held open: both cards end on Retry; Retry draws them)."""
 from pathlib import Path
 
-JS = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "dashboard.js").read_text(encoding="utf-8")
+_DIR = Path(__file__).resolve().parents[1] / "frontend" / "js"
+#: The constellation is dash-art.js since INBOX 1530 (d).
+JS = "\n".join((_DIR / name).read_text(encoding="utf-8") for name in ("dashboard.js", "dash-art.js"))
 
 
 def test_the_shared_stats_request_has_a_deadline_and_forgets_a_failure():
@@ -23,4 +25,5 @@ def test_every_widget_mounts_through_the_stall_guard():
 
 def test_the_constellation_waits_for_its_library():
     js = JS
-    assert 'if (typeof p5 === "undefined" && !(await ensureP5()))' in js
+    # With background art on, the only time it uses p5 (INBOX 1530 d).
+    assert 'if (live && typeof p5 === "undefined" && !(await ensureP5()))' in js

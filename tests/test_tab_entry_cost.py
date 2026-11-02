@@ -65,7 +65,8 @@ def test_a_caret_does_not_resolve_the_surface_adapter():
     assert 'typeof asSurface !== "function"' in sync[: sync.index("editorSurfaceFor(")]
 
 
-DASH = (JS / "dashboard.js").read_text(encoding="utf-8")
+#: The sky moved to the lazy dash-art.js (INBOX 1530 d), indented one level in its IIFE.
+DASH = re.sub(r"(?m)^  ", "", (JS / "dash-art.js").read_text(encoding="utf-8"))
 
 
 def test_the_dashboard_sky_does_not_parse_a_p5_colour_per_shape():

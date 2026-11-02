@@ -755,7 +755,8 @@ MORE_TOPICS: list[dict] = [
             "and carries on when you come back. Movement sets how much it moves and Intensity "
             "how strong it is. Page background in Theme & colour sets the "
             "colour under it. Performance mode and Battery-efficient mode both "
-            "stop it, and so does Motion off."
+            "stop it, and so does Motion off. The dashboard's constellation "
+            "moves only while it is on; off, it is a still picture."
         ),
         "badge": {"label": "Animated background", "section": "appearance", "target": "bg-style-row"},
     },
