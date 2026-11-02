@@ -155,16 +155,29 @@
   }
 }
 
-/* **A table in the Read view is set like the prose around it.** It wore the
-   code block's monospace and `width: 100%`, so a three-word table spread to
-   the page (columns of 113, 249 and 295 px at 1440) and read as source. Body
-   font, columns sized to their content, never wider than the page; full view
-   keeps the chat's own fit and actual-size rules. */
-#doc-preview .md-table-block:not(.is-full) .md-table {
-  font-family: var(--font-sans);
-  width: auto;
-  min-width: 0;
-  max-width: 100%;
+/* **Live and Read share one type set** (audit 1102 DX25). Measured at 1440 with
+   a heading in each: the text column was 594 px in Live and 686 in Read, the
+   leading 23.55 against 22.08, and a heading kept 32 above and 8 below in Live
+   but 29 and 29 in Read (the browser's own `1.33em` margin, so a Read heading
+   sat as far from its text as from the text before it). The numbers are
+   Live's (`.cm-md-gap-*` and the scroller's leading in documents-cm.js, which says so too):
+   1.6 leading, `--space-9` before an h1 or h2, `--space-8` before the lower levels,
+   `--space-4` after, about a third of the lowest before. A new token would have
+   gone over the token budget, so they are the existing spacing steps. The measure
+   (`--doc-measure` plus the gutters is 50em = 736 px, Read's own width since 04-chat-dock-appearance.css
+   and the owner's two "so thin" reports) is Live's now too (it was 64ch = 658; `em`, since `ch` differs by face). The pane
+   is the measure plus the gutter either side, as the editor's content is. */
+#doc-preview {
+  line-height: 1.6;
+}
+#doc-preview :is(.md-h1, .md-h2) {
+  margin-block: var(--space-9) var(--space-4);
+}
+#doc-preview :is(.md-h3, .md-h4, .md-h5, .md-h6) {
+  margin-block: var(--space-8) var(--space-4);
+}
+#doc-preview :is(.md-h1, .md-h2, .md-h3, .md-h4, .md-h5, .md-h6) + * {
+  margin-top: 0;
 }
 
 /* **A quotation in the rendered view** (DOCUMENTS_PLAN 17c). The document's

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents Live and Read share one type set (audit 1102 DX25): the page is 736 px in both (Live was 658; `--doc-measure` is `50em` less the margins, since `ch` differs by face), the leading 1.6 (Read was 1.5, 22.08 px against 23.55), and a Read heading keeps 32 px before it (24 for h3 to h6) and 9.6 after (it was 29 and 29, the browser's own margin); Live's gap under a heading is 9.6 too (was 8). Measured at 1440 with `scratchpad` sweep `m.js` (scratch): text column 672 against 670, line height 23.552 both.
 - The Notes Filter button shows when meaning search is on, as the Library's does (audit 1028 S83).
 - The Stats widget's category counts open those notes, through the same door as the Categories widget (audit 1028 S87).
 - Closing the keyboard shortcuts sheet gives focus back to what opened it (audit 1028 S58; was BODY).

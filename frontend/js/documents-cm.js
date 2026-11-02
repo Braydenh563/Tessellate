@@ -2415,10 +2415,12 @@ function docCmTheme(CM) {
       //: The gaps between blocks (17b), one token each; the note beside the
       //: decoration in `docLivePlugin` says why this is `line-height` and not
       //: `height`.
+      //: Read's heading margins (09-editor.css, audit 1102 DX25) are these same
+      //: three: 2rem and 1.5rem before a heading, `--space-4` after it, and 1.6 leading.
       ".cm-md-gap": { lineHeight: "var(--space-6)" },
       ".cm-md-gap-major": { lineHeight: "var(--space-9)" },
       ".cm-md-gap-minor": { lineHeight: "var(--space-8)" },
-      ".cm-md-gap-tight": { lineHeight: "var(--space-3)" },
+      ".cm-md-gap-tight": { lineHeight: "var(--space-4)" },
       ".cm-md-gap-extra": { lineHeight: "0" },
       //: The callout's kind, in the place its `[!note]` marker was. Set in
       //: `em` so it tracks the editor's own type scale, and in the muted ink

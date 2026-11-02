@@ -626,7 +626,12 @@ select optgroup {
      gate allows, and 64ch puts 77. The margin is fluid between a comfortable
      minimum and 2rem, so the text is never ten pixels from its pane's edge
      again, which is what 17a measured it at. */
-  --doc-measure: 64ch;
+  /* The text column is 50em less the two margins, so the page (column plus
+     margins, which is what the editor and Read both cap) is 736 px at the body
+     size, Read's width since the owner's "so thin" reports; Live was 658
+     (audit 1102 DX25). `em`, not `ch`: the two views draw in different faces,
+     so one `ch` count came to 658 px in one and 669 in the other. */
+  --doc-measure: calc(50em - 2 * var(--doc-gutter));
   --doc-gutter: clamp(var(--space-6), 2.5vw, var(--space-9));
   /* 2rem, the inset five rules had by hand */
   /* Equal to the side gutter -- see `.layout`'s gap for the measurement. */
