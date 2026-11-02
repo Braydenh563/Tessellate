@@ -487,7 +487,7 @@ let docView = "source";
 //: switched back from `.py` to `.md` stayed there). Nothing stored, nothing
 //: remembered as the last editing view; the file type coming back to a
 //: markdown one restores the view the person actually chose.
-const docViewState = { held: false, tableGrips: null };
+const docViewState = { held: false, tableGrips: null, blockHandle: null };
 
 //: One-time reset (owner, 2026-10-25: Live should be the default, but their
 //: browser held "source" from before). A view stored before this version key
@@ -3354,11 +3354,20 @@ function docBlockMoveEdit(text, offset, delta) {
       ? base + (offset - starts[b.from]) + shift
       : base + head.join("\n").length + (head.length ? 1 : 0) + (offset - starts[a.from]) + shift;
     const more = b.to < lines.length;
+    //: `unit` is what the caret's block spans and `hopFrom`/`hopTo` the neighbour
+    //: it swaps with (offsets in this text): the drag handle shows beside the
+    //: unit and decides how many neighbours a drop is past.
+    const edge = (run) => (run.to < lines.length ? starts[run.to] : source.length);
+    const mover = moverIsB ? b : a;
+    const hop = moverIsB ? a : b;
     return {
       from: base,
       to: more ? starts[b.to] : source.length,
       insert: [...head, ...aLines].join("\n") + (more ? "\n" : ""),
       caret,
+      unit: { from: starts[mover.from], to: edge(mover) },
+      hopFrom: starts[hop.from],
+      hopTo: edge(hop),
     };
   };
   const swapItems = (one, two) => swap(one, two, false, true);
@@ -4909,11 +4918,11 @@ function docCodeCommentAtCaret(box, block = false) {
 // (`view.visibleRanges`), so the work per keystroke is a screenful rather than
 // a document. It is Obsidian's own architecture, which is what was asked for.
 //
-// **What is lost, said plainly:** the Notion-style block handle, its drag to
-// reorder and its move/duplicate/delete menu went with the block DOM. Those
-// were real and people used them. DOCUMENTS_PLAN Phase 3 is where block
-// structure comes back, as gutter affordances over the one document rather
-// than as a second copy of it.
+// **What was lost, said plainly:** the Notion-style block handle, its drag to
+// reorder and its move/duplicate/delete menu went with the block DOM. The
+// drag is back (`docLiveExtensions.dragHandle`, DX29), a gutter grip over the
+// one document that reuses the Alt+Up and Alt+Down move; the menu is still
+// DOCUMENTS_PLAN Phase 3's.
 
 // -----------------------------------------------------------------------------
 // The table commands: what the editor does with the model above
@@ -6325,8 +6334,201 @@ docLiveSpanTouched.anchorIn = (ranges, from, to) => ranges.some((range) => range
 //: widget and the arrow keys that step into it belong to Live exactly as the
 //: markdown decorations do.
 function docLiveExtensions(CM) {
-  return [docLivePlugin(CM), docTableGripsPlugin(CM), docColumnsField(CM), docColumnsArrowKeymap(CM), docMermaidField(CM)];
+  return [docLivePlugin(CM), docTableGripsPlugin(CM), docColumnsField(CM), docColumnsArrowKeymap(CM), docMermaidField(CM), docLiveExtensions.dragHandle(CM)];
 }
+
+//: **A drag handle for a Live block** (audit 1102 DX29; Notion's grip). Beside
+//: the block under the pointer a grip appears in the page margin; dragging it
+//: and letting go moves the whole block (a paragraph, a list item with what is
+//: nested under it, a fence, a heading's section) to the drop point.
+//:
+//: It is the keyboard move repeated, not a second model: `docBlockMoveEdit`
+//: (Alt+Up and Alt+Down) is applied to a copy of the text once per neighbour the
+//: drop is past, and the difference between the copy and the document is
+//: dispatched as ONE transaction, so one Undo puts the block back. The keyboard
+//: path already meets WCAG 2.5.7, so the grip is `aria-hidden` and its title
+//: names the keys. Pointer only: a phone has no hover (the stylesheet hides it
+//: too) and a code file keeps the editor's own line move.
+docLiveExtensions.dragHandle = (CM) => {
+  if (docViewState.blockHandle) return docViewState.blockHandle;
+  const { ViewPlugin } = CM.view;
+  docViewState.blockHandle = ViewPlugin.fromClass(
+    class {
+      constructor(view) {
+        this.view = view;
+        this.press = null;
+        this.plan = null;
+        this.unit = null;
+        this.seen = -1;
+        this.el = document.createElement("div");
+        this.el.className = "doc-block-handle hidden";
+        this.el.title = "Drag to move this block. Alt+Up and Alt+Down move it from the keyboard";
+        this.el.setAttribute("aria-hidden", "true");
+        const icon = document.createElement("i");
+        icon.className = "ph ph-dots-six-vertical";
+        this.el.appendChild(icon);
+        this.mark = document.createElement("div");
+        this.mark.className = "doc-block-drop hidden";
+        view.scrollDOM.append(this.el, this.mark);
+        this.on = {
+          hover: (event) => this.hover(event),
+          leave: () => this.press || this.hide(),
+          down: (event) => this.down(event),
+          move: (event) => this.drag(event),
+          up: (event) => this.drop(event),
+          cancel: () => this.end(),
+        };
+        view.contentDOM.addEventListener("pointermove", this.on.hover);
+        view.scrollDOM.addEventListener("pointerleave", this.on.leave);
+        this.el.addEventListener("pointerdown", this.on.down);
+        this.el.addEventListener("pointermove", this.on.move);
+        this.el.addEventListener("pointerup", this.on.up);
+        this.el.addEventListener("pointercancel", this.on.cancel);
+      }
+      update(update) {
+        if (!update.docChanged) return;
+        this.end();
+        this.hide();
+      }
+      destroy() {
+        this.view.contentDOM.removeEventListener("pointermove", this.on.hover);
+        this.view.scrollDOM.removeEventListener("pointerleave", this.on.leave);
+        this.el.remove();
+        this.mark.remove();
+      }
+
+      hide() {
+        this.unit = null;
+        this.seen = -1;
+        this.el.classList.add("hidden");
+      }
+
+      //: The block under the pointer. Recomputed only when the pointer changes
+      //: line (the block model reads the whole text), and a blank line between
+      //: two blocks leaves the grip where it was so the pointer can reach it.
+      hover(event) {
+        if (this.press || event.pointerType !== "mouse" || window.matchMedia("(hover: none)").matches) return;
+        if (!docFileType().previewable) return this.hide();
+        const view = this.view;
+        const pos = view.posAtCoords({ x: event.clientX, y: event.clientY }, false);
+        if (pos == null) return;
+        const doc = view.state.doc;
+        const line = doc.lineAt(pos);
+        if (line.from === this.seen) return;
+        if (!line.text.trim()) return;
+        this.seen = line.from;
+        const text = docStr(doc);
+        let edit = docBlockMoveEdit(text, line.from, 1);
+        if (!edit || edit.noop) edit = docBlockMoveEdit(text, line.from, -1);
+        if (!edit || edit.noop || !edit.unit) return this.hide();
+        const box = view.coordsAtPos(edit.unit.from);
+        if (!box) return this.hide();
+        const scroller = view.scrollDOM;
+        const sr = scroller.getBoundingClientRect();
+        this.unit = edit.unit;
+        this.el.classList.remove("hidden");
+        this.el.style.top = `${Math.round(box.top - sr.top - scroller.clientTop + scroller.scrollTop)}px`;
+        this.el.style.height = `${Math.round(box.bottom - box.top)}px`;
+        this.el.style.left = `${Math.max(0, Math.round(box.left - sr.left - scroller.clientLeft + scroller.scrollLeft))}px`;
+      }
+
+      down(event) {
+        if (event.button !== 0 || !this.unit) return;
+        //: Not a text press: the editor keeps its focus and its caret.
+        event.preventDefault();
+        this.press = { id: event.pointerId, x: event.clientX, y: event.clientY, drag: false, unit: this.unit, text: docStr(this.view.state.doc) };
+        this.plan = null;
+        try {
+          this.el.setPointerCapture(event.pointerId);
+        } catch {
+          /* a pointer that is already gone: the release will not come, and the press is dropped */
+        }
+      }
+
+      //: Where a drop at this height lands: the nearest line edge, then as many
+      //: neighbours as that edge is past, each one the keyboard move.
+      planFor(drop) {
+        const press = this.press;
+        let text = press.text;
+        let at = press.unit.from;
+        let edge = null;
+        let steps = 0;
+        const delta = drop > at ? 1 : -1;
+        while (steps < 500) {
+          const edit = docBlockMoveEdit(text, at, delta);
+          if (!edit || edit.noop) break;
+          if (delta > 0 ? drop < edit.hopTo : drop > edit.hopFrom) break;
+          text = text.slice(0, edit.from) + edit.insert + text.slice(edit.to);
+          if (delta > 0 && drop >= edit.to) drop += edit.insert.length - (edit.to - edit.from);
+          at = edit.caret;
+          edge = delta > 0 ? edit.hopTo : edit.hopFrom;
+          steps += 1;
+        }
+        return { text, at, edge, steps };
+      }
+
+      drag(event) {
+        const press = this.press;
+        if (!press || event.pointerId !== press.id) return;
+        if (!press.drag && Math.hypot(event.clientX - press.x, event.clientY - press.y) >= DOC_GRIP_DRAG_PX) {
+          press.drag = true;
+          this.el.classList.add("is-dragging");
+        }
+        if (!press.drag) return;
+        const view = this.view;
+        const scroller = view.scrollDOM;
+        const sr = scroller.getBoundingClientRect();
+        if (event.clientY < sr.top + 24) scroller.scrollTop -= 12;
+        else if (event.clientY > sr.bottom - 24) scroller.scrollTop += 12;
+        const doc = view.state.doc;
+        const block = view.lineBlockAtHeight(event.clientY - view.documentTop);
+        const line = doc.lineAt(block.from);
+        const upper = event.clientY - view.documentTop < (block.top + block.bottom) / 2;
+        const drop = upper ? line.from : Math.min(line.to + 1, doc.length);
+        if (!this.plan || this.plan.drop !== drop) this.plan = { ...this.planFor(drop), drop };
+        const edge = this.plan.steps ? view.lineBlockAt(this.plan.edge) : null;
+        this.mark.classList.toggle("hidden", !edge);
+        if (!edge) return;
+        const cr = view.contentDOM.getBoundingClientRect();
+        const y = this.plan.edge >= doc.length ? edge.bottom : edge.top;
+        this.mark.style.top = `${Math.round(view.documentTop + y - sr.top - scroller.clientTop + scroller.scrollTop)}px`;
+        this.mark.style.left = `${Math.round(cr.left - sr.left - scroller.clientLeft + scroller.scrollLeft)}px`;
+        this.mark.style.width = `${Math.round(cr.width)}px`;
+      }
+
+      drop(event) {
+        const press = this.press;
+        const plan = this.plan;
+        if (!press || event.pointerId !== press.id) return;
+        const view = this.view;
+        this.end();
+        if (!press.drag || !plan || !plan.steps || view.state.doc.length !== press.text.length) return;
+        //: The move is a swap of text the document already has, so the change is
+        //: the stretch that differs: one edit, one transaction, one Undo.
+        const old = press.text;
+        const next = plan.text;
+        const room = Math.min(old.length, next.length);
+        let from = 0;
+        while (from < room && old.charCodeAt(from) === next.charCodeAt(from)) from += 1;
+        let tail = 0;
+        while (tail < room - from && old.charCodeAt(old.length - 1 - tail) === next.charCodeAt(next.length - 1 - tail)) tail += 1;
+        view.dispatch({
+          changes: { from, to: old.length - tail, insert: next.slice(from, next.length - tail) },
+          selection: { anchor: plan.at },
+          userEvent: "move.line",
+        });
+      }
+
+      end() {
+        this.press = null;
+        this.plan = null;
+        this.el.classList.remove("is-dragging");
+        this.mark.classList.add("hidden");
+      }
+    },
+  );
+  return docViewState.blockHandle;
+};
 
 //: State the Phase 2 pieces share: the pending Mermaid pictures and its Live field (documents-mermaid.js), the image refocus and the print sheet.
 const docPhase2State = { mermaidDrawn: Promise.resolve(), mermaidReady: false, mermaidFieldCache: null, imageRefocus: null, printSheet: null };
@@ -16680,8 +16882,8 @@ function docSetCalloutHead(at, kind, fold) {
 //: `docRenderFlow`) less `docPreviewLineShift` (the title and properties the
 //: preview adds or leaves out), and **checked against the text before
 //: anything is written**: a callout's first line has to be a callout head.
-//: A drag handle was left out: reordering by drag needs a drop model for the
-//: preview, which is not cheap, and Cut and paste in the editor does it.
+//: The preview has no drag handle: reordering by drag needs a drop model for
+//: it, which is not cheap. Live has one (`docLiveExtensions.dragHandle`).
 //: Pointer only: a phone has no hover, and its Live view carries the kind
 //: button on the callout itself.
 let docBlockBarFor = null;
