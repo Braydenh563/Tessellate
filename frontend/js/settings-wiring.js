@@ -1632,13 +1632,32 @@ $("notes-page-next").addEventListener("click", () => {
 //:
 //: Ids or elements: the edit form builds its host and textarea and calls this
 //: *before* the row is in the document, so a lookup by id would find neither.
-function renderEntryAttachmentChips(boxId = "entry-content", hostId = "entry-attachment-chips") {
+//:
+//: **A key in a long note costs a timer check** (z1c-1101): the regex reads the whole text, 0.29 ms a
+//: key at 200,000 characters. `paced` (the input listeners) runs it on the key up to
+//: `CHIPS_PACE_CHARS`, past that once per `CHIPS_PACE_MS` from the text as it is then, the rule the
+//: Capture count keeps. And a row that would come out the same is not rebuilt (`chipsSig`), so a key
+//: in a note with pictures no longer remakes every card.
+function renderEntryAttachmentChips(boxId = "entry-content", hostId = "entry-attachment-chips", { paced = false } = {}) {
+  const CHIPS_PACE_CHARS = 2000;
+  const CHIPS_PACE_MS = 150;
   const box = hostId instanceof HTMLElement ? hostId : $(hostId);
   const textarea = boxId instanceof HTMLElement ? boxId : $(boxId);
   if (!box || !textarea) return;
+  clearTimeout(textarea.chipsTimer);
+  textarea.chipsTimer = 0;
+  if (paced && textarea.value.length > CHIPS_PACE_CHARS) {
+    textarea.chipsTimer = setTimeout(() => renderEntryAttachmentChips(textarea, box), CHIPS_PACE_MS);
+    return;
+  }
   const pattern = /!?\[([^\]]{0,200})\]\(((?:\/media\/|\/files\/|staged:)[^)\s]{1,500})\)/g;
   const matches = [...textarea.value.matchAll(pattern)];
   const staged = textarea.id === "entry-content" ? captureStagedFiles : [];
+  const sig = matches.map(([markdown, , url]) => `${markdown}\u0000${stagedImageByUrl(url) ? 1 : 0}`)
+    .concat(staged.map((file) => `${file.name}\u0000${file.size}`)).join("\u0001");
+  if (box.chipsSig === sig && box.chipsFor === textarea) return;
+  box.chipsSig = sig;
+  box.chipsFor = textarea;
   box.replaceChildren();
   box.classList.toggle("hidden", matches.length + staged.length === 0);
   for (const [markdown, name, url] of matches) {
@@ -1746,7 +1765,7 @@ function captureCountText(text) {
 $("entry-content").addEventListener("input", () => {
   // Keep a draft so a half-typed thought survives a reload or a stray tab
   // switch: losing one is the most annoying thing this app could do.
-  renderEntryAttachmentChips();
+  renderEntryAttachmentChips("entry-content", "entry-attachment-chips", { paced: true });
   // The "go to it" link belongs to the note you just saved, not the one you
   // are now writing: drop it as soon as typing starts.
   $("save-status").querySelector(".jump-to-note")?.remove();

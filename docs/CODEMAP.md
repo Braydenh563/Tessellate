@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7554, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8431, test files 1833, tests 15674, plan headings 990, app scripts 28, boot scripts 37, script files 226.
+Counts: frontend functions 7554, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8431, test files 1834, tests 15677, plan headings 990, app scripts 28, boot scripts 37, script files 226.
 
 ## Frontend functions (7554)
 
@@ -1211,18 +1211,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `_isChatComposer` | frontend/js/settings-wiring.js:1929 |
+| `_isChatComposer` | frontend/js/settings-wiring.js:1948 |
 | `activeOverlay` | frontend/js/settings-wiring.js:955 |
-| `captureCountText` | frontend/js/settings-wiring.js:1690 |
+| `captureCountText` | frontend/js/settings-wiring.js:1709 |
 | `captureShortcutKey` | frontend/js/settings-wiring.js:1461 |
-| `clearStagedImages` | frontend/js/settings-wiring.js:2096 |
+| `clearStagedImages` | frontend/js/settings-wiring.js:2115 |
 | `closeOverlaysForChord` | frontend/js/settings-wiring.js:1256 |
 | `closeShortcuts` | frontend/js/settings-wiring.js:1491 |
 | `comboFromEvent` | frontend/js/settings-wiring.js:1292 |
-| `commitCaptureImages` | frontend/js/settings-wiring.js:2081 |
-| `fileDropBox` | frontend/js/settings-wiring.js:1938 |
+| `commitCaptureImages` | frontend/js/settings-wiring.js:2100 |
+| `fileDropBox` | frontend/js/settings-wiring.js:1957 |
 | `flashSaved` | frontend/js/settings-wiring.js:496 |
-| `handleFileUpload` | frontend/js/settings-wiring.js:2128 |
+| `handleFileUpload` | frontend/js/settings-wiring.js:2147 |
 | `hideChordGuide` | frontend/js/settings-wiring.js:1274 |
 | `inEditable` | frontend/js/settings-wiring.js:953 |
 | `loadForgottenOrder` | frontend/js/settings-wiring.js:1568 |
@@ -1236,13 +1236,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `maybeShowOnboarding` | frontend/js/settings-wiring.js:976 |
 | `notebookLocked` | frontend/js/settings-wiring.js:481 |
 | `persistSavedSearches` | frontend/js/settings-wiring.js:53 |
-| `renderCaptureFiles` | frontend/js/settings-wiring.js:1655 |
-| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1635 |
-| `renderInstallRow` | frontend/js/settings-wiring.js:1857 |
+| `renderCaptureFiles` | frontend/js/settings-wiring.js:1674 |
+| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1641 |
+| `renderInstallRow` | frontend/js/settings-wiring.js:1876 |
 | `renderSavedSearches` | frontend/js/settings-wiring.js:17 |
 | `resetShortcuts` | frontend/js/settings-wiring.js:1428 |
 | `restampShortcutHints` | frontend/js/settings-wiring.js:1182 |
-| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2069 |
+| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2088 |
 | `runShortcut` | frontend/js/settings-wiring.js:1319 |
 | `saveCurrentSearch` | frontend/js/settings-wiring.js:61 |
 | `saveShortcutOverrides` | frontend/js/settings-wiring.js:1280 |
@@ -1250,13 +1250,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `savedSearches` | frontend/js/settings-wiring.js:13 |
 | `setShortcutStatus` | frontend/js/settings-wiring.js:1445 |
 | `setShortcutStatusError` | frontend/js/settings-wiring.js:1452 |
-| `singleKeysOn` | frontend/js/settings-wiring.js:2267 |
-| `stagedImageUrl` | frontend/js/settings-wiring.js:2046 |
+| `singleKeysOn` | frontend/js/settings-wiring.js:2286 |
+| `stagedImageUrl` | frontend/js/settings-wiring.js:2065 |
 | `stampShortcutTitles` | frontend/js/settings-wiring.js:1158 |
 | `submitLockForm` | frontend/js/settings-wiring.js:305 |
-| `textCounts` | frontend/js/settings-wiring.js:1680 |
-| `uploadStagedFiles` | frontend/js/settings-wiring.js:2105 |
-| `wordCount` | frontend/js/settings-wiring.js:1675 |
+| `textCounts` | frontend/js/settings-wiring.js:1699 |
+| `uploadStagedFiles` | frontend/js/settings-wiring.js:2124 |
+| `wordCount` | frontend/js/settings-wiring.js:1694 |
 
 ### frontend/js/spaces-find.js (25)
 
@@ -23097,7 +23097,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15674)
+## Tests (15677)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23314,6 +23314,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_chat_weather_1027.py | 4 |
 | tests/test_cheap_animations.py | 6 |
 | tests/test_chip_target.py | 2 |
+| tests/test_chips_paced_z1c.py | 3 |
 | tests/test_chunk_vectors.py | 11 |
 | tests/test_citation_after_heading.py | 1 |
 | tests/test_citation_order_1029.py | 7 |

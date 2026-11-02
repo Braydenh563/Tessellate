@@ -594,7 +594,7 @@ ${textarea.value}`));
   //: when the pressed state is set.
   Promise.resolve(mountGutterFor(textarea)).then(() => requestAnimationFrame(() => applyDocGutter()));
   renderEntryAttachmentChips(textarea, chipsHost);
-  textarea.addEventListener("input", () => renderEntryAttachmentChips(textarea, chipsHost));
+  textarea.addEventListener("input", () => renderEntryAttachmentChips(textarea, chipsHost, { paced: true }));
   renderRelatedWhileEditing(li, entry);
   renderNoteBookmarksWhileEditing(li, entry);
 }

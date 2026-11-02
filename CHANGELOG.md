@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - A document's snippet rows open their menu on right-click and long-press, as every other row does (OPEN 244).
+- A key in a long note no longer rescans and rebuilds the attachment cards: past 2,000 characters they redraw once per 150 ms, and a row that would come out the same is kept (0.62 ms to 0.04 ms a key at 200,000 characters; z1c-1101 leftover).
 - Follow-up suggestions send the last 500 characters of the question, the part the model is shown (`FOLLOWUP_QUESTION_CHARS`), not 4,000 (warm12 leftover).
 - Alt+= opens the equation editor in a fresh note box at once (it did nothing for about a second, until the editor adapters arrived), and Insert writes through the adapter (maths1527 leftovers).
 - Calculator and equations: Escape in LaTeX mode returns to the formula instead of closing the dialog, and a press outside no longer drops a half-written equation (`openSheet` `hasWork`; maths1527 leftovers).
