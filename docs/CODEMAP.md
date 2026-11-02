@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7558, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8470, test files 1843, tests 15736, plan headings 990, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7558, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8470, test files 1844, tests 15737, plan headings 990, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7558)
 
@@ -1978,50 +1978,50 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `closePalette` | frontend/js/app-palette.js:163 |
-| `notesPaletteCommands` | frontend/js/app-palette.js:846 |
+| `notesPaletteCommands` | frontend/js/app-palette.js:853 |
 | `openPalette` | frontend/js/app-palette.js:120 |
-| `paletteActRows` | frontend/js/app-palette.js:439 |
-| `paletteArrow` | frontend/js/app-palette.js:800 |
+| `paletteActRows` | frontend/js/app-palette.js:446 |
+| `paletteArrow` | frontend/js/app-palette.js:807 |
 | `paletteAskNotes` | frontend/js/app-palette.js:60 |
-| `paletteBase` | frontend/js/app-palette.js:394 |
-| `paletteDistance` | frontend/js/app-palette.js:642 |
-| `paletteDrawRows` | frontend/js/app-palette.js:713 |
+| `paletteBase` | frontend/js/app-palette.js:401 |
+| `paletteDistance` | frontend/js/app-palette.js:649 |
+| `paletteDrawRows` | frontend/js/app-palette.js:720 |
 | `paletteEditorMatches` | frontend/js/app-palette.js:209 |
 | `paletteFeature` | frontend/js/app-palette.js:96 |
-| `paletteFeatureRows` | frontend/js/app-palette.js:422 |
-| `paletteFind` | frontend/js/app-palette.js:688 |
+| `paletteFeatureRows` | frontend/js/app-palette.js:429 |
+| `paletteFind` | frontend/js/app-palette.js:695 |
 | `paletteFuzzyScore` | frontend/js/app-palette.js:189 |
-| `paletteGoToCategory` | frontend/js/app-palette.js:932 |
-| `paletteKeydown` | frontend/js/app-palette.js:809 |
-| `paletteLight` | frontend/js/app-palette.js:774 |
+| `paletteGoToCategory` | frontend/js/app-palette.js:939 |
+| `paletteKeydown` | frontend/js/app-palette.js:816 |
+| `paletteLight` | frontend/js/app-palette.js:781 |
 | `paletteMatches` | frontend/js/app-palette.js:223 |
-| `paletteNearRows` | frontend/js/app-palette.js:668 |
-| `paletteNearest` | frontend/js/app-palette.js:622 |
-| `paletteNearestCommand` | frontend/js/app-palette.js:693 |
-| `paletteNearestRows` | frontend/js/app-palette.js:657 |
+| `paletteNearRows` | frontend/js/app-palette.js:675 |
+| `paletteNearest` | frontend/js/app-palette.js:629 |
+| `paletteNearestCommand` | frontend/js/app-palette.js:700 |
+| `paletteNearestRows` | frontend/js/app-palette.js:664 |
 | `paletteNoteAbout` | frontend/js/app-palette.js:38 |
 | `paletteNoteRows` | frontend/js/app-palette.js:45 |
-| `paletteNotesInHand` | frontend/js/app-palette.js:922 |
-| `palettePick` | frontend/js/app-palette.js:597 |
-| `palettePicks` | frontend/js/app-palette.js:578 |
-| `palettePool` | frontend/js/app-palette.js:400 |
-| `palettePrefixPicks` | frontend/js/app-palette.js:586 |
-| `paletteRanked` | frontend/js/app-palette.js:554 |
-| `paletteRefresh` | frontend/js/app-palette.js:414 |
+| `paletteNotesInHand` | frontend/js/app-palette.js:929 |
+| `palettePick` | frontend/js/app-palette.js:604 |
+| `palettePicks` | frontend/js/app-palette.js:585 |
+| `palettePool` | frontend/js/app-palette.js:407 |
+| `palettePrefixPicks` | frontend/js/app-palette.js:593 |
+| `paletteRanked` | frontend/js/app-palette.js:561 |
+| `paletteRefresh` | frontend/js/app-palette.js:421 |
 | `paletteRun` | frontend/js/app-palette.js:103 |
-| `paletteScore` | frontend/js/app-palette.js:514 |
-| `paletteSettingRows` | frontend/js/app-palette.js:474 |
-| `paletteShown` | frontend/js/app-palette.js:795 |
-| `paletteStartAct` | frontend/js/app-palette.js:461 |
-| `paletteTarget` | frontend/js/app-palette.js:405 |
+| `paletteScore` | frontend/js/app-palette.js:521 |
+| `paletteSettingRows` | frontend/js/app-palette.js:481 |
+| `paletteShown` | frontend/js/app-palette.js:802 |
+| `paletteStartAct` | frontend/js/app-palette.js:468 |
+| `paletteTarget` | frontend/js/app-palette.js:412 |
 | `paletteText` | frontend/js/app-palette.js:180 |
-| `paletteTier` | frontend/js/app-palette.js:545 |
-| `paletteVocab` | frontend/js/app-palette.js:530 |
-| `paletteWhy` | frontend/js/app-palette.js:611 |
-| `paletteWords` | frontend/js/app-palette.js:501 |
-| `renderPalette` | frontend/js/app-palette.js:739 |
-| `scrollPaletteToActive` | frontend/js/app-palette.js:830 |
-| `utilityPaletteRows` | frontend/js/app-palette.js:302 |
+| `paletteTier` | frontend/js/app-palette.js:552 |
+| `paletteVocab` | frontend/js/app-palette.js:537 |
+| `paletteWhy` | frontend/js/app-palette.js:618 |
+| `paletteWords` | frontend/js/app-palette.js:508 |
+| `renderPalette` | frontend/js/app-palette.js:746 |
+| `scrollPaletteToActive` | frontend/js/app-palette.js:837 |
+| `utilityPaletteRows` | frontend/js/app-palette.js:309 |
 
 ### frontend/js/appearance-panel.js (16)
 
@@ -23255,7 +23255,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15736)
+## Tests (15737)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23347,6 +23347,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_attachment_path_containment.py | 3 |
 | tests/test_attachment_rename_route.py | 4 |
 | tests/test_audio_section.py | 4 |
+| tests/test_audit_1028_a28s.py | 1 |
 | tests/test_audit_1028_e_rows.py | 5 |
 | tests/test_audit_1028_e_rows_b.py | 6 |
 | tests/test_audit_1028_k_rows.py | 2 |

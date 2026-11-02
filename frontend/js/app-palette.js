@@ -222,7 +222,14 @@ const PALETTE_ASKS = /^(?:how (?:do|does|can|to|should)|where (?:is|are|do|can)|
 
 function paletteMatches(query) {
   const lowered = query.trim().toLowerCase();
-  if (lowered.startsWith(">")) return paletteEditorMatches(lowered.slice(1).trim());
+  if (lowered.startsWith(">")) {
+    const needle = lowered.slice(1).trim();
+    const rows = paletteEditorMatches(needle);
+    //: Nothing in the editor's list is called that: a row carries the words to Find anything, notes only (audit 1028 S62).
+    if (rows.length || !needle) return rows;
+    const typed = query.trim().slice(1).trim();
+    return [{ group: "Search", label: `ph:magnifying-glass Search notes for “${typed}”`, about: "No editor command matches. Find anything searches your notes.", handoff: true, run: () => openFinder(typed, { kind: "note" }) }];
+  }
   //: **The app's own commands get a group name too, now that something can
   //: sit above them.** They had none because they were always first and a
   //: header over the top of a list says nothing; with the editor's group

@@ -1304,7 +1304,7 @@ HELP_TOPICS.extend(
                 "Its tabs: Output, Problems, Tests, Console (Python or JavaScript, "
                 "in what the run left) and Debug. Ctrl+J shows it, Ctrl+Shift+M "
                 "Problems, Ctrl+Shift+Y the Console, Ctrl+Shift+D Debug; "
-                "Ctrl+Shift+P or F1 runs a command by name, Ctrl+\\ splits the "
+                "Ctrl+Shift+P or F1 runs a command by name (words that match none offer Search notes for), Ctrl+\\ splits the "
                 "editor, Ctrl+K Ctrl+S lists every key, and Outline follows the "
                 "caret. Minimap (Editor and layout, "
                 "off at first) maps the whole file; Compare with a saved version "

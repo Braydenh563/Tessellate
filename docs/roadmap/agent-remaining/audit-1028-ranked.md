@@ -245,7 +245,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 239 | S59 | low | no skip link to main content | fixed (already built; reconciled 2026-10-30) | S |
 | 240 | S60 | low | reduced-motion not applied to every animation | docs/roadmap/BACKLOG.md:1290 | S |
 | 241 | S61 | low | muted text contrast near threshold in dark theme | new | S |
-| 242 | S62 | low | palette empty state offers no suggestion | new | S |
+| 242 | S62 | low | palette empty state offers no suggestion | fixed 2026-11-02 (a28s-S62) | S |
 | 243 | S63 | low | palette lacks note results with a preview | new | M |
 | 244 | S68 | low | import panel is long and dense | new | M |
 | 245 | S69 | low | backup restore has no verify-before-restore summary | new | M |
