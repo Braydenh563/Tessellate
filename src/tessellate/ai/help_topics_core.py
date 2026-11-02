@@ -1826,7 +1826,7 @@ HELP_TOPICS.extend(
                 "Ctrl+; Ctrl+Shift+; Ctrl+' Alt+= and Ctrl+Shift+' open the emoji, "
                 "icon, symbol, equation and calculator, "
                 "Tab and Shift+Tab "
-                "indent and outdent, Ctrl+/ comments the selection, Alt+Up / "
+                "indent and outdent, Ctrl+/ comments the selection (Enter ends the remark), Alt+Up / "
                 "Alt+Down moves the block at the caret, and typing / opens "
                 "the blocks menu. Ctrl+F finds and Ctrl+H (Mac: Cmd+Option+F) replaces (Enter or F3 next, "
                 "Shift+Enter previous, Esc closes), and Ctrl+Shift+F finds in every "

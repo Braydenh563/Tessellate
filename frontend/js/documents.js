@@ -15676,6 +15676,8 @@ function docCmKeymap(CM) {
     //: anything that would treat a row as a line of text; each declines
     //: (returns false) everywhere that is not a Live table cell.
     { key: "Enter", run: (view) => docTableKeyMove(view, "Enter") },
+    //: And a fresh remark's Enter steps past its closing marker (DX24).
+    { key: "Enter", run: (view) => docAnnotateSelection.end(view) },
     { key: "Mod-Enter", run: (view) => docTableCtrlEnter(view) },
     { key: "ArrowDown", run: (view) => docTableKeyMove(view, "ArrowDown") },
     { key: "ArrowUp", run: (view) => docTableKeyMove(view, "ArrowUp") },
@@ -15695,6 +15697,8 @@ function docCmKeymap(CM) {
         return false;
       },
     },
+    //: Escape inside a remark leaves it, past the closing marker (DX24).
+    { key: "Escape", run: (view) => docAnnotateSelection.end(view, true) },
     //: Tab indents, in prose as well as code, with Escape-then-Tab as the way
     //: out. `docTabEscapes` above carries the whole reason.
     {
