@@ -299,22 +299,27 @@ function atlasTailFrame(tail, now) {
   //: And in the lite set (`atlasFrameBudget`), where they are not played at all.
   const loops = live && !box.closest("#nm-buddy.nm-buddy-dragging") && !document.documentElement.hasAttribute("data-atlas-lite");
   if (live) atlasFrameBudget(now);
-  for (const anim of box.atlasLoops || []) if (loops !== (anim.playState === "running")) loops ? anim.play() : anim.pause();
+  //: **Reads, then the tail's one restyle, then the writes** (INBOX 1534: this
+  //: beat's own writes, the loops' play and pause and the breath's scale,
+  //: made the next read settle style: `atlasPropsFrame` 71ms, the breath's
+  //: rise 107ms and the rest's release 73ms at 4x CPU in 45s of idle). The
+  //: props read first; the rest's release, which reads where the sway is,
+  //: comes before anything is written; the breath and the loops are writes.
   //: Thirty a second: each draw repaints the tail's layer.
   tail.tick += 1;
   //: The props' own loops, while each is shown (`atlasPropsFrame`).
   atlasPropsFrame(box, live, tail.tick);
-  //: And the chest's breath (`atlasBreathFrame`).
-  atlasBreathFrame(box, live, now);
   //: Resting on the compositor (`atlasTailRest`): nothing to draw while the
   //: state holds and the act has not run out; the breath and the props
-  //: above are all this beat does.
-  if (tail.resting) {
-    if (live && atlasTailCalm(tail, box) && atlasLowerState(box.closest("#nm-buddy"), box) === tail.state && now < tail.until) {
-      tail.raf = setTimeout(() => atlasTailFrame(tail, performance.now()), ATLAS_TAIL_REST_BEAT_MS);
-      return;
-    }
-    atlasTailUnrest(tail);
+  //: are all this beat does.
+  const holds = tail.resting && live && atlasTailCalm(tail, box) && atlasLowerState(box.closest("#nm-buddy"), box) === tail.state && now < tail.until;
+  if (tail.resting && !holds) atlasTailUnrest(tail);
+  //: And the chest's breath (`atlasBreathFrame`).
+  atlasBreathFrame(box, live, now);
+  for (const anim of box.atlasLoops || []) if (loops !== (anim.playState === "running")) loops ? anim.play() : anim.pause();
+  if (holds) {
+    tail.raf = setTimeout(() => atlasTailFrame(tail, performance.now()), ATLAS_TAIL_REST_BEAT_MS);
+    return;
   }
   if (live && tail.tick % 2 && tail.drawn && !tail.calm) {
     tail.raf = requestAnimationFrame((t) => atlasTailFrame(tail, t));
