@@ -55,8 +55,9 @@ TOP_LEVEL_LETS_CAP = 699
 #: renderer (documents-math.js, 400 lines) wrapped whole, two exports; measured 9,754. doc23-1102: the comments
 #: model and panel (documents-comments.js, 436 lines) wrapped whole, five exports; measured 9,742. doc23-1102: embeds and wiki-link
 #: targets (documents-embeds.js, 335 lines) wrapped whole, seven exports; measured 9,739. doc24-1102: the table
-#: model (documents-tables.js, 676 lines) wrapped whole, 23 exports; measured 9,732.
-GLOBAL_NAMES_CAP = 9732
+#: model (documents-tables.js, 676 lines) wrapped whole, 23 exports; measured 9,732. doc24-1102: the columns block
+#: (documents-columns.js, 267 lines) wrapped whole, three exports; measured 9,726.
+GLOBAL_NAMES_CAP = 9726
 
 
 def _code() -> dict[str, str]:

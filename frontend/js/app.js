@@ -306,27 +306,11 @@ function replaceMissingMedia(img) {
   // different situation, and the note may well want it back when the network
   // returns.
   if (!/^\/(media|files)\//.test(src)) return;
-  //: **An image the app addresses by id is hidden, never replaced.** This
-  //: listener was written for the images inside rendered markdown, which are
-  //: built fresh on every render and referred to by nobody: swapping one for a
-  //: placeholder costs nothing. `#ocr-image` is the opposite: one long-lived
-  //: element that the OCR workspace sets a new `src` on for every page of
-  //: every document it opens.
+  //: **An image the app addresses by id is hidden, never replaced.** This listener was written for the images inside rendered markdown, which are built fresh on every render and referred to by nobody: swapping one for a placeholder costs nothing. `#ocr-image` is the opposite: one long-lived element that the OCR workspace sets a new `src` on for every page of every document it opens.
   //:
-  //: Measured. Opening a text file (a .md attachment) in the workspace sets
-  //: `img.src` to that file's own url before the text branch of `ocrLoadPage`
-  //: runs, the browser cannot decode markdown as an image, this listener fired
-  //: and `img.replaceWith(gone)` deleted `#ocr-image` from the document. After
-  //: that the stage held `SPAN.media-missing` and no `<img>` at all, for the
-  //: rest of the session: every later open threw "Cannot set properties of
-  //: null (setting 'src')" at `ocrLoadPage`, so clicking the next file's name
-  //: opened a workspace that never showed the page. CLAUDE.md's own shape: the
-  //: damage lands nowhere near the code that caused it.
+  //: Measured. Opening a text file (a .md attachment) in the workspace sets `img.src` to that file's own url before the text branch of `ocrLoadPage` runs, the browser cannot decode markdown as an image, this listener fired and `img.replaceWith(gone)` deleted `#ocr-image` from the document. After that the stage held `SPAN.media-missing` and no `<img>` at all, for the rest of the session: every later open threw "Cannot set properties of null (setting 'src')" at `ocrLoadPage`, so clicking the next file's name opened a workspace that never showed the page. CLAUDE.md's own shape: the damage lands nowhere near the code that caused it.
   //:
-  //: Hidden rather than replaced, so nothing draws a torn-page glyph and the
-  //: element the app is holding on to is still there. The surfaces that own
-  //: such an image say what happened in their own words (`#ocr-message`), and
-  //: they unhide it themselves the moment a page really loads.
+  //: Hidden rather than replaced, so nothing draws a torn-page glyph and the element the app is holding on to is still there. The surfaces that own such an image say what happened in their own words (`#ocr-message`), and they unhide it themselves the moment a page really loads.
   if (img.id) {
     img.classList.add("hidden");
     return;
@@ -378,19 +362,7 @@ document.addEventListener(
   true,
 );
 
-// A page-load-order bug lived here: this was declared down in the spaces
-// section (appended at the end of the file), and `api()`, called from
-// `initAuth()` at module load, long before that point in the script runs, 
-// reads it via `activeSpaceId()` on every request's headers below. A `const`
-// is in the temporal dead zone until its own declaration executes, so the
-// very first request the app ever made threw `ReferenceError: Cannot access
-// 'SPACE_ALL' before initialization`, caught by api()'s own try/catch and
-// surfaced only as "Can't reach the Tessellate server", the lock screen
-// never appeared, with no console error and no failed network request,
-// because the fetch was never reached. `node --check` cannot catch this: the
-// file is syntactically valid, only wrong in execution order. Declared here,
-// before `api()` is ever callable, so this cannot happen again regardless of
-// what gets appended below.
+// A page-load-order bug lived here: this was declared down in the spaces section (appended at the end of the file), and `api()`, called from `initAuth()` at module load, long before that point in the script runs, reads it via `activeSpaceId()` on every request's headers below. A `const` is in the temporal dead zone until its own declaration executes, so the very first request the app ever made threw `ReferenceError: Cannot access 'SPACE_ALL' before initialization`, caught by api()'s own try/catch and surfaced only as "Can't reach the Tessellate server", the lock screen never appeared, with no console error and no failed network request, because the fetch was never reached. `node --check` cannot catch this: the file is syntactically valid, only wrong in execution order. Declared here, before `api()` is ever callable, so this cannot happen again regardless of what gets appended below.
 const SPACE_ALL = "all";
 
 //: Here and not with the spaces code: `api()` calls it on every request, and
@@ -406,21 +378,7 @@ function activeSpaceId() {
 }
 
 async function api(path, options = {}) {
-  // `silent`: a background poll (model status, reminders): a 401 must not
-  // yank the user to the lock screen mid-session (Wave O fix for a
-  // long-standing intermittent re-lock). Only an explicit user action
-  // shows the lock screen on 401.
-  // `timeoutMs`: opt-in abort so a call can't hang the UI forever (used by the
-  // startup probe). Off by default, so long-running requests, model pulls,
-  // blocking chat: are unaffected.
-  // `ownsAuthErrors`: this call treats 401 as part of its own result rather
-  // than as an expired session. Change-password answers 401 for "that isn't
-  // your current password", a typo there must show a message beside the
-  // field, not throw the user out to the lock screen.
-  // `readOnly`: a POST that writes nothing (the code checker in documents.js
-  // sends a file's text in a body because a query string cannot carry it).
-  // Without it every pause in typing a .py file would empty the read cache
-  // for the whole app, which is a write's job, not a read's.
+  // `silent`: a background poll (model status, reminders): a 401 must not yank the user to the lock screen mid-session (Wave O fix for a long-standing intermittent re-lock). Only an explicit user action shows the lock screen on 401. `timeoutMs`: opt-in abort so a call can't hang the UI forever (used by the startup probe). Off by default, so long-running requests, model pulls, blocking chat: are unaffected. `ownsAuthErrors`: this call treats 401 as part of its own result rather than as an expired session. Change-password answers 401 for "that isn't your current password", a typo there must show a message beside the field, not throw the user out to the lock screen. `readOnly`: a POST that writes nothing (the code checker in documents.js sends a file's text in a body because a query string cannot carry it). Without it every pause in typing a .py file would empty the read cache for the whole app, which is a write's job, not a read's.
   const { silent, timeoutMs, ownsAuthErrors, readOnly, ...fetchOptions } = options;
   refuseStagedUrls(fetchOptions.body);
   // Any write invalidates the read cache above, see clearApiCache().
@@ -1122,21 +1080,8 @@ function startApp() {
   // pile of pre-auth 401s, one endpoint earlier.
   step("watch reminders", startReminderWatch);
 
-  // Re-render whichever tab is on screen. This used to be switchTab() itself,
-  // called at module level before initAuth() has a token, so a tab that
-  // fetches its own data painted itself from a pile of 401s and then never
-  // tried again. On the dashboard that meant an empty grid until you opened
-  // Edit layout and cancelled out of it, which re-ran renderDashboard by hand
-  // (user-reported). Now the module-level call is revealTab(), DOM only,
-  // no fetch: and this is the one place the real data load happens.
-  // *After* the entries land, not alongside them. These two ran concurrently,
-  // so on a cold load the dashboard rendered against an `allEntries` that was
-  // still `[]` and drew its brand-new-notebook card instead of the widgets, 
-  // reported as "the dashboard widgets are missing until I refresh or change
-  // tabs". Every tab wants the notes; none of them wants to guess.
-  //: The view the address names, when the page was opened on one (a reload,
-  //: a bookmark, a pasted link: router.js); it loads its own tab, so the
-  //: Dashboard is not loaded under it first.
+  // Re-render whichever tab is on screen. This used to be switchTab() itself, called at module level before initAuth() has a token, so a tab that fetches its own data painted itself from a pile of 401s and then never tried again. On the dashboard that meant an empty grid until you opened Edit layout and cancelled out of it, which re-ran renderDashboard by hand (user-reported). Now the module-level call is revealTab(), DOM only, no fetch: and this is the one place the real data load happens. *After* the entries land, not alongside them. These two ran concurrently, so on a cold load the dashboard rendered against an `allEntries` that was still `[]` and drew its brand-new-notebook card instead of the widgets, reported as "the dashboard widgets are missing until I refresh or change tabs". Every tab wants the notes; none of them wants to guess.
+  //: The view the address names, when the page was opened on one (a reload, a bookmark, a pasted link: router.js); it loads its own tab, so the Dashboard is not loaded under it first.
   const tabReady = entriesReady.then(() => step("load this tab", async () => {
     if (typeof routerRestore === "function" && (await routerRestore())) return;
     return refreshActiveTab();
@@ -1736,7 +1681,7 @@ const LAZY_MODULES = {
   //: Tidy, the reviews with no AI (INBOX 691): tidy.js's header.
   tidy: ["/css/tidy-lazy.css", "/js/tidy.js"],
   semanticNotice: ["/css/semantic-notice-lazy.css", "/js/semantic-notice.js"],
-  //: The order the `<script>` tags had, kept: every cross-file call between these three is inside a function rather than at parse time, so it is not load-bearing, but it is the order the three files' own headers describe. documents-code.js and documents-prose.js were split out of documents.js (2026-09-24) and go *before* it, and that position is load-bearing: their own top level reads nothing from documents.js, while documents.js's top-level wiring names their functions, and each file here is followed by a microtask checkpoint before the next one runs. See their headers. documents-props.js, documents-mermaid.js, documents-math.js, documents-comments.js, documents-embeds.js and documents-tables.js (DC13) go before it likewise, as does whiteboard-map.js before whiteboard.js.
+  //: The order the `<script>` tags had, kept: every cross-file call between these three is inside a function rather than at parse time, so it is not load-bearing, but it is the order the three files' own headers describe. documents-code.js and documents-prose.js were split out of documents.js (2026-09-24) and go *before* it, and that position is load-bearing: their own top level reads nothing from documents.js, while documents.js's top-level wiring names their functions, and each file here is followed by a microtask checkpoint before the next one runs. See their headers. documents-props.js, documents-mermaid.js, documents-math.js, documents-comments.js, documents-embeds.js, documents-tables.js and documents-columns.js (DC13) go before it likewise, as does whiteboard-map.js before whiteboard.js.
   library: [
     "/vendor/d3.v7.min.js", //: Before whiteboard.js, whose top level calls `d3.zoom()`.
     "/css/library-lazy.css", //: The styles only this bundle's surfaces draw, out of the boot budget.
@@ -1754,6 +1699,7 @@ const LAZY_MODULES = {
     "/js/documents-comments.js",
     "/js/documents-embeds.js",
     "/js/documents-tables.js",
+    "/js/documents-columns.js",
     "/js/autocorrect.js",
     "/js/documents.js",
     "/js/margin-reader.js",
@@ -1927,36 +1873,14 @@ document.addEventListener("keydown", (event) => {
 
 //: **The entry points that can be reached before their own file exists.**
 //:
-//: Most calls into a lazy module happen on its own tab, after `switchTab` has
-//: awaited it. These are the ones that do not: a map chip in the note list
-//: opens a board, the command palette opens a document, the notes editor's
-//: bold button is documents.js's `applyMarkdown`, and eight of graph.js's
-//: functions are read as *bare identifiers* by this file's own top-level
-//: wiring (the click listener this file binds on `#graph-popup-close` names
-//: `closeGraphPopup` as a bare identifier), which is evaluated the moment that
-//: line runs and would throw ReferenceError with graph.js absent.
+//: Most calls into a lazy module happen on its own tab, after `switchTab` has awaited it. These are the ones that do not: a map chip in the note list opens a board, the command palette opens a document, the notes editor's bold button is documents.js's `applyMarkdown`, and eight of graph.js's functions are read as *bare identifiers* by this file's own top-level wiring (the click listener this file binds on `#graph-popup-close` names `closeGraphPopup` as a bare identifier), which is evaluated the moment that line runs and would throw ReferenceError with graph.js absent.
 //:
-//: Each name below gets a stand-in that loads the bundle and then calls the
-//: real function, which has replaced the stand-in by then: a top-level
-//: `function foo()` in a classic script rebinds `globalThis.foo`, so no
-//: hand-off is needed beyond looking the name up again.
+//: Each name below gets a stand-in that loads the bundle and then calls the real function, which has replaced the stand-in by then: a top-level `function foo()` in a classic script rebinds `globalThis.foo`, so no hand-off is needed beyond looking the name up again.
 //:
 //: Two rules decide what is on this list, and both matter:
 //:
-//: 1. **Only functions whose return value nobody reads.** A stand-in has to
-//:    return a promise, so a function whose answer is used in the same
-//:    statement cannot have one. `docEventFromCm` is the sharp case: editor.js
-//:    reads it as `if (typeof docEventFromCm === "function" &&
-//:    docEventFromCm(event.target)) return;`, and a promise is truthy, so a
-//:    stand-in there would swallow every keystroke in the note editor. Those
-//:    functions are left off, and their `typeof` guard then means what it
-//:    says: the document surface is not loaded, so this is not one.
-//: 2. **Only functions a person's own gesture reaches.** `loadLibrary` and
-//:    `renderLibrary` are deliberately absent: they are called from "refresh
-//:    the list if it is on screen" guards after an OCR pass or an import
-//:    finishes, and a stand-in would pull 1.7 MB in the background because a
-//:    caption came back. Skipping is the right answer when the Library has
-//:    never been opened; opening it loads and renders it anyway.
+//: 1. **Only functions whose return value nobody reads.** A stand-in has to return a promise, so a function whose answer is used in the same statement cannot have one. `docEventFromCm` is the sharp case: editor.js reads it as `if (typeof docEventFromCm === "function" && docEventFromCm(event.target)) return;`, and a promise is truthy, so a stand-in there would swallow every keystroke in the note editor. Those functions are left off, and their `typeof` guard then means what it says: the document surface is not loaded, so this is not one.
+//: 2. **Only functions a person's own gesture reaches.** `loadLibrary` and `renderLibrary` are deliberately absent: they are called from "refresh the list if it is on screen" guards after an OCR pass or an import finishes, and a stand-in would pull 1.7 MB in the background because a caption came back. Skipping is the right answer when the Library has never been opened; opening it loads and renders it anyway.
 const LAZY_ENTRY_POINTS = {
   //: The palette's Live captions row (captions.js; Brief 82): nobody reads its return.
   captions: ["toggleLiveCaptions"],
