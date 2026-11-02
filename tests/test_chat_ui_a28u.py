@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+
 from tests._app_js import JS_DIR
 from tests._app_js import app_js_text
 
@@ -16,3 +18,19 @@ def test_e49_edit_reads_the_turn_from_the_bubble():
     # A deleted exchange renumbers the user bubbles after it.
     assert "dataset.turn" in js[js.index("async function deleteChatTurn") :][:3000]
 
+
+def test_e47_the_chat_list_has_a_search_field():
+    from tests._app_js import INDEX_HTML
+
+    html = INDEX_HTML.read_text(encoding="utf-8")
+    box = re.search(r'<div class="search-field chat-sidebar-search">.*?</div>', html, re.S).group(0)
+    assert 'class="ph ph-magnifying-glass search-field-icon"' in box
+    assert 'id="chat-sidebar-search" type="search" class="search-field-input"' in box
+    assert 'aria-label="Search your saved chats"' in box
+    # The server reads titles and message text; the list reads the box on every load.
+    assert "/conversations?q=${encodeURIComponent(term)}" in app_js_text()
+    assert "Search" not in re.findall(r'placeholder="(Filter[^"]*)"', box)
+    from tessellate.ai import help_chat
+
+    topic = next(t for t in help_chat.HELP_TOPICS if t["id"] == "chat-list")
+    assert "search box above it finds a chat" in topic["body"]

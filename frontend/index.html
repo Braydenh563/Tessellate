@@ -2783,6 +2783,14 @@ Link to another note with [[its first few words]]."></textarea>
              bottom??"). The list takes the sidebar's free height, so a line
              after it sat at the foot, beside All in Library, a panel's
              height away from the heading it answers. -->
+        <!-- E47 (audit 1028): the search-field recipe, above the list. It asks the
+             server (`GET /conversations?q=`), which reads titles and what was said,
+             because the list below holds only the last few chats. -->
+        <div class="search-field chat-sidebar-search">
+          <i class="ph ph-magnifying-glass search-field-icon" aria-hidden="true"></i>
+          <input id="chat-sidebar-search" type="search" class="search-field-input" autocomplete="off"
+            placeholder="Search chats" aria-label="Search your saved chats" aria-controls="conversation-list">
+        </div>
         <p id="conv-empty" class="muted empty-line">No saved chats yet. Ask something to start one.</p>
         <ul id="conversation-list"></ul>
         <button id="conv-browse-all" class="ghost small conv-browse-all" type="button"

@@ -393,6 +393,22 @@ $("chat-private-toggle").addEventListener("click", chatPrivateToggle);
     loadConversationList();
   });
 }
+{
+  //: E47: search the saved chats; Escape clears it before it closes anything.
+  const find = $("chat-sidebar-search");
+  let waiting = 0;
+  find.addEventListener("input", () => {
+    clearTimeout(waiting);
+    waiting = setTimeout(loadConversationList, 200);
+  });
+  find.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || !find.value) return;
+    event.preventDefault();
+    event.stopPropagation();
+    find.value = "";
+    loadConversationList();
+  });
+}
 $("persona-peek").addEventListener("click", togglePersonaPrompt);
 $("chat-tune-search").addEventListener("click", () => {
   closeChatDockMore();
