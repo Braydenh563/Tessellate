@@ -1995,7 +1995,7 @@ function renderWindowed(list, items, buildItem, { keep, afterChunk, settled, gro
     //: The window stays; the new rows join its end and the rows built say how many there are now.
     noteWindow.items = items;
     noteWindow.win.add(list, grown);
-    for (const li of list.querySelectorAll(":scope > li[aria-setsize]")) li.setAttribute("aria-setsize", String(items.length));
+    for (const li of list.querySelectorAll(":scope > li[aria-setsize]")) li.setAttribute("aria-setsize", items.length);
     afterChunk?.();
     return;
   }
@@ -2013,8 +2013,8 @@ function renderWindowed(list, items, buildItem, { keep, afterChunk, settled, gro
     //: from screen readers.
     build: (item, i) => {
       const li = buildItem(item, i);
-      li.setAttribute("aria-posinset", String(i + 1));
-      li.setAttribute("aria-setsize", String(noteWindow.items.length));
+      li.setAttribute("aria-posinset", i + 1);
+      li.setAttribute("aria-setsize", noteWindow.items.length);
       return li;
     },
     stays: noteRowStays,
@@ -2136,8 +2136,8 @@ function applyNotesViewMode() {
   if (list) list.classList.toggle("is-rows", notesViewMode === "rows");
   $("notes-view-rows")?.classList.toggle("active", notesViewMode === "rows");
   $("notes-view-cards")?.classList.toggle("active", notesViewMode === "cards");
-  $("notes-view-rows")?.setAttribute("aria-pressed", String(notesViewMode === "rows"));
-  $("notes-view-cards")?.setAttribute("aria-pressed", String(notesViewMode === "cards"));
+  $("notes-view-rows")?.setAttribute("aria-pressed", notesViewMode === "rows");
+  $("notes-view-cards")?.setAttribute("aria-pressed", notesViewMode === "cards");
   updateExpandAllButton();
 }
 
@@ -3609,7 +3609,7 @@ function syncNotesRailToggle() {
   //: action on a column that was not there when no note was open.
   const on = !notesRailHiddenByChoice();
   setLabel(toggle, `${on ? "ph:check-square" : "ph:square"} Connections beside the note you're reading`);
-  toggle.setAttribute("aria-pressed", String(on));
+  toggle.setAttribute("aria-pressed", on);
 }
 
 async function renderNotesRail() {

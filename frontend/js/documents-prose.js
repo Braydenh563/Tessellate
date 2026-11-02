@@ -217,6 +217,13 @@ function docGrammarKeeps(lint, span, structural, text) {
   //: A dotfile after a space (" .gitignore") reads to Harper as the end of a
   //: sentence with a stray space.
   if (/unnecessary space/i.test(message) && /^\.[A-Za-z0-9]/.test(text.slice(lint.end))) return false;
+  //: **Two Harper guesses that read a phrase as a different part of speech**
+  //: (audit 1102 DX19). "it's colour coded" is a contraction before a compound
+  //: adjective, not a possessive. "Callout kinds" or "Backup files" is a noun
+  //: starting a sentence, not a phrasal verb: the verb has an object next, a
+  //: determiner or a pronoun ("Callout the problem"), and that one stays.
+  if (/possessive pronoun/i.test(message) && /^[ \t]+[A-Za-z]+[ -](?:coded|blind|themed|based|aware|safe|friendly|proof|ready)\b/i.test(text.slice(lint.end))) return false;
+  if (/phrasal verb, not a compound noun/i.test(message) && !/^[ \t]+(?:the|an?|this|that|these|those|it|them|him|her|us|me|my|your|our|their|his|its|any|each|every|all|some|to|for|in|on|at|with|by|and|or)\b/i.test(text.slice(lint.end))) return false;
   //: "These words would go better together" asks to join a tech term
   //: ("cron job" to "cronjob"); a style nag, and the writer's term is theirs.
   if (/go better together/i.test(message)) return false;

@@ -1040,6 +1040,7 @@ function editorCommands(context) {
         icon: "ph:sparkle", label: "Ask Atlas to write here",
         about: "Writes at the cursor, for you to keep or undo",
         keys: "Ctrl+J",
+        gate: "doc-ai",
         keywords: ["ai", "write", "inline", "here", "cursor", "ask", "generate", "continue"],
         run: (textarea) => inlineAiOpen(textarea),
       },
@@ -1048,6 +1049,7 @@ function editorCommands(context) {
         group: "AI",
         icon: "ph:sparkle", label: "AI edit this selection",
         about: "Rewrite, expand or tighten what is selected",
+        gate: "doc-ai",
         keywords: ["ai", "rewrite", "improve", "expand", "edit"],
         run: () => $("doc-ai")?.click(),
       },
@@ -1473,6 +1475,15 @@ function editorRenderMenu() {
       className: "editor-menu-item",
     });
     row.dataset.index = String(position);
+    //: **An AI row follows the gate of the control it stands for** (`gate`, an
+    //: id; audit 1102 DX28): with no model it is dimmed and says that
+    //: control's reason, as `#doc-ai` does, and a press offers a model.
+    const gate = item.gate && aiIsOff() ? $(item.gate) : null;
+    if (gate) {
+      row.setAttribute("aria-disabled", "true");
+      row.classList.add("ai-unavailable");
+      row.title = gate.title;
+    }
 
     // mousedown, not click: the textarea must not lose focus first, or the
     // caret position the insertion depends on is already gone.
@@ -1641,6 +1652,8 @@ function editorRunItem(position) {
     textarea.setSelectionRange(keep, keep);
   }
   editorCloseMenu("ran");
+  const gate = item.gate && aiIsOff() ? $(item.gate) : null;
+  if (gate) return openModelOffer(gate);
   //: Remembered under its own id, not its "Recent" copy's.
   if (trigger === "/" && item.id && typeof item.run === "function") editorRememberBlock(item.recentOf || item.id);
 

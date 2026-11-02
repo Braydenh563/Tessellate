@@ -1324,7 +1324,7 @@ function renderAskTrail() {
   const trail = followupTrail(turns.map((turn) => turn.question), (i, link) => {
     shown = shown === i ? -1 : i;
     for (const other of trail.querySelectorAll(".chat-trail-link")) {
-      other.setAttribute("aria-expanded", String(other === link && shown === i));
+      other.setAttribute("aria-expanded", other === link && shown === i);
     }
     peek.classList.toggle("hidden", shown === -1);
     if (shown !== -1) renderMarkdown(peek, turns[i].answer || "");

@@ -641,7 +641,7 @@ function plainText(md) {
 //: only).
 function setActiveChoice(button, on) {
   button.classList.toggle("active", on);
-  button.setAttribute("aria-pressed", String(on));
+  button.setAttribute("aria-pressed", on);
 }
 
 //: **A note's or document's name as plain words**, the one way (INBOX 820: a
@@ -1020,7 +1020,7 @@ function setNotePickerSource(source, { focus = "search" } = {}) {
   for (const button of document.querySelectorAll("#note-picker-sources [data-picker-source]")) {
     const on = button.dataset.pickerSource === source;
     button.classList.toggle("active", on);
-    button.setAttribute("aria-selected", String(on));
+    button.setAttribute("aria-selected", on);
     button.tabIndex = on ? 0 : -1;
     if (on && focus === "tab") button.focus();
   }

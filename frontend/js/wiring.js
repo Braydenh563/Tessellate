@@ -873,7 +873,7 @@ function noteSourceOn() {
 
 function syncNoteSourceButtons() {
   for (const button of document.querySelectorAll("#entry-preview-toggle, [data-note-preview]")) {
-    button.setAttribute("aria-pressed", String(noteSourceOn()));
+    button.setAttribute("aria-pressed", noteSourceOn());
     button.classList.toggle("is-active", noteSourceOn());
   }
 }
@@ -1022,7 +1022,7 @@ function setGraphOptionsOpen(open) {
   //: half is refused.
   const phone = window.matchMedia(PHONE_TABS).matches;
   panel.classList.toggle("hidden", !open || phone);
-  toggle.setAttribute("aria-expanded", String(open && !phone));
+  toggle.setAttribute("aria-expanded", open && !phone);
   toggle.classList.toggle("is-on", open && !phone);
   prefs.set("graph-options-open", open ? "1" : "0");
 }
@@ -1110,7 +1110,7 @@ $("graph-trace-clear").addEventListener("click", () => setTracePanelOpen(false))
   if (!row || !toggle) return;
   const apply = (collapsed) => {
     row.classList.toggle("legend-collapsed", collapsed);
-    toggle.setAttribute("aria-expanded", String(!collapsed));
+    toggle.setAttribute("aria-expanded", !collapsed);
     toggle.title = collapsed ? "Show the legend" : "Hide the legend";
     toggle.setAttribute("aria-label", toggle.title);
     // A menu item, not the bare caret it was when it sat in the strip: the
@@ -1405,7 +1405,7 @@ let planModeOn = false;
 function renderPlanToggle() {
   const button = $("chat-plan");
   if (!button) return;
-  button.setAttribute("aria-pressed", String(planModeOn));
+  button.setAttribute("aria-pressed", planModeOn);
   button.classList.toggle("active", planModeOn);
   button.title = planModeOn
     ? "Plan mode is on, your next message is planned first, and the steps are shown before anything touches your notes. Click to turn off."

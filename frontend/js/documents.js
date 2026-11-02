@@ -1389,7 +1389,8 @@ function keepDocEditLocally() {
   if (content.length > 2e6) return;
   try {
     const all = docKeptDrafts();
-    all[currentDoc.id] = { id: currentDoc.id, title: $("doc-title").value, content, at: Date.now() };
+    //: `base`: the hash of the server text this was typed over, so a later open can tell the copy is the newer (DX31).
+    all[currentDoc.id] = { id: currentDoc.id, title: $("doc-title").value, content, at: Date.now(), base: currentDoc.content_hash };
     const newest = Object.values(all).sort((a, b) => b.at - a.at).slice(0, DOC_KEPT_MAX);
     prefs.setJSON(DOC_EDIT_KEPT, Object.fromEntries(newest.map((kept) => [kept.id, kept])));
   } catch {
@@ -1412,9 +1413,13 @@ function forgetDocEditLocally(id) {
 window.addEventListener("pagehide", keepDocEditLocally);
 
 //: Called by openDocument once the document is on screen. A kept copy whose
-//: text is already the document's is dropped without a word; otherwise one
-//: message offers it back, as an edit (Ctrl+Z takes it out again) that the
-//: ordinary autosave then saves.
+//: text is already the document's is dropped without a word. One typed over
+//: the text the server still holds (`base` is its `content_hash`) is the newer
+//: by construction, so it goes straight into the editor, as an edit that the
+//: ordinary autosave saves, with Undo in the toast (DX31: a fast reload showed
+//: the older text until a button was pressed). Any other is offered, not
+//: applied: the server has moved on since, and which text wins is the
+//: writer's to say.
 function offerKeptDocEdit(doc) {
   const kept = docKeptDrafts()[doc.id];
   if (!kept) return;
@@ -1422,13 +1427,28 @@ function offerKeptDocEdit(doc) {
     forgetDocEditLocally(doc.id);
     return;
   }
-  toastAction(`Your unsaved changes to “${clipText(kept.title || "Untitled", 40)}” were kept.`, "Put them back", () => {
-    if (!currentDoc || currentDoc.id !== kept.id) return;
+  const put = (title, content) => {
     const box = docSurface();
-    if (!box) return;
-    if (kept.title) $("doc-title").value = kept.title;
-    docReplaceRange(box, 0, docText().length, String(kept.content || ""));
+    if (!currentDoc || currentDoc.id !== kept.id || !box) return false;
+    if (title) $("doc-title").value = title;
+    docReplaceRange(box, 0, docText().length, String(content || ""));
+    return true;
+  };
+  const name = clipText(kept.title || "Untitled", 40);
+  if (kept.base && kept.base === doc.content_hash) {
+    if (!put(kept.title, kept.content)) return;
     markDocDirty();
+    toastAction(`Restored your unsaved changes to \u201c${name}\u201d.`, "Undo", () => {
+      if (!put(doc.title, doc.content)) return;
+      forgetDocEditLocally(doc.id);
+      clearTimeout(docSaveTimer);
+      docDirty = false;
+      $("doc-saved").textContent = "Saved";
+    });
+    return;
+  }
+  toastAction(`Your unsaved changes to \u201c${name}\u201d were kept.`, "Put them back", () => {
+    if (put(kept.title, kept.content)) markDocDirty();
   });
 }
 
@@ -2845,12 +2865,21 @@ const DOC_COMMANDS = [
     run: () => wrapDocSelection("~~", "struck through") },
   { id: "code", icon: "ph:code", label: "Inline code", keys: "Ctrl+E",
     run: () => wrapDocSelection("`") },
-  { id: "h1", icon: "ph:text-h-one", label: "Heading 1", keys: "Ctrl+1",
+  //: `alt` is a second chord for the same row (INBOX 1559): Ctrl+1 to 3 are the
+  //: browser's tab switch, which a page cannot always take, so Ctrl+Alt+1 to 6
+  //: (Google Docs' set) are the ones that work everywhere.
+  { id: "h1", icon: "ph:text-h-one", label: "Heading 1", keys: "Ctrl+1", alt: "Ctrl+Alt+1",
     run: () => applyMarkdown("h1") },
-  { id: "h2", icon: "ph:text-h-two", label: "Heading 2", keys: "Ctrl+2",
+  { id: "h2", icon: "ph:text-h-two", label: "Heading 2", keys: "Ctrl+2", alt: "Ctrl+Alt+2",
     run: () => applyMarkdown("h2") },
-  { id: "h3", icon: "ph:text-h-three", label: "Heading 3", keys: "Ctrl+3",
+  { id: "h3", icon: "ph:text-h-three", label: "Heading 3", keys: "Ctrl+3", alt: "Ctrl+Alt+3",
     run: () => applyMarkdown("h3") },
+  { id: "h4", icon: "ph:text-h-four", label: "Heading 4", keys: "Ctrl+Alt+4",
+    run: () => applyMarkdown("h4") },
+  { id: "h5", icon: "ph:text-h-five", label: "Heading 5", keys: "Ctrl+Alt+5",
+    run: () => applyMarkdown("h5") },
+  { id: "h6", icon: "ph:text-h-six", label: "Heading 6", keys: "Ctrl+Alt+6",
+    run: () => applyMarkdown("h6") },
   { id: "comment", icon: "ph:chat-teardrop-text", label: "Comment on the selection", keys: "Ctrl+/",
     run: () => toggleDocComment(docSurface()) },
   { id: "indent", icon: "ph:text-indent", label: "Indent the line or list item", keys: "Tab", run: null },
@@ -2866,7 +2895,9 @@ const DOC_COMMANDS = [
   { id: "ol", icon: "ph:list-numbers", label: "Numbered list", keys: "Ctrl+Shift+7", run: () => applyMarkdown("ol") },
   { id: "task", icon: "ph:check-square", label: "Task list", keys: "Ctrl+Shift+9", run: () => applyMarkdown("task") },
   { id: "quote", icon: "ph:quotes", label: "Quote", keys: "none", run: () => applyMarkdown("quote") },
-  { id: "link", icon: "ph:link", label: "Link", keys: "none", run: () => applyMarkdown("link") },
+  //: Ctrl+K with a selection makes the link; with none the chord is the palette's
+  //: (`docLinkChord`, INBOX 1559). The row works from the palette either way.
+  { id: "link", icon: "ph:link", label: "Link (Ctrl+K on selected text)", keys: "Ctrl+K", run: () => applyMarkdown("link") },
   //: The insert panels (INBOX 1544): the picker on its three tabs, the equation
   //: editor and the calculator, pressed from here as from the Insert menu. The
   //: chords are bound for the document and every note box (`docCmKeymap.insert`).
@@ -3098,7 +3129,7 @@ function docPaletteCommands() {
   return DOC_COMMANDS.filter((command) => command.run && (!command.code || code) && (!command.prose || !code)).map((command) => ({
     group: "This document",
     label: `${command.icon} ${command.label}`,
-    keys: command.keys === "none" ? "" : command.keys,
+    keys: command.keys === "none" ? "" : (command.alt || command.keys),
     run: command.run,
   }));
 }
@@ -3117,10 +3148,13 @@ function renderDocShortcutSheet(list) {
     keys.className = "shortcut-keys";
     //: One `<kbd>` per key, the shape the hand-written rows above it use, so
     //: a generated row and a written one are the same thing on screen.
-    for (const part of command.keys.split(/\s*\+\s*/)) {
-      const kbd = document.createElement("kbd");
-      kbd.textContent = part;
-      keys.appendChild(kbd);
+    for (const chord of [command.keys, command.alt].filter(Boolean)) {
+      if (chord !== command.keys) keys.append(" or ");
+      for (const part of chord.split(/\s*\+\s*/)) {
+        const kbd = document.createElement("kbd");
+        kbd.textContent = part;
+        keys.appendChild(kbd);
+      }
     }
     const label = document.createElement("span");
     label.textContent = command.label;
@@ -4019,7 +4053,15 @@ function renderDocPreview() {
   docRenderBody(preview, lead ? `# ${title}\n\n${body}` : body);
   //: Named, so a phone can leave it to the head row that already shows it
   //: (10-responsive.css, "The first line under the chrome").
-  if (lead) preview.querySelector(":scope > .md-h1")?.classList.add("doc-preview-title");
+  if (lead) {
+    const head = preview.querySelector(":scope > .md-h1");
+    head?.classList.add("doc-preview-title");
+    //: The contents list was filled while the title looked like any heading;
+    //: filled again without it, it leaves the added title out (DX23).
+    head?.remove();
+    mdFillTocs(preview);
+    if (head) preview.prepend(head);
+  }
   if (fm) {
     //: After the title, which is the document's name rather than part of its
     //: text, and before the first thing its author wrote.
@@ -9578,6 +9620,8 @@ docBoxEl().addEventListener("keydown", (event) => {
   // Ctrl+1/2/3 headings and Ctrl+E inline code, the Notion / Typora /
   // Word set, so the hand does not leave the keyboard for the strip.
   else if (key === "1" || key === "2" || key === "3") { event.preventDefault(); applyMarkdown(`h${key}`); }
+  else if (event.altKey && /^Digit[1-6]$/.test(event.code)) { event.preventDefault(); applyMarkdown(`h${event.code.slice(-1)}`); }
+  else if (key === "k" && docCmKeymap.link(docSurface())) event.preventDefault();
   else if (key === "e") { event.preventDefault(); wrapDocSelection("`"); }
   // The browser's own Ctrl+F can't search a textarea's content at all, it
   // only sees page DOM text, and a textarea's text is its *value*, not DOM
@@ -10738,8 +10782,9 @@ const DOC_PROSE_RULES = [
     id: "space-before-punctuation",
     //: Not before `![[embed]]`: that `!` is the embed's own, not punctuation.
     //: Nor before a dotfile or an extension (" .gitignore", " .env"): the dot
-    //: opens a name there (INBOX 1407).
-    test: /\s+([,.;:!?])(?!\[\[)(?!(?<=\.)[A-Za-z0-9])/g,
+    //: opens a name there (INBOX 1407). Nor the `!` of an image, `![alt](src)`
+    //: (audit 1102 DX19): markdown syntax, not punctuation.
+    test: /\s+([,.;:!?])(?!\[\[)(?!(?<=!)\[)(?!(?<=\.)[A-Za-z0-9])/g,
     message: "A space before punctuation",
     fix: (match) => match.trim(),
   },
@@ -11053,7 +11098,7 @@ function docSpellRoot(word) {
 //: meant that neighbour.
 const DOC_TWO_EDIT_FLOOR = 2;
 
-function docSpellGuesses(word, limit = DOC_SUGGEST_MAX) {
+function docSpellGuesses(word, limit = DOC_SUGGEST_MAX, quick = false) {
   if (!docWordlist) return [];
   const lower = docSpellRoot(word);
   const near = [];
@@ -11064,7 +11109,7 @@ function docSpellGuesses(word, limit = DOC_SUGGEST_MAX) {
   //: Two edits only when one found next to nothing. It costs the square of
   //: the work, and a word with any one-edit neighbour almost always meant one
   //: of those.
-  if (near.length < DOC_TWO_EDIT_FLOOR) {
+  if (!quick && near.length < DOC_TWO_EDIT_FLOOR) {
     const seen = new Set(near.map(([candidate]) => candidate));
     //: Two edits out, everything is equally weak evidence, so they all share
     //: one rank below every one-edit answer.
@@ -11094,6 +11139,17 @@ function docSpellGuesses(word, limit = DOC_SUGGEST_MAX) {
   if (contraction) words.unshift(contraction);
   return words.slice(0, limit);
 }
+
+//: **A misspelling's row names its nearest word** (audit 1102 DX19): "libary"
+//: and "tomorow" showed only "not in the dictionary" until the row was opened.
+//: One edit only (`quick`), cached on the finding, for the rows drawn; the menu
+//: still offers every candidate. Empty when the dictionary was sure (the row
+//: then has its own answer) or one edit finds nothing.
+docSpellGuesses.hint = (finding) => {
+  if (finding.rule !== "spelling" || finding.replacement !== null) return "";
+  finding.hint ??= docMatchCase(finding.text, docSpellGuesses(finding.text, 1, true)[0] || "");
+  return finding.hint;
+};
 
 //: **"whats" is "what's" with the apostrophe left out** (the owner,
 //: 2026-10-19: "this should have been picked up as what's"). The word list
@@ -14290,13 +14346,14 @@ function docFindingLine(finding, variant = "row") {
   words.textContent = docFindingLabel(finding);
   const why = document.createElement("span");
   why.className = "doc-finding-why";
-  why.textContent = finding.message;
+  const hint = variant === "row" ? docSpellGuesses.hint(finding) : "";
+  why.textContent = hint ? `Did you mean \u201c${hint}\u201d?` : finding.message;
   //: Both halves ellipsise in a narrow panel (INBOX 426 b), so each carries
   //: its whole text as a title: the nearest title is the one the pointer
   //: shows, so these win over the row button's "show me this" hint only
   //: where the words themselves are under it.
   words.title = words.textContent;
-  why.title = finding.message;
+  why.title = why.textContent;
   line.append(dot, words, why);
   return line;
 }
@@ -15688,6 +15745,11 @@ function docProseChord(run) {
 //: the shortcut sheet lists it; `apply(kind)` says how the caller runs a kind.
 docCmKeymap.insert = (apply) => [["Mod-;", "emoji"], ["Mod-Shift-;", "icon"], ["Mod-'", "symbol"], ["Mod-Shift-'", "calculator"]].map(([key, kind]) => ({ key, run: () => apply(kind) }));
 
+//: **Ctrl+K with a selection makes a link** (INBOX 1559). True when it did;
+//: false (no selection, or a code file, which keeps its own Ctrl+K chord)
+//: hands the key on to the command palette.
+docCmKeymap.link = (box) => !!box && docFileType().previewable && box.selectionStart !== box.selectionEnd && (applyMarkdown("link"), true);
+
 function docCmKeymap(CM) {
   const surface = () => docSurface();
   return [
@@ -15695,6 +15757,8 @@ function docCmKeymap(CM) {
     //: anything that would treat a row as a line of text; each declines
     //: (returns false) everywhere that is not a Live table cell.
     { key: "Enter", run: (view) => docTableKeyMove(view, "Enter") },
+    //: And a fresh remark's Enter steps past its closing marker (DX24).
+    { key: "Enter", run: (view) => docAnnotateSelection.end(view) },
     { key: "Mod-Enter", run: (view) => docTableCtrlEnter(view) },
     { key: "ArrowDown", run: (view) => docTableKeyMove(view, "ArrowDown") },
     { key: "ArrowUp", run: (view) => docTableKeyMove(view, "ArrowUp") },
@@ -15714,6 +15778,8 @@ function docCmKeymap(CM) {
         return false;
       },
     },
+    //: Escape inside a remark leaves it, past the closing marker (DX24).
+    { key: "Escape", run: (view) => docAnnotateSelection.end(view, true) },
     //: Tab indents, in prose as well as code, with Escape-then-Tab as the way
     //: out. `docTabEscapes` above carries the whole reason.
     {
@@ -15752,6 +15818,11 @@ function docCmKeymap(CM) {
     { key: "Mod-1", run: () => docProseChord(() => { applyMarkdown("h1"); }) },
     { key: "Mod-2", run: () => docProseChord(() => { applyMarkdown("h2"); }) },
     { key: "Mod-3", run: () => docProseChord(() => { applyMarkdown("h3"); }) },
+    //: Ctrl+Alt+1 to 6 (INBOX 1559): the browser keeps Ctrl+1 to 3 for its tabs.
+    //: Ctrl+K on selected text makes a link; with none it declines, and the
+    //: app's palette answers.
+    ...[1, 2, 3, 4, 5, 6].map((n) => ({ key: `Mod-Alt-${n}`, run: () => docProseChord(() => { applyMarkdown(`h${n}`); }) })),
+    { key: "Mod-k", run: () => docCmKeymap.link(docSurface()) },
     //: Google Docs' list chords; the base key is read, so Shift's `*` is 8.
     { key: "Mod-Shift-8", run: () => docProseChord(() => { applyMarkdown("ul"); }) },
     { key: "Mod-Shift-7", run: () => docProseChord(() => { applyMarkdown("ol"); }) },

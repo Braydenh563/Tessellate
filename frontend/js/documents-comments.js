@@ -431,6 +431,27 @@
     finishMarkdownEdit(surface, boxId);
   }
 
+  // DOC-REMARK-END-BEGIN
+  //: **Enter ends a remark** (audit 1102 DX24). With the caret straight before
+  //: the closing `%%` of a remark opened on this line, Enter moved nothing but
+  //: put a newline in the file (`%%Check this word` then `%%`). It now steps
+  //: past the marker instead; Escape does so from anywhere inside the remark
+  //: (`anywhere`). Anywhere else, and in the middle of a remark, the key is the
+  //: editor's own, so a deliberate two-line remark is still typed with Enter.
+  docAnnotateSelection.end = (view, anywhere = false) => {
+    const { state } = view;
+    const caret = state.selection.main;
+    if (!caret.empty) return false;
+    const line = state.doc.lineAt(caret.head);
+    const at = caret.head - line.from;
+    if ((line.text.slice(0, at).match(/%%/g) || []).length % 2 === 0) return false;
+    const close = anywhere ? line.text.indexOf("%%", at) : (line.text.startsWith("%%", at) ? at : -1);
+    if (close < 0) return false;
+    view.dispatch({ selection: { anchor: line.from + close + 2 }, scrollIntoView: true });
+    return true;
+  };
+  // DOC-REMARK-END-END
+
   //: The file's whole surface: what documents.js, documents-cm.js and documents-prose.js call.
   Object.assign(window, { docCommentStrip, docCommentFootnotes, renderDocComments, docShowComment, docAnnotateSelection });
 })();

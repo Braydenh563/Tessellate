@@ -1024,7 +1024,7 @@ function personaOptions() {
 function togglePersonaPrompt() {
   const panel = $("persona-peek-panel");
   const showing = panel.classList.toggle("hidden");
-  $("persona-peek").setAttribute("aria-expanded", String(!showing));
+  $("persona-peek").setAttribute("aria-expanded", !showing);
 }
 
 // A running total for the whole conversation. Per-message counts can't tell
@@ -1354,8 +1354,8 @@ function aiWritingTrace() {
   nodes.forEach(([cx, cy], index) => {
     const dot = document.createElementNS(NS, "circle");
     dot.setAttribute("class", `ai-writing-node ai-writing-node-${index + 1}`);
-    dot.setAttribute("cx", String(cx));
-    dot.setAttribute("cy", String(cy));
+    dot.setAttribute("cx", cx);
+    dot.setAttribute("cy", cy);
     dot.setAttribute("r", "2");
     svg.append(dot);
   });
