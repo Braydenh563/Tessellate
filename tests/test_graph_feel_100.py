@@ -328,7 +328,9 @@ def test_a_dropped_note_settles_near_where_it_was_put_and_is_never_pinned():
     assert dist(out["freed"], out["end"]) > 0.5, out
     worker = (ROOT / "frontend" / "js" / "graph-worker.js").read_text(encoding="utf-8")
     release = worker[worker.index("if (!message.keep) {\n          node.fx = null;") :][:200]
-    assert "simulation.alpha(Math.min(Math.max(simulation.alpha(), RELEASE_ALPHA_MIN), RELEASE_ALPHA))" in release
+    # The release heat is the drag's reach's share of it since INBOX 1531
+    # (`nudgeHeat`, the whole of it from `DRAG_FULL_DISTANCE`, as this drop is).
+    assert "simulation.alpha(Math.min(Math.max(simulation.alpha(), RELEASE_ALPHA_MIN), RELEASE_ALPHA) * nudgeHeat())" in release
 
 
 def _node_args(script: str, *args: str) -> dict:
