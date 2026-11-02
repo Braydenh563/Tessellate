@@ -40,7 +40,7 @@ python-dotenv>=1.2.4,<2.0
 # `user_now`). This is that fallback's actual cause on Windows, not a bad
 # zone name. tzdata is pure data, ~500KB, and safe to install unconditionally
 # on every platform (Python prefers the system database when one exists).
-tzdata>=2026.5
+tzdata>=2026.6
 
 # AI (Phase 2)
 requests>=2.34.2,<3.0      # talks to the local Ollama REST API
