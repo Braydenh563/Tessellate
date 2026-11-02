@@ -5,7 +5,7 @@ max-continues: 60
 max-idle-minutes: 60
 finish-up: 85%
 started: 2026-11-02 04:40Z
-tier: max (three agents at once, one Opus); never Fable; owner away, all permissions given 2026-11-02
+tier: max (four agents at once, the owner 2026-11-02q; one Opus); never Fable; owner away, all permissions given 2026-11-02
 
 - [x] Merge fix1525 (list1525 review findings + 5 CI reds) as it reports; gate, serial targeted tests, push; PR 212 CI green
 - [x] Merge gods2 (row 36: routes_whiteboard.py, ai/tools/__init__.py splits); gate, push
@@ -24,7 +24,7 @@ tier: max (three agents at once, one Opus); never Fable; owner away, all permiss
 ## 2026-11-02q, the owner: "Finish all the audit stuff and fable findings" (and small plan rows, unslop pass)
 - [~] Agents a30a (1546 P1), a30b (small plan rows), a30d (small OPEN rows from a30c): merge, gate, push as each reports
 - [ ] Audit 1028 board UI batch (Sonnet): U12 U14 U15 U16 U17 U21 U22 U23 U24 U25 U26 U27 U28 U30 B12
-- [ ] Audit 1028 chat batch plus Fable (Sonnet): E14 E16 E20 E23 E33 E38 E50 E57, Fable F13 F14 F15 rest, Z57 Z58 Z70 (fable-fix-1030.md, composer-z-1030.md)
+- [~] Audit 1028 chat batch plus Fable (a30e) (Sonnet): E14 E16 E20 E23 E33 E38 E50 E57, Fable F13 F14 F15 rest, Z57 Z58 Z70 (fable-fix-1030.md, composer-z-1030.md)
 - [ ] Audit 1028 perf batch (Sonnet high, measure before and after): B3 B4 U18 U19 U20 D18 E34 D12 D22
 - [ ] Audit 1028 docs batch: D26 D30 D33 with DX24 threads (audit-1102-docs.md); E48 branches (design call, judge)
 - [ ] Audit 1028 lows and infos (71 + 12, Haiku verify then Sonnet), 1029 rest, 1031 last row
