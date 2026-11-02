@@ -59,7 +59,7 @@ def test_a_lasting_toast_steps_aside_for_the_buttons_of_the_section_in_use():
     body = js[js.index("function toastYield(target = document.activeElement) {"):]
     body = body[: body.index("\n}\n")]
     assert 'const area = target.closest("form, section, [role=dialog]");' in body
-    assert 'area?.querySelectorAll("button")' in body
+    assert 'area?.querySelectorAll("button:not(.panel-grip)")' in body  # INBOX 1548: not the resize grip
     assert '(area?.role == "dialog" || !el.toastTimer) && work.some(' in body
     stack = js[js.index("function toastStack(box, change) {"):]
     assert 'if (box.id === "toast-box") toastYield();' in stack[: stack.index("\n}\n")]

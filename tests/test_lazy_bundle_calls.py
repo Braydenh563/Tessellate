@@ -266,6 +266,8 @@ REACHED_AFTER_LOAD = {
     "startUtilityTimer": "utilities, called in the .then of ensureModule('utilities') on the palette's timer rows",
     "openCalculator": "replyKit, called in the .then of ensureModule('replyKit') on the palette's Calculator row",
     "startStopwatch": "utilities, called in the .then of ensureModule('utilities') on the palette's stopwatch row",
+    "openClockPanel": "utilities, called in the .then of ensureModule('utilities') on the timer, stopwatch and alarm rows and the palette's typed timer",
+    "utilityOps": "utilities, used in the .then of ensureModule('utilities') by the dashboard's Focus widget (focusRow)",
     "countSelection": "utilities, called in the .then of ensureModule('utilities') on the palette's Count words row",
     #: Brief 47: the findAnything shortcut closes the box only while
     #: #finder-overlay is shown, and only openFinder (the same bundle) shows it.

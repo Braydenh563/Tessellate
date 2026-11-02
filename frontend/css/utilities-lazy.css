@@ -1,7 +1,8 @@
 /* utilities-lazy.css: the Statistics page and the dashboard's This week card
-   (statistics.js), loaded with that bundle (`LAZY_MODULES.statistics`), not
-   at boot: the boot CSS budget is full (tests/test_boot_budget.py). The
-   palette's timer chip is a plain `.status-item` and needs nothing here. */
+   (statistics.js) and the Clock panel (utility-tools.js, at the foot), loaded
+   with those bundles (`LAZY_MODULES.statistics`, `.utilities`), not at boot:
+   the boot CSS budget is full (tests/test_boot_budget.py). The status bar's
+   timer chip is a plain `.status-item` and needs nothing here. */
 
 /* Wider and taller than a settings dialog, with the body as the scroll pane
    so the title and its close never scroll away (INBOX 1319, the owner: "the
@@ -325,4 +326,138 @@ button.stats-tile.is-link:is(:focus-visible, :has(:focus-visible)) {
   margin: var(--space-2) 0 0;
   padding-inline-start: var(--space-5);
   font-size: var(--text-sm);
+}
+
+/* **The Clock panel** (`openClockPanel`, utility-tools.js; INBOX 1551): the
+   corner sheet's card (a movable, modeless panel), a tab strip over Timer,
+   Stopwatch and Alarm, then the Running list of every clock in the status
+   bar's store. The list is the card's scroll box, so the strip and the tab's
+   controls stay put when many clocks run. */
+.sheet-card.clock-card {
+  max-height: min(34rem, 80dvh);
+  overflow: hidden;
+}
+
+.clock-pane {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.clock-presets,
+.clock-length {
+  flex-wrap: wrap;
+}
+
+.clock-length > input[type="text"] {
+  flex: 1 1 10rem;
+  min-width: 0;
+}
+
+.clock-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.clock-note {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+.clock-note:empty {
+  display: none;
+}
+
+.clock-running {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-height: 0;
+  flex: 1 1 auto;
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--divider);
+}
+
+.clock-heading {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.clock-empty {
+  margin: 0;
+}
+
+.clock-list {
+  list-style: none;
+  margin: 0;
+  padding: var(--space-1);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* INBOX 1553: the lock card's list of timers and reminders (utility-tools.js, `paintLock`),
+   under the Unlock button; only while the switch in Settings, Account is on. */
+.lock-notices {
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-sm);
+  text-align: center;
+}
+.lock-notices li {
+  overflow-wrap: anywhere;
+}
+
+.clock-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+}
+
+.clock-row-top {
+  flex-wrap: nowrap;
+}
+
+.clock-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clock-time {
+  font-size: var(--text-h3);
+  font-variant-numeric: tabular-nums;
+}
+
+.clock-row.is-paused .clock-time {
+  opacity: 0.6;
+}
+
+.clock-laps {
+  margin: 0;
+  padding-inline-start: 0;
+  list-style: none;
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  max-height: min(6rem, 20dvh);
+  overflow-y: auto;
+}
+
+/* Above the status bar, not over it: the corner sheet's card sits flush with
+   the window's foot, and the Clock is a panel that stays up while the app is
+   used, so it must not cover the bar's chips (the timer chip is one). */
+@media (min-width: 600px) {
+  .sheet-overlay[data-sheet="clock"] {
+    padding-bottom: var(--status-bar-h);
+  }
 }

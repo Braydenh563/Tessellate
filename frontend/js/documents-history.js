@@ -452,6 +452,7 @@
       docHistoryFilter = button.dataset.historyFilter || "all";
       for (const other of document.querySelectorAll("#doc-history-filter [data-history-filter]")) {
         other.setAttribute("aria-pressed", other === button ? "true" : "false");
+        other.classList.toggle("active", other === button);
       }
       renderDocHistoryList();
     });

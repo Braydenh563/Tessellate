@@ -1136,17 +1136,24 @@ const POPUP_TOOLS = [
   },
   {
     id: "timer", name: "Start a timer", icon: "ph:timer", group: "Plan & focus",
-    keywords: "timer countdown pomodoro alarm",
-    about: "25 minutes on the status bar, or type timer 10 minutes.",
+    keywords: "timer countdown pomodoro",
+    about: "Opens the Clock.",
     keys: "Ctrl+K", where: "Start a timer",
-    guide: "timer", open: () => ensureModule("utilities").then(() => startUtilityTimer(25)),
+    guide: "timer", open: () => ensureModule("utilities").then(() => openClockPanel("timer")),
   },
   {
     id: "stopwatch", name: "Start a stopwatch", icon: "ph:timer", group: "Plan & focus",
     keywords: "stopwatch count up",
-    about: "Counts up on the status bar.",
+    about: "Opens the Clock.",
     keys: "Ctrl+K", where: "Start a stopwatch",
-    guide: "timer", open: () => ensureModule("utilities").then(() => startStopwatch()),
+    guide: "timer", open: () => ensureModule("utilities").then(() => openClockPanel("stopwatch")),
+  },
+  {
+    id: "alarm", name: "Set an alarm", icon: "ph:alarm", group: "Plan & focus",
+    keywords: "alarm",
+    about: "Opens the Clock.",
+    keys: "Ctrl+K", where: "Set an alarm",
+    guide: "timer", open: () => ensureModule("utilities").then(() => openClockPanel("alarm")),
   },
 ];
 

@@ -1265,7 +1265,7 @@
            Two choices, so it is the app's `.seg` rather than a select. -->
       <div class="doc-history-bar">
         <div class="seg" id="doc-history-filter" role="group" aria-label="Which versions to show">
-          <button type="button" data-history-filter="all" aria-pressed="true"
+          <button type="button" class="active" data-history-filter="all" aria-pressed="true"
             title="Every version this document has had">All</button>
           <button type="button" data-history-filter="named" aria-pressed="false"
             title="Only the versions you named">Named</button>
@@ -14283,6 +14283,16 @@ Link to another note with [[its first few words]]."></textarea>
                 <option value="240">4 hours</option>
                 <option value="720">12 hours</option>
               </select>
+
+              <!-- INBOX 1553: kept on this device (`lock-notices`), listed by
+                   utility-tools.js on the lock card; wired in settings-rows.js. -->
+              <label class="setting-check" id="lock-notices-row" data-synonyms="lock screen timers reminders notifications show hide privacy">
+                <input type="checkbox" id="lock-notices-toggle">
+                <span>
+                  Show timers and reminders on the lock screen
+                  <small class="muted">Off by default. The lock screen lists your timers and the next few reminders by title and time, except a reminder about a private note; never the text of a note. Kept on this device.</small>
+                </span>
+              </label>
 
               <div class="row">
                 <button id="account-lock-all" class="ghost small">

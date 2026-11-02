@@ -317,8 +317,11 @@ function utilityPaletteRows(lowered) {
       rows.push({
         group: "Do it",
         label: `ph:timer Start a timer: ${amount} ${PALETTE_UNITS[unit] === 60 ? "hour" : PALETTE_UNITS[unit] ? "second" : "minute"}${amount === 1 ? "" : "s"}`,
-        about: "Counts down on the status bar and says when the time is up. Press it to stop.",
-        run: () => ensureModule("utilities").then(() => startUtilityTimer(minutes)),
+        about: "Starts it and opens the Clock.",
+        run: () => ensureModule("utilities").then(() => {
+          startUtilityTimer(minutes);
+          openClockPanel("timer");
+        }),
       });
     }
   }

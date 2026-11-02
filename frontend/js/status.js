@@ -1009,7 +1009,8 @@ function toastYield(target = document.activeElement) {
   const wide = focused.width > innerWidth / 2 && focused.height > innerHeight / 2;
   //: Skipped content-visibility buttons are not drawn; measuring one lays it out alone (INBOX 1415).
   const area = target.closest("form, section, [role=dialog]");
-  const work = [...(area?.querySelectorAll("button") || [])].map((el) => el.checkVisibility({ contentVisibilityAuto: true }) && el.getBoundingClientRect());
+  //: Not the panel's resize grip (INBOX 1548): it is a button in the dialog's bottom-right corner, where every toast lands, so each one was drawn at 0.12 over Settings as if it were hiding a control.
+  const work = [...(area?.querySelectorAll("button:not(.panel-grip)") || [])].map((el) => el.checkVisibility({ contentVisibilityAuto: true }) && el.getBoundingClientRect());
   //: In a dialog a timed toast steps aside too: the pointer resting on it
   //: holds its timer, so the last import's Undo sat on the next preview's
   //: Import for as long as the press was tried (E2E import, 2026-11-01).

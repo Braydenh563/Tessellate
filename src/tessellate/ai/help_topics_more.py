@@ -1139,23 +1139,33 @@ MORE_TOPICS: list[dict] = [
         "id": "timer",
         "keywords": (
             "timer", "countdown", "stopwatch", "pomodoro", "set a timer", "start a timer",
-            "stop the timer", "time how long",
+            "stop the timer", "time how long", "clock", "alarm", "set an alarm", "laps", "pause a timer",
+            "lock screen timers", "show reminders on the lock screen",
         ),
         "body": (
-            "Type timer in the command palette (Ctrl+K; its ? at the foot lists "
-            "the timer, the stopwatch and Count words) for Start a timer (25 "
-            "minutes) and Start a stopwatch, or type a length, such as timer 10 "
-            "minutes, 90s timer or countdown 2h, and press Enter. The time runs "
-            "on the status bar (on a phone the bar comes back while it runs); "
-            "press that timer chip in the status bar to stop the one it shows (Undo brings it back). Several "
-            "timers can run at once (the chip shows the one ending first), and they "
-            "come back after a reload. When a timer "
-            "runs out it says so in a message and a notification. The "
-            "Dashboard's Focus timer widget is a separate timer: a ring with "
-            "the time, lengths of 5, 15, 25 or 50 minutes (or minus and plus "
-            "for any other), one Start that becomes Pause, a chime and a "
-            "notification at the end, Breaks for a five-minute break after "
-            "each session, and the minutes focused today."
+            "The Clock is one window for timers, a stopwatch and alarms. Open it "
+            "from the command palette (Ctrl+K): Start a timer, Start a "
+            "stopwatch or Set an alarm, or from the \"/\" menu in Chat, or by "
+            "pressing the timer chip in the status bar, which opens the panel "
+            "and never stops the clock. Type a length in the palette, such as "
+            "timer 10 minutes, 90s timer or countdown 2h, and Enter starts it. "
+            "Drag its title bar to move it or its corner to resize it. "
+            "Timer: press 5, 10, 15, 25 or 45 minutes, or type a length (10, "
+            "90s, 1h30m or 1:30) and press Start. Several timers can run at "
+            "once, each with Pause, Resume, Reset and Stop in the Running list "
+            "(a stopped one comes back with Undo), and they survive a reload. "
+            "When one runs out it says so, notifies and chimes (Sound at the "
+            "end turns the chime off). Stopwatch: Start counts up, Lap writes "
+            "down the time so far and the lap, Pause holds it and Reset puts it "
+            "back to its start. Alarm: pick a time and a label and press Set "
+            "alarm; it makes an ordinary reminder, today or tomorrow. The "
+            "Dashboard's Focus timer is a separate ring timer: 5, 15, 25 or 50 "
+            "minutes (or minus and plus), a chime at the end, Breaks, and the "
+            "minutes focused today. While the app is locked nothing is "
+            "announced; a timer that ran out speaks after you unlock. Settings, "
+            "Account, Show timers and reminders on the lock screen (off by "
+            "default, this device) lists timers and the next few reminders by "
+            "title and time, except private notes', never a note's text."
         ),
         "badge": {"label": "Dashboard", "tab": "dashboard"},
     },
@@ -2538,7 +2548,7 @@ TOPIC_META: dict[str, dict] = {
     "usage-ledger": {"title": "What you use", "path": "Settings, General, What you use", "target": "usage-box"},
     "statistics": {"title": "Statistics", "path": "Dashboard, Activity heatmap, Statistics"},
     "chat-private": {"title": "Private chat", "path": "Chat, the gear under the message box, Private chat"},
-    "timer": {"title": "Timer and stopwatch", "path": "Command palette, timer"},
+    "timer": {"title": "Clock: timer, stopwatch and alarm", "path": "Command palette, Start a timer; the status bar's timer"},
     "calculator": {"title": "Calculator and equations", "path": "Command palette, Calculator and equations; Alt+= in a text box; /calc in Chat"},
     "manual": {"title": "The manual", "path": "Settings, Help, Open the manual"},
     "first-steps": {"title": "First steps and the sample notebook", "path": "Dashboard, Get started"},

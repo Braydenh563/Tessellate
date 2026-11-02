@@ -1595,7 +1595,7 @@ const LAZY_MODULES = {
   quickAdd: ["/css/quickadd-lazy.css", "/js/quickadd.js"],
   //: The Statistics page and This week (statistics.js's header).
   statistics: ["/css/utilities-lazy.css", "/js/ask-chart.js", "/js/statistics.js"],
-  utilities: ["/js/utility-tools.js"],
+  utilities: ["/css/utilities-lazy.css", "/js/utility-tools.js"],
   //: Live captions (captions.js's header; Brief 82).
   captions: ["/css/captions-lazy.css", "/js/captions.js"],
   //: Translate this, the offline translator's sheet (translate.js's header).

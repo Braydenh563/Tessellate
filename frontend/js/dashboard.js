@@ -3343,7 +3343,9 @@ function paintFocusTimer(root = document) {
   const toggle = $("focus-timer-toggle");
   if (toggle) setLabel(toggle, focusTimer.running ? "ph:pause Pause" : focusTimer.remaining ? "ph:play Resume" : "ph:play Start");
   for (const button of root.querySelectorAll(".focus-presets-seg button")) {
-    button.setAttribute("aria-pressed", String(focusTimer.mode === "focus" && Number(button.dataset.minutes) * 60 === focusTimer.focusTotal));
+    const chosen = focusTimer.mode === "focus" && Number(button.dataset.minutes) * 60 === focusTimer.focusTotal;
+    button.setAttribute("aria-pressed", String(chosen));
+    button.classList.toggle("active", chosen);
   }
   const step = $("focus-step-value");
   if (step) step.textContent = `${Math.round(focusTimer.focusTotal / 60)} min`;
@@ -3525,6 +3527,9 @@ async function renderFocusTimerWidget(body) {
   today.id = "focus-today";
   today.className = "muted focus-today";
   body.appendChild(today);
+
+  //: The Clock's line and button (utility-tools.js, INBOX 1551), drawn when that module is in.
+  ensureModule("utilities").then(() => utilityOps.focusRow(body));
 
   paintFocusTimer(body);
 }
