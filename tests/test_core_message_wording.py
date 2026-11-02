@@ -86,11 +86,11 @@ SOURCES: tuple[Source, ...] = (
         functions=(
             "validate_attachment_filename",
             "rename_attachment",
-            "rename_tags",
             "rename_category",
             "delete_category",
         ),
     ),
+    Source("repo/tags.py", raises=("ValueError",), functions=("rename",)),
     Source("entry/tidy.py", raises=("ValueError", "LookupError"), functions=("set_auto", "undo")),
     Source("ai/tools/categories.py", raises=("ToolError",)),
     Source(
@@ -330,7 +330,7 @@ REVIEWED_COMPUTED: dict[tuple[str, str], str] = {
     ("routes_models.py", "reason"): "core/security.py check_backend_url",
     ("routes_models.py", "info['error']"): "ai/model_cards.py inspect_model_name",
     ("routes_settings.py", "importer.INSTALL_HINT"): "entry/importer.py INSTALL_HINT",
-    ("routes_tags.py", "str(exc)"): "ValueError from entry/manager.py rename_tags",
+    ("routes_tags.py", "str(exc)"): "ValueError from repo/tags.py rename",
     ("routes_tidy.py", "str(exc)"): "ValueError from entry/tidy.py set_auto and LookupError from entry/tidy.py undo",
     ("routes_voice.py", "voice.INSTALL_HINT"): "ai/voice.py INSTALL_HINT",
     ("routes_voice.py", "over_limit_detail"): "the two callers pass literals, which collect() checks",

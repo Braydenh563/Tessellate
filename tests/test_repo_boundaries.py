@@ -21,6 +21,7 @@ MOVED = {
     "bookmarks": {"Bookmark", "EntryBookmark", "DocumentBookmark"},
     "relation_types": {"RelationType"},
     "reminders": {"Reminder"},
+    "properties": {"EntryProperty"},
     "documents": {"Document", "DocumentLink", "DocumentRevision", "DocumentAiEdit"},
 }
 
@@ -34,8 +35,12 @@ CROSS_RESOURCE = {"routes_spaces.py"}
 #: and two chat readers): 843; documents' history and AI-edit log and the
 #: document list, contents and write verbs to repo/documents.py: 811; the
 #: other routers' reads of Document and DocumentLink (chat, graph, notes,
-#: library, timeline, bench, mentions) to repo/documents.py: 767.
-ORM_CALLS_CAP = 767
+#: library, timeline, bench, mentions) to repo/documents.py: 767; the chat's
+#: tag read (notes sharing a rare tag) to repo/tags.py: 765. Tags are a JSON
+#: list in `Entry.tags`, not a table, so they have no model in `MOVED`; the
+#: properties index reads (the graph's note types, the timeline's meeting dates
+#: and their join) to repo/properties.py: 757.
+ORM_CALLS_CAP = 757
 
 _ORM = re.compile(
     r"\b(?:session|db)\.(?:query|get|execute|scalar|scalars|add|add_all|delete|merge)\("

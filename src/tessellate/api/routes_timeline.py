@@ -33,7 +33,8 @@ from sqlalchemy import Select, String, and_, func, or_, select
 from sqlalchemy.orm import Session, aliased
 
 from tessellate.core import cjk
-from tessellate.core.database import Entry, EntryDate, EntryProperty, Space, utcnow
+from tessellate.core.database import Entry, EntryDate, Space, utcnow
+from tessellate.repo import properties as properties_repo
 from tessellate.repo import documents as documents_repo
 from tessellate.repo import reminders as reminder_repo
 from tessellate.repo.documents import Document
@@ -294,29 +295,10 @@ def _meeting_dates(session: Session, entry_ids: list[int]) -> dict[int, _Meeting
     """Each meeting's own date, from the property index (two queries for
     the page): a note typed Meeting whose `date:` reads as one. The value is
     the writer's wall clock, as a mention's is (UX-02)."""
-    if not entry_ids:
-        return {}
-    typed = set(
-        session.scalars(
-            select(EntryProperty.entry_id).where(
-                EntryProperty.entry_id.in_(entry_ids),
-                EntryProperty.key == "type",
-                func.lower(EntryProperty.value) == "meeting",
-            )
-        )
-    )
-    if not typed:
-        return {}
-    found: dict[int, _MeetingAt] = {}
-    for row in session.scalars(
-        select(EntryProperty).where(
-            EntryProperty.entry_id.in_(typed),
-            EntryProperty.key == "date",
-            EntryProperty.date.is_not(None),
-        )
-    ):
-        found.setdefault(row.entry_id, _MeetingAt(row.date, len(row.value.strip()) > 10))
-    return found
+    return {
+        entry_id: _MeetingAt(at, len(value.strip()) > 10)
+        for entry_id, (at, value) in properties_repo.meeting_dates(session, entry_ids).items()
+    }
 
 
 def _place_documents(documents_found: list, placed: list[dict], scale: str, spaces: dict) -> None:
@@ -716,23 +698,10 @@ def _with_placement(query: Select) -> tuple[Select, object, object]:
         .group_by(EntryDate.entry_id)
         .subquery("first_mention")
     )
-    meetings = select(EntryProperty.entry_id).where(
-        EntryProperty.key == "type", func.lower(EntryProperty.value) == "meeting"
-    )
-    own_pick = (
-        select(EntryProperty.entry_id.label("entry_id"), func.min(EntryProperty.id).label("pick"))
-        .where(EntryProperty.key == "date", EntryProperty.date.is_not(None), EntryProperty.entry_id.in_(meetings))
-        .group_by(EntryProperty.entry_id)
-        .subquery("own_date")
-    )
-    mention, own = aliased(EntryDate), aliased(EntryProperty)
-    joined = (
-        query.outerjoin(first_pick, first_pick.c.entry_id == Entry.id)
-        .outerjoin(mention, mention.id == first_pick.c.pick)
-        .outerjoin(own_pick, own_pick.c.entry_id == Entry.id)
-        .outerjoin(own, own.id == own_pick.c.pick)
-    )
-    return joined, mention.at, own.date
+    mention = aliased(EntryDate)
+    joined = query.outerjoin(first_pick, first_pick.c.entry_id == Entry.id).outerjoin(mention, mention.id == first_pick.c.pick)
+    joined, own_date = properties_repo.join_meeting_date(joined, Entry.id)
+    return joined, mention.at, own_date
 
 
 def _ranged_entries(query: Select, in_range, asked: tuple, since, until, tz: int, also: bool, first) -> Select:

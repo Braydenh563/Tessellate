@@ -21,6 +21,7 @@ from tessellate.api.chat_attach import _MEDIA_REF, _attached_boards, _attachment
 from tessellate.core import deps
 from tessellate.core.database import Category, Entry, EntryLink, like_escape, LIKE_ESCAPE, MediaUpload
 from tessellate.repo import documents as documents_repo
+from tessellate.repo import tags as tags_repo
 from tessellate.entry import manager
 from tessellate.search import engine, search_manager
 
@@ -99,13 +100,8 @@ def _with_neighbours(session: Session, question: str, entries: list, scope: str 
         return _with_open(session, question, entries)
     if not entries or scope or len(entries) > NEIGHBOUR_ROOM or not neighbours.reads_whole(question):
         return entries
-    rows = session.execute(
-        select(Entry.id, Entry.tags)
-        .where(Entry.is_deleted == False, Entry.is_private == False, Entry.is_board == False, Entry.tags != "[]")  # noqa: E712
-        .order_by(Entry.created_at.desc())
-        .limit(2000)
-    ).all()
-    chosen = neighbours.pick([e.id for e in entries[:NEIGHBOUR_SEEDS]], [(i, manager.tags_from_json(t)) for i, t in rows])
+    rows = tags_repo.tagged(session, limit=2000)
+    chosen = neighbours.pick([e.id for e in entries[:NEIGHBOUR_SEEDS]], rows)
     have = {e.id for e in entries}
     extra = [session.get(Entry, i) for i in chosen if i not in have]
     return entries + [e for e in extra if e is not None]
@@ -119,7 +115,7 @@ def _with_open(session: Session, question: str, entries: list) -> list:
     clauses = [Entry.content.like("%- [ ]%"), Entry.content.like("%still to %"), Entry.content.like("%need to %")]
     if re.search(r"\b(buy|shop|get)\b", question, re.I):
         shops = ("grocer", "shopping", "shop list")
-        clauses += [func.lower(Entry.tags).like(f"%{like_escape(w)}%", escape=LIKE_ESCAPE) for w in shops]
+        clauses += tags_repo.mentioning(list(shops))
         named = select(Category.id).where(or_(*(func.lower(Category.name).like(f"%{like_escape(w)}%", escape=LIKE_ESCAPE) for w in shops)))
         clauses.append(Entry.category_id.in_(named))
     found = session.scalars(
@@ -149,7 +145,7 @@ def _filed_under(session: Session, terms: list[str]) -> list:
     words = [t.lower() for t in terms if len(t) >= 3][:3]
     if not words:
         return []
-    clauses = [func.lower(Entry.tags).like(f'%"{like_escape(w.rstrip("s"))}%', escape=LIKE_ESCAPE) for w in words]
+    clauses = tags_repo.mentioning(words, whole_start=True)
     #: A word at the start of the name or after a space in it ("study" is in "Courses & study").
     said = [like_escape(w.rstrip("s")) for w in words]
     named = select(Category.id).where(or_(*(func.lower(Category.name).like(pattern, escape=LIKE_ESCAPE) for w in said for pattern in (f"{w}%", f"% {w}%"))))

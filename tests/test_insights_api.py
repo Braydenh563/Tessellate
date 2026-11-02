@@ -291,7 +291,7 @@ def test_all_tags_is_not_rescanned_for_an_unchanged_notebook(client, monkeypatch
     every Library tab open, every tag_cloud call, and every /tags call. Same
     fingerprint-cache pattern as routes_graph.py's pagerank: this pins that
     a second call within the same notebook version doesn't redo the scan."""
-    from tessellate.entry import manager
+    from tessellate.repo import tags as tags_repo
 
     _save(client, "note one", tags=["work"])
 
@@ -303,27 +303,27 @@ def test_all_tags_is_not_rescanned_for_an_unchanged_notebook(client, monkeypatch
         return original_scalars(stmt, *a, **k)
 
     monkeypatch.setattr(session, "scalars", counting_scalars)
-    manager.all_tags(session)
+    tags_repo.counts(session)
     first_call_count = len(calls)
-    manager.all_tags(session)
+    tags_repo.counts(session)
     assert len(calls) == first_call_count, "all_tags rescanned an unchanged notebook"
 
     # ...and a new tag invalidates it, because a stale count is worse than a
     # slow one.
     _save(client, "note two", tags=["ideas"])
-    manager.all_tags(session)
+    tags_repo.counts(session)
     assert len(calls) > first_call_count
-    manager.reset_tag_cache()
+    tags_repo.reset_tag_cache()
 
 
 def test_all_tags_cache_is_scoped_to_the_notebook_it_was_built_from(app_state, session):
     """The cache is process-global; restoring a backup must not be served
     the previous notebook's tag counts."""
-    from tessellate.entry import manager
+    from tessellate.repo import tags as tags_repo
 
-    fingerprint = manager._tag_fingerprint(session)
+    fingerprint = tags_repo._tag_fingerprint(session)
     assert str(app_state.data_dir) in fingerprint
-    manager.reset_tag_cache()
+    tags_repo.reset_tag_cache()
 
 
 # --- dashboard layout preference --------------------------------------------------

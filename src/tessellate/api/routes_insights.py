@@ -25,6 +25,7 @@ from tessellate.core.config import days_from_today, user_now
 from tessellate.core.database import Category, Entry, utcnow
 from tessellate.core.deps import get_session
 from tessellate.entry import manager, paths
+from tessellate.repo import tags as tags_repo
 
 router = APIRouter(prefix="/insights", tags=["insights"])
 
@@ -565,9 +566,9 @@ def tag_cloud(session: Session = Depends(get_session)) -> list[dict]:
     """Every tag with its frequency, most-used first, for a weighted cloud.
 
     Was its own independent full-entry scan + tag-JSON decode, duplicating
-    `manager.all_tags`, the same computation, run twice in two places.
+    `tags_repo.counts`, the same computation, run twice in two places.
     """
-    ordered = manager.all_tags(session).items()
+    ordered = tags_repo.counts(session).items()
     return [{"tag": tag, "count": count} for tag, count in list(ordered)[:60]]
 
 
