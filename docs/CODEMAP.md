@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7550, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8428, test files 1823, tests 15610, plan headings 990, app scripts 28, boot scripts 37, script files 224.
+Counts: frontend functions 7550, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8428, test files 1824, tests 15614, plan headings 990, app scripts 28, boot scripts 37, script files 224.
 
 ## Frontend functions (7550)
 
@@ -900,10 +900,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `markPrefsDirty` | frontend/js/settings-panes.js:914 |
 | `markPrefsSaved` | frontend/js/settings-panes.js:930 |
 | `nudgeZoom` | frontend/js/settings-panes.js:1077 |
-| `paletteAbouts` | frontend/js/settings-panes.js:1179 |
-| `paletteCaughtNow` | frontend/js/settings-panes.js:1156 |
-| `paletteKeys` | frontend/js/settings-panes.js:1165 |
-| `paletteRowParts` | frontend/js/settings-panes.js:1190 |
+| `paletteAbouts` | frontend/js/settings-panes.js:1180 |
+| `paletteCaughtNow` | frontend/js/settings-panes.js:1157 |
+| `paletteKeys` | frontend/js/settings-panes.js:1166 |
+| `paletteRowParts` | frontend/js/settings-panes.js:1191 |
 | `refitComposer` | frontend/js/settings-panes.js:269 |
 | `renderAutonomousSettings` | frontend/js/settings-panes.js:684 |
 | `renderPrefs` | frontend/js/settings-panes.js:614 |
@@ -1972,13 +1972,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `featureCatalog` | frontend/js/app-features.js:11 |
 | `featureCommandRows` | frontend/js/app-features.js:223 |
-| `paletteCommands` | frontend/js/app-features.js:288 |
+| `paletteCommands` | frontend/js/app-features.js:289 |
 | `popupToolMaths` | frontend/js/app-features.js:254 |
-| `quickAccessCurrent` | frontend/js/app-features.js:587 |
-| `quickAccessItems` | frontend/js/app-features.js:578 |
-| `quickCatalogue` | frontend/js/app-features.js:559 |
-| `renderQuickLinks` | frontend/js/app-features.js:591 |
-| `renderToolShortcutList` | frontend/js/app-features.js:262 |
+| `quickAccessCurrent` | frontend/js/app-features.js:588 |
+| `quickAccessItems` | frontend/js/app-features.js:579 |
+| `quickCatalogue` | frontend/js/app-features.js:560 |
+| `renderQuickLinks` | frontend/js/app-features.js:592 |
+| `renderToolShortcutList` | frontend/js/app-features.js:263 |
 
 ### frontend/js/app-import.js (6)
 
@@ -1995,51 +1995,51 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `closePalette` | frontend/js/app-palette.js:157 |
-| `notesPaletteCommands` | frontend/js/app-palette.js:840 |
-| `openPalette` | frontend/js/app-palette.js:114 |
-| `paletteActRows` | frontend/js/app-palette.js:433 |
-| `paletteArrow` | frontend/js/app-palette.js:794 |
+| `closePalette` | frontend/js/app-palette.js:163 |
+| `notesPaletteCommands` | frontend/js/app-palette.js:846 |
+| `openPalette` | frontend/js/app-palette.js:120 |
+| `paletteActRows` | frontend/js/app-palette.js:439 |
+| `paletteArrow` | frontend/js/app-palette.js:800 |
 | `paletteAskNotes` | frontend/js/app-palette.js:60 |
-| `paletteBase` | frontend/js/app-palette.js:388 |
-| `paletteDistance` | frontend/js/app-palette.js:636 |
-| `paletteDrawRows` | frontend/js/app-palette.js:707 |
-| `paletteEditorMatches` | frontend/js/app-palette.js:203 |
+| `paletteBase` | frontend/js/app-palette.js:394 |
+| `paletteDistance` | frontend/js/app-palette.js:642 |
+| `paletteDrawRows` | frontend/js/app-palette.js:713 |
+| `paletteEditorMatches` | frontend/js/app-palette.js:209 |
 | `paletteFeature` | frontend/js/app-palette.js:96 |
-| `paletteFeatureRows` | frontend/js/app-palette.js:416 |
-| `paletteFind` | frontend/js/app-palette.js:682 |
-| `paletteFuzzyScore` | frontend/js/app-palette.js:183 |
-| `paletteGoToCategory` | frontend/js/app-palette.js:926 |
-| `paletteKeydown` | frontend/js/app-palette.js:803 |
-| `paletteLight` | frontend/js/app-palette.js:768 |
-| `paletteMatches` | frontend/js/app-palette.js:217 |
-| `paletteNearRows` | frontend/js/app-palette.js:662 |
-| `paletteNearest` | frontend/js/app-palette.js:616 |
-| `paletteNearestCommand` | frontend/js/app-palette.js:687 |
-| `paletteNearestRows` | frontend/js/app-palette.js:651 |
+| `paletteFeatureRows` | frontend/js/app-palette.js:422 |
+| `paletteFind` | frontend/js/app-palette.js:688 |
+| `paletteFuzzyScore` | frontend/js/app-palette.js:189 |
+| `paletteGoToCategory` | frontend/js/app-palette.js:932 |
+| `paletteKeydown` | frontend/js/app-palette.js:809 |
+| `paletteLight` | frontend/js/app-palette.js:774 |
+| `paletteMatches` | frontend/js/app-palette.js:223 |
+| `paletteNearRows` | frontend/js/app-palette.js:668 |
+| `paletteNearest` | frontend/js/app-palette.js:622 |
+| `paletteNearestCommand` | frontend/js/app-palette.js:693 |
+| `paletteNearestRows` | frontend/js/app-palette.js:657 |
 | `paletteNoteAbout` | frontend/js/app-palette.js:38 |
 | `paletteNoteRows` | frontend/js/app-palette.js:45 |
-| `paletteNotesInHand` | frontend/js/app-palette.js:916 |
-| `palettePick` | frontend/js/app-palette.js:591 |
-| `palettePicks` | frontend/js/app-palette.js:572 |
-| `palettePool` | frontend/js/app-palette.js:394 |
-| `palettePrefixPicks` | frontend/js/app-palette.js:580 |
-| `paletteRanked` | frontend/js/app-palette.js:548 |
-| `paletteRefresh` | frontend/js/app-palette.js:408 |
+| `paletteNotesInHand` | frontend/js/app-palette.js:922 |
+| `palettePick` | frontend/js/app-palette.js:597 |
+| `palettePicks` | frontend/js/app-palette.js:578 |
+| `palettePool` | frontend/js/app-palette.js:400 |
+| `palettePrefixPicks` | frontend/js/app-palette.js:586 |
+| `paletteRanked` | frontend/js/app-palette.js:554 |
+| `paletteRefresh` | frontend/js/app-palette.js:414 |
 | `paletteRun` | frontend/js/app-palette.js:103 |
-| `paletteScore` | frontend/js/app-palette.js:508 |
-| `paletteSettingRows` | frontend/js/app-palette.js:468 |
-| `paletteShown` | frontend/js/app-palette.js:789 |
-| `paletteStartAct` | frontend/js/app-palette.js:455 |
-| `paletteTarget` | frontend/js/app-palette.js:399 |
-| `paletteText` | frontend/js/app-palette.js:174 |
-| `paletteTier` | frontend/js/app-palette.js:539 |
-| `paletteVocab` | frontend/js/app-palette.js:524 |
-| `paletteWhy` | frontend/js/app-palette.js:605 |
-| `paletteWords` | frontend/js/app-palette.js:495 |
-| `renderPalette` | frontend/js/app-palette.js:733 |
-| `scrollPaletteToActive` | frontend/js/app-palette.js:824 |
-| `utilityPaletteRows` | frontend/js/app-palette.js:296 |
+| `paletteScore` | frontend/js/app-palette.js:514 |
+| `paletteSettingRows` | frontend/js/app-palette.js:474 |
+| `paletteShown` | frontend/js/app-palette.js:795 |
+| `paletteStartAct` | frontend/js/app-palette.js:461 |
+| `paletteTarget` | frontend/js/app-palette.js:405 |
+| `paletteText` | frontend/js/app-palette.js:180 |
+| `paletteTier` | frontend/js/app-palette.js:545 |
+| `paletteVocab` | frontend/js/app-palette.js:530 |
+| `paletteWhy` | frontend/js/app-palette.js:611 |
+| `paletteWords` | frontend/js/app-palette.js:501 |
+| `renderPalette` | frontend/js/app-palette.js:739 |
+| `scrollPaletteToActive` | frontend/js/app-palette.js:830 |
+| `utilityPaletteRows` | frontend/js/app-palette.js:302 |
 
 ### frontend/js/appearance-panel.js (16)
 
@@ -23035,7 +23035,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15610)
+## Tests (15614)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23200,6 +23200,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_brand_name.py | 10 |
 | tests/test_breakpoints.py | 3 |
 | tests/test_budgets.py | 6 |
+| tests/test_calc_ux_1530.py | 4 |
 | tests/test_calculator_equations.py | 8 |
 | tests/test_captioning.py | 17 |
 | tests/test_captions.py | 16 |

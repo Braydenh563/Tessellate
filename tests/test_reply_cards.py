@@ -127,7 +127,7 @@ def test_the_calculator_is_one_sheet_reached_three_ways():
     #: The row now comes from the `POPUP_TOOLS` registry (K27), which the
     #: palette, Features, the "/" menus and the Guide all read.
     entry = panes[panes.index('id: "calculator", name: "Calculator and equations"'):][:900]
-    assert "about:" in entry and "popupToolMaths(t ? { target: t } : undefined)" in entry
+    assert "about:" in entry and "popupToolMaths({ target: t || null })" in entry
 
 
 def test_a_note_a_reply_gives_is_previewed_on_every_surface():

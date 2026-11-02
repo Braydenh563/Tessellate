@@ -116,7 +116,7 @@ def test_one_registry_row_carries_both_shortcuts() -> None:
     row = next(block for block in tools.split("\n  },") if 'id: "calculator"' in block)
     assert 'name: "Calculator and equations"' in row
     assert 'keys: "Alt+= or /calc"' in row
-    assert 'guide: "calculator"' in row and "popupToolMaths(t ? { target: t } : undefined)" in row
+    assert 'guide: "calculator"' in row and "popupToolMaths({ target: t || null })" in row
     #: Nothing else in the registry claims Alt+=.
     assert tools.count('keys: "Alt+=') == 1
 
@@ -148,4 +148,4 @@ def test_a_slash_row_hands_the_calculator_the_box_it_was_typed_in():
     editor = (js / "editor.js").read_text(encoding="utf-8")
     assert 'run: (t) => tool.open(t) });' in editor
     panes = (js / "settings-panes.js").read_text(encoding="utf-8")
-    assert "open: (t) => ensureModule(\"appPalette\").then(() => popupToolMaths(t ? { target: t } : undefined))," in panes
+    assert "open: (t) => ensureModule(\"appPalette\").then(() => popupToolMaths({ target: t || null }))," in panes
