@@ -196,7 +196,7 @@
   //: This page loads no chat.js, so it spells the cap itself: chat.js's
   //: `QUESTION_CAP` and `search/query.py`'s, held equal by tests/test_warm12_1101.py.
   const DESK_QUESTION_CAP = 4000;
-  //: chat.js `clipFor`'s rule: over the cap, the opening and the end (the ask) are kept.
+  //: the chat page's clip rule: over the cap, the opening and the end (the ask) are kept.
   const deskClip = (q) => {
     if (q.length <= DESK_QUESTION_CAP) return q;
     return `${q.slice(0, DESK_QUESTION_CAP - 1002)}\n\n${q.slice(-1000)}`;

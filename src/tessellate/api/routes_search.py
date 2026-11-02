@@ -104,6 +104,7 @@ def search(
     hybrid: bool = Query(default=True, description="False for keyword only"),
     limit: int = Query(default=20, ge=1, le=MAX_LIMIT),
     page: int = Query(default=1, ge=1, le=MAX_PAGE, description="1-based page of `limit` hits"),
+    ids_only: bool = Query(default=False, description="Every note that holds the words, as ids, unranked"),
     session: Session = Depends(get_session),
 ) -> dict:
     """Hits with their three scores and their explanation, best first.
@@ -120,6 +121,10 @@ def search(
     #: 2,233 ms to search, and the finder's box can be pasted into.
     q = search_manager.clip_query(session, q)
     kinds = [part.strip() for part in kind.split(",") if part.strip() in search_index.KINDS]
+    if ids_only:
+        #: The Notes list's filter box (INBOX 1525): its rows hold a note's first characters, the
+        #: index holds the rest. `null` says the box names no words, so the list stays whole.
+        return {"query": q, "ids": engine.match_ids(session, q, kinds or ["note"])}
     ctx = _scope_of(entry_id, space)
     #: Paged by ranking deeper and slicing: one more than the page asks for,
     #: so `more` is known without a count of the whole notebook.

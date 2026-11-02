@@ -195,3 +195,30 @@ function liveQueryBar(visible) {
     smallButton("ph:graph Show on graph", "Light these notes on the graph", () => showQueryOnGraph(ids)),
   );
 }
+
+//: The Semantic toggle's list (moved out of `_loadEntries` for the gzip budget; INBOX 1525): `asked` is the box text.
+async function loadSemanticEntries(asked, generation) {
+  //: **The Semantic toggle asks the engine** (`GET /search`), the one place
+  //: words, meaning and the links are ranked together, rather than a second
+  //: cosine-only list path (retired). The engine's page
+  //: is at most 50 hits, so nothing here needs paging; the list is then read
+  //: by id, which is also what keeps the bin, the archive and the boards out
+  //: of it (the index holds them, flagged), and put in the engine's order.
+  const found = await apiJson(`/search?q=${encodeURIComponent(clipFor("search", asked))}&kind=note&limit=50`);
+  const order = (found.hits || []).map((hit) => hit.id);
+  const rows = order.length ? await apiJson(`/entries?ids=${order.join(",")}`) : [];
+  if (generation !== _entriesLoadGeneration) return; // a newer load took over
+  const byId = new Map(rows.map((row) => [row.id, row]));
+  const results = order.filter((id) => byId.has(id)).map((id) => byId.get(id));
+  noteEngine.semanticFor = asked;
+  noteEngine.rank = new Map(results.map((row, place) => [row.id, place]));
+  allEntries = results;
+  entriesEverLoaded = true;
+  publishNotes(allEntries);
+  renderStatusBar();
+  renderSidebar();
+  loadCategories();
+  renderEntries();
+  ensureMapChipsFor(results, generation);
+  fillCategoryOptions($("entry-category"), null);
+}

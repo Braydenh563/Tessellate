@@ -95,7 +95,7 @@ installStandIns({
   mathEditor: ["openMathEditor"],
   mathField: ["openMathInPlace"],
   gestureKit: ["openChatModelPanel", "editChatAnswer", "explainNote", "commitExtractPreview"],
-  notesLazy: ["toggleRowExpanded", "nudgeUntaggedNotes", "nudgeReviewQueue", "refreshNoteSearchWhy", "noMatchHint", "liveQueryBar"],
+  notesLazy: ["toggleRowExpanded", "nudgeUntaggedNotes", "nudgeReviewQueue", "refreshNoteSearchWhy", "loadSemanticEntries", "noMatchHint", "liveQueryBar"],
   quickAdd: ["reminderComposeAdd"],
   featureRows: ["renderQuickLinks"],
   loadFailed: ["surfaceFailed"],

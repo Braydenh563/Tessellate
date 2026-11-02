@@ -901,6 +901,7 @@ def _keyword_pass(
     kinds: list[str],
     space: str | tuple[str, ...] | None,
     depth: int,
+    modes: tuple[str, ...] = ("all", "prefix", "any"),
 ) -> list[dict]:
     #: Words of an unsegmented script cannot be tokenised, so they are matched
     #: as substrings beside the MATCH for the rest (notes audit 1031 N2).
@@ -908,7 +909,7 @@ def _keyword_pass(
     phrases = [phrase for phrase in asked.phrases if not cjk.has(phrase)]
     substrings = [term for term in terms if cjk.has(term)] + [p.strip() for p in asked.phrases if cjk.has(p)]
     wanted_is, _has = _flag_filters(asked)
-    for mode in ("all", "prefix", "any"):
+    for mode in modes:
         expression = _match_expression(plain, phrases, asked.excluded, mode, _title_terms(asked))
         if not expression:
             return _substring_rows(session, asked, substrings, kinds, space, depth, wanted_is) if substrings else []
@@ -1274,7 +1275,7 @@ def _without_categories(session: Session, rows: list, asked) -> list:  # noqa: A
     return [row for row in rows if filed.get(row["ref_id"]) not in ruled_out]
 
 
-def _candidate_rows(session: Session, q: str, subject: str, terms: list, asked, wanted_kinds: list, space, hybrid: bool, limit: int, depth: int) -> tuple:  # noqa: ANN001
+def _candidate_rows(session: Session, q: str, subject: str, terms: list, asked, wanted_kinds: list, space, hybrid: bool, limit: int, depth: int, strict: bool = False) -> tuple:  # noqa: ANN001
     """The rows the words (or, with none, the filters) select, and the terms
     after any typo fix."""
     if not (terms or asked.phrases or _title_terms(asked)):
@@ -1293,6 +1294,9 @@ def _candidate_rows(session: Session, q: str, subject: str, terms: list, asked, 
             # is answered.
             rows = [row for row in rows if not _mentions(row, asked.excluded)]
         return rows, terms
+    if strict:
+        #: Every word as a prefix and nothing looser: no "any of them", no typo fix, no meaning.
+        return _keyword_pass(session, terms, asked, wanted_kinds, space, depth, ("prefix",)), terms
     rows = _keyword_pass(session, terms, asked, wanted_kinds, space, depth)
     if not rows and terms:
         # **A typo is still a question** (ARCH-07). The vocabulary fix the
@@ -1413,6 +1417,25 @@ def _rank_rows(session: Session, rows: list, subject: str, q: str, terms: list, 
     hits = [hit for hit in (_hit_for(row, best_raw, filters_only, cosines, hops, terms) for row in rows) if hit is not None]
     hits.sort(key=lambda hit: (-hit.score, hit.kind, -hit.ref_id))
     return hits
+
+
+def match_ids(session: Session, q: str, kinds: list[str] | None = None, depth: int = 20000) -> list[int] | None:
+    """Every note whose text holds all of `q`'s words (each as a prefix), its
+    phrases, and none of its `-words`: a filter, not a ranking (INBOX 1525).
+
+    The Notes list holds only the first characters of each note, so the words
+    it filters by are asked here instead, of the index that holds whole bodies.
+    None when `q` names nothing to match, so the caller keeps its whole list.
+    """
+    asked = query_understanding.understand(q)
+    subject, terms = _plan_terms(q, asked)
+    if not (terms or asked.phrases or asked.excluded):
+        return None
+    wanted = [kind for kind in (kinds or asked.filters["kind"]) if kind in search_index.KINDS]
+    space = _search_space(session, {}, asked)
+    rows, _ = _candidate_rows(session, q, subject, terms, asked, wanted, space, False, depth, depth, strict=True)
+    rows = _filter_rows(session, rows, asked) if rows else rows
+    return sorted({row["ref_id"] for row in rows if row["kind"] in search_index.ENTRY_KINDS})
 
 
 def search(

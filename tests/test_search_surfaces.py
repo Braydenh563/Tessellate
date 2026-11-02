@@ -109,9 +109,11 @@ def _function(text: str, name: str) -> str:
 
 
 def test_the_notes_list_semantic_toggle_asks_the_engine():
+    #: Moved out of `_loadEntries` into notes-lazy.js (INBOX 1525, the gzip budget); the ask is the same.
     body = _function(_read("notes-list.js"), "_loadEntries")
-    assert "semantic=true" not in body
-    assert "/search?q=" in body
+    assert "semantic=true" not in body and "loadSemanticEntries(" in body
+    ask = _function(_read("notes-lazy.js"), "loadSemanticEntries")
+    assert "semantic=true" not in ask and "/search?q=" in ask
 
 
 def test_the_notes_list_asks_the_engine_for_its_operators():
