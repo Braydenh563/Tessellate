@@ -70,3 +70,15 @@ def test_a_topic_inside_the_slide_margin_of_the_edge_is_revealed_not_left_there(
     assert reveal.index("const m = 24;") < reveal.index("wbRectEscapes(el.getBoundingClientRect(), inset)")
     assert "right: free.right - m" in reveal and "left: free.left + m" in reveal
     assert "wbRectEscapes(el.getBoundingClientRect(), free)" not in reveal
+
+
+# U16 ------------------------------------------------------------------------
+
+
+def test_the_sidebar_tabs_are_32px_and_keep_the_touch_floor():
+    rule = _block(LAZY, "#wb-sidebar .wb-side-tab {", "}")
+    # max() so a coarse pointer keeps its 44px (--target-min) and a mouse gets 32 (--button-min-h), not the 28 floor.
+    assert "min-width: max(var(--button-min-h), var(--target-min))" in rule
+    assert "min-height: max(var(--button-min-h), var(--target-min))" in rule
+    tokens = (CSS / "00-tokens-shell.css").read_text(encoding="utf-8")
+    assert "--button-min-h: 2rem;" in tokens

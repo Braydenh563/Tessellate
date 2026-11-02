@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Board: the sidebar's tabs are 32px with a mouse (they were 28px); touch keeps its 44px (audit 1028 U16).
 - Mind map: a new or navigated-to topic within 24px of the canvas edge is brought in to that margin (it stayed 5px from the right edge, counted as in view); measured 5px before, 24px after at 1440x900 (audit 1028 U24).
 - Board: the Delete tool sits 10px from Undo and Redo in the dock (it was 2px, measured at 1440x900), and the side dock's grid is unchanged (audit 1028 U14).
 - Board: the Insert menu shows the key that does the thing (Sticky note N, it said click; Image I and Connector Shift+C, which showed none), read from the same key table the board binds, so every item that has a key says it (audit 1028 U12).

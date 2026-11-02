@@ -8182,3 +8182,11 @@ input[type="color"].wb-mixed {
 .whiteboard-floating-panel[data-dock="side"] .wb-tool-section-row > [data-tool="delete"] {
   margin-inline-end: 0;
 }
+
+/* **The sidebar's tabs are 32px, 44px under touch** (U16: 28px was the
+   24px floor with 4px to spare, beside a rail of 36px tools). The id keeps
+   it over `button.icon-only`'s own floor. */
+#wb-sidebar .wb-side-tab {
+  min-width: max(var(--button-min-h), var(--target-min));
+  min-height: max(var(--button-min-h), var(--target-min));
+}
