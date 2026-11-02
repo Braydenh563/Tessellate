@@ -413,7 +413,7 @@ $("lock-password-show").addEventListener("click", (event) => {
   const show = field.type === "password";
   field.type = show ? "text" : "password";
   const button = event.currentTarget;
-  button.setAttribute("aria-pressed", String(show));
+  button.setAttribute("aria-pressed", show);
   button.title = show ? "Hide password" : "Show password";
   button.setAttribute("aria-label", button.title);
   button.querySelector("i").className = `ph ${show ? "ph-eye-slash" : "ph-eye"}`;

@@ -3972,7 +3972,15 @@ function renderDocPreview() {
   docRenderBody(preview, lead ? `# ${title}\n\n${body}` : body);
   //: Named, so a phone can leave it to the head row that already shows it
   //: (10-responsive.css, "The first line under the chrome").
-  if (lead) preview.querySelector(":scope > .md-h1")?.classList.add("doc-preview-title");
+  if (lead) {
+    const head = preview.querySelector(":scope > .md-h1");
+    head?.classList.add("doc-preview-title");
+    //: The contents list was filled while the title looked like any heading;
+    //: filled again without it, it leaves the added title out (DX23).
+    head?.remove();
+    mdFillTocs(preview);
+    if (head) preview.prepend(head);
+  }
   if (fm) {
     //: After the title, which is the document's name rather than part of its
     //: text, and before the first thing its author wrote.

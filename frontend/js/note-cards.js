@@ -374,7 +374,7 @@ function favouriteButton(entry) {
   );
   button.classList.add("favourite-btn");
   button.classList.toggle("is-favourite", Boolean(entry.pinned));
-  button.setAttribute("aria-pressed", String(Boolean(entry.pinned)));
+  button.setAttribute("aria-pressed", Boolean(entry.pinned));
   return button;
 }
 

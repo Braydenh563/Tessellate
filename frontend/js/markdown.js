@@ -882,7 +882,7 @@ function wrapToggle(kind, apply, keep = () => true) {
   //: is the sighted reader's hint of what a press does.
   button.setAttribute("aria-label", "Wrap lines");
   const paint = (on) => {
-    button.setAttribute("aria-pressed", String(on));
+    button.setAttribute("aria-pressed", on);
     button.title = on ? "Don't wrap" : "Wrap lines";
   };
   button.addEventListener("click", () => {

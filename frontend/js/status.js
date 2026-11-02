@@ -273,7 +273,7 @@ function renderNotifMuteToggle() {
   button.title = muted
     ? "Stop muting: everything will notify again"
     : "Mute notifications except reminders";
-  button.setAttribute("aria-pressed", String(muted));
+  button.setAttribute("aria-pressed", muted);
   //: Icon-only since the head lost its second row, so the tooltip is no
   //: longer backed by a visible word, the accessible name has to carry it.
   button.setAttribute("aria-label", button.title);
@@ -2793,7 +2793,7 @@ function toggleAiStatusPopup(force) {
   if (!button || !popup) return;
   const open = force !== undefined ? force : !button.classList.contains("pinned");
   button.classList.toggle("pinned", open);
-  button.setAttribute("aria-expanded", String(open));
+  button.setAttribute("aria-expanded", open);
   // Visibility, not the `hidden` attribute: `hidden` is display:none, which
   // the CSS hover rule would then have to fight. The stylesheet owns whether
   // the popup is shown; this only records that it has been pinned open.
@@ -2831,7 +2831,7 @@ function renderChatModeSeg() {
     if (agentButton.dataset.enabledTitle === undefined) agentButton.dataset.enabledTitle = agentButton.title;
     //: aria-disabled, not disabled (E61): the button stays a Tab stop and a press opens the
     //: same "Needs a model" popover Plan does (`openModelOffer`), so the reason is not hover-only.
-    agentButton.setAttribute("aria-disabled", String(gated));
+    agentButton.setAttribute("aria-disabled", gated);
     agentButton.classList.toggle("ai-unavailable", gated);
     agentButton.title = gated
       ? `Agent mode needs a model, or the Needle extra, to call tools. ${AI_OFFLINE_HINT}.`

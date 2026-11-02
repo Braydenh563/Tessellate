@@ -315,15 +315,15 @@ const SIDEBAR_RAIL_NAMES = {
 //: A resize grip says its value (WCAG 4.1.2: a focusable separator requires
 //: `aria-valuenow`). Read by an observer, so every way of resizing reports it.
 function trackSeparatorValue(handle, panel, min, max, axis = "width") {
-  handle.setAttribute("aria-valuemin", String(min));
-  handle.setAttribute("aria-valuemax", String(max));
+  handle.setAttribute("aria-valuemin", min);
+  handle.setAttribute("aria-valuemax", max);
   //: A horizontal separator (the code editor's output panel) reports its height.
   const tall = axis === "height";
   const size = () => (tall ? panel.getBoundingClientRect().height : panel.getBoundingClientRect().width);
   const write = (px) => {
     const now = Math.round(px);
     if (!now) return; // hidden or folded away: keep the last real value
-    handle.setAttribute("aria-valuenow", String(Math.min(Math.max(now, min), max)));
+    handle.setAttribute("aria-valuenow", Math.min(Math.max(now, min), max));
     handle.setAttribute("aria-valuetext", `${now} pixels ${tall ? "tall" : "wide"}`);
   };
   write(size() || min);
@@ -377,7 +377,7 @@ function makeSidebarResizable(aside) {
     // to avoid fighting.
     if (layoutIsStacked()) {
       const open = setSidebarSheet(aside, !aside.classList.contains("sidebar-sheet-open"));
-      collapseBtn.setAttribute("aria-expanded", String(open));
+      collapseBtn.setAttribute("aria-expanded", open);
       return;
     }
     const folded = aside.classList.toggle("sidebar-collapsed");
@@ -842,7 +842,7 @@ function enhanceSelect(select) {
     opener.disabled = select.disabled;
     for (const row of menu.querySelectorAll("[role='option']")) {
       const on = row.dataset.value === select.value;
-      row.setAttribute("aria-selected", String(on));
+      row.setAttribute("aria-selected", on);
       row.classList.toggle("is-chosen", on);
     }
   };

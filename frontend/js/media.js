@@ -372,7 +372,7 @@ function speakText(text, button = null) {
   if (button) {
     const rest = button.innerHTML;
     const paint = (on) => {
-      button.setAttribute("aria-pressed", String(on));
+      button.setAttribute("aria-pressed", on);
       if (on) setLabel(button, "ph:stop");
       else button.innerHTML = rest;
     };

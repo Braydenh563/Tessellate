@@ -1422,13 +1422,13 @@ function promptDialog(message, initial = "", { confirmLabel = "Save", segment = 
         button.dataset.value = option.value;
         button.title = option.title || "";
         button.classList.toggle("active", option.value === chosen);
-        button.setAttribute("aria-pressed", String(option.value === chosen));
+        button.setAttribute("aria-pressed", option.value === chosen);
         button.addEventListener("click", () => {
           chosen = option.value;
           for (const sibling of segRow.querySelectorAll("button")) {
             const on = sibling.dataset.value === chosen;
             sibling.classList.toggle("active", on);
-            sibling.setAttribute("aria-pressed", String(on));
+            sibling.setAttribute("aria-pressed", on);
           }
           // Straight back to the name: choosing the kind is a detour on the
           // way to typing, not the end of the interaction.

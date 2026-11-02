@@ -631,21 +631,14 @@ function renderMarkdown(container, text, depth = 0) {
       // Map #→h3 … ######→h6 (the app reserves h1/h2 for its own chrome).
       const level = Math.min(6, heading[1].length + 2);
       const el = document.createElement(`h${level}`);
-      //: **And the source level as a class, because the tag has lost it.**
-      //: Demoting by two is right for the document outline and wrong for
-      //: everything else: three source levels (`####`, `#####`, `######`) all
-      //: land on `h6`, and nothing in the stylesheet catches `h5` or `h6` at
-      //: all, so they fall through to the browser's own defaults, which are
-      //: *smaller than body text*. Measured in the rendered pane against a
-      //: 16px paragraph: `# Heading one` 12px, `## Heading two` 16px, `###`
-      //: 13.3px, `####` and `#####` both 10.7px. The document's largest
-      //: heading was its smallest text, and two levels were identical.
-      //:
-      //: The live view of the same document is 28.8 / 24 / 20 / 17.6, so the
-      //: two views of one file disagreed about what a heading is. `md-h1`..
-      //: `md-h6` carry the level the person actually typed, and the
-      //: stylesheet keys the scale off that.
+      //: **The source level as a class and as `aria-level`, because the tag has
+      //: lost it.** Three source levels (`####` to `######`) all land on `h6`,
+      //: which the stylesheet does not catch (the browser's default is smaller
+      //: than body text, and two levels were identical). `md-h1`..`md-h6` carry
+      //: the typed level for the scale; `aria-level` carries the demoted one
+      //: (3 to 8) so a screen reader's heading list keeps six levels (DX23).
       el.classList.add(`md-h${heading[1].length}`);
+      el.setAttribute("aria-level", heading[1].length + 2);
       // An id makes the heading a real jump target, for the outline and for
       // any [](#anchor) link written into the text.
       el.id = mdHeadingId(heading[2], headingIds);
@@ -655,16 +648,9 @@ function renderMarkdown(container, text, depth = 0) {
       continue;
     }
 
-    // Transclusion: a line that is nothing but ![[name]] inlines that note's
-    // text here, rather than linking to it. This is what makes a document
-    // genuinely *composed of* notes instead of merely pointing at them.
-    //
-    // **Notes only, deliberately.** GET /documents returns id/title/words and
-    // no content (routes_documents._summary), so embedding a document would
-    // need a fetch: and renderMarkdown runs on every streamed chat chunk, so
-    // a fetch in this path is a request storm waiting to happen. A document
-    // target therefore renders as a labelled link, and the inline version
-    // waits for a content-bearing endpoint rather than being bolted on here.
+    // Transclusion: a line that is only ![[name]] inlines that note's text.
+    // **Notes only**: a document would need a fetch, and renderMarkdown runs
+    // on every streamed chat chunk, so a document renders as a labelled link.
     const embedded = line.match(/^\s*!\[\[([^[\]]{1,120})\]\]\s*$/);
     if (embedded) {
       closeList();
@@ -871,7 +857,7 @@ function revealTab(name) {
     button.classList.toggle("active", active);
     // Real tab semantics (Wave L): one tab stop for the whole list
     // (roving tabindex), arrow keys move between tabs.
-    button.setAttribute("aria-selected", String(active));
+    button.setAttribute("aria-selected", active);
     button.tabIndex = active ? 0 : -1;
   }
   // When the strip is narrow enough to scroll, the tab you just chose is the
@@ -2359,7 +2345,7 @@ function showNotesSection(name, { focus = false } = {}) {
   for (const button of document.querySelectorAll("#notes-subtabs button")) {
     const active = button.dataset.section === wanted;
     button.classList.toggle("active", active);
-    button.setAttribute("aria-selected", String(active));
+    button.setAttribute("aria-selected", active);
     // Roving tabindex: the strip is one tab stop, arrows move within it.
     button.tabIndex = active ? 0 : -1;
     if (active && focus) button.focus();
