@@ -191,13 +191,15 @@ function syncDocFileType({ prose = true } = {}) {
     //: Plain is offered for a code file as readily as Source: "use the
     //: documents tab as a plain text editor" is exactly the thing you would
     //: want on a `.csv` or a `.php` the bundle has no mode for.
-    const rendered = !DOC_VIEWS_UNRENDERED.includes(button.dataset.docView);
-    button.disabled = rendered && !type.previewable;
+    button.disabled = !docViewState.allows(type, button.dataset.docView);
     button.title = button.disabled
-      ? `A .${type.ext} file has no rendered form, this is for markdown.`
+      ? type.ext === "mmd" ? "A diagram shows its picture beside the source, in Split." : `A .${type.ext} file has no rendered form, this is for markdown.`
       : button.dataset.docTitle || button.title;
   }
-  if (!type.previewable && !DOC_VIEWS_UNRENDERED.includes(docView)) setDocView("source");
+  //: A diagram opens in Split the first time its type is synced after another type.
+  const toDiagram = type.ext === "mmd" && docViewState.type !== "mmd";
+  docViewState.type = type.ext;
+  if (!docViewState.allows(type, docView) || toDiagram) setDocView(type.ext === "mmd" ? "split" : "source");
   //: And back: a markdown type again, and Source was only the code file's.
   else if (type.previewable && docViewState.held) setDocView(docDefaultView());
   //: The engine's own language and wrapping, where it is mounted.
@@ -487,7 +489,16 @@ let docView = "source";
 //: switched back from `.py` to `.md` stayed there). Nothing stored, nothing
 //: remembered as the last editing view; the file type coming back to a
 //: markdown one restores the view the person actually chose.
-const docViewState = { held: false, tableGrips: null, blockHandle: null };
+//: `allows(type, mode)`: a markdown document may be in any view, a code file in the two that
+//: need no rendered form, and a diagram (the `mmd` type, 1546 D5) also in Split, where its
+//: picture is the preview. `type` is the last file type synced, so a diagram opens in Split.
+const docViewState = {
+  held: false,
+  tableGrips: null,
+  blockHandle: null,
+  type: "md",
+  allows: (type, mode) => type.previewable || DOC_VIEWS_UNRENDERED.includes(mode) || (type.ext === "mmd" && mode === "split"),
+};
 
 //: One-time reset (owner, 2026-10-25: Live should be the default, but their
 //: browser held "source" from before). A view stored before this version key
@@ -917,10 +928,11 @@ function setDocView(mode, { persist = true } = {}) {
   // A code file has no rendered form, so it can only be one of the two views
   // that do not need one. Asked for any other, that is the honest answer
   // rather than an empty pane.
-  if (!type.previewable && !DOC_VIEWS_UNRENDERED.includes(mode)) mode = "source";
+  if (!docViewState.allows(type, mode)) mode = "source";
   docView = DOC_VIEWS.includes(mode) ? mode : "source";
-  //: Source in a code file is the file's only editing view, not a choice.
-  docViewState.held = !type.previewable && docView === "source";
+  //: Source in a code file is the file's only editing view, not a choice; a diagram's view is
+  //: never stored, so the markdown documents after it open in the view the person chose.
+  docViewState.held = !type.previewable && (docView === "source" || type.ext === "mmd");
   if (persist) try {
     if (!docViewState.held) prefs.set(DOC_VIEW_KEY, docView);
   } catch {
@@ -4019,6 +4031,13 @@ function renderDocPreview() {
   preview.replaceChildren();
   const title = ($("doc-title").value || "").trim();
   const text = docText();
+  //: 1546 D5: a diagram's preview is its picture, drawn through the fence path (the frame
+  //: draws it, and refuses what it cannot with the reason under the source).
+  if (docFileType().ext === "mmd") {
+    docRenderBody(preview, "```mermaid\n" + text + "\n```");
+    docRenderMermaidIn(preview);
+    return;
+  }
   //: **The properties are not prose.** Rendered as markdown, a frontmatter
   //: block is a horizontal rule, a paragraph of `key: value` lines and
   //: another rule, which is what the preview showed until now for every

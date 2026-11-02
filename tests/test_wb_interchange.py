@@ -18,12 +18,25 @@ BOARD = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 
 
+MERMAID = (ROOT / "frontend" / "js" / "documents-mermaid.js").read_text(encoding="utf-8")
+#: 1546 D4: the flowchart reader is the diagram model, in documents-mermaid.js; the board's old reader's
+#: contract (three shapes, `dashed`, a `skipped` count) is what these assertions were written against.
+MODEL = MERMAID[MERMAID.index("// DIAGRAM-MODEL-BEGIN") : MERMAID.index("// DIAGRAM-MODEL-END")]
+BOARD_GRAPH = """
+const wbMermaidParse = (src) => {
+  const g = diagramModel.parse(src);
+  const shape = (s) => (s === "diamond" || s === "circle" ? s : "rect");
+  return { ...g, skipped: g.kept.length, nodes: g.nodes.map((n) => ({ ...n, shape: shape(n.shape) })), edges: g.edges.map((e) => ({ ...e, dashed: e.style === "dotted" })) };
+};
+"""
+
+
 def _run(expr: str):
     node = shutil.which("node")
     if not node:
         pytest.skip("node is not installed")
     pure = SOURCE[: SOURCE.index("//: The rows inside an SVG")]
-    out = subprocess.run([node, "-e", pure + f"\nconsole.log(JSON.stringify({expr}));"], capture_output=True, text=True, check=True)
+    out = subprocess.run([node, "-e", MODEL + BOARD_GRAPH + pure + f"\nconsole.log(JSON.stringify({expr}));"], capture_output=True, text=True, check=True)
     return json.loads(out.stdout.strip())
 
 
@@ -45,7 +58,7 @@ def test_the_flowchart_subset_parses() -> None:
 
 
 def test_the_layout_puts_each_level_on_its_own_row() -> None:
-    at = _run('Object.fromEntries(wbMermaidLayout(wbMermaidParse("graph TD\\nA-->B\\nA-->C\\nB-->D")))')
+    at = _run('Object.fromEntries(wbMermaidLayout(diagramModel.parse("graph TD\\nA-->B\\nA-->C\\nB-->D")))')
     assert at["A"]["y"] < at["B"]["y"] == at["C"]["y"] < at["D"]["y"]
     assert at["B"]["x"] != at["C"]["x"]
 
@@ -128,7 +141,7 @@ def test_subgraphs_parse_with_their_titles_and_members() -> None:
 
 
 def test_a_frame_holds_its_members_and_nothing_else() -> None:
-    out = _run(f"(() => {{ const m = wbMermaidLayout(wbMermaidParse({json.dumps(NESTED)})); return {{ at: Object.fromEntries(m), frames: m.frames }}; }})()")
+    out = _run(f"(() => {{ const m = wbMermaidLayout(diagramModel.parse({json.dumps(NESTED)})); return {{ at: Object.fromEntries(m), frames: m.frames }}; }})()")
     at, frames = out["at"], {f["id"]: f for f in out["frames"]}
     assert out["frames"][0]["depth"] == 0 and out["frames"][-1]["depth"] == 1  # outermost first
     assert frames["S2"]["depth"] == 1 and frames["S1"]["depth"] == 0
@@ -151,7 +164,7 @@ def test_a_frame_holds_its_members_and_nothing_else() -> None:
 
 
 def test_a_flat_flowchart_lays_out_as_it_did() -> None:
-    at = _run('Object.fromEntries(wbMermaidLayout(wbMermaidParse("graph LR\\nA-->B\\nA-->C")))')
+    at = _run('Object.fromEntries(wbMermaidLayout(diagramModel.parse("graph LR\\nA-->B\\nA-->C")))')
     assert at["B"]["x"] - at["A"]["x"] == 220 and abs(at["B"]["y"] - at["C"]["y"]) == 140
 
 

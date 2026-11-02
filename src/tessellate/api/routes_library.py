@@ -53,6 +53,8 @@ router = APIRouter(tags=["library"])
 #: hand back 300 documents and no chats, every kind gets its own allowance, so
 #: the filter chips are never empty for a reason nobody can see.
 PER_KIND_LIMIT = 200
+#: The document type a diagram is (1546 D5): listed as `kind: "diagram"`, counted apart.
+DIAGRAM_FILE_TYPE = "mmd"
 
 def _like(query: str) -> str:
     """`query` as a literal LIKE pattern (see `like_escape`): a search for
@@ -233,7 +235,8 @@ def _documents(session: Session, q: str = "") -> list[dict]:
         words = cjk.word_count(doc.content)
         items.append(
             {
-                "kind": "document",
+                #: A diagram is a document of the `mmd` type (1546 D5), listed and counted apart.
+                "kind": "diagram" if doc.file_type == DIAGRAM_FILE_TYPE else "document",
                 "id": doc.id,
                 "title": doc.title or "Untitled",
                 "preview": _clip(doc.content),
@@ -1032,11 +1035,13 @@ def _totals(session: Session) -> dict[str, int]:
     def count(stmt) -> int:
         return int(session.scalar(stmt) or 0)
 
+    diagrams = documents_repo.count(session, DIAGRAM_FILE_TYPE)
     return {
         "note": count(
             select(func.count(Entry.id)).where(*_LIVE_NOTE, Entry.is_board == False)  # noqa: E712
         ),
-        "document": documents_repo.count(session),
+        "document": documents_repo.count(session) - diagrams,
+        "diagram": diagrams,
         "chat": count(select(func.count(Conversation.id))),
     }
 
