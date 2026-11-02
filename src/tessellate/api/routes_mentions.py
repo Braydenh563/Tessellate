@@ -29,9 +29,9 @@ from sqlalchemy.orm import Session
 
 from tessellate.api import routes_documents, routes_entries
 from tessellate.api.schemas import EntryUpdate
-from tessellate.core.database import LIKE_ESCAPE, Entry, EntryLink, like_escape
+from tessellate.core.database import LIKE_ESCAPE, Entry, like_escape
 from tessellate.core.deps import get_session
-from tessellate.repo import documents as documents_repo
+from tessellate.repo import documents as documents_repo, relations as relations_repo
 from tessellate.entry import manager
 from tessellate.entry.manager import WIKI_LINK, plain_label
 from tessellate.entry.mentions import (
@@ -104,13 +104,7 @@ def _backlinks(session: Session, entry: Entry) -> dict:
     )
     #: The notes whose stored wiki link lands here, whatever they typed (a
     #: prefix of the name resolves too), and the notes whose text holds a name.
-    linked_ids = set(
-        session.scalars(
-            select(EntryLink.source_entry_id).where(
-                EntryLink.target_entry_id == entry.id, EntryLink.origin == "wiki"
-            )
-        )
-    )
+    linked_ids = set(relations_repo.wiki_sources(session, entry.id))
     note_rows = session.scalars(
         select(Entry)
         .where(
