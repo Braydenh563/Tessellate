@@ -19,6 +19,7 @@ import logging
 import os
 import re
 import sys
+import zlib
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -2355,8 +2356,14 @@ class DatabaseManager:
             dbapi_connection.execute("PRAGMA temp_store=MEMORY")
 
         Base.metadata.create_all(self.engine)  # creates missing tables only
-        self._add_missing_columns()
+        #: A start that finds the schema as the last one stamped it has no column to add
+        #: (audit 1028 K35): the scan is one `PRAGMA table_info` per table.
+        stamped = self._schema_is_stamped()
+        if not stamped:
+            self._add_missing_columns()
         self._rebuild_categories_unique_constraint()
+        if not stamped:
+            self._stamp_schema()
         self._backfill_inherited_workspaces()
         self._drop_orphan_links()
         self._ensure_fts5()
@@ -2913,12 +2920,10 @@ class DatabaseManager:
             for table, fk, parent in self._WORKSPACE_INHERITANCE:
                 if table not in tables:
                     continue
-                columns = {
-                    row[1]
-                    for row in connection.exec_driver_sql(
-                        f'PRAGMA table_info("{table}")'
-                    ).fetchall()
-                }
+                #: The model's columns, not a `PRAGMA table_info` per table (audit 1028 K35):
+                #: `_add_missing_columns` has run, so a table the model knows has them all.
+                model = Base.metadata.tables.get(table)
+                columns = set(model.columns.keys()) if model is not None else set()
                 if "workspace_id" not in columns or fk not in columns:
                     continue
                 connection.exec_driver_sql(
@@ -2950,6 +2955,40 @@ class DatabaseManager:
                 "DELETE FROM entry_links WHERE source_entry_id NOT IN (SELECT id FROM entries)"
                 " OR target_entry_id NOT IN (SELECT id FROM entries)"
             )
+
+    @staticmethod
+    def _model_signature() -> str:
+        """Every model table's column names and types, in a fixed order."""
+        return ";".join(
+            f"{table.name}({','.join(f'{column.name} {column.type}' for column in table.columns)})"
+            for table in sorted(Base.metadata.tables.values(), key=lambda t: t.name)
+        )
+
+    def _schema_stamp(self) -> int:
+        """A 31-bit fingerprint of the model and of the model's tables as SQLite
+        holds them (their CREATE text, which an added or dropped column changes).
+        Only the model's tables: the search and full-text tables other steps make
+        after this one would otherwise change it between two starts."""
+        names = sorted(Base.metadata.tables)
+        marks = ",".join("?" for _ in names)
+        with self.engine.connect() as connection:
+            held = connection.exec_driver_sql(
+                f"SELECT name, sql FROM sqlite_master WHERE type='table' AND name IN ({marks}) ORDER BY name",
+                tuple(names),
+            ).fetchall()
+        text = self._model_signature() + "|" + "|".join(f"{name}:{sql}" for name, sql in held)
+        return zlib.crc32(text.encode("utf-8")) & 0x7FFFFFFF
+
+    def _schema_is_stamped(self) -> bool:
+        with self.engine.connect() as connection:
+            stored = connection.exec_driver_sql("PRAGMA user_version").scalar()
+        return stored == self._schema_stamp()
+
+    def _stamp_schema(self) -> None:
+        """Record the fingerprint, after the steps that can change the tables ran."""
+        stamp = self._schema_stamp()
+        with self.engine.begin() as connection:
+            connection.exec_driver_sql(f"PRAGMA user_version = {int(stamp)}")
 
     def _add_missing_columns(self) -> None:
         """Additive auto-migration for existing databases.

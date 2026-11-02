@@ -2242,7 +2242,9 @@ MORE_TOPICS.extend(
                 "no Ctrl or Alt. A toast steps aside, fading and letting clicks "
                 "through, while the focused control is under it. For a screen "
                 "reader every tab has one main landmark, editors and panels have "
-                "names, and resize grips say how wide a panel is. Settings, "
+                "names, and resize grips say how wide a panel is. After Notes or "
+                "the Library loads or you filter it, one polite line says how "
+                "many are shown, and the window title follows the view. Settings, "
                 "Appearance has High contrast, Motion, Interface animations, "
                 "Text size and Zoom."
             ),

@@ -2438,6 +2438,8 @@ function renderEntries(appendOnly = false) {
         ? `${scope}: ${visible.length} of ${total}`
         : scope;
   liveQueryBar(visible);
+  //: The count after a load or a filter, said once to a screen reader (audit 1028 S92).
+  if (prefs.get("activeTab", null) === "notes") announce(`${scope}: ${nounCount(visible.length, "note")}`, { settle: 600, once: true });
   // Distinguish "empty notebook" from "filter matched nothing".
   const notebookEmpty = allEntries.length === 0;
   empty.classList.toggle("hidden", !notebookEmpty);

@@ -4111,7 +4111,7 @@ function docRunRow(level, text, line, into = null, follow = true) {
   }
   const words = document.createElement("span");
   words.className = "cm-run-text";
-  words.textContent = String(text).slice(0, 4000);
+  words.textContent = String(text).length > 4000 ? `${String(text).slice(0, 4000)}\nOutput cut at 4,000 characters.` : String(text);
   row.appendChild(words);
   if (Number.isInteger(line) && line > 0) {
     const link = document.createElement("button");
@@ -4191,7 +4191,7 @@ function docRunTestRow(name, state, ms, text, line) {
   if (text) {
     const why = document.createElement("pre");
     why.className = "cm-run-why";
-    why.textContent = String(text).slice(0, 4000);
+    why.textContent = String(text).length > 4000 ? `${String(text).slice(0, 4000)}\nOutput cut at 4,000 characters.` : String(text);
     row.appendChild(why);
   }
   if (kind === "fail" && Number.isInteger(line) && line > 0) {

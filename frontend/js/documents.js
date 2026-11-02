@@ -2456,6 +2456,16 @@ async function docSaveOnce(silent) {
       //: rather than overwriting it (WORLD_CLASS_PLAN 22.1 item 5).
       body: JSON.stringify({ title, content, file_type: currentDoc.file_type || "md", base_hash: currentDoc.content_hash }),
     });
+    //: A name another document already has is said once per document and name, on the
+    //: first save under it (a new document's first autosave, or a rename), and left as
+    //: typed (audit 1028 U38): a suffix added unasked would change what the person wrote.
+    const alike = String(saved.title || "").trim().toLowerCase();
+    const said = (docSaveOnce.said ||= new Set());
+    const named = docsMadeThisSession.has(saved.id) || (currentDoc?.id === saved.id && currentDoc.title !== saved.title);
+    if (named && alike && !said.has(`${saved.id}:${alike}`) && docs.some((d) => d.id !== saved.id && String(d.title || "").trim().toLowerCase() === alike)) {
+      said.add(`${saved.id}:${alike}`);
+      toast(`Another document is called “${saved.title.trim()}” too. Rename one if you want to tell them apart.`);
+    }
     docs = docs.map((d) => (d.id === saved.id ? { ...d, ...saved } : d));
     renderDocList();
     if (currentDoc?.id !== savingId) return;
