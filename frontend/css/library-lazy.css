@@ -8074,3 +8074,49 @@ input[type="color"].wb-mixed {
     width: auto;
   }
 }
+
+/* --- the Documents dock is one row on a phone (audit 1102 DX13) ------------------
+   At 390x844 the content started at y = 282 (it is 153 at 1440): the dock wrapped
+   onto three rows and Read was a bordered card inside the page card. Now: back,
+   the title, Edit / Read and the kebab. AI edit, Snippets, Focus, the help and the
+   other editing views are rows of the kebab (`.doc-phone-only`, index.html; a row
+   presses the real button, `data-click-proxy`, documents.js). The breadcrumb row
+   goes too (44 px). Edit and Read are their icons (the words stay their names for
+   a screen reader), since the title had 45 px of the row beside them. Moved here
+   from the boot sheet it first went in, which was 45 bytes over its budget. */
+@media (min-width: 600px) {
+  #tab-documents .doc-phone-only {
+    display: none;
+  }
+}
+@media (max-width: 599.98px) {
+  #tab-documents .doc-dock {
+    flex-wrap: nowrap;
+  }
+  #tab-documents .doc-actions {
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
+  }
+  #tab-documents .doc-actions > :is(#doc-ai, #doc-code-snippets-open, #doc-code-assist-open, #doc-code-format, #doc-focus-toggle, .graph-help-toggle),
+  #tab-documents .doc-view-menu,
+  #tab-documents #doc-crumbs {
+    display: none;
+  }
+  #tab-documents #doc-view-seg > button {
+    padding-inline: var(--space-3);
+    font-size: 0;
+  }
+  #tab-documents #doc-view-seg > button > .ph {
+    margin: 0;
+    font-size: var(--text-lg);
+  }
+  #tab-documents .doc-dock-identity > .doc-title-input {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  #tab-documents #doc-preview {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+}
