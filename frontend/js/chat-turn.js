@@ -273,6 +273,8 @@ async function chatSendTurn(preset, opts = {}) {
   // this treatment already for the same reported-missing-on-reload reason.
   let groundingSentences = null;
   let chatOffer = null;
+  //: The screen-aware next step (E52): drawn beside the answer, never in its text.
+  let chatTip = "";
   let whyLines = null; // the why event (B30), drawn last
   let composedNext = []; // a composed answer's own next questions (INBOX 725)
   //: **Numbered while it streams, as the Ask tab is** (INBOX 320, the
@@ -704,6 +706,7 @@ async function chatSendTurn(preset, opts = {}) {
         chatScrollToEnd();
       },
       onOffer: (event) => { chatOffer = event.offer || null; },
+      onTip: (event) => { chatTip = event.text || ""; },
       onWhy: (event) => { whyLines = event.lines; },
       onStats: (event) => {
         // A round finished. Asked for directly: *"a new chat should be saved
@@ -899,6 +902,12 @@ async function chatSendTurn(preset, opts = {}) {
     sources: turnSources,
   });
   if (sourcesPanel) recordsHolder.appendChild(sourcesPanel);
+  if (chatTip) {
+    const tip = document.createElement("p");
+    tip.className = "muted answer-tip";
+    tip.textContent = chatTip;
+    recordsHolder.prepend(tip);
+  }
   //: Why this answer (B30), the Ask box's own fold, after the sources.
   if (whyLines) ensureModule("askCompose").then(() => drawWhyTrail(recordsHolder, whyLines)).catch(() => {});
   // INBOX 272 part 1: drawn once the stream is over, same reason

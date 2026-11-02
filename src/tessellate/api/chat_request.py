@@ -736,6 +736,13 @@ class _StreamRequest:
     #: Why the web search could not run this turn ("" when it ran): the
     #: reply then names the service and links its setting (`composer_web`).
     web_down: str = ""
+    #: The screen-aware next step ("Shall we carry on with ..."), sent as its
+    #: own `tip` event so it is never part of the answer's saved, copied or
+    #: spoken text (audit 1028 E52).
+    tip: str = ""
+
+    def tip_events(self) -> list[dict]:
+        return [{"type": "tip", "text": self.tip}] if self.tip else []
 
 
 def _in_full(req: _StreamRequest) -> str:

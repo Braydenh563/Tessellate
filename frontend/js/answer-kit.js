@@ -1102,6 +1102,7 @@ async function streamChatEvents({
   onWebSources,
   onWhy,
   onOffer,
+  onTip,
   peek,
   attempt,
   isPrivate,
@@ -1277,6 +1278,8 @@ async function streamChatEvents({
       else if (event.type === "why" && onWhy) onWhy(event);
       //: A counted answer's one acting offer ("Open Statistics ..."), decision 70.
       else if (event.type === "offer" && onOffer) onOffer(event);
+      //: The screen-aware next step, apart from the answer's text (audit 1028 E52).
+      else if (event.type === "tip" && onTip) onTip(event);
       else if (event.type === "ask" && onAsk) onAsk(event);
       else if (event.type === "run_skill" && onRunSkill) onRunSkill(event);
       else if (event.type === "run_plan" && onRunPlan) onRunPlan(event);

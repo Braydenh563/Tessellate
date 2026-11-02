@@ -97,6 +97,12 @@ def _ask(client, question: str, **body) -> str:
     return text
 
 
+def _tip(client, question: str, **body) -> str:
+    with client.stream("POST", "/chat/stream", json={"question": question, **body}) as response:
+        events = [json.loads(line) for line in response.iter_lines() if line.strip()]
+    return "".join(e["text"] for e in events if e["type"] == "tip")
+
+
 def _seed(session):
     plain = manager.create_entry(session, "# Dentist\n\nCheck-up booked for the 21st. Ask about the night guard.")
     secret = manager.create_entry(session, "# Divorce lawyer\n\nMeeting on the 3rd about the settlement.")
@@ -108,7 +114,8 @@ def test_a_composed_answer_picks_up_the_open_note(client, session):
     plain, _ = _seed(session)
     text = _ask(client, "when is the check-up", open_note_id=plain, screen={"tab": "notes", "actions": ["Cleared a box"]})
     assert "Check-up booked for the 21st" in text
-    assert "“Dentist”" in text.splitlines()[-1]
+    #: The pick-up line is a `tip` event, not the answer's last line (audit 1028 E52).
+    assert "“Dentist”" not in text and "“Dentist”" in _tip(client, "when is the check-up", open_note_id=plain, screen={"tab": "notes", "actions": ["Cleared a box"]})
 
 
 def test_a_hello_says_what_the_app_can_see(client, session):

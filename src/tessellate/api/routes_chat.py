@@ -1397,7 +1397,8 @@ def _with_next_step(text: str, size: str, req: _StreamRequest, cited: list[str] 
     #: here: how do I ask about one note", INBOX 1420).
     aware = composer_aware.closing(_awareness(req), f"{seed}:{req.question}", recent, related=not cited, asked=req.question or "", cited=cited or ()) if req.body.screen else ""
     if aware:
-        return f"{text}\n\n{aware}", []
+        req.tip = aware
+        return text, []
     if not named:
         return text, []
     #: Its heading, not a whole first line ("Project Atlas budget: Sam says ..."): a chip is short.
@@ -1431,10 +1432,10 @@ def _composed_events(req: _StreamRequest, prepared: dict, ollama_running: bool) 
     text = _with_older(text, older, result)
     text = _with_words_only(text, prepared, result)
     text = _with_lapsed(text, current, result, req)
-    events: list = [{"type": "answer", "delta": text}, *(_web_chip(req) if missed else [])]
+    events: list = [{"type": "answer", "delta": text}, *(_web_chip(req) if missed else []), *req.tip_events()]
     #: Every question the finished text suggests is a chip (INBOX 1497); one
     #: the grounding event already carries is not said twice.
-    suggested = [q for q in ask_chips.lift(text) if q not in (result.get("next") or []) and q not in asks]
+    suggested = [q for q in ask_chips.lift(f"{text}\n{req.tip}") if q not in (result.get("next") or []) and q not in asks]
     if result["grounding"]:
         _name_documents(req.session, result["grounding"])
         events.append(_composed_grounding_event(req, result, [*asks, *suggested]))
