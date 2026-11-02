@@ -226,7 +226,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 220 | D39 | low | typo autocorrect rewrites silently with a 5s undo only | new | S |
 | 221 | D40 | low | no selection word count in the status bar | fixed (already: the caret line counts selected words; reconciled 2026-10-30) | S |
 | 222 | D48 | low | controls hidden in dock-menu flyouts reparented to body | new | M |
-| 223 | D53 | low | code run output truncated silently at 4,000 chars | new | S |
+| 223 | D53 | low | code run output truncated silently at 4,000 chars | fixed 2026-11-02 (a28s-D53) | S |
 | 224 | E37 | low | AI status control reads as an error, red circle with x | new | S |
 | 225 | E41 | low | models pane jargon and redundant Use this model button | new | S |
 | 226 | E51 | low | citation mark lands mid-sentence, date-only source | docs/roadmap/CHAT_PLAN.md:1810 | S |

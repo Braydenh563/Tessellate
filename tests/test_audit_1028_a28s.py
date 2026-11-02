@@ -89,6 +89,14 @@ def test_b34_an_empty_board_keeps_one_line_after_its_card_is_put_away():
     assert "pointer-events: none" in _between(css, ".wb-empty-cue {", "}")
 
 
+def test_d53_run_output_cut_at_4000_characters_says_so():
+    """D53: a console row and a failed test's reason were sliced at 4,000 characters in silence."""
+    source = _js("documents-code.js")
+    cut = "`${String(text).slice(0, 4000)}\\nOutput cut at 4,000 characters.`"
+    assert source.count(cut) == 2
+    assert ".textContent = String(text).slice(0, 4000);" not in source
+
+
 def test_s92_a_loaded_or_filtered_list_says_its_count_through_the_one_live_region():
     """S92: Notes and the Library announce their count, settled and once, through
     `announce` (the page's `#live-region`), not a region each."""
