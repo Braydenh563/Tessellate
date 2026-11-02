@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- A document title another document already has is said once, in a toast on its first save under that name (a new document's first autosave, or a rename), and left as typed: "Another document is called “Trip plan” too. Rename one if you want to tell them apart." Three autosaves of a third "Trip plan" gave one toast (audit 1028 U38).
 - Notes and the Library say their count to a screen reader after a load or a filter: one polite line through the page's live region (`announce` with `settle` and `once`), "All notes: 0 notes" after a filter, "Library: 0 items" on the Library (audit 1028 S92; the Guide's Accessibility topic says so).
 - The command palette's editor mode (`>`) no longer ends in an empty list: words that match no editor command show one row, Search notes for the words, which opens Find anything on notes (audit 1028 S62; typed `>zzqq nothing` gave an empty list, now one row and Enter opens Find anything with the words and the Notes chip).
 - Chat without a model: a checklist line done in a later note now reads done in the note's checklist and leaves "what is still open", as "is it still on my list" already said (Fable eye F15).
