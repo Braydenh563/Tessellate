@@ -53,7 +53,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 47 | E14 | med | follow-ups like pin that note lose their referent | new | M |
 | 48 | E15 | med | stats route steals questions that name a note subject | fixed 1030 | S |
 | 49 | E16 | med | compare gives identical lists for both sides | new | M |
-| 50 | E17 | med | digest says newest a day ago when written today | new | S |
+| 50 | E17 | med | digest says newest a day ago when written today | fixed 2026-11-02 (today, never a day ago) | S |
 | 51 | E18 | med | composer invents speech acts the notes do not contain | new | S |
 | 52 | E19 | med | source lists mangled, author lowercased and split | new | S |
 | 53 | E20 | med | weekday words in log notes treated as due dates | new | M |

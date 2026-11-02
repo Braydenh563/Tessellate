@@ -142,15 +142,17 @@ _BASE = {
         "You last added to it {age} ago, which is a while; a fresh note would bring it up to date.",
         "Nothing new on it for {age}, so this is where it stood then rather than now.",
     ),
+    #: `{ago}` is "today" or "a week ago": a note written today was "a day
+    #: ago" when the age was rounded up to one (audit 1028 E17).
     "burst": (
-        "{all_of} came within {span} of each other, the newest {age} ago.",
-        "They were written close together, within {span}, the newest {age} ago.",
+        "{all_of} came within {span} of each other, the newest written {ago}.",
+        "They were written close together, within {span}; the newest is from {ago}.",
     ),
     "cadence": (
-        "That's about one every {every}, the newest {age} ago.",
-        "You've come back to it roughly every {every}, most recently {age} ago.",
+        "That's about one every {every}, the newest written {ago}.",
+        "You've come back to it roughly every {every}, most recently {ago}.",
     ),
-    "fresh": ("The newest is from {age} ago, so it's current.", "The latest is only {age} old."),
+    "fresh": ("The newest is from {ago}, so it's current.", "The latest was written {ago}."),
     "aim_under": ("{said}, under your aim of {aim}.", "{said}, which keeps you inside your {aim}."),
     "aim_over": ("{said}, over your aim of {aim}.", "{said}, which is more than the {aim} you were aiming for."),
     "price_gap": ", a gap of {gap} between them",
@@ -2531,14 +2533,15 @@ def _pattern(members: list[composer.NoteView], today: date) -> str:
         return _vary("stale").format(age=_gap(age)) if _CURRENT.get() else ""
     if not _TIMED.get():
         return ""
+    ago = "today" if age <= 0 else f"{_gap(age)} ago"
     if span <= 9:
         #: "Both came within a day", never "All two came" (2026-10-30).
         all_of = "Both" if len(days) == 2 else f"All {realise.count_word(len(days))}"
-        return _vary("burst").format(all_of=all_of, span=_gap(max(span, 1)), age=_gap(max(age, 1)))
+        return _vary("burst").format(all_of=all_of, span=_gap(max(span, 1)), ago=ago)
     if len(days) >= 3:
         every = _bare_gap(_gap(max(1, round(span / (len(days) - 1)))))
-        return _vary("cadence").format(every=every, age=_gap(max(age, 1)))
-    return _vary("fresh").format(age=_gap(max(age, 1)))
+        return _vary("cadence").format(every=every, ago=ago)
+    return _vary("fresh").format(ago=ago)
 
 
 def _row(said: str, fact: Fact) -> dict:
