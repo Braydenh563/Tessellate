@@ -106,3 +106,26 @@ def test_no_caller_throws_the_whole_note_away_and_reads_its_own_row():
         for m in DISCARDED.finditer(text)
     ]
     assert not found, f"use the note fullEntry returns, not the row you held: {found}"
+
+
+def _function(text: str, head: str) -> str:
+    start = text.index(head)
+    return text[start : text.index("\n}\n", start)]
+
+
+def test_a_card_drawn_open_from_a_clipped_row_fills_itself_with_the_whole_note():
+    """INBOX 1525 review, items 3 and 4: one way to the whole text for every opened card (cards, rows, the phone page).
+
+    Measured (fix1525 sweep, port 8796): a 2,314-character note's list row holds 272; opened by Show more and then
+    redrawn, by the row chevron and then reloaded, and as the phone note page, each shows all 2,314 with its end word.
+    """
+    card = _function((JS / "entry-card.js").read_text(encoding="utf-8"), "function entryItem(")
+    assert "content.fillWhole = () => entry.content_truncated && fullEntry(entry.id).then((whole) => {" in card
+    assert "entry = whole;" in card  # the card's menus and Copy read the whole note too
+    assert "if (expandedNotes.has(entry.id) || expandedRows.has(entry.id)) content.fillWhole();" in card
+    assert "if (expandedNotes.has(entry.id)) content.fillWhole();" in card  # the Show more press
+    toggle = _function((JS / "notes-lazy.js").read_text(encoding="utf-8"), "function toggleRowExpanded(")
+    #: The row's text is filled in place, never swapped for a new element its Show more is not bound to.
+    assert "replaceWith" not in toggle and '.querySelector(".entry-content")?.fillWhole?.()' in toggle
+    page = _function((JS / "phone-shell.js").read_text(encoding="utf-8"), "function dropRepeatedTitle(")
+    assert '"note-whole"' in page

@@ -1025,7 +1025,10 @@ let notePageClose = null;
 //: clipped head, so a long heading still matches.
 function dropRepeatedTitle(root, title) {
   root.querySelector(".entry-title")?.remove();
-  const first = root.querySelector(".entry-content")?.firstElementChild;
+  const shown = root.querySelector(".entry-content");
+  //: A clipped note's card fills in the whole text once it arrives (`fillWhole`, entry-card.js): its heading again.
+  if (shown && !shown.titled) shown.titled = shown.addEventListener("note-whole", () => dropRepeatedTitle(shown.parentNode, title)) || 1;
+  const first = shown?.firstElementChild;
   const said = (first?.textContent || "").replace(/\s+/g, " ").trim();
   if (first && /^H[1-6]$/.test(first.tagName) && said && title.startsWith(said.slice(0, 80))) first.remove();
 }
