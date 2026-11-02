@@ -53,7 +53,9 @@ eval(require("fs").readFileSync({str(store)!r}, "utf8") + "; globalThis.appState
 
 
 def test_both_writers_of_the_notes_list_publish_it() -> None:
-    notes = (JS / "notes-list.js").read_text(encoding="utf-8")
+    #: The semantic search's write moved to the lazy notes-lazy.js (`loadSemanticEntries`, INBOX 1525, for the boot
+    #: gzip budget): the rule is about every writer, wherever it lives, so both files are read.
+    notes = "\n".join((JS / name).read_text(encoding="utf-8") for name in ("notes-list.js", "notes-lazy.js"))
     writes = notes.count("allEntries = ")
     # The full read, the semantic search and `refreshEntries`'s patch.
     assert writes == 3

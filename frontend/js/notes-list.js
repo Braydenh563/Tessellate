@@ -106,8 +106,6 @@ function restoreNoteControl(held) {
 //: never swapped for another note's without asking.
 async function openNoteEditor(id, { focusTags = false } = {}) {
   if (editingId !== null && editingId !== id && !(await noteFormMayClose())) return false;
-  //: The form edits the whole text, never a list row's preview (INBOX 1525).
-  if (allEntries.find((e) => e.id === id)?.content_truncated && !(await fullEntry(id).catch(() => null))) return false;
   if (editingId !== id) {
     noteFormDirty = false;
     noteFormDraft = null;
@@ -1274,7 +1272,8 @@ function bodyWithoutTitleLine(content) {
 // case-insensitive title. Private notes are never a target: they cannot be
 // linked, and resolving to one would leak that it exists.
 //: **The lowercased forms a wiki lookup compares against, computed once per note, not per link.**
-//: Lowercasing every note's whole body twice per `[[link]]` cost 267 ms of self time in 14 s of ordinary use at
+//: Lowercasing every note's whole body twice per `[[link]]` (`opening` and `openingTitle`, the plain form and the one
+//: with its heading marker stripped) cost 267 ms of self time in 14 s of ordinary use at
 //: four thousand notes. The forms are cached on the entry, keyed by the content they came from (an edit
 //: invalidates them by construction), and only the first `WIKI_PREFIX_MAX` characters are lowercased, since every
 //: comparison is a `startsWith` against a title; a longer needle falls back to the full string.

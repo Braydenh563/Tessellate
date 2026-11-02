@@ -245,15 +245,18 @@ function entryItem(entry, options = {}) {
   //: A clamped card's two lines are text, not the blank line between its
   //: paragraphs (INBOX 458: "Tonight, I have work." then a lone "..."):
   //: folded, the paragraphs run on one line each; opened, the note as written.
-  const bodyText = () => (entry.title ? bodyWithoutTitleLine(entry.content) : stripFrontmatter(entry.content));
-  const fillContent = () => renderNoteText(
-    content,
-    content.classList.contains("entry-clamped") ? bodyText().replace(/\n[ \t\r]*(?:\n[ \t\r]*)+/g, "\n") : bodyText(),
-    searchHighlightTerms(),
-    //: Heading hashes are source, not words (dogfood item 18). Run on the
-    //: prose only, not the whole note: a code fence keeps its own `#` and `-`.
-    (prose) => prose.replace(/^#{1,6}[ \t]+/gm, "").replace(/^( *)-(?= \w)/gm, "$1•")
-  );
+  //: Read at each fill, not once: a clipped row's card is filled again with the whole note (INBOX 1525).
+  const fillContent = () => {
+    const body = entry.title ? bodyWithoutTitleLine(entry.content) : stripFrontmatter(entry.content);
+    renderNoteText(
+      content,
+      content.classList.contains("entry-clamped") ? body.replace(/\n[ \t\r]*(?:\n[ \t\r]*)+/g, "\n") : body,
+      searchHighlightTerms(),
+      //: Heading hashes are source, not words (dogfood item 18). Run on the
+      //: prose only, not the whole note: a code fence keeps its own `#` and `-`.
+      (prose) => prose.replace(/^#{1,6}[ \t]+/gm, "").replace(/^( *)-(?= \w)/gm, "$1•")
+    );
+  };
   fillContent();
   content.addEventListener("remove-inline-image", async (e) => {
     e.stopPropagation();
