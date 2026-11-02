@@ -394,16 +394,18 @@ WHITEBOARD_WRITE_PREFIXES = (
 
 
 def _whiteboard_writes():
-    from tessellate.api import routes_whiteboard
+    from tessellate.api import wb_boards, wb_export, wb_items, wb_make, wb_map
 
+    #: The routes live in the layers `routes_whiteboard` includes (gods-2).
     return sorted(
         name
-        for name, fn in inspect.getmembers(routes_whiteboard, inspect.isfunction)
+        for layer in (wb_boards, wb_items, wb_map, wb_export, wb_make)
+        for name, fn in inspect.getmembers(layer, inspect.isfunction)
         if name.startswith(WHITEBOARD_WRITE_PREFIXES)
         # `functools.wraps` keeps `__module__` pointing at the module the
         # function was defined in, so the decorated routes are still found and
         # the manager helpers imported into that module are still excluded.
-        and fn.__module__ == routes_whiteboard.__name__
+        and fn.__module__ == layer.__name__
     )
 
 
@@ -589,7 +591,7 @@ def test_every_whiteboard_write_records_exactly_one_event(client, session):
     for name in writes:
         driver = drivers.get(name)
         assert driver is not None, (
-            f"{name} is a write route in api/routes_whiteboard.py with no driver "
+            f"{name} is a write route in api/wb_*.py with no driver "
             "in this test. Make it record exactly one event (wrap it in "
             "@events.writes and give its events.record a whole-field payload), "
             "then add a driver for it here."

@@ -54,6 +54,6 @@ def test_hidden_and_locked_read_the_layer():
 
 
 def test_the_state_schema_keeps_layers():
-    src = (ROOT / "src" / "tessellate" / "api" / "routes_whiteboard.py").read_text(encoding="utf-8")
+    src = (ROOT / "src" / "tessellate" / "api" / "wb_model.py").read_text(encoding="utf-8")
     assert "layers: list[dict] = []" in src
     assert json.dumps  # keeps the import honest
