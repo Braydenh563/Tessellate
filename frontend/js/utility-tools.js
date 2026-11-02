@@ -38,11 +38,6 @@ function utilityClockSeconds(clock) {
   return Math.floor((clock.paused ?? now - clock.start) / 1000);
 }
 
-//: A lap's time, with the tenth that a whole second would hide.
-function utilityLapText(ms) {
-  return `${utilityTimeText(Math.floor(ms / 1000))}.${Math.floor((ms % 1000) / 100)}`;
-}
-
 function utilitySave() {
   if (utilityClocks.length) prefs.set("utility-clocks", JSON.stringify(utilityClocks));
   else prefs.remove("utility-clocks");
@@ -56,35 +51,12 @@ function utilityShown() {
   return [...utilityClocks].sort((x, y) => rank(x) - rank(y) || end(x) - end(y))[0];
 }
 
-//: The Clock panel's rows and the dashboard's line follow the same second.
-//: The panel hangs its painter on `utilityTick.panel` when it loads below (no new global).
-function paintClockViews() {
-  utilityTick.panel?.();
-  paintClockSummary();
-}
-
-//: One line for the dashboard's Focus timer widget (`#focus-clocks-text`):
-//: what is running now, from the same clocks.
-function utilityClocksLine() {
-  if (!utilityClocks.length) return "No clock running";
-  const clock = utilityShown();
-  const time = utilityTimeText(utilityClockSeconds(clock));
-  const what = clock.kind === "timer" ? `${clock.name} timer ${time}` : `Stopwatch ${time}`;
-  const paused = utilityClocks.filter((c) => c.paused != null).length;
-  const many = utilityClocks.length > 1 ? `${utilityClocks.length} clocks running, next ${what}` : `1 clock running, ${what}`;
-  return paused ? `${many} (${paused} paused)` : many;
-}
-
-function paintClockSummary() {
-  const line = document.getElementById?.("focus-clocks-text");
-  if (line) line.textContent = utilityClocksLine();
-}
-
 function paintUtilityChip() {
   for (const clock of utilityClocks.filter((c) => c.kind === "timer" && c.paused == null && c.end <= Date.now())) utilityTimerDone(clock);
   const chip = $("status-timer");
   const clock = utilityShown();
-  paintClockViews();
+  utilityTick.panel?.();
+  utilityOps.summary();
   if (!clock) {
     chip.classList.add("hidden");
     return;
@@ -106,7 +78,7 @@ function utilityClockRun(kind, name, seconds = 0) {
   while (utilityClocks.some((c) => c.id === `${start}-${n}`)) n++;
   const clock = { id: `${start}-${n}`, kind, name, start, end: start + seconds * 1000 };
   utilityClocks.push(clock);
-  utilityChanged();
+  utilityOps.changed();
   return clock;
 }
 
@@ -126,42 +98,10 @@ function utilityEnsureTick() {
   if (Number.isFinite(next)) utilityTick.end = setTimeout(paintUtilityChip, Math.max(0, next - Date.now()) + 50);
 }
 
-//: After any change to the list: saved, the tick re-armed, every view repainted.
-function utilityChanged() {
-  utilitySave();
-  utilityEnsureTick();
-  paintUtilityChip();
-}
-
 function utilityDrop(clock) {
   utilityClocks.splice(utilityClocks.indexOf(clock), 1);
   utilitySave();
   utilityEnsureTick();
-}
-
-//: Pause holds what was left or counted; play moves the end or the start so the
-//: held time is kept and the time paused is not counted.
-function utilityPause(clock) {
-  if (clock.paused != null) return;
-  const now = Date.now();
-  clock.paused = clock.kind === "timer" ? Math.max(0, clock.end - now) : now - clock.start;
-  utilityChanged();
-}
-
-function utilityPlay(clock) {
-  if (clock.paused == null) return;
-  const now = Date.now();
-  if (clock.kind === "timer") clock.end = now + clock.paused;
-  else clock.start = now - clock.paused;
-  delete clock.paused;
-  utilityChanged();
-}
-
-function utilityLap(clock) {
-  if (clock.kind !== "stopwatch") return;
-  if (!clock.laps) clock.laps = [];
-  clock.laps.push(clock.paused ?? Date.now() - clock.start);
-  utilityChanged();
 }
 
 //: What was running when the page last closed. A timer that ran out in the
@@ -180,35 +120,11 @@ function utilityRestore() {
   paintUtilityChip();
 }
 
-function utilityMinutesName(minutes) {
-  if (minutes < 1) return `${Math.round(minutes * 60)} second`;
-  if (minutes % 60 === 0) return `${minutes / 60} hour`;
-  return `${Math.round(minutes * 10) / 10} minute`;
-}
-
-//: A length typed in the Timer tab, in minutes: "10", "10m", "90s", "2h",
-//: "1h30m", "1:30" (minutes and seconds) or "1:02:03"; null when it is not one.
-function utilityParseLength(text) {
-  const t = String(text ?? "").trim().toLowerCase();
-  let minutes = null;
-  const hms = t.match(/^(\d+):(\d{2}):(\d{2})$/);
-  const ms = t.match(/^(\d+):(\d{2})$/);
-  if (hms) minutes = Number(hms[1]) * 60 + Number(hms[2]) + Number(hms[3]) / 60;
-  else if (ms) minutes = Number(ms[1]) + Number(ms[2]) / 60;
-  else if (/^\d+(?:\.\d+)?$/.test(t)) minutes = Number(t);
-  else {
-    const part = (unit) => `(?:(\\d+(?:\\.\\d+)?)\\s*(?:${unit}))?\\s*`;
-    const words = t.match(new RegExp(`^${part("h|hrs?|hours?")}${part("m|mins?|minutes?")}${part("s|secs?|seconds?")}$`));
-    if (words && (words[1] || words[2] || words[3])) minutes = Number(words[1] || 0) * 60 + Number(words[2] || 0) + Number(words[3] || 0) / 60;
-  }
-  return Number.isFinite(minutes) && minutes > 0 ? minutes : null;
-}
-
 //: A timer of `minutes` (to a day), put on the list; the Clock panel shows it.
 function startUtilityTimer(minutes = 25) {
   const span = Math.min(24 * 60, Math.max(1 / 60, Number(minutes) || 25));
   askNotificationPermission();
-  return utilityClockRun("timer", utilityMinutesName(span), Math.round(span * 60));
+  return utilityClockRun("timer", utilityOps.minutesName(span), Math.round(span * 60));
 }
 
 function startStopwatch() {
@@ -240,12 +156,7 @@ function utilityResume(clock, seconds) {
   const back = clock.paused != null ? { ...clock } : clock.kind === "timer" ? { ...clock, end: now + seconds * 1000 } : { ...clock, start: now - seconds * 1000 };
   if (utilityClocks.some((c) => c.id === clock.id)) return;
   utilityClocks.push(back);
-  utilityChanged();
-}
-
-//: The sound is the dashboard's chime (`focusChime`), on unless turned off in the Timer tab.
-function utilitySoundOn() {
-  return prefs.json("utility-sound", 1) !== 0;
+  utilityOps.changed();
 }
 
 function utilityTimerDone(clock) {
@@ -253,7 +164,7 @@ function utilityTimerDone(clock) {
   toast(`Time is up: the ${clock.name} timer has finished.`);
   notify("Tessellate", `Time is up: the ${clock.name} timer has finished.`);
   //: The chime itself catches a missing Web Audio; this catches a page where the dashboard's file is not in.
-  if (utilitySoundOn()) {
+  if (utilityOps.soundOn()) {
     try {
       focusChime();
     } catch {
@@ -262,26 +173,130 @@ function utilityTimerDone(clock) {
   }
 }
 
-//: The local "YYYY-MM-DDTHH:MM" for an alarm at `hhmm` ("07:30"): today when it
-//: is still ahead, else tomorrow; null for no time. It is what `addReminder` takes.
-function utilityAlarmValue(hhmm) {
-  const match = /^(\d{1,2}):(\d{2})$/.exec(String(hhmm || "").trim());
-  if (!match) return null;
-  const at = new Date(Date.now());
-  at.setHours(Number(match[1]), Number(match[2]), 0, 0);
-  if (at.getTime() <= Date.now()) at.setDate(at.getDate() + 1);
-  const pad = (n) => String(n).padStart(2, "0");
-  return `${at.getFullYear()}-${pad(at.getMonth() + 1)}-${pad(at.getDate())}T${pad(at.getHours())}:${pad(at.getMinutes())}`;
-}
+//: **The clock's helpers, in one object** (tests/test_global_scope_ratchet.py counts every top-level
+//: name): pause and play, laps, a typed length, the alarm, the sound pref and the dashboard's line.
+const utilityOps = (() => {
+  //: A lap's time, with the tenth that a whole second would hide.
+  function lapText(ms) {
+    return `${utilityTimeText(Math.floor(ms / 1000))}.${Math.floor((ms % 1000) / 100)}`;
+  }
 
-//: An alarm is a reminder at that time (`addReminder`, shell-reminders.js: the
-//: reminders API, its Undo, the bell and the system notification when due).
-async function utilityAlarmSet(hhmm, label) {
-  const value = utilityAlarmValue(hhmm);
-  if (!value) return null;
-  const made = await addReminder(label || "Alarm", value);
-  return made ? value : null;
-}
+  //: One line for the dashboard's Focus timer widget (`#focus-clocks-text`):
+  //: what is running now, from the same clocks.
+  function clocksLine() {
+    if (!utilityClocks.length) return "No clock running";
+    const clock = utilityShown();
+    const time = utilityTimeText(utilityClockSeconds(clock));
+    const what = clock.kind === "timer" ? `${clock.name} timer ${time}` : `Stopwatch ${time}`;
+    const paused = utilityClocks.filter((c) => c.paused != null).length;
+    const many = utilityClocks.length > 1 ? `${utilityClocks.length} clocks running, next ${what}` : `1 clock running, ${what}`;
+    return paused ? `${many} (${paused} paused)` : many;
+  }
+
+  function summary() {
+    const line = document.getElementById?.("focus-clocks-text");
+    if (line) line.textContent = clocksLine();
+  }
+
+  //: After any change to the list: saved, the tick re-armed, every view repainted.
+  function changed() {
+    utilitySave();
+    utilityEnsureTick();
+    paintUtilityChip();
+  }
+
+  //: Pause holds what was left or counted; play moves the end or the start so the
+  //: held time is kept and the time paused is not counted.
+  function pause(clock) {
+    if (clock.paused != null) return;
+    const now = Date.now();
+    clock.paused = clock.kind === "timer" ? Math.max(0, clock.end - now) : now - clock.start;
+    changed();
+  }
+
+  function play(clock) {
+    if (clock.paused == null) return;
+    const now = Date.now();
+    if (clock.kind === "timer") clock.end = now + clock.paused;
+    else clock.start = now - clock.paused;
+    delete clock.paused;
+    changed();
+  }
+
+  function lap(clock) {
+    if (clock.kind !== "stopwatch") return;
+    if (!clock.laps) clock.laps = [];
+    clock.laps.push(clock.paused ?? Date.now() - clock.start);
+    changed();
+  }
+
+  //: A length typed in the Timer tab, in minutes: "10", "10m", "90s", "2h",
+  //: "1h30m", "1:30" (minutes and seconds) or "1:02:03"; null when it is not one.
+  function parseLength(text) {
+    const t = String(text ?? "").trim().toLowerCase();
+    let minutes = null;
+    const hms = t.match(/^(\d+):(\d{2}):(\d{2})$/);
+    const ms = t.match(/^(\d+):(\d{2})$/);
+    if (hms) minutes = Number(hms[1]) * 60 + Number(hms[2]) + Number(hms[3]) / 60;
+    else if (ms) minutes = Number(ms[1]) + Number(ms[2]) / 60;
+    else if (/^\d+(?:\.\d+)?$/.test(t)) minutes = Number(t);
+    else {
+      const part = (unit) => `(?:(\\d+(?:\\.\\d+)?)\\s*(?:${unit}))?\\s*`;
+      const words = t.match(new RegExp(`^${part("h|hrs?|hours?")}${part("m|mins?|minutes?")}${part("s|secs?|seconds?")}$`));
+      if (words && (words[1] || words[2] || words[3])) minutes = Number(words[1] || 0) * 60 + Number(words[2] || 0) + Number(words[3] || 0) / 60;
+    }
+    return Number.isFinite(minutes) && minutes > 0 ? minutes : null;
+  }
+
+  //: The sound is the dashboard's chime (`focusChime`), on unless turned off in the Timer tab.
+  function soundOn() {
+    return prefs.json("utility-sound", 1) !== 0;
+  }
+
+  //: The local "YYYY-MM-DDTHH:MM" for an alarm at `hhmm` ("07:30"): today when it
+  //: is still ahead, else tomorrow; null for no time. It is what `addReminder` takes.
+  function alarmValue(hhmm) {
+    const match = /^(\d{1,2}):(\d{2})$/.exec(String(hhmm || "").trim());
+    if (!match) return null;
+    const at = new Date(Date.now());
+    at.setHours(Number(match[1]), Number(match[2]), 0, 0);
+    if (at.getTime() <= Date.now()) at.setDate(at.getDate() + 1);
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${at.getFullYear()}-${pad(at.getMonth() + 1)}-${pad(at.getDate())}T${pad(at.getHours())}:${pad(at.getMinutes())}`;
+  }
+
+  //: An alarm is a reminder at that time (`addReminder`, shell-reminders.js: the
+  //: reminders API, its Undo, the bell and the system notification when due).
+  async function alarmSet(hhmm, label) {
+    const value = alarmValue(hhmm);
+    if (!value) return null;
+    const made = await addReminder(label || "Alarm", value);
+    return made ? value : null;
+  }
+
+  function minutesName(minutes) {
+    if (minutes < 1) return `${Math.round(minutes * 60)} second`;
+    if (minutes % 60 === 0) return `${minutes / 60} hour`;
+    return `${Math.round(minutes * 10) / 10} minute`;
+  }
+
+  //: The Dashboard's Focus timer widget gets one line from the same list the status
+  //: bar reads, and a button into the Clock panel; `summary` repaints it each second.
+  function focusRow(body) {
+    if (!body.isConnected || body.querySelector("#focus-clocks")) return;
+    const row = document.createElement("div");
+    row.id = "focus-clocks";
+    row.className = "row focus-clocks";
+    const text = document.createElement("span");
+    text.id = "focus-clocks-text";
+    text.className = "muted focus-clocks-text";
+    text.textContent = clocksLine();
+    row.append(text, smallButton("ph:timer Clock", "Open the Clock: timers, a stopwatch and an alarm", () => openClockPanel("timer")));
+    body.appendChild(row);
+  }
+
+  return { focusRow, minutesName, lapText, clocksLine, summary, changed, pause, play, lap, parseLength, soundOn, alarmValue, alarmSet };
+})();
 
 $("status-timer").addEventListener("click", () => openClockPanel());
 //: A page that closes with a clock running gets it back when this loads (spaces-find.js asks for the module at boot).
@@ -417,7 +432,7 @@ async function insertTemplate(template, caught) {
     start.type = "submit";
     form.addEventListener("submit", (event) => {
       event.preventDefault();
-      const minutes = utilityParseLength(input.value);
+      const minutes = utilityOps.parseLength(input.value);
       note.textContent = minutes ? "" : "Type a length such as 10, 90s, 1h30m or 1:30.";
       if (!minutes) return;
       startUtilityTimer(minutes);
@@ -427,7 +442,7 @@ async function insertTemplate(template, caught) {
     const sound = clockEl("label", "check-row clock-sound");
     const box = clockEl("input");
     box.type = "checkbox";
-    box.checked = utilitySoundOn();
+    box.checked = utilityOps.soundOn();
     box.addEventListener("change", () => prefs.set("utility-sound", box.checked ? "1" : "0"));
     sound.append(box, clockEl("span", "", "Sound at the end"));
     pane.append(presets, form, note, sound);
@@ -461,13 +476,13 @@ async function insertTemplate(template, caught) {
     seeReminders.classList.add("hidden");
     pane.addEventListener("submit", async (event) => {
       event.preventDefault();
-      const value = utilityAlarmValue(time.value);
+      const value = utilityOps.alarmValue(time.value);
       if (!value) {
         note.textContent = "Pick a time for the alarm.";
         return;
       }
       try {
-        const done = await utilityAlarmSet(time.value, label.value.trim());
+        const done = await utilityOps.alarmSet(time.value, label.value.trim());
         if (!done) return;
         const tomorrow = new Date(value).getDate() !== new Date(Date.now()).getDate();
         note.textContent = `Alarm set for ${time.value}${tomorrow ? " tomorrow" : ""}. It is a reminder.`;
@@ -576,12 +591,12 @@ async function insertTemplate(template, caught) {
     const toggle = smallButton("ph:pause", "Pause", () => {
       const clock = find();
       if (!clock) return;
-      if (clock.paused != null) utilityPlay(clock);
-      else utilityPause(clock);
+      if (clock.paused != null) utilityOps.play(clock);
+      else utilityOps.pause(clock);
     });
     const lap = smallButton("ph:flag", "Lap", () => {
       const clock = find();
-      if (clock) utilityLap(clock);
+      if (clock) utilityOps.lap(clock);
     });
     const stop = smallButton("ph:stop", "Stop", () => stopUtilityClock(find()));
     top.append(name, time, toggle, lap, stop);
@@ -607,7 +622,7 @@ async function insertTemplate(template, caught) {
     const laps = clock.laps || [];
     if (row.laps.children.length !== laps.length) {
       //: Newest first, each with the time it took since the one before.
-      row.laps.replaceChildren(...laps.map((at, i) => clockEl("li", "", `Lap ${i + 1}: ${utilityLapText(at)}, +${utilityLapText(at - (laps[i - 1] || 0))}`)).reverse());
+      row.laps.replaceChildren(...laps.map((at, i) => clockEl("li", "", `Lap ${i + 1}: ${utilityOps.lapText(at)}, +${utilityOps.lapText(at - (laps[i - 1] || 0))}`)).reverse());
       row.laps.classList.toggle("hidden", !laps.length);
     }
   }

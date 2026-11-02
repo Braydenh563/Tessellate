@@ -2,9 +2,9 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7570, frontend ids 2638, CSS sections 517, backend routes 640, backend modules 8485, test files 1856, tests 15810, plan headings 991, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7558, frontend ids 2638, CSS sections 517, backend routes 640, backend modules 8485, test files 1856, tests 15810, plan headings 991, app scripts 28, boot scripts 37, script files 234.
 
-## Frontend functions (7570)
+## Frontend functions (7558)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -1412,22 +1412,22 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `activityActorName` | frontend/js/dashboard.js:3811 |
-| `activityUndoControl` | frontend/js/dashboard.js:3889 |
-| `activityUndoPlanText` | frontend/js/dashboard.js:3818 |
-| `activityUndoStarts` | frontend/js/dashboard.js:3874 |
+| `activityActorName` | frontend/js/dashboard.js:3797 |
+| `activityUndoControl` | frontend/js/dashboard.js:3875 |
+| `activityUndoPlanText` | frontend/js/dashboard.js:3804 |
+| `activityUndoStarts` | frontend/js/dashboard.js:3860 |
 | `afterFrames` | frontend/js/dashboard.js:1929 |
 | `applyDashDensity` | frontend/js/dashboard.js:1239 |
 | `cachedGreetingPhrase` | frontend/js/dashboard.js:293 |
 | `closeFeatures` | frontend/js/dashboard.js:1519 |
-| `dashActionRow` | frontend/js/dashboard.js:3604 |
-| `dashActivityItems` | frontend/js/dashboard.js:3722 |
+| `dashActionRow` | frontend/js/dashboard.js:3590 |
+| `dashActivityItems` | frontend/js/dashboard.js:3708 |
 | `dashContinueNote` | frontend/js/dashboard.js:1365 |
 | `dashCustomiseItems` | frontend/js/dashboard.js:1414 |
 | `dashDensity` | frontend/js/dashboard.js:1107 |
 | `dashDensityChosen` | frontend/js/dashboard.js:1113 |
 | `dashDragOverCard` | frontend/js/dashboard.js:22 |
-| `dashEmpty` | frontend/js/dashboard.js:3657 |
+| `dashEmpty` | frontend/js/dashboard.js:3643 |
 | `dashEntries` | frontend/js/dashboard.js:467 |
 | `dashFillingSkeleton` | frontend/js/dashboard.js:1940 |
 | `dashFillingSkeletonDone` | frontend/js/dashboard.js:1985 |
@@ -1441,7 +1441,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dashReminders` | frontend/js/dashboard.js:447 |
 | `dashStatsButton` | frontend/js/dashboard.js:2289 |
 | `dashStreak` | frontend/js/dashboard.js:2277 |
-| `dashTensionRow` | frontend/js/dashboard.js:4093 |
+| `dashTensionRow` | frontend/js/dashboard.js:4079 |
 | `dashWidgetRow` | frontend/js/dashboard.js:2041 |
 | `dashWidgetToggle` | frontend/js/dashboard.js:2015 |
 | `dashWidgetsSummary` | frontend/js/dashboard.js:2153 |
@@ -1485,9 +1485,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `refreshAiGreeting` | frontend/js/dashboard.js:313 |
 | `refreshArtForTheme` | frontend/js/dashboard.js:2254 |
 | `refreshDashWidgets` | frontend/js/dashboard.js:1709 |
-| `renderActivityWidget` | frontend/js/dashboard.js:3735 |
-| `renderBoardsWidget` | frontend/js/dashboard.js:3678 |
-| `renderBookmarksWidget` | frontend/js/dashboard.js:3957 |
+| `renderActivityWidget` | frontend/js/dashboard.js:3721 |
+| `renderBoardsWidget` | frontend/js/dashboard.js:3664 |
+| `renderBookmarksWidget` | frontend/js/dashboard.js:3943 |
 | `renderCategoriesWidget` | frontend/js/dashboard.js:2982 |
 | `renderDashGlance` | frontend/js/dashboard.js:687 |
 | `renderDashMore` | frontend/js/dashboard.js:1474 |
@@ -1496,7 +1496,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderDashboard` | frontend/js/dashboard.js:1738 |
 | `renderDashboardGreeting` | frontend/js/dashboard.js:545 |
 | `renderDigestWidget` | frontend/js/dashboard.js:2695 |
-| `renderDocumentsWidget` | frontend/js/dashboard.js:3920 |
+| `renderDocumentsWidget` | frontend/js/dashboard.js:3906 |
 | `renderFeatures` | frontend/js/dashboard.js:1583 |
 | `renderFirstStepsLazy` | frontend/js/dashboard.js:1637 |
 | `renderFocusTimerWidget` | frontend/js/dashboard.js:3450 |
@@ -1505,8 +1505,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderMostOpenedWidget` | frontend/js/dashboard.js:2505 |
 | `renderMostUsedWidget` | frontend/js/dashboard.js:2531 |
 | `renderNameNudge` | frontend/js/dashboard.js:751 |
-| `renderOnThisDayWidget` | frontend/js/dashboard.js:4151 |
-| `renderPaceWidget` | frontend/js/dashboard.js:4226 |
+| `renderOnThisDayWidget` | frontend/js/dashboard.js:4137 |
+| `renderPaceWidget` | frontend/js/dashboard.js:4212 |
 | `renderPinnedWidget` | frontend/js/dashboard.js:2500 |
 | `renderQuestionsWidget` | frontend/js/dashboard.js:2591 |
 | `renderQuickCaptureWidget` | frontend/js/dashboard.js:2768 |
@@ -1518,9 +1518,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderStatsWidget` | frontend/js/dashboard.js:2327 |
 | `renderStreakWidget` | frontend/js/dashboard.js:2295 |
 | `renderTagCloudWidget` | frontend/js/dashboard.js:3248 |
-| `renderTensionsWidget` | frontend/js/dashboard.js:4031 |
+| `renderTensionsWidget` | frontend/js/dashboard.js:4017 |
 | `renderTopTagsWidget` | frontend/js/dashboard.js:2570 |
-| `renderUnfinishedWidget` | frontend/js/dashboard.js:3983 |
+| `renderUnfinishedWidget` | frontend/js/dashboard.js:3969 |
 | `saveDashLayout` | frontend/js/dashboard.js:196 |
 | `saveQuickAccess` | frontend/js/dashboard.js:1338 |
 | `saveQuickTints` | frontend/js/dashboard.js:1347 |
@@ -1538,7 +1538,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `toggleDashWidgetHidden` | frontend/js/dashboard.js:207 |
 | `toggleDashWidgetWide` | frontend/js/dashboard.js:215 |
 | `truncateMarkdownSafe` | frontend/js/dashboard.js:3046 |
-| `undoActorFrom` | frontend/js/dashboard.js:3836 |
+| `undoActorFrom` | frontend/js/dashboard.js:3822 |
 | `watchDashWidgets` | frontend/js/dashboard.js:828 |
 | `wireDashDensity` | frontend/js/dashboard.js:1275 |
 | `withDisplayName` | frontend/js/dashboard.js:257 |
@@ -7216,40 +7216,28 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderUsage` | frontend/js/usage-ledger.js:33 |
 | `usageLabels` | frontend/js/usage-ledger.js:18 |
 
-### frontend/js/utility-tools.js (30)
+### frontend/js/utility-tools.js (18)
 
 | Name | File:line |
 |---|---|
-| `countSelection` | frontend/js/utility-tools.js:301 |
-| `insertTemplate` | frontend/js/utility-tools.js:318 |
-| `paintClockSummary` | frontend/js/utility-tools.js:78 |
-| `paintClockViews` | frontend/js/utility-tools.js:61 |
-| `paintUtilityChip` | frontend/js/utility-tools.js:83 |
-| `startStopwatch` | frontend/js/utility-tools.js:214 |
-| `startUtilityTimer` | frontend/js/utility-tools.js:208 |
-| `stopUtilityClock` | frontend/js/utility-tools.js:223 |
-| `utilityAlarmSet` | frontend/js/utility-tools.js:279 |
-| `utilityAlarmValue` | frontend/js/utility-tools.js:267 |
-| `utilityChanged` | frontend/js/utility-tools.js:130 |
-| `utilityClockRun` | frontend/js/utility-tools.js:103 |
+| `countSelection` | frontend/js/utility-tools.js:316 |
+| `insertTemplate` | frontend/js/utility-tools.js:333 |
+| `paintUtilityChip` | frontend/js/utility-tools.js:54 |
+| `startStopwatch` | frontend/js/utility-tools.js:130 |
+| `startUtilityTimer` | frontend/js/utility-tools.js:124 |
+| `stopUtilityClock` | frontend/js/utility-tools.js:139 |
+| `utilityClockRun` | frontend/js/utility-tools.js:75 |
 | `utilityClockSeconds` | frontend/js/utility-tools.js:35 |
-| `utilityClocksLine` | frontend/js/utility-tools.js:68 |
-| `utilityDrop` | frontend/js/utility-tools.js:136 |
-| `utilityEnsureTick` | frontend/js/utility-tools.js:115 |
-| `utilityLap` | frontend/js/utility-tools.js:160 |
-| `utilityLapText` | frontend/js/utility-tools.js:42 |
-| `utilityMinutesName` | frontend/js/utility-tools.js:183 |
-| `utilityParseLength` | frontend/js/utility-tools.js:191 |
-| `utilityPause` | frontend/js/utility-tools.js:144 |
-| `utilityPlay` | frontend/js/utility-tools.js:151 |
-| `utilityRestore` | frontend/js/utility-tools.js:169 |
-| `utilityResume` | frontend/js/utility-tools.js:238 |
-| `utilitySave` | frontend/js/utility-tools.js:46 |
-| `utilitySelectedText` | frontend/js/utility-tools.js:293 |
-| `utilityShown` | frontend/js/utility-tools.js:53 |
-| `utilitySoundOn` | frontend/js/utility-tools.js:247 |
+| `utilityDrop` | frontend/js/utility-tools.js:101 |
+| `utilityEnsureTick` | frontend/js/utility-tools.js:87 |
+| `utilityOps` | frontend/js/utility-tools.js:178 |
+| `utilityRestore` | frontend/js/utility-tools.js:109 |
+| `utilityResume` | frontend/js/utility-tools.js:154 |
+| `utilitySave` | frontend/js/utility-tools.js:41 |
+| `utilitySelectedText` | frontend/js/utility-tools.js:308 |
+| `utilityShown` | frontend/js/utility-tools.js:48 |
 | `utilityTimeText` | frontend/js/utility-tools.js:24 |
-| `utilityTimerDone` | frontend/js/utility-tools.js:251 |
+| `utilityTimerDone` | frontend/js/utility-tools.js:162 |
 
 ### frontend/js/vault-unlock.js (2)
 

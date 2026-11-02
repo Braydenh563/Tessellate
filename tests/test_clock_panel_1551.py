@@ -148,10 +148,10 @@ def test_pressing_the_chip_opens_the_panel_and_no_longer_only_stops_the_clock():
 def test_a_timer_pauses_holds_its_time_and_resumes_from_it():
     got = _run(
         "run('startUtilityTimer(10)'); now += 60_000; const c = run('utilityClocks[0]');"
-        "run('utilityPause(utilityClocks[0])'); const held = run('utilityClockSeconds(utilityClocks[0])');"
+        "run('utilityOps.pause(utilityClocks[0])'); const held = run('utilityClockSeconds(utilityClocks[0])');"
         "now += 3_600_000; tick(); const still = run('utilityClockSeconds(utilityClocks[0])');"
         "const finished = toasts.filter((t) => t.startsWith('Time is up')).length;"
-        "run('utilityPlay(utilityClocks[0])'); const end = run('utilityClocks[0].end');"
+        "run('utilityOps.play(utilityClocks[0])'); const end = run('utilityClocks[0].end');"
         "out({held, still, finished, end, at: now});"
     )
     assert got["held"] == 540 and got["still"] == 540, "9:00 left, paused for an hour"
@@ -162,9 +162,9 @@ def test_a_timer_pauses_holds_its_time_and_resumes_from_it():
 @needs_node
 def test_a_stopwatch_pauses_and_resumes_and_laps_record_the_elapsed_time():
     got = _run(
-        "run('startStopwatch()'); now += 65_400; run('utilityLap(utilityClocks[0])');"
-        "now += 10_000; run('utilityLap(utilityClocks[0])');"
-        "run('utilityPause(utilityClocks[0])'); now += 500_000; run('utilityPlay(utilityClocks[0])'); now += 1_000;"
+        "run('startStopwatch()'); now += 65_400; run('utilityOps.lap(utilityClocks[0])');"
+        "now += 10_000; run('utilityOps.lap(utilityClocks[0])');"
+        "run('utilityOps.pause(utilityClocks[0])'); now += 500_000; run('utilityOps.play(utilityClocks[0])'); now += 1_000;"
         "out({laps: run('utilityClocks[0].laps'), secs: run('utilityClockSeconds(utilityClocks[0])')});"
     )
     assert got["laps"] == [65_400, 75_400]
@@ -175,7 +175,7 @@ def test_a_stopwatch_pauses_and_resumes_and_laps_record_the_elapsed_time():
 def test_several_clocks_run_at_once_and_each_is_kept_across_a_reload():
     got = _run(
         "run('startUtilityTimer(10)'); run('startUtilityTimer(5)'); run('startStopwatch()'); run('startStopwatch()');"
-        "run('utilityPause(utilityClocks[1])'); out({n: run('utilityClocks.length'), ids: new Set(run('utilityClocks.map((c) => c.id)')).size});"
+        "run('utilityOps.pause(utilityClocks[1])'); out({n: run('utilityClocks.length'), ids: new Set(run('utilityClocks.map((c) => c.id)')).size});"
     )
     assert got["n"] == 4 and got["ids"] == 4
     saved = json.loads(got["stored"])
@@ -208,28 +208,28 @@ def test_a_timer_that_ends_chimes_and_notifies_and_the_sound_can_be_turned_off()
 @needs_node
 def test_a_typed_length_is_read_in_minutes_seconds_and_hours():
     cases = {"10": 10, "10m": 10, "90s": 1.5, "2h": 120, "1h30m": 90, "1:30": 1.5, "1:02:03": 62.05, "0.5": 0.5, "abc": None, "": None, "0": None, "-5": None}
-    got = _run("out({r: " + json.dumps(list(cases)) + ".map((t) => run('utilityParseLength(' + JSON.stringify(t) + ')'))});")
+    got = _run("out({r: " + json.dumps(list(cases)) + ".map((t) => run('utilityOps.parseLength(' + JSON.stringify(t) + ')'))});")
     assert got["r"] == list(cases.values())
 
 
 @needs_node
 def test_an_alarm_time_is_today_if_it_is_ahead_else_tomorrow():
     #: 2023-11-14 22:13:20 UTC
-    got = _run("out({a: run('utilityAlarmValue(\"23:30\")'), b: run('utilityAlarmValue(\"07:05\")'), c: run('utilityAlarmValue(\"22:13\")'), d: run('utilityAlarmValue(\"\")')});")
+    got = _run("out({a: run('utilityOps.alarmValue(\"23:30\")'), b: run('utilityOps.alarmValue(\"07:05\")'), c: run('utilityOps.alarmValue(\"22:13\")'), d: run('utilityOps.alarmValue(\"\")')});")
     assert got["a"] == "2023-11-14T23:30" and got["b"] == "2023-11-15T07:05"
     assert got["c"] == "2023-11-15T22:13", "a minute that has begun is passed"
     assert got["d"] is None
 
 
 def test_the_alarm_is_a_reminder_through_the_existing_api():
-    assert "addReminder(" in SRC[SRC.index("function utilityAlarmSet"):][:900]
+    assert "addReminder(" in SRC[SRC.index("function alarmSet"):][:900]
 
 
 @needs_node
 def test_the_dashboard_line_reads_the_same_clocks():
     got = _run(
-        "run('startUtilityTimer(10)'); run('startStopwatch()'); const two = run('utilityClocksLine()'); "
-        "run('utilityClocks.length = 0'); out({two, none: run('utilityClocksLine()')});"
+        "run('startUtilityTimer(10)'); run('startStopwatch()'); const two = run('utilityOps.clocksLine()'); "
+        "run('utilityClocks.length = 0'); out({two, none: run('utilityOps.clocksLine()')});"
     )
     assert got["two"].startswith("2 clocks running") and "10:00" in got["two"]
     assert got["none"] == "No clock running"
@@ -238,8 +238,9 @@ def test_the_dashboard_line_reads_the_same_clocks():
 def test_the_focus_widget_has_a_row_for_the_clocks_and_opens_the_panel():
     dash = (JS / "dashboard.js").read_text(encoding="utf-8")
     widget = dash[dash.index("async function renderFocusTimerWidget"):][:6000]
-    assert 'id = "focus-clocks"' in widget and 'ensureModule("utilities")' in widget and "openClockPanel(" in widget
-    assert "paintClockSummary" in SRC
+    assert 'ensureModule("utilities").then(() => utilityOps.focusRow(body))' in widget
+    row = SRC[SRC.index("function focusRow"):][:900]
+    assert 'row.id = "focus-clocks"' in row and "openClockPanel(" in row and "clocksLine()" in row
 
 
 # --- the panel itself ------------------------------------------------------------
