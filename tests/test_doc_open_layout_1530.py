@@ -54,6 +54,9 @@ def test_the_outline_reads_the_caret_line_before_it_writes():
 
 
 def test_the_trail_fade_is_measured_after_the_frame():
-    body = _body(frontend_text("documents.js"), "function renderDocCrumbs(line) {")
+    #: renderDocCrumbs moved to documents-outline.js, one closure (doc24-1102): its lines sit two spaces further in.
+    js = frontend_text("documents-outline.js")
+    start = js.index("function renderDocCrumbs(line) {")
+    body = js[start : js.index("\n  }\n", start)]
     assert "afterFrames(() => setTimeout(" in body
-    assert "\n  window.syncEdgeFade?.(nav);" not in body
+    assert "\n    window.syncEdgeFade?.(nav);" not in body

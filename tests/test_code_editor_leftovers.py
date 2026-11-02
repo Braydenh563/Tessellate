@@ -18,6 +18,8 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 FRONTEND = ROOT / "frontend"
 DOCS_JS = (FRONTEND / "js" / "documents.js").read_text(encoding="utf-8")
+#: A plain Ctrl+P and the page setup moved to documents-print.js, one closure (DC13 remainder, doc24-1102).
+PRINT_JS = (FRONTEND / "js" / "documents-print.js").read_text(encoding="utf-8")
 CODEKIT_JS = (FRONTEND / "js" / "documents-codekit.js").read_text(encoding="utf-8")
 SETTINGS_JS = (FRONTEND / "js" / "settings-wiring.js").read_text(encoding="utf-8")
 INDEX = (FRONTEND / "index.html").read_text(encoding="utf-8")
@@ -25,9 +27,12 @@ node = pytest.mark.skipif(shutil.which("node") is None, reason="node not install
 
 
 def _function(source: str, name: str) -> str:
-    """One top-level function's text: the scripts keep them at column 0."""
+    """One top-level function's text: the scripts keep them at column 0, a wrapped file (one closure) at two."""
     start = source.index(f"function {name}(")
-    return source[start : source.index("\n}\n", start) + 3]
+    line = source[source.rfind("\n", 0, start) + 1 : start]
+    indent = line[: len(line) - len(line.lstrip(" "))]
+    end = f"\n{indent}}}\n"
+    return source[start : source.index(end, start) + len(end)]
 
 
 def _run(names: list[tuple[str, str]], call: str):
@@ -97,7 +102,7 @@ def test_the_invalid_field_is_drawn_in_the_error_ink():
 
 @node
 def test_a_code_file_prints_one_row_per_line_without_a_phantom_last_row():
-    names = [(DOCS_JS, "docCodePrintRows")]
+    names = [(PRINT_JS, "docCodePrintRows")]
     assert _run(names, 'docCodePrintRows("a\\nb\\n")') == ["a", "b"]
     assert _run(names, 'docCodePrintRows("a\\r\\n\\r\\nb")') == ["a", "", "b"]
     assert _run(names, 'docCodePrintRows("")') == []
@@ -108,11 +113,11 @@ def test_a_code_file_has_a_print_row_and_prints_its_own_listing():
     assert hidden and "doc-export-pdf" not in hidden.group(1)
     export = (FRONTEND / "js" / "documents-export.js").read_text(encoding="utf-8")
     assert "docCodeExportRefused" not in _function(export, "docExportPdfRun")
-    begin = _function(DOCS_JS, "docPrintBegin")
+    begin = _function(PRINT_JS, "docPrintBegin")
     assert "docIsCodeFile()" in begin and "docCodePrintFill()" in begin
-    fill = _function(DOCS_JS, "docCodePrintFill")
+    fill = _function(PRINT_JS, "docCodePrintFill")
     assert "doc-code-print-line" in fill and "doc-code-print-no" in fill
-    assert "docPrintBegin()" in DOCS_JS.split('window.addEventListener("beforeprint"')[1][:500]
+    assert "docPrintBegin()" in PRINT_JS.split('window.addEventListener("beforeprint"')[1][:500]
 
 
 def test_the_printed_code_is_monospaced_with_numbers_and_keeps_a_line_whole():

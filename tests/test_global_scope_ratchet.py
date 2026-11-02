@@ -54,8 +54,12 @@ TOP_LEVEL_LETS_CAP = 699
 #: fences (documents-mermaid.js, 426 lines) wrapped whole, three exports; measured 9,775. doc23-1102: the TeX parser and MathML
 #: renderer (documents-math.js, 400 lines) wrapped whole, two exports; measured 9,754. doc23-1102: the comments
 #: model and panel (documents-comments.js, 436 lines) wrapped whole, five exports; measured 9,742. doc23-1102: embeds and wiki-link
-#: targets (documents-embeds.js, 335 lines) wrapped whole, seven exports; measured 9,739.
-GLOBAL_NAMES_CAP = 9739
+#: targets (documents-embeds.js, 335 lines) wrapped whole, seven exports; measured 9,739. doc24-1102: the table
+#: model (documents-tables.js, 676 lines) wrapped whole, 23 exports; measured 9,732. doc24-1102: the columns block
+#: (documents-columns.js, 267 lines) wrapped whole, three exports; measured 9,726. doc24-1102: a plain Ctrl+P and the page setup
+#: (documents-print.js, 186 lines) wrapped whole, six exports; measured 9,720. doc24-1102: the breadcrumb row and the outline's
+#: folds and filter (documents-outline.js, 327 lines) wrapped whole, ten exports; measured 9,714.
+GLOBAL_NAMES_CAP = 9714
 
 
 def _code() -> dict[str, str]:
