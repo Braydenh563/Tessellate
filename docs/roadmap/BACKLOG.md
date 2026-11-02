@@ -584,7 +584,7 @@ audit:
   the vendored JS, since nothing currently checks either), and a fresh look
   at this section's own three easy-to-break rules (§8b's opening) to confirm
   nothing has quietly regressed since they were written down.
-  **Next:** nothing in `.github/`, `scripts/` or `tests/` runs `pip-audit` (checked 2026-10-05); the security agent owns it with `scratchpad/audit1005/security.md`. An offline test over `frontend/vendor/*/` version stamps against a pinned advisory list is the vendored-JS half.
+  **Next:** nothing in `.github/`, `scripts/` or `tests/` runs `pip-audit` (checked 2026-10-05); the security agent owns it with `scratchpad/audit1005/security.md`. An offline test over `frontend/vendor/*/` version stamps against a pinned advisory list is the vendored-JS half. **Checked 2026-11-02:** stamps found for mermaid 12.2.0, mathlive 0.111.1, d3 7.9.0, harper 2.10.0, docx 9.10.0, sql.js 0.28.2 (package.json) and esbuild 0.24.2 (the build scripts); mammoth, p5, codemirror, emmet, js-beautify, js-interpreter and sucrase carry no version stamp, so the test needs a `VERSION.txt` beside each first (mermaid's and mathlive's are the pattern). `pip install pip-audit` hung behind the sandbox proxy, so the Python half still needs a networked run.
 - **Search-specific items** now live in §13, since SearXNG went from "being
   built" to "actually running" this pass.
 
