@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7558, frontend ids 2638, CSS sections 517, backend routes 640, backend modules 8485, test files 1854, tests 15789, plan headings 991, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7558, frontend ids 2638, CSS sections 517, backend routes 640, backend modules 8485, test files 1855, tests 15792, plan headings 991, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7558)
 
@@ -5956,34 +5956,34 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `panelAbove` | frontend/js/panel-movable.js:134 |
 | `panelAboveBy` | frontend/js/panel-movable.js:102 |
-| `panelAdopt` | frontend/js/panel-movable.js:540 |
+| `panelAdopt` | frontend/js/panel-movable.js:541 |
 | `panelApply` | frontend/js/panel-movable.js:349 |
-| `panelChip` | frontend/js/panel-movable.js:900 |
+| `panelChip` | frontend/js/panel-movable.js:935 |
 | `panelClamp` | frontend/js/panel-movable.js:385 |
 | `panelClampMove` | frontend/js/panel-movable.js:53 |
 | `panelClampSize` | frontend/js/panel-movable.js:59 |
 | `panelClipBox` | frontend/js/panel-movable.js:155 |
-| `panelCloseBtn` | frontend/js/panel-movable.js:858 |
+| `panelCloseBtn` | frontend/js/panel-movable.js:893 |
 | `panelContains` | frontend/js/panel-movable.js:152 |
 | `panelDock` | frontend/js/panel-movable.js:467 |
 | `panelFit` | frontend/js/panel-movable.js:452 |
 | `panelFull` | frontend/js/panel-movable.js:503 |
-| `panelGripDown` | frontend/js/panel-movable.js:730 |
-| `panelGripKey` | frontend/js/panel-movable.js:781 |
-| `panelGripRoom` | frontend/js/panel-movable.js:638 |
-| `panelHeadDown` | frontend/js/panel-movable.js:647 |
+| `panelGripDown` | frontend/js/panel-movable.js:758 |
+| `panelGripKey` | frontend/js/panel-movable.js:816 |
+| `panelGripRoom` | frontend/js/panel-movable.js:640 |
+| `panelHeadDown` | frontend/js/panel-movable.js:649 |
 | `panelHeadOf` | frontend/js/panel-movable.js:381 |
-| `panelHeadSettle` | frontend/js/panel-movable.js:841 |
+| `panelHeadSettle` | frontend/js/panel-movable.js:876 |
 | `panelId` | frontend/js/panel-movable.js:334 |
 | `panelInset` | frontend/js/panel-movable.js:431 |
 | `panelKeyDelta` | frontend/js/panel-movable.js:259 |
 | `panelLayout` | frontend/js/panel-movable.js:308 |
 | `panelMakesContext` | frontend/js/panel-movable.js:115 |
-| `panelMinHost` | frontend/js/panel-movable.js:827 |
-| `panelMinKey` | frontend/js/panel-movable.js:961 |
-| `panelMinPlace` | frontend/js/panel-movable.js:887 |
-| `panelMinTray` | frontend/js/panel-movable.js:873 |
-| `panelMinimise` | frontend/js/panel-movable.js:929 |
+| `panelMinHost` | frontend/js/panel-movable.js:862 |
+| `panelMinKey` | frontend/js/panel-movable.js:996 |
+| `panelMinPlace` | frontend/js/panel-movable.js:922 |
+| `panelMinTray` | frontend/js/panel-movable.js:908 |
+| `panelMinimise` | frontend/js/panel-movable.js:964 |
 | `panelMovableOn` | frontend/js/panel-movable.js:313 |
 | `panelOf` | frontend/js/panel-movable.js:323 |
 | `panelPinned` | frontend/js/panel-movable.js:219 |
@@ -5991,11 +5991,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `panelPushOn` | frontend/js/panel-movable.js:216 |
 | `panelPushSide` | frontend/js/panel-movable.js:228 |
 | `panelPushSync` | frontend/js/panel-movable.js:231 |
-| `panelPushToggle` | frontend/js/panel-movable.js:971 |
-| `panelReopen` | frontend/js/panel-movable.js:862 |
+| `panelPushToggle` | frontend/js/panel-movable.js:1006 |
+| `panelReopen` | frontend/js/panel-movable.js:897 |
 | `panelReset` | frontend/js/panel-movable.js:507 |
 | `panelResetSize` | frontend/js/panel-movable.js:520 |
-| `panelRestore` | frontend/js/panel-movable.js:945 |
+| `panelRestore` | frontend/js/panel-movable.js:980 |
 | `panelRestoreOn` | frontend/js/panel-movable.js:256 |
 | `panelSafe` | frontend/js/panel-movable.js:181 |
 | `panelSave` | frontend/js/panel-movable.js:532 |
@@ -6012,11 +6012,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `panelStoreRead` | frontend/js/panel-movable.js:276 |
 | `panelStoreWrite` | frontend/js/panel-movable.js:284 |
 | `panelSync` | frontend/js/panel-movable.js:479 |
-| `panelTitle` | frontend/js/panel-movable.js:830 |
+| `panelTitle` | frontend/js/panel-movable.js:865 |
 | `panelTopLayer` | frontend/js/panel-movable.js:105 |
 | `panelUnsnap` | frontend/js/panel-movable.js:472 |
 | `panelWatchOpen` | frontend/js/panel-movable.js:486 |
-| `panelWindowResized` | frontend/js/panel-movable.js:983 |
+| `panelWindowResized` | frontend/js/panel-movable.js:1018 |
 | `panelZoneFor` | frontend/js/panel-movable.js:252 |
 | `panelZoneRect` | frontend/js/panel-movable.js:80 |
 
@@ -11945,7 +11945,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/nav-history-lazy.css | 169 |
 | frontend/css/objmove-lazy.css | 123 |
 | frontend/css/offline-split-lazy.css | 71 |
-| frontend/css/panel-movable-lazy.css | 196 |
+| frontend/css/panel-movable-lazy.css | 209 |
 | frontend/css/plain-head-lazy.css | 17 |
 | frontend/css/popup-anatomy-lazy.css | 155 |
 | frontend/css/questions-lazy.css | 102 |
@@ -23280,7 +23280,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15789)
+## Tests (15792)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24500,6 +24500,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_palette_synonyms.py | 5 |
 | tests/test_panel_movable.py | 25 |
 | tests/test_panel_movable_whole_1448.py | 1 |
+| tests/test_panel_rim_1536.py | 3 |
 | tests/test_panel_scrim_lift_1029.py | 3 |
 | tests/test_passes.py | 7 |
 | tests/test_passive_capture.py | 9 |
@@ -25846,7 +25847,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1300 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:241 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:239 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4186 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |

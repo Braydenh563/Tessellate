@@ -531,6 +531,7 @@ function panelResetSize(panel) {
 }
 function panelSave(panel) {
   const st = panelSt(panel);
+  st.rim = null;
   if (st.id) panelStoreWrite(st.id, st, panelLayout(panel));
   panelScrimLift(panel, st);
   panelSync(panel);
@@ -548,6 +549,7 @@ function panelAdopt(panel) {
     if (!nat.width || !nat.height) return;
     st.nat = { width: nat.width, height: nat.height };
     panel.classList.add("panel-movable-on");
+    panel.addEventListener("pointermove", panelAdopt.rimHover);
     panelWatchOpen(panel);
     let saved = st.id && panelRestoreOn() ? panelStoreRead(st.id, panelLayout(panel)) : null;
     //: A stored entry that does not fit this panel opens it at the default and
@@ -727,10 +729,39 @@ function panelHeadDown(e) {
   head.addEventListener("pointercancel", done);
 }
 //: Resize with the left and top edges held where they were.
-function panelGripDown(e) {
-  const grip = e.target.closest(".panel-grip");
-  const panel = grip && grip.parentElement;
+//: **Every edge and corner resizes (INBOX 1536, the owner: "can you make the
+//: edges and corners of popups resizable??")**: the outer 6 pixels of
+//: a movable panel. The box is read once as the pointer comes in (`st.rim`,
+//: dropped on every save), so a hover reads no layout; `data-rim` names the
+//: edge for the cursor, and a press there resizes from it with the opposite
+//: edge held still. The right edge of a panel that scrolls is 3px, so its
+//: scrollbar keeps most of its width. The corner grip stays the keyboard route.
+//: A property, not a name: the shared scope is at its cap (test_global_scope_ratchet).
+panelAdopt.rimHover = (e) => {
+  const panel = e.currentTarget;
+  const st = panelSt(panel);
+  if (e.buttons || panel.classList.contains("panel-moving") || !panelMovableOn()) return;
+  if (!st.rim) {
+    const r = panel.getBoundingClientRect();
+    st.rim = { top: r.top, bottom: r.bottom, left: r.left, right: r.right, bar: panel.scrollHeight > panel.clientHeight };
+  }
+  const r = st.rim;
+  const [x, y, rim] = [e.clientX, e.clientY, 6];
+  const v = y - r.top < rim ? "n" : r.bottom - y < rim ? "s" : "";
+  const h = x - r.left < rim ? "w" : r.right - x < (r.bar ? 3 : rim) ? "e" : "";
+  const edge = e.target.closest(".panel-movable-on") === panel ? v + h : "";
+  if ((panel.dataset.rim || "") !== edge) {
+    if (edge) panel.dataset.rim = edge;
+    else delete panel.dataset.rim;
+  }
+};
+function panelGripDown(e, rimmed) {
+  const grip = rimmed || e.target.closest(".panel-grip");
+  const panel = rimmed || (grip && grip.parentElement);
   if (!panel || e.button !== 0 || !panelMovableOn()) return;
+  const edge = rimmed ? rimmed.dataset.rim : "se";
+  const dx = edge.includes("e") ? 1 : edge.includes("w") ? -1 : 0;
+  const dy = edge.includes("s") ? 1 : edge.includes("n") ? -1 : 0;
   e.preventDefault();
   const st = panelSt(panel);
   st.dock = "";
@@ -745,10 +776,12 @@ function panelGripDown(e) {
   const k = { x: null, y: null };
   grip.setPointerCapture(e.pointerId);
   panel.classList.add("panel-moving");
+  //: Grown left or up, the room is what lies left of the right edge or above the bottom.
+  const room = { width: rect.width, height: rect.height, left: dx < 0 ? vw - rect.right : rect.left, top: dy < 0 ? vh - rect.bottom : rect.top };
   const move = (ev) => {
-    const dw = ev.clientX - x0;
-    const dh = ev.clientY - y0;
-    const c = panelClampSize(rect, rect.width + dw, rect.height + dh, vw, vh);
+    const dw = dx * (ev.clientX - x0);
+    const dh = dy * (ev.clientY - y0);
+    const c = panelClampSize(room, rect.width + dw, rect.height + dh, vw, vh);
     st.w = c.w;
     st.h = c.h;
     panel.style.width = `${c.w}px`;
@@ -757,14 +790,16 @@ function panelGripDown(e) {
     //: One read per axis, once the size has moved enough to tell.
     const sw = c.w - rect.width;
     const sh = c.h - rect.height;
-    if (k.x === null && Math.abs(sw) >= 8) {
-      k.x = Math.round(((panel.getBoundingClientRect().left - rect.left) / sw) * 2) / 2;
+    //: How far the panel's own layout moves an edge as it grows (0 pinned, 0.5
+    //: centred), read once with the translate it started with.
+    if ((k.x === null && Math.abs(sw) >= 8) || (k.y === null && Math.abs(sh) >= 8)) {
+      panel.style.translate = `${ox}px ${oy}px`;
+      const now = panel.getBoundingClientRect();
+      if (k.x === null && Math.abs(sw) >= 8) k.x = Math.round(((now.left - rect.left) / sw) * 2) / 2;
+      if (k.y === null && Math.abs(sh) >= 8) k.y = Math.round(((now.top - rect.top) / sh) * 2) / 2;
     }
-    if (k.y === null && Math.abs(sh) >= 8) {
-      k.y = Math.round(((panel.getBoundingClientRect().top - rect.top) / sh) * 2) / 2;
-    }
-    st.x = ox - (k.x || 0) * sw;
-    st.y = oy - (k.y || 0) * sh;
+    st.x = ox - (k.x || 0) * sw - (dx < 0 ? sw : 0);
+    st.y = oy - (k.y || 0) * sh - (dy < 0 ? sh : 0);
     panel.style.translate = `${st.x}px ${st.y}px`;
   };
   const done = () => {
@@ -1024,11 +1059,17 @@ if (typeof document !== "undefined" && document.addEventListener) {
   document.addEventListener("click", () => { if (PANEL_MIN.size) setTimeout(panelMinPlace, 250); }, true);
   document.addEventListener("pointerover", (e) => {
     const t = e.target;
-    if (t instanceof Element && t.closest(".dialog-head")) { const p = panelOf(t); if (p) panelAdopt(p); }
+    //: Anywhere in a panel, not only its head, so its edges resize from the first touch (INBOX 1536).
+    if (t instanceof Element && t.closest('dialog, [role="dialog"]') && !t.closest(".panel-movable-on")) { const p = panelOf(t); if (p) panelAdopt(p); }
   }, true);
   document.addEventListener("pointerdown", (e) => {
     if (!(e.target instanceof Element)) return;
+    const rim = e.target.closest(".panel-movable-on[data-rim]");
     if (e.target.closest(".panel-grip")) panelGripDown(e);
+    else if (rim && e.button === 0) {
+      e.stopPropagation();
+      panelGripDown(e, rim);
+    }
     else if (e.target.closest(".dialog-head")) panelHeadDown(e);
   }, true);
   //: A press on a head must not take the focus from the control that has it
