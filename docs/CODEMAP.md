@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7563, frontend ids 2642, CSS sections 518, backend routes 641, backend modules 8493, test files 1896, tests 15998, plan headings 991, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7563, frontend ids 2642, CSS sections 518, backend routes 641, backend modules 8493, test files 1896, tests 15999, plan headings 991, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7563)
 
@@ -4881,32 +4881,32 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `askAtlas` | frontend/js/help-chat.js:766 |
-| `assistantHeadRow` | frontend/js/help-chat.js:926 |
-| `atlasStartersFor` | frontend/js/help-chat.js:911 |
-| `fillAskBox` | frontend/js/help-chat.js:744 |
+| `askAtlas` | frontend/js/help-chat.js:769 |
+| `assistantHeadRow` | frontend/js/help-chat.js:929 |
+| `atlasStartersFor` | frontend/js/help-chat.js:914 |
+| `fillAskBox` | frontend/js/help-chat.js:747 |
 | `guideFirstControl` | frontend/js/help-chat.js:134 |
 | `guideLand` | frontend/js/help-chat.js:139 |
 | `guideOnScreen` | frontend/js/help-chat.js:129 |
 | `guideShown` | frontend/js/help-chat.js:116 |
 | `helpChatAppendRow` | frontend/js/help-chat.js:69 |
-| `helpChatChips` | frontend/js/help-chat.js:720 |
+| `helpChatChips` | frontend/js/help-chat.js:723 |
 | `helpChatIsNearBottom` | frontend/js/help-chat.js:63 |
-| `helpChatNewChat` | frontend/js/help-chat.js:627 |
+| `helpChatNewChat` | frontend/js/help-chat.js:630 |
 | `helpChatOnScreenHelp` | frontend/js/help-chat.js:287 |
 | `helpChatOpenButton` | frontend/js/help-chat.js:88 |
-| `helpChatReveal` | frontend/js/help-chat.js:583 |
+| `helpChatReveal` | frontend/js/help-chat.js:586 |
 | `helpChatSetBusy` | frontend/js/help-chat.js:325 |
 | `helpChatStop` | frontend/js/help-chat.js:346 |
-| `helpChatStreamTurn` | frontend/js/help-chat.js:466 |
-| `openHelpChat` | frontend/js/help-chat.js:804 |
-| `renderAtlasStarters` | frontend/js/help-chat.js:683 |
-| `renderHelpChatAsks` | frontend/js/help-chat.js:737 |
-| `renderHelpChatGreeting` | frontend/js/help-chat.js:716 |
-| `renderHelpChatMenu` | frontend/js/help-chat.js:644 |
+| `helpChatStreamTurn` | frontend/js/help-chat.js:468 |
+| `openHelpChat` | frontend/js/help-chat.js:807 |
+| `renderAtlasStarters` | frontend/js/help-chat.js:686 |
+| `renderHelpChatAsks` | frontend/js/help-chat.js:740 |
+| `renderHelpChatGreeting` | frontend/js/help-chat.js:719 |
+| `renderHelpChatMenu` | frontend/js/help-chat.js:647 |
 | `renderHelpChatMessage` | frontend/js/help-chat.js:166 |
 | `submitHelpChatQuestion` | frontend/js/help-chat.js:351 |
-| `toggleHelpChat` | frontend/js/help-chat.js:799 |
+| `toggleHelpChat` | frontend/js/help-chat.js:802 |
 
 ### frontend/js/icon-picker.js (10)
 
@@ -15352,28 +15352,28 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_place` | src/tessellate/ai/help_chat.py:965 |
 | `_preference` | src/tessellate/ai/help_chat.py:1047 |
 | `_prompt_for` | src/tessellate/ai/help_chat.py:747 |
-| `_read_as` | src/tessellate/ai/help_chat.py:1194 |
+| `_read_as` | src/tessellate/ai/help_chat.py:1195 |
 | `_reading_topics` | src/tessellate/ai/help_chat.py:395 |
 | `_repaired` | src/tessellate/ai/help_chat.py:441 |
 | `_second_sentence` | src/tessellate/ai/help_chat.py:995 |
 | `_state_line` | src/tessellate/ai/help_chat.py:1056 |
 | `_stated_lead` | src/tessellate/ai/help_chat.py:1065 |
 | `_tab_topics` | src/tessellate/ai/help_chat.py:733 |
-| `answer` | src/tessellate/ai/help_chat.py:1274 |
-| `answer_stream` | src/tessellate/ai/help_chat.py:1209 |
+| `answer` | src/tessellate/ai/help_chat.py:1275 |
+| `answer_stream` | src/tessellate/ai/help_chat.py:1210 |
 | `badges_for` | src/tessellate/ai/help_chat.py:620 |
 | `composed_answer` | src/tessellate/ai/help_chat.py:1092 |
-| `help_block_for` | src/tessellate/ai/help_chat.py:1355 |
+| `help_block_for` | src/tessellate/ai/help_chat.py:1356 |
 | `help_listing` | src/tessellate/ai/help_chat.py:591 |
 | `help_sentences` | src/tessellate/ai/help_chat.py:974 |
-| `names_app` | src/tessellate/ai/help_chat.py:1339 |
-| `offline_answer` | src/tessellate/ai/help_chat.py:1140 |
+| `names_app` | src/tessellate/ai/help_chat.py:1340 |
+| `offline_answer` | src/tessellate/ai/help_chat.py:1141 |
 | `social_reply` | src/tessellate/ai/help_chat.py:924 |
 | `source_names` | src/tessellate/ai/help_chat.py:587 |
 | `system_answer` | src/tessellate/ai/help_chat.py:569 |
 | `topic_title` | src/tessellate/ai/help_chat.py:555 |
 | `topics_for` | src/tessellate/ai/help_chat.py:691 |
-| `with_asks` | src/tessellate/ai/help_chat.py:1129 |
+| `with_asks` | src/tessellate/ai/help_chat.py:1130 |
 
 ### src/tessellate/ai/help_topics_more.py (2)
 
@@ -23299,7 +23299,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (15998)
+## Tests (15999)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24121,7 +24121,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_guide_gaps.py | 3 |
 | tests/test_guide_intent.py | 9 |
 | tests/test_guide_paraphrases_1530.py | 2 |
-| tests/test_guide_social_1414.py | 17 |
+| tests/test_guide_social_1414.py | 18 |
 | tests/test_hardware_profile.py | 15 |
 | tests/test_harness_evals.py | 3 |
 | tests/test_harness_plan_card.py | 9 |

@@ -1123,7 +1123,8 @@ def _aware(reply: dict, question: str, tab: str | None, actions: list[str] | Non
     line = composer_aware.closing(
         composer_aware.build(tab=tab, actions=actions), seed=question.lower(), related=related, asked=question
     )
-    return with_asks({**reply, "content": f"{reply['content']}\n\n{line}"}) if line else reply
+    #: Beside the answer, not in it (audit 1028 E52), as Chat's `tip` event.
+    return with_asks({**reply, "tip": line}) if line else reply
 
 
 def with_asks(reply: dict) -> dict:
@@ -1133,7 +1134,7 @@ def with_asks(reply: dict) -> dict:
     that already carries its own asks (what to ask in Chat) is left alone."""
     from tessellate.ai import ask_chips
 
-    lifted = [] if reply.get("asks") else ask_chips.lift(str(reply.get("content") or ""))
+    lifted = [] if reply.get("asks") else ask_chips.lift(f"{reply.get('content') or ''}\n\n{reply.get('tip') or ''}")
     return {**reply, "asks": lifted, "asks_to": "guide"} if lifted else reply
 
 

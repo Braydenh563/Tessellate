@@ -426,6 +426,8 @@ async function submitHelpChatQuestion(question) {
       finishReply(answerRow.querySelector(".help-chat-prose"), { composed: result?.composed, head: answerRow.querySelector(".msg-role"), help: true });
     }
     if (answerRow && result?.greeting && !signal.aborted) renderHelpChatGreeting(answerRow);
+    //: The what-next line sits under the answer, not in it (audit 1028 E52), as in Chat.
+    if (answerRow && result?.tip && !signal.aborted) answerRow.querySelector(".help-chat-prose")?.after(Object.assign(document.createElement("p"), { className: "muted answer-tip", textContent: result.tip }));
     if (answerRow && result?.asks?.length && !signal.aborted) renderHelpChatAsks(answerRow, result.asks, result.asks_to);
     helpChatHistory.push({ role: "user", content: question });
     helpChatHistory.push({ role: "assistant", content });
@@ -573,6 +575,7 @@ async function helpChatStreamTurn({ pending, signal, body, line = null }) {
     greeting: !!done?.greeting,
     asks: done?.asks || [],
     asks_to: done?.asks_to || "chat",
+    tip: done?.tip || "",
     shown: text,
   };
 }

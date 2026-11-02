@@ -141,8 +141,10 @@ def test_without_a_screen_nothing_changes(client, session):
 
 def test_the_guide_does_not_resume_a_finished_action_without_a_model(client):
     reply = client.post("/help/ask", json={"question": "how do I tag a note", "tab": "notes", "actions": ["Cleared a box"]}).json()
-    assert reply["composed"] and "cleared a box" not in reply["content"]
-    assert not reply["content"].rstrip().endswith("tag a note and I will show you.")
+    #: The what-next line is the reply's `tip` since E52 (audit 1028), so both are read.
+    said = f"{reply['content']}\n\n{reply.get('tip', '')}"
+    assert reply["composed"] and "cleared a box" not in said
+    assert not said.rstrip().endswith("tag a note and I will show you.")
 
 
 def test_the_client_sends_the_screen_with_ask_and_the_guide():

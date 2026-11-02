@@ -230,7 +230,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 224 | E37 | low | AI status control reads as an error, red circle with x | stale 11-02: off is the muted sparkle-with-slash on --chip-bg (INBOX 656, aiOffGlyph), measured color rgb(102,100,95) | S |
 | 225 | E41 | low | models pane jargon and redundant Use this model button | fixed 2026-11-02 (5ed769f) | S |
 | 226 | E51 | low | citation mark lands mid-sentence, date-only source | docs/roadmap/CHAT_PLAN.md:1810 | S |
-| 227 | E52 | low | coaching tip appended inside answer text | fixed (aea78bd, Chat stream only; Guide and Ask tab left, see a28x-1102.md) | S |
+| 227 | E52 | low | coaching tip appended inside answer text | fixed (aea78bd Chat; Ask tab ask-compose.js onTip; Guide 11-02: reply `tip`, a muted line under the answer) | S |
 | 228 | E53 | low | double greeting and last-time line from app-made note | fixed (already, checked 2026-11-02: tests/test_audit1028_e53.py pins no double greeting; the last-wrote clause names a note the person asked chat to create) | S |
 | 229 | E54 | low | identity muddled between Atlas and Tessellate | docs/roadmap/CHAT_PLAN.md:460 | S |
 | 230 | E61 | low | disabled Plan and Agent explain need only on hover | fixed 2026-11-02 (1789f37) | S |
