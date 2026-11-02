@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- A Graph drag that moved nothing leaves the map exactly as it was, and a small drag no longer shrinks it with Tidy spacing off (INBOX 1531): a release within half a world unit of where the note was taken puts every note back with no heat and no tick after; a release leaves only the share of its heat the drag's reach earns; and while a nudge settles every other note is held, its own links carried with it until the release and a note it runs into let go to the collision. Ten releases on the worker at 40 notes: mean link 0.966 to 1.000 with no movement, 0.964 to 1.004 with 8 unit drags (200 notes 1.000 and 1.006); in the app (36 notes, ten drags) 0.986 to 1.005 at 8 px and 0.987 to 1.011 at 30 px; first settle unchanged (tests/test_graph_drag_local_1517.py).
 - A document's snippet rows open their menu on right-click and long-press, as every other row does (OPEN 244).
 - Follow-up suggestions send the last 500 characters of the question, the part the model is shown (`FOLLOWUP_QUESTION_CHARS`), not 4,000 (warm12 leftover).
 - Alt+= opens the equation editor in a fresh note box at once (it did nothing for about a second, until the editor adapters arrived), and Insert writes through the adapter (maths1527 leftovers).
