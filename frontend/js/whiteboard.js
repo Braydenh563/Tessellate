@@ -15425,13 +15425,16 @@ async function initWhiteboard() {
       ? `Tidied ${nounCount(moved, "node")}.`
       : "Everything is already where this layout puts it.");
   });
+  //: A card put away leaves its one line on the empty board (`#wb-empty-cue`, audit 1028 B34).
   $("wb-empty-hint-close")?.addEventListener("click", () => {
     $("wb-empty-hint")?.classList.add("hidden");
+    $("wb-empty-cue")?.classList.remove("hidden");
   });
   $("wb-empty-hint-dismiss")?.addEventListener("click", () => {
     prefs.set("wbEmptyHintDismissed", "1");
     wbHintForcedOpen = false;
     $("wb-empty-hint")?.classList.add("hidden");
+    $("wb-empty-cue")?.classList.remove("hidden");
   });
   //: The board's help is its own sheet now (INBOX 566): the Board menu's row
   //: and the empty board's card open it, as "?" does.
@@ -15442,6 +15445,7 @@ async function initWhiteboard() {
     prefs.remove("wbEmptyHintDismissed");
     wbHintForcedOpen = true;
     $("wb-empty-hint")?.classList.remove("hidden");
+    $("wb-empty-cue")?.classList.add("hidden");
   });
   $("wb-empty-hint-keys")?.addEventListener("click", () => wbOpenHelpSheet());
 
@@ -18547,10 +18551,6 @@ async function initWhiteboard() {
   // directly, and all three funnel through the same upload+place path
   // `handleFileUpload` already established for notes (POST /media/upload,
   // then a placed reference, a board object here instead of markdown text).
-  async function wbPlaceUploadedImage(file, x, y) {
-    if (!file || !file.type?.startsWith("image/")) return;
-    try {
-      const formData = new FormData();
   //: The most the notebook keeps of one upload (`routes_files.MAX_FILE_BYTES`), said before the
   //: upload starts and not after a 50 MB request fails (audit 1028 B28).
   const wbPictureCap = 50 * 1024 * 1024;
@@ -18586,17 +18586,17 @@ async function initWhiteboard() {
     toast("This notebook works offline, so a picture from the web is not fetched. Save the picture, then paste or drop the file.");
   }
 
+  async function wbPlaceUploadedImage(file, x, y) {
+    if (!file || !file.type?.startsWith("image/")) return;
+    if (file.size > wbPictureCap) return wbPictureTooBig();
+    try {
+      const formData = new FormData();
       formData.append("file", file);
       const uploaded = await apiJson("/media/upload", {
-    if (file.size > wbPictureCap) return wbPictureTooBig();
         method: "POST",
         headers: authHeaders(),
         body: formData,
       });
-      const img = new Image();
-      const naturalSize = await new Promise((resolve) => {
-        img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
-        img.onerror = () => resolve({ w: 300, h: 200 });
       await wbPlaceImageUrl(uploaded.url, x, y);
     } catch (err) {
       toast(err.message || voiceLine("failed", { what: "add that image" }), true);
@@ -18605,6 +18605,10 @@ async function initWhiteboard() {
 
   async function wbPlaceImageUrl(url, x, y) {
     try {
+      const img = new Image();
+      const naturalSize = await new Promise((resolve) => {
+        img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
+        img.onerror = () => resolve({ w: 300, h: 200 });
         img.src = mediaSrc(url);
       });
       //: Its own size, shrunk only to sit inside the view (wbpaste-1026).
@@ -18650,10 +18654,6 @@ async function initWhiteboard() {
       files.forEach((file, i) => wbPlaceUploadedImage(file, x + i * WB_GRID_SPACING, y + i * WB_GRID_SPACING));
       return;
     }
-    const text = data?.getData("text/plain") || "";
-    //: A map's paste of an outline under a topic is the map's own (MINDMAP
-    //: §12.2, the map half of FEAT-09); here a map keeps its own clipboard.
-    if (text.trim()) {
     const address = wbPastedPictureAddress(data, html);
     if (address) {
       e.preventDefault();
@@ -18661,6 +18661,10 @@ async function initWhiteboard() {
       wbPlacePastedAddress(address, x, y);
       return;
     }
+    const text = data?.getData("text/plain") || "";
+    //: A map's paste of an outline under a topic is the map's own (MINDMAP
+    //: §12.2, the map half of FEAT-09); here a map keeps its own clipboard.
+    if (text.trim()) {
       //: Text on a map is the map's alone: falling through to the board's own
       //: clipboard pasted a stale copy beside the outline (wbpaste-1026 sweep).
       if (wbIsMap()) return;
@@ -21984,28 +21988,21 @@ function renderWhiteboard() {
   // whole render pass below.
   const entriesById = new Map(allEntries.map((e) => [String(e.id), e]));
 
-  document
-    .getElementById("wb-empty-hint")
-    ?.classList.toggle(
-      "hidden",
-      // Objects count too: a board holding only a text box or an image is
-      // not empty, and left out of this sum the hint sat on top of them.
-      // Asked for directly: an option to turn the hint off entirely, once
-      // it's served its purpose, `localStorage`, the same durability the
-      // onboarding tour's own "don't show again" already uses.
-      // `wbHintForcedOpen` overrides both checks: the "?" help button's way
-      // back after a dismiss, or on a board that already has content.
-      !wbHintForcedOpen &&
-        // A map gets `#wb-map-empty` instead: this panel is the whiteboard's
-        // own help, and on an emptied map it was pens, shapes and the eraser
-        // sitting over a surface none of them apply to.
-        (wbIsMap() ||
-          (wbState.nodes?.length || 0) +
-          (wbState.sketches?.length || 0) +
-          (wbState.objects?.length || 0) >
-            0 ||
-          prefs.get("wbEmptyHintDismissed", null) === "1")
-    );
+  // Objects count too: a board holding only a text box or an image is
+  // not empty, and left out of this sum the hint sat on top of them.
+  const wbBoardHolds = (wbState.nodes?.length || 0) + (wbState.sketches?.length || 0) + (wbState.objects?.length || 0);
+  // Asked for directly: an option to turn the hint off entirely, once
+  // it's served its purpose, `localStorage`, the same durability the
+  // onboarding tour's own "don't show again" already uses.
+  // `wbHintForcedOpen` overrides both checks: the "?" help button's way
+  // back after a dismiss, or on a board that already has content.
+  // A map gets `#wb-map-empty` instead: this panel is the whiteboard's
+  // own help, and on an emptied map it was pens, shapes and the eraser
+  // sitting over a surface none of them apply to.
+  const wbHintHidden = !wbHintForcedOpen && (wbIsMap() || wbBoardHolds > 0 || prefs.get("wbEmptyHintDismissed", null) === "1");
+  document.getElementById("wb-empty-hint")?.classList.toggle("hidden", wbHintHidden);
+  //: A card turned off still leaves one line on an empty board (audit 1028 B34).
+  document.getElementById("wb-empty-cue")?.classList.toggle("hidden", !(wbHintHidden && !wbIsMap() && wbBoardHolds === 0));
 
   // Render Sketches (SVG)
   const svgGroup = d3.select("#wb-zoom-group");

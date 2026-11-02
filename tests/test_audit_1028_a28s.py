@@ -74,6 +74,21 @@ def test_b28_a_picture_pasted_as_markup_or_an_address_is_placed_or_refused_with_
     assert "works offline" in place  # a web address is refused with the reason, not dropped
 
 
+def test_b34_an_empty_board_keeps_one_line_after_its_card_is_put_away():
+    """B34: closing or turning off the card left a bare canvas. `#wb-empty-cue` is the
+    `p.muted.empty-line` recipe, shown when the card is hidden on a board holding nothing."""
+    html = (JS_DIR.parent / "index.html").read_text(encoding="utf-8")
+    assert 'id="wb-empty-cue" class="muted empty-line wb-empty-cue hidden"' in html
+    source = _js("whiteboard.js")
+    render = _between(source, "const wbBoardHolds = ", "// Render Sketches (SVG)")
+    assert '"wb-empty-cue"' in render and "!(wbHintHidden && !wbIsMap() && wbBoardHolds === 0)" in render
+    for button in ("wb-empty-hint-close", "wb-empty-hint-dismiss"):
+        handler = _between(source, f'$("{button}")?.addEventListener', "});")
+        assert 'wb-empty-cue' in handler, button
+    css = (JS_DIR.parent / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    assert "pointer-events: none" in _between(css, ".wb-empty-cue {", "}")
+
+
 def test_s92_a_loaded_or_filtered_list_says_its_count_through_the_one_live_region():
     """S92: Notes and the Library announce their count, settled and once, through
     `announce` (the page's `#live-region`), not a region each."""

@@ -222,7 +222,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 216 | S77 | low | no manual sort order | new | L |
 | 217 | B26 | low | context menu builder is 453 lines with one-use items | new | M |
 | 218 | B27 | low | resize and rotation handle hit size unverified | docs/roadmap/WHITEBOARD_PLAN.md:1698 | S |
-| 219 | B34 | low | empty-board hint lost after dismiss, no inline cue | new | S |
+| 219 | B34 | low | empty-board hint lost after dismiss, no inline cue | fixed 2026-11-02 (a28s-B34) | S |
 | 220 | D39 | low | typo autocorrect rewrites silently with a 5s undo only | new | S |
 | 221 | D40 | low | no selection word count in the status bar | fixed (already: the caret line counts selected words; reconciled 2026-10-30) | S |
 | 222 | D48 | low | controls hidden in dock-menu flyouts reparented to body | new | M |
