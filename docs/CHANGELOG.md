@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- A toast raised with Settings open no longer fades to a ghost (INBOX 1548): the dialog's resize grip in its bottom-right corner counted as a control the toast hides; the toast is now whole and `elementFromPoint` at its centre returns it (it returned the Settings dialog, opacity 0.12 before).
 - Documents: the Read view's reading progress is a hairline on the reading pane's top edge under the breadcrumbs, no longer a line inside the text (INBOX 1535).
 - A chat question reads its notes in a fixed number of queries and no longer rewrites their search rows when it counts them as used: 329 queries to 96 and 197 to 128 ms median for a 24-note answer at 200 notes.
 - Chat without a model: a checklist line done in a later note now reads done in the note's checklist and leaves "what is still open", as "is it still on my list" already said (Fable eye F15).
