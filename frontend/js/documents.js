@@ -2673,6 +2673,20 @@ function toggleDocFindBar(open) {
   if (!open_) docCmView.focus();
 }
 
+//: State the outline and the breadcrumbs share with the rest of this file (the
+//: outline's rebuild writes both; documents-outline.js reads and resets them).
+//: `headings` is **the headings the outline last read.** The breadcrumb needs
+//: them on every keystroke (`renderDocCaret` runs then, and the caret is what
+//: the trail is about), and finding them is a scan of the whole document: on a
+//: 20k-word file that is a 20k-element split per character typed. The outline
+//: is rebuilt on a pause in typing, so a heading written a moment ago reaches
+//: the trail on the same beat it reaches the outline, which is the beat a
+//: writer is already watching. `crumbsKey` is what the row says, as one string,
+//: so the common case (a keystroke that moves the caret inside the same
+//: section) costs a comparison rather than a rebuild of four buttons per
+//: character typed.
+const docOutlineState = { headings: [], crumbsKey: "" };
+
 // A table of contents built from the document's own headings. Past a couple
 // of screens the scrollbar stops being a way to navigate a document.
 // =============================================================================
@@ -2717,15 +2731,6 @@ function docHeadingTrail(headings, line) {
 
 // DOC-CRUMBS-END
 
-//: **The headings the outline last read.** The breadcrumb needs them on every
-//: keystroke (`renderDocCaret` runs then, and the caret is what the trail is
-//: about), and finding them is a scan of the whole document: on a 20k-word
-//: file that is a 20k-element split per character typed. The outline is
-//: rebuilt on a pause in typing, so a heading written a moment ago reaches the
-//: trail on the same beat it reaches the outline, which is the beat a writer
-//: is already watching.
-let docOutlineHeadingList = [];
-
 //: The row, and its one-time wiring. It is in index.html (see the markup
 //: there for why), so this is a lookup rather than a build; what is done once
 //: here is the edge-fade, whose listeners app.js only attaches to the strips
@@ -2751,22 +2756,17 @@ function docCrumbsEl() {
   return nav;
 }
 
-//: What the row says, as one string, so the common case (a keystroke that
-//: moves the caret inside the same section) costs a comparison rather than a
-//: rebuild of four buttons per character typed.
-let docCrumbsKey = "";
-
 function renderDocCrumbs(line) {
   const nav = docCrumbsEl();
   if (!nav) return;
   const list = nav.firstElementChild;
-  const headings = docOutlineHeadingList;
+  const headings = docOutlineState.headings;
   //: A document with no headings has nothing to say here, and a row that is
   //: present and empty is a strip of blank space above the writing.
   nav.classList.toggle("hidden", !headings.length);
   if (!headings.length) {
     list.replaceChildren();
-    docCrumbsKey = "";
+    docOutlineState.crumbsKey = "";
     return;
   }
   //: The document itself is the first crumb, and it jumps to the top. Phase
@@ -2780,8 +2780,8 @@ function renderDocCrumbs(line) {
   const crumbs = [{ text: "Top", line: 0 }];
   for (const index of docHeadingTrail(headings, line)) crumbs.push(headings[index]);
   const key = crumbs.map((crumb) => `${crumb.line}:${crumb.text}`).join("\u0000");
-  if (key === docCrumbsKey) return;
-  docCrumbsKey = key;
+  if (key === docOutlineState.crumbsKey) return;
+  docOutlineState.crumbsKey = key;
   list.replaceChildren();
   crumbs.forEach((crumb, index) => {
     const li = document.createElement("li");
@@ -3731,7 +3731,7 @@ function renderDocOutline() {
     needle, [...folds], visible.map((row) => [row.shown, row.foldable]),
   ]);
   if (outlineKey === docOutlineKey && docOutlineRows.length === headings.length && list.isConnected) {
-    docOutlineHeadingList = headings;
+    docOutlineState.headings = headings;
     renderDocCrumbs(where);
     return;
   }
@@ -3890,8 +3890,8 @@ function renderDocOutline() {
   }
   //: The breadcrumb reads this list rather than the document, so it is set
   //: here and the trail is redrawn on the same beat the outline is.
-  docOutlineHeadingList = headings;
-  docCrumbsKey = "";
+  docOutlineState.headings = headings;
+  docOutlineState.crumbsKey = "";
   renderDocCrumbs(where);
 }
 

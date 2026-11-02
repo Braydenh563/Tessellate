@@ -3884,7 +3884,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docCompleteEnabled` | frontend/js/documents.js:12565 |
 | `docCompleteKeydown` | frontend/js/documents.js:12795 |
 | `docCopyBlockRef` | frontend/js/documents.js:6319 |
-| `docCrumbsEl` | frontend/js/documents.js:2735 |
+| `docCrumbsEl` | frontend/js/documents.js:2740 |
 | `docCycleChoice` | frontend/js/documents.js:9160 |
 | `docDefaultView` | frontend/js/documents.js:466 |
 | `docDesktopFs` | frontend/js/documents.js:9482 |
@@ -3941,7 +3941,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docGutterWanted` | frontend/js/documents.js:9843 |
 | `docGutters` | frontend/js/documents.js:4554 |
 | `docHeadingFold` | frontend/js/documents.js:16856 |
-| `docHeadingTrail` | frontend/js/documents.js:2703 |
+| `docHeadingTrail` | frontend/js/documents.js:2717 |
 | `docHistoryPersist` | frontend/js/documents.js:16953 |
 | `docHistoryRestore` | frontend/js/documents.js:16936 |
 | `docHistoryStamp` | frontend/js/documents.js:15317 |
