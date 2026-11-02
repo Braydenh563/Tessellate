@@ -9,7 +9,7 @@ from pathlib import Path
 from tessellate.ai import tools
 from tessellate.entry import manager
 
-SOURCE = Path(tools.__file__).read_text(encoding="utf-8")
+SOURCE = "".join(path.read_text(encoding="utf-8") for path in sorted(Path(tools.__file__).parent.glob("*.py")))
 
 
 def test_no_result_label_shows_a_note_id():

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- `ai/tools/__init__.py` split by tool family (ranked row 36, gods3-1102): 5,282 lines to 48, the code moved whole into twelve `ai/tools/tool_*.py` modules (read, skills, write, web, turn, learn, sets, table, handoff, focus, schema, run), each importing only the layers above it; `tools.TOOLS`, `tools.execute_tool` and every name read elsewhere are re-exported. The registry (names, order, schemas, `ollama_tools()`) dumped before and after is identical, import cycles 0, `tests/test_module_line_caps.py` holds each module at its size.
 - A document's snippet rows open their menu on right-click and long-press, as every other row does (OPEN 244).
 - Follow-up suggestions send the last 500 characters of the question, the part the model is shown (`FOLLOWUP_QUESTION_CHARS`), not 4,000 (warm12 leftover).
 - Alt+= opens the equation editor in a fresh note box at once (it did nothing for about a second, until the editor adapters arrived), and Insert writes through the adapter (maths1527 leftovers).
