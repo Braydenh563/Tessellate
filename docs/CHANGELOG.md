@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat without a model: "create a note called \"Shopping\" with milk, eggs and bread" makes a note titled Shopping with the words as its body (audit 1028 E25); it kept the whole phrase as the body. Called, titled or named, quoted or not, joined by with, saying, containing, including, that says or a colon.
 - Chat without a model: the composer no longer says what the notes do not (audit 1028 E18). An instruction line is reported as "the same note adds: ..." instead of "you told yourself to" or "you reminded yourself to", and the quote lead-ins "This was your thought:", "You captured this:" and "You documented this:" are gone; only note words and measured values appear.
 - Chat without a model: a checklist line done in a later note now reads done in the note's checklist and leaves "what is still open", as "is it still on my list" already said (Fable eye F15).
 - A question in Chat past ten lines folds to ten, its last line faded, with Show more and Show less under it (the owner's ask, as Perplexity does): a 20-line question is 228 px tall, was 456, in both themes; a question that fits has no button.

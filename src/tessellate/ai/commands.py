@@ -491,6 +491,26 @@ _NOTE_HEADS_NEW = (
 
 
 _NAMED = ("called ", "titled ", "named ")
+#: The words that join a note's name to what it says: "called X with Y",
+#: "titled X saying Y", "named X that says Y", "called X: Y" (audit 1028 E25).
+_JOIN = r"(?:with|saying|containing|including|that says|which says|that reads|reading|having|and (?:say|says|put|write|writes))"
+_QUOTED_NAME = re.compile(r"^[\"“‘'](?P<name>.{1,120}?)[\"”’'](?P<tail>.*)$", re.S)
+_PLAIN_NAME = re.compile(rf"^(?P<name>.+?)(?:\s+{_JOIN}\s+|\s*:\s*)(?P<tail>.+)$", re.I | re.S)
+_BODY_LEAD = re.compile(rf"^\s*(?:{_JOIN}\s+|[:,;-]\s*)", re.I)
+
+
+def _name_and_words(rest: str) -> str:
+    """`"Shopping" with milk, eggs and bread` as "Shopping\nMilk, eggs and
+    bread": a name, then what the note says, as its title line and its body;
+    a name alone is just the name. Quoted or not, with any joining word."""
+    rest = rest.strip()
+    quoted = _QUOTED_NAME.match(rest)
+    if quoted and (not quoted.group("tail").strip() or _BODY_LEAD.match(quoted.group("tail"))):
+        title, body = quoted.group("name").strip(), _BODY_LEAD.sub("", quoted.group("tail"), count=1).strip()
+    else:
+        plain = _PLAIN_NAME.match(rest)
+        title, body = (plain.group("name").strip(), plain.group("tail").strip()) if plain else (rest, "")
+    return f"{_cap(title)}\n{_cap(body)}" if title and body else _cap(title)
 
 
 def _note_at_the_end(rest: str) -> dict | None:
@@ -512,6 +532,14 @@ _BARE_NOTE = frozenset({
 })
 
 
+def _note_lead(rest: str) -> tuple[str, bool]:
+    """`rest` without its "that", "saying", "called" ...; whether that was a name."""
+    for lead in ("that ", "saying ", "of ", "about ", "to say ", *_NAMED):
+        if rest.lower().startswith(lead):
+            return rest[len(lead):], lead in _NAMED
+    return rest, False
+
+
 def _new_note(text: str) -> dict | None:
     low = text.lower()
     if low.strip(" .:-") in _BARE_NOTE:
@@ -525,10 +553,10 @@ def _new_note(text: str) -> dict | None:
         if needs_colon and not rest.startswith(":") and not rest.lower().startswith((*_NAMED, "about ")):
             return None
         rest = rest.lstrip(" :-")
-        for lead in ("that ", "saying ", "of ", "about ", "to say ", *_NAMED):
-            if rest.lower().startswith(lead):
-                rest = rest[len(lead):]
-                break
+        rest, named = _note_lead(rest)
+        if named:
+            said = _name_and_words(rest)
+            return {"intent": "new_note", "content": said} if said else None
         appended_to = _note_at_the_end(rest)
         if appended_to:
             return appended_to
@@ -1420,10 +1448,14 @@ def _plan_new_note(session: Session, parsed: dict) -> dict:
     if parsed.get("no_subject"):
         return {"line": "What should the note say? Send it as “make a note: …” and I'll save it."}
     steps = [{"name": "create_note", "arguments": {"content": parsed["content"]}}]
-    card = _card(f"Make a new note: “{_clip(parsed['content'], 80)}”", steps)
+    #: A named note ("called X with Y") has a title line and a body: said as
+    #: `“X”: Y`, never with the line break in the sentence.
+    title, _, body = parsed["content"].partition("\n")
+    label = f"Make a new note “{_clip(title, 50)}”: {_clip(body.strip(), 50)}" if body.strip() else f"Make a new note: “{_clip(title, 80)}”"
+    card = _card(label, steps)
     if _has_note_saying(session, parsed["content"]):
-        return _add_another(f"a note “{_clip(parsed['content'], 60)}”", card)
-    return {"line": f"Make a new note: “{_clip(parsed['content'], 80)}”.", "card": card, "run": True}
+        return _add_another(f"a note “{_clip(title, 60)}”", card)
+    return {"line": f"{label}.", "card": card, "run": True}
 
 
 def _plan_meeting(parsed: dict) -> dict:
