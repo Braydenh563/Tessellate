@@ -227,7 +227,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 221 | D40 | low | no selection word count in the status bar | fixed (already: the caret line counts selected words; reconciled 2026-10-30) | S |
 | 222 | D48 | low | controls hidden in dock-menu flyouts reparented to body | new | M |
 | 223 | D53 | low | code run output truncated silently at 4,000 chars | fixed 2026-11-02 (711e8c5) | S |
-| 224 | E37 | low | AI status control reads as an error, red circle with x | new | S |
+| 224 | E37 | low | AI status control reads as an error, red circle with x | stale 11-02: off is the muted sparkle-with-slash on --chip-bg (INBOX 656, aiOffGlyph), measured color rgb(102,100,95) | S |
 | 225 | E41 | low | models pane jargon and redundant Use this model button | fixed 2026-11-02 (5ed769f) | S |
 | 226 | E51 | low | citation mark lands mid-sentence, date-only source | docs/roadmap/CHAT_PLAN.md:1810 | S |
 | 227 | E52 | low | coaching tip appended inside answer text | fixed (aea78bd, Chat stream only; Guide and Ask tab left, see a28x-1102.md) | S |
@@ -250,7 +250,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 244 | S68 | low | import panel is long and dense | new | M |
 | 245 | S69 | low | backup restore has no verify-before-restore summary | new | M |
 | 246 | S82 | low | segmented view toggle has no labels | fixed (already: each segmented toggle button has a title and aria-label, e.g. index.html:6031, 14490; checked 2026-11-02) | S |
-| 247 | S83 | low | filter state not summarised when the menu is closed | new | S |
+| 247 | S83 | low | filter state not summarised when the menu is closed | fixed 11-02: Notes Filter summary tint 0 to rgba(31,36,48,0.12), aria-pressed true when on (Library already did) | S |
 | 248 | S84 | low | onboarding cannot be re-opened from Help | fixed (already: Help pane calls renderTourReplay, settings.js:122, tour.js:1947; checked 2026-11-02) | S |
 | 249 | S85 | low | error toasts say what failed but not what to do | new | M |
 | 250 | S86 | low | library to note takes three clicks | new | S |
@@ -259,7 +259,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 253 | S89 | low | export has no format picker | fixed (already: Settings export offers JSON, CSV, Markdown zip, notebook folder and full backup, each titled, with an About help, index.html:13411; checked 2026-11-02) | S |
 | 254 | S91 | low | document title and language do not update per view | fixed (router.js routerPaintTitle, found already fixed 2026-11-02) | S |
 | 255 | S92 | low | no live region for list loading and counts | fixed 2026-11-02 (9da89c9) | S |
-| 256 | S94 | low | offline indicator does not say what still works | new | S |
+| 256 | S94 | low | offline indicator does not say what still works | stale 11-02: the AI-off card says "Writing, searching, tagging, reminders, documents and the graph all work without any AI" (status.js aiStatusState) | S |
 | 257 | U38 | low | duplicate document titles allowed silently | fixed 2026-11-02 (0300872) | S |
 | 258 | U41 | low | new-board toast persists and stacks with others | new | S |
 | 259 | U46 | low | hidden native board select is 1px wide | new | S |

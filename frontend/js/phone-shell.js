@@ -2293,16 +2293,16 @@ function toggleAutonomousPanel() {
 }
 
 $("semantic-search-toggle")?.addEventListener("change", () => {
-  // `loadEntries`, which is what re-runs the list with the toggle's new
-  // state: this said `loadAllNotes()`, a name no file in frontend/ has ever
-  // defined, so turning semantic search on or off while a search term was in
-  // the box raised a ReferenceError and left the old results on screen.
-  // `tests/test_frontend_symbols.py` is what found it. The same pair, "set
-  // the term, then reload if semantic is on", is written out at the
-  // "Search the notebook" selection action.
+  // `loadEntries` re-runs the list with the toggle's new state (it once
+  // called an undefined name; tests/test_frontend_symbols.py found it).
   if (noteSearch) loadEntries();
+  //: Audit 1028 S83: the closed menu says the filter is on.
+  const on = $("semantic-search-toggle").checked;
+  const summary = $("notes-filter-menu")?.firstElementChild;
+  summary?.classList.toggle("is-on", on);
+  summary?.setAttribute("aria-pressed", String(on));
   //: Turning it on with no engine would otherwise change nothing and say nothing (N25).
-  if ($("semantic-search-toggle").checked && meaningEngineMissing()) toast(MEANING_ENGINE_WORDS, "info");
+  if (on && meaningEngineMissing()) toast(MEANING_ENGINE_WORDS, "info");
 });
 
 // There is no Tags / Recycle bin / Activity shortcut in the notes sidebar, and

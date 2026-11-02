@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7561, frontend ids 2642, CSS sections 517, backend routes 640, backend modules 8491, test files 1885, tests 15941, plan headings 991, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7561, frontend ids 2642, CSS sections 517, backend routes 640, backend modules 8491, test files 1886, tests 15942, plan headings 991, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7561)
 
@@ -23293,7 +23293,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (15941)
+## Tests (15942)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24462,6 +24462,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_notebook_stats_page.py | 14 |
 | tests/test_notes_audit_ui_1031.py | 16 |
 | tests/test_notes_extras_api.py | 26 |
+| tests/test_notes_filter_on_s83.py | 1 |
 | tests/test_notes_menu_1518.py | 4 |
 | tests/test_notes_rail.py | 7 |
 | tests/test_notes_rail_resize.py | 4 |
