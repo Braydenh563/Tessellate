@@ -148,8 +148,8 @@ def test_each_fold_help_sits_beside_its_fold_over_a_slot():
         INDEX,
         re.S,
     )
-    # Nine: Effects & accessibility gained the motion help (2026-10-05); Embedding models left the fold list when it moved into Search and index (INBOX 700).
-    assert len(wraps) == 9, len(wraps)
+    # Twelve: Effects & accessibility gained the motion help (2026-10-05); Embedding models left the fold list when it moved into Search and index (INBOX 700); Import a document, Import from another app and Web clipper became folds (audit S68, 2026-11-02).
+    assert len(wraps) == 12, len(wraps)
     for attrs, summary in wraps:
         assert "fold-help" in attrs and "data-help-for=" in attrs, attrs
         assert '<span class="fold-help-slot" aria-hidden="true"></span>' in summary

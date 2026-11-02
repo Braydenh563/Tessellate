@@ -386,8 +386,44 @@ function foldDocMenuGroup(label, ids) {
   //: open, and so did every download row.
   const panel = group.querySelector(".action-menu.submenu");
   if (panel) panel.dataset.docDockSubmenu = "1";
+  //: **The flyout's keys (audit D48).** These rows are the dock's own buttons and
+  //: switches, which carry no `role`, so the group's Right and Arrow keys (menus.js,
+  //: `[role="menuitem"]` rows) found none and the focus never left the group row.
+  //: The switch rows are `<label>`s, so the walk takes a button or a shown label's
+  //: input; the code-only labels stay `.hidden` on a prose document.
+  const trigger = group.firstElementChild;
+  const rowsOf = () => [...panel.querySelectorAll("button, label:not(.hidden) > input")].filter((row) => row.getClientRects().length);
+  trigger.addEventListener("keydown", (event) => {
+    if (["ArrowRight", "Enter", " "].includes(event.key)) rowsOf()[0]?.focus();
+  });
+  panel.addEventListener("keydown", (event) => {
+    const down = event.key === "ArrowDown";
+    if (!down && event.key !== "ArrowUp") return;
+    const rows = rowsOf();
+    rows[(rows.indexOf(document.activeElement) + (down ? 1 : rows.length - 1)) % rows.length]?.focus();
+  });
   return group;
 }
+
+//: The dock menu's Escape and Tab, ahead of the capture handler in navigation.js
+//: (a `window` capture listener runs before a `document` one). A group's flyout is
+//: drawn at `<body>`, so the first Escape in one closed the whole menu under it and
+//: left the flyout drawn; Tab walked off the end of the page. Both now close the
+//: flyout (`closeActionMenus` puts the focus back on its group row), Escape from
+//: inside one stops there, and Tab goes on from the group row.
+window.addEventListener(
+  "keydown",
+  (event) => {
+    if ((event.key !== "Escape" && event.key !== "Tab") || !$("doc-dock-menu")?.open) return;
+    const inside = event.target.closest?.(".action-menu.submenu[data-doc-dock-submenu]");
+    closeActionMenus();
+    if (inside && event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  },
+  true
+);
 
 //: **Three groups, because fourteen rows do not fit on a laptop.** Reported
 //: twice: first that the menu "goes off the page", and after the downloads

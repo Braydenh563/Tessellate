@@ -225,7 +225,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 219 | B34 | low | empty-board hint lost after dismiss, no inline cue | fixed 2026-11-02 (03e4a05) | S |
 | 220 | D39 | low | typo autocorrect rewrites silently with a 5s undo only | stale 11-02: documents' #doc-autocorrect is off by default and never runs in code files; a correction is underlined with a menu, Ctrl+Z or Backspace puts it back | S |
 | 221 | D40 | low | no selection word count in the status bar | fixed (already: the caret line counts selected words; reconciled 2026-10-30) | S |
-| 222 | D48 | low | controls hidden in dock-menu flyouts reparented to body | new | M |
+| 222 | D48 | low | controls hidden in dock-menu flyouts reparented to body | built (a29k-1102: flyout keys, Escape and Tab in documents.js) | M |
 | 223 | D53 | low | code run output truncated silently at 4,000 chars | fixed 2026-11-02 (711e8c5) | S |
 | 224 | E37 | low | AI status control reads as an error, red circle with x | stale 11-02: off is the muted sparkle-with-slash on --chip-bg (INBOX 656, aiOffGlyph), measured color rgb(102,100,95) | S |
 | 225 | E41 | low | models pane jargon and redundant Use this model button | fixed 2026-11-02 (5ed769f) | S |
@@ -247,7 +247,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 241 | S61 | low | muted text contrast near threshold in dark theme | not reproduced 11-02: .muted 7.96:1 dark, 5.91:1 light (AA 4.5) | S |
 | 242 | S62 | low | palette empty state offers no suggestion | fixed 2026-11-02 (e0b77e9) | S |
 | 243 | S63 | low | palette lacks note results with a preview | built (verify: app-palette.js note results with snippets) | M |
-| 244 | S68 | low | import panel is long and dense | new | M |
+| 244 | S68 | low | import panel is long and dense | built (318414d, folds) | M |
 | 245 | S69 | low | backup restore has no verify-before-restore summary | built 11-02: GET /backups/summary, the confirm names the counts (the uploaded full-backup restore still cannot: sealed) | M |
 | 246 | S82 | low | segmented view toggle has no labels | fixed (already: each segmented toggle button has a title and aria-label, e.g. index.html:6031, 14490; checked 2026-11-02) | S |
 | 247 | S83 | low | filter state not summarised when the menu is closed | fixed 11-02: Notes Filter summary tint 0 to rgba(31,36,48,0.12), aria-pressed true when on (Library already did) | S |

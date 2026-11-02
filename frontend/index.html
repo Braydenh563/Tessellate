@@ -13575,8 +13575,12 @@ Link to another note with [[its first few words]]."></textarea>
               <p id="restore-bundle-status" class="status" role="status"></p>
             </div>
 
-            <div class="settings-group">
-              <h3>Import markdown</h3>
+            <!-- The four imports are folds on the settings-fold recipe
+                 (S68): the pane was 2,747px with every import drawn at full
+                 length; closed, a group is one row, and the first is open.
+                 Every control and id is where it was. -->
+            <details class="settings-group settings-fold" data-fold-key="import-markdown" open>
+              <summary><h3 class="inline-h3">Import markdown</h3></summary>
               <!-- One step each (INBOX 464 (18)): the button opens the
                    picker and choosing starts the import, the Library's
                    Upload shape; the picker's Cancel is the way out before,
@@ -13594,26 +13598,29 @@ Link to another note with [[its first few words]]."></textarea>
                   title="A whole folder, every .md inside it, with its folders kept"><i class="ph ph-folder-simple-plus ph-lead" aria-hidden="true"></i> Import a folder</button>
               </div>
               <p id="import-md-status" class="status" role="status"></p>
-              
-              <h3>Import from a folder path</h3>
+              <p class="muted">
+                Each file becomes a note. Obsidian-style frontmatter
+                (category, tags) is understood.
+              </p>
+              <label class="muted" for="import-dir-path">Or type a folder path</label>
               <div class="row settings-row-spaced" data-this-computer>
                 <input id="import-dir-path" aria-label="Folder path to import" type="text" class="import-dir-path-input" placeholder="C:\path\to\Obsidian\vault">
                 <button id="import-dir" class="small ghost">Import from path</button>
               </div>
               <p id="import-dir-status" class="status" role="status"></p>
-              <p class="muted">
-                Each file becomes a note. Obsidian-style frontmatter
-                (category, tags) is understood.
-              </p>
+            </details>
 
-              <div class="row help-head">
-                <h3>Import a document</h3>
-                <button type="button" class="icon-only ghost small graph-help-toggle"
-                  data-help-for="import-document-help" aria-controls="import-document-help" aria-expanded="false"
-                  title="About importing a document" aria-label="About importing a document">
-                  <i class="ph ph-question" aria-hidden="true"></i>
-                </button>
-              </div>
+            <div class="fold-help-wrap">
+              <button type="button" class="icon-only ghost small graph-help-toggle fold-help"
+                data-help-for="import-document-help" aria-controls="import-document-help" aria-expanded="false"
+                title="About importing a document" aria-label="About importing a document">
+                <i class="ph ph-question" aria-hidden="true"></i>
+              </button>
+            <details class="settings-group settings-fold" data-fold-key="import-document">
+              <summary><div class="row help-head">
+                <h3 class="inline-h3">Import a document</h3>
+                <span class="fold-help-slot" aria-hidden="true"></span>
+              </div></summary>
               <div class="row">
                 <input id="import-document-file" aria-label="Choose a document to import" title="Choose a document to import" type="file" accept=".pdf,.docx,.doc,.pptx,.ppt,.xlsx,.xls,.html,.htm" class="hidden">
                 <button id="import-document" class="ghost small" type="button"><i class="ph ph-file-arrow-up ph-lead" aria-hidden="true"></i> Import a document</button>
@@ -13628,20 +13635,23 @@ Link to another note with [[its first few words]]."></textarea>
                 </p>
               </div>
               <p class="status job-line" role="status" data-job-line="import"></p>
+            </details>
             </div>
 
             <!-- Import from another app (WORLD_CLASS_PLAN H6, row 25): one step
                  each, as the imports above (INBOX 464 (18)); app-import.js
                  (lazy) wires them, entry/app_import.py reads the exports. -->
-            <div class="settings-group" id="import-app-box">
-              <div class="row help-head">
-                <h3>Import from another app</h3>
-                <button type="button" class="icon-only ghost small graph-help-toggle"
-                  data-help-for="import-app-help" aria-controls="import-app-help" aria-expanded="false"
-                  title="About importing from another app" aria-label="About importing from another app">
-                  <i class="ph ph-question" aria-hidden="true"></i>
-                </button>
-              </div>
+            <div class="fold-help-wrap">
+              <button type="button" class="icon-only ghost small graph-help-toggle fold-help"
+                data-help-for="import-app-help" aria-controls="import-app-help" aria-expanded="false"
+                title="About importing from another app" aria-label="About importing from another app">
+                <i class="ph ph-question" aria-hidden="true"></i>
+              </button>
+            <details class="settings-group settings-fold" data-fold-key="import-app" id="import-app-box">
+              <summary><div class="row help-head">
+                <h3 class="inline-h3">Import from another app</h3>
+                <span class="fold-help-slot" aria-hidden="true"></span>
+              </div></summary>
               <p class="muted">Bring in your notes from Notion, Obsidian, Evernote or Apple Notes.</p>
               <div class="help-body hidden" id="import-app-help" role="dialog" aria-label="About importing from another app">
                 <p>
@@ -13683,20 +13693,23 @@ Link to another note with [[its first few words]]."></textarea>
                 <button id="import-memorymap" class="ghost small" type="button"><i class="ph ph-file-arrow-up ph-lead" aria-hidden="true"></i> From a Tessellate folder</button>
               </div>
               <p id="import-app-status" class="status" role="status" aria-live="polite"></p>
+            </details>
             </div>
 
             <!-- The web clipper (WORLD_CLASS_PLAN D9, row 24): a bookmark that
                  sends the page you are reading to clip.html, from your own
                  browser. web-clip.js (lazy) writes its address in. -->
-            <div class="settings-group" id="web-clip-box">
-              <div class="row help-head">
-                <h3>Web clipper</h3>
-                <button type="button" class="icon-only ghost small graph-help-toggle"
-                  data-help-for="web-clip-help" aria-controls="web-clip-help" aria-expanded="false"
-                  title="About the web clipper" aria-label="About the web clipper">
-                  <i class="ph ph-question" aria-hidden="true"></i>
-                </button>
-              </div>
+            <div class="fold-help-wrap">
+              <button type="button" class="icon-only ghost small graph-help-toggle fold-help"
+                data-help-for="web-clip-help" aria-controls="web-clip-help" aria-expanded="false"
+                title="About the web clipper" aria-label="About the web clipper">
+                <i class="ph ph-question" aria-hidden="true"></i>
+              </button>
+            <details class="settings-group settings-fold" data-fold-key="import-web-clip" id="web-clip-box">
+              <summary><div class="row help-head">
+                <h3 class="inline-h3">Web clipper</h3>
+                <span class="fold-help-slot" aria-hidden="true"></span>
+              </div></summary>
               <p class="muted">Drag this to your bookmarks bar, then press it on any page to keep that page as a note.</p>
               <div class="help-body hidden" id="web-clip-help" role="dialog" aria-label="About the web clipper">
                 <p>
@@ -13719,6 +13732,7 @@ Link to another note with [[its first few words]]."></textarea>
                 <button id="web-clip-copy" class="ghost small" type="button"><i class="ph ph-copy ph-lead" aria-hidden="true"></i> Copy the bookmark</button>
               </div>
               <p id="web-clip-status" class="status" role="status" aria-live="polite"></p>
+            </details>
             </div>
 
             <div class="settings-group">
