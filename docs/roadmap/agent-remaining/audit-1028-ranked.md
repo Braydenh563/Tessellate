@@ -263,7 +263,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 257 | U38 | low | duplicate document titles allowed silently | fixed 2026-11-02 (a28s-U38) | S |
 | 258 | U41 | low | new-board toast persists and stacks with others | new | S |
 | 259 | U46 | low | hidden native board select is 1px wide | new | S |
-| 260 | U48 | low | export defaults to On screen, not whole board | new | S |
+| 260 | U48 | low | export defaults to On screen, not whole board | fixed 2026-11-02 (a28s-U48) | S |
 | 261 | U49 | low | board toolbar has 33 tab stops | new | M |
 | 262 | B23 | low | export SVG built from live DOM, blocks main thread | new | M |
 | 263 | B31 | low | timers and frames not cancelled on board switch | fixed | M |

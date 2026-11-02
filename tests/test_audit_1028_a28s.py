@@ -44,6 +44,12 @@ def test_u38_a_document_title_another_has_is_said_once_and_left_as_typed():
     assert '" (2)"' not in block
 
 
+def test_u48_the_export_dialog_opens_on_the_whole_board_when_nothing_is_selected():
+    """U48: "On screen" was the first export's scope and put "(view)" in its file name."""
+    block = _between(_js("whiteboard.js"), "function wbExportBoard()", "const overlay = ")
+    assert 'let scope = hasSelection ? "selection" : "whole";' in block
+
+
 def test_s92_a_loaded_or_filtered_list_says_its_count_through_the_one_live_region():
     """S92: Notes and the Library announce their count, settled and once, through
     `announce` (the page's `#live-region`), not a region each."""

@@ -14634,7 +14634,9 @@ function wbExportBoard() {
   const isMap = wbIsMap();
   const formats = WB_EXPORT_FORMATS.filter((f) => (!f.map || isMap) && (!f.board || !isMap));
   let format = formats[0];
-  let scope = hasSelection ? "selection" : "visible";
+  //: The whole board when nothing is selected (audit 1028 U48): "On screen" put "(view)" in a first export's
+  //: file name and cut off what was past the edge; it stays one press away.
+  let scope = hasSelection ? "selection" : "whole";
 
   const overlay = document.createElement("div");
   overlay.className = "modal-overlay confirm-overlay wb-export-overlay";

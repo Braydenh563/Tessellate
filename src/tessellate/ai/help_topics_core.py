@@ -1557,7 +1557,7 @@ HELP_TOPICS.extend(
                 "a board. In Agent mode the assistant can search the library and place from it, draw "
                 "shapes and frames, and move, edit or delete what is on a board, asking first. "
                 "A PNG export joins the image library only when Also add to the image library is ticked in the "
-                "export dialog; Board, Show hints brings the first-steps card back. "
+                "export dialog, which opens on Whole board when nothing is selected (On screen is one press away); Board, Show hints brings the first-steps card back. "
                 "For diagrams, the UML set has class, interface, enumeration and package boxes with the six "
                 "relations; Entity relationship has entities, attributes and crow's foot lines; Wireframe has "
                 "a window, button, input, checkbox, dropdown, image, navigation bar and card."
