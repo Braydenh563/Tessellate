@@ -7,8 +7,8 @@ finish-up: 85%
 started: 2026-11-02 04:40Z
 tier: max (three agents at once, one Opus); never Fable; owner away, all permissions given 2026-11-02
 
-- [ ] Merge fix1525 (list1525 review findings + 5 CI reds) as it reports; gate, serial targeted tests, push; PR 212 CI green
-- [ ] Merge gods2 (row 36: routes_whiteboard.py, ai/tools/__init__.py splits); gate, push
+- [x] Merge fix1525 (list1525 review findings + 5 CI reds) as it reports; gate, serial targeted tests, push; PR 212 CI green
+- [x] Merge gods2 (row 36: routes_whiteboard.py, ai/tools/__init__.py splits); gate, push
 - [x] Resolve INBOX 1530 (scratchpad/inbox_resolve.py 1530); CHANGELOG, plan Built moves
 - [ ] Ranked row 19 rest: graph worker 11-14 s, hover and wheel at rest, PF10 (gr1-1101.md, gperf1518-1101.md)
 - [ ] Ranked row 22 rest: DC13 documents-code.js split, CE9 rest
