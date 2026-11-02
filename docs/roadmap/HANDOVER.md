@@ -512,23 +512,6 @@ chips, composer follow-ups while a model runs
 `bgprogress-1006.md` (autonomous pass with no model, night pairing speed),
 `autoinstall-1006.md`; then WHITEBOARD_PLAN "Placed from INBOX, 2026-10-07" (edge arrows on rotate, resize and drag; template connectors following their shapes; Reset style), DOCUMENTS_PLAN's live code blocks with completion, the Windows installer's frozen optional-packages step (`windows-packaging-1005.md`), then INBOX 727 to 745.
 
-**Now (2026-10-06, PR 167, 0.4.1):** 0.4.1 is ready to merge from
-`claude/mini-release-0.4.1` (forgot-password flow plus INBOX 663 to 726). Next
-session, in order: INBOX 727 to 736 (Ask search indicator, missing similarity
-numbers, composer answer polish, filing without a model, Guide failure with a
-model, reminders magic add, p5 documents and code completion, output panel
-resize); then CHAT_PLAN Phase 5 and the composer decisions 17 to 29, measured on
-the 725 eval. The owner tags `v0.4.0` on main and then `v0.4.1` after merge.
-
-**Now (2026-10-06, PR 162):** release 0.4.0 is ready to merge: version
-bumped (`__version__`, pyproject, README, every `?v=` stamp), CHANGELOG
-`[0.4.0] - 2026-10-06` with a Highlights block (release.yml cuts the notes
-under 120,000 bytes with a link), CI green on every job including the 49
-E2E browser tests and the Windows install/upgrade/uninstall. Final scan:
-`agent-remaining/final-scan-1006.md` (5 open, none blocking). After the
-merge: tag `v0.4.0` on main; then the next PR from ROADMAP's top block
-(OneNote ideas and meeting notes, the code editor, the rest of 641).
-
 **Before that (2026-10-03 night, PR 162):** merged since evening: Library pages and
 whiteboard/mind map audits (445), job last-run status (438), note making
 (434: Quick note Alt+N, offline outbox, paste/drop, `#tags`), mind map undo

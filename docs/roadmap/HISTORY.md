@@ -7,6 +7,25 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from HANDOVER, 2026-11-02 (session record past 600 lines)
+
+**Now (2026-10-06, PR 167, 0.4.1):** 0.4.1 is ready to merge from
+`claude/mini-release-0.4.1` (forgot-password flow plus INBOX 663 to 726). Next
+session, in order: INBOX 727 to 736 (Ask search indicator, missing similarity
+numbers, composer answer polish, filing without a model, Guide failure with a
+model, reminders magic add, p5 documents and code completion, output panel
+resize); then CHAT_PLAN Phase 5 and the composer decisions 17 to 29, measured on
+the 725 eval. The owner tags `v0.4.0` on main and then `v0.4.1` after merge.
+
+**Now (2026-10-06, PR 162):** release 0.4.0 is ready to merge: version
+bumped (`__version__`, pyproject, README, every `?v=` stamp), CHANGELOG
+`[0.4.0] - 2026-10-06` with a Highlights block (release.yml cuts the notes
+under 120,000 bytes with a link), CI green on every job including the 49
+E2E browser tests and the Windows install/upgrade/uninstall. Final scan:
+`agent-remaining/final-scan-1006.md` (5 open, none blocking). After the
+merge: tag `v0.4.0` on main; then the next PR from ROADMAP's top block
+(OneNote ideas and meeting notes, the code editor, the rest of 641).
+
 ## INBOX resolved, 2026-11-01 (1524)
 
 - **1527, the equations and the calculator should be integrated together (owner, 2026-11-01).** Built in 2bd0d4b: one dialog, Calculator and equations, with a third tab, Equation, that hosts the math editor (`mathEditorMount`, the floating popover removed; `openMathEditor` opens the dialog, so Alt+= and every Equation row land in it). Alt+= opens Equation over the box it was pressed in, /calc and the palette row open Work out; with a box behind it a result offers Insert and Insert as equation, an equation of numbers shows its value through the Work out evaluator, and with no box Insert is Copy. One POPUP_TOOLS row (Alt+= or /calc) replaced Calculator and Equation; `popupToolEquation` is `popupToolMaths`; the calculator and equation-editor Guide topics say it is one tool. Measured at 1440 and 360 wide, dark and light: Alt+= to the field 315 to 554 ms, tab switch at 4x CPU 34 to 85 ms (Equation 96 to 197 ms, first mount with the library 521 ms), overflow 0, 0 page errors. Open points in `agent-remaining/maths1527-1101.md`.
