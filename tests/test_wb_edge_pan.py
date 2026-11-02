@@ -2,9 +2,9 @@
 
 The owner: "when I drag select off the screen on the whiteboard and mind map
 ... it doesnt scroll down or up or the way I am dragging". The browser
-measurement is scratchpad/ui-sweeps/bm1005-edgepan.js (a held marquee and a
-held item each pan hundreds of pixels a second; the item stays under the
-pointer). These pin the wiring that measurement depends on.
+measurement (a held marquee and a held item each pan hundreds of pixels a
+second; the item stays under the pointer) was a one-off sweep, retired with
+INBOX 1556 to hold the scratchpad cap. These pin the wiring it depended on.
 """
 
 from tests._help_text import help_chat_text

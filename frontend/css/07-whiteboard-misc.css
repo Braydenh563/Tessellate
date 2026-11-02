@@ -4222,7 +4222,7 @@ summary:not(.icon-only):not(.icon-button):not(.fold-summary, .chat-sources-summa
 .row.field-row > input,
 .row.field-row > button,
 .row.field-row > .select-shell > .select-opener {
-  min-height: var(--control-h-lg);
+  min-height: max(var(--target-min), var(--button-min-h));
 }
 .row.field-row > input {
   padding-block: 0;

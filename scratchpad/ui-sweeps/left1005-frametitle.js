@@ -113,7 +113,7 @@ const VH = Number(process.env.VH || (VW < 600 ? 844 : 900));
   });
   // Back to where the objects were made, and the view to the fit: the four
   // drags above carry the pair 4 x 284 units right, to the viewport's edge,
-  // where the edge auto-pan (bm1005-edgepan) takes over the next drag (this
+  // where the edge auto-pan (the edge auto-pan) takes over the next drag (this
   // case read dx 1,070 to 1,355 for a 284 move at 390 before this reset).
   await page.evaluate(({ ids, home, view }) => {
     clearWbSelection();

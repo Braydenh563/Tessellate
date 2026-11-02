@@ -98,8 +98,20 @@ CACHE_TTL_SECONDS = 180
 CACHE_MAX_ENTRIES = 64
 
 
+#: A reason a caller reads instead of the message: the SearXNG this search
+#: needs is not answering (INBOX 1556). Frontends offer to start it.
+REASON_SEARXNG_DOWN = "searxng_down"
+
+
 class WebSearchError(RuntimeError):
-    """The web couldn't be reached or the response wasn't usable."""
+    """The web couldn't be reached or the response wasn't usable.
+
+    `reason` is the machine-readable cause when one matters to a caller
+    (`REASON_SEARXNG_DOWN`); the message is for people and is never matched."""
+
+    def __init__(self, message: str = "", reason: str | None = None) -> None:
+        super().__init__(message)
+        self.reason = reason
 
 
 def _cache_get(key: tuple[str, int]) -> list[dict] | None:
@@ -359,7 +371,8 @@ def search_web(
         raise WebSearchError(
             "Web search is set to use SearXNG only, but no SearXNG address is "
             "configured. Set one in Settings, Web search, or switch the "
-            "engine to Automatic."
+            "engine to Automatic.",
+            reason=REASON_SEARXNG_DOWN,
         )
 
     cache_key = (f"{provider}::{searxng_url or 'ddg'}::{query.lower()}", limit)
@@ -463,7 +476,8 @@ def _search_searxng(query: str, limit: int, base_url: str) -> list[dict]:
         # The transport's own text is for the log; the query is not in it.
         logger.warning("SearXNG search failed (%s): %s", type(exc).__name__, safe_value(str(exc), 300))
         raise WebSearchError(
-            "The SearXNG search failed. Check that SearXNG is running, then try again."
+            "The SearXNG search failed. Check that SearXNG is running, then try again.",
+            reason=REASON_SEARXNG_DOWN,
         ) from exc
     finally:
         session.close()  # the cookie jar goes with it

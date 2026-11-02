@@ -32,7 +32,7 @@ def _web_search(session: Session, args: dict) -> dict:
             provider=provider,
         )
     except websearch.WebSearchError as exc:
-        raise ToolError(str(exc)) from exc
+        raise ToolError(str(exc), reason=exc.reason) from exc
     return {
         "results": results,
         "provider": provider,

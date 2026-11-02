@@ -34,9 +34,6 @@ with its owner named in the entry.
 
 ## Open items
 
-1557. **Owner, 2026-11-02, verbatim (screenshot: the Clock popup's duration box "10, 90s, 1h30m, 1:30" beside the Start button):** "these elements arent the same height in the timer popup". Recommendation: the field and its button share one control height token in every input-plus-button row (fix the class: find each row that pairs an input with a button and give them one height), with a lint.
-
-1556. **Owner, 2026-11-02, verbatim (screenshots: the Web panel saying "The SearXNG search failed. Check that SearXNG is running, then try again." with only Try again; its menu has Web search settings and Clear recent searches):** "no button to start up searxng". Recommendation: when SearXNG is down, the message offers Start SearXNG (the same start the Settings pane uses), then retries the search once it answers; where the app cannot start it, the message says why and links the setup.
 
 1549. **Owner's log, 2026-11-02 7:50:34 pm:** `ERROR: browser: CodeMirror plugin crashed: {}` in Documents, just before the math editor loaded (`math-editor.js` onload). Recommendation: reproduce (insert an equation from the slash menu in Live, then in Source), find which view plugin throws and why the logged error is `{}` (the logger stringifies an Error to an empty object: log its name, message and stack), fix the plugin, and make the crash log say which plugin. **Logging half done 2026-11-02:** the lag watcher's console.error wrapper hands an Error on as its stack (`tests/test_error_log_1549.py`), so the owner's next log names the throw; the plugin itself is still to reproduce. **Repro tried 2026-11-02:** `scratchpad/ui-sweeps/cmcrash1549.js` (slash equation, click to edit, Alt+=, a document with TOC, table, tasks, code, mermaid, footnotes and maths, Live and Source) logs no plugin crash; the next owner log names the throw, so this waits on it.
 

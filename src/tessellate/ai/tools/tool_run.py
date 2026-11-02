@@ -367,7 +367,7 @@ def execute_tool(
     except _common.ToolError as exc:
         # An explanation the handler wrote on purpose, safe to hand back.
         session.rollback()
-        return {"error": f"{name}: {exc}"}
+        return exc.result(name)
     except (KeyError, TypeError, ValueError) as exc:
         # A missing or wrong-typed argument, or a bug. Keep the detail here.
         session.rollback()
