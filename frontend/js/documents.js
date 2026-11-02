@@ -1350,7 +1350,8 @@ function keepDocEditLocally() {
   if (content.length > 2e6) return;
   try {
     const all = docKeptDrafts();
-    all[currentDoc.id] = { id: currentDoc.id, title: $("doc-title").value, content, at: Date.now() };
+    //: `base`: the hash of the server text this was typed over, so a later open can tell the copy is the newer (DX31).
+    all[currentDoc.id] = { id: currentDoc.id, title: $("doc-title").value, content, at: Date.now(), base: currentDoc.content_hash };
     const newest = Object.values(all).sort((a, b) => b.at - a.at).slice(0, DOC_KEPT_MAX);
     prefs.setJSON(DOC_EDIT_KEPT, Object.fromEntries(newest.map((kept) => [kept.id, kept])));
   } catch {
@@ -1373,9 +1374,13 @@ function forgetDocEditLocally(id) {
 window.addEventListener("pagehide", keepDocEditLocally);
 
 //: Called by openDocument once the document is on screen. A kept copy whose
-//: text is already the document's is dropped without a word; otherwise one
-//: message offers it back, as an edit (Ctrl+Z takes it out again) that the
-//: ordinary autosave then saves.
+//: text is already the document's is dropped without a word. One typed over
+//: the text the server still holds (`base` is its `content_hash`) is the newer
+//: by construction, so it goes straight into the editor, as an edit that the
+//: ordinary autosave saves, with Undo in the toast (DX31: a fast reload showed
+//: the older text until a button was pressed). Any other is offered, not
+//: applied: the server has moved on since, and which text wins is the
+//: writer's to say.
 function offerKeptDocEdit(doc) {
   const kept = docKeptDrafts()[doc.id];
   if (!kept) return;
@@ -1383,13 +1388,28 @@ function offerKeptDocEdit(doc) {
     forgetDocEditLocally(doc.id);
     return;
   }
-  toastAction(`Your unsaved changes to “${clipText(kept.title || "Untitled", 40)}” were kept.`, "Put them back", () => {
-    if (!currentDoc || currentDoc.id !== kept.id) return;
+  const put = (title, content) => {
     const box = docSurface();
-    if (!box) return;
-    if (kept.title) $("doc-title").value = kept.title;
-    docReplaceRange(box, 0, docText().length, String(kept.content || ""));
+    if (!currentDoc || currentDoc.id !== kept.id || !box) return false;
+    if (title) $("doc-title").value = title;
+    docReplaceRange(box, 0, docText().length, String(content || ""));
+    return true;
+  };
+  const name = clipText(kept.title || "Untitled", 40);
+  if (kept.base && kept.base === doc.content_hash) {
+    if (!put(kept.title, kept.content)) return;
     markDocDirty();
+    toastAction(`Restored your unsaved changes to \u201c${name}\u201d.`, "Undo", () => {
+      if (!put(doc.title, doc.content)) return;
+      forgetDocEditLocally(doc.id);
+      clearTimeout(docSaveTimer);
+      docDirty = false;
+      $("doc-saved").textContent = "Saved";
+    });
+    return;
+  }
+  toastAction(`Your unsaved changes to \u201c${name}\u201d were kept.`, "Put them back", () => {
+    if (put(kept.title, kept.content)) markDocDirty();
   });
 }
 
