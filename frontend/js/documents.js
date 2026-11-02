@@ -4001,17 +4001,36 @@ function docTaskLines(text) {
 }
 
 function docWireReadTasks(preview, text) {
-  const boxes = [...preview.querySelectorAll("li.md-task > input[type=checkbox]")];
+  const boxes = [...preview.querySelectorAll("li.md-task input[type=checkbox]")];
   if (!boxes.length) return;
   const tasks = docTaskLines(text);
   if (tasks.length !== boxes.length) return;
   boxes.forEach((box, n) => {
     box.disabled = false;
+    //: **The Live view's task box, not a second one** (audit 1102 DX21): a
+    //: native box at the text's size was 14.7px, under the 24px a pressable
+    //: target needs (WCAG 2.5.8), and a native box cannot be padded out. The
+    //: press strip and the drawn box are `.cm-md-task-hit` and `.cm-md-task`
+    //: (09-editor.css), the same two the Live widget uses, so the views agree.
+    if (!box.parentElement.classList.contains("cm-md-task-hit")) {
+      const hit = document.createElement("span");
+      hit.className = "cm-md-task-hit";
+      box.classList.add("cm-md-task");
+      box.replaceWith(hit);
+      hit.append(box);
+    }
     box.dataset.docTask = String(n);
     box.setAttribute("aria-label", box.checked ? "Done" : "Not done");
   });
   if (preview.dataset.taskWired === "1") return;
   preview.dataset.taskWired = "1";
+  //: A press on the strip beside the box lands on the strip (a pseudo-element
+  //: cannot be the target), so it is forwarded to the box it belongs to.
+  preview.addEventListener("click", (event) => {
+    const hit = event.target instanceof Element ? event.target.closest(".cm-md-task-hit") : null;
+    const box = hit?.firstElementChild;
+    if (box && event.target === hit && !box.disabled) box.click();
+  });
   preview.addEventListener("change", (event) => {
     const box = event.target;
     if (!(box instanceof HTMLInputElement) || box.dataset.docTask === undefined) return;
@@ -4368,7 +4387,12 @@ function watchDocGutter(box) {
   if (!box || typeof ResizeObserver !== "function") return;
   if (!docGutterObserver) {
     docGutterObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) syncDocGutterMetrics(entry.target);
+      for (const entry of entries) {
+        //: The status bar's counts ride this one observer (the wake sources are
+        //: capped): a box that has no width is not a tab stop (audit 1102 DX21).
+        if (entry.target.id === "doc-counts") entry.target.tabIndex = entry.target.clientWidth >= 1 ? 0 : -1;
+        else syncDocGutterMetrics(entry.target);
+      }
     });
   }
   //: Observing the same element twice replaces the registration rather than
@@ -8639,6 +8663,13 @@ $("doc-counts")?.addEventListener("keydown", (event) => {
   event.preventDefault();
   docRunTextTool("stats");
 });
+//: **A button with no width is not a place to stand** (audit 1102 DX21): at 390
+//: the counts give way entirely (an ellipsis in a 0px box), still visible to
+//: the tab key as a focus stop nobody can see. It leaves the tab order while it
+//: has no room and comes back when it has; the same statistics are one press
+//: away in the document menu. Watched by `docGutterObserver`, whose callback
+//: knows this one element.
+watchDocGutter($("doc-counts"));
 $("doc-word-goal-submit").addEventListener("click", () => {
   if (!currentDoc) return;
   //: The field's own limits say what is wrong (1031 DC9: a negative goal
@@ -15330,7 +15361,16 @@ function docTableGridRules() {
   const rules = {};
   for (let n = 1; n <= DOC_TABLE_GRID_MAX; n += 1) {
     rules[`.cm-md-cols-${n}`] = {
-      gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))`,
+      //: **A column has a floor** (audit 1102 DX2): a zero minimum let 14
+      //: columns share 594px as 42px tracks and stack "Column 0" one letter a
+      //: line. The floor is `--doc-table-col-min` (6em, a word and its inset;
+      //: 5em broke "Column" mid-word when measured) and the line is as wide as
+      //: its columns need, so a wide table scrolls the editor sideways as the
+      //: Read view does, every row the same width. The floor is a fixed
+      //: minimum, not `auto`, so a long unbroken word still wraps inside its
+      //: track instead of widening the table.
+      gridTemplateColumns: `repeat(${n}, minmax(var(--doc-table-col-min), 1fr))`,
+      minWidth: `calc(${n} * var(--doc-table-col-min))`,
       //: **An implicit row gets no height** (the owner, twice: "when I click
       //: on a header row in a table on the live view, another row appears
       //: below it until I click off"). Measured with the caret in the header

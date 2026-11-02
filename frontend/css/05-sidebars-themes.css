@@ -1539,9 +1539,23 @@ button.rich-picker-row:is(:hover, :focus-visible) .rich-picker-tile {
 .md-fn-ref {
   line-height: 0;
 }
-.md-fn-ref a {
-  padding: 0 0.1em;
+/* **A footnote number is a target at least 24px square** (audit 1102 DX21:
+   7 by 15). The padding is the hit area and the equal negative margin takes it
+   out of the layout, so the text does not move: padding on an inline box
+   reaches up and down without growing its line, and sideways the margin
+   cancels it. 44px under a coarse pointer, the same floor as `--target-min`. */
+.md-fn-ref a,
+.md-fn-back {
+  padding: var(--space-3) var(--space-5);
+  margin-inline: calc(var(--space-5) * -1);
   text-decoration: none;
+}
+@media (pointer: coarse) {
+  .md-fn-ref a,
+  .md-fn-back {
+    padding: var(--space-6) var(--space-7);
+    margin-inline: calc(var(--space-7) * -1);
+  }
 }
 .md-footnotes {
   margin-top: var(--space-5);
@@ -1587,6 +1601,15 @@ button.rich-picker-row:is(:hover, :focus-visible) .rich-picker-tile {
   font-family: var(--mono, ui-monospace, monospace);
   font-size: var(--text-md);
   color: var(--muted);
+}
+/* A formula the parser had to guess at (documents-math.js `problem`): an
+   error tint, and the title names what it could not read (audit 1102 DX18).
+   Live and Read draw it through the same wrapper. */
+.md-math-error {
+  color: var(--error);
+  background: var(--error-soft);
+  border-radius: var(--radius-sm);
+  padding: 0 var(--space-1);
 }
 /* --- transcluded notes (![[note]]) -------------------------------------------
    An embedded note is somebody else's text living inside this one, and the

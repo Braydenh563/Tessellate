@@ -185,7 +185,7 @@
 /* A finished task in the rendered view, struck through in the muted ink the
    live view gives it (`.cm-md-task-done`), so the two views agree about
    which items are done. `:has` on the box the renderer writes first. */
-#doc-preview .md-task:has(> input:checked) {
+#doc-preview .md-task:has(input:checked) {
   color: var(--muted);
   text-decoration: line-through;
   text-decoration-color: color-mix(in srgb, var(--muted) 70%, transparent);
@@ -377,7 +377,9 @@
   top: 50%;
   right: 0;
   width: var(--target-min);
-  height: 1.6em;
+  /* The line's height, and never under the 24px a target needs (audit 1102
+     DX21: 1.6em is 23.5px at the editor's size). */
+  height: max(1.6em, 24px);
   transform: translateY(-50%);
 }
 
