@@ -1973,9 +1973,8 @@ HELP_TOPICS.extend(
                 "task boxes, footnotes (as Word footnotes), formulas (as Word "
                 "equations), diagrams (as pictures) and suggested changes as "
                 "Word's tracked changes; a .docx added "
-                "in the Library is read with its headings, nested lists, tables, "
-                "code blocks and pictures kept, and one with tracked changes "
-                "keeps them as suggestions to accept or reject; other downloads "
+                "in the Library is read with its headings, lists, tables, code "
+                "and pictures, its tracked changes as suggestions; other downloads "
                 "are .md, .html, a .zip "
                 "with images, and print or save as PDF."
             ),
