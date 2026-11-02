@@ -8167,3 +8167,18 @@ input[type="color"].wb-mixed {
     background: transparent;
   }
 }
+
+/* --- audit 1028 board and map rows (U14 to U28) ----------------------------
+   Lazy on purpose: the boot stylesheets are at their gzip cap
+   (tests/test_boot_budget.py), so a board's rule lands here. */
+
+/* **Delete stands apart from Undo and Redo** (U14: 2px between the one tool
+   that destroys and the two that take it back, so a slip on Undo deleted).
+   2px of row gap plus this margin is 10px at the default density; the side
+   dock's grid spaces its own cells. */
+.wb-tool-section-row > [data-tool="delete"] {
+  margin-inline-end: var(--space-3);
+}
+.whiteboard-floating-panel[data-dock="side"] .wb-tool-section-row > [data-tool="delete"] {
+  margin-inline-end: 0;
+}

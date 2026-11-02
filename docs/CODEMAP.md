@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7562, frontend ids 2642, CSS sections 518, backend routes 641, backend modules 8493, test files 1905, tests 16040, plan headings 987, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7562, frontend ids 2642, CSS sections 519, backend routes 641, backend modules 8493, test files 1905, tests 16041, plan headings 987, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7562)
 
@@ -11379,7 +11379,7 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `zoom-slider` | frontend/index.html:11763 |
 | `zoom-value` | frontend/index.html:11767 |
 
-## CSS sections (518)
+## CSS sections (519)
 
 Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 
@@ -11608,6 +11608,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | appearance settings: grouped, scannable rows | frontend/css/04-chat-dock-appearance.css:1948 |
 | assistant message layout | frontend/css/05-sidebars-themes.css:4403 |
 | attaching notes to a chat message | frontend/css/04-chat-dock-appearance.css:2798 |
+| audit 1028 board and map rows (U14 to U28) | frontend/css/library-lazy.css:8171 |
 | back / forward through pages | frontend/css/00-tokens-shell.css:4088 |
 | back-to-top button | frontend/css/04-chat-dock-appearance.css:2617 |
 | band 2 (820 to 1200): the tabs keep their names, set small | frontend/css/10-responsive.css:61 |
@@ -11942,7 +11943,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/improve-lazy.css | 110 |
 | frontend/css/inbox-lazy.css | 306 |
 | frontend/css/lan-lazy.css | 131 |
-| frontend/css/library-lazy.css | 8169 |
+| frontend/css/library-lazy.css | 8184 |
 | frontend/css/lightbox-lazy.css | 425 |
 | frontend/css/manual-lazy.css | 161 |
 | frontend/css/math-editor-lazy.css | 141 |
@@ -23303,7 +23304,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16040)
+## Tests (16041)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23404,7 +23405,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_audit1028_e55.py | 3 |
 | tests/test_audit1028_e63.py | 2 |
 | tests/test_audit1028_e72.py | 3 |
-| tests/test_audit1028_ux_boards.py | 1 |
+| tests/test_audit1028_ux_boards.py | 2 |
 | tests/test_audit_1028_a28s.py | 9 |
 | tests/test_audit_1028_e_rows.py | 5 |
 | tests/test_audit_1028_e_rows_b.py | 6 |
