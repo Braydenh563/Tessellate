@@ -460,23 +460,33 @@ function editorSplice(textarea, start, end, text, select) {
 //: (the map, the board, both editors) goes through. Resolves once the panel
 //: is open; a load that fails (offline, the file gone) does nothing.
 function pickIconOrEmoji(options) {
-  return openIconPicker(options);
+  //: The movable-panel module first, so the panel is placed once, in its final
+  //: place (INBOX 1542): adopted late, it was placed twice.
+  return Promise.all([ensureModule("panelMovable"), ensureModule("iconPicker")]).then(() => openIconPicker(options));
 }
 
 //: **An emoji or an icon at the caret** (MINDMAP_PLAN.md decision 46),
 //: from the one picker: an emoji as itself, an icon as `:ph-name:`, which
 //: the reading view draws. The caret's place is kept while the picker is
 //: open, since focus is in its search field by then.
-function editorPickGlyph(textarea, anchor = null) {
-  if (!textarea) return;
-  const start = textarea.selectionStart;
-  const end = textarea.selectionEnd;
+//: `mode` is the tab it opens on: the Emoji, Icons and Symbols doors (the "/"
+//: menu, the Insert menus, the palette, the chords) are one picker, three tabs
+//: (INBOX 1544). A symbol is inserted as the character. With no box to write
+//: into (the palette over nothing) a pick is copied instead of lost.
+function editorPickGlyph(box, anchor = null, mode = "emoji") {
+  //: The palette hands over the element that had the focus (a CodeMirror's content); the surface behind it is what takes a splice.
+  const textarea = editorSurfaceFor(box) || box;
+  const start = textarea?.selectionStart;
+  const end = textarea?.selectionEnd;
   pickIconOrEmoji({
-    anchor: anchor || (textarea.kind === "codemirror" ? null : textarea),
-    title: "Insert an emoji or icon",
+    anchor: anchor || (!textarea || textarea.kind === "codemirror" ? null : textarea),
+    title: "Insert an emoji, icon or symbol",
+    modes: ["emoji", "icon", "symbol"],
+    mode,
     onPick: (choice) => {
-      const text = choice.kind === "emoji" ? choice.value : `:ph-${choice.value}:`;
-      editorSplice(textarea, start, end, text, { from: text.length, to: text.length });
+      const text = choice.kind === "icon" ? `:ph-${choice.value}:` : choice.value;
+      if (textarea) editorSplice(textarea, start, end, text, { from: text.length, to: text.length });
+      else navigator.clipboard?.writeText(text).then(() => toast(`Copied ${choice.name}.`, "info"), () => {});
     },
   });
 }
@@ -891,7 +901,9 @@ function editorBlockRows(context) {
   add({ id: "quote", group: "Basic", icon: "ph:quotes", label: "Quote", about: "Somebody else's words, set apart", keys: ">", keywords: ["quote", "blockquote", "cite"], sample: "> Words worth keeping.", run: act("quote") });
   add({ id: "quote-cite", group: "Basic", icon: "ph:quotes", label: "Quote with attribution", about: "The words, and who said them", keys: "> ... -- Name", keywords: ["quote", "cite", "attribution", "author", "pull quote", "source"], sample: "> Stay hungry, stay foolish.\n> -- Stewart Brand", run: (t) => editorBlock(t, "> ", "Words worth keeping", "\n> -- Who said it") });
   //: MINDMAP_PLAN decision 46: the one icon and emoji picker, from "/".
-  add({ id: "emoji", group: "Basic", icon: "ph:smiley", label: "Emoji or icon", about: "Pick from every emoji and icon", keys: ":fire:", keywords: ["emoji", "icon", "sticker", "symbol", "smiley", "glyph"], run: (t) => editorPickGlyph(t) });
+  add({ id: "emoji", group: "Basic", icon: "ph:smiley", label: "Emoji or icon", about: "Pick from every emoji and icon", keys: ":fire:", keywords: ["emoji", "icon", "sticker", "smiley", "glyph"], run: (t) => editorPickGlyph(t) });
+  //: The picker's third tab, on its own row (INBOX 1544): a character a keyboard lacks.
+  add({ id: "symbol", group: "Basic", icon: "ph:pi", label: "Symbol", about: "Arrows, maths, Greek, currency and writing marks", keys: "Ctrl+'", keywords: ["symbol", "arrow", "greek", "pi", "currency", "euro", "degree", "copyright", "character"], run: (t) => editorPickGlyph(t, null, "symbol") });
   add({ id: "divider", group: "Basic", icon: "ph:minus", label: "Divider", about: "A hairline between two parts", keys: "---", keywords: ["divider", "rule", "hr", "separator", "line"], sample: "Above\n\n---\n\nBelow", run: (t) => editorBlock(t, "---") });
 
   // --- Structure: what turns a page of text into a document. ---------------

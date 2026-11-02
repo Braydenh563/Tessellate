@@ -1690,20 +1690,25 @@ function renderNoteInline(element, text, terms) {
 //: `appendInlineRun` come here) and left as its words for every other reader.
 //: The name is held to Phosphor's own character set, and it is only ever a
 //: class: nothing typed reaches the markup.
-const INLINE_ICON_RE = /:ph-([a-z0-9-]{1,40}):/g;
+const INLINE_ICON_RE = /:ph-([a-z0-9-]+):/g;
 
 function appendPlainText(element, text) {
   let cursor = 0;
-  for (const match of text.matchAll(/\[([ xX])\](?!\S)/g)) {
+  for (const match of text.matchAll(/\[([ xX])\](?!\S)|:ph-([a-z0-9-]+):/g)) {
+    const icon = match[2] && appendPlainText.icon?.(match[2]);
+    if (match[2] && !icon) continue;
     element.append(text.slice(cursor, match.index));
-    const box = document.createElement("input");
-    box.type = "checkbox";
-    box.className = "md-task-inline";
-    box.disabled = true;
-    box.checked = match[1] !== " ";
-    box.ariaLabel = box.checked ? "Done" : "Not done";
-    element.append(box);
-    cursor = match.index + 3;
+    if (icon) element.append(icon);
+    else {
+      const box = document.createElement("input");
+      box.type = "checkbox";
+      box.className = "md-task-inline";
+      box.disabled = true;
+      box.checked = match[1] !== " ";
+      box.ariaLabel = box.checked ? "Done" : "Not done";
+      element.append(box);
+    }
+    cursor = match.index + match[0].length;
   }
   element.append(text.slice(cursor));
 }

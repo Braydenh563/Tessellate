@@ -2342,6 +2342,7 @@ MORE_TOPICS.extend(
             "keywords": (
                 "emoji", "emojis", "icon", "icons", "sticker", "stickers", "emoji picker",
                 "icon picker", "insert an emoji", "insert an icon", "drag an icon", ":ph-",
+                "symbol", "symbols", "insert a symbol", "special characters", "greek letters", "arrows",
             ),
             "body": (
                 "Emoji and icons. One picker holds every Phosphor icon the app ships "
@@ -2357,7 +2358,20 @@ MORE_TOPICS.extend(
                 "topic's icon. Each is one Undo step. In a note or a document, the "
                 "smiley in the formatting toolbar (the document's Insert menu) or "
                 "Emoji or icon in the / menu puts one at the caret: an emoji as "
-                "itself, an icon as :ph-name:, which reading shows as the icon."
+                "itself, an icon as :ph-name:, which reading, Live and an HTML "
+                "export show as the icon (a name the icon font lacks stays text). "
+                "Symbols is a third tab for characters a keyboard lacks: arrows, "
+                "maths, Greek letters, currency, writing marks and key caps, each "
+                "inserted as the character itself. Every panel has its own doors: "
+                "a document's Insert menu lists Emoji, Icon, Symbol, Equation and "
+                "Calculator; Ctrl+K lists Emoji, Icons, Symbols and the calculator "
+                "over any text box (with none, a pick is copied); the chords, in "
+                "a document and in every note box, are Ctrl+; for emoji, "
+                "Ctrl+Shift+; for icons, Ctrl+' for symbols, Alt+= for an equation "
+                "and Ctrl+Shift+' for the calculator, all in the document's "
+                "shortcut sheet; the note editor's strip has Emoji or icon, Symbol "
+                "and Equation. Each opens the same movable panel, which comes up "
+                "where it will stay."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -2665,7 +2679,7 @@ TOPIC_META: dict[str, dict] = {
     "mind-map-import-export": {"title": "Mind map templates, import and export", "path": "Library tab, Boards & maps"},
     "mind-map-study": {"title": "Study the map", "path": "Library tab, Boards & maps, a map's board menu"},
     "mind-map-look": {"title": "How a map's topics look", "path": "Library tab, Boards & maps, a map"},
-    "emoji-and-icons": {"title": "Emoji and icons", "path": "The smiley on a board's or map's tool dock, or its Insert menu; a topic's Text menu"},
+    "emoji-and-icons": {"title": "Emoji, icons and symbols", "path": "A document's Insert menu, Ctrl+K, the note editor strip; the smiley on a board's or map's tool dock; a topic's Text menu"},
     "board-comments": {"title": "Comments on boards and maps", "path": "An item's right-click menu, Comment…"},
     "sticky-notes": {"title": "Sticky notes and text boxes", "path": "A board's tool dock, Add"},
     "callouts": {"title": "Callouts", "path": "Library tab, Documents"},

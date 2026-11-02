@@ -447,6 +447,20 @@ function docLivePlugin(CM) {
     }
   }
 
+  //: An icon in a line, drawn by the renderer every other reader uses.
+  class DocIconWidget extends WidgetType {
+    constructor(name) {
+      super();
+      this.name = name;
+    }
+    eq(other) {
+      return other.name === this.name;
+    }
+    toDOM() {
+      return appendPlainText.icon(this.name) || document.createElement("span");
+    }
+  }
+
   //: **`[TOC]` as the contents it stands for** (INBOX 421 b). The headings
   //: come from the document's own text (`mdTocEntries`, app.js), the same
   //: list the Read view draws, and an entry moves the caret to its heading
@@ -1143,6 +1157,15 @@ function docLivePlugin(CM) {
         ranges.push(
           Decoration.replace({ widget: new DocMathWidget(match[1], false) }).range(from, to)
         );
+      });
+
+      //: **`:ph-name:` is the icon** (INBOX 1545), the token the icon picker
+      //: inserts and the reading view and an export draw; a name the font does
+      //: not have stays the text it is. Revealed as text under the caret.
+      scan(/:ph-([a-z0-9-]{1,40}):/g, (match, from, to) => {
+        const icon = appendPlainText.icon(match[1]);
+        if (!icon || rangeRevealed(from, to)) return;
+        ranges.push(Decoration.replace({ widget: new DocIconWidget(match[1]) }).range(from, to));
       });
 
       //: **Footnotes**, Phase 3 item 2. Two shapes of the same thing: a

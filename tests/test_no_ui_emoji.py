@@ -100,6 +100,11 @@ ALLOWED: dict[str, list[tuple[str, str]]] = {
             "the app's own icons",
         ),
         (
+            "block:iconPickerState.symbolSource = [",
+            "the picker's Symbols tab (INBOX 1544): characters a person inserts into "
+            "their own text, written as escapes; no Phosphor glyph can stand in",
+        ),
+        (
             "block:const ICON_KAOMOJI",
             "the picker's Japanese emoticons (INBOX 904 B81): text a person inserts "
             "into their own note, made of these characters; no Phosphor glyph can stand in",
