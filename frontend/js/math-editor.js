@@ -18,7 +18,7 @@
 // stays plain text and the editor adds no second format. Its anatomy is the
 // icon picker's, from the recipe index: a `.tabs-line` of Inline and Display,
 // the '?' and the equation field, a `.search-field`, the palette's groups
-// under pinned heads, and the dialog foot (Cancel, Insert).
+// under pinned heads; Copy and Insert are the dialog's action row (reply-kit.js).
 //
 // **The equation is a MathLive field, as Word's is** (math-field.js): a
 // structure drawn as it will read with dotted boxes where things go, which
@@ -206,6 +206,8 @@ function mathEditorTile(item) {
   const button = document.createElement("button");
   button.type = "button";
   button.className = "ghost math-editor-tile";
+  //: Out of the Tab order; the group's current tile is put back by `mathEditorPalette`/`mathEditorRoving`.
+  button.tabIndex = -1;
   button.title = item.name;
   button.setAttribute("aria-label", item.name);
   button._item = item;
@@ -232,6 +234,8 @@ function mathEditorPalette(list, query) {
     grid.setAttribute("role", "group");
     grid.setAttribute("aria-label", group.label);
     grid.append(...items.map(mathEditorTile));
+    //: One Tab stop per group (INBOX 1530 g M5: 149 stops on this tab, a long walk to the Insert row).
+    grid.firstChild.tabIndex = 0;
     parts.push(head, grid);
   }
   if (!parts.length) {
@@ -339,16 +343,6 @@ function mathEditorKeys(paneOf, insert, escape) {
   };
 }
 
-function mathEditorFoot(onCancel, onInsert, label) {
-  const foot = document.createElement("div");
-  foot.className = "row right space-dialog-actions math-editor-foot";
-  const cancel = smallButton("Cancel", "Close without inserting", onCancel);
-  const insert = smallButton(label, "Write the equation into the text (Ctrl+Enter)", onInsert, false);
-  insert.classList.add("primary");
-  foot.append(cancel, insert);
-  return { foot, insert };
-}
-
 //: What the editor opens on: the equation the selection is in, or the
 //: selection as TeX, or nothing.
 function mathEditorStart(surface) {
@@ -419,9 +413,10 @@ function openMathEditor({ target = null } = {}) {
 //: **Builds the editor into `host`**, the Equation tab's pane (reply-kit.js
 //: `replyCalcEquation`), for `target` (an editor surface or a text box; none
 //: and Insert becomes Copy). `done` closes the dialog; `note` is an element
-//: for the value line, and `onTex(tex)` hears each change. Returns
-//: `{close, focus}`, or null while the field's library is not loaded.
-function mathEditorMount({ host, target = null, done = () => {}, note = null, onTex = () => {} }) {
+//: for the value line, and `onTex(tex)` hears each change; `focus: false` builds it
+//: without taking the focus (an arrow onto the tab). Returns
+//: `{close, focus, copy, insert, ready, label}`, or null while the field's library is not loaded.
+function mathEditorMount({ host, target = null, done = () => {}, note = null, onTex = () => {}, focus = true }) {
   if (!mathFieldConfigure()) return null;
   const surface = target ? mathEditorSurface(target) : null;
   const start = surface ? mathEditorStart(surface) : { from: 0, to: 0, tex: "", display: false, editing: false };
@@ -433,14 +428,14 @@ function mathEditorMount({ host, target = null, done = () => {}, note = null, on
     helpBody.remove();
     done();
   };
+  //: The calculator's action row calls these (reply-kit.js `replyCalcActions`); Ctrl+Enter is Insert with a box and Copy without one.
   const view = {
+    copy: () => {
+      const text = mathEditorOutput(pane.tex(), display);
+      if (!text) return pane.focus();
+      navigator.clipboard?.writeText(text).then(() => toast("Equation copied."), () => toast("Couldn't copy the equation.", "info"));
+    },
     insert: () => {
-      if (!surface) {
-        const text = mathEditorOutput(pane.tex(), display);
-        if (!text) return pane.focus();
-        navigator.clipboard?.writeText(text).then(() => toast("Equation copied."), () => toast("Couldn't copy the equation.", "info"));
-        return;
-      }
       if (mathEditorWrite(target, pane.tex(), { display, start })) close();
       else pane.focus();
     },
@@ -450,7 +445,7 @@ function mathEditorMount({ host, target = null, done = () => {}, note = null, on
     tex: start.tex,
     label: "Equation",
     onChange: () => onTex(pane.tex()),
-    onKey: mathEditorKeys(() => pane, () => view.insert(), escape),
+    onKey: mathEditorKeys(() => pane, () => (surface ? view.insert() : view.copy()), escape),
   });
   pane.field.setAttribute("aria-describedby", "math-editor-help");
   const mode = mathEditorModes(display, (on, refocus = true) => {
@@ -463,8 +458,44 @@ function mathEditorMount({ host, target = null, done = () => {}, note = null, on
   list.className = "math-editor-list";
   const search = mathEditorSearch((q) => mathEditorPalette(list, q));
   mathEditorPalette(list, "");
-  const label = !surface ? "Copy" : start.editing ? "Update" : "Insert";
-  const { foot } = mathEditorFoot(() => done(), view.insert, label);
+  //: **A group of tiles is one Tab stop and the arrows walk it** (INBOX 1530 g
+  //: M5), as the keypad's keys are: the tile that last had focus is the group's
+  //: stop (`focusin` moves it, so a click does too); Left and Right step, Up and
+  //: Down go to the nearest tile in the row above or below (across the groups),
+  //: Home and End to the group's first and last. Delegated on the list, so a
+  //: search that redraws the groups needs nothing again.
+  const roving = (list) => {
+    list.addEventListener("focusin", (event) => {
+      const tile = event.target.closest?.(".math-editor-tile");
+      if (!tile) return;
+      for (const other of tile.parentElement.children) other.tabIndex = other === tile ? 0 : -1;
+    });
+    list.addEventListener("keydown", (event) => {
+      const tile = event.target.closest?.(".math-editor-tile");
+      if (!tile || event.altKey || event.ctrlKey || event.metaKey) return;
+      const group = [...tile.parentElement.children];
+      const all = [...list.querySelectorAll(".math-editor-tile")];
+      const at = group.indexOf(tile);
+      let next = null;
+      if (event.key === "ArrowRight") next = group[at + 1] || all[all.indexOf(tile) + 1];
+      else if (event.key === "ArrowLeft") next = group[at - 1] || all[all.indexOf(tile) - 1];
+      else if (event.key === "Home") next = group[0];
+      else if (event.key === "End") next = group[group.length - 1];
+      else if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+        const down = event.key === "ArrowDown";
+        const from = tile.getBoundingClientRect();
+        const centre = from.left + from.width / 2;
+        //: Rows are told apart by their top edge; the nearest row first, then the nearest column in it.
+        const others = all.filter((t) => (down ? t.getBoundingClientRect().top > from.top + 2 : t.getBoundingClientRect().top < from.top - 2));
+        const row = others.length ? (down ? Math.min : Math.max)(...others.map((t) => t.getBoundingClientRect().top)) : null;
+        const inRow = others.filter((t) => Math.abs(t.getBoundingClientRect().top - row) < 2);
+        next = inRow.sort((a, b) => Math.abs(a.getBoundingClientRect().left + a.offsetWidth / 2 - centre) - Math.abs(b.getBoundingClientRect().left + b.offsetWidth / 2 - centre))[0];
+      } else return;
+      event.preventDefault();
+      next?.focus();
+    });
+  };
+  roving(list);
 
   list.addEventListener("click", (event) => {
     const tile = event.target.closest(".math-editor-tile");
@@ -474,10 +505,10 @@ function mathEditorMount({ host, target = null, done = () => {}, note = null, on
   //: letter here must not reach the canvas or the editor behind it.
   host.addEventListener("keydown", (event) => event.stopPropagation());
 
-  //: The foot sits under the field, not under the palette: the dialog is a sheet two thirds of the window high, and Insert must not be a scroll away.
-  host.replaceChildren(mode.tabs, mathEditorLede(help, pane.toggle), helpBody, pane.el, ...(note ? [note] : []), foot, search, list);
+  //: Copy and Insert are the dialog's action row, pinned under the panes (reply-kit.js), so neither is a scroll away.
+  host.replaceChildren(mode.tabs, mathEditorLede(help, pane.toggle), helpBody, pane.el, ...(note ? [note] : []), search, list);
   initHelpToggles(host);
-  pane.start();
+  if (focus) pane.start();
   onTex(pane.tex());
-  return { close, focus: () => pane.focus() };
+  return { close, focus: () => pane.focus(), copy: view.copy, insert: view.insert, ready: () => Boolean(pane.tex().trim()), label: start.editing ? "Update" : "Insert" };
 }

@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7550, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8428, test files 1824, tests 15614, plan headings 990, app scripts 28, boot scripts 37, script files 224.
+Counts: frontend functions 7550, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8428, test files 1824, tests 15621, plan headings 990, app scripts 28, boot scripts 37, script files 224.
 
 ## Frontend functions (7550)
 
@@ -5326,28 +5326,27 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `marginRender` | frontend/js/margin-reader.js:123 |
 | `marginSchedule` | frontend/js/margin-reader.js:184 |
 
-### frontend/js/math-editor.js (18)
+### frontend/js/math-editor.js (17)
 
 | Name | File:line |
 |---|---|
-| `mathEditorBlockText` | frontend/js/math-editor.js:366 |
-| `mathEditorFoot` | frontend/js/math-editor.js:342 |
+| `mathEditorBlockText` | frontend/js/math-editor.js:360 |
 | `mathEditorGroups` | frontend/js/math-editor.js:129 |
-| `mathEditorHelp` | frontend/js/math-editor.js:246 |
-| `mathEditorKeys` | frontend/js/math-editor.js:328 |
-| `mathEditorLede` | frontend/js/math-editor.js:399 |
-| `mathEditorModes` | frontend/js/math-editor.js:274 |
-| `mathEditorMount` | frontend/js/math-editor.js:424 |
+| `mathEditorHelp` | frontend/js/math-editor.js:250 |
+| `mathEditorKeys` | frontend/js/math-editor.js:332 |
+| `mathEditorLede` | frontend/js/math-editor.js:393 |
+| `mathEditorModes` | frontend/js/math-editor.js:278 |
+| `mathEditorMount` | frontend/js/math-editor.js:419 |
 | `mathEditorOutput` | frontend/js/math-editor.js:151 |
-| `mathEditorPalette` | frontend/js/math-editor.js:218 |
-| `mathEditorSearch` | frontend/js/math-editor.js:308 |
+| `mathEditorPalette` | frontend/js/math-editor.js:220 |
+| `mathEditorSearch` | frontend/js/math-editor.js:312 |
 | `mathEditorSpan` | frontend/js/math-editor.js:159 |
-| `mathEditorStart` | frontend/js/math-editor.js:354 |
+| `mathEditorStart` | frontend/js/math-editor.js:348 |
 | `mathEditorSurface` | frontend/js/math-editor.js:187 |
 | `mathEditorTile` | frontend/js/math-editor.js:205 |
 | `mathEditorTileFace` | frontend/js/math-editor.js:196 |
-| `mathEditorWrite` | frontend/js/math-editor.js:380 |
-| `openMathEditor` | frontend/js/math-editor.js:415 |
+| `mathEditorWrite` | frontend/js/math-editor.js:374 |
+| `openMathEditor` | frontend/js/math-editor.js:409 |
 
 ### frontend/js/math-field.js (19)
 
@@ -6121,47 +6120,48 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `listenToReminderWorker` | frontend/js/reminder-notify.js:26 |
 | `showReminderNotification` | frontend/js/reminder-notify.js:36 |
 
-### frontend/js/reply-kit.js (42)
+### frontend/js/reply-kit.js (43)
 
 | Name | File:line |
 |---|---|
-| `calcFigure` | frontend/js/reply-kit.js:496 |
-| `chatQueuePaint` | frontend/js/reply-kit.js:1173 |
+| `calcFigure` | frontend/js/reply-kit.js:604 |
+| `chatQueuePaint` | frontend/js/reply-kit.js:1272 |
 | `openCalculator` | frontend/js/reply-kit.js:364 |
 | `renderRelatedElsewhere` | frontend/js/reply-kit.js:68 |
 | `renderReplyPanel` | frontend/js/reply-kit.js:23 |
-| `renderToolsUnsupportedNotice` | frontend/js/reply-kit.js:846 |
-| `replyByHelpPanel` | frontend/js/reply-kit.js:897 |
-| `replyByHover` | frontend/js/reply-kit.js:918 |
-| `replyByline` | frontend/js/reply-kit.js:950 |
-| `replyBylineFacts` | frontend/js/reply-kit.js:875 |
+| `renderToolsUnsupportedNotice` | frontend/js/reply-kit.js:945 |
+| `replyByHelpPanel` | frontend/js/reply-kit.js:996 |
+| `replyByHover` | frontend/js/reply-kit.js:1017 |
+| `replyByline` | frontend/js/reply-kit.js:1049 |
+| `replyBylineFacts` | frontend/js/reply-kit.js:974 |
+| `replyCalcActions` | frontend/js/reply-kit.js:471 |
 | `replyCalcBuild` | frontend/js/reply-kit.js:387 |
-| `replyCalcConvertPane` | frontend/js/reply-kit.js:736 |
-| `replyCalcEquation` | frontend/js/reply-kit.js:618 |
-| `replyCalcHistory` | frontend/js/reply-kit.js:716 |
-| `replyCalcKeypad` | frontend/js/reply-kit.js:674 |
+| `replyCalcConvertPane` | frontend/js/reply-kit.js:824 |
+| `replyCalcEquation` | frontend/js/reply-kit.js:693 |
+| `replyCalcHistory` | frontend/js/reply-kit.js:804 |
+| `replyCalcKeypad` | frontend/js/reply-kit.js:762 |
 | `replyCalcPanel` | frontend/js/reply-kit.js:340 |
-| `replyCalcResult` | frontend/js/reply-kit.js:482 |
-| `replyCalcShow` | frontend/js/reply-kit.js:506 |
+| `replyCalcResult` | frontend/js/reply-kit.js:590 |
+| `replyCalcShow` | frontend/js/reply-kit.js:614 |
 | `replyCalcWork` | frontend/js/reply-kit.js:354 |
-| `replyCalcWorkPane` | frontend/js/reply-kit.js:522 |
+| `replyCalcWorkPane` | frontend/js/reply-kit.js:630 |
 | `replyCompare` | frontend/js/reply-kit.js:173 |
 | `replyDrawAll` | frontend/js/reply-kit.js:34 |
 | `replyFillMeters` | frontend/js/reply-kit.js:193 |
-| `replyFinish` | frontend/js/reply-kit.js:811 |
-| `replyFoldLong` | frontend/js/reply-kit.js:1031 |
-| `replyGist` | frontend/js/reply-kit.js:1026 |
+| `replyFinish` | frontend/js/reply-kit.js:910 |
+| `replyFoldLong` | frontend/js/reply-kit.js:1130 |
+| `replyGist` | frontend/js/reply-kit.js:1125 |
 | `replyMeter` | frontend/js/reply-kit.js:160 |
 | `replyMonthName` | frontend/js/reply-kit.js:201 |
-| `replyNoteCard` | frontend/js/reply-kit.js:1124 |
-| `replyNoteEntry` | frontend/js/reply-kit.js:1073 |
-| `replyNoteId` | frontend/js/reply-kit.js:1068 |
-| `replyNotePreviews` | frontend/js/reply-kit.js:1077 |
+| `replyNoteCard` | frontend/js/reply-kit.js:1223 |
+| `replyNoteEntry` | frontend/js/reply-kit.js:1172 |
+| `replyNoteId` | frontend/js/reply-kit.js:1167 |
+| `replyNotePreviews` | frontend/js/reply-kit.js:1176 |
 | `replyPanelShell` | frontend/js/reply-kit.js:44 |
-| `replyPeekLink` | frontend/js/reply-kit.js:1096 |
-| `replyRecordReasons` | frontend/js/reply-kit.js:828 |
-| `replyReveal` | frontend/js/reply-kit.js:996 |
-| `replyRevealWanted` | frontend/js/reply-kit.js:991 |
+| `replyPeekLink` | frontend/js/reply-kit.js:1195 |
+| `replyRecordReasons` | frontend/js/reply-kit.js:927 |
+| `replyReveal` | frontend/js/reply-kit.js:1095 |
+| `replyRevealWanted` | frontend/js/reply-kit.js:1090 |
 | `replySpark` | frontend/js/reply-kit.js:136 |
 | `replyStatCard` | frontend/js/reply-kit.js:104 |
 | `replyStatCards` | frontend/js/reply-kit.js:206 |
@@ -11873,7 +11873,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/library-lazy.css | 8060 |
 | frontend/css/lightbox-lazy.css | 425 |
 | frontend/css/manual-lazy.css | 161 |
-| frontend/css/math-editor-lazy.css | 91 |
+| frontend/css/math-editor-lazy.css | 87 |
 | frontend/css/math-field-lazy.css | 72 |
 | frontend/css/meetings-lazy.css | 566 |
 | frontend/css/mermaid-lazy.css | 68 |
@@ -11889,7 +11889,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/quick-access-lazy.css | 105 |
 | frontend/css/quickadd-lazy.css | 35 |
 | frontend/css/recovery-lazy.css | 115 |
-| frontend/css/reply-kit-lazy.css | 553 |
+| frontend/css/reply-kit-lazy.css | 602 |
 | frontend/css/reveal-lazy.css | 10 |
 | frontend/css/search-lazy.css | 153 |
 | frontend/css/semantic-notice-lazy.css | 10 |
@@ -15290,8 +15290,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3092 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3218 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3094 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3220 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -23035,7 +23035,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15614)
+## Tests (15621)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23200,7 +23200,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_brand_name.py | 10 |
 | tests/test_breakpoints.py | 3 |
 | tests/test_budgets.py | 6 |
-| tests/test_calc_ux_1530.py | 4 |
+| tests/test_calc_ux_1530.py | 11 |
 | tests/test_calculator_equations.py | 8 |
 | tests/test_captioning.py | 17 |
 | tests/test_captions.py | 16 |

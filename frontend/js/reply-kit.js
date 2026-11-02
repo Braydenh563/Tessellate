@@ -316,8 +316,8 @@ function replyTimelinePanel(event) {
 //: it; the result is a live region; the last results come back with a press.
 //: Reached from a sum or a conversion's answer (its panel), /calc with
 //: nothing after it, and the palette's Calculator row.
-//: `tabs`: the dialog's, in order: sums, conversions, and the equation editor.
-const replyCalc = { history: [], units: null, tabs: [["work", "Work out"], ["convert", "Convert units"], ["equation", "Equation"]] };
+//: `tabs`: the dialog's, in order: sums, conversions, and the equation editor, all named for what they hold (INBOX 1530 g L4: a verb, a verb and a noun read as three tools). `opened` numbers the dialogs, for ids that never collide with one still leaving.
+const replyCalc = { history: [], units: null, opened: 0, tabs: [["work", "Sum"], ["convert", "Units"], ["equation", "Equation"]] };
 
 const REPLY_CALC_KEYS = [
   ["C", "clear"], ["(", "("], [")", ")"], ["ph:divide", "/"],
@@ -385,59 +385,167 @@ function openCalculator(input = "", mode = "work", { target = null } = {}) {
 }
 
 function replyCalcBuild(card, input, mode = "work", { target = null, close = () => {} } = {}) {
+  //: One height for all three tabs, the strip and the action row pinned and the panes between them scrolling (INBOX 1530 g M2: on a bottom-anchored sheet the strip moved 188 px between tabs and 4 to 40 px on a result).
+  card.classList.add("calc-card");
   //: A tab strip, not a pill (DESIGN.md, "A popup that chooses a kind").
   const modes = document.createElement("div");
   modes.className = "tabs-line popup-kinds calc-modes";
   modes.setAttribute("role", "tablist");
   modes.setAttribute("aria-label", "Calculator mode");
-  const equation = replyCalcEquation(target, close);
-  const panes = { work: replyCalcWorkPane(input, { target, close }), convert: replyCalcConvertPane(), equation: equation.pane };
+  const actions = replyCalcActions(target, close);
+  const equation = replyCalcEquation(target, close, actions);
+  const panes = { work: replyCalcWorkPane(input, actions), convert: replyCalcConvertPane(actions), equation: equation.pane };
+  //: Where focus goes when a tab is chosen with a press; an arrow keeps it on the strip (INBOX 1530 g M4: the first arrow onto Equation put the caret in the math field, so the next arrow moved inside the equation instead of on to the tab after it).
   const focusIn = {
     work: () => panes.work.querySelector(".calc-input")?.focus(),
     convert: () => panes.convert.querySelector(".calc-amount")?.focus(),
     equation: () => equation.mount(),
   };
+  const wrap = document.createElement("div");
+  wrap.className = "calc-panes";
+  //: Each tab names its panel and each panel its tab (INBOX 1530 g M3), by ids that carry the dialog's number.
+  const n = replyCalc.opened;
   for (const [key, pane] of Object.entries(panes)) {
     pane.setAttribute("role", "tabpanel");
+    pane.id = `calc-panel-${n}-${key}`;
+    pane.setAttribute("aria-labelledby", `calc-tab-${n}-${key}`);
     pane.classList.toggle("hidden", key !== mode);
   }
+  const select = (key, { focus = true } = {}) => {
+    for (const other of tabs) {
+      const on = other.dataset.tab === key;
+      other.setAttribute("aria-selected", String(on));
+      other.classList.toggle("active", on);
+      other.tabIndex = on ? 0 : -1;
+    }
+    for (const [name, pane] of Object.entries(panes)) pane.classList.toggle("hidden", name !== key);
+    wrap.scrollTop = 0;
+    actions.show(key);
+    if (focus) focusIn[key]();
+    else if (key === "equation") equation.mount({ focus: false });
+  };
   const tabs = replyCalc.tabs.map(([key, words]) => {
     const button = document.createElement("button");
     button.type = "button";
     button.setAttribute("role", "tab");
+    button.id = `calc-tab-${n}-${key}`;
+    button.setAttribute("aria-controls", `calc-panel-${n}-${key}`);
     button.textContent = words;
     button.dataset.tab = key;
-    button.addEventListener("click", () => {
-      for (const other of tabs) {
-        const on = other === button;
-        other.setAttribute("aria-selected", String(on));
-        other.classList.toggle("active", on);
-        other.tabIndex = on ? 0 : -1;
-      }
-      for (const [name, pane] of Object.entries(panes)) pane.classList.toggle("hidden", name !== key);
-      focusIn[key]();
-    });
+    button.addEventListener("click", () => select(key));
     return button;
   });
-  //: Arrows, Home and End walk the strip, which is one Tab stop.
+  //: Arrows, Home and End walk the strip, which is one Tab stop; the panel opens under the focus without taking it.
   modes.addEventListener("keydown", (event) => {
     const at = tabs.indexOf(document.activeElement);
     const to = { ArrowRight: (at + 1) % tabs.length, ArrowLeft: (at + tabs.length - 1) % tabs.length, Home: 0, End: tabs.length - 1 }[event.key];
     if (at < 0 || to === undefined) return;
     event.preventDefault();
-    tabs[to].click();
+    select(tabs[to].dataset.tab, { focus: false });
     tabs[to].focus();
   });
   modes.append(...tabs);
-  card.append(modes, ...Object.values(panes));
+  wrap.append(...Object.values(panes));
+  card.append(modes, wrap, actions.el);
   const first = Math.max(0, replyCalc.tabs.findIndex(([key]) => key === mode));
   for (const [i, tab] of tabs.entries()) {
     tab.setAttribute("aria-selected", String(i === first));
     tab.classList.toggle("active", i === first);
     tab.tabIndex = i === first ? 0 : -1;
   }
+  actions.show(replyCalc.tabs[first][0]);
   if (first) focusIn[replyCalc.tabs[first][0]]();
   else requestAnimationFrame(() => focusIn.work());
+}
+
+//: **One action row for all three tabs** (INBOX 1530 g, H2, M1, L2, L6). The
+//: tabs read as three tools because Work out had a left ghost Insert row,
+//: Equation a right filled Insert beside a Cancel and Convert nothing; nothing
+//: said where Insert writes, and a dialog opened with no box had no Insert and
+//: no reason. Now every tab ends in the same row: a line saying where Insert
+//: writes (or that no box is open), then Copy, Insert as equation (Sum and
+//: Units) and the one filled Insert. A button with nothing to act on stays in
+//: the Tab order as `aria-disabled`, is described by that line, and says why
+//: when pressed (Copy on an empty result used to do nothing at all). A pane
+//: hands in what it can do with `provide(key, {ready, text, equation, ...})`.
+function replyCalcActions(target, close) {
+  const id = `calc-where-${++replyCalc.opened}`;
+  const el = document.createElement("div");
+  el.className = "calc-actions";
+  const where = document.createElement("p");
+  where.className = "muted calc-where";
+  where.id = id;
+  const row = document.createElement("div");
+  row.className = "row right calc-actions-buttons";
+  const providers = {};
+  let shown = "work";
+  const current = () => providers[shown];
+  //: Where Insert writes, in the words a person would use for the box they were in (by id, as the opener does: `editorSurfaceKind` answers null until the Library bundle has loaded).
+  const kind = target ? EDITOR_SURFACES[target.id] || editorSurfaceKind(target) : null;
+  const name = target?.id === "question" ? "the Ask box" : { note: "the note", document: "the document", chat: "the Chat box", agent: "the Agent box", skill: "the skill steps" }[kind] || "the text box you came from";
+  const blocked = (kind) => {
+    const p = current();
+    if (kind !== "copy" && !target) return "No text box is open, so there is nowhere to insert. Use Copy.";
+    return p?.ready() ? "" : p?.first || "There is nothing here yet.";
+  };
+  const write = async (equation) => {
+    const p = current();
+    const text = equation ? p.equation() : p.text();
+    await ensureModule("mathEditor");
+    if (mathEditorWrite(target, text, { plain: !equation })) close();
+    else toast("Couldn't write into that box.", "info");
+  };
+  const act = (kind) => {
+    const why = blocked(kind);
+    if (why) return toast(why, "info");
+    const p = current();
+    if (kind === "copy") {
+      if (p.copy) return p.copy();
+      return navigator.clipboard?.writeText(p.text()).then(() => toast("Result copied."), () => toast("Couldn't copy the result.", "info"));
+    }
+    if (p.insert) return p.insert();
+    return write(kind === "equation");
+  };
+  const copy = smallButton("Copy", "Copy the result", () => act("copy"));
+  const asEquation = smallButton("Insert as equation", "Write the sum and its result as an equation", () => act("equation"));
+  const insert = smallButton("Insert", "Write the result into the text", () => act("insert"), false);
+  insert.classList.add("primary");
+  for (const button of [copy, asEquation, insert]) button.setAttribute("aria-describedby", id);
+  row.append(copy, asEquation, insert);
+  el.append(where, row);
+  const sync = () => {
+    const p = current();
+    if (!p) return;
+    const ready = Boolean(p.ready());
+    const label = p.label?.() || "Insert";
+    setLabel(insert, label);
+    copy.title = p.copyTitle;
+    insert.title = p.insertTitle;
+    asEquation.classList.toggle("hidden", !p.equation);
+    copy.setAttribute("aria-disabled", String(!ready));
+    insert.setAttribute("aria-disabled", String(!ready || !target));
+    asEquation.setAttribute("aria-disabled", String(!ready || !target));
+    where.textContent = !target
+      ? `No text box is open. Copy ${p.what}, then paste it where you want it.`
+      : ready
+        ? `${label} writes into ${name}.`
+        : `${label} writes into ${name} once there is ${p.needs}.`;
+  };
+  return {
+    el,
+    sync,
+    provide: (key, provider) => { providers[key] = provider; },
+    show: (key) => { shown = key; sync(); },
+    //: What the row does with a worked-out result (Sum and Units): the figure to copy or insert, and the sum with its figure as an equation.
+    result: (read, words) => ({
+      ...words,
+      copyTitle: "Copy the result",
+      insertTitle: "Write the result into the text",
+      ready: () => Boolean(read()),
+      text: () => calcFigure(read().answer, true),
+      equation: () => calcTex.toTex(read().input, calcFigure(read().answer, true)),
+    }),
+  };
 }
 
 // CALC-TEX-BEGIN
@@ -519,7 +627,7 @@ function replyCalcShow(out, got, { final = false } = {}) {
   read.textContent = got.error ? got.error : got.read_as ? `Read as ${got.read_as}` : "";
 }
 
-function replyCalcWorkPane(input, { target = null, close = () => {} } = {}) {
+function replyCalcWorkPane(input, actions) {
   const pane = document.createElement("div");
   pane.className = "calc-pane";
   const box = document.createElement("input");
@@ -536,27 +644,9 @@ function replyCalcWorkPane(input, { target = null, close = () => {} } = {}) {
   history.setAttribute("aria-label", "Earlier results");
   let timer = 0;
   let asked = 0;
-  //: The result on show, for the Insert buttons (drawn only with a box to write into).
+  //: The result on show, for the action row.
   let last = null;
-  //: **Insert and Insert as equation** (INBOX 1527): the result on show goes
-  //: into the box the dialog was opened from, as its figure or as an equation
-  //: ("12 \times (3 + 4) = 84"); the dialog closes and focus is back in the box.
-  let inserts = null;
-  if (target) {
-    const row = document.createElement("div");
-    row.className = "row calc-insert-row";
-    const put = async (equation) => {
-      if (!last) return;
-      const figure = calcFigure(last.answer, true);
-      await ensureModule("mathEditor");
-      if (mathEditorWrite(target, equation ? calcTex.toTex(last.input, figure) : figure, { plain: !equation })) close();
-      else toast("Couldn't write into that box.", "info");
-    };
-    const buttons = [smallButton("Insert", "Write the result into the text", () => put(false)), smallButton("Insert as equation", "Write the sum and its result as an equation", () => put(true))];
-    row.append(...buttons);
-    inserts = { row, sync: () => buttons.forEach((button) => (button.disabled = !last)) };
-    inserts.sync();
-  }
+  actions.provide("work", actions.result(() => last, { what: "the result", needs: "a result", first: "Work out a sum first." }));
   const run = async (final) => {
     const mine = ++asked;
     try {
@@ -564,7 +654,7 @@ function replyCalcWorkPane(input, { target = null, close = () => {} } = {}) {
       if (mine !== asked) return;
       replyCalcShow(out, got, { final });
       last = got?.answer && !got.error ? { input: box.value.trim(), answer: got.answer } : null;
-      inserts?.sync();
+      actions.sync();
       if (final && got?.answer) {
         replyCalc.history = [{ input: box.value.trim(), answer: got.answer }, ...replyCalc.history.filter((h) => h.input !== box.value.trim())].slice(0, 5);
         replyCalcHistory(history, box);
@@ -573,7 +663,7 @@ function replyCalcWorkPane(input, { target = null, close = () => {} } = {}) {
       if (mine !== asked) return;
       replyCalcShow(out, { error: error.message }, { final });
       last = null;
-      inserts?.sync();
+      actions.sync();
     }
   };
   box.addEventListener("input", () => {
@@ -590,22 +680,7 @@ function replyCalcWorkPane(input, { target = null, close = () => {} } = {}) {
     clearTimeout(timer);
     run(true);
   });
-  //: Copy sits beside the figure it copies, outside the live region.
-  const foot = document.createElement("div");
-  foot.className = "calc-result-row";
-  const copy = document.createElement("button");
-  copy.type = "button";
-  copy.className = "ghost small icon-only";
-  setLabel(copy, "ph:copy");
-  copy.setAttribute("aria-label", "Copy result");
-  copy.title = "Copy result";
-  copy.addEventListener("click", () => {
-    const text = out.querySelector(".calc-figure").textContent;
-    if (!text) return;
-    navigator.clipboard?.writeText(text).then(() => toast("Result copied."), () => toast("Couldn't copy the result.", "info"));
-  });
-  foot.append(out, copy);
-  pane.append(box, foot, ...(inserts ? [inserts.row] : []), keys, history);
+  pane.append(box, out, keys, history);
   replyCalcHistory(history, box);
   if (input) run(true);
   return pane;
@@ -615,7 +690,7 @@ function replyCalcWorkPane(input, { target = null, close = () => {} } = {}) {
 //: first time the tab opens (its library is the heavy part), with the value
 //: of an equation made of numbers under the field, worked out by the same
 //: reader as Work out. `mount()` builds it, or puts focus back in it.
-function replyCalcEquation(target, close) {
+function replyCalcEquation(target, close, actions) {
   const pane = document.createElement("div");
   pane.className = "calc-pane calc-equation";
   const note = replyCalcResult();
@@ -624,7 +699,20 @@ function replyCalcEquation(target, close) {
   let loading = null;
   let timer = 0;
   let asked = 0;
+  //: The action row's Copy and Insert are the editor's own (it knows the display mode, the equation being edited and the box).
+  actions.provide("equation", {
+    what: "the equation",
+    needs: "an equation",
+    first: "Type an equation first.",
+    copyTitle: "Copy the equation, between dollar signs",
+    insertTitle: "Write the equation into the text (Ctrl+Enter)",
+    ready: () => Boolean(editor?.ready()),
+    label: () => editor?.label || "Insert",
+    copy: () => editor.copy(),
+    insert: () => editor.insert(),
+  });
   const onTex = (tex) => {
+    actions.sync();
     clearTimeout(timer);
     const sum = calcTex.toSum(tex);
     const mine = ++asked;
@@ -649,13 +737,13 @@ function replyCalcEquation(target, close) {
     line.textContent = words;
     pane.replaceChildren(line);
   };
-  const mount = () => {
-    if (editor) return editor.focus();
+  const mount = ({ focus = true } = {}) => {
+    if (editor) return focus ? editor.focus() : undefined;
     if (!loading) {
       say("Loading the equation editor.");
       loading = ensureModule("mathEditor")
         .then((ok) => {
-          editor = ok && typeof mathEditorMount === "function" ? mathEditorMount({ host: pane, target, done: close, note, onTex }) : null;
+          editor = ok && typeof mathEditorMount === "function" ? mathEditorMount({ host: pane, target, done: close, note, onTex, focus }) : null;
           if (!editor) throw new Error("not loaded");
         })
         .catch(() => {
@@ -679,8 +767,8 @@ function replyCalcKeypad(box, equals) {
   const keys = REPLY_CALC_KEYS.map(([face, act], i) => {
     const key = document.createElement("button");
     key.type = "button";
-    // = is the pad's one primary action (the app's filled button); the rest are ghosts.
-    key.className = act === "equals" ? "calc-key" : `ghost calc-key${/^[0-9.]$/.test(act) ? "" : " is-op"}`;
+    // Every key is a ghost: the one filled button of the dialog is Insert, in the action row.
+    key.className = `ghost calc-key${/^[0-9.]$/.test(act) ? "" : " is-op"}`;
     setLabel(key, face);
     key.tabIndex = i === 0 ? 0 : -1;
     if (REPLY_CALC_NAMES[act]) key.setAttribute("aria-label", REPLY_CALC_NAMES[act]);
@@ -733,7 +821,7 @@ function replyCalcHistory(list, box) {
   }
 }
 
-function replyCalcConvertPane() {
+function replyCalcConvertPane(actions) {
   const pane = document.createElement("div");
   pane.className = "calc-pane calc-convert";
   const amount = document.createElement("input");
@@ -764,13 +852,24 @@ function replyCalcConvertPane() {
     select.replaceChildren(...names.map((name) => new Option(name, name)));
     select.value = names.includes(pick) ? pick : names[0];
   };
+  //: The conversion on show, for the action row (the same shape as Sum's).
+  let last = null;
+  actions.provide("convert", actions.result(() => last, { what: "the result", needs: "a result", first: "Pick an amount and two units first." }));
   const run = async () => {
-    if (!from.value || !to.value || amount.value === "") return replyCalcShow(out, null);
+    last = null;
+    if (!from.value || !to.value || amount.value === "") {
+      replyCalcShow(out, null);
+      return actions.sync();
+    }
+    const asked = `${amount.value} ${from.value} to ${to.value}`;
     try {
-      replyCalcShow(out, await replyCalcWork(`${amount.value} ${from.value} to ${to.value}`), { final: true });
+      const got = await replyCalcWork(asked);
+      replyCalcShow(out, got, { final: true });
+      last = got?.answer && !got.error ? { input: asked, answer: got.answer } : null;
     } catch (error) {
       replyCalcShow(out, { error: error.message }, { final: true });
     }
+    actions.sync();
   };
   const pickKind = () => {
     const names = replyCalc.units?.[kind.value] || [];
