@@ -154,7 +154,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 148 | D22 | med | 1.1 MB documents.js plus CodeMirror bundle loaded eagerly | new | L |
 | 149 | K30 | med | link-suggestions loads every entry per request, no cache | fixed 2026-10-30: kept until a session write, 300 s backstop | M |
 | 150 | K31 | med | GET /entities reads every mention then slices in Python | fixed 2026-10-30: counted in SQL | S |
-| 151 | E34 | med | live markdown re-renders whole answer every 66 ms | new | M |
+| 151 | E34 | med | live markdown re-renders whole answer every 66 ms | fixed 1102 a30g (4x throttle, 9.8 KB stream: render time 1481 to 166 ms, worst 115 to 36 ms, long tasks 41 totalling 4098 ms to 2 totalling 141 ms) | M |
 | 152 | S16 | med | notes list never recycles rows, DOM grows unbounded | left (large; notes list already windowed, shell-1031.md) | L |
 | 153 | S37 | med | list filter re-renders without debounce | fixed (already: the notes filter waits 150 ms, settings-wiring.js) | S |
 | 154 | S38 | med | many timers run independent intervals | fixed (b8cfb46) | S |

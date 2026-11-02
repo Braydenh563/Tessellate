@@ -206,3 +206,48 @@ document.addEventListener(
   },
   true
 );
+//: Why a source was chosen (I6, row 6): the row's `signals` as bars; an
+//: unmeasured one is left out, never drawn empty. DESIGN.md, "Why a thing was chosen".
+const EVIDENCE_SIGNALS = [
+  ["bm25", "Words"],
+  ["cosine", "Meaning"],
+  ["graph", "Links"],
+];
+const EVIDENCE_VERDICTS = {
+  supported: "Supported by this passage",
+  partly: "Partly supported by this passage",
+};
+
+
+function evidenceSignals(signals) {
+  const list = evidenceSpan("evidence-signals");
+  for (const [key, label] of EVIDENCE_SIGNALS) {
+    const value = signals ? signals[key] : null;
+    if (typeof value !== "number" || !Number.isFinite(value)) continue;
+    const percent = `${Math.round(Math.max(0, Math.min(1, value)) * 100)}%`;
+    const track = evidenceSpan("evidence-signal-track");
+    track.setAttribute("role", "img");
+    track.setAttribute("aria-label", `${label} ${percent}`);
+    const fill = evidenceSpan("evidence-signal-fill");
+    fill.style.width = percent;
+    track.append(fill);
+    const number = evidenceSpan("evidence-signal-value", percent);
+    number.setAttribute("aria-hidden", "true");
+    const row = evidenceSpan("evidence-signal");
+    row.append(evidenceSpan("evidence-signal-name", label), track, number);
+    list.append(row);
+  }
+  return list.childElementCount ? list : null;
+}
+
+//: Verdict and bars as one block; null for a row saved before they existed.
+function evidenceBlock(source) {
+  const verdict = EVIDENCE_VERDICTS[source?.verdict];
+  const bars = evidenceSignals(source?.signals);
+  if (!verdict && !bars) return null;
+  const block = evidenceSpan("evidence-block");
+  if (verdict) block.append(evidenceSpan(`evidence-verdict evidence-verdict-${source.verdict}`, verdict));
+  if (bars) block.append(bars);
+  return block;
+}
+

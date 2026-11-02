@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7568, frontend ids 2642, CSS sections 518, backend routes 641, backend modules 8493, test files 1905, tests 16054, plan headings 987, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7568, frontend ids 2642, CSS sections 518, backend routes 641, backend modules 8493, test files 1906, tests 16061, plan headings 987, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7568)
 
@@ -358,21 +358,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wireCategoryDropTarget` | frontend/js/notes-list.js:2921 |
 | `wireSidebarRowKeys` | frontend/js/notes-list.js:2853 |
 
-### frontend/js/capture-ask.js (48)
+### frontend/js/capture-ask.js (45)
 
 | Name | File:line |
 |---|---|
 | `announce` | frontend/js/capture-ask.js:838 |
 | `captureCategoryChip` | frontend/js/capture-ask.js:512 |
-| `clearAskAnswerFoot` | frontend/js/capture-ask.js:1165 |
+| `clearAskAnswerFoot` | frontend/js/capture-ask.js:1121 |
 | `clearCaptureStatusOnInput` | frontend/js/capture-ask.js:582 |
 | `clearCaptureTagSuggestions` | frontend/js/capture-ask.js:499 |
-| `copyAnswer` | frontend/js/capture-ask.js:1358 |
+| `copyAnswer` | frontend/js/capture-ask.js:1333 |
 | `createDocumentNamed` | frontend/js/capture-ask.js:291 |
-| `evidenceBlock` | frontend/js/capture-ask.js:1109 |
-| `evidenceSignals` | frontend/js/capture-ask.js:1087 |
-| `evidenceSpan` | frontend/js/capture-ask.js:1080 |
-| `evidenceSwitchReset` | frontend/js/capture-ask.js:1131 |
+| `evidenceSpan` | frontend/js/capture-ask.js:1068 |
+| `evidenceSwitchReset` | frontend/js/capture-ask.js:1087 |
 | `filedByText` | frontend/js/capture-ask.js:224 |
 | `filingOutcomeText` | frontend/js/capture-ask.js:185 |
 | `flashCategory` | frontend/js/capture-ask.js:1017 |
@@ -380,34 +378,33 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `flashReminder` | frontend/js/capture-ask.js:991 |
 | `focusCaptureBox` | frontend/js/capture-ask.js:462 |
 | `heldOffline` | frontend/js/capture-ask.js:596 |
-| `holdPictureTokens` | frontend/js/capture-ask.js:1148 |
-| `liveMarkdownRenderer` | frontend/js/capture-ask.js:1263 |
-| `loadAskHistoryBadge` | frontend/js/capture-ask.js:1394 |
+| `holdPictureTokens` | frontend/js/capture-ask.js:1104 |
+| `liveMarkdownRenderer` | frontend/js/capture-ask.js:1243 |
+| `loadAskHistoryBadge` | frontend/js/capture-ask.js:1369 |
 | `loadCaptureDocuments` | frontend/js/capture-ask.js:280 |
-| `loadSuggestions` | frontend/js/capture-ask.js:1364 |
-| `loadTemplates` | frontend/js/capture-ask.js:1458 |
-| `newChat` | frontend/js/capture-ask.js:1339 |
+| `loadSuggestions` | frontend/js/capture-ask.js:1339 |
+| `loadTemplates` | frontend/js/capture-ask.js:1433 |
+| `newChat` | frontend/js/capture-ask.js:1314 |
 | `noteSurfaceIfAny` | frontend/js/capture-ask.js:427 |
 | `noteTemplateForUse` | frontend/js/capture-ask.js:409 |
 | `noteTemplateText` | frontend/js/capture-ask.js:398 |
 | `offerJumpToNewNote` | frontend/js/capture-ask.js:12 |
 | `openDocumentFromNote` | frontend/js/capture-ask.js:431 |
 | `openNoteAtPassage` | frontend/js/capture-ask.js:986 |
-| `pictureItems` | frontend/js/capture-ask.js:1123 |
-| `renderAskTrail` | frontend/js/capture-ask.js:1313 |
+| `pictureItems` | frontend/js/capture-ask.js:1079 |
 | `renderCaptureDocumentAdder` | frontend/js/capture-ask.js:354 |
 | `renderCaptureDocuments` | frontend/js/capture-ask.js:316 |
 | `renderCaptureTagSuggestions` | frontend/js/capture-ask.js:528 |
 | `resetCaptureForm` | frontend/js/capture-ask.js:469 |
-| `retryAnswer` | frontend/js/capture-ask.js:1354 |
+| `retryAnswer` | frontend/js/capture-ask.js:1329 |
 | `saveEntry` | frontend/js/capture-ask.js:610 |
 | `saveEntryAsDraft` | frontend/js/capture-ask.js:735 |
 | `scheduleCaptureTagSuggestions` | frontend/js/capture-ask.js:556 |
 | `scrollEditingEntryIntoView` | frontend/js/capture-ask.js:871 |
 | `settleCaptureStatus` | frontend/js/capture-ask.js:129 |
-| `showAskAsOf` | frontend/js/capture-ask.js:1431 |
+| `showAskAsOf` | frontend/js/capture-ask.js:1406 |
 | `stampDate` | frontend/js/capture-ask.js:396 |
-| `stopAnswer` | frontend/js/capture-ask.js:1305 |
+| `stopAnswer` | frontend/js/capture-ask.js:1310 |
 | `watchFiling` | frontend/js/capture-ask.js:52 |
 | `withTitle` | frontend/js/capture-ask.js:447 |
 
@@ -2046,7 +2043,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `drawAskChart` | frontend/js/ask-chart.js:258 |
 | `renderAskChart` | frontend/js/ask-chart.js:242 |
 
-### frontend/js/ask-compose.js (33)
+### frontend/js/ask-compose.js (34)
 
 | Name | File:line |
 |---|---|
@@ -2077,6 +2074,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderAskFollowups` | frontend/js/ask-compose.js:793 |
 | `renderAskHint` | frontend/js/ask-compose.js:1411 |
 | `renderAskInsights` | frontend/js/ask-compose.js:721 |
+| `renderAskTrail` | frontend/js/ask-compose.js:1480 |
 | `renderAskUseAi` | frontend/js/ask-compose.js:51 |
 | `renderAskWhy` | frontend/js/ask-compose.js:745 |
 | `renderChatMeta` | frontend/js/ask-compose.js:1279 |
@@ -2859,13 +2857,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `chordGuideKey` | frontend/js/chord-guide.js:76 |
 | `showTabJumpHint` | frontend/js/chord-guide.js:83 |
 
-### frontend/js/citation-peek.js (5)
+### frontend/js/citation-peek.js (7)
 
 | Name | File:line |
 |---|---|
 | `citationPeekText` | frontend/js/citation-peek.js:31 |
 | `citationTitleEnd` | frontend/js/citation-peek.js:24 |
 | `closeCitationPeek` | frontend/js/citation-peek.js:146 |
+| `evidenceBlock` | frontend/js/citation-peek.js:244 |
+| `evidenceSignals` | frontend/js/citation-peek.js:222 |
 | `openCitationPeek` | frontend/js/citation-peek.js:55 |
 | `scheduleCitationPeekClose` | frontend/js/citation-peek.js:12 |
 
@@ -23309,7 +23309,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16054)
+## Tests (16061)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24296,6 +24296,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_list_paging_f2.py | 4 |
 | tests/test_list_routes_by_shape.py | 2 |
 | tests/test_listener_arguments.py | 1 |
+| tests/test_live_markdown_blocks.py | 7 |
 | tests/test_live_queries_kg7.py | 8 |
 | tests/test_live_rule_line_height.py | 1 |
 | tests/test_live_span_reveal.py | 9 |
