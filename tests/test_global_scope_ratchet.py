@@ -50,8 +50,9 @@ TOP_LEVEL_LETS_CAP = 699
 #: wrapped, one export each (measured 9,866). docs-1101: the version history dialog and the
 #: line diff (documents-history.js, 710 lines) wrapped whole, seven exports (measured 9,848). doc22-1102:
 #: the frontmatter model and properties panel (documents-props.js) wrapped whole, four exports; the
-#: cap is set to the measured count (9,785).
-GLOBAL_NAMES_CAP = 9785
+#: cap is set to the measured count (9,785). doc23-1102: the Mermaid
+#: fences (documents-mermaid.js, 426 lines) wrapped whole, three exports; measured 9,775.
+GLOBAL_NAMES_CAP = 9775
 
 
 def _code() -> dict[str, str]:

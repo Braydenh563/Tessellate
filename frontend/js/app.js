@@ -1738,15 +1738,11 @@ function smallButton(label, title, onClick, ghost = true) {
 //: document order: a dynamic script defaults to async, and library.js running
 //: before documents.js would be a different program.
 const LAZY_MODULES = {
-  //: d3 (90 KB gzipped) comes with the two surfaces that use it, not at boot
-  //: (audit FE-07); `ensureModule` fetches a file once whichever bundle names
-  //: it first.
+  //: d3 (90 KB gzipped) comes with the two surfaces that use it, not at boot (audit FE-07); `ensureModule` fetches a file once whichever bundle names it first.
   graph: ["/vendor/d3.v7.min.js", "/css/graph-lazy.css", "/js/graph.js", "/js/graph-canvas.js"],
-  //: The image viewer (2026-09-27, the boot-script gzip budget): see
-  //: lightbox-view.js's header.
+  //: The image viewer (2026-09-27, the boot-script gzip budget): see lightbox-view.js's header.
   lightbox: ["/css/lightbox-lazy.css", "/js/lightbox-view.js"],
-  //: Run, preview and test for a code document (DOCUMENTS_PLAN 23, D1): the
-  //: protocol and its languages, loaded on the first Run.
+  //: Run, preview and test for a code document (DOCUMENTS_PLAN 23, D1): the protocol and its languages, loaded on the first Run.
   run: ["/js/run-core.js", "/js/run-tests.js", "/js/run-debug.js"],
   editConflict: ["/js/edit-conflict.js"],
   categories: ["/js/categories-panel.js"],
@@ -1770,9 +1766,7 @@ const LAZY_MODULES = {
   attachments: ["/js/attachment-actions.js"],
   //: Tesseract's status line (INBOX 443 (3)): see ocr-engine.js.
   ocrEngine: ["/js/ocr-engine.js"],
-  //: Quick note and the note outbox (INBOX 434): see quick-note.js.
-  //: router-overlays.js rides with the quick note: Back closes an open overlay first, and
-  //: Settings' close settles the address. Both preloaded below; boot code is at its cap.
+  //: Quick note and the note outbox (INBOX 434): see quick-note.js. router-overlays.js rides with the quick note: Back closes an open overlay first, and Settings' close settles the address. Both preloaded below; boot code is at its cap.
   quickNote: ["/js/quick-note.js", "/js/router-overlays.js"],
   fieldClear: ["/js/field-clear.js"],
   //: A date or time field's panel (Phase 12): see date-field.js.
@@ -1806,8 +1800,7 @@ const LAZY_MODULES = {
   webClip: ["/js/web-clip.js", "/js/web-results.js"],
   appImport: ["/js/app-import.js"],
   usageLedger: ["/css/usage-lazy.css", "/js/usage-ledger.js"],
-  //: The Library list without the editors (audit FE-03(c)): they were about
-  //: 900 KB gzipped. A document or a board brings the whole `library` surface.
+  //: The Library list without the editors (audit FE-03(c)): they were about 900 KB gzipped. A document or a board brings the whole `library` surface.
   libraryList: ["/css/library-lazy.css", "/js/library.js"],
   //: The Capture box's template picker (note-templates.js's header).
   noteTemplates: ["/js/note-templates.js"],
@@ -1822,8 +1815,7 @@ const LAZY_MODULES = {
   translate: ["/css/utilities-lazy.css", "/js/translate.js"],
   //: The search box, Find anything, and its saved searches (search.js's header).
   search: ["/css/search-lazy.css", "/js/search.js"],
-  //: Atlas's blink and arm rig (atlas-motion.js's header): the drawing is
-  //: boot's, the motion arrives with the first figure that mounts.
+  //: Atlas's blink and arm rig (atlas-motion.js's header): the drawing is boot's, the motion arrives with the first figure that mounts.
   atlasMotion: ["/js/atlas-motion.js"],
   //: Atlas the Guide as a chat (help-chat.js's header), on first ask.
   helpChat: ["/css/help-chat-lazy.css", "/js/citation-peek.js", "/js/entry-card.js", "/js/answer-kit.js", "/js/help-chat.js"],
@@ -1857,7 +1849,7 @@ const LAZY_MODULES = {
   //: Tidy, the reviews with no AI (INBOX 691): tidy.js's header.
   tidy: ["/css/tidy-lazy.css", "/js/tidy.js"],
   semanticNotice: ["/css/semantic-notice-lazy.css", "/js/semantic-notice.js"],
-  //: The order the `<script>` tags had, kept: every cross-file call between these three is inside a function rather than at parse time, so it is not load-bearing, but it is the order the three files' own headers describe. documents-code.js and documents-prose.js were split out of documents.js (2026-09-24) and go *before* it, and that position is load-bearing: their own top level reads nothing from documents.js, while documents.js's top-level wiring names their functions, and each file here is followed by a microtask checkpoint before the next one runs. See their headers. documents-props.js (doc22-1102) goes before it on the same terms. whiteboard-map.js (the mind map layer, split out of whiteboard.js the same day) goes before whiteboard.js on the same terms.
+  //: The order the `<script>` tags had, kept: every cross-file call between these three is inside a function rather than at parse time, so it is not load-bearing, but it is the order the three files' own headers describe. documents-code.js and documents-prose.js were split out of documents.js (2026-09-24) and go *before* it, and that position is load-bearing: their own top level reads nothing from documents.js, while documents.js's top-level wiring names their functions, and each file here is followed by a microtask checkpoint before the next one runs. See their headers. documents-props.js and documents-mermaid.js (DC13) go before it likewise, as does whiteboard-map.js before whiteboard.js.
   library: [
     //: d3 before whiteboard.js, whose top level calls `d3.zoom()`.
     "/vendor/d3.v7.min.js",
@@ -1874,6 +1866,7 @@ const LAZY_MODULES = {
     "/js/documents-prose.js",
     "/js/documents-cm.js",
     "/js/documents-props.js",
+    "/js/documents-mermaid.js",
     "/js/autocorrect.js",
     "/js/documents.js",
     "/js/margin-reader.js",

@@ -50,6 +50,7 @@ SCRIPTS = (
     "graph-canvas.js",
     "documents.js",
     "documents-props.js",
+    "documents-mermaid.js",
     "library.js",
     "dashboard.js",
     "settings.js",
