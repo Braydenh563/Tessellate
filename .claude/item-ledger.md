@@ -91,3 +91,7 @@ date | item | type | rung | rework | note
 2026-11-02 | maths1527 leftovers: Escape LaTeX, scrim, Alt+= | bugfix | opus | 1 | 
 2026-11-02 | z1c chips paced at 200k chars | perf | opus | 0 | 
 2026-11-02 | warm12 long question bubble clip | ui | opus | 0 | 
+2026-11-02 | CI red: composer cold import, lazy regex (e7fab01) | ci-fix | opus | 1 | 
+2026-11-02 | INBOX 1531 graph no-move release (g1531) | bugfix | opus | 1 | 
+2026-11-02 | Row 3a tags and properties repositories (repo3a) | refactor | sonnet | 0 | 
+2026-11-02 | OPEN.md stale running owners (3c7d13f) | docs | opus | 0 | 
