@@ -52048,3 +52048,7 @@ that need building rather than fixing.
 5. **The Files sub-tab has to show more than a row can hold.** OCR text for a
    long document does not fit where a photo's caption fits; the row needs a
    summary plus a way to open the reading, not a clamped paragraph.
+
+## Moved from the plans, 2026-11-02 (a30b: UI_MODERNISATION focus ring, measured, not reproduced)
+
+From UI_MODERNISATION_PLAN.md Phase 12 "Open": "One focus ring at 1:1 (Chat, an `.active` button whose ring takes the ground's colour; `focusring.js`)." Re-measured on a seeded 48-note profile at 1440 with `scratchpad/ui-sweeps/focusring.js` (30 Tab stops on each of eight tabs, 239 stops): light 0 stops under 2px or 3:1, minimum 3.56:1; dark 0 under, minimum 7.03:1. The stops with no ring are the text fields that mark focus by their own border or caret (`#chat-input`, `#capture-card-body`, `.capture-card-tags`, and in dark the documents editor). Not verified: an `.active` button with a hover ring over a tinted ground on a real model-backed Chat (no model was connected here).

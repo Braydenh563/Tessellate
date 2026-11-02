@@ -1058,7 +1058,6 @@ and some are rounded squares."
 Steps 1 to 4 and 6, and step 5's pickers, built 2026-10-10 (Brief 41): moved to HISTORY.md ("Moved from the plans, 2026-10-10 (UI_MODERNISATION Phase 12)"). Open:
 - 5b, the calendar mode (decision 6): TIMELINE_PLAN section 9, Brief 55.
 - 7 on chat bubbles and library cards; 1's panel padding 12 and sidebar gutter 8, not yet measured.
-- One focus ring at 1:1 (Chat, an `.active` button whose ring takes the ground's colour; `focusring.js`).
 
 ## Placed from INBOX, built (pointers)
 
