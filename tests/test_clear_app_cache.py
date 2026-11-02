@@ -54,8 +54,10 @@ def test_the_click_says_so_then_reloads():
 
 
 def test_the_emblem_does_not_load_p5_before_the_scripts_have_run():
-    start = SHELL.index("function ensureP5()")
-    body = SHELL[start : SHELL.index("\n}\n", start)]
+    #: p5's loader moved to dash-art.js with its one use (INBOX 1530 d).
+    art = (ROOT / "frontend" / "js" / "dash-art.js").read_text(encoding="utf-8")
+    start = art.index("function ensureP5()")
+    body = art[start : art.index("\n  }\n", start)]
     assert 'document.readyState === "complete"' in body
     assert '"load"' in body
 
