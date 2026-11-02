@@ -3526,6 +3526,23 @@ async function renderFocusTimerWidget(body) {
   today.className = "muted focus-today";
   body.appendChild(today);
 
+  //: The Clock's timers and stopwatches (utility-tools.js, INBOX 1551): one line
+  //: from the same list the status bar reads, and the way into the Clock panel.
+  //: Painted again each second by the module while any clock runs.
+  const clocks = document.createElement("div");
+  clocks.id = "focus-clocks";
+  clocks.className = "row focus-clocks";
+  const clocksText = document.createElement("span");
+  clocksText.id = "focus-clocks-text";
+  clocksText.className = "muted focus-clocks-text";
+  clocksText.textContent = "No clock running";
+  clocks.append(
+    clocksText,
+    smallButton("ph:timer Clock", "Open the Clock: timers, a stopwatch and an alarm", () => ensureModule("utilities").then(() => openClockPanel("timer")))
+  );
+  body.appendChild(clocks);
+  if (prefs.has("utility-clocks")) ensureModule("utilities").then(() => paintClockSummary());
+
   paintFocusTimer(body);
 }
 

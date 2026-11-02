@@ -1134,23 +1134,35 @@ MORE_TOPICS: list[dict] = [
         "id": "timer",
         "keywords": (
             "timer", "countdown", "stopwatch", "pomodoro", "set a timer", "start a timer",
-            "stop the timer", "time how long",
+            "stop the timer", "time how long", "clock", "alarm", "set an alarm", "laps", "pause a timer",
         ),
         "body": (
-            "Type timer in the command palette (Ctrl+K; its ? at the foot lists "
-            "the timer, the stopwatch and Count words) for Start a timer (25 "
-            "minutes) and Start a stopwatch, or type a length, such as timer 10 "
-            "minutes, 90s timer or countdown 2h, and press Enter. The time runs "
-            "on the status bar (on a phone the bar comes back while it runs); "
-            "press that timer chip in the status bar to stop the one it shows (Undo brings it back). Several "
-            "timers can run at once (the chip shows the one ending first), and they "
-            "come back after a reload. When a timer "
-            "runs out it says so in a message and a notification. The "
-            "Dashboard's Focus timer widget is a separate timer: a ring with "
-            "the time, lengths of 5, 15, 25 or 50 minutes (or minus and plus "
-            "for any other), one Start that becomes Pause, a chime and a "
+            "The Clock is one window for timers, a stopwatch and alarms. Open it "
+            "from the command palette (Ctrl+K; its ? at the foot lists the "
+            "timer, the stopwatch and Count words): Start a timer, Start a "
+            "stopwatch or Set an alarm, or from the \"/\" menu in Chat, or by "
+            "pressing the timer chip in the status bar while a clock runs. Type "
+            "a length in the palette, such as timer 10 minutes, 90s timer or "
+            "countdown 2h, and Enter starts it and opens the Clock. Drag its "
+            "title bar to move it, drag its corner to resize it, or minimise it. "
+            "Timer: press 5, 10, 15, 25 or 45 minutes, or type a length (10, "
+            "90s, 1h30m or 1:30) and press Start. Several timers can run at "
+            "once, each with its own Pause, Resume and Stop in the Running list "
+            "(a stopped one comes back with Undo), and they come back after a "
+            "reload. When a timer runs out it says so in a message and a "
+            "notification and plays a chime (Sound at the end turns the chime "
+            "off). Stopwatch: Start counts up, Lap writes down the time so far "
+            "and how long that lap took, Pause holds it. Alarm: pick a time and "
+            "an optional label and press Set alarm; it makes an ordinary "
+            "reminder, today or tomorrow, so it rings as a reminder does and "
+            "shows in Reminders and on the Dashboard. The status bar shows the "
+            "clock that ends first (on a phone the bar comes back while it "
+            "runs). The Dashboard's Focus timer widget is a separate ring "
+            "timer: lengths of 5, 15, 25 or 50 minutes (or minus and plus for "
+            "any other), one Start that becomes Pause, a chime and a "
             "notification at the end, Breaks for a five-minute break after "
-            "each session, and the minutes focused today."
+            "each session, and the minutes focused today; a line under it says "
+            "what the Clock is running and its Clock button opens the panel."
         ),
         "badge": {"label": "Dashboard", "tab": "dashboard"},
     },
@@ -2515,7 +2527,7 @@ TOPIC_META: dict[str, dict] = {
     "usage-ledger": {"title": "What you use", "path": "Settings, General, What you use", "target": "usage-box"},
     "statistics": {"title": "Statistics", "path": "Dashboard, Activity heatmap, Statistics"},
     "chat-private": {"title": "Private chat", "path": "Chat, the gear under the message box, Private chat"},
-    "timer": {"title": "Timer and stopwatch", "path": "Command palette, timer"},
+    "timer": {"title": "Clock: timer, stopwatch and alarm", "path": "Command palette, Start a timer; the status bar's timer"},
     "calculator": {"title": "Calculator and equations", "path": "Command palette, Calculator and equations; Alt+= in a text box; /calc in Chat"},
     "manual": {"title": "The manual", "path": "Settings, Help, Open the manual"},
     "first-steps": {"title": "First steps and the sample notebook", "path": "Dashboard, Get started"},

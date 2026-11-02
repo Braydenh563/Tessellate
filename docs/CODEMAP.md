@@ -2,9 +2,9 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7558, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8472, test files 1845, tests 15741, plan headings 991, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7582, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8472, test files 1846, tests 15759, plan headings 991, app scripts 28, boot scripts 37, script files 234.
 
-## Frontend functions (7558)
+## Frontend functions (7582)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -898,10 +898,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `markPrefsDirty` | frontend/js/settings-panes.js:914 |
 | `markPrefsSaved` | frontend/js/settings-panes.js:930 |
 | `nudgeZoom` | frontend/js/settings-panes.js:1077 |
-| `paletteAbouts` | frontend/js/settings-panes.js:1180 |
-| `paletteCaughtNow` | frontend/js/settings-panes.js:1157 |
-| `paletteKeys` | frontend/js/settings-panes.js:1166 |
-| `paletteRowParts` | frontend/js/settings-panes.js:1191 |
+| `paletteAbouts` | frontend/js/settings-panes.js:1187 |
+| `paletteCaughtNow` | frontend/js/settings-panes.js:1164 |
+| `paletteKeys` | frontend/js/settings-panes.js:1173 |
+| `paletteRowParts` | frontend/js/settings-panes.js:1198 |
 | `refitComposer` | frontend/js/settings-panes.js:269 |
 | `renderAutonomousSettings` | frontend/js/settings-panes.js:684 |
 | `renderPrefs` | frontend/js/settings-panes.js:614 |
@@ -1412,22 +1412,22 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `activityActorName` | frontend/js/dashboard.js:3794 |
-| `activityUndoControl` | frontend/js/dashboard.js:3872 |
-| `activityUndoPlanText` | frontend/js/dashboard.js:3801 |
-| `activityUndoStarts` | frontend/js/dashboard.js:3857 |
+| `activityActorName` | frontend/js/dashboard.js:3811 |
+| `activityUndoControl` | frontend/js/dashboard.js:3889 |
+| `activityUndoPlanText` | frontend/js/dashboard.js:3818 |
+| `activityUndoStarts` | frontend/js/dashboard.js:3874 |
 | `afterFrames` | frontend/js/dashboard.js:1929 |
 | `applyDashDensity` | frontend/js/dashboard.js:1239 |
 | `cachedGreetingPhrase` | frontend/js/dashboard.js:293 |
 | `closeFeatures` | frontend/js/dashboard.js:1519 |
-| `dashActionRow` | frontend/js/dashboard.js:3587 |
-| `dashActivityItems` | frontend/js/dashboard.js:3705 |
+| `dashActionRow` | frontend/js/dashboard.js:3604 |
+| `dashActivityItems` | frontend/js/dashboard.js:3722 |
 | `dashContinueNote` | frontend/js/dashboard.js:1365 |
 | `dashCustomiseItems` | frontend/js/dashboard.js:1414 |
 | `dashDensity` | frontend/js/dashboard.js:1107 |
 | `dashDensityChosen` | frontend/js/dashboard.js:1113 |
 | `dashDragOverCard` | frontend/js/dashboard.js:22 |
-| `dashEmpty` | frontend/js/dashboard.js:3640 |
+| `dashEmpty` | frontend/js/dashboard.js:3657 |
 | `dashEntries` | frontend/js/dashboard.js:467 |
 | `dashFillingSkeleton` | frontend/js/dashboard.js:1940 |
 | `dashFillingSkeletonDone` | frontend/js/dashboard.js:1985 |
@@ -1441,7 +1441,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dashReminders` | frontend/js/dashboard.js:447 |
 | `dashStatsButton` | frontend/js/dashboard.js:2289 |
 | `dashStreak` | frontend/js/dashboard.js:2277 |
-| `dashTensionRow` | frontend/js/dashboard.js:4076 |
+| `dashTensionRow` | frontend/js/dashboard.js:4093 |
 | `dashWidgetRow` | frontend/js/dashboard.js:2041 |
 | `dashWidgetToggle` | frontend/js/dashboard.js:2015 |
 | `dashWidgetsSummary` | frontend/js/dashboard.js:2153 |
@@ -1485,9 +1485,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `refreshAiGreeting` | frontend/js/dashboard.js:313 |
 | `refreshArtForTheme` | frontend/js/dashboard.js:2254 |
 | `refreshDashWidgets` | frontend/js/dashboard.js:1709 |
-| `renderActivityWidget` | frontend/js/dashboard.js:3718 |
-| `renderBoardsWidget` | frontend/js/dashboard.js:3661 |
-| `renderBookmarksWidget` | frontend/js/dashboard.js:3940 |
+| `renderActivityWidget` | frontend/js/dashboard.js:3735 |
+| `renderBoardsWidget` | frontend/js/dashboard.js:3678 |
+| `renderBookmarksWidget` | frontend/js/dashboard.js:3957 |
 | `renderCategoriesWidget` | frontend/js/dashboard.js:2982 |
 | `renderDashGlance` | frontend/js/dashboard.js:687 |
 | `renderDashMore` | frontend/js/dashboard.js:1474 |
@@ -1496,7 +1496,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderDashboard` | frontend/js/dashboard.js:1738 |
 | `renderDashboardGreeting` | frontend/js/dashboard.js:545 |
 | `renderDigestWidget` | frontend/js/dashboard.js:2695 |
-| `renderDocumentsWidget` | frontend/js/dashboard.js:3903 |
+| `renderDocumentsWidget` | frontend/js/dashboard.js:3920 |
 | `renderFeatures` | frontend/js/dashboard.js:1583 |
 | `renderFirstStepsLazy` | frontend/js/dashboard.js:1637 |
 | `renderFocusTimerWidget` | frontend/js/dashboard.js:3450 |
@@ -1505,8 +1505,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderMostOpenedWidget` | frontend/js/dashboard.js:2505 |
 | `renderMostUsedWidget` | frontend/js/dashboard.js:2531 |
 | `renderNameNudge` | frontend/js/dashboard.js:751 |
-| `renderOnThisDayWidget` | frontend/js/dashboard.js:4134 |
-| `renderPaceWidget` | frontend/js/dashboard.js:4209 |
+| `renderOnThisDayWidget` | frontend/js/dashboard.js:4151 |
+| `renderPaceWidget` | frontend/js/dashboard.js:4226 |
 | `renderPinnedWidget` | frontend/js/dashboard.js:2500 |
 | `renderQuestionsWidget` | frontend/js/dashboard.js:2591 |
 | `renderQuickCaptureWidget` | frontend/js/dashboard.js:2768 |
@@ -1518,9 +1518,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderStatsWidget` | frontend/js/dashboard.js:2327 |
 | `renderStreakWidget` | frontend/js/dashboard.js:2295 |
 | `renderTagCloudWidget` | frontend/js/dashboard.js:3248 |
-| `renderTensionsWidget` | frontend/js/dashboard.js:4014 |
+| `renderTensionsWidget` | frontend/js/dashboard.js:4031 |
 | `renderTopTagsWidget` | frontend/js/dashboard.js:2570 |
-| `renderUnfinishedWidget` | frontend/js/dashboard.js:3966 |
+| `renderUnfinishedWidget` | frontend/js/dashboard.js:3983 |
 | `saveDashLayout` | frontend/js/dashboard.js:196 |
 | `saveQuickAccess` | frontend/js/dashboard.js:1338 |
 | `saveQuickTints` | frontend/js/dashboard.js:1347 |
@@ -1538,7 +1538,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `toggleDashWidgetHidden` | frontend/js/dashboard.js:207 |
 | `toggleDashWidgetWide` | frontend/js/dashboard.js:215 |
 | `truncateMarkdownSafe` | frontend/js/dashboard.js:3046 |
-| `undoActorFrom` | frontend/js/dashboard.js:3819 |
+| `undoActorFrom` | frontend/js/dashboard.js:3836 |
 | `watchDashWidgets` | frontend/js/dashboard.js:828 |
 | `wireDashDensity` | frontend/js/dashboard.js:1275 |
 | `withDisplayName` | frontend/js/dashboard.js:257 |
@@ -1978,49 +1978,49 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `closePalette` | frontend/js/app-palette.js:163 |
-| `notesPaletteCommands` | frontend/js/app-palette.js:846 |
+| `notesPaletteCommands` | frontend/js/app-palette.js:849 |
 | `openPalette` | frontend/js/app-palette.js:120 |
-| `paletteActRows` | frontend/js/app-palette.js:439 |
-| `paletteArrow` | frontend/js/app-palette.js:800 |
+| `paletteActRows` | frontend/js/app-palette.js:442 |
+| `paletteArrow` | frontend/js/app-palette.js:803 |
 | `paletteAskNotes` | frontend/js/app-palette.js:60 |
-| `paletteBase` | frontend/js/app-palette.js:394 |
-| `paletteDistance` | frontend/js/app-palette.js:642 |
-| `paletteDrawRows` | frontend/js/app-palette.js:713 |
+| `paletteBase` | frontend/js/app-palette.js:397 |
+| `paletteDistance` | frontend/js/app-palette.js:645 |
+| `paletteDrawRows` | frontend/js/app-palette.js:716 |
 | `paletteEditorMatches` | frontend/js/app-palette.js:209 |
 | `paletteFeature` | frontend/js/app-palette.js:96 |
-| `paletteFeatureRows` | frontend/js/app-palette.js:422 |
-| `paletteFind` | frontend/js/app-palette.js:688 |
+| `paletteFeatureRows` | frontend/js/app-palette.js:425 |
+| `paletteFind` | frontend/js/app-palette.js:691 |
 | `paletteFuzzyScore` | frontend/js/app-palette.js:189 |
-| `paletteGoToCategory` | frontend/js/app-palette.js:932 |
-| `paletteKeydown` | frontend/js/app-palette.js:809 |
-| `paletteLight` | frontend/js/app-palette.js:774 |
+| `paletteGoToCategory` | frontend/js/app-palette.js:935 |
+| `paletteKeydown` | frontend/js/app-palette.js:812 |
+| `paletteLight` | frontend/js/app-palette.js:777 |
 | `paletteMatches` | frontend/js/app-palette.js:223 |
-| `paletteNearRows` | frontend/js/app-palette.js:668 |
-| `paletteNearest` | frontend/js/app-palette.js:622 |
-| `paletteNearestCommand` | frontend/js/app-palette.js:693 |
-| `paletteNearestRows` | frontend/js/app-palette.js:657 |
+| `paletteNearRows` | frontend/js/app-palette.js:671 |
+| `paletteNearest` | frontend/js/app-palette.js:625 |
+| `paletteNearestCommand` | frontend/js/app-palette.js:696 |
+| `paletteNearestRows` | frontend/js/app-palette.js:660 |
 | `paletteNoteAbout` | frontend/js/app-palette.js:38 |
 | `paletteNoteRows` | frontend/js/app-palette.js:45 |
-| `paletteNotesInHand` | frontend/js/app-palette.js:922 |
-| `palettePick` | frontend/js/app-palette.js:597 |
-| `palettePicks` | frontend/js/app-palette.js:578 |
-| `palettePool` | frontend/js/app-palette.js:400 |
-| `palettePrefixPicks` | frontend/js/app-palette.js:586 |
-| `paletteRanked` | frontend/js/app-palette.js:554 |
-| `paletteRefresh` | frontend/js/app-palette.js:414 |
+| `paletteNotesInHand` | frontend/js/app-palette.js:925 |
+| `palettePick` | frontend/js/app-palette.js:600 |
+| `palettePicks` | frontend/js/app-palette.js:581 |
+| `palettePool` | frontend/js/app-palette.js:403 |
+| `palettePrefixPicks` | frontend/js/app-palette.js:589 |
+| `paletteRanked` | frontend/js/app-palette.js:557 |
+| `paletteRefresh` | frontend/js/app-palette.js:417 |
 | `paletteRun` | frontend/js/app-palette.js:103 |
-| `paletteScore` | frontend/js/app-palette.js:514 |
-| `paletteSettingRows` | frontend/js/app-palette.js:474 |
-| `paletteShown` | frontend/js/app-palette.js:795 |
-| `paletteStartAct` | frontend/js/app-palette.js:461 |
-| `paletteTarget` | frontend/js/app-palette.js:405 |
+| `paletteScore` | frontend/js/app-palette.js:517 |
+| `paletteSettingRows` | frontend/js/app-palette.js:477 |
+| `paletteShown` | frontend/js/app-palette.js:798 |
+| `paletteStartAct` | frontend/js/app-palette.js:464 |
+| `paletteTarget` | frontend/js/app-palette.js:408 |
 | `paletteText` | frontend/js/app-palette.js:180 |
-| `paletteTier` | frontend/js/app-palette.js:545 |
-| `paletteVocab` | frontend/js/app-palette.js:530 |
-| `paletteWhy` | frontend/js/app-palette.js:611 |
-| `paletteWords` | frontend/js/app-palette.js:501 |
-| `renderPalette` | frontend/js/app-palette.js:739 |
-| `scrollPaletteToActive` | frontend/js/app-palette.js:830 |
+| `paletteTier` | frontend/js/app-palette.js:548 |
+| `paletteVocab` | frontend/js/app-palette.js:533 |
+| `paletteWhy` | frontend/js/app-palette.js:614 |
+| `paletteWords` | frontend/js/app-palette.js:504 |
+| `renderPalette` | frontend/js/app-palette.js:742 |
+| `scrollPaletteToActive` | frontend/js/app-palette.js:833 |
 | `utilityPaletteRows` | frontend/js/app-palette.js:302 |
 
 ### frontend/js/appearance-panel.js (16)
@@ -7216,28 +7216,52 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderUsage` | frontend/js/usage-ledger.js:33 |
 | `usageLabels` | frontend/js/usage-ledger.js:18 |
 
-### frontend/js/utility-tools.js (18)
+### frontend/js/utility-tools.js (42)
 
 | Name | File:line |
 |---|---|
-| `countSelection` | frontend/js/utility-tools.js:176 |
-| `insertTemplate` | frontend/js/utility-tools.js:193 |
-| `paintUtilityChip` | frontend/js/utility-tools.js:47 |
-| `startStopwatch` | frontend/js/utility-tools.js:120 |
-| `startUtilityTimer` | frontend/js/utility-tools.js:112 |
-| `stopUtilityClock` | frontend/js/utility-tools.js:129 |
-| `utilityClockRun` | frontend/js/utility-tools.js:64 |
-| `utilityClockSeconds` | frontend/js/utility-tools.js:30 |
-| `utilityDrop` | frontend/js/utility-tools.js:89 |
-| `utilityEnsureTick` | frontend/js/utility-tools.js:75 |
-| `utilityMinutesName` | frontend/js/utility-tools.js:106 |
-| `utilityRestore` | frontend/js/utility-tools.js:97 |
-| `utilityResume` | frontend/js/utility-tools.js:145 |
-| `utilitySave` | frontend/js/utility-tools.js:36 |
-| `utilitySelectedText` | frontend/js/utility-tools.js:168 |
-| `utilityShown` | frontend/js/utility-tools.js:42 |
-| `utilityTimeText` | frontend/js/utility-tools.js:20 |
-| `utilityTimerDone` | frontend/js/utility-tools.js:155 |
+| `clockAlarmPane` | frontend/js/utility-tools.js:434 |
+| `clockEl` | frontend/js/utility-tools.js:370 |
+| `clockField` | frontend/js/utility-tools.js:383 |
+| `clockName` | frontend/js/utility-tools.js:378 |
+| `clockPanelBuild` | frontend/js/utility-tools.js:475 |
+| `clockPanelHelp` | frontend/js/utility-tools.js:529 |
+| `clockRow` | frontend/js/utility-tools.js:556 |
+| `clockRowPaint` | frontend/js/utility-tools.js:581 |
+| `clockStopwatchPane` | frontend/js/utility-tools.js:426 |
+| `clockTimerPane` | frontend/js/utility-tools.js:390 |
+| `countSelection` | frontend/js/utility-tools.js:303 |
+| `insertTemplate` | frontend/js/utility-tools.js:320 |
+| `openClockPanel` | frontend/js/utility-tools.js:355 |
+| `paintClockPanel` | frontend/js/utility-tools.js:604 |
+| `paintClockSummary` | frontend/js/utility-tools.js:87 |
+| `paintClockViews` | frontend/js/utility-tools.js:70 |
+| `paintUtilityChip` | frontend/js/utility-tools.js:92 |
+| `startStopwatch` | frontend/js/utility-tools.js:223 |
+| `startUtilityTimer` | frontend/js/utility-tools.js:217 |
+| `stopUtilityClock` | frontend/js/utility-tools.js:232 |
+| `utilityAlarmSet` | frontend/js/utility-tools.js:281 |
+| `utilityAlarmValue` | frontend/js/utility-tools.js:269 |
+| `utilityChanged` | frontend/js/utility-tools.js:139 |
+| `utilityClockRun` | frontend/js/utility-tools.js:112 |
+| `utilityClockSeconds` | frontend/js/utility-tools.js:45 |
+| `utilityClocksLine` | frontend/js/utility-tools.js:77 |
+| `utilityDrop` | frontend/js/utility-tools.js:145 |
+| `utilityEnsureTick` | frontend/js/utility-tools.js:124 |
+| `utilityLap` | frontend/js/utility-tools.js:169 |
+| `utilityLapText` | frontend/js/utility-tools.js:52 |
+| `utilityMinutesName` | frontend/js/utility-tools.js:192 |
+| `utilityParseLength` | frontend/js/utility-tools.js:200 |
+| `utilityPause` | frontend/js/utility-tools.js:153 |
+| `utilityPlay` | frontend/js/utility-tools.js:160 |
+| `utilityRestore` | frontend/js/utility-tools.js:178 |
+| `utilityResume` | frontend/js/utility-tools.js:247 |
+| `utilitySave` | frontend/js/utility-tools.js:56 |
+| `utilitySelectedText` | frontend/js/utility-tools.js:295 |
+| `utilityShown` | frontend/js/utility-tools.js:63 |
+| `utilitySoundOn` | frontend/js/utility-tools.js:256 |
+| `utilityTimeText` | frontend/js/utility-tools.js:34 |
+| `utilityTimerDone` | frontend/js/utility-tools.js:260 |
 
 ### frontend/js/vault-unlock.js (2)
 
@@ -11960,7 +11984,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/timeline-ticks-lazy.css | 42 |
 | frontend/css/update-bar-lazy.css | 15 |
 | frontend/css/usage-lazy.css | 34 |
-| frontend/css/utilities-lazy.css | 328 |
+| frontend/css/utilities-lazy.css | 450 |
 | frontend/css/web-lazy.css | 88 |
 | frontend/css/writing-desk-lazy.css | 27 |
 
@@ -15353,8 +15377,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3096 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3222 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3108 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3234 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -23257,7 +23281,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15741)
+## Tests (15759)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23486,6 +23510,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_client_log_rate_limit.py | 2 |
 | tests/test_clip_text.py | 1 |
 | tests/test_clipped_readers_1525c.py | 13 |
+| tests/test_clock_panel_1551.py | 18 |
 | tests/test_clock_weekday.py | 5 |
 | tests/test_cm_measure_loop_1031.py | 5 |
 | tests/test_code_completion.py | 29 |

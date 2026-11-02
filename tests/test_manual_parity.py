@@ -129,7 +129,10 @@ UTILITIES = {
     "statistics": ("statistics.js", 'helpBody.id = "stats-help";', "the heatmap's Statistics, the palette's Statistics", "statistics"),
     "timer": ("utility-tools.js", "function startUtilityTimer(minutes = 25)", "the palette's Start a timer, or timer 10 minutes", "timer"),
     "stopwatch": ("utility-tools.js", "function startStopwatch()", "the palette's Start a stopwatch", "timer"),
-    "stop the clock": ("utility-tools.js", '$("status-timer").addEventListener("click", stopUtilityClock);', "the status bar's timer chip", "timer"),
+    #: INBOX 1551: the rows and the chip open one Clock panel (Timer, Stopwatch, Alarm).
+    "open the clock": ("utility-tools.js", '$("status-timer").addEventListener("click", () => openClockPanel());', "the status bar's timer chip", "timer"),
+    "clock panel": ("utility-tools.js", 'function openClockPanel(tab = "timer")', "the palette's Start a timer, Start a stopwatch and Set an alarm", "timer"),
+    "alarm": ("settings-panes.js", 'id: "alarm", name: "Set an alarm"', "the palette's Set an alarm", "timer"),
     "no-model badge": ("reply-kit.js", "function replyByHelpPanel(kind)", "the From your notes badge", "ask-chat"),
     "calculator": ("reply-kit.js", 'function openCalculator(input = "", mode = "work", { target = null } = {})', "the palette's Calculator and equations, or /calc", "calculator"),
     "convert units": ("settings-panes.js", 'id: "convert", name: "Convert units"', "the palette's Convert units", "calculator"),
