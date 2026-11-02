@@ -7062,6 +7062,17 @@ function wbMapPickRow(select) {
 //: of the bar where the well was 151. The readout says the size the topic
 //: is drawn at, the map's when it follows the map (ringed, its sentence the
 //: tooltip), so it never reads "M" over a topic the map draws large.
+//: **One scale for the readout** (audit 1028 U28: a root drawn at 22px read
+//: "22px" while its children read "M"). `steps` is the scale, `[{ name, px }]`
+//: smallest first. A size on a step is its name; a size between two is the step
+//: below with a plus ("L+", so it reads as "a little over L" and the minus
+//: button visibly lands on "L"); under the smallest step it is that step.
+function wbMapSizeName(size, steps) {
+  if (!steps.length) return `${size}px`;
+  const below = [...steps].reverse().find((step) => step.px <= size) || steps[0];
+  return below.px === size || size < steps[0].px ? below.name : `${below.name}+`;
+}
+
 function wbMapSizeStepper(select) {
   const wrap = document.createElement("div");
   wrap.className = "stepper wb-map-size-stepper";
@@ -7088,7 +7099,7 @@ function wbMapSizeStepper(select) {
     const drawn = Number(wbMapThemedData(wbSelectedMapNode())?.font_size);
     return { size: drawn > 0 ? drawn : Number(chosen?.dataset.inherits) || WB_MAP_TEXT_DEFAULT, following: true };
   };
-  const nameOf = (size) => choices().find((o) => px(o) === size)?.textContent.trim() || `${size}px`;
+  const nameOf = (size) => wbMapSizeName(size, choices().map((o) => ({ name: o.textContent.trim(), px: px(o) })));
   const step = (dir) => {
     const { size } = now();
     const list = choices();
@@ -7106,7 +7117,8 @@ function wbMapSizeStepper(select) {
     unit.textContent = nameOf(size);
     unit.classList.toggle("is-inherited", following && Boolean(select.querySelector("option[data-follow]")));
     const said = select.querySelector("option[data-follow]")?.textContent.trim();
-    unit.title = following && said ? said : `Text size ${nameOf(size)}`;
+    const shown = nameOf(size);
+    unit.title = following && said ? said : shown.endsWith("+") ? `Text size ${size}px, a little over ${shown.slice(0, -1)}` : `Text size ${shown}`;
     minus.disabled = !smaller;
     plus.disabled = !larger;
     minus.title = smaller ? `Smaller text (${smaller.textContent.trim()})` : "Already the smallest";

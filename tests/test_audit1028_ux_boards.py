@@ -129,3 +129,28 @@ def test_every_layout_option_names_an_icon_and_a_menu_row_draws_it():
     selects = (JS / "sheets-selects.js").read_text(encoding="utf-8")
     row = _block(selects, "const buildOptionRow = (option) => {", "row.addEventListener")
     assert "option.dataset.icon" in row and "ph-lead" in row and 'setAttribute("aria-hidden", "true")' in row
+
+
+# U28 ------------------------------------------------------------------------
+
+
+def test_the_size_readout_is_one_scale_never_pixels():
+    import json
+    import shutil
+    import subprocess
+
+    import pytest
+
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node is not installed")
+    start = MAP.index("function wbMapSizeName(")
+    fn = MAP[start : MAP.index("\n}\n", start) + 3]
+    steps = "[{name:'S',px:12},{name:'M',px:14},{name:'L',px:19},{name:'XL',px:25}]"
+    script = fn + f"console.log(JSON.stringify([12,14,19,25,22,17,30,10,16].map((n) => wbMapSizeName(n, {steps}))));"
+    out = subprocess.run([node, "-e", script], capture_output=True, text=True, check=True).stdout
+    # On a step: its name. Between two: the step below with a plus. Under the smallest: the smallest.
+    assert json.loads(out) == ["S", "M", "L", "XL", "L+", "M+", "XL+", "S", "M+"]
+    stepper = MAP[MAP.index("function wbMapSizeStepper(") :]
+    assert "`${size}px`" not in stepper[: stepper.index("\n}\n")].split("const nameOf")[1].split("\n")[0]
+
