@@ -242,7 +242,8 @@ def test_a_pasted_app_address_opens_in_this_window_and_other_links_keep_their_be
     assert "const linkTarget = appAddressHash(linkUrl) || linkUrl;" in body
     # A new tab only for a web link that is not this app's own address.
     assert "if (linkTarget === linkUrl && /^https?:\\/\\//i.test(linkUrl))" in body
-    docs = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    #: documents-embeds.js is one closure (doc23-1102): the function ends at an indented brace.
+    docs = (ROOT / "frontend" / "js" / "documents-embeds.js").read_text(encoding="utf-8")
     opener = docs[docs.index("function docOpenLink(") :]
-    opener = opener[: opener.index("\n}\n")]
+    opener = opener[: opener.index("\n  }\n")]
     assert "appAddressHash(clean)" in opener and "window.open(clean" in opener

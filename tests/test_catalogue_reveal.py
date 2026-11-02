@@ -53,6 +53,7 @@ SCRIPTS = (
     "documents-mermaid.js",
     "documents-math.js",
     "documents-comments.js",
+    "documents-embeds.js",
     "library.js",
     "dashboard.js",
     "settings.js",

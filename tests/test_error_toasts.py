@@ -80,6 +80,9 @@ EXPECTED = {
         '"Save the document first."',
         '"This window has no speech voices to read with."',
     ],
+    'documents-embeds.js': [
+        '`Nothing called "${name}" yet.`',
+    ],
     'documents-history.js': [
         '"Open a document first."',
     ],
@@ -89,7 +92,6 @@ EXPECTED = {
         '"Give the document a title first, a block link is named by it."',
         '"Put the caret in a paragraph first."',
         '"That block is not in this document any more."',
-        '`Nothing called "${name}" yet.`',
         '"Full screen is not available in this window."',
         '"That text has changed, the list is refreshed."',
         '"Nothing left to fix."',

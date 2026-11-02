@@ -53,8 +53,9 @@ TOP_LEVEL_LETS_CAP = 699
 #: cap is set to the measured count (9,785). doc23-1102: the Mermaid
 #: fences (documents-mermaid.js, 426 lines) wrapped whole, three exports; measured 9,775. doc23-1102: the TeX parser and MathML
 #: renderer (documents-math.js, 400 lines) wrapped whole, two exports; measured 9,754. doc23-1102: the comments
-#: model and panel (documents-comments.js, 436 lines) wrapped whole, five exports; measured 9,742.
-GLOBAL_NAMES_CAP = 9742
+#: model and panel (documents-comments.js, 436 lines) wrapped whole, five exports; measured 9,742. doc23-1102: embeds and wiki-link
+#: targets (documents-embeds.js, 335 lines) wrapped whole, seven exports; measured 9,739.
+GLOBAL_NAMES_CAP = 9739
 
 
 def _code() -> dict[str, str]:
