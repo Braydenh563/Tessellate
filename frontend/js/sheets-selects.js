@@ -1814,11 +1814,11 @@ async function loadConversationList() {
   if (!list.children.length || list.querySelector(".skeleton")) $("conv-empty")?.classList.add("hidden");
   //: A failed read says so with Try again; "No saved chats yet" is for a list that came back empty.
   //: The search box asks the server, which reads titles and message text (E47).
-  const term = ($("chat-sidebar-search")?.value || "").trim();
-  const asked = (loadConversationList.asks = (loadConversationList.asks || 0) + 1);
-  const loaded = await loadSurface($("conv-empty"), "your chats", () => apiJson(term ? `/conversations?q=${encodeURIComponent(term)}` : "/conversations"));
+  const term = $("chat-sidebar-search").value.trim();
+  const asked = (loadConversationList.n = -~loadConversationList.n); // the newest read owns the list
+  const loaded = await loadSurface($("conv-empty"), "your chats", () => apiJson(`/conversations?q=${encodeURIComponent(term)}`));
   clearSkeletons(list);
-  if (asked !== loadConversationList.asks) return; // a newer read owns the list
+  if (asked !== loadConversationList.n) return;
   if (!loaded) return list.replaceChildren();
   const conversations = sortConversations(loaded, $("chat-sidebar-sort")?.value || "recent").slice(0, term ? 4 * RECENT_CHATS_SHOWN : RECENT_CHATS_SHOWN);
   list.replaceChildren();

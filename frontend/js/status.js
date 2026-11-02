@@ -2830,16 +2830,8 @@ function renderChatModeSeg() {
     if (agentButton.dataset.enabledTitle === undefined) agentButton.dataset.enabledTitle = agentButton.title;
     //: aria-disabled, not disabled (E61): the button stays a Tab stop and a press opens the
     //: same "Needs a model" popover Plan does (`openModelOffer`), so the reason is not hover-only.
-    if (gated) agentButton.setAttribute("aria-disabled", "true");
-    else agentButton.removeAttribute("aria-disabled");
+    agentButton.setAttribute("aria-disabled", String(gated));
     agentButton.classList.toggle("ai-unavailable", gated);
-    if (gated) {
-      agentButton.dataset.needsModel = "Agent mode needs a model, or the Needle extra, to call tools";
-      agentButton.dataset.modelOffer = "Ask the Librarian answers from your notes without one.";
-    } else {
-      delete agentButton.dataset.needsModel;
-      delete agentButton.dataset.modelOffer;
-    }
     agentButton.title = gated
       ? `Agent mode needs a model, or the Needle extra, to call tools. ${AI_OFFLINE_HINT}.`
       : engine

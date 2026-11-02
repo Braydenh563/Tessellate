@@ -1369,6 +1369,7 @@ function chatMessageActions(actions) {
     button.title = action.title;
     button.setAttribute("aria-label", action.title);
     button.addEventListener("click", action.onClick);
+    if (action.speak) button.dataset.speak = "1"; // speakText flips it to Stop reading (E71)
     return button;
   };
   //: **The row grew past what a row can hold.** An assistant message now
@@ -1381,17 +1382,18 @@ function chatMessageActions(actions) {
   for (const action of actions.slice(0, MSG_ACTIONS_VISIBLE)) row.appendChild(make(action));
   const overflow = actions.slice(MSG_ACTIONS_VISIBLE);
   if (overflow.length) {
-    row.appendChild(
-      kebabMenu(
-        overflow.map((action) => ({
-          label: `${action.label} ${action.title}`,
-          title: action.title,
-          danger: action.danger,
-          run: () => action.onClick({ currentTarget: null }),
-        })),
-        "More actions for this message"
-      )
+    const more = kebabMenu(
+      overflow.map((action) => ({
+        label: `${action.label} ${action.title}`,
+        title: action.title,
+        danger: action.danger,
+        run: () => action.onClick({ currentTarget: null }),
+      })),
+      "More actions for this message"
     );
+    const spoken = overflow.findIndex((action) => action.speak);
+    if (spoken >= 0) more.querySelectorAll(".action-menu .menu-item")[spoken].dataset.speak = "1";
+    row.appendChild(more);
   }
   return row;
 }

@@ -3362,6 +3362,8 @@ Link to another note with [[its first few words]]."></textarea>
                     title="Ask the Librarian about your notes. It reads and answers; it never changes anything."
                     aria-label="Ask the Librarian"><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> Ask<span class="chat-mode-long"> the Librarian</span></button>
                   <button data-chat-mode="agent" type="button"
+                    data-needs-model="Agent mode needs a model, or the Needle extra, to call tools"
+                    data-model-offer="Ask the Librarian answers from your notes without one."
                     title="Agent mode. Ask the Librarian to do something: it can use tools, search and read your notes, open web pages, create, tag, link and organise. Destructive actions always ask you first."
                     aria-label="Agent mode"><i class="ph ph-strategy ph-lead" aria-hidden="true"></i> Agent<span class="chat-mode-long"> mode</span></button>
                 </div>
@@ -12800,6 +12802,34 @@ Link to another note with [[its first few words]]."></textarea>
               <h3>Microphone</h3>
               <p class="muted">Which input records and how it is cleaned up, for dictation, voice notes, meetings and live captions.</p>
               <div id="mic-settings-controls"></div>
+            </div>
+            <!-- Read aloud's speed (audit 1028 E71): remembered on this device and read by
+                 `speakText` (media.js) each time a message is read. The help recipe is `data-help-for`. -->
+            <div class="settings-group" id="read-aloud-box">
+              <div class="row help-head">
+                <h3>Read aloud</h3>
+                <button type="button" class="icon-only ghost small graph-help-toggle"
+                  data-help-for="read-aloud-help" aria-controls="read-aloud-help" aria-expanded="false"
+                  title="About read aloud" aria-label="About read aloud">
+                  <i class="ph ph-question" aria-hidden="true"></i>
+                </button>
+              </div>
+              <div class="row space-between setting-row">
+                <label for="pref-read-aloud-rate">Speaking speed</label>
+                <select id="pref-read-aloud-rate" class="small-select">
+                  <option value="0.75">Slower (0.75x)</option>
+                  <option value="1">Normal (1x)</option>
+                  <option value="1.25">Faster (1.25x)</option>
+                  <option value="1.5">Fastest (1.5x)</option>
+                </select>
+              </div>
+              <div class="help-body hidden" id="read-aloud-help" role="dialog" aria-label="About read aloud">
+                <p>
+                  A message's Read aloud plays it in this computer's own voice. Press
+                  it again, now Stop reading, to stop. The speed is remembered on this
+                  device.
+                </p>
+              </div>
             </div>
             <!-- Simple mode and the usage ledger (WORLD_CLASS_PLAN H9, row 27):
                  usage-ledger.js (lazy) wires both; theme-boot.js applies

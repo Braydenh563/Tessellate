@@ -367,6 +367,8 @@ function speakText(text, button = null) {
   }
   if (!text.trim()) return;
   const utterance = new SpeechSynthesisUtterance(text);
+  //: Kept on this device (Settings, Read aloud); anything else reads at normal speed (E71).
+  utterance.rate = prefs.number("read-aloud-rate", 1, { min: 0.75, max: 1.5 });
   if (button) {
     const rest = button.innerHTML;
     const paint = (on) => {
@@ -383,4 +385,5 @@ function speakText(text, button = null) {
     for (const type of ["end", "error"]) utterance.addEventListener(type, () => nameMarkBuddySound("speech", false));
   }
   speechSynthesis.speak(utterance);
+  return utterance; // the caller may follow it (a message's Read aloud turns to Stop reading)
 }

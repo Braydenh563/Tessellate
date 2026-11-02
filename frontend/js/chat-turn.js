@@ -2509,7 +2509,25 @@ function assistantMessageActions({ bubble, text, question, onEdit }) {
       title: "Fork the conversation from here",
       onClick: () => forkFromBubble(bubble),
     },
-    { label: "ph:speaker-high", title: "Read aloud", onClick: () => speakText(text) },
+    {
+      label: "ph:speaker-high",
+      title: "Read aloud",
+      speak: true,
+      //: Turns to Stop reading for as long as it speaks, the icon button and the same
+      //: item in the ⋯ menu alike (both carry `data-speak`, chatMessageActions).
+      onClick: () => {
+        const said = speakText(text);
+        const paint = (on) => {
+          for (const row of document.querySelectorAll("[data-speak]")) {
+            row.title = on ? "Stop reading" : "Read aloud";
+            setLabel(row, `ph:${on ? "stop" : "speaker-high"}${row.classList.contains("menu-item") ? ` ${row.title}` : ""}`);
+            row.setAttribute("aria-label", row.title);
+          }
+        };
+        if (said) said.onstart = () => paint(true);
+        if (said) said.onend = said.onerror = () => paint(false);
+      },
+    },
     {
       label: "ph:note-pencil",
       title: "Save this answer as a draft note",
@@ -2595,9 +2613,7 @@ async function deleteChatTurn(assistantBubble) {
   // The user bubble is the one immediately before this assistant bubble.
   const userBubble = assistantBubble.previousElementSibling;
   //: Later questions move up one saved turn (E49).
-  for (let node = assistantBubble.nextElementSibling; node; node = node.nextElementSibling) {
-    if (node.dataset.turn) node.dataset.turn = String(Number(node.dataset.turn) - 1);
-  }
+  for (let node = assistantBubble; (node = node.nextElementSibling); ) if (node.dataset.turn) node.dataset.turn -= 1;
   if (userBubble && userBubble.classList.contains("user")) dropChatBubble(userBubble);
   assistantBubble.remove();
   chatConv.turns.splice(index, 1);

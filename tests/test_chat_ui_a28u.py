@@ -15,8 +15,8 @@ def test_e49_edit_reads_the_turn_from_the_bubble():
     js = app_js_text()
     # Both bubble writers stamp the index this pair will occupy.
     assert "dataset.turn = String(chatConv.turns.length)" in js
-    # A deleted exchange renumbers the user bubbles after it.
-    assert "dataset.turn" in js[js.index("async function deleteChatTurn") :][:3000]
+    # A deleted exchange (chat-edit.js, lazy) renumbers the user bubbles after it.
+    assert "node.dataset.turn -= 1" in js[js.index("async function deleteChatTurn") :][:3000]
 
 
 def test_e47_the_chat_list_has_a_search_field():
@@ -29,6 +29,7 @@ def test_e47_the_chat_list_has_a_search_field():
     assert 'aria-label="Search your saved chats"' in box
     # The server reads titles and message text; the list reads the box on every load.
     assert "/conversations?q=${encodeURIComponent(term)}" in app_js_text()
+    assert "loadConversationList.n" in app_js_text()
     assert "Search" not in re.findall(r'placeholder="(Filter[^"]*)"', box)
     from tessellate.ai import help_chat
 
@@ -41,9 +42,13 @@ def test_e61_plan_and_agent_say_why_in_view_and_stay_reachable():
     # The visible line names both; Agent is aria-disabled (a Tab stop) with the model-offer popover.
     assert "Plan and Agent need a model." in js
     body = js[js.index("function renderChatModeSeg") :][:2600]
-    assert 'setAttribute("aria-disabled", "true")' in body
+    assert 'agentButton.setAttribute("aria-disabled", String(gated))' in body
     assert "agentButton.disabled" not in body
-    assert "dataset.modelOffer" in body and "dataset.needsModel" in body
+    from tests._app_js import INDEX_HTML
+
+    html = INDEX_HTML.read_text(encoding="utf-8")
+    button = html[html.index('<button data-chat-mode="agent"') :][:500]
+    assert "data-needs-model=" in button and "data-model-offer=" in button
 
 
 def test_e68_the_transcript_is_busy_while_an_answer_streams():
@@ -55,3 +60,20 @@ def test_e68_the_transcript_is_busy_while_an_answer_streams():
     assert '$("chat-messages").removeAttribute("aria-busy")' in turn[done - 200 : done + 300]
     assert 'removeAttribute("aria-busy")' in (JS_DIR / "chat-attach.js").read_text(encoding="utf-8")
     assert 'setAttribute("aria-busy", "true")' in (JS_DIR / "answer-kit.js").read_text(encoding="utf-8")
+
+
+def test_e71_read_aloud_stops_and_has_a_remembered_speed():
+    from tests._app_js import INDEX_HTML
+
+    js = app_js_text()
+    speak = js[js.index("function speakText") :][:2600]
+    assert 'prefs.number("read-aloud-rate", 1, { min: 0.75, max: 1.5 })' in speak
+    assert "return utterance;" in speak
+    assert "Stop reading" in js and 'querySelectorAll("[data-speak]")' in js
+    # Both the icon button and the item in the ⋯ menu are marked.
+    assert 'dataset.speak = "1"' in js and "speak: true" in js
+    html = INDEX_HTML.read_text(encoding="utf-8")
+    box = html[html.index('id="read-aloud-box"') :][:1800]
+    for rate in ("0.75", "1", "1.25", "1.5"):
+        assert f'<option value="{rate}">' in box
+    assert 'data-help-for="read-aloud-help"' in box

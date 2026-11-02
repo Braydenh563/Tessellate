@@ -620,7 +620,8 @@ HELP_TOPICS: list[dict] = [
             "lines, and the transcript's more menu copies the picked lines or all of "
             "them, with or without times) and downloads them as SRT or VTT subtitles; with "
             "the AI on, each turn is labelled with who spoke, and a recording's menu has Rename a speaker to correct a name everywhere. "
-            "Read-aloud plays a note or answer back to you."
+            "Read aloud plays an answer back to you; its item turns to Stop "
+            "reading while it speaks, and Settings, General, Read aloud sets the speed (0.75x to 1.5x)."
         ),
         "badge": {"label": "Notes", "tab": "notes"},
     },

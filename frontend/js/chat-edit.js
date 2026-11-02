@@ -77,7 +77,6 @@ function editAndResend(bubble, text) {
     //: The turn rides on the bubble (addBubble), not on its place in the DOM: an offer
     //: card or a skipped bubble after a failed turn would shift a position count.
     const turnIndex = Number(bubble.dataset.turn);
-    if (!Number.isInteger(turnIndex)) return toast("Couldn't tell which question that is. Reopen the chat and try again.");
     //: This turn's answer re-runs with the new wording; if it changed notes,
     //: ask first (confirmRerun, chat.js).
     if (!(await confirmRerun(bubbles[bubbles.indexOf(bubble) + 1]))) return;

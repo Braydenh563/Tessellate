@@ -236,7 +236,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 230 | E61 | low | disabled Plan and Agent explain need only on hover | fixed 2026-11-02 (1789f37) | S |
 | 231 | E63 | low | three clauses joined as a run-on, no list | new | S |
 | 232 | E67 | low | next chip row offers a single chip | new | S |
-| 233 | E68 | low | typing dots role=status, no aria-busy on transcript | new | S |
+| 233 | E68 | low | typing dots role=status, no aria-busy on transcript | fixed 2026-11-02 (ecb69a5) | S |
 | 234 | E69 | low | chat autocorrect runs on names and codes unseen | new | S |
 | 235 | E72 | low | Why trail shows timing lines and a wrong nothing matched | new | S |
 | 236 | S55 | low | settings labels mix case against sentence case | new | S |

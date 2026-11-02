@@ -1493,7 +1493,7 @@ MORE_TOPICS.extend(
             "body": (
                 "The Chats list beside the chat shows your last eight saved chats. "
                 "The search box above it finds a chat by its title or by anything "
-                "said in it and lists up to 32 matches; Escape clears it. Sort "
+                "said in it and lists up to 32 matches. Sort "
                 "puts them Recent, Most turns, Most tokens or A to Z, and a pinned "
                 "chat stays first. Each chat's menu renames, pins, archives or "
                 "deletes it. All in Library opens every chat, with the full search."

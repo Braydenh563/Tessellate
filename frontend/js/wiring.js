@@ -393,22 +393,12 @@ $("chat-private-toggle").addEventListener("click", chatPrivateToggle);
     loadConversationList();
   });
 }
-{
-  //: E47: search the saved chats; Escape clears it before it closes anything.
-  const find = $("chat-sidebar-search");
-  let waiting = 0;
-  find.addEventListener("input", () => {
-    clearTimeout(waiting);
-    waiting = setTimeout(loadConversationList, 200);
-  });
-  find.addEventListener("keydown", (event) => {
-    if (event.key !== "Escape" || !find.value) return;
-    event.preventDefault();
-    event.stopPropagation();
-    find.value = "";
-    loadConversationList();
-  });
-}
+//: E47: search the saved chats. A search field clears itself with its X (and Escape, where
+//: the browser does that) and says `input`, so one listener covers both.
+$("chat-sidebar-search").addEventListener("input", () => {
+  clearTimeout(loadConversationList.wait);
+  loadConversationList.wait = setTimeout(loadConversationList, 200);
+});
 $("persona-peek").addEventListener("click", togglePersonaPrompt);
 $("chat-tune-search").addEventListener("click", () => {
   closeChatDockMore();
