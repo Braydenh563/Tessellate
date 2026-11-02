@@ -111,6 +111,9 @@ def lines(
     def say(at: str, text: str) -> None:
         out.append({"at": _secs(marks.get(at, 0.0)), "text": text})
 
+    #: A composed answer can read notes the search count never saw (a summary
+    #: of one named note): a note the answer used was matched (audit 1028 E72).
+    matched = max(matched, used)
     reading = INTENTS.get(intent, "a question")
     say("read", f"Read the question as {reading}{f', for {when}' if when else ''}.")
     retrieval = _search_say(say, intent, mode, matched, scoped, loading)

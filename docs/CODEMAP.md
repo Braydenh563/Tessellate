@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7558, frontend ids 2642, CSS sections 517, backend routes 640, backend modules 8490, test files 1870, tests 15880, plan headings 991, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7558, frontend ids 2642, CSS sections 517, backend routes 640, backend modules 8490, test files 1871, tests 15883, plan headings 991, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7558)
 
@@ -18183,14 +18183,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_may_digest` | src/tessellate/api/chat_turn.py:269 |
 | `_meaning_loading` | src/tessellate/api/chat_turn.py:137 |
 | `_model_stream_events` | src/tessellate/api/chat_turn.py:184 |
-| `_names_a_note_word` | src/tessellate/api/chat_turn.py:614 |
+| `_names_a_note_word` | src/tessellate/api/chat_turn.py:617 |
 | `_note_kind` | src/tessellate/api/chat_turn.py:479 |
 | `_note_with_hint` | src/tessellate/api/chat_turn.py:587 |
-| `_notes_first` | src/tessellate/api/chat_turn.py:631 |
+| `_notes_first` | src/tessellate/api/chat_turn.py:634 |
 | `_notes_messages` | src/tessellate/api/chat_turn.py:154 |
 | `_relay_events` | src/tessellate/api/chat_turn.py:527 |
 | `_searched_question` | src/tessellate/api/chat_turn.py:301 |
-| `_social_line` | src/tessellate/api/chat_turn.py:624 |
+| `_social_line` | src/tessellate/api/chat_turn.py:627 |
 | `_trim_answer` | src/tessellate/api/chat_turn.py:569 |
 | `_turn_label` | src/tessellate/api/chat_turn.py:276 |
 | `_uncut` | src/tessellate/api/chat_turn.py:361 |
@@ -23289,7 +23289,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15880)
+## Tests (15883)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23385,6 +23385,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_audit1028_e22.py | 2 |
 | tests/test_audit1028_e27.py | 3 |
 | tests/test_audit1028_e55.py | 3 |
+| tests/test_audit1028_e72.py | 3 |
 | tests/test_audit_1028_a28s.py | 9 |
 | tests/test_audit_1028_e_rows.py | 5 |
 | tests/test_audit_1028_e_rows_b.py | 6 |

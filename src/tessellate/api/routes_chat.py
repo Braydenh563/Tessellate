@@ -2099,7 +2099,7 @@ def _settle_turn(req: _StreamRequest, prepared: dict, t: _Turn) -> Iterator[str]
     yield from map(_event, _late_panel(prepared, req.question, t.answer_text, t.sent_kinds))
     if t.answer_text:
         t.marks["done"] = time.perf_counter() - t.started
-        yield _event({"type": "why", "lines": _why(req, prepared, grounding, t.composing, t.will_answer, t.tools_only, t.ollama_running, t.shape, t.marks)})
+        yield _event({"type": "why", "lines": _why(req, prepared, grounding, t.composing, t.will_answer, t.tools_only, t.ollama_running, t.shape, t.marks, t.answer_text)})
     yield _event({"type": "done"})
 
 
