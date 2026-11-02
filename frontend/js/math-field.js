@@ -62,9 +62,15 @@ function mathFieldStored(latex) {
   return flat.replace(/\\[\s\S]|\$/g, (piece) => (piece === "$" ? "\\$" : piece));
 }
 
-//: The TeX a field is given: each empty `{}` a box to click into.
-function mathFieldBoxes(tex) {
-  return String(tex || "").replace(/\{\s*\}/g, "{\\placeholder{}}");
+//: **Each empty `{}` is a box to click into**, whether the TeX is being set or
+//: has just been edited (INBOX 1538): MathLive writes a slot typed in and then
+//: deleted as a bare `{}`, which draws as a caret and no box, so the pane runs
+//: this after every edit as well. One already a box (`\placeholder{}`) and a
+//: brace to draw (`\{`) are left alone.
+function mathFieldBoxes(tex, bases = false) {
+  const boxed = String(tex || "").replace(/(?<!\\placeholder)(?<!\\)\{\s*\}/g, "{\\placeholder{}}");
+  //: With `bases`, a power or subscript whose base was deleted gets its box back too (`^{2}` alone is a caret and a floating 2).
+  return bases ? boxed.replace(/(^|\{)(?=[\^_])/g, "$1\\placeholder{}") : boxed;
 }
 
 //: The change that writes `tex` over the equation `span` (`{from, to, delim}`)
@@ -196,6 +202,14 @@ function mathFieldPane({ tex = "", label = "Equation", onChange = () => {}, onKe
   mathFieldWrite(field, tex);
   box.value = tex;
   field.addEventListener("input", () => {
+    //: A slot emptied by typing and deleting, or cut, is a box again (INBOX 1538); the box takes the selection so typing fills it.
+    const latex = field.getValue("latex");
+    const boxed = mathFieldBoxes(latex, true);
+    if (boxed !== latex) {
+      const at = field.position;
+      field.setValue(boxed, { silenceNotifications: true });
+      field.selection = /^\\placeholder/.test(field.getValue(at, at + 1, "latex")) ? { ranges: [[at, at + 1]] } : { ranges: [[at, at]] };
+    }
     box.value = mathFieldRead(field);
     onChange();
   });

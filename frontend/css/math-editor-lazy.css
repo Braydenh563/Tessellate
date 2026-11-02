@@ -52,6 +52,8 @@
 }
 
 .math-editor-group {
+  /* A jump lands the heading under the sticky row of groups, not behind it. */
+  scroll-margin-top: calc(var(--space-9) + var(--space-2));
   padding: var(--space-2) 0 var(--space-1);
   color: var(--muted);
   font-size: var(--text-xs);
@@ -85,4 +87,55 @@
 
 .math-editor-glyph {
   line-height: 1;
+}
+
+/* **Quicker than scrolling** (INBOX 1539): a row of the groups under the search, which stays in reach at the
+   top of the scrolling pane, jumps to a group and marks the one in view; the palette keeps its groups. */
+.math-editor-jump {
+  position: sticky;
+  top: calc(-1 * var(--space-1));
+  z-index: 2;
+  display: flex;
+  gap: var(--space-1);
+  padding: var(--space-1) 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  background: var(--modal-bg-opaque);
+  box-shadow: inset 0 -1px 0 var(--divider);
+}
+
+.math-editor-jump::-webkit-scrollbar {
+  display: none;
+}
+
+.math-editor-jump > button {
+  flex: none;
+  white-space: nowrap;
+  transition: color var(--ui-base) var(--ease-out), background-color var(--ui-base) var(--ease-out);
+}
+
+.math-editor-jump > button.active {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+/* A pinned tile wears a small mark at its corner; Pin mode says so in its button and in the line above. */
+.math-editor-tile {
+  position: relative;
+}
+
+.math-editor-tile.is-pinned::after {
+  content: "";
+  position: absolute;
+  top: var(--space-1);
+  right: var(--space-1);
+  width: var(--space-1);
+  height: var(--space-1);
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+}
+
+.math-editor-pinning .math-editor-tile {
+  outline: 1px dashed var(--accent);
+  outline-offset: -2px;
 }

@@ -202,25 +202,37 @@ function mathEditorTileFace(item) {
   return face;
 }
 
-function mathEditorTile(item) {
+function mathEditorTile(item, pinned = false) {
   const button = document.createElement("button");
   button.type = "button";
-  button.className = "ghost math-editor-tile";
+  button.className = `ghost math-editor-tile${pinned ? " is-pinned" : ""}`;
   //: Out of the Tab order; the group's current tile is put back by `mathEditorPalette`/`mathEditorRoving`.
   button.tabIndex = -1;
   button.title = item.name;
-  button.setAttribute("aria-label", item.name);
+  button.setAttribute("aria-label", pinned ? `${item.name}, pinned` : item.name);
   button._item = item;
   button.appendChild(mathEditorTileFace(item));
   return button;
 }
 
 //: The palette, filtered by the words typed: every word must be in the
-//: name, the group's name or the TeX.
+//: name, the group's name or the TeX. With none typed, **Favourites and Recent
+//: lead the list** (INBOX 1539): what a person pinned, then what they last
+//: inserted, kept by the TeX each inserts (this browser's prefs store) so a
+//: tile that moves group is still found.
 function mathEditorPalette(list, query) {
   const words = String(query || "").trim().toLowerCase().split(/\s+/).filter(Boolean);
   const parts = [];
-  for (const group of mathEditorGroups()) {
+  const groups = mathEditorGroups();
+  const pinned = new Set(prefs.json("math-editor-fav", []));
+  if (!words.length) {
+    const all = groups.flatMap((group) => group.items);
+    for (const [key, label, store] of [["recent", "Recent", "math-editor-recent"], ["fav", "Favourites", "math-editor-fav"]]) {
+      const items = prefs.json(store, []).map((tex) => all.find((item) => item.tex === tex)).filter(Boolean);
+      if (items.length) groups.unshift({ key, label, structures: items.some((item) => item.sample), items });
+    }
+  }
+  for (const group of groups) {
     const items = group.items.filter((item) => {
       const hay = `${item.name} ${group.label} ${group.structures ? "" : item.tex}`.toLowerCase();
       return words.every((word) => hay.includes(word));
@@ -233,7 +245,7 @@ function mathEditorPalette(list, query) {
     grid.className = group.structures ? "math-editor-grid math-editor-grid-wide" : "math-editor-grid";
     grid.setAttribute("role", "group");
     grid.setAttribute("aria-label", group.label);
-    grid.append(...items.map(mathEditorTile));
+    grid.append(...items.map((item) => mathEditorTile(item, pinned.has(item.tex))));
     //: One Tab stop per group (INBOX 1530 g M5: 149 stops on this tab, a long walk to the Insert row).
     grid.firstChild.tabIndex = 0;
     parts.push(head, grid);
@@ -266,7 +278,12 @@ function mathEditorModes(display, onChange) {
     return b;
   });
   const sync = (on) => {
-    for (const b of buttons) b.setAttribute("aria-pressed", String((b.dataset.value === "display") === on));
+    //: `.active` as well as `aria-pressed`: the glide (shell-reminders.js `glideStrip`) places its sliding fill on `.active` (INBOX 1540: the pill jumped).
+    for (const b of buttons) {
+      const chosen = (b.dataset.value === "display") === on;
+      b.setAttribute("aria-pressed", String(chosen));
+      b.classList.toggle("active", chosen);
+    }
   };
   seg.append(...buttons);
   sync(display);
@@ -354,7 +371,7 @@ function mathEditorWrite(target, tex, { display = false, start = null, plain = f
 
 //: The line under Inline and Display: what to do, then the button that shows
 //: the TeX (the '?' is the dialog's, in its head).
-function mathEditorLede(toggle) {
+function mathEditorLede(...buttons) {
   const row = document.createElement("div");
   row.className = "math-editor-lede-row";
   const lede = document.createElement("p");
@@ -362,7 +379,7 @@ function mathEditorLede(toggle) {
   lede.textContent = "Click a box to fill it, or pick a structure; it is written as TeX.";
   const tools = document.createElement("span");
   tools.className = "math-editor-lede-tools";
-  tools.append(toggle);
+  tools.append(...buttons);
   row.append(lede, tools);
   return row;
 }
@@ -379,10 +396,12 @@ function openMathEditor({ target = null } = {}) {
 //: **Builds the editor into `host`**, the Equation tab's pane (reply-kit.js
 //: `replyCalcEquation`), for `target` (an editor surface or a text box; none
 //: and Insert becomes Copy). `done` closes the dialog; `note` is an element
-//: for the value line, and `onTex(tex)` hears each change; `focus: false` builds it
+//: for the value line, and `onTex(tex)` hears each change; `log` is the
+//: dialog's history (INBOX 1541), drawn under the field; `focus: false` builds it
 //: without taking the focus (an arrow onto the tab). Returns
-//: `{close, focus, copy, insert, ready, label}`, or null while the field's library is not loaded.
-function mathEditorMount({ host, target = null, done = () => {}, note = null, onTex = () => {}, focus = true }) {
+//: `{close, focus, copy, insert, ready, label, entry, load}` (`entry()` is the
+//: equation as a history row or null, `load(row)` puts one back), or null while the field's library is not loaded.
+function mathEditorMount({ host, target = null, done = () => {}, note = null, onTex = () => {}, focus = true, log = null }) {
   if (!mathFieldConfigure()) return null;
   const surface = target ? mathEditorSurface(target) : null;
   const start = surface ? mathEditorStart(surface) : { from: 0, to: 0, tex: "", display: false, editing: false };
@@ -418,8 +437,70 @@ function mathEditorMount({ host, target = null, done = () => {}, note = null, on
 
   const list = document.createElement("div");
   list.className = "math-editor-list";
-  const search = mathEditorSearch((q) => mathEditorPalette(list, q));
-  mathEditorPalette(list, "");
+  const search = mathEditorSearch(() => draw());
+  //: **Quicker than scrolling** (INBOX 1539): a row of the groups under the search, in reach at the top of the
+  //: scrolling pane, jumps to a group and marks the one in view. It follows the palette (a search, a new Favourites row).
+  const jump = document.createElement("div");
+  jump.className = "math-editor-jump";
+  jump.setAttribute("role", "group");
+  jump.setAttribute("aria-label", "Jump to a group");
+  const scroller = host.closest(".calc-panes");
+  const mark = () => {
+    const edge = jump.getBoundingClientRect().bottom + 2;
+    let on = jump.firstChild;
+    for (const chip of jump.children) if (chip._head.getBoundingClientRect().top <= edge) on = chip;
+    for (const chip of jump.children) {
+      chip.classList.toggle("active", chip === on);
+      if (chip === on) chip.setAttribute("aria-current", "true");
+      else chip.removeAttribute("aria-current");
+    }
+    //: Kept in sight in its own row; `scrollIntoView` would scroll the pane as well.
+    if (on && (on.offsetLeft < jump.scrollLeft || on.offsetLeft + on.offsetWidth > jump.scrollLeft + jump.clientWidth)) jump.scrollLeft = on.offsetLeft - 8;
+  };
+  //: A scroll event is already one per frame; 17 rects are read.
+  scroller?.addEventListener("scroll", mark, { passive: true });
+  const draw = () => {
+    const before = scroller?.scrollHeight || 0;
+    mathEditorPalette(list, search.querySelector("input").value);
+    jump.replaceChildren(
+      ...[...list.querySelectorAll(".math-editor-group")].map((head) => {
+        const chip = smallButton(head.textContent, `Jump to ${head.textContent}`, () => {
+          head.scrollIntoView({ block: "start" });
+          mark();
+        });
+        chip._head = head;
+        return chip;
+      })
+    );
+    jump.hidden = !jump.children.length;
+    mark();
+    //: A row arriving above (a pin) must not move what is being looked at.
+    if (scroller?.scrollTop > 0) scroller.scrollTop += scroller.scrollHeight - before;
+  };
+  //: **Pin mode**: a press on a tile pins it to Favourites or takes it off (a right-click does the same), so a touch screen needs no long press.
+  let pinning = false;
+  const lede = "Click a box to fill it, or pick a structure; it is written as TeX.";
+  const pin = smallButton("ph:push-pin Pin", "Pin tiles to the top of the palette: press a tile to pin or unpin it", () => {
+    pinning = !pinning;
+    pin.setAttribute("aria-pressed", String(pinning));
+    host.classList.toggle("math-editor-pinning", pinning);
+    ledeRow.querySelector(".math-editor-lede").textContent = pinning ? "Press a tile to pin it to the top, or to unpin it." : lede;
+  });
+  pin.setAttribute("aria-pressed", "false");
+  const ledeRow = mathEditorLede(pin, pane.toggle);
+  const togglePin = (tile) => {
+    const tex = tile._item.tex;
+    const now = prefs.json("math-editor-fav", []);
+    prefs.setJSON("math-editor-fav", now.includes(tex) ? now.filter((t) => t !== tex) : [tex, ...now]);
+    draw();
+    [...list.querySelectorAll(".math-editor-tile")].find((t) => t._item.tex === tex)?.focus({ preventScroll: true });
+  };
+  list.addEventListener("contextmenu", (event) => {
+    const tile = event.target.closest(".math-editor-tile");
+    if (!tile) return;
+    event.preventDefault();
+    togglePin(tile);
+  });
   //: **A group of tiles is one Tab stop and the arrows walk it** (INBOX 1530 g
   //: M5), as the keypad's keys are: the tile that last had focus is the group's
   //: stop (`focusin` moves it, so a click does too); Left and Right step, Up and
@@ -461,15 +542,39 @@ function mathEditorMount({ host, target = null, done = () => {}, note = null, on
 
   list.addEventListener("click", (event) => {
     const tile = event.target.closest(".math-editor-tile");
-    if (tile) pane.insert(tile._item.tex);
+    if (!tile) return;
+    if (pinning) return togglePin(tile);
+    //: The row of Recent is redrawn the next time the palette is, not under a pointer that is working.
+    prefs.setJSON("math-editor-recent", [tile._item.tex, ...prefs.json("math-editor-recent", []).filter((t) => t !== tile._item.tex)].slice(0, 12));
+    pane.insert(tile._item.tex);
   });
   //: **No key leaves the pane** (the icon picker's rule): an Enter or a
   //: letter here must not reach the canvas or the editor behind it.
   host.addEventListener("keydown", (event) => event.stopPropagation());
 
   //: Copy and Insert are the dialog's action row, pinned under the panes (reply-kit.js), so neither is a scroll away.
-  host.replaceChildren(mode.seg, mathEditorLede(pane.toggle), pane.el, ...(note ? [note] : []), search, list);
+  host.replaceChildren(mode.seg, ledeRow, pane.el, ...(note ? [note] : []), ...(log ? [log] : []), search, jump, list);
+  draw();
   if (focus) pane.start();
   onTex(pane.tex());
-  return { close, focus: () => pane.focus(), copy: view.copy, insert: view.insert, ready: () => Boolean(pane.tex().trim()), label: start.editing ? "Update" : "Insert" };
+  //: A history row is the TeX and whether it was display; `load` puts one back in the field and the pill.
+  return {
+    close,
+    focus: () => pane.focus(),
+    copy: view.copy,
+    insert: view.insert,
+    ready: () => Boolean(pane.tex().trim()),
+    label: start.editing ? "Update" : "Insert",
+    entry: () => {
+      const tex = pane.tex().trim();
+      return tex ? { key: `${display ? "$$" : "$"}${tex}`, tex, display } : null;
+    },
+    load: (row) => {
+      display = Boolean(row.display);
+      mode.sync(display);
+      pane.set(row.tex);
+      onTex(pane.tex());
+      pane.focus();
+    },
+  };
 }

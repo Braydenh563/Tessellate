@@ -168,9 +168,14 @@
 /* **One height for the three tabs** (INBOX 1530 g M2). A bottom sheet grows
    upward, so a card that took each tab's own height moved the strip 188 px
    between Sum and Units. The card is one height, the strip and the action row
-   are pinned, and the panes between them scroll. */
+   are pinned, and the panes between them scroll. **Tall enough that Sum and
+   Units need no scroll** (INBOX 1537): the keypad's pane is 325px and the
+   head, strip and action row 219px and the History bar 44px, so 588px; 86dvh is 619px at 720 and the
+   cap 42rem (672px) keeps a tall window's card from outgrowing its panes. */
 .sheet-card.calc-card {
-  height: min(66dvh, 40rem);
+  height: min(86dvh, 42rem);
+  /* A sheet is two thirds of the window at most (10-responsive.css); this one is the exception the owner asked for. */
+  max-height: min(86dvh, 42rem);
   overflow: hidden;
 }
 
@@ -297,17 +302,79 @@
   color: var(--accent-text);
 }
 
+/* **History** (INBOX 1541): a bar under the pane, "History" with its count and Clear, closed until opened so
+   the keypad keeps its room; the rows under it newest first, each a button that puts the row back in the
+   fields, then Copy, Edit and Remove as quiet icons. */
+.calc-log {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.calc-log-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.calc-log-bar .calc-log-note {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--text-sm);
+}
+
+.calc-log-toggle .calc-log-count {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.calc-log-toggle .ph-caret-down {
+  transition: rotate var(--ui-base) var(--ease-out);
+}
+
+.calc-log-toggle[aria-expanded="true"] .ph-caret-down {
+  rotate: 180deg;
+}
+
 .calc-history {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: var(--space-1);
 }
 
+.calc-history li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  border-radius: var(--radius-md);
+}
+
+.calc-history li.is-editing {
+  background: var(--accent-soft);
+}
+
 .calc-again {
+  flex: 1 1 auto;
+  min-width: 0;
+  justify-content: flex-start;
+  text-align: start;
   font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calc-history li > .icon-only {
+  flex: none;
+}
+
+/* The copy beside an answer: quiet, in the figure's row, at the far end. */
+.calc-copy {
+  margin-inline-start: auto;
+  align-self: center;
 }
 
 /* The amount on a row of its own and the two units under it, so a unit opener has half the card, not a fifth of it (INBOX 1530 g L5: 86 px at 320 and "kilometres an hour" clipped at 320, 390 and 1280). Under 600 px the units stack, one to a row. */
