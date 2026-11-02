@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The companion's beat keeps its measure of the page's controls while nothing has changed it (a beat on a still page swept every control again: 224ms at 4x CPU, 31ms forced; the sweep over 12 beats 29 to 4ms on the dashboard, 202 to 90ms in the Library). A mood's return writes its ease inside the hand-over, after the hand-over has read, and the tail's beat reads before it writes (60 s of idle at 4x CPU: forced style in the tail's beat 493 to 211ms, the rest's release max 250 to 28ms) (INBOX 1534).
 - Chat counts "how many days between 1 March and 2 April" and works out "how much is 20% of 50" on the device; a web reply, answered or not, is no longer badged "From your notes" with the notes searched first as its sources (INBOX 1550). "What are my sketch notes" is about sketch, not "what are my sketch".
 - The companion menu's choices (Atlas look Feminine among them) work before Settings has opened (INBOX 1554). A picture's caption is said whole and past "A photo of", and its link names the note once (INBOX 1555).
 - Chat works out "what is 7000 km in miles", "whats 50 usd in eur" and "how much is 12 stone in kg" on the device in every mode instead of searching the web (INBOX 1550): one lead before every conversion pattern. A browser error reaches the app log as its stack, not {} (INBOX 1549).

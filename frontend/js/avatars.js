@@ -6549,7 +6549,11 @@ function nameMarkBuddyBeat() {
   }
   const tab = nameMarkBuddyTab();
   const own = nameMarkBuddySpots()[tab];
-  nameMarkBuddyIndexReset();
+  //: The page's measured spots (controls and surfaces) are kept across beats
+  //: while nothing has changed them: scroll, resize and the views observer
+  //: reset them, `NMB_COVERS_MAX_MS` bounds the rest (INBOX 1534: a beat on a
+  //: still page re-measured every control, 224ms at 4x, 31ms of it forced).
+  if (nmb.covers?.tab !== tab || performance.now() - nmb.covers.at >= NMB_COVERS_MAX_MS) nameMarkBuddyIndexReset();
   //: A new view in the tab (`nameMarkBuddyViewChanged`): a window bar was
   //: the last resort of the view it left, so it looks again, and by the
   //: tab's own preference rather than the nearest (a bar 15px away beat a

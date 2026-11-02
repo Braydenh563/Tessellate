@@ -120,3 +120,39 @@ def test_card_chips_are_fitted_once_after_they_are_all_in():
     body = _braced(js, js.index("function ensureOneCardCount("))
     assert not [b for b in _loop_bodies(body) if "fitNoteMetas(" in b], "fit after the loop, once"
     assert "fitNoteMetas(fitted)" in body
+
+
+def test_companion_beat_keeps_the_page_measure_while_the_page_holds_still():
+    """INBOX 1534: every beat dropped the controls' boxes and swept them again (224ms at 4x, 31ms
+    forced). The scroll, the resize and the views observer already reset them, and
+    `NMB_COVERS_MAX_MS` bounds the rest, so a beat resets only when the measure is gone or old."""
+    js = frontend_text("avatars.js")
+    body = _braced(js, js.index("function nameMarkBuddyBeat("))
+    assert not re.search(r"^  nameMarkBuddyIndexReset\(\);", body, re.M)
+    assert "nmb.covers?.tab !== tab || performance.now() - nmb.covers.at >= NMB_COVERS_MAX_MS" in body
+
+
+def test_atlas_mood_writes_its_ease_after_the_hand_over_has_read():
+    """INBOX 1534 (atlas.js setTimeout, 156ms): the ease class written before
+    `nameMarkBuddyBlend` read the parts made that read settle style, and the change settled it
+    again. Both ease writes are inside `apply`, which the hand-over runs after its reads."""
+    js = frontend_text("atlas.js")
+    start = js.index("function setAtlasMood(")
+    body = js[start : js.index("\n}\n", start)]
+    apply = body.index("const apply = () => {")
+    for needle in ('classList.add("atl-easing")', 'classList.remove("atl-easing")', "atlasState.easeTimer = setTimeout"):
+        assert body.index(needle) > apply, needle
+    assert body.index("nameMarkBuddyBlend(boxes, apply") > apply
+
+
+
+def test_atlas_tail_beat_reads_before_it_writes():
+    """INBOX 1534 (60 s of idle at 4x CPU, forced style in the tail's beat: 493ms, the rest's
+    release alone 322ms, max 250): the loops' play and pause and the breath's scale were written
+    before the props' opacity read and the rest's release read. Reads first, writes last."""
+    js = frontend_text("atlas-life.js")
+    body = js[js.index("function atlasTailFrame(") :]
+    body = body[: body.index("\n}\n")]
+    order = ["atlasPropsFrame(box", "atlasTailUnrest(tail)", "atlasBreathFrame(box", "for (const anim of box.atlasLoops"]
+    spots = [body.index(o) for o in order]
+    assert spots == sorted(spots), order

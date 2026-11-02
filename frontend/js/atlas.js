@@ -3589,18 +3589,23 @@ function setAtlasMood(mood, forMs = 0, { quiet = false, easeMs = 0, backEaseMs =
   if (!quiet && typeof nameMarkBuddyCue === "function") nameMarkBuddyCue(ATLAS_MOODS[next].cue);
   const marks = [...document.querySelectorAll(".nm-atlas")];
   clearTimeout(atlasState.easeTimer);
-  for (const svg of marks) {
-    if (easeMs) {
-      svg.style.setProperty("--atl-ease", `${easeMs}ms`);
-      svg.classList.add("atl-easing");
-    } else svg.classList.remove("atl-easing");
-  }
-  if (easeMs) {
-    atlasState.easeTimer = setTimeout(() => {
-      for (const svg of document.querySelectorAll(".nm-atlas.atl-easing")) svg.classList.remove("atl-easing");
-    }, easeMs + 100);
-  }
+  //: **The ease is written inside `apply`, after the hand-over has read.**
+  //: `nameMarkBuddyBlend` reads where every part is before the change; the
+  //: ease's class and custom property written first made that read settle
+  //: style on its own, then the change settled it again (a mood's return at
+  //: 4x CPU: two restyles of 160 to 210ms in one timer, INBOX 1534).
   const apply = () => {
+    for (const svg of marks) {
+      if (easeMs) {
+        svg.style.setProperty("--atl-ease", `${easeMs}ms`);
+        svg.classList.add("atl-easing");
+      } else svg.classList.remove("atl-easing");
+    }
+    if (easeMs) {
+      atlasState.easeTimer = setTimeout(() => {
+        for (const svg of document.querySelectorAll(".nm-atlas.atl-easing")) svg.classList.remove("atl-easing");
+      }, easeMs + 100);
+    }
     for (const svg of marks) {
       //: The classic globe draws a mood rather than easing into one.
       if (svg.classList.contains("atl-classic")) svg.replaceWith(atlasClassicMark(Number(svg.getAttribute("width")) || 20, next));
