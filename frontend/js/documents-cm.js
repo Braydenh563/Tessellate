@@ -2485,7 +2485,14 @@ function docCmTheme(CM) {
         color: "var(--accent-text)",
         fontWeight: "600",
       },
-      ".cm-md-footnote-ref": { cursor: "pointer" },
+      ".cm-md-footnote-ref": {
+        cursor: "pointer",
+        //: A target of at least 24px (44 under touch) with no change to the
+        //: line: the padding is the hit area, the negative margin takes it
+        //: out of the layout (audit 1102 DX21, the same pair as `.md-fn-ref a`).
+        padding: "var(--space-3) var(--space-5)",
+        margin: "0 calc(var(--space-5) * -1)",
+      },
       //: The toggle's chevron sits with the callout's own label, in the same
       //: muted ink, because it is part of the same control.
       ".cm-md-callout-fold": { fontSize: "0.9em", opacity: "0.8" },

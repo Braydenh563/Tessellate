@@ -56,7 +56,9 @@ def test_the_picker_inserts_the_title_without_its_hash():
 
 def test_a_picker_row_is_named_as_a_phrase():
     row = _function("rich-picker.js", "richPickerRow")
-    assert "aria-label" in row and "${title.textContent}, ${about}" in row
+    #: Still a phrase, label first; 1102 DX22 added the keycap to the end so the
+    #: name holds every word the row shows (axe label-content-name-mismatch).
+    assert "aria-label" in row and '[title.textContent, about, keys].filter(Boolean).join(", ")' in row
 
 
 def test_the_phone_note_page_drops_the_title_its_head_already_says():

@@ -651,6 +651,17 @@ textarea.has-gutter {
     display: none !important;
   }
 
+/* **The renderer's own chrome is not the document** (audit 1102 DX8). A code
+     block's and a table's bar ("JS", "Copy", "Save", "TABLE, header and 2
+     rows") and a remote picture's "not loaded, open link" note printed on
+     paper, and the table's bar printed on page 1 with the table on page 2. The
+     Word export drops the same two things (`.code-bar` in documents-word.js,
+     which also drops every button) and `tests/test_docs_1102_dx.py` pins that
+     the lists agree, so the page and the file say the same words. */
+  body.printing-doc #doc-preview :is(.code-bar, .entry-image-note) {
+    display: none !important;
+  }
+
 body.printing-doc #doc-preview {
     max-width: 68ch;
     margin-inline: auto;
@@ -686,7 +697,8 @@ body.printing-doc #doc-preview p,
   body.printing-doc #doc-preview blockquote,
   body.printing-doc #doc-preview table,
   body.printing-doc #doc-preview figure,
-  body.printing-doc #doc-preview img {
+  body.printing-doc #doc-preview img,
+  body.printing-doc #doc-preview :is(.code-block, .md-table-block, .callout, .md-mermaid) {
     break-inside: avoid;
   }
 
@@ -6765,19 +6777,10 @@ input[type="color"].wb-mixed {
   font-size: var(--text-sm);
 }
 
-/* A task box in the Read view is pressable now (`docWireReadTasks`): drawn at
-   the text's size like the disabled one and the live view's, with the pointer
-   and the accent that say it can be pressed. The id outranks the global
-   checkbox floor, which would draw it 28px (44px on a phone). */
-#doc-preview .md-task > input[type="checkbox"]:not(:disabled) {
-  width: 1.1em;
-  height: 1.1em;
-  min-width: 0;
-  min-height: 0;
-  margin-block: 0;
-  cursor: pointer;
-  accent-color: var(--accent);
-}
+/* A task box in the Read view is pressable now (`docWireReadTasks`): it is
+   wrapped in the Live view's own press strip and drawn by its rule
+   (`.cm-md-task-hit`, 09-editor.css), so the two views have one box and a
+   target of at least 24px. */
 
 /* **The dock answers to its own width, not the window's.** Reported: the top of
    the editor at half a screen, and in full screen with Tools on, wrapped the

@@ -122,3 +122,19 @@ def test_dx18_the_error_is_tinted_in_one_wrapper_for_live_and_read():
     assert 'mark.className = "md-math-error"' in js and "mark.title" in js
     rule = CSS.split(".md-math-error {")[1].split("}")[0]
     assert "var(--error)" in rule and "var(--error-soft)" in rule
+
+
+def test_dx8_print_drops_the_renderers_chrome_and_keeps_blocks_whole():
+    """A code block's bar ("JS, Copy, Save"), a table's bar and a remote
+    picture's note printed on paper, and a table's bar printed a page before
+    the table. Print and the Word export drop the same chrome."""
+    lazy = (ROOT / "frontend/css/library-lazy.css").read_text(encoding="utf-8")
+    hide = lazy.split("body.printing-doc #doc-preview :is(.code-bar, .entry-image-note) {")[1].split("}")[0]
+    assert "display: none" in hide
+    keep = lazy.split("body.printing-doc #doc-preview img,\n  body.printing-doc #doc-preview :is(")[1].split("}")[0]
+    for block in (".code-block", ".md-table-block", ".callout", ".md-mermaid"):
+        assert block in keep.split(")")[0]
+    assert "break-inside: avoid" in keep
+    # The export drops the bar too: the two must not drift apart.
+    word = (ROOT / "frontend/js/documents-word.js").read_text(encoding="utf-8")
+    assert 'querySelectorAll(".code-bar, button")' in word

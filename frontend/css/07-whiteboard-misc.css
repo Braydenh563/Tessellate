@@ -2267,6 +2267,15 @@ body.scroll-top-visible .skills-split > .tab-main {
   margin-top: 0;
   padding-right: 0;
 }
+/* **"Recent" is a short word that must not be the part that gives way.**
+   Measured at 1440 and 1920 (audit 1102 DX20): the text is 53.44px and the box
+   it was shrunk to 53px, so a heading that fits was cut to "Rec...". Its row
+   holds three actions that do not shrink, and the sub-pixel overflow came out
+   of the heading. `flex: none` keeps the heading its own width; the actions
+   are the ones with room to spare here (the column has no collapse lane). */
+#doc-sidebar-list .sidebar-head h2 {
+  flex: none;
+}
 /* Each tab's whole content column, so #doc-outline-wrap's own `flex: 1 1
    auto` below still has a flex context stretching the height the tab strip
    left behind: the same nested-flex-column shape .doc-sidebar itself uses
