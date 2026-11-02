@@ -34,8 +34,10 @@ CROSS_RESOURCE = {"routes_spaces.py"}
 #: and two chat readers): 843; documents' history and AI-edit log and the
 #: document list, contents and write verbs to repo/documents.py: 811; the
 #: other routers' reads of Document and DocumentLink (chat, graph, notes,
-#: library, timeline, bench, mentions) to repo/documents.py: 767.
-ORM_CALLS_CAP = 767
+#: library, timeline, bench, mentions) to repo/documents.py: 767; the chat's
+#: tag read (notes sharing a rare tag) to repo/tags.py: 765. Tags are a JSON
+#: list in `Entry.tags`, not a table, so they have no model in `MOVED`.
+ORM_CALLS_CAP = 765
 
 _ORM = re.compile(
     r"\b(?:session|db)\.(?:query|get|execute|scalar|scalars|add|add_all|delete|merge)\("

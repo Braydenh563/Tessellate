@@ -67,6 +67,7 @@ from tessellate.repo import bookmarks as bookmark_repo
 from tessellate.repo import relation_types
 from tessellate.repo import content as content_repo
 from tessellate.repo import documents as documents_repo
+from tessellate.repo import tags as tags_repo
 from tessellate.repo.content import NOTES
 from tessellate.entry.mentions import MENTION_MIN_TITLE_CHARS, names_label
 from tessellate.entry import meetings as meeting_shape
@@ -1365,10 +1366,10 @@ def _tag_vocabulary(session: Session) -> list[str]:
 
     Both tag suggesters read this, so a note filed before saving and a note
     refiled afterwards are offered the same vocabulary and cannot drift
-    apart. `manager.all_tags` is cached by notebook fingerprint, so this is
+    apart. `tags_repo.counts` is cached by notebook fingerprint, so this is
     a dictionary lookup rather than a scan on the common path.
     """
-    counts = manager.all_tags(session)
+    counts = tags_repo.counts(session)
     return [tag for tag, _count in sorted(counts.items(), key=lambda row: (-row[1], row[0]))]
 
 

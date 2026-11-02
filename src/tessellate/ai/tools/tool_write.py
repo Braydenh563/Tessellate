@@ -16,6 +16,7 @@ from tessellate.core import deps
 from sqlalchemy import func, select
 from tessellate.entry import manager
 from tessellate.repo import relation_types
+from tessellate.repo import tags as tags_repo
 from datetime import timedelta
 from tessellate.ai.tools.tool_read import _named
 
@@ -137,7 +138,7 @@ def _tag_note(session: Session, args: dict) -> dict:
 
     add_tags = args.get("add") or []
     #: Folded: a tag is one tag to the person whatever its case (as in the
-    #: manager's `edit_tags_on_notes`); "remove urgent" left "Urgent" on the
+    #: `repo/tags.py` `bulk_edit`); "remove urgent" left "Urgent" on the
     #: note while the label said it was gone (caught by the B5 postcondition).
     remove_tags = {str(r).casefold() for r in args.get("remove") or []}
 
@@ -516,7 +517,8 @@ def _complete_reminder(session: Session, args: dict) -> dict:
 
 def _rename_tag(session: Session, args: dict) -> dict:
     try:
-        changed = manager.rename_tag(session, str(args["old"]), str(args["new"]))
+        changed = len(tags_repo.rename(session, [str(args["old"])], str(args["new"])))
+        session.commit()
     except ValueError as exc:
         # A blank new name: told to the model as a tool error it can fix,
         # not raised as a crash of the whole turn.
@@ -524,15 +526,13 @@ def _rename_tag(session: Session, args: dict) -> dict:
     return {
         "entries_changed": changed,
         "label": f"ph:tag Renamed tag “{args['old']}” → “{args['new']}” ({changed} notes)",
-        "undo": {
-            "tool": "rename_tag",
-            "arguments": {"old": str(args["new"]), "new": str(args["old"])},
-        },
+        "undo": {"tool": "rename_tag", "arguments": {"old": str(args["new"]), "new": str(args["old"])}},
     }
 
 
 def _delete_tag(session: Session, args: dict) -> dict:
-    changed = manager.delete_tag(session, str(args["name"]))
+    changed = len(tags_repo.remove(session, [str(args["name"])]))
+    session.commit()
     return {
         "entries_changed": changed,
         "label": f"ph:tag Removed the tag “{args['name']}” from {changed} notes",

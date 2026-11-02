@@ -45,6 +45,7 @@ from tessellate.entry.manager import extract_title, join_blocks, remove_title, s
 from tessellate.entry.properties import strip as strip_properties
 from tessellate.repo import content as content_repo
 from tessellate.repo import documents as documents_repo
+from tessellate.repo import tags as tags_repo
 
 router = APIRouter(tags=["library"])
 
@@ -966,7 +967,7 @@ def _tags(session: Session) -> list[dict]:
 
     Capped at PER_KIND_LIMIT, the same bound every other kind section in
     this file already carries, this was the one exception, left uncapped
-    when `manager.all_tags` was made cheap (§86, a cache keyed by notebook
+    when `tags_repo.counts` was made cheap (§86, a cache keyed by notebook
     fingerprint), which fixed the *cost* of computing the dict but not the
     length of what this endpoint sent to the browser. `all_tags()` is
     already most-used-first, so the slice keeps the tags anyone is actually
@@ -975,9 +976,7 @@ def _tags(session: Session) -> list[dict]:
     uncapped: its job is renaming or deleting *any* tag, including a
     rarely-used one that a length cap here would hide from it entirely.
     """
-    from tessellate.entry import manager
-
-    counts = list(manager.all_tags(session).items())[:PER_KIND_LIMIT]
+    counts = list(tags_repo.counts(session).items())[:PER_KIND_LIMIT]
     return [
         {
             "kind": "tag",

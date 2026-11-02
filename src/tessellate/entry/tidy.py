@@ -47,6 +47,7 @@ from sqlalchemy import func, or_, select
 from tessellate.core import events
 from tessellate.core.database import AuditLog, Entry, EntryLink, Reminder, plain_reason, utcnow
 from tessellate.entry import link_facts, link_wording, manager
+from tessellate.repo import tags as tags_repo
 
 logger = logging.getLogger("tessellate.tidy")
 
@@ -753,8 +754,8 @@ def _apply_remove_tags(session, chosen: list[dict]) -> tuple[int, dict]:  # noqa
     for row in chosen:
         _kind, entry_id, tag = row["id"].split(":", 2)
         by_entry.setdefault(int(entry_id), set()).add(tag.casefold())
-    entries = list(session.scalars(select(Entry).where(Entry.id.in_(list(by_entry)))))
-    before = manager._retag(session, entries, lambda e, tags: [t for t in tags if t.casefold() not in by_entry[e.id]])
+    before = tags_repo.remove_from(session, by_entry)
+    session.commit()
     return sum(len(by_entry[i]) for i in before), {"tags": {str(k): v for k, v in before.items()}}
 
 
@@ -767,8 +768,9 @@ def _apply_merge_tags(session, chosen: list[dict]) -> tuple[int, dict]:  # noqa:
         group = groups.get(row["id"])
         if not group:
             continue
-        for entry_id, tags in manager.rename_tags(session, group[1:], group[0]).items():
+        for entry_id, tags in tags_repo.rename(session, group[1:], group[0]).items():
             before.setdefault(entry_id, tags)
+        session.commit()
         merged += 1
     return merged, {"tags": {str(k): v for k, v in before.items()}}
 
@@ -992,7 +994,9 @@ def _undo_unlinked(session, undo: dict) -> int:  # noqa: ANN001
 def _undo_tags(session, undo: dict) -> int:  # noqa: ANN001
     if not undo.get("tags"):
         return 0
-    return len(manager.undo_tag_edit(session, {int(k): v for k, v in undo["tags"].items()}))
+    restored = len(tags_repo.restore(session, {int(k): v for k, v in undo["tags"].items()}))
+    session.commit()
+    return restored
 
 
 def _undo_moved(session, undo: dict) -> int:  # noqa: ANN001
