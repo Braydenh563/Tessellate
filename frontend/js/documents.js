@@ -7126,6 +7126,15 @@ function docRevealBlock(blockId) {
   return true;
 }
 
+//: **True only while a print is being prepared** (`exportDocumentPdf`), which
+//: is the one moment the rendered pane carries the remarks rather than hiding
+//: them: a PDF handed to somebody should carry them as footnotes, and Read view
+//: should not, and both are drawn by `renderDocPreview` from one place. A flag
+//: rather than an argument because the render is also reached from the debounce
+//: and from `setDocView`, neither of which knows anything about printing.
+let docPrintComments = false;
+
+
 // =============================================================================
 // Comments and annotations (DOCUMENTS_PLAN Phase 5 item 1)
 // =============================================================================
@@ -7367,14 +7376,6 @@ function docCommentFootnotes(text, prefix = "c") {
 //: The remark the reader is looking at, so the row can be painted as current
 //: without re-parsing to find out which one it was.
 let docCommentCurrent = null;
-
-//: **True only while a print is being prepared** (`exportDocumentPdf`), which
-//: is the one moment the rendered pane carries the remarks rather than hiding
-//: them: a PDF handed to somebody should carry them as footnotes, and Read view
-//: should not, and both are drawn by `renderDocPreview` from one place. A flag
-//: rather than an argument because the render is also reached from the debounce
-//: and from `setDocView`, neither of which knows anything about printing.
-let docPrintComments = false;
 
 function docComments() {
   return docCommentsParse(docText());
