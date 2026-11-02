@@ -245,18 +245,17 @@ function entryItem(entry, options = {}) {
   //: A clamped card's two lines are text, not the blank line between its
   //: paragraphs (INBOX 458: "Tonight, I have work." then a lone "..."):
   //: folded, the paragraphs run on one line each; opened, the note as written.
-  //: Read at each fill, not once: a clipped row's card is filled again with the whole note (INBOX 1525).
-  const fillContent = () => {
-    const body = entry.title ? bodyWithoutTitleLine(entry.content) : stripFrontmatter(entry.content);
-    renderNoteText(
-      content,
-      content.classList.contains("entry-clamped") ? body.replace(/\n[ \t\r]*(?:\n[ \t\r]*)+/g, "\n") : body,
-      searchHighlightTerms(),
-      //: Heading hashes are source, not words (dogfood item 18). Run on the
-      //: prose only, not the whole note: a code fence keeps its own `#` and `-`.
-      (prose) => prose.replace(/^#{1,6}[ \t]+/gm, "").replace(/^( *)-(?= \w)/gm, "$1•")
-    );
-  };
+  //: `body` is set again when a clipped row's card is filled with the whole note (INBOX 1525).
+  const bodyOf = (note) => (note.title ? bodyWithoutTitleLine(note.content) : stripFrontmatter(note.content));
+  let body = bodyOf(entry);
+  const fillContent = () => renderNoteText(
+    content,
+    content.classList.contains("entry-clamped") ? body.replace(/\n[ \t\r]*(?:\n[ \t\r]*)+/g, "\n") : body,
+    searchHighlightTerms(),
+    //: Heading hashes are source, not words (dogfood item 18). Run on the
+    //: prose only, not the whole note: a code fence keeps its own `#` and `-`.
+    (prose) => prose.replace(/^#{1,6}[ \t]+/gm, "").replace(/^( *)-(?= \w)/gm, "$1•")
+  );
   fillContent();
   content.addEventListener("remove-inline-image", async (e) => {
     e.stopPropagation();
@@ -326,7 +325,10 @@ function entryItem(entry, options = {}) {
       content.classList.toggle("entry-clamped", !expandedNotes.has(entry.id));
       fillContent();
       toggle.textContent = label();
-      if (entry.content_truncated && expandedNotes.has(entry.id)) fullEntry(entry.id).then(fillContent, () => {});
+      if (entry.content_truncated && expandedNotes.has(entry.id)) fullEntry(entry.id).then((whole) => {
+        body = bodyOf(whole);
+        fillContent();
+      }, () => {});
     });
     li.appendChild(toggle);
     // **Then check whether it was actually needed.** Reported: "a show
