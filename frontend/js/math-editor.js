@@ -266,7 +266,12 @@ function mathEditorModes(display, onChange) {
     return b;
   });
   const sync = (on) => {
-    for (const b of buttons) b.setAttribute("aria-pressed", String((b.dataset.value === "display") === on));
+    //: `.active` as well as `aria-pressed`: the glide (shell-reminders.js `glideStrip`) places its sliding fill on `.active` (INBOX 1540: the pill jumped).
+    for (const b of buttons) {
+      const chosen = (b.dataset.value === "display") === on;
+      b.setAttribute("aria-pressed", String(chosen));
+      b.classList.toggle("active", chosen);
+    }
   };
   seg.append(...buttons);
   sync(display);

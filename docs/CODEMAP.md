@@ -5387,22 +5387,22 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `mathEditorBlockText` | frontend/js/math-editor.js:324 |
+| `mathEditorBlockText` | frontend/js/math-editor.js:329 |
 | `mathEditorGroups` | frontend/js/math-editor.js:129 |
-| `mathEditorKeys` | frontend/js/math-editor.js:296 |
-| `mathEditorLede` | frontend/js/math-editor.js:357 |
+| `mathEditorKeys` | frontend/js/math-editor.js:301 |
+| `mathEditorLede` | frontend/js/math-editor.js:362 |
 | `mathEditorModes` | frontend/js/math-editor.js:254 |
-| `mathEditorMount` | frontend/js/math-editor.js:385 |
+| `mathEditorMount` | frontend/js/math-editor.js:390 |
 | `mathEditorOutput` | frontend/js/math-editor.js:151 |
 | `mathEditorPalette` | frontend/js/math-editor.js:220 |
-| `mathEditorSearch` | frontend/js/math-editor.js:276 |
+| `mathEditorSearch` | frontend/js/math-editor.js:281 |
 | `mathEditorSpan` | frontend/js/math-editor.js:159 |
-| `mathEditorStart` | frontend/js/math-editor.js:312 |
+| `mathEditorStart` | frontend/js/math-editor.js:317 |
 | `mathEditorSurface` | frontend/js/math-editor.js:187 |
 | `mathEditorTile` | frontend/js/math-editor.js:205 |
 | `mathEditorTileFace` | frontend/js/math-editor.js:196 |
-| `mathEditorWrite` | frontend/js/math-editor.js:338 |
-| `openMathEditor` | frontend/js/math-editor.js:373 |
+| `mathEditorWrite` | frontend/js/math-editor.js:343 |
+| `openMathEditor` | frontend/js/math-editor.js:378 |
 
 ### frontend/js/math-field.js (19)
 

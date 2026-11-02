@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Equation editor: the Inline and Display pill slides like every other segmented control (INBOX 1540). It marked its choice with aria-pressed only, and the glide places its fill on the .active option, so the fill jumped; measured the fill now travels over 0.28 s (scale 0.83 to 1, 63 px to 0). A sweep of the panel found no other control without its standard motion; the two other pills without it are the print setup's and the focus timer's presets (not fixed here).
 - Equation editor: a box you typed in and emptied shows its box again (INBOX 1538). A slot deleted, cut or undone came back as a bare caret; the field now restores the box after every edit (fraction, power, subscript, integral, root), with the box selected so typing fills it, and a power or subscript whose base was deleted gets its base box back.
 - Calculator and equations opens taller (INBOX 1537): the card is 84% of the window up to 42rem, so Sum and Units need no scroll at 1440x900 (pane 453 of 453), 1366x768 (426 of 426) and 1280x720 (386 for a 325 pane); the sheet's two-thirds cap no longer applies to it.
 - Chat without a model: "new notes" lists the newest notes instead of asking what the note should say (INBOX 1532). New before a plural noun is read as newest, as latest and recent are ("show new notes", "see new notes", "any new notes please"); a singular "new note" with words still makes one, and a bare "new note" offers both.
