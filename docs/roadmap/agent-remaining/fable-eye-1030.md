@@ -116,7 +116,7 @@ Counts: high 3, medium 7, low 5. Ranked by severity times reach.
 
 ### F13 (low, architecture): eight readers of a note's title disagree
 
-**Fixed c5a24ea.** Agent `fable-fix-1030`.
+**Fixed c5a24ea; the rest 68e396e** (the questions row's own reader is gone, its pin moved to the shared reader). Agent `fable-fix-1030`.
 
 - Repro: run `commands._title`, `composer._title`, `composer_lists._title`, `composer_study._title`, `questions._title`, `study.title_of`, `tool_say._title`, `composer_frame.note_label` on `[ ] Renew library membership - due 28 October.\n[x] Email the landlord`: results `'[ ] Renew library membership -…'`, `'your untitled list'`, `'[ ] Renew library membership - due 28 October'` (three spellings) and `''`; on `**Admin bits**\nRenew membership` seven say `Admin bits` and `commands._title` says `**Admin bits**`.
 - Root cause: eight private readers (`commands.py:848`, `composer.py:1018`, `composer_lists.py:378`, `composer_study.py:115`, `questions.py:87`, `study.py:167`, `tool_say.py:71`, `composer_frame.py:262`) each with their own markdown and checkbox rules.
@@ -125,7 +125,7 @@ Counts: high 3, medium 7, low 5. Ranked by severity times reach.
 
 ### F14 (low, security): two compare regexes are quadratic on whitespace; not reachable through the route today
 
-**Fixed c5a24ea.** Agent `fable-fix-1030`.
+**Fixed c5a24ea.** The chat request squeezes blanks (`bounds.squeeze_blanks`, tests/test_composer_review_1031.py:75); the compare patterns time 0.0004 s on 20,000 spaces (a30e 1102). Agent `fable-fix-1030`.
 
 - Repro: `composer._COMPARE_SIDES[0].search(" " * 20000)` 65 s, `composer_digest._ASKS["compare"].search(" " * 20000)` 47 s (1.5 s and 0.9 s at 3,000). `ChatRequest.question` allows 20,000 characters (`routes_chat.py:392`). Through `POST /chat/stream` the same 20,000-space question answers in 0.04 s because `composer.rephrase` (`composer.py:530`) and `composer_lists.clean` collapse whitespace before any reader. Smaller ones on 3,000 spaces: `task_acts._DONE_TAIL` 0.60 s, `activity._DATE_STUB` 0.54 s, `composer_frame._PRESENTED_END` 0.36 s, `task_acts._TAIL_KIND` 0.36 s, `recognise._CLOCK_TAIL` 0.34 s (1,016 patterns timed; the rest under 0.1 s).
 - Root cause: `composer.py:787` `^(?:...\s+)?(?P<a>.+?)\s+...` and `composer_digest.py` `_ASKS["compare"]` `[\w' -]{2,30}?\s+or\s+`: a lazy group followed by `\s+` backtracks over every split of a long run of spaces.
@@ -134,7 +134,7 @@ Counts: high 3, medium 7, low 5. Ranked by severity times reach.
 
 ### F15 (low): an offer suggests a reminder for a task a later note records as done
 
-**Fixed c5a24ea.** Agent `fable-fix-1030`.
+**Fixed c5a24ea; the counted ask 68e396e and 88fd715** (a named note carries its records beside it). Agent `fable-fix-1030`.
 
 - Repro: `When is the laptop backup due?` on the stress notebook ends `Remind you to renew library membership - due 28 October?` after note 7 (29 October) says it was renewed.
 - Root cause: the offers in `composer_digest._offer`/`_finish` pick the first open checklist line of the lead note and never ask `composer_slots._done_later` (`composer_slots.py:222`).

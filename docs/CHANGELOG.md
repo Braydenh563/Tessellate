@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Audit E16: comparing two named notes no longer gives both sides the same lines: a note whose name holds both sides' words belongs to the side its name opens with, and a line picked for both is said under the side it names, with what speaks of both, or not at all.
 - Audit E20: a bare weekday in a log note ("Wednesday bench 60kg for 5 reps" in a gym log) is a day gone, not a day due; a plan, schedule or routine note keeps its weekdays as arranged, and so does any line with a deadline cue or a date.
 - Second eye F13 and F15 closed: the questions row names a note with the one shared reader (its own title function and the byte-equal pin are gone), and a named note ("what is in my admin bits note") fetches the notes that record its open items beside it, so a box a later note says is done is not listed as still to do.
 - A sheet whose focus arrived by itself still re-measures the toasts once it settles: the import card moved after the focusin check, so the search-by-meaning question covered Import (E2E import, fifth head).

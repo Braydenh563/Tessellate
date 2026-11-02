@@ -56,7 +56,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 50 | E17 | med | digest says newest a day ago when written today | fixed 2026-11-02 (today, never a day ago) | S |
 | 51 | E18 | med | composer invents speech acts the notes do not contain | fixed 2026-11-02 (5e6147c) | S |
 | 52 | E19 | med | source lists mangled, author lowercased and split | fixed (e09a63e) | S |
-| 53 | E20 | med | weekday words in log notes treated as due dates | new | M |
+| 53 | E20 | med | weekday words in log notes treated as due dates | fixed (54af546) | M |
 | 54 | E21 | med | lowercase month in computed days-until answer | fixed (f210bc3) | S |
 | 55 | E22 | med | instruction words reported as missing evidence | fixed (239b496) | S |
 | 56 | E24 | med | generative requests answered with quotes, no needs-a-model reply | fixed 2026-11-02 (468c2d8) | S |
