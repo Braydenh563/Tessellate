@@ -491,6 +491,26 @@ _NOTE_HEADS_NEW = (
 
 
 _NAMED = ("called ", "titled ", "named ")
+#: The words that join a note's name to what it says: "called X with Y",
+#: "titled X saying Y", "named X that says Y", "called X: Y" (audit 1028 E25).
+_JOIN = r"(?:with|saying|containing|including|that says|which says|that reads|reading|having|and (?:say|says|put|write|writes))"
+_QUOTED_NAME = re.compile(r"^[\"“‘'](?P<name>.{1,120}?)[\"”’'](?P<tail>.*)$", re.S)
+_PLAIN_NAME = re.compile(rf"^(?P<name>.+?)(?:\s+{_JOIN}\s+|\s*:\s*)(?P<tail>.+)$", re.I | re.S)
+_BODY_LEAD = re.compile(rf"^\s*(?:{_JOIN}\s+|[:,;-]\s*)", re.I)
+
+
+def _name_and_words(rest: str) -> str:
+    """`"Shopping" with milk, eggs and bread` as "Shopping\nMilk, eggs and
+    bread": a name, then what the note says, as its title line and its body;
+    a name alone is just the name. Quoted or not, with any joining word."""
+    rest = rest.strip()
+    quoted = _QUOTED_NAME.match(rest)
+    if quoted and (not quoted.group("tail").strip() or _BODY_LEAD.match(quoted.group("tail"))):
+        title, body = quoted.group("name").strip(), _BODY_LEAD.sub("", quoted.group("tail"), count=1).strip()
+    else:
+        plain = _PLAIN_NAME.match(rest)
+        title, body = (plain.group("name").strip(), plain.group("tail").strip()) if plain else (rest, "")
+    return f"{_cap(title)}\n{_cap(body)}" if title and body else _cap(title)
 
 
 def _note_at_the_end(rest: str) -> dict | None:
@@ -512,6 +532,14 @@ _BARE_NOTE = frozenset({
 })
 
 
+def _note_lead(rest: str) -> tuple[str, bool]:
+    """`rest` without its "that", "saying", "called" ...; whether that was a name."""
+    for lead in ("that ", "saying ", "of ", "about ", "to say ", *_NAMED):
+        if rest.lower().startswith(lead):
+            return rest[len(lead):], lead in _NAMED
+    return rest, False
+
+
 def _new_note(text: str) -> dict | None:
     low = text.lower()
     if low.strip(" .:-") in _BARE_NOTE:
@@ -525,10 +553,10 @@ def _new_note(text: str) -> dict | None:
         if needs_colon and not rest.startswith(":") and not rest.lower().startswith((*_NAMED, "about ")):
             return None
         rest = rest.lstrip(" :-")
-        for lead in ("that ", "saying ", "of ", "about ", "to say ", *_NAMED):
-            if rest.lower().startswith(lead):
-                rest = rest[len(lead):]
-                break
+        rest, named = _note_lead(rest)
+        if named:
+            said = _name_and_words(rest)
+            return {"intent": "new_note", "content": said} if said else None
         appended_to = _note_at_the_end(rest)
         if appended_to:
             return appended_to
@@ -1353,7 +1381,10 @@ def _plan_reminder(session: Session, parsed: dict, note_ids: list[int] | None) -
     if note is not None:
         arguments["note_id"] = note.id
     steps = [{"name": "set_reminder", "arguments": arguments}]
-    card = _card(label, steps, items=[f"#{note.id} {note_title(note.content, size=48)}"] if note is not None else None)
+    card = _card(label, steps, items=[_item(note)] if note is not None else None)
+    if _open_reminder_at(session, parsed["text"], due):
+        #: The same words at the same time exist: said, with nothing to confirm (audit 1028 E29).
+        return {"line": f"You already have a reminder “{_clip(parsed['text'], 60)}” {when_said}."}
     if _has_open_reminder(session, parsed["text"]):
         return _add_another(f"a reminder “{_clip(parsed['text'], 60)}”", card)
     return {"line": f"{label}.", "card": card, "run": True}
@@ -1371,6 +1402,16 @@ def _has_note_saying(session: Session, content: str) -> bool:
     wanted = " ".join(content.split()).casefold()
     rows = session.scalars(select(Entry.content).where(Entry.deleted_at.is_(None), Entry.is_private.is_(False)).order_by(Entry.id.desc()).limit(200)).all()
     return any(" ".join((c or "").lstrip("# ").split()).casefold() == wanted for c in rows)
+
+
+def _open_reminder_at(session: Session, text: str, due) -> bool:  # noqa: ANN001
+    """Whether a waiting reminder says `text` at the same minute as `due`."""
+    from tessellate.core.database import Reminder
+
+    wanted = " ".join(text.split()).casefold()
+    rows = session.execute(select(Reminder.text, Reminder.due_at).where(Reminder.done.is_(False), Reminder.deleted_at.is_(None)).limit(500)).all()
+    minute = due.replace(second=0, microsecond=0, tzinfo=None)
+    return any(" ".join((t or "").split()).casefold() == wanted and d is not None and d.replace(second=0, microsecond=0, tzinfo=None) == minute for t, d in rows)
 
 
 def _has_open_reminder(session: Session, text: str) -> bool:
@@ -1397,7 +1438,7 @@ def _plan_tag_or_move(session: Session, parsed: dict, note_ids: list[int] | None
     if not entries:
         return {"line": _no_notes_to_tag_or_move(parsed, which, intent)}
     ok, skipped = _split_allowed(entries)
-    items = [f"#{e.id} {note_title(e.content, size=48)}" for e in ok]
+    items = [_item(e) for e in ok]
     count = f"{len(ok)} note{'' if len(ok) == 1 else 's'}"
     if intent == "tag":
         tags = " ".join(f"#{t}" for t in parsed["tags"])
@@ -1420,10 +1461,14 @@ def _plan_new_note(session: Session, parsed: dict) -> dict:
     if parsed.get("no_subject"):
         return {"line": "What should the note say? Send it as “make a note: …” and I'll save it."}
     steps = [{"name": "create_note", "arguments": {"content": parsed["content"]}}]
-    card = _card(f"Make a new note: “{_clip(parsed['content'], 80)}”", steps)
+    #: A named note ("called X with Y") has a title line and a body: said as
+    #: `“X”: Y`, never with the line break in the sentence.
+    title, _, body = parsed["content"].partition("\n")
+    label = f"Make a new note “{_clip(title, 50)}”: {_clip(body.strip(), 50)}" if body.strip() else f"Make a new note: “{_clip(title, 80)}”"
+    card = _card(label, steps)
     if _has_note_saying(session, parsed["content"]):
-        return _add_another(f"a note “{_clip(parsed['content'], 60)}”", card)
-    return {"line": f"Make a new note: “{_clip(parsed['content'], 80)}”.", "card": card, "run": True}
+        return _add_another(f"a note “{_clip(title, 60)}”", card)
+    return {"line": f"{label}.", "card": card, "run": True}
 
 
 def _plan_meeting(parsed: dict) -> dict:
@@ -1445,7 +1490,7 @@ def _plan_untag(session: Session, parsed: dict, note_ids: list[int] | None) -> d
     tags = " ".join(f"#{t}" for t in parsed["tags"])
     label = f"Take {tags} off {len(ok)} note{'' if len(ok) == 1 else 's'} {which}"
     steps = [{"name": "tag_note", "arguments": {"note_ids": [e.id for e in ok], "remove": parsed["tags"]}}]
-    return {"line": _confirm(label), "card": _card(label, steps, skipped, [f"#{e.id} {note_title(e.content, size=48)}" for e in ok])}
+    return {"line": _confirm(label), "card": _card(label, steps, skipped, [_item(e) for e in ok])}
 
 
 def plan(session: Session, parsed: dict, note_ids: list[int] | None = None) -> dict:
@@ -1622,7 +1667,7 @@ def _plan_delete_all(session: Session, about: str) -> dict:
         label = f"Move the only note about “{about}”, “{note_title(ok[0].content, size=48)}”, to the bin"
     else:
         label = f"Move the {len(ok)} notes about “{about}” to the bin"
-    return {"line": _confirm(label), "card": _card(label, steps, skipped, [f"#{e.id} {note_title(e.content, size=48)}" for e in ok])}
+    return {"line": _confirm(label), "card": _card(label, steps, skipped, [_item(e) for e in ok])}
 
 
 def _plan_one(session: Session, parsed: dict, note_ids: list[int] | None) -> dict:
@@ -1659,10 +1704,15 @@ def _plan_one(session: Session, parsed: dict, note_ids: list[int] | None) -> dic
         tool = "link_notes" if intent == "link" else "unlink_notes"
         steps = [{"name": tool, "arguments": {"note_id": entry.id, "other_note_id": other.id}}]
         label = f"{'Link' if intent == 'link' else 'Unlink'} {name} {'and' if intent == 'link' else 'from'} “{note_title(other.content, size=48)}”"
-    card = _card(label, steps, skipped, [f"#{entry.id} {note_title(entry.content, size=48)}"])
+    card = _card(label, steps, skipped, [_item(entry)])
     if intent in CONFIRM_INTENTS:
         return {"line": _confirm(label), "card": card}
     return {"line": label, "card": card, "run": True}
+
+
+def _item(entry) -> str:  # noqa: ANN001
+    """A note as a card item or a line says it: its title, never its id (audit 1028 E64)."""
+    return note_title(entry.content, size=48) or "Untitled note"
 
 
 def _clip(text: str, cap: int) -> str:
@@ -1690,9 +1740,9 @@ def _plan_read(session: Session, parsed: dict) -> dict:
     if parsed.get("note_id") is not None:
         result = tools.execute_tool(session, "get_note", {"note_id": parsed["note_id"]})
         if "error" in result:
-            return {"line": f"I could not open note #{parsed['note_id']}: it does not exist, or it is private."}
+            return {"line": "I could not open that note: it does not exist, or it is private."}
         name, args = "get_note", {"note_id": parsed["note_id"]}
-        line = f"Here is note #{parsed['note_id']}. Open it from the row below."
+        line = f"Here is “{note_title(str(result.get('content') or ''), size=60) or 'that note'}”. Open it from the row below."
     elif parsed.get("filed") and (listed := _filed_notes(session, parsed["filed"])):
         name, args, result, line = listed
     else:
@@ -1741,11 +1791,14 @@ def _start_meeting(session: Session, args: dict) -> dict:
 
 def _bin_reminder(session: Session, args: dict) -> dict:
     from tessellate.api.routes_reminders import delete_reminder
+    from tessellate.core.database import Reminder
 
+    held = session.get(Reminder, int(args["reminder_id"]))
+    named = f"“{_clip(held.text, 60)}”" if held is not None and held.text else "that reminder"
     delete_reminder(int(args["reminder_id"]), session)
     return {
         "binned": int(args["reminder_id"]),
-        "label": f"Cancelled reminder #{int(args['reminder_id'])}",
+        "label": f"Cancelled reminder {named}",
         "undo": {"tool": "restore_reminder", "arguments": {"reminder_id": int(args["reminder_id"])}},
     }
 
@@ -1754,7 +1807,7 @@ def _step_undo(name: str, args: dict, result: dict):  # noqa: ANN202
     """The step that reverses one that ran: the tool's own, or the one this
     module knows for a reminder, a completed task and a link."""
     step_undo = result.get("undo")
-    if name == "set_reminder" and result.get("id") is not None:
+    if name == "set_reminder" and result.get("id") is not None and not result.get("existing"):
         step_undo = {"tool": "bin_reminder", "arguments": {"reminder_id": result["id"]}}
     if name == "complete_reminder":
         step_undo = task_acts.undo_step(name, args)

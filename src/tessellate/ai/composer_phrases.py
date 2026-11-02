@@ -215,6 +215,7 @@ PHRASES: dict[str, str] = {
     # A utility the app cannot do (decision 41): said, never guessed.
     "utility_weather": "The weather is not something this app knows, and nothing leaves this computer to look it up.",
     "utility_translate": "Translating needs a model: connect one in Settings and the Writing room translates.",
+    "utility_generate": "Writing that needs a model: connect one in Settings, Models. Until then I can find what your notes already say about it.",
     "utility_web_off": "Web search is off, so I only read your notes. Turn it on with the Web button beside the chat box, or in Settings, Web search.",
     "utility_web_on": "Yes: web search is on, in Agent mode. Say what to look up, for example: search the web for train times to Perth.",
     #: The no-answer that names what no note found holds, then asks back:

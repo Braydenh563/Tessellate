@@ -17,7 +17,7 @@ from sqlalchemy import func, select
 from tessellate.entry import manager
 from tessellate.repo import relation_types
 from tessellate.repo import tags as tags_repo
-from datetime import timedelta
+from tessellate.ai.tools.reminder_rules import held_reminder, reminder_time
 from tessellate.ai.tools.tool_read import _named
 
 def _create_note(session: Session, args: dict) -> dict:
@@ -390,38 +390,24 @@ def _set_reminder(session: Session, args: dict) -> dict:
     without an offset mean the user's local time. Measured before: `due_at`
     "2026-10-05T09:00" was stored as 09:00 UTC, 19:00 for a user at UTC+10.
     """
-    from tessellate.ai import when as when_words
     from tessellate.core.config import user_now
 
     text = str(args["text"]).strip()
     if not text:
         raise ToolError("The reminder text is empty")
     now = user_now(deps.get_config())
-    said = str(args.get("when") or "").strip()
-    exact = str(args.get("due_at") or "").strip()
-    due_at = when_words.resolve(said, now) if said else None
-    if due_at is None and exact:
-        due_at = when_words.resolve(exact, now)
-    if due_at is None:
-        raise ToolError(
-            f"Couldn't read '{said or exact}' as a time. Put the user's own "
-            "words in `when`, like 'tomorrow at 9am', 'in 20 minutes' or "
-            "'Friday evening'."
-            if said or exact
-            else "Say when in `when`, in the user's words, like 'tomorrow at 9am'."
-        )
-    if due_at < now - timedelta(minutes=1):
-        raise ToolError(
-            f"{due_at.strftime('%A %d %B %H:%M')} has already passed. Ask the "
-            "user for a time that has not happened yet."
-        )
+    due_at = reminder_time(args, now)
     entry_id = args.get("note_id")
     if entry_id is not None:
         _require_note(session, {"note_id": entry_id})  # validates it exists
         entry_id = int(entry_id)
     priority = str(args.get("priority") or "normal").lower()
-    if priority not in ("low", "normal", "high"):
-        priority = "normal"
+    priority = priority if priority in ("low", "normal", "high") else "normal"
+    #: The same words at the same minute are one reminder (audit 1028 E29):
+    #: said back as the one that exists, not made a second time.
+    held = held_reminder(session, text, due_at)
+    if held:
+        return held
     reminder = Reminder(text=text, due_at=due_at, entry_id=entry_id, priority=priority)
     session.add(reminder)
     session.flush()

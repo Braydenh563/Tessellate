@@ -54,13 +54,13 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 48 | E15 | med | stats route steals questions that name a note subject | fixed 1030 | S |
 | 49 | E16 | med | compare gives identical lists for both sides | new | M |
 | 50 | E17 | med | digest says newest a day ago when written today | fixed 2026-11-02 (today, never a day ago) | S |
-| 51 | E18 | med | composer invents speech acts the notes do not contain | new | S |
+| 51 | E18 | med | composer invents speech acts the notes do not contain | fixed 2026-11-02 (5e6147c) | S |
 | 52 | E19 | med | source lists mangled, author lowercased and split | new | S |
 | 53 | E20 | med | weekday words in log notes treated as due dates | new | M |
 | 54 | E21 | med | lowercase month in computed days-until answer | new | S |
 | 55 | E22 | med | instruction words reported as missing evidence | new | S |
-| 56 | E24 | med | generative requests answered with quotes, no needs-a-model reply | new | S |
-| 57 | E25 | med | quoted note titles stored as body text | new | S |
+| 56 | E24 | med | generative requests answered with quotes, no needs-a-model reply | fixed 2026-11-02 (468c2d8) | S |
+| 57 | E25 | med | quoted note titles stored as body text | fixed 2026-11-02 (a8a56f0) | S |
 | 58 | E26 | med | reminder with no subject; impossible dates accepted | fixed 1030 | S |
 | 59 | E31 | med | guide answers the wrong topic for realistic questions | fixed (490e3c3, reconciled 2026-10-30) | M |
 | 60 | E32 | med | ChatGPT question gets local model not running answer | fixed 1030 | S |
@@ -94,7 +94,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 88 | E23 | med | quiz cloze questions cut the subject off | new | M |
 | 89 | E27 | med | act summaries have lowercase verbs, ids and stale notice | new | S |
 | 90 | E28 | med | show my reminders not handled in the chat path | fixed 1030 | S |
-| 91 | E29 | med | identical reminders printed twice, no duplicate check | new | S |
+| 91 | E29 | med | identical reminders printed twice, no duplicate check | fixed 2026-11-02 (ca14588) | S |
 | 92 | E35 | med | chat transcript is not a live region for screen readers | fixed 1031 | S |
 | 93 | E36 | med | saved-chat rows are li with click and no keyboard path | fixed 1031 | S |
 | 94 | E38 | med | no-model Models page hides suggested cards and pickers | new | M |
@@ -210,7 +210,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 204 | E59 | low | no per-answer thumbs feedback | new | M |
 | 205 | E60 | low | no regenerate with another model, no continue after Stop | new | M |
 | 206 | E62 | low | regenerate rewords but cannot widen retrieval | new | M |
-| 207 | E64 | low | internal ids and test notes in student-facing text | new | S |
+| 207 | E64 | low | internal ids and test notes in student-facing text | fixed 2026-11-02 (9a750b3) | S |
 | 208 | E71 | low | read aloud has no stop or speed control, unverified | new | S |
 | 209 | S70 | low | no note count per tag chip | already built (tag chip counts, measured) | S |
 | 210 | S71 | low | no drag and drop of files into the list | new | M |
@@ -235,7 +235,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 229 | E54 | low | identity muddled between Atlas and Tessellate | docs/roadmap/CHAT_PLAN.md:460 | S |
 | 230 | E61 | low | disabled Plan and Agent explain need only on hover | new | S |
 | 231 | E63 | low | three clauses joined as a run-on, no list | new | S |
-| 232 | E67 | low | next chip row offers a single chip | new | S |
+| 232 | E67 | low | next chip row offers a single chip | fixed 2026-11-02 (2f1213f) | S |
 | 233 | E68 | low | typing dots role=status, no aria-busy on transcript | new | S |
 | 234 | E69 | low | chat autocorrect runs on names and codes unseen | new | S |
 | 235 | E72 | low | Why trail shows timing lines and a wrong nothing matched | new | S |

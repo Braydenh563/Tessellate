@@ -239,3 +239,20 @@ def test_one_reporting_verb_and_none_the_note_did_not_make(key):
 @pytest.mark.parametrize("body", ["pay cut", "book club on Friday", "passport", "Tom to draft the spec"])
 def test_a_noun_is_never_put_after_planned_to(body):
     assert "planned to" not in composer_digest._clause(body, "noted", 0, True)
+
+
+def test_no_phrase_invents_a_speech_act_the_note_did_not_make():
+    """Audit 1028 E18: "you told yourself to" and "you reminded yourself to"
+    put an act in the writer's mouth; an instruction is said as the note's."""
+    assert "told_self" in composer_digest._BASE
+    said = " ".join(composer_digest._BASE["told_self"] if isinstance(composer_digest._BASE["told_self"], tuple) else [composer_digest._BASE["told_self"]])
+    assert not re.search(r"told yourself|reminded yourself", said)
+
+
+def test_the_wrote_lead_ins_label_no_note_as_a_thought_or_a_capture():
+    """Audit 1028 E18: "This was your thought:", "You captured this:" and
+    "You documented this:" labelled plain notes with an act they never state."""
+    from tessellate.ai import composer_tables
+
+    lines = [x for f in composer_tables._FAMILIES_ADDED["open_wrote"].values() for x in f]
+    assert lines and not [x for x in lines if re.search(r"your thought|captured|documented", x, re.I)]
