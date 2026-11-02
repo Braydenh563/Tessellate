@@ -60,9 +60,13 @@ def test_the_clearance_force_runs_only_with_tidy_spacing_on():
 
 
 def test_the_switch_is_off_by_default_and_sent_to_the_worker():
-    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
-    assert '<input type="checkbox" id="graph-tidy">' in html
     graph = (FRONTEND / "js" / "graph.js").read_text(encoding="utf-8")
+    # Drawn on the first visit beside Group by category (the boot element cap),
+    # unchecked, before the stored switches are restored and the listener bound.
+    built = graph[graph.index("(function graphTidyRow() {") :]
+    built = built[: built.index("\n})();\n")]
+    assert 'box.id = "graph-tidy";' in built and "group.after(row)" in built and "checked" not in built
+    assert graph.index("(function graphTidyRow() {") < graph.index("graphRestoreSwitches();") < graph.index('$("graph-tidy")?.addEventListener')
     assert '"graph-tidy": false,' in graph
     assert '"graph-tidy"' in graph[graph.index("const GRAPH_STORED_OFF") :].split("\n", 1)[0]
     canvas = (FRONTEND / "js" / "graph-canvas.js").read_text(encoding="utf-8")

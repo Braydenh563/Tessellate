@@ -4680,6 +4680,22 @@ function initGraphViews() {
 initGraphDockHeightToken();
 initGraphRailToken();
 initGraphToastClearance();
+//: Tidy spacing (INBOX 1529) is drawn on the first visit, beside Group by
+//: category, not shipped in index.html (the boot element cap, test_boot_diet3).
+(function graphTidyRow() {
+  const group = $("graph-group")?.closest("label");
+  if (!group || $("graph-tidy")) return;
+  const row = document.createElement("label");
+  row.className = group.className;
+  row.title = "Dots move off the lines they would sit on; slower to settle on a large notebook";
+  const name = document.createElement("span");
+  name.textContent = "Tidy spacing";
+  const box = document.createElement("input");
+  box.type = "checkbox";
+  box.id = "graph-tidy";
+  row.append(name, box);
+  group.after(row);
+})();
 
 //: The remembered on-by-default switches, restored when graph.js loads: the
 //: canvas renderer (the default) never ran the SVG render that used to do it,
