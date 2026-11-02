@@ -31,7 +31,10 @@ fullEntry.send = async () => {
   const ids = [...asks.keys()];
   const got = new Map();
   for (let at = 0; ids.length > 1 && at < ids.length; at += 200) {
-    for (const whole of await apiJson(`/entries?ids=${ids.slice(at, at + 200)}&boards=include`).catch(() => [])) got.set(whole.id, whole);
+    //: A failed batch is not an empty answer: each id is then read on its own below, and one that fails rejects.
+    try {
+      for (const whole of await apiJson(`/entries?ids=${ids.slice(at, at + 200)}&boards=include`)) got.set(whole.id, whole);
+    } catch {}
   }
   await Promise.all(ids.map(async (id) => {
     try {

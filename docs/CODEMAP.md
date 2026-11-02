@@ -5688,15 +5688,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `fullEntry` | frontend/js/notes-lazy.js:15 |
-| `liveQueryBar` | frontend/js/notes-lazy.js:220 |
-| `loadSemanticEntries` | frontend/js/notes-lazy.js:250 |
-| `noMatchHint` | frontend/js/notes-lazy.js:211 |
-| `nudgeReviewQueue` | frontend/js/notes-lazy.js:110 |
-| `nudgeUntaggedNotes` | frontend/js/notes-lazy.js:135 |
-| `paintSearchWhy` | frontend/js/notes-lazy.js:198 |
-| `refreshNoteSearchWhy` | frontend/js/notes-lazy.js:153 |
-| `reviewNudgeWanted` | frontend/js/notes-lazy.js:105 |
-| `toggleRowExpanded` | frontend/js/notes-lazy.js:47 |
+| `liveQueryBar` | frontend/js/notes-lazy.js:223 |
+| `loadSemanticEntries` | frontend/js/notes-lazy.js:253 |
+| `noMatchHint` | frontend/js/notes-lazy.js:214 |
+| `nudgeReviewQueue` | frontend/js/notes-lazy.js:113 |
+| `nudgeUntaggedNotes` | frontend/js/notes-lazy.js:138 |
+| `paintSearchWhy` | frontend/js/notes-lazy.js:201 |
+| `refreshNoteSearchWhy` | frontend/js/notes-lazy.js:156 |
+| `reviewNudgeWanted` | frontend/js/notes-lazy.js:108 |
+| `toggleRowExpanded` | frontend/js/notes-lazy.js:50 |
 
 ### frontend/js/notes-rail-spy.js (6)
 
