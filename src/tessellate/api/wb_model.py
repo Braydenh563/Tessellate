@@ -18,7 +18,6 @@ from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, StringConstr
 from fastapi import HTTPException
 from tessellate.core.validation_copy import Said
 from tessellate.core.database import WhiteboardObject
-from tessellate.core import events
 
 #: An image object's `data.url`, as an allowlist rather than a prefix check.
 #:
@@ -908,19 +907,6 @@ class WhiteboardObjectOut(BaseModel):
 # fields the manager does not know about.
 
 
-# The payload builders themselves live in `core/events.py`, beside
-# `entry_state`, because the routes are no longer the only writer of these
-# events: the AI's own board tools (`ai/tools/whiteboard.py`) record the same
-# ones, `ai/` cannot import `api/` at module level, and two copies of a state
-# function is how two writers of one entity come to disagree about what its
-# state is. Aliased rather than called through `events.` at every site so the
-# twenty-odd uses below read as they did.
-_node_state = events.node_state
-_sketch_state = events.sketch_state
-_object_state = events.object_state
-
-#: What a deleted item replays to; see `events.DELETED`.
-_DELETED = events.DELETED
 
 
 def _object_to_out(obj: WhiteboardObject) -> WhiteboardObjectOut:

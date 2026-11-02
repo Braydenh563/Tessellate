@@ -302,7 +302,8 @@ class BranchesBody(BaseModel):
 def add_branches(board_id: int, node_id: int, body: BranchesBody, db: Session = Depends(get_session)) -> list[dict]:
     """Make the ticked suggestions under the topic: one transaction, a
     `created` event per topic, and the note each came from in its note."""
-    from tessellate.api.routes_whiteboard import MAP_COL, MAP_ROW, WhiteboardObjectData, _object_state, _object_to_out
+    from tessellate.api.routes_whiteboard import MAP_COL, MAP_ROW, WhiteboardObjectData, _object_to_out
+    from tessellate.core.events import object_state as _object_state
     from tessellate.entry import manager
 
     parent = _node_or_404(db, board_id, node_id)

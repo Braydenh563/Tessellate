@@ -18,7 +18,8 @@ from tessellate.core import events
 from tessellate.entry.manager import extract_title
 from sqlalchemy import func, select
 from tessellate.core.deps import get_session
-from tessellate.api.wb_model import Coord, MAP_REFERENCE_KINDS, MAP_TOPIC_KIND, MAX_OBJECT_TEXT_CHARS, WhiteboardObjectData, WhiteboardObjectOut, _object_state, _object_to_out
+from tessellate.api.wb_model import Coord, MAP_REFERENCE_KINDS, MAP_TOPIC_KIND, MAX_OBJECT_TEXT_CHARS, WhiteboardObjectData, WhiteboardObjectOut, _object_to_out
+from tessellate.core.events import object_state as _object_state
 from tessellate.api.wb_tree import MAP_COL, MAP_ROW, MAP_STYLE_FIELDS, MAX_IMPORT_CHARS, MAX_MAP_DEPTH, MapTreeOut, _build_tree, _cross_links, _map_kind_ok, _map_objects, _object_data, _require_reference
 from tessellate.api.wb_board import _board_entry, _board_filter, _board_numbered, _board_settings, _board_theme, _require_board
 from tessellate.api.wb_preview import _board_palette

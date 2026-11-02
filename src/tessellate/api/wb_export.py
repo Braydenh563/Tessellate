@@ -245,7 +245,6 @@ def _markdown_note_lines(note: str, depth: int) -> list[str]:
 #: way a bold marker or an icon name would, and `_parse_markdown_outline`
 #: reads them back.
 _MARKDOWN_TASK_BOX = {"open": "[ ] ", "done": "[x] "}
-_MARKDOWN_TASK_ITEM = re.compile(r"^\[([ xX])\]\s+")
 
 
 #: How this map's three line shapes are spelled in FreeMind's own `<edge
@@ -256,7 +255,6 @@ _MARKDOWN_TASK_ITEM = re.compile(r"^\[([ xX])\]\s+")
 #: rather than a private attribute is what makes a map exported here open in
 #: FreeMind, Freeplane and Coggle *looking* the way it did.
 _FREEMIND_EDGE_STYLE = {"curve": "bezier", "elbow": "horizontal", "straight": "linear"}
-_FREEMIND_EDGE_STYLE_BACK = {value: key for key, value in _FREEMIND_EDGE_STYLE.items()}
 #: And the ones with no native home, written as private attributes on the
 #: node, the same device `_kind` and `_ref` already use here: an unknown
 #: attribute is ignored by every other reader and survives a round trip

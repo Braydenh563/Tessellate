@@ -16,7 +16,6 @@ import tessellate.ai.tools.contracts as contracts
 import tessellate.ai.tools.verify as verify
 
 from sqlalchemy.orm import Session
-from tessellate.ai.tools._common import ToolError, _require_note
 from tessellate.core import activity, deps, events
 from tessellate.entry import manager
 from tessellate.core.logbuffer import safe_value
@@ -62,10 +61,10 @@ def confirm_label(name: str, arguments: dict, session: Session | None = None) ->
     """Human sentence for the UI's confirm button (destructive tools)."""
     if session is not None and name in _CONFIRM_NAMED:
         try:
-            note = _named(_require_note(session, arguments))
+            note = _named(_common._require_note(session, arguments))
         #: AttributeError: a session that cannot look notes up (a stub) gets
         #: the plain label; a label never stops the call.
-        except (ToolError, KeyError, TypeError, ValueError, AttributeError):
+        except (_common.ToolError, KeyError, TypeError, ValueError, AttributeError):
             note = None
         if note:
             return _CONFIRM_NAMED[name].format(note=note)
@@ -313,7 +312,7 @@ def execute_tool(
     that agent's. Either way its writes are filed as `agent:<tool>@<who>`,
     not as Atlas's.
 
-    Only `ToolError` text is passed on, see that class. A `KeyError`, a
+    Only `_common.ToolError` text is passed on, see that class. A `KeyError`, a
     `TypeError`, or a plain `ValueError` from inside a handler is something
     else: a missing argument the model didn't send, or a genuine bug. Its text
     is an internal detail, a key name, a function signature, sometimes a
@@ -365,7 +364,7 @@ def execute_tool(
                 result["from_outside"] = True
         finally:
             outside.reset(flag_token)
-    except ToolError as exc:
+    except _common.ToolError as exc:
         # An explanation the handler wrote on purpose, safe to hand back.
         session.rollback()
         return {"error": f"{name}: {exc}"}

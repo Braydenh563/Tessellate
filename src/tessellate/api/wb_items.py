@@ -16,7 +16,8 @@ from tessellate.core.database import WhiteboardNode, WhiteboardObject, Whiteboar
 from tessellate.core import deps, events
 from tessellate.core.deps import get_session
 from sqlalchemy import select
-from tessellate.api.wb_model import WhiteboardNodeBase, WhiteboardNodeOut, WhiteboardObjectBase, WhiteboardObjectOut, WhiteboardSketchIn, WhiteboardSketchOut, _DELETED, _node_state, _object_state, _object_to_out, _require_object_data, _sketch_state
+from tessellate.api.wb_model import WhiteboardNodeBase, WhiteboardNodeOut, WhiteboardObjectBase, WhiteboardObjectOut, WhiteboardSketchIn, WhiteboardSketchOut, _object_to_out, _require_object_data
+from tessellate.core.events import DELETED as _DELETED, node_state as _node_state, object_state as _object_state, sketch_state as _sketch_state
 from tessellate.api.wb_board import _board_filter, _forget_links_to, _on_current_layer, _require_board, _require_entry
 
 router = APIRouter()

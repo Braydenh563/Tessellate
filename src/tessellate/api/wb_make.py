@@ -17,7 +17,8 @@ from tessellate.core import deps, events
 from tessellate.core.deps import get_session
 from sqlalchemy import select
 from tessellate.api.wb_board import BoardOut, _store_board_numbered, _store_board_settings
-from tessellate.api.wb_model import DEFAULT_MAP_LAYOUT, _object_state
+from tessellate.api.wb_model import DEFAULT_MAP_LAYOUT
+from tessellate.core.events import object_state as _object_state
 from tessellate.api.wb_tree import MAX_IMPORT_CHARS
 from tessellate.api.wb_import import MapImport, _flatten_parsed, _parse_freemind, _parse_markdown_outline, _parse_opml, _parse_xmind, _place_map_nodes, _restore_import_links
 from tessellate.api.wb_map import _outline_from_paste

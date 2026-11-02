@@ -25,11 +25,6 @@ from tessellate.ai import skills
 # nothing arrives in context unless the model goes and gets it.
 
 
-# The documents/whiteboard handlers themselves now live in .documents/
-# .whiteboard; imported here so they can still register in TOOLS below.
-from .documents import (  # noqa: E402
-    MAX_NEW_DOCUMENT_CHARS as MAX_NEW_DOCUMENT_CHARS,  # re-exported: tools.MAX_NEW_DOCUMENT_CHARS
-    )
 
 def _search_chat_history(session: Session, args: dict) -> dict:
     """Past conversations. "What did we decide last week?" was unanswerable:

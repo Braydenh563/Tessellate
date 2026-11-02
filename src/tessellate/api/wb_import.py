@@ -17,7 +17,12 @@ from sqlalchemy.orm import Session
 from tessellate.core.database import WhiteboardObject, WhiteboardSketch
 from tessellate.api.wb_tree import MAP_COL, MAP_ROW, MAX_IMPORT_CHARS, MAX_IMPORT_DEPTH, MAX_IMPORT_NODES
 from tessellate.api.wb_model import MAP_TOPIC_KIND, MAX_OBJECT_TEXT_CHARS, MAX_TOPIC_NOTE_CHARS, WhiteboardObjectData
-from tessellate.api.wb_export import XMIND_LAYOUTS, _FREEMIND_EDGE_STYLE_BACK, _FREEMIND_PRIVATE, _MARKDOWN_TASK_ITEM, _OPML_PRIVATE
+from tessellate.api.wb_export import XMIND_LAYOUTS, _FREEMIND_EDGE_STYLE, _FREEMIND_PRIVATE, _OPML_PRIVATE
+
+#: The export's tables read backwards: FreeMind's edge STYLE to this map's line
+#: shape, and a Markdown task box to its state.
+_FREEMIND_EDGE_STYLE_BACK = {value: key for key, value in _FREEMIND_EDGE_STYLE.items()}
+_MARKDOWN_TASK_ITEM = re.compile(r"^\[([ xX])\]\s+")
 
 class MapImport(BaseModel):
     format: str
