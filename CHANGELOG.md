@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat acts take a note by its number: "pin note 12", "delete note 12", "rename note 12 to ...", "link note 3 to note 4" and "tag note 12 with health" act on that note, and a number with no note says so (OPEN 1522).
 - A sheet whose focus arrived by itself still re-measures the toasts once it settles: the import card moved after the focusin check, so the search-by-meaning question covered Import (E2E import, fifth head).
 - A toast steps aside for an open sheet's buttons even when nothing is focused: on CI the focus never reached the import preview, so the search-by-meaning question kept the Import press (E2E import, red on both tries); the chat file tests find the chat's own model request, not the last call.
 - Full-suite fallout of the DX29 and INBOX 1545 merges: the drag grip's hover has its keyboard twin, the export's icon font fetch (static /vendor) is allowed, the wrap toggle test reads DX23's boolean.

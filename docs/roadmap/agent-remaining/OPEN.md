@@ -1591,7 +1591,7 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 1519 | Questions split at quote marks: INBOX 745 (b) decided a quoted prompt is not the person's own question, so the extractor rejects them; the fragments... | docs/roadmap/agent-remaining/OPEN.md:2465 | M | unassigned |
 | 1520 | A failed or slow status poll nulls modelStatus, so Agent greys until the next good poll and may flicker. | docs/roadmap/agent-remaining/OPEN.md:2473 | S | unassigned |
 | 1521 | Other AI controls still gate on aiIsOff(); model_ready is the field to move them to. | docs/roadmap/agent-remaining/OPEN.md:2474 | S | unassigned |
-| 1522 | The reading does not take a note by its number ("pin note 12"): commands._one_target. | docs/roadmap/agent-remaining/OPEN.md:2519 | S | unassigned |
+| 1522 | **Fixed 2026-11-02 (a30d-1102; tests/test_note_by_number_1102.py: _target reads note 12 to a note_id, _resolve_one and _which look it up, link takes both numbers).** The reading does not take a note by its number ("pin note 12"): commands._one_target. | docs/roadmap/agent-remaining/OPEN.md:2519 | S | unassigned |
 | 1523 | The fishbone's rib runs behind its causes' boxes (lines are under nodes); the look is not compared against XMind's. | docs/roadmap/agent-remaining/OPEN.md:2554 | S | unassigned |
 | 1524 | The week is Monday-first on user_now; a Sunday-first locale reads it a day out (notebook_stats.week_start). | docs/roadmap/agent-remaining/OPEN.md:2565 | S | unassigned |
 | 1525 | Words written this week are the words in the notes made that week; edits to older notes are not counted (no per-edit word delta is stored). | docs/roadmap/agent-remaining/OPEN.md:2566 | S | unassigned |
