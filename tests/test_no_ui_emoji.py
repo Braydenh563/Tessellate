@@ -80,6 +80,25 @@ ALLOWED: dict[str, list[tuple[str, str]]] = {
             "(\\cdots draws as the midline ellipsis), document content rather than an icon",
         ),
     ],
+    "frontend/js/documents-word.js": [
+        (
+            "new D.TextRun({ text: child.checked ?",
+            "a task's box in the exported .docx (DX9): text inside the Word file, which "
+            "has no Phosphor font, never drawn in the app",
+        ),
+    ],
+    "frontend/js/documents.js": [
+        (
+            "const DOC_RICH_TAGS",
+            "the bullet marks a pasted Word paragraph starts with, matched to read it as "
+            "a list; never drawn",
+        ),
+        (
+            "(?:[·•▪◦‣§Ø]",
+            "the same bullet marks (DX32), matched to make the paragraph an item and "
+            "stripped from its text; never drawn",
+        ),
+    ],
     "frontend/js/documents-prose.js": [
         (
             "block:const DOC_EMOJI_SOURCE",
