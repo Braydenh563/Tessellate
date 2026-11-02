@@ -1588,6 +1588,15 @@ button.rich-picker-row:is(:hover, :focus-visible) .rich-picker-tile {
   font-size: var(--text-md);
   color: var(--muted);
 }
+/* A formula the parser had to guess at (documents-math.js `problem`): an
+   error tint, and the title names what it could not read (audit 1102 DX18).
+   Live and Read draw it through the same wrapper. */
+.md-math-error {
+  color: var(--error);
+  background: var(--error-soft);
+  border-radius: var(--radius-sm);
+  padding: 0 var(--space-1);
+}
 /* --- transcluded notes (![[note]]) -------------------------------------------
    An embedded note is somebody else's text living inside this one, and the
    single most important thing the styling has to do is say so, otherwise a

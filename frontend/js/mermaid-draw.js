@@ -345,9 +345,60 @@ function mermaidKnown(source, look = null) {
 
 //: The one-line reason a source was refused by the parser, remembered so the
 //: Live view can leave that fence as code without asking again.
+// MERMAID-PLAIN-BEGIN
 function mermaidFailure(source) {
   return mermaidState.bad.get(source) || "";
 }
+
+//: **The reason in plain words** (audit 1102 DX17). The parser's own line is a
+//: token list ("Expecting 'AMP', 'COLON', 'PIPE' ...") that tells a writer
+//: nothing; what they need is which line and what is wrong with it. The line
+//: is found in the source, because Mermaid reports the line where it gave up
+//: (often the empty one after a dangling arrow). A reason that is already a
+//: sentence (empty, too long, renderer missing) comes back as it was. A
+//: property of `mermaidFailure`, not a global of its own.
+mermaidFailure.plain = (error, source) => {
+  const raw = String(error || "");
+  if (/No diagram type detected|UnknownDiagramError/i.test(raw)) {
+    return "The first line should name a diagram, such as flowchart TD or sequenceDiagram.";
+  }
+  const found = /^Parse error on line (\d+)/.exec(raw);
+  if (!found) return raw;
+  const lines = String(source || "").split("\n");
+  let at = Math.min(Number(found[1]), lines.length) - 1;
+  while (at > 0 && !lines[at].trim()) at -= 1;
+  const text = (lines[at] || "").replace(/;\s*$/, "").trim();
+  const where = `Line ${at + 1}: `;
+  const count = (open, close) => text.split(open).length - text.split(close).length;
+  if (/(-->|---|==>|===|-\.->|--[ox>]|<-->)$/.test(text)) return `${where}an arrow needs a box after it.`;
+  if (text.split('"').length % 2 === 0) return `${where}a quote is not closed.`;
+  if (count("[", "]") || count("(", ")") || count("{", "}")) return `${where}a bracket is not closed.`;
+  return `${where}this line is not valid here. Check its arrows and brackets.`;
+};
+
+// MERMAID-PLAIN-END
+
+//: The note under a diagram that would not draw, for Read and for the Live
+//: widget alike: the plain sentence, and the parser's own words behind a
+//: disclosure when they differ.
+mermaidFailure.note = (error, source) => {
+  const note = document.createElement("div");
+  note.className = "md-mermaid-reason";
+  note.setAttribute("role", "status");
+  const plain = mermaidFailure.plain(error, source);
+  note.append(`Could not draw this diagram. ${plain}`);
+  if (plain !== error) {
+    const more = document.createElement("details");
+    more.className = "md-mermaid-raw";
+    const label = document.createElement("summary");
+    label.textContent = "Details";
+    const raw = document.createElement("code");
+    raw.textContent = error;
+    more.append(label, raw);
+    note.append(more);
+  }
+  return note;
+};
 
 function mermaidRequest(source, look = null) {
   const theme = mermaidThemeNow(look);
@@ -457,11 +508,7 @@ function mermaidDrawBlock(block) {
     }
     figure.remove();
     block.dataset.mermaidState = "failed";
-    const reason = document.createElement("p");
-    reason.className = "md-mermaid-reason";
-    reason.setAttribute("role", "status");
-    reason.textContent = `Could not draw this diagram: ${result.error}`;
-    block.after(reason);
+    block.after(mermaidFailure.note(result.error, code.textContent));
   });
 }
 

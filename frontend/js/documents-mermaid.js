@@ -381,18 +381,16 @@
       }
     }
     class DocMermaidReason extends WidgetType {
-      constructor(reason) {
+      constructor(reason, source) {
         super();
         this.reason = reason;
+        this.source = source;
       }
       eq(other) {
-        return other.reason === this.reason;
+        return other.reason === this.reason && other.source === this.source;
       }
       toDOM() {
-        const note = document.createElement("p");
-        note.className = "md-mermaid-reason";
-        note.textContent = `Could not draw this diagram: ${this.reason}`;
-        return note;
+        return mermaidFailure.note(this.reason, this.source);
       }
     }
     const build = (state) => {
@@ -404,7 +402,7 @@
         const reason = docPhase2State.mermaidReady ? mermaidFailure(block.source) : "";
         //: A fence the frame refused stays the code it is, with its reason under it.
         if (reason) {
-          ranges.push(Decoration.widget({ widget: new DocMermaidReason(reason), block: true, side: 1 }).range(block.to));
+          ranges.push(Decoration.widget({ widget: new DocMermaidReason(reason, block.source), block: true, side: 1 }).range(block.to));
           continue;
         }
         if (docLiveSpanTouched.anchorIn(state.selection.ranges, block.from, block.to)) continue;

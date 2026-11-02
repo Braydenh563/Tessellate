@@ -130,6 +130,15 @@
     return tokens;
   }
 
+  //: **What counts as a formula that failed** (audit 1102 DX18). The parser stays
+  //: total (it still draws what it understood), but it now says so when it had
+  //: to guess: the first thing it could not read is kept on the state and
+  //: comes out as `problem` on the tree, so a reader is told rather than left
+  //: with a lone "a" where `\frac{a}{` was typed.
+  function docMathProblem(state, text) {
+    if (state.problems && !state.problems.includes(text)) state.problems.push(text);
+  }
+
   function docMathRow(kids) {
     return kids.length === 1 ? kids[0] : { tag: "mrow", kids };
   }
@@ -137,10 +146,13 @@
   //: One argument: a braced group, or the single token after the command.
   function docMathArgument(tokens, state) {
     const token = tokens[state.at];
-    if (!token) return { tag: "mrow", kids: [] };
+    if (!token) {
+      docMathProblem(state, "a command is missing what it applies to");
+      return { tag: "mrow", kids: [] };
+    }
     if (token.kind === "{") {
       state.at += 1;
-      return docMathRow(docMathNodes(tokens, state));
+      return docMathRow(docMathNodes(tokens, state, true));
     }
     state.at += 1;
     return docMathToken(token, tokens, state);
@@ -194,12 +206,14 @@
   function docMathCells(tokens, state) {
     const rows = [[[]]];
     let depth = 0;
+    let ended = false;
     while (state.at < tokens.length) {
       const token = tokens[state.at];
       state.at += 1;
       const cmd = token.kind === "cmd" ? token.value : null;
       if (cmd === "end" && depth === 0) {
         docMathBracedName(tokens, state);
+        ended = true;
         break;
       }
       if (token.kind === "{" || cmd === "begin") depth += 1;
@@ -209,18 +223,20 @@
       else if (depth === 0 && cmd === "\\") rows.push([[]]);
       else row[row.length - 1].push(token);
     }
+    if (!ended) docMathProblem(state, "an environment has no \\end");
     return rows;
   }
 
   function docMathEnvironment(tokens, state) {
     const name = docMathBracedName(tokens, state);
+    if (!(name in DOC_MATH_FENCES)) docMathProblem(state, `there is no environment called {${name}}`);
     const rows = docMathCells(tokens, state).filter((row) => row.some((cell) => cell.length));
     const table = {
       tag: "mtable",
       attrs: name === "cases" ? { columnalign: "left" } : undefined,
       kids: rows.map((row) => ({
         tag: "mtr",
-        kids: row.map((cell) => ({ tag: "mtd", kids: [docMathRow(docMathNodes(cell, { at: 0 }))] })),
+        kids: row.map((cell) => ({ tag: "mtd", kids: [docMathRow(docMathNodes(cell, { at: 0, problems: state.problems }))] })),
       })),
     };
     const [open, close] = DOC_MATH_FENCES[name] || ["", ""];
@@ -294,21 +310,25 @@
     if (DOC_MATH_FUNCTIONS.includes(name)) return { tag: "mi", attrs: { mathvariant: "normal" }, text: name };
     if (name === "{" || name === "}" || name === "|") return { tag: "mo", text: name };
     //: Anything unknown comes back as what was typed. A formula that is nine
-    //: tenths understood should render nine tenths of the way, not fail.
+    //: tenths understood should render nine tenths of the way, not fail; it
+    //: is marked, though (`problem`), when the unknown thing is a command.
+    if (/^[A-Za-z]/.test(name)) docMathProblem(state, `\\${name} is not a command this editor draws`);
     return { tag: "mi", text: name };
   }
 
-  function docMathNodes(tokens, state) {
+  function docMathNodes(tokens, state, nested = false) {
     const kids = [];
+    let closed = false;
     while (state.at < tokens.length) {
       const token = tokens[state.at];
       if (token.kind === "}") {
         state.at += 1;
+        closed = true;
         break;
       }
       if (token.kind === "{") {
         state.at += 1;
-        kids.push(docMathRow(docMathNodes(tokens, state)));
+        kids.push(docMathRow(docMathNodes(tokens, state, true)));
         continue;
       }
       if (token.kind === "^" || token.kind === "_") {
@@ -330,6 +350,7 @@
       state.at += 1;
       kids.push(docMathToken(token, tokens, state));
     }
+    if (nested && !closed) docMathProblem(state, "a { is never closed");
     return kids;
   }
 
@@ -342,8 +363,13 @@
     //: Display only: an inline formula has nowhere to put one.
     const found = display ? /\\tag\*?\{([^{}]{1,24})\}/.exec(tex) : null;
     const body = found ? tex.replace(found[0], "") : tex;
-    const kids = docMathNodes(docMathTokens(body), { at: 0 });
+    const tokens = docMathTokens(body);
+    const state = { at: 0, problems: [] };
+    const kids = docMathNodes(tokens, state);
+    //: A `}` with nothing open ends the parse early and drops the rest.
+    if (state.at < tokens.length) docMathProblem(state, "a } has no { before it");
     return {
+      problem: state.problems[0] || "",
       tag: "math",
       attrs: { display: display ? "block" : "inline" },
       kids: [docMathRow(kids.length ? kids : [{ tag: "mtext", text: "" }])],
@@ -383,7 +409,21 @@
 
   function docMathRender(tex, display = false) {
     const tree = docMathTree(tex, display);
-    const math = docMathElement(tree);
+    const drawn = docMathNumbered(tree, docMathElement(tree));
+    if (!tree.problem) return drawn;
+    //: **A formula the parser had to guess at says so** (audit 1102 DX18): an
+    //: error tint and a title naming the first thing it could not read, on one
+    //: wrapper so the Live widget, the Read view and a note card all get it
+    //: from here. `title` sits on the span, not on the MathML element, which
+    //: browsers do not give a tooltip.
+    const mark = document.createElement("span");
+    mark.className = "md-math-error";
+    mark.title = `Not drawn as written: ${tree.problem}.`;
+    mark.append(drawn);
+    return mark;
+  }
+
+  function docMathNumbered(tree, math) {
     if (!tree.label) return math;
     //: A numbered equation: the formula centred, its number at the right edge.
     const box = document.createElement("span");

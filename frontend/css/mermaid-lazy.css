@@ -56,6 +56,24 @@
   font-size: var(--text-sm);
 }
 
+/* The parser's own words, behind a disclosure under the plain sentence
+   (audit 1102 DX17). */
+.md-mermaid-raw {
+  margin-top: var(--space-1);
+}
+
+.md-mermaid-raw summary {
+  cursor: pointer;
+  width: fit-content;
+}
+
+.md-mermaid-raw code {
+  display: block;
+  margin-top: var(--space-1);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
 /* The fence waits behind its figure while the frame draws; a failed one shows. */
 .code-block[data-mermaid-state="pending"] {
   display: none;

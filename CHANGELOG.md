@@ -6,7 +6,9 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
-Documents Live: a wide table keeps a 6em floor per column and scrolls sideways, as Read does (audit 1102 DX2). 14 columns: cells 42.4 to 88.3px, "Column 0" no longer stacks a letter a line, line 594 to 1237px in a 658px editor (scrollWidth 658 to 1301).
+- Documents: a formula the maths parser had to guess at (`$\frac{a}{$`, `$$\begin{bad}x$$`, an unclosed brace, a missing argument, an unknown command) is tinted in the error colours with a title naming the first thing it could not read, in Live and Read (audit 1102 DX18). The parser stays total; `docMathTree` returns `problem`. 2 of 2 broken formulas marked and 0 of 3 valid ones; colour rgb(28,28,26) to rgb(176,26,26).
+- Documents: a diagram that will not draw says what to fix in plain words, in Live and Read ("Line 2: an arrow needs a box after it."), with the parser's own message behind a Details disclosure instead of its token list (audit 1102 DX17; `mermaidFailure.plain` and `.note`, one builder for both views).
+- Documents Live: a wide table keeps a 6em floor per column and scrolls sideways, as Read does (audit 1102 DX2). 14 columns: cells 42.4 to 88.3px, "Column 0" no longer stacks a letter a line, line 594 to 1237px in a 658px editor (scrollWidth 658 to 1301).
 - Ask tab draws the pick-up tip under the answer, as Chat does (audit 1028 E52); tests/test_utility_timers_1029.py stubs follow 1553 (page object, no lock card), assertions unchanged.
 - Documents Live: a drag selection across a diagram or equation leaves it drawn (INBOX 1547); source shows only when a selection starts in it. flicker1547.js: 12 of 12 toggles and a 147px jump before, 0 and 0 after.
 - Panels: a corner resizes from the corner (INBOX 1552). The rounded corner clipped hit testing, so a press there hit the backdrop; corners now take 16px each way and a backdrop press inside the box resizes. rim1536.js: Settings se moved l 208 to 216, now r and b move and l and t hold.
