@@ -1306,8 +1306,20 @@ const CLEAR_CELL = 40;
 const CLEAR_GRID_MAX = 1 << 18;
 const clearPts = new Float64Array(10);
 const clearInv = new Float64Array(5);
+//: **The first ticks run the force on every second one** (GR1, ranked row
+//: 19): the clearance force was 5.2 s of a 9.9 s init to end on the 2,000-note
+//: fixture (126 calls, 41 ms each), and the hot first 60 ticks only shape the
+//: layout the later ticks and the passes then clear. `clear.lean` counts the
+//: calls left in that lean stretch; an init sets it, every call after is full.
+const CLEAR_LEAN_TICKS = 60;
+//: A tick that runs in the lean stretch pushes twice as hard, for the one it skipped.
+const CLEAR_LEAN_GAIN = 2;
+//: A chord longer than this many cells reads each column's cells as one run.
+const CLEAR_LONG_CELLS = 4;
 const clear = {
   curved: true,
+  lean: 0,
+  gain: 1,
   stamp: 0,
   start: new Int32Array(1),
   items: new Int32Array(0),
@@ -1404,7 +1416,7 @@ function clearPush(node, a, b) {
     nx = -(b.y - a.y) / len;
     ny = (b.x - a.x) / len;
   }
-  const push = (need - dist) * CLEAR_STRENGTH;
+  const push = (need - dist) * CLEAR_STRENGTH * clear.gain;
   // A held note does not move; whoever is free takes the whole step.
   const along = clearNear[3];
   const nodeFree = node.fx == null ? 1 : 0;
@@ -1421,6 +1433,12 @@ function clearPush(node, a, b) {
 }
 
 function clearanceForce() {
+  clear.gain = 1;
+  if (clear.lean > 0) {
+    clear.lean -= 1;
+    if (clear.lean % 2 === 0) return;
+    clear.gain = CLEAR_LEAN_GAIN;
+  }
   const links = simulation && simulation.force("link") ? simulation.force("link").links() : [];
   if (!links.length) return;
   let widest = 0;
@@ -1518,6 +1536,7 @@ function clearanceForce() {
       const dx = clearPts[c * 2] - ax;
       const dy = clearPts[c * 2 + 1] - ay;
       const inv = clearInv[c];
+      const long = Math.abs(dx) > CLEAR_LONG_CELLS * cell || Math.abs(dy) > CLEAR_LONG_CELLS * cell;
       const slope = dx ? dy / dx : 0;
       const lo = Math.min(ax, ax + dx);
       const hi = Math.max(ax, ax + dx);
@@ -1527,8 +1546,12 @@ function clearanceForce() {
         const yb = dx ? ay + slope * (Math.min(hi, (gx + 1) * cell + reach) - ax) : ay + dy;
         const y1 = Math.min(Math.floor((Math.max(ya, yb) + reach + 1) / cell), gy0 + rows - 1);
         const column = (gx - gx0) * rows - gy0;
-        for (let gy = Math.max(Math.floor((Math.min(ya, yb) - reach - 1) / cell), gy0); gy <= y1; gy++) {
-          const end = start[column + gy + 1];
+        const y0 = Math.max(Math.floor((Math.min(ya, yb) - reach - 1) / cell), gy0);
+        //: A long chord's column is read as one run of slots, not cell by cell
+        //: (`CLEAR_LONG_CELLS`): the cells of a column are contiguous in the
+        //: sorted arrays, so the same notes are asked in the same order.
+        for (let gy = y0; gy <= y1; gy += long ? y1 - y0 + 1 : 1) {
+          const end = start[column + (long ? y1 : gy) + 1];
           for (let k = start[column + gy]; k < end; k++) {
             const at = items[k];
             if (at === ai || at === bi || mark[at] === stamp) continue;
@@ -3585,6 +3608,7 @@ self.onmessage = (event) => {
       ring.on = groupingOn(message.params);
       shuffle.left = 0;
       const tuned = tuning(message.params);
+      clear.lean = CLEAR_LEAN_TICKS;
       simulation = d3
         .forceSimulation(nodes)
         .velocityDecay(VELOCITY_DECAY)
