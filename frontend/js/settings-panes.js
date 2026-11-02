@@ -1125,7 +1125,7 @@ const POPUP_TOOLS = [
     about: "Sums, conversions and equations in one dialog, with no model; Alt+= opens the equation tab in a text box, /calc the calculator in Chat.",
     keys: "Alt+= or /calc", where: "Equation in text boxes, Calculator in Chat",
     //: `t`: the box a slash row was typed in, which outranks the palette's last box (a stale one sent "/calc" in a note to the Ask box).
-    guide: "calculator", open: (t) => ensureModule("appPalette").then(() => popupToolMaths(t ? { target: t } : undefined)),
+    guide: "calculator", open: (t) => ensureModule("appPalette").then(() => popupToolMaths({ target: t || null })),
   },
   {
     id: "convert", name: "Convert units", icon: "ph:ruler", group: "Ask & chat",
@@ -1152,9 +1152,10 @@ const POPUP_TOOLS = [
 
 //: What the palette caught from the field it was opened over (`paletteCaught`,
 //: app-palette.js, lazy): nothing yet when that file is not in, so a caller
-//: other than the palette (Tools and features, audit 1031 Z17) cannot throw.
+//: other than the palette (Tools and features, audit 1031 Z17) cannot throw,
+//: and nothing once the row it ran has started (`live`, INBOX 1530 g).
 function paletteCaughtNow() {
-  return typeof paletteCaught === "undefined" ? { target: null, selection: "", start: null, end: null, range: null } : paletteCaught;
+  return typeof paletteCaught === "undefined" || !paletteCaught.live ? { target: null, selection: "", start: null, end: null, range: null } : paletteCaught;
 }
 
 //: **A row's keycap: the way to run it without the palette.** A chord the

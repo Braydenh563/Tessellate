@@ -5,7 +5,7 @@
    It is the Calculator's Equation tab (INBOX 1527), so the card is the sheet's
    and this file only lays out what is inside the pane: the mode, the equation
    field (math-field-lazy.css draws it), the value line, the search, the
-   palette scroller and the foot, in one column that fits a phone. */
+   palette scroller, in one column that fits a phone. */
 
 .math-editor {
   display: flex;
@@ -20,9 +20,10 @@
   font-size: var(--text-xs);
 }
 
-/* The kind strip spans the panel under its head, as the icon picker's does. */
+/* Inline and Display: a `.seg`, its own width, with the pane's gap under it and none of the well's own margin. */
 .math-editor-mode {
-  align-self: stretch;
+  align-self: flex-start;
+  margin-bottom: 0;
 }
 
 /* The line under the head: the hint, and the LaTeX button that shows the TeX. */
@@ -44,8 +45,8 @@
   flex: none;
 }
 
-/* The sheet's card scrolls (a bottom sheet is two thirds of the window), so the
-   palette does not scroll again inside it: a scroll in a scroll traps a thumb. */
+/* The dialog's panes scroll (`.calc-panes`, reply-kit-lazy.css), so the
+   palette does not scroll again inside them: a scroll in a scroll traps a thumb. */
 .math-editor-list {
   min-width: 0;
 }
@@ -84,8 +85,4 @@
 
 .math-editor-glyph {
   line-height: 1;
-}
-
-.math-editor-foot {
-  margin: 0;
 }

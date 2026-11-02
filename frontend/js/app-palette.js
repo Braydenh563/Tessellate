@@ -86,7 +86,7 @@ function paletteAskNotes(query) {
 //: field that had the focus and the text selected in it, caught before the
 //: palette's own box takes the focus, so Count words and Insert template act
 //: on the editor the person was in.
-const paletteCaught = { target: null, selection: "", start: null, end: null, range: null };
+const paletteCaught = { target: null, selection: "", start: null, end: null, range: null, live: false };
 
 //: The usage ledger's counts (core/usage.py, WORLD_CLASS_PLAN H9): with
 //: nothing typed, the commands this person runs most come first.
@@ -108,7 +108,13 @@ function paletteRun(match) {
     if (name) usageCount(name);
     if (name && typed) palettePick(typed, name);
   }
-  match.run();
+  //: The caught box is live for the row's own synchronous start only (`paletteCaughtNow`, settings-panes.js): a row run from the shortcuts dialog or the Guide, long after, finds none (INBOX 1530 g).
+  paletteCaught.live = true;
+  try {
+    match.run();
+  } finally {
+    paletteCaught.live = false;
+  }
 }
 
 async function openPalette() {

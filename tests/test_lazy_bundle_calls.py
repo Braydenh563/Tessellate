@@ -412,7 +412,6 @@ REACHED_AFTER_LOAD = {
 LAZY_REACHED_AFTER_LOAD: dict[str, str] = {
     "answer-kit.js:agentTimeline": "addAssistantBubble has two callers: chat-turn.js (its own file) and sheets-selects.js's replay, after `await ensureModule(\"chatTurn\")` (line 1991)",
     "answer-kit.js:nameMark": "inside the afterCharacters callback (avatarHead and chatHead paths) or reached from it",
-    "app-features.js:paletteCaught": "popupToolMaths's one caller (settings-panes.js) awaits ensureModule(\"appPalette\") first, and the palette passes its own caught",
     "app-palette.js:quickAddPaletteRow": "typeof-guarded optional first row; null is the designed answer without it (the act row only exists once quickadd.js or the board is loaded)",
     "app-palette.js:wbPaletteActRow": "typeof-guarded optional first row; null is the designed answer without it (the act row only exists once quickadd.js or the board is loaded)",
     "appearance-panel.js:paintSettingRow": "the panel is opened only by openAppearancePanel, which awaits settingsControls and settings-rows.js (line 265) before it sets APPEARANCE_PANEL.open, and this returns while it is not open",

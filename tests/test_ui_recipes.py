@@ -5095,6 +5095,7 @@ SEG_BUILT_IN_SCRIPT = {
     ("whiteboard.js", "seg seg-compact wb-export-seg"): "Export this board: the format, a value",
     ("timeline-calendar.js", "seg seg-compact timeline-cal-span"): "not a popup: the calendar head's view mode (Month, Week, Day)",
     ("dashboard.js", "seg focus-presets-seg"): "not a popup: the focus timer's length, a value (UI_MODERNISATION V8)",
+    ("math-editor.js", "seg math-editor-mode"): "not a kind switch: Inline or Display, two exclusive values always in view (INBOX 1530 g L3; the dialog's own kinds are its tab strip)",
 }
 
 
@@ -6353,7 +6354,6 @@ PANEL_FIXED_JS = {
     "icon-picker.js": "an anchored picker",
     "lightbox-actions.js": "the image viewer's overlays",
     "lightbox-view.js": "the image viewer",
-    "reply-kit.js": "an anchored panel",
     "settings-controls.js": "an anchored control overlay",
     "sheets-selects.js": "the select popup",
     "skills.js": "an anchored panel",

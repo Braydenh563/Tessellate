@@ -250,10 +250,11 @@ function featureCommandRows(groups) {
   return { group: "More commands", items };
 }
 
-//: The popup tools (settings-panes.js `POPUP_TOOLS`): Calculator and equations over the box the palette was opened from (its Insert buttons write there), else on its own; and the shortcuts dialog's Tools list.
-async function popupToolMaths(caught = paletteCaught) {
+//: The popup tools (settings-panes.js `POPUP_TOOLS`): Calculator and equations over the box it is handed (`{target}`; its Insert buttons write there), else on its own. The box is passed, never remembered: a default of the palette's last box sent the shortcuts dialog's and the Guide's opens to a field from an earlier palette (INBOX 1530 g).
+async function popupToolMaths(caught = {}) {
   const target = caught.target;
-  const fit = target?.isConnected && (target.id === "question" || (typeof editorSurfaceKind === "function" && editorSurfaceKind(target)));
+  //: By id first: `editorSurfaceKind` answers null until the Library bundle has loaded, so a palette opened over the Chat box early dropped its box and the dialog opened with no Insert.
+  const fit = target?.isConnected && (target.id === "question" || target.id in EDITOR_SURFACES || (typeof editorSurfaceKind === "function" && editorSurfaceKind(target)));
   if (fit) target.focus();
   await ensureModule("replyKit");
   openCalculator("", "work", { target: fit ? target : null });
@@ -513,9 +514,9 @@ function paletteCommands() {
     //: The small tools (Brief 89, UI_MODERNISATION utilities rows 2 to 4):
     //: "timer 10 minutes" and "insert template ..." also build their own rows
     //: from the words (`utilityPaletteRows`, app-palette.js).
-    ...POPUP_TOOLS.map((t) => ({ label: `${t.icon} ${t.name}`, keywords: t.keywords, about: t.about, keys: t.keys, act: t.open })),
+    ...POPUP_TOOLS.map((t) => ({ label: `${t.icon} ${t.name}`, keywords: t.keywords, about: t.about, keys: t.keys, act: () => t.open(paletteCaughtNow().target) })),
     { label: "ph:closed-captioning Live captions", quick: "captions", keywords: "live captions subtitles transcribe speech microphone listen real time stop", about: "Write what the microphone hears as you go, on this computer. Run it again to stop and save a note.", act: () => toggleLiveCaptions() },
-    { label: "ph:text-aa Count words", keywords: "word count characters letters reading time selection length", about: "Words, characters and reading time of the selected text, or of the editor.", act: () => ensureModule("utilities").then(() => countSelection(paletteCaughtNow())) },
+    { label: "ph:text-aa Count words", keywords: "word count characters letters reading time selection length", about: "Words, characters and reading time of the selected text, or of the editor.", act: () => { const caught = { ...paletteCaughtNow() }; ensureModule("utilities").then(() => countSelection(caught)); } },
     { label: "ph:translate Translate this", keywords: "translate translation spanish language offline selection passage", about: "The selected passage into Spanish, offline (a package).", act: () => { const caught = { ...paletteCaughtNow() }; ensureModule("translate").then(() => translateCaught(caught)); } },
     { label: "ph:activity Activity", keywords: "running jobs stop background model unload memory agent runs", about: "Every job running now, with Stop, and the agent's runs.", act: () => openActivity("running") },
     { label: "ph:stop-circle Stop the model", keywords: "unload free memory model stop generating", about: "Stop any answer and unload the model from memory.", act: () => ensureModule("activity").then(() => window.stopActivityModel()) },

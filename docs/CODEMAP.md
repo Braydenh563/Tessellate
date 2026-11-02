@@ -2,9 +2,9 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7555, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8429, test files 1828, tests 15636, plan headings 990, app scripts 28, boot scripts 37, script files 225.
+Counts: frontend functions 7554, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8429, test files 1829, tests 15652, plan headings 990, app scripts 28, boot scripts 37, script files 225.
 
-## Frontend functions (7555)
+## Frontend functions (7554)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -898,10 +898,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `markPrefsDirty` | frontend/js/settings-panes.js:914 |
 | `markPrefsSaved` | frontend/js/settings-panes.js:930 |
 | `nudgeZoom` | frontend/js/settings-panes.js:1077 |
-| `paletteAbouts` | frontend/js/settings-panes.js:1179 |
-| `paletteCaughtNow` | frontend/js/settings-panes.js:1156 |
-| `paletteKeys` | frontend/js/settings-panes.js:1165 |
-| `paletteRowParts` | frontend/js/settings-panes.js:1190 |
+| `paletteAbouts` | frontend/js/settings-panes.js:1180 |
+| `paletteCaughtNow` | frontend/js/settings-panes.js:1157 |
+| `paletteKeys` | frontend/js/settings-panes.js:1166 |
+| `paletteRowParts` | frontend/js/settings-panes.js:1191 |
 | `refitComposer` | frontend/js/settings-panes.js:269 |
 | `renderAutonomousSettings` | frontend/js/settings-panes.js:684 |
 | `renderPrefs` | frontend/js/settings-panes.js:614 |
@@ -1954,13 +1954,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `featureCatalog` | frontend/js/app-features.js:11 |
 | `featureCommandRows` | frontend/js/app-features.js:223 |
-| `paletteCommands` | frontend/js/app-features.js:288 |
+| `paletteCommands` | frontend/js/app-features.js:289 |
 | `popupToolMaths` | frontend/js/app-features.js:254 |
-| `quickAccessCurrent` | frontend/js/app-features.js:587 |
-| `quickAccessItems` | frontend/js/app-features.js:578 |
-| `quickCatalogue` | frontend/js/app-features.js:559 |
-| `renderQuickLinks` | frontend/js/app-features.js:591 |
-| `renderToolShortcutList` | frontend/js/app-features.js:262 |
+| `quickAccessCurrent` | frontend/js/app-features.js:588 |
+| `quickAccessItems` | frontend/js/app-features.js:579 |
+| `quickCatalogue` | frontend/js/app-features.js:560 |
+| `renderQuickLinks` | frontend/js/app-features.js:592 |
+| `renderToolShortcutList` | frontend/js/app-features.js:263 |
 
 ### frontend/js/app-import.js (6)
 
@@ -1977,51 +1977,51 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `closePalette` | frontend/js/app-palette.js:157 |
-| `notesPaletteCommands` | frontend/js/app-palette.js:840 |
-| `openPalette` | frontend/js/app-palette.js:114 |
-| `paletteActRows` | frontend/js/app-palette.js:433 |
-| `paletteArrow` | frontend/js/app-palette.js:794 |
+| `closePalette` | frontend/js/app-palette.js:163 |
+| `notesPaletteCommands` | frontend/js/app-palette.js:846 |
+| `openPalette` | frontend/js/app-palette.js:120 |
+| `paletteActRows` | frontend/js/app-palette.js:439 |
+| `paletteArrow` | frontend/js/app-palette.js:800 |
 | `paletteAskNotes` | frontend/js/app-palette.js:60 |
-| `paletteBase` | frontend/js/app-palette.js:388 |
-| `paletteDistance` | frontend/js/app-palette.js:636 |
-| `paletteDrawRows` | frontend/js/app-palette.js:707 |
-| `paletteEditorMatches` | frontend/js/app-palette.js:203 |
+| `paletteBase` | frontend/js/app-palette.js:394 |
+| `paletteDistance` | frontend/js/app-palette.js:642 |
+| `paletteDrawRows` | frontend/js/app-palette.js:713 |
+| `paletteEditorMatches` | frontend/js/app-palette.js:209 |
 | `paletteFeature` | frontend/js/app-palette.js:96 |
-| `paletteFeatureRows` | frontend/js/app-palette.js:416 |
-| `paletteFind` | frontend/js/app-palette.js:682 |
-| `paletteFuzzyScore` | frontend/js/app-palette.js:183 |
-| `paletteGoToCategory` | frontend/js/app-palette.js:926 |
-| `paletteKeydown` | frontend/js/app-palette.js:803 |
-| `paletteLight` | frontend/js/app-palette.js:768 |
-| `paletteMatches` | frontend/js/app-palette.js:217 |
-| `paletteNearRows` | frontend/js/app-palette.js:662 |
-| `paletteNearest` | frontend/js/app-palette.js:616 |
-| `paletteNearestCommand` | frontend/js/app-palette.js:687 |
-| `paletteNearestRows` | frontend/js/app-palette.js:651 |
+| `paletteFeatureRows` | frontend/js/app-palette.js:422 |
+| `paletteFind` | frontend/js/app-palette.js:688 |
+| `paletteFuzzyScore` | frontend/js/app-palette.js:189 |
+| `paletteGoToCategory` | frontend/js/app-palette.js:932 |
+| `paletteKeydown` | frontend/js/app-palette.js:809 |
+| `paletteLight` | frontend/js/app-palette.js:774 |
+| `paletteMatches` | frontend/js/app-palette.js:223 |
+| `paletteNearRows` | frontend/js/app-palette.js:668 |
+| `paletteNearest` | frontend/js/app-palette.js:622 |
+| `paletteNearestCommand` | frontend/js/app-palette.js:693 |
+| `paletteNearestRows` | frontend/js/app-palette.js:657 |
 | `paletteNoteAbout` | frontend/js/app-palette.js:38 |
 | `paletteNoteRows` | frontend/js/app-palette.js:45 |
-| `paletteNotesInHand` | frontend/js/app-palette.js:916 |
-| `palettePick` | frontend/js/app-palette.js:591 |
-| `palettePicks` | frontend/js/app-palette.js:572 |
-| `palettePool` | frontend/js/app-palette.js:394 |
-| `palettePrefixPicks` | frontend/js/app-palette.js:580 |
-| `paletteRanked` | frontend/js/app-palette.js:548 |
-| `paletteRefresh` | frontend/js/app-palette.js:408 |
+| `paletteNotesInHand` | frontend/js/app-palette.js:922 |
+| `palettePick` | frontend/js/app-palette.js:597 |
+| `palettePicks` | frontend/js/app-palette.js:578 |
+| `palettePool` | frontend/js/app-palette.js:400 |
+| `palettePrefixPicks` | frontend/js/app-palette.js:586 |
+| `paletteRanked` | frontend/js/app-palette.js:554 |
+| `paletteRefresh` | frontend/js/app-palette.js:414 |
 | `paletteRun` | frontend/js/app-palette.js:103 |
-| `paletteScore` | frontend/js/app-palette.js:508 |
-| `paletteSettingRows` | frontend/js/app-palette.js:468 |
-| `paletteShown` | frontend/js/app-palette.js:789 |
-| `paletteStartAct` | frontend/js/app-palette.js:455 |
-| `paletteTarget` | frontend/js/app-palette.js:399 |
-| `paletteText` | frontend/js/app-palette.js:174 |
-| `paletteTier` | frontend/js/app-palette.js:539 |
-| `paletteVocab` | frontend/js/app-palette.js:524 |
-| `paletteWhy` | frontend/js/app-palette.js:605 |
-| `paletteWords` | frontend/js/app-palette.js:495 |
-| `renderPalette` | frontend/js/app-palette.js:733 |
-| `scrollPaletteToActive` | frontend/js/app-palette.js:824 |
-| `utilityPaletteRows` | frontend/js/app-palette.js:296 |
+| `paletteScore` | frontend/js/app-palette.js:514 |
+| `paletteSettingRows` | frontend/js/app-palette.js:474 |
+| `paletteShown` | frontend/js/app-palette.js:795 |
+| `paletteStartAct` | frontend/js/app-palette.js:461 |
+| `paletteTarget` | frontend/js/app-palette.js:405 |
+| `paletteText` | frontend/js/app-palette.js:180 |
+| `paletteTier` | frontend/js/app-palette.js:545 |
+| `paletteVocab` | frontend/js/app-palette.js:530 |
+| `paletteWhy` | frontend/js/app-palette.js:611 |
+| `paletteWords` | frontend/js/app-palette.js:501 |
+| `renderPalette` | frontend/js/app-palette.js:739 |
+| `scrollPaletteToActive` | frontend/js/app-palette.js:830 |
+| `utilityPaletteRows` | frontend/js/app-palette.js:302 |
 
 ### frontend/js/appearance-panel.js (16)
 
@@ -5334,28 +5334,26 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `marginRender` | frontend/js/margin-reader.js:123 |
 | `marginSchedule` | frontend/js/margin-reader.js:184 |
 
-### frontend/js/math-editor.js (18)
+### frontend/js/math-editor.js (16)
 
 | Name | File:line |
 |---|---|
-| `mathEditorBlockText` | frontend/js/math-editor.js:366 |
-| `mathEditorFoot` | frontend/js/math-editor.js:342 |
+| `mathEditorBlockText` | frontend/js/math-editor.js:324 |
 | `mathEditorGroups` | frontend/js/math-editor.js:129 |
-| `mathEditorHelp` | frontend/js/math-editor.js:246 |
-| `mathEditorKeys` | frontend/js/math-editor.js:328 |
-| `mathEditorLede` | frontend/js/math-editor.js:399 |
-| `mathEditorModes` | frontend/js/math-editor.js:274 |
-| `mathEditorMount` | frontend/js/math-editor.js:424 |
+| `mathEditorKeys` | frontend/js/math-editor.js:296 |
+| `mathEditorLede` | frontend/js/math-editor.js:357 |
+| `mathEditorModes` | frontend/js/math-editor.js:254 |
+| `mathEditorMount` | frontend/js/math-editor.js:383 |
 | `mathEditorOutput` | frontend/js/math-editor.js:151 |
-| `mathEditorPalette` | frontend/js/math-editor.js:218 |
-| `mathEditorSearch` | frontend/js/math-editor.js:308 |
+| `mathEditorPalette` | frontend/js/math-editor.js:220 |
+| `mathEditorSearch` | frontend/js/math-editor.js:276 |
 | `mathEditorSpan` | frontend/js/math-editor.js:159 |
-| `mathEditorStart` | frontend/js/math-editor.js:354 |
+| `mathEditorStart` | frontend/js/math-editor.js:312 |
 | `mathEditorSurface` | frontend/js/math-editor.js:187 |
 | `mathEditorTile` | frontend/js/math-editor.js:205 |
 | `mathEditorTileFace` | frontend/js/math-editor.js:196 |
-| `mathEditorWrite` | frontend/js/math-editor.js:380 |
-| `openMathEditor` | frontend/js/math-editor.js:415 |
+| `mathEditorWrite` | frontend/js/math-editor.js:338 |
+| `openMathEditor` | frontend/js/math-editor.js:373 |
 
 ### frontend/js/math-field.js (19)
 
@@ -6131,47 +6129,48 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `listenToReminderWorker` | frontend/js/reminder-notify.js:26 |
 | `showReminderNotification` | frontend/js/reminder-notify.js:36 |
 
-### frontend/js/reply-kit.js (42)
+### frontend/js/reply-kit.js (43)
 
 | Name | File:line |
 |---|---|
-| `calcFigure` | frontend/js/reply-kit.js:496 |
-| `chatQueuePaint` | frontend/js/reply-kit.js:1173 |
-| `openCalculator` | frontend/js/reply-kit.js:364 |
+| `calcFigure` | frontend/js/reply-kit.js:661 |
+| `chatQueuePaint` | frontend/js/reply-kit.js:1336 |
+| `openCalculator` | frontend/js/reply-kit.js:373 |
 | `renderRelatedElsewhere` | frontend/js/reply-kit.js:68 |
 | `renderReplyPanel` | frontend/js/reply-kit.js:23 |
-| `renderToolsUnsupportedNotice` | frontend/js/reply-kit.js:846 |
-| `replyByHelpPanel` | frontend/js/reply-kit.js:897 |
-| `replyByHover` | frontend/js/reply-kit.js:918 |
-| `replyByline` | frontend/js/reply-kit.js:950 |
-| `replyBylineFacts` | frontend/js/reply-kit.js:875 |
-| `replyCalcBuild` | frontend/js/reply-kit.js:387 |
-| `replyCalcConvertPane` | frontend/js/reply-kit.js:736 |
-| `replyCalcEquation` | frontend/js/reply-kit.js:618 |
-| `replyCalcHistory` | frontend/js/reply-kit.js:716 |
-| `replyCalcKeypad` | frontend/js/reply-kit.js:674 |
-| `replyCalcPanel` | frontend/js/reply-kit.js:340 |
-| `replyCalcResult` | frontend/js/reply-kit.js:482 |
-| `replyCalcShow` | frontend/js/reply-kit.js:506 |
-| `replyCalcWork` | frontend/js/reply-kit.js:354 |
-| `replyCalcWorkPane` | frontend/js/reply-kit.js:522 |
+| `renderToolsUnsupportedNotice` | frontend/js/reply-kit.js:1009 |
+| `replyByHelpPanel` | frontend/js/reply-kit.js:1060 |
+| `replyByHover` | frontend/js/reply-kit.js:1081 |
+| `replyByline` | frontend/js/reply-kit.js:1113 |
+| `replyBylineFacts` | frontend/js/reply-kit.js:1038 |
+| `replyCalcActions` | frontend/js/reply-kit.js:513 |
+| `replyCalcBuild` | frontend/js/reply-kit.js:395 |
+| `replyCalcConvertPane` | frontend/js/reply-kit.js:888 |
+| `replyCalcEquation` | frontend/js/reply-kit.js:757 |
+| `replyCalcHistory` | frontend/js/reply-kit.js:868 |
+| `replyCalcKeypad` | frontend/js/reply-kit.js:826 |
+| `replyCalcPanel` | frontend/js/reply-kit.js:349 |
+| `replyCalcResult` | frontend/js/reply-kit.js:637 |
+| `replyCalcShow` | frontend/js/reply-kit.js:671 |
+| `replyCalcWork` | frontend/js/reply-kit.js:363 |
+| `replyCalcWorkPane` | frontend/js/reply-kit.js:694 |
 | `replyCompare` | frontend/js/reply-kit.js:173 |
 | `replyDrawAll` | frontend/js/reply-kit.js:34 |
 | `replyFillMeters` | frontend/js/reply-kit.js:193 |
-| `replyFinish` | frontend/js/reply-kit.js:811 |
-| `replyFoldLong` | frontend/js/reply-kit.js:1031 |
-| `replyGist` | frontend/js/reply-kit.js:1026 |
+| `replyFinish` | frontend/js/reply-kit.js:974 |
+| `replyFoldLong` | frontend/js/reply-kit.js:1194 |
+| `replyGist` | frontend/js/reply-kit.js:1189 |
 | `replyMeter` | frontend/js/reply-kit.js:160 |
 | `replyMonthName` | frontend/js/reply-kit.js:201 |
-| `replyNoteCard` | frontend/js/reply-kit.js:1124 |
-| `replyNoteEntry` | frontend/js/reply-kit.js:1073 |
-| `replyNoteId` | frontend/js/reply-kit.js:1068 |
-| `replyNotePreviews` | frontend/js/reply-kit.js:1077 |
+| `replyNoteCard` | frontend/js/reply-kit.js:1287 |
+| `replyNoteEntry` | frontend/js/reply-kit.js:1236 |
+| `replyNoteId` | frontend/js/reply-kit.js:1231 |
+| `replyNotePreviews` | frontend/js/reply-kit.js:1240 |
 | `replyPanelShell` | frontend/js/reply-kit.js:44 |
-| `replyPeekLink` | frontend/js/reply-kit.js:1096 |
-| `replyRecordReasons` | frontend/js/reply-kit.js:828 |
-| `replyReveal` | frontend/js/reply-kit.js:996 |
-| `replyRevealWanted` | frontend/js/reply-kit.js:991 |
+| `replyPeekLink` | frontend/js/reply-kit.js:1259 |
+| `replyRecordReasons` | frontend/js/reply-kit.js:991 |
+| `replyReveal` | frontend/js/reply-kit.js:1159 |
+| `replyRevealWanted` | frontend/js/reply-kit.js:1154 |
 | `replySpark` | frontend/js/reply-kit.js:136 |
 | `replyStatCard` | frontend/js/reply-kit.js:104 |
 | `replyStatCards` | frontend/js/reply-kit.js:206 |
@@ -11883,7 +11882,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/library-lazy.css | 8060 |
 | frontend/css/lightbox-lazy.css | 425 |
 | frontend/css/manual-lazy.css | 161 |
-| frontend/css/math-editor-lazy.css | 91 |
+| frontend/css/math-editor-lazy.css | 88 |
 | frontend/css/math-field-lazy.css | 72 |
 | frontend/css/meetings-lazy.css | 566 |
 | frontend/css/mermaid-lazy.css | 68 |
@@ -11899,7 +11898,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/quick-access-lazy.css | 105 |
 | frontend/css/quickadd-lazy.css | 35 |
 | frontend/css/recovery-lazy.css | 115 |
-| frontend/css/reply-kit-lazy.css | 553 |
+| frontend/css/reply-kit-lazy.css | 628 |
 | frontend/css/reveal-lazy.css | 10 |
 | frontend/css/search-lazy.css | 153 |
 | frontend/css/semantic-notice-lazy.css | 10 |
@@ -15300,8 +15299,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3093 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3219 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3096 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3222 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -23046,7 +23045,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15636)
+## Tests (15652)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23211,6 +23210,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_brand_name.py | 10 |
 | tests/test_breakpoints.py | 3 |
 | tests/test_budgets.py | 6 |
+| tests/test_calc_ux_1530.py | 16 |
 | tests/test_calculator_equations.py | 8 |
 | tests/test_captioning.py | 17 |
 | tests/test_captions.py | 16 |
