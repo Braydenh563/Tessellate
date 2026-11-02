@@ -703,6 +703,7 @@ function openIconPicker({ anchor = null, onPick = null, modes = ["emoji", "icon"
   };
   document.addEventListener("pointerdown", outside, true);
 
+  window.uiSettlingUntil = performance.now() + 400;
   //: Read before the panel is drawn and added, while the layout is clean.
   const rect = anchor?.getBoundingClientRect?.();
   draw();

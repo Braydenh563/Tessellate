@@ -110,3 +110,12 @@ def test_the_icon_picker_and_the_equation_pane_lay_out_after_the_frame_that_open
     assert 'panel.style.visibility = "hidden"' in block
     math = frontend_text("math-editor.js")
     assert "afterFrames(() => setTimeout(() => host.isConnected && pane.start()), 1)" in math
+
+
+def test_the_companions_tempo_does_not_flush_style_while_a_popup_is_arriving():
+    """`getAnimations` flushes all the style a press has dirtied (nameMarkBuddyTempo, 306ms at 4x),
+    so the once-a-second refresh waits out the arrival window the picker and the tabs open."""
+    src = frontend_text("avatars.js")
+    body = _body(src, "function nameMarkBuddyTempo(")
+    assert "now - nmbTempo.seen > 1000 && now >= (window.uiSettlingUntil || 0)" in body
+    assert "window.uiSettlingUntil = performance.now() + 400;" in frontend_text("icon-picker.js")

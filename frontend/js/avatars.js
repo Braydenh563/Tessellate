@@ -5161,7 +5161,8 @@ function nameMarkBuddyTempo() {
     return;
   }
   const now = performance.now();
-  if (now - nmbTempo.seen > 1000) {
+  //: Not while a page or popup is arriving: `getAnimations` flushes all the style it has dirtied (306ms at 4x, INBOX 1534).
+  if (now - nmbTempo.seen > 1000 && now >= (window.uiSettlingUntil || 0)) {
     nmbTempo.seen = now;
     //: Atlas's layer roots (atlas.js, `atlasDrawFigure`) animate on the
     //: compositor; stepping them here would put them back on the main
