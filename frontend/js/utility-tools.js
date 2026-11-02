@@ -10,7 +10,12 @@
 // Focus timer was the seed; it stays the widget's own, this one is the
 // palette's and the bar's.
 
-const utilityClock = { kind: "", name: "", start: 0, end: 0, tick: 0 };
+//: Every clock that is running: {id, kind, name, start, end}. A timer is its
+//: end time and nothing else (audit 1029 X14): remaining is the end minus the
+//: clock, so a throttled tab reads true, several can run, and the list is
+//: kept in `prefs` so a reload gets them back (`utilityRestore`).
+const utilityClocks = [];
+const utilityTick = { id: 0, end: 0 };
 
 function utilityTimeText(seconds) {
   const h = Math.floor(seconds / 3600);
@@ -21,37 +26,80 @@ function utilityTimeText(seconds) {
   return h ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
 }
 
-//: Seconds left (a timer) or gone (a stopwatch), from the clock rather than a
-//: count of ticks, so a tab the browser throttled in the background still
-//: reads true when it comes back.
-function utilityClockSeconds() {
+//: Seconds left (a timer) or gone (a stopwatch), from the clock.
+function utilityClockSeconds(clock) {
   const now = Date.now();
-  if (utilityClock.kind === "timer") return Math.max(0, Math.ceil((utilityClock.end - now) / 1000));
-  return Math.floor((now - utilityClock.start) / 1000);
+  if (clock.kind === "timer") return Math.max(0, Math.ceil((clock.end - now) / 1000));
+  return Math.floor((now - clock.start) / 1000);
+}
+
+function utilitySave() {
+  if (utilityClocks.length) prefs.set("utility-clocks", JSON.stringify(utilityClocks));
+  else prefs.remove("utility-clocks");
+}
+
+//: The one on the bar: the timer that ends first, else the stopwatch.
+function utilityShown() {
+  const end = (c) => (c.kind === "timer" ? c.end : Infinity);
+  return [...utilityClocks].sort((x, y) => end(x) - end(y))[0];
 }
 
 function paintUtilityChip() {
+  for (const clock of utilityClocks.filter((c) => c.kind === "timer" && c.end <= Date.now())) utilityTimerDone(clock);
   const chip = $("status-timer");
-  if (!utilityClock.kind) {
+  const clock = utilityShown();
+  if (!clock) {
     chip.classList.add("hidden");
     return;
   }
-  const seconds = utilityClockSeconds();
-  const time = utilityTimeText(seconds);
+  const time = utilityTimeText(utilityClockSeconds(clock));
   setLabel(chip, `ph:stop-circle ${time}`);
-  const what = utilityClock.kind === "timer" ? `${utilityClock.name} timer, ${time} left` : `Stopwatch, ${time}`;
+  const more = utilityClocks.length > 1 ? `, ${utilityClocks.length} timers running` : "";
+  const what = (clock.kind === "timer" ? `${clock.name} timer, ${time} left` : `Stopwatch, ${time}`) + more;
   chip.title = `${what}. Press to stop`;
   chip.setAttribute("aria-label", `${what}. Stop`);
   chip.classList.remove("hidden");
-  if (utilityClock.kind === "timer" && seconds === 0) utilityTimerDone();
 }
 
 function utilityClockRun(kind, name, seconds = 0) {
-  clearInterval(utilityClock.tick);
-  Object.assign(utilityClock, { kind, name, start: Date.now(), end: Date.now() + seconds * 1000 });
-  //: The one wake source here: a second's tick while a clock is on the bar,
-  //: cleared the moment it stops (tests/wake_sources_seed.json).
-  utilityClock.tick = setInterval(paintUtilityChip, 1000);
+  if (kind === "stopwatch") utilityClocks.splice(0, utilityClocks.length, ...utilityClocks.filter((c) => c.kind !== kind));
+  const start = Date.now();
+  utilityClocks.push({ id: `${start}-${utilityClocks.length}`, kind, name, start, end: start + seconds * 1000 });
+  utilitySave();
+  utilityEnsureTick();
+  paintUtilityChip();
+}
+
+//: The one wake source here: a second's tick while any clock is on the bar,
+//: cleared the moment none is (tests/wake_sources_seed.json).
+function utilityEnsureTick() {
+  if (utilityClocks.length && !utilityTick.id) utilityTick.id = setInterval(paintUtilityChip, 1000);
+  if (!utilityClocks.length && utilityTick.id) {
+    clearInterval(utilityTick.id);
+    utilityTick.id = 0;
+  }
+  //: A one-shot at the soonest end: a hidden tab runs the interval about
+  //: once a minute after a while, so "Time is up" came up to a minute late;
+  //: a lone timeout is not throttled that hard (audit 1030 Y6).
+  clearTimeout(utilityTick.end);
+  const next = Math.min(...utilityClocks.filter((c) => c.kind === "timer").map((c) => c.end));
+  if (Number.isFinite(next)) utilityTick.end = setTimeout(paintUtilityChip, Math.max(0, next - Date.now()) + 50);
+}
+
+function utilityDrop(clock) {
+  utilityClocks.splice(utilityClocks.indexOf(clock), 1);
+  utilitySave();
+  utilityEnsureTick();
+}
+
+//: What was running when the page last closed. A timer that ran out in the
+//: meantime is announced now; one bad entry never blocks the rest.
+function utilityRestore() {
+  for (const c of prefs.json("utility-clocks", [])) {
+    const ok = c && (c.kind === "timer" || c.kind === "stopwatch") && Number.isFinite(c.start) && Number.isFinite(c.end);
+    if (ok && !utilityClocks.some((x) => x.id === String(c.id))) utilityClocks.push({ id: String(c.id), kind: c.kind, name: String(c.name), start: c.start, end: c.end });
+  }
+  utilityEnsureTick();
   paintUtilityChip();
 }
 
@@ -64,9 +112,9 @@ function utilityMinutesName(minutes) {
 function startUtilityTimer(minutes = 25) {
   const span = Math.min(24 * 60, Math.max(1 / 60, Number(minutes) || 25));
   askNotificationPermission();
-  utilityClockRun("timer", utilityMinutesName(span), Math.round(span * 60));
-  const one = /^1 /.test(utilityClock.name);
-  toast(`Timer started: ${utilityClock.name}${one ? "" : "s"}. Press it on the status bar to stop.`);
+  const name = utilityMinutesName(span);
+  utilityClockRun("timer", name, Math.round(span * 60));
+  toast(`Timer started: ${name}${/^1 /.test(name) ? "" : "s"}. Press it on the status bar to stop.`);
 }
 
 function startStopwatch() {
@@ -74,26 +122,45 @@ function startStopwatch() {
   toast("Stopwatch started. Press it on the status bar to stop.");
 }
 
+//: Stops the one the bar shows, and offers it back with the time it had: a
+//: stray press on the chip no longer costs a 25-minute focus timer (audit 1031
+//: Z2). The stopped clock is restored from what it had left (a timer) or had
+//: counted (a stopwatch), so the minutes spent deciding are not counted.
 function stopUtilityClock() {
-  if (!utilityClock.kind) return;
-  const time = utilityTimeText(utilityClockSeconds());
-  const said = utilityClock.kind === "timer" ? `Timer stopped with ${time} left.` : `Stopwatch stopped at ${time}.`;
-  clearInterval(utilityClock.tick);
-  utilityClock.kind = "";
+  const clock = utilityShown();
+  if (!clock) return;
+  const seconds = utilityClockSeconds(clock);
+  const time = utilityTimeText(seconds);
+  utilityDrop(clock);
   paintUtilityChip();
-  toast(said);
+  const message = clock.kind === "timer" ? `Timer stopped with ${time} left.` : `Stopwatch stopped at ${time}.`;
+  offerUndo(clock.kind === "timer" ? "Stop timer" : "Stop stopwatch", message, () => utilityResume(clock, seconds), () => {
+    const live = utilityClocks.find((c) => c.id === clock.id);
+    if (live) utilityDrop(live);
+    paintUtilityChip();
+  });
 }
 
-function utilityTimerDone() {
-  const name = utilityClock.name;
-  clearInterval(utilityClock.tick);
-  utilityClock.kind = "";
+//: A stopped clock back on the bar, from the seconds it showed.
+function utilityResume(clock, seconds) {
+  const now = Date.now();
+  const back = clock.kind === "timer" ? { ...clock, end: now + seconds * 1000 } : { ...clock, start: now - seconds * 1000 };
+  if (utilityClocks.some((c) => c.id === clock.id)) return;
+  utilityClocks.push(back);
+  utilitySave();
+  utilityEnsureTick();
   paintUtilityChip();
-  toast(`Time is up: the ${name} timer has finished.`);
-  notify("Tessellate", `Time is up: the ${name} timer has finished.`);
+}
+
+function utilityTimerDone(clock) {
+  utilityDrop(clock);
+  toast(`Time is up: the ${clock.name} timer has finished.`);
+  notify("Tessellate", `Time is up: the ${clock.name} timer has finished.`);
 }
 
 $("status-timer").addEventListener("click", stopUtilityClock);
+//: A page that closes with a clock running gets it back when this loads (spaces-find.js asks for the module at boot).
+utilityRestore();
 
 //: The text a palette command acts on: what was selected when the palette
 //: opened (`paletteCaught`, app-palette.js), else the whole of the editor

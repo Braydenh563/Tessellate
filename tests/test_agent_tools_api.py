@@ -190,7 +190,7 @@ def test_agent_runs_tool_then_answers(ai_client, fake_ollama):
     tool_events = [e for e in events if e["type"] == "tool"]
     assert len(tool_events) == 1
     assert tool_events[0]["ok"] is True
-    assert "Created note" in tool_events[0]["label"]
+    assert "Created “buy milk”" in tool_events[0]["label"]  # by title, not id (audit 1029 C47)
     answer = "".join(e["delta"] for e in events if e["type"] == "answer")
     assert answer == "Done: I saved that to Shopping."
     assert events[-1]["type"] == "done"
@@ -227,7 +227,7 @@ def test_agent_destructive_call_waits_for_confirmation(ai_client, fake_ollama):
     confirms = [e for e in events if e["type"] == "confirm"]
     assert len(confirms) == 1
     assert confirms[0]["name"] == "delete_note"
-    assert str(saved["id"]) in confirms[0]["label"]
+    assert confirms[0]["label"] == "Move “delete me please” to the recycle bin"  # the note by title (audit 1029 C47)
     # Nothing was deleted: the tool never ran.
     assert not [e for e in events if e["type"] == "tool"]
     entries = ai_client.get("/entries").json()

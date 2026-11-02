@@ -32,7 +32,8 @@ def test_a_note_cards_task_line_is_a_box_not_brackets():
     assert 'buffer.push("");' in body
     css = (CSS / "01-forms-settings.css").read_text(encoding="utf-8")
     box = _rule(css, '#entry-list .entry-content .entry-task > input[type="checkbox"]:disabled')
-    assert "min-height: 0" in box and "width: 1.1em" in box
+    # 1.125rem since the target floor (audit 1031 class 28, test_ux_1031_targets).
+    assert "min-height: 0" in box and "width: 1.125rem" in box
     assert "line-through" in _rule(css, ".entry-task:has(> input:checked)")
 
 
@@ -104,7 +105,9 @@ def test_a_note_cards_connection_pill_is_one_line():
     (qa1005-polish.js `linkpills`: 112 of 112 at 390, then 0)."""
     css = (CSS / "08-consistency.css").read_text(encoding="utf-8")
     chip = _rule(css, "#entry-list .link-connection > .chip.link")
-    assert "white-space: nowrap" in chip and "overflow: hidden" in chip
+    #: `clip visible`, not `hidden` (audit 1029 rank 46): the words are still cut
+    #: across, but the chip keeps the hit overhang above and below.
+    assert "white-space: nowrap" in chip and "overflow: clip visible" in chip
     assert "text-overflow: ellipsis" in _rule(css, "#entry-list .link-connection > .chip.link > .ph-text")
 
 
@@ -112,7 +115,7 @@ def test_a_note_being_opened_for_editing_holds_its_place_while_the_form_loads():
     """With note-edit-panels.js held 3s the card fell from 188px to a 15px
     empty strip, then rose to the form: every note under it jumped twice.
     The stand-in's promise now puts placeholders up (133px, aria-busy)."""
-    src = (JS / "note-cards.js").read_text(encoding="utf-8")
+    src = ((JS / "note-cards.js").read_text(encoding="utf-8") + (JS / "entry-card.js").read_text(encoding="utf-8"))
     block = src[src.index("if (editingId === entry.id && options.actions) {") :][:900]
     assert "const drawn = renderEditForm(li, entry);" in block
     assert "if (drawn instanceof Promise)" in block and "showSkeletons(li, 2)" in block

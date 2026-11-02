@@ -15,8 +15,8 @@ def _activity(client, q: str, workspace: str) -> list[dict]:
 
 
 def test_activity_keeps_to_the_query_and_the_space(client):
-    work = client.post("/spaces", json={"name": "Work"}).json()["id"]
-    personal = client.post("/spaces", json={"name": "Personal"}).json()["id"]
+    work = client.post("/spaces", json={"name": "Client work"}).json()["id"]
+    personal = client.post("/spaces", json={"name": "Home life"}).json()["id"]
     note = client.post(
         "/entries", json={"content": "zebracorn launch plan"}, headers={"X-Workspace-ID": work}
     ).json()["id"]

@@ -47,6 +47,7 @@ FALSE_CLAIMS = {
     "restore_board_item": ({}, {"kind": "card", "item_id": 999_999}),
     "place_library_item": ({}, {"sketch_ids": [999_999], "object_ids": []}),
     "audit_link_reasons": ({}, {"updated": 5}),
+    "check_learned": ({}, {"retired": 3, "run": "2026-11-01T09:00:00"}),
     "save_skill": ({}, {"name": "never saved"}),
 }
 

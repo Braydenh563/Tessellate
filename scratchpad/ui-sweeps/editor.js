@@ -571,11 +571,8 @@ function ok(name, condition, detail) {
       findings: docProseFound.length,
     });
     const pick = async (ext) => {
-      const select = document.getElementById("doc-file-type");
-      const option = [...select.options].find((o) => o.value === ext);
-      if (!option) return null;
-      select.value = ext;
-      select.dispatchEvent(new Event("change", { bubbles: true }));
+      if (!docFileTypes.some((t) => t.ext === ext)) return null;
+      await docTypeChoose(ext);
       await new Promise((r) => setTimeout(r, 1200));
       return read();
     };

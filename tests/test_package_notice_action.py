@@ -38,4 +38,7 @@ def test_the_open_action_reveals_the_package_row() -> None:
 
 def test_the_lazy_reveal_stub_names_the_open_function() -> None:
     app = (ROOT / "frontend" / "js" / "app.js").read_text(encoding="utf-8")
-    assert 'reveal: ["revealFeature", "packagesNoticeOpen"]' in app
+    #: The reveal list has grown (openShortcuts, flashRevealed, renderShortcutList);
+    #: the intent is that the stub names packagesNoticeOpen, wherever it sits.
+    reveal = app.split("const LAZY_ENTRY_POINTS", 1)[1].split("reveal:", 1)[1].split("]", 1)[0]
+    assert '"revealFeature"' in reveal and '"packagesNoticeOpen"' in reveal

@@ -9,6 +9,7 @@ holds each row's words and key to the table's, so renaming a control renames
 it everywhere (standing order 13).
 """
 
+from tests._help_text import help_chat_text
 import re
 from pathlib import Path
 
@@ -66,8 +67,8 @@ def test_the_bundle_loads_the_table_after_the_board() -> None:
 
 
 def test_the_palette_and_the_sheet_read_the_table() -> None:
-    panes = (ROOT / "frontend" / "js" / "settings-panes.js").read_text(encoding="utf-8")
-    wiring = (ROOT / "frontend" / "js" / "settings-wiring.js").read_text(encoding="utf-8")
+    panes = (ROOT / "frontend" / "js" / "settings-panes.js").read_text(encoding="utf-8") + (ROOT / "frontend" / "js" / "app-features.js").read_text(encoding="utf-8")
+    wiring = (ROOT / "frontend" / "js" / "reveal-targets.js").read_text(encoding="utf-8")
     assert "wbPaletteCommands()" in panes
     assert "renderWbShortcutSheet(" in wiring
     assert 'id="shortcut-list-whiteboard"' in INDEX
@@ -92,5 +93,5 @@ def test_a_map_folds_to_a_level_from_the_keys_the_table_and_the_sheet():
     for n in (1, 2, 3):
         assert f'keys: "Alt+{n}", surface: "map", run: () => wbMapFoldToLevel({n})' in COMMANDS
     assert 'keys: ["Alt+1 to 9"]' in COMMANDS
-    help_text = (ROOT / "src" / "tessellate" / "ai" / "help_chat.py").read_text(encoding="utf-8")
+    help_text = help_chat_text()
     assert "Alt+1 to Alt+9 show that many levels" in help_text

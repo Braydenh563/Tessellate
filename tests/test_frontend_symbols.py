@@ -59,7 +59,7 @@ KEYWORDS = frozenset(
 #: check is that an unknown name is treated as a mistake.
 KNOWN_GLOBALS = frozenset(
     """
-    Array ArrayBuffer AudioContext BigInt Blob Boolean BroadcastChannel CSS ClipboardItem
+    Array ArrayBuffer AudioContext BigInt MathfieldElement Blob Boolean BroadcastChannel CSS ClipboardItem
     CSSStyleSheet CustomEvent DataView Date DecompressionStream DOMMatrix DOMParser Error EvalError Event MouseEvent
     EventSource File FileReader Float32Array Float64Array Int16Array FormData Function
     InputEvent KeyboardEvent WheelEvent

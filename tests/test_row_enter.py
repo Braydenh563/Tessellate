@@ -11,7 +11,7 @@ CSS = (Path(__file__).resolve().parent.parent / "frontend" / "css" / "08-consist
 
 def test_the_list_remembers_what_was_on_screen_and_marks_new_cards():
     code = app_js_text()
-    render = code[code.index("function renderEntries() {"):]
+    render = code[code.index("function resetNoteList("):]
     render = render[: render.index("list.replaceChildren();")]
     assert "rowEnterIds = new Set(" in render and "rowEnterTimer" in render
     card = code[code.index("function entryItem("):]

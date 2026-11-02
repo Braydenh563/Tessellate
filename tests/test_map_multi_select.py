@@ -60,4 +60,5 @@ def test_the_right_click_menu_offers_the_same_map_actions():
 def test_one_undo_step_for_the_whole_selection():
     many = _body("whiteboard-map.js", "wbMapStyleMany")
     assert "wbPushDragUndo(entries)" in many
-    assert many.index("wbPushDragUndo(entries)") < many.index("await wbSaveObject(node)")
+    # The selection is saved in one request since perf 1031 row 20.
+    assert many.index("wbPushDragUndo(entries)") < many.index("await wbSaveMany(")

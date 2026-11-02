@@ -89,9 +89,10 @@ def test_games_notes_answers_in_its_first_sentence_and_groups_by_the_thread():
     result = ask("games notes")
     first = result["text"].split("\n", 1)[0]
     assert result["shape"] == "overview"
-    #: How many, over which days, the thread most of them share.
+    #: How many and the thread most of them share; the days only when the
+    #: question is about time (INBOX 1441, the owner, 2026-10-29).
     assert "five notes" in first and "games" in first and "24 August" not in first
-    assert "from July to September" in first and "League" in first
+    assert "July" not in first and "League" in first
     assert "**League**" in result["text"]
     assert not trace_failures(result, "games notes", _notes(), TODAY)
     #: Decision 52's maxims hold: no day said twice, no capital after a comma.

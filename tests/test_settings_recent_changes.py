@@ -9,6 +9,8 @@ page (a switch, a look setting, each clear, at 1440 and 390).
 
 from __future__ import annotations
 
+from tests._help_text import help_chat_text
+
 import json
 import re
 import shutil
@@ -193,7 +195,7 @@ console.log(JSON.stringify({{ n: list.length, newest: list[0].label, second: lis
 def test_the_surfaces_are_there_and_help_names_them() -> None:
     assert 'id="recent-changes-list"' in INDEX and 'data-help-for="recent-changes-help"' in INDEX
     assert re.search(r"apiJson = async \(path, options = \{\}\) => \{[\s\S]{0,400}settingsPrefsSeen", STATUS)
-    guide = (ROOT / "src" / "tessellate" / "ai" / "help_chat.py").read_text(encoding="utf-8")
+    guide = help_chat_text()
     assert "Recent changes" in guide, "the Guide names the list"
 
 

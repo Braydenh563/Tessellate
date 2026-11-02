@@ -72,7 +72,9 @@ def test_the_choices_persist_and_are_honoured_everywhere():
     assert 'prefs.set("getStartedHidden", "1")' in hide
     done = _body(FIRST, "function getStartedMarkDone(")
     assert 'prefs.set("getStartedDone", "1")' in done
-    state = _body(FIRST, "async function firstStepsState(")
+    #: 79c7e07 split the read out of `firstStepsState` (now the shared in-flight
+    #: wrapper) into `firstStepsRead`; the "marked done" check lives in the read.
+    state = _body(FIRST, "async function firstStepsRead(")
     assert 'prefs.get("getStartedDone", "") === "1"' in state
     assert 'prefs.get("getStartedHidden", "") === "1"' in _body(FIRST, "async function renderGetStarted(")
     assert 'prefs.get("getStartedHidden", "") === "1"' in _body(FIRST, "async function firstStepsBellRow(")

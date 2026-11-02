@@ -7,11 +7,13 @@ silently.
 
 from __future__ import annotations
 
+from tests._app_js import documents_text
+
 import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-DOCUMENTS_JS = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+DOCUMENTS_JS = documents_text()
 
 
 def _live_plugin_update() -> str:

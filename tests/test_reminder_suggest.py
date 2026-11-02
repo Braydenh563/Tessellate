@@ -28,7 +28,9 @@ NOW = datetime(2026, 10, 26, 9, 0)
         ("Don't forget to send the report tomorrow at 9am", "Send the report", (2026, 10, 27)),
         ("I'm going to book the venue next Monday", "Book the venue", (2026, 11, 2)),
         ("I should email Priya tomorrow", "Email Priya", (2026, 10, 27)),
-        ("Remember to water the plants on Thursday", "Water the plants", (2026, 10, 29)),
+        #: "Remember to ..." at the start is now a request the chat acts on
+        #: (composer acts, audit 1029); the nudge to oneself mid-sentence is not.
+        ("I need to remember to water the plants on Thursday", "Water the plants", (2026, 10, 29)),
     ],
 )
 def test_a_dated_intention_is_offered(message, words, day):
@@ -50,6 +52,7 @@ def test_a_dated_intention_is_offered(message, words, day):
         "I needed to call the dentist last Friday",
         "I need to call the dentist",
         "Remind me to call the dentist on Friday",
+        "Remember to water the plants on Thursday",
         "Set a reminder to pay the invoice tomorrow",
         "Friday",
         "",

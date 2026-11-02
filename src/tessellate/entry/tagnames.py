@@ -14,14 +14,25 @@ from __future__ import annotations
 import re
 from collections.abc import Iterable
 
+from tessellate.entry.cleantext import is_blank, strip_invisible
+
 #: A tag is a label. 50,000 characters was once accepted as one, which is a
 #: chip 50,000 characters wide in every list the note appears in. 60 is twice
 #: what `librarian.py` already allows itself when it suggests one.
 MAX_TAG_LENGTH = 60
 
 
-def normalise_tags(tags: Iterable[object] | None) -> list[str]:
+#: A comma ends a tag, ASCII or full-width: "work, home" typed into one box
+#: is two tags, never one tag with a comma in it (audit 1029 N6).
+_COMMA = re.compile(r"[,\uff0c]")
+
+
+def normalise_tags(tags: Iterable[object] | None, *, split: bool = True) -> list[str]:
     """Trimmed, clipped, blank-free, and each tag once regardless of case.
+
+    A comma splits one entry into several, so "work, home" is two tags;
+    `split=False` is for matching tags already stored (a removal, an old name
+    in a rename), where a legacy tag that holds a comma must still be found.
 
     The first spelling wins: a note tagged "Idea" that is then sent "idea" as
     well keeps "Idea", because that is the spelling the person chose first
@@ -38,16 +49,15 @@ def normalise_tags(tags: Iterable[object] | None) -> list[str]:
     for raw in tags or ():
         if raw is None:
             continue
-        #: "#biology" is the tag "biology": the mark is how a tag is drawn and
-        #: written, not part of its name (it was stored as "##biology").
-        tag = str(raw).strip().lstrip("#").strip()[:MAX_TAG_LENGTH].strip()
-        if not tag:
-            continue
-        key = tag.casefold()
-        if key in seen:
-            continue
-        seen.add(key)
-        out.append(tag)
+        for piece in _COMMA.split(str(raw)) if split else (str(raw),):
+            #: "#biology" is the tag "biology": the mark is how a tag is drawn and
+            #: written, not part of its name (it was stored as "##biology").
+            tag = strip_invisible(piece).strip().lstrip("#").strip()[:MAX_TAG_LENGTH].strip()
+            key = tag.casefold()
+            if is_blank(tag) or key in seen:
+                continue
+            seen.add(key)
+            out.append(tag)
     return out
 
 

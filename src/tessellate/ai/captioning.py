@@ -315,7 +315,7 @@ def caption_and_store(upload_id: int, image_path: Path, force: bool = False) -> 
             # A real attempt was made (a model was resolved) and produced
             # nothing: the actual failure the report was about: a caption
             # call failing outright with no visible record of it anywhere
-            # but the log console, and Settings → Background tasks showing
+            # but the log console, and Settings, Background tasks showing
             # captioning as if it had never run at all.
             taskhistory.record(
                 "caption",

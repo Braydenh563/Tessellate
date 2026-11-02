@@ -191,7 +191,9 @@ function meaningMissing(things, text) {
 }
 
 function meaningHolds(things, text) {
-  return meaningMissing(things, text) === 0;
+  //: Nothing read from the words (Japanese has no a-z word) holds nothing: an empty list is
+  //: not "every thing is held", which listed every command for 考え (audit 1031 N13).
+  return things.length > 0 && meaningMissing(things, text) === 0;
 }
 
 //: How close `text` comes to the words typed: for each thing it holds, 1 for

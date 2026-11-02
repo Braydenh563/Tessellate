@@ -7,6 +7,7 @@ held item each pan hundreds of pixels a second; the item stays under the
 pointer). These pin the wiring that measurement depends on.
 """
 
+from tests._help_text import help_chat_text
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -40,9 +41,12 @@ def test_the_pointer_is_replayed_after_each_step():
     # The marquee is redrawn from the pointer; an item drag gets a move at
     # the same screen point, so it travels with the board.
     assert "wbMarqueeAt = getLogicalMouse(at)" in body
-    assert 'window.dispatchEvent(new MouseEvent("mousemove", at))' in body
+    # Called on d3-drag's listener, never broadcast to every mousemove
+    # listener (audit B16).
+    assert 'd3.select(window).on("mousemove.drag")?.call(window, new MouseEvent("mousemove", at))' in body
+    assert "dispatchEvent" not in body
 
 
 def test_help_says_so():
-    help_text = (ROOT / "src" / "tessellate" / "ai" / "help_chat.py").read_text(encoding="utf-8")
+    help_text = help_chat_text()
     assert "a drag to an edge pans" in help_text

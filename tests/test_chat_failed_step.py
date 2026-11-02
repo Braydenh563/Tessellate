@@ -7,12 +7,13 @@ the DOM.
 """
 
 from pathlib import Path
+from tests._app_js import with_pieces
 
 JS = Path(__file__).resolve().parent.parent / "frontend" / "js" / "chat-attach.js"
 
 
 def test_the_failed_step_names_the_failure() -> None:
-    text = JS.read_text(encoding="utf-8")
+    text = with_pieces("chat-attach.js")
     assert "Failed due to error" not in text
     assert "timeline.failRunningStep(" in text
     call = text[text.index("timeline.failRunningStep(") :][:260]

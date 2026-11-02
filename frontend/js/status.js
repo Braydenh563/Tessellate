@@ -129,10 +129,10 @@ function settleNotification(id, { key, kind, title, detail = "" }) {
 //: "Finished: X, took 4 s", "Failed: X" with the reason, "Stopped: X".
 function taskEndingWords(ended, label) {
   const took = ended ? jobDurationWords(ended.duration_ms) : "";
-  const name = (ended && ended.label) || label;
-  if (ended && ended.outcome === "failed") return { kind: "error", title: `Failed: ${name}`, detail: ended.detail || "" };
-  if (ended && ended.outcome === "cancelled") return { kind: "task", title: `Stopped: ${name}`, detail: ended.detail || "" };
-  return { kind: "task", title: `Finished: ${name}${took ? `, took ${took}` : ""}`, detail: (ended && ended.detail) || "" };
+  const name = ended?.label || label;
+  if (ended?.outcome === "failed") return { kind: "error", title: `Failed: ${name}`, detail: ended.detail || "" };
+  if (ended?.outcome === "cancelled") return { kind: "task", title: `Stopped: ${name}`, detail: ended.detail || "" };
+  return { kind: "task", title: `Finished: ${name}${took ? `, took ${took}` : ""}`, detail: ended?.detail || "" };
 }
 
 function notificationsReadAt() {
@@ -337,6 +337,16 @@ const NOTICE_UNDO_MS = 5 * 60 * 1000;
 function keepToastAction(message, label, run, { go = null, record = true, kind = "" } = {}) {
   const once = !go;
   const undo = once && /\b(undo|put it back)\b/i.test(label);
+  //: An Undo pressed after a space switch goes back to its own space first, as the stack's
+  //: entries do (`spaceEnterFor`); the bell's row runs the same function.
+  if (undo) {
+    const [space, inner] = [activeSpaceId(), run];
+    run = async function backThenRun() {
+      if (await spaceEnterFor({ space })) return inner();
+      //: The space may have been deleted since: a situation, not a fault.
+      toast("Couldn't go back to the space it was made in.", "info", { action: ["Try again", backThenRun] });
+    };
+  }
   if (!record) return () => run();
   const id = recordNotification({
     kind: kind || (undo ? "undo" : "done"),
@@ -345,7 +355,7 @@ function keepToastAction(message, label, run, { go = null, record = true, kind =
   });
   //: The app's stack entry this Undo stands for: callers push it just before
   //: the toast (`pushUndo` then `toastAction`), so it is the top one, now.
-  const top = undoStack[undoStack.length - 1];
+  const top = undoStack.at(-1);
   const stacked = undo && top && Date.now() - top.at < 2000 ? top : null;
   const live = { run, once, used: false, until: undo && !stacked ? Date.now() + NOTICE_UNDO_MS : 0, stacked };
   if (id) noticeLive.set(id, live);
@@ -358,7 +368,10 @@ function keepToastAction(message, label, run, { go = null, record = true, kind =
 function closeNotifications() {
   const panel = $("notif-panel");
   if (panel.classList.contains("hidden")) return;
+  const hadFocus = panel.contains(document.activeElement);
   panel.classList.add("hidden");
+  //: Focus goes back to the bell when it was inside the panel (SH2).
+  if (hadFocus || !document.activeElement || document.activeElement === document.body) focusBackTo($("notif-btn"));
   // Closing the panel is reading it: everything shown is now old news,
   // except rows deliberately kept unread (the override set survives).
   prefs.set(NOTIFICATIONS_READ_KEY, String(Date.now()));
@@ -375,6 +388,8 @@ function syncNotifBlocked() {
   for (const line of document.querySelectorAll(".notif-blocked")) line.classList.toggle("hidden", !blocked);
 }
 
+onSettingsBody(syncNotifBlocked);
+
 function askNotificationPermission() {
   if ("Notification" in window && Notification.permission === "default") {
     Notification.requestPermission().then(syncNotifBlocked, syncNotifBlocked);
@@ -388,7 +403,9 @@ function askNotificationPermission() {
 // 2026-10-03: `new AudioContext()` cost 44 to 56 ms inside the unlock click);
 // every gesture resumes a suspended context, which is WebKit's unlock, and
 // the listeners leave once it runs.
-const reminderAudio = { ctx: null, building: false };
+//: Built only when an alert is near (`nextAt`) or a chime is wanted
+//: (`after`): the device opens on the main thread (INBOX 1446).
+const reminderAudio = { ctx: null, building: false, nextAt: Infinity, after: null };
 function primeReminderAudio() {
   if (reminderAudio.ctx) {
     if (reminderAudio.ctx.state === "running") {
@@ -399,7 +416,7 @@ function primeReminderAudio() {
     }
     return;
   }
-  if (reminderAudio.building) return;
+  if (reminderAudio.building || (!reminderAudio.after && reminderAudio.nextAt - Date.now() > 3e5)) return;
   reminderAudio.building = true;
   const build = () => {
     try {
@@ -407,6 +424,8 @@ function primeReminderAudio() {
     } catch {
       // No Web Audio support, reminders still show as a toast/notification.
     }
+    if (reminderAudio.ctx) reminderAudio.after?.();
+    reminderAudio.after = null;
   };
   if (window.requestIdleCallback) window.requestIdleCallback(build, { timeout: 1500 });
   else setTimeout(build, 300);
@@ -415,7 +434,11 @@ document.addEventListener("pointerdown", primeReminderAudio, { passive: true });
 document.addEventListener("keydown", primeReminderAudio, { passive: true });
 
 function playReminderChime() {
-  if (!reminderAudio.ctx) return;
+  if (!reminderAudio.ctx) {
+    reminderAudio.after = playReminderChime;
+    primeReminderAudio();
+    return;
+  }
   reminderAudio.ctx.resume().catch(() => {});
   const now = reminderAudio.ctx.currentTime;
   // Two short notes, rising, reads as "an alert" rather than a UI click,
@@ -503,7 +526,8 @@ function setTitleView(view) {
 //: throttled, and a reminder made on another device is not in this list.
 //: A one-shot timeout, not a second interval: it wakes the page once per
 //: due reminder and never at rest.
-const reminderDueTimer = { id: 0 };
+//: `stop` is the minute tick's stopper (off while hidden), kept here with the other timer.
+const reminderDueTimer = { id: 0, stop: null };
 function armReminderTimer(list) {
   clearTimeout(reminderDueTimer.id);
   const now = Date.now();
@@ -513,11 +537,38 @@ function armReminderTimer(list) {
     return r.alert_minutes ? [due, due - r.alert_minutes * 60000] : [due];
   });
   const next = Math.min(...times.filter((t) => t > now));
+  reminderAudio.nextAt = next;
   if (!Number.isFinite(next)) return;
   //: Past the browser's 24.8-day ceiling a timeout fires at once; the poll
   //: re-arms long before such a reminder comes due.
   if (next - now > 2 ** 31 - 1) return;
   reminderDueTimer.id = setTimeout(checkDueReminders, next - now + 250);
+}
+
+//: **One poll for every tab, and none while hidden** (audit 1031 BK12). Each
+//: tab used to ask `/reminders` once a minute, hidden or not: ten tabs, ten
+//: asks. Now whichever visible tab ticks first asks (a Web Lock makes the
+//: claim atomic; a shared timestamp says another tab asked in the last 45 s),
+//: and hands the list to the others over a BroadcastChannel so their badge,
+//: title count and due timer are the same without asking. Announcing stays
+//: with the tab that asked, after the announced ids are written. A hidden
+//: tab's minute tick is off, its due-time timer still fires (`armReminderTimer`),
+//: and coming back asks at once unless a tab has asked since.
+const reminderChannel = window.BroadcastChannel ? new BroadcastChannel("memorymap-reminders") : null;
+if (reminderChannel) reminderChannel.onmessage = (event) => authToken() && paintReminderList(event.data);
+
+function pollReminders() {
+  const ask = (lock) => lock && Date.now() - prefs.get("reminderPolledAt", 0) > 45e3 && checkDueReminders();
+  return navigator.locks ? navigator.locks.request("memorymap-reminders", { ifAvailable: true }, ask) : ask(1);
+}
+
+//: What every tab does with a fresh list, the one that asked and the ones told.
+function paintReminderList(all) {
+  const due = all.filter((r) => !r.done && new Date(r.due_at).getTime() <= Date.now());
+  armReminderTimer(all);
+  updateReminderBadge(all);
+  setTitleCount(due.length);
+  return due;
 }
 
 async function checkDueReminders() {
@@ -526,6 +577,7 @@ async function checkDueReminders() {
   // own log, where it looks like an auth failure worth investigating.
   if (!authToken()) return;
   syncNotifBlocked();
+  prefs.set("reminderPolledAt", Date.now());
   //: Open ones only. The route orders by `due_at` ascending with ticked-off
   //: rows included by default, so this poll's one page was the *oldest*
   //: reminders, done or not: a notebook whose oldest two hundred were done
@@ -534,12 +586,10 @@ async function checkDueReminders() {
   //: asks, and it is smaller.
   const all = await apiJson("/reminders?include_done=false", { silent: true }).catch(() => null);
   if (!all) return; // server asleep or locked, say nothing rather than guess
+  const due = paintReminderList(all);
+  //: Painting only: announcing stays with the tab that asked.
+  reminderChannel?.postMessage(all);
   const now = Date.now();
-  const due = all.filter((r) => !r.done && new Date(r.due_at).getTime() <= now);
-  armReminderTimer(all);
-  updateReminderBadge(all);
-  setTitleCount(due.length);
-
   const already = announcedReminders();
   //: An early alert (TIMELINE_PLAN 11 row 8) is announced once, under its
   //: own key, with how long is left; the due time is announced as before.
@@ -590,6 +640,10 @@ function openLanPanel() {
   });
 }
 
+//: Windows High Contrast gets its own small sheet (audit 1028 S15); everyone
+//: else never downloads it.
+if (window.matchMedia("(forced-colors: active)").matches) lazyScript("/css/forced-colors-lazy.css");
+
 let reminderWatchStarted = false;
 function startReminderWatch() {
   checkDueReminders();
@@ -605,17 +659,22 @@ function startReminderWatch() {
   reminderWatchStarted = true;
   //: One minute tick for both: the reminders, and the Local chip every
   //: fifth (PRIVACY_CHIP_MS), rather than a second interval waking the page.
+  //: On the shared minute tick (startMinuteTicker), off while the tab is
+  //: hidden. Its first paint is the check this function has just made, which
+  //: stamped the shared timestamp, so that one asks nothing.
   let ticks = 0;
-  setInterval(() => {
-    checkDueReminders();
+  const tick = () => {
+    pollReminders();
     if (++ticks % (PRIVACY_CHIP_MS / REMINDER_POLL_MS) === 0) refreshPrivacyChip();
-  }, REMINDER_POLL_MS);
+  };
+  reminderDueTimer.stop = document.hidden ? null : startMinuteTicker(tick);
   // A machine that was asleep wakes up with reminders long past due, and the
   // interval will not have run. Checking on focus catches that immediately
   // rather than up to a minute later.
-  window.addEventListener("focus", () => checkDueReminders());
+  window.addEventListener("focus", pollReminders);
   document.addEventListener("visibilitychange", () => {
-    if (!document.hidden) checkDueReminders();
+    reminderDueTimer.stop?.();
+    reminderDueTimer.stop = document.hidden ? null : startMinuteTicker(tick);
   });
 }
 
@@ -625,7 +684,7 @@ function startReminderWatch() {
 // least meant to hide. Everything else (background jobs, agent runs, general
 // activity) is what the toggle actually quiets.
 function notificationsMuted() {
-  return Boolean(prefsCache && prefsCache.notifications_muted_except_reminders);
+  return Boolean(prefsCache?.notifications_muted_except_reminders);
 }
 
 //: **Where the AI's own activity is announced.**
@@ -640,7 +699,7 @@ function notificationsMuted() {
 //: well, so a muted app forgets what it did. This keeps the history and drops
 //: the interruption, which is what was actually asked for.
 function agentActivityQuiet() {
-  return (prefsCache && prefsCache.agent_activity_notices) === "centre";
+  return prefsCache?.agent_activity_notices === "centre";
 }
 
 //: One call for "the AI did something worth mentioning". Always recorded,
@@ -682,21 +741,6 @@ function agentActivityNotice(message, { isError = false, kind = "task", detail =
 //: gone and the id finds nothing, so it opens the panel and stops there.
 const ANSWER_PANEL_NAMES = { agent: "Popup agent", guide: "Atlas" };
 
-function noticeUnwatchedAnswer(panel, question, answerId, { failed = false } = {}) {
-  const who = ANSWER_PANEL_NAMES[panel];
-  if (!who) return;
-  const action = { panel, answer: answerId || "" };
-  agentActivityNotice(
-    failed ? `${who} could not answer: ${agentRunTitle(question)}` : `${who} answered: ${agentRunTitle(question)}`,
-    {
-      isError: failed,
-      detail: "Open it to read the answer.",
-      action,
-      onOpen: () => reopenAnswerPanel(action),
-    },
-  );
-}
-
 function reopenAnswerPanel({ panel, answer } = {}) {
   let list = null;
   if (panel === "agent") {
@@ -729,26 +773,15 @@ function renderAgentActivityMode() {
 // already been read is just something left to wait out otherwise, the
 // timer clears when this fires, so a stray late setTimeout can't reach for
 // a note the click already removed.
-//: **One stack in the corner** (the owner 2026-10-11: "lots of the same
-//: notifcations dont neatly stack when they appear fast in the corner").
-//: Measured before: ten identical toasts in 500 ms drew six cards (a 400 ms
-//: repeat guard let every other one through), each slid in on its own
-//: keyframe while the others slid by `translate`, so a card arriving at the
-//: corner crossed the one it pushed away for about 120 ms.
-//: The rules, each held by tests/test_notification_actions.py and
-//: `scratchpad/ui-sweeps/toaststack.js`:
-//: - the same words of the same kind (and, with an action, the same action)
-//:   within `TOAST_MERGE_MS` are one card with a count ("×3"), its timer
-//:   restarted; an Undo merges only with the same Undo, never another's;
-//: - the newest is nearest the corner (the bottom on a desktop, the top
-//:   below 1100 where the box hangs from the header), the gap is the box's
-//:   `--space-2`;
-//: - positions come from the stack: measured, changed, played back by
-//:   `translate` (FLIP), and an arrival rides in by the same distance the
-//:   others move, on the same curve, so two cards never cross;
-//: - three show; the rest fold into one "+N more" card that opens the bell,
-//:   and a folded notice is written to the bell so it is not lost;
-//: - reduced motion fades and never slides; interface animations off jumps.
+//: **One stack in the corner** (the owner 2026-10-11), held by
+//: tests/test_notification_actions.py and ui-sweeps/toaststack.js:
+//: - the same words, kind and action within `TOAST_MERGE_MS` are one card
+//:   with a count ("×3"); an Undo merges only with the same Undo;
+//: - the newest is nearest the corner, `--space-2` apart;
+//: - positions are played back by `translate` (FLIP), an arrival riding the
+//:   same distance and curve, so two cards never cross;
+//: - three show; the rest fold into "+N more", written to the bell;
+//: - reduced motion fades, never slides.
 const TOAST_MERGE_MS = 4000;
 const TOAST_VISIBLE = 3;
 let toastBorn = 0;
@@ -803,7 +836,7 @@ function toastLayout(box) {
   const count = (cls, text) => Object.assign(document.createElement("span"), { className: cls, textContent: text });
   open.replaceChildren(count("toast-more-rest", `+${rest} more`), count("toast-more-folded", folded.length ? `+${folded.length} more` : "All notifications"));
   open.title = "Open the notifications";
-  open.setAttribute("aria-label", `${rest} more notifications. Open the notifications`);
+  open.setAttribute("aria-label", `${nounCount(rest, "more notification", "more notifications")}. Open the notifications`);
   if (toastAtTop(box)) box.append(more);
   else box.prepend(more);
 }
@@ -845,17 +878,16 @@ function toastMark(note, key, { act = null, life = 0, text = "" } = {}) {
   note.toastText = text;
 }
 
-//: Reduced motion (the system's, or Appearance's Reduce motion) keeps the
+//: Reduced motion (`data-motion="reduced"`: the system's request under Follow the system, or Appearance's Motion, Off) keeps the
 //: fades, which are the polish set's and follow Interface animations, but
 //: never slides the stack (the owner 2026-10-11).
 function toastReduced() {
-  return Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)").matches)
-    || document.documentElement.dataset.motion === "reduced";
+  return reducedMotionWanted();
 }
 
 function toastStack(box, change) {
   if (!box) return change();
-  const shown = (t) => t.getClientRects().length > 0;
+  const shown = (t) => t.getClientRects().length;
   const was = new Map([...box.children].filter(shown).map((t) => [t, t.getBoundingClientRect().top]));
   const before = new Set(box.children);
   change();
@@ -896,6 +928,19 @@ function dismissToast(note) {
   const done = () => note.isConnected && toastStack(note.parentElement, () => note.remove());
   note.addEventListener("animationend", done, { once: true });
   setTimeout(done, 400);
+}
+
+//: A toast holds while pointed at or focused, then gets its whole life again
+//: (audit 1028 S19, WCAG 2.2.1). A held one keeps its timer id: unset is sticky.
+function toastHold(event, on) {
+  const note = event.target.closest?.(".toast");
+  if (!note?.toastTimer || note.classList.contains("is-leaving")) return;
+  if (!on && note.contains(event.relatedTarget)) return;
+  clearTimeout(note.toastTimer);
+  if (!on && !note.matches(":hover, :focus-within")) note.toastTimer = setTimeout(() => dismissToast(note), note.toastLife || 5500);
+}
+for (const [kind, on] of [["pointerover", true], ["pointerout", false], ["focusin", true], ["focusout", false]]) {
+  document.addEventListener(kind, (event) => toastHold(event, on));
 }
 
 function toastCloseButton(note, timer) {
@@ -952,17 +997,25 @@ document.addEventListener("keydown", (e) => lockFieldWants(e)?.focus(), true);
 //: steps aside for the buttons of the form or section being worked in: at
 //: 1280 by 720 the search-by-meaning question sat on the composer's Save
 //: and Save as draft for as long as it went unanswered (E2E first-run,
-//: 2026-10-27). Checked again when a toast arrives over a focused control.
+//: 2026-10-27), and the dialog's too: the search-by-meaning question sat on
+//: the import preview's Import press (E2E import, 2026-11-01). Checked again
+//: when a toast arrives over a focused control.
 function toastYield(target = document.activeElement) {
   const box = $("toast-box");
   if (!box?.children.length || !target || box.contains(target) || target === document.body) return box?.classList.remove("is-yielding");
   const meets = (b, r) => r.width > 0 && b.left < r.right && b.right > r.left && b.top < r.bottom && b.bottom > r.top;
   const focused = target.getBoundingClientRect();
+  //: A target that fills the window (the sketch's drawing area) hides nothing a toast could cover, and it ghosted every toast there (audit 1029 N16).
+  const wide = focused.width > innerWidth / 2 && focused.height > innerHeight / 2;
   //: Skipped content-visibility buttons are not drawn; measuring one lays it out alone (INBOX 1415).
-  const work = [...(target.closest("form, section")?.querySelectorAll("button") || [])].map((el) => el.checkVisibility({ contentVisibilityAuto: true }) && el.getBoundingClientRect());
+  const area = target.closest("form, section, [role=dialog]");
+  const work = [...(area?.querySelectorAll("button") || [])].map((el) => el.checkVisibility({ contentVisibilityAuto: true }) && el.getBoundingClientRect());
+  //: In a dialog a timed toast steps aside too: the pointer resting on it
+  //: holds its timer, so the last import's Undo sat on the next preview's
+  //: Import for as long as the press was tried (E2E import, 2026-11-01).
   box.classList.toggle("is-yielding", [...box.children].some((el) => {
     const b = el.getBoundingClientRect();
-    return meets(b, focused) || (!el.toastTimer && work.some((r) => meets(b, r)));
+    return (!wide && meets(b, focused)) || ((area?.role == "dialog" || !el.toastTimer) && work.some((r) => meets(b, r)));
   }));
 }
 document.addEventListener("focusin", (e) => toastYield(e.target));
@@ -992,7 +1045,7 @@ function toastHost() {
 // the bare word "Internal error"; a missing route was "Not Found". A detail
 // the app's own code wrote as a sentence ("Entry not found") is kept exactly,
 // because a few callers read it. Only the shapes no person should see are
-// replaced; `api()` still logs the raw text to Settings > Logs, where
+// replaced; `api()` still logs the raw text to Settings, Logs, where
 // someone diagnosing it wants it.
 //
 // `fallback` is for a caller that knows what it was doing ("Upload failed.")
@@ -1008,14 +1061,14 @@ function plainHttpError(status, detail, fallback = "") {
   if (Array.isArray(detail) && detail.length) {
     const first = detail[0] || {};
     const loc = Array.isArray(first.loc) ? first.loc.filter((part) => part !== "body" && part !== "query") : [];
-    const field = loc.length ? String(loc[loc.length - 1]).replace(/_/g, " ") : "";
+    const field = loc.length ? String(loc.at(-1)).replace(/_/g, " ") : "";
     return field ? `Check the ${field} and try again.` : "That was not accepted. Check what you entered and try again.";
   }
   if (fallback) return fallback;
   if (status === 404) return "That could not be found. It may have been deleted.";
   if (status === 400 || status === 405 || status === 422) return "That was not accepted. Try again.";
   if (status === 403) return "That is not allowed.";
-  if (status >= 500) return "Something went wrong inside Tessellate. Try again; if it keeps happening, Settings > Logs has the details.";
+  if (status >= 500) return "Something went wrong inside Tessellate. Try again; if it keeps happening, Settings, Logs has the details.";
   return "That did not work. Try again.";
 }
 
@@ -1079,6 +1132,8 @@ function voiceLine(key, slots = {}) {
 }
 
 function toast(message, isError = false, { exempt = false, action = null } = {}) {
+  //: A read dropped by a space switch (app.js, the request helper) is nothing to report.
+  if (isError && String(message).endsWith("Space changed.")) return;
   if (isError === "info" || (isError === true && [...toast.refused].some((m) => String(message).includes(m)))) {
     isError = false;
     exempt = true;
@@ -1380,7 +1435,7 @@ const UNDO_STACK_LIMIT = 50;
 
 function pushUndo(label, undo, redo) {
   //: `at`: a toast's Undo finds the entry it stands for (`keepToastAction`).
-  const action = { label, undo, redo, at: Date.now() };
+  const action = { label, undo, redo, at: Date.now(), space: activeSpaceId() };
   undoStack.push(action);
   if (undoStack.length > UNDO_STACK_LIMIT) undoStack.shift();
   // A fresh action invalidates whatever was available to redo, the same
@@ -1526,8 +1581,8 @@ function pushEntryPutUndo(entryId, label, beforeBody, afterBody) {
 //: **An open board, not the boards list**: the list's own actions (rename,
 //: delete a board) are the app's, and went to an empty board history.
 function boardHistoryActive() {
-  const board = document.getElementById("library-view-whiteboard");
-  const canvas = document.getElementById("wb-canvas-view");
+  const board = $("library-view-whiteboard");
+  const canvas = $("wb-canvas-view");
   //: Showing, not merely un-hidden (INBOX 898, found by the live check): the
   //: board's view keeps no `hidden` class when another main tab covers it, so
   //: Ctrl+Z on Notes walked the last board's history and the app's own steps
@@ -1546,7 +1601,7 @@ function surfaceHistory(dir = "undo") {
   if (boardHistoryActive()) {
     return { where: "board", undo: () => window.wbUndo(), redo: () => window.wbRedo?.(), canUndo: window.wbCanUndo, canRedo: window.wbCanRedo };
   }
-  const docs = document.getElementById("tab-documents");
+  const docs = $("tab-documents");
   if (docs && !docs.classList.contains("hidden") && typeof currentDoc !== "undefined" && currentDoc && window.docCanUndo && !appStackIsNewer(dir)) {
     return { where: "document", undo: () => window.docUndo(), redo: () => window.docRedo(), canUndo: window.docCanUndo, canRedo: window.docCanRedo };
   }
@@ -1562,10 +1617,10 @@ function surfaceHistory(dir = "undo") {
 //: and an act on the stack could only be undone from its toast.
 function appStackIsNewer(dir) {
   if (dir === "redo") {
-    const top = redoStack[redoStack.length - 1];
+    const top = redoStack.at(-1);
     return Boolean(top) && (top.undoneAt || 0) >= (window.docRedoAt?.() || 0);
   }
-  const top = undoStack[undoStack.length - 1];
+  const top = undoStack.at(-1);
   return Boolean(top) && top.at >= (window.docUndoAt?.() || 0);
 }
 
@@ -1597,6 +1652,8 @@ async function performUndoNow() {
   const action = undoStack.pop();
   if (!action) return;
   try {
+    //: Made in another space: go back there first (space-swap.js).
+    if (action.space && !(await spaceEnterFor(action))) throw new Error("Couldn't go back to the space it was made in.");
     await action.undo();
     action.undoneAt = Date.now();
     redoStack.push(action);
@@ -1620,6 +1677,7 @@ async function performRedoNow() {
   const action = redoStack.pop();
   if (!action) return;
   try {
+    if (action.space && !(await spaceEnterFor(action))) throw new Error("Couldn't go back to the space it was made in.");
     await action.redo();
     undoStack.push(action);
     toast(`Redone: ${action.label}`);
@@ -1651,9 +1709,12 @@ function renderUndoBar() {
   //: board's counts: a button that is lit when there is nothing behind it is
   //: the thing that makes people stop trusting it. Each button asks for its
   //: own history, since on a document the newer step decides (`appStackIsNewer`).
+  //: Both asked before either is painted: `boardHistoryActive` reads layout,
+  //: and a read after the first button's writes forced a second layout (OPEN 813).
   const surface = surfaceHistory();
+  const redoSurface = surfaceHistory("redo");
   paintUndoDoor(undoBtn, "undo", surface, undoStack);
-  paintUndoDoor(redoBtn, "redo", surfaceHistory("redo"), redoStack);
+  paintUndoDoor(redoBtn, "redo", redoSurface, redoStack);
 }
 
 function paintUndoDoor(button, verb, surface, stack) {
@@ -1764,6 +1825,8 @@ async function loadMostUsed() {
     const count = document.createElement("span");
     count.className = "count";
     count.textContent = `×${entry.access_count}`;
+    //: What the number counts (blind test 2026-10-31: "x4, of what?").
+    count.title = `Opened or asked about ${entry.access_count} ${entry.access_count === 1 ? "time" : "times"}`;
     li.append(text, count);
     li.addEventListener("click", () => flashEntry(entry.id));
     list.appendChild(li);
@@ -1783,7 +1846,7 @@ const settingsReadouts = {};
 //: per chosen model in this browser; Settings, Models keeps the why.
 function sayChatModelChosen(status) {
   const why = status?.chat_model_chosen_why;
-  if (!why || typeof toastAction !== "function") return;
+  if (!why) return;
   const key = `chatModelChosen:${status.chat_model}`;
   if (prefs.get(key)) return;
   if (!prefs.set(key, "1")) return;
@@ -1910,15 +1973,24 @@ async function refreshModelStatus() {
     // Backend's own worst case is 2.5s (INSTALLED_REFRESH_BUDGET: the runner
     // call has its own thread and a poll serves the last answer past that),
     // so 8s leaves real headroom instead of racing it at the wire.
-    modelStatus = await apiJson("/models/status", {
+    const next = await apiJson("/models/status", {
       silent: true,
+      cacheMs: 600,
       //: A timeout of a silent request (this poll is the only one that sets
       //: its own `AbortSignal.timeout`) is the "slow" state below, asked
       //: again on the next tick, so `api()` does not log it.
       signal: AbortSignal.timeout(8000)
     });
-    statusEverAnswered = true;
-    modelStatusProblem = null;
+    //: **Nothing has answered yet is not an answer** (INBOX 1426 L1): the
+    //: server's first seconds after a start, with the runner still busy. Keep
+    //: what the page had, show "Checking", and ask again soon.
+    if (next?.ollama_checking) {
+      modelStatusProblem = "checking";
+    } else {
+      modelStatus = next;
+      statusEverAnswered = true;
+      modelStatusProblem = null;
+    }
   } catch (err) {
     //: **A slow answer keeps the last good status** (OPEN ledger 1520): the
     //: Agent panel and the pill used to grey on every timeout and flicker
@@ -1971,7 +2043,9 @@ async function refreshModelStatus() {
   } else if (!jobsRunning() && !settingsOpen() && !document.hidden) {
     statusIdleDelay = Math.min(statusIdleDelay * 2, STATUS_IDLE_CEILING_MS);
   }
-  const delay = jobsRunning()
+  const delay = modelStatusProblem === "checking"
+    ? 1500
+    : jobsRunning()
     ? 1000
     : document.hidden
       ? 120000
@@ -2050,39 +2124,6 @@ function openModelGate(control) {
   delete control.dataset.modelGated;
 }
 
-function openModelOffer(control) {
-  closeHelpPopovers();
-  const panel = document.createElement("div");
-  panel.className = "help-body model-offer";
-  panel.setAttribute("role", "dialog");
-  panel.setAttribute("aria-label", "Needs a model");
-  const why = document.createElement("p");
-  why.textContent = `${control.dataset.needsModel}, and no model is connected. ${control.dataset.modelOffer}`.trim();
-  const setUp = smallButton("ph:plugs Set up a model", "Open Settings at Models, where a local or remote model is connected", () => {
-    entry.close();
-    openSettingsModal("models");
-  });
-  setUp.classList.add("primary");
-  panel.append(why, setUp);
-  const entry = {
-    panel,
-    trigger: control,
-    close() {
-      openHelpPopovers.delete(entry);
-      panel.remove();
-      control.setAttribute("aria-expanded", "false");
-    },
-  };
-  panel.style.visibility = "hidden";
-  panel.classList.add("help-popover");
-  (control.closest("dialog[open]") || document.body).appendChild(panel);
-  panel.addEventListener("click", (event) => event.stopPropagation());
-  openHelpPopovers.add(entry);
-  control.setAttribute("aria-expanded", "true");
-  placeHelpPopover(panel, control);
-  setUp.focus();
-}
-
 //: Capture, so the control's own handler (which would start the AI act)
 //: never sees a press made while the gate is shut.
 document.addEventListener(
@@ -2097,6 +2138,8 @@ document.addEventListener(
   true
 );
 
+//: The body's own controls are gated when it is built (settings-body.js), not before.
+onSettingsBody(() => syncModelGatedControls());
 function syncModelGatedControls(status = modelStatus) {
   const off = status ? status.ollama_running === false : false;
   for (const control of document.querySelectorAll("[data-needs-model]")) {
@@ -2128,8 +2171,8 @@ function syncModelGatedControls(status = modelStatus) {
   //: feature already has an override of its own, which must stay visible so it
   //: can be cleared (WORLD_CLASS_PLAN 20).
   const holdsOverride = Number(status?.feature_models_overridden || 0) > 0;
-  $("feature-models-config")?.classList.toggle("hidden", off && !holdsOverride);
-  const sampling = $("sampling-box");
+  document.getElementById("feature-models-config")?.classList.toggle("hidden", off && !holdsOverride);
+  const sampling = document.getElementById("sampling-box");
   (sampling?.parentElement?.classList.contains("fold-help-wrap") ? sampling.parentElement : sampling)?.classList.toggle("hidden", off);
   //: The badge is a span, not a button, so `disabled` does nothing to it
   //: (see its own comment in `renderTimelineEntry`). Explicitly hidden here so
@@ -2171,7 +2214,7 @@ function syncModelGatedControls(status = modelStatus) {
   //: thing that said so was a title on a button that could not be pressed.
   renderAiOfflineNotice(
     $("draft-offline"),
-    "No model connected, so nothing can be drafted. The rest of this tab works."
+    "No model connected. Carry on and Translate are off; the rest writes by rule."
   );
   //: UX-12: any other AI-only widget names its own line.
   for (const line of document.querySelectorAll("[data-offline-line]")) renderAiOfflineNotice(line, line.dataset.offlineLine);
@@ -2345,14 +2388,15 @@ function aiStatusState() {
   }
   if (!searchReady && modelStatus.embedding_error) {
     // "Broken" and "still loading" looked identical before: the old pill said
-    // "warming up…" forever when the model had actually failed.
+    // "warming up…" forever when the model had actually failed. Never
+    // allowed to download (yet) is a choice, not a fault (audit 1030 Y2).
+    const off = modelStatus.semantic_off;
     return {
-      level: "error",
-      title: "Search AI didn't load",
+      level: off ? "off" : "error",
+      title: off ? "Search by meaning off" : "Search AI didn't load",
       detail:
         `${modelStatus.embedding_error}\n\nSearching by word still works, and ` +
-        "notes, tags, reminders and the graph are unaffected. Settings → Logs " +
-        "has the details.",
+        "notes, tags, reminders and the graph are unaffected." + (off ? "" : " Settings, Logs has the details."),
     };
   }
   if (chatReady && searchReady) {
@@ -2401,7 +2445,7 @@ function aiStatusState() {
 // colour vision deficiency, and fails everyone in high-contrast mode, so the
 // shape carries the same meaning the colour does.
 // "…" for connecting rather than a spinner: a spinner has to be animated to
-// read as one, and under prefers-reduced-motion a frozen spinner looks like a
+// read as one, and under reduced motion a frozen spinner looks like a
 // rendering fault. The ellipsis says "waiting" while perfectly still.
 const AI_STATUS_GLYPH = { idle: "…", ok: "✓", warn: "!", error: "✕", off: "" };
 
@@ -2478,15 +2522,37 @@ function renderAiPill() {
 //: the same in the bell, keyed by the error so it is said once per problem,
 //: not once per poll.
 let embeddingNudgeSaid = "";
+
+//: An error without its closing full stops, so `${error}. Next` never reads ".." (X18).
+function withoutEndStop(text) {
+  return String(text || "").trim().replace(/[.\s]+$/, "");
+}
+
+function embeddingProblemDetail(error) {
+  return `${withoutEndStop(error)}. Settings, Models can switch it to ${EMBEDDING_FALLBACK_MODEL} or install the package.`;
+}
+
+//: The toast is once per browser session (X24); the bell keeps every problem.
+//: Blocked storage falls back to `embeddingNudgeSaid`: once per page load.
+function embeddingToastDue() {
+  try {
+    if (sessionStorage.getItem("embeddingToastShown")) return false;
+    sessionStorage.setItem("embeddingToastShown", "1");
+  } catch {
+    // No storage: the in-memory once-per-problem guard above still holds.
+  }
+  return true;
+}
+
 function nudgeEmbeddingProblem() {
   const error = modelStatus?.embedding_error;
-  if (!error || error === embeddingNudgeSaid) return;
+  if (!error || modelStatus.semantic_off || error === embeddingNudgeSaid) return;
   embeddingNudgeSaid = error;
   const installing = /being installed/.test(error);
   const title = installing ? "Search by meaning is being installed" : "Search by meaning is not working";
   const detail = installing
     ? "Search uses keywords until it finishes. Or pick nomic-embed-text in Settings, Models."
-    : `${error}. Settings, Models can switch it to ${EMBEDDING_FALLBACK_MODEL} or install the package.`;
+    : embeddingProblemDetail(error);
   recordNotification({
     kind: "assist",
     title,
@@ -2494,7 +2560,9 @@ function nudgeEmbeddingProblem() {
     key: `embedding:${error}`,
     action: { settings: "models" },
   });
-  if (!installing) toastAction(`${title}. Search is using keywords for now.`, "Fix it", () => openSettingsModal("searchindex", "embedding-model-select"), { record: false });
+  //: While the download question is up it already says keywords work
+  //: meanwhile: a second toast said it again, stacked over Settings (audit 1028 E40).
+  if (!installing && !modelStatus.semantic_offer && embeddingToastDue()) toastAction(`${title}. Search is using keywords for now.`, "Fix it", () => openSettingsModal("searchindex", "embedding-model-select"), { record: false });
 }
 
 // --- the status bar (§36D) ---------------------------------------------------
@@ -2606,7 +2674,7 @@ function renderStatusBar() {
     value: due || open,
     label: due ? "due" : "open",
     title: due
-      ? `${due} reminder${due === 1 ? "" : "s"} due now`
+      ? `${nounCount(due, "reminder")} due now`
       : `${open} open reminder${open === 1 ? "" : "s"}`,
     tone: due ? "due" : "",
   });
@@ -2626,9 +2694,10 @@ function renderStatusBar() {
       icon: "ph:spin",
       value: count,
       label: `running: ${task.label}`,
-      title:
-        backgroundTasks.map((t) => `${t.label}${t.detail ? `, ${t.detail}` : ""}`).join("\n") +
-        "\n\nClick to open Activity, where each run shows its lines and can stop.",
+      //: The first task's name is already the label, and the label is part
+      //: of the accessible name, so the title carries only what it adds
+      //: (HR10: "running: X: X"): its detail, then the ones behind it.
+      title: [[task.detail, ...backgroundTasks.slice(1).map((t) => `${t.label}${t.detail ? `, ${t.detail}` : ""}`)].filter(Boolean).join("\n"), "Click to open Activity, where each run shows its lines and can stop."].filter(Boolean).join("\n\n"),
     });
   }
 
@@ -2807,7 +2876,7 @@ async function setChatMode(mode) {
 }
 
 function backendLabel(status) {
-  return (status && status.provider) === "openai" ? "The model server" : "Ollama";
+  return status?.provider === "openai" ? "The model server" : "Ollama";
 }
 
 // True while the user is mid-edit, so a status poll doesn't overwrite the
@@ -2854,7 +2923,7 @@ function renderSettings() {
   ollamaLine.textContent = status.ollama_running
     ? `${backend} is running`
     : status.unreachable_hint || `${backend} isn't running`;
-  ollamaLine.className = `status ${status.ollama_running ? "ok" : "off"}`;
+  ollamaLine.className = `status ${status.ollama_running ? "ok" : status.ollama_busy ? "is-checking" : "off"}`;
   //: A slow poll keeps the last answer on screen (see refreshModelStatus), so
   //: the line says so instead of presenting a stale answer as fresh.
   if (modelStatusProblem === "slow") {
@@ -2882,7 +2951,7 @@ function renderSettings() {
   const say = (text) => setLabel(embeddingError, `ph:warning ${text}`);
   if (status.embedding_error && /^Search by meaning/.test(status.embedding_error)) {
     say(
-      `${status.embedding_error}. ` +
+      `${withoutEndStop(status.embedding_error)}. ` +
       (status.ollama_running
         ? `Or switch the search engine to ${EMBEDDING_FALLBACK_MODEL} below: smaller, and offline.`
         : `Or start Ollama and pick ${EMBEDDING_FALLBACK_MODEL} as the search engine: smaller, and offline.`)
@@ -2892,7 +2961,7 @@ function renderSettings() {
       `Search engine problem: ${status.embedding_error}: semantic search is ` +
       "falling back to keywords. Quick fix: switch the search engine below to " +
       "an Ollama embedding model (download nomic-embed-text from the list), " +
-      "it runs fully offline. Full details in Settings → Logs."
+      "it runs fully offline. Full details in Settings, Logs."
     );
   }
   // The one-click version of the "quick fix" sentence above: only offered
@@ -2929,7 +2998,7 @@ function renderSettings() {
   // The search engine is always adjustable: its recommended option is the
   // built-in one, which needs no Ollama. Only the Ollama half of it depends
   // on Ollama being up.
-  renderEmbeddingPicker(status);
+  if (typeof renderEmbeddingPicker === "function") renderEmbeddingPicker(status);
   //: Always, not only while a backend answers: the rows come from saved
   //: settings, and a person with the server down still needs to see and clear
   //: an override (WORLD_CLASS_PLAN 20, "Still open").
@@ -2967,6 +3036,27 @@ function renderSettings() {
 // screen. So a re-index that finished while you were anywhere else, which is
 // most of them, since these jobs run for minutes, was recorded nowhere. It is
 // polled from here now, so the record does not depend on being watched.
+//: Debounced, because committing a note with four images is four writes and
+//: one job list. 600ms rather than immediately: the thread is started after
+//: the response is written, so a poll racing it by a millisecond sees the
+//: state from just before the job existed, the exact miss this fixes.
+let jobPollKick = null;
+function kickBackgroundTaskPoll() {
+  //: A write that starts a job is the clearest "something just changed"
+  //: there is, so the status poll's idle backoff (see `resetStatusCadence`)
+  //: starts again from 30s rather than the job's progress being reported on
+  //: a two-minute delay. Reached only from `api()` on a non-GET, which
+  //: cannot happen before this file has finished evaluating, so the `const`
+  //: that function reads is always past its temporal dead zone by then.
+  resetStatusCadence();
+  clearTimeout(jobPollKick);
+  jobPollKick = setTimeout(() => {
+    refreshBackgroundTasks().catch(() => {
+      // A poll is best-effort, it runs again on the status loop regardless.
+    });
+  }, 600);
+}
+
 const TASKS_RUNNING_MS = 1500;
 const tasksState = { beat: null };
 
@@ -2979,7 +3069,7 @@ async function refreshBackgroundTasks() {
     return;
   }
   const body = await apiJson("/tasks", { silent: true }).catch(() => null);
-  backgroundTasks = (body && body.tasks) || [];
+  backgroundTasks = body?.tasks || [];
   //: While anything runs, the slot keeps its own beat (INBOX 805, B77): on
   //: the status loop alone it waited behind `/models/status`, which a busy
   //: runner makes slow exactly while jobs run, and it said "running" for 12 s
@@ -2988,7 +3078,7 @@ async function refreshBackgroundTasks() {
   if (backgroundTasks.length && !document.hidden) {
     tasksState.beat = setTimeout(() => refreshBackgroundTasks().catch(() => {}), TASKS_RUNNING_MS);
   }
-  noticeTaskTransitions(backgroundTasks, (body && body.history) || []);
+  noticeTaskTransitions(backgroundTasks, body?.history || []);
   renderStatusBar();
   // One fetch, not two: the panel renders from this payload rather than asking
   // again a few milliseconds later.
@@ -2996,7 +3086,7 @@ async function refreshBackgroundTasks() {
   //: `followTaskLines`); the poll then only keeps the bar current.
   if (settingsModalOpen() && currentSettingsSection === "tasks") {
     if (!taskLineStream.controller) renderTasks(body);
-  } else renderTaskHistory((body && body.history) || []);
+  } else renderTaskHistory(body?.history || []);
 }
 
 // --- a background job starting and finishing, said out loud --------------------
@@ -3048,6 +3138,7 @@ const QUIET_TASK_KINDS = new Set([
   "job-warm-filing", "job-file-entry", "filing-late",
   "embeddings", "embedding-model", "reindex", "searxng-start", "searxng",
   "job-caption", "caption", "page-read", "pull", "extra",
+  "job-warm", "maintenance", "job-maintenance", "redate", "job-redate", "backup",
 ]);
 
 function noticeTaskTransitions(running, history) {
@@ -3082,7 +3173,9 @@ function noticeTaskTransitions(running, history) {
     renderAgentRunSummary(run);
     backgroundRunRows.set(key, run);
     if (!QUIET_TASK_KINDS.has(task.kind)) openPanelForRun(run);
-    task.noticeId = recordNotification({
+    //: Upkeep the app starts itself is not news for the bell: only its
+    //: failure is, which agentActivityNotice records below (audit 1030 Y7).
+    if (!QUIET_TASK_KINDS.has(task.kind)) task.noticeId = recordNotification({
       kind: "task",
       title: `Started: ${task.label}`,
       detail: task.detail || "",
@@ -3117,17 +3210,17 @@ function noticeTaskTransitions(running, history) {
       const endKey = ended ? `task:${ended.kind || ended.label}:${ended.at}` : `${task.noticeId}:end`;
       settleNotification(task.noticeId, { key: endKey, ...taskEndingWords(ended, task.label) });
     }
-    if (ended && ended.outcome === "failed") {
+    if (ended?.outcome === "failed") {
       endAgentRun(row, { state: "failed" });
       agentActivityNotice(`Failed: ${ended.label || task.label}`, { isError: true });
-    } else if (ended && ended.outcome === "cancelled") {
+    } else if (ended?.outcome === "cancelled") {
       endAgentRun(row, { state: "stalled", detail: "cancelled" });
       // Not an error and not an achievement, the user stopped it and already
       // knows. Recorded in the centre by renderTaskHistory; no toast.
       continue;
     } else {
       endAgentRun(row, { state: "done" });
-      if (!QUIET_TASK_KINDS.has(task.kind)) agentActivityNotice(`Finished: ${(ended && ended.label) || task.label}`);
+      if (!QUIET_TASK_KINDS.has(task.kind)) agentActivityNotice(`Finished: ${ended?.label || task.label}`);
     }
   }
 }

@@ -1,0 +1,22 @@
+/* The staged chip's upload bar (attachmentChip loads this while a chip uploads; moved out of the boot sheets for the gzip budget). */
+.att-chip-bar {
+  position: absolute;
+  inset: auto var(--space-2) 0;
+  width: auto;
+  height: var(--space-1);
+  appearance: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  accent-color: var(--accent);
+}
+.att-chip-bar::-webkit-progress-bar {
+  background: transparent;
+}
+.att-chip-bar::-webkit-progress-value {
+  background: var(--accent);
+  border-radius: var(--radius-sm);
+}
+.att-chip-bar::-moz-progress-bar {
+  background: var(--accent);
+}

@@ -63,6 +63,7 @@ from tessellate.ai.provider import (
     offered_tool_names,
     split_thinking,
 )
+from tessellate.core import activity
 
 
 def _looks_like_tools_rejection(status: int, body: str) -> bool:
@@ -177,6 +178,8 @@ class OpenAICompatClient(Provider):
         just to discover the server is off."""
         if ollama_client.is_quiet(self.base_url):
             return False
+        if ollama_client.recently_up(self.base_url):
+            return True
         try:
             response = requests.get(
                 f"{self.base_url}/models", headers=self._headers(), timeout=(ollama_client.CONNECT_TIMEOUT_SECONDS, ollama_client.PROBE_READ_SECONDS)
@@ -186,7 +189,10 @@ class OpenAICompatClient(Provider):
             # configuration problem to report, not an unreachable server. The
             # status pill would otherwise say "offline" about a server that is
             # plainly answering.
-            return response.status_code < 500
+            up = response.status_code < 500
+            if up:
+                ollama_client.remember_up(self.base_url)
+            return up
         except requests.RequestException:
             ollama_client.mark_quiet(self.base_url)
             return False
@@ -513,7 +519,7 @@ class OpenAICompatClient(Provider):
         framed differently on the wire. Keeping the split exactly here is why
         neither of them needed touching for a second provider.
         """
-        for line in response.iter_lines():
+        for line in activity.stop_aware(response, response.iter_lines()):
             if not line:
                 continue
             text = line.decode("utf-8") if isinstance(line, bytes) else line

@@ -18,7 +18,7 @@ const ROUTE_NOTES_SECTIONS = ["capture", "writing-room", "ask", "questions"];
 //: The Library's sub-tabs by the word the address uses. Images and Files are
 //: one view (`library-view-media`) in two kinds, so their sections carry the
 //: kind; "All" is the view whose id kept the old name, documents.
-const ROUTE_LIBRARY = { all: "library-view-documents", documents: "library-view-docs", boards: "library-view-whiteboard", images: "library-view-media:images", files: "library-view-media:files", skills: "library-view-skills", links: "library-view-links", contents: "library-view-contents", recordings: "library-view-recordings" };
+const ROUTE_LIBRARY = { all: "library-view-documents", documents: "library-view-docs", boards: "library-view-whiteboard", images: "library-view-media:images", files: "library-view-media:files", skills: "library-view-skills", links: "library-view-links", contents: "library-view-contents", recordings: "library-view-recordings", bin: "library-bin" };
 
 //: The things with an address of their own: the tab, the history section's
 //: prefix and the path word before the id. One table for `routeHash` (a

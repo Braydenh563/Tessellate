@@ -11,12 +11,17 @@ from __future__ import annotations
 import re
 from datetime import datetime, timedelta
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from tessellate.core.database import Entry, Reminder
 
 _REMINDERS = re.compile(r"\breminders?\b")
+#: What a reminder question can ask besides "how many are open": the late ones and
+#: the ticked-off ones. Answering either with the open total is a substitution
+#: (audit 1031 Z8).
+_OVERDUE = re.compile(r"\b(?:overdue|over due|past due|late|missed|behind)\b")
+_FINISHED = re.compile(r"\b(?:done|completed?|finished|ticked(?: off)?|checked off)\b")
 _THINGS = r"(?:tasks?|items?|to-?dos?|boxes|checkboxes|tick ?boxes)"
 _OPEN_WORD = r"(?:unticked|unchecked|open|outstanding|incomplete|remaining|left|still to do|to do)"
 _OPEN_ITEMS = re.compile(rf"\b{_OPEN_WORD}\b.*\b{_THINGS}\b|\b{_THINGS}\b.*\b{_OPEN_WORD}\b")
@@ -52,25 +57,32 @@ def _ahead_end(moment: datetime, days: int) -> datetime:
     return moment.replace(hour=23, minute=59, second=59) + timedelta(days=days)
 
 
-def _reminders_answer(session: Session, now: datetime, ahead: tuple[str, int] | None) -> tuple[str, str, list[dict]]:
+def _noun(count: int, word: str) -> str:
+    return f"{count or 'no'} {word}" + ("" if count == 1 else "s")
+
+
+def _reminders_answer(session: Session, now: datetime, ahead: tuple[str, int] | None, text: str = "") -> tuple[str, str, list[dict]]:
     moment = now.replace(tzinfo=None)
     due = [at.replace(tzinfo=None) for at in session.scalars(select(Reminder.due_at).where(Reminder.done.is_(False)))]
+    late = sum(1 for at in due if at < moment)
+    if _OVERDUE.search(text):
+        return "reminder-count", f"You have {_noun(late, 'overdue reminder')}.", [{"label": "overdue reminders", "count": late}]
+    if _FINISHED.search(text):
+        done = session.scalar(select(func.count(Reminder.id)).where(Reminder.done.is_(True))) or 0
+        return "reminder-count", f"You have {_noun(done, 'reminder')} marked done.", [{"label": "reminders done", "count": done}]
     if ahead is not None:
         said, days = ahead
         end = _ahead_end(moment, days)
         count = sum(1 for at in due if moment <= at <= end)
-        noun = "reminder" if count == 1 else "reminders"
-        return "reminder-count", f"You have {count or 'no'} {noun} due {said}.", [{"label": "reminders", "count": count}]
-    late = sum(1 for at in due if at < moment)
-    noun = "open reminder" if len(due) == 1 else "open reminders"
+        return "reminder-count", f"You have {_noun(count, 'reminder')} due {said}.", [{"label": "reminders", "count": count}]
     tail = f", {late} of them overdue" if late and len(due) > 1 else ", and it is overdue" if late else ""
-    return "reminder-count", f"You have {len(due) or 'no'} {noun}{tail}.", [{"label": "reminders", "count": len(due)}]
+    return "reminder-count", f"You have {_noun(len(due), 'open reminder')}{tail}.", [{"label": "reminders", "count": len(due)}]
 
 
 def answer(text: str, session: Session, now: datetime, visible, ahead: tuple[str, int] | None):  # noqa: ANN001, ANN201
     """(kind, sentence, facts) for a count of reminders or open items, or None."""
     if _REMINDERS.search(text):
-        return _reminders_answer(session, now, ahead)
+        return _reminders_answer(session, now, ahead, text)
     if _OPEN_ITEMS.search(text):
         return _open_items_answer(session, visible)
     return None

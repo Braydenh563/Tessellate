@@ -7,11 +7,13 @@ bar hit-tested in full screen).
 
 from __future__ import annotations
 
+from tests._app_js import documents_text
+
 import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-DOCS_JS = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+DOCS_JS = documents_text()
 LAZY_CSS = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
 FOCUS_CSS = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
 

@@ -9,6 +9,8 @@ lines name it. Measured by `scratchpad/ui-sweeps/shortcut1300.js` (in git at d4d
 
 from __future__ import annotations
 
+from tests._help_text import help_chat_text
+
 from tests._app_js import JS_DIR
 from tests._css_paths import CSS_DIR
 
@@ -16,7 +18,7 @@ ROOT = JS_DIR.parents[1]
 
 
 def test_the_chip_carries_a_pencil_and_an_x_while_capturing():
-    js = (JS_DIR / "settings-wiring.js").read_text(encoding="utf-8")
+    js = (JS_DIR / "reveal-targets.js").read_text(encoding="utf-8")
     body = js.split("function buildShortcutList", 1)[1].split("\nfunction ", 1)[0]
     assert '`ph ${capturing ? "ph-x" : "ph-pencil-simple"} shortcut-edit`' in body
     assert "change.append(combo, pen)" in body
@@ -31,5 +33,5 @@ def test_the_pencil_is_quiet_until_aimed_at():
 def test_the_help_lines_name_the_pencil():
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert html.count("Press a shortcut's keys, marked with a pencil") == 2
-    guide = (ROOT / "src" / "tessellate" / "ai" / "help_chat.py").read_text(encoding="utf-8")
+    guide = help_chat_text()
     assert "marked with a pencil" in guide

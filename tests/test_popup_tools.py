@@ -20,7 +20,7 @@ JS = ROOT / "js"
 
 
 def _registry() -> list[dict]:
-    text = (JS / "settings-panes.js").read_text()
+    text = (JS / "settings-panes.js").read_text() + (JS / "app-features.js").read_text()
     body = text.split("const POPUP_TOOLS = [", 1)[1].split("\n];", 1)[0]
     tools = []
     for block in re.split(r"\n  \},?\n", body):
@@ -32,7 +32,8 @@ def _registry() -> list[dict]:
 
 def test_registry_has_the_known_tools():
     ids = {t["id"] for t in _registry()}
-    assert {"equation", "calculator", "convert", "timer", "stopwatch"} <= ids
+    assert {"calculator", "convert", "timer", "stopwatch"} <= ids
+    assert "equation" not in ids, "Equation is the Calculator and equations row now (INBOX 1527)"
 
 
 def test_every_entry_is_complete_and_has_a_guide_topic():
@@ -47,10 +48,9 @@ def test_every_entry_is_complete_and_has_a_guide_topic():
 
 def test_every_surface_reads_the_registry():
     reads = {
-        "settings-panes.js": ["...POPUP_TOOLS.map"],
-        "app-features.js": ["of POPUP_TOOLS", "function renderToolShortcutList"],
-        "settings-wiring.js": ['renderToolShortcutList($("shortcut-list-tools"))'],
-        "editor.js": ["POPUP_TOOLS.filter", 'keys: "Alt+="'],
+        "app-features.js": ["...POPUP_TOOLS.map", "of POPUP_TOOLS", "function renderToolShortcutList"],
+        "reveal-targets.js": ['renderToolShortcutList($("shortcut-list-tools"))'],
+        "editor.js": ["for (const tool of POPUP_TOOLS)", 'keys: "Alt+="'],
     }
     for name, needles in reads.items():
         text = (JS / name).read_text()
@@ -61,5 +61,5 @@ def test_every_surface_reads_the_registry():
 
 def test_the_editor_menus_get_a_row_for_every_tool():
     text = (JS / "editor.js").read_text()
-    assert text.count('POPUP_TOOLS.filter((t) => t.id !== "equation")') == 2
+    assert text.count("POPUP_TOOLS.map(") == 1 and "for (const tool of POPUP_TOOLS) {" in text
     assert 'id: "chat-equation"' in text and 'id: "equation"' in text

@@ -1,4 +1,4 @@
-"""K13: Settings > Models with no model says the composer answers in its place."""
+"""K13: Settings, Models with no model says the composer answers in its place."""
 
 from __future__ import annotations
 

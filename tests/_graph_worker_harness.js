@@ -61,18 +61,32 @@ sandbox.onmessage({
   data: {
     type: "init",
     epoch: 1,
-    nodes: scenario.nodes.map((n) => ({ id: n.id, r: n.r || 8, group: n.group || "" })),
+    nodes: scenario.nodes.map((n) => ({ id: n.id, r: n.r || 8, group: n.group || "", x: n.x, y: n.y })),
     edges: scenario.edges,
     params: scenario.params || { gravity: 50, spread: 50, lengthByScore: true, groupBy: true, orbit: true },
     world,
-    alpha: 1,
+    // `alpha: 0` with `x`/`y` on every note is a restored layout (G6).
+    alpha: scenario.alpha == null ? 1 : scenario.alpha,
     warm: scenario.warm === true,
     intro: scenario.intro === true,
     bloom: scenario.bloom === true,
   },
 });
+// `settleCap` runs the settle with an already-passed cap (the branch that skips the passes and goes straight to the cleanup), as a slow machine does.
+let settled = null;
+if (scenario.settleCap) {
+  settled = vm.runInContext("(() => { try { simulation.alpha(0); return String(settleUntangled(Date.now() + 1e5, 0, 1)); } catch (e) { return 'error: ' + e.message; } })()", sandbox);
+}
 let last = null;
 let firstAlpha = null;
+// A restored layout answers inside `init`, before any timer runs.
+const early = sent.filter((m) => m.type === "tick").pop();
+if (early) {
+  last = Array.from(early.positions);
+  firstAlpha = early.alpha;
+}
+const ended = () => sent.some((m) => m.type === "end");
+let endedAt = ended() ? 0 : null;
 // The warm-up's playback (INBOX 775): the `frame` it posts, and how many
 // ticks were playback and from what heat the first one came.
 let framed = sent.some((m) => m.type === "frame");
@@ -92,6 +106,7 @@ for (let i = 0; i < (scenario.ticks || 300) && timers.length; i++) {
     introTicks += 1;
     if (firstIntroAlpha === null) firstIntroAlpha = m.alpha;
   }
+  if (endedAt === null && ended()) endedAt = i + 1;
   const tick = sent.filter((m) => m.type === "tick").pop();
   if (tick) last = Array.from(tick.positions);
   if (tick && firstAlpha === null) firstAlpha = tick.alpha;
@@ -103,4 +118,4 @@ const positions = {};
 scenario.nodes.forEach((n, i) => {
   positions[n.id] = [last[i * 2], last[i * 2 + 1]];
 });
-process.stdout.write(JSON.stringify({ positions, firstAlpha, framed, introTicks, firstIntroAlpha }));
+process.stdout.write(JSON.stringify({ positions, firstAlpha, framed, introTicks, firstIntroAlpha, settled, endedAt }));

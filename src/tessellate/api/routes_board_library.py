@@ -44,6 +44,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from tessellate.api.downloads import attachment_headers, safe_filename
 from tessellate.api.routes_whiteboard import (
     BOARD_BG_COLOR_RE,
     BOARD_LAYOUTS,
@@ -52,7 +53,7 @@ from tessellate.api.routes_whiteboard import (
     MEDIA_URL_RE,
     WhiteboardObjectBase,
     WhiteboardObjectData,
-    WhiteboardSketchBase,
+    WhiteboardSketchIn,
     _require_board,
     _require_object_data,
     _board_settings,
@@ -467,6 +468,74 @@ def _library_out(row: BoardLibrary) -> dict:
     return {"id": row.id, "name": row.name, "kind": row.kind, "sort": row.sort}
 
 
+def _name_matcher(words: list[str]):  # noqa: ANN202
+    """A test for "every searched word is in the name or a tag"; with no
+    words it accepts everything."""
+
+    def matches(name: str, tags: list[str]) -> bool:
+        text = " ".join([name.lower(), *tags])
+        return all(w in text for w in words)
+
+    return matches
+
+
+def _item_rows(db: Session, kind: str | None, library_id: int | None, favourites: bool, deleted: bool) -> list[BoardLibraryItem]:
+    """The person's saved items, newest first, narrowed by the query string.
+    Snippets stay out of the panel unless that kind is asked for by name."""
+    query = select(BoardLibraryItem)
+    query = query.where(BoardLibraryItem.deleted_at.is_not(None) if deleted else BoardLibraryItem.deleted_at.is_(None))
+    query = query.where(BoardLibraryItem.kind == kind if kind else BoardLibraryItem.kind != SNIPPET_KIND)
+    if library_id:
+        query = query.where(BoardLibraryItem.library_id == library_id)
+    if favourites:
+        query = query.where(BoardLibraryItem.favourite.is_(True))
+    return list(db.scalars(query.order_by(BoardLibraryItem.updated_at.desc(), BoardLibraryItem.id.desc())).all())
+
+
+def _marks_and_recent(db: Session, rows: list[BoardLibraryItem]) -> tuple[dict, list[str]]:
+    """Favourite and use marks on built-ins, and the most recently used refs
+    across the person's items and the built-ins together. `rows` is every
+    matching item before the limit cut, so a recent item is never cut away."""
+    marked = db.scalars(select(BoardLibraryMark)).all()
+    marks = {
+        m.key: {
+            "favourite": bool(m.favourite),
+            "use_count": m.use_count or 0,
+            "last_used_at": m.last_used_at.isoformat() if m.last_used_at else None,
+        }
+        for m in marked
+    }
+    used = [(r.last_used_at, f"item:{r.id}") for r in rows if r.last_used_at]
+    used += [(m.last_used_at, f"builtin:{m.key}") for m in marked if m.last_used_at]
+    return marks, [ref for _, ref in sorted(used, reverse=True)[:RECENT_LIMIT]]
+
+
+def _builtin_set_names() -> list:
+    try:
+        return json.loads((BUILTIN_DIR / "index.json").read_text(encoding="utf-8")).get("sets", [])
+    except (OSError, ValueError):
+        return []
+
+
+def _builtin_matches(matches, words: list[str], kind: str | None) -> list[dict]:  # noqa: ANN001
+    """Built-in entries (static files) that fit the search, at most 200: the
+    sets' entries first, then the icons, which only a word search reaches and
+    only when elements are wanted."""
+    found = []
+    for key, entry in _builtin_index().items():
+        if kind and entry.get("kind", "element") != kind:
+            continue
+        if matches(entry.get("name", ""), entry.get("tags") or []):
+            found.append({"key": key, "name": entry.get("name"), "set": entry.get("set"), "kind": entry.get("kind", "element")})
+    if words and (not kind or kind == "element"):
+        for name in _icons():
+            if matches(name.replace("-", " "), ["icon"]):
+                found.append({"key": f"icons/{name}", "name": name.replace("-", " ").capitalize(), "set": "Icons", "kind": "element"})
+                if len(found) > 200:
+                    break
+    return found[:200]
+
+
 @router.get("/board-library")
 def list_library(
     response: Response,
@@ -486,56 +555,26 @@ def list_library(
     yours = _yours(db)
     db.commit()
     libraries = db.scalars(select(BoardLibrary).order_by(BoardLibrary.sort, BoardLibrary.id)).all()
-    query = select(BoardLibraryItem)
-    query = query.where(BoardLibraryItem.deleted_at.is_not(None) if deleted else BoardLibraryItem.deleted_at.is_(None))
-    query = query.where(BoardLibraryItem.kind == kind if kind else BoardLibraryItem.kind != SNIPPET_KIND)
-    if library_id:
-        query = query.where(BoardLibraryItem.library_id == library_id)
-    if favourites:
-        query = query.where(BoardLibraryItem.favourite.is_(True))
-    rows = db.scalars(query.order_by(BoardLibraryItem.updated_at.desc(), BoardLibraryItem.id.desc())).all()
+    rows = _item_rows(db, kind, library_id, favourites, deleted)
     words = (q or "").lower().split()
-
-    def matches(name: str, tags: list[str]) -> bool:
-        text = " ".join([name.lower(), *tags])
-        return all(w in text for w in words)
-
+    matches = _name_matcher(words)
     items = [_item_out(r) for r in rows if matches(r.name, r.tags or [])]
     #: A library grows with what the person saves: the newest `limit`, and
     #: the whole count in a header so a caller can tell it was cut.
     response.headers["X-Total-Count"] = str(len(items))
     items = items[:limit]
-    marks = {m.key: {"favourite": bool(m.favourite), "use_count": m.use_count or 0,
-                     "last_used_at": m.last_used_at.isoformat() if m.last_used_at else None}
-             for m in db.scalars(select(BoardLibraryMark)).all()}
-    used = [(r.last_used_at, f"item:{r.id}") for r in rows if r.last_used_at]
-    used += [(m.last_used_at, f"builtin:{m.key}") for m in db.scalars(select(BoardLibraryMark)).all() if m.last_used_at]
+    marks, recent_refs = _marks_and_recent(db, rows)
     out: dict[str, Any] = {
         "yours_id": yours.id,
         "libraries": [_library_out(lib) for lib in libraries],
         "items": [i.model_dump(mode="json") for i in items],
         "marks": marks,
-        "recent": [ref for _, ref in sorted(used, reverse=True)[:RECENT_LIMIT]],
+        "recent": recent_refs,
+        "sets": _builtin_set_names(),
+        "shape_sets": _shape_sets(),
     }
-    try:
-        out["sets"] = json.loads((BUILTIN_DIR / "index.json").read_text(encoding="utf-8")).get("sets", [])
-    except (OSError, ValueError):
-        out["sets"] = []
-    out["shape_sets"] = _shape_sets()
     if words or kind:
-        builtins = []
-        for key, entry in _builtin_index().items():
-            if kind and entry.get("kind", "element") != kind:
-                continue
-            if matches(entry.get("name", ""), entry.get("tags") or []):
-                builtins.append({"key": key, "name": entry.get("name"), "set": entry.get("set"), "kind": entry.get("kind", "element")})
-        if words and (not kind or kind == "element"):
-            for name in _icons():
-                if matches(name.replace("-", " "), ["icon"]):
-                    builtins.append({"key": f"icons/{name}", "name": name.replace("-", " ").capitalize(), "set": "Icons", "kind": "element"})
-                    if len(builtins) > 200:
-                        break
-        out["builtins"] = builtins[:200]
+        out["builtins"] = _builtin_matches(matches, words, kind)
     return out
 
 
@@ -763,11 +802,11 @@ def export_library(library_id: int | None = None, db: Session = Depends(get_sess
         "library": {"name": library.name},
         "items": [{"kind": r.kind, "name": r.name, "tags": r.tags or [], "payload": r.payload or {}} for r in rows],
     }
-    safe = re.sub(r"[^A-Za-z0-9 _-]+", "", library.name).strip() or "Library"
+    name = safe_filename(library.name, "memorymap-library.json", "Library")
     return Response(
         content=json.dumps(body, indent=1),
         media_type="application/json",
-        headers={"Content-Disposition": f'attachment; filename="{safe}.memorymap-library.json"'},
+        headers=attachment_headers(name),
     )
 
 
@@ -1225,7 +1264,7 @@ class PasteItem(BaseModel):
 
     key: str = Field(min_length=1, max_length=40)
     object: WhiteboardObjectBase | None = None
-    sketch: WhiteboardSketchBase | None = None
+    sketch: WhiteboardSketchIn | None = None
     src: str | None = Field(default=None, max_length=40)
     dst: str | None = Field(default=None, max_length=40)
 

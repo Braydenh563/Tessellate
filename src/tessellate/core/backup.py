@@ -18,6 +18,7 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+from tessellate.core import paths
 from tessellate.core.logbuffer import safe_value
 
 KEEP_BACKUPS = 10
@@ -76,11 +77,10 @@ def backup_path(name: str, data_dir: Path) -> Path | None:
     """The file a backup's name stands for, or None when the name would
     reach outside `backups/`. The name comes from a request, so the check is
     on the real path (links followed), not on the spelling."""
-    folder = os.path.realpath(backups_dir(data_dir))
-    candidate = os.path.realpath(os.path.join(folder, name))
-    if not candidate.startswith(folder + os.sep):
+    try:
+        return paths.contained(backups_dir(data_dir), name)
+    except paths.OutsideFolder:
         return None
-    return Path(candidate)
 
 
 def backup_files(data_dir: Path) -> list[Path]:

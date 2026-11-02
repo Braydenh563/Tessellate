@@ -32,7 +32,9 @@ def _function(source: str, name: str) -> str:
 
 def _run(names: list[tuple[str, str]], call: str):
     body = "\n".join(_function(src, name) for src, name in names)
-    script = f"const TEXT_READING_WPM = 220;\n{body}\nconsole.log(JSON.stringify({call}));"
+    #: `textCounts` counts words through the one helper (`wordCount`, settings-wiring.js).
+    counter = SETTINGS_JS[SETTINGS_JS.index("const WORD_PER_CHARACTER") : SETTINGS_JS.index("function textCounts(")]
+    script = f"const TEXT_READING_WPM = 220;\n{counter}\n{body}\nconsole.log(JSON.stringify({call}));"
     out = subprocess.run(["node", "-e", script], capture_output=True, text=True, timeout=30, check=True)
     return json.loads(out.stdout)
 
@@ -104,7 +106,8 @@ def test_a_code_file_prints_one_row_per_line_without_a_phantom_last_row():
 def test_a_code_file_has_a_print_row_and_prints_its_own_listing():
     hidden = re.search(r'for \(const id of \[([^\]]*)\]\) \$\(id\)\?\.classList\.toggle\("hidden", docIsCodeFile\(\)\)', DOCS_JS)
     assert hidden and "doc-export-pdf" not in hidden.group(1)
-    assert "docCodeExportRefused" not in _function(DOCS_JS, "exportDocumentPdf")
+    export = (FRONTEND / "js" / "documents-export.js").read_text(encoding="utf-8")
+    assert "docCodeExportRefused" not in _function(export, "docExportPdfRun")
     begin = _function(DOCS_JS, "docPrintBegin")
     assert "docIsCodeFile()" in begin and "docCodePrintFill()" in begin
     fill = _function(DOCS_JS, "docCodePrintFill")

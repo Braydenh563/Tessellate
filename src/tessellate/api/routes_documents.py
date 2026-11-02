@@ -19,27 +19,28 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Response, UploadFi
 from fastapi.responses import StreamingResponse
 
 from tessellate.api import paging
-from pydantic import BaseModel, Field
-from sqlalchemy import func, select
+from tessellate.api.downloads import attachment_headers, safe_filename
+from pydantic import BaseModel, Field, field_validator
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.api.edit_conflicts import content_hash, refuse_if_stale
 from tessellate.ai import drafter, utilities, vision_ocr
-from tessellate.core import activity, deps, docexport, docmeta, docview, filetypes, syntaxcheck
+from tessellate.core import activity, cjk, deps, docexport, docmeta, docview, filetypes, syntaxcheck
 from tessellate.core.config import user_now
 from tessellate.core.database import (
     LIKE_ESCAPE,
-    Bookmark,
-    Document,
     Entry,
-    DocumentAiEdit,
-    DocumentBookmark,
-    DocumentRevision,
     utcnow,
     like_escape,
 )
 from tessellate.core.deps import get_session
 from tessellate.entry import link_offers
+from tessellate.repo import content as content_repo
+from tessellate.repo.content import DOCUMENTS, unshelved
+from tessellate.repo import bookmarks as bookmark_repo
+from tessellate.repo import documents as document_repo
+from tessellate.repo.documents import Document
 from tessellate.entry.mentions import (
     BACKLINK_ROWS_MAX,
     BACKLINK_SOURCES_MAX,
@@ -79,13 +80,15 @@ SELECTION_EXCERPT_CHARS = 160
 class DocumentBody(BaseModel):
     title: str = Field(default="Untitled", min_length=1, max_length=200)
     content: str = Field(default="", max_length=MAX_CONTENT)
-    #: A bare extension ("md", "py"). Not validated as an enum here on
-    #: purpose: `filetypes.normalise` accepts a filename, a dotted
-    #: extension or a bare one and falls back to markdown for anything it
-    #: does not know, which is the right answer for a field that only
-    #: describes how to *display* the content. A 422 over it would refuse
-    #: to save someone's writing because of its label.
+    #: A bare extension ("md", "py"), a dotted one or a filename. An unknown
+    #: type is refused, 422 naming the valid ones: it used to become markdown
+    #: unseen, so `exe` and `../../etc` were stored as `md` (audit 1031 DC8).
     file_type: str = Field(default=filetypes.DEFAULT_FILE_TYPE, max_length=40)
+
+    @field_validator("file_type")
+    @classmethod
+    def _known_type(cls, value: str) -> str:
+        return filetypes.require(value)
 
 
 class DocumentPatch(BaseModel):
@@ -95,6 +98,9 @@ class DocumentPatch(BaseModel):
     #: above, so an autosave sending only `content` cannot reset a
     #: document's type back to markdown.
     file_type: str | None = Field(default=None, max_length=40)
+    #: Take an archived document off the shelf with this edit; without it an
+    #: archived document refuses the PUT (409), as a binned note does.
+    unarchive: bool = False
     #: Who is making this change, for the history: "edit" (a person typing),
     #: "ai" (an accepted suggestion), "restore" (rolling back). The frontend
     #: says so because only it knows, by the time a PATCH arrives the text
@@ -104,6 +110,11 @@ class DocumentPatch(BaseModel):
     #: text another window has since changed is refused with 409 rather than
     #: silently overwriting it (api/edit_conflicts.py). None is unchecked.
     base_hash: str | None = Field(default=None, max_length=64)
+
+    @field_validator("file_type")
+    @classmethod
+    def _known_type(cls, value: str | None) -> str | None:
+        return None if value is None else filetypes.require(value)
 
 
 class AiEditBody(BaseModel):
@@ -186,7 +197,10 @@ def _summary(document: Document) -> dict:
         "id": document.id,
         "title": document.title,
         "updated_at": document.updated_at.isoformat(),
-        "words": len(document.content.split()),
+        "words": cjk.word_count(document.content),
+        #: What describes a code file better than its words (1031 CE8: "19
+        #: words just now" for a script); the card says lines and type.
+        "lines": (document.content or "").count("\n") + 1 if document.content else 0,
         "preview": _preview(document.content),
         # Normalised on the way out as well as in: a row written before this
         # column existed, or by a restore from an older backup, can hold
@@ -230,7 +244,7 @@ def _linked_notes(session: Session, document_id: int) -> list[dict]:
 
 
 def _existing(session: Session, document_id: int) -> Document:
-    return deps.get_or_404(session, Document, document_id, "That document could not be found.")
+    return document_repo.get(session, document_id)
 
 
 class AttachBookmarkBody(BaseModel):
@@ -243,13 +257,7 @@ def document_bookmarks(document_id: int, session: Session = Depends(get_session)
     note's own `/entries/{id}/bookmarks` (asked about directly: "should
     bookmarks show in documents... as well?")."""
     _existing(session, document_id)
-    rows = (
-        session.query(Bookmark)
-        .join(DocumentBookmark, DocumentBookmark.bookmark_id == Bookmark.id)
-        .filter(DocumentBookmark.document_id == document_id)
-        .order_by(DocumentBookmark.created_at)
-        .all()
-    )
+    rows = bookmark_repo.attached_to_document(session, document_id)
     return [
         {"id": b.id, "url": b.url, "title": b.title, "group_name": b.group_name}
         for b in rows
@@ -260,15 +268,8 @@ def document_bookmarks(document_id: int, session: Session = Depends(get_session)
 def attach_bookmark(
     document_id: int, body: AttachBookmarkBody, session: Session = Depends(get_session)
 ) -> dict:
-    _existing(session, document_id)
-    deps.get_or_404(session, Bookmark, body.bookmark_id, "That bookmark could not be found.")
-    already = (
-        session.query(DocumentBookmark)
-        .filter_by(document_id=document_id, bookmark_id=body.bookmark_id)
-        .first()
-    )
-    if not already:
-        session.add(DocumentBookmark(document_id=document_id, bookmark_id=body.bookmark_id))
+    DOCUMENTS.writable(session, document_id)
+    if bookmark_repo.attach_to_document(session, document_id, body.bookmark_id):
         session.commit()
     return {"attached": True}
 
@@ -277,10 +278,8 @@ def attach_bookmark(
 def detach_bookmark(
     document_id: int, bookmark_id: int, session: Session = Depends(get_session)
 ) -> dict:
-    _existing(session, document_id)
-    session.query(DocumentBookmark).filter_by(
-        document_id=document_id, bookmark_id=bookmark_id
-    ).delete()
+    DOCUMENTS.writable(session, document_id)
+    bookmark_repo.detach_from_document(session, document_id, bookmark_id)
     session.commit()
     return {"detached": True}
 
@@ -352,7 +351,7 @@ def document_link_offers(body: LinkOffersBody, session: Session = Depends(get_se
     Stateless like `/check-syntax`: it takes the text on screen rather than a
     saved document, and writes nothing. Declared above `/{document_id}`.
     """
-    own = session.get(Document, body.document_id) if body.document_id else None
+    own = document_repo.find(session, body.document_id) if body.document_id else None
     return {"offers": link_offers.offers(session, body.text, exclude_title=own.title if own else None)}
 
 
@@ -412,9 +411,8 @@ def list_documents(
     offset = paging.start(cursor, offset)
     # Archived documents are kept, but out of the way, reachable via the
     # Library's Shelved filter (routes_library._shelved), not this list.
-    live = Document.archived_at.is_(None)
-    filters = [live]
     term = q.strip()
+    since = until = None
     #: **A window in the search is a window** (CHAT_PLAN section 2, the
     #: documents row): "harbor last week" is the documents about the harbor
     #: edited in the last week, read by the notes search's own reader
@@ -425,28 +423,14 @@ def list_documents(
 
         understood = search_query.understand(term, user_now(deps.get_config()))
         if understood.since is not None:
-            filters.append(Document.updated_at >= datetime.combine(understood.since, time.min))
+            since = datetime.combine(understood.since, time.min)
             if understood.until is not None:
-                filters.append(Document.updated_at < datetime.combine(understood.until + timedelta(days=1), time.min))
+                until = datetime.combine(understood.until + timedelta(days=1), time.min)
             term = understood.subject if not understood.time_only else ""
-    if term:
-        like = f"%{like_escape(term)}%"
-        filters.append(
-            Document.title.ilike(like, escape=LIKE_ESCAPE)
-            | Document.content.ilike(like, escape=LIKE_ESCAPE)
-        )
-    # Counted over the same filters as the page below, never over the whole
-    # table: with `q` given, "how many are there" means how many match, or a
-    # caller paging a search would loop past the end of its own results.
-    total = session.scalar(select(func.count(Document.id)).where(*filters)) or 0
-    query = (
-        select(Document)
-        .where(*filters)
-        .order_by(Document.updated_at.desc(), Document.id.desc())
-        .limit(limit)
-        .offset(offset)
-    )
-    rows = session.scalars(query)
+    # Counted over the same filters as the page, never over the whole table:
+    # with `q` given, "how many are there" means how many match, or a caller
+    # paging a search would loop past the end of its own results.
+    rows, total = document_repo.page(session, term=term, since=since, until=until, limit=limit, offset=offset)
     response.headers["X-Total-Count"] = str(total)
     paging.finish(response, offset, limit, total)
     return [_summary(d) for d in rows]
@@ -477,12 +461,7 @@ def documents_outline(session: Session = Depends(get_session)) -> list[dict]:
     only part of it this index needs, so only they are sent. Markdown only: a
     code file's "headings" are comments.
     """
-    rows = session.scalars(
-        select(Document)
-        .where(Document.archived_at.is_(None))
-        .order_by(Document.updated_at.desc(), Document.id.desc())
-        .limit(OUTLINE_DOCUMENTS)
-    )
+    rows = document_repo.live(session, limit=OUTLINE_DOCUMENTS)
     out = []
     for document in rows:
         kind = filetypes.get(document.file_type)
@@ -503,13 +482,12 @@ def documents_outline(session: Session = Depends(get_session)) -> list[dict]:
 def create_document(
     body: DocumentBody, session: Session = Depends(get_session)
 ) -> dict:
-    document = Document(
+    document = document_repo.create(
+        session,
         title=body.title.strip() or "Untitled",
         content=body.content,
         file_type=filetypes.normalise(body.file_type),
     )
-    session.add(document)
-    session.flush()
     log_action(session, "created", "document", document.id, document.title[:80])
     session.commit()
     _process_committed_media(session, document.content)
@@ -526,6 +504,10 @@ MAX_IMPORT_BYTES = 50 * 1024 * 1024
 class ContentItem(BaseModel):
     id: int
     content: str = Field(max_length=MAX_CONTENT)
+    #: The `content_hash` of the text this item was worked out from (audit
+    #: 1028 D11): an undo of a replace wrote the old text back over any edit
+    #: made since. One stale item refuses the batch, which lands whole.
+    base_hash: str | None = Field(default=None, max_length=64)
 
 
 class ContentBatch(BaseModel):
@@ -548,12 +530,14 @@ def read_contents(
     matched in the browser because it may be a regular expression.
     `file_type` narrows it to one kind: a SQL run reads the CSV documents
     its query names as tables (OPEN row 1069)."""
-    query = select(Document).where(Document.archived_at.is_(None))
-    if file_type:
-        query = query.where(Document.file_type == filetypes.normalise(file_type))
-    rows = session.scalars(query.order_by(Document.updated_at.desc(), Document.id.desc()).limit(CONTENTS_READ_MAX))
+    rows = document_repo.live(
+        session, limit=CONTENTS_READ_MAX, file_type=filetypes.normalise(file_type) if file_type else None
+    )
     return [
-        {"id": d.id, "title": d.title, "file_type": filetypes.normalise(d.file_type), "content": d.content or ""}
+        {
+            "id": d.id, "title": d.title, "file_type": filetypes.normalise(d.file_type),
+            "content": d.content or "", "content_hash": content_hash(d.content),
+        }
         for d in rows
     ]
 
@@ -568,7 +552,8 @@ def write_contents(body: ContentBatch, session: Session = Depends(get_session)) 
     ids = [item.id for item in body.documents]
     if len(set(ids)) != len(ids):
         raise HTTPException(status_code=422, detail="A document is listed twice.")
-    documents = {doc.id: doc for doc in (_existing(session, doc_id) for doc_id in ids)}
+    documents = {doc.id: doc for doc in (DOCUMENTS.writable(session, doc_id) for doc_id in ids)}
+    _refuse_unwritable(body.documents, documents)
     updated = []
     for item in body.documents:
         document = documents[item.id]
@@ -581,7 +566,29 @@ def write_contents(body: ContentBatch, session: Session = Depends(get_session)) 
     if updated:
         log_action(session, "edited", "document", updated[0], f"{len(updated)} documents in one replace")
     session.commit()
-    return {"updated": updated}
+    #: The hook a save runs (audit 1028 D13): a replace that adds a picture
+    #: reference is a committed save of it.
+    for doc_id in updated:
+        _process_committed_media(session, documents[doc_id].content)
+    return {"updated": updated, "hashes": {str(doc_id): content_hash(doc.content) for doc_id, doc in documents.items()}}
+
+
+def _refuse_unwritable(items: list[ContentItem], documents: dict[int, Document]) -> None:
+    """Nothing is written when one item cannot be: an archived document is
+    read-only until it is restored, and a stale `base_hash` means the text
+    changed after the batch was worked out."""
+    if any(doc.archived_at for doc in documents.values()):
+        raise HTTPException(status_code=409, detail="An archived document can't be changed. Restore it first.")
+    stale = [
+        item.id for item in items
+        if item.base_hash and item.content != documents[item.id].content
+        and content_hash(documents[item.id].content) != item.base_hash
+    ]
+    if stale:
+        raise HTTPException(
+            status_code=409,
+            detail=f"{len(stale)} of these documents changed since; nothing was written.",
+        )
 
 
 @router.post("/import", status_code=201)
@@ -664,7 +671,8 @@ def import_document(
             detail=viewed.message or "There was no readable text in that file.",
         )
 
-    document = Document(
+    document = document_repo.create(
+        session,
         title=Path(name).stem[:200] or "Imported",
         content=viewed.text,
         # The extracted text is markdown-ish prose whatever it came from, so
@@ -682,8 +690,6 @@ def import_document(
             else filetypes.normalise(suffix.lstrip("."))
         ),
     )
-    session.add(document)
-    session.flush()
     log_action(session, "imported", "document", document.id, document.title[:80])
     session.commit()
     return {**_full(document, session), "truncated": viewed.truncated}
@@ -698,7 +704,7 @@ def get_document(document_id: int, session: Session = Depends(get_session)) -> d
 def update_document(
     document_id: int, body: DocumentPatch, session: Session = Depends(get_session)
 ) -> dict:
-    document = _existing(session, document_id)
+    document = unshelved(DOCUMENTS.writable(session, document_id), unarchive=body.unarchive)
     #: Two windows, one document (WORLD_CLASS_PLAN 22.1 item 5), checked
     #: before anything is written, the title included.
     refuse_if_stale(
@@ -745,58 +751,11 @@ MAX_DOCUMENT_REVISIONS = 40
 
 
 def _record_document_revision(session: Session, document: Document, source: str = "edit") -> None:
-    """Snapshot the document as it is *now*, before the caller changes it.
-
-    Coalesced: an edit soon after the last snapshot replaces it, so the history
-    reads as sittings rather than keystrokes. See `DocumentRevision`.
-
-    Never raises: a history that fails to record must not fail the save it was
-    recording. Losing one entry is a much smaller harm than refusing to let
-    someone save their work.
-    """
-    try:
-        latest = (
-            session.query(DocumentRevision)
-            .filter(DocumentRevision.document_id == document.id)
-            .order_by(DocumentRevision.id.desc())
-            .first()
-        )
-        now = utcnow()
-        if latest is not None:
-            #: Both sides made naive-UTC before comparing: `utcnow()` here is
-            #: naive and a value read back from SQLite is too, but a future
-            #: backend could hand back an aware one and a mixed comparison
-            #: raises rather than being wrong quietly.
-            previous = latest.created_at
-            if previous.tzinfo is not None:
-                previous = previous.replace(tzinfo=None)
-            reference = now.replace(tzinfo=None) if now.tzinfo is not None else now
-            if not latest.name and (reference - previous).total_seconds() < REVISION_QUIET_SECONDS:
-                latest.title = document.title
-                latest.content = document.content
-                latest.source = source
-                latest.created_at = now
-                return
-        session.add(
-            DocumentRevision(
-                document_id=document.id,
-                title=document.title,
-                content=document.content,
-                source=source,
-            )
-        )
-        session.flush()
-        stale = (
-            session.query(DocumentRevision)
-            .filter(DocumentRevision.document_id == document.id)
-            .order_by(DocumentRevision.id.desc())
-            .offset(MAX_DOCUMENT_REVISIONS)
-            .all()
-        )
-        for row in stale:
-            session.delete(row)
-    except Exception:  # noqa: BLE001 - a history must never block a save
-        logger.debug("could not record a document revision", exc_info=True)
+    """Snapshot the document as it is *now*, before the caller changes it
+    (`repo/documents.record_revision`, which never raises). See `DocumentRevision`."""
+    document_repo.record_revision(
+        session, document, source, quiet_seconds=REVISION_QUIET_SECONDS, keep=MAX_DOCUMENT_REVISIONS
+    )
 
 
 @router.delete("/{document_id}")
@@ -812,24 +771,11 @@ def delete_document(document_id: int, session: Session = Depends(get_session)) -
     return {"deleted": True, "binned": True}
 
 
-def _binned(session: Session, document_id: int) -> Document:
-    from tessellate.entry import bin as other_bin
-
-    with other_bin.including_binned(session):
-        document = session.get(Document, document_id)
-    if document is None:
-        raise HTTPException(status_code=404, detail="That document could not be found.")
-    return document
-
-
 @router.post("/{document_id}/restore")
 def restore_document(document_id: int, session: Session = Depends(get_session)) -> dict:
     """Out of the bin, with its id and everything that pointed at it."""
-    document = _binned(session, document_id)
-    if document.deleted_at is not None:
-        document.deleted_at = None
-        log_action(session, "restored", "document", document.id, document.title[:80])
-        session.commit()
+    document, _was_binned = content_repo.restore(session, "document", document_id)
+    session.commit()
     return _summary(document)
 
 
@@ -839,7 +785,7 @@ def purge_document(document_id: int, session: Session = Depends(get_session)) ->
     goes to the bin first, so no single press destroys a document."""
     from tessellate.entry import bin as other_bin
 
-    document = _binned(session, document_id)
+    document = document_repo.get_any(session, document_id)
     if document.deleted_at is None:
         raise HTTPException(status_code=409, detail="Only a document in the bin can be deleted for good.")
     log_action(session, "purged", "document", document.id, document.title[:80])
@@ -855,7 +801,7 @@ def archive_document(document_id: int, session: Session = Depends(get_session)) 
     same shape as `routes_entries.archive_entry`: never deleted, never
     auto-cleared, drops out of the Documents list, still reachable from
     the Library's Shelved filter."""
-    document = _existing(session, document_id)
+    document = DOCUMENTS.writable(session, document_id)
     if not document.archived_at:
         document.archived_at = utcnow()
         log_action(session, "archived", "document", document.id, document.title[:80])
@@ -865,19 +811,12 @@ def archive_document(document_id: int, session: Session = Depends(get_session)) 
 
 @router.put("/{document_id}/unarchive")
 def unarchive_document(document_id: int, session: Session = Depends(get_session)) -> dict:
-    document = _existing(session, document_id)
+    document = DOCUMENTS.writable(session, document_id)
     if document.archived_at:
         document.archived_at = None
         log_action(session, "unarchived", "document", document.id, document.title[:80])
         session.commit()
     return _summary(document)
-
-
-def _safe_filename(title: str, extension: str) -> str:
-    """A title is user text; it must not steer where the file lands."""
-    cleaned = re.sub(r"[^\w\s-]", "", title).strip() or "document"
-    cleaned = re.sub(r"[\s_]+", "-", cleaned)[:60]
-    return f"{cleaned}.{extension}"
 
 
 class LinkBody(BaseModel):
@@ -889,7 +828,7 @@ def attach_note(
     document_id: int, body: LinkBody, session: Session = Depends(get_session)
 ) -> dict:
     """Attach an existing note to this document."""
-    document = _existing(session, document_id)
+    document = DOCUMENTS.writable(session, document_id)
     entry = get_entry(session, body.entry_id)
     if entry is None or entry.is_deleted:
         raise HTTPException(status_code=404, detail="That note could not be found.")
@@ -903,7 +842,7 @@ def detach_note(
 ) -> dict:
     """Detach a note. The note itself is untouched, this is a connection,
     not ownership."""
-    document = _existing(session, document_id)
+    document = DOCUMENTS.writable(session, document_id)
     unlink_document(session, document.id, entry_id)
     return _full(document, session)
 
@@ -938,16 +877,7 @@ def _backlinks(session: Session, document: Document) -> dict:
     sources: list[tuple[str, int, str, str]] = []
     sources.extend(
         ("document", row.id, row.title or "Untitled", row.content or "")
-        for row in session.scalars(
-            select(Document)
-            .where(
-                Document.id != document.id,
-                Document.archived_at.is_(None),
-                Document.content.ilike(like, escape=LIKE_ESCAPE),
-            )
-            .order_by(Document.updated_at.desc(), Document.id.desc())
-            .limit(BACKLINK_SOURCES_MAX)
-        )
+        for row in document_repo.mentioning(session, document.id, like, BACKLINK_SOURCES_MAX)
     )
     note_rows = session.scalars(
         select(Entry)
@@ -1000,12 +930,7 @@ def document_connections(document_id: int, session: Session = Depends(get_sessio
     document = _existing(session, document_id)
     bookmarks = [
         {"id": row.id, "title": row.title, "url": row.url}
-        for row in session.scalars(
-            select(Bookmark)
-            .join(DocumentBookmark, DocumentBookmark.bookmark_id == Bookmark.id)
-            .where(DocumentBookmark.document_id == document.id)
-            .order_by(Bookmark.title)
-        )
+        for row in bookmark_repo.attached_to_document(session, document.id, by_title=True)
     ]
     notes = _linked_notes(session, document.id)
     files = _connected_files(session, document.content)
@@ -1055,11 +980,7 @@ def export_markdown(
     return Response(
         content=body,
         media_type=media_type,
-        headers={
-            "Content-Disposition": (
-                f'attachment; filename="{_safe_filename(document.title, kind.ext)}"'
-            )
-        },
+        headers=attachment_headers(safe_filename(document.title, kind.ext, "document")),
     )
 
 
@@ -1096,9 +1017,7 @@ def export_bundle(
         content=data,
         media_type="application/zip",
         headers={
-            "Content-Disposition": (
-                f'attachment; filename="{_safe_filename(document.title, "zip")}"'
-            ),
+            **attachment_headers(safe_filename(document.title, "zip", "document")),
             #: What travelled, for the frontend's own message and for a test
             #: that wants the answer without opening the archive.
             "X-Assets": str(len(carried)),
@@ -1309,19 +1228,14 @@ def document_revisions(
     git log is useful because every line says how big the change was.
     """
     document = _existing(session, document_id)
-    rows = (
-        session.query(DocumentRevision)
-        .filter(DocumentRevision.document_id == document_id)
-        .order_by(DocumentRevision.id.desc())
-        .all()
-    )
+    rows = document_repo.revisions(session, document_id)
     out: list[DocumentRevisionOut] = []
     #: Newest first, and each row is compared with the version that *came
     #: after* it: for the newest revision that is the document as it stands
     #: now, which is why this walks with `newer` seeded from the document.
-    newer_words = len((document.content or "").split())
+    newer_words = cjk.word_count(document.content)
     for row in rows:
-        words = len((row.content or "").split())
+        words = cjk.word_count(row.content)
         out.append(
             DocumentRevisionOut(
                 id=row.id,
@@ -1344,9 +1258,7 @@ def document_revision(
 ) -> dict:
     """One past version, in full, so it can be read or diffed before restoring."""
     _existing(session, document_id)
-    row = session.get(DocumentRevision, revision_id)
-    if row is None or row.document_id != document_id:
-        raise HTTPException(status_code=404, detail="That revision could not be found.")
+    row = document_repo.revision(session, document_id, revision_id)
     return {
         "id": row.id,
         "title": row.title,
@@ -1369,18 +1281,11 @@ def name_current_version(
     """Name the document as it stands now (DOCUMENTS 24 row 4, Google Docs's
     "Name current version"): a revision holding the current text, never
     coalesced into by the edits after it."""
-    document = _existing(session, document_id)
+    document = DOCUMENTS.writable(session, document_id)
     name = body.name.strip()
     if not name:
         raise HTTPException(status_code=422, detail="A version needs a name.")
-    row = DocumentRevision(
-        document_id=document.id,
-        title=document.title,
-        content=document.content,
-        source="edit",
-        name=name,
-    )
-    session.add(row)
+    row = document_repo.name_version(session, document, name)
     session.commit()
     return {"id": row.id, "name": row.name, "created_at": row.created_at.isoformat()}
 
@@ -1393,10 +1298,8 @@ def rename_version(
     session: Session = Depends(get_session),
 ) -> dict:
     """Name, rename or un-name one version; the text it holds is untouched."""
-    _existing(session, document_id)
-    row = session.get(DocumentRevision, revision_id)
-    if row is None or row.document_id != document_id:
-        raise HTTPException(status_code=404, detail="That revision could not be found.")
+    DOCUMENTS.writable(session, document_id)
+    row = document_repo.revision(session, document_id, revision_id)
     row.name = body.name.strip() or None
     session.commit()
     return {"id": row.id, "name": row.name}
@@ -1413,10 +1316,8 @@ def restore_document_revision(
     want to restore. Marked `source="restore"` so the history says what
     happened rather than looking like an ordinary rewrite.
     """
-    document = _existing(session, document_id)
-    row = session.get(DocumentRevision, revision_id)
-    if row is None or row.document_id != document_id:
-        raise HTTPException(status_code=404, detail="That revision could not be found.")
+    document = DOCUMENTS.writable(session, document_id)
+    row = document_repo.revision(session, document_id, revision_id)
     #: **Read before writing, and this is not a style preference.** The
     #: snapshot below coalesces into the most recent revision when one is
     #: recent enough: and on the common path ("I rewrote this, undo that")
@@ -1462,7 +1363,7 @@ class DocumentAiEditOut(BaseModel):
     created_at: str
 
 
-def _ai_edit_out(row: DocumentAiEdit) -> DocumentAiEditOut:
+def _ai_edit_out(row) -> DocumentAiEditOut:  # noqa: ANN001
     return DocumentAiEditOut(
         id=row.id,
         verb=row.verb,
@@ -1480,33 +1381,15 @@ def record_ai_edit(
     the oldest entries past `MAX_AI_EDIT_LOG_PER_DOCUMENT` so a heavily
     AI-edited document doesn't keep an unbounded pile of full-text
     snapshots forever."""
-    _existing(session, document_id)  # 404s if the document is gone
+    DOCUMENTS.writable(session, document_id)  # 404 gone, 409 binned
     selection = body.selection.strip()
     excerpt = selection[:SELECTION_EXCERPT_CHARS]
     if len(selection) > SELECTION_EXCERPT_CHARS:
         excerpt += "…"
-    row = DocumentAiEdit(
-        document_id=document_id,
-        verb=body.verb,
-        instruction=body.instruction.strip(),
-        selection_excerpt=excerpt,
-        before_content=body.before_content,
-        after_content=body.after_content,
+    row = document_repo.log_ai_edit(
+        session, document_id, verb=body.verb, instruction=body.instruction.strip(), excerpt=excerpt,
+        before=body.before_content, after=body.after_content, keep=MAX_AI_EDIT_LOG_PER_DOCUMENT,
     )
-    session.add(row)
-    session.flush()
-
-    existing_ids = session.scalars(
-        select(DocumentAiEdit.id)
-        .where(DocumentAiEdit.document_id == document_id)
-        .order_by(DocumentAiEdit.created_at.desc())
-    ).all()
-    stale_ids = existing_ids[MAX_AI_EDIT_LOG_PER_DOCUMENT:]
-    if stale_ids:
-        session.query(DocumentAiEdit).filter(DocumentAiEdit.id.in_(stale_ids)).delete(
-            synchronize_session=False
-        )
-
     session.commit()
     session.refresh(row)
     return _ai_edit_out(row)
@@ -1518,12 +1401,7 @@ def list_ai_edits(
 ) -> list[DocumentAiEditOut]:
     """The changelog itself, newest first, asked for directly."""
     _existing(session, document_id)
-    rows = session.scalars(
-        select(DocumentAiEdit)
-        .where(DocumentAiEdit.document_id == document_id)
-        .order_by(DocumentAiEdit.created_at.desc())
-    ).all()
-    return [_ai_edit_out(row) for row in rows]
+    return [_ai_edit_out(row) for row in document_repo.ai_edits(session, document_id)]
 
 
 @router.post("/{document_id}/ai-edit-log/{entry_id}/revert")
@@ -1536,21 +1414,8 @@ def revert_ai_edit(document_id: int, entry_id: int, session: Session = Depends(g
     truthful record of everything that happened, including the revert
     itself, and a revert can itself be reverted.
     """
-    document = _existing(session, document_id)
-    entry = deps.get_or_404(session, DocumentAiEdit, entry_id, "That AI edit could not be found.")
-    if entry.document_id != document_id:
-        raise HTTPException(status_code=404, detail="That AI edit could not be found.")
-
-    reverted = DocumentAiEdit(
-        document_id=document_id,
-        verb="revert",
-        instruction=f"Reverted: {entry.instruction}" if entry.instruction else "Reverted an AI edit",
-        selection_excerpt=entry.selection_excerpt,
-        before_content=document.content,
-        after_content=entry.before_content,
-    )
-    document.content = entry.before_content
-    document.updated_at = utcnow()
-    session.add(reverted)
+    document = DOCUMENTS.writable(session, document_id)
+    entry = document_repo.ai_edit(session, document_id, entry_id)
+    document_repo.revert_ai_edit(session, document, entry)
     session.commit()
     return _full(document, session)

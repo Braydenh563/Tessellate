@@ -38,6 +38,7 @@ const $ = () => element();
 async function savePrefs(options) {{ order.push('save ' + JSON.stringify(options)); prefsDirty = false; }}
 const apiJson = async () => {{ order.push('get'); return {{ profile_enabled: false }}; }};
 const paintUserMarks = () => {{}};
+const afterCharacters = () => {{}};
 const updateProfileCount = () => {{}};
 const markPrefsSaved = () => {{ prefsDirty = false; }};
 {match.group(0)}

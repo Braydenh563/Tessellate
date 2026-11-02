@@ -45,8 +45,8 @@ def test_yes_turns_checking_on_and_remembers(client, app_state):
     assert response.status_code == 200
     assert app_state.get_preference("update_choice_made") is True
     assert app_state.get_preference("update_check_enabled") is True
-    # A source checkout's own check is its launcher's pull, so yes means that too.
-    assert app_state.get_preference("auto_update_enabled") is True
+    # INBOX 1440: yes is "tell me"; the launcher's pull stays its own switch.
+    assert app_state.get_preference("auto_update_enabled") is False
 
 
 def test_yes_in_the_packaged_app_does_not_also_install_unasked(client, app_state, monkeypatch):

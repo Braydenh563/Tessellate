@@ -120,6 +120,10 @@ function showSettingsSection(name) {
   if (name === "appearance") nameMarkBuddyHint(true);
   //: Help's tour buttons are drawn by tour.js, a lazy bundle.
   if (name === "help") renderTourReplay();
+  //: Help's topics (about 2,100 nodes, from the Guide's own table, settings-find.js) are
+  //: drawn when Help is shown or Settings is searched (filterSettings), not on every open.
+  //: settings-find.js is awaited by openSettingsModal; `?.` covers a bundle that failed to load.
+  if (name === "help") window.renderHelpTopics?.();
   //: Reported: reopening Settings lands on Models "but the scroll doesn't
   //: reset", so the first section opened halfway down. The section's own
   //: scrolling ancestor goes back to the top whenever the section changes.
@@ -273,6 +277,7 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   }
   overlayReturnFocus = document.activeElement;
   window.uiSettlingUntil = performance.now() + 400;
+  settingsBodyBuild();
   //: **The window's own listeners arrive before the window does** (the gzip
   //: budget, settings-controls.js). Only the first open waits, and only for
   //: that file: once its marker constant exists this stays synchronous, so a
@@ -297,13 +302,15 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   //: section's own count of the same thing, and the two disagreed.
   const aboutHealth = await apiJson("/health").catch(() => null);
   $("about-version").textContent = aboutHealth?.version ? `Version ${aboutHealth.version}` : "Version not available right now";
-  if (typeof nameMarkBuddyMotion === "function") {
+  //: The line waits for the companion's file (`afterCharacters`), not a `typeof` that skipped it.
+  afterCharacters(() => {
     const { mode, reason } = nameMarkBuddyMotion();
     const word = { full: "moves freely", fades: "fades only", still: "stays still" }[mode];
     $("about-motion").textContent = `Companion motion: ${word}${reason && NMB_MOTION_WHY[reason] ? `. ${NMB_MOTION_WHY[reason]}` : "."}`;
-  }
+  });
   $("pref-update-check").checked = Boolean(prefsCache?.update_check_enabled);
   $("pref-auto-update").checked = Boolean(prefsCache?.auto_update_enabled);
+  $("pref-update-bar").checked = prefsCache?.show_update_bar !== false;
   $("pref-update-channel-main").checked = prefsCache?.update_channel === "main";
   $("pref-update-beta").checked = prefsCache?.update_beta === true;
   $("update-check-status").textContent = "";
@@ -318,6 +325,7 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   $("desktop-tray-row")?.classList.toggle("hidden", !isDesktop);
   $("desktop-tray-hint")?.classList.toggle("hidden", !isDesktop);
   $("desktop-advanced-fold")?.classList.toggle("hidden", !isDesktop);
+  $("desktop-companion-row")?.classList.toggle("hidden", !isDesktop);
   // Same reasoning as the tray/console rows above: /system/restart can only
   // ever do something in the packaged desktop app on Windows specifically
   // (the one platform _spawn_desktop knows how to relaunch), not desktop in
@@ -342,6 +350,8 @@ async function openSettingsModal(section = "models", scrollToId = null) {
     $("pref-close-to-tray").checked = prefsCache?.close_to_tray ?? true;
     //: Off unless chosen: a second launch brings the open window forward.
     $("pref-new-window-on-launch").checked = Boolean(prefsCache?.new_window_on_launch);
+    //: Off unless chosen: the corner companion only shows once it is turned on.
+    $("pref-desktop-companion").checked = Boolean(prefsCache?.desktop_companion);
   }
   // Rebuilt each open rather than once at startup: the list reflects saved
   // preferences, and those can change from another window or a restore.
@@ -350,8 +360,6 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   //: cards arrive with the first open (app.js `LAZY_MODULES.settingsUi`);
   //: every call into them is behind a `typeof` guard.
   await ensureModule("settingsUi");
-  //: Settings, Help's topics, from the Guide's own table (settings-find.js).
-  if (typeof renderHelpTopics === "function") renderHelpTopics();
   if (typeof renderCredits === "function") renderCredits();
   showSettingsSection(section);
   // Re-read every open, not cached: the panel shows what the *currently
@@ -421,7 +429,7 @@ async function openSettingsModal(section = "models", scrollToId = null) {
       // This was the one of the three flash call sites with no cleanup, and it
       // looked harmless because the animation ends on `transparent`, so on an
       // ordinary machine the highlight does fade and the stuck class is
-      // invisible. Under `prefers-reduced-motion: reduce` the stylesheet
+      // invisible. Under reduced motion (`data-motion="reduced"`) the stylesheet
       // deliberately swaps the animation for a *static* outline and background
       // (see .flash-target.flash there), and with nothing ever removing the
       // class that static highlight is permanent. A value that is only wrong
@@ -431,7 +439,7 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   }
 }
 
-// CHANGELOG.md, rendered in Settings → About (§36E). Loaded once per session
+// CHANGELOG.md, rendered in Settings, About (§36E). Loaded once per session
 // and only when the settings panel is opened, it is several thousand words
 // and nobody is waiting for it at startup.
 let changelogLoaded = false;
@@ -491,16 +499,6 @@ function paintIntegrity(check) {
     : "Not checked yet";
 }
 
-$("health-integrity-check")?.addEventListener("click", async () => {
-  const button = $("health-integrity-check");
-  setLabel(button, "ph:spin Checking");
-  try {
-    paintIntegrity(await apiJson("/debug/health/integrity", { method: "POST" }));
-  } catch (e) {
-    toast(`The integrity check could not run: ${e.message}`, true, { action: ["Try again", () => button.click()] });
-  }
-  setLabel(button, "Check now");
-});
 
 
 // --- finding a setting (§36B) ------------------------------------------------------
@@ -592,6 +590,12 @@ function filterSettings(term) {
     return;
   }
 
+  //: The topics are findable settings too: draw them on the first query, then ask again.
+  if ($("help-topics")?.hasAttribute("aria-busy")) {
+    window.renderHelpTopics?.()?.then(() => {
+      if ($("settings-search").value.trim().toLowerCase() === query) filterSettings(query);
+    });
+  }
   let matches = 0;
   //: Each word, or a word meaning the same thing (settings-find.js
   //: `settingQueryAlts`, once that file has loaded): "night" keeps the
@@ -621,9 +625,9 @@ function filterSettings(term) {
   //: The settings themselves, under the field (settings-find.js).
   const settingsFound = typeof renderSettingResults === "function" ? renderSettingResults(query) : 0;
   count.textContent = settingsFound
-    ? `${settingsFound} setting${settingsFound === 1 ? "" : "s"} in ${matches} section${matches === 1 ? "" : "s"}`
+    ? `${nounCount(settingsFound, "setting")} in ${nounCount(matches, "section")}`
     : matches
-      ? `${matches} section${matches === 1 ? "" : "s"}`
+      ? nounCount(matches, "section")
       : "Nothing matches that";
   // The first match is shown rather than leaving the pane on what it was
   // (dog2 item 18: "phone" listed results over the Models pane).
@@ -647,7 +651,7 @@ function closeSettingsModal() {
   //: floating over the page (measured, scratchpad/ui-sweeps/menus.js).
   closeActionMenus();
   $("settings-modal").classList.add("hidden");
-  overlayReturnFocus?.focus?.();
+  focusBackTo(overlayReturnFocus, "#settings-btn");
   overlayReturnFocus = null;
 }
 
@@ -671,6 +675,7 @@ function closeSettingsModal() {
 // and reading them apart is what made this screen hard to use.
 
 const LOG_LEVEL_RANK = { DEBUG: 0, LOG: 0, INFO: 1, WARN: 2, WARNING: 2, ERROR: 3, CRITICAL: 4 };
+const LOG_WINDOW = 200; // rows drawn at once; "Show earlier" draws the next window
 const MAX_LOG_ROWS = 1000; // what the list holds; the buffers themselves are smaller
 
 let logRecords = [];
@@ -888,7 +893,23 @@ function renderLogList() {
   const shouldStick = $("log-follow").checked && logFollowPinned;
   const visible = logRecords.filter(logMatchesFilters);
 
+  //: Only the newest `LOG_WINDOW` rows are built (500 rows were 90 to 126 ms
+  //: on open, HR23); a row at the top draws the next window. The newest stays
+  //: last, so follow mode is unchanged.
+  const cap = Number(list.dataset.window) || LOG_WINDOW;
   list.replaceChildren();
+  if (visible.length > cap) {
+    const more = Math.min(LOG_WINDOW, visible.length - cap);
+    const li = document.createElement("li");
+    li.appendChild(smallButton(`Show ${more} earlier records`, "Draw older records above these", () => {
+      list.dataset.window = cap + more;
+      logFollowPinned = false;
+      const top = list.scrollHeight;
+      renderLogList();
+      list.scrollTop += list.scrollHeight - top;
+    }));
+    list.appendChild(li);
+  }
   // **Deliberately not `renderIncrementally`, unlike every other list here.**
   // Two reasons, and the second is the disqualifying one. This list is already
   // bounded, `MAX_LOG_ROWS` (1000) is a real cap, not an unbounded notebook , 
@@ -899,7 +920,7 @@ function renderLogList() {
   // bottom of whatever happened to be painted, not to the newest line. Making
   // this incremental would mean inverting the window, which is a different
   // mechanism built to fix a cost that is already capped.
-  for (const record of visible) list.appendChild(logRow(record));
+  for (const record of visible.slice(-cap)) list.appendChild(logRow(record));
 
   renderLogSharedUI(visible.length);
   if (shouldStick) scrollLogToBottom();
@@ -1002,7 +1023,7 @@ function renderLogErrorBadge() {
     link.appendChild(badge);
   }
   badge.textContent = logErrorsSinceOpened > 99 ? "99+" : String(logErrorsSinceOpened);
-  badge.title = `${logErrorsSinceOpened} error${logErrorsSinceOpened === 1 ? "" : "s"} since you last looked at the logs, click to show just those`;
+  badge.title = `${nounCount(logErrorsSinceOpened, "error")} since you last looked at the logs, click to show just those`;
 }
 
 // NDJSON over fetch rather than an EventSource, for one blunt reason:
@@ -1088,12 +1109,18 @@ async function renderLogs() {
   //: its rows already there and `showSkeletons` leaves them alone.
   showSkeletons($("log-list"), 4, "li");
   const [records, stats] = await Promise.all([
-    apiJson("/logs?limit=500").catch(() => []),
+    apiJson("/logs?limit=500").catch(() => null),
     apiJson("/logs/stats?limit=500").catch(() => null),
   ]);
   clearSkeletons($("log-list"));
-  logStreamCursor = records.length ? records[records.length - 1].seq || 0 : 0;
-  logRecords = [...records.map(serverLogRecord), ...browserLogRecords()];
+  if (!records) {
+    const note = $("logs-dropped");
+    note.textContent = "Could not load the server log. The records from this browser are shown.";
+    note.classList.remove("hidden");
+  }
+  const served = records || [];
+  logStreamCursor = served.length ? served[served.length - 1].seq || 0 : 0;
+  logRecords = [...served.map(serverLogRecord), ...browserLogRecords()];
   sortLogRecords();
   renderLogGap(stats);
   renderActiveLogView();
@@ -1122,7 +1149,7 @@ async function copyLogs() {
   }
   const text = shown.map(logRecordText).join("\n");
   if (await copyToClipboard(text)) {
-    toast(`Copied ${shown.length} record${shown.length === 1 ? "" : "s"}.`);
+    toast(`Copied ${nounCount(shown.length, "record")}.`);
   }
 }
 
@@ -1403,7 +1430,9 @@ const APPEARANCE_DEFAULTS = {
   // rate, whatever the three settings below say, without rewriting them, so
   // turning it back off restores exactly the look that was chosen.
   perf: "auto", // auto | on | off
-  motion: "auto", // "auto" = follow the OS; "reduced" = force-still
+  //: Motion (INBOX 1506): "follow" the system's reduced-motion request, "on" whatever it says, "off".
+  //: Stored "auto" and "reduced" read as follow and off (`MOTION.choice`, theme-boot.js).
+  motion: "follow",
   // Interface animations (the polish set): on plays them whatever reduced
   // motion says; off makes them instant (00-tokens-shell.css, `--ui-*`).
   "ui-motion": "on",
@@ -1426,13 +1455,13 @@ const APPEARANCE_DEFAULTS = {
   //: copies; the *default* is what differs, and the reason is the whole point
   //: of the setting. Reported with a screenshot of a frozen "Thinking…":
   //: "the thinking and writing animation is completely broken, doesn't move."
-  //: The app's Reduce motion had turned it into one static italic word, 
+  //: Reduced motion (the app's own Motion choice, Off, or the system's) had turned it into one static italic word, 
   //: which is also exactly what a hung app shows, so the setting had made the
   //: interface unable to tell the user whether anything was happening.
   //:
   //: Turning off "animations and transitions" is a statement about chrome. A
   //: spinner is not chrome. "always" keeps progress moving through this app's
-  //: own Reduce motion; the *operating system's* accessibility setting is
+  //: Motion choice, Off; the *operating system's* accessibility request is
   //: still obeyed (see `progressMotionWanted` in chat.js), and the indicator
   //: steps through a colour rather than freezing when it is.
   "progress-motion": "always", // always | auto | still
@@ -1493,7 +1522,7 @@ const APPEARANCE_DEFAULTS = {
   // from whether it's on at all.
   "glass-sheen-strength": "100",
   zoom: "100", // §37E: interface-wide scale, percent: multiplies the root font-size
-  "bg-style": "aurora", // aurora | constellation | waves | bubbles | mesh | microbes | mycelium
+  "bg-style": "aurora", // aurora | constellation | waves | bubbles | mesh | microbes | mycelium | dusk | ripples | fireflies | rain | wander | drift
   palette: "default", // which curated colour set; themes select one
   // No accent by default: the palette supplies the colour until you pick one
   // yourself. Named here so appearancePref("accent") has a defined answer
@@ -1630,14 +1659,15 @@ const THEME_PRESETS = {
   },
 };
 
-// The two colours a theme card shows: the page it sits on and the accent it
-// picks out. Read from the palette itself so a palette tweak can never leave
-// the theme cards advertising a colour the app no longer uses.
+// The four colours a theme tile shows as overlapping dots (INBOX 1478): the
+// page, its card, the accent and the ink. Read from the palette itself so a
+// palette tweak can never leave the tiles advertising a colour the app no
+// longer uses; the ink is the one neutral a palette does not carry.
 function themeSwatch(preset) {
   const palette = PALETTES.find((p) => p.id === preset.values.palette) || PALETTES[0];
   const isDark = document.documentElement.dataset.mode === "dark";
   const set = isDark ? palette.dark : palette.light;
-  return [set.page, set.accent];
+  return [set.page, set.card, set.accent, isDark ? "#ecebe8" : "#1c1c1a"];
 }
 
 //: A theme under the pointer in Settings (settings-controls.js previewTheme):
@@ -2334,11 +2364,8 @@ function applyAppearance() {
   root.dataset.pageWash = appearancePref("page-wash");
   root.style.setProperty("--glass-sheen-strength", Number(appearancePref("glass-sheen-strength")) / 100);
   root.dataset.themePreset = activeThemePreset();
-  root.dataset.motion = perf ? "reduced" : appearancePref("motion");
   root.dataset.uiMotion = appearancePref("ui-motion");
-  //: The blankets for these two switches are a sheet that matches only while one is on (motion-still.css).
-  const stillSheet = document.getElementById("motion-still-sheet");
-  if (stillSheet) stillSheet.media = root.dataset.motion === "reduced" || root.dataset.uiMotion === "off" ? "all" : "(prefers-reduced-motion: reduce)";
+  MOTION.apply(appearancePref("motion"), perf);
   //: The Capture box holds its line-number column from first paint when this is on.
   root.dataset.noteGutter = prefs.get("doc-gutter", null) === "1" ? "on" : "off";
   root.dataset.progressMotion = appearancePref("progress-motion");
@@ -2448,10 +2475,12 @@ function applyThemeChoice(choice, remember = true) {
   repaintThemeAtOnce(() => {
     if (choice === "system") delete document.documentElement.dataset.theme;
     else document.documentElement.dataset.theme = choice;
-    // Clear any custom background colour when explicitly switching themes,
-    // otherwise the user thinks the theme toggle is broken because the custom
-    // colour is overriding the new theme's native background.
-    if (remember) {
+    // A single hand-picked background is one colour in both modes, so it is
+    // cleared when switching themes: it would override the new theme's native
+    // background and the toggle would look broken. A scheme (`page-bg-dark`
+    // set) is a pair made for both modes and stays: `applyResolvedMode`
+    // picks the one for the mode now showing (audit 1028 S10).
+    if (remember && !prefs.get("page-bg-dark", null)) {
       prefs.remove("page-bg");
       prefs.remove("page-bg-dark");
       applyPageBackground(null);
@@ -2487,10 +2516,13 @@ function renderThemePresets() {
     button.setAttribute("aria-pressed", String(name === active));
     const swatch = document.createElement("span");
     swatch.className = "theme-swatch";
-    // Two bands: the page it sits on and the accent it picks out.
-    const [page, accent] = themeSwatch(preset);
-    swatch.style.background = page;
-    swatch.style.borderBottom = `6px solid ${accent}`;
+    // Four overlapping dots: page, card, accent, ink.
+    for (const colour of themeSwatch(preset)) {
+      const dot = document.createElement("i");
+      dot.className = "theme-dot";
+      dot.style.background = colour;
+      swatch.appendChild(dot);
+    }
     const caption = document.createElement("span");
     caption.className = "theme-card-name";
     caption.textContent = preset.label;
@@ -2516,7 +2548,7 @@ function renderThemePresets() {
     note.textContent = `${THEME_PRESETS[active].label} is showing exactly as designed.`;
   } else {
     note.textContent =
-      `${overrides.length} setting${overrides.length === 1 ? "" : "s"} you changed ` +
+      `${nounCount(overrides.length, "setting")} you changed ` +
       `(${overrides.join(", ")}) ${overrides.length === 1 ? "is" : "are"} on top of ` +
       (active ? `the ${THEME_PRESETS[active].label} theme.` : "the default look.");
   }
@@ -2527,8 +2559,13 @@ function renderThemePresets() {
 //: The accent the theme wears with no accent chosen: read with the choice
 //: (the data-accent rule, an inline custom colour) lifted for one
 //: synchronous style read, so nothing paints in between.
+//: Kept for as long as nothing on the root but the accent itself, and the
+//: custom CSS, has changed: lifting the choice and putting it back is two
+//: whole-page style recalculations, once per Appearance open (the lag log).
 function themeDefaultAccent() {
   const root = document.documentElement;
+  const key = [...root.attributes].filter((a) => a.name !== "data-accent").map((a) => `${a.name}=${a.value.replace(/--accent:[^;]*;?/g, "")}`).join("|") + prefs.get("custom-css", "");
+  if (themeDefaultAccent.kept?.key === key) return themeDefaultAccent.kept.value;
   const chosen = root.dataset.accent;
   const inline = root.style.getPropertyValue("--accent");
   const priority = root.style.getPropertyPriority("--accent");
@@ -2537,7 +2574,26 @@ function themeDefaultAccent() {
   const value = getComputedStyle(root).getPropertyValue("--accent").trim();
   if (chosen !== undefined) root.dataset.accent = chosen;
   if (inline) root.style.setProperty("--accent", inline, priority);
+  themeDefaultAccent.kept = { key, value };
   return value;
+}
+
+//: **A setting that needs another one on is dimmed, never dead** (the owner,
+//: 2026-11-01: "why are the glass controls disabled, i wanna use them").
+//: `.dependent-off` stays usable, and using it turns its parent on
+//: (`glassWake`, settings-controls.js). Only Performance mode, which says
+//: why, still holds the glass rows down (`.disabled-row`).
+function renderGlassRows() {
+  const perf = perfModeOn();
+  const glassOff = appearancePref("glass") !== "on";
+  $("glass-row").classList.toggle("disabled-row", perf);
+  for (const id of ["glass-sheen-row", "glass-controls-row", "glass-blur-row", "glass-opacity-row"]) {
+    $(id).classList.toggle("disabled-row", perf);
+    $(id).classList.toggle("dependent-off", glassOff && !perf);
+  }
+  const sheenOff = glassOff || appearancePref("glass-sheen") !== "on";
+  $("glass-sheen-strength-row").classList.toggle("disabled-row", perf);
+  $("glass-sheen-strength-row").classList.toggle("dependent-off", sheenOff && !perf);
 }
 
 function renderAppearance() {
@@ -2567,12 +2623,16 @@ function renderAppearance() {
   // Seed the harmony picker from whatever accent is showing, so "Apply" on an
   // untouched picker keeps the colour you already have rather than jumping to
   // an arbitrary default.
-  const showing = getComputedStyle(document.documentElement)
-    .getPropertyValue("--accent")
-    .trim();
-  if (/^#[0-9a-f]{6}$/i.test(showing)) $("harmony-base").value = showing;
+  //: Seeded a timer past the frame: the read settles the style of a page the
+  //: press has just rewritten, and was the press's largest cost (the lag
+  //: log: 295ms of a 376ms press, forced).
+  afterFrames(() => setTimeout(() => {
+    const showing = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim();
+    if (/^#[0-9a-f]{6}$/i.test(showing)) $("harmony-base").value = showing;
+  }), 1);
   $("contrast-toggle").checked = contrastOn();
-  $("reduce-motion-toggle").checked = appearancePref("motion") === "reduced";
+  _segActive("motion-seg", "motionChoice", MOTION.choice(appearancePref("motion")));
+  for (const b of document.querySelectorAll("#motion-seg button")) b.setAttribute("aria-pressed", String(b.classList.contains("active")));
   $("ui-motion-toggle").checked = appearancePref("ui-motion") !== "off";
   $("bg-art-toggle").checked = bgArtOn();
   $("bg-intensity-row").classList.toggle("hidden", !bgArtOn());
@@ -2583,7 +2643,8 @@ function renderAppearance() {
   $("avatar-buddy").value = appearancePref("avatar-buddy");
   mountBuddyCustom();
   mountBuddyActivities();
-  mountBuddyPresets();
+  //: The menu's file reaches into the faces at load, so it waits for them.
+  afterCharacters(mountBuddyPresets);
   try {
     $("avatar-buddy-motion").value = prefs.get("avatar-buddy-motion", null) || "follow";
   } catch (e) {
@@ -2605,19 +2666,12 @@ function renderAppearance() {
   $("perf-mode-hint").textContent = perfWhy;
   $("perf-mode-hint").classList.toggle("hidden", !perfWhy);
   $("glass-toggle").checked = appearancePref("glass") === "on";
-  $("glass-row").classList.toggle("disabled-row", perfModeOn());
-  $("reduce-motion-row").classList.toggle("disabled-row", perfModeOn());
   $("glass-sheen-toggle").checked = appearancePref("glass-sheen") === "on";
   $("glass-controls-toggle").checked = appearancePref("glass-controls") === "on";
-  $("glass-controls-row").classList.toggle("disabled-row", appearancePref("glass") !== "on" || perfModeOn());
   if ($("page-wash-toggle")) $("page-wash-toggle").checked = appearancePref("page-wash") === "on";
-  $("glass-sheen-row").classList.toggle("disabled-row", appearancePref("glass") !== "on" || perfModeOn());
   $("glass-sheen-strength").value = appearancePref("glass-sheen-strength");
   $("glass-sheen-strength-value").textContent = `${appearancePref("glass-sheen-strength")}%`;
-  $("glass-sheen-strength-row").classList.toggle(
-    "disabled-row",
-    appearancePref("glass") !== "on" || appearancePref("glass-sheen") !== "on"
-  );
+  renderGlassRows();
   $("bg-intensity").value = appearancePref("bg-intensity");
   $("bg-intensity-value").textContent = `${appearancePref("bg-intensity")}%`;
   renderBgStyleGrid();
@@ -2636,12 +2690,8 @@ function renderAppearance() {
   $("accent-custom").value = prefs.get("accent-custom", null) || "#4664f0";
   $("page-bg-custom").value = prefs.get("page-bg", null) || "#f5f7fb";
   $("custom-css").value = prefs.get("custom-css", null) || "";
-  // Blur strength and opacity only matter while glass is on.
-  $("glass-blur-row").classList.toggle("disabled-row", appearancePref("glass") !== "on");
-  $("glass-opacity-row").classList.toggle("disabled-row", appearancePref("glass") !== "on");
-  // Style/intensity only matter while the background art is on.
-  const artOff = !bgArtOn();
-  $("bg-intensity-row").classList.toggle("disabled-row", artOff);
+  // Intensity only matters while the background art is on; using it turns the art on.
+  $("bg-intensity-row").classList.toggle("dependent-off", !bgArtOn());
   renderPaletteGrid();
   _segActive("theme-seg", "themeChoice", effectiveTheme());
   _segActive("fontsize-seg", "fontsize", appearancePref("fontsize"));
@@ -2658,17 +2708,16 @@ function renderAppearance() {
 // "Moving" will override it.
 //: The one case where this setting is *not* in charge, said where the choice
 //: is made rather than left to be discovered. "Always move" overrides this
-//: app's own Reduce motion; it deliberately does not override the operating
+//: app's own Motion choice, Off; it deliberately does not override the operating
 //: system's, which can be on for a medical reason. `typingDots` still steps
 //: the dots through a colour there, so the indicator is never dead.
 function renderProgressMotionHint() {
   const hint = $("progress-motion-hint");
   if (!hint) return;
-  const osReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const choice = appearancePref("progress-motion");
   let text = "";
-  if (choice === "always" && osReduced) {
-    text = "Moving anyway: your system asks for reduced motion, and this setting overrides it. Choose Auto to follow the system instead.";
+  if (choice === "always" && reducedMotionWanted()) {
+    text = "Moving anyway: Motion asks for less movement, and this setting overrides it. Choose Auto to follow Motion instead.";
   } else if (choice === "still") {
     text = "Held still. The dots step through a colour once a second so you can still tell work is happening.";
   }
@@ -2702,13 +2751,11 @@ function renderBgMotionHint() {
   const hint = $("bg-motion-hint");
   if (!hint) return;
   const choice = appearancePref("bg-motion");
-  const osReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const appReduced = appearancePref("motion") === "reduced";
   let text = "";
-  if (choice === "auto" && (osReduced || appReduced)) {
-    text = osReduced
-      ? "Held still because your system asks for reduced motion. Choose Moving to override it here."
-      : "Held still because Reduce motion is on above. Choose Moving to override it just for the background.";
+  if (choice === "auto" && reducedMotionWanted()) {
+    text = MOTION.cause === "os"
+      ? "Held still because your system asks for reduced motion. Choose Moving here, or set Motion to Always on."
+      : "Held still because Motion is off above. Choose Moving to override it just for the background.";
   }
   hint.textContent = text;
   hint.classList.toggle("hidden", !text);
@@ -2922,7 +2969,7 @@ function stopBgArt() {
 
 // Which generative background to paint. Persisted like the other
 // appearance prefs (user asked for more variety of art).
-const BG_ART_STYLES = ["aurora", "constellation", "waves", "bubbles", "mesh", "microbes", "mycelium", "dusk", "ripples", "fireflies", "rain"];
+const BG_ART_STYLES = ["aurora", "constellation", "waves", "bubbles", "mesh", "microbes", "mycelium", "dusk", "ripples", "fireflies", "rain", "wander", "drift"];
 //: The cards (Brief 95): a name and one line each, shown lightest first by
 //: their measured cost (`BG_ART_COST`, bg-art.js).
 const BG_ART_INFO = {
@@ -2937,6 +2984,8 @@ const BG_ART_INFO = {
   ripples: ["Ripples", "Rings on still water"],
   fireflies: ["Fireflies", "Soft lights wandering"],
   rain: ["Rain", "Fine streaks falling"],
+  wander: ["Wander", "Pen strokes that walk"],
+  drift: ["Drift", "Slow colour noise"],
 };
 
 //: Built once, then only marked; the previews are drawn when the cards are
@@ -3103,303 +3152,27 @@ function toggleBgArt(on) {
 }
 
 $("theme-btn").addEventListener("click", toggleTheme);
-//: The one switch for every box's suggestions (Brief 86, CHAT_PLAN decision
-//: 69), kept on this device: absent reads as on.
-$("pref-search-suggest")?.addEventListener("change", (event) => {
-  prefs.set("searchSuggest", event.target.checked ? "on" : "off");
-  toast(event.target.checked ? "Search boxes suggest as you type." : "Search boxes no longer suggest.");
-});
-$("bg-art-toggle").addEventListener("change", (e) => {
-  toggleBgArt(e.target.checked);
-  renderAppearance(); // enable/disable the style + intensity rows
-});
-$("contrast-toggle").addEventListener("change", (e) => applyContrast(e.target.checked));
-
-// Wave O: expanded appearance controls.
-for (const b of document.querySelectorAll("#theme-seg button")) {
-  b.addEventListener("click", () => {
-    applyThemeChoice(b.dataset.themeChoice);
-    renderAppearance();
-  });
-}
-for (const b of document.querySelectorAll("#fontsize-seg button")) {
-  b.addEventListener("click", () => {
-    prefs.set("fontsize", b.dataset.fontsize);
-    applyAppearance();
-    renderAppearance();
-  });
-}
-$("font-seg").addEventListener("change", (e) => {
-  prefs.set("font", e.target.value);
-  applyAppearance();
-  renderAppearance();
-});
-$("density-seg").addEventListener("change", (e) => {
-  //: Auto is no choice at all: the window's height decides.
-  if (e.target.value === "auto") prefs.remove("density");
-  else prefs.set("density", e.target.value);
-  applyAppearance();
-  renderAppearance();
-});
-$("perf-mode").addEventListener("change", (e) => {
-  prefs.set("perf", e.target.value);
-  applyAppearance();
-  renderAppearance();
-});
+$("theme-btn").addEventListener("contextmenu", (e) => { e.preventDefault(); openAppearancePanel(); });
 // The OS setting can change while the app is open; "auto" follows it.
 window.matchMedia("(prefers-reduced-transparency: reduce)").addEventListener("change", () => {
   applyAppearance();
   if (!$("settings-appearance").classList.contains("hidden")) renderAppearance();
 });
-$("glass-toggle").addEventListener("change", (e) => {
-  const turningOn = e.target.checked && appearancePref("glass") !== "on";
-  prefs.set("glass", e.target.checked ? "on" : "off");
-  // Asked for directly: switching glassmorphism on from off also turns the
-  // sheen on, so the full look shows up in one action, the sheen's own
-  // checkbox can still turn it back off afterward without touching this.
-  if (turningOn) prefs.set("glass-sheen", "on");
+//: The system's request changed under an open page: repaint what reads it.
+document.addEventListener("motionchange", () => {
   applyAppearance();
-  renderAppearance();
-});
-$("page-wash-toggle")?.addEventListener("change", (e) => {
-  prefs.set("page-wash", e.target.checked ? "on" : "off");
-  applyAppearance();
-});
-$("glass-sheen-toggle").addEventListener("change", (e) => {
-  prefs.set("glass-sheen", e.target.checked ? "on" : "off");
-  applyAppearance();
-  $("glass-sheen-strength-row")?.classList.toggle("disabled-row", !e.target.checked);
-});
-$("glass-controls-toggle").addEventListener("change", (e) => {
-  prefs.set("glass-controls", e.target.checked ? "on" : "off");
-  applyAppearance();
-});
-$("glass-sheen-strength").addEventListener("input", (e) => {
-  prefs.set("glass-sheen-strength", e.target.value);
-  $("glass-sheen-strength-value").textContent = `${e.target.value}%`;
-  applyAppearance();
-});
-$("reduce-motion-toggle").addEventListener("change", (e) => {
-  prefs.set("motion", e.target.checked ? "reduced" : "auto");
-  // The background-art picker has its own "Moving" override so someone can
-  // ask for motion despite the OS-level reduced-motion hint (see
-  // startBgArt()'s comment: that fix was reported missing once already).
-  // But flipping the in-app reduce-motion toggle is a direct, explicit ask,
-  // and "Moving" silently surviving it read as the two settings being
-  // unrelated. Turning it on selects "Still"; turning it back off only
-  // clears that if we're the ones who set it, so an independent "Moving"
-  // choice made before or after isn't clobbered.
-  if (e.target.checked) {
-    prefs.set("bg-motion", "still");
-  } else if (appearancePref("bg-motion") === "still") {
-    prefs.set("bg-motion", "auto");
-  }
-  if ($("bg-motion")) $("bg-motion").value = appearancePref("bg-motion");
   renderBgMotionHint();
-  applyAppearance();
-  if (e.target.checked) stopBgArt(); // a still UI shouldn't keep the art running
-  else if (bgArtOn()) startBgArt();
-  renderBrandLogo(); // start/stop the emblem's rotation to match
-});
-$("ui-motion-toggle").addEventListener("change", (e) => {
-  prefs.set("ui-motion", e.target.checked ? "on" : "off");
-  applyAppearance();
-});
-$("bg-intensity").addEventListener("input", (e) => {
-  prefs.set("bg-intensity", e.target.value);
-  $("bg-intensity-value").textContent = `${e.target.value}%`;
-  applyAppearance();
-  if (bgArtOn()) startBgArt(); // intensity also drives particle density
-});
-// Corner rounding + glass blur: live sliders over CSS custom properties.
-$("radius-slider").addEventListener("input", (e) => {
-  prefs.set("radius", e.target.value);
-  $("radius-value").textContent = `${e.target.value}px`;
-  applyAppearance();
-});
-$("glass-blur").addEventListener("input", (e) => {
-  prefs.set("glass-blur", e.target.value);
-  $("glass-blur-value").textContent = `${e.target.value}px`;
-  applyAppearance();
-});
-$("glass-opacity").addEventListener("input", (e) => {
-  prefs.set("glass-opacity", e.target.value);
-  $("glass-opacity-value").textContent = `${e.target.value}%`;
-  applyAppearance();
-});
-// All four routes go through app.js's setZoom, so the slider, the buttons, the
-// Ctrl+/- shortcut and the command palette cannot disagree about the range,
-// the step, or where the value is stored.
-$("zoom-slider").addEventListener("input", (e) => setZoom(Number(e.target.value)));
-$("zoom-in")?.addEventListener("click", () => nudgeZoom(1));
-$("zoom-out")?.addEventListener("click", () => nudgeZoom(-1));
-$("zoom-reset")?.addEventListener("click", () => setZoom(100));
-for (const btn of document.querySelectorAll("#border-style-seg button")) {
-  btn.addEventListener("click", () => {
-    prefs.set("border-style", btn.dataset.borderChoice);
-    applyAppearance();
-    renderAppearance();
-  });
-}
-$("shadow-intensity").addEventListener("input", (e) => {
-  prefs.set("shadow-intensity", e.target.value);
-  $("shadow-intensity-value").textContent = `${e.target.value}%`;
-  applyAppearance();
-});
-// Custom accent + page background.
-// A pick whose button words would read under 4.5:1 in the mode showing is
-// refused, not quietly altered: the row says the ratio and offers the
-// nearest shade that reads, one press to take it (Brief 95).
-function setCustomAccent(hex) {
-  $("accent-offer").classList.add("hidden");
-  prefs.set("accent-custom", hex);
-  applyCustomAccent(hex);
-  renderAppearance();
-  if (bgArtOn()) startBgArt();
-  renderBrandLogo();
-}
-$("accent-custom").addEventListener("input", (e) => {
-  const pick = e.target.value;
-  const dark = resolvedTheme() === "dark";
-  const tone = accentTone(pick, dark);
-  if (tone === pick) return setCustomAccent(pick);
-  const ratio = hexRatio(pick, accentInk(dark)).toFixed(1);
-  $("accent-offer-text").textContent =
-    `Words on ${pick} read at ${ratio}:1 in ${dark ? "dark" : "light"} mode, under the 4.5:1 they need.`;
-  $("accent-offer-dot").style.setProperty("--swatch", tone);
-  $("accent-offer-label").textContent = `Use ${tone} (${hexRatio(tone, accentInk(dark)).toFixed(1)}:1)`;
-  $("accent-offer-use").dataset.tone = tone;
-  $("accent-offer").classList.remove("hidden");
-});
-$("accent-offer-use").addEventListener("click", (e) => {
-  const tone = e.currentTarget.dataset.tone;
-  if (!tone) return;
-  $("accent-custom").value = tone;
-  setCustomAccent(tone);
-});
-$("accent-custom-clear").addEventListener("click", () => {
-  $("accent-offer").classList.add("hidden");
-  prefs.remove("accent-custom");
-  applyCustomAccent(null);
-  renderAppearance();
-  if (bgArtOn()) startBgArt();
-  renderBrandLogo();
-});
-$("page-bg-custom").addEventListener("input", (e) => {
-  prefs.set("page-bg", e.target.value);
-  applyPageBackground(e.target.value);
-});
-$("page-bg-clear").addEventListener("click", () => {
-  prefs.remove("page-bg");
-  prefs.remove("page-bg-dark");
-  applyPageBackground(null);
-  renderAppearance();
-});
-// Background art style.
-$("bg-art-style").closest("details")?.addEventListener("toggle", renderBgStyleGrid);
-$("avatar-follow").addEventListener("change", (e) => {
-  const value = e.target.checked ? "on" : "off";
-  prefs.set("avatar-follow", value);
-  document.documentElement.dataset.avatarFollow = value;
-});
-$("avatar-buddy").addEventListener("change", (e) => {
-  prefs.set("avatar-buddy", e.target.value);
-  mountBuddyCustom();
-  syncNameMarkBuddy();
-  nameMarkBuddySizeSelect();
-});
-$("avatar-buddy-size").addEventListener("change", (e) => nameMarkBuddySetSize(Number(e.target.value)));
-$("avatar-buddy-motion").addEventListener("change", (e) => {
-  try {
-    prefs.set("avatar-buddy-motion", e.target.value);
-  } catch (err) {
-    // For this visit only.
-  }
-  nameMarkBuddyMotionApply();
-});
-$("avatar-buddy-actions").addEventListener("change", (e) => {
-  try {
-    prefs.set("avatar-buddy-actions", e.target.value);
-  } catch (err) {
-    // This visit only.
-  }
-});
-try {
-  $("avatar-buddy-actions").value = prefs.get("avatar-buddy-actions", null) || "fewer";
-} catch (err) {
-  $("avatar-buddy-actions").value = "fewer";
-}
-$("avatar-buddy-recall").addEventListener("click", () => nameMarkBuddyCallBack());
-$("atlas-style").addEventListener("change", (e) => {
-  prefs.set("atlas-style", e.target.value);
-  atlasRepaint();
-});
-$("assistant-avatar").addEventListener("change", (e) => {
-  prefs.set("assistant-avatar", e.target.value);
-  repaintAssistantAvatars();
-});
-$("atlas-look").addEventListener("change", (e) => {
-  prefs.set("atlas-look", e.target.value);
-  atlasRepaint();
-});
-$("face-look").addEventListener("change", (e) => {
-  prefs.set("face-look", e.target.value);
-  nameMarkRepaintAll();
-  //: An Atlas on Auto takes its look from here (`atlasLook`).
-  atlasRepaint();
-});
-$("dash-mark").addEventListener("change", (e) => {
-  prefs.set("dash-mark", e.target.value);
-  paintDashEmblem();
-});
-$("avatar-motion").addEventListener("change", (e) => {
-  prefs.set("avatar-motion", e.target.value);
-  document.documentElement.dataset.avatarMotion = e.target.value;
-});
-$("progress-motion").addEventListener("change", (e) => {
-  prefs.set("progress-motion", e.target.value);
-  document.documentElement.dataset.progressMotion = e.target.value;
-  document.documentElement.toggleAttribute("data-progress-chosen", e.target.value === "always");
   renderProgressMotionHint();
+  if (reducedMotionWanted()) stopBgArt();
+  else if (bgArtOn()) startBgArt();
+  renderBrandLogo();
 });
-$("pref-show-thinking-words")?.addEventListener("change", (e) => {
-  prefs.set("show-thinking-words", e.target.checked ? "on" : "off");
-});
-$("bg-motion").addEventListener("change", (e) => {
-  prefs.set("bg-motion", e.target.value);
-  // Still vs moving is decided in setup, so the sketch has to be rebuilt.
-  if (bgArtOn()) startBgArt();
-});
-// Custom CSS (advanced).
-$("custom-css-apply").addEventListener("click", () => {
-  const css = $("custom-css").value;
-  prefs.set("custom-css", css);
-  applyCustomCss(css);
-  $("custom-css-status").textContent = "Applied.";
-});
-$("custom-css-clear").addEventListener("click", () => {
-  prefs.remove("custom-css");
-  $("custom-css").value = "";
-  applyCustomCss("");
-  $("custom-css-status").textContent = "Cleared.";
-});
-$("appearance-reset").addEventListener("click", resetAppearance);
-$("theme-reset").addEventListener("click", resetThemeOnly);
-
-$("theme-clear-overrides").addEventListener("click", clearManualOverrides);
 
 // Settings modal (Wave A).
 $("settings-btn").addEventListener("click", () => openSettingsModal());
 $("settings-close").addEventListener("click", closeSettingsModal);
 $("settings-peek").addEventListener("click", () => setSettingsPeek(!settingsPeekIsOn()));
 
-$("harmony-apply").addEventListener("click", applyHarmony);
-$("custom-theme-save").addEventListener("click", () => {
-  saveCurrentLook().catch((error) => toast(error.message, true));
-});
-$("custom-theme-name").addEventListener("keydown", (e) => {
-  if (e.key === "Enter") $("custom-theme-save").click();
-});
 
 wireBackdropClose($("settings-modal"), () => closeSettingsModal()); // backdrop click
 //: **A section chosen with the pointer hands the keys to the pane** (INBOX
@@ -3511,9 +3284,6 @@ document.addEventListener("click", (event) => {
 
 // Filters only re-draw what is already held, they never refetch, so changing
 // one mid-incident cannot lose the records you were looking at.
-$("log-source").addEventListener("change", renderActiveLogView);
-$("log-level").addEventListener("change", renderActiveLogView);
-$("log-requests").addEventListener("change", renderActiveLogView);
 //: **A finished task's log** (Background tasks' history, its Logs button):
 //: Logs, with the filter set to the most particular words the row has, the
 //: package or model in its brackets ("fastembed"), else the
@@ -3525,55 +3295,7 @@ function taskLogButton(item) {
 
 
 let logFilterDebounceTimeout;
-$("log-filter").addEventListener("input", (event) => {
-  if (event.isTrusted) settingsLook.logFilterFromRun = false;
-  clearTimeout(logFilterDebounceTimeout);
-  logFilterDebounceTimeout = setTimeout(renderActiveLogView, 150);
-});
-$("logs-copy").addEventListener("click", copyLogs);
-$("logs-clear").addEventListener("click", clearLogs);
-$("logs-bundle").addEventListener("click", downloadSupportBundle);
-$("logs-email-bundle").addEventListener("click", () => emailSupportReport(""));
 
-$("log-follow").addEventListener("change", (event) => {
-  logFollowPinned = event.target.checked;
-  if (event.target.checked) scrollLogToBottom();
-});
-
-// Scrolling up is how you say "stop moving, I am reading this", so it pauses
-// the follow rather than fighting you for the scroll position. Scrolling back
-// to the bottom resumes it, which is the same gesture every terminal uses.
-// Both containers get the listener, only one is ever visible at a time, but
-// whichever it is has to pause Follow the same way.
-for (const id of ["log-list", "log-terminal"]) {
-  $(id).addEventListener("scroll", () => {
-    if (!$("log-follow").checked) return;
-    logFollowPinned = nearLogBottom();
-    $("log-follow-label").classList.toggle("is-paused", !logFollowPinned);
-  });
-}
-
-for (const button of document.querySelectorAll("#log-view-toggle button")) {
-  button.addEventListener("click", () => {
-    logView = button.dataset.view;
-    prefs.set("logView", logView);
-    for (const b of document.querySelectorAll("#log-view-toggle button")) {
-      b.classList.toggle("active", b === button);
-    }
-    $("log-list").classList.toggle("hidden", logView !== "list");
-    $("log-terminal").classList.toggle("hidden", logView !== "terminal");
-    $("log-terminal-hint").classList.toggle("hidden", logView !== "terminal");
-    renderActiveLogView();
-    scrollLogToBottom();
-  });
-  // The markup hardcodes "List" as the active button; a returning visitor
-  // whose last choice (localStorage) was "terminal" needs that reflected
-  // here too, not just in which container renders.
-  button.classList.toggle("active", button.dataset.view === logView);
-}
-$("log-list").classList.toggle("hidden", logView !== "list");
-$("log-terminal").classList.toggle("hidden", logView !== "terminal");
-$("log-terminal-hint").classList.toggle("hidden", logView !== "terminal");
 
 // --- initial paint (relocated from app.js's own top-level wiring) ----------
 //
@@ -3635,18 +3357,6 @@ async function loadSamplingSettings() {
 }
 
 
-$("sampling-reset")?.addEventListener("click", async () => {
-  try {
-    await apiJson("/models/sampling", {
-      method: "PUT",
-      body: JSON.stringify({ overrides: {} }),
-    });
-    toast("Back to what each model recommends.");
-  } catch {
-    toast("Couldn't reset those settings.", true);
-  }
-  await loadSamplingSettings();
-});
 
 
 // --- settings rows: one shape, and the prose out of the way ------------------
@@ -3682,7 +3392,11 @@ function collapseLongSettingHints(root) {
   // version of this ran, found nothing, and changed no measurement.
   //: `.setting-label` rows (a label word beside a select) carry the same
   //: hints; their long ones collapse the same way (Brief 4).
-  for (const hint of scope.querySelectorAll("label small.muted, .setting-label small.muted")) {
+  //: Not a hint with an id: that is a status line a render fills and empties
+  //: (`renderProgressMotionHint`, the perf, art and clear lines). Collapsed
+  //: while it had words, it left a stray '?' on a line of its own once the
+  //: render emptied it (the owner, 2026-11-01, Progress indicators).
+  for (const hint of scope.querySelectorAll("label small.muted:not([id]), .setting-label small.muted:not([id])")) {
     if (hint.dataset.collapsible) continue;
     const text = (hint.textContent || "").trim();
     if (text.length <= SETTINGS_HINT_INLINE_CHARS) continue;
@@ -3805,11 +3519,6 @@ const GUIDE_TITLE = `${GUIDE_NAME} guide`;
 //: the same thing and fits with room to spare; the CSS still ellipsises it,
 //: so a longer translation cannot put the second line back.
 const GUIDE_LINE = "Answers from the app's own help";
-//: The persona hint's "(Atlas)" follows the name too.
-{
-  const hint = document.getElementById("persona-placeholder-hint");
-  if (hint) hint.textContent = `Write {ai_name} where the name should go and it is replaced with ${AI_NAME}. Optional.`;
-}
 
 //: The header's '?' became the status bar's Guide slot with INBOX 207;
 //: app.js binds that one, because the status bar is its markup and it can
@@ -3817,7 +3526,6 @@ const GUIDE_LINE = "Answers from the app's own help";
 $("settings-guide-btn")?.addEventListener("click", () => openHelpChat());
 //: The avatar in the Settings head is the way to the profile from every pane.
 $("settings-profile-btn")?.addEventListener("click", () => showSettingsSection("preferences"));
-$("atlas-open")?.addEventListener("click", () => openHelpChat());
 
 
 // =============================================================================
@@ -3981,7 +3689,7 @@ async function renderLearnedSwitches() {
   if (banner) {
     banner.classList.toggle("hidden", !paused);
     banner.textContent = paused
-      ? `Paused. ${learnedTotal} thing${learnedTotal === 1 ? "" : "s"} already worked out are kept and stay editable below.`
+      ? `Paused. ${nounCount(learnedTotal, "thing")} already worked out are kept and stay editable below.`
       : "";
   }
 }
@@ -4310,8 +4018,8 @@ async function learnedRunNow() {
       const stopped = result.stopped_reason === "budget" ? ", stopped at this run's budget" : "";
       if (note) {
         note.textContent = derived
-          ? `Read ${scanned} note${scanned === 1 ? "" : "s"}, worked out ${derived} new thing${derived === 1 ? "" : "s"}${stopped}.`
-          : `Read ${scanned} note${scanned === 1 ? "" : "s"}, nothing new${stopped}.`;
+          ? `Read ${nounCount(scanned, "note")}, worked out ${derived} new thing${derived === 1 ? "" : "s"}${stopped}.`
+          : `Read ${nounCount(scanned, "note")}, nothing new${stopped}.`;
       }
       if (derived) renderLearnedList();
     }
@@ -4373,9 +4081,9 @@ function wireLearnedSection() {
 function learnedFromYouText(sum) {
   if (!sum || (!sum.corrections && !sum.notes)) return "";
   const n = Number(sum.corrections) || 0;
-  const head = `Learned from you: ${n} correction${n === 1 ? "" : "s"}.`;
+  const head = `Learned from you: ${nounCount(n, "correction")}.`;
   if (!sum.notes || sum.accuracy == null) return `${head} No notes filed by Atlas yet.`;
-  const over = `over the last ${sum.notes} note${sum.notes === 1 ? "" : "s"} it filed`;
+  const over = `over the last ${nounCount(sum.notes, "note")} it filed`;
   if (sum.earlier != null && sum.later != null) {
     return `${head} Filing accuracy ${sum.earlier}% to ${sum.later}% ${over}.`;
   }
@@ -4398,7 +4106,6 @@ async function renderLearned() {
   await renderLearnedFromYou();
 }
 
-wireLearnedSection();
 
 //: **Long Settings panes fold their tuned-once groups** (INBOX 424 m:
 //: Appearance was 4,115px with 151 controls). Each group is a
@@ -4455,14 +4162,23 @@ function wireSettingsFolds() {
 //: (36px, 44, 46, 50 measured; `scratchpad/ui-sweeps/foldhelp.js`); a
 //: `ResizeObserver` on the wrapper and the summary re-places it whenever
 //: either changes size, which is also when a hidden pane is first shown.
+//: **The rects are divided by the dialog's own scale** (INBOX 1514): Settings
+//: rises from `scale: 0.985` over 240ms (08-consistency.css, the dialog
+//: motion), the observer fires on the first laid-out frame, and a bounding
+//: rect is drawn size, so the offsets came out short of the real ones (up to
+//: 9.8px at 1440) and stayed, because a scale changes no layout size and the
+//: observer never fires again. The wrapper's computed `width` is its layout
+//: width, the same on every frame, so the ratio is the scale at that moment.
 function placeFoldHelp(wrap) {
   const help = wrap.querySelector(":scope > .fold-help");
   const slot = wrap.querySelector(":scope > details > summary .fold-help-slot");
   if (!help || !slot || !slot.offsetParent) return;
   const box = wrap.getBoundingClientRect();
   const at = slot.getBoundingClientRect();
-  help.style.top = `${at.top - box.top}px`;
-  help.style.left = `${at.left - box.left}px`;
+  const layoutWidth = parseFloat(getComputedStyle(wrap).width);
+  const scale = layoutWidth > 0 && box.width > 0 ? box.width / layoutWidth : 1;
+  help.style.top = `${(at.top - box.top) / scale}px`;
+  help.style.left = `${(at.left - box.left) / scale}px`;
   help.style.right = "auto";
 }
 
@@ -4486,9 +4202,10 @@ function wireFoldHelps() {
   }
 }
 
-wireFoldHelps();
-
-wireSettingsFolds();
+//: The folds are in Settings' lazy body (settings-body.js), not in the page at
+//: boot: run when it is built, or the '?' is never placed and no fold remembers.
+onSettingsBody(wireFoldHelps);
+onSettingsBody(wireSettingsFolds);
 
 // --- Last run of each job (INBOX 438) ------------------------------------------
 //
@@ -4595,7 +4312,7 @@ async function refreshJobRuns() {
   if (running && authToken()) jobRunsTimer = setTimeout(refreshJobRuns, 2000);
 }
 
-// Settings → Background tasks → Background jobs: every kind in one column,
+// Settings, Background tasks, Background jobs: every kind in one column,
 // the ones that have never run included, so the absence of a job reads as
 // "not run yet" rather than "this app cannot do that".
 function renderJobOverview() {

@@ -10,11 +10,11 @@ from pathlib import Path
 
 import tessellate
 from tessellate.ai import help_chat
-from tests._app_js import app_js_text
+from tests._app_js import app_js_text, with_pieces
 
 ROOT = Path(__file__).resolve().parents[1]
 APP = app_js_text()
-SETTINGS = (ROOT / "frontend" / "js" / "settings.js").read_text(encoding="utf-8")
+SETTINGS = with_pieces("settings.js")  # the body listeners are in settings-controls.js since INBOX 1501
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 
 

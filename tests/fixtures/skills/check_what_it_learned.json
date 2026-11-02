@@ -1,0 +1,101 @@
+{
+ "skill": "Check what it learned",
+ "small_class": false,
+ "cases": [
+  {
+   "id": "rent-changed",
+   "notebook": [
+    {
+     "content": "Rent is 900 a month",
+     "category": "Home",
+     "tags": [
+      "money"
+     ]
+    },
+    {
+     "content": "New lease signed: rent is 950 a month from June",
+     "category": "Home",
+     "tags": [
+      "money"
+     ]
+    },
+    {
+     "content": "Call the landlord about the boiler",
+     "category": "Inbox",
+     "tags": []
+    }
+   ],
+   "expect": {
+    "unchanged": true,
+    "answer_mentions": [
+     "retired",
+     "flagged"
+    ]
+   }
+  },
+  {
+   "id": "joke-note",
+   "notebook": [
+    {
+     "content": "I hate Mondays and everyone knows it",
+     "category": "Journal",
+     "tags": [
+      "joke"
+     ]
+    },
+    {
+     "content": "Started running on Monday mornings",
+     "category": "Health",
+     "tags": [
+      "running"
+     ]
+    },
+    {
+     "content": "Shoes for the 10k",
+     "category": "Health",
+     "tags": [
+      "running"
+     ]
+    }
+   ],
+   "expect": {
+    "unchanged": true,
+    "answer_mentions": [
+     "checked"
+    ]
+   }
+  },
+  {
+   "id": "passport-date",
+   "notebook": [
+    {
+     "content": "Passport expires March 2025",
+     "category": "Admin",
+     "tags": [
+      "travel"
+     ]
+    },
+    {
+     "content": "Renewal form sent for the passport",
+     "category": "Admin",
+     "tags": [
+      "travel"
+     ]
+    },
+    {
+     "content": "Book the Lisbon flights",
+     "category": "Travel",
+     "tags": [
+      "travel"
+     ]
+    }
+   ],
+   "expect": {
+    "unchanged": true,
+    "answer_mentions": [
+     "flagged"
+    ]
+   }
+  }
+ ]
+}

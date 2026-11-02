@@ -489,27 +489,9 @@ def state_line(state: dict | None) -> str:
     return "State so far: " + "; ".join(parts) + "."
 
 
-def normalise(raw: dict, known_tools: set[str] | None = None) -> dict:
-    """Validate one skill and return it in canonical form.
-
-    Raises `SkillError` with a sentence meant for the person (or the model)
-    that wrote the skill. Unknown keys are dropped rather than rejected: a
-    skill saved by an older version carries `useTools`, and refusing it would
-    make an upgrade lose the user's skills.
-    """
-    name = _text(raw.get("name"), MAX_NAME, "A skill name")
-    prompt = _text(raw.get("prompt"), MAX_PROMPT, "A skill prompt")
-    if not name:
-        raise SkillError("A skill needs a name.")
-    #: **Steps count as the prompt** (Brief 13's decision, recorded in
-    #: CHAT_PLAN "Decisions made"). A numbered list of steps already says what
-    #: the job is, and making the author write it twice is how the two drift
-    #: apart: the prompt says one thing, the steps do another, and the model
-    #: reads both. A skill with neither is still refused, because that is a
-    #: skill that says nothing at all.
-    if not prompt and not (raw.get("steps") or raw.get("step_specs")):
-        raise SkillError("A skill needs a prompt saying what it should do, or steps.")
-
+def _clean_tools(raw: dict, known_tools: set[str] | None) -> list[str]:
+    """The declared tools in order, blanks and repeats dropped; one that can
+    start a run, or that is not a tool, is refused."""
     tools: list[str] = []
     for tool in raw.get("tools") or []:
         tool = str(tool or "").strip()
@@ -527,15 +509,16 @@ def normalise(raw: dict, known_tools: set[str] | None = None) -> dict:
         if known_tools is not None and tool not in known_tools:
             raise SkillError(
                 f"There is no tool called “{tool}”. Pick from the tools shown "
-                "in Settings → Tools it can use."
+                "in Settings, Tools it can use."
             )
         tools.append(tool)
     if len(tools) > MAX_TOOLS:
         raise SkillError(f"A skill can name at most {MAX_TOOLS} tools.")
+    return tools
 
-    specs = _step_specs(raw, known_tools, tools)
-    steps = [spec["text"] for spec in specs]
 
+def _clean_inputs(raw: dict) -> list[dict]:
+    """The declared inputs, each a bare name or an object, in canonical form."""
     inputs = []
     for item in raw.get("inputs") or []:
         if isinstance(item, str):
@@ -557,6 +540,49 @@ def normalise(raw: dict, known_tools: set[str] | None = None) -> dict:
         )
     if len(inputs) > MAX_INPUTS:
         raise SkillError(f"A skill can declare at most {MAX_INPUTS} inputs.")
+    return inputs
+
+
+def _check_placeholders(texts: list[str], inputs: list[dict]) -> None:
+    """Every placeholder used has to be declared, or running the skill sends
+    the model a literal {{tag}} and it invents a value. Cheaper to catch on
+    save than to debug in a run."""
+    declared = {item["name"] for item in inputs}
+    used = set()
+    for text in texts:
+        used.update(PLACEHOLDER.findall(text))
+    missing = sorted(used - declared)
+    if missing:
+        listed = ", ".join(f"{{{{{name}}}}}" for name in missing)
+        pronoun = "them" if len(missing) > 1 else "it"
+        raise SkillError(f"This skill uses {listed} but doesn't declare {pronoun} as an input.")
+
+
+def normalise(raw: dict, known_tools: set[str] | None = None) -> dict:
+    """Validate one skill and return it in canonical form.
+
+    Raises `SkillError` with a sentence meant for the person (or the model)
+    that wrote the skill. Unknown keys are dropped rather than rejected: a
+    skill saved by an older version carries `useTools`, and refusing it would
+    make an upgrade lose the user's skills.
+    """
+    name = _text(raw.get("name"), MAX_NAME, "A skill name")
+    prompt = _text(raw.get("prompt"), MAX_PROMPT, "A skill prompt")
+    if not name:
+        raise SkillError("A skill needs a name.")
+    #: **Steps count as the prompt** (Brief 13's decision, recorded in
+    #: CHAT_PLAN "Decisions made"). A numbered list of steps already says what
+    #: the job is, and making the author write it twice is how the two drift
+    #: apart: the prompt says one thing, the steps do another, and the model
+    #: reads both. A skill with neither is still refused, because that is a
+    #: skill that says nothing at all.
+    if not prompt and not (raw.get("steps") or raw.get("step_specs")):
+        raise SkillError("A skill needs a prompt saying what it should do, or steps.")
+
+    tools = _clean_tools(raw, known_tools)
+    specs = _step_specs(raw, known_tools, tools)
+    steps = [spec["text"] for spec in specs]
+    inputs = _clean_inputs(raw)
 
     skill = {
         "name": name,
@@ -580,18 +606,7 @@ def normalise(raw: dict, known_tools: set[str] | None = None) -> dict:
     # through here unchanged, and a `verify: None` key on every stored skill
     # would be a schema change nothing asked for.
     skill.update(_declared_blocks(raw, known_tools, tools))
-    # Every placeholder used has to be declared, or running the skill sends
-    # the model a literal {{tag}} and it invents a value. Cheaper to catch on
-    # save than to debug in a run.
-    declared = {item["name"] for item in inputs}
-    used = set()
-    for text in [prompt, *steps]:
-        used.update(PLACEHOLDER.findall(text))
-    missing = sorted(used - declared)
-    if missing:
-        listed = ", ".join(f"{{{{{name}}}}}" for name in missing)
-        pronoun = "them" if len(missing) > 1 else "it"
-        raise SkillError(f"This skill uses {listed} but doesn't declare {pronoun} as an input.")
+    _check_placeholders([prompt, *steps], inputs)
     # An action skill is one that names tools or steps; kept as `useTools` so
     # skills saved before this rebuild keep the flag the UI already reads.
     if raw.get("useTools") or steps or tools:
@@ -1241,6 +1256,33 @@ BUILTIN_SKILLS: list[dict] = [
                 "audit_link_reasons",
             ),
             _step("Report back how many links were updated.", "answer_only"),
+        ],
+    },
+
+    {
+        "name": "Check what it learned",
+        "prompt": (
+            "Check what you learned about me against my notes as they are now, "
+            "retire what no longer holds and tell me what needs my eye."
+        ),
+        "description": "Re-reads what Atlas learned against its notes and retires what no longer holds.",
+        "when_to_use": (
+            "When I ask you to check, audit or clean up what you learned about me, "
+            "or when something you say I think or said is wrong."
+        ),
+        #: The same pair as the link-reason audit, for the same reason: the
+        #: check changes learned rows and no note, and `count_notes` is what makes
+        #: "your notes were not touched" a checked claim.
+        "tools": ["check_learned", "count_notes"],
+        "verify": {"tool": "count_notes", "expect": {"unchanged": True}},
+        "steps": [
+            _step("Run the check_learned tool.", "tool_called", "check_learned"),
+            _step(
+                "Say how many things it checked, what it retired and what it "
+                "flagged, each with its reason. Say the retired ones can be "
+                "put back from Settings, What it learned.",
+                "answer_only",
+            ),
         ],
     },
 

@@ -1,23 +1,18 @@
 """Bookmarks: saved links to somewhere outside the notebook, create, list,
-update, delete. Same shape as reminders.py; nothing here needs the AI.
+update, delete. The routes read the request and shape the answer; every
+query is `repo/bookmarks.py`'s (INBOX 1499). Nothing here needs the AI.
 """
 
 from __future__ import annotations
 
-import re
-
-from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from fastapi import APIRouter, Depends, Query, Response
 
 from tessellate.api import paging
 from pydantic import BaseModel, Field
-from sqlalchemy import delete as sa_delete
-from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.core import deps
-from tessellate.core.database import Bookmark, DocumentBookmark, EntryBookmark
 from tessellate.core.deps import get_session
-from tessellate.entry.manager import log_action
+from tessellate.repo import bookmarks
 
 router = APIRouter(prefix="/bookmarks", tags=["bookmarks"])
 
@@ -42,48 +37,7 @@ class BookmarkUpdate(BaseModel):
     group_name: str | None = Field(default=None, max_length=120)
 
 
-#: The same allowlist `safeHref()` in frontend/js/app.js applies to markdown
-#: links (`tests/test_markdown_link_schemes.py`): web, mail, phone. A bare
-#: host with no scheme at all ("google.com") is not on this list because it
-#: never reaches it, see below.
-ALLOWED_URL_SCHEMES = ("http", "https", "mailto", "tel")
-#: Same shape as the scheme frontend/js/notes-list.js's `safeHref()` looks for
-#: (`^[a-z][a-z0-9+.-]*:`): anything before the first colon that reads as a
-#: URI scheme, case-insensitively.
-_SCHEME_RE = re.compile(r"^([a-z][a-z0-9+.-]*):", re.IGNORECASE)
-
-
-def _normalise_url(raw: str) -> str:
-    """"google.com" is what most people actually type into a bookmark box,
-    requiring a scheme up front would reject the common case for no benefit,
-    since a bare host is unambiguous: it's never meant as a relative path.
-
-    A URL that *does* carry a scheme is checked against `ALLOWED_URL_SCHEMES`
-    instead of being stored verbatim: this used to only prepend `https://`
-    when a URL had no scheme at all, so `javascript:alert(1)` passed through
-    unchanged and was stored exactly as typed. Rejecting it here (422,
-    naming the allowed schemes) is the write-time half of the fix; the CSP
-    was already a backstop and `library.js` now runs saved URLs through the
-    frontend's own `safeHref()` before ever setting `link.href`, so a
-    bookmark saved before this existed can't become a live link either.
-    """
-    url = raw.strip()
-    if not url:
-        raise HTTPException(status_code=422, detail="A bookmark needs a web address.")
-    match = _SCHEME_RE.match(url)
-    if not match:
-        return f"https://{url}"
-    scheme = match.group(1).lower()
-    if scheme not in ALLOWED_URL_SCHEMES:
-        allowed = ", ".join(f"{s}:" for s in ALLOWED_URL_SCHEMES)
-        raise HTTPException(
-            status_code=422,
-            detail=f"Addresses starting with '{scheme}:' are not allowed. Pick one that starts with: {allowed}.",
-        )
-    return url
-
-
-def _to_out(bookmark: Bookmark, duplicate_of: int | None = None) -> dict:
+def _to_out(bookmark, duplicate_of: int | None = None) -> dict:
     out = {
         "id": bookmark.id,
         "url": bookmark.url,
@@ -104,10 +58,6 @@ def _to_out(bookmark: Bookmark, duplicate_of: int | None = None) -> dict:
     return out
 
 
-def _existing(session: Session, bookmark_id: int) -> Bookmark:
-    return deps.get_or_404(session, Bookmark, bookmark_id, "That bookmark could not be found.")
-
-
 #: One page of saved links. A notebook's bookmarks grow with use and nothing
 #: ever trimmed this list, so the response grew with the table for ever.
 BOOKMARKS_PAGE_SIZE = 200
@@ -121,20 +71,9 @@ def list_bookmarks(
     cursor: str | None = paging.cursor_param(),
     session: Session = Depends(get_session),
 ) -> list[dict]:
-    """Pinned first, then newest first within each group, one page at a time.
-
-    The id is a tiebreaker in the ordering, not decoration: two links saved in
-    the same second could otherwise swap places between two pages and hide one
-    of them, which is the bug a paged list without a stable sort always has.
-    """
+    """Pinned first, then newest first within each group, one page at a time."""
     offset = paging.start(cursor, offset)
-    total = session.scalar(select(func.count(Bookmark.id))) or 0
-    rows = session.scalars(
-        select(Bookmark)
-        .order_by(Bookmark.pinned.desc(), Bookmark.created_at.desc(), Bookmark.id.desc())
-        .limit(limit)
-        .offset(offset)
-    )
+    rows, total = bookmarks.page(session, limit=limit, offset=offset)
     response.headers["X-Total-Count"] = str(total)
     paging.finish(response, offset, limit, total)
     return [_to_out(b) for b in rows]
@@ -142,62 +81,23 @@ def list_bookmarks(
 
 @router.post("", status_code=201)
 def create_bookmark(body: BookmarkCreate, session: Session = Depends(get_session)) -> dict:
-    url = _normalise_url(body.url)
-    existing = session.scalar(select(Bookmark).where(Bookmark.url == url))
-    bookmark = Bookmark(
-        url=url,
-        title=body.title.strip(),
-        note=body.note.strip(),
-        group_name=body.group_name.strip(),
-        pinned=body.pinned,
-        is_read=body.is_read,
-    )
-    session.add(bookmark)
-    session.flush()
-    log_action(session, "created", "bookmark", bookmark.id, bookmark.title or bookmark.url)
+    bookmark, twin = bookmarks.create(session, **body.model_dump())
     session.commit()
-    return _to_out(bookmark, duplicate_of=existing.id if existing else None)
+    return _to_out(bookmark, duplicate_of=twin)
 
 
 @router.put("/{bookmark_id}")
 def update_bookmark(
     bookmark_id: int, body: BookmarkUpdate, session: Session = Depends(get_session)
 ) -> dict:
-    bookmark = _existing(session, bookmark_id)
-    if body.url is not None:
-        bookmark.url = _normalise_url(body.url)
-    if body.title is not None:
-        bookmark.title = body.title.strip()
-    if body.note is not None:
-        bookmark.note = body.note.strip()
-    if body.pinned is not None:
-        bookmark.pinned = body.pinned
-    if body.is_read is not None:
-        bookmark.is_read = body.is_read
-    if body.group_name is not None:
-        bookmark.group_name = body.group_name.strip()
+    bookmark = bookmarks.update(session, bookmark_id, **body.model_dump())
     session.commit()
     return _to_out(bookmark)
 
 
 @router.delete("/{bookmark_id}")
 def delete_bookmark(bookmark_id: int, session: Session = Depends(get_session)) -> dict:
-    """Delete a saved link, and the two join tables that attach it.
-
-    `EntryBookmark` and `DocumentBookmark` hold real foreign keys with no
-    cascade, and `PRAGMA foreign_keys=ON` is set, so a bookmark attached to a
-    note or a document could not be deleted at all: the delete raised
-    `FOREIGN KEY constraint failed`, answered 500, and the link stayed in the
-    list. Attaching it is what made it permanent, which is the same shape
-    that made a document with a note on it undeletable, one table over.
-
-    The join row goes, not the thing at the other end of it: a note does not
-    disappear because a link saved on it did.
-    """
-    bookmark = _existing(session, bookmark_id)
-    log_action(session, "deleted", "bookmark", bookmark.id)
-    session.execute(sa_delete(EntryBookmark).where(EntryBookmark.bookmark_id == bookmark.id))
-    session.execute(sa_delete(DocumentBookmark).where(DocumentBookmark.bookmark_id == bookmark.id))
-    session.delete(bookmark)
+    """Delete a saved link and what attaches it (`bookmarks.delete` says why)."""
+    bookmarks.delete(session, bookmark_id)
     session.commit()
     return {"deleted": True}

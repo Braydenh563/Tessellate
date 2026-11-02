@@ -74,6 +74,10 @@ CSS_FILES = [
     CSS_DIR / "utilities-lazy.css",
     #: What the app draws into a reply beside its words (reply-kit.js, INBOX 1300 C06).
     CSS_DIR / "reply-kit-lazy.css",
+    #: The staged chip's upload bar (chat-attach.js `attachmentChip` loads it).
+    CSS_DIR / "chip-bar-lazy.css",
+    #: The composer's model picker (`LAZY_MODULES.modelMenu`, INBOX 1477).
+    CSS_DIR / "model-menu-lazy.css",
     #: The live captions dock (captions.js, Brief 82).
     CSS_DIR / "captions-lazy.css",
     #: The Notes tab's Questions view (questions-view.js loads it).
@@ -90,6 +94,7 @@ CSS_FILES = [
     CSS_DIR / "timeline-calendar-lazy.css",
     #: Where another device opens the notebook (settings-controls.js, INBOX 867).
     CSS_DIR / "lan-lazy.css",
+    CSS_DIR / "objmove-lazy.css",
     #: The storage bar in Settings, About (settings-data.js, data-1011).
     CSS_DIR / "settings-data-lazy.css",
     #: Moved out of the boot sheets for the gzip budget (2026-10-12), each
@@ -110,16 +115,41 @@ CSS_FILES = [
     CSS_DIR / "timeline-ticks-lazy.css",
     #: Quick sketch, the self-contained pad (media.js `openSketch` loads it).
     CSS_DIR / "sketch-pad.css",
+    #: A private chat's empty pane (chat-private.js, `LAZY_MODULES.chatPrivate`, INBOX 1481).
+    CSS_DIR / "chat-private-lazy.css",
     #: The Notes sidebar's folds (C43).
     CSS_DIR / "sidebar-folds-lazy.css",
     #: The thrown companion's fates (companion-throw.js loads it, D6).
     CSS_DIR / "companion-throw-lazy.css",
+    #: The companion's far moves and small acts (companion-travel.js loads it, INBOX 1429).
+    CSS_DIR / "companion-travel-lazy.css",
+    #: Movable and resizable panels (panel-movable.js loads it, INBOX 1427).
+    CSS_DIR / "panel-movable-lazy.css",
     #: The guided equation editor (lazy-entries.js `mathEditor`, DOCUMENTS_PLAN 16).
     CSS_DIR / "math-editor-lazy.css",
     #: Mermaid diagrams: the figure, its placeholder and the hidden frame (mermaid-draw.js).
     CSS_DIR / "mermaid-lazy.css",
+    #: The Writing room: the kind select's room and the diagram preview (lazy `writingDesk`, UX review 1031).
+    CSS_DIR / "writing-desk-lazy.css",
     #: Settings, Appearance, Glass controls: icon buttons in glass (lazy-entries.js `glassControls`, INBOX 1409).
     CSS_DIR / "glass-controls-lazy.css",
+    #: The Appearance quick panel (lazy-entries.js `appearancePanel`, INBOX 1435): the Settings
+    #: rules copied under #appearance-panel (scripts/appearance_panel_css.py), then its own.
+    CSS_DIR / "appearance-panel-lazy.css",
+    CSS_DIR / "appearance-panel-own-lazy.css",
+    #: The update bar (INBOX 1440), loaded by update-dialogs.js when a version is found.
+    CSS_DIR / "update-bar-lazy.css",
+    #: Windows high contrast only (status.js loads it under forced-colors, audit 1028 S38).
+    CSS_DIR / "forced-colors-lazy.css",
+    #: The meaning-search notice (app.js `LAZY_MODULES.semanticNotice`).
+    CSS_DIR / "semantic-notice-lazy.css",
+    CSS_DIR / "plain-head-lazy.css",
+    #: One anatomy for every popup: glyph head, glyph tabs, bordered cards (INBOX 1478).
+    CSS_DIR / "popup-anatomy-lazy.css",
+    #: The Notes capture bar's card (notes-list.js loads it with capture-card.js, INBOX 1479).
+    CSS_DIR / "capture-card-lazy.css",
+    #: The in-place equation field (lazy-entries.js `mathField` and `mathEditor`, a9a01e5).
+    CSS_DIR / "math-field-lazy.css",
 ]
 
 

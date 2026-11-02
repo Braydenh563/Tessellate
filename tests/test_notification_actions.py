@@ -126,7 +126,7 @@ def test_already_recorded_notices_do_not_record_twice():
 #: Openers that name a target the app can find again after a reload. Each
 #: caller passes `go`, plain data for localStorage.
 OPENERS = {
-    "chat.js": ['go: { open: "conversation", id: fork.id }'],
+    "chat-turn.js": ['go: { open: "conversation", id: fork.id }'],
     #: Save an answer (ask-compose.js) or a chat (quick-note.js, e4b220e) as a document.
     "ask-compose.js": ['go: { open: "doc", id: doc.id }'],
     "wiring.js": ['go: { open: "conversation", id: fork.id }'],
@@ -243,7 +243,7 @@ def test_arrivals_ride_with_the_stack_and_a_card_leaves_in_place():
     # Reduced motion: the slide is the JS's alone, so it stops there; the fades
     # stay with Interface animations (test_motion_tokens).
     reduced = _stack_fn("toastReduced")
-    assert "prefers-reduced-motion: reduce" in reduced and 'dataset.motion === "reduced"' in reduced
+    assert "reducedMotionWanted()" in reduced and "matchMedia" not in reduced
 
 
 def test_the_stack_gap_is_a_spacing_token():
@@ -254,3 +254,16 @@ def test_the_stack_gap_is_a_spacing_token():
 
 def test_the_recipe_says_so():
     assert "toastMerge" in _STACK_DESIGN and "+N more" in _STACK_DESIGN
+
+
+def test_a_toast_holds_while_pointed_at_or_focused():
+    """Audit 1028 S19 (WCAG 2.2.1): toasts left on a fixed timer, even under
+    the pointer or with focus on their button. Measured in the browser by a
+    one-off sweep (its numbers are in the CHANGELOG line)."""
+    status = (JS / "status.js").read_text(encoding="utf-8")
+    start = status.index("function toastHold(")
+    body = status[start: status.index("\n}\n", start)]
+    assert "clearTimeout(note.toastTimer)" in body
+    assert 'note.matches(":hover, :focus-within")' in body and "note.toastLife" in body
+    assert '[["pointerover", true], ["pointerout", false], ["focusin", true], ["focusout", false]]' in status
+    assert "document.addEventListener(kind, (event) => toastHold(event, on))" in status

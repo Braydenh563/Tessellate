@@ -5,7 +5,7 @@ logs it and the cause or when it happened ... so if it happens then I can give
 you the logs?" The browser's watcher (frontend/js/lag-watch.js) sees a frame
 that blocked, a slow interaction or a slow request and names its cause; this
 keeps each one as a JSON line in `<data dir>/logs/lag.log`, the folder
-Settings > Maintenance already opens, so a report survives a reload or a
+Settings, Maintenance already opens, so a report survives a reload or a
 restart and can be sent as a file. The in-memory log ring keeps 500 records
 and loses them on restart, which is exactly when a lag report is wanted.
 

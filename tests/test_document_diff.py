@@ -1,7 +1,7 @@
 """One diff model, shared by the history dialog and the AI edit panel.
 
 DOCUMENTS_PLAN Phase 5 items 2 and 3. The model lives between `DOC-DIFF-BEGIN`
-and `DOC-DIFF-END` in documents.js and is pure string work with no DOM and no
+and `DOC-DIFF-END` in documents-history.js and is pure string work with no DOM and no
 app globals in it, so python can run it in node, the same way the block
 reference, table, frontmatter and columns models are tested.
 
@@ -25,7 +25,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-DOCUMENTS_JS = ROOT / "frontend" / "js" / "documents.js"
+DOCUMENTS_JS = ROOT / "frontend" / "js" / "documents-history.js"  # the model moved out of documents.js (docs-1101, DC13)
 EDITOR_CSS = ROOT / "frontend" / "css" / "09-editor.css"
 
 BEGIN = "// DOC-DIFF-BEGIN"
@@ -36,7 +36,7 @@ def diff_source() -> str:
     text = DOCUMENTS_JS.read_text(encoding="utf-8")
     start = text.find(BEGIN)
     stop = text.find(END)
-    assert start != -1, f"{BEGIN} marker is missing from documents.js"
+    assert start != -1, f"{BEGIN} marker is missing from documents-history.js"
     assert stop > start, f"{END} marker is missing or before {BEGIN}"
     return text[start + len(BEGIN) : stop]
 
@@ -164,7 +164,7 @@ def test_one_diff_builder_and_no_second_one() -> None:
     differently.
     """
     text = DOCUMENTS_JS.read_text(encoding="utf-8")
-    builders = re.findall(r"\nfunction (docRenderDiff\w*)\(", text)
+    builders = re.findall(r"\n *function (docRenderDiff\w*)\(", text)  # indented: the file is one closure now (docs-1101)
     assert builders == ["docRenderDiff"], builders
     rows = re.findall(r'"doc-diff-line[^"]*"', text)
     assert rows, "docRenderDiff no longer draws .doc-diff-line rows"

@@ -27,7 +27,7 @@ def test_the_laser_is_wired_and_ends_with_the_presentation():
 def test_the_trail_fades_by_itself_and_respects_reduced_motion():
     assert "@keyframes wb-laser-fade" in CSS
     reduced = CSS[CSS.index("@keyframes wb-laser-fade") :]
-    assert "prefers-reduced-motion" in reduced
+    assert '[data-motion="reduced"]' in reduced
 
 
 def test_the_laser_has_a_steady_head_and_the_count_cell_is_fixed():

@@ -191,6 +191,10 @@ DEFAULT_PREFERENCES: dict[str, Any] = {
     #: Let background work use the (smaller, faster) utility model instead of
     #: tying up the chat model. Off means everything uses the chat model.
     "smart_model_routing_enabled": True,
+    #: INBOX 1440: the bar at the top that says a new version exists (with an
+    #: Update button and a close). Off means no bar; Settings, About still
+    #: has Check for updates.
+    "show_update_bar": True,
     # How long a session can be idle before the user must log in again.
     "session_idle_ttl_minutes": 720,
     #: The desktop launcher's console window (start.bat/start-desktop.bat
@@ -215,6 +219,9 @@ DEFAULT_PREFERENCES: dict[str, Any] = {
     #: running server instead (never a second server on one data directory,
     #: core/instance_lock.py). Advanced, off by default.
     "new_window_on_launch": False,
+    #: The chosen companion in a small window at the screen's corner while the
+    #: app window is in the tray (core/desk_companion.py). Off by default.
+    "desktop_companion": False,
 }
 
 
@@ -472,6 +479,15 @@ def week_first_day(config: "ConfigManager") -> int:
     except (TypeError, ValueError):
         return 0
     return reported if 0 <= reported <= 6 else 0
+
+
+def loaded_user_now() -> datetime:
+    """`user_now` on the settings the app has loaded, or the server's zone.
+    `deps` is read from `sys.modules`, not imported: it pulls in the embedding
+    stack (1.2 s on a composed answer's first call), and when it is not loaded
+    there are no settings to read."""
+    deps = sys.modules.get("tessellate.core.deps")
+    return user_now(deps.peek_config() if deps else None)
 
 
 def user_now(config: "ConfigManager | None") -> datetime:

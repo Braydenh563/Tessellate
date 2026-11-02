@@ -22,7 +22,9 @@ def _block(source: str, start: str, end: str) -> str:
 
 
 def test_a_note_card_reaches_the_graph_and_the_chat():
-    menu = _block(APP, 'label: "ph:hourglass-medium Forgotten notes like this"', "const addItems = [")
+    # The menu is grouped by task (audit 1031 N20): Ask sits in the first
+    # group, the graph in the last, both before the Add rows.
+    menu = _block(APP, "function fillEntryMenu(menu, entry) {", "const addItems = [")
     assert "showNoteInGraph(entry.id)" in menu
     assert "askAtlasAboutNote(entry)" in menu
 
@@ -70,3 +72,23 @@ def test_the_shared_row_says_the_same_thing_everywhere():
         for line in source.splitlines():
             if "Ask Atlas about this" in line and ("label" in line or "makeMenuItem(" in line):
                 assert "ph:chat-circle Ask Atlas about this" in line, line.strip()
+
+
+def test_duplicate_sits_with_the_notes_own_actions_not_under_add():
+    """Audit 1028 S12: Duplicate lived in the Add flyout, beside "Make a mind
+    map" and "Accept the filing", where nobody looks for a copy."""
+    menus = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "entry-menu.js").read_text(encoding="utf-8")
+    top = menus.index("const topLevel = [")
+    add = menus.index("const addItems = [")
+    duplicate = menus.index('label: "ph:copy Duplicate"')
+    assert top < duplicate < add
+
+
+def test_board_failures_are_said_on_screen_not_in_the_console():
+    """Audit 1028 B22: a failed drawing save, board fetch or connection was a
+    `console.error` and nothing else. The remaining `console.warn` lines are
+    diagnostics for menus refused at the window's corner, not failures."""
+    board = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    assert "console.error(" not in board and "console.log(" not in board
+    for what in ("save that drawing", "open that board", "connect those"):
+        assert f'voiceLine("failed", {{ what: "{what}"' in board, what

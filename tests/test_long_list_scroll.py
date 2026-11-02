@@ -32,9 +32,10 @@ def function_body(source: str, name: str) -> str:
 
 
 def test_the_incremental_renderer_can_build_by_time_and_the_library_asks_it_to():
-    source = read("notes-list.js")
+    # In library.js since the Notes list was windowed (audit 1029 N9).
+    source = read("library.js")
     body = function_body(source, "renderIncrementally")
-    assert "budgetMs = 0" in body, "opt-in, so the Notes list keeps its behaviour"
+    assert "budgetMs = 0" in body, "opt-in, so a caller that does not ask builds by count"
     assert "performance.now() - started > budgetMs" in body
     # The observer only fires on a *change* of intersection, so a small chunk
     # that leaves the sentinel near must carry on by itself, on frames.
@@ -54,14 +55,31 @@ def test_a_new_card_does_not_restyle_the_whole_grid():
     assert 'classList.toggle("is-choosing", n > 0)' in library
 
 
-def test_the_timeline_appends_by_time_and_counts_once_per_chunk():
-    body = function_body(read("timeline.js"), "appendTimelineRows")
-    assert "TIMELINE_APPEND_BUDGET_MS" in body
-    # Re-counting a section per row walked the section per row: quadratic.
-    assert 'section.querySelectorAll(".timeline-row")' not in body
-    assert "childElementCount" in body
-    # The visible set is built once per page, not per chunk.
-    assert "appendTimelineRows(fresh, next, visible)" in body
+def test_the_timeline_pages_into_the_shared_window_and_counts_from_the_data():
+    # Its intent moved (audit 1028 S53): a page used to be built row by row
+    # across frames on a 6ms budget (TIMELINE_APPEND_BUDGET_MS) and the DOM
+    # grew with every page. It now lands as one-element shells in the same
+    # `windowRows` the Notes list uses, and the rows near the reader are built.
+    source = read("timeline.js")
+    body = function_body(source, "appendTimelineRows")
+    assert "TIMELINE_APPEND" not in source
+    assert "win.add(list, run.rows)" in body
+    assert "timelineRowElement(" not in body, "a page is not built whole"
+    # Built rows are fewer than loaded rows, so the count is the data's.
+    assert 'querySelectorAll(".timeline-row")' not in body
+    assert "visible.size" in body
+    assert "windowRows(" in function_body(source, "newTimelineWindow")
+    # The Notes list and the Timeline share the one window (S16, S53).
+    assert "windowRows(" in function_body(read("notes-list.js"), "renderWindowed")
+
+
+def test_the_timeline_keyboard_and_focus_reach_rows_that_are_not_built():
+    source = read("timeline.js")
+    assert "fill(row)" in function_body(source, "timelineRowByKey")
+    assert "timelineRowByKey(key)" in function_body(source, "focusTimelineRow")
+    assert "timelineRowEls()" in source[source.index('$("timeline-scroll").addEventListener("keydown"') :][:400]
+    # Leaving the feed (table, calendar) stops the window's observer.
+    assert "timelineWindow.win?.stop()" in function_body(source, "paintTimeline")
 
 
 def test_the_timeline_scroll_does_its_work_once_a_frame():

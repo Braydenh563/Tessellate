@@ -26,13 +26,15 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai import speakers, voice
 from tessellate.api import paging
-from tessellate.core import activity, background, deps, recordings, transcript
+from tessellate.api.downloads import attachment_headers
+from tessellate.core import activity, deps, jobs, recordings, transcript
 from tessellate.core.database import LIKE_ESCAPE, Entry, Recording, like_escape, utcnow
 from tessellate.core.deps import get_session
 from tessellate.entry import bin as other_bin
 from tessellate.entry import manager
 from tessellate.entry import meetings as meeting_shape
 from tessellate.entry.manager import log_action
+from tessellate.repo import content as content_repo
 
 router = APIRouter(tags=["recordings"])
 #: `<audio src>` sends the media cookie, never the X-Auth-Token header, so
@@ -75,8 +77,13 @@ def _get(session: Session, recording_id: int, binned: bool = False) -> Recording
         if row is not None and row.deleted_at is not None:
             row = None
     if row is None:
-        raise HTTPException(status_code=404, detail="That recording isn't there any more.")
+        raise HTTPException(status_code=404, detail="That recording could not be found.")
     return row
+
+
+def _writable(session: Session, recording_id: int) -> Recording:
+    """A write's row: 404 for none, 409 for one in the bin (`repo/content`)."""
+    return content_repo.RECORDINGS.writable(session, recording_id)
 
 
 #: A page of the library; the screen asks for the largest and filters it itself.
@@ -156,27 +163,47 @@ def create_recording(body: RecordingCreate, session: Session = Depends(get_sessi
     return recordings.as_dict(row)
 
 
+def _append(path, data: bytes, size: int) -> None:  # noqa: ANN001
+    """Append, or leave the file as it was: a write cut short (a full disk)
+    is cut back, so the retry starts where the saved audio ends. The error
+    goes on to the app's handler, which answers a full disk with 507."""
+    try:
+        with path.open("ab") as out:
+            out.write(data)
+    except OSError:
+        with path.open("ab") as out:
+            out.truncate(size)
+        raise
+
+
 @router.post("/recordings/{recording_id}/chunk")
 def append_chunk(
     recording_id: int,
     file: UploadFile,
     duration_ms: int = Form(0),
+    at: int = Form(-1),
     session: Session = Depends(get_session),
 ) -> dict:
     """One slice of a recording in progress, appended to its file. The first
-    must open with the container's own header (the type check)."""
-    row = _get(session, recording_id)
+    must open with the container's own header (the type check). `at` is the
+    size the sender thinks the file has: a retried slice that already landed
+    is answered, not written twice, and one out of step is refused (audit
+    1030 Y1)."""
+    row = _writable(session, recording_id)
     if row.state != "recording":
         raise HTTPException(status_code=409, detail="That recording is already finished.")
     room = recordings.MAX_RECORDING_BYTES - row.size_bytes
     data = file.file.read(room + 1)
+    if at >= 0 and at != row.size_bytes:
+        if at + len(data) == row.size_bytes:
+            return {"id": row.id, "size_bytes": row.size_bytes, "duration_ms": row.duration_ms}
+        raise HTTPException(status_code=409, detail="That slice is out of step with the saved recording.")
     if len(data) > room:
         raise HTTPException(status_code=413, detail="That recording is larger than 300 MB.")
     if not row.size_bytes and data and not recordings.matches(row.mime, data[:16]):
         raise HTTPException(status_code=415, detail="That audio isn't the type it says it is.")
     if data:
-        with recordings.path_of(row).open("ab") as out:
-            out.write(data)
+        _append(recordings.path_of(row), data, row.size_bytes)
         row.size_bytes += len(data)
     row.duration_ms = max(row.duration_ms, min(int(duration_ms), 24 * 3600 * 1000))
     row.updated_at = utcnow()
@@ -188,7 +215,7 @@ def append_chunk(
 def finish_recording(
     recording_id: int, body: RecordingFinish, session: Session = Depends(get_session)
 ) -> dict:
-    row = _get(session, recording_id)
+    row = _writable(session, recording_id)
     if not row.size_bytes:
         recordings.purge(session, row)
         session.commit()
@@ -211,7 +238,7 @@ def read_recording(recording_id: int, session: Session = Depends(get_session)) -
 def update_recording(
     recording_id: int, body: RecordingPatch, session: Session = Depends(get_session)
 ) -> dict:
-    row = _get(session, recording_id)
+    row = _writable(session, recording_id)
     if body.title is not None:
         row.title = body.title.strip()[:200]
     if body.markers is not None:
@@ -225,7 +252,7 @@ def update_recording(
 @router.delete("/recordings/{recording_id}")
 def bin_recording(recording_id: int, session: Session = Depends(get_session)) -> dict:
     """Into the bin, audio and all; Restore brings it back as it was."""
-    row = _get(session, recording_id)
+    row = _writable(session, recording_id)
     row.deleted_at = utcnow()
     log_action(session, "binned", "recording", row.id)
     session.commit()
@@ -234,14 +261,12 @@ def bin_recording(recording_id: int, session: Session = Depends(get_session)) ->
 
 @router.post("/recordings/{recording_id}/restore")
 def restore_recording(recording_id: int, session: Session = Depends(get_session)) -> dict:
-    row = _get(session, recording_id, binned=True)
-    row.deleted_at = None
-    log_action(session, "restored", "recording", row.id)
+    row, _was_binned = content_repo.restore(session, "recording", recording_id)
     session.commit()
     return recordings.as_dict(row)
 
 
-@router.post("/recordings/{recording_id}/purge")
+@router.delete("/recordings/{recording_id}/purge")
 def purge_recording(recording_id: int, session: Session = Depends(get_session)) -> dict:
     with other_bin.including_binned(session):
         row = _get(session, recording_id, binned=True)
@@ -257,7 +282,7 @@ def transcribe_recording(recording_id: int, session: Session = Depends(get_sessi
     """The kept audio, transcribed by the optional add-on (decision 4), its
     segments kept with their times on the recording (28.5 row 7). With no
     add-on: 503 and the hint, and the recording is unaffected."""
-    row = _get(session, recording_id)
+    row = _writable(session, recording_id)
     if not voice.whisper_available():
         raise HTTPException(status_code=503, detail=voice.INSTALL_HINT)
     path = recordings.path_of(row)
@@ -290,7 +315,7 @@ def start_transcription(recording_id: int, session: Session = Depends(get_sessio
     returns at once, closing the dialog or the tab never stops it, the row
     and the running panel show how far it is, and Stop ends it between two
     segments, keeping nothing. 409 while one is already running."""
-    row = _get(session, recording_id)
+    row = _writable(session, recording_id)
     if not voice.whisper_available():
         raise HTTPException(status_code=503, detail=voice.INSTALL_HINT)
     path = recordings.path_of(row)
@@ -303,15 +328,15 @@ def start_transcription(recording_id: int, session: Session = Depends(get_sessio
         raise HTTPException(status_code=409, detail="That recording is already being transcribed.")
     work = (row.id, Path(path), row.duration_ms, deps.get_config().get_preference("voice_model", "base"),
             session.info.get("workspace_id"), job)
-    #: Registered (core/background.py, decision 58); the Stop route ends it between
+    #: A thread Job (`jobs.thread`, decision 58); the Stop route ends it between
     #: two segments, so the registry entry has no stopper of its own.
-    background.start(f"transcribe-{row.id}", lambda: _transcribe_in_background(*work))
+    jobs.thread(f"transcribe-{row.id}", lambda: _transcribe_in_background(*work))
     return {"id": row.id, "job_id": job.id, "transcription": recordings.transcription_of(row.id)}
 
 
 @router.post("/recordings/{recording_id}/transcribe/stop")
 def stop_transcription(recording_id: int, session: Session = Depends(get_session)) -> dict:
-    _get(session, recording_id)
+    _writable(session, recording_id)
     run = recordings.transcription_of(recording_id)
     if not run or run.get("state") != "running":
         return {"stopped": False, "detail": "Nothing is transcribing that recording."}
@@ -389,8 +414,8 @@ def _named(session: Session, row: Recording, segments: list[dict]) -> list[dict]
         return segments
 
 
-def _segments_of(session: Session, recording_id: int) -> tuple[Recording, list[dict]]:
-    row = _get(session, recording_id)
+def _segments_of(session: Session, recording_id: int, *, write: bool = False) -> tuple[Recording, list[dict]]:
+    row = _writable(session, recording_id) if write else _get(session, recording_id)
     segments = transcript.loads(row.segments)
     if not segments:
         raise HTTPException(status_code=404, detail="That recording has no transcript yet. Transcribe it first.")
@@ -410,7 +435,7 @@ def name_speakers(recording_id: int, session: Session = Depends(get_session)) ->
     """Name the turns of a transcript made while the model was off (row 11).
     Behind the model gate: with none, 503 and the sentence the menu never
     needs to show, since it offers this only when a model is on."""
-    row, segments = _segments_of(session, recording_id)
+    row, segments = _segments_of(session, recording_id, write=True)
     if not deps.get_ollama().is_running():
         raise HTTPException(status_code=503, detail="Naming the speakers needs the local AI, which is off.")
     named = _named(session, row, [{**seg, "speaker": None} for seg in segments])
@@ -429,7 +454,7 @@ def rename_speaker(recording_id: int, body: RenameSpeakerBody, session: Session 
     """Rename one speaker everywhere in a transcript (ledger 1514): the model's
     "Speaker A" becomes "Priya", or a wrong guess is corrected. An empty new
     name drops the label from those turns. No model needed."""
-    _row, segments = _segments_of(session, recording_id)
+    _row, segments = _segments_of(session, recording_id, write=True)
     old = " ".join(body.from_name.split())
     new = " ".join(body.to_name.split()) or None
     if not any(seg["speaker"] == old for seg in segments):
@@ -444,11 +469,12 @@ def rename_speaker(recording_id: int, body: RenameSpeakerBody, session: Session 
 def _subtitles(session: Session, recording_id: int, ext: str) -> Response:
     row, segments = _segments_of(session, recording_id)
     body = transcript.to_srt(segments) if ext == "srt" else transcript.to_vtt(segments)
-    name = re.sub(r"[^A-Za-z0-9._ -]", "_", row.title or "").strip(". ")[:80] or f"recording-{row.id}"
+    stem = re.sub(r"[^\w._ -]", "_", row.title or "").strip(". ")[:80] or f"recording-{row.id}"
+    name = f"{stem}.{ext}"
     return Response(
         content=body.encode("utf-8"),
         media_type="application/x-subrip" if ext == "srt" else "text/vtt",
-        headers={"Content-Disposition": f'attachment; filename="{name}.{ext}"'},
+        headers=attachment_headers(name),
     )
 
 

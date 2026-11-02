@@ -16,8 +16,8 @@ def _contents(client, q: str, workspace: str) -> list[int]:
 
 
 def test_a_note_in_one_space_is_not_found_from_another(client):
-    work = client.post("/spaces", json={"name": "Work"}).json()["id"]
-    personal = client.post("/spaces", json={"name": "Personal"}).json()["id"]
+    work = client.post("/spaces", json={"name": "Client work"}).json()["id"]
+    personal = client.post("/spaces", json={"name": "Home life"}).json()["id"]
     at_work = client.post(
         "/entries", json={"content": "zebracorn launch plan"}, headers={"X-Workspace-ID": work}
     ).json()["id"]
@@ -32,7 +32,7 @@ def test_a_note_in_one_space_is_not_found_from_another(client):
 
 def test_all_spaces_leaves_out_a_space_hidden_from_it(client):
     journal = client.post("/spaces", json={"name": "Journal"}).json()["id"]
-    work = client.post("/spaces", json={"name": "Work"}).json()["id"]
+    work = client.post("/spaces", json={"name": "Client work"}).json()["id"]
     secret = client.post(
         "/entries", json={"content": "quokkafish diary"}, headers={"X-Workspace-ID": journal}
     ).json()["id"]

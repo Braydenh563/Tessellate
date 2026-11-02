@@ -68,7 +68,7 @@ async function newMap(page, name) {
     await page.click('[data-tab="library"]'); clicks++; await page.waitForTimeout(800);
     await page.click('#library-subtabs [data-target="library-view-whiteboard"]'); clicks++; await page.waitForTimeout(1500);
     await page.evaluate(() => { if (typeof wbShowBoardsLanding === "function") wbShowBoardsLanding(); }); await page.waitForTimeout(500);
-    await page.click('#wb-boards-new-menu > summary'); clicks++;
+    await page.click('#wb-boards-new-more'); clicks++;
     await page.waitForTimeout(200);
     const r = await newMap(page, "Clicked map"); clicks++;
     if (r.dialog) clicks += 2; // the kind segment was preset; the name typed and Create pressed

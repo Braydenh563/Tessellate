@@ -48,6 +48,7 @@ def _harness() -> str:
         _grab(r"^function firstNoteImage\(content\) \{.*?^\}\n", "firstNoteImage"),
         _grab(r"^function noteRowImage\(entry\) \{.*?^\}\n", "noteRowImage"),
         _grab(r"^function stripFrontmatter\(text\) \{.*?^\}\n", "stripFrontmatter"),
+        _grab(r"^function previewBlocks\(text\) \{.*?^\}\n", "previewBlocks"),
         _grab(r"^function notePreviewText\(content\) \{.*?^\}\n", "notePreviewText"),
         _grab(r"^function flattenNoteMarkdown\(md\) \{.*?^\}\n", "flattenNoteMarkdown"),
         _grab(r"^function clipText\(text, limit\) \{.*?^\}\n", "clipText"),

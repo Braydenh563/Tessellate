@@ -241,7 +241,7 @@ function inboxMergeRow(m) {
   const row = document.createElement("div");
   row.className = "inbox-row";
   row.setAttribute("role", "group");
-  const notes = (n) => `${n} note${n === 1 ? "" : "s"}`;
+  const notes = (n) => nounCount(n, "note");
   const title = document.createElement("p");
   title.className = "inbox-row-title";
   title.textContent = `“${m.merge_name}” (${notes(m.merge_notes)}) into “${m.keep_name}” (${notes(m.keep_notes)})`;
@@ -376,7 +376,7 @@ function inboxTensionsPane() {
       return;
     }
     const checked = body.pairs_checked || 0;
-    status.textContent = `${found.length} to look at, from ${checked} pair${checked === 1 ? "" : "s"} read.`;
+    status.textContent = `${found.length} to look at, from ${nounCount(checked, "pair")} read.`;
     for (const tension of found) results.appendChild(tensionCard(tension));
   });
   tools.append(status, run);
@@ -468,9 +468,9 @@ function tensionResolve(card, message) {
 }
 
 function tensionGapText(days) {
-  if (days < 31) return `${days} day${days === 1 ? "" : "s"}`;
+  if (days < 31) return nounCount(days, "day");
   const months = Math.round(days / 30);
-  if (months < 18) return `${months} month${months === 1 ? "" : "s"}`;
+  if (months < 18) return nounCount(months, "month");
   const years = (days / 365).toFixed(1).replace(/\.0$/, "");
   return `${years} year${years === "1" ? "" : "s"}`;
 }
@@ -589,7 +589,7 @@ function inboxLinksPane(suggestions) {
       const done = await fillReasons(targets, false);
       working("");
       if (!done) return;
-      if (done.filled) toast(`Filled in ${done.filled} reason${done.filled === 1 ? "" : "s"}.`);
+      if (done.filled) toast(`Filled in ${nounCount(done.filled, "reason")}.`);
       else if (done.result.ai_unavailable) toast("Atlas isn't running, so no reasons could be guessed.", "info");
       else toast("Couldn't guess a reason for any of these.");
     },
@@ -603,7 +603,7 @@ function inboxLinksPane(suggestions) {
     async () => {
       const sure = rowReasons.filter((r) => r.input.isConnected && (r.s.confidence ?? r.s.similarity ?? 0) >= LINK_ALL_AT);
       if (!sure.length) return toast("None of these is 70% sure or more.");
-      const many = `${sure.length} pair${sure.length === 1 ? "" : "s"}`;
+      const many = nounCount(sure.length, "pair");
       if (!(await confirmDialog(`Link ${many} of notes? Each is linked with its reason; a link can be removed from either note.`, { confirmLabel: "Link them" }))) return;
       setBusy(linkSure, true, "Linking…");
       //: Quiet per row: one toast and one reload for the lot, not one each.

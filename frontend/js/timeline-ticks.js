@@ -20,7 +20,8 @@ const TIMELINE_TICK_GAP = 28;
 //: be cut by the rounded corner.
 const TIMELINE_TICK_EDGE = 7;
 //: The d3 formats (built once, d3 loads lazily) and the plan last drawn.
-const timelineTickCache = { formats: null, key: "" };
+//: `height` is the strip's, as the observer last told us (`null` before it has).
+const timelineTickCache = { formats: null, key: "", height: null };
 
 //: The steps, finest first, each with the days one tick stands for (the
 //: nominal length, to choose by) and d3's interval (to place by).
@@ -108,11 +109,18 @@ async function timelineTicks() {
   }
   if (!strip.dataset.ticksWatched) {
     strip.dataset.ticksWatched = "1";
-    if (typeof ResizeObserver === "function") new ResizeObserver(() => timelineTicks()).observe(strip);
+    //: The observer hands over the height free; `clientHeight` here laid the
+    //: page out after the draw's writes (INBOX 1446).
+    if (typeof ResizeObserver === "function") {
+      new ResizeObserver((entries) => {
+        timelineTickCache.height = entries[entries.length - 1].contentRect.height;
+        timelineTicks();
+      }).observe(strip);
+    }
   }
   const [loaded] = await Promise.all([lazyScript("/vendor/d3.v7.min.js"), lazyScript("/css/timeline-ticks-lazy.css")]);
   const span = timelineDensitySpan();
-  const height = strip.clientHeight;
+  const height = timelineTickCache.height ?? strip.clientHeight;
   if (!loaded || !span || strip.classList.contains("hidden") || height < 60) return;
   const plan = timelineTickPlan(span, height);
   const key = `${plan.step}|${height}|${span.newest}|${span.width}`;

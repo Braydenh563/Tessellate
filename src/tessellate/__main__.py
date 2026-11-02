@@ -301,8 +301,7 @@ _LOADING_HTML = """<!doctype html>
     // reduced motion the fade goes and the text simply swaps.
     var mmTip = document.getElementById("tip");
     var mmTipAt = Math.floor(Math.random() * window.__mmTips.length);
-    var mmReduced = window.matchMedia
-      && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var mmReduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     function mmShowTip() {
       mmTip.textContent = window.__mmTips[mmTipAt % window.__mmTips.length];
       mmTipAt++;
@@ -332,6 +331,26 @@ _LOADING_LOOKS = {
 _LOOK_PALETTES = {"utilitarian": "utilitarian", "paper": "paper", "mono": "mono", "default": "default"}
 
 
+#: The loading page's two raw reduced-motion reads: the stylesheet's block and
+#: the tip fade's script. They live here, not in `frontend/`, because the page is
+#: shown from `html=` before the app and cannot read the app's `data-motion`.
+_LOADING_MOTION_CSS = "@media (prefers-reduced-motion: reduce) {"
+_LOADING_MOTION_JS = 'window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches'
+
+
+def _loading_motion(html: str, choice: object) -> str:
+    """The loading page under the person's Motion choice (INBOX 1506), which the
+    app mirrors to `ui_state` as "follow", "on" or "off" (older words "auto" and
+    "reduced" read as follow and off, as `MOTION.choice` in theme-boot.js does).
+    "off" holds the page still, "on" keeps it moving whatever the system asks,
+    and anything else leaves it following the system's request, as written."""
+    if choice == "on":
+        return html.replace(_LOADING_MOTION_CSS, "@media not all {").replace(_LOADING_MOTION_JS, "false")
+    if choice in ("off", "reduced"):
+        return html.replace(_LOADING_MOTION_CSS, "@media all {").replace(_LOADING_MOTION_JS, "true")
+    return html
+
+
 def _recolour_loading_page(html: str, data_dir: str | None) -> str:
     """The loading page in the look the app will open in (owner: "some popup
     ui's havent followed the theme change like the loading screen").
@@ -349,6 +368,7 @@ def _recolour_loading_page(html: str, data_dir: str | None) -> str:
         state = ConfigManager(data_dir or None).get_preference("ui_state", {}) or {}
     except Exception:  # noqa: BLE001  # a cosmetic read must never stop the launch
         return html
+    html = _loading_motion(html, state.get("motion"))
     # The same order as `appearancePref` (settings.js): a palette chosen by
     # hand, then the chosen look's palette, then the default look's.
     preset = state.get("themePreset")
@@ -1514,17 +1534,23 @@ def _stop_background_work() -> None:
 
     `os._exit` and `os.execv` both replace or end this process immediately:
     no `finally`, no atexit, no uvicorn shutdown, and so no lifespan handler.
-    The server's own lifespan calls `bgtasks.stop_all()` for the graceful
+    The server's own lifespan calls `jobs.stop_all()` for the graceful
     paths (`/shutdown`, Ctrl+C); this is the same call for the two paths that
     are deliberately abrupt.
 
     Never raises and never blocks for long: the process is going away, and a
     Quit button that hangs is worse than a stray subprocess.
     """
-    try:
-        from tessellate.core import bgtasks
+    # The corner companion's window goes first: a hidden second window would
+    # keep the web view's loop from ending, and it must not be shown by the
+    # main window's own hide on the way out.
+    from tessellate.core import desk_companion
 
-        bgtasks.stop_all()
+    desk_companion.shutdown()
+    try:
+        from tessellate.core import jobs
+
+        jobs.stop_all()
     except Exception as exc:  # noqa: BLE001  # best effort on the way out
         logger.warning("couldn't stop background work before exiting: %s", exc)
     # **And the notebook's lock is let go.** Every caller ends the process
@@ -1983,6 +2009,7 @@ def _run_desktop(hidden_relaunch: bool = False) -> None:
         if sys.platform == "win32"
         else None
     )
+    _attach_desk_companion(webview, window, tray_icon)
     if tray_icon is not None:
         # **Closing the window is not quitting the app, and it now says so.**
         # The hide itself has been here since the tray was added; what was
@@ -2027,7 +2054,7 @@ def _run_desktop(hidden_relaunch: bool = False) -> None:
                     try:
                         tray_icon.notify(
                             "Still running here. Click the icon to bring the "
-                            "window back, or right-click → Quit to close it "
+                            "window back, or right-click it and choose Quit to close it "
                             "properly.",
                             "Tessellate",
                         )
@@ -2075,6 +2102,31 @@ def _run_desktop(hidden_relaunch: bool = False) -> None:
         stop_notifier()
         instance_lock.set_focus_handler(None)
         instance_lock.release()
+
+
+def _attach_desk_companion(webview, window, tray_icon):  # noqa: ANN001
+    """The corner companion (`core/desk_companion.py`, BACKLOG 16): a second
+    window shown while this one is in the tray and the preference is on.
+    Only where there is a tray to put the window in. Returns None without one.
+
+    `open_main` is what the companion's "Open Tessellate", a search hit and
+    its Settings do: the window comes forward (which hides the companion) and,
+    for the last two, a line of script the companion module has already
+    checked. A locked app only comes forward: Settings carries the lock guard
+    the tray's items carry, and a hit's address is only a route."""
+    if tray_icon is None:
+        return None
+    from tessellate.core import desk_companion
+
+    def _open_main(script: str = "") -> None:
+        window.show()
+        _focus_window(window)
+        if script:
+            window.evaluate_js(script)
+
+    return desk_companion.attach(
+        webview, window, _open_main, lambda: f"http://{page_host()}:{PORT}/desktop-companion.html"
+    )
 
 
 def _start_reminder_notifier(window, icon_path: Path, data_dir: Path):  # noqa: ANN001
@@ -2149,6 +2201,8 @@ def _start_tray(
         # missing package does rather than take the whole launcher down.
         logger.warning("system tray unavailable, continuing without one: %s", exc, exc_info=True)
         return None
+
+    from tessellate.core import desk_companion
 
     image = None
     if icon_path.is_file():
@@ -2422,6 +2476,9 @@ def _start_tray(
         # now does, reachable from here so the behaviour is discoverable
         # rather than only ever happening to you.
         pystray.MenuItem("Hide to tray", lambda icon, item: window.hide()),
+        # The corner companion (core/desk_companion.py): the same switch as
+        # Settings, so a person who finds the tray first can turn it on there.
+        desk_companion.tray_menu_item(pystray),
     ]
     if console_hwnd is not None:
         menu_items.append(

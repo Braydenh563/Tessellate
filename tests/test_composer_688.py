@@ -14,8 +14,9 @@ from datetime import date, timedelta
 
 import pytest
 
-from tessellate.ai import composer
+from tessellate.ai import composer, composer_read
 from tests import _composer_eval as ev
+from tests._app_js import with_pieces
 
 TODAY = date(2026, 10, 6)
 #: Spelled by its code point: the lint reads this file too.
@@ -138,7 +139,9 @@ def test_a_leading_discourse_word_is_trimmed_and_the_offsets_follow():
 
 def test_a_note_without_a_heading_is_named_by_its_first_words():
     view = composer.read_note(NOTES[13], 0)
-    assert view.title == "Note with no heading about the…"
+    #: Cut at a word, and never on a dangling "the" (audit 1029 C9): the
+    #: intent, a name from the first words, is unchanged.
+    assert view.title == "Note with no heading about…"
     #: Its first sentence is still quotable: the name is not the body.
     assert view.sentences[0].text.startswith("Note with no heading")
 
@@ -193,7 +196,7 @@ def test_when_lists_the_other_notes_in_the_order_they_were_written():
     heading = next(w for w in composer.phrase_options("timeline") if w in text)
     timeline = text.split(heading, 1)[1]
     days = re.findall(r"^- (\d+ \w+): ", timeline, re.M)
-    parsed = [date(2026, composer._MONTH_INDEX[d.split()[1].lower()], int(d.split()[0])) for d in days]
+    parsed = [date(2026, composer_read._MONTH_INDEX[d.split()[1].lower()], int(d.split()[0])) for d in days]
     assert len(parsed) == 2 and parsed == sorted(parsed)
 
 
@@ -458,7 +461,7 @@ def test_an_answer_no_model_wrote_says_so_in_its_support_notice() -> None:
 
     routes = Path("src/tessellate/api/routes_chat.py").read_text(encoding="utf-8")
     assert routes.count('"by_model": False') >= 1
-    js = Path("frontend/js/capture-ask.js").read_text(encoding="utf-8")
+    js = with_pieces("capture-ask.js")
     body = js[js.index("function renderAnswerSupport") :]
     body = body[: body.index("\n}\n")]
     assert "support.by_model === false" in body and "no model wrote any of it" in body
@@ -482,6 +485,6 @@ def test_a_cited_name_opens_its_note_and_never_the_sources_panel() -> None:
     body = body[: body.index("\n}\n")]
     assert "flashEntry(g.note_id)" in body and "scheduleCitationPeek(" in body
     assert "source" not in body.lower().replace("citationsource", "")
-    caller = Path("frontend/js/capture-ask.js").read_text(encoding="utf-8")
+    caller = with_pieces("capture-ask.js")
     assert "linkCitedTitles(targets, sentences, byId, numberFor);" in caller
     assert caller.index('ensureModule("askCompose").then(() => {') < caller.index("linkCitedTitles(targets, sentences, byId, numberFor);")

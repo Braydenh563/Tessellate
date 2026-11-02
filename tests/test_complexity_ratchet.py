@@ -20,7 +20,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-MAX_FINDINGS = 27
+MAX_FINDINGS = 20
 
 
 def _ruff() -> list[str] | None:

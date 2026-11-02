@@ -24,10 +24,14 @@ from __future__ import annotations
 import functools
 import hashlib
 import re
+
+from tessellate.core.lazyre import lazy_compile
 import sys
 from datetime import date, datetime
+from typing import NamedTuple
 
 from tessellate.ai import arithmetic, recognise
+from tessellate.core import cjk
 from tessellate.ai import when as when_words
 
 # --- units -----------------------------------------------------------------------
@@ -77,21 +81,21 @@ def _patterns(name: str) -> tuple:
 
 # --- the clock, dates, chance ----------------------------------------------------------
 
-_CLOCK = re.compile(r"^(?:what(?:'s| is) the time|what time is it|whats the time|the time|time)(?: now| right now)?$", re.I)
-_TODAY = re.compile(
+_CLOCK = lazy_compile(r"^(?:what(?:'s| is) the time|what time is it|whats the time|the time|time)(?: now| right now)?$", re.I)
+_TODAY = lazy_compile(
     r"^(?:what(?:'s| is) (?:the )?(?:date|day)(?: today| it)?|what day is it(?: today)?|what(?:'s| is) today(?:'s date)?|"
     r"today'?s date|what date is it(?: today)?|what(?:'s| is) the date today)$",
     re.I,
 )
-_YEAR = re.compile(r"^what (?:year|month) is it(?: now)?$", re.I)
+_YEAR = lazy_compile(r"^what (?:year|month) is it(?: now)?$", re.I)
 #: "15% of 240" (CHAT_PLAN section 7 row 1: it quoted a note instead of 36).
-_PERCENT = re.compile(r"^(?:what(?:'s| is)\s+|work out\s+|calculate\s+)?(-?\d+(?:\.\d+)?)\s*(?:%|percent|per cent)\s+of\s+(-?\d[\d,]*(?:\.\d+)?)$", re.I)
-_WEEKDAY_OF = re.compile(r"^what day(?: of the week)? (?:is|was|will be|falls on) (\S.*)$", re.I)
-_DIE = re.compile(r"^(?:roll|throw)\s+(?:a\s+|one\s+|the\s+)?(?:die|dice|d6)$|^roll\s+(\d{1,2})?d(\d{1,3})$", re.I)
-_COIN = re.compile(r"^(?:flip|toss)\s+a\s+coin$|^heads or tails$", re.I)
-_PICK = re.compile(r"^(?:pick|choose|give me)\s+a\s+(?:random\s+)?number\s+(?:between|from)\s+(-?\d{1,6})\s+(?:and|to)\s+(-?\d{1,6})$", re.I)
-_WEATHER = re.compile(r"\b(?:weather|forecast|temperature outside|going to rain|will it rain)\b", re.I)
-_TRANSLATE = re.compile(r"^(?:translate|say) \S.* (?:in|into|to) (?:french|spanish|german|italian|portuguese|dutch|japanese|chinese|korean|arabic|russian|hindi|greek|swedish|polish|turkish)$", re.I)
+_PERCENT = lazy_compile(r"^(?:what(?:'s| is)\s+|work out\s+|calculate\s+)?(-?\d+(?:\.\d+)?)\s*(?:%|percent|per cent)\s+of\s+(-?\d[\d,]*(?:\.\d+)?)$", re.I)
+_WEEKDAY_OF = lazy_compile(r"^what day(?: of the week)? (?:is|was|will be|falls on) (\S.*)$", re.I)
+_DIE = lazy_compile(r"^(?:roll|throw)\s+(?:a\s+|one\s+|the\s+)?(?:die|dice|d6)$|^roll\s+(\d{1,2})?d(\d{1,3})$", re.I)
+_COIN = lazy_compile(r"^(?:flip|toss)\s+a\s+coin$|^heads or tails$", re.I)
+_PICK = lazy_compile(r"^(?:pick|choose|give me)\s+a\s+(?:random\s+)?number\s+(?:between|from)\s+(-?\d{1,6})\s+(?:and|to)\s+(-?\d{1,6})$", re.I)
+_WEATHER = lazy_compile(r"\b(?:weather|forecast|temperature outside|going to rain|will it rain)\b", re.I)
+_TRANSLATE = lazy_compile(r"^(?:translate|say) \S.* (?:in|into|to) (?:french|spanish|german|italian|portuguese|dutch|japanese|chinese|korean|arabic|russian|hindi|greek|swedish|polish|turkish)$", re.I)
 
 _WEEKDAY_NAMES = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
 _MONTH_NAMES = ("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
@@ -236,7 +240,12 @@ def _dates(text: str, now: datetime) -> list[tuple] | None:
 
 
 def now_day() -> date:
-    return date.today()
+    """Today on the user's own clock, not the server's (audit 1028 K22).
+    The settings as loaded, never `get_config()`, which would start the app
+    from a unit test; with none, `user_now` is the server's zone."""
+    from tessellate.core.config import loaded_user_now
+
+    return loaded_user_now().date()
 
 
 def until_subject(question: str) -> tuple[str, str] | None:
@@ -276,16 +285,16 @@ def _sum_of(question: str, text: str) -> str | None:
 
 #: A list's average and friends (CHAT_PLAN A1): "average of 3, 8, 10",
 #: "what's the median of 1, 5, 9 and 12", "add up 10, 20, 30".
-_LIST_OF = re.compile(
+_LIST_OF = lazy_compile(
     r"^(?:what(?:'?s| is) )?(?:the )?(?P<what>average|mean|median|sum|total|biggest|largest|smallest|max(?:imum)?|min(?:imum)?|range)"
     r"(?: number)? (?:of|in|for) (?P<nums>.+)$|^add (?:up |together )?(?P<add>.+)$",
     re.I,
 )
 _LIST_WORDS = {"average": "mean", "biggest": "largest", "max": "largest", "maximum": "largest", "smallest": "smallest", "min": "smallest", "minimum": "smallest", "total": "sum"}
-_ROOT = re.compile(r"^(?:what(?:'?s| is) )?(?:the )?(square|cube) root of (-?\d+(?:\.\d+)?)$", re.I)
-_MONTH_DAYS = re.compile(r"^how many days (?:are )?(?:there )?in (?P<month>[a-z]+)(?: (?P<year>\d{4}))?$", re.I)
-_BORN = re.compile(r"^how old (?:is (?:someone|somebody|a person)|would i be|am i|are you)(?: if (?:i was|you were))? born in (?P<year>\d{4})$", re.I)
-_CLOCK_SWAP = re.compile(
+_ROOT = lazy_compile(r"^(?:what(?:'?s| is) )?(?:the )?(square|cube) root of (-?\d+(?:\.\d+)?)$", re.I)
+_MONTH_DAYS = lazy_compile(r"^how many days (?:are )?(?:there )?in (?P<month>[a-z]+)(?: (?P<year>\d{4}))?$", re.I)
+_BORN = lazy_compile(r"^how old (?:is (?:someone|somebody|a person)|would i be|am i|are you)(?: if (?:i was|you were))? born in (?P<year>\d{4})$", re.I)
+_CLOCK_SWAP = lazy_compile(
     r"^(?:what(?:'?s| is) )?(?P<time>\d{1,2}(?::\d{2})? ?(?:am|pm)?|noon|midnight) (?:in )?(?P<a>[a-z][a-z .'-]{1,40}?)(?: time)? (?:in|to|for) (?P<b>[a-z][a-z .'-]{1,40}?)(?: time)?$",
     re.I,
 )
@@ -493,7 +502,7 @@ SEVERAL_ZONES: dict[str, tuple[tuple[str, str], ...]] = {
 for _alias in ("us", "america", "united states", "united states of america"):
     SEVERAL_ZONES[_alias] = SEVERAL_ZONES["usa"]
 
-_CLOCK_IN = re.compile(
+_CLOCK_IN = lazy_compile(
     r"^(?:(?:(?:and|so) )?(?:what|how) about )?"
     r"(?:what(?:'s| is) the (?:current )?time|what time is it|whats the time|(?:the |current )?time)"
     r"(?: now| right now)? (?:in|at|over in) (?:the )?(?P<place>[a-z][a-z .'-]{1,40}?)(?: now| right now)?$",
@@ -569,7 +578,7 @@ def zone_for(place: str) -> str | None:
 
 #: "what time is it in am/pm", "the time in 12 hour": the clock in the
 #: 12-hour form (the owner, 2026-10-12: it could only say 18:53).
-_TWELVE = re.compile(r"(?: (?:in|as|with|using))? (?:am ?/ ?pm|am ?pm|a\.m\.?/p\.m\.?|12-?h(?:ou)?r?(?: (?:time|clock|format))?)$", re.I)
+_TWELVE = lazy_compile(r"(?: (?:in|as|with|using))? (?:am ?/ ?pm|am ?pm|a\.m\.?/p\.m\.?|12-?h(?:ou)?r?(?: (?:time|clock|format))?)$", re.I)
 
 
 def _twelve(text: str) -> tuple[str, bool]:
@@ -650,11 +659,11 @@ def _clock(text: str, now: datetime) -> list[tuple]:
 
 # --- asking whether the web can be searched (INBOX 801 and 808) -----------------------
 
-_WEB_ASK = re.compile(
+_WEB_ASK = lazy_compile(
     r"\b(?:search|look (?:it |things )?up|google|browse|use|access|go)\b.*\b(?:the web|online|the internet|internet)\b|\bweb search\b",
     re.I,
 )
-_WEB_FILLER = re.compile(
+_WEB_FILLER = lazy_compile(
     r"\b(?:can|could|would|will|do|does|are|is|you|u|please|search|look|up|it|things|stuff|google|browse|use|"
     r"access|go|on|in|the|web|online|internet|have|has|a|able|to|for|me|there|turned)\b|[?.!,]",
     re.I,
@@ -690,74 +699,98 @@ def _web_capability(text: str) -> bool:
 _CLOCK_READ = ("computed", "\nRead as the date and time on this computer's clock.")
 
 
+class _Ask(NamedTuple):
+    """One utility question as `answer` has cleaned it, for the per-kind answerers."""
+
+    question: str
+    text: str
+    now: datetime
+    salt: str
+    rates: dict | None
+    rates_date: date | None
+
+
+def _answer_sum(ask: _Ask) -> list[tuple]:
+    expr = _sum_of(ask.question, ask.text)
+    value = arithmetic.spoken(arithmetic.evaluate(expr))
+    read = " ".join(expr.replace("*", " × ").replace("/", " ÷ ").replace("^", " to the power of ").split())
+    said = [("computed", f"{expr.strip()} is {value}.")]
+    #: A sum typed in symbols is its own reading; one said in words is shown as read.
+    return said if arithmetic.sum_in(ask.question) or arithmetic.sum_in(ask.text) else [*said, ("computed", f"\nRead as {read}.")]
+
+
+def _answer_root(ask: _Ask) -> list[tuple] | None:
+    which, raw = _ROOT.match(ask.text).groups()
+    number = float(raw)
+    if which.lower() == "square" and number < 0:
+        return None
+    value = abs(number) ** (1 / 2 if which.lower() == "square" else 1 / 3) * (-1 if number < 0 else 1)
+    return [("computed", f"The {which.lower()} root of {raw} is {_said(value)}."), ("computed", f"\nRead as the {which.lower()} root of {raw}.")]
+
+
+def _answer_age(ask: _Ask) -> list[tuple] | None:
+    now = ask.now
+    year = int(_BORN.match(ask.text).group("year"))
+    if not 1900 <= year <= now.year:
+        return None
+    age = now.year - year
+    return [("computed", f"{age} this year, or {age - 1} until their birthday."), ("computed", f"\nRead as the years from {year} to {now.year}.")]
+
+
+def _answer_percent(ask: _Ask) -> list[tuple]:
+    share, whole = _PERCENT.match(ask.text).groups()
+    worked = arithmetic.evaluate(f"{share} / 100 * {whole.replace(',', '')}")
+    return [("computed", f"{share}% of {whole} is {arithmetic.spoken(worked)}."),
+            ("computed", f"\nRead as {share} hundredths of {whole}.")]
+
+
+def _answer_chance(ask: _Ask) -> list[tuple] | None:
+    text, salt = ask.text, ask.salt
+    match = _PICK.match(text)
+    if match:
+        low, high = sorted((int(match.group(1)), int(match.group(2))))
+        return [("computed", f"{_salted(salt, text, low, high)}."), ("computed", f"\nRead as a whole number from {low} to {high}, picked at random.")]
+    if _COIN.match(text):
+        return [("computed", f"{'Heads' if _salted(salt, text, 0, 1) else 'Tails'}."), ("computed", "\nRead as one coin toss, picked at random.")]
+    match = _DIE.match(text)
+    count = int(match.group(1) or 1) if match.group(2) else 1
+    sides = int(match.group(2) or 6)
+    if not (1 <= count <= 10 and 2 <= sides <= 100):
+        return None
+    rolls = [_salted(f"{salt}:{i}", text, 1, sides) for i in range(count)]
+    said = f"You rolled {rolls[0]}." if count == 1 else f"You rolled {', '.join(map(str, rolls))}: {sum(rolls)} in all."
+    dice = "one roll" if count == 1 else f"{count} rolls"
+    return [("computed", said), ("computed", f"\nRead as {dice} of a {sides}-sided die, picked at random.")]
+
+
+#: Each utility kind to what answers it; a kind not listed is the weather.
+_ANSWERERS = {
+    "sum": _answer_sum,
+    "list": lambda ask: _list_answer(*_list_of(ask.text)),
+    "root": _answer_root,
+    "month_days": lambda ask: _month_days(_MONTH_DAYS.match(ask.text), ask.now),
+    "age": _answer_age,
+    "clock_swap": lambda ask: _swap_answer(*_clock_swap(ask.text), ask.now),
+    "percent": _answer_percent,
+    "clock": lambda ask: _clock(ask.text, ask.now),
+    "units": lambda ask: _convert(ask.text),
+    "currency": lambda ask: _currency(ask.text, ask.rates or RATES, ask.rates_date or RATES_DATE),
+    "dates": lambda ask: _dates(ask.text, ask.now),
+    "chance": _answer_chance,
+    "translate": lambda ask: [("phrase", "utility_translate")],
+    "web": lambda ask: [("phrase", "utility_web_on" if web_on() else "utility_web_off")],
+}
+
+
 def answer(question: str, now: datetime | None = None, salt: str = "", rates: dict | None = None, rates_date: date | None = None) -> list[tuple] | None:
     """The parts of a utility answer to `question`, or None."""
     question = _heard(question)
     kind = _kind_of(question)
     if kind is None or kind == "until_note":
         return None
-    now = now or datetime.now()
-    text = _clean(question)
-    if kind == "sum":
-        expr = _sum_of(question, text)
-        value = arithmetic.spoken(arithmetic.evaluate(expr))
-        read = " ".join(expr.replace("*", " × ").replace("/", " ÷ ").replace("^", " to the power of ").split())
-        said = [("computed", f"{expr.strip()} is {value}.")]
-        #: A sum typed in symbols is its own reading; one said in words is shown as read.
-        return said if arithmetic.sum_in(question) or arithmetic.sum_in(text) else [*said, ("computed", f"\nRead as {read}.")]
-    if kind == "list":
-        return _list_answer(*_list_of(text))
-    if kind == "root":
-        which, raw = _ROOT.match(text).groups()
-        number = float(raw)
-        if which.lower() == "square" and number < 0:
-            return None
-        value = abs(number) ** (1 / 2 if which.lower() == "square" else 1 / 3) * (-1 if number < 0 else 1)
-        return [("computed", f"The {which.lower()} root of {raw} is {_said(value)}."), ("computed", f"\nRead as the {which.lower()} root of {raw}.")]
-    if kind == "month_days":
-        return _month_days(_MONTH_DAYS.match(text), now)
-    if kind == "age":
-        year = int(_BORN.match(text).group("year"))
-        if not 1900 <= year <= now.year:
-            return None
-        age = now.year - year
-        return [("computed", f"{age} this year, or {age - 1} until their birthday."), ("computed", f"\nRead as the years from {year} to {now.year}.")]
-    if kind == "clock_swap":
-        return _swap_answer(*_clock_swap(text), now)
-    if kind == "percent":
-        share, whole = _PERCENT.match(text).groups()
-        worked = arithmetic.evaluate(f"{share} / 100 * {whole.replace(',', '')}")
-        return [("computed", f"{share}% of {whole} is {arithmetic.spoken(worked)}."),
-                ("computed", f"\nRead as {share} hundredths of {whole}.")]
-    if kind == "clock":
-        return _clock(text, now)
-    if kind == "units":
-        return _convert(text)
-    if kind == "currency":
-        return _currency(text, rates or RATES, rates_date or RATES_DATE)
-    if kind == "dates":
-        return _dates(text, now)
-    if kind == "chance":
-        match = _PICK.match(text)
-        if match:
-            low, high = sorted((int(match.group(1)), int(match.group(2))))
-            return [("computed", f"{_salted(salt, text, low, high)}."), ("computed", f"\nRead as a whole number from {low} to {high}, picked at random.")]
-        if _COIN.match(text):
-            return [("computed", f"{'Heads' if _salted(salt, text, 0, 1) else 'Tails'}."), ("computed", "\nRead as one coin toss, picked at random.")]
-        match = _DIE.match(text)
-        count = int(match.group(1) or 1) if match.group(2) else 1
-        sides = int(match.group(2) or 6)
-        if not (1 <= count <= 10 and 2 <= sides <= 100):
-            return None
-        rolls = [_salted(f"{salt}:{i}", text, 1, sides) for i in range(count)]
-        said = f"You rolled {rolls[0]}." if count == 1 else f"You rolled {', '.join(map(str, rolls))}: {sum(rolls)} in all."
-        dice = "one roll" if count == 1 else f"{count} rolls"
-        return [("computed", said), ("computed", f"\nRead as {dice} of a {sides}-sided die, picked at random.")]
-    if kind == "translate":
-        return [("phrase", "utility_translate")]
-    if kind == "web":
-        return [("phrase", "utility_web_on" if web_on() else "utility_web_off")]
-    return [("phrase", "utility_weather")]
+    ask = _Ask(question, _clean(question), now or datetime.now(), salt, rates, rates_date)
+    answerer = _ANSWERERS.get(kind)
+    return answerer(ask) if answerer else [("phrase", "utility_weather")]
 
 
 def _list_answer(what: str, values: list[float]) -> list[tuple]:
@@ -818,9 +851,9 @@ def _swap_answer(found: re.Match, a: str, b: str, now: datetime) -> list[tuple] 
 
 #: Words a minute for "reading time": the rate the editor has always used.
 READING_WPM = 220
-_ATX = re.compile(r"^(#{1,6})[ \t]+(.+?)[ \t#]*$")
-_SETEXT = re.compile(r"^\s*(=+|-{2,})\s*$")
-_NOT_PARAGRAPH = re.compile(r"^\s*(#{1,6}\s|[-*+]\s|\d+[.)]\s|>|\|)")
+_ATX = lazy_compile(r"^(#{1,6})[ \t]+(.+?)[ \t#]*$")
+_SETEXT = lazy_compile(r"^\s*(=+|-{2,})\s*$")
+_NOT_PARAGRAPH = lazy_compile(r"^\s*(#{1,6}\s|[-*+]\s|\d+[.)]\s|>|\|)")
 
 
 def counts(text: str) -> dict:
@@ -828,7 +861,7 @@ def counts(text: str) -> dict:
     (a word is a run of non-space, a character a code point, a line a
     newline), and the reading time in minutes."""
     text = str(text or "")
-    words = len(text.split())
+    words = cjk.word_count(text)
     return {
         "words": words,
         "chars": len(text),

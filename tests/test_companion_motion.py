@@ -29,14 +29,14 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from tests._app_js import app_js_text, frontend_text
+from tests._app_js import app_js_text, frontend_text, with_pieces
 
 ROOT = Path(__file__).resolve().parents[1]
 #: avatars.js and its lazy half, companion-menu.js (the menu and the enlarged
 #: view), read as one.
-AV = "\n".join((ROOT / "frontend" / "js" / name).read_text(encoding="utf-8") for name in ("avatars.js", "companion-menu.js"))
+AV = "\n".join((ROOT / "frontend" / "js" / name).read_text(encoding="utf-8") for name in ("avatars.js", "companion-menu.js", "companion-settings.js", "companion-throw.js"))
 APP = app_js_text()
-SETTINGS = (ROOT / "frontend" / "js" / "settings.js").read_text(encoding="utf-8")
+SETTINGS = with_pieces("settings.js")  # the body listeners are in settings-controls.js since INBOX 1501
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 
 
@@ -73,8 +73,10 @@ def test_no_move_is_a_fade_to_somewhere_else() -> None:
     assert "distance > 700" not in move
     # The two fades left: Reduce motion's, in place of the travel, and
     # being carried asleep (a sleeper is not woken to walk). Each is a
-    # crossfade now (INBOX 443), never a fade to nothing and back.
-    assert move.count("nameMarkBuddyCrossfade(buddy, dx, dy,") == 2 and "if (nameMarkBuddyNoTravel()) {" in move
+    # crossfade now (INBOX 443), never a fade to nothing and back. The
+    # first also takes a far move a new view asked for (INBOX 1463, the
+    # owner: no more coming "across the screen ... on a new page").
+    assert move.count("nameMarkBuddyCrossfade(buddy, dx, dy,") == 2 and "if (nameMarkBuddyNoTravel() || (nmb.quiet && distance > size * NMB_FAR_SIZES)) {" in move
     assert "if (nameMarkBuddyAsleep(buddy)) {" in move
 
 
@@ -379,7 +381,10 @@ def test_the_size_handle_shows_only_when_asked_for() -> None:
     # at 10Hz, 119 and 60 left free (atlasmoodfx.js, INJECT=1).
     tempo = _fn("nameMarkBuddyTempo")
     assert 'a.effect.target.closest("svg.atl-layer")' in tempo
-    assert "if (beat || !nmbTempo.slow.has(anim)) anim.currentTime = t;" in tempo
+    # (Each beat asks `nameMarkBuddyDue`, which keeps that rule and gives a prop's loop
+    # its own gap: audit 1101, `test_idle_restyle_1101.py`.)
+    assert "if (nameMarkBuddyDue(anim, beat)) anim.currentTime = t;" in tempo
+    assert "return beat || !nmbTempo.slow.has(anim);" in _fn("nameMarkBuddyDue")
 
 
 def test_the_benches_carry_no_inline_style() -> None:
@@ -465,7 +470,7 @@ def test_every_way_to_a_note_counts_as_opening_it() -> None:
     # graph and chat all go to a note through flashEntry (capture-ask.js);
     # the companion reads along from there too (companionreact.js: the
     # palette's jump to a long note reads along).
-    ask = (ROOT / "frontend" / "js" / "capture-ask.js").read_text(encoding="utf-8")
+    ask = with_pieces("capture-ask.js")
     flash = ask[ask.index("function flashEntry(") :]
     flash = flash[: flash.index("\n}\n")]
     # Unguarded since Brief 86 dropped the redundant typeof guards on eager-file functions (avatars.js is eager).
@@ -510,7 +515,7 @@ def test_the_companion_shows_and_hides_from_anywhere() -> None:
     wiring = (ROOT / "frontend" / "js" / "settings-wiring.js").read_text(encoding="utf-8")
     assert 'toggleCompanion: { keys: "Ctrl+Shift+Y"' in wiring
     assert "nameMarkBuddyToggle()" in wiring
-    panes = (ROOT / "frontend" / "js" / "settings-panes.js").read_text(encoding="utf-8")
+    panes = (ROOT / "frontend" / "js" / "settings-panes.js").read_text(encoding="utf-8") + (ROOT / "frontend" / "js" / "app-features.js").read_text(encoding="utf-8")
     # The row names which it will do (tests/test_companion_toggle.py).
     assert "Show companion\", chord: \"toggleCompanion\", act: () => nameMarkBuddyToggle()" in panes
     toggle = _fn("nameMarkBuddyToggle")
@@ -521,7 +526,8 @@ def test_the_companion_shows_and_hides_from_anywhere() -> None:
 def test_it_gets_out_of_a_popups_way() -> None:
     # INBOX 430: "the notifications panel was blocked by it". A popup is an
     # obstacle as a whole box; over one it fades at once and steps aside.
-    assert '"#notif-panel:not(.hidden)' in AV
+    # Found by id since INBOX 1465 (`NMB_POPUP_IDS`), hidden ones skipped.
+    assert re.search(r'^const NMB_POPUP_IDS = \["notif-panel", ', AV, re.M)
     assert "const boxes = nameMarkBuddyPopups();" in _fn("nameMarkBuddyObstacles")
     dodge = _fn("nameMarkBuddyDodge")
     assert 'buddy.classList.toggle("nmb-dodge", over)' in dodge
@@ -533,8 +539,11 @@ def test_it_keeps_out_of_the_tours_ring() -> None:
     # INBOX 430: "Atlas spills out of its ring in the tour". The tour's ring
     # and card are popups it gets out of the way of, looked at again once a
     # step has settled, measured by the drawn figure's box.
-    assert "#tour-spot:not(.hidden), #tour-card:not(.hidden)" in AV
-    assert "nmbDodgeLate = setTimeout(nameMarkBuddyDodge, 700);" in AV
+    assert '"tour-spot", "tour-card"' in re.search(r"^const NMB_POPUP_IDS = \[(.*)\];$", AV, re.M).group(1)
+    # (The late look is `look`: `nameMarkBuddyDodge`, or the cheaper typing look for a plain
+    # character in a field, audit 1101.)
+    assert "nmbDodgeLate = setTimeout(look, 700);" in AV
+    assert "const look = nameMarkBuddyTypingKey(e) ? nameMarkBuddyDodgeTyping : nameMarkBuddyDodge;" in AV
     assert 'buddy.querySelector(".nm-figure")' in _fn("nameMarkBuddyDodge")
 
 
@@ -693,7 +702,9 @@ def test_every_change_of_place_is_travelled_by_its_body() -> None:
     # frame, speed changing at most 5.5px a frame, every move ending on its
     # place.
     go = _fn("nameMarkBuddyGo") + _fn("nameMarkBuddyRoute")
-    for way in ("if (nameMarkBuddyNoTravel()) {", "nameMarkBuddyPoof(buddy, dx, dy, seenFrom)",
+    # Reduce motion's crossfade also takes a far move a new view asked for
+    # (INBOX 1463: never "across the screen ... on a new page").
+    for way in ("if (nameMarkBuddyNoTravel() || (nmb.quiet && distance > size * NMB_FAR_SIZES)) {", "nameMarkBuddyPoof(buddy, dx, dy, seenFrom)",
                 "if (route === \"float\") {", "if (d < size * NMB_HOP_SIZES && !poseChanged)",
                 'nameMarkBuddyBlend(buddy, () => buddy.classList.add("nmb-walking"), NMB_BLEND_IN_MS);'):
         assert way in go, way
@@ -1056,8 +1067,8 @@ def test_performance_mode_alone_no_longer_holds_the_companion_still() -> None:
     # Performance mode on it walks, materialises or climbs in; with Motion
     # set to Reduce or the system asking, it fades; never a pop.
     motion = _fn("nameMarkBuddyMotion")
-    assert 'if (app === "reduced") return { mode: "fades", reason: "app" };' in motion
-    assert '"(prefers-reduced-motion: reduce)"' in motion and '"perf-ignored"' in motion
+    assert 'if (why === "off") return { mode: "fades", reason: "app" };' in motion
+    assert "MOTION.cause" in motion and "matchMedia" not in motion and '"perf-ignored"' in motion
     assert "return nameMarkBuddyMotion().mode !== \"full\";" in _fn("nameMarkBuddyNoTravel")
     assert 'root.dataset.buddyMotion = "full"' in _fn("nameMarkBuddyMotionApply")
     assert ':root:not([data-avatar-motion="off"]):is(:not([data-motion="reduced"]), [data-buddy-motion="full"]) #nm-buddy' in CSS08
@@ -1104,7 +1115,7 @@ def test_the_lab_keeps_what_you_pick_and_no_cap_is_worn_upright() -> None:
 
 
 def test_faces_in_round_holders_stay_inside_their_circle() -> None:
-    # The owner: "in Settings > Personas, the Atlas avatar spills outside its
+    # The owner: "in Settings, Personas, the Atlas avatar spills outside its
     # black circle". Measured (personaclip.js): every persona and profile
     # face in Settings clipped to circle(50%).
     css01 = (ROOT / "frontend" / "css" / "01-forms-settings.css").read_text(encoding="utf-8")
@@ -1133,7 +1144,7 @@ def test_companions_can_be_saved_applied_renamed_and_deleted() -> None:
     for key in ('"avatar-buddy"', '"atlas-look"', '"avatar-buddy-custom"', '"avatar-buddy-size"', '"avatar-buddy-acts-off"', '"avatar-buddy-motion"'):
         assert key in AV[AV.index("const NMB_PRESET_KEYS = [") :][:400], key
     assert "p.name !== nmbPresetRenaming" in _fn("nameMarkBuddySavePreset")
-    assert "mountBuddyPresets()" in (ROOT / "frontend" / "js" / "settings.js").read_text(encoding="utf-8")
+    assert "afterCharacters(mountBuddyPresets)" in (ROOT / "frontend" / "js" / "settings.js").read_text(encoding="utf-8")
 
 
 @pytest.mark.skipif(not shutil.which("node"), reason="needs node")
@@ -1795,9 +1806,11 @@ def test_the_companion_steps_off_a_dock_more_menu():
     way". A dock's "more" menu is an open `<details>`, which the popup list
     missed (measured: the figure now ends clear of the open menu's box)."""
     js = (Path(__file__).resolve().parent.parent / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
-    popups = re.search(r"const NMB_POPUPS = \"(.*)\";", js).group(1)
-    assert 'details[open][class*=\\"menu\\"] > :not(summary)' in popups
-    assert '[role=\\"menu\\"]:not(.hidden)' in popups
+    # Found by tag and role since INBOX 1465 (one selector over the whole document cost 15 to 50ms a look).
+    popups = js[js.index("function nameMarkBuddyPopupEls("):].split("\n}\n", 1)[0]
+    assert 'getElementsByTagName("details")' in popups and "d.open && /menu/.test(d.className)" in popups and 'c.tagName !== "SUMMARY"' in popups
+    assert '"action-menu"' in re.search(r"^const NMB_POPUP_CLASSES = \[(.*)\];$", js, re.M).group(1)
+    assert 'el.classList.contains("hidden")' in js[js.index("function nameMarkBuddyPopups("):].split("\n}\n", 1)[0]
 
 
 # The companion's words check counts only drawn text (INBOX 812).

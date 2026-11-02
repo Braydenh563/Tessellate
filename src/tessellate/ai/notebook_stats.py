@@ -39,11 +39,12 @@ from collections import Counter
 from dataclasses import dataclass, field
 from datetime import date, datetime, time, timedelta
 
-from sqlalchemy import and_, case, exists, func, or_, select
+from sqlalchemy import and_, case, func, select
 from sqlalchemy.orm import Session, aliased
 
-from tessellate.ai import spelling
+from tessellate.ai import composer_frame, plain_words, spelling
 from tessellate.core.database import Category, Document, Entry, EntryLink, EntryRevision, Reminder, utcnow
+from tessellate.entry import manager
 
 #: How many rows a "top N" answer lists. Ten is a glance; fifty is a report
 #: nobody reads in a chat bubble, and the follow-up question ("show me all of
@@ -224,6 +225,7 @@ def looks_like_a_question_about_the_notebook(message: str) -> bool:
         #: matcher rather than by reading the code.
         or re.search(r"\bwords?\b|word ?count|writ(?:ten|ing)|\bwr(?:ite|ote)\b", text)
         or re.search(r"stale|forgotten|untouched|abandoned", text)
+        or re.search(r"^what (?:are|were) (?:my |the )?(?:main |biggest |top |common |recurring )?(?:themes|topics|subjects|areas)\b", text)
         or re.search(r"\bstat(?:istic)?s\b", text)
         or re.search(r"\b(?:pinned|archived|checklists?|reminders?|unticked|unchecked|tasks?)\b", text)
     )
@@ -324,13 +326,7 @@ _SUBJECT_AFTER = re.compile(r"\bnotes?\b.*\b(?:about|mention(?:s|ing)?|tagged|on
 
 #: Words that say nothing about what a note is about, left out of the most
 #: written-about words: function words and the ones every note shares.
-_PLAIN = frozenset(
-    """the a an and or but of to in on at for with from by is are was were be been it its
-    this that these those i me my we our you your he she they them his her their not no
-    do did does done have has had will would can could should so if then than as up out
-    just also very more most some any all one two three get got go went make made need
-    about into over after before when what which who how there here note notes today""".split()
-)
+_PLAIN = plain_words.PLAIN
 
 
 def _no_repeats(notes: int) -> str:
@@ -655,9 +651,12 @@ def _recent_count(session: Session, window: tuple[datetime, datetime, str]) -> S
         )
         or 0
     )
+    #: A window that ended before today is over, so it is "You wrote", not "You
+    #: have written" (audit 1031 Z8: "You have written no notes last week").
+    over = end.date() < utcnow().date()
     return StatAnswer(
         "recent-count",
-        f"You have written {_plural(total, 'note')} {words}.",
+        f"You {'wrote' if over else 'have written'} {_plural(total, 'note')} {words}.",
         [{"label": words, "count": total}],
     )
 
@@ -683,7 +682,7 @@ def _word_count(session: Session) -> StatAnswer:
     not millions; this is a millisecond.
     """
     rows = session.scalars(_visible(select(Entry.content))).all()
-    words = sum(len(str(row or "").split()) for row in rows)
+    words = sum(composer_frame.note_words(row) for row in rows)
     if not rows:
         return StatAnswer("word-count", "There are no notes to count yet.")
     average = round(words / len(rows))
@@ -693,6 +692,42 @@ def _word_count(session: Session) -> StatAnswer:
         f"roughly {average} words a note.",
         [{"label": "words", "count": words}, {"label": "notes", "count": len(rows)}],
     )
+
+
+def _has_title(content: str) -> bool:
+    """A note has a title when its first line is a heading."""
+    first = next((ln for ln in str(content or "").splitlines() if ln.strip()), "")
+    return first.lstrip().startswith("#")
+
+
+def _untitled(session: Session) -> StatAnswer:
+    """The notes with no heading: they are named by their first words, which
+    is the one thing a person might want to fix (audit 1030 Z36)."""
+    rows = session.execute(_visible(select(Entry.id, Entry.content)).order_by(Entry.created_at.desc())).all()
+    bare = [(note_id, content) for note_id, content in rows if not _has_title(content)]
+    if not bare:
+        return StatAnswer("untitled", "Every note has a title.")
+    facts = [{"label": composer_frame.plain_snippet(content), "count": composer_frame.note_words(content), "id": note_id} for note_id, content in bare[:TOP_N]]
+    return StatAnswer("untitled", f"{_plural(len(bare), 'note')} out of {len(rows)} {'has' if len(bare) == 1 else 'have'} no title. The newest {'is' if len(facts) == 1 else 'are'} listed below.", facts)
+
+
+def _same_text(content: str) -> str:
+    return " ".join(re.sub(r"[#*_>\-\[\]]", " ", str(content or "").lower()).split())
+
+
+def _duplicates(session: Session) -> StatAnswer:
+    """Notes whose whole text is the same once case, spacing and marks are
+    set aside: said by the notes, not by a guess about near matches."""
+    rows = session.execute(_visible(select(Entry.id, Entry.content)).order_by(Entry.created_at.desc())).all()
+    groups: dict[str, list[tuple[int, str]]] = {}
+    for note_id, content in rows:
+        if key := _same_text(content):
+            groups.setdefault(key, []).append((note_id, content))
+    twins = [g for g in groups.values() if len(g) > 1]
+    if not twins:
+        return StatAnswer("duplicates", "I found no two notes with the same text.")
+    facts = [{"label": composer_frame.plain_snippet(g[0][1]), "count": len(g), "id": g[0][0]} for g in twins[:TOP_N]]
+    return StatAnswer("duplicates", f"{_plural(len(twins), 'note')} {'is' if len(twins) == 1 else 'are'} written out more than once; the copies are counted below.", facts)
 
 
 def _longest_notes(session: Session) -> StatAnswer:
@@ -713,8 +748,8 @@ def _longest_notes(session: Session) -> StatAnswer:
         return StatAnswer("longest-notes", "There are no notes long enough to rank yet.")
     facts = [
         {
-            "label": " ".join(str(content or "").split())[:60],
-            "count": len(str(content or "").split()),
+            "label": composer_frame.plain_snippet(content),
+            "count": composer_frame.note_words(content),
             "id": note_id,
         }
         for note_id, content in rows
@@ -754,7 +789,7 @@ def _stale_notes(session: Session) -> StatAnswer:
         )
     facts = [
         {
-            "label": " ".join(str(content or "").split())[:60],
+            "label": composer_frame.plain_snippet(content),
             "id": note_id,
             "when": touched.isoformat() if touched else "",
         }
@@ -813,6 +848,11 @@ _COVERAGE = re.compile(
     rf"|^what (?:have i|did i|do i) (?:been )?(?:writing|written|write|wrote|noting|noted|saving|saved|note|save)(?: (?:about|on))?{_SOFAR}$"
     rf"|^what (?:topics|subjects|themes|things|areas) (?:do i|have i|did i) (?:write|writing|written|wrote|note|noted|cover|covered|keep notes)(?: (?:about|on))?{_SOFAR}$"
     rf"|^(?:give me |show me |can i get |i want )?(?:an? )?(?:overview|summary|rundown|run down|breakdown|tour) of (?:my |the )?(?:notes|notebook|everything){_SOFAR}$"
+    #: The notebook itself is the subject, not a word to search for (audit
+    #: 1030 Z17: "summarise my notebook" said no note mentions "notebook").
+    rf"|^(?:summari[sz]e|describe|sum up) (?:my |the )?(?:whole |entire )?(?:notes|notebook|everything){_SOFAR}$"
+    rf"|^what(?:'s| is) (?:my |the )?(?:notes|notebook) about{_SOFAR}$"
+    rf"|^what (?:are|were) (?:my |the )?(?:main |biggest |top |common |recurring )?(?:themes|topics|subjects|areas){_SOFAR}$"
 )
 
 
@@ -931,7 +971,7 @@ USAGE_ROWS = 200
 
 
 def _words(text: str | None) -> int:
-    return len(str(text or "").split())
+    return composer_frame.note_words(text)
 
 
 def _month_keys(now: datetime, months: int = GROWTH_MONTHS) -> list[str]:
@@ -949,7 +989,7 @@ GROWTH_RANGES = ("3", "12", "all")
 GROWTH_ALL_MAX = 240
 
 
-def _growth_keys(now: datetime, growth: str, made: list[str]) -> list[str]:
+def _growth_keys(now: datetime, growth: str, made: Counter) -> list[str]:
     if growth != "all":
         return _month_keys(now, int(growth))
     first = min(made, default=None)
@@ -960,29 +1000,77 @@ def _growth_keys(now: datetime, growth: str, made: list[str]) -> list[str]:
     return _month_keys(now, max(3, min(GROWTH_ALL_MAX, span)))
 
 
-def _notebook_block(session: Session, now: datetime, growth_range: str = "12") -> dict:
-    """Notes, words, tags and growth from one pass over the live notes; the
-    other counts are one aggregate query each."""
-    zone = now.tzinfo
-    rows = session.execute(_visible(select(Entry.content, Entry.tags, Entry.created_at))).all()
+def _left_out(session: Session) -> dict:
+    """Notes the page counts but does not read: the words, tags, links and
+    growth below skip a private note (a figure that moves when a note is made
+    private leaks it) and an archived one (audit 1029 X13: 7 of 8 notes read,
+    said nowhere). The page says so in one line."""
+    counted = manager.note_filter(select(func.count()).select_from(Entry))
+    private = session.scalar(counted.where(Entry.is_private.is_(True))) or 0
+    archived = session.scalar(counted.where(Entry.is_private.is_(False), Entry.archived_at.is_not(None))) or 0
+    return {"private": private, "archived": archived}
+
+
+#: **One pass over the live notes, kept until a note moves** (perf3 1031). The
+#: words, the distinct tags and the month each note was made in cost 100 to
+#: 150 ms per 2,000 notes (every note read and counted), and the Statistics
+#: page asked again on every open. Held per (database, space, zone) against a
+#: fingerprint of the live notes read by one aggregate query: how many, the
+#: sum of their ids, the newest `updated_at` (which any write to a note moves)
+#: and the total length of the text and tags. A note made, edited, binned,
+#: archived or made private changes at least one of them.
+_PASS_CACHE: dict[tuple, tuple[tuple, int, int, Counter]] = {}
+_PASS_CACHE_MAX = 8
+
+
+def _notes_fingerprint(session: Session) -> tuple:
+    return tuple(
+        session.execute(
+            _visible(
+                select(
+                    func.count(Entry.id),
+                    func.coalesce(func.sum(Entry.id), 0),
+                    func.max(Entry.updated_at),
+                    func.coalesce(func.sum(func.length(Entry.content)), 0),
+                    func.coalesce(func.sum(func.length(Entry.tags)), 0),
+                )
+            )
+        ).one()
+    )
+
+
+def _note_pass(session: Session, zone) -> tuple[int, int, Counter]:  # noqa: ANN001
+    """(words, distinct tags, notes made per "YYYY-MM") over the live notes."""
+    key = (str(session.get_bind().url), session.info.get("workspace_id"), str(zone))
+    seen = _notes_fingerprint(session)
+    held = _PASS_CACHE.get(key)
+    if held and held[0] == seen:
+        return held[1], held[2], held[3]
     tags: set[str] = set()
     words = 0
-    made: list[str] = []
-    for content, raw, created in rows:
+    made: Counter = Counter()
+    for content, raw, created in session.execute(_visible(select(Entry.content, Entry.tags, Entry.created_at))):
         words += _words(content)
         tags.update(_tags_of(raw))
         if created is not None:
-            made.append((created.astimezone(zone) if created.tzinfo else created).strftime("%Y-%m"))
+            made[(created.astimezone(zone) if created.tzinfo else created).strftime("%Y-%m")] += 1
+    if len(_PASS_CACHE) >= _PASS_CACHE_MAX and key not in _PASS_CACHE:
+        _PASS_CACHE.pop(next(iter(_PASS_CACHE)))
+    _PASS_CACHE[key] = (seen, words, len(tags), made)
+    return words, len(tags), made
+
+
+def _notebook_block(session: Session, now: datetime, growth_range: str = "12") -> dict:
+    """Notes, words, tags and growth from one pass over the live notes; the
+    other counts are one aggregate query each."""
+    words, tag_count, made = _note_pass(session, now.tzinfo)
     keys = _growth_keys(now, growth_range, made)
-    growth = dict.fromkeys(keys, 0)
-    for key in made:
-        if key in growth:
-            growth[key] += 1
+    growth = {key: made.get(key, 0) for key in keys}
     #: A link counts only between two counted notes: a link to a binned or
     #: private one would say that hidden note is joined to something.
     near, far = aliased(Entry), aliased(Entry)
     visible_link = (
-        select(EntryLink.id)
+        select(EntryLink.id, near.id.label("near"), far.id.label("far"))
         .join(near, near.id == EntryLink.source_entry_id)
         .join(far, far.id == EntryLink.target_entry_id)
     )
@@ -990,17 +1078,20 @@ def _notebook_block(session: Session, now: datetime, growth_range: str = "12") -
         visible_link = visible_link.where(
             end.deleted_at.is_(None), end.is_private.is_(False), end.is_board.is_(False)
         )
-    linked = or_(
-        exists().where(EntryLink.source_entry_id == Entry.id, EntryLink.id.in_(visible_link)),
-        exists().where(EntryLink.target_entry_id == Entry.id, EntryLink.id.in_(visible_link)),
-    )
+    #: A note is linked when it is an end of a counted link. The ends are read
+    #: once and the notes are tested against that set: the per-note
+    #: `EXISTS (... id IN (subquery))` this replaced re-ran the join for every
+    #: note (1,889 ms of the 2,000-note page's 2.2 s; 6 to 9 s at 5,000).
+    ends = visible_link.subquery()
+    linked = Entry.id.in_(select(ends.c.near).union(select(ends.c.far)))
     return {
-        "notes": len(rows),
+        "notes": manager.count_notes(session),
+        "left_out": _left_out(session),
         "words": words,
-        "tags": len(tags),
+        "tags": tag_count,
         "categories": session.scalar(select(func.count(Category.id))) or 0,
         "documents": session.scalar(select(func.count(Document.id))) or 0,
-        "links": session.scalar(select(func.count()).select_from(visible_link.subquery())) or 0,
+        "links": session.scalar(select(func.count()).select_from(ends)) or 0,
         "orphans": session.scalar(_visible(select(func.count(Entry.id)).where(~linked))) or 0,
         "growth": [{"label": key, "value": growth[key]} for key in keys],
         "growth_range": growth_range,
@@ -1148,6 +1239,8 @@ _FIRST_RULES = (
     (lambda t: _asks(t, _TAG_WORDS, _MOST), _top_tags),
     (lambda t: _asks(t, _CATEGORY_WORDS, _MOST), _top_categories),
     (lambda t: _asks(t, r"untagged|no tags|without (?:a )?tags?|missing tags?"), _untagged),
+    (lambda t: _asks(t, r"untitled|title-?less|(?:no|without|missing|lack\w*) (?:a )?titles?"), _untitled),
+    (lambda t: _asks(t, r"duplicat|same text|written twice|copies of"), _duplicates),
     (
         lambda t: _asks(t, _COUNT, r"\bnotes?\b")
         and re.search(r"\b(?:per|by|in each|for each|across)\s+(?:categor(?:y|ies)|folders?|spaces?)", t),
@@ -1158,6 +1251,17 @@ _COUNT_RULES = (
     (lambda t: _asks(t, _COUNT, _TAG_WORDS), _tag_count),
     (lambda t: _asks(t, _COUNT, _CATEGORY_WORDS), _category_count),
 )
+#: "When is the history essay due and how many words" is about one essay,
+#: not the notebook (audit 1028 E15): the notebook's word count answered it.
+#: A "the" or "my" before anything but the notebook or a span of time names a
+#: thing, and the question goes on to the notes.
+_A_THING = re.compile(r"\b(?:the|my|this|that) (?!notes?\b|notebook\b|words?\b|whole\b|entire\b|(?:past |last |previous )?(?:day|week|month|year)s?\b)[a-z]")
+
+
+def _names_a_thing(text: str) -> bool:
+    return bool(_A_THING.search(text))
+
+
 #: Added with the spelling pass, because "improve" was the other half of the
 #: same request: each is a question about the collection, not about any note
 #: in it, which retrieval answers badly.
@@ -1167,7 +1271,7 @@ _LATER_RULES = (
     (lambda t: _asks(t, r"orphan|unlinked|not linked|no links"), _orphans),
     (lambda t: _asks(t, r"when do i|busiest|most active|what time|which day"), _busiest),
     (lambda t: _asks(t, r"\b(?:write|wrote|written|writing)\b", r"\bmost\b", r"\babout\b"), _top_subjects),
-    (lambda t: _asks(t, r"\bwords?\b|word count|wordcount", r"\bhow many|\btotal|\bwritten|\bcount"), _word_count),
+    (lambda t: _asks(t, r"\bwords?\b|word count|wordcount", r"\bhow many|\btotal|\bwritten|\bcount") and not _names_a_thing(t), _word_count),
     (lambda t: _asks(t, r"longest|biggest|largest", r"\bnotes?\b"), _longest_notes),
     (lambda t: _asks(t, r"stale|forgotten|untouched|abandoned|haven.?t (?:looked|touched|opened|read)"), _stale_notes),
     (lambda t: _asks(t, _TAG_WORDS, r"together|alongside|\bpairs?\b|combination|co-?occur"), _tag_pairs),

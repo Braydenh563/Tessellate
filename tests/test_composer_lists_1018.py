@@ -44,19 +44,21 @@ def _marks(result: dict) -> list[int]:
 
 def test_days_until_a_note_s_day_is_counted_from_today_and_cited():
     result = _say("how many days until the dentist")
-    assert result["text"].startswith("The dentist is on 3 November, 23 days from today."), result["text"]
+    #: Composer5-1031 (INBOX 1483, the one date table): the distance first, then the day; was "is on 3 November, 23 days from today".
+    assert result["text"].startswith("The dentist is 23 days from today, on 3 November."), result["text"]
     assert _marks(result)[0] == 1
     assert "[your note" not in result["text"]
 
 
 def test_days_since_a_day_is_said_in_the_past():
     result = _say("how long since the boiler service", [{**NOTES[5], "content": "Boiler service on 2 October."}])
-    assert result["text"].startswith("The boiler service was on 2 October, 9 days ago."), result["text"]
+    #: Composer5-1031 (INBOX 1483): was "was on 2 October, 9 days ago."
+    assert result["text"].startswith("The boiler service was nine days ago, on 2 October."), result["text"]
 
 
 def test_tomorrow_and_today_are_said_as_words():
     one = [{"id": 1, "content": "Dentist on 12 October.", "created_at": "2026-10-01T10:00:00", "category": "Health", "tags": []}]
-    assert _say("how many days until the dentist", one)["text"].startswith("The dentist is tomorrow, 12 October."), one
+    assert _say("how many days until the dentist", one)["text"].startswith("The dentist is tomorrow."), one  # composer5-1031: yesterday and tomorrow are relative only (was "tomorrow, 12 October")
     now = [{**one[0], "content": "Dentist on 11 October."}]
     assert _say("how many days until the dentist", now)["text"].startswith("The dentist is today."), now
 
@@ -95,7 +97,9 @@ def test_a_list_by_category_or_tag_is_every_note_in_it():
     tagged = _say("list everything tagged launch")
     assert tagged["text"].startswith("You have one note tagged launch, 10 September:"), tagged["text"]
     assert _marks(tagged) == [4]
-    assert _say("show me all my home notes")["text"].startswith("You have one note in Home"), "home"
+    #: Composer5-1031 (CHAT_PLAN decision 81): "show me all my home notes" is the overview now, only "list" lists.
+    assert _say("list all my home notes")["text"].startswith("You have one note in Home"), "home"
+    assert _say("show me all my home notes")["shape"] == "digest:overview", "the overview is the digest's, not a listing"
     assert _say("list my cooking notes") is None
 
 

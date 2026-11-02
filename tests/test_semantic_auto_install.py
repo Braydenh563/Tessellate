@@ -7,6 +7,8 @@ Settings switch that is bound to the preference."""
 
 from __future__ import annotations
 
+from tests._help_text import help_chat_text
+
 import re
 from pathlib import Path
 
@@ -160,10 +162,10 @@ def test_the_switch_is_bound_to_the_preference():
 
 
 def test_the_guide_tells_the_choice():
-    from tessellate.ai import help_chat, help_topics_more
+    from tessellate.ai import help_topics_more
 
     text = (
-        Path(help_chat.__file__).read_text(encoding="utf-8")
+        help_chat_text()
         + Path(help_topics_more.__file__).read_text(encoding="utf-8")
     )
     joined = re.sub(r'"\s*\n\s*"', "", text)
@@ -175,7 +177,7 @@ def test_the_guide_tells_the_choice():
 
 def test_the_notice_is_lazy_and_reached_from_the_status_poll():
     js = ROOT / "frontend" / "js"
-    assert 'semanticNotice: ["/js/semantic-notice.js"]' in (js / "app.js").read_text(encoding="utf-8")
+    assert 'semanticNotice: ["/css/semantic-notice-lazy.css", "/js/semantic-notice.js"]' in (js / "app.js").read_text(encoding="utf-8")
     status = (js / "status.js").read_text(encoding="utf-8")
     assert "status.semantic_offer" in status
     assert "semanticOffer(Boolean(status.semantic_offer), status.semantic_engine_moved)" in status

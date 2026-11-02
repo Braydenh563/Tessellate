@@ -24,7 +24,7 @@ def test_a_missing_id_says_to_search_rather_than_guess():
 
 def test_a_disabled_tool_says_to_stop_calling_it():
     hint = agent._recovery_hint(
-        "web_search", "The 'web_search' tool is turned off in Settings → Tools it can use"
+        "web_search", "The 'web_search' tool is turned off in Settings, Tools it can use"
     )
     assert "Do not call it again" in hint
 

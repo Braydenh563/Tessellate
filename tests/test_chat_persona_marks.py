@@ -51,7 +51,7 @@ def test_the_default_assistant_wears_atlas_and_no_reply_wears_the_app_logo() -> 
     assert "paintAssistantAvatar(holder, size)" in painter
     decider = _function("assistantAvatar")
     assert "atlasDraw(size" in decider and "atlasAvatar(size" in decider
-    assert "nameMark(name, size)" in painter
+    assert "nameMark(name, size)" in _function("paintNamedHead")
     is_atlas = _function("chatHeadIsAtlas")
     assert "aiNameNow()" in is_atlas and '"atlas"' in is_atlas and "!who" in is_atlas
 

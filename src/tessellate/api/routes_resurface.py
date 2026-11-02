@@ -43,7 +43,7 @@ def _card(session: Session, entry) -> dict:  # noqa: ANN001
         # about subj", which is a title and its body run together with the
         # break that separated them removed. A person's own first line is the
         # closest thing to a title a note without one has.
-        "title": manager.extract_title(content) or _first_line(content) or "Untitled note",
+        "title": manager.plain_label(content) or "Untitled note",
         "preview": " ".join(content.split())[:200],
         "created_at": entry.created_at,
         # The three facts the score is made of, in the card, because a panel
@@ -55,15 +55,6 @@ def _card(session: Session, entry) -> dict:  # noqa: ANN001
         "access_count": row.access_count if row else None,
         "reason": _reason(row),
     }
-
-
-def _first_line(content: str) -> str:
-    """The note's own first line, clipped. Empty when it has none."""
-    for line in (content or "").splitlines():
-        stripped = line.strip()
-        if stripped:
-            return stripped[:80]
-    return ""
 
 
 def _reason(row) -> str:  # noqa: ANN001

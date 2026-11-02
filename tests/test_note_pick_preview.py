@@ -45,6 +45,7 @@ def _excerpt(content: str) -> list[str]:
     script = f"""
 {_constant("INLINE_MD", "notes-list.js")}
 {_function("stripFrontmatter", "shell-reminders.js")}
+{_function("previewBlocks", "shell-reminders.js")}
 {_function("notePreviewText", "shell-reminders.js")}
 {head}
 process.stdout.write(JSON.stringify(notePickExcerpt({json.dumps(content)})));

@@ -7,8 +7,8 @@ from pathlib import Path
 
 CSS = Path(__file__).resolve().parent.parent / "frontend" / "css" / "10-responsive.css"
 SELECTOR = (
-    "#tab-library:has(#library-view-whiteboard:not(.hidden) "
-    "#wb-canvas-view:not(.hidden)) #library-subtabs {"
+    "#tab-library:has(> #library-view-whiteboard:not(.hidden) "
+    "> #wb-canvas-view:not(.hidden)) #library-subtabs {"
 )
 
 

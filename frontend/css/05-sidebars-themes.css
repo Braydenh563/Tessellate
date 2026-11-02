@@ -567,9 +567,9 @@ select.ai-unavailable {
   margin: 0 var(--space-3) var(--space-3);
   border-radius: var(--radius-sm);
 }
-/* Swapped in for a note's own inline image once its file is gone, 
-   a closable box instead of a broken-image glyph, asked for directly. */
-.entry-inline-image-deleted {
+/* Stands where a note's inline image cannot show: its file is gone (closable),
+   or it lives on the web and this offline notebook does not load it (a link). */
+.entry-image-note {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
@@ -765,10 +765,8 @@ mark.text-highlight-grey { background: rgba(148, 163, 184, 0.25); }
     opacity: 0.55;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .shortcut-list kbd.capturing {
-    animation: none;
-  }
+:where(:root[data-motion="reduced"]) .shortcut-list kbd.capturing {
+  animation: none;
 }
 /* --- [[wiki links]] ----------------------------------------------------------- */
 .wiki-link {
@@ -1346,7 +1344,7 @@ button.rich-picker-row:is(:hover, :focus-visible) .rich-picker-tile {
   border-right: 2px solid currentColor;
   border-bottom: 2px solid currentColor;
   transform: rotate(-45deg);
-  transition: transform var(--ui-fast) var(--ease-out);
+  transition: transform var(--ui-base) var(--ease-out);
 }
 .callout-foldable[open] > .callout-head::after {
   transform: rotate(45deg);
@@ -2437,30 +2435,6 @@ body.resizing-sidebar {
   margin: 0 0.25rem;
   background: var(--border);
 }
-/* Find and replace (16b): same materials as .doc-toolbar right above it,
-   its own row rather than folded into the formatting toolbar because it
-   carries two text inputs, not just icon buttons. */
-.doc-find-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-  padding: 0.4rem 0.5rem;
-  margin-top: var(--space-2);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius);
-  background: var(--card);
-}
-.doc-find-bar input[type="text"] {
-  flex: 1 1 10rem;
-  min-width: 6rem;
-  margin: 0;
-}
-.doc-find-count {
-  font-size: var(--text-sm);
-  white-space: nowrap;
-  min-width: 4.5rem;
-}
 /* An inline explanation under a setting, shown only when that setting is
    being overridden by something else, so a control that looks like it did
    nothing can say why. */
@@ -3242,7 +3216,7 @@ button.outline-twist:focus-visible {
   overflow-wrap: anywhere;
 }
 /* ================================================================================
-   Curated palettes (Settings → Appearance → Theme)
+   Curated palettes (Settings, Appearance, Theme)
    Each palette is a point of view, not a hue rotation: a paper-and-ink one for
    writing, a cool clinical one, a warm one for evenings. Every palette ships
    BOTH a light and a dark set, so choosing one is orthogonal to the light/dark
@@ -3959,18 +3933,6 @@ button.is-on {
   outline: 2px solid var(--accent);
   outline-offset: -2px;
 }
-.graph-node.graph-keyfocus .graph-core {
-  stroke: var(--accent);
-  stroke-width: 3px;
-  paint-order: stroke;
-}
-.graph-node.graph-keyfocus .graph-halo {
-  opacity: 0.55;
-}
-.graph-node.graph-keyfocus .graph-label {
-  font-weight: 700;
-  fill: var(--ink);
-}
 /* ================================================================================
    Phones (roadmap §8: the layout had breakpoints but had never been driven at
    phone width, and at a true 390px viewport every single tab overflowed
@@ -4656,11 +4618,15 @@ html[data-chrome="native"] #top-bar #brand-logo {
 /* The status strip. Quiet by design: it is the line you glance at, never the
    line you read, so it takes the smallest type in the app and the muted ink,
    and its own controls only gain weight when there is something to say. */
+/* One row at every width: the counts give way with an ellipsis so the
+   controls keep their words and targets. Wrapping put the file type picker
+   (INBOX 1482) on a second 44px row at 700px and squeezed the editor under
+   its 260px floor (E2E editor-keys, "toolbar is one row"). */
 .doc-statusbar {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   margin-top: var(--space-2);
   padding: var(--space-1) var(--space-2);
   border: 1px solid var(--glass-border);
@@ -4671,6 +4637,15 @@ html[data-chrome="native"] #top-bar #brand-logo {
 .doc-statusbar-fact {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+.doc-statusbar > * {
+  flex: 0 0 auto;
+}
+#doc-counts {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .doc-statusbar-spacer {
   flex: 1 1 auto;
@@ -6106,6 +6081,10 @@ button.ghost.doc-template-choice[aria-checked="true"] {
      titl" with no ellipsis at all (INBOX 425 i). */
   display: block;
   text-align: start;
+  /* 22.8px high before (audit 1028 U35, WCAG 2.5.8). The line box carries the
+     height, so the ellipsis above still applies. */
+  min-height: var(--target-min);
+  line-height: calc(var(--target-min) - 0.3rem);
 }
 .doc-crumb:hover,
 .doc-crumb:focus-visible {
@@ -6234,7 +6213,7 @@ button.ghost.doc-template-choice[aria-checked="true"] {
     z-index: 2;
     margin-top: calc(-1 * var(--card-pad-y));
     padding-block: var(--card-pad-y) var(--space-2);
-    background: var(--card);
+    /* Bare at rest (INBOX 1489); the ground comes when it sticks (08-consistency.css). */
   }
   #sidebar {
     scrollbar-width: thin;

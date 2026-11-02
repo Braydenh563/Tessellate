@@ -22,7 +22,7 @@ function atlasBlink(box, slow = false) {
 //: page: every 3.4 to 7.6 seconds each one that is on screen, has its eyes
 //: open and may move blinks once, now and then twice; a drowsy or groggy companion
 //: blinks slowly and stays shut a moment. Avatar animation Off, the app's
-//: Reduce motion or the system's (unless the companion is set to Always)
+//: Reduced motion or the system's (unless the companion is set to Always)
 //: and a hidden tab hold the eyes still: no idle loop runs there.
 //: `atlasState` (the blink's timer, the rig's trace, the act's ease) is
 //: atlas.js's: the boot's `setAtlasMood` writes it before this file loads.
@@ -105,15 +105,18 @@ function atlasLowerState(buddy, box) {
   if (["sad", "sleepy", "worried"].includes(mood) || has("nmb-drowsy")) return "sad";
   return "idle";
 }
-//: One query, read every frame of the tail's loop: `matchMedia` made anew
-//: each frame was 43ms of 1.3s of Atlas's idle script in a 15s profile.
-//: Asked once, not per frame; `typeof matchMedia` for the node vm the shape tests run this file in.
-const ATLAS_REDUCE_QUERY = typeof matchMedia === "function" ? matchMedia("(prefers-reduced-motion: reduce)") : null;
+//: **Away is off** (audit AI1, 2026-10-31: the companion faded out on every
+//: tab but the one it lives on kept about 65 animations running, 540 ms of
+//: main thread per 5 s at 4x CPU): a companion that is away (`nmb-away`,
+//: opacity 0 and hidden) is not drawn, so nothing of it may move. Every loop
+//: that asks this question rests; the class change wakes the rig and the
+//: tail (`atlasRigWake`), so they resume the frame it comes back.
 function atlasMotionOK(box) {
   const root = document.documentElement;
   if (root.dataset.avatarMotion === "off") return false;
-  const reduced = root.dataset.motion === "reduced"
-    || !!(ATLAS_REDUCE_QUERY || matchMedia("(prefers-reduced-motion: reduce)")).matches;
+  if (box.closest("#nm-buddy")?.classList.contains("nmb-away")) return false;
+  //: One dataset read per frame of the tail loop; a query made anew each frame was 43ms of 1.3s of Atlas idle script.
+  const reduced = root.dataset.motion === "reduced";
   return !reduced || (root.dataset.buddyMotion === "full" && !!box.closest("#nm-buddy"));
 }
 function atlasRigAttach(box) {
@@ -143,10 +146,28 @@ function atlasRigAttach(box) {
       drawn: [0, 0],
       shown: "",
       antic: null,
+      //: What animates on the probe, kept by its events (`atlasProbeWatch`).
+      running: new Set(),
     });
+    atlasProbeWatch(rig.arms[rig.arms.length - 1]);
   }
   box.atlasRig = rig;
   atlasRigWake(box);
+}
+//: **Whether the probe animates, from its events, not a scan** (audit HR1,
+//: 2026-10-31: `getAnimations()` per arm per frame was 25 to 190 ms in a
+//: 5 s agent turn, each call settling style for a page running 65
+//: animations). The probe's gestures are CSS animations, so their names come
+//: and go with `animationstart`, `animationend` and `animationcancel`; the
+//: list is read once when the rig attaches, to seed the set.
+function atlasProbeWatch(arm) {
+  if (!arm.probe) return;
+  const mark = (add) => (e) => {
+    if (e.target === arm.probe) arm.running[add ? "add" : "delete"](e.animationName);
+  };
+  arm.probe.addEventListener("animationstart", mark(true));
+  for (const type of ["animationend", "animationcancel"]) arm.probe.addEventListener(type, mark(false));
+  for (const a of arm.probe.getAnimations()) if (a.animationName) arm.running.add(a.animationName);
 }
 //: Where the CSS has the arm: the probe's turn (its transform's and any
 //: gesture's `rotate`) and its vertical scale (a meditating arm's).
@@ -408,7 +429,7 @@ function atlasRigFrame(rig, now) {
   //: arm; once both arms and the turn have held a quarter second with none
   //: running, the rig works from what it read until the next wake.
   const look = rig.dirty || !rig.reads;
-  const reads = look ? rig.arms.map((arm) => ({ ...atlasRigRead(arm), anim: live && arm.probe.getAnimations().length > 0 })) : rig.reads;
+  const reads = look ? rig.arms.map((arm) => ({ ...atlasRigRead(arm), anim: live && arm.running.size > 0 })) : rig.reads;
   const turnMatrix = !look ? rig.turnMatrix : rig.pose && rig.heads.length ? /matrix\(([^)]+)\)/.exec(getComputedStyle(rig.pose).transform) : null;
   if (look) {
     const was = rig.reads;

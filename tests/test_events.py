@@ -844,3 +844,52 @@ def test_a_generated_or_imported_map_replays_with_its_nodes_on_it(client, sessio
 
     board_state = events.replay(session, "board", board["id"])
     assert board_state["title"] == "Imported outline", board_state
+
+
+def test_a_settled_log_is_not_visited_again_at_the_next_start(session, monkeypatch):
+    """INBOX 1426 L1: every launch re-read and re-folded every entity with an
+    old event to write the same bytes (1.3s on 30,000 events, the unlock
+    waiting behind it). Once folded, an entity is not visited; a new edit that
+    ages into the window makes it work again."""
+    from tessellate.core import events
+
+    entry = manager.create_entry(session, "version 0", tags=[])
+    session.commit()
+    for i in range(1, 30):
+        manager.update_entry(session, entry, content=f"version {i}", tags=[])
+        session.commit()
+    _age_all_events(session, 200)
+    visited: list[int] = []
+    real = events._compact_one
+    monkeypatch.setattr(events, "_compact_one", lambda *a, **k: visited.append(a[2]) or real(*a, **k))
+    events.compact(session, keep_last=5)
+    assert visited == [entry.id]
+    visited.clear()
+    events.compact(session, keep_last=5)
+    assert visited == []
+    for i in range(30, 45):
+        manager.update_entry(session, entry, content=f"version {i}", tags=[])
+        session.commit()
+    _age_all_events(session, 200)
+    events.compact(session, keep_last=5)
+    assert visited == [entry.id]
+    assert events.replay(session, "entry", entry.id)["content"] == "version 44"
+
+
+def test_compaction_commits_in_batches(session, monkeypatch):
+    from tessellate.core import events
+
+    for n in range(5):
+        entry = manager.create_entry(session, f"note {n}", tags=[])
+        session.commit()
+        for i in range(1, 12):
+            manager.update_entry(session, entry, content=f"note {n} v{i}", tags=[])
+            session.commit()
+    _age_all_events(session, 200)
+    monkeypatch.setattr(events, "COMPACT_BATCH", 2)
+    commits: list[int] = []
+    real = session.commit
+    monkeypatch.setattr(session, "commit", lambda: commits.append(1) or real())
+    summary = events.compact(session, keep_last=5)
+    assert summary["entities"] == 5
+    assert len(commits) == 3  # 2 + 2 + 1

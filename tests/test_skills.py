@@ -1083,7 +1083,7 @@ def test_the_chat_offers_to_edit_the_step_a_run_stopped_on():
     a stopped run is actually looked at, beside the Resume it belongs with."""
     app = app_js_text()
     start = app.index("const editStepAction = (index) => ({")
-    body = app[start : app.index("\n  };\n", start)]
+    body = app[start : app.index("\n  });\n", start)]
     assert "skillOnlyStep: index" in body
     assert "skillStepText: text.trim()" in body
     #: The box opens on the instruction that actually ran, which for a

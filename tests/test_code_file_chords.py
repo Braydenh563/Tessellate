@@ -80,7 +80,8 @@ def test_a_code_files_exports_are_its_source_not_an_empty_page():
     form is empty), named `apppy.html`; the bundle and Word rows were offered
     for it too."""
     source = DOCS_JS.read_text(encoding="utf-8")
-    html = source[source.index("async function exportDocumentHtml()") :].split("\n}\n")[0]
+    export = (DOCS_JS.parent / "documents-export.js").read_text(encoding="utf-8")
+    html = export[export.index("async function docExportHtmlRun()") :].split("\n}\n")[0]
     head = html.split("withDocPreviewShown")[0]
     assert "!docFileType().previewable" in head
     assert "<pre><code>" in head
@@ -115,4 +116,7 @@ def test_an_export_name_keeps_a_code_files_extension():
 def test_the_word_goal_is_not_offered_in_a_code_file():
     source = DOCS_JS.read_text(encoding="utf-8")
     body = source[source.index("function renderDocStats()") :].split("\n}\n")[0]
-    assert 'button.classList.toggle("hidden", docIsCodeFile())' in body
+    # CE3 (audit 1031 row 23) keeps the answer in `code` so a code file also
+    # skips the word count; the goal button still hides on it.
+    assert "const code = docIsCodeFile();" in body
+    assert 'button.classList.toggle("hidden", code)' in body

@@ -13,7 +13,6 @@ model echoes ("similarity 0.54", "note id 3") comes off the answer.
 from __future__ import annotations
 
 import re
-from pathlib import Path
 
 import pytest
 
@@ -38,7 +37,9 @@ def test_a_model_s_name_picks_its_tier(name, tier):
 
 
 def test_the_table_is_the_only_place_a_size_decision_lives():
-    source = Path(agent.__file__).read_text(encoding="utf-8")
+    from tests._help_text import agent_text
+
+    source = agent_text()
     head, tail = source.split("def size_tier", 1)
     body, rest = tail.split("\n\n\n", 1)
     assert "parameter_count(" in body
@@ -264,7 +265,9 @@ def test_a_copy_of_the_note_just_changed_is_not_made(monkeypatch, app_state):
         {"name": "edit_note", "arguments": {"note_id": 3, "content": f"{_SNOWDON}\nbring a rain jacket"}},
         {"name": "create_note", "arguments": {"content": f"{_SNOWDON}\nbring a rain jacket"}},
     )
-    assert ran == ["edit_note"]
+    #: The edit parks for a Confirm card now (audit 1029 H2), so it has not run,
+    #: and the copy is still not made behind it: that is the guard's point.
+    assert ran == []
 
 
 def test_a_note_holding_the_prompt_s_fence_is_not_made(monkeypatch, app_state):

@@ -18,6 +18,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._app_js import with_pieces
 
 ROOT = Path(__file__).resolve().parent.parent
 JS = ROOT / "frontend" / "js"
@@ -31,7 +32,7 @@ def _between(text: str, start: str, end: str) -> str:
 
 @pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 def test_a_following_pane_re_pins_on_a_late_image_and_a_fold_toggle():
-    source = (JS / "chat-agent.js").read_text(encoding="utf-8")
+    source = with_pieces("chat-agent.js")
     code = _between(source, "const SCROLL_STICK_SLACK", "//: **The \"still writing\" pill")
     script = (
         code
@@ -78,8 +79,8 @@ def test_growth_under_a_following_pane_never_lets_go_only_a_scroll_up_does():
     leaving. Following stopped at the next heading or code block, and the pane
     fell behind the answer (`data-stuck` "0", the pill up) with no one having
     touched it."""
-    source = (JS / "chat-agent.js").read_text(encoding="utf-8")
-    code = _between(source, "const SCROLL_STICK_SLACK", "function chatScrollToEnd")
+    source = with_pieces("chat-agent.js")
+    code = _between(source, "const SCROLL_STICK_SLACK", "//: **What the notebook gave a message, as one card**")
     script = (
         code
         + """
@@ -135,7 +136,7 @@ def test_a_picture_holds_a_box_before_it_loads_and_the_streaming_bubble_is_not_a
 def test_a_wheel_up_inside_a_nested_scroller_does_not_release_following():
     """A code block, table or fold that can still scroll up takes the wheel
     itself; only a wheel the pane would scroll lets go."""
-    source = (JS / "chat-agent.js").read_text(encoding="utf-8")
+    source = with_pieces("chat-agent.js")
     code = _between(source, "const SCROLL_STICK_SLACK", "//: **The \"still writing\" pill")
     script = (
         code

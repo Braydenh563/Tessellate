@@ -77,12 +77,15 @@ def test_a_subject_inside_a_window_keeps_the_window(client, session):
 def test_a_heading_is_named_without_its_hash():
     from tessellate.ai import composer_frame
 
-    assert composer_frame.short_name({"content": "# Trains\n\nLisbon to Porto, 2h50."}) == "the Trains"
+    assert composer_frame.short_name({"content": "# Trains\n\nLisbon to Porto, 2h50."}) == "Trains"  # no article before a title (composer-1031)
 
 
+#: "the Porto" was the recorded side until audit 1029 C36: a determiner is not
+#: part of the thing named (it headed the side-by-side as "**the Porto**"),
+#: and the digest's topic for the same question was already "Porto and Lisbon".
 @pytest.mark.parametrize(
     ("ask", "sides"),
-    [("compare the Porto and Lisbon notes", ("the Porto", "Lisbon")), ("compare Porto notes with Lisbon notes", ("Porto", "Lisbon")), ("Porto vs Lisbon", ("Porto", "Lisbon"))],
+    [("compare the Porto and Lisbon notes", ("Porto", "Lisbon")), ("compare Porto notes with Lisbon notes", ("Porto", "Lisbon")), ("Porto vs Lisbon", ("Porto", "Lisbon"))],
 )
 def test_a_comparison_names_its_two_things_without_the_noun_for_notes(ask, sides):
     assert composer.compare_sides(ask) == sides
@@ -181,3 +184,28 @@ def test_one_note_shown_of_many_is_not_called_the_first_ones():
     note = {"id": 1, "title": "Knife sharpening", "content": "# Knife sharpening\n\nWhetstone."}
     lead, _rows, _chips = tool_say._found_notes("I found five notes about “knives”.", [note], 5, "none")
     assert "Here is the closest one." in lead and "the first one" not in lead.replace("Here is the closest one", "")
+
+
+@pytest.mark.parametrize(
+    ("ask", "name"),
+    [("How many recipes have I saved?", "recipes"), ("how many books do I have", "books"), ("how many notes have I saved", None), ("how many km did I run", None)],
+)
+def test_a_count_of_a_filing_name_is_read_as_one(ask, name):
+    from tessellate.ai import composer_lists
+
+    assert composer_lists.counted_things(ask) == name
+
+
+def test_how_many_recipes_counts_and_names_the_filed_notes(client, session):
+    from tessellate.entry import manager as m
+
+    for title in ("Lentil soup", "Banana loaf", "Chickpea curry"):
+        m.create_entry(session, f"# {title}\n\nServes four.", category_name="Recipes")
+    m.create_entry(session, "# Recipes to try\n\nA list for later.", category_name="Ideas")
+    m.create_entry(session, "# Run log\n\nRan 5 km.", category_name="Health")
+    session.commit()
+    text = _ask(client, "How many recipes have I saved?", notes_only=True, use_tools=False)["text"]
+    assert text.startswith("You have three recipes: ") and all(t in text for t in ("Lentil soup", "Banana loaf", "Chickpea curry"))
+    assert "Recipes to try" not in text
+    #: A name that is neither a category nor a tag is the composer's.
+    assert not _ask(client, "how many km have I run", notes_only=True, use_tools=False)["text"].startswith("You have")

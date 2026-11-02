@@ -70,4 +70,59 @@ const FOLDS = [
     }
     await browser.close();
   }
+  await offsets();
 })();
+
+// INBOX 1514: the help button against its slot for every visible fold-help,
+// read right after the dialog opens (its 240ms scale-in is what skewed the
+// first placement) and again after a scroll, in Settings and in the
+// Appearance panel; all must be 0px off. SURFACE=panel for the panel run.
+async function offsets() {
+  const MEASURE = () => [...document.querySelectorAll('.fold-help-wrap')].flatMap((w) => {
+    const slot = w.querySelector('.fold-help-slot');
+    const s = slot.getBoundingClientRect();
+    for (let e = slot.parentElement; e; e = e.parentElement) {
+      if (e.tagName === 'DETAILS' && !e.open && !e.querySelector(':scope > summary').contains(slot)) return [];
+      if (e.hidden || e.classList.contains('hidden')) return [];
+    }
+    if (!s.width) return [];
+    const h = w.querySelector(':scope > .fold-help').getBoundingClientRect();
+    return [[w.querySelector(':scope > .fold-help').dataset.helpFor, +(h.left - s.left).toFixed(1), +(h.top - s.top).toFixed(1)]];
+  });
+  for (const width of [1440, 390]) {
+    const opts = { viewport: { width, height: 900 } };
+    if (width < 600) { opts.hasTouch = true; opts.isMobile = true; }
+    const { browser, page } = await boot(opts);
+    await page.evaluate(() => prefs.set(SETTINGS_FOLDS_KEY, JSON.stringify({ 'appearance-advanced': true })));
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(2500);
+    if (await page.isVisible('#lock-password')) { await page.fill('#lock-password', 'testpassword123'); await page.click('#lock-submit'); await page.waitForTimeout(2500); }
+    await page.evaluate((panel) => (panel ? openAppearancePanel('advanced') : openSettingsModal('appearance')), process.env.SURFACE === 'panel');
+    await page.waitForTimeout(1200);
+    let worst = 0;
+    for (const step of ['opened', 'scrolled']) {
+      if (step === 'scrolled') {
+        await page.evaluate(() => document.querySelector('[data-help-for="custom-css-help"]').scrollIntoView({ block: 'center' }));
+        await page.waitForTimeout(500);
+      }
+      const rows = await page.evaluate(MEASURE);
+      for (const [, dx, dy] of rows) worst = Math.max(worst, Math.abs(dx), Math.abs(dy));
+      console.log(width, step, rows.length, 'visible, worst', worst, 'px off');
+    }
+    // The entrance is a race, so force it: place every '?' while the card is
+    // scaled to 0.9, then let it settle and measure (the old placement: ~60px).
+    const forced = await page.evaluate((MEASURE) => {
+      const card = document.querySelector('#settings-modal > *, #appearance-panel');
+      card.style.transition = 'none';
+      card.style.scale = '0.9';
+      document.querySelectorAll('.fold-help-wrap').forEach(placeFoldHelp);
+      card.style.scale = '';
+      card.style.transition = '';
+      return eval(`(${MEASURE})`)();
+    }, MEASURE.toString());
+    for (const [, dx, dy] of forced) worst = Math.max(worst, Math.abs(dx), Math.abs(dy));
+    console.log(width, 'placed while scaled to 0.9', forced.length, 'visible, worst', worst, 'px off');
+    await browser.close();
+    if (worst > 0.1) process.exitCode = 1;
+  }
+}

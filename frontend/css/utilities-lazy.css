@@ -171,6 +171,30 @@
   r: 5;
 }
 
+/* A phone's targets (audit 1031 Z5): the marks are 21px wide at 390, so under
+   600px the chips under the chart take the press and the marks only draw. */
+.ask-chart-chips {
+  display: none;
+}
+
+@media (max-width: 599.98px) {
+  .ask-chart-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+  }
+
+  .ask-chart-chip {
+    min-width: var(--target-min);
+    min-height: var(--target-min);
+  }
+
+  .stats-chart .ask-chart-pt {
+    pointer-events: none;
+  }
+}
+
 .ask-chart-tip {
   position: absolute;
   transform: translate(-50%, -100%);

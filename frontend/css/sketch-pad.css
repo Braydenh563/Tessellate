@@ -178,7 +178,8 @@
   gap: var(--space-1);
 }
 .sp-recent {
-  grid-template-columns: repeat(3, var(--target-min));
+  grid-template-columns: repeat(3, auto);
+  justify-content: start;
 }
 /* The app's target floor, as every other control: 28px, 44 under 820 and
    on a finger (it was 24, the WCAG minimum, under DESIGN's floor). */
@@ -196,9 +197,76 @@
 }
 /* The dialog touch floor (07-whiteboard-misc.css, under 820) would stretch a
    disc into an oval; its target is the spacing round it. */
-#sketch-overlay .sp-root button:is(.sp-swatch, .sp-well) {
+#sketch-overlay .sp-root button:is(.sp-swatch, .sp-well, .sp-unpick) {
   min-width: 0;
   min-height: 0;
+}
+/* A recent colour's remove button, beside the swatch (a sibling, not nested):
+   shown on hover, focus and a finger, where there is no hover. It is a small x
+   in a cell of its own, never over the disc, so a press on the swatch cannot
+   land on it (INBOX 1447: the old one was 24px and covered most of the swatch
+   and a third of the next). The 24px target floor (WCAG 2.5.8) is met by
+   spacing: a 24px circle round its centre meets no other target, because the
+   x is as far from each swatch as it is wide. Its cell is always there, so
+   showing it moves nothing. */
+.sp-recent-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+.sp-unpick {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: var(--space-6);
+  height: var(--space-6);
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--muted);
+  font-size: var(--text-xs);
+  cursor: pointer;
+  visibility: hidden;
+}
+/* **A quiet glyph, not a badge** (INBOX 1450, the owner: "that x delete
+   button is off in design"). A filled light disc with a bright x read as a
+   sticker beside the swatch, and on a touch screen a tap left it filled (a
+   sticky :hover). The x stays the muted ink of the app's ghost buttons; only a
+   real hover tints it, and the keyboard gets the focus ring, not a fill. */
+/* The glyph was 12.9px in a 16px disc, edge to edge; the smallest step leaves it room. */
+.sp-unpick > :is(i, svg) {
+  font-size: var(--text-xs);
+}
+@media (hover: hover) {
+  .sp-unpick:hover {
+    background: var(--ghost-btn-bg);
+    color: var(--ink);
+  }
+}
+.sp-unpick:is(:focus-visible, :has(:focus-visible)) {
+  color: var(--ink);
+}
+.sp-recent-item:is(:hover, :focus-within) .sp-unpick {
+  visibility: visible;
+}
+@media (pointer: coarse) {
+  .sp-unpick {
+    visibility: visible;
+  }
+}
+/* Save colour: the plus after the picker, the size of the picker beside it. */
+.sp-keep {
+  width: var(--target-min);
+  height: var(--target-min);
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+}
+.sp-keep[aria-disabled="true"] {
+  opacity: 0.45;
 }
 .sp-swatch.active {
   box-shadow: 0 0 0 2px var(--modal-bg-opaque), 0 0 0 4px var(--accent);

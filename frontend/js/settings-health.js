@@ -25,14 +25,13 @@ async function renderHealthBlock() {
   //: dashboard's notes (no boards, no drafts), and boards and drafts are
   //: named rather than folded in (it read "96 notes" beside a dashboard's 44).
   //: A kind with none is left out, and "1 draft" is singular.
-  const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
-  const parts = [plural(c.notes ?? c.entries ?? 0, "note", "notes")];
-  if (c.drafts) parts.push(plural(c.drafts, "draft", "drafts"));
-  if (c.boards) parts.push(plural(c.boards, "board or map", "boards and maps"));
-  parts.push(plural(c.documents ?? 0, "document", "documents"));
-  if (c.media) parts.push(plural(c.media, "file", "files"));
-  if (c.attachments) parts.push(plural(c.attachments, "attachment", "attachments"));
-  parts.push(plural(c.reminders ?? 0, "reminder", "reminders"));
+  const parts = [nounCount(c.notes ?? c.entries ?? 0, "note", "notes")];
+  if (c.drafts) parts.push(nounCount(c.drafts, "draft", "drafts"));
+  if (c.boards) parts.push(nounCount(c.boards, "board or map", "boards and maps"));
+  parts.push(nounCount(c.documents ?? 0, "document", "documents"));
+  if (c.media) parts.push(nounCount(c.media, "file", "files"));
+  if (c.attachments) parts.push(nounCount(c.attachments, "attachment", "attachments"));
+  parts.push(nounCount(c.reminders ?? 0, "reminder", "reminders"));
   counts.textContent = parts.join(" · ");
   //: Rule 14 (WORLD_CLASS_PLAN 28.1): each field present and dated.
   const trust = health.trust || {};
@@ -41,7 +40,8 @@ async function renderHealthBlock() {
   $("health-checked").textContent = `Checked${asOf}.`;
   const backup = trust.last_backup || {};
   $("health-last-backup").textContent = backup.at ? `${when(backup.at)} · ${backup.name}` : `No backup yet${asOf}`;
-  $("health-data-dir").textContent = `${formatFileSize(trust.data_dir_bytes) || "0 B"}${asOf}`;
+  //: A first count cut short (the folder is large) says "or more"; the next check has the whole.
+  $("health-data-dir").textContent = `${formatFileSize(trust.data_dir_bytes) || "0 B"}${trust.data_dir_bytes_partial ? " or more" : ""}${asOf}`;
   paintIntegrity(trust.integrity);
   const running = trust.running || health.jobs?.running || [];
   jobs.textContent = (running.length ? running.map((job) => job.label).join(", ") : "Nothing running") + asOf;

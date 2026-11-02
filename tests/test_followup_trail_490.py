@@ -13,6 +13,7 @@ half of the client.
 from __future__ import annotations
 
 from pathlib import Path
+from tests._app_js import with_pieces
 
 JS = Path(__file__).resolve().parent.parent / "frontend" / "js"
 
@@ -37,7 +38,7 @@ def test_the_turn_keeps_which_question_it_followed(client):
 
 
 def test_chat_sends_and_redraws_the_link():
-    attach = (JS / "chat-attach.js").read_text(encoding="utf-8")
+    attach = with_pieces("chat-attach.js")
     selects = (JS / "sheets-selects.js").read_text(encoding="utf-8")
     # A chip sends its question with the one it was offered under.
     assert "sendChatMessage(pick, { followupOf:" in attach
@@ -47,6 +48,6 @@ def test_chat_sends_and_redraws_the_link():
 
 
 def test_ask_keeps_the_chain_its_chips_started():
-    ask = (JS / "capture-ask.js").read_text(encoding="utf-8")
+    ask = with_pieces("capture-ask.js")
     assert "askTrailPending = [...askTrail, conversation.length - 1]" in (JS / "ask-compose.js").read_text(encoding="utf-8")
     assert "renderAskTrail()" in ask

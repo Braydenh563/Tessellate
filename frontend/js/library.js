@@ -80,6 +80,240 @@
 //    (whiteboard.js) and renderLibraryImagesGallery()/renderLibraryDocuments()
 //    (this file) exactly as before; only the listener's *location* changed.
 
+//: [{ext, label, line_comment, block_comment, indent, previewable}], server
+//: order preserved: the picker's order is a decision (see filetypes.py) and
+//: sorting it here would quietly undo it. Here, not in documents.js: the
+//: Library's list (library.js alone, `libraryList`) names a code file's lines
+//: and kind before the editors load, and documents.js reads it after.
+let docFileTypes = [];
+//: The table, fetched once a session is unlocked (documents.js
+//: `loadDocFileTypes` says why not at load); a failed fetch asks again next time.
+async function loadDocTypeTable() {
+  if (docFileTypes.length) return;
+  const body = await apiJson("/documents/file-types", { silent: true }).catch(() => null);
+  docFileTypes = (body && body.types) || [];
+}
+
+//: **One picker for a file's type, drawn in three places** (INBOX 1482, the
+//: owner's screenshots of a type button in a document's foot opening a list
+//: grouped Documents, Data, Code, each row with its glyph). `docTypeMenu` is a
+//: `kebabMenu` of the served table (`group` and `icon` come from filetypes.py),
+//: with the group names drawn as headings and a filter field, because
+//: thirty-odd rows are found by typing; the foot's button
+//: (`#doc-type-slot`) changes the open document's type and New's caret
+//: (`#doc-new-type-slot`) starts a blank file of one, and so does the Library's
+//: New document caret (`#library-docs-new-slot`); the picker sits beside the
+//: table here because library.js is the file the Library loads alone.
+//: Never a second list.
+function docTypeItems(onPick) {
+  return docFileTypes.map((type) => ({
+    label: `ph:${type.icon || "file-code"} ${type.label}`,
+    title:
+      type.ext === "md"
+        ? "Markdown (.md): the rich text editor, formatted as you type"
+        : `${type.label} (.${type.ext})`,
+    group: type.group || "Code",
+    run: () => onPick(type.ext),
+  }));
+}
+
+//: The hairlines `kebabMenu` draws between groups become a heading over each
+//: group here (rows and headings are one-to-one with the table, in its order).
+function docTypeHeadings(menu) {
+  menu.querySelectorAll(":scope > .menu-sep").forEach((rule) => rule.remove());
+  let last = null;
+  menu.querySelectorAll(":scope > .menu-item").forEach((row, i) => {
+    const type = docFileTypes[i];
+    row.dataset.docType = type.ext;
+    row.dataset.group = type.group || "Code";
+    if (row.dataset.group === last) return;
+    last = row.dataset.group;
+    const heading = document.createElement("div");
+    heading.className = "menu-heading";
+    heading.setAttribute("role", "presentation");
+    heading.dataset.group = last;
+    heading.textContent = last;
+    row.before(heading);
+  });
+}
+
+//: A heading with every row under it filtered out goes too.
+function docTypeHeadingsFit(menu) {
+  const shown = new Set();
+  for (const row of menu.querySelectorAll(":scope > .menu-item:not([hidden])")) shown.add(row.dataset.group);
+  for (const heading of menu.querySelectorAll(":scope > .menu-heading")) heading.hidden = !shown.has(heading.dataset.group);
+}
+
+function docTypeFilterKey(event, menu) {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    menu.querySelector(":scope > .menu-item:not([hidden])")?.click();
+  } else if (event.key === "Home" || event.key === "End") {
+    //: The menu's own Home and End walk the rows; in the field they move the caret.
+    event.stopPropagation();
+  }
+}
+
+//: Typing narrows the list through `listFilter`, the app's one filter field
+//: (it hides rows and says when none match; Escape clears it first). The field
+//: takes the focus when the menu opens (not on a phone, where that would raise
+//: the keyboard over the list) and a letter typed on a row goes to it; the
+//: arrows leave the field for the rows through the menu's own keys.
+function docTypeFilter(menu, opener) {
+  const filter = listFilter(menu, { label: "Filter types", threshold: 0, rows: ":scope > .menu-item", inside: true });
+  const { input, refresh } = filter;
+  input.addEventListener("input", () => docTypeHeadingsFit(menu));
+  input.addEventListener("keydown", (event) => docTypeFilterKey(event, menu));
+  menu.addEventListener("keydown", (event) => {
+    if (event.target !== input && event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) input.focus();
+  });
+  opener.addEventListener("click", () => {
+    if (input.value) {
+      input.value = "";
+      refresh();
+      docTypeHeadingsFit(menu);
+    }
+    if (window.matchMedia("(hover: hover)").matches) input.focus();
+  });
+}
+
+function docTypeMenu(onPick, ariaLabel) {
+  const wrap = kebabMenu(docTypeItems(onPick), ariaLabel);
+  const menu = wrap.querySelector(":scope > .action-menu");
+  const opener = wrap.querySelector(":scope > button");
+  docTypeHeadings(menu);
+  docTypeFilter(menu, opener);
+  return { wrap, menu, opener };
+}
+
+//: How big a list row says a document is: a code file's lines, a prose
+//: document's words (1031 CE8: "19 words" for a script). Both lists use it.
+function docSizeText(doc, withKind = false) {
+  const kind = docFileTypes.find((t) => t.ext === doc.file_type);
+  if (kind && !kind.previewable && typeof doc.lines === "number") return withKind ? `${nounCount(doc.lines, "line")} · ${kind.label}` : nounCount(doc.lines, "line");
+  return typeof doc.words === "number" ? nounCount(doc.words, "word") : "";
+}
+
+// --- incremental list rendering (ROADMAP §85.4 items 3 and 4; moved here from
+// notes-list.js when the Notes list was windowed, audit 1029 N9, so the
+// Library is its one caller) ---------------
+//
+// **The problem this solves, measured rather than assumed.** Four of this
+// app's lists: the Notes list, the Library grid, the Timeline, the log
+// console: built one DOM node per record for the *entire* collection, with
+// no cap and no windowing. At 1,501 notes `renderEntries()` took ~533ms, and
+// it re-runs on every search keystroke, sort change, filter and save.
+//
+// **Why chunk-on-scroll rather than true virtualisation.** Real
+// virtualisation (absolute positioning against a scroll offset) needs to know
+// each row's height before it renders one. Every list here has variable
+// heights: a note card grows with its text, its tags, its attachments and
+// whether its inline actions are open, so a virtualiser would either need
+// measurement passes that cost what it saves, or fixed heights the design
+// does not have. Rendering in chunks as the end of the list approaches keeps
+// the DOM proportional to what has been *scrolled past* rather than to the
+// notebook, needs no height information at all, and leaves the list one
+// continuous scroll rather than turning it into pages, which is the
+// distinction BACKLOG §77 draws and deliberately asks for.
+//
+// **The honest trade:** the browser's own Ctrl+F cannot find text in a chunk
+// that has not rendered yet. That is a real loss, and it is why `initial` is
+// generous rather than minimal, a screenful and change is always present , 
+// and why it is applied to lists that have their own search box sitting
+// directly above them. It is not applied anywhere that the browser's find is
+// the only way through.
+//
+// `root: null` (the viewport) rather than the scroll container: an element
+// inside the scrolled-away part of a *nested* scroller is not intersecting
+// the viewport either, so one observer is correct for both a page-level and a
+// container-level scroll, without having to find which one this list is in.
+const listWindows = new WeakMap();
+
+function renderIncrementally(container, items, buildItem, options = {}) {
+  //: `budgetMs` (opt-in, libtl-0926): build for at most that long a frame and
+  //: carry on next frame while the sentinel is still near, instead of forty
+  //: items in one go. The Library's forty cards measured 42 to 83ms a chunk
+  //: on a thousand-note seed, six frames dropped each time a chunk landed
+  //: mid-scroll. The observer alone cannot drive this, because it only
+  //: fires when the sentinel's intersection *changes*: a sentinel that is
+  //: still near after a small chunk never fires again. So `near` keeps the
+  //: observer's last answer and the pump runs on frames until it goes false.
+  const { initial = 60, chunk = 40, afterChunk, budgetMs = 0 } = options;
+
+  // Tear down the previous run first. Without this a re-render (a keystroke in
+  // the search box) leaves the old observer alive, still holding the old
+  // items, still appending them into a container that has moved on, the
+  // "listener added without removal" shape, and the reason this is a
+  // WeakMap rather than a local.
+  listWindows.get(container)?.disconnect();
+  listWindows.delete(container);
+
+  const paint = (from, to) => {
+    const fragment = document.createDocumentFragment();
+    for (let i = from; i < to; i++) fragment.appendChild(buildItem(items[i], i));
+    container.appendChild(fragment);
+  };
+
+  paint(0, Math.min(initial, items.length));
+  afterChunk?.();
+  if (items.length <= initial) return;
+
+  let rendered = initial;
+  // A zero-height marker after the last painted item. It is the *list's* own
+  // last child rather than a sibling of the container, so it moves down as
+  // chunks land and it inherits whatever scroller the list is in.
+  const sentinel = document.createElement("li");
+  sentinel.className = "list-window-sentinel";
+  sentinel.setAttribute("aria-hidden", "true");
+  container.appendChild(sentinel);
+
+  let near = false;
+  let pumping = 0;
+  let done = false;
+  const buildNext = () => {
+    const next = Math.min(rendered + chunk, items.length);
+    const started = performance.now();
+    // Insert *before* the sentinel so it stays last and keeps observing.
+    const fragment = document.createDocumentFragment();
+    let i = rendered;
+    for (; i < next; i++) {
+      if (budgetMs && i > rendered && performance.now() - started > budgetMs) break;
+      fragment.appendChild(buildItem(items[i], i));
+    }
+    container.insertBefore(fragment, sentinel);
+    rendered = i;
+    afterChunk?.();
+    if (rendered >= items.length) {
+      done = true;
+      observer.disconnect();
+      listWindows.delete(container);
+      sentinel.remove();
+    }
+  };
+  const pump = () => {
+    pumping = 0;
+    if (done || !near || listWindows.get(container) !== observer) return;
+    buildNext();
+    if (!done && near) pumping = requestAnimationFrame(pump);
+  };
+  const observer = new IntersectionObserver(
+    (entries) => {
+      near = entries.some((entry) => entry.isIntersecting);
+      if (!near) return;
+      if (!budgetMs) {
+        buildNext();
+        return;
+      }
+      if (!pumping) pump();
+    },
+    // Start the next chunk while the sentinel is still a screen away, so the
+    // list refills before the user reaches the bottom rather than after.
+    { root: null, rootMargin: "600px 0px" }
+  );
+  observer.observe(sentinel);
+  listWindows.set(container, observer);
+}
+
 
 // --- the Library (§4, §36F) ---------------------------------------------------
 //
@@ -211,7 +445,7 @@ async function loadLibrary() {
   const body = await apiJson("/library").catch(() => null);
   clearSkeletons(grid);
   if (!body) {
-    surfaceFailed(document.getElementById("library-empty"), "library", loadLibrary);
+    surfaceFailed(document.getElementById("library-empty"), "your library", loadLibrary);
     return;
   }
   surfaceRecovered(document.getElementById("library-empty"));
@@ -355,6 +589,12 @@ function renderLibraryFilters() {
   }
 }
 
+//: "Custom order" (obj-order.js, lazy): the order a drag or Alt+Arrow left. Until
+//: that file has arrived every item ranks the same, so the list keeps the server's order.
+function libraryCustomCmp(scope, keyOf) {
+  return (a, b) => (window.objOrderRank ? objOrderRank(scope, keyOf(a)) - objOrderRank(scope, keyOf(b)) : 0);
+}
+
 function librarySorted(items) {
   const sort = $("library-sort")?.value || "recent";
   const copy = [...items];
@@ -412,7 +652,7 @@ async function refreshLibrarySemantic() {
   }
   if (query === librarySemanticQuery) return; // already have this one
   try {
-    const found = await apiJson(`/search?q=${encodeURIComponent(query)}&kind=note&limit=50`);
+    const found = await apiJson(`/search?q=${encodeURIComponent(clipFor("search", query))}&kind=note&limit=50`);
     librarySemanticIds = new Set((found.hits || []).map((hit) => hit.id));
     librarySemanticQuery = query;
   } catch {
@@ -684,8 +924,7 @@ function renderLibrary(options) {
   //: every switch to Library, a cross-fade of a page that was already
   //: changing because the tab changed.
   const typing = document.activeElement?.id === "library-search";
-  const still = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ||
-    document.documentElement.dataset.motion === "reduced";
+  const still = reducedMotionWanted();
   if (!document.startViewTransition || typing || still || quiet) {
     updateDOM();
   } else {
@@ -734,7 +973,9 @@ function withLibraryCopyActions(items, kind, title, id) {
   //: together at the end rather than the copies splitting them.
   const put = /\b(Delete|Move to bin|Remove|Archive|Unarchive)\b/;
   const at = items.findIndex((it) => put.test(it.label || ""));
-  const all = at === -1 ? [...items, ...copies] : [...items.slice(0, at), ...copies, ...items.slice(at)];
+  //: A long menu keeps its copies behind one row (INBOX 1469).
+  const kept = items.length + copies.length > 8 ? [{ label: "ph:copy Copy", items: copies }] : copies;
+  const all = at === -1 ? [...items, ...kept] : [...items.slice(0, at), ...kept, ...items.slice(at)];
   //: **Grouped past five rows** (DESIGN.md, the recipe index): a note's card
   //: menu is seven rows, and it read as one list (menus.js). Three groups,
   //: named by what the rows do rather than listed per kind, so every kind's
@@ -744,7 +985,7 @@ function withLibraryCopyActions(items, kind, title, id) {
   if (all.length <= 5) return all;
   return all.map((it) => ({
     ...it,
-    group: copies.includes(it) ? "copy" : put.test(it.label || "") ? "end" : "act",
+    group: kept.includes(it) ? "copy" : put.test(it.label || "") ? "end" : "act",
   }));
 }
 
@@ -765,7 +1006,7 @@ function libraryActions(item) {
         }
       ),
       makeMenuItem("ph:pencil-simple Rename", "Rename this chat", async () => {
-        const next = await promptDialog("Rename this chat:", item.title);
+        const next = await promptTitle("Rename this chat", item.title);
         if (!next) return;
         const renamed = await apiJson(`/conversations/${item.id}`, {
           method: "PUT",
@@ -779,11 +1020,10 @@ function libraryActions(item) {
         const archived = await apiJson(`/conversations/${item.id}/archive`, { method: "PUT" }).catch((e) =>
           toast(e.message, true)
         );
-        if (archived) chatWriteRecord("chatArchiveUndo", item.id, item.title);
         if (chatConv && chatConv.id === item.id) newChatConversation();
-        toast("Archived.");
         reload();
-        loadConversationList();
+        await loadConversationList();
+        if (archived) chatWriteRecord("chatArchiveUndo", item.id, item.title);
       }),
       makeMenuItem("ph:trash Delete", "Delete this chat", async () => {
         if (!(await confirmDialog("Delete this saved chat?"))) return;
@@ -801,7 +1041,7 @@ function libraryActions(item) {
   if (item.kind === "document") {
     return [
       makeMenuItem("ph:pencil-simple Rename", "Rename this document", async () => {
-        const next = await promptDialog("Rename this document:", item.title);
+        const next = await promptDialog("Rename this document", item.title);
         if (!next) return;
         await renameDocumentWithUndo(item, next).catch((e) => toast(e.message, true));
         reload();
@@ -846,7 +1086,7 @@ function libraryActions(item) {
       makeMenuItem("ph:arrow-u-up-left Restore", `Put this ${bin.noun} back`, async () => {
         const back = await apiJson(bin.restore, { method: "POST" }).catch((e) => toast(e.message, true));
         if (back && item.subtype !== "reading") {
-          pushBinPairUndo(`Restored “${item.title}” from the bin`, bin.restore.replace(/\/restore$/, ""), bin.restore, true, () => Promise.all([loadLibrary(), bin.reload()]));
+          pushBinPairUndo(`Restored “${item.title}” from the bin`, bin.bin, bin.restore, true, () => Promise.all([loadLibrary(), bin.reload()]));
         }
         toast("Restored.");
         reload();
@@ -957,7 +1197,7 @@ function libraryActions(item) {
   if (item.kind === "tag") {
     return [
       makeMenuItem("ph:pencil-simple Rename", "Rename this tag everywhere (merge if it exists)", async () => {
-        const next = await promptDialog(`Rename tag “${item.title}” to:`, item.title);
+        const next = await promptDialog(`Rename the tag “${item.title}”`, item.title);
         if (!next || next === item.title) return;
         if (!(await ensureModule("tagManager"))) return;
         await runTagEdit(`Renamed “${item.title}” to “${next}”`, "/tags/rename", { old: item.title, new: next }, { [item.title]: next });
@@ -1014,24 +1254,23 @@ function libraryActions(item) {
 
 //: **The bin holds five kinds** (WORLD_CLASS_PLAN 5 item 10): notes (with
 //: boards and maps), documents, reminders, OCR readings and recordings, told apart by `subtype`
-//: (`routes_library._archive`). Each has its own restore and purge route.
+//: (`routes_library._archive`). Restore is one route for every kind with a
+//: bin mark (`POST /bin/{kind}/{id}/restore`, audit 1031 row 2a); `bin` is
+//: the kind's own DELETE (Undo of a restore), and purge stays per kind.
 function binRoutes(item) {
-  if (item.subtype === "document") {
-    return { noun: "document", restore: `/documents/${item.id}/restore`, purge: `/documents/${item.id}/purge`, reload: () => {} };
-  }
-  if (item.subtype === "reminder") {
-    return { noun: "reminder", restore: `/reminders/${item.id}/restore`, purge: `/reminders/${item.id}/purge`, reload: () => loadReminders() };
-  }
+  const kind = item.subtype;
+  const one = { restore: `/bin/${item.subtype}/${item.id}/restore`, reload: () => {} };
   //: A deleted OCR reading (WORLD_CLASS_PLAN 28.4 row 2) goes back to the
-  //: page or the file it was read from.
-  //: A deleted recording (WORLD_CLASS_PLAN 28.5 row 6), its audio kept.
-  if (item.subtype === "recording") {
-    return { noun: "recording", restore: `/recordings/${item.id}/restore`, purge: `/recordings/${item.id}/purge`, reload: () => {} };
-  }
-  if (item.subtype === "reading") {
+  //: page or the file it was read from: a former value of a file's text, not
+  //: a row with a bin mark, so it keeps its own restore.
+  if (kind === "reading") {
     return { noun: "reading", restore: `/reading-bin/${item.id}/restore`, purge: `/reading-bin/${item.id}/purge`, reload: () => renderLibraryImagesGallery() };
   }
-  return { noun: "note", restore: `/entries/${item.id}/restore`, purge: `/entries/${item.id}/purge`, reload: () => refreshEntries([item.id]) };
+  if (kind === "document") return { ...one, noun: "document", bin: `/documents/${item.id}`, purge: `/documents/${item.id}/purge` };
+  if (kind === "reminder") return { ...one, noun: "reminder", bin: `/reminders/${item.id}`, purge: `/reminders/${item.id}/purge`, reload: () => loadReminders() };
+  //: A deleted recording (WORLD_CLASS_PLAN 28.5 row 6), its audio kept.
+  if (kind === "recording") return { ...one, noun: "recording", bin: `/recordings/${item.id}`, purge: `/recordings/${item.id}/purge` };
+  return { ...one, noun: "note", bin: `/entries/${item.id}`, purge: `/entries/${item.id}/purge`, reload: () => refreshEntries([item.id]) };
 }
 
 //: Link a Library note to another, chosen from a picker. The same route the
@@ -1069,9 +1308,9 @@ function renderLibraryContextBars() {
     // bin you can trust to clear itself and one you assume you have to empty.
     const days = prefsCache ? prefsCache.recycle_bin_days : 30;
     $("library-bin-note").textContent = count
-      ? `${count} note${count === 1 ? "" : "s"} in the bin, kept for ${days} days ` +
+      ? `${nounCount(count, "note")} in the bin, kept for ${days} days ` +
         "then cleared automatically. Open one to read it, or use its ⋯ menu."
-      : `The bin is empty. Deleted notes are kept here for ${days} days ` +
+      : `The bin is empty. Deleted notes are kept here for ${nounCount(days, "day")} ` +
         "(change that in Preferences) before they clear.";
     $("library-bin-empty").disabled = !count;
   }
@@ -1140,6 +1379,8 @@ function keepLibraryScroll() {
   const pending = new Set();
   const sections = [...document.querySelectorAll("#tab-library .library-view-section")];
   const restore = () => {
+    //: Read every section, then put the offsets back (INBOX 1446).
+    const put = [];
     for (const el of sections) {
       if (!el.clientHeight) {
         if (saved.get(el.id)) pending.add(el.id);
@@ -1148,10 +1389,11 @@ function keepLibraryScroll() {
       if (!pending.has(el.id)) continue;
       const want = saved.get(el.id) || 0;
       if (el.scrollHeight - el.clientHeight >= want) {
-        el.scrollTop = want;
+        put.push([el, want]);
         pending.delete(el.id);
       }
     }
+    for (const [el, want] of put) el.scrollTop = want;
   };
   const observer = typeof ResizeObserver === "function" ? new ResizeObserver(restore) : null;
   for (const el of sections) {
@@ -1288,7 +1530,7 @@ function libraryCard(item) {
     card.appendChild(thumb);
   } else if (
     (item.kind === "note" || item.kind === "shelved" || item.kind === "archived") &&
-    (item.thumb_attachment_id || item.thumb_url)
+    (item.thumb_attachment_id || (item.thumb_url && !isRemoteImage(item.thumb_url)))
   ) {
     // A sketch is a note whose actual content is a file attachment, not
     // text: without this a sketch card in the Library was a bare title
@@ -1439,7 +1681,9 @@ function libraryCard(item) {
   card.title = `${kindWord} · ${item.title}`;
   //: Named on the control now, not the box: the title is what a screen
   //: reader lands on, and it says the kind and the category as the card did.
-  cardOpener(title, () => openLibraryItem(item), `${kindWord}: ${item.title}. ${item.detail}.`);
+  //: The visible words first, then the kind and the category (SH4): the name
+  //: has to contain what is on the card, or voice control cannot say it.
+  cardOpener(title, () => openLibraryItem(item), `${title.textContent}, ${kindWord.toLowerCase()}${item.detail ? `, ${item.detail}` : ""}`);
 
   const actions = withLibraryCopyActions(libraryActions(item), item.kind, item.title, item.id);
   if (actions.length) {
@@ -1558,7 +1802,7 @@ function openLibraryItem(item) {
         if (!yes) return;
         const back = await apiJson(bin.restore, { method: "POST" }).catch((e) => toast(e.message, true));
         if (back && item.subtype !== "reading") {
-          pushBinPairUndo(`Restored “${item.title}” from the bin`, bin.restore.replace(/\/restore$/, ""), bin.restore, true, () => Promise.all([loadLibrary(), bin.reload()]));
+          pushBinPairUndo(`Restored “${item.title}” from the bin`, bin.bin, bin.restore, true, () => Promise.all([loadLibrary(), bin.reload()]));
         }
         loadLibrary();
         bin.reload();
@@ -1604,7 +1848,7 @@ async function openBinnedNote(entryId) {
   const binned = entry.deleted_at ? relativeTime(entry.deleted_at) : "recently";
   $("binned-meta").textContent =
     `Deleted ${binned} · written ${relativeTime(entry.created_at)} · ` +
-    `kept for ${days} days from deletion, then cleared automatically.`;
+    `kept for ${nounCount(days, "day")} from deletion, then cleared automatically.`;
   // The note's own markdown, as the notebook renders it everywhere else. A
   // binned note is still a note, and showing it as flat text here would make
   // it look like a different, lesser thing than the one you deleted.
@@ -1677,7 +1921,7 @@ async function flashLibraryItem(kind, id) {
     return null;
   })();
   if (!card) return;
-  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const reduced = reducedMotionWanted();
   card.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
   // "flash" alone only draws on a note-list <li> or something already
   // carrying "flash-target" (01-forms-settings.css): a library card is
@@ -1692,7 +1936,7 @@ async function flashLibraryItem(kind, id) {
 
 // "+ New Skill" on the Library's AI Skills page. Reported as doing nothing,
 // and it did nothing: the button was in the markup and no handler was ever
-// attached to it. The skill editor lives in Settings → Skills, so this opens
+// attached to it. The skill editor lives in Settings, Skills, so this opens
 // that with a blank form rather than growing a second editor that would then
 // have to be kept in step with the first.
 $("skills-add-new")?.addEventListener("click", async () => {
@@ -1811,7 +2055,7 @@ for (const button of document.querySelectorAll("#library-view button, #library-b
 $("library-bin-empty").addEventListener("click", async () => {
   const count = libraryCounts.archived || 0;
   const ok = await confirmDialog(
-    `Permanently delete ${count} note${count === 1 ? "" : "s"} in the bin?\n\n` +
+    `Permanently delete ${nounCount(count, "note")} in the bin?\n\n` +
       "This cannot be undone."
   );
   if (!ok) return;
@@ -1876,15 +2120,15 @@ $("library-bulk-restore").addEventListener("click", async () => {
   }
   if (back.length) {
     pushRoutePairUndo(
-      `Restored ${back.length} item${back.length === 1 ? "" : "s"} from the bin`,
-      back.map((item) => [binRoutes(item).restore.replace(/\/restore$/, ""), "DELETE"]),
+      `Restored ${nounCount(back.length, "item")} from the bin`,
+      back.map((item) => [binRoutes(item).bin, "DELETE"]),
       back.map((item) => [binRoutes(item).restore, "POST"]),
       () => Promise.all([loadLibrary(), loadEntries(), loadReminders()])
     );
   }
-  if (restored) toast(`Restored ${restored} item${restored === 1 ? "" : "s"}.`);
+  if (restored) toast(`Restored ${nounCount(restored, "item")}.`);
   const failed = chosen.length - restored;
-  if (failed) toast(`${failed} item${failed === 1 ? "" : "s"} couldn't be restored.`, true);
+  if (failed) toast(`${nounCount(failed, "item")} couldn't be restored.`, true);
   loadLibrary();
   loadEntries();
   loadReminders();
@@ -1897,7 +2141,7 @@ $("library-bulk-delete").addEventListener("click", async () => {
   // "delete" means recoverable for a note and permanent for one already binned.
   const permanent = chosen.filter((i) => i.kind === "archived").length;
   const ok = await confirmDialog(
-    `Delete ${chosen.length} item${chosen.length === 1 ? "" : "s"}?\n\n` +
+    `Delete ${nounCount(chosen.length, "item")}?\n\n` +
       (permanent
         ? `${permanent} of them ${permanent === 1 ? "is" : "are"} already in the bin and will be destroyed permanently.`
         : "Notes and documents go to the bin; chats are deleted for good.")
@@ -1937,7 +2181,7 @@ $("library-bulk-delete").addEventListener("click", async () => {
   if (comeBack.length) {
     const live = comeBack.map((c) => ({ ...c }));
     pushUndo(
-      `Deleted ${comeBack.length} item${comeBack.length === 1 ? "" : "s"} from the Library`,
+      `Deleted ${nounCount(comeBack.length, "item")} from the Library`,
       async () => {
         for (const c of live) {
           if (c.chat) await apiJson("/conversations/restore", { method: "POST", body: JSON.stringify(c.chat) });
@@ -1954,9 +2198,9 @@ $("library-bulk-delete").addEventListener("click", async () => {
       }
     );
   }
-  if (deleted) toast(`Deleted ${deleted} item${deleted === 1 ? "" : "s"}.`);
+  if (deleted) toast(`Deleted ${nounCount(deleted, "item")}.`);
   const failed = chosen.length - deleted;
-  if (failed) toast(`${failed} item${failed === 1 ? "" : "s"} couldn't be deleted.`, true);
+  if (failed) toast(`${nounCount(failed, "item")} couldn't be deleted.`, true);
   loadLibrary();
   loadEntries();
 });
@@ -1993,6 +2237,18 @@ const LIBRARY_CREATE_BY_KIND = {
     run: async () => {
       await switchTab("documents");
       await createDocument();
+    },
+  },
+  //: The code editor under New (audit 1028 U6): it was a 32px icon and a file
+  //: type menu. The documents' template dialog, opened on its Code group.
+  code: {
+    label: "ph:code New code file",
+    run: async () => {
+      await switchTab("documents");
+      $("doc-new-template")?.click();
+      //: The first row under the "Code" heading, chosen and focused by its own click.
+      const heads = [...document.querySelectorAll("#doc-template-list .doc-template-group")];
+      heads.find((h) => h.textContent === "Code")?.nextElementSibling?.querySelector("button")?.click();
     },
   },
   chat: {
@@ -2055,7 +2311,8 @@ const LIBRARY_CREATE_BY_KIND = {
     run: async () => {
       document.querySelector('#library-subtabs button[data-target="library-view-whiteboard"]')?.click();
       await ensureModule("library");
-      $("wb-boards-new-map")?.click();
+      //: New's arrow rows are built by whiteboard.js (`wbNewMenuMount`), so the map is made by its function (through `window`, as below).
+      await window.wbNewUntitledBoard("map");
     },
   },
   board: {
@@ -2107,6 +2364,7 @@ const LIBRARY_CREATE_BY_KIND = {
 const LIBRARY_CREATE_HINTS = {
   note: ["ph:note-pencil", "A quick thought. Atlas files it and links it for you."],
   document: ["ph:file-text", "A long page: headings, an outline, templates, export."],
+  code: ["ph:code", "A script, a page or a notebook with a Run button."],
   map: ["ph:graph", "A board of note cards you branch with Tab and Enter; each topic is saved as a note."],
   mindmap: ["ph:tree-structure", "A tree of topics round one central idea, with branches you fold and colour."],
   board: ["ph:squares-four", "A canvas of cards, sketches and links you arrange freely."],
@@ -2119,7 +2377,7 @@ const LIBRARY_CREATE_HINTS = {
 //: then the things that arrive from elsewhere. The picker's sentence used to
 //: say "Five kinds of thing", which went stale the day a sixth row was
 //: added; it names no count now, so it cannot drift from the rows under it.
-const LIBRARY_CREATE_ORDER = ["note", "document", "mindmap", "board", "chat", "meeting", "file"];
+const LIBRARY_CREATE_ORDER = ["note", "document", "code", "mindmap", "board", "chat", "meeting", "file"];
 
 //: The kinds that have a chord of their own, by its name in the shortcut
 //: registry: the keycap is read from the live table, so a rebinding shows.
@@ -2393,7 +2651,7 @@ function skillCard(skill, lastRun) {
   //: and onto a second line.
   if (inputs) {
     const asks = document.createElement("span");
-    asks.textContent = ` · asks for ${inputs} input${inputs === 1 ? "" : "s"}`;
+    asks.textContent = ` · asks for ${nounCount(inputs, "input")}`;
     asks.title = "Asks you for these before it runs";
     when.appendChild(asks);
   }
@@ -2675,7 +2933,7 @@ async function renderSkillsDashboard() {
 
   // --- background workers, in this app's own controls ------------------------
   //
-  // The same three preferences as Settings → Background tasks, and written
+  // The same three preferences as Settings, Background tasks, and written
   // through `setPreference` for the reason that fix already documents: these
   // used to write straight to the server and update nothing locally, so
   // `savePrefs`, which rebuilds the whole object from the *other* screen's
@@ -2938,6 +3196,7 @@ let libraryDocsCurrentPage = 1;
 //: anything: sorting a slice would reorder ten rows within a page and leave
 //: the pages themselves in the server's order, so "longest first" would show
 //: the longest of page two rather than the longest there is.
+let libraryDocsAll = [];
 const LIBRARY_DOC_SORTS = {
   newest: (a, b) => String(b.updated_at || "").localeCompare(String(a.updated_at || "")),
   oldest: (a, b) => String(a.updated_at || "").localeCompare(String(b.updated_at || "")),
@@ -2949,6 +3208,7 @@ const LIBRARY_DOC_SORTS = {
   //: name would have made every document sort as zero and the order look
   //: arbitrary rather than broken, which is the failure that hides longest.
   longest: (a, b) => (Number(b.words) || 0) - (Number(a.words) || 0),
+  custom: libraryCustomCmp("docs", (doc) => `document:${doc.id}`),
 };
 
 //: **Filtering documents by a property they declare about themselves**
@@ -3113,8 +3373,9 @@ async function importLibraryDocuments(files) {
       //: A Word file is read here by Mammoth (documents-word.js, Brief 42),
       //: which keeps its headings, lists and tables; the server's extraction
       //: keeps only the words. One with tracked changes goes to the server,
-      //: whose reader keeps them as suggestions (`docWordHasRevisions`).
-      const word = /\.docx$/i.test(file.name) && (await lazyScript("/js/documents-word.js")) && !(await docWordHasRevisions(file))
+      //: whose reader keeps them as suggestions (`docWordHasRevisions`). The converter
+      //: it hands the words to is documents.js's, so the library bundle comes first.
+      const word = /\.docx$/i.test(file.name) && (await ensureModule("library")) && (await lazyScript("/js/documents-word.js")) && !(await docWordHasRevisions(file))
         ? await docWordImport(file)
         : null;
       const document_ = word
@@ -3135,13 +3396,59 @@ async function importLibraryDocuments(files) {
   // The list is already on screen and redrawn, so "Show them" would be a
   // button that does nothing; only a single import has somewhere to go.
   if (made.length > 1) {
-    toast(`Added ${made.length} files to your documents.`);
+    toast(`Added ${nounCount(made.length, "file")} to your documents.`);
     return;
   }
   toastAction(`Added “${made[0].title}” to your documents.`, "Open it", () => {
     switchTab("documents");
     openDocument(made[0].id);
   }, { go: { open: "doc", id: made[0].id } });
+}
+
+//: A search that is already on when the list first draws (no unfiltered draw came before) has
+//: nothing for the first reorder to store, so it read the visible rows only (polish5 1031: 0 held, 4 shown).
+//: Read the whole list once, behind the draw, and keep a newer unfiltered draw's if one lands first.
+function seedLibraryDocsAll() {
+  apiPagedList("/documents", DOCUMENTS_PAGE_SIZE)
+    .then((all) => { if (!libraryDocsAll.length) libraryDocsAll = all; })
+    .catch(() => {});
+}
+
+//: New document, and its caret's file types (typepick-1031). switchTab first,
+//: then open, the same fix openDoc() needed ("the documents subtab document
+//: cards don't even do anything"): the document was created and loaded into
+//: the editor correctly, but the Documents page stayed hidden behind the
+//: Library tab, so nothing seemed to happen.
+async function libraryNewDocument(fileType = null) {
+  //: Another type starts the way the Documents list's own caret does: a blank
+  //: page of that type, made by the first keystroke (`startBlankDocument`).
+  if (fileType && fileType !== "md") {
+    await ensureModule("library");
+    switchTab("documents");
+    //: Through `window`: the editors are in by now, and a bare name would ask the
+    //: list bundle for a stand-in it does not need (test_library_list_bundle.py).
+    await window.startBlankDocument(fileType);
+    return;
+  }
+  const doc = await createDocumentNamed();
+  if (doc) {
+    switchTab("documents");
+    openDocument(doc.id);
+  }
+}
+
+//: The caret beside New document: the Documents list's own type picker, built
+//: once the table is in (renderLibraryDocuments loads it).
+function libraryDocsNewMount() {
+  const slot = $("library-docs-new-slot");
+  if (!slot || slot.firstChild || !docFileTypes.length) return;
+  const { wrap, opener } = docTypeMenu((ext) => libraryNewDocument(ext), "Start a document of another type");
+  opener.id = "library-docs-new-type";
+  opener.classList.remove("icon-only", "ghost");
+  opener.classList.add("split-button-caret");
+  setLabel(opener, "ph:caret-down");
+  opener.title = "New document of another type";
+  slot.replaceChildren(wrap);
 }
 
 async function renderLibraryDocuments() {
@@ -3155,6 +3462,10 @@ async function renderLibraryDocuments() {
 
   let docs = [];
   showSkeletons(list, 4, "li");
+  //: The type table names a code card's kind; the library can open before
+  //: the Documents tab has asked for it.
+  await loadDocTypeTable();
+  libraryDocsNewMount();
   try {
     // `q` searches title *and* content server-side (routes_documents.py): 
     // client-side filtering alone could only ever match a title, since a
@@ -3173,11 +3484,14 @@ async function renderLibraryDocuments() {
     );
   } catch {
     list.replaceChildren();
-    return surfaceFailed(empty, "documents", renderLibraryDocuments);
+    return surfaceFailed(empty, "your documents", renderLibraryDocuments);
   } finally {
     clearSkeletons(list);
   }
   surfaceRecovered(empty);
+  //: Every document, before any filter or page: the first reorder stores this (obj-reorder.js).
+  if (!needle) libraryDocsAll = docs;
+  else if (!libraryDocsAll.length) seedLibraryDocsAll();
 
   //: The property filter's options come from what the *search* left, so the
   //: control offers the properties of the documents on screen rather than of
@@ -3199,6 +3513,9 @@ async function renderLibraryDocuments() {
   list.replaceChildren();
   const isFilteredEmpty = (Boolean(needle) || propertyFiltered) && !docs.length;
   empty?.classList.toggle("hidden", docs.length > 0 || isFilteredEmpty);
+  //: One New document at a time: the empty state's own button is the action
+  //: while there is nothing, so the head's copy steps aside (audit 1028 U29).
+  document.getElementById("library-docs-new")?.closest(".split-button")?.classList.toggle("hidden", !docs.length && !isFilteredEmpty);
   noMatch?.classList.toggle("hidden", !isFilteredEmpty);
   if (noMatch && isFilteredEmpty) {
     //: Which of the two narrowings came up empty, said by name: "no documents
@@ -3250,6 +3567,7 @@ async function renderLibraryDocuments() {
     //: controls inside a control.
     const open = document.createElement("article");
     open.className = "doc-list-item";
+    Object.assign(open.dataset, { obj: `document:${doc.id}`, objTitle: doc.title || "Untitled" });
     const openDoc = () => {
       // switchTab first, then open. Reported as "the documents subtab document
       // cards don't even do anything": openDocument() loaded the document
@@ -3289,7 +3607,9 @@ async function renderLibraryDocuments() {
     meta.className = "muted doc-list-meta";
     // Words and when it was last touched, the two facts that tell you which
     // of five similarly-named drafts is the one you meant.
-    const words = typeof doc.words === "number" ? `${doc.words} words` : "";
+    //: A code file is its lines and its type ("6 lines · JavaScript"), not
+    //: its words (1031 CE8; `docSizeText` is the one rule).
+    const words = docSizeText(doc, true);
     const when = doc.updated_at ? relativeTime(doc.updated_at) : "";
     meta.textContent = [words, when].filter(Boolean).join(" · ");
     body.append(title, meta);
@@ -3357,7 +3677,7 @@ async function renderLibraryDocuments() {
           );
         }),
         makeMenuItem("ph:pencil-simple Rename", "Rename this document", async () => {
-          const next = await promptDialog("Rename this document:", doc.title || "");
+          const next = await promptDialog("Rename this document", doc.title || "");
           if (!next) return;
           await renameDocumentWithUndo(doc, next).catch((e) => toast(e.message, true));
           renderLibraryDocuments();
@@ -3421,7 +3741,7 @@ $("library-docs-bulk-delete")?.addEventListener("click", async () => {
   const ids = [...libraryDocsSelection];
   if (!ids.length) return;
   const ok = await confirmDialog(
-    `Delete ${ids.length} document${ids.length === 1 ? "" : "s"}? This cannot be undone.`
+    `Delete ${nounCount(ids.length, "document")}? This cannot be undone.`
   );
   if (!ok) return;
   let deleted = 0;
@@ -3437,16 +3757,16 @@ $("library-docs-bulk-delete")?.addEventListener("click", async () => {
   }
   if (gone.length) {
     pushRoutePairUndo(
-      `Deleted ${gone.length} document${gone.length === 1 ? "" : "s"}`,
+      `Deleted ${nounCount(gone.length, "document")}`,
       gone.map((id) => [`/documents/${id}/restore`, "POST"]),
       gone.map((id) => [`/documents/${id}`, "DELETE"]),
       () => renderLibraryDocuments()
     );
   }
   libraryDocsSelection.clear();
-  if (deleted) toast(`Deleted ${deleted} document${deleted === 1 ? "" : "s"}.`);
+  if (deleted) toast(`Deleted ${nounCount(deleted, "document")}.`);
   const failed = ids.length - deleted;
-  if (failed) toast(`${failed} document${failed === 1 ? "" : "s"} couldn't be deleted.`, true);
+  if (failed) toast(`${nounCount(failed, "document")} couldn't be deleted.`, true);
   renderLibraryDocuments();
 });
 
@@ -3772,7 +4092,7 @@ function fileMetaLine(image) {
   parts.push(mediaFileKind(image.original_name || image.url || ""));
   const size = formatFileSize(image.size_bytes);
   if (size) parts.push(size);
-  if (image.page_count) parts.push(`${image.page_count} page${image.page_count === 1 ? "" : "s"}`);
+  if (image.page_count) parts.push(nounCount(image.page_count, "page"));
   if (image.created_at) {
     const when = new Date(image.created_at);
     if (!Number.isNaN(when.getTime())) parts.push(`added ${when.toLocaleDateString()}`);
@@ -5952,6 +6272,8 @@ function openOcrWorkspace(image, images, page = 0) {
   //: card and becomes the page a frame later is a flash of the wrong thing.
   ocrPhonePage(window.matchMedia(PHONE_TABS).matches);
   overlay.classList.remove("hidden");
+  //: Focus starts inside the window, on its first control, not on <body> (audit 1029 X21).
+  $("ocr-close")?.focus({ preventScroll: true });
   //: The tool row is measured once it has a size (INBOX 717), and again
   //: whenever the card does.
   ocrWatchDock();
@@ -6208,7 +6530,21 @@ function ocrSyncZoomButtons() {
 //:
 //: The mode is remembered, because it is a preference about how you read
 //: rather than a property of this document.
-const OCR_VIEW_KEY = "memorymap.ocr.view";
+const OCR_VIEW_KEY = "tessellate.ocr.view";
+//: The two keys had the product's old name (`memorymap.ocr.*`). A value stored
+//: under it is copied once and the old key removed, here beside the only
+//: reader of both, so a person's reader and view choice survive the rename.
+(function ocrMigrateKeys() {
+  for (const name of ["view", "reader"]) {
+    try {
+      const old = prefs.get(`memorymap.ocr.${name}`, null);
+      if (old !== null && !prefs.has(`tessellate.ocr.${name}`)) prefs.set(`tessellate.ocr.${name}`, old);
+      if (old !== null) prefs.remove(`memorymap.ocr.${name}`);
+    } catch {
+      //: Blocked storage: nothing to carry over.
+    }
+  }
+})();
 let ocrViewMode = "page";
 //: Set while the code is doing the scrolling, so the observer that watches
 //: which page is on screen does not answer its own scroll by scrolling again.
@@ -6434,7 +6770,7 @@ let ocrReadersLoading = Promise.resolve();
 //: Where the workspace remembers the reader (INBOX 717), and whether this
 //: session has already applied it: a reader changed by hand is not overruled
 //: by the memory on the next refresh of the list (an install finishing).
-const OCR_READER_KEY = "memorymap.ocr.reader";
+const OCR_READER_KEY = "tessellate.ocr.reader";
 
 function ocrLoadReaders() {
   ocrReadersLoading = ocrLoadReadersNow();
@@ -6625,6 +6961,9 @@ function ocrSyncCanRead() {
   };
   mark($("ocr-read-page"), !any, why);
   mark($("ocr-region-read"), !any, why);
+  //: The reason is words on the page too, not only a tooltip: the empty reading's line says it until a reader arrives (audit 1029 X21).
+  const line = $("ocr-empty")?.querySelector(".ocr-empty-line");
+  if (line) line.textContent = any ? ocrEmptyLine() : why;
   mark($("ocr-region-describe"), !ocrCan("vision"), whyDescribe);
 }
 
@@ -7350,7 +7689,6 @@ function ocrPaintEmpty(body, hasReading) {
     box.replaceChildren();
     return;
   }
-  const pdf = ocrIsPdf(ocrWorkspaceCurrent);
   const icon = document.createElement("span");
   icon.className = "ocr-empty-icon";
   setLabel(icon, "ph:scan");
@@ -7360,13 +7698,18 @@ function ocrPaintEmpty(body, hasReading) {
   title.textContent = "Nothing read yet";
   const line = document.createElement("p");
   line.className = "muted ocr-empty-line";
-  line.textContent = pdf
-    ? `Press Read this page to turn page ${ocrWorkspacePage + 1} into text, or open Read's menu for every page.`
-    : "Press Read this image to turn it into text you can copy, search and save.";
+  line.textContent = ocrEmptyLine();
   const hint = document.createElement("p");
   hint.className = "muted ocr-empty-line";
   hint.textContent = "Or drag on the page to read or describe just one part.";
   box.replaceChildren(icon, title, line, hint);
+  ocrReadersLoading.then(ocrSyncCanRead);
+}
+
+function ocrEmptyLine() {
+  return ocrIsPdf(ocrWorkspaceCurrent)
+    ? `Press Read this page to turn page ${ocrWorkspacePage + 1} into text, or open Read's menu for every page.`
+    : "Press Read this image to turn it into text you can copy, search and save.";
 }
 
 //: **The rail and the reading walk with the arrow keys** (INBOX 717). One tab
@@ -8025,9 +8368,8 @@ onDomReady(() => {
         method: "POST",
         body: JSON.stringify({ content: body, defer_filing: true }),
       });
-      pushEntryCreateUndo(created, "Saved a picture's text as a note");
-      toast("Saved as a note.");
       $("ocr-workspace").classList.add("hidden");
+      announceSavedNote(created, "", { message: "Saved as a note.", undoLabel: "Saved a picture's text as a note" });
       flashEntry(created.id);
     } catch (error) {
       toast(error.message || voiceLine("failed", { what: "save that note" }), true);
@@ -8167,7 +8509,7 @@ function mediaReadingBadge(row) {
     badge.title = "Nothing has been transcribed from this yet";
     return badge;
   }
-  const words = reading.split(/\s+/).length;
+  const words = wordCount(reading);
   badge.className = "chip item-label library-read-badge is-read is-ok";
   chipWords(badge, `Read · ${words.toLocaleString()} words`);
   badge.title = "Open the reader to see it beside the page";
@@ -8190,7 +8532,7 @@ function mediaReadingBadge(row) {
 function mediaReadingSummary(row) {
   const reading = mediaReading(row);
   if (!reading) return null;
-  const words = reading.split(/\s+/).filter(Boolean).length;
+  const words = wordCount(reading);
   //: First sentence, or the first line if the reading has no sentence in it, 
   //: a table of figures, a slide title, a scan of a form. Capped, because a
   //: "sentence" in a bad transcription can run for a paragraph, and the cap is
@@ -8212,7 +8554,7 @@ function mediaReadingSummary(row) {
   //: claim twice, and the owner wrote the shorter one out in the report
   //: (INBOX 279).
   const pages = Number(row?.pages_read) || 0;
-  if (pages) facts.push(`${pages} page${pages === 1 ? "" : "s"}`);
+  if (pages) facts.push(nounCount(pages, "page"));
   facts.push(`${words.toLocaleString()} word${words === 1 ? "" : "s"}`);
   return { sentence, facts, words, pages };
 }
@@ -8532,7 +8874,7 @@ async function renderLibraryImagesGallery({ ifUnchanged = "render" } = {}) {
   if (unchanged && ifUnchanged === "skip") return;
   if (!images && !attachments?.length) {
     grid.replaceChildren();
-    if (!images && empty) surfaceFailed(empty, "images", renderLibraryImagesGallery);
+    if (!images && empty) surfaceFailed(empty, "your images", renderLibraryImagesGallery);
     else empty?.classList.remove("hidden");
     return;
   }
@@ -8566,6 +8908,7 @@ const LIBRARY_MEDIA_SORTS = {
       sensitivity: "base",
     }),
   largest: (a, b) => (Number(b.size_bytes) || 0) - (Number(a.size_bytes) || 0),
+  custom: libraryCustomCmp("media", (row) => `${row._isImage && !row._isAttachment ? "image" : "file"}:${row.id}`),
 };
 
 const LIBRARY_MEDIA_SORT_KEY = "library-media-sort";
@@ -8733,6 +9076,8 @@ function filterLibraryImagesGallery() {
   for (const image of images) {
     const fig = document.createElement("figure");
     fig.className = "library-image-tile";
+    //: A picture is staged by its media row, a file (an attachment or a PDF) by its id (obj-ref.js).
+    Object.assign(fig.dataset, { obj: `${image._isImage && !image._isAttachment ? "image" : "file"}:${image.id}`, objTitle: image.original_name || "", objUrl: image.url || "" });
     // **A PDF is not an image, and rendering one as an <img> is why files
     // "dont appear anywhere".** Reported directly, and this is the whole
     // mechanism: every `/media/upload` row was rendered into an `<img
@@ -9281,8 +9626,8 @@ function filterLibraryImagesGallery() {
           toast(
             updated.message ||
               (image._isImage
-                ? "No description was written. Is a vision model running in Settings > Models?"
-                : "No description was written. Check a model is running in Settings > Models."),
+                ? "No description was written. Check that a vision model is running in Settings, Models."
+                : "No description was written. Check a model is running in Settings, Models."),
             "info",
           );
         }
@@ -9759,14 +10104,14 @@ function filterLibraryImagesGallery() {
       ...(image._isAttachment
         ? []
         : [{ button: copyRef, label: "ph:code Copy markdown reference" }]),
-      { button: writeCaption, label: "ph:pencil-line Write a description" },
-      ...(image._isImage
-        ? [{ button: writeReading, label: "ph:keyboard Type the text in this picture" }]
-        : []),
       { button: rename, label: "ph:pencil-simple Rename" },
       { button: save, label: "ph:download-simple Save a copy" },
-      { button: captionBtn, label: "ph:sparkle Describe with AI" },
-      { button: visionOcrBtn, label: "ph:sparkle Read text with AI" },
+      { button: writeCaption, label: "ph:pencil-line Write a description", text: true },
+      ...(image._isImage
+        ? [{ button: writeReading, label: "ph:keyboard Type the text in this picture", text: true }]
+        : []),
+      { button: captionBtn, label: "ph:sparkle Describe with AI", text: true },
+      { button: visionOcrBtn, label: "ph:sparkle Read text with AI", text: true },
       //: Left out entirely, not greyed, when the binary is missing, the
       //: lightbox menu (app.js) does the same, for the same report: "make
       //: sure all the fila and document ocr worfs with ai ocr models, I dont
@@ -9774,13 +10119,13 @@ function filterLibraryImagesGallery() {
       //: instruction), so a disabled row here can never become enabled.
       ...(modelStatus && modelStatus.tesseract_available === false
         ? []
-        : [{ button: ocrBtn, label: `ph:scan Read text (${modelStatus?.ocr_engine || "Tesseract"} OCR)` }]),
+        : [{ button: ocrBtn, label: `ph:scan Read text (${modelStatus?.ocr_engine || "Tesseract"} OCR)`, text: true }]),
       //: Images and PDFs. Tesseract cannot open a PDF, but the workspace no
       //: longer needs it to: `_pdf_regions_for` (routes_files.py) rasterises
       //: the page first and the workspace reads it with the vision model,
       //: which is what *"is the document ocr even working??"* was about.
       ...(image._isImage || ocrIsPdf(image)
-        ? [{ button: ocrOpenBtn, label: "ph:selection-all See text on the page" }]
+        ? [{ button: ocrOpenBtn, label: "ph:selection-all See text on the page", text: true }]
         : []),
       //: **Every place this picture is used, by name.** Reported as the gap
       //: in INBOX 115 ("no way to see which notes use it beyond one chip")
@@ -9807,9 +10152,11 @@ function filterLibraryImagesGallery() {
     //: and taking that block out took the declaration with it.
     const actions = document.createElement("div");
     actions.className = "library-image-actions";
-    const menu = kebabMenu(
-      menuActions.map(({ button, label, danger }) => ({
+    //: **Fifteen rows became ten** (INBOX 1469): the six that write or read a
+    //: picture's words sit behind one row, at the place the first of them was.
+    const menuRows = menuActions.map(({ button, label, danger, text }) => ({
         label,
+        text,
         title: button.title,
         //: The button's own disabled state carries through as the menu row's
         //: muted state: `ocrBtn` is disabled when Tesseract is missing, and a
@@ -9820,9 +10167,10 @@ function filterLibraryImagesGallery() {
         //: field, the two readers' spinners, delete's confirm: is still the
         //: one thing that decides what happens.
         run: () => button.click(),
-      })),
-      `More actions for “${image.original_name}”`,
-    );
+      }));
+    const rows = menuRows.filter((row) => !row.text);
+    rows.splice(menuRows.findIndex((row) => row.text), 0, { label: "ph:text-aa Text and description", items: menuRows.filter((row) => row.text) });
+    const menu = kebabMenu(rows, `More actions for “${image.original_name}”`);
     actions.append(menu);
 
     // **Labelled, and separated.** Reported directly: "I feel the image
@@ -10363,18 +10711,7 @@ onDomReady(() => {
     libraryImagesSearchTimer = setTimeout(filterLibraryImagesGallery, 150);
   });
   $("library-docs-refresh")?.addEventListener("click", renderLibraryDocuments);
-  $("library-docs-new")?.addEventListener("click", async () => {
-    const doc = await createDocumentNamed();
-    // switchTab first, then open, the same fix openDoc() above needed
-    // ("the documents subtab document cards don't even do anything"): the
-    // document was created and loaded into the editor correctly, but the
-    // Documents page stayed hidden behind the Library tab, so nothing
-    // seemed to happen.
-    if (doc) {
-      switchTab("documents");
-      openDocument(doc.id);
-    }
-  });
+  $("library-docs-new")?.addEventListener("click", () => libraryNewDocument());
   //: **Import a file as a document** (BACKLOG section 99, "an upload documents
   //: option in the documents tab in the library"). `POST /documents/import`
   //: extracts a Word file, PDF, spreadsheet, Markdown or code file to text
@@ -10767,7 +11104,7 @@ async function bulkDeleteLibraryBoards() {
   // things about whether it comes back.
   if (
     !(await confirmDialog(
-      `Delete ${boards.length} board${boards.length === 1 ? "" : "s"}? They go to the bin.`
+      `Delete ${nounCount(boards.length, "board")}? They go to the bin.`
     ))
   ) {
     return;
@@ -10791,13 +11128,13 @@ async function bulkDeleteLibraryBoards() {
   };
   if (deleted) {
     const action = pushUndo(`Deleted ${deleted} boards`, move(false), move(true));
-    toastAction(`Moved ${deleted} board${deleted === 1 ? "" : "s"} to the bin.`, "Undo", async () => {
+    toastAction(`Moved ${nounCount(deleted, "board")} to the bin.`, "Undo", async () => {
       settleUndoFromToast(action);
       await move(false)();
     });
   }
   const failed = boards.length - deleted;
-  if (failed) toast(`${failed} board${failed === 1 ? "" : "s"} couldn't be deleted.`, true);
+  if (failed) toast(`${nounCount(failed, "board")} couldn't be deleted.`, true);
   if (typeof renderLibraryBoardsGallery === "function") renderLibraryBoardsGallery();
 }
 
@@ -10838,9 +11175,9 @@ onDomReady(() => {
     };
     linkVerb("library-links-bulk-move", "ph:folder-simple Move to group", "Put the ticked bookmarks in a group", bulkMoveLibraryLinks);
     linkVerb("library-links-bulk-read", "ph:check-circle Mark read", "Mark the ticked bookmarks as read", () =>
-      bulkUpdateLibraryLinks({ is_read: true }, (n) => `Marked ${n} bookmark${n === 1 ? "" : "s"} as read.`));
+      bulkUpdateLibraryLinks({ is_read: true }, (n) => `Marked ${nounCount(n, "bookmark")} as read.`));
     linkVerb("library-links-bulk-pin", "ph:push-pin Pin", "Pin the ticked bookmarks to the top", () =>
-      bulkUpdateLibraryLinks({ pinned: true }, (n) => `Pinned ${n} bookmark${n === 1 ? "" : "s"}.`));
+      bulkUpdateLibraryLinks({ pinned: true }, (n) => `Pinned ${nounCount(n, "bookmark")}.`));
     document.getElementById("library-links-bulk-delete").addEventListener("click", bulkDeleteLibraryLinks);
     document.getElementById("library-links-clear-selection").addEventListener("click", clearLibraryLinksSelection);
   }
@@ -10891,7 +11228,7 @@ async function renderBookmarks() {
     bookmarksCache = await fetchAllBookmarks();
   } catch {
     list.replaceChildren();
-    return surfaceFailed(empty, "bookmarks", renderBookmarks);
+    return surfaceFailed(empty, "your bookmarks", renderBookmarks);
   } finally {
     clearSkeletons(list);
   }
@@ -10937,7 +11274,7 @@ async function deleteBookmarksWithUndo(links) {
   }
   libraryLinksSelection.clear();
   const failed = links.length - deleted;
-  if (failed) toast(`${failed} bookmark${failed === 1 ? "" : "s"} couldn't be deleted.`, true);
+  if (failed) toast(`${nounCount(failed, "bookmark")} couldn't be deleted.`, true);
   await renderBookmarks();
   if (!deleted) return;
   const restore = async () => {
@@ -11005,7 +11342,7 @@ async function bulkUpdateLibraryLinks(changes, done) {
   libraryLinksSelection.clear();
   if (changed) {
     toast(done(changed));
-    pushBookmarksPutUndo(`Changed ${changed} bookmark${changed === 1 ? "" : "s"}`, written);
+    pushBookmarksPutUndo(`Changed ${nounCount(changed, "bookmark")}`, written);
   }
   await renderBookmarks();
 }
@@ -11014,7 +11351,7 @@ async function bulkMoveLibraryLinks() {
   const links = [...libraryLinksSelection.values()];
   if (!links.length) return;
   const value = await promptDialog(
-    `Group for ${links.length} bookmark${links.length === 1 ? "" : "s"} (e.g. Work/Reading, blank clears it):`,
+    `Group for ${nounCount(links.length, "bookmark")} (e.g. Work/Reading, blank clears it)`,
     ""
   );
   //: Cancel and an empty field both resolve "" (see `moveToGroup`), so a bulk
@@ -11023,7 +11360,7 @@ async function bulkMoveLibraryLinks() {
   if (!value) return;
   await bulkUpdateLibraryLinks(
     { group_name: value.trim() },
-    (n) => `Moved ${n} bookmark${n === 1 ? "" : "s"} to “${value.trim()}”.`
+    (n) => `Moved ${nounCount(n, "bookmark")} to “${value.trim()}”.`
   );
 }
 
@@ -11110,7 +11447,7 @@ async function deleteBookmarkGroup(group) {
 }
 
 async function newBookmarkGroup() {
-  const name = (await promptDialog("Name for the new group (e.g. Work/Reading):", "")).trim();
+  const name = (await promptDialog("Name for the new group (e.g. Work/Reading)", "")).trim();
   if (!name) return;
   if (allBookmarkGroups().includes(name)) {
     toast(`"${name}" already exists.`);
@@ -11185,25 +11522,25 @@ function manageBookmarkGroups() {
       name.textContent = group.split("/").join(" / ");
       const meta = document.createElement("span");
       meta.className = "muted text-sm";
-      meta.textContent = count === 0 ? "Empty" : `${count} bookmark${count === 1 ? "" : "s"}`;
+      meta.textContent = count === 0 ? "Empty" : nounCount(count, "bookmark");
       label.append(name, meta);
 
       const actions = document.createElement("div");
       actions.className = "row bookmark-group-row-actions";
       actions.append(
         smallButton("ph:pencil-simple", `Rename "${group}"`, async () => {
-          const next = (await promptDialog(`Rename "${group}" to:`, group)).trim();
+          const next = (await promptDialog(`Rename "${group}"`, group)).trim();
           if (!next || next === group) return;
           const moved = await renameBookmarkGroup(group, next);
           await renderBookmarks();
           paint();
-          toast(moved ? `Moved ${moved} bookmark${moved === 1 ? "" : "s"} to "${next}".` : `Renamed to "${next}".`);
+          toast(moved ? `Moved ${nounCount(moved, "bookmark")} to "${next}".` : `Renamed to "${next}".`);
         }),
         smallButton("ph:trash", `Delete "${group}"`, async () => {
           const ok = await confirmDialog(
             count === 0
               ? `Delete the empty group "${group}"?`
-              : `Delete the group "${group}"? Its ${count} bookmark${count === 1 ? "" : "s"} stay: they just stop being grouped.`
+              : `Delete the group "${group}"? Its ${nounCount(count, "bookmark")} stay: they just stop being grouped.`
           );
           if (!ok) return;
           await deleteBookmarkGroup(group);
@@ -11677,7 +12014,7 @@ function bookmarkRow(bookmark) {
 
   const moveToGroup = async () => {
     const value = await promptDialog(
-      "Group (e.g. Work/Reading: blank clears it):", bookmark.group_name
+      "Group (e.g. Work/Reading: blank clears it)", bookmark.group_name
     );
     // Unlike the title prompt above, an intentionally blank group is a real,
     // useful answer ("ungroup this link"), so only an actual Cancel/Escape
@@ -12092,7 +12429,7 @@ function contentsDocRow(doc, heads, shallowest, forceOpen) {
   link.href = "#";
   const facts = [
     contentsMode === "date" ? "" : "Document",
-    heads.length ? `${heads.length} section${heads.length === 1 ? "" : "s"}` : "",
+    heads.length ? nounCount(heads.length, "section") : "",
     doc.updated_at ? relativeTime(doc.updated_at) : "",
   ];
   contentsRowBody(link, contentsGlyph("ph-file-text"), doc.title || "Untitled", facts);
@@ -12193,8 +12530,9 @@ function contentsBuildSection(outline, { key, label, total, fill }) {
   const count = document.createElement("span");
   count.className = "contents-count";
   count.textContent = total;
-  heading.append(caret, contentsGroupMark(key), name, count);
-  heading.setAttribute("aria-label", `${label}, ${total}`);
+  //: The words and the count name the button as drawn (a space between them,
+  //: invisible in a flex row), so the name starts with the visible text.
+  heading.append(caret, contentsGroupMark(key), name, " ", count);
 
   const list = document.createElement("ul");
   list.className = "contents-list";
@@ -12328,7 +12666,7 @@ async function renderContents() {
   hint?.classList.add("hidden");
   if (summary) summary.textContent = "";
   if (!active.length && $("empty-message")?.classList.contains("is-failed")) {
-    surfaceFailed(empty, "contents", renderContents);
+    surfaceFailed(empty, "this document's contents", renderContents);
     return;
   }
   surfaceRecovered(empty);
@@ -12382,7 +12720,7 @@ async function renderContents() {
     hint.textContent =
       "Folders come from an imported Obsidian vault, they are not created in "
       + "Tessellate. Nothing has been imported yet, so every note is grouped "
-      + "here. Import a vault from Settings → Import & export to see its folder tree.";
+      + "here. Import a vault from Settings, Import & export to see its folder tree.";
     hint.classList.remove("hidden");
   }
   if (hint && contentsMode === "topic") {
@@ -12442,10 +12780,10 @@ async function renderContents() {
 
   if (summary) {
     const sections = shownDocs.reduce((n, d) => n + d.heads.length, 0);
-    const bits = [`${shown.length} note${shown.length === 1 ? "" : "s"}`];
+    const bits = [nounCount(shown.length, "note")];
     if (shownDocs.length) {
-      bits.push(`${shownDocs.length} document${shownDocs.length === 1 ? "" : "s"}`);
-      if (sections) bits.push(`${sections} section${sections === 1 ? "" : "s"}`);
+      bits.push(nounCount(shownDocs.length, "document"));
+      if (sections) bits.push(nounCount(sections, "section"));
     }
     summary.textContent = bits.join(" · ");
   }

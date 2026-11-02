@@ -18,7 +18,7 @@ from collections import Counter
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from pydantic import BaseModel, Field
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from tessellate.ai.entities import MergeUndoError, merge_with_undo, undo_merge
@@ -71,17 +71,18 @@ def list_entities(
     limit: int = Query(default=LIST_MAX, ge=1, le=LIST_MAX),
     session: Session = Depends(get_session),
 ) -> list[dict]:
-    """Every entity some visible note names, most named first."""
-    visible = _visible_ids(session)
-    counts: Counter[int] = Counter()
-    for entity_id, entry_id in session.execute(select(EntityMention.entity_id, EntityMention.entry_id)):
-        if entry_id in visible:
-            counts[entity_id] += 1
-    rows = [
-        _row(e, counts[e.id])
-        for e in session.scalars(select(Entity).where(Entity.merged_into.is_(None)))
-        if counts[e.id]
-    ]
+    """Every entity some visible note names, most named first. Counted in
+    SQL (audit 1028 K31: every mention row was read and counted in Python on
+    each call, whatever the limit)."""
+    notes = func.count(func.distinct(EntityMention.entry_id))
+    named = (
+        select(Entity, notes)
+        .join(EntityMention, EntityMention.entity_id == Entity.id)
+        .join(Entry, Entry.id == EntityMention.entry_id)
+        .where(Entity.merged_into.is_(None), Entry.is_deleted.is_(False), Entry.is_private.is_(False))
+        .group_by(Entity.id)
+    )
+    rows = [_row(entity, count) for entity, count in session.execute(named)]
     rows.sort(key=lambda r: (-r["notes"], r["name"].casefold()))
     response.headers["X-Total-Count"] = str(len(rows))
     return rows[:limit]

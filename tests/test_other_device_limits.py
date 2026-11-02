@@ -171,6 +171,7 @@ def test_the_phone_cannot_write_a_file_into_the_exports_folder(phone, here):
         ("show_console_on_startup", False, True, None),
         ("close_to_tray", False, True, None),
         ("new_window_on_launch", False, True, None),
+        ("desktop_companion", False, True, None),
         ("searxng_autostart", False, True, False),
         ("semantic_auto_install", False, True, False),
         ("auto_update_enabled", False, True, False),

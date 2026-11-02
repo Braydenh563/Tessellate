@@ -43,6 +43,7 @@ from typing import Any
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from tessellate.core import private_turn
 from tessellate.core.database import (
     AuditLog,
     Entry,
@@ -194,6 +195,18 @@ def _fold(scope: _Write, item: dict) -> None:
     scope.owner.payload = payload
 
 
+def _turn_bookkeeping(action: str, entity_type: str) -> bool:
+    """An event about a turn rather than a change to the notebook: a tool
+    call's row (`ai_tool`, `chat`), a skill or plan run's (`ran`, `skill`),
+    and the question log (`queried`). A private chat writes none of them; a
+    note it creates or edits is still recorded, because history and Undo need
+    the change whoever asked for it."""
+    return entity_type in _TURN_ENTITIES or action == "queried"
+
+
+_TURN_ENTITIES = frozenset({"chat", "skill"})
+
+
 def record(
     session: Session,
     action: str,
@@ -208,7 +221,7 @@ def record(
     Returns the row, or None when the event was folded into the write that
     contains it (see the module docstring) or suppressed entirely.
     """
-    if _suppress.get():
+    if _suppress.get() or (private_turn.active() and _turn_bookkeeping(action, entity_type)):
         return None
     stack = _writes.get()
     scope = stack[-1] if stack else None
@@ -467,6 +480,9 @@ COMPACT_AFTER_DAYS = 90
 #: nothing at all, five took the payloads from 9.89 MB to 1.46 MB.
 COMPACT_KEEP_LAST = 5
 
+#: Entities folded per commit, so the write lock is held for a few of them at a time.
+COMPACT_BATCH = 50
+
 #: Marks a payload the compactor rewrote. On the snapshot event it sits beside
 #: an `after` holding the whole state; on the events behind it, it is the
 #: whole payload, which is what "this row is still a fact, its values are not
@@ -566,24 +582,52 @@ def compact(
     stripping it would lose the only record of what it did.
     """
     cutoff = (now or utcnow()) - timedelta(days=older_than_days)
-    keys = session.execute(
-        select(AuditLog.entity_type, AuditLog.entity_id)
-        .where(
-            AuditLog.entity_id.is_not(None),
-            AuditLog.created_at < cutoff,
-            AuditLog.payload.is_not(None),
+    #: **Only entities with something left to fold are visited** (INBOX 1426
+    #: L1). The old query named every entity with an old event, so every launch
+    #: re-read and re-folded the whole log to write the same bytes: 1.3s of
+    #: Python at start on 30,000 events, the unlock and the first polls waiting
+    #: behind it. A row is work when it is older than the window, past the
+    #: newest `keep_last` of its entity, and not yet stripped or a snapshot.
+    ranked = (
+        select(
+            AuditLog.entity_type.label("entity_type"),
+            AuditLog.entity_id.label("entity_id"),
+            AuditLog.created_at.label("created_at"),
+            AuditLog.payload.label("payload"),
+            func.row_number()
+            .over(partition_by=(AuditLog.entity_type, AuditLog.entity_id), order_by=AuditLog.id.desc())
+            .label("rank"),
         )
-        .distinct()
+        .where(AuditLog.entity_id.is_not(None))
+        .subquery()
+    )
+    keys = session.execute(
+        select(ranked.c.entity_type, ranked.c.entity_id)
+        .where(
+            ranked.c.rank > keep_last,
+            ranked.c.created_at < cutoff,
+            func.json_type(ranked.c.payload) == "object",
+            func.json_extract(ranked.c.payload, f"$.{COMPACTED}").is_(None),
+        )
+        .group_by(ranked.c.entity_type, ranked.c.entity_id)
     ).all()
 
     entities = 0
     stripped = 0
+    pending = 0
     for entity_type, entity_id in keys:
         count = _compact_one(session, entity_type, entity_id, cutoff, keep_last)
         if count:
             entities += 1
             stripped += count
-    if stripped:
+            pending += 1
+        #: Committed in batches: one transaction over every entity held the
+        #: database's write lock for the whole pass, and a note saved at
+        #: start waited it out (the `busy_timeout` is 5s).
+        if pending >= COMPACT_BATCH:
+            session.commit()
+            pending = 0
+    if pending:
         session.commit()
     return {"entities": entities, "events": stripped}
 
@@ -755,6 +799,109 @@ def _readable_now(content: Any) -> bool:
     return True
 
 
+def _refused_early(entity_type: str, live: list[AuditLog]) -> str | None:
+    """The status of an entity the plan refuses before reading anything else."""
+    if not live:
+        return "already undone"
+    if entity_type != "entry":
+        return "not undoable"
+    if any(is_compacted(row) for row in live):
+        return "too old"
+    return None
+
+
+def _plan_undo(
+    session: Session,
+    item: dict[str, Any],
+    entity_type: str,
+    entity_id: int,
+    live: list[AuditLog],
+    actors: list[str],
+    force: bool,
+) -> tuple[Entry, dict[str, Any]] | None:
+    """One entity's part of the plan: its status set on `item`, and the note
+    with the fields to put back, or None when the plan refuses it."""
+    refused = _refused_early(entity_type, live)
+    if refused:
+        item["status"] = refused
+        return None
+    created = any(row.action == "created" for row in live)
+    changes = [
+        row for row in live
+        if isinstance((row.payload or {}).get("before"), dict)
+    ]
+    if not created and not changes:
+        item["status"] = "no values recorded"
+        return None
+    later_by_others = session.scalar(
+        select(func.count())
+        .select_from(AuditLog)
+        .where(
+            AuditLog.entity_type == entity_type,
+            AuditLog.entity_id == entity_id,
+            AuditLog.id > live[0].id,
+            AuditLog.actor.notin_(actors),
+            AuditLog.action.notin_(sorted(QUIET_ACTIONS)),
+        )
+    )
+    if later_by_others and not force:
+        item["status"] = "changed since"
+        return None
+    entry = session.get(Entry, entity_id)
+    if entry is None:
+        item["status"] = "gone"
+        return None
+    target = _fields_to_restore(created, changes)
+    if "content" in target and not _readable_now(target["content"]):
+        # A payload keeps a private note's column as it was, ciphertext
+        # under that day's key. After `rotate-vault-key` it reads under
+        # nothing, and writing it back would leave a note nobody can
+        # open, so the text stays as it is and the plan says so.
+        del target["content"]
+        item["kept"] = ["content"]
+        if not target:
+            item["status"] = "private text under an older key"
+            return None
+    item["status"] = "undo"
+    item["fields"] = sorted(target)
+    return entry, target
+
+
+def _fields_to_restore(created: bool, changes: list[AuditLog]) -> dict[str, Any]:
+    if created:
+        return {"is_deleted": True, "deleted_at": utcnow().isoformat()}
+    target: dict[str, Any] = {}
+    for row in reversed(changes):
+        target.update({k: v for k, v in row.payload["before"].items() if k in _UNDOABLE_ENTRY_FIELDS})
+    return target
+
+
+def _restore_entry(session: Session, entry: Entry, target: dict[str, Any], live: list[AuditLog], actors: list[str]) -> None:
+    was = entry_state(entry)
+    if "content" in target and target["content"] != entry.content:
+        # The text about to be replaced is kept, as every restore keeps
+        # it: undoing an undo has to be possible.
+        session.add(EntryRevision(entry_id=entry.id, content=entry.content, tags=entry.tags or "[]"))
+    for key, value in target.items():
+        if key == "tags":
+            entry.tags = json.dumps(value if isinstance(value, list) else [])
+        elif key in ("deleted_at", "archived_at"):
+            setattr(entry, key, datetime.fromisoformat(value) if value else None)
+        elif key == "is_deleted":
+            entry.is_deleted = bool(value)
+        else:
+            setattr(entry, key, value)
+    with acting_as(ACTOR_USER):
+        record(
+            session,
+            "restored",
+            "entry",
+            entry.id,
+            detail=f"undid {len(live)} change(s) by {', '.join(actors)}"[:200],
+            payload={**changed(was, entry_state(entry)), "undid": [row.id for row in live]},
+        )
+
+
 def undo(
     session: Session,
     actor: str | list[str],
@@ -810,84 +957,11 @@ def undo(
         }
         items.append(item)
         live = [row for row in mine if row.id not in already]
-        if not live:
-            item["status"] = "already undone"
+        planned = _plan_undo(session, item, entity_type, entity_id, live, actors, force)
+        if planned is None or not apply:
             continue
-        if entity_type != "entry":
-            item["status"] = "not undoable"
-            continue
-        if any(is_compacted(row) for row in live):
-            item["status"] = "too old"
-            continue
-        created = any(row.action == "created" for row in live)
-        changes = [
-            row for row in live
-            if isinstance((row.payload or {}).get("before"), dict)
-        ]
-        if not created and not changes:
-            item["status"] = "no values recorded"
-            continue
-        first = live[0].id
-        later_by_others = session.scalar(
-            select(func.count())
-            .select_from(AuditLog)
-            .where(
-                AuditLog.entity_type == entity_type,
-                AuditLog.entity_id == entity_id,
-                AuditLog.id > first,
-                AuditLog.actor.notin_(actors),
-                AuditLog.action.notin_(sorted(QUIET_ACTIONS)),
-            )
-        )
-        if later_by_others and not force:
-            item["status"] = "changed since"
-            continue
-        entry = session.get(Entry, entity_id)
-        if entry is None:
-            item["status"] = "gone"
-            continue
-        target: dict[str, Any] = {}
-        for row in reversed(changes):
-            target.update({k: v for k, v in row.payload["before"].items() if k in _UNDOABLE_ENTRY_FIELDS})
-        if created:
-            target = {"is_deleted": True, "deleted_at": utcnow().isoformat()}
-        if "content" in target and not _readable_now(target["content"]):
-            # A payload keeps a private note's column as it was, ciphertext
-            # under that day's key. After `rotate-vault-key` it reads under
-            # nothing, and writing it back would leave a note nobody can
-            # open, so the text stays as it is and the plan says so.
-            del target["content"]
-            item["kept"] = ["content"]
-            if not target:
-                item["status"] = "private text under an older key"
-                continue
-        item["status"] = "undo"
-        item["fields"] = sorted(target)
-        if not apply:
-            continue
-        was = entry_state(entry)
-        if "content" in target and target["content"] != entry.content:
-            # The text about to be replaced is kept, as every restore keeps
-            # it: undoing an undo has to be possible.
-            session.add(EntryRevision(entry_id=entry.id, content=entry.content, tags=entry.tags or "[]"))
-        for key, value in target.items():
-            if key == "tags":
-                entry.tags = json.dumps(value if isinstance(value, list) else [])
-            elif key in ("deleted_at", "archived_at"):
-                setattr(entry, key, datetime.fromisoformat(value) if value else None)
-            elif key == "is_deleted":
-                entry.is_deleted = bool(value)
-            else:
-                setattr(entry, key, value)
-        with acting_as(ACTOR_USER):
-            record(
-                session,
-                "restored",
-                "entry",
-                entry.id,
-                detail=f"undid {len(live)} change(s) by {', '.join(actors)}"[:200],
-                payload={**changed(was, entry_state(entry)), "undid": [row.id for row in live]},
-            )
+        entry, target = planned
+        _restore_entry(session, entry, target, live, actors)
         undone += 1
     if apply:
         session.flush()

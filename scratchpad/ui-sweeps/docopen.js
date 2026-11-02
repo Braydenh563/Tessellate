@@ -25,7 +25,7 @@
 //
 // `opts.ext` names the file type the way `GET /documents/file-types` does
 // ("md", "txt", "py", ...); it is applied through the app's own file-type
-// select after the open, so the language mode and the gutter follow the same
+// picker (`docTypeChoose`) after the open, so the language mode and the gutter follow the same
 // path a user's choice would.
 //
 // Returns the document's id.
@@ -55,17 +55,13 @@ async function openDoc(page, opts = {}) {
     .catch(() => {});
   await page.waitForTimeout(600);
   if (opts.ext) {
-    // `doc-file-type`, with both hyphens: the select moved into the ⋯ menu in
-    // Phase 1 and kept its id. Written as `doc-filetype` once here, which set
-    // nothing, said nothing, and cost a probe that reported a Python file with
-    // no syntax highlighting at all. It throws now rather than carrying on
-    // measuring a markdown document that was asked to be code.
-    const problem = await page.evaluate((ext) => {
-      const sel = document.getElementById('doc-file-type');
-      if (!sel) return 'no #doc-file-type in the page';
-      sel.value = ext;
-      if (sel.value !== ext) return `#doc-file-type has no option "${ext}"`;
-      sel.dispatchEvent(new Event('change', { bubbles: true }));
+    // The foot's type button opens `docTypeMenu` (INBOX 1482); a sweep skips
+    // the menu and calls what its row calls, so the language mode and the
+    // gutter follow the same path a user's choice would. It throws rather than
+    // carrying on measuring a markdown document that was asked to be code.
+    const problem = await page.evaluate(async (ext) => {
+      if (!docFileTypes.some((t) => t.ext === ext)) return `no file type "${ext}"`;
+      await docTypeChoose(ext);
       return null;
     }, opts.ext);
     if (problem) throw new Error(`openDoc: ${problem}`);

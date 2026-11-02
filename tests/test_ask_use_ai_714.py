@@ -15,10 +15,12 @@ These are the source halves; the heights and the centre line are the sweep's
 
 from __future__ import annotations
 
+from tests._help_text import help_chat_text
+
 import re
 from pathlib import Path
 
-from tessellate.ai import help_chat, help_topics_more
+from tessellate.ai import help_topics_more
 from tests._css_paths import CSS_DIR
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -89,7 +91,7 @@ def test_the_switch_wears_the_pill_switch_recipe_and_the_chip_rules_are_gone():
 
 def test_every_help_surface_names_the_switch():
     source = Path(help_topics_more.__file__).read_text(encoding="utf-8")
-    chat = Path(help_chat.__file__).read_text(encoding="utf-8")
+    chat = help_chat_text()
     assert "Ask on the Notes tab has an AI switch beside its answer-length picker" in source
     assert "Notes tab, Ask, the AI switch" in source
     assert "Turn the AI switch off beside the answer length." in source

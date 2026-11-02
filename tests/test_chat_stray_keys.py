@@ -15,11 +15,11 @@ import subprocess
 
 import pytest
 
-from tests._app_js import JS_DIR
+from tests._app_js import with_pieces
 
 
 def _tidy(text: str) -> str:
-    source = (JS_DIR / "chat-attach.js").read_text(encoding="utf-8")
+    source = with_pieces("chat-attach.js")
     match = re.search(r"^function chatTidyTyped\(text\) \{.*?^\}", source, re.S | re.M)
     assert match, "chatTidyTyped is gone from chat-attach.js"
     script = match.group(0) + f"\nprocess.stdout.write(JSON.stringify(chatTidyTyped({json.dumps(text)})));"
@@ -43,5 +43,5 @@ def test_a_stray_trailing_key_is_dropped(typed, shown):
 
 
 def test_the_send_path_tidies_what_it_shows():
-    source = (JS_DIR / "chat-attach.js").read_text(encoding="utf-8")
+    source = with_pieces("chat-attach.js")
     assert "const typed = chatTidyTyped((preset ?? input.value).trim());" in source

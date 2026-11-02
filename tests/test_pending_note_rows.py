@@ -34,7 +34,7 @@ def test_the_list_render_asks_for_the_rows_only_when_something_is_held():
     code = app_js_text()
     assert '"renderPendingNoteRows"]' in code  # a lazy entry point
     notes = (JS / "notes-list.js").read_text(encoding="utf-8")
-    render = notes.split("function renderEntries()")[1].split("const visible = libraryVisibleRows()")[0]
+    render = notes.split("function renderEntries(")[1].split("A selection is of what is on screen")[0]
     assert 'prefs.get("noteOutbox", null)' in render
     assert "renderPendingNoteRows();" in render
 

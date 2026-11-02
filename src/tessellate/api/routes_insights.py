@@ -7,7 +7,9 @@ import json
 import random
 import re
 from collections.abc import Iterator
-from datetime import datetime, timedelta, timezone
+from concurrent.futures import Future
+from concurrent.futures import TimeoutError as FutureTimeout
+from datetime import date, datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
@@ -15,10 +17,10 @@ from sqlalchemy import func, select
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from tessellate.ai import greeting_compose, librarian
+from tessellate.ai import backend_hint, greeting_compose, librarian
 from tessellate.ai.answer_trim import trim_assistant_padding
 from tessellate.ai.ollama_client import OllamaError
-from tessellate.core import deps
+from tessellate.core import deps, jobs
 from tessellate.core.config import days_from_today, user_now
 from tessellate.core.database import Category, Entry, utcnow
 from tessellate.core.deps import get_session
@@ -146,7 +148,9 @@ def _clean_greeting(raw: str) -> tuple[str, str] | None:
         text = text[:-1].rstrip()
     # A little headroom over the prompt's word limit, since a woven-in name
     # costs a word or two.
-    if not text or len(text) > 56 or len(text.split()) > 9:
+    #: One word is a reply, not a greeting ("Ok." from a model that answered
+    #: "ok", audit 1031 SH9); the banner needs a phrase.
+    if not text or len(text) > 56 or not 2 <= len(text.split()) <= 9:
         return None
     # Small local models often answer in lowercase; the banner is a sentence,
     # so open it with a capital. Only the first character is touched, leaving
@@ -187,9 +191,44 @@ def greeting(block: str = "morning", session: Session = Depends(get_session)) ->
     }
 
     ollama = deps.get_ollama()
-    if not ollama.is_running():
+    if not backend_hint.running(ollama):
         return fallback
+    return _greeting_within(config, ollama, block, fallback)
 
+
+#: How long the banner waits for the model's greeting before it shows the
+#: composed one (audit 1030 A39: a hung model held the route 4,005 ms).
+GREETING_WAIT = 0.5
+_GREETING_FLIGHT: dict[str, Future] = {}
+
+
+def _greeting_within(config, ollama, block: str, fallback: dict) -> dict:  # noqa: ANN001
+    """The model's greeting if it comes within `GREETING_WAIT`, else the
+    composed one now. A call that runs late is not cancelled: the next
+    request takes its result, and while one is still running no second is
+    started, so a hung model costs one thread and no wait."""
+    flight = _GREETING_FLIGHT.get(block)
+    if flight is not None:
+        if not flight.done():
+            return fallback
+        _GREETING_FLIGHT.pop(block, None)
+        try:
+            return flight.result()
+        except Exception:  # noqa: BLE001  # a failed late call is the composed greeting
+            return fallback
+    flight = jobs.future("greeting", _ai_greeting, config, ollama, block, fallback)
+    _GREETING_FLIGHT[block] = flight
+    try:
+        result = flight.result(timeout=GREETING_WAIT)
+    except FutureTimeout:
+        return fallback
+    except Exception:  # noqa: BLE001  # any model failure degrades to the composed greeting
+        result = fallback
+    _GREETING_FLIGHT.pop(block, None)
+    return result
+
+
+def _ai_greeting(config, ollama, block: str, fallback: dict) -> dict:  # noqa: ANN001
     # The name is read from preferences here rather than trusted from the
     # client, so there is exactly one source of truth for it.
     name = str(config.get_preference("display_name", "") or "").strip()
@@ -413,6 +452,25 @@ def patterns(session: Session = Depends(get_session)) -> dict:
     return {"patterns": [insights.as_row(i, known) for i in found]}
 
 
+@router.get("/remarks")
+def remarks(session: Session = Depends(get_session)) -> dict:
+    """What the companion could say about the notebook, best first
+    (`composer_voice.remarks`, INBOX 743): a reminder due, a note from this
+    day in an earlier year, an open item, a quiet day. Each carries a `key`
+    (a hash of its words) so the page never says one twice, and the notes it
+    names; no model, and private and binned notes are never read."""
+    from tessellate.ai import composer_voice
+    from tessellate.repo import reminders as reminder_repo, voice
+
+    today = user_now(deps.get_config()).date()
+    recent = voice.recent(session)
+    ids = {e.id for e in recent}
+    notes = voice.as_notes(session, [*recent, *(e for e in voice.this_day_before(session, today) if e.id not in ids)])
+    reminders = reminder_repo.due_by(session, today)
+    found = composer_voice.remarks(notes, today=today, reminders=reminders)[:6]
+    return {"remarks": [{"text": r["text"].replace("**", ""), "key": r["key"], "kind": r["kind"], "sources": r["sources"]} for r in found]}
+
+
 @router.get("/today-line")
 def today_line(seed: int = 0, session: Session = Depends(get_session)) -> dict:
     """The dashboard's line under the greeting, composed from the notebook
@@ -421,25 +479,22 @@ def today_line(seed: int = 0, session: Session = Depends(get_session)) -> dict:
     private and binned notes are never read. `text` is empty for an empty
     notebook, so the page falls back to its counts."""
     from tessellate.ai import composer_voice
+    from tessellate.repo import voice
 
-    cats = {c.id: c.name for c in session.scalars(select(Category)).all()}
-    rows = session.scalars(
-        select(Entry)
-        .where(Entry.is_deleted == False, Entry.is_private == False, Entry.is_draft == False, Entry.is_board == False)  # noqa: E712
-        .order_by(Entry.created_at.desc())
-        .limit(120)
-    ).all()
-    notes = [
-        {
-            "id": e.id,
-            "content": e.content or "",
-            "created_at": e.created_at.date().isoformat() if e.created_at else "",
-            "tags": manager.entry_tags(e),
-            "category": "" if cats.get(e.category_id, "").lower().startswith("uncategori") else cats.get(e.category_id, ""),
-        }
-        for e in rows
-    ]
-    line = composer_voice.today_line(notes, today=user_now(deps.get_config()).date(), seed=seed)
+    shown = voice.SHOWN
+    rows = voice.recent(session)
+    #: The 120 rows are the sample the line names notes from; how many were
+    #: written today and yesterday is counted in SQL, so a bulk import is not
+    #: capped at the sample's size (audit 1028 S8).
+    today = user_now(deps.get_config()).date()
+    day = func.date(Entry.created_at)
+    asked = [today.isoformat(), (today - timedelta(days=1)).isoformat()]
+    counts = {
+        date.fromisoformat(d): n
+        for d, n in session.execute(select(day, func.count()).where(*shown, day.in_(asked)).group_by(day)).all()
+    }
+    notes = voice.as_notes(session, rows)
+    line = composer_voice.today_line(notes, today=today, seed=seed, counts=counts)
     if not line:
         #: An empty notebook is welcomed in words (CHAT_PLAN 1353), not left blank.
         from tessellate.api import chat_extra
@@ -467,7 +522,7 @@ class InsightVerdict(BaseModel):
 @router.post("/confirm", status_code=201)
 def confirm_insight(body: InsightVerdict, session: Session = Depends(get_session)) -> dict:
     """Confirm: the insight is written as a fact the person vouched for,
-    "confirmed by you, <date>", and said that way from the next turn on."""
+    "..., as you told me on <date>.", and said that way from the next turn on."""
     from tessellate.ai import insights
 
     try:

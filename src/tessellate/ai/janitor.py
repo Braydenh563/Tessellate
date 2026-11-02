@@ -34,7 +34,7 @@ from typing import Any
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import filing_certainty, learning, lexical_filing, librarian
+from tessellate.ai import fence, filing_certainty, learning, lexical_filing, librarian
 from tessellate.ai.embeddings import EmbeddingService, cosine_similarity
 from tessellate.ai.model_manager import ModelManager
 from tessellate.ai.ollama_client import OllamaClient, OllamaError
@@ -95,7 +95,7 @@ SYSTEM_PROMPT = (
     "choose the single best category for it. Prefer one of the existing "
     "categories; invent a short new category name (1-3 words) only if none "
     'fit. Reply with ONLY JSON like {"category": "...", "confidence": 0-100} '
-    "where confidence is how sure you are."
+    "where confidence is how sure you are. " + fence.FENCE_RULE
 )
 
 

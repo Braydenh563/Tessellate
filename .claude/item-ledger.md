@@ -47,3 +47,43 @@ date | item | type | rung | rework | note
 2026-10-27 | guide chip closes panel; how-to lead past forms | bug | opus | 0 | 
 2026-10-27 | picture deleted mid-read StaleDataError | bug | opus | 0 | 
 2026-10-27 | merge fastembed, facts r3, atlas 1402 | merge | opus | 1 | 
+2026-10-28 | E10 tasks as acts | feature | sonnet | 1 | 
+2026-10-28 | help text parity 1028 | docs | sonnet | 0 | 
+2026-10-28 | import cycles in commands.py | bugfix | opus | 0 | 
+2026-10-30 | INBOX 1452 left-drag select, right-drag pan | ui | opus | 0 | 
+2026-10-30 | INBOX 1451/1453/1455/1456 diagram, panel layer, offered open, spending lists | feature | opus | 0 | 
+2026-10-30 | K30 link suggestion cache | bug | sonnet | 0 | 
+2026-10-30 | K31 entity counts in SQL | bug | sonnet | 0 | 
+2026-10-30 | S14 documents tab label | ui | sonnet | 0 | 
+2026-10-30 | S19 toast hold on hover and focus | ui | sonnet | 0 | 
+2026-10-30 | U13 two Library buttons | ui | sonnet | 0 | 
+2026-10-30 | D17 blank title autosave | bug | sonnet | 0 | 
+2026-10-30 | D29 replace whole word and leave-out | feature | sonnet | 0 | 
+2026-10-30 | U9 find match count | ui | sonnet | 0 | 
+2026-10-30 | K6 SearXNG pinned commit and tree digest | security | opus | 0 | 
+2026-10-30 | K21 quoted string defaults | bug | opus | 0 | 
+2026-10-30 | K37 PRAGMA optimize at shutdown | perf | opus | 0 | 
+2026-10-30 | D36 failed drop re-adds document | bug | opus | 0 | 
+2026-10-30 | S12 Duplicate at top level | ui | opus | 0 | 
+2026-10-30 | K22 user-day dates | bug | opus | 0 | 
+2026-10-30 | B22 board failures toasted | bug | opus | 0 | 
+2026-10-30 | D34 failed save said once | bug | opus | 0 | 
+2026-10-30 | K18 thumbnails off the loop | perf | opus | 0 | 
+2026-10-30 | D31 Ctrl+H replace | feature | opus | 0 | 
+2026-10-30 | E66 delete all names every match | bug | opus | 0 | 
+2026-10-30 | U29 one New document | ui | opus | 0 | 
+2026-10-30 | S17 one past-time helper | refactor | opus | 0 | 
+2026-10-30 | D32 find chords in palette | ui | opus | 0 | 
+2026-10-30 | U33 prompt headings | ui | opus | 0 | 
+2026-10-30 | S13 placeholder fields labelled | ui | opus | 0 | 
+2026-10-30 | PR 211 CI: 13 failures (threads, import cycle, embedding import, toasts) and 5 CodeQL alerts | bug | opus | 0 | 
+2026-10-30 | composer merge regressions: composed more, follow-on tool offer, cut choice open | bug | opus | 1 | 
+2026-10-30 | INBOX 1333b /categories and /tags bar chart | feature | opus | 0 | 
+2026-10-30 | scratchpad cap: 8 one-off sweeps folded into measure-static.py | mechanical | opus | 0 | 
+2026-10-30 | docs audit 1028 rows D19 D20 D9 D27 U32 U34 U35 (agent) | refactor | sonnet | 0 | 
+2026-10-30 | graph 2,000-note layout G3/S2 (agent) | refactor | sonnet | 0 | 
+2026-10-30 | audit 1028 E13 E15 E26 E28 E32 chat routing | bug | opus | 1 | 
+2026-10-30 | fable-fix-1030 merge F rows Z64 Z69 Z71 | bug | opus | 0 | 
+2026-10-30 | shellux-1030 merge 1333 strip S26 (boot CSS byte) | ui | sonnet | 1 | 
+2026-10-30 | audit 1028 E35 E36 E39 E40 (byte budget trims) | bug | opus | 1 | 
+2026-10-30 | wb1313-1030 merge rows 7 13 14, keep_ratio fix | feature | sonnet | 0 | 

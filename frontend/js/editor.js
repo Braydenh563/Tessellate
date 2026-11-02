@@ -41,6 +41,11 @@ const EDITOR_SURFACES = {
   //: toolbar and no selection bar. One id, because `editingId` allows exactly
   //: one open edit form at a time.
   "entry-edit-content": "note",
+  //: The capture bar's card and the quick note (audit 1031 N9, N50): the two
+  //: other boxes a note is typed into had no `[[` picker, no "/" menu and a
+  //: placeholder that promised neither. A saved `[[Harbor launch` was literal.
+  "capture-card-body": "note",
+  "quick-note-text": "note",
   "doc-content": "document",
   //: The chat composer. Asked for as part of "the chat interface needs
   //: bugfixing and more utility and features" -- "/" did nothing there, the
@@ -136,7 +141,6 @@ function editorSurfaceFor(box) {
 //: find out whether the feature exists.
 let editorSurfaceModulePending = null;
 function editorEnsureSurfaceModule(box) {
-  if (typeof ensureModule !== "function") return;
   const el = box && box.nodeType === 1 ? box : null;
   if (!el || !(el.id in EDITOR_SURFACES)) return;
   if (!editorSurfaceModulePending) {
@@ -682,7 +686,7 @@ function chatCommands() {
     { id: "chat-plan", primary: true, group: "This message", icon: "ph:compass", label: "Plan first", hint: "toggle", keywords: ["plan", "steps", "think"], run: press("chat-plan") },
     { id: "chat-skills", primary: true, group: "This message", icon: "ph:lightning", label: "Skills", hint: "run a saved skill", keywords: ["skill", "skills", "run", "workflow"], run: press("chat-skills-btn") },
     { id: "chat-equation", group: "This message", icon: "ph:function", label: "Equation", hint: "build a formula, Alt+=", keywords: ["equation", "math", "maths", "formula", "symbol"], run: afterPress(() => openMathEditor({ target: document.getElementById("chat-input") })) },
-    ...POPUP_TOOLS.filter((t) => t.id !== "equation").map((tool) => ({ id: `chat-tool-${tool.id}`, group: "This message", icon: tool.icon, label: tool.name, hint: "opens a panel", keywords: tool.keywords.split(" "), run: afterPress(() => tool.open()) })),
+    ...POPUP_TOOLS.map((tool) => ({ id: `chat-tool-${tool.id}`, group: "This message", icon: tool.icon, label: tool.name, hint: "opens a panel", keywords: tool.keywords.split(" "), run: afterPress(() => tool.open()) })),
     ...chatSlashRows(afterPress),
     { id: "chat-mode-agent", group: "Mode", icon: "ph:strategy", label: "Agent mode", hint: "let it act on the notebook", keywords: ["agent", "mode", "tools", "act"], run: mode("agent") },
     { id: "chat-mode-chat", group: "Mode", icon: "ph:sparkle", label: "Ask mode", hint: "answer only", keywords: ["ask", "chat", "mode", "answer"], run: mode("chat") },
@@ -940,8 +944,8 @@ function editorBlockRows(context) {
   //: DOCUMENTS_PLAN 16: the guided editor (math-editor.js, lazy), Word's Alt+=.
   add({ id: "equation", group: "Media", icon: "ph:function", label: "Equation", about: "Build a formula from a palette, with a live preview", keys: "Alt+=", keywords: ["equation", "math", "maths", "formula", "symbol", "fraction", "greek", "matrix", "integral"], run: (t) => openMathEditor({ target: t }) });
   //: The other popup tools (settings-panes.js `POPUP_TOOLS`): a row each, so "/calc" and "/convert" find them in a note too.
-  for (const tool of POPUP_TOOLS.filter((t) => t.id !== "equation")) {
-    add({ id: `tool-${tool.id}`, group: "Media", icon: tool.icon, label: tool.name, about: tool.about.split(";")[0], keys: tool.keys, keywords: tool.keywords.split(" "), run: () => tool.open() });
+  for (const tool of POPUP_TOOLS) {
+    add({ id: `tool-${tool.id}`, group: "Media", icon: tool.icon, label: tool.name, about: tool.about.split(";")[0], keys: tool.keys, keywords: tool.keywords.split(" "), run: (t) => tool.open(t) });
   }
 
   // --- Embeds: other things in this notebook, and the web. ------------------
@@ -965,7 +969,7 @@ function editorBlockRows(context) {
     add({ id: "annotate", group: "Advanced", icon: "ph:chat-circle", label: "Comment on this", about: "A remark on these words, listed in the sidebar", keys: "==text== %%", keywords: ["comment", "annotate", "remark", "review", "feedback", "margin"], run: (t) => editorApplyNamed(t, "annotate") });
   }
   const now = new Date();
-  const date = now.toLocaleDateString();
+  const date = stampDate(now);
   const time = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   add({ id: "stamp-date", group: "Advanced", icon: "ph:calendar-blank", label: "Today's date", about: date, keys: "", keywords: ["date", "today", "stamp", "day"], run: (t) => editorApplyAction(t, { insert: date }) });
   add({ id: "stamp-time", group: "Advanced", icon: "ph:clock", label: "Time now", about: time, keys: "", keywords: ["time", "now", "stamp", "clock"], run: (t) => editorApplyAction(t, { insert: time }) });
@@ -1111,7 +1115,16 @@ function editorCaretPoint(textarea) {
 //: corner, which is the menu "at the top of the screen". The caret is
 //: scrolled into view and the menu placed on the next frame; a caret that is
 //: still not drawn after that closes the menu rather than parking it.
+//: The menu lives in the open dialog its box sits in, and goes home to the
+//: page when it closes (audit 1031 N9): a modal dialog is in the top layer, so
+//: a menu in `body` opened under the quick note, where nothing could press it.
+function editorHomeMenu(box) {
+  const host = (box?.el || box)?.closest?.("dialog[open]") || document.body;
+  $("editor-menu").parentElement !== host && host.appendChild($("editor-menu"));
+}
+
 function editorPositionMenu(textarea, retried = false) {
+  editorHomeMenu(textarea);
   const menu = $("editor-menu");
   const { top, left, lineHeight, offscreen } = editorCaretPoint(textarea);
   if (offscreen) {
@@ -1157,6 +1170,7 @@ function editorCloseMenu(reason = "") {
   editorMenuState.textarea = null;
   editorMenuState.items = [];
   $("editor-menu")?.classList.add("hidden");
+  editorHomeMenu(null);
   //: **A code fence is never left open.** The language step starts from a
   //: written "```", and an unclosed fence turns the rest of the page into
   //: code in every view. Closed any way but by choosing (Escape, a click
@@ -1252,10 +1266,15 @@ function editorLinkMatches(needle) {
       // then find the INNER brackets and resolve to the wrong note.
       value: (entry.content || "")
         .split("\n")[0]
+        //: Without the heading marker (audit 1031 N34): `[[# Very long title]]`
+        //: put a hash in the text and resolved only by prefix luck; the resolver
+        //: strips the marker from the note, so the title alone finds it.
+        .replace(/^\s*#{1,6}\s+/, "")
         .replace(/\[\[|\]\]/g, "")
         .replace(/\s+/g, " ")
         .trim()
-        .slice(0, 60),
+        //: The whole title, up to what a link can hold (the card's and the document's pattern take 120): a cut at 60 left `[[Atlas project line 183: remember to follow up about Atlas pr]]` in the note (audit 1029 N19).
+        .slice(0, 120),
     }))
     .filter((item) => item.value);
 
@@ -1270,7 +1289,7 @@ function editorLinkMatches(needle) {
       icon: "ph:file-text",
       label: doc.title || "Untitled",
       hint: "document",
-      value: (doc.title || "").replace(/\[\[|\]\]/g, "").trim().slice(0, 60),
+      value: (doc.title || "").replace(/\[\[|\]\]/g, "").trim().slice(0, 120),
     }))
     .filter((item) => item.value);
 
@@ -1326,7 +1345,7 @@ function editorLinkMatches(needle) {
         .replace(/\[\[|\]\]/g, "")
         .replace(/\s+/g, " ")
         .trim()
-        .slice(0, 60),
+        .slice(0, 120),
     }))
     .filter((item) => item.value);
 
@@ -1474,10 +1493,15 @@ function editorRenderPreview(item) {
     renderMarkdown(sample, item.sample);
     //: A narrow pane: the bar's Copy is an icon like its ⋯, so the caption
     //: keeps one line and the two buttons sit side by side.
-    for (const copy of sample.querySelectorAll(".code-copy")) {
-      copy.classList.add("icon-only");
-      copy.querySelector(".ph-text")?.remove();
-    }
+    //: A table's Copy comes with its bar (table-block.js, lazy), so it is made so again when that is in.
+    const iconOnly = () => {
+      for (const copy of sample.querySelectorAll(".code-copy")) {
+        copy.classList.add("icon-only");
+        copy.querySelector(".ph-text")?.remove();
+      }
+    };
+    iconOnly();
+    ensureModule("tableBlock").then(iconOnly);
   }
   richPickerPreview(pane, {
     icon: editorMenuIcon(item),
@@ -2105,6 +2129,27 @@ function selectionBarSync() {
   //: while you type.
   if (active.selectionStart === active.selectionEnd) return selectionBarHide();
   selectionBarShow(active);
+}
+
+//: **A bar or menu whose text has left the page closes with it** (the owner,
+//: 2026-11-01, INBOX 1510(b): "I used these arrows to make another text box
+//: from a note but then deleted the new one but now this floating popup
+//: toolbar is not going away"). Removing a focused editor with text selected
+//: fires no `selectionchange` in Chromium, so `selectionBarSync` never ran
+//: and the bar kept its last place over an empty board. A surface whose
+//: element is detached can format nothing; a caller that removes editors
+//: (the board, after every render) asks here.
+function editorSurfaceGone(surface) {
+  return Boolean(surface?.el) && !surface.el.isConnected;
+}
+
+function editorCloseOrphans() {
+  if (editorSurfaceGone(selectionBarState.textarea)) selectionBarHide();
+  if (editorMenuState.open && editorSurfaceGone(editorMenuState.textarea)) editorCloseMenu();
+  if (typeof selectionPopupField !== "undefined" && selectionPopupField?.el && !selectionPopupField.el.isConnected) {
+    selectionPopupField = null;
+    hideSelectionPopup();
+  }
 }
 
 //: `selectionchange` is the one event that fires for *every* way a selection

@@ -193,7 +193,7 @@ async function openNewMeeting({ title = "", notes = "", then = null } = {}) {
       create.className = "accent small";
       create.id = "meeting-new-create";
       setLabel(create, "ph:users-three Start the meeting");
-      //: `record`: "Start and record" (INBOX 704: the redesign took the
+      //: `record`: "Start and open recorder" (INBOX 704: the redesign took the
       //: recorder's tile away and left recording two levels deep): the
       //: meeting is made, then the recorder opens writing into its Notes.
       const make = async (record = false) => {
@@ -240,8 +240,8 @@ async function openNewMeeting({ title = "", notes = "", then = null } = {}) {
       recordButton.type = "button";
       recordButton.className = "ghost small";
       recordButton.id = "meeting-new-record";
-      recordButton.title = "Start the meeting and transcribe it as it happens, on this computer";
-      setLabel(recordButton, "ph:microphone Start and record");
+      recordButton.title = "Start the meeting and open the recorder, writing into its Notes";
+      setLabel(recordButton, "ph:microphone Start and open recorder");
       recordButton.addEventListener("click", () => make(true));
       create.addEventListener("click", () => make());
       for (const input of [titleInput, whenInput]) {
@@ -614,7 +614,7 @@ let meetingStartedAt = 0;
 //: never refuses: with no Whisper add-on the audio is kept and the sheet says
 //: how long it is; transcription is offered only when `/voice/status` says
 //: the add-on is there. One object, not more top-level lets.
-const meetingTake = { id: null, chain: Promise.resolve(), failed: null, peaks: [], markers: [], ms: 0 };
+const meetingTake = { id: null, queue: [], sending: null, failed: null, tries: 0, peaks: [], markers: [], ms: 0, bytes: 0, lostMs: 0 };
 
 //: How long the audio is, in ms: the clock stops while paused.
 function meetingElapsedMs() {
@@ -630,6 +630,17 @@ function meetingClockText(ms) {
   return h ? `${h}:${String(m).padStart(2, "0")}:${s}` : `${m}:${s}`;
 }
 
+//: What the status line says while a take is live: the state and what the
+//: server really holds, never a fixed claim (audit 1029 X3).
+function meetingStatusLine() {
+  const b = meetingTake.bytes;
+  const saved = b ? `${b < 1048576 ? Math.max(1, Math.round(b / 1024)) + " KB" : (b / 1048576).toFixed(1) + " MB"} saved so far.` : "Nothing saved yet.";
+  if (meetingTake.failed) return `Not saving: ${meetingFailText()}. Retrying. ${saved}`;
+  return meetingRecorder?.state === "paused" ? `Paused. ${saved} Resume to keep recording, or stop to transcribe.` : `Recording. ${saved}`;
+}
+
+const meetingFailText = () => meetingTake.failed?.message || "the notebook did not answer";
+
 function meetingElapsedText() {
   return meetingClockText(Date.now() - meetingStartedAt);
 }
@@ -640,7 +651,7 @@ function meetingContainerName(mime) {
 }
 
 async function meetingTakeBegin(recorder) {
-  Object.assign(meetingTake, { id: null, chain: Promise.resolve(), failed: null, peaks: [], markers: [], ms: 0 });
+  Object.assign(meetingTake, { id: null, queue: [], sending: null, failed: null, tries: 0, peaks: [], markers: [], ms: 0, bytes: 0, lostMs: 0 });
   const made = await apiJson("/recordings", {
     method: "POST",
     body: JSON.stringify({
@@ -652,20 +663,42 @@ async function meetingTakeBegin(recorder) {
   meetingTake.id = made.id;
 }
 
-const MEETING_CHUNK_MS = 10000;
+//: A slice every 2 s: a crash loses at most that, not ten seconds (audit 1029 X3).
+const MEETING_CHUNK_MS = 2000;
 
-//: One slice of audio onto the object, in order: each waits for the last.
+const MEETING_RETRY_MAX_MS = 15000;
+const MEETING_FINISH_TRIES = 3;
+
+//: One slice of audio onto the object, queued in order.
 function meetingTakeAppend(blob) {
-  const id = meetingTake.id;
-  if (!id || !blob?.size) return;
-  const form = new FormData();
-  form.append("file", blob, "chunk");
-  form.append("duration_ms", String(Math.round(meetingElapsedMs())));
-  meetingTake.chain = meetingTake.chain
-    .then(() => api.upload(`/recordings/${id}/chunk`, form))
-    .catch((error) => {
-      meetingTake.failed = error;
-    });
+  if (!meetingTake.id || !blob?.size) return;
+  meetingTake.queue.push({ blob, ms: Math.round(meetingElapsedMs()) });
+  meetingTakeFlush();
+}
+
+//: Sends the queued slices in order; a failed one stays at the head and is
+//: retried, said at once (audit 1030 Y1). `at` stops a landed retry doubling.
+function meetingTakeFlush(limit = Infinity) {
+  return (meetingTake.sending ||= (async () => {
+    const id = meetingTake.id;
+    for (let tries = 0; meetingTake.queue.length && tries < limit; ) {
+      const { blob, ms } = meetingTake.queue[0];
+      const form = new FormData();
+      form.append("file", blob, "chunk");
+      form.append("duration_ms", String(ms));
+      form.append("at", String(meetingTake.bytes));
+      try {
+        const saved = await (await api.upload(`/recordings/${id}/chunk`, form)).json();
+        meetingTake.queue.shift();
+        Object.assign(meetingTake, { bytes: saved.size_bytes || 0, failed: null, tries: 0 });
+      } catch (error) {
+        tries += 1;
+        Object.assign(meetingTake, { failed: error, tries: meetingTake.tries + 1 });
+        if (tries < limit) await new Promise((done) => setTimeout(done, Math.min(MEETING_RETRY_MAX_MS, 2000 * meetingTake.tries)));
+      }
+      if (meetingRecorder) meetingSay(meetingStatusLine(), Boolean(meetingTake.failed));
+    }
+  })().finally(() => (meetingTake.sending = null)));
 }
 
 //: The waveform kept with the object: the recorder's levels, the loudest of
@@ -681,9 +714,15 @@ function meetingPeaksSummary(levels, size = 400) {
   return out;
 }
 
+//: Stop: a few more tries, then the take is kept as far as it got.
 async function meetingTakeFinish() {
-  await meetingTake.chain;
-  if (meetingTake.failed) throw meetingTake.failed;
+  while (meetingTake.sending) await meetingTake.sending;
+  if (meetingTake.queue.length) await meetingTakeFlush(MEETING_FINISH_TRIES);
+  if (meetingTake.queue.length) {
+    meetingTake.lostMs = Math.max(0, meetingTake.ms - Math.max(0, meetingTake.queue[0].ms - MEETING_CHUNK_MS));
+    meetingTake.queue = [];
+    if (!meetingTake.bytes) throw meetingTake.failed || new Error("Couldn't save the recording.");
+  }
   return apiJson(`/recordings/${meetingTake.id}/finish`, {
     method: "POST",
     body: JSON.stringify({ duration_ms: meetingTake.ms, peaks: meetingPeaksSummary(meetingTake.peaks), markers: meetingTake.markers }),
@@ -923,12 +962,20 @@ async function openMeetingRecorder() {
   //: A recording folded into the dock is brought back, not reset.
   if (meetingRecorder) return showMeetingRecorder();
   nameMeetingMic();
+  syncCaptionsDoors();
   overlayReturnFocus = document.activeElement;
   delete $("meeting-overlay").dataset.target;
   $("meeting-overlay").classList.remove("meeting-into", "voice-note");
   resetMeetingUI();
   $("meeting-overlay").classList.remove("hidden");
-  $("meeting-record").focus();
+  meetingFocusFirstField();
+}
+
+//: First focus is the first field you can type in, never an action: Record
+//: focused meant a typed space started the microphone (audit 1029 X1).
+function meetingFocusFirstField() {
+  const fields = $("meeting-overlay").querySelectorAll("input:not([type=hidden]), select, textarea");
+  [...fields].find((el) => el.getClientRects().length)?.focus();
 }
 
 //: **Voice note** (WORLD_CLASS_PLAN 28.5 row 3; the owner: "meeting notes
@@ -944,7 +991,7 @@ function openVoiceNote() {
 function showMeetingRecorder() {
   $("meeting-overlay").classList.remove("hidden");
   syncRecordingDock();
-  $("meeting-record").focus();
+  meetingFocusFirstField();
 }
 
 //: Closed while recording, the recording goes on in the dock (V1): a live
@@ -991,10 +1038,9 @@ async function toggleMeetingRecording() {
     // up to a second stale, stopped while paused it is already right.
     if (meetingRecorder.state === "recording") $("meeting-timer").textContent = meetingElapsedText();
     meetingTake.ms = Math.round(meetingElapsedMs());
-    // A paused recorder holds what it has heard so far; asking for it before
-    // the stop makes the last chunk arrive on every engine, not only the ones
-    // that flush on a stop from paused (INBOX 708: Stop from Paused).
-    if (meetingRecorder.state === "paused") meetingRecorder.requestData();
+    // Asking for what it has heard before the stop makes the last chunk arrive
+    // on every engine, paused or not (INBOX 708: Stop from Paused).
+    if (meetingRecorder.state === "paused" || meetingRecorder.state === "recording") meetingRecorder.requestData();
     meetingRecorder.stop();
     return;
   }
@@ -1025,8 +1071,8 @@ async function toggleMeetingRecording() {
     if (!recorder.discarded) meetingTakeAppend(e.data);
   });
   recorder.addEventListener("stop", () => meetingRecordingStopped(recorder, button));
-  //: A slice every 10 s, each appended to the object as it arrives (row 5):
-  //: a tab killed at 2:00 keeps at least 1:50.
+  //: A slice every 2 s, each appended to the object as it arrives (row 5):
+  //: a tab killed at 2:00 keeps at least 1:58.
   recorder.start(MEETING_CHUNK_MS);
   meetingRecordingStarted(button);
 }
@@ -1052,7 +1098,7 @@ function meetingRecordingStarted(button) {
     stopWave();
   };
   setMeetingState("recording");
-  meetingSay("Recording. Saved as it goes.");
+  meetingSay(meetingStatusLine());
   meetingLiveWordsStart();
 }
 
@@ -1121,6 +1167,8 @@ async function meetingRecordingStopped(recorder, button) {
     meetingSay(error.message || "Couldn't save the recording.", true);
     return;
   }
+  //: Info, not a fault: the loss was retried, is named, and the rest is kept.
+  if (meetingTake.lostMs) toast(`The last ${meetingClockText(meetingTake.lostMs)} could not be saved (${meetingFailText()}). The rest is kept.`, "info");
   saved = await meetingEnhanceTake(saved);
   const length = meetingClockText(saved.duration_ms);
   const away = $("meeting-overlay").classList.contains("hidden");
@@ -1306,13 +1354,27 @@ async function stopMeetingTranscription() {
 async function meetingTakeDiscard() {
   const id = meetingTake.id;
   if (!id) return;
+  //: An empty take is removed by its finish; nothing is left to bin.
   try {
     await meetingTakeFinish();
-    await apiJson(`/recordings/${id}`, { method: "DELETE" });
-    pushBinPairUndo("Discarded a recording", `/recordings/${id}`, `/recordings/${id}/restore`, false, () => (typeof loadLibrary === "function" ? loadLibrary() : null));
   } catch {
-    // An empty take is removed by its finish; nothing is left to bin.
+    return;
   }
+  await meetingTakeBin(id);
+}
+
+//: The bin's half, apart so a failure is said and can be tried again (audit
+//: 1031 Z12: a failed delete closed the dialog and left the recording in the
+//: Library with no word). The dialog is gone by now, so the way back is the
+//: toast's own action.
+async function meetingTakeBin(id) {
+  try {
+    await apiJson(`/recordings/${id}`, { method: "DELETE" });
+  } catch (error) {
+    toastAction(`Couldn't discard the recording (${error.message || "the request failed"}). It is still in Library, Recordings.`, "Try again", () => meetingTakeBin(id), { sticky: true });
+    return;
+  }
+  pushBinPairUndo("Discarded a recording", `/recordings/${id}`, `/recordings/${id}/restore`, false, () => (typeof loadLibrary === "function" ? loadLibrary() : null));
 }
 
 // Pause and resume, which a MediaRecorder supports directly, the chunks
@@ -1331,12 +1393,14 @@ function toggleMeetingPause() {
   const button = $("meeting-pause");
   if (meetingRecorder.state === "recording") {
     meetingRecorder.pause();
+    //: The audio since the last slice is sent now, not lost if the tab dies while paused.
+    meetingRecorder.requestData();
     if (meetingLive.on) holdLiveCaptions(true);
     meetingPausedAt = Date.now();
     stopMeetingTimer();
     setLabel(button, "ph:play Resume");
     setMeetingState("paused");
-    $("meeting-status").textContent = "Paused. Resume to keep recording, or stop to transcribe.";
+    meetingSay(meetingStatusLine());
   } else if (meetingRecorder.state === "paused") {
     meetingRecorder.resume();
     if (meetingLive.on) holdLiveCaptions(false);
@@ -1346,7 +1410,7 @@ function toggleMeetingPause() {
     meetingTimerHandle = setInterval(meetingTick, 1000);
     setLabel(button, "ph:pause Pause");
     setMeetingState("recording");
-    $("meeting-status").textContent = "Recording.";
+    meetingSay(meetingStatusLine());
   }
 }
 
@@ -1457,6 +1521,7 @@ let recordingsAsk = 0;
 async function renderRecordings() {
   const list = $("recordings-list");
   if (!list) return;
+  syncCaptionsDoors();
   let body = null;
   const q = ($("recordings-search")?.value || "").trim();
   try {
@@ -1470,7 +1535,7 @@ async function renderRecordings() {
     const failed = list.appendChild(document.createElement("li"));
     list.replaceChildren(failed);
     failed.className = "empty-state recordings-empty";
-    surfaceFailed(failed, "recordings", renderRecordings);
+    surfaceFailed(failed, "your recordings", renderRecordings);
     return;
   }
   noteRecoveredRecordings(body.recovered);
@@ -1511,7 +1576,7 @@ function recordingsEmpty(kind) {
     const mic = document.createElement("i");
     mic.className = "ph ph-microphone ph-lead";
     mic.setAttribute("aria-hidden", "true");
-    record.append(mic, " Record");
+    record.append(mic, " Open recorder");
     record.addEventListener("click", () => openVoiceNote());
     li.appendChild(record);
   }
@@ -1925,7 +1990,7 @@ async function recordingTranscriptFill(rec, audio, list) {
   const buttons = [];
   const sync = () => {
     note.textContent = picked.size
-      ? `${picked.size} line${picked.size === 1 ? "" : "s"} picked`
+      ? `${nounCount(picked.size, "line")} picked`
       : "Shift-click picks a run of lines to copy";
     buttons.forEach((button, i) => {
       const on = picked.has(i);
@@ -2174,7 +2239,7 @@ async function recordingTranscriptionEnded(rec, run, hooks) {
   if (run.state === "done") {
     await hooks.done?.(run);
     if (!here) {
-      recordNotification({ kind: "task", title: `Transcript ready: “${name}”`, detail: `${run.words} words`, key: `transcription:${rec.id}:${Date.now()}`, action: { open: "recording", id: rec.id } });
+      recordNotification({ kind: "task", title: `Transcript ready: “${name}”`, detail: nounCount(run.words, "word"), key: `transcription:${rec.id}:${Date.now()}`, action: { open: "recording", id: rec.id } });
       toastAction(`Transcript ready: “${name}”.`, "Open", () => openRecordings(rec.id));
     }
   } else if (run.state === "failed") {
@@ -2251,7 +2316,7 @@ function openRecordingTrim(rec) {
       if (minutes >= RECORDING_TRIM_HEAVY_MINUTES) {
         const note = document.createElement("p");
         note.className = "muted recording-trim-weight";
-        note.textContent = `Trimming opens the whole recording in this tab: about ${minutes * RECORDING_TRIM_MB_PER_MINUTE} MB of memory for ${minutes} minutes.`;
+        note.textContent = `Trimming opens the whole recording in this tab: about ${minutes * RECORDING_TRIM_MB_PER_MINUTE} MB of memory for ${nounCount(minutes, "minute")}.`;
         heavy.push(note);
       }
       const sync = () => {
@@ -2377,6 +2442,17 @@ $("recordings-record")?.addEventListener("click", () => openVoiceNote());
 //: **Live captions from where a person looks for them** (V6): the voice
 //: note's Live captions and the Recordings bar's Captions. The dialog makes
 //: way for the floating bar; a recording in hand already writes its words.
+//: **A door that can only explain itself is not drawn** (audit 1031 Z14): with
+//: no caption engine installed, Live captions and Captions would open a toast.
+//: Asked fresh at each opening (installing the helper in Settings, Packages
+//: needs no reload); an unknown answer keeps the doors, as before. The reason
+//: is in the Guide's Live captions topic and each help popover.
+async function syncCaptionsDoors() {
+  const status = await apiJson("/voice/status", { silent: true }).catch(() => null);
+  const off = status?.captions?.available === false;
+  for (const id of ["meeting-captions", "recordings-captions"]) $(id)?.classList.toggle("captions-off", off);
+}
+
 function openLiveCaptionsFrom() {
   if (meetingRecorder) return toast("This recording already writes its words in the dialog as you speak.", "info");
   if (!$("meeting-overlay").classList.contains("hidden")) closeMeetingRecorder();

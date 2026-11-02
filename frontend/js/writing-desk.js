@@ -25,7 +25,7 @@ async function composeDraft() {
     ? written.slice(foldedThoughts.length).trim()
     : written.trim();
   const draft = $("draft-text").value;
-  if (!thoughts && !draft.trim()) {
+  if (!thoughts && !draft.trim() && !draftSources.length) {
     setDraftStatus("Write a thought first.", true);
     $("draft-thoughts").focus();
     return;
@@ -100,6 +100,9 @@ async function composeDraft() {
   setDraftBusy(false);
 
   const finished = done && typeof done.draft === "string" ? done.draft : streamed;
+  //: A composed pass (no model) has no delta to take the undo point at.
+  const composed = done?.by === "composer";
+  if (composed && !started && draft.trim() && finished !== draft) pushDraftUndo();
   $("draft-text").value = finished || draft;
   updateDraftCount();
   // Collapsed once it lands: the thinking is worth watching and not worth
@@ -116,14 +119,44 @@ async function composeDraft() {
     if (thoughts) foldedThoughts = written;
     $("draft-instruction").value = "";
     rememberDraftVersion($("draft-text").value);
+    markDraftComposed(composed);
     setDraftStatus(
-      thoughts
-        ? "Folded your thoughts into the draft, your notes above are untouched."
-        : "Draft updated: edit it, or add more thoughts."
+      composed
+        ? done.said
+        : thoughts
+          ? "Folded your thoughts into the draft, your notes above are untouched."
+          : "Draft updated: edit it, or add more thoughts."
     );
-    announce("The draft has been updated.");
+    //: Only when it moved: a pass that left the draft alone says why in
+    //: the status line (a live region), and "updated" would contradict it.
+    if ($("draft-text").value !== draft) announce("The draft has been updated.");
   }
+  drawDraftDiagram();
   saveDraftLocally();
+}
+
+//: **A diagram pass shows its picture** (UX review 1031, L11): the box holds
+//: the ```mermaid source, which a saved note draws, so the preview is drawn
+//: here the way a document draws it (`mermaidDrawIn`, DESIGN.md's recipe).
+function drawDraftDiagram() {
+  const host = $("draft-diagram");
+  const source = /```mermaid\n([\s\S]*?)\n```/.exec($("draft-text").value)?.[1];
+  host.replaceChildren();
+  host.classList.toggle("hidden", !source);
+  if (!source) return;
+  const block = host.appendChild(document.createElement("div"));
+  block.className = "code-block";
+  const code = block.appendChild(document.createElement("pre")).appendChild(document.createElement("code"));
+  code.dataset.lang = "mermaid";
+  code.textContent = source;
+  ensureModule("mermaid").then((ok) => (ok ? mermaidDrawIn(host) : null)).catch(() => {});
+}
+
+//: The chip on a pass the composer wrote with no model (INBOX 1466).
+function markDraftComposed(on) {
+  const chip = $("draft-by");
+  chip.textContent = draftSources.length ? "From your notes" : "From your words";
+  chip.classList.toggle("hidden", !on);
 }
 
 //: The NDJSON reader for the writing desk. Hand-rolled rather than through
@@ -284,6 +317,7 @@ async function saveDraftAsNote(asDraft = false) {
     $("draft-text").value = "";
     $("draft-tags").value = "";
     $("draft-thinking").classList.add("hidden");
+    markDraftComposed(false);
     // The desk is clear, so its earlier versions and the notes this one was
     // written from go too: a row of "v1 v2 v3" over an empty box offers a way
     // back to drafts of a note that has already been filed.
@@ -349,3 +383,103 @@ function draftSaveMenuInit() {
   }
   slot.replaceChildren(wrap);
 }
+
+//: **The quick starts, and what the desk offers with no model** (INBOX 1488).
+//: The owner, on thoughts "I am japanese" that came back "I am japanese." with
+//: every chip still on offer: "if certain features are useless or not
+//: available with no ai they shouldnt be an option". With none connected the
+//: chips and menu entries that need one (`only: "model"`, `data-gate="model"`)
+//: are left off, the ones the composer does by rule (`only: "rule"`) come on,
+//: and a model connecting puts the desk back as it was. Moved here from
+//: chat-agent.js so the boot scripts carry none of it; drawn when the room is
+//: first shown (`showNotesSection`) or soon after boot (`LAZY_PRELOAD`).
+//:
+//: A chip sets what to write and, where it helps, the tone; nothing runs until
+//: Draft is pressed, so a chip is a starting point rather than a button that
+//: spends a minute of a local model's time on a guess.
+const DRAFT_QUICKSTARTS = [
+  { label: "Write up my notes", icon: "ph:note-pencil", kind: "note", title: "Turn what is in the box into one organised note" },
+  { label: "Carry on writing", icon: "ph:pencil-line", kind: "continue", only: "model", title: "Keep writing from where the draft stops, in the same voice" },
+  { label: "Say it plainly", icon: "ph:chat-text", kind: "rewrite", tone: "plain", only: "model", title: "The same draft in plain words" },
+  { label: "Tidy and spellcheck", icon: "ph:check-circle", kind: "tidy", only: "rule", title: "Fix spelling, capitals, apostrophes and full stops, nothing reworded" },
+  { label: "Say it plainly", icon: "ph:chat-text", kind: "plain", only: "rule", title: "Swap long words and phrases for plain ones and split long sentences" },
+  { label: "Make it formal", icon: "ph:briefcase", kind: "formal", only: "rule", title: "Spell out contractions and swap slang for the formal word" },
+  { label: "Bullets to prose", icon: "ph:text-align-left", kind: "expand", title: "Open the bullet points out into paragraphs" },
+  { label: "Prose to bullets", icon: "ph:list-bullets", kind: "bullets", title: "Close the writing back up into bullet points" },
+  { label: "Make a diagram", icon: "ph:tree-structure", kind: "diagram", title: "Draw the steps, dates or points in the box as a flowchart, timeline or mind map" },
+  //: The language is the last one chosen in the kind menu's "Translate into"
+  //: group, Spanish until one has been; the menu shows which, and changing
+  //: it there is how another language is picked.
+  { label: "Translate", icon: "ph:translate", kind: "translate", only: "model", title: "Translate what is in the box, into the language chosen in the menu" },
+];
+
+function renderDraftQuickstarts() {
+  const host = $("draft-quickstarts");
+  if (!host) return;
+  host.replaceChildren();
+  const rule = aiIsOff();
+  for (const start of DRAFT_QUICKSTARTS) {
+    if (start.only && (start.only === "rule") !== rule) continue;
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "library-chip";
+    chip.dataset.kind = start.kind;
+    chip.title = start.title;
+    setLabel(chip, `${start.icon} ${start.label}`);
+    chip.addEventListener("click", () => {
+      $("draft-kind").value = start.kind === "translate" ? draftTranslateKind() : start.kind;
+      if (start.tone) $("draft-tone").value = start.tone;
+      markDraftQuickstart(start.kind);
+      //: A line left by the last chip is about that chip: cleared first.
+      setDraftStatus("");
+      saveDraftLocally();
+      $("draft-thoughts").focus();
+    });
+    host.appendChild(chip);
+  }
+  markDraftQuickstart($("draft-kind").value);
+}
+
+//: The chip and the select say the same thing, so picking either marks the
+//: other: two controls that disagree about what the next pass will do is the
+//: defect this feature is full of everywhere else it has been tried.
+function markDraftQuickstart(kind) {
+  const host = $("draft-quickstarts");
+  if (!host) return;
+  for (const chip of host.children) {
+    const own = chip.dataset.kind;
+    const on = own === kind || (own === "translate" && String(kind).startsWith("translate-"));
+    chip.classList.toggle("active", on);
+    chip.setAttribute("aria-pressed", String(on));
+  }
+}
+
+//: One select, with the entries its state allows. The options are kept as the
+//: page wrote them and put back whole, rather than hidden, because the
+//: styled menu in front of a `<select>` rebuilds from added and removed
+//: options and not from an attribute.
+const draftGate = { kept: new WeakMap(), off: null };
+
+function gateDraftSelect(select, off) {
+  if (!select) return;
+  const all = draftGate.kept.get(select) || [...select.children];
+  draftGate.kept.set(select, all);
+  const value = select.value;
+  for (const node of all) node.hidden = false;
+  select.replaceChildren(...all.filter((node) => !node.dataset.gate || (node.dataset.gate === "rule") === off));
+  const stays = [...select.options].some((option) => option.value === value);
+  select.value = stays ? value : select.options[0].value;
+  if (!stays) select.dispatchEvent(new Event("change"));
+}
+
+function syncDraftGate() {
+  const off = aiIsOff();
+  if (off === draftGate.off) return;
+  draftGate.off = off;
+  for (const id of ["draft-kind", "draft-tone", "draft-length"]) gateDraftSelect($(id), off);
+  renderDraftQuickstarts();
+  $("draft-rule-line")?.classList.toggle("hidden", !off);
+}
+
+document.addEventListener("mm-model-gate", syncDraftGate);
+syncDraftGate();

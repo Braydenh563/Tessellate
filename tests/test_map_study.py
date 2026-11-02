@@ -96,4 +96,9 @@ def test_the_study_bar_and_the_guide_know_the_note_answer():
     board = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
     show = board[board.index("function wbPresentShow(index)") :]
     assert show.index("wbPresentCaption(at, steps)") < show.index("const foot")
-    assert "function wbPresentCaption(at, steps)" in board and 'flex: "1 0 100%"' in board
+    #: The own line moved from an inline style to the picker's is-wide class
+    #: when the caption became a page picker (INBOX 1425).
+    css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    wide = css[css.index(".wb-present-count.wb-present-pick-slot.is-wide {") :]
+    assert "function wbPresentCaption(at, steps)" in board and '"is-wide"' in board
+    assert "flex: 1 0 100%;" in wide[: wide.index("}")]

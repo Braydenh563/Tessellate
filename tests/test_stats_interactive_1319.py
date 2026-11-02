@@ -77,7 +77,9 @@ def test_the_chart_marks_are_focusable_and_act_on_click():
     svg = _fn(CHART, "askChartSvg")
     assert "tabindex" in svg and "ask-chart-pt" in svg and "ask-chart-hit" in svg
     wire = _fn(CHART, "askChartWire")
-    assert "ResizeObserver" in wire and "onPick" in wire and "ask-chart-tip" in wire and "askChartStep" in wire
+    # The redraw on resize moved to `askChartFollow`, which the wiring calls.
+    assert "askChartFollow(host, chart" in wire and "ResizeObserver" in _fn(CHART, "askChartFollow")
+    assert "onPick" in wire and "ask-chart-tip" in wire and "askChartStep" in wire
     assert "askChartWire(host, chart)" in _fn(CHART, "drawAskChart")
     assert "ArrowRight" in CHART
     # the rule is opt-in, so the Ask box's chart is unchanged

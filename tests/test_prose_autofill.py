@@ -25,6 +25,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PROSE_JS = ROOT / "frontend" / "js" / "documents-prose.js"
 DOCUMENTS_JS = ROOT / "frontend" / "js" / "documents.js"
 APP_JS = ROOT / "frontend" / "js" / "app.js"
+PREFS_JS = ROOT / "frontend" / "js" / "prefs.js"
 
 node = pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
 
@@ -47,6 +48,8 @@ def run(calls: list) -> list:
     """Evaluate `[name, *args]` calls against the region, in node."""
     script = (
         _region()
+        + "\n"
+        + _function(PREFS_JS, "nounCount")
         + "\n"
         + _function(APP_JS, "mdHeadingId")
         + "\nconst NOW = new Date(2026, 8, 24, 14, 5);\n"

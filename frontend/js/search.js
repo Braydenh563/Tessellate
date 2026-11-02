@@ -67,7 +67,7 @@ let finderCounts = {};
 let finderIndexTotals = {};
 //: The corrected query the hits are for, if the route fixed a typo.
 //: `page` and `more`: the route's paging, for "Show more".
-const finderState = { corrected: "", page: 1, more: false, timer: null, run: 0, active: -1, opener: null };
+const finderState = { corrected: "", notices: [], page: 1, more: false, timer: null, run: 0, active: -1, opener: null };
 //: The box's private counters live on `finderState` rather than as four more
 //: top-level lets (tests/test_global_scope_ratchet.py): `timer` the typing
 //: pause, `run` so a slow answer cannot paint over a newer one, `active` the
@@ -84,8 +84,8 @@ const finderState = { corrected: "", page: 1, more: false, timer: null, run: 0, 
 const FINDER_OPEN = {
   note: (hit) => { switchTab("notes"); flashEntry(hit.id); },
   document: (hit) => { switchTab("documents"); openDocument(hit.id); },
-  board: (hit) => openLibraryItem({ kind: "board", id: hit.id }),
-  map: (hit) => openLibraryItem({ kind: "map", id: hit.id }),
+  board: (hit) => ensureModule("library").then(() => openLibraryItem({ kind: "board", id: hit.id })),
+  map: (hit) => ensureModule("library").then(() => openLibraryItem({ kind: "map", id: hit.id })),
   file: (hit) => flashLibraryItem("file", hit.id),
   bookmark: (hit) => flashLibraryItem("link", hit.id),
   reminder: () => switchTab("reminders"),
@@ -161,7 +161,7 @@ async function finderSearch(append = false) {
   //: of them.
   const kindParam = finderKind && finderKind !== "action" ? `&kind=${finderKind}` : "";
   const body = await apiJson(
-    `/search?q=${encodeURIComponent(query)}${kindParam}&limit=30&page=${finderState.page}`,
+    `/search?q=${encodeURIComponent(clipFor("search", query))}${kindParam}&limit=30&page=${finderState.page}`,
     { silent: true }
   ).catch(() => null);
   clearTimeout(slow);
@@ -170,12 +170,13 @@ async function finderSearch(append = false) {
     finderHits = [];
     finderCounts = {};
     results.replaceChildren();
-    surfaceFailed(results, "results", () => finderSearch());
+    surfaceFailed(results, "the results", () => finderSearch());
     return;
   }
   surfaceRecovered(results);
   finderIndexTotals = body.counts || {};
   finderState.corrected = body.corrected || "";
+  finderState.notices = body.notices || [];
   finderState.more = Boolean(body.more);
   if (append) {
     finderHits = [...finderHits.filter((hit) => hit.kind !== "action"), ...(body.hits || []), ...finderHits.filter((hit) => hit.kind === "action")];
@@ -346,7 +347,7 @@ async function finderSpellingOffer(query) {
   if (!words.size || wrong < 0) return null;
   for (const spelled of finderSpellings(said[wrong], words).slice(0, 3)) {
     const guess = said.map((w, i) => (i === wrong ? spelled : w)).join(" ");
-    const body = await apiJson(`/search?q=${encodeURIComponent(guess)}&limit=1`, { silent: true }).catch(() => null);
+    const body = await apiJson(`/search?q=${encodeURIComponent(clipFor("search", guess))}&limit=1`, { silent: true }).catch(() => null);
     if (body?.hits?.length) return { label: `ph:text-aa Search for “${guess}”`, run: () => finderUse(guess) };
   }
   return null;
@@ -453,13 +454,13 @@ function finderRender() {
   finderResultsRole(results, rows.length > 0);
   if (!rows.length) {
     finderRenderNothing(results);
-    if (summary) summary.textContent = "";
+    if (summary) summary.textContent = finderState.notices.join(" ");
     return;
   }
   if (summary) {
-    summary.textContent = `${rows.length} result${rows.length === 1 ? "" : "s"}${
+    summary.textContent = `${nounCount(rows.length, "result")}${
       finderState.corrected ? `, showing results for “${finderState.corrected}”` : ""
-    }`;
+    }${finderState.notices.length ? `. ${finderState.notices.join(" ")}` : ""}`;
   }
   const icons = Object.fromEntries(FINDER_KINDS.map((k) => [k.key, k.icon]));
   const names = Object.fromEntries(FINDER_KINDS.map((k) => [k.key, k]));
@@ -525,6 +526,8 @@ function finderRender() {
     row.setAttribute("role", "option");
     row.setAttribute("aria-selected", "false");
     row.dataset.index = String(index);
+    //: What a drag or a copy reads the row as (obj-ref.js); a kind that is not an object is skipped there.
+    if (hit.id != null) Object.assign(row.dataset, { obj: `${hit.kind}:${hit.id}`, objTitle: hit.title || "" });
     const head = document.createElement("span");
     head.className = "finder-row-head";
     const title = document.createElement("span");
@@ -768,7 +771,7 @@ async function saveFinderSearch() {
     toast("Removed the saved search.");
     return;
   }
-  const name = await promptDialog("Name this search:", query.slice(0, 40), { confirmLabel: "Save search" });
+  const name = await promptDialog("Name this search", query.slice(0, 40), { confirmLabel: "Save search" });
   if (!name) return;
   //: Saving a name again replaces it, as the saved filters do.
   const next = savedFinds().filter((item) => item.name !== name);
@@ -778,7 +781,7 @@ async function saveFinderSearch() {
 }
 
 async function renameSavedFind(item) {
-  const name = await promptDialog("Rename this search:", item.name, { confirmLabel: "Rename" });
+  const name = await promptDialog("Rename this search", item.name, { confirmLabel: "Rename" });
   if (!name || name === item.name) return;
   const next = savedFinds()
     .filter((other) => other.name !== name)

@@ -13,11 +13,13 @@ of one width, each centred on the row it counts, and the caret's line marked.
 
 from __future__ import annotations
 
+from tests._app_js import documents_text
+
 import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-DOCS = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+DOCS = documents_text()
 CSS = "\n".join(p.read_text(encoding="utf-8") for p in sorted((ROOT / "frontend" / "css").glob("*.css")))
 
 
@@ -110,6 +112,6 @@ def test_the_capture_box_holds_its_line_number_column_from_first_paint():
     assert "width: calc(100% - 2.1ch - var(--space-4) - var(--space-3))" in block
     settings = (ROOT / "frontend" / "js" / "settings.js").read_text(encoding="utf-8")
     assert 'root.dataset.noteGutter = prefs.get("doc-gutter", null) === "1"' in settings
-    documents = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    documents = documents_text()
     # Turning Line numbers on or off moves the reserve with it.
     assert 'document.documentElement.dataset.noteGutter = on ? "on" : "off";' in documents

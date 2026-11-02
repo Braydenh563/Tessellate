@@ -110,7 +110,7 @@
 //:   its starlight glinting, the tendril tips drifting, dust drifting round
 //:   the rings, a slow head sway and the glow pulsing. All of it is CSS
 //:   transform and opacity on this one SVG, runs only while the mark is on
-//:   screen and motion is on, slows under Reduce motion and stops under
+//:   screen and motion is on, slows under reduced motion and stops under
 //:   Avatar animation Off. The companion's figure (INBOX 540, 554, 564,
 //:   575) adds a rig: jointed arms eased on springs between the poses the
 //:   CSS names (`atlasRig`), a lid that sweeps down for a blink
@@ -3524,7 +3524,10 @@ function atlasRepaint() {
     //: figure is redrawn once, whole (INBOX 430).
     if (svg.classList.contains("atl-layer")) {
       const box = svg.closest(".atl-figure-box");
-      if (box && box.isConnected) box.replaceWith(atlasFigure());
+      if (box && box.isConnected) {
+        dropAnimations(box);
+        box.replaceWith(atlasFigure());
+      }
       continue;
     }
     const size = Number(svg.getAttribute("height")) || 20;
@@ -3823,3 +3826,15 @@ if (typeof registerCharacter === "function") {
 //: already.
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => atlasDressMarks());
 else atlasDressMarks();
+
+//: A task of its own, so the files' parse and this are two long tasks, not one.
+function charactersArrived() {
+  setTimeout(() => {
+    charactersLoaded = true;
+    const waiting = [...characterWaiters];
+    characterWaiters.clear();
+    for (const fn of waiting) runCharacterJob(fn);
+    for (const [name, args] of characterBacklog) runCharacterJob(window[name], args);
+    characterBacklog.clear();
+  }, 0);
+}

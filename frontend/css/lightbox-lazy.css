@@ -372,10 +372,8 @@
 .lightbox .lightbox-glide {
   transition: transform var(--ui-slow) var(--ease-out);
 }
-@media (prefers-reduced-motion: reduce) {
-  .lightbox .lightbox-glide {
-    transition: none;
-  }
+:where(:root[data-motion="reduced"]) .lightbox .lightbox-glide {
+  transition: none;
 }
 /* The dock's own arrows are a phone's; a wide window has them at the
    picture's sides. */

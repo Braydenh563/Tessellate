@@ -11,7 +11,7 @@ import json
 import pytest
 from pathlib import Path
 
-from tessellate.ai import acts, agent, tools, validate
+from tessellate.ai import acts, tools, validate
 from tessellate.core.database import Reminder
 
 #: Importing `acts` registers propose_act's runner on the act registry (act_registry.py).
@@ -64,7 +64,9 @@ def test_a_models_act_waits_for_confirm(session):
 
 
 def test_the_agent_draws_the_proposed_card():
-    src = Path(agent.__file__).read_text(encoding="utf-8")
+    from tests._help_text import agent_text
+
+    src = agent_text()
     assert 'if result.get("act_card"):' in src and 'yield result["act_card"]' in src
 
 

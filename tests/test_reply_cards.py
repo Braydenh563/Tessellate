@@ -15,6 +15,7 @@ from pathlib import Path
 
 from tessellate.ai import tools
 from tests._app_js import app_js_text
+from tests._app_js import with_pieces
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -73,16 +74,16 @@ def test_the_calculator_works_out_through_the_chat_tools_reader(ai_client):
 def test_every_answer_surface_draws_the_panel_with_one_renderer():
     code = app_js_text()
     assert 'event.type === "panel" && onPanel' in code
-    assert re.search(r'replyKit: \["/css/reply-kit-lazy\.css", "/js/reply-kit\.js"\]', code)
+    assert re.search(r'replyKit: \["/css/reply-kit-lazy\.css", "/js/citation-peek\.js", "/js/reply-kit\.js"\]', code)
     kit = (JS / "reply-kit.js").read_text(encoding="utf-8")
     assert "function renderReplyPanel(holder, event)" in kit
-    assert "onPanel:" in (JS / "chat-attach.js").read_text(encoding="utf-8")
+    assert "onPanel:" in with_pieces("chat-attach.js")
     #: Ask and the popup agent draw theirs once the answer is final, through one drawer.
-    ask = (JS / "capture-ask.js").read_text(encoding="utf-8")
+    ask = with_pieces("capture-ask.js")
     assert "function drawAnswerPanels(holder, panels, before = null)" in ask and "replyDrawAll(holder, panels, before)" in ask
-    assert "renderReplyPanel(holder, event)" in kit and "drawAnswerPanels(timeline.holder, [event])" in (JS / "chat-attach.js").read_text(encoding="utf-8")
+    assert "renderReplyPanel(holder, event)" in kit and "drawAnswerPanels(timeline.holder, [event])" in with_pieces("chat-attach.js")
     for name in ("capture-ask.js", "palette.js"):
-        source = (JS / name).read_text(encoding="utf-8")
+        source = with_pieces(name)
         assert "onPanel:" in source and "drawAnswerPanels(answerBox" in source, name
     #: One recipe: a reply panel is drawn by reply-kit.js and nowhere else.
     others = [p.name for p in JS.glob("*.js") if p.name != "reply-kit.js" and '"reply-panel' in p.read_text(encoding="utf-8")]
@@ -100,7 +101,7 @@ def test_web_results_are_cards_and_a_read_page_is_a_fold():
     #: The reader is the page's blocks as Markdown, with its facts line.
     assert "renderMarkdown(body, markdown)" in kit and "web-reader-facts" in kit
     for name in ("chat-attach.js", "palette.js"):
-        source = (JS / name).read_text(encoding="utf-8")
+        source = with_pieces(name)
         assert 'event.tool === "read_url"' in source and "read: true }]" in source, name
     css = (ROOT / "frontend" / "css" / "ask-compose-lazy.css").read_text(encoding="utf-8")
     assert "max-block-size: min(32rem, 60dvh);" in css
@@ -112,7 +113,7 @@ def test_the_calculator_is_one_sheet_reached_three_ways():
     conversions"."""
     kit = (JS / "reply-kit.js").read_text(encoding="utf-8")
     assert "calculator: (event) => replyCalcPanel(event)" in kit
-    assert 'function openCalculator(input = "", mode = "work")' in kit and 'name: "calculator"' in kit and "openSheet({" in kit
+    assert 'function openCalculator(input = "", mode = "work", { target = null } = {})' in kit and 'name: "calculator"' in kit and "openSheet({" in kit
     #: Accessible: a live result, a keypad that is one Tab stop walked by the
     #: arrows, keys named for what they do, a mode switch that says which is on.
     assert 'out.setAttribute("aria-live", "polite")' in kit
@@ -125,14 +126,14 @@ def test_the_calculator_is_one_sheet_reached_three_ways():
     panes = (JS / "settings-panes.js").read_text(encoding="utf-8")
     #: The row now comes from the `POPUP_TOOLS` registry (K27), which the
     #: palette, Features, the "/" menus and the Guide all read.
-    entry = panes[panes.index('id: "calculator", name: "Calculator"'):][:600]
-    assert "about:" in entry and 'ensureModule("replyKit").then(() => openCalculator())' in entry
+    entry = panes[panes.index('id: "calculator", name: "Calculator and equations"'):][:900]
+    assert "about:" in entry and "popupToolMaths(t ? { target: t } : undefined)" in entry
 
 
 def test_a_note_a_reply_gives_is_previewed_on_every_surface():
     """INBOX 1300 C07: "if it is going to give me a note, can it at least
     preview it for me as well??"."""
-    ask = (JS / "capture-ask.js").read_text(encoding="utf-8")
+    ask = with_pieces("capture-ask.js")
     assert "function finishReply(answers, opts)" in ask and "replyFinish(answers, opts)" in ask
     #: Chat, Ask, the popup agent and the Guide each finish a reply through it.
     calls = {
@@ -143,7 +144,7 @@ def test_a_note_a_reply_gives_is_previewed_on_every_surface():
         "help-chat.js": 'finishReply(answerRow.querySelector(".help-chat-prose")',
     }
     for name, call in calls.items():
-        assert call in (JS / name).read_text(encoding="utf-8"), name
+        assert call in with_pieces(name), name
     kit = (JS / "reply-kit.js").read_text(encoding="utf-8")
     #: The citation peek for every note link, and up to three cards in the
     #: document embed's recipe; a longer list keeps the peek only.
@@ -176,7 +177,7 @@ def test_a_composed_reply_takes_one_reveal_on_every_surface(ai_client, fake_olla
     assert "still ? [{ opacity: 0 }, {}]" in body and "delay: still ? 0" in body
     assert 'prefs.get("reply-motion", "on") !== "off"' in kit and 'root.dataset.uiMotion !== "off"' in kit
     #: The one reveal: Chat's own per-block animation is gone.
-    chat = (JS / "chat-attach.js").read_text(encoding="utf-8")
+    chat = with_pieces("chat-attach.js")
     assert ".animate([{ opacity: 0, translate" not in chat
     #: The Guide says when no model wrote it, and then does not type it out.
     guide = (JS / "help-chat.js").read_text(encoding="utf-8")
@@ -200,7 +201,7 @@ def test_who_wrote_a_reply_is_one_badge_on_every_surface():
     assert "if (opts.head && list.some((answer) => answer.textContent.trim())) replyByline(opts.head, opts);" in kit
     facts = kit[kit.index("function replyBylineFacts(") :].split("\n}\n", 1)[0]
     assert '"From your notes"' in facts and '"Composer"' in facts and '"From the help"' in facts
-    chat = (JS / "chat-attach.js").read_text(encoding="utf-8")
+    chat = with_pieces("chat-attach.js")
     assert 'const head = bubble.querySelector(".msg-role");' in chat and "who.textContent" not in chat
     palette = (JS / "palette.js").read_text(encoding="utf-8")
     assert "head: agentLabel, model: stats?.model || meta?.answered_by, engine: Boolean(meta)" in palette

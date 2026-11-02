@@ -45,37 +45,40 @@ def test_reminders_card_has_one_worded_add():
     assert len(worded) == 1
 
 
-def test_boards_and_maps_dock_has_one_new_menu_holding_both_kinds():
+def test_boards_and_maps_dock_has_one_new_split_button():
+    """INBOX 1520 (819): one press of New makes a blank board; the arrow beside
+    it holds the kinds and the templates. The split button is DESIGN.md's
+    recipe (`.split-button`, `.split-button-main`, a `.split-button-slot` the
+    caret's `kebabMenu` fills), so the dock keeps its one filled control."""
     dock_start = HTML.index('data-dock-name="library-boards"')
     dock = HTML[dock_start : HTML.index('id="wb-boards-intro"', dock_start)]
-    menu = re.search(r'<details[^>]*id="wb-boards-new-menu"[^>]*>(.*?)</details>', dock, re.S)
-    assert menu, "the New menu is a details.dock-menu in the dock"
-    body = menu.group(1)
-    assert "dock-menu-primary" in body, "its summary is the dock's filled primary"
-    # The two kinds keep the ids the old buttons had, as rows inside the menu.
-    assert re.search(r'<button id="wb-boards-new"[^>]*doc-dock-menu-item', body)
-    assert re.search(r'<button id="wb-boards-new-map"[^>]*doc-dock-menu-item', body)
-    outside = dock.replace(menu.group(0), "")
-    assert 'id="wb-boards-new"' not in outside and 'id="wb-boards-new-map"' not in outside, (
-        "no second create button beside the menu"
-    )
+    split = re.search(r'<div[^>]*id="wb-boards-new-menu"[^>]*>(.*?)</div>', dock, re.S)
+    assert split, "the New split button is a div in the dock"
+    assert 'class="split-button' in split.group(0)
+    body = split.group(1)
+    main = re.search(r'<button id="wb-boards-new"[^>]*split-button-main[^>]*>', body)
+    assert main, "the default press is the board button, with the id every caller presses"
+    assert 'aria-label="New board"' in main.group(0)
+    assert re.search(r'<span id="wb-boards-new-slot"[^>]*split-button-slot', body)
+    assert "<details" not in split.group(0), "no details menu: the caret is a kebabMenu"
+    outside = dock.replace(split.group(0), "")
+    assert 'id="wb-boards-new"' not in outside, "no second create button beside the split"
 
 
-def test_each_kind_in_the_new_menu_says_what_it_makes():
-    """MINDMAP_PLAN INBOX 24's decision: "one filled New button opens a
-    two-row menu (Board, Mind map), each with its icon and a one-line hint".
-    The hint was a tooltip only, which a touch screen never shows; it is a
-    visible second line now (`.dock-menu-item-hint`, DESIGN.md's row for a
-    dock's one filled action with a choice inside it)."""
-    dock_start = HTML.index('data-dock-name="library-boards"')
-    dock = HTML[dock_start : HTML.index('id="wb-boards-intro"', dock_start)]
-    for row_id in ("wb-boards-new", "wb-boards-new-map"):
-        row = re.search(rf'<button id="{row_id}"[^>]*>(.*?)</button>', dock, re.S)
-        assert row, row_id
-        inner = row.group(1)
-        assert 'class="ph ' in inner, f"{row_id} keeps its icon"
-        hint = re.search(r'<span class="dock-menu-item-hint">([^<]+)</span>', inner)
-        assert hint and 10 < len(hint.group(1)) < 60, f"{row_id} carries a one-line hint"
+def test_the_new_caret_lists_both_kinds_and_the_templates_with_a_hint_each():
+    """The caret's rows are built by `wbNewMenuMount` (whiteboard.js) and keep
+    the ids the old rows had, so the Library's and the Dashboard's New board and
+    New mind map reach them as before. Each row's hint is its title: a kebab
+    row has one line, and the word says what it makes."""
+    wb = (INDEX.parent / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    start = wb.index("function wbNewMenuMount(")
+    body = wb[start : wb.index("\n}\n", start)]
+    for text in ("Whiteboard", "Mind map", "From a template"):
+        assert text in body, text
+    for ident in ("wb-boards-new-template", "wb-boards-new-map"):
+        assert ident in body, ident
+    assert body.count("title:") >= 3, "every row carries its hint as the title"
+    assert "split-button-caret" in body
 
 
 def test_documents_refresh_folds_on_a_phone_so_the_help_does_not_cost_a_row():

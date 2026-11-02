@@ -18,15 +18,20 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._app_js import with_pieces
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-CHAT = (JS / "chat.js").read_text(encoding="utf-8")
-ASK = (JS / "capture-ask.js").read_text(encoding="utf-8")
-ATTACH = (JS / "chat-attach.js").read_text(encoding="utf-8")
+CHAT = with_pieces("chat.js")
+ASK = with_pieces("capture-ask.js")
+ATTACH = with_pieces("chat-attach.js")
+#: The turn's own code (chat-attach.js and chat-turn.js), without answer-kit.js,
+#: which holds the client that legitimately says `phase("writing")`.
+ATTACH_OWN = (JS / "chat-attach.js").read_text(encoding="utf-8") + (JS / "chat-turn.js").read_text(encoding="utf-8")
+KIT = (JS / "answer-kit.js").read_text(encoding="utf-8")
 PALETTE = (JS / "palette.js").read_text(encoding="utf-8")
 HELP = (JS / "help-chat.js").read_text(encoding="utf-8")
-DOCS = (JS / "documents.js").read_text(encoding="utf-8")
+DOCS = (JS / "documents.js").read_text(encoding="utf-8") + (JS / "documents-ai.js").read_text(encoding="utf-8")
 
 
 def _table_in_node(names: list[str]) -> dict:
@@ -39,6 +44,7 @@ def _table_in_node(names: list[str]) -> dict:
     script = (
         "const personaDisplayName = (n) => (!n || n === 'Librarian' ? 'Atlas' : n);\n"
         + CHAT[start:end]
+        + KIT[KIT.index("function toolPhaseVerb(") : KIT.index("\n}\n", KIT.index("function toolPhaseVerb(")) + 3]
         + f"\nconsole.log(JSON.stringify({{{', '.join(names)}}}));\n"
     )
     run = subprocess.run([node, "-e", script], capture_output=True, text=True, timeout=60, check=False)
@@ -90,7 +96,7 @@ def test_a_persona_name_replaces_atlas_and_the_old_librarian_name_does_not():
 
 
 def test_the_indicator_has_two_shapes_and_only_writing_gets_the_trace():
-    body = CHAT[CHAT.index("function typingDots(") : CHAT.index("function progressLine(")]
+    body = CHAT[CHAT.index("function typingDots(") : CHAT.index("\n}\n", CHAT.index("function typingDots("))]
     # Both branches (dots and the stepped word) derive the shape the same way.
     assert body.count('const next = phase === "writing" ? "writing" : "thinking";') == 2
     assert "PROGRESS_PHASES[phase]?.visual" not in body
@@ -167,7 +173,7 @@ def test_every_streaming_caller_hands_its_line_to_the_client():
         assert 'say("Writing the answer…")' not in src
         assert 'say("The model is' not in src
         assert "const say = " not in src
-    assert 'phase("writing")' not in ATTACH
+    assert 'phase("writing")' not in ATTACH_OWN
 
 
 def test_no_surface_opens_on_the_old_word():

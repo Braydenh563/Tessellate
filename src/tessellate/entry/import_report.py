@@ -12,10 +12,11 @@ open it (`GET /import/reports/{id}`).
 from __future__ import annotations
 
 import json
-import os
 import re
 from datetime import datetime, timezone
 from pathlib import Path
+
+from tessellate.core import paths
 
 KEEP = 20
 #: A report lists every skip; this only stops a pathological export from
@@ -77,11 +78,10 @@ def latest(data_dir: Path) -> str:
 def _inside(where: Path, report_id: str) -> Path:
     """The report's file, refused unless it resolves inside the reports folder
     (the id is checked by shape too; this is the check a path needs)."""
-    base = os.path.realpath(where)
-    path = os.path.realpath(os.path.join(base, f"{report_id}.json"))
-    if not path.startswith(base + os.sep):
-        raise ValueError("not a report of this notebook")
-    return Path(path)
+    try:
+        return paths.contained(where, f"{report_id}.json")
+    except paths.OutsideFolder:
+        raise ValueError("not a report of this notebook") from None
 
 
 def load(data_dir: Path, report_id: str) -> dict | None:

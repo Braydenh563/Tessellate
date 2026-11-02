@@ -47,7 +47,10 @@ def test_the_compact_row_never_wraps() -> None:
 
 
 def test_the_fab_does_not_float_over_the_panels_kebab() -> None:
-    assert re.search(r"\.tab-page:has\(#graph-popup:not\(\.hidden\), #graph-new:not\(\.hidden\)\) > \.dock-fab \{\s*display: none;", RESPONSIVE)
+    #: The rule was scoped to the graph's own path in dec5b0b (OPEN 813: a bare
+    #: :has() re-matched on every board write); the intent, no fab while the
+    #: popup or the new-note panel is open, is unchanged.
+    assert re.search(r"\.tab-page:has\(> #graph-card > #graph-box > :is\(#graph-popup, #graph-new\):not\(\.hidden\)\) > \.dock-fab \{\s*display: none;", RESPONSIVE)
 
 
 def test_a_sheet_never_lands_focus_on_a_select_under_touch() -> None:

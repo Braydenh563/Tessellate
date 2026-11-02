@@ -23,13 +23,14 @@ from datetime import timedelta
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import librarian, skills, toolrank, toolwords
+from tessellate.ai import librarian, memory, note_rank, personal, skills, toolrank, toolwords
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.ai.provider import set_write_tools
-from tessellate.core import activity, deps, events
-from tessellate.core.database import LIKE_ESCAPE, Category, Entry, Reminder, like_escape
+from tessellate.core import activity, deps, events, private_turn
+from tessellate.core.database import LIKE_ESCAPE, LINK_TYPES, Category, Entry, Reminder, like_escape
 from tessellate.core.logbuffer import safe_value
-from tessellate.entry import manager, paths
+from tessellate.entry import link_wording, manager, paths
+from tessellate.repo import relation_types
 from tessellate.entry.properties import strip as strip_properties
 from tessellate.search import search_manager
 
@@ -66,7 +67,13 @@ from ._common import (  # noqa: F401
 
 # --- handlers (session, args) -> result dict -----------------------------------
 # Results always include a human "label" on success; the UI shows it
-# inline in the chat ("Created note #12 in Shopping").
+# inline in the chat ("Created “Milk and eggs” in Shopping").
+
+
+def _named(entry: Entry) -> str:
+    """A note as a tool label says it: its title in quotes, never its id
+    (audit 1029 C47: "Done: added to Favourites: note #29")."""
+    return f"“{link_wording.title(entry.content or '', limit=48) or 'Untitled note'}”"
 
 
 def _search_notes(session: Session, args: dict) -> dict:
@@ -87,7 +94,9 @@ def _search_notes(session: Session, args: dict) -> dict:
         session, str(args["query"]), deps.get_embeddings(), limit=limit
     )
     notes = []
-    for entry in found.entries:
+    #: The same order Ask lists in (audit 1029 C20), unless the search gave the newest.
+    entries = found.entries if found.mode == "recent" else note_rank.lead(found.entries, str(args["query"]))
+    for entry in entries:
         summary = _note_summary(session, entry)
         if entry.id in found.connected_ids:
             # **Why this note is here.** It did not match the search, it is
@@ -124,7 +133,7 @@ def _get_note_tool(session: Session, args: dict) -> dict:
     result["links"] = [
         other.id for _link, other in manager.links_for_entry(session, entry)
     ]
-    result["label"] = f"ph:file-text Read note #{entry.id} in full"
+    result["label"] = f"ph:file-text Read {_named(entry)} in full"
     return result
 
 
@@ -938,7 +947,7 @@ def _tool_group(name: str) -> str:
     if name in ("web_search", "read_url"):
         return "online"
     spec = TOOLS[name]
-    return "confirm" if spec.destructive else "write" if name in WRITE_TOOLS else "read"
+    return "confirm" if spec.destructive or name in CHANGE_TOOLS else "write" if name in WRITE_TOOLS else "read"
 
 
 def _list_tools(session: Session, args: dict) -> dict:
@@ -1418,7 +1427,7 @@ def _create_note(session: Session, args: dict) -> dict:
         )
     deps.store_quietly(session, entry)
     result = _note_summary(session, entry)
-    result["label"] = f"ph:pencil-simple Created note #{entry.id} in {result['category']}"
+    result["label"] = f"ph:pencil-simple Created {_named(entry)} in {result['category']}"
     result["undo"] = {"tool": "delete_note", "arguments": {"note_id": entry.id}}
     return result
 
@@ -1464,7 +1473,7 @@ def _edit_note(session: Session, args: dict) -> dict:
         parts.append("text rewritten")
     if "category" not in changed:
         parts.append(f"still in {after_category}")
-    result["label"] = f"ph:note-pencil Updated note #{entry.id}: {'; '.join(parts)}"
+    result["label"] = f"ph:note-pencil Updated {_named(entry)}: {'; '.join(parts)}"
     result["undo"] = undo
     return result
 
@@ -1567,7 +1576,7 @@ def _pin_note(session: Session, args: dict) -> dict:
         session.commit()
     result = _note_summary(session, entry)
     verb = "Added to Favourites" if pinned else "Removed from Favourites"
-    result["label"] = f"ph:star {verb}: note #{entry.id}"
+    result["label"] = f"ph:star {verb}: {_named(entry)}"
     result["undo"] = {
         "tool": "pin_note",
         "arguments": {"note_id": entry.id, "pinned": not pinned},
@@ -1582,14 +1591,14 @@ def _pin_note(session: Session, args: dict) -> dict:
 LINK_TYPE_DESCRIPTION_CHARS = 420
 
 _LINK_TYPE_LEAD = (
-    "Optional kind of link, read as note_id <kind> the other note. One of: "
+    "Optional: note_id <kind> the other note. One of: "
 )
-_LINK_TYPE_TAIL = ". Leave it out when unsure."
+_LINK_TYPE_TAIL = ". Omit when unsure."
 
 
 def link_type_description(types: dict[str, dict]) -> str:
     """The `link_type` parameter's text for these relation types
-    (`manager.relation_types`): the built-ins first, then the person's own,
+    (`relation_types.kinds`): the built-ins first, then the person's own,
     cut to `LINK_TYPE_DESCRIPTION_CHARS` with a count of what was left out."""
     keys = list(types)
     room = LINK_TYPE_DESCRIPTION_CHARS - len(_LINK_TYPE_LEAD) - len(_LINK_TYPE_TAIL)
@@ -1616,7 +1625,7 @@ def _resolve_link_type(session: Session, wanted: object) -> str | None:
     text = " ".join(str(wanted or "").split())
     if not text:
         return None
-    types = manager.relation_types(session)
+    types = relation_types.kinds(session)
     folded = text.casefold()
     snake = folded.replace(" ", "_").replace("-", "_")
     for key, row in types.items():
@@ -1662,7 +1671,7 @@ def _link_notes(session: Session, args: dict) -> dict:
     return {
         "linked": [source.id] + linked,
         "label": (
-            f"ph:link Linked note #{source.id} to {len(linked)} other note(s): "
+            f"ph:link Linked {_named(source)} to {len(linked)} other note(s): "
             f"{', '.join(map(str, linked))}"
         ),
     }
@@ -1708,7 +1717,7 @@ def _unlink_notes(session: Session, args: dict) -> dict:
             "tool": "link_notes",
             "arguments": {"note_id": source.id, "other_note_id": target.id},
         },
-        "label": f"ph:scissors Unlinked note #{source.id} from note #{target.id}",
+        "label": f"ph:scissors Unlinked {_named(source)} from {_named(target)}",
     }
 
 
@@ -1719,7 +1728,7 @@ def _delete_note(session: Session, args: dict) -> dict:
         "deleted": entry.id,
         "recoverable": True,
         "undo": {"tool": "restore_note", "arguments": {"note_id": entry.id}},
-        "label": f"ph:trash Moved note #{entry.id} to the recycle bin",
+        "label": f"ph:trash Moved {_named(entry)} to the recycle bin",
     }
 
 
@@ -1742,7 +1751,7 @@ def _restore_note(session: Session, args: dict) -> dict:
     if entry.is_deleted:
         manager.restore_entry(session, entry)
     result = _note_summary(session, entry)
-    result["label"] = f"ph:recycle Restored note #{entry.id} from the recycle bin"
+    result["label"] = f"ph:recycle Restored {_named(entry)} from the recycle bin"
     result["undo"] = {"tool": "delete_note", "arguments": {"note_id": entry.id}}
     return result
 
@@ -1904,7 +1913,7 @@ def _web_search(session: Session, args: dict) -> dict:
 
     config = deps.get_config()
     if not config.get_preference("web_search_enabled", False):
-        raise ToolError("Web search is disabled in Settings → Web search")
+        raise ToolError("Web search is disabled in Settings, Web search")
     # Read through the same helper the HTTP route uses, so the engine the
     # user picked is the engine the agent uses. Two readers is how a tool
     # ends up quietly ignoring a setting the rest of the app honours.
@@ -1980,7 +1989,7 @@ def _read_url(session: Session, args: dict) -> dict:
 
     config = deps.get_config()
     if not config.get_preference("web_search_enabled", False):
-        raise ToolError("Web search is disabled in Settings → Web search")
+        raise ToolError("Web search is disabled in Settings, Web search")
     url = str(args.get("url") or "").strip()
     if not url:
         raise ToolError("No URL was given")
@@ -2502,7 +2511,7 @@ def handoff_event(name: str, arguments: dict, history: list[dict] | None = None)
 #: `agent._persona_with_memory`), so an unbounded list is a slow squeeze on the
 #: window that ends with the user's actual question falling off the front.
 #: `content` is a String(500) column and SQLite will not enforce that for us.
-MAX_PREFERENCE_CHARS = 200
+MAX_PREFERENCE_CHARS = memory.MAX_PREFERENCE_CHARS
 MAX_ACTIVE_PREFERENCES = 40
 
 
@@ -2518,6 +2527,10 @@ def _save_user_preference(session: Session, args: dict) -> dict:
     """
     from tessellate.core.database import UserPreference
 
+    if private_turn.active():
+        #: The agent is not offered this tool in a private chat; this is the
+        #: write's own refusal, for a path that offers the whole registry.
+        raise ToolError("Nothing is saved from a private chat.")
     pref = str(args.get("preference") or "").strip()
     if not pref:
         raise ToolError("Must provide 'preference'.")
@@ -2604,6 +2617,27 @@ def _audit_link_reasons(session: Session, args: dict) -> dict:
     limit = int(args.get("limit", 50))
     updated = links.audit_vague_links(session, deps.get_model_manager(), deps.get_ollama(), limit)
     return {"updated": updated, "message": f"Successfully audited and rewrote {updated} link reasons."}
+
+def _check_learned(session: Session, args: dict) -> dict:
+    """Check what it learned (decision 68, `ai/learned_audit_run.py`): re-read
+    every learned claim and question against its note, retire what no longer
+    holds and flag what needs a look. Every retirement is a tombstone with its
+    run's stamp, which Settings, What it learned can undo."""
+    from tessellate.ai import learned_audit_run
+    from tessellate.core import jobruns
+
+    with jobruns.job_run("learned-audit") as run:
+        done = learned_audit_run.run_check(session)
+        session.commit()
+        learned_audit_run.say_lines(run, done)
+        run.result = learned_audit_run.summary_words(done)
+    shown = done["lines"][:10]
+    return {
+        "checked": done["checked"], "retired": len(done["retired"]), "flagged": len(done["flagged"]),
+        "items": [{"action": row["action"], "text": row["text"][:200], "reason": row["reason"]} for row in shown],
+        "run": done["run"], "message": f"Checked {run.result.removeprefix('checked ')}.",
+    }
+
 
 def _find_contradictions(session: Session, args: dict) -> dict:
     """Notes that appear to contradict each other (see `ai.tensions`).
@@ -2706,6 +2740,13 @@ TOOLS: dict[str, ToolSpec] = {
             _find_contradictions,
         ),
 
+        ToolSpec(
+            "check_learned",
+            "Re-check what was learned about the user against the notes as they are now: retire "
+            "what no longer holds, flag what needs a look (two notes disagree, a date passed).",
+            {"type": "object", "properties": {}},
+            _check_learned,
+        ),
         ToolSpec(
             "audit_link_reasons",
             "Audits vague graph link reasons (like 'similar in meaning') and rewrites them by deducing a specific reason based on both notes.",
@@ -2834,9 +2875,8 @@ TOOLS: dict[str, ToolSpec] = {
         ToolSpec(
             "list_notes",
             "Walk the user's notes, newest first, optionally by category, tag, age or "
-            "untagged. One page at a time: while has_more, call again with next_offset. "
-            "untagged:true for 'tag my untagged notes'. search_notes finds something "
-            "specific.",
+            "untagged; while has_more, call again with next_offset. untagged:true for "
+            "'tag my untagged notes'; search_notes finds something specific.",
             {
                 "type": "object",
                 "properties": {
@@ -2851,8 +2891,7 @@ TOOLS: dict[str, ToolSpec] = {
                     },
                     "since": {
                         "type": "string",
-                        "description": "A window in the user's words: 'this week', 'since Friday', 'last "
-                        "month', or a number of days (optional)",
+                        "description": "Optional window: 'this week', 'since Friday', 'last month', or a number of days",
                     },
                     "limit": {
                         "type": "integer",
@@ -2891,8 +2930,7 @@ TOOLS: dict[str, ToolSpec] = {
                     },
                     "since": {
                         "type": "string",
-                        "description": "A window in the user's words: 'this week', 'since Friday', 'last "
-                        "month', or a number of days (optional)",
+                        "description": "Optional window: 'this week', 'since Friday', 'last month', or a number of days",
                     },
                 },
             },
@@ -2951,8 +2989,7 @@ TOOLS: dict[str, ToolSpec] = {
         ToolSpec(
             "read_file",
             "Everything the app knows about one file: its caption and the text read from it. "
-            "Takes `kind` and `id` exactly as search_files gave them. The text is capped: for"
-            " a long file, pass query.",
+            "Takes `kind` and `id` as search_files gave them. Long text is capped: pass query.",
             {
                 "type": "object",
                 "properties": {
@@ -3022,15 +3059,14 @@ TOOLS: dict[str, ToolSpec] = {
         ),
         ToolSpec(
             "read_whiteboard",
-            "Read a whiteboard: the notes placed as cards, text boxes, how many images, and "
-            "which cards link to which. Use it for 'what's on my project board?' or before "
-            "adding, so nothing is duplicated.",
+            "Read a whiteboard: its cards, text boxes, image count and which cards link. Use "
+            "it for 'what's on my board?' or before adding, so nothing is duplicated.",
             {
                 "type": "object",
                 "properties": {
                     "board_id": {
                         "type": "integer",
-                        "description": "The board's own note id. Omit for the default board.",
+                        "description": "The board's note id; omit for the default board.",
                     },
                 },
             },
@@ -3060,7 +3096,7 @@ TOOLS: dict[str, ToolSpec] = {
                     "note_id": _NOTE_ID,
                     "board_id": {
                         "type": "integer",
-                        "description": "The board's own note id. Omit for the default board.",
+                        "description": "The board's note id; omit for the default board.",
                     },
                     "x": {"type": "number", "description": "Board x position (optional)"},
                     "y": {"type": "number", "description": "Board y position (optional)"},
@@ -3087,9 +3123,9 @@ TOOLS: dict[str, ToolSpec] = {
         ToolSpec(
             "generate_diagram",
             "Place a tree of notes on a board in one call. Each node is a new note ('title') "
-            "or an existing one ('note_id'), with a short 'ref' that children name as their "
-            "'parent_ref'. One node has no parent_ref (the root), or parent_ref is card:<id> "
-            "to grow from a card on the board. Never invent x/y. "
+            "or an existing one ('note_id') with a short 'ref'; children name it as "
+            "'parent_ref'. The root has none, or card:<id> to grow from a board card. "
+            "Never invent x/y. "
             f"Up to {MAX_DIAGRAM_NODES} nodes.",
             {
                 "type": "object",
@@ -3109,7 +3145,7 @@ TOOLS: dict[str, ToolSpec] = {
                     },
                     "board_id": {
                         "type": "integer",
-                        "description": "The board's own note id. Omit for the default board.",
+                        "description": "The board's note id; omit for the default board.",
                     },
                     "layout": {
                         "type": "string",
@@ -3130,9 +3166,9 @@ TOOLS: dict[str, ToolSpec] = {
         # thing they never ask the model for is a coordinate.
         ToolSpec(
             "read_mindmap",
-            "Read a mindmap as an indented outline: title, then each node with its id, kind "
-            "and the note or document it stands for. Use it before adding to a map. Needs "
-            "board_id; search_whiteboard finds it by name.",
+            "Read a mindmap as an indented outline: each node's id, kind and the note or "
+            "document it stands for. Use it before adding. Needs board_id; search_whiteboard "
+            "finds it.",
             {
                 "type": "object",
                 "properties": {
@@ -3164,9 +3200,9 @@ TOOLS: dict[str, ToolSpec] = {
         ),
         ToolSpec(
             "map_from_note",
-            "A mind map from one note in one call ('turn this note into a map'): its title "
-            "the centre, its headings and lists the branches. Use it instead of "
-            "create_mindmap plus add_map_node for one note's outline.",
+            "A mind map from one note in one call ('turn this note into a map'): title the "
+            "centre, headings and lists the branches. Use it, not create_mindmap plus "
+            "add_map_node, for one note's outline.",
             {
                 "type": "object",
                 "properties": {
@@ -3314,9 +3350,8 @@ TOOLS: dict[str, ToolSpec] = {
         ToolSpec(
             "list_library",
             "Find shapes, flowchart symbols, arrows, frames (Kanban, SWOT, "
-            "retrospective), icons and the person's own saved items in the "
-            "board's object library, by a word. Gives each a ref for "
-            "place_library_item.",
+            "retrospective), icons and the person's saved items in the board "
+            "library by a word; each has a ref for place_library_item.",
             {
                 "type": "object",
                 "properties": {
@@ -3429,9 +3464,8 @@ TOOLS: dict[str, ToolSpec] = {
             # Offered by cue, not in CORE_TOOLS (§34's "the registry should
             # stop growing", this only needs to be on the wire for the rare
             # turn that's actually about the chat getting long).
-            "Summarise the older part of this conversation to free context. Your turn ENDS: "
-            "the user edits the summary before it replaces anything. Only when asked to "
-            "shorten the chat itself, not to summarise notes.",
+            "Summarise the older part of this chat to free context. Your turn ENDS: the user "
+            "edits the summary first. Only when asked to shorten the chat, not to summarise notes.",
             {"type": "object", "properties": {}},
             _compress_chat,
             ends_turn=True,
@@ -3526,8 +3560,8 @@ TOOLS: dict[str, ToolSpec] = {
         ToolSpec(
             "calculate",
             "Work out a sum, percentage, unit or currency conversion, or count "
-            "of days, the way the app does. Use it for every number you would "
-            "otherwise compute; say the result and how it was read.",
+            "of days, as the app does. Use it for every number; say the result "
+            "and how it was read.",
             {"type": "object", "properties": {"question": {"type": "string", "description": "e.g. 15% of 240, 5 km in miles, days until 25 December"}},
              "required": ["question"]},
             _calculate,
@@ -3696,7 +3730,7 @@ TOOLS: dict[str, ToolSpec] = {
                     "link_type": {
                         "type": "string",
                         "description": link_type_description(
-                            {key: {} for key in manager.LINK_TYPES}
+                            {key: {} for key in LINK_TYPES}
                         ),
                     },
                 },
@@ -3929,6 +3963,7 @@ TOOLS: dict[str, ToolSpec] = {
 # which skills act rather than answer, one list, so the two can't disagree.
 WRITE_TOOLS = {
     "audit_link_reasons",
+    "check_learned",
     "create_note",
     "edit_note",
     "tag_note",
@@ -3975,6 +4010,68 @@ WRITE_TOOLS = {
     "move_notes",
 }
 set_write_tools(WRITE_TOOLS)
+
+#: **Writes are in one of three classes** (audit 1029 H2; table in
+#: `docs/roadmap/agent-remaining/audit-1029-harness.md`). The Agent tip says it
+#: asks before it changes or removes something, so the gate is in code:
+#:
+#: - destructive (`ToolSpec.destructive`): removes content; always parks.
+#: - CHANGE_TOOLS: overwrites or detaches what the person already wrote;
+#:   parks the same way, so a Confirm card names it before it happens.
+#: - ADD_TOOLS: only adds (or flips state with an Undo); runs, and its result
+#:   card carries the Undo. `tag_note` is here, but `remove` makes it a change
+#:   (`needs_confirm`).
+#:
+#: `tests/test_write_gate_h2.py` fails when a write tool is in none of them.
+CHANGE_TOOLS = frozenset({
+    "check_learned",
+    "edit_note",
+    "unlink_notes",
+    "rename_tag",
+    "rename_category",
+    "save_skill",
+    "audit_link_reasons",
+})
+ADD_TOOLS = frozenset({
+    "create_note",
+    "tag_note",
+    "pin_note",
+    "link_notes",
+    "restore_note",
+    "set_reminder",
+    "complete_reminder",
+    "create_document",
+    "add_whiteboard_card",
+    "add_whiteboard_link",
+    "generate_diagram",
+    "create_mindmap",
+    "map_from_note",
+    "add_map_node",
+    "link_map_nodes",
+    "restore_board_item",
+    "add_board_shape",
+    "place_library_item",
+    "create_category",
+})
+
+
+def needs_confirm(name: str, arguments: dict | None = None, approved: bool = False) -> bool:
+    """Whether this call parks for a Confirm card whatever else is true of the turn.
+
+    `approved` is a run the person already started with the writes listed (a
+    plan's "Run the plan", a skill they ran): their click was the confirm for
+    changes, so only a removal still parks.
+    """
+    spec = TOOLS.get(name)
+    if spec is None:
+        return False
+    if spec.destructive:
+        return True
+    if approved:
+        return False
+    if name in CHANGE_TOOLS:
+        return True
+    return name == "tag_note" and bool((arguments or {}).get("remove"))
 
 
 # --- which tools a turn is offered (roadmap §11a) --------------------------------
@@ -4360,8 +4457,17 @@ def focus_detail(question: str, recent: str = "") -> toolwords.Focus:
     )
 
 
+def web_barred(question: str) -> set[str]:
+    """The web tools a first-person question must not be offered: "who is my
+    sister" is in the notes, and a model holding `web_search` sends it out
+    (audit 1030 A3). An explicit "search the web for" keeps them."""
+    if personal.about_own_record(question or "") and not toolwords.asks_web(question or ""):
+        return {"web_search", "read_url"}
+    return set()
+
+
 def tool_enabled(name: str) -> bool:
-    """A tool is offered unless the user turned it off in Settings → Tools.
+    """A tool is offered unless the user turned it off in Settings, Tools.
     web_search additionally requires the online opt-in."""
     # Listing the tools must not start the app: without settings the defaults
     # hold (web off, nothing disabled), which is what a fresh notebook has.
@@ -4465,7 +4571,7 @@ def ollama_tools(allowed: list[str] | None = None, session: Session | None = Non
     roadmap §11a in one line: 28 schemas are ~77% of the fixed per-round
     overhead, and a skill that needs three of them should pay for three. The
     user's own switches still win, a skill cannot re-enable something turned
-    off in Settings → Tools.
+    off in Settings, Tools.
     """
     wanted = set(allowed) if allowed else None
     offered = [
@@ -4492,7 +4598,7 @@ def with_relation_types(offered: list[dict], session: Session) -> list[dict]:
         if function.get("name") != "link_notes" or "link_type" not in props:
             continue
         try:
-            kinds = manager.relation_types(session)
+            kinds = relation_types.kinds(session)
         except Exception:  # noqa: BLE001
             # A session that cannot list kinds (a test double, a closed
             # session) keeps the registry's own description: the built-ins.
@@ -4754,12 +4860,12 @@ COUNTING_TOOLS = ("count_notes", "list_notes")
 
 
 def tool_catalog() -> list[dict]:
-    """Metadata for the Settings → Tools toggles."""
+    """Metadata for the Settings, Tools toggles."""
     return [
         {
             "name": spec.name,
             "description": spec.description,
-            "destructive": spec.destructive,
+            "destructive": spec.destructive or spec.name in CHANGE_TOOLS,
             "enabled": tool_enabled(spec.name),
             "online": spec.name in ("web_search", "read_url"),
             "counts": spec.name in COUNTING_TOOLS,
@@ -4770,7 +4876,7 @@ def tool_catalog() -> list[dict]:
                 "online"
                 if spec.name in ("web_search", "read_url")
                 else "confirm"
-                if spec.destructive
+                if spec.destructive or spec.name in CHANGE_TOOLS
                 else "write"
                 if spec.name in WRITE_TOOLS
                 else "read"
@@ -4806,8 +4912,25 @@ _CONFIRM_LABELS = {
 }
 
 
-def confirm_label(name: str, arguments: dict) -> str:
+#: The confirm sentences that name one note, said with its title when the
+#: note can be read (audit 1029 C47: "Move note #12 to the recycle bin").
+_CONFIRM_NAMED = {
+    "delete_note": "Move {note} to the recycle bin",
+    "edit_note": "Change {note}",
+}
+
+
+def confirm_label(name: str, arguments: dict, session: Session | None = None) -> str:
     """Human sentence for the UI's confirm button (destructive tools)."""
+    if session is not None and name in _CONFIRM_NAMED:
+        try:
+            note = _named(_require_note(session, arguments))
+        #: AttributeError: a session that cannot look notes up (a stub) gets
+        #: the plain label; a label never stops the call.
+        except (ToolError, KeyError, TypeError, ValueError, AttributeError):
+            note = None
+        if note:
+            return _CONFIRM_NAMED[name].format(note=note)
     label = _CONFIRM_LABELS.get(name)
     if label:
         return label(arguments)
@@ -5064,7 +5187,7 @@ def execute_tool(
         return {"error": f"Unknown tool '{name}'"}
     deps.get_config()  # a call runs inside the app: the user's settings, never the defaults
     if not tool_enabled(name):
-        return {"error": f"The '{name}' tool is turned off in Settings → Tools it can use"}
+        return {"error": f"The '{name}' tool is turned off in Settings, Tools it can use"}
     #: Stop landed while the model call that chose this write was in flight:
     #: the write is discarded, not done late (the stream only sees Stop between
     #: yields, `activity.bind`). Reads are harmless and still run.
@@ -5072,7 +5195,7 @@ def execute_tool(
         return {"error": "You stopped this run before this step ran, so nothing was changed."}
     args, problem = check_arguments(name, dict(arguments or {}))
     if problem:
-        # Logged like a handler's argument failure, so Settings → Logs shows
+        # Logged like a handler's argument failure, so Settings, Logs shows
         # what the model sent; the text is the app's own, safe to hand back.
         logging.getLogger("tessellate.tools").warning("tool %s refused: %s", safe_value(name, 40), safe_value(problem, 200))
         return {"error": problem}

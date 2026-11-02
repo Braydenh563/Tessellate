@@ -17,7 +17,7 @@ from tessellate.search.query import understand
 
 def test_an_ordinary_question_has_no_operators():
     u = understand("what did I write about beans")
-    assert u.filters == {"tag": [], "kind": [], "space": [], "has": [], "is": []}
+    assert u.filters == {"tag": [], "kind": [], "space": [], "has": [], "is": [], "title": []}
     assert not u.has_operators
     assert u.subject == "beans"
 
@@ -208,7 +208,7 @@ def test_deleting_a_space_takes_its_rows_out_of_the_index(client, session):
     assert all(_indexed(session, kind, ref) for kind, ref in ids.items())
     # The request is made before the assert, not inside it: an assert that
     # performs the deletion would skip it under `python -O` (CodeQL 424).
-    deleted = client.delete(f"/spaces/{space_id}")
+    deleted = client.delete(f"/spaces/{space_id}?purge=1")
     assert deleted.status_code == 200
     session.expire_all()
     for kind, ref in ids.items():
@@ -469,11 +469,12 @@ def test_the_search_endpoint_answers_with_scores(client):
 
 def test_the_search_endpoint_is_behind_the_lock():
     """The one gate this app has: a route that reads the notebook is
-    registered with `locked`, and this one reads every kind at once."""
-    from pathlib import Path
+    registered with `locked`, and this one reads every kind at once. The
+    gate is the router's row in `api.app.ROUTERS` since audit 1031 AR9."""
+    from tessellate.api import app as app_module
+    from tessellate.api import routes_search
 
-    source = Path("src/tessellate/api/app.py").read_text(encoding="utf-8")
-    assert "app.include_router(routes_search.router, dependencies=locked)" in source
+    assert (routes_search.router, app_module.LOCKED) in app_module.ROUTERS
 
 
 def test_making_a_note_private_takes_its_vector_out_of_the_matrix(
@@ -681,3 +682,43 @@ def test_the_finders_empty_state_reads_the_index_not_the_chips():
     empty = empty[: empty.index(";")]
     assert "finderIndexTotals" in empty and "finderCounts" not in empty
     assert "finderIndexTotals = body.counts" in source
+
+
+#: Audit 1031 N1: the Notes filter box reads `in:` and `cat:` as a category; the finder
+#: read `in:` only as a space, so `in:Money` found nothing there. One rule now: `in:` names
+#: a space or, when no space has the name, a category; `cat:` and `category:` always mean one.
+def _categorised(session):
+    from tessellate.entry import manager
+
+    work = _note(session, "invoice for the harbour job")
+    home = _note(session, "invoice for the boiler")
+    for entry, name in ((work, "Money"), (home, "Household")):
+        entry.category_id = manager.get_or_create_category(session, name).id
+    session.commit()
+    return work, home
+
+
+def test_cat_and_category_are_an_operator_not_a_word():
+    u = understand('cat:Money category:"Home office" invoice')
+    assert u.categories == ["Money", "Home office"]
+    assert u.subject == "invoice"
+    assert u.has_operators
+    assert "cat:" not in " ".join(u.notices)
+
+
+def test_in_names_a_category_when_no_space_has_the_name(session):
+    work, home = _categorised(session)
+    assert _hit_ids(session, "in:Money invoice") == {("note", work.id)}
+    assert _hit_ids(session, "in:money invoice") == {("note", work.id)}
+    assert _hit_ids(session, "cat:Household invoice") == {("note", home.id)}
+    assert _hit_ids(session, "cat:household") == {("note", home.id)}
+
+
+def test_in_still_names_a_space_that_exists(session):
+    from tessellate.core.database import Space
+
+    work, _home = _categorised(session)
+    session.add(Space(id="elsewhere", name="Elsewhere"))
+    session.commit()
+    assert _hit_ids(session, "in:Elsewhere invoice") == set()
+    assert _hit_ids(session, "in:Money invoice") == {("note", work.id)}

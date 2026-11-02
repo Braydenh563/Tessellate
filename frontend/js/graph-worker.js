@@ -128,8 +128,8 @@ const ALPHA_DECAY = 0.0228;
 //:   moved it (an init, a drag released, a reheat), the loop stops and says
 //:   `end`, as if it had cooled. Nothing is lost: a drag or a reheat starts it
 //:   again from where it stands.
-const SETTLE_FULL_TICKS_UP_TO = 1500;
-const SETTLE_TICKS_BIG = 120;
+const SETTLE_FULL_TICKS_UP_TO = 750;
+const SETTLE_TICKS_BIG = 100;
 const SETTLE_BUDGET_MS = 20000;
 let settleFrom = 0;
 
@@ -138,6 +138,61 @@ function alphaDecayFor(count) {
   const ticks = Math.max(SETTLE_TICKS_BIG, Math.round((300 * SETTLE_FULL_TICKS_UP_TO) / count));
   return 1 - Math.pow(0.001, 1 / ticks);
 }
+//: **Heat comes up and goes down along curves, never a step** (INBOX 1513,
+//: the owner: "make the graph adjustments be more smooth and less
+//: mechanical"). A change of settings, a filter or a reheat used to set
+//: alpha to its full value at once, so the first tick shoved every note with
+//: the whole force (66 px a note in the first quarter second, measured
+//: 500 notes, `gmo/gm.js`), and the cooling then ran at whatever pace the
+//: loop could make. Now alpha rises to its target over `RAMP_TICKS` along a
+//: smoothstep (from rest, no first frame that jumps), the physics' friction
+//: firms up along a smoothstep as the heat falls (`damping`, the last drift
+//: dies instead of crawling), and less motion skips both (`still`).
+//: A map already placed re-lays out from this heat, not from 1: the notes
+//: keep their neighbourhoods (500 notes, Spread 50 to 80: mean move 91 px
+//: against 74, the path walked 833 against 617, the same overlaps, crossings
+//: and link length) and the settle is shorter.
+const RELAYOUT_ALPHA = 0.5;
+const RAMP_TICKS = 14;
+const RAMP_FROM = 0.1;
+const VELOCITY_DECAY_REST = 0.55;
+const DAMP_BAND = 0.08;
+const ramp = { n: 0, i: 0, from: 0, to: 0 };
+let still = false;
+
+//: The simulation's own alpha is the target at once (what a direct tick and
+//: every reader of `alpha()` have always seen); `tickOnce` plays the climb.
+function heatTo(target) {
+  if (!simulation) return;
+  const now = simulation.alpha();
+  if (!ramp.n && now >= target) return;
+  if (still || dragging) {
+    ramp.n = 0;
+    simulation.alpha(Math.max(now, target));
+    return;
+  }
+  ramp.to = Math.max(target, ramp.n ? ramp.to : 0);
+  ramp.n = RAMP_TICKS;
+  ramp.i = 0;
+  ramp.from = Math.min(ramp.to, Math.max(now, ramp.to * RAMP_FROM));
+  simulation.alpha(ramp.to);
+}
+
+//: One step of the live layout: the ramp's alpha when heat is coming up,
+//: the eased friction when it is going down, then d3's own tick.
+function tickOnce() {
+  if (ramp.n) {
+    ramp.i += 1;
+    simulation.alpha(ramp.from + (ramp.to - ramp.from) * smoothstep(ramp.i / ramp.n));
+    if (ramp.i >= ramp.n) ramp.n = 0;
+  }
+  if (!dragging && !still) {
+    const cool = ramp.n ? 0 : smoothstep(1 - simulation.alpha() / DAMP_BAND);
+    simulation.velocityDecay(VELOCITY_DECAY + (VELOCITY_DECAY_REST - VELOCITY_DECAY) * cool);
+  }
+  simulation.tick();
+}
+
 //: The alphaTarget a drag raises the simulation to, and the plan's number.
 //: High enough that the neighbourhood reorganises around where you put the
 //: node, low enough that the rest of the map is not thrown into the air.
@@ -195,6 +250,71 @@ function carryForce(alpha) {
   }
 }
 carryForce.initialize = () => {};
+//: **A small drag is a local nudge** (INBOX 1517, the owner: "the more I
+//: slightly move nodes on the graph, all of it really starts to bunch up and
+//: get closer together until they are all really close"). A drag reheats the
+//: whole simulation, and a map the untangle passes arranged is not the force
+//: layout's own resting shape, so every nudge let all of it relax toward that
+//: shape a little: ten 8 unit drags changed the layout's size by 7% at 40 notes
+//: and the notes 150+ units away from the held one moved 3.8px a drag (a
+//: control with no drag moved nothing; tests/test_graph_drag_local_1517.py).
+//: Now the notes beyond the held one's neighbourhood (two links, or
+//: `NUDGE_RADIUS` world units) are held where they stood until the map rests,
+//: by a share of `1 - smoothstep(reach / DRAG_FULL_DISTANCE)`: whole for a
+//: nudge, none once the note has been carried a real distance, so a deliberate
+//: move still reorganises the map around it.
+const NUDGE_RADIUS = 150;
+const NUDGE_HOPS = 2;
+const nudge = { held: [], w: 0, reach: 0 };
+function nudgeStart(node) {
+  nudge.held = [];
+  nudge.reach = 0;
+  nudge.w = 1;
+  const links = simulation && simulation.force("link") ? simulation.force("link").links() : [];
+  const near = new Set([node]);
+  let frontier = [node];
+  for (let hop = 0; hop < NUDGE_HOPS && frontier.length; hop++) {
+    const next = [];
+    for (const link of links) {
+      for (const [a, b] of [[link.source, link.target], [link.target, link.source]]) {
+        if (typeof a !== "object" || typeof b !== "object") continue;
+        if (frontier.includes(a) && !near.has(b)) {
+          near.add(b);
+          next.push(b);
+        }
+      }
+    }
+    frontier = next;
+  }
+  for (const other of nodes) {
+    if (near.has(other) || other.fx != null || !Number.isFinite(other.x)) continue;
+    if (Math.hypot(other.x - node.x, other.y - node.y) <= NUDGE_RADIUS) continue;
+    nudge.held.push({ node: other, x: other.x, y: other.y });
+  }
+}
+function nudgeReach(distance) {
+  nudge.reach = Math.max(nudge.reach, distance);
+  const t = Math.min(1, nudge.reach / DRAG_FULL_DISTANCE);
+  nudge.w = 1 - t * t * (3 - 2 * t);
+}
+function nudgeEnd() {
+  nudge.held = [];
+  nudge.w = 0;
+}
+function nudgeForce() {
+  const w = nudge.w;
+  if (!w) return;
+  const keep = 1 - w;
+  for (const f of nudge.held) {
+    const n = f.node;
+    if (n.fx != null) continue;
+    n.x = f.x + (n.x - f.x) * keep;
+    n.y = f.y + (n.y - f.y) * keep;
+    n.vx *= keep;
+    n.vy *= keep;
+  }
+}
+nudgeForce.initialize = () => {};
 let dragOrigin = null;
 function dragHeat(x, y) {
   if (!dragOrigin) return DRAG_ALPHA;
@@ -1125,8 +1245,21 @@ const HOME_PULL = 1.5;
 const CLEAR_GAP = 4;
 const CLEAR_STRENGTH = 0.6;
 const CLEAR_CELL = 40;
+//: The grid is a dense array over the notes' extent; past this many cells
+//: (a note flung far out) the cell doubles instead.
+const CLEAR_GRID_MAX = 1 << 18;
 const clearPts = new Float64Array(10);
-const clear = { curved: true, stamp: 0 };
+const clearInv = new Float64Array(5);
+const clear = {
+  curved: true,
+  stamp: 0,
+  start: new Int32Array(1),
+  items: new Int32Array(0),
+  sx: new Float64Array(0),
+  sy: new Float64Array(0),
+  sneed: new Float64Array(0),
+  mark: new Int32Array(0),
+};
 
 function clearCurve(a, b) {
   // Drawn straight in every shape but Organic, whose long curves are its
@@ -1136,6 +1269,7 @@ function clearCurve(a, b) {
     clearPts[1] = a.y;
     clearPts[2] = b.x;
     clearPts[3] = b.y;
+    clearChordInv(2);
     return 2;
   }
   const dx = b.x - a.x;
@@ -1149,31 +1283,54 @@ function clearCurve(a, b) {
     clearPts[i * 2] = (1 - u) * (1 - u) * a.x + 2 * (1 - u) * u * cx + u * u * b.x;
     clearPts[i * 2 + 1] = (1 - u) * (1 - u) * a.y + 2 * (1 - u) * u * cy + u * u * b.y;
   }
+  clearChordInv(5);
   return 5;
 }
 
 //: The nearest point of the drawn line to `node`: [squared distance, x, y,
-//: how far along the line (0 at `a`, 1 at `b`)].
+//: how far along the line (0 at `a`, 1 at `b`)]. The nearest chord is found
+//: on distance alone and its foot point worked out once, not for each chord
+//: on the way (the force asks this for about 25 notes a line a tick at
+//: 2,000 notes). It reads each chord's 1 / length squared from `clearInv`,
+//: made once a line (not once a note) by whoever fills `clearPts`:
+//: `clearCurve`, or `clearChordInv` after a copy from the line grid.
 const clearNear = [0, 0, 0, 0];
+function clearChordInv(count) {
+  for (let i = 1; i < count; i++) {
+    const dx = clearPts[i * 2] - clearPts[i * 2 - 2];
+    const dy = clearPts[i * 2 + 1] - clearPts[i * 2 - 1];
+    clearInv[i] = 1 / (dx * dx + dy * dy || 1);
+  }
+}
 function clearNearest(node, count) {
-  clearNear[0] = Infinity;
+  const x = node.x;
+  const y = node.y;
+  let best = Infinity;
+  let at = 1;
+  let along = 0;
   for (let i = 1; i < count; i++) {
     const ax = clearPts[i * 2 - 2];
     const ay = clearPts[i * 2 - 1];
     const dx = clearPts[i * 2] - ax;
     const dy = clearPts[i * 2 + 1] - ay;
-    const l2 = dx * dx + dy * dy || 1;
-    const u = Math.max(0, Math.min(1, ((node.x - ax) * dx + (node.y - ay) * dy) / l2));
-    const qx = ax + u * dx;
-    const qy = ay + u * dy;
-    const d = (node.x - qx) ** 2 + (node.y - qy) ** 2;
-    if (d < clearNear[0]) {
-      clearNear[0] = d;
-      clearNear[1] = qx;
-      clearNear[2] = qy;
-      clearNear[3] = (i - 1 + u) / (count - 1);
+    let u = (x - ax) * dx + (y - ay) * dy;
+    u *= clearInv[i];
+    u = u < 0 ? 0 : u > 1 ? 1 : u;
+    const ex = x - ax - u * dx;
+    const ey = y - ay - u * dy;
+    const d = ex * ex + ey * ey;
+    if (d < best) {
+      best = d;
+      at = i;
+      along = u;
     }
   }
+  const px = clearPts[at * 2 - 2];
+  const py = clearPts[at * 2 - 1];
+  clearNear[0] = best;
+  clearNear[1] = px + along * (clearPts[at * 2] - px);
+  clearNear[2] = py + along * (clearPts[at * 2 + 1] - py);
+  clearNear[3] = (at - 1 + along) / (count - 1);
 }
 
 function clearPush(node, a, b) {
@@ -1213,37 +1370,125 @@ function clearanceForce() {
   let widest = 0;
   for (const node of nodes) widest = Math.max(widest, node.r || 8);
   const reach = widest + CLEAR_GAP;
-  const grid = new Map();
+  //: **The notes by cell in two typed arrays, not a Map of lists** (audit
+  //: 1029 row 35): a long line's corridor reads hundreds of cells, nearly
+  //: all empty, and a Map lookup on a number key was most of this force's
+  //: time (2,000 notes, 3,800 links spread over the world: 195 ms a call).
+  //: Counting sort over the notes' extent; reads outside it are skipped.
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
   for (const node of nodes) {
-    const key = Math.floor(node.x / CLEAR_CELL) * 100003 + Math.floor(node.y / CLEAR_CELL);
-    const list = grid.get(key);
-    if (list) list.push(node);
-    else grid.set(key, [node]);
+    if (!Number.isFinite(node.x) || !Number.isFinite(node.y)) continue;
+    if (node.x < minX) minX = node.x;
+    if (node.x > maxX) maxX = node.x;
+    if (node.y < minY) minY = node.y;
+    if (node.y > maxY) maxY = node.y;
+  }
+  if (minX > maxX) return;
+  let cell = CLEAR_CELL;
+  let cols = Math.floor(maxX / cell) - Math.floor(minX / cell) + 1;
+  let rows = Math.floor(maxY / cell) - Math.floor(minY / cell) + 1;
+  while (cols * rows > CLEAR_GRID_MAX) {
+    cell *= 2;
+    cols = Math.floor(maxX / cell) - Math.floor(minX / cell) + 1;
+    rows = Math.floor(maxY / cell) - Math.floor(minY / cell) + 1;
+  }
+  const gx0 = Math.floor(minX / cell);
+  const gy0 = Math.floor(minY / cell);
+  const cells = cols * rows;
+  if (clear.start.length < cells + 1) clear.start = new Int32Array(cells + 1);
+  if (clear.items.length < nodes.length) clear.items = new Int32Array(nodes.length);
+  const start = clear.start;
+  const items = clear.items;
+  start.fill(0, 0, cells + 1);
+  const cellOf = (node) =>
+    Number.isFinite(node.x) && Number.isFinite(node.y)
+      ? (Math.floor(node.x / cell) - gx0) * rows + Math.floor(node.y / cell) - gy0
+      : -1;
+  for (const node of nodes) {
+    const at = cellOf(node);
+    if (at >= 0) start[at + 1] += 1;
+  }
+  for (let i = 1; i <= cells; i++) start[i] += start[i - 1];
+  //: Filled in the notes' order, as the lists were, so pushes sum the same.
+  //: The cell-sorted coordinates are kept beside the indices (`sx`, `sy`,
+  //: `sneed`), so the scan reads three flat arrays and touches a note's
+  //: object only when the note is within reach of the chord.
+  const count = nodes.length;
+  if (clear.sx.length < count) {
+    clear.sx = new Float64Array(count);
+    clear.sy = new Float64Array(count);
+    clear.sneed = new Float64Array(count);
+    clear.mark = new Int32Array(count);
+  }
+  const { sx, sy, sneed, mark } = clear;
+  const fill = start.slice(0, cells);
+  for (let index = 0; index < count; index++) {
+    const node = nodes[index];
+    const at = cellOf(node);
+    if (at < 0) continue;
+    const slot = fill[at]++;
+    items[slot] = index;
+    sx[slot] = node.x;
+    sy[slot] = node.y;
+    sneed[slot] = (node.r || 8) + CLEAR_GAP;
+  }
+  //: A mark per note says it was already asked for this line; stamps only
+  //: grow, so the marks are cleared once, when the stamp first outgrows them.
+  if (clear.stamp > 2000000000) {
+    mark.fill(0);
+    clear.stamp = 0;
   }
   for (const link of links) {
     const a = link.source;
     const b = link.target;
-    const count = clearCurve(a, b);
-    clear.stamp += 1;
+    const points = clearCurve(a, b);
+    const stamp = ++clear.stamp;
+    const ai = a.index;
+    const bi = b.index;
     //: Chord by chord, not the whole line's box: a note within `reach` of the
     //: line is within it of a chord, so the cells round each chord hold every
     //: note the box did. A long diagonal line's box is mostly empty air (the
     //: 300-note seed: this force was 64% of a tick, 7 of 11 ms).
-    for (let c = 1; c < count; c++) {
+    //: And only the chord's corridor, not its box (audit 1029 row 35): each
+    //: column of cells takes the rows the chord crosses within it, padded by
+    //: the reach. A long diagonal's box at 2,000 notes asked 290,000 notes a
+    //: tick, 81% of the worker's time.
+    for (let c = 1; c < points; c++) {
       const ax = clearPts[c * 2 - 2];
       const ay = clearPts[c * 2 - 1];
-      const bx = clearPts[c * 2];
-      const by = clearPts[c * 2 + 1];
-      const x1 = Math.floor((Math.max(ax, bx) + reach) / CLEAR_CELL);
-      const y1 = Math.floor((Math.max(ay, by) + reach) / CLEAR_CELL);
-      for (let gx = Math.floor((Math.min(ax, bx) - reach) / CLEAR_CELL); gx <= x1; gx++) {
-        for (let gy = Math.floor((Math.min(ay, by) - reach) / CLEAR_CELL); gy <= y1; gy++) {
-          const list = grid.get(gx * 100003 + gy);
-          if (!list) continue;
-          for (const node of list) {
-            if (node === a || node === b || node._clear === clear.stamp) continue;
-            node._clear = clear.stamp;
-            clearNearest(node, count);
+      const dx = clearPts[c * 2] - ax;
+      const dy = clearPts[c * 2 + 1] - ay;
+      const inv = clearInv[c];
+      const slope = dx ? dy / dx : 0;
+      const lo = Math.min(ax, ax + dx);
+      const hi = Math.max(ax, ax + dx);
+      const x1 = Math.min(Math.floor((hi + reach) / cell), gx0 + cols - 1);
+      for (let gx = Math.max(Math.floor((lo - reach) / cell), gx0); gx <= x1; gx++) {
+        const ya = dx ? ay + slope * (Math.max(lo, gx * cell - reach) - ax) : ay;
+        const yb = dx ? ay + slope * (Math.min(hi, (gx + 1) * cell + reach) - ax) : ay + dy;
+        const y1 = Math.min(Math.floor((Math.max(ya, yb) + reach + 1) / cell), gy0 + rows - 1);
+        const column = (gx - gx0) * rows - gy0;
+        for (let gy = Math.max(Math.floor((Math.min(ya, yb) - reach - 1) / cell), gy0); gy <= y1; gy++) {
+          const end = start[column + gy + 1];
+          for (let k = start[column + gy]; k < end; k++) {
+            const at = items[k];
+            if (at === ai || at === bi || mark[at] === stamp) continue;
+            // Clear of this chord: no push from it, and a chord it is near
+            // finds it in its own corridor.
+            const px = sx[k] - ax;
+            const py = sy[k] - ay;
+            let u = (px * dx + py * dy) * inv;
+            u = u < 0 ? 0 : u > 1 ? 1 : u;
+            const ex = px - u * dx;
+            const ey = py - u * dy;
+            const need = sneed[k];
+            if (ex * ex + ey * ey >= need * need) continue;
+            mark[at] = stamp;
+            const node = nodes[at];
+            clearNearest(node, points);
             clearPush(node, a, b);
           }
         }
@@ -1518,13 +1763,13 @@ function applyForces(params) {
 //: is given a new starting place near its category's new place (a hub near
 //: the middle, a leaf further out, at a seeded random angle), and the layout
 //: starts again from there at full heat. The move to the new places is
-//: drawn, not jumped: `SHUFFLE_STEPS` frames, each closing a quarter of
-//: what is left (an ease-out), before the simulation takes over, so the
-//: eye can follow each note to where it went. A pinned note stays put: a
+//: drawn, not jumped: `SHUFFLE_STEPS` frames along one smoothstep (from
+//: rest, to rest; a quarter of what was left in the first frame was a lurch,
+//: 2,400 px in one draw at 500 notes), before the simulation takes over, so
+//: the eye can follow each note to where it went. A pinned note stays put: a
 //: pin is the person's own decision about where it goes.
-const SHUFFLE_STEPS = 18;
-const SHUFFLE_EASE = 0.25;
-const shuffle = { left: 0 };
+const SHUFFLE_STEPS = 36;
+const shuffle = { left: 0, total: 1 };
 
 function reshuffle(seed, animate) {
   setRingSeed(seed || 1);
@@ -1542,23 +1787,28 @@ function reshuffle(seed, animate) {
     const reach = (at ? at.r * 0.8 : 18 * Math.sqrt(size)) * (1 - 0.7 * (node.hub || 0));
     const angle = rand() * 2 * Math.PI;
     const r = reach * Math.sqrt(rand());
+    node.sx = Number.isFinite(node.x) ? node.x : cx;
+    node.sy = Number.isFinite(node.y) ? node.y : cy;
     node.tx = cx + (at ? at.x : 0) + Math.cos(angle) * r;
     node.ty = cy + (at ? at.y : 0) + Math.sin(angle) * r;
   }
   orbit.reach = null;
   orbit.tick = 0;
-  shuffle.left = animate ? SHUFFLE_STEPS : 1;
-  simulation.alphaTarget(0).alpha(1);
+  shuffle.total = animate ? SHUFFLE_STEPS : 1;
+  shuffle.left = shuffle.total;
+  simulation.alphaTarget(0).alpha(0);
+  heatTo(1);
 }
 
 //: One frame of the drawn move; the last one lands every note exactly.
 function shuffleStep() {
   shuffle.left -= 1;
   const last = shuffle.left === 0;
+  const e = smoothstep(1 - shuffle.left / shuffle.total);
   for (const node of nodes) {
     if (node.tx === undefined) continue;
-    node.x = last ? node.tx : node.x + (node.tx - node.x) * SHUFFLE_EASE;
-    node.y = last ? node.ty : node.y + (node.ty - node.y) * SHUFFLE_EASE;
+    node.x = last ? node.tx : node.sx + (node.tx - node.sx) * e;
+    node.y = last ? node.ty : node.sy + (node.ty - node.sy) * e;
     node.vx = 0;
     node.vy = 0;
     if (last) {
@@ -1615,9 +1865,38 @@ function untanglePasses() {
   return nodes.length > UNTANGLE_BIG ? UNTANGLE_BIG_PASSES : UNTANGLE_PASSES;
 }
 const UNTANGLE_MAX_EDGES = 4000;
-const untangle = { holding: false, margin: 0, cleaned: false, widest: 8, edges: [], incident: [], done: false, passes: 0, ea: null, eb: null, xs: null, ys: null, mark: null };
+const untangle = { holding: false, margin: 0, cleaned: false, widest: 8, edges: [], incident: [], done: false, passes: 0, ea: null, eb: null, xs: null, ys: null, mark: null, run: null, tidy: null };
+
+//: **The passes and the cleanup run in slices** (INBOX 1514). A pass was one
+//: call of up to `UNTANGLE_MS_MAX` (600 ms at 500 notes) and the cleanup
+//: another, so a drag or new settings sent while they ran waited for the
+//: call to end, and the map showed nothing for all of it. They are
+//: generators now, with a checkpoint (`if (sliceOver()) yield;`) at each
+//: note, turn and push; `settleUntangled` resumes one for a slice
+//: (`PENDING_SLICE_MS`) at a time, and the sync callers drive it to the end
+//: (`untangleLayout`, `untangleCleanup`), unchanged. Their budgets run on
+//: `workNow`, the time spent inside slices, so a pass gets the same work
+//: (and finds the same moves) whether it is cut into slices or not.
+const sliceClock = { spent: 0, since: 0, end: Infinity };
+function workNow() {
+  return sliceClock.spent + Date.now() - sliceClock.since;
+}
+function sliceOver() {
+  return Date.now() >= sliceClock.end;
+}
+//: One slice of `gen` ending at `end`: its result in `{ value }`, or null when it yielded.
+function sliceRun(gen, end) {
+  sliceClock.since = Date.now();
+  sliceClock.end = end;
+  const step = gen.next();
+  sliceClock.spent += Date.now() - sliceClock.since;
+  sliceClock.end = Infinity;
+  return step.done ? { value: step.value } : null;
+}
 
 function untangleSetup(edges) {
+  untangle.run = null;
+  untangle.tidy = null;
   untangle.edges = [];
   untangle.incident = nodes.map(() => []);
   untangle.done = false;
@@ -1625,8 +1904,11 @@ function untangleSetup(edges) {
   untangle.cleaned = false;
   untangle.holding = false;
   untangle.mark = null;
-  if (edges.length > UNTANGLE_MAX_EDGES) return;
-  for (const edge of edges) {
+  //: Past the edge cap the stage is skipped, but its buffers are still built (empty),
+  //: sized for this run: a dependent (`untangleCleanup`, `lineGridBuild`) reached on a
+  //: skipped stage then sees no lines instead of null or the last run's arrays (the
+  //: 2,000-note crash, audit G1). Every typed array here is allocated for the current sizes.
+  for (const edge of edges.length > UNTANGLE_MAX_EDGES ? [] : edges) {
     const a = indexById.get(edge.source);
     const b = indexById.get(edge.target);
     if (a === b) continue;
@@ -1697,7 +1979,10 @@ function crossingsOn(mine) {
 //: A whole category turns or mirrors about its middle when that lowers the
 //: crossings on its lines: its links out then face the categories they join.
 const UNTANGLE_TURN_STEPS = 8;
-function untangleGroups(still) {
+//: Within the pass's budget (`until`, audit 1029 row 35): each turn counts the
+//: crossings on all of a category's lines, and at 2,000 notes the 10 x 16
+//: turns took 7.2 s in one call against a budget of 0.6 s.
+function* untangleGroupsSteps(still, until = Infinity) {
   const groups = new Map();
   nodes.forEach((node, i) => {
     if (still(node)) return;
@@ -1706,6 +1991,8 @@ function untangleGroups(still) {
   });
   let gained = 0;
   for (const members of groups.values()) {
+    if (workNow() >= until) break;
+    if (sliceOver()) yield;
     if (members.length < 2) continue;
     const lines = [...new Set(members.flatMap((i) => untangle.incident[i]))];
     if (!lines.length) continue;
@@ -1717,8 +2004,9 @@ function untangleGroups(still) {
     let best = before;
     let bestAt = null;
     for (let mirror = 0; mirror < 2; mirror++) {
-      for (let step = 0; step < UNTANGLE_TURN_STEPS; step++) {
+      for (let step = 0; step < UNTANGLE_TURN_STEPS && workNow() < until; step++) {
         if (!mirror && !step) continue;
+        if (sliceOver()) yield;
         const angle = (2 * Math.PI * step) / UNTANGLE_TURN_STEPS;
         const cos = Math.cos(angle);
         const sin = Math.sin(angle);
@@ -2145,6 +2433,7 @@ function lineGridGap(note, k) {
   const grid = lineGrid;
   const count = grid.count[k];
   for (let i = 0; i < count * 2; i++) clearPts[i] = grid.pts[k * 10 + i];
+  clearChordInv(count);
   clearNearest(note, count);
   return Math.min(clearNear[0], untangleChordD2(note, nodes[untangle.ea[k]], nodes[untangle.eb[k]]));
 }
@@ -2203,9 +2492,17 @@ function untangleStepOff(i) {
 }
 
 function untangleCleanup() {
+  sliceClock.since = Date.now();
+  sliceClock.end = Infinity;
+  const step = untangleCleanupSteps().next();
+  sliceClock.spent += Date.now() - sliceClock.since;
+  return step.value;
+}
+
+function* untangleCleanupSteps() {
   // Each half of the cleanup (the pushes, the step-offs) gets half of what a pass gets.
   const half = untangleBudget() / 2;
-  const until = Date.now() + half;
+  const until = workNow() + half;
   const free = (node) => node.fx == null && !node.placed;
   const startX = nodes.map((n) => n.x);
   const startY = nodes.map((n) => n.y);
@@ -2242,9 +2539,10 @@ function untangleCleanup() {
       if (Math.hypot(nodes[i].x - nodes[j].x, nodes[i].y - nodes[j].y) < need + 2 * UNTANGLE_CLEAN_SLACK) meet.push([i, j, need]);
     }
   }
-  for (let iter = 0; stuck && iter < UNTANGLE_CLEAN_ITERS && Date.now() < until; iter++) {
+  for (let iter = 0; stuck && iter < UNTANGLE_CLEAN_ITERS && workNow() < until; iter++) {
     let moved = false;
     for (const at of pairs) {
+      if (sliceOver()) yield;
       const k = Math.floor(at / nodes.length);
       const m = at % nodes.length;
       const a = nodes[ea[k]];
@@ -2258,6 +2556,7 @@ function untangleCleanup() {
       if (!lineGridTouches(node, k)) continue;
       // The nearest point of the drawn line (curve or chord, whichever is nearer), from the points filed with it.
       for (let c = 0; c < lineGrid.count[k] * 2; c++) clearPts[c] = lineGrid.pts[k * 10 + c];
+      clearChordInv(lineGrid.count[k]);
       clearNearest(node, lineGrid.count[k]);
       let qx = clearNear[1];
       let qy = clearNear[2];
@@ -2306,6 +2605,7 @@ function untangleCleanup() {
     // turns: the lines have the last word, nothing ticks after them (`untangle.holding`).
     if (iter < UNTANGLE_CLEAN_ITERS * 0.75) {
       for (const [pi, qi, need] of meet) {
+        if (sliceOver()) yield;
         const p = nodes[pi];
         const q = nodes[qi];
         const dx = q.x - p.x;
@@ -2343,12 +2643,13 @@ function untangleCleanup() {
   untangleReach();
   lineGridBuild(untangle.widest + UNTANGLE_CLEAN_MARGIN + UNTANGLE_CLEAN_SLACK);
   nodeGridBuild(untangle.widest + COLLIDE_PAD / 2 + UNTANGLE_CLEAN_MARGIN);
-  const stepUntil = Date.now() + half;
+  const stepUntil = workNow() + half;
   // A sweep that moved a note may have opened room for one it could not move: the notes still on a line go again while the clock lasts.
-  for (let sweep = 0, any = true; any && sweep < UNTANGLE_CLEAN_SWEEPS && Date.now() < stepUntil; sweep++) {
+  for (let sweep = 0, any = true; any && sweep < UNTANGLE_CLEAN_SWEEPS && workNow() < stepUntil; sweep++) {
     any = false;
     for (const i of untangleStepOrder(free)) {
-      if (Date.now() >= stepUntil) break;
+      if (workNow() >= stepUntil) break;
+      if (sliceOver()) yield;
       // An earlier step may have cleared this one's line.
       if (!untangleOnLine(i)) continue;
       const x0 = nodes[i].x;
@@ -2474,21 +2775,30 @@ function untangleInside(node) {
 }
 
 function untangleLayout() {
+  sliceClock.since = Date.now();
+  sliceClock.end = Infinity;
+  const step = untangleLayoutSteps().next();
+  sliceClock.spent += Date.now() - sliceClock.since;
+  return step.value;
+}
+
+function* untangleLayoutSteps() {
   // Organic only: Clusters places its hubs at each category's heart and its
   // bridges on the rim (`hubForce`, `rimOffset`), Galaxy by degree; a move
   // here would undo what those shapes are for.
   if (untangle.done || !untangle.edges.length || ring.shape !== "organic") return 0;
   untangle.done = true;
-  const until = Date.now() + untangleBudget();
+  const until = workNow() + untangleBudget();
   const still = (node) => node.fx != null || node.placed;
   const startX = nodes.map((n) => n.x);
   const startY = nodes.map((n) => n.y);
   untangleReach();
   untangle.total = crossingsOn(untangle.edges.map((_, i) => i));
   untangle.gain = 0;
-  for (let round = 0; round < UNTANGLE_ROUNDS && Date.now() < until; round++) {
-    let gained = untangleGroups(still);
-    for (let i = 0; i < nodes.length && Date.now() < until; i++) {
+  for (let round = 0; round < UNTANGLE_ROUNDS && workNow() < until; round++) {
+    let gained = yield* untangleGroupsSteps(still, until);
+    for (let i = 0; i < nodes.length && workNow() < until; i++) {
+      if (sliceOver()) yield;
       const node = nodes[i];
       const mine = untangle.incident[i];
       if (still(node) || !mine.length) continue;
@@ -2501,6 +2811,7 @@ function untangleLayout() {
       }
       near.sort((p, q) => p[0] - q[0]);
       for (const [, j] of near.slice(0, UNTANGLE_NEAR)) {
+        if (sliceOver()) yield;
         const other = nodes[j];
         const both = [...new Set([...mine, ...untangle.incident[j]])];
         const before = crossingsOn(both);
@@ -2530,6 +2841,7 @@ function untangleLayout() {
         for (let ring = 1; ring <= UNTANGLE_HUB_RINGS; ring++) {
           const r = (home.far * UNTANGLE_REACH * ring) / UNTANGLE_HUB_RINGS;
           for (let t = 0; t < UNTANGLE_TURNS; t++) {
+            if (sliceOver()) yield;
             const angle = (2 * Math.PI * t) / UNTANGLE_TURNS;
             node.x = home.cx + Math.cos(angle) * r;
             node.y = home.cy + Math.sin(angle) * r;
@@ -2550,6 +2862,7 @@ function untangleLayout() {
         const reach = Math.max(1, Math.hypot(x0 - other.x, y0 - other.y));
         const from = Math.atan2(y0 - other.y, x0 - other.x);
         for (let t = mine.length === 1 ? 1 : 0; t < UNTANGLE_TURNS; t++) {
+          if (sliceOver()) yield;
           const angle = from + (2 * Math.PI * t) / UNTANGLE_TURNS;
           node.x = other.x + Math.cos(angle) * reach;
           node.y = other.y + Math.sin(angle) * reach;
@@ -2627,15 +2940,22 @@ function untangleOwed() {
 function settleUntangled(until, deadline, cap) {
   if (!coolToRest(until)) return false;
   const late = () => deadline && Date.now() + untangleBudget() > deadline;
-  while (!untangle.done || (untangle.passes > 0 && untangle.passes < untanglePasses())) {
-    if (late()) return "late";
-    if (cap && Date.now() + 2 * untangleBudget() > cap) {
-      untangle.done = true;
-      untangle.passes = UNTANGLE_PASSES;
-      break;
+  while (untangle.run || !untangle.done || (untangle.passes > 0 && untangle.passes < untanglePasses())) {
+    if (!untangle.run) {
+      if (late()) return "late";
+      if (cap && Date.now() + 2 * untangleBudget() > cap) {
+        untangle.done = true;
+        untangle.passes = UNTANGLE_PASSES;
+        break;
+      }
+      untangle.done = false;
+      untangle.run = untangleLayoutSteps();
     }
-    untangle.done = false;
-    if (!untangleLayout()) break;
+    //: A pass in progress is resumed for the rest of this slice (`sliceRun`).
+    const out = sliceRun(untangle.run, until);
+    if (!out) return false;
+    untangle.run = null;
+    if (!out.value) break;
     landTargets();
     untangle.passes += 1;
     if (untangle.gain < Math.max(2, untangle.total * UNTANGLE_MIN_SHARE)) untangle.passes = UNTANGLE_PASSES;
@@ -2646,9 +2966,19 @@ function settleUntangled(until, deadline, cap) {
   }
   untangle.done = true;
   if (untangle.passes > 0 && !untangle.cleaned) {
-    if (late()) return "late";
-    untangle.cleaned = true;
-    if (untangleCleanup()) landTargets();
+    if (!untangle.tidy) {
+      if (late()) return "late";
+      // No links past the cap (G1): nothing to clear, but marked cleaned so it is not owed again.
+      if (untangle.edges.length) untangle.tidy = untangleCleanupSteps();
+      else untangle.cleaned = true;
+    }
+    if (untangle.tidy) {
+      const out = sliceRun(untangle.tidy, until);
+      if (!out) return false;
+      untangle.tidy = null;
+      untangle.cleaned = true;
+      if (out.value) landTargets();
+    }
   }
   for (const node of nodes) {
     node.vx = 0;
@@ -2725,13 +3055,37 @@ function settleGlideCancel() {
 //: no pass begins after `PENDING_MAX_MS` less the cleanup's time, and one
 //: still cooling at `PENDING_CUT_MS` is shown as it is (less motion waits
 //: for the settled map, to `PENDING_STILL_MS` and `PENDING_STILL_CUT_MS`).
-const PENDING_SLICE_MS = 12;
+const PENDING_SLICE_MS = 30;
 const PENDING_TICKS = 150;
 const PENDING_MAX_MS = 4000;
 const PENDING_CUT_MS = 6000;
 const PENDING_STILL_MS = 2400;
 const PENDING_STILL_CUT_MS = 3000;
-const pending = { on: false, open: false, record: false, bloom: false, from: 0, sx: null, sy: null, alpha: 0, untangle: null };
+const pending = { on: false, open: false, record: false, bloom: false, from: 0, sx: null, sy: null, snapX: null, snapY: null, alpha: 0, untangle: null };
+
+//: The last map that was whole: between slices and never mid-pass, where
+//: notes stand on trial places. Where a pass or cleanup that is given up
+//: (`pendingAbandon`) puts the notes back.
+function pendingSnap() {
+  if (untangle.run || untangle.tidy) return;
+  nodes.forEach((node, i) => {
+    pending.snapX[i] = node.x;
+    pending.snapY[i] = node.y;
+  });
+}
+
+function pendingAbandon() {
+  if (!untangle.run && !untangle.tidy) return;
+  untangle.run = null;
+  untangle.tidy = null;
+  nodes.forEach((node, i) => {
+    node.tx = undefined;
+    node.ty = undefined;
+    if (node.fx != null) return;
+    node.x = pending.snapX[i];
+    node.y = pending.snapY[i];
+  });
+}
 
 function pendingStart(open, record, bloom) {
   pending.on = true;
@@ -2741,9 +3095,14 @@ function pendingStart(open, record, bloom) {
   pending.from = Date.now();
   pending.sx = nodes.map((n) => n.x);
   pending.sy = nodes.map((n) => n.y);
+  pending.snapX = Float64Array.from(pending.sx);
+  pending.snapY = Float64Array.from(pending.sy);
   pending.alpha = simulation.alpha();
   pending.untangle = { done: untangle.done, passes: untangle.passes, cleaned: untangle.cleaned };
   simulation.alphaDecay(1 - Math.pow(0.001, 1 / PENDING_TICKS));
+  if (ramp.n) simulation.alpha(ramp.to);
+  ramp.n = 0;
+  simulation.velocityDecay(VELOCITY_DECAY);
 }
 
 function pendingEnd() {
@@ -2756,6 +3115,8 @@ function pendingEnd() {
 function pendingCancel() {
   if (!pending.on) return;
   pendingEnd();
+  untangle.run = null;
+  untangle.tidy = null;
   nodes.forEach((node, i) => {
     node.tx = undefined;
     node.ty = undefined;
@@ -2785,24 +3146,32 @@ function pendingStep() {
     else settleGlideFrom(pending.sx, pending.sy);
     return;
   }
+  pendingSnap();
   const spent = Date.now() - pending.from;
-  if (pending.open && !still && (done === "late" || (spent > WARM_MS && untangle.passes > 0))) {
+  const whole = !untangle.run && !untangle.tidy;
+  //: Cooled but not untangled by the budget; shown once the pass in hand is done (it ran whole before).
+  const late = pending.open && !still && (done === "late" || (spent > WARM_MS && untangle.passes > 0));
+  if (late && whole) {
     // Cooled but not untangled by the budget (300 notes): shown as it
     // stands, the rest worked out of sight and glided to (`settleGlideFrom`).
     pending.open = false;
     pending.sx = nodes.map((n) => n.x);
     pending.sy = nodes.map((n) => n.y);
+    pending.snapX = Float64Array.from(pending.sx);
+    pending.snapY = Float64Array.from(pending.sy);
     pending.alpha = simulation.alpha();
     pending.untangle = { done: untangle.done, passes: untangle.passes, cleaned: untangle.cleaned };
     post(false);
-  } else if (pending.open && spent > (still ? PENDING_STILL_CUT_MS : WARM_MS)) {
+  } else if (!late && pending.open && spent > (still ? PENDING_STILL_CUT_MS : WARM_MS)) {
     // Too big to cool out of sight: shown as it is, the rest cooled live.
+    pendingAbandon();
     pendingEnd();
     untangle.holding = false;
     post(false);
   } else if (!pending.open && spent > PENDING_CUT_MS) {
     // Still cooling well past the cap (thousands of notes): what the passes
     // moved lands, the rest is given up, one glide.
+    pendingAbandon();
     pendingEnd();
     untangle.done = true;
     untangle.passes = UNTANGLE_PASSES;
@@ -2822,14 +3191,14 @@ function clampToWorld() {
   }
 }
 
-function post(final) {
+function post(final, xs = null, ys = null) {
   if (inFlight > MAX_IN_FLIGHT && !final) return;
   const wanted = nodes.length * 2;
   let buffer = pool.pop();
   if (!buffer || buffer.length !== wanted) buffer = new Float32Array(wanted);
   for (let i = 0; i < nodes.length; i++) {
-    buffer[i * 2] = nodes[i].x;
-    buffer[i * 2 + 1] = nodes[i].y;
+    buffer[i * 2] = xs ? xs[i] : nodes[i].x;
+    buffer[i * 2 + 1] = ys ? ys[i] : nodes[i].y;
   }
   inFlight += 1;
   self.postMessage(
@@ -2837,7 +3206,9 @@ function post(final) {
       type: "tick",
       epoch,
       positions: buffer,
-      alpha: simulation ? simulation.alpha() : 0,
+      //: The heat it is climbing to while it climbs: a layout in its first ticks
+      //: is hot, not cooling (the page throttles draws and waits to fit by this).
+      alpha: simulation ? (ramp.n ? ramp.to : simulation.alpha()) : 0,
       // How many times the simulation has stepped since `init`. Posted because
       // a frame the main thread paints and a step the worker takes are no
       // longer the same event, and a slow layout could otherwise be either
@@ -2852,7 +3223,7 @@ function post(final) {
 }
 
 const LIVE_STEP_MS = 8;
-const LIVE_MAX_STEPS = 40;
+const LIVE_MAX_STEPS = 4;
 
 function stopLoop() {
   if (timer !== null) {
@@ -2908,17 +3279,22 @@ function loop() {
   //: settings: the runs `untangle` waits on); a drag and the ease after a
   //: drop keep one tick a frame, their pace is the pointer's.
   const quick = !dragging && untangleOwed() && simulation.alpha() < WARM_ALPHA;
+  //: Ticks a frame grow with the cooling along a smoothstep (1 at `WARM_ALPHA`),
+  //: not from one to forty at once: a speed-up that starts as a lurch is what
+  //: the end of a settle looked like (INBOX 1513).
+  const cap = ramp.n ? 1 : 1 + Math.round((LIVE_MAX_STEPS - 1) * smoothstep(1 - simulation.alpha() / WARM_ALPHA));
   let steps = 0;
   do {
-    simulation.tick();
+    tickOnce();
     ticks += 1;
     steps += 1;
-  } while (quick && steps < LIVE_MAX_STEPS && Date.now() - started < LIVE_STEP_MS && simulation.alpha() >= simulation.alphaMin());
+  } while (quick && steps < cap && Date.now() - started < LIVE_STEP_MS && simulation.alpha() >= simulation.alphaMin());
   const cost = Date.now() - started;
   tickMs = ticks === steps ? cost / steps : tickMs * 0.9 + (cost / steps) * 0.1;
   clampToWorld();
   const overBudget = !dragging && Date.now() - settleFrom > SETTLE_BUDGET_MS;
-  const settled = !dragging && (simulation.alpha() < simulation.alphaMin() || overBudget);
+  const calmed = !dragging && calmPass(nodes, simulation.alpha(), ramp.n > 0 || shuffle.left > 0);
+  const settled = !dragging && (simulation.alpha() < simulation.alphaMin() || overBudget) || calmed;
   //: At rest and not yet untangled: the passes, their relax and the cleanup
   //: run out of sight (`pending`) and the map moves to the result in one glide.
   if (settled && !dragging && untangleOwed()) {
@@ -2928,6 +3304,7 @@ function loop() {
     return;
   }
   if (settled) {
+    nudgeEnd();
     post(true);
     self.postMessage({ type: "end", alpha: simulation.alpha(), epoch });
     return;
@@ -2961,19 +3338,68 @@ function loop() {
   // is actually watching is the one following their pointer, and a
   // neighbourhood that reorganises at 10 Hz under a pointer that tracks at
   // 60 Hz looks right; the reverse does not.
-  const share = dragging ? 2 : 1;
+  timer = setTimeout(loop, loopYield(cost));
+}
+
+//: **Audit 1029 row 35: the duty cycle only where it is needed.** The half
+//: core above was measured when the canvas drew every frame between ticks; it
+//: now draws a costly map once a tick (`gcTickSnaps`, graph-canvas.js), and
+//: 2,000 notes at half a core took 28.7 s to come to rest. So a costly tick
+//: is followed by a short turn (`LOOP_YIELD_MS`, long enough to hear a drag),
+//: except during a drag and in performance mode, which settings.js turns on
+//: by itself at two cores or fewer: those keep the duty cycle.
+const LOOP_YIELD_MS = 8;
+function loopYield(cost) {
   // Performance mode: the yield doubles, so the simulation takes at most a
   // quarter of a core and a small laptop keeps its frames for the paint.
   const rest = perf ? 2 : 1;
-  timer = setTimeout(
-    loop,
-    (cost >= 12 ? Math.min(120, cost * share) : Math.max(4, 16 - cost)) * rest
-  );
+  if (cost < 12) return Math.max(4, 16 - cost) * rest;
+  if (!dragging && !perf) return LOOP_YIELD_MS;
+  return Math.min(120, cost * (dragging ? 2 : 1)) * rest;
+}
+
+//: **A layout ends when its motion stops, not when its alpha does** (INBOX
+//: 1519: draws and ticks for seconds after the notes had stopped moving
+//: anywhere the eye can tell). The cooling to `alphaMin` is a fixed 300
+//: ticks and the last third of them move the median note 0.35 world units a
+//: post (500 notes, measured), so on a big map the tail is seconds of ticks
+//: and frames for nothing. A pass is calm when at most a tenth of the notes
+//: moved more than `STILL_STEP` world units since the pass before (about half
+//: a pixel at the fit's usual scale; the first ten notes are never the
+//: ignored ones, so a note being eased into place keeps its map moving);
+//: `STILL_PASSES` calm passes in a row,
+//: with the heat already low and not climbing, end the layout as the floor
+//: would have. A drag, a ramp or a pass with real motion starts the count
+//: again. The first pass only records where the notes are.
+const STILL_STEP = 1;
+const STILL_SHARE = 0.1;
+const STILL_SMALL = 10;
+const STILL_PASSES = 3;
+const STILL_ALPHA = 0.006;
+const calm = { n: 0, xs: null, ys: null };
+function calmPass(nodeList, alpha, hot) {
+  const count = nodeList.length;
+  const first = !calm.xs || calm.xs.length !== count;
+  if (first) {
+    calm.xs = new Float32Array(count);
+    calm.ys = new Float32Array(count);
+  }
+  let moved = 0;
+  for (let i = 0; i < count; i++) {
+    const node = nodeList[i];
+    if (!first && Math.abs(node.x - calm.xs[i]) + Math.abs(node.y - calm.ys[i]) > STILL_STEP) moved++;
+    calm.xs[i] = node.x;
+    calm.ys[i] = node.y;
+  }
+  const quiet = !first && !hot && alpha < STILL_ALPHA && moved <= Math.max(0, Math.floor((count - STILL_SMALL) * STILL_SHARE));
+  calm.n = quiet ? calm.n + 1 : 0;
+  return calm.n >= STILL_PASSES;
 }
 
 //: Every message that moves the layout comes through here, so this is where
 //: the settle budget starts again.
 function run() {
+  calm.n = 0;
   settleFrom = Date.now();
   if (timer === null && simulation) timer = setTimeout(loop, 0);
 }
@@ -2998,7 +3424,10 @@ self.onmessage = (event) => {
       dragging = false;
       carry.node = null;
       carry.followers = [];
+      nudgeEnd();
       perf = message.perf === true;
+      still = message.still === true;
+      ramp.n = 0;
       epoch = message.epoch || 0;
       ticks = 0;
       inFlight = 0;
@@ -3152,6 +3581,7 @@ self.onmessage = (event) => {
         .force("hub", hubForce)
         .force("tether", tetherForce)
         .force("carry", carryForce)
+        .force("nudge", nudgeForce)
         .force("shape", shapeForce)
         .force("leaf", leafForce)
         .force(
@@ -3170,7 +3600,18 @@ self.onmessage = (event) => {
         simulation.force("y").y(cy);
       }
       applyGrouping(message.params);
-      simulation.alpha(message.alpha == null ? 1 : message.alpha);
+      //: A map that is already on screen heats up along the ramp; an opening
+      //: (`warm`) is out of sight and starts hot.
+      //: Counted from the message: d3 places every note without a spot when it is built.
+      const placed = (message.nodes || []).filter((n) => Number.isFinite(n.x)).length;
+      const again = placed * 2 > nodes.length && !message.warm;
+      const heat = message.alpha == null ? 1 : again ? Math.min(message.alpha, RELAYOUT_ALPHA) : message.alpha;
+      simulation.velocityDecay(VELOCITY_DECAY);
+      if (message.warm || heat < 0.2) simulation.alpha(heat);
+      else {
+        simulation.alpha(0);
+        heatTo(heat);
+      }
       // New notes: a playback, glide or settle of the old ones is dropped, not restored.
       intro.frames = [];
       intro.alphas = [];
@@ -3178,17 +3619,33 @@ self.onmessage = (event) => {
       settleGlide.left = 0;
       pending.on = false;
       untangle.holding = false;
+      //: **A layout restored at rest stays there** (audit G6; GRAPH_PLAN, the
+      //: map opens settled). Alpha 0 with every note placed is a saved or held
+      //: map that was untangled before it was kept: owing the passes again ran
+      //: them and their relax over it, every note moved (500 notes: RMS 99 px).
+      //: Nothing is stepped (the collision ignores alpha); it is posted as it
+      //: came and is at rest. Any later message that heats it runs as before.
+      if (message.alpha === 0 && nodes.every((n) => n.x !== undefined)) {
+        untangle.done = true;
+        untangle.passes = UNTANGLE_PASSES;
+        untangle.cleaned = true;
+        post(true);
+        self.postMessage({ type: "end", alpha: 0, epoch });
+        break;
+      }
       if (message.warm) pendingStart(true, message.intro === true, message.bloom === true);
       run();
       break;
     }
     case "params":
+      nudgeEnd();
       untangle.done = false;
       untangle.passes = 0;
       untangle.cleaned = false;
       untangle.holding = false;
       applyForces(message.params);
-      if (simulation) simulation.alpha(Math.max(simulation.alpha(), 0.3));
+      if (message.still !== undefined) still = message.still === true;
+      heatTo(0.3);
       run();
       break;
     case "drag": {
@@ -3198,6 +3655,7 @@ self.onmessage = (event) => {
       const node = nodes[index];
       if (message.phase === "start") {
         dragging = true;
+        ramp.n = 0;
         // A note the reader moves is not followed by a reshuffle of others.
         untangle.done = true;
         untangle.passes = UNTANGLE_PASSES;
@@ -3205,6 +3663,7 @@ self.onmessage = (event) => {
         untangle.holding = false;
         dragOrigin = { x: node.x, y: node.y };
         markFollowers(node, true);
+        nudgeStart(node);
         if (ring.params) applyGrouping(ring.params);
         const heat = dragHeat(message.x, message.y);
         simulation.alphaTarget(heat).alpha(Math.max(simulation.alpha(), heat));
@@ -3213,6 +3672,7 @@ self.onmessage = (event) => {
       } else if (message.phase === "move") {
         node.fx = message.x;
         node.fy = message.y;
+        if (dragOrigin) nudgeReach(Math.hypot(message.x - dragOrigin.x, message.y - dragOrigin.y));
         const heat = dragHeat(message.x, message.y);
         simulation.alphaTarget(heat).alpha(Math.max(simulation.alpha(), heat));
       } else {
@@ -3281,17 +3741,19 @@ self.onmessage = (event) => {
       if (index === undefined) break;
       nodes[index].fx = null;
       nodes[index].fy = null;
-      if (simulation) simulation.alpha(Math.max(simulation.alpha(), 0.2));
+      heatTo(0.2);
       run();
       break;
     }
     case "reheat":
       if (!simulation) break;
-      simulation.alpha(Math.max(simulation.alpha(), message.alpha || 0.3));
+      heatTo(message.alpha || 0.3);
       run();
       break;
     case "reshuffle":
       if (!simulation) break;
+      nudgeEnd();
+      if (message.still !== undefined) still = message.still === true;
       untangle.done = false;
       untangle.passes = 0;
       untangle.cleaned = false;
@@ -3301,6 +3763,7 @@ self.onmessage = (event) => {
       break;
     case "stop":
       stopLoop();
+      nudgeEnd();
       dragging = false;
       carry.node = null;
       carry.followers = [];

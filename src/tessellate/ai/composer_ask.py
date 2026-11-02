@@ -1,0 +1,668 @@
+"""Reading the question: its shape, its subject words, the stems and synonyms
+they match by, the sides a comparison names, and the person's clock.
+
+Moved whole from `composer.py` (audit AR3, gods-1101): the code is unchanged,
+and `composer` re-exports every name here that anything reads, so
+`composer.classify` still works. Imports run one way, down
+the layer list in `composer.py`'s docstring, never back to `composer`.
+"""
+
+from __future__ import annotations
+
+import contextvars
+import functools
+import re
+from datetime import date, datetime
+
+from tessellate.ai import composer_sides, composer_tables, question_noise, recognise as rec, variants
+from tessellate.search import query as query_understanding
+
+
+def user_now() -> datetime:
+    """Now on the person's own clock (their saved timezone), as a naive
+    datetime: the server's `date.today()` names the wrong day for someone far
+    from it (audit 1028 K22). The settings as loaded, never `get_config()`,
+    which would start the app in a unit test; with none, the server's zone.
+    """
+    from tessellate.core import config
+
+    return config.loaded_user_now().replace(tzinfo=None)
+
+
+def user_today() -> date:
+    return user_now().date()
+
+
+_MONTHS = "January February March April May June July August September October November December".split()
+
+
+def month_name(month: int) -> str:
+    """The month's name for its number, 1 to 12."""
+    return _MONTHS[month - 1]
+
+
+# --- the question -------------------------------------------------------------
+
+#: The shapes a question comes in, read from its wording alone, first match
+#: wins. Ordered: "how many" is a count before it is a "how", "what is the
+#: latest" is a status before it is a "what", and a comparison can open with
+#: any word at all.
+_SHAPE_RULES: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("compare", re.compile(r"\b(compare|versus|vs\.?|differences? between)\b", re.I)),
+    ("count", re.compile(r"^\s*how (many|much|often|long)\b|\bnumber of\b", re.I)),
+    ("when", re.compile(r"^\s*(when|what (date|day|time|month|year)|which (date|day|month))\b", re.I)),
+    ("who", re.compile(r"^\s*(who|whom|whose)\b", re.I)),
+    (
+        "status",
+        re.compile(
+            r"\b(latest|status|progress|update on|updates on|newest|most recent|so far|"
+            r"where (am i|are we|is it|are things) (with|on)|any (news|word) (on|about)|"
+            r"how far along|what happened (with|to)|how (is|are) .{2,60}? (going|coming along|getting on))\b",
+            re.I,
+        ),
+    ),
+    ("where", re.compile(r"^\s*(where|whereabouts|what (address|place|street|room))\b", re.I)),
+    (
+        "explain",
+        re.compile(r"^\s*(why|how come|explain|what (made|makes|caused|causes)|how (do|does|did|can|could|should|to|is|are|was|were|would))\b", re.I),
+    ),
+    #: "What's in the soup", "what do I need for camping": what a note holds (Z46).
+    ("list", re.compile(r"^\s*(list|which|name)\b|^\s*what are (the|my|all)\b|^\s*what(?:'s| is| goes| go)? in(?:to)?\b(?! (?:my|the|your) (?:notes?|journal|diary|library)\b)"
+                        r"|^\s*what do (?:i|you) need (?:for|to make)\b", re.I)),
+    ("yesno", re.compile(r"^\s*(is|are|do|does|did|can|could|was|were|has|have|had|should|will|would|am)\b", re.I)),
+)
+
+
+SHAPES = ("what", *(name for name, _ in _SHAPE_RULES), "recent")
+
+
+#: Words that ask rather than name: dropped from the subject, so "what is the
+#: latest on the sync rewrite" is scored on "sync rewrite" alone. The verbs a
+#: question wraps its subject in ("feel", "say") are here too, so the closing
+#: line never reports "feel" as a word no note mentions.
+_ASKING_WORDS = frozenset(
+    """about all any anything everything define defines definition meaning compare comparison difference differences
+    between versus vs latest status progress update updates newest recent
+    recently most current currently tell say says said know think thought
+    feel felt get got go went make made want need like much many number
+    often long ever still actually really there here things thing note notes
+    wrote written write mention mentions mentioning mentioned explain should
+    could would way am i me my mine whose whom anyone someone near after
+    before during without within over under around across through since
+    until also again just only some other one any every each main
+    remind idea forgot forget remember wonder wondering deal hows whats
+    wheres whens whos whys going happen happened happening news anything
+    something stuff info information details please thanks thank check
+    find look show help kind sort bit quick quickly briefly short detail
+    detailed full whole remind possible maybe okay ok hey hi
+    whereabouts address place put decide decided conclude concluded doing""".split()
+) | composer_tables.EXTRA_ASKING_WORDS | frozenset(
+    #: Time words say when, never what (engine probe P6: "what did I write
+    #: last week" was told "No note found brings up last"). The window they
+    #: name is read by `when.window`; the subject is what is left.
+    """last ago today yesterday tonight lately earlier summarise summarize
+    summary done pattern patterns habit habits trend trends
+    else another rest total version gist tldr""".split()
+)
+
+
+#: A time phrase names a window, not a subject: "last week", "3 days ago",
+#: "this month" come off whole before the subject is read, so "week 4"
+#: stays a subject and "last week" is not one.
+
+#: The wrappers a casual or indirect question comes in, taken off before its
+#: shape and its subject are read (INBOX 741, the owner: "better to
+#: understand"): "can you remind me when the dentist is" asks "when the
+#: dentist is"; "any idea if the deposit is paid" asks "is the deposit paid".
+#: Each is a fixed, tested pattern; what is left is the person's own words.
+_WRAPPERS = (
+    re.compile(r"^(?:hey|hi|hello|ok|okay|so|um+|uh+|right|quick question|question|hmm+)\b[,.!:]?\s+", re.I),
+    re.compile(r"^(?:please\s+)?(?:can|could|would|will) you\s+(?:please\s+)?(?:tell me|remind me(?: of)?|let me know|check|find(?: out)?|look up|show me|say|help me (?:find|remember))\s+", re.I),
+    re.compile(r"^(?:(?:do|does) )?(?:you|anyone) (?:know|remember|recall)\s+", re.I),
+    re.compile(
+        r"^(?:i do not know|i don't know|i dunno|to be honest|honestly|not going to lie|by the way|"
+        r"ty|thanks|thank you|thx|yo|lol|haha|ok|okay|oh|ah|so)\b[,.!:]?\s+",
+        re.I,
+    ),
+    re.compile(r"^(?:any idea|no idea|not sure)\s+", re.I),
+    re.compile(
+        r"^i(?:'m| am)? (?:forgot|forget|can't remember|cannot remember|don't remember|do not remember|wonder|was wondering|"
+        r"need to know|want to know|'d like to know|would like to know|need|want|have to check|can't recall)\s+",
+        re.I,
+    ),
+    re.compile(r"^(?:remind me|tell me|show me|let me know)\s+(?=(?:what|when|who|where|why|how|which|if|whether)\b)", re.I),
+    re.compile(r"^(?:remind me)\s+(?:of|about)\s+", re.I),
+    re.compile(r"^please\s+", re.I),
+    re.compile(r"^(?:and|but|also|plus)\s+(?=(?:what|when|where|who|why|how|which|is|are|do|does|did|can|should)\b)", re.I),
+    re.compile(r"^(?:right|alright|cool|nice|great|got it|k|kk|sure|fair enough|makes sense)\b[,.!:]?\s+(?=\w)", re.I),
+    re.compile(r"^(?:in short|in brief|briefly|quickly|quick one|tl;?dr|in a word|in detail)\b[,:]?\s+", re.I),
+    *(re.compile(pattern, re.I) for pattern in composer_tables.EXTRA_WRAPPERS),
+)
+
+
+#: "dentist when?", "spare key where": the question word typed last.
+_LAST_WORD = re.compile(r"^(?P<rest>[^?]*?\S)[,\s]+(?P<q>when|where|who|why|how many|how much|how long|how often)(?P<p>\s*\?*)$", re.I)
+
+
+_ASKS_FIRST = re.compile(r"^(?:what|when|where|who|whom|whose|why|how|which|is|are|do|does|did|can|could|should|will|would|was|were|has|have|had|am|if|whether|compare|list|name|tell|explain)\b", re.I)
+
+
+_TRAILERS = re.compile(
+    #: Starts after a word, so a run of blanks is tried once, not from each blank (CodeQL).
+    r"(?<![,\s])(?:[,\s]+(?:please|thanks|thank you|again|for me|real quick|quickly|by any chance|"
+    + "|".join(re.escape(t) for t in composer_tables.EXTRA_TRAILERS)
+    + r"))+\s*([?.!]*)\s*$",
+    re.I,
+)
+
+
+#: "whats", "how's" and the rest, spelled out so the shape rules read them.
+_CONTRACTIONS = (
+    (re.compile(r"^(what|how|where|when|who|why)(?:'s|s)\b", re.I), r"\1 is"),
+    (re.compile(r"^(what|how|where|when|who|why)(?:'re)\b", re.I), r"\1 are"),
+    *((re.compile(pattern, re.I), spelled) for pattern, spelled in composer_tables.EXTRA_CONTRACTIONS),
+)
+
+
+#: "if the deposit is paid", left after "any idea", asks yes or no.
+_IF = re.compile(r"^(?:if|whether)\s+", re.I)
+
+
+#: "what about X", "anything on X", "is there anything about X", "do I have
+#: notes on X": everything on a subject, the broad answer.
+_ANYTHING_ON = re.compile(
+    r"^(?:(?:is there )?anything (?:about|on)|do i have (?:any )?(?:notes? )?(?:about|on)|have i (?:written|got|noted) (?:anything |down )?(?:about|on)|"
+    r"what(?: is|'s)? the deal with|what is going on with|what's going on with)\b",
+    re.I,
+)
+
+
+def _still_recent(question: str) -> bool:
+    """Whether a retrieval that fell back to the newest notes still answers
+    `question`: it does when there is no subject, or when the whole question is
+    a recency ask ("What have I saved recently?": "saved" is a verb there)."""
+    from tessellate.search.search_manager import is_recency_ask
+
+    return not subject_terms(question) or is_recency_ask(question)
+
+
+_UNNAMED_ASK = re.compile(r"^(?:who|where|how (?:much|many)|what (?:should|do you think|would you))\b")
+
+
+def _guessing_recent(question: str) -> bool:
+    """A fallback to the newest notes for a who, where or how-much that names
+    nothing to look for: the answer says it is a fallback (audit 1030 Z34)."""
+    from tessellate.search.search_manager import is_recency_ask
+
+    return bool(_UNNAMED_ASK.match(" ".join(question.lower().split()))) and not is_recency_ask(question) and rec.without_windows(question) == question
+
+
+def _respell(text: str) -> str:
+    """Slang and text-speak spelled out, misspelt asking words put right,
+    run-together words split (`question_noise`, INBOX 741: "does it cover
+    any and ALL typos ... all slang like pls, ty, lol, u, r, wym")."""
+    return question_noise.repair(text, known=_KNOWN.get())
+
+
+#: "define X" and "the meaning of X" ask what "what is X" asks, so they take
+#: its answer (audit 1029 C18). The text is single-spaced by here, so the
+#: pattern reads one literal space: linear on any input.
+_DEFINE = re.compile(r"^(?:define|(?:the )?(?:definition|meaning) of) (.+)$", re.I)
+
+
+def what_is(text: str) -> str:
+    """"define X" read as "what is X"; any other text as it came."""
+    return _DEFINE.sub(r"what is \1", " ".join(text.split()))
+
+
+def rephrase(question: str) -> str:
+    """The question with its casual wrapper off: "hey, can you remind me
+    when the dentist is please?" reads as "when the dentist is?". Text-speak
+    is spelled out and a misspelt question word put right first ("whn is
+    the launch" reads "when is the launch"). Never adds a word of the
+    subject the person did not write."""
+    text = _respell(" ".join((question or "").split())).lstrip(".,;:!?-*~ ")
+    for _ in range(4):
+        before = text
+        for pattern in _WRAPPERS:
+            text = pattern.sub("", text)
+        text = _TRAILERS.sub(r"\1", text)
+        for pattern, spelled in _CONTRACTIONS:
+            text = pattern.sub(spelled, text)
+        if text == before:
+            break
+    text = what_is(text)
+    last = _LAST_WORD.match(text)
+    if last and not _ASKS_FIRST.match(text):
+        text = f"{last.group('q')} {last.group('rest')}{last.group('p')}"
+    return text or _respell(" ".join((question or "").split()))
+
+
+def classify(question: str, embed=None) -> str:  # noqa: ANN001
+    """The question's shape: one of `SHAPES`, "what" when nothing else fits.
+    Read after its casual wrapper is off (`rephrase`); a question no rule
+    reads and that opens with no asking word ("dentist date?", "reason the
+    list was slow") is matched by meaning to example questions of each kind
+    (`question_noise.guess_kind`, by `embed` when given)."""
+    text = rephrase(question)
+    if _IF.match(text):
+        return "yesno"
+    #: "is there anything about the boiler", "how many notes mention
+    #: sourdough": everything on a subject, however they open.
+    if _ANYTHING_ON.match(text) or re.match(r"^how many (?:of my )?notes\b", text, re.I):
+        return "what"
+    if _COMPARE_EXTRA.search(text) and compare_sides(text):
+        return "compare"
+    for name, pattern in _SHAPE_RULES:
+        if pattern.search(text):
+            return name
+    if not _ASKS_FIRST.match(text):
+        guessed = question_noise.guess_kind(text, embed)
+        if guessed:
+            return guessed
+    return "what"
+
+
+#: Words whose final "s" is not a plural: "news" is not "new", "lens" not
+#: "len" (the stemmer's own rule, below; found by the 2026-10-10 triage).
+_NOT_PLURAL = frozenset("atlas canvas news lens gas yes always perhaps series species means mathematics physics".split())
+
+
+_VOWELS = "aeiou"
+
+
+def _one_syllable_cvc(w: str) -> bool:
+    """A stem of one vowel group ending consonant, vowel, consonant ("hir",
+    "mak", "writ"): the shape that lost a silent "e" to its suffix (Porter's
+    *o rule, held to one syllable so "open" never becomes "opene")."""
+    if len(w) < 3 or w[-1] in _VOWELS + "wxy" or w[-2] not in _VOWELS or w[-3] in _VOWELS:
+        return False
+    groups = re.findall(r"[aeiou]+", w)
+    return len(groups) == 1
+
+
+@functools.cache
+def _overview():
+    """composer_overview, imported on the first overview question rather than
+    with the composer: the cold import is budgeted (test_engine_budgets)."""
+    from tessellate.ai import composer_overview
+
+    return composer_overview
+
+
+@functools.lru_cache(maxsize=1 << 16)
+def _stem(word: str) -> str:
+    """A light stem, so "testers" meets "tester" and "booked" meets "book".
+
+    Suffixes only, and only on words long enough that taking one off leaves a
+    word: a stemmer that turned "news" into "new" would match the wrong notes.
+    A word without a suffix is left whole, so "same" is never "sam" (engine
+    probe P1: "who is Sam" quoted "Same breakfast as the long runs"); the
+    silent "e" a suffix took ("hiring", "making") is put back instead.
+    """
+    #: One key for the UK and US spellings ("colour" meets "color", INBOX
+    #: 895); the answer is still made from the note's own words.
+    return _stem_plain(variants.canonical(word.lower()))
+
+
+#: Plurals whose singular ends in f or fe: "find notes about knives" must meet
+#: "Knife sharpening" (grading round 1324).
+_F_PLURALS = {"knives": "knife", "wives": "wife", "shelves": "shelf", "loaves": "loaf", "leaves": "leaf", "halves": "half", "calves": "calf"}
+
+
+#: Past forms no suffix rule folds, so a question that says "run" meets the
+#: note that says "Ran" (audit 1030 Z4: "when did I run 8 km" answered with
+#: another run's sentence). Only forms that are rarely another word: not
+#: "saw", "left", "found", "felt".
+IRREGULAR_PAST = variants.IRREGULAR_PAST
+
+
+def _stem_plain(word: str) -> str:
+    """`_stem` without the spelling key: what the import-time tables use, so
+    importing the composer never loads the English list."""
+    w = word.lower()
+    if w in _NOT_PLURAL:
+        return w
+    if w in IRREGULAR_PAST:
+        return IRREGULAR_PAST[w]
+    if w in _F_PLURALS:
+        return _F_PLURALS[w]
+    return _strip_suffix(w)
+
+
+def _suffix_fits(w: str, suffix: str, least: int) -> bool:
+    """`w` ends in `suffix` and keeps a stem of `least` letters (or is a
+    "baked", "liked", "named": a three-letter stem that lost a silent "e";
+    it ends in a consonant; "ahead" and "bread" do not qualify)."""
+    short_ed = suffix == "ed" and len(w) == 5 and w[2] not in "aeiou" + "y" and w[-3] not in _VOWELS and _one_syllable_cvc(w[:-2])
+    return w.endswith(suffix) and (len(w) - len(suffix) >= least or short_ed)
+
+
+def _after_suffix(w: str, suffix: str) -> str:
+    """"running" is "run" and "stopped" is "stop": the doubled last
+    consonant a suffix brought is taken off with it (INBOX 725, measured:
+    "what do my notes say about running" missed every note that says "run"
+    or is tagged it); "baked" gets its "e" back."""
+    if suffix not in ("ing", "ed"):
+        return w
+    if len(w) >= 3 and w[-1] == w[-2] and w[-1] not in "aeioulsz":
+        return w[:-1]
+    return w + "e" if _one_syllable_cvc(w) else w
+
+
+def _strip_suffix(w: str) -> str:
+    for suffix, keep, least in (("ies", "y", 4), ("ing", "", 3), ("ed", "", 4), ("es", "", 3), ("s", "", 3)):
+        if not _suffix_fits(w, suffix, least):
+            continue
+        if suffix == "s" and w.endswith(("ss", "us", "is")):
+            break
+        if suffix == "es" and not w.endswith(("ches", "shes", "sses", "xes", "zes")):
+            continue
+        w = w[: len(w) - len(suffix)] + keep
+        #: A plural of an "-ing" or "-ed" word folds like the word: "meetings"
+        #: and "meeting" are one key (audit 1031 C8).
+        if suffix in ("s", "es") and w.endswith(("ing", "ed")):
+            return _strip_suffix(w)
+        return _after_suffix(w, suffix)
+    return w
+
+
+#: Words that name the same thing in a notebook, so "how much will the trip
+#: cost" finds "Trip budget" and is never told no note mentions "cost"
+#: (measured on the showcase eval, INBOX 741). Small and tested: each group
+#: is one thing said two ways, never a broader idea ("trip" is not "holiday"
+#: plus "flight" plus "hotel").
+SYNONYM_GROUPS = (
+    ("cost", "price", "budget", "spend", "expensive", "cheap", "afford"),
+    ("hotel", "stay", "staying", "accommodation", "room", "airbnb"),
+    ("doctor", "gp", "appointment"),
+    ("job", "work", "career"),
+    ("buy", "purchase", "shopping"),
+    ("film", "movie"),
+    ("car", "drive", "driving"),
+    ("eat", "cook", "food", "dinner", "lunch", "breakfast", "meal", "recipe"),
+    ("book", "books", "reading", "read"),
+    ("run", "running", "jog", "race"),
+    ("flat", "apartment", "home", "house"),
+    ("friend", "friends", "mate"),
+    ("meeting", "call", "standup"),
+    ("bug", "crash", "error", "broken", "slow"),
+    ("idea", "ideas", "thought"),
+    ("trip", "travel", "holiday", "vacation"),
+    ("pay", "paid", "deposit", "payment"),
+    ("hire", "hiring", "recruit"),
+    ("launch", "release", "ship"),
+    ("pack", "packing", "bring"),
+) + composer_tables.EXTRA_SYNONYM_GROUPS
+
+
+def _build_synonyms(key=None) -> dict[str, frozenset[str]]:  # noqa: ANN001
+    key = key or _stem_plain
+    table: dict[str, set[str]] = {}
+    for group in SYNONYM_GROUPS:
+        stems = {key(w) for w in group}
+        for stem in stems:
+            table.setdefault(stem, set()).update(stems - {stem})
+    return {k: frozenset(v) for k, v in table.items()}
+
+
+def _alternatives(stem: str) -> frozenset[str]:
+    """The other stems that name what `stem` names."""
+    return _keyed_synonyms().get(stem, frozenset())
+
+
+@functools.lru_cache(maxsize=1)
+def _keyed_synonyms() -> dict[str, frozenset[str]]:
+    """The groups keyed by `_stem`, the UK and US spellings as one
+    ("counselling" is "counseling"): built at the first question, not at
+    import, which would load the English list (`_build_synonyms()` is the plain one)."""
+    return _build_synonyms(_stem)
+
+
+def _holds(stem: str, words: set[str]) -> bool:
+    return stem in words or bool(_alternatives(stem) & words)
+
+
+#: What a synonym hit is worth beside the word itself: the person's own word
+#: is the better evidence.
+SYNONYM_WEIGHT = 0.7
+
+
+@functools.lru_cache(maxsize=1 << 14)
+def _words_of(text: str) -> tuple[str, ...]:
+    return tuple(_stem(w) for w in query_understanding.search_terms(text))
+
+
+def _words(text: str) -> list[str]:
+    """The stems of a text's words. Cached by text, since every answer reads
+    the same notes again (second eye F8); a fresh list, for callers that edit it."""
+    return list(_words_of(text))
+
+
+#: The verbs the app does or answers as acts: a question that opens with one
+#: is about what follows it, never about the verb (audit 1029 C15).
+_COMMAND_VERBS = frozenset(
+    "read open show draft write compose compare explain define summarise summarize archive unarchive restore split merge "
+    "duplicate clone combine rename retitle tag untag pin unpin delete remove move file link unlink append add".split()
+)
+
+
+_COMMAND_LEADS = frozenset("please pls can could would will you just ok okay hey and then".split())
+
+
+_COMMAND_FILLER = frozenset("me my the a an this that these those all both every two three four five".split())
+
+
+_DRAFTED = frozenset("message messages email emails text reply letter note".split())
+
+
+_BIN_WORDS = frozenset("bin trash".split())
+
+
+def _without_command(text: str) -> str:
+    """The subject without the command that wraps it, one pass over the words:
+    "draft a message to Sara" is Sara, "move the budget to the bin" is budget,
+    "merge the two lentil soup notes" is lentil soup. Only a verb that opens
+    the sentence is a command, so "books I am reading" keeps its verb."""
+    words = text.split()
+    at = 0
+    while at < len(words) and words[at].casefold() in _COMMAND_LEADS:
+        at += 1
+    if at >= len(words) or words[at].casefold() not in _COMMAND_VERBS:
+        return text
+    rest = _without_bin(words[_past_filler(words, at):])
+    return " ".join(rest) or text
+
+
+def _past_filler(words: list[str], at: int) -> int:
+    """Where the subject starts after the command verb at `at`: past "the",
+    and for a draft past "a message to"."""
+    drafting = words[at].casefold() in ("draft", "write", "compose")
+    at += 1
+    while at < len(words) and (words[at].casefold() in _COMMAND_FILLER or (drafting and words[at].casefold() in _DRAFTED)):
+        at += 1
+    if drafting and at < len(words) and words[at].casefold() in ("to", "for"):
+        at += 1
+    return at
+
+
+def _without_bin(rest: list[str]) -> list[str]:
+    """"budget to the bin" is budget."""
+    if len(rest) >= 3 and rest[-3].casefold() == "to" and rest[-2].casefold() == "the" and rest[-1].casefold().rstrip("?.!") in _BIN_WORDS:
+        return rest[:-3]
+    return rest
+
+
+def subject_terms(question: str) -> list[str]:
+    """The words the question is about, as typed, without the asking words."""
+    question = rephrase(question)
+    question = _IF.sub("", question)
+    question = _ANYTHING_ON.sub("", question)
+    #: The asking words go; "how come" becomes the "why" it means, since a
+    #: bare "the list is slow" reads to the parser as a list command.
+    question = re.sub(r"^how come\b", "why", question, flags=re.I)
+    question = re.sub(r"^(?:what time|how many (?:of my )?notes (?:mention|are about|about|on))\b", "", question, flags=re.I)
+    question = rec.without_windows(question)
+    understood = query_understanding.understand(question)
+    source = understood.subject or question
+    #: "List my ..." and "Name the ..." ask; "the reading list" names. Only the
+    #: first word is dropped, so the list a question is about stays in it.
+    #: "Count my notes about Hobart" asks; it is not a word to find in a note
+    #: ("Don't count the balance"; second eye F10).
+    if re.match(r"^\s*(list|name|show|tell|count|check|tally)\b", question, re.I):
+        source = re.sub(r"^\s*(list|name|show|tell|count|check|tally)\b", "", source, flags=re.I)
+    seen: list[str] = []
+    #: Only a command the question itself opens with: "what did I add to the
+    #: pasta" keeps its "add", which understanding may have moved to the front.
+    if _without_command(question) != question:
+        source = _without_command(source)
+    for word in query_understanding.search_terms(source):
+        if word in _ASKING_WORDS or word in seen:
+            continue
+        seen.append(word)
+    return seen
+
+
+_COMPARE_SIDES = (
+    re.compile(r"\bdifferences? between (?P<a>.+?) and (?P<b>.+?)[?.!]*$", re.I),
+    re.compile(r"\bcompare (?P<a>.+?) (?:and|with|to|vs\.?|versus) (?P<b>.+?)[?.!]*$", re.I),
+    re.compile(r"^(?P<a>[\w' -]+?) (?:vs\.?|versus) (?P<b>.+?)[?.!]*$", re.I),
+)
+
+
+#: The patterns that name a comparison by more than a bare "vs" are tried first:
+#: "pros and cons of A vs B" is not a "vs" with "pros and cons of A" on its left.
+_COMPARE_SIDES = (*composer_tables.EXTRA_COMPARE_SIDES, *_COMPARE_SIDES)
+
+
+#: The extra comparison words ("cheaper than", "compared with", "pros and cons
+#: of ... and ..."), read as a comparison only when both sides can be named.
+_COMPARE_EXTRA = re.compile(composer_tables.COMPARE_SHAPE_EXTRA, re.I)
+
+
+_NOTES_NOUNS = ("note", "notes", "entries")
+
+
+_SIDE_NUMBERS = r"one|two|three|four|five|1|2|3|4|5|first|second|third|a|b|c|old|new"
+
+
+def _bare_side(side: str, shared_noun: bool = False) -> str:
+    """One side of a comparison without the noun that names the notes:
+    "Lisbon notes" is Lisbon (1324)."""
+    side = re.sub(r"^(?:how (?:does|do|is|are) |what (?:does|do) )?(?:my )?(?:notes? )?(?:on |about )?", "", side.strip(" ,"), flags=re.I)
+    # Word steps, not `\s+(?:notes?|entries)$`: that regex is quadratic on a run
+    # of whitespace (CodeQL py/polynomial-redos).
+    head, _, last = side.rstrip().rpartition(" ")
+    if head and last.casefold() in _NOTES_NOUNS:
+        side, shared_noun = head, True
+    if shared_noun:
+        #: The article went with the noun: "the Porto notes" is Porto, as a
+        #: heading and as a topic (audit 1029 C36: "**the Porto**"), while "the
+        #: Lisbon flat" keeps its "the". Lower case only: "The Overstory" is a title.
+        side = re.sub(r"^(?:the|my|our|your) ", "", side)
+    return side.strip(" ,") or side
+
+
+_SIDE_CONNECTOR = re.compile(r"\s(?:and|with|to|vs\.?|versus)\s", re.I)
+
+
+#: Strongest first: "Trip to Lisbon and Trip to Porto" splits at "and", the
+#: "to" belongs to the first trip's name.
+_SIDE_PRIORITY = (r"and", r"vs\.?", r"versus", r"with", r"to")
+
+
+def _clean_split(span: str) -> tuple[str, str, str] | None:
+    for word in _SIDE_PRIORITY:
+        hit = re.search(rf"\s{word}\s", span, re.I)
+        if hit and span[: hit.start()].strip() and span[hit.end():].strip():
+            return span[: hit.start()], span[hit.end():], hit.group(0).strip()
+    return None
+
+
+#: The words that join two sides and may also sit inside a name ("Trip to
+#: Lisbon"); a span cut at "or" or "than" was cut where the person meant it.
+_NAME_JOINERS = frozenset({"and", "with", "to", "vs", "versus"})
+
+
+def _raw_sides(text: str, match: re.Match) -> list[str]:
+    """The sides a comparison pattern cut, as typed and one list: each of the
+    two spans may name several ("the dentist, the Lisbon trip or the Tokyo
+    trip"), cut at its commas and at the word that joins them."""
+    raw_a, raw_b = match.group("a"), match.group("b")
+    words = text[match.end("a"): match.start("b")].lower().replace(",", " ").replace(".", " ").split()
+    joiner = words[-1] if words else ""
+    if joiner in _NAME_JOINERS and (_SIDE_CONNECTOR.search(f" {raw_a} ") or _SIDE_CONNECTOR.search(f" {raw_b} ")):
+        clean = _clean_split(text[match.start("a"): match.end("b")].strip(" ?.!"))
+        if clean:
+            raw_a, raw_b, joiner = clean[0], clean[1], clean[2].lower().rstrip(".")
+    return [*composer_sides.listed(raw_a, joiner), *composer_sides.listed(raw_b, joiner)]
+
+
+def _numbered_sides(sides: list[str]) -> list[str]:
+    """"compare sourdough loaf one and two": a side that is only a number is
+    the one before it with its own number (audit 1029 C36)."""
+    out: list[str] = []
+    for side in sides:
+        before = re.match(rf"(.+ )(?:{_SIDE_NUMBERS})$", out[-1].strip(), re.I) if out else None
+        out.append(before.group(1) + side if before and re.fullmatch(_SIDE_NUMBERS, side.strip(), re.I) else side)
+    return out
+
+
+def compare_sides(question: str) -> tuple[str, ...] | None:
+    """The things a comparison names, as typed: ("Lisbon", "Porto"), or three
+    to six of them for "which is soonest, the dentist, the Lisbon trip or the
+    Tokyo trip". A format wish ("in a table", "please") is no part of a name."""
+    #: Once, not once per pattern: each reading spell-checks every unknown
+    #: word (audit 1030 Z65).
+    text = rephrase(question)
+    for pattern in _COMPARE_SIDES:
+        match = pattern.search(text)
+        if not match:
+            continue
+        raw = _numbered_sides([composer_sides.strip_format(side) for side in _raw_sides(text, match)])
+        #: "the Porto and Lisbon notes": one "notes" names every side.
+        shared = bool(raw) and raw[-1].rpartition(" ")[2].casefold() in _NOTES_NOUNS
+        sides = [_bare_side(side, shared_noun=shared) for side in raw]
+        sides = [side for side in sides if subject_terms(side)]
+        if len(sides) >= composer_sides.MIN_SIDES:
+            return tuple(sides[: composer_sides.MAX_SIDES])
+    return None
+
+
+#: The words the notes under question hold: the person's own, so the speller
+#: never "corrects" a name or a term they wrote (`question_noise.repair`).
+_KNOWN: contextvars.ContextVar[frozenset] = contextvars.ContextVar("composer_known", default=frozenset())
+
+
+#: "When was my gym log written", "what day did I create the pasta recipe",
+#: "what date was the essay started": about the note's own day, not its words.
+_WRITTEN_WHEN = re.compile(
+    r"\b(?:when|what (?:day|date))\b.{0,50}?\b(?:written|wrote|write|made|make|created|create|(?:started|start|began|begun)(?!\s+(?:\w+ing|to\s+\w+)\b)|"
+    r"added|add|saved|save|put together|jotted|typed)\b",
+    re.I,
+)
+
+
+#: Words that make it a question about the notes' words or ends, not one note's day.
+_NOT_ONE_NOTE = re.compile(r"\b(?:about|mention\w*|says?|said|last|latest|newest|first|ever|any|every|all)\b", re.I)
+
+
+_WHEN_NOISE = frozenset(
+    "day date time created create creating start started starting began begun note notes page entry entries "
+    "made make making added add saved save wrote write written put together jotted typed".split()
+)
+
+
+def when_terms(terms: list[str]) -> list[str]:
+    """The terms of "when did I write about X" that name X, not the asking."""
+    return [t for t in terms if t.lower() not in _WHEN_NOISE]
+
+
+def asks_time(question: str | None) -> bool:
+    """Whether a question is about time, the only time an answer says a date
+    (INBOX 1441: "I dont like how it refers to dates")."""
+    return rec.asks_time(question or "") or asks_written_when(question or "")
+
+
+def asks_written_when(question: str) -> bool:
+    return bool(_WRITTEN_WHEN.search(question or "")) and not _NOT_ONE_NOTE.search(question or "")

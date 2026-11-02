@@ -56,7 +56,7 @@ def _run(scenario: str) -> dict:
     document's fetch takes `delays[id]` ms; the list takes 30 ms."""
     source = (JS / "documents.js").read_text(encoding="utf-8")
     declarations = "\n".join(
-        line for line in source.splitlines() if line.startswith("let docOpenSeq")
+        line for line in source.splitlines() if line.startswith(("let docOpenSeq", "const docLoadSeen"))
     )
     opener = _function(source, "async function openDocument(id) {").replace(
         "async function openDocument(id) {", "globalThis.openDocument = async function (id) {", 1
@@ -66,7 +66,7 @@ def _run(scenario: str) -> dict:
         "globalThis.loadDocumentsNow = async function (selectId) {",
         1,
     )
-    own = "currentDoc docDirty docs apiJson apiPagedList docOpenSeq stub delays fetched".split()
+    own = "currentDoc docDirty docs apiJson apiPagedList docOpenSeq docLoadSeen stub delays fetched".split()
     script = (
         """
 let currentDoc = null, docDirty = false, docs = [];
@@ -127,7 +127,40 @@ await Promise.all([loading, routed]);
     assert out["open"] == 2, f"the loader opened the last document instead: {out}"
 
 
-@pytest.mark.parametrize("kind, button", [("board", "wb-boards-new"), ("mindmap", "wb-boards-new-map")])
+@pytest.mark.skipif(not shutil.which("node"), reason="needs node")
+@pytest.mark.parametrize(
+    "scenario",
+    [
+        # the route's open lands first, the loader starts after (DC7)
+        "delays[2] = 60; delays[9] = 60;\nconst routed = openDocument(2);\nconst loading = loadDocumentsNow(null);\nawait Promise.all([loading, routed]);",
+        # New document asked before the loader starts
+        "delays[2] = 60; delays[9] = 60;\nconst routed = openDocument(9);\nawait new Promise((r) => setTimeout(r, 1));\nconst loading = loadDocumentsNow(null);\nawait Promise.all([loading, routed]);",
+    ],
+)
+def test_an_open_asked_before_the_loader_starts_is_honoured(scenario):
+    """The class behind DC7: any open requested before the list loads, not
+    only one made while it loads, beats the loader's own default."""
+    out = _run(scenario)
+    assert out["open"] in (2, 9) and 3 not in out["fetched"], out
+
+
+@pytest.mark.skipif(not shutil.which("node"), reason="needs node")
+def test_the_loader_still_opens_the_last_document_when_nothing_was_asked():
+    out = _run("await loadDocumentsNow(null);")
+    assert out["open"] == 3, out
+
+
+@pytest.mark.skipif(not shutil.which("node"), reason="needs node")
+def test_a_later_visit_opens_the_last_document_again_after_a_settled_ask():
+    """An ask settles at the first load, so a second visit with nothing open
+    (the open document was deleted) is not stuck on an old request."""
+    out = _run(
+        "await openDocument(2);\nawait loadDocumentsNow(null);\ncurrentDoc = null;\nawait loadDocumentsNow(null);"
+    )
+    assert out["open"] == 3, out
+
+
+@pytest.mark.parametrize("kind, button", [("board", '$("wb-boards-new")'), ("mindmap", 'wbNewUntitledBoard("map")')])
 def test_new_board_and_new_mind_map_wait_for_the_boards_code(kind, button):
     """The same shape for boards (found by tests-e2e/specs/boards.spec.js):
     Create, New board pressed `#wb-boards-new` straight after opening the
@@ -139,7 +172,7 @@ def test_new_board_and_new_mind_map_wait_for_the_boards_code(kind, button):
     start = source.index(f"  {kind}: {{\n")
     row = source[start : source.index("\n  },", start)]
     wait = row.find('await ensureModule("library")')
-    press = row.find(f'$("{button}")')
+    press = row.find(button)
     assert 0 <= wait < press, row
 
 

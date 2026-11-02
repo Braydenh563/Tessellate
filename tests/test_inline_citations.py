@@ -251,7 +251,10 @@ def test_the_popup_agent_numbers_its_answer_like_chat():
     call = ask[ask.index("addInlineCitations(") :]
     call = call[: call.index(");")]
     assert "answerBox" in call and "found" in call
-    assert "chatSourcesFrom({ meta, touched: [...touched.values()] })" in call
+    #: Intent unchanged (the marks and the list share one source order); the
+    #: call now also carries the sentences, which is how the order is by first
+    #: mention (audit 1029 rank 49).
+    assert "chatSourcesFrom({ meta, touched: [...touched.values()], sentences: cites })" in call
     #: Every paint that rebuilds the answer puts the marks back.
     paints = [m.start() for m in re.finditer(r"renderMarkdown\(answerBox, ", ask)]
     assert paints, "the popup agent paints its answer with renderMarkdown"

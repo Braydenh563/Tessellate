@@ -10,6 +10,8 @@ the structure that makes it possible is held.
 
 from __future__ import annotations
 
+from tests._help_text import help_chat_text
+
 import re
 from pathlib import Path
 
@@ -82,7 +84,7 @@ def test_the_guide_says_every_section_has_a_question_mark() -> None:
     from tessellate.ai import help_chat
 
     topics = {t["id"]: t for t in help_chat.HELP_TOPICS} if hasattr(help_chat, "HELP_TOPICS") else {}
-    body = topics.get("graph-options-help", {}).get("body", "") if topics else (ROOT / "src/tessellate/ai/help_chat.py").read_text(encoding="utf-8")
+    body = topics.get("graph-options-help", {}).get("body", "") if topics else help_chat_text()
     assert "beside its name" in str(body)
 
 
@@ -99,4 +101,4 @@ def test_a_toast_over_the_map_stands_above_the_legend_and_left_of_the_zoom() -> 
     # The legend row rides the popups' observer (`watchGraphPopupSize`): a second ResizeObserver
     # in graph.js fails the wake-source ratchet (tests/test_frontend_wake_sources.py).
     assert "box.style.bottom" in body and "watchGraphPopupSize(row, write)" in body and '"resize"' in body
-    assert js.count("initGraphToastClearance();") == 2, "the clearance is wired on render and at load"
+    assert js.count("initGraphToastClearance();") == 1, "the clearance is wired once, at load"

@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-NOTE_CARDS = (Path(__file__).resolve().parent.parent / "frontend" / "js" / "note-cards.js").read_text(
+NOTE_CARDS = (Path(__file__).resolve().parent.parent / "frontend" / "js" / "map-preview.js").read_text(
     encoding="utf-8"
 )
 

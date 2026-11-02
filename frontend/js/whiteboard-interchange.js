@@ -580,8 +580,11 @@ function wbDrawioStyle(style) {
 }
 
 //: A label as plain text: draw.io keeps HTML in `value` when `html=1`. Read
-//: with string rules, not a parser, so nothing in a file can run.
-function wbDrawioText(value) {
+//: with string rules, not a parser, so nothing in a file can run. A cell
+//: whose style says `html=0` holds plain text (this app's own export writes
+//: it so), kept as it stands.
+function wbDrawioText(value, html = true) {
+  if (!html) return String(value || "").trim();
   const named = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " " };
   return String(value || "")
     .replace(/<br\s*\/?>/gi, "\n")
@@ -607,7 +610,10 @@ function wbDrawioLook(s) {
   const look = {};
   if (s.strokeColor === "none") look.noStroke = true;
   else if (hex(s.strokeColor)) look.color = hex(s.strokeColor);
-  if (hex(s.fillColor)) Object.assign(look, { fill: hex(s.fillColor), fillOpacity: 1 });
+  //: draw.io's fillOpacity and strokeOpacity are percentages, 100 when absent.
+  const pct = (v) => (v === undefined || v === "" || !Number.isFinite(Number(v)) ? null : Math.max(0, Math.min(100, Number(v))) / 100);
+  if (hex(s.fillColor)) Object.assign(look, { fill: hex(s.fillColor), fillOpacity: pct(s.fillOpacity) ?? 1 });
+  if (pct(s.strokeOpacity) !== null && pct(s.strokeOpacity) < 1) look.opacity = pct(s.strokeOpacity);
   if (hex(s.fontColor)) look.label_color = hex(s.fontColor);
   if (Number(s.fontStyle) & 1) look.label_bold = true;
   if (Number(s.fontStyle) & 2) look.label_italic = true;
@@ -652,14 +658,14 @@ function wbDrawioPlan(cells) {
     const s = wbDrawioStyle(c.style);
     const parent = byId.get(c.parent);
     if (parent?.edge) {
-      edgeLabels.set(parent.id, wbDrawioText(c.value));
+      edgeLabels.set(parent.id, wbDrawioText(c.value, s.html !== "0"));
       continue;
     }
     for (const k of WB_DRAWIO_DROPPED) if (s[k] && s[k] !== "0") drop(k);
     if (s._kind === "group") continue;
     const at = origin(c.id);
     const box = { x: at.x, y: at.y, w: Math.max(1, Number(c.geo?.width) || 0), h: Math.max(1, Number(c.geo?.height) || 0) };
-    const label = wbDrawioText(c.value);
+    const label = wbDrawioText(c.value, s.html !== "0");
     if (s._kind === "swimlane" || s.swimlane === "1") items.push({ id: c.id, kind: "frame", ...box, label });
     else if (s._kind === "text") items.push({ id: c.id, kind: "text", ...box, label, look: { font_size: Math.round(Number(s.fontSize) || 16), ...(wbDrawioLook(s).label_color ? { color: wbDrawioLook(s).label_color } : {}) } });
     else {
@@ -679,7 +685,7 @@ function wbDrawioPlan(cells) {
     if (end !== "none" && end !== "") data.endCap = WB_DRAWIO_CAPS[end] || "arrow";
     if (s.startArrow && s.startArrow !== "none") data.startCap = WB_DRAWIO_CAPS[s.startArrow] || "arrow";
     if (s.dashed === "1") data.dash = "dashed";
-    const label = wbDrawioText(c.value) || edgeLabels.get(c.id) || "";
+    const label = wbDrawioText(c.value, s.html !== "0") || edgeLabels.get(c.id) || "";
     if (label) data.label = label;
     const source = byId.get(c.source)?.vertex ? c.source : null, target = byId.get(c.target)?.vertex ? c.target : null;
     if (!source && c.sourcePoint) data.sourcePoint = { x: Number(c.sourcePoint.x) || 0, y: Number(c.sourcePoint.y) || 0 };
@@ -692,6 +698,101 @@ function wbDrawioPlan(cells) {
     links.push({ id: c.id, type: s.curved === "1" ? "link-curved" : "link-straight", source, target, data });
   }
   return { items, links, dropped };
+}
+
+//: The board's end marks to draw.io's (the import's table, turned round).
+const WB_DRAWIO_CAPS_OUT = { arrow: "classic", circle: "oval", "er-one-only": "ERone", "er-one": "ERmandOne", "er-many": "ERmany", "er-one-many": "ERoneToMany", "er-zero-one": "ERzeroToOne", "er-zero-many": "ERzeroToMany", cross: "cross", "half-arrow": "openAsync", "double-arrow": "doubleBlock" };
+const WB_DRAWIO_SHAPES_OUT = { circle: "ellipse", diamond: "rhombus", triangle: "triangle", rect: "rounded=0" };
+
+//: **A board as a `.drawio` file** (OPEN 807: the import had no way back).
+//: Frames are swimlanes, text boxes and stickies are text or filled boxes,
+//: closed shapes are vertices in their own shape, and connectors are edges
+//: joined to the cells that took their ends. What a draw.io page has no
+//: counterpart for (pictures, tables, cards, drawn lines) is counted in
+//: `skipped` and named to the person, never dropped silently. One uncompressed
+//: page, so any text editor can read it. `box(kind, item)` is a shape's
+//: bounds (the board's `wbItemBBox` in the page); `hidden(kind, item)`
+//: leaves out what the layers panel hides.
+function wbBoardToDrawio(state, { title = "Board", box = null, hidden = null } = {}) {
+  const bounds = box || (() => null);
+  const esc = (v) => String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/\r?\n/g, "&#xa;");
+  const hex = (v) => (/^#[0-9a-f]{6}$/i.test(v || "") ? v.toLowerCase() : null);
+  //: A fill or a line under 100% says so, as draw.io's own percentages.
+  const opacityKeys = (d) => `${hex(d.fill) && d.fillOpacity != null && d.fillOpacity < 1 ? `fillOpacity=${Math.round(d.fillOpacity * 100)};` : ""}${d.opacity != null && d.opacity < 1 ? `strokeOpacity=${Math.round(d.opacity * 100)};` : ""}`;
+  const skipped = {};
+  const skip = (what) => { skipped[what] = (skipped[what] || 0) + 1; };
+  const ids = new Map();
+  const cells = [];
+  let n = 1;
+  const geo = (b) => `<mxGeometry x="${Math.round(b.x)}" y="${Math.round(b.y)}" width="${Math.max(1, Math.round(b.w))}" height="${Math.max(1, Math.round(b.h))}" as="geometry"/>`;
+  const vertex = (key, style, value, b) => {
+    const id = `c${++n}`;
+    ids.set(key, id);
+    cells.push(`<mxCell id="${id}" value="${esc(value)}" style="${style}" vertex="1" parent="1">${geo(b)}</mxCell>`);
+  };
+  const font = (size, bold, italic, underline, ink) => {
+    const bits = (bold ? 1 : 0) | (italic ? 2 : 0) | (underline ? 4 : 0);
+    return `${Number(size) > 0 ? `fontSize=${Math.round(size)};` : ""}${bits ? `fontStyle=${bits};` : ""}${hex(ink) ? `fontColor=${hex(ink)};` : ""}`;
+  };
+  const objects = [...(state.objects || [])].filter((o) => !(hidden && hidden("object", o)));
+  //: Frames first, so they sit behind what is on them, then by stacking order.
+  objects.sort((a, b) => (b.kind === "frame") - (a.kind === "frame") || (a.z || 0) - (b.z || 0));
+  for (const o of objects) {
+    const d = o.data || {};
+    const b = { x: o.x || 0, y: o.y || 0, w: o.width || 160, h: o.height || 60 };
+    if (o.kind === "frame") vertex(`object:${o.id}`, "swimlane;startSize=30;html=0;whiteSpace=wrap;", d.content || "Frame", b);
+    else if (o.kind === "text") {
+      const filled = hex(d.bg) || hex(d.border_color);
+      const look = font(d.font_size, d.bold, d.italic, d.underline, d.color);
+      if (filled) vertex(`object:${o.id}`, `rounded=0;whiteSpace=wrap;html=0;${hex(d.bg) ? `fillColor=${hex(d.bg)};${d.bg_alpha != null && d.bg_alpha < 1 ? `fillOpacity=${Math.round(d.bg_alpha * 100)};` : ""}` : ""}${hex(d.border_color) ? `strokeColor=${hex(d.border_color)};` : ""}${look}`, d.content || "", b);
+      else vertex(`object:${o.id}`, `text;whiteSpace=wrap;html=0;align=left;verticalAlign=top;${look}`, d.content || "", b);
+    } else if (o.kind === "image" || o.kind === "table") skip(o.kind === "image" ? "pictures" : "tables");
+    else skip("other items");
+  }
+  if ((state.nodes || []).length) skipped.cards = state.nodes.length;
+  const links = [];
+  for (const sk of state.sketches || []) {
+    if (hidden && hidden("sketch", sk)) continue;
+    let d = null;
+    try { d = JSON.parse(sk.data); } catch { continue; }
+    if (!d) continue;
+    if (String(d.type || "").startsWith("link-")) { links.push([sk, d]); continue; }
+    const closed = typeof d.d === "string" && /[Zz]\s*$/.test(d.d.trim());
+    if (typeof d.d !== "string" || !(WB_DRAWIO_SHAPES_OUT[d.shape] || d.shape === "custom" || closed)) { skip("drawn lines"); continue; }
+    const bb = bounds("sketch", sk);
+    if (!bb) { skip("drawn lines"); continue; }
+    if (d.shape === "custom" || (!WB_DRAWIO_SHAPES_OUT[d.shape] && closed)) skip("shapes drawn as boxes");
+    const shape = WB_DRAWIO_SHAPES_OUT[d.shape] || "rounded=0";
+    const width = Math.max(1, Math.round((Number(d.width) || 2) / 2));
+    vertex(`sketch:${sk.id}`,
+      `${shape};whiteSpace=wrap;html=0;${hex(d.color) ? `strokeColor=${hex(d.color)};` : ""}${hex(d.fill) ? `fillColor=${hex(d.fill)};` : "fillColor=none;"}${opacityKeys(d)}strokeWidth=${width};${d.dash === "dashed" || d.dash === "dotted" ? "dashed=1;" : ""}${font(d.label_size, d.label_bold, d.label_italic, d.label_underline, d.label_color)}`,
+      d.label || "", { x: bb.minX, y: bb.minY, w: bb.maxX - bb.minX, h: bb.maxY - bb.minY });
+  }
+  for (const [sk, d] of links) {
+    const ref = (side) => {
+      const id = ids.get(`${d[`${side}Kind`] || "node"}:${d[`${side}Id`]}`);
+      return id ? ` ${side}="${id}"` : "";
+    };
+    const point = (side) => {
+      const p = d[`${side}Point`];
+      return p && !ref(side) ? `<mxPoint x="${Math.round(p.x)}" y="${Math.round(p.y)}" as="${side}Point"/>` : "";
+    };
+    const joined = (side) => ref(side) || d[`${side}Point`];
+    if (!joined("source") || !joined("target")) { skip("loose connectors"); continue; }
+    const capOf = (cap, flag) => (cap && cap !== "none" ? WB_DRAWIO_CAPS_OUT[cap] || "classic" : flag ? "classic" : "none");
+    const end = capOf(d.endCap, d.endStyle === "end" || d.endStyle === "both");
+    const start = capOf(d.startCap, d.endStyle === "both");
+    const way = Array.isArray(d.points) && d.route !== "elbow" ? `<Array as="points">${d.points.map((p) => `<mxPoint x="${Math.round(p.x)}" y="${Math.round(p.y)}"/>`).join("")}</Array>` : "";
+    const style = `${d.route === "elbow" ? "edgeStyle=orthogonalEdgeStyle;" : ""}${d.type === "link-curved" ? "curved=1;" : ""}html=0;endArrow=${end};startArrow=${start};` +
+      `${hex(d.color) ? `strokeColor=${hex(d.color)};` : ""}strokeWidth=${Math.max(1, Math.round((Number(d.width) || 2) / 2))};${d.dash === "dashed" || d.dash === "dotted" ? "dashed=1;" : ""}`;
+    cells.push(`<mxCell id="c${++n}" value="${esc(d.label || "")}" style="${style}" edge="1" parent="1"${ref("source")}${ref("target")}>` +
+      `<mxGeometry relative="1" as="geometry">${point("source")}${point("target")}${way}</mxGeometry></mxCell>`);
+  }
+  const shapes = cells.filter((c) => c.includes('vertex="1"')).length;
+  const xml = '<?xml version="1.0" encoding="UTF-8"?>\n<mxfile host="Tessellate">' +
+    `<diagram name="${esc(String(title).slice(0, 120))}" id="page1"><mxGraphModel grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" math="0" shadow="0">` +
+    `<root><mxCell id="0"/><mxCell id="1" parent="0"/>${cells.join("")}</root></mxGraphModel></diagram></mxfile>\n`;
+  return { xml, shapes, links: cells.length - shapes, skipped };
 }
 
 //: A box's outline as a path the board draws (M, L, C and Z only, so the
@@ -792,7 +893,7 @@ async function wbImportBoardRows(rows, at = wbViewCentre()) {
     }
   });
   renderWhiteboardNow();
-  wbAnnounce(`Brought in ${made} item${made === 1 ? "" : "s"} from the file.`);
+  wbAnnounce(`Brought in ${nounCount(made, "item")} from the file.`);
   return made;
 }
 
@@ -839,8 +940,8 @@ async function wbImportMermaid(source, at = wbViewCentre()) {
     }
   });
   renderWhiteboardNow();
-  const frames = frameIds.size ? ` in ${frameIds.size} frame${frameIds.size === 1 ? "" : "s"}` : "";
-  const said = `Brought in ${graph.nodes.length} shapes${frames} and ${graph.edges.length} connectors${graph.skipped ? `; ${graph.skipped} line${graph.skipped === 1 ? "" : "s"} left out` : ""}.`;
+  const frames = frameIds.size ? ` in ${nounCount(frameIds.size, "frame")}` : "";
+  const said = `Brought in ${graph.nodes.length} shapes${frames} and ${graph.edges.length} connectors${graph.skipped ? `; ${nounCount(graph.skipped, "line")} left out` : ""}.`;
   wbAnnounce(said);
   toast(said);
   return graph.nodes.length;
@@ -929,7 +1030,7 @@ async function wbImportMermaidSequence(source, at = wbViewCentre()) {
     }
   });
   renderWhiteboardNow();
-  const said = `Brought in ${n} participant${n === 1 ? "" : "s"} and ${messages} message${messages === 1 ? "" : "s"}${seq.skipped ? `; ${seq.skipped} line${seq.skipped === 1 ? "" : "s"} left out` : ""}.`;
+  const said = `Brought in ${nounCount(n, "participant")} and ${nounCount(messages, "message")}${seq.skipped ? `; ${nounCount(seq.skipped, "line")} left out` : ""}.`;
   wbAnnounce(said);
   toast(said);
   return n;
@@ -962,6 +1063,17 @@ async function wbExportMermaid() {
   }
   await saveFile(wbExportFileName("whole", "mmd"), new Blob([text], { type: "text/plain" }));
   toast("Board exported as a Mermaid flowchart.");
+}
+
+async function wbExportDrawio() {
+  const made = wbBoardToDrawio(wbState, { title: wbBoardTitleForExport(), box: wbItemBBox, hidden: wbItemHidden });
+  if (!made.shapes) {
+    toast("Nothing on this board has a draw.io counterpart yet: add shapes, text or frames first.", "info");
+    return;
+  }
+  await saveFile(wbExportFileName("whole", "drawio"), new Blob([made.xml], { type: "application/vnd.jgraph.mxfile" }));
+  const left = Object.entries(made.skipped).map(([k, c]) => `${k} ${c}`).join(", ");
+  toast(`Board exported for draw.io: ${nounCount(made.shapes, "shape")} and ${nounCount(made.links, "connector")}${left ? `; not kept: ${left}` : ""}.`);
 }
 
 async function wbExportOutline() {
@@ -1128,7 +1240,7 @@ async function wbImportDrawio(text, at = wbViewCentre()) {
   for (const page of pages) for (const [k, n] of Object.entries(page.plan.dropped)) dropped[k] = (dropped[k] || 0) + n;
   const kept = Object.entries(dropped).map(([k, n]) => `${k} ${n}`).join(", ");
   const said = `Brought in ${items} shapes and ${links} connectors from draw.io`
-    + `${framed ? `, ${pages.length} pages each in a frame of its own` : ""}${kept ? `; not kept: ${kept}` : ""}.`;
+    + `${framed ? `, ${nounCount(pages.length, "page")} each in a frame of its own` : ""}${kept ? `; not kept: ${kept}` : ""}.`;
   wbAnnounce(said);
   toast(said);
   return items;
@@ -1247,3 +1359,171 @@ async function wbThumbFlush() {
     if (document.visibilityState === "hidden" && wbThumbState.pending !== null) wbThumbFlush();
   });
 })();
+
+// --- A live Mermaid diagram (INBOX 1451) -----------------------------------
+//
+// The owner: "allow mermaid diagrams to actually be added as objects like
+// with draw.io into the whiteboard". An object of kind `diagram` keeps its
+// source (`data.mermaid`) and nothing drawn: the notes' own hidden frame
+// (mermaid-draw.js, loaded only when a board has one) draws it, so a theme
+// change redraws it and an edit is one Save. Double-click edits it; "Turn
+// into shapes" hands the source to `wbImportMermaid` for editable shapes.
+
+const WB_DIAGRAM_SAMPLE = "flowchart TD\n  A[Start] --> B{Ready?}\n  B -->|yes| C[Ship it]";
+const wbDiagramDialogState = { target: null, timer: 0 };
+
+//: The drawing already made for this item's source in the theme in force, as
+//: an image address, or "": export and the thumbnail are synchronous.
+//: The look a diagram object stored (INBOX 1486): its fill colour (`bg`), the
+//: fill's opacity (`bg_alpha`) and the line's (`line_alpha`); null when it
+//: stored none, which draws as every diagram always did.
+function wbDiagramLook(obj) {
+  const x = obj?.data || {};
+  const look = {};
+  if (x.bg && x.bg !== "transparent") look.fill = x.bg;
+  if (x.bg_alpha != null) look.fillAlpha = x.bg_alpha;
+  if (x.line_alpha != null) look.lineAlpha = x.line_alpha;
+  return Object.keys(look).length ? look : null;
+}
+
+//: The colour and the strength a diagram's fill shows when it stored none,
+//: for the Format panel's Fill row and slider: the accent at the default share.
+function wbDiagramFillColour(data) {
+  if (data?.bg && data.bg !== "transparent") return data.bg;
+  const accent = wbHexColour(getComputedStyle(document.documentElement).getPropertyValue("--accent").trim());
+  return accent || "#4664f0";
+}
+
+function wbDiagramFillShare() {
+  const strong = document.documentElement.dataset.contrast === "on";
+  //: The lazy module may not be in yet, so the same two numbers stand by.
+  return globalThis.mermaidFillShare?.(strong) ?? (strong ? 0.28 : 0.16);
+}
+
+function wbDiagramDataUrl(obj) {
+  const known = typeof mermaidKnown === "function" ? mermaidKnown(obj?.data?.mermaid || "", wbDiagramLook(obj)) : null;
+  return known?.svg ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(known.svg)}` : "";
+}
+
+function wbBuildDiagram(el, d) {
+  el.attr("role", "img").on("dblclick", (event) => {
+    event.stopPropagation();
+    if (!wbIsLocked("object", d)) wbOpenDiagramDialog(d);
+  });
+}
+
+//: Draws the source once per source and theme; a mistake shows the parser's
+//: one line in the box instead of a broken picture.
+function wbPaintDiagram(node, d) {
+  const source = d.data?.mermaid || "";
+  node.setAttribute("aria-label", `Mermaid ${wbMermaidKind(source) || ""} diagram`.replace("  ", " "));
+  ensureModule("mermaid").then(() => {
+    const key = `${source}\u0000${mermaidThemeNow(wbDiagramLook(d)).key}`;
+    if (node._wbDiagramKey === key) return;
+    node._wbDiagramKey = key;
+    mermaidRequest(source, wbDiagramLook(d)).then((result) => {
+      if (node._wbDiagramKey !== key) return;
+      const url = wbDiagramDataUrl(d);
+      const img = url ? Object.assign(document.createElement("img"), { src: url, alt: "", draggable: false }) : null;
+      const note = img ? null : Object.assign(document.createElement("div"), { className: "wb-diagram-note", textContent: result?.error || "This diagram could not be drawn." });
+      node.replaceChildren(img || note);
+    });
+  });
+}
+
+//: The box a drawing fits at its own shape: its longer side 480, neither
+//: under 40 (a wide flowchart drew as a strip inside a 320 by 220 box).
+async function wbDiagramSize(source) {
+  await ensureModule("mermaid");
+  const svg = (await mermaidRequest(source))?.svg || "";
+  const box = /viewBox="[-\d.]+ [-\d.]+ ([\d.]+) ([\d.]+)"/.exec(svg);
+  const ratio = box ? Number(box[1]) / Number(box[2]) || 1.45 : 1.45;
+  const w = ratio >= 1 ? 480 : Math.max(40, 480 * ratio);
+  return { width: Math.round(w), height: Math.round(Math.max(40, w / ratio)) };
+}
+
+async function wbInsertDiagram(source) {
+  const [cx, cy] = wbViewCentre();
+  const { width, height } = await wbDiagramSize(source);
+  const made = await wbCreateObject("diagram", { mermaid: source }, cx - width / 2, cy - height / 2, width, height);
+  if (!made) return null;
+  clearWbSelection();
+  wbHandleItemClick("object", made.id, { shiftKey: false });
+  wbAnnounce("Diagram added. Double-click it to change it.");
+  return made;
+}
+
+//: Insert opens it empty with a sample; double-click opens it on an item.
+function wbOpenDiagramDialog(d = null) {
+  const dialog = document.getElementById("wb-diagram-dialog");
+  const field = document.getElementById("wb-diagram-text");
+  if (!dialog || !field) return;
+  wbDiagramDialogState.target = d;
+  field.value = d?.data?.mermaid || WB_DIAGRAM_SAMPLE;
+  document.getElementById("wb-diagram-title").textContent = d ? "Edit diagram" : "Mermaid diagram";
+  document.getElementById("wb-diagram-save").textContent = d ? "Save" : "Add to board";
+  const shapes = document.getElementById("wb-diagram-shapes");
+  shapes.hidden = !d;
+  shapes.disabled = !wbMermaidKind(field.value);
+  wbDiagramPreview();
+  dialog.showModal();
+  field.focus();
+}
+
+function wbDiagramPreview() {
+  const source = document.getElementById("wb-diagram-text")?.value || "";
+  const well = document.getElementById("wb-diagram-preview");
+  if (!well) return;
+  const shown = { data: { ...(wbDiagramDialogState.target?.data || {}), mermaid: source } };
+  ensureModule("mermaid").then(() => mermaidRequest(source, wbDiagramLook(shown))).then((result) => {
+    if ((document.getElementById("wb-diagram-text")?.value || "") !== source) return;
+    const url = wbDiagramDataUrl(shown);
+    const img = url ? Object.assign(document.createElement("img"), { src: url, alt: "Preview of the diagram" }) : null;
+    well.replaceChildren(img || Object.assign(document.createElement("p"), { className: "muted", textContent: result?.error || "Nothing to draw yet." }));
+  });
+}
+
+async function wbSaveDiagramDialog() {
+  const dialog = document.getElementById("wb-diagram-dialog");
+  const source = (document.getElementById("wb-diagram-text")?.value || "").trim();
+  if (!source) {
+    toast("Write the diagram first, or Cancel.");
+    return;
+  }
+  dialog.close();
+  const d = wbDiagramDialogState.target;
+  if (!d) return wbInsertDiagram(source);
+  if (source === d.data?.mermaid) return;
+  wbPushUndo({ action: "move", kind: "object", id: d.id, before: WB_KIND_INFO.object.payload(d) });
+  //: The new drawing's own shape, about the box's centre.
+  const fit = await wbDiagramSize(source);
+  d.data = { ...d.data, mermaid: source };
+  Object.assign(d, { x: Math.round(d.x + (d.width - fit.width) / 2), y: Math.round(d.y + (d.height - fit.height) / 2) }, fit);
+  await wbSaveObject(d);
+  wbScheduleRender();
+  wbAnnounce("Diagram saved.");
+}
+
+//: Editable shapes where the diagram stood, as one Undo step.
+async function wbDiagramToShapes() {
+  const d = wbDiagramDialogState.target;
+  const source = document.getElementById("wb-diagram-text")?.value || "";
+  if (!d || !wbMermaidKind(source)) return;
+  document.getElementById("wb-diagram-dialog")?.close();
+  await wbRecordGesture(async () => {
+    const made = await wbImportMermaid(source, [d.x + d.width / 2, d.y + d.height / 2]);
+    if (made) await wbDeleteObject(d);
+  });
+}
+
+onDomReady(() => {
+  const field = document.getElementById("wb-diagram-text");
+  if (!field) return;
+  field.addEventListener("input", () => {
+    clearTimeout(wbDiagramDialogState.timer);
+    document.getElementById("wb-diagram-shapes").disabled = !wbMermaidKind(field.value);
+    wbDiagramDialogState.timer = setTimeout(wbDiagramPreview, 300);
+  });
+  document.getElementById("wb-diagram-save")?.addEventListener("click", wbSaveDiagramDialog);
+  document.getElementById("wb-diagram-shapes")?.addEventListener("click", wbDiagramToShapes);
+});

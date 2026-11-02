@@ -44,7 +44,7 @@ import requests
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 
-from tessellate.core import egress
+from tessellate.core import egress, update_verify
 from tessellate import __version__
 from tessellate.api.this_computer import this_computer_only
 
@@ -140,13 +140,19 @@ def _release_key(text: str) -> tuple:
 
 
 def _windows_asset(release: dict) -> dict | None:
-    for candidate in release.get("assets") or []:
+    assets = release.get("assets") or []
+    for candidate in assets:
         name = str(candidate.get("name") or "")
         if name.startswith(ASSET_PREFIX) and name.endswith(ASSET_SUFFIX):
+            #: The digest GitHub lists for the asset and the detached signature
+            #: asset beside it, both from this same answer (`update_verify`).
+            signature = next((a for a in assets if a.get("name") == name + ".sig"), None)
             return {
                 "name": name,
                 "download_url": candidate.get("browser_download_url"),
                 "size": candidate.get("size"),
+                "digest": candidate.get("digest"),
+                "signature_url": signature.get("browser_download_url") if signature else None,
             }
     return None
 
@@ -205,27 +211,9 @@ def current() -> dict:
 MAX_DOWNLOAD_REDIRECTS = 5
 
 
-@egress.labelled(lambda url, *a, **k: f"Downloading an update: {egress.short(url.rsplit('/', 1)[-1])}")
-def _download(url: str, dest: Path) -> None:
-    """Streamed, with progress on `_state`, the installer is well over a
-    typical extras wheel, so a caller polling for "still alive" needs an
-    actual number moving, not a static "downloading…" for however long a
-    slow connection takes.
-
-    `requests.get(..., allow_redirects=True)` (the default) only checks the
-    *first* URL: `_run_apply` validates that one against
-    `ALLOWED_DOWNLOAD_HOSTS` before this function ever runs, but every hop
-    after that used to be followed unchecked. GitHub's own release flow
-    always redirects at least once (github.com to
-    objects.githubusercontent.com, the reason both hosts are on the
-    allowlist), so this is not a theoretical gap: `allow_redirects=False`
-    below, with each `Location` re-validated by hand before it is ever
-    fetched, keeps that real redirect working while refusing to follow one
-    off the allowlist. Chosen over "follow redirects and check
-    `response.url` afterwards" because by the time a response has a final
-    `url`, `requests` has already connected to every host on the way there;
-    checking first means a disallowed host is never contacted at all.
-    """
+def _open(url: str):
+    """The response for `url`, each redirect hop checked against the allowlist
+    before it is contacted (see `_download` for why by hand)."""
     current_url = url
     response = None
     for _ in range(MAX_DOWNLOAD_REDIRECTS):
@@ -249,6 +237,46 @@ def _download(url: str, dest: Path) -> None:
     else:
         raise ValueError("too many redirects")
     response.raise_for_status()
+    return response
+
+
+def _fetch_signature(url: str | None) -> bytes | None:
+    """The detached signature (a few dozen bytes), or None when the release has
+    none or it cannot be fetched: either way a pinned key refuses the update."""
+    if not url:
+        return None
+    try:
+        response = _open(url)
+        body = b"".join(response.iter_content(chunk_size=CHUNK_SIZE))
+        response.close()
+    except Exception:
+        logger.exception("update signature fetch failed")
+        return None
+    return body if len(body) <= 1024 else None
+
+
+@egress.labelled(lambda url, *a, **k: f"Downloading an update: {egress.short(url.rsplit('/', 1)[-1])}")
+def _download(url: str, dest: Path) -> None:
+    """Streamed, with progress on `_state`, the installer is well over a
+    typical extras wheel, so a caller polling for "still alive" needs an
+    actual number moving, not a static "downloading…" for however long a
+    slow connection takes.
+
+    `requests.get(..., allow_redirects=True)` (the default) only checks the
+    *first* URL: `_run_apply` validates that one against
+    `ALLOWED_DOWNLOAD_HOSTS` before this function ever runs, but every hop
+    after that used to be followed unchecked. GitHub's own release flow
+    always redirects at least once (github.com to
+    objects.githubusercontent.com, the reason both hosts are on the
+    allowlist), so this is not a theoretical gap: `allow_redirects=False`
+    below, with each `Location` re-validated by hand before it is ever
+    fetched, keeps that real redirect working while refusing to follow one
+    off the allowlist. Chosen over "follow redirects and check
+    `response.url` afterwards" because by the time a response has a final
+    `url`, `requests` has already connected to every host on the way there;
+    checking first means a disallowed host is never contacted at all.
+    """
+    response = _open(url)
     _state.total_bytes = int(response.headers.get("Content-Length") or 0)
     written = 0
     with open(dest, "wb") as f:
@@ -276,7 +304,27 @@ def _download(url: str, dest: Path) -> None:
         raise OSError("download truncated")
 
 
-def _run_apply(download_url: str, asset_name: str) -> None:
+def _verified(installer_path: Path, asset: dict) -> bool:
+    """Check the download before it can run (`update_verify`). A refusal is on
+    `_state` as a sentence, the file is deleted, and nothing is started."""
+    _state.step = "Checking the update…"
+    try:
+        signature = _fetch_signature(asset.get("signature_url")) if update_verify.PUBLIC_KEYS else None
+        reason = update_verify.refusal(installer_path, digest=asset.get("digest"), signature=signature)
+    except Exception:
+        logger.exception("update verification failed")
+        reason = update_verify.UNCHECKABLE
+    if reason is None:
+        return True
+    installer_path.unlink(missing_ok=True)
+    _state.outcome = "failed"
+    _state.error = reason
+    _state.step = reason
+    _state.running = False
+    return False
+
+
+def _run_apply(download_url: str, asset_name: str, asset: dict | None = None) -> None:
     # Two distinct failure phases below, caught separately on purpose: a
     # download blocked by a firewall/proxy/antivirus and an installer
     # execution blocked by antivirus/SmartScreen *after* a good download
@@ -321,14 +369,17 @@ def _run_apply(download_url: str, asset_name: str) -> None:
         logger.exception("update download failed")
         _state.outcome = "failed"
         if not _state.error:
-            _state.error = "Download failed: see Settings → Logs for details."
+            _state.error = "Download failed: see Settings, Logs for details."
         _state.step = (
             "Couldn't download the update, this can happen if a firewall, "
             "proxy, or antivirus is blocking the download, or if you're "
-            "offline. Check your connection and try again from Settings → "
+            "offline. Check your connection and try again from Settings, "
             "About."
         )
         _state.running = False
+        return
+
+    if not _verified(installer_path, asset or {}):
         return
 
     try:
@@ -370,7 +421,7 @@ def _run_apply(download_url: str, asset_name: str) -> None:
         _state.outcome = "failed"
         # Not str(exc): a WinError from Popen/the filesystem can carry a
         # real local path. See the download except block's own comment.
-        _state.error = "Couldn't start the installer, see Settings → Logs for details."
+        _state.error = "Couldn't start the installer, see Settings, Logs for details."
         _state.step = (
             "The downloaded update was blocked from running, this is "
             "usually antivirus or Windows SmartScreen quarantining a new "
@@ -381,8 +432,8 @@ def _run_apply(download_url: str, asset_name: str) -> None:
     except Exception:
         logger.exception("update apply failed")
         _state.outcome = "failed"
-        _state.error = "Update failed: see Settings → Logs for details."
-        _state.step = "Couldn't apply the update, see Settings → Logs for why."
+        _state.error = "Update failed: see Settings, Logs for details."
+        _state.step = "Couldn't apply the update, see Settings, Logs for why."
     finally:
         _state.running = False
 
@@ -391,16 +442,16 @@ def record_update_choice(config, check: bool) -> None:  # noqa: ANN001  # a Conf
     """The answer to "check for updates automatically?", asked once (the
     owner, 2026-10-05, WORLD_CLASS_PLAN 12 "Decisions made").
 
-    Yes turns the in-app check on everywhere. In a source checkout the
-    launcher's pull *is* its check, so yes turns that on too; the packaged
-    app keeps installing behind its own switch, because "tell me a version
-    exists" and "run an installer by itself" are different sizes of
-    consequence (core/config.py). No turns both off. Either way the question
-    is not asked again; Settings, About holds both switches.
+    Yes turns the in-app check on, which shows the update bar when a version
+    exists. It never turns on the launcher's pull on start (INBOX 1440:
+    nothing installs without a press), so "tell me" and "change my code by
+    itself" stay different sizes of consequence (core/config.py). No turns
+    both off. Either way the question is not asked again; Settings, About
+    holds the switches.
     """
     config.set_preference("update_check_enabled", bool(check))
-    if not check or not getattr(sys, "frozen", False):
-        config.set_preference("auto_update_enabled", bool(check))
+    if not check:
+        config.set_preference("auto_update_enabled", False)
     config.set_preference("update_choice_made", True)
 
 
@@ -722,16 +773,12 @@ def apply_update(tag: str | None = None) -> dict:
     if not config.get_preference("update_check_enabled", False):
         raise HTTPException(
             status_code=403,
-            detail="Turn on 'Check GitHub for a newer version' in Settings → "
+            detail="Turn on 'Check GitHub for a newer version' in Settings, "
             "About first: this needs to know a release actually exists.",
         )
-    if not config.get_preference("auto_update_enabled", False):
-        raise HTTPException(
-            status_code=403,
-            detail="Automatic updates are turned off in Settings → About. "
-            "Turn on 'Update automatically' first, or download the "
-            "installer from the release page instead.",
-        )
+    # No `auto_update_enabled` guard (INBOX 1440): this request is the press on
+    # the update bar's or Settings' Update button, the consent itself. That
+    # switch now only decides whether a launcher copy pulls code on start.
     if not _can_auto_apply():
         raise HTTPException(
             status_code=409,
@@ -791,7 +838,7 @@ def apply_update(tag: str | None = None) -> dict:
         _state.done_bytes = 0
         _state.total_bytes = 0
     threading.Thread(
-        target=_run_apply, args=(download_url, asset["name"]), daemon=True, name="update-apply"
+        target=_run_apply, args=(download_url, asset["name"], asset), daemon=True, name="update-apply"
     ).start()
     threading.Thread(
         target=_exit_once_launched, args=(watched, attempt), daemon=True, name="update-exit-watch"

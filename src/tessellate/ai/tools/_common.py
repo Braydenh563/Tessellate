@@ -413,7 +413,7 @@ def _refresh_embedding(session: Session, entry: Entry) -> None:
     """Content changed → the old vector is stale. Best effort, exactly
     like the entries routes: a failed embed never fails the change, 
     but it does get logged, so a backend that has stopped working is
-    visible in Settings → Logs instead of silently degrading search."""
+    visible in Settings, Logs instead of silently degrading search."""
     try:
         session.execute(
             EmbeddingRecord.__table__.delete().where(

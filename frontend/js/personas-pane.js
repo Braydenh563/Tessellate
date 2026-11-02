@@ -1,5 +1,11 @@
 // personas-pane.js: Settings, Personas (the built-in and custom persona list with inline edit), moved out of sheets-selects.js on 2026-10-12 for the boot gzip budget. Drawn when the pane opens and awaited or ignored by every caller: `LAZY_ENTRY_POINTS.personasPane` (app.js) stands in. `personaEditing`, `builtinPersonas` and `personaNamesNow` stay in sheets-selects.js.
 
+//: The names the pickers offer, from what is already in memory.
+function personaNamesNow() {
+  const custom = ((prefsCache && prefsCache.personas) || []).map((p) => p.name);
+  return [...new Set([...Object.keys(builtinPersonas()), ...custom])];
+}
+
 async function savePersonaList(personas) {
   await apiJson("/preferences", {
     method: "PUT",
@@ -118,7 +124,7 @@ async function renderPersonas() {
             //: beside the box instead of a raw 422 from a save that has
             //: already closed the editor.
             if (thinkingWords.length && (thinkingWords.length < 8 || thinkingWords.length > 40)) {
-              wordsStatus.textContent = `${thinkingWords.length} words: use 8 to 40, or leave it empty for the default list.`;
+              wordsStatus.textContent = `${nounCount(thinkingWords.length, "word")}: use 8 to 40, or leave it empty for the default list.`;
               return;
             }
             const tooLong = thinkingWords.find((w) => w.length > 40);

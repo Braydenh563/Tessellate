@@ -28,6 +28,7 @@ from datetime import date, datetime, time
 from pathlib import Path
 
 from tessellate.ai import arithmetic, recognise, study, utilities
+from tessellate.core import cjk
 from tessellate.ai import composer_compose as compose
 from tessellate.ai.composer_study import Ctx, Reply, topic_notes
 
@@ -220,7 +221,7 @@ def _countdown(text: str, today: date, mood: compose.Mood) -> Reply | None:
         return None
     key = "today" if target == today else "until" if target > today else "until_past"
     words = _countdown_words(today, target, unit)
-    line = compose.say(key, mood, when=_long(target), words=words)
+    line = compose.frame(key, mood, when=_long(target), words=words)
     return _computed(line, f"the days from today to {found.group('d').strip()}")
 
 
@@ -234,7 +235,7 @@ def _since(text: str, today: date, mood: compose.Mood) -> Reply | None:
         return None
     target = date.fromordinal(today.toordinal() - ago)
     words = _countdown_words(today, target, unit)
-    line = compose.say("since", mood, when=_long(target), words=words)
+    line = compose.frame("since", mood, when=_long(target), words=words)
     return _computed(line, f"the days from {phrase} to today")
 
 
@@ -252,8 +253,8 @@ def _pasted_count(text: str, mood: compose.Mood) -> Reply | None:
     body = ((quoted.group(1) or quoted.group(2)) if quoted else "") or ""
     if not body.strip():
         return None
-    words = len(body.split())
-    return _computed(compose.say("count_text", mood, words=f"{words} word{'s' if words != 1 else ''}", chars=f"{len(body)} characters",
+    words = cjk.word_count(body)
+    return _computed(compose.frame("count_text", mood, words=f"{words} word{'s' if words != 1 else ''}", chars=f"{len(body)} characters",
                                  read=utilities.reading_time(words) or "a few seconds"), "the text you gave")
 
 
@@ -269,7 +270,7 @@ def _note_count(ctx: Ctx, topic: str) -> Reply | None:
     words = counted["words"]
     read = f", {'' if counted['read'].startswith('under') else 'a '}{counted['read']}" if counted["read"] else ""
     detail = f"{counted['chars']} characters and about {sents} sentence{'s' if sents != 1 else ''}{read}"
-    return Reply(compose.say("count_note", ctx.mood, link=f"[**{study.title_of(body)}**](#/notes/{notes[0]['id']})",
+    return Reply(compose.frame("count_note", ctx.mood, link=f"[**{study.title_of(body)}**](#/notes/{notes[0]['id']})",
                              words=f"{words} word{'s' if words != 1 else ''}", detail=detail))
 
 

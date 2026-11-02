@@ -4,6 +4,7 @@
   "tools": {
     "find_contradictions": "where do my notes contradict each other",
     "audit_link_reasons": "audit the vague link reasons in my graph",
+    "check_learned": "check what you learned about me against my notes",
     "save_user_preference": "remember that I prefer short answers",
     "ask_user": "ask me which one I meant before you choose",
     "search_notes": "what did I write about the boiler",
@@ -83,6 +84,7 @@
     "new_note": "note: buy milk and eggs",
     "meeting": "start a meeting",
     "pin": "pin the dentist note",
+    "complete": "tick off read chapter 5",
     "unpin": "unpin the dentist note",
     "link": "link the gym note to the running note",
     "unlink": "unlink the gym note from the running note",
@@ -92,6 +94,8 @@
     "find": "find my note about the passport",
     "open": "open the note about the boiler",
     "navigate": "open settings",
-    "summarise": "summarise my gym notes"
+    "summarise": "summarise my gym notes",
+    "cancel": "cancel the dentist task",
+    "snooze": "snooze the dentist task until Friday"
   }
 }

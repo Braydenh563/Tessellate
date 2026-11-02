@@ -22,17 +22,16 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Response
 from pydantic import BaseModel, Field
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.api import routes_entries, routes_reminders
 from tessellate.api.schemas import EntryCreate, EntryOut, EntryUpdate
 from tessellate.core import activity, deps
-from tessellate.core.database import Reminder, utcnow
+from tessellate.core.database import utcnow
+from tessellate.repo import reminders as reminder_repo
 from tessellate.core.deps import get_session
 from tessellate.entry import manager
 from tessellate.entry import meetings as shape
-from tessellate.entry.manager import log_action
 
 router = APIRouter(tags=["meetings"])
 
@@ -78,12 +77,10 @@ def _meeting_entry(session: Session, entry_id: int):  # noqa: ANN202
     return entry
 
 
-def _reminders_for(session: Session, entry_id: int) -> dict[str, Reminder]:
+def _reminders_for(session: Session, entry_id: int) -> dict:
     """The note's reminders by their text, so an item already turned into
     one says so instead of offering to make a second."""
-    rows = session.scalars(
-        select(Reminder).where(Reminder.entry_id == entry_id, Reminder.deleted_at.is_(None))
-    )
+    rows = reminder_repo.on_note(session, entry_id)
     return {(r.text or "").strip().lower(): r for r in rows}
 
 
@@ -157,10 +154,7 @@ def remind_action(entry_id: int, body: RemindBody, session: Session = Depends(ge
         due = due.replace(tzinfo=zone)
     due = due.astimezone(timezone.utc)
     routes_reminders._reject_if_in_the_past(due)
-    reminder = Reminder(text=text, due_at=due, entry_id=entry.id, priority="normal")
-    session.add(reminder)
-    session.flush()
-    log_action(session, "created", "reminder", reminder.id, text[:80])
+    reminder = reminder_repo.create(session, text=text, due_at=due, entry_id=entry.id, priority="normal")
     session.commit()
     return routes_reminders._to_out(session, reminder)
 

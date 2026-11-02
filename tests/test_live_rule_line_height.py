@@ -8,11 +8,13 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from tests._app_js import documents_text  # noqa: E402
+
 DOCS = Path(__file__).resolve().parents[1] / "frontend" / "js" / "documents.js"
 
 
 def test_the_live_rule_keeps_a_full_line_height() -> None:
-    js = DOCS.read_text(encoding="utf-8")
+    js = documents_text()
     rule = re.search(r'"\.cm-md-rule": \{(.*?)\n      \},', js, re.S)
     assert rule, ".cm-md-rule moved"
     body = rule.group(1)

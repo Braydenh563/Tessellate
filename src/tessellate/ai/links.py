@@ -16,7 +16,7 @@ import logging
 from sqlalchemy import select
 
 from tessellate.ai import librarian, model_manager, ollama_client
-from tessellate.core.database import Entry, EntryLink
+from tessellate.core.database import Entry, EntryLink, plain_reason
 from tessellate.entry import manager
 
 logger = logging.getLogger("tessellate.ai.links")
@@ -89,7 +89,7 @@ def _is_vague_reason(reason: str) -> bool:
 def _clean_reason(raw: str) -> str:
     """A model's reply, trimmed to something safe to store: no wrapping
     quotes, no trailing punctuation, capped at `MAX_REASON_CHARS`."""
-    reason = raw.strip().strip("\"'“”‘’").strip()
+    reason = (plain_reason(raw.strip()) or "").strip("\"'“”‘’").strip()
     reason = reason.rstrip(" .,;:!-")
     return reason[:MAX_REASON_CHARS].strip()
 

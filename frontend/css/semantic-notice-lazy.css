@@ -1,0 +1,10 @@
+/* The one question that stays up until it is answered (search by meaning,
+   semantic-notice.js) is small on a phone: at the body size it stood 178px
+   tall over the Ask box's own button at 390x667 and 360x640 (audit 1028 S26).
+   Lazy with semantic-notice.js, which alone draws it. */
+@media (max-width: 599.98px) {
+  .toast.semantic-install-toast {
+    --toast-line: 1.25rem;
+    font-size: var(--text-sm);
+  }
+}

@@ -102,6 +102,7 @@ async function dashRenderBoards(body) {
   for (const board of ranked.slice(1)) {
     dashActionRow(ul, {
       title: board.title,
+      obj: `${board.type === "map" ? "map" : "board"}:${board.id}`,
       // `mapCountLabel` (note-cards.js) rather than three lines here. The three lines
       // it replaces called a map's objects "images", which is the wrong noun
       // for the only thing on a map, the Library card had already been fixed

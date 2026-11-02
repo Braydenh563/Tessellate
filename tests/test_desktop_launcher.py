@@ -590,6 +590,7 @@ def test_tray_has_no_hide_console_item_without_a_real_console(monkeypatch, tmp_p
         "View Logs",
         None,  # separator
         "Hide to tray",
+        "Show desktop companion",  # BACKLOG 16: the Settings switch, from the tray
         "Restart",
         "Quit",
     ]

@@ -74,6 +74,9 @@ function closeActionMenus() {
     //: can continue from.
     const held = menu.contains(document.activeElement);
     menu.classList.add("hidden");
+    //: A menu closed inside a nested level opens at its top rows next time.
+    menu.classList.remove("menu-nested");
+    for (const open of menu.querySelectorAll(".menu-group-open")) open.classList.remove("menu-group-open");
     restoreEscapedMenuAfterExit(menu);
     // `menu._escapedOpener` (set by wireEscapedActionMenu) wins when
     // present: a menu reparented to <body> has no useful `.parentElement`
@@ -256,16 +259,24 @@ document.addEventListener("click", (event) => {
   }
 });
 document.addEventListener("keydown", (event) => {
-  if (event.key !== "Escape") return;
+  if (event.key !== "Escape" || !openHelpPopovers.size) return;
   //: Marked so a handler further down this same press can tell it was spent
   //: closing a popover (the Graph's full-screen exit: one Escape closes the
   //: '?' and the map stays full screen, as the hand-wired Graph help did).
-  if (openHelpPopovers.size) event.helpPopoverSpent = true;
+  event.helpPopoverSpent = true;
   //: A "?" open inside a modal takes this Escape for itself: without the
   //: default, the press also asked the dialog to close, and the Quick note
   //: went with its help (INBOX 667). The next Escape closes the dialog.
   if ([...openHelpPopovers].some((entry) => entry.panel.closest("dialog[open]"))) event.preventDefault();
+  //: **This press is the popover's alone, in every dialog** (dashcls-1031:
+  //: Escape in Settings' '?' closed the whole Settings). The overlays close on
+  //: their own document listeners, loaded after this one, and only some read
+  //: `helpPopoverSpent`; stopping the press here is the one place that covers
+  //: them all. Focus goes back to the '?' so the next Escape has a home.
+  event.stopImmediatePropagation();
+  const opener = [...openHelpPopovers].pop()?.trigger;
   closeHelpPopovers();
+  if (opener?.isConnected) opener.focus({ preventScroll: true });
 });
 window.addEventListener("resize", () => {
   for (const entry of openHelpPopovers) placeHelpPopover(entry.panel, entry.trigger);
@@ -1337,9 +1348,10 @@ function wireMenuKeyboard(menu, opener) {
 function buildMenuItemButton(item) {
   const button = document.createElement("button");
   button.setAttribute("role", "menuitem");
-  button.className = "menu-item" + (item.danger ? " menu-danger" : "");
+  button.className = "menu-item" + (item.danger ? " menu-danger" : "") + (item.disabled ? " menu-item-unavailable" : "");
   setLabel(button, item.label);
   if (item.title) button.title = item.title;
+  if (item.disabled) button.setAttribute("aria-disabled", "true");
   button.addEventListener("click", () => {
     closeActionMenus();
     item.run();
@@ -1356,14 +1368,16 @@ function buildMenuItemButton(item) {
 // `buildMenuGroupButton`'s own note).
 let openGroupSubmenu = null;
 
-// A grouped trigger ("AI AI actions ›") that opens a side flyout of its own
-// items: asked for directly, to cut a 15-item flat list down to something
-// scannable. Hover opens it on a device that has hover; click/tap opens it
-// everywhere, which is the only way in on a touchscreen. Below
-// `--menu-submenu-stack-width` (phone-width) there is nowhere for a flyout
-// to go without running off-screen, so it drops the side-popup positioning
-// entirely and expands in place instead, an accordion, not a flyout, which
-// is what "compatible with small screens like iPhones" actually means here.
+//: Where a flyout has nowhere to go: a narrow window or a touch screen, which
+//: has no hover (the same query as 02-chat-graph.css's submenu rules). The
+//: group then opens as a level of its own in the same menu, with a back row.
+const SUBMENU_STACK = "(max-width: 819.98px), (hover: none)";
+
+// A grouped trigger ("AI actions ›") that opens a side flyout of its own items,
+// to cut a 15-item flat list down to something scannable. Hover (150 ms), a
+// click, Right arrow or Enter opens it; Left arrow or Escape closes it back to
+// the row. Where `SUBMENU_STACK` matches it is a nested level instead (the
+// group's rows replace the menu's, under a back row).
 function buildMenuGroupButton(label, subItems) {
   let openedByHoverAt = 0;
   const groupWrap = document.createElement("div");
@@ -1375,9 +1389,7 @@ function buildMenuGroupButton(label, subItems) {
   trigger.setAttribute("aria-expanded", "false");
   trigger.className = "menu-item has-submenu";
   const labelSpan = document.createElement("span");
-  // setLabel, not textContent: these three group triggers ("AI actions",
-  // "Connect", "Add") were the one label sink the sweep missed, so the note
-  // kebab menu rendered the literal text "ph:sparkle AI actions".
+  // setLabel, not textContent: a label carries its icon as "ph:name text".
   setLabel(labelSpan, label);
   labelSpan.className = "menu-item-words";
   const arrow = document.createElement("span");
@@ -1389,35 +1401,16 @@ function buildMenuGroupButton(label, subItems) {
   const submenu = document.createElement("div");
   submenu.className = "action-menu submenu hidden";
   submenu.setAttribute("role", "menu");
-  //: **An entry may be a button that already exists**, not only a descriptor
-  //: to build one from. The document editor's ⋯ is static markup whose rows
-  //: carry ids that `documents.js` binds handlers to (`doc-export-md` and
-  //: four more), so folding them into a group has to *move* those buttons
-  //: rather than rebuild them: a rebuilt row is a row with no handler and an
-  //: id that two lints watch. Everything else about the group is identical,
-  //: which is the point of reusing this recipe rather than writing a second
-  //: flyout for one menu.
+  submenu.setAttribute("aria-label", label.replace(/^ph:\S+ /, ""));
+  //: An entry may be a button that already exists: the document editor's ⋯
+  //: rows carry ids `documents.js` binds, so a group *moves* them, never rebuilds.
   for (const item of subItems) {
     submenu.appendChild(item instanceof HTMLElement ? item : buildMenuItemButton(item));
   }
 
-  // **Reparented to `<body>` while open, like `escapeMenuIfClipped` does for
-  // the top-level kebab.** Reported: a submenu opened from a kebab near the
-  // bottom or right of the viewport (a note card low in the list, or the
-  // last card in a row) drew past the window edge with nothing but a
-  // scrollbar to show for it. `.action-menu.submenu` was `position:
-  // absolute` against its own `.menu-group`, which only ever checked the
-  // *horizontal* edge (`submenu-left`, below); there was no vertical check
-  // at all, and once the parent kebab is itself escaped (also `position:
-  // fixed`, also reparented to `<body>`) the submenu's containing block
-  // moves with it, so a flyout that fit its note card could still miss the
-  // actual browser window. Reusing `.action-menu-escaped` (`position:
-  // fixed`, the same z-index tier) plus this menu's own placement, computed
-  // from the trigger's rect and clamped on both axes, fixes both at once:
-  // this is why `openSubmenu`/`closeSubmenuState` below write the same
-  // `_escapedHome`/`_escapedOpener` fields `restoreEscapedMenu` already
-  // knows how to put back, rather than inventing a second bookkeeping
-  // scheme `closeActionMenus`' own document-wide sweep would not see.
+  //: A flyout (not a nested level) is reparented to `<body>` while open, like
+  //: `escapeMenuIfClipped`, and clamped on both axes from the trigger's rect;
+  //: `restoreEscapedMenu` puts it back.
   const placeSubmenu = () => {
     const margin = 8;
     const anchor = trigger.getBoundingClientRect();
@@ -1441,18 +1434,34 @@ function buildMenuGroupButton(label, subItems) {
     submenu.classList.toggle("submenu-left", onLeft);
   };
 
+  const stacked = () => window.matchMedia(SUBMENU_STACK).matches;
+  //: A nested level: the menu shows only this group, under a back row built
+  //: on the first open (CSS hides the menu's other rows and the trigger).
+  const backRow = () => {
+    if (submenu.querySelector(":scope > .menu-back")) return;
+    const back = document.createElement("button");
+    back.className = "menu-item menu-back";
+    back.setAttribute("role", "menuitem");
+    setLabel(back, `ph:caret-left ${label.replace(/^ph:\S+ /, "")}`);
+    back.addEventListener("click", (event) => {
+      event.stopPropagation();
+      closeSubmenu();
+      trigger.focus();
+    });
+    submenu.prepend(back);
+  };
   const openSubmenu = () => {
-    // Only one flyout open at a time, at this level or any sibling group;
-    // a DOM search under `groupWrap.parentElement` cannot find a sibling's
-    // flyout once it may live at `<body>`, so this is tracked directly.
+    // One flyout at a time; tracked directly, as a sibling's may live at `<body>`.
     if (openGroupSubmenu && openGroupSubmenu !== submenu) closeSubmenuState(openGroupSubmenu);
     submenu.classList.remove("hidden");
     trigger.setAttribute("aria-expanded", "true");
     submenu.classList.remove("submenu-left");
-    // Below phone-width the flyout positioning is dropped for an in-place
-    // accordion (CSS media query); escaping it there would strand it at a
-    // fixed viewport position while its own trigger scrolls underneath.
-    if (window.innerWidth > 720) {
+    if (stacked()) {
+      backRow();
+      groupWrap.classList.add("menu-group-open");
+      groupWrap.closest(".action-menu")?.classList.add("menu-nested");
+      submenu.firstElementChild.focus();
+    } else {
       submenu._escapedHome = { parent: submenu.parentElement, next: submenu.nextSibling };
       submenu._escapedOpener = trigger;
       document.body.appendChild(submenu);
@@ -1467,6 +1476,10 @@ function buildMenuGroupButton(label, subItems) {
     restoreEscapedMenu(target);
     target.style.marginLeft = "";
     target.classList.remove("submenu-left");
+    const wrap = target.closest(".menu-group-open");
+    wrap?.classList.remove("menu-group-open");
+    wrap?.closest(".action-menu")?.classList.remove("menu-nested");
+    wrap?.firstElementChild.setAttribute("aria-expanded", "false");
     if (openGroupSubmenu === target) openGroupSubmenu = null;
   }
   const closeSubmenu = () => closeSubmenuState(submenu);
@@ -1474,30 +1487,27 @@ function buildMenuGroupButton(label, subItems) {
   let hoverTimer = null;
   groupWrap.addEventListener("mouseenter", () => {
     clearTimeout(hoverTimer);
+    if (stacked()) return;
     hoverTimer = setTimeout(() => {
       openSubmenu();
       openedByHoverAt = Date.now();
-    }, 120); // brief delay: a mouse crossing the item isn't a request to open it
+    }, 150); // brief delay: a mouse crossing the item isn't a request to open it
   });
   groupWrap.addEventListener("mouseleave", () => {
     clearTimeout(hoverTimer);
+    if (stacked()) return;
     hoverTimer = setTimeout(closeSubmenu, 200); // outlives the diagonal move from the trigger into the flyout
   });
-  // Once escaped, the submenu is a sibling of `groupWrap` at `<body>`, not
-  // its descendant, so `groupWrap`'s own `mouseleave` above fires the
-  // instant the pointer crosses onto the (still open) flyout: measured
-  // live, the submenu closed under the cursor before a hovering mouse user
-  // could ever reach a second-level item. These two mirror the pair above
-  // so hovering the flyout itself also keeps it open.
+  // Escaped to `<body>`, the flyout is no longer inside `groupWrap`, whose
+  // `mouseleave` would close it under the cursor: these two keep it open.
   submenu.addEventListener("mouseenter", () => clearTimeout(hoverTimer));
   submenu.addEventListener("mouseleave", () => {
+    if (stacked()) return;
     hoverTimer = setTimeout(closeSubmenu, 200);
   });
   trigger.addEventListener("click", (event) => {
     event.stopPropagation();
-    //: A click that lands just after the hover opened the flyout is the same
-    //: request, not a second one: toggling there closed what the person had
-    //: just reached for (measured on the map node menu).
+    //: A click just after the hover opened it is the same request, not a toggle.
     if (submenu.classList.contains("hidden")) openSubmenu();
     else if (Date.now() - openedByHoverAt > 600) closeSubmenu();
   });
@@ -1521,7 +1531,7 @@ function buildMenuGroupButton(label, subItems) {
     if (event.key === "ArrowRight" || event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       openSubmenu();
-      submenu.querySelector('[role="menuitem"]')?.focus();
+      submenu.querySelector('[role="menuitem"]:not(.menu-back)')?.focus();
     }
   });
 
@@ -1551,18 +1561,18 @@ function entryOverflowMenu(entry) {
   //: within the box. The icon font's own glyph is drawn to fill its box, so
   //: using the same icon as the other builder fixes the centring and the
   //: drift in one go.
-  const opener = smallButton("ph:dots-three", "More actions", () => {
+  const opener = smallButton("ph:dots-three", "More actions", async () => {
+    //: Built now, and given the card rows (Copy, Move, Add to tray) as `kebabMenu` gives them.
+    filled ||= ensureModule("entryMenu").then((ok) => ok && (fillEntryMenu(menu, entry), true));
+    if (!(await filled)) return ((filled = null), lazyLoadFailed());
+    window.objKebabRows?.(menu);
     // The phone's action sheet, as `kebabMenu` opens (`openKebabSheet`).
     if (window.matchMedia(PHONE_ACTION_SHEET).matches) {
-      fillMenu();
       openKebabSheet(menu, opener, "Note actions");
       return;
     }
-    const willOpen = menu.classList.contains("hidden");
-    if (willOpen) {
-      fillMenu();
-      openActionMenu(menu, opener);
-    } else closeActionMenus();
+    if (menu.classList.contains("hidden")) openActionMenu(menu, opener);
+    else closeActionMenus();
   });
   opener.classList.add("icon-only");
   opener.setAttribute("aria-haspopup", "menu");
@@ -1572,377 +1582,9 @@ function entryOverflowMenu(entry) {
   // nodes and `entryItem()` builds one per note card, on every renderEntries()
   // (every search keystroke, sort, filter and save); a 2,500-note notebook built
   // over a hundred thousand hidden nodes nobody opens. The opener renders eagerly
-  // (it carries the aria state and a tab stop); only the contents are deferred,
-  // and `openActionMenu` runs after `fillMenu()` so it finds a first item.
-  let filled = false;
-  function fillMenu() {
-    if (filled) return;
-    filled = true;
-    // Kept flat: the three actions used often enough, or serious enough (a
-    // delete), that burying them a level down would cost more than the
-    // grouping below saves. Everything else groups into three side flyouts, 
-    // asked for directly, to cut what had grown into a 15-item flat list.
-    const topLevel = [
-      // Direct instruction: a way into multi-select from the row itself,
-      // not only the toolbar's own "Select" button: which is real and
-      // already works, but requires knowing it exists and is above the
-      // list rather than on the note someone actually wants to start
-      // selecting from. Reuses that exact same mode (`enterSelectMode`,
-      // `selectedIds`) rather than inventing a second one, and seeds it
-      // with this note already checked, so choosing "Select" here is a
-      // head start rather than an empty selection identical to the
-      // toolbar button's own.
-      {
-        label: "ph:check-square Select",
-        title: "Start selecting multiple notes, beginning with this one",
-        run: () => {
-          enterSelectMode();
-          selectedIds.add(entry.id);
-          updateBatchCount();
-          renderEntries();
-        },
-      },
-      //: The one correction a notebook that files for you is asked for most
-      //: (INBOX 432); the card's category chip opens the same sheet.
-      {
-        label: "ph:folder-open Move to category",
-        title: `Now in ${entry.category || "Uncategorised"}; choose another`,
-        run: () => chooseNoteCategory([entry.id], entry.category),
-      },
-      {
-        label: entry.is_private ? "ph:lock-open Make readable" : "ph:lock Make private",
-        title: entry.is_private
-          ? "Decrypt this note so search and Atlas can use it again"
-          : "Encrypt this note at rest, and keep it out of search and Atlas",
-        run: () => toggleEntryPrivacy(entry),
-      },
-      {
-        // Sits above History because it is the more common question by far:
-        // "what else is this about?" is asked of a note every time it is
-        // read, and "what did it used to say?" only when something looks
-        // wrong.
-        label: "ph:graph Connections",
-        title: "Everything this note is joined to, links both ways, documents, boards and files",
-        // The note's own title when it wrote one, and its first words
-        // otherwise: `notePreviewText` alone hands back both lines of a
-        // titled note ("Probe A\nrelates to sourdough"), which reads as
-        // two sentences jammed together on one line of the dialog.
-        run: () =>
-          lazyScript("/js/connections.js").then(() => openConnections(
-            "entries",
-            entry.id,
-            entry.title || noteNamePlain(entry.content, 80)
-          )),
-      },
-      {
-        label: "ph:clock-counter-clockwise History",
-        title: "See earlier versions of this note, and put one back",
-        run: () => openEntryHistory(entry),
-      },
-      // BACKLOG.md §95 item D.14: "Full export exists. There is no way to
-      // hand one note to someone." Same route shape and same "download,
-      // not navigate" pattern the Documents kebab's own "Download .md"
-      // already uses (library.js).
-      {
-        label: "ph:download-simple Download .md",
-        title: "Save a copy of this note as a markdown file",
-        run: () => downloadFromApi(`/entries/${entry.id}/export.md`, "note.md"),
-      },
-    ];
-
-    //: With no model the app does these itself and the menu says so (O7;
-    //: BACKLOG "The composer does Improve writing and Generate title").
-    const off = aiIsOff();
-    const aiItems = [
-      {
-        //: **Named for what it does, not for what it is called internally**
-        //: (INBOX 292, the owner: "i feel like it is more than just
-        //: re-evaluating, and it is hidden away"). The route re-files the
-        //: note, refreshing its confidence and its category unless the person
-        //: filed it themselves, *and* suggests tags and links for them to
-        //: apply. "Re-evaluate" named the smallest part of that, and tags,
-        //: the part it is actually reached for, were not in the name at all.
-        label: off ? "ph:tag Tag and file" : "ph:sparkle Tag and file with Atlas",
-        title: "Atlas re-reads the note, suggests tags and links, and may refile it",
-        run: () => reevaluateEntry(entry),
-      },
-      {
-        label: off ? "ph:text-aa Proofread" : "ph:sparkle Improve writing",
-        title: off ? "Spelling and capitals put right with no model; rewording needs one" : "Proofread or rewrite this note with AI",
-        run: async () => {
-          if (!(await openNoteEditor(entry.id))) return;
-          // The edit textarea now exists, improve it in place.
-          const box = document.querySelector(`#entry-list li[data-id="${entry.id}"] textarea`);
-          if (box) openImprove(box);
-        },
-      },
-      {
-        // Recognising a title the note already wrote (a leading `# Heading`)
-        // is free; writing one costs a real model call, so it's this
-        // separate, on-request action rather than something automatic.
-        label: off ? "ph:text-h Title from its words" : entry.title ? "ph:sparkle Regenerate title" : "ph:sparkle Generate title",
-        title: off ? "A title taken from the note's first sentence, with no model" : "Write a short title for this note with AI",
-        run: () => generateEntryTitle(entry),
-      },
-      ...(entry.title
-        ? [
-            {
-              label: "ph:x Remove title",
-              title: "Take the title back out, the note's text is unchanged",
-              run: () => removeEntryTitle(entry),
-            },
-          ]
-        : []),
-    ];
-
-    const connectItems = [
-      {
-        label: "ph:file-text Add to a document",
-        title: "Attach this note to a document you have already started",
-        run: () => {
-          inlineAction = inlineActionIs(entry.id, "document")
-            ? null
-            : { id: entry.id, kind: "document" };
-          renderEntries();
-        },
-      },
-      {
-        //: INBOX 246's first sentence. Next to "Add to a document" because
-        //: it is the same act on the other kind of surface, and the note
-        //: stays exactly where it is either way.
-        label: "ph:squares-four Add to a board or map",
-        title: "Put this note on a whiteboard or a mind map",
-        run: () => {
-          inlineAction = inlineActionIs(entry.id, "board")
-            ? null
-            : { id: entry.id, kind: "board" };
-          renderEntries();
-        },
-      },
-      {
-        label: "ph:file-text Expand into a document",
-        title: "Start a document from this note, the note stays where it is",
-        run: () => expandNoteIntoDocument(entry),
-      },
-      { label: "ph:link Link to another", run: () => beginOrCompleteLink(entry) },
-      //: A meeting's sheet (INBOX 644): its action items, decisions,
-      //: Summarise and Record into it. The meeting chip opens the same.
-      ...(noteIsMeeting(entry)
-        ? [{ label: "ph:users-three Meeting", run: () => openMeetingSheet(entry.id) }]
-        : []),
-      //: KG4: the note's properties and type, as a table.
-      {
-        label: "ph:list-bullets Properties",
-        title: "Fields at the top of this note (status, due, a type's fields), kept in its text",
-        run: () => openNotePropertiesSheet(entry),
-      },
-      //: The way to point at this note from another one, ready to paste
-      //: (INBOX 432: there was no copy link at all). Its name as `[[` finds
-      //: it, the title or the first words.
-      {
-        label: "ph:brackets-square Copy wiki link",
-        title: "Copy a [[wiki link]] to this note, to paste into another note or document",
-        run: async () => {
-          const name = noteNamePlain(entry.title || entry.content).slice(0, 80).trim();
-          if (await copyToClipboard(`[[${name}]]`)) toast("Link copied. Paste it into any note.");
-        },
-      },
-      appLinkMenuItem("note", entry.id),
-      { label: "ph:approximate-equals Similar notes", run: () => toggleRelated(entry) },
-      {
-        label: "ph:arrow-u-up-left Referenced by",
-        title: "Documents, notes, boards and maps that point at this note",
-        run: () => toggleReferences(entry),
-      },
-      {
-        label: "ph:hourglass-medium Forgotten notes like this",
-        title: "Notes you have not looked at in a long time that are close to this one",
-        run: () => toggleFaded(entry),
-      },
-      //: **The note's two other homes, one press away** (INBOX 393: "there
-      //: needs to be more integration between all the main features"). The
-      //: menu could put a note on a board, in a document and in a reminder,
-      //: and could not take it to the graph that draws it or to the chat that
-      //: answers about it.
-      {
-        label: "ph:graph Show in graph",
-        title: "Open the graph centred on this note, its links lit",
-        run: () => showNoteInGraph(entry.id),
-      },
-      {
-        label: "ph:chat-circle Ask Atlas about this note",
-        title: "Start a chat about this note and what it connects to",
-        run: () => askAtlasAboutNote(entry),
-      },
-      {
-        label: "ph:translate Translate",
-        title: "Open this note in the Writing room, set to translate",
-        run: () => translateNoteInDesk(entry),
-      },
-    ];
-
-    const addItems = [
-      {
-        label: "ph:copy Duplicate",
-        title: "Make a copy of this note, opens ready to edit",
-        run: async () => {
-          closeActionMenus();
-          try {
-            const copy = await apiJson("/entries", {
-              method: "POST",
-              body: JSON.stringify({
-                //: The copy's title is its first "# " line: the API takes no
-                //: `title`, so the "(Copy)" this sent was dropped and the two
-                //: notes were indistinguishable (INBOX 432).
-                content: /^#\s+\S/.test(entry.content || "")
-                  ? entry.content.replace(/^#\s+[^\n]*/, (line) => `${line.trimEnd()} (copy)`)
-                  : entry.content,
-                category: entry.category,
-                tags: entry.tags || [],
-              }),
-            });
-            await loadEntries();
-            pushEntryCreateUndo(copy, "Duplicated a note");
-            // Open the new note in edit mode straight away.
-            if (copy && copy.id) {
-              flashEntry(copy.id);
-              await openNoteEditor(copy.id);
-            }
-            toast("Note duplicated.");
-          } catch (err) {
-            toast(err.message || "Couldn't duplicate note.", true);
-          }
-        },
-      },
-      //: OPEN row 566: the note's headings and lists as a mind map, the same
-      //: build as the agent's `map_from_note`, so no model is needed.
-      ...(entry.is_private ? [] : [{
-        label: "ph:tree-structure Make a mind map",
-        title: "A mind map of this note: its title in the centre, its headings and lists as branches",
-        run: async () => {
-          try {
-            const board = await apiJson(`/whiteboard/maps/from-note/${entry.id}`, { method: "POST" });
-            pushBinPairUndo("Made a mind map from a note", `/entries/${board.id}`, `/entries/${board.id}/restore`, true, () => refreshEntries([board.id]));
-            await openWhiteboardBoard(board.id);
-          } catch (err) {
-            toast(err.message || "Couldn't make a mind map of this note.", true);
-          }
-        },
-      }]),
-      //: Section 17 row 1: settle a filing from the note itself.
-      ...(entryNeedsReview(entry)
-        ? [{
-          label: "ph:check-circle Accept the filing",
-          title: `Keep it in ${entry.category}; it leaves the review queue`,
-          run: async () => {
-            const accepted = await apiJson(`/review-queue/${entry.id}/accept`, { method: "POST" }).catch((e) => toast(e.message, true));
-            if (accepted !== undefined) {
-              const settle = (value) => async () => {
-                await apiJson(`/entries/${entry.id}/filing`, { method: "POST", body: JSON.stringify({ accepted: value }) });
-                await refreshEntries([entry.id]);
-              };
-              pushUndo(`Kept a note in ${entry.category}`, settle(false), settle(true));
-            }
-            await refreshEntries([entry.id]);
-            toast(`Kept in ${entry.category}.`);
-          },
-        }]
-        : []),
-      //: Section 17 row 6: the note read aloud, then what it links to and why.
-      { label: "ph:speaker-high Explain this note", title: "Read it aloud, then what it links to and why", run: () => explainNote(entry) },
-      {
-        label: "ph:plus Add context",
-        title: "Append detail: Atlas may refile it",
-        run: () => {
-          inlineAction = inlineActionIs(entry.id, "context") ? null : { id: entry.id, kind: "context" };
-          renderEntries();
-        },
-      },
-      {
-        label: "ph:arrow-bend-down-right Continue thought",
-        title: "Start or extend a thread from this note",
-        run: () => {
-          inlineAction = inlineActionIs(entry.id, "continue") ? null : { id: entry.id, kind: "continue" };
-          renderEntries();
-        },
-      },
-      {
-        label: "ph:alarm Remind me",
-        run: () => {
-          inlineAction = inlineActionIs(entry.id, "remind") ? null : { id: entry.id, kind: "remind" };
-          renderEntries();
-        },
-      },
-      { label: "ph:paperclip Attach a file", run: () => attachFileTo(entry) },
-      { label: "ph:images-square Attach from Library", run: () => attachFromLibrary(entry) },
-    ];
-
-    // Not destructive, so not grouped with "danger" below: but visually
-    // adjacent to it (asked for directly: a way to keep a note but get it
-    // out of the way, distinct from binning it) so the two "get this off my
-    // list" actions sit together rather than one being buried in a group.
-    const archive = entry.archived_at
-      ? {
-          label: "ph:arrow-u-up-left Unarchive",
-          title: "Bring this note back into your notebook",
-          run: async () => {
-            await apiJson(`/entries/${entry.id}/unarchive`, { method: "POST" });
-            pushRoutePairUndo("Unarchived a note", [`/entries/${entry.id}/archive`, "POST"], [`/entries/${entry.id}/unarchive`, "POST"], () => refreshEntries([entry.id]));
-            await refreshEntries([entry.id]);
-            toast("Unarchived.");
-          },
-        }
-      : {
-          label: "ph:archive Archive",
-          title: "Keep it, but out of the way, not the bin",
-          //: Undoable like Move to bin beside it (INBOX 432), and it says
-          //: where the note went, since nothing in the Notes tab shows it.
-          run: async () => {
-            const archive = async () => {
-              await apiJson(`/entries/${entry.id}/archive`, { method: "POST" });
-              await refreshEntries([entry.id]);
-            };
-            const unarchive = async () => {
-              await apiJson(`/entries/${entry.id}/unarchive`, { method: "POST" });
-              await refreshEntries([entry.id]);
-            };
-            await archive();
-            const action = pushUndo("Archived a note", unarchive, archive);
-            toastAction("Archived. Find it in Library, Archived.", "Undo", async () => {
-              settleUndoFromToast(action);
-              await unarchive();
-            });
-          },
-        };
-
-    const danger = {
-      label: "ph:trash Move to bin",
-      danger: true,
-      run: () => binNoteWithUndo(entry),
-    };
-
-    //: Three groups, broken by the same hairline `kebabMenu` draws for a
-    //: grouped menu (DESIGN.md: past five rows a menu is grouped): what you
-    //: do to this note, the three families that open further, and the two
-    //: that put it away. Ten rows read as one list before this (menus.js).
-    const rule = () => {
-      const sep = document.createElement("div");
-      sep.className = "menu-sep";
-      sep.setAttribute("role", "separator");
-      return sep;
-    };
-    for (const item of topLevel) menu.appendChild(buildMenuItemButton(item));
-    menu.appendChild(rule());
-    //: A private note never goes to a model: the server refuses retitling
-    //: and re-filing one, so the menu does not offer what would only toast
-    //: a refusal (sweep 1004).
-    if (!entry.is_private) menu.appendChild(buildMenuGroupButton("ph:sparkle AI actions", aiItems));
-    menu.appendChild(buildMenuGroupButton("ph:link Connect", connectItems));
-    menu.appendChild(buildMenuGroupButton("ph:plus Add", addItems));
-    menu.appendChild(rule());
-    menu.appendChild(buildMenuItemButton(archive));
-    menu.appendChild(buildMenuItemButton(danger));
-  }
+  // (it carries the aria state and a tab stop); the rows are `fillEntryMenu`
+  // (entry-menu.js, lazy), awaited by the opener so `openActionMenu` finds a first item.
+  let filled = null;
 
   wireMenuKeyboard(menu, opener);
 

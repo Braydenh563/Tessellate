@@ -7,6 +7,7 @@ Chromium (numbers in the commit).
 from __future__ import annotations
 
 from pathlib import Path
+from tests._app_js import with_pieces
 
 JS = Path(__file__).resolve().parent.parent / "frontend" / "js"
 
@@ -52,7 +53,7 @@ def test_create_with_an_empty_title_is_answered_and_the_h1_is_not_doubled():
     # document began with a "# Title" line under its own title field.
     app = (JS / "app.js").read_text()
     assert app.count("input.reportValidity() && close(input.value.trim())") == 2
-    assert "required = true" in (JS / "capture-ask.js").read_text()
+    assert "required = true" in with_pieces("capture-ask.js")
     for name in ("capture-ask.js", "editor.js"):
         assert "content: `# ${" not in (JS / name).read_text().split("apiJson(\"/documents\"")[1][:200]
     assert "A blank line is inside nothing" in (JS / "documents.js").read_text()
@@ -67,7 +68,9 @@ def test_a_leading_hash_is_not_part_of_a_tag():
 
 def test_chat_with_no_model_does_not_name_one_or_send_you_to_notes_ask():
     # 17: "Inherited: llama3.2 (not connected)" and "Try in Notes, Ask:".
-    assert '"No model connected"' in (JS / "ai-tools.js").read_text()
+    # The label moved to "Default (off)" with audit 1030 Y18 (the banner beside
+    # it says no model is connected); still no model named.
+    assert '"Default (off)"' in (JS / "ai-tools.js").read_text()
     assert "(not connected)`" not in (JS / "ai-tools.js").read_text()
     assert '"Try in Ask:"' in (JS / "sheets-selects.js").read_text()
 
@@ -92,7 +95,7 @@ def test_a_formatting_toolbar_is_one_tab_stop():
 
 def test_note_cards_show_list_markers_as_bullets_not_dashes():
     # 9: "- item" lines showed as raw text in the notes list.
-    assert '"$1•"' in (JS / "note-cards.js").read_text()
+    assert '"$1•"' in ((JS / "note-cards.js").read_text() + (JS / "entry-card.js").read_text())
 
 
 def test_the_toolbar_arrow_keys_are_written_down_in_help_and_both_shortcut_lists():

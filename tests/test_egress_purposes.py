@@ -91,7 +91,9 @@ def test_the_outbound_call_sites_name_their_purpose():
 
     for func in (
         websearch.search_web,
-        websearch.fetch_readable,
+        #: The label moved with the request itself, out of fetch_readable into
+        #: the helper it calls (audit 1030 A2 split fetch_readable).
+        websearch._fetch_page,
         webclip.fetch_page,
         routes_update._download,
         routes_update.check_for_update,

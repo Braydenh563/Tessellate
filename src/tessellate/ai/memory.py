@@ -25,6 +25,7 @@ import logging
 from sqlalchemy.orm import Session
 
 from tessellate.ai import librarian
+from tessellate.core import private_turn
 
 #: How much of the memory stream may ride along with the persona.
 #:
@@ -39,6 +40,12 @@ from tessellate.ai import librarian
 #: Newest wins when the budget is spent, a preference stated last month is
 #: likelier to be current than one stated at setup.
 MEMORY_STREAM_BUDGET_CHARS = 600
+
+#: The longest single preference, by hand or by the model. One number for the
+#: Settings field's `maxlength`, the route's body, the tool and the copy
+#: (audit 1031 HR13: the field said 200 while a hand-written route took 2,000);
+#: `tests/test_validation_copy.py` holds the field to it.
+MAX_PREFERENCE_CHARS = 200
 
 
 def persona_with_memory(session: Session, persona_prompt: str | None) -> str:
@@ -56,6 +63,9 @@ def persona_with_memory(session: Session, persona_prompt: str | None) -> str:
     the user their preferences on that turn, never the turn itself.
     """
     base = (persona_prompt or librarian.DEFAULT_PERSONA).strip()
+    if private_turn.active():
+        #: A private chat reads nothing it was taught (INBOX 1481).
+        return base
     try:
         from sqlalchemy import select
 

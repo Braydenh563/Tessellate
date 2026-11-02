@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tessellate companion</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <!-- The desktop companion's window (BACKLOG 16, INBOX 1464; core/desk_companion.py):
+       a frameless pywebview window at the screen's corner, shown while the app
+       window is in the tray. A page of its own, not a boot asset: it loads the
+       app's companion drawing (avatars.js, atlas*.js) as they are, with
+       desk-env.js standing in for the few app globals they read, and signs in
+       with the app's own token like capture.html. No inline script. -->
+  <script src="/js/theme-boot.js?v=0.6.2"></script>
+  <link rel="stylesheet" href="/vendor/phosphor/style.css">
+  <link rel="stylesheet" href="/css/00-tokens-shell.css?v=0.6.2">
+  <link rel="stylesheet" href="/css/01-forms-settings.css?v=0.6.2">
+  <link rel="stylesheet" href="/css/02-chat-graph.css?v=0.6.2">
+  <link rel="stylesheet" href="/css/03-dashboard-widgets.css?v=0.6.2">
+  <link rel="stylesheet" href="/css/04-chat-dock-appearance.css?v=0.6.2">
+  <link rel="stylesheet" href="/css/05-sidebars-themes.css?v=0.6.2">
+  <link rel="stylesheet" href="/css/06-timeline-dialogs.css?v=0.6.2">
+  <link rel="stylesheet" href="/css/07-whiteboard-misc.css?v=0.6.2">
+  <link rel="stylesheet" href="/css/08-consistency.css?v=0.6.2">
+  <link rel="stylesheet" href="/css/atlas-lazy.css?v=0.6.2">
+  <link rel="stylesheet" href="/css/desk-companion-lazy.css?v=0.6.2">
+</head>
+<body class="desk-page" data-state="rest" data-locked="1">
+  <main class="desk-root">
+    <section class="desk-panel hidden" id="desk-menu" role="menu" aria-label="Companion"></section>
+    <section class="desk-panel hidden" id="desk-note" role="dialog" aria-labelledby="desk-note-title">
+      <header class="desk-head">
+        <h1 id="desk-note-title" class="desk-title">Quick note</h1>
+        <button type="button" class="icon-only ghost small desk-close" data-desk-close aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
+      </header>
+      <label class="visually-hidden" for="desk-note-text">Your note</label>
+      <textarea id="desk-note-text" rows="5" maxlength="4000" placeholder="A thought, a link, a reminder"></textarea>
+      <p id="desk-note-status" class="status" role="status" aria-live="polite">Enter saves it, Shift+Enter starts a new line.</p>
+      <div class="row gap desk-actions">
+        <button id="desk-note-save" type="button">Save</button>
+      </div>
+    </section>
+    <section class="desk-panel hidden" id="desk-search" role="dialog" aria-labelledby="desk-search-title">
+      <header class="desk-head">
+        <h1 id="desk-search-title" class="desk-title">Quick search</h1>
+        <button type="button" class="icon-only ghost small desk-close" data-desk-close aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
+      </header>
+      <label class="visually-hidden" for="desk-search-text">Search your notes</label>
+      <input id="desk-search-text" type="search" maxlength="200" autocomplete="off" placeholder="Search your notes">
+      <p id="desk-search-status" class="status" role="status" aria-live="polite"></p>
+      <ul id="desk-search-hits" class="desk-hits"></ul>
+    </section>
+    <button type="button" class="desk-pet" id="desk-pet" aria-haspopup="menu" aria-expanded="false" aria-label="Your companion. Click for the menu, right-click for settings, drag to move it.">
+      <span class="desk-figure" id="desk-figure"></span>
+    </button>
+  </main>
+  <script src="/js/prefs.js?v=0.6.2"></script>
+  <script src="/js/desk-env.js?v=0.6.2"></script>
+  <script src="/js/avatars.js?v=0.6.2"></script>
+  <script src="/js/atlas.js?v=0.6.2"></script>
+  <script src="/js/atlas-motion.js?v=0.6.2"></script>
+  <script src="/js/atlas-life.js?v=0.6.2"></script>
+  <script src="/js/standalone-undo.js?v=0.6.2"></script>
+  <script src="/js/desk-companion.js?v=0.6.2"></script>
+</body>
+</html>

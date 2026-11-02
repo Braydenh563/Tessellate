@@ -81,7 +81,7 @@ def test_a_failure_is_a_plain_sentence_with_the_next_step(name):
         f"{name}: No note with id 4242",
         f"{name}: note_id must be a whole number, like 12",
         f"{name}: {{'board_id': 3}} is not a board",
-        f"The '{name}' tool is turned off in Settings → Tools it can use",
+        f"The '{name}' tool is turned off in Settings, Tools it can use",
     ):
         text = tool_say.say(name, {"error": error}, {})["text"]
         _house_style(text, f"{name}: {error}")
@@ -137,7 +137,7 @@ FAMILIES = {
     "find": {"search_notes", "list_notes", "find_similar_notes", "related_notes", "search_whiteboard", "search_files", "search_chat_history", "web_search", "path_between"},
     "counts": {"count_notes", "list_tags", "list_categories", "list_documents", "list_skills", "list_reminders", "list_library", "notebook_overview", "notebook_structure", "summarize_notes"},
     "read": {"get_note", "get_document", "read_file", "read_url", "read_text", "read_whiteboard", "read_mindmap", "search_help", "get_current_time", "calculate", "check_answer", "find_contradictions"},
-    "notes": {"create_note", "edit_note", "delete_note", "restore_note", "pin_note", "tag_note", "link_notes", "unlink_notes", "audit_link_reasons", "move_notes"},
+    "notes": {"create_note", "edit_note", "delete_note", "restore_note", "pin_note", "tag_note", "link_notes", "unlink_notes", "audit_link_reasons", "check_learned", "move_notes"},
     "filing": {"create_category", "rename_category", "delete_category", "merge_categories", "rename_tag", "delete_tag"},
     "documents": {"create_document", "delete_document"},
     "boards": {"add_board_shape", "add_whiteboard_card", "add_whiteboard_link", "delete_board_item", "edit_board_item", "move_board_item", "restore_board_item", "place_library_item", "generate_diagram", "create_mindmap", "map_from_note", "add_map_node", "link_map_nodes"},

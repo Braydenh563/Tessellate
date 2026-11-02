@@ -6,18 +6,20 @@ Split out of `routes_settings.py`'s "backups" section
 
 from __future__ import annotations
 
+import contextlib
 import os
 import shutil
 import tempfile
+from collections.abc import Iterator
 from pathlib import Path
 
-from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from tessellate.api import routes_auth
-from tessellate.core import backup, backup_bundle, deps, diskspace, extras, jobruns
+from tessellate.core import backup, backup_bundle, deps, diskspace, extras, jobruns, jobs
 from tessellate.core.deps import get_session
 from tessellate.entry import manager
 from tessellate.api.this_computer import this_computer_only
@@ -151,28 +153,58 @@ def set_retention(body: RetentionBody) -> dict:
     return {"keep": body.keep, "removed": removed}
 
 
+#: How long a restore waits for a running background job to finish.
+RESTORE_JOB_WAIT_SECONDS = 20.0
+
+
+@contextlib.contextmanager
+def _jobs_held(request: Request) -> Iterator[None]:
+    """The database file is swapped with no background job running (audit
+    1028 K19: a filing or embedding job still writing went to the old file,
+    or failed on the disposed engine) and no request holding a session (audit
+    1031 BK5). Jobs queued meanwhile run on the restored notebook, requests
+    that arrive meanwhile wait. One still running after the wait refuses the
+    restore, and the live notebook is untouched."""
+    with jobs.pool().held(deadline=RESTORE_JOB_WAIT_SECONDS) as idle:
+        if not idle:
+            raise HTTPException(
+                status_code=409,
+                detail="A background job is still running. Stop it in Tasks, or try again when it ends.",
+            )
+        #: Then the requests in flight (audit 1031 BK5): new ones wait at
+        #: `get_session`, and the file is swapped once the running ones are done.
+        with deps.drained(deadline=RESTORE_JOB_WAIT_SECONDS, own=request) as quiet:
+            if not quiet:
+                raise HTTPException(
+                    status_code=409,
+                    detail="Another request is still running. Try the restore again in a moment.",
+                )
+            yield
+
+
 class RestoreBody(BaseModel):
     name: str = Field(min_length=1, max_length=120)
 
 
 @router.post("/backups/restore", dependencies=[Depends(this_computer_only)])
-def restore_backup(body: RestoreBody) -> dict:
+def restore_backup(body: RestoreBody, request: Request) -> dict:
     """Swap the live database for a backup. A safety snapshot of the
     current state is taken first, so a restore is itself undoable."""
     config = deps.get_config()
-    # Every connection must be closed while the file is replaced.
-    deps.get_db().engine.dispose()
-    try:
-        backup.restore_backup(body.name, config.db_path, config.data_dir, _retention(config))
-    except FileNotFoundError as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
-    except ValueError as exc:
-        # A backup that is damaged or empty: the live database was not touched
-        # (restore_backup checks a temp copy first), and the sentence is the
-        # one that function wrote for the person.
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
-    finally:
-        deps.reload_db()
+    with _jobs_held(request):
+        # Every connection must be closed while the file is replaced.
+        deps.get_db().engine.dispose()
+        try:
+            backup.restore_backup(body.name, config.db_path, config.data_dir, _retention(config))
+        except FileNotFoundError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        except ValueError as exc:
+            # A backup that is damaged or empty: the live database was not touched
+            # (restore_backup checks a temp copy first), and the sentence is the
+            # one that function wrote for the person.
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        finally:
+            deps.reload_db()
     session = deps.get_db().session()
     try:
         manager.log_action(session, "restored", "data", detail=body.name)
@@ -186,7 +218,9 @@ def restore_backup(body: RestoreBody) -> dict:
     return {"restored": body.name, "signed_out": True}
 
 
-@router.delete("/backups/{name}")
+#: `:path`, so a name with a slash reaches the handler and is "not found" as on
+#: every other spelling, not a 405 from no route (audit 1031 BK9).
+@router.delete("/backups/{name:path}")
 def delete_backup(name: str) -> dict:
     # Only a file inside backups/ dies; a name that reaches outside is "not found".
     path = backup.backup_path(name, deps.get_config().data_dir)
@@ -257,7 +291,7 @@ def export_bundle(body: BundleBody, background_tasks: BackgroundTasks, session: 
 
 
 @router.post("/backups/bundle/restore", dependencies=[Depends(this_computer_only)])
-def restore_bundle(file: UploadFile = File(...), password: str = Form(default="")) -> dict:
+def restore_bundle(request: Request, file: UploadFile = File(...), password: str = Form(default="")) -> dict:
     """Replace the notebook with the one in an uploaded full backup, a zip or
     a `.mmenc` with its password. Everything is checked before the live
     notebook is touched; a safety snapshot is taken first, so this is itself
@@ -280,12 +314,13 @@ def restore_bundle(file: UploadFile = File(...), password: str = Form(default=""
                 archive = Path(zip_path)
             else:
                 archive = Path(upload_path)
-            # Every connection must be closed while the file is replaced.
-            deps.get_db().engine.dispose()
-            try:
-                result = backup_bundle.restore_zip(archive, config.db_path, config.data_dir, _retention(config))
-            finally:
-                deps.reload_db()
+            with _jobs_held(request):
+                # Every connection must be closed while the file is replaced.
+                deps.get_db().engine.dispose()
+                try:
+                    result = backup_bundle.restore_zip(archive, config.db_path, config.data_dir, _retention(config))
+                finally:
+                    deps.reload_db()
         except (backup_bundle.BundleError, ValueError) as exc:
             # BundleError is ValueError: the sentence is the one the module
             # wrote for the person, and the live notebook was not touched.

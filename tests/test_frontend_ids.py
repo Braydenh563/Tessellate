@@ -276,12 +276,6 @@ def test_every_appearance_setting_has_a_default():
 #: summarises when it can and files the note either way, so neither is gated;
 #: nor is Improve, which proofreads with no model (O7) and says rewording needs one.
 MODEL_GATED_CONTROLS = {
-    # The desk streams its draft, so the gate is the streaming route.
-    "draft-compose": "/drafts/compose/stream",
-    # The same pass with an instruction in hand, and the same route, so it is
-    # gated by the same rule: a Refine that looks available with no model
-    # would fail only once it had been pressed.
-    "draft-refine": "/drafts/compose/stream",
     "doc-ai": "/documents/<id>/ai-edit",
     "doc-ai-run": "/documents/<id>/ai-edit",
     # Its instruction field, gated with it (DOCUMENTS decision 10, 2026-10-11).
@@ -329,6 +323,12 @@ WORKS_WITHOUT_A_MODEL = {
     "extract-commit": "/entries/extract/commit",
     "doc-extract": "/entries/extract/preview",
     "wb-extract-notes": "/entries/extract/preview",
+    # INBOX 1466 (CHAT_PLAN decision 75): with no model the desk's passes are
+    # composed by rule (`ai/composer_write.py`, `composer_mermaid.py`), and a
+    # pass that needs a model (Carry on, Translate) says so in the status line,
+    # so Draft and Refine moved here from the gated list.
+    "draft-compose": "/drafts/compose/stream",
+    "draft-refine": "/drafts/compose/stream",
 }
 
 

@@ -58,6 +58,11 @@ def fence(kind: str, text: str) -> str:
     return f"{OPEN} {kind}>>>\n{_defang(str(text))}\n{CLOSE}"
 
 
+def inline(kind: str, text: str) -> str:
+    """`fence` on one line, for a quoted excerpt inside a sentence or a list."""
+    return f"{OPEN} {kind}>>>{_defang(str(text))}{CLOSE}"
+
+
 def unfence(text: str) -> str:
     """The text inside a fence (for tests and for anything that shows a
     fenced value back to a person)."""

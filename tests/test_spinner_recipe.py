@@ -187,15 +187,12 @@ def test_the_ring_is_one_rule_with_one_stroke_one_colour_one_speed() -> None:
 def test_reduced_motion_pulses_the_ring_and_progress_motion_always_still_turns_it() -> None:
     raw = "\n".join(p.read_text(encoding="utf-8") for p in CSS_FILES)
     css = _strip_css_comments(raw)
-    reduce_blocks = re.findall(r"@media \(prefers-reduced-motion: reduce\)\s*\{", css)
-    assert reduce_blocks
-    # The pulse is reachable from both reduced-motion gates the app has.
-    assert re.search(
-        r"@media \(prefers-reduced-motion: reduce\)\s*\{[^@]*?\.spinner\s*\{[^}]*spinner-pulse", css, re.S
-    ), "the OS setting gives the ring a pulse"
+    # One reduced-motion gate (INBOX 1506): the resolved `data-motion`, which
+    # the system's request, Motion Off and Performance mode all set.
+    assert "@media (prefers-reduced-motion" not in css
     assert re.search(
         r'\[data-motion="reduced"\][^{]*\.spinner\s*\{[^}]*spinner-pulse', css
-    ), "the app's own Reduce motion gives the ring a pulse too"
+    ), "reduced motion gives the ring a pulse"
     # And the owner's 'always' setting (progress motion) keeps it turning.
     assert re.search(
         r'\[data-progress-motion="always"\]\s*\.spinner\s*\{[^}]*spinner-turn', css
@@ -324,7 +321,8 @@ def test_in_progress_copy_uses_a_real_ellipsis_never_three_dots() -> None:
 #: statistics.js: the Statistics dialog's body (a div) while it counts.
 #: reply-kit.js: the answer panel's statistics grid while it loads (C06), a region, not a button.
 #: mermaid-draw.js marks a diagram's figure busy while it draws, a container like the others.
-CONTAINER_BUSY_FILES = {"app.js", "chat.js", "notes-list.js", "tour.js", "statistics.js", "reply-kit.js", "mermaid-draw.js"}
+#: graph-canvas.js: the map's count line (a status region) during a slow reload (audit 1029 G30).
+CONTAINER_BUSY_FILES = {"app.js", "chat.js", "notes-list.js", "tour.js", "statistics.js", "reply-kit.js", "mermaid-draw.js", "graph-canvas.js"}
 
 
 def test_a_button_is_marked_busy_only_through_setbusy() -> None:

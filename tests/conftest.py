@@ -16,7 +16,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from tessellate.ai import model_manager, spelling
-from tessellate.core import background, deps, extras, jobs, taskhistory, vault
+from tessellate.core import deps, extras, jobs, taskhistory, vault
 
 #: Loaded for what they register (the typed reader, the help topics), which a
 #: test that classifies a question without the chat route would otherwise miss.
@@ -124,7 +124,7 @@ def app_state(tmp_path, monkeypatch):
     # caption job after an attach) would otherwise rebuild the app state from
     # the repo's `data/` once it is reset.
     jobs.shutdown(2.0)
-    background.join_all()
+    jobs.join_threads()
     extras.reset_for_tests()
     vault.close()
     deps.reset_app_state()
@@ -346,6 +346,18 @@ def _forget_ollama_down():
     forget()
     yield
     forget()
+
+
+@pytest.fixture(autouse=True)
+def _forget_asked_image_readers():
+    """`media_process._ASKED` is per run; a test's upload ids and hashed file
+    names repeat in the next test's notebook (INBOX 1465)."""
+    module = sys.modules.get("tessellate.core.media_process")
+    if module is not None:
+        module._ASKED.clear()
+    yield
+    if module is not None:
+        module._ASKED.clear()
 
 
 @pytest.fixture(autouse=True)

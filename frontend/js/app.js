@@ -15,7 +15,7 @@
 
 // --- browser log capture (Wave A) -----------------------------------------------
 // Installed before anything else runs so no message is missed. Shown in
-// Settings → Logs alongside the server's records.
+// Settings, Logs alongside the server's records.
 
 const browserLogs = [];
 const MAX_BROWSER_LOGS = 500;
@@ -87,7 +87,7 @@ window.addEventListener("error", (e) =>
   ])
 );
 window.addEventListener("unhandledrejection", (e) =>
-  recordBrowserLog("ERROR", [
+  e.reason?.isStale || recordBrowserLog("ERROR", [
     "Unhandled promise rejection:",
     e.reason?.stack || String(e.reason),
   ])
@@ -163,7 +163,7 @@ let noteSort = "newest"; // newest | oldest | az | most-used (Wave J)
 let notesPageSize = localStorage.getItem("notes-page-size") || "all";
 let notesCurrentPage = 1;
 
-const $ = (id) => document.getElementById(id);
+const $ = (id) => document.getElementById(id) || settingsBodyFind(id);
 const show = (...ids) => ids.forEach((id) => $(id).classList.remove("hidden"));
 const hide = (...ids) => ids.forEach((id) => $(id).classList.add("hidden"));
 
@@ -397,8 +397,12 @@ const SPACE_ALL = "all";
 //: the first one is made at load, before spaces-find.js (a later classic
 //: script) has run ("activeSpaceId is not defined" on GET /health). prefs.js
 //: also loads after this file, so its absence reads as the default space.
+//: The space THIS window shows (`api.space`, read once from the pref, set by space-swap.js),
+//: not the pref itself: another window's switch writes the pref, and this window's open
+//: work must go on reaching its own space until it has heard and swapped (spaces-find.js).
 function activeSpaceId() {
-  return (typeof prefs !== "undefined" && prefs.get("spaceId", null)) || SPACE_ALL;
+  if (typeof prefs === "undefined") return SPACE_ALL;
+  return (api.space ??= prefs.get("spaceId", null) || SPACE_ALL);
 }
 
 async function api(path, options = {}) {
@@ -421,6 +425,8 @@ async function api(path, options = {}) {
   refuseStagedUrls(fetchOptions.body);
   // Any write invalidates the read cache above, see clearApiCache().
   if (!readOnly && fetchOptions.method && fetchOptions.method !== "GET") clearApiCache();
+  //: Which space switch this request started under (`api.epoch`, bumped by space-swap.js).
+  const sentAt = api.epoch;
   let timer = null;
   if (timeoutMs) {
     const controller = new AbortController();
@@ -482,6 +488,13 @@ async function api(path, options = {}) {
   //: server answered: the fastest sign it is back after being down, ahead of
   //: the retry poll's own backoff.
   noteServerUp();
+  //: **A read that started in the old space is dropped here, for every loader at once.**
+  //: Its rows are the old space's: applied after a switch they would sit in the new one's
+  //: lists. The error is quiet (`isStale`: no toast, no log line), and a write is never
+  //: refused, it happened.
+  if (sentAt !== api.epoch && (!fetchOptions.method || fetchOptions.method === "GET" || readOnly) && /json/.test(response.headers.get("content-type"))) {
+    throw Object.assign(new Error("Space changed."), { isStale: true });
+  }
   if (response.status === 401 && !ownsAuthErrors) {
     //: A silent read stays quiet, but a silent write (a setting changed after
     //: the server restarted) got "Locked" in a toast with no lock screen.
@@ -515,7 +528,7 @@ async function api(path, options = {}) {
       errMsg = `${errMsg} ${detail.hint}`;
     }
     if (!silent) {
-      // Log HTTP errors so they always appear in Settings → Logs for debugging.
+      // Log HTTP errors so they always appear in Settings, Logs for debugging.
       recordBrowserLog("ERROR", [
         `[HTTP ${response.status}] ${fetchOptions.method || 'GET'} ${path}: ${rawMsg}`
       ]);
@@ -524,6 +537,8 @@ async function api(path, options = {}) {
     //: caller that has something to do with a particular refusal (an edit
     //: conflict's 409 carries the text another window saved,
     //: `editConflictPrompt`) can read it rather than parse a message.
+    //: A space deleted in another window falls back to "All spaces" (1031 BK3).
+    if (detail.code === "unknown_space") setActiveSpace(SPACE_ALL);
     const error = new Error(errMsg);
     error.status = response.status;
     if (response.status < 500) toast.refused.add(errMsg);
@@ -549,6 +564,7 @@ async function api(path, options = {}) {
   return response;
 }
 api.retries = 0;
+api.epoch = 0;
 // F5 (tests/test_no_bare_fetch.py)
 api.upload = (path, body, options) => api(path, { method: "POST", body, ...options });
 api.stream = api;
@@ -602,27 +618,6 @@ async function apiPagedList(path, pageSize, options = {}) {
 //: not cost a poll.
 const JOB_STARTING_PATH =
   /^\/(entries|documents|media\/upload|media\/\d+\/|files\/\d+\/|conversations\/\d+\/messages|extras\/|models\/pull|search\/reindex|tasks\/trigger-autonomous)/;
-
-//: Debounced, because committing a note with four images is four writes and
-//: one job list. 600ms rather than immediately: the thread is started after
-//: the response is written, so a poll racing it by a millisecond sees the
-//: state from just before the job existed, the exact miss this fixes.
-let jobPollKick = null;
-function kickBackgroundTaskPoll() {
-  //: A write that starts a job is the clearest "something just changed"
-  //: there is, so the status poll's idle backoff (see `resetStatusCadence`)
-  //: starts again from 30s rather than the job's progress being reported on
-  //: a two-minute delay. Reached only from `api()` on a non-GET, which
-  //: cannot happen before this file has finished evaluating, so the `const`
-  //: that function reads is always past its temporal dead zone by then.
-  resetStatusCadence();
-  clearTimeout(jobPollKick);
-  jobPollKick = setTimeout(() => {
-    refreshBackgroundTasks().catch(() => {
-      // A poll is best-effort, it runs again on the status loop regardless.
-    });
-  }, 600);
-}
 
 // A short-lived cache for GET responses, opt-in per call.
 //
@@ -697,7 +692,7 @@ let autoSessionOffered = false;
 let lockedByHand = false;
 let vaultOpen = null;
 let autoSessionPending = null;
-//: The open prompt: `{ submit, resolve, returnFocus }`, or null.
+//: The open prompt: `{ submit, resolve }`, or null.
 let lockPrompt = null;
 
 //: Ask the server for a session without a password. One request at a time,
@@ -720,7 +715,7 @@ function startWithoutPassword() {
 
 function enterWithoutPassword(body) {
   localStorage.setItem("token", body.token);
-  vaultOpen = Boolean(body.vault_open);
+  vaultOpen = !!body.vault_open;
   lockedByHand = false;
   const opening = startApp();
   curtainShell(opening);
@@ -751,7 +746,6 @@ function settleLockPrompt(done) {
   if (overlay.dataset.mode === "prompt") {
     overlay.classList.add("hidden");
     overlay.dataset.mode = "unlock";
-    prompt.returnFocus?.focus?.();
   }
   prompt.resolve(done);
 }
@@ -765,7 +759,7 @@ function askPasswordPrompt({ title, message, submitLabel, submit }) {
   settleLockPrompt(false);
   const overlay = $("lock-overlay");
   return new Promise((resolve) => {
-    lockPrompt = { submit, resolve, returnFocus: document.activeElement };
+    lockPrompt = { submit, resolve };
     overlay.dataset.mode = "prompt";
     overlay.classList.add("lock-prompt");
     $("lock-title").textContent = title;
@@ -780,28 +774,8 @@ function askPasswordPrompt({ title, message, submitLabel, submit }) {
     $("lock-password").placeholder = "Password"; // a prompt never takes the PIN
     $("lock-password").autocomplete = "current-password";
     overlay.classList.remove("hidden");
-    $("lock-password").focus();
   });
 }
-
-//: Modal dialogs and popovers sit in the top layer, above the lock screen,
-//: and make it inert: a lock left them readable and the password field
-//: untypeable. They are put away while it shows and back, as they were,
-//: after it, so a half-written dialog loses nothing.
-let lockStash = [];
-new MutationObserver(() => {
-  if ($("lock-overlay").classList.contains("hidden")) {
-    for (const el of lockStash) {
-      try { if (el.isConnected) el.popover ? el.showPopover() : el.showModal(); } catch { /* reopened meanwhile */ }
-    }
-    lockStash = [];
-  } else {
-    for (const el of document.querySelectorAll("dialog:modal, :popover-open")) {
-      lockStash.push(el);
-      el.popover ? el.hidePopover() : el.close();
-    }
-  }
-}).observe($("lock-overlay"), { attributes: true, attributeFilter: ["class"] });
 
 function showLockScreen(setupMode) {
   settleLockPrompt(false);
@@ -817,7 +791,7 @@ function showLockScreen(setupMode) {
   //: `/auth/setup` derives an encryption key from this password on the spot.
   $("lock-message").textContent = setupMode
     ? "A notebook that runs on this machine. Your notes stay here, and nothing goes online unless you turn it on later."
-    : "Enter your password to unlock your notebook.";
+    : ""; // unlock wording is `lockFieldForPin`'s, below
   //: Four is the backend's own floor (`Field(min_length=4)`,
   //: routes_auth.py), quoted rather than restated so the two cannot drift.
   const note = $("lock-setup-note");
@@ -837,14 +811,13 @@ function showLockScreen(setupMode) {
   // saved password into a first-run "choose a new one" field.
   if (setupMode) $("lock-password").setAttribute("aria-label", "Choose a password");
   $("lock-password").autocomplete = setupMode ? "new-password" : "current-password";
-  $("lock-password").focus();
   if (!setupMode && autoSessionOffered && !lockedByHand) resumeWithoutPassword();
   //: A PIN set or forgotten since the last look (Settings, or five wrong
   //: tries) changes what the field asks for, so the lock asks again.
   if (!setupMode) {
-    apiJson("/auth/status", { silent: true })
+    apiJson("/auth/status", { silent: true, cacheMs: 3e3 })
       .then((status) => {
-        pinHere = Boolean(status?.pin_here);
+        pinHere = !!status?.pin_here;
         if ($("lock-overlay").dataset.mode === "unlock") lockFieldForPin(pinHere);
       })
       .catch(() => {});
@@ -888,8 +861,6 @@ const LOCK_PURGE_IDS = [
   "graph-svg", // node labels are note titles
   "palette-list", // whatever was last searched for
   "palette-preview", // and the note it was showing
-  "doc-live",
-  "doc-preview",
 ];
 
 //: Empty everything the lock screen is covering.
@@ -911,16 +882,15 @@ const LOCK_PURGE_IDS = [
 //: invisibly.
 function purgeLockedContent() {
   for (const id of LOCK_PURGE_IDS) {
-    const el = document.getElementById(id);
+    const el = $(id);
     if (el) el.replaceChildren();
   }
-  // A textarea's text lives in `.value`, which `replaceChildren` never
-  // touches: the document editor would otherwise keep the whole document
-  // readable behind the lock screen.
-  for (const id of ["doc-content", "doc-title", "entry-input", "chat-input"]) {
-    const field = document.getElementById(id);
-    if (field && "value" in field) field.value = "";
+  //: `data-holds-notebook` marks a panel of the notebook's words (1031 DC1).
+  for (const el of document.querySelectorAll("[data-holds-notebook]")) {
+    el.matches("input, textarea") ? (el.value = "") : el.replaceChildren();
   }
+  // `.value` survives `replaceChildren`, so the editor's text needs its own clear.
+  for (const id of ["doc-content", "doc-title"]) if ($(id)) $(id).value = "";
 }
 
 async function lockNow() {
@@ -950,11 +920,11 @@ async function lockNow() {
 //: for good (measured: still there, `display: none`, after every boot). Its
 //: own leaving class, and a timer behind the event.
 function hideBootSplash() {
-  const splash = document.getElementById("boot-splash");
+  const splash = $("boot-splash");
   if (!splash || splash.classList.contains("boot-splash-leaving")) return;
   // Snap the bar to 100% before the fade starts, so it never visibly
   // disappears mid-crawl: it always reads as "finished", never "cut off".
-  document.getElementById("boot-splash-progress-fill")?.classList.add("done");
+  $("boot-splash-progress-fill")?.classList.add("done");
   splash.classList.add("boot-splash-leaving");
   const gone = () => splash.remove();
   splash.addEventListener("transitionend", gone, { once: true });
@@ -965,7 +935,7 @@ function hideBootSplash() {
 async function initAuth() {
   // Bounded probe: if the server is unreachable or hangs, fail fast with a
   // clear message instead of an indefinite blank/"connecting" screen.
-  const status = await apiJson("/auth/status", { timeoutMs: 8000 }).catch(() => null);
+  const status = await apiJson("/auth/status", { timeoutMs: 8000, cacheMs: 3e3 }).catch(() => null);
   //: The splash goes now only where the app is not about to start under it:
   //: a start lifts it with the shell (`curtainShell`).
   if (!status || status.setup_required || (!status.auto_session && !authToken())) hideBootSplash();
@@ -979,10 +949,10 @@ async function initAuth() {
     return;
   }
   $("lock-btn").classList.remove("hidden");
-  pinHere = Boolean(status.pin_here);
+  pinHere = !!status.pin_here;
   // Sign-in off, on this computer: straight in, no lock screen. A token
   // still live is kept by the server; a stale one is replaced.
-  autoSessionOffered = Boolean(status.auto_session);
+  autoSessionOffered = !!status.auto_session;
   if (autoSessionOffered) {
     const started = await startWithoutPassword();
     if (started) {
@@ -1086,13 +1056,7 @@ function startApp() {
     
     // Always check battery efficient mode regardless of ui_state seeding
     const indicator = $("power-saver-indicator");
-    if (indicator) {
-      if (prefsCache && prefsCache.battery_efficient_mode) {
-        indicator.classList.remove("hidden");
-      } else {
-        indicator.classList.add("hidden");
-      }
-    }
+    indicator?.classList.toggle("hidden", !prefsCache?.battery_efficient_mode);
     // The bell's own icon reads the mute preference, re-render now that
     // prefsCache actually has it, rather than leaving the pre-load default
     // (unmuted) on screen until the notifications panel happens to be opened.
@@ -1140,8 +1104,8 @@ function startApp() {
   // After the templates, which is what fills `prefsCache`: run beside them it
   // read null and neither asked nor checked (found 2026-10-05, measured).
   templatesReady.then(() => step("check for an update", () => {
-    if (prefsCache && prefsCache.update_choice_made === false) return askUpdateChoiceOnce();
-    if (prefsCache && prefsCache.update_check_enabled) return checkForUpdate(true);
+    if (prefsCache?.update_choice_made === false) return askUpdateChoiceOnce();
+    if (prefsCache?.update_check_enabled) return checkForUpdate(true);
   }));
   // Independent of update_check_enabled above, this isn't a network
   // check, it's reporting a fact: start.sh/start.bat already git-pulled a
@@ -1196,7 +1160,14 @@ function startApp() {
 // The per-tab data loads switchTab performs, without the tab-switching itself.
 // Kept beside switchTab's own dispatch so the two can't drift apart.
 async function refreshActiveTab() {
-  const name = localStorage.getItem("activeTab") || "notes";
+  //: The tab on screen, not the stored name. Every load opens on the Dashboard
+  //: (`revealTab("dashboard")`, phone-shell.js) and `looksReady` has just
+  //: restored the notebook's mirrored `activeTab` over it, so the stored name
+  //: could say "notes" under a Dashboard that nothing drew (blind test 1031:
+  //: blank after unlock, no /statistics). The stored name is set back to what
+  //: is shown, so the readers of `activeTab` agree with the screen.
+  const name = document.body.dataset.tab || "dashboard";
+  prefs.set("activeTab", name);
   //: The tab on screen may be one whose code arrives on demand (A1), and this
   //: is the boot-time call that loads its data: `renderGraph`, `loadDocuments`
   //: and `loadLibrary` below are all defined in a file that is fetched here.
@@ -1274,14 +1245,14 @@ function setLabel(el, label) {
   //: first turned every icon-only button (`smallButton("ph:x")`) into a
   //: `ph-trail`, a decoration's margin and opacity on a control.
   const tail = PH_LABEL_TRAILING.exec(text);
-  if (tail && tail.index > 0) text = text.slice(0, tail.index);
+  if (tail?.index > 0) text = text.slice(0, tail.index);
   else if (tail) tail.length = 0;
   const match = PH_LABEL.exec(text);
   //: The trailing icon is appended after whatever the rest of this builds, so
   //: it is the last child in every shape a label can take: text only, icon
   //: and text, or icon only.
   const withTail = (built) => {
-    if (tail && tail.length) {
+    if (tail?.length) {
       const mark = document.createElement("i");
       mark.className = `ph ph-${tail[1]} ph-trail`;
       mark.setAttribute("aria-hidden", "true");
@@ -1339,8 +1310,8 @@ function setLabel(el, label) {
 //: another file; moving it removes the window entirely rather than papering
 //: over it at each caller.
 function settingsModalOpen() {
-  const modal = document.getElementById("settings-modal");
-  return Boolean(modal) && !modal.classList.contains("hidden");
+  const modal = $("settings-modal");
+  return !!modal && !modal.classList.contains("hidden");
 }
 
 //: A chip's words are always a `.ph-text` span (DESIGN.md, "A chip"): bare
@@ -1360,7 +1331,7 @@ function chip(text, extraClass = "", onClick = null) {
   if (onClick) {
     span.classList.add("chip-interactive");
     span.setAttribute("role", "button");
-    span.setAttribute("tabindex", "0");
+    span.tabIndex = 0;
     span.addEventListener("click", onClick);
     span.addEventListener("keydown", (event) => {
       if (event.key === "Enter" || event.key === " ") {
@@ -1438,6 +1409,8 @@ function confirmVerb(message) {
     : "OK";
 }
 
+// One confirm at a time (HR20): a second ask waits for the first to close, so
+// each takes focus and Esc answers the one the person can see.
 function confirmDialog(message, options = {}) {
   const {
     confirmLabel = confirmVerb(message),
@@ -1445,7 +1418,7 @@ function confirmDialog(message, options = {}) {
     danger = true,
     checkbox = null,
   } = options;
-  return new Promise((resolve) => {
+  const show = () => new Promise((resolve) => {
     const overlay = document.createElement("div");
     overlay.className = "modal-overlay confirm-overlay";
     overlay.setAttribute("role", "dialog");
@@ -1494,14 +1467,14 @@ function confirmDialog(message, options = {}) {
       document.removeEventListener("keydown", onKey, true);
       overlay.remove();
       returnFocus?.focus?.();
-      resolve(checkbox ? { ok: answer, checked: answer && Boolean(extra?.checked) } : answer);
+      resolve(checkbox ? { ok: answer, checked: answer && !!extra?.checked } : answer);
     };
     const onKey = (event) => {
       // Escape cancels and Enter confirms, but only while this dialog is up, 
       // captured, so a keyboard shortcut elsewhere can't fire underneath it.
       if (event.key === "Escape") {
         event.stopPropagation();
-        close(false);
+        close(); // undefined, not false: leaving is not a "no" (X12)
       } else if (event.key === "Enter" && event.target.tagName !== "BUTTON") {
         event.stopPropagation();
         close(true);
@@ -1519,13 +1492,14 @@ function confirmDialog(message, options = {}) {
     card.appendChild(row);
     overlay.appendChild(card);
     // Clicking the backdrop cancels, the way every other overlay here behaves.
-    wireBackdropClose(overlay, () => close(false));
+    wireBackdropClose(overlay, () => close());
     document.addEventListener("keydown", onKey, true);
     document.body.appendChild(overlay);
     // Cancel takes focus, not the dangerous one: a stray Enter or Space
     // arriving with the dialog must not be the thing that deletes the notes.
     cancel.focus();
   });
+  return (confirmDialog.q = (confirmDialog.q || Promise.resolve()).then(show, show));
 }
 
 // `confirmDialog`'s missing sibling: ask for a line of text.
@@ -1561,8 +1535,8 @@ function promptDialog(message, initial = "", { confirmLabel = "Save", segment = 
     //: dialogs off the modal recipe: this card's first child was a `<p>`, so
     //: the "New board" dialog had no heading at all while every other dialog
     //: in the app leads with one. Every `promptDialog` message is a short
-    //: prompt ("Name the new board:", "Rename this chat:", "Tag to add to the
-    //: selected notes:"), which is a title, so all twenty-odd callers are
+    //: prompt ("Name the new board", "Rename this chat", "Tag to add to the
+    //: selected notes"), which is a title, so all twenty-odd callers are
     //: right to promote it rather than only this one.
     //:
     //: `confirmDialog`'s message stays a `<p>`: that one really is a
@@ -1771,7 +1745,6 @@ const LAZY_MODULES = {
   //: The image viewer (2026-09-27, the boot-script gzip budget): see
   //: lightbox-view.js's header.
   lightbox: ["/css/lightbox-lazy.css", "/js/lightbox-view.js"],
-  activity: ["/js/activity-panel.js"],
   //: Run, preview and test for a code document (DOCUMENTS_PLAN 23, D1): the
   //: protocol and its languages, loaded on the first Run.
   run: ["/js/run-core.js", "/js/run-tests.js", "/js/run-debug.js"],
@@ -1782,9 +1755,9 @@ const LAZY_MODULES = {
   //: The menus a note card's category and tag chips open: see chip-menus.js.
   chipMenus: ["/js/chip-menus.js"],
   noteHistory: ["/js/note-history.js"],
-  askHistory: ["/js/ask-history.js", "/js/ask-chart.js"],
+  askHistory: ["/js/citation-peek.js", "/js/entry-card.js", "/js/answer-kit.js", "/js/ask-history.js", "/js/ask-chart.js"],
   //: The Ask box's Use AI switch (ask-compose.js), preloaded below.
-  askCompose: ["/css/ask-compose-lazy.css", "/js/ask-compose.js"],
+  askCompose: ["/css/ask-compose-lazy.css", "/js/citation-peek.js", "/js/entry-card.js", "/js/answer-kit.js", "/js/ask-compose.js"],
   //: Notes, Questions (questions-view.js), behind two stand-ins.
   questionsView: ["/css/questions-lazy.css", "/js/questions-view.js"],
   settingsData: ["/js/settings-data.js"],
@@ -1792,7 +1765,7 @@ const LAZY_MODULES = {
   tagSuggest: ["/js/tag-suggest.js"],
   searchSuggest: ["/js/search-suggest.js"],
   //: The writing desk's model passes (compose, title, save as note); see writing-desk.js.
-  writingDesk: ["/js/writing-desk.js"],
+  writingDesk: ["/css/writing-desk-lazy.css", "/js/writing-desk.js"],
   //: An attachment card's click (INBOX 440 (2)): attachment-actions.js.
   attachments: ["/js/attachment-actions.js"],
   //: Tesseract's status line (INBOX 443 (3)): see ocr-engine.js.
@@ -1807,7 +1780,7 @@ const LAZY_MODULES = {
   //: The app emblem as an assistant head (INBOX 463 (2)): assistant-avatar.js.
   assistantAvatar: ["/js/assistant-avatar.js"],
   //: Arranging the dashboard's Quick access row (INBOX 461): quick-access.js.
-  quickAccess: ["/css/quick-access-lazy.css", "/js/quick-access.js"],
+  quickAccess: ["/css/quick-access-lazy.css", "/js/app-features.js", "/js/quick-access.js"],
   notesRail: ["/js/notes-rail-spy.js"],
   //: The dashboard's Boards & maps widget (INBOX 553(d)): see dash-boards.js.
   dashBoards: ["/js/pick-row.js", "/js/dash-boards.js"],
@@ -1829,7 +1802,8 @@ const LAZY_MODULES = {
   iconPicker: ["/css/icon-picker.css", "/js/icon-picker.js"],
   //: Settings groups, each file's header says which (WORLD_CLASS_PLAN rows 21 to 27).
   modelBench: ["/js/model-bench.js"],
-  webClip: ["/js/web-clip.js"],
+  //: The web panel: web-clip.js, and its search, result rows and recents (web-results.js).
+  webClip: ["/js/web-clip.js", "/js/web-results.js"],
   appImport: ["/js/app-import.js"],
   usageLedger: ["/css/usage-lazy.css", "/js/usage-ledger.js"],
   //: The Library list without the editors (audit FE-03(c)): they were about
@@ -1852,7 +1826,7 @@ const LAZY_MODULES = {
   //: boot's, the motion arrives with the first figure that mounts.
   atlasMotion: ["/js/atlas-motion.js"],
   //: Atlas the Guide as a chat (help-chat.js's header), on first ask.
-  helpChat: ["/css/help-chat-lazy.css", "/js/help-chat.js"],
+  helpChat: ["/css/help-chat-lazy.css", "/js/citation-peek.js", "/js/entry-card.js", "/js/answer-kit.js", "/js/help-chat.js"],
   //: Atlas's mood cues and bold small-size brows (atlas.js `atlasSheet`).
   atlasFaces: ["/css/atlas-lazy.css"],
   //: A selection's Move to space (batch-space.js's header).
@@ -1867,7 +1841,7 @@ const LAZY_MODULES = {
   //: The panel the "m" chord opens: chord-guide.js says why it is preloaded.
   chordGuide: ["/js/chord-guide.js"],
   //: Atlas's living tail and its rings' loops (the gzip budget): see atlas-life.js.
-  atlasLife: ["/js/atlas-life.js"],
+  atlasLife: ["/js/atlas-motion.js", "/js/atlas-life.js"],
   //: The companion's menu and a face's enlarged view (companion-menu.js's header).
   companionMenu: ["/js/companion-menu.js"],
   //: A throw and what can happen on the way (companion-throw.js's header).
@@ -1882,7 +1856,7 @@ const LAZY_MODULES = {
   notifications: ["/js/notifications.js"],
   //: Tidy, the reviews with no AI (INBOX 691): tidy.js's header.
   tidy: ["/css/tidy-lazy.css", "/js/tidy.js"],
-  semanticNotice: ["/js/semantic-notice.js"],
+  semanticNotice: ["/css/semantic-notice-lazy.css", "/js/semantic-notice.js"],
   //: The order the `<script>` tags had, kept: every cross-file call between
   //: these three is inside a function rather than at parse time, so it is not
   //: load-bearing, but it is the order the three files' own headers describe.
@@ -1902,8 +1876,13 @@ const LAZY_MODULES = {
     "/js/undo-store.js",
     //: The Attach picker's row, drawn synchronously by the board pickers.
     "/js/pick-row.js",
+    "/js/image-layout.js",
+    //: Before the editors: it holds the file-type table they read.
+    "/js/library.js",
     "/js/documents-code.js",
     "/js/documents-prose.js",
+    "/js/documents-cm.js",
+    "/js/autocorrect.js",
     "/js/documents.js",
     "/js/margin-reader.js",
     "/js/whiteboard-map.js",
@@ -1915,7 +1894,6 @@ const LAZY_MODULES = {
     "/js/whiteboard-format.js",
     "/js/whiteboard-interchange.js",
     "/js/whiteboard-history.js",
-    "/js/library.js",
   ],
 };
 
@@ -1960,25 +1938,6 @@ function lazyAssetStamp(file) {
   return query === -1 ? "" : src.slice(query);
 }
 
-//: **A lazy bundle's "when the page is ready" is now.** Three of the files
-//: `ensureModule` inserts wrapped their top-level wiring in a
-//: `DOMContentLoaded` listener, which was right when they were `<script>`
-//: tags in the head and wrong the moment they loaded on first use: the
-//: event had fired minutes earlier, the listener never ran, and every
-//: Library sub-tab was a button with no handler ("I cant click on any of
-//: the library subtabs"). This runs the wiring at once when the document is
-//: already parsed and defers it only while it is still loading, so a file
-//: behaves the same whether it arrived at boot or on demand.
-//: A microtask, not a direct call: the wiring sits in the middle of its file
-//: and reads `let` bindings declared further down (`libraryMediaKind`), which
-//: a direct call reached before they existed ("Cannot access before
-//: initialization"). A microtask runs once the whole script has evaluated,
-//: which is the same moment `DOMContentLoaded` gave a boot-time script.
-function onDomReady(fn) {
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn);
-  else queueMicrotask(fn);
-}
-
 //: One fetch per file, whichever bundle asks first: d3 is in two. An
 //: `async = false` script runs in insertion order with every other one, so a
 //: bundle reusing a file still in flight still runs after it.
@@ -1995,7 +1954,8 @@ function lazyScript(file) {
         else el.async = false; // document order, not network order
         el[css ? "href" : "src"] = file + lazyAssetStamp(file);
         el.onload = () => resolve(true);
-        el.onerror = () => resolve(false);
+        //: A failed load is forgotten (audit 1031 N41), so the next try refetches.
+        el.onerror = () => (lazyFileLoads.delete(file), el.remove(), resolve(false));
         document.head.appendChild(el);
       })
     );
@@ -2007,7 +1967,7 @@ function ensureModule(name) {
   const files = LAZY_MODULES[name];
   if (!files) return Promise.resolve(false);
   if (!lazyModuleLoads.has(name)) {
-    lazyModuleLoads.set(name, Promise.all(files.map(lazyScript)).then((results) => results.every(Boolean)));
+    lazyModuleLoads.set(name, Promise.all(files.map(lazyScript)).then((results) => results.every(Boolean) || !lazyModuleLoads.delete(name)));
   }
   return lazyModuleLoads.get(name);
 }
@@ -2054,7 +2014,7 @@ document.addEventListener("focusin", (event) => {
   mountNoteSurfaceNow(host).then((surface) => {
     //: Focus moved on while the bundle was fetching: mount, but do not
     //: steal the caret back.
-    if (surface && surface.kind === "codemirror" && document.activeElement === host) surface.focus();
+    if (surface?.kind === "codemirror" && document.activeElement === host) surface.focus();
   });
 });
 
@@ -2139,10 +2099,12 @@ const LAZY_ENTRY_POINTS = {
   packages: ["renderExtras"],
   embedChoices: ["renderEmbedChoices"],
   chordGuide: ["showTabJumpHint"],
+  //: A click on Ask, Enter in its box, an example or a recent question; nobody reads its return.
+  askCompose: ["askQuestion"],
   //: The icon and emoji picker: reached through `pickIconOrEmoji` (editor.js).
   iconPicker: ["openIconPicker"],
   //: Async, and reached from a Settings pane drawn before the window's own await.
-  settingsControls: ["refreshSearxngHost", "renderStatusBarSettings", "renderMcpSnippet", "renderLanAccess", "renderMemorySettings"],
+  settingsControls: ["refreshSearxngHost", "renderStatusBarSettings", "renderLanAccess", "renderMemorySettings", "renderAccount", "renderAutonomousReview", "renderToolSettings"],
   settingsData: ["renderPrivacyRange", "renderPrivacyReceipt", "renderBackups", "renderBackupRetention", "backupNow", "importDirectory", "importMarkdown", "importDocument"],
   tagSuggest: ["openTagSuggest", "renderReevaluateResult"],
   writingDesk: ["composeDraft", "suggestDraftTitle", "saveDraftAsNote", "draftSaveMenuInit"],
@@ -2151,20 +2113,21 @@ const LAZY_ENTRY_POINTS = {
   companionMenu: ["nameMarkBuddyMenu", "openNameMarkViewer", "mountBuddyPresets"],
   //: Opened, asked or drawn for their effect; `openHelpChat`'s close is read by no caller.
   helpChat: ["openHelpChat", "toggleHelpChat", "askAtlas", "renderAtlasStarters"],
-  batchSpace: ["batchMoveToSpace"],
+  batchSpace: ["batchMoveToSpace", "rmSpace", "moveNotesToSpace"],
   notifications: ["openNotifications"],
+  webClip: ["runWebSearch", "renderWebSearchHistory"],
   sharedIntake: ["takeSharedIntake"],
   undoKit: ["pushEntryCreateUndo", "pushLinkCreateUndo", "pushRequestUndo", "pushEntriesPutUndo", "pushBinPairUndo", "pushRoutePairUndo", "pushTensionLinkUndo", "pushTokenUndo", "pushUploadUndo", "pushCorrectionUndo", "pushMadeUndo", "pushTextUndo", "pushWikiRenameUndo"],
   tidy: ["openTidySheet"],
   semanticNotice: ["semanticOffer", "semanticOnboardingOffer"],
   questionsView: ["initQuestionsView", "loadQuestions"],
   //: 2026-10-05, the next six: async or unread, reached by a gesture.
-  reveal: ["revealFeature", "packagesNoticeOpen"],
+  reveal: ["revealFeature", "packagesNoticeOpen", "openShortcuts", "flashRevealed", "renderShortcutList"],
   onboarding: ["openOnboarding", "maybeShowConsoleViewIntro"],
   tour: ["openTour", "renderTourReplay"],
   updates: ["checkForUpdate", "applyUpdateNow", "showSourceUpdatedDialog", "askUpdateChoiceOnce"],
   appPalette: ["openPalette"],
-  notePanels: ["beginOrCompleteLink", "toggleRelated", "toggleReferences", "toggleFaded", "toggleNoteReminders", "renderRelatedWhileEditing", "renderNoteBookmarksWhileEditing", "renderEditForm", "richPickerNote"],
+  notePanels: ["beginOrCompleteLink", "toggleRelated", "toggleReferences", "toggleFaded", "toggleNoteReminders", "renderEditForm", "richPickerNote"],
   vault: ["unlockPrivateNotes", "ensureVaultOpen"],
   accountRecovery: ["openForgotPassword", "offerRecoveryKey", "showRecoveryKey", "makeRecoveryKey", "recoveryAccountRow"],
   attachTo: ["renderAttachToBoard", "renderAttachToDocument", "renderNotePickerList"],
@@ -2174,8 +2137,8 @@ const LAZY_ENTRY_POINTS = {
   search: ["openFinder"],
   statistics: ["openStatistics", "renderWeekWidget"],
   meetings: ["openNewMeeting", "openMeetingSheet", "openMeetingRecorder"],
-  askHistory: ["toggleAskHistoryPanel", "loadAskHistoryPage", "clearAskHistory", "viewAskHistoryTurn", "toggleAskHistoryPin", "deleteAskHistoryTurn"],
-  categories: ["openManageCategories", "mergeCategoryFromPanel", "splitCategoryFromPanel", "deleteCategoryFromPanel", "renameCategory", "deleteCategory", "restoreCategoryMoves", "chooseNoteCategory", "showCategoryNotes", "moveNotesToCategory", "pickCategoryColour", "foldSide"],
+  askHistory: ["toggleAskHistoryPanel", "loadAskHistoryPage", "clearAskHistory", "viewAskHistoryTurn"],
+  categories: ["openManageCategories", "mergeCategoryFromPanel", "splitCategoryFromPanel", "deleteCategoryFromPanel", "renameCategory", "chooseNoteCategory", "showCategoryNotes", "moveNotesToCategory", "pickCategoryColour", "foldSide"],
   tagManager: ["openTagsSheet", "openBulkTags", "renameTagEverywhere", "removeTagFromNote"],
   chipMenus: ["openCategoryChipMenu", "openTagChipMenu"],
   attachments: ["attachmentAction"],
@@ -2183,7 +2146,7 @@ const LAZY_ENTRY_POINTS = {
   quickAccess: ["quickAccessEdit"],
   inbox: ["openSuggestionsInbox", "openEntityPage", "openEntitiesSheet", "openLinkTypeSheet", "openRelationTypesSheet", "openNotePropertiesSheet", "openNoteTypesSheet", "openQueryTable", "showQueryOnGraph"],
   assistantAvatar: ["assistantEmblemInto"],
-  quickNote: ["openQuickNote", "pasteClipboardAsNote", "saveChatAnswerAsNote", "chatKeep", "reminderFromChatAnswer", "createNoteSafely", "noteOutboxAdd", "flushNoteOutbox", "renderPendingNoteRows"],
+  quickNote: ["openQuickNote", "pasteClipboardAsNote", "saveChatAnswerAsNote", "chatKeep", "reminderFromChatAnswer", "createNoteSafely", "announceSavedNote", "noteOutboxAdd", "flushNoteOutbox", "noteEditOutboxAdd", "renderPendingNoteRows"],
   graph: [
     "clearTrace",
     "closeGraphNewNote",
@@ -2204,7 +2167,7 @@ const LAZY_ENTRY_POINTS = {
     "setTracePanelOpen",
     "syncGraphPopupSave",
   ],
-  library: ["applyDocGutter", "applyMarkdown", "archiveDocumentWithUndo", "closeDocAiPanel", "createConceptMap", "createDocument", "createNewBoard", "expandNoteIntoDocument", "initDocSidebarTabs", "loadDocuments", "markDocDirty", "mountDocToolbarControlsFor", "mountGutterFor", "openDocDictionary", "openDocTemplateDialog", "openDocument", "renderDocStorage", "saveDocument", "showDocSidebarSection", "toggleDocFindBar", "wbOpenBoardSearch", "wbShowBoardsLanding", "wbShowCanvasView", "wbToggleNavigator", "wireMarkdownToolbar", "wireMdFormatShortcuts", "openWhiteboardBoard", "deleteDocumentWithUndo", "offerCreateUndo", "offerCreatedDocsUndo", "renameDocumentWithUndo", "jumpToDocLine", "renderLibraryBoardsGallery"],
+  library: ["applyDocGutter", "applyMarkdown", "closeDocAiPanel", "createConceptMap", "createDocument", "createNewBoard", "expandNoteIntoDocument", "initDocSidebarTabs", "loadDocuments", "markDocDirty", "mountDocToolbarControlsFor", "mountGutterFor", "openDocDictionary", "openDocTemplateDialog", "openDocument", "renderDocStorage", "saveDocument", "showDocSidebarSection", "toggleDocFindBar", "wbOpenBoardSearch", "wbShowBoardsLanding", "wbToggleNavigator", "wireMarkdownToolbar", "wireMdFormatShortcuts", "openWhiteboardBoard", "offerCreateUndo", "offerCreatedDocsUndo", "jumpToDocLine", "renderLibraryBoardsGallery", "renameDocumentWithUndo", "archiveDocumentWithUndo", "deleteDocumentWithUndo"],
   //: The Library's own list (audit FE-03(c)): library.js alone. A call from
   //: it into a document or a board is one of `library`'s stand-ins above,
   //: which fetches the editors on first use.
@@ -2221,10 +2184,8 @@ function installStandIns(table) {
         ensureModule(module).then(() => {
           const real = window[name];
           //: The module failed to load (offline, or the file is gone). Calling
-          //: the stand-in again here would recurse forever, so this is where it
-          //: stops, quietly: the control does nothing, which is what it did
-          //: before this list existed.
-          if (typeof real !== "function" || real === standIn) return undefined;
+          //: the stand-in again here would recurse forever, so this is where it stops.
+          if (typeof real !== "function" || real === standIn) return lazyLoadFailed();
           return real(...args);
         });
       window[name] = standIn;
@@ -2234,4 +2195,5 @@ function installStandIns(table) {
 installStandIns(LAZY_ENTRY_POINTS);
 //: Fetched soon after boot, not on first use: the outbox is for the moment
 //: the server is gone, when no script can be fetched (quick-note.js).
-setTimeout(() => ["quickNote", "quickAdd", "fieldClear", "chordGuide", "notePanels", "dragEdge", "search", "library"].forEach(ensureModule), 3000);
+//: The library bundle is warmed after the first touch (lazy-entries.js), not here.
+setTimeout(() => ["quickNote", "quickAdd", "fieldClear", "chordGuide", "notePanels", "dragEdge", "search", "writingDesk"].forEach(ensureModule), 3000);

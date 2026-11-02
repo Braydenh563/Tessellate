@@ -679,8 +679,8 @@ function cmdPaletteGoToNote(id) {
 //: its date. Every row closes the palette before it opens
 //: its note: the palette is an overlay over the app it is about to
 //: navigate, and "find it" and "go to it" should be one gesture.
-function cmdPaletteSources({ meta, touched }) {
-  const sources = chatSourcesFrom({ meta, touched }).map((source) =>
+function cmdPaletteSources({ meta, touched, sentences }) {
+  const sources = chatSourcesFrom({ meta, touched, sentences }).map((source) =>
     source.open
       ? {
           ...source,
@@ -1005,6 +1005,8 @@ async function agentCommitFiles() {
 }
 
 async function cmdPaletteAsk(text, { plan = null } = {}) {
+  //: The reply's drawing (chat-turn.js, answer-kit.js) is lazy; fetched at the first key typed here (lazy-entries.js).
+  if (!(await ensureModule("chatTurn"))) return lazyLoadFailed();
   const sentFiles = await agentCommitFiles();
   if (!sentFiles) {
     cmdPaletteInput.value = text;
@@ -1212,6 +1214,7 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
   let meta = null;
   let stats = null;
   const panels = []; // the app's panels under the answer (INBOX 1300 C06)
+  let trail = null; // the why event (B30)
   let thinkingRaw = "";
   //: In-text numbers, Chat's own call (`addInlineCitations`) on the `grounding`
   //: rows (BACKLOG, the owner 2026-10-12: popup answers had a Sources list and
@@ -1222,7 +1225,7 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
   let cites = null;
   const cite = (event) => {
     if (event) cites = event.sentences || [];
-    if (cites?.length) addInlineCitations(answerBox, cites, found, chatSourcesFrom({ meta, touched: [...touched.values()] }));
+    if (cites?.length) addInlineCitations(answerBox, cites, found, chatSourcesFrom({ meta, touched: [...touched.values()], sentences: cites }));
   };
   //: The box the reasoning is written into while it is being produced, made
   //: on the first delta rather than up front so a turn that never thinks out
@@ -1326,8 +1329,9 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
         //: same move Chat's timeline makes (`foldEarlierThinking`).
         if (thinkingBox) thinkingBox.open = false;
         addStep(event);
-        //: A page the model read opens in place above the answer (INBOX 1300 C06).
+        //: A page the model read, or the results of its search, open in place above the answer (INBOX 1300 C06).
         if (event.ok && event.tool === "read_url") drawAnswerPanels(stepsHolder, [{ web: event.sources, read: true }], answerBox);
+        if (event.ok && event.tool === "web_search") drawAnswerPanels(stepsHolder, [{ web: event.sources }], answerBox);
         keepAtBottom(cmdPaletteResults);
         // Something visible while a tool runs, so a long silence reads as
         // work rather than as nothing happening.
@@ -1372,6 +1376,7 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
       onUnsupported: (e) => (why = e?.message || why),
       onPanel: (event) => panels.push(event),
       onWebSources: (event) => panels.push({ web: event.sources }),
+      onWhy: (event) => (trail = event.lines),
       onHint: (e) => (why = why || e?.text || ""),
       onGrounding: cite,
       onGroundingLive: cite,
@@ -1419,7 +1424,7 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
     //: what was searched and what was opened (`cmdPaletteSources`), inside
     //: the bubble and above its action row, so the row hangs under the
     //: bubble rather than over the list.
-    const sources = cmdPaletteSources({ meta, touched: [...touched.values()] });
+    const sources = cmdPaletteSources({ meta, touched: [...touched.values()], sentences: cites });
     if (sources) agentMsg.insertBefore(sources, actionRow);
     //: The reasoning stays where it was written, folded now, with the
     //: trailing blank lines trimmed.
@@ -1441,6 +1446,8 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
       persona: askedPersona,
     });
     if (metaRow) agentMsg.insertBefore(metaRow, actionRow);
+    //: Why this answer (B30), the Ask box's own fold, last above the actions.
+    if (trail) ensureModule("askCompose").then(() => drawWhyTrail(agentMsg, trail, actionRow)).catch(() => {});
     keepAtBottom(cmdPaletteResults);
   } catch (err) {
     if (err?.name === "AbortError") {

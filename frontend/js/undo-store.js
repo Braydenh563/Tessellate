@@ -75,6 +75,9 @@ const undoStoreTimers = new Map();
 //: Written a moment later, the latest value winning, as plain data: the
 //: stacks can hold anything a step needed in memory, and only what survives
 //: a JSON round trip is a step that can be replayed after a reload.
+//: `value` may be a function, called only when the write runs: a caller
+//: with a costly snapshot (a whole editor history) pays for it once per
+//: pause instead of on every keystroke (audit 1028 D6).
 function undoStorePut(key, value) {
   const name = String(key);
   clearTimeout(undoStoreTimers.get(name));
@@ -82,7 +85,7 @@ function undoStorePut(key, value) {
     undoStoreTimers.delete(name);
     let plain;
     try {
-      plain = JSON.parse(JSON.stringify(value));
+      plain = JSON.parse(JSON.stringify(value instanceof Function ? value() : value));
     } catch {
       return;
     }

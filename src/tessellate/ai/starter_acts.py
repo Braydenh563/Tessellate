@@ -23,6 +23,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import commands, day_digest, lexical_filing, realise, recognise, tagging, utilities
+from tessellate.ai.composer_frame import note_title
 from tessellate.core.database import Document, Entry, EntryLink, Reminder
 
 #: Each starter's reading, first match wins. The text is folded to lower case
@@ -217,10 +218,10 @@ def _open_links(session: Session, *, note_ids: list[int], **_: object) -> tuple[
 
     others = [other for _link, other in manager.links_for_entry(session, entry)
               if not other.is_deleted and not other.is_private]
-    title = commands._title(entry)
+    title = note_title(entry.content, size=48)
     if not others:
         return f"Nothing is linked to “{title}” yet.", None
-    rows = [f"#{other.id} {commands._title(other)}" for other in others[:12]]
+    rows = [f"#{other.id} {note_title(other.content, size=48)}" for other in others[:12]]
     return _list_answer(f"{realise.count_noun(len(others), 'note').capitalize()} linked to “{title}”:", rows), None
 
 
@@ -251,7 +252,7 @@ def _tag_untagged(session: Session, **_: object) -> tuple[str, dict | None]:
             unsure += 1
             continue
         steps.append({"name": "tag_note", "arguments": {"note_id": entry.id, "add": tags}})
-        items.append(f"#{entry.id} {commands._title(entry)}: {', '.join(tags)}")
+        items.append(f"#{entry.id} {note_title(entry.content, size=48)}: {', '.join(tags)}")
         if len(steps) >= TAG_NOTES:
             break
     left = f" {realise.count_noun(unsure, 'note')} had no word that matches a tag you use, so they are left as they are." if unsure else ""
@@ -267,7 +268,7 @@ def _tag_open(session: Session, *, note_ids: list[int], **_: object) -> tuple[st
         return "Nothing is open. Open a note and tick “Use the open note”.", None
     have = _tags_of(entry)
     tags = [t for t in tagging.suggest(session, entry.content or "", have, exclude_entry_id=entry.id) if t not in have]
-    title = commands._title(entry)
+    title = note_title(entry.content, size=48)
     if not tags:
         return f"No tag you already use fits “{title}”; it keeps {', '.join(have) or 'no tags'}.", None
     label = f"Tag “{commands._clip(title, 60)}” {', '.join(tags)}"
@@ -330,7 +331,7 @@ def _link_related(session: Session, **_: object) -> tuple[str, dict | None]:
     if not chosen:
         return "No two unlinked notes share enough words to link them.", None
     steps = [{"name": "link_notes", "arguments": {"note_id": a.id, "other_note_id": b.id}} for _, a, b in chosen]
-    items = [f"#{a.id} {commands._title(a)} and #{b.id} {commands._title(b)}" for _, a, b in chosen]
+    items = [f"#{a.id} {note_title(a.content, size=48)} and #{b.id} {note_title(b.content, size=48)}" for _, a, b in chosen]
     label = f"Link {realise.count_noun(len(chosen), 'pair')} of notes that share the most words"
     return commands._confirm(label), commands._card(label, steps, items=items)
 
@@ -357,7 +358,7 @@ def _append_today(session: Session, *, slots: dict, now: datetime, **_: object) 
     else:
         steps = [{"name": "edit_note", "arguments": {"note_id": entry.id, "content": (entry.content or "").rstrip() + "\n\n" + words}}]
         label = f"Add “{said}” to the end of today's note"
-        items = [f"#{entry.id} {commands._title(entry)}"]
+        items = [f"#{entry.id} {note_title(entry.content, size=48)}"]
     return commands._confirm(label), commands._card(label, steps, items=items)
 
 

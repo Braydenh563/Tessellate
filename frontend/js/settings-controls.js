@@ -24,6 +24,9 @@
 // `storage` event) stay because they run with the window closed.
 //: The marker `openSettingsModal` looks for, so it only waits for this file once.
 const SETTINGS_CONTROLS_READY = true;
+//: The body these listeners wire is built here if nothing asked for a control
+//: first (settings-body.js; INBOX 1501): every `$` below finds its element.
+settingsBodyBuild();
 
 // ---- from skills.js ----
 
@@ -448,6 +451,11 @@ $("update-apply-now").addEventListener("click", async () => {
   }
 });
 
+$("pref-update-bar").addEventListener("change", (e) => {
+  if (!e.target.checked) document.querySelector(".update-bar")?.remove();
+  return setPreference("show_update_bar", e.target.checked);
+});
+
 $("pref-auto-update").addEventListener("change", (e) =>
   setPreference("auto_update_enabled", e.target.checked)
 );
@@ -591,6 +599,12 @@ $("pref-close-to-tray")?.addEventListener("change", (e) => {
   );
 });
 
+$("pref-desktop-companion")?.addEventListener("change", (e) => {
+  const checked = e.target.checked;
+  setPreference("desktop_companion", checked);
+  toast(checked ? "Your companion will sit in the corner while the window is in the tray." : "The desktop companion is off.");
+});
+
 $("exports-refresh")?.addEventListener("click", renderExportsList);
 
 $("open-exports-folder").addEventListener("click", async () => {
@@ -639,10 +653,10 @@ $("pref-season-hemisphere").addEventListener("change", (e) => setPreference("sea
 //: The voice's live sample (CHAT_PLAN decision 72): the same three lines
 //: `composer_digest.sample` writes, kept equal by tests/test_answer_voice.py.
 const VOICE_SAMPLES = {
-  natural: "You have four notes about uni, 17 July to 4 August. Nothing yet on assessments or due dates. Remind you to ask the tutor on Thursday?",
-  professional: "Your notebook holds four notes on uni, 17 July to 4 August. The notes do not yet cover assessments or due dates. Set a reminder to ask the tutor on Thursday?",
-  playful: "Found four notes about uni, 17 July to 4 August. No word yet on assessments or due dates. Want a nudge to ask the tutor on Thursday?",
-  plain: "Four notes about uni, 17 July to 4 August. Not in your notes: assessments or due dates. Remind you to ask the tutor on Thursday?",
+  natural: "You have four notes about uni. Nothing yet on assessments or due dates. Remind you to ask the tutor on Thursday?",
+  professional: "Your notebook holds four notes on uni. The notes do not yet cover assessments or due dates. Set a reminder to ask the tutor on Thursday?",
+  playful: "Found four notes about uni. No word yet on assessments or due dates. Want a nudge to ask the tutor on Thursday?",
+  plain: "Four notes about uni. Not in your notes: assessments or due dates. Remind you to ask the tutor on Thursday?",
 };
 function showVoiceSample(voice) {
   $("pref-voice-sample").textContent = VOICE_SAMPLES[voice] || VOICE_SAMPLES.natural;
@@ -1046,7 +1060,7 @@ $("settings-nav-back")?.addEventListener("click", () => stepTabHistory(-1));
 $("settings-nav-forward")?.addEventListener("click", () => stepTabHistory(1));
 
 // Two buttons, two behaviours, each the one its own words name. Settings →
-// Help has "Replay the welcome" and Settings → About has "Take tour again";
+// Help has "Replay the welcome" and Settings, About has "Take tour again";
 // only the first was ever wired, so the About one was a button that did
 // nothing at all (found by listing every id in index.html that no JS file and
 // no stylesheet mentions), and wiring both to the same call then made the
@@ -1726,7 +1740,7 @@ async function findDuplicates() {
     const body = await apiJson(`/duplicates?threshold=${threshold}`);
     renderDuplicateGroups(body.groups);
     status.textContent = body.groups.length
-      ? `${body.groups.length} group${body.groups.length === 1 ? "" : "s"} of similar notes.`
+      ? `${nounCount(body.groups.length, "group")} of similar notes.`
       : "No duplicates at that similarity, try lowering the slider.";
   } catch (error) {
     status.classList.add("error");
@@ -1802,7 +1816,7 @@ function renderDuplicateGroups(groups) {
 
     const head = document.createElement("p");
     head.className = "muted";
-    head.textContent = `${group.entries.length} notes · ${Math.round(group.similarity * 100)}% alike`;
+    head.textContent = `${nounCount(group.entries.length, "note")} · ${Math.round(group.similarity * 100)}% alike`;
     card.appendChild(head);
 
     // Every note ticked by default: the whole point is merging the group.
@@ -1875,7 +1889,7 @@ async function mergeDuplicateGroup(ids, card) {
   status.textContent = "";
 
   const ok = (await confirmDialog(
-    `Merge ${ids.length} notes into one?\n\n` +
+    `Merge ${nounCount(ids.length, "note")} into one?\n\n` +
       `The merged note will read:\n\n${preview.merged.slice(0, 400)}` +
       `${preview.merged.length > 400 ? "…" : ""}\n\n` +
       `The other ${ids.length - 1} go to the bin, so this is undoable.`
@@ -1897,8 +1911,8 @@ async function mergeDuplicateGroup(ids, card) {
       for (const id of binned) await api(back ? `/entries/${id}/restore` : `/entries/${id}`, { method: back ? "POST" : "DELETE" });
       await refreshEntries([result.id, ...binned]);
     };
-    const action = pushUndo(`Merged ${result.merged_count} notes`, swap(true), swap(false));
-    toastAction(`Merged ${result.merged_count} notes${result.used_ai ? " with Atlas" : ""}.`, "Undo", async () => {
+    const action = pushUndo(`Merged ${nounCount(result.merged_count, "note")}`, swap(true), swap(false));
+    toastAction(`Merged ${nounCount(result.merged_count, "note")}${result.used_ai ? " with Atlas" : ""}.`, "Undo", async () => {
       settleUndoFromToast(action);
       await swap(true)();
     });
@@ -2118,6 +2132,12 @@ const STATUS_SLOTS = [
     key: "find",
     label: "Find anything",
     hint: "Search your notes, documents, files and the app itself",
+  },
+  //: INBOX 1467. A few cards held while you go to another page.
+  {
+    key: "tray",
+    label: "Tray",
+    hint: "Hold cards to paste or drag somewhere else",
   },
   //: INBOX 896. Shown on this computer only; another device never sees it.
   {
@@ -2571,10 +2591,19 @@ function pickJsonFile(inputId, apply) {
     const file = input.files[0];
     input.value = "";
     if (!file) return;
+    let data;
     try {
-      apply(JSON.parse(await file.text()));
+      data = JSON.parse(await file.text());
     } catch {
-      toast("That file isn't valid JSON.", "info");
+      return toast("That file isn't valid JSON.", "info");
+    }
+    //: The apply step is awaited: a refused save (a prompt over its limit)
+    //: used to be an unhandled rejection, so an import said nothing at all
+    //: (audit 1031 HR12).
+    try {
+      await apply(data);
+    } catch (error) {
+      toast(error?.message || "Couldn't import that file.", "info");
     }
   };
   input.click();
@@ -3074,6 +3103,9 @@ async function openTaskLog(item) {
   settingsLook.logFilterFromRun = !!item.run_id;
   filter.value = item.run_id ? `[${item.run_id}]` : /\(([^)]+)\)/.exec(item.label || "")?.[1] || item.name || item.label || "";
   filter.dispatchEvent(new Event("input"));
+  //: The button that sent us here is in the pane just left: the keyboard goes
+  //: to the filter, which is what the pane now shows (audit 1031 HR21).
+  filter.focus({ preventScroll: true });
 }
 
 $("logs-empty-clear").addEventListener("click", () => {
@@ -3106,9 +3138,11 @@ function renderAutoChoices() {
   const still = reducedMotionWanted();
   word("progress-motion", still ? "still now" : "moving now", "Follows reduced motion: your system's, or this app's own");
   word("bg-motion", still ? "still now" : "moving now", "Follows reduced motion: your system's, or this app's own");
-  const { look, reason } = atlasLookReason();
-  const from = { "face-looks": "from Face looks", "your-look": "from your own look", default: "main look" }[reason] || "";
-  word("atlas-look", from ? `${look}, ${from}` : look, "Matches Face looks when it is one look, otherwise the look you chose for your own face");
+  afterCharacters(() => {
+    const { look, reason } = atlasLookReason();
+    const from = { "face-looks": "from Face looks", "your-look": "from your own look", default: "main look" }[reason] || "";
+    word("atlas-look", from ? `${look}, ${from}` : look, "Matches Face looks when it is one look, otherwise the look you chose for your own face");
+  });
 }
 
 //: B56: Auto names what it resolved to for the model in use. The server's
@@ -3139,6 +3173,7 @@ settingsReadouts.smallModel = renderSmallModelAuto;
 //: capture phase and the label follows folds opened by hand too.
 function ensureSettingsFoldAll(box) {
   if (!box) return;
+  ensurePaneTabs(box);
   const folds = () => [...box.querySelectorAll("details")].filter((d) => !d.parentElement.closest("details"));
   const bar = box.querySelector(":scope > .settings-pane-title");
   if (!bar || folds().length < 2) return;
@@ -3169,7 +3204,56 @@ function ensureSettingsFoldAll(box) {
     actions.insertBefore(button, actions.querySelector(".icon-only"));
     box.addEventListener("toggle", paint, true);
   }
+  if (box.id === "settings-appearance") ensureAppearancePopOut(box);
   paint();
+}
+
+//: **A pane's glyph tab row** (INBOX 1478, DESIGN.md "A popup's anatomy"): a
+//: `.pane-tabs` nav in the markup whose buttons name a section by
+//: `data-target`. A press opens the section's fold and goes to it (the pane is
+//: one scroll, so nothing is hidden and Find, "On this page" and Expand all
+//: still reach everything); a fold opened by anything else marks its tab.
+function ensurePaneTabs(box) {
+  const nav = box?.querySelector(":scope > .pane-tabs");
+  if (!nav || nav.dataset.wired) return;
+  nav.dataset.wired = "1";
+  ensureModule("popupAnatomy");
+  const tabs = [...nav.querySelectorAll("button[data-target]")];
+  const aim = (tab) => box.querySelector(tab.dataset.target);
+  const mark = (on) => tabs.forEach((tab) => {
+    tab.classList.toggle("active", tab === on);
+    tab.setAttribute("aria-current", String(tab === on));
+  });
+  for (const tab of tabs) {
+    tab.addEventListener("click", () => {
+      const el = aim(tab);
+      if (!el) return;
+      if (el.matches("details")) el.open = true;
+      mark(tab);
+      el.scrollIntoView({ block: "start", behavior: reducedMotionWanted() ? "auto" : "smooth" });
+      if (tab.dataset.focus) $(tab.dataset.focus)?.focus({ preventScroll: true });
+    });
+  }
+  box.addEventListener("toggle", (event) => {
+    const hit = tabs.find((tab) => aim(tab) === event.target);
+    if (hit && event.target.open) mark(hit);
+  }, true);
+  mark(tabs[0]);
+}
+
+//: The Pop out button at the top of Settings, Appearance: the same controls in
+//: a panel beside the app (appearance-panel.js, INBOX 1435).
+function ensureAppearancePopOut(box) {
+  const actions = box.querySelector(":scope > .settings-pane-title .dock-actions");
+  if (!actions || actions.querySelector("[data-pop-out]")) return;
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "ghost small";
+  button.dataset.popOut = "appearance";
+  button.title = "Open Appearance in a panel beside the app, so you see each change without closing Settings";
+  setLabel(button, "ph:arrow-square-out Pop out");
+  button.addEventListener("click", () => openAppearancePanel());
+  actions.insertBefore(button, actions.firstChild);
 }
 
 //: **A model per feature, the list in Settings, Models** (moved here from
@@ -3272,3 +3356,955 @@ function renderFeatureModelRows(status) {
 //: This file arrives after the first Appearance render, so label once now.
 renderAutoChoices();
 renderSmallModelAuto();
+
+async function renderAccount() {
+  const facts = $("account-facts");
+  facts.replaceChildren();
+  showSkeletons(facts, 3, "li");
+  const info = await apiJson("/auth/account").catch(() => null);
+  clearSkeletons(facts);
+  if (!info) {
+    const li = document.createElement("li");
+    li.className = "muted";
+    li.textContent = "Couldn't read the account state.";
+    facts.appendChild(li);
+    return;
+  }
+  const rows = [
+    ["Password", info.configured ? "Set" : "Not set yet"],
+    [
+      "Created",
+      info.created_at ? new Date(info.created_at).toLocaleDateString() : "Unknown",
+    ],
+    [
+      "Private notes",
+      info.vault_exists
+        ? info.vault_open
+          ? "Encryption key loaded: private notes are readable"
+          : "Locked: unlock to read private notes"
+        : "No encrypted notes yet",
+    ],
+    ["Open sessions", String(info.active_sessions)],
+    //: INBOX 663: the recovery key's row and its one button, drawn by
+    //: account-recovery.js (lazy: the boot scripts' total cap).
+    await recoveryAccountRow(info),
+  ];
+  if (typeof info.vault_open === "boolean") vaultOpen = info.vault_open;
+  $("account-password-on-open").checked = info.password_on_open !== false;
+  renderPinSettings(info.pin);
+  renderLanAccess().catch(() => {});
+  for (const [label, value] of rows) {
+    //: A label column and a value column (`.account-facts`), not "Label: value"
+    //: in bold run-in: four facts read as a table, so they are laid out as one.
+    const li = document.createElement("li");
+    const name = document.createElement("span");
+    name.className = "account-fact-label";
+    name.textContent = label;
+    const text = document.createElement("span");
+    text.textContent = value;
+    li.append(name, text);
+    facts.appendChild(li);
+  }
+}
+
+//: "PIN for this computer" (owner, 2026-10-12): the fields show only where a
+//: PIN can be set, which is this computer with an OS protected store; the
+//: line under the heading says why when it cannot.
+function renderPinSettings(pin) {
+  const state = $("account-pin-state");
+  if (!state || !pin) return;
+  const usable = pin.available && pin.here;
+  $("account-pin-fields").classList.toggle("hidden", !usable);
+  $("account-pin-set").classList.toggle("hidden", !usable);
+  $("account-pin-set").textContent = pin.set ? "Change PIN" : "Set up a PIN for this computer";
+  $("account-pin-forget").classList.toggle("hidden", !(pin.set && pin.here));
+  if (!pin.here) {
+    state.textContent = "A PIN can be set up only on the computer this notebook runs on.";
+  } else if (!pin.available) {
+    state.textContent = "This computer has no protected store for a PIN, so the password is the only way in here.";
+  } else {
+    state.textContent = pin.set
+      ? "A PIN is set: the lock screen takes it or your password, on this computer only."
+      : "Unlock on this computer with a few digits instead of your password.";
+  }
+}
+
+// The review panel for the background librarian (ROADMAP §40 item 2).
+//
+// A true dry-run is not available here, the agent picks each call from the
+// result of the last one, so a pass with the writes stubbed out stops
+// resembling the pass that would really run, and a preview that lies is worse
+// than no preview. What is available is honest and nearly as useful: every
+// write already captured the call that reverses it, so the pass can be read
+// back and undone one item at a time. `changeRow` is the same renderer the
+// chat uses for a skill's result, so Undo here goes through exactly the path
+// the chat's own Undo buttons do.
+async function renderAutonomousReview() {
+  const box = $("autonomous-review");
+  const list = $("autonomous-review-list");
+  if (!box || !list) return;
+
+  const pass = await apiJson("/tasks/autonomous/last").catch(() => null);
+  const changes = pass?.changes || [];
+  box.classList.toggle("hidden", changes.length === 0);
+  if (!changes.length) return;
+
+  const when = pass.finished_at ? whenText(pass.finished_at) : "";
+  $("autonomous-review-title").textContent =
+    `What the last run changed, ${changes.length} thing(s)` + (when ? `, ${when}` : "");
+  list.replaceChildren(...changes.map((change) => changeRow(change)));
+}
+
+async function renderToolSettings() {
+  renderMcpSnippet();
+  const list = $("tool-list");
+  showSkeletons(list, 4, "li");
+  const [catalog, prefs] = await Promise.all([
+    apiJson("/chat/tools").catch(() => []),
+    apiJson("/preferences").catch(() => ({ disabled_tools: [] })),
+  ]);
+  clearSkeletons(list);
+  prefsCache = prefs;
+  renderToolFocus(prefs.tool_focus || "auto");
+  renderSmallModelMode(prefs.small_model_mode || "auto");
+  renderRunBudget(prefs);
+  const disabled = new Set(prefs.disabled_tools || []);
+  list.replaceChildren();
+  //: Grouped by what a tool does to the notebook (CHAT_PLAN, INBOX 71: "a
+  //: grouped table (read, write, destructive)"), each group under an
+  //: `h4.setting-subhead` (DESIGN.md: a subdivision inside a group) that
+  //: spans both columns. Within a group, the catalog's own order.
+  for (const [key, title] of TOOL_GROUPS) {
+    const members = catalog.filter((t) => (t.group || "read") === key);
+    if (!members.length) continue;
+    const head = document.createElement("li");
+    head.className = "tool-group-head";
+    head.dataset.group = key;
+    const h4 = document.createElement("h4");
+    h4.className = "setting-subhead";
+    h4.textContent = title;
+    head.append(h4);
+    //: One switch for the group (audit 1031 HR14: seventy-two switches in ten groups).
+    const all = document.createElement("button");
+    all.type = "button";
+    all.className = "linklike tool-group-all";
+    all.addEventListener("click", () => saveToolGroup(head));
+    head.append(all);
+    list.append(head);
+    for (const tool of members) appendToolRow(list, tool, disabled, key);
+  }
+  applyToolFilter();
+}
+
+//: Moved here from skills.js (audit 1031, the boot gzip budget): Tools and features is
+//: the only caller of every function below.
+// --- Wave O: agent-tools toggles ----------------------------------------------------
+
+// How many tool descriptions each message carries (§11a). Saved on change
+// rather than behind an Apply button, the search-engine picker taught us
+// that a control which saves nothing until later reads as broken, because
+// the next status poll paints the old value back over it.
+function renderToolFocus(current) {
+  for (const radio of document.querySelectorAll('input[name="tool-focus"]')) {
+    radio.checked = radio.value === current;
+    radio.onchange = async () => {
+      if (!radio.checked) return;
+      const status = $("tool-focus-status");
+      status.textContent = "Saving…";
+      prefsCache = await apiJson("/preferences", {
+        method: "PUT",
+        body: JSON.stringify({ tool_focus: radio.value }),
+      });
+      status.textContent =
+        radio.value === "auto"
+          ? "Each message is offered the tools it needs."
+          : "Every message is offered every tool.";
+    };
+  }
+}
+
+//: **The Phase B setting, given the control it never had.** `small_model_mode`
+//: has been on GET/PUT /preferences since the skills reform's backend half,
+//: read by the chat route on every run, with nothing anywhere in the app that
+//: could change it, so every notebook ran on `auto` whatever its owner wanted.
+//: Saved on change for the same reason the tool-focus radios above are: a
+//: control that waits for an Apply button reads as broken here, because the
+//: next preferences render paints the old value back over it.
+function renderSmallModelMode(current) {
+  const select = $("small-model-mode");
+  if (!select) return;
+  select.value = current || "auto";
+  renderSmallModelAuto();
+}
+
+//: **The run budget** (Brief 13), the same shape as the two controls above:
+//: saved on change, because a control that waits for an Apply button reads as
+//: broken here, the next preferences render paints the old value back over it.
+//: Both fields together in one request, so a person who edits one and then the
+//: other does not race two writes of the same preferences file.
+function renderRunBudget(prefs) {
+  const tokens = $("run-budget-tokens");
+  const seconds = $("run-budget-seconds");
+  if (tokens) tokens.value = String(prefs.run_budget_tokens ?? 20000);
+  if (seconds) seconds.value = String(prefs.run_budget_seconds ?? 90);
+}
+
+//: One tool's switch, saved. A refused save puts the switch back and says why:
+//: the handler used to `await` with nothing to catch it, so a 422 was an
+//: unhandled rejection and the switch stayed where the server disagreed (found
+//: by the deepflows sweep, which turned all the tools off).
+async function saveToolSwitch(check, name) {
+  const next = new Set(prefsCache.disabled_tools || []);
+  if (check.checked) next.delete(name);
+  else next.add(name);
+  try {
+    prefsCache = await apiJson("/preferences", {
+      method: "PUT",
+      body: JSON.stringify({ disabled_tools: [...next] }),
+    });
+  } catch (error) {
+    check.checked = !check.checked;
+    toast(error.message || "Couldn't save that. Try again.", true);
+    return;
+  }
+  // The "N of 51 on" count is only true until someone flips one.
+  applyToolFilter();
+}
+
+//: The boxes a group's switch acts on: its rows on screen, so a filter is never
+//: overstepped, and not the one the web opt-in holds off.
+function toolGroupBoxes(key) {
+  const rows = $("tool-list")?.querySelectorAll(`:scope > li[data-tool][data-group="${key}"]`) || [];
+  return [...rows]
+    .filter((row) => !row.classList.contains("hidden"))
+    .map((row) => row.querySelector("input[type=checkbox]"))
+    .filter((check) => check && !check.disabled);
+}
+
+//: The group switch says what a press does now: off while any is on, else on.
+function toolGroupAllPaint(head) {
+  const button = head.querySelector(".tool-group-all");
+  if (!button) return;
+  const boxes = toolGroupBoxes(head.dataset.group);
+  const words = boxes.some((check) => check.checked) ? "Turn all off" : "Turn all on";
+  button.hidden = !boxes.length;
+  button.textContent = words;
+  button.setAttribute("aria-label", `${words} in ${head.querySelector("h4").textContent}`);
+}
+
+//: A group in one save; the boxes follow the answer and a failure leaves them as they were.
+async function saveToolGroup(head) {
+  const boxes = toolGroupBoxes(head.dataset.group);
+  if (!boxes.length) return;
+  const turnOn = !boxes.some((check) => check.checked);
+  const next = new Set(prefsCache.disabled_tools || []);
+  for (const check of boxes) {
+    const name = check.closest("li").dataset.tool;
+    if (turnOn) next.delete(name);
+    else next.add(name);
+  }
+  try {
+    prefsCache = await apiJson("/preferences", {
+      method: "PUT",
+      body: JSON.stringify({ disabled_tools: [...next] }),
+    });
+  } catch (error) {
+    toast(error.message || "Couldn't save that. Try again.", true);
+    return;
+  }
+  for (const check of boxes) check.checked = turnOn;
+  applyToolFilter();
+}
+
+//: The four groups, in the order a person scanning for risk reads them.
+const TOOL_GROUPS = [
+  ["read", "Reads your notebook"],
+  ["write", "Changes your notebook"],
+  ["confirm", "Asks you first"],
+  ["online", "Reaches the web"],
+];
+
+function appendToolRow(list, tool, disabled, group) {
+  const li = document.createElement("li");
+  li.dataset.group = group;
+  //: What a Tools and features row for this tool lands on (`ai-tool` in
+  //: REVEAL_TARGETS).
+  li.dataset.tool = tool.name;
+  const label = document.createElement("label");
+  label.className = "tool-row setting-check";
+  const check = document.createElement("input");
+  check.type = "checkbox";
+  check.checked = !disabled.has(tool.name);
+  // web_search is gated by the separate online opt-in, show why it's off.
+  if (tool.online && !tool.enabled && !disabled.has(tool.name)) {
+    check.checked = false;
+    check.disabled = true;
+    check.title = "Enable web search in Preferences first";
+  }
+  check.addEventListener("change", () => saveToolSwitch(check, tool.name));
+  const text = document.createElement("span");
+  const name = document.createElement("strong");
+  name.textContent = tool.name.replace(/_/g, " ");
+  text.append(name);
+  // The chips sit on their own line under the name, not after it on the
+  // same one: the switch is centred on the name's line (the grid in
+  // 03-dashboard-widgets.css), and a chip that wrapped would have made
+  // that line two lines tall and pulled the switch off the name again.
+  if (tool.destructive || tool.online) {
+    const tags = document.createElement("span");
+    tags.className = "tool-tags";
+    if (tool.destructive) tags.append(chip("confirms first", "item-label is-warn"));
+    if (tool.online) tags.append(chip("online", "item-label"));
+    text.append(tags);
+  }
+  const desc = document.createElement("span");
+  desc.className = "muted tool-desc";
+  desc.textContent = tool.description;
+  desc.title = tool.description || ""; // clamped to two lines; the whole of it on hover
+  // The description goes *inside* the label's text column, not beside the
+  // label in the <li>. That is what lets this row be `.setting-check`'s
+  // grid, name and description stacked in column one, switch hard right , 
+  // instead of a flex row whose switch tracked the length of each name.
+  // It also makes the description part of the control's own hit area, the
+  // way the hint under every other setting already is.
+  text.append(desc);
+  label.append(check, text);
+  li.append(label);
+  // Matched against by the filter below. Stored on the row rather than
+  // re-read from the DOM on every keystroke, and lower-cased once here
+  // instead of once per row per keystroke.
+  li.dataset.search = `${tool.name} ${tool.description || ""}`.toLowerCase().replace(/_/g, " ");
+  list.appendChild(li);
+}
+
+//: Narrow a fifty-one item list, and say how many are on.
+//:
+//: The first audit of Settings measured this section at **5,708px**, by some
+//: way the longest scroll in the app, with every tool a name plus a
+//: paragraph of description. Finding one meant scrolling past fifty others,
+//: and nothing anywhere answered the question the list actually raises: how
+//: many of these are switched on?
+//:
+//: Filtering hides rows rather than re-rendering them, so a checkbox keeps
+//: its state and its listener while you type. Re-rendering would also lose
+//: focus from the filter field on every keystroke.
+function applyToolFilter() {
+  const list = $("tool-list");
+  const box = $("tool-filter");
+  const count = $("tool-count");
+  const empty = $("tool-filter-empty");
+  if (!list) return;
+  const needle = (box?.value || "").trim().toLowerCase();
+  const rows = [...list.querySelectorAll(":scope > li[data-tool]")];
+  let shown = 0;
+  const groupsShown = new Set();
+  for (const row of rows) {
+    const hit = !needle || (row.dataset.search || "").includes(needle);
+    row.classList.toggle("hidden", !hit);
+    if (hit) {
+      shown++;
+      groupsShown.add(row.dataset.group);
+    }
+  }
+  //: A group's head goes with its last matching row.
+  for (const head of list.querySelectorAll(":scope > li.tool-group-head")) {
+    head.classList.toggle("hidden", !groupsShown.has(head.dataset.group));
+    toolGroupAllPaint(head);
+  }
+  empty?.classList.toggle("hidden", shown > 0 || !rows.length);
+  if (count) {
+    // Two different questions, so two different answers: with no filter the
+    // useful number is how many are enabled; while filtering it is how many
+    // the search actually found.
+    const on = rows.filter((r) => r.querySelector("input[type=checkbox]")?.checked).length;
+    count.textContent = needle
+      ? `${shown} of ${rows.length}`
+      : `${on} of ${rows.length} on`;
+  }
+}
+
+// ---- from settings.js, settings-wiring.js and settings-panes.js (INBOX 1501) ----
+// The statements below sat in the boot files and asked for controls inside the
+// body at load, which would have built the 2,700-node body at every boot. They
+// run here, with the first open, after the body exists, in the order they ran.
+
+$("health-integrity-check")?.addEventListener("click", async () => {
+  const button = $("health-integrity-check");
+  setLabel(button, "ph:spin Checking");
+  try {
+    paintIntegrity(await apiJson("/debug/health/integrity", { method: "POST" }));
+  } catch (e) {
+    toast(`The integrity check could not run: ${e.message}`, true, { action: ["Try again", () => button.click()] });
+  }
+  setLabel(button, "Check now");
+});
+
+//: The one switch for every box's suggestions (Brief 86, CHAT_PLAN decision
+//: 69), kept on this device: absent reads as on.
+$("pref-search-suggest")?.addEventListener("change", (event) => {
+  prefs.set("searchSuggest", event.target.checked ? "on" : "off");
+  toast(event.target.checked ? "Search boxes suggest as you type." : "Search boxes no longer suggest.");
+});
+$("bg-art-toggle").addEventListener("change", (e) => {
+  toggleBgArt(e.target.checked);
+  renderAppearance(); // enable/disable the style + intensity rows
+});
+$("contrast-toggle").addEventListener("change", (e) => applyContrast(e.target.checked));
+
+// Wave O: expanded appearance controls.
+for (const b of document.querySelectorAll("#theme-seg button")) {
+  b.addEventListener("click", () => {
+    applyThemeChoice(b.dataset.themeChoice);
+    renderAppearance();
+  });
+}
+for (const b of document.querySelectorAll("#fontsize-seg button")) {
+  b.addEventListener("click", () => {
+    prefs.set("fontsize", b.dataset.fontsize);
+    applyAppearance();
+    renderAppearance();
+  });
+}
+$("font-seg").addEventListener("change", (e) => {
+  prefs.set("font", e.target.value);
+  applyAppearance();
+  renderAppearance();
+});
+$("density-seg").addEventListener("change", (e) => {
+  //: Auto is no choice at all: the window's height decides.
+  if (e.target.value === "auto") prefs.remove("density");
+  else prefs.set("density", e.target.value);
+  applyAppearance();
+  renderAppearance();
+});
+$("perf-mode").addEventListener("change", (e) => {
+  prefs.set("perf", e.target.value);
+  applyAppearance();
+  renderAppearance();
+});
+
+$("glass-toggle").addEventListener("change", (e) => {
+  const turningOn = e.target.checked && appearancePref("glass") !== "on";
+  prefs.set("glass", e.target.checked ? "on" : "off");
+  // Asked for directly: switching glassmorphism on from off also turns the
+  // sheen on, so the full look shows up in one action, the sheen's own
+  // checkbox can still turn it back off afterward without touching this.
+  if (turningOn) prefs.set("glass-sheen", "on");
+  applyAppearance();
+  renderAppearance();
+});
+$("page-wash-toggle")?.addEventListener("change", (e) => {
+  prefs.set("page-wash", e.target.checked ? "on" : "off");
+  applyAppearance();
+});
+//: Using a glass setting while the glass is off turns the glass on (and the
+//: sheen, for its strength): a dimmed row is a hint, not a wall
+//: (`renderGlassRows`, settings.js). Repaints the rows only when it woke one.
+function glassWake(sheen = false) {
+  const wake = [["glass", true], ["glass-sheen", sheen]].filter(([key, want]) => want && appearancePref(key) !== "on");
+  for (const [key] of wake) prefs.set(key, "on");
+  if (wake.length) renderAppearance();
+}
+$("glass-sheen-toggle").addEventListener("change", (e) => {
+  prefs.set("glass-sheen", e.target.checked ? "on" : "off");
+  if (e.target.checked) glassWake();
+  applyAppearance();
+  renderGlassRows();
+});
+$("glass-controls-toggle").addEventListener("change", (e) => {
+  prefs.set("glass-controls", e.target.checked ? "on" : "off");
+  if (e.target.checked) glassWake();
+  applyAppearance();
+});
+$("glass-sheen-strength").addEventListener("input", (e) => {
+  prefs.set("glass-sheen-strength", e.target.value);
+  $("glass-sheen-strength-value").textContent = `${e.target.value}%`;
+  glassWake(true);
+  applyAppearance();
+});
+for (const btn of document.querySelectorAll("#motion-seg button")) {
+  btn.addEventListener("click", () => {
+    const off = btn.dataset.motionChoice === "off";
+    prefs.set("motion", btn.dataset.motionChoice);
+    // The background-art picker has its own "Moving" override (see
+    // startBgArt()'s comment). Choosing Off here is a direct, explicit ask
+    // for stillness, and "Moving" silently surviving it read as the two
+    // settings being unrelated: Off selects "Still"; leaving Off only clears
+    // that if we set it, so an independent "Moving" choice isn't clobbered.
+    if (off) {
+      prefs.set("bg-motion", "still");
+    } else if (appearancePref("bg-motion") === "still") {
+      prefs.set("bg-motion", "auto");
+    }
+    if ($("bg-motion")) $("bg-motion").value = appearancePref("bg-motion");
+    applyAppearance();
+    renderAppearance();
+    if (reducedMotionWanted()) stopBgArt(); // a still UI shouldn't keep the art running
+    else if (bgArtOn()) startBgArt();
+    renderBrandLogo(); // start/stop the emblem's rotation to match
+  });
+}
+
+$("ui-motion-toggle").addEventListener("change", (e) => {
+  prefs.set("ui-motion", e.target.checked ? "on" : "off");
+  applyAppearance();
+});
+$("bg-intensity").addEventListener("input", (e) => {
+  prefs.set("bg-intensity", e.target.value);
+  $("bg-intensity-value").textContent = `${e.target.value}%`;
+  // Using it while the art is off turns the art on (`.dependent-off`, settings.js).
+  if (!bgArtOn()) {
+    toggleBgArt(true);
+    renderAppearance();
+  }
+  applyAppearance();
+  startBgArt(); // intensity also drives particle density
+});
+// Corner rounding + glass blur: live sliders over CSS custom properties.
+$("radius-slider").addEventListener("input", (e) => {
+  prefs.set("radius", e.target.value);
+  $("radius-value").textContent = `${e.target.value}px`;
+  applyAppearance();
+});
+$("glass-blur").addEventListener("input", (e) => {
+  prefs.set("glass-blur", e.target.value);
+  $("glass-blur-value").textContent = `${e.target.value}px`;
+  glassWake();
+  applyAppearance();
+});
+$("glass-opacity").addEventListener("input", (e) => {
+  prefs.set("glass-opacity", e.target.value);
+  $("glass-opacity-value").textContent = `${e.target.value}%`;
+  glassWake();
+  applyAppearance();
+});
+// All four routes go through app.js's setZoom, so the slider, the buttons, the
+// Ctrl+/- shortcut and the command palette cannot disagree about the range,
+// the step, or where the value is stored.
+$("zoom-slider").addEventListener("input", (e) => setZoom(Number(e.target.value)));
+$("zoom-in")?.addEventListener("click", () => nudgeZoom(1));
+$("zoom-out")?.addEventListener("click", () => nudgeZoom(-1));
+$("zoom-reset")?.addEventListener("click", () => setZoom(100));
+for (const btn of document.querySelectorAll("#border-style-seg button")) {
+  btn.addEventListener("click", () => {
+    prefs.set("border-style", btn.dataset.borderChoice);
+    applyAppearance();
+    renderAppearance();
+  });
+}
+$("shadow-intensity").addEventListener("input", (e) => {
+  prefs.set("shadow-intensity", e.target.value);
+  $("shadow-intensity-value").textContent = `${e.target.value}%`;
+  applyAppearance();
+});
+// Custom accent + page background.
+// A pick whose button words would read under 4.5:1 in the mode showing is
+// refused, not quietly altered: the row says the ratio and offers the
+// nearest shade that reads, one press to take it (Brief 95).
+function setCustomAccent(hex) {
+  $("accent-offer").classList.add("hidden");
+  prefs.set("accent-custom", hex);
+  applyCustomAccent(hex);
+  renderAppearance();
+  if (bgArtOn()) startBgArt();
+  renderBrandLogo();
+}
+$("accent-custom").addEventListener("input", (e) => {
+  const pick = e.target.value;
+  const dark = resolvedTheme() === "dark";
+  const tone = accentTone(pick, dark);
+  if (tone === pick) return setCustomAccent(pick);
+  const ratio = hexRatio(pick, accentInk(dark)).toFixed(1);
+  $("accent-offer-text").textContent =
+    `Words on ${pick} read at ${ratio}:1 in ${dark ? "dark" : "light"} mode, under the 4.5:1 they need.`;
+  $("accent-offer-dot").style.setProperty("--swatch", tone);
+  $("accent-offer-label").textContent = `Use ${tone} (${hexRatio(tone, accentInk(dark)).toFixed(1)}:1)`;
+  $("accent-offer-use").dataset.tone = tone;
+  $("accent-offer").classList.remove("hidden");
+});
+$("accent-offer-use").addEventListener("click", (e) => {
+  const tone = e.currentTarget.dataset.tone;
+  if (!tone) return;
+  $("accent-custom").value = tone;
+  setCustomAccent(tone);
+});
+$("accent-custom-clear").addEventListener("click", () => {
+  $("accent-offer").classList.add("hidden");
+  prefs.remove("accent-custom");
+  applyCustomAccent(null);
+  renderAppearance();
+  if (bgArtOn()) startBgArt();
+  renderBrandLogo();
+});
+$("page-bg-custom").addEventListener("input", (e) => {
+  prefs.set("page-bg", e.target.value);
+  applyPageBackground(e.target.value);
+});
+$("page-bg-clear").addEventListener("click", () => {
+  prefs.remove("page-bg");
+  prefs.remove("page-bg-dark");
+  applyPageBackground(null);
+  renderAppearance();
+});
+// Background art style.
+$("bg-art-style").closest("details")?.addEventListener("toggle", renderBgStyleGrid);
+$("avatar-follow").addEventListener("change", (e) => {
+  const value = e.target.checked ? "on" : "off";
+  prefs.set("avatar-follow", value);
+  document.documentElement.dataset.avatarFollow = value;
+});
+$("avatar-buddy").addEventListener("change", (e) => {
+  prefs.set("avatar-buddy", e.target.value);
+  mountBuddyCustom();
+  syncNameMarkBuddy();
+  nameMarkBuddySizeSelect();
+});
+$("avatar-buddy-size").addEventListener("change", (e) => nameMarkBuddySetSize(Number(e.target.value)));
+$("avatar-buddy-motion").addEventListener("change", (e) => {
+  try {
+    prefs.set("avatar-buddy-motion", e.target.value);
+  } catch (err) {
+    // For this visit only.
+  }
+  nameMarkBuddyMotionApply();
+});
+$("avatar-buddy-actions").addEventListener("change", (e) => {
+  try {
+    prefs.set("avatar-buddy-actions", e.target.value);
+  } catch (err) {
+    // This visit only.
+  }
+});
+try {
+  $("avatar-buddy-actions").value = prefs.get("avatar-buddy-actions", null) || "fewer";
+} catch (err) {
+  $("avatar-buddy-actions").value = "fewer";
+}
+$("avatar-buddy-recall").addEventListener("click", () => nameMarkBuddyCallBack());
+$("atlas-style").addEventListener("change", (e) => {
+  prefs.set("atlas-style", e.target.value);
+  atlasRepaint();
+});
+$("assistant-avatar").addEventListener("change", (e) => {
+  prefs.set("assistant-avatar", e.target.value);
+  repaintAssistantAvatars();
+});
+$("atlas-look").addEventListener("change", (e) => {
+  prefs.set("atlas-look", e.target.value);
+  atlasRepaint();
+});
+$("face-look").addEventListener("change", (e) => {
+  prefs.set("face-look", e.target.value);
+  nameMarkRepaintAll();
+  //: An Atlas on Auto takes its look from here (`atlasLook`).
+  atlasRepaint();
+});
+$("dash-mark").addEventListener("change", (e) => {
+  prefs.set("dash-mark", e.target.value);
+  paintDashEmblem();
+});
+$("avatar-motion").addEventListener("change", (e) => {
+  prefs.set("avatar-motion", e.target.value);
+  document.documentElement.dataset.avatarMotion = e.target.value;
+});
+$("progress-motion").addEventListener("change", (e) => {
+  prefs.set("progress-motion", e.target.value);
+  document.documentElement.dataset.progressMotion = e.target.value;
+  document.documentElement.toggleAttribute("data-progress-chosen", e.target.value === "always");
+  renderProgressMotionHint();
+});
+$("pref-show-thinking-words")?.addEventListener("change", (e) => {
+  prefs.set("show-thinking-words", e.target.checked ? "on" : "off");
+});
+$("bg-motion").addEventListener("change", (e) => {
+  prefs.set("bg-motion", e.target.value);
+  // Still vs moving is decided in setup, so the sketch has to be rebuilt.
+  if (bgArtOn()) startBgArt();
+});
+// Custom CSS (advanced).
+$("custom-css-apply").addEventListener("click", () => {
+  const css = $("custom-css").value;
+  prefs.set("custom-css", css);
+  applyCustomCss(css);
+  $("custom-css-status").textContent = "Applied.";
+});
+$("custom-css-clear").addEventListener("click", () => {
+  prefs.remove("custom-css");
+  $("custom-css").value = "";
+  applyCustomCss("");
+  $("custom-css-status").textContent = "Cleared.";
+});
+$("appearance-reset").addEventListener("click", resetAppearance);
+$("theme-reset").addEventListener("click", resetThemeOnly);
+
+$("theme-clear-overrides").addEventListener("click", clearManualOverrides);
+
+$("harmony-apply").addEventListener("click", applyHarmony);
+$("custom-theme-save").addEventListener("click", () => {
+  saveCurrentLook().catch((error) => toast(error.message, true));
+});
+$("custom-theme-name").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") $("custom-theme-save").click();
+});
+
+$("log-source").addEventListener("change", renderActiveLogView);
+$("log-level").addEventListener("change", renderActiveLogView);
+$("log-requests").addEventListener("change", renderActiveLogView);
+
+$("log-filter").addEventListener("input", (event) => {
+  if (event.isTrusted) settingsLook.logFilterFromRun = false;
+  clearTimeout(logFilterDebounceTimeout);
+  logFilterDebounceTimeout = setTimeout(renderActiveLogView, 150);
+});
+$("logs-copy").addEventListener("click", copyLogs);
+$("logs-clear").addEventListener("click", clearLogs);
+$("logs-bundle").addEventListener("click", downloadSupportBundle);
+$("logs-email-bundle").addEventListener("click", () => emailSupportReport(""));
+
+$("log-follow").addEventListener("change", (event) => {
+  logFollowPinned = event.target.checked;
+  if (event.target.checked) scrollLogToBottom();
+});
+
+// Scrolling up is how you say "stop moving, I am reading this", so it pauses
+// the follow rather than fighting you for the scroll position. Scrolling back
+// to the bottom resumes it, which is the same gesture every terminal uses.
+// Both containers get the listener, only one is ever visible at a time, but
+// whichever it is has to pause Follow the same way.
+for (const id of ["log-list", "log-terminal"]) {
+  $(id).addEventListener("scroll", () => {
+    if (!$("log-follow").checked) return;
+    logFollowPinned = nearLogBottom();
+    $("log-follow-label").classList.toggle("is-paused", !logFollowPinned);
+  });
+}
+
+for (const button of document.querySelectorAll("#log-view-toggle button")) {
+  button.addEventListener("click", () => {
+    logView = button.dataset.view;
+    prefs.set("logView", logView);
+    for (const b of document.querySelectorAll("#log-view-toggle button")) {
+      b.classList.toggle("active", b === button);
+    }
+    $("log-list").classList.toggle("hidden", logView !== "list");
+    $("log-terminal").classList.toggle("hidden", logView !== "terminal");
+    $("log-terminal-hint").classList.toggle("hidden", logView !== "terminal");
+    renderActiveLogView();
+    scrollLogToBottom();
+  });
+  // The markup hardcodes "List" as the active button; a returning visitor
+  // whose last choice (localStorage) was "terminal" needs that reflected
+  // here too, not just in which container renders.
+  button.classList.toggle("active", button.dataset.view === logView);
+}
+$("log-list").classList.toggle("hidden", logView !== "list");
+$("log-terminal").classList.toggle("hidden", logView !== "terminal");
+$("log-terminal-hint").classList.toggle("hidden", logView !== "terminal");
+
+$("sampling-reset")?.addEventListener("click", async () => {
+  try {
+    await apiJson("/models/sampling", {
+      method: "PUT",
+      body: JSON.stringify({ overrides: {} }),
+    });
+    toast("Back to what each model recommends.");
+  } catch {
+    toast("Couldn't reset those settings.", true);
+  }
+  await loadSamplingSettings();
+});
+
+//: The persona hint's "(Atlas)" follows the name too.
+{
+  const hint = document.getElementById("persona-placeholder-hint");
+  if (hint) hint.textContent = `Write {ai_name} where the name should go and it is replaced with ${AI_NAME}. Optional.`;
+}
+
+$("atlas-open")?.addEventListener("click", () => openHelpChat());
+
+wireLearnedSection();
+
+wirePrefsDirtyMarks();
+
+// Mark a picker as "user has a pending choice" so the status poll stops
+// resetting it (Wave N bug fix).
+for (const id of ["chat-model-select", "embedding-model-select"]) {
+  $(id).addEventListener("change", () => ($(id).dataset.userChosen = "1"));
+}
+for (const radio of document.querySelectorAll('input[name="emb-backend"]')) {
+  radio.addEventListener("change", () => {
+    $("embedding-model-select").dataset.userChosen = "1";
+    // The radio itself needs the latch too: the choice isn't saved until
+    // "Apply & re-index", and without this the next status poll put the old
+    // backend back the instant focus left the radio.
+    radio.dataset.userChosen = "1";
+    //: The picker's enabled state follows the radio immediately rather than
+    //: waiting for the next status poll: choosing Ollama and finding the
+    //: model list still greyed for a second reads as the choice not having
+    //: taken. It says which backend is *selected*, which is the question the
+    //: control is about; whether it is applied is what Apply is for.
+    syncEmbeddingPickerState();
+    if (radio.checked && radio.value === "fastembed") applyEmbeddingBackend();
+  });
+}
+
+$("about-install")?.addEventListener("click", async () => {
+  const offered = installPrompt.event;
+  if (!offered) return;
+  installPrompt.event = null; // the event can be used once
+  offered.prompt();
+  await offered.userChoice.catch(() => {});
+  renderInstallRow();
+});
+
+$("pref-single-keys").checked = singleKeysOn();
+
+for (const button of document.querySelectorAll("#privacy-range [data-range]")) {
+  button.addEventListener("click", () => {
+    privacyRange = button.dataset.range;
+    renderPrivacyRange();
+  });
+}
+
+
+// ---- Check what it learned (CHAT_PLAN decision 68) ----
+//
+// The button on What it learned's bar runs `POST /learned/audit/run`: every
+// open claim and question is re-read against its note, what no longer holds is
+// retired (a tombstone, with its reason) or flagged. Here, and not in the boot
+// files, because the panel cannot be seen before Settings opens. What a check
+// retired, a scheduled one included, is read back from `GET /learned/audit/last`
+// so its Undo is in the panel whoever ran it; a flag is a mark on the list's row.
+const LEARNED_CHECK = { flags: {}, loaded: false };
+
+function learnedCheckSentence(words) {
+  const text = String(words || "").trim();
+  return text ? `${text.charAt(0).toUpperCase()}${text.slice(1)}.` : "";
+}
+
+function learnedCheckLine(item) {
+  const li = document.createElement("li");
+  li.className = "entry-item learned-row";
+  const text = document.createElement("p");
+  text.className = "learned-text";
+  text.textContent = item.text;
+  const why = document.createElement("p");
+  why.className = "muted learned-meta";
+  why.textContent = `Retired: ${item.reason}`;
+  li.append(text, why);
+  return li;
+}
+
+//: The box: the sentence, what the last check retired, and its Undo.
+function learnedCheckShow(last, summary) {
+  const box = $("learned-check-result");
+  if (!box) return;
+  const retired = last?.retired || [];
+  const flagged = Object.keys(LEARNED_CHECK.flags).length;
+  let words = summary;
+  if (!words && retired.length) words = `The last check retired ${nounCount(retired.length, "thing")}.`;
+  if (!words && flagged) words = `${nounCount(flagged, "thing is", "things are")} flagged below for your eye.`;
+  box.classList.toggle("hidden", !words);
+  $("learned-check-summary").textContent = words || "";
+  $("learned-check-list").replaceChildren(...retired.map(learnedCheckLine));
+  const undo = $("learned-check-undo");
+  undo.classList.toggle("hidden", !retired.length);
+  undo.dataset.run = last?.run || "";
+  undo.dataset.count = String(retired.length);
+}
+
+//: A flagged row says why, beside its own words.
+function learnedCheckMark() {
+  for (const li of document.querySelectorAll("#learned-list [data-fact-id]")) {
+    const reason = LEARNED_CHECK.flags[li.dataset.factId];
+    if (!reason || li.querySelector(".learned-flag")) continue;
+    const note = document.createElement("p");
+    note.className = "muted learned-meta learned-flag";
+    note.textContent = `Check this: ${reason}`;
+    li.appendChild(note);
+  }
+}
+
+async function learnedCheckRefresh(summary = "") {
+  const last = await apiJson("/learned/audit/last").catch(() => null);
+  const flags = await apiJson("/learned/audit/flags").catch(() => null);
+  LEARNED_CHECK.flags = flags?.flags || {};
+  learnedCheckShow(last, summary);
+  learnedCheckMark();
+}
+
+async function learnedCheckRun() {
+  const button = $("learned-check");
+  button.disabled = true;
+  const refresh = () => {
+    renderLearnedList();
+    return learnedCheckRefresh();
+  };
+  try {
+    const done = await apiJson("/learned/audit/run", { method: "POST" });
+    const run = { run: done.run };
+    if (done.retired.length) {
+      pushRoutePairUndo(
+        `Check what it learned, ${nounCount(done.retired.length, "thing")} retired`,
+        ["/learned/audit/undo", "POST", run],
+        ["/learned/audit/redo", "POST", run],
+        refresh
+      );
+    }
+    await learnedCheckRefresh(learnedCheckSentence(done.summary));
+    renderLearnedList();
+  } catch (error) {
+    toast(error.message, true);
+  } finally {
+    button.disabled = false;
+  }
+}
+
+//: The box's Undo: put back what the last check retired, whoever ran it, and
+//: leave a step on the stack that retires it again.
+async function learnedCheckPutBack() {
+  const button = $("learned-check-undo");
+  const run = { run: button.dataset.run };
+  const count = Number(button.dataset.count) || 0;
+  const post = (path) => apiJson(path, { method: "POST", body: JSON.stringify(run) });
+  const refresh = () => {
+    renderLearnedList();
+    return learnedCheckRefresh();
+  };
+  try {
+    await post("/learned/audit/undo");
+  } catch (error) {
+    toast(error.message, true);
+    return;
+  }
+  pushUndo(
+    `Put back ${nounCount(count, "thing")} the check retired`,
+    async () => {
+      await post("/learned/audit/redo");
+      await refresh();
+    },
+    async () => {
+      await post("/learned/audit/undo");
+      await refresh();
+    }
+  );
+  toast(`Put back ${nounCount(count, "thing")}.`);
+  await refresh();
+}
+
+$("learned-check")?.addEventListener("click", learnedCheckRun);
+$("learned-check-undo")?.addEventListener("click", learnedCheckPutBack);
+//: The list is drawn on every filter, page and edit (`renderLearnedList`, a
+//: boot file that cannot know this one): the draw is wrapped, so the marks
+//: follow it, and the first draw reads what the last check did (a scheduled
+//: one too). A wrapper and not a MutationObserver: nothing here may add a wake source.
+const learnedListDrawn = renderLearnedList;
+renderLearnedList = async function renderLearnedListMarked() {
+  const drawn = await learnedListDrawn();
+  if (LEARNED_CHECK.loaded) learnedCheckMark();
+  else {
+    LEARNED_CHECK.loaded = true;
+    await learnedCheckRefresh();
+  }
+  return drawn;
+};

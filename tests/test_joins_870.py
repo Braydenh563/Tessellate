@@ -31,11 +31,13 @@ def _text(n: int) -> str:
 @pytest.mark.parametrize(("n", "clause"), [
     (2, "you're leaning towards the Logitech"),
     (2, "a gap of about $30 between them"),
-    #: The day is named too (the owner, 2026-10-11: "a week later" says when).
-    (2, "A week later, on 25 September, you tried the Viper"),
+    #: The time between two notes is said only for a question about time
+    #: (INBOX 1441, the owner, 2026-10-29, over 2026-10-11's "a week later").
+    (2, "You tried the Viper at JB Hi-Fi"),
     #: Said as then, as the gold has it (atlas narration, the owner 2026-10-11).
     (1, "though you were still shaky on big O"),
-    (1, "about two months old"),
+    #: The staleness line only for a question about now (INBOX 1441).
+    (1, "Nothing yet on assessments or due dates"),
     (12, "with one thing still open"),
     (12, "May, which is seven months from now"),
     (15, "under your aim of $100 a week"),

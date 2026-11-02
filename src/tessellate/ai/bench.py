@@ -135,6 +135,10 @@ class Failure:
         }
 
 
+#: The mean score a model needs before the bench calls it recommended.
+RECOMMEND_FLOOR = 0.5
+
+
 @dataclass
 class ModelScore:
     model: str
@@ -279,6 +283,81 @@ def _tokens(reply: dict) -> int:
     return max(1, len(reply.get("content") or "") // 4)
 
 
+def _filing_step(session, provider, model, items, categories, score, tick) -> None:  # noqa: ANN001
+    """Each held-out note filed once; a failing call is a failed task."""
+    from tessellate.ai import librarian
+    from tessellate.ai.janitor import SYSTEM_PROMPT
+
+    for item in items:
+        tick(model)
+        prompt = librarian.filing_prompt(session, item.content, categories)
+        try:
+            reply = provider.chat(model, [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": prompt},
+            ])
+            right, got = filing_right(reply.get("content") or "", item.category)
+        except Exception as exc:  # noqa: BLE001  # one failing call is a failed task, not a failed run
+            score.errors += 1
+            right, got = False, f"error: {exc}"
+        score.filing.append(1.0 if right else 0.0)
+        if not right:
+            score._fail(Failure("filing", item.entry_id, "File this note", item.category, got))
+
+
+def _answer_step(provider, model, items, score, tick, clock) -> None:  # noqa: ANN001
+    """Each question asked beside distractors; scored on citing the right block."""
+    for index, item in enumerate(items):
+        tick(model)
+        others = [o for o in items if o.entry_id != item.entry_id]
+        distractors = [others[(index + k) % len(others)] for k in (0, 1)] if len(others) >= 2 else others
+        shown = distractors[:]
+        slot = index % (len(shown) + 1)
+        shown.insert(slot, item)
+        blocks = "\n\n".join(f"[{n}] {fence('note', o.content)}" for n, o in enumerate(shown, 1))
+        began = clock()
+        try:
+            reply = provider.chat(model, [
+                {"role": "system", "content": ANSWER_SYSTEM},
+                {"role": "user", "content": f"{blocks}\n\nQuestion: {item.question}"},
+            ])
+            text = reply.get("content") or ""
+            score.latency_ms.append((clock() - began) * 1000)
+            score.tokens.append(_tokens(reply))
+        except Exception as exc:  # noqa: BLE001
+            score.errors += 1
+            text = f"error: {exc}"
+        value, _ = citation_score({slot + 1}, cited_numbers(text))
+        score.citation.append(value)
+        if value < 1.0:
+            score._fail(Failure("citation", item.entry_id, item.question, f"[{slot + 1}]", text))
+
+
+def _tool_step(provider, model, items, score, tick) -> None:  # noqa: ANN001
+    """The first TOOL_TASKS notes looked up through the find_note tool."""
+    for item in items[:TOOL_TASKS]:
+        tick(model)
+        ask = f"Look up my notes about “{item.terms[0]}” with the find_note tool."
+        try:
+            reply = provider.chat_tools(model, [
+                {"role": "system", "content": TOOL_SYSTEM},
+                {"role": "user", "content": ask},
+            ], [FIND_NOTE_TOOL])
+            calls = reply.get("tool_calls") or []
+            right = any(
+                c.get("name") == "find_note"
+                and item.terms[0] in str((c.get("arguments") or {}).get("query", "")).lower()
+                for c in calls
+            )
+            got = json.dumps(calls)[:160] if calls else (reply.get("content") or "no tool call")
+        except Exception as exc:  # noqa: BLE001  # a model without tools scores 0 here, it does not stop the run
+            score.errors += 1
+            right, got = False, f"error: {exc}"
+        score.tools.append(1.0 if right else 0.0)
+        if not right:
+            score._fail(Failure("tools", item.entry_id, ask, f"find_note({item.terms[0]})", got))
+
+
 def run(
     session: Session,
     provider,  # noqa: ANN001  # the configured Provider, duck-typed for the fakes
@@ -290,9 +369,6 @@ def run(
     on_progress: Callable[[dict], None] | None = None,
 ) -> dict:
     """Bench each of `models` over the same held-out set; best first."""
-    from tessellate.ai import librarian
-    from tessellate.ai.janitor import SYSTEM_PROMPT
-
     items = build_set(session, size)
     categories = [n for n in session.scalars(select(Category.name)) if n != UNCATEGORISED]
     started = clock()
@@ -315,66 +391,9 @@ def run(
         for model in models:
             score = ModelScore(model)
             scores.append(score)
-            for item in items:
-                tick(model)
-                prompt = librarian.filing_prompt(session, item.content, categories)
-                try:
-                    reply = provider.chat(model, [
-                        {"role": "system", "content": SYSTEM_PROMPT},
-                        {"role": "user", "content": prompt},
-                    ])
-                    right, got = filing_right(reply.get("content") or "", item.category)
-                except Exception as exc:  # noqa: BLE001  # one failing call is a failed task, not a failed run
-                    score.errors += 1
-                    right, got = False, f"error: {exc}"
-                score.filing.append(1.0 if right else 0.0)
-                if not right:
-                    score._fail(Failure("filing", item.entry_id, "File this note", item.category, got))
-            for index, item in enumerate(items):
-                tick(model)
-                others = [o for o in items if o.entry_id != item.entry_id]
-                distractors = [others[(index + k) % len(others)] for k in (0, 1)] if len(others) >= 2 else others
-                shown = distractors[:]
-                slot = index % (len(shown) + 1)
-                shown.insert(slot, item)
-                blocks = "\n\n".join(f"[{n}] {fence('note', o.content)}" for n, o in enumerate(shown, 1))
-                began = clock()
-                try:
-                    reply = provider.chat(model, [
-                        {"role": "system", "content": ANSWER_SYSTEM},
-                        {"role": "user", "content": f"{blocks}\n\nQuestion: {item.question}"},
-                    ])
-                    text = reply.get("content") or ""
-                    score.latency_ms.append((clock() - began) * 1000)
-                    score.tokens.append(_tokens(reply))
-                except Exception as exc:  # noqa: BLE001
-                    score.errors += 1
-                    text = f"error: {exc}"
-                value, _ = citation_score({slot + 1}, cited_numbers(text))
-                score.citation.append(value)
-                if value < 1.0:
-                    score._fail(Failure("citation", item.entry_id, item.question, f"[{slot + 1}]", text))
-            for item in items[:TOOL_TASKS]:
-                tick(model)
-                ask = f"Look up my notes about “{item.terms[0]}” with the find_note tool."
-                try:
-                    reply = provider.chat_tools(model, [
-                        {"role": "system", "content": TOOL_SYSTEM},
-                        {"role": "user", "content": ask},
-                    ], [FIND_NOTE_TOOL])
-                    calls = reply.get("tool_calls") or []
-                    right = any(
-                        c.get("name") == "find_note"
-                        and item.terms[0] in str((c.get("arguments") or {}).get("query", "")).lower()
-                        for c in calls
-                    )
-                    got = json.dumps(calls)[:160] if calls else (reply.get("content") or "no tool call")
-                except Exception as exc:  # noqa: BLE001  # a model without tools scores 0 here, it does not stop the run
-                    score.errors += 1
-                    right, got = False, f"error: {exc}"
-                score.tools.append(1.0 if right else 0.0)
-                if not right:
-                    score._fail(Failure("tools", item.entry_id, ask, f"find_note({item.terms[0]})", got))
+            _filing_step(session, provider, model, items, categories, score, tick)
+            _answer_step(provider, model, items, score, tick, clock)
+            _tool_step(provider, model, items, score, tick)
     except _Stop as halt:
         stopped = halt.reason
         logger.info("bench: %s after %d of %d tasks", halt.reason, done, total)
@@ -385,7 +404,10 @@ def run(
         "models": rows,
         #: No recommendation from a run that did not finish: a model that
         #: was cut off after ten tasks has not been compared with the rest.
-        "recommended": rows[0]["model"] if rows and not stopped else None,
+        #: And none from a run where nothing scored: the first row of a table
+        #: of zeros is the model that failed first (audit HR8: "Recommended,
+        #: Filing 0%, Answers 0%, Tools 0%").
+        "recommended": rows[0]["model"] if rows and not stopped and rows[0]["score"] >= RECOMMEND_FLOOR else None,
         "items": len(items),
         "set": fingerprint(items),
         "stopped": stopped,

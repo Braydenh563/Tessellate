@@ -184,7 +184,7 @@
 }
 
 .recording-transcript-toggle .ph-caret-down {
-  transition: transform var(--ui-base);
+  transition: transform var(--ui-base) var(--ease-out);
 }
 
 .recording-transcript-toggle[aria-expanded="true"] .ph-caret-down {
@@ -403,10 +403,8 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .recording-dock-dot {
-    animation: none;
-  }
+:where(:root[data-motion="reduced"]) .recording-dock-dot {
+  animation: none;
 }
 
 /* A background transcription on its card: the bar and a quiet Stop. */
@@ -559,4 +557,10 @@
 #meeting-done button {
   height: var(--control-h-lg);
   padding-block: 0;
+}
+
+/* No caption engine installed: the doors to Live captions are not drawn
+   (its own class, because the dialog toggles `hidden` by state). */
+button.captions-off {
+  display: none;
 }

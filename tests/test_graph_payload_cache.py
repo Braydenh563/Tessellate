@@ -107,6 +107,8 @@ def test_locking_the_vault_rebuilds_a_private_notes_label(client, session, build
         assert client.post(f"/entries/{note['id']}/privacy", json={"private": True}).status_code == 200
         assert _node(client, note["id"])["preview"].startswith("the spare key")
         vault.close()
-        assert "unlock" in _node(client, note["id"])["preview"]
+        # INBOX 1437: a sealed node is titled "Private note", no longer the
+        # read placeholder; the point here (a lock rebuilds the label) is unchanged.
+        assert _node(client, note["id"])["preview"] == "Private note"
     finally:
         vault.close()

@@ -54,18 +54,11 @@ const W = Number(process.env.W || 1440);
     const r = el.getBoundingClientRect();
     return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
   }, ids.shape);
-  await page.mouse.move(centre.x - 40, centre.y - 80);
-  await page.mouse.move(centre.x, centre.y, { steps: 4 });
-  await page.waitForTimeout(300);
-  const hover = await page.evaluate(() => {
-    const pin = document.getElementById("wb-lock-hover");
-    return { shown: Boolean(pin) && !pin.classList.contains("hidden") && pin.getBoundingClientRect().width >= 0, pe: pin ? getComputedStyle(pin).pointerEvents : null };
-  });
-  check("a lock shows on a locked shape under the pointer", hover.shown && hover.pe === "none", hover);
-  await page.mouse.move(centre.x + 400, centre.y + 200, { steps: 3 });
-  await page.waitForTimeout(300);
-  const gone = await page.evaluate(() => document.getElementById("wb-lock-hover")?.classList.contains("hidden"));
-  check("and goes when the pointer leaves it", gone);
+  const badge = await page.evaluate((id) => {
+    const pin = document.querySelector("#wb-lock-marks .wb-lock-pin");
+    return { shown: Boolean(pin) && pin.getBoundingClientRect().width >= 0, pe: pin ? getComputedStyle(pin).pointerEvents : null };
+  }, ids.shape);
+  check("a lock badge shows on a locked shape without hover", badge.shown && badge.pe === "none", badge);
   await page.mouse.move(centre.x, centre.y, { steps: 3 });
   await page.mouse.down();
   await page.mouse.up();

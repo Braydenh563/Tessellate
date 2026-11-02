@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Run Python</title></head><body><script>
+(function () {
+  "use strict";
+  var BASE = new URL("/documents/pyodide/", location.href).href;
+  var WORKER = @@WORKER@@;
+  var worker = null, current = 0, busy = false, evalId = 0;
+  //: D2: with cross-origin isolation the worker can block on this buffer
+  //: while the panel decides (a debugger stop, an input() line); without it
+  //: a run still runs, and the app says Debug cannot.
+  var REPLY_MAX = 65536;
+  var shared = self.crossOriginIsolated && typeof SharedArrayBuffer === "function" ? new SharedArrayBuffer(8 + REPLY_MAX) : null;
+  //: Pyodide's interrupt buffer (OPEN row 1065): a 2 written here raises
+  //: KeyboardInterrupt in the line that is running, so a console line that
+  //: never ends is stopped and the namespace the last run left is kept.
+  //: Without isolation the only stop is the worker going.
+  var interrupt = shared ? new Uint8Array(new SharedArrayBuffer(1)) : null;
+  function reply(value) {
+    if (!shared) return;
+    var bytes = new TextEncoder().encode(JSON.stringify(value == null ? null : value));
+    if (bytes.length > REPLY_MAX) bytes = new TextEncoder().encode('{"cmd":"stop"}');
+    var ctl = new Int32Array(shared, 0, 2);
+    new Uint8Array(shared, 8, REPLY_MAX).set(bytes);
+    Atomics.store(ctl, 1, bytes.length);
+    Atomics.store(ctl, 0, 1);
+    Atomics.notify(ctl, 0);
+  }
+  function up(id, msg) {
+    msg.mmRun = id;
+    if (evalId) { msg.mmEval = evalId; if (msg.t === "eval-done") evalId = 0; }
+    parent.postMessage(msg, "*");
+  }
+  function stop() {
+    if (worker) { worker.terminate(); worker = null; }
+    busy = false;
+    evalId = 0;
+  }
+  function boot() {
+    var src = "const BASE = " + JSON.stringify(BASE) + ";\n" + WORKER;
+    worker = new Worker(URL.createObjectURL(new Blob([src], { type: "text/javascript" })));
+    worker.onmessage = function (e) {
+      var d = e.data || {};
+      if (d.idle) { busy = false; return; }
+      if (d.run === current && d.msg) up(current, d.msg);
+    };
+    worker.onerror = function (e) {
+      e.preventDefault();
+      up(current, { t: "log", level: "error", text: "Python could not start: " + (e.message || "the runtime did not load"), line: null, uncaught: true });
+      stop();
+    };
+  }
+  function handle(e) {
+    var d = e.data || {};
+    if (e.source !== parent || typeof d.mmRun !== "number") return;
+    if (d.type === "stop") { stop(); return; }
+    if (d.type === "interrupt") { if (interrupt && busy && worker) interrupt[0] = 2; else stop(); return; }
+    //: The console (D8): one line in the namespace the last run left, in
+    //: the same worker (a fresh one, and a fresh namespace, after a Stop).
+    if (d.type === "eval") {
+      if (busy) {
+        parent.postMessage({ mmRun: d.mmRun, mmEval: d.mmEval, t: "eval-done", ok: false, text: "A run is still going: stop it, or wait for it to finish." }, "*");
+        return;
+      }
+      evalId = Number(d.mmEval) || 0;
+      if (!worker) boot();
+      busy = true;
+      if (interrupt) interrupt[0] = 0;
+      worker.postMessage({ run: current, eval: true, source: String(d.source || ""), interrupt: interrupt && interrupt.buffer });
+      return;
+    }
+    if (d.type === "reply") { if (d.mmRun === current) reply(d.value); return; }
+    //: Warm-up (Brief 101c): the app opens a Python document and the runtime
+    //: starts loading before Run is pressed. Only when no worker exists: one
+    //: that does exists already holds, or is loading, the runtime.
+    if (d.type === "warm") {
+      if (!worker) { boot(); worker.postMessage({ run: current, warm: true }); }
+      return;
+    }
+    //: A different document's panel took over this page: drop the namespace
+    //: the last run left, keep the loaded runtime.
+    if (d.type === "forget") {
+      if (worker && !busy) worker.postMessage({ run: current, forget: true });
+      return;
+    }
+    if (d.type !== "run") return;
+    //: A run still going (a `while True`) cannot be interrupted from here:
+    //: the worker goes, and the new run gets a fresh one.
+    if (busy) stop();
+    current = d.mmRun;
+    if (!worker) boot();
+    busy = true;
+    if (interrupt) interrupt[0] = 0;
+    worker.postMessage({
+      run: current,
+      interrupt: interrupt && interrupt.buffer,
+      source: String(d.source != null ? d.source : d.code || ""),
+      lineOffset: Number(d.lineOffset) || 0,
+      tests: Boolean(d.tests),
+      stdin: String(d.stdin || ""),
+      debug: Boolean(d.debug) && Boolean(shared),
+      breaks: Array.isArray(d.breaks) ? d.breaks : [],
+      watches: Array.isArray(d.watches) ? d.watches : [],
+      sab: shared,
+    });
+  }
+  window.onmessage = handle;
+  parent.postMessage({ mmRun: 0, t: "ready", runner: "python", isolated: Boolean(shared) }, "*");
+})();
+</script></body></html>

@@ -257,7 +257,7 @@ function packagesRenderBundles(body) {
                 const row = picked.length ? document.getElementById(`extra-row-${picked[0].id}`) : null;
                 row?.scrollIntoView({ block: "center", behavior: reducedMotionWanted() ? "auto" : "smooth" });
                 row?.querySelector(".extras-pick")?.focus({ preventScroll: true });
-                toast(`Selected ${picked.length} package${picked.length === 1 ? "" : "s"}.`, "info");
+                toast(`Selected ${nounCount(picked.length, "package")}.`, "info");
               },
             },
             {

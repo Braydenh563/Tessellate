@@ -312,9 +312,9 @@ function docGrammarRequest(text) {
   docGrammarAsking = text;
   docGrammarAsk(text).then((lints) => {
     docGrammarAsking = null;
-    if (lints === null) return renderDocProse();
+    if (lints === null) return renderDocProse(true);
     docGrammarCache = { text, findings: docGrammarFindings(lints, text), linkText: docCheckLinkText() };
-    renderDocProse();
+    renderDocProse(true);
   });
 }
 
@@ -324,8 +324,17 @@ function docGrammarRequest(text) {
 // the vendored FlashText) answers the first mention of each; the offer is a
 // finding like any other, with the `[[link]]` as its one answer. It is never
 // applied by "Fix all": a link is the writer's choice, not a correction.
-//: The quiet before the text is sent: one ask per pause, not one per key.
+//: The quiet before the text is sent: one ask per pause, not one per key. A
+//: sentence or a line just ended is the natural place to ask (700 ms); in the
+//: middle of one the writer is still going, so it waits 2 s (perf 1031 row 23,
+//: DC12: one typed line sent three POSTs, one per 700 ms pause).
 const DOC_LINK_OFFER_QUIET_MS = 700;
+const DOC_LINK_OFFER_MIDWAY_MS = 2000;
+//: Only the tail is read: the text can be 400,000 characters.
+function docLinkOfferQuiet(text) {
+  const tail = text.slice(-40);
+  return /[.!?]\s*$/.test(tail) || /\n\s*$/.test(tail) ? DOC_LINK_OFFER_QUIET_MS : DOC_LINK_OFFER_MIDWAY_MS;
+}
 //: The server's own cap on the text it will scan.
 const DOC_LINK_OFFER_MAX_CHARS = 400000;
 //: The last answer, for the document and text it was for. `timer` is the
@@ -403,7 +412,7 @@ async function docLinkOfferAsk(text, docId) {
   state.doc = docId;
   state.text = text;
   state.findings = docLinkOfferFindings(body.offers);
-  renderDocProse();
+  renderDocProse(true);
 }
 
 //: Ask once the writer pauses, unless this text is already answered or on its
@@ -415,7 +424,7 @@ function docLinkOfferRequest(text) {
   if (!text || !text.trim() || text.length > DOC_LINK_OFFER_MAX_CHARS) return;
   if (state.asking === text || (state.text === text && state.doc === docId)) return;
   clearTimeout(state.timer);
-  state.timer = setTimeout(() => docLinkOfferAsk(text, docId), DOC_LINK_OFFER_QUIET_MS);
+  state.timer = setTimeout(() => docLinkOfferAsk(text, docId), docLinkOfferQuiet(text));
 }
 
 //: The last answer moved with the edits since, and only for the document it
@@ -485,7 +494,7 @@ function noteGrammarPlugin(CM) {
   const effect = noteGrammarEffect;
 
   function build(view, findings) {
-    const text = view.state.doc.toString();
+    const text = docStr(view.state.doc);
     const ranges = [];
     findings.forEach((finding, index) => {
       if (text.slice(finding.start, finding.end) !== finding.text) return;
@@ -515,11 +524,11 @@ function noteGrammarPlugin(CM) {
         this.timer = setTimeout(() => this.check(), DOC_GRAMMAR_NOTE_DEBOUNCE_MS);
       }
       check() {
-        const text = this.view.state.doc.toString();
+        const text = docStr(this.view.state.doc);
         if (!text.trim() || text === this.checked) return;
         docGrammarAsk(text).then((lints) => {
           if (lints === null || this.destroyed) return;
-          if (this.view.state.doc.toString() !== text) return this.schedule();
+          if (docStr(this.view.state.doc) !== text) return this.schedule();
           const skip = docProseSkipMask(text);
           this.checked = text;
           this.findings = docGrammarFindings(lints, text).filter((finding) => skip[finding.start] !== 1);
@@ -528,8 +537,8 @@ function noteGrammarPlugin(CM) {
       }
       update(update) {
         if (update.docChanged) {
-          const before = update.startState.doc.toString();
-          this.findings = docProseRemap(this.findings, before, update.state.doc.toString());
+          const before = docStr(update.startState.doc);
+          this.findings = docProseRemap(this.findings, before, docStr(update.state.doc));
           this.schedule();
         }
         const told = update.transactions.some((tr) => tr.effects.some((e) => e.is(effect)));
@@ -563,7 +572,7 @@ function noteGrammarPlugin(CM) {
 function noteGrammarMenu(view, plugin, finding, x, y) {
   if (typeof openMenuAtPoint !== "function") return;
   const apply = (option) => {
-    const text = view.state.doc.toString();
+    const text = docStr(view.state.doc);
     if (text.slice(finding.start, finding.end) !== finding.text) {
       return toast("That text has changed since it was checked.", "info");
     }
@@ -632,6 +641,10 @@ function docSuggestCodeMask(text) {
 //: span of what it suggests (between the three-character markers).
 function docSuggestParse(text) {
   const src = String(text == null ? "" : text);
+  //: Most documents hold no mark: two scans for the opener, not the code mask
+  //: and the pattern, which the plugin and the status chip each ran over the
+  //: whole text on every key.
+  if (!src.includes("{++") && !src.includes("{--")) return [];
   const code = docSuggestCodeMask(src);
   const pattern = /\{\+\+([\s\S]*?)\+\+\}|\{--([\s\S]*?)--\}/g;
   const out = [];
@@ -974,7 +987,7 @@ function docSuggestExtensions(CM) {
     if (!["input", "delete", "move"].some((event) => tr.isUserEvent(event))) return tr;
     const changes = [];
     tr.changes.iterChanges((fromA, toA, _fromB, _toB, inserted) => changes.push([fromA, toA, inserted.toString()]));
-    const before = tr.startState.doc.toString();
+    const before = docStr(tr.startState.doc);
     const backward = tr.isUserEvent("delete.backward");
     let text = before;
     let caret = 0;
@@ -1006,7 +1019,7 @@ function docSuggestExtensions(CM) {
     const marks = [];
     const hidden = [];
     const hide = docView === "live";
-    for (const mark of docSuggestParse(view.state.doc.toString())) {
+    for (const mark of docSuggestParse(docStr(view.state.doc))) {
       const cls = mark.kind === "ins" ? "cm-suggest-ins" : "cm-suggest-del";
       const title = mark.kind === "ins" ? "Suggested insertion: click to accept or reject" : "Suggested deletion: click to accept or reject";
       const edges = [[mark.start, mark.bodyStart], [mark.bodyEnd, mark.end]];
@@ -1071,10 +1084,10 @@ function docSuggestApply(view, edit, message) {
 //: keyboard). Recomputed from the text at the press: the mark is found again
 //: by where it starts, and a mark no longer there says so.
 function docSuggestMenu(view, start, x, y) {
-  const mark = docSuggestParse(view.state.doc.toString()).find((m) => m.start === start);
+  const mark = docSuggestParse(docStr(view.state.doc)).find((m) => m.start === start);
   if (!mark || typeof openMenuAtPoint !== "function") return;
   const what = mark.kind === "ins" ? "insertion" : "deletion";
-  const count = docSuggestParse(view.state.doc.toString()).length;
+  const count = docSuggestParse(docStr(view.state.doc)).length;
   //: **One surface** (INBOX 689). A word that is a suggested insertion and
   //: also a spelling finding used to open this menu and, from the same press,
   //: the finding's popover over it. The finding's answers join this menu as
@@ -1104,13 +1117,13 @@ function docSuggestMenu(view, start, x, y) {
 function docSuggestAll(accept) {
   const view = docCmView;
   if (!view) return;
-  const before = view.state.doc.toString();
+  const before = docStr(view.state.doc);
   const count = docSuggestParse(before).length;
   if (!count) return toast("No suggested changes in this document.");
   docSuggestApply(
     view,
     { from: 0, to: before.length, insert: docSuggestResolveAll(before, accept) },
-    `${accept ? "Accepted" : "Rejected"} ${count} change${count === 1 ? "" : "s"}. Ctrl+Z undoes it.`
+    `${accept ? "Accepted" : "Rejected"} ${nounCount(count, "change")}. Ctrl+Z undoes it.`
   );
 }
 
@@ -1119,7 +1132,7 @@ function docSuggestAll(accept) {
 function docSuggestNext() {
   const view = docCmView;
   if (!view) return;
-  const marks = docSuggestParse(view.state.doc.toString());
+  const marks = docSuggestParse(docStr(view.state.doc));
   if (!marks.length) return toast("No suggested changes in this document.");
   const here = view.state.selection.main.head;
   const mark = marks.find((m) => m.start > here) || marks[0];
@@ -1134,7 +1147,7 @@ function docSuggestNext() {
 //: The chip in the status bar and the rows in the ⋯ menu, from one count.
 function renderDocSuggestState() {
   const on = docSuggestActive();
-  const count = docCmView ? docSuggestParse(docCmView.state.doc.toString()).length : 0;
+  const count = docCmView ? docSuggestParse(docStr(docCmView.state.doc)).length : 0;
   const box = $("doc-suggest-mode");
   if (box) box.checked = on;
   const row = $("doc-suggest-row");
@@ -1142,7 +1155,7 @@ function renderDocSuggestState() {
   const chip = $("doc-suggest-status");
   if (chip) {
     chip.hidden = !on && !count;
-    const changes = `${count} change${count === 1 ? "" : "s"}`;
+    const changes = nounCount(count, "change");
     setLabel(chip, `ph:pencil-simple-line ${on ? `Suggesting, ${changes}` : `${changes} suggested`}`);
     chip.title = count ? "Review the next suggested change" : "Suggestion mode is on: what you type and delete is marked for review";
   }
@@ -1258,7 +1271,7 @@ function docReadAloudStart() {
     return toast("This window has no speech voices to read with.", "info");
   }
   docReadAloudStop();
-  const text = view.state.doc.toString();
+  const text = docStr(view.state.doc);
   const selection = view.state.selection.main;
   const from = selection.empty ? view.state.doc.lineAt(selection.head).from : selection.from;
   const to = selection.empty ? text.length : selection.to;
@@ -1672,7 +1685,7 @@ function docFillOptions(tok, ctx) {
       const t = docFillTable(tok.cols, tok.rows);
       const c = Math.max(1, Math.min(12, tok.cols));
       const r = Math.max(1, Math.min(50, tok.rows));
-      const detail = `A table, ${c} column${c === 1 ? "" : "s"} by ${r} row${r === 1 ? "" : "s"}`;
+      const detail = `A table, ${nounCount(c, "column")} by ${nounCount(r, "row")}`;
       return [{ label: tok.token, detail, text: t.text, select: t.select }];
     }
     case "today":
@@ -1706,7 +1719,7 @@ function docFillOptions(tok, ctx) {
       const toc = docFillToc(ctx.doc, ctx.slug);
       if (!toc) return [];
       const n = toc.trim().split("\n").length;
-      return [{ label: "toc", detail: `Contents, ${n} heading${n === 1 ? "" : "s"}`, text: toc }];
+      return [{ label: "toc", detail: `Contents, ${nounCount(n, "heading")}`, text: toc }];
     }
     case "sig": {
       const sig = docFillSig(ctx.name);
@@ -2815,7 +2828,7 @@ function docPasteIsLinewise(plain) {
 //: pasted bare and the chip offers the link form.
 function docPasteUrlEvent(event, view, url, plain) {
   const sel = view.state.selection.main;
-  const doc = view.state.doc.toString();
+  const doc = docStr(view.state.doc);
   const selected = doc.slice(sel.from, sel.to);
   event.preventDefault();
   if (selected.trim() && !selected.includes("\n")) {
@@ -2851,7 +2864,7 @@ function docSmartPasteEvent(event, view) {
   if (html && docHtmlIsRich(html)) return false;
   if (pasteLines(plain).length < 2) return false;
   const { from, to } = sel.main;
-  let variants = docPasteTextVariants(plain, view.state.doc.toString(), from, to);
+  let variants = docPasteTextVariants(plain, docStr(view.state.doc), from, to);
   //: Tab-separated rows in a rectangle (a spreadsheet copied with no HTML
   //: table) become the table; the chip's other rows put the text back.
   const tabbed = docPasteIsTsvGrid(plain) && variants.find((v) => v.id === "table");
@@ -2864,7 +2877,7 @@ function docSmartPasteEvent(event, view) {
 
 //: After a rich paste became Markdown (documents.js): the other two readings.
 function docPasteOfferRich(view, from, markdown, plain) {
-  const doc = view.state.doc.toString();
+  const doc = docStr(view.state.doc);
   const prefix = doc.slice(doc.lastIndexOf("\n", from - 1) + 1, from);
   const text = pasteClean(plain || "");
   const match = docPasteMatch(text, prefix);
@@ -2882,7 +2895,7 @@ function docPasteOfferTable(view, from, inserted, plain) {
 
 function docPasteSpecialApply(view, mode, text) {
   const sel = view.state.selection.main;
-  const doc = view.state.doc.toString();
+  const doc = docStr(view.state.doc);
   const out = docPasteTransform(mode, text, doc, sel.from, sel.to);
   if (!out) {
     const why = { table: "Nothing on the clipboard reads as rows and columns.", link: "The clipboard does not hold a web address." };

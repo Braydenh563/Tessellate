@@ -42,9 +42,24 @@ function settingRowText(el) {
 //: panes are filled by JS after their first paint, so an index built at start
 //: would be searching empty panes) and skipping what a person cannot see:
 //: a pane's own hidden state does not count, a hidden group inside it does.
+//: **Scanned once per open of the palette, not once per key** (audit 1031 PF3:
+//: it cloned every label in the Settings panes on each letter, 49 ms of a key at
+//: 4x). While the palette is open nothing edits the panes, so its rows are kept
+//: under the open's own stamp (`data-opened`, set by `openPalette`); every other
+//: asker (the Settings search, Help) still reads the live panes.
 function settingRows() {
   //: Asked before the first query, so the first word typed is read by meaning.
   meaningAsk();
+  const palette = $("palette-overlay");
+  if (!palette || palette.classList.contains("hidden") || !palette.dataset.opened) return settingRowsScan();
+  if (settingRows.stamp !== palette.dataset.opened) {
+    settingRows.stamp = palette.dataset.opened;
+    settingRows.rows = settingRowsScan();
+  }
+  return settingRows.rows;
+}
+
+function settingRowsScan() {
   const rows = [];
   for (const pane of document.querySelectorAll("#settings-modal .settings-section")) {
     const name = pane.id.slice("settings-".length);
@@ -110,6 +125,13 @@ document.addEventListener("meaning-ready", () => {
   if (help?.value) helpApplySearch(help.value);
 });
 
+//: A Guide topic is a row of the Help pane: its entries carry keywords, but a
+//: topic with none, and the group heads above them, are the pane's too (the
+//: "Boards and maps" head ranked as a setting before the feature it names).
+function settingRowIsTopic(row) {
+  return Boolean(row.keys) || row.section === "help";
+}
+
 function findSettings(query, limit = 8) {
   const words = meaningNamed(query);
   if (!words.length) return [];
@@ -166,7 +188,7 @@ function findSettings(query, limit = 8) {
     const key = `${row.section}|${row.text.toLowerCase()}`;
     if (seen.has(key)) continue;
     seen.add(key);
-    (row.keys ? topics : settings).push(row);
+    (settingRowIsTopic(row) ? topics : settings).push(row);
   }
   //: **Settings first, then help topics** (INBOX 448): "password" is a
   //: question about the password settings before it is one about the help
@@ -348,7 +370,7 @@ function settingsIndexGo(name, head) {
     scroller._indexUnpin = () => { scroller._indexPinned = null; };
     for (const type of ["wheel", "touchstart", "keydown"]) scroller.addEventListener(type, scroller._indexUnpin, { passive: true });
   }
-  scroller.scrollTo({ top: scroller.scrollTop + delta, behavior: typeof reducedMotionWanted === "function" && reducedMotionWanted() ? "auto" : "smooth" });
+  scroller.scrollTo({ top: scroller.scrollTop + delta, behavior: reducedMotionWanted() ? "auto" : "smooth" });
   settingsIndexMark(name);
   head.tabIndex = -1;
   head.focus({ preventScroll: true });
@@ -381,7 +403,7 @@ function settingsNavFollow(link) {
   const delta = at.top < have.top + pad ? at.top - have.top - pad : at.bottom > have.bottom - pad ? at.bottom - have.bottom + pad : 0;
   if (!delta) return;
   const root = document.documentElement;
-  const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches || root.dataset.motion === "reduced" || root.dataset.uiMotion === "off";
+  const still = reducedMotionWanted() || root.dataset.uiMotion === "off";
   box._followAt = performance.now();
   box.scrollTo({ top: box.scrollTop + delta, behavior: still ? "auto" : "smooth" });
 }
@@ -501,7 +523,7 @@ function settingsIndexBuild(name) {
   const paint = () => {
     list.classList.toggle("is-open", showAll);
     toggle.setAttribute("aria-expanded", String(showAll));
-    toggle.textContent = showAll ? "Show fewer" : `Show all ${heads.length} sections`;
+    toggle.textContent = showAll ? "Show fewer" : `Show all ${nounCount(heads.length, "section")}`;
   };
   toggle.addEventListener("click", () => {
     showAll = !showAll;
@@ -558,7 +580,10 @@ function settingsIndexWatchSection(name) {
   const build = () => {
     if (currentSettingsSection === name) settingsIndexBuild(name);
   };
-  requestAnimationFrame(build);
+  //: A timer past the frame, not the frame callback: the section has only
+  //: just been shown, and its first read of the heads settled the whole
+  //: pane's layout inside the press (the lag log: 47 to 66ms a section).
+  requestAnimationFrame(() => setTimeout(build));
   setTimeout(build, 700);
   if (pane.querySelectorAll("h3").length < 3) return;
   let timer = null;
@@ -787,7 +812,7 @@ function helpApplySearch(query) {
   $("help-empty")?.classList.toggle("hidden", !searching || shown + others > 0);
   const status = $("help-search-status");
   if (status) {
-    status.textContent = searching ? `${shown} of ${total} topics` : "";
+    status.textContent = searching ? `${shown} of ${nounCount(total, "topic")}` : "";
     status.classList.toggle("hidden", !searching);
   }
 }

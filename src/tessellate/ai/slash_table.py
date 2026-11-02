@@ -8,12 +8,12 @@ and the composer is not reached through the topic.
 from __future__ import annotations
 
 TABLE: tuple[tuple[str, str, str, str], ...] = (
-    ('recent', '/recent [n]', 'your newest notes, five unless you say how many.', '/recent 10'),
+    ('recent', '/recent [n]', 'your newest notes, five unless you say how many, with a small timeline of when.', '/recent 10'),
     ('count', '/count [tag, category or word]', 'how many notes, or how many carry a tag, sit in a category or mention a word.', '/count golf'),
-    ('made', '/made [day or span]', 'the notes written on a day or over a span.', '/made last week'),
+    ('made', '/made [day or span]', 'the notes written on a day or over a span, with a small timeline.', '/made last week'),
     ('untagged', '/untagged', 'the notes with no tags yet.', '/untagged'),
-    ('today', '/today', 'the notes you wrote today.', '/today'),
-    ('yesterday', '/yesterday', 'the notes you wrote yesterday.', '/yesterday'),
+    ('today', '/today', 'the notes you wrote today, with a small timeline of the day.', '/today'),
+    ('yesterday', '/yesterday', 'the notes you wrote yesterday, with a small timeline of the day.', '/yesterday'),
     ('find', '/find <words>', 'the notes that hold every word you give, newest first.', '/find dentist tuesday'),
     ('pinned', '/pinned', 'the notes you have pinned.', '/pinned'),
     ('oldest', '/oldest [n]', 'your oldest notes, five unless you say how many.', '/oldest 3'),

@@ -192,6 +192,14 @@ const RUN_LANGS = {
     preview: true,
     run: (request) => runBase(request, "svg"),
   },
+  //: A CSV file's Run shows it as a table: an HTML page drawn from its rows.
+  csv: {
+    label: "CSV",
+    page: "main",
+    shows: true,
+    preview: true,
+    run: (request) => ({ ...runBase(request, "html"), source: docCsvTableHtml(request.source, request.path) }),
+  },
   py: {
     label: "Python",
     page: "python",

@@ -53,6 +53,8 @@ import hashlib
 import logging
 import re
 from collections import Counter
+from collections.abc import Iterable
+from types import SimpleNamespace
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
@@ -60,8 +62,9 @@ from typing import Any
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from tessellate.ai import question_cues
 from tessellate.core import jobruns, model_gate, undo_bin
-from tessellate.core.database import DerivedFact, Entry, utcnow
+from tessellate.core.database import DerivedFact, Entry, EntryLink, utcnow
 from tessellate.core.logbuffer import safe_value
 
 logger = logging.getLogger("tessellate.ai.facts")
@@ -322,6 +325,50 @@ def own_question(content: str, start: int, end: int) -> bool:
     return True
 
 
+def kept_question(content: str, start: int, end: int) -> bool:
+    """`own_question`, less the kinds it does not see: a rhetorical question,
+    one on a quoted line, one pasted from a page (`question_cues.not_asked`)."""
+    return own_question(content, start, end) and not question_cues.not_asked(content, start, end)
+
+
+#: A question in this many notes or more came from a template ("What am I
+#: grateful for today?" in every journal page), not from a person asking.
+TEMPLATE_NOTES = 3
+
+
+def _template_questions(session: Session) -> set[str]:
+    """The questions, in `question_cues.normal` form, that `TEMPLATE_NOTES`
+    or more notes ask word for word."""
+    seen: Counter[str] = Counter()
+    for content in session.scalars(
+        select(Entry.content).where(Entry.is_deleted.is_(False), Entry.is_private.is_(False))
+    ):
+        if content and ("?" in content or question_cues.cue(content)):
+            seen.update({question_cues.normal(text) for text, _s, _e in sentences(content) if question_cues.asks(text)})
+    return {text for text, notes in seen.items() if notes >= TEMPLATE_NOTES}
+
+
+def _proposed(content: str, questions_on: bool, templates: set[str]) -> list[Candidate]:
+    """A note's candidates, less its questions when the switch is off or a
+    template asked them."""
+    return [
+        item
+        for item in candidates(content)
+        if item.kind != "question" or (questions_on and question_cues.normal(item.text) not in templates)
+    ]
+
+
+def _in_context(entry: Entry, proposed: list[Candidate]) -> list[Candidate]:
+    """Decision 67: a sentence is learned only in its context. What
+    `context_reason` says is not a claim (a note tagged joke, quote, fiction,
+    test or draft; a sentence inside a quote or a Q-and-A list) is not
+    proposed, and the learned-store check retires it by the same rule."""
+    if not proposed:
+        return proposed
+    content, tags = entry.content or "", entry_tags(entry)
+    return [item for item in proposed if context_reason(item.text, (item.start, item.end), content, tags) is None]
+
+
 def _qa_pairs(content: str) -> int:
     """How many lines end in a question answered by the line after."""
     pairs = 0
@@ -341,14 +388,15 @@ def candidates(content: str) -> list[Candidate]:
         if not (MIN_SENTENCE_CHARS <= len(text) <= MAX_SENTENCE_CHARS):
             continue
         words = {word.strip("'\"`").lower() for word in re.findall(r"[A-Za-z']+", text)}
-        if text.endswith("?"):
+        if question_cues.asks(text):
             # A question is the one kind the text states outright, which is
             # why it is checked first and scored highest: no judgement was
-            # needed and none should be claimed. Only the person's own
-            # (`own_question`); one that is not is neither a question nor a
-            # claim.
-            if own_question(content, start, end):
-                found.append(Candidate("question", text, start, end, 0.9))
+            # needed and none should be claimed. One asked without its "?"
+            # ("I wonder whether...", "need to find out...", INBOX 1466)
+            # scores lower. Only the person's own (`kept_question`); one that
+            # is not is neither a question nor a claim.
+            if kept_question(content, start, end):
+                found.append(Candidate("question", text, start, end, 0.9 if text.endswith("?") else 0.7))
         elif words & _STANCE:
             found.append(Candidate("claim", text, start, end, 0.6))
         if len(found) >= MAX_FACTS_PER_ENTRY:
@@ -357,12 +405,17 @@ def candidates(content: str) -> list[Candidate]:
 
 
 def _retire_not_own_questions(session: Session) -> int:
-    """Tombstone the stored questions `own_question` would not take now
+    """Tombstone the stored questions `kept_question` would not take now
     (INBOX 745 (b)): they leave the list at the next pass, and a tombstone is
     "already known", so a later read does not bring them back. A row whose
-    note no longer holds its text is left to the edit path."""
+    note no longer holds its text is left to the edit path. Only the rows the
+    rule pass wrote (`model == "local"`): a row a model decided on, or the
+    person edited, is not undone by a rule after the fact."""
     rows = list(session.scalars(
-        select(DerivedFact).where(DerivedFact.kind == "question", DerivedFact.deleted_at.is_(None))
+        select(DerivedFact).where(
+            DerivedFact.kind == "question", DerivedFact.deleted_at.is_(None),
+            DerivedFact.model == "local", DerivedFact.edited_by_user.is_not(True),
+        )
     ).all())
     notes = {
         entry.id: entry.content or ""
@@ -371,7 +424,7 @@ def _retire_not_own_questions(session: Session) -> int:
     retired = 0
     for row in rows:
         content = notes.get(row.entry_id, "")
-        if content[row.span_start:row.span_end] == row.text and not own_question(content, row.span_start, row.span_end):
+        if content[row.span_start:row.span_end] == row.text and not kept_question(content, row.span_start, row.span_end):
             row.deleted_at = utcnow()
             retired += 1
     if retired:
@@ -541,6 +594,7 @@ def run(
 
     spent = 0
     scanned = 0
+    boards = 0
     derived = 0
     stopped = "done"
     try:
@@ -555,6 +609,7 @@ def run(
         for row in session.scalars(select(DerivedFact)).all():
             known_by_entry.setdefault(row.entry_id, set()).add(fingerprint_of(row))
         to_read = _entries_to_read(session, force)
+        templates = _template_questions(session)
         #: What the Background tasks row shows (INBOX 1006): notes read of the
         #: notes this run will reach, which the token budget may cut short.
         progress = jobruns.current("night-shift")
@@ -569,10 +624,11 @@ def run(
             content = entry.content or ""
             spent += TOKENS_PER_NOTE
             scanned += 1
+            boards += int(bool(entry.is_board))
             progress.step(scanned, reachable)
             if scanned % 25 == 0:
                 progress.say(f"Read {scanned} of {reachable} notes, {derived} fact{'' if derived == 1 else 's'} found so far.")
-            proposed = [item for item in candidates(content) if questions_on or item.kind != "question"]
+            proposed = _in_context(entry, _proposed(content, questions_on, templates))
             if not proposed:
                 continue
 
@@ -636,6 +692,7 @@ def run(
                 counts=counts,
                 models_used=models_used,
                 questions_on=questions_on,
+                read=to_read[:scanned],
             )
             derived += paired
     except BaseException:
@@ -657,6 +714,7 @@ def run(
         "paused": False,
         "run_id": night.id,
         "scanned": scanned,
+        "boards": boards,
         "derived": derived,
         "tokens_spent": spent,
         "budget": budget,
@@ -935,6 +993,163 @@ def _pair_fact(kind: str, row: DerivedFact, other: DerivedFact, pair: str, reaso
     )
 
 
+@dataclass(slots=True)
+class _PairPass:
+    """What passes 4 and 5 share while they compare: the budget they spend,
+    the pairs already decided, and the tally of what they found. One record
+    rather than a dozen arguments, so each pass reads as the loop it is."""
+
+    session: Session
+    night: Any  # NightRun
+    provider: Any
+    model: str
+    counts: dict[str, int]
+    models_used: set[str]
+    budget: int
+    spent: int
+    derived: int
+    similar: _Similar
+    known: set[str]
+    written: dict[int, datetime]
+    progress: Any
+
+    def judged_by_model(self) -> bool:
+        return self.provider is not None and bool(self.model)
+
+    def afford(self, first: str, second: str) -> bool:
+        """Charge one comparison, or say the budget cannot cover it. A model
+        costs by the length of the pair; the local rules cost a flat two."""
+        if self.judged_by_model():
+            cost = int((len(first) + len(second) + 200) * TOKENS_PER_CHAR)
+        else:
+            cost = TOKENS_PER_PAIR
+        if self.spent + cost > self.budget:
+            return False
+        self.spent += cost
+        return True
+
+    def record(self, kind: str, row: Any, other: DerivedFact, pair: str, found: tuple[str, str, float], score: float) -> None:
+        """Store one tension or answer on `row`'s side and count it."""
+        decided_by, reason, confidence = found
+        self.session.add(_pair_fact(kind, row, other, pair, reason, decided_by, confidence, self.night.id, score))
+        self.derived += 1
+        self.counts[kind] = self.counts.get(kind, 0) + 1
+        self.models_used.add(decided_by)
+
+
+def _later_and_earlier(written: dict[int, datetime], claim: DerivedFact, other: DerivedFact) -> tuple[DerivedFact, DerivedFact]:
+    """Which of two claims sits in the note written later. A tie, or a note
+    with no known date, keeps the claim being compared as the later one."""
+    if written.get(other.entry_id) and written.get(claim.entry_id) and written[other.entry_id] > written[claim.entry_id]:
+        return other, claim
+    return claim, other
+
+
+def _tension_between(pairs: _PairPass, earlier: DerivedFact, later: DerivedFact) -> tuple[str, str, float] | None:
+    """`(decided_by, reason, confidence)` when the two claims cannot both be
+    true: the model's word when there is one, else the local number-or-"not"
+    rule. The session is released before the model is asked, never held."""
+    if pairs.judged_by_model():
+        _release(pairs.session)
+        model_gate.yield_to_interactive()
+        judged = _judge(pairs.provider, pairs.model, _JUDGE_TENSION, earlier.text, later.text)
+        if judged and judged[0] == "incompatible":
+            return pairs.model, judged[1], 0.7
+        return None
+    reason = _local_disagreement(earlier.text, later.text)
+    return ("local", reason, 0.5) if reason else None
+
+
+def _claim_pairs(pairs: _PairPass, claim: DerivedFact) -> bool:
+    """One new claim against its nearest claims in other notes. True when the
+    budget ran out part-way, which ends the whole pass."""
+
+    def other_note(row: DerivedFact) -> bool:
+        return row.entry_id != claim.entry_id
+
+    for score, other in pairs.similar.nearest(claim.text, other_note):
+        pair = _pair_key("tension", claim.id, other.id)
+        if pair in pairs.known:
+            continue
+        if not pairs.afford(claim.text, other.text):
+            return True
+        pairs.known.add(pair)
+        later, earlier = _later_and_earlier(pairs.written, claim, other)
+        found = _tension_between(pairs, earlier, later)
+        if found:
+            pairs.record("tension", later, earlier, pair, found, score)
+    return False
+
+
+def _compare_claims(pairs: _PairPass, new_claims: list[DerivedFact]) -> bool:
+    """Pass 4: each new claim against the claims of other notes. True on a budget stop."""
+    for claim_index, claim in enumerate(new_claims):
+        pairs.progress.step(claim_index, len(new_claims), "Comparing claims")
+        if _claim_pairs(pairs, claim):
+            return True
+    return False
+
+
+def _answered_question_ids(session: Session) -> set[int]:
+    """The questions that already have a standing answer (a dismissed one is a
+    tombstone and does not count, so it can be answered again by another claim)."""
+    return {
+        int(json_payload_value(row.payload, "other_fact_id") or 0)
+        for row in session.scalars(
+            select(DerivedFact).where(DerivedFact.kind == "answered", DerivedFact.deleted_at.is_(None))
+        ).all()
+    }
+
+
+def _answer_to(pairs: _PairPass, question: DerivedFact, asked_at: datetime) -> tuple[bool, bool]:
+    """Look for the claim that answers one question. Returns `(answered,
+    out_of_budget)`: the first claim the model says answers it ends the search."""
+
+    def written_later(row: DerivedFact) -> bool:
+        at = pairs.written.get(row.entry_id)
+        return (
+            row.entry_id != question.entry_id
+            and at is not None
+            and at > asked_at
+            and (question.run_id == pairs.night.id or row.run_id == pairs.night.id)
+        )
+
+    for score, claim in pairs.similar.nearest(question.text, written_later):
+        pair = _pair_key("answered", question.id, claim.id)
+        if pair in pairs.known:
+            continue
+        if not pairs.afford(question.text, claim.text):
+            return False, True
+        pairs.known.add(pair)
+        _release(pairs.session)
+        model_gate.yield_to_interactive()
+        judged = _judge(pairs.provider, pairs.model, _JUDGE_ANSWER, question.text, claim.text)
+        if judged and judged[0] == "yes":
+            pairs.record("answered", claim, question, pair, (pairs.model, judged[1], 0.7), score)
+            return True, False
+    return False, False
+
+
+def _match_questions(pairs: _PairPass, questions: list[DerivedFact], questions_on: bool) -> bool:
+    """Pass 5: open questions against claims written later, in other notes,
+    judged by the model (with none, `_answers_by_rule` did this already).
+    True on a budget stop."""
+    answered = _answered_question_ids(pairs.session)
+    pending = _for_the_model(questions, questions_on, pairs.provider, pairs.model)
+    pairs.progress.step(0, len(pending) or None, "Matching questions to answers")
+    for question_index, question in enumerate(pending):
+        pairs.progress.step(question_index, len(pending))
+        asked_at = pairs.written.get(question.entry_id)
+        if question.id in answered or asked_at is None:
+            continue
+        found, out_of_budget = _answer_to(pairs, question, asked_at)
+        if out_of_budget:
+            return True
+        if found:
+            answered.add(question.id)
+    return False
+
+
 def _pair_passes(
     session: Session,
     night,  # noqa: ANN001  # NightRun
@@ -947,6 +1162,7 @@ def _pair_passes(
     counts: dict[str, int],
     models_used: set[str],
     questions_on: bool = True,
+    read: list[Entry] | None = None,
 ) -> tuple[int, int, str]:
     """Passes 4 and 5 over what pass 3 just found. Returns `(spent, derived,
     stopped)`; never raises past a single pair.
@@ -958,112 +1174,158 @@ def _pair_passes(
     claims, questions = _open_claims_and_questions(session)
     new_claims = [row for row in claims if row.run_id == night.id]
     new_questions = [row for row in questions if row.run_id == night.id] if questions_on else []
+    # With no model, a later sentence that states what a question asks
+    # answers it (INBOX 1466). Before the early return: a note read this run
+    # with no claim or question in it can still answer an older question.
+    by_rule = _answers_by_rule(
+        session, night, questions, read, questions_on=questions_on, provider=provider, model=model, counts=counts, models_used=models_used
+    )
     if not (new_claims or new_questions):
-        return spent, 0, "done"
+        return spent, by_rule, "done"
     progress = jobruns.current("night-shift")
     progress.say(
         f"Comparing {len(new_claims)} new claim{'' if len(new_claims) == 1 else 's'} "
         f"and {len(new_questions)} question{'' if len(new_questions) == 1 else 's'} against the rest of your notes."
     )
-    similar = _Similar(embeddings, claims)
-    known = _known_pairs(session)
-    written = _written(session, {row.entry_id for row in claims + questions})
-    derived = 0
+    pairs = _PairPass(
+        session=session,
+        night=night,
+        provider=provider,
+        model=model,
+        counts=counts,
+        models_used=models_used,
+        budget=budget,
+        spent=spent,
+        derived=by_rule,
+        similar=_Similar(embeddings, claims),
+        known=_known_pairs(session),
+        written=_written(session, {row.entry_id for row in claims + questions}),
+        progress=progress,
+    )
+    if _compare_claims(pairs, new_claims) or _match_questions(pairs, questions, questions_on):
+        return pairs.spent, pairs.derived, "budget"
+    progress.say(f"Finished comparing: {pairs.derived} pairing{'' if pairs.derived == 1 else 's'} found.")
+    return pairs.spent, pairs.derived, "done"
 
-    def charge(first: str, second: str) -> int:
-        if provider is not None and model:
-            return int((len(first) + len(second) + 200) * TOKENS_PER_CHAR)
-        return TOKENS_PER_PAIR
 
-    # Pass 4: each new claim against the claims of other notes.
-    for claim_index, claim in enumerate(new_claims):
-        progress.step(claim_index, len(new_claims), "Comparing claims")
+#: The most later notes one rule pass reads for answers, newest first.
+ANSWER_NOTES = 300
+_RULE_REASON = "States what the question asks about, in a note written after it."
 
-        def other_note(row, claim=claim):  # noqa: ANN001, ANN202
-            return row.entry_id != claim.entry_id
 
-        for score, other in similar.nearest(claim.text, other_note):
-            pair = _pair_key("tension", claim.id, other.id)
-            if pair in known:
-                continue
-            cost = charge(claim.text, other.text)
-            if spent + cost > budget:
-                return spent, derived, "budget"
-            spent += cost
-            known.add(pair)
-            later, earlier = (claim, other)
-            if written.get(other.entry_id) and written.get(claim.entry_id) and written[other.entry_id] > written[claim.entry_id]:
-                later, earlier = other, claim
-            found: tuple[str, str, float] | None = None
-            if provider is not None and model:
-                _release(session)
-                model_gate.yield_to_interactive()
-                judged = _judge(provider, model, _JUDGE_TENSION, earlier.text, later.text)
-                if judged and judged[0] == "incompatible":
-                    found = (model, judged[1], 0.7)
-            else:
-                reason = _local_disagreement(earlier.text, later.text)
-                if reason:
-                    found = ("local", reason, 0.5)
-            if found:
-                session.add(_pair_fact("tension", later, earlier, pair, found[1], found[0], found[2], night.id, score))
-                derived += 1
-                counts["tension"] = counts.get("tension", 0) + 1
-                models_used.add(found[0])
-
-    # Pass 5: open questions against claims written later, in other notes.
-    answered = {
-        int(json_payload_value(row.payload, "other_fact_id") or 0)
-        for row in session.scalars(
-            select(DerivedFact).where(DerivedFact.kind == "answered", DerivedFact.deleted_at.is_(None))
-        ).all()
+def _answered_ids(session: Session) -> set[int]:
+    return {
+        int(json_payload_value(payload, "other_fact_id") or 0)
+        for payload in session.scalars(
+            select(DerivedFact.payload).where(DerivedFact.kind == "answered", DerivedFact.deleted_at.is_(None))
+        )
     }
-    pending_questions = list(questions) if questions_on else []
-    progress.step(0, len(pending_questions), "Matching questions to answers")
-    for question_index, question in enumerate(pending_questions):
-        progress.step(question_index, len(pending_questions))
-        if question.id in answered:
-            continue
-        asked_at = written.get(question.entry_id)
-        if asked_at is None:
-            continue
 
-        def written_later(row, question=question, asked_at=asked_at):  # noqa: ANN001, ANN202
-            at = written.get(row.entry_id)
-            return (
-                row.entry_id != question.entry_id
-                and at is not None
-                and at > asked_at
-                and (question.run_id == night.id or row.run_id == night.id)
-            )
 
-        for score, claim in similar.nearest(question.text, written_later):
-            pair = _pair_key("answered", question.id, claim.id)
-            if pair in known:
-                continue
-            cost = charge(question.text, claim.text)
-            if spent + cost > budget:
-                return spent, derived, "budget"
-            spent += cost
-            known.add(pair)
-            found = None
-            if provider is not None and model:
-                _release(session)
-                model_gate.yield_to_interactive()
-                judged = _judge(provider, model, _JUDGE_ANSWER, question.text, claim.text)
-                if judged and judged[0] == "yes":
-                    found = (model, judged[1], 0.7)
-            elif _local_answer(question.text, claim.text):
-                found = ("local", "Says most of what the question asks about.", 0.4)
-            if found:
-                session.add(_pair_fact("answered", claim, question, pair, found[1], found[0], found[2], night.id, score))
-                derived += 1
-                counts["answered"] = counts.get("answered", 0) + 1
-                models_used.add(found[0])
-                answered.add(question.id)
-                break
-    progress.say(f"Finished comparing: {derived} pairing{'' if derived == 1 else 's'} found.")
-    return spent, derived, "done"
+def _heading(content: str, question: str) -> str:
+    """A note's first sentence, its title in effect, unless it is the
+    question itself."""
+    first = sentences(content.lstrip().split("\n", 1)[0].lstrip("# ")) if content.strip() else []
+    return first[0][0] if first and first[0][0] != question else ""
+
+
+def _rule_notes(session: Session, since: datetime) -> list[tuple[int, datetime, list[tuple[str, int, int]]]]:
+    """The newest `ANSWER_NOTES` readable notes written after `since`, each
+    with the sentences in it that can answer."""
+    rows = session.execute(
+        select(Entry.id, Entry.content, Entry.created_at)
+        .where(Entry.is_deleted.is_(False), Entry.is_private.is_(False), Entry.created_at > since)
+        .order_by(Entry.created_at.desc())
+        .limit(ANSWER_NOTES)
+    ).all()
+    return [(eid, at, question_cues.answer_sentences(sentences(content or ""))) for eid, content, at in rows]
+
+
+def _links(session: Session, entry_ids: set[int]) -> set[frozenset[int]]:
+    pairs = session.execute(
+        select(EntryLink.source_entry_id, EntryLink.target_entry_id).where(
+            EntryLink.source_entry_id.in_(entry_ids) | EntryLink.target_entry_id.in_(entry_ids)
+        )
+    ).all()
+    return {frozenset(pair) for pair in pairs}
+
+
+def _for_the_model(questions: list[DerivedFact], questions_on: bool, provider, model: str) -> list[DerivedFact]:  # noqa: ANN001
+    """The questions pass 5 asks the model about: none with no model, where
+    `_answers_by_rule` has matched them already."""
+    return list(questions) if questions_on and provider is not None and model else []
+
+
+def _due_questions(session: Session, night, questions: list[DerivedFact], read_ids: set[int]) -> list[DerivedFact]:  # noqa: ANN001
+    """The open questions worth comparing this run: new ones, or every one
+    when a note was read that might answer it."""
+    answered = _answered_ids(session)
+    return [q for q in questions if q.id not in answered and (q.run_id == night.id or read_ids)]
+
+
+def _asked_notes(session: Session, due: list[DerivedFact]) -> dict[int, tuple[str, datetime]]:
+    if not due:
+        return {}
+    rows = session.execute(
+        select(Entry.id, Entry.content, Entry.created_at).where(Entry.id.in_({q.entry_id for q in due}))
+    ).all()
+    return {eid: (content or "", at) for eid, content, at in rows if at is not None}
+
+
+def _rule_answer(question: DerivedFact, asked: tuple[str, datetime], notes, links: set[frozenset[int]], read_ids: set[int], run_id: int):  # noqa: ANN001, ANN202
+    """The best later sentence for one question, from `_rule_notes`."""
+    content, at = asked
+    fresh = question.run_id == run_id
+    later = [
+        (eid, frozenset((eid, question.entry_id)) in links, said)
+        for eid, written, said in notes
+        if eid != question.entry_id and written > at and (fresh or eid in read_ids)
+    ]
+    return question_cues.best_answer(question_cues.subject(question.text, _heading(content, question.text)), later)
+
+
+def _answers_by_rule(
+    session: Session,
+    night,  # noqa: ANN001  # NightRun
+    questions: list[DerivedFact],
+    read: list[Entry] | None,
+    *,
+    questions_on: bool,
+    provider,  # noqa: ANN001
+    model: str,
+    counts: dict[str, int],
+    models_used: set[str],
+) -> int:
+    """Pass 5 with no model (INBOX 1466): each open question against the
+    sentences of notes written after it, stored as the same `answered` row
+    the model's pass writes. Only a question new this run, or a note read
+    this run, is compared, so a run with nothing new compares nothing."""
+    if not questions_on or (provider is not None and model):
+        return 0
+    read_ids = {entry.id for entry in read or []}
+    due = _due_questions(session, night, questions, read_ids)
+    asked = _asked_notes(session, due)
+    due = [q for q in due if q.entry_id in asked]
+    if not due:
+        return 0
+    notes = _rule_notes(session, min(asked[q.entry_id][1] for q in due))
+    links = _links(session, set(asked))
+    known = _known_pairs(session)
+    found = 0
+    for question in due:
+        best = _rule_answer(question, asked[question.entry_id], notes, links, read_ids, night.id)
+        pair = f"answered:{question.id}:s{best[1]}:{best[3]}" if best else ""
+        if not best or pair in known:
+            continue
+        value, eid, text, start, end = best
+        sentence = SimpleNamespace(id=None, entry_id=eid, text=text, span_start=start, span_end=end)
+        session.add(_pair_fact("answered", sentence, question, pair, _RULE_REASON, "local", 0.4, night.id, value))
+        known.add(pair)
+        found += 1
+    if found:
+        counts["answered"] = counts.get("answered", 0) + found
+        models_used.add("local")
+    return found
 
 
 def json_payload_value(payload: str | None, key: str):  # noqa: ANN201
@@ -1421,3 +1683,75 @@ def runner_enabled(name: str) -> bool:
         return enabled(deps.get_config(), name)
     except Exception:  # noqa: BLE001  # no app state: nothing has been switched off
         return True
+
+
+CONTEXT_TAGS = frozenset({"joke", "quote", "fiction", "test", "draft"})
+
+
+def entry_tags(entry) -> tuple[str, ...]:  # noqa: ANN001  # an Entry
+    """The note's tags as stored (a JSON list), or none when they do not parse."""
+    import json
+
+    try:
+        tags = json.loads(entry.tags or "[]")
+    except ValueError:
+        return ()
+    return tuple(str(tag) for tag in tags) if isinstance(tags, list) else ()
+
+
+def tag_words(tags: Iterable[str]) -> set[str]:
+    """The words a note's tags say, lower case, `#` and plurals dropped:
+    "#Jokes" and "jokes/dad" both say joke."""
+    words: set[str] = set()
+    for tag in tags:
+        for part in re.split(r"[/\s_-]+", str(tag).lstrip("#").lower()):
+            if part:
+                words.add(part[:-1] if part.endswith("s") and len(part) > 3 else part)
+    return words
+
+
+def context_reason(text: str, span: tuple[int, int], content: str, tags: Iterable[str]) -> str | None:
+    """Why this sentence is not a claim about the person, or None (decision 67):
+    the note is tagged joke, quote, fiction, test or draft; the sentence is
+    inside a quote; the note is a Q-and-A list and the sentence is a line of it."""
+    hit = sorted(tag_words(tags) & CONTEXT_TAGS)
+    if hit:
+        return f"The note is tagged {hit[0]}, so this is not a claim about you."
+    if _quoted(text, span, content):
+        return "The sentence sits inside a quote."
+    if _in_qa_list(text, span, content):
+        return "The note is a list of questions and answers."
+    return None
+
+
+def _located(text: str, span: tuple[int, int], content: str) -> tuple[int, int]:
+    """Where the fact's words are in the note now: its span when it still
+    points at them, else the first place they are."""
+    start, end = span
+    if content[start:end] == text:
+        return start, end
+    found = content.find(text)
+    return (found, found + len(text)) if found >= 0 else (-1, -1)
+
+
+def _quoted(text: str, span: tuple[int, int], content: str) -> bool:
+    start, end = _located(text, span, content)
+    if start < 0:
+        return False
+    line, before, _ = _line_around(content, start, end)
+    if line.lstrip().startswith(">") or text.lstrip()[:1] in _QUOTES:
+        return True
+    return sum(before.count(mark) for mark in _QUOTES) % 2 == 1
+
+
+def _in_qa_list(text: str, span: tuple[int, int], content: str) -> bool:
+    if _qa_pairs(content) < 2:
+        return False
+    start, end = _located(text, span, content)
+    if start < 0:
+        return False
+    line, _before, _end = _line_around(content, start, end)
+    if line.rstrip().endswith("?"):
+        return True
+    above = content[: max(content.rfind("\n", 0, start), 0)].rstrip()
+    return above.split("\n")[-1].rstrip().endswith("?")

@@ -28,7 +28,9 @@ def test_a_reply_head_is_drawn_once_per_face_and_copied() -> None:
     later one is a deep copy, and no reply head starts a p5 sketch
     (chatheads.js: 0 canvases in 150 replies)."""
     app = app_js_text()
-    paint = _function(app, "paintPersonaAvatar") + _function(app, "assistantAvatar")
+    #: A persona's face is drawn in `paintNamedHead` once the faces are in
+    #: (bootlazy-1031, `afterCharacters`); the rule follows it there.
+    paint = _function(app, "paintPersonaAvatar") + _function(app, "paintNamedHead") + _function(app, "assistantAvatar")
     assert "renderEmblem" not in paint, "a reply head builds a p5 sketch again"
     assert "chatHeadSources.get(key)" in paint
     assert "source.cloneNode(true)" in paint or "face.cloneNode(true)" in paint
@@ -286,11 +288,15 @@ def test_web_pieces_of_the_owners_list():
     "the notification said it takes a while to pull the first image for
     searxng but ive already used multiple times" (said only when absent)."""
     agent = frontend_text("chat-agent.js")
-    assert 'return [...sources.filter((s) => s.kind === "web"), ...sources.filter((s) => s.kind !== "web")];' in agent
+    #: The web-first order now feeds the first-mention numbering (audit 1029
+    #: rank 49), which keeps a web page's place: the intent is unchanged.
+    assert '[...sources.filter((s) => s.kind === "web"), ...sources.filter((s) => s.kind !== "web")],' in agent
     groups = agent[agent.index("const CHAT_SOURCE_GROUPS = [") :][:200]
     assert groups.index('key: "web"') < groups.index('key: "note"')
+    #: The web panel's search code moved to the lazy web-results.js (AI6); the
+    #: composer's status line stays in chat.js. The intent is unchanged.
+    assert 'smallButton("ph:arrow-clockwise Try again", "Search again", () => runWebSearch())' in frontend_text("web-results.js")
     chat = frontend_text("chat.js")
-    assert 'smallButton("ph:arrow-clockwise Try again", "Search again", () => runWebSearch())' in chat
     assert 'webEngineInfo?.state === "absent" ? "Setting SearXNG up…' in chat
     assert "the first run pulls the image" not in chat + frontend_text("settings-controls.js")
     clip = frontend_text("web-clip.js")

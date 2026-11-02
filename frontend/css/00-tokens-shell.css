@@ -169,8 +169,8 @@ select optgroup {
      gesture yet (drag/resize move the DOM directly, no spring), so a fixed
      duration is the right tool yet a wrong one to speed-write per component. */
   --motion-fast: 0.12s;   /* hover/press feedback, checkbox/toggle state */
-  --motion-base: 0.16s;   /* the default: colour, background, border, opacity */
-  --motion-slow: 0.2s;    /* a bigger move: panel/sidebar open, card lift */
+  --motion-base: 0.18s;   /* the default: a chevron's turn, a menu, colour, opacity */
+  --motion-slow: 0.24s;   /* a bigger move: dialog, panel/sidebar open, card lift */
   --motion-exit: 0.1s;    /* a thing leaving: faster than it came */
   --motion-step: 30ms;    /* one step of a list's first-render stagger */
   /* **The interface's own motion has its own switch** (the owner,
@@ -195,12 +195,13 @@ select optgroup {
      five curves for one kind of motion. A control that answers the pointer
      should arrive at once and settle, which is what `--ease-out` does: most
      of the change in the first third. `--ease-in-out` is for a thing that
-     travels between two resting places; `--ease-spring` overshoots once, for
-     a knob or a pop, never for a surface. Every transition names one of the
+     travels between two resting places; `--ease-spring` is the one gentle
+     overshoot (1.3, it was 1.56: INBOX 1506 B), for a knob, a pop, a menu
+     opening from its trigger and a plus turning to a minus. Every transition names one of the
      three (`tests/test_motion_tokens.py`). */
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-spring: cubic-bezier(0.34, 1.3, 0.64, 1);
   /* The spinner recipe (DESIGN.md, "Something is working on it"; INBOX 441
      (2)): one stroke, one turn, one pulse for every "working" ring in the app.
      Not on the motion scale above: a transition settles, a spinner repeats,
@@ -321,7 +322,7 @@ select optgroup {
   --accent-soft: rgba(79, 109, 245, 0.14);
   /* Syntax highlighting in the file viewer (REDESIGN.md §R7.1 item 3). Its
      own token rather than `--accent`, and that is not a style preference: the
-     accent is *user-chosen* (Settings → Appearance writes any hex onto
+     accent is *user-chosen* (Settings, Appearance writes any hex onto
      `--accent`), so a keyword painted with it can be set to a colour with no
      contrast against the code behind it. Measured on a profile whose accent
      was `#cdd5e0`, which is what caught this. Strings, numbers and comments
@@ -406,7 +407,7 @@ select optgroup {
   --field-inset: rgba(31, 36, 48, 0.1);
   /* ============ SURFACE TIERS, and the border budget ========================
      Three depths, and a rule about which of them may draw a line. Measured
-     before this existed (Settings → Tools it can use): the modal drew a
+     before this existed (Settings, Tools it can use): the modal drew a
      hairline, the group inside it drew a hairline, and all 54 rows inside
      the group drew one more -- three nested boxes, each saying "this is a
      thing" with the same 1px line, so none of them said anything. Every
@@ -429,7 +430,7 @@ select optgroup {
   /* The specular top edge that reads as light catching the lip of a glass
      panel. Kept low in the light theme for the reason the sheen gradient
      below already records: white on near-white adds nothing. */
-  /* User-tunable in Settings → Appearance (set inline on <html> by JS). */
+  /* User-tunable in Settings, Appearance (set inline on <html> by JS). */
   /* --- the type scale (§35L) ------------------------------------------------
      Ten steps, extracted the same way the spacing scale was. This file had
      thirty-seven distinct font sizes, nine of them between 0.74rem and
@@ -439,7 +440,7 @@ select optgroup {
      means anything.
      Snapping moved nothing by more than 0.05rem, except 1.6→1.7rem. Sizes
      above 2.2rem are single hero elements and are left alone. */
-  --text-xs: 0.7rem;
+  --text-xs: 0.75rem;
   /* badges, counters */
   --text-sm: 0.75rem;
   /* dense metadata */
@@ -1303,7 +1304,7 @@ header#top-bar {
 header#top-bar h1 {
   margin: 0;
   font-size: var(--text-h3);
-  letter-spacing: 0.01em;
+  letter-spacing: .01em;
   white-space: nowrap;
   /* Never shrinks. `flex: 0 1 auto` with `min-width: 0` let the box get
      narrower than the text while `white-space: nowrap` kept the text at full
@@ -1632,7 +1633,7 @@ header#top-bar.tabs-wrapped #tab-bar {
      the header on a phone it hangs over the tab's own head, so the next
      control Tab reached sat under an invisible popup that took its clicks. */
   pointer-events: none;
-  transition: opacity var(--motion-fast) var(--ease-out), visibility var(--motion-fast) var(--ease-out);
+  transition: opacity var(--ui-fast) var(--ease-out), visibility var(--ui-fast) var(--ease-out);
 }
 .ai-status-wrap:hover .ai-status-popup,
 .ai-status:focus-visible+.ai-status-popup,
@@ -3170,7 +3171,7 @@ header#top-bar.tabs-wrapped #tab-bar {
    child: nothing overlaps the page, no tab needs padding reserved for it, and
    a change to the bar's height cannot desynchronise from a padding constant
    somewhere else. A fixed bar would need all three. */
-/* A status-bar slot the user has switched off (Settings → Appearance →
+/* A status-bar slot the user has switched off (Settings, Appearance →
    Status bar). Its own class rather than `.hidden`, because one of these
    slots (`#status-task`) is already shown and hidden by `.hidden` from a
    different code path: sharing the class would mean a running job could
@@ -3883,7 +3884,7 @@ header#top-bar.tabs-wrapped #tab-bar {
    glass itself is off, `[data-glass="off"]`'s own fallback rule already
    overrides `.card`'s background/box-shadow wholesale, and this must never
    fight that back on, and off by default even while glass is on, toggled
-   separately in Settings → Appearance (`#glass-sheen-toggle`), auto-enabled
+   separately in Settings, Appearance (`#glass-sheen-toggle`), auto-enabled
    the moment glass itself is switched on from off, so turning glassmorphism
    on gets the full look without a second trip to a checkbox, while still
    leaving that checkbox able to turn just the sheen back off on its own.
@@ -4207,18 +4208,16 @@ summary.small.icon-button {
   animation: none;
   transform: scaleX(1);
 }
-@media (prefers-reduced-motion: reduce) {
-  .boot-splash-dots span {
-    animation: none;
-  }
-  .boot-splash {
-    transition: none;
-  }
-  .boot-splash-progress-fill {
-    animation: none;
-    transform: scaleX(0.9);
-    transition: none;
-  }
+:where(:root[data-motion="reduced"]) .boot-splash-dots span {
+  animation: none;
+}
+:where(:root[data-motion="reduced"]) .boot-splash {
+  transition: none;
+}
+:where(:root[data-motion="reduced"]) .boot-splash-progress-fill {
+  animation: none;
+  transform: scaleX(0.9);
+  transition: none;
 }
 /* The one tip line. Muted and small: it is there for the second or two of
    a cold start, and it must never compete with the progress bar above it

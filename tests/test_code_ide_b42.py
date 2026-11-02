@@ -7,6 +7,8 @@ run in node against the vendored bundle; the wiring is read from the source.
 
 from __future__ import annotations
 
+from tests._help_text import help_chat_text
+
 import json
 import re
 import shutil
@@ -108,7 +110,7 @@ def test_the_palette_rows_have_a_shortcut_or_say_none() -> None:
 
 
 def test_help_names_the_new_commands() -> None:
-    guide = (ROOT / "src" / "tessellate" / "ai" / "help_chat.py").read_text(encoding="utf-8")
+    guide = help_chat_text()
     for words in ("minimap", "Compare with a saved version", "Ctrl+Shift+M"):
         assert words in guide, words
 
@@ -129,7 +131,7 @@ def test_the_output_panel_has_the_sidebar_grip_with_keys_and_a_height_per_docume
 
 
 def test_stop_is_disabled_once_a_script_has_nothing_left_to_run() -> None:
-    sandbox = (ROOT / "src" / "tessellate" / "api" / "run_sandbox.py").read_text(encoding="utf-8")
+    sandbox = (ROOT / "src" / "tessellate" / "api" / "run_sandbox_assets" / "sandbox_page.html").read_text(encoding="utf-8")
     #: The worker counts its own timers and says when the last one is gone.
     assert "t:'idle'" in sandbox and "pending:" in sandbox
     code = (JS / "documents-code.js").read_text(encoding="utf-8")

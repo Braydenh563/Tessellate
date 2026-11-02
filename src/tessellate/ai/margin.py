@@ -178,57 +178,41 @@ def _judge(provider, model: str, paragraph: str, source: str) -> tuple[str, str]
     return word, reason[:200]
 
 
-def read(
-    session: Session,
-    paragraph: str,
-    *,
-    entry_id: int | None = None,
-    exclude: list[int] | None = None,
-    embeddings=None,  # noqa: ANN001
-    provider=None,  # noqa: ANN001
-    model: str = "",
-    now: datetime | None = None,
-) -> dict:
-    """At most `MAX_CARDS` cards for one paragraph; see the module docstring."""
-    paragraph = (paragraph or "").strip()[:MAX_CHARS]
-    if len(paragraph) < MIN_CHARS:
-        return {"cards": [], "judged": False}
-    skip = set(exclude or ())
-    if entry_id:
-        skip.add(int(entry_id))
-    cards: list[dict] = []
-    for entry_id_, row in _candidates(session, paragraph, skip, embeddings).items():
-        entry: Entry = row["entry"]
-        content = entry.content or ""
-        sentence, start, end, words = _best_sentence(content, paragraph, row["span"])
-        if not sentence:
-            continue
-        title = (entry.title if getattr(entry, "title", None) else content.strip().split("\n", 1)[0])[:80]
-        base = {
-            "source_entry_id": entry_id_,
-            "source_title": title,
-            "source_span": [start, end],
-            "source_text": sentence[:300],
-        }
-        disagreement = None
-        for mine, _s, _e in facts.sentences(paragraph) or [(paragraph, 0, len(paragraph))]:
-            disagreement = facts._local_disagreement(mine, sentence)
-            if disagreement:
-                break
+def _candidate_card(entry_id_: int, row: dict, paragraph: str) -> dict | None:
+    """The card one earlier note earns against the paragraph, or None."""
+    entry: Entry = row["entry"]
+    content = entry.content or ""
+    sentence, start, end, words = _best_sentence(content, paragraph, row["span"])
+    if not sentence:
+        return None
+    title = (entry.title if getattr(entry, "title", None) else content.strip().split("\n", 1)[0])[:80]
+    base = {
+        "source_entry_id": entry_id_,
+        "source_title": title,
+        "source_span": [start, end],
+        "source_text": sentence[:300],
+    }
+    disagreement = None
+    for mine, _s, _e in facts.sentences(paragraph) or [(paragraph, 0, len(paragraph))]:
+        disagreement = facts._local_disagreement(mine, sentence)
         if disagreement:
-            cards.append({**base, "kind": "contradicts", "confidence": 0.75, "reason": disagreement,
-                          "text": f"You wrote something different: “{sentence[:160]}”"})
-        elif words >= REPEAT_AT or _alike(paragraph, content) >= REPEAT_AT:
-            cards.append({**base, "kind": "repeats", "confidence": round(max(words, 0.7), 2),
-                          "reason": "Most of the same words.", "text": f"This repeats your note “{title}”"})
-        else:
-            closeness = max(row["score"], words)
-            if closeness < RELATED_AT:
-                continue
-            cards.append({**base, "kind": "related", "confidence": round(min(0.55, closeness), 2),
-                          "reason": "Close in words and meaning." if row["score"] else "Shares words with this paragraph.",
-                          "text": f"Related: “{sentence[:160]}”"})
-    cards.extend({
+            break
+    if disagreement:
+        return {**base, "kind": "contradicts", "confidence": 0.75, "reason": disagreement,
+                "text": f"You wrote something different: “{sentence[:160]}”"}
+    if words >= REPEAT_AT or _alike(paragraph, content) >= REPEAT_AT:
+        return {**base, "kind": "repeats", "confidence": round(max(words, 0.7), 2),
+                "reason": "Most of the same words.", "text": f"This repeats your note “{title}”"}
+    closeness = max(row["score"], words)
+    if closeness < RELATED_AT:
+        return None
+    return {**base, "kind": "related", "confidence": round(min(0.55, closeness), 2),
+            "reason": "Close in words and meaning." if row["score"] else "Shares words with this paragraph.",
+            "text": f"Related: “{sentence[:160]}”"}
+
+
+def _answer_cards(session: Session, skip: set[int], paragraph: str) -> list[dict]:
+    return [{
         "kind": "answers",
         "source_entry_id": question.entry_id,
         "source_span": [question.span_start, question.span_end],
@@ -237,32 +221,32 @@ def read(
         "confidence": 0.65,
         "reason": "Holds most of what the question asks about.",
         "text": f"Answers your open question: “{question.text[:160]}”",
-    } for question in _open_questions(session, skip) if facts._local_answer(question.text, paragraph))
-    dated = _date_card(paragraph, now or datetime.now())
-    if dated:
-        cards.append(dated)
+    } for question in _open_questions(session, skip) if facts._local_answer(question.text, paragraph)]
 
-    judged = False
-    if provider is not None and model:
-        judged = True
-        for card in [c for c in cards if c["kind"] in ("related", "repeats")][:MAX_CARDS]:
-            verdict = _judge(provider, model, paragraph, card["source_text"])
-            if verdict is None:
-                continue
-            kind, reason = verdict
-            card["judged_by"] = model
-            if kind == "unrelated":
-                card["kind"] = "dropped"
-                continue
-            card["kind"] = kind
-            card["confidence"] = max(card["confidence"], 0.7)
-            if reason:
-                card["reason"] = reason
-            if kind == "contradicts":
-                card["text"] = f"You wrote something different: “{card['source_text'][:160]}”"
-            elif kind == "answers":
-                card["text"] = f"This answers something in “{card['source_title']}”"
 
+def _judge_cards(cards: list[dict], provider, model: str, paragraph: str) -> None:  # noqa: ANN001
+    """The model's verdict on the related and repeating cards, written onto them."""
+    for card in [c for c in cards if c["kind"] in ("related", "repeats")][:MAX_CARDS]:
+        verdict = _judge(provider, model, paragraph, card["source_text"])
+        if verdict is None:
+            continue
+        kind, reason = verdict
+        card["judged_by"] = model
+        if kind == "unrelated":
+            card["kind"] = "dropped"
+            continue
+        card["kind"] = kind
+        card["confidence"] = max(card["confidence"], 0.7)
+        if reason:
+            card["reason"] = reason
+        if kind == "contradicts":
+            card["text"] = f"You wrote something different: “{card['source_text'][:160]}”"
+        elif kind == "answers":
+            card["text"] = f"This answers something in “{card['source_title']}”"
+
+
+def _best_cards(cards: list[dict]) -> list[dict]:
+    """At most `MAX_CARDS`, strongest first, one per note and one per sentence."""
     order = {"contradicts": 0, "answers": 1, "repeats": 2, "date": 3, "related": 4}
     out: list[dict] = []
     seen: set[int] = set()
@@ -284,4 +268,38 @@ def read(
         out.append(card)
         if len(out) == MAX_CARDS:
             break
-    return {"cards": out, "judged": judged}
+    return out
+
+
+def read(
+    session: Session,
+    paragraph: str,
+    *,
+    entry_id: int | None = None,
+    exclude: list[int] | None = None,
+    embeddings=None,  # noqa: ANN001
+    provider=None,  # noqa: ANN001
+    model: str = "",
+    now: datetime | None = None,
+) -> dict:
+    """At most `MAX_CARDS` cards for one paragraph; see the module docstring."""
+    paragraph = (paragraph or "").strip()[:MAX_CHARS]
+    if len(paragraph) < MIN_CHARS:
+        return {"cards": [], "judged": False}
+    skip = set(exclude or ())
+    if entry_id:
+        skip.add(int(entry_id))
+    cards = [
+        card
+        for entry_id_, row in _candidates(session, paragraph, skip, embeddings).items()
+        if (card := _candidate_card(entry_id_, row, paragraph))
+    ]
+    cards.extend(_answer_cards(session, skip, paragraph))
+    dated = _date_card(paragraph, now or datetime.now())
+    if dated:
+        cards.append(dated)
+
+    judged = provider is not None and bool(model)
+    if judged:
+        _judge_cards(cards, provider, model, paragraph)
+    return {"cards": _best_cards(cards), "judged": judged}

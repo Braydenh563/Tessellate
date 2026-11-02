@@ -1756,6 +1756,7 @@ whiteboard half of 641's research (beyond stickers).
     selection box, and the one "Left-drag on empty canvas" preference
     swaps them for maps and boards together (WHITEBOARD_PLAN decision 41).
     **Reversed** (the owner, 2026-10-19: "we need to revert the left click pan as it clashes with and negates the drag selection tools"): a left-drag with Select draws the selection box again; Pan, Space, the middle and right buttons and the trackpad pan; the preference is removed.
+    **Amended for maps only** (the owner, 2026-10-29, INBOX 1445): a map's Select left drag on empty canvas pans and Shift-drag boxes; a board keeps the box select.
 
 ### 14.4 What is open
 

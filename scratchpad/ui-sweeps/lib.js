@@ -58,6 +58,9 @@ async function boot(opts={}) {
   // LOOK picks a look by its preset id (`default` is Classic), for a sweep
   // that has to hold in more than the default look. Unset means whatever the
   // app's own default is, which is what every older sweep measured.
+  //: CPU=<rate> marks the lag log's rows as throttled (lag-watch.js reads `window.lagThrottled`), so
+  //: a sweep that slows the CPU is not read as a real lag day (audit 1031 PF9).
+  await ctx.addInitScript((rate) => { if (rate) window.lagThrottled = rate; }, Number(process.env.CPU) || 0);
   await ctx.addInitScript((look) => {
     try {
       if (look) localStorage.setItem('themePreset', look);

@@ -1019,6 +1019,11 @@ def extract_and_store(upload_id: int, image_path: Path) -> None:
         upload = session.get(MediaUpload, upload_id)
         if upload is None:
             return  # deleted (or its upload never committed) before OCR finished
+        if upload.ocr_text:
+            #: Read again or typed by hand while this pass ran: that reading
+            #: stands ("Read with RapidOCR" came back with this pass's
+            #: Tesseract text, PR 211 CI).
+            return
         upload.ocr_text = text
         session.commit()
 

@@ -24,7 +24,7 @@ from datetime import datetime
 from itertools import zip_longest
 
 from tessellate.ai import composer_compose as compose
-from tessellate.ai import study
+from tessellate.ai import composer_frame, filed_name, note_rank, realise, recognise, study
 
 QUIZ_LENGTH = 6
 MAX_QUIZ = 12
@@ -112,21 +112,41 @@ def pick(seed: str, key: str, options: tuple | list) -> str:
 _TOPIC_NOISE = re.compile(r"\b(?:my|the|notes?|about|on|of|for|in|from|and|a|an|all|everything|please|stuff|material|topic|chapter notes)\b", re.I)
 
 
-def _title(note: dict) -> str:
-    return study.title_of(str(note.get("content") or ""))
-
-
 def _body_matches(wanted: list[str], ctx: Ctx, limit: int) -> list[dict]:
     scored: list[tuple[int, int, dict]] = []
     for i, n in enumerate(ctx.notes):
         low = str(n.get("content") or "").lower()
-        if all(w in low for w in wanted):
+        #: A cheap substring pass, then whole stems: "Tom" is a name, never
+        #: the start of "tomatoes" (audit 1029 C16).
+        if all(w in low for w in wanted) and set(wanted) <= set(study.content_stems(low)):
             scored.append((-sum(low.count(w) for w in wanted), i, n))
     scored.sort(key=lambda row: row[:2])
     return [row[2] for row in scored[:limit]]
 
 
-def topic_notes(topic: str, ctx: Ctx, limit: int = 3) -> list[dict]:
+def _titled_as(topic: str, ctx: Ctx, open_one: bool) -> list[dict]:
+    """The one note whose title is the topic, as typed or (for "open the chess
+    note") with the noise words off; empty when none is."""
+    exact = [n for n in ctx.notes if composer_frame.note_title(n).lower() == topic.lower()]
+    if exact:
+        return exact[:1]
+    #: "open the chess note" names the note titled "Chess": one note, not a menu.
+    said = " ".join(_TOPIC_NOISE.sub(" ", topic).split()).lower()
+    return [n for n in ctx.notes if open_one and said and composer_frame.note_title(n).lower() == said][:1]
+
+
+def _ranked_by_title_then_body(topic: str, wanted: list[str], ctx: Ctx, limit: int) -> list[dict]:
+    titled = [n for n in ctx.notes if set(wanted) <= set(study.content_stems(composer_frame.note_title(n)))]
+    #: The same ranker as Chat's lists (audit 1029 C19, C20): the note titled
+    #: as the topic, then the one that defines it, then the rest.
+    if titled:
+        #: A note that defines the topic is about it whatever its title says.
+        defining = [n for n in _body_matches(wanted, ctx, 50) if n not in titled and note_rank.key(n, note_rank.subject(topic), note_rank.stems_of(topic))[0] == 1]
+        return note_rank.lead(titled + defining, topic)[:limit]
+    return note_rank.lead(_body_matches(wanted, ctx, 50), topic)[:limit]
+
+
+def topic_notes(topic: str, ctx: Ctx, limit: int = 3, *, open_one: bool = False) -> list[dict]:
     """The notes a topic names: those whose title holds every word of it,
     else those whose text does, best first. An empty topic, or "this note", is
     the note that is open. Empty when nothing fits."""
@@ -136,11 +156,10 @@ def topic_notes(topic: str, ctx: Ctx, limit: int = 3) -> list[dict]:
     wanted = study.content_stems(_TOPIC_NOISE.sub(" ", topic))
     if not wanted:
         return []
-    exact = [n for n in ctx.notes if _title(n).lower() == topic.lower()]
+    exact = _titled_as(topic, ctx, open_one)
     if exact:
-        return exact[:1]
-    titled = [n for n in ctx.notes if set(wanted) <= set(study.content_stems(_title(n)))]
-    return titled[:limit] or _body_matches(wanted, ctx, limit)
+        return exact
+    return _ranked_by_title_then_body(topic, wanted, ctx, limit)
 
 
 def category_notes(topic: str, ctx: Ctx, limit: int = 6) -> list[dict]:
@@ -152,11 +171,21 @@ def category_notes(topic: str, ctx: Ctx, limit: int = 6) -> list[dict]:
         return []
     #: "my lecture notes" is the category "Lecture notes" as well as "Lecture".
     names = {wanted, f"{wanted} notes"}
-    return [n for n in ctx.notes if str(n.get("category") or "").lower() in names][:limit]
+    #: A tag names notes as a category does ("list my running notes" says
+    #: three tagged #running, so "summarise my running notes" is the same three).
+    tagged = {t.lower() for t in names}
+
+    def filed(n: dict) -> bool:
+        #: "my social notes" is the category "Social connections": a category
+        #: that opens on the words asked is that category (audit 1031 C23).
+        category = str(n.get("category") or "").lower()
+        return category in names or category.startswith(wanted + " ")
+
+    return [n for n in ctx.notes if filed(n) or tagged & {str(t).lower() for t in n.get("tags") or []}][:limit]
 
 
 def _link(note: dict) -> str:
-    return f"[**{_title(note) or 'Untitled'}**](#/notes/{note['id']})"
+    return f"[**{composer_frame.note_title(note) or 'Untitled'}**](#/notes/{note['id']})"
 
 
 def _newest_with_cards(ctx: Ctx, count: int = 3, need: int = 3) -> list[dict]:
@@ -171,7 +200,7 @@ def _newest_with_cards(ctx: Ctx, count: int = 3, need: int = 3) -> list[dict]:
 
 def _which_note(ctx: Ctx, what: str, verb: str) -> Reply:
     near = _newest_with_cards(ctx) or ctx.notes[:3]
-    names = [_title(n) for n in near if _title(n)]
+    names = [composer_frame.note_title(n) for n in near if composer_frame.note_title(n)]
     if not names:
         return Reply(compose.say("study_nonotes", ctx.mood))
     text = compose.say("study_which", ctx.mood, what=what)
@@ -180,7 +209,7 @@ def _which_note(ctx: Ctx, what: str, verb: str) -> Reply:
 
 def _nothing_named(ctx: Ctx, topic: str, verb: str) -> Reply:
     near = _newest_with_cards(ctx)
-    names = [_title(n) for n in near if _title(n)]
+    names = [composer_frame.note_title(n) for n in near if composer_frame.note_title(n)]
     text = compose.frame("study_nothing_named", ctx.mood, topic=topic.strip(" .?"))
     if names:
         text += " These have material to work with: " + "; ".join(f"“{n}”" for n in names) + "."
@@ -257,13 +286,35 @@ def _target(ctx: Ctx, topic: str, verb: str, what: str, *, strict: bool) -> tupl
     return None, _nothing_named(ctx, topic, verb)
 
 
+_EMPHASIS = re.compile(r"\*\*(.+?)\*\*|(?<!\*)\*(?!\s)(.+?)(?<!\s)\*(?!\*)")
+
+
+def _stopped(sentences: list[str]) -> str:
+    """Sentences read as one run: each ends with a stop, so a label line
+    ("Attendees: Sara, Tom, Priya") is not glued to the next one. The note's
+    own emphasis marks are not shown as asterisks (audit 1031 C23)."""
+    return _EMPHASIS.sub(lambda m: m.group(1) or m.group(2), " ".join(s if s.rstrip().endswith((".", "!", "?", ":", "…")) else s.rstrip() + "." for s in sentences))
+
+
+def _list_said(note: dict) -> str:
+    """A note that is only a list, summarised by its items and counts."""
+    gist = study.list_gist(str(note.get("content") or ""))
+    if gist is None:
+        return ""
+    kind, items, ticked = gist
+    shown = realise.join_items(items[:6]) + ("" if len(items) <= 6 else f", and {len(items) - 6} more")
+    count = f"{len(items)} item{'s' if len(items) != 1 else ''}"
+    state = "" if kind == "list" else (", none ticked" if not ticked else ", all ticked" if ticked == len(items) else f", {ticked} ticked")
+    return f"{_link(note)} is a {kind} of {count}{state}: {shown}."
+
+
 def _summary_text(ctx: Ctx, notes: list[dict], parts: list, level: int) -> str:
     note = notes[0]
     head = compose.head("study_summary", ctx.mood, link=_link(note)) if level <= 0 else f"{_link(note)} in more detail:"
     lines = [head, ""]
     for title, sents in parts:
-        title = "" if title == _title(note) else title
-        lines.append("- " + (f"**{title}**: " if title else "") + " ".join(sents))
+        title = "" if title == composer_frame.note_title(note) else title
+        lines.append("- " + (f"**{title}**: " if title else "") + _stopped(sents))
     if len(notes) > 1:
         lines += ["", "Other notes that match: " + "; ".join(_link(n) for n in notes[1:]) + "."]
     more = sum(len(s) for _t, s in study.summary(str(note.get("content") or ""), 1)) > sum(len(s) for _t, s in parts)
@@ -277,7 +328,7 @@ def _summary(ctx: Ctx, topic: str, level: int) -> Reply | None:
     #: "Lecture notes") is all of its notes, not the one whose title has the
     #: word; a note titled exactly as asked still wins.
     named = category_notes(topic, ctx, limit=8)
-    if len(named) > 1 and not any(_title(n).lower() == (topic or "").strip().lower() for n in ctx.notes):
+    if len(named) > 1 and not any(composer_frame.note_title(n).lower() == (topic or "").strip().lower() for n in ctx.notes):
         return _summaries(ctx, named)
     notes, reply = _target(ctx, topic, "Summarise", "summarise", strict=True)
     if not notes:
@@ -286,7 +337,7 @@ def _summary(ctx: Ctx, topic: str, level: int) -> Reply | None:
         return _summaries(ctx, notes)
     parts = study.summary(str(notes[0].get("content") or ""), level)
     if not parts:
-        return Reply(f"{_link(notes[0])} has too little in it to summarise.")
+        return Reply(_list_said(notes[0]) or f"{_link(notes[0])} has too little in it to summarise.")
     return Reply(_summary_text(ctx, notes, parts, level))
 
 
@@ -295,8 +346,15 @@ def _summaries(ctx: Ctx, notes: list[dict]) -> Reply:
     in a line or two, newest first, never the first one alone."""
     lines = [pick(ctx.seed, "multihead", (f"{len(notes)} notes match. The short version of each:", f"Here are your {len(notes)} matching notes, one short paragraph each:")), ""]
     for note in notes:
+        #: One sentence a section drops a short note's second fact (the date
+        #: beside the topic), so a note with a single section gets its first
+        #: four sentences; a long one still gets a line per section.
         parts = study.summary(str(note.get("content") or ""), -1)
-        body = " ".join(" ".join(sents) for _t, sents in parts[:2]) or "Too little in it to summarise."
+        if len(parts) < 2:
+            parts = study.summary(str(note.get("content") or ""), 1)
+        body = " ".join(_stopped(sents) for _t, sents in parts[:3] if sents)
+        body = " ".join(re.split(r"(?<=[.!?])\s+", body)[:4]) if len(parts) < 2 else body
+        body = body or "Too little in it to summarise."
         lines += [f"- {_link(note)}: {body}"]
     return Reply("\n".join(lines))
 
@@ -316,11 +374,11 @@ def _terms(ctx: Ctx, topic: str, *, more: bool = False) -> Reply | None:
     lines = [head, ""] + [f"- **{t}**" + (f": {g}" if g else "") for t, g in found]
     if not more and len(study.key_terms(str(note.get("content") or ""), limit=24)) > len(found):
         lines += ["", "Say “more” for the rest."]
-    return Reply("\n".join(lines), asks=[f"Quiz me on {_title(note)}"])
+    return Reply("\n".join(lines), asks=[f"Quiz me on {composer_frame.note_title(note)}"])
 
 
 def deck_text(note: dict, deck: list[study.Card]) -> str:
-    return deck_text_titled(_title(note), deck)
+    return deck_text_titled(composer_frame.note_title(note), deck)
 
 
 def deck_text_titled(title: str, deck: list[study.Card]) -> str:
@@ -336,7 +394,7 @@ def _pooled_deck(topic: str, group: list[dict]) -> list[study.Card]:
     decks = []
     for note in group:
         cards = [c for c in study.cards(str(note.get("content") or "")) if c.kind != "pair"] or study.cards(str(note.get("content") or ""))
-        decks.append(study.ordered(cards, _title(note), limit=6))
+        decks.append(study.ordered(cards, composer_frame.note_title(note), limit=6))
     out: list[study.Card] = []
     for row in zip_longest(*decks):
         out += [c for c in row if c is not None]
@@ -360,7 +418,7 @@ def _category_flashcards(ctx: Ctx, topic: str, group: list[dict]) -> Reply | Non
         lines += [f"**Q:** {card.q}", f"**A:** {card.a}", ""]
     lines += [f"From: {sources}.", "", label]
     return Reply("\n".join(lines), offer={"kind": "note", "label": label, "text": deck_text_titled(name, deck), "items": []},
-                 asks=[f"Quiz me on {_title(group[0])}"])
+                 asks=[f"Quiz me on {composer_frame.note_title(group[0])}"])
 
 
 def _flashcards(ctx: Ctx, topic: str) -> Reply:
@@ -377,7 +435,7 @@ def _flashcards(ctx: Ctx, topic: str) -> Reply:
     if not deck:
         return Reply(f"{_link(note)} has no definitions, lists or bold terms I can turn into cards. "
                      "Add a few lines like “Term: what it means” and ask again.")
-    deck = study.ordered(deck, _title(note), limit=24)
+    deck = study.ordered(deck, composer_frame.note_title(note), limit=24)
     label = "Save these as a note"
     shown = deck[:CARDS_SHOWN]
     lines = [pick(ctx.seed, "flashhead", (
@@ -389,7 +447,7 @@ def _flashcards(ctx: Ctx, topic: str) -> Reply:
         lines += [f"**Q:** {card.q}", f"**A:** {card.a}", ""]
     lines += ["Save them as a note and I can quiz you from them any time.", "", label]
     return Reply("\n".join(lines), offer={"kind": "note", "label": label, "text": deck_text(note, deck), "items": []},
-                 asks=[f"Quiz me on {_title(note)}"])
+                 asks=[f"Quiz me on {composer_frame.note_title(note)}"])
 
 
 # --- the quiz ----------------------------------------------------------------------
@@ -425,7 +483,7 @@ def _start_quiz(ctx: Ctx, topic: str, count: int | None) -> Reply:
     note, reply = _quiz_note(ctx, topic)
     if note is None:
         return reply
-    name = _title(note)
+    name = composer_frame.note_title(note)
     total = max(1, min(MAX_QUIZ, count or QUIZ_LENGTH))
     rounds = 1 + sum(1 for t in ctx.history if f"**Quiz on {name}**" in str(t.get("answer") or "") and "question 1 of" in str(t.get("answer") or ""))
     deck = study.ordered(study.cards(str(note.get("content") or "")), name if rounds <= 1 else f"{name}#{rounds}", limit=total)
@@ -547,21 +605,47 @@ def _finish(ctx: Ctx, topic: str, note: dict, deck: list[study.Card], score: int
     return Reply("\n".join(lines), asks=[f"Quiz me on {topic}", f"Make flashcards from {topic}"])
 
 
-_OPEN = re.compile(r"^(?:ok(?:ay)?[, ]+|please[, ]+|can you |could you )*(?:open|show me|show|go to|take me to|pull up|bring up|jump to|find and open)\s+(?:my |the |all my |all the )?(?P<t>.+?)\W*$", re.I)
+_OPEN = re.compile(r"^(?:ok(?:ay)?[, ]+|please[, ]+|can you |could you )*(?P<verb>open|show me|show|go to|take me to|pull up|bring up|jump to|find and open)\s+(?:my |the |all my |all the )?(?P<t>.+?)\W*$", re.I)
 _OPEN_NOT = re.compile(r"^(?:a new|new|a|an|settings?|chat|the chat|help|guide|the guide|tab|statistics|calendar|timeline|graph|reminders?|tasks?|whiteboard|board|map|the app|search|library|inbox|today)\b", re.I)
+
+
+#: "Show notes from October": the notes of a time, not a note called that
+#: (audit 1030 Z28); the listing reader answers it.
+_LISTING = re.compile(r"^(?:all |my |the )*(?:notes|entries)\b", re.I)
+
+
+def _lists_a_time(topic: str) -> bool:
+    return bool(_LISTING.match(topic)) and recognise.without_windows(topic) != topic
+
+
+
+def _not_an_open(ctx: Ctx, found: re.Match) -> bool:
+    """Whether the words are something other than "open these notes"."""
+    #: "show me notes about X" is a listing Chat draws with previews (the
+    #: tool's rows); only a verb that opens is answered the same in both.
+    if not ctx.ask and found.group("verb").lower().startswith("show"):
+        return True
+    #: "pull up my uni notes", "show me all of my university notes": the notes
+    #: on a subject, said whole (the overview), not links to pick from.
+    if ctx.ask and found.group("verb").lower().split()[0] in ("show", "pull", "bring") and filed_name.shows_the_lot(ctx.asked or ctx.question or ""):
+        return True
+    topic = found.group("t")
+    return bool(_OPEN_NOT.match(topic) or _lists_a_time(topic) or re.match(r"^(?:it|that|this)\b", topic, re.I))
 
 
 def open_named(ctx: Ctx) -> Reply | None:
     """Ask cannot open things itself, but it can point: "open my lecture
-    notes" is the links to the notes that name it."""
+    notes" is the links to the notes that name it. Chat answers the same
+    (audit 1029 C20): "open the sourdough starter" was a digest of three loaf
+    notes there, and the same words in Ask pointed at the starter."""
     found = _OPEN.match(" ".join((ctx.asked or ctx.question or "").split()))
-    if not ctx.ask or not found:
+    if not found or _not_an_open(ctx, found):
         return None
-    topic = found.group("t")
-    if _OPEN_NOT.match(topic) or re.match(r"^(?:it|that|this)\b", topic, re.I):
-        return None
-    notes = topic_notes(topic, ctx, limit=5)
+    notes = topic_notes(found.group("t"), ctx, limit=5, open_one=not found.group("verb").lower().startswith("show"))
     if not notes:
+        return None
+    #: Several in Chat: its open tool picks or asks, as the starter expects.
+    if len(notes) > 1 and not ctx.ask:
         return None
     if len(notes) == 1:
         return Reply(pick(ctx.seed, "openone", ("Here it is:", "Open it from here:", "This one:")) + f" {_link(notes[0])}")

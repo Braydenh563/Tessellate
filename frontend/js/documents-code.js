@@ -342,7 +342,7 @@ function docCodeLintSource(CM) {
     const type = docFileType();
     const ext = type.ext;
     const state = view.state;
-    const text = state.doc.toString();
+    const text = docStr(state.doc);
     const unit = type.indent || "  ";
     let found = [];
     if (ext === "json") {
@@ -629,7 +629,7 @@ function docP5Source() {
     if (context.matchBefore(/\.\w*$/)) return null;
     const word = context.matchBefore(/[A-Za-z_]\w*/);
     if (!word || (word.from === word.to && !context.explicit)) return null;
-    if (!DOC_P5_SKETCH.test(context.state.doc.toString())) return null;
+    if (!DOC_P5_SKETCH.test(docStr(context.state.doc))) return null;
     return { from: word.from, options, validFor: /^\w*$/ };
   };
 }
@@ -650,6 +650,7 @@ function docNativeSnippets(CM, ext) {
       js: [
         CM.javascript.javascriptLanguage.data.of({ autocomplete: source("js") }),
         CM.javascript.javascriptLanguage.data.of({ autocomplete: CM.autocomplete.ifNotIn(quiet, docP5Source()) }),
+        CM.javascript.javascriptLanguage.data.of({ autocomplete: CM.autocomplete.ifNotIn(quiet, docJsMemberSource()) }),
       ],
     };
   }
@@ -712,7 +713,7 @@ function docPyStdlibSource(CM) {
     if (!before) return null;
     const dot = before.text.lastIndexOf(".");
     const modules = await docPyStdlibTable();
-    const rows = docPyStdlibRows(modules, docPyImports(context.state.doc.toString()), before.text.slice(0, dot));
+    const rows = docPyStdlibRows(modules, docPyImports(docStr(context.state.doc)), before.text.slice(0, dot));
     if (!rows) return null;
     const type = { function: "function", class: "class", constant: "constant", namespace: "namespace" };
     return {
@@ -720,13 +721,76 @@ function docPyStdlibSource(CM) {
       validFor: /^\w*$/,
       options: rows.map(([label, kind, signature, doc]) => ({
         label,
-        boost: 2,
+        //: Constants after the names a person types (1031 CE1: `os.pa` listed
+        //: P_ALL and O_PATH above `path`, every row alike at a boost of 2).
+        boost: kind === "constant" ? -1 : 2,
         type: type[kind] || "variable",
         detail: signature ? signature.slice(label.length) : "",
         info: doc || undefined,
       })),
     };
   };
+}
+
+//: **Members after a dot, in JavaScript and TypeScript** (1031 CE1: `console.l`
+//: offered nothing). The browser's own globals by name, an object literal the
+//: file declares by its keys, and for any other receiver the methods an array,
+//: a string or a promise share, below the rest.
+const DOC_JS_MEMBERS = {
+  console: "log warn error info debug table dir time timeEnd assert count group groupEnd trace clear",
+  Math: "abs ceil floor round trunc sign sqrt cbrt pow exp log log2 log10 min max random sin cos tan atan atan2 hypot PI E",
+  JSON: "parse stringify",
+  Object: "keys values entries assign freeze fromEntries create defineProperty getPrototypeOf",
+  Array: "isArray from of",
+  Number: "isInteger isFinite isNaN parseFloat parseInt MAX_SAFE_INTEGER EPSILON",
+  String: "fromCharCode raw",
+  Promise: "all allSettled race resolve reject any",
+  Date: "now parse UTC",
+  document: "querySelector querySelectorAll getElementById createElement addEventListener body title",
+  window: "addEventListener setTimeout setInterval fetch localStorage location innerWidth innerHeight requestAnimationFrame",
+  localStorage: "getItem setItem removeItem clear",
+};
+const DOC_JS_COMMON_MEMBERS = "map filter reduce forEach find findIndex some every includes join slice splice push pop shift unshift sort reverse indexOf length concat flat flatMap split trim toUpperCase toLowerCase replace replaceAll startsWith endsWith padStart padEnd then catch finally";
+
+//: The keys of `const name = { a: 1, b() {} }` in the file, or an empty list.
+function docJsObjectKeys(text, name) {
+  const body = new RegExp(`\\b(?:const|let|var)\\s+${name}\\s*=\\s*\\{([^}]*)\\}`).exec(text)?.[1] || "";
+  return [...body.matchAll(/(?:^|,)\s*(\w+)\s*[:(]/g)].map((m) => m[1]);
+}
+
+function docJsMemberSource() {
+  return (context) => {
+    const ext = docFileType().ext;
+    if (ext !== "js" && ext !== "ts") return null;
+    const before = context.matchBefore(/(?:[A-Za-z_$][\w$]*|[)\]])\??\.[\w$]*$/);
+    if (!before) return null;
+    const dot = before.text.lastIndexOf(".");
+    const receiver = before.text.slice(0, dot).replace(/\?$/, "");
+    const own = /^[\w$]+$/.test(receiver) ? docJsObjectKeys(docStr(context.state.doc), receiver) : [];
+    const listed = (DOC_JS_MEMBERS[receiver] || "").split(" ").filter(Boolean);
+    const rows = (names, boost, detail) => names.map((label) => ({ label, boost, detail, type: /^[A-Z_0-9]+$/.test(label) ? "constant" : "method" }));
+    const options = own.length || listed.length
+      ? [...rows(own, 3, "this file"), ...rows(listed, 2, receiver)]
+      : rows(DOC_JS_COMMON_MEMBERS.split(" "), -2, "array, string or promise");
+    return { from: before.from + dot + 1, validFor: /^[\w$]*$/, options };
+  };
+}
+
+//: The names a file uses, scanned once per document version (the editor's text
+//: object is the same until it changes), with how many times each shows.
+const docNameScans = new WeakMap();
+
+function docNamesIn(doc) {
+  let scan = docNameScans.get(doc);
+  if (!scan) {
+    const counts = new Map();
+    for (const match of doc.toString().matchAll(/[A-Za-z_$][\w$]{2,}/g)) {
+      counts.set(match[0], (counts.get(match[0]) || 0) + 1);
+      if (counts.size >= 2000) break;
+    }
+    docNameScans.set(doc, (scan = counts));
+  }
+  return scan;
 }
 
 let docCodeCompletionCache = null;
@@ -743,14 +807,13 @@ function docCodeCompletionSource(CM) {
     const snipped = new Set(snippets.map((o) => o.label));
     for (const label of snipped) seen.add(label);
     const options = [...snippets, ...keywords.filter((k) => !snipped.has(k)).map((label) => ({ label, type: "keyword" }))];
-    const text = context.state.doc.toString();
-    const names = /[A-Za-z_$][\w$]{2,}/g;
-    let match;
-    while ((match = names.exec(text)) !== null && options.length < 2000) {
-      if (match.index === word.from) continue;
-      if (seen.has(match[0])) continue;
-      seen.add(match[0]);
-      options.push({ label: match[0], type: "variable" });
+    //: The word being typed is not a suggestion for itself unless it is
+    //: already written elsewhere.
+    const typing = context.state.sliceDoc(word.from, word.to);
+    for (const [name, times] of docNamesIn(context.state.doc)) {
+      if (seen.has(name) || (name === typing && times < 2)) continue;
+      seen.add(name);
+      options.push({ label: name, type: "variable" });
     }
     return CM.autocomplete.completeFromList(options)(context);
   };
@@ -790,7 +853,8 @@ function docCodeTools(CM) {
     //: the old timer into a state with no completion field, which throws
     //: "Field is not present in this state" (found by the code editor pass).
     //: No sources and no typing trigger, so prose behaves exactly as before.
-    return [CM.autocomplete.autocompletion({ override: [], activateOnTyping: false })];
+    //: A CSV keeps the output panel, which is where its table is shown.
+    return [CM.autocomplete.autocompletion({ override: [], activateOnTyping: false }), type.ext === "csv" ? docRunExtension(CM) : []];
   }
   const native = ["js", "ts", "py", "css", "html"].includes(type.ext);
   return [
@@ -1723,7 +1787,7 @@ async function docEmmetWrap() {
     from = first.from + indent.length;
     to = first.to;
   }
-  const abbr = await promptDialog("Wrap with an abbreviation:", docEmmetLastWrap, { confirmLabel: "Wrap" });
+  const abbr = await promptDialog("Wrap with an abbreviation", docEmmetLastWrap, { confirmLabel: "Wrap" });
   if (!abbr || !docCmView) return false;
   const text = docEmmetWrapText(view.state.sliceDoc(from, to), indent, abbr);
   const expansion = docEmmetExpansion(window.EMMET, abbr, syntax, text);
@@ -1747,7 +1811,7 @@ function docEmmetBalance(inward) {
   const E = window.EMMET;
   if (!syntax || !E) return false;
   const view = docCmView;
-  const text = view.state.doc.toString();
+  const text = docStr(view.state.doc);
   const { from, to } = view.state.selection.main;
   const options = { xml: syntax !== "html" };
   const into = inward && from !== to;
@@ -1915,7 +1979,7 @@ function docTagLink(CM, syntax) {
       }
       if (!inTag) return tr;
     }
-    const partner = docTagRename(E, start.doc.toString(), fromA, toA, insert, syntax !== "html");
+    const partner = docTagRename(E, docStr(start.doc), fromA, toA, insert, syntax !== "html");
     if (!partner) return tr;
     return [tr, { changes: partner, sequential: true }];
   });
@@ -2121,7 +2185,7 @@ async function docPyHover(CM, view, pos, side) {
   if (node.name !== "PropertyName" || node.parent?.name !== "MemberExpression") return null;
   const dotted = view.state.sliceDoc(node.parent.from, node.from).replace(/\.\s*$/, "").replace(/\s+/g, "");
   if (!/^[A-Za-z_][\w.]*$/.test(dotted)) return null;
-  const rows = docPyStdlibRows(await docPyStdlibTable(), docPyImports(view.state.doc.toString()), dotted);
+  const rows = docPyStdlibRows(await docPyStdlibTable(), docPyImports(docStr(view.state.doc)), dotted);
   const name = view.state.sliceDoc(node.from, node.to);
   const row = rows?.find((r) => r[0] === name);
   if (!row) return null;
@@ -2193,9 +2257,16 @@ function docIndentGuides(CM, unit) {
   //: they are.
   const size = unit === "\t" ? 0 : Math.max(1, Math.min(8, unit.length));
   const mark = Decoration.mark({ class: size ? `cm-indent-guide cm-indent-w${size}` : "cm-indent-guide" });
+  //: The space's width is the face's, so it is measured when the face
+  //: changes, not on every geometry change (a key that adds a line is one;
+  //: 173 ms of a 20-key run at 4x, audit 1031 CE3).
   const measureSpace = (view) => {
+    const font = getComputedStyle(view.contentDOM).font;
+    const seen = (docIndentGuides.fonts ||= new WeakMap());
+    if (seen.get(view.contentDOM) === font) return;
+    seen.set(view.contentDOM, font);
     const ctx = (docIndentGuides.canvas ||= document.createElement("canvas")).getContext("2d");
-    ctx.font = getComputedStyle(view.contentDOM).font;
+    ctx.font = font;
     view.contentDOM.style.setProperty("--doc-space-w", `${ctx.measureText(" ").width}px`);
   };
   const build = (view) => {
@@ -2270,15 +2341,36 @@ function docBracketColours(CM) {
     const found = docBracketDepths(view.state.sliceDoc(0, end), ranges[0].from, inCode);
     return Decoration.set(found.map(([i, depth]) => marks[depth % 3].range(i, i + 1)));
   };
+  //: **Mapped on a keystroke, counted again once the typing pauses** (audit
+  //: 1031 CE3: this pass runs from the top of the file to the end of what is
+  //: shown, with a tree lookup per bracket: 567 ms of a 20-key run in a
+  //: 7,000-line file at 4x). Each key moves the colours already drawn with the
+  //: change, so a bracket typed is plain and a depth that moved is stale for
+  //: a fifth of a second; a scroll still counts at once, since nothing is
+  //: drawn yet where it lands.
   docBracketColourCache = ViewPlugin.fromClass(
     class {
       constructor(view) {
+        this.view = view;
+        this.timer = 0;
         this.decorations = build(view);
       }
       update(update) {
-        if (update.docChanged || update.viewportChanged || CM.language.syntaxTree(update.startState) !== CM.language.syntaxTree(update.state)) {
-          this.decorations = build(update.view);
-        }
+        const moved = CM.language.syntaxTree(update.startState) !== CM.language.syntaxTree(update.state);
+        if (update.docChanged) this.decorations = this.decorations.map(update.changes);
+        if (update.docChanged || moved) this.later();
+        else if (update.viewportChanged) this.decorations = build(update.view);
+      }
+      later() {
+        clearTimeout(this.timer);
+        this.timer = setTimeout(() => {
+          this.timer = 0;
+          this.decorations = build(this.view);
+          this.view.dispatch({});
+        }, 200);
+      }
+      destroy() {
+        clearTimeout(this.timer);
       }
     },
     { decorations: (p) => p.decorations }
@@ -2298,9 +2390,13 @@ function docBracketColours(CM) {
 //: run of lines, a function is not.
 const DOC_SYMBOL_EXTS = new Set(["js", "ts", "py", "css"]);
 
-function docCodeSymbols(CM, state, ext) {
+//: `at`, when given, is a window of one position: only the symbols that
+//: contain it, found by walking down to it rather than over the whole tree
+//: (sticky scroll asks about the top line on every scroll and keystroke: the
+//: full pass over a 7,000-line file was 57 ms a key at 4x, audit 1031 CE3).
+function docCodeSymbols(CM, state, ext, at = null) {
   if (!DOC_SYMBOL_EXTS.has(ext)) return [];
-  const tree = CM.language.ensureSyntaxTree(state, state.doc.length, 50) || CM.language.syntaxTree(state);
+  const tree = at === null ? CM.language.ensureSyntaxTree(state, state.doc.length, 50) || CM.language.syntaxTree(state) : CM.language.syntaxTree(state);
   const text = (node) => state.sliceDoc(node.from, node.to);
   const nameOf = (node, ...kinds) => {
     for (const kind of kinds) {
@@ -2312,6 +2408,7 @@ function docCodeSymbols(CM, state, ext) {
   const found = [];
   const stack = [];
   tree.iterate({
+    ...(at === null ? {} : { from: at, to: at }),
     enter: (ref) => {
       const node = ref.node;
       let label = "";
@@ -2378,6 +2475,23 @@ function docStickyHeaders(symbols, pos, topLine, max = 3) {
     .slice(-max);
 }
 
+//: **A plugin never asks for a measure from inside CodeMirror's measure loop**
+//: (INBOX 1492, "Measure loop restarted more than 5 times"). `geometryChanged`,
+//: `viewportChanged` and `heightChanged` are set on the updates the loop itself
+//: produces, so a `requestMeasure` from `update` on one of them adds a pass to
+//: the loop it is in, and a document whose lines take four passes to settle
+//: reaches the sixth. This asks once per frame instead, from outside the loop:
+//: any number of calls in a frame are one request (`plugin.measureFrame` is
+//: the pending frame), and a destroyed plugin's is dropped. The class is
+//: pinned by tests/test_cm_measure_loop_1031.py.
+function docMeasureNextFrame(plugin, view, spec) {
+  if (plugin.measureFrame) return;
+  plugin.measureFrame = requestAnimationFrame(() => {
+    plugin.measureFrame = 0;
+    if (!plugin.measureDead) view.requestMeasure(spec);
+  });
+}
+
 //: **Sticky scroll** (INBOX 402, VS Code's): while the view is scrolled into
 //: a function, a class or a rule, its first line stays pinned at the top of
 //: the pane, and the lines of the scopes around it above that, so the reader
@@ -2398,38 +2512,36 @@ function docStickyScroll(CM) {
         this.dom.className = "cm-sticky hidden";
         this.dom.setAttribute("aria-hidden", "true");
         view.dom.appendChild(this.dom);
-        this.symbols = null;
-        this.tree = null;
         this.key = "";
+        this.spec = { key: this, read: () => this.read(), write: (m) => this.write(m) };
         this.onScroll = () => this.schedule();
         view.scrollDOM.addEventListener("scroll", this.onScroll, { passive: true });
         this.schedule();
       }
       update(update) {
-        if (update.docChanged || update.viewportChanged || update.geometryChanged) this.schedule();
+        if (update.docChanged) this.schedule();
+        else if (update.viewportChanged || update.geometryChanged) docMeasureNextFrame(this, this.view, this.spec);
       }
       schedule() {
-        this.view.requestMeasure({ key: this, read: () => this.read(), write: (m) => this.write(m) });
+        this.view.requestMeasure(this.spec);
       }
       read() {
         const view = this.view;
-        const tree = CM.language.syntaxTree(view.state);
-        if (tree !== this.tree) {
-          this.tree = tree;
-          this.symbols = docCodeSymbols(CM, view.state, docFileType().ext);
-        }
+        //: Only what contains the top line, not the file's whole list (CE3).
+        const ext = docFileType().ext;
+        const headersAt = (pos) => docStickyHeaders(docCodeSymbols(CM, view.state, ext, pos), pos, view.state.doc.lineAt(pos).number);
         const scroller = view.scrollDOM.getBoundingClientRect();
         const outer = view.dom.getBoundingClientRect();
         const content = view.contentDOM.getBoundingClientRect();
         const lineHeight = view.defaultLineHeight;
         let top = view.lineBlockAtHeight(Math.max(0, scroller.top - view.documentTop));
-        let headers = docStickyHeaders(this.symbols, top.from, view.state.doc.lineAt(top.from).number);
+        let headers = headersAt(top.from);
         //: The pinned lines cover the lines under them: ask again from the
         //: first line they leave showing, so a scope that ends under the
         //: overlay is not still pinned.
         if (headers.length) {
           top = view.lineBlockAtHeight(Math.max(0, scroller.top - view.documentTop + headers.length * lineHeight));
-          headers = docStickyHeaders(this.symbols, top.from, view.state.doc.lineAt(top.from).number);
+          headers = headersAt(top.from);
         }
         //: The code's own face and line box, and its lines' left padding, so
         //: a pinned line sits column for column over the line it repeats.
@@ -2470,6 +2582,7 @@ function docStickyScroll(CM) {
         );
       }
       destroy() {
+        this.measureDead = true;
         this.view.scrollDOM.removeEventListener("scroll", this.onScroll);
         this.dom.remove();
       }
@@ -2499,7 +2612,7 @@ function docWordAt(state, pos) {
 
 //: Every use of `name` as a whole word in code, as `{ from, to }`.
 function docReferencesOf(CM, state, name) {
-  const text = state.doc.toString();
+  const text = docStr(state.doc);
   if (text.length > DOC_CHECK_MAX_CHARS) return [];
   const tree = CM.language.ensureSyntaxTree(state, state.doc.length, 200) || CM.language.syntaxTree(state);
   const found = [];
@@ -2658,7 +2771,7 @@ function docFindInDocuments() {
 //: themselves (what a run sends) are `RUN_LANGS` in run-core.js, the lazy
 //: bundle loaded on the first Run; this table is only what the toolbar and
 //: the panel need before it is in.
-const DOC_RUN_KINDS = { js: "main", ts: "main", sql: "main", html: "main", css: "main", svg: "main", py: "python" };
+const DOC_RUN_KINDS = { js: "main", ts: "main", sql: "main", html: "main", css: "main", svg: "main", csv: "main", py: "python" };
 //: Preview live (D6): how long after the last keystroke a preview refreshes.
 const DOC_RUN_LIVE_MS = 400;
 //: The types whose tests run (D7): the panel's Run tests button.
@@ -2766,7 +2879,7 @@ async function docRunSyncAvailability(type) {
   if (docFileType().ext !== type.ext) return;
   if (python && ready) docPyWarm();
   run.disabled = !ready;
-  run.title = ready ? "Run this file in a sandbox and show its output (Ctrl+Shift+Enter)" : "Running Python needs the Python package: install it in Settings, Packages";
+  run.title = ready ? (type.ext === "csv" ? "Show this file as a table (Ctrl+Shift+Enter)" : "Run this file in a sandbox and show its output (Ctrl+Shift+Enter)") : "Running Python needs the Python package: install it in Settings, Packages";
   why.classList.toggle("hidden", ready || !docRunnable(type));
 }
 
@@ -3156,6 +3269,8 @@ function docDebugView() {
   add.className = "cm-debug-watch-add";
   add.placeholder = "Add an expression to watch";
   add.setAttribute("aria-label", "Add an expression to watch");
+  //: 815: a JavaScript watch is worked out over the paused values, not stepped (api/run_sandbox.py `evaluate`), so the limit is said where it is typed.
+  add.title = "A watch reads the values at this stop. In JavaScript it does not call your own functions or change the program.";
   add.spellcheck = false;
   add.addEventListener("keydown", (event) => {
     if (event.key !== "Enter" || !add.value.trim()) return;
@@ -3335,7 +3450,7 @@ const DOC_RUN_EMPTY = {
 //: three lines, the Guide's "Running code" topic at length.
 const DOC_RUN_HELP = [
   "Run sends this file to a sandbox with no network and none of your notes. What it prints and its errors come back in Output; Line N goes to the line.",
-  "JavaScript, TypeScript (types removed, not checked), SQL (a SQLite per run, with any CSV document the query names as a table) and Python (once installed; Input feeds input()) run. HTML, CSS, SVG and p5.js sketches show as a page; Live refreshes it as you type.",
+  "JavaScript, TypeScript (types removed, not checked), SQL (a SQLite per run, with any CSV document the query names as a table) and Python (once installed; Input feeds input()) run. HTML, CSS, SVG and p5.js sketches show as a page, a CSV or TSV as a table; Live refreshes it as you type.",
   "Problems lists every finding the checks underline. Tests lists each test with its time, a failure underlined on its line. Console evaluates a line in what the last run left: Python for a .py file, JavaScript for the rest.",
   "Debug (F5, or the Debug tab's first button) runs JavaScript, TypeScript or Python to the first breakpoint (F9, or click beside a line number; right-click for a condition), then steps: F10 over, F11 in, Shift+F11 out, Shift+F5 stop. The tab shows variables, watches, the call stack and the breakpoints.",
   "The head's buttons are icons; point at one for its name. Ctrl+J shows or hides the panel, Ctrl+Shift+M opens Problems, Ctrl+Shift+Y the Console, Ctrl+Shift+D Debug; drag the top edge for its height, kept for each tab. A run still going after two seconds is in Activity, where Stop ends it too.",
@@ -3524,7 +3639,9 @@ function docRunPanel(view) {
   consoleInput.className = "cm-console-input";
   consoleInput.spellcheck = false;
   consoleInput.autocomplete = "off";
-  consoleInput.placeholder = python ? "A line of Python, in what the last run left" : "A line of JavaScript, in what the last run left";
+  //: 817: on a page, style or data file the console is a worker of its own, not the page's window, so it does not say it holds what the run left.
+  const aloneConsole = !python && !["js", "ts"].includes(docFileType().ext);
+  consoleInput.placeholder = python ? "A line of Python, in what the last run left" : aloneConsole ? "A line of JavaScript, run on its own (the page is out of reach)" : "A line of JavaScript, in what the last run left";
   consoleInput.setAttribute("aria-label", python ? "Python console: a line to evaluate" : "JavaScript console: a line to evaluate");
   consoleInput.addEventListener("keydown", (event) => docConsoleKey(event));
   consoleForm.append(prompt, consoleInput);
@@ -3912,12 +4029,17 @@ function docRunJobArm(id) {
   if (!docRun) return;
   const run = docRun;
   docRunJobEnd(run);
+  //: D38: the end of a job bumps `jobSeq`, so an answer that lands after the
+  //: panel closed (the run still going) finds its own generation gone and
+  //: starts no beat: the run's state alone could not tell.
+  const seq = run.jobSeq;
+  const live = () => docRun === run && run.id === id && run.running && run.jobSeq === seq;
   run.jobWait = setTimeout(async () => {
-    if (docRun !== run || run.id !== id || !run.running) return;
+    if (!live()) return;
     const label = `Running ${currentDoc?.title || "a code document"}`.slice(0, 120);
     const body = await docRunJobCall("/documents/run-jobs", { method: "POST", body: JSON.stringify({ label }) });
     if (!body?.id) return;
-    if (docRun !== run || run.id !== id || !run.running) {
+    if (!live()) {
       docRunJobCall(`/documents/run-jobs/${encodeURIComponent(body.id)}`, { method: "DELETE" });
       return;
     }
@@ -3926,13 +4048,14 @@ function docRunJobArm(id) {
       const job = run.job;
       if (!job) return;
       const beat = await docRunJobCall(`/documents/run-jobs/${encodeURIComponent(job)}/beat`, { method: "POST" });
-      if (beat?.stopped && docRun === run && run.id === id && run.job === job) docRunStop("Stopped from Activity.");
+      if (beat?.stopped && live() && run.job === job) docRunStop("Stopped from Activity.");
     }, DOC_RUN_JOB_BEAT_MS);
   }, DOC_RUN_JOB_AFTER_MS);
 }
 
 function docRunJobEnd(run) {
   if (!run) return;
+  run.jobSeq = (run.jobSeq || 0) + 1;
   clearTimeout(run.jobWait);
   clearInterval(run.jobBeat);
   const job = run.job;
@@ -3954,7 +4077,24 @@ function docRunRow(level, text, line, into = null, follow = true) {
   //: `into` is another tab's list (Problems, Tests, Console); only Output's
   //: rows count toward its cap.
   const list = into || docRun.log;
+  //: **The same line again is a count, not another row** (1031 CE6: a loop
+  //: printing "tick" made a column of identical rows, each with its own "Line
+  //: N" button): "tick x 11", one link, and the row cap counts it once.
+  const last = list.lastElementChild;
+  if (last && level !== "input" && level !== "result" && last.dataset.said === `${level}\u0000${line || 0}\u0000${text}`) {
+    const times = (Number(last.dataset.times) || 1) + 1;
+    last.dataset.times = String(times);
+    let badge = last.querySelector(".cm-run-times");
+    if (!badge) {
+      badge = document.createElement("span");
+      badge.className = "muted cm-run-times";
+      last.querySelector(".cm-run-text")?.after(badge);
+    }
+    badge.textContent = ` x ${times}`;
+    return;
+  }
   const row = document.createElement("li");
+  row.dataset.said = `${level}\u0000${line || 0}\u0000${text}`;
   row.className = `cm-run-row is-${["error", "warn", "info", "debug"].includes(level) ? level : "log"}`;
   //: A console's typed line and the value it gave back.
   if (level === "input" || level === "result") row.classList.add(`is-${level}`);
@@ -4220,7 +4360,7 @@ function docSqlTableName(title) {
 
 //: RFC 4180: quoted fields may hold commas, quotes ("") and line breaks.
 //: One row past the cap is read, so a cut table can say it was cut.
-function docSqlCsvRows(text, cap = DOC_SQL_CSV_ROWS + 2) {
+function docSqlCsvRows(text, cap = DOC_SQL_CSV_ROWS + 2, delimiter = ",") {
   const rows = [];
   let row = [];
   let cell = "";
@@ -4233,7 +4373,7 @@ function docSqlCsvRows(text, cap = DOC_SQL_CSV_ROWS + 2) {
       else if (ch === '"') quoted = false;
       else cell += ch;
     } else if (ch === '"' && cell === "") quoted = true;
-    else if (ch === ",") { row.push(cell); cell = ""; }
+    else if (ch === delimiter) { row.push(cell); cell = ""; }
     else if (ch === "\n" || ch === "\r") {
       if (ch === "\r" && src[i + 1] === "\n") i += 1;
       row.push(cell); cell = "";
@@ -4243,6 +4383,22 @@ function docSqlCsvRows(text, cap = DOC_SQL_CSV_ROWS + 2) {
   }
   if (rows.length < cap && (cell !== "" || row.length)) { row.push(cell); rows.push(row); }
   return rows;
+}
+
+//: **A CSV or TSV as a table** (1031 CE7: it opened as raw text with no grid).
+//: Run shows it read-only in the preview frame, the first 500 rows, the first
+//: row as the head; Live keeps it current as the file is edited.
+function docCsvTableHtml(text, title) {
+  const tabs = /\.tsv$/i.test(String(title || "")) || (!/,/.test(String(text).split("\n", 1)[0]) && /\t/.test(String(text).split("\n", 1)[0]));
+  const rows = docSqlCsvRows(text, DOC_RUN_MAX_ROWS + 2, tabs ? "\t" : ",");
+  const cut = rows.length > DOC_RUN_MAX_ROWS + 1;
+  const shown = rows.slice(0, DOC_RUN_MAX_ROWS + 1);
+  const esc = (value) => String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const cells = (row, tag) => `<tr>${row.map((cell) => `<${tag}>${esc(cell)}</${tag}>`).join("")}</tr>`;
+  const head = shown.length ? `<thead>${cells(shown[0], "th")}</thead>` : "";
+  const body = shown.slice(1).map((row) => cells(row, "td")).join("");
+  const note = cut ? `<p>Only the first ${DOC_RUN_MAX_ROWS} rows are shown.</p>` : "";
+  return `<!doctype html><meta charset="utf-8"><style>:root{color-scheme:light dark}body{margin:0;font:13px system-ui,sans-serif}table{border-collapse:collapse;width:max-content;min-width:100%}th,td{border:1px solid #8884;padding:4px 10px;text-align:left;white-space:nowrap}th{position:sticky;top:0;background:Canvas}tbody tr:nth-child(even){background:#8881}p{margin:8px 10px}</style>${shown.length ? `<table>${head}<tbody>${body}</tbody></table>` : "<p>This file has no rows yet.</p>"}${note}`;
 }
 
 function docSqlCsvTable(name, text) {
@@ -6046,7 +6202,7 @@ async function docFormatCode(scope = "auto") {
     return false;
   }
   const state = view.state;
-  const text = state.doc.toString();
+  const text = docStr(state.doc);
   const sel = state.selection.main;
   const selection = scope === "selection" || (scope === "auto" && !sel.empty);
   if (selection && sel.empty) {
@@ -6064,7 +6220,7 @@ async function docFormatCode(scope = "auto") {
   //: The server check is a round trip, and so is the formatter's first
   //: load; typing during either would make the result a format of text
   //: that is no longer there.
-  if (docCmView !== view || view.state.doc.toString() !== text) {
+  if (docCmView !== view || docStr(view.state.doc) !== text) {
     toast("The text changed while it was being checked. Format again.", "info");
     return false;
   }
@@ -6144,7 +6300,7 @@ async function docFormatCode(scope = "auto") {
 //: for again: "scan" (brackets, strings, comments), "json", "py-colon",
 //: "indent-mix".
 function docCodeFixNow(view, source, key, name, from) {
-  const text = view.state.doc.toString();
+  const text = docStr(view.state.doc);
   const type = docFileType();
   const unit = type.indent || "  ";
   if (source === "py-colon") {

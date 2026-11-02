@@ -78,38 +78,80 @@ def unreadable(url: str, reason: str) -> dict:
     }
 
 
-#: The one line that starts the search service. Settings, Web search shows the
-#: same command, and the Guide's web search topic repeats it.
+#: The one line that starts the search service by hand. Only the Guide's web
+#: search topic shows it (a reply gives buttons, INBOX 1490), and a test keeps
+#: the two in step.
 DOCKER_ONE_LINER = "docker run -d --name searxng -p 8888:8080 -v searxng:/etc/searxng searxng/searxng"
-START_STEPS = (
-    "To start one with Docker, run:\n\n```\n" + DOCKER_ONE_LINER + "\n```\n\n"
-    "then press Auto-detect in Settings, Web search."
-)
+START_LABEL = "Start SearXNG"
+SETUP_LABEL = "Set it up in Settings"
+PANEL_LABEL = "Open the web panel"
+PROVIDER_LABEL = "Use another provider"
 
 
-def search_down(reason: str, searxng_url: str, provider: str) -> dict:
-    """A web search that could not run, in plain words with the switch.
+def down_buttons(*, can_start: bool) -> dict:
+    """The buttons under a web search that was asked for and could not run
+    (INBOX 1490: "not a pasted docker command"): start the service when the
+    app can, set it up, open the web panel, or pick another provider. The first
+    is the offer; the rest are its `also`, one line each."""
+    setup = {"kind": "open", "surface": "settings:websearch", "label": SETUP_LABEL}
+    rest = [{"kind": "open", "surface": "web-panel", "label": PANEL_LABEL}, {"kind": "open", "surface": "settings:websearch", "label": PROVIDER_LABEL}]
+    if can_start:
+        return {"kind": "searxng-start", "label": START_LABEL, "also": [setup, *rest]}
+    return {**setup, "also": rest}
+
+
+def can_start(url: str, provider: str) -> bool:
+    """Whether the app can launch the search service itself: the provider may
+    be SearXNG and the address is empty or this computer's own."""
+    from tessellate.search import searxng_manager
+
+    host = (urlparse(url if "//" in url else f"//{url}").hostname or "") if url else ""
+    return provider != "duckduckgo" and host in ("", "127.0.0.1", "localhost", "::1") and searxng_manager.source_available()
+
+
+def can_start_here() -> bool:
+    """`can_start` for the address and provider Settings holds now."""
+    from tessellate.core import deps
+    from tessellate.search import websearch
+
+    try:
+        return can_start(*websearch.settings_from(deps.get_config()))
+    except Exception:  # noqa: BLE001  # an unreadable setting is no address
+        return False
+
+
+def start_reply(*, can_start: bool) -> dict:
+    """"Start it" after a search that could not run: the buttons, not a pasted
+    command (INBOX 1490); the words say which of them can do it from here."""
+    offer = down_buttons(can_start=can_start)
+    head = (
+        "SearXNG is not running. The first button starts it from here."
+        if can_start
+        else "SearXNG does not start from this app. Set it up in Settings, or use another provider."
+    )
+    return {"text": f"{head}\n\n{_button_lines(offer)}", "offer": offer}
+
+
+def _button_lines(offer: dict) -> str:
+    return "\n\n".join([offer["label"], *(o["label"] for o in offer["also"])])
+
+
+def search_down(reason: str, searxng_url: str, provider: str, *, can_start: bool = False) -> dict:
+    """A web search that could not run, in plain words with the buttons that
+    fix it (`down_buttons`).
 
     With SearXNG chosen and no address saved it is not "down": it was never set
     up, and the reply says so rather than naming a service that does not exist."""
-    offer = {"kind": "open", "surface": "settings:websearch", "label": SETTINGS_LABEL}
+    offer = down_buttons(can_start=can_start)
     if provider == "searxng" and not searxng_url:
-        return {
-            "text": (
-                "Web search is not set up yet: SearXNG is chosen as the provider, but no search service address is saved. "
-                "Your notes did not hold an answer either.\n\n" + START_STEPS + "\n\n" + SETTINGS_LABEL
-            ),
-            "offer": offer,
-        }
-    where = f" at {searxng_url}" if searxng_url else ""
-    return {
-        "text": (
-            f"I tried to search the web, but the search service{where} is not answering ({reason.rstrip('.')}). "
-            "Your notes did not hold an answer either. Start it or pick another provider in Settings, Web search, then ask again.\n\n"
-            + START_STEPS + "\n\n" + SETTINGS_LABEL
-        ),
-        "offer": offer,
-    }
+        head = (
+            "Web search is not set up yet: SearXNG is chosen as the provider, but no search service address is saved. "
+            "Your notes did not hold an answer either."
+        )
+    else:
+        where = f" at {searxng_url}" if searxng_url else ""
+        head = f"I tried to search the web, but the search service{where} is not answering ({reason.rstrip('.')}). Your notes did not hold an answer either."
+    return {"text": f"{head}\n\n{_button_lines(offer)}", "offer": offer}
 
 
 def page_summary(page: dict, url: str) -> dict:

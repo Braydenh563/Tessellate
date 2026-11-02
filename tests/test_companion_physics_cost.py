@@ -128,9 +128,15 @@ def test_the_atlas_rig_reads_style_once_before_it_writes_any() -> None:
     start = motion.index("function atlasRigFrame(")
     body = motion[start : motion.index("\n}\n", start)]
     first_write = min(i for i in (body.find("setProperty("), body.find("setAttribute("), body.find(".style.rotate =")) if i >= 0)
-    for read in ("atlasRigRead(", "getAnimations()", "getComputedStyle("):
+    for read in ("atlasRigRead(", "getComputedStyle("):
         assert body.count(read) == 1, f"{read} is read once"
         assert body.index(read) < first_write, f"{read} comes after a write"
+    # Moved by audit 1031 HR1: the probe's animation state is kept by its
+    # animation events (`atlasProbeWatch`), so the frame scans no list at all
+    # (it was one getAnimations() per arm per frame, 25 to 190 ms in a turn);
+    # the one scan left seeds the set when the rig attaches.
+    assert "getAnimations()" not in body, "the frame reads the animation list from events, not a scan"
+    assert "arm.probe.getAnimations()" in motion[motion.index("function atlasProbeWatch(") :][:900]
 
 
 def test_the_release_reads_the_page_before_it_writes_the_companion() -> None:
@@ -143,7 +149,9 @@ def test_the_release_reads_the_page_before_it_writes_the_companion() -> None:
     build = AV[AV.index("function nameMarkBuddyBuild(") :]
     release = build[build.index("const release = (event) =>") : build.index('face.addEventListener("pointerup", release)')]
     first_write = release.index('buddy.style.translate = ""')
-    assert release.index("const box = buddy.getBoundingClientRect()") < release.index("nameMarkBuddyDrop(") < first_write
+    # INBOX 1429: the box read is gone altogether (the pick-up box plus the pull, no layout read).
+    assert "getBoundingClientRect" not in release
+    assert release.index("const b = drag.box") < release.index("nameMarkBuddyDrop(") < first_write
     assert release.index("nameMarkBuddyWorld(") < first_write
     assert "nameMarkBuddyThrow(buddy, v[0], v[1], world, plan);" in release
     # The whole flight and its landing, planned before the first write (2026-10-27).

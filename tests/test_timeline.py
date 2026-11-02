@@ -264,6 +264,20 @@ def test_a_page_still_carries_the_density_of_the_whole_range(client, session):
     assert len(page["density"]) == 6
 
 
+def test_a_later_page_does_not_recompute_the_density_strip(client, session):
+    """The strip is drawn from the first page and no later page's `density` is
+    read (timeline.js `timelineLoadMore`, the calendar's fetch), so a page with
+    a cursor skips the whole range's counts and the document and reminder scans."""
+    for i in range(6):
+        note = _save(client, f"note {i}")
+        _age(session, note["id"], i * 3)
+    first = client.get("/timeline?limit=2").json()
+    assert sum(first["density"].values()) == 6
+    second = client.get(f"/timeline?limit=2&cursor={first['next_cursor']}").json()
+    assert len(second["rows"]) == 2
+    assert second["density"] == {}
+
+
 def test_a_cursor_it_cannot_read_is_refused_rather_than_ignored(client):
     """A silently ignored cursor is a view that starts again at the top on
     every page, which reads as duplicated notes rather than as an error."""

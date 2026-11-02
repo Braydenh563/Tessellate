@@ -28,17 +28,24 @@ TIE = _notes([
 ])
 
 
+def _tie_chips(reply: dict) -> list[str]:
+    """The chips that offer the other reading. Since INBOX 1466 an answer also
+    carries its shape's own follow-ups ("What's the latest on X?"), which are
+    not what these tests are about."""
+    return [chip for chip in reply["next"] if chip.startswith("What have I saved about")]
+
+
 def test_a_tie_answers_the_newer_reading_and_offers_one_chip():
     r = digest.answer("what have I saved about python?", TIE, today=TODAY)
     assert "shed its skin" in r["text"] and "decorators" not in r["text"]
     assert "Python also comes up in Coding: two notes on something else." in r["text"]
-    assert r["next"] == ["What have I saved about python in Coding?"]
+    assert _tie_chips(r) == ["What have I saved about python in Coding?"]
 
 
 def test_the_chip_asks_the_other_reading_and_gets_it():
     r = digest.answer("What have I saved about python in Coding?", TIE, today=TODAY)
     assert "decorators" in r["text"] and "skin" not in r["text"]
-    assert r["next"] == []
+    assert _tie_chips(r) == []
 
 
 def test_no_chip_when_the_split_is_uneven():
@@ -48,7 +55,7 @@ def test_no_chip_when_the_split_is_uneven():
         ("Python generators yield lazily.", "Coding"),
         ("The python shed its skin.", "Pets"),
     ])
-    assert digest.answer("what have I saved about python?", notes, today=TODAY)["next"] == []
+    assert _tie_chips(digest.answer("what have I saved about python?", notes, today=TODAY)) == []
 
 
 def test_no_chip_when_the_categories_share_words():
@@ -58,7 +65,7 @@ def test_no_chip_when_the_categories_share_words():
         ("Signed up for the charity race running in May.", "Events"),
         ("Charity running race starts at the park gates.", "Events"),
     ])
-    assert digest.answer("what have I saved about running?", notes, today=TODAY)["next"] == []
+    assert _tie_chips(digest.answer("what have I saved about running?", notes, today=TODAY)) == []
 
 
 def test_one_note_on_each_side_is_not_a_tie():
@@ -67,4 +74,4 @@ def test_one_note_on_each_side_is_not_a_tie():
         ("Homework: write three jokes for the drama class.", "Courses & Study"),
     ])
     r = digest.answer("what have I saved about jokes?", notes, today=TODAY)
-    assert r["next"] == [] and "comes up in" not in r["text"]
+    assert _tie_chips(r) == [] and "comes up in" not in r["text"]

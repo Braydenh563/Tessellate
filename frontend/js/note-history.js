@@ -16,8 +16,17 @@ async function openEntryHistory(entry) {
 
   let history;
   try {
-    history = await apiJson(`/entries/${entry.id}/history`);
+    history = await apiJson(`/entries/${entry.id}/history`).catch(async (error) => {
+      //: A locked private note answers 409 "Unlock first." (INBOX 1437): the
+      //: usual password prompt, then the sheet reads once more.
+      if (error?.detail !== "Unlock first." || !(await ensureVaultOpen())) throw error;
+      return apiJson(`/entries/${entry.id}/history`);
+    });
   } catch (error) {
+    if (error?.detail === "Unlock first.") {
+      overlay.classList.add("hidden");
+      return;
+    }
     $("history-status").classList.add("error");
     $("history-status").textContent = error.message;
     return;
@@ -345,7 +354,7 @@ async function undoSkillRun(span, button, onDone) {
   if (!ok) return;
   try {
     const done = await apiJson("/events/undo", { method: "POST", body: JSON.stringify({ ...body, dry_run: false }) });
-    toast(`Put back ${done.undone} note${done.undone === 1 ? "" : "s"}.`);
+    toast(`Put back ${nounCount(done.undone, "note")}.`);
     button?.remove();
     onDone?.();
     await loadEntries().catch(() => {});

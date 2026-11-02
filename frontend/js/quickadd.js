@@ -48,7 +48,7 @@ const qaFields = new WeakMap();
 //: `undefined` until a reading has been asked for; then the route that
 //: answered, or `null` for this page's life when none exists (Brief 65 not
 //: merged), so a missing route costs one request, not one per key.
-const qaReader = { route: undefined };
+const qaReader = { gone: false };
 
 function qaNow() {
   const d = new Date();
@@ -60,24 +60,19 @@ function qaNow() {
 //: `surface`: "reminder" asks the reading to take the whole box as a
 //: reminder (ai/reading.py `read(context={"surface": ...})`).
 async function qaFetch(text, surface) {
-  if (qaReader.route === null) return null;
+  if (qaReader.gone) return null;
   //: The route's own names (routes_read.py): `q`, the clock as
   //: `/reminders/parse` takes it, the date order from the browser's locale.
   const query = `?q=${encodeURIComponent(text)}&tz_offset_minutes=${-new Date().getTimezoneOffset()}`
     + `&now=${encodeURIComponent(qaNow())}&locale=${encodeURIComponent((navigator.language || "").slice(0, 16))}&surface=${surface}`;
-  for (const route of qaReader.route ? [qaReader.route] : ["/read", "/api/v1/read"]) {
-    try {
-      const reading = await apiJson(route + query, { silent: true, timeoutMs: 8000 });
-      if (reading && Array.isArray(reading.spans)) {
-        qaReader.route = route;
-        return reading;
-      }
-    } catch (error) {
-      //: Away or slow: no chips this time, ask again on the next key.
-      if (!(error?.status >= 400 && error.status < 500)) return null;
-    }
+  try {
+    const reading = await apiJson("/read" + query, { silent: true, timeoutMs: 8000 });
+    if (reading && Array.isArray(reading.spans)) return reading;
+  } catch (error) {
+    //: Away or slow: no chips this time, ask again on the next key.
+    if (!(error?.status >= 400 && error.status < 500)) return null;
   }
-  if (!qaReader.route) qaReader.route = null;
+  qaReader.gone = true;
   return null;
 }
 
@@ -475,7 +470,8 @@ async function magicAddReminder() {
   const slots = qaResume(input, await quickAddSlots(input), text);
   if (slots && !slots.joined && quickAddAsk(input)) {
     qaHold(input, slots, text);
-    status.textContent = qaMissing(qaFields.get(input));
+    //: The question is said once, in the chips' own status line (W28).
+    status.textContent = "";
     return;
   }
   setLabel(status, "ph:spin Adding…");
@@ -501,6 +497,55 @@ async function magicAddReminder() {
     status.classList.add("error");
     status.textContent = error.message;
   }
+}
+
+//: **The reminders form's Add** (sweep 1028b W2, W3, W13). The sentence box is
+//: read the way the magic box is (chips under the form show the time before
+//: Add): "Pay rent next tuesday at 9am" is due then, not in two minutes. A
+//: refusal (a day already gone) or an empty field is said in one line under
+//: the form, the field marked and focused, never an unhandled rejection.
+function reminderFormError(message, id) {
+  const line = $("reminder-form-error");
+  const control = $(id).closest(".select-shell")?.querySelector(".select-opener") || $(id);
+  line.textContent = message;
+  line.classList.remove("hidden");
+  control.setAttribute("aria-invalid", "true");
+  control.setAttribute("aria-describedby", "reminder-form-error");
+  control.focus();
+}
+
+function reminderFormClear() {
+  $("reminder-form-error").classList.add("hidden");
+  for (const el of document.querySelectorAll("#reminder-compose [aria-describedby=reminder-form-error]")) {
+    el.removeAttribute("aria-invalid");
+    el.removeAttribute("aria-describedby");
+  }
+}
+
+async function reminderComposeAdd() {
+  reminderFormClear();
+  const box = $("reminder-text");
+  let text = box.value.trim();
+  let due = $("reminder-due").value;
+  let recurring = $("reminder-recurring").value;
+  const slots = text ? await quickAddSlots(box).catch(() => null) : null;
+  if (slots?.due && slots.title) {
+    text = slots.title;
+    due = toLocalInputValue(slots.due.toISOString());
+    if (slots.recurring && recurring === "none") recurring = slots.recurring;
+  }
+  if (!text || !due) return reminderFormError(text ? "Pick a due time for this reminder." : "Write what to be reminded of.", text ? "reminder-date" : "reminder-text");
+  try {
+    await addReminder(text, due, null, { priority: $("reminder-priority").value, recurring });
+  } catch (error) {
+    return reminderFormError(error.message, "reminder-date");
+  }
+  box.value = "";
+  quickAddClear(box);
+  $("reminder-priority").value = "normal";
+  $("reminder-recurring").value = "none";
+  setDue(defaultDueValue());
+  reminderComposeSheetClose?.();
 }
 
 //: The timeline's search: Enter with a day or a window read turns it into
@@ -595,7 +640,15 @@ function qaPrewarm(tries = 0) {
   //: typed is not the one that waits.
   qaPrewarm();
   quickAddAttach($("reminder-magic"), "reminder", { after: $("reminder-magic-row") });
-  const search = $("timeline-search");
+  //: The "Remind me to…" box reads its words the same way (sweep 1028b W2):
+  //: its chips go under the whole form, so the time is shown before Add.
+  const compose = $("reminder-compose");
+  if (compose) {
+    quickAddAttach($("reminder-text"), "reminder", { after: compose.querySelector(".reminder-form") });
+    for (const id of ["reminder-text", "reminder-date", "reminder-time"]) $(id).addEventListener("input", reminderFormClear);
+    $("reminder-date").min = toLocalInputValue(new Date()).slice(0, 10);
+  }
+  const search =$("timeline-search");
   if (search) {
     quickAddAttach(search, "timeline", { after: search.closest(".search-field") || search });
     search.addEventListener("keydown", qaTimelineEnter);

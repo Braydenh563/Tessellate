@@ -110,9 +110,29 @@ def test_a_page_never_arrives_from_nothing():
     css = CSS["08-consistency.css"]
     block = css[css.index("/* --- motion: a page arrives") :]
     block = block[: block.index("/* --- ", 10)]
-    assert "transition: opacity var(--ui-fast) var(--ease-out);" in block
-    start = re.search(r"@starting-style\s*\{\s*\.tab-page:not\(\.hidden\)\s*\{\s*opacity:\s*([\d.]+);", block)
+    # INBOX 1462: opacity plus a one-step rise, both compositor-only, on one token.
+    assert "transition: opacity var(--ui-base) var(--ease-out), translate var(--ui-base) var(--ease-out);" in block
+    start = re.search(
+        r"@starting-style\s*\{\s*\.tab-page:not\(\.hidden\)\s*\{\s*opacity:\s*([\d.]+);\s*translate:\s*0 var\(--space-([12])\);", block
+    )
     assert start and float(start.group(1)) >= 0.3, "a page fading in from 0 shows the bare window for its first frames"
+    assert start.group(2) == "1", "the rise is one step (4px): a page that travels further is confronting"
+    assert "will-change" not in block
+
+
+def test_the_small_popups_and_the_hover_card_arrive_on_the_menu_recipe():
+    """INBOX 1462: the selection popup, the spelling menu and the OCR region popover
+    join the shared fade and grow (no per-surface rule); the graph's hover card
+    fades by opacity alone, since its own `transform` places it."""
+    resp = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
+    at = resp.index(".action-menu:not(.hidden),\n.dock-menu[open]")
+    head = resp[at : resp.index("{", at)]
+    for sel in (".selection-popup", ".doc-suggest-menu", ".ocr-region-popover"):
+        assert sel in head, sel
+    graph = (ROOT / "frontend" / "css" / "graph-lazy.css").read_text(encoding="utf-8")
+    rule = graph[graph.index(".graph-hovercard:not([hidden]) {") :]
+    rule = rule[: rule.index("}")]
+    assert "animation: ui-fade var(--ui-fast) var(--ease-out);" in rule and "transform" not in rule
 
 
 def test_every_popup_has_one_way_in():

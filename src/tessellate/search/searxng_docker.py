@@ -95,6 +95,12 @@ def docker_available() -> bool:
             check=False,
             creationflags=NO_WINDOW,
         )
+    except subprocess.TimeoutExpired:
+        # A daemon that does not answer in `DAEMON_PROBE_TIMEOUT` is an answer,
+        # and remembered: asking again at once spent another eight seconds.
+        _daemon_probe["answer"] = False
+        _daemon_probe["at"] = time.monotonic()
+        return False
     except (OSError, subprocess.SubprocessError):
         # Not remembered. This arm is "docker could not be run at all", which
         # is the answer most likely to be wrong in a moment (a daemon that is

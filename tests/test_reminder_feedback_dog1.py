@@ -16,7 +16,8 @@ def test_day_without_time_is_asked_not_defaulted():
 def test_empty_add_and_missing_day_give_feedback():
     text = (JS / "quickadd.js").read_text(encoding="utf-8")
     assert "Type what to remind you of first" in text
-    assert "status.textContent = qaMissing(qaFields.get(input));" in text
+    #: The missing day is asked once, in the chips' own status line (sweep 1028b W28), not again here.
+    assert "The question is said once, in the chips' own status line" in text
 
 
 def test_far_dates_are_not_the_ambiguous_locale_short_form():

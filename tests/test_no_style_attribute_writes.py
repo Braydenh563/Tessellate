@@ -3,11 +3,11 @@
 `style-src 'self'` has no 'unsafe-inline', so `el.setAttribute("style", ...)`
 and d3's `.attr("style", ...)` are refused, and each refusal is a console
 error. The CSSOM (`el.style.x = ...`, `el.style.setProperty`, `cssText`) is
-not an inline style to the CSP and works. Found on the graph's SVG export
+not an inline style to the CSP and works. Found on the graph's old SVG export
 (`graphInlineComputedStyle`), which wrote one per element of the clone: 6,278
 refusals for one export of the 417-note fixture, while the picture came out
-right, because the attribute was kept (`scratchpad/ui-sweeps/graphexportcsp.js`,
-0 after). It writes SVG presentation attributes now. CLAUDE.md section 6,
+right, because the attribute was kept. That export went with the SVG renderer
+(audit 1029 row 60), so only the rule stays. CLAUDE.md section 6,
 shape 4, is the same rule for markup.
 """
 

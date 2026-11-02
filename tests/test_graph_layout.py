@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from tests._help_text import help_chat_text
+
 import json
 from pathlib import Path
 import re
@@ -26,6 +28,11 @@ const opts = JSON.parse(optsJson);
 const out = [];
 // The loop is stepped by hand below, so no timer ever fires.
 const ctx = { console, setTimeout: () => 1, clearTimeout: () => {}, setInterval: () => 1, clearInterval: () => {} };
+// A clock that moves a fixed step each read: the worker's time budgets
+// (the untangle passes) count the same work on a loaded machine as on an
+// idle one, so a seed lays out the same map every run.
+let clock = 0;
+ctx.Date = class extends Date { static now() { return (clock += 0.05); } };
 ctx.self = ctx;
 // The main thread hands every frame's buffer back (`recycle`), or the worker
 // stops posting frames once two are in flight.
@@ -286,7 +293,7 @@ def test_the_reshuffle_control_sits_beside_unpin_all_and_is_explained():
     assert "function gcReshuffle(" in canvas
     assert 'type: "reshuffle"' in canvas
     assert 'case "reshuffle"' in WORKER
-    help_text = (ROOT / "src" / "tessellate" / "ai" / "help_chat.py").read_text(encoding="utf-8")
+    help_text = help_chat_text()
     assert "Reshuffle layout" in help_text
 
 
@@ -333,7 +340,7 @@ def test_the_shape_control_is_saved_and_reaches_the_worker():
     canvas = (JS / "graph-canvas.js").read_text(encoding="utf-8")
     assert "shape: gcShape(s)," in canvas
     assert 'const SHAPES = new Set(["organic", "clusters", "galaxy"]);' in WORKER
-    help_text = (ROOT / "src" / "tessellate" / "ai" / "help_chat.py").read_text(encoding="utf-8")
+    help_text = help_chat_text()
     assert "Shape (Organic, Clusters or Galaxy;" in help_text
 
 
@@ -365,7 +372,7 @@ def test_shape_is_dimmed_with_its_reason_off_the_force_layout():
     assert '$("graph-shape-row")?.classList.toggle("is-disabled", !applies);' in body
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert 'class="graph-option-row graph-physics" id="graph-shape-row"' in html
-    help_text = (ROOT / "src" / "tessellate" / "ai" / "help_chat.py").read_text(encoding="utf-8")
+    help_text = help_chat_text()
     assert "the Force layout's own, dimmed under the others" in help_text
 
 
@@ -384,9 +391,8 @@ def test_the_dock_chip_is_hidden_under_force_and_opens_the_layout_choice():
     assert 'layoutKind !== "force"' in body and 'classList.toggle("hidden", !named)' in body
     assert "setGraphOptionsOpen(true)" in body and "openGraphControlsSheet(chip)" in body
     assert 'focusSelect(document.getElementById("graph-layout"))' in body
-    # Both renderers' stats line call it, so neither leaves a stale chip.
+    # The stats line calls it, so it never leaves a stale chip.
     assert "graphSyncLayoutChip(layoutKind);" in CANVAS
-    assert "graphSyncLayoutChip(layoutKind);" in (ROOT / "frontend" / "js" / "graph.js").read_text(encoding="utf-8")
 
 
 def test_the_chip_survives_the_phone_dock_that_hides_every_other_chip():
@@ -536,7 +542,7 @@ const ring = Array.from({ length: 12 }, (_, i) => ({
   y: 400 + 150 * Math.sin((i / 12) * 2 * Math.PI),
   depth: 1,
 }));
-frameTree(svg, { transform: null }, null, ring, 1400, 800, true, false);
+frameTree(svg, { transform: null }, ring, 1400, 800, true, false);
 const mid = { x: got.x + got.k * 600, y: got.y + got.k * 400 };
 console.log(JSON.stringify({ k: got.k, mid }));
 """,

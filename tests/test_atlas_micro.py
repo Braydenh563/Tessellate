@@ -29,7 +29,7 @@ let seed = 7;
 const rnd = () => ((seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296);
 const timers = [];
 const calls = { anim: [], aim: [], mood: [], blink: 0, raf: 0 };
-const animEl = (name) => ({ name, style: {}, animate(frames, opts) { calls.anim.push({ name, frames, opts }); return { cancel() {} }; } });
+const animEl = (name) => ({ name, style: {}, classList: { contains: () => false }, animate(frames, opts) { calls.anim.push({ name, frames, opts }); return { cancel() {} }; } });
 const heads = [animEl("head"), animEl("hair")];
 const body = animEl("body");
 const ears = [animEl("ear-l"), animEl("ear-r")];
@@ -97,13 +97,21 @@ def test_a_tick_moves_something_small_and_never_uses_a_frame_loop() -> None:
 ctx.__start();
 for (let i = 0; i < 80; i += 1) { const [f] = timers.shift() || []; if (f) f(); }
 const kinds = new Set(calls.anim.map((a) => a.name));
-const big = calls.anim.filter((a) => a.frames.some((f) => parseFloat(f.rotate || 0) > 6 || Math.abs(parseFloat(f.translate || 0)) > 2));
-process.stdout.write(JSON.stringify({ kinds: [...kinds], aim: calls.aim.length, mood: calls.mood.length, raf: calls.raf, big: big.length, composite: [...new Set(calls.anim.map((a) => a.opts.composite))] }));
+const big = calls.anim.filter((a) => a.frames.some((f) => parseFloat(f.rotate || 0) > 6 || Math.abs(parseFloat(String(f.transform || "").replace("rotate(", "") || 0)) > 6 || Math.abs(parseFloat(f.translate || 0)) > 2));
+const added = [...new Set(calls.anim.filter((a) => a.opts.composite === "add").map((a) => a.name))];
+const replaced = [...new Set(calls.anim.filter((a) => !a.opts.composite).map((a) => a.name))];
+process.stdout.write(JSON.stringify({ kinds: [...kinds], aim: calls.aim.length, mood: calls.mood.length, raf: calls.raf, big: big.length, added, replaced }));
 """
     )
     assert out["raf"] == 0
     assert out["big"] == 0, "micro means a few degrees and a pixel"
-    assert out["composite"] == ["add"], "adds to the loops already running, replaces none"
+    # Audit 1031 row 17: a Web Animation that adds (`composite: "add"`) or shares
+    # a property with a running loop cannot be composited, and one such animation
+    # puts every loop on the figure back on the main thread (60 style recalcs a
+    # second). The seconds-long moves (tilt, shift) replace a property the loops
+    # leave alone; only the ear flick (a third of a second) still adds.
+    assert out["added"] == ["ear-l", "ear-r"] or set(out["added"]) <= {"ear-l", "ear-r"}, out["added"]
+    assert {"head", "hair", "body"} <= set(out["replaced"]), out["replaced"]
     assert {"head", "body"} <= set(out["kinds"]) and out["aim"] > 0
 
 

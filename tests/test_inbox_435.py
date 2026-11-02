@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from tests._app_js import app_js_text
+from tests._app_js import app_js_text, documents_text
 
 ROOT = Path(__file__).resolve().parent.parent
 CSS = ROOT / "frontend" / "css"
@@ -122,7 +122,7 @@ def test_an_image_line_being_edited_keeps_its_picture():
     """INBOX 442: the graph popup's Edit put the caret on a note's last line,
     its picture, which revealed as markdown and lost the image. A revealed
     image keeps a widget after its source."""
-    docs = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     assert "new DocImageWidget(src, text.slice(2, close), true), side: 1" in docs
     assert '".cm-md-image-under"' in docs
 
@@ -130,7 +130,7 @@ def test_an_image_line_being_edited_keeps_its_picture():
 def test_the_source_choice_stays_with_the_boxes_that_have_the_toggle():
     """INBOX 447: Source pressed in Capture was remembered for every note box,
     so the graph popup (no toggle) showed raw markdown and image links."""
-    docs = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     assert 'NOTE_SOURCE_HOSTS = new Set(["entry-content", "entry-edit-content"])' in docs
     assert "noteSourceWanted() && NOTE_SOURCE_HOSTS.has(host.id) ? [] : live" in docs
 

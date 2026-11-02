@@ -190,12 +190,15 @@ def test_stopping_a_slow_stream_midway_stops_reading_at_once(openai_server, monk
     module, url = openai_server
     monkeypatch.setattr(module, "STREAM_DELAY_MS", 300)
     stream = OpenAICompatClient(url, timeout=10).chat_stream(module.MODEL_ID, ASK)
-    started = time.monotonic()
     first = next(piece for piece in stream if piece.get("content_delta"))
+    started = time.monotonic()
     stream.close()
     stopped_after = time.monotonic() - started
     assert first["content_delta"]
-    # Eight pieces at 300 ms is 2.4 s; the first piece plus the close is well under half of it.
+    # Seven pieces at 300 ms (2.1 s) are still to come after the first, so a
+    # close that read them out could not return this fast. Timed from the
+    # close, not from the request: a loaded runner's wait for the first piece
+    # (3.5 s on CI, 2026-11-01) is not what this test is about.
     assert stopped_after < 1.2, stopped_after
     # The server is still healthy for the next request.
     monkeypatch.setattr(module, "STREAM_DELAY_MS", 0)

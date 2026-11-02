@@ -242,3 +242,38 @@ def test_loading_the_search_model_never_holds_the_model_lane():
     assert jobs.KIND_LANES["warm"] != "model"
     assert jobs.KIND_LANES["file-entry"] == "model"
     assert jobs.KIND_LANES["warm"] in jobs.LANE_WIDTHS
+
+
+def test_a_hold_waits_for_the_running_job_and_starts_no_other() -> None:
+    """Audit 1028 K19: a restore disposed the engine and swapped the database
+    file with a background job still writing. `held()` lets the running job
+    finish, starts nothing new until it ends, and then runs what queued."""
+    pool = jobs.Pool({"default": 1}, kind_lanes={"tidy": "default"})
+    started: list[str] = []
+    release = threading.Event()
+
+    def first() -> None:
+        started.append("first")
+        release.wait(5)
+
+    try:
+        pool.enqueue("tidy", first)
+        deadline = time.monotonic() + 5
+        while pool.running_count() == 0 and time.monotonic() < deadline:
+            time.sleep(0.01)
+        with pool.held(deadline=0.2) as idle:
+            assert idle is False, "the job is still running: the hold says so"
+        threading.Timer(0.1, release.set).start()
+        with pool.held(deadline=5) as idle:
+            assert idle is True
+            pool.enqueue("tidy", lambda: started.append("second"))
+            time.sleep(0.3)
+            assert started == ["first"], "nothing starts while held"
+            assert pool.queued_count() == 1
+        deadline = time.monotonic() + 5
+        while len(started) < 2 and time.monotonic() < deadline:
+            time.sleep(0.01)
+        assert started == ["first", "second"]
+    finally:
+        release.set()
+        pool.shutdown(deadline=2.0)

@@ -10,6 +10,7 @@ import functools
 
 import logging
 import threading
+import time
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -25,8 +26,10 @@ from tessellate.ai.model_manager import (
     FOLLOW_UTILITY_MODEL,
     SUGGESTED_MODELS,
 )
+from tessellate.ai import ollama_client
 from tessellate.ai.ollama_client import OllamaError
-from tessellate.core import background, deps, hardware, ocr, security
+from tessellate.core import deps, hardware, ocr, security
+from tessellate.core import jobs as bgpool
 from tessellate.core.deps import get_session
 from tessellate.core.logbuffer import safe_value
 from tessellate.entry.manager import log_action
@@ -112,11 +115,27 @@ def _installed_models(running: bool) -> list[dict]:
 
 
 #: How long a poll waits on the runner's model list when it already has an
-#: answer to fall back on. Short on purpose: the browser gives the whole poll
-#: 8s, and the list is one call on Ollama (5s timeout) and up to two on an
-#: OpenAI-dialect server (5s each), made while that same runner may be busy
-#: loading a model (the filing model warms at every launch).
-INSTALLED_REFRESH_BUDGET = 2.5
+#: answer to fall back on. Short on purpose: the list is one call on Ollama
+#: (5s timeout) and up to two on an OpenAI-dialect server (5s each), made while
+#: that same runner may be busy loading a model (the filing model warms at
+#: every launch). It was 2.5s, and a runner that stays slow cost every poll the
+#: whole of it (INBOX 1426 L1: `/models/status` 2.5s in a row, measured
+#: against a runner that answers in 5s); a runner that answers is heard within
+#: this, one that does not is served from the last answer. 0.05, not 0.25
+#: (INBOX 1492, the owner's lag log: `/models/status` 3743 ms): a local runner
+#: answers its list in a few milliseconds, so the wait buys nothing it needs,
+#: and the 0.25 was paid by every one of the boot's polls, in a thread pool the
+#: unlock burst already fills.
+INSTALLED_REFRESH_BUDGET = 0.05
+#: The first poll after a start has no answer to fall back on. It waits this
+#: long for the launch warm-up, then says `ollama_checking` and lets the page
+#: ask again in a moment, rather than holding the page for the runner's own
+#: timeout (INBOX 1426 L1: 3.2 to 5.0s at boot, four polls in six seconds).
+#: 0.2, not 1.0 (INBOX 1492): against a runner that takes 5s the first poll
+#: held a pool thread for the whole of the second, measured 1,012 ms on every
+#: one of four polls, 0.2 now; the list is asked for at launch (`prewarm_installed`),
+#: so by the time anyone has unlocked it is almost always known.
+INSTALLED_COLD_BUDGET = 0.2
 
 
 class _ListFlight:
@@ -124,6 +143,7 @@ class _ListFlight:
 
     def __init__(self) -> None:
         self.done = threading.Event()
+        self.started = time.monotonic()
         self.result: list[dict] | None = None  # None: the runner did not answer
         self.error: BaseException | None = None
 
@@ -131,6 +151,11 @@ class _ListFlight:
 _installed_lock = threading.Lock()
 _installed_known: dict[tuple[str, str], list[dict] | None] = {}
 _installed_flights: dict[tuple[str, str], _ListFlight] = {}
+#: Runners whose first, cold poll already waited `INSTALLED_COLD_BUDGET` and
+#: heard nothing: the polls after it do not wait again (INBOX 1492: a runner
+#: that takes 5s cost four polls 0.2s each, measured 212 and 226 ms where a
+#: poll that waits for nothing is 10 ms). Cleared when the list arrives.
+_installed_cold_paid: set[tuple[str, str]] = set()
 
 
 def prewarm_installed() -> None:
@@ -151,7 +176,7 @@ def prewarm_installed() -> None:
 def _start_flight(client, key: tuple[str, str]) -> "_ListFlight":  # noqa: ANN001
     """Begin the one list request for `key`; the caller holds `_installed_lock`."""
     flight = _installed_flights[key] = _ListFlight()
-    background.start("models-list", functools.partial(_run_list_flight, client, key, flight))
+    bgpool.thread("models-list", functools.partial(_run_list_flight, client, key, flight))
     return flight
 
 
@@ -161,7 +186,13 @@ def _flight_key(client) -> tuple[str, str]:  # noqa: ANN001
 
 
 def _installed_or_last_known(client, *, patient: bool = True) -> list[dict] | None:  # noqa: ANN001
-    """The runner's installed models: None when it is not answering.
+    """The runner's installed models: None when it is not answering."""
+    return _installed_state(client, patient=patient)[0]
+
+
+def _installed_state(client, *, patient: bool = True) -> tuple[list[dict] | None, bool]:  # noqa: ANN001
+    """`(models, checking)`: the list is None when the runner is not answering,
+    and `checking` says the None is "no answer yet", not "down".
 
     The poll used to make this call itself, so a runner that was merely busy
     (loading the filing model at launch, generating) held the poll for its
@@ -171,9 +202,9 @@ def _installed_or_last_known(client, *, patient: bool = True) -> list[dict] | No
     as `INSTALLED_REFRESH_BUDGET` when it already knows an answer, and serves
     that answer otherwise; the refresh still lands for the next poll. With no
     answer known yet (the first poll after a start, or a changed address) it
-    waits for the call, as it always did. The budget only hides lateness: a
-    runner that refuses the connection answers at once, and is reported down
-    on that poll.
+    waits `INSTALLED_COLD_BUDGET` and then reports `checking`. The budget only
+    hides lateness: a runner that refuses the connection answers at once, and
+    is reported down on that poll.
     """
     key = _flight_key(client)
     with _installed_lock:
@@ -182,14 +213,22 @@ def _installed_or_last_known(client, *, patient: bool = True) -> list[dict] | No
             flight = _start_flight(client, key)
         has_known = key in _installed_known
         last_known = _installed_known.get(key)
-    #: `patient=False` (the shortlist) never waits past the budget: sizes fall
-    #: back to the shipped figures, which is better than a 4s blank card list.
-    flight.done.wait(INSTALLED_REFRESH_BUDGET if has_known or not patient else None)
+    #: `patient=False` (the shortlist) never waits past the short budget: sizes
+    #: fall back to the shipped figures, which is better than a blank card list.
+    cold = bool(patient and not has_known)
+    wait = (0 if key in _installed_cold_paid else INSTALLED_COLD_BUDGET) if cold else INSTALLED_REFRESH_BUDGET
+    #: Counted from when the request was sent, not from this poll: a runner that
+    #: has been silent for a second is not given another 50 ms by every poll
+    #: that arrives behind it (INBOX 1516: measured 53 to 62 ms a poll against a
+    #: runner that takes 5 s, 3 ms with the wait spent once).
+    flight.done.wait(max(0.0, wait - (time.monotonic() - flight.started)))
     if not flight.done.is_set():
-        return last_known
+        if cold:
+            _installed_cold_paid.add(key)
+        return last_known, not has_known
     if flight.error is not None:
         raise flight.error
-    return flight.result
+    return flight.result, False
 
 
 def _run_list_flight(client, key: tuple[str, str], flight: _ListFlight) -> None:  # noqa: ANN001
@@ -206,6 +245,7 @@ def _run_list_flight(client, key: tuple[str, str], flight: _ListFlight) -> None:
         with _installed_lock:
             if flight.error is None:
                 _installed_known[key] = flight.result
+                _installed_cold_paid.discard(key)
             _installed_flights.pop(key, None)
         flight.done.set()
 
@@ -307,7 +347,7 @@ def warm_filing() -> dict:
     #: The graphics card is read by starting a program (up to 3s, cached five
     #: minutes): read it now, so Settings' first model list does not wait on it
     #: (INBOX 1415).
-    background.start("gpu-probe", hardware.detect_gpus)
+    bgpool.thread("gpu-probe", hardware.detect_gpus)
     ollama = deps.get_ollama()
     #: Only when a model answers: with none the job returned at once, yet
     #: still showed "Warming up the filing model" in the bell and Activity on
@@ -374,6 +414,42 @@ def _semantic_offer(embeddings, config) -> bool:  # noqa: ANN001
     )
 
 
+def _unreachable_state(ollama, provider: str, running: bool, checking: bool) -> tuple[bool, str | None]:  # noqa: ANN001
+    """`(busy, hint)` for a backend that has not answered (see `status`)."""
+    default_url = deps.DEFAULT_BASE_URLS.get(provider, "")
+    custom = (ollama.base_url or "").rstrip("/") != default_url.rstrip("/")
+    #: A runner busy with a generation or a model load answers late, not
+    #: never: a probe that timed out (not refused) says so (audit 1031 HR2).
+    busy = not running and not checking and ollama_client.is_quiet(ollama.base_url)
+    hint = (
+        "The model server did not answer in time. It is probably busy, so it is asked again."
+        if busy
+        else f"Nothing answered at {ollama.base_url}. Check the address, and that the server is running."
+        if not running and custom
+        else None
+    )
+    return busy, hint
+
+
+def _effective_chat_model(running: bool, installed: list[dict], provider: str, chat_model: str) -> str:
+    """The model that answers: the one loaded, when an OpenAI-dialect server lacks the chosen name."""
+    if running and provider != "ollama" and installed and not _name_matches(chat_model, installed):
+        return installed[0]["name"]
+    return chat_model
+
+
+def _embedding_ready(manager, embeddings, running: bool) -> bool:  # noqa: ANN001
+    """`EmbeddingService.is_ready`, without its own probe of the runner on the
+    Ollama backend: this poll already asked (`_installed_state`), and a second
+    GET made it wait out the probe timeout whenever the runner was busy loading
+    a model (INBOX 1516: `/models/status` 3198 ms, 1,228 ms reproduced)."""
+    return running if manager.embedding_backend() == "ollama" else embeddings.is_ready()
+
+
+def _overridden_count(manager) -> int:  # noqa: ANN001
+    return sum(1 for row in manager.feature_rows() if row["overridden"])
+
+
 @router.get("/status")
 def status(session: Session = Depends(get_session)) -> dict:
     """One call that tells the UI everything: is Ollama up, what's
@@ -390,7 +466,7 @@ def status(session: Session = Depends(get_session)) -> dict:
     # trusting that margin. That mismatch read as "AI unavailable" on a
     # backend that is genuinely up but momentarily slow to answer, one
     # round-trip now serves both purposes.
-    known = _installed_or_last_known(ollama)
+    known, checking = _installed_state(ollama)
     installed = known if known is not None else []
     running = known is not None
     chat_model = manager.chat_model()
@@ -412,19 +488,18 @@ def status(session: Session = Depends(get_session)) -> dict:
     #: Section 21 row 12: nothing answered, at an address the person set.
     #: The default address unanswered is a server not started ("isn't
     #: running"); a custom one is as likely a typo, so the line names it.
-    default_url = deps.DEFAULT_BASE_URLS.get(provider, "")
-    custom = (ollama.base_url or "").rstrip("/") != default_url.rstrip("/")
-    unreachable_hint = (
-        f"Nothing answered at {ollama.base_url}. Check the address, and that the server is running."
-        if not running and custom
-        else None
-    )
+    busy, unreachable_hint = _unreachable_state(ollama, provider, running, checking)
 
     return {
         # Named for Ollama because the whole UI is, and it means "the chat
         # backend is answering", which is the question the pill asks whoever
         # is answering it.
         "ollama_running": running,
+        "ollama_busy": busy,
+        #: True when nothing has answered yet and the runner is still being
+        #: asked (the first seconds after a start): "not known", not "down".
+        #: The page keeps what it had and asks again in a moment.
+        "ollama_checking": checking,
         #: **A model can answer right now** (INBOX 778, the owner: "agent mode
         #: was still an option when I was on the chat with no ai running").
         #: `ollama_running` only says a server answered; a server up with
@@ -474,12 +549,7 @@ def status(session: Session = Depends(get_session)) -> dict:
         # configured name is not one it serves, the loaded one is what runs.
         # Ollama has no such fallback: there the configured name stands, and
         # `chat_model_installed` says it will fail.
-        "chat_model_effective": (
-            installed[0]["name"]
-            if running and provider != "ollama" and installed
-            and not _name_matches(chat_model, installed)
-            else chat_model
-        ),
+        "chat_model_effective": _effective_chat_model(running, installed, provider, chat_model),
         # "" means "same as chat model" (utility model).
         "utility_model": manager._config.get_preference("utility_model", ""),
         # What background jobs actually run on, and why (INBOX 277): the
@@ -514,9 +584,7 @@ def status(session: Session = Depends(get_session)) -> dict:
         "feature_models": manager.feature_rows(),
         #: What the mass reset would clear. The button says the number and
         #: does nothing when it is zero.
-        "feature_models_overridden": sum(
-            1 for row in manager.feature_rows() if row["overridden"]
-        ),
+        "feature_models_overridden": _overridden_count(manager),
         #: The two sentinel values a feature's select can send back through
         #: `/feature-model` for "Same as chat model" / "Same as utility
         #: model" (INBOX 430), so the frontend never hardcodes a string that
@@ -540,7 +608,7 @@ def status(session: Session = Depends(get_session)) -> dict:
         # itself the first time the built-in model is needed (after a yes),
         # and said so only in the log.
         **_builtin_embedding_install_state(),
-        "embedding_ready": embeddings.is_ready(),
+        "embedding_ready": _embedding_ready(manager, embeddings, running),
         # Lets the UI tell "still loading" from "failed" (pill fix).
         "embedding_warming": embeddings_module.warmup_running(),
         "embedding_warming_failed": embeddings_module.warmup_failed(),
@@ -548,6 +616,10 @@ def status(session: Session = Depends(get_session)) -> dict:
         #: The one-time offer to download search by meaning: a save wanted it,
         #: nothing is on this computer, and the question is still unanswered.
         "semantic_offer": semantic_offer,
+        #: Not downloaded because no one has said yes (the question is open,
+        #: or was answered no): off by choice, never shown as an error
+        #: (audit 1030 Y2).
+        "semantic_off": bool(getattr(embeddings, "awaiting_consent", False)),
         #: Set when the old engine's copy of the model is on this computer:
         #: the one-time question then says the engine moved (semantic-notice.js).
         #: Read only while the question is open: it is a folder listing.
@@ -581,7 +653,7 @@ def model_spec(name: str = "") -> dict:
     """What the backend says about one model, size, quantisation, window,
     and what it can actually do.
 
-    The app read a context length and nothing else, so Settings → Models could
+    The app read a context length and nothing else, so Settings, Models could
     not tell you how big a model was, how it was quantised, or whether it
     supports tool calls: which is the first thing worth knowing when "agent
     mode does nothing", and until now was only discoverable by trying it and
@@ -732,30 +804,61 @@ def _hardware_profile() -> dict:
     return hardware.profile(deps.get_config().get_preference("hardware_override"))
 
 
+_loaded_state: dict = {"names": set(), "busy": False, "answered": False, "unknown": True}
+
+
 def _loaded_names() -> set[str]:
     """Models Ollama holds in memory now, without `:latest`; empty when unknown."""
+    return loaded_snapshot() or set()
+
+
+def loaded_snapshot() -> set[str] | None:
+    """`_loaded_names`, but None when the backend could not say. Never waits
+    past the short budget, so a route that only decorates (Activity's "Stop the
+    model", the hardware card) cannot be held by a busy or hung runner (audit
+    1029 H5)."""
     #: Under the same short budget as the list: /api/ps is one more call to a
-    #: runner that may be busy loading, and "loaded" only tints a card.
-    box: list[list[str]] = []
-
-    def ask() -> None:
-        try:
-            box.append(deps.get_ollama().loaded_models() or [])
-        except Exception:  # noqa: BLE001  # the backend being off is not an error here
-            box.append([])
-
+    #: runner that may be busy loading, and "loaded" only tints a card. One
+    #: request at a time: a runner that stays slow used to be asked again by
+    #: every shortlist poll, a worker held for its whole timeout each time, and
+    #: the last answer is served while one is out (INBOX 1426 L1).
     from tessellate.core import jobs
 
+    with _installed_lock:
+        busy = _loaded_state["busy"]
+        _loaded_state["busy"] = True
+    if busy:
+        return _loaded_known()
     finished = threading.Event()
 
     def run() -> None:
-        ask()
+        try:
+            names = deps.get_ollama().loaded_models()
+        except Exception:  # noqa: BLE001  # the backend being off is not an error here
+            names = None
+        with _installed_lock:
+            _loaded_state["unknown"] = names is None
+            _loaded_state["names"] = {str(n).removesuffix(":latest") for n in (names or []) if n}
+            _loaded_state["busy"] = False
+            _loaded_state["answered"] = True
         finished.set()
 
-    jobs.enqueue("model-info", run, name="loaded models")
-    finished.wait(INSTALLED_REFRESH_BUDGET)
-    names = box[0] if box else []
-    return {str(n).removesuffix(":latest") for n in names if n}
+    try:
+        jobs.enqueue("model-info", run, name="loaded models")
+    except Exception:  # noqa: BLE001  # never leave the gate shut behind a job that did not start
+        with _installed_lock:
+            _loaded_state["busy"] = False
+        raise
+    #: Waited for only until the first answer is in: after that "loaded" is a
+    #: tint on last time's truth, and the shortlist does not pay for it.
+    if not _loaded_state["answered"]:
+        finished.wait(INSTALLED_REFRESH_BUDGET)
+    return _loaded_known()
+
+
+def _loaded_known() -> set[str] | None:
+    with _installed_lock:
+        return None if _loaded_state["unknown"] else set(_loaded_state["names"])
 
 
 class HardwareBody(BaseModel):
@@ -791,8 +894,10 @@ class InspectBody(BaseModel):
 
 
 def _installed_names() -> set[str]:
+    #: Through the one bounded, single-flight list (`_installed_state`), never a
+    #: live `list_models()`: a hung runner held `/models/hardware` for 5 s.
     try:
-        return {str(m.get("name", "")) for m in deps.get_ollama().list_models()}
+        return {m["name"] for m in _installed_or_last_known(deps.get_ollama(), patient=False) or []}
     except Exception:  # noqa: BLE001  # the backend being off is not an error here
         return set()
 
@@ -1036,7 +1141,7 @@ def set_provider(body: ProviderBody, session: Session = Depends(get_session)) ->
 
 @router.post("/jobs/cancel")
 def cancel_job(kind: str, name: str = "") -> dict:
-    """Quit a stuck or slow background job from Settings → Tasks.
+    """Quit a stuck or slow background job from Settings, Tasks.
     kind is 'reindex' or 'pull' (with the model name for a pull)."""
     if kind == "reindex":
         stopped = jobs.cancel_reindex()

@@ -36,13 +36,14 @@ def test_the_note_menu_is_not_built_until_it_is_opened():
     notes as 133,748 nodes eager against 31,680 lazy.
 
     Guarded by shape rather than by count: the opener's handler has to call
-    `fillMenu()` before `openActionMenu`, or the menu opens empty.
+    `fillEntryMenu` (entry-menu.js, awaited through `ensureModule`) before
+    `openActionMenu`, or the menu opens empty.
     """
     source = _app_js()
     start = source.index("function entryOverflowMenu(")
-    body = source[start : start + 2000]
-    assert "fillMenu();" in body, "the opener no longer fills the menu before opening it"
-    assert body.index("fillMenu();") < body.index("openActionMenu(menu, opener)")
+    body = source[start : start + 3000]
+    assert "fillEntryMenu(menu, entry)" in body, "the opener no longer fills the menu before opening it"
+    assert body.index("fillEntryMenu(menu, entry)") < body.index("openActionMenu(menu, opener)")
 
 
 def test_the_selection_popup_clamps_the_right_way_round():

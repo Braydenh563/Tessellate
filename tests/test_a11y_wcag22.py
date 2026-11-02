@@ -112,8 +112,12 @@ def test_the_keyboard_lands_somewhere_after_every_note_step():
     notes = _read("notes-list.js")
     assert "else focusBodyAfterRender = id;" in _function(notes, "openNoteEditor")
     assert "focusNoteRow(back)" in _function(_read("note-edit-panels.js"), "closeNoteForm")
+    # Since notes N11 the guard (only when focus is lost) and the focus call
+    # live in the one `restoreFocusTo` contract, which focusNoteRow calls.
     row = _function(notes, "focusNoteRow")
-    assert "active !== document.body" in row and "row.focus(" in row
+    assert "restoreFocusTo(" in row and "row.tabIndex = 0;" in row
+    contract = _function(notes, "restoreFocusTo")
+    assert "here !== document.body" in contract and "el.focus(" in contract
     assert "if (!many) focusNoteRow(noteIds[0]);" in _read("categories-panel.js")
     sheet = _function(_read("phone-shell.js"), "openSheet")
     assert "'.sheet-row[aria-current=\"true\"]'" in sheet
@@ -141,7 +145,7 @@ def test_single_key_shortcuts_can_be_turned_off():
     # way to turn them off.
     wiring = _read("settings-wiring.js")
     assert "const singleKeys = singleKeysOn();" in wiring
-    assert "if (!typing && !burst && !overlayOpen && singleKeys && !boardOwns) {" in wiring
+    assert "if (!burst && singleKeys && !boardOwns) {" in wiring
     assert 'singleKeys && (e.key === "m" || e.key === "t") && !e.ctrlKey' in wiring
     assert 'prefs.get("singleKeys", null) !== "off"' in _function(wiring, "singleKeysOn")
     assert 'id="pref-single-keys"' in _read("index.html")
@@ -505,3 +509,20 @@ def test_visible_text_is_inside_the_accessible_name_wcag_2_5_3():
     feature = feature[: feature.index("return button;")]
     assert 'button.setAttribute("aria-label"' not in feature
     assert "button.title = `Open the ${kind} ${board.title}`;" in feature
+
+
+def test_every_labelledby_and_describedby_names_an_element_that_exists():
+    """Audit 1028 S14: the Documents page was labelled by `tab-btn-documents`,
+    a tab button that does not exist (Documents opens from the Library), so
+    a screen reader named the region nothing."""
+    from tests._app_js import INDEX_HTML
+
+    html = INDEX_HTML.read_text(encoding="utf-8")
+    ids = set(re.findall(r'\bid="([^"]+)"', html))
+    missing = [
+        ref
+        for refs in re.findall(r'aria-(?:labelledby|describedby)="([^"$]+)"', html)
+        for ref in refs.split()
+        if ref not in ids
+    ]
+    assert missing == []

@@ -176,12 +176,12 @@ def test_the_crossfade_reuses_the_progress_musings_own_technique() -> None:
 
 
 def test_chat_passes_the_persona_that_was_actually_sent() -> None:
-    text = (ROOT / "frontend" / "js" / "chat-attach.js").read_text(encoding="utf-8")
+    text = with_pieces("chat-attach.js")
     assert 'progressLine(null, { persona: sentPersona, words: true })' in text
 
 
 def test_capture_ask_opts_in_with_no_persona_picker_of_its_own() -> None:
-    text = (ROOT / "frontend" / "js" / "capture-ask.js").read_text(encoding="utf-8")
+    text = with_pieces("capture-ask.js")
     assert "progressLine(text, { words: true })" in text
 
 
@@ -274,5 +274,5 @@ def test_reduced_motion_re_declares_rather_than_removes_the_transition() -> None
     back."""
     idx = CSS.index(".typing-thinking-word")
     reduced = CSS[idx : idx + 1200]
-    assert "@media (prefers-reduced-motion: reduce)" in reduced
+    assert ':where(:root[data-motion="reduced"]) .typing-thinking-word' in reduced
     assert reduced.count("transition:") >= 2

@@ -72,8 +72,10 @@ def test_p4_the_route_says_no_repetition_for_a_sentence_in_one_note(ai_client, s
 def test_p5_a_count_of_notes_on_a_subject_keeps_its_subject(client, session):
     _seed(session)
     out = _ask(client, "how many notes are about Harbor", **NOTES_ONLY)
-    assert not out["text"].startswith("You have ")
-    assert "Harbor" in out["text"]
+    #: Not the notebook's total ("You have 5 notes."); "You have two notes
+    #: about Harbor." is the subject's own count and keeps it.
+    assert not out["text"].startswith("You have 5 notes")
+    assert "Harbor" in out["text"].split("\n", 1)[0]
 
 
 def test_p5_a_count_of_all_notes_is_still_the_count(client, session):

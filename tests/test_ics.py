@@ -129,3 +129,12 @@ def test_what_another_calendar_sends_is_read():
     assert all_day.due_at == datetime(2030, 10, 6, 7, 0) and all_day.recurring == "weekly"
     assert zoned.due_at == datetime(2030, 7, 6, 8, 0) and zoned.done and zoned.alert_minutes == 1440
     assert folded.text == "Folded summary that goes onand on" and folded.priority == "low"
+
+
+def test_the_import_runs_off_the_event_loop():
+    """Audit 1028 K17: a per-event query loop inside `async def` froze the server."""
+    import inspect
+
+    from tessellate.api import routes_reminders
+
+    assert not inspect.iscoroutinefunction(routes_reminders.import_ics)

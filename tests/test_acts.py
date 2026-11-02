@@ -40,7 +40,7 @@ def _state(session) -> tuple:
         if e.deleted_at is None
     )
     links = tuple(sorted((link.source_entry_id, link.target_entry_id) for link in session.scalars(select(EntryLink))))
-    reminders = tuple(r.id for r in session.scalars(select(Reminder)) if r.deleted_at is None)
+    reminders = tuple((r.id, r.done, r.due_at) for r in session.scalars(select(Reminder)) if r.deleted_at is None)
     return notes, links, reminders
 
 
@@ -65,10 +65,17 @@ def test_every_write_act_has_an_inverse_that_restores_the_notebook(client, sessi
         setup = acts.preview(session, acts.parse(_BEFORE[act.intent], NOW))
         acts.run(session, setup["card"]["steps"])
         session.commit()
+    if act.intent in ("complete", "cancel", "snooze"):
+        #: A task is completed, cancelled or snoozed only once one is open;
+        #: seeded directly, as the store refuses a reminder due before the
+        #: real clock.
+        session.add(Reminder(text="Buy milk" if act.intent == "complete" else "Call the dentist", due_at=datetime(2030, 1, 1, 9)))
+        session.commit()
     before = _state(session)
     # The store refuses a reminder due in the past by the real clock, so a
-    # fixed NOW turns "on Friday" into a past date once that week is over.
-    now = datetime.now().replace(hour=12, minute=0, second=0, microsecond=0) if act.intent == "reminder" else NOW
+    # fixed NOW turns "on Friday" into a past date once that week is over
+    # (a snooze too: its plan refuses a time already passed on the real clock).
+    now = datetime.now().replace(hour=12, minute=0, second=0, microsecond=0) if act.intent in ("reminder", "snooze") else NOW
     planned = acts.preview(session, acts.parse(act.example, now))
     card = planned["card"]
     assert card["steps"], act.intent
@@ -172,4 +179,15 @@ def test_a_reminder_is_said_back_with_the_note_it_comes_from(client, session, mo
      (datetime(2027, 1, 4, 9, 0), "on 4 January 2027 at 9")],
 )
 def test_reminder_when_says_the_time_against_today(due, said):
+    assert commands.reminder_when(due, NOW) == said
+
+
+@pytest.mark.parametrize(
+    ("due", "said"),
+    [(datetime(2026, 10, 10, 14, 0), "in 2 hours, at 2pm"), (datetime(2026, 10, 10, 12, 45), "in 45 minutes, at 12:45pm"),
+     (datetime(2026, 10, 10, 13, 0), "in an hour, at 1pm"), (datetime(2026, 10, 10, 14, 20), "in about 2 hours, at 2:20pm")],
+)
+def test_a_reminder_within_three_hours_says_how_soon(due, said):
+    """Audit 1029 C47: "remind me in 2 hours" was said back as "today at
+    2:32am", which reads as a mistake; within three hours it says how soon."""
     assert commands.reminder_when(due, NOW) == said

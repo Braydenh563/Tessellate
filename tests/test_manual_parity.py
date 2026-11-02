@@ -15,6 +15,8 @@ panel (notes-list.js, `routes_categories.py`).
 
 from __future__ import annotations
 
+from tests._help_text import help_chat_text
+
 import json
 import shutil
 import subprocess
@@ -38,7 +40,8 @@ MANUAL = {
     "pin_note": ("note-cards.js", 'button.classList.add("favourite-btn");', "a note's star"),
     "link_notes": ("graph-canvas.js", 'method: "POST", body: JSON.stringify({ target', "Graph, drag one note to another"),
     "unlink_notes": ("graph.js", '/links/${edge.id}`, { method: "DELETE" })', "Graph, click a link, Remove"),
-    "audit_link_reasons": ("note-cards.js", "/reason`", "a note's links, Edit reason"),
+    "audit_link_reasons": ("entry-card.js", "/reason`", "a note's links, Edit reason"),
+    "check_learned": ("settings-controls.js", 'apiJson("/learned/audit/run"', "Settings, What it learned, Check what it learned"),
     "delete_note": ("note-cards.js", "async function binNoteWithUndo(entry)", "a note's menu, Move to bin"),
     "restore_note": ("note-cards.js", '/restore`, { method: "POST"', "the recycle bin, Restore"),
     "set_reminder": ("shell-reminders.js", 'async function addReminder(text, dueValue', "Reminders, New reminder"),
@@ -53,7 +56,7 @@ MANUAL = {
     "add_whiteboard_link": ("whiteboard.js", 'apiJson("/whiteboard/objects", { method: "POST"', "a board, draw a link between cards"),
     "generate_diagram": ("whiteboard.js", 'apiJson("/whiteboard/boards/generate", {', "Library, Boards & maps, Map from notes"),
     "create_mindmap": ("whiteboard.js", 'const board = await apiJson("/whiteboard/boards", {', "Library, Boards & maps, New, Mind map"),
-    "map_from_note": ("menus.js", "apiJson(`/whiteboard/maps/from-note/${entry.id}`", "a note's ⋮ menu, Make a mind map"),
+    "map_from_note": ("entry-menu.js", "apiJson(`/whiteboard/maps/from-note/${entry.id}`", "a note's ⋮ menu, Make a mind map"),
     "add_map_node": ("whiteboard-map.js", "const created = await apiJson(`/whiteboard/boards/${boardId}/nodes`, {", "a mind map, Add child"),
     "link_map_nodes": ("whiteboard.js", 'apiJson("/whiteboard/objects", { method: "POST"', "a mind map, draw a cross-link"),
     "move_board_item": ("whiteboard-format.js", "async function wbFmtGeometry(axis, value)", "a board, drag an item, or the Format panel's X and Y"),
@@ -128,9 +131,9 @@ UTILITIES = {
     "stopwatch": ("utility-tools.js", "function startStopwatch()", "the palette's Start a stopwatch", "timer"),
     "stop the clock": ("utility-tools.js", '$("status-timer").addEventListener("click", stopUtilityClock);', "the status bar's timer chip", "timer"),
     "no-model badge": ("reply-kit.js", "function replyByHelpPanel(kind)", "the From your notes badge", "ask-chat"),
-    "calculator": ("reply-kit.js", 'function openCalculator(input = "", mode = "work")', "the palette's Calculator, or /calc", "calculator"),
+    "calculator": ("reply-kit.js", 'function openCalculator(input = "", mode = "work", { target = null } = {})', "the palette's Calculator and equations, or /calc", "calculator"),
     "convert units": ("settings-panes.js", 'id: "convert", name: "Convert units"', "the palette's Convert units", "calculator"),
-    "equation": ("settings-panes.js", 'id: "equation", name: "Equation"', "the palette's Equation, Alt+=, or /equation", "equation-editor"),
+    "equation": ("math-editor.js", "function mathEditorMount({", "Calculator and equations, Equation tab, Alt+=, or /equation", "equation-editor"),
     "count words": ("utility-tools.js", "function countSelection(caught)", "the palette's Count words", "count-words"),
     "live captions": ("captions.js", "async function startLiveCaptions(opts = {})", "the palette's Live captions", "live-captions"),
     "translate this": ("translate.js", "async function translateCaught(caught)", "the palette's Translate this", "translate-offline"),
@@ -139,6 +142,7 @@ UTILITIES = {
     "launcher logs": ("settings-controls.js", 'apiJson("/system/open-logs-folder"', "Settings, About, Maintenance, Open the launcher logs", "maintenance"),
     "desktop shortcut": ("settings-controls.js", 'apiJson("/system/desktop-shortcut"', "Settings, About, Maintenance, Make a desktop shortcut", "maintenance"),
     "uninstall steps": ("settings-controls.js", "function openUninstallSteps()", "Settings, About, Maintenance, Uninstall", "maintenance"),
+    "private chat": ("chat-private.js", "function chatPrivateToggle()", "Chat, the gear under the message box, Private chat", "chat-private"),
     "insert template": ("app-palette.js", "label: `ph:note-blank Insert template: ${template.name}`,", "the palette's insert template", "insert-template"),
 }
 
@@ -156,7 +160,7 @@ def test_every_utility_has_its_way_in_and_a_guide_topic():
     #: Each palette row carries its one line of help (`about`), the palette's
     #: in-place help; the Statistics page and Settings, Templates also have a
     #: '?' popover (`data-help-for`).
-    panes = (FRONTEND / "js" / "settings-panes.js").read_text(encoding="utf-8")
+    panes = (FRONTEND / "js" / "settings-panes.js").read_text(encoding="utf-8") + (FRONTEND / "js" / "app-features.js").read_text(encoding="utf-8")
     for label in ("Statistics", "Count words", "Live captions"):
         row = next((line for line in panes.splitlines() if 'label: "ph:' in line and f' {label}"' in line), "")
         assert "about:" in row, f"the palette's {label} row has no line of help"
@@ -229,9 +233,9 @@ def test_the_open_packages_button_and_the_transcript_and_strip_controls_are_in_t
     """Standing order 13: the Open Packages button on package notices (fixes1),
     the transcript's copy controls (C40) and the strip's dates switch (C36) are
     named in the Guide and in Settings or the Timeline's own help."""
-    from tessellate.ai import help_chat, help_topics_more
+    from tessellate.ai import help_topics_more
 
-    text = Path(help_chat.__file__).read_text(encoding="utf-8") + Path(help_topics_more.__file__).read_text(encoding="utf-8")
+    text = help_chat_text() + Path(help_topics_more.__file__).read_text(encoding="utf-8")
     html = (FRONTEND / "index.html").read_text(encoding="utf-8")
     assert "Open Packages button" in text and "Open Packages button" in html
     assert "Shift-click picks a run of" in text
@@ -249,3 +253,50 @@ def test_every_graph_options_section_has_a_question_mark_and_the_guide_says_so()
         assert f'data-help-for="graph-{help_id}-help"' in html, f"Options has no '?' for {help_id}"
     body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "graph-options-help"))
     assert "beside its name" in body and "Minimap" in body
+
+
+def test_the_graph_search_count_and_keys_are_in_the_guide() -> None:
+    """Audit 1029 G11: the dock says "N matches", Enter and Shift+Enter walk
+    them and Esc clears; the Guide's graph topic says so, and a reader can find
+    it by asking."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "graph"))
+    assert "how many notes match" in body
+    assert "Enter jumps to the next match" in body and "Shift and Enter" in body and "Esc clears the search" in body
+    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    assert 'id="graph-search-count"' in html
+
+
+def test_the_board_zoom_keys_are_in_the_keys_sheet_and_the_guide() -> None:
+    """INBOX 1509: Ctrl or Cmd with + or - zooms the board about the selection
+    (else the view's centre), Ctrl+0 fits and Ctrl+1 is 100%, as InDesign
+    has it. The command table (the Keys sheet's rows), the menus and the
+    Guide's keys topic all say the same keys."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    commands = (FRONTEND / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
+    assert 'label: "Zoom to 100%", keys: "Ctrl+1"' in commands
+    assert 'label: "Fit everything", keys: "Ctrl+0"' in commands
+    assert '{ cmd: "zoom-fit", also: ["Shift+1"] }' in commands
+    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    assert "<span>Zoom to 100%</span><kbd>Ctrl+1</kbd>" in html
+    assert "<span>Fit everything</span><kbd>Ctrl+0</kbd>" in html
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "whiteboard-controls"))
+    assert "Ctrl+0 fits all" in body and "Ctrl+1 is 100%" in body
+    assert "zoom the board about the selection's centre" in body
+
+
+def test_check_what_it_learned_is_in_the_guide_the_panel_help_and_the_skill():
+    """Decision 68: the bar's button, the Guide's learned topic, the panel's own
+    help and the skill say the same thing and use the button's own words."""
+    from tessellate.ai import help_chat, skills
+
+    topic = next(t for t in help_chat.HELP_TOPICS if t["id"] == "learned")
+    for words in ("Check what it learned", "retires", "Undo", "flags", "Background tasks", "joke, quote, fiction, test or draft"):
+        assert words in topic["body"] or words.lower() in topic["body"].lower(), words
+    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    help_body = html[html.index('id="learned-help"') :][:3000]
+    assert '"Check what it learned"' in help_body and "Undo" in help_body
+    assert "Check what it learned</button>" in html
+    assert any(item["name"] == "Check what it learned" for item in skills.BUILTIN_SKILLS)

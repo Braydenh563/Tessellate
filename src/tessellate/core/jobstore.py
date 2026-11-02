@@ -39,7 +39,7 @@ make an app worse than forgetting.
 
 **Cancel** stops a queued job (the row goes to `cancelled` and the worker's
 lease then fails). A running job is not interrupted, for the reason
-`core/bgtasks.py` gives: Python cannot stop a thread safely, and the work
+`jobs.cancel_kind` gives: Python cannot stop a thread safely, and the work
 writes to a notebook someone cares about. The answer says so.
 
 **Bookkeeping never breaks the job**, the rule `core/jobruns.py` set: every
@@ -384,7 +384,7 @@ def cancel(job_id: int, db=None) -> tuple[bool, str]:  # noqa: ANN001
         return True, "Stopped before it started."
     except Exception:  # noqa: BLE001
         logger.warning("could not cancel a job", exc_info=True)
-        return False, "Couldn't stop that job, see Settings → Logs."
+        return False, "Couldn't stop that job, see Settings, Logs."
 
 
 def cancel_queued(kind: str, name: str = "", db=None) -> int:  # noqa: ANN001
@@ -701,6 +701,9 @@ def list_jobs(db=None, limit: int = 50, labels: dict[str, str] | None = None) ->
                 {
                     "id": row.id,
                     "kind": row.kind,
+                    #: A durable row is a pool `Job`'s: background, as its
+                    #: `job-<kind>` running row is (`jobs.Job.lane`).
+                    "lane": "background",
                     "label": labels.get(row.kind, "Background job"),
                     "name": row.name or "",
                     "state": row.state,

@@ -38,15 +38,17 @@ def notebook(session):
 
 def test_summarise_this_sums_up_the_open_note_point_by_point(client, notebook):
     text = _turn(client, "Summarise this", open_note_id=notebook["trip"], open_category="Travel")
-    assert text.startswith("Your trip planning note of ")
-    assert "in Travel, in three points:" in text
+    #: INBOX 1441 moved the day out: "Summarise this" does not ask about
+    #: time, so the note is named by its label and says no "of <date>".
+    assert text.startswith("Your trip planning note, in Travel, in three points:"), text
     assert "- Flights to Lisbon on 3 May, 240 pounds.\n- Hotel near Alfama" in text
     assert "Packing" not in text and "squats" not in text
 
 
 def test_a_one_point_note_is_one_sentence(client, notebook):
     text = _turn(client, "tl;dr", open_note_id=notebook["gym"])
-    assert "Your gym note of " in text and ", in Health, says one thing: squats at 80 kg." in text
+    #: No "of <date>" for an untimed question (INBOX 1441).
+    assert text.startswith("Your gym note, in Health, says one thing: squats at 80 kg."), text
 
 
 def test_with_no_note_open_the_open_category_is_summed_up(client, notebook):
@@ -106,3 +108,30 @@ def test_with_a_model_up_the_model_summarises_the_open_note(ai_client, fake_olla
     with ai_client.stream("POST", "/chat/stream", json={"question": "Summarise this", "history": [], "use_tools": False}) as response:
         text = "".join(json.loads(line).get("delta", "") for line in response.iter_lines() if line.strip() and json.loads(line).get("type") == "answer")
     assert not text.startswith("Nothing is open to sum up.")
+
+
+def test_summarise_this_reads_the_open_document(client, notebook):
+    """Row 5 (open-1101): the Ask body sends the open document's id, and
+    "Summarise this" reads that document, not a note or the newest ones."""
+    doc = client.post("/documents", json={"title": "Q3 plan", "content": "Ship the reader by October. Hire two testers in July."}).json()
+    text = _turn(client, "Summarise this", open_document_id=doc["id"], open_note_id=notebook["gym"])
+    assert "October" in text and "squats" not in text, text
+
+
+def test_a_document_that_is_gone_falls_back_to_the_open_note(client, notebook):
+    text = _turn(client, "Summarise this", open_document_id=99999, open_note_id=notebook["gym"])
+    assert "squats at 80 kg" in text, text
+
+
+def test_a_question_that_is_not_about_this_ignores_the_open_document(client, notebook):
+    doc = client.post("/documents", json={"title": "Q3 plan", "content": "Ship the reader by October."}).json()
+    text = _turn(client, "what have I saved about the gym?", open_document_id=doc["id"])
+    assert "October" not in text, text
+
+
+def test_summarise_this_reads_the_open_mind_map(client, notebook):
+    board = client.post("/whiteboard/boards", json={"name": "Launch map", "type": "map", "layout": "tree-right"}).json()
+    root = client.post(f"/whiteboard/boards/{board['id']}/nodes", json={"kind": "topic", "parent_id": None, "text": "Launch"}).json()
+    client.post(f"/whiteboard/boards/{board['id']}/nodes", json={"kind": "topic", "parent_id": root["id"], "text": "Press kit by Friday"})
+    text = _turn(client, "Summarise this", open_board_id=board["id"])
+    assert "Press kit" in text and "squats" not in text, text

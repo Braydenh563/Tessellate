@@ -109,6 +109,17 @@
   stroke: none;
 }
 
+.reply-timeline .reply-spark {
+  height: calc(var(--space-9) * 1.5);
+}
+
+.reply-timeline-ends {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+}
+
 .reply-meter,
 .reply-compare-bar {
   display: block;
@@ -149,8 +160,8 @@
   display: none;
 }
 
-/* **The calculator** (`openCalculator`): the sheet recipe's card, a `.seg`
-   for its two modes, the box, the result as a live region (the figure large,
+/* **The calculator** (`openCalculator`): the sheet recipe's card, a tab strip
+   for its three modes (Work out, Convert units, the Equation editor), the box, the result as a live region (the figure large,
    how it was read muted under it), a four-column keypad of square-ish keys
    as ghost buttons (operators in the accent's text colour, = the filled one),
    then the last results as ghost buttons. */
@@ -185,6 +196,11 @@
 .calc-result-row .calc-result {
   flex: 1;
   min-width: 0;
+}
+
+/* Insert and Insert as equation, under the result when the dialog has a box. */
+.calc-insert-row {
+  flex-wrap: wrap;
 }
 
 .calc-figure {
@@ -268,8 +284,14 @@
 /* **A long block, folded** (`replyFoldLong`, INBOX 1300 C08): the web
    fold's look, shut, its summary the block's gist and its length; open, the
    block reads in the same inset panel, capped and scrolling. */
+/* A gap under it as under any answer paragraph: the line after it sat flush
+   against the shut fold (INBOX 1524). */
 .long-fold {
-  margin: var(--space-2) 0 0;
+  margin: var(--space-2) 0;
+}
+
+.long-fold:last-child {
+  margin-bottom: 0;
 }
 
 .long-fold[open] {
@@ -390,17 +412,15 @@ button.reply-by {
   font-style: normal;
   line-height: 1;
   transform: rotate(-90deg);
-  transition: transform var(--ui-fast) var(--ease-out);
+  transition: transform var(--ui-base) var(--ease-out);
 }
 
 .grounding-fold[open] > .fold-summary::before {
   transform: none;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .grounding-fold > .fold-summary::before {
-    transition: none;
-  }
+:where(:root[data-motion="reduced"]) .grounding-fold > .fold-summary::before {
+  transition: none;
 }
 
 .grounding-body {

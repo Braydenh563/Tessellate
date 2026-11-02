@@ -12,14 +12,15 @@ import re
 
 from tests._app_js import JS_DIR, app_js_text
 
-APP = app_js_text() + (JS_DIR / "documents.js").read_text(encoding="utf-8")
+#: documents-history.js holds the history dialog (docs-1101, DC13): one closure, so its functions are indented.
+APP = app_js_text() + (JS_DIR / "documents.js").read_text(encoding="utf-8") + (JS_DIR / "documents-history.js").read_text(encoding="utf-8")
 
 
 def _body(name: str) -> str:
-    match = re.search(rf"^(?:async\s+)?function\s+{name}\s*\(", APP, re.M)
+    match = re.search(rf"^ *(?:async\s+)?function\s+{name}\s*\(", APP, re.M)
     assert match, f"{name} is missing"
     rest = APP[match.end():]
-    end = re.search(r"^(?:async\s+)?function\s", rest, re.M)
+    end = re.search(r"^ *(?:async\s+)?function\s", rest, re.M)
     return rest[: end.start() if end else len(rest)]
 
 
@@ -59,8 +60,11 @@ def test_a_restore_is_one_step_not_a_confirm():
     body = _body("docHistoryRow")
     assert "restoreDocVersionWithUndo(entry)" in body
     assert "Restore it" not in body
-    #: Outside the editor's history, so Ctrl+Z does not undo it twice.
-    assert "addToHistory.of(false)" in _body("docWriteOutsideHistory")
+    #: Outside the editor's history, so Ctrl+Z does not undo it twice. The
+    #: write takes a `keep` flag since replace-all's undo (audit 1031 DC4) keeps
+    #: its own step; a restore leaves it at its default, outside the history.
+    assert "function docWriteOutsideHistory(text, keep = false)" in APP
+    assert "addToHistory.of(keep)" in _body("docWriteOutsideHistory")
 
 
 def test_a_fix_is_its_own_step_in_the_editor():
@@ -87,7 +91,7 @@ def test_version_history_names_versions_and_compares_side_by_side():
     assert "offerUndo(" in _body("docNameCurrentVersion")
     assert "docDiffSplitLayout(host, opts.split)" in _body("docRenderDiff")
     assert 'docHistoryFilter === "named"' in _body("renderDocHistoryList")
-    assert "docIdeCompareWith(entry.id" in _body("docHistoryRowMenu")
+    assert "docIdeCall(\"docIdeCompareWith\", entry.id" in _body("docHistoryRowMenu")
     assert "modal.appendChild(overlay)" in _body("docPromptInModal")
     assert "docPromptInModal(" in _body("docNameCurrentVersion")
     from tests._app_js import INDEX_HTML

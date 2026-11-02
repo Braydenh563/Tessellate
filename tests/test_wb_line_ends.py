@@ -104,7 +104,9 @@ def test_the_owner_s_ends_are_all_offered_and_a_plain_line_takes_them():
     # What the tool draws is stored by kind, so the lists read it back.
     assert "Object.assign(blob, wbToolCaps())" in SOURCE
     fmt = (ROOT / "frontend" / "js" / "whiteboard-format.js").read_text(encoding="utf-8")
-    assert 'arrow: ["stroke", "width", "dash", "caps"' in fmt and "wbRegenerateShapeCaps(parsed.d" in fmt
+    #: 22cc1f2 put "strokealpha" (line opacity) after "stroke" in the arrow's row; the
+    #: ends ("caps") are still offered, which is what this line holds.
+    assert 'arrow: ["stroke", "strokealpha", "width", "dash", "caps"' in fmt and "wbRegenerateShapeCaps(parsed.d" in fmt
 
 
 def _sized(kind: str, size: str | None) -> str:

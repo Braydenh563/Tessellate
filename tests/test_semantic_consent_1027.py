@@ -218,7 +218,7 @@ def test_settings_row_says_downloads_are_ask_first():
 def test_the_guide_and_privacy_say_it_asks_first():
     from tessellate.ai import help_chat, help_topics_more
 
-    guide = _text("src/tessellate/ai/help_chat.py", "src/tessellate/ai/help_topics_more.py")
+    guide = _text("src/tessellate/ai/help_chat.py", "src/tessellate/ai/help_topics_core.py", "src/tessellate/ai/help_topics_more.py")
     assert "Download search by meaning" in guide
     privacy = _text("docs/PRIVACY.md")
     assert "asks first" in privacy.lower() or "after a yes" in privacy.lower()

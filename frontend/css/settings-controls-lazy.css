@@ -15,6 +15,17 @@
 .theme-card-cell > .theme-card {
   flex: 1 1 auto;
 }
+/* Four dots that overlap (INBOX 1478): each ringed in the tile's own ground so
+   the one beside it reads as a separate colour. */
+.theme-dot {
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  border-radius: var(--radius-pill);
+  box-shadow: 0 0 0 2px var(--inner), inset 0 0 0 1px var(--border);
+}
+.theme-dot + .theme-dot {
+  margin-inline-start: -0.5rem;
+}
 .theme-eye {
   position: absolute;
   top: var(--space-2);
@@ -119,3 +130,75 @@
 
 /* An Extras skeleton is about a package row's height (K21). */
 .extras-list > .skeleton { height: calc(var(--control-h-lg) * 5.5); }
+
+/* A switch with its "?" on one row (the desktop companion). The switch's
+   label does not shrink by default, so its text made the row 524.7px wide in
+   a 263.6px one at 390 and pushed the "?" onto its own line; it gives way
+   to the "?" instead and its words wrap. */
+#settings-modal .help-head > .check-row {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+#settings-modal .help-head > .check-row > span {
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* The web search engine picker (Settings, Web search): moved out of the boot
+   styles, which it only cost bytes in. */
+.provider-option {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.6rem;
+  align-items: start;
+  /* Tier 3: a tone inside its group, with a transparent border reserved for
+     high-contrast mode -- the same budget every other settings row keeps. */
+  background: var(--surface-3);
+  border: 1px solid transparent;
+  border-radius: calc(var(--radius) * 0.6);
+  padding: 0.6rem 0.8rem;
+  cursor: pointer;
+  /* Contains the radio-hiding rule's own `position: absolute` below. */
+  position: relative;
+}
+
+.provider-option:hover,
+.provider-option:is(:focus-visible, :has(:focus-visible)) {
+  background: var(--ghost-btn-bg-hover);
+}
+
+.provider-option:has(input:checked) {
+  background: var(--accent-soft);
+}
+
+.provider-option:has(input:checked):hover,
+.provider-option:has(input:checked):is(:focus-visible, :has(:focus-visible)) {
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.provider-option .muted {
+  font-size: var(--text-md);
+}
+
+/* The hover tone is darker than the muted text can read on (3.8:1 light,
+   3.2:1 dark, audit 1031 HR22): under it the detail takes the body colour.
+   Keyed on its own class: `.muted` is on every page, and a `:has()` keyed on
+   it restyles all of them (tests/test_has_invalidation.py). */
+.provider-option:is(:hover, :has(:focus-visible)) .provider-detail {
+  color: var(--text);
+}
+
+/* Motion's three words ("Follow the system", "Always on", "Off") are the
+   longest well in Settings: at 390px they wrapped to a second line (INBOX 1506),
+   so on a phone the segments close up and hold one line. */
+@media (max-width: 599.98px) {
+  #motion-seg {
+    flex-wrap: nowrap;
+  }
+  #motion-seg button {
+    padding-inline: var(--space-2);
+    font-size: var(--text-sm);
+    white-space: nowrap;
+  }
+}

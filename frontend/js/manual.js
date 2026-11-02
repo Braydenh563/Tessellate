@@ -135,8 +135,8 @@ function manualFilter(parts, query, count, empty) {
   }
   const total = parts.sections.reduce((sum, part) => sum + part.rows.length, 0);
   count.textContent = words.length
-    ? `${shown} of ${total} topics match`
-    : `${total} topics in ${parts.sections.length} groups`;
+    ? `${shown} of ${nounCount(total, "topic")} match`
+    : `${nounCount(total, "topic")} in ${parts.sections.length} groups`;
   empty.classList.toggle("hidden", Boolean(shown));
   parts.topics.scrollTop = 0;
   parts.follow();

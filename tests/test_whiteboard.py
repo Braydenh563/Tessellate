@@ -393,6 +393,9 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
     assert state["objects"][0]["data"] == {
         "content": "Meeting notes", "color": "#ffcc00", "font_size": 18, "url": None,
         "bg": None, "border_color": None,
+        # Added with the Format panel's fill and line transparency; None until set.
+        "bg_alpha": None,
+        "line_alpha": None,
         # Added with the Format panel's line and letter spacing (wb3, INBOX 1355).
         "line_height": None,
         "letter_spacing": None,
@@ -410,6 +413,9 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         "font_family": None,
         "underline": None,
         "strike": None,
+        # Added with the Format panel's Direction and Text opacity (INBOX 1510a).
+        "text_dir": None,
+        "text_alpha": None,
         # Added with the mind map's pinned line ends (K31); None until pinned.
         "edge_from": None,
         "edge_to": None,
@@ -454,7 +460,7 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         # And labels under a topic (canvasdepth2).
         "labels": None,
         # And reaction stamps and votes on a topic (canvasdepth2).
-        "stamps": None,
+        "stamps": None, "stamped": None,
         "spine": None,
         # And with a topic's fill (one topic, or its whole branch).
         "fill": None,
@@ -467,6 +473,8 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         "edge_bend": None,
         "edge_slide": None,
         "image": None,
+        # And with the live Mermaid diagram object (INBOX 1451).
+        "mermaid": None,
         # And with a topic's place among its siblings (INBOX 445).
         "order": None,
         # And with a board item held in place (WHITEBOARD_PLAN decision 15).
@@ -510,6 +518,12 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         "fold": None,
         # Added with the reference node caption (INBOX 904 B38); None until set.
         "caption": None,
+        # Added with a picture's or text box's own keep-proportions switch (INBOX 1313, plan row 5).
+        "keep_ratio": None,
+        # And with a picture's crop to a shape (INBOX 1313, plan row 13).
+        "crop": None,
+        # And with a board item's voting dots (INBOX 1313, plan row 14).
+        "votes": None,
     }
 
     moved = board_client.put(
@@ -1154,3 +1168,79 @@ def test_a_comment_keeps_its_edit_its_resolve_and_its_reply(board_client, sessio
     assert next(o for o in state["objects"] if o["id"] == made["id"])["data"]["comments"] == thread
     bad = [{"id": "c1", "text": "x", "at": "", "reply_to": "y" * 41}]
     assert board_client.put(url, json={"entry_id": note.id, "comments": bad}).status_code == 422
+
+
+def test_an_objects_keep_proportions_switch_is_kept(board_client):
+    """It was dropped silently by the schema for every object kind (INBOX 1313):
+    the switch flipped, the save succeeded, and it came back missing."""
+    made = board_client.post(
+        "/whiteboard/objects",
+        json={"kind": "image", "data": {"url": "/media/abc123.png", "keep_ratio": True}},
+    )
+    assert made.status_code == 201, made.text
+    assert made.json()["data"]["keep_ratio"] is True
+    state = board_client.get("/whiteboard/").json()
+    assert state["objects"][0]["data"]["keep_ratio"] is True
+
+
+def test_a_pictures_crop_shape_is_kept_and_only_a_known_one(board_client):
+    made = board_client.post("/whiteboard/objects", json={"kind": "image", "data": {"url": "/media/abc123.png", "crop": "hexagon"}})
+    assert made.status_code == 201, made.text
+    assert board_client.get("/whiteboard/").json()["objects"][0]["data"]["crop"] == "hexagon"
+    refused = board_client.post("/whiteboard/objects", json={"kind": "image", "data": {"url": "/media/abc123.png", "crop": "url(x)"}})
+    assert refused.status_code == 422
+
+
+def test_a_board_items_votes_are_kept_and_bounded(board_client):
+    made = board_client.post("/whiteboard/objects", json={"kind": "text", "data": {"content": "idea", "votes": 3}})
+    assert made.status_code == 201, made.text
+    assert board_client.get("/whiteboard/").json()["objects"][0]["data"]["votes"] == 3
+    for bad in (0, 100, -1):
+        refused = board_client.post("/whiteboard/objects", json={"kind": "text", "data": {"content": "idea", "votes": bad}})
+        assert refused.status_code == 422, bad
+
+
+def test_a_selection_saves_every_kind_in_one_request(board_client, session):
+    """Audit 1031 BD2: two arrow presses over 362 items sent 167 PUTs. A card, a
+    sketch and a text box now save together, each as its own PUT body plus id."""
+    note = _note(session, "card text")
+    board = _note(session, "a board")
+    node = board_client.post(
+        "/whiteboard/nodes", json={"entry_id": note.id, "board_id": board.id, "x": 1, "y": 2}
+    ).json()
+    sketch = board_client.post(
+        "/whiteboard/sketches", json={"data": "M0 0 L10 10", "board_id": board.id, "x": 3, "y": 4}
+    ).json()
+    text = board_client.post(
+        "/whiteboard/objects",
+        json={"kind": "text", "data": {"content": "box"}, "board_id": board.id, "x": 5, "y": 6, "width": 100, "height": 40},
+    ).json()
+
+    saved = board_client.put(
+        "/whiteboard/items/save-many",
+        json={
+            "nodes": [{**node, "x": 11, "y": 12}],
+            "sketches": [{**sketch, "x": 13, "y": 14, "data": "M10 10 L20 20"}],
+            "objects": [{**text, "x": 15, "y": 16}],
+        },
+    )
+    assert saved.status_code == 200, saved.text
+    assert saved.json() == {"saved": 3}
+    state = board_client.get(f"/whiteboard/?board_id={board.id}").json()
+    assert [(n["x"], n["y"]) for n in state["nodes"]] == [(11, 12)]
+    assert [(s["x"], s["y"], s["data"]) for s in state["sketches"]] == [(13, 14, "M10 10 L20 20")]
+    assert [(o["x"], o["y"]) for o in state["objects"]] == [(15, 16)]
+
+
+def test_a_batch_with_one_missing_item_saves_nothing(board_client, session):
+    board = _note(session, "a board")
+    text = board_client.post(
+        "/whiteboard/objects",
+        json={"kind": "text", "data": {"content": "box"}, "board_id": board.id, "x": 5, "y": 6, "width": 100, "height": 40},
+    ).json()
+    refused = board_client.put(
+        "/whiteboard/items/save-many",
+        json={"objects": [{**text, "x": 99}, {**text, "id": text["id"] + 1000, "x": 1}]},
+    )
+    assert refused.status_code == 404
+    assert board_client.get(f"/whiteboard/?board_id={board.id}").json()["objects"][0]["x"] == 5

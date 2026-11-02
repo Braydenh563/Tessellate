@@ -2341,6 +2341,42 @@
      "label": "ph:folder Moved 2 notes to “Travel”"
     }
    }
+  ],
+  "check_learned": [
+   {
+    "args": {},
+    "result": {
+     "checked": 6,
+     "retired": 1,
+     "flagged": 1,
+     "items": [
+      {
+       "action": "retire",
+       "text": "I tell a joke about the weather every morning.",
+       "reason": "The note is tagged joke, so this is not a claim about you."
+      },
+      {
+       "action": "flag",
+       "text": "My passport renewal is due 3 March 2026.",
+       "reason": "It speaks of 3 March 2026 as ahead, and that has passed."
+      }
+     ],
+     "run": "2026-10-11T16:00:00+00:00",
+     "message": "Checked 6, retired 1 and flagged 1."
+    },
+    "fake": true
+   },
+   {
+    "args": {},
+    "result": {
+     "checked": 3,
+     "retired": 0,
+     "flagged": 0,
+     "items": [],
+     "run": "2026-10-11T16:00:00+00:00",
+     "message": "Checked 3, retired 0 and flagged 0."
+    }
+   }
   ]
  }
 }

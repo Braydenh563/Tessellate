@@ -1,0 +1,10 @@
+mathlive 0.111.1 (MIT, see LICENSE), mathlive.min.js and fonts/ unchanged from the npm tarball.
+
+Fetched with:
+  npm pack mathlive@0.111.1
+  tar xzf mathlive-0.111.1.tgz package/mathlive.min.js package/fonts package/LICENSE.txt
+
+It is loaded only on the first equation edit (js/math-field.js, LAZY_MODULES.mathField),
+never in index.html or the boot scripts, and nothing is fetched from a CDN. Fonts come
+from this folder (MathfieldElement.fontsDirectory); the keypress sounds are not shipped
+(soundsDirectory is null).

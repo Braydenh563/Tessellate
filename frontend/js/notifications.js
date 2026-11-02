@@ -93,6 +93,8 @@ function notificationActionButton(item) {
 async function openNotifications({ keepWatermark = false } = {}) {
   const panel = $("notif-panel");
   const list = $("notif-list");
+  //: A fresh open (not a row's own re-render) takes focus into the panel (SH2).
+  const fresh = panel.classList.contains("hidden");
   panel.classList.remove("hidden");
   renderNotifMuteToggle();
   renderAgentActivityMode();
@@ -308,6 +310,7 @@ async function openNotifications({ keepWatermark = false } = {}) {
   // the one a tick causes, then showed every row as read (reported twice
   // as "mark one, all get marked").
   renderNotificationBadge();
+  if (fresh) focusFirstIn(panel, ".notif-row button, #notif-close");
 }
 
 function setNotificationUnread(id, unread) {

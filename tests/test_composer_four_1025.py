@@ -54,9 +54,10 @@ def test_turn_it_on_offers_the_switch_and_never_flips_it(client, ask, last, said
     assert offers and offers[0]["kind"] == "open" and offers[0]["surface"] == surface
 
 
-def test_turn_it_on_after_the_search_service_is_down_gives_the_docker_line(ask):
+def test_turn_it_on_after_the_search_service_is_down_gives_the_buttons(ask):
+    #: Was the docker line; INBOX 1490 (the owner) asked for buttons, not a command.
     said = ask("turn it on", [{"question": "who won", "answer": OFF_WEB}])
-    assert "docker run" in said and "not start it for you" in said
+    assert "docker" not in said.lower() and "Set it up in Settings" in said and "Open the web panel" in said
 
 
 def test_turn_it_on_with_nothing_off_is_left_alone(ask):

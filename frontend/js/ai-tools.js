@@ -16,55 +16,6 @@ const TASK_ORIGIN_WORDS = {
   app: "the app",
 };
 
-//: One run's lines as text, each with when it was said from the run's start
-//: ("+3 s  Called search_notes: ..."), the way a terminal log reads.
-function taskRunLinesText(lines, started) {
-  return lines
-    .map((line) => (line.at && started ? `+${taskElapsed(line.at - started)}  ${line.text}` : line.text))
-    .join("\n");
-}
-
-//: The disclosure under a run (DESIGN.md list row with a `.task-log` fold):
-//: open while it runs if it was open before, closed once finished. Keyed on
-//: the run, so a fold someone opened stays open across the re-render, and
-//: `data-run-lines` lets the jobs stream refresh just its text.
-function taskRunFold(key, lines, started, state) {
-  const fold = document.createElement("details");
-  fold.className = "task-log";
-  fold.open = taskLogsOpen.has(key);
-  fold.addEventListener("toggle", () => {
-    if (fold.open) taskLogsOpen.add(key);
-    else taskLogsOpen.delete(key);
-  });
-  const summary = document.createElement("summary");
-  const pre = document.createElement("pre");
-  pre.className = "task-log-lines";
-  pre.dataset.runLines = key;
-  pre.dataset.started = started || "";
-  fold.dataset.state = state;
-  fold.append(summary, pre);
-  paintTaskRunLines(fold, lines);
-  pre.addEventListener("scroll", () => {
-    const isAtBottom = Math.abs(pre.scrollHeight - pre.scrollTop - pre.clientHeight) < 5;
-    taskLogScrollStates.set(key, isAtBottom);
-  });
-  return fold;
-}
-
-function paintTaskRunLines(fold, lines) {
-  const pre = fold.querySelector("pre");
-  const key = pre.dataset.runLines;
-  const verb = fold.dataset.state === "running" ? "What it's doing" : "What it did";
-  fold.querySelector("summary").textContent = `${verb} (${lines.length} line${lines.length === 1 ? "" : "s"})`;
-  pre.textContent = taskRunLinesText(lines, Number(pre.dataset.started) || 0);
-  //: Follow the tail, the way a terminal does, unless the reader scrolled up.
-  if (fold.open && taskLogScrollStates.get(key) !== false) {
-    requestAnimationFrame(() => {
-      pre.scrollTop = pre.scrollHeight;
-    });
-  }
-}
-
 //: **The panel reads the jobs stream** (`GET /jobs/stream`), not a poll of
 //: its own: while Settings, Running jobs is open, its `tasks` event repaints
 //: the rows (one recipe, `renderTasks`) when they change, and its `runs`
@@ -95,15 +46,6 @@ const TASK_OUTCOMES = {
   cancelled: { icon: "ph:x", className: "muted" },
 };
 
-
-//: Run kinds a person starts and watches where they started them (an answer
-//: streaming in the chat): `routes_tasks.WATCHED_KINDS`.
-const WATCHED_RUN_KINDS = new Set(["generation", "transcription", "ocr", "run"]);
-
-// Which task logs the user has opened, kept across the 3-second re-render so
-// a fold doesn't slam shut under them.
-const taskLogsOpen = new Set(["searxng"]);
-const taskLogScrollStates = new Map();
 
 // Model pickers (rewritten, Wave O). The old version let the status poll
 // (every ~3s while Settings is open) reset the dropdown to the SAVED
@@ -192,7 +134,7 @@ function renderChatModelPicker(status) {
 }
 
 // Nielsen #6, recognition over recall: which model answers was previously
-// knowable only by opening Settings → Models, and only then if the backend
+// knowable only by opening Settings, Models, and only then if the backend
 // is Ollama (the picker above is gated on ollama_running). status.chat_model
 // itself isn't backend-specific, so this reads it straight off the poll
 // loop instead of piggybacking on that gated render.
@@ -453,7 +395,6 @@ function renderFeatureModels(status) {
 //: The menu row every surface uses to reach the picker above. One label, one
 //: place, so the three surfaces cannot drift apart in wording.
 function featureModelMenuItem(key) {
-  const row = featureModelRow(key);
   return {
     label: "ph:cube Model for this feature",
     //: A static title on purpose. These menus are built once and the model
@@ -517,8 +458,10 @@ function syncFeatureModelSelects() {
     //: install check reads "unknown" as installed, so a disconnected app still
     //: said "Inherited: llama3.2" under the no-model banner (the owner: "if an
     //: ai model isnt connected, it shouldnt show a model being used right??").
+    //: "Default (off)": the banner beside it already says no model is
+    //: connected, and saying it twice was noise (audit 1030 Y18).
     const inherited = modelStatus?.ollama_running === false
-      ? "No model connected"
+      ? "Default (off)"
       : `Inherited: ${shortModelName(row.inherits)}${isInstalled ? "" : " (not installed)"}`;
     fillModelSelect(
       select,
@@ -597,89 +540,8 @@ function renderAutonomousModelPicker(status) {
   );
 }
 
-function renderEmbeddingPicker(status) {
-  // Name the built-in model rather than describing it. "Works out of the box,
-  // no download" was wrong on both counts: it fetches ~130 MB from Hugging
-  // Face the first time, which is a long quiet wait to have described as
-  // needing nothing.
-  //: Its own name, and whether it is the one in use: the label used to
-  //: carry the *active* model's name, so with Ollama in use the built-in
-  //: option named the Ollama model and nothing said which one was working
-  //: (owner, 0.3.31: "idk if it is using the built in one or not").
-  const builtinName = status.builtin_embedding_model || "the built-in model";
-  $("builtin-model-name").textContent =
-    status.embedding_backend === "ollama"
-      ? `${builtinName}, downloaded once on first use`
-      : `${builtinName}, in use`;
-  //: The built-in model needs the fastembed package, which the app installs
-  //: by itself, once, the first time it is needed (after a yes): a download
-  //: of about 60 MB that needs the internet. Said here, with the
-  //: alternative that needs neither Python packages nor that download.
-  const note = $("builtin-embed-note");
-  if (note) {
-    let text = "";
-    if (status.builtin_embedding_installing) {
-      text =
-        "Installing fastembed for the built-in model. This happens once and " +
-        "takes a minute or so. Prefer not to wait? Pick nomic-embed-text from Ollama below.";
-    } else if (status.builtin_embedding_installed === false) {
-      text =
-        "The built-in model needs fastembed, which the app installs by itself " +
-        "the first time it is needed if the switch below is on (a one-time download that needs the internet). " +
-        "Or pick nomic-embed-text from Ollama below instead.";
-    }
-    note.textContent = text;
-    note.classList.toggle("hidden", !text);
-  }
-  // The backend radios only reflect the saved value while the user has no
-  // pending choice of their own.
-  //
-  // A focus check alone was not enough, and it is why switching search
-  // engines was reported as impossible. Picking a radio does not save
-  // anything, "Apply & re-index" does, so between the click and the apply
-  // there is a pending choice the server doesn't know about yet. The moment
-  // focus moved (clicking Apply, or just tabbing away) the status poll ran,
-  // found `touching` false, and reset the radio to the *saved* backend. The
-  // selection visibly snapped back, so the setting looked stuck.
-  //
-  // Same `userChosen` latch the model selects already use, cleared once the
-  // choice is actually applied.
-  const group = document.querySelectorAll('input[name="emb-backend"]');
-  const touching =
-    document.activeElement?.name === "emb-backend" ||
-    [...group].some((radio) => radio.dataset.userChosen === "1");
-  if (!touching) {
-    for (const radio of document.querySelectorAll('input[name="emb-backend"]')) {
-      radio.checked = radio.value === status.embedding_backend;
-    }
-  }
-  const names = (status.installed_models || []).map((m) => m.name);
-  fillModelSelect(
-    $("embedding-model-select"),
-    names,
-    null,
-    status.embedding_model
-  );
-  // With Ollama down there are no embedding models to pick from, so that half
-  // of the choice is disabled and says why, rather than the whole section
-  // disappearing, which is what used to happen.
-  const offline = !status.ollama_running;
-  //: **And it says whether it is the one in use.** Asked after reading the
-  //: code: "does the ai embedding model actually get used??" It does, in
-  //: seven places, but only when the backend above is set to Ollama, and the
-  //: built-in backend is the default. So somebody who picked a model here
-  //: expecting it to be doing the work had a fully enabled, fully ignored
-  //: control, which is the same class of thing as a disabled control that
-  //: does not say why: a setting whose state is invisible.
-  //:
-  //: Disabled rather than hidden, because hiding it would make the choice
-  //: unfindable from the radio that mentions it, and the tooltip carries the
-  //: reason so the state is legible without a second paragraph on screen.
-  syncEmbeddingPickerState(offline);
-  document.querySelector('input[name="emb-backend"][value="ollama"]').disabled = offline;
-  $("embedding-ollama-note").classList.toggle("hidden", offline);
-  $("embedding-offline-note").classList.toggle("hidden", !offline);
-}
+//: `renderEmbeddingPicker` lives in settings-models.js (lazy `settingsUi`),
+//: like the model cards: only an open Settings draws it.
 
 //: **A control says whether it is the one in use.** Asked after reading the
 //: code: *"does the ai embedding model actually get used??"* It does, in
@@ -775,7 +637,7 @@ function renderReindex(status) {
   if (running) {
     $("reindex-progress").value = job.done;
     $("reindex-progress").max = Math.max(job.total, 1);
-    $("reindex-label").textContent = `${job.done} of ${job.total} notes re-indexed`;
+    $("reindex-label").textContent = `${job.done} of ${nounCount(job.total, "note")} re-indexed`;
   }
   //: **Say when it is actually worth doing.** Asked for: "suggest rebuilding
   //: the search index upon large changes". The backend counts notes that
@@ -916,6 +778,8 @@ const DEVICE_ONLY_KEYS = [
   "wb-panel-pos-library",
   "wb-panel-pos-tools",
   "wb-panel-pos-zoom",
+  "panel-pos",
+  "panel-push",
 ];
 
 //: The keys worth surviving a restart. Explicit rather than "everything in
@@ -976,6 +840,9 @@ const MIRRORED_UI_EXTRAS = [
   "graph-fold-graph-toggle-group",
   "graph-fold-graph-temporal",
   "wb-bg-color",
+  //: The model picker's pins and recent picks (model-menu.js, INBOX 1477).
+  "model-pins",
+  "model-recent",
 ];
 
 // A function rather than a `const` array, because `LOOK_KEYS` is declared

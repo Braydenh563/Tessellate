@@ -21,23 +21,27 @@ from __future__ import annotations
 
 import json
 import logging
+import math
 import re
 import unicodedata
 from collections import OrderedDict
 from datetime import datetime
 from typing import Annotated
 
+from starlette.concurrency import run_in_threadpool
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 
 from tessellate.api import paging
-from pydantic import BaseModel, ConfigDict, Field, StringConstraints, ValidationError, field_validator, model_serializer
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, StringConstraints, ValidationError, field_validator, model_serializer
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from tessellate.core import board_thumbs, deps, events
 from tessellate.core.database import LIKE_ESCAPE, Entry, WhiteboardNode, WhiteboardObject, WhiteboardSketch
 from tessellate.core.deps import get_session
+from tessellate.core.validation_copy import Said
 from tessellate.entry.manager import apply_title, extract_title, update_entry
+from tessellate.repo.content import BOARDS
 
 router = APIRouter(prefix="/whiteboard", tags=["whiteboard"])
 
@@ -258,7 +262,12 @@ FRAME_KIND = "frame"
 TABLE_KIND = "table"
 MAX_TABLE_ROWS = 50
 MAX_TABLE_COLS = 20
-VALID_OBJECT_KINDS = {"image", "text", FRAME_KIND, MAP_TOPIC_KIND, TABLE_KIND} | MAP_REFERENCE_KINDS
+#: A live Mermaid diagram (INBOX 1451): its source is `data.mermaid`, drawn
+#: by the browser's diagram frame; nothing drawn is stored, so a theme
+#: change or an edit redraws it.
+DIAGRAM_KIND = "diagram"
+MAX_MERMAID_CHARS = 20_000
+VALID_OBJECT_KINDS = {"image", "text", FRAME_KIND, MAP_TOPIC_KIND, TABLE_KIND, DIAGRAM_KIND} | MAP_REFERENCE_KINDS
 
 
 #: A card/sketch/object's own persisted group, asked for directly (Ctrl+G).
@@ -293,12 +302,40 @@ class WhiteboardComment(BaseModel):
 CommentThread = Annotated[list[WhiteboardComment], Field(max_length=MAX_COMMENTS_PER_ITEM)]
 
 
+#: Where an item may sit (audit 1031 BD1). `y: 1e308` was accepted and, with two
+#: such items, put everything at y = -33 million: zoom to fit showed nothing and
+#: the PNG export failed. A million board units is some 3,000 screens each way.
+#: `allow_inf_nan=False` also refuses `"NaN"`, which SQLite stores as NULL and
+#: which answered 500. `LAYER_LIMIT` is the same bound for the stacking number.
+COORD_LIMIT = 1_000_000.0
+LAYER_LIMIT = 10**12
+Coord = Annotated[float, Field(ge=-COORD_LIMIT, le=COORD_LIMIT, allow_inf_nan=False)]
+Layer = Annotated[int, Field(ge=-LAYER_LIMIT, le=LAYER_LIMIT)]
+
+
+def _clamp(limit: float):
+    def clamp(value):
+        try:
+            number = float(value)
+        except (TypeError, ValueError):
+            return 0.0
+        return 0.0 if math.isnan(number) else max(-limit, min(limit, number))
+
+    return clamp
+
+
+#: What a row stored before the bound reads back as: pulled to the edge, so one
+#: old row cannot blank the board and the response still validates.
+StoredCoord = Annotated[float, BeforeValidator(_clamp(COORD_LIMIT))]
+StoredLayer = Annotated[int, BeforeValidator(lambda v: int(_clamp(LAYER_LIMIT)(v)))]
+
+
 class WhiteboardNodeBase(BaseModel):
     entry_id: int
     board_id: int | None = None
-    x: float = 0.0
-    y: float = 0.0
-    z: int = 0
+    x: Coord = 0.0
+    y: Coord = 0.0
+    z: Layer = 0
     #: Asked for directly ("resizing... cards"). `None` means auto-sized: 
     #: the same ~250×150 CSS default every card used before this existed.
     width: float | None = Field(default=None, ge=20, le=4000)
@@ -318,6 +355,9 @@ class WhiteboardNodeBase(BaseModel):
 
 class WhiteboardNodeOut(WhiteboardNodeBase):
     id: int
+    x: StoredCoord = 0.0
+    y: StoredCoord = 0.0
+    z: StoredLayer = 0
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -325,14 +365,68 @@ class WhiteboardNodeOut(WhiteboardNodeBase):
 class WhiteboardSketchBase(BaseModel):
     data: str = Field(max_length=MAX_SKETCH_CHARS)
     board_id: int | None = None
-    x: float = 0.0
-    y: float = 0.0
-    z: int = 0
+    x: Coord = 0.0
+    y: Coord = 0.0
+    z: Layer = 0
     group_id: str | None = Field(default=None, max_length=GROUP_ID_MAX_LEN)
+
+
+#: What a sketch's JSON may say about its look (audit 1031 BD14). The page
+#: draws these into SVG attributes, so each is a short value of a known shape,
+#: checked on the way in; a row stored before this is read as it is.
+_PATH_RE = re.compile(r"^[MmLlHhVvCcSsQqTtAaZz0-9eE.,+\-\s]*$")
+_COLOUR_RE = re.compile(r"^[#A-Za-z0-9(),.%\s/-]{0,60}$")
+_SKETCH_NUMBERS = {"width": (0, 400), "opacity": (0, 1)}
+_SKETCH_COLOURS = ("color", "fill", "label_color")
+
+
+def _bad_sketch_field(parsed: dict) -> str | None:
+    """The first field of a sketch's JSON that is not a value the page can draw."""
+    path = parsed.get("d")
+    if path is not None and not (isinstance(path, str) and _PATH_RE.match(path)):
+        return "d"
+    for key in _SKETCH_COLOURS:
+        value = parsed.get(key)
+        if value is not None and not (isinstance(value, str) and _COLOUR_RE.match(value) and "url(" not in value.lower()):
+            return key
+    for key, (low, high) in _SKETCH_NUMBERS.items():
+        value = parsed.get(key)
+        if value is not None and not (isinstance(value, (int, float)) and not isinstance(value, bool) and low <= value <= high):
+            return key
+    return None
+
+
+def check_sketch_data(data: str) -> str:
+    """`data` unchanged when it is safe to store: a bare path or list is left
+    to the page's own parse, an object has its path, colours, width and
+    opacity bounded, and a nest too deep to parse is refused."""
+    try:
+        parsed = json.loads(data)
+    except RecursionError as exc:
+        raise Said("This drawing is nested too deeply to save.") from exc
+    except ValueError:
+        return data
+    bad = _bad_sketch_field(parsed) if isinstance(parsed, dict) else None
+    if bad:
+        raise Said(f"The drawing's {bad} is not something the board can draw.")
+    return data
+
+
+class WhiteboardSketchIn(WhiteboardSketchBase):
+    """A sketch as a client sends it: checked. Reading one back
+    (`WhiteboardSketchOut`) never refuses a row that is already stored."""
+
+    @field_validator("data")
+    @classmethod
+    def _drawable(cls, value: str) -> str:
+        return check_sketch_data(value)
 
 
 class WhiteboardSketchOut(WhiteboardSketchBase):
     id: int
+    x: StoredCoord = 0.0
+    y: StoredCoord = 0.0
+    z: StoredLayer = 0
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -358,6 +452,8 @@ class WhiteboardObjectData(BaseModel):
     #: header, drawn bold on a tint.
     cells: list[list[Annotated[str, StringConstraints(max_length=500)]]] | None = Field(default=None, max_length=50)
     header: bool | None = None
+    #: A diagram's Mermaid source (`DIAGRAM_KIND`).
+    mermaid: str | None = Field(default=None, max_length=MAX_MERMAID_CHARS)
     #: **A table's column widths** (wb5): one relative weight per column, so
     #: [2, 1, 1] is a first column twice the others and the box's width the
     #: sum. Absent means equal; a length other than the columns is refused.
@@ -380,6 +476,15 @@ class WhiteboardObjectData(BaseModel):
     #: The Format panel's opacity and shadow (WHITEBOARD_PLAN decision 19).
     alpha: float | None = Field(default=None, ge=0.05, le=1)
     shadow: bool | None = None
+    #: This item's own keep-proportions switch (INBOX 1313): a corner drag keeps
+    #: the ratio without Shift. A schema that does not name it drops it.
+    keep_ratio: bool | None = None
+    #: A picture cropped to a shape (INBOX 1313): a name from this short list,
+    #: never a path, so nothing a client sends reaches a style.
+    crop: str | None = Field(default=None, pattern="^(ellipse|diamond|hexagon|triangle)$")
+    #: Voting dots on a board item (Miro's; INBOX 1313): how many it holds.
+    #: Content, not a look. Zero is "none", so it is not stored.
+    votes: int | None = Field(default=None, ge=1, le=99)
     color: str | None = Field(default=None, max_length=20)
     #: 0 is a topic's pin to the app's own size against a map's theme
     #: (`MAP_APP_DEFAULT_PINS`); 1 to 7 stay refused (`_size_or_pin`).
@@ -387,6 +492,11 @@ class WhiteboardObjectData(BaseModel):
     #: A text box's own fill/border: asked for directly (the properties
     #: panel). Images have no use for either; left `None` there.
     bg: str | None = Field(default=None, max_length=20)
+    #: How solid that fill is, and for a diagram how solid its lines are (the
+    #: Format panel's Fill opacity and Line opacity; INBOX 1486). 0 is a real
+    #: answer (see-through), so absent, not zero, means "as it always was".
+    bg_alpha: float | None = Field(default=None, ge=0, le=1)
+    line_alpha: float | None = Field(default=None, ge=0, le=1)
     border_color: str | None = Field(default=None, max_length=20)
     #: How the text sits in its box, and whether it is shown as rendered
     #: markdown: asked for directly ("text alignment, font size etc", "rendered
@@ -402,6 +512,10 @@ class WhiteboardObjectData(BaseModel):
     #: letters in pixels (the Format panel's Text tab; WHITEBOARD_PLAN 1355).
     line_height: float | None = Field(default=None, ge=0.8, le=3)
     letter_spacing: float | None = Field(default=None, ge=-5, le=30)
+    #: Right to left or vertical, and the words' own opacity (draw.io's Text
+    #: tab; INBOX 1510(a)). Absent is left to right and solid.
+    text_dir: str | None = Field(default=None, pattern="^(rtl|vertical)$")
+    text_alpha: float | None = Field(default=None, ge=0.1, le=1)
     md: bool | None = None
     #: The Format panel's box rows (WHITEBOARD_PLAN 1355, wb5): each corner's
     #: radius in pixels as top-left, top-right, bottom-right, bottom-left; the
@@ -547,6 +661,13 @@ class WhiteboardObjectData(BaseModel):
         Annotated[str, StringConstraints(pattern=r"^(up|heart|star|question|check|fire)$")],
         Annotated[int, Field(ge=1, le=999)],
     ] | None = None
+    #: **Which of those are yours** (INBOX 1493): a press on a stamp is a
+    #: toggle per person, so the stamps this notebook's owner put on the topic
+    #: are named here, each one counted in `stamps` too. Private to this
+    #: install: the exports carry the counts, not whose they are.
+    stamped: list[Annotated[str, StringConstraints(pattern=r"^(up|heart|star|question|check|fire)$")]] | None = Field(
+        default=None, max_length=6
+    )
     #: **Markers** (MINDMAP_PLAN decision 34): a priority 1 to 5, how far
     #: along it is (0 to 100, the menu offers quarters), a flag, and up to six
     #: Phosphor glyph names drawn before the label. Content, not a look: a
@@ -682,6 +803,16 @@ class WhiteboardObjectData(BaseModel):
             return {name.strip(): count.strip() for name, count in pairs}
         return value
 
+    @field_validator("stamped")
+    @classmethod
+    def _stamped_have_a_count(cls, value, info):
+        """A stamp with no count cannot be yours; the rest is kept in order."""
+        if not value:
+            return value
+        counted = info.data.get("stamps") or {}
+        kept = [name for name in dict.fromkeys(value) if name in counted]
+        return kept or None
+
     @field_validator("icon")
     @classmethod
     def _icon_name_or_emoji(cls, value: str | None) -> str | None:
@@ -738,9 +869,9 @@ class WhiteboardObjectBase(BaseModel):
     kind: str
     data: WhiteboardObjectData
     board_id: int | None = None
-    x: float = 0.0
-    y: float = 0.0
-    z: int = 0
+    x: Coord = 0.0
+    y: Coord = 0.0
+    z: Layer = 0
     width: float = Field(default=200.0, ge=20, le=4000)
     height: float = Field(default=120.0, ge=20, le=4000)
     rotation: float | None = Field(default=None, ge=-360, le=360)
@@ -762,9 +893,9 @@ class WhiteboardObjectOut(BaseModel):
     kind: str
     data: WhiteboardObjectData
     board_id: int | None
-    x: float
-    y: float
-    z: int
+    x: StoredCoord
+    y: StoredCoord
+    z: StoredLayer
     width: float
     height: float
     rotation: float | None
@@ -855,6 +986,8 @@ def _require_object_data(body: WhiteboardObjectBase) -> None:
         raise HTTPException(
             status_code=422, detail=f"A {body.kind} item needs some content."
         )
+    elif body.kind == DIAGRAM_KIND and not (body.data.mermaid or "").strip():
+        raise HTTPException(status_code=422, detail="A diagram needs its Mermaid source.")
     elif body.kind == TABLE_KIND:
         _require_table_cells(body.data.cells)
         if body.data.col_widths is not None and len(body.data.col_widths) != len(body.data.cells[0]):
@@ -961,9 +1094,7 @@ def _require_board(session: Session, board_id: int | None) -> None:
     """
     if board_id is None:
         return
-    entry = session.get(Entry, board_id)
-    if entry is None or entry.is_deleted:
-        raise HTTPException(status_code=404, detail="That board could not be found.")
+    entry = BOARDS.writable(session, board_id)
     if not entry.is_board:
         entry.is_board = True
         session.commit()
@@ -2430,6 +2561,13 @@ def _thumb_board(db: Session, board_id: int) -> None:
         _board_entry(db, board_id)
 
 
+def _thumb_writable(db: Session, board_id: int) -> None:
+    """A thumbnail PUT is a write: a binned board answers the bin guard's 409
+    (audit 1031 row 2a), where a read of it keeps its 404."""
+    if board_id != DEFAULT_BOARD_THUMB_ID:
+        BOARDS.writable(db, board_id)
+
+
 def _current_thumb_fp(db: Session, board_id: int) -> str:
     entry = db.get(Entry, board_id) if board_id > 0 else None
     palette_name = (_board_theme(entry).get("palette") if entry else None) or "classic"
@@ -2455,22 +2593,26 @@ async def put_thumbnail(
     fp: str = Query(...),
     db: Session = Depends(get_session),
 ) -> dict:
-    _thumb_board(db, board_id)
+    #: The lookup and the write go to the thread pool, and the body grows in a
+    #: bytearray (audit 1028 K18): in the event loop they stalled every other
+    #: request while a board list's thumbnails came in.
+    await run_in_threadpool(_thumb_writable, db, board_id)
     if not board_thumbs.valid_fp(fp):
         raise HTTPException(status_code=422, detail="That thumbnail version is not valid.")
     declared = int(request.headers.get("content-length") or 0)
     if declared > board_thumbs.MAX_BYTES:
         raise HTTPException(status_code=413, detail="That thumbnail is too large.")
-    data = b""
+    data = bytearray()
     async for chunk in request.stream():
         data += chunk
         if len(data) > board_thumbs.MAX_BYTES:
             raise HTTPException(status_code=413, detail="That thumbnail is too large.")
-    mime = board_thumbs.sniff(data)
+    body = bytes(data)
+    mime = board_thumbs.sniff(body)
     if mime is None:
         raise HTTPException(status_code=415, detail="A thumbnail must be a WebP or JPEG image.")
-    board_thumbs.save(deps.get_config().data_dir, board_id, fp, mime, data)
-    return {"fp": fp, "bytes": len(data)}
+    await run_in_threadpool(board_thumbs.save, deps.get_config().data_dir, board_id, fp, mime, body)
+    return {"fp": fp, "bytes": len(body)}
 
 
 #: Served under `/media` because an `<img src>` cannot send the auth header and
@@ -2993,9 +3135,7 @@ def rename_board(board_id: int, body: BoardRename, db: Session = Depends(get_ses
     applied: the same shape `PATCH` would have, kept as `PUT` because the
     route, the client call and this function's name already existed.
     """
-    entry = db.get(Entry, board_id) if board_id > 0 else None
-    if entry is None or entry.is_deleted:
-        raise HTTPException(status_code=404, detail="That board could not be found.")
+    entry = BOARDS.writable(db, board_id)
     entry.is_board = True
     if body.type is not None or body.layout is not None:
         before = dict(zip(("type", "layout"), _board_settings(entry)))
@@ -3136,6 +3276,14 @@ def update_node(
     node = deps.get_or_404(db, WhiteboardNode, node_id, "That node could not be found.")
     _require_entry(db, node_in.entry_id)
     _require_board(db, node_in.board_id)
+    _save_node(db, node, node_in)
+    db.commit()
+    db.refresh(node)
+    return node
+
+
+def _save_node(db: Session, node: WhiteboardNode, node_in: WhiteboardNodeBase) -> None:
+    """What `PUT /nodes/{id}` writes, shared with `save-many`."""
     before = _node_state(node)
     node.entry_id = node_in.entry_id
     # `board_id` was read from the body and then never assigned, so moving a
@@ -3155,9 +3303,6 @@ def update_node(
         f"card on board {node.board_id}",
         payload={"after": _node_state(node), "before": before},
     )
-    db.commit()
-    db.refresh(node)
-    return node
 
 
 @router.delete("/nodes/{node_id}")
@@ -3184,7 +3329,7 @@ def delete_node(node_id: int, db: Session = Depends(get_session)) -> dict:
 @router.post("/sketches", response_model=WhiteboardSketchOut)
 @events.writes("whiteboard_sketch", "created")
 def create_sketch(
-    sketch_in: WhiteboardSketchBase, db: Session = Depends(get_session)
+    sketch_in: WhiteboardSketchIn, db: Session = Depends(get_session)
 ) -> WhiteboardSketch:
     _require_board(db, sketch_in.board_id)
     sketch = WhiteboardSketch(**sketch_in.model_dump())
@@ -3214,10 +3359,18 @@ def create_sketch(
 @router.put("/sketches/{sketch_id}", response_model=WhiteboardSketchOut)
 @events.writes("whiteboard_sketch", "edited")
 def update_sketch(
-    sketch_id: int, sketch_in: WhiteboardSketchBase, db: Session = Depends(get_session)
+    sketch_id: int, sketch_in: WhiteboardSketchIn, db: Session = Depends(get_session)
 ) -> WhiteboardSketch:
     sketch = deps.get_or_404(db, WhiteboardSketch, sketch_id, "That sketch could not be found.")
     _require_board(db, sketch_in.board_id)
+    _save_sketch(db, sketch, sketch_in)
+    db.commit()
+    db.refresh(sketch)
+    return sketch
+
+
+def _save_sketch(db: Session, sketch: WhiteboardSketch, sketch_in: WhiteboardSketchIn) -> None:
+    """What `PUT /sketches/{id}` writes, shared with `save-many`."""
     before = _sketch_state(sketch)
     sketch.data = sketch_in.data
     sketch.board_id = sketch_in.board_id
@@ -3231,9 +3384,6 @@ def update_sketch(
         f"drawing on board {sketch.board_id}",
         payload={"after": _sketch_state(sketch), "before": before},
     )
-    db.commit()
-    db.refresh(sketch)
-    return sketch
 
 
 @router.delete("/sketches/{sketch_id}")
@@ -3317,6 +3467,14 @@ def update_object(
     obj = deps.get_or_404(db, WhiteboardObject, object_id, "That item could not be found.")
     _require_board(db, body.board_id)
     _require_object_data(body)
+    _save_object(db, obj, body)
+    db.commit()
+    db.refresh(obj)
+    return _object_to_out(obj)
+
+
+def _save_object(db: Session, obj: WhiteboardObject, body: WhiteboardObjectBase) -> None:
+    """What `PUT /objects/{id}` writes, shared with `save-many`."""
     # The kind an object was created as doesn't change: an image resized or
     # moved is still an image; nothing in the UI offers "turn this into a
     # text box", so treating a mismatched kind here as a client bug rather
@@ -3338,9 +3496,68 @@ def update_object(
         f"{obj.kind} on board {obj.board_id}",
         payload={"after": _object_state(obj), "before": before},
     )
+
+
+class SaveManyNode(WhiteboardNodeBase):
+    id: int
+
+
+class SaveManySketch(WhiteboardSketchIn):
+    id: int
+
+
+class SaveManyObject(WhiteboardObjectBase):
+    id: int
+
+
+class ItemsSaveMany(BaseModel):
+    """Every item a gesture moved, each as its own `PUT` body plus its id."""
+
+    nodes: list[SaveManyNode] = Field(default_factory=list, max_length=5000)
+    sketches: list[SaveManySketch] = Field(default_factory=list, max_length=5000)
+    objects: list[SaveManyObject] = Field(default_factory=list, max_length=5000)
+
+
+def _rows_by_id(db: Session, model, ids: list[int], noun: str) -> dict[int, object]:
+    if len(set(ids)) != len(ids):
+        raise HTTPException(status_code=422, detail="Each item is saved once per batch.")
+    rows = {row.id: row for row in db.scalars(select(model).where(model.id.in_(ids)))} if ids else {}
+    if len(rows) != len(ids):
+        raise HTTPException(status_code=404, detail=f"That {noun} could not be found.")
+    return rows
+
+
+@router.put("/items/save-many")
+@events.writes("whiteboard_object", "edited")
+def save_items(body: ItemsSaveMany, db: Session = Depends(get_session)) -> dict:
+    """Save a whole selection's move in one request and one transaction.
+
+    **Why this exists** (audit 1031 BD2: Ctrl+A on 362 items and two arrow
+    presses sent 167 `PUT`s, three long tasks of 189 to 274 ms). A nudge, a
+    multi-drag, a turn, a resize and an undo of any of them each wrote one
+    request per item, each its own transaction, and a half-saved selection
+    for as long as they took. This takes the same bodies the three `PUT`s take
+    and applies them through the same helpers; the batch is all or nothing,
+    every id and board and note checked before anything is written, and
+    whatever it records folds into the one event `events.writes` opens.
+    """
+    nodes = _rows_by_id(db, WhiteboardNode, [n.id for n in body.nodes], "node")
+    sketches = _rows_by_id(db, WhiteboardSketch, [n.id for n in body.sketches], "sketch")
+    objects = _rows_by_id(db, WhiteboardObject, [n.id for n in body.objects], "item")
+    for board_id in {item.board_id for item in (*body.nodes, *body.sketches, *body.objects)}:
+        _require_board(db, board_id)
+    for entry_id in {n.entry_id for n in body.nodes}:
+        _require_entry(db, entry_id)
+    for item in body.objects:
+        _require_object_data(item)
+    for item in body.nodes:
+        _save_node(db, nodes[item.id], item)
+    for item in body.sketches:
+        _save_sketch(db, sketches[item.id], item)
+    for item in body.objects:
+        _save_object(db, objects[item.id], item)
     db.commit()
-    db.refresh(obj)
-    return _object_to_out(obj)
+    return {"saved": len(nodes) + len(sketches) + len(objects)}
 
 
 @router.delete("/objects/{object_id}")
@@ -3499,20 +3716,26 @@ def _require_reference(db: Session, kind: str, ref_id: int | None) -> None:
     every map tool in `ai/tools/whiteboard.py` calls before it writes, and
     `read_mindmap`, which will not read a private note's text back out.
     """
-    from tessellate.core.database import Attachment, Bookmark, Document
-
     if ref_id is None:
         raise HTTPException(status_code=422, detail=f"A {kind} node needs to point at an existing {kind}.")
     if kind == "note":
         _require_entry(db, ref_id)
         return
-    model, label = {
-        "document": (Document, "document"),
-        "file": (Attachment, "file"),
-        "link": (Bookmark, "bookmark"),
-    }[kind]
-    if db.get(model, ref_id) is None:
+    label = {"document": "document", "file": "file", "link": "bookmark"}[kind]
+    if _referenced(db, kind, ref_id) is None:
         raise HTTPException(status_code=404, detail=f"That {label} could not be found.")
+
+
+def _referenced(db: Session, kind: str, ref_id: int):
+    """The document, file or bookmark a reference node points at, or None."""
+    from tessellate.core.database import Attachment
+    from tessellate.repo import bookmarks, documents
+
+    if kind == "link":
+        return bookmarks.find(db, ref_id)
+    if kind == "document":
+        return documents.find(db, ref_id)
+    return db.get(Attachment, ref_id)
 
 
 def _reference_label(db: Session, kind: str, ref_id: int | None, fallback: str) -> str:
@@ -3546,18 +3769,16 @@ def _note_reference_label(db: Session, ref_id: int, fallback: str) -> str:
 
 def _other_reference_label(db: Session, kind: str, ref_id: int) -> str:
     """A document, file or link reference's name, "" when it has none."""
-    from tessellate.core.database import Attachment, Bookmark, Document
-
+    if kind not in ("document", "file", "link"):
+        return ""
+    row = _referenced(db, kind, ref_id)
+    if row is None:
+        return ""
     if kind == "document":
-        document = db.get(Document, ref_id)
-        return document.title if document is not None else ""
+        return row.title
     if kind == "file":
-        attachment = db.get(Attachment, ref_id)
-        return attachment.filename if attachment is not None else ""
-    if kind == "link":
-        bookmark = db.get(Bookmark, ref_id)
-        return (bookmark.title or bookmark.url) if bookmark is not None else ""
-    return ""
+        return row.filename
+    return row.title or row.url
 
 
 def _reference_facets(db: Session, kind: str, ref_id: int | None) -> dict:
@@ -3875,8 +4096,8 @@ class MapNodeCreate(BaseModel):
     #: Omitted means "put it somewhere sensible", see `_next_position`. A
     #: caller that has to invent coordinates gets them wrong, which is the
     #: whole reason `generate_diagram` computes them server-side too.
-    x: float | None = None
-    y: float | None = None
+    x: Coord | None = None
+    y: Coord | None = None
     color: str | None = Field(default=None, max_length=20)
 
 
@@ -4143,8 +4364,8 @@ class MapNodeMoveOne(BaseModel):
     #: rather than a bare `int | None`.
     reparent: bool = False
     parent_id: int | None = None
-    x: float | None = None
-    y: float | None = None
+    x: Coord | None = None
+    y: Coord | None = None
 
 
 class MapNodesMove(BaseModel):

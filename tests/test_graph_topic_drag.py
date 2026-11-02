@@ -9,6 +9,7 @@ scratchpad/ui-sweeps/graphtopicdrag.js (12 of 12 moved by the same delta,
 12 pinned, one PUT /graph/pins).
 """
 
+from tests._help_text import help_chat_text
 import json
 import re
 import shutil
@@ -78,7 +79,7 @@ def test_the_gesture_is_wired_end_to_end():
     assert "if (s.dragTopic) node._dragShift = true;" in CANVAS, "a topic is pinned as a group"
     assert "? gcTopicMembers(s.dragTopic, s)" in CANVAS
     assert 'apiJson("/graph/pins", { method: "PUT", body: JSON.stringify({ pins }) })' in CANVAS
-    assert "!s.dragTopic ? graphNodeUnder(" in CANVAS, "dropping a topic never links"
+    assert "s.dragTopic || !node._dragAlt) return null;" in CANVAS, "dropping a topic never links"
 
 
 def test_a_plate_double_click_renames_in_place():
@@ -106,7 +107,7 @@ def test_a_topic_card_files_its_notes_as_a_category_only_when_asked():
     assert "ph:folder-simple-plus File as a category" in card
     assert "await moveNotesToCategory(topic.ids, wanted)" in card
     assert 'topic.name.replace(/^#/, "")' in card, "a tag-named topic files under the word, not the hash"
-    guide = (ROOT / "src" / "tessellate" / "ai" / "help_chat.py").read_text(encoding="utf-8")
+    guide = help_chat_text()
     assert "File as a category files its notes under one category" in guide
 
 

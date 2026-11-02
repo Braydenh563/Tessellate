@@ -35,12 +35,15 @@ text for the client's model to act on with the tools listed above, never a run.
 from __future__ import annotations
 
 import json
+import logging
 import re
 import sys
 from typing import TextIO
 
 from tessellate.ai import tools
 from tessellate.core import deps
+
+logger = logging.getLogger(__name__)
 
 #: Newest first. `initialize` answers with the client's own version when it is
 #: one of these (the spec's negotiation), else the newest we speak. The
@@ -99,6 +102,8 @@ NOTE_URI = re.compile(r"^memorymap://note/(\d+)$")
 RESOURCE_PAGE = 25
 RESOURCE_NOT_FOUND = -32002
 INVALID_PARAMS = -32602
+INVALID_REQUEST = -32600
+INTERNAL_ERROR = -32603
 
 
 def _resources_offered() -> bool:
@@ -311,7 +316,10 @@ def _initialize(message: dict) -> dict:
 
 def _tools_call(message: dict) -> dict:
     params = message.get("params") or {}
-    return _call_tool(params.get("name", ""), params.get("arguments") or {})
+    arguments = params.get("arguments") or {}
+    if not isinstance(arguments, dict) or not isinstance(params.get("name", ""), str):
+        raise _Refused(INVALID_PARAMS, "name must be a string and arguments an object")
+    return _call_tool(params.get("name", ""), arguments)
 
 
 def _resources_read_method(message: dict) -> dict:
@@ -349,6 +357,8 @@ def handle_request(message: dict) -> dict | None:
     JSON-RPC 2.0). Kept pure, no stdio touched here, so the protocol
     logic is directly testable without a real subprocess or a live client.
     """
+    if not isinstance(message, dict):
+        return _error(None, INVALID_REQUEST, "A JSON-RPC message is an object")
     method = message.get("method")
     msg_id = message.get("id")
     is_notification = "id" not in message
@@ -362,9 +372,14 @@ def handle_request(message: dict) -> dict | None:
             "error": {"code": -32601, "message": f"Unknown method '{method}'"},
         }
     try:
+        if not isinstance(message.get("params") or {}, dict):
+            raise _Refused(INVALID_PARAMS, "params must be an object")
         result = handler(message)
     except _Refused as refused:
         return None if is_notification else _error(msg_id, refused.code, refused.why)
+    except (AttributeError, TypeError, ValueError, KeyError):
+        # A shape the handlers did not expect is the caller's, not a crash.
+        return None if is_notification else _error(msg_id, INVALID_PARAMS, "Invalid params")
     if is_notification:
         return None
     return {"jsonrpc": "2.0", "id": msg_id, "result": result}
@@ -385,7 +400,11 @@ def serve(stdin: TextIO = sys.stdin, stdout: TextIO = sys.stdout) -> None:
             message = json.loads(line)
         except json.JSONDecodeError:
             continue
-        response = handle_request(message)
+        try:
+            response = handle_request(message)
+        except Exception:  # one bad message never ends the server
+            logger.exception("mcp message failed")
+            response = _error(message.get("id") if isinstance(message, dict) else None, INTERNAL_ERROR, "Internal error")
         if response is not None:
             stdout.write(json.dumps(response) + "\n")
             stdout.flush()

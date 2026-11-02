@@ -87,7 +87,7 @@ $("draft-continue-note").addEventListener("click", async () => {
   draftNoteId = entry.id;
   draftNoteLabel = clipText(entry.title || notePreviewText(entry.content) || "a note", 40);
   $("draft-kind").value = "continue";
-  markDraftQuickstart("continue");
+  window.markDraftQuickstart?.("continue");
   renderDraftTarget();
   // The note as it stands is version one, so the way back to what it said
   // before Atlas touched it is the same chip row as every other pass.
@@ -101,7 +101,9 @@ for (const id of ["draft-kind", "draft-tone", "draft-length"]) {
   $(id).addEventListener("change", () => {
     if (id === "draft-kind") {
       const kind = $("draft-kind").value;
-      markDraftQuickstart(kind);
+      window.markDraftQuickstart?.(kind);
+      //: A chip's "needs a model" line is about that chip, not the next pass.
+      setDraftStatus("");
       //: The Translate chip goes back to the last language picked here.
       if (kind.startsWith("translate-")) {
         try {
@@ -114,7 +116,6 @@ for (const id of ["draft-kind", "draft-tone", "draft-length"]) {
     saveDraftLocally();
   });
 }
-renderDraftQuickstarts();
 $("draft-extract").addEventListener("click", () => openExtractPreview($("draft-text").value));
 $("extract-close").addEventListener("click", closeExtractPreview);
 $("extract-cancel").addEventListener("click", closeExtractPreview);
@@ -153,6 +154,8 @@ $("draft-discard").addEventListener("click", async () => {
   renderDraftVersions();
   clearDraftTarget();
   setDraftStatus("");
+  $("draft-diagram").replaceChildren();
+  $("draft-diagram").classList.add("hidden");
   updateDraftCount();
   saveDraftLocally();
 });
@@ -219,7 +222,7 @@ function addAtlasLine(panel) {
 
 function initHelpToggles(root = document) {
   for (const trigger of root.querySelectorAll("[data-help-for]")) {
-    const panel = document.getElementById(trigger.dataset.helpFor);
+    const panel = $(trigger.dataset.helpFor);
     if (!panel) continue;
     wireHelpPopover(trigger, panel);
     addAtlasLine(panel);
@@ -347,12 +350,11 @@ document.addEventListener("click", (event) => {
   if (event.target.closest(".chat-dock-more, .action-menu, .select-menu, .sheet-overlay")) return;
   closeChatDockMore();
 });
-$("chat-dock-more-panel").addEventListener("keydown", (event) => {
-  if (event.key === "Escape") {
-    event.stopPropagation();
-    closeChatDockMore();
-    $("chat-dock-more-btn").focus();
-  }
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape" || event.defaultPrevented || !chatDockMoreOpen()) return;
+  if (document.querySelector(".sheet-overlay:not(.hidden), .action-menu:not(.hidden)")) return;
+  closeChatDockMore();
+  $("chat-dock-more-btn").focus();
 });
 $("chat-stop").addEventListener("click", () => {
   chatQueueState.held = true;
@@ -382,6 +384,7 @@ document.addEventListener("keydown", (event) => {
   chatController.abort();
 });
 $("chat-new").addEventListener("click", newChatConversation);
+$("chat-private-toggle").addEventListener("click", chatPrivateToggle);
 {
   const sortSelect = $("chat-sidebar-sort");
   sortSelect.value = prefs.get(CHAT_SIDEBAR_SORT_KEY, null) || "recent";
@@ -440,7 +443,7 @@ let globalFindScope = null;
 //: nothing you could see and scrolled a page you were not looking at.
 function globalFindWalkableRoot() {
   if (globalFindScope && globalFindScope.checkVisibility?.()) return globalFindScope;
-  const settings = document.getElementById("settings-modal");
+  const settings = $("settings-modal");
   if (settings && !settings.classList.contains("hidden")) return settings;
   return document.querySelector(".tab-page:not(.hidden)");
 }
@@ -452,7 +455,7 @@ function globalFindWalkableRoot() {
 //: and switches to the first that does, so Ctrl+F answers "where is the
 //: setting for X" rather than "not on this page".
 function settingsSectionContaining(needle) {
-  const modal = document.getElementById("settings-modal");
+  const modal = $("settings-modal");
   if (!modal || modal.classList.contains("hidden")) return null;
   const lower = needle.toLowerCase();
   for (const section of modal.querySelectorAll(".settings-section.hidden")) {
@@ -566,17 +569,17 @@ function globalFindStep(delta) {
 }
 
 function openGlobalFind(opts = {}) {
-  const reader = document.getElementById("web-reader");
+  const reader = $("web-reader");
   const readerOpen = reader && !reader.classList.contains("hidden") && reader.checkVisibility?.();
   const scopeReader =
     readerOpen &&
     (opts.scope === "web-reader" || Boolean(document.activeElement?.closest?.("#web-panel")));
-  const scope = scopeReader ? document.getElementById("web-reader-text") : null;
+  const scope = scopeReader ? $("web-reader-text") : null;
   if (scope !== globalFindScope) {
     globalFindClearHighlights();
     globalFindScope = scope;
   }
-  const findInput = document.getElementById("global-find-input");
+  const findInput = $("global-find-input");
   if (findInput) {
     const words = scope ? "Find in this page" : "Find on this page";
     findInput.placeholder = `${words}…`;
@@ -609,8 +612,8 @@ function openGlobalFind(opts = {}) {
     $("settings-search").select();
     return;
   }
-  const wbCanvas = document.getElementById("wb-canvas-view");
-  const wbView = document.getElementById("library-view-whiteboard");
+  const wbCanvas = $("wb-canvas-view");
+  const wbView = $("library-view-whiteboard");
   if (
     wbCanvas && !wbCanvas.classList.contains("hidden") &&
     wbView && !wbView.classList.contains("hidden") &&
@@ -717,7 +720,7 @@ let chatPendingTitle = null;
 async function renameCurrentConversation() {
   if (!chatConv) return;
   const current = $("chat-title").textContent;
-  const next = await promptDialog("Rename this conversation:", current);
+  const next = await promptTitle("Rename this conversation", current);
   if (!next || next === current) return;
   if (chatConv.id === null) {
     chatPendingTitle = next;
@@ -738,24 +741,6 @@ async function renameCurrentConversation() {
   }
 }
 
-//: Called by both places that create a conversation from the composer. Silent
-//: and best-effort: a title that fails to stick is worth a wrong name in the
-//: sidebar, not an error over the answer that just arrived.
-function applyPendingChatTitle(conversationId, viewing) {
-  const wanted = chatPendingTitle;
-  chatPendingTitle = null;
-  if (!wanted) return false;
-  if (viewing) $("chat-title").textContent = wanted;
-  apiJson(`/conversations/${conversationId}`, {
-    method: "PUT",
-    body: JSON.stringify({ title: wanted }),
-    silent: true,
-  })
-    .then(() => loadConversationList())
-    .catch(() => {});
-  return true;
-}
-
 //: Built once, at boot, the header's ⋯ is the same for every conversation,
 //: unlike a note card's, which is rebuilt per row.
 mountChatActionsMenu();
@@ -764,7 +749,7 @@ mountChatActionsMenu();
 
 $("chat-title").addEventListener("click", renameCurrentConversation);
 $("chat-title").addEventListener("keydown", (event) => {
-  //: Space and Enter, because this is a `<h2 role="button">` and the browser
+  //: Space and Enter, because this is a focusable `<h2>` and the browser
   //: only gives those two keys to a real `<button>` for free.
   if (event.key === "Enter" || event.key === " ") {
     event.preventDefault();
@@ -968,7 +953,7 @@ if (dashFind) {
     openFinder(event.key);
     //: Opened with the letter already in it, so `openFinder`'s own `select()`
     //: would highlight it and the next keystroke would replace it.
-    const input = document.getElementById("finder-input");
+    const input = $("finder-input");
     if (input) input.setSelectionRange(input.value.length, input.value.length);
   });
   const keysHint = dashFind.querySelector(".dash-find-keys");
@@ -1159,11 +1144,7 @@ $("graph-labels").addEventListener("change", (e) => {
   // or the names sit detached from their notes until something redraws.
   graphCatchUpLabels();
 });
-let graphSearchDebounceTimeout;
-$("graph-search").addEventListener("input", () => {
-  clearTimeout(graphSearchDebounceTimeout);
-  graphSearchDebounceTimeout = setTimeout(applyGraphHighlight, 150);
-});
+//: The search box's own listener is in graph.js, with the match set it reads.
 
 // Physics sliders: persist, then rebuild the simulation with the new forces.
 for (const key of ["gravity", "spread", "link-force"]) {
@@ -1176,7 +1157,7 @@ for (const key of ["gravity", "spread", "link-force"]) {
 }
 
 // Node popup: edit a note in place on the map.
-$("graph-popup-close").addEventListener("click", closeGraphPopup);
+$("graph-popup-close").addEventListener("click", () => closeGraphPopup());
 // Resizing the window changes the map's size, so an open popup needs re-clamping.
 // Only once the graph bundle has been asked for: placeGraphPopup is a stand-in
 // before that, and a bare listener made every window resize on a session that
@@ -1188,7 +1169,7 @@ window.addEventListener(
   },
   { passive: true }
 );
-$("graph-popup-save").addEventListener("click", saveGraphPopup);
+$("graph-popup-save").addEventListener("click", () => saveGraphPopup());
 // Save is shown only once the note differs from what loaded (GRAPH_PLAN
 // Phase 6), so both fields have to tell the gate when they change.
 for (const id of ["graph-popup-content", "graph-popup-tags"]) {
@@ -1366,7 +1347,7 @@ $("tools-toggle").addEventListener("change", async () => {
 });
 
 // In-chat web-search toggle: reflects and flips the web_search_enabled pref,
-// with a clear active state (it's the same setting as Settings → Web search).
+// with a clear active state (it's the same setting as Settings, Web search).
 function renderWebSearchToggle() {
   const on = Boolean(prefsCache && prefsCache.web_search_enabled);
   const button = $("web-search-toggle");
@@ -1379,7 +1360,11 @@ function renderWebSearchToggle() {
   //: which works with no model at all, so greying it would take browsing away
   //: to say something a title can say.
   button.dataset.enabledTitle ??= button.title;
-  button.title = agentModeAvailable() ? button.dataset.enabledTitle : "Browse the web here. With no model, answers come from your notes only.";
+  button.title = !agentModeAvailable()
+    ? "Browse the web here. With no model, answers come from your notes only."
+    : on && !$("tools-toggle").checked
+      ? "Atlas searches in Agent mode, not Ask."
+      : button.dataset.enabledTitle;
 }
 // Plan Plan: send what is in the box as a request that must be planned first.
 //
@@ -1421,14 +1406,6 @@ function renderPlanToggle() {
     : `Plan mode: plan the request first, ${aiNameNow()} draws the steps and shows them before it starts`;
 }
 
-// Applied by sendChatMessage on the way out, so every route into it, the Send
-// button, Enter, a suggestion chip, goes through planning when the mode is on.
-// Reading the flag at send time rather than at click time is the whole point.
-function applyPlanMode(question) {
-  if (!planModeOn) return null;
-  return `${question}\n\n${PLAN_PREFIX}`;
-}
-
 $("chat-plan").addEventListener("click", async () => {
   planModeOn = !planModeOn;
   renderPlanToggle();
@@ -1458,6 +1435,12 @@ async function toggleWebSearch({ openFirst = false } = {}) {
     return;
   }
   const next = !(prefsCache && prefsCache.web_search_enabled);
+  //: The Web button is the one online switch in the dock, so its first turn-on asks once (AI5).
+  if (next && openFirst && prefs.get("web-search-asked", null) !== "1") {
+    const asked = await confirmDialog("Turn on web search?\n\nOnly your search words leave this computer, never your notes. You can turn it off in Settings, Web search.", { confirmLabel: "Turn on", danger: false, checkbox: { label: "Don't ask again" } });
+    if (!asked.ok) return;
+    if (asked.checked) prefs.set("web-search-asked", "1");
+  }
   prefsCache = await apiJson("/preferences", {
     method: "PUT",
     body: JSON.stringify({ web_search_enabled: next }),
@@ -1476,6 +1459,11 @@ async function toggleWebSearch({ openFirst = false } = {}) {
 //: 2026-10-26: it took off-then-on to see it). A click with the panel open turns web off.
 $("web-search-toggle").addEventListener("click", () => toggleWebSearch({ openFirst: true }));
 $("web-panel-close").addEventListener("click", () => toggleWebPanel(false));
+$("web-panel").addEventListener("keydown", (e) => {
+  if (e.key !== "Escape" || e.defaultPrevented) return;
+  toggleWebPanel(false);
+  $("web-search-toggle").focus();
+});
 //: Enter searches; there is no Search button to press. ArrowDown walks from
 //: the field into the results (and ArrowUp from the first result back to the
 //: field, below), which is how every search list the owner compares this to
@@ -1546,10 +1534,13 @@ $("web-reader-ask").addEventListener("click", () => {
 $("web-reader-cite").addEventListener("click", () => {
   if (webReaderPage) citeWebPage(webReaderPage);
 });
-$("web-reader-copy").addEventListener("click", (e) => {
-  if (webReaderPage) copyWebLink(webReaderPage.url, e.currentTarget);
+$("web-reader-copy").addEventListener("click", async (e) => {
+  const button = e.currentTarget;
+  await ensureModule("webClip");
+  if (webReaderPage) copyWebLink(webReaderPage.url, button);
 });
-$("web-reader-open").addEventListener("click", () => {
+$("web-reader-open").addEventListener("click", async () => {
+  await ensureModule("webClip");
   if (webReaderPage) openWebPageExternally(webReaderPage.url);
 });
 $("web-reader-find").addEventListener("click", () => openGlobalFind({ scope: "web-reader" }));
@@ -1580,22 +1571,7 @@ $("reminder-text")?.addEventListener("keydown", (event) => {
   event.preventDefault();
   $("reminder-add").click();
 });
-$("reminder-add").addEventListener("click", async () => {
-  const ok = await addReminder($("reminder-text").value.trim(), $("reminder-due").value, null, {
-    priority: $("reminder-priority").value,
-    recurring: $("reminder-recurring").value,
-  });
-  if (ok) {
-    $("reminder-text").value = "";
-    $("reminder-priority").value = "normal";
-    $("reminder-recurring").value = "none";
-    // A fresh default for the next one, measured from now.
-    setDue(defaultDueValue());
-    // On a phone the form was a sheet over the list; the toast says it
-    // landed and the list behind is where it now is.
-    reminderComposeSheetClose?.();
-  }
-});
+$("reminder-add").addEventListener("click", reminderComposeAdd); // quickadd.js
 
 // **What a phone comes to Reminders for is the list** (INBOX 392,
 // UI_MODERNISATION_PLAN Phase 11 item 12): what is due, and ticking it off.
@@ -1616,7 +1592,7 @@ function openReminderCompose() {
   if (!form) return;
   // The sentence box: its times need no model (UX-01).
   const field = () => $("reminder-magic") || $("reminder-text");
-  if (!window.matchMedia(REMINDER_SHEET).matches || typeof openSheet !== "function") {
+  if (!window.matchMedia(REMINDER_SHEET).matches) {
     field()?.focus();
     return;
   }

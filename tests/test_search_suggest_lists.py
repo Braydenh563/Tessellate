@@ -11,6 +11,7 @@ from pathlib import Path
 import pytest
 
 from tests._app_js import JS_DIR
+from tests._app_js import with_pieces
 
 SOURCE = (JS_DIR / "search-suggest.js").read_text(encoding="utf-8")
 
@@ -77,6 +78,9 @@ globalThis.document = {{ addEventListener() {{}}, querySelectorAll: () => [] }};
 globalThis.navigator = {{ platform: "Linux" }};
 const fs = require("fs");
 eval(fs.readFileSync({str(PREFS)!r}, "utf8") + "; globalThis.prefs = prefs; globalThis.prefsStore = prefsStore;");
+//: prefs.js records its schema migrations at load (`prefs-versions`): the
+//: store these tests count starts empty after that.
+store.clear();
 eval(fs.readFileSync({str(SUGGEST)!r}, "utf8") + "; globalThis.searchRecent = searchRecent; globalThis.SEARCH_RECENT_PREFIX = SEARCH_RECENT_PREFIX; globalThis.searchSuggestItems = searchSuggestItems;");
 //: The "every box at once" helpers live in settings-data.js (lazy): lifted by name.
 const data = fs.readFileSync({str(DATA)!r}, "utf8");
@@ -178,7 +182,7 @@ def test_every_search_box_names_its_scope_and_the_web_panel_shares_the_store() -
         "library-docs-search", "library-boards-search", "library-images-search", "bookmark-search",
         "recordings-search", "skills-search", "web-query",
     }, f"a search box lost its scope: {sorted(ids)}"
-    chat = (JS / "chat.js").read_text(encoding="utf-8")
+    chat = (JS / "web-results.js").read_text(encoding="utf-8")
     assert "prefs.remove(WEB_SEARCH_HISTORY_KEY)" not in chat
     assert "web-recent-remove" in chat and "clearWebSearchHistory" in chat, "the web recents carry a remove per row and a Clear"
     assert 'const SEARCH_RECENT_PREFIX = "searchRecent:"' in SUGGEST.read_text(encoding="utf-8")
@@ -187,7 +191,7 @@ def test_every_search_box_names_its_scope_and_the_web_panel_shares_the_store() -
 def test_the_suggestions_are_a_lazy_bundle_called_from_a_boot_listener() -> None:
     app = (JS / "app.js").read_text(encoding="utf-8")
     assert 'searchSuggest: ["/js/search-suggest.js"]' in app
-    capture = (JS / "capture-ask.js").read_text(encoding="utf-8")
+    capture = with_pieces("capture-ask.js")
     assert "input[data-search-scope]" in capture
     assert 'ensureModule("searchSuggest").then(() => openSearchSuggest(box))' in capture
 

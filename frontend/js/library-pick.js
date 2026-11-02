@@ -1,10 +1,34 @@
-// library-pick.js: the Library item picker dialog (bookmark, board, note or document), moved out of selection.js on 2026-10-12 for the boot gzip budget. Every caller awaits it: `lazy-entries.js` stands in until this loads. Its source table and remembered-tab helper stay in selection.js.
+// library-pick.js: the Library item picker dialog (bookmark, board, note or document) and the uploaded-picture picker (`pickMediaDialog`, 2026-10-29, audit 1029 rows 44 to 56 paid for in the same gzip budget), moved out of selection.js on 2026-10-12 for the boot gzip budget. Every caller awaits it: `lazy-entries.js` stands in until this loads. Its source table and remembered-tab helper stay in selection.js.
+
+//: One row's label per source, in one table (`notePickerShape`'s reason).
+//: Long enough that the row's own width clips it (an ellipsis in CSS):
+//: clipped at 70 characters, a title stopped short with half the row empty.
+function libraryPickLabel(kind, row) {
+  if (kind === "note") return noteLabel(row, 200);
+  if (kind === "board") return row.title || (row.type === "board" ? "Untitled board" : "Untitled map");
+  if (kind === "document") return row.title || "Untitled document";
+  if (kind === "file") return row.original_name || row.filename || "File";
+  return row.title || row.url || "Link";
+}
+
+//: The source the person last chose, so the map's picker opens where they
+//: were (INBOX 572). A per-viewer convenience: storage that is blocked or
+//: empty just opens on the first source.
+const PICK_SOURCE_KEY = "libraryPickSource";
+function pickerRememberedSource(available) {
+  try {
+    const kind = prefs.get(PICK_SOURCE_KEY, null);
+    return available.find((source) => source.kind === kind) || null;
+  } catch {
+    return null;
+  }
+}
 
 //: And its second line: what tells two rows with one name apart.
 function libraryPickAbout(kind, row) {
   const when = relativeTime(row.updated_at || row.created_at);
   if (kind === "note") return pickerNoteAbout(row);
-  if (kind === "document") return notePickerFacts(when && `Edited ${when}`, row.words ? `${row.words} word${row.words === 1 ? "" : "s"}` : "");
+  if (kind === "document") return notePickerFacts(when && `Edited ${when}`, row.words ? nounCount(row.words, "word") : "");
   if (kind === "file") return notePickerFacts(row.size_bytes ? formatFileSize(row.size_bytes) : "", notePickerUsedIn(row) || when);
   if (kind === "board") return notePickerFacts(row.type === "board" ? "Whiteboard" : "Mind map", when);
   let host = "";
@@ -52,7 +76,9 @@ function pickLibraryItemDialog(message, { sources = null } = {}) {
       const read = source.path === "/files/gallery"
         ? apiPagedList(source.path, 200, { silent: true })
         : apiJson(source.path, { silent: true });
-      const rows = await read.catch(() => []);
+      //: A failed read is not remembered as an empty source: the next visit to the tab asks again.
+      const rows = await read.catch(() => null);
+      if (!rows) return [];
       const list = Array.isArray(rows) ? rows : rows.documents || [];
       cache[kind] = source.keep ? list.filter(source.keep) : list;
       return cache[kind];
@@ -159,5 +185,82 @@ function pickLibraryItemDialog(message, { sources = null } = {}) {
         }
       })();
     }
+  });
+}
+
+//: Pick something already uploaded rather than uploading it again ("attach
+//: images that are already in the image library... to new notes in the
+//: capture subtab"). `/media` has no mime field, so each tile is tried as an
+//: `<img>` and drops itself on error, the gallery's own approach.
+function pickMediaDialog() {
+  return new Promise((resolve) => {
+    const grid = document.createElement("div");
+    grid.className = "media-pick-grid";
+    const shell = pickerDialog({
+      title: "Choose from your library",
+      about: "An image already in your library, attached without uploading it again.",
+      placeholder: "Search by file name…",
+      searchLabel: "Search your uploaded images",
+      list: grid,
+    });
+    let uploads = [];
+    //: The grid's states on the empty state recipe, as the lists' are
+    //: (`pickerListState`): an icon and a title over the sentence when
+    //: there is nothing to show, the sentence alone while loading.
+    const say = (text, { icon = "", title = "" } = {}) => {
+      const state = document.createElement("div");
+      state.className = "empty-state entry-pick-empty";
+      if (icon) {
+        const glyph = document.createElement("i");
+        glyph.className = `${richPickerIconClass(icon)} empty-icon`;
+        glyph.setAttribute("aria-hidden", "true");
+        state.appendChild(glyph);
+      }
+      if (title) {
+        const heading = document.createElement("p");
+        heading.className = "empty-title";
+        heading.textContent = title;
+        state.appendChild(heading);
+      }
+      const line = document.createElement("p");
+      line.textContent = text;
+      state.appendChild(line);
+      grid.replaceChildren(state);
+    };
+    const paint = () => {
+      const term = shell.search.value.trim().toLowerCase();
+      const matches = uploads.filter((u) => !term || u.original_name.toLowerCase().includes(term)).slice(0, 60);
+      if (!matches.length) {
+        return uploads.length
+          ? say("Try fewer or different words.", { icon: "ph:magnifying-glass", title: "No pictures match that" })
+          : say("Attach a new file to start your library.", { icon: "ph:image", title: "No pictures yet" });
+      }
+      grid.replaceChildren();
+      for (const upload of matches) {
+        const tile = document.createElement("button");
+        tile.type = "button";
+        tile.className = "media-pick-tile";
+        tile.title = upload.original_name;
+        const img = document.createElement("img");
+        img.src = mediaSrc(upload.url);
+        img.alt = "";
+        img.loading = "lazy";
+        img.addEventListener("error", () => tile.remove());
+        const name = document.createElement("span");
+        name.textContent = upload.original_name;
+        tile.append(img, name);
+        tile.addEventListener("click", () => shell.close(upload));
+        grid.appendChild(tile);
+      }
+    };
+    shell.search.addEventListener("input", paint);
+    say("Loading your library…");
+    shell.open(resolve);
+    apiJson("/media", { silent: true })
+      .then((list) => {
+        uploads = list || [];
+        paint();
+      })
+      .catch(() => say("Couldn't load your library."));
   });
 }

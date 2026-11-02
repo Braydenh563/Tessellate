@@ -18,12 +18,14 @@ import os
 import re
 import sys
 import threading
+import time
 import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import Callable, NamedTuple
 from urllib.parse import parse_qs
 
-from fastapi import Depends, FastAPI, Header, HTTPException, Request
+from fastapi import APIRouter, Depends, FastAPI, Header, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import HTMLResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -54,6 +56,7 @@ from tessellate.api import (
     routes_tidy,
     routes_drafts,
     routes_learned,
+    routes_learned_audit,
     routes_meetings,
     routes_mentions,
     routes_inbox,
@@ -77,6 +80,7 @@ from tessellate.api import (
     routes_graph,
     routes_help,
     routes_insights,
+    routes_diag,
     routes_lag,
     routes_library,
     routes_maintenance,
@@ -103,12 +107,16 @@ from tessellate.api import (
     routes_map_suggest,
     routes_map_from_notes,
 )
+from tessellate.ai.provider import ProviderError
 from tessellate.api.routes_auth import require_unlock
 from tessellate.api.this_computer import is_another_device
 from tessellate.core import (
+    afterunlock,
     backup,
-    bgtasks,
+    concurrency,
+    deadline,
     deps,
+    diagring,
     diskspace,
     egress,
     events,
@@ -120,6 +128,7 @@ from tessellate.core import (
     passes,
     security,
     startup_status,
+    validation_copy,
 )
 from tessellate.core.deps import init_app_state
 from tessellate.entry import manager
@@ -256,7 +265,7 @@ def asset_stamps() -> dict[str, str]:
 #: served. `clip.html` and `capture.html` joined (OPEN 1101): a plain
 #: `?v=<version>` let an edit inside one version be served stale from the
 #: immutable HTTP cache.
-STAMPED_PAGES = ("offline.html", "clip.html", "capture.html")
+STAMPED_PAGES = ("offline.html", "clip.html", "capture.html", "desktop-companion.html")
 
 
 def served_offline_html(name: str = "offline.html") -> bytes:
@@ -748,7 +757,7 @@ def _backup_if_due() -> None:
         # daily local backups, and without this line a backup that has been
         # failing for months looks exactly like one that has been working.
         logging.getLogger("tessellate.startup").warning(
-            "today's local backup didn't run: check Settings → Logs",
+            "today's local backup didn't run: check Settings, Logs",
             exc_info=True,
         )
 
@@ -927,11 +936,16 @@ def _register_error_handlers(app: FastAPI) -> None:
 
     def _is_locked(exc: BaseException) -> bool:
         """SQLite's "database is locked" (or "busy"), through SQLAlchemy or
-        the driver: the message is all `sqlite3` gives to tell it apart."""
+        the driver: the message is all `sqlite3` gives to tell it apart. A
+        connection pool still exhausted after `POOL_TIMEOUT` is the same wait
+        (audit 1031 BK1): busy, not a bare 500."""
         import sqlite3
 
         from sqlalchemy.exc import OperationalError as SAOperationalError
+        from sqlalchemy.exc import TimeoutError as SAPoolTimeout
 
+        if isinstance(exc, SAPoolTimeout):
+            return True
         if not isinstance(exc, (SAOperationalError, sqlite3.OperationalError)):
             return False
         text = str(exc).lower()
@@ -957,15 +971,29 @@ def _register_error_handlers(app: FastAPI) -> None:
         Now the sentence the frontend already built from that list
         (`plainHttpError`), `code: "invalid"`, and the fields, never the input.
         """
-        fields = []
-        for error in exc.errors():
-            loc = [str(part) for part in error.get("loc", ()) if part not in ("body", "query", "path")]
-            fields.append({"field": ".".join(loc), "message": str(error.get("msg", ""))[:200]})
-        named = fields[0]["field"].rsplit(".", 1)[-1].replace("_", " ") if fields and fields[0]["field"] else ""
-        detail = f"Check the {named} and try again." if named else "That was not accepted. Check what you entered and try again."
+        detail, fields = validation_copy.describe(exc.errors())
         return JSONResponse(
             status_code=422,
             content={"detail": detail, "code": "invalid", "hint": None, "fields": fields},
+        )
+
+    @app.exception_handler(OverflowError)
+    async def _overflow_handler(_request, exc: OverflowError) -> JSONResponse:
+        """A number beyond what the store holds (an id or offset above 2^63)
+        names nothing: a refused request, not a server fault (audit 1030 A41)."""
+        error_logger.info("a number was too large: %s", exc)
+        #: An id in the address that no row can have names nothing, the same
+        #: answer `/entries/-1` gives (audit 1031 BK9); only a number the
+        #: person typed into a field is a refused request.
+        raw = [str(v) for v in (_request.scope.get("path_params") or {}).values()]
+        if any(v.lstrip("-").isdigit() and abs(int(v)) >= 2**63 for v in raw):
+            return JSONResponse(
+                status_code=404,
+                content={"detail": "That could not be found.", "code": "not_found", "hint": None},
+            )
+        return JSONResponse(
+            status_code=422,
+            content={"detail": "That number is too large.", "code": "invalid", "hint": None, "fields": []},
         )
 
     @app.exception_handler(Exception)
@@ -986,19 +1014,31 @@ def _register_error_handlers(app: FastAPI) -> None:
                     "code": "busy",
                     "hint": None,
                 },
-                headers={"Retry-After": "2"},
+                headers={"Retry-After": str(concurrency.RETRY_AFTER_SECONDS)},
+            )
+        if getattr(_request.state, "deadline_expired", False) and isinstance(exc, ProviderError):
+            # The route's deadline (core/deadline.py) cut the model call and
+            # the route had no notes-only fallback of its own.
+            return JSONResponse(
+                status_code=504,
+                content={
+                    "detail": "The model took too long to answer. Try again in a moment.",
+                    "code": "model_slow",
+                    "hint": None,
+                },
             )
         # A fresh id per failure, logged next to the real traceback and
         # handed back to the user, "it broke" with no ref is unreportable;
         # this ref is the thing a bug report can actually be filed against.
         ref = uuid.uuid4().hex
         error_logger.exception("Unhandled exception (ref=%s)", ref, exc_info=exc)
+        diagring.note_exception(_request.url.path, exc, ref)
         return JSONResponse(
             status_code=500,
             content={
                 "detail": (
                     "Something went wrong inside Tessellate. Try again, and if it "
-                    "keeps happening, check Settings > Logs."
+                    "keeps happening, check Settings, Logs."
                 ),
                 "code": "internal",
                 "ref": ref,
@@ -1108,7 +1148,7 @@ def _content_length(scope) -> int | None:  # noqa: ANN001
 #: How long shutdown waits for the background pool's workers. Short: the only
 #: thing that can still be running is one job (a Tesseract pass or a model
 #: call), the workers are daemons, and a quit that waits for a vision read of
-#: a 20-page scan is the hang `core/bgtasks.py` was written to prevent.
+#: a 20-page scan is the hang `jobs.stop_all` was written to prevent.
 _JOB_SHUTDOWN_SECONDS = 3.0
 
 
@@ -1130,14 +1170,27 @@ class RequestPulse:
             await self.app(scope, receive, send)
             return
         embeddings.note_request()
+        started = time.perf_counter()
+        status = 0
+
+        async def timed_send(message) -> None:  # noqa: ANN001
+            nonlocal status
+            if message["type"] == "http.response.start":
+                status = message["status"]
+            await send(message)
+
         #: Which device this request is for (core/origin.py): carried into
         #: the jobs it queues, so a phone's save cannot start an install here.
         another = is_another_device(Request(scope))
         if not another and scope.get("method") in _ACTS and origin.has_deferred():
             origin.run_deferred(jobs.enqueue)
         #: The request's endpoint names a model call no run owns (INBOX 805).
-        with origin.acting_for(another), jobruns.for_request(scope):
-            await self.app(scope, receive, send)
+        try:
+            with origin.acting_for(another), jobruns.for_request(scope):
+                await self.app(scope, receive, timed_send)
+        finally:
+            #: A slow route is one line in the diagnostics report (core/diagring.py).
+            diagring.note_request(scope.get("method", ""), scope.get("path", ""), (time.perf_counter() - started) * 1000, status)
 
 
 def _start_services() -> Path:
@@ -1148,6 +1201,7 @@ def _start_services() -> Path:
     2026-10-05, ARCH-22: create_app was 354 lines)."""
     pin_static_mime_types()
     logbuffer.install()  # start capturing logs for the Settings viewer
+    diagring.install_query_hook()  # slow statements, for the diagnostics report
     # The privacy receipt's record (core/egress.py): before anything below
     # can open a socket, so a startup download or a warmup that phones home
     # is on the receipt too. Idempotent, and permanent by design.
@@ -1161,9 +1215,16 @@ def _start_services() -> Path:
     # A job record still saying "running" belongs to the process that just
     # ended; say so before anything new can be mistaken for it.
     jobruns.mark_interrupted()
+    #: **A launch with a password holds its heavy work until the first unlock**
+    #: (INBOX 1492: `/auth/unlock` 5072 ms, `/models/status` 3743 ms in the
+    #: owner's lag log): the search model's load, the speller, the day's
+    #: housekeeping and the queued jobs start after the unlock answer has
+    #: gone (core/afterunlock.py), never beside it.
+    if _has_password():
+        afterunlock.arm()
     # The durable jobs (core/jobstore.py): the readings and filings a closed
     # or killed process left queued or half done are queued again, once.
-    jobs.resume()
+    afterunlock.defer("resume-jobs", jobs.resume)
     ledger_path = deps.get_config().data_dir / egress.LEDGER_NAME
     # Keep the ledger current as connections happen, not only on a receipt
     # read and at a clean shutdown, so a killed process loses at most
@@ -1196,13 +1257,7 @@ def _start_services() -> Path:
         deps.get_config().get_preference("season_locale", ""),
     )
     if deps.get_config().get_preference("warm_search_model_at_launch", True):
-        embeddings.start_warmup(deps.get_embeddings(), deps.get_db().session)
-        #: The speller's lists and the UK/US pairs (INBOX 895), about a
-        #: second built once on the job pool, so the first question does not
-        #: wait for them.
-        from tessellate.ai import spelling
-
-        spelling.warm_in_background()
+        afterunlock.defer("search-warmup", _warm_search_at_launch)
     # The filing model's warm-up and the retry of stand-ins are *not* started
     # here: `create_app` runs for every test app too, and a model call at
     # construction was an extra round on every fake model in the suite. The
@@ -1211,191 +1266,246 @@ def _start_services() -> Path:
     return ledger_path
 
 
-def _add_middleware(app: FastAPI) -> None:
-    """The middleware stack, in the order it is added (the last added runs
-    first, so the order is load-bearing; each block says why). ARCH-22."""
+def _has_password() -> bool:
+    """Whether this notebook has a password to give (a lock screen to wait
+    for). An unreadable database answers no: the work then runs at launch."""
+    try:
+        from sqlalchemy import select
 
-    # Middleware is added inside-out: the LAST one added is the outermost, so
-    # the headers below are stamped on the origin check's own 403 too.
-    #
-    # **Compression goes on FIRST, which means innermost, and the ordering is
-    # load-bearing rather than stylistic.** Both middlewares below are
-    # `BaseHTTPMiddleware`, and that base class re-wraps every response it
-    # handles as a *streaming* response. Starlette's gzip only consults
-    # `minimum_size` on a response it can measure, a stream has no length to
-    # measure: so a gzip layer placed outside either of them compresses
-    # everything regardless of size. Measured while adding this: with gzip
-    # outermost, `GET /health` (70 bytes) and `GET /tags` (2 bytes) both came
-    # back `content-encoding: gzip`, i.e. spending CPU to make small responses
-    # larger, with `minimum_size` silently doing nothing. Innermost, gzip sits
-    # against the routers and the static mount and sees real `Content-Length`
-    # headers, so the threshold works.
-    #
-    # **Why compression matters here at all, given it is localhost.**
-    # `app.js` is over a megabyte of unminified source and there is no bundler
-    # and no minifier by design (CLAUDE.md: "no build step"), so this is the
-    # only remaining lever on transfer size. It is not really about the wire:
-    # the desktop shell is a WebView with its own cache, and `GET /entries`
-    # hands back up to a thousand full note bodies per page.
-    #
-    # **Streaming was checked, not assumed**, this app has three streaming
-    # endpoints (chat in `routes_chat`, the weekly digest in `routes_insights`,
-    # the live log in `routes_settings`), and "gzip buffers a stream into
-    # uselessness" is true of some implementations. Starlette's is not one:
-    # `GZipResponder._compress_body` flushes with `Z_SYNC_FLUSH` on every chunk
-    # carrying `more_body`, so each chunk still leaves the server as it is
-    # produced. `text/event-stream` is already in Starlette's own exclusion
-    # list; the two NDJSON streams are not, so they are named explicitly, 
-    # which keeps those two responses byte-identical to what they were before
-    # this existed.
-    #
-    # `compresslevel=6`, not the library default of 9: 9 costs meaningfully
-    # more CPU for a few percent of size on text, and this is a single process
-    # serving one user who is usually running a local model on the same machine.
-    #
-    # On BREACH: the attack needs compression *plus* a secret in the response
-    # *plus* attacker-controlled reflection, and the last two legs are absent
-    # here: the auth token travels in a header rather than a cookie (see this
-    # module's docstring) and `OriginCheckMiddleware` already refuses
-    # cross-origin requests outright, so there is no third party in a position
-    # to make the guesses the attack is built from.
-    app.add_middleware(
+        from tessellate.core.database import User
+
+        with deps.get_db().session() as session:
+            return session.scalar(select(User.id)) is not None
+    except Exception:  # noqa: BLE001  # nothing to wait for is the old behaviour
+        return False
+
+
+def _warm_search_at_launch() -> None:
+    """The search model's load (the session factory is handed in so
+    embeddings never has to import the dependency container) and the speller's
+    lists and the UK/US pairs (INBOX 895), about a second built once on the
+    job pool, so the first question does not wait for them."""
+    embeddings.start_warmup(deps.get_embeddings(), deps.get_db().session)
+    from tessellate.ai import spelling
+
+    spelling.warm_in_background()
+
+
+class Layer(NamedTuple):
+    """One middleware: what it is, the options it is built with (a callable, so each app
+    gets its own), and why it sits where it does."""
+
+    cls: type
+    options: Callable[[], dict]
+    reason: str
+
+
+# **Compression goes on FIRST, which means innermost, and the ordering is
+# load-bearing rather than stylistic.** Both middlewares below are
+# `BaseHTTPMiddleware`, and that base class re-wraps every response it
+# handles as a *streaming* response. Starlette's gzip only consults
+# `minimum_size` on a response it can measure, a stream has no length to
+# measure: so a gzip layer placed outside either of them compresses
+# everything regardless of size. Measured while adding this: with gzip
+# outermost, `GET /health` (70 bytes) and `GET /tags` (2 bytes) both came
+# back `content-encoding: gzip`, i.e. spending CPU to make small responses
+# larger, with `minimum_size` silently doing nothing. Innermost, gzip sits
+# against the routers and the static mount and sees real `Content-Length`
+# headers, so the threshold works.
+#
+# **Why compression matters here at all, given it is localhost.**
+# `app.js` is over a megabyte of unminified source and there is no bundler
+# and no minifier by design (CLAUDE.md: "no build step"), so this is the
+# only remaining lever on transfer size. It is not really about the wire:
+# the desktop shell is a WebView with its own cache, and `GET /entries`
+# hands back up to a thousand full note bodies per page.
+#
+# **Streaming was checked, not assumed**, this app has three streaming
+# endpoints (chat in `routes_chat`, the weekly digest in `routes_insights`,
+# the live log in `routes_settings`), and "gzip buffers a stream into
+# uselessness" is true of some implementations. Starlette's is not one:
+# `GZipResponder._compress_body` flushes with `Z_SYNC_FLUSH` on every chunk
+# carrying `more_body`, so each chunk still leaves the server as it is
+# produced. `text/event-stream` is already in Starlette's own exclusion
+# list; the two NDJSON streams are not, so they are named explicitly, 
+# which keeps those two responses byte-identical to what they were before
+# this existed.
+#
+# `compresslevel=6`, not the library default of 9: 9 costs meaningfully
+# more CPU for a few percent of size on text, and this is a single process
+# serving one user who is usually running a local model on the same machine.
+#
+# On BREACH: the attack needs compression *plus* a secret in the response
+# *plus* attacker-controlled reflection, and the last two legs are absent
+# here: the auth token travels in a header rather than a cookie (see this
+# module's docstring) and `OriginCheckMiddleware` already refuses
+# cross-origin requests outright, so there is no third party in a position
+# to make the guesses the attack is built from.
+#:
+#: Innermost first: Starlette wraps each one added around the last, so the LAST row is the
+#: outermost and runs first. `tests/test_middleware_table_1031.py` holds the order and that
+#: every row has its reason (ARCH-22, audit 1031 AR9).
+MIDDLEWARE: tuple[Layer, ...] = (
+    Layer(
         GZipMiddleware,
-        minimum_size=500,
-        compresslevel=6,
-        exclude_content_types=(
-            *DEFAULT_EXCLUDED_CONTENT_TYPES,
-            "application/x-ndjson",
-            # The grammar checker's 15.9 MB binary (INBOX 401). Measured on
-            # loopback: 755 ms to gzip it on every cold fetch against 60 ms
-            # to send it as it is, so compressing it made the first check
-            # slower by the whole difference. Never compressed *here*: the
-            # precompressed cache (`RevalidatedStatic._precompressed`) gzips
-            # it once per version and this middleware passes that through.
-            "application/wasm",
+        lambda: dict(
+            minimum_size=500,
+            compresslevel=6,
+            exclude_content_types=(
+                *DEFAULT_EXCLUDED_CONTENT_TYPES,
+                "application/x-ndjson",
+                # The grammar checker's 15.9 MB binary (INBOX 401). Measured on
+                # loopback: 755 ms to gzip it on every cold fetch against 60 ms
+                # to send it as it is, so compressing it made the first check
+                # slower by the whole difference. Never compressed *here*: the
+                # precompressed cache (`RevalidatedStatic._precompressed`) gzips
+                # it once per version and this middleware passes that through.
+                "application/wasm",
+            ),
         ),
-    )
-    app.add_middleware(security.OriginCheckMiddleware)
-    # Who is asking, for the vault's per-session grants (routes_auth.VaultScope).
-    app.add_middleware(routes_auth.VaultScope)
-    # LAN mode's rebinding guard: a no-op on loopback (core/netbind.py).
-    app.add_middleware(security.HostCheckMiddleware)
-    app.add_middleware(SpaceGuard)
-    app.add_middleware(RequestPulse)
-    # Outside the Host and Origin checks, so a refused request is never read
-    # either; inside the security headers, so a 413 still carries them (SEC-06).
-    app.add_middleware(security.BodyCapMiddleware)
-    app.add_middleware(
+        "Innermost, so it sees real Content-Length headers and its minimum_size works (above).",
+    ),
+    Layer(security.OriginCheckMiddleware, dict, "Refuses a cross-origin request before anything reads it."),
+    Layer(routes_auth.VaultScope, dict, "Who is asking, for the vault's per-session grants."),
+    Layer(security.HostCheckMiddleware, dict, "LAN mode's rebinding guard: a no-op on loopback (core/netbind.py)."),
+    Layer(SpaceGuard, dict, "Refuses a request whose workspace header names no space (422, audit 1031 BK3)."),
+    Layer(RequestPulse, dict, "Counts requests in flight, which a restore waits on."),
+    Layer(
+        security.BodyCapMiddleware,
+        dict,
+        "Outside the Host and Origin checks, so a refused request is never read either; inside the security headers, so a 413 still carries them (SEC-06).",
+    ),
+    Layer(
         security.SecurityHeadersMiddleware,
         # Tracks index.html rather than freezing one policy at startup, see
         # CspForPage for the reported bug that caused ("blocked
         # script-src-elem: inline" after any frontend update, until restart).
-        csp=security.CspForPage(FRONTEND_DIR / "index.html"),
-    )
-    # Outermost, so every check above sees the path without its `/api/v1`
-    # and an agent-named request is named for everything inside it (H4).
-    app.add_middleware(versioning.ApiVersionMiddleware)
+        lambda: dict(csp=security.CspForPage(FRONTEND_DIR / "index.html")),
+        "Outside the checks above, so the headers are stamped on their own 403s too.",
+    ),
+    Layer(
+        versioning.ApiVersionMiddleware,
+        dict,
+        "Outermost, so every check above sees the path without its /api/v1 and an agent-named request is named for everything inside it (H4).",
+    ),
+)
 
 
-def _include_routers(app: FastAPI, locked: list) -> None:
-    """Every API router, behind `locked` unless it says otherwise. ARCH-22."""
-    app.include_router(routes_auth.router)
-    app.include_router(routes_entries.router, dependencies=locked)
-    app.include_router(routes_mentions.router, dependencies=locked)
-    app.include_router(routes_meetings.router, dependencies=locked)
-    app.include_router(routes_inbox.router, dependencies=locked)
-    app.include_router(routes_entities.router, dependencies=locked)
-    app.include_router(routes_relations.router, dependencies=locked)
-    app.include_router(routes_properties.router, dependencies=locked)
-    app.include_router(routes_chat.router, dependencies=locked)
-    app.include_router(routes_ask_history.router, dependencies=locked)
-    app.include_router(routes_models.router, dependencies=locked)
-    app.include_router(routes_settings.router, dependencies=locked)
-    app.include_router(routes_maintenance.router, dependencies=locked)
-    app.include_router(routes_lag.router, dependencies=locked)
+def _add_middleware(app: FastAPI) -> None:
+    """The stack in `MIDDLEWARE` order, innermost first."""
+    for layer in MIDDLEWARE:
+        app.add_middleware(layer.cls, **layer.options())
+
+
+#: How a router is reached: behind the unlock, open (a few, each with its reason), or
+#: behind the unlock that also takes the media cookie (a plain `<img src>` never sends the
+#: token header). `tests/test_middleware_table_1031.py` holds the table to every router.
+OPEN, LOCKED, MEDIA = "open", "locked", "media"
+
+ROUTERS: tuple[tuple[APIRouter, str], ...] = (
+    (routes_auth.router, OPEN),
+    (routes_entries.router, LOCKED),
+    (routes_mentions.router, LOCKED),
+    (routes_meetings.router, LOCKED),
+    (routes_inbox.router, LOCKED),
+    (routes_entities.router, LOCKED),
+    (routes_relations.router, LOCKED),
+    (routes_properties.router, LOCKED),
+    (routes_chat.router, LOCKED),
+    (routes_ask_history.router, LOCKED),
+    (routes_models.router, LOCKED),
+    (routes_settings.router, LOCKED),
+    (routes_maintenance.router, LOCKED),
+    (routes_lag.router, LOCKED),
+    (routes_diag.router, LOCKED),
     # The browser's own crash reports, which have to reach the log *before*
     # unlock: that is when the failure they describe happens. One route, and
     # `routes_settings.open_router`'s own comment says why it is separate.
-    app.include_router(routes_settings.open_router)
+    (routes_settings.open_router, OPEN),
     # The Run button's sandbox page: no data, its own sandboxing policy, and
     # registered before the documents router so `/documents/{id}` does not
     # claim the path (`api/run_sandbox.py`).
-    app.include_router(run_sandbox.router)
+    (run_sandbox.router, OPEN),
     # A long run's row in Activity (DOCUMENTS_PLAN 25 row 9): locked.
-    app.include_router(run_sandbox.jobs_router, dependencies=locked)
+    (run_sandbox.jobs_router, LOCKED),
     # The offline translator (WORLD_CLASS_PLAN 28.5 row 10): what is
     # installed is behind the unlock; the engine and model files are open,
     # like the Python runtime's, because a Worker's fetch carries no token.
-    app.include_router(routes_translate.router, dependencies=locked)
-    app.include_router(routes_translate.files_router)
-    app.include_router(routes_update.router, dependencies=locked)
-    app.include_router(routes_websearch.router, dependencies=locked)
-    app.include_router(routes_webclip.router, dependencies=locked)
-    app.include_router(routes_backups.router, dependencies=locked)
-    app.include_router(routes_spaces.router, dependencies=locked)
-    app.include_router(routes_files.router, dependencies=locked)
+    (routes_translate.router, LOCKED),
+    (routes_translate.files_router, OPEN),
+    (routes_update.router, LOCKED),
+    (routes_websearch.router, LOCKED),
+    (routes_webclip.router, LOCKED),
+    (routes_backups.router, LOCKED),
+    (routes_spaces.router, LOCKED),
+    (routes_files.router, LOCKED),
     # A plain `<img src>` (or a note's own inline `![]()` markdown) never
     # attaches the X-Auth-Token header, so only these routes also accept the
     # media cookie, on their own gate rather than widening `locked` for every
     # route. See require_unlock_media's docstring.
-    app.include_router(
-        routes_files.media_router, dependencies=[Depends(routes_auth.require_unlock_media)]
-    )
-    app.include_router(routes_search.router, dependencies=locked)
-    app.include_router(routes_tags.router, dependencies=locked)
-    app.include_router(routes_categories.router, dependencies=locked)
-    app.include_router(routes_conversations.router, dependencies=locked)
-    app.include_router(routes_documents.router, dependencies=locked)
-    app.include_router(routes_duplicates.router, dependencies=locked)
-    app.include_router(routes_tidy.router, dependencies=locked)
-    app.include_router(routes_drafts.router, dependencies=locked)
-    app.include_router(routes_learned.router, dependencies=locked)
-    app.include_router(routes_night.router, dependencies=locked)
-    app.include_router(routes_bench.router, dependencies=locked)
-    app.include_router(routes_editor.router, dependencies=locked)
-    app.include_router(routes_import.router, dependencies=locked)
-    app.include_router(routes_usage.router, dependencies=locked)
-    app.include_router(routes_usage.capture_router, dependencies=locked)
-    app.include_router(routes_questions.router, dependencies=locked)
-    app.include_router(routes_resurface.router, dependencies=locked)
-    app.include_router(routes_insights.router, dependencies=locked)
-    app.include_router(routes_graph.router, dependencies=locked)
-    app.include_router(routes_help.router, dependencies=locked)
-    app.include_router(routes_reminders.router, dependencies=locked)
+    (routes_files.media_router, MEDIA),
+    (routes_search.router, LOCKED),
+    (routes_tags.router, LOCKED),
+    (routes_categories.router, LOCKED),
+    (routes_conversations.router, LOCKED),
+    (routes_documents.router, LOCKED),
+    (routes_duplicates.router, LOCKED),
+    (routes_tidy.router, LOCKED),
+    (routes_drafts.router, LOCKED),
+    (routes_learned.router, LOCKED),
+    (routes_learned_audit.router, LOCKED),
+    (routes_night.router, LOCKED),
+    (routes_bench.router, LOCKED),
+    (routes_editor.router, LOCKED),
+    (routes_import.router, LOCKED),
+    (routes_usage.router, LOCKED),
+    (routes_usage.capture_router, LOCKED),
+    (routes_questions.router, LOCKED),
+    (routes_resurface.router, LOCKED),
+    (routes_insights.router, LOCKED),
+    (routes_graph.router, LOCKED),
+    (routes_help.router, LOCKED),
+    (routes_reminders.router, LOCKED),
     # A notification's Done and Snooze, pressed by the service worker with a
     # token scoped to one reminder and those two actions (core/reminder_token.py)
     # instead of a session: the one route here outside the gate, and why is in
     # `routes_reminders.act_from_notification` and tests/test_every_route_is_locked.py.
-    app.include_router(routes_reminders.open_router)
-    app.include_router(routes_bookmarks.router, dependencies=locked)
-    app.include_router(routes_voice.router, dependencies=locked)
-    app.include_router(routes_recordings.router, dependencies=locked)
-    app.include_router(
-        routes_recordings.media_router,
-        dependencies=[Depends(routes_auth.require_unlock_media)],
-    )
-    app.include_router(routes_captions.router, dependencies=locked)
-    app.include_router(routes_tasks.router, dependencies=locked)
-    app.include_router(routes_timeline.router, dependencies=locked)
-    app.include_router(routes_library.router, dependencies=locked)
-    app.include_router(routes_whiteboard.router, dependencies=locked)
-    app.include_router(
-        routes_whiteboard.media_router, dependencies=[Depends(routes_auth.require_unlock_media)]
-    )
-    app.include_router(routes_board_library.router, dependencies=locked)
-    app.include_router(routes_code_snippets.router, dependencies=locked)
-    app.include_router(routes_code_assist.router, dependencies=locked)
-    app.include_router(routes_board_history.router, dependencies=locked)
-    app.include_router(routes_map_suggest.router, dependencies=locked)
-    app.include_router(routes_map_from_notes.router, dependencies=locked)
-    app.include_router(routes_debug.router, dependencies=locked)
-    app.include_router(routes_privacy.router, dependencies=locked)
-    app.include_router(routes_capabilities.router, dependencies=locked)
-    app.include_router(routes_read.router, dependencies=locked)
-    app.include_router(routes_statistics.router, dependencies=locked)
-    app.include_router(routes_utilities.router, dependencies=locked)
+    (routes_reminders.open_router, OPEN),
+    (routes_bookmarks.router, LOCKED),
+    (routes_voice.router, LOCKED),
+    (routes_recordings.router, LOCKED),
+    (routes_recordings.media_router, MEDIA),
+    (routes_captions.router, LOCKED),
+    (routes_tasks.router, LOCKED),
+    (routes_timeline.router, LOCKED),
+    (routes_library.router, LOCKED),
+    (routes_whiteboard.router, LOCKED),
+    (routes_whiteboard.media_router, MEDIA),
+    (routes_board_library.router, LOCKED),
+    (routes_code_snippets.router, LOCKED),
+    (routes_code_assist.router, LOCKED),
+    (routes_board_history.router, LOCKED),
+    (routes_map_suggest.router, LOCKED),
+    (routes_map_from_notes.router, LOCKED),
+    (routes_debug.router, LOCKED),
+    (routes_privacy.router, LOCKED),
+    (routes_capabilities.router, LOCKED),
+    (routes_read.router, LOCKED),
+    (routes_statistics.router, LOCKED),
+    (routes_utilities.router, LOCKED),
     #: WORLD_CLASS_PLAN section 17: the review queue, most opened, tidy proposals, charts.
-    app.include_router(routes_vision.router, dependencies=locked)
+    (routes_vision.router, LOCKED),
+)
+
+
+def _include_routers(app: FastAPI, locked: list) -> None:
+    """Every API router in `ROUTERS` order (a path one claims first wins), each behind the
+    gate its row names. ARCH-22."""
+    gates = {OPEN: [], LOCKED: locked, MEDIA: [Depends(routes_auth.require_unlock_media)]}
+    for router, gate in ROUTERS:
+        app.include_router(router, dependencies=gates[gate])
+
+    routes_diag.BUILD["hash"] = lambda: asset_hash(FRONTEND_DIR / "js" / "app.js")
 
 
 def _add_system_routes(app: FastAPI, locked: list) -> None:
@@ -1568,18 +1678,17 @@ def create_app() -> FastAPI:
         # On the pool, not a thread of its own (the THREAD_SITES ratchet in
         # tests/test_flaw_class_lints.py): it is the app's housekeeping, a
         # quiet kind, after the server is up (ARCH-19).
+        concurrency.apply_worker_limit()
         routes_models.prewarm_installed()
-        jobs.enqueue("maintenance", _startup_maintenance, name="startup maintenance")
+        afterunlock.defer("maintenance", lambda: jobs.enqueue("maintenance", _startup_maintenance, name="startup maintenance"))
         yield
         # Never raises: `stop_all` swallows per-job failures itself, and a
         # shutdown that fails to shut down is worse than one that leaves a
         # line in the log.
-        bgtasks.stop_all()
-        # The registry of threads that are not jobs (`core/background.py`):
-        # its watchers name how they stop, and quitting is when to ask.
-        from tessellate.core import background
-
-        background.stop_all()
+        jobs.stop_all()
+        # The thread Jobs (`jobs.thread`): their watchers name how they
+        # stop, and quitting is when to ask.
+        jobs.stop_threads()
         # The reminder notifier's loop is a job on that pool, so it is told to
         # end first: otherwise a quit waits the pool's whole deadline for it.
         from tessellate.core import reminder_notifier
@@ -1592,6 +1701,8 @@ def create_app() -> FastAPI:
         # call that cannot be interrupted and the workers are daemons: see
         # `jobs.Pool.shutdown`.
         jobs.shutdown(deadline=_JOB_SHUTDOWN_SECONDS)
+        if deps._db is not None:
+            deps._db.optimize()
         # The receipt's ledger keeps what this launch saw; the writer thread
         # (`egress.configure`) flushes within a second of a connection and the
         # route on every read, so this is the last drain on a clean quit.
@@ -1619,7 +1730,7 @@ def create_app() -> FastAPI:
 
     # Everything that touches the user's data sits behind the unlock
     # gate; /auth itself and /health stay open.
-    locked = [Depends(require_unlock)]
+    locked = [Depends(require_unlock), Depends(deadline.guard)]
     _include_routers(app, locked)
     _add_system_routes(app, locked)
 

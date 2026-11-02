@@ -89,6 +89,11 @@ LINTS=(tests/test_style_scale.py tests/test_ui_signatures.py tests/test_css_brac
   # The gzip boot budget: a few hundred bytes from the cap, and a merge that
   # passed every other lint here went over it on CI (2026-10-03).
   tests/test_static_compression.py
+  # The cross-file guard and top-level let caps, and the wake-source seed:
+  # each counts over every frontend file, so a merge of two agents (or a
+  # deletion that must lower a seed) broke them after push (2026-10-29, the
+  # guard cap at 277 and the graph.js raf seed; the gzip cap on 2026-10-27b).
+  tests/test_global_scope_ratchet.py tests/test_frontend_wake_sources.py
   # The whole boot (every script and stylesheet index.html loads, gzipped as
   # served), the breakpoint set, and "fully local" (no other host in what is
   # served): each reads every frontend file at once, so no one file's name
@@ -138,6 +143,13 @@ LINTS=(tests/test_style_scale.py tests/test_ui_signatures.py tests/test_css_brac
   # A request inside an assert: CodeQL flags each new one on push.
   tests/test_codeql_shapes.py
   tests/test_plan_hygiene.py tests/test_readme_freshness.py tests/test_vendor_licences.py
+  # Per-file ledgers that go stale when code moves between files or a split
+  # lowers a function: each turned CI red once on 2026-11-01 after a gate had
+  # passed (the complexity seed only shrinks, a toast or kebab table names the
+  # file it lives in, storage goes through prefs, a module's line cap). About
+  # 30 seconds, most of it the complexity walk.
+  tests/test_complexity.py tests/test_error_toasts.py tests/test_icon_conventions.py
+  tests/test_prefs_module.py tests/test_module_line_caps.py
   # Mirror drift (docs/CHANGELOG.md and friends) belongs here rather than in
   # --changed: the file that goes stale is a `.md` at the repo root, and the
   # changed-test heuristic matches on a test naming a changed *source* file, so

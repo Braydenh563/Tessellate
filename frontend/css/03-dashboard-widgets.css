@@ -385,13 +385,16 @@
    selected one legible), so the fix is the missing feedback, not a resting
    fill: the surface appears under the pointer, and the label goes to full
    --ink so the hovered option looks as real as the selected one. */
-.seg button:not(.active):hover,
-.seg button:not(.active):is(:focus-visible, :has(:focus-visible)) {
+.seg button:not(.active, [aria-pressed="true"]):hover,
+.seg button:not(.active, [aria-pressed="true"]):is(:focus-visible, :has(:focus-visible)) {
   background: var(--ghost-btn-bg);
   color: var(--ink);
 }
 
-.seg button.active {
+/* A segment says it is chosen by `.active` or by `aria-pressed` (the note
+   capture's Note / To-do switch, INBOX 1494): either one paints it, so a
+   switch that only sets the attribute is never left with no chosen look. */
+.seg button:is(.active, [aria-pressed="true"]) {
   background: var(--accent-surface);
   color: var(--on-accent);
 }
@@ -636,7 +639,6 @@ header#top-bar select,
    button were the only blurred surfaces left on a machine asking for none. */
 :root[data-glass="off"] .notes-subtabs,
 :root[data-glass="off"] .library-subtabs,
-:root[data-glass="off"] .contents-heading,
 :root[data-glass="off"] .graph-zoom,
 :root[data-glass="off"] .scroll-top,
 :root[data-glass="off"] .toast,
@@ -697,7 +699,6 @@ header#top-bar select,
 #backup-list li .entry-actions {
   opacity: 1;
 }
-
 
 /* Full width, on its own line: inline after the label it ran off the right
    edge of the card as soon as the job name got long. */
@@ -870,7 +871,7 @@ header#top-bar select,
   margin-top: var(--space-2);
   font-size: var(--text-xs);
   font-variant-numeric: tabular-nums;
-  opacity: 0.75;
+  color: var(--muted);
 }
 
 .msg-meta:empty {
@@ -1890,6 +1891,11 @@ header#top-bar select,
   overflow-x: auto;
   overflow-y: hidden;
   padding-bottom: 0.25rem;
+  /* Below the fold on a first visit: its 373 cells are skipped until it nears
+     the window (INBOX 1508: 47% of the Dashboard reveal's elements). Already a
+     scroll box, so nothing it paints is clipped that was not. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 6rem;
 }
 
 .heat-cell {
@@ -2050,8 +2056,8 @@ header#top-bar select,
 }
 
 @media (hover: hover) {
-  #entry-list li:hover,
-  #entry-list li:is(:focus-visible, :has(:focus-visible)) {
+  #entry-list li:where(:not(.row-shell)):hover,
+  #entry-list li:where(:not(.row-shell)):is(:focus-visible, :has(:focus-visible)) {
     border-color: var(--accent);
     box-shadow: var(--shadow-sm);
   }
@@ -2205,8 +2211,10 @@ header#top-bar select,
   flex-basis: 100%;
 }
 
-/* A grounding chip is a control: the band's floor, not the chip's 21px. */
-.answer-grounding .result-reason-chip {
+/* A grounding chip is a control: the band's floor, not the chip's 21px. The
+   history rows share it (audit 1031 AI15). */
+.answer-grounding .result-reason-chip,
+#conversation-list li {
   min-height: var(--target-min);
 }
 
@@ -2660,7 +2668,6 @@ button.answer-figure-open {
   min-width: 0;
 }
 
-
 .result-reason-connected {
   background: var(--accent-soft);
   color: var(--accent-text);
@@ -3104,33 +3111,6 @@ button.answer-figure-open {
   animation-delay: 1.6s;
 }
 
-/* Half the lift, for the system's reduced-motion hint (below). */
-@keyframes emblem-lift-soft {
-  0% {
-    transform: none;
-    animation-timing-function: var(--ease-in-out);
-  }
-  15% {
-    transform: translateY(-2.5%);
-    animation-timing-function: var(--ease-in-out);
-  }
-  30%,
-  100% {
-    transform: none;
-  }
-}
-
-/* Under the system's reduced-motion hint the mark still moves (above), but
-   gently: the breath is slower and the lift half as high, so they keep
-   saying what they say with less movement. */
-@media (prefers-reduced-motion: reduce) {
-  :root:not([data-motion="reduced"]):not([data-ui-motion="off"]) .emblem-art:not(.is-still) :is(.emblem-float, .emblem-shadow-breathe) {
-    animation-duration: 10s;
-  }
-  :root:not([data-motion="reduced"]):not([data-ui-motion="off"]) .emblem-art.is-busy:not(.is-still) .emblem-rise {
-    animation-name: emblem-lift-soft;
-  }
-}
 
 /* Off screen (`watchEmblemVisibility`) or two minutes idle (`nmbTick`, :root.is-idle), held where it is. Last, and as
    specific as the rules above, so it wins over their shorthand. */
@@ -3460,7 +3440,6 @@ button.answer-figure-open {
   opacity: 1;
 }
 
-
 .chat-empty {
   padding: 1.5rem 1rem;
 }
@@ -3472,7 +3451,6 @@ button.answer-figure-open {
     radial-gradient(120% 90% at 50% 0%, var(--accent-soft), transparent 60%),
     var(--inner);
 }
-
 
 /* Zoom controls as one floating pill. */
 .graph-zoom {
@@ -3654,7 +3632,6 @@ button.answer-figure-open {
   color: var(--on-accent);
   background: var(--accent-surface);
 }
-
 
 .timeline-custom-range {
   gap: var(--space-1);
@@ -4005,7 +3982,6 @@ button.answer-figure-open {
   display: none;
 }
 
-
 #graph-help-toggle {
   position: static;
   margin-left: 0;
@@ -4046,7 +4022,6 @@ button.answer-figure-open {
    this head is a `.dock` now, and the dock recipe owns its gap, its one
    control height and the width search grows to. */
 
-
 /* ---------------------------------------------------------------------------
    Placed at the end of this file on purpose. A panel keeps its original class
    (`.help-body`, `.setting-hint`) when `wireHelpPopover` promotes it,
@@ -4085,7 +4060,6 @@ button.answer-figure-open {
   /* Arrives from its '?': the menus' grow (10-responsive.css, "a menu or
      popover grows from what opened it"). */
 }
-
 
 /* The caret. Two squares rotated 45°, the back one carries the border, the
    front one covers the join so the panel's own edge reads as continuous. */
@@ -4188,10 +4162,8 @@ button.answer-figure-open {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .msg.is-generating::before {
-    animation: none;
-  }
+:where(:root[data-motion="reduced"]) .msg.is-generating::before {
+  animation: none;
 }
 
 /* **The flickering bar under some widgets.**
@@ -4577,6 +4549,8 @@ button.answer-figure-open {
 #tool-list > li.tool-group-head {
   grid-column: 1 / -1;
   margin-top: var(--space-3);
+  display: flex;
+  justify-content: space-between;
 }
 
 #tool-list > li.tool-group-head:first-child {
@@ -4592,7 +4566,7 @@ button.answer-figure-open {
 }
 
 .night-kind-toggle > .ph {
-  transition: rotate var(--ui-fast) var(--ease-out);
+  transition: rotate var(--ui-base) var(--ease-out);
 }
 
 .night-kind-toggle[aria-expanded="true"] > .ph {

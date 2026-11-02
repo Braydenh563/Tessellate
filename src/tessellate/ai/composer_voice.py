@@ -534,27 +534,33 @@ def _draw(seed: int, slot: str, n: int) -> int:
     return int.from_bytes(hashlib.sha1(f"{seed}:{slot}".encode()).digest()[:4], "big") % n
 
 
-def today_line(notes: list[dict], *, today: date, seed: int = 0) -> dict | None:
+def today_line(
+    notes: list[dict], *, today: date, seed: int = 0, counts: dict[date, int] | None = None
+) -> dict | None:
     """One short sentence for under the dashboard's greeting: what was written
     today or yesterday, or when the last note was. `seed` rotates the wording:
     the same seed gives the same line, so a test with a fixed clock is exact.
     One sentence only (the owner, 2026-10-18: the hero's sub line must not run
-    long). Every fact in it is traced like the rest of the voice."""
+    long). Every fact in it is traced like the rest of the voice. `notes` may be
+    only a sample of the newest; `counts` (day to how many) is the whole notebook's
+    answer for today and yesterday, so a big import is not read as the sample."""
     views = _views(notes)
     dated = sorted((w for w in views if w.written), key=lambda w: (w.written, -w.rank), reverse=True)
     if not dated:
         return None
     v = _Voice({w.id: w for w in views}, today)
-    _today_opening(v, dated, today, _draw(seed, "open", 6))
+    _today_opening(v, dated, today, _draw(seed, "open", 6), counts or {})
     return v.done("today")
 
 
-def _today_opening(v: _Voice, dated: list, today: date, k: int) -> None:
+def _today_opening(v: _Voice, dated: list, today: date, k: int, counts: dict[date, int]) -> None:
     todays = [w for w in dated if w.written == today]
     yesterdays = [w for w in dated if (today - w.written).days == 1]
-    if len(todays) > 1:
+    n_today = max(len(todays), counts.get(today, 0))
+    n_yesterday = max(len(yesterdays), counts.get(today - timedelta(days=1), 0))
+    if n_today > 1:
         v.t(("v_today_wrote", "v_today_wrote_b", "v_today_wrote_c", "v_today_wrote_d", "v_today_wrote_e", "v_today_wrote_f")[k])
-        v.m(_count_word(len(todays)))
+        v.m(_count_word(n_today))
         #: An untitled note names itself "your note from today", which cannot
         #: follow "the latest": the count then ends the sentence on its own.
         if todays[0].titled:
@@ -567,8 +573,8 @@ def _today_opening(v: _Voice, dated: list, today: date, k: int) -> None:
         v.t(("v_today_one", "v_today_one_b", "v_today_one_c", "v_today_one_d", "v_today_one_e", "v_today_one_f")[k]).name(todays[0]).t("stop")
     elif yesterdays:
         v.t(("v_yesterday", "v_yesterday_b", "v_yesterday_c", "v_yesterday_d", "v_yesterday_e", "v_yesterday_f")[k]).name(yesterdays[0])
-        if len(yesterdays) > 1:
-            v.t("v_and_more").m(_count_word(len(yesterdays) - 1)).t("v_more")
+        if n_yesterday > 1:
+            v.t("v_and_more").m(_count_word(n_yesterday - 1)).t("v_more")
         v.t("stop")
     else:
         v.t(("v_last_was", "v_last_was_b", "v_last_was_c", "v_last_was_d", "v_last_was_e", "v_last_was_f")[k]).name(dated[0])
@@ -588,25 +594,45 @@ def week_review(notes: list[dict], *, today: date, unlinked: set[int] | None = N
     if not views:
         v.t("v_review_none")
         return v.done("week_review")
-    oldest = min(w.written for w in views)
+    _review_span(v, views, today)
+    _review_filed(v, views)
+    ordered = sorted(views, key=lambda w: (w.written, -w.rank), reverse=True)
+    _review_standouts(v, _standouts(ordered))
+    _review_open(v, ordered)
+    loose = [w for w in ordered if unlinked and w.id in unlinked][:4]
+    if loose:
+        v.t("para", "v_review_loose").names(loose).t("stop")
+    return v.done("week_review")
+
+
+def _review_span(v: _Voice, views: list[NoteView], today: date) -> None:
+    """"You wrote three notes in the last seven days, from 30 September to today."""
     if len(views) == 1:
         v.t("v_review_lead_one")
     else:
         v.t("v_review_lead").m(_count_word(len(views))).t("v_review_notes")
+    oldest = min(w.written for w in views)
     v.t("v_review_span").m(v.day(oldest)).t("to_span").m(v.day(today)).t("stop")
+
+
+def _review_filed(v: _Voice, views: list[NoteView]) -> None:
+    """" Most went under **Work** (three), then **Travel** (two)." Not for two
+    notes or fewer, where it would only repeat the count."""
     cats = Counter(str(w.note.get("category")) for w in views if w.note.get("category"))
-    if len(views) > 2 and cats:
-        top = cats.most_common(2)
-        v.t("v_review_most")
-        for i, (cat, n) in enumerate(top):
-            if i:
-                v.t("v_review_then")
-            first = next(w for w in views if str(w.note.get("category")) == cat)
-            v.t("bold").filed(cat, first.id).t("bold", "open_paren").m(_count_word(n)).t("close_paren")
-        v.t("stop")
-    # Standouts: the newest note of each category first, so the week's spread
-    # shows, then the newest of the rest.
-    ordered = sorted(views, key=lambda w: (w.written, -w.rank), reverse=True)
+    if len(views) <= 2 or not cats:
+        return
+    v.t("v_review_most")
+    for i, (cat, n) in enumerate(cats.most_common(2)):
+        if i:
+            v.t("v_review_then")
+        first = next(w for w in views if str(w.note.get("category")) == cat)
+        v.t("bold").filed(cat, first.id).t("bold", "open_paren").m(_count_word(n)).t("close_paren")
+    v.t("stop")
+
+
+def _standouts(ordered: list[NoteView]) -> list[NoteView]:
+    """The newest note of each category first, so the week's spread shows,
+    then the newest of the rest; only notes with a sentence to lead with."""
     picks: list[NoteView] = []
     seen_cats: set[str] = set()
     for w in ordered:
@@ -614,23 +640,24 @@ def week_review(notes: list[dict], *, today: date, unlinked: set[int] | None = N
         if cat not in seen_cats and lead(w):
             seen_cats.add(cat)
             picks.append(w)
-    for w in ordered:
-        if w not in picks and lead(w):
-            picks.append(w)
-    picks = picks[:REVIEW_POINTS]
+    picks += [w for w in ordered if w not in picks and lead(w)]
+    return picks[:REVIEW_POINTS]
+
+
+def _review_standouts(v: _Voice, picks: list[NoteView]) -> None:
     if picks:
         v.t("para", "v_review_stand")
-        for w in picks:
-            v.t("line", "bullet").name(w).dated(w).t("colon").quoted(lead(w))
+    for w in picks:
+        v.t("line", "bullet").name(w).dated(w).t("colon").quoted(lead(w))
+
+
+def _review_open(v: _Voice, ordered: list[NoteView]) -> None:
+    """The week's open tasks, newest note first, at most `REVIEW_OPEN`."""
     open_items = [(w, s) for w in ordered for s in w.sentences if s.kind == "task" and not s.done][:REVIEW_OPEN]
     if open_items:
         v.t("para", "v_review_open")
-        for w, s in open_items:
-            v.t("line", "task_open").q(_clip(s), []).t("v_review_open_in").name(w)
-    loose = [w for w in ordered if unlinked and w.id in unlinked][:4]
-    if loose:
-        v.t("para", "v_review_loose").names(loose).t("stop")
-    return v.done("week_review")
+    for w, s in open_items:
+        v.t("line", "task_open").q(_clip(s), []).t("v_review_open_in").name(w)
 
 
 # --- Find anything, titles, suggestions ----------------------------------------------

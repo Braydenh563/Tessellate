@@ -68,6 +68,17 @@ SOCIAL_NATURAL: dict[str, tuple[str, ...]] = {
         "All quiet here. Your notes are safe and I'm ready whenever you want something found.",
         "Good. How about you?",
     ),
+    #: A swear or a groan (INBOX 1459): calm, short, and an offer of help.
+    "frustrated": (
+        "That sounds frustrating. Tell me what you're after and I'll try again.",
+        "Fair enough. What were you trying to find?",
+        "Sorry it's not going well. What do you need?",
+        "Let's sort it out. What are you after?",
+        "I hear you. Say what you need in any words and I'll look.",
+        "Rough moment? Tell me what you need and I'll help.",
+        "Annoying, I know. What should I look for?",
+        "Okay. What can I do to help?",
+    ),
     "insult": (
         "Fair. I can do better.",
         "Sorry, that one's on me.",
@@ -220,6 +231,16 @@ SOCIAL_PROFESSIONAL: dict[str, tuple[str, ...]] = {
         "I appreciate that. Is there anything further?",
         "Much appreciated. The quality of the answers owes a good deal to the quality of your notes.",
         "Thank you very much.",
+    ),
+    "frustrated": (
+        "Understood. What would you like me to do?",
+        "I am sorry this is frustrating. Please tell me what you need.",
+        "Let us try again. What are you looking for?",
+        "Noted. How can I help?",
+        "Apologies for the trouble. What should I look up?",
+        "I understand. Please describe what you need and I will try again.",
+        "Understood. Shall we start again from what you need?",
+        "I am sorry it is not working as hoped. What can I help with?",
     ),
     "insult": (
         "My apologies.",

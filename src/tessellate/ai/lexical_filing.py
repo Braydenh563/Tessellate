@@ -46,23 +46,15 @@ from functools import lru_cache
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from tessellate.ai import plain_words
 from tessellate.core.database import Category, Entry
 from tessellate.entry.manager import UNCATEGORISED
 
-#: Words with no say in where a note belongs. Short on purpose: anything
-#: frequent across *every* category already cancels out in the likelihoods,
-#: so this list only has to catch the words that would otherwise dominate a
-#: short note.
-_STOP = frozenset(
-    """a about after again all also am an and any are as at be because been
-    before being but by can could did do does doing done for from get got had
-    has have having he her here him his how i if in into is it its just like
-    me more most my no not now of off on once only or other our out over own
-    really same she should so some still such than that the their them then
-    there these they this those through to too up us very was we were what
-    when where which while who why will with would you your yes ok okay im
-    ive dont didnt cant wont thats today tomorrow yesterday""".split()
-)
+#: Words with no say in where a note belongs (`ai/plain_words.py`, shared with
+#: the statistics): anything frequent across *every* category already cancels
+#: out in the likelihoods, so the list only has to catch the words that would
+#: otherwise dominate a short note.
+_STOP = plain_words.PLAIN
 
 _WORD = re.compile(r"[a-z0-9]+(?:'[a-z]+)?")
 
@@ -432,25 +424,35 @@ def _quote_list(words: list[str]) -> str:
     return ", ".join(quoted[:-1]) + " and " + quoted[-1]
 
 
+def _lexicon_line(candidate: Candidate) -> str:
+    """The reason when a lexicon topic decided it."""
+    topic = candidate.lexicon[0]
+    said = candidate.topics.get(topic) or []
+    mentions = f"It mentions {_quote_list(said[:2])} ({topic})" if said else f"It reads as {topic}"
+    return f"{mentions}, which you file under {candidate.name}."
+
+
+def _phrases_line(candidate: Candidate, phrases: list[str], topics: list[str], joins: str) -> str:
+    """"It mentions “squat” (Fitness), like the 9 notes in Gym." """
+    about = _quote_list(phrases[:3])
+    #: A topic named by the very word quoted ("cooking (Cooking)") adds nothing, and
+    #: read beside a category of another name it looked like a contradiction (audit 1031 N7).
+    if {t.casefold() for t in topics[:2]} != {p.casefold() for p in phrases[:3]}:
+        about += f" ({', '.join(topics[:2])})"
+    return f"It mentions {about}, like {joins}."
+
+
 def _why_line(candidate: Candidate) -> str:
     """"It mentions “squat” and “deadlift” (Fitness), like the 9 notes in
     Gym." The words shared, the notes it joins, the measure that decided."""
     joins = f"the {candidate.notes} note{'s' if candidate.notes != 1 else ''} in {candidate.name}"
     if candidate.lexicon:
-        topic = candidate.lexicon[0]
-        said = candidate.topics.get(topic) or []
-        mentions = f"It mentions {_quote_list(said[:2])} ({topic})" if said else f"It reads as {topic}"
-        return f"{mentions}, which you file under {candidate.name}."
+        return _lexicon_line(candidate)
     phrases: list[str] = []
-    topics: list[str] = []
-    for topic, said in candidate.topics.items():
-        topics.append(topic)
+    for said in candidate.topics.values():
         phrases.extend(p for p in said if p not in phrases)
-    if candidate.named and not phrases and not candidate.words:
-        return f"It says {candidate.name}."
     if phrases:
-        about = _quote_list(phrases[:3]) + f" ({', '.join(topics[:2])})"
-        return f"It mentions {about}, like {joins}."
+        return _phrases_line(candidate, phrases, list(candidate.topics), joins)
     if candidate.words:
         return f"It shares {_quote_list(candidate.words[:3])} with {joins}."
     return f"It says {candidate.name}." if candidate.named else f"It reads like {joins}."
@@ -1043,6 +1045,53 @@ FULL_REFRESH_SECONDS = 30.0
 _STAMP_COLUMNS = "id, updated_at, tags, category_id, user_filed, is_board, workspace_id"
 
 
+def _read_stamps(connection, corpus: _Corpus, now: float) -> dict[int, tuple]:  # noqa: ANN001
+    """The stamps to compare: every kept note on a full refresh, else only what moved."""
+    current: dict[int, tuple] = {}
+    if corpus.mark is None or now - corpus.full_at > FULL_REFRESH_SECONDS:
+        rows = connection.exec_driver_sql(
+            f"SELECT {_STAMP_COLUMNS} FROM entries "  # noqa: S608  # constant columns
+            "WHERE is_deleted = 0 AND is_private = 0 ORDER BY id DESC LIMIT ?",
+            (MAX_EXAMPLES,),
+        ).fetchall()
+        current = {int(row[0]): tuple(row[1:]) for row in rows}
+        for gone in [entry_id for entry_id in corpus.docs if entry_id not in current]:
+            corpus.remove(gone)
+        corpus.full_at = now
+        return current
+    # What moved since the last read, binned and made private included:
+    # those leave the corpus. `>=`, so a write in the same instant as the
+    # mark is read again rather than missed; its stamp then matches.
+    for row in connection.exec_driver_sql(
+        f"SELECT {_STAMP_COLUMNS}, is_deleted, is_private FROM entries "  # noqa: S608  # constant columns
+        "WHERE updated_at >= ?",
+        (corpus.mark,),
+    ).fetchall():
+        entry_id = int(row[0])
+        if row[7] or row[8]:
+            corpus.remove(entry_id)
+        else:
+            current[entry_id] = tuple(row[1:7])
+    return current
+
+
+def _read_stale(connection, corpus: _Corpus, current: dict[int, tuple]) -> None:  # noqa: ANN001
+    """Fetch the text of every note whose stamp differs from the kept one, in batches."""
+    stale = [entry_id for entry_id, stamp in current.items() if (doc := corpus.docs.get(entry_id)) is None or doc.stamp != stamp]
+    for start in range(0, len(stale), 500):
+        batch = stale[start : start + 500]
+        placeholders = ",".join("?" for _ in batch)
+        for entry_id, content in connection.exec_driver_sql(
+            f"SELECT id, content FROM entries WHERE id IN ({placeholders})", tuple(batch)  # noqa: S608  # placeholders only
+        ).fetchall():
+            stamp = current[int(entry_id)]
+            _updated, raw_tags, category_id, by_hand, board, workspace = stamp
+            corpus.add(
+                int(entry_id),
+                _make_doc(stamp, content or "", _tags(raw_tags), workspace, category_id, by_hand, board),
+            )
+
+
 def _corpus_for(session: Session) -> _Corpus:
     """The kept corpus for this notebook, brought up to date. Call under
     `_corpus_lock`.
@@ -1058,50 +1107,13 @@ def _corpus_for(session: Session) -> _Corpus:
         _corpus = _Corpus(key)
     corpus = _corpus
     connection = session.connection()
-    now = time.monotonic()
-    current: dict[int, tuple] = {}
-    if corpus.mark is None or now - corpus.full_at > FULL_REFRESH_SECONDS:
-        rows = connection.exec_driver_sql(
-            f"SELECT {_STAMP_COLUMNS} FROM entries "  # noqa: S608  # constant columns
-            "WHERE is_deleted = 0 AND is_private = 0 ORDER BY id DESC LIMIT ?",
-            (MAX_EXAMPLES,),
-        ).fetchall()
-        current = {int(row[0]): tuple(row[1:]) for row in rows}
-        for gone in [entry_id for entry_id in corpus.docs if entry_id not in current]:
-            corpus.remove(gone)
-        corpus.full_at = now
-    else:
-        # What moved since the last read, binned and made private included:
-        # those leave the corpus. `>=`, so a write in the same instant as the
-        # mark is read again rather than missed; its stamp then matches.
-        for row in connection.exec_driver_sql(
-            f"SELECT {_STAMP_COLUMNS}, is_deleted, is_private FROM entries "  # noqa: S608  # constant columns
-            "WHERE updated_at >= ?",
-            (corpus.mark,),
-        ).fetchall():
-            entry_id = int(row[0])
-            if row[7] or row[8]:
-                corpus.remove(entry_id)
-            else:
-                current[entry_id] = tuple(row[1:7])
+    current = _read_stamps(connection, corpus, time.monotonic())
     marks = [stamp[0] for stamp in current.values() if stamp[0] is not None]
     if marks:
         corpus.mark = max([*marks, corpus.mark] if corpus.mark is not None else marks)
     elif corpus.mark is None:
         corpus.mark = ""
-    stale = [entry_id for entry_id, stamp in current.items() if (doc := corpus.docs.get(entry_id)) is None or doc.stamp != stamp]
-    for start in range(0, len(stale), 500):
-        batch = stale[start : start + 500]
-        placeholders = ",".join("?" for _ in batch)
-        for entry_id, content in connection.exec_driver_sql(
-            f"SELECT id, content FROM entries WHERE id IN ({placeholders})", tuple(batch)  # noqa: S608  # placeholders only
-        ).fetchall():
-            stamp = current[int(entry_id)]
-            _updated, raw_tags, category_id, by_hand, board, workspace = stamp
-            corpus.add(
-                int(entry_id),
-                _make_doc(stamp, content or "", _tags(raw_tags), workspace, category_id, by_hand, board),
-            )
+    _read_stale(connection, corpus, current)
     # The newest `MAX_EXAMPLES`, as the full read takes them.
     if len(corpus.docs) > MAX_EXAMPLES:
         for entry_id in sorted(corpus.docs)[: len(corpus.docs) - MAX_EXAMPLES]:

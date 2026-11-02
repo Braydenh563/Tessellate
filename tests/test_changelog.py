@@ -6,7 +6,7 @@ second in-app list that says roughly the same things and drifts from the real
 one within a release.
 
 Small, and it makes the app feel maintained rather than static: the version
-number was already in Settings → About with nothing behind it.
+number was already in Settings, About with nothing behind it.
 """
 
 from __future__ import annotations

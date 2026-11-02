@@ -209,9 +209,12 @@ def test_a_commit_of_the_plain_split_needs_no_model(client):
 # --- the buttons ---------------------------------------------------------------
 
 #: Every control that does the job with no model (a plain rule, above).
-WORK_WITHOUT_A_MODEL = ["draft-title", "draft-extract", "extract-commit", "doc-extract", "wb-extract-notes"]
+#: Draft and Refine joined it with INBOX 1466: with no model the composer
+#: writes up, rewords, reshapes and draws by rule (`composer_write`), and a pass
+#: it cannot do says so in the status line instead of a gate.
+WORK_WITHOUT_A_MODEL = ["draft-title", "draft-extract", "extract-commit", "doc-extract", "wb-extract-notes", "draft-compose", "draft-refine"]
 #: Model-only buttons: each must answer a press with the reason and Set up a model.
-MODEL_ONLY_BUTTONS = ["draft-compose", "draft-refine", "doc-ai", "doc-ai-run", "chat-plan", "template-draft",
+MODEL_ONLY_BUTTONS = ["doc-ai", "doc-ai-run", "chat-plan", "template-draft",
                       "assist:explain", "assist:tests", "assist:refactor"]
 
 

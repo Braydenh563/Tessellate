@@ -6,7 +6,7 @@ the second thing in the app that goes online, so it is held to the rules the
 first one (the web reader) set, and these tests are those rules:
 
 * **Only when asked, and only when allowed.** The clip is refused, before any
-  network call, while the web opt-in (`web_search_enabled`, Settings → Web
+  network call, while the web opt-in (`web_search_enabled`, Settings, Web
   search) is off, with a sentence that says where to turn it on.
 * **Never a probe of this machine or its network** (S5,
   `core.security.public_addresses`): a non-http scheme, credentials in the

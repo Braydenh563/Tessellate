@@ -38,10 +38,11 @@ STRAY_OVERFLOW = ("dots-three-circle", "dots-three-outline", "dots-three-circle-
 #: markup. A new vertical one is a decision, so it is a line here.
 VERTICAL_KEBABS = {
     "categories-panel.js": 1,  # Manage categories, one row per category
-    "documents.js": 2,  # the documents rail's rows; a history version's row (Brief 76)
+    "documents.js": 1,  # the documents rail's rows
     "documents-codekit.js": 1,  # a saved snippet's row in the code panel's narrow column (INBOX 788)
+    "documents-history.js": 1,  # a history version's row (Brief 76)
     "link-types.js": 1,  # the relation types list
-    "note-cards.js": 1,  # a note's connection rows
+    "entry-card.js": 1,  # a note's connection rows (moved out of note-cards.js, boot diet 3)
     "note-properties.js": 1,  # the note types list
     "notes-list.js": 1,  # the Notes categories rail
     "search.js": 1,  # the saved searches under the Notes categories rail (Brief 47)
@@ -164,13 +165,13 @@ AGENT_ICON = "strategy"
 #: Where the agent glyph is drawn, by file. Each is the agent itself or one of
 #: its runs; a new place is a decision, so it is a line here.
 AGENT_ICON_PLACES = {
-    "index.html": 4,  # the popup agent's head and input, Agent mode (toggle, segment); Activity wears ph-activity (decision 70)
+    "index.html": 7,  # the popup agent's head and input, Agent mode (toggle, segment), the Activity popup's Agent runs tab and its This session card (INBOX 1478); Activity wears ph-activity (decision 70)
     "agent-activity.js": 1,  # the status bar's runs
-    "chat-attach.js": 1,  # an agent turn's run in the activity panel
-    "chat.js": 1,  # a past turn answered in Agent mode
+    "chat-turn.js": 1,  # an agent turn's run in the activity panel
+    "answer-kit.js": 1,  # a past turn answered in Agent mode (chat.js's bubble meta line, moved)
     "editor.js": 1,  # the chat palette's Agent mode row
     "phone-more.js": 2,  # More sheet: Ask the agent, Agent activity (moved out of phone-shell.js, INBOX 1314)
-    "settings-panes.js": 1,  # the command palette's Ask the agent anything
+    "app-features.js": 1,  # the command palette's Ask the agent anything (paletteCommands moved here, boot diet 3)
     "settings-wiring.js": 1,  # the tools popup's Popup agent
     "skills.js": 1,  # the nudge to switch to Agent mode
     "status.js": 2,  # the status bar's agent button, a run's notification
@@ -290,7 +291,7 @@ def test_ask_and_agent_wear_the_two_glyphs_in_the_chat_dock() -> None:
     assert ask and ask.group(1) == f"ph-{AI_ICON}", ask and ask.group(1)
     assert agent and agent.group(1) == f"ph-{AGENT_ICON}", agent and agent.group(1)
     #: The panel is Activity now, every job and the agent's runs (decision 70).
-    assert 'ph-activity ph-lead" aria-hidden="true"></i> Activity' in HTML
+    assert 'ph-activity pop-glyph" aria-hidden="true"></i> Activity' in HTML
 
 
 def test_design_md_has_the_ai_and_agent_row() -> None:

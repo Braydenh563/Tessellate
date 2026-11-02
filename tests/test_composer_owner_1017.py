@@ -228,7 +228,9 @@ def test_a_hello_ends_on_an_ask_about_the_newest_note(client, session):
         assert ("golf" in invited) == (not base.endswith("?") and "“" not in base), (base, invited)
     _seed(session)
     texts = [_ask(client, hello, use_tools=False)["text"] for hello in ("hi", "hello", "good morning", "hey there", "morning")]
-    assert any("golf" in text for text in texts), texts
+    #: Since audit 1030's greeting rows the hello names the newest note by
+    #: its title ("Your last note was “Golf practice…”"), capital and all.
+    assert any("golf" in text.lower() for text in texts), texts
     #: The ask it offers is one the notes answer.
     assert "Golf practice" in _ask(client, "what did I write about golf", use_tools=False)["text"]
 

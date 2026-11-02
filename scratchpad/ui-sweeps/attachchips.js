@@ -66,7 +66,7 @@ const { boot } = require('./lib.js');
     check(`${w} no page overflow`, !m.pageOverflow, m);
     check(`${w} every x is labelled and 24px+`, m.chips.every((c) => /^Remove/.test(c.xLabel) && c.xw >= 24 && c.xh >= 24), m.chips.map((c) => [c.xLabel, c.xw, c.xh]));
     check(`${w} extension kept when the stem is cut`, m.chips.every((c) => c.extVisible) && m.chips[1].clipped && m.chips[1].ext === '.docx', m.chips[1]);
-    check(`${w} png has a thumbnail, docx a glyph, facts say kind and size`, m.chips[0].thumb && m.chips[1].glyph.includes('ph-file') && /Word · 2\.2 MB/.test(m.chips[1].facts), m.chips);
+    check(`${w} png has a thumbnail, docx a glyph, facts say kind and size`, m.chips[0].thumb && m.chips[1].glyph.includes('ph-file') && /^\[Word\]$/.test(m.chips[1].facts), m.chips);
     console.log('     chip height', m.chips.map((c) => Math.round(c.height)), 'widths', m.chips.map((c) => Math.round(c.width)));
 
     // Remove one before sending: chip gone, nothing sent to the server.

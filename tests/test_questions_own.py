@@ -142,3 +142,55 @@ def test_stored_fragments_do_not_reach_the_list_before_a_pass_runs(client, sessi
 def test_a_note_card_does_not_count_the_retired_fragments(client, session):
     entry_id = _store_old_fragments(session, ICE_BREAKERS)
     assert client.get("/questions/counts", params={"ids": str(entry_id)}).json()["counts"] == {}
+
+
+# --- review finding 3: "pasted" needs the address beside the question ---------------
+
+#: A note that holds a URL and a question with "you" in it is not a paste.
+OWN_WITH_URL = {
+    "inline": "Grant details at https://example.org/grants then link below.\n\nCan you check with Sam whether the grant covers travel?",
+    "other_paragraph": "See https://example.org/grants for the rules.\n\nCan you check with Sam whether the grant covers travel?",
+    "other_line_break": "Grant call notes https://example.org/grants\n\nDo you think the grant covers travel?",
+    "far": "https://example.org/a\n\nSome unrelated text about the shed roof.\n\nCan you check with Sam whether the grant covers travel?",
+}
+#: Pasted: the address on its own line or paragraph beside the question, or a quote.
+PASTED = {
+    "own_line": "Page I copied:\nhttps://example.org/quiz\nHave you ever wondered where your ideas go?",
+    "paragraph_before": "https://example.org/quiz\n\nWhat would you like to find today?",
+    "paragraph_after": "What would you like to find today?\n\n<https://example.org/quiz>",
+    "link_only": "[Quiz](https://example.org/quiz)\n\nWhat would you like to find today?",
+    "quote_block": "> Have you ever wondered where your ideas go?\n> More below.",
+}
+
+
+def _kept(text: str) -> bool:
+    start = text.index("?") + 1
+    sentence_start = max(text.rfind(". ", 0, start), text.rfind("\n", 0, start)) + 1
+    return facts.kept_question(text, sentence_start, start)
+
+
+def test_a_url_in_the_note_does_not_make_the_persons_question_pasted():
+    for name, text in OWN_WITH_URL.items():
+        assert _questions(text), name
+        assert _kept(text), name
+
+
+def test_a_question_beside_a_pasted_address_or_in_a_quote_is_not_the_persons():
+    for name, text in PASTED.items():
+        assert _questions(text) == [], name
+
+
+def test_a_stored_row_a_model_decided_on_is_not_retired_by_the_rule(client, session):
+    text = "> Have you ever wondered where your ideas go?\n> More below."
+    entry = Entry(content=text, tags=json.dumps([]))
+    session.add(entry)
+    session.commit()
+    end = text.index("?") + 1
+    for who in ("local", "qwen3:8b"):
+        session.add(DerivedFact(entry_id=entry.id, kind="question", text=text[2:end], span_start=2, span_end=end,
+                                model=who, confidence=0.9, computed_at=utcnow()))
+    session.commit()
+    assert facts._retire_not_own_questions(session) == 1
+    session.expire_all()
+    left = session.query(DerivedFact).filter_by(entry_id=entry.id, deleted_at=None).all()
+    assert [row.model for row in left] == ["qwen3:8b"]

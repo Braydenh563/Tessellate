@@ -1,4 +1,4 @@
-"""Settings → Background tasks has to show *every* background job.
+"""Settings, Background tasks has to show *every* background job.
 
 It listed two, a re-index and a model download, because it was assembled in
 `app.js` out of whatever happened to be in `/models/status`. The embedding
@@ -135,7 +135,7 @@ def test_the_searxng_install_is_a_visible_job(client, monkeypatch):
     monkeypatch.setitem(searxng_manager._install_state, "step", "Unpacking SearXNG…")
     task = next(t for t in client.get("/tasks").json()["tasks"] if t["kind"] == "searxng")
     assert task["detail"] == "Unpacking SearXNG…"
-    # Quittable since `core/bgtasks.py`, it is the longest silence in the app
+    # Quittable since the cancel table (now `jobs.CANCELLERS`), it is the longest silence in the app
     # (pip building lxml for minutes) and was the job most worth stopping.
     assert task["cancellable"] is True
 

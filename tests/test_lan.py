@@ -260,9 +260,9 @@ def test_a_job_queued_for_a_phone_runs_as_the_phone():
     from tessellate.core import jobs
 
     with origin.acting_for(True):
-        job = jobs._Job(1, "embed", print, (), {}, "x")
+        job = jobs.Job(1, "embed", print, (), {}, "x")
     assert job.another_device is True
-    assert jobs._Job(2, "embed", print, (), {}, "y").another_device is False
+    assert jobs.Job(2, "embed", print, (), {}, "y").another_device is False
 
 
 # --- the routes ------------------------------------------------------------------------
@@ -484,7 +484,7 @@ def test_the_watch_paints_the_icon_and_keeps_going_while_lan_mode_is_off():
 def test_the_icon_is_reachable_by_key_palette_slot_and_phone_row():
     wiring = _js("settings-wiring.js")
     assert 'lanPanel: { keys: "Alt+L"' in wiring and "lanPanel: () => openLanPanel()," in wiring
-    assert 'chord: "lanPanel", act: () => openLanPanel()' in _js("settings-panes.js")
+    assert 'chord: "lanPanel", act: () => openLanPanel()' in (_js("settings-panes.js") + _js("app-features.js"))
     assert 'key: "lan",' in _js("settings-controls.js").split("const STATUS_SLOTS", 1)[1].split("];", 1)[0]
     assert '{ id: "status-lan", label: "ph:wifi-high Other devices" }' in _js("phone-shell.js")
     assert "function openLanPanel()" in _js("status.js")

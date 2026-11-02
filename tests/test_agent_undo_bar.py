@@ -14,6 +14,7 @@ import re
 from pathlib import Path
 
 from tests._app_js import app_js_text
+from tests._app_js import with_pieces
 
 APP = app_js_text()
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
@@ -35,7 +36,7 @@ def test_a_write_goes_on_the_stack_with_its_undo_and_its_redo():
 def test_chat_and_the_agent_panel_both_push_each_write():
     pushes = r"pushAgentChangeUndo\(event\??\.change, event\)"
     for name in ("chat-attach.js", "palette.js"):
-        assert len(re.findall(pushes, (JS / name).read_text("utf-8"))) == 1, name
+        assert len(re.findall(pushes, with_pieces(name))) == 1, name
 
 
 def test_a_rows_own_undo_takes_its_entry_off_the_stack():
@@ -56,9 +57,12 @@ def test_the_last_write_undone_restores_the_note_byte_equal(ai_client, fake_olla
     fake_ollama.tool_script = [[{"name": "edit_note", "arguments": {"note_id": note["id"], "content": "# Boiler\n\nPressure 2 bar."}}]]
     with ai_client.stream("POST", "/chat/stream", json={"question": "set the boiler pressure to 2 bar", "use_tools": True}) as r:
         events = [json.loads(line) for line in r.iter_lines() if line.strip()]
-    change = next(e["change"] for e in events if e.get("type") == "tool" and e.get("change"))
+    #: An edit to existing text parks for a Confirm card (audit 1029 H2); the
+    #: click runs it through /chat/tools/execute, whose result carries the undo.
+    park = next(e for e in events if e.get("type") == "confirm")
+    ran = ai_client.post("/chat/tools/execute", json={"name": park["name"], "arguments": park["arguments"]}).json()
     assert ai_client.get(f"/entries/{note['id']}").json()["content"] != before["content"]
-    undo = change["undo"]
+    undo = ran["undo"]
     ai_client.post("/chat/tools/execute", json={"name": undo["tool"], "arguments": undo["arguments"]})
     after = ai_client.get(f"/entries/{note['id']}").json()
     assert (after["content"], after["tags"], after.get("pinned")) == (before["content"], before["tags"], before.get("pinned"))

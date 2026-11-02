@@ -61,6 +61,7 @@ SCRIPTS = (
     "timeline.js",
     "palette.js",
     "avatars.js",
+    "companion-settings.js",
     "atlas.js",
     #: The rest of the whiteboard bundle (app.js LAZY_MODULES): its palette
     #: rows live in whiteboard-commands.js.
@@ -87,6 +88,10 @@ SCRIPTS = (
     "first-run.js",
     #: The manual (Find anything and the palette open it after `lazyScript`).
     "manual.js",
+    #: Copy diagnostics (INBOX 1430): the palette loads `diagnostics`, then calls diagCopy.
+    "diag-report.js",
+    #: The Appearance panel (INBOX 1435), lazy behind `LAZY_MODULES.appearancePanel`.
+    "appearance-panel.js",
 )
 
 #: Names a row may call that are the platform rather than the app. Kept short
@@ -143,7 +148,14 @@ def _strip_comments(text: str) -> str:
     is gone before anything looks for a block.
     """
     text = re.sub(r"^\s*//.*$", "", text, flags=re.M)
-    return re.sub(r"/\*.*?\*/", "", text, flags=re.S)
+    #: A quoted string is matched first and kept, so `"image/*"` is not read
+    #: as a block comment opening (it swallowed ten documents.js functions).
+    return re.sub(
+        r"""("(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*')|/\*.*?\*/""",
+        lambda m: m.group(1) or "",
+        text,
+        flags=re.S,
+    )
 
 
 def _body(source: str, signature: str) -> str:

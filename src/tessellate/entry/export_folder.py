@@ -14,6 +14,7 @@ reminders were lost on the way in again. This writes, inside one zip:
     notes/<category>/<id>-<title>/...  its attachments, linked from the .md
     notes/_recycle-bin/...             binned notes, never silently dropped
     documents/<id>-<title>.md, .json   each document and its sidecar
+    documents/_recycle-bin/...         binned documents, like binned notes
     boards/<id>-<title>.json           each board: its note and its canvas
 
 **The sidecar wins.** On the way in (`read`, the "memorymap" source of
@@ -39,6 +40,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import quote
+
+from tessellate.core import paths
 
 FORMAT = "memorymap-folder"
 VERSION = 1
@@ -100,12 +103,6 @@ def _restore(obj: object, record: dict, skip: set[str] | dict) -> None:
             # sweep would purge a row just imported before it could be seen.
             value = datetime.now(timezone.utc)
         setattr(obj, column.name, value)
-
-
-def _slug(text: str, length: int = 40) -> str:
-    first = (text or "").strip().split("\n", 1)[0].lstrip("#").strip()
-    cleaned = re.sub(r"[^\w\s-]", "", first)[:length].strip()
-    return re.sub(r"\s+", "-", cleaned) or "note"
 
 
 def _safe_name(name: str) -> str:
@@ -294,21 +291,22 @@ def _link_ends(data: str | None, places: dict) -> dict | None:
 
 def snapshot(session, uploads_dir: Path) -> dict:  # noqa: ANN001
     """Every record the export writes, keyed by id: what the round-trip test
-    compares, field by field, before and after."""
-    from sqlalchemy import select
-
-    from tessellate.core.database import Document, Entry
+    compares, field by field, before and after. Rows come from the one
+    export walker (`repo/content.walk`), as the export's do."""
+    from tessellate.repo.content import walk
 
     related = _related(session)
-    notes, boards = {}, {}
-    for entry in session.scalars(select(Entry).order_by(Entry.id)):
-        record = note_record(entry, related, uploads_dir)
-        if entry.is_board:
-            record["canvas"] = board_canvas(session, entry.id)
-            boards[entry.id] = record
+    notes, boards, documents = {}, {}, {}
+    for adapter, row in walk(session, ("note", "board", "document")):
+        if adapter.kind == "document":
+            documents[row.id] = document_record(row, related)
+            continue
+        record = note_record(row, related, uploads_dir)
+        if adapter.kind == "board":
+            record["canvas"] = board_canvas(session, row.id)
+            boards[row.id] = record
         else:
-            notes[entry.id] = record
-    documents = {d.id: document_record(d, related) for d in session.scalars(select(Document).order_by(Document.id))}
+            notes[row.id] = record
     return {"notes": notes, "boards": boards, "documents": documents}
 
 
@@ -345,9 +343,9 @@ def note_markdown(record: dict, folder_name: str) -> str:
 
 
 def _note_base(record: dict) -> str:
-    folder = BIN_FOLDER if record.get("is_deleted") else _slug(record["category"])
+    folder = BIN_FOLDER if record.get("is_deleted") else paths.slug(record["category"])
     title = "private" if record["sealed"] else _front_matter(record)[1]  # the words, not a properties block
-    return f"notes/{folder}/{record['id']}-{_slug(title)}"
+    return f"notes/{folder}/{record['id']}-{paths.slug(title)}"
 
 
 def _write_note(archive: zipfile.ZipFile, record: dict, uploads_dir: Path, stored: dict) -> tuple[dict, list[str]]:
@@ -395,14 +393,13 @@ def _categories(session) -> list[dict]:  # noqa: ANN001
 
 
 def _write_documents(archive: zipfile.ZipFile, session, related: _Related) -> list[dict]:  # noqa: ANN001
-    from sqlalchemy import select
-
-    from tessellate.core.database import Document
+    from tessellate.repo.content import walk
 
     rows = []
-    for document in session.scalars(select(Document).order_by(Document.id)):
+    for _adapter, document in walk(session, ("document",)):
         record = document_record(document, related)
-        base = f"documents/{document.id}-{_slug(document.title)}"
+        folder = f"documents/{BIN_FOLDER}" if document.deleted_at else "documents"
+        base = f"{folder}/{document.id}-{paths.slug(document.title)}"
         archive.writestr(f"{base}.md", document.content or "")
         archive.writestr(f"{base}.json", json.dumps(record, ensure_ascii=False, indent=1))
         rows.append({"id": document.id, "md": f"{base}.md", "sidecar": f"{base}.json"})
@@ -412,21 +409,19 @@ def _write_documents(archive: zipfile.ZipFile, session, related: _Related) -> li
 def export(session, uploads_dir: Path, archive: zipfile.ZipFile, progress=None) -> ExportResult:  # noqa: ANN001
     """Write the whole notebook into `archive`. `progress(done, total)` is
     called after every note, for the job's bar."""
-    from sqlalchemy import select
-
     from tessellate import __version__
-    from tessellate.core.database import Entry
+    from tessellate.repo.content import walk
 
     t0 = time.perf_counter()
     related = _related(session)
     stored = _stored_names(related)
-    entries = list(session.scalars(select(Entry).order_by(Entry.id)))
+    entries = list(walk(session, ("note", "board")))
     notes, boards, missing = [], [], []
-    for done, entry in enumerate(entries, 1):
+    for done, (adapter, entry) in enumerate(entries, 1):
         record = note_record(entry, related, uploads_dir)
-        if entry.is_board:
+        if adapter.kind == "board":
             record["canvas"] = board_canvas(session, entry.id)
-            path = f"boards/{entry.id}-{_slug(record['content'])}.json"
+            path = f"boards/{entry.id}-{paths.slug(record['content'])}.json"
             archive.writestr(path, json.dumps(record, ensure_ascii=False, indent=1))
             boards.append({"id": entry.id, "file": path})
         else:
@@ -841,8 +836,11 @@ def _existing_documents(session) -> set:  # noqa: ANN001
     from sqlalchemy import select
 
     from tessellate.core.database import Document
+    from tessellate.entry.bin import including_binned
 
-    return {(_fingerprint(d.created_at, d.content), d.title) for d in session.scalars(select(Document))}
+    #: The bin too: the export carries binned documents, so a re-import merges them.
+    with including_binned(session):
+        return {(_fingerprint(d.created_at, d.content), d.title) for d in session.scalars(select(Document))}
 
 
 def _write_documents_in(session, records: list[dict], idmap: dict, said: list[str]) -> tuple[int, int]:  # noqa: ANN001

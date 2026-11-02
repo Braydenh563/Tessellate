@@ -15,7 +15,7 @@ from tests._app_js import JS_DIR
 
 
 def _form() -> str:
-    source = (JS_DIR / "shell-reminders.js").read_text(encoding="utf-8")
+    source = (JS_DIR / "reminder-edit.js").read_text(encoding="utf-8")
     match = re.search(r"^function reminderEditForm\(reminder\) \{.*?^\}", source, re.S | re.M)
     assert match, "reminderEditForm is gone"
     return match.group(0)

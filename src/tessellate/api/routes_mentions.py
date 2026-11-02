@@ -29,8 +29,9 @@ from sqlalchemy.orm import Session
 
 from tessellate.api import routes_documents, routes_entries
 from tessellate.api.schemas import EntryUpdate
-from tessellate.core.database import LIKE_ESCAPE, Document, Entry, EntryLink, like_escape
+from tessellate.core.database import LIKE_ESCAPE, Entry, EntryLink, like_escape
 from tessellate.core.deps import get_session
+from tessellate.repo import documents as documents_repo
 from tessellate.entry import manager
 from tessellate.entry.manager import WIKI_LINK, plain_label
 from tessellate.entry.mentions import (
@@ -99,15 +100,7 @@ def _backlinks(session: Session, entry: Entry) -> dict:
     sources: list[tuple[str, int, str, str]] = []
     sources.extend(
         ("document", row.id, row.title or "Untitled", row.content or "")
-        for row in session.scalars(
-            select(Document)
-            .where(
-                Document.archived_at.is_(None),
-                or_(*[Document.content.ilike(like, escape=LIKE_ESCAPE) for like in likes]),
-            )
-            .order_by(Document.updated_at.desc(), Document.id.desc())
-            .limit(BACKLINK_SOURCES_MAX)
-        )
+        for row in documents_repo.mentioning_names(session, likes, BACKLINK_SOURCES_MAX)
     )
     #: The notes whose stored wiki link lands here, whatever they typed (a
     #: prefix of the name resolves too), and the notes whose text holds a name.
@@ -189,7 +182,7 @@ def link_mention(entry_id: int, body: MentionLinkIn, session: Session = Depends(
             raise HTTPException(status_code=400, detail="That note can't be linked from here.")
         text = source.content or ""
     else:
-        document = session.get(Document, body.id)
+        document = documents_repo.find(session, body.id)
         if document is None or document.archived_at is not None:
             raise HTTPException(status_code=404, detail="That document could not be found.")
         text = document.content or ""

@@ -62,6 +62,8 @@ KINDS: dict[str, str] = {
     #: The whole notebook as a markdown folder (WORLD_CLASS 25b).
     "export": "Notebook export",
     "night-shift": "Night shift",
+    #: Decision 68: the learned store re-read against its notes (ai/learned_audit_run.py).
+    "learned-audit": "Check what it learned",
     "model-bench": "Model bench",
     "autonomous": "Autonomous optimisation",
     "resurface": "Resurfacing",
@@ -92,6 +94,21 @@ WATCH_ONLY_KINDS: dict[str, str] = {
     "ai-call": "AI request",
     "filing-late": "Late filing answer",
 }
+
+#: **The lane a kind of work is in** (audit 1031 HR4, SH3, AR6). "user" is work a
+#: person asked for and watches where they started it: an answer or a draft
+#: streaming, a transcription, and the model calls the app makes for those
+#: (`ai-call`, `model-info`). Everything else is "background". The server says
+#: it on every running and finished row so the panel, the Tasks history fold and
+#: the bell read one field and keep no list of their own.
+USER_KINDS = frozenset({"generation", "ai-call", "model-info", "transcription", "ocr", "run"})
+
+
+def lane_of(kind: str) -> str:
+    """`user` or `background`, for a run or history kind (a pool job's running
+    row is `job-<kind>`, which is background, as its bare kind is)."""
+    return "user" if kind in USER_KINDS else "background"
+
 
 #: Longest result or error kept: the column is 400 and a line is a line.
 _MAX_TEXT = 300
@@ -178,6 +195,11 @@ def _bump() -> None:
 
 def version() -> int:
     return _version
+
+
+def origin_now() -> str:
+    """Who started the work on this thread, as `started_by` set it, or ""."""
+    return getattr(_origin, "value", "")
 
 
 @contextmanager
@@ -269,7 +291,7 @@ class Run:
         #: The plain words for this one run ("Answering 'what is a mouse'"),
         #: where the kind's label says only what sort of job it is.
         self.title = _clip(title) or KINDS.get(kind, kind)
-        self.origin = origin or getattr(_origin, "value", "")
+        self.origin = origin or origin_now()
         #: False for a run seen only at its end (`note_finished`): its
         #: ending is already in `taskhistory`, and the ledger would list it twice.
         self._ledger = ledger
@@ -531,6 +553,8 @@ def merged_history(entries: list[dict], limit: int = FINISHED_KEEP) -> list[dict
         out.append(row)
     out.extend(ledger)
     out.sort(key=lambda row: row.get("ended") or 0.0, reverse=True)
+    for row in out:
+        row["lane"] = lane_of(str(row.get("kind") or ""))
     return out[:limit]
 
 
@@ -671,12 +695,14 @@ def describe_night_pass(run: "Run", outcome: dict) -> None:
     if outcome.get("paused"):
         run.skip()
         return
-    scanned = int(outcome.get("scanned") or 0)
+    boards = int(outcome.get("boards") or 0)
+    notes = int(outcome.get("scanned") or 0) - boards
     derived = int(outcome.get("derived") or 0)
-    run.result = (
-        f"read {scanned} note{'' if scanned == 1 else 's'}, "
-        f"found {derived} fact{'' if derived == 1 else 's'}"
-    )
+    #: A count says what it counted: the pass reads boards as well as notes.
+    parts = [
+        f"{n} {word}{'' if n == 1 else 's'}" for n, word in ((notes, "note"), (boards, "board")) if n
+    ] or ["0 notes"]
+    run.result = f"read {' and '.join(parts)}, found {derived} fact{'' if derived == 1 else 's'}"
     if outcome.get("stopped_reason") == "budget":
         run.result += " (stopped at its budget)"
 

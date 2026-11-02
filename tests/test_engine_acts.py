@@ -104,3 +104,19 @@ def test_the_capability_line_names_only_what_runs():
     for verb in ("set a reminder", "tag notes", "pin, link, rename or delete a note"):
         assert verb in commands.CAPABILITY_LINE
     assert "archive" not in commands.CAPABILITY_LINE
+
+
+def test_delete_all_notes_about_names_every_match(client, session):
+    """"delete all notes about gym" bins every match, and says how many,
+    rather than quietly reducing "all" to the best one (audit 1028 E66)."""
+    ids = _seed(session)
+    second = manager.create_entry(session, "# Gym plan\n\nGym three times a week.").id
+    session.commit()
+    card = _ask(client, "delete all notes about gym", use_tools=False)["act"][0]
+    assert card["label"] == "Move the 2 notes about “gym” to the bin"
+    assert sorted(s["arguments"]["note_id"] for s in card["steps"]) == sorted([ids["gym"], second])
+    assert all(s["name"] == "delete_note" for s in card["steps"]) and not card.get("done")
+    manager.soft_delete_entry(session, manager.get_entry(session, second))
+    session.commit()
+    card = _ask(client, "delete all notes about gym", use_tools=False)["act"][0]
+    assert card["label"] == "Move the only note about “gym”, “Gym log”, to the bin"

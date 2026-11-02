@@ -359,7 +359,7 @@ def test_a_failed_install_reason_reaches_the_history_card(client, monkeypatch):
 
 def test_a_failed_install_reaches_settings_logs(client, monkeypatch):
     """The bug in the earlier fix, precisely: `_run_uninstall` routed pip's
-    output through `logging` (which backs Settings → Logs, `core/logbuffer`)
+    output through `logging` (which backs Settings, Logs, `core/logbuffer`)
     and `_run_install` did not, so a failed *install*, the case actually
     reported: still never showed up there no matter what the panel said."""
     from tessellate.core import logbuffer
@@ -682,7 +682,7 @@ def test_a_source_install_is_untouched(monkeypatch):
 
 
 def test_the_installer_page_runs_the_apps_own_installer():
-    """The wizard's optional-packages page and Settings > Packages are one
+    """The wizard's optional-packages page and Settings, Packages are one
     code path: installer.iss calls the exe with extras ids, never a separate
     script that installs somewhere else. Since 2026-10-07 Setup hands the ids
     to the app (pending-extras.txt), which installs them through the same

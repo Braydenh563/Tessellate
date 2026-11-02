@@ -220,3 +220,19 @@ def test_the_python_debugger_waits_on_the_shared_buffer_only_when_isolated():
     worker = run_sandbox._PY_WORKER
     assert "Atomics.wait(ctl, 0, 0)" in worker and "Atomics.store(ctl, 0, 0);" in worker
     assert worker.index("Atomics.store(ctl, 0, 0);") < worker.index("current(JSON.parse(String(text)));")
+
+
+def test_the_sandbox_files_ship_in_every_build():
+    """The pages, workers and runner are files beside the module (audit 1031
+    CE9), read at import: a build that leaves them out cannot start."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    assert (root / "src/tessellate/api/run_sandbox_assets").is_dir()
+    assert "run_sandbox_assets/*" in (root / "pyproject.toml").read_text(encoding="utf-8")
+    for spec in ("linux", "windows"):
+        text = (root / "packaging" / spec / "tessellate.spec").read_text(encoding="utf-8")
+        assert '"tessellate/api/run_sandbox_assets"' in text, spec
+    for name in ("sandbox_page.html", "sandbox_py_page.html", "py_runner.py.txt", "py_worker.js",
+                 "js_debug_worker.js", "sql_worker.js", "css_sample.html"):
+        assert (root / "src/tessellate/api/run_sandbox_assets" / name).stat().st_size > 0, name

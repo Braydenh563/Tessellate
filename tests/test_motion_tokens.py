@@ -32,6 +32,7 @@ from __future__ import annotations
 
 import re
 
+from tests._app_js import with_pieces
 from tests._css_paths import CSS_DIR
 
 DECL = re.compile(
@@ -182,13 +183,14 @@ def test_the_reduced_motion_blankets_stop_transitions_outright():
     openings under the hint, 0 of 24 without). A zero duration and a zero
     delay start no transition at all, which is what the blanket means."""
     # Every rule that switches transitions off, in whichever blanket it sits
-    # (the system hint's, Reduce motion's, Interface animations off).
+    # (reduced motion's, Interface animations off); the system hint's own
+    # blanket is the same rule now (INBOX 1506), so there are two, not three.
     blankets = []
     for path in sorted(CSS_DIR.glob("*.css")):
         text = _blank_comments(path.read_text(encoding="utf-8"))
         for m in re.finditer(r"\{([^{}]*transition-duration:[^;]*!important[^{}]*)\}", text):
             blankets.append((path.name, m.group(1)))
-    assert len(blankets) >= 3, "the motion blankets moved; point this lint at them"
+    assert len(blankets) >= 2, "the motion blankets moved; point this lint at them"
     for name, body in blankets:
         duration = re.search(r"transition-duration:\s*([^;]+);", body)
         delay = re.search(r"transition-delay:\s*([^;]+);", body)
@@ -221,19 +223,28 @@ POLISH = (
 #: is happening (the recording pulse, the skeleton's shimmer) keeps its own
 #: reduced-motion branch, which DESIGN.md asks of every indefinite animation.
 INDICATORS = (".recording", ".skeleton")
+#: INBOX 1506 B moved this lint's intent by one step, and only this step: the
+#: motion vocabulary's *extras* (a menu's overshoot and the rows arriving one
+#: after another, 10-responsive.css) are decoration on top of the polish, not
+#: the polish itself, so they stand still with the resolved Motion value
+#: (motion-still.css). The menu's fade, its grow and every transition stay
+#: with the Interface animations switch, as the owner decided on 2026-10-05.
+VOCABULARY_EXTRAS = (".action-menu > *", ":is(.action-menu, .dock-menu-list, .help-popover)")
 
 
 def _reduced_motion_blocks():
-    """(file, selector, body) of every rule inside a reduced-motion query."""
+    """(file, selector, body) of every rule under the resolved reduced value.
+
+    It was every rule inside an `@media (prefers-reduced-motion)` query; since
+    INBOX 1506 the one resolved value is `data-motion="reduced"` on the root,
+    so a reduced-motion rule is one whose selector names it (not inside a
+    `:not()`, which is the full-motion side)."""
     for path in sorted(CSS_DIR.glob("*.css")):
         text = _blank_comments(path.read_text(encoding="utf-8"))
-        for m in re.finditer(r"@media[^{]*prefers-reduced-motion[^{]*\{", text):
-            depth, i = 1, m.end()
-            while depth and i < len(text):
-                depth += {"{": 1, "}": -1}.get(text[i], 0)
-                i += 1
-            for r in re.finditer(r"([^{};]+)\{([^{}]*)\}", text[m.end():i - 1]):
-                yield path.name, " ".join(r.group(1).split()), r.group(2)
+        for r in re.finditer(r"([^{};]+)\{([^{}]*)\}", text):
+            selector = " ".join(r.group(1).split())
+            if re.search(r'(?<!not\()\[data-motion="reduced"\]', selector):
+                yield path.name, selector, r.group(2)
 
 
 def test_the_interface_tokens_resolve_against_the_switch():
@@ -274,6 +285,7 @@ def test_the_polish_is_never_gated_by_the_media_query_alone():
         and not all(any(i in part for i in INDICATORS) for part in selector.split(","))
         # A blanket that names the polish only to exempt it while the switch is on.
         and 'data-ui-motion="on"' not in selector
+        and not any(extra in selector for extra in VOCABULARY_EXTRAS)
     ]
     assert not offenders, (
         "A reduced-motion block stops part of the polish set, which the "
@@ -310,7 +322,7 @@ def test_the_switch_is_wired_from_boot_to_settings():
     assert 'dataset.uiMotion = pref("ui-motion", "on")' in boot, "theme-boot.js does not set data-ui-motion before first paint"
     prefs = (JS_DIR / "prefs.js").read_text(encoding="utf-8")
     assert re.search(r'"ui-motion":\s*\{\s*default:\s*"on"', prefs), "prefs.js has no default for ui-motion"
-    settings = (JS_DIR / "settings.js").read_text(encoding="utf-8")
+    settings = with_pieces("settings.js")  # the body listeners are in settings-controls.js since INBOX 1501
     assert 'root.dataset.uiMotion = appearancePref("ui-motion")' in settings
     assert '$("ui-motion-toggle").addEventListener("change"' in settings
     html = (CSS_DIR.parents[0] / "index.html").read_text(encoding="utf-8")
@@ -326,7 +338,7 @@ DECORATIVE = re.compile(
     r"#nm-buddy|\.nm-|\.nmb|\.nms|\.atl-|\.name-mark|\.graph-node|\.graph-edge|\.graph-label|"
     r"\.graph-minimap|\.graph-halo|\.graph-core|graph-orb|\.emblem|\.typing|\.progress-|\.ai-writing|"
     r"\.boot-splash|\.mic-bar|recording|\.wb-|\.sketch-color|\.onboarding-dot|theme-switching|"
-    r"\.is-generating|\.ai-status-popup"
+    r"\.is-generating"
 )
 
 
@@ -358,12 +370,13 @@ def test_the_skeleton_shimmer_follows_the_os_unless_always_was_chosen():
     forced = [m for m in re.finditer(r"([^{};]+)\{[^{}]*animation:\s*shimmer[^{}]*!important", css)]
     assert forced, "no forced shimmer rule found"
     for m in forced:
-        before = css[: m.start()]
-        in_media = before.rfind("@media") > before.rfind("}\n}") and "reduce)" in before[before.rfind("@media"):]
+        # Full motion is `:not([data-motion="reduced"])` now, the media
+        # query's old "an OS that allows motion" (INBOX 1506).
+        in_media = '[data-motion="reduced"]' in m.group(1) and ":not([data-motion" in m.group(1)
         assert "data-progress-chosen" in m.group(1) or in_media, (
             f"a forced shimmer ignores the OS reduced-motion setting: {' '.join(m.group(1).split())}"
         )
-    settings = (JS_DIR / "settings.js").read_text(encoding="utf-8")
+    settings = with_pieces("settings.js")
     assert 'toggleAttribute("data-progress-chosen"' in settings
 
 

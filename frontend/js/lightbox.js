@@ -41,10 +41,15 @@ function renderInlineAction(entry) {
     row.className = "row";
     row.appendChild(
       smallButton("Set reminder", "", async () => {
-        if (await addReminder(textInput.value.trim(), dueInput.value, entry.id)) {
-          inlineAction = null;
-          renderEntries();
+        //: A refusal (a time already gone) is said, not an unhandled rejection.
+        try {
+          if (!(await addReminder(textInput.value.trim(), dueInput.value, entry.id))) return;
+        } catch (error) {
+          if (!error.isLockout) toast(error.message || "Couldn't set that reminder.", true);
+          return;
         }
+        inlineAction = null;
+        renderEntries();
       }, false)
     );
     row.appendChild(

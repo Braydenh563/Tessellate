@@ -53,9 +53,13 @@ def test_layout_ticks_queue_the_minimap_rather_than_paint_it() -> None:
     """A tick asks for a paint; the frame runs at most one."""
     canvas = _source("graph-canvas.js")
     graph = _source("graph.js")
-    assert "graphMinimapTick % 8 === 0) graphMinimapQueuePaint();" in canvas
+    # By the clock since perf 1031 row 19: one paint in eight ticks was eight a
+    # second on a small map and one on a big one; still a queued paint.
+    assert "now - (s.minimapAt || 0) >= GC_MINIMAP_MS) {" in canvas
+    assert "graphMinimapQueuePaint();" in canvas
     assert 'if (s.size === "full") graphMinimapQueuePaint();' in canvas
-    assert "graphMinimapTick++ % 8 === 0) graphMinimapQueuePaint();" in graph
+    # graph.js held the SVG renderer's copy of the tick until that renderer
+    # was removed (audit 1029 row 60); the canvas tick above is the one left.
     queue = _body(graph, "graphMinimapQueuePaint")
     assert "requestAnimationFrame(" in queue
     assert "graphMinimapCanShow()" in queue

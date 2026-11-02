@@ -65,9 +65,10 @@ def test_the_zoom_filter_never_zooms_mid_pan(event: dict, want: bool) -> None:
     import json
 
     script = (
-        "let wbSpaceHeld = false; let wbMidPanHeld = false;"
+        "const nmb = { grabbed: false }; let charactersLoaded = true; let wbSpaceHeld = false; let wbMidPanHeld = false;"
         " const wbBoardState = { wheel: { at: -1e9, pad: false } }; globalThis.window = { currentTool: 'select' };\n"
         + _function("wbTrackpadPan")
+        + _function("wbCompanionHeld")
         + _function("wbZoomFilter")
         + f"\nconsole.log(JSON.stringify(Boolean(wbZoomFilter({json.dumps(event)}))));\n"
     )
@@ -108,9 +109,10 @@ def _gesture(events: list[dict]) -> list[bool]:
     if not node:
         pytest.skip("node is not installed")
     script = (
-        "let wbSpaceHeld = false; let wbMidPanHeld = false;"
+        "const nmb = { grabbed: false }; let charactersLoaded = true; let wbSpaceHeld = false; let wbMidPanHeld = false;"
         " const wbBoardState = { wheel: { at: -1e9, pad: false } }; globalThis.window = { currentTool: 'select' };\n"
         + _function("wbTrackpadPan")
+        + _function("wbCompanionHeld")
         + _function("wbZoomFilter")
         + f"\nconsole.log(JSON.stringify({json.dumps(events)}.map((e) => Boolean(wbZoomFilter(e)))));\n"
     )
@@ -164,7 +166,7 @@ def test_frames_turn_and_a_click_on_a_panel_selects_it() -> None:
     """INBOX 1327. Browser half (measured): a tinted panel's body, a plain frame's edge and a
     panel's title select (object ids returned), a plain frame's body and bare board do not,
     and dragging a frame's rotate handle stored rotation 90."""
-    assert 'if (d.kind === "table") return;\n    el.append("div")\n      .attr("class", "wb-rotate-handle")' in SOURCE
+    assert 'if (kind === "table") return;\n    el.append("div")\n      .attr("class", "wb-rotate-handle")' in SOURCE
     assert "function wbSelectFrameAt(" in SOURCE
     assert "wbSelectFrameAt(...getLogicalMouse(e)" in SOURCE
 
@@ -172,8 +174,9 @@ def test_frames_turn_and_a_click_on_a_panel_selects_it() -> None:
 @pytest.mark.parametrize("shift", [False, True])
 def test_a_left_drag_with_select_never_pans(shift: bool) -> None:
     """INBOX 1332 reverted by the owner: a left-drag pan on empty canvas took the drag from the
-    marquee and lasso. With Select a left-drag never pans, Shift or not; Pan, Space, the middle
-    button and the trackpad still do."""
+    marquee and lasso. INBOX 1450 moved the plain drag to a pan for a while; the owner moved it
+    back (INBOX 1452, "left click drag select instead of pan"), so a left drag with Select never
+    pans, Shift or not, and the plain case returns to this test (test_left_drag_select_1452.py)."""
     import json
 
     node = shutil.which("node")
@@ -181,10 +184,11 @@ def test_a_left_drag_with_select_never_pans(shift: bool) -> None:
         pytest.skip("node is not installed")
     event = {"type": "mousedown", "button": 0, "buttons": 1, "shiftKey": shift, "target": None}
     script = (
-        "let wbSpaceHeld = false; let wbMidPanHeld = false;"
+        "const nmb = { grabbed: false }; let charactersLoaded = true; let wbSpaceHeld = false; let wbMidPanHeld = false;"
         " const wbBoardState = { wheel: { at: -1e9, pad: false } }; globalThis.window = { currentTool: 'select' };\n"
-        "function wbIsBareCanvas() { return true; }\n"
+        "function wbIsBareCanvas() { return true; }\nfunction wbIsMap() { return false; }\n"
         + _function("wbTrackpadPan")
+        + _function("wbCompanionHeld")
         + _function("wbZoomFilter")
         + f"\nconsole.log(JSON.stringify(Boolean(wbZoomFilter({json.dumps(event)}))));\n"
     )

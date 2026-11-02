@@ -111,15 +111,15 @@ def test_renaming_something_that_is_not_there_says_what_is(session, app_state):
 
 def test_merging_moves_every_note_and_drops_the_empty_category(session, app_state):
     first = manager.create_entry(session, "a work note", "Work")
-    second = manager.create_entry(session, "another work note", "work")
+    second = manager.create_entry(session, "another work note", "wrok")
 
     result = tools.execute_tool(
-        session, "merge_categories", {"from": "work", "into": "Work"}
+        session, "merge_categories", {"from": "wrok", "into": "Work"}
     )
     assert result["notes_moved"] == 1
     assert _category_of(session, first.id) == "Work"
     assert _category_of(session, second.id) == "Work"
-    assert _names(session).count("work") == 0
+    assert _names(session).count("wrok") == 0
 
 
 def test_merging_a_category_into_itself_is_refused(session, app_state):

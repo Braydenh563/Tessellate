@@ -24,28 +24,9 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from tessellate.core.database import NoteType
-from tessellate.core.docmeta import MAX_FENCE_LINES, properties as read_block
+from tessellate.core.docmeta import block_end, properties as read_block
 
-_FENCE = re.compile(r"^---[ \t]*$")
 _NEEDS_QUOTES = re.compile(r"""^[\s"'\[{>|*&!%@`-]|:\s|\s#|[,\]]|\s$""")
-
-
-def block_end(text: str) -> int:
-    """Where the body starts: the offset just past the closing fence's line,
-    or 0 when the text opens with no closed block."""
-    source = str(text or "")
-    if not source.startswith("---"):
-        return 0
-    lines = source.split("\n")
-    if not _FENCE.match(lines[0]):
-        return 0
-    offset = len(lines[0]) + 1
-    for index in range(1, min(len(lines), MAX_FENCE_LINES + 1)):
-        line = lines[index]
-        if _FENCE.match(line):
-            return min(len(source), offset + len(line) + 1)
-        offset += len(line) + 1
-    return 0
 
 
 def split(text: str) -> tuple[dict[str, list[str]], str]:
@@ -93,6 +74,33 @@ def write(text: str, props: dict[str, object]) -> str:
     if not lines:
         return body
     return "---\n" + "\n".join(lines) + "\n---\n" + body
+
+
+_TITLE_LINE = re.compile(r"title\s*:", re.IGNORECASE)
+
+
+def lift_title(text: str) -> str:
+    """A `title:` in the block becomes the note's heading (audit 1031 N12).
+
+    Done once, at save, by the reader that knows where the block ends, so a
+    note written with frontmatter is no longer untitled beside a chip that
+    spells its title. The other properties keep their lines; a note that
+    names itself (its body opens with a heading, or with the title's own
+    words) is left as written."""
+    text = str(text or "")
+    end = block_end(text)
+    found = {key.lower(): value for key, value in read_block(text).items()} if end else {}
+    title = " ".join(((found.get("title") or [""])[0]).split())
+    if not title:
+        return text
+    block, body = text[:end], text[end:]
+    first = next((line.strip() for line in body.splitlines() if line.strip()), "")
+    if first.startswith("#") or first == title:
+        return text
+    lines = [line for line in block.splitlines(keepends=True) if not _TITLE_LINE.match(line)]
+    head = "".join(lines) if any(line.strip() for line in lines[1:-1]) else ""
+    rest = body.lstrip("\n")
+    return f"{head}# {title}\n\n{rest}" if rest.strip() else f"{head}# {title}\n"
 
 
 #: WORLD_CLASS_PLAN D5's built-in kinds: the five a notebook starts with, so

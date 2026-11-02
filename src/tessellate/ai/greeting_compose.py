@@ -96,7 +96,9 @@ def _context_phrases(facts: NotebookFacts, slot: str) -> list[tuple[str, str]]:
         out.append(("A full page today", "."))
     elif facts.today >= 1:
         out.append(("Back for more", "."))
-    if facts.this_week >= 10:
+    #: A week is said of notes from more than today: a notebook made seconds
+    #: ago with fourteen notes was "A productive week" (audit 1030 Y18).
+    if facts.this_week >= 10 and facts.this_week - facts.today >= 3:
         out.append(("A productive week", "."))
     if facts.recent_category:
         out.append((f"{facts.recent_category} on your mind lately", "?"))

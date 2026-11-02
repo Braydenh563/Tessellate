@@ -62,6 +62,30 @@ def _lan(client) -> TestClient:
     return TestClient(client.app, base_url="http://192.168.1.10:8795", client=("192.168.1.20", 50000))
 
 
+CODE = "123456"
+
+
+@pytest.fixture(autouse=True)
+def _known_code(monkeypatch):
+    """The code is printed to the terminal, so tests pin the draw."""
+    import secrets
+    from types import SimpleNamespace
+
+    from tessellate.core import reset_code
+
+    monkeypatch.setattr(
+        reset_code, "secrets", SimpleNamespace(randbelow=lambda n: int(CODE), token_bytes=secrets.token_bytes)
+    )
+    reset_code._forget()
+
+
+def _reset(local, code: str = CODE):
+    """Ask for the code, then reset with it (INBOX 1424)."""
+    asked = local.post("/auth/reset-code")
+    assert asked.status_code == 200, asked.text
+    return local.post("/auth/reset", json={"confirm": "RESET", "code": code})
+
+
 def _auth(token: str) -> dict:
     return {"X-Auth-Token": token}
 
@@ -339,7 +363,7 @@ def test_both_doors_leave_the_same_notebook(client, app_state, monkeypatch, door
     app_state.set_preference(netbind.LAN_PREF, True)
     before = _state(app_state)
     if door == "app":
-        answer = _local(client).post("/auth/reset", json={"confirm": "RESET"})
+        answer = _reset(_local(client))
         assert answer.status_code == 200, answer.text
     else:
         from tessellate import __main__ as launcher
@@ -356,7 +380,7 @@ def test_both_doors_leave_the_same_notebook(client, app_state, monkeypatch, door
 def test_after_a_reset_setup_runs_and_a_new_private_note_works(client):
     note, _key = _notebook(client)
     local = _local(client)
-    local.post("/auth/reset", json={"confirm": "RESET"})
+    _reset(local)
     token = local.post("/auth/setup", json={"password": NEW_PASSWORD}).json()["token"]
     # The old private note stays sealed: it is there, and it does not open.
     old = local.get(f"/entries/{note}", headers=_auth(token)).json()
@@ -374,7 +398,7 @@ def test_a_reset_notebook_can_still_re_key(client, session):
 
     old_note, _key = _notebook(client)
     local = _local(client)
-    local.post("/auth/reset", json={"confirm": "RESET"})
+    _reset(local)
     token = local.post("/auth/setup", json={"password": NEW_PASSWORD}).json()["token"]
     fresh = local.post("/entries", json={"content": "after the reset"}, headers=_auth(token)).json()
     local.post(f"/entries/{fresh['id']}/privacy", json={"private": True}, headers=_auth(token))

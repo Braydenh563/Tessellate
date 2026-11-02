@@ -48,6 +48,14 @@ function notePanelStillOpen(entry, kind) {
 }
 
 
+//: A panel that opens takes the keyboard (audit 1031 N11): the menu that
+//: opened it has closed, and focus fell to the page. The panel is a region
+//: with no role of its own, so it is focusable by script only.
+function focusPanel(row) {
+  row.tabIndex = -1;
+  restoreFocusTo(row);
+}
+
 async function toggleRelated(entry) {
   if (!toggleNotePanel(entry, "related")) return;
   const related = await apiJson(`/entries/${entry.id}/related`).catch(() => []);
@@ -59,6 +67,16 @@ async function toggleRelated(entry) {
   label.className = "muted";
   label.textContent = related.length ? "Similar:" : "No similar notes found.";
   row.appendChild(label);
+  //: With no meaning engine the list is empty for a reason the person can fix.
+  if (!related.length && meaningEngineMissing()) {
+    label.textContent = "No similar notes found: the meaning engine is not ready.";
+    const setup = document.createElement("button");
+    setup.type = "button";
+    setup.className = "ghost small";
+    setup.textContent = "Set it up";
+    setup.addEventListener("click", () => openSettingsModal("models"));
+    row.appendChild(setup);
+  }
   for (const other of related) {
     row.appendChild(similarNoteRow(entry, other, () => {
       // Nothing else on this card changes, so re-rendering the whole list
@@ -69,6 +87,7 @@ async function toggleRelated(entry) {
     }));
   }
   card.appendChild(row);
+  focusPanel(row);
 }
 
 //: **What points at this note** (INBOX 246, the owner: "I want it to show in
@@ -146,6 +165,7 @@ async function toggleFaded(entry) {
     row.appendChild(wrap);
   }
   card.appendChild(row);
+  focusPanel(row);
 }
 
 //: **This note's reminders, under the card** (INBOX 309). The other half of
@@ -200,6 +220,7 @@ async function toggleNoteReminders(entry) {
     row.appendChild(wrap);
   }
   card.appendChild(row);
+  focusPanel(row);
 }
 
 async function toggleReferences(entry) {
@@ -260,6 +281,7 @@ async function toggleReferences(entry) {
     row.appendChild(wrap);
   }
   card.appendChild(row);
+  focusPanel(row);
 }
 
 // One similar note, with the button that turns it into a real link.
@@ -332,6 +354,15 @@ function similarNoteRow(entry, other, onLinked) {
 //: budget (INBOX 676 needed the room). Reached only by a gesture, called for
 //: its effect, so `LAZY_ENTRY_POINTS.notePanels` stands in for it until this
 //: file arrives (three seconds after boot at the latest).
+//: Cancelling takes the instruction down with it: "Esc cancels" stayed up its
+//: full life after Esc had (audit 1029 N14).
+function linkCancel() {
+  linkSource = null;
+  for (const note of document.querySelectorAll("#toast-box .toast")) {
+    if (note.textContent.startsWith("Now click Link")) dismissToast(note);
+  }
+  renderEntries();
+}
 function beginOrCompleteLink(entry) {
   //: **A draft and a saved note cannot be connected**, asked for directly,
   //: and refused by `manager.create_link` whichever route asks. Caught here as
@@ -345,8 +376,7 @@ function beginOrCompleteLink(entry) {
     const source = allEntries.find((e) => e.id === linkSource);
     if (source && Boolean(source.is_draft) !== Boolean(entry.is_draft)) {
       const draftFirst = Boolean(source.is_draft);
-      linkSource = null;
-      renderEntries();
+      linkCancel();
       toast(
         draftFirst
           ? "A draft can't be linked to a saved note. Save the draft first."
@@ -363,8 +393,7 @@ function beginOrCompleteLink(entry) {
     return;
   }
   if (linkSource === entry.id) {
-    linkSource = null; // clicked the same one again = cancel
-    renderEntries();
+    linkCancel(); // clicked the same one again = cancel
     return;
   }
   const source = linkSource;

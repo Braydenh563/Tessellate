@@ -111,6 +111,19 @@ def english() -> frozenset:
         return frozenset(w for w in (line.strip() for line in handle) if len(w) >= 4 and w.isalpha() and w.isascii())
 
 
+@lru_cache(maxsize=1)
+def short_english() -> frozenset:
+    """The three-letter words of the general list that are words ("oat",
+    "gin", "yam", "fog": audit 1030 Z66), which a three-letter slip is never
+    read away from. Left out of `english`, whose short entries include
+    abbreviations; here a vowel is required, which drops those."""
+    path = _wordlist_path()
+    if path is None:
+        return frozenset()
+    with open(path, encoding="utf-8") as handle:
+        return frozenset(w for w in (line.strip() for line in handle) if len(w) == 3 and w.isalpha() and w.isascii() and set(w) & set("aeiouy"))
+
+
 
 @lru_cache(maxsize=1)
 def pairs() -> dict[str, str]:
@@ -151,6 +164,35 @@ def forms(word: str) -> tuple[str, ...]:
     return (low, *_others().get(low, ()))
 
 
+#: Past forms no suffix rule folds (moved here from the composer's stemmer so the
+#: search finds "Ran" for "run", audit 1031 C15). Only forms that are rarely
+#: another word: not "saw", "left", "found", "felt".
+IRREGULAR_PAST = {
+    "ran": "run", "wrote": "write", "written": "write", "ate": "eat", "eaten": "eat", "swam": "swim", "swum": "swim",
+    "rode": "ride", "ridden": "ride", "drove": "drive", "driven": "drive", "bought": "buy", "went": "go", "gone": "go",
+    "flew": "fly", "flown": "fly", "took": "take", "taken": "take", "made": "make", "sold": "sell", "gave": "give",
+    "given": "give", "came": "come", "told": "tell", "spoke": "speak", "spoken": "speak", "slept": "sleep", "paid": "pay",
+    "met": "meet", "began": "begin", "begun": "begin", "broke": "break", "broken": "break", "chose": "choose",
+    "chosen": "choose", "forgot": "forget", "forgotten": "forget", "sent": "send", "built": "build", "heard": "hear",
+    "won": "win", "lost": "lose", "sat": "sit", "stood": "stand", "taught": "teach", "caught": "catch",
+    "brought": "bring", "drank": "drink", "drunk": "drink", "sang": "sing", "sung": "sing", "wore": "wear", "worn": "wear",
+    "woke": "wake", "grew": "grow", "grown": "grow",
+}
+
+
+@lru_cache(maxsize=1)
+def _irregular_siblings() -> dict[str, tuple[str, ...]]:
+    """Each irregular verb's other written forms: "run" is "ran", "ran" is "run"."""
+    grouped: dict[str, set[str]] = {}
+    for form, lemma in IRREGULAR_PAST.items():
+        grouped.setdefault(lemma, {lemma}).add(form)
+    out: dict[str, tuple[str, ...]] = {}
+    for group in grouped.values():
+        for word in group:
+            out[word] = tuple(sorted(group - {word}))
+    return out
+
+
 def fts_group(term: str) -> str:
     """One FTS5 term as every spelling of it: "colour" is "(colour OR color)",
     "organise*" is "(organise* OR organize*)". A term with one
@@ -158,6 +200,8 @@ def fts_group(term: str) -> str:
     star = term.endswith("*")
     core = term[:-1] if star else term
     spelt = forms(core)
-    if len(spelt) == 1:
+    #: An irregular form joins whole, never as a prefix: "ran*" would find "random".
+    irregular = _irregular_siblings().get(core.lower(), ())
+    if len(spelt) == 1 and not irregular:
         return term
-    return "(" + " OR ".join(f"{w}*" if star else w for w in spelt) + ")"
+    return "(" + " OR ".join([*(f"{w}*" if star else w for w in spelt), *irregular]) + ")"

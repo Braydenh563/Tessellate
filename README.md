@@ -145,11 +145,11 @@ Open a section for the detail.
   model, reading your notes, thinking, writing, or the tool in use.
 - Questions collects the questions your notes ask in passing, and marks one
   answered when a later note answers it.
-- In Agent mode the assistant has 72 tools to search, link, organise and act on
+- In Agent mode the assistant has 73 tools to search, link, organise and act on
   your notebook. Anything destructive asks first, as does any change or web
   request after it has read a web page or an imported note. Every step is
   shown.
-- 21 built-in skills (and your own) run multi-step jobs as a visible
+- 22 built-in skills (and your own) run multi-step jobs as a visible
   checklist. Small models are first-class: a small-model mode gives a 4B model
   one step and one tool at a time.
 - A command palette (`Ctrl`/`Cmd`+`K`) runs any command or goes to any place
@@ -173,6 +173,10 @@ Open a section for the detail.
 - A ```mermaid block draws as a diagram (flowchart, sequence, class, state, Gantt, pie and
   more) in documents, chat and exports, with Mermaid 12.2.0 shipped in the app and loaded on
   first use, so it works offline.
+- Equations are drawn as you write them, as in Word: click one in a note or document, or open
+  Calculator and equations on its Equation tab (Alt+=), and fill the dotted boxes of a fraction, script, root, integral, sum,
+  bracket, function, accent, limit or matrix, or type LaTeX; the file keeps plain TeX between
+  dollar signs. MathLive (MIT) is shipped in the app and loaded on the first equation edit.
 - The Writing room turns rough thoughts into a proper note, or a pasted block
   into several linked notes, before anything is saved.
 - Export a document as Markdown, HTML, PDF or Word, and your notes as JSON,
@@ -208,8 +212,9 @@ Open a section for the detail.
   and corners. A drawn face for every person and persona, and an optional
   corner companion.
 - An Interface animations switch (Settings, Appearance, Effects & accessibility)
-  turns the short fades and slides off or on, apart from Reduce motion, which
-  stills the large movement. A Back and Forward list in the status bar shows
+  turns the short fades and slides off or on, apart from Motion (Follow the
+  system, Always on or Off), which governs the large movement and can ignore a
+  browser that asks for reduced motion by default. A Back and Forward list in the status bar shows
   where you have been, with an icon for each kind.
 - Keyboard and screen reader support: named controls, 4.5:1 contrast, a layout
   that holds at 400% zoom, and a switch for single-key shortcuts.
@@ -489,7 +494,7 @@ Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) first: the
 one rule is that every feature must work with no cloud service. In short:
 
 ```
-pytest -n auto                  # 12,400+ tests, fully offline, every AI call faked
+pytest -n auto                  # 15,000+ tests, fully offline, every AI call faked
 bash scripts/gate.sh --changed  # lints, node --check, ruff, and the tests that name your files
 ruff check .                    # what CI lints with
 ```

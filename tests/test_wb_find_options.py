@@ -133,6 +133,6 @@ def test_tooltip_row_and_handler():
 
 def test_help_names_the_options():
     ai = ROOT / "src" / "tessellate" / "ai"
-    help_text = (ai / "help_chat.py").read_text(encoding="utf-8") + (ai / "help_topics_more.py").read_text(encoding="utf-8")
+    help_text = (ai / "help_chat.py").read_text(encoding="utf-8") + (ai / "help_topics_core.py").read_text(encoding="utf-8") + (ai / "help_topics_more.py").read_text(encoding="utf-8")
     for needle in ("whole word", "pattern", "%name%", "tooltip"):
         assert needle in help_text.lower()

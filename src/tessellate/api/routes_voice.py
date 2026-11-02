@@ -9,10 +9,11 @@ import tempfile
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from tessellate.ai import captions, librarian, voice
+from tessellate.api import bounds
 from tessellate.core import activity, deps
 from tessellate.api.this_computer import this_computer_only
 from tessellate.core.deps import get_session
@@ -127,7 +128,9 @@ def transcribe_meeting(file: UploadFile, session: Session = Depends(get_session)
 
 
 class SummarizeBody(BaseModel):
-    text: str
+    #: A transcript, bounded (audit HR3: 3 MB was accepted): ten hours of
+    #: speech is about 600,000 characters.
+    text: str = Field(max_length=bounds.TRANSCRIPT_MAX)
 
 
 @router.post("/summarize")

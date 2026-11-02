@@ -120,7 +120,7 @@ function renderAgentRunSummary(run) {
   if (run.stepCount) {
     const at = Math.min(run.stepCount, (run.currentIndex ?? done) + 1);
     run.metaEl.textContent =
-      run.state === "running" ? `Step ${at} of ${run.stepCount}` : `${done} of ${run.stepCount} steps`;
+      run.state === "running" ? `Step ${at} of ${run.stepCount}` : `${done} of ${nounCount(run.stepCount, "step")}`;
   } else {
     run.metaEl.textContent = run.detail || "";
   }
@@ -153,15 +153,6 @@ function renderAgentRunSummary(run) {
   // line under its name is a gap that looks like something failed to load.
   run.progressWrap.classList.toggle("hidden", !bar && !run.metaEl.textContent);
   run.el.classList.toggle("is-running", run.state === "running");
-}
-
-//: What to call a run that has no name of its own. An agent turn is titled by
-//: the question that started it, trimmed to something that fits one line of a
-//: 350px panel: the alternative is a row called "Agent turn" fourteen times.
-function agentRunTitle(question) {
-  const text = String(question || "").replace(/\s+/g, " ").trim();
-  if (!text) return "Agent turn";
-  return text.length > 48 ? `${text.slice(0, 47)}…` : text;
 }
 
 //: A run row. Built once and updated in place, re-rendering the list on every
@@ -250,6 +241,7 @@ function addAgentRun({ kind, name, icon = "", steps = [], detail = "" }) {
   renderAgentRunSummary(run);
   renderActivityStatusItem();
   agentMonitorEmpty?.classList.add("hidden");
+  $("activity-count-runs").textContent = String(agentRuns.length);
   //: The list is chronological and it scrolls, so without this a run that
   //: starts while eight are already listed is appended out of sight, the
   //: same tail-following the log it replaced has always done.
@@ -284,65 +276,6 @@ function agentRunPaintStep(run, step, event = {}) {
   step.summary.textContent = `${number}${step.text}: ${words}`;
   step.summary.className = `plan-step plan-step-${step.state}`;
   step.summary.dataset.state = step.state;
-}
-
-//: **What the app checked after the run, in the app's own words.** A skill
-//: may declare a `verify` block (a tool call plus a predicate); the runner
-//: runs it against the notebook once the last step is done and the answer
-//: lands here. Worded as a fact with the number in it, never as a badge on
-//: its own: "verified" with nothing behind it is the same reassurance the
-//: green tick on an unfinished step used to give.
-function verificationRow(check) {
-  const row = document.createElement("div");
-  row.className = `skill-verify skill-verify-${check.ok ? "ok" : "not-ok"}`;
-  row.textContent = check.ok ? `Verified: ${check.reason}` : `Not verified: ${check.reason}`;
-  return row;
-}
-
-//: One step event from the runner. `retrying` is Phase A's own state and is
-//: the reason this panel had to change: a step that is being re-prompted looks
-//: exactly like one that is running unless it says so.
-function agentRunStep(run, event) {
-  if (!run) return;
-  let step = run.steps[event.index];
-  if (!step) step = agentRunAddStep(run, event.index, event.text || `Step ${event.index + 1}`);
-  if (event.text) step.text = event.text;
-  step.state = event.state;
-  agentRunPaintStep(run, step, event);
-  run.currentIndex = event.index;
-  //: `replanned` is included because the step is about to be run again at the
-  //: same index: the calls it makes next belong under it, not under whatever
-  //: step happened to be current before it.
-  if (
-    event.state === "running" ||
-    event.state === "retrying" ||
-    event.state === "replanned" ||
-    //: `paging` is the step still working: the next page's tool call belongs
-    //: under it, and leaving it out would file the rest of a paged read under
-    //: whatever step was current before this one.
-    event.state === "paging"
-  ) {
-    run.currentStep = step;
-  }
-  //: A step that stopped the run opens itself. Everything else stays folded, 
-  //: which is the point of the panel, but a failure nobody can see without a
-  //: click is a failure reported as silence.
-  if (event.state === "failed" || event.state === "stalled") step.el.open = true;
-  renderAgentRunSummary(run);
-}
-
-//: A tool call, filed under the step that made it. A run with no steps (a
-//: plain agent turn) keeps its calls at the top level: inventing a "step 1 of
-//: 1" for it would be a level that says nothing.
-function agentRunTool(run, node) {
-  if (!run || !node) return;
-  const holder = run.currentStep ? run.currentStep.tools : run.body;
-  holder.appendChild(node);
-  if (run.currentStep) {
-    run.currentStep.toolCount += 1;
-    run.currentStep.el.classList.add("has-tools");
-  }
-  renderAgentRunSummary(run);
 }
 
 function endAgentRun(run, { state = "done", detail = "" } = {}) {
@@ -556,6 +489,7 @@ if (agentMonitorClear) {
     agentRuns.length = 0;
     agentRuns.push(...kept);
     agentMonitorLogs.textContent = "";
+    $("activity-count-runs").textContent = String(agentRuns.length);
     agentMonitorEmpty?.classList.toggle(
       "hidden",
       agentRuns.length > 0 || !agentMonitorLogs.classList.contains("hidden"),
@@ -587,7 +521,7 @@ function appendAgentLog(record) {
   // logger produced it: so a failed embedding backend, a bad request, a
   // stray traceback all popped open a panel labelled "Agent Activity" and
   // left it there. Errors already have somewhere to go (a toast, and
-  // Settings → Logs); this panel is a tail of one specific thing.
+  // Settings, Logs); this panel is a tail of one specific thing.
   const logger = record.logger || "";
   const isAgent =
     logger.startsWith("tessellate.ai") ||

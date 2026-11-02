@@ -44,52 +44,6 @@ function sketch(node) {
   return `${node.tag}[${(node.kids || []).map(sketch).join(" ")}]`;
 }
 
-// Guided typing: [text with the character just typed, caret, wanted value, wanted caret].
-const AUTO = [
-  ["a/", 2, "\\frac{a}{}", 9],
-  ["/", 1, "\\frac{}{}", 6],
-  ["2x/", 3, "\\frac{2x}{}", 10],
-  ["(a+b)/", 6, "\\frac{a+b}{}", 11],
-  ["x^{2}/", 6, "\\frac{x^{2}}{}", 13],
-  ["\\frac{a}{b}/", 12, "\\frac{\\frac{a}{b}}{}", 19],
-  ["x^", 2, "x^{}", 3],
-  ["x_", 2, "x_{}", 3],
-  ["x^{2+}", 5, "x^{2}+", 6],
-  ["x^{2 }", 5, "x^{2}", 5],
-  ["alpha ", 6, "\\alpha ", 7],
-  ["2pi ", 4, "2\\pi ", 5],
-  ["sin(", 4, "\\sin (", 6],
-  ["sqrt ", 5, "\\sqrt{}", 6],
-  ["x>=", 3, "x\\ge ", 5],
-  ["x!=", 3, "x\\ne ", 5],
-  ["x->", 3, "x\\to ", 5],
-  ["+-", 2, "\\pm ", 4],
-  ["inf ", 4, "\\infty ", 7],
-];
-for (const [text, caret, value, want] of AUTO) {
-  const got = mathEditorAuto(text, caret);
-  check(`auto/${text}`, got && got.value === value && got.caret === want, JSON.stringify(got));
-}
-// Left alone: a command typed as TeX, a word in text, a plain word, a letter.
-for (const [text, caret] of [["\\alpha ", 7], ["\\text{alpha ", 12], ["word ", 5], ["x", 1], ["x^{-", 4], ["\\/", 2]]) {
-  check(`leaves/${text}`, mathEditorAuto(text, caret) === null, JSON.stringify(mathEditorAuto(text, caret)));
-}
-
-// Slots: Tab and Shift+Tab.
-check("next slot", mathEditorNextSlot("\\frac{}{}", 0) === 6, mathEditorNextSlot("\\frac{}{}", 0));
-check("next slot after", mathEditorNextSlot("\\frac{}{}", 6) === 8, mathEditorNextSlot("\\frac{}{}", 6));
-check("no next slot", mathEditorNextSlot("\\frac{}{}", 8) === -1, mathEditorNextSlot("\\frac{}{}", 8));
-check("prev slot", mathEditorPrevSlot("\\frac{}{}", 8) === 6, mathEditorPrevSlot("\\frac{}{}", 8));
-check("tab leaves a filled slot", mathEditorTabStop("\\frac{a}{b}", 10) === 11, mathEditorTabStop("\\frac{a}{b}", 10));
-check("tab with nowhere to go", mathEditorTabStop("x+1", 3) === -1, mathEditorTabStop("x+1", 3));
-check("root index is a slot", mathEditorNextSlot("\\sqrt[]{}", 0) === 6, "");
-
-// Palette inserts.
-const ins = (v, s, e, t) => JSON.stringify(mathEditorInsert(v, s, e, t));
-check("insert template", ins("", 0, 0, "\\frac{}{}") === JSON.stringify({ value: "\\frac{}{}", caret: 6 }), ins("", 0, 0, "\\frac{}{}"));
-check("selection fills the first slot", ins("x", 0, 1, "\\frac{}{}") === JSON.stringify({ value: "\\frac{x}{}", caret: 9 }), ins("x", 0, 1, "\\frac{}{}"));
-check("a command gets its space", ins("", 0, 0, "\\alpha") === JSON.stringify({ value: "\\alpha ", caret: 7 }), ins("", 0, 0, "\\alpha"));
-
 // The markdown written.
 check("inline", mathEditorOutput(" x^2 ", false) === "$x^2$", mathEditorOutput(" x^2 ", false));
 check("display", mathEditorOutput("x", true) === "$$x$$", mathEditorOutput("x", true));
@@ -111,8 +65,11 @@ check("plain text is not", mathEditorSpan("hello", 2, 2) === null, span("hello",
 
 // Every symbol draws as its glyph; every template and sample is structure.
 const groups = mathEditorGroups();
-check("seven groups", groups.length === 7, groups.map((g) => g.key).join());
-const COMMAND_WORDS = /mi\((frac|sqrt|begin|end|binom|vec|hat|overline|left|right|partial|to|square)\)/;
+check("seventeen groups", groups.length === 17, groups.map((g) => g.key).join());
+check("Word's eleven structure groups, in Word's order", groups.slice(0, 11).map((g) => g.label).join() === "Fraction,Script,Radical,Integral,Large operator,Bracket,Function,Accent,Limit and log,Operator,Matrix", groups.slice(0, 11).map((g) => g.label).join());
+const COMMAND_WORDS = /m[io]\((frac|tfrac|sqrt|begin|end|binom|vec|hat|overline|left|right|partial|to|square|lfloor|rfloor|lceil|rceil|langle|rangle|iiint|coprod|tilde)\)/;
+//: A template's boxes, as the stored text has them.
+const boxed = (tex) => tex.replace(/#[@?]/g, "{}");
 for (const group of groups) {
   for (const item of group.items) {
     if (item.glyph) {
@@ -120,7 +77,11 @@ for (const group of groups) {
       const leaf = tree.kids[0];
       check(`glyph/${item.name}`, leaf.text === item.glyph, `${sketch(tree)} for ${item.glyph}`);
     }
-    for (const tex of [item.tex, item.sample, mathEditorPreviewTex(item.tex)].filter(Boolean)) {
+    if (group.structures) {
+      check(`template/${item.name}/has a box`, /#[@?]/.test(item.tex), item.tex);
+      check(`template/${item.name}/first box takes the selection`, item.tex.includes("#@") || item.tex.startsWith("#@"), item.tex);
+    }
+    for (const tex of [boxed(item.tex), item.sample].filter(Boolean)) {
       let out;
       try {
         out = sketch(docMathTree(tex, true));
@@ -154,14 +115,17 @@ def test_the_core_runs_without_a_browser(core_checks: list[dict]) -> None:
     assert len(core_checks) > 150
 
 
-def test_the_guided_typing_slots_inserts_and_output(core_checks: list[dict]) -> None:
+def test_the_templates_output_and_span(core_checks: list[dict]) -> None:
     failed = [c for c in core_checks if not c["ok"]]
     assert not failed, "\n".join(f"{c['name']}: {c['detail']}" for c in failed[:20])
 
 
 def test_one_lazy_module_behind_one_stand_in() -> None:
     entries = (JS / "lazy-entries.js").read_text(encoding="utf-8")
-    assert 'mathEditor: ["/css/math-editor-lazy.css", "/js/math-editor.js"]' in entries
+    assert (
+        'mathEditor: ["/css/math-field-lazy.css", "/vendor/mathlive/mathlive.min.js", "/js/math-field.js", '
+        '"/css/math-editor-lazy.css", "/js/math-editor.js"]'
+    ) in entries
     assert 'mathEditor: ["openMathEditor"]' in entries
     index = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert "math-editor.js" not in index and "math-editor-lazy.css" not in index
@@ -189,4 +153,5 @@ def test_its_help_is_the_popover_recipe_and_a_guide_topic() -> None:
 
     topic = next(t for t in help_topics_more.MORE_TOPICS if t["id"] == "equation-editor")
     assert "Alt+=" in topic["body"] and "/equation" in topic["body"]
+    assert "LaTeX" in topic["body"] and "dotted box" in topic["body"]
     assert help_topics_more.TOPIC_META["equation-editor"]["title"] == "Equation editor"

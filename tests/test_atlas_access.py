@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-from tessellate.ai import act_registry, acts, reading
+from tessellate.ai import act_registry, acts, commands, reading
 from tessellate.ai.tools import TOOLS
 
 DATA = json.loads((Path(__file__).parent / "fixtures" / "composer" / "access_1010.json").read_text(encoding="utf-8"))
@@ -40,7 +40,9 @@ def test_each_act_is_reached_from_a_sentence(intent):
 def test_every_act_tool_is_a_real_tool():
     named = set(act_registry.ACT_TOOLS.values()) | set(act_registry.UTILITY_TOOLS.values())
     named |= {tool for tool, _ in act_registry.TOOL_CUES}
-    assert named <= set(TOOLS)
+    #: The task acts (cancel, snooze) run the composer's own steps, which a
+    #: confirmed card runs without the tool table (commands.RUNNABLE).
+    assert named <= set(TOOLS) | commands.RUNNABLE
 
 
 def test_an_act_keeps_its_own_tool_on_the_act_corpus():

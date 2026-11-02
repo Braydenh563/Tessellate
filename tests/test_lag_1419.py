@@ -14,7 +14,7 @@ def _body(js: str, head: str) -> str:
 
 def test_a_strip_indicator_is_placed_after_the_click_not_inside_its_mutation_microtask():
     """The microtask read the whole new page's layout before the click's own
-    work was done (library button, whiteboard open, Settings > Help: 100 to
+    work was done (library button, whiteboard open, Settings, Help: 100 to
     250ms at 4x CPU each); the frame then laid it out again."""
     glide = _body(frontend_text("shell-reminders.js"), "function glideStrip(")
     assert "new MutationObserver(() => place(true))" not in glide

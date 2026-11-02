@@ -28,12 +28,12 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session
 
+from tessellate.core import cjk
 from tessellate.core.database import (
     Attachment,
     AuditLog,
     Category,
     Conversation,
-    Document,
     Entry,
     LIKE_ESCAPE,
     like_escape,
@@ -41,8 +41,10 @@ from tessellate.core.database import (
 from tessellate.core import events, reading_bin, recordings
 from tessellate.core.deps import get_session
 from tessellate.entry import highlights as note_highlights
-from tessellate.entry.manager import extract_title, join_blocks, remove_title, strip_inline_markdown
+from tessellate.entry.manager import extract_title, join_blocks, remove_title, shown_tags, strip_inline_markdown
 from tessellate.entry.properties import strip as strip_properties
+from tessellate.repo import content as content_repo
+from tessellate.repo import documents as documents_repo
 
 router = APIRouter(tags=["library"])
 
@@ -224,18 +226,10 @@ def _entry_kind(entry: Entry) -> str:
 
 
 def _documents(session: Session, q: str = "") -> list[dict]:
-    stmt = select(Document)
-    if q:
-        stmt = stmt.where(
-            or_(
-                Document.title.ilike(_like(q), escape=LIKE_ESCAPE),
-                Document.content.ilike(_like(q), escape=LIKE_ESCAPE),
-            )
-        )
-    rows = session.scalars(stmt.order_by(Document.updated_at.desc()).limit(PER_KIND_LIMIT))
+    rows = documents_repo.listing(session, _like(q) if q else None, PER_KIND_LIMIT)
     items = []
     for doc in rows:
-        words = len(doc.content.split())
+        words = cjk.word_count(doc.content)
         items.append(
             {
                 "kind": "document",
@@ -583,17 +577,12 @@ def _shelved(session: Session) -> list[dict]:
             "preview": _clip(doc.content),
             "updated_at": doc.archived_at.isoformat(),
             "detail": "archived",
-            "size": len(doc.content.split()),
+            "size": cjk.word_count(doc.content),
             "entry_id": None,
             "mime": None,
             "pinned": False,
         }
-        for doc in session.scalars(
-            select(Document)
-            .where(Document.archived_at.is_not(None))
-            .order_by(Document.archived_at.desc())
-            .limit(PER_KIND_LIMIT)
-        ).all()
+        for doc in documents_repo.shelved(session, PER_KIND_LIMIT)
     )
     return items
 
@@ -696,7 +685,7 @@ def _notes(session: Session, q: str = "") -> list[dict]:
                 # than the earlier "Meeting Notes" sub-tab's `tag:meeting`
                 # in the search box, which matched nothing: this endpoint
                 # never sent tags at all, so it always showed an empty grid.
-                "tags": json.loads(entry.tags) if entry.tags else [],
+                "tags": shown_tags(entry),
                 # Never for a private note, hiding the text but showing a
                 # thumbnail of what it's a photo of would be the same
                 # encryption bypass showing the preview text would be.
@@ -1048,7 +1037,7 @@ def _totals(session: Session) -> dict[str, int]:
         "note": count(
             select(func.count(Entry.id)).where(*_LIVE_NOTE, Entry.is_board == False)  # noqa: E712
         ),
-        "document": count(select(func.count(Document.id))),
+        "document": documents_repo.count(session),
         "chat": count(select(func.count(Conversation.id))),
     }
 
@@ -1100,3 +1089,14 @@ def library(
         "overview": overview,
         "truncated": truncated,
     }
+
+
+@router.post("/bin/{kind}/{item_id}/restore")
+def restore_from_bin(kind: str, item_id: int, session: Session = Depends(get_session)) -> dict:
+    """The Library bin's one Restore (audit 1031 row 2a): every kind the bin
+    lists comes back through `repo/content.restore`, so a new kind is an
+    adapter row, not a route here and a branch in `binRoutes`. `restored` is
+    False for a row that was already live."""
+    row, restored = content_repo.restore(session, kind, item_id)
+    session.commit()
+    return {"kind": kind, "id": row.id, "restored": restored}

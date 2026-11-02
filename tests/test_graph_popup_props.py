@@ -11,6 +11,7 @@ when there are none, Edit when there are) at the row's end, the table under
 it, and the section spaced off the text field.
 """
 
+from tests._help_text import help_chat_text
 import re
 from pathlib import Path
 
@@ -48,6 +49,6 @@ def test_the_section_stands_off_the_notes_text() -> None:
 
 
 def test_the_guide_names_the_new_action() -> None:
-    chat = (ROOT / "src" / "tessellate" / "ai" / "help_chat.py").read_text(encoding="utf-8")
+    chat = help_chat_text()
     assert "with a Properties button" not in chat
     assert "Add or Edit beside its Properties heading" in chat

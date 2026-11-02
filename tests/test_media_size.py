@@ -33,7 +33,7 @@ def _upload(client, name: str, blob: bytes) -> dict:
 
 
 def test_the_gallery_reports_the_real_byte_count(client):
-    blob = b"x" * 4321
+    blob = b"\x89PNG\r\n\x1a\n" + b"x" * 4313  # a PNG's opening bytes, checked since audit 1030 Y15
     _upload(client, "sized.png", blob)
     row = next(r for r in client.get("/media").json() if r["original_name"] == "sized.png")
     assert row["size_bytes"] == len(blob)

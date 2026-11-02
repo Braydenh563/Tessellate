@@ -158,6 +158,10 @@ def open_ended(question: str) -> str:
     m = _BARE.match(q)
     if m:
         kind = _VERB_KIND[m.group("verb").lower()]
+        #: "show my reminders" names its object: the Reminders, read or
+        #: opened, never "What should I look for?" (audit 1028 E28).
+        if kind in ("find", "open") and (m.group("noun") or "").lower().startswith("reminder"):
+            return ""
         #: "make me a" and "add" alone are unfinished, not requests.
         return kind if (m.group("noun") or m.group("verb").lower() in ("open", "find", "search")) else ""
     return ""

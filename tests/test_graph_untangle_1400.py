@@ -115,10 +115,11 @@ def test_a_note_left_on_a_line_is_pushed_off_it_and_the_map_ends_there() -> None
     settle = WORKER[WORKER.index("\nfunction settleUntangled(") :]
     settle = settle[: settle.index("\n}\n")]
     assert "if (untangle.passes > 0 && !untangle.cleaned) {" in settle
-    assert settle.index("untangleCleanup()") < settle.index("untangle.holding = true;")
+    # 1514: the cleanup is a generator resumed in slices (`untangleCleanupSteps`), still before the hold.
+    assert settle.index("untangleCleanupSteps()") < settle.index("untangle.holding = true;")
     assert "settled && !dragging && untangleOwed()" in loop
     assert "nodes.length <= UNTANGLE_BIG" not in loop and "nodes.length <= UNTANGLE_BIG" not in settle
-    assert loop.index("if (untangle.holding) {") < loop.index("simulation.tick();")
+    assert loop.index("if (untangle.holding) {") < loop.index("tickOnce();")  # the loop steps through `tickOnce` (1513: eased heat)
     drag = WORKER[WORKER.index('if (message.phase === "start") {') :]
     drag = drag[: drag.index('} else if (message.phase === "move")')]
     assert "untangle.cleaned = true;" in drag and "untangle.holding = false;" in drag
@@ -172,7 +173,7 @@ def test_organic_orders_its_ring_by_the_links_between_categories() -> None:
 
 
 def _fn(text: str, name: str) -> str:
-    start = re.search(rf"\nfunction {name}\(", text).start() + 1
+    start = re.search(rf"\nfunction\*? {name}\(", text).start() + 1
     return text[start : text.index("\n}\n", start) + 2]
 
 
@@ -212,7 +213,7 @@ def test_the_untangle_runs_three_passes_with_the_relax_between_and_never_after_a
     # "smooth and flowy"), so the loop that repeats them moved there; there is no
     # shown relax left for a drag to stop, so the drag marks the cleanup spent too.
     assert (
-        "while (!untangle.done || (untangle.passes > 0 && untangle.passes < untanglePasses())) {"
+        "while (untangle.run || !untangle.done || (untangle.passes > 0 && untangle.passes < untanglePasses())) {"  # 1514: a pass in slices is resumed first
         in WORKER
     )
     assert "nodes.length > UNTANGLE_BIG ? UNTANGLE_BIG_PASSES : UNTANGLE_PASSES" in WORKER
@@ -228,7 +229,7 @@ def test_the_untangle_runs_three_passes_with_the_relax_between_and_never_after_a
 def test_a_pass_gets_time_by_the_size_of_the_map_up_to_a_cap() -> None:
     budget = _fn(WORKER, "untangleBudget")
     assert "UNTANGLE_MS_PER_NOTE" in budget and "UNTANGLE_MS_MAX" in budget and "Math.max(UNTANGLE_MS," in budget
-    assert "Date.now() + untangleBudget()" in _fn(WORKER, "untangleLayout")
+    assert "workNow() + untangleBudget()" in _fn(WORKER, "untangleLayoutSteps")  # 1514: the budget is work done inside slices
     script = (
         "const UNTANGLE_MS = 200, UNTANGLE_MS_PER_NOTE = 2, UNTANGLE_MS_MAX = 600; let nodes = [];"
         + budget

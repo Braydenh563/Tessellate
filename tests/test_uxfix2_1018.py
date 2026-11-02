@@ -24,8 +24,10 @@ PALETTE = (ROOT / "frontend/js/app-palette.js").read_text()
 
 def test_palette_offers_three_matching_notes_after_commands():
     assert "PALETTE_NOTE_ROWS = 3" in PALETTE
-    # Commands first, then the notes, then the hand-off row.
-    assert "...shownCommands, ...noteRows, handoff" in PALETTE
+    # Commands first, then the notes, then the hand-off row; a typed sentence
+    # (more than two words) leads with the notes instead, and the notes are
+    # never in both places (`sentence ? noteRows : []` before, `[] : noteRows` after).
+    assert "...(sentence ? noteRows : []), ...shownCommands, ...(sentence ? [] : noteRows), handoff" in PALETTE
     assert "kind=note&limit=${PALETTE_NOTE_ASK}" in PALETTE
 
 

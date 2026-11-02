@@ -147,3 +147,16 @@ def test_the_today_line_route_composes_and_rotates(client, session):
     assert len(lines) >= 4
     assert all("**" not in line and ("Spice drawer" in line or "Boiler" in line) for line in lines)
     assert client.get("/insights/today-line?seed=2").json() == client.get("/insights/today-line?seed=2").json()
+
+
+def test_the_today_line_counts_past_the_sample(client, session):
+    """Audit 1028 S8: the line read the newest 120 notes, so an import that made
+    130 today said 120. The counts come from SQL; the rows are only the sample."""
+    from tessellate.entry import manager
+
+    for i in range(130):
+        manager.create_entry(session, f"# Imported {i}\n\nBody {i}.")
+    session.commit()
+    lines = [client.get(f"/insights/today-line?seed={s}").json()["text"] for s in range(12)]
+    assert any("130" in line for line in lines), lines
+    assert not any("120" in line for line in lines), lines

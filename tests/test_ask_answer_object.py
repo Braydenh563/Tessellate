@@ -131,7 +131,7 @@ def test_related_items_are_not_written_into_the_box_that_clears_them():
     `replaceChildren()`, and the grounding event always arrives after the
     related one, so "Elsewhere in your notebook" was drawn and deleted."""
     start = APP.index("async function askQuestion(")
-    body = APP[start : APP.index("\nfunction retryAnswer(", start)]
+    body = APP[start : APP.index("\n}\n", start)]
     assert 'renderRelatedElsewhere($("ai-answer-grounding")' not in body
     assert "relatedItems = event.items" in body
 

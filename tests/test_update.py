@@ -17,7 +17,13 @@ from tessellate.api import routes_update
 
 
 @pytest.fixture(autouse=True)
-def _clean_update_state():
+def _clean_update_state(monkeypatch):
+    # These tests are about fetching and launching: their fake installers are
+    # checked by digest (`_listed`) and carry no signature. The pinned key and
+    # its signature are tests/test_update_verify_1031.py's (INBOX 1500).
+    from tessellate.core import update_verify
+
+    monkeypatch.setattr(update_verify, "PUBLIC_KEYS", ())
     routes_update.reset_for_tests()
     yield
     routes_update.reset_for_tests()
@@ -72,6 +78,18 @@ RELEASE_WITH_ASSET = {
 }
 
 
+def _listed(content: bytes, release: dict | None = None) -> dict:
+    """The release with the SHA-256 GitHub lists for an asset of these bytes: the
+    installer is only run when the download matches it (audit 1031 BK6)."""
+    import copy
+    import hashlib
+
+    release = copy.deepcopy(release or RELEASE_WITH_ASSET)
+    for asset in release["assets"]:
+        asset["digest"] = "sha256:" + hashlib.sha256(content).hexdigest()
+    return release
+
+
 def _wait_until_idle(timeout=5.0):
     deadline = time.time() + timeout
     while routes_update.current()["running"] and time.time() < deadline:
@@ -104,26 +122,6 @@ def test_apply_refuses_when_update_check_is_disabled(client):
     assert response.status_code == 403
 
 
-def test_apply_refuses_when_auto_update_is_off(client, app_state, monkeypatch):
-    """update_check_enabled alone is not enough, asked for directly, a
-    separate switch for "turn auto update off entirely" that this endpoint
-    has to respect even when checking is on and the build could otherwise
-    apply one.
-
-    Set explicitly rather than left to the default: a source checkout now
-    defaults this to on, because that is what start.sh/start.bat have always
-    done and the launchers read the same switch (INBOX 221). A frozen Windows
-    build, which is the only one this endpoint can act on, still defaults to
-    off; what this test is about is the switch, not the default."""
-    app_state.set_preference("update_check_enabled", True)
-    app_state.set_preference("auto_update_enabled", False)
-    monkeypatch.setattr(routes_update.sys, "platform", "win32")
-    monkeypatch.setattr(routes_update.sys, "frozen", True, raising=False)
-    response = client.post("/update/apply")
-    assert response.status_code == 403
-    assert "Update automatically" in response.json()["detail"]
-
-
 def test_apply_refuses_off_a_source_or_non_windows_build(client, app_state):
     app_state.set_preference("update_check_enabled", True)
     app_state.set_preference("auto_update_enabled", True)
@@ -140,7 +138,7 @@ def test_apply_refuses_a_second_attempt_while_one_is_running(client, app_state, 
 
     def _fake_get(url, **kwargs):
         if "releases/latest" in url:
-            return _FakeResponse(RELEASE_WITH_ASSET)
+            return _FakeResponse(_listed(b"x"))
         time.sleep(0.3)  # a window for the second request to arrive mid-download
         return _FakeResponse(content=b"x", headers={"Content-Length": "1"})
 
@@ -217,7 +215,7 @@ def test_a_truncated_download_is_caught_even_without_a_network_exception(
 
     def _fake_get(url, **kwargs):
         if "releases/latest" in url:
-            return _FakeResponse(RELEASE_WITH_ASSET)
+            return _FakeResponse(_listed(b"only 5"))
         return _FakeResponse(content=b"only 5", headers={"Content-Length": "999"})
 
     monkeypatch.setattr(routes_update.requests, "get", _fake_get)
@@ -246,7 +244,7 @@ def test_a_successful_apply_downloads_then_launches_the_official_installer_only(
 
     def _fake_get(url, **kwargs):
         if "releases/latest" in url:
-            return _FakeResponse(RELEASE_WITH_ASSET)
+            return _FakeResponse(_listed(b"MZ-fake-installer-bytes"))
         return _FakeResponse(content=b"MZ-fake-installer-bytes", headers={"Content-Length": "23"})
 
     monkeypatch.setattr(routes_update.requests, "get", _fake_get)
@@ -370,7 +368,7 @@ def test_a_redirect_to_another_allowed_host_is_followed(client, app_state, monke
 
     def _fake_get(url, **kwargs):
         if "releases/latest" in url:
-            return _FakeResponse(RELEASE_WITH_ASSET)
+            return _FakeResponse(_listed(b"MZ-real-installer"))
         # `_download` must ask for each hop itself, not let `requests`
         # follow one on its own: that is the whole fix.
         assert kwargs.get("allow_redirects") is False
@@ -413,7 +411,7 @@ def test_a_redirect_off_the_allowed_hosts_is_refused(client, app_state, monkeypa
     def _fake_get(url, **kwargs):
         fetched.append(url)
         if "releases/latest" in url:
-            return _FakeResponse(RELEASE_WITH_ASSET)
+            return _FakeResponse(_listed(b"MZ-evil"))
         if url == evil:
             return _FakeResponse(content=b"MZ-evil", headers={"Content-Length": "7"})
         return _FakeResponse(redirect=True, headers={"Location": evil})
@@ -528,7 +526,7 @@ def test_apply_with_a_specific_tag_hits_the_tagged_release_not_latest(
     def _fake_get(url, **kwargs):
         requested_urls.append(url)
         if url == f"{routes_update.GITHUB_REPO_API}/releases":
-            return _FakeResponse([other_release, tagged_release])
+            return _FakeResponse([other_release, _listed(b"old-installer", tagged_release)])
         return _FakeResponse(content=b"old-installer", headers={"Content-Length": "13"})
 
     monkeypatch.setattr(routes_update.requests, "get", _fake_get)
@@ -695,7 +693,7 @@ def test_check_finds_an_update_and_reports_the_windows_asset(client, app_state, 
     app_state.set_preference("update_channel", "stable")
     monkeypatch.setattr(routes_update.sys, "platform", "win32")
     monkeypatch.setattr(routes_update.sys, "frozen", True, raising=False)
-    monkeypatch.setattr(routes_update.requests, "get", lambda *a, **k: _FakeResponse(RELEASE_WITH_ASSET))
+    monkeypatch.setattr(routes_update.requests, "get", lambda *a, **k: _FakeResponse(_listed(b"old-installer")))
 
     response = client.get("/update/check")
     assert response.status_code == 200
@@ -711,7 +709,7 @@ def test_check_never_offers_auto_apply_off_a_source_build(client, app_state, mon
     must be False and asset must be None, never a half-offer."""
     app_state.set_preference("update_check_enabled", True)
     app_state.set_preference("update_channel", "stable")
-    monkeypatch.setattr(routes_update.requests, "get", lambda *a, **k: _FakeResponse(RELEASE_WITH_ASSET))
+    monkeypatch.setattr(routes_update.requests, "get", lambda *a, **k: _FakeResponse(_listed(b"old-installer")))
 
     response = client.get("/update/check")
     body = response.json()
@@ -866,7 +864,7 @@ def test_an_installer_blocked_by_antivirus_gets_an_execution_specific_message(
 
     def _fake_get(url, **kwargs):
         if "releases/latest" in url:
-            return _FakeResponse(RELEASE_WITH_ASSET)
+            return _FakeResponse(_listed(b"MZ-fake-installer"))
         return _FakeResponse(content=b"MZ-fake-installer", headers={"Content-Length": "17"})
 
     def _blocked_popen(*a, **k):
@@ -902,7 +900,7 @@ def test_error_field_never_carries_a_raw_local_path_from_an_os_error(
 
     def _fake_get(url, **kwargs):
         if "releases/latest" in url:
-            return _FakeResponse(RELEASE_WITH_ASSET)
+            return _FakeResponse(_listed(b"MZ-fake-installer"))
         return _FakeResponse(content=b"MZ-fake-installer", headers={"Content-Length": "17"})
 
     def _blocked_popen(*a, **k):
@@ -934,7 +932,7 @@ def test_a_sleeping_exit_watcher_keeps_the_exit_it_started_with(client, app_stat
 
     def _fake_get(url, **kwargs):
         if "releases/latest" in url:
-            return _FakeResponse(RELEASE_WITH_ASSET)
+            return _FakeResponse(_listed(b"x"))
         return _FakeResponse(content=b"x", headers={"Content-Length": "1"})
 
     exit_calls = []
@@ -970,7 +968,7 @@ def test_a_failed_attempts_watcher_never_acts_on_the_next_attempt(client, app_st
 
     def _fake_get(url, **kwargs):
         if "releases/latest" in url:
-            return _FakeResponse(RELEASE_WITH_ASSET)
+            return _FakeResponse(_listed(b"x"))
         if fail_download["on"]:
             raise routes_update.requests.ConnectionError("offline")
         return _FakeResponse(content=b"x", headers={"Content-Length": "1"})

@@ -68,7 +68,17 @@ from tessellate.search.searxng_settings import _searxng_env, _write_pwd_shim
 # We therefore unpack it ourselves and skip the handful of members Windows
 # can't represent. They are nginx and uwsgi deployment templates for
 # installing SearXNG on a server, nothing the app runs.
-SOURCE_TARBALL = "https://github.com/searxng/searxng/archive/refs/heads/master.tar.gz"
+#
+# **Pinned, and checked once unpacked** (audit 1028 K6). A moving `master`
+# meant whatever was pushed last ran as the user's own process. The archive's
+# bytes are not stable (GitHub has changed its compression before), so the
+# check is over the unpacked files: `SOURCE_TREE_SHA256` is `_tree_digest` of
+# `git archive` at SOURCE_COMMIT unpacked by `_unpack`. To move the pin, fetch
+# the new commit, `git archive --format=tar.gz` it, unpack it with `_unpack`
+# and put both values here in one commit.
+SOURCE_COMMIT = "8252c0bf6d5d97e833868099272eed0bb75828b2"
+SOURCE_TARBALL = f"https://github.com/searxng/searxng/archive/{SOURCE_COMMIT}.tar.gz"
+SOURCE_TREE_SHA256 = "4a20360f98606de7819ecbf66c35235903b5f5b1d31741cbbf3a4d5d79df6b09"
 DOWNLOAD_TIMEOUT = 300
 INSTALL_TIMEOUT = 900  # a cold pip install builds a few wheels
 
@@ -285,6 +295,26 @@ def _unpack(archive: Path, into: Path) -> list[str]:
     return skipped
 
 
+def _tree_digest(root: Path) -> str:
+    """One sha256 over every file's path and contents, in path order."""
+    import hashlib
+
+    digest = hashlib.sha256()
+    for path in sorted(p for p in root.rglob("*") if p.is_file()):
+        digest.update(path.relative_to(root).as_posix().encode() + b"\0")
+        digest.update(hashlib.sha256(path.read_bytes()).digest())
+    return digest.hexdigest()
+
+
+def _check_tree(src: Path) -> None:
+    """Refuse an unpacked source that is not the pinned commit's files."""
+    if _tree_digest(src) == SOURCE_TREE_SHA256:
+        return
+    searxng_manager._remove_tree(src)
+    logging.getLogger("tessellate.searxng").warning("SearXNG's files don't match the pinned commit %s", SOURCE_COMMIT)
+    raise SearxngError("The SearXNG download isn't the version Tessellate expects, so it wasn't installed. Try again later.")
+
+
 def _fetch_source(src: Path, state: dict) -> None:
     """Download and unpack SearXNG into `src`, replacing whatever was there."""
     problem = searxng_manager._remove_tree(src)
@@ -311,6 +341,7 @@ def _fetch_source(src: Path, state: dict) -> None:
         searxng_manager._download(SOURCE_TARBALL, archive, on_progress=downloaded)
         _install_stage(3, "Unpacking SearXNG…")
         skipped = _unpack(archive, src)
+        searxng_manager._check_tree(src)
         _install_log(f"Unpacked into {src.name}")
         if skipped:
             _install_log(f"Skipped {len(skipped)} file(s) this filesystem can't hold")

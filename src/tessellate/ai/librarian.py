@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import re
 
-from tessellate.ai import AI_NAME, context
+from tessellate.ai import AI_NAME, context, fence
 from tessellate.ai.model_manager import ModelManager
 from tessellate.ai.ollama_client import OllamaClient, OllamaError
 from tessellate.core.logbuffer import safe_value
@@ -24,6 +24,22 @@ AI_FAILED_MESSAGE = (
     "The AI couldn't finish that. Check that it is running and the model is "
     "installed in Settings, Models, then try again."
 )
+#: The same line for a runner that took the probe and did not answer in time
+#: (busy with a generation or a load): not "doesn't seem to be running"
+#: (audit 1031 HR2).
+BUSY_MESSAGE = (
+    "The AI answer isn't available right now (the model did not answer in "
+    "time, it may be busy), but here are the notes that match your question."
+)
+
+
+def offline_message(ollama) -> str:  # noqa: ANN001
+    """OFFLINE_MESSAGE for a refused or missing server, BUSY_MESSAGE for a quiet one."""
+    from tessellate.ai import ollama_client
+
+    return BUSY_MESSAGE if ollama_client.is_quiet(getattr(ollama, "base_url", "")) else OFFLINE_MESSAGE
+
+
 NO_RESULTS_MESSAGE = "I couldn't find any saved notes matching that question."
 
 
@@ -137,7 +153,7 @@ ABOUT_APP_BRIEF = (
     "of their actual notes."
 )
 
-# Built-in personas. Users add their own in Settings → Personas.
+# Built-in personas. Users add their own in Settings, Personas.
 #: The built-in librarian is Atlas (INBOX 237: "the librarian persona hasnt
 #: been adjusted to be atlas acting as the librarian"). A preference saved
 #: under the old name still resolves through `PERSONA_ALIASES`.
@@ -211,7 +227,7 @@ STYLE_HINTS = {
 }
 
 
-#: **The local profile's share of the system prompt, capped.** Settings > Your
+#: **The local profile's share of the system prompt, capped.** Settings, Your
 #: profile holds a display name and a short "About me", and both reach the
 #: model through `profile_context` below, in the system message beside the
 #: persona and the tools guide. That message is resent on every round of every
@@ -474,6 +490,17 @@ def build_facts_messages(
     return messages
 
 
+#: The names a note in no category carries: no label for the model (audit
+#: 1030 Z70: "[Uncategorised]" opened every note and told it nothing).
+_NO_CATEGORY = frozenset({"", "none", "uncategorised", "uncategorized"})
+
+
+def category_hint(note: dict) -> str:
+    """" [Health]", or "" for a note in no category."""
+    name = str(note.get("category") or "").strip()
+    return "" if name.lower() in _NO_CATEGORY else f" [{name}]"
+
+
 def _written_hint(note: dict) -> str:
     """" (written Tuesday 22 September 2026)", or "" when the caller did not
     date the note. See the comment where `build_messages` uses it."""
@@ -728,7 +755,7 @@ def build_messages(
         # opposite reason: it did not match, and an answer that presents it as
         # though it did is telling the user their search found something it
         # did not.
-        f"{i}. [{note['category']}]"
+        f"{i}.{category_hint(note)}"
         # The day the note was written, when the caller knows it matters: a
         # note that says "tonight" means the night it was written, and a
         # model that cannot see that date reads it as tonight (the weekly
@@ -817,7 +844,7 @@ def answer(
     if not notes and not images and not image_context:
         return NO_RESULTS_MESSAGE, None
     if not ollama.is_running():
-        return OFFLINE_MESSAGE, None
+        return offline_message(ollama), None
 
     model = model_override or (
         model_manager.utility_model() if use_utility_model else model_manager.chat_model()
@@ -1477,11 +1504,13 @@ def evidence_note(session, content: str, already: str = "", exclude_entry_id: in
         session, content, limit=FILING_EVIDENCE_ROWS, exclude_entry_id=exclude_entry_id
     ):
         excerpt = str(item.get("excerpt") or "")[:CORRECTION_EXCERPT_CHARS]
+        #: Another note's words, fenced as data like the note itself (audit HR5).
+        quoted = fence.inline("note", excerpt)
         if item["kind"] == "neighbour":
-            lines.append(f'- "{excerpt}" is in {item["category"]}')
+            lines.append(f'- {quoted} is in {item["category"]}')
         elif excerpt and excerpt not in already:
             where = f" from {item['from']}" if item["from"] else ""
-            seen_moves.append(f'- "{excerpt}" was moved{where} to {item["to"]}')
+            seen_moves.append(f'- {quoted} was moved{where} to {item["to"]}')
     if not lines and not seen_moves:
         return ""
     out = []
@@ -1513,5 +1542,8 @@ def filing_prompt(
     evidence = evidence_note(session, content, already=note, exclude_entry_id=exclude_entry_id)
     if evidence:
         parts.append(evidence)
-    parts.append(f"Note: {content}")
+    #: Fenced as quoted data, as the answer path fences a note (audit HR5: a
+    #: note reading "SYSTEM: ignore all previous instructions" reached the
+    #: model verbatim after `Note: `).
+    parts.append(f"Note: {fence.fence('note', content)}")
     return "\n".join(parts)

@@ -46,7 +46,12 @@ def test_find_reads_labels_and_replace_is_one_step():
     assert '"sketch"' in run
     replace = WB[WB.index("async function wbBoardReplaceAll(") :]
     replace = replace[: replace.index("\n}\n")]
-    assert "wbPushMoveBatch(" in replace and "wbSaveSketchProps(" in replace and "wbSaveObject(" in replace
+    #: One undo step and one save for the lot (BD2): `wbCommitMoves` saves the rows
+    #: and pushes the batch; `wbReplaceWrite` writes a hit into a sketch or an object.
+    assert "wbCommitMoves(" in replace and "wbReplaceWrite(" in replace
+    write = WB[WB.index("function wbReplaceWrite(") :]
+    write = write[: write.index("\n}\n")]
+    assert "wbSketchSetProps(" in write and 'kind === "object"' in write
 
 
 def test_replace_all_rewrites_data_values_that_find_matches():
@@ -70,7 +75,8 @@ def test_the_find_bar_sits_above_the_format_panel():
     right end (elementFromPoint), at 700px its Replace row."""
     import re
 
-    css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    # The Format panel's rules moved to the board's lazy sheet (INBOX 1510a).
+    css = "".join((ROOT / "frontend" / "css" / f).read_text(encoding="utf-8") for f in ("07-whiteboard-misc.css", "library-lazy.css"))
 
     def z(selector: str) -> int:
         return int(re.search(r"\n" + re.escape(selector) + r" \{[^}]*?z-index: (\d+);", css).group(1))

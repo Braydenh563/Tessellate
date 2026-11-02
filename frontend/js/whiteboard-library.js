@@ -185,6 +185,9 @@ async function wbLoadLibrary({ force = false } = {}) {
       // A set that does not load is left out; the rest still show.
     }
   }));
+  //: The tiles are drawn by whiteboard-templates.js (`wbThumbSvg`), later in this bundle: a
+  //: board restored with its Library side open gets here while the bundle is still loading.
+  await ensureModule("library");
   wbRenderLibrary();
 }
 
@@ -860,18 +863,20 @@ async function wbLibApplyPalette(entry, colour) {
   }
   const entries = wbMultiSelection.size ? wbSelectionEntries() : [{ ...wbSelectedItem, item: wbFindItem(wbSelectedItem.kind, wbSelectedItem.id) }];
   await wbRecordGesture(async () => {
+    const rows = [];
     for (const e of entries) {
       const item = e.item;
       if (!item) continue;
       if (e.kind === "sketch") {
         const parsed = wbSketchParsedData(item);
         const shape = parsed && WB_FILLABLE_SHAPES.has(parsed.shape);
-        await wbSaveSketchProps(item, shape ? { fill: colour, fillOpacity: parsed.fillOpacity ?? 1 } : { color: colour });
+        if (wbSketchSetProps(item, shape ? { fill: colour, fillOpacity: parsed.fillOpacity ?? 1 } : { color: colour })) rows.push({ kind: "sketch", item });
       } else if (e.kind === "object" && item.kind === "text") {
         item.data = { ...item.data, [item.data?.bg ? "bg" : "color"]: colour };
-        await wbSaveObject(item);
+        rows.push({ kind: "object", item });
       }
     }
+    await wbSaveMany(rows);
   });
   wbScheduleRender();
   wbAnnounce(`Coloured ${colour}.`);
@@ -1119,7 +1124,7 @@ async function wbSaveSelectionToLibrary() {
   const payload = wbLibSelectionPayload();
   if (!payload) return;
   const one = payload.items.length === 1 ? payload.items[0] : null;
-  const guess = one?.data?.label || noteNamePlain(one?.data?.content, 40) || `${payload.items.length} items`;
+  const guess = one?.data?.label || noteNamePlain(one?.data?.content, 40) || nounCount(payload.items.length, "item");
   const name = await promptDialog("Save to the library as", guess, { confirmLabel: "Save" });
   if (!name || !name.trim()) return;
   return wbLibCreate("element", name.trim(), payload);
@@ -1305,7 +1310,7 @@ async function wbLibImportFile(file) {
     const out = await apiJson("/board-library/import", { method: "POST", body: JSON.stringify(body) });
     wbLibPairStep(`Imported the library “${out.library.name}”`, out.library.id, null, { created: true, withItems: true });
     await wbLoadLibrary({ force: true });
-    const extra = [out.skipped ? `${out.skipped} skipped` : "", out.dropped_media ? `${out.dropped_media} picture${out.dropped_media === 1 ? "" : "s"} not in this notebook left out` : ""].filter(Boolean).join(", ");
+    const extra = [out.skipped ? `${out.skipped} skipped` : "", out.dropped_media ? `${nounCount(out.dropped_media, "picture")} not in this notebook left out` : ""].filter(Boolean).join(", ");
     toast(`Imported ${out.items} into "${out.library.name}"${extra ? ` (${extra})` : ""}.`);
   } catch (err) {
     toast(err.message || "Couldn't import that library.", true);
@@ -1575,7 +1580,7 @@ onDomReady(() => {
   document.getElementById("wb-side-map-expand")?.addEventListener("click", () => wbMapExpandAll());
   document.getElementById("wb-side-map-tidy")?.addEventListener("click", async () => {
     const moved = await wbMapTidy({ quiet: true });
-    toast(moved ? `Tidied ${moved} node${moved === 1 ? "" : "s"}.` : "Everything is already where this layout puts it.");
+    toast(moved ? `Tidied ${nounCount(moved, "node")}.` : "Everything is already where this layout puts it.");
   });
   //: The tiles are drawn in the pen's ink (`wbLibThumb`), so a new ink draws
   //: them again, once the picker has settled, where the list was scrolled to.
@@ -1599,7 +1604,7 @@ onDomReady(() => {
     importInput.value = "";
     wbLibImportFile(file);
   });
-  //: The top bar's Library button opens the sidebar where it was left.
+  //: The top bar's Sidebar button opens the sidebar where it was left.
   const state = wbSideState();
   if (state.open && !window.matchMedia("(max-width: 600px)").matches) wbOpenSidebar(state.tab, { focus: false });
 });
@@ -1773,6 +1778,7 @@ async function wbMoveSelectionToLayer(layerId) {
     return 0;
   }
   const undo = [];
+  const rows = [];
   for (const [kind, item] of movable) {
     if (wbNamedLayerOf(kind, item) === layerId) continue;
     undo.push({ action: "move", kind, id: item.id, before: WB_KIND_INFO[kind].payload(item) });
@@ -1781,16 +1787,17 @@ async function wbMoveSelectionToLayer(layerId) {
       if (layerId) data.layer = layerId;
       else delete data.layer;
       item.data = data;
-      await wbSaveObject(item);
-    } else {
-      await wbSaveSketchProps(item, { layer: layerId || undefined });
+    } else if (!wbSketchSetProps(item, { layer: layerId || undefined })) {
+      undo.pop();
+      continue;
     }
+    rows.push({ kind, item });
   }
-  wbPushMoveBatch(undo);
+  await wbCommitMoves(rows, undo);
   wbScheduleRender();
   wbRenderLayers();
   const name = (wbState.layers || []).find((x) => x.id === layerId)?.name;
-  wbAnnounce(`${undo.length} item${undo.length === 1 ? "" : "s"} ${name ? `moved to ${name}` : "taken off their layer"}.`);
+  wbAnnounce(`${nounCount(undo.length, "item")} ${name ? `moved to ${name}` : "taken off their layer"}.`);
   return undo.length;
 }
 
@@ -2000,7 +2007,7 @@ function wbRenderLayers() {
       li.setAttribute("aria-expanded", folded ? "false" : "true");
       li.classList.add("has-held");
       const fold = wbLayerButton("wb-layer-fold", folded ? "ph-caret-right" : "ph-caret-down",
-        `${folded ? "Show" : "Hide"} the ${row.holds} item${row.holds === 1 ? "" : "s"} in this frame`);
+        `${folded ? "Show" : "Hide"} the ${nounCount(row.holds, "item")} in this frame`);
       fold.removeAttribute("aria-hidden");
       fold.setAttribute("aria-label", fold.title);
       name.textContent = `${row.name} \u00b7 ${row.holds}`;
@@ -2158,17 +2165,14 @@ async function wbLayerRestack(li, target, above) {
   order.splice(above ? at + 1 : at, 0, item);
   const kindOf = new Map(peers.map((p) => [p.row, p.kind]));
   const entries = [];
+  const rows = [];
   let z = Math.min(...order.map((r) => r.z || 0));
   for (const row of order) {
-    if ((row.z || 0) !== z) {
-      const entry = await wbWriteZ(kindOf.get(row), row, z);
-      if (entry) entries.push(entry);
-    }
+    const entry = wbWriteZ(kindOf.get(row), row, z, rows);
+    if (entry) entries.push(entry);
     z += 1;
   }
-  if (entries.length === 1) wbPushUndo(entries[0]);
-  else if (entries.length > 1) wbPushUndo({ action: "batch", entries });
-  wbScheduleRender();
+  await wbCommitMoves(rows, entries);
   wbAnnounce(`${wbLayerName(kind, item)} moved ${above ? "in front of" : "behind"} ${wbLayerName(b[0], b[1])}.`);
   wbRenderLayers();
   wbLayerFocus(li.dataset.key);
@@ -2354,11 +2358,13 @@ async function wbPageMove(id, to) {
   const [moved] = frames.splice(from, 1);
   frames.splice(to, 0, moved);
   await wbRecordGesture(async () => {
+    const rows = [];
     for (const [i, frame] of frames.entries()) {
       if (frame.data?.page === i + 1) continue;
       frame.data = { ...frame.data, page: i + 1 };
-      await wbSaveObject(frame);
+      rows.push({ kind: "object", item: frame });
     }
+    await wbSaveMany(rows);
   });
   wbRenderPages();
   wbPageFocus(id);

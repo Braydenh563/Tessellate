@@ -22,6 +22,7 @@ async function renderTasks(payload) {
   const jobs = (body && body.tasks) || [];
   list.replaceChildren();
   $("tasks-empty").classList.toggle("hidden", jobs.length > 0);
+  $("tasks-count").textContent = String(jobs.length);
   for (const job of jobs) {
     const li = document.createElement("li");
     // The heading row is the job and its Quit button; everything else stacks
@@ -165,9 +166,25 @@ function paintLiveRunLines(body) {
   }
 }
 
+//: Upkeep the app runs by itself (warming a model, re-indexing) is listed in
+//: Settings, Tasks; the bell hears only when it fails (blind test 2026-10-31:
+//: "Warming up: the search model" ten times over). `QUIET_TASK_KINDS` is
+//: status.js's, keyed `job-<kind>` for the pool's jobs.
+function taskEndingIsUpkeep(item) {
+  const kind = item.kind || "";
+  return item.outcome !== "failed" && (QUIET_TASK_KINDS.has(kind) || QUIET_TASK_KINDS.has(`job-${kind}`));
+}
+
+//: The rest of the app's own jobs (model info, resurfacing, a picture read
+//: after a save): a finished one is listed in Settings, Tasks, and the bell
+//: hears it only when it failed or a person started it (audit 1031 Z4).
+function taskEndingIsAppsOwn(item) {
+  return item.outcome !== "failed" && item.origin !== "you";
+}
+
 function renderTaskHistory(history) {
-  const box = $("task-history-box");
-  const list = $("task-history");
+  const box = document.getElementById("task-history-box");
+  const list = document.getElementById("task-history");
   // A finished background job goes into the notifications centre whether or
   // not this screen is open, which is the point of the centre (§36E). These
   // jobs are long: an install or a re-index finishes minutes after you stopped
@@ -178,11 +195,13 @@ function renderTaskHistory(history) {
     //: A turn the person watched in its own surface (a chat answer) is in
     //: the list below, not announced: one notification per question asked
     //: would bury the ones that matter.
-    if (item.origin === "you" && WATCHED_RUN_KINDS.has(item.kind)) continue;
+    if (item.origin === "you" && item.lane === "user") continue;
+    if (taskEndingIsUpkeep(item)) continue;
     const key = `task:${item.kind || item.label}:${item.at}`;
     //: Its "Started:" row becomes the ending (INBOX 811 item 4): one row
     //: per run, never a stale "Started" left behind.
     if (settleStartedNotification(item, key)) continue;
+    if (taskEndingIsAppsOwn(item)) continue;
     recordNotification({
       kind: item.outcome === "failed" ? "error" : "task",
       title: item.label,
@@ -194,50 +213,84 @@ function renderTaskHistory(history) {
   }
   if (!box || !list) return;
   box.classList.toggle("hidden", history.length === 0);
+  const foldOpen = list.querySelector(".task-turns")?.open; // the page repaints every few seconds
   list.replaceChildren();
+  //: **Work, then turns** (audit 1031 HR4): 61 rows of "AI request to ...",
+  //: "Chat followups" and "Model info" buried the backup and the warm-ups.
+  //: Background work is the list; the turns a person started, and the app's
+  //: own AI calls, sit in one closed fold under it with their count.
+  const folded = taskRepeatsFolded(history);
+  const turns = folded.filter((item) => item.lane === "user");
+  for (const item of folded) if (item.lane !== "user") list.appendChild(taskHistoryRow(item));
+  if (!turns.length) return;
+  const fold = document.createElement("details");
+  fold.className = "task-turns";
+  fold.open = Boolean(foldOpen);
+  const summary = document.createElement("summary");
+  summary.className = "fold-summary";
+  summary.textContent = `Requests and answers (${turns.length})`;
+  const inner = document.createElement("ul");
+  inner.className = "entry-list";
+  for (const item of turns) inner.appendChild(taskHistoryRow(item));
+  fold.append(summary, inner);
+  const holder = document.createElement("li");
+  holder.appendChild(fold);
+  list.appendChild(holder);
+}
+
+//: The same job finishing again with the same words is one row with a count
+//: (fifteen "Model info" lines, thirty "Warming up: the search model").
+function taskRepeatsFolded(history) {
+  const seen = new Map();
+  const out = [];
   for (const item of history) {
-    const style = TASK_OUTCOMES[item.outcome] || TASK_OUTCOMES.completed;
-    const li = document.createElement("li");
-    if (style.className) li.className = style.className;
-
-    const row = document.createElement("div");
-    row.className = "entry-meta";
-    const name = document.createElement("strong");
-    setLabel(name, `${style.icon} ${item.label}`);
-    const when = document.createElement("span");
-    when.className = "muted";
-    // Which model actually did the work (captioning, OCR, the weekly
-    // digest): recorded by the backend all along (`taskhistory.record`'s
-    // `name` param) but never shown here, so "which model answered this"
-    // was answerable only by opening the log console. Asked about
-    // directly (BACKLOG.md §95 item A.3).
-    //: When, how long, how many times and who started it (INBOX 805).
-    const took = jobDurationWords(item.duration_ms);
-    when.textContent = [
-      relativeTime(item.at),
-      took ? `took ${took}` : "",
-      item.count > 1 ? `${item.count} times` : "",
-      TASK_ORIGIN_WORDS[item.origin] || "",
-      item.name || "",
-    ]
-      .filter(Boolean)
-      .join(" · ");
-    //: Its log (the owner, 2026-10-10: "no way to view logs of bg
-    //: processes"): Settings, Logs, filtered to this task (settings.js).
-    row.append(name, taskLogButton(item));
-    li.append(row, when);
-
-    // The reason, which is the whole point for a failure, until now it
-    // existed only in the log console, a screen you have to know to open.
-    if (item.detail) {
-      const detail = document.createElement("p");
-      detail.className = "muted task-detail";
-      setLabel(detail, item.detail);
-      li.appendChild(detail);
+    const key = [item.kind, item.label, item.outcome, item.detail].join("|");
+    const first = seen.get(key);
+    if (first) first.count += item.count || 1;
+    else {
+      const copy = { ...item, count: item.count || 1 };
+      out.push(copy);
+      seen.set(key, copy);
     }
-    if ((item.lines || []).length) li.appendChild(taskRunFold(item.run_id || item.at, item.lines, item.started, "finished"));
-    list.appendChild(li);
   }
+  return out;
+}
+
+
+function taskHistoryRow(item) {
+  const style = TASK_OUTCOMES[item.outcome] || TASK_OUTCOMES.completed;
+  const li = document.createElement("li");
+  if (style.className) li.className = style.className;
+  const row = document.createElement("div");
+  row.className = "entry-meta";
+  const name = document.createElement("strong");
+  setLabel(name, `${style.icon} ${item.label}`);
+  const when = document.createElement("span");
+  when.className = "muted";
+  //: When, how long, how many times and who started it (INBOX 805), and the
+  //: model that did the work (`name`, BACKLOG 95 A.3).
+  const took = jobDurationWords(item.duration_ms);
+  when.textContent = [
+    relativeTime(item.at),
+    took ? `took ${took}` : "",
+    item.count > 1 ? `${item.count} times` : "",
+    TASK_ORIGIN_WORDS[item.origin] || "",
+    item.name || "",
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  //: Its log (the owner, 2026-10-10): Settings, Logs, filtered to this task.
+  row.append(name, taskLogButton(item));
+  li.append(row, when);
+  //: The reason, which is the whole point for a failure.
+  if (item.detail) {
+    const detail = document.createElement("p");
+    detail.className = "muted task-detail";
+    setLabel(detail, item.detail);
+    li.appendChild(detail);
+  }
+  if ((item.lines || []).length) li.appendChild(taskRunFold(item.run_id || item.at, item.lines, item.started, "finished"));
+  return li;
 }
 
 //: Moved from status.js for the boot budget: only the Tasks history calls it.

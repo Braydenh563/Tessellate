@@ -11,18 +11,22 @@ from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Response, UploadFile
 
 from tessellate.api import paging
-from pydantic import BaseModel, Field
-from sqlalchemy import func, select
+from tessellate.api.downloads import attachment_headers
+from tessellate.api.schemas import not_blank
+from pydantic import BaseModel, Field, field_validator, model_validator
 from sqlalchemy.orm import Session
 from typing import Annotated, Literal
 from urllib.parse import quote, urlencode
 
 from tessellate.ai import recognise as rec
 from tessellate.core import deps, ics_import, reminder_token
-from tessellate.core.database import Document, Entry, Reminder, utcnow
+from tessellate.core.database import Entry, utcnow
 from tessellate.core.deps import get_session
 from tessellate.entry.manager import extract_title, log_action, plain_label, readable_content
 from tessellate.entry.properties import strip as strip_properties
+from tessellate.repo import content as content_repo
+from tessellate.repo import documents as documents_repo
+from tessellate.repo import reminders as reminder_repo
 
 router = APIRouter(prefix="/reminders", tags=["reminders"])
 #: The one route outside the unlock gate: a notification's Done and Snooze,
@@ -60,6 +64,14 @@ class ReminderCreate(BaseModel):
     restore: bool = False
     done: bool = False
 
+    @model_validator(mode="after")
+    def _text_is_not_blank(self) -> "ReminderCreate":
+        #: Undo brings a reminder back as it was, a blank one made before the
+        #: rule included; only a new one is held to it.
+        if not self.restore:
+            not_blank(self.text, "reminder")
+        return self
+
 
 class MagicAddBody(BaseModel):
     text: str = Field(min_length=1, max_length=300)
@@ -85,6 +97,11 @@ class ReminderUpdate(BaseModel):
     #: reminder is what gets snoozed), so the past-date rule must not refuse it.
     restore: bool = False
 
+    @field_validator("text")
+    @classmethod
+    def _text_is_not_blank(cls, text: str | None) -> str | None:
+        return not_blank(text, "reminder")
+
 
 def _reject_if_in_the_past(due_at: datetime) -> None:
     """A reminder due before now will never usefully fire, it's either an
@@ -101,13 +118,13 @@ def _reject_if_in_the_past(due_at: datetime) -> None:
         )
 
 
-def _target(session: Session, reminder: Reminder) -> tuple[str | None, str | None]:
+def _target(session: Session, reminder) -> tuple[str | None, str | None]:
     """What the reminder is about, as (kind, title): "note", "board", "map"
     or "document", so the row says "Open its board" rather than calling every
     target a note (row 15). (None, None) when it is about nothing, or about
     something since deleted."""
     if reminder.document_id is not None:
-        document = session.get(Document, reminder.document_id)
+        document = documents_repo.find(session, reminder.document_id)
         if document is None or getattr(document, "deleted_at", None) is not None:
             return None, None
         return "document", document.title or "Untitled"
@@ -126,7 +143,7 @@ def _target(session: Session, reminder: Reminder) -> tuple[str | None, str | Non
     return "note", title
 
 
-def _to_out(session: Session, reminder: Reminder) -> dict:
+def _to_out(session: Session, reminder) -> dict:
     entry_preview = None
     target_kind, target_title = _target(session, reminder)
     if reminder.entry_id is not None:
@@ -187,8 +204,13 @@ def _rule_words(rule: str) -> str:
     return f"{every} {unit}{'s' if n > 2 else ''}"
 
 
-def _existing(session: Session, reminder_id: int) -> Reminder:
-    return deps.get_or_404(session, Reminder, reminder_id, "That reminder could not be found.")
+def _existing(session: Session, reminder_id: int):  # noqa: ANN202
+    return reminder_repo.get(session, reminder_id)
+
+
+def _writable(session: Session, reminder_id: int):  # noqa: ANN202
+    """A write's row: 404 for none, 409 for one in the bin (`repo/content`)."""
+    return content_repo.REMINDERS.writable(session, reminder_id)
 
 
 #: A page of the reminder list, not a ceiling on how many reminders may
@@ -241,21 +263,13 @@ def reminder_counts(
     wanted = wanted[:REMINDER_COUNT_IDS_MAX]
     if not wanted:
         return {"counts": {}}
-    filters = [Reminder.entry_id.in_(wanted)]
-    if not include_done:
-        filters.append(Reminder.done.is_(False))
-    rows = session.execute(
-        select(Reminder.entry_id, func.count(Reminder.id))
-        .where(*filters)
-        .group_by(Reminder.entry_id)
-    ).all()
+    found = reminder_repo.counts_for_notes(session, wanted, include_done=include_done)
     #: Every id asked about is answered for, zeros included: a caller that
     #: caches "this note has none" must be able to tell that from "the
     #: server did not mention it", or it asks again on every render.
     counts = {str(entry_id): 0 for entry_id in wanted}
-    for entry_id, count in rows:
-        if entry_id is not None:
-            counts[str(entry_id)] = int(count)
+    for entry_id, count in found.items():
+        counts[str(entry_id)] = count
     return {"counts": counts}
 
 
@@ -307,7 +321,7 @@ def _ics_time(value: datetime) -> str:
     return moment.astimezone(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
 
-def _event_details(session: Session, reminder: Reminder) -> str:
+def _event_details(session: Session, reminder) -> str:
     """The note's opening as an event's description, or "". A private note's
     words never leave in a file or a link: the calendar gets the reminder's
     own text and nothing of the note behind it."""
@@ -319,7 +333,7 @@ def _event_details(session: Session, reminder: Reminder) -> str:
     return " ".join(readable_content(entry).split())[:280]
 
 
-def _ics_event(session: Session, reminder: Reminder, stamp: str) -> list[str]:
+def _ics_event(session: Session, reminder, stamp: str) -> list[str]:
     lines = [
         "BEGIN:VEVENT",
         f"UID:reminder-{reminder.id}@memorymap.local",
@@ -350,7 +364,7 @@ def _ics_event(session: Session, reminder: Reminder, stamp: str) -> list[str]:
     return lines
 
 
-def _ics_response(session: Session, reminders: list[Reminder], filename: str) -> Response:
+def _ics_response(session: Session, reminders: list, filename: str) -> Response:
     stamp = _ics_time(utcnow())
     lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Tessellate//Reminders//EN", "CALSCALE:GREGORIAN"]
     for reminder in reminders:
@@ -360,7 +374,7 @@ def _ics_response(session: Session, reminders: list[Reminder], filename: str) ->
     return Response(
         content=body.encode("utf-8"),
         media_type="text/calendar; charset=utf-8",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        headers=attachment_headers(filename),
     )
 
 
@@ -368,8 +382,7 @@ def _ics_response(session: Session, reminders: list[Reminder], filename: str) ->
 def export_ics(include_done: bool = False, session: Session = Depends(get_session)) -> Response:
     """Every reminder in this space as one calendar file; ticked-off ones
     only when asked, since a calendar is for what is coming."""
-    filters = [] if include_done else [Reminder.done.is_(False)]
-    rows = list(session.scalars(select(Reminder).where(*filters).order_by(Reminder.due_at, Reminder.id)))
+    rows = reminder_repo.every(session, include_done=include_done)
     return _ics_response(session, rows, "tessellate-reminders.ics")
 
 
@@ -436,29 +449,17 @@ def _past_and_open(event: ics_import.IcsReminder) -> bool:
     return not event.done and event.recurring == "none" and event.due_at.replace(tzinfo=timezone.utc) < utcnow() - timedelta(minutes=1)
 
 
-def _import_one(session: Session, event: ics_import.IcsReminder) -> tuple[str, Reminder]:
-    reminder = session.get(Reminder, event.own_id) if event.own_id else None
-    verb = "updated"
-    if reminder is None or reminder.deleted_at is not None:
-        reminder, verb = Reminder(), "added"
-        session.add(reminder)
-    reminder.text = event.text
-    reminder.due_at = event.due_at.replace(tzinfo=timezone.utc)
-    reminder.priority = event.priority
-    reminder.recurring = event.recurring
-    reminder.alert_minutes = event.alert_minutes
-    reminder.done = event.done
-    return verb, reminder
-
-
+#: A plain `def`, run in the threadpool: the parse and one row per event ran
+#: on the event loop and froze every request and stream for the length of a
+#: big calendar (audit 1028 K17).
 @router.post("/import.ics")
-async def import_ics(
+def import_ics(
     file: UploadFile = File(...),
     tz_offset_minutes: int = Form(default=0, ge=-840, le=840),
     session: Session = Depends(get_session),
 ) -> dict:
     """Reminders from a calendar file, with what was skipped and why."""
-    raw = await file.read(ics_import.MAX_BYTES + 1)
+    raw = file.file.read(ics_import.MAX_BYTES + 1)
     if len(raw) > ics_import.MAX_BYTES:
         raise HTTPException(status_code=413, detail="That calendar file is over 2 MB. Export only the reminders and try again.")
     text = raw.decode("utf-8", errors="replace")
@@ -472,8 +473,7 @@ async def import_ics(
         if _past_and_open(event):
             skipped.append({"line": event.line, "text": event.text, "reason": f"line {event.line}: already past"})
             continue
-        verb, reminder = _import_one(session, event)
-        session.flush()
+        verb, reminder = reminder_repo.import_event(session, event)
         (added if verb == "added" else updated).append(reminder.id)
     if added or updated:
         log_action(session, "created", "reminder", added[0] if added else updated[0], f"imported {len(added)}, updated {len(updated)}")
@@ -506,20 +506,8 @@ def list_reminders(
     the Reminders tab pages on it.
     """
     offset = paging.start(cursor, offset)
-    filters = []
-    if entry_id is not None:
-        filters.append(Reminder.entry_id == entry_id)
-    if document_id is not None:
-        filters.append(Reminder.document_id == document_id)
-    if not include_done:
-        filters.append(Reminder.done.is_(False))
-    total = session.scalar(select(func.count(Reminder.id)).where(*filters)) or 0
-    rows = session.scalars(
-        select(Reminder)
-        .where(*filters)
-        .order_by(Reminder.due_at, Reminder.id)
-        .limit(limit)
-        .offset(offset)
+    rows, total = reminder_repo.page(
+        session, limit=limit, offset=offset, entry_id=entry_id, document_id=document_id, include_done=include_done
     )
     response.headers["X-Total-Count"] = str(total)
     paging.finish(response, offset, limit, total)
@@ -535,19 +523,12 @@ def create_reminder(body: ReminderCreate, session: Session = Depends(get_session
     if body.entry_id is not None:
         deps.get_or_404(session, Entry, body.entry_id, "That note could not be found.")
     if body.document_id is not None:
-        document = session.get(Document, body.document_id)
+        document = documents_repo.find(session, body.document_id)
         if document is None or getattr(document, "deleted_at", None) is not None:
             raise HTTPException(status_code=404, detail="That document could not be found.")
-    twin = session.scalar(
-        select(Reminder.id)
-        .where(
-            func.lower(func.trim(Reminder.text)) == body.text.strip().lower(),
-            Reminder.due_at == body.due_at,
-            Reminder.done.is_(False),
-        )
-        .limit(1)
-    )
-    reminder = Reminder(
+    twin = reminder_repo.twin(session, body.text, body.due_at)
+    reminder = reminder_repo.create(
+        session,
         text=body.text,
         due_at=body.due_at,
         entry_id=body.entry_id,
@@ -557,9 +538,6 @@ def create_reminder(body: ReminderCreate, session: Session = Depends(get_session
         alert_minutes=body.alert_minutes,
         done=body.restore and body.done,
     )
-    session.add(reminder)
-    session.flush()
-    log_action(session, "created", "reminder", reminder.id, body.text[:80])
     session.commit()
     return {**_to_out(session, reminder), "duplicate": twin is not None}
 
@@ -679,7 +657,8 @@ def magic_add_reminder(body: MagicAddBody, session: Session = Depends(get_sessio
         # Answered in the user's wall-clock time, as asked.
         due_at = due_at.replace(tzinfo=user_zone)
     due_at = due_at.astimezone(timezone.utc)
-    reminder = Reminder(
+    reminder = reminder_repo.create(
+        session,
         text=parsed["text"],
         due_at=due_at,
         priority=parsed["priority"],
@@ -689,9 +668,6 @@ def magic_add_reminder(body: MagicAddBody, session: Session = Depends(get_sessio
         alert_minutes=parsed.get("alert_minutes"),
         entry_id=body.entry_id,
     )
-    session.add(reminder)
-    session.flush()
-    log_action(session, "created", "reminder", reminder.id, parsed["text"][:80])
     session.commit()
     return _to_out(session, reminder)
 
@@ -703,14 +679,24 @@ def _naive_utc(moment: datetime) -> datetime:
     return moment
 
 
+def _is_its_own_time(new: datetime, current: datetime) -> bool:
+    """The time a reminder already has, as the edit form hands it back: its
+    datetime field is cut to the minute, so "unchanged" is the same minute.
+    An overdue reminder saved with its own past time is not a new past date
+    (INBOX 1468: it was refused, so no overdue reminder could be edited)."""
+    return abs(_naive_utc(new) - _naive_utc(current)) < timedelta(minutes=1)
+
+
 @router.put("/{reminder_id}")
 def update_reminder(
     reminder_id: int, body: ReminderUpdate, session: Session = Depends(get_session)
 ) -> dict:
-    reminder = _existing(session, reminder_id)
+    reminder = _writable(session, reminder_id)
     if body.text is not None:
         reminder.text = body.text
-    if body.due_at is not None:
+    #: Its own time handed back (the edit form's minute) changes nothing, so a
+    #: rule's chosen day (`repeat_day`) and its seconds stay.
+    if body.due_at is not None and (body.restore or not _is_its_own_time(body.due_at, reminder.due_at)):
         if not body.restore:
             _reject_if_in_the_past(body.due_at)
         if _naive_utc(body.due_at) != _naive_utc(reminder.due_at):
@@ -749,32 +735,11 @@ def complete_reminder(
     are the person's (`tz_offset_minutes`, minutes east of UTC): 9am Monday
     in Auckland is Sunday evening in UTC. The answer keeps the time it was
     due, for the undo."""
-    reminder = _existing(session, reminder_id)
+    reminder = _writable(session, reminder_id)
     was = reminder.due_at.isoformat()
-    _complete(session, reminder, tz_offset_minutes)
+    reminder_repo.complete(session, reminder, tz_offset_minutes)
     session.commit()
     return {**_to_out(session, reminder), "was_due_at": was}
-
-
-def _complete(session: Session, reminder: Reminder, tz_offset_minutes: int) -> None:
-    """Done, or the next time of a repeating one (see `complete_reminder`)."""
-    if reminder.recurring and reminder.recurring != "none":
-        shift = timedelta(minutes=tz_offset_minutes)
-        due = reminder.due_at.replace(tzinfo=None) + shift
-        now = utcnow().replace(tzinfo=None) + shift
-        # A 31st clamped to the 28th remembers it was a 31st (Brief 101b).
-        anchor = reminder.repeat_day or due.day
-        for _ in range(1000):
-            due = rec.next_occurrence(reminder.recurring, due, anchor)
-            if due > now:
-                break
-        reminder.repeat_day = anchor if anchor > 28 else None
-        reminder.due_at = due - shift
-        reminder.done = False
-        log_action(session, "edited", "reminder", reminder.id, "rolled on")
-    else:
-        reminder.done = True
-        log_action(session, "edited", "reminder", reminder.id, "done")
 
 
 @router.post("/{reminder_id}/notification-token")
@@ -808,13 +773,11 @@ def act_from_notification(
     nothing about which reminders exist. The answer carries no reminder."""
     if not reminder_token.verify(body.token, reminder_id, body.action, data_dir=deps.get_config().data_dir):
         raise HTTPException(status_code=401, detail="That notification can no longer do this.")
-    reminder = _existing(session, reminder_id)
+    reminder = _writable(session, reminder_id)
     if body.action == "done":
-        _complete(session, reminder, body.tz_offset_minutes)
+        reminder_repo.complete(session, reminder, body.tz_offset_minutes)
     else:
-        reminder.due_at = utcnow() + NOTIFICATION_SNOOZE
-        reminder.done = False
-        log_action(session, "edited", "reminder", reminder.id, "snoozed")
+        reminder_repo.snooze(session, reminder, NOTIFICATION_SNOOZE)
     session.commit()
     return {"ok": True, "action": body.action}
 
@@ -823,40 +786,21 @@ def act_from_notification(
 def delete_reminder(reminder_id: int, session: Session = Depends(get_session)) -> dict:
     """To the recycle bin (WORLD_CLASS_PLAN 5 item 10): hidden, not fired,
     restorable with its id and its target until purged."""
-    reminder = _existing(session, reminder_id)
-    log_action(session, "deleted", "reminder", reminder.id)
-    reminder.deleted_at = utcnow()
+    reminder_repo.move_to_bin(session, _writable(session, reminder_id))
     session.commit()
     return {"deleted": True, "binned": True}
 
 
-def _binned(session: Session, reminder_id: int) -> Reminder:
-    from tessellate.entry import bin as other_bin
-
-    with other_bin.including_binned(session):
-        reminder = session.get(Reminder, reminder_id)
-    if reminder is None:
-        raise HTTPException(status_code=404, detail="That reminder could not be found.")
-    return reminder
-
-
 @router.post("/{reminder_id}/restore")
 def restore_reminder(reminder_id: int, session: Session = Depends(get_session)) -> dict:
-    reminder = _binned(session, reminder_id)
-    if reminder.deleted_at is not None:
-        reminder.deleted_at = None
-        log_action(session, "restored", "reminder", reminder.id)
-        session.commit()
+    reminder, _was_binned = content_repo.restore(session, "reminder", reminder_id)
+    session.commit()
     return _to_out(session, reminder)
 
 
 @router.delete("/{reminder_id}/purge")
 def purge_reminder(reminder_id: int, session: Session = Depends(get_session)) -> dict:
     """For good; only a binned reminder."""
-    reminder = _binned(session, reminder_id)
-    if reminder.deleted_at is None:
-        raise HTTPException(status_code=409, detail="Only a reminder in the bin can be deleted for good.")
-    log_action(session, "purged", "reminder", reminder.id)
-    session.delete(reminder)
+    reminder_repo.purge(session, reminder_repo.get_any(session, reminder_id))
     session.commit()
     return {"purged": reminder_id}

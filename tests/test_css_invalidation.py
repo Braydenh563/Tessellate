@@ -161,6 +161,10 @@ ROOT_CUSTOM_PROPERTIES = {
     "--ph-cap-dy",
     # app.js: a ResizeObserver on the top bar, and the on-screen keyboard.
     "--header-h", "--keyboard-inset",
+    # panel-movable.js (INBOX 1474): the app's side margins while a panel is
+    # docked to a side, written when it docks, undocks, closes or the window
+    # resizes (debounced 120ms), never per frame.
+    "--dock-push-left", "--dock-push-right",
 }
 
 

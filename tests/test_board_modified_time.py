@@ -59,7 +59,7 @@ def test_opening_listing_exporting_searching_and_indexing_leave_the_time_alone(c
 
 def test_opening_the_boards_entry_leaves_the_time_alone(client, old_map):
     """The measured culprit: a note card's link chip opens `GET /entries/{id}`."""
-    opened = client.get(f"/entries/{old_map}")
+    opened = client.get(f"/entries/{old_map}?open=1")
     assert opened.status_code == 200
     assert opened.json()["access_count"] == 1, "the open is still counted"
     assert _listed(client, old_map) == THEN

@@ -56,7 +56,7 @@ function wbFmtKind(entry) {
   if (entry.kind === "object") {
     const k = entry.item.kind;
     if (WB_MAP_KINDS.has(k)) return "topic";
-    return k === "text" || k === "image" || k === "frame" || k === "table" ? k : null;
+    return k === "text" || k === "image" || k === "frame" || k === "table" || k === "diagram" ? k : null;
   }
   let parsed = null;
   try {
@@ -77,25 +77,46 @@ function wbFmtKind(entry) {
 
 //: The fields each kind takes, by the `data-fmt` names in index.html.
 const WB_FMT_FIELDS = {
-  shape: ["stroke", "width", "dash", "fill", "alpha", "shadow", "shadowset", "rough", "text", "fit", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "fillstyle", "gradient", "tip"],
-  line: ["stroke", "width", "dash", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "tip"],
+  shape: ["stroke", "strokealpha", "width", "dash", "fill", "alpha", "shadow", "shadowset", "rough", "text", "fit", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "fillstyle", "fillalpha", "gradient", "tip"],
+  line: ["stroke", "strokealpha", "width", "dash", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "tip"],
   //: A straight line or arrow: a line that takes ends.
-  arrow: ["stroke", "width", "dash", "caps", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "tip"],
+  arrow: ["stroke", "strokealpha", "width", "dash", "caps", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "tip"],
   link: ["stroke", "width", "dash", "alpha", "rough", "route", "jumps", "caps", "label-t", "props", "pattern", "round", "flow", "jumpsize", "gapstart", "gapend", "tip"],
-  text: ["stroke", "fill", "alpha", "shadow", "shadowset", "radii", "pad", "fold", "text", "geometry", "angle", "style-lib", "props"],
-  image: ["alpha", "shadow", "shadowset", "radii", "geometry", "angle", "props"],
+  text: ["stroke", "fill", "fillalpha", "alpha", "shadow", "shadowset", "radii", "pad", "fold", "text", "geometry", "angle", "style-lib", "props"],
+  image: ["alpha", "shadow", "shadowset", "radii", "crop", "geometry", "angle", "props"],
   frame: ["geometry", "props"],
   table: ["alpha", "shadow", "shadowset", "radii", "geometry", "props"],
   note: ["geometry", "angle"],
+  //: A Mermaid diagram object: the fill and the line it draws with (INBOX 1486).
+  diagram: ["fill", "fillalpha", "strokealpha"],
 };
 
-//: The fill's own opacity (draw.io's "Fill opacity", PaintZ's fill toggle): the
-//: line and the words keep theirs. The slider and its number, kept together.
-function wbFmtShowFillAlpha(isMixed, value) {
-  const slider = document.getElementById("wb-fmt-fillalpha");
-  const out = document.getElementById("wb-fmt-fillalpha-out");
+//: Where an item keeps the opacity of its fill and of its line: a drawn shape's
+//: own two numbers, a text box's and a diagram's `bg_alpha` and `line_alpha`.
+function wbFmtAlphaKeys(entry) {
+  return entry.kind === "sketch" ? { fill: "fillOpacity", line: "opacity" } : { fill: "bg_alpha", line: "line_alpha" };
+}
+
+//: What an item needs first so a fill opacity means something: a shape or a
+//: text box with no fill is given one; a diagram always has its accent.
+function wbFmtFillFirst(entry) {
+  const colour = document.getElementById("wb-fmt-fill")?.value || "#3355ff";
+  if (entry.kind === "sketch") return wbFmtSketch(entry).fill ? {} : { fill: colour };
+  const bg = entry.item.data?.bg;
+  return entry.item.kind === "diagram" || (bg && bg !== "transparent") ? {} : { bg: colour };
+}
+
+//: The fill's own opacity (draw.io's "Fill opacity", PaintZ's fill toggle) and
+//: the line's: each a slider with its number and the five presets, the preset
+//: that matches lit. The line and the words keep theirs.
+function wbFmtShowAlpha(name, isMixed, value) {
+  const slider = document.getElementById(`wb-fmt-${name}`);
+  const out = document.getElementById(`wb-fmt-${name}-out`);
   if (slider && document.activeElement !== slider) slider.value = value;
   if (out) out.textContent = isMixed ? "Mixed" : `${value}%`;
+  for (const button of document.querySelectorAll(`[data-alpha-for="${name}"]`)) {
+    button.setAttribute("aria-pressed", !isMixed && Number(button.dataset.alphaPreset) === value ? "true" : "false");
+  }
 }
 
 function wbFmtCanRound(entry) {
@@ -124,12 +145,13 @@ function wbFmtValue(entry, field) {
     case "dash": return s?.dash || "solid";
     case "pattern": return s?.dashPattern || "";
     case "round": return Number(s?.round) || 0;
+    case "crop": return o?.crop || "";
     case "flow": return Boolean(s?.flow);
     case "fillstyle": return WB_FILL_STYLES.includes(s?.fillStyle) ? s.fillStyle : "solid";
     case "gradient": return wbHexColour(s?.gradient?.to) || "#ffffff";
     case "gradient-dir": return s?.gradient && wbHexColour(s.gradient.to) && (s.gradient.dir === "radial" || wbGradientVector(s.gradient.dir)) ? s.gradient.dir : "none";
-    case "fill-on": return s ? Boolean(s.fill) : Boolean(o.bg && o.bg !== "transparent");
-    case "fill": return s ? s.fill || "#3355ff" : (o.bg && o.bg !== "transparent" ? o.bg : "#ffffff");
+    case "fill-on": return s ? Boolean(s.fill) : kind === "diagram" ? o.bg_alpha !== 0 : Boolean(o.bg && o.bg !== "transparent");
+    case "fill": return s ? s.fill || "#3355ff" : kind === "diagram" ? wbDiagramFillColour(o) : (o.bg && o.bg !== "transparent" ? o.bg : "#ffffff");
     case "alpha": return Math.round(((s ? s.alpha : o?.alpha) ?? 1) * 100);
     case "shadow": return Boolean(s ? s.shadow : o?.shadow);
     //: Empty (not 0) when the item set none, so the field shows the default as a placeholder.
@@ -166,7 +188,10 @@ function wbFmtValue(entry, field) {
     case "ink": return (kind === "shape" ? s.label_color : o.color) || "#1f2430";
     case "lh": return (kind === "shape" ? s.label_lh : o.line_height) || "";
     case "ls": return (kind === "shape" ? s.label_ls : o.letter_spacing) || "";
-    case "fillalpha": return Math.round((s?.fillOpacity ?? 1) * 100);
+    case "dir": return (kind === "shape" ? s.label_dir : o.text_dir) || "";
+    case "inkalpha": return Math.round(((kind === "shape" ? s.label_alpha : o.text_alpha) ?? 1) * 100);
+    case "fillalpha": return Math.round((s ? s.fillOpacity ?? 1 : o?.bg_alpha ?? (kind === "diagram" ? wbDiagramFillShare() : 1)) * 100);
+    case "strokealpha": return Math.round(((s ? s.opacity : o?.line_alpha) ?? 1) * 100);
     default: return null;
   }
 }
@@ -178,23 +203,26 @@ async function wbFmtApply(field, patch, said) {
   const entries = wbFmtEntries().filter((e) => !wbIsLocked(e.kind, e.item));
   if (!entries.length) return;
   await wbRecordGesture(async () => {
+    //: Rows and objects are saved together at the end, in one request (perf
+    //: 1031 row 20); a drawn shape still saves as it is changed.
+    const saves = [];
     for (const entry of entries) {
       const kind = wbFmtKind(entry);
       if (!kind || !(WB_FMT_FIELDS[kind] || []).includes(field)) continue;
       const partial = patch(entry, kind);
       if (!partial) continue;
       if (entry.kind === "sketch") {
-        await wbSaveSketchProps(entry.item, partial);
+        if (wbSketchSetProps(entry.item, partial)) saves.push({ kind: "sketch", item: entry.item });
       } else if (partial.row) {
         Object.assign(entry.item, partial.row);
-        if (entry.kind === "node") await wbSaveNode(entry.item);
-        else await wbSaveObject(entry.item);
+        saves.push({ kind: entry.kind, item: entry.item });
       } else if (entry.kind === "object") {
         entry.item.data = { ...entry.item.data, ...partial };
         for (const [key, value] of Object.entries(partial)) if (value === undefined) delete entry.item.data[key];
-        await wbSaveObject(entry.item);
+        saves.push({ kind: "object", item: entry.item });
       }
     }
+    await wbSaveMany(saves);
   });
   wbScheduleRender();
   if (said) wbAnnounce(said);
@@ -272,7 +300,9 @@ async function wbFmtSizeAxis(axis, target) {
   if (!e.bbox) return;
   const dim = axis === "w" ? "width" : "height";
   const size = axis === "w" ? e.bbox.maxX - e.bbox.minX : e.bbox.maxY - e.bbox.minY;
-  if (size > 0 && Math.abs(size - target) >= 0.5) await wbSizeItemTo(e, dim, target, target / size);
+  const rows = [];
+  if (size > 0 && Math.abs(size - target) >= 0.5) wbSizeItemTo(e, dim, target, target / size, rows);
+  await wbSaveMany(rows);
 }
 
 //: X and Y move the selection to the number; W and H size one item to it.
@@ -286,10 +316,9 @@ async function wbFmtGeometry(axis, value) {
       const dx = axis === "x" ? value - box.minX : 0;
       const dy = axis === "y" ? value - box.minY : 0;
       if (!dx && !dy) return;
-      for (const e of entries) {
-        if (wbFmtKind(e) === "link") continue;
-        await wbMoveItemBy(e.kind, e.id, e.item, dx, dy);
-      }
+      const rows = [];
+      for (const e of entries) if (wbFmtKind(e) !== "link") wbMoveItemBy(e.kind, e.id, e.item, dx, dy, rows);
+      await wbSaveMany(rows);
       return;
     }
     const target = Math.max(8, value);
@@ -305,6 +334,27 @@ async function wbFmtGeometry(axis, value) {
   wbFormatSyncSoon();
 }
 
+//: **A size preset** (draw.io's Arrange tab, INBOX 1510(a)): the height
+//: set from the width to a common ratio, one undo step, and a kept ratio
+//: moves to the new one so a later W or H change keeps it. The menu goes
+//: back to its prompt: a preset is an action, not a state.
+async function wbFmtAspect(ratio) {
+  const select = document.getElementById("wb-fmt-aspect");
+  const name = select?.selectedOptions?.[0]?.textContent || "chosen";
+  if (select) select.value = "";
+  const entries = wbFmtEntries().filter((e) => !wbIsLocked(e.kind, e.item));
+  const box = wbFmtBox(entries);
+  if (!(ratio > 0) || !box) return;
+  const key = wbFmtLinkKey(entries);
+  const kept = wbFmtState.links.has(key);
+  wbFmtState.links.delete(key);
+  await wbRecordGesture(() => wbFmtSizeAxis("h", Math.max(8, Math.round((box.maxX - box.minX) / ratio))));
+  if (kept) wbFmtState.links.set(key, { ratio });
+  wbScheduleRender();
+  wbAnnounce(`Height set for ${name}.`);
+  wbFormatSyncSoon();
+}
+
 //: One axis of a selection's box set to a number: every member's position
 //: on that axis and its size scale by the same factor about the box's top
 //: left, the arithmetic the group's own edge grips use. A connector follows
@@ -315,14 +365,16 @@ async function wbFmtScaleSelection(entries, box, axis, target) {
   if (!(size > 0) || Math.abs(size - target) < 0.5) return;
   const f = target / size;
   const ax = box.minX, ay = box.minY;
+  const saves = [];
   for (const e of entries) {
     if (wbFmtKind(e) === "link" || !e.bbox) continue;
     if (e.kind === "sketch") {
       const parsed = wbSketchParsedData(e.item);
       if (!parsed) continue;
-      await wbSaveSketchD(e.item, wbTransformPathD(parsed.d, {
+      wbSketchSetD(e.item, wbTransformPathD(parsed.d, {
         sx: horizontal ? f : 1, sy: horizontal ? 1 : f, anchorX: ax, anchorY: ay,
       }));
+      saves.push({ kind: "sketch", item: e.item });
       continue;
     }
     const item = e.item;
@@ -333,9 +385,9 @@ async function wbFmtScaleSelection(entries, box, axis, target) {
       item.y = Math.round(ay + ((item.y || 0) - ay) * f);
       item.height = Math.round(Math.max(WB_OBJECT_MIN_SIZE, (e.bbox.maxY - e.bbox.minY) * f));
     }
-    if (e.kind === "node") await wbSaveNode(item);
-    else await wbSaveObject(item);
+    saves.push({ kind: e.kind, item });
   }
+  await wbSaveMany(saves);
 }
 
 //: A card, text box or picture turns about its centre (`rotation`). A drawn
@@ -350,17 +402,19 @@ async function wbFmtFlip(axis) {
   const entries = wbFmtEntries().filter((e) => e.kind === "sketch" && !wbIsLocked(e.kind, e.item));
   if (!entries.length) return;
   await wbRecordGesture(async () => {
+    const rows = [];
     for (const e of entries) {
       const parsed = wbSketchParsedData(e.item);
       if (!parsed) continue;
-      const d = wbTransformPathD(parsed.d, {
+      wbSketchSetD(e.item, wbTransformPathD(parsed.d, {
         sx: axis === "h" ? -1 : 1,
         sy: axis === "v" ? -1 : 1,
         anchorX: (e.bbox.minX + e.bbox.maxX) / 2,
         anchorY: (e.bbox.minY + e.bbox.maxY) / 2,
-      });
-      await wbSaveSketchD(e.item, d);
+      }));
+      rows.push({ kind: "sketch", item: e.item });
     }
+    await wbSaveMany(rows);
   });
   wbScheduleRender();
   wbAnnounce(axis === "h" ? "Flipped left to right." : "Flipped top to bottom.");
@@ -494,6 +548,14 @@ function wbFmtShowMixed(el, isMixed, value) {
   }
 }
 
+//: A group's head shows while one of its rows does (INBOX 1510(a)): a
+//: line's Style tab has no Fill head over nothing.
+function wbFmtShowGroups(panel) {
+  for (const group of panel.querySelectorAll(".wb-fmt-group")) {
+    group.hidden = !group.querySelector("[data-fmt]:not([hidden]), .wb-fmt-commands:not([hidden])");
+  }
+}
+
 function wbFormatSync() {
   const panel = wbFormatPanel();
   if (!panel || panel.classList.contains("hidden")) return;
@@ -539,6 +601,7 @@ function wbFormatSync() {
   const arrange = document.getElementById("wb-format-commands");
   if (arrange) arrange.hidden = !entries.length || map;
   wbSyncCommandRows(arrange);
+  wbFmtShowGroups(panel);
   if (fields.has("props")) wbFmtSyncProps(entries);
   const first = entries.find((e) => wbFmtKind(e) && wbFmtKind(e) !== "topic");
   if (!first) return;
@@ -565,10 +628,10 @@ function wbFormatSync() {
     ["wb-fmt-fill", "fill", "fill"], ["wb-fmt-route", "route", "route"], ["wb-fmt-jumps", "jumps", "jumps"], ["wb-fmt-startcap", "startcap", "caps"],
     ["wb-fmt-fillstyle", "fillstyle", "fillstyle"], ["wb-fmt-gradient-dir", "gradient-dir", "gradient"], ["wb-fmt-gradient", "gradient", "gradient"],
     ["wb-fmt-jumpsize", "jumpsize", "jumpsize"], ["wb-fmt-gapstart", "gapstart", "gapstart"], ["wb-fmt-gapend", "gapend", "gapend"], ["wb-fmt-tip", "tip", "tip"],
-    ["wb-fmt-pattern", "pattern", "pattern"], ["wb-fmt-round", "round", "round"], ["wb-fmt-endcap", "endcap", "caps"], ["wb-fmt-startsize", "startsize", "caps"], ["wb-fmt-endsize", "endsize", "caps"], ["wb-fmt-label-t", "label-t", "label-t"], ["wb-fmt-size", "size", "text"],
+    ["wb-fmt-pattern", "pattern", "pattern"], ["wb-fmt-round", "round", "round"], ["wb-fmt-crop", "crop", "crop"], ["wb-fmt-endcap", "endcap", "caps"], ["wb-fmt-startsize", "startsize", "caps"], ["wb-fmt-endsize", "endsize", "caps"], ["wb-fmt-label-t", "label-t", "label-t"], ["wb-fmt-size", "size", "text"],
     ["wb-fmt-shx", "shx", "shadowset"], ["wb-fmt-shy", "shy", "shadowset"], ["wb-fmt-shb", "shb", "shadowset"], ["wb-fmt-pad", "pad", "pad"],
     ["wb-fmt-r0", "r0", "radii"], ["wb-fmt-r1", "r1", "radii"], ["wb-fmt-r2", "r2", "radii"], ["wb-fmt-r3", "r3", "radii"],
-    ["wb-fmt-ink", "ink", "text"], ["wb-fmt-alpha", "alpha", "alpha"], ["wb-fmt-lh", "lh", "text"], ["wb-fmt-ls", "ls", "text"],
+    ["wb-fmt-ink", "ink", "text"], ["wb-fmt-alpha", "alpha", "alpha"], ["wb-fmt-lh", "lh", "text"], ["wb-fmt-ls", "ls", "text"], ["wb-fmt-dir", "dir", "text"], ["wb-fmt-inkalpha", "inkalpha", "text"],
   ]) {
     if (!takes.has(row)) continue;
     const el = document.getElementById(id);
@@ -596,7 +659,8 @@ function wbFormatSync() {
   if (sticky) set("wb-fmt-fold", wbStickyFolds(sticky.item), "checked");
   const alphaOut = document.getElementById("wb-fmt-alpha-out");
   if (alphaOut && takes.has("alpha")) alphaOut.textContent = mixed("alpha") ? "Mixed" : `${wbFmtValue(first, "alpha")}%`;
-  if (takes.has("fillstyle")) wbFmtShowFillAlpha(mixed("fillalpha"), wbFmtValue(first, "fillalpha"));
+  if (takes.has("fillalpha")) wbFmtShowAlpha("fillalpha", mixed("fillalpha"), wbFmtValue(first, "fillalpha"));
+  if (takes.has("strokealpha")) wbFmtShowAlpha("strokealpha", mixed("strokealpha"), wbFmtValue(first, "strokealpha"));
   if (takes.has("text")) {
     const pressed = (field, value) => {
       const some = sharing.map((e) => wbFmtValue(e, field) === value);
@@ -734,7 +798,10 @@ function wbFormatCommandButtons() {
   if (!host || host.childElementCount) return;
   const groups = [
     ["Order", ["order-front", "order-forward", "order-backward", "order-back"]],
-    ["Align", ["align-left", "align-hcenter", "align-right", "align-top", "align-vcenter", "align-bottom"]],
+    //: Three a row, so every run fits the field column beside its name
+    //: (INBOX 1510(a), one grid): six in one run wrapped under the label.
+    ["Align across", ["align-left", "align-hcenter", "align-right"]],
+    ["Align down", ["align-top", "align-vcenter", "align-bottom"]],
     ["Space and size", ["distribute-h", "distribute-v", "same-width", "same-height"]],
     ["Group and lock", ["group", "ungroup", "lock"]],
   ];
@@ -846,6 +913,10 @@ onDomReady(() => {
     }
     wbFmtApply("pattern", () => ({ dashPattern: numbers ? numbers.join(" ") : undefined }), numbers ? "Custom dashes set." : "Custom dashes cleared.");
   });
+  on("wb-fmt-crop", "change", (e) => {
+    const crop = e.target.value;
+    wbFmtApply("crop", () => ({ crop: crop || undefined }), crop ? `Picture cropped to ${e.target.selectedOptions[0].textContent.toLowerCase()}.` : "Picture crop taken off.");
+  });
   on("wb-fmt-round", "change", (e) => {
     const radius = Math.max(0, Math.min(80, Math.round(Number(e.target.value) || 0)));
     wbFmtApply("round", () => ({ round: radius || undefined }), radius ? `Corners rounded by ${radius}.` : "Corners sharp.");
@@ -877,6 +948,7 @@ onDomReady(() => {
     const colour = document.getElementById("wb-fmt-fill")?.value || "#3355ff";
     wbFmtApply("fill", (entry) => (entry.kind === "sketch"
       ? { fill: e.target.checked ? colour : undefined, fillOpacity: e.target.checked ? 1 : undefined, ...(e.target.checked ? {} : { gradient: undefined, fillStyle: undefined }) }
+      : entry.item.kind === "diagram" ? { bg_alpha: e.target.checked ? undefined : 0 }
       : { bg: e.target.checked ? colour : "transparent" }), e.target.checked ? "Filled." : "Fill taken off.");
   });
   //: A gradient or a fill style needs a colour to start from, so choosing one
@@ -916,13 +988,25 @@ onDomReady(() => {
     const pct = Math.max(10, Math.min(100, Number(e.target.value) || 100));
     wbFmtApply("alpha", () => ({ alpha: pct >= 100 ? undefined : pct / 100 }), `Opacity ${pct}%.`);
   });
-  on("wb-fmt-fillalpha", "input", (e) => {
-    const out = document.getElementById("wb-fmt-fillalpha-out");
-    if (out) out.textContent = `${e.target.value}%`;
-  });
-  on("wb-fmt-fillalpha", "change", (e) => {
-    const pct = Math.max(5, Math.min(100, Number(e.target.value) || 100));
-    wbFmtApply("fillstyle", (entry) => (entry.kind === "sketch" && wbFmtSketch(entry).fill ? { fillOpacity: pct / 100 } : null), `Fill ${pct}% solid.`);
+  //: A fill's opacity on a shape with no fill yet fills it first, so the
+  //: slider and the presets always do what they say. 0 is a real answer.
+  const setFillAlpha = (pct) => wbFmtApply("fillalpha", (entry) => ({ ...wbFmtFillFirst(entry), [wbFmtAlphaKeys(entry).fill]: pct / 100 }), `Fill ${pct}% solid.`);
+  const setStrokeAlpha = (pct) => wbFmtApply("strokealpha", (entry) => {
+    const key = wbFmtAlphaKeys(entry).line;
+    return { [key]: key === "opacity" && pct >= 100 ? undefined : pct / 100 };
+  }, `Line ${pct}% solid.`);
+  const alphaSetters = { fillalpha: setFillAlpha, strokealpha: setStrokeAlpha };
+  const alphaPct = (value) => Math.max(0, Math.min(100, Number.isFinite(Number(value)) && value !== "" ? Number(value) : 100));
+  for (const name of Object.keys(alphaSetters)) {
+    on(`wb-fmt-${name}`, "input", (e) => {
+      const out = document.getElementById(`wb-fmt-${name}-out`);
+      if (out) out.textContent = `${e.target.value}%`;
+    });
+    on(`wb-fmt-${name}`, "change", (e) => alphaSetters[name](alphaPct(e.target.value)));
+  }
+  panel.addEventListener("click", (e) => {
+    const button = e.target.closest?.("[data-alpha-preset]");
+    if (button) alphaSetters[button.dataset.alphaFor]?.(alphaPct(button.dataset.alphaPreset));
   });
   on("wb-fmt-fold", "change", (e) => wbFmtApply("fold", (entry) => (entry.kind === "object" && wbIsSticky(entry.item) ? { fold: e.target.checked } : null), e.target.checked ? "Corner folded." : "Corner flat."));
   on("wb-fmt-shadow", "change", (e) => wbFmtApply("shadow", () => ({ shadow: e.target.checked || undefined }), e.target.checked ? "Shadow on." : "Shadow off."));
@@ -1004,6 +1088,16 @@ onDomReady(() => {
     const ls = raw ? Math.max(-5, Math.min(30, Math.round(raw * 2) / 2)) : undefined;
     wbFmtApply("text", textPatch("label_ls", "letter_spacing", ls), ls ? `Letter spacing ${ls}px.` : "Letter spacing normal.");
   });
+  //: Direction and text opacity (draw.io's Text tab, INBOX 1510(a)): the
+  //: default is stored as no value, so a reset box and an untouched one match.
+  on("wb-fmt-dir", "change", (e) => {
+    const dir = e.target.value || undefined;
+    wbFmtApply("text", textPatch("label_dir", "text_dir", dir), dir ? `Text ${e.target.selectedOptions[0]?.textContent.toLowerCase()}.` : "Text left to right.");
+  });
+  on("wb-fmt-inkalpha", "change", (e) => {
+    const pct = Math.max(10, Math.min(100, Math.round(Number(e.target.value) || 100)));
+    wbFmtApply("text", textPatch("label_alpha", "text_alpha", pct === 100 ? undefined : pct / 100), `Text opacity ${pct}%.`);
+  });
   on("wb-fmt-fit", "click", () => wbToggleLabelFit());
   on("wb-fmt-align", "click", (e) => {
     const button = e.target.closest("[data-align]");
@@ -1026,6 +1120,7 @@ onDomReady(() => {
     on(`wb-fmt-${axis}`, "change", (e) => wbFmtGeometry(axis, Number(e.target.value)));
   }
   on("wb-fmt-angle", "change", (e) => wbFmtAngle(Number(e.target.value) || 0));
+  on("wb-fmt-aspect", "change", (e) => wbFmtAspect(Number(e.target.value)));
   on("wb-fmt-flip-h", "click", () => wbFmtFlip("h"));
   on("wb-fmt-flip-v", "click", () => wbFmtFlip("v"));
   on("wb-fmt-save-style", "click", () => wbRunCommand("save-style"));
@@ -1045,8 +1140,8 @@ onDomReady(() => {
 //: text box is one step on the stack and an item with no text of its own is
 //: skipped.
 const WB_TEXT_LOOK_KEYS = {
-  shape: ["label_size", "label_color", "label_bold", "label_italic", "label_underline", "label_strike", "label_font", "label_align", "label_valign", "label_fit", "label_lh", "label_ls"],
-  text: ["font_size", "color", "bold", "italic", "underline", "strike", "font_family", "align", "valign", "line_height", "letter_spacing"],
+  shape: ["label_size", "label_color", "label_bold", "label_italic", "label_underline", "label_strike", "label_font", "label_align", "label_valign", "label_fit", "label_lh", "label_ls", "label_dir", "label_alpha"],
+  text: ["font_size", "color", "bold", "italic", "underline", "strike", "font_family", "align", "valign", "line_height", "letter_spacing", "text_dir", "text_alpha"],
 };
 
 //: Shrink to fit, on or off for every selected shape as one step: on unless
@@ -1083,21 +1178,23 @@ function wbTurnSelection(degrees = 90) {
   return wbRecordGesture(async () => {
     const entries = wbFmtEntries().filter((e) => !wbIsLocked(e.kind, e.item) && e.bbox);
     let turned = 0;
+    const saves = [];
     for (const e of entries) {
       if (e.kind === "sketch") {
         const parsed = wbSketchParsedData(e.item);
         if (typeof parsed?.d !== "string") continue;
-        await wbSaveSketchD(e.item, wbTransformPathD(parsed.d, {
+        wbSketchSetD(e.item, wbTransformPathD(parsed.d, {
           rotate: degrees, anchorX: (e.bbox.minX + e.bbox.maxX) / 2, anchorY: (e.bbox.minY + e.bbox.maxY) / 2,
         }));
+        saves.push({ kind: "sketch", item: e.item });
       } else {
         if (wbFmtKind(e) === "topic") continue;
         e.item.rotation = ((Math.round((e.item.rotation || 0) + degrees) % 360) + 360) % 360 || null;
-        if (e.kind === "node") await wbSaveNode(e.item);
-        else await wbSaveObject(e.item);
+        saves.push({ kind: e.kind, item: e.item });
       }
       turned += 1;
     }
+    await wbSaveMany(saves);
     if (turned) wbAnnounce(`Turned ${degrees} degrees.`);
     else toast("Select a shape, note or picture to turn it.");
   }).then(() => wbScheduleRender());
@@ -1110,20 +1207,23 @@ function wbRemoveFromGroup() {
   return wbRecordGesture(async () => {
     const leaving = wbFmtEntries().filter((e) => e.item.group_id);
     if (!leaving.length) return;
+    const rows = [];
     for (const e of leaving) {
       const chain = wbGroupChain(e.item);
       chain.pop();
       e.item.group_id = chain.length ? chain.join(WB_GROUP_SEP) : null;
-      await wbSaveGroupMember(e.kind, e.item);
+      rows.push({ kind: e.kind, item: e.item });
     }
-    await wbDropLoneGroups();
+    wbDropLoneGroups(rows);
+    await wbSaveMany(rows);
     wbAnnounce("Removed from the group.");
     wbUpdateContextBar();
   });
 }
 
-//: Each group id held by one item only is taken off it.
-async function wbDropLoneGroups() {
+//: Each group id held by one item only is taken off it; the items it changed
+//: go onto `rows`, which the caller saves once with the rest.
+function wbDropLoneGroups(rows) {
   const all = wbItemsWithGroupPrefix([]);
   const count = new Map();
   for (const { item } of all) for (const seg of wbGroupChain(item)) count.set(seg, (count.get(seg) || 0) + 1);
@@ -1132,7 +1232,7 @@ async function wbDropLoneGroups() {
     const kept = chain.filter((seg) => count.get(seg) > 1);
     if (kept.length === chain.length) continue;
     item.group_id = kept.length ? kept.join(WB_GROUP_SEP) : null;
-    await wbSaveGroupMember(kind, item);
+    rows.push({ kind, item });
   }
 }
 
@@ -1157,11 +1257,13 @@ function wbPasteSize() {
   const clip = wbFmtState.sizeClip;
   return wbRecordGesture(async () => {
     const entries = wbFmtEntries().filter((e) => !wbIsLocked(e.kind, e.item) && e.bbox && wbFmtKind(e) !== "topic");
+    const rows = [];
     for (const e of entries) {
       for (const [dim, target, size] of [["width", Math.max(8, clip.w), e.bbox.maxX - e.bbox.minX], ["height", Math.max(8, clip.h), e.bbox.maxY - e.bbox.minY]]) {
-        if (size > 0 && Math.abs(size - target) >= 0.5) await wbSizeItemTo(e, dim, target, target / size);
+        if (size > 0 && Math.abs(size - target) >= 0.5) wbSizeItemTo(e, dim, target, target / size, rows);
       }
     }
+    await wbSaveMany(rows);
     wbAnnounce(`Size ${clip.w} by ${clip.h} pasted.`);
   }).then(() => wbScheduleRender());
 }
@@ -1206,6 +1308,7 @@ async function wbGrowShapeToLabel(sketch) {
 function wbAutoSizeSelection() {
   return wbRecordGesture(async () => {
     let grown = 0;
+    const saves = [];
     for (const e of wbFmtEntries().filter((x) => !wbIsLocked(x.kind, x.item) && x.bbox)) {
       const kind = wbFmtKind(e);
       if (kind === "shape") {
@@ -1222,11 +1325,11 @@ function wbAutoSizeSelection() {
         const fit = el.querySelector(".wb-text-content") ? wbTextFitHeight(el) : wbCardFitHeight(el);
         if (!(fit > current + 1)) continue;
         e.item.height = Math.round(fit);
-        if (e.kind === "node") await wbSaveNode(e.item);
-        else await wbSaveObject(e.item);
+        saves.push({ kind: e.kind, item: e.item });
         grown += 1;
       }
     }
+    await wbSaveMany(saves);
     wbAnnounce(grown ? "Grown to fit the words." : "Everything already fits.");
   }).then(() => wbScheduleRender());
 }
@@ -1263,20 +1366,22 @@ function wbReversedLinkFields(parsed) {
 function wbReverseSelection() {
   return wbRecordGesture(async () => {
     let turned = 0;
+    const rows = [];
     for (const e of wbFmtEntries().filter((x) => x.kind === "sketch" && !wbIsLocked(x.kind, x.item))) {
       const kind = wbFmtKind(e);
       const parsed = wbFmtSketch(e);
+      let patch = null;
       if (kind === "link") {
-        await wbSaveSketchProps(e.item, wbReversedLinkFields(parsed));
+        patch = wbReversedLinkFields(parsed);
       } else if (kind === "arrow") {
         const caps = wbSketchCaps(parsed);
-        const swapped = { startCap: caps.endCap, endCap: caps.startCap, startSize: caps.endSize, endSize: caps.startSize };
-        await wbSaveSketchProps(e.item, wbFmtCapFields("arrow", parsed, swapped));
-      } else {
-        continue;
+        patch = wbFmtCapFields("arrow", parsed, { startCap: caps.endCap, endCap: caps.startCap, startSize: caps.endSize, endSize: caps.startSize });
       }
+      if (!patch || !wbSketchSetProps(e.item, patch)) continue;
+      rows.push({ kind: "sketch", item: e.item });
       turned += 1;
     }
+    await wbSaveMany(rows);
     if (turned) wbAnnounce("Reversed.");
     else toast("Select a connector or an arrow to reverse it.");
   }).then(() => wbScheduleRender());
@@ -1444,7 +1549,7 @@ function wbSvgBoxRadii(el, data, w, h) {
 }
 
 function wbSvgBoxBackdrop(el, data, w, h) {
-  const paper = data?.bg && data.bg !== "transparent" ? data.bg : "none";
+  const paper = data?.bg && data.bg !== "transparent" ? (wbExportColour(wbPaperPaint(data)) || data.bg) : "none";
   const paint = el ? wbExportPaint(el) : { fill: paper, edge: data?.border_color || null };
   //: A sticky's paper can be a gradient, which has no background colour to read.
   const fill = paint.fill !== "none" ? paint.fill : paper;
@@ -1790,6 +1895,12 @@ function wbColourPairOf(input) {
   return fill && border ? { ...pair, fillEl: fill, borderEl: border } : null;
 }
 
+//: `aria-expanded` belongs to a button; a colour field (`input[type=color]`) is not
+//: allowed it or `aria-haspopup` (axe aria-allowed-attr, BD4), so only a button gets it.
+function wbWellExpanded(el, open) {
+  if (el.type !== "color") el.setAttribute("aria-expanded", String(open));
+}
+
 //: Writes a colour into a field as a pick would: its own handlers save it.
 function wbSetColourField(input, colour) {
   const hex = wbHexOf(colour);
@@ -1819,6 +1930,7 @@ async function wbWriteColourPair(pair, how) {
   const entries = wbFmtEntries().filter((e) => !wbIsLocked(e.kind, e.item));
   const used = new Set();
   await wbRecordGesture(async () => {
+    const saves = [];
     for (const entry of entries) {
       const kind = wbFmtKind(entry);
       if (kind !== "shape" && kind !== "text") continue;
@@ -1826,12 +1938,13 @@ async function wbWriteColourPair(pair, how) {
       const { fill, border } = pick(wbFmtValue(entry, "fill"), wbFmtValue(entry, "stroke"));
       for (const colour of [fill, border]) if (colour) used.add(colour);
       if (entry.kind === "sketch") {
-        await wbSaveSketchProps(entry.item, { ...(fill ? { fill, fillOpacity: 1 } : {}), ...(border ? { color: border } : {}) });
+        if (wbSketchSetProps(entry.item, { ...(fill ? { fill, fillOpacity: 1 } : {}), ...(border ? { color: border } : {}) })) saves.push({ kind: "sketch", item: entry.item });
       } else {
         entry.item.data = { ...entry.item.data, ...(fill ? { bg: fill } : {}), ...(border ? { border_color: border } : {}) };
-        await wbSaveObject(entry.item);
+        saves.push({ kind: "object", item: entry.item });
       }
     }
+    await wbSaveMany(saves);
   });
   for (const colour of used) wbRememberColour(colour);
   wbScheduleRender();
@@ -1859,7 +1972,7 @@ function wbColourMenu() {
       wbStopEyedrop();
       for (const el of document.querySelectorAll(".wb-colour-target")) {
         el.classList.remove("wb-colour-target");
-        el.setAttribute("aria-expanded", "false");
+        wbWellExpanded(el, false);
       }
     }
   }).observe(menu, { attributes: true, attributeFilter: ["class"] });
@@ -2035,7 +2148,7 @@ async function wbOpenColourMenu(input) {
   menu._escapedOpener = input;
   menu.classList.add("action-menu-escaped");
   menu.classList.remove("hidden");
-  input.setAttribute("aria-expanded", "true");
+  wbWellExpanded(input, true);
   input.classList.add("wb-colour-target");
   if (keepAt) {
     //: The same corner, pulled back inside the window if the other field's
@@ -2194,8 +2307,6 @@ onDomReady(() => {
   for (const input of document.querySelectorAll('input[type="color"].wb-color-picker')) {
     if (input.dataset.wbColourWell) continue;
     input.dataset.wbColourWell = "1";
-    input.setAttribute("aria-haspopup", "dialog");
-    input.setAttribute("aria-expanded", "false");
     input.addEventListener("click", (e) => {
       if (wbColourState.eyedrop) return;
       e.preventDefault();

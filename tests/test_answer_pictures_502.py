@@ -19,6 +19,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._app_js import with_pieces
 
 JS = Path(__file__).resolve().parent.parent / "frontend" / "js"
 
@@ -71,7 +72,7 @@ def test_the_turn_keeps_the_alts_for_a_reopened_chat(client):
 
 
 def test_the_client_draws_thumbnails_beside_the_chip():
-    ask = (JS / "capture-ask.js").read_text(encoding="utf-8")
+    ask = with_pieces("capture-ask.js")
     start = ask.index("function groundingThumbs(pictures, n, alts)")
     thumbs = ask[start : ask.index("\n}\n", start)]
     for needle in ('img.loading = "lazy"', "img.width = 32", "img.height = 32", "img.alt = words ||", "openLightbox(items, i)"):
@@ -80,7 +81,7 @@ def test_the_client_draws_thumbnails_beside_the_chip():
     assert "support = null, pictureAlts = null" in grounding
     assert "groundingThumbs(pictures, n, pictureAlts)" in grounding
     # Every caller hands the alts on: live Chat, live Ask, a reopened chat.
-    assert "meta?.picture_alts || null" in (JS / "chat-attach.js").read_text(encoding="utf-8")
+    assert "meta?.picture_alts || null" in with_pieces("chat-attach.js")
     assert "answerMeta?.picture_alts || null" in ask
     assert "message.picture_alts || null" in (JS / "sheets-selects.js").read_text(encoding="utf-8")
 
@@ -169,7 +170,7 @@ def test_a_note_with_two_pictures_offers_the_second_token():
 
 
 def test_the_client_places_figures_from_tokens():
-    ask = (JS / "capture-ask.js").read_text(encoding="utf-8")
+    ask = with_pieces("capture-ask.js")
     start = ask.index("function placeAnswerFigures(")
     body = ask[start : ask.index("\n}\n", start)]
     # The token is always removed; a figure needs a note with pictures; three at most.
@@ -184,14 +185,14 @@ def test_the_client_places_figures_from_tokens():
     assert "holdPictureTokens(latest)" in ask
     # Every surface that shows an answer places them: live Ask, live Chat, a reopened chat, a reopened Ask.
     assert "placeAnswerFigures(answerBox, answerMeta, question)" in ask
-    assert "placeAnswerFigures(" in (JS / "chat-attach.js").read_text(encoding="utf-8")
+    assert "placeAnswerFigures(" in with_pieces("chat-attach.js")
     assert "placeAnswerFigures(" in (JS / "sheets-selects.js").read_text(encoding="utf-8")
     assert "placeAnswerFigures(" in (JS / "ask-history.js").read_text(encoding="utf-8")
 
 
 @pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 def test_a_half_written_token_is_held_back_and_a_whole_one_removed():
-    ask = (JS / "capture-ask.js").read_text(encoding="utf-8")
+    ask = with_pieces("capture-ask.js")
     token = ask[ask.index("const PICTURE_TOKEN") : ask.index("\n", ask.index("const PICTURE_TOKEN"))]
     hold = ask[ask.index("function holdPictureTokens") :]
     hold = hold[: hold.index("\n}\n") + 2]

@@ -115,13 +115,13 @@ _LONG = re.compile(
 _OPENING = {
     "natural": (
         "I'm Atlas's assistant. I work without a model: I answer from your notes, do sums, times and dates, and act on the app for you.",
-        "I'm the assistant that comes with Tessellate and works for Atlas. On my own I read your notes, work things out and do small jobs.",
+        "I'm Atlas's assistant, the one that comes with Tessellate. On my own I read your notes, work things out and do small jobs.",
         "Atlas's assistant here. Without a model I can still answer from your notes, do the maths and dates, and run the app for you.",
         "I'm Atlas's assistant, the part that answers when no model is connected: your notes, quick sums and dates, and jobs in the app.",
     ),
     "professional": (
         "I am Atlas's assistant. Without a model I answer from your notes, calculate times and dates, and carry out tasks in the app.",
-        "I am the assistant that serves Atlas. On my own I search your notes, perform calculations and act on the app on request.",
+        "I am Atlas's assistant. On my own I search your notes, perform calculations and act on the app on request.",
         "This is Atlas's assistant. It answers from your notes, works out sums and dates, and performs small tasks in the app.",
     ),
 }

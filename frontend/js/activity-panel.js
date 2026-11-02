@@ -119,7 +119,8 @@ function paintActivity(body) {
     return li;
   });
   $("activity-finished").replaceChildren(...finished);
-  $("activity-finished-head").classList.toggle("hidden", !finished.length);
+  $("activity-finished-card").classList.toggle("hidden", !finished.length);
+  $("activity-count-running").textContent = String(jobs.length);
 }
 
 //: The report sheet lives with the importers (app-import.js, lazy).
@@ -168,7 +169,7 @@ async function stopAllActivity() {
     ),
   );
   const stopped = asked.reduce((sum, one) => sum + one, 0);
-  if (stopped) toast(`Asked ${stopped} job${stopped === 1 ? "" : "s"} to stop.`, "info");
+  if (stopped) toast(`Asked ${nounCount(stopped, "job")} to stop.`, "info");
   if (error) toast(error.message, true);
   renderActivity();
 }

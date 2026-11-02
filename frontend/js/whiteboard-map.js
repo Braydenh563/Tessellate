@@ -742,7 +742,7 @@ function wbSyncMapFocusChrome(passed = null) {
   if (label) label.textContent = name.length > 40 ? `${name.slice(0, 39)}…` : name;
   const shown = index.nodes.length - wbMapFocusHidden(index).size;
   if (depth) {
-    depth.textContent = `${wbMapFocusState.depth} step${wbMapFocusState.depth === 1 ? "" : "s"}, ${shown} of ${index.nodes.length} nodes`;
+    depth.textContent = `${nounCount(wbMapFocusState.depth, "step")}, ${shown} of ${index.nodes.length} nodes`;
   }
   bar.hidden = false;
 }
@@ -950,7 +950,7 @@ async function wbMapClearEveryTopicNow() {
     await fetchWhiteboardState();
     renderWhiteboardNow();
     toast(count
-      ? `${count} topic${count === 1 ? "" : "s"} back to following this map.`
+      ? `${nounCount(count, "topic")} back to following this map.`
       : "Every topic was already following this map.");
   } catch (err) {
     toast(err.message || voiceLine("failed", { what: "reset the topics" }), true);
@@ -1517,7 +1517,7 @@ async function wbMapSortChildren(id, dir = 1) {
   const word = (o) => String(wbMapLabel(o) || "");
   const sorted = [...kids].sort((x, y) => dir * word(x).localeCompare(word(y), undefined, { numeric: true, sensitivity: "base" }) || x.id - y.id);
   sorted.forEach((kid, at) => { kid.data = { ...kid.data, order: at + 1 }; });
-  await Promise.all(sorted.map((kid) => wbSaveObject(kid)));
+  await wbSaveMany(sorted.map((item) => ({ kind: "object", item })));
   if (wbMapLayout() === "free") toast("Sorted in the outline. This map's layout is Free, so the canvas stays as it is.");
   else await wbMapTidyBranch(id);
   renderWhiteboardNow();
@@ -1733,21 +1733,21 @@ function wbBuildMapNode(el, d) {
       wbMapEditCallout(wbMapLiveDatum(d));
     });
   //: And labels under them (XMind), the next row of the same flow.
-  //: Its stamps ride the same row; a press on one adds one more (a vote),
-  //: without starting a drag or the labels' double-click.
+  //: Its stamps ride the same row; a press on one toggles yours (a vote, taken
+  //: back by a second press), and its menu takes a count down, none of it
+  //: starting a drag or the labels' double-click.
   el.append("div").attr("class", "wb-map-tags").property("hidden", true)
     .on("pointerdown", (event) => {
-      if (event.target.closest(".wb-map-stamp")) event.stopPropagation();
+      if (event.target.closest(".wb-map-stamp-wrap")) event.stopPropagation();
     })
     .on("click", (event) => {
       const stamp = event.target.closest(".wb-map-stamp");
-      if (!stamp) return;
-      event.stopPropagation();
-      wbMapAddStamp(wbMapLiveDatum(d), stamp.dataset.stamp);
+      if (event.target.closest(".wb-map-stamp-wrap")) event.stopPropagation();
+      if (stamp) wbMapStampSet(wbMapLiveDatum(d), stamp.dataset.stamp, "toggle");
     })
     .on("dblclick", (event) => {
       event.stopPropagation();
-      if (!event.target.closest(".wb-map-stamp")) wbMapEditLabels(wbMapLiveDatum(d));
+      if (!event.target.closest(".wb-map-stamp-wrap")) wbMapEditLabels(wbMapLiveDatum(d));
     });
   //: **Built for every node, hidden when it has nothing to say**, the same
   //: rule the chevron and the count badge already follow here and for the
@@ -1867,7 +1867,8 @@ function wbBuildMapNode(el, d) {
     });
     text.on("blur", function () {
       wbEndTextEdit(this);
-      const edited = wbEditedText(this);
+      //: Trailing blank lines are not part of a name ("Central idea\n\n" was saved, sweep 1028b W16); Enter stays a new line (the owner, 2026-10-10).
+      const edited = wbEditedText(this).replace(/\s+$/, "");
       //: **The topic as it is now, by the id the element wears** (INBOX 537):
       //: this closure's `d` is the row from when the node was built, and a
       //: state fetch or an Undo since replaced it; a rename saved through it
@@ -2141,6 +2142,15 @@ function wbCoreInkFor(colour) {
   return onDark >= onLight ? WB_CORE_INK_DARK : WB_CORE_INK_LIGHT;
 }
 
+//: The ink itself when it reads on `bg` at 4.5:1, else the one that does.
+function wbReadableInk(ink, bg, min = 4.5) {
+  const a = wbColourChannels(ink), b = wbColourChannels(bg);
+  if (!a || !b) return ink;
+  const la = wbRelativeLuminance(a), lb = wbRelativeLuminance(b);
+  const ratio = (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+  return ratio >= min ? ink : (wbCoreInkFor(bg) || ink);
+}
+
 //: The half that changes: label, branch colour, chevron, badge. Runs for
 //: every visible map node on every render, so it does no work that the enter
 //: selection could have done once.
@@ -2193,7 +2203,7 @@ function wbPaintMapNode(el, d, index, colors, fills) {
     const buried = collapsed && index ? wbMapSubtree(index, d.id).length - 1 : 0;
     badge.hidden = buried <= 0;
     badge.textContent = String(buried);
-    const label = `Open the ${buried} topic${buried === 1 ? "" : "s"} folded in here`;
+    const label = `Open the ${nounCount(buried, "topic")} folded in here`;
     badge.title = label;
     badge.setAttribute("aria-label", label);
   }
@@ -2238,7 +2248,7 @@ function wbPaintMapNode(el, d, index, colors, fills) {
     progress.hidden = !tally;
     if (tally) {
       progress.textContent = `${tally.done}/${tally.total}`;
-      progress.title = `${tally.done} of ${tally.total} tasks under this topic are done`;
+      progress.title = `${tally.done} of ${nounCount(tally.total, "task")} under this topic are done`;
       progress.classList.toggle("wb-map-progress-complete", tally.done === tally.total);
     }
   }
@@ -2717,20 +2727,15 @@ function wbMapStartResizeDrag(grip, event, d) {
 }
 
 //: Open every folded branch on the map (§12.1 item 7's third route, after the
-//: badge and the chevron). One PUT per folded node rather than a bulk call,
-//: which is the same bargain `wbSaveBulkMove` makes and for the same reason:
-//: there is no bulk endpoint, and the number of *folded* nodes on a map is
-//: small even when the map is not.
+//: badge and the chevron), saved in one request (`wbSaveMany`, BD2).
 async function wbMapExpandAll() {
   const folded = wbMapIndex().nodes.filter((o) => o.data?.collapsed);
   if (!folded.length) {
     toast("Nothing is folded away on this map.");
     return;
   }
-  for (const node of folded) {
-    node.data = { ...node.data, collapsed: false };
-    await wbSaveObject(node);
-  }
+  for (const node of folded) node.data = { ...node.data, collapsed: false };
+  await wbSaveMany(folded.map((item) => ({ kind: "object", item })));
   renderWhiteboardNow();
   wbSyncMapToolState();
   toast(`Opened ${folded.length} branch${folded.length === 1 ? "" : "es"}.`);
@@ -2763,7 +2768,7 @@ async function wbMapFoldToLevel(level) {
       changed.push(node);
     }
   }
-  for (const node of changed) await wbSaveObject(node);
+  await wbSaveMany(changed.map((item) => ({ kind: "object", item })));
   if (changed.length) {
     renderWhiteboardNow();
     wbSyncMapToolState();
@@ -3348,31 +3353,29 @@ function wbMapFacingSide(node, size, x, y) {
   return dy < 0 ? "top" : "bottom";
 }
 
-//: Both ends with at least one pinned. The end left on Auto faces the
-//: pinned one's point, so a line pinned to a parent's top still arrives at
-//: whichever side of the child looks back at it.
-function wbMapPinnedAnchors(parent, p, child, c, from, to) {
-  let s1 = from;
-  let s2 = to;
-  if (!s1) {
-    const b = wbMapSidePoint(child, c, s2);
-    s1 = wbMapFacingSide(parent, p, b.x, b.y);
-  }
-  if (!s2) {
-    const a = wbMapSidePoint(parent, p, s1);
-    s2 = wbMapFacingSide(child, c, a.x, a.y);
-  }
-  const a = wbMapSidePoint(parent, p, s1);
-  const b = wbMapSidePoint(child, c, s2);
-  return { horizontal: s1 === "left" || s1 === "right", pinned: true, s1, s2, x1: a.x, y1: a.y, x2: b.x, y2: b.y };
-}
-
 function wbMapEdgeAnchors(parent, child, mapLayout) {
   const p = wbMapNodeSize(parent);
   const c = wbMapNodeSize(child);
   const from = WB_MAP_SIDES[child?.data?.edge_from] ? child.data.edge_from : null;
   const to = WB_MAP_SIDES[child?.data?.edge_to] ? child.data.edge_to : null;
-  if (from || to) return wbMapPinnedAnchors(parent, p, child, c, from, to);
+  if (from || to) {
+    //: Both ends with at least one pinned. The end left on Auto faces the
+    //: pinned one's point, so a line pinned to a parent's top still arrives at
+    //: whichever side of the child looks back at it.
+    let s1 = from;
+    let s2 = to;
+    if (!s1) {
+      const b = wbMapSidePoint(child, c, s2);
+      s1 = wbMapFacingSide(parent, p, b.x, b.y);
+    }
+    if (!s2) {
+      const a = wbMapSidePoint(parent, p, s1);
+      s2 = wbMapFacingSide(child, c, a.x, a.y);
+    }
+    const a = wbMapSidePoint(parent, p, s1);
+    const b = wbMapSidePoint(child, c, s2);
+    return { horizontal: s1 === "left" || s1 === "right", pinned: true, s1, s2, x1: a.x, y1: a.y, x2: b.x, y2: b.y };
+  }
   //: Inside a branch with its own structure, that structure's lines, and its
   //: top topic is the "root" the column layouts measure from.
   const layout = child._bl || mapLayout;
@@ -3925,6 +3928,8 @@ function wbMapEdgesFor(id, ctx) {
 function wbUpdateMapEdges(edges) {
   for (const { parent, child, el, layout } of edges || []) {
     const d = wbMapEdgePathD(parent, child, layout);
+    //: Drawn by hand: the render's cache no longer holds what is on screen.
+    el._wbMoved = true;
     // The visible path is the ribbon where the edge has one; the hit twin is
     // always the centreline, which is what a person is actually pointing at.
     el.setAttribute("d", wbMapEdgeIsRibbon(child) ? wbMapRibbonD(parent, child, layout) : d);
@@ -3943,6 +3948,30 @@ function wbUpdateMapEdges(edges) {
   }
 }
 
+//: Every tree line that is drawn, as its two topics and its key, in the
+//: tree's own order: the one walk the lines and the mid-line `+` buttons
+//: share, so their orders cannot disagree.
+function wbMapVisibleEdges(index, hidden) {
+  const edges = [];
+  for (const parent of index.nodes) {
+    if (hidden.has(parent.id) || parent.data?.collapsed) continue;
+    for (const child of index.childrenOf.get(parent.id) || []) {
+      if (!hidden.has(child.id)) edges.push({ parent, child, key: `${parent.id}:${child.id}` });
+    }
+  }
+  return edges;
+}
+
+//: Take out of a keyed cache (`{ wrap }` or an element) every entry whose key
+//: is no longer wanted.
+function wbMapDropStale(cache, wanted) {
+  for (const [key, held] of cache) {
+    if (wanted.has(key)) continue;
+    (held.wrap || held).remove();
+    cache.delete(key);
+  }
+}
+
 //: The parent→child edges, drawn as cubic curves into their own group.
 //:
 //: A tree edge is deliberately **not** a link sketch. A sketch is a row in the
@@ -3954,7 +3983,7 @@ function wbUpdateMapEdges(edges) {
 //:
 //: The group is the first child of the zoom group so edges sit *under* every
 //: sketch and node, which is the only z-order a tree reads correctly in.
-function wbRenderMapEdges() {
+function wbRenderMapEdges({ only = null } = {}) {
   const zoomGroup = document.getElementById("wb-zoom-group");
   if (!zoomGroup) return;
   let group = zoomGroup.querySelector(".wb-map-edges");
@@ -3989,7 +4018,13 @@ function wbRenderMapEdges() {
   //: is not a map removes the group above, which takes the cache with it, so
   //: a stale element can never be handed to the next board.
   const cache = group._wbMapEdges instanceof Map ? group._wbMapEdges : (group._wbMapEdges = new Map());
-  const drawn = new Set();
+  const edges = wbMapVisibleEdges(index, hidden);
+  //: **Lines whose two ends are no longer joined go first** (OPEN 813): a
+  //: re-parent, a delete, a folded branch, and the line a new topic's
+  //: provisional id drew. Left until after the placing pass below, a stale
+  //: line kept its slot and every later line looked out of place and was
+  //: moved (84 nodes removed from layout on a 20-topic map).
+  wbMapDropStale(cache, new Set(edges.map((edge) => edge.key)));
   //: **The group stays in the tree's own order**, which is what rebuilding it
   //: gave for free. Two things read that order: SVG paints in document order,
   //: so it decides which of two overlapping lines is on top, and
@@ -3998,45 +4033,59 @@ function wbRenderMapEdges() {
   //: instead cost that sweep its insert check, which is the order saying out
   //: loud that it is load-bearing. Nothing moves while the tree is unchanged:
   //: this compares first and writes only when a line is out of place.
-  let slot = 0;
-  for (const parent of index.nodes) {
-    if (hidden.has(parent.id) || parent.data?.collapsed) continue;
-    for (const child of index.childrenOf.get(parent.id) || []) {
-      if (hidden.has(child.id)) continue;
-      const key = `${parent.id}:${child.id}`;
-      drawn.add(key);
-      const geom = wbMapEdgeGeometry(parent, child, layout, colors);
-      const held = cache.get(key);
-      //: `isConnected`, because something else can take the element out from
-      //: under this cache: `group.remove()` above on a board that stopped
-      //: being a map, and an export that clones and replaces the layer.
-      let wrap;
-      if (held && held.wrap.isConnected) {
-        wrap = held.wrap;
+  edges.forEach(({ parent, child, key }, slot) => {
+    let held = cache.get(key);
+    //: `isConnected`, because something else can take the element out from
+    //: under this cache: `group.remove()` above on a board that stopped
+    //: being a map, and an export that clones and replaces the layer.
+    const drawn = Boolean(held && held.wrap.isConnected);
+    //: **`only`: the topics whose lines are drawn again** (OPEN 813). The render
+    //: after the server's answer to an add changes one topic's id and nothing's
+    //: place; it drew every line again (22ms of 49 on 200 topics).
+    if (!(only && drawn && !only.has(parent.id) && !only.has(child.id))) {
+      //: **A line is worked out only when something it reads has changed**
+      //: (wbp2): the geometry is 75us a line (15ms at 200 topics) and the key
+      //: over its inputs is a string. A hand-drawn line (`wbUpdateMapEdges`
+      //: writes the path per drag frame and marks it) forgets what it holds.
+      if (drawn && held.path._wbMoved) {
+        held.path._wbMoved = false;
+        held.key = held.paint = null;
+      }
+      const geomKey = wbMapEdgeKey(parent, child, layout, colors);
+      if (!drawn) {
+        const wrap = wbMapEdgeElement(parent.id, child.id);
+        cache.set(key, (held = { wrap, path: wrap.querySelector("path.wb-map-edge"), key: null, paint: null }));
+      }
+      if (held.key !== geomKey) {
+        const geom = wbMapEdgeGeometry(parent, child, layout, colors);
+        held.key = geomKey;
         if (held.paint !== geom.paint) {
-          wbMapEdgeApply(wrap, geom);
+          wbMapEdgeApply(held.wrap, geom);
           held.paint = geom.paint;
         }
-      } else {
-        wrap = wbMapEdgeElement(parent.id, child.id);
-        wbMapEdgeApply(wrap, geom);
-        cache.set(key, { wrap, paint: geom.paint });
       }
-      if (group.childNodes[slot] !== wrap) group.insertBefore(wrap, group.childNodes[slot] || null);
-      slot += 1;
     }
-  }
-  //: The lines whose two ends are no longer joined: a re-parent, a delete, a
-  //: branch folded away. This is the one thing a keyed update has to do that
-  //: rebuilding the group got for free, and leaving it out is how a keyed
-  //: render grows edges that point at nothing.
-  for (const [key, held] of cache) {
-    if (drawn.has(key)) continue;
-    held.wrap.remove();
-    cache.delete(key);
-  }
-  wbRenderMapEdgePluses(index, hidden, layout);
+    const wrap = held.wrap;
+    if (group.childNodes[slot] !== wrap) group.insertBefore(wrap, group.childNodes[slot] || null);
+  });
+  wbRenderMapEdgePluses(edges, layout, only);
   wbSyncMapEdgeHandles();
+}
+
+//: **Everything `wbMapEdgeGeometry` reads, as one string** (wbp2): both ends'
+//: place and rendered box, the layout and the branch's own, which end is the
+//: tree's root, the four themed fields the line's look resolves (the topic's
+//: own, its level's, the map's), the topic's own bend, pinned sides and label,
+//: and its branch colour. `tests/test_map_edge_cache.py` changes each in turn
+//: and fuzzes them together: an input the geometry starts reading goes here,
+//: or that test fails. Cheaper than the geometry by a factor of thirty, which
+//: is the whole of why it exists.
+function wbMapEdgeKey(parent, child, layout, colors) {
+  const p = wbMapNodeSize(parent);
+  const c = wbMapNodeSize(child);
+  const themed = wbMapThemedData(child);
+  const own = child.data || WB_MAP_NO_THEME;
+  return `${layout}|${child._bl}|${child._blTop}|${parent.id}|${parent.parent_id == null}|${parent.x},${parent.y},${p.w},${p.h}|${child.x},${child.y},${c.w},${c.h}|${themed.edge_style}|${themed.edge_dashed}|${themed.edge_width}|${themed.edge_arrow}|${own.edge_from}|${own.edge_to}|${own.edge_slide}|${own.edge_bend}|${own.edge_label}|${own.edge_label_dx}|${own.edge_label_dy}|${colors.get(child.id)}`;
 }
 
 //: Everything one tree edge draws, worked out from the two topics it joins,
@@ -4359,7 +4408,7 @@ function wbMapEdgePlusPoint(parent, child, layout) {
 //:
 //: Invisible until the pointer is on it (CSS), which is what keeps a map of
 //: two hundred lines from being a map of two hundred buttons.
-function wbRenderMapEdgePluses(index, hidden, layout) {
+function wbRenderMapEdgePluses(edges, layout, only = null) {
   const host = document.getElementById("wb-html-layer");
   if (!host) return;
   let layer = host.querySelector(".wb-map-plus-layer");
@@ -4382,33 +4431,18 @@ function wbRenderMapEdgePluses(index, hidden, layout) {
   //: the layer's disagree (`mapstrip.js` pairs the first line with the first
   //: `+`).
   const cache = layer._wbPluses instanceof Map ? layer._wbPluses : (layer._wbPluses = new Map());
-  const wanted = new Set();
-  let slot = 0;
-  for (const parent of index.nodes) {
-    if (hidden.has(parent.id) || parent.data?.collapsed) continue;
-    for (const child of index.childrenOf.get(parent.id) || []) {
-      if (hidden.has(child.id)) continue;
-      const key = `${parent.id}:${child.id}`;
-      wanted.add(key);
+  //: Stale buttons out first, for `wbRenderMapEdges`'s reason.
+  wbMapDropStale(cache, new Set(edges.map((edge) => edge.key)));
+  edges.forEach(({ parent, child, key }, slot) => {
+    let button = cache.get(key);
+    if (!(only && button && !only.has(parent.id) && !only.has(child.id))) {
       const middle = wbMapEdgePlusPoint(parent, child, layout);
-      const left = `${middle.x - 12}px`;
-      const top = `${middle.y - 12}px`;
-      let button = cache.get(key);
-      if (!button) {
-        button = wbMapEdgePlusButton(parent.id, child.id);
-        cache.set(key, button);
-      }
-      if (button.style.left !== left) button.style.left = left;
-      if (button.style.top !== top) button.style.top = top;
-      if (layer.childNodes[slot] !== button) layer.insertBefore(button, layer.childNodes[slot] || null);
-      slot += 1;
+      if (!button) cache.set(key, (button = wbMapEdgePlusButton(parent.id, child.id)));
+      button.style.left = `${middle.x - 12}px`;
+      button.style.top = `${middle.y - 12}px`;
     }
-  }
-  for (const [key, button] of cache) {
-    if (wanted.has(key)) continue;
-    button.remove();
-    cache.delete(key);
-  }
+    if (layer.childNodes[slot] !== button) layer.insertBefore(button, layer.childNodes[slot] || null);
+  });
 }
 
 //: One mid-line `+`, built once for the line between two topics.
@@ -4745,7 +4779,7 @@ async function wbMapPasteText(text) {
   if (wbMapLayout() !== "free") await wbMapTidy({ onlyBranch: wbMapTidyBranchScope(node ? node.id : null), quiet: true });
   if (made[0]) selectWbItem("object", made[0].id);
   const n = made.length;
-  wbAnnounce(`Pasted ${n} topic${n === 1 ? "" : "s"}`);
+  wbAnnounce(`Pasted ${nounCount(n, "topic")}`);
   return n;
 }
 
@@ -4913,6 +4947,7 @@ function mapPaletteCommands() {
     row("This topic", "ph:paint-bucket Paste style onto this topic", () => wbPasteCopiedStyle(), "Ctrl+Alt+V");
     row("This topic", "ph:stack Use this look for its level", () => wbMapUseLookForLevel(node.id));
     row("This topic", "ph:text-align-left Summarise this branch", () => wbMapSummariseBranch(node));
+    if (!(node.parent_id == null && wbMapLevels(wbMapIndex()).get(node.id) === 0)) row("This topic", "ph:arrow-bend-right-down Move under…", () => wbMapMoveUnder(node.id), "M");
     row("This topic", "ph:copy Copy this branch as an outline", () => wbMapCopyBranchOutline(node.id));
     row("This topic", "ph:export Export this branch…", () => wbMapExportBranch(node.id));
     row("This topic", "ph:trash Delete the topic and its branch", () => wbMapDeleteSubtree(node.id), "Delete");
@@ -5062,7 +5097,7 @@ async function wbMapAdoptProvisional(row, { expand = null, origin = null, order 
   //: mid-line `+` and its waypoint handle are drawn again under the new. Not
   //: a whole render (MINDMAP_PLAN 15, row 4: one render per act, not two);
   //: the topic itself took its new id on its element above.
-  wbRenderMapEdges();
+  wbRenderMapEdges({ only: new Set([made.id]) });
   return true;
 }
 
@@ -5231,6 +5266,51 @@ async function wbMapOutdent(id) {
   } catch (err) {
     toast(err.message || voiceLine("failed", { what: "move that node" }), true);
   }
+}
+
+//: **Move under…** (audit 1028 U4, WCAG 2.5.7): a branch has a way to a new
+//: parent that is not a drag. A searchable list of every topic it may go under
+//: (not itself or anything in its own branch, not the parent it already has),
+//: then the same `wbMapTransplant` a drop uses, so the cycle check and the one
+//: Undo step are the drag's own. Keys: M; the topic menu, palette and sheet.
+function wbMapMoveUnder(id) {
+  const index = wbMapIndex();
+  const node = index.byId.get(id);
+  if (!node) return;
+  const own = new Set(wbMapSubtree(index, id).map((o) => o.id));
+  const options = index.nodes.filter((n) => !own.has(n.id) && n.id !== node.parent_id);
+  if (!options.length) {
+    toast("There is nowhere else to put this topic.", "info");
+    return;
+  }
+  const shell = pickerDialog({
+    title: "Move under…",
+    about: `Pick the topic that "${wbMapLabel(node) || "this topic"}" and its branch go under.`,
+    placeholder: "Search topics…",
+  });
+  const paint = () => {
+    const term = shell.search.value.trim().toLowerCase();
+    const rows = options.filter((n) => !term || (wbMapLabel(n) || "").toLowerCase().includes(term)).slice(0, 80);
+    if (!rows.length) {
+      const none = document.createElement("li");
+      none.className = "muted entry-pick-about";
+      none.textContent = "No topic matches.";
+      shell.list.replaceChildren(none);
+      return;
+    }
+    shell.list.replaceChildren(...rows.map((n) => {
+      const li = document.createElement("li");
+      const button = richPickerRow({ tag: "button", role: null, icon: "ph:tree-structure", label: wbMapLabel(n) || "Untitled topic" });
+      button.addEventListener("click", () => shell.close(n.id));
+      li.appendChild(button);
+      return li;
+    }));
+  };
+  shell.search.addEventListener("input", paint);
+  paint();
+  new Promise((resolve) => shell.open(resolve)).then((targetId) => {
+    if (targetId != null) wbMapTransplant(node, targetId, false, { via: "menu" });
+  });
 }
 
 //: **Ctrl+Enter: a parent topic** (XMind's Insert parent topic, which the map
@@ -5540,12 +5620,12 @@ async function wbMapDeleteSubtree(id) {
   //: Inside a recorded gesture the gesture pushes the one step for the whole
   //: act; the toast's Undo is then the board's own.
   if (wbRecordDepth > 0) {
-    toastAction(`Deleted ${count} node${count === 1 ? "" : "s"}.`, "Undo", () => wbUndo());
+    toastAction(`Deleted ${nounCount(count, "node")}.`, "Undo", () => wbUndo());
     return;
   }
   wbPushUndo(entry);
   toastAction(
-    `Deleted ${count} node${count === 1 ? "" : "s"}.`,
+    `Deleted ${nounCount(count, "node")}.`,
     "Undo",
     async () => {
       const at = wbUndoStack.lastIndexOf(entry);
@@ -6313,7 +6393,7 @@ async function wbMapTidy({ onlyBranch = null, quiet = false } = {}) {
   //: half of pressing Tab and must never move the view while someone is
   //: typing, and a tidy whose result already fits is a view nobody asked to
   //: have changed.
-  if (onlyBranch == null && wbMapSpillsOffCanvas()) wbZoomToFit({ animate: false });
+  if (onlyBranch == null && wbMapSpillsOffCanvas()) wbFrameSpilledMap();
   await wbSaveBulkMove(origin);
   return origin.size;
 }
@@ -6379,6 +6459,16 @@ async function wbMapTidyFresh() {
     wbRecordDepth -= 1;
   }
   wbFrameMapOnOpen();
+}
+
+//: A whole-map tidy that spilled fits the map, as it always did; only a narrow
+//: canvas (`wbMapFrameScales`) takes the phone frame, where a fit reads at 4px.
+//: On desktop `wbFrameMapOnOpen` would jump a large map to its root at 1:1
+//: instead of showing all of it.
+function wbFrameSpilledMap() {
+  const container = document.getElementById("whiteboard-container");
+  if (container && wbMapFrameScales(container).open < 1) wbFrameMapOnOpen();
+  else wbZoomToFit({ animate: false });
 }
 
 //: Is any part of the map outside the canvas right now? Read off the rendered
@@ -7127,7 +7217,7 @@ async function wbMapStyleMany(topics, patchOf) {
   }
   if (!changed.length) return 0;
   wbPushDragUndo(entries);
-  for (const node of changed) await wbSaveObject(node);
+  await wbSaveMany(changed.map((item) => ({ kind: "object", item })));
   renderWhiteboardNow();
   return changed.length;
 }
@@ -7476,7 +7566,7 @@ const WB_MAP_TEXT_MAX = 44;
 //: every card and sketch, the "glitchy and slow to update" report this file
 //: already carries) and re-places the strip, whose width changes with what it
 //: now says.
-async function wbMapSetNodeStyle(node, patch, { undo = true } = {}) {
+async function wbMapSetNodeStyle(node, patch, { undo = true, rows = null } = {}) {
   if (!node) return;
   //: Every map-topic look goes through here (the strip, the rings, edge
   //: bends, reset to branch), so undo is recorded once here rather than at
@@ -7486,7 +7576,9 @@ async function wbMapSetNodeStyle(node, patch, { undo = true } = {}) {
   node.data = { ...node.data, ...patch };
   const el = document.querySelector(`.wb-object[data-id="${node.id}"]`);
   if (el) wbPaintMapNodeStyle(el, node);
-  await wbSaveObject(node);
+  //: A selection passes `rows` and saves them once (BD2: one request, not one per topic).
+  if (rows) rows.push({ kind: "object", item: node });
+  else await wbSaveObject(node);
   wbUpdateSelectionBar();
 }
 
@@ -8104,7 +8196,7 @@ async function wbMapCopyBranch(id) {
   if (!source) return;
   const subtree = wbMapSubtree(index, id);
   if (subtree.length > WB_MAP_COPY_MAX) {
-    toast(`That branch has ${subtree.length} topics: copying stops at ${WB_MAP_COPY_MAX}.`, "info");
+    toast(`That branch has ${nounCount(subtree.length, "topic")}: copying stops at ${WB_MAP_COPY_MAX}.`, "info");
     return;
   }
   const mapped = new Map();
@@ -8138,7 +8230,7 @@ async function wbMapCopyBranch(id) {
   renderWhiteboardNow();
   const rootCopy = mapped.get(id);
   if (rootCopy) selectWbItem("object", rootCopy);
-  toast(`Copied ${mapped.size} topic${mapped.size === 1 ? "" : "s"}.`);
+  toast(`Copied ${nounCount(mapped.size, "topic")}.`);
 }
 
 //: A branch big enough that copying it is a mistake rather than an intention.
@@ -8183,7 +8275,7 @@ const WB_MAP_STYLE_KEYS = [
 //: And a boundary and a summary (decisions 19, 20): what the map says.
 const WB_MAP_CONTENT_KEYS = [
   "image", "task", "note", "boundary", "boundary_label", "summary", "summary_span",
-  "priority", "progress", "flag", "markers", "due", "branch_layout", "callout", "labels", "stamps",
+  "priority", "progress", "flag", "markers", "due", "branch_layout", "callout", "labels", "stamps", "stamped",
 ];
 
 //: **Reaction stamps and votes** (Miro; MINDMAP_PLAN 14.4): six Phosphor
@@ -8194,13 +8286,46 @@ const WB_MAP_STAMPS = Object.freeze([
   ["check", "check-circle", "Agree"], ["question", "question", "Question"], ["fire", "fire", "Hot"],
 ]);
 
-//: One more of a stamp on a topic, one Undo step.
-async function wbMapAddStamp(node, name) {
+//: **A stamp is a toggle per person** (INBOX 1493, "no wqay tp remove a stamp
+//: vote"): a press adds yours, a second press takes yours back; `stamped` names
+//: the stamps that are yours, each one counted in `stamps` too. A count from
+//: before the toggle has no owner, so it comes down with the chip's menu:
+//: Remove one ("one") or Clear all ("all"). Pure: returns the patch and the
+//: words for the live region, or null when there is nothing to do.
+function wbMapStampPatch(data, name, how) {
   const known = WB_MAP_STAMPS.find(([n]) => n === name);
-  if (!node || !known) return;
-  const stamps = { ...(node.data?.stamps || {}) };
-  stamps[name] = Math.min(999, (stamps[name] || 0) + 1);
-  await wbMapSetExtra(node, { stamps }, `${known[2]}: ${stamps[name]}.`);
+  if (!known) return null;
+  const stamps = { ...(data?.stamps || {}) };
+  let mine = (Array.isArray(data?.stamped) ? data.stamped : []).filter((n) => stamps[n] > 0 && n !== name);
+  const owned = Array.isArray(data?.stamped) && data.stamped.includes(name);
+  const count = stamps[name] || 0;
+  let said;
+  if (how === "toggle" && owned) {
+    stamps[name] = count - 1;
+    said = `${known[2]}: yours taken back.`;
+  } else if (how === "toggle") {
+    if (count >= 999) return null;
+    stamps[name] = count + 1;
+    mine.push(name);
+    said = `${known[2]}: yours added.`;
+  } else if (!count) {
+    return null;
+  } else if (how === "one") {
+    stamps[name] = count - 1;
+    if (owned && stamps[name] > 0) mine.push(name);
+    said = `${known[2]}: one removed.`;
+  } else {
+    delete stamps[name];
+    said = `${known[2]}: cleared.`;
+  }
+  if (!(stamps[name] > 0)) delete stamps[name];
+  return { stamps: Object.keys(stamps).length ? stamps : null, stamped: mine.length ? mine : null, said };
+}
+
+//: One press, one Undo step.
+async function wbMapStampSet(node, name, how) {
+  const patch = node ? wbMapStampPatch(node.data, name, how) : null;
+  if (patch) await wbMapSetExtra(node, { stamps: patch.stamps, stamped: patch.stamped }, patch.said);
 }
 
 //: A topic's callout (canvasdepth2), read off its own data: content. The
@@ -8219,7 +8344,8 @@ function wbMapPaintExtras(node, data) {
   const stamps = WB_MAP_STAMPS.filter(([name]) => data.stamps?.[name] > 0);
   if (tags) {
     tags.hidden = !labels.length && !stamps.length;
-    const key = `${labels.join("\u0000")}|${stamps.map(([name]) => `${name}${data.stamps[name]}`).join(",")}`;
+    const mine = Array.isArray(data.stamped) ? data.stamped : [];
+    const key = `${labels.join("\u0000")}|${stamps.map(([name]) => `${name}${data.stamps[name]}${mine.includes(name) ? "m" : ""}`).join(",")}`;
     if (tags.dataset.key !== key) {
       tags.dataset.key = key;
       tags.replaceChildren(...labels.map((label) => {
@@ -8228,17 +8354,26 @@ function wbMapPaintExtras(node, data) {
         chip.textContent = label;
         return chip;
       }), ...stamps.map(([name, glyph, said]) => {
+        const yours = mine.includes(name);
+        const wrap = document.createElement("span");
+        wrap.className = "wb-map-stamp-wrap";
         const chip = document.createElement("button");
         chip.type = "button";
         chip.className = "wb-map-stamp";
         chip.dataset.stamp = name;
-        chip.title = `${said}: press to add one`;
-        chip.setAttribute("aria-label", `${said}, ${data.stamps[name]}. Press to add one.`);
+        chip.setAttribute("aria-pressed", String(yours));
+        chip.title = `${said}: ${yours ? "press to take yours back" : "press to add yours"}`;
+        chip.setAttribute("aria-label", `${said}, ${data.stamps[name]}${yours ? ", yours included" : ""}. ${yours ? "Press to take yours back." : "Press to add yours."}`);
         const icon = document.createElement("i");
         icon.className = `ph ph-${glyph}`;
         icon.setAttribute("aria-hidden", "true");
         chip.append(icon, String(data.stamps[name]));
-        return chip;
+        const live = () => wbMapLiveDatum({ id: Number(node.dataset.id) });
+        wrap.append(chip, kebabMenu([
+          { label: "Remove one", title: "Takes one off the count", run: () => wbMapStampSet(live(), name, "one") },
+          { label: "Clear all", title: "Every count of this stamp; Ctrl+Z brings them back", danger: true, run: () => wbMapStampSet(live(), name, "all") },
+        ], `${said} stamp options`));
+        return wrap;
       }));
     }
     tags.title = labels.length ? "Labels: double-click to change them" : "";
@@ -8541,6 +8676,12 @@ function wbMapCrossLinkInfo(sketchId) {
   return { sketch, data, source, target, index };
 }
 
+//: A waypoint handle shown or hidden, with the line's `<g>` that shows its ends.
+function wbMapEdgeShown(handle, on) {
+  handle.classList.toggle("is-shown", on);
+  handle.parentNode.classList.toggle("is-shown", on);
+}
+
 //: **Which lines show their waypoint handle without being pointed at.**
 //:
 //: Two routes, and the second is not a luxury. Hover (the `<g>` wrapper, in
@@ -8571,10 +8712,13 @@ function wbSyncMapEdgeHandles() {
       if (handle) want.add(handle);
     }
   }
+  //: The line's own `<g>` carries the class too: the two end grips are shown by
+  //: it, where a `:has()` on the handle made every class write on the board
+  //: re-match two hundred lines (OPEN 813).
   for (const handle of group.querySelectorAll(".wb-map-edge-handle.is-shown")) {
-    if (!want.has(handle)) handle.classList.remove("is-shown");
+    if (!want.has(handle)) wbMapEdgeShown(handle, false);
   }
-  for (const handle of want) if (!handle.classList.contains("is-shown")) handle.classList.add("is-shown");
+  for (const handle of want) if (!handle.classList.contains("is-shown")) wbMapEdgeShown(handle, true);
   //: **The selected topic's lines are drawn last** (K31): SVG takes the
   //: pointer in paint order, and a sibling line sharing a leg (an elbow's
   //: trunk, a stack of topics under one another) lay over this line's end
@@ -9185,7 +9329,9 @@ function wbMapSetLinkStyle(value) {
   return wbMapSetTheme({ edge_style: value === fallback ? null : value });
 }
 
-async function wbMapSetLayoutNow(layout) {
+//: `quiet`: the caller has just said which layout it wants (a template), so
+//: "Laid out 7 nodes" would only cover the map it drew (blind test 1031, 390px).
+async function wbMapSetLayoutNow(layout, { quiet = false } = {}) {
   const boardId = window.currentBoardId;
   if (!boardId || !wbIsMap()) return;
   try {
@@ -9197,9 +9343,10 @@ async function wbMapSetLayoutNow(layout) {
     wbSyncMapChrome();
     const moved = await wbMapTidy({ quiet: true });
     renderWhiteboardNow();
+    if (quiet) return;
     toast(layout === "free"
       ? "Layout set to Free, nodes stay where you put them."
-      : `Laid out ${moved} node${moved === 1 ? "" : "s"}.`);
+      : `Laid out ${nounCount(moved, "node")}.`);
   } catch (err) {
     toast(err.message || voiceLine("failed", { what: "change the layout" }), true);
   }

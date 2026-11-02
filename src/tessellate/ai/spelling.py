@@ -24,7 +24,6 @@ composer offers "Did you mean" instead of guessing silently.
 
 from __future__ import annotations
 
-import logging
 import re
 from collections import Counter
 from collections.abc import Callable
@@ -123,6 +122,9 @@ def set_topic_source(source: Callable[[], list]) -> None:
     _topic_source = source
     _app_counts.cache_clear()
     _dictionary.cache_clear()
+    #: Both are read from the dictionary just dropped.
+    _index.cache_clear()
+    _candidates.cache_clear()
 
 
 def _help_text() -> str | None:
@@ -140,6 +142,8 @@ def _help_text() -> str | None:
             if isinstance(t, dict)
         )
     except Exception:  # noqa: BLE001 - a missing help must not stop a question being read
+        import logging  # only on this failure path: the cold import is budgeted
+
         logging.getLogger(__name__).debug("the help topics could not be read; questions are read without them", exc_info=True)
         return None
 
@@ -172,6 +176,7 @@ _QUOTED = re.compile(r'"[^"\n]{1,80}"|\u201c[^\u201d\n]{1,80}\u201d')
 #: The general English list lives with the spelling pairs (`variants`, a
 #: leaf: search reads it too, and must not reach the speller's help text).
 english = variants.english
+short_english = variants.short_english
 
 
 #: A long word of the general list is a target, never above a listed word:
@@ -337,9 +342,11 @@ def _accept(typed: str, base: str, d: float) -> bool:
     return d <= 1.0 and typed[0] == base[0] and typed[-1] == base[-1]
 
 
+@lru_cache(maxsize=4096)
 def _candidates(stem: str, distance):  # noqa: ANN001
     """The list words near a stem, as (distance, -weight, word); cached, since
-    one question is read many times over (`composer.rephrase`)."""
+    one question is read many times over (`composer.rephrase`). It said so
+    and was not, and one typo cost 4 to 10 s (audit 1030 Z65)."""
     index = _index()
     weights = _dictionary()
     mask = _mask(stem)
@@ -578,6 +585,9 @@ def _fix_short(word: str, after: str, before: str, distance):  # noqa: ANN001
     """A two- or three-letter token that is no word: read as a small word only
     when a letter was dropped or swapped, and between words (not alone)."""
     if len(word) < 2 or word in KNOWN_SHORT or not (after or before):
+        return None
+    #: "oat milk" is not "at milk": a word of the general list stays (Z66).
+    if len(word) == 3 and word in short_english():
         return None
     if len(word) == 2:
         return _two_letter_reading(word, after, distance)
@@ -864,7 +874,7 @@ def warm_in_background() -> None:
     _WARMED["started"] = True
     from tessellate.core import jobs
 
-    jobs.enqueue("warm", _warm, name="warm the spelling lists", dedupe_key="spelling-warm")
+    jobs.enqueue("warm", _warm, name="the spelling lists", dedupe_key="spelling-warm")
 
 
 def _warm() -> None:
@@ -874,4 +884,6 @@ def _warm() -> None:
         _common()
         variants.pairs()
     except Exception:  # noqa: BLE001  # a warm-up that fails leaves the first use to build them
+        import logging  # only on this failure path: the cold import is budgeted
+
         logging.getLogger(__name__).debug("spelling warm-up failed; the first question builds the lists", exc_info=True)

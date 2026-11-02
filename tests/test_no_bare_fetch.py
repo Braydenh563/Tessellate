@@ -48,6 +48,9 @@ ALLOWED = {
     # carrying the token themselves.
     "capture.js": 1,
     "clip.js": 1,
+    # The desktop companion's window (desktop-companion.html): a page of its
+    # own as well, one `call` carrying the token.
+    "desk-companion.js": 1,
     # A Web Worker (the offline translator, Brief 83) has no app.js and so no
     # `api()`: its engine (.wasm) and model files, from an open route.
     "translate-worker.js": 2,

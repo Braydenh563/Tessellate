@@ -33,6 +33,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 DOCUMENTS_JS = ROOT / "frontend" / "js" / "documents.js"
+from tests._app_js import documents_text  # noqa: E402
 
 #: The marker *lines*, not the bare names: documents.js's own comment above
 #: the region says what the markers are for, so the names appear twice in the
@@ -43,7 +44,7 @@ END = "// DOC-TABLE-END"
 
 def table_model_source() -> str:
     """The bracketed region of documents.js, on its own."""
-    text = DOCUMENTS_JS.read_text(encoding="utf-8")
+    text = documents_text()
     start = text.find(BEGIN)
     end = text.find(END)
     assert start != -1, f"{BEGIN} marker is missing from documents.js"
@@ -431,8 +432,8 @@ def test_read_view_table_is_set_like_prose_and_counts_rows_plainly() -> None:
     css = (ROOT / "frontend" / "css" / "09-editor.css").read_text(encoding="utf-8")
     rule = css[css.index("#doc-preview .md-table-block:not(.is-full) .md-table") :].split("}")[0]
     assert "font-family: var(--font-sans)" in rule and "width: auto" in rule and "max-width: 100%" in rule
-    markdown = (ROOT / "frontend" / "js" / "markdown.js").read_text(encoding="utf-8")
-    assert "table · header and ${bodyRows.length} row" in markdown and "table · header only" in markdown
+    markdown = (ROOT / "frontend" / "js" / "table-block.js").read_text(encoding="utf-8")
+    assert 'table · header and ${nounCount(bodyRows.length, "row")}' in markdown and "table · header only" in markdown
 
 
 def test_list_markers_do_not_inherit_the_hanging_indent() -> None:
@@ -440,7 +441,7 @@ def test_list_markers_do_not_inherit_the_hanging_indent() -> None:
     x -6 (half outside the page, 40 px from its words) because the inline-block
     marker inherited the line's `text-indent: -1.6em`; with it reset the glyph
     is at 18 and the words at 42."""
-    source = DOCUMENTS_JS.read_text(encoding="utf-8")
+    source = documents_text()
     for name in ("cm-md-li-bullet", "cm-md-li-num"):
         line = next(ln for ln in source.splitlines() if f'".{name}": ' in ln)
         assert 'textIndent: "0"' in line, name

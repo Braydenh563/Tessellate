@@ -8,6 +8,7 @@ the notes. `layoutTreemap` (graph.js) is the pure part, run here in node with
 the vendored d3; the drawing, the picker and the help are read from source.
 """
 
+from tests._help_text import help_chat_text
 import json
 import re
 import shutil
@@ -102,6 +103,6 @@ def test_the_picker_the_layout_list_and_the_drawing_know_the_treemap() -> None:
 
 
 def test_the_help_names_the_treemap() -> None:
-    chat = (ROOT / "src" / "tessellate" / "ai" / "help_chat.py").read_text(encoding="utf-8")
+    chat = help_chat_text()
     assert "Force, Tree, Radial, Arc or Treemap" in chat
     assert "Treemap" in HTML[HTML.index('id="graph-help-panel"') :][:2600]

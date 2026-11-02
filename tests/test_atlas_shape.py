@@ -373,10 +373,11 @@ def test_a_blink_is_a_lid_sweeping_down_not_a_patch_fading_in():
     # The clock asks `atlasMotionOK`, the one reading every idle loop shares.
     may = ATLAS[ATLAS.index("function atlasBlinkMay(") : ATLAS.index("function atlasBlinkTick(")]
     assert "if (!atlasMotionOK(box)) return false;" in may
-    # The system hint is one query made once, above the function (a fresh
-    # matchMedia per tail frame was 43ms a profile).
-    may = ATLAS[ATLAS.index("const ATLAS_REDUCE_QUERY") : ATLAS.index("function atlasRigAttach(")]
-    assert 'avatarMotion === "off"' in may and "prefers-reduced-motion: reduce" in may and 'dataset.motion === "reduced"' in may
+    # Reduced motion is one dataset read per frame of the tail (a fresh
+    # matchMedia per frame was 43ms a profile); the one resolved value is
+    # `data-motion` (INBOX 1506), so the loop never asks the query.
+    may = ATLAS[ATLAS.index("function atlasMotionOK(") : ATLAS.index("function atlasRigAttach(")]
+    assert 'avatarMotion === "off"' in may and 'dataset.motion === "reduced"' in may and "matchMedia" not in may
 
 
 
@@ -975,7 +976,9 @@ def test_the_feminine_look_has_astral_wisps_that_drift_on_a_box():
     assert "& .atl-lw-wisps { animation: atl-wisp-drift" in CSS
     body = _keyframes("atl-wisp-drift").split("{", 1)[1]
     assert set(re.findall(r"([a-z-]+)\s*:", body)) <= {"rotate", "translate"}
-    assert ".atl-lw-neb, .atl-lw-neb-front, .atl-lw-wisps { animation: none !important; }" in CSS
+    assert re.search(
+        r"\.atl-lw-neb,\n[^\n]*\.atl-lw-neb-front,\n[^\n]*\.atl-lw-wisps \{ animation: none !important; \}", CSS
+    )
 
 
 def test_one_aura_centred_on_the_figure_and_no_stray_glows():
@@ -1170,7 +1173,10 @@ def test_the_hair_and_her_tail_move_on_the_compositor():
     assert "& .atl-lw-tip { animation: atl-tail-wave 8.3s ease-in-out -2.05s infinite alternate; }" in CSS
     assert "& .atl-lw-tail { animation-delay: -4.15s; }" in CSS
     assert "& .atl-lw-tail { animation: atl-tail-flow 8.3s ease-in-out infinite alternate; }" in CSS
-    assert '.atl-lw-hair[data-atlas-look="masculine"], .atl-lw-hair[data-atlas-look="feminine"], .atl-lw-tip { animation: none !important; }' in CSS
+    assert re.search(
+        r'\.atl-lw-hair\[data-atlas-look="masculine"\],\n[^\n]*\.atl-lw-hair\[data-atlas-look="feminine"\],\n[^\n]*\.atl-lw-tip \{ animation: none !important; \}',
+        CSS,
+    )
     for name in ("atl-tail-wave", "atl-hair-trail"):
         body = _keyframes(name).split("{", 1)[1]
         assert set(re.findall(r"([a-z-]+)\s*:", body)) <= {"rotate"}, name

@@ -35,7 +35,7 @@ def test_notes_files_and_uploads_go_with_their_space(client):
     assert upload.status_code == 200, upload.text
     keep = client.post("/entries", json={"content": "stays in default"}).json()
 
-    deleted = client.delete(f"/spaces/{space_id}")
+    deleted = client.delete(f"/spaces/{space_id}?purge=1")
     assert deleted.status_code == 200
 
     everything = client.get("/entries", headers={"X-Workspace-ID": "all"}).json()

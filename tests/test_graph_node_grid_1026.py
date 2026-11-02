@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parent.parent
 
 
 def _fn(text: str, name: str) -> str:
-    start = re.search(rf"\nfunction {name}\(", text).start() + 1
+    start = re.search(rf"\nfunction\*? {name}\(", text).start() + 1
     return text[start : text.index("\n}\n", start) + 2]
 
 
@@ -217,7 +217,7 @@ def test_the_cleanup_drops_both_grids_and_still_clears_planted_notes() -> None:
 
 
 def test_the_pushes_use_the_filed_curve_and_the_step_off_the_grid_in_order() -> None:
-    cleanup = _fn(WORKER, "untangleCleanup")
+    cleanup = _fn(WORKER, "untangleCleanupSteps")  # 1514: the cleanup is a generator, resumed in slices
     # The push turns read the points filed with each line and refile one only when an end moved.
     push = cleanup[cleanup.index("for (let iter = 0;") : cleanup.index("// A note that travelled too far")]
     assert "lineCurveFile(k)" in push and "lineGridTouches(node, k)" in push and "stale[k]" in push, push

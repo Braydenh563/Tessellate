@@ -56,3 +56,16 @@ def test_1419_a_help_popover_fades_out_before_it_goes_home():
     assert "afterMenuExit(panel, () => {" in body
     assert "clearTimeout(panel._exitTimer);" in body
     assert re.search(r"\.help-popover\.hidden,\s*\.action-menu\.hidden \{", (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8"))
+
+
+# Escape closes the popover and nothing else (dashcls-1031).
+
+def test_escape_in_a_popover_is_spent_there_and_focus_goes_back_to_its_button():
+    text = frontend_text("menus.js")
+    handler = text[text.index("event.helpPopoverSpent = true") - 400 :][:1600]
+    # Later document listeners (Settings' overlay close among them) never see
+    # this press: they used to close the whole dialog with the popover.
+    assert "event.stopImmediatePropagation();" in handler
+    # The press ends with focus back on the "?" that opened the popover.
+    assert "opener.focus(" in handler
+    assert handler.index("closeHelpPopovers()") < handler.index("opener.focus(")

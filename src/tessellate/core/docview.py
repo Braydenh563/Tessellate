@@ -30,7 +30,7 @@ Three kinds of file, three ways in:
 - **Text already** (.md, .txt, .csv, .json, code): read and decoded here.
   No dependency, always available.
 - **A converted document** (.docx, .pdf, .pptx, .xlsx): `entry/importer.py`'s
-  markitdown, which the app can already install from Settings → Optional
+  markitdown, which the app can already install from Settings, Optional
   extras. Absent, this reports that rather than failing in a way that looks
   broken: the same contract `importer` itself keeps.
 - **A scanned page with no text layer**: the vision model's transcription,
@@ -56,6 +56,7 @@ import zipfile
 from dataclasses import dataclass
 from html.parser import HTMLParser
 from pathlib import Path
+from xml.etree.ElementTree import ParseError
 
 from tessellate.core import pdfpages
 
@@ -383,6 +384,255 @@ def docx_has_revisions(path: Path) -> bool:
     return b"<w:ins " in raw or b"<w:del " in raw
 
 
+def _docx_parts(path: Path):  # noqa: ANN202
+    """`(body root, relationships part, numbering part)`, or None for anything
+    that cannot be read: not a zip, no body, a body over the cap, or XML that
+    does not parse. The parts are read with defusedxml, because the file is
+    somebody's upload and an XML bomb is a real shape to refuse."""
+    try:
+        from defusedxml import ElementTree as DefusedET
+    except ImportError:  # defusedxml is a dependency, not an extra
+        return None
+    try:
+        with zipfile.ZipFile(path) as archive:
+            info = archive.getinfo("word/document.xml")
+            if info.file_size > _DOCX_PART_CAP:
+                return None
+            raw = archive.read("word/document.xml")
+            rels = _docx_part(archive, "word/_rels/document.xml.rels", DefusedET.fromstring)
+            numbering = _docx_part(archive, "word/numbering.xml", DefusedET.fromstring)
+    except (KeyError, OSError, zipfile.BadZipFile):
+        return None
+    try:
+        return DefusedET.fromstring(raw), rels, numbering
+    except (ParseError, ValueError):  # not XML, or refused (an entity or DTD): no text
+        return None
+
+
+def _docx_links(rels) -> dict[str, str]:  # noqa: ANN001
+    """External link targets by relationship id."""
+    links: dict[str, str] = {}
+    if rels is not None:
+        for rel in rels.iter(_REL):
+            if rel.get("TargetMode") == "External" and rel.get("Id"):
+                links[rel.get("Id")] = rel.get("Target") or ""
+    return links
+
+
+def _docx_is_mono(run) -> bool:  # noqa: ANN001
+    props = run.find(f"{_W}rPr")
+    fonts = props.find(f"{_W}rFonts") if props is not None else None
+    face = (fonts.get(f"{_W}ascii") or fonts.get(f"{_W}hAnsi") or "") if fonts is not None else ""
+    return face.lower() in _DOCX_MONO
+
+
+def _docx_flag(props, name: str) -> bool:  # noqa: ANN001
+    """Whether a run property (bold, italic, strike) is on: present, and not
+    switched off by a `val` of 0 or false."""
+    node = props.find(f"{_W}{name}") if props is not None else None
+    return node is not None and (node.get(f"{_W}val") or "true") not in ("0", "false")
+
+
+def _docx_run_text(run, deleted: bool, raw: bool = False) -> str:  # noqa: ANN001
+    """One run's words with its markers. The markers go round the trimmed
+    words, not their spaces, so `**bold **` never closes after a space."""
+    tag = f"{_W}delText" if deleted else f"{_W}t"
+    text = "".join(node.text or "" for node in run.iter(tag))
+    if not text.strip() or raw:
+        return text
+    props = run.find(f"{_W}rPr")
+    lead = text[: len(text) - len(text.lstrip())]
+    tail = text[len(text.rstrip()) :]
+    core = text.strip()
+    if _docx_is_mono(run):
+        return f"{lead}`{core}`{tail}"
+    if _docx_flag(props, "strike"):
+        core = f"~~{core}~~"
+    if _docx_flag(props, "i"):
+        core = f"*{core}*"
+    if _docx_flag(props, "b"):
+        core = f"**{core}**"
+    return f"{lead}{core}{tail}"
+
+
+#: Wrappers whose content is read as if they were not there.
+_DOCX_TRANSPARENT = (f"{_W}smartTag", f"{_W}customXml", f"{_W}sdtContent", f"{_W}fldSimple")
+
+
+def _docx_hyperlink(node, links: dict[str, str], deleted: bool) -> str:  # noqa: ANN001
+    """A link keeps its address only when the address is a safe one; anything
+    else (a `javascript:` target, a link with no words) is just its words."""
+    words = _docx_inline(node, links, deleted)
+    target = links.get(node.get(_R_ID) or "", "")
+    if words.strip() and _DOCX_SAFE_LINK.match(target):
+        return f"[{words}]({target})"
+    return words
+
+
+def _docx_revision(node, links: dict[str, str]) -> str:  # noqa: ANN001
+    """A tracked change as suggestion mode's mark, so a draft reviewed in Word
+    arrives with its revisions still to accept or reject."""
+    inserted = node.tag == f"{_W}ins"
+    words = _docx_inline(node, links, not inserted)
+    if not words.strip():
+        return ""
+    return f"{{++{words}++}}" if inserted else f"{{--{words}--}}"
+
+
+def _docx_inline(node, links: dict[str, str], deleted: bool = False) -> str:  # noqa: ANN001
+    """The paragraph's runs, links and revisions, in order."""
+    out = []
+    for child in node:
+        if child.tag == f"{_W}r":
+            out.append(_docx_run_text(child, deleted))
+        elif child.tag == f"{_W}hyperlink":
+            out.append(_docx_hyperlink(child, links, deleted))
+        elif child.tag in (f"{_W}ins", f"{_W}del"):
+            out.append(_docx_revision(child, links))
+        elif child.tag in _DOCX_TRANSPARENT:
+            out.append(_docx_inline(child, links, deleted))
+        elif child.tag == f"{_W}sdt":
+            content = child.find(f"{_W}sdtContent")
+            if content is not None:
+                out.append(_docx_inline(content, links, deleted))
+    return "".join(out)
+
+
+def _docx_list_item(body: str, style: str, num, kinds: dict) -> str:  # noqa: ANN001
+    """A list paragraph as `-` or `1.`, indented by its level. Which one, and
+    the level, come from its numbering when it has any, and from the list
+    style's own name (`List Number 2`) when it has not."""
+    level = 0
+    kind = "number" if "Number" in style else "bullet"
+    if num is not None:
+        ilvl = num.find(f"{_W}ilvl")
+        num_id = num.find(f"{_W}numId")
+        level = int(ilvl.get(f"{_W}val") or 0) if ilvl is not None else 0
+        key = (num_id.get(f"{_W}val") if num_id is not None else "") or ""
+        kind = kinds.get((key, level), kind)
+    else:
+        trailing = re.search(r"(\d)$", style)
+        level = int(trailing.group(1)) - 1 if trailing else 0
+    marker = "1." if kind == "number" else "-"
+    #: The box characters the exporter writes for a task list.
+    body = re.sub(r"^☑\s*", "[x] ", re.sub(r"^☐\s*", "[ ] ", body))
+    return f"{'   ' * level if kind == 'number' else '  ' * level}{marker} {body}"
+
+
+def _docx_style_and_numbering(node):  # noqa: ANN001, ANN202
+    """The paragraph's style name ("" for none) and its numbering node (None
+    for none)."""
+    properties = node.find(f"{_W}pPr")
+    if properties is None:
+        return "", None
+    found = properties.find(f"{_W}pStyle")
+    style = (found.get(f"{_W}val") or "") if found is not None else ""
+    return style, properties.find(f"{_W}numPr")
+
+
+def _docx_heading(style: str, body: str) -> str | None:
+    """A heading or title paragraph as `#`s, or None for any other style."""
+    heading = re.match(r"Heading\s?(\d)", style)
+    if heading:
+        return f"{'#' * min(6, max(1, int(heading.group(1))))} {body}"
+    return f"# {body}" if style.startswith("Title") else None
+
+
+def _docx_paragraph(node, kinds: dict, links: dict[str, str]) -> tuple[str, str]:  # noqa: ANN001
+    """(markdown, block kind): kind is "list" for a list item, so the
+    caller can keep a list's items on consecutive lines. The order of the
+    checks is the precedence: a heading is never a list, a list is never a
+    quote."""
+    style, num = _docx_style_and_numbering(node)
+    #: Every run, empty ones too: a blank line inside a code block is a
+    #: paragraph holding one empty run in the code face.
+    runs = list(node.iter(f"{_W}r"))
+    if runs and all(_docx_is_mono(run) for run in runs) and num is None and not style.startswith(("Heading", "List")):
+        #: Every run in a code face: a line of a code block, as it was.
+        return "".join(_docx_run_text(run, False, raw=True) for run in runs), "code"
+    body = _docx_inline(node, links).strip()
+    if not body:
+        return "", "blank"
+    heading = _docx_heading(style, body)
+    if heading:
+        return heading, "block"
+    if num is not None or style.startswith("List"):
+        return _docx_list_item(body, style, num, kinds), "list"
+    return (f"> {body}" if "Quote" in style else body), "block"
+
+
+def _docx_table(node, links: dict[str, str]) -> list[str]:  # noqa: ANN001
+    """A table as a pipe table, padded to its widest row."""
+    rows = []
+    for row in node.iter(f"{_W}tr"):
+        cells = []
+        for cell in row.findall(f"{_W}tc"):
+            words = " ".join(filter(None, (_docx_inline(p, links).strip() for p in cell.iter(f"{_W}p"))))
+            cells.append(words.replace("|", "\\|"))
+        if cells:
+            rows.append(cells)
+    if not rows:
+        return []
+    width = max(len(row) for row in rows)
+    rows = [row + [""] * (width - len(row)) for row in rows]
+    #: A header row set in bold is a header row: the pipe table's own
+    #: first row already says so, and `**` around each name would not.
+    if all(re.fullmatch(r"\*\*.*\*\*", cell) or not cell for cell in rows[0]):
+        rows[0] = [cell[2:-2] if cell else cell for cell in rows[0]]
+    out = ["| " + " | ".join(rows[0]) + " |", "|" + " --- |" * width]
+    out += ["| " + " | ".join(row) + " |" for row in rows[1:]]
+    return out
+
+
+class _DocxLines:
+    """The output being built, with the one rule that keeps blocks apart: a
+    block that is not a list item starts after a blank line, and a code block
+    stays open across its lines until something else arrives."""
+
+    def __init__(self) -> None:
+        self.lines: list[str] = []
+        self.in_code = False
+
+    def _gap(self) -> None:
+        if self.lines and self.lines[-1] != "":
+            self.lines.append("")
+
+    def leave_code(self) -> None:
+        if self.in_code:
+            self.lines.extend(["```", ""])
+            self.in_code = False
+
+    def table(self, rows: list[str]) -> None:
+        self._gap()
+        self.lines.extend(rows + [""])
+
+    def code(self, text: str) -> None:
+        if not self.in_code:
+            self._gap()
+            self.lines.append("```")
+            self.in_code = True
+        self.lines.append(text)
+
+    def blank(self) -> None:
+        #: A blank paragraph is a blank line, which is what keeps two
+        #: paragraphs from running together as one.
+        self._gap()
+
+    def list_item(self, text: str) -> None:
+        self.lines.append(text)
+
+    def prose(self, text: str) -> None:
+        if self.lines and self.lines[-1] != "" and re.match(r"\s*(-|1\.) ", self.lines[-1]):
+            self.lines.append("")
+        self.lines.extend([text, ""])
+
+    def text(self) -> str:
+        if self.in_code:
+            self.lines.append("```")
+        out = "\n".join(self.lines).strip()
+        return f"{out}\n" if out else ""
+
+
 def docx_to_markdown(path: Path) -> str:
     """A .docx read without markitdown and without python-docx.
 
@@ -402,189 +652,32 @@ def docx_to_markdown(path: Path) -> str:
     Returns "" for anything it cannot read, which is what puts the caller back
     on its existing "no text found" path rather than a traceback.
     """
-    try:
-        from defusedxml import ElementTree as DefusedET
-    except Exception:  # noqa: BLE001 - defusedxml is a dependency, not an extra
+    parts = _docx_parts(path)
+    if parts is None:
         return ""
-    try:
-        with zipfile.ZipFile(path) as archive:
-            info = archive.getinfo("word/document.xml")
-            if info.file_size > _DOCX_PART_CAP:
-                return ""
-            raw = archive.read("word/document.xml")
-            rels = _docx_part(archive, "word/_rels/document.xml.rels", DefusedET.fromstring)
-            numbering = _docx_part(archive, "word/numbering.xml", DefusedET.fromstring)
-    except (KeyError, OSError, zipfile.BadZipFile):
-        return ""
-    try:
-        root = DefusedET.fromstring(raw)
-    except Exception:  # noqa: BLE001
-        return ""
-    links: dict[str, str] = {}
-    if rels is not None:
-        for rel in rels.iter(_REL):
-            if rel.get("TargetMode") == "External" and rel.get("Id"):
-                links[rel.get("Id")] = rel.get("Target") or ""
+    root, rels, numbering = parts
+    links = _docx_links(rels)
     kinds = _docx_list_kinds(numbering)
-
-    def mono(run) -> bool:
-        props = run.find(f"{_W}rPr")
-        fonts = props.find(f"{_W}rFonts") if props is not None else None
-        face = (fonts.get(f"{_W}ascii") or fonts.get(f"{_W}hAnsi") or "") if fonts is not None else ""
-        return face.lower() in _DOCX_MONO
-
-    def run_text(run, deleted: bool, raw: bool = False) -> str:
-        tag = f"{_W}delText" if deleted else f"{_W}t"
-        text = "".join(node.text or "" for node in run.iter(tag))
-        if not text.strip() or raw:
-            return text
-        props = run.find(f"{_W}rPr")
-
-        def on(name: str) -> bool:
-            node = props.find(f"{_W}{name}") if props is not None else None
-            return node is not None and (node.get(f"{_W}val") or "true") not in ("0", "false")
-
-        lead = text[: len(text) - len(text.lstrip())]
-        tail = text[len(text.rstrip()) :]
-        core = text.strip()
-        if mono(run):
-            return f"{lead}`{core}`{tail}"
-        if on("strike"):
-            core = f"~~{core}~~"
-        if on("i"):
-            core = f"*{core}*"
-        if on("b"):
-            core = f"**{core}**"
-        return f"{lead}{core}{tail}"
-
-    def inline(node, deleted: bool = False) -> str:
-        """The paragraph's runs, links and revisions, in order."""
-        out = []
-        for child in node:
-            if child.tag == f"{_W}r":
-                out.append(run_text(child, deleted))
-            elif child.tag == f"{_W}hyperlink":
-                words = inline(child, deleted)
-                target = links.get(child.get(_R_ID) or "", "")
-                if words.strip() and _DOCX_SAFE_LINK.match(target):
-                    out.append(f"[{words}]({target})")
-                else:
-                    out.append(words)
-            elif child.tag in (f"{_W}ins", f"{_W}del"):
-                words = inline(child, child.tag == f"{_W}del")
-                if words.strip():
-                    out.append(f"{{++{words}++}}" if child.tag == f"{_W}ins" else f"{{--{words}--}}")
-            elif child.tag in (f"{_W}smartTag", f"{_W}customXml", f"{_W}sdtContent", f"{_W}fldSimple"):
-                out.append(inline(child, deleted))
-            elif child.tag == f"{_W}sdt":
-                content = child.find(f"{_W}sdtContent")
-                if content is not None:
-                    out.append(inline(content, deleted))
-        return "".join(out)
-
-    def paragraph(node) -> tuple[str, str]:
-        """(markdown, block kind): kind is "list" for a list item, so the
-        caller can keep a list's items on consecutive lines."""
-        style = ""
-        num = None
-        properties = node.find(f"{_W}pPr")
-        if properties is not None:
-            found = properties.find(f"{_W}pStyle")
-            if found is not None:
-                style = found.get(f"{_W}val") or ""
-            num = properties.find(f"{_W}numPr")
-        #: Every run, empty ones too: a blank line inside a code block is a
-        #: paragraph holding one empty run in the code face.
-        runs = list(node.iter(f"{_W}r"))
-        if runs and all(mono(run) for run in runs) and num is None and not style.startswith(("Heading", "List")):
-            #: Every run in a code face: a line of a code block, as it was.
-            return "".join(run_text(run, False, raw=True) for run in node.iter(f"{_W}r")), "code"
-        body = inline(node).strip()
-        if not body:
-            return "", "blank"
-        heading = re.match(r"Heading\s?(\d)", style)
-        if heading:
-            return f"{'#' * min(6, max(1, int(heading.group(1))))} {body}", "block"
-        if style.startswith("Title"):
-            return f"# {body}", "block"
-        if num is not None or style.startswith("List"):
-            level = 0
-            kind = "number" if "Number" in style else "bullet"
-            if num is not None:
-                ilvl = num.find(f"{_W}ilvl")
-                num_id = num.find(f"{_W}numId")
-                level = int(ilvl.get(f"{_W}val") or 0) if ilvl is not None else 0
-                key = (num_id.get(f"{_W}val") if num_id is not None else "") or ""
-                kind = kinds.get((key, level), kind)
-            else:
-                trailing = re.search(r"(\d)$", style)
-                level = int(trailing.group(1)) - 1 if trailing else 0
-            marker = "1." if kind == "number" else "-"
-            #: The box characters the exporter writes for a task list.
-            body = re.sub(r"^☑\s*", "[x] ", re.sub(r"^☐\s*", "[ ] ", body))
-            return f"{'   ' * level if kind == 'number' else '  ' * level}{marker} {body}", "list"
-        if "Quote" in style:
-            return f"> {body}", "block"
-        return body, "block"
-
-    def table(node) -> list[str]:
-        rows = []
-        for row in node.iter(f"{_W}tr"):
-            cells = []
-            for cell in row.findall(f"{_W}tc"):
-                words = " ".join(filter(None, (inline(p).strip() for p in cell.iter(f"{_W}p"))))
-                cells.append(words.replace("|", "\\|"))
-            if cells:
-                rows.append(cells)
-        if not rows:
-            return []
-        width = max(len(row) for row in rows)
-        rows = [row + [""] * (width - len(row)) for row in rows]
-        #: A header row set in bold is a header row: the pipe table's own
-        #: first row already says so, and `**` around each name would not.
-        if all(re.fullmatch(r"\*\*.*\*\*", cell) or not cell for cell in rows[0]):
-            rows[0] = [cell[2:-2] if cell else cell for cell in rows[0]]
-        out =["| " + " | ".join(rows[0]) + " |", "|" + " --- |" * width]
-        out += ["| " + " | ".join(row) + " |" for row in rows[1:]]
-        return out
-
     body = root.find(f"{_W}body")
     blocks = list(body) if body is not None else list(root.iter(f"{_W}p"))
-    lines: list[str] = []
-    in_code = False
+    out = _DocxLines()
     for block in blocks:
         if block.tag not in (f"{_W}tbl", f"{_W}p"):
             continue
-        text, kind = paragraph(block) if block.tag == f"{_W}p" else ("", "table")
-        if in_code and kind != "code":
-            lines.extend(["```", ""])
-            in_code = False
+        text, kind = _docx_paragraph(block, kinds, links) if block.tag == f"{_W}p" else ("", "table")
+        if kind != "code":
+            out.leave_code()
         if kind == "table":
-            if lines and lines[-1] != "":
-                lines.append("")
-            lines.extend(table(block) + [""])
+            out.table(_docx_table(block, links))
         elif kind == "code":
-            if not in_code:
-                if lines and lines[-1] != "":
-                    lines.append("")
-                lines.append("```")
-                in_code = True
-            lines.append(text)
+            out.code(text)
         elif kind == "blank":
-            #: A blank paragraph is a blank line, which is what keeps two
-            #: paragraphs from running together as one.
-            if lines and lines[-1] != "":
-                lines.append("")
+            out.blank()
         elif kind == "list":
-            lines.append(text)
+            out.list_item(text)
         else:
-            if lines and lines[-1] != "" and re.match(r"\s*(-|1\.) ", lines[-1]):
-                lines.append("")
-            lines.extend([text, ""])
-    if in_code:
-        lines.append("```")
-    out = "\n".join(lines).strip()
-    return f"{out}\n" if out else ""
+            out.prose(text)
+    return out.text()
 
 
 def kind_for(suffix: str) -> str:

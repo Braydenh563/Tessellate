@@ -65,8 +65,7 @@ def test_the_map_asks_for_it_and_fills_it_back():
     for key in ("note_type", "graph_pin_x", "graph_pin_y", "parent_id", "has_file", "pinned", "map_ids", "tags", "reason", "reason_confidence", "link_type"):
         assert key in fill, key
     canvas = (ROOT / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8")
-    for body in (text, canvas):
-        assert "apiJson(endpoint).then(graphFill)" in body
+    assert "apiJson(endpoint).then(graphFill)" in canvas
 
 
 def test_the_dashboard_shares_the_maps_payload():

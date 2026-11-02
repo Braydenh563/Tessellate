@@ -46,7 +46,7 @@ def test_the_proposal_lists_each_steps_writes(ai_client, fake_ollama, app_state)
     proposal = next(e for e in _events(ai_client, "tidy up") if e["type"] == "run_plan")
     assert len(proposal["writes"]) == 3
     assert proposal["writes"][0] and "harbor" in proposal["writes"][0][0].lower()
-    assert proposal["writes"][1] and proposal["writes"][1][0].startswith("Pin the note")
+    assert proposal["writes"][1] and proposal["writes"][1][0].startswith("Add the note")
     assert proposal["writes"][2] == []
 
 
@@ -59,7 +59,7 @@ def test_a_plan_run_lists_its_writes_before_the_first_step(ai_client, fake_ollam
     events = _events(ai_client, "Tidy up", plan={"goal": "Tidy up", "steps": steps})
     kinds = [e["type"] for e in events]
     plan = events[kinds.index("plan")]
-    assert plan["writes"][0] and plan["writes"][0][0].startswith("Pin the note")
+    assert plan["writes"][0] and plan["writes"][0][0].startswith("Add the note")
     assert kinds.index("plan") < kinds.index("step")
 
 

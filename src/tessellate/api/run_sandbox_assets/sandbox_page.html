@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Run</title>
+<style>html,body{margin:0;height:100%;background:#fff;color:#111;font:13px system-ui,sans-serif}
+iframe{border:0;width:100%;height:100%;display:block;background:#fff}</style>
+</head><body><script>
+(function () {
+  "use strict";
+  var SQL_WORKER = @@SQL_WORKER@@;
+  var CSS_SAMPLE = @@CSS_SAMPLE@@;
+  var JS_DEBUG = @@JS_DEBUG@@;
+  var worker = null, frame = null, current = 0, evalId = 0, workerKind = "";
+  function up(id, msg) {
+    msg.mmRun = id;
+    if (evalId) { msg.mmEval = evalId; if (msg.t === "eval-done") evalId = 0; }
+    parent.postMessage(msg, "*");
+  }
+  // The stack's frames are the finder, the console method, then the caller:
+  // the first frame from the third on is the user's own source.
+  function prelude(post) {
+    return "(function(){var P=" + post + ";function F(v){if(typeof v==='string')return v;" +
+      "if(v instanceof Error)return v.name+': '+v.message;try{var s=JSON.stringify(v);return s===undefined?String(v):s}catch(e){return String(v)}}" +
+      "function L(){var s=(new Error().stack||'').split('\\n');if(/\\beval at /.test(s[3]||''))return null;for(var i=3;i<s.length;i++){var m=/(?:blob:|srcdoc)[^\\s)]*:(\\d+):\\d+\\)?\\s*$/.exec(s[i]);" +
+      "if(m)return Number(m[1])}return null}" +
+      "['log','info','warn','error','debug'].forEach(function(k){console[k]=function(){var a=[].slice.call(arguments);" +
+      "P({t:'log',level:k,text:a.map(F).join(' '),line:L()})}});" +
+      "self.addEventListener('unhandledrejection',function(e){var r=e.reason,s=String(r&&r.stack||'').split('\\n'),n=null;" +
+      "for(var i=0;i<s.length&&n===null;i++){var m=/(?:blob:|srcdoc)[^\\s)]*:(\\d+):\\d+\\)?\\s*$/.exec(s[i]);if(m)n=Number(m[1])}" +
+      "P({t:'log',level:'error',text:'Uncaught (in promise) '+F(r),line:n})});})();";
+  }
+  function stop() {
+    if (worker) { worker.terminate(); worker = null; }
+    if (frame) { frame.remove(); frame = null; }
+    evalId = 0;
+    workerKind = "";
+  }
+  //: Lines of the document before `source`, as blank lines, so the browser's
+  //: line numbers stay the document's (Run selection, Run cell).
+  function pad(d) { var n = Math.max(0, Math.min(100000, Number(d.lineOffset) || 0)); return new Array(n + 1).join("\n"); }
+  function runJs(id, code, d) {
+    // The timers the script leaves behind are counted, so the app can tell
+    // "the top level ended" from "nothing is left to run" (INBOX 736).
+    var timers = "(function(){var n=0,done=false,live=new Set(),sT=setTimeout,cT=clearTimeout,sI=setInterval,cI=clearInterval;" +
+      "function end(h){if(live.delete(h)&&--n===0&&done)postMessage({t:'idle'})}" +
+      "self.setTimeout=function(f,ms){var a=[].slice.call(arguments,2),h=sT(function(){end(h);typeof f==='function'?f.apply(null,a):0},ms);live.add(h);n++;return h};" +
+      "self.clearTimeout=function(h){cT(h);end(h)};" +
+      "self.setInterval=function(){var h=sI.apply(null,arguments);live.add(h);n++;return h};" +
+      "self.clearInterval=function(h){cI(h);end(h)};" +
+      "self.__mmDone=function(){done=true;postMessage({t:'done',pending:n})}})();";
+    //: A script that says `export` or `require` after the TypeScript pass
+    //: (sucrase's `imports` transform) finds the names it expects; a run has
+    //: no modules to import, and says so by name.
+    var modules = "var exports={},module={exports:exports};function require(n){throw new Error('Cannot import '+n+': a run has no modules.')}";
+    //: The harness is evaluated from a string on the same first line, so it
+    //: adds no line to the document's numbering, and its own frames (`eval
+    //: at`) are not taken for the document's by the line finder.
+    var tests = d && d.tests && d.harness ? "eval(" + JSON.stringify(String(d.harness)) + ");" : "";
+    var after = tests ? "\n;__mmTests().then(__mmDone);" : "\n;__mmDone();";
+    //: The console's listener (D8), on the same first line: an indirect
+    //: `eval` runs at the worker's global scope, so it sees the script's own
+    //: top-level names, `let` and `const` included.
+    var repl = "self.addEventListener('message',function(e){var m=e.data;if(!m||typeof m.mmEval!=='number')return;" +
+      "function S(v){if(typeof v==='string')return JSON.stringify(v);if(typeof v==='function')return 'function '+(v.name||'(anonymous)');" +
+      "if(v instanceof Error)return v.name+': '+v.message;try{var s=JSON.stringify(v);return s===undefined?String(v):s}catch(x){return String(v)}}" +
+      "function E(x){return x instanceof Error?x.name+': '+x.message:'Uncaught '+S(x)}" +
+      "var r;try{r=(0,eval)(String(m.source))}catch(x){postMessage({t:'eval-done',ok:false,text:E(x)});return}" +
+      "if(r&&typeof r.then==='function'){r.then(function(v){postMessage({t:'eval-done',ok:true,text:'Promise resolved: '+S(v)})}," +
+      "function(x){postMessage({t:'eval-done',ok:false,text:'Promise rejected: '+E(x)})});return}" +
+      "postMessage({t:'eval-done',ok:true,text:S(r)})});";
+    var src = prelude("function(m){postMessage(m)}") + timers + modules + repl + tests + pad(d) + code + after;
+    worker = new Worker(URL.createObjectURL(new Blob([src], { type: "text/javascript" })));
+    workerKind = "js";
+    worker.onmessage = function (e) { if (id === current) up(id, e.data); };
+    worker.onerror = function (e) {
+      e.preventDefault();
+      var text = /^Uncaught/.test(e.message) ? e.message : "Uncaught " + e.message;
+      if (id === current) up(id, { t: "log", level: "error", text: text, line: e.lineno || null, uncaught: true });
+    };
+  }
+  function runHtml(id, code, d) {
+    frame = document.createElement("iframe");
+    frame.setAttribute("sandbox", "allow-scripts");
+    var head = "<script>" + prelude("function(m){parent.postMessage(m,'*')}") +
+      "window.addEventListener('error',function(e){e.preventDefault();var m=String(e.message);" +
+      "parent.postMessage({t:'log',level:'error',text:/^Uncaught/.test(m)?m:'Uncaught '+m,line:e.lineno||null,uncaught:true},'*')});<\/script>";
+    frame.srcdoc = head + pad(d) + code;
+    document.body.appendChild(frame);
+    frame.addEventListener("load", function () { if (id === current) up(id, { t: "done" }); });
+  }
+  function handle(e) {
+    var d = e.data || {};
+    if (e.source !== parent || typeof d.mmRun !== "number") return;
+    if (d.type === "stop") { stop(); return; }
+    if (d.type === "eval") { evalJs(d); return; }
+    //: The panel's action at a debugger stop, for the stepping worker.
+    if (d.type === "reply") { if (worker && d.mmRun === current) worker.postMessage({ reply: d.value }); return; }
+    if (d.type !== "run") return;
+    stop();
+    current = d.mmRun;
+    var run = Object.prototype.hasOwnProperty.call(RUNNERS, d.kind) ? RUNNERS[d.kind] : RUNNERS.js;
+    try {
+      run(current, String(d.source != null ? d.source : d.code || ""), d);
+    } catch (err) {
+      up(current, { t: "log", level: "error", text: String(err && err.message || err), line: null });
+    }
+  }
+  function evalJs(d) {
+    evalId = Number(d.mmEval) || 0;
+    try {
+      if (!worker || workerKind !== "js") {
+        if (worker) { worker.terminate(); worker = null; }
+        current = d.mmRun;
+        runJs(current, "", {});
+      }
+      worker.postMessage({ mmEval: evalId, source: String(d.source || "") });
+    } catch (err) {
+      up(current, { t: "eval-done", ok: false, text: String(err && err.message || err) });
+    }
+  }
+  //: SQL (D5): sql.js's text and binary arrive in `lib`, from the app.
+  function runSql(id, code, d) {
+    var lib = d.lib || {};
+    if (typeof lib.js !== "string" || !(lib.wasm instanceof ArrayBuffer)) throw new Error("SQLite did not arrive with the run.");
+    worker = new Worker(URL.createObjectURL(new Blob([lib.js + "\n;" + SQL_WORKER], { type: "text/javascript" })));
+    workerKind = "sql";
+    worker.onmessage = function (e) { if (id === current) up(id, e.data); };
+    worker.onerror = function (e) {
+      e.preventDefault();
+      if (id === current) up(id, { t: "log", level: "error", text: "SQLite stopped: " + e.message, line: null, uncaught: true });
+    };
+    worker.postMessage({ source: code, wasm: lib.wasm, lineOffset: Number(d.lineOffset) || 0, tables: Array.isArray(d.tables) ? d.tables : [] });
+  }
+  //: A page in a frame from a string, shown, `done` when it has loaded.
+  //: The previews (D6) are pages too: a stylesheet over the sample, an SVG
+  //: as an image, a p5 sketch with the library beside it.
+  function showPage(id, html) {
+    frame = document.createElement("iframe");
+    frame.setAttribute("sandbox", "allow-scripts");
+    frame.srcdoc = html;
+    document.body.appendChild(frame);
+    frame.addEventListener("load", function () { if (id === current) up(id, { t: "done" }); });
+  }
+  function errorHead() {
+    return "<script>" + prelude("function(m){parent.postMessage(m,'*')}") +
+      "window.addEventListener('error',function(e){e.preventDefault();var m=String(e.message);" +
+      "parent.postMessage({t:'log',level:'error',text:/^Uncaught/.test(m)?m:'Uncaught '+m,line:e.lineno||null,uncaught:true},'*')});<\/script>";
+  }
+  //: A stylesheet over the sample page. No script runs: the frame carries
+  //: only the sample and the rules, whose `</style` cannot close early.
+  function runCss(id, code) {
+    showPage(id, "<!doctype html><html><head><meta charset='utf-8'><style>" +
+      code.replace(/<\/(style)/gi, "<\\/$1") + "</style></head><body>" + CSS_SAMPLE + "</body></html>");
+  }
+  //: An SVG, parsed here first so a broken one is a row on its line, then
+  //: shown as an image: an `<img>` runs none of the file's own script.
+  function runSvg(id, code) {
+    var parsed = new DOMParser().parseFromString(code, "image/svg+xml");
+    var broken = parsed.querySelector("parsererror");
+    if (broken || !parsed.documentElement || parsed.documentElement.localName !== "svg") {
+      //: The browser's report is a page of its own ("This page contains the
+      //: following errors: error on line 3 at column 7: ..."): its one
+      //: sentence is kept, and its line becomes the row's link.
+      var text = broken ? String(broken.textContent || "").replace(/\s+/g, " ") : "";
+      var at = /error on line (\d+) at column \d+: (.*?)(?: Below is a rendering.*)?$/i.exec(text);
+      var said = !broken ? "This is not an SVG: its outer element is not <svg>." : "Could not read this SVG: " + (at ? at[2] : text).trim();
+      up(id, { t: "log", level: "error", text: said.slice(0, 300), line: at ? Number(at[1]) : null, uncaught: true });
+      return;
+    }
+    showPage(id, "<!doctype html><html><head><meta charset='utf-8'><style>html,body{margin:0;height:100%}" +
+      "body{display:grid;place-items:center;background:#fff;background-image:linear-gradient(45deg,#eee 25%,transparent 25%,transparent 75%,#eee 75%),linear-gradient(45deg,#eee 25%,transparent 25%,transparent 75%,#eee 75%);" +
+      "background-size:16px 16px;background-position:0 0,8px 8px}img{max-width:100%;max-height:100%}</style></head><body>" +
+      "<img alt='' src='data:image/svg+xml;charset=utf-8," + encodeURIComponent(code).replace(/'/g, "%27") + "'></body></html>");
+  }
+  //: A p5.js sketch (D6, INBOX 735): the sketch's own script first, on the
+  //: frame's first line so a line number is the document's, then the
+  //: vendored p5.min.js, handed over by the app, which finds `setup` and
+  //: `draw` and starts. A `</script` in the sketch cannot close it early.
+  function runP5(id, code, d) {
+    var lib = d.lib || {};
+    if (typeof lib.p5 !== "string") throw new Error("p5.js did not arrive with the run.");
+    showPage(id, errorHead() + "<style>html,body{margin:0}canvas{display:block}</style><script>" + pad(d) +
+      code.replace(/<\/(script)/gi, "<\\/$1") + "\n<\/script><script>" + lib.p5.replace(/<\/(script)/gi, "<\\/$1") + "<\/script>");
+  }
+  //: Debug for JavaScript (D3): JS-Interpreter's text, from the app in
+  //: `lib.interp`, and the driver after it, in a worker that steps the script
+  //: and waits between stops for the panel's next action (`reply`).
+  function runJsDebug(id, code, d) {
+    var lib = d.lib || {};
+    if (typeof lib.interp !== "string") throw new Error("The debugger did not arrive with the run.");
+    worker = new Worker(URL.createObjectURL(new Blob([lib.interp + "\n;" + JS_DEBUG], { type: "text/javascript" })));
+    worker.onmessage = function (e) { if (id === current) up(id, e.data); };
+    worker.onerror = function (e) {
+      e.preventDefault();
+      if (id === current) up(id, { t: "log", level: "error", text: "The debugger stopped: " + e.message, line: null, uncaught: true });
+    };
+    worker.postMessage({ source: pad(d) + code, breaks: Array.isArray(d.breaks) ? d.breaks : [], watches: Array.isArray(d.watches) ? d.watches : [], dom: Boolean(d.dom) });
+  }
+  var RUNNERS = { js: runJs, html: runHtml, sql: runSql, css: runCss, svg: runSvg, p5: runP5, jsdebug: runJsDebug };
+  window.onmessage = function (e) {
+    //: A message from the page being run goes up as that run's; anything
+    //: else must be the app's own.
+    if (frame && e.source === frame.contentWindow) { up(current, e.data || {}); return; }
+    handle(e);
+  };
+  parent.postMessage({ mmRun: 0, t: "ready" }, "*");
+})();
+</script></body></html>

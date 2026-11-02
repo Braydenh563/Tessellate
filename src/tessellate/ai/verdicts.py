@@ -21,6 +21,8 @@ import json
 from dataclasses import dataclass, field
 from datetime import date
 
+from tessellate.core import clock
+
 WRONG = "wrong"
 PINNED = "pinned"
 VERDICTS = (WRONG, PINNED)
@@ -72,7 +74,7 @@ def known(session) -> Known:  # noqa: ANN001
         if row.kind == WRONG:
             wrong.add(key)
         else:
-            pinned[key] = (row.computed_at.date() if row.computed_at else date.today())
+            pinned[key] = (row.computed_at.date() if row.computed_at else clock.today())
     return Known(frozenset(wrong - set(pinned)), pinned)
 
 

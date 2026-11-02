@@ -411,6 +411,12 @@ function initComposerResize() {
   // fights the drag; the final height is recorded once on release. The
   // deferred frame stays: a synchronous autoGrow inside the callback is
   // the "ResizeObserver loop" console error.
+  //: `pressed` is a pointer down on the box. Only a pointer resizes a textarea
+  //: by hand, so a size change without one (the app's Ctrl +/- zoom, the
+  //: window, autoGrow) is never a height the person chose: it was recorded as
+  //: one, and its measure was a forced layout of 75 to 118 ms a zoom step at
+  //: 4x CPU (INBOX 1508).
+  const held = { pressed: false };
   let dragging = false;
   const record = () => {
     const height = Math.round(box.getBoundingClientRect().height);
@@ -421,18 +427,20 @@ function initComposerResize() {
     requestAnimationFrame(() => autoGrow(box));
   };
   box.addEventListener("pointerdown", (event) => {
+    held.pressed = true;
     const rect = box.getBoundingClientRect();
     dragging = event.clientX >= rect.right - GRABBER && event.clientY >= rect.bottom - GRABBER;
     if (dragging) box.dataset.resizing = "1";
   });
   window.addEventListener("pointerup", () => {
+    held.pressed = false;
     if (!dragging) return;
     dragging = false;
     delete box.dataset.resizing;
     record();
   });
   const observer = new ResizeObserver(() => {
-    if (dragging) return;
+    if (dragging || !held.pressed) return;
     record();
   });
   observer.observe(box);
@@ -485,77 +493,7 @@ function watchOverlays() {
 
 // --- account & security ------------------------------------------------------------
 
-async function renderAccount() {
-  const facts = $("account-facts");
-  facts.replaceChildren();
-  showSkeletons(facts, 3, "li");
-  const info = await apiJson("/auth/account").catch(() => null);
-  clearSkeletons(facts);
-  if (!info) {
-    const li = document.createElement("li");
-    li.className = "muted";
-    li.textContent = "Couldn't read the account state.";
-    facts.appendChild(li);
-    return;
-  }
-  const rows = [
-    ["Password", info.configured ? "Set" : "Not set yet"],
-    [
-      "Created",
-      info.created_at ? new Date(info.created_at).toLocaleDateString() : "Unknown",
-    ],
-    [
-      "Private notes",
-      info.vault_exists
-        ? info.vault_open
-          ? "Encryption key loaded: private notes are readable"
-          : "Locked: unlock to read private notes"
-        : "No encrypted notes yet",
-    ],
-    ["Open sessions", String(info.active_sessions)],
-    //: INBOX 663: the recovery key's row and its one button, drawn by
-    //: account-recovery.js (lazy: the boot scripts' total cap).
-    await recoveryAccountRow(info),
-  ];
-  if (typeof info.vault_open === "boolean") vaultOpen = info.vault_open;
-  $("account-password-on-open").checked = info.password_on_open !== false;
-  renderPinSettings(info.pin);
-  renderLanAccess().catch(() => {});
-  for (const [label, value] of rows) {
-    //: A label column and a value column (`.account-facts`), not "Label: value"
-    //: in bold run-in: four facts read as a table, so they are laid out as one.
-    const li = document.createElement("li");
-    const name = document.createElement("span");
-    name.className = "account-fact-label";
-    name.textContent = label;
-    const text = document.createElement("span");
-    text.textContent = value;
-    li.append(name, text);
-    facts.appendChild(li);
-  }
-}
 
-//: "PIN for this computer" (owner, 2026-10-12): the fields show only where a
-//: PIN can be set, which is this computer with an OS protected store; the
-//: line under the heading says why when it cannot.
-function renderPinSettings(pin) {
-  const state = $("account-pin-state");
-  if (!state || !pin) return;
-  const usable = pin.available && pin.here;
-  $("account-pin-fields").classList.toggle("hidden", !usable);
-  $("account-pin-set").classList.toggle("hidden", !usable);
-  $("account-pin-set").textContent = pin.set ? "Change PIN" : "Set up a PIN for this computer";
-  $("account-pin-forget").classList.toggle("hidden", !(pin.set && pin.here));
-  if (!pin.here) {
-    state.textContent = "A PIN can be set up only on the computer this notebook runs on.";
-  } else if (!pin.available) {
-    state.textContent = "This computer has no protected store for a PIN, so the password is the only way in here.";
-  } else {
-    state.textContent = pin.set
-      ? "A PIN is set: the lock screen takes it or your password, on this computer only."
-      : "Unlock on this computer with a few digits instead of your password.";
-  }
-}
 
 // --- Account & security: other devices (LAN mode) -----------------------------
 //
@@ -576,12 +514,6 @@ function renderPinSettings(pin) {
 
 let privacyRange = "launch";
 
-for (const button of document.querySelectorAll("#privacy-range [data-range]")) {
-  button.addEventListener("click", () => {
-    privacyRange = button.dataset.range;
-    renderPrivacyRange();
-  });
-}
 
 let prefsCache = null;
 // Set by savePrefs() to the PUT's own promise while it is in flight, and
@@ -691,11 +623,12 @@ async function renderPrefs() {
   prefsCache = await apiJson("/preferences");
   $("pref-display-name").value = prefsCache.display_name || "";
   $("pref-semantic-auto-install").checked = prefsCache.semantic_auto_install ?? false;
-  //: The saved look, and its controls (avatars.js).
-  if (typeof setOwnNameMarkStyle === "function") {
-    setOwnNameMarkStyle(prefsCache.avatar_style || {});
+  //: The saved look, and its controls (avatars.js, once it is in).
+  const savedLook = prefsCache.avatar_style || {};
+  afterCharacters(() => {
+    setOwnNameMarkStyle(savedLook);
     mountProfileLook();
-  }
+  });
   $("pref-bin-days").value = prefsCache.recycle_bin_days;
   $("pref-chat-retention").value = prefsCache.conversation_retention_days ?? 0;
   $("pref-search-min-sim").value = prefsCache.search_min_similarity;
@@ -725,10 +658,10 @@ async function renderPrefs() {
   markPrefsSaved();
 }
 
-// --- Settings → Web search ------------------------------------------------------
+// --- Settings, Web search ------------------------------------------------------
 //
 // Its own screen, and its own save. Web search used to be four controls inside
-// Preferences, which is why every error message that said "Settings → Web
+// Preferences, which is why every error message that said "Settings, Web
 // search" pointed at a screen that did not exist.
 //
 // The engine list comes from the server rather than being written out here:
@@ -739,7 +672,7 @@ async function renderPrefs() {
 // them the moment *that* section opens, not only as a side effect of opening
 // Web search. They used to be filled in exclusively by `renderWebSearch`
 // despite living in `#settings-tasks`, a different section entirely, open
-// Settings → Background tasks directly in a fresh session (never having
+// Settings, Background tasks directly in a fresh session (never having
 // visited Web search) and every checkbox here read its raw HTML default
 // (unchecked) instead of what was actually saved. Toggling one of them then
 // called `savePrefs()`, which rebuilds the *entire* preferences object from
@@ -798,7 +731,7 @@ async function renderWebSearch() {
     const title = document.createElement("strong");
     title.textContent = provider.label;
     const detail = document.createElement("span");
-    detail.className = "muted";
+    detail.className = "muted provider-detail";
     detail.textContent = provider.detail;
     text.append(title, document.createElement("br"), detail);
     row.append(radio, text);
@@ -1024,7 +957,7 @@ function wirePrefsDirtyMarks() {
   //: marks wait for the save, since that is when the name is real.
   $("pref-display-name")?.addEventListener("input", (e) => {
     const typed = e.target.value.trim();
-    $("profile-avatar")?.replaceChildren(nameMark(typed || "You", 56));
+    afterCharacters(() => $("profile-avatar")?.replaceChildren(nameMark(typed || "You", 56)));
     const head = $("profile-head-name");
     if (head) head.textContent = typed || "Your profile";
   });
@@ -1172,55 +1105,6 @@ document.addEventListener(
   true
 );
 
-//: Kept at boot, not in reveal-targets.js: settings.js and settings-find.js ring a
-//: Settings control with it on a plain deep link, with no catalogue row involved.
-const revealTimers = new WeakMap();
-
-//: The ring, on what the person can see. An enhanced `<select>` is a 1x1
-//: clipped box behind its opener (`enhanceSelect`, and openSettingsModal's
-//: own comment on the deep link that ringed nothing because of it), and a
-//: checkbox is a square whose meaning is in the label beside it, so both ring
-//: their visible representative.
-function flashRevealed(target) {
-  if (!target) return null;
-  const shown =
-    target.closest(".select-shell") ||
-    (target.matches('input[type="checkbox"], input[type="radio"], input[type="color"], input[type="range"]')
-      ? target.closest("label, .setting-row, .row")
-      : null) ||
-    target;
-  //: Scrolled only when it is not already in the window: a scroll moves the
-  //: page under a resting pointer, and the hover that follows closed a menu
-  //: group the reveal had just opened (measured on the phone's note sheet).
-  const box = shown.getBoundingClientRect();
-  const inView = box.top >= 0 && box.left >= 0 && box.bottom <= window.innerHeight && box.right <= window.innerWidth;
-  //: Inside an open menu only the menu's own list scrolls: a scroll of the
-  //: page closes every open menu (`closeActionMenusOnScroll`), which took the
-  //: document's Export group away the moment it was ringed on a phone.
-  const menu = shown.closest(".action-menu, .dock-menu-list, .doc-dock-menu-list, [role='menu'], .sheet-card");
-  if (!inView && menu) {
-    for (let box = shown.parentElement; box && menu.contains(box); box = box.parentElement) {
-      if (box.scrollHeight > box.clientHeight + 1 && /(auto|scroll)/.test(getComputedStyle(box).overflowY)) {
-        const offset = shown.getBoundingClientRect().top - box.getBoundingClientRect().top;
-        box.scrollTop += offset - box.clientHeight / 2 + shown.offsetHeight / 2;
-        break;
-      }
-    }
-  } else if (!inView) {
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    shown.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center", inline: "nearest" });
-  }
-  shown.classList.remove("feature-reveal");
-  void shown.offsetWidth;
-  shown.classList.add("feature-reveal");
-  //: Taken off again, reduced motion included: under that setting the ring is
-  //: static rather than animated, and a class nothing removes is a ring that
-  //: stays for good (the Search relevance report, openSettingsModal).
-  clearTimeout(revealTimers.get(shown));
-  revealTimers.set(shown, setTimeout(() => shown.classList.remove("feature-reveal"), 2700));
-  return shown;
-}
-
 //: A row's declaration, turned into the `run` the three lists call.
 function catalogueRun(row) {
   if (typeof row.run === "function") return row;
@@ -1236,24 +1120,18 @@ function catalogueRun(row) {
 //: read it; tests/test_popup_tools.py fails for a tool missing from any.
 const POPUP_TOOLS = [
   {
-    id: "equation", name: "Equation", icon: "ph:function", group: "Capture & notes",
-    keywords: "equation math maths formula symbol fraction greek matrix integral latex alt word",
-    about: "Build a formula with a live preview; Alt+= opens it in a note, document, board text, Chat or Ask box.",
-    keys: "Alt+=", where: "Equation, in text boxes",
-    guide: "equation-editor", open: () => ensureModule("appPalette").then(() => popupToolEquation()),
-  },
-  {
-    id: "calculator", name: "Calculator", icon: "ph:calculator", group: "Ask & chat",
-    keywords: "calculator calc sum maths math work out percent convert units currency keypad",
-    about: "Sums, percentages and unit or currency conversions, with no model; /calc does the same in a chat.",
-    keys: "/calc", where: "Calculator, or type it in Chat",
-    guide: "calculator", open: () => ensureModule("replyKit").then(() => openCalculator()),
+    id: "calculator", name: "Calculator and equations", icon: "ph:calculator", group: "Ask & chat",
+    keywords: "calculator calc sum maths math work out percent convert units currency keypad equation formula symbol fraction greek matrix integral latex alt word",
+    about: "Sums, conversions and equations in one dialog, with no model; Alt+= opens the equation tab in a text box, /calc the calculator in Chat.",
+    keys: "Alt+= or /calc", where: "Equation in text boxes, Calculator in Chat",
+    //: `t`: the box a slash row was typed in, which outranks the palette's last box (a stale one sent "/calc" in a note to the Ask box).
+    guide: "calculator", open: (t) => ensureModule("appPalette").then(() => popupToolMaths(t ? { target: t } : undefined)),
   },
   {
     id: "convert", name: "Convert units", icon: "ph:ruler", group: "Ask & chat",
     keywords: "convert conversion unit units miles km kg pounds celsius fahrenheit litres currency",
-    about: "Length, weight, temperature, volume and currency, with no model; the Calculator's second tab.",
-    keys: "/calc", where: "Convert units, in the Calculator",
+    about: "Length, weight, temperature, volume and currency, with no model; the second tab of Calculator and equations.",
+    keys: "/calc", where: "Convert units, in Calculator and equations",
     guide: "calculator", open: () => ensureModule("replyKit").then(() => openCalculator("", "convert")),
   },
   {
@@ -1272,260 +1150,11 @@ const POPUP_TOOLS = [
   },
 ];
 
-function paletteCommands() {
-  //: **The documents editor's own commands, at the top, while one is open**
-  //: (DOCUMENTS_PLAN Phase 4 item 4). The plan named `Ctrl+K` for an editor
-  //: palette of its own, which is the chord this one already has: two
-  //: palettes on one key is the collision the agent palette's comment records
-  //: being caught twice. So the editor contributes a group here instead, and
-  //: `docPaletteCommands` (documents.js) returns nothing at all unless the
-  //: Documents tab is showing with a document in it. Guarded by `typeof`
-  //: because that file is in the Library's lazy bundle and the palette opens
-  //: from every tab, including before it has ever been fetched.
-  const editor = typeof docPaletteCommands === "function" ? docPaletteCommands() : [];
-  //: And an open map's (whiteboard-map.js, lazy for the same reason).
-  if (typeof mapPaletteCommands === "function") editor.push(...mapPaletteCommands());
-  //: The open board's commands, the same way (FEAT-11, whiteboard-commands.js):
-  //: nothing unless a board is on screen, which needs the bundle in.
-  const board = typeof wbPaletteCommands === "function" ? wbPaletteCommands() : [];
-  //: Every row below declares where it goes (tests/test_catalogue_reveal.py)
-  //: and `catalogueRun` makes its `run`; the editor's rows are commands on
-  //: the document already open, so they keep their own.
-  return [
-    ...editor,
-    ...board,
-    { label: "ph:clipboard Go to Dashboard", tab: "dashboard", about: "Today at a glance: recent notes, reminders and widgets." },
-    { label: "ph:magnifying-glass-plus Zoom in", about: "Make everything in the app a step larger.", act: () => nudgeZoom(1) },
-    { label: "ph:magnifying-glass-minus Zoom out", about: "Make everything in the app a step smaller.", act: () => nudgeZoom(-1) },
-    { label: "ph:arrow-counter-clockwise Reset zoom to 100%", about: "Back to the size the app was drawn at.", act: () => { setZoom(100); hud("Zoom 100%"); } },
-    { label: "ph:note-pencil Go to Notes", tab: "notes", about: "Every note, with capture, filters and the reading pane." },
-    { label: "ph:chat-circle Go to Chat", tab: "chat", about: "A conversation with your notebook, saved as you go." },
-    { label: "ph:graph Go to Graph", tab: "graph", about: "Your notes as a map of what links to what." },
-    { label: "ph:file-text Go to Documents", tab: "documents", about: "Long-form writing, with blocks, an outline and history." },
-    //: Two tabs the palette could not reach. The Library holds six sub-tabs of
-    //: real surfaces (documents, images, files, links, skills, contents) and
-    //: the Timeline is a top-level tab, and neither had a command: a jump list
-    //: missing two of the seven places you can be is the one kind of gap that
-    //: teaches people not to use it.
-    { label: "ph:books Go to Library", tab: "library", about: "Documents, images, files, links, skills and boards." },
-    { label: "ph:clock-counter-clockwise Go to Timeline", tab: "timeline", about: "Everything you have written, by the day it happened." },
-    { label: "ph:alarm Go to Reminders", tab: "reminders", about: "What is due, and what you asked to be told about." },
-    // Features reachable *only* from inside one surface are exactly the ones a
-    // palette has to carry, or they are found by accident or not at all.
-    // The inbox is a sheet; the board's overview and find bar live on a
-    // board you have to be on already.
-    { label: "ph:tray Suggestions: links, disagreements, names and link types", reveal: "suggestions" },
-    { label: "ph:users People and things in my notes", reveal: "entities" },
-    { label: "ph:tag Kinds of link: Part of, Cites and your own", reveal: "relation-types" },
-    { label: "ph:list-bullets Note types: Meeting, Book and their fields", reveal: "note-types" },
-    { label: "ph:scales Tensions: find where I disagreed with myself", reveal: "tensions" },
-    //: Atlas is a surface with no tab of its own, which is exactly what a
-    //: command palette is for (INBOX 224).
-    //: The row wears Atlas's own face rather than a glyph (the owner: "find
-    //: anything search" should have the avatar too), see `renderPalette`.
-    { label: "Ask Atlas about the app", mark: "atlas", reveal: "atlas-help", chord: "askAtlas" },
-    //: A companion that went somewhere it cannot be reached (INBOX 426 k).
-    { label: "ph:arrow-counter-clockwise Call the companion back", about: "Bring the companion back to its corner of the window.", act: () => nameMarkBuddyCallBack() },
-    //: Both did nothing at all unless a board was already on screen: the
-    //: palette opens from every tab, and the two functions act on the board
-    //: that is open. The reveal opens one first (the newest), and with no
-    //: board at all rings the button that makes one.
-    { label: "ph:map-trifold Board overview", reveal: "board-overview", about: "The whole board at once, to jump to any part of it." },
-    { label: "ph:magnifying-glass Find on this board", reveal: "board-find", about: "Search the open board's cards, text and labels; Ctrl+H replaces." },
-    //: Capture is a sub-tab of Notes, and focusing its box while another
-    //: sub-tab was showing did nothing (the dashboard's own New note says so).
-    { label: "ph:pencil-simple New note", reveal: "notes-capture", chord: "newNote" },
-    //: Ctrl+D had no palette row (tests/test_consistency_contract.py: every
-    //: chord is in the palette or says why it cannot be).
-    { label: "ph:calendar-check Open today's note", reveal: "todays-note", chord: "todaysNote", about: "Today's page, or a new one titled with the day." },
-    { label: "ph:lightning Quick note", about: "A note saved without leaving this page.", chord: "quickNote", act: () => openQuickNote() },
-    { label: "ph:clipboard-text Paste as a note", about: "What you copied, saved as a new note.", chord: "pasteNote", act: () => pasteClipboardAsNote() },
-    { label: "ph:file-text New document", reveal: "doc-new", chord: "newDocument" },
-    { label: "ph:sparkle Write a note from rough thoughts", reveal: "writing-room" },
-    { label: "ph:sparkle New chat", reveal: "chat-new", chord: "newChat" },
-    // The popup agent (Ctrl+Shift+A) has real capability, it's the same
-    // tool-calling agent as Chat's agent mode, just reachable from anywhere
-    //, but was reachable only by already knowing that chord. This palette
-    // is the app's own "what can I do here" list; it belongs in it.
-    { label: "ph:strategy Ask the agent anything", reveal: "agent-palette", chord: "askAgent" },
-    { label: "ph:palette New sketch", reveal: "sketch", chord: "quickSketch" },
-    //: A command, not a search (INBOX 666: the palette is commands and
-    //: places; finding a meeting is Find anything's). INBOX 644: there was
-    //: no way to start a meeting note by name anywhere in the app.
-    { label: "ph:users-three New meeting", reveal: "meeting-new", about: "Agenda, notes, decisions and action items." },
-    {
-      // Reachable from anywhere, which is the point. Asked for directly: "I
-      // would also like the meeting notes popup to be expanded as a proper
-      // feature with more capabilities and expansion which is also accessible
-      // throughout the app, not just from the dashboard." A recording is
-      // started the moment a meeting starts, and "go to the Dashboard first"
-      // is exactly the friction that means it does not get started at all.
-      label: "ph:microphone Record a meeting or lecture",
-      reveal: "meeting",
-      chord: "recordMeeting",
-    },
-    { label: "ph:microphone-stage Voice note", reveal: "voice-note" },
-    { label: "ph:microphone Dictate a note", reveal: "notes-dictation" },
-    { label: "ph:waveform Recordings", reveal: "recordings" },
-    {
-      // The same ask about the page reader, in the same words: "I want an
-      // easier and more accessible way to access the ocr workspace as a proper
-      // and more central feature." It had four doors and every one of them
-      // started from a file you had already found, which is no answer to "I
-      // want to read something". `openPageReader` (library.js) opens it on what
-      // you were last reading, else your newest readable file; the decision and
-      // what was deliberately not built is in UI_MODERNISATION_PLAN.md, "how
-      // the page reader is reached".
-      //: "OCR" in the words (the owner, 2026-10-10: searching "ocr" in the
-      //: palette, Find anything and Quick access's list found nothing).
-      label: "ph:scan OCR workspace: read a document or image",
-      reveal: "page-reader",
-    },
-    {
-      // Asked for directly: "add creating a new board to the command
-      // palette and tools and features as well", the only way in before
-      // this was the Add button inside the whiteboard's own board-picker
-      // panel, unreachable without already being on that tab.
-      label: "ph:folders New whiteboard board",
-      reveal: "board-create",
-      about: "A blank board for cards, drawings, images and links.",
-    },
-    {
-      //: The Library's New, Mind map, from anywhere: Untitled map N, its
-      //: root in edit (MINDMAP_PLAN 15, rows 1 and 2).
-      label: "ph:tree-structure New mind map",
-      reveal: "map-create",
-    },
-    {
-      //: The Library's sub-tabs, as commands. These are the two halves of the
-      //: file gallery, and getting to either meant three clicks through a tab
-      //: and a sub-tab strip that scrolls on a narrow window.
-      label: "ph:image Browse images",
-      reveal: "library-images",
-    },
-    {
-      label: "ph:paperclip Browse files",
-      reveal: "library-files",
-    },
-    {
-      label: "ph:link Browse links",
-      reveal: "library-links",
-    },
-    {
-      //: The whole list of what the app can do, from the list of what the app
-      //: can do: the features browser was reachable from a dashboard button
-      //: and nowhere else, and it is the answer to "what was that thing
-      //: called", which is exactly the question the palette is opened with.
-      label: "ph:compass Tools and features",
-      reveal: "features",
-      about: "Everything the app can do, a line each, and where it is.",
-    },
-    {
-      //: Resurfacing shipped as a sort and a widget and was named in neither
-      //: list. The sort is the half a person can act on: it re-ranks the notes
-      //: they are already looking at by what is slipping out of reach.
-      label: "ph:hourglass Show forgotten notes first",
-      reveal: "notes-forgotten",
-    },
-    {
-      //: The word list the document spelling check reads, which is otherwise
-      //: only reachable from inside a suggestion popup on a flagged word, so
-      //: "what have I taught it" had no door at all.
-      label: "ph:book-bookmark Words you have taught it",
-      reveal: "doc-dictionary",
-    },
-    {
-      //: Ctrl+F is bound globally (`openGlobalFind`) and the palette is where
-      //: a person looks for a key they have forgotten.
-      label: "ph:magnifying-glass Find on this screen",
-      reveal: "global-find",
-      chord: "find",
-    },
-    {
-      //: Workspaces filter every tab in the app from one control in the top
-      //: left, and nothing in the palette mentioned them.
-      label: "ph:folders New workspace",
-      reveal: "workspace-new",
-    },
-    // Filters as commands: the fastest route to "the notes I mean" without
-    // remembering the operator syntax.
-    ...[
-      ["ph:star Show favourites", "is:favourite"],
-      ["ph:tag Show untagged notes", "is:untagged"],
-      ["ph:lock Show private notes", "is:private"],
-      ["ph:link Show linked notes", "is:linked"],
-      ["ph:check-square Show filings to check", "is:review"],
-    ].map(([label, query]) => ({
-      label,
-      about: `The notes list, filtered to ${query}.`,
-      act: () => showNotesFilter(query),
-    })),
-    //: UX-08: places Ctrl+K could not reach (tests/test_palette_synonyms.py).
-    { label: "ph:trash Open the bin", reveal: "library-bin", keywords: "bin trash deleted binned restore recover", about: "Everything you threw away, in the Library, ready to restore." },
-    { label: "ph:question Questions your notes ask", reveal: "notes-questions", keywords: "questions open questions", about: "The open questions found in your notes." },
-    { label: "ph:chat-text Ask your notes", reveal: "notes-ask", keywords: "ask question answer search my notes", about: "An answer quoted from your own notes, with or without a model." },
-    //: The Guide had no row: "guide" found the tour (CHAT_PLAN 9 row 3).
-    { label: "ph:question Ask the Guide", reveal: "atlas-help", keywords: "guide help how do i how does where is question", about: "Ask how anything in the app works; it answers from the app's own help." },
-    //: The tour's third door (the e2e flow pass): the Dashboard's first-run
-    //: tile and Settings, Help were the only two (tests/test_palette_synonyms.py).
-    { label: "ph:compass Take the guided tour", keywords: "tour walkthrough guide how to start show me around", about: "A short walk round the app, pointing at the real controls.", act: () => openTour("basics") },
-    //: INBOX 1304: Get started, hidden or done, comes back from the palette too.
-    { label: "ph:list-checks Show Get started", keywords: "unhide", act: () => lazyScript("/js/first-run.js").then(() => getStartedShow()) },
-    { label: "ph:arrow-u-up-left Undo", keywords: "undo take back revert", about: "Undo the last change, wherever it was made.", act: () => performUndo() },
-    { label: "ph:arrow-u-up-right Redo", keywords: "redo", about: "Do again what Undo took back.", act: () => performRedo() },
-    {
-      label: "ph:magnifying-glass What can I type in the filter?",
-      reveal: "notes-filter-help",
-      about: "The words the notes filter understands, like is:favourite.",
-    },
-    { label: "ph:gear Settings → Models", reveal: "settings:models", about: "Which local model answers, and where it runs." },
-    { label: "ph:mask-happy Settings → Personas", reveal: "settings:personas" },
-    { label: "ph:lightning Settings → Skills", reveal: "settings:skills" },
-    { label: "ph:toolbox Settings → Tools it can use", reveal: "settings:tools" },
-    { label: "ph:palette Settings → Appearance", reveal: "settings:appearance", keywords: "theme colour color accent font text size look", about: "The look, the accent colour, the glass and the text size." },
-    { label: "ph:user-circle Settings → Profile", reveal: "settings:preferences", about: "Your name, and what the app knows to call you." },
-    { label: "ph:sliders Settings → General", reveal: "settings:general", keywords: "recycle bin auto-clear chat history notifications", chord: "settings" },
-    { label: "ph:floppy-disk Settings → Import & export", reveal: "settings:data", keywords: "backup backups restore import export data", about: "Bring notes in, take everything out, and back up." },
-    { label: "ph:brain Settings → What it remembers", reveal: "settings:memory" },
-    { label: "ph:note-blank Settings → Templates", reveal: "settings:templates", about: "The shapes a new note or document can start from." },
-    { label: "ph:shield-check Settings → Account & security", reveal: "settings:account", about: "The password, the lock and when it asks for it." },
-    { label: "ph:globe-hemisphere-west Settings → Privacy", reveal: "settings:privacy", about: "The two things that can go online, both off by default." },
-    { label: "ph:list-checks Settings → Background tasks", reveal: "settings:tasks", about: "What the app is working on while you write." },
-    { label: "ph:heartbeat Health", reveal: "settings:about", keywords: "integrity check last backup last error data folder size status storage disk space files", about: "How the notebook is: last backup, last error, what is running, size, integrity." },
-    { label: "ph:chart-bar Statistics", quick: "statistics", keywords: "stats numbers counts usage week review growth", about: "Your notebook, reminders and usage, counted, with this week against last.", act: () => openStatistics() },
-    { label: "ph:book-open-text Open the manual", reveal: "manual" },
-    //: The small tools (Brief 89, UI_MODERNISATION utilities rows 2 to 4):
-    //: "timer 10 minutes" and "insert template ..." also build their own rows
-    //: from the words (`utilityPaletteRows`, app-palette.js).
-    ...POPUP_TOOLS.map((t) => ({ label: `${t.icon} ${t.name}`, keywords: t.keywords, about: t.about, keys: t.keys, act: t.open })),
-    { label: "ph:closed-captioning Live captions", quick: "captions", keywords: "live captions subtitles transcribe speech microphone listen real time stop", about: "Write what the microphone hears as you go, on this computer. Run it again to stop and save a note.", act: () => toggleLiveCaptions() },
-    { label: "ph:text-aa Count words", keywords: "word count characters letters reading time selection length", about: "Words, characters and reading time of the selected text, or of the editor.", act: () => ensureModule("utilities").then(() => countSelection(paletteCaught)) },
-    { label: "ph:translate Translate this", keywords: "translate translation spanish language offline selection passage", about: "The selected passage into Spanish, offline (a package).", act: () => { const caught = { ...paletteCaught }; ensureModule("translate").then(() => translateCaught(caught)); } },
-    { label: "ph:activity Activity", keywords: "running jobs stop background model unload memory agent runs", about: "Every job running now, with Stop, and the agent's runs.", act: () => openActivity("running") },
-    { label: "ph:stop-circle Stop the model", keywords: "unload free memory model stop generating", about: "Stop any answer and unload the model from memory.", act: () => ensureModule("activity").then(() => window.stopActivityModel()) },
-    { label: "ph:package Settings → Packages", reveal: "settings:extras", about: "Optional parts: speech, reading pages, better search." },
-    { label: "ph:tree-evergreen Settings → Logs", reveal: "settings:logs", about: "What happened, for when something did not work." },
-    { label: "ph:question Settings → Help", reveal: "settings:help", about: "How the app works, a section at a time." },
-    { label: "ph:info Settings → About", reveal: "settings:about", about: "The version you have and whether a newer one exists." },
-    { label: "ph:archive Back up now", keywords: "backup snapshot save a copy", about: "Save a copy of the whole notebook, now.", act: () => { openSettingsModal("data"); backupNow(); } },
-    { label: "ph:export Export markdown", about: "Every note as a Markdown file, in one download.", act: () => downloadExport("markdown") },
-    { label: "ph:circle-half Toggle light/dark", keywords: "theme dark mode light mode night", chord: "toggleTheme", act: toggleTheme },
-    //: INBOX 430: also in Find anything, which lists these same commands;
-    //: the row says which it will do, since this list is built per query.
-    { label: nameMarkBuddyShowing() ? "ph:eye-slash Hide companion" : "ph:person-simple Show companion", chord: "toggleCompanion", act: () => nameMarkBuddyToggle() },
-    { label: "ph:keyboard Keyboard shortcuts", reveal: "shortcuts", chord: "help" },
-    //: INBOX 896: the status bar's wifi icon, by name, from anywhere.
-    { label: "ph:wifi-high Other devices", keywords: "lan network wifi phone open close trusted networks address", about: "Whether a phone on this network can open the app, with the switch and the trusted networks.", chord: "lanPanel", act: () => openLanPanel() },
-    { label: "ph:arrow-left Go back", about: "To the page or view you were on before.", chord: "navigateBack", act: () => stepTabHistory(-1) },
-    { label: "ph:arrow-right Go forward", about: "Forward again, after going back.", chord: "navigateForward", act: () => stepTabHistory(1) },
-    { label: "ph:arrows-clockwise Reload the app", about: "Clears cached files first, so the newest version loads.", chord: "forceReload", act: () => forceReloadApp() },
-    { label: "ph:lock Lock Tessellate", about: "Close the notebook until the password is typed again.", act: lockNow },
-    //: The top bar's other controls, so each is in the palette too (ledger 1410).
-    { label: "ph:gear Open Settings", chord: "settings", act: () => openSettingsModal() },
-    { label: "ph:bell Open notifications", keywords: "bell", act: () => openNotifications() },
-    { label: "ph:squares-four Switch space", act: () => $("space-switcher-btn")?.click() },
-    { label: "ph:power Quit Tessellate", act: () => quitApp() },
-  ].map(catalogueRun);
+//: What the palette caught from the field it was opened over (`paletteCaught`,
+//: app-palette.js, lazy): nothing yet when that file is not in, so a caller
+//: other than the palette (Tools and features, audit 1031 Z17) cannot throw.
+function paletteCaughtNow() {
+  return typeof paletteCaught === "undefined" ? { target: null, selection: "", start: null, end: null, range: null } : paletteCaught;
 }
 
 //: **A row's keycap: the way to run it without the palette.** A chord the

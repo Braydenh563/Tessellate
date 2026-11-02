@@ -20,7 +20,7 @@
   //
   // The gap was real and had just cost a session: a JavaScript error aborts
   // the rest of the file it is in, so the app can hang with nothing in the
-  // terminal, nothing in Settings → Logs, and the only record in a browser
+  // terminal, nothing in Settings, Logs, and the only record in a browser
   // console nobody opens: least of all in the desktop shell, which has no
   // obvious way to open one.
   //
@@ -130,6 +130,7 @@
   // often already handled by a toast. The log is the right place for it.
   window.addEventListener("unhandledrejection", function (event) {
     var reason = event.reason;
+    if (reason && reason.isStale) return;
     report(
       "unhandledrejection",
       (reason && (reason.stack || reason.message)) || String(reason),

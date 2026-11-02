@@ -15,12 +15,14 @@ from __future__ import annotations
 import json
 import re
 from collections import Counter
-from datetime import datetime, time, timedelta
+from datetime import date, datetime, time, timedelta
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import arithmetic, realise
+from tessellate.core import cjk
+from tessellate.ai.composer_frame import note_title
 
 #: How many rows a command shows; the sentence says how many there are.
 SHOWN = 8
@@ -137,9 +139,77 @@ def _random(session: Session, arg: str, now: datetime) -> str:
     return f"Here is one of your {len(rows)} notes, picked at random:\n\n{_rows(session, [pick])}"
 
 
-def _tags(session: Session, arg: str, now: datetime) -> str:
+#: The most points a strip carries, and the longest span it draws by the day
+#: and by the week: past them it counts in months.
+_STRIP_MOST, _STRIP_DAYS, _STRIP_WEEKS = 60, 31, 182
+
+
+def _strip_day(d: date, today: date) -> str:
+    return "Today" if d == today else f"{d.day} {d:%b}" + (f" {d.year}" if d.year != today.year else "")
+
+
+def timeline_panel(session: Session, start: date, end: date, today: date) -> dict | None:
+    """The small timeline strip a time answer carries (INBOX 1333 b): notes
+    counted over `start` to `end`, a point a day, a week or a month by how
+    long that is (one day: a point an hour), for the lazy reply kit's spark
+    line (`replyTimelinePanel`). None when nothing was written in it or it is
+    one point."""
     entry, visible = _notes()
-    counts = Counter(t for raw in session.scalars(select(entry.tags).where(*visible)) for t in _tags_of(raw))
+    end = min(end, today)
+    if start > end:
+        return None
+    stamps = [d for d in session.scalars(select(entry.created_at).where(
+        *visible, entry.created_at >= datetime.combine(start, time.min), entry.created_at < datetime.combine(end + timedelta(days=1), time.min))) if d]
+    if not stamps:
+        return None
+    span, first = (end - start).days + 1, start
+    if span == 1:
+        by, size, slot = "hour", 24, (lambda d: d.hour)
+    elif span <= _STRIP_DAYS:
+        by, size, slot = "day", span, (lambda d: (d.date() - start).days)
+    elif span <= _STRIP_WEEKS:
+        by, size, slot = "week", -(-span // 7), (lambda d: (d.date() - start).days // 7)
+    else:
+        month = lambda d: d.year * 12 + d.month - 1  # noqa: E731
+        base = max(month(start), month(end) - _STRIP_MOST + 1)
+        by, size, slot = "month", month(end) - base + 1, (lambda d: month(d) - base)
+        first = start if base == month(start) else date(base // 12, base % 12 + 1, 1)
+    points = [0] * size
+    for stamp in stamps:
+        if 0 <= slot(stamp) < size:
+            points[slot(stamp)] += 1
+    ends = ("00:00", "23:00") if by == "hour" else (_strip_day(first, today), _strip_day(end, today))
+    return {"type": "panel", "panel": "timeline", "by": by, "title": f"Notes per {by}", "points": points, "from": ends[0], "to": ends[1]}
+
+
+def empty_timeline(session: Session, today: date) -> dict | None:
+    """Where the notes run, for an answer that found none in the day or span
+    asked: the strip from the first note to today."""
+    entry, visible = _notes()
+    first = session.scalar(select(func.min(entry.created_at)).where(*visible))
+    return timeline_panel(session, first.date(), today, today) if first else None
+
+
+def tag_counts(session: Session) -> Counter:
+    """How many visible notes carry each tag."""
+    entry, visible = _notes()
+    return Counter(t for raw in session.scalars(select(entry.tags).where(*visible)) for t in _tags_of(raw))
+
+
+def category_counts(session: Session) -> tuple[list, int]:
+    """((name, notes) per category, most first; the notes filed nowhere)."""
+    from tessellate.core.database import Category
+
+    entry, visible = _notes()
+    count = func.count(entry.id)
+    rows = session.execute(
+        select(Category.name, count).join(entry, entry.category_id == Category.id).where(*visible).group_by(Category.id).order_by(count.desc(), Category.name)
+    ).all()
+    return rows, session.scalar(select(count).where(*visible, entry.category_id.is_(None))) or 0
+
+
+def _tags(session: Session, arg: str, now: datetime) -> str:
+    counts = tag_counts(session)
     if not counts:
         return "No note has a tag yet."
     top = counts.most_common(15)
@@ -149,14 +219,7 @@ def _tags(session: Session, arg: str, now: datetime) -> str:
 
 
 def _categories(session: Session, arg: str, now: datetime) -> str:
-    from tessellate.core.database import Category
-
-    entry, visible = _notes()
-    count = func.count(entry.id)
-    rows = session.execute(
-        select(Category.name, count).join(entry, entry.category_id == Category.id).where(*visible).group_by(Category.id).order_by(count.desc(), Category.name)
-    ).all()
-    unfiled = session.scalar(select(count).where(*visible, entry.category_id.is_(None))) or 0
+    rows, unfiled = category_counts(session)
     parts = [f"{name} ({n})" for name, n in rows] + ([f"not filed ({unfiled})"] if unfiled else [])
     if not parts:
         return "You have no notes yet."
@@ -171,7 +234,7 @@ def _todo(session: Session, arg: str, now: datetime) -> str:
     found = [(e, m.group(1).strip()) for e in notes for m in _OPEN_BOX.finditer(e.content or "")]
     if not found:
         return "No note has an open checkbox."
-    lines = [f"- {text} in {tool_say.link(tool_say._title(e.content), tool_say.note_at(e.id))}" for e, text in found[: SHOWN]]
+    lines = [f"- {text} in {tool_say.link((note_title(e.content, size=60) or 'Untitled'), tool_say.note_at(e.id))}" for e, text in found[: SHOWN]]
     lead = "One open checkbox:" if len(found) == 1 else f"{realise.count_word(len(found)).capitalize()} open checkboxes:"
     return f"{lead}\n\n" + "\n".join(lines) + _more(len(found))
 
@@ -204,6 +267,14 @@ def _calc(session: Session, arg: str, now: datetime) -> str:
     try:
         value = arithmetic.evaluate(expression)
     except arithmetic.NotArithmetic:
+        #: What the Calculator dialog reads ("12% of 340", a unit, a currency):
+        #: the one reader, so the chat does not refuse what the dialog does
+        #: (audit 1030 A28).
+        from tessellate.ai import tools
+
+        got = tools.execute_tool(session, "calculate", {"question": expression[:300]})
+        if got.get("answer"):
+            return f"{expression} = {got['answer']}"
         return f"I can only work out sums with numbers, + - * / % ^ and brackets, so not “{expression}”."
     return f"{expression} = {arithmetic.spoken(value)}"
 
@@ -221,7 +292,7 @@ def _stats(session: Session, arg: str, now: datetime) -> str:
     rows = session.execute(select(entry.content, entry.created_at, entry.tags).where(*visible)).all()
     if not rows:
         return "You have no notes yet."
-    words = sum(len((c or "").split()) for c, _, _ in rows)
+    words = sum(cjk.word_count(c) for c, _, _ in rows)
     days = {d.date() for _, d, _ in rows}
     tags = {t for _, _, raw in rows for t in _tags_of(raw)}
     newest = max(d for _, d, _ in rows)

@@ -101,7 +101,26 @@ PIECE_CAP = 32_000
 #: lazy shared-intake.js and `renderMemorySettings` is in settings-controls.js,
 #: behind stand-ins. App.js 14,045, total 319,920.
 #: And after the model panel, answer edit and Explain row moved to the lazy gesture-kit.js: 318,631.
-TOTAL_CAP = 320_600
+#: 2026-11-01, the boot diet (audit row 21, PF4): 320,255 down to 301,539 by
+#: moving what only a gesture or an opened chat reaches into two lazy files:
+#: the chat turn with its bubbles, timeline and run controls (chat-turn.js,
+#: bundle `chatTurn`) and `askQuestion` with its helpers (ask-compose.js).
+#: The cap is that total rounded up to the next 100.
+#: 2026-11-01, boot diet 2: 301,539 down to 275,355: the note card's menu rows
+#: (entry-menu.js), 87 answer-drawing functions only a reply, popup or Guide
+#: chat reaches (answer-kit.js) and a board's miniature (map-preview.js).
+#: 2026-11-01, boot diet 3: 275,520 (the branch had crept over the cap) down to
+#: 273,700 gzipped (1,953,036 to 1,943,654 raw): the citation peek, 198 lines
+#: only a reply, a composed answer or an attachment card opens
+#: (citation-peek.js, listed ahead of its callers in every bundle that carries them).
+#: 2026-11-01, boot diet 3, step 2: 273,700 down to 268,118: the table bar
+#: (table-block.js) and the palette's rows with the dashboard's Quick access
+#: draw (`paletteCommands`, `renderQuickLinks`: app-features.js, which the
+#: dashboard fetches beside the preferences anyway).
+#: 2026-11-01, boot diet 3, step 3: 268,118 down to 260,019 (1,949,052 to
+#: 1,857,489 raw): a note's card (`entryItem`, entry-card.js; `renderEntries`
+#: waits for it, the bundles that carry answer-kit.js list it first).
+TOTAL_CAP = 260_300
 
 
 def _served_gzip_size(client, name: str) -> int:

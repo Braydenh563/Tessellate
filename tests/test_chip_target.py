@@ -16,7 +16,7 @@ CSS = Path(__file__).resolve().parents[1] / "frontend" / "css"
 
 def test_an_interactive_chip_overhangs_to_the_floor():
     text = (CSS / "01-forms-settings.css").read_text(encoding="utf-8")
-    rule = re.search(r"\.chip-interactive::after\s*\{([^}]*)\}", text)
+    rule = re.search(r"\.chip-interactive::after[^{]*\{([^}]*)\}", text)
     assert rule, "the overhang is gone"
     body = rule.group(1)
     assert "position: absolute" in body

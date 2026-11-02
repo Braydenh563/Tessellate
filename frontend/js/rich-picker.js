@@ -139,6 +139,9 @@ function richPickerRow({ icon, tint, face, label, about, keys, query, tag = "li"
     text.appendChild(line);
   }
   row.appendChild(text);
+  //: Said as a phrase (audit 1031 N39): the label and the kind sit in two
+  //: spans, and a reader joined them as "Harbor launch plannote".
+  if (about) row.setAttribute("aria-label", `${title.textContent}, ${about}`);
 
   if (keys) {
     const cap = document.createElement("kbd");

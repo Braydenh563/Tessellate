@@ -33,5 +33,8 @@ def test_a_tool_switch_deselect_and_overlay_clear_take_the_dots():
 def test_a_map_topic_has_no_free_resize_handles():
     """Its size is its text's and its own grips' (MINDMAP_PLAN): the eight
     handles are for boxes and cards."""
-    build = WB[WB.index('    if (WB_MAP_KINDS.has(d.kind)) return;\n    for (const handle of ["nw"'):][:200]
+    #: Armed only for a box (the handles are built on first need, BD3), never for a topic.
+    armed = WB[WB.index('    if (WB_MAP_KINDS.has(d.kind)) return;\n    wbArmHandles('):][:200]
+    assert "wbBuildObjectHandles(el, d.kind)" in armed
+    build = WB[WB.index("function wbBuildObjectHandles("):][:200]
     assert "wb-resize-handle" in build

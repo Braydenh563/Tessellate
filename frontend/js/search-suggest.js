@@ -184,7 +184,7 @@ function searchSuggestItems(input) {
       .sort((a, b) => searchSuggestRank(a[0], wanted) - searchSuggestRank(b[0], wanted) || b[1] - a[1])
       .slice(0, SEARCH_SUGGEST_LIMITS.tag);
     for (const [tag, count] of hits) {
-      items.push({ kind: "tag", label: tag, value: `${head}${op}${tag}`, about: `Tag, ${count} note${count === 1 ? "" : "s"}` });
+      items.push({ kind: "tag", label: tag, value: `${head}${op}${tag}`, about: `Tag, ${nounCount(count, "note")}` });
     }
   }
   if (wantsCategories && wanted) {
@@ -194,7 +194,7 @@ function searchSuggestItems(input) {
       .slice(0, SEARCH_SUGGEST_LIMITS.category);
     for (const [name, count] of hits) {
       const written = op && /\s/.test(name) ? `"${name}"` : name;
-      items.push({ kind: "category", label: name, value: `${head}${op}${written}`, about: `Category, ${count} note${count === 1 ? "" : "s"}` });
+      items.push({ kind: "category", label: name, value: `${head}${op}${written}`, about: `Category, ${nounCount(count, "note")}` });
     }
   }
   return items;
@@ -338,7 +338,7 @@ function fillSearchSuggest() {
   input.setAttribute("aria-expanded", String(items.length > 0));
   if (items.length && state.announced !== items.length) {
     state.announced = items.length;
-    announce(`${items.length} suggestion${items.length === 1 ? "" : "s"}`);
+    announce(nounCount(items.length, "suggestion"));
   }
   if (!items.length) state.announced = 0;
   placeSearchSuggest();

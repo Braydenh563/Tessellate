@@ -1,7 +1,8 @@
 """Every "how long ago" reads a server time the same way (audit 2026-10-05,
 FE-16).
 
-Three formatters: `relativeTime` (sheets-selects.js) read through
+Two formatters now (the dashboard's own copy folded into `relativeTime`,
+audit 1028 S17): `relativeTime` (sheets-selects.js) read through
 `parseServerTime`, which treats a zone-less timestamp as the UTC the server
 keeps it in; `dashRelativeTime` (dashboard.js) and `relativeWhen`
 (shell-reminders.js) used `new Date(iso)`, which reads the same string as
@@ -26,7 +27,6 @@ def _function(file: str, name: str) -> str:
 def test_each_reads_through_parse_server_time():
     for file, name in (
         ("sheets-selects.js", "relativeTime"),
-        ("dashboard.js", "dashRelativeTime"),
         ("shell-reminders.js", "relativeWhen"),
     ):
         body = _function(file, name)

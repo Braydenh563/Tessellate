@@ -92,3 +92,13 @@ def test_the_route_serves_it_signed_in(client):
 def test_the_dashboard_draws_the_day_with_no_model():
     js = with_pieces("dashboard.js")
     assert '"/insights/day"' in js
+
+
+def test_a_quote_skips_a_frontmatter_block_and_a_line_with_no_words() -> None:
+    # Audit 1031 Z16: a note that opens with frontmatter was quoted as "---".
+    meeting = "---\ntype: meeting\ndate: 2026-10-10\n---\n\n# Harbor sync\nBoat for May."
+    assert day_digest._first_line(meeting) == "Harbor sync"
+    assert day_digest._first_line("---\n\n***\nPlain words here") == "Plain words here"
+    assert day_digest._first_line("---\ntitle: never closed\nbody") == "title: never closed"
+    assert day_digest._first_line("# Title only") == "Title only"
+    assert day_digest._first_line("---\n---\n") == ""

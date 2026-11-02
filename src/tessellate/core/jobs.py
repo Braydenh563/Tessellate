@@ -34,28 +34,32 @@ memory; the row is what the next launch reads to run it again.
 
 **Why jobs are dropped at shutdown rather than drained.** `shutdown` has a
 deadline because a shutdown that waits is the hang it exists to prevent
-(`core/bgtasks.py`'s docstring makes the same argument for cancellation).
+(`stop_all` below makes the same argument for cancellation).
 Nothing here is lost by dropping it: every job re-derives its result from a
 row that is already committed, so the next launch can redo it, and a caption
 that never arrives is a missing caption rather than a corrupt notebook. The
-job in flight is not interrupted, for the same reason `bgtasks` never kills a
+job in flight is not interrupted, for the same reason `cancel_kind` never kills a
 thread: Python cannot do it safely and the work writes to a notebook the
 user cares about. Workers are daemons, so the process still exits on time;
 `shutdown` returns False to say plainly that one was still running.
 
 **The activity panel needs no new frontend.** `pending()` returns rows in
 `/tasks`'s shape (`routes_tasks.collect`), so queued and running jobs appear
-in the panel that already lists the readings `core/filejobs.py` announces.
+in the panel beside the file readings (`reading`, a Job on the request's thread).
 """
 
 from __future__ import annotations
 
+import contextlib
+import importlib
+import itertools
 import logging
 import os
 import queue
 import threading
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from concurrent.futures import Future
 
 from tessellate.core import jobruns, jobstore, model_gate, origin
 
@@ -185,18 +189,6 @@ OWN_RUN_KINDS = frozenset({
 LEDGER_KINDS = {"vision": "vision_ocr", "vision-pdf": "vision_ocr"}
 
 
-def _ledger_run(job: "_Job"):  # noqa: ANN202
-    """The process ledger's run for one pool job (INBOX 805), or None."""
-    if job.kind in OWN_RUN_KINDS:
-        return None
-    label = LABELS.get(job.kind, job.kind.replace("-", " ").capitalize())
-    run = jobruns.Run(LEDGER_KINDS.get(job.kind, job.kind), None, title=f"{label}: {job.name}" if job.name else label)
-    #: Its row on the running list is the pool's own; the run adds lines.
-    run.listed = True
-    run.start()
-    return run
-
-
 def _start_heartbeat(target):  # noqa: ANN001, ANN202
     """The durable store's lease heartbeat (`jobstore._beat`), started here so
     job threads have one home. It ends itself once no lease is held."""
@@ -217,6 +209,8 @@ LABELS: dict[str, str] = {
     "vision-pdf": "Reading a scan with the vision model",
     "file-entry": "Filing a note",
     "warm-filing": "Warming up the filing model",
+    #: "Warm: warm the spelling lists" said the kind twice (audit 1030 Y7).
+    "warm": "Warming up",
     #: INBOX 696: a "Background job" row says nothing a person can read.
     "embed-entry": "Updating a note's search vector",
     "bench": "Timing a model",
@@ -229,42 +223,108 @@ LABELS: dict[str, str] = {
 }
 
 
-class _Job:
-    """One queued piece of work. A plain object rather than a dataclass so
-    `__slots__` keeps 200 of them cheap during a bulk upload."""
+#: Who started a job that a phone or another computer asked for (`core/origin.py`).
+ANOTHER_DEVICE = "another-device"
+
+
+class Job:
+    """One piece of background work, wherever it runs (INBOX 1502, audit AR6).
+
+    The pool queues it, a reading runs it on the request's thread, a watcher
+    runs it on a thread of its own: the `seat` says which. Every one carries
+    the same four answers the panel and a shutdown ask:
+
+    - `lane`: `user` or `background` (`jobruns.lane_of`), derived from the
+      kind, so the durable `jobs` table needs no column for it;
+    - `owner`: who started it, a `jobruns.ORIGINS` key or `another-device`;
+    - `cancel`: the token, a `threading.Event`; `stop()` sets it and calls the
+      job's own stopper (a flag or a child process), never kills a thread;
+    - `run`: its `jobruns.Run` record while it runs, or None.
+
+    `__slots__` rather than a dataclass keeps 200 of them cheap during a bulk
+    upload.
+    """
 
     __slots__ = (
-        "seq", "kind", "func", "args", "kwargs", "name", "queued_at", "started_at", "dedupe_key", "durable_id", "durable_db",
-        "another_device",
+        "seq", "kind", "func", "args", "kwargs", "name", "lane", "owner", "cancel", "run", "stopper", "seat",
+        "queued_at", "started_at", "dedupe_key", "durable_id", "durable_db", "detail", "thread",
     )
 
     def __init__(
         self,
         seq: int,
         kind: str,
-        func: Callable[..., object],
-        args: tuple,
-        kwargs: dict,
-        name: str,
+        func: Callable[..., object] | None,
+        args: tuple = (),
+        kwargs: dict | None = None,
+        name: str = "",
+        *,
+        seat: str = "pool",
+        stopper: Callable[[], None] | None = None,
     ) -> None:
         self.seq = seq
         self.kind = kind
         self.func = func
         self.args = args
-        self.kwargs = kwargs
+        self.kwargs = kwargs or {}
         self.name = name
+        self.seat = seat
+        #: Read off the row kind, as `/tasks` reads it: a pool job's `job-ocr`
+        #: is background even though a person's own `ocr` run is not.
+        self.lane = jobruns.lane_of(self.row_kind)
+        #: Queued while serving another device (core/origin.py): the job runs
+        #: as that device, so it cannot start an install on this computer.
+        self.owner = ANOTHER_DEVICE if origin.from_another_device() else (jobruns.origin_now() or "app")
+        self.cancel = threading.Event()
+        self.stopper = stopper
+        self.run: jobruns.Run | None = None
         self.dedupe_key: object = None
         #: The `jobs` row behind this job (`core/jobstore.py`), or None for
         #: a job only this process knows about.
         self.durable_id: int | None = None
         self.durable_db: object = None
+        self.detail = ""
+        self.thread: threading.Thread | None = None
         self.queued_at = time.time()
         #: When a worker took it, for the panel's elapsed time (INBOX 696):
         #: a running row counts from here, a waiting one from `queued_at`.
         self.started_at = 0.0
-        #: Queued while serving another device (core/origin.py): the job runs
-        #: as that device, so it cannot start an install on this computer.
-        self.another_device = origin.from_another_device()
+
+    @property
+    def row_kind(self) -> str:
+        """The kind on its `/tasks` row: `job-<kind>`, `file-<kind>`, or the bare kind."""
+        return {"pool": f"job-{self.kind}", "here": f"file-{self.kind}"}.get(self.seat, self.kind)
+
+    @property
+    def another_device(self) -> bool:
+        return self.owner == ANOTHER_DEVICE
+
+    @property
+    def stoppable(self) -> bool:
+        return self.stopper is not None
+
+    def stop(self) -> bool:
+        """Set the cancel token and ask the job's stopper; True when it has one."""
+        self.cancel.set()
+        if self.stopper is None:
+            return False
+        self.stopper()
+        return True
+
+    def open_run(self) -> "jobruns.Run | None":
+        """The process ledger's run for a pool job (INBOX 805), kept on the
+        job as `run`; None for a kind that opens its own."""
+        if self.kind in OWN_RUN_KINDS:
+            return None
+        label = LABELS.get(self.kind, self.kind.replace("-", " ").capitalize())
+        run = jobruns.Run(
+            LEDGER_KINDS.get(self.kind, self.kind), None, title=f"{label}: {self.name}" if self.name else label
+        )
+        #: Its row on the running list is the pool's own; the run adds lines.
+        run.listed = True
+        run.start()
+        self.run = run
+        return run
 
 
 class Pool:
@@ -288,11 +348,15 @@ class Pool:
         self._queues: dict[str, queue.Queue] = {lane: queue.Queue() for lane in self._widths}
         self._lock = threading.Lock()
         self._workers: list[threading.Thread] = []
-        self._queued: dict[int, _Job] = {}
-        self._running: dict[int, _Job] = {}
+        self._queued: dict[int, Job] = {}
+        self._running: dict[int, Job] = {}
         self._seq = 0
         self._started = False
         self._stopping = threading.Event()
+        #: Cleared while `held()`: no job is admitted. Cleared and checked
+        #: under `_lock`, the lock admission takes, so none slips in between.
+        self._open = threading.Event()
+        self._open.set()
 
     # -- starting -----------------------------------------------------------
 
@@ -389,7 +453,7 @@ class Pool:
                         break
             if duplicate is None:
                 self._seq += 1
-                job = _Job(self._seq, kind, func, args, kwargs, name)
+                job = Job(self._seq, kind, func, args, kwargs, name)
                 job.dedupe_key = dedupe_key
                 self._queued[job.seq] = job
         if duplicate is not None:
@@ -433,15 +497,8 @@ class Pool:
                     # A chat turn in flight goes first (`core/model_gate.py`,
                     # ARCH-09): the job stays queued until it is done.
                     model_gate.yield_to_interactive(stop=self._stopping)
-                with self._lock:
-                    self._queued.pop(job.seq, None)
-                    if self._stopping.is_set():
-                        # Drained, not run: this is what makes shutdown fast
-                        # with a long queue behind it. A durable job's row
-                        # stays queued, so the next launch runs it.
-                        continue
-                    job.started_at = time.time()
-                    self._running[job.seq] = job
+                if not self._admit(job):
+                    continue
                 # A remembered job is claimed first: a row cancelled while it
                 # waited, or claimed by another server on the same file,
                 # is not run.
@@ -450,7 +507,7 @@ class Pool:
                         self._running.pop(job.seq, None)
                     continue
                 error = ""
-                run = _ledger_run(job)
+                run = job.open_run()
                 try:
                     with origin.acting_for(job.another_device), jobruns.bound(run):
                         job.func(*job.args, **job.kwargs)
@@ -478,6 +535,42 @@ class Pool:
             finally:
                 work_queue.task_done()
 
+    def _admit(self, job: Job) -> bool:
+        """Move a job from queued to running, once the pool is not held; False
+        when the pool is stopping."""
+        while True:
+            self._open.wait(0.2)
+            with self._lock:
+                if self._stopping.is_set():
+                    # Drained, not run: this is what makes shutdown fast
+                    # with a long queue behind it. A durable job's row
+                    # stays queued, so the next launch runs it.
+                    self._queued.pop(job.seq, None)
+                    return False
+                if not self._open.is_set():
+                    continue
+                self._queued.pop(job.seq, None)
+                job.started_at = time.time()
+                self._running[job.seq] = job
+                return True
+
+    @contextlib.contextmanager
+    def held(self, deadline: float = 20.0) -> Iterator[bool]:
+        """No job starts inside this block, and it is entered once the running
+        ones have finished, or at `deadline` seconds, yielding whether the pool
+        was idle by then. A restore swaps the database file inside it (audit
+        1028 K19: a job still writing went to the old file, or failed on the
+        disposed engine). Queued jobs run when the block ends."""
+        with self._lock:
+            self._open.clear()
+        try:
+            end = time.monotonic() + deadline
+            while self.running_count() and time.monotonic() < end:
+                time.sleep(0.05)
+            yield self.running_count() == 0
+        finally:
+            self._open.set()
+
     # -- reporting ----------------------------------------------------------
 
     def queued_count(self) -> int:
@@ -491,7 +584,7 @@ class Pool:
     def pending(self) -> list[dict]:
         """Queued and running jobs as `/tasks` rows, oldest first.
 
-        Oldest first for the same reason `filejobs.running` is: the panel
+        Oldest first for the same reason `readings` is: the panel
         reads as a queue, and the job someone is wondering about is the one
         that has been waiting longest.
         """
@@ -517,7 +610,9 @@ class Pool:
                     continue
             rows.append(
                 {
-                    "kind": f"job-{job.kind}",
+                    "kind": job.row_kind,
+                    "lane": job.lane,
+                    "owner": job.owner,
                     "name": job.name,
                     "label": label,
                     "detail": f"{job.name} (queued)" if waiting and job.name else (job.name or ("queued" if waiting else "")),
@@ -537,6 +632,7 @@ class Pool:
             rows.append(
                 {
                     "kind": f"job-{kind}",
+                    "lane": "background",
                     "name": "",
                     "label": LABELS.get(kind, "Background job"),
                     "detail": f"{count:,} more queued",
@@ -583,6 +679,236 @@ class Pool:
                 f" ({', '.join(alive)})" if alive else "",
             )
         return not alive
+
+
+# -- jobs off the pool: a reading on the request's thread ---------------------
+#
+# *"the describe with ai feature needs to show in background process, same for
+# all ocr processes"*. `/files/{id}/analyse` runs the model on the request's
+# own thread and returns the reading in the response, which the frontend is
+# built around; FastAPI serves `/tasks` on another worker thread, so a request
+# busy inside a model call can still be listed. A reading is therefore a `here`
+# Job: announced when the work starts, gone when it ends (`finally`, so a
+# model that raises never leaves a row behind). It has no stopper: a single
+# blocking call into a local model owns no flag and no child process, and a
+# Quit button that did nothing would be worse than none.
+
+#: What each reading is called on screen. The panel shows the verb, because
+#: the file's own name is the `detail` line underneath it.
+READING_LABELS = {
+    "describe": "Describing a file",
+    "ocr": "Reading text from a file",
+    "vision": "Reading a file with the vision model",
+}
+
+_side_lock = threading.Lock()
+#: `here` and `thread` Jobs, by seq: what runs outside the pool's lanes.
+_side: dict[int, Job] = {}
+_side_seq = itertools.count(1)
+
+
+def _seat(job: Job) -> None:
+    with _side_lock:
+        _side[job.seq] = job
+
+
+def _unseat(job: Job) -> None:
+    with _side_lock:
+        _side.pop(job.seq, None)
+
+
+def _seated(seat: str) -> list[Job]:
+    with _side_lock:
+        return sorted((job for job in _side.values() if job.seat == seat), key=lambda job: job.queued_at)
+
+
+@contextlib.contextmanager
+def reading(kind: str, attachment_id: int, filename: str, model: str = "") -> Iterator[Job]:
+    """Announce that `kind` is reading this file for as long as the block."""
+    job = Job(next(_side_seq), kind, None, name=filename or f"file {int(attachment_id)}", seat="here")
+    #: The model is worth naming: on a local machine "which model is this
+    #: going through" is most of the answer to "why is it taking so long".
+    job.detail = f"{job.name} ({model})" if model else job.name
+    _seat(job)
+    try:
+        yield job
+    finally:
+        _unseat(job)
+
+
+def readings() -> list[dict]:
+    """Every reading in flight, oldest first (the panel reads as a queue), as `/tasks` rows."""
+    return [
+        {
+            "kind": job.row_kind,
+            "lane": job.lane,
+            "name": job.name,
+            "label": READING_LABELS.get(job.kind, "Reading a file"),
+            "detail": job.detail,
+            #: One model call reports no progress: `None` is the panel's own
+            #: "running, no percentage" state; a fake bar would be worse.
+            "progress": None,
+            "log": [],
+        }
+        for job in _seated("here")
+    ]
+
+
+# -- jobs off the pool: a thread of its own (WORLD_CLASS_PLAN 26.2, decision 58)
+#
+# A thread nobody can list or stop is the bug behind "the app would not quit"
+# and "a second embedding pass started under the first". Work with progress
+# goes through the pool and `jobruns`; a one-shot or a watcher that does not
+# is a `thread` Job: `thread(name, target, stop=...)` runs `target` on a
+# daemon thread and keeps the Job until it returns, so the Tasks panel and a
+# shutdown can ask what is running and ask it to stop. `stop` is optional on
+# purpose: a thread that ends by itself within seconds (a DNS probe) has
+# nothing to stop; a long-lived one names how it stops.
+
+
+def thread(name: str, target: Callable[[], None], stop: Callable[[], None] | None = None) -> threading.Thread:
+    """Run `target` on a named daemon thread, listed as a Job until it returns."""
+    job = Job(next(_side_seq), name, None, name=name, seat="thread", stopper=stop)
+
+    def run() -> None:
+        try:
+            target()
+        finally:
+            _unseat(job)
+
+    job.thread = threading.Thread(target=run, name=name, daemon=True)
+    _seat(job)
+    job.thread.start()
+    return job.thread
+
+
+def future(name: str, fn: Callable, *args) -> Future:  # noqa: ANN002
+    """`fn(*args)` on a listed daemon thread, its result in a Future: a call
+    that may hang (a model, a web page) waits under a deadline and is then
+    left to finish, never holding the app open when it quits."""
+    out: Future = Future()
+
+    def run() -> None:
+        try:
+            out.set_result(fn(*args))
+        except Exception as exc:  # noqa: BLE001  # carried to whoever reads the result
+            out.set_exception(exc)
+
+    thread(name, run)
+    return out
+
+
+def threads() -> list[dict]:
+    """The thread Jobs running now: name, seconds up, and whether one can be stopped."""
+    now = time.time()
+    return [
+        {"name": job.name, "seconds": round(now - job.queued_at, 1), "stoppable": job.stoppable}
+        for job in _seated("thread")
+        if job.thread is not None and job.thread.is_alive()
+    ]
+
+
+def stop_threads() -> list[str]:
+    """Ask every thread Job that can stop to do so; the names asked."""
+    asked = []
+    for job in _seated("thread"):
+        if not job.stoppable:
+            continue
+        try:
+            job.stop()
+            asked.append(job.name)
+        except Exception:  # noqa: BLE001  # one stuck stopper must not keep the others running
+            logger.warning("could not stop %s", job.name, exc_info=True)
+    return asked
+
+
+def join_threads(timeout: float = 5.0) -> None:
+    """Wait up to `timeout` seconds for the one-shot thread Jobs (no stopper,
+    they end by themselves): a test that tears the app state down must not
+    leave one to rebuild it (and a `./data` folder) from the thread. A
+    long-lived watcher names its own stop and is skipped."""
+    deadline = time.time() + timeout
+    for job in _seated("thread"):
+        if job.thread is not None and not job.stoppable:
+            job.thread.join(max(0.0, deadline - time.time()))
+
+
+# -- stopping a kind, or everything at quit (was core/bgtasks.py) -------------
+#
+# Two requests, one mechanism: *"allow the quitting/killing of background
+# tasks as well"* (the panel listed eight kinds and offered Quit on two) and
+# *"make sure that if the app is quit, all ai tasks and bg tasks stop as
+# well"* (a pip install is a child process that outlives its parent, and a
+# SearXNG build killed halfway leaves a half-written checkout). The kinds share
+# no implementation, only the `kind` string `/tasks` reports, so the table is
+# keyed on it and each canceller lives with the work it stops. They are named
+# by dotted path and resolved on use, as `jobstore.resolve` does: those owners
+# import this module, so a real import would close a cycle.
+#
+# A canceller takes the job's name, is safe to call when nothing runs
+# (`stop_all` calls every one) and returns `(acted, message)`; `False` with a
+# message is a normal answer. Nothing here kills a thread: a stop is a flag
+# checked at the next boundary or a `terminate()` on a child process.
+
+#: kind -> "module:function". `embeddings` is absent: the warm-up is one
+#: blocking model load with nothing to check a flag between, so the panel
+#: says so rather than offering a button that would do nothing.
+CANCELLERS: dict[str, str] = {
+    "reindex": "tessellate.ai.model_manager:stop_reindex",
+    "pull": "tessellate.ai.model_manager:stop_pulls",
+    "autonomous": "tessellate.ai.autonomous:stop_pass",
+    "extra": "tessellate.core.extras:cancel",
+    "embedding-model": "tessellate.core.embedmodels:cancel",
+    "embed-switch": "tessellate.core.embedswitch:cancel",
+    "searxng": "tessellate.search.searxng_manager:cancel_install",
+    "searxng-start": "tessellate.search.searxng_manager:cancel_start",
+    "tidy-link-reasons": "tessellate.entry.tidy:cancel_link_reasons",
+}
+
+#: What the panel puts a Quit button on, derived from the table so it cannot drift.
+CANCELLABLE_KINDS = frozenset(CANCELLERS)
+
+#: Asked at quit after every kind: the autonomous scheduler (joined, so a pass
+#: part-way through a write finishes it) and a SearXNG service this app started.
+#: Each returns the kind it stopped, or "".
+AT_QUIT = ("tessellate.ai.autonomous:stop_for_quit", "tessellate.search.searxng_manager:stop_for_quit")
+
+
+def _resolve(path: str) -> Callable[..., object]:
+    module, _, attr = path.partition(":")
+    return getattr(importlib.import_module(module), attr)
+
+
+def cancel_kind(kind: str, name: str = "") -> tuple[bool, str]:
+    """Stop one kind of job. Returns (acted, message): never raises."""
+    path = CANCELLERS.get(kind)
+    if path is None:
+        return False, "That job can't be stopped."
+    try:
+        return _resolve(path)(name)
+    except Exception as exc:  # noqa: BLE001  # a failed stop is a message
+        # `kind` arrives in a request body: untrusted text going into a log
+        # line (CodeQL py/log-injection). A newline could forge a record in the
+        # log Settings shows; a kind never legitimately holds one.
+        safe_kind = kind.replace("\r", "").replace("\n", "")
+        logger.warning("couldn't stop the %s job: %s", safe_kind, exc, exc_info=True)
+        return False, "Couldn't stop that job, see Settings, Logs."
+
+
+def stop_all() -> list[str]:
+    """Stop every kind of background work; what was actually stopped. Called
+    on the way out, so it is fast and never raises: a shutdown that hangs on a
+    stuck job is the thing it exists to prevent."""
+    stopped = [kind for kind in CANCELLERS if cancel_kind(kind)[0]]
+    for path in AT_QUIT:
+        try:
+            if kind := _resolve(path)():
+                stopped.append(kind)
+        except Exception as exc:  # noqa: BLE001  # one stuck stopper must not keep the others running
+            logger.warning("couldn't stop %s at quit: %s", path, exc)
+    if stopped:
+        logger.info("stopped background work at shutdown: %s", ", ".join(sorted(set(stopped))))
+    return stopped
 
 
 # -- the app's one pool -------------------------------------------------------

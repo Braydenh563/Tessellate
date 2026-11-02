@@ -40,6 +40,7 @@ async function openExtractPreview(text, { sourceEntryIds = [], sourceDocumentId 
       body: JSON.stringify({ text: trimmed, source_entry_ids: sourceEntryIds }),
     });
     extractProposal = { ...body, source_document_id: sourceDocumentId };
+    await lazyScript("/js/extract-preview.js");
     renderExtractPreview(body);
   } catch (error) {
     status.classList.add("error");
@@ -48,196 +49,11 @@ async function openExtractPreview(text, { sourceEntryIds = [], sourceDocumentId 
 }
 
 // What a link's `kind` (from `ai.extractor`) reads as in the preview.
-const EXTRACT_LINK_KIND_LABEL = { sibling: "new note", source: "source", related: "related" };
-
-function extractRefLabel(ref, notes) {
-  if (ref.startsWith("existing:")) return "an existing note";
-  const note = notes.find((n) => n.ref === ref);
-  return note ? note.title || clipText(notePreviewText(note.content), 30) : ref;
-}
-
-function renderExtractPreview(body) {
-  const status = $("extract-status");
-  status.classList.remove("error");
-  status.textContent =
-    body.message ||
-    `${body.notes.length} note${body.notes.length === 1 ? "" : "s"} proposed: review, then save.`;
-
-  // Built with createElement, not an `innerHTML` template per iteration.
-  // The old version escaped everything correctly, so this is not a security
-  // fix: it is this file's own rule (see the header comment: "All DOM nodes
-  // are built with createElement/textContent, never innerHTML"), and the rule
-  // exists because an `innerHTML` assignment inside a loop re-invokes the HTML
-  // parser once per proposed note, and because the next person to add a field
-  // here is one forgotten `escapeHtml` away from an injection.
-  const field = (type, className, { placeholder, label, value } = {}) => {
-    const input = document.createElement("input");
-    input.type = type;
-    input.className = className;
-    if (placeholder) input.placeholder = placeholder;
-    if (label) input.setAttribute("aria-label", label);
-    if (value !== undefined) input.value = value;
-    return input;
-  };
-
-  const list = $("extract-notes-list");
-  list.replaceChildren();
-  for (const note of body.notes) {
-    const card = document.createElement("div");
-    card.className = "extract-note-card";
-    card.dataset.ref = note.ref;
-
-    const keepLabel = document.createElement("label");
-    keepLabel.className = "row align-center checkbox-label";
-    const keep = field("checkbox", "extract-note-keep");
-    keep.checked = true;
-    keepLabel.append(keep, document.createTextNode(" Keep this note"));
-
-    const title = field("text", "extract-note-title", {
-      placeholder: "Title (optional)",
-      label: "Note title",
-      value: note.title || "",
-    });
-
-    const content = document.createElement("textarea");
-    content.className = "extract-note-content";
-    content.rows = 6;
-    content.setAttribute("aria-label", "Note content");
-    content.value = note.content;
-
-    const meta = document.createElement("div");
-    meta.className = "row extract-note-meta";
-    const category = document.createElement("span");
-    category.className = "muted extract-note-category";
-    category.textContent = `Filed under: ${note.category}`;
-    meta.append(
-      category,
-      field("text", "extract-note-tags", {
-        placeholder: "Tags, comma separated",
-        label: "Tags for this note",
-      })
-    );
-
-    card.append(keepLabel, title, content, meta);
-    list.appendChild(card);
-  }
-
-  const linksBox = $("extract-links-list");
-  linksBox.replaceChildren();
-  if (body.links.length) {
-    const heading = document.createElement("p");
-    heading.className = "muted";
-    heading.textContent = "Links";
-    linksBox.appendChild(heading);
-  }
-  for (const link of body.links) {
-    const row = document.createElement("label");
-    row.className = "row align-center extract-link-row checkbox-label";
-    row.dataset.sourceRef = link.source_ref;
-    row.dataset.targetRef = link.target_ref;
-    const kindLabel = EXTRACT_LINK_KIND_LABEL[link.kind] || "note";
-    // Raw, not escaped: this now goes into a text node, where escaping would
-    // render the entities literally ("A &amp; B" on screen).
-    const target = link.target_preview || extractRefLabel(link.target_ref, body.notes);
-    const keep = document.createElement("input");
-    keep.type = "checkbox";
-    keep.className = "extract-link-keep";
-    keep.checked = true;
-    const desc = document.createElement("span");
-    desc.className = "extract-link-desc";
-    const why = document.createElement("span");
-    why.className = "muted";
-    why.textContent = `(${kindLabel}: ${link.reason})`;
-    desc.append(
-      document.createTextNode(
-        `${extractRefLabel(link.source_ref, body.notes)} → ${target} `
-      ),
-      why
-    );
-    row.append(keep, desc);
-    linksBox.appendChild(row);
-  }
-
-  $("extract-commit").disabled = body.notes.length === 0;
-}
-
+//: The proposal's cards (`renderExtractPreview`) are extract-preview.js, fetched
+//: with the first proposal: only an extraction reaches them.
 function closeExtractPreview() {
   $("extract-panel").classList.add("hidden");
   extractProposal = null;
-}
-
-async function commitExtractPreview() {
-  if (!extractProposal) return;
-  const keptRefs = new Set();
-  const notes = [];
-  for (const card of $("extract-notes-list").querySelectorAll(".extract-note-card")) {
-    if (!card.querySelector(".extract-note-keep").checked) continue;
-    const ref = card.dataset.ref;
-    const original = extractProposal.notes.find((n) => n.ref === ref);
-    if (!original) continue;
-    const content = card.querySelector(".extract-note-content").value.trim();
-    if (!content) continue; // an edited-down-to-nothing note is dropped, not saved empty
-    keptRefs.add(ref);
-    notes.push({
-      ref,
-      title: card.querySelector(".extract-note-title").value.trim(),
-      content,
-      category: original.category,
-      tags: card
-        .querySelector(".extract-note-tags")
-        .value.split(",")
-        .map((t) => t.trim())
-        .filter(Boolean),
-    });
-  }
-  if (!notes.length) {
-    toast("Keep at least one note to save.");
-    return;
-  }
-
-  const links = [];
-  for (const row of $("extract-links-list").querySelectorAll(".extract-link-row")) {
-    if (!row.querySelector(".extract-link-keep").checked) continue;
-    const sourceRef = row.dataset.sourceRef;
-    const targetRef = row.dataset.targetRef;
-    if (!keptRefs.has(sourceRef)) continue; // its source note was dropped
-    if (!targetRef.startsWith("existing:") && !keptRefs.has(targetRef)) continue; // its sibling was dropped
-    const original = extractProposal.links.find(
-      (l) => l.source_ref === sourceRef && l.target_ref === targetRef
-    );
-    if (original) links.push({ source_ref: sourceRef, target_ref: targetRef, reason: original.reason });
-  }
-
-  $("extract-commit").disabled = true;
-  const status = $("extract-status");
-  status.classList.remove("error");
-  status.textContent = "Saving…";
-  try {
-    const result = await apiJson("/entries/extract/commit", {
-      method: "POST",
-      body: JSON.stringify({
-        notes,
-        links,
-        source_document_id: extractProposal.source_document_id || null,
-      }),
-    });
-    closeExtractPreview();
-    const madeIds = result.notes.map((n) => n.id).filter((id) => id != null);
-    if (madeIds.length) {
-      pushRoutePairUndo(
-        `Saved ${madeIds.length} extracted note${madeIds.length === 1 ? "" : "s"}`,
-        madeIds.map((id) => [`/entries/${id}`, "DELETE"]),
-        madeIds.map((id) => [`/entries/${id}/restore`, "POST"]),
-        () => refreshEntries(madeIds)
-      );
-    }
-    toast(`Saved ${result.notes.length} note${result.notes.length === 1 ? "" : "s"}.`);
-    await loadEntries();
-  } catch (error) {
-    status.classList.add("error");
-    status.textContent = error.message;
-    $("extract-commit").disabled = false;
-  }
 }
 
 // --- attaching notes to a chat message ------------------------------------------
@@ -264,10 +80,18 @@ let lastChatImageAttachments = [];
 //: A tile (the picture, or the kind's glyph), the name with its extension kept
 //: when the stem is cut, one facts line, a bar while it uploads, a round x.
 //: `state` is "ready", "uploading" (with `progress` 0..1) or "error" (the
-//: facts line then says why).
-function attachmentChip({ name, size, thumb, state = "ready", progress = 0, error = "", title, removeTitle, onRemove }) {
+//: facts line then says why). A notebook item (`notebookCard`, chat-agent.js)
+//: passes its own `icon` and `facts` (a note's name is words, not a file name,
+//: so no extension is split off) and `onOpen`, which makes the tile and the
+//: words one button; the remove x stays its sibling.
+function attachmentChip({ name, size, thumb, icon, facts: factsText, onOpen, state = "ready", progress = 0, error = "", title, removeTitle, onRemove }) {
   const chipEl = document.createElement("span");
-  chipEl.className = "chip attachment-chip att-chip";
+  //: **Staged is a pill, sent is a card** (INBOX 1476, the owner: the grey slab
+  //: is not "very clean and dynamic"). A staged chip (`onRemove` given, null while it uploads) is waiting in a
+  //: composer: one quiet line, the glyph, the name cut at about 14 characters,
+  //: the kind in brackets, the x. Sent, it keeps the two-line card.
+  const pill = onRemove !== undefined;
+  chipEl.className = `chip att-chip${pill ? " att-chip-pill" : ""}`;
   chipEl.dataset.state = state;
   chipEl.title = title || name;
   let tile;
@@ -277,11 +101,11 @@ function attachmentChip({ name, size, thumb, state = "ready", progress = 0, erro
     tile.alt = "";
   } else {
     tile = document.createElement("i");
-    tile.className = `ph ${attachmentIconClass("", name) || "ph-file"}`;
+    tile.className = `ph ${icon || attachmentIconClass("", name) || "ph-file"}`;
     tile.setAttribute("aria-hidden", "true");
   }
   tile.classList.add("att-chip-tile");
-  const ext = attachmentExt(name);
+  const ext = icon ? "" : attachmentExt(name);
   const stem = document.createElement("span");
   stem.className = "att-chip-stem";
   stem.textContent = ext ? name.slice(0, -(ext.length + 1)) : name;
@@ -297,17 +121,28 @@ function attachmentChip({ name, size, thumb, state = "ready", progress = 0, erro
   const facts = document.createElement("span");
   facts.className = "att-chip-facts";
   const kind = fileKindLabel("", name);
-  facts.textContent =
+  const factsLine =
     state === "uploading"
       ? `Uploading ${Math.round(progress * 100)}%`
       : state === "error"
         ? error || "Could not attach"
-        : [kind, formatFileSize(size)].filter(Boolean).join(" · ");
+        : factsText || [kind, formatFileSize(size)].filter(Boolean).join(" · ");
+  facts.textContent = pill && state === "ready" ? `[${(factsText || kind || "File").split(" · ")[0]}]` : factsLine;
   const body = document.createElement("span");
   body.className = "att-chip-body";
   body.append(nameEl, facts);
-  chipEl.append(tile, body);
+  if (onOpen) {
+    const open = document.createElement("button");
+    open.type = "button";
+    open.className = "att-chip-open";
+    open.setAttribute("aria-haspopup", "dialog");
+    if (title) open.setAttribute("aria-label", `${title}, ${facts.textContent}`);
+    open.append(tile, body);
+    open.addEventListener("click", onOpen);
+    chipEl.append(open);
+  } else chipEl.append(tile, body);
   if (state === "uploading") {
+    lazyScript("/css/chip-bar-lazy.css");
     const bar = document.createElement("progress");
     bar.className = "att-chip-bar";
     bar.max = 100;
@@ -392,34 +227,6 @@ async function attachImageFiles(files) {
     });
   }
   renderImageAttachments();
-}
-
-//: Upload whatever is still staged, and return the attachment list with real
-//: ids. Called at the moment a message is actually sent, the point where the
-//: user has committed to it and the server needs to know.
-//:
-//: A failure here has to stop the send rather than drop the picture quietly:
-//: a message that arrives without the image it was written about is worse
-//: than one that refuses to send and says why.
-async function commitStagedImages() {
-  for (const image of attachedImages) {
-    if (image.id) continue; // already on the server (a regenerate re-uses these)
-    const form = new FormData();
-    form.append("file", image.file);
-    // No explicit Content-Type: the browser sets its own multipart boundary
-    // for a FormData body, and `api()`'s default JSON header would be wrong
-    // here: the same reason the editor's own image-drop upload overrides
-    // headers rather than merging.
-    const uploaded = await apiJson("/media/upload", {
-      method: "POST",
-      headers: authHeaders(),
-      body: form,
-    });
-    image.id = uploaded.id;
-    image.url = uploaded.url;
-    image.name = uploaded.filename || image.name;
-  }
-  return attachedImages;
 }
 
 // --- one attach button, two destinations ---------------------------------------
@@ -545,7 +352,7 @@ async function importChatDocuments(files) {
   const label =
     made.length === 1
       ? `Added “${first.title}” to your documents.`
-      : `Added ${made.length} files to your documents.`;
+      : `Added ${nounCount(made.length, "file")} to your documents.`;
   toastAction(label, made.length === 1 ? "Open it" : "Show them", () => {
     switchTab("documents");
     if (made.length === 1) openDocument(first.id);
@@ -652,23 +459,16 @@ function renderBoardAttachments() {
   box.replaceChildren();
   box.classList.toggle("hidden", attachedBoards.length === 0);
   for (const board of attachedBoards) {
-    const chipEl = document.createElement("span");
-    chipEl.className = "chip attachment-chip";
-    const label = document.createElement("span");
-    setLabel(label, `ph:tree-structure ${board.name}`);
-    const remove = document.createElement("button");
-    remove.className = "attachment-remove";
-    remove.type = "button";
-    setLabel(remove, "ph:x");
-    remove.title = `Don't send “${board.name}” with this message`;
-    remove.setAttribute("aria-label", remove.title);
-    remove.addEventListener("click", () => {
-      attachedBoards = attachedBoards.filter((b) => b.id !== board.id);
-      renderBoardAttachments();
-      announce(`Removed attachment. ${attachedBoards.length} map(s) attached.`);
-    });
-    chipEl.append(label, remove);
-    box.appendChild(chipEl);
+    box.appendChild(
+      notebookCard({ kind: "map", id: board.id, name: board.name }, {
+        removeTitle: `Don't send “${board.name}” with this message`,
+        onRemove: () => {
+          attachedBoards = attachedBoards.filter((b) => b.id !== board.id);
+          renderBoardAttachments();
+          announce(`Removed attachment. ${attachedBoards.length} map(s) attached.`);
+        },
+      }),
+    );
   }
 }
 
@@ -706,8 +506,7 @@ function renderDocumentAttachments() {
   box.classList.toggle("hidden", attachedDocuments.length === 0);
   for (const document_ of attachedDocuments) {
     box.appendChild(
-      attachmentChip({
-        name: document_.name,
+      notebookCard({ kind: "document", id: document_.id, name: document_.name }, {
         removeTitle: `Don't send “${document_.name}” with this message`,
         onRemove: () => {
           attachedDocuments = attachedDocuments.filter((d) => d.id !== document_.id);
@@ -770,129 +569,27 @@ function renderSelectionAttachment() {
   box.replaceChildren();
   box.classList.toggle("hidden", !attachedSelection);
   if (!attachedSelection) return;
-  const chipEl = document.createElement("span");
-  chipEl.className = "chip attachment-chip";
-  //: The full passage on hover. A chip can only show a few words of it, and
+  //: The full passage on hover: a pill can only name where it is from, and
   //: "which selection is this?" is the one question it has to answer.
-  chipEl.title = attachedSelection.text;
-  const label = document.createElement("span");
-  const words = attachedSelection.text.replace(/\s+/g, " ").trim();
-  const shown = words.length > 42 ? `${words.slice(0, 41)}…` : words;
-  //: A page's reading (the OCR workspace, INBOX 717) has a file and a page,
-  //: not a line in an editor.
-  setLabel(label, attachedSelection.kind === "reading"
-    ? `ph:scan ${attachedSelection.title}: “${shown}”`
-    : `ph:text-aa ${attachedSelection.title} · line ${attachedSelection.line}: “${shown}”`);
-  const remove = document.createElement("button");
-  remove.className = "attachment-remove";
-  remove.type = "button";
-  setLabel(remove, "ph:x");
-  remove.title = "Don't send this with your message";
-  remove.setAttribute("aria-label", remove.title);
-  remove.addEventListener("click", () => {
-    clearSelectionAttachment();
-    announce("Selection removed.");
-  });
-  chipEl.append(label, remove);
-  box.appendChild(chipEl);
-}
-
-//: **Re-validated at send, not trusted from when it was attached.** This is
-//: the part of odysseus's `getSelectionContext()` worth porting exactly
-//: (`static/js/document.js`, AGPL: this project is AGPL-3.0, see
-//: ANALYSIS.md): between selecting a passage and pressing send, the user can
-//: type above it, undo, or edit the note entirely, and stored offsets then
-//: point at *different words*. Sending those would hand the model text from a
-//: region the user is no longer looking at, attributed to a line number that
-//: is now someone else's line: wrong in the most confusing possible way.
-//:
-//: Three outcomes, and each is said plainly to the model rather than papered
-//: over: the offsets still hold; the passage moved (found elsewhere, so the
-//: line number is recomputed); or the passage is gone from the surface, in
-//: which case the text is still sent, the user asked about it, but with no
-//: position claimed at all.
-function revalidateSelection(context) {
-  //: A reading is a copy of what was read, not a place in a surface.
-  if (context.kind === "reading") return { ...context, position: "exact" };
-  //: **Through `docSurfaceById`, never `getElementById` alone.** A document
-  //: whose CodeMirror engine has mounted keeps `#doc-content` in the markup as
-  //: the form's empty value carrier: it is still an `HTMLTextAreaElement` and
-  //: its `.value` is still `""`, so reading it directly passed the type check
-  //: and then told the model every document passage was `gone` while the
-  //: passage was on screen (measured on the branch head by
-  //: `scratchpad/ui-sweeps/docsel.js`: "gone" for an untouched selection).
-  //: `docSurfaceById` resolves `doc-content` to whichever surface is editing,
-  //: and a note box that has mounted the engine the same way.
-  //:
-  //: Guarded by `typeof`, because documents.js is in the Library's lazy bundle
-  //: (`LAZY_MODULES`) and a selection taken from the capture box can be sent
-  //: before that bundle has ever loaded; the textarea is the right answer
-  //: there anyway.
-  const el = document.getElementById(context.surfaceId);
-  const surface =
-    typeof docSurfaceById === "function"
-      ? docSurfaceById(context.surfaceId)
-      //: `{ text }` rather than the element itself, so the one line below that
-      //: reads the words reads the same property in both branches.
-      : el instanceof HTMLTextAreaElement
-        ? { text: el.value }
-        : null;
-  if (!surface || typeof surface.text !== "string") {
-    //: The note was closed or the document navigated away from. Nothing to
-    //: check against, so nothing is claimed.
-    return { ...context, position: "unknown" };
-  }
-  const value = surface.text;
-  if (value.slice(context.start, context.end) === context.text) {
-    return { ...context, position: "exact" };
-  }
-  const found = value.indexOf(context.text);
-  if (found === -1) return { ...context, position: "gone" };
-  const upToCaret = value.slice(0, found + context.text.length);
-  return {
-    ...context,
-    start: found,
-    end: found + context.text.length,
-    line: upToCaret.split("\n").length,
-    column: upToCaret.length - (upToCaret.lastIndexOf("\n") + 1) + 1,
-    position: "moved",
-  };
-}
-
-//: What the model is actually told. Terse on purpose: it rides on every
-//: message that carries a selection, and the tool schemas are already the
-//: dominant fixed cost of a round (§R5 item 1).
-function selectionContextBlock(context) {
-  if (context.kind === "reading") {
-    return [`The user is asking about the text read (OCR) from ${context.title}:`, "", context.text, ""].join("\n");
-  }
-  const where =
-    context.position === "gone" || context.position === "unknown"
-      ? `${context.title} (the user has since edited it, so this passage may no longer be there)`
-      : `${context.title}, line ${context.line}, column ${context.column}`;
-  const parts = [`The user has selected this passage in ${where}:`, "", context.text, ""];
-  const around = [context.before, context.after].some((t) => (t || "").trim());
-  if (around) {
-    parts.push(
-      "Immediately around it, for context only, do not treat it as the question:",
-      "",
-      `…${context.before}⟦selection⟧${context.after}…`
-    );
-  }
-  return parts.join("\n");
+  const reading = attachedSelection.kind === "reading";
+  box.appendChild(
+    attachmentChip({
+      name: attachedSelection.title,
+      icon: reading ? "ph-scan" : "ph-text-aa",
+      facts: reading ? "Reading" : `line ${attachedSelection.line}`,
+      title: `${attachedSelection.title}${reading ? "" : `, line ${attachedSelection.line}`}: “${attachedSelection.text.replace(/\s+/g, " ").trim().slice(0, 300)}”`,
+      removeTitle: "Don't send this with your message",
+      onRemove: () => {
+        clearSelectionAttachment();
+        announce("Selection removed.");
+      },
+    }),
+  );
 }
 
 function attachedNotes() {
   return attachedNoteIds
     .map((id) => allEntries.find((e) => e.id === id))
-    .filter(Boolean);
-}
-
-//: The notes an answer named, as short titles, sent back on its history turn
-//: so "delete the other one" can name the note (`reading.follow`, decision 57).
-function chatTurnObjects(sources) {
-  return (sources || []).filter((s) => s.kind === "note").slice(0, 5)
-    .map((s) => String(s.label || "").replace(/…$/, "").split(/[:.!?]/)[0].trim().slice(0, 80))
     .filter(Boolean);
 }
 
@@ -923,7 +620,7 @@ function flattenNoteMarkdown(md) {
   //: Front matter is the note's settings, not its words (INBOX 1323).
   return stripFrontmatter(md)
     .replace(/^\s{0,3}(?:#{1,6}\s+|>\s?|[-*+]\s+|\d+[.)]\s+)/gm, "")
-    .replace(/!?\[([^\]]{0,300})\]\([^)]{0,500}\)?/g, "$1")
+    .replace(/!?\[([^\]|]{0,300})[^\]]{0,300}\]\([^)]{0,500}\)?/g, "$1")
     .replace(/\[\[([^[\]]{1,120})\]\]/g, "$1")
     .replace(/\s+/g, " ")
     .trim();
@@ -1016,25 +713,17 @@ function renderAttachments() {
   box.classList.toggle("hidden", notes.length === 0);
   $("attach-note").classList.toggle("has-attachments", notes.length > 0);
   for (const entry of notes) {
-    const chipEl = document.createElement("span");
-    chipEl.className = "chip attachment-chip";
-    chipEl.title = entry.content;
-    const label = document.createElement("span");
-    setLabel(label, `ph:paperclip ${noteLabel(entry)}`);
-    const remove = document.createElement("button");
-    remove.className = "attachment-remove";
-    remove.type = "button";
-    setLabel(remove, "ph:x");
-    remove.title = `Remove "${noteLabel(entry, 24)}"`;
-    remove.setAttribute("aria-label", remove.title);
-    remove.addEventListener("click", () => {
-      attachedNoteIds = attachedNoteIds.filter((id) => id !== entry.id);
-      renderAttachments();
-      renderNotePickerList();
-      announce(`Removed attachment. ${attachedNoteIds.length} note(s) attached.`);
-    });
-    chipEl.append(label, remove);
-    box.appendChild(chipEl);
+    box.appendChild(
+      notebookCard({ kind: "note", id: entry.id, name: entry.content }, {
+        removeTitle: `Remove “${noteNamePlain(entry.content, 24) || "this note"}”`,
+        onRemove: () => {
+          attachedNoteIds = attachedNoteIds.filter((id) => id !== entry.id);
+          renderAttachments();
+          renderNotePickerList();
+          announce(`Removed attachment. ${attachedNoteIds.length} note(s) attached.`);
+        },
+      }),
+    );
   }
 }
 
@@ -1085,7 +774,7 @@ function notePickerShape(source) {
       },
       meta: (row) => {
         const when = relativeTime(row.updated_at);
-        return [notePickerFacts(when && `Edited ${when}`, row.words ? `${row.words} word${row.words === 1 ? "" : "s"}` : "")];
+        return [notePickerFacts(when && `Edited ${when}`, row.words ? nounCount(row.words, "word") : "")];
       },
       search: (row) => `${row.title || ""} ${row.preview || ""}`,
       isOn: (row) => attachedDocuments.some((d) => d.id === row.id),
@@ -1385,6 +1074,9 @@ function openNotePicker() {
     $("note-picker-search").focus();
     return;
   }
+  //: The floating popover hides the messages' action rows behind it (a class
+  //: the sheet's CSS reads; not a `:has()` on the tab, AI9).
+  $("tab-chat").classList.add("note-picker-open");
   $("note-picker-search").focus();
 }
 
@@ -1394,6 +1086,7 @@ function closeNotePicker() {
     return;
   }
   $("note-picker-panel").classList.add("hidden");
+  $("tab-chat").classList.remove("note-picker-open");
   $("attach-note").setAttribute("aria-expanded", "false");
 }
 
@@ -1421,7 +1114,7 @@ function openChatDockMore() {
   const button = $("chat-dock-more-btn");
   panel.classList.remove("hidden");
   button.setAttribute("aria-expanded", "true");
-  if (!window.matchMedia(PHONE_TABS).matches || typeof openSheet !== "function") return;
+  if (!window.matchMedia(PHONE_TABS).matches) return;
   const home = panel.parentElement;
   chatDockMoreSheetClose = openSheet({
     label: "How it answers",
@@ -1449,127 +1142,6 @@ function closeChatDockMore() {
   $("chat-dock-more-btn").setAttribute("aria-expanded", "false");
 }
 
-//: **The way onward, built in one place so both paths draw the same buttons.**
-//:
-//: Reported: "the continue step and edit step buttons in the chat arent
-//: persistent and disappeared when I came back to the chat". They were built
-//: only while the stream was finishing, from local variables (`stopped`,
-//: `stoppedAtStep`, the skill and its inputs) that nothing wrote down, so a
-//: run you stopped offered Resume until the moment you changed tab and then
-//: silently stopped offering it, with the run's work still sitting there and
-//: no way back to it. The state is saved on the turn now (`resume` in the
-//: turn body) and `openConversation` calls this with it, which is the same
-//: shape the Sources panel, the grounding chips and the followups each had
-//: to be given for the same reason.
-//:
-//: One function rather than a copy in the reopen path: the comment on
-//: `assistantMessageActions` is about exactly this pair of paths drifting.
-function appendRunResumeControls(bubble, spec) {
-  if (!bubble || !spec) return;
-  const stopped = Boolean(spec.stopped);
-  const stoppedAtStep = typeof spec.stoppedAtStep === "number" ? spec.stoppedAtStep : null;
-  const pausedForManual = Boolean(spec.pausedForManual);
-  const ranOutOfRounds = Boolean(spec.ranOutOfRounds);
-  const editStepAction = (index) => ({
-    label: `ph:pencil-simple Edit step ${index + 1}`,
-    title: "Rewrite this step and run just it, leaving the rest for afterwards",
-    onClick: async () => {
-      const text = await promptDialog(
-        `Rewrite step ${index + 1} and run just that step. Earlier steps are ` +
-          "not repeated, and the rest of the skill is left to resume afterwards.",
-        spec.timeline?.stepText?.(index) || "",
-        { confirmLabel: "Run this step" }
-      );
-      if (!text || !text.trim()) return false;
-      sendChatMessage(`${spec.skill}: step ${index + 1}`, {
-        skill: spec.skill,
-        skillInputs: spec.skillInputs || {},
-        skillOnlyStep: index,
-        skillStepText: text.trim(),
-        skipPlanMode: true,
-      });
-      return true;
-    },
-  });
-
-  if (stopped && stoppedAtStep !== null && spec.skill) {
-    bubble.appendChild(
-      continueRunControls({
-        also: editStepAction(stoppedAtStep),
-        label: `ph:play Resume from step ${stoppedAtStep + 1}`,
-        hint: "You stopped this. Earlier steps are not repeated.",
-        onClick: () =>
-          sendChatMessage(`${spec.skill}: from step ${stoppedAtStep + 1}`, {
-            skill: spec.skill,
-            skillInputs: spec.skillInputs || {},
-            skillFromStep: stoppedAtStep,
-            skipPlanMode: true,
-          }),
-      })
-    );
-  } else if (stopped && (spec.skill || spec.hasTools)) {
-    //: A stopped run with no step to name, a plain agent turn, or a skill
-    //: stopped before its first step finished. It still did work worth not
-    //: repeating, so the offer is the same one the round limit gets.
-    bubble.appendChild(
-      continueRunControls({
-        label: "ph:play Resume",
-        hint: "Picks up from what it had already done.",
-        onClick: () =>
-          sendChatMessage(
-            "Continue from where you stopped. Don't redo what you have " +
-              "already done: carry on with what is left, and say when it is " +
-              "all finished.",
-            { useTools: true }
-          ),
-      })
-    );
-  } else if (!stopped && stoppedAtStep !== null && spec.skill && pausedForManual) {
-    bubble.appendChild(
-      manualPauseControls({
-        onContinue: (note) =>
-          sendChatMessage(`${spec.skill}: from step ${stoppedAtStep + 1}`, {
-            skill: spec.skill,
-            skillInputs: spec.skillInputs || {},
-            skillFromStep: stoppedAtStep,
-            skillManual: true,
-            skillManualNote: note,
-            skipPlanMode: true,
-          }),
-      })
-    );
-  } else if (!stopped && stoppedAtStep !== null && spec.skill) {
-    bubble.appendChild(
-      continueRunControls({
-        also: editStepAction(stoppedAtStep),
-        label: `ph:arrow-clockwise Resume from step ${stoppedAtStep + 1}`,
-        hint: "Earlier steps are not repeated.",
-        onClick: () =>
-          sendChatMessage(`${spec.skill}: from step ${stoppedAtStep + 1}`, {
-            skill: spec.skill,
-            skillInputs: spec.skillInputs || {},
-            skillFromStep: stoppedAtStep,
-            skipPlanMode: true,
-          }),
-      })
-    );
-  } else if (!stopped && ranOutOfRounds) {
-    bubble.appendChild(
-      continueRunControls({
-        label: "ph:arrow-right Continue",
-        hint: "Picks up from what it had already done.",
-        onClick: () =>
-          sendChatMessage(
-            "Continue from where you stopped. Don't redo what you have " +
-              "already done: carry on with what is left, and say when it is " +
-              "all finished.",
-            { useTools: true }
-          ),
-      })
-    );
-  }
-}
-
 //: A stray key typed against the last word ("dentist\\") goes before the bubble
 //: shows it, as the server already reads it (question_noise); an emoticon
 //: (":\\") and a lone key stay.
@@ -1595,6 +1167,8 @@ async function sendChatMessage(preset, opts = {}) {
   }
   chatQueueState.held = false;
   try {
+    //: The turn itself is lazy (chat-turn.js, warmed when the box takes focus).
+    if (!(await ensureModule("chatTurn"))) return lazyLoadFailed();
     return await chatSendTurn(preset, opts);
   } finally {
     if (!chatQueueState.held && chatQueue.length && $("chat-stop").classList.contains("hidden")) sendChatMessage(chatQueue.shift());
@@ -1606,1347 +1180,13 @@ function chatQueueShow() {
   if (chatQueue.length || document.querySelector(".chat-queue")) ensureModule("replyKit").then(() => chatQueuePaint()).catch(() => {});
 }
 
-async function chatSendTurn(preset, opts = {}) {
-  const input = $("chat-input");
-  const status = $("chat-status");
-  const typed = chatTidyTyped((preset ?? input.value).trim());
-  if (!typed) {
-    //: Pressing Send on an empty box did nothing at all (dog3-1026 row 12).
-    if (preset == null) {
-      toast("Type a message first.");
-      input.focus();
-    }
-    return;
-  }
-
-  // Plan mode is applied here, on the way out, rather than by whatever control
-  // was pressed: so Send, Enter and a suggestion chip all get planned when the
-  // mode is on. `opts.plan` means this message IS a plan already (the plan
-  // runner re-sends through here), so it must not be planned again.
-  //
-  // The user's own words go in the bubble; the planning instruction is appended
-  // for the model only. `displayText` already exists for exactly this.
-  const planned = opts.plan || opts.skipPlanMode ? null : applyPlanMode(typed);
-  let question = planned || typed;
-  if (planned && !opts.displayText) opts = { ...opts, displayText: typed };
-  //: **The selection joins the question here, and only for the model.** It is
-  //: appended after Plan mode's own rewrite for the same reason that rewrite
-  //: exists at all: `displayText` is what the user said, and showing them a
-  //: block of their own note quoted back at them under their question would
-  //: read as the app putting words in their mouth. The chip above the box is
-  //: what tells them it is going.
-  //:
-  //: Re-validated at this moment rather than reused from when it was attached
-  //:, see `revalidateSelection` for what changes in between and why sending
-  //: stale offsets is the worst of the three outcomes.
-  const sentSelection = attachedSelection ? revalidateSelection(attachedSelection) : null;
-  if (sentSelection) {
-    if (!opts.displayText) opts = { ...opts, displayText: typed };
-    question = `${question}\n\n${selectionContextBlock(sentSelection)}`;
-  }
-  //: A cited web page joins the same way and for the same reason: the model
-  //: reads it, the bubble shows only what the user typed, and the chip above
-  //: the box is what said it was going.
-  if (attachedWebPage) {
-    if (!opts.displayText) opts = { ...opts, displayText: typed };
-    question = `${question}\n\n${webPageContextBlock(attachedWebPage)}`;
-  } else if (chatWeb.lastUrl && (await ensureModule("webClip"))) {
-    const page = await webFollowUp(typed, chatWeb.lastUrl);
-    if (page) {
-      if (!opts.displayText) opts = { ...opts, displayText: typed };
-      question = `${question}\n\n${webPageContextBlock(page)}`;
-    }
-  }
-  lastChatQuestion = question;
-  if (!opts.replaceLast) regenerateLastAnswer.retries = 0; // a new question is a first ask
-
-  // Consumed once: this send, button click or free-typed reply alike, is
-  // the answer to whatever question was pending, and the next one after it
-  // is an ordinary message again.
-  const answeringAgent = opts.answeringAgent ?? chatAwaitingAgentAnswer;
-  chatAwaitingAgentAnswer = false;
-  // Whatever is sent while a question card waits is its answer (INBOX 171):
-  // the card folds into its chip and cannot send a second one.
-  settlePendingAgentQuestion(opts.displayText ?? typed);
-
-  // **Staged images become real uploads here**, at the moment the message is
-  // actually committed: see `attachImageFiles` for why nothing was uploaded
-  // when they were attached.
-  //
-  // Before the snapshot below, because that snapshot reads `img.id` and a
-  // staged image has none until this runs. A failure stops the send and says
-  // so: a message arriving without the picture it was written about is worse
-  // than one that refuses and explains.
-  if (!opts.imageMediaIds) {
-    try {
-      await commitStagedImages();
-    } catch (error) {
-      toast(error.message || "Couldn't upload the attached image.", true);
-      return;
-    }
-  }
-
-  // Snapshot the attachments for this message. A regenerate re-uses the same
-  // ones; a fresh send clears them, so they don't silently ride along on
-  // every later question.
-  const sentAttachments = opts.noteIds || attachedNoteIds.slice();
-  const sentImages = opts.imageMediaIds || attachedImages.map((img) => img.id);
-  const sentDocuments = opts.documentIds || attachedDocuments.map((d) => d.id);
-  const sentFiles = opts.fileIds || attachedFiles.map((f) => f.id);
-  const sentBoards = opts.boardIds || attachedBoards.map((b) => b.id);
-  // What the bubble will draw. Built here, while the composer still knows the
-  // names and urls: after the clear below there is nothing left to build it
-  // from, and a round trip to re-fetch what we already had would show the
-  // message without its pictures for as long as that took.
-  const sentAttachmentCards = opts.attachmentCards || [
-    ...attachedImages.map((img) => ({
-      kind: "image",
-      id: img.id,
-      url: img.url,
-      name: img.name || "Attached image",
-      // A just-uploaded image has no caption yet, captioning runs in the
-      // background once the message commits it. Reopening the chat picks the
-      // caption up from `GET /conversations/{id}`, which is where it lands.
-      caption: "",
-      text: "",
-    })),
-    ...attachedDocuments.map((d) => ({ kind: "document", id: d.id, name: d.name })),
-    // Library files: the same card list as the other kinds, so the bubble
-    // shows every reference the question was given rather than three of four.
-    ...attachedFiles.map((f) => ({ kind: "file", id: f.id, name: f.name })),
-    // A mind map, same card list again, the bubble has to show every
-    // reference the question was given, and a map is the one whose absence
-    // would be least obvious (its outline is invisible in the transcript).
-    ...attachedBoards.map((b) => ({ kind: "map", id: b.id, name: b.name })),
-    // The paperclip's own attachments. Same card list as the other two kinds
-    // so the bubble shows every reference this question was given, not two of
-    // the three.
-    ...attachedNotes().map((entry) => ({
-      kind: "note",
-      id: entry.id,
-      name: noteLabel(entry, 60),
-    })),
-  ];
-  if (!opts.replaceLast) {
-    // Remembered so a regenerate re-runs with the same references, by then
-    // the picker has been cleared.
-    lastChatAttachments = sentAttachments;
-    lastChatImageAttachments = attachedImages.slice();
-    lastChatDocumentAttachments = attachedDocuments.slice();
-    lastChatFileAttachments = attachedFiles.slice();
-    lastChatBoardAttachments = attachedBoards.slice();
-    // The staged bytes are on the server now, so the local Blob references
-    // are dead weight: an object URL lives as long as the document unless it
-    // is revoked, and a chat session sending several images would hold every
-    // one of them in memory for the life of the tab. The upload's real url is
-    // what the sent bubble draws from, so nothing on screen depends on these.
-    for (const image of attachedImages) {
-      if (image.objectUrl) URL.revokeObjectURL(image.objectUrl);
-      image.objectUrl = null;
-    }
-    attachedNoteIds = [];
-    attachedImages = [];
-    attachedDocuments = [];
-    attachedFiles = [];
-    attachedBoards = [];
-    //: Cleared with the rest, and for the same stated reason: a selection that
-    //: rode along on every later question would be the app answering about a
-    //: paragraph the user stopped talking about three messages ago.
-    attachedSelection = null;
-    attachedWebPage = null;
-    renderAttachments();
-    renderImageAttachments();
-    renderDocumentAttachments();
-    renderFileAttachments();
-    renderBoardAttachments();
-    renderSelectionAttachment();
-    renderWebPageAttachment();
-    closeNotePicker();
-  }
-
-  //: Same loan as in `openConversation`: `chatEmptyState` can have moved this
-  //: element inside `#chat-messages`, and a caller that cleared the pane first
-  //: would find it gone.
-  $("chat-suggest")?.classList.add("hidden");
-  input.value = "";
-  autoGrow(input); // a cleared box must not keep the height of what was in it
-  // The draft is gone, so the suggestions about it are too, including the
-  // ones that were dismissed, which belonged to that draft and not to the
-  // next one.
-  resetChatNudge();
-  //: The box stays open while the answer streams, so the next message can
-  //: be written and queued (INBOX 1321); Escape still stops the answer.
-  hide("chat-send");
-  show("chat-stop");
-  status.classList.remove("error");
-  status.textContent = "Searching your notes…";
-  startChatTimer();
-
-  // Regenerate re-runs the same question without adding a duplicate "you".
-  //
-  // `displayText` is what the *user* said when the message carries an
-  // instruction they did not type, Plan Plan appends one. Showing the appended
-  // sentence back to them would read as the app putting words in their mouth,
-  // and hiding the request entirely would leave the plan looking as though it
-  // came from nowhere; the button they pressed is the explanation.
-  const userBubble = opts.skipUserBubble
-    ? null
-    : addBubble("user", opts.displayText || question, sentAttachmentCards);
-  //: A chip's question names the one it was offered under (INBOX 490); a
-  //: regenerate keeps what the question it re-asks already had.
-  const followupOf = opts.followupOf || (opts.skipUserBubble ? [...$("chat-messages").querySelectorAll(".msg.user")].at(-1)?.dataset.followupOf : "") || null;
-  markFollowup(userBubble, followupOf);
-  //: **Who answers this question, captured once**, the way `effectiveUseTools`
-  //: is below: the picker can move on while this reply is still streaming,
-  //: and the bubble's face, the request and the saved turn must all name the
-  //: persona that actually answered (the owner: "the avatars need to persist
-  //: for what persona was used").
-  const sentPersona = $("persona-select").value || aiNameNow();
-  const { bubble, stepsHolder, recordsHolder, groundingHolder, timeline, paintHooks } = addAssistantBubble(sentPersona);
-  // The live counter rides in the bubble it is timing, and leaves with it.
-  mountChatTimer(bubble);
-  // A newer answer exists, so the previous one's chips stop being the end of
-  // the thread: this bubble is, and it has none yet.
-  refreshFollowupVisibility();
-  // A placeholder until the first event arrives; the first real step evicts it.
-  const pending = document.createElement("div");
-  pending.className = "agent-step step-pending";
-  const pendingLine = progressLine(null, { persona: sentPersona, words: true });
-  pending.appendChild(pendingLine);
-  stepsHolder.appendChild(pending);
-  // The placeholder trails the work rather than vanishing at the first event,
-  // so a turn that thinks for a while still shows one live line.
-  //: `turnEnded`: `clearPending` appends, and appending a removed node puts it
-  //: back, so a late delta after `finally` re-attached "Writing the answer"
-  //: under a finished turn. The flag says the turn is over.
-  let turnEnded = false;
-  const clearPending = () => {
-    if (turnEnded) return;
-    //: Only when not already last: `onAnswer` calls this per delta, and
-    //: re-appending the last child restarts its CSS animation, which froze
-    //: the three dots.
-    if (stepsHolder.lastElementChild === pending) return;
-    stepsHolder.appendChild(pending);
-  };
-  //: The line's words and shape are driven by `streamChat` itself (`progress:
-  //: pendingLine` below), from the events that really arrive (INBOX 649), so
-  //: no handler in this turn names a stage of its own.
-  // **The turn is marked as generating for its whole length, not just until
-  // the first event.** Reported as "none of the generating animations work",
-  // and this is the mechanism: `clearPending` above runs on the first event
-  // of *any* kind: including `meta`, which this app emits almost
-  // immediately, well before the model has produced a word. So the dots
-  // appeared for a few hundred milliseconds and then the bubble sat
-  // completely still for however long the model actually took, which reads
-  // as nothing happening at all.
-  //
-  // A class on the bubble, cleared in the `finally` that ends the stream, is
-  // the state that genuinely lasts as long as the work does, every step
-  // that arrives can still evict its own placeholder without taking the
-  // "still working" signal down with it.
-  bubble.classList.add("is-generating");
-  let meta = null;
-  //: This turn's row in the Agent Activity panel, or null while the turn has
-  //: done nothing worth a row. **Created lazily, on the first plan or the
-  //: first tool call**, and that is deliberate: a plain question with a plain
-  //: answer is not a "run", and a row per chat message would rebuild the wall
-  //: of text this panel was just taken apart to stop being.
-  let activityRun = null;
-  let toolsActed = false;
-  let stats = null;
-  // Captured so the final save below can persist it. Reported directly: the
-  // "Grounded in" chips under a direct Q&A answer only ever existed for the
-  // live stream: reopening the chat, or leaving the tab and coming back,
-  // showed an answer with no sources at all. Same unfixed-until-now shape as
-  // raw_results/search_mode/match_info a few lines below, which got exactly
-  // this treatment already for the same reported-missing-on-reload reason.
-  let groundingSentences = null;
-  let chatOffer = null;
-  let composedNext = []; // a composed answer's own next questions (INBOX 725)
-  //: **Numbered while it streams, as the Ask tab is** (INBOX 320, the
-  //: askcite row): the backend sends the rows so far each time a sentence
-  //: completes (`grounding_live`), and the markers are put back after every
-  //: live paint, which rebuilds the step. The numbering is the final pass's
-  //: own (`chatSourcesFrom` over this turn's meta), so a digit that appears
-  //: mid-answer is the digit it keeps. The `grounding` event still replaces
-  //: these rows when the stream ends.
-  let liveSources = null;
-  const placeLiveCitations = () => {
-    if (groundingSentences?.length) {
-      addInlineCitations(
-        bubble.querySelectorAll(".bubble-answer"),
-        groundingSentences,
-        meta?.raw_results || [],
-        liveSources
-      );
-    }
-  };
-  paintHooks.afterAnswerPaint = placeLiveCitations;
-  // INBOX 272 part 1: set when the model couldn't call tools and the turn
-  // was silently answered as plain Q&A instead. Captured here, rendered
-  // once the stream is over (same reason `groundingSentences` waits: a
-  // notice drawn mid-stream would be for a bubble the live renderer is
-  // about to rebuild).
-  let toolsUnsupportedEvent = null;
-  // Whether the user pressed Stop. An empty answer they asked for needs no
-  // explanation; one they didn't ask for does.
-  let miss, stopped = false;
-  // Set when the agent ends its turn by handing the job to a saved skill.
-  // The run can't start from inside the stream, this turn is still holding
-  // the input box and the conversation, so it is remembered and started
-  // once everything below has run.
-  let handoff = null;
-  // Set when the turn ended by asking the person something: the question is
-  // the answer, and "the model finished without writing anything" over a
-  // question card (INBOX 169, with a screenshot) blamed the model for
-  // doing what it was told.
-  let asked = false;
-  let askedQuestion = null;
-  // Set when the turn stopped because it ran out of rounds, and, for a skill
-  // run: the step it did not get past. Both become a button at the end of the
-  // bubble rather than a sentence asking the user to type "carry on".
-  let ranOutOfRounds = false;
-  let stoppedAtStep = null;
-  let pausedForManual = false;
-  const startedAt = performance.now();
-  const toolEvents = []; // {label, ok}: persisted so chips survive a reload
-  //: Everything this turn opened, deduped on kind+id, for the Sources panel.
-  //: A Map rather than an array because a turn that reads the same note twice
-  //: has one source, not two, and `touched` arrives per tool call.
-  const touchedItems = new Map();
-  chatController = new AbortController();
-  const controller = chatController;
-  //: The app's mark lifts its cells while a turn runs (phone-shell.js).
-  syncEmblemBusy();
-  //: Atlas looks up to think while a turn runs (avatars.js).
-  if (typeof setAtlasMood === "function") setAtlasMood("thinking");
-
-  // --- the turn owns its conversation ----------------------------------------
-  // `chatConv` is reassigned by every switch, and saves used to read it live,
-  // so a turn that finished after a switch was written into whichever chat was
-  // open. `convRef` pins the asking conversation; `viewing()` says whether it
-  // is still on screen, the only time this turn may touch the pane.
-  const convRef = chatConv;
-  const viewing = () => chatConv === convRef;
-
-  // The live nodes, kept: `openConversation` rebuilds the transcript, so coming
-  // back re-attaches these same still-streaming elements. Set once here, never
-  // by a switch, or the notice names the wrong conversation.
-  chatStreaming = {
-    conv: convRef,
-    title: $("chat-title").textContent || "that chat",
-    nodes: [userBubble, bubble].filter(Boolean),
-    announced: false,
-  };
-
-  // --- checkpointing a long turn --------------------------------------------
-  // A row for this turn already exists, so the save at the end has to update
-  // it rather than append a second copy of the same exchange.
-  let checkpointed = false;
-  let checkpointInFlight = false;
-  //: The checkpoint's own promise, so the save at the end can wait for it.
-  //: Without it a fast model finished while the first checkpoint's create
-  //: was still in flight, the end save saw no id yet and created a second
-  //: conversation: the README's Chat shot listed "What is left before the
-  //: Harbor launch?" twice, 43ms apart (INBOX 431 (g)).
-  let checkpointRun = null;
-
-  // Write what the turn has so far. Called at each agent round boundary, so a
-  // ten-minute run that dies at minute nine leaves nine minutes of work in the
-  // conversation instead of nothing.
-  //
-  // One in flight at a time: rounds can finish close together, and two
-  // creates racing each other would make two conversations out of one thread.
-  function checkpointTurn() {
-    if (checkpointInFlight) return checkpointRun;
-    checkpointInFlight = true;
-    checkpointRun = writeCheckpoint();
-    return checkpointRun;
-  }
-  async function writeCheckpoint() {
-    try {
-      const partial = {
-        question,
-        // A turn that ended by asking saves the question as its answer, so a
-        // reloaded thread shows what was asked rather than an empty bubble
-        // (INBOX 171: "all the ai responses dissappeared"; the question
-        // lives in the bubble's output area, which is not a serialised step).
-        answer: timeline.text() || (askedQuestion ? `Asked: ${askedQuestion}` : ""),
-        thinking: timeline.thinkingText() || null,
-        tools: toolEvents.length ? toolEvents : null,
-        steps: timeline.serialise(),
-        // No stats or elapsed yet, the turn is not over, and a half-turn's
-        // numbers reported as final would be wrong rather than incomplete.
-        image_media_ids: sentImages.length ? sentImages : null,
-        document_ids: sentDocuments.length ? sentDocuments : null,
-        file_ids: sentFiles.length ? sentFiles : null,
-        note_ids: sentAttachments.length ? sentAttachments : null,
-        followup_of: followupOf,
-        persona: savedPersona(sentPersona),
-      };
-      if (convRef.id === null) {
-        const created = await apiJson("/conversations", {
-          method: "POST",
-          body: JSON.stringify(partial),
-          silent: true,
-        });
-        convRef.id = created.id;
-        if (viewing()) $("chat-title").textContent = created.title;
-        applyPendingChatTitle(created.id, viewing());
-        loadConversationList();
-      } else if (checkpointed || opts.replaceLast) {
-        await apiJson(`/conversations/${convRef.id}/turns/last`, {
-          method: "PUT",
-          body: JSON.stringify(partial),
-          silent: true,
-        });
-      } else {
-        await apiJson(`/conversations/${convRef.id}/turns`, {
-          method: "POST",
-          body: JSON.stringify(partial),
-          silent: true,
-        });
-      }
-      checkpointed = true;
-    } catch {
-      // Deliberately silent. This is insurance running behind a live answer;
-      // a toast here would interrupt the thing it exists to protect, and the
-      // save at the end of the turn reports its own failure.
-    } finally {
-      checkpointInFlight = false;
-    }
-  }
-
-  //: **A new chat gets its row at send time, not at the first agent round.**
-  //: A plain answer has no round boundary, so a chat started with one had no
-  //: row, and so no entry in the list, until the reply finished: start a new
-  //: chat, open another, and the first one could not be reached again until
-  //: it was done (the owner, 2026-10-12). The row holds the question and an
-  //: empty answer; `openConversation` already drops that partial turn and
-  //: puts the live bubbles back (`isStreamingConversation`).
-  if (convRef.id === null) checkpointTurn();
-
-  // Captured once, not re-read at save time: the toggle can move on to the
-  // next message while this one is still streaming, and the meta line and
-  // the saved turn must both say what actually answered *this* question.
-  //: Agent only when something can call tools: the saved toggle stays on with
-  //: no model (renderChatModeSeg greys it), and a turn sent then is Ask's.
-  const effectiveUseTools = opts.useTools ?? ($("tools-toggle").checked && !(aiIsOff() && !modelStatus?.tools_engine));
-
-  let slowLoadTimeout;
-  try {
-    slowLoadTimeout = setTimeout(() => {
-      if (!meta && !stopped) {
-        status.textContent = "Loading model… (this may take a moment)";
-      }
-    }, 5000);
-    await streamChat({
-      progress: pendingLine,
-      question,
-      history: chatHistoryToSend(),
-      attempt: opts.attempt,
-      persona: sentPersona,
-      mode: $("response-mode-select").value || null,
-      useTools: effectiveUseTools,
-      noteIds: sentAttachments,
-      imageMediaIds: sentImages,
-      documentIds: sentDocuments,
-      fileIds: sentFiles,
-      boardIds: sentBoards,
-      skill: opts.skill,
-      skillInputs: opts.skillInputs,
-      skillFromStep: opts.skillFromStep,
-      skillOnlyStep: opts.skillOnlyStep,
-      skillStepText: opts.skillStepText,
-      // Read live rather than captured at launch: a run that started
-      // straight-through and is now being Resumed can still be switched to
-      // step-by-step, and vice versa.
-      skillManual: opts.skillManual ?? Boolean($("skill-manual-toggle")?.checked),
-      skillManualNote: opts.skillManualNote,
-      plan: opts.plan,
-      attachedNotesOnly: opts.attachedNotesOnly,
-      answeringAgent,
-      signal: controller.signal,
-      onMeta: (m) => {
-        meta = m;
-        //: No model runs: the answer is composed from the notes (INBOX 725).
-        status.textContent = m && m.composed ? "Composing from your notes, no AI…" : "The model is writing…";
-      },
-      onRelated: (event) => {
-        ensureModule("replyKit").then(() => renderRelatedElsewhere(groundingHolder, event.items)).catch(() => {});
-      },
-      onUnsupported: (event) => {
-        toolsUnsupportedEvent = event;
-      },
-      onGroundingLive: (event) => {
-        groundingSentences = event.sentences || [];
-        liveSources ??= chatSourcesFrom({ meta, toolEvents: [], touched: [] });
-        placeLiveCitations();
-      },
-      onGrounding: (event) => {
-        groundingSentences = event.sentences;
-        composedNext = Array.isArray(event.next) ? event.next : [];
-        renderAnswerGrounding(
-          groundingHolder,
-          event.sentences,
-          meta?.raw_results || [],
-          //: Every prose block of this turn, not the first: see
-          //: `addInlineCitations`. A skill run has one per step.
-          bubble.querySelectorAll(".bubble-answer"),
-          //: The turn's own question, so opening a source here teaches the
-          //: search the same thing it learns from the Ask tab.
-          question,
-          null,
-          event.support || null,
-          meta?.picture_alts || null
-        );
-        //: Each insight line the answer said carries Confirm and Not right
-        //: (CHAT_PLAN decision 60), under the answer, one row each.
-        for (const insight of event.insights || []) {
-          if (insight.confirmed && insight.rule !== "drift") continue;
-          const line = insightLine(insight, insight.in_answer ? (insight.rule === "drift" ? "Is that open plan right?" : "Is that pattern right?") : `Pattern: ${insight.short}.`, (row, verdict, result) => {
-            row.textContent = verdict === "confirmed" ? `Confirmed: ${result.line}` : verdict === "done" ? "Marked done" : "Not right: it will not be shown again.";
-          }, "muted");
-          groundingHolder.appendChild(line);
-          //: A digest answer hides this holder (its marks are inline), and the
-          //: rows are not citations: show it for them.
-          groundingHolder.classList.remove("hidden");
-        }
-      },
-      onPlan: (event) => {
-        clearPending();
-        timeline.plan(event);
-        //: A turn's own card: its tool rows are already in the panel's run.
-        if (event.kind === "turn") return chatScrollToEnd();
-        // …and the same run as one row in the activity panel. Both are drawn
-        // from this one event, so they cannot disagree about how many steps
-        // there are or what the run is called.
-        activityRun = addAgentRun({
-          kind: event.kind === "plan" ? "plan" : "skill",
-          name: event.skill || "Run",
-          icon: event.kind === "plan" ? "ph:compass" : "ph:lightning",
-          steps: event.steps || [],
-        });
-        openPanelForRun(activityRun);
-        status.textContent =
-          event.kind === "plan"
-            ? `Working through ${(event.steps || []).length} steps…`
-            : `Running “${event.skill}”…`;
-        chatScrollToEnd();
-      },
-      onStep: (event) => {
-        clearPending();
-        timeline.step(event);
-        if (event.kind !== "turn") agentRunStep(activityRun, event);
-        if (event.state === "running") {
-          status.textContent = `Step ${event.index + 1}: ${event.text}`;
-        }
-        chatScrollToEnd();
-      },
-      onResult: (event) => {
-        clearPending();
-        timeline.result(event);
-        // Where the run stopped, if it did. A number here means the steps
-        // after it never ran.
-        stoppedAtStep = typeof event.stopped_at === "number" ? event.stopped_at : null;
-        pausedForManual = Boolean(event.paused);
-        // A skill that changed notes has just made the list on screen stale.
-        if ((event.changes || []).length) loadEntries();
-        chatScrollToEnd();
-      },
-      onLimit: () => {
-        // Out of rounds with tools still in flight. Only remembered here: the
-        // offer to continue belongs beneath the answer that says it stopped,
-        // and that answer has not been written yet.
-        ranOutOfRounds = true;
-      },
-      onThinking: (delta) => {
-        clearPending();
-        timeline.thinking(delta);
-        //: Reasoning is still waiting, as far as the reader is concerned:
-        //: `streamChat` sets the "thinking" phase (dots) before this runs, so
-        //: a turn that thinks *after* writing goes back to dots.
-        status.textContent = "The model is thinking…";
-        chatScrollToEnd();
-      },
-      onAnswer: (delta) => {
-        clearPending();
-        timeline.answer(delta);
-        status.textContent = "The model is writing…";
-        chatScrollToEnd();
-      },
-      onTool: (event) => {
-        clearPending();
-        //: The fallback strips the failed call's own icon token before
-        //: prefixing the warning one. `setLabel` only resolves a token at the
-        //: start of the string, so `ph:warning ph:books Listed notes` renders
-        //: one warning glyph and then prints "ph:books" as literal text: 
-        //: the same defect reported in the palette's status line, one branch
-        //: over and only reachable when a tool fails.
-        const label = event.ok
-          ? event.label
-          : `ph:warning ${(event.error || event.label || "").replace(/^ph:[\w-]+\s*/, "")}`;
-        timeline.tool(toolChip(label, event.ok, event));
-        pushAgentChangeUndo(event.change, event);
-        //: The same call, filed in the panel under the step that made it. A
-        //: second `toolChip` rather than the same node: one element cannot be
-        //: in two places, and the panel's copy has to survive the chat being
-        //: cleared or the conversation being closed.
-        if (!activityRun) {
-          // An agent turn with no plan is still a run, it is what the report
-          // called "agent model activity", and its first tool call is the
-          // moment it becomes one.
-          activityRun = addAgentRun({
-            kind: "agent",
-            name: agentRunTitle(question),
-            icon: "ph:strategy",
-          });
-          openPanelForRun(activityRun);
-        }
-        agentRunTool(activityRun, toolChip(label, event.ok, event));
-        toolEvents.push(event); // remember for persistence
-        for (const item of event.touched || []) {
-          touchedItems.set(`${item.kind}:${item.id}`, item);
-        }
-        if (event.proposal) {
-          // Asked where it was suggested, not in a settings page nobody opens.
-          const card = document.createElement("div");
-          renderMemoryProposal(card, event.proposal);
-          timeline.tool(card.firstElementChild || card);
-        }
-        if (event.ok) toolsActed = true;
-        //: A page the model read opens in place under its step (INBOX 1300
-        //: C06): the web fold's reader, the same one a composed answer's
-        //: results use. Its search results are the Sources panel's cards.
-        if (event.ok && event.tool === "read_url") drawAnswerPanels(timeline.holder, [{ web: event.sources, read: true }]);
-        status.textContent = "The model is making changes…";
-        chatScrollToEnd();
-      },
-      //: The web pages an answer from no model read (CHAT_PLAN decision 37).
-      onWebSources: (event) => ensureModule("askCompose").then(() => renderWebSources(timeline.holder, event.sources)),
-      //: A bar of counts from a no-model answer (CHAT_PLAN decision 59, step
-      //: 2), drawn by the Ask box's chart recipe under the answer's line.
-      onChart: (event) => ensureModule("askHistory").then(() => {
-        const host = document.createElement("div");
-        host.className = "ask-chart";
-        timeline.holder.appendChild(host);
-        drawAskChart(host, event.chart);
-        chatScrollToEnd();
-      }),
-      //: The notebook's cards or the calculator (INBOX 1300 C06), drawn by
-      //: the one reply renderer every answer surface shares.
-      onPanel: (event) => drawAnswerPanels(timeline.holder, [event]).then(chatScrollToEnd),
-      onConfirm: (event) => {
-        clearPending();
-        const card = document.createElement("div");
-        renderToolConfirm(card, event);
-        //: An act's card is the answer's own (CHAT_PLAN decision 38), under
-        //: its line, never folded away in a step group with its Confirm.
-        if (event.type === "act") timeline.holder.appendChild(card);
-        else timeline.tool(card.firstElementChild || card);
-        status.textContent = "Waiting for your confirmation…";
-      },
-      onAsk: (event) => {
-        clearPending();
-        //: **The question is output, not a step.**
-        //:
-        //: Reported: *"the question the agent asked me appeared in the step
-        //: and not the actual output."* A step group folds itself shut into
-        //: "Finished 1 step" the moment prose starts (`startAnswer`), so a
-        //: question filed there is a question that disappears while it is
-        //: still waiting to be answered, and the answer box underneath then
-        //: says the model wrote nothing, which is the screenshot.
-        //:
-        //: `recordsHolder` is the bubble's own output area, under the steps
-        //: and above the sources, where everything else the turn is waiting
-        //: on (a confirmation, a memory proposal's outcome) already lands.
-        const card = document.createElement("div");
-        renderAgentQuestion(card, event);
-        recordsHolder.appendChild(card.firstElementChild || card);
-        status.textContent = "Waiting for your answer…";
-        chatAwaitingAgentAnswer = true;
-        asked = true;
-        askedQuestion = event.question;
-      },
-      onRunSkill: (event) => {
-        // The model picked a saved skill for this job (§33). Its turn is over;
-        // the run starts below, once this one has finished tidying up.
-        clearPending();
-        timeline.tool(toolChip(event.label, true));
-        toolEvents.push({ label: event.label, ok: true });
-        status.textContent = `Starting “${event.skill}”…`;
-        handoff = event;
-        chatScrollToEnd();
-      },
-      onRunPlan: (event) => {
-        // The model decided the job has several parts and planned it (§35K).
-        // Same handover as a skill: the turn is over and the steps run one at
-        // a time below, so nothing is left half-done.
-        clearPending();
-        timeline.tool(toolChip(event.label, true));
-        toolEvents.push({ label: event.label, ok: true });
-        status.textContent = "Working out the steps…";
-        handoff = event;
-        chatScrollToEnd();
-      },
-      onCompressReview: (event) => {
-        // The model asked to compress the chat (§37I). Unlike run_skill/
-        // run_plan this isn't a run to start, it opens the same review
-        // panel the manual Compress button fills in, and the summary is
-        // used only if the user presses Apply there. Not set on `handoff`:
-        // that path always starts something; this one waits for a person.
-        clearPending();
-        const label = "ph:arrows-in Suggested compressing the earlier messages";
-        timeline.tool(toolChip(label, true));
-        toolEvents.push({ label, ok: true });
-        showCompressReview(event, event.turns);
-        status.textContent = "Waiting for you to review the summary…";
-        chatScrollToEnd();
-      },
-      onOffer: (event) => { chatOffer = event.offer || null; },
-      onStats: (event) => {
-        // A round finished. Asked for directly: *"a new chat should be saved
-        // after agent turns as well, not after the whole response is
-        // complete."* Correct, and the reason is that an agent turn is minutes
-        // of work on a local model, closing the window, a stall, or the
-        // server going away halfway through used to lose **the entire
-        // conversation**, because nothing was written until the last round
-        // returned. A checkpoint per round means the worst case is losing the
-        // round in progress rather than the thread.
-        //
-        // Fire-and-forget, and silent: a checkpoint that interrupts the answer
-        // to complain about the network would be worse than the data loss it
-        // is preventing. The turn's real save still happens at the end and
-        // overwrites this with the finished version.
-        if (event.round) checkpointTurn();
-        //: The header's context meter, updated live rather than at the end of
-        //: the turn: on a long agent run the window fills round by round, and
-        //: the number is only useful while there is still a decision to make
-        //: about it.
-        renderChatContextMeter(event);
-        // An agent turn reports once per round, so these accumulate: output
-        // tokens and generation time add up, while the prompt size is the
-        // largest context the model was given rather than the sum.
-        if (!stats) {
-          stats = { ...event };
-          return;
-        }
-        stats.model = event.model || stats.model;
-        stats.prompt_tokens = Math.max(stats.prompt_tokens || 0, event.prompt_tokens || 0);
-        stats.output_tokens = (stats.output_tokens || 0) + (event.output_tokens || 0);
-        stats.eval_ms = (stats.eval_ms || 0) + (event.eval_ms || 0);
-        // The agent tags each round; the highest is how many it took.
-        stats.round = Math.max(stats.round || 0, event.round || 0);
-        // The window doesn't change between rounds, but the peak prompt does, 
-        // and the peak is the one worth reporting, because it is the round
-        // that came closest to overflowing.
-        stats.context_tokens = event.context_tokens || stats.context_tokens;
-        // One estimated round makes the whole total an estimate. Reporting a
-        // mixed figure as measured would be the dishonest way round.
-        if (event.usage_source === "estimated") stats.usage_source = "estimated";
-      },
-    });
-    if (viewing()) status.textContent = "";
-  } catch (error) {
-    if (error.name === "AbortError") {
-      stopped = true;
-      if (viewing()) status.textContent = "Stopped.";
-    } else {
-      // The timeline is this turn's own, detached or not, so it is always
-      // marked failed; only the shared status line is conditional.
-      //: The step names what failed, in the server's own plain sentence
-      //: (owner, 2026-10-17: the old fixed line said nothing). A message
-      //: too long to be a sentence, or none, falls back to a line that still
-      //: says what to do next.
-      miss = error instanceof TypeError;
-      const said = String(error && error.message ? error.message : "").trim();
-      timeline.failRunningStep(
-        said && said.length <= 160 ? said : "The model stopped before it finished. Try again, or check Settings, Models."
-      );
-      if (viewing()) {
-        status.textContent = error.message;
-        status.classList.add("error");
-      }
-    }
-  } finally {
-    clearTimeout(slowLoadTimeout);
-    // Whatever happened, answered, stopped, errored, the turn is no longer
-    // generating, so the signal that says it is has to come down here rather
-    // than on any one success path.
-    bubble.classList.remove("is-generating");
-    // The one place the trailing progress line is taken down, the turn is
-    // genuinely over here, whether it ended, errored or was aborted. The flag
-    // goes up *first*: see `clearPending` for the callback that used to run
-    // after this line and put the node straight back.
-    turnEnded = true;
-    pending.remove();
-    //: **Every visual "still working" state comes down here, on every exit.**
-    //:
-    //: Reported with a screenshot of a finished skill run still showing both
-    //: the streaming caret and "Writing the answer…". `finalise()` was called
-    //: on the success path only, so a turn that ended any other way, an
-    //: error, a stop, the round limit, kept the caret blinking on prose that
-    //: had stopped arriving. It is idempotent, so calling it here as well
-    //: costs nothing and closes every path at once, which is the property the
-    //: success-path-only version could never have.
-    timeline.finalise?.();
-    //: Whatever step group is still open stops saying "Working", see
-    //: `agentTimeline.finish`.
-    timeline.finish?.();
-    //: …and the same for this turn's row in the activity panel, on the same
-    //: every-exit reasoning: a row still saying "Running" after the turn
-    //: errored or was stopped is the panel telling a lie for the rest of the
-    //: session. `stoppedAtStep`/`pausedForManual` come from the `result`
-    //: event, so the row can say *how* it ended rather than only that it did.
-    const endState = stopped
-      ? "stalled"
-      : pausedForManual
-        ? "paused"
-        : typeof stoppedAtStep === "number"
-          ? activityRun?.steps?.[stoppedAtStep]?.state === "failed"
-            ? "failed"
-            : "stalled"
-          : "done";
-    endAgentRun(activityRun, { state: endState });
-    //: …and Atlas's face says how it went, for a moment.
-    if (typeof setAtlasMood === "function") {
-      setAtlasMood(endState === "done" ? "happy" : endState === "failed" ? "surprised" : "calm", 5000);
-    }
-    // Only if it is still ours. Switching away and sending a second message
-    // installs a new controller, and this line firing late would null it, 
-    // leaving Stop wired to nothing while a stream was genuinely running.
-    if (chatController === controller) {
-      chatController = null;
-      stopChatTimer();
-      syncEmblemBusy();
-      // The turn is over: it is saved (or about to be) and a reload of this
-      // thread will render it like any other. Re-attaching these nodes after
-      // that point would show it twice.
-      if (chatStreaming && chatStreaming.conv === convRef) chatStreaming = null;
-    }
-    // The composer belongs to whatever conversation is on screen. A turn that
-    // finishes after the reader has moved on must not re-enable, refocus or
-    // re-label the box they are now typing into, releaseChatComposer already
-    // put it back when they switched.
-    if (viewing()) {
-      input.disabled = false;
-      show("chat-send");
-      //: The focus goes back to the box only from the Stop button (which
-      //: took it when the answer began, `sendChatMessage`) or from nowhere:
-      //: a reader who moved to the search box or the sidebar while the
-      //: answer streamed keeps their place, rather than having the box take
-      //: it as the answer ends (the review, 2026-09-27).
-      const fromStop = document.activeElement === $("chat-stop") || document.activeElement === document.body;
-      hide("chat-stop");
-      if (fromStop) input.focus();
-    }
-  }
-
-  clearPending();
-  timeline.finalise();
-  //: **The citations go back in after the final render.** Same defect as the
-  //: Ask box's, one surface over and for the same reason: `onGrounding` writes
-  //: the markers straight into the answer during the stream, and `finalise()`
-  //: re-renders every prose step from its raw markdown, throwing all of them
-  //: away a few milliseconds later. The grounding event always arrives before
-  //: `done`, so this was true of every answer that had any.
-  //: Built once, here, and handed to both the citation pass and the panel,
-  //: so the digit in the prose and the digit on the row are the same number
-  //: by construction rather than by two functions agreeing about order.
-  const turnSources = chatSourcesFrom({
-    meta,
-    toolEvents,
-    touched: [...touchedItems.values()],
-    grounded: meta?.composed ? new Set((groundingSentences || []).map((row) => row.note_id).filter(Boolean)) : null,
-  });
-  //: The page this turn went out to read, for a follow-up about it
-  //: (`webFollowUp`, web-clip.js).
-  chatWeb.lastUrl = turnSources.find((source) => source.kind === "web" && source.url)?.url || null;
-  if (groundingSentences?.length) {
-    addInlineCitations(
-      bubble.querySelectorAll(".bubble-answer"),
-      groundingSentences,
-      meta?.raw_results || [],
-      turnSources
-    );
-  }
-  const answerEls = bubble.querySelectorAll(".bubble-answer");
-  placeAnswerFigures(answerEls, meta, question);
-  //: Who wrote it (INBOX 1300 C14), as a badge beside the name in the head.
-  const head = bubble.querySelector(".msg-role");
-  const model = stats?.model || meta?.answered_by;
-  finishReply(answerEls, { composed: meta?.composed, head, model, engine: Boolean(meta), bubble, unsupported: toolsUnsupportedEvent });
-  //: An answer's one acting offer, the Ask box's (`digestOffer`): a place's link.
-  if (chatOffer) ensureModule("askCompose").then(() => digestOffer([...bubble.querySelectorAll(".bubble-answer")].pop(), chatOffer)).catch(() => {});
-  const answerRaw = timeline.text();
-  const thinkingRaw = timeline.thinkingText();
-  //: **The Sources panel replaces the old "N matching notes" disclosure here.**
-  //: It is a superset, it carries the same retrieved notes and adds the
-  //: files and pages the turn read and the things it opened, which had no
-  //: home at all. `renderRecordsDetails` stays for the Ask tab, which has one
-  //: answer rather than a thread and no tool events to fold in.
-  const sourcesPanel = chatSourcesPanel({
-    meta,
-    toolEvents,
-    touched: [...touchedItems.values()],
-    sources: turnSources,
-  });
-  if (sourcesPanel) recordsHolder.appendChild(sourcesPanel);
-  // INBOX 272 part 1: drawn once the stream is over, same reason
-  // `groundingSentences` waits (a notice inserted mid-stream is inside a
-  // bubble the live renderer is about to rebuild from raw markdown).
-  //: Drawn by `replyFinish` (`finishReply` above), above the facts line.
-  // What this answer cost: model, wall-clock time, tokens, speed.
-  const elapsedMs = Math.round(performance.now() - startedAt);
-  //: For the status bar's AI dot (Placed 2026-09-09 item 99 (c)).
-  if (stats) {
-    lastAnswerFacts = { model: stats.model || (meta && meta.answered_by) || "", ms: elapsedMs, used: Number(stats.prompt_tokens) || 0, window: Number(stats.context_tokens) || 0 };
-    renderAiPill();
-  }
-  // A turn that only ran tools still cost time and tokens, so it gets a meta
-  // line too: previously an agent turn with no prose showed nothing at all.
-  //: **Who wrote it, in the head** (the owner, 2026-10-10: "should say if the
-  //: composer or a specific ai model generated it"; INBOX 1300 C14: "a badge
-  //: or smnth similar"): the `replyByline` chip through `finishReply` above,
-  //: From your notes, the model, or Composer when the app answered itself.
-  if (answerRaw || toolEvents.length) {
-    bubble.appendChild(
-      messageMetaLine({
-        model: (stats && stats.model) || (meta && meta.answered_by),
-        elapsedMs,
-        stats,
-        toolCount: toolEvents.length,
-        rounds: (stats && stats.round) || 0,
-        usedTools: effectiveUseTools,
-      })
-    );
-  }
-  // A turn that stopped short offers the way onward, in the two shapes it can
-  // take. Not shown when the user pressed Stop, they know why it ended, and
-  // not when a skill run finished every step it had.
-  // A run that stopped early is exactly the kind of thing you find out about
-  // ten minutes later, having walked away from a long job (§36E). The Resume
-  // button below is the fix in the moment; this is the record afterwards.
-  // A deliberate manual-mode pause is not a failure and not something to
-  // notify about ten minutes later, the person is sitting right here
-  // waiting for the Continue button, which is the whole point of asking for
-  // it. Only an *unplanned* stop (a real failure, or running out of rounds)
-  // earns the notification.
-  if (!stopped && !pausedForManual && (stoppedAtStep !== null || ranOutOfRounds)) {
-    recordNotification({
-      kind: "run",
-      title: opts.skill ? `“${opts.skill}” stopped early` : "A long answer stopped early",
-      detail:
-        stoppedAtStep !== null
-          ? `Got as far as step ${stoppedAtStep + 1}. Reopen the chat to resume.`
-          : "It ran out of rounds. Reopen the chat to continue.",
-      key: `run:${opts.skill || "answer"}:${Date.now()}`,
-      action: { tab: "chat" },
-    });
-  }
-  //: **A run you stopped can be picked up again.** Reported: "cant continue
-  //: canceled skills??", and it was exactly that, every resume control below
-  //: was guarded by `!stopped`. The guard belongs on the *notification* above
-  //: (nobody wants to be told ten minutes later about a stop they chose) and
-  //: never belonged on the button: pressing Stop means "not right now", not
-  //: "throw away the six steps that already ran". Resuming a stopped run is
-  //: the same call as resuming one that hit the round limit, and the step it
-  //: reached was already being tracked for the other case.
-  //: **Phase D's third third.** Resuming carries on from the step that stopped
-  //: the run; this changes that step first. A run that stalled on step 4
-  //: because the step was written for a bigger model is fixed by rewriting
-  //: step 4, and without this the only way to find out whether the rewrite
-  //: works is to run the whole skill again, every earlier step of which writes
-  //: to the notebook. It runs that step and stops, so the rest of the skill is
-  //: still there to resume afterwards.
-  //: Built from this turn's own state and, on a reopened conversation, from
-  //: the copy of it saved with the turn. See `appendRunResumeControls`.
-  const resumeState = {
-    skill: opts.skill || null,
-    skillInputs: opts.skillInputs || {},
-    stopped,
-    stoppedAtStep,
-    pausedForManual,
-    ranOutOfRounds,
-    hasTools: toolEvents.length,
-  };
-  appendRunResumeControls(bubble, { ...resumeState, timeline });
-  chatScrollToEnd();
-  if (toolsActed) refreshAfterToolChanges(); // the AI changed real data
-  if (handoff) {
-    // Start the run as its own message, down the same path the Skill dropdown
-    // uses: so the plan, the ticked steps, the change list and every Undo
-    // work here exactly as they do when the user picks the skill themselves.
-    // Deferred by a task because this turn is still finishing: it re-enables
-    // the input box in `finally`, and the run needs to disable it again.
-    //: A plan the model drew waits for Run the plan (row 3: approved once,
-    //: with each step's writes listed); a skill the person saved starts.
-    const plan = handoff;
-    if (plan.type === "run_plan") planProposalCard(timeline.holder, plan, () => startPlannedRun(plan.goal, plan.steps));
-    else setTimeout(() => startSkill({ name: plan.skill }, plan.inputs || {}), 0);
-  }
-  if (!answerRaw) {
-    // The model returned nothing. This used to return early and leave the
-    // bubble sitting there with the notes disclosure, no answer, no error and
-    // no buttons: a dead end with nothing to click and nothing explaining it.
-    if (opts.replaceLast) {
-      // A regenerate already removed the old answer; don't leave a blank in
-      // its place, since the previous one is gone either way.
-      bubble.remove();
-      toast("The model returned nothing that time. Try again.", "info");
-      return;
-    }
-    // A turn that ended by starting a skill said nothing on purpose, the run
-    // below is the answer. Complaining that the model wrote nothing would be
-    // wrong, and the retry button would re-run the choosing turn rather than
-    // the skill.
-    if (!stopped && !handoff && !asked) {
-      const note = document.createElement("p");
-      note.className = "muted";
-      note.textContent = miss
-        ? "Can't reach the app. Is it open?"
-        : "The model wrote nothing. Try again, or ask it another way.";
-      timeline.ensureAnswerBox().replaceChildren(note);
-      // Retry and delete at minimum, so there's always a way forward.
-      bubble.appendChild(
-        chatMessageActions([
-          { label: "ph:arrow-clockwise", title: "Try again", onClick: () => regenerateLastAnswer() },
-          { label: "ph:trash", title: "Delete this message", onClick: () => removeChatBubble(bubble) },
-        ])
-      );
-      chatScrollToEnd();
-    }
-    return;
-  }
-  // Per-message actions: one shared list with the reopened-conversation path,
-  // see `assistantMessageActions` for why that matters.
-  bubble.appendChild(
-    assistantMessageActions({ bubble, text: answerRaw, question })
-  );
-
-  // Regenerate replaces the last turn; a normal send appends a new one.
-  if (opts.replaceLast && convRef.turns.length) {
-    convRef.turns[convRef.turns.length - 1] = { question, answer: answerRaw, objects: chatTurnObjects(turnSources) };
-  } else {
-    convRef.turns.push({ question, answer: answerRaw, objects: chatTurnObjects(turnSources) });
-  }
-  // Persist the finished turn so the chat survives restarts. A checkpoint
-  // still on its way is let land first, so this sees its id and replaces its
-  // row rather than racing it to create a second conversation.
-  if (checkpointRun) await checkpointRun;
-  try {
-    const payload = {
-      question,
-      answer: answerRaw || (askedQuestion ? `Asked: ${askedQuestion}` : ""),
-      thinking: thinkingRaw || null,
-      tools: toolEvents.length ? toolEvents : null,
-      // The run in the order it happened, so reopening the chat shows the
-      // same step-by-step process rather than a flattened summary.
-      steps: timeline.serialise(),
-      // What this turn cost, so the conversation can show a running total.
-      // Prompt + output, because both were sent through the model.
-      tokens: stats
-        ? (stats.prompt_tokens || 0) + (stats.output_tokens || 0)
-        : null,
-      // The whole metadata line, not just its total. `tokens` above is a sum,
-      // which is right for the conversation's running total and useless for
-      // rebuilding "3.9k/8k window · 12 tok/s · llama3.2", so on reload the
-      // line used to vanish and the answer looked like it came from nowhere.
-      stats: stats || null,
-      // §89.4: which mode actually answered this turn (Ask vs. Agent): a
-      // conversation can span mode switches, so this has to be per-turn, not
-      // read off the toggle's current state on reload.
-      used_tools: effectiveUseTools,
-      //: Which persona wrote this reply, so reopening the chat draws its face
-      //: and not whichever persona the picker shows by then.
-      persona: savedPersona(sentPersona),
-      //: What the Resume and Edit-step buttons need to exist again after a
-      //: reload (`appendRunResumeControls`). Sent only for a turn that has
-      //: somewhere to resume *to*: an ordinary answer would otherwise carry
-      //: five null fields on every row for the sake of a button it never
-      //: draws.
-      resume:
-        resumeState.stoppedAtStep !== null ||
-        resumeState.stopped ||
-        resumeState.ranOutOfRounds
-          ? resumeState
-          : null,
-      // How long the answer took, measured here because the client is the only
-      // thing that saw the whole turn: the server reports per-round timings,
-      // and an agent turn is several rounds plus the tool calls between them.
-      elapsed_ms: elapsedMs,
-      // The "N matching notes" disclosure's own data. Reported: "semantic
-      // search results in chat messages keep disappearing" - true on every
-      // reload, since none of this was ever saved. Only meaningful for a
-      // grounded (non-conversational) turn that actually searched, so
-      // omitted rather than sent empty when there's nothing to show.
-      raw_results: meta?.raw_results?.length ? meta.raw_results : null,
-      search_mode: meta?.search_mode || null,
-      match_info: meta?.match_info && Object.keys(meta.match_info).length ? meta.match_info : null,
-      connected_ids: meta?.connected_ids?.length ? meta.connected_ids : null,
-      // The "Grounded in" chips' own data: same reasoning as raw_results
-      // just above. Only meaningful alongside raw_results (renderAnswerGrounding
-      // looks note content up in it), so there's nothing to persist without it.
-      sentence_grounding: groundingSentences?.length ? groundingSentences : null,
-      // Which uploads this turn actually used, asked for directly: without
-      // this, a sent chat image had no record anywhere that anything still
-      // used it, so the Library's "Clean orphaned media" tool (which can
-      // only check notes, documents and whiteboard content for `/media/…`
-      // references) would delete a real, sent attachment's file the moment
-      // someone ran it. Persisting the ids here is what lets media_gc.py
-      // recognise them as still in use.
-      image_media_ids: sentImages.length ? sentImages : null,
-      // Same reason as the ids above, one kind over: a document attached to a
-      // message is what lets the bubble draw its chip again on reopen.
-      document_ids: sentDocuments.length ? sentDocuments : null,
-      file_ids: sentFiles.length ? sentFiles : null,
-      // And the notes clipped with the paperclip, which until now were used to
-      // build one prompt and then forgotten, the bubble showed no sign the
-      // answer had been given a note to read.
-      note_ids: sentAttachments.length ? sentAttachments : null,
-      followup_of: followupOf,
-      //: The thumbnails' words, so a reopened chat keeps them (INBOX 502).
-      picture_alts: meta?.picture_alts && Object.keys(meta.picture_alts).length ? meta.picture_alts : null,
-      picture_sizes: meta?.picture_sizes && Object.keys(meta.picture_sizes).length ? meta.picture_sizes : null,
-    };
-    if (convRef.id === null) {
-      const created = await apiJson("/conversations", {
-        method: "POST",
-        body: JSON.stringify(payload),
-      });
-      convRef.id = created.id;
-      if (viewing()) {
-        $("chat-title").textContent = created.title;
-        renderChatUsage(created.tokens);
-      }
-      // A name typed before the first message was sent beats both the
-      // question-derived title and the model's. See `renameCurrentConversation`.
-      const namedByHand = applyPendingChatTitle(created.id, viewing());
-      // Let the AI name the thread once there's something to name. Silent
-      // best-effort: the question-derived title stays if the model can't.
-      if (!namedByHand) {
-        apiJson(`/conversations/${created.id}/retitle`, { method: "POST", silent: true })
-          .then((named) => {
-            if (chatConv.id === created.id) $("chat-title").textContent = named.title;
-            loadConversationList();
-          })
-          .catch(() => {});
-      }
-    } else if (opts.replaceLast || checkpointed) {
-      // `checkpointed` matters as much as `replaceLast` here: a long agent
-      // turn has already written a row for this exchange (see checkpointTurn),
-      // so appending would leave the conversation holding the same question
-      // twice: once half-finished and once complete.
-      const saved = await apiJson(`/conversations/${convRef.id}/turns/last`, {
-        method: "PUT",
-        body: JSON.stringify(payload),
-      });
-      if (viewing()) renderChatUsage(saved.tokens);
-    } else {
-      const saved = await apiJson(`/conversations/${convRef.id}/turns`, {
-        method: "POST",
-        body: JSON.stringify(payload),
-      });
-      if (viewing()) renderChatUsage(saved.tokens);
-    }
-    loadConversationList();
-  } catch {
-    toast("Couldn't save this chat turn.", true);
-  }
-  loadRecentQuestions();
-  loadMostUsed();
-  // Last, and deliberately not awaited: the answer is already on screen and
-  // saved, and this is a second model call. See offerFollowups. A composed
-  // answer (no model running) brings its own next questions (INBOX 725).
-  offerFollowups(bubble, question, answerRaw, meta?.composed ? composedNext : null);
-  offerReminder(bubble, question);
-}
-
-// --- "Make this a reminder" under the answer to a dated intention ------------
-//
-// "I need to call the dentist on Friday" is a reminder said aloud (the owner,
-// 2026-10-27; CHAT_PLAN decision 79). `POST /reminders/suggest` reads the
-// message by rules alone, so the chip is the same with a model up or down,
-// and it makes nothing: one press creates, with the usual Undo. Like the
-// follow-ups it is fired after the turn is saved, never awaited, silent on
-// every failure, and only drawn if its bubble is still on screen.
-async function offerReminder(bubble, question) {
-  if (!bubble || !question) return;
-  let found = null;
-  try {
-    const read = await apiJson("/reminders/suggest", {
-      method: "POST",
-      silent: true,
-      body: JSON.stringify({ text: String(question).slice(0, 4000), tz_offset_minutes: -new Date().getTimezoneOffset() }),
-    });
-    found = read?.suggestion || null;
-  } catch {
-    return; // an offer that fails is no offer, not an error on a fine answer
-  }
-  if (!found || !bubble.isConnected) return;
-  bubble.querySelector(":scope > .chat-reminder-offer")?.remove();
-  const row = document.createElement("div");
-  row.className = "chat-reminder-offer";
-  const offer = chip(`ph:alarm Make this a reminder: ${found.text}, ${relativeWhen(found.due_at)}`, "", async () => {
-    offer.classList.add("hidden");
-    try {
-      const made = await apiJson("/reminders", {
-        method: "POST",
-        body: JSON.stringify({
-          text: found.text,
-          due_at: found.due_at,
-          priority: found.priority || "normal",
-          recurring: found.recurring || "none",
-          alert_minutes: found.alert_minutes ?? null,
-        }),
-      });
-      reminderMadeUndo(made);
-      loadReminders();
-      row.replaceChildren(Object.assign(document.createElement("span"), { className: "muted", textContent: `Reminder set: ${relativeWhen(made.due_at)}.` }));
-    } catch (error) {
-      offer.classList.remove("hidden");
-      toast(error.message || "Couldn't make that reminder.", true);
-    }
-  });
-  offer.title = "Makes a reminder from what you wrote; nothing is made until you press this";
-  row.appendChild(offer);
-  bubble.appendChild(row);
-  chatScrollToEnd();
-}
-
-// --- "what to ask next" chips under a finished answer -------------------------
-//
-// The empty-state chips (loadChatSuggestions) taught the feature for the first
-// question and then went away, which left every turn after it ending on a blank
-// box. These are the same idea for the turn you just read.
-//
-// Three things this must not do, all of which are why it lives out here rather
-// than inside the streaming loop:
-//
-// - **Delay the answer.** It fires after the turn is rendered and saved, and
-//   nothing awaits it.
-// - **Show an error.** `/chat/followups` returns [] on every failure path
-//   including the AI being off, and [] renders nothing at all. A row that says
-//   "couldn't suggest anything" is worse than no row.
-// - **Attach to the wrong bubble.** The reply can land after the reader has
-//   sent another message or opened a different conversation, so the bubble it
-//   was asked for has to still be on screen when it does.
-async function offerFollowups(bubble, question, answer, given = null) {
-  if (!bubble || !question || !answer) return;
-  //: `given`: a composed answer's own next questions, already in hand.
-  let picks = given || [];
-  if (!given) {
-    try {
-      picks = await apiJson("/chat/followups", {
-        method: "POST",
-        silent: true,
-        body: JSON.stringify({ question, answer }),
-      });
-    } catch {
-      return; // no honest error state for a suggestion, see the module note
-    }
-  }
-  //: A call's asks arrive mid-stream and are only drawn then (ask-compose.js);
-  //: saved here, after the turn, so they cannot race its save (INBOX 1300 C42).
-  if (!picks?.length) picks = JSON.parse(bubble.dataset.followups || "[]");
-  if (!Array.isArray(picks) || !picks.length) return;
-  // `isConnected` is the check that matters: a deleted turn, a cleared chat or
-  // a switched conversation all detach the bubble, and appending to a detached
-  // node is an invisible leak rather than a visible bug.
-  if (!bubble.isConnected) return;
-  renderFollowups(bubble, picks);
-  // Saved, so they are still there next time. Reported directly: "suggested
-  // repsponse continuation prompts in chat doesnt persist and disappears once
-  // I switch chat sessions or quit the app", they never persisted because
-  // nothing stored them; they lived only on this DOM node.
-  //
-  // Not awaited and silent, for the same reason the request above is: this is
-  // bookkeeping behind a suggestion, and a failed save must not put an error
-  // on screen over an answer that is fine.
-  saveFollowups(bubble, picks);
-}
-
-// The strip itself, shared by the live path above and the reopen path in
-// `openConversation`, two renderers would be two chances for a saved chip to
-// look unlike a fresh one.
-function renderFollowups(bubble, picks) {
-  if (!bubble || !Array.isArray(picks) || !picks.length) return;
-  // Stored, not only drawn: deleting the newest turn brings the previous
-  // turn's chips back without asking the model again (the owner's report).
-  bubble.dataset.followups = JSON.stringify(picks);
-  refreshFollowupVisibility();
-}
-
-// Exactly one strip in the thread, on the last answer in it.
-//
-// Chips under an older answer are an invitation to fork the conversation
-// backwards: clicking one sends its question as a *new* message at the end, so
-// the suggestion and the place the reply lands are three exchanges apart. Only
-// the newest answer is still the end of the thread, so only it gets them.
-function refreshFollowupVisibility() {
-  const bubbles = [...$("chat-messages").querySelectorAll(".msg.assistant")];
-  const last = bubbles.at(-1);
-  for (const bubble of bubbles) {
-    const strip = bubble.querySelector(".chat-followups");
-    if (bubble !== last) {
-      strip?.remove();
-      continue;
-    }
-    if (strip) continue; // already showing this turn's chips
-    let picks = [];
-    try {
-      picks = JSON.parse(bubble.dataset.followups || "[]");
-    } catch {
-      picks = [];
-    }
-    if (picks.length) buildFollowupStrip(bubble, picks);
-  }
-}
-
-function buildFollowupStrip(bubble, picks) {
-  const strip = document.createElement("div");
-  strip.className = "chat-followups";
-  const label = document.createElement("span");
-  label.className = "muted";
-  label.textContent = "Next:";
-  strip.appendChild(label);
-  for (const pick of picks) {
-    // chip()'s second argument is a class, not a tooltip, passing prose there
-    // would put a sentence into `className`.
-    strip.appendChild(chip(pick, "", () => sendChatMessage(pick, { followupOf: followupParent(bubble) })));
-  }
-  bubble.appendChild(strip);
-  chatScrollToEnd();
-}
-
-// --- where a follow-up came from (INBOX 490: "hyperlinked bread crumbs") ----
-// A chip's question keeps the one it was offered under (`followup_of` on the
-// turn, words not an index, which a deleted turn would shift); its bubble
-// links the chain back, a press scrolling to that question and lighting it.
-function followupParent(bubble) {
-  let el = bubble.previousElementSibling;
-  while (el && !el.matches(".msg.user")) el = el.previousElementSibling;
-  return el?.dataset.sent || "";
-}
+//: **A bare "undo" or "redo" typed in chat runs the app's own** (audit 1028
+//: E13), as Ctrl+Z does: sent as a question it got the Help line, and the
+//: change the person meant to take back stayed.
+const CHAT_UNDO_WORDS = /^(undo|redo)( that| it)?\.?$/i;
 
 //: Saved content may carry Plan mode's block after the words.
 const followupMatches = (sent, ref) => Boolean(sent) && (sent === ref || sent.startsWith(ref));
-
-function followupChain(userBubble) {
-  const users = [...$("chat-messages").querySelectorAll(".msg.user")];
-  const chain = [];
-  let at = users.indexOf(userBubble);
-  let ref = userBubble.dataset.followupOf;
-  while (ref && at > 0 && chain.length < 8) {
-    let i = at - 1;
-    while (i >= 0 && !followupMatches(users[i].dataset.sent, ref)) i -= 1;
-    if (i < 0) break;
-    chain.unshift(users[i]);
-    at = i;
-    ref = users[i].dataset.followupOf;
-  }
-  return chain;
-}
 
 //: Chat's and Ask's trail; `open(i)` is a press on the i-th question.
 function followupTrail(questions, open) {
@@ -2973,77 +1213,6 @@ function followupTrail(questions, open) {
   return nav;
 }
 
-function markFollowup(userBubble, ref) {
-  if (!userBubble || !ref) return;
-  userBubble.dataset.followupOf = ref;
-  userBubble.querySelector(":scope > .chat-trail")?.remove();
-  const chain = followupChain(userBubble);
-  if (!chain.length) return;
-  const trail = followupTrail(chain.map((b) => b.dataset.sent), (i) => {
-    const target = chain[i];
-    if (!target.isConnected) return;
-    target.scrollIntoView({ behavior: reducedMotionWanted() ? "auto" : "smooth", block: "center" });
-    target.classList.remove("flash");
-    void target.offsetWidth; // restart the highlight on a second press
-    target.classList.add("flash-target", "flash");
-    clearTimeout(target.flashTimer);
-    target.flashTimer = setTimeout(() => target.classList.remove("flash"), 2700);
-  });
-  userBubble.querySelector(":scope > .msg-body")?.before(trail);
-}
-
-async function saveFollowups(bubble, picks) {
-  if (chatConv.id === null) return; // an unsaved chat has no turn to attach to
-  // Which turn this bubble is: its index among the assistant bubbles, which is
-  // exactly how every other per-turn endpoint in this file addresses one.
-  const bubbles = [...$("chat-messages").querySelectorAll(".msg.assistant")];
-  const index = bubbles.indexOf(bubble);
-  if (index === -1) return;
-  const conversationId = chatConv.id;
-  await apiJson(`/conversations/${conversationId}/turns/${index}/followups`, {
-    method: "PUT",
-    silent: true,
-    body: JSON.stringify({ followups: picks }),
-  }).catch(() => {});
-}
-
-// Delete one Q&A exchange: its assistant bubble AND the user bubble just
-// above it, from the screen, memory, and the saved conversation.
-async function deleteChatTurn(assistantBubble) {
-  if (chatController) return; // don't edit a chat mid-stream
-  const bubbles = [...$("chat-messages").querySelectorAll(".msg.assistant")];
-  const index = bubbles.indexOf(assistantBubble);
-  if (index === -1) return;
-  if (!(await confirmDialog("Delete this message?"))) return;
-
-  if (chatConv.id !== null) {
-    try {
-      const id = chatConv.id;
-      const result = await apiJson(`/conversations/${id}/turns/${index}`, {
-        method: "DELETE",
-      });
-      chatWriteRecord("chatTurnUndo", id, index, result);
-      if (result.conversation_deleted) {
-        newChatConversation();
-        loadConversationList();
-        return;
-      }
-    } catch {
-      toast("Couldn't delete that message.", true);
-      return;
-    }
-  }
-  // The user bubble is the one immediately before this assistant bubble.
-  const userBubble = assistantBubble.previousElementSibling;
-  if (userBubble && userBubble.classList.contains("user")) userBubble.remove();
-  assistantBubble.remove();
-  chatConv.turns.splice(index, 1);
-  // The turn below is the end of the thread now, so its saved chips come back.
-  refreshFollowupVisibility();
-  if (!$("chat-messages").querySelector(".msg")) renderChatEmptyState();
-  loadConversationList();
-}
-
 // --- leaving a conversation while it is still answering ------------------------
 // The composer is handed back to whatever is on screen while the stream keeps
 // running (not an abort: the answer is saved to the thread that asked it).
@@ -3060,51 +1229,6 @@ let chatTimerStartedAt = 0;
 //: The live counter's node, mounted inside the assistant bubble being
 //: streamed. Null between turns: `paintChatTimer` is a no-op then.
 let chatTimerBox = null;
-
-// Put the counter in the bubble this turn is being written into.
-function mountChatTimer(bubble) {
-  if (!bubble) return;
-  chatTimerBox?.remove();
-  const box = document.createElement("span");
-  box.className = "msg-timer";
-  box.setAttribute("aria-hidden", "true"); // the status line already says it aloud
-  chatTimerBox = box;
-  // Beside the role label, which is the bubble's own header row, it reads as
-  // "LIBRARIAN · 4s" rather than as a number floating in the answer.
-  (bubble.querySelector(".msg-role") || bubble).appendChild(box);
-  paintChatTimer();
-}
-
-function paintChatTimer() {
-  const box = chatTimerBox;
-  if (!box) return;
-  const seconds = Math.floor((performance.now() - chatTimerStartedAt) / 1000);
-  // Plain seconds under a minute, m:ss above it, "97s" is a number you have
-  // to convert, and by then it is the interesting case.
-  box.textContent =
-    seconds < 60
-      ? `${seconds}s`
-      : `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
-}
-
-function startChatTimer() {
-  // Started before the bubble exists, the clock has to include the wait for
-  // the first byte, which on a cold local model is most of it. `mountChatTimer`
-  // gives it somewhere to draw a moment later.
-  clearInterval(chatTimerInterval);
-  chatTimerStartedAt = performance.now();
-  chatTimerInterval = setInterval(paintChatTimer, 1000);
-}
-
-function stopChatTimer() {
-  clearInterval(chatTimerInterval);
-  chatTimerInterval = null;
-  // Taken off screen, not left showing: the answer is finished, and its
-  // metadata line already carries the final duration. A live-looking counter above a
-  // finished answer is the bug this replaced.
-  chatTimerBox?.remove();
-  chatTimerBox = null;
-}
 
 function releaseChatComposer({ announce = true } = {}) {
   //: Called by every way out of a chat: the page it read is that chat's.
@@ -3135,28 +1259,20 @@ function releaseChatComposer({ announce = true } = {}) {
   }
 }
 
-//: True when the conversation being opened is the one still being written to.
-function isStreamingConversation(id) {
-  return Boolean(chatController && chatStreaming && chatStreaming.conv.id === id);
-}
-
-//: Put the in-flight turn back on screen, still streaming.
-//:
-//: The nodes were never destroyed, `openConversation` detached them with
-//: `replaceChildren()` and this re-appends the same elements, so whatever the
-//: stream has written since is already in them and whatever it writes next
-//: lands in front of the reader. That is the difference between the reported
-//: "the response only shows after it is completed" and watching it arrive.
-function reattachStreamingTurn() {
-  if (!chatStreaming) return false;
-  const host = $("chat-messages");
-  clearChatEmptyState();
-  for (const node of chatStreaming.nodes) host.appendChild(node);
-  chatScrollToEnd();
+//: A private chat with messages asks before it is left (chat-private.js).
+function chatLeaveHeld(retry) {
+  if (!chatConv.private || !(chatConv.turns.length || chatStreaming?.conv === chatConv)) return false;
+  chatPrivateLeave(retry);
   return true;
 }
 
+function syncChatPrivate() {
+  $("chat-private-mark").hidden = !chatConv.private;
+  $("chat-private-toggle").ariaPressed = String(!!chatConv.private);
+}
+
 function newChatConversation() {
+  if (chatLeaveHeld(newChatConversation)) return;
   releaseChatComposer();
   recordTabVisit("chat", "new");
   chatConv = { id: null, turns: [] };
@@ -3197,6 +1313,7 @@ function newChatConversation() {
   //: for a scroll or resize that a brand-new chat may never get.
   syncChatJumpLatest();
   scrollTopUpdate?.();
+  syncChatPrivate();
 }
 
 // Delete the conversation open in the main pane, saved or not.
@@ -3209,7 +1326,7 @@ function newChatConversation() {
 // silently, there is nothing to lose and nothing to confirm, and anything
 // that made it to the server asks first, the same confirm the sidebar uses.
 async function deleteCurrentChat() {
-  if (chatConv.id === null && !chatConv.turns.length) {
+  if (chatConv.private || (chatConv.id === null && !chatConv.turns.length)) {
     newChatConversation();
     return;
   }
@@ -3252,6 +1369,17 @@ function chatDeleteUndo(gone, after = () => {}) {
 
 //: **Every chat write is on the undo bar** (CHAT_PLAN 8 row 5): the helpers
 //: are chat-undo.js, fetched on the first write, out of the boot scripts.
+async function promptTitle(message, initial) {
+  const asked = promptDialog(message, initial);
+  //: A blank title cannot be saved (the field is required, so Save says
+  //: so in place), which makes "" mean one thing: Esc or Cancel, and that
+  //: changes nothing, so nothing is said (AI19; it toasted "Title kept.").
+  const field = document.querySelector(".prompt-card input");
+  field.maxLength = 120;
+  field.required = true;
+  return (await asked)?.trim() || null;
+}
+
 function chatWriteRecord(name, ...args) {
   lazyScript("/js/chat-undo.js").then(() => window[name](...args));
 }

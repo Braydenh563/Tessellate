@@ -106,3 +106,36 @@ def test_patches_dockerfiles_and_visual_basic_are_types_with_a_mode():
     for ext, mode in (("diff", "diff"), ("dockerfile", "dockerFile"), ("vb", "vb"), ("vbs", "vbScript")):
         assert f'case "{ext}": return stream(CM.{mode});' in body
         assert f"export {{ {mode} }}" in entry
+
+
+def test_every_type_is_in_one_group_and_the_groups_are_contiguous():
+    """INBOX 1482: the type picker is a grouped list (Documents, Data, Code),
+    so the group is part of the table and each group's rows sit together,
+    because the picker draws a heading wherever the name changes."""
+    names = [ft.group for ft in filetypes.FILE_TYPES]
+    assert set(names) == {"Documents", "Data", "Code"}
+    order = list(dict.fromkeys(names))
+    assert order == ["Documents", "Data", "Code"]
+    assert names == sorted(names, key=order.index)
+    by_ext = {ft.ext: ft.group for ft in filetypes.FILE_TYPES}
+    assert by_ext["md"] == "Documents" and by_ext["txt"] == "Documents"
+    assert {by_ext[e] for e in ("csv", "json", "yaml", "toml", "ini", "xml")} == {"Data"}
+    assert by_ext["py"] == "Code" and by_ext["bash"] == "Code"
+
+
+def test_every_type_has_a_glyph_the_bundled_icon_font_draws():
+    """Each row of the picker carries its glyph; a name the font lacks draws
+    nothing, silently."""
+    from pathlib import Path
+
+    css = (Path(__file__).resolve().parents[1] / "frontend/vendor/phosphor/style.css").read_text(encoding="utf-8")
+    for ft in filetypes.FILE_TYPES:
+        assert ft.icon, ft.ext
+        assert f".ph-{ft.icon}:before" in css, (ft.ext, ft.icon)
+
+
+def test_the_served_table_carries_group_and_icon():
+    by_ext = {t["ext"]: t for t in filetypes.as_dicts()}
+    assert by_ext["py"]["group"] == "Code" and by_ext["py"]["icon"] == "file-py"
+    assert by_ext["csv"]["group"] == "Data"
+    assert by_ext["md"]["group"] == "Documents"

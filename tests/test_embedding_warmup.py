@@ -225,6 +225,8 @@ def test_through_the_route_a_cold_model_answers_at_once_and_says_so(client, sess
     manager.create_entry(session, "Went to the gym after work.", category_name="Fitness")
     session.commit()
     monkeypatch.setattr(jobs, "enqueue", lambda *a, **kw: None)
+    #: The engine is installed but not loaded; a missing engine is "off", not "loading" (E30).
+    monkeypatch.setattr(embeddings, "_package_present", lambda: True)
     deps.override_ai(embeddings=_Cold())
     started = time.perf_counter()
     body = {"question": "what do I need to buy?", "history": [], "notes_only": True, "use_tools": False, "answer_from": "notes"}

@@ -198,6 +198,8 @@ async function modelCancel(model, button) {
   if (button) button.disabled = true;
   try {
     await api(`/models/jobs/cancel?kind=pull&name=${encodeURIComponent(model.name)}`, { method: "POST" });
+    //: The row used to vanish with nothing said (HR19).
+    toast(`Stopped downloading ${model.name}.`);
   } catch (error) {
     toast(error.message, true);
   }
@@ -329,7 +331,9 @@ function buildModelCard(model, state) {
 
   const head = document.createElement("div");
   head.className = "model-card-head";
-  const name = document.createElement("h5");
+  //: One level under whatever heads the list: the installed list's `h3`, or a
+  //: suggested group's `h4` (a skipped level is axe's heading-order, 1029 row 62).
+  const name = document.createElement(model.listed === "installed" ? "h4" : "h5");
   name.className = "model-card-name";
   name.textContent = model.label || modelDisplayName(model.name);
   name.title = model.name;
@@ -585,6 +589,8 @@ function renderSuggested(status) {
       section.dataset.group = group.kind;
       section.open = modelGroupOpen(group.kind, group.shown, status);
       section.addEventListener("toggle", () => {
+        //: A shut group has no cards yet (HR18); opening it builds them.
+        if (section.open && modelLastStatus) renderSuggested(modelLastStatus);
         try {
           prefs.set(`modelGroup:${group.kind}`, section.open ? "1" : "0");
         } catch (error) {
@@ -614,7 +620,7 @@ function renderSuggested(status) {
   }
   for (const group of groups) {
     const grid = host.querySelector(`.model-grid[data-group="${group.kind}"]`);
-    if (!grid) continue;
+    if (!grid || !grid.parentNode.open) continue;
     group.shown.forEach((model, i) => {
       const el = modelCardFor(model, status);
       if (grid.children[i] !== el) grid.insertBefore(el, grid.children[i] || null);
@@ -636,7 +642,7 @@ function modelHardwareSentence(hw) {
   else parts.push("no graphics card with memory of its own");
   if (hw.cpu_cores) parts.push(`${hw.cpu_cores} processor core${hw.cpu_cores === 1 ? "" : "s"}`);
   const here = hw.models_installed
-    ? ` ${hw.models_installed} model${hw.models_installed === 1 ? "" : "s"} installed${hw.models_loaded ? `, ${hw.models_loaded} loaded now` : ""}.`
+    ? ` ${nounCount(hw.models_installed, "model")} installed${hw.models_loaded ? `, ${hw.models_loaded} loaded now` : ""}.`
     : "";
   const fixed = hw.override ? " You corrected these numbers." : "";
   return `This computer: ${parts.join(", ")}.${here}${fixed} Each card says whether a model fits.`;
@@ -807,3 +813,89 @@ $("suggested-hide-big")?.addEventListener("change", (event) => {
   }
   if (modelLastStatus) renderSuggested(modelLastStatus);
 });
+
+//: Moved from ai-tools.js (boot) to keep the boot gzip under its cap: only an
+//: open Settings draws the search-engine picker, and Settings loads this file.
+function renderEmbeddingPicker(status) {
+  // Name the built-in model rather than describing it. "Works out of the box,
+  // no download" was wrong on both counts: it fetches ~130 MB from Hugging
+  // Face the first time, which is a long quiet wait to have described as
+  // needing nothing.
+  //: Its own name, and whether it is the one in use: the label used to
+  //: carry the *active* model's name, so with Ollama in use the built-in
+  //: option named the Ollama model and nothing said which one was working
+  //: (owner, 0.3.31: "idk if it is using the built in one or not").
+  const builtinName = status.builtin_embedding_model || "the built-in model";
+  $("builtin-model-name").textContent =
+    status.embedding_backend === "ollama"
+      ? `${builtinName}, downloaded once on first use`
+      : `${builtinName}, in use`;
+  //: The built-in model needs the fastembed package, which the app installs
+  //: by itself, once, the first time it is needed (after a yes): a download
+  //: of about 60 MB that needs the internet. Said here, with the
+  //: alternative that needs neither Python packages nor that download.
+  const note = $("builtin-embed-note");
+  if (note) {
+    let text = "";
+    if (status.builtin_embedding_installing) {
+      text =
+        "Installing fastembed for the built-in model. This happens once and " +
+        "takes a minute or so. Prefer not to wait? Pick nomic-embed-text from Ollama below.";
+    } else if (status.builtin_embedding_installed === false) {
+      text =
+        "The built-in model needs fastembed, which the app installs by itself " +
+        "the first time it is needed if the switch below is on (a one-time download that needs the internet). " +
+        "Or pick nomic-embed-text from Ollama below instead.";
+    }
+    note.textContent = text;
+    note.classList.toggle("hidden", !text);
+  }
+  // The backend radios only reflect the saved value while the user has no
+  // pending choice of their own.
+  //
+  // A focus check alone was not enough, and it is why switching search
+  // engines was reported as impossible. Picking a radio does not save
+  // anything, "Apply & re-index" does, so between the click and the apply
+  // there is a pending choice the server doesn't know about yet. The moment
+  // focus moved (clicking Apply, or just tabbing away) the status poll ran,
+  // found `touching` false, and reset the radio to the *saved* backend. The
+  // selection visibly snapped back, so the setting looked stuck.
+  //
+  // Same `userChosen` latch the model selects already use, cleared once the
+  // choice is actually applied.
+  const group = document.querySelectorAll('input[name="emb-backend"]');
+  const touching =
+    document.activeElement?.name === "emb-backend" ||
+    [...group].some((radio) => radio.dataset.userChosen === "1");
+  if (!touching) {
+    for (const radio of document.querySelectorAll('input[name="emb-backend"]')) {
+      radio.checked = radio.value === status.embedding_backend;
+    }
+  }
+  const names = (status.installed_models || []).map((m) => m.name);
+  fillModelSelect(
+    $("embedding-model-select"),
+    names,
+    null,
+    status.embedding_model
+  );
+  // With Ollama down there are no embedding models to pick from, so that half
+  // of the choice is disabled and says why, rather than the whole section
+  // disappearing, which is what used to happen.
+  const offline = !status.ollama_running;
+  //: **And it says whether it is the one in use.** Asked after reading the
+  //: code: "does the ai embedding model actually get used??" It does, in
+  //: seven places, but only when the backend above is set to Ollama, and the
+  //: built-in backend is the default. So somebody who picked a model here
+  //: expecting it to be doing the work had a fully enabled, fully ignored
+  //: control, which is the same class of thing as a disabled control that
+  //: does not say why: a setting whose state is invisible.
+  //:
+  //: Disabled rather than hidden, because hiding it would make the choice
+  //: unfindable from the radio that mentions it, and the tooltip carries the
+  //: reason so the state is legible without a second paragraph on screen.
+  syncEmbeddingPickerState(offline);
+  document.querySelector('input[name="emb-backend"][value="ollama"]').disabled = offline;
+  $("embedding-ollama-note").classList.toggle("hidden", offline);
+  $("embedding-offline-note").classList.toggle("hidden", !offline);
+}

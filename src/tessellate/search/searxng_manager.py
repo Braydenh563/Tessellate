@@ -422,7 +422,10 @@ _FACADE_NAMES: dict[str, tuple[str, ...]] = {
         "DOWNLOAD_TIMEOUT",
         "INSTALL_STAGES",
         "INSTALL_TIMEOUT",
+        "SOURCE_COMMIT",
         "SOURCE_TARBALL",
+        "SOURCE_TREE_SHA256",
+        "_check_tree",
         "_download",
         "_drop_readonly",
         "_fetch_source",
@@ -435,6 +438,7 @@ _FACADE_NAMES: dict[str, tuple[str, ...]] = {
         "_install_steps",
         "_LOG_LINES",
         "_remove_tree",
+        "_tree_digest",
         "_UNSAFE_CHARS",
         "_unpack",
         "_unsafe_member",
@@ -711,3 +715,39 @@ def stop(data_dir: Path | None = None) -> dict:
     if result.returncode != 0:
         raise SearxngError(_reason(result, "Couldn't stop the container."))
     return {"stopped": True}
+
+
+def cancel_install(_name: str = "") -> tuple[bool, str]:
+    """Quit on the SearXNG setup row (`jobs.CANCELLERS`): (acted, message)."""
+    if not _self._install_state.get("running"):
+        return False, "No SearXNG setup is running."
+    stop_streaming()
+    return True, "Stopping the SearXNG setup."
+
+
+def _here() -> Path:
+    from tessellate.core import deps
+
+    return deps.get_config().data_dir
+
+
+def cancel_start(_name: str = "") -> tuple[bool, str]:
+    """Quit on "Starting SearXNG": stopping the service is the only way to stop
+    waiting for it, and it is what the person means: they want it not to be starting."""
+    if not starting():
+        return False, "SearXNG isn't starting."
+    try:
+        stop(_here())
+    except Exception as exc:  # noqa: BLE001  # a stop that fails is not a 500
+        logging.getLogger("tessellate.searxng").warning("couldn't stop SearXNG: %s", exc)
+        return False, "Couldn't stop it: see Settings, Logs."
+    return True, "Stopped SearXNG."
+
+
+def stop_for_quit() -> str:
+    """At quit (`jobs.stop_all`): the one background thing that is a real OS
+    process this app started; left behind, a second launch finds the port taken."""
+    if not status(_here()).get("running"):
+        return ""
+    stop(_here())
+    return "searxng"

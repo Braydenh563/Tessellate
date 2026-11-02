@@ -30,7 +30,7 @@ those, whatever a switch says.
 
 The link reason pass (`respecify_all`) is also a durable job (`jobstore`
 kind `tidy-link-reasons`), in chunks, stopped between chunks by
-`request_stop` (the Tasks panel's Quit, `core/bgtasks`).
+`request_stop` (the Tasks panel's Quit, `jobs.CANCELLERS`).
 """
 
 from __future__ import annotations
@@ -45,7 +45,7 @@ from datetime import timedelta
 from sqlalchemy import func, or_, select
 
 from tessellate.core import events
-from tessellate.core.database import AuditLog, Entry, EntryLink, Reminder, utcnow
+from tessellate.core.database import AuditLog, Entry, EntryLink, Reminder, plain_reason, utcnow
 from tessellate.entry import link_facts, link_wording, manager
 
 logger = logging.getLogger("tessellate.tidy")
@@ -727,8 +727,9 @@ def _apply_link_reasons(session, chosen: list[dict]) -> tuple[int, dict]:  # noq
         link = session.get(EntryLink, _id_number(row["id"]))
         if link is None or not link_wording.is_generic(link.reason):
             continue
-        undo.append({"id": link.id, "reason": link.reason, "now": row["change"]})
-        link.reason = row["change"]
+        now = plain_reason(row["change"])  # what the column will hold and read back
+        undo.append({"id": link.id, "reason": link.reason, "now": now})
+        link.reason = now
     return len(undo), {"links": undo}
 
 
@@ -968,7 +969,7 @@ def _undo_links(session, undo: dict) -> int:  # noqa: ANN001
     restored = 0
     for item in undo.get("links", []):
         link = session.get(EntryLink, item["id"])
-        if link is not None and link.reason == item["now"]:
+        if link is not None and link.reason == plain_reason(item["now"]):  # an older undo may hold the marked-up text
             link.reason = item["reason"]
             restored += 1
     return restored
@@ -1194,7 +1195,7 @@ _running = threading.Event()
 
 
 def request_stop() -> bool:
-    """Ask the running pass to stop at its next chunk (`bgtasks`). Also
+    """Ask the running pass to stop at its next chunk (`jobs.CANCELLERS`). Also
     stops a pass that has not started yet."""
     _stop.set()
     return _running.is_set()
@@ -1244,3 +1245,18 @@ def respecify_all(workspace_id: str = "default", chunk: int = 200) -> dict:
         _running.clear()
         link_facts.forget()
     return {"named": len(named), "stopped": stopped, "undo_id": undo_id}
+
+
+def cancel_link_reasons(_name: str = "") -> tuple[bool, str]:
+    """Quit on the link reason pass (INBOX 691): a queued one is cancelled, a
+    running one stops at its next chunk with what it named kept (and undoable
+    from Tidy's history)."""
+    from tessellate.core import jobstore
+
+    queued = jobstore.cancel_queued("tidy-link-reasons")
+    if is_running():
+        request_stop()
+        return True, "Asked the link reason pass to stop."
+    if queued:
+        return True, "Stopped before it started."
+    return False, "Nothing is naming link reasons."

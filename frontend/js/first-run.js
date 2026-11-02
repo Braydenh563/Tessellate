@@ -10,12 +10,35 @@
 // the step that shows what the notes are for. Lazy: dashboard.js's
 // `renderFirstStepsLazy` fetches it while the steps may still be shown.
 
-async function firstStepsState() {
+//: Step two's line names the quick-note chord as it is bound now (rebindable),
+//: so a new notebook learns the fastest way to capture on its first screen
+//: (audit 1028 S72).
+function writeNoteHint() {
+  const keys = typeof shortcuts === "object" && shortcuts?.quickNote?.keys;
+  return `A half sentence is fine; add a #tag if you like.${keys ? ` ${keys} saves one from any tab.` : ""}`;
+}
+
+//: One in-flight read shared by the card, the Get started menu and the bell
+//: row: they asked at once at boot and each fetched the three lists (the
+//: second /help/sample-notebook, blind test 2026-10-31). It is dropped as
+//: soon as it settles, so a later press reads fresh.
+let firstStepsPending = null;
+
+function firstStepsState() {
+  if (!firstStepsPending) {
+    firstStepsPending = firstStepsRead().finally(() => {
+      firstStepsPending = null;
+    });
+  }
+  return firstStepsPending;
+}
+
+async function firstStepsRead() {
   const named = Boolean(((typeof prefsCache === "object" && prefsCache?.display_name) || "").trim());
   //: An answer from Ask is kept in the Ask history, a chat in the chat list:
   //: either one is the third step done.
   const [asks, chats, sample] = await Promise.all([
-    apiJson("/ask-history/stats").catch(() => ({ total: 0 })),
+    askBadgeTotal === null ? apiJson("/ask-history/stats").catch(() => ({ total: 0 })) : { total: askBadgeTotal },
     apiJson("/conversations?limit=1").catch(() => []),
     apiJson("/help/sample-notebook").catch(() => ({ live: 0, added: true })),
   ]);
@@ -51,7 +74,7 @@ function firstStepButton({ number, done, icon, label, note, doneNote, run }) {
 }
 
 //: Step one is typed where it is asked: a name field in the tile, Enter
-//: saves it (`PUT /preferences`), rather than a door into Settings, General,
+//: saves it (`PUT /preferences`), rather than a door into Settings, Profile,
 //: whose Save button is three presses further on.
 function firstStepName(host) {
   const form = document.createElement("form");
@@ -75,7 +98,12 @@ function firstStepName(host) {
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const name = input.value.trim();
-    if (!name) return;
+    //: Said, not silent, and focus kept on the step (audit 1030 Y9).
+    if (!name) {
+      toast("Type a name first, then press Enter.");
+      input.focus();
+      return;
+    }
     try {
       prefsCache = await apiJson("/preferences", { method: "PUT", body: JSON.stringify({ display_name: name }) });
     } catch (err) {
@@ -84,6 +112,7 @@ function firstStepName(host) {
     }
     renderDashboardGreeting();
     renderFirstSteps(host);
+    host.querySelector("input, button")?.focus({ preventScroll: true });
   });
   return form;
 }
@@ -138,7 +167,7 @@ function getStartedHide() {
   $("dash-first-steps")?.replaceChildren();
   $("dash-start")?.replaceChildren();
   renderDashMore();
-  toastAction("Get started is hidden. Settings > Help, Customise or the palette brings it back.", "Show again", getStartedShow);
+  toastAction("Get started is hidden. Settings, Help, Customise or the palette brings it back.", "Show again", getStartedShow);
 }
 
 function getStartedMarkDone() {
@@ -165,7 +194,7 @@ function firstStepsMenuItems(host, state) {
     { label: "ph:compass Take the tour", title: "Two minutes through what is here", group: "help", run: () => openTour("basics") },
     { label: "ph:book-open-text Read the manual", title: "Every help topic on one page", group: "help", run: () => lazyScript("/js/manual.js").then((ok) => ok && openManual()) },
     { label: "ph:checks Mark all as done", title: "Tick every step and put this card away", group: "away", run: getStartedMarkDone },
-    { label: "ph:eye-slash Hide Get started", title: "Hide this card and the Get started button; Settings > Help or Customise shows them again", group: "away", run: getStartedHide }
+    { label: "ph:eye-slash Hide Get started", title: "Hide this card and the Get started button; Settings, Help or Customise shows them again", group: "away", run: getStartedHide }
   );
   return items;
 }
@@ -219,13 +248,13 @@ function firstStepsCard(host, state) {
     state.named
       ? firstStepButton({
           number: 1, done: true, icon: "ph:hand-waving", label: "Your name",
-          doneNote: "Done. Change it in Settings, General.",
+          doneNote: "Done. Change it in Settings, Profile.",
           run: () => openSettingsModal("preferences"),
         })
       : firstStepName(host),
     firstStepButton({
       number: 2, done: state.noted, icon: "ph:pencil-simple", label: "Write a note",
-      note: "A half sentence is fine; add a #tag if you like.", doneNote: "Done. Write another any time.",
+      note: writeNoteHint(), doneNote: "Done. Write another any time.",
       run: () => startNewNote(),
     }),
     firstStepButton({
@@ -266,12 +295,12 @@ function getStartedSteps(state) {
   return [
     {
       done: state.named, label: "Add your name",
-      note: "For the greeting and Atlas.", doneNote: "Done. Change it in Settings, General.",
+      note: "For the greeting and Atlas.", doneNote: "Done. Change it in Settings, Profile.",
       run: () => openSettingsModal("preferences"),
     },
     {
       done: state.noted, label: "Write a note",
-      note: "A half sentence is fine; add a #tag if you like.", doneNote: "Done. Write another any time.",
+      note: writeNoteHint(), doneNote: "Done. Write another any time.",
       run: () => startNewNote(),
     },
     {
@@ -323,7 +352,10 @@ async function firstStepsBellRow() {
   body.className = "notif-body";
   const title = document.createElement("strong");
   title.className = "notif-title";
-  title.textContent = `Get started, ${steps.length - left} of ${steps.length} done`;
+  //: Names what is left: "2 of 3 done" with no name set read as wrong to
+  //: a blind tester (2026-10-31) when it was true (a note and an answer).
+  const todo = steps.filter((step) => !step.done).map((step) => step.label.toLowerCase());
+  title.textContent = `Get started, ${steps.length - left} of ${steps.length} done. Left: ${todo.join(", ")}`;
   const list = document.createElement("ul");
   list.className = "notif-start-steps";
   for (const step of steps) {

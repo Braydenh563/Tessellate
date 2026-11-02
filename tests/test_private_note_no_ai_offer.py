@@ -12,8 +12,8 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-CARDS = Path(__file__).resolve().parents[1] / "frontend" / "js" / "note-cards.js"
-MENUS = Path(__file__).resolve().parents[1] / "frontend" / "js" / "menus.js"
+CARDS = Path(__file__).resolve().parents[1] / "frontend" / "js" / "entry-card.js"  # moved out of note-cards.js (boot diet 3)
+MENUS = Path(__file__).resolve().parents[1] / "frontend" / "js" / "entry-menu.js"
 
 
 def test_the_tag_with_atlas_chip_is_not_drawn_for_a_private_note() -> None:
@@ -30,5 +30,10 @@ def test_every_caller_of_reevaluate_entry_is_gated_on_privacy() -> None:
     for path in (Path(__file__).resolve().parents[1] / "frontend" / "js").glob("*.js"):
         if re.search(r"\breevaluateEntry\(entry\)", path.read_text()) and path.name not in ("lightbox.js", "lightbox-actions.js"):
             callers.append(path.name)
-    assert sorted(callers) == ["menus.js", "note-cards.js"], callers
-    assert 'if (!entry.is_private) menu.appendChild(buildMenuGroupButton("ph:sparkle AI actions"' in MENUS.read_text()
+    assert sorted(callers) == ["entry-card.js", "entry-menu.js"], callers
+    #: The gate sits on the AI rows themselves since the menu was grouped by
+    #: task (N20): Tag and file is inside the private guard, not after it.
+    text = MENUS.read_text()
+    gate = text.index("...(entry.is_private ? [] : [")
+    call = text.index("run: () => reevaluateEntry(entry)")
+    assert gate < call and "])," not in text[gate:call], "Tag and file is outside the private-note gate"

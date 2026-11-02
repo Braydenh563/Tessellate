@@ -26,7 +26,7 @@ from fastapi.responses import FileResponse, JSONResponse, Response
 
 from tessellate.core import activity
 from tessellate.core.subproc import NO_WINDOW
-from tessellate.api import paging
+from tessellate.api import bounds, paging
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -34,14 +34,16 @@ from sqlalchemy.orm import Session
 from tessellate.ai import captioning, docreader, vision_ocr
 from tessellate.api.routes_entries import _existing_entry, _to_out
 from tessellate.api.schemas import EntryOut
+from tessellate.repo.content import FILES
 from tessellate.core import (
     deps,
     diskspace,
     docview,
-    filejobs,
+    jobs,
     media_gc,
     media_process,
     ocr,
+    paths,
     pdfpages,
     reading_bin,
     undo_bin,
@@ -145,7 +147,7 @@ def upload_file(
     attachment = manager.add_attachment(
         session,
         entry,
-        filename=file.filename or stored_name,
+        filename=bounds.display_name(file.filename, stored_name),
         stored_name=stored_name,
         mime=file.content_type or "application/octet-stream",
         size=size,
@@ -173,7 +175,7 @@ def _existing_attachment(session: Session, attachment_id: int) -> Attachment:
 @media_router.get("/files/{attachment_id}")
 def download_file(attachment_id: int, session: Session = Depends(get_session)) -> FileResponse:
     attachment = _existing_attachment(session, attachment_id)
-    path = deps.get_config().uploads_dir / attachment.stored_name
+    path = _within(deps.get_config().uploads_dir, attachment.stored_name)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
     #: **Never the type the uploader declared, unless it is a picture or a
@@ -416,8 +418,8 @@ def _attachment_size(session: Session, attachment: Attachment) -> int:
     if attachment.size:
         return attachment.size
     try:
-        size = (deps.get_config().uploads_dir / attachment.stored_name).stat().st_size
-    except OSError:
+        size = _within(deps.get_config().uploads_dir, attachment.stored_name).stat().st_size
+    except (OSError, HTTPException):
         return 0
     if size:
         attachment.size = size
@@ -449,6 +451,175 @@ def _attachment_out(session: Session, attachment: Attachment) -> AttachmentGalle
     )
 
 
+def _store_typed_reading(session: Session, attachment: Attachment, body: AttachmentAnalyseBody) -> AttachmentGalleryOut:
+    """The reader typed a caption, an OCR reading or a vision reading by hand."""
+    stripped = (body.text or "").strip() or None
+    if body.kind == "caption":
+        attachment.caption = stripped
+        if stripped:
+            attachment.caption_edited = True
+        else:
+            attachment.caption_model = None
+            attachment.caption_edited = False
+    elif body.kind == "ocr":
+        attachment.ocr_text = stripped
+    else:
+        attachment.vision_ocr_text = stripped
+        if not stripped:
+            attachment.vision_ocr_model = None
+    session.commit()
+    if body.edited and body.kind in {"ocr", "vision"}:
+        _set_edited_reading(
+            _page_read_key(attachment.id, None),
+            stripped,
+            "tesseract" if body.kind == "ocr" else "vision",
+        )
+    else:
+        _forget_regions(_page_read_key(attachment.id, None))
+    return _attachment_out(session, attachment)
+
+
+def _read_locally(
+    session: Session, attachment: Attachment, path: Path, body: AttachmentAnalyseBody, is_image: bool
+) -> AttachmentGalleryOut:
+    """The `ocr` kind: Tesseract for a picture; this app's own document
+    extractor for everything else: a .docx or a text-layer PDF has real text
+    in it that no OCR pass should be guessing at.
+
+    Announced as a reading (`jobs.reading`) even though no model is involved: Tesseract on
+    a long scan is one of the slowest things this app does, and "is it
+    working or is it stuck" is the same question whether the work is a model
+    or a binary.
+    """
+    choice = _checked_engine(body.engine) if is_image else ""
+    if is_image and (reason := ocr.unavailable_reason(choice)):
+        raise HTTPException(status_code=409, detail=reason)
+    with jobs.reading("ocr", attachment.id, attachment.filename):
+        if is_image:
+            text = _local_text(path, choice)
+        else:
+            # No `vision_reader` passed on purpose: this is the "read it
+            # locally, no model" path, and the vision kind is the one that
+            # costs a model round trip. A scan with no text layer comes back
+            # empty here, which is the honest answer and is exactly what
+            # sends the reader to "Read with AI".
+            text = docview.extract(path).text
+    attachment.ocr_text = (text or "").strip() or None
+    session.commit()
+    _forget_regions(_page_read_key(attachment.id, None))
+    return _attachment_out(session, attachment)
+
+
+def _describe_from_text(
+    session: Session, attachment: Attachment, path: Path, body: AttachmentAnalyseBody, suffix: str
+) -> AttachmentGalleryOut | None:
+    """**Describing a document needs no vision model, only its own text.**
+
+    Reported on 2026-09-09: "the describe with ai button in the files tab
+    doesnt work. it should be a button for generating a
+    description/summary of the file from the readable and/or extractable
+    content of the file." It refused with a 415 for everything that was not a
+    picture or a PDF, and even a PDF went to a vision model, which most
+    machines do not have installed.
+
+    This runs above the vision-model checks deliberately: a .md, a .docx, a
+    .csv or a text-layer PDF is described by the utility model that already
+    writes tag suggestions, on a machine with no vision model at all.
+    `ocr_text` first when it is there, since that is this file's reading as
+    the reader has it (corrections included) rather than a second extraction
+    that may disagree with what they can see.
+
+    **`vision_ocr_text` was missing from this chain entirely.** Reported
+    directly: a scan already read page by page with the AI document reader
+    (fourteen pages stored here) still had "Describe with AI" call a vision
+    model itself, on one raw page image, because this fallback only ever
+    checked the Tesseract field and a fresh local extraction, never the field
+    this exact reading is written to. Checked second, after `ocr_text`:
+    Tesseract's own reading, when both exist, is the one already corrected by
+    hand and shown as the file's own text; the AI reader's is the one likelier
+    to exist at all for a scan, since it needs no separate OCR binary.
+    `docview.extract` stays last of the three, since it is a *native* text
+    layer and only a text-layer PDF or a `.docx`/`.csv`/etc. has one at all.
+
+    A file whose text extraction comes back empty is a scan with nothing
+    already read either, and returns None here so the caller falls through to
+    the vision path, which rasterises its first page. A file whose text is
+    there but whose model had nothing to say stores nothing and says so:
+    those are different answers and must not share a branch.
+    """
+    if attachment.caption and not body.force:
+        return _attachment_out(session, attachment)
+    readable = (
+        (attachment.ocr_text or "").strip()
+        or (attachment.vision_ocr_text or "").strip()
+        or (docview.extract(path).text or "").strip()
+    )
+    if readable:
+        if not deps.get_ollama().is_running():
+            raise HTTPException(status_code=409, detail="The AI model isn't running.")
+        models = deps.get_model_manager()
+        with jobs.reading("describe", attachment.id, attachment.filename, models.utility_model()):
+            described = captioning.describe_document(readable, models, deps.get_ollama())
+        attachment.caption = described or None
+        attachment.caption_model = models.utility_model() if described else None
+        attachment.caption_edited = False
+        session.commit()
+        return _attachment_out(session, attachment)
+    if suffix != ".pdf":
+        raise HTTPException(
+            status_code=415,
+            detail="There is no readable text in this file to describe.",
+        )
+    return None
+
+
+def _vision_model() -> str:
+    """The installed vision model, or the 409 that says there is none."""
+    if not deps.get_ollama().is_running():
+        raise HTTPException(status_code=409, detail="The AI model isn't running.")
+    model = deps.get_model_manager().resolve_vision_model(deps.get_ollama())
+    if not model:
+        raise HTTPException(
+            status_code=409,
+            detail="No installed model can read images. Install or "
+            "pick one in Settings, Models.",
+        )
+    return model
+
+
+def _caption_with_vision(attachment: Attachment, path: Path, is_image: bool, model: str) -> None:
+    ollama = deps.get_ollama()
+    # `pdf_vision_reader` returns the reader callable itself (docview's
+    # `vision_reader` contract), not an object with a `.read`: calling
+    # `.read(path)` on it was the reported 500 on "generate a caption" for
+    # a PDF ("'function' object has no attribute 'read'").
+    with jobs.reading("describe", attachment.id, attachment.filename, model):
+        text = (
+            captioning.caption_text(path, model, ollama)
+            if is_image
+            else vision_ocr.pdf_vision_reader(model, ollama)(path)
+        )
+    attachment.caption = (text or "").strip() or None
+    attachment.caption_model = model if attachment.caption else None
+    attachment.caption_edited = False
+
+
+def _read_with_vision(attachment: Attachment, path: Path, is_image: bool, model: str) -> None:
+    ollama = deps.get_ollama()
+    # A PDF is rasterised page by page (`pdf_vision_reader`), which is
+    # the whole point for a scan, where there is no text layer to read
+    # and Tesseract has already found nothing.
+    with jobs.reading("vision", attachment.id, attachment.filename, model):
+        text = (
+            vision_ocr.vision_ocr_text(path, model, ollama)
+            if is_image
+            else vision_ocr.pdf_vision_reader(model, ollama)(path)
+        )
+    attachment.vision_ocr_text = (text or "").strip() or None
+    attachment.vision_ocr_model = model if attachment.vision_ocr_text else None
+    _forget_regions(_page_read_key(attachment.id, None), only_source="edited-")
+
+
 @router.post("/files/{attachment_id}/analyse", response_model=AttachmentGalleryOut)
 def analyse_attachment(
     attachment_id: int,
@@ -466,169 +637,32 @@ def analyse_attachment(
     vision path rasterises PDF pages so a scan with no text layer at all
     still has something a model can look at.
     """
-    attachment = _existing_attachment(session, attachment_id)
-    path = _within_dir(deps.get_config().uploads_dir, attachment.stored_name)
+    attachment = FILES.writable(session, attachment_id)
+    path = _within(deps.get_config().uploads_dir, attachment.stored_name)
     suffix = Path(attachment.filename).suffix.lower()
     is_image = suffix in captioning.CAPTION_SUFFIXES
 
     if body.text is not None:
-        stripped = body.text.strip() or None
-        if body.kind == "caption":
-            attachment.caption = stripped
-            if stripped:
-                attachment.caption_edited = True
-            else:
-                attachment.caption_model = None
-                attachment.caption_edited = False
-        elif body.kind == "ocr":
-            attachment.ocr_text = stripped
-        else:
-            attachment.vision_ocr_text = stripped
-            if not stripped:
-                attachment.vision_ocr_model = None
-        session.commit()
-        if body.edited and body.kind in {"ocr", "vision"}:
-            _set_edited_reading(
-                _page_read_key(attachment.id, None),
-                stripped,
-                "tesseract" if body.kind == "ocr" else "vision",
-            )
-        else:
-            _forget_regions(_page_read_key(attachment.id, None))
-        return _attachment_out(session, attachment)
-
+        return _store_typed_reading(session, attachment, body)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
-
     if body.kind == "ocr":
-        # Tesseract for a picture; this app's own document extractor for
-        # everything else: a .docx or a text-layer PDF has real text in it
-        # that no OCR pass should be guessing at.
-        # Registered even though no model is involved: Tesseract on a long
-        # scan is one of the slowest things this app does, and "is it working
-        # or is it stuck" is the same question whether the work is a model or
-        # a binary.
-        choice = _checked_engine(body.engine) if is_image else ""
-        if is_image and (reason := ocr.unavailable_reason(choice)):
-            raise HTTPException(status_code=409, detail=reason)
-        with filejobs.reading("ocr", attachment.id, attachment.filename):
-            if is_image:
-                text = _local_text(path, choice)
-            else:
-                # No `vision_reader` passed on purpose: this is the "read it
-                # locally, no model" path, and the vision kind below is the one
-                # that costs a model round trip. A scan with no text layer comes
-                # back empty here, which is the honest answer and is exactly what
-                # sends the reader to "Read with AI".
-                text = docview.extract(path).text
-        attachment.ocr_text = (text or "").strip() or None
-        session.commit()
-        _forget_regions(_page_read_key(attachment.id, None))
-        return _attachment_out(session, attachment)
-
-    #: **Describing a document needs no vision model, only its own text.**
-    #: Reported on 2026-09-09: "the describe with ai button in the files tab
-    #: doesnt work. it should be a button for generating a
-    #: description/summary of the file from the readable and/or extractable
-    #: content of the file." It refused with a 415 for everything that was
-    #: not a picture or a PDF, and even a PDF went to a vision model, which
-    #: most machines do not have installed.
-    #:
-    #: This branch sits above the vision-model checks deliberately: a .md, a
-    #: .docx, a .csv or a text-layer PDF is described by the utility model
-    #: that already writes tag suggestions, on a machine with no vision model
-    #: at all. `ocr_text` first when it is there, since that is this file's
-    #: reading as the reader has it (corrections included) rather than a
-    #: second extraction that may disagree with what they can see.
-    #:
-    #: **`vision_ocr_text` was missing from this chain entirely.** Reported
-    #: directly: a scan already read page by page with the AI document
-    #: reader (fourteen pages stored here) still had "Describe with AI" call
-    #: a vision model itself, on one raw page image, because this fallback
-    #: only ever checked the Tesseract field and a fresh local extraction,
-    #: never the field this exact reading is written to. Checked second,
-    #: after `ocr_text`: Tesseract's own reading, when both exist, is the
-    #: one already corrected by hand and shown as the file's own text; the
-    #: AI reader's is the one likelier to exist at all for a scan, since it
-    #: needs no separate OCR binary. `docview.extract` stays last of the
-    #: three, since it is a *native* text layer and only a text-layer PDF or
-    #: a `.docx`/`.csv`/etc. has one at all.
-    #:
-    #: A file whose text extraction comes back empty is a scan with nothing
-    #: already read either, and falls through to the vision path below,
-    #: which rasterises its first page. A file whose text is there but whose
-    #: model had nothing to say stores nothing and says so: those are
-    #: different answers and must not share a branch.
+        return _read_locally(session, attachment, path, body, is_image)
     if body.kind == "caption" and not is_image:
-        if attachment.caption and not body.force:
-            return _attachment_out(session, attachment)
-        readable = (
-            (attachment.ocr_text or "").strip()
-            or (attachment.vision_ocr_text or "").strip()
-            or (docview.extract(path).text or "").strip()
-        )
-        if readable:
-            if not deps.get_ollama().is_running():
-                raise HTTPException(status_code=409, detail="The AI model isn't running.")
-            models = deps.get_model_manager()
-            with filejobs.reading(
-                "describe", attachment.id, attachment.filename, models.utility_model()
-            ):
-                described = captioning.describe_document(readable, models, deps.get_ollama())
-            attachment.caption = described or None
-            attachment.caption_model = models.utility_model() if described else None
-            attachment.caption_edited = False
-            session.commit()
-            return _attachment_out(session, attachment)
-        if suffix != ".pdf":
-            raise HTTPException(
-                status_code=415,
-                detail="There is no readable text in this file to describe.",
-            )
+        done = _describe_from_text(session, attachment, path, body, suffix)
+        if done is not None:
+            return done
 
     # Both remaining kinds need a vision model.
-    if not deps.get_ollama().is_running():
-        raise HTTPException(status_code=409, detail="The AI model isn't running.")
-    model = deps.get_model_manager().resolve_vision_model(deps.get_ollama())
-    if not model:
-        raise HTTPException(
-            status_code=409,
-            detail="No installed model can read images. Install or "
-            "pick one in Settings → Models.",
-        )
-    ollama = deps.get_ollama()
-
+    model = _vision_model()
     if body.kind == "caption":
         if attachment.caption and not body.force:
             return _attachment_out(session, attachment)
-        # `pdf_vision_reader` returns the reader callable itself (docview's
-        # `vision_reader` contract), not an object with a `.read`: calling
-        # `.read(path)` on it was the reported 500 on "generate a caption" for
-        # a PDF ("'function' object has no attribute 'read'").
-        with filejobs.reading("describe", attachment.id, attachment.filename, model):
-            text = (
-                captioning.caption_text(path, model, ollama)
-                if is_image
-                else vision_ocr.pdf_vision_reader(model, ollama)(path)
-            )
-        attachment.caption = (text or "").strip() or None
-        attachment.caption_model = model if attachment.caption else None
-        attachment.caption_edited = False
+        _caption_with_vision(attachment, path, is_image, model)
     else:
         if attachment.vision_ocr_text and not body.force:
             return _attachment_out(session, attachment)
-        # A PDF is rasterised page by page (`pdf_vision_reader`), which is
-        # the whole point for a scan, where there is no text layer to read
-        # and Tesseract has already found nothing.
-        with filejobs.reading("vision", attachment.id, attachment.filename, model):
-            text = (
-                vision_ocr.vision_ocr_text(path, model, ollama)
-                if is_image
-                else vision_ocr.pdf_vision_reader(model, ollama)(path)
-            )
-        attachment.vision_ocr_text = (text or "").strip() or None
-        attachment.vision_ocr_model = model if attachment.vision_ocr_text else None
-        _forget_regions(_page_read_key(attachment.id, None), only_source="edited-")
+        _read_with_vision(attachment, path, is_image, model)
     session.commit()
     return _attachment_out(session, attachment)
 
@@ -682,7 +716,7 @@ def attached_file_text(
     file's text would mean writing text back into a format it was never in.
     """
     attachment = _existing_attachment(session, attachment_id)
-    path = deps.get_config().uploads_dir / attachment.stored_name
+    path = _within(deps.get_config().uploads_dir, attachment.stored_name)
     # The scanned-PDF fallback, passed rather than omitted. `docview` has
     # always taken a `vision_reader` and this, its only caller, passed
     # nothing, so the whole path was wired and never once ran: exactly the
@@ -708,7 +742,7 @@ def attached_file_text(
 class FileTextIn(BaseModel):
     """The edited text of a file, on its way back to disk."""
 
-    text: str
+    text: str = Field(max_length=bounds.FILE_TEXT_MAX)
 
 
 @router.put("/files/{attachment_id}/text", response_model=AttachedFileTextOut)
@@ -728,8 +762,8 @@ def save_attached_file_text(
     a client is not the authority on what may be overwritten, and the file can
     have been replaced between the two calls.
     """
-    attachment = _existing_attachment(session, attachment_id)
-    path = _within_dir(deps.get_config().uploads_dir, attachment.stored_name)
+    attachment = FILES.writable(session, attachment_id)
+    path = _within(deps.get_config().uploads_dir, attachment.stored_name)
     viewed = docview.extract(path)
     editable, edit_message = docview.editability(path, viewed)
     if not editable:
@@ -779,7 +813,7 @@ def attached_file_pdf_info(attachment_id: int, session: Session = Depends(get_se
     attachment = _existing_attachment(session, attachment_id)
     if Path(attachment.filename).suffix.lower() != ".pdf":
         raise HTTPException(status_code=422, detail="Not a PDF.")
-    path = _within_dir(deps.get_config().uploads_dir, attachment.stored_name)
+    path = _within(deps.get_config().uploads_dir, attachment.stored_name)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
     if not pdfpages.available():
@@ -788,7 +822,7 @@ def attached_file_pdf_info(attachment_id: int, session: Session = Depends(get_se
             pages=0,
             message=(
                 "Viewing PDF pages needs a small rasteriser: install "
-                "“Read scanned PDFs” in Settings → Packages."
+                "“Read scanned PDFs” in Settings, Packages."
             ),
         )
     count = pdfpages.page_count(path)
@@ -816,7 +850,7 @@ def attached_file_pdf_page(
     attachment = _existing_attachment(session, attachment_id)
     if Path(attachment.filename).suffix.lower() != ".pdf":
         raise HTTPException(status_code=404, detail="Not a PDF.")
-    path = _within_dir(deps.get_config().uploads_dir, attachment.stored_name)
+    path = _within(deps.get_config().uploads_dir, attachment.stored_name)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
     png = pdfpages.render_page(path, index, thumb=thumb)
@@ -888,7 +922,7 @@ def attached_file_html_preview(
     attachment = _existing_attachment(session, attachment_id)
     if Path(attachment.filename).suffix.lower() not in {".html", ".htm"}:
         raise HTTPException(status_code=404, detail="Not an HTML file.")
-    path = _within_dir(deps.get_config().uploads_dir, attachment.stored_name)
+    path = _within(deps.get_config().uploads_dir, attachment.stored_name)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
     viewed = docview.extract(path)
@@ -918,7 +952,7 @@ def delete_file(
     reason, same default. An attached image can be embedded in the note it is
     attached to (`![](/files/12)`), and deleting the file used to leave that
     markdown behind forever."""
-    attachment = _existing_attachment(session, attachment_id)
+    attachment = FILES.writable(session, attachment_id)
     entry = _existing_entry(session, attachment.entry_id)
     config = deps.get_config()
     changed: dict = {}
@@ -930,7 +964,7 @@ def delete_file(
         config.data_dir,
         "attachment",
         {"row": undo_bin.row_dict(attachment), "notes": changed},
-        {"bytes": config.uploads_dir / attachment.stored_name},
+        {"bytes": _within(config.uploads_dir, attachment.stored_name)},
     )
     manager.delete_attachment(session, attachment, config.uploads_dir)
     out = _to_out(session, entry)
@@ -952,7 +986,7 @@ def restore_file(body: RestoreBody, session: Session = Depends(get_session)) -> 
         raise HTTPException(status_code=409, detail="That file is already back.")
     config.uploads_dir.mkdir(parents=True, exist_ok=True)
     if "bytes" in kept and kept["bytes"].is_file():
-        shutil.move(str(kept["bytes"]), str(config.uploads_dir / row["stored_name"]))
+        shutil.move(str(kept["bytes"]), str(_within(config.uploads_dir, row["stored_name"])))
     session.add(undo_bin.row_from(Attachment, row))
     _put_notes_back(session, payload.get("notes") or {})
     session.commit()
@@ -969,7 +1003,7 @@ def _put_notes_back(session: Session, changed: dict) -> None:
 
 
 class AttachmentRenameBody(BaseModel):
-    filename: str = Field(min_length=1, max_length=255)
+    filename: str = Field(min_length=1, max_length=bounds.NAME_MAX)
 
 
 @router.put("/files/{attachment_id}", response_model=EntryOut)
@@ -994,7 +1028,7 @@ def rename_file(
       CLAUDE.md's review section warns about: the guard here is new, but the
       boundary it enforces already exists elsewhere in the app.
     """
-    attachment = _existing_attachment(session, attachment_id)
+    attachment = FILES.writable(session, attachment_id)
     entry = _existing_entry(session, attachment.entry_id)
     if entry.is_private:
         raise HTTPException(
@@ -1048,7 +1082,7 @@ class SaveFileBody(BaseModel):
 
     filename: str = Field(min_length=1, max_length=120)
     #: Base64, because the same route has to carry a .zip as well as a .md.
-    content_base64: str
+    content_base64: str = Field(max_length=bounds.FILE_BASE64_MAX)
 
 
 def safe_filename(name: str) -> str:
@@ -1065,68 +1099,17 @@ def safe_filename(name: str) -> str:
     return cleaned[:120]
 
 
-def _within_exports(exports: Path, name: str) -> Path:
-    """`exports / name`, refusing anything whose resolved path lands outside
-    `exports`. `safe_filename` already whitelists to a flat, traversal-free
-    name, but CodeQL's `py/path-injection` still flagged the join as tainted
-    (alerts #289/#290): the same shape HANDOVER.md already documents for
-    the update-apply SSRF fix: a query's sanitiser recognition is narrower
-    than "the code is provably safe," so the fix is a real containment
-    check at the point of use, not a stronger filter upstream of it.
-
-    **Third attempt at the exact recognised shape, not just an equivalent
-    check.** `os.path.realpath`/`os.path.normpath`/`os.path.abspath` are all
-    modelled by CodeQL's Python library as `Path::PathNormalization`, they
-    mark the result "normalised" but do not by themselves clear the taint.
-    The actual barrier is `Path::SafeAccessCheck`, whose only recognised
-    Python implementation is a bare `<path>.startswith(<base>)` call used as
-    a guard's sole condition (`if not fullpath.startswith(base_path): raise`
-    - GitHub's own CWE-022 remediation example, and the shape
-    `StartswithCall` in the standard library actually matches). The first
-    attempt here used `Path.resolve()`/`Path.relative_to()`, which CodeQL's
-    Python model does not extend `PathNormalization`/`SafeAccessCheck` to at
-    all. The second attempt switched to `os.path` but combined the guard
-    with `candidate != base and` and appended `+ os.sep` to the `startswith`
-    argument: still flagged, most likely because a compound condition and a
-    computed (rather than bare) argument stop the guard-node matcher from
-    recognising it as the same `SafeAccessCheck` shape; a query's pattern
-    matcher can be exactly this literal about it.
-
-    So: the single-condition, bare-argument form below, and nothing else.
-    The dropped nuance (a candidate exactly equal to `base`, and a
-    sibling-directory collision like `base-evil` slipping past a
-    separator-less prefix check) is not a real gap here specifically, 
-    `safe_filename` already strips every path separator out of `name`
-    before either caller passes it in, so `os.path.join(base, name)` can
-    only ever produce `base + os.sep + <flat name>`, never a sibling path or
-    `base` itself unless `name` were empty (already rejected upstream).
-    """
-    base = os.path.realpath(str(exports))
-    candidate = os.path.realpath(os.path.join(base, name))
-    if not candidate.startswith(base):
-        raise HTTPException(status_code=422, detail="That filename can't be used.") from None
-    return Path(candidate)
-
-
-def _within_dir(base_dir: Path, name: str) -> Path:
-    """`_within_exports`'s own containment check, generalised to any base
-    directory: the PDF-page endpoints' `_media_upload_path` and the two
-    attachment `pdf-page`/`pdf-info` routes each build a path from a name
-    that traces back to a request parameter (via a DB round trip, but
-    CodeQL's `py/path-injection` tracks the taint through the query filter
-    regardless), the same shape `_within_exports` already exists to close.
-    Kept as its own function rather than reusing `_within_exports` directly:
-    that one is precision-tuned to the exact guard shape CodeQL's
-    `Path::SafeAccessCheck` recognises (see its own long comment on how many
-    equivalent-looking forms it rejected) and duplicating the same five
-    lines here is safer than risking that tuning by generalising its name
-    or signature for a second, differently-named caller.
-    """
-    base = os.path.realpath(str(base_dir))
-    candidate = os.path.realpath(os.path.join(base, name))
-    if not candidate.startswith(base):
+def _within(base_dir: Path, name: str, *, typed: bool = False) -> Path:
+    """`base_dir / name` through `paths.contained`, a 422 when it reaches
+    outside. The one containment check for exports, uploads and media; the
+    CodeQL history of its shape is in `core/paths.py`. `typed`: the name is
+    one the person wrote (an export), so the sentence says filename."""
+    try:
+        return paths.contained(base_dir, name)
+    except paths.OutsideFolder:
+        if typed:
+            raise HTTPException(status_code=422, detail="That filename can't be used.") from None
         raise HTTPException(status_code=422, detail="That file can't be used.") from None
-    return Path(candidate)
 
 
 @router.post("/files/save", dependencies=[Depends(this_computer_only)])
@@ -1142,13 +1125,13 @@ def save_generated_file(body: SaveFileBody) -> dict:
     exports = _exports_dir()
     exports.mkdir(parents=True, exist_ok=True)
     name = safe_filename(body.filename)
-    target = _within_exports(exports, name)
+    target = _within(exports, name, typed=True)
     # Never silently overwrite: two exports of the same chat on the same day
     # are two files someone may want to compare.
     if target.exists():
         stem, suffix = target.stem, target.suffix
         stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-        target = _within_exports(exports, f"{stem}-{stamp}{suffix}")
+        target = _within(exports, f"{stem}-{stamp}{suffix}", typed=True)
     #: A half-written export is worse than no export: it lands in the folder
     #: Settings lists, under the name the person chose, and opens as a
     #: truncated file rather than as an obvious failure. `write_bytes`
@@ -1168,7 +1151,7 @@ def save_generated_file(body: SaveFileBody) -> dict:
 #: but only on the desktop, and only if you remembered a toast. This is the
 #: list Settings draws and the download link each row carries, so a browser
 #: tab can get its exports back too: a file the app wrote is served from the
-#: folder it wrote it to, contained by `_within_exports` exactly as the write
+#: folder it wrote it to, contained by `_within` exactly as the write
 #: was.
 #:
 #: Newest first and capped, because the folder grows one file per export for
@@ -1217,10 +1200,10 @@ def list_exports(
 
 @router.get("/files/exports/{filename}")
 def download_export(filename: str) -> FileResponse:
-    """One exported file, as a download. `safe_filename` and `_within_exports`
+    """One exported file, as a download. `safe_filename` and `_within`
     are the same two locks the write went through, in the same order."""
     exports = _exports_dir()
-    target = _within_exports(exports, safe_filename(filename))
+    target = _within(exports, safe_filename(filename), typed=True)
     if not target.is_file():
         raise HTTPException(status_code=404, detail="That export is no longer there.")
     return FileResponse(str(target), filename=target.name)
@@ -1340,12 +1323,18 @@ def upload_media(
                     raise HTTPException(status_code=413, detail="That file is larger than 50 MB.")
                 out.write(chunk)
 
-    original_name = file.filename or stored_name
+    try:
+        with destination.open("rb") as written:
+            bounds.check_image_upload(written.read(64), size, suffix)
+    except HTTPException:
+        destination.unlink(missing_ok=True)
+        raise
+    original_name = bounds.display_name(file.filename, stored_name)
     # `size` was already counted above while streaming the upload to disk, 
     # storing it here means `GET /media` never has to `stat()` this file to
     # answer "how big is it" (PLAN.md §0 P6).
     upload = MediaUpload(
-        filename=stored_name, original_name=original_name[:300], size_bytes=size
+        filename=stored_name, original_name=original_name, size_bytes=size
     )
     session.add(upload)
     session.commit()
@@ -1645,7 +1634,7 @@ def media_meta(filename: str, session: Session = Depends(get_session)) -> MediaU
 def _media_size(filename: str) -> int:
     """Bytes on disk for one upload, or 0 when it is gone or unreadable."""
     try:
-        return _within_dir(deps.get_config().data_dir / "media", filename).stat().st_size
+        return _within(deps.get_config().data_dir / "media", filename).stat().st_size
     except (OSError, HTTPException):
         return 0
 
@@ -1712,7 +1701,7 @@ def _media_upload_path(session: Session, filename: str) -> tuple[MediaUpload, Pa
     upload = session.query(MediaUpload).filter(MediaUpload.filename == filename).first()
     if not upload:
         raise HTTPException(status_code=404, detail="No upload by that name.")
-    path = _within_dir(deps.get_config().data_dir / "media", upload.filename)
+    path = _within(deps.get_config().data_dir / "media", upload.filename)
     if not path.exists():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
     return upload, path
@@ -1741,7 +1730,7 @@ def media_pdf_info(filename: str, session: Session = Depends(get_session)) -> Pd
             pages=0,
             message=(
                 "Viewing PDF pages needs a small rasteriser: install "
-                "“Read scanned PDFs” in Settings → Packages."
+                "“Read scanned PDFs” in Settings, Packages."
             ),
         )
     count = pdfpages.page_count(path)
@@ -2013,7 +2002,7 @@ def caption_media(
             if not deps.get_ollama().is_running():
                 raise HTTPException(status_code=409, detail="The AI model isn't running.")
             media_dir = deps.get_config().data_dir / "media"
-            path = _within_dir(media_dir, upload.filename)
+            path = _within(media_dir, upload.filename)
             readable = (upload.ocr_text or "").strip() or (docview.extract(path).text or "").strip()
             if not readable:
                 raise HTTPException(
@@ -2034,7 +2023,7 @@ def caption_media(
             raise HTTPException(
                 status_code=409,
                 detail="No installed model can read images. Install or "
-                "pick one in Settings → Models.",
+                "pick one in Settings, Models.",
             )
         media_dir = deps.get_config().data_dir / "media"
         captioning.caption_and_store(upload.id, media_dir / upload.filename, force=body.force)
@@ -2618,7 +2607,7 @@ def media_ocr_regions(
     suffix = Path(upload.filename).suffix.lower()
     if suffix not in ocr.OCR_SUFFIXES and suffix != ".pdf":
         raise HTTPException(status_code=415, detail="Only images and PDFs can be read this way.")
-    path = _within_dir(deps.get_config().data_dir / "media", upload.filename)
+    path = _within(deps.get_config().data_dir / "media", upload.filename)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
     stored = (upload.vision_ocr_text or upload.ocr_text or "")
@@ -2650,7 +2639,7 @@ def attachment_ocr_regions(
     suffix = Path(attachment.filename).suffix.lower()
     if suffix not in ocr.OCR_SUFFIXES and suffix != ".pdf":
         raise HTTPException(status_code=415, detail="Only images and PDFs can be read this way.")
-    path = _within_dir(deps.get_config().uploads_dir, attachment.stored_name)
+    path = _within(deps.get_config().uploads_dir, attachment.stored_name)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
     stored = (attachment.vision_ocr_text or attachment.ocr_text or "")
@@ -2747,7 +2736,7 @@ def _vision_read_page(path: Path, index: int, reader: str = "vision") -> OcrPage
         raise HTTPException(
             status_code=409,
             detail="No installed model can read images. Install or "
-            "pick one in Settings → Models.",
+            "pick one in Settings, Models.",
         )
     count = pdfpages.page_count(path)
     if count <= 0:
@@ -3133,7 +3122,7 @@ def _read_page(
     """One page, by whichever reader was asked for.
 
     Registered in `vision_ocr`'s running-reads list for the length of the call,
-    which is what puts it in Settings → Background tasks. Asked for directly:
+    which is what puts it in Settings, Background tasks. Asked for directly:
     "make sure eveyrhting appears in the bg processes in settings." A read is a
     model round-trip of several seconds and it appeared there nowhere, so
     closing the workspace mid-read left no sign anywhere that the app was still
@@ -3200,7 +3189,7 @@ def _describe_page(
         raise HTTPException(
             status_code=409,
             detail="No installed model can read images. Install or "
-            "pick one in Settings → Models.",
+            "pick one in Settings, Models.",
         )
     count = pdfpages.page_count(path)
     if count <= 0:
@@ -3210,7 +3199,7 @@ def _describe_page(
     if not png:
         return OcrPageReadOut(page=index, message=f"Page {index + 1} could not be rendered.")
     #: Registered in the same running-reads list a page read uses, so a
-    #: describe shows up in Settings → Background tasks like everything else, 
+    #: describe shows up in Settings, Background tasks like everything else, 
     #: "make sure eveyrhting appears in the bg processes in settings."
     token = vision_ocr.register_page_read(f"Describing page {index + 1} of {path.name}", model=model)
     try:
@@ -3516,7 +3505,7 @@ def attachment_ocr_range_read(
     attachment = _existing_attachment(session, attachment_id)
     if Path(attachment.filename).suffix.lower() != ".pdf":
         raise HTTPException(status_code=415, detail="Only PDFs are read by page range.")
-    path = _within_dir(deps.get_config().uploads_dir, attachment.stored_name)
+    path = _within(deps.get_config().uploads_dir, attachment.stored_name)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
     return _read_range(path, pages, reader, _page_read_key(attachment_id, None))
@@ -3534,7 +3523,7 @@ def media_ocr_range_read(
     upload = deps.get_or_404(session, MediaUpload, upload_id, "That upload could not be found.")
     if Path(upload.filename).suffix.lower() != ".pdf":
         raise HTTPException(status_code=415, detail="Only PDFs are read by page range.")
-    path = _within_dir(deps.get_config().data_dir / "media", upload.filename)
+    path = _within(deps.get_config().data_dir / "media", upload.filename)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
     return _read_range(path, pages, reader, _page_read_key(None, upload_id))
@@ -3551,7 +3540,7 @@ def attachment_ocr_page_read(
     attachment = _existing_attachment(session, attachment_id)
     if Path(attachment.filename).suffix.lower() != ".pdf":
         raise HTTPException(status_code=415, detail="Only PDF pages are read one at a time.")
-    path = _within_dir(deps.get_config().uploads_dir, attachment.stored_name)
+    path = _within(deps.get_config().uploads_dir, attachment.stored_name)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
     return _read_page(path, page, reader, _page_read_key(attachment_id, None))
@@ -3568,7 +3557,7 @@ def media_ocr_page_read(
     upload = deps.get_or_404(session, MediaUpload, upload_id, "That upload could not be found.")
     if Path(upload.filename).suffix.lower() != ".pdf":
         raise HTTPException(status_code=415, detail="Only PDF pages are read one at a time.")
-    path = _within_dir(deps.get_config().data_dir / "media", upload.filename)
+    path = _within(deps.get_config().data_dir / "media", upload.filename)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
     return _read_page(path, page, reader, _page_read_key(None, upload_id))
@@ -3655,7 +3644,7 @@ def _region_model(mode: str, reader: str, local: bool) -> str:
         raise HTTPException(
             status_code=409,
             detail="No installed model can read images. Install or "
-            "pick one in Settings → Models.",
+            "pick one in Settings, Models.",
         )
     return model
 
@@ -3775,7 +3764,7 @@ def attachment_page_caption(
     attachment = _existing_attachment(session, attachment_id)
     if Path(attachment.filename).suffix.lower() != ".pdf":
         raise HTTPException(status_code=415, detail="Only PDF pages are described one at a time.")
-    path = _within_dir(deps.get_config().uploads_dir, attachment.stored_name)
+    path = _within(deps.get_config().uploads_dir, attachment.stored_name)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
     return _describe_page(path, page, _page_read_key(attachment_id, None))
@@ -3792,7 +3781,7 @@ def media_page_caption(
     upload = deps.get_or_404(session, MediaUpload, upload_id, "That upload could not be found.")
     if Path(upload.filename).suffix.lower() != ".pdf":
         raise HTTPException(status_code=415, detail="Only PDF pages are described one at a time.")
-    path = _within_dir(deps.get_config().data_dir / "media", upload.filename)
+    path = _within(deps.get_config().data_dir / "media", upload.filename)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
     return _describe_page(path, page, _page_read_key(None, upload_id))
@@ -4107,7 +4096,7 @@ def vision_ocr_media(
         raise HTTPException(
             status_code=409,
             detail="No installed model can read images. Install or "
-            "pick one in Settings → Models.",
+            "pick one in Settings, Models.",
         )
     media_dir = deps.get_config().data_dir / "media"
     vision_ocr.vision_ocr_and_store(upload.id, media_dir / upload.filename, force=body.force)

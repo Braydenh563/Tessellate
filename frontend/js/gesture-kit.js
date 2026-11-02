@@ -1,10 +1,55 @@
 // Gesture-only chat panels, moved out of the boot scripts on 2026-10-26 for the
 // gzip budget (tests/test_static_compression.py): the active-model badge's
 // spec panel (from ai-tools.js), editing an answer in place (from
-// sheets-selects.js) and a note's "Explain this note" menu row (from menus.js).
+// sheets-selects.js), a note's "Explain this note" menu row (from menus.js),
+// the extract preview's Save (from chat-attach.js) and the chat's Copy message
+// (`chatTurnTranscript`, awaited by its button).
 // Each is reached only by a click, and no caller reads a return value, so
 // `LAZY_ENTRY_POINTS`-style stand-ins (`gestureKit`, lazy-entries.js) fetch
 // this file on first use and then call the real function.
+
+//: **Copy copies the whole turn, not the last paragraph of it** (the owner:
+//: "everything in the whole chat and assistant messages, including thinking
+//: processes (if toggled), tool calls"). The bubble is walked in document
+//: order: a thinking step only while open, a plan step as its text, a tool
+//: chip as one "Tool:" line, every body as its text; `text` is the raw
+//: Markdown of the final answer, so headings and links survive.
+function chatTurnTranscript(bubble, text) {
+  const parts = [];
+  const seen = new Set();
+  const nodes = bubble
+    ? [...bubble.querySelectorAll(".agent-step, .tool-chip, .msg-body")]
+    : [];
+  const bodies = nodes.filter((n) => n.classList.contains("msg-body"));
+  for (const node of nodes) {
+    if ([...seen].some((s) => s.contains(node))) continue;
+    seen.add(node);
+    if (node.classList.contains("thinking-fold")) {
+      if (!node.open) continue;
+      const body = node.querySelector(".thinking")?.innerText.trim();
+      if (body) parts.push(`Thinking:\n${body}`);
+    } else if (node.classList.contains("step-plan")) {
+      const body = node.innerText.replace(/^\s*Plan\s*/i, "").trim();
+      if (body) parts.push(`Plan:\n${body}`);
+    } else if (node.classList.contains("tool-chip")) {
+      const label = node.querySelector("summary")?.innerText.trim() || node.innerText.trim();
+      const args = node.querySelector(".tool-chip-args")?.textContent.trim();
+      const result = node.querySelector(".tool-chip-result")?.textContent.trim();
+      let line = `Tool: ${label}`;
+      if (args) line += `\n${args}`;
+      if (result) line += `\nResult: ${result}`;
+      parts.push(line);
+    } else if (node.classList.contains("msg-body")) {
+      const last = node === bodies.at(-1);
+      const body = last && text ? text : bodyTextWithCitations(node);
+      if (body) parts.push(body);
+    } else {
+      const body = bodyTextWithCitations(node);
+      if (body) parts.push(body);
+    }
+  }
+  return parts.length ? parts.join("\n\n") : text || "";
+}
 
 async function openChatModelPanel() {
   const name = modelStatus && modelStatus.chat_model;
@@ -30,6 +75,26 @@ async function openChatModelPanel() {
   panel.append(list, loading);
   panel.classList.remove("hidden");
   placeChatModelPanel();
+  //: Escape and a press outside shut it, and focus goes back to the badge
+  //: (audit 1030 A27). One pair of listeners at a time, dropped on the first
+  //: event that finds the panel closed, so reopening never stacks them.
+  if (panel._dismiss) off(panel._dismiss);
+  const dismiss = (event) => {
+    if (panel.classList.contains("hidden")) return off(dismiss);
+    const key = event.type === "keydown";
+    if (key ? event.key !== "Escape" : panel.contains(event.target) || event.target.closest?.("#chat-active-model")) return;
+    panel.classList.add("hidden");
+    off(dismiss);
+    if (key) $("chat-active-model")?.focus();
+  };
+  function off(fn) {
+    document.removeEventListener("keydown", fn);
+    document.removeEventListener("mousedown", fn);
+    if (panel._dismiss === fn) panel._dismiss = null;
+  }
+  panel._dismiss = dismiss;
+  document.addEventListener("keydown", dismiss);
+  document.addEventListener("mousedown", dismiss);
 
   const spec = await apiJson(`/models/spec?name=${encodeURIComponent(name)}`).catch(() => null);
   //: The panel was measured empty a moment ago; it is a different height now.
@@ -80,7 +145,7 @@ async function openChatModelPanel() {
   fact("Can show its reasoning", flag(spec.supports_thinking));
   fact("Can see images", flag(spec.supports_vision), "Whether it can read a picture or a scanned page");
 
-  const change = smallButton("ph:gear Change the model", "Open Settings → Models", () => {
+  const change = smallButton("ph:gear Change the model", "Open Settings, Models", () => {
     panel.classList.add("hidden");
     openSettingsModal("models", "chat-model-select");
   });
@@ -179,7 +244,7 @@ async function explainNote(entry) {
   const name = (link) => noteNamePlain(link.preview).slice(0, 80) || "a note";
   const lines = links.map((link) => `“${name(link)}”: ${link.reason ? link.reason : "no reason was given for this link"}.`);
   const about = links.length
-    ? `It links to ${links.length} note${links.length === 1 ? "" : "s"}. ${lines.join(" ")}`
+    ? `It links to ${nounCount(links.length, "note")}. ${lines.join(" ")}`
     : "It links to no other notes yet.";
   speakText(`${words}\n\n${about}`);
   openSheet({
@@ -196,7 +261,7 @@ async function explainNote(entry) {
       text.textContent = words || "This note has no words of its own.";
       const head = document.createElement("p");
       head.className = "muted text-sm";
-      head.textContent = links.length ? `It links to ${links.length} note${links.length === 1 ? "" : "s"}:` : "It links to no other notes yet.";
+      head.textContent = links.length ? `It links to ${nounCount(links.length, "note")}:` : "It links to no other notes yet.";
       body.append(text, head);
       if (links.length) {
         const list = document.createElement("ul");
@@ -213,4 +278,80 @@ async function explainNote(entry) {
       card.appendChild(body);
     },
   });
+}
+
+//: The extract preview's Save (from chat-attach.js, which keeps the preview itself):
+//: reached only by its button, which wiring.js binds to the stand-in.
+async function commitExtractPreview() {
+  if (!extractProposal) return;
+  const keptRefs = new Set();
+  const notes = [];
+  for (const card of $("extract-notes-list").querySelectorAll(".extract-note-card")) {
+    if (!card.querySelector(".extract-note-keep").checked) continue;
+    const ref = card.dataset.ref;
+    const original = extractProposal.notes.find((n) => n.ref === ref);
+    if (!original) continue;
+    const content = card.querySelector(".extract-note-content").value.trim();
+    if (!content) continue; // an edited-down-to-nothing note is dropped, not saved empty
+    keptRefs.add(ref);
+    notes.push({
+      ref,
+      title: card.querySelector(".extract-note-title").value.trim(),
+      content,
+      category: original.category,
+      tags: card
+        .querySelector(".extract-note-tags")
+        .value.split(",")
+        .map((t) => t.trim())
+        .filter(Boolean),
+    });
+  }
+  if (!notes.length) {
+    toast("Keep at least one note to save.");
+    return;
+  }
+
+  const links = [];
+  for (const row of $("extract-links-list").querySelectorAll(".extract-link-row")) {
+    if (!row.querySelector(".extract-link-keep").checked) continue;
+    const sourceRef = row.dataset.sourceRef;
+    const targetRef = row.dataset.targetRef;
+    if (!keptRefs.has(sourceRef)) continue; // its source note was dropped
+    if (!targetRef.startsWith("existing:") && !keptRefs.has(targetRef)) continue; // its sibling was dropped
+    const original = extractProposal.links.find(
+      (l) => l.source_ref === sourceRef && l.target_ref === targetRef
+    );
+    if (original) links.push({ source_ref: sourceRef, target_ref: targetRef, reason: original.reason });
+  }
+
+  $("extract-commit").disabled = true;
+  const status = $("extract-status");
+  status.classList.remove("error");
+  status.textContent = "Saving…";
+  try {
+    const result = await apiJson("/entries/extract/commit", {
+      method: "POST",
+      body: JSON.stringify({
+        notes,
+        links,
+        source_document_id: extractProposal.source_document_id || null,
+      }),
+    });
+    closeExtractPreview();
+    const madeIds = result.notes.map((n) => n.id).filter((id) => id != null);
+    if (madeIds.length) {
+      pushRoutePairUndo(
+        `Saved ${madeIds.length} extracted note${madeIds.length === 1 ? "" : "s"}`,
+        madeIds.map((id) => [`/entries/${id}`, "DELETE"]),
+        madeIds.map((id) => [`/entries/${id}/restore`, "POST"]),
+        () => refreshEntries(madeIds)
+      );
+    }
+    toast(`Saved ${nounCount(result.notes.length, "note")}.`);
+    await loadEntries();
+  } catch (error) {
+    status.classList.add("error");
+    status.textContent = error.message;
+    $("extract-commit").disabled = false;
+  }
 }

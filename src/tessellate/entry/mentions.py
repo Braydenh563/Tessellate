@@ -9,6 +9,7 @@ became shared.
 from __future__ import annotations
 
 import re
+from functools import lru_cache
 
 from tessellate.entry.manager import WIKI_LINK, wiki_target
 
@@ -24,10 +25,12 @@ BACKLINK_HITS_PER_SOURCE = 3
 BACKLINK_SOURCES_MAX = 400
 BACKLINK_ROWS_MAX = 60
 #: A title shorter than this is never searched for as an *unlinked* mention:
-#: "AI", "Q3" or "Ops" would match a third of the notebook and every row would
-#: be noise. A linked mention is an exact `[[name]]` and is found at any
-#: length, which is why the guard sits on one half and not the other.
-MENTION_MIN_TITLE_CHARS = 4
+#: "AI", "Q3" or "t" would match a third of the notebook and every row would
+#: be noise (audit 1029 N1: the title "t" had 58 incoming rows). A linked
+#: mention is an exact `[[name]]` and is found at any length, which is why the
+#: guard sits on one half and not the other. One floor for the backlinks
+#: panel, the Referenced-by rows, Connections and the counts.
+MENTION_MIN_TITLE_CHARS = 3
 
 #: The markdown a line opens with, dropped from the front of a context line so
 #: a backlink from a bullet list does not read as "- - the sentence".
@@ -96,6 +99,23 @@ def sentence_around(text: str, start: int, end: int) -> tuple[str, int, int]:
     return context, hit_start, hit_end
 
 
+@lru_cache(maxsize=512)
+def mention_pattern(label: str) -> re.Pattern[str]:
+    """The one whole-word, case-folded matcher for "this text names `label`".
+
+    `(?<![\\w\\[])` and `(?![\\w\\]])` keep "Roadmap" out of "Roadmaps" and out
+    of `[[Roadmap]]` (a link is its own, stronger fact, found by `[[...]]`).
+    """
+    return re.compile(rf"(?<![\w\[]){re.escape(label)}(?![\w\]])", re.IGNORECASE)
+
+
+def names_label(content: str | None, label: str) -> bool:
+    """Whether `content` holds `label` as a whole word, and `label` is long
+    enough to be a name rather than a letter (`MENTION_MIN_TITLE_CHARS`)."""
+    label = label.strip()
+    return len(label) >= MENTION_MIN_TITLE_CHARS and mention_pattern(label).search(content or "") is not None
+
+
 def backlink_spans(content: str, title: str) -> tuple[list[tuple[int, int]], list[tuple[int, int]]]:
     """`(linked, unlinked)` spans of this title in one source's text.
 
@@ -112,10 +132,9 @@ def backlink_spans(content: str, title: str) -> tuple[list[tuple[int, int]], lis
             linked.append(match.span())
     if linked or len(title) < MENTION_MIN_TITLE_CHARS:
         return linked, []
-    # `(?<![\w\[])` and `(?![\w\]])` keep "Roadmap" out of "Roadmaps" and out
-    # of `[[Roadmap]]`; the `wiki` overlap check is what keeps it out of
+    # The wiki-overlap check below is what keeps it out of
     # `[[Roadmap for 2027]]`, which no lookaround can see.
-    pattern = re.compile(rf"(?<![\w\[]){re.escape(title)}(?![\w\]])", re.IGNORECASE)
+    pattern = mention_pattern(title)
     unlinked = [
         match.span()
         for match in pattern.finditer(content)

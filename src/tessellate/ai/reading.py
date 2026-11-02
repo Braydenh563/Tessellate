@@ -393,6 +393,61 @@ _PRONOUN = (r"^(?:and |then |now |ok |okay |also |please )*(?P<verb>delete|bin|p
             r"\s+(?:that one|this one|the note|it|that)\b(?P<rest>.*)$")
 _OTHER = r"\bthe other(?: one| note)?\b"
 _TOO = r"^(?:and |also )?(?:the )?(?P<x>.+?)(?: note)? (?:too|as well)$"
+#: A sentence that names its own note ("delete the note about lentil soup")
+#: stands alone: the follow-on subject never rides along (sweep 1028b W1).
+_OWN_SUBJECT = r"\b(?:about|called|named|titled|regarding|concerning)\s+\S"
+
+
+#: The verbs a follow-up says about the note just answered with (audit 1029
+#: C44): "open it", "tell me more about that", "remind me about it".
+_REFER_HEAD = (r"(?:delete|bin|pin|unpin|open|show(?: me)?|summari[sz]e|rename|move|tag|untag|read|explain|link|unlink|compare|"
+               r"tell me more about|more about|remind me about|what(?:'s| is) in|what does)")
+_REFER_FILLER = r"(?:(?:and|then|now|ok|okay|also|please|can you|could you)\s+)*"
+_REFER_IT = re.compile(rf"^{_REFER_FILLER}(?P<head>{_REFER_HEAD})\s+(?P<it>it|that one|this one|that note|that|this|the note)\b(?P<rest>.*)$")
+_REFER_THE = re.compile(rf"^{_REFER_FILLER}(?P<head>{_REFER_HEAD})\s+(?:the\s+)?(?P<x>[a-z0-9' -]{{2,40}}?)(?: note)?$")
+_REFER_MORE = re.compile(r"^(?:and |ok |okay )*(?:tell me more|more|go on|what else|keep going|carry on)$")
+_REFER_SMALL = frozenset("the a an of to in on and or for my your note notes".split())
+
+
+def _cited_titles(turns: list[dict]) -> list[str]:
+    """The notes the newest turn that cited any named, leading one first."""
+    for turn in reversed(turns):
+        objects = [str(o).strip() for o in turn.get("objects") or [] if str(o).strip()]
+        if objects:
+            return objects
+    return []
+
+
+def _follow_referent(raw: str, low: str, turns: list[dict]) -> str | None:
+    """"Open it", "tell me more about the starter", "what else": the sentence
+    with its referent named, the leading note the previous answer cited
+    (or, for "the X", the cited note whose title holds X). A follow-on never
+    searches its own words; with nothing cited there is no referent."""
+    titles = _cited_titles(turns)
+    if not titles:
+        return None
+    if _REFER_MORE.match(low):
+        return f"tell me more about the {titles[0]} note"
+    pron = _REFER_IT.match(low)
+    if pron:
+        head = low[pron.start("head"):pron.end("head")]
+        return f"{head} the {titles[0]} note{raw[pron.start('rest'):]}"
+    named = _REFER_THE.match(low)
+    if named:
+        wanted = {w for w in re.findall(r"[a-z0-9]+", named["x"]) if w not in _REFER_SMALL}
+        for title in titles:
+            if wanted and wanted <= set(re.findall(r"[a-z0-9]+", title.lower())):
+                return f"{low[named.start('head'):named.end('head')]} the {title} note"
+    return None
+
+
+def cited_follow(text: str, turns: list[dict] | None, now: datetime) -> str | None:
+    """`text` with its "it", "that", "the X" or bare "more" named as the
+    leading note the last answer cited, else None. The same on every path,
+    model up or down, so the one note is meant either way (decision 75)."""
+    turns = _leaned_on(turns, now)
+    raw = " ".join(str(text or "").split())
+    return _follow_referent(raw, raw.lower().rstrip("?."), turns) if turns and raw else None
 
 
 def _turn_object(turn: dict, now: datetime) -> str | None:
@@ -439,6 +494,11 @@ def follow(text: str, turns: list[dict] | None, now: datetime) -> tuple[str, str
         return slot, "slot"
     if re.match(_AGAIN, low):
         return str(turns[-1]["text"]), "again"
+    cited = _follow_referent(raw, low, turns)
+    if cited:
+        return cited, "pronoun"
+    if re.search(_OWN_SUBJECT, low) and not re.match(_SAME_FOR, low):
+        return None
     if re.search(_OTHER, low):
         return _follow_other(raw, low, turns, now)
     pronoun = re.match(_PRONOUN, low)
@@ -467,7 +527,7 @@ def _follow_slot(raw: str, turn: dict, now: datetime) -> str | None:
         return None
     #: Rebuilt from what is to be done, so a time already gone ("tonight at
     #: 8", said at ten) does not ride along with the new one.
-    joined = f"remind me to {waiting.get('said') or ''} {raw}"
+    joined = f"{'add a task to' if waiting.get('task') else 'remind me to'} {waiting.get('said') or ''} {raw}"
     filled = commands.read_typed(joined, now)
     if filled and filled.get("time_given") and filled.get("said") == waiting.get("said"):
         return joined

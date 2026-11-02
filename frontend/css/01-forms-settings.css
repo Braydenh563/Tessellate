@@ -304,10 +304,11 @@ input[type="datetime-local"] {
   resize: none;
 }
 /* The placeholder was inheriting the body colour at full strength in some
-   themes, so an empty box read as a filled one. */
+   themes, so an empty box read as a filled one. `--muted` whole: dimmed it was
+   3.68:1 on the dock's search field (audit 1029 G21). */
 ::placeholder {
   color: var(--muted);
-  opacity: 0.85;
+  opacity: 1;
 }
 /* A one-row box that grows with what is typed (`rows="1"`: chat, the
    palette's agent line, magic add) keeps its hint on that one row: the
@@ -803,10 +804,8 @@ summary.ghost.small:not(.icon-only, .icon-button):not(.dock *) {
     opacity: 1;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .stepper-fresh {
-    animation: none;
-  }
+:where(:root[data-motion="reduced"]) .stepper-fresh {
+  animation: none;
 }
 /* A checkbox or switch is a hit target too, and these were the smallest in
    the app: the Semantic and "include bin" toggles measured 32x18, and the
@@ -876,26 +875,6 @@ input[type="range"] {
 .checkbox-label input[type="checkbox"].sr-only {
   min-width: 0;
   min-height: 0;
-}
-/* The update-available dialog's "View release" is a real <a>, not a button
-   with a navigate-on-click handler (right-click/middle-click/Ctrl-click all
-   need to keep working), so it can't pick up `button`/`button.small`'s own
-   rules above: this is that same look, on an element those selectors
-   don't reach. */
-.update-dialog-link {
-  display: inline-block;
-  padding: 0.25rem 0.8rem;
-  border-radius: var(--radius-lg);
-  background: var(--accent-surface);
-  color: var(--on-accent);
-  font-size: var(--text-md);
-  font-weight: 600;
-  text-decoration: none;
-  box-shadow: var(--shadow-accent-glow);
-}
-.update-dialog-link:hover,
-.update-dialog-link:is(:focus-visible, :has(:focus-visible)) {
-  background: var(--accent-surface-hover);
 }
 .row {
   display: flex;
@@ -1358,8 +1337,8 @@ input.md-task-inline:disabled,
    [type="checkbox"]`, 07-whiteboard-misc.css), which drew it as a 28px
    accent slab: this box is a mark at the text's size, not a target. */
 #entry-list .entry-content .entry-task > input[type="checkbox"]:disabled {
-  width: 1.1em;
-  height: 1.1em;
+  width: 1.125rem;
+  height: 1.125rem;
   min-width: 0;
   min-height: 0;
   margin: 0 var(--space-2) 0 0;
@@ -1874,13 +1853,17 @@ input.md-task-inline:disabled,
    The switches' pattern (DESIGN.md, Hit targets): a transparent overhang,
    centred, so the row of pills keeps its density and a click 2px above or
    below still lands. Never shorter than the chip itself. */
-.chip-interactive::after {
+.chip-interactive::after,
+.entry-more::after,
+#entry-list .menu-wrap > button::after {
   content: "";
   position: absolute;
-  inset-inline: 0;
   /* No transform: a later rule resets pseudo-element transforms, and the
-     overhang must not depend on it. Half the shortfall, never negative. */
+     overhang must not depend on it. Half the shortfall, never negative, on
+     both axes: the same pattern serves a link pill's menu button (21px with
+     a mouse) and "Show more" (14px high), both measured under the floor. */
   inset-block: min(0px, calc(50% - var(--target-min) / 2));
+  inset-inline: min(0px, calc(50% - var(--target-min) / 2));
 }
 .chip-interactive:hover {
   background-image: linear-gradient(var(--hover-veil), var(--hover-veil));
@@ -1988,21 +1971,6 @@ input.md-task-inline:disabled,
    leading icon is accent already), and a danger ghost keeps its red. */
 button:not(.ghost) > .spinner {
   color: currentColor;
-}
-@media (prefers-reduced-motion: reduce) {
-  /* The ring breathes instead of turning. **Not when progress motion is kept
-     on**: `data-progress-motion="always"` (02-chat-graph.css) puts the turn
-     back with `!important`, the owner's standing instruction that progress
-     moves whatever the platform asks ("make sure the animations run even
-     with prefer reduced motion on"). `auto` and `still` get this.
-     `!important`, because the OS blanket in 02-chat-graph.css ("kill every
-     animation when the OS asks for calm") is one: it ran the ring once in
-     0.01ms and left it frozen, measured by `spinners.js` with the hint on
-     (duration 1e-05s). Four class-and-attribute specificity beats the bare
-     `*` of that blanket, so only the ring is let through. */
-  :root:not([data-progress-motion="always"]) .spinner {
-    animation: spinner-pulse var(--spinner-pulse) ease-in-out infinite !important;
-  }
 }
 .entry-busy {
   outline: 1.5px solid var(--accent);
@@ -2526,21 +2494,13 @@ button:not(.ghost) > .spinner {
   position: sticky;
   top: 0;
   z-index: 1;
-  background: var(--card);
-  backdrop-filter: var(--glass-filter);
-  -webkit-backdrop-filter: var(--glass-filter);
+  /* Bare at rest, opaque only while stuck (08-consistency.css, INBOX 1489). */
+  background: none;
 }
-/* `.card button` switches a control's blur off (03-dashboard-widgets.css);
-   this heading is a sticky strip, the one blurred element on the page. */
-.card .contents-heading {
-  backdrop-filter: var(--glass-filter);
-  -webkit-backdrop-filter: var(--glass-filter);
-}
-/* The hover tint over the card's ground, never the tint alone: the heading is
-   sticky, and a 7% wash on its own turns into a window when rows scroll by. */
+/* The hover tint; while stuck it sits over the opaque ground (08-consistency.css). */
 .contents-heading:hover,
 .contents-heading:focus-visible {
-  background: linear-gradient(var(--row-hover-bg), var(--row-hover-bg)), var(--card);
+  background: var(--row-hover-bg);
 }
 .contents-heading-name {
   flex: 0 1 auto;
@@ -2559,7 +2519,7 @@ button:not(.ghost) > .spinner {
 .contents-caret {
   flex: 0 0 auto;
   color: var(--muted);
-  transition: transform var(--ui-fast) var(--ease-out);
+  transition: transform var(--ui-base) var(--ease-out);
 }
 .contents-section.is-folded .contents-caret,
 .contents-doc:not(.is-open) .contents-doc-caret {
@@ -3262,14 +3222,12 @@ mark.global-find-hit.global-find-current {
   animation: flash-outline 2.6s ease-out;
 }
 /* Reduced motion still gets the highlight, it just doesn't animate away. */
-@media (prefers-reduced-motion: reduce) {
-  .entry-list li.flash,
-  .flash-target.flash,
-  .feature-reveal {
-    animation: none;
-    outline-color: var(--accent);
-    background: var(--accent-soft);
-  }
+:where(:root[data-motion="reduced"]) .entry-list li.flash,
+:where(:root[data-motion="reduced"]) .flash-target.flash,
+:where(:root[data-motion="reduced"]) .feature-reveal {
+  animation: none;
+  outline-color: var(--accent);
+  background: var(--accent-soft);
 }
 /* --- settings modal + logs (Wave A) ----------------------------------------- */
 .modal-overlay {
@@ -3576,10 +3534,15 @@ mark.global-find-hit.global-find-current {
   white-space: nowrap;
 }
 .theme-swatch {
+  display: flex;
+  align-items: center;
+  /* The eye is the tile's corner (settings-controls-lazy.css), so the dots stay left of it. */
+  justify-content: flex-start;
+  padding-inline-start: var(--space-2);
   height: 38px;
   /* Concentric: a surface inside its theme card (DESIGN.md rule 3, op4-1005). */
   border-radius: var(--radius-inner);
-  border: 1px solid var(--border);
+  background: var(--field-inset);
   box-sizing: border-box;
 }
 /* Scroll lock: while any overlay is open the page behind must not move.
@@ -4243,13 +4206,11 @@ html.modal-open body {
    counter-rule in 02-chat-graph.css has been doing for one of the four
    selectors, and doing it from the wrong end, a rule that has to shout to be
    heard is a rule whose neighbours are wrong. */
-@media (prefers-reduced-motion: reduce) {
-  :root:not([data-progress-motion="always"]) .is-streaming:not(:has(*))::after,
-  :root:not([data-progress-motion="always"]) .is-streaming > :last-child:not(:is(ul, ol, blockquote))::after,
-  :root:not([data-progress-motion="always"]) .is-streaming > :last-child:is(ul, ol) > li:last-child::after,
-  :root:not([data-progress-motion="always"]) .is-streaming > :last-child:is(blockquote) > :last-child::after {
-    animation: none;
-  }
+:root:where([data-motion="reduced"]):not([data-progress-motion="always"]) .is-streaming:not(:has(*))::after,
+:root:where([data-motion="reduced"]):not([data-progress-motion="always"]) .is-streaming > :last-child:not(:is(ul, ol, blockquote))::after,
+:root:where([data-motion="reduced"]):not([data-progress-motion="always"]) .is-streaming > :last-child:is(ul, ol) > li:last-child::after,
+:root:where([data-motion="reduced"]):not([data-progress-motion="always"]) .is-streaming > :last-child:is(blockquote) > :last-child::after {
+  animation: none;
 }
 /* `progress-motion: still` is the same request made in the app rather than in
    the OS, so it gets the same answer: the caret stays, the blink stops. There
@@ -4391,22 +4352,20 @@ html.modal-open body {
     opacity: 1;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  /* **Declared, not exempted.** DESIGN.md's Motion rule ("every indefinite
-     animation needs a prefers-reduced-motion branch, and the branch keeps
-     the information") is right for decoration; this element only exists
-     *because* motion is already reduced ("still", or "auto" plus the OS
-     setting, see typingDots in app.js) or because "always" made a
-     deliberate, reviewed choice to override the OS setting for progress
-     indicators specifically (`progressMotionWanted`'s own comment: "it is
-     the user's own app, the choice is theirs"). Turning it off here would
-     recreate the exact bug this fix closes: a reduced-motion reader with no
-     way to tell the app is still working. Re-declared explicitly, identical
-     to the base rule, so this is a stated decision this lint (and the next
-     person reading it) can see rather than a component the branch missed. */
-  .typing-dots-stepped .typing-word {
-    animation: typing-word-pulse 2.4s ease-in-out infinite;
-  }
+/* **Declared, not exempted.** DESIGN.md's Motion rule ("every indefinite
+   animation needs a prefers-reduced-motion branch, and the branch keeps
+   the information") is right for decoration; this element only exists
+   *because* motion is already reduced ("still", or "auto" plus the OS
+   setting, see typingDots in app.js) or because "always" made a
+   deliberate, reviewed choice to override the OS setting for progress
+   indicators specifically (`progressMotionWanted`'s own comment: "it is
+   the user's own app, the choice is theirs"). Turning it off here would
+   recreate the exact bug this fix closes: a reduced-motion reader with no
+   way to tell the app is still working. Re-declared explicitly, identical
+   to the base rule, so this is a stated decision this lint (and the next
+   person reading it) can see rather than a component the branch missed. */
+:where(:root[data-motion="reduced"]) .typing-dots-stepped .typing-word {
+  animation: typing-word-pulse 2.4s ease-in-out infinite;
 }
 /* **The rotating thinking word** (chat.js's `startThinkingWordRotation`):
    beside the enhanced-motion dots, never built when motion is off (that
@@ -4439,13 +4398,11 @@ html.modal-open body {
   opacity: 0.85;
   transform: none;
 }
-@media (prefers-reduced-motion: reduce) {
-  /* Same reasoning as `.typing-dots-stepped .typing-word` just above: this
-     element exists only when "always" deliberately overrode the OS
-     setting, so its own crossfade is re-declared rather than switched off. */
-  .typing-thinking-word {
-    transition: opacity var(--motion-base) var(--ease-out), transform var(--motion-base) var(--ease-out);
-  }
+/* Same reasoning as `.typing-dots-stepped .typing-word` just above: this
+   element exists only when "always" deliberately overrode the OS
+   setting, so its own crossfade is re-declared rather than switched off. */
+:where(:root[data-motion="reduced"]) .typing-thinking-word {
+  transition: opacity var(--motion-base) var(--ease-out), transform var(--motion-base) var(--ease-out);
 }
 @keyframes dot-bounce {
   0%,
@@ -4487,7 +4444,7 @@ html.modal-open body {
   margin: var(--space-1) 0 0;
   font-size: var(--text-sm);
 }
-/* Advanced response settings (Settings → Models). One row per sampling knob:
+/* Advanced response settings (Settings, Models). One row per sampling knob:
    a label with a badge saying where the value came from, the plain-language
    help, then the slider, its readout and a per-row reset. */
 .sampling-row {
@@ -4821,11 +4778,9 @@ html.modal-open body {
    is working; only the pulsing stops. Getting this wrong is what left the
    desktop shell with no generating indicator at all once, since it inherits
    the OS setting. */
-@media (prefers-reduced-motion: reduce) {
-  .is-generating {
-    animation: none;
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 60%, transparent);
-  }
+:where(:root[data-motion="reduced"]) .is-generating {
+  animation: none;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 60%, transparent);
 }
 /* --- one size for every dropdown -------------------------------------------
    Reported: "A LOT of the dropdown menus are all different styles and ui and
@@ -4852,7 +4807,7 @@ html.modal-open body {
 select {
   font-size: var(--text-md);
 }
-/* The "worth rebuilding now" line in Settings → Search index. An accent
+/* The "worth rebuilding now" line in Settings, Search index. An accent
    ground rather than a warning colour: nothing is broken, there is simply
    something useful to do. See `renderReindex` in ai-tools.js. */
 /* The box itself is `.notice.notice-warn` now (08-consistency.css, the recipe
@@ -4919,11 +4874,9 @@ select {
 }
 /* Motion off means no fade either: a value that changes is information, but a
    fade is a gesture. Both lines simply appear. */
-@media (prefers-reduced-motion: reduce) {
-  .progress-musing,
-  .progress-line-label {
-    transition: none;
-  }
+:where(:root[data-motion="reduced"]) .progress-musing,
+:where(:root[data-motion="reduced"]) .progress-line-label {
+  transition: none;
 }
 :root[data-progress-motion="still"] .progress-musing,
 :root[data-progress-motion="still"] .progress-line-label {
@@ -4957,12 +4910,10 @@ select {
 .progress-line-still > .progress-line-label {
   animation: typing-word-pulse 2.4s ease-in-out infinite;
 }
-@media (prefers-reduced-motion: reduce) {
-  /* Declared, not exempted, for the reason `.typing-dots-stepped .typing-word`
-     gives: this class exists only when motion is already off. */
-  .progress-line-still > .progress-line-label {
-    animation: typing-word-pulse 2.4s ease-in-out infinite;
-  }
+/* Declared, not exempted, for the reason `.typing-dots-stepped .typing-word`
+   gives: this class exists only when motion is already off. */
+:where(:root[data-motion="reduced"]) .progress-line-still > .progress-line-label {
+  animation: typing-word-pulse 2.4s ease-in-out infinite;
 }
 /* The exact-value box beside each sampling slider. Narrow, because every knob
    here is a short decimal or a small integer, and `width: 100%` (the base
@@ -5084,24 +5035,22 @@ select {
     r: 2;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  /* DESIGN.md's rule for this branch: stop the motion, keep the information.
-     The edge is drawn complete and the nodes stay lit, so "the model is
-     writing" is still legible as a distinct state from the waiting dots, 
-     it simply no longer moves. The cross-fade goes too, since a fade is
-     motion; the two states swap instantly instead. */
-  .ai-writing-edge {
-    animation: none;
-    stroke-dashoffset: 0;
-  }
-  .ai-writing-node {
-    animation: none;
-    opacity: 0.9;
-  }
-  .ai-writing-trace,
-  .typing-dots .typing-dot {
-    transition: none;
-  }
+/* DESIGN.md's rule for this branch: stop the motion, keep the information.
+   The edge is drawn complete and the nodes stay lit, so "the model is
+   writing" is still legible as a distinct state from the waiting dots, 
+   it simply no longer moves. The cross-fade goes too, since a fade is
+   motion; the two states swap instantly instead. */
+:where(:root[data-motion="reduced"]) .ai-writing-edge {
+  animation: none;
+  stroke-dashoffset: 0;
+}
+:where(:root[data-motion="reduced"]) .ai-writing-node {
+  animation: none;
+  opacity: 0.9;
+}
+:where(:root[data-motion="reduced"]) .ai-writing-trace,
+:where(:root[data-motion="reduced"]) .typing-dots .typing-dot {
+  transition: none;
 }
 /* The one-line explanation shown when By folder has nothing to group by, 
    see `renderContents`. Sits above the single section rather than inside it,
@@ -5630,7 +5579,7 @@ select {
 #learned-switches .learned-master {
   margin-bottom: var(--space-3);
 }
-/* --- a model per feature (Settings → Models) ---------------------------------
+/* --- a model per feature (Settings, Models) ---------------------------------
    One row per feature: what it is, then what it runs on, then the way back to
    the default. Three columns rather than a `.row` of loose controls because
    the whole point of the list is comparison down the column: which of these is
@@ -6277,12 +6226,7 @@ select {
    section is shown by dropping `.hidden`, so the animation restarts each time.
    CSS only; Interface animations off and reduced motion zero it globally. */
 #settings-modal .settings-section:not(.hidden) {
-  animation: settings-pane-in var(--motion-slow) var(--ease-out);
-}
-@keyframes settings-pane-in {
-  from {
-    opacity: 0;
-  }
+  animation: ui-fade var(--ui-base) var(--ease-out);
 }
 
 /* A finished job's Logs button stays top right on one line (BACKLOG). */

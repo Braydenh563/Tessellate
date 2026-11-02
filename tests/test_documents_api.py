@@ -501,14 +501,20 @@ def test_an_autosave_of_content_alone_does_not_reset_the_type(client):
     assert updated["file_type"] == "py"
 
 
-def test_an_unknown_type_falls_back_rather_than_refusing_the_save(client):
-    """A 422 here would refuse to save someone's writing because of a field
-    that only describes how to display it."""
-    created = client.post(
-        "/documents", json={"title": "Odd", "content": "hi", "file_type": "wat"}
-    ).json()
-    assert created["file_type"] == "md"
-    assert created["content"] == "hi"
+def test_an_unknown_type_is_refused_naming_the_valid_ones_not_stored_as_markdown(client):
+    """Moved by audit 1031 DC8: a type the request names must not be coerced to
+    markdown unseen (`exe` and `../../etc` were both stored as `md`). The save
+    is refused with a 422 that lists the types, and nothing is written; a
+    missing type, a dotted extension and a filename still resolve (below)."""
+    before = len(client.get("/documents").json())
+    for odd in ("wat", "exe", "../../etc"):
+        response = client.post("/documents", json={"title": "Odd", "content": "hi", "file_type": odd})
+        assert response.status_code == 422
+        assert "Use one of" in response.text and "md" in response.text
+    after = len(client.get("/documents").json())
+    assert after == before
+    plain = client.post("/documents", json={"title": "Plain", "content": "hi"}).json()
+    assert plain["file_type"] == "md"
 
 
 def test_a_dotted_extension_and_a_filename_both_work(client):
@@ -689,7 +695,7 @@ def test_every_export_format_names_the_file_the_same_way():
     assert names[:5] == ["Sleep-essay.docx", "ab-c.docx", "document.docx", "document.docx", "Caf\u00e9-notes.docx"]
     assert len(names[5]) == 65
     assert "docExportName(" in (root / "documents-word.js").read_text(encoding="utf-8")
-    assert "docExportName(currentDoc.title" in source
+    assert "docExportName(currentDoc.title" in source + (root / "documents-export.js").read_text(encoding="utf-8")
 
 
 def test_library_preview_reads_a_table_and_markers_as_plain_words(client):
@@ -700,3 +706,13 @@ def test_library_preview_reads_a_table_and_markers_as_plain_words(client):
     preview = next(d["preview"] for d in client.get("/documents").json() if d["title"] == "Sleep")
     assert "|" not in preview and "---" not in preview and "**" not in preview and "](" not in preview
     assert "Stage, Share" in preview and "REM, 25%" in preview and preview.startswith("Intro with bold and a link")
+
+
+def test_a_validator_that_quotes_its_input_keeps_the_generic_sentence():
+    """Only a `Said` refusal passes through; a plain ValueError may echo what
+    was sent, so it keeps "Check the <label> and try again." (BK8)."""
+    from tessellate.core.validation_copy import Said, sentence
+
+    assert sentence("value_error", "file_type", {"error": Said("Use one of: md.")}) == "Use one of: md."
+    plain = sentence("value_error", "timezone", {"error": ValueError("Unknown timezone 'x<y'")})
+    assert "x<y" not in plain and plain.startswith("Check the")

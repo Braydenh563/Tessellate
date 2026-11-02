@@ -159,13 +159,26 @@ def test_the_button_is_placed_over_its_slot_and_still_opens_its_fold():
     place = _function(SETTINGS, "placeFoldHelp")
     assert ".fold-help-slot" in place and "getBoundingClientRect" in place
     assert "ResizeObserver" in _function(SETTINGS, "wireFoldHelps")
-    assert "wireFoldHelps();" in SETTINGS
+    assert "onSettingsBody(wireFoldHelps);" in SETTINGS
     folds = _function(SETTINGS, "wireSettingsFolds")
     assert ":scope.fold-help-wrap > .fold-help" in folds
     assert re.search(r"\.fold-help-wrap\s*\{[^}]*position:\s*relative", CSS)
     assert re.search(r"\.fold-help-wrap > \.fold-help\s*\{[^}]*position:\s*absolute", CSS)
     slot = re.search(r"\.fold-help-slot\s*\{([^}]*)\}", CSS)
     assert slot and "visibility: hidden" in slot.group(1) and "var(--target-min)" in slot.group(1)
+
+
+def test_the_placement_is_divided_by_the_dialogs_entrance_scale():
+    # INBOX 1514: Settings rises from `scale: 0.985`, the observer fires on
+    # that first frame, and bounding rects are drawn size, so every '?' in
+    # Settings sat 4.8px (1440) short of its slot for good: a scale changes
+    # no layout size, so nothing re-placed it. The wrapper's computed width is
+    # its layout width; the ratio is the scale to divide out.
+    place = _function(SETTINGS, "placeFoldHelp")
+    assert "getComputedStyle(wrap).width" in place
+    assert re.search(r"at\.left - box\.left\) / scale", place)
+    assert re.search(r"at\.top - box\.top\) / scale", place)
+    assert re.search(r"@starting-style\s*\{[^}]*scale:\s*0\.985", re.sub(r"\s+", " ", CSS))
 
 
 # --- the Manage categories panel is a grid, not a listbox of buttons ---------

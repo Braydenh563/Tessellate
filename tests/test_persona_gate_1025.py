@@ -6,10 +6,11 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._app_js import with_pieces
 
 ROOT = Path(__file__).resolve().parents[1]
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-CHAT = (ROOT / "frontend" / "js" / "chat.js").read_text(encoding="utf-8")
+CHAT = with_pieces("chat.js")
 
 
 def test_the_persona_picker_names_why_it_needs_a_model():

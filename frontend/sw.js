@@ -24,17 +24,18 @@
 // on this computer", one line of what to do, and Retry. It is kept at install
 // together with the stylesheets and script it links.
 //
-// The cache is named for the app version (`memorymap-assets-<version>`, read
+// The cache is named for the app version (`tessellate-assets-<version>`, read
 // from this worker's own `?v=` in settings-wiring.js), so a version bump
 // installs a new worker, which drops the old set when it activates. The
-// caches the earlier shell-caching worker left (`memorymap-shell-*`) are
+// caches the earlier shell-caching worker left (`memorymap-shell-*`) and the
+// ones this worker made before the rename (`memorymap-assets-*`) are
 // deleted too, which is why this file must keep running: a worker that is
 // simply removed is not fetched again, and every browser that installed the
 // old one would serve its stale shell forever. `clearAppCache` (phone-shell.js)
 // still clears everything on demand.
 
-const CACHE_PREFIX = "memorymap-assets-";
-const RETIRED_CACHE_PREFIX = "memorymap-shell-";
+const CACHE_PREFIX = "tessellate-assets-";
+const RETIRED_CACHE_PREFIXES = ["memorymap-shell-", "memorymap-assets-"];
 const VERSION = new URL(self.location.href).searchParams.get("v") || "dev";
 const CACHE = CACHE_PREFIX + VERSION;
 const OFFLINE_PATH = "/offline.html";
@@ -105,7 +106,7 @@ self.addEventListener("activate", (event) => {
           keys
             .filter(
               (key) =>
-                key.startsWith(RETIRED_CACHE_PREFIX) ||
+                RETIRED_CACHE_PREFIXES.some((prefix) => key.startsWith(prefix)) ||
                 (key.startsWith(CACHE_PREFIX) && key !== CACHE)
             )
             .map((key) => caches.delete(key))

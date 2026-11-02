@@ -70,8 +70,11 @@ def test_the_switch_has_a_row_a_default_a_reset_and_a_help_line():
     assert '"glass-controls"' in reset[: reset.index("prefs.remove(key)")]
     rows = (ROOT / "frontend" / "js" / "settings-rows.js").read_text(encoding="utf-8")
     assert '{ key: "glass-controls", id: "glass-controls-toggle", on: "on", off: "off" },' in rows
-    #: Without glass there is nothing to dress: the row dims, as the sheen's does.
-    assert '$("glass-controls-row").classList.toggle("disabled-row", appearancePref("glass") !== "on" || perfModeOn());' in settings
+    #: Without glass there is nothing to dress: the row dims, as the sheen's does,
+    #: but stays usable and turns the glass on (the owner, 2026-11-01, wanted to
+    #: use it with the blur off; only Performance mode still holds it down).
+    assert '"glass-controls-row"' in settings[settings.index("function renderGlassRows(") :]
+    assert "if (e.target.checked) glassWake();" in settings
 
 
 def test_the_guide_knows_the_switch():

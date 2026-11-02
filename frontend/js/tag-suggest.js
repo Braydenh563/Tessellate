@@ -84,7 +84,7 @@ function fillTagSuggest() {
     const row = richPickerRow({
       icon: "ph:hash",
       label: tag,
-      about: `${counts[tag]} note${counts[tag] === 1 ? "" : "s"}${said.has(tag) ? ", in this note" : ""}`,
+      about: `${nounCount(counts[tag], "note")}${said.has(tag) ? ", in this note" : ""}`,
       query: wanted,
       id: `tag-suggest-${i}`,
     });

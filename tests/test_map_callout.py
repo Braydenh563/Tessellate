@@ -95,13 +95,16 @@ def test_stamps_count_from_a_fixed_set_and_ride_the_exports(ai_client):
         assert any(o["data"].get("stamps") == {"up": 3, "star": 1} for o in objs), fmt
 
 
-def test_a_stamp_press_adds_one_and_never_starts_a_drag():
+def test_a_stamp_press_toggles_yours_and_never_starts_a_drag():
+    """INBOX 1493 moved the intent from "adds one more" to a toggle per person
+    (`tests/test_map_stamp_toggle.py` pins the toggle itself); the drag guard
+    and the stamp set stay."""
     build = _body(MAP, "function wbBuildMapNode(")
     tags = build[build.index('attr("class", "wb-map-tags")') :]
-    assert 'event.target.closest(".wb-map-stamp")) event.stopPropagation()' in tags
-    assert "wbMapAddStamp(wbMapLiveDatum(d), stamp.dataset.stamp)" in tags
-    add = _body(MAP, "async function wbMapAddStamp(")
-    assert "wbMapSetExtra(node, { stamps }" in add and "Math.min(999" in add
+    assert 'event.target.closest(".wb-map-stamp-wrap")) event.stopPropagation()' in tags
+    assert 'wbMapStampSet(wbMapLiveDatum(d), stamp.dataset.stamp, "toggle")' in tags
+    set_ = _body(MAP, "async function wbMapStampSet(")
+    assert "wbMapSetExtra(node, { stamps: patch.stamps" in set_ and "count >= 999" in _body(MAP, "function wbMapStampPatch(")
     icons = MAP[MAP.index("const WB_MAP_STAMPS") :][:400]
     assert all(ord(ch) < 0x2000 for ch in icons), "an emoji in the stamp set"
-    assert 'subItem("Stamps"' in WB and "wbMapSetExtra(mapNode, { stamps: null }" in WB
+    assert 'subItem("Stamps"' in WB and "wbMapSetExtra(mapNode, { stamps: null, stamped: null }" in WB

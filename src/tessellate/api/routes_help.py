@@ -4,6 +4,7 @@ never touching the database, see `ai/help_chat.py` for why."""
 from __future__ import annotations
 
 import json
+import logging
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
@@ -11,6 +12,7 @@ from pydantic import BaseModel, Field, field_validator
 from sqlalchemy.orm import Session
 
 from tessellate.ai import help_chat
+from tessellate.ai.provider import ProviderError
 from tessellate.api import routes_entries
 from tessellate.api.schemas import EntryCreate
 from tessellate.core import activity, deps
@@ -65,15 +67,22 @@ def topics() -> dict:
 
 @router.post("/ask")
 def ask(body: AskBody) -> dict:
-    return help_chat.answer(
-        body.question,
-        deps.get_model_manager().for_feature("guide"),
-        deps.get_ollama(),
-        history=[turn.model_dump() for turn in body.history],
-        tab=body.tab,
-        context=body.context,
-        actions=body.actions,
-    )
+    try:
+        return help_chat.answer(
+            body.question,
+            deps.get_model_manager().for_feature("guide"),
+            deps.get_ollama(),
+            history=[turn.model_dump() for turn in body.history],
+            tab=body.tab,
+            context=body.context,
+            actions=body.actions,
+        )
+    except ProviderError as exc:
+        #: A closed tab or a model that failed: the model call was cut, which is
+        #: not a server fault. The app's own help answers, with no traceback
+        #: in the log (audit 1030 A40).
+        logging.getLogger("tessellate.help").info("help/ask: the model call ended: %s", exc)
+        return help_chat.offline_answer(body.question, body.tab, body.context)
 
 
 @router.post("/ask/stream")

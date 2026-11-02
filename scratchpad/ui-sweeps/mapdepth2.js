@@ -204,28 +204,51 @@ async function mapstamps() {
     const group = await page.evaluate(() => [...document.querySelectorAll(".wb-ctx-menu:not(.hidden) button")].map((b) => b.textContent.trim()).find((t) => /Stamps/.test(t)));
     check("the topic menu has a Stamps group", Boolean(group), group);
     await page.keyboard.press("Escape");
-    await page.evaluate(async (id) => { await wbMapAddStamp(wbState.objects.find((o) => o.id === id), "up"); }, picnic);
+    //: A count from before the toggle (the owner's "star 8"): two votes nobody owns.
+    await page.evaluate(async (id) => { const o = wbState.objects.find((x) => x.id === id); await wbMapSetExtra(o, { stamps: { up: 2 }, stamped: null }, ""); }, picnic);
     await page.waitForTimeout(700);
-    const before = await page.evaluate((id) => { const o = wbState.objects.find((x) => x.id === id); return [o.x, o.y]; }, picnic);
-    const chip = await page.evaluate((id) => { const b = document.querySelector(`.wb-object[data-id="${id}"] .wb-map-stamp[data-stamp="up"]`); const r = b.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2, w: r.width, h: r.height, text: b.textContent.trim(), boardH: b.offsetHeight }; }, picnic);
-    check("the chip shows the count", chip.text === "1", chip);
-    //: In board units, before the canvas zoom, as every control on a topic is.
+    const geo = (id) => page.evaluate((i) => {
+      const b = document.querySelector(`.wb-object[data-id="${i}"] .wb-map-stamp[data-stamp="up"]`);
+      if (!b) return null;
+      const k = b.parentElement.querySelector(".kebab-opener");
+      const r = b.getBoundingClientRect(), kr = k.getBoundingClientRect();
+      return { x: r.x + r.width / 2, y: r.y + r.height / 2, w: r.width, h: r.height, text: b.textContent.trim(), boardH: b.offsetHeight,
+        kx: kr.x + kr.width / 2, ky: kr.y + kr.height / 2, kw: kr.width, kh: kr.height, kbw: k.offsetWidth, kbh: k.offsetHeight, pressed: b.getAttribute("aria-pressed"), cardW: b.closest(".wb-map-node").getBoundingClientRect().width };
+    }, id);
+    const state = (id) => page.evaluate((i) => { const o = wbState.objects.find((x) => x.id === i); return { stamps: o.data.stamps || null, stamped: o.data.stamped || null, x: o.x, y: o.y, text: document.querySelector(`.wb-object[data-id="${i}"] .wb-map-stamp[data-stamp="up"]`)?.textContent.trim() ?? null }; }, id);
+    const chip = await geo(picnic);
+    check("the chip shows the count", chip.text === "2", chip);
     const min = phone ? 44 : 20;
     check(`the chip is at least ${min} board px tall`, chip.boardH >= min - 0.5, chip);
-    if (phone) await page.touchscreen.tap(chip.x, chip.y); else await page.mouse.click(chip.x, chip.y);
-    await page.waitForTimeout(900);
-    const after = await page.evaluate((id) => { const o = wbState.objects.find((x) => x.id === id); return { count: o.data.stamps?.up, x: o.x, y: o.y, text: document.querySelector(`.wb-object[data-id="${id}"] .wb-map-stamp`)?.textContent.trim() }; }, picnic);
-    check("a press on the chip adds one (a vote)", after.count === 2 && after.text === "2", after);
-    check("and does not drag the topic", Math.abs(after.x - before[0]) < 1 && Math.abs(after.y - before[1]) < 1, { before, after });
-    const read = await page.evaluate((id) => { const b = document.querySelector(`.wb-object[data-id="${id}"] .wb-map-stamp`); const cs = getComputedStyle(b); return { bg: cs.backgroundColor, color: cs.color, pinned: wbState.objects.find((o) => o.id === id).data.pinned || false }; }, picnic);
-    check("not pinned by the press", read.pinned === false, read);
+    check(`the chip's menu opener is at least ${min} board px square`, chip.kbw >= min - 0.5 && chip.kbh >= min - 0.5, { kbw: chip.kbw, kbh: chip.kbh });
+    const press = async (g, key) => { if (phone) await page.touchscreen.tap(g[key + "x"] ?? g.x, g[key + "y"] ?? g.y); else await page.mouse.click(g[key + "x"] ?? g.x, g[key + "y"] ?? g.y); await page.waitForTimeout(900); };
+    const before = await state(picnic);
+    await press(chip, "");
+    const mine = await state(picnic);
+    check("a press adds yours (2 to 3, yours named)", mine.stamps?.up === 3 && mine.stamped?.[0] === "up" && mine.text === "3", mine);
+    check("and does not drag the topic", Math.abs(mine.x - before.x) < 1 && Math.abs(mine.y - before.y) < 1, { before, mine });
+    const pressed = await geo(picnic);
+    check("yours is aria-pressed", pressed.pressed === "true", pressed.pressed);
+    const read = await page.evaluate((id) => { const b = document.querySelector(`.wb-object[data-id="${id}"] .wb-map-stamp`); const cs = getComputedStyle(b); return { bg: cs.backgroundColor, color: cs.color, pinned: !!document.querySelector(`.wb-object[data-id="${id}"].pinned`) }; }, picnic);
     check("its count reads (4.5:1)", contrast(read.color, read.bg) >= 4.5, { ratio: contrast(read.color, read.bg) });
     check("the tidy makes room: nothing overlaps", (await overlapIn(page)) === 0);
+    await press(pressed, "");
+    const back = await state(picnic);
+    check("a second press takes yours back (3 to 2)", back.stamps?.up === 2 && back.stamped === null && back.text === "2", back);
+    //: The chip's menu: Remove one, then Clear all.
+    const openMenu = async () => { const g = await geo(picnic); await press(g, "k"); await page.waitForTimeout(300); };
+    const pick = async (label) => { const ok = await page.evaluate((l) => { const b = [...document.querySelectorAll(".action-menu:not(.hidden) .menu-item, .sheet-overlay .menu-item")].find((x) => x.textContent.trim() === l); if (!b) return false; b.click(); return true; }, label); await page.waitForTimeout(900); return ok; };
+    await openMenu();
+    const items = await page.evaluate(() => [...document.querySelectorAll(".action-menu:not(.hidden) .menu-item, .sheet-overlay .menu-item")].map((x) => x.textContent.trim()));
+    check("the chip's menu offers Remove one and Clear all", items.includes("Remove one") && items.includes("Clear all"), items);
+    check("Remove one", (await pick("Remove one")) && (await state(picnic)).stamps?.up === 1);
+    await openMenu();
+    check("Clear all", (await pick("Clear all")) && (await state(picnic)).stamps === null);
     const undone = await page.evaluate(async (id) => { await wbUndo(); return wbState.objects.find((o) => o.id === id).data.stamps?.up; }, picnic);
-    check("one Undo takes the last vote back", undone === 1, undone);
-    const back = await page.evaluate(async (id) => { await openWhiteboardBoard(window.currentBoardId); return wbState.objects.find((o) => o.id === id)?.data?.stamps; }, picnic);
-    check("the count survives a reopen", back?.up === 1, back);
-    console.log("    chip", Math.round(chip.w), "x", Math.round(chip.h), "contrast", contrast(read.color, read.bg));
+    check("one Undo brings Clear all back", undone === 1, undone);
+    const reopened = await page.evaluate(async (id) => { await openWhiteboardBoard(window.currentBoardId); return wbState.objects.find((o) => o.id === id)?.data?.stamps; }, picnic);
+    check("the count survives a reopen", reopened?.up === 1, reopened);
+    console.log("    chip", Math.round(chip.w), "x", Math.round(chip.h), "opener", Math.round(chip.kw), "x", Math.round(chip.kh), "card", Math.round(chip.cardW), "contrast", contrast(read.color, read.bg));
     check("no page errors", errors.length === 0, errors.slice(0, 3));
     summary();
     await browser.close();

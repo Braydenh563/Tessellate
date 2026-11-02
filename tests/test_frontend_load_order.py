@@ -37,6 +37,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from tests import _js_scope
 from tests._app_js import app_js_files, app_js_text
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -239,6 +240,7 @@ def test_the_stand_ins_name_functions_that_exist():
     for name in _lazy_order():
         source = (FRONTEND / "js" / name).read_text(encoding="utf-8")
         lazy_functions.update(re.findall(r"^(?:async )?function ([A-Za-z_$][\w$]*)\(", source, re.M))
+        lazy_functions.update(_js_scope.exported(source))  # a wrapped file's surface (row 37a)
     orphans = sorted(_stand_ins() - lazy_functions)
     assert not orphans, (
         "LAZY_ENTRY_POINTS names these, which no lazily-loaded file defines: " + ", ".join(orphans)

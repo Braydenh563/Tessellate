@@ -114,7 +114,8 @@ def test_arrows_text_fade_thickness_and_link_force_reach_the_drawing():
     root = Path(__file__).resolve().parents[1] / "frontend" / "js"
     canvas = (root / "graph-canvas.js").read_text(encoding="utf-8")
     assert 'else if (arrows && edge.kind === "link" && !edge.two_way) {' in canvas and "gcLinkSpark(bucket, a, bow, b, k, sparkRich);" in canvas
-    assert "ctx.lineWidth = (style.width * widthScale * (bucket.wide ? 0.8 : 1)) / k;" in canvas
+    # The width reaches the stroke through gcSetStroke (gr1-1101: a hairline only while the map moves).
+    assert "gcSetStroke(ctx, s, style.width * widthScale * (bucket.wide ? 0.8 : 1), k, alpha, !!style.dash);" in canvas
     assert "k > labelZoom" in canvas and "linkForce: Number(" in canvas
     worker = (root / "graph-worker.js").read_text(encoding="utf-8")
     # Times a cross-category factor since INBOX 693 (`crossStrength`).
@@ -138,7 +139,7 @@ def test_arrows_are_off_by_default_and_drawn_as_sparks():
     assert "gcQuadAt(a, c, b, 0.7)" in spark and "bucket.wide.quadraticCurveTo" in spark
     assert "bucket.glows.arc(" in spark and "bucket.sparks.quadraticCurveTo(" in spark
     drifting = canvas[canvas.index("const drifting =") :][:400]
-    # Both switches, the system's and the app's, through `gcStill` (Brief 100).
+    # One resolved value, through `gcStill` (Brief 100, INBOX 1506).
     still = canvas[canvas.index("function gcStill(") :][:400]
-    assert "!gcStill()" in drifting and 'dataset.motion !== "reduced"' in drifting
-    assert "prefers-reduced-motion: reduce" in still and 'dataset?.motion === "reduced"' in still
+    assert "!gcStill()" in drifting
+    assert "reducedMotionWanted()" in still and "matchMedia" not in still

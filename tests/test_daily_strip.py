@@ -8,6 +8,8 @@ statically and `scratchpad/ui-sweeps/daystrip.js` drives the real thing.
 
 from __future__ import annotations
 
+from tests._help_text import help_chat_text
+
 import re
 from pathlib import Path
 
@@ -78,7 +80,7 @@ def test_the_strip_has_its_styles_and_stays_flat():
 
 
 def test_the_guide_and_the_timeline_help_name_the_strip():
-    guide = (ROOT / "src" / "tessellate" / "ai" / "help_chat.py").read_text(encoding="utf-8")
+    guide = help_chat_text()
     assert "the calendar strip shows the last seven days" in guide
     assert "The strip below shows the last seven days" in HTML
 

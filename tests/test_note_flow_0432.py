@@ -18,6 +18,7 @@ import time
 from pathlib import Path
 
 from tessellate.api import routes_entries
+from tests._app_js import with_pieces
 
 ROOT = Path(__file__).resolve().parent.parent
 FRONTEND = ROOT / "frontend"
@@ -107,13 +108,13 @@ def test_one_note_moves_from_its_chip_and_its_menu():
     # LAZY_ENTRY_POINTS.
     assert "function chooseNoteCategory(" in _read("categories-panel.js")
     assert '"chooseNoteCategory"' in _read("app.js")
-    cards = _read("note-cards.js")
+    cards = (_read("note-cards.js") + _read("entry-card.js"))
     chip_block = cards[cards.index('const categoryEl = chip("", "category")'):][:3200]
     # INBOX 447 (5): the chip opens a menu (chip-menus.js), whose second row is the move.
     assert "openCategoryChipMenu(categoryEl, entry)" in chip_block
     assert "chooseNoteCategory([entry.id], name)" in _read("chip-menus.js")
     assert 'setAttribute("role", "button")' in chip_block
-    assert "Move to category" in _read("menus.js")
+    assert "Move to category" in _read("entry-menu.js")
 
 
 def test_the_batch_move_lists_empty_categories():
@@ -144,7 +145,7 @@ def test_leaving_a_changed_form_asks_and_an_empty_one_is_refused():
     assert "A note needs some text" in form
     assert "noteFormMayClose()" in _function(notes, "openNoteEditor")
     # Every edit entry point goes through the guard.
-    for name in ("note-cards.js", "menus.js", "chat-agent.js"):
+    for name in ("entry-card.js", "entry-menu.js", "chat-agent.js"):
         source = _read(name)
         assert "openNoteEditor(" in source, name
         assert not re.search(r"editingId = (entry|item|copy)\.id;\s*\n\s*renderEntries\(\)", source), name
@@ -193,7 +194,7 @@ def test_tags_filter_from_a_chip_and_from_the_box():
     match = _function(notes, "matchesSearch")
     assert 'tag === t || tag.startsWith(`${t}/`)' in match
     assert 'flag === "draft"' in match
-    cards = _read("note-cards.js")
+    cards = (_read("note-cards.js") + _read("entry-card.js"))
     assert "filterNotesByTag(tag)" in cards
     assert "filterNotesByTag(tag)" in _read("dashboard.js")
 
@@ -228,7 +229,7 @@ def test_category_rename_and_merge_can_be_undone_and_redraw_the_panel():
 
 
 def test_archive_and_duplicate_behave():
-    menus = _read("menus.js")
+    menus = _read("entry-menu.js")
     archive = menus[menus.index('label: "ph:archive Archive"'):][:1200]
     assert "pushUndo(" in archive
     duplicate = menus[menus.index('label: "ph:copy Duplicate"'):][:1500]
@@ -243,12 +244,12 @@ def test_recently_edited_sort_copy_link_and_list_keys():
     for key in ('"Home"', '"End"', '"Delete"', '"F2"'):
         assert key in keys, key
     assert "binNoteWithUndo(entry)" in keys
-    assert "Copy wiki link" in _read("menus.js") and "appLinkMenuItem(\"note\"" in _read("menus.js")
+    assert "Copy wiki link" in _read("entry-menu.js") and "appLinkMenuItem(\"note\"" in _read("entry-menu.js")
 
 
 def test_the_notes_chrome_says_less():
     # The space chip only when the notes in view span spaces.
-    cards = _read("note-cards.js")
+    cards = (_read("note-cards.js") + _read("entry-card.js"))
     assert "spacesCache.length > 1 && notesSpanSpaces()" in cards
     # Housekeeping does not open the activity panel or toast its finish.
     status = _read("status.js")
@@ -351,7 +352,7 @@ def test_saving_before_the_preferences_arrive_still_saves():
     # Scan 2026-10-11: with `prefsCache` still null (the preferences request
     # refused or slow at boot) Save threw "Cannot read properties of null
     # (reading 'background_filing')" and nothing was saved, with no message.
-    save = (FRONTEND / "js" / "capture-ask.js").read_text(encoding="utf-8")
+    save = with_pieces("capture-ask.js")
     assert "prefsCache?.background_filing ?? true" in save
     assert "prefsCache.background_filing" not in save
 

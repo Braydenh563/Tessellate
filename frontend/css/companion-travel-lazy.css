@@ -1,0 +1,106 @@
+/* companion-travel-lazy.css: the companion's far moves and small acts (INBOX
+   1429), loaded by companion-menu.js (`LAZY_MODULES.companionMenu`)
+   at its first tick rather than at boot, for the gzip budget
+   (tests/test_boot_budget.py). Transforms and opacity only. The moves never run
+   under Reduce motion (`nameMarkBuddyNoTravel` gives a crossfade), and the acts
+   are gated as the boot sheet's are. */
+
+/* A puff of smoke: six soft clouds thrown out from the figure's middle and
+   gone, beside it in its rider so they are not faded with it. */
+/* Set per element from companion-travel.js: `--nmb-burst-delay` and, per puff,
+   `--nmb-burst-a` and `--nmb-burst-r` (declared with the poof's, in the boot sheet). */
+.nmb-smoke,
+.nmb-portal {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 64px;
+  aspect-ratio: 64 / 92;
+  pointer-events: none;
+}
+.nmb-smoke i {
+  position: absolute;
+  left: 50%;
+  top: 55%;
+  width: 30px;
+  aspect-ratio: 1;
+  margin: -15px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--muted) 62%, transparent), transparent);
+  opacity: 0;
+  animation: nmb-puff 720ms var(--nmb-burst-delay) var(--ease-out) both;
+}
+@keyframes nmb-puff {
+  0% { opacity: 0; transform: rotate(var(--nmb-burst-a)) translateY(0) scale(0.4); }
+  25% { opacity: 0.85; }
+  100% { opacity: 0; transform: rotate(var(--nmb-burst-a)) translateY(calc(var(--nmb-burst-r) * -1.6)) scale(1.7); }
+}
+
+/* A portal: an upright ring that opens, holds while it is walked through,
+   and closes. Its element is put to one side of the figure (companion-travel.js). */
+.nmb-portal::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 56%;
+  width: 30px;
+  aspect-ratio: 30 / 66;
+  margin: -33px -15px;
+  border: 3px solid var(--accent);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 40%, transparent), transparent);
+  opacity: 0;
+  animation: nmb-portal 1260ms var(--nmb-burst-delay) var(--ease-in-out) both;
+}
+@keyframes nmb-portal {
+  0% { opacity: 0; transform: scale(0.1, 0.3); }
+  16% { opacity: 1; transform: scale(1, 1); }
+  74% { opacity: 1; transform: scale(1, 1) rotate(8deg); }
+  100% { opacity: 0; transform: scale(0.1, 0.3); }
+}
+
+/* Small things a body does, on the whole figure (`.nm-buddy-char`): each is a
+   few seconds and eases back to rest. */
+@media all {
+  :root:not([data-avatar-motion="off"]):is(:not([data-motion="reduced"]), [data-buddy-motion="full"]) #nm-buddy {
+    &.nmb-act-shake .nm-buddy-char { animation: nmb-shake 1.2s ease-in-out; }
+    &.nmb-act-groom .nm-buddy-char { animation: nmb-groom 3.2s ease-in-out; }
+    &.nmb-act-sniff .nm-buddy-char { animation: nmb-sniff 2.4s ease-in-out; }
+    &.nmb-act-sigh .nm-buddy-char { animation: nmb-sigh 2.8s ease-in-out; }
+  }
+}
+/* Shaken off, as after rain: a quick twist each way, getting smaller. */
+@keyframes nmb-shake {
+  0%, 100% { rotate: 0deg; scale: 1 1; }
+  12% { rotate: -7deg; scale: 0.97 1.03; }
+  28% { rotate: 7deg; }
+  44% { rotate: -5deg; }
+  60% { rotate: 4deg; }
+  78% { rotate: -2deg; scale: 1 1; }
+}
+/* Smoothing itself down: the head tips to one side and nods twice. */
+@keyframes nmb-groom {
+  0%, 100% { rotate: 0deg; translate: 0 0; }
+  18% { rotate: 5deg; translate: 1px 1px; }
+  34% { rotate: 5deg; translate: 1px 3px; }
+  50% { rotate: 5deg; translate: 1px 1px; }
+  66% { rotate: 5deg; translate: 1px 3px; }
+  84% { rotate: 2deg; translate: 0 0; }
+}
+/* Sniffing the air: a lean forward and three small bobs. */
+@keyframes nmb-sniff {
+  0%, 100% { rotate: 0deg; scale: 1 1; }
+  20% { rotate: 3deg; scale: 1.02 0.99; }
+  34% { scale: 1.03 0.97; }
+  46% { scale: 1.02 0.99; }
+  58% { scale: 1.03 0.97; }
+  70% { scale: 1.02 0.99; }
+  86% { rotate: 1deg; scale: 1 1; }
+}
+/* A long breath in and out. */
+@keyframes nmb-sigh {
+  0%, 100% { scale: 1 1; translate: 0 0; }
+  38% { scale: 1.04 1.06; translate: 0 -2px; }
+  62% { scale: 1.04 1.06; translate: 0 -2px; }
+  90% { scale: 0.98 0.97; translate: 0 1px; }
+}

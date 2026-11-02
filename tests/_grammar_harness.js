@@ -18,7 +18,7 @@ const fixture = JSON.parse(fs.readFileSync(process.argv[3], "utf8"));
 const optionsArg = process.argv[4] || "{}";
 const options = JSON.parse(optionsArg.startsWith("@") ? fs.readFileSync(optionsArg.slice(1), "utf8") : optionsArg);
 
-const SOURCES = ["documents.js", "documents-prose.js"].map((name) =>
+const SOURCES = ["documents.js", "documents-prose.js", "prefs.js", "autocorrect.js"].map((name) =>
   fs.readFileSync(path.join(root, "frontend", "js", name), "utf8")
 );
 
@@ -43,7 +43,7 @@ function declaration(name) {
 }
 
 const NAMES = options.names || [
-  "DOC_PROSE_RULES", "DOC_AUTOCORRECT", "DOC_LONG_SENTENCE_WORDS", "DOC_PROSE_SKIP", "docProseSkipMask",
+  "DOC_PROSE_RULES", "AUTOCORRECT_TYPOS", "DOC_AUTOCORRECT", "DOC_LONG_SENTENCE_WORDS", "DOC_PROSE_SKIP", "docProseSkipMask",
   "docProseFindings", "docSpellable", "docWordKnown", "docSpellRoot", "docEditsOnce", "docSpellConfident",
   "docSpellLookup", "DOC_CONFIDENT_MIN", "DOC_ALPHABET", "DOC_EDIT_SWAP", "DOC_EDIT_DROP", "DOC_EDIT_ADD",
   "DOC_EDIT_SWAP_LETTER", "docMatchCase", "docWordlistReady", "DOC_VARIANT_LABEL",
@@ -51,6 +51,7 @@ const NAMES = options.names || [
   "docProseRemap", "docProseExtras", "DOC_FINDING_SKIP", "docCheckLinkText", "DOC_PROSE_SKIP_LINK_TEXT",
   "docSpellNameKind", "docSpellTransposed","DOC_STRUCTURAL_LINE", "docStructuralMask", "docStructuralBlank",
   "DOC_GRAMMAR_SENTENCE_KINDS", "DOC_GRAMMAR_ABBREVIATION", "docGrammarKeeps",
+  "nounCount",
   ...(options.extraNames || []),
 ];
 const body = NAMES.map(declaration).join("\n\n");

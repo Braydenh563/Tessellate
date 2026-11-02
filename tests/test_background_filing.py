@@ -196,8 +196,6 @@ def test_stop_rejects_an_unknown_action(client):
 
 
 def test_the_background_tasks_stop_files_every_pending_note(client, monkeypatch):
-    from tessellate.core import bgtasks
-
     monkeypatch.setattr(routes_entries, "_queue_filing", lambda entry: None)
     ids = [
         client.post("/entries", json={"content": f"note {i}", "defer_filing": True}).json()["id"]
@@ -205,7 +203,7 @@ def test_the_background_tasks_stop_files_every_pending_note(client, monkeypatch)
     ]
     answer = client.post("/tasks/cancel", json={"kind": "job-file-entry"}).json()
     assert answer["stopped"], answer
-    assert "job-file-entry" not in bgtasks.CANCELLERS  # never stopped at shutdown
+    assert "job-file-entry" not in jobs.CANCELLERS  # never stopped at shutdown
     for entry_id in ids:
         assert client.get(f"/entries/{entry_id}/filing").json()["filing_state"] == "stopped"
 

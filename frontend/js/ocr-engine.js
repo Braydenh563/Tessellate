@@ -3,7 +3,7 @@
 // and manage").
 //
 // Measured before this existed: the engine's state was a tooltip on a disabled
-// dropdown option, "Install the OCR extra in Settings → Optional extras" (a
+// dropdown option, "Install the OCR extra in Settings, Optional extras" (a
 // section that is named Packages now), with no install button in the
 // workspace, no language choice anywhere, and a Packages row that showed a
 // green tick for the Python half alone. This draws one status line, from the

@@ -21,6 +21,7 @@ import logging
 import os
 import re
 import secrets
+import sys
 import threading
 import time
 import urllib.parse
@@ -34,6 +35,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.core import (
+    afterunlock,
     crypto,
     desktop_dialog,
     diskspace,
@@ -41,13 +43,14 @@ from tessellate.core import (
     lantrust,
     netbind,
     password_reset,
+    reset_code,
     pinstore,
     reminder_token,
     security,
     vault,
 )
 from tessellate.core.config import ConfigManager
-from tessellate.core.deps import get_config, get_session, register_cache_reset
+from tessellate.core.deps import brief_session, get_config, get_session, register_cache_reset
 from tessellate.core.database import Entry, User, Vault
 from tessellate.entry import manager
 from tessellate.entry.manager import log_action
@@ -75,11 +78,49 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 # rather than a gap in one. The one cookie this app sets is the media ticket
 # below, which opens pictures and files and nothing else.
 _SESSION_IDLE_TTL = 12 * 60 * 60  # fallback default; overridden by the
-# session_idle_ttl_minutes preference (Settings → Account) once one is set
+# session_idle_ttl_minutes preference (Settings, Account) once one is set
 _SESSION_MAX_AGE = 7 * 24 * 60 * 60  # this old → expired, however busy
 
+#: **One lock for the token tables** (audit 1031 BK7; 1028 K2, K23). Requests
+#: run in the threadpool, and a single dict call is atomic but a sweep, a grant
+#: and a sign-out are several: two grants for one session each saw "no ticket
+#: yet" and left two. Every table below is a `GuardedTable` on this lock, so no
+#: single mutation interleaves, and the multi-step moves take it themselves
+#: (re-entrant, so a move may call another). Held for dictionary work only,
+#: never across the vault, the disk or a password check.
+_token_lock = threading.RLock()
+
+
+class GuardedTable:
+    """Marks the dict and set below: each mutator runs under `lock`."""
+
+    lock = _token_lock
+
+
+def _locked(name: str, base: type):
+    def call(self, *args, **kwargs):
+        with self.lock:
+            return getattr(base, name)(self, *args, **kwargs)
+
+    call.__name__ = name
+    return call
+
+
+class _GuardedDict(GuardedTable, dict):
+    pass
+
+
+class _GuardedSet(GuardedTable, set):
+    pass
+
+
+for _name in ("__setitem__", "__delitem__", "pop", "popitem", "setdefault", "update", "clear"):
+    setattr(_GuardedDict, _name, _locked(_name, dict))
+for _name in ("add", "discard", "remove", "pop", "clear", "update", "intersection_update", "difference_update"):
+    setattr(_GuardedSet, _name, _locked(_name, set))
+
 # token -> [issued_at, last_used_at]
-_active_tokens: dict[str, list[float]] = {}
+_active_tokens: dict[str, list[float]] = _GuardedDict()
 
 # **The media ticket** (WORLD_CLASS_PLAN §12, S1). A declarative load (`<img
 # src>`, an `<iframe>`, a CSS background) cannot attach the X-Auth-Token
@@ -104,7 +145,7 @@ MEDIA_COOKIE = "memorymap_media"
 # `/mermaid-frame` too: the diagram frame is a page load, which sends no header.
 MEDIA_COOKIE_PATHS = ("/media", "/files", "/mermaid-frame")
 # ticket -> the session token it was issued for
-_media_tickets: dict[str, str] = {}
+_media_tickets: dict[str, str] = _GuardedDict()
 register_cache_reset(_media_tickets.clear)
 
 # The desktop window's "Open in a new tab" hands the link to the system
@@ -115,7 +156,7 @@ register_cache_reset(_media_tickets.clear)
 # its life because a PDF viewer asks for ranges more than once.
 MEDIA_LINK_SECONDS = 120
 # ticket -> (decoded path, expiry, session token)
-_media_links: dict[str, tuple[str, float, str]] = {}
+_media_links: dict[str, tuple[str, float, str]] = _GuardedDict()
 register_cache_reset(_media_links.clear)
 _MEDIA_LINK_PATH = re.compile(r"/(?:media|files)/[A-Za-z0-9._~%/-]+")
 # Module state, not app state, so `deps.reset_app_state()` (the thing every
@@ -162,15 +203,19 @@ def _sweep_expired(idle_ttl: int) -> None:
     it is written on.
     """
     now = time.time()
-    dead = [
-        token
-        for token, (issued, seen) in _active_tokens.items()
-        if now - seen > idle_ttl or now - issued > _SESSION_MAX_AGE
-    ]
-    for token in dead:
-        del _active_tokens[token]
-    if dead:
+    with _token_lock:
+        dead = [
+            token
+            for token, (issued, seen) in list(_active_tokens.items())
+            if now - seen > idle_ttl or now - issued > _SESSION_MAX_AGE
+        ]
+        for token in dead:
+            _active_tokens.pop(token, None)
+        #: Every sweep, not only one that dropped a session: a session ended
+        #: elsewhere (sign-out) while a ticket was being granted leaves that
+        #: ticket behind, and the table is a few rows, so the check is cheap.
         _forget_dead_tickets()
+    if dead:
         # The key goes with the last session that gave the password, even
         # while a session without it is still live (tests/test_vault_sessions).
         vault.revoke(dead)
@@ -180,8 +225,9 @@ def _sweep_expired(idle_ttl: int) -> None:
 
 def _forget_dead_tickets() -> None:
     """Drop every media ticket whose session is gone."""
-    for ticket in [t for t, token in _media_tickets.items() if token not in _active_tokens]:
-        del _media_tickets[ticket]
+    with _token_lock:
+        for ticket in [t for t, token in list(_media_tickets.items()) if token not in _active_tokens]:
+            _media_tickets.pop(ticket, None)
 
 
 def _cookie_secure(request: Request) -> bool:
@@ -194,10 +240,8 @@ def _cookie_secure(request: Request) -> bool:
     every picture in the notebook would stop loading."""
     if request.url.scheme == "https":
         return True
-    return (request.url.hostname or "") in _LOOPBACK_HOSTS
+    return (request.url.hostname or "") in security.LOOPBACK_HOSTS
 
-
-_LOOPBACK_HOSTS = frozenset({"localhost", "127.0.0.1", "::1"})
 
 # **Optional sign-in** (INBOX 426 aa, the owner's brother: "some people might
 # not care about it and find it annoying"). One switch in Settings, Account
@@ -261,7 +305,7 @@ def _from_this_computer(request: Request) -> bool:
     if any(name in request.headers for name in _FORWARDING_HEADERS):
         return False
     hostname = request.url.hostname or ""
-    return hostname in _LOOPBACK_HOSTS or (bool(hostname) and hostname == netbind.local_name())
+    return hostname in security.LOOPBACK_HOSTS or (bool(hostname) and hostname == netbind.local_name())
 
 
 def _auto_session_allowed(request: Request, session: Session, config: ConfigManager) -> bool:
@@ -278,10 +322,16 @@ def _grant_media(request: Request, response: Response, token: str) -> None:
     # session's earlier ticket is already gone from the jar it was set in;
     # keeping it here would only let the table grow by one per reload (the
     # boot path asks again every time) until the session ends.
-    for stale in [t for t, owner in _media_tickets.items() if owner == token]:
-        del _media_tickets[stale]
     ticket = secrets.token_urlsafe(32)
-    _media_tickets[ticket] = token
+    with _token_lock:
+        #: A session swept between its unlock and this grant gets no ticket:
+        #: one stored for it would outlive it, since a sweep forgets tickets
+        #: only when it drops a session (race seen in CI, test_token_tables_1031).
+        if token not in _active_tokens:
+            return
+        for stale in [t for t, owner in list(_media_tickets.items()) if owner == token]:
+            _media_tickets.pop(stale, None)
+        _media_tickets[ticket] = token
     for path in MEDIA_COOKIE_PATHS:
         response.set_cookie(
             MEDIA_COOKIE,
@@ -309,10 +359,12 @@ def _revoke_media(request: Request, response: Response) -> None:
 def _token_valid(token: str | None, idle_ttl: int) -> bool:
     """Is this token live? Using it also keeps it alive."""
     _sweep_expired(idle_ttl)
-    if not token or token not in _active_tokens:
-        return False
-    _active_tokens[token][1] = time.time()
-    return True
+    with _token_lock:
+        entry = _active_tokens.get(token) if token else None
+        if entry is None:
+            return False
+        entry[1] = time.time()
+        return True
 
 # Brute-force throttle for unlock attempts. The app binds 127.0.0.1, but a
 # server log showed a public client address arriving through a proxy header,
@@ -345,9 +397,29 @@ _failed_unlocks: list[float] = []  # every failure, from anyone: the backstop
 _failed_by_client: dict[str, list[float]] = {}
 
 
+#: Guesses let through and not yet answered, per client (audit 1028 K3).
+#: The throttle checked before bcrypt and counted after, so forty guesses
+#: sent at once all passed a check that allows five. An attempt in flight
+#: counts as a failure until it is answered; one never answered (a route
+#: that raised for another reason) is dropped after a minute.
+_pending_unlocks: dict[str, list[float]] = {}
+_PENDING_TTL = 60.0
+_throttle_lock = threading.RLock()
+
+
 def _clear_unlock_failures() -> None:
     _failed_unlocks.clear()
     _failed_by_client.clear()
+    _pending_unlocks.clear()
+
+
+def _answered(client: str) -> None:
+    """One in-flight attempt from `client` (already bucketed) has an answer."""
+    pending = _pending_unlocks.get(client)
+    if pending:
+        pending.pop(0)
+        if not pending:
+            _pending_unlocks.pop(client, None)
 
 
 register_cache_reset(_clear_unlock_failures)
@@ -395,17 +467,36 @@ def _wait_left(failures: list[float], allowance: int, now: float) -> float:
     return wait - (now - failures[-1])
 
 
+def _drop_stale_pending(now: float) -> None:
+    """Forget unlock attempts older than the pending window. Caller holds the lock."""
+    for key in list(_pending_unlocks):
+        kept = [t for t in _pending_unlocks[key] if now - t < _PENDING_TTL]
+        if kept:
+            _pending_unlocks[key] = kept
+        else:
+            del _pending_unlocks[key]
+
+
 def _refuse_if_throttled(client: str = "unknown") -> None:
     """429 while inside the wait a run of wrong passwords has earned."""
     client = _bucket(client)
-    now = time.time()
-    own = _failed_by_client.get(client)
-    remaining = max(
-        _wait_left(own, _FAILURE_ALLOWANCE, now) if own is not None else 0.0,
-        _wait_left(_failed_unlocks, _GLOBAL_FAILURE_ALLOWANCE, now),
-    )
-    if own is not None and not own:
-        _failed_by_client.pop(client, None)
+    with _throttle_lock:
+        now = time.time()
+        _drop_stale_pending(now)
+        own = _failed_by_client.get(client)
+        if own is not None:
+            _wait_left(own, _FAILURE_ALLOWANCE, now)  # forgets a long-quiet run
+        _wait_left(_failed_unlocks, _GLOBAL_FAILURE_ALLOWANCE, now)
+        mine = sorted((own or []) + _pending_unlocks.get(client, []))
+        everyone = sorted(_failed_unlocks + [t for ts in _pending_unlocks.values() for t in ts])
+        remaining = max(
+            _wait_left(mine, _FAILURE_ALLOWANCE, now) if mine else 0.0,
+            _wait_left(everyone, _GLOBAL_FAILURE_ALLOWANCE, now) if everyone else 0.0,
+        )
+        if own is not None and not own:
+            _failed_by_client.pop(client, None)
+        if remaining <= 0:
+            _pending_unlocks.setdefault(client, []).append(now)
     if remaining > 0:
         raise HTTPException(
             status_code=429,
@@ -413,11 +504,18 @@ def _refuse_if_throttled(client: str = "unknown") -> None:
                 f"Too many wrong passwords. Try again in {int(remaining) + 1} "
                 f"second{'' if int(remaining) == 0 else 's'}."
             ),
+            headers={"Retry-After": str(int(remaining) + 1)},
         )
 
 
 def _unlock_failed(client: str = "unknown") -> None:
     client = _bucket(client)
+    with _throttle_lock:
+        _answered(client)
+        _record_failure(client)
+
+
+def _record_failure(client: str) -> None:
     now = time.time()
     _failed_unlocks.append(now)
     _failed_by_client.setdefault(client, []).append(now)
@@ -428,6 +526,8 @@ def _unlock_failed(client: str = "unknown") -> None:
 
 def _unlock_succeeded(client: str = "unknown") -> None:
     client = _bucket(client)
+    with _throttle_lock:
+        _answered(client)
     # The global list too: whoever got the password right is the owner, and
     # a backstop that outlived the owner's own unlock would be the lockout
     # this change exists to remove. Other clients' own buckets are kept.
@@ -603,14 +703,23 @@ def _no_password_yet(request: Request, session: Session) -> bool:
 NO_PASSWORD_ELSEWHERE = "Set a password on the computer Tessellate runs on first."
 
 
+def _no_password_yet_now(request: Request) -> bool:
+    with brief_session(request) as session:
+        return _no_password_yet(request, session)
+
+
 def require_unlock(
     request: Request,
-    session: Session = Depends(get_session),
     config: ConfigManager = Depends(get_config),
     x_auth_token: str | None = Header(default=None),
 ) -> None:
-    """Dependency that gates every data route once a password exists."""
-    if _no_password_yet(request, session):
+    """Dependency that gates every data route once a password exists.
+
+    The check holds a session only while it reads (`brief_session`), so a
+    long poll or stream that holds none of its own (`/auth/lan-watch`,
+    `/jobs/stream`) is not a request in flight that a restore must wait for
+    (audit 1031 BK5)."""
+    if _no_password_yet_now(request):
         return  # setup not done yet, nothing to protect
     idle_ttl = config.get_preference("session_idle_ttl_minutes", _SESSION_IDLE_TTL // 60) * 60
     if not _token_valid(x_auth_token, idle_ttl):
@@ -619,7 +728,6 @@ def require_unlock(
 
 def require_unlock_media(
     request: Request,
-    session: Session = Depends(get_session),
     config: ConfigManager = Depends(get_config),
     x_auth_token: str | None = Header(default=None),
     memorymap_media: str | None = Cookie(default=None),
@@ -637,7 +745,7 @@ def require_unlock_media(
     header. **A `?token=` query parameter is no longer read**: it was the
     fallback here until 2026-09-24, and it was the leak S1 describes.
     """
-    if _no_password_yet(request, session):
+    if _no_password_yet_now(request):
         return
     idle_ttl = config.get_preference("session_idle_ttl_minutes", _SESSION_IDLE_TTL // 60) * 60
     token = x_auth_token or _media_tickets.get(memorymap_media or "")
@@ -677,6 +785,9 @@ def _issue_token() -> str:
     token = secrets.token_hex(32)
     now = time.time()
     _active_tokens[token] = [now, now]
+    #: The launch's heavy work was held for this (INBOX 1492): released a
+    #: moment after the answer, never beside it.
+    afterunlock.fire()
     return token
 
 
@@ -741,22 +852,23 @@ DEVICE_WAIT_SECONDS = 45.0
 #: are told to press Unlock again.
 _device_waits = threading.BoundedSemaphore(4)
 #: Which device each LAN session belongs to, so Remove signs it out.
-_device_tokens: dict[str, str] = {}
+_device_tokens: dict[str, str] = _GuardedDict()
 #: Every token handed to another device, whether or not it had a device
 #: cookie: switching LAN mode off ends them all (INBOX 900).
-_network_tokens: set[str] = set()
+_network_tokens: set[str] = _GuardedSet()
 
 
 def _end_network_sessions() -> int:
     """Sign out every other device now: LAN mode was switched off."""
-    ended = [t for t in _network_tokens if t in _active_tokens]
-    for token in ended:
-        _active_tokens.pop(token, None)
-        _device_tokens.pop(token, None)
+    with _token_lock:
+        ended = [t for t in list(_network_tokens) if t in _active_tokens]
+        for token in ended:
+            _active_tokens.pop(token, None)
+            _device_tokens.pop(token, None)
+        _network_tokens.clear()
+        _forget_dead_tickets()
     if ended:
         vault.revoke(ended)
-    _network_tokens.clear()
-    _forget_dead_tickets()
     return len(ended)
 
 
@@ -967,8 +1079,8 @@ def media_link(body: MediaLinkIn, x_auth_token: str | None = Header(default=None
     if not _MEDIA_LINK_PATH.fullmatch(body.path) or "/.." in path or "//" in path:
         raise HTTPException(status_code=422, detail="Only a picture or file of this notebook can open in a tab.")
     now = time.time()
-    for stale in [t for t, (_, expires, _) in _media_links.items() if expires <= now]:
-        del _media_links[stale]
+    for stale in [t for t, (_, expires, _) in list(_media_links.items()) if expires <= now]:
+        _media_links.pop(stale, None)
     ticket = secrets.token_urlsafe(32)
     _media_links[ticket] = (path, now + MEDIA_LINK_SECONDS, x_auth_token or "")
     return {"url": f"{body.path}?once={ticket}"}
@@ -1345,7 +1457,7 @@ def forget_device(device_id: str, request: Request, config: ConfigManager = Depe
     sessions end now."""
     if not lantrust.forget_device(config.data_dir, device_id):
         raise HTTPException(status_code=404, detail="That device is not on the list.")
-    for token in [t for t, owner in _device_tokens.items() if owner == device_id]:
+    for token in [t for t, owner in list(_device_tokens.items()) if owner == device_id]:
         _device_tokens.pop(token, None)
         _active_tokens.pop(token, None)
         vault.revoke([token])
@@ -1499,7 +1611,7 @@ def account(
     session: Session = Depends(get_session),
     config: ConfigManager = Depends(get_config),
 ) -> dict:
-    """What Settings → Account needs to describe the current state.
+    """What Settings, Account needs to describe the current state.
 
     Deliberately says nothing secret: whether a password exists, whether the
     vault is open, and how many sessions are live.
@@ -1519,7 +1631,7 @@ def account(
         # When the recovery key was made, or None: Settings says which button
         # to show (INBOX 663). Behind the lock, unlike `/auth/status`.
         "recovery_key_created_at": _iso(vault.recovery_created_at(session)),
-        # Settings > Security: whether this computer can keep a PIN, whether
+        # Settings, Security: whether this computer can keep a PIN, whether
         # one is set, and whether the caller is this computer (only it may).
         "pin": {
             "available": pinstore.available(config.data_dir),
@@ -1691,7 +1803,7 @@ def forget_pin(
     session: Session = Depends(get_session),
     config: ConfigManager = Depends(get_config),
 ) -> dict:
-    """Settings > Security, "Forget PIN": the password, then it is gone."""
+    """Settings, Security, "Forget PIN": the password, then it is gone."""
     user = _check_current_password(request, session, body.current_password)
     forgotten = pinstore.forget(config.data_dir)
     if forgotten:
@@ -1888,6 +2000,8 @@ class RecoverBody(BaseModel):
 
 class ResetBody(BaseModel):
     confirm: str = Field(default="", max_length=32)
+    #: The six digits the server printed to its terminal (INBOX 1424).
+    code: str = Field(default="", max_length=16)
 
 
 def _refuse_unless_this_computer(request: Request) -> None:
@@ -2040,6 +2154,67 @@ def recover(
     }
 
 
+@router.post("/reset-code")
+def request_reset_code(request: Request, session: Session = Depends(get_session)) -> dict:
+    """Print a six-digit reset code on the server's terminal (INBOX 1424).
+
+    This computer only, like the reset itself. The answer says how long the
+    code lasts and nothing else: the code is never in a response or the log
+    buffer. Asking again replaces the live code, and wrong tries are counted
+    by the login throttle, so asking again does not buy more guesses.
+    """
+    _refuse_unless_this_computer(request)
+    if _get_user(session) is None:
+        raise HTTPException(status_code=400, detail="No password is set yet. Set one up first.")
+    try:
+        expires_in = reset_code.issue()
+    except reset_code.TooSoon as soon:
+        raise HTTPException(
+            status_code=429,
+            detail=f"A code was just printed. Look for it, or ask again in {soon.retry_after} seconds.",
+            headers={"Retry-After": str(soon.retry_after)},
+        ) from None
+    if reset_code.stderr_is_terminal():
+        return {"expires_in": expires_in, "where": "terminal"}
+    return {"expires_in": expires_in, "where": "log", "log_file": _stderr_log_name()}
+
+
+def _stderr_log_name() -> str:
+    """The file name (never the path) the code went to when there is no terminal."""
+    name = Path(str(getattr(sys.stderr, "name", ""))).name
+    if name.endswith(".log"):
+        return name
+    from tessellate.core import maintenance
+
+    logs = sorted(maintenance.logs_dir(get_config().data_dir).glob("launcher-*.log"), key=lambda f: f.stat().st_mtime)
+    return logs[-1].name if logs else "desktop-stdio.log"
+
+
+@router.post("/reset-code/open-logs")
+def open_reset_code_logs(request: Request) -> dict:
+    """Open the logs folder for the lock card when the code went to a log file.
+
+    This computer only, the same guard as the code. It opens a file manager
+    window and answers `ok` and nothing else, so no path leaks to a locked page.
+    """
+    _refuse_unless_this_computer(request)
+    from tessellate.api.routes_files import reveal_folder
+    from tessellate.core import maintenance
+
+    folder = maintenance.logs_dir(get_config().data_dir)
+    try:
+        reveal_folder(folder, "the launcher logs")
+    except HTTPException:
+        # reveal_folder's detail names the path; a locked page gets a fixed line.
+        logging.getLogger("tessellate.auth").warning("couldn't open the launcher logs at %s", folder)
+        #: 503, not 500: no file manager here is the environment, not a fault
+        #: of the server (audit 1030 Y13).
+        raise HTTPException(
+            status_code=503, detail="Couldn't open the logs folder. Look in the logs folder inside your data folder."
+        ) from None
+    return {"ok": True}
+
+
 @router.post("/reset")
 def reset(
     body: ResetBody,
@@ -2059,6 +2234,18 @@ def reset(
         raise HTTPException(status_code=400, detail="Type RESET to confirm.")
     if _get_user(session) is None:
         raise HTTPException(status_code=400, detail="No password is set yet. Set one up first.")
+    # The code is the credential (INBOX 1424): read from the server's own
+    # terminal, so a local program that can only send requests cannot reset.
+    # A wrong one earns the same waits as a wrong password.
+    client = _client_key(request)
+    _refuse_if_throttled(client)
+    if not reset_code.check(body.code):
+        _unlock_failed(client)
+        raise HTTPException(
+            status_code=401,
+            detail="That code is wrong or has run out. Ask for a new one.",
+        )
+    _unlock_succeeded(client)
     password_reset.reset_password(session, config)
     end_every_session()
     _revoke_media(request, response)

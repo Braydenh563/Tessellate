@@ -41,7 +41,7 @@ function privacyAddressLine(row) {
   //: INBOX 894: a device on this network opening the app is a row too,
   //: by its address only; it came in, nothing here reached out to it.
   const verb = row.kind === "lookup" ? "Looked up" : row.kind === "incoming" ? "Came in from" : "Connected to";
-  return `${verb} ${address}, ${row.count} time${row.count === 1 ? "" : "s"}, last ${privacyWhen(row.last)}`;
+  return `${verb} ${address}, ${nounCount(row.count, "time")}, last ${privacyWhen(row.last)}`;
 }
 
 function privacyDestinationRow(group) {
@@ -74,7 +74,7 @@ function privacyDestinationRow(group) {
   meta.className = "library-file-meta privacy-row-meta";
   meta.textContent = [
     what.charAt(0).toUpperCase() + what.slice(1),
-    `${verb} ${count} time${count === 1 ? "" : "s"}`,
+    `${verb} ${nounCount(count, "time")}`,
     `last ${privacyWhen(group.last)}`,
   ].join(" · ");
   li.appendChild(meta);
@@ -320,10 +320,19 @@ async function renderBackups() {
   const list = $("backup-list");
   renderBackupCopyRow().catch(() => {});
   showSkeletons(list, 2, "li");
-  const backups = await apiJson("/backups").catch(() => []);
+  const backups = await loadSurface($("backup-schedule"), "your backups", () => apiJson("/backups"));
   clearSkeletons(list);
   list.replaceChildren();
+  if (!backups) return;
   renderBackupSchedule(backups).catch(() => {});
+  //: The line beside Back up now reads the newest backup (1031 SH16: it was
+  //: empty while the daily one sat listed); a "Saved ..." the button just
+  //: wrote is left to say its own thing.
+  const status = $("backup-status");
+  const newest = backups.find((b) => b.latest) || backups[0];
+  if (status && newest && (!status.textContent || status.textContent.startsWith("Last backup"))) {
+    status.textContent = `Last backup ${relativeTime(newest.created_at)}.${newest.origin_words ? ` ${newest.origin_words}.` : ""}`;
+  }
   for (const item of backups) {
     const li = document.createElement("li");
     const row = document.createElement("div");
@@ -514,9 +523,24 @@ async function importDirectory() {
 //: The way back from a one-step import (INBOX 464 (18)): choosing the files
 //: starts it, so the toast offers Undo, which moves exactly the notes it made
 //: (the ids both endpoints return) to the recycle bin, restorable from there.
+//: What an import did, in one line: made, skipped as already here, failed
+//: (the files or notes it could not read). Said even when nothing was made.
+function importSummary(result) {
+  const made = result.imported ?? (result.ids || []).length;
+  const already = result.already || 0;
+  const failed = (result.skipped || []).length;
+  const parts = [`Imported ${nounCount(made, "note")}`];
+  if (already) parts.push(`skipped ${already} already here`);
+  if (failed) parts.push(`${failed} failed`);
+  return `${parts.join(", ")}.`;
+}
+
 function undoImport(result, status) {
   const ids = result.ids || [];
-  if (!ids.length) return;
+  if (!ids.length) {
+    toast(importSummary(result));
+    return;
+  }
   const n = ids.length;
   //: Eight at a time, each settled on its own, so one note already gone does
   //: not stop the rest; answers how many went.
@@ -538,9 +562,32 @@ function undoImport(result, status) {
   };
   const restoreThem = async () => {
     const back = await each((id) => apiJson(`/entries/${id}/restore`, { method: "POST", silent: true }));
-    if (status) status.textContent = `Imported ${back} note${back === 1 ? "" : "s"} again.`;
+    if (status) status.textContent = `Imported ${nounCount(back, "note")} again.`;
   };
-  offerUndo(`Imported ${n} note${n === 1 ? "" : "s"}`, `Imported ${n} note${n === 1 ? "" : "s"}.`, binThem, restoreThem);
+  offerUndo(`Imported ${nounCount(n, "note")}`, importSummary(result), binThem, restoreThem);
+}
+
+//: The files to send, or null when the person closed the preview. The rows
+//: are read here (the first 400 characters of each), since a markdown file
+//: has nothing the server knows that the browser does not.
+async function markdownPreview(files, status) {
+  if (!(await ensureModule("appImport"))) return files;
+  const shown = files.slice(0, 1000);
+  const rows = await Promise.all(shown.map(async (file, at) => {
+    const name = (file.webkitRelativePath || file.name).replace(/\.(md|markdown|txt)$/i, "");
+    const text = (await file.slice(0, 400).text().catch(() => "")).replace(/^---[\s\S]*?\n---\s*/, "").trimStart();
+    //: A first line that is a heading names the note, as the server's title does.
+    const heading = /^#{1,6}\s+([^\n]+)\n?/.exec(text);
+    const body = heading ? text.slice(heading[0].length) : text;
+    return { key: String(at), title: heading ? heading[1].trim() : name.split("/").pop(), snippet: body.replace(/\s+/g, " ").trim().slice(0, 140), already: false };
+  }));
+  const left = await importPreview({ label: "your files", rows, more: files.length - shown.length });
+  if (left === null) {
+    status.textContent = "Nothing was imported.";
+    return null;
+  }
+  const skip = new Set(left);
+  return files.filter((file, at) => !skip.has(String(at)));
 }
 
 async function importMarkdown(inputId = "import-md-files") {
@@ -570,11 +617,15 @@ async function importMarkdown(inputId = "import-md-files") {
     status.textContent = "No markdown files in that folder.";
     return;
   }
-  for (const file of chosen) {
+  input.value = "";
+  //: The preview step (INBOX 1520, S36): each file's name and first words, a
+  //: tick on each; the files left unticked are never sent.
+  const keep = await markdownPreview(chosen, status);
+  if (!keep) return;
+  for (const file of keep) {
     form.append("files", file, file.webkitRelativePath || file.name);
   }
-  input.value = "";
-  setLabel(status, `ph:spin Importing ${chosen.length} file${chosen.length === 1 ? "" : "s"}…`);
+  setLabel(status, `ph:spin Importing ${nounCount(keep.length, "file")}…`);
   try {
     // `api.upload` (F5): the multipart type from the browser, and
     // X-Workspace-ID, without which the notes land in the default space.
@@ -583,7 +634,7 @@ async function importMarkdown(inputId = "import-md-files") {
     });
     const result = await response.json();
     status.textContent =
-      `Imported ${result.imported} note${result.imported === 1 ? "" : "s"}.` +
+      `Imported ${nounCount(result.imported, "note")}.` +
       //: Passed over because the same file and text are already a note.
       (result.already ? ` ${result.already} already in your notebook, left as they are.` : "") +
       (result.skipped.length ? ` Skipped: ${result.skipped.join("; ")}` : "");
@@ -614,7 +665,7 @@ async function importDocument() {
     const response = await api.upload("/import/document", form);
     const result = await response.json();
     status.textContent =
-      `Imported ${result.imported} note${result.imported === 1 ? "" : "s"}` +
+      `Imported ${nounCount(result.imported, "note")}` +
       ` from ${result.filename}.` +
       (result.truncated ? " (Stopped at the note limit, the rest wasn't imported.)" : "");
     undoImport(result, status);
@@ -857,7 +908,7 @@ function settingShown(value) {
   if (value === false || value === "off") return "off";
   if (value == null) return "default";
   if (value === "") return "empty";
-  if (Array.isArray(value)) return `${value.length} item${value.length === 1 ? "" : "s"}`;
+  if (Array.isArray(value)) return nounCount(value.length, "item");
   if (typeof value === "object") return "changed";
   const text = String(value);
   return text.length > 24 ? `${text.slice(0, 23)}…` : text;
@@ -868,9 +919,30 @@ function settingName(key) {
   return words.charAt(0).toUpperCase() + words.slice(1);
 }
 
+//: A list setting says what was added or taken out, not how long it was
+//: ("Personas: 0 items to 1 item", HR17). "" when it is not one clear act.
+function settingListWords(change) {
+  const old = Array.isArray(change.old) ? change.old : change.old == null ? [] : null;
+  const next = Array.isArray(change.new) ? change.new : change.new == null ? [] : null;
+  if (!old || !next) return "";
+  const nameOf = (item) => String(item?.name ?? item?.title ?? item).replace(/[_-]+/g, " ");
+  const keyOf = (item) => (item && typeof item === "object" ? String(item.name ?? JSON.stringify(item)) : String(item));
+  const had = new Set(old.map(keyOf));
+  const has = new Set(next.map(keyOf));
+  const added = next.filter((item) => !had.has(keyOf(item)));
+  const removed = old.filter((item) => !has.has(keyOf(item)));
+  if (added.length + removed.length !== 1) return "";
+  const [item] = added.length ? added : removed;
+  const where = settingName(change.key).toLowerCase();
+  if (change.key === "disabled_tools") return `${added.length ? "Turned off" : "Turned on"} ${nameOf(item)}`;
+  return `${added.length ? "Added" : "Removed"} ${nameOf(item)} ${added.length ? "to" : "from"} ${where}`;
+}
+
 function settingChangeWords(change) {
   if (change.words) return change.words;
   const [first] = change.changes;
+  const said = change.changes.length === 1 ? settingListWords(first) : "";
+  if (said) return said;
   const more = change.changes.length > 1 ? ` and ${change.changes.length - 1} more` : "";
   return `${settingName(first.key)}: ${settingShown(first.old)} to ${settingShown(first.new)}${more}`;
 }

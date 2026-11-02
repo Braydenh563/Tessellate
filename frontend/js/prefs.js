@@ -27,6 +27,9 @@ const PREFS_SCHEMA = {
   //: Interface animations: "on" (the default) or "off". Its absence must
   //: read as on, which theme-boot.js and every reader of the attribute rely on.
   "ui-motion": { default: "on", version: 1 },
+  //: Motion: "follow" (the default), "on" or "off" (INBOX 1506); version 2 turned
+  //: the stored "auto" and "reduced" into follow and off.
+  motion: { default: "follow", version: 2, migrate: (raw) => (raw === "reduced" ? "off" : raw === "auto" ? "follow" : raw) },
 };
 
 function prefsStore() {
@@ -192,4 +195,10 @@ function shortcutHint(action) {
 function shortcutTitle(base, action) {
   const hint = shortcutHint(action);
   return hint ? `${base} (${hint})` : base;
+}
+
+//: **The one plural helper** (sweep 1028b W14): "1 note", "3 notes", "2 categories".
+//: A count in words goes through this, never `${n} notes` (tests/test_plural_helper.py).
+function nounCount(n, one, many = `${one}s`) {
+  return `${n} ${n === 1 ? one : many}`;
 }

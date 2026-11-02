@@ -1,0 +1,86 @@
+/* The Appearance quick panel (INBOX 1435, DESIGN.md recipe `appearancePanel`). Loaded with
+   js/appearance-panel.js. The Settings rows inside it are styled by
+   appearance-panel-lazy.css (generated). Non-modal: no scrim, the app stays usable behind it.
+   Its layer is the floating panels' (02-chat-graph.css, `.chat-model-panel`). */
+.appearance-panel {
+  position: fixed;
+  top: calc(var(--space-9) * 2);
+  right: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: min(33rem, calc(100vw - 2 * var(--space-6)));
+  max-height: calc(100dvh - var(--space-9) * 3 - var(--space-6));
+  overflow: hidden;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+.appearance-panel[hidden] {
+  display: none;
+}
+@media (max-width: 599.98px) {
+  /* A sheet at the foot, as every panel is on a phone. */
+  .appearance-panel {
+    top: auto;
+    right: var(--space-3);
+    bottom: var(--space-3);
+    left: var(--space-3);
+    width: auto;
+    max-height: 70dvh;
+  }
+}
+.appearance-panel > .dialog-head {
+  flex: none;
+  padding: var(--space-3) var(--space-4);
+}
+/* The sticky section strip: outside the scroller, so it is always in view. It is the popup
+   glyph tab row (`.tabs-line.popup-kinds`, popup-anatomy-lazy.css); the chosen tab is the one the
+   scroll is in. */
+.appearance-strip {
+  flex: none;
+  gap: 0;
+  padding-inline: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.appearance-strip > button {
+  min-width: 0;
+  padding-inline: var(--space-2);
+  font-size: var(--text-sm);
+}
+.appearance-strip > button > .pop-tab-glyph {
+  margin-inline-end: var(--space-1);
+}
+.appearance-strip > button > .pop-count {
+  margin-inline-start: var(--space-1);
+}
+.appearance-panel-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--space-3) var(--space-4) var(--space-6);
+}
+/* Peek: the ground goes to a token mix and nothing else fades, so the controls stay sharp
+   (Settings' Peek in 06-timeline-dialogs.css does the same with the same mix). */
+.appearance-panel.peeking {
+  background: color-mix(in srgb, var(--panel) 14%, transparent);
+  border-color: color-mix(in srgb, var(--border) 60%, transparent);
+  box-shadow: none;
+  backdrop-filter: none;
+}
+.appearance-panel.peeking > .dialog-head {
+  background: color-mix(in srgb, var(--panel) 88%, transparent);
+  border-radius: var(--radius-md);
+}
+.appearance-panel [data-fold-key] {
+  scroll-margin-top: var(--space-2);
+}
+/* On the Settings page, where the controls went. */
+.appearance-popped {
+  padding: var(--space-4) 0;
+}
+.appearance-popped-out .settings-fold-all {
+  display: none;
+}

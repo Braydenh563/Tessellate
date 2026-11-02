@@ -275,8 +275,8 @@ def _ui_strings():
 
 
 def test_every_pane_the_app_names_in_its_own_text_is_a_real_pane():
-    """"Settings → Models" in a toast, an error or a hint: the same rename that
-    stranded the Guide stranded these (Settings → Extras, → Tools, → Import)."""
+    """"Settings, Models" in a toast, an error or a hint: the same rename that
+    stranded the Guide stranded these (Settings, Extras, → Tools, → Import)."""
     bad = set()
     for name, text in _ui_strings():
         text = " ".join(html.unescape(text).split())

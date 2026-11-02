@@ -34,6 +34,12 @@ SCRIPT_SRC = re.compile(r'<script src="/js/([^"?]+)', re.IGNORECASE)
 ID_ATTRIBUTE = re.compile(r'(?<![\w-])id="([^"]*)"')
 FUNCTION_DECLARATION = re.compile(r"^(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*\(")
 ARROW_CONSTANT = re.compile(r"^const\s+([A-Za-z_$][\w$]*)\s*=\s*(?:async\s+)?\(")
+#: A script that is one closure from its first code line to its last
+#: (sketch-pad.js): its functions sit one step in, and are listed too.
+CLOSURE_OPEN = re.compile(r"^\(\s*(?:async\s*)?(?:\(\)\s*=>|function\s*\(\))\s*\{\s*$")
+CLOSURE_CLOSE = re.compile(r"^\}\s*\)?\s*\(\)\s*\)?;?\s*$")
+INDENTED_FUNCTION = re.compile(r"^  (?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*\(")
+INDENTED_ARROW = re.compile(r"^  const\s+([A-Za-z_$][\w$]*)\s*=\s*(?:async\s+)?\(")
 MODULE_LEVEL = re.compile(r"^(?:async\s+def|def|class)\s+([A-Za-z_]\w*)")
 TEST_DEFINITION = re.compile(r"^\s*def test_", re.M)
 PLAN_HEADING = re.compile(r"^(#{2,3}) +(\S.*)$")
@@ -98,13 +104,27 @@ def _js_order(root: Path) -> list[str]:
 def _frontend_functions(root: Path) -> list[tuple[str, list[tuple[str, int]]]]:
     groups = []
     for rel in _js_order(root):
-        found = []
-        for number, line in enumerate(_lines(_read(root / rel)), 1):
-            match = FUNCTION_DECLARATION.match(line) or ARROW_CONSTANT.match(line)
-            if match:
-                found.append((match.group(1), number))
-        groups.append((rel, sorted(found)))
+        groups.append((rel, sorted(js_functions(_lines(_read(root / rel))))))
     return groups
+
+
+def _closure_wrapped(lines: list[str]) -> bool:
+    code = [line for line in lines if line.strip() and not line.lstrip().startswith("//")]
+    return bool(code) and bool(CLOSURE_OPEN.match(code[0])) and bool(CLOSURE_CLOSE.match(code[-1]))
+
+
+def js_functions(lines: list[str]) -> list[tuple[str, int]]:
+    """`(name, line)` for every top-level function of a script, and for the
+    closure's own functions when the script is wrapped whole in one."""
+    wrapped = _closure_wrapped(lines)
+    found = []
+    for number, line in enumerate(lines, 1):
+        match = FUNCTION_DECLARATION.match(line) or ARROW_CONSTANT.match(line)
+        if wrapped and not match:
+            match = INDENTED_FUNCTION.match(line) or INDENTED_ARROW.match(line)
+        if match:
+            found.append((match.group(1), number))
+    return found
 
 
 def _frontend_ids(root: Path) -> list[tuple[str, int]]:
@@ -230,6 +250,23 @@ def _plan_headings(root: Path) -> list[tuple[str, str, int]]:
     return sorted(rows)
 
 
+def script_counts(root: Path) -> dict[str, int]:
+    """The three script numbers the documents quote: the app's code (index.html's
+    `app.js` through `agent-activity.js`), every script the page loads at boot, and
+    every file in `frontend/js/` (lazy ones too). `tests/test_script_counts_1031.py`
+    holds the prose to these (audit 1031 AR10)."""
+    names: list[str] = []
+    for name in SCRIPT_SRC.findall(_read(root / "frontend" / "index.html")):
+        if name not in names and (root / "frontend" / "js" / name).is_file():
+            names.append(name)
+    first, last = names.index("app.js"), names.index("agent-activity.js")
+    return {
+        "app scripts": last - first + 1,
+        "boot scripts": len(names),
+        "script files": len(list((root / "frontend" / "js").glob("*.js"))),
+    }
+
+
 def build(root: Path, date: str) -> str:
     """The whole map as one string. `date` is the only input that is not the
     repository, so the lint can pass the committed date and compare exactly."""
@@ -254,6 +291,7 @@ def build(root: Path, date: str) -> str:
         "test files": len(tests),
         "tests": test_total,
         "plan headings": len(plans),
+        **script_counts(root),
     }
 
     out = [

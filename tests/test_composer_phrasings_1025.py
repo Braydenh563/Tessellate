@@ -120,12 +120,17 @@ def test_a_retry_words_the_answer_anew(ask):
 
 
 def test_fixed_phrases_come_in_variants(ask):
-    """"It's your only note on that so far" is one of several wordings."""
+    """A fixed phrase is one of several wordings. The "only one note has those
+    words" footer is one sentence now (audit 1031 C33: four wordings of one
+    thing read as noise), so the variants are read where they still live:
+    the source frame, "from your X note" or "as your X note has it", which an
+    "Ask again" turns."""
     said = {
-        line
+        "from" if ", from your" in line else "has it"
         for q in ("what is the harbor launch plan", "when is the dentist", "what is hydration", "what are the three gates", "what is the Lisbon trip", "what is the Porto trip")
-        for line in ask(q).splitlines()
-        if "only note" in line or "only one" in line
+        for n in range(2)
+        for line in ask(q, attempt=n).splitlines()
+        if ", from your" in line or " has it" in line
     }
     assert len(said) >= 2, said
 
@@ -172,6 +177,8 @@ def test_a_note_opening_on_its_own_day_is_dated_once_and_reported():
     work not have"."""
     from tessellate.ai import composer_digest
 
+    #: A dated line is said only for a question about time (INBOX 1441).
+    composer_digest._set_timing("what did I write on 21 September?")
     said, _ = composer_digest._dated_line(
         "on 21 September, you have work. You need to finish your IT assignment, which is due on Friday.",
         "21 September", 1,
