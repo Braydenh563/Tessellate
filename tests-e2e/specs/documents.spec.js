@@ -136,9 +136,11 @@ test("words typed just before a reload are kept and put back", async ({ page }) 
   await reloadApp(page);
   await page.unroute(saveUrl);
   for (const route of held) await route.abort().catch(() => {});
-  const offer = page.locator(".toast", { hasText: "unsaved changes" });
+  // DX31 (audit 1102): a kept edit made on the text the server still holds is
+  // put back on open, with Undo in the toast, rather than waiting for a press.
+  const offer = page.locator(".toast", { hasText: "Restored your unsaved changes" });
   await expect(offer).toBeVisible({ timeout: 15_000 });
-  await offer.getByRole("button", { name: "Put them back" }).click();
+  await expect(offer.getByRole("button", { name: "Undo" })).toBeVisible();
   await expect(editor).toContainText("Charger for the camera.");
   await expect
     .poll(async () => (await api(page, `/documents/${made.id}`)).content, { message: "the kept words were not saved" })
