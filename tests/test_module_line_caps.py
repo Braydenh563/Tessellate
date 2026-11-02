@@ -1,10 +1,10 @@
 """The god modules' line caps, ratcheted so they only go down (audit AR3,
 ranked row 36, gods-1101).
 
-`composer.py` was 6,376 lines and `routes_chat.py` 6,198 before their layers
+`composer.py` was 6,376 lines, `routes_chat.py` 6,198 and `routes_whiteboard.py` 6,344 before their layers
 were moved out whole, each to a module with one reason to exist that imports
 only the layers below it (the design is in
-docs/roadmap/agent-remaining/gods-1101.md). A cap here is the file's size
+docs/roadmap/agent-remaining/gods-1101.md and gods2-1102.md). A cap here is the file's size
 when that split landed. A file that grows past its cap fails: put the new
 code in the layer it belongs to, or start one. A file that shrinks well
 under its cap fails too, until the cap is lowered to the new size, so the
@@ -22,6 +22,8 @@ ROOT = Path(__file__).resolve().parents[1] / "src" / "tessellate"
 CAPS = {
     "ai/composer.py": 962,
     "api/routes_chat.py": 2474,
+    #: The routes and models moved out whole to the wb_*.py layers; this module only includes them (gods-2).
+    "api/routes_whiteboard.py": 64,
     #: The table moved out whole to help_topics_core.py (audit AI23): 3,740 lines before.
     "ai/help_chat.py": 1370,
     #: The rules and the turn plan moved out whole to agent_policy.py and agent_turn.py (audit AI23).
