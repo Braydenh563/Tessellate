@@ -102,7 +102,8 @@ def test_facts_survive_every_voice_and_emotion(ability):
             for seed in range(6):
                 text = cc.say(ability, cc.mood_of(question, voice=voice, seed=str(seed)), **FACTS[ability])
                 for value in FACTS[ability].values():
-                    assert value in text, (ability, voice, question, value, text)
+                    #: A fact that opens a sentence takes its capital (audit 1028 E27); the words survive.
+                    assert value in text or value[:1].upper() + value[1:] in text, (ability, voice, question, value, text)
 
 
 def test_voices_differ_in_wording_and_rhythm_not_only_the_opener():
