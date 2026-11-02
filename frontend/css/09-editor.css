@@ -180,6 +180,68 @@
   margin-top: 0;
 }
 
+/* **A table in the Read view is set like the prose around it** (audit 1102
+   DX12). It was a grey code card (border, tint, a monospace "TABLE" bar) that
+   shrank to its content: 86 px in a 736 px pane, where Live draws the same
+   table as a plain grid across the page. Now: the page's font, no card, and
+   from three columns the full measure. The bar (Copy, the wrap switch, the
+   ⋯ menu of Markdown, CSV and Full view; `buildTableBlock`, table-block.js)
+   is kept, as the Live view's block bar is: it sits on the table's bottom edge, at the right (the
+   block bar of `docBlockBarShow` has the top one), and shows while the pointer or the focus is in the block. Where there is
+   no hover it stays in the flow above the table. Full view moves the block to
+   the body, out of this selector, and keeps its own panel look. Notes and chat
+   answers use the same renderer and keep the card: this is the preview's. */
+#doc-preview .md-table-block {
+  position: relative;
+  margin: var(--space-6) 0;
+  padding: 0;
+  font: inherit;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow: visible;
+}
+#doc-preview .md-table-block .md-table {
+  font: inherit;
+  width: auto;
+  min-width: 0;
+  max-width: 100%;
+}
+#doc-preview .md-table-block .md-table:has(thead th:nth-child(3)) {
+  width: 100%;
+}
+#doc-preview .md-table-block > .code-bar {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline-end: 0;
+  transform: translateY(50%);
+  z-index: 2;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--motion-fast);
+}
+#doc-preview .md-table-block:is(:hover, :focus-within) > .code-bar {
+  opacity: 1;
+  pointer-events: auto;
+}
+#doc-preview .md-table-block > .code-bar .code-lang {
+  display: none;
+}
+#doc-preview .md-table-block > .code-bar .code-actions {
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+}
+@media (hover: none) {
+  #doc-preview .md-table-block > .code-bar {
+    position: static;
+    justify-content: flex-end;
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
 /* **A quotation in the rendered view** (DOCUMENTS_PLAN 17c). The document's
    preview had no rule for `blockquote` at all, so a quotation was the
    browser's default: a 40px indent, the body ink, no bar, and nothing to say
