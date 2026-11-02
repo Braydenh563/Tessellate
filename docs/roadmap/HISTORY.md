@@ -51850,3 +51850,7 @@ From OPEN.md row 819 and the audit rows `audit-1028-docs.md` D12, D35 and D38, `
 - D35: a document that cannot be fetched toasts with Try again and repaints the list (`tests/test_open_document_failure_d35.py`).
 - D12: Replace in every document reads the texts once per opening; measured in Chromium, 3 requests for three keystrokes before and 1 after (`tests/test_documents_replace_all.py`).
 - DC13 (part): `documents.js` 21,710 to 20,737 lines; `documents-replace.js`, `documents-export.js` and `documents-ai.js` are lazy files fetched by `openDocReplace`, `exportDocumentHtml` and `exportDocumentPdf`, and `docAiLazy`. None is a boot file, so the gzip total did not move.
+## INBOX resolved, 2026-11-02
+
+- **1529 (owner decisions, 2026-11-01):** **Fixed a69fbaa** (gr1b: Tidy spacing, off by default; 2,000 notes 137 to 154 ms a tick on, 40 to 44 ms off; PF2 and the chat cap are decisions, recorded here). gr1b: a Graph setting "Tidy spacing" off by default, so the 53,000 clearance checks a tick at 2,000 notes run only when it is on (fast by default). PF2: keep the companion's current look, polish only (animations, performance). Chat send stays 20,000 characters (INBOX 1528). PR 211: the owner merges it; the remaining work goes on a fresh PR (HANDOVER "Next PR queue").
+
