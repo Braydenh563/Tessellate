@@ -1234,6 +1234,7 @@ function releaseChatComposer({ announce = true } = {}) {
   //: Called by every way out of a chat: the page it read is that chat's.
   chatWeb.lastUrl = null;
   if (!chatController || !chatStreaming) return;
+  $("chat-messages").removeAttribute("aria-busy"); // this transcript is no longer the one streaming
   const input = $("chat-input");
   input.disabled = false;
   show("chat-send");

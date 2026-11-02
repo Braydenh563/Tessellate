@@ -328,6 +328,8 @@ async function chatSendTurn(preset, opts = {}) {
   const touchedItems = new Map();
   chatController = new AbortController();
   const controller = chatController;
+  //: Half-rendered markdown is not read out frame by frame while it streams (E68).
+  $("chat-messages").setAttribute("aria-busy", "true");
   //: The app's mark lifts its cells while a turn runs (phone-shell.js).
   syncEmblemBusy();
   //: Atlas looks up to think while a turn runs (avatars.js).
@@ -819,6 +821,7 @@ async function chatSendTurn(preset, opts = {}) {
     // leaving Stop wired to nothing while a stream was genuinely running.
     if (chatController === controller) {
       chatController = null;
+      $("chat-messages").removeAttribute("aria-busy"); // end, error and Stop all land here
       stopChatTimer();
       syncEmblemBusy();
       // The turn is over: it is saved (or about to be) and a reload of this
@@ -2379,6 +2382,8 @@ function addBubble(role, text, attachments = null) {
   //: The words as sent, so ArrowUp in an empty composer can reopen the last
   //: question for editing without reading them back out of the rendered DOM.
   if (role === "user" && typeof text === "string") bubble.dataset.sent = text;
+  //: The saved turn this question will be (E49): chat-edit.js cuts from it.
+  if (role === "user") bubble.dataset.turn = String(chatConv.turns.length);
 
   const label = document.createElement("div");
   label.className = "msg-role";
@@ -2504,7 +2509,25 @@ function assistantMessageActions({ bubble, text, question, onEdit }) {
       title: "Fork the conversation from here",
       onClick: () => forkFromBubble(bubble),
     },
-    { label: "ph:speaker-high", title: "Read aloud", onClick: () => speakText(text) },
+    {
+      label: "ph:speaker-high",
+      title: "Read aloud",
+      speak: true,
+      //: Turns to Stop reading for as long as it speaks, the icon button and the same
+      //: item in the ⋯ menu alike (both carry `data-speak`, chatMessageActions).
+      onClick: () => {
+        const said = speakText(text);
+        const paint = (on) => {
+          for (const row of document.querySelectorAll("[data-speak]")) {
+            row.title = on ? "Stop reading" : "Read aloud";
+            setLabel(row, `ph:${on ? "stop" : "speaker-high"}${row.classList.contains("menu-item") ? ` ${row.title}` : ""}`);
+            row.setAttribute("aria-label", row.title);
+          }
+        };
+        if (said) said.onstart = () => paint(true);
+        if (said) said.onend = said.onerror = () => paint(false);
+      },
+    },
     {
       label: "ph:note-pencil",
       title: "Save this answer as a draft note",
@@ -2589,6 +2612,8 @@ async function deleteChatTurn(assistantBubble) {
   }
   // The user bubble is the one immediately before this assistant bubble.
   const userBubble = assistantBubble.previousElementSibling;
+  //: Later questions move up one saved turn (E49).
+  for (let node = assistantBubble; (node = node.nextElementSibling); ) if (node.dataset.turn) node.dataset.turn -= 1;
   if (userBubble && userBubble.classList.contains("user")) dropChatBubble(userBubble);
   assistantBubble.remove();
   chatConv.turns.splice(index, 1);

@@ -393,6 +393,12 @@ $("chat-private-toggle").addEventListener("click", chatPrivateToggle);
     loadConversationList();
   });
 }
+//: E47: search the saved chats. A search field clears itself with its X (and Escape, where
+//: the browser does that) and says `input`, so one listener covers both.
+$("chat-sidebar-search").addEventListener("input", () => {
+  clearTimeout(loadConversationList.wait);
+  loadConversationList.wait = setTimeout(loadConversationList, 200);
+});
 $("persona-peek").addEventListener("click", togglePersonaPrompt);
 $("chat-tune-search").addEventListener("click", () => {
   closeChatDockMore();

@@ -203,15 +203,20 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 197 | K23 | low | token and ticket dicts mutated from several threads | fixed 1031 (snapshots and pop) | S |
 | 198 | K38 | low | media-link tickets reusable and in URL query string | not reproduced 1031: `once` is redacted in the access line (QueryScrubFilter, tests/test_audit_1028_k_rows.py); reusable by design for PDF range requests | S |
 | 199 | E46 | low | chat sidebar sort covers only the first page | docs/roadmap/BACKLOG.md:1148 | S |
-| 200 | E47 | low | no search of chats in the chat sidebar | new | S |
-| 201 | E49 | low | editAndResend derives turn from DOM bubble index | new | S |
+| 200 | E47 | low | no search of chats in the chat sidebar | fixed 2026-11-02 (bbc8003) | S |
+| 201 | E49 | low | editAndResend derives turn from DOM bubble index | fixed 2026-11-02 (c589253) | S |
 | 202 | E55 | low | untag with no tag named falls through to Q&A | new | S |
 | 203 | E56 | low | app-control phrases like timer and pomodoro parse to nothing | new | M |
 | 204 | E59 | low | no per-answer thumbs feedback | new | M |
 | 205 | E60 | low | no regenerate with another model, no continue after Stop | new | M |
 | 206 | E62 | low | regenerate rewords but cannot widen retrieval | new | M |
+<<<<<<< HEAD
 | 207 | E64 | low | internal ids and test notes in student-facing text | fixed 2026-11-02 (9a750b3) | S |
 | 208 | E71 | low | read aloud has no stop or speed control, unverified | new | S |
+=======
+| 207 | E64 | low | internal ids and test notes in student-facing text | new | S |
+| 208 | E71 | low | read aloud has no stop or speed control, unverified | fixed 2026-11-02 (1f67c2b) | S |
+>>>>>>> agent/a28u-1102
 | 209 | S70 | low | no note count per tag chip | already built (tag chip counts, measured) | S |
 | 210 | S71 | low | no drag and drop of files into the list | new | M |
 | 211 | S72 | low | no quick-capture hint on first run | fixed (b8cfb46) | S |
@@ -228,15 +233,20 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 222 | D48 | low | controls hidden in dock-menu flyouts reparented to body | new | M |
 | 223 | D53 | low | code run output truncated silently at 4,000 chars | new | S |
 | 224 | E37 | low | AI status control reads as an error, red circle with x | new | S |
-| 225 | E41 | low | models pane jargon and redundant Use this model button | new | S |
+| 225 | E41 | low | models pane jargon and redundant Use this model button | fixed 2026-11-02 (5ed769f) | S |
 | 226 | E51 | low | citation mark lands mid-sentence, date-only source | docs/roadmap/CHAT_PLAN.md:1810 | S |
 | 227 | E52 | low | coaching tip appended inside answer text | new | S |
 | 228 | E53 | low | double greeting and last-time line from app-made note | new | S |
 | 229 | E54 | low | identity muddled between Atlas and Tessellate | docs/roadmap/CHAT_PLAN.md:460 | S |
-| 230 | E61 | low | disabled Plan and Agent explain need only on hover | new | S |
+| 230 | E61 | low | disabled Plan and Agent explain need only on hover | fixed 2026-11-02 (1789f37) | S |
 | 231 | E63 | low | three clauses joined as a run-on, no list | new | S |
+<<<<<<< HEAD
 | 232 | E67 | low | next chip row offers a single chip | fixed 2026-11-02 (2f1213f) | S |
 | 233 | E68 | low | typing dots role=status, no aria-busy on transcript | new | S |
+=======
+| 232 | E67 | low | next chip row offers a single chip | new | S |
+| 233 | E68 | low | typing dots role=status, no aria-busy on transcript | fixed 2026-11-02 (ecb69a5) | S |
+>>>>>>> agent/a28u-1102
 | 234 | E69 | low | chat autocorrect runs on names and codes unseen | new | S |
 | 235 | E72 | low | Why trail shows timing lines and a wrong nothing matched | new | S |
 | 236 | S55 | low | settings labels mix case against sentence case | new | S |

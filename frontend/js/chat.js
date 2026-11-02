@@ -842,11 +842,11 @@ async function renderModelSpec(modelName) {
     // cache scales with the window, without both numbers the percentage on
     // each message looks wrong to anyone who knows what the model can hold.
     [
-      "Context window",
+      "Reads at once",
       spec.context_length
-        ? `${compactTokens(spec.usable_context)} in use` +
+        ? `${compactTokens(spec.usable_context)} tokens` +
           (spec.context_length > spec.usable_context
-            ? ` (of ${compactTokens(spec.context_length)} it can hold)`
+            ? ` (it can hold ${compactTokens(spec.context_length)})`
             : "")
         : null,
     ],
@@ -858,7 +858,7 @@ async function renderModelSpec(modelName) {
     // model can still emit inline <think> tags without declaring it, which
     // `split_thinking` picks up and shows. Saying "declared" makes the two
     // facts distinguishable instead of contradictory.
-    ["Thinking mode declared", canDo(spec.supports_thinking)],
+    ["Thinking switch", canDo(spec.supports_thinking)],
     ["Can see images", canDo(spec.supports_vision)],
   ].filter(([, value]) => value != null && value !== "");
 
