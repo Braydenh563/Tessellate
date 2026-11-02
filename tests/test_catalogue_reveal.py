@@ -54,6 +54,7 @@ SCRIPTS = (
     "documents-math.js",
     "documents-comments.js",
     "documents-embeds.js",
+    "documents-tables.js",
     "library.js",
     "dashboard.js",
     "settings.js",

@@ -1736,16 +1736,12 @@ const LAZY_MODULES = {
   //: Tidy, the reviews with no AI (INBOX 691): tidy.js's header.
   tidy: ["/css/tidy-lazy.css", "/js/tidy.js"],
   semanticNotice: ["/css/semantic-notice-lazy.css", "/js/semantic-notice.js"],
-  //: The order the `<script>` tags had, kept: every cross-file call between these three is inside a function rather than at parse time, so it is not load-bearing, but it is the order the three files' own headers describe. documents-code.js and documents-prose.js were split out of documents.js (2026-09-24) and go *before* it, and that position is load-bearing: their own top level reads nothing from documents.js, while documents.js's top-level wiring names their functions, and each file here is followed by a microtask checkpoint before the next one runs. See their headers. documents-props.js, documents-mermaid.js, documents-math.js, documents-comments.js and documents-embeds.js (DC13) go before it likewise, as does whiteboard-map.js before whiteboard.js.
+  //: The order the `<script>` tags had, kept: every cross-file call between these three is inside a function rather than at parse time, so it is not load-bearing, but it is the order the three files' own headers describe. documents-code.js and documents-prose.js were split out of documents.js (2026-09-24) and go *before* it, and that position is load-bearing: their own top level reads nothing from documents.js, while documents.js's top-level wiring names their functions, and each file here is followed by a microtask checkpoint before the next one runs. See their headers. documents-props.js, documents-mermaid.js, documents-math.js, documents-comments.js, documents-embeds.js and documents-tables.js (DC13) go before it likewise, as does whiteboard-map.js before whiteboard.js.
   library: [
-    //: d3 before whiteboard.js, whose top level calls `d3.zoom()`.
-    "/vendor/d3.v7.min.js",
-    //: The styles only this bundle's surfaces draw, out of the boot budget.
-    "/css/library-lazy.css",
-    //: First: the stored undo histories both editors read (undo-store.js).
-    "/js/undo-store.js",
-    //: The Attach picker's row, drawn synchronously by the board pickers.
-    "/js/pick-row.js",
+    "/vendor/d3.v7.min.js", //: Before whiteboard.js, whose top level calls `d3.zoom()`.
+    "/css/library-lazy.css", //: The styles only this bundle's surfaces draw, out of the boot budget.
+    "/js/undo-store.js", //: First: the stored undo histories both editors read.
+    "/js/pick-row.js", //: The Attach picker's row, drawn synchronously by the board pickers.
     "/js/image-layout.js",
     //: Before the editors: it holds the file-type table they read.
     "/js/library.js",
@@ -1757,6 +1753,7 @@ const LAZY_MODULES = {
     "/js/documents-math.js",
     "/js/documents-comments.js",
     "/js/documents-embeds.js",
+    "/js/documents-tables.js",
     "/js/autocorrect.js",
     "/js/documents.js",
     "/js/margin-reader.js",
@@ -1772,10 +1769,7 @@ const LAZY_MODULES = {
   ],
 };
 
-//: Which bundle a tab needs before its own dispatch runs. `documents` is the
-//: document editor the Library opens, which is why it shares the Library's
-//: bundle rather than having one of its own.
-//: INBOX 519: a boot fetch can answer between two scripts, before dashboard.js.
+//: Which bundle a tab needs before its own dispatch runs. `documents` is the document editor the Library opens, which is why it shares the Library's bundle rather than having one of its own. INBOX 519: a boot fetch can answer between two scripts, before dashboard.js.
 function whenScriptsLoaded() {
   if (document.readyState !== "loading") return Promise.resolve();
   return new Promise((resolve) => document.addEventListener("DOMContentLoaded", resolve, { once: true }));
