@@ -49,6 +49,7 @@ SCRIPTS = (
     "graph.js",
     "graph-canvas.js",
     "documents.js",
+    "documents-props.js",
     "library.js",
     "dashboard.js",
     "settings.js",
