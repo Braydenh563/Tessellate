@@ -104,3 +104,6 @@ date | item | type | rung | rework | note
 2026-11-02 | a28c composer rows E18 E25 E29 E64 E67 E24 + INBOX 1532 | fix | sonnet | 0 | 
 2026-11-02 | a28u chat UI rows E47 E49 E61 E68 E71 E41 | fix | sonnet | 0 | 
 2026-11-02 | a28s shell/board rows S62 S92 U38 U48 B32 B28 B34 D53 K35 | fix | sonnet | 0 | 
+2026-11-02 | 1554 companion menu choose before Settings | bugfix | opus | 0 | 
+2026-11-02 | 1555 caption cut at noun-verb; frame; link label | bugfix | opus | 0 | 
+2026-11-02 | a28m math panel 1537-1541 | feature | sonnet | 0 | 
