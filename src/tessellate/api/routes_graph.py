@@ -28,12 +28,13 @@ from tessellate.ai.embeddings import bytes_to_vector, similar_pairs
 from tessellate.api import bounds
 from tessellate.core import cjk
 from tessellate.core import deps
-from tessellate.core.database import Attachment, EmbeddingRecord, Entry, EntryLink, NoteType
+from tessellate.core.database import Attachment, EmbeddingRecord, Entry, NoteType
 from tessellate.core.deps import get_session
 from tessellate.entry import manager, paths
 from tessellate.repo import documents as documents_repo
 from tessellate.repo import properties as properties_repo
 from tessellate.repo import relation_types
+from tessellate.repo import relations as relations_repo
 from tessellate.entry import topics as topic_finder
 from tessellate.search import search_manager
 
@@ -118,8 +119,8 @@ def _graph_fingerprint(session: Session) -> tuple:
         tuple(sorted(session.info.get("hidden_workspaces") or ())),
         session.scalar(select(func.count(Entry.id)).where(live)) or 0,
         session.scalar(select(func.max(Entry.updated_at)).where(live)),
-        session.scalar(select(func.count(EntryLink.id))) or 0,
-        session.scalar(select(func.max(EntryLink.created_at))),
+        relations_repo.count(session),
+        relations_repo.newest(session),
     )
 
 
@@ -715,14 +716,7 @@ def _payload_key(session: Session, similarity: bool, include_maps: bool, include
         )
     )
     feed(session.execute(select(Category.id, Category.name).order_by(Category.id)))
-    feed(
-        session.execute(
-            select(
-                EntryLink.id, EntryLink.source_entry_id, EntryLink.target_entry_id, EntryLink.reason,
-                EntryLink.reason_confidence, EntryLink.link_type, EntryLink.two_way,
-            ).order_by(EntryLink.id)
-        )
-    )
+    feed(relations_repo.columns(session, ordered=True))
     feed(session.execute(select(Attachment.entry_id).distinct().order_by(Attachment.entry_id)))
     feed(
         session.execute(
@@ -951,17 +945,7 @@ def _note_nodes(session: Session, entries: list, node_ids: set[int]) -> list[dic
 def _link_edges(session: Session, node_ids: set[int], taken: set[frozenset[int]]) -> list[dict]:
     edges: list[dict] = []
     types = relation_types.kinds(session)
-    for link in session.execute(
-        select(
-            EntryLink.id,
-            EntryLink.source_entry_id,
-            EntryLink.target_entry_id,
-            EntryLink.reason,
-            EntryLink.reason_confidence,
-            EntryLink.link_type,
-            EntryLink.two_way,
-        )
-    ):
+    for link in relations_repo.columns(session):
         if link.source_entry_id in node_ids and link.target_entry_id in node_ids:
             pair = frozenset((link.source_entry_id, link.target_entry_id))
             if pair not in taken:
@@ -1252,9 +1236,7 @@ def _local_topology(session: Session, similarity: bool) -> tuple[paths.Connectio
         #: from the note to its reply, as on `/graph`); tags and similarity
         #: have no direction and pass either switch.
         directed: dict[frozenset, tuple[int, int]] = {}
-        for source, target in session.execute(
-            select(EntryLink.source_entry_id, EntryLink.target_entry_id)
-        ):
+        for source, target in relations_repo.pairs(session):
             directed.setdefault(frozenset((source, target)), (source, target))
         for entry in index.entries.values():
             if entry.parent_id in index.entries and entry.parent_id != entry.id:
