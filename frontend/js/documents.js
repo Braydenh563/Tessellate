@@ -8121,6 +8121,10 @@ function docColumnsArrowKeymap(CM) {
 }
 
 
+//: State the Phase 2 pieces share: the pending Mermaid pictures and its Live field (documents-mermaid.js), the image refocus and the print sheet.
+const docPhase2State = { mermaidDrawn: Promise.resolve(), mermaidReady: false, mermaidFieldCache: null, imageRefocus: null, printSheet: null };
+
+
 // -----------------------------------------------------------------------------
 // Mermaid fences (DOCUMENTS_PLAN decisions 3 and 6, BACKLOG steps 8 and 12b)
 // -----------------------------------------------------------------------------
@@ -8429,8 +8433,6 @@ async function docMermaidWhenDrawn() {
 //: state field for the reason the columns block gives (a replace that spans
 //: line breaks may not come from a plugin). Pressing the figure puts the
 //: caret on the fence's first line, which shows the text to edit.
-const docPhase2State = { mermaidDrawn: Promise.resolve(), mermaidReady: false, mermaidFieldCache: null, imageRefocus: null, printSheet: null };
-
 function docMermaidBlocks(text) {
   const blocks = [];
   const re = /^```[ \t]*mermaid[^\n]*\n([\s\S]*?)\n```[ \t]*$/gm;
