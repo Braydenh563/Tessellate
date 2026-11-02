@@ -5705,7 +5705,8 @@ def test_a_rows_repeated_action_is_quiet_and_three_fold_into_its_menu() -> None:
         r"button\.ghost\.quiet\.danger:hover,\s*button\.ghost\.quiet\.danger:is\(:focus-visible, :has\(:focus-visible\)\) \{[^}]*color: var\(--error\)",
         css,
     )
-    for name, needle in (("settings.js", "rowActions(acts, "), ("settings-data.js", "rowActions([")):
+    # The learned row (rowActions(acts, ...)) moved to settings-controls.js with the Learned section, 2026-11-02.
+    for name, needle in (("settings-controls.js", "rowActions(acts, "), ("settings-data.js", "rowActions([")):
         assert needle in (ROOT / "frontend" / "js" / name).read_text(encoding="utf-8"), name
 
 

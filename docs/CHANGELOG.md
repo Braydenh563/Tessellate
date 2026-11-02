@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Learned settings section moved from boot settings.js into lazy settings-controls.js: boot settings.js gzip 68,790 to 61,561 bytes (eager headroom for the next boot change).
 - The block-based Mermaid diagram builder (INBOX 1546) is designed in DOCUMENTS_PLAN.md ("1546 design": the model, two-way sync, surfaces, interaction, budgets and five build rows); DOCUMENTS Phase 7's record moved to HISTORY.md.
 - Settings, Search and index: once the model is downloaded the switch reads "Repair search by meaning by itself" instead of offering a download, and a model the app cannot fetch is marked "Through Ollama" (INBOX 1533).
 - The companion's beat keeps its measure of the page's controls while nothing has changed it (a beat on a still page swept every control again: 224ms at 4x CPU, 31ms forced; the sweep over 12 beats 29 to 4ms on the dashboard, 202 to 90ms in the Library). A mood's return writes its ease inside the hand-over, after the hand-over has read, and the tail's beat reads before it writes (60 s of idle at 4x CPU: forced style in the tail's beat 493 to 211ms, the rest's release max 250 to 28ms) (INBOX 1534).
