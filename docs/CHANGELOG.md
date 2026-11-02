@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The graph worker's cold settle with Tidy spacing on is 1 to 1.4 s shorter at 2,000 notes (median of 5, node, fixed seed: init to end 9.9 s, now 9.0 s here): the line-clearance force runs on every second one of the first 60 ticks (pushing twice as hard on the ones it runs) and reads a long chord's column as one run of cells (the pushes are identical to the last digit; the force 184 against 205 ms a call). Crossings and line-through-dot pairs at 2,000 notes: 61,377 to 61,642 and 5,397 to 5,254; at 500 notes on a fixed clock over three seeds: 2,195 to 2,111 and 217 to 195. With Tidy spacing off, its default, the force never runs and the settle is unchanged (5.4 s at 2,000 notes) (GR1, ranked row 19).
 - The composer imports cold in 0.083 s, was 0.107 to 0.124 s here and 0.21 to 0.22 s on CI against its 0.2 s budget: the patterns of `ai/recognise.py`, `ai/composer_ask.py` and `core/cjk.py` compile on first use (`core/lazyre.py`).
 - The model status poll that reports a finished download lists the new model: it waits, once per download and at most 0.2 s, for a model list asked after the download ended, where it used to serve the list from before it on a busy machine (CI on PR 212).
 - The note picker's preview shows a picture that sits past a list row's first 300 characters, read from the whole note (fix1525b finding).
