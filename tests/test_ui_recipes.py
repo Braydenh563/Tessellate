@@ -194,6 +194,25 @@ def test_a_submenu_is_a_menu_in_a_menu_with_a_nested_level_where_a_flyout_cannot
     assert "OBJ_MENU_FOLD = 10" in clip and "buildMenuGroupButton(" in clip, "a card's own rows no longer fold past ten"
 
 
+def test_a_dock_menu_flyout_walks_by_keyboard_and_leaves_with_escape_and_tab() -> None:
+    """Audit D48 (2026-11-02), driven with the keyboard in the Documents editor
+    (3 groups): a flyout's rows are the dock's own buttons and switches, which
+    carry no `role`, so Right on a group row left the focus there; the first
+    Escape in a flyout closed the whole menu from navigation.js's capture
+    handler and left the flyout drawn at `<body>`; and Tab walked off the end
+    of the document. Documents' own wiring (a lazy file, outside the boot gzip
+    ratchet) walks the rows and a `window` capture listener, which runs before
+    the `document` one, closes the flyout first."""
+    docs = documents_text()
+    body = docs.split("function foldDocMenuGroup(", 1)[1].split("const docDownloadGroup", 1)[0]
+    assert "const rowsOf = " in body and "getClientRects().length" in body, "the flyout's rows are not walked by the keyboard"
+    assert 'label:not(.hidden) > input' in body, "a switch row is unreachable by the keyboard again"
+    assert '"ArrowRight", "Enter", " "' in body, "Right on a group row no longer moves the focus into its flyout"
+    assert re.search(r'window\.addEventListener\(\s*"keydown",.*?closeActionMenus\(\);', docs.split("function foldDocMenuGroup(", 1)[1], re.S), (
+        "Escape and Tab no longer close a flyout before the menu's own Escape runs"
+    )
+
+
 def test_a_pointer_anchored_menu_is_the_recipe() -> None:
     """A right-click or long-press menu is `openMenuAtPoint`, not a new shape.
 
