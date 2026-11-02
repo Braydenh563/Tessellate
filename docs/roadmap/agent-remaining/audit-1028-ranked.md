@@ -257,7 +257,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 251 | S87 | low | dashboard counts do not link to filtered views | new | S |
 | 252 | S88 | low | search results lack term highlighting | new | S |
 | 253 | S89 | low | export has no format picker | new | S |
-| 254 | S91 | low | document title and language do not update per view | new | S |
+| 254 | S91 | low | document title and language do not update per view | fixed (router.js routerPaintTitle, found already fixed 2026-11-02) | S |
 | 255 | S92 | low | no live region for list loading and counts | new | S |
 | 256 | S94 | low | offline indicator does not say what still works | new | S |
 | 257 | U38 | low | duplicate document titles allowed silently | new | S |
@@ -279,7 +279,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 273 | E65 | low | NoteView not cached, notes re-read per question | new | M |
 | 274 | S64 | low | mascot and avatar assets load even when disabled | new | S |
 | 275 | S65 | low | service worker precache not trimmed to critical assets | new | M |
-| 276 | S90 | low | palette rebuilds 103 commands on each open | new | S |
+| 276 | S90 | low | palette rebuilds 103 commands on each open | closed 2026-11-02 (a28s-S90: rebuild measured 0.02 ms of an 11.4 ms open, no cache) | S |
 | 277 | B24 | low | plan-history markers and decision numbers in code comments | new | S |
 | 278 | B30 | low | library, interchange and templates load up front | new | M |
 | 279 | B37 | low | routes_whiteboard.py is 6,123 lines in one router | new | M |
