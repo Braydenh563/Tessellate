@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Plans: ten UI_MODERNISATION rows that the code and its tests already satisfy (indent guides, card dates, boards kept out of notes, a board's modified time, the one-row no-model notice, the lightbox row height, one open graph menu, Tidy review and recent runs, menu end gaps) moved to HISTORY.md as built (a30b).
 - A sheet whose focus arrived by itself still re-measures the toasts once it settles: the import card moved after the focusin check, so the search-by-meaning question covered Import (E2E import, fifth head).
 - A toast steps aside for an open sheet's buttons even when nothing is focused: on CI the focus never reached the import preview, so the search-by-meaning question kept the Import press (E2E import, red on both tries); the chat file tests find the chat's own model request, not the last call.
 - Full-suite fallout of the DX29 and INBOX 1545 merges: the drag grip's hover has its keyboard twin, the export's icon font fetch (static /vendor) is allowed, the wrap toggle test reads DX23's boolean.

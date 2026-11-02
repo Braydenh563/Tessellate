@@ -51943,3 +51943,22 @@ plans, 2026-09-13". The python-docx row is closed too: `core/extras.py` has
    `.docx` from the editor's model), both vendored under `frontend/vendor`
    with their notices in THIRD_PARTY.md. The python-docx extra, its route
    and `docexport.to_docx` are retired (Brief 42, docs42b, 2026-10-10).
+
+## Moved from the plans, 2026-11-02 (a30b: UI_MODERNISATION rows found built)
+
+From UI_MODERNISATION_PLAN.md, each checked against the code and its test on 2026-11-02 and found already built; the plan text is below as it stood.
+
+Evidence: indent guides, `docIndentGuides` (documents-code.js) with `tests/test_code_vscode.py` (section 6, lines 229 to 274); INBOX 760, `tests/test_ui_recipes.py::test_a_note_cards_details_line_ends_the_card_and_keeps_the_space_before_edited`; INBOX 761, `tests/test_note_order_1345.py` and `tests/test_search_maps.py` (a board is a board, not a note), CHANGELOG line "mind maps and boards no longer appear as notes"; INBOX 762, `tests/test_board_modified_time.py`; INBOX 767, `tests/test_ui_recipes.py::test_the_no_model_notice_is_one_row_on_the_notice_recipe`; the lightbox row, `tests/test_lightbox.py::test_the_lightbox_row_is_one_height`; INBOX 796, `tests/test_menus_close_others.py` (`GRAPH_HEAD_MENUS`, graph.js); T1 and T2, tidy.js (comments "(T1)", "(T2)"); T4, `tests/test_ui_recipes.py::test_a_menu_has_no_gap_at_its_ends`. All of these tests pass on this branch.
+
+- 8, indent guides in the code editor: Brief 42 (DOCUMENTS 25 row 3); the active line is built.
+- **INBOX 760, card dates.** The time floats mid-card on a card the grid stretched taller than its content (about 110px under it on the tallest card, 40px on short ones); "1 week ago· edited" has lost its space. Pin the details line to the card's bottom edge, measured on a row of unequal cards; the space restored. Carddate agent.
+- **INBOX 761, mind maps listed as notes.** The Ask results show a mind map as an Uncategorised note card; check every reader of notes (Ask, Notes, search, graph, timeline, dashboard counts, Find anything, palette) and exclude what a board keeps behind its topics, with a test per reader. Mapnotes agent.
+- **INBOX 762, "just now" on an untouched mind map.** The Library card's modified time moved without the owner; find what writes `updated_at` on a board when it is only opened, listed, indexed, searched or thumbnailed, stop it, and pin it with a test. Mapnotes agent.
+- **INBOX 767, the no-model notice.** One row at 1440 (icon, one short sentence, the action as a link-styled button, the X at the end), wraps to two only under 600px; the five surfaces share it (`renderAiOfflineNotice`). Measured: notice height equals one line height plus padding at 1440; copy under 90 characters. Notice agent.
+- "These elements in the lightbox aren’t the same height"
+  Recommendation: give lightbox controls one height token and measure their heights in the sweep. No brief carries it; Brief 41 (density) is the nearest.
+- INBOX 796, bug, graph, the owner 2026-10-10 23:00Z, two screenshots: "dropdown menus in the graph dont close when another is opened causing a visual clash and overlay for all 3 of these buttons" (the ?, settings and ⋯ menus in the graph head open on top of each other.) Owner: graphfeel.
+- T1. Tidy is one list of reviews with counts; a review opens in place with a back link (not a bordered button beside a small title), its one-line description, and its rows. An empty review says so in one line with no selection bar: All, None and the disabled action show only when there are rows.
+- T2. Recent runs is a quiet disclosure row (DESIGN "Row actions"), not a full-width bordered box.
+- T4. A menu's first and last items sit one menu padding from its edge, never a group label's or a separator's gap (owner: grammar57, with 813's one dropdown grammar).
+Rows: T1 and T2 (owner: voiceup, with V7's dialog work); T3 learnaudit; T4 grammar57.
