@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The composer imports cold in 0.083 s, was 0.107 to 0.124 s here and 0.21 to 0.22 s on CI against its 0.2 s budget: the patterns of `ai/recognise.py`, `ai/composer_ask.py` and `core/cjk.py` compile on first use (`core/lazyre.py`).
 - The model status poll that reports a finished download lists the new model: it waits, once per download and at most 0.2 s, for a model list asked after the download ended, where it used to serve the list from before it on a busy machine (CI on PR 212).
 - The note picker's preview shows a picture that sits past a list row's first 300 characters, read from the whole note (fix1525b finding).
 - A long question in Chat shows its first 2,000 characters with Show more: a 20,000-character question's bubble is 387 px tall, was 3,352, and lays out in 11 ms, was 21 ms at 4x; Edit, the transcript and Copy read the words as sent (warm12-1101 leftover).
