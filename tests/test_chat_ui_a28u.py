@@ -44,3 +44,14 @@ def test_e61_plan_and_agent_say_why_in_view_and_stay_reachable():
     assert 'setAttribute("aria-disabled", "true")' in body
     assert "agentButton.disabled" not in body
     assert "dataset.modelOffer" in body and "dataset.needsModel" in body
+
+
+def test_e68_the_transcript_is_busy_while_an_answer_streams():
+    turn = (JS_DIR / "chat-turn.js").read_text(encoding="utf-8")
+    start = turn.index("chatController = new AbortController();")
+    assert 'setAttribute("aria-busy", "true")' in turn[start : start + 600]
+    # Cleared where the one controller is let go: end, error and Stop all reach it.
+    done = turn.index("chatController = null;")
+    assert '$("chat-messages").removeAttribute("aria-busy")' in turn[done - 200 : done + 300]
+    assert 'removeAttribute("aria-busy")' in (JS_DIR / "chat-attach.js").read_text(encoding="utf-8")
+    assert 'setAttribute("aria-busy", "true")' in (JS_DIR / "answer-kit.js").read_text(encoding="utf-8")

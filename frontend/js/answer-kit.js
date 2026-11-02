@@ -2671,6 +2671,7 @@ function reattachStreamingTurn() {
   const host = $("chat-messages");
   clearChatEmptyState();
   for (const node of chatStreaming.nodes) host.appendChild(node);
+  if (chatController) host.setAttribute("aria-busy", "true"); // streaming again in view
   chatScrollToEnd();
   return true;
 }

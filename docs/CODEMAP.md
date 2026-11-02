@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7558, frontend ids 2634, CSS sections 517, backend routes 640, backend modules 8470, test files 1844, tests 15739, plan headings 990, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7558, frontend ids 2634, CSS sections 517, backend routes 640, backend modules 8470, test files 1844, tests 15740, plan headings 990, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7558)
 
@@ -535,25 +535,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `attachSelectionContext` | frontend/js/chat-attach.js:537 |
 | `attachedNotes` | frontend/js/chat-attach.js:590 |
 | `attachmentChip` | frontend/js/chat-attach.js:87 |
-| `chatDeleteUndo` | frontend/js/chat-attach.js:1354 |
+| `chatDeleteUndo` | frontend/js/chat-attach.js:1355 |
 | `chatDockMoreOpen` | frontend/js/chat-attach.js:1099 |
-| `chatLeaveHeld` | frontend/js/chat-attach.js:1263 |
+| `chatLeaveHeld` | frontend/js/chat-attach.js:1264 |
 | `chatQueueShow` | frontend/js/chat-attach.js:1179 |
 | `chatTidyTyped` | frontend/js/chat-attach.js:1148 |
-| `chatWriteRecord` | frontend/js/chat-attach.js:1383 |
+| `chatWriteRecord` | frontend/js/chat-attach.js:1384 |
 | `clearSelectionAttachment` | frontend/js/chat-attach.js:561 |
 | `closeChatDockMore` | frontend/js/chat-attach.js:1136 |
 | `closeExtractPreview` | frontend/js/chat-attach.js:54 |
 | `closeNotePicker` | frontend/js/chat-attach.js:1083 |
-| `deleteCurrentChat` | frontend/js/chat-attach.js:1328 |
-| `exportChatMarkdown` | frontend/js/chat-attach.js:1388 |
+| `deleteCurrentChat` | frontend/js/chat-attach.js:1329 |
+| `exportChatMarkdown` | frontend/js/chat-attach.js:1389 |
 | `flattenNoteMarkdown` | frontend/js/chat-attach.js:619 |
 | `followupMatches` | frontend/js/chat-attach.js:1189 |
 | `followupTrail` | frontend/js/chat-attach.js:1192 |
 | `importChatDocuments` | frontend/js/chat-attach.js:301 |
 | `isImageFile` | frontend/js/chat-attach.js:252 |
 | `keepUnreadableChatFile` | frontend/js/chat-attach.js:272 |
-| `newChatConversation` | frontend/js/chat-attach.js:1274 |
+| `newChatConversation` | frontend/js/chat-attach.js:1275 |
 | `noteLabel` | frontend/js/chat-attach.js:596 |
 | `noteNamePlain` | frontend/js/chat-attach.js:656 |
 | `notePickerColumns` | frontend/js/chat-attach.js:943 |
@@ -569,7 +569,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openExtractPreview` | frontend/js/chat-attach.js:22 |
 | `openNotePicker` | frontend/js/chat-attach.js:1045 |
 | `plainText` | frontend/js/chat-attach.js:634 |
-| `promptTitle` | frontend/js/chat-attach.js:1372 |
+| `promptTitle` | frontend/js/chat-attach.js:1373 |
 | `releaseChatComposer` | frontend/js/chat-attach.js:1233 |
 | `renderAttachments` | frontend/js/chat-attach.js:709 |
 | `renderBoardAttachments` | frontend/js/chat-attach.js:456 |
@@ -581,7 +581,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `setActiveChoice` | frontend/js/chat-attach.js:642 |
 | `setNoteLabel` | frontend/js/chat-attach.js:666 |
 | `setNotePickerSource` | frontend/js/chat-attach.js:1018 |
-| `syncChatPrivate` | frontend/js/chat-attach.js:1269 |
+| `syncChatPrivate` | frontend/js/chat-attach.js:1270 |
 
 ### frontend/js/sheets-selects.js (55)
 
@@ -1863,13 +1863,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `actNavigate` | frontend/js/answer-kit.js:2195 |
 | `addAssistantBubble` | frontend/js/answer-kit.js:1798 |
 | `addInlineCitations` | frontend/js/answer-kit.js:195 |
-| `agentRunStep` | frontend/js/answer-kit.js:2753 |
-| `agentRunTitle` | frontend/js/answer-kit.js:2731 |
-| `agentRunTool` | frontend/js/answer-kit.js:2785 |
+| `agentRunStep` | frontend/js/answer-kit.js:2754 |
+| `agentRunTitle` | frontend/js/answer-kit.js:2732 |
+| `agentRunTool` | frontend/js/answer-kit.js:2786 |
 | `answerFigure` | frontend/js/answer-kit.js:761 |
 | `answerObject` | frontend/js/answer-kit.js:854 |
-| `applyPendingChatTitle` | frontend/js/answer-kit.js:2705 |
-| `applyPlanMode` | frontend/js/answer-kit.js:2723 |
+| `applyPendingChatTitle` | frontend/js/answer-kit.js:2706 |
+| `applyPlanMode` | frontend/js/answer-kit.js:2724 |
 | `askNotesOnTheRight` | frontend/js/answer-kit.js:948 |
 | `askOpenContext` | frontend/js/answer-kit.js:21 |
 | `assistantLabel` | frontend/js/answer-kit.js:1355 |
@@ -1907,7 +1907,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `messageMetaLine` | frontend/js/answer-kit.js:1441 |
 | `metaItem` | frontend/js/answer-kit.js:1407 |
 | `notePictures` | frontend/js/answer-kit.js:501 |
-| `noticeUnwatchedAnswer` | frontend/js/answer-kit.js:2687 |
+| `noticeUnwatchedAnswer` | frontend/js/answer-kit.js:2688 |
 | `numberMatchingRecords` | frontend/js/answer-kit.js:440 |
 | `paintNamedHead` | frontend/js/answer-kit.js:1778 |
 | `paintPersonaAvatar` | frontend/js/answer-kit.js:1766 |
@@ -1934,7 +1934,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `showCitedPassage` | frontend/js/answer-kit.js:392 |
 | `sourceLines` | frontend/js/answer-kit.js:2226 |
 | `sourcesByFirstMention` | frontend/js/answer-kit.js:2353 |
-| `startPlannedRun` | frontend/js/answer-kit.js:2682 |
+| `startPlannedRun` | frontend/js/answer-kit.js:2683 |
 | `streamChat` | frontend/js/answer-kit.js:1009 |
 | `streamChatEvents` | frontend/js/answer-kit.js:1053 |
 | `toolCardChips` | frontend/js/answer-kit.js:1971 |
@@ -1945,7 +1945,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `toolPreviewPanel` | frontend/js/answer-kit.js:1949 |
 | `toolTouchedRow` | frontend/js/answer-kit.js:2044 |
 | `userMarkEl` | frontend/js/answer-kit.js:1749 |
-| `verificationRow` | frontend/js/answer-kit.js:2743 |
+| `verificationRow` | frontend/js/answer-kit.js:2744 |
 | `webPageContextBlock` | frontend/js/answer-kit.js:1605 |
 
 ### frontend/js/app-features.js (9)
@@ -2818,32 +2818,32 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addBubble` | frontend/js/chat-turn.js:2374 |
-| `agentTimeline` | frontend/js/chat-turn.js:1197 |
-| `appendRunResumeControls` | frontend/js/chat-turn.js:2268 |
-| `assistantMessageActions` | frontend/js/chat-turn.js:2469 |
-| `chatAttachmentStrip` | frontend/js/chat-turn.js:2143 |
+| `addBubble` | frontend/js/chat-turn.js:2377 |
+| `agentTimeline` | frontend/js/chat-turn.js:1200 |
+| `appendRunResumeControls` | frontend/js/chat-turn.js:2271 |
+| `assistantMessageActions` | frontend/js/chat-turn.js:2472 |
+| `chatAttachmentStrip` | frontend/js/chat-turn.js:2146 |
 | `chatSendTurn` | frontend/js/chat-turn.js:11 |
-| `commitStagedImages` | frontend/js/chat-turn.js:2046 |
-| `continueRunControls` | frontend/js/chat-turn.js:2622 |
-| `deleteChatTurn` | frontend/js/chat-turn.js:2568 |
-| `forkFromBubble` | frontend/js/chat-turn.js:2667 |
-| `manualPauseControls` | frontend/js/chat-turn.js:2696 |
-| `markFollowup` | frontend/js/chat-turn.js:2722 |
-| `mountChatTimer` | frontend/js/chat-turn.js:2095 |
-| `offerFollowups` | frontend/js/chat-turn.js:1981 |
-| `offerReminder` | frontend/js/chat-turn.js:1920 |
-| `paintChatTimer` | frontend/js/chat-turn.js:2082 |
-| `removeChatBubble` | frontend/js/chat-turn.js:2746 |
-| `renderAgentQuestion` | frontend/js/chat-turn.js:1708 |
-| `renderMemoryProposal` | frontend/js/chat-turn.js:1792 |
-| `renderRecordsDetails` | frontend/js/chat-turn.js:2528 |
-| `revalidateSelection` | frontend/js/chat-turn.js:1864 |
-| `saveFollowups` | frontend/js/chat-turn.js:2067 |
-| `selectionContextBlock` | frontend/js/chat-turn.js:2019 |
-| `settlePendingAgentQuestion` | frontend/js/chat-turn.js:2127 |
-| `startChatTimer` | frontend/js/chat-turn.js:2108 |
-| `stopChatTimer` | frontend/js/chat-turn.js:2117 |
+| `commitStagedImages` | frontend/js/chat-turn.js:2049 |
+| `continueRunControls` | frontend/js/chat-turn.js:2625 |
+| `deleteChatTurn` | frontend/js/chat-turn.js:2571 |
+| `forkFromBubble` | frontend/js/chat-turn.js:2670 |
+| `manualPauseControls` | frontend/js/chat-turn.js:2699 |
+| `markFollowup` | frontend/js/chat-turn.js:2725 |
+| `mountChatTimer` | frontend/js/chat-turn.js:2098 |
+| `offerFollowups` | frontend/js/chat-turn.js:1984 |
+| `offerReminder` | frontend/js/chat-turn.js:1923 |
+| `paintChatTimer` | frontend/js/chat-turn.js:2085 |
+| `removeChatBubble` | frontend/js/chat-turn.js:2749 |
+| `renderAgentQuestion` | frontend/js/chat-turn.js:1711 |
+| `renderMemoryProposal` | frontend/js/chat-turn.js:1795 |
+| `renderRecordsDetails` | frontend/js/chat-turn.js:2531 |
+| `revalidateSelection` | frontend/js/chat-turn.js:1867 |
+| `saveFollowups` | frontend/js/chat-turn.js:2070 |
+| `selectionContextBlock` | frontend/js/chat-turn.js:2022 |
+| `settlePendingAgentQuestion` | frontend/js/chat-turn.js:2130 |
+| `startChatTimer` | frontend/js/chat-turn.js:2111 |
+| `stopChatTimer` | frontend/js/chat-turn.js:2120 |
 
 ### frontend/js/chat-undo.js (10)
 
@@ -23256,7 +23256,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15739)
+## Tests (15740)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23469,7 +23469,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_chat_tab_has_ai9.py | 2 |
 | tests/test_chat_times.py | 8 |
 | tests/test_chat_transcript.py | 28 |
-| tests/test_chat_ui_a28u.py | 3 |
+| tests/test_chat_ui_a28u.py | 4 |
 | tests/test_chat_vision.py | 9 |
 | tests/test_chat_weather_1027.py | 4 |
 | tests/test_cheap_animations.py | 6 |

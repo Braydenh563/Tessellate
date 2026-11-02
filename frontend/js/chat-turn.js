@@ -328,6 +328,8 @@ async function chatSendTurn(preset, opts = {}) {
   const touchedItems = new Map();
   chatController = new AbortController();
   const controller = chatController;
+  //: Half-rendered markdown is not read out frame by frame while it streams (E68).
+  $("chat-messages").setAttribute("aria-busy", "true");
   //: The app's mark lifts its cells while a turn runs (phone-shell.js).
   syncEmblemBusy();
   //: Atlas looks up to think while a turn runs (avatars.js).
@@ -819,6 +821,7 @@ async function chatSendTurn(preset, opts = {}) {
     // leaving Stop wired to nothing while a stream was genuinely running.
     if (chatController === controller) {
       chatController = null;
+      $("chat-messages").removeAttribute("aria-busy"); // end, error and Stop all land here
       stopChatTimer();
       syncEmblemBusy();
       // The turn is over: it is saved (or about to be) and a reload of this

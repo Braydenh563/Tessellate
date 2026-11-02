@@ -233,7 +233,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 227 | E52 | low | coaching tip appended inside answer text | new | S |
 | 228 | E53 | low | double greeting and last-time line from app-made note | new | S |
 | 229 | E54 | low | identity muddled between Atlas and Tessellate | docs/roadmap/CHAT_PLAN.md:460 | S |
-| 230 | E61 | low | disabled Plan and Agent explain need only on hover | new | S |
+| 230 | E61 | low | disabled Plan and Agent explain need only on hover | fixed 2026-11-02 (1789f37) | S |
 | 231 | E63 | low | three clauses joined as a run-on, no list | new | S |
 | 232 | E67 | low | next chip row offers a single chip | new | S |
 | 233 | E68 | low | typing dots role=status, no aria-busy on transcript | new | S |
