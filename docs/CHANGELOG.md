@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Mind map: the Layout menu draws a glyph before each of its ten shapes (audit 1028 U27).
 - Mind map: the fold chevron and its count stand 3px outside the topic's edge (the chevron overlapped it by 13px at 1440x900); a downward tree hangs it under the topic's middle (audit 1028 U25).
 - Board and map: on a phone the top bar is one row again, 54px instead of 104px (390x844, board and map), so the board's name gets about 103px beside the menus instead of being cut; the Format panel button leaves the bar and stays in More (audit 1028 U22, U23 title).
 - Board: the sidebar's tabs are 32px with a mouse (they were 28px); touch keeps its 44px (audit 1028 U16).

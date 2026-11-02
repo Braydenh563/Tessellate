@@ -112,3 +112,20 @@ def test_the_fold_chevron_and_count_start_outside_the_topics_edge():
     assert "transform-origin: 50% 0" in down
     count = _block(LAZY, ".wb-map-count {\n  right: auto;", "}")
     assert "left: calc(100% + var(--space-1))" in count
+
+
+# U27 ------------------------------------------------------------------------
+
+
+def test_every_layout_option_names_an_icon_and_a_menu_row_draws_it():
+    layout = _block(HTML, 'id="wb-map-layout"', "</select>")
+    options = re.findall(r'<option value="([\w-]+)" data-icon="([\w-]+)"', layout)
+    assert len(options) == len(re.findall(r"<option ", layout)) == 10
+    # One glyph each: a row you cannot tell from its neighbour at a glance is the text-only menu again.
+    assert len({icon for _, icon in options}) == 10
+    vendor = "".join(p.read_text(encoding="utf-8") for p in (ROOT / "frontend" / "vendor").rglob("*.css"))
+    for _, icon in options:
+        assert f".ph-{icon}:before" in vendor, icon
+    selects = (JS / "sheets-selects.js").read_text(encoding="utf-8")
+    row = _block(selects, "const buildOptionRow = (option) => {", "row.addEventListener")
+    assert "option.dataset.icon" in row and "ph-lead" in row and 'setAttribute("aria-hidden", "true")' in row
