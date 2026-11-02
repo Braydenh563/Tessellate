@@ -3,7 +3,6 @@ Library side open drew tiles before whiteboard-templates.js ran (`wbThumbSvg is 
 defined`), and a card file that loaded without defining `entryItem` made the notes
 list ask for its own draw forever."""
 
-import re
 from pathlib import Path
 
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
