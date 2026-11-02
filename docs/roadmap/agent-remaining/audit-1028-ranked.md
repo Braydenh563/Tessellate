@@ -52,7 +52,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 46 | E13 | med | bare undo after an answer gets help text, not undo | fixed 1030 | S |
 | 47 | E14 | med | follow-ups like pin that note lose their referent | new | M |
 | 48 | E15 | med | stats route steals questions that name a note subject | fixed 1030 | S |
-| 49 | E16 | med | compare gives identical lists for both sides | new | M |
+| 49 | E16 | med | compare gives identical lists for both sides | fixed (53e0454) | M |
 | 50 | E17 | med | digest says newest a day ago when written today | fixed 2026-11-02 (today, never a day ago) | S |
 | 51 | E18 | med | composer invents speech acts the notes do not contain | fixed 2026-11-02 (5e6147c) | S |
 | 52 | E19 | med | source lists mangled, author lowercased and split | fixed (e09a63e) | S |

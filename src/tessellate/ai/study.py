@@ -246,6 +246,37 @@ def _term_ok(term: str) -> bool:
     return not term[0].isdigit() or len(words) > 1
 
 
+#: What a sentence says of a thing when it is not what the thing is: where,
+#: when, how much, what state ("The exam is on 12 November", "The deadline is
+#: 6 November", "Revision is going well"). Turned round, such a body is a
+#: question with its subject cut off (audit 1028 E23).
+_NOT_A_KIND = frozenset("""
+on in at by for from to with about of until till since during after before around near under over between across within
+without into onto through towards upon off up out per via next last this today tomorrow tonight yesterday now soon
+due worth not very so quite still already also early late open closed done finished ready important essential useful
+easy hard difficult good bad great likely possible necessary different similar available complete incomplete confirmed
+cancelled canceled booked moved scheduled planned
+""".split())
+_WHEN_WORDS = re.compile(
+    r"^(?:\d|(?:mon|tues?|wed(?:nes)?|thu(?:rs?)?|fri|sat(?:ur)?|sun)(?:day)?s?\b|(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\b)", re.I)
+
+
+def _names_a_kind(body: str, verb: str = "is") -> bool:
+    """Whether the words after "is" say what the thing is, a noun phrase
+    ("the process by which ...", "a type of diffusion", "how plants ..."),
+    rather than when, where, how much or in what state."""
+    words = clean(body).split()
+    if not words:
+        return False
+    first = words[0].lower().strip(",;:")
+    if verb in ("is the", "is a", "is an", "is defined as", "is known as", "is called", "refers to", "means", "stands for", "is when"):
+        return True
+    if first in _NOT_A_KIND or _WHEN_WORDS.match(first):
+        return False
+    #: "going well", "running late": a gerund and almost nothing after it is a state.
+    return not (first.endswith("ing") and len(first) > 4 and len(words) <= 3)
+
+
 def _answer_text(body: str) -> str:
     body = clean(body).strip(" ")
     return body[0].upper() + body[1:] if body else body
@@ -266,6 +297,8 @@ def _definition(sentence: str) -> tuple[str, str, str] | None:
         return None
     verb = found.group("verb")
     body = found.group("body")
+    if not _names_a_kind(body, verb):
+        return None
     if verb in ("is the", "is a", "is an"):
         body = verb.split(" ", 1)[1] + " " + body
     return term, ("are" if verb == "are" else "is"), body
@@ -324,7 +357,7 @@ def _colon_cards(sec: Section, where: str) -> list[Card]:
             continue
         term, body = _trim_term(colon.group("term")), colon.group("body")
         stressed = line.lstrip().startswith(("-", "*", "+")) or "**" in line
-        if _term_ok(term) and (stressed or body[0].islower()) and not re.match(r"^\d", body):
+        if _term_ok(term) and (stressed or body[0].islower()) and not re.match(r"^\d", body) and _names_a_kind(body):
             out.append(Card(_define_frame(term, "is"), _answer_text(body), "define", where))
     return out
 

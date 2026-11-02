@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7562, frontend ids 2642, CSS sections 518, backend routes 641, backend modules 8497, test files 1905, tests 16045, plan headings 992, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7562, frontend ids 2642, CSS sections 518, backend routes 641, backend modules 8500, test files 1907, tests 16058, plan headings 992, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7562)
 
@@ -12626,7 +12626,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8497)
+## Backend modules (8500)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -16311,36 +16311,38 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `summary` | src/tessellate/ai/questions.py:195 |
 | `visible_question` | src/tessellate/ai/questions.py:203 |
 
-### src/tessellate/ai/reading.py (29)
+### src/tessellate/ai/reading.py (31)
 
 | Name | File:line |
 |---|---|
 | `Reading` | src/tessellate/ai/reading.py:77 |
 | `Repair` | src/tessellate/ai/reading.py:342 |
 | `_ambiguity` | src/tessellate/ai/reading.py:148 |
-| `_cited_titles` | src/tessellate/ai/reading.py:412 |
-| `_day_phrase` | src/tessellate/ai/reading.py:468 |
-| `_follow_other` | src/tessellate/ai/reading.py:537 |
-| `_follow_pronoun` | src/tessellate/ai/reading.py:554 |
-| `_follow_referent` | src/tessellate/ai/reading.py:421 |
-| `_follow_same` | src/tessellate/ai/reading.py:563 |
-| `_follow_slot` | src/tessellate/ai/reading.py:518 |
+| `_cited_titles` | src/tessellate/ai/reading.py:459 |
+| `_day_phrase` | src/tessellate/ai/reading.py:518 |
+| `_follow_other` | src/tessellate/ai/reading.py:587 |
+| `_follow_place` | src/tessellate/ai/reading.py:436 |
+| `_follow_pronoun` | src/tessellate/ai/reading.py:604 |
+| `_follow_referent` | src/tessellate/ai/reading.py:468 |
+| `_follow_same` | src/tessellate/ai/reading.py:613 |
+| `_follow_slot` | src/tessellate/ai/reading.py:568 |
+| `_joined` | src/tessellate/ai/reading.py:432 |
 | `_known` | src/tessellate/ai/reading.py:126 |
-| `_leaned_on` | src/tessellate/ai/reading.py:511 |
+| `_leaned_on` | src/tessellate/ai/reading.py:561 |
 | `_plain` | src/tessellate/ai/reading.py:114 |
 | `_read_act` | src/tessellate/ai/reading.py:298 |
 | `_read_dated` | src/tessellate/ai/reading.py:284 |
 | `_read_question` | src/tessellate/ai/reading.py:310 |
-| `_redate` | src/tessellate/ai/reading.py:580 |
+| `_redate` | src/tessellate/ai/reading.py:630 |
 | `_reminder_slots` | src/tessellate/ai/reading.py:173 |
 | `_repeat_slots` | src/tessellate/ai/reading.py:184 |
 | `_resolving` | src/tessellate/ai/reading.py:219 |
-| `_swap_object` | src/tessellate/ai/reading.py:464 |
-| `_turn_object` | src/tessellate/ai/reading.py:453 |
+| `_swap_object` | src/tessellate/ai/reading.py:514 |
+| `_turn_object` | src/tessellate/ai/reading.py:503 |
 | `_weigh` | src/tessellate/ai/reading.py:157 |
 | `band_of` | src/tessellate/ai/reading.py:69 |
-| `cited_follow` | src/tessellate/ai/reading.py:444 |
-| `follow` | src/tessellate/ai/reading.py:481 |
+| `cited_follow` | src/tessellate/ai/reading.py:494 |
+| `follow` | src/tessellate/ai/reading.py:531 |
 | `read` | src/tessellate/ai/reading.py:242 |
 | `repair` | src/tessellate/ai/reading.py:359 |
 | `tool_of` | src/tessellate/ai/reading.py:198 |
@@ -17006,49 +17008,50 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_usage` | src/tessellate/ai/stats_ask.py:131 |
 | `ask` | src/tessellate/ai/stats_ask.py:213 |
 
-### src/tessellate/ai/study.py (40)
+### src/tessellate/ai/study.py (41)
 
 | Name | File:line |
 |---|---|
 | `Card` | src/tessellate/ai/study.py:217 |
 | `Section` | src/tessellate/ai/study.py:94 |
-| `_answer_text` | src/tessellate/ai/study.py:249 |
-| `_colon_cards` | src/tessellate/ai/study.py:319 |
-| `_define_cards` | src/tessellate/ai/study.py:274 |
-| `_define_frame` | src/tessellate/ai/study.py:287 |
-| `_definition` | src/tessellate/ai/study.py:254 |
+| `_answer_text` | src/tessellate/ai/study.py:280 |
+| `_colon_cards` | src/tessellate/ai/study.py:352 |
+| `_define_cards` | src/tessellate/ai/study.py:307 |
+| `_define_frame` | src/tessellate/ai/study.py:320 |
+| `_definition` | src/tessellate/ai/study.py:285 |
 | `_drop_code` | src/tessellate/ai/study.py:111 |
 | `_drop_statement_runs` | src/tessellate/ai/study.py:135 |
-| `_gap_card` | src/tessellate/ai/study.py:292 |
-| `_grade_list` | src/tessellate/ai/study.py:516 |
-| `_list_card` | src/tessellate/ai/study.py:306 |
-| `_marked_items` | src/tessellate/ai/study.py:487 |
+| `_gap_card` | src/tessellate/ai/study.py:325 |
+| `_grade_list` | src/tessellate/ai/study.py:549 |
+| `_list_card` | src/tessellate/ai/study.py:339 |
+| `_marked_items` | src/tessellate/ai/study.py:520 |
+| `_names_a_kind` | src/tessellate/ai/study.py:264 |
 | `_pick` | src/tessellate/ai/study.py:225 |
-| `_picks` | src/tessellate/ai/study.py:440 |
-| `_plain_lines` | src/tessellate/ai/study.py:478 |
+| `_picks` | src/tessellate/ai/study.py:473 |
+| `_plain_lines` | src/tessellate/ai/study.py:511 |
 | `_prose` | src/tessellate/ai/study.py:189 |
-| `_says_something` | src/tessellate/ai/study.py:457 |
-| `_section_cards` | src/tessellate/ai/study.py:332 |
-| `_share` | src/tessellate/ai/study.py:542 |
+| `_says_something` | src/tessellate/ai/study.py:490 |
+| `_section_cards` | src/tessellate/ai/study.py:365 |
+| `_share` | src/tessellate/ai/study.py:575 |
 | `_term_ok` | src/tessellate/ai/study.py:240 |
-| `_terms_of` | src/tessellate/ai/study.py:395 |
+| `_terms_of` | src/tessellate/ai/study.py:428 |
 | `_trim_term` | src/tessellate/ai/study.py:234 |
-| `_word_forms` | src/tessellate/ai/study.py:512 |
+| `_word_forms` | src/tessellate/ai/study.py:545 |
 | `bullets` | src/tessellate/ai/study.py:206 |
-| `cards` | src/tessellate/ai/study.py:350 |
+| `cards` | src/tessellate/ai/study.py:383 |
 | `clean` | src/tessellate/ai/study.py:65 |
 | `content_stems` | src/tessellate/ai/study.py:82 |
-| `generic_head` | src/tessellate/ai/study.py:386 |
-| `grade` | src/tessellate/ai/study.py:521 |
-| `hint` | src/tessellate/ai/study.py:547 |
-| `key_terms` | src/tessellate/ai/study.py:410 |
-| `list_gist` | src/tessellate/ai/study.py:496 |
+| `generic_head` | src/tessellate/ai/study.py:419 |
+| `grade` | src/tessellate/ai/study.py:554 |
+| `hint` | src/tessellate/ai/study.py:580 |
+| `key_terms` | src/tessellate/ai/study.py:443 |
+| `list_gist` | src/tessellate/ai/study.py:529 |
 | `open_tasks` | src/tessellate/ai/study.py:210 |
-| `ordered` | src/tessellate/ai/study.py:365 |
+| `ordered` | src/tessellate/ai/study.py:398 |
 | `sections` | src/tessellate/ai/study.py:151 |
 | `sentences` | src/tessellate/ai/study.py:197 |
 | `stem` | src/tessellate/ai/study.py:72 |
-| `summary` | src/tessellate/ai/study.py:464 |
+| `summary` | src/tessellate/ai/study.py:497 |
 | `title_of` | src/tessellate/ai/study.py:171 |
 
 ### src/tessellate/ai/supersede.py (19)
@@ -23307,7 +23310,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16045)
+## Tests (16058)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24015,6 +24018,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_focus_feedback_1029.py | 8 |
 | tests/test_focus_timer.py | 5 |
 | tests/test_folder_roundtrip.py | 8 |
+| tests/test_followup_ordinal_e14.py | 9 |
 | tests/test_followup_referent_1029.py | 9 |
 | tests/test_followup_trail_490.py | 3 |
 | tests/test_followups.py | 19 |
@@ -24893,6 +24897,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_stream_turn_helpers.py | 4 |
 | tests/test_streaming_laziness.py | 7 |
 | tests/test_strip_dead_embeds.py | 10 |
+| tests/test_study_cloze_e23.py | 4 |
 | tests/test_style_scale.py | 31 |
 | tests/test_subprocess_no_window.py | 2 |
 | tests/test_subtab_strip_surface.py | 2 |

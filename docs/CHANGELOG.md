@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Audit E14: a follow-up names the last answer's notes by place or as a group: "pin the second one", "the last one", "what about the third", "which of those is first", "compare those" are resolved against the cited notes, with a model and without; a place the answer lacks, or a sentence with its own subject ("the second world war"), is left alone.
+- Audit E23: a quiz no longer turns a sentence about when, where or how much into a term question ("The exam is on 12 November" asked 'Which term means: "on 12 November, covers chapters 4 to 6"?'): only a sentence that says what a thing is, or a labelled line that names a kind, makes a define or term card.
 - Audit E16: comparing two named notes no longer gives both sides the same lines: a note whose name holds both sides' words belongs to the side its name opens with, and a line picked for both is said under the side it names, with what speaks of both, or not at all.
 - Audit E20: a bare weekday in a log note ("Wednesday bench 60kg for 5 reps" in a gym log) is a day gone, not a day due; a plan, schedule or routine note keeps its weekdays as arranged, and so does any line with a deadline cue or a date.
 - Second eye F13 and F15 closed: the questions row names a note with the one shared reader (its own title function and the byte-equal pin are gone), and a named note ("what is in my admin bits note") fetches the notes that record its open items beside it, so a box a later note says is done is not listed as still to do.
