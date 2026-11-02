@@ -273,7 +273,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 267 | K32 | low | tabs poll all reminders every minute for a due check | won't fix (the poll already asks only open reminders; the timer, badge and early alerts need the rows, 2026-10-30) | S |
 | 268 | K33 | low | token sweep runs on every authenticated request | won't fix 1031: the per-request sweep is what drops the key the moment the last granted session expires (test_vault_sessions); O(tokens) with a handful of tokens | S |
 | 269 | K34 | low | 200 MB uploads read into memory as bytes | new | M |
-| 270 | K35 | low | startup PRAGMA table_info for every table each launch | new | S |
+| 270 | K35 | low | startup PRAGMA table_info for every table each launch | fixed 2026-11-02 (a28s-K35) | S |
 | 271 | K36 | low | list_boards and list_images run per-board queries | new | M |
 | 272 | E58 | low | saved chat list rebuilt every checkpoint round | new | S |
 | 273 | E65 | low | NoteView not cached, notes re-read per question | new | M |
