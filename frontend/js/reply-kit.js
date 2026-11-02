@@ -399,22 +399,29 @@ function openCalculator(input = "", mode = "work", { target = null } = {}) {
   });
 }
 
-function replyCalcBuild(card, input, mode = "work", { target = null, close = () => {} } = {}) {
+//: A dashboard widget's body (INBOX 1558): the Sum and Units tabs drawn into it through the dialog's own build, with no Insert and no focus taken.
+openCalculator.inline = (host, mode = "work") => replyCalcBuild(host, "", mode, { inline: true });
+
+function replyCalcBuild(card, input, mode = "work", { target = null, close = () => {}, inline = false } = {}) {
   //: One height for all three tabs, the strip and the action row pinned and the panes between them scrolling (INBOX 1530 g M2: on a bottom-anchored sheet the strip moved 188 px between tabs and 4 to 40 px on a result).
   card.classList.add("calc-card");
+  if (inline) card.classList.add("calc-inline");
+  //: An inline calculator has no Equation tab (the field needs its own bundle and a box to write into).
+  const kinds = inline ? replyCalc.tabs.filter(([key]) => key !== "equation") : replyCalc.tabs;
+  if (!kinds.some(([key]) => key === mode)) mode = "work";
   //: A tab strip, not a pill (DESIGN.md, "A popup that chooses a kind").
   const modes = document.createElement("div");
   modes.className = "tabs-line popup-kinds calc-modes";
   modes.setAttribute("role", "tablist");
   modes.setAttribute("aria-label", "Calculator mode");
-  const actions = replyCalcActions(target, close);
-  const equation = replyCalcEquation(target, close, actions);
-  const panes = { work: replyCalcWorkPane(input, actions), convert: replyCalcConvertPane(actions), equation: equation.pane };
+  const actions = replyCalcActions(target, close, inline);
+  const equation = inline ? null : replyCalcEquation(target, close, actions);
+  const panes = { work: replyCalcWorkPane(input, actions), convert: replyCalcConvertPane(actions), ...(equation ? { equation: equation.pane } : {}) };
   //: Where focus goes when a tab is chosen with a press; an arrow keeps it on the strip (INBOX 1530 g M4: the first arrow onto Equation put the caret in the math field, so the next arrow moved inside the equation instead of on to the tab after it).
   const focusIn = {
     work: () => panes.work.querySelector(".calc-input")?.focus(),
     convert: () => panes.convert.querySelector(".calc-amount")?.focus(),
-    equation: () => equation.mount(),
+    equation: () => equation?.mount(),
   };
   const wrap = document.createElement("div");
   wrap.className = "calc-panes";
@@ -437,9 +444,9 @@ function replyCalcBuild(card, input, mode = "work", { target = null, close = () 
     wrap.scrollTop = 0;
     actions.show(key);
     if (focus) focusIn[key]();
-    else if (key === "equation") equation.mount({ focus: false });
+    else if (key === "equation") equation?.mount({ focus: false });
   };
-  const tabs = replyCalc.tabs.map(([key, words]) => {
+  const tabs = kinds.map(([key, words]) => {
     const button = document.createElement("button");
     button.type = "button";
     button.setAttribute("role", "tab");
@@ -496,14 +503,15 @@ function replyCalcBuild(card, input, mode = "work", { target = null, close = () 
     }
     head.after(body);
   }
-  const first = Math.max(0, replyCalc.tabs.findIndex(([key]) => key === mode));
+  const first = Math.max(0, kinds.findIndex(([key]) => key === mode));
   for (const [i, tab] of tabs.entries()) {
     tab.setAttribute("aria-selected", String(i === first));
     tab.classList.toggle("active", i === first);
     tab.tabIndex = i === first ? 0 : -1;
   }
-  actions.show(replyCalc.tabs[first][0]);
-  if (first) focusIn[replyCalc.tabs[first][0]]();
+  actions.show(kinds[first][0]);
+  if (inline) return;
+  if (first) focusIn[kinds[first][0]]();
   else requestAnimationFrame(() => focusIn.work());
 }
 
@@ -517,7 +525,7 @@ function replyCalcBuild(card, input, mode = "work", { target = null, close = () 
 //: the Tab order as `aria-disabled`, is described by that line, and says why
 //: when pressed (Copy on an empty result used to do nothing at all). A pane
 //: hands in what it can do with `provide(key, {ready, text, equation, ...})`.
-function replyCalcActions(target, close) {
+function replyCalcActions(target, close, inline = false) {
   const id = `calc-where-${++replyCalc.opened}`;
   const el = document.createElement("div");
   el.className = "calc-actions";
@@ -561,6 +569,8 @@ function replyCalcActions(target, close) {
   insert.classList.add("primary");
   for (const button of [copy, asEquation, insert]) button.setAttribute("aria-describedby", id);
   row.append(copy, asEquation, insert);
+  //: A widget has no box to write into: Copy is its one action, and the line about Insert is not drawn.
+  if (inline) where.classList.add("hidden");
   el.append(where, row);
   const sync = () => {
     const p = current();
@@ -570,7 +580,8 @@ function replyCalcActions(target, close) {
     setLabel(insert, label);
     copy.title = p.copyTitle;
     insert.title = p.insertTitle;
-    asEquation.classList.toggle("hidden", !p.equation);
+    asEquation.classList.toggle("hidden", inline || !p.equation);
+    insert.classList.toggle("hidden", inline);
     copy.setAttribute("aria-disabled", String(!ready));
     insert.setAttribute("aria-disabled", String(!ready || !target));
     asEquation.setAttribute("aria-disabled", String(!ready || !target));

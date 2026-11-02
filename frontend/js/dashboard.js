@@ -160,6 +160,23 @@ const DASH_DEFAULT_SHOWN = [
 //: adds it, or saves a layout with it hidden, the saved layout decides.
 const DASH_OPT_IN = ["activity", "night", "week"];
 
+//: **The popup tools as widgets** (INBOX 1558, the owner: "cant add the timer,
+//: calculator, converter, stopwatch etc"). A widget draws the tool itself, not
+//: a button that opens it: the Clock and the Calculator mount into the body
+//: through the popup's own build (`host`). A `POPUP_TOOLS` entry (settings-panes.js)
+//: names its widget; a kind no tool names is not listed (tests/test_popup_widgets_1558.py).
+{
+  const POPUP_WIDGETS = {
+    clock: { title: "ph:timer Clock", description: "Timers, a stopwatch and an alarm, drawn here. They keep running when you leave the page.", module: "utilities", mount: (body) => openClockPanel.inline("timer", body) },
+    calculator: { title: "ph:calculator Calculator", description: "Sums, percentages and unit conversions, worked out here with no model.", module: "replyKit", mount: (body) => openCalculator.inline(body, "work") },
+  };
+  for (const [id, kind] of Object.entries(POPUP_WIDGETS)) {
+    if (!POPUP_TOOLS.some((tool) => tool.widget === id)) continue;
+    DASH_WIDGETS[id] = { title: kind.title, description: kind.description, render: (body) => ensureModule(kind.module).then(() => kind.mount(body)) };
+    DASH_OPT_IN.push(id);
+  }
+}
+
 function dashLayout() {
   const saved = (prefsCache && prefsCache.dashboard_layout) || {};
   //: Empty lists count as never arranged: the preference's own default is

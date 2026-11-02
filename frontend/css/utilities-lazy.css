@@ -461,3 +461,14 @@ button.stats-tile.is-link:is(:focus-visible, :has(:focus-visible)) {
     padding-bottom: var(--status-bar-h);
   }
 }
+
+/* **The Clock as a dashboard widget** (`openClockPanel.inline(tab, host)`; INBOX 1558): the popup's own tab strip, panes and Running list drawn into the widget body; the list scrolls rather than growing the card. */
+.clock-inline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.clock-inline .clock-list {
+  max-height: min(16rem, 40dvh);
+}

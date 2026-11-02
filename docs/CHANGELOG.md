@@ -9,6 +9,7 @@ below). Versioning is `0.x` while the app stabilises.
 - Ask tab draws the pick-up tip under the answer, as Chat does (audit 1028 E52); tests/test_utility_timers_1029.py stubs follow 1553 (page object, no lock card), assertions unchanged.
 - Documents Live: a drag selection across a diagram or equation leaves it drawn (INBOX 1547); source shows only when a selection starts in it. flicker1547.js: 12 of 12 toggles and a 147px jump before, 0 and 0 after.
 - Panels: a corner resizes from the corner (INBOX 1552). The rounded corner clipped hit testing, so a press there hit the backdrop; corners now take 16px each way and a backdrop press inside the box resizes. rim1536.js: Settings se moved l 208 to 216, now r and b move and l and t hold.
+- Dashboard: the Clock (timers, stopwatch, alarm) and the Calculator (Sum and Units) can be added from Customise, Widgets and are drawn on the page, not opened as popups, through the popup's own build; every `POPUP_TOOLS` entry names its widget or gives a reason (tests/test_popup_widgets_1558.py), and each tool is a Quick access tile too (INBOX 1558). dashboard.js gzips 32,221 to 32,519 bytes.
 - Learned settings section moved from boot settings.js into lazy settings-controls.js: boot settings.js gzip 68,790 to 61,561 bytes (eager headroom for the next boot change).
 Tests: a pin for audit 1028 E53 (no double greeting from an app-made note); the row no longer reproduces.
 Chat: the screen-aware pick-up line ("Looks like you have X open") is sent as a tip under the answer, not as the answer text's last line (audit 1028 E52).

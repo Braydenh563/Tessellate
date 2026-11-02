@@ -34,8 +34,6 @@ with its owner named in the entry.
 
 ## Open items
 
-1558. **Owner, 2026-11-02, verbatim:** "cant add the timer, calculator, converter, stopwatch etc". Read as the dashboard's Add widget list (it has the Focus timer only) and the pinned tools. Recommendation (decision taken, standing order 3): every popup tool in `POPUP_TOOLS` (settings-panes.js) can be added as a dashboard widget that draws the tool inline (the Clock with timer, stopwatch and alarm; the calculator and converter), from the same registry so a new tool joins by itself, and each can be pinned where Tools pin; a lint ties the widget list to `POPUP_TOOLS`.
-
 1557. **Owner, 2026-11-02, verbatim (screenshot: the Clock popup's duration box "10, 90s, 1h30m, 1:30" beside the Start button):** "these elements arent the same height in the timer popup". Recommendation: the field and its button share one control height token in every input-plus-button row (fix the class: find each row that pairs an input with a button and give them one height), with a lint.
 
 1556. **Owner, 2026-11-02, verbatim (screenshots: the Web panel saying "The SearXNG search failed. Check that SearXNG is running, then try again." with only Try again; its menu has Web search settings and Clear recent searches):** "no button to start up searxng". Recommendation: when SearXNG is down, the message offers Start SearXNG (the same start the Settings pane uses), then retries the search once it answers; where the app cannot start it, the message says why and links the setup.

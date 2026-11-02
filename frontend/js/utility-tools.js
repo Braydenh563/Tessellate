@@ -465,11 +465,13 @@ async function insertTemplate(template, caught) {
     "Alarm: a reminder at a time, today or tomorrow. It is an ordinary reminder, so it rings as one does and shows in Reminders and on the Dashboard.",
     "Whatever is running also shows on the status bar. Press it to come back here. They are kept when the page reloads.",
   ];
-  const clockPanel = { select: null, list: null, empty: null, rows: new Map() };
+  //: Every drawn Clock: the popup and any dashboard widget (INBOX 1558), each with its own tab strip and list over the one `utilityClocks` store.
+  const clockMounts = new Set();
+  const clockPanel = { sheet: null, made: 0 };
 
   function openClockPanel(tab = "timer") {
     if (document.querySelector('[data-sheet="clock"]')) {
-      clockPanel.select?.(tab);
+      clockPanel.sheet?.select(tab);
       return;
     }
     openSheet({
@@ -478,7 +480,10 @@ async function insertTemplate(template, caught) {
       variant: "corner",
       modal: false,
       build: (card) => clockPanelBuild(card, tab),
-      onClose: () => Object.assign(clockPanel, { select: null, list: null, empty: null }).rows.clear(),
+      onClose: () => {
+        clockMounts.delete(clockPanel.sheet);
+        clockPanel.sheet = null;
+      },
     });
   }
 
@@ -587,8 +592,16 @@ async function insertTemplate(template, caught) {
     return pane;
   }
 
-  function clockPanelBuild(card, tab) {
-    card.classList.add("clock-card");
+  //: Draws the Clock into `card` (the popup's card, or a widget's body when `inline`). Ids carry the view's number so two can be on screen.
+  function clockPanelBuild(card, tab, { inline = false } = {}) {
+    const n = ++clockPanel.made;
+    const view = { select: null, list: null, empty: null, rows: new Map(), wasHere: false };
+    clockMounts.add(view);
+    if (inline) card.classList.add("clock-inline");
+    else {
+      card.classList.add("clock-card");
+      clockPanel.sheet = view;
+    }
     const strip = clockEl("div", "tabs-line popup-kinds clock-tabs");
     strip.setAttribute("role", "tablist");
     strip.setAttribute("aria-label", "Clock tools");
@@ -598,10 +611,10 @@ async function insertTemplate(template, caught) {
       button.type = "button";
       button.setAttribute("role", "tab");
       button.dataset.tab = key;
-      button.id = `clock-tab-${key}`;
-      button.setAttribute("aria-controls", `clock-panel-${key}`);
+      button.id = `clock-tab-${n}-${key}`;
+      button.setAttribute("aria-controls", `clock-panel-${n}-${key}`);
       panes[key].setAttribute("role", "tabpanel");
-      panes[key].id = `clock-panel-${key}`;
+      panes[key].id = `clock-panel-${n}-${key}`;
       panes[key].setAttribute("aria-labelledby", button.id);
       button.addEventListener("click", () => select(button.dataset.tab));
       return button;
@@ -617,6 +630,7 @@ async function insertTemplate(template, caught) {
       for (const [name, pane] of Object.entries(panes)) pane.classList.toggle("hidden", name !== key);
       if (focus) panes[key].querySelector("[data-clock-focus]")?.focus();
     };
+    view.select = select;
     strip.addEventListener("keydown", (event) => {
       const at = tabs.indexOf(document.activeElement);
       const to = { ArrowRight: (at + 1) % tabs.length, ArrowLeft: (at + tabs.length - 1) % tabs.length, Home: 0, End: tabs.length - 1 }[event.key];
@@ -628,17 +642,20 @@ async function insertTemplate(template, caught) {
     strip.append(...tabs);
     const running = clockEl("div", "clock-running");
     const heading = clockEl("h3", "muted clock-heading", "Running");
-    clockPanel.empty = clockEl("p", "muted clock-empty", "Nothing is running. Start a timer or a stopwatch above.");
-    clockPanel.list = clockEl("ul", "clock-list");
-    clockPanel.list.setAttribute("aria-label", "Running clocks");
-    running.append(heading, clockPanel.empty, clockPanel.list);
+    view.empty = clockEl("p", "muted clock-empty", "Nothing is running. Start a timer or a stopwatch above.");
+    view.list = clockEl("ul", "clock-list");
+    view.list.setAttribute("aria-label", "Running clocks");
+    running.append(heading, view.empty, view.list);
     card.append(strip, ...Object.values(panes), running);
-    clockPanel.select = select;
-    clockPanelHelp(card);
     select(tab, { focus: false });
     paintClockPanel();
-    //: After `openSheet` has attached the card and made its own focus pass (a microtask, not a frame).
-    Promise.resolve().then(() => select(tab));
+    //: A widget is drawn with the page and takes no focus. The popup does, after `openSheet` has attached the card and made its own focus pass (a microtask, not a frame).
+    if (inline) return;
+    clockPanelHelp(card);
+    Promise.resolve().then(() => {
+      select(tab);
+      paintClockPanel();
+    });
   }
 
   //: The head's '?' (DESIGN.md `data-help-for`): what each tab does, behind the title.
@@ -721,32 +738,40 @@ async function insertTemplate(template, caught) {
     }
   }
 
-  //: Repaints the open panel's list from `utilityClocks`, in place (called from `paintClockViews`).
+  //: Repaints every drawn Clock's list from `utilityClocks`, in place (called from `paintClockViews`). A view whose card was on the page and left it is dropped.
   function paintClockPanel() {
-    const list = clockPanel.list;
-    if (!list?.isConnected) return;
-    const seen = new Set();
-    let stopwatches = 0;
     const total = utilityClocks.filter((c) => c.kind === "stopwatch").length;
-    for (const clock of utilityClocks) {
-      let row = clockPanel.rows.get(clock.id);
-      if (!row) {
-        row = clockRow(clock.id);
-        clockPanel.rows.set(clock.id, row);
-        list.append(row.el);
+    for (const view of clockMounts) {
+      const list = view.list;
+      if (!list?.isConnected) {
+        if (view.wasHere) clockMounts.delete(view);
+        continue;
       }
-      if (clock.kind === "stopwatch") stopwatches++;
-      clockRowPaint(row, clock, clock.kind === "timer" ? `${clock.name} timer` : total > 1 ? `Stopwatch ${stopwatches}` : "Stopwatch");
-      seen.add(clock.id);
+      view.wasHere = true;
+      const seen = new Set();
+      let stopwatches = 0;
+      for (const clock of utilityClocks) {
+        let row = view.rows.get(clock.id);
+        if (!row) {
+          row = clockRow(clock.id);
+          view.rows.set(clock.id, row);
+          list.append(row.el);
+        }
+        if (clock.kind === "stopwatch") stopwatches++;
+        clockRowPaint(row, clock, clock.kind === "timer" ? `${clock.name} timer` : total > 1 ? `Stopwatch ${stopwatches}` : "Stopwatch");
+        seen.add(clock.id);
+      }
+      for (const [id, row] of view.rows) {
+        if (seen.has(id)) continue;
+        row.el.remove();
+        view.rows.delete(id);
+      }
+      view.empty.classList.toggle("hidden", utilityClocks.length > 0);
     }
-    for (const [id, row] of clockPanel.rows) {
-      if (seen.has(id)) continue;
-      row.el.remove();
-      clockPanel.rows.delete(id);
-    }
-    clockPanel.empty.classList.toggle("hidden", utilityClocks.length > 0);
   }
 
+  //: A dashboard widget's body (INBOX 1558): the same Clock drawn into it, inline, through the popup's own build.
+  openClockPanel.inline = (tab, host) => clockPanelBuild(host, tab, { inline: true });
   window.openClockPanel = openClockPanel;
   utilityTick.panel = paintClockPanel;
 })();

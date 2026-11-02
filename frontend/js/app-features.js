@@ -521,7 +521,7 @@ function paletteCommands() {
     //: The small tools (Brief 89, UI_MODERNISATION utilities rows 2 to 4):
     //: "timer 10 minutes" and "insert template ..." also build their own rows
     //: from the words (`utilityPaletteRows`, app-palette.js).
-    ...POPUP_TOOLS.map((t) => ({ label: `${t.icon} ${t.name}`, keywords: t.keywords, about: t.about, keys: t.keys, act: () => t.open(paletteCaughtNow().target) })),
+    ...POPUP_TOOLS.map((t) => ({ label: `${t.icon} ${t.name}`, keywords: t.keywords, about: t.about, keys: t.keys, quick: `tool-${t.id}`, act: () => t.open(paletteCaughtNow().target) })),
     //: The picker's three tabs, each its own row (INBOX 1544): a pick goes into the box the palette was opened over, or is copied.
     { label: "ph:smiley Emoji", keywords: "emoji emoticon smiley sticker kaomoji face insert", about: "Pick an emoji; it goes where you were writing, or is copied.", keys: "Ctrl+;", act: () => popupToolMaths.glyph("emoji") },
     { label: "ph:shapes Icons", keywords: "icon icons glyph phosphor insert shortcode", about: "Pick an icon; it goes where you were writing as :ph-name:, or is copied.", keys: "Ctrl+Shift+;", act: () => popupToolMaths.glyph("icon") },
@@ -580,7 +580,7 @@ function quickCatalogue() {
   for (const row of rows) {
     //: A row that is an act (no tab, no reveal) is a tile only when it says so
     //: with `quick`, a short stable name: Live captions is one (libr-1011 1220).
-    const key = row.keys ? "" : row.tab ? `tab:${row.tab}` : row.reveal ? `reveal:${row.reveal}` : row.quick ? `act:${row.quick}` : "";
+    const key = row.keys && !row.quick ? "" : row.tab ? `tab:${row.tab}` : row.reveal ? `reveal:${row.reveal}` : row.quick ? `act:${row.quick}` : "";
     const parts = key && paletteRowParts(row, abouts);
     if (parts && parts.about && !out.has(key)) out.set(key, { id: key, icon: parts.icon.replace(/^(ph:)?/, "ph:"), label: parts.label, hint: parts.about, run: row.run });
   }
