@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Board: the phone's tools sheet puts each tool's name under its icon, 18 tiles all 44px or more, and takes the names out again on close (audit 1028 U21).
 - Mind map: the text size stepper reads one scale: a root drawn at 22px read "22px" while its children read "M", now "L+" (a little over L) and the title keeps the pixels (audit 1028 U28).
 - Mind map: the Layout menu draws a glyph before each of its ten shapes (audit 1028 U27).
 - Mind map: the fold chevron and its count stand 3px outside the topic's edge (the chevron overlapped it by 13px at 1440x900); a downward tree hangs it under the topic's middle (audit 1028 U25).

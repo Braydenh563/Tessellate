@@ -154,3 +154,26 @@ def test_the_size_readout_is_one_scale_never_pixels():
     stepper = MAP[MAP.index("function wbMapSizeStepper(") :]
     assert "`${size}px`" not in stepper[: stepper.index("\n}\n")].split("const nameOf")[1].split("\n")[0]
 
+
+# U21 ------------------------------------------------------------------------
+
+
+def test_the_tools_sheet_puts_each_tools_name_under_its_icon_and_takes_it_out_on_close():
+    sheet = WB[WB.index("function wbOpenToolsSheet(") :]
+    sheet = sheet[: sheet.index("\n  }\n")]
+    assert 'className = "wb-tool-word"' in sheet and 'classList.add("wb-tool-worded")' in sheet
+    # The key hint in the tooltip is not part of the word, and the rail is untouched above the sheet.
+    assert r'.replace(/\s*\(.*$/, "")' in sheet
+    close = sheet[sheet.index("onClose:") :]
+    assert 'classList.remove("wb-tool-worded")' in close and "word.remove()" in close
+    tile = _block(LAZY, ".wb-tools-palette button.wb-tool-worded {", "}")
+    assert "flex-direction: column" in tile and "aspect-ratio: auto" in tile and "max-width: 4.75rem" in tile
+    word = _block(LAZY, ".wb-tool-word {", "}")
+    assert "text-overflow: ellipsis" in word and "var(--text-xs)" in word
+    # Two lines then cut, centred in a box of its own width: a one-line nowrap word was cut on both sides.
+    assert "line-clamp: 2" in word and "width: 100%" in word and "text-align: center" in word
+    # The two sentence-length names get one short word each, which the full name still contains.
+    for full, word in re.findall(r'^\s+"([\w ]+)": "(\w+)",$', _block(sheet, "const short = {", "};"), re.M):
+        assert word.lower() in full.lower()
+    assert '"Upload an image onto the board": "Image"' in sheet and '"Lasso select": "Lasso"' in sheet
+

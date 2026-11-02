@@ -8232,3 +8232,35 @@ input[type="color"].wb-mixed {
   left: calc(100% + var(--space-1));
   transform-origin: 0 100%;
 }
+
+/* **The tools sheet names its tiles** (U21): the icon over its word, the word
+   from the button's own name (whiteboard.js, `wbOpenToolsSheet`). A tile is as
+   wide as its word up to 4.75rem; a longer name wraps to two lines and is then
+   cut with an ellipsis, so "Rounded rectangle" never pushes a row wider than
+   the sheet. Rounded square rather than the rail's circle: a circle cannot hold
+   a caption. */
+.wb-tools-palette button.wb-tool-worded {
+  width: auto;
+  height: auto;
+  min-width: 3.5rem;
+  max-width: 4.75rem;
+  aspect-ratio: auto;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+}
+.wb-tool-word {
+  display: -webkit-box;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--text-xs);
+  line-height: 1.2;
+  text-align: center;
+  text-overflow: ellipsis;
+  overflow-wrap: break-word;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
