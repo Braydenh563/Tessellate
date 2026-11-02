@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7550, frontend ids 2634, CSS sections 517, backend routes 640, backend modules 8428, test files 1823, tests 15605, plan headings 990, app scripts 28, boot scripts 37, script files 224.
+Counts: frontend functions 7550, frontend ids 2634, CSS sections 517, backend routes 640, backend modules 8428, test files 1823, tests 15606, plan headings 990, app scripts 28, boot scripts 37, script files 224.
 
 ## Frontend functions (7550)
 
@@ -5681,11 +5681,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `liveQueryBar` | frontend/js/notes-lazy.js:170 |
-| `noMatchHint` | frontend/js/notes-lazy.js:161 |
+| `liveQueryBar` | frontend/js/notes-lazy.js:172 |
+| `noMatchHint` | frontend/js/notes-lazy.js:163 |
 | `nudgeReviewQueue` | frontend/js/notes-lazy.js:62 |
 | `nudgeUntaggedNotes` | frontend/js/notes-lazy.js:87 |
-| `paintSearchWhy` | frontend/js/notes-lazy.js:148 |
+| `paintSearchWhy` | frontend/js/notes-lazy.js:150 |
 | `refreshNoteSearchWhy` | frontend/js/notes-lazy.js:105 |
 | `reviewNudgeWanted` | frontend/js/notes-lazy.js:57 |
 | `toggleRowExpanded` | frontend/js/notes-lazy.js:9 |
@@ -23036,7 +23036,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15605)
+## Tests (15606)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23194,7 +23194,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_bookmarks_library.py | 3 |
 | tests/test_bookmarks_said_once.py | 1 |
 | tests/test_boot_budget.py | 4 |
-| tests/test_boot_diet3.py | 9 |
+| tests/test_boot_diet3.py | 10 |
 | tests/test_boot_has_no_p5_or_d3.py | 4 |
 | tests/test_boot_integrity.py | 6 |
 | tests/test_brand_mark.py | 6 |
