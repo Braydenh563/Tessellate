@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7550, frontend ids 2634, CSS sections 517, backend routes 640, backend modules 8426, test files 1822, tests 15602, plan headings 990, app scripts 28, boot scripts 37, script files 224.
+Counts: frontend functions 7550, frontend ids 2634, CSS sections 517, backend routes 640, backend modules 8426, test files 1822, tests 15603, plan headings 990, app scripts 28, boot scripts 37, script files 224.
 
 ## Frontend functions (7550)
 
@@ -4345,19 +4345,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `firstStepButton` | frontend/js/first-run.js:53 |
 | `firstStepName` | frontend/js/first-run.js:79 |
-| `firstStepsBellRow` | frontend/js/first-run.js:339 |
+| `firstStepsBellRow` | frontend/js/first-run.js:344 |
 | `firstStepsCard` | frontend/js/first-run.js:206 |
 | `firstStepsMenuItems` | frontend/js/first-run.js:185 |
 | `firstStepsRead` | frontend/js/first-run.js:36 |
 | `firstStepsSample` | frontend/js/first-run.js:120 |
 | `firstStepsState` | frontend/js/first-run.js:27 |
 | `getStartedHide` | frontend/js/first-run.js:164 |
-| `getStartedItems` | frontend/js/first-run.js:314 |
+| `getStartedItems` | frontend/js/first-run.js:319 |
 | `getStartedMarkDone` | frontend/js/first-run.js:173 |
 | `getStartedShow` | frontend/js/first-run.js:157 |
-| `getStartedSteps` | frontend/js/first-run.js:294 |
+| `getStartedSteps` | frontend/js/first-run.js:299 |
 | `renderFirstSteps` | frontend/js/first-run.js:271 |
-| `renderGetStarted` | frontend/js/first-run.js:381 |
+| `renderGetStarted` | frontend/js/first-run.js:386 |
 | `writeNoteHint` | frontend/js/first-run.js:16 |
 
 ### frontend/js/gesture-kit.js (5)
@@ -23029,7 +23029,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15602)
+## Tests (15603)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23722,7 +23722,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_gate_lint_set.py | 2 |
 | tests/test_gate_owner_cache.py | 3 |
 | tests/test_gate_staged_once.py | 3 |
-| tests/test_get_started_1301.py | 7 |
+| tests/test_get_started_1301.py | 8 |
 | tests/test_glass_controls_1027.py | 5 |
 | tests/test_global_scope_ratchet.py | 5 |
 | tests/test_glossary_b7.py | 7 |
@@ -25436,7 +25436,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E3 · Model calls are scattered across request handlers, background threads and module singletons, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:666 |
 | E4 · The honest positives, so the section is not one-sided (read) | docs/roadmap/MODERNISATION_AUDIT.md:676 |
 | Earlier morning summary (away run 2026-10-18b, branch claude/magical-feynman-7bgj7j, PR 192, 0.6.0) | docs/roadmap/HANDOVER.md:38 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:578 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:580 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4280 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |
