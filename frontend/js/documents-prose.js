@@ -2269,9 +2269,22 @@ function docPlainText(text) {
     .replace(/!\[[^[\]\n]*\]\([^()\n]*\)/g, " ")
     .replace(/\[([^[\]\n]*)\]\([^()\n]*\)/g, "$1")
     .replace(/https?:\/\/\S+/g, " ")
+    //: A rule or a table's alignment row is marks, not words (DX10, audit 1102).
+    .replace(/^[ \t]*(?:[|:\- \t]{3,}|(?:[*_][ \t]*){3,})$/gm, " ")
     .replace(/^\s{0,3}(#{1,6}|[-*+>]|\d+[.)])\s+(\[[ xX]\]\s+)?/gm, "")
+    //: A callout's head is a marker, then its title (`> [!note] Title`).
+    .replace(/^\s{0,3}(?:>\s*)*\[![\w-]+\][+-]?/gm, "")
     .replace(/[*_~`=|]+/g, " ");
 }
+
+//: **The one word count** (DX10, audit 1102): the status bar said 98 words and
+//: Document statistics 57 on the same page, because the bar counted the raw
+//: Markdown (pipes, `---` and list marks were words) and the dialog counted the
+//: prose. Every surface asks this: the status bar, the word goal, the selection
+//: and the statistics read the plain text's words and the one reading speed
+//: (`TEXT_READING_WPM`, settings-wiring.js). Callers strip the document's
+//: comments first (`docCommentStrip`).
+docPlainText.counts = (text) => textCounts(docPlainText(text));
 
 function docSyllables(word) {
   const w = word.toLowerCase().replace(/[^a-z]/g, "");
@@ -2296,6 +2309,7 @@ const DOC_WORD_RE = /[\p{L}\p{N}][\p{L}\p{N}'’-]*/gu;
 function docStatistics(text) {
   const raw = String(text || "");
   const plain = docPlainText(raw);
+  const total = textCounts(plain);
   const words = plain.match(DOC_WORD_RE) || [];
   const sentences = plain.split(/(?<=[.!?])\s+|\n{2,}/).filter((s) => /[\p{L}\p{N}]/u.test(s));
   const sentenceWords = sentences.map((s) => (s.match(DOC_WORD_RE) || []).length);
@@ -2305,14 +2319,14 @@ function docStatistics(text) {
   const ease = words.length ? Math.max(0, Math.min(100, 206.835 - 1.015 * perSentence - 84.6 * perWord)) : 0;
   const grade = words.length ? Math.max(0, 0.39 * perSentence + 11.8 * perWord - 15.59) : 0;
   return {
-    words: words.length,
+    words: total.words,
     chars: [...raw].length,
     charsNoSpaces: [...raw.replace(/\s/g, "")].length,
     sentences: sentences.length,
     paragraphs: plain.split(/\n{2,}/).filter((p) => p.trim()).length,
     headings: docHeadingRows(raw.split("\n")).length,
-    readMinutes: words.length / 238,
-    speakMinutes: words.length / 130,
+    readMinutes: total.minutes,
+    speakMinutes: total.words / 130,
     longest: sentenceWords.length ? Math.max(...sentenceWords) : 0,
     perSentence,
     ease,

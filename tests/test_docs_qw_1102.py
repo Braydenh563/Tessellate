@@ -146,3 +146,40 @@ def test_dx7_heading_rows_four_to_six_are_in_the_menu():
     for n in (4, 5, 6):
         assert f'id: "h{n}", group: "Basic"' in EDITOR
         assert f'run: act("h{n}")' in EDITOR
+
+
+# DX10 ----------------------------------------------------------------------
+
+WIRING = (JS / "settings-wiring.js").read_text(encoding="utf-8")
+PROSE = (JS / "documents-prose.js").read_text(encoding="utf-8")
+
+
+@node
+def test_dx10_one_word_count_for_the_bar_the_goal_the_selection_and_the_statistics():
+    counts = WIRING[WIRING.index("const TEXT_READING_WPM") : WIRING.index("function captureCountText")]
+    plain = _slice(PROSE, "function docPlainText(text) {", "\n}\n")
+    prop = _slice(PROSE, "docPlainText.counts = ", ";\n")
+    stats = PROSE[PROSE.index("const DOC_STOP_WORDS") : PROSE.index("function docOpenStatistics")]
+    table = "| a | b |\n|---|---|\n| one | two |\n\n- first item\n- second item\n\n---\n\nThree plain words."
+    out = _node(
+        f"""(() => {{
+          const text = {json.dumps(table)};
+          const bar = docPlainText.counts(text);
+          const stats = docStatistics(text);
+          return {{ bar: bar.words, stats: stats.words, barMinutes: bar.minutes, statsMinutes: stats.readMinutes, raw: textCounts(text).words }};
+        }})()""",
+        counts + stats,
+    )
+    assert out["bar"] == out["stats"] == 11, out
+    assert out["raw"] > out["bar"], "the raw markdown counts pipes and rules as words"
+    assert out["barMinutes"] == out["statsMinutes"], "one reading speed"
+    assert plain and prop
+
+
+def test_dx10_every_reader_asks_the_one_function():
+    bar = _slice(DOCS, "function renderDocCounts() {", "\n}\n")
+    assert "docPlainText.counts(stripped)" in bar and "textCounts(stripped)" in bar
+    goal = _slice(DOCS, "function renderDocStats() {", "\n}\n")
+    assert "docPlainText.counts(docCommentStrip(docText()))" in goal
+    assert "docPlainText.counts(docCommentStrip(box.text.slice(range.from, range.to)))" in DOCS
+    assert "readMinutes: total.minutes" in PROSE and "/ 238" not in PROSE

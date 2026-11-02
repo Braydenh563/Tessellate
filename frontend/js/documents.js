@@ -2621,7 +2621,7 @@ function renderDocStats() {
   const code = docIsCodeFile();
   button.classList.toggle("hidden", code);
   if (code) return;
-  const { words } = textCounts(docText());
+  const { words } = docPlainText.counts(docCommentStrip(docText()));
   const goal = currentDoc ? getDocWordGoal(currentDoc.id) : 0;
   button.setAttribute("aria-pressed", String(goal > 0));
   button.classList.toggle("has-findings", goal > 0 && words >= goal);
@@ -10278,7 +10278,7 @@ function docCaretStats(box) {
   //: and a selection count that lagged the selection would be worse than
   //: none. Counted only when there is a selection to count, so the common
   //: case (a caret, no range) still does no work at all.
-  const words = selected ? textCounts(box.text.slice(range.from, range.to)).words : 0;
+  const words = selected ? docPlainText.counts(docCommentStrip(box.text.slice(range.from, range.to))).words : 0;
   return {
     line: line.number,
     column: range.from - line.from + 1,
@@ -10479,7 +10479,8 @@ function renderDocCounts() {
   //: composer, this bar and the server share: characters are code points, as
   //: `wc -m` counts them, so an emoji is one, not two.
   const stripped = docCommentStrip(docText());
-  const { words, chars, read } = textCounts(stripped);
+  const { words, read } = docPlainText.counts(stripped);
+  const { chars } = textCounts(stripped);
   const lines = docLineCount(stripped);
   //: Characters first, because that is the one the existing header line never
   //: showed and the one that was asked for by name. Lines (OPEN ledger 299)
