@@ -430,8 +430,11 @@ def test_read_view_table_is_set_like_prose_and_counts_rows_plainly() -> None:
     monospace and 658 px wide for three short columns (113/249/295 px); now
     system-ui and 302 px. The caption says what the number counts."""
     css = (ROOT / "frontend" / "css" / "09-editor.css").read_text(encoding="utf-8")
-    rule = css[css.index("#doc-preview .md-table-block:not(.is-full) .md-table") :].split("}")[0]
-    assert "font-family: var(--font-sans)" in rule and "width: auto" in rule and "max-width: 100%" in rule
+    #: DX12 (audit 1102) dropped the card: the table inherits the prose face, and from
+    #: three columns takes the full measure; two short columns stay narrow.
+    rule = css[css.index("#doc-preview .md-table-block .md-table {") :].split("}")[0]
+    assert "font: inherit" in rule and "width: auto" in rule and "max-width: 100%" in rule
+    assert "#doc-preview .md-table-block .md-table:has(thead th:nth-child(3)) {\n  width: 100%;" in css
     markdown = (ROOT / "frontend" / "js" / "table-block.js").read_text(encoding="utf-8")
     assert 'table · header and ${nounCount(bodyRows.length, "row")}' in markdown and "table · header only" in markdown
 
