@@ -108,6 +108,9 @@ ALLOWED_BLOCKS = {
     ("app.js", "LATEX_SYMBOLS"),
     ("documents-math.js", "DOC_MATH_LETTERS"),
     ("documents-math.js", "DOC_MATH_OPERATORS"),
+    #: The picker's Symbols tab (INBOX 1544): the characters a person inserts into their own text,
+    #: written as escapes. A property assignment (`NAME = [` ... `];`), not a new name in the shared scope.
+    ("app.js", "iconPickerState.symbolSource"),
 }
 
 
@@ -119,14 +122,14 @@ def _allowed_line_numbers(name: str, source_lines: list[str]) -> set[int]:
     for number, line in enumerate(source_lines, 1):
         if open_block is None:
             for block in wanted:
-                if line.lstrip().startswith(f"const {block} = {{"):  # indented in a wrapped file (documents-math.js)
+                if line.lstrip().startswith((f"const {block} = {{", f"{block} = [")):  # indented in a wrapped file (documents-math.js)
                     open_block = block
                     break
             if open_block is not None:
                 inside.add(number)
             continue
         inside.add(number)
-        if line.strip() == "};":
+        if line.strip() in ("};", "];"):
             open_block = None
     return inside
 

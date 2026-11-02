@@ -2806,6 +2806,19 @@ const DOC_COMMANDS = [
   { id: "task", icon: "ph:check-square", label: "Task list", keys: "Ctrl+Shift+9", run: () => applyMarkdown("task") },
   { id: "quote", icon: "ph:quotes", label: "Quote", keys: "none", run: () => applyMarkdown("quote") },
   { id: "link", icon: "ph:link", label: "Link", keys: "none", run: () => applyMarkdown("link") },
+  //: The insert panels (INBOX 1544): the picker on its three tabs, the equation
+  //: editor and the calculator, pressed from here as from the Insert menu. The
+  //: chords are bound for the document and every note box (`docCmKeymap.insert`).
+  { id: "insert-emoji", icon: "ph:smiley", label: "Insert an emoji", keys: "Ctrl+;", prose: true,
+    run: () => applyMarkdown("emoji") },
+  { id: "insert-icon", icon: "ph:shapes", label: "Insert an icon", keys: "Ctrl+Shift+;", prose: true,
+    run: () => applyMarkdown("icon") },
+  { id: "insert-symbol", icon: "ph:pi", label: "Insert a symbol", keys: "Ctrl+'", prose: true,
+    run: () => applyMarkdown("symbol") },
+  { id: "insert-equation", icon: "ph:function", label: "Insert an equation", keys: "Alt+=", prose: true,
+    run: () => applyMarkdown("equation") },
+  { id: "insert-calculator", icon: "ph:calculator", label: "Open the calculator", keys: "Ctrl+Shift+'",
+    run: () => applyMarkdown("calculator") },
   { id: "view-edit", icon: "ph:pencil-simple", label: "Edit this document", keys: "none",
     run: () => setDocView(lastEditView) },
   { id: "view-read", icon: "ph:book-open", label: "Read this document", keys: "none",
@@ -6375,7 +6388,11 @@ const MD_ACTIONS = {
   clearformat: { custom: "clearformat" },
   //: The one icon and emoji picker (MINDMAP_PLAN decision 46).
   emoji: { custom: "emoji" },
+  //: The picker's other two tabs and the calculator, each its own door (INBOX 1544).
+  icon: { custom: "icon" },
+  symbol: { custom: "symbol" },
   equation: { custom: "equation" },
+  calculator: { custom: "calculator" },
   ul: { line: "- " },
   ol: { line: "1. " },
   task: { line: "- [ ] " },
@@ -6615,12 +6632,19 @@ function applyMarkdown(kind, boxId = "doc-content") {
     finishMarkdownEdit(box, boxId);
     return;
   }
-  if (action.custom === "emoji") {
-    //: Hung from the button that asked, in whichever strip it is; a button
-    //: inside a closed Insert menu has no place, so the picker centres.
-    const anchor = document.querySelector(`[data-md-target="${boxId}"] [data-md="emoji"]`)
-      || (boxId === "doc-content" ? document.querySelector('#doc-toolbar [data-md="emoji"]') : null);
-    editorPickGlyph(box, anchor);
+  if (["emoji", "icon", "symbol"].includes(action.custom)) {
+    //: Hung from the button that asked, in whichever strip it is (a strip
+    //: without that tab's button hangs it from the emoji one); a button inside
+    //: a closed Insert menu has no place, so the picker centres.
+    const near = `:is([data-md="${action.custom}"], [data-md="emoji"])`;
+    const anchor = document.querySelector(`[data-md-target="${boxId}"] ${near}`)
+      || (boxId === "doc-content" ? document.querySelector(`#doc-toolbar ${near}`) : null);
+    editorPickGlyph(box, anchor, action.custom);
+    return;
+  }
+  if (action.custom === "calculator") {
+    //: Over this box, so its Insert writes here; the same entry the palette's row uses.
+    POPUP_TOOLS.find((tool) => tool.id === "calculator").open(box);
     return;
   }
   if (action.custom === "equation") {
@@ -8215,6 +8239,7 @@ function noteSurfaceKeymap(host) {
     { key: "Mod-1", run: () => { applyMarkdown("h1", host.id); return true; } },
     { key: "Mod-2", run: () => { applyMarkdown("h2", host.id); return true; } },
     { key: "Mod-3", run: () => { applyMarkdown("h3", host.id); return true; } },
+    ...docCmKeymap.insert((kind) => { applyMarkdown(kind, host.id); return true; }),
     //: No Ctrl+/ here: in a note it is the blocks menu (the registry's
     //: `editorMenu`), and a comment toggle bound here as well wrapped the
     //: line in the *document's* comment marker before the menu wrote "/"
@@ -15477,6 +15502,13 @@ function docProseChord(run) {
   return true;
 }
 
+//: **The insert panels' chords** (INBOX 1544), one list for the document and
+//: every note box: Ctrl+; emoji, Ctrl+Shift+; icons, Ctrl+' symbols and
+//: Ctrl+Shift+' the calculator (Alt+= is the equation, `lazy-entries.js`). The
+//: base key is read, as for the list chords. Each is a row of `DOC_COMMANDS`, so
+//: the shortcut sheet lists it; `apply(kind)` says how the caller runs a kind.
+docCmKeymap.insert = (apply) => [["Mod-;", "emoji"], ["Mod-Shift-;", "icon"], ["Mod-'", "symbol"], ["Mod-Shift-'", "calculator"]].map(([key, kind]) => ({ key, run: () => apply(kind) }));
+
 function docCmKeymap(CM) {
   const surface = () => docSurface();
   return [
@@ -15542,6 +15574,7 @@ function docCmKeymap(CM) {
     { key: "Mod-Shift-8", run: () => docProseChord(() => { applyMarkdown("ul"); }) },
     { key: "Mod-Shift-7", run: () => docProseChord(() => { applyMarkdown("ol"); }) },
     { key: "Mod-Shift-9", run: () => docProseChord(() => { applyMarkdown("task"); }) },
+    ...docCmKeymap.insert((kind) => (kind === "calculator" ? (applyMarkdown(kind), true) : docProseChord(() => { applyMarkdown(kind); }))),
     //: One gesture, one entry point: `toggleDocFindBar` opens the engine's
     //: panel here and the app's own bar on the fallback, so this binding does
     //: not have to know which is on screen.

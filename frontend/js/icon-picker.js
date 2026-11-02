@@ -293,7 +293,76 @@ const ICON_KAOMOJI = [
 //: This file's only mutable state, one object (the global-scope ratchet): the
 //: emoji groups, parsed once on first open as `[{key, label, items: [{name, glyph}]}]`,
 //: the icon groups likewise, and the open panel.
-const iconPickerState = { emojiGroups: null, phGroups: null, open: null };
+const iconPickerState = { emojiGroups: null, symbolGroups: null, phGroups: null, open: null };
+
+//: **The symbols tab** (INBOX 1544): characters a keyboard does not have, in
+//: groups, `[key, heading, "name=glyph name=glyph ..."]` as the emoji are. A pick
+//: is the character itself (`kind: "symbol"`, inserted as text). A property of
+//: `iconPickerState`, not new names in the shared scope.
+iconPickerState.symbolSource = [
+  ["arrows", "Arrows",
+    "left_arrow=\u{2190} right_arrow=\u{2192} up_arrow=\u{2191} down_arrow=\u{2193} " +
+    "left_right_arrow=\u{2194} up_down_arrow=\u{2195} double_right_arrow=\u{21D2} " +
+    "double_left_arrow=\u{21D0} double_left_right_arrow=\u{21D4} north_east_arrow=\u{2197} " +
+    "south_east_arrow=\u{2198} south_west_arrow=\u{2199} north_west_arrow=\u{2196} return_arrow=\u{21B5} " +
+    "clockwise_arrow=\u{21BB} anticlockwise_arrow=\u{21BA} long_right_arrow=\u{27F6} maps_to=\u{21A6} " +
+    "heavy_right_arrow=\u{279C} triangle_right=\u{25B6} triangle_left=\u{25C0} triangle_up=\u{25B2} " +
+    "triangle_down=\u{25BC} "],
+  ["math", "Maths",
+    "plus_minus=\u{B1} multiplication=\u{D7} division=\u{F7} minus=\u{2212} not_equal=\u{2260} " +
+    "approximately_equal=\u{2248} identical_to=\u{2261} less_or_equal=\u{2264} greater_or_equal=\u{2265} " +
+    "much_less=\u{226A} much_greater=\u{226B} infinity=\u{221E} square_root=\u{221A} cube_root=\u{221B} " +
+    "sum=\u{2211} product=\u{220F} integral=\u{222B} partial_derivative=\u{2202} nabla=\u{2207} " +
+    "increment=\u{2206} element_of=\u{2208} not_element_of=\u{2209} subset=\u{2282} union=\u{222A} " +
+    "intersection=\u{2229} for_all=\u{2200} there_exists=\u{2203} empty_set=\u{2205} therefore=\u{2234} " +
+    "because=\u{2235} proportional_to=\u{221D} logical_and=\u{2227} logical_or=\u{2228} not=\u{AC} " +
+    "perpendicular=\u{22A5} angle=\u{2220} parallel=\u{2225} degree=\u{B0} prime=\u{2032} " +
+    "double_prime=\u{2033} "],
+  ["greek", "Greek",
+    "alpha=\u{3B1} beta=\u{3B2} gamma=\u{3B3} delta=\u{3B4} epsilon=\u{3B5} zeta=\u{3B6} eta=\u{3B7} " +
+    "theta=\u{3B8} iota=\u{3B9} kappa=\u{3BA} lambda=\u{3BB} mu=\u{3BC} nu=\u{3BD} xi=\u{3BE} " +
+    "omicron=\u{3BF} pi=\u{3C0} rho=\u{3C1} sigma=\u{3C3} tau=\u{3C4} upsilon=\u{3C5} phi=\u{3C6} " +
+    "chi=\u{3C7} psi=\u{3C8} omega=\u{3C9} capital_gamma=\u{393} capital_delta=\u{394} " +
+    "capital_theta=\u{398} capital_lambda=\u{39B} capital_xi=\u{39E} capital_pi=\u{3A0} " +
+    "capital_sigma=\u{3A3} capital_phi=\u{3A6} capital_psi=\u{3A8} capital_omega=\u{3A9} "],
+  ["currency", "Currency",
+    "euro=\u{20AC} pound=\u{A3} yen=\u{A5} cent=\u{A2} dollar=\u{24} rupee=\u{20B9} won=\u{20A9} " +
+    "ruble=\u{20BD} lira=\u{20BA} franc=\u{20A3} bitcoin=\u{20BF} generic_currency=\u{A4} "],
+  ["writing", "Writing marks",
+    "en_dash=\u{2013} em_dash=\u{2014} ellipsis=\u{2026} bullet=\u{2022} middle_dot=\u{B7} section=\u{A7} " +
+    "pilcrow=\u{B6} dagger=\u{2020} double_dagger=\u{2021} copyright=\u{A9} registered=\u{AE} " +
+    "trademark=\u{2122} per_mille=\u{2030} numero=\u{2116} left_double_quote=\u{201C} " +
+    "right_double_quote=\u{201D} left_single_quote=\u{2018} right_single_quote=\u{2019} " +
+    "left_guillemet=\u{AB} right_guillemet=\u{BB} inverted_question_mark=\u{BF} " +
+    "inverted_exclamation_mark=\u{A1} feminine_ordinal=\u{AA} masculine_ordinal=\u{BA} "],
+  ["fractions", "Fractions and scripts",
+    "one_half=\u{BD} one_third=\u{2153} two_thirds=\u{2154} one_quarter=\u{BC} three_quarters=\u{BE} " +
+    "one_fifth=\u{2155} one_eighth=\u{215B} superscript_one=\u{B9} superscript_two=\u{B2} " +
+    "superscript_three=\u{B3} superscript_n=\u{207F} subscript_zero=\u{2080} subscript_one=\u{2081} " +
+    "subscript_two=\u{2082} "],
+  ["marks", "Marks and shapes",
+    "check_mark=\u{2713} heavy_check_mark=\u{2714} cross_mark=\u{2717} heavy_cross_mark=\u{2718} " +
+    "empty_box=\u{2610} checked_box=\u{2611} crossed_box=\u{2612} black_star=\u{2605} white_star=\u{2606} " +
+    "black_circle=\u{25CF} white_circle=\u{25CB} black_square=\u{25A0} white_square=\u{25A1} " +
+    "black_diamond=\u{25C6} white_diamond=\u{25C7} black_heart=\u{2665} spade=\u{2660} club=\u{2663} " +
+    "diamond_suit=\u{2666} music_note=\u{266A} beamed_notes=\u{266B} sharp=\u{266F} flat=\u{266D} " +
+    "natural=\u{266E} "],
+  ["keys", "Keyboard keys",
+    "command=\u{2318} option=\u{2325} shift=\u{21E7} enter=\u{23CE} escape=\u{238B} tab=\u{21E5} " +
+    "backspace=\u{232B} delete=\u{2326} caps_lock=\u{21EA} "],
+];
+
+iconPickerState.symbols = () => {
+  iconPickerState.symbolGroups ||= iconPickerState.symbolSource.map(([key, label, source]) => ({
+    key,
+    label,
+    items: source.split(" ").filter(Boolean).map((pair) => {
+      const at = pair.indexOf("=");
+      return { kind: "symbol", value: pair.slice(at + 1), name: pair.slice(0, at).replace(/_/g, " ") };
+    }),
+  }));
+  return iconPickerState.symbolGroups;
+};
 
 //: The text a search reads for one tile: its name, its everyday aliases and its
 //: group, lower case.
@@ -374,7 +443,7 @@ const ICON_PICKER_RECENT_MAX = 20;
 
 function iconPickerRecent() {
   const list = prefs.json(ICON_PICKER_RECENT_KEY, []);
-  return list.filter((r) => r && (r.kind === "emoji" || r.kind === "icon") && typeof r.value === "string").slice(0, ICON_PICKER_RECENT_MAX);
+  return list.filter((r) => r && (r.kind === "emoji" || r.kind === "icon" || r.kind === "symbol") && typeof r.value === "string").slice(0, ICON_PICKER_RECENT_MAX);
 }
 
 function iconPickerRemember(choice) {
@@ -392,13 +461,13 @@ const ICON_PICKER_PAGE = 48;
 //: What a choice is as text, for a drop into a text box or an insert: an
 //: emoji is itself, an icon the token the reading view draws (decision 46).
 function iconPickerText(choice) {
-  return choice.kind === "emoji" ? choice.value : `:ph-${choice.value}:`;
+  return choice.kind === "icon" ? `:ph-${choice.value}:` : choice.value;
 }
 
 //: A tile's glyph element: the emoji as text, the icon as Phosphor's `<i>`.
 function iconPickerGlyph(choice) {
-  const glyph = document.createElement(choice.kind === "emoji" ? "span" : "i");
-  if (choice.kind === "emoji") {
+  const glyph = document.createElement(choice.kind === "icon" ? "i" : "span");
+  if (choice.kind !== "icon") {
     glyph.className = choice.wide ? "icon-picker-emoji icon-picker-kaomoji" : "icon-picker-emoji";
     glyph.textContent = choice.value;
   } else {
@@ -423,7 +492,7 @@ function closeIconPicker() {
 //: Returns `{close}`.
 function openIconPicker({ anchor = null, onPick = null, modes = ["emoji", "icon"], mode = null, keepOpen = false, title = "Emoji and icons" } = {}) {
   closeIconPicker();
-  const kinds = modes.filter((m) => m === "emoji" || m === "icon");
+  const kinds = modes.filter((m) => m === "emoji" || m === "icon" || m === "symbol");
   let current = kinds.includes(mode) ? mode : kinds[0] || "emoji";
   let query = "";
   const expanded = new Set();
@@ -466,8 +535,10 @@ function openIconPicker({ anchor = null, onPick = null, modes = ["emoji", "icon"
   search.type = "search";
   search.className = "search-field-input";
   search.autocomplete = "off";
-  search.placeholder = "Search emoji and icons";
-  search.setAttribute("aria-label", "Search emoji and icons");
+  //: Named for what the panel offers: a board's two tabs say "emoji and icons".
+  const offered = kinds.length > 2 ? "emoji, icons and symbols" : kinds.includes("symbol") ? "symbols" : "emoji and icons";
+  search.placeholder = `Search ${offered}`;
+  search.setAttribute("aria-label", `Search ${offered}`);
   field.append(lens, search);
 
   //: **The kind is a tab strip under the head, never a pill** (INBOX 715, the
@@ -476,8 +547,8 @@ function openIconPicker({ anchor = null, onPick = null, modes = ["emoji", "icon"
   const tabs = document.createElement("div");
   tabs.className = "tabs-line popup-kinds icon-picker-modes";
   tabs.setAttribute("role", "tablist");
-  tabs.setAttribute("aria-label", "Emoji or icons");
-  for (const [kind, label] of [["emoji", "Emoji"], ["icon", "Icons"]]) {
+  tabs.setAttribute("aria-label", "Emoji, icons or symbols");
+  for (const [kind, label] of [["emoji", "Emoji"], ["icon", "Icons"], ["symbol", "Symbols"]]) {
     if (!kinds.includes(kind)) continue;
     const b = document.createElement("button");
     b.type = "button";
@@ -565,7 +636,7 @@ function openIconPicker({ anchor = null, onPick = null, modes = ["emoji", "icon"
       b.setAttribute("aria-selected", String(b.dataset.mode === current));
       b.tabIndex = b.dataset.mode === current ? 0 : -1;
     }
-    const groups = current === "emoji" ? iconPickerEmojiGroups() : iconPickerIconGroups();
+    const groups = { emoji: iconPickerEmojiGroups, icon: iconPickerIconGroups, symbol: iconPickerState.symbols }[current]();
     const q = query.trim().toLowerCase();
     const parts = [];
     tiles = [];
@@ -605,7 +676,7 @@ function openIconPicker({ anchor = null, onPick = null, modes = ["emoji", "icon"
       if (!found.length) {
         const none = document.createElement("p");
         none.className = "muted icon-picker-empty";
-        none.textContent = current === "emoji" ? "No emoji by that name. Try Icons." : "No icon by that name. Try Emoji.";
+        none.textContent = `No ${current} by that name.${kinds.length > 1 ? " Try another tab." : ""}`;
         parts.push(none);
       }
     } else {
