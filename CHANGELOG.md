@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+Tests: a pin for audit 1028 E53 (no double greeting from an app-made note); the row no longer reproduces.
 Chat: the screen-aware pick-up line ("Looks like you have X open") is sent as a tip under the answer, not as the answer text's last line (audit 1028 E52).
 Chat: a source sentence that runs three or more semicolon clauses together is listed as bullets instead of one run-on line (audit 1028 E63).
 Chat and Writing room: a source list whose items carry a label or a citation is no longer split at a semicolon or lowercased, so names and years survive (audit 1028 E19).
