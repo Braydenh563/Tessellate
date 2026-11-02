@@ -272,11 +272,11 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 266 | D45 | low | 871 KB wordlist fetched and dictionary built on main thread | new | M |
 | 267 | K32 | low | tabs poll all reminders every minute for a due check | won't fix (the poll already asks only open reminders; the timer, badge and early alerts need the rows, 2026-10-30) | S |
 | 268 | K33 | low | token sweep runs on every authenticated request | won't fix 1031: the per-request sweep is what drops the key the moment the last granted session expires (test_vault_sessions); O(tokens) with a handful of tokens | S |
-| 269 | K34 | low | 200 MB uploads read into memory as bytes | new | M |
+| 269 | K34 | low | 200 MB uploads read into memory as bytes | won't fix 2026-11-02: capped at 200 MB and Starlette spools the upload; the importers parse bytes | M |
 | 270 | K35 | low | startup PRAGMA table_info for every table each launch | new | S |
 | 271 | K36 | low | list_boards and list_images run per-board queries | new | M |
 | 272 | E58 | low | saved chat list rebuilt every checkpoint round | new | S |
-| 273 | E65 | low | NoteView not cached, notes re-read per question | new | M |
+| 273 | E65 | low | NoteView not cached, notes re-read per question | measured 2026-11-02: read_note is not the cost; the 329 queries per answer were (now 96), see CHANGELOG | M |
 | 274 | S64 | low | mascot and avatar assets load even when disabled | new | S |
 | 275 | S65 | low | service worker precache not trimmed to critical assets | new | M |
 | 276 | S90 | low | palette rebuilds 103 commands on each open | new | S |

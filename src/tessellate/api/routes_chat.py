@@ -364,7 +364,7 @@ def _context_note(ctx: _NoteCtx, entry) -> dict:  # noqa: ANN001
         #: How many pictures the note holds: the prompt says so, because the
         #: answer shows them beside this note's citation (INBOX 502).
         "pictures": len(set(_MEDIA_REF.findall(entry.content or ""))),
-        "category": manager.category_name_for(ctx.session, entry),
+        "category": ctx.category_names.get(entry.category_id, manager.UNCATEGORISED),
         # Marked so the prompt can say which notes the user chose.
         "attached": entry.id in ctx.attached_ids,
         # Clipped from the web or imported (SEC-02): the agent starts the turn
@@ -405,6 +405,7 @@ def _context_notes(session: Session, found: _Found, attached: list, attached_doc
     ctx = _NoteCtx(
         session, found, attached_ids, now.tzinfo, now.date(),
         manager.entry_dates_bulk(session, ids), _files_on(session, ids), as_of,
+        manager.bulk_category_names(session, found.entries),
     )
     notes = [_context_note(ctx, entry) for entry in found.entries]
     #: Listed newest first for "my last note": said on the first, which a small

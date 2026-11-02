@@ -211,6 +211,8 @@ class _NoteCtx:
     time_words: dict
     files_on: dict
     as_of: "date | None"
+    #: Category names for every entry in one query, not one per note.
+    category_names: dict = field(default_factory=dict)
 
 
 def _in_window(found: _Found, session: Session, asked, question: str) -> None:  # noqa: ANN001
@@ -402,11 +404,12 @@ def _stats_out(stats) -> dict | None:  # noqa: ANN001
 
 
 def _raw_results(session: Session, found: _Found) -> list:
-    from tessellate.api.routes_entries import _to_out  # avoids a route-module cycle
+    from tessellate.api.routes_entries import _to_out_bulk  # avoids a route-module cycle
 
     rows = []
-    for entry in found.entries:
-        out = _to_out(session, entry)
+    #: In a fixed number of queries: one `_to_out` per note was five queries
+    #: each, 120 for a 24-note answer (2026-11-02).
+    for entry, out in zip(found.entries, _to_out_bulk(session, list(found.entries)), strict=True):
         if entry.id in found.as_of_then:
             out = out.model_copy(update={"content": found.as_of_then[entry.id].text})
         rows.append(out)
