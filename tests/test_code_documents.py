@@ -67,9 +67,12 @@ def test_every_language_the_brief_names_has_a_code_template(templates):
         #: The type is one the server keeps as given, so the document opens in
         #: the code view of that language rather than falling back to Markdown.
         assert filetypes.normalise(kind) == kind, template["id"]
-    #: Writing first, then Code: the gallery's group heads change once.
+    #: Writing, Planning, then Code (Planning split out by audit 1102 DX30): the
+    #: gallery's group heads change once each.
     groups = [t.get("group") or "writing" for t in templates]
-    assert groups == sorted(groups, key=lambda g: g == "code")
+    order = {"writing": 0, "planning": 1, "code": 2}
+    assert groups == sorted(groups, key=order.__getitem__)
+    assert {"letter", "report", "essay", "cv", "proposal"} <= {t["id"] for t in templates if not t.get("group")}
 
 
 @pytest.mark.parametrize("template_id", ["py-script", "py-cli", "fastapi", "notebook"])

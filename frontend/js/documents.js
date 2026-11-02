@@ -1830,23 +1830,45 @@ const DOC_TEMPLATES = [
     id: "blank", title: "Blank", hint: "An empty page.", content: "",
   },
   {
-    id: "assignment", title: "Assignment plan", hint: "Brief, criteria, sections, sources, timeline.",
-    content: "# {{title}}\n\n**Due:** \n**Unit:** \n**Weight:** \n\n## The brief, in my own words\n\n\n## Marking criteria\n\n- [ ] \n- [ ] \n\n## Outline\n\n1. Introduction, \n2. \n3. \n4. Conclusion, \n\n## Sources\n\n- \n\n## Timeline\n\n| When | What |\n| --- | --- |\n| {{date}} | Plan written |\n|  | Draft |\n|  | Edit and submit |\n",
-  },
-  {
     id: "lecture", title: "Lecture notes", hint: "Cornell-style: cues, notes, summary.",
     content: "# {{title}}\n\n**Date:** {{date}}\n**Unit / lecturer:** \n\n## Key questions\n\n- \n\n## Notes\n\n\n## Terms\n\n| Term | Meaning |\n| --- | --- |\n|  |  |\n\n## Summary (three sentences)\n\n\n## To follow up\n\n- [ ] \n",
   },
+  //: The writing staples (audit 1102 DX30): the gallery had no letter, report,
+  //: essay, CV or one-pager, the five a word processor opens with.
   {
-    id: "meeting", title: "Meeting notes", hint: "Attendees, agenda, decisions, actions.",
+    id: "letter", title: "Letter", hint: "Date, greeting, body and sign-off.",
+    content: "# {{title}}\n\n{{date}}\n\nDear ,\n\n\n\nYours sincerely,\n\n",
+  },
+  {
+    id: "report", title: "Report", hint: "Summary, background, findings, recommendations.",
+    content: "# {{title}}\n\n**Date:** {{date}}\n**Prepared by:** \n\n## Summary\n\n\n## Background\n\n\n## Findings\n\n1. \n\n## Recommendations\n\n- \n\n## Appendix\n\n",
+  },
+  {
+    id: "essay", title: "Essay", hint: "Thesis, three points, conclusion, references.",
+    content: "# {{title}}\n\n## Introduction\n\nThesis: \n\n## First point\n\n\n## Second point\n\n\n## Third point\n\n\n## Conclusion\n\n\n## References\n\n1. \n",
+  },
+  {
+    id: "cv", title: "CV", hint: "Profile, experience, education, skills.",
+    content: "# {{title}}\n\nEmail · Phone · Place\n\n## Profile\n\n\n## Experience\n\n### Role, company (from to)\n\n- \n\n## Education\n\n### Qualification, place (year)\n\n## Skills\n\n- \n",
+  },
+  {
+    id: "proposal", title: "One-page proposal", hint: "The problem, the idea, why now, cost, the ask.",
+    content: "# {{title}}\n\n**Date:** {{date}}\n**From:** \n\n## The problem\n\n\n## The idea\n\n\n## Why now\n\n\n## Cost and time\n\n\n## The ask\n\n",
+  },
+  {
+    id: "assignment", group: "planning", title: "Assignment plan", hint: "Brief, criteria, sections, sources, timeline.",
+    content: "# {{title}}\n\n**Due:** \n**Unit:** \n**Weight:** \n\n## The brief, in my own words\n\n\n## Marking criteria\n\n- [ ] \n- [ ] \n\n## Outline\n\n1. Introduction, \n2. \n3. \n4. Conclusion, \n\n## Sources\n\n- \n\n## Timeline\n\n| When | What |\n| --- | --- |\n| {{date}} | Plan written |\n|  | Draft |\n|  | Edit and submit |\n",
+  },
+  {
+    id: "meeting", group: "planning", title: "Meeting notes", hint: "Attendees, agenda, decisions, actions.",
     content: "# {{title}}\n\n**Date:** {{date}}\n**Attendees:** \n\n## Agenda\n\n1. \n\n## Notes\n\n\n## Decisions\n\n- \n\n## Actions\n\n- [ ] Who, what, by when\n",
   },
   {
-    id: "decision", title: "Decision record", hint: "Context, options, decision, consequences.",
+    id: "decision", group: "planning", title: "Decision record", hint: "Context, options, decision, consequences.",
     content: "# {{title}}\n\n**Date:** {{date}}\n**Status:** proposed\n\n## Context\n\n\n## Options considered\n\n1. \n2. \n\n## Decision\n\n\n## Consequences\n\n- \n",
   },
   {
-    id: "weekly", title: "Weekly review", hint: "What happened, what's next, what to drop.",
+    id: "weekly", group: "planning", title: "Weekly review", hint: "What happened, what's next, what to drop.",
     content: "# Week of {{date}}\n\n## Went well\n\n- \n\n## Didn't\n\n- \n\n## Next week\n\n- [ ] \n\n## Stop doing\n\n- \n",
   },
   //: **The day's page** (DOCUMENTS_PLAN section 14). The whole of "daily notes"
@@ -1860,7 +1882,7 @@ const DOC_TEMPLATES = [
   //: in app.js, which is the only thing that lets the Timeline recognise a day
   //: written here as that day's page.
   {
-    id: "daily", title: "Daily", hint: "Today's page: what happened, what is open, what is next.",
+    id: "daily", group: "planning", title: "Daily", hint: "Today's page: what happened, what is open, what is next.",
     docTitle: "{{isodate}}",
     content: "# {{isodate}}\n\n## What happened\n\n- \n\n## Still open\n\n- [ ] \n\n## Next\n\n- \n",
   },
@@ -2257,7 +2279,7 @@ function openDocTemplateDialog() {
   if (!dialog || !list) return;
   docTemplateMade = false;
   list.replaceChildren();
-  //: Writing first, then Code (INBOX 788): a heading row where the group
+  //: Writing, Planning, then Code (INBOX 788, DX30): a heading row where the group
   //: changes, not a second list, so the arrows still walk every row.
   let group = "";
   for (const template of DOC_TEMPLATES) {
@@ -2266,7 +2288,7 @@ function openDocTemplateDialog() {
       const head = document.createElement("li");
       head.setAttribute("role", "presentation");
       head.className = "doc-template-group muted text-xs";
-      head.textContent = group === "code" ? "Code" : "Writing";
+      head.textContent = { code: "Code", planning: "Planning" }[group] || "Writing";
       list.appendChild(head);
     }
     const li = document.createElement("li");
