@@ -184,7 +184,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 178 | E43 | low | tools execute runs any tool after confirm, unsigned | new | M |
 | 179 | B22 | low | eight console calls are the only error surfacing | fixed (this batch) | S |
 | 180 | B25 | low | minimap redraws all items on any render | docs/roadmap/WHITEBOARD_PLAN.md:1219 | M |
-| 181 | B28 | low | image paste lacks URL and HTML paste and size cap | new | S |
+| 181 | B28 | low | image paste lacks URL and HTML paste and size cap | fixed 2026-11-02 (a28s-B28) | S |
 | 182 | B29 | low | inline rich text in map topics unverified | new | S |
 | 183 | B33 | low | 24 NaN guards suggest NaN has leaked before | new | M |
 | 184 | D35 | low | openDocument silently returns when the fetch fails | new | S |

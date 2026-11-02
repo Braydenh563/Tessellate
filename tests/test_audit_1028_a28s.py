@@ -59,6 +59,21 @@ def test_b32_the_maps_timers_and_frames_are_kept_and_cancelled_on_a_board_switch
     assert "wbMapCache.cancelAll();" in _between(_js("whiteboard.js"), "function wbCancelBoardTimers()", "return wbFlushNudge();")
 
 
+def test_b28_a_picture_pasted_as_markup_or_an_address_is_placed_or_refused_with_a_reason():
+    """B28: the board's paste took files and text only, and no picture was checked
+    against the upload cap before the request."""
+    source = _js("whiteboard.js")
+    assert "const wbPictureCap = 50 * 1024 * 1024;" in source
+    assert "if (file.size > wbPictureCap) return wbPictureTooBig();" in source
+    handler = _between(source, 'document.addEventListener("paste", (e) => {', 'document.addEventListener("copy"')
+    assert "wbPastedPictureAddress(data, html)" in handler
+    assert handler.index("wbPastedPictureAddress(") < handler.index('getData("text/plain")')
+    helper = _between(source, "function wbPastedPictureAddress(", "function wbPlacePastedAddress(")
+    assert "text/uri-list" in helper and "img[src]" in helper
+    place = _between(source, "async function wbPlacePastedAddress(", "async function wbPlaceUploadedImage(")
+    assert "works offline" in place  # a web address is refused with the reason, not dropped
+
+
 def test_s92_a_loaded_or_filtered_list_says_its_count_through_the_one_live_region():
     """S92: Notes and the Library announce their count, settled and once, through
     `announce` (the page's `#live-region`), not a region each."""

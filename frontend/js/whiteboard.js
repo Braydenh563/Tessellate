@@ -18551,8 +18551,44 @@ async function initWhiteboard() {
     if (!file || !file.type?.startsWith("image/")) return;
     try {
       const formData = new FormData();
+  //: The most the notebook keeps of one upload (`routes_files.MAX_FILE_BYTES`), said before the
+  //: upload starts and not after a 50 MB request fails (audit 1028 B28).
+  const wbPictureCap = 50 * 1024 * 1024;
+  function wbPictureTooBig() {
+    toast("That picture is over 50 MB, the most the notebook keeps. Shrink it and try again.", "info");
+  }
+
+  //: A picture pasted as an address or as markup, not as a file (audit 1028 B28): `text/uri-list`
+  //: naming a picture, or the first `<img>` of `text/html` when the plain text is empty or just
+  //: that address (a paragraph with a picture in it is still a paragraph).
+  function wbPastedPictureAddress(data, html) {
+    const plain = (data?.getData("text/plain") || "").trim();
+    const listed = (data?.getData("text/uri-list") || "").split(/\r?\n/).map((line) => line.trim()).find((line) => line && !line.startsWith("#"));
+    if (listed && /^data:image\/|\.(?:png|jpe?g|gif|webp|avif|bmp|svg)(?:[?#]|$)/i.test(listed)) return listed;
+    if (!html) return "";
+    const src = new DOMParser().parseFromString(html, "text/html").querySelector("img[src]")?.getAttribute("src") || "";
+    return src && (!plain || plain === src) ? src : "";
+  }
+
+  //: A `data:` picture is decoded to a file; one already in the notebook is placed as it is; a web
+  //: address is refused with the reason, since the page may not fetch the web (`connect-src 'self'`).
+  async function wbPlacePastedAddress(src, x, y) {
+    const inline = /^data:(image\/[\w.+-]+);base64,([\s\S]*)$/i.exec(src);
+    if (inline) {
+      if (inline[2].length * 0.75 > wbPictureCap) return wbPictureTooBig();
+      const bytes = Uint8Array.from(atob(inline[2]), (char) => char.charCodeAt(0));
+      //: The upload route reads the type from the name's extension.
+      const ext = inline[1].slice(6).toLowerCase().replace("jpeg", "jpg").replace("svg+xml", "svg");
+      return wbPlaceUploadedImage(new File([bytes], `pasted-picture.${ext}`, { type: inline[1] }), x, y);
+    }
+    const local = src.startsWith(`${location.origin}/media/`) ? src.slice(location.origin.length) : src;
+    if (local.startsWith("/media/")) return wbPlaceImageUrl(local, x, y);
+    toast("This notebook works offline, so a picture from the web is not fetched. Save the picture, then paste or drop the file.");
+  }
+
       formData.append("file", file);
       const uploaded = await apiJson("/media/upload", {
+    if (file.size > wbPictureCap) return wbPictureTooBig();
         method: "POST",
         headers: authHeaders(),
         body: formData,
@@ -18561,14 +18597,22 @@ async function initWhiteboard() {
       const naturalSize = await new Promise((resolve) => {
         img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
         img.onerror = () => resolve({ w: 300, h: 200 });
-        img.src = mediaSrc(uploaded.url);
+      await wbPlaceImageUrl(uploaded.url, x, y);
+    } catch (err) {
+      toast(err.message || voiceLine("failed", { what: "add that image" }), true);
+    }
+  }
+
+  async function wbPlaceImageUrl(url, x, y) {
+    try {
+        img.src = mediaSrc(url);
       });
       //: Its own size, shrunk only to sit inside the view (wbpaste-1026).
       const view = wbVisibleCanvasRect();
       const [vx0, vy0] = wbClientToBoard(view.left, view.top);
       const [vx1, vy1] = wbClientToBoard(view.right, view.bottom);
       const { width, height } = wbPasteImageSize(naturalSize.w, naturalSize.h, vx1 - vx0, vy1 - vy0);
-      await wbCreateObject("image", { url: uploaded.url }, x - width / 2, y - height / 2, width, height);
+      await wbCreateObject("image", { url }, x - width / 2, y - height / 2, width, height);
     } catch (err) {
       toast(err.message || voiceLine("failed", { what: "add that image" }), true);
     }
@@ -18610,6 +18654,13 @@ async function initWhiteboard() {
     //: A map's paste of an outline under a topic is the map's own (MINDMAP
     //: §12.2, the map half of FEAT-09); here a map keeps its own clipboard.
     if (text.trim()) {
+    const address = wbPastedPictureAddress(data, html);
+    if (address) {
+      e.preventDefault();
+      const [x, y] = wbViewCentre();
+      wbPlacePastedAddress(address, x, y);
+      return;
+    }
       //: Text on a map is the map's alone: falling through to the board's own
       //: clipboard pasted a stale copy beside the outline (wbpaste-1026 sweep).
       if (wbIsMap()) return;
