@@ -175,3 +175,9 @@ def test_the_choose_a_note_dialog_and_the_map_chips_read_what_the_server_says_of
     assert "noteEngine.literal(noteEngine.pick, needle, paint)" in dialog and "served?.has(e.id)" in dialog
     chips = _block(_text("notes-list.js"), "function ensureMapChipsFor(")
     assert 'entry.wiki_linked ?? String(entry.content || "").includes("[[")' in chips
+
+
+def test_the_picker_preview_reads_a_picture_past_the_rows_300_characters() -> None:
+    """fix1525b found: note-pick-preview.js read a note's first picture from the clipped row."""
+    body = _block(_text("note-pick-preview.js"), "function notePickThumb(")
+    assert "entry.content_truncated" in body and "fullEntry(entry.id)" in body

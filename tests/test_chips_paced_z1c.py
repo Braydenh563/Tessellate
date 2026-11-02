@@ -36,3 +36,4 @@ def test_every_input_caller_asks_for_pacing():
     assert callers, "the input callers moved"
     assert all("paced" in args for args in callers), callers
     assert "renderEntryAttachmentChips({ paced: true })" in TEXT or 'renderEntryAttachmentChips("entry-content", "entry-attachment-chips", { paced: true })' in TEXT
+

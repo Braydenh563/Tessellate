@@ -52,6 +52,15 @@ function notePickThumb(entry) {
     return img;
   }
   const attached = (entry.attachments || []).find((a) => a.is_image);
+  //: A list row holds 300 characters (INBOX 1525), so a picture past them is read from the whole note.
+  if (!inline && !attached && entry.content_truncated) {
+    fullEntry(entry.id).then((whole) => {
+      const later = String(whole.content || "").match(NOTE_PICK_IMAGE);
+      if (later && isRenderableUrl(later[1]) && !isRemoteImage(later[1])) img.src = mediaSrc(later[1]);
+      else img.remove();
+    }, () => img.remove());
+    return img;
+  }
   if (!attached) return null;
   attachmentObjectUrl(attached).then((url) => (img.src = url)).catch(() => img.remove());
   return img;

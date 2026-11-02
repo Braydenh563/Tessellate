@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7554, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8431, test files 1836, tests 15693, plan headings 990, app scripts 28, boot scripts 37, script files 226.
+Counts: frontend functions 7554, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8431, test files 1836, tests 15694, plan headings 990, app scripts 28, boot scripts 37, script files 226.
 
 ## Frontend functions (7554)
 
@@ -5655,7 +5655,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `notePickExcerpt` | frontend/js/note-pick-preview.js:25 |
 | `notePickText` | frontend/js/note-pick-preview.js:20 |
 | `notePickThumb` | frontend/js/note-pick-preview.js:44 |
-| `richPickerNote` | frontend/js/note-pick-preview.js:60 |
+| `richPickerNote` | frontend/js/note-pick-preview.js:69 |
 
 ### frontend/js/note-properties.js (12)
 
@@ -23152,7 +23152,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15693)
+## Tests (15694)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23379,7 +23379,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_client_key_idempotent.py | 2 |
 | tests/test_client_log_rate_limit.py | 2 |
 | tests/test_clip_text.py | 1 |
-| tests/test_clipped_readers_1525c.py | 12 |
+| tests/test_clipped_readers_1525c.py | 13 |
 | tests/test_clock_weekday.py | 5 |
 | tests/test_cm_measure_loop_1031.py | 5 |
 | tests/test_code_completion.py | 29 |
