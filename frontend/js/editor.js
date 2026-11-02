@@ -1243,8 +1243,10 @@ function editorLinkMatches(needle) {
     const line = opening(e);
     return line.startsWith(query) ? 0 : line.includes(query) ? 1 : 2;
   };
+  //: A row holds a note's first 300 characters; the server's literal match reads the whole text (INBOX 1525 review).
+  const served = query && typeof noteEngine !== "undefined" ? noteEngine.literal(noteEngine.pick, query, () => editorMenuState.open && editorRefreshMenu()) : null;
   const notes = (typeof allEntries !== "undefined" ? allEntries : [])
-    .filter((e) => !e.is_private && (!query || (e.content || "").toLowerCase().includes(query)))
+    .filter((e) => !e.is_private && (!query || (e.content || "").toLowerCase().includes(query) || served?.has(e.id)))
     .map((e, order) => ({ e, order, rank: query ? rank(e) : 0 }))
     .sort((a, b) => a.rank - b.rank || a.order - b.order)
     .map((row) => row.e)

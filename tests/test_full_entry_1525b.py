@@ -120,10 +120,10 @@ def test_a_card_drawn_open_from_a_clipped_row_fills_itself_with_the_whole_note()
     redrawn, by the row chevron and then reloaded, and as the phone note page, each shows all 2,314 with its end word.
     """
     card = _function((JS / "entry-card.js").read_text(encoding="utf-8"), "function entryItem(")
-    # Asked of what this card drew, not of the shared row, which `fullEntry` makes whole for every card of the note
-    # (review of d24c8b4: a second card of one note kept its 300 characters).
-    assert "let drawnClipped = !!entry.content_truncated;" in card
-    assert "content.fillWhole = () => drawnClipped && fullEntry(entry.id).then((whole) => {" in card
+    #: Keyed on how the card was drawn: `fullEntry` fills the shared row in place, so a row another reader filled
+    #: first (Copy, the editor, a cited passage) no longer says clipped while this card still shows 300 characters.
+    assert "let clipped = entry.content_truncated;" in card
+    assert "content.fillWhole = () => clipped && (content.whole ||= fullEntry(entry.id).then((whole) => {" in card
     assert "entry = whole;" in card  # the card's menus and Copy read the whole note too
     assert "if (expandedNotes.has(entry.id) || expandedRows.has(entry.id)) content.fillWhole();" in card
     assert "if (expandedNotes.has(entry.id)) content.fillWhole();" in card  # the Show more press

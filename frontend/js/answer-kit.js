@@ -735,8 +735,14 @@ function renderEvidenceView(view, sentences, support, rawResults, answerEl, numb
       const title = noteLabel({ content }, 60);
       head.append(evidenceSpan("citation-peek-number", number), evidenceSpan("citation-peek-title", title));
       const quote = evidenceSpan("citation-peek-body answer-evidence-quote");
-      const { before, passage, after } = citationPeekText(content, g.start, g.end, title);
-      quote.append(before, ...(passage ? [evidenceSpan("", passage, "mark")] : []), after);
+      const fill = (text) => {
+        const { before, passage, after } = citationPeekText(text, g.start, g.end, title);
+        quote.replaceChildren(before, ...(passage ? [evidenceSpan("", passage, "mark")] : []), after);
+        return passage;
+      };
+      let passage = fill(content);
+      //: The offsets are into the whole note; a clipped list row holds its first 300 characters (INBOX 1525 review).
+      if (entry?.content_truncated) fullEntry(g.note_id).then((whole) => (passage = fill(whole.content)), () => {});
       card.append(head, quote);
       const evidence = evidenceBlock(g);
       if (evidence) card.append(evidence);

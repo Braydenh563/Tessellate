@@ -301,9 +301,11 @@ function pickEntryDialog(message) {
     const paint = () => {
       const term = shell.search.value.trim();
       const needle = term.toLowerCase();
+      //: A row holds a note's first 300 characters; the server's literal match reads the whole text (INBOX 1525 review).
+      const served = needle ? noteEngine.literal(noteEngine.pick, needle, paint) : null;
       const items = allEntries
         .filter((e) => !e.is_draft && !e.is_deleted)
-        .filter((e) => !needle || (e.content || "").toLowerCase().includes(needle))
+        .filter((e) => !needle || (e.content || "").toLowerCase().includes(needle) || served?.has(e.id))
         .slice(0, 40)
         .map((entry) => ({
           icon: "ph:note",

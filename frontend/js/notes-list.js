@@ -212,19 +212,24 @@ const noteEngine = {
   q: "", ids: null, pending: "", capped: false, semanticFor: "", rank: new Map(), jumpId: null,
   body: { q: "", ids: null, pending: "" },
   live: { q: "", ids: null, pending: "" },
-  ask(slot, q, load, fail) {
+  ask(slot, q, load, fail, done = renderEntries) {
     if (slot.q === q) return slot.ids;
     if (slot.pending !== q) {
       slot.pending = q;
       load()
-        .then((got) => slot.pending === q && (Object.assign(slot, got, { q, pending: "" }), renderEntries()))
+        .then((got) => slot.pending === q && (Object.assign(slot, got, { q, pending: "" }), done()))
         .catch(() => slot.pending === q && Object.assign(slot, { q, ids: fail, capped: false, pending: "" }));
     }
     return null;
   },
   bodyIds(query) {
     const text = [...query.words, ...query.phrases.map((p) => `"${p}"`), ...query.exclude.map((w) => `-${w}`)].join(" ");
-    return noteEngine.ask(noteEngine.body, text, () => apiJson(`/search?q=${encodeURIComponent(clipFor("search", text))}&kind=note&ids_only=true`, { silent: true }).then((r) => ({ ids: r.ids && new Set(r.ids) })), null);
+    return noteEngine.literal(noteEngine.body, text);
+  },
+  //: The same match for a picker's words (the `[[` link menu, Attach notes): `redraw` runs when it lands.
+  pick: { q: "", ids: null, pending: "" },
+  literal(slot, text, redraw) {
+    return noteEngine.ask(slot, text, () => apiJson(`/search?q=${encodeURIComponent(clipFor("search", text))}&kind=note&ids_only=true`, { silent: true }).then((r) => ({ ids: r.ids && new Set(r.ids) })), null, redraw);
   },
 };
 
@@ -440,7 +445,8 @@ function matchesSearch(entry) {
     }
     if (flag === "private" && !entry.is_private) return false;
     //: A [[wiki link]] in the text is a link too (INBOX 432).
-    if (flag === "linked" && !(entry.links || []).length && !/\[\[[^\]\n]{1,120}\]\]/.test(entry.content || "")) return false;
+    //: A clipped row holds 300 characters: the server says whether the whole text has one (`wiki_linked`).
+    if (flag === "linked" && !(entry.links || []).length && !(entry.wiki_linked ?? /\[\[[^\]\n]{1,120}\]\]/.test(entry.content || ""))) return false;
     if ((flag === "draft" || flag === "drafts") && !entry.is_draft) return false;
     if (flag === "untagged" && tags.length) return false;
     if (flag === "untitled" && entry.title) return false;
@@ -3497,7 +3503,8 @@ function ensureOneCardCount(list, generation, source) {
 
 function ensureMapChipsFor(page, generation) {
   if (mapBoardIndexCache) return; // one index per session, as it always was
-  if (!page.some((entry) => String(entry.content || "").includes("[["))) return;
+  //: A clipped row holds 300 characters; the server says whether the whole text has a link.
+  if (!page.some((entry) => entry.wiki_linked ?? String(entry.content || "").includes("[["))) return;
   loadMapBoardIndex()
     .then(() => {
       if (generation === _entriesLoadGeneration) renderEntriesWhenShown();

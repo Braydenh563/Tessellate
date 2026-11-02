@@ -285,6 +285,8 @@ class EntryOut(BaseModel):
     word_count: int | None = None
     tasks_open: int | None = None
     tasks_done: int | None = None
+    #: Whether the whole text holds a `[[wiki link]]` (the list's `is:linked`, INBOX 432), for the same rows.
+    wiki_linked: bool | None = None
     #: The hash of `content` (api/edit_conflicts.py): an editor sends it back
     #: as `base_hash` so a save over a newer text is refused, not lost.
     content_hash: str = ""

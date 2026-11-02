@@ -2500,6 +2500,8 @@ ENTRIES_PREVIEW_MAX = 2000
 
 _TASK_OPEN = re.compile(r"^[ \t]*(?:[-*+]|\d+[.)])[ \t]+\[[ \t]\]", re.M)
 _TASK_DONE = re.compile(r"^[ \t]*(?:[-*+]|\d+[.)])[ \t]+\[[xX]\]", re.M)
+#: The list's own `[[wiki link]]` test (`matchesSearch`, `is:linked`), for the part of a note past the preview.
+_WIKI_LINK = re.compile(r"\[\[[^\]\n]{1,120}\]\]")
 
 
 def _previewed(rows: list[EntryOut], preview: int) -> list[EntryOut]:
@@ -2515,6 +2517,7 @@ def _previewed(rows: list[EntryOut], preview: int) -> list[EntryOut]:
         row.word_count = cjk.word_count(row.content)
         row.tasks_open = len(_TASK_OPEN.findall(row.content))
         row.tasks_done = len(_TASK_DONE.findall(row.content))
+        row.wiki_linked = bool(_WIKI_LINK.search(row.content))
         #: A meeting's card reads its sections from the whole text (`meetingGlance`), so a meeting is sent whole. So is
         #: a private note: the index never reads one, so the list's filter box matches it on the text the list holds
         #: (INBOX 1525 review). Locked, its text is the short placeholder anyway.
