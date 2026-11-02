@@ -1237,20 +1237,12 @@ const PH_LABEL_TRAILING = /\s*ph:([a-z0-9-]{1,40})$/;
 // element. Returns the element, so it composes.
 function setLabel(el, label) {
   let text = String(label ?? "");
-  //: Taken off before the leading marker is read, so `ph:file-text Name ph:x`
-  //: is an icon, a name and an icon rather than a name ending in "ph:x".
-  //:
-  //: **Only when something comes before it.** Both patterns match a label
-  //: that is nothing but one marker, and the trailing one reading `"ph:x"`
-  //: first turned every icon-only button (`smallButton("ph:x")`) into a
-  //: `ph-trail`, a decoration's margin and opacity on a control.
+  //: Taken off before the leading marker is read, so `ph:file-text Name ph:x` is an icon, a name and an icon rather than a name ending in "ph:x".  **Only when something comes before it.** Both patterns match a label that is nothing but one marker, and the trailing one reading `"ph:x"` first turned every icon-only button (`smallButton("ph:x")`) into a `ph-trail`, a decoration's margin and opacity on a control.
   const tail = PH_LABEL_TRAILING.exec(text);
   if (tail?.index > 0) text = text.slice(0, tail.index);
   else if (tail) tail.length = 0;
   const match = PH_LABEL.exec(text);
-  //: The trailing icon is appended after whatever the rest of this builds, so
-  //: it is the last child in every shape a label can take: text only, icon
-  //: and text, or icon only.
+  //: The trailing icon is appended after whatever the rest of this builds, so it is the last child in every shape a label can take: text only, icon and text, or icon only.
   const withTail = (built) => {
     if (tail?.length) {
       const mark = document.createElement("i");
@@ -1294,28 +1286,13 @@ function setLabel(el, label) {
   return withTail(el);
 }
 
-//: **Is the Settings dialog open?** Defined here, in app.js, and not in
-//: settings.js where the rest of that dialog lives. Reported from a real
-//: session, five times in one second:
-//:
-//:     Uncaught ReferenceError: settingsModalOpen is not defined
-//:       at HTMLDocument.<anonymous> (app.js:30278)
-//:
-//: app.js registers its document-wide keydown handler while it parses, and
-//: settings.js is the last script on the page -- so every key pressed in the
-//: window between the two threw, and the handler that runs Escape, "/" and
-//: every other shortcut died with it. One call site already carried a
-//: `typeof ... === "function"` guard, which is the same bug being worked
-//: around one line at a time. A three-line DOM check has no reason to live in
-//: another file; moving it removes the window entirely rather than papering
-//: over it at each caller.
+//: **Is the Settings dialog open?** Defined here, in app.js, and not in settings.js where the rest of that dialog lives. Reported from a real session, five times in one second:  Uncaught ReferenceError: settingsModalOpen is not defined at HTMLDocument.<anonymous> (app.js:30278)  app.js registers its document-wide keydown handler while it parses, and settings.js is the last script on the page -- so every key pressed in the window between the two threw, and the handler that runs Escape, "/" and every other shortcut died with it. One call site already carried a `typeof ... === "function"` guard, which is the same bug being worked around one line at a time. A three-line DOM check has no reason to live in another file; moving it removes the window entirely rather than papering over it at each caller.
 function settingsModalOpen() {
   const modal = $("settings-modal");
   return !!modal && !modal.classList.contains("hidden");
 }
 
-//: A chip's words are always a `.ph-text` span (DESIGN.md, "A chip"): bare
-//: text cannot be trimmed to the x-height band and sits a pixel off its row.
+//: A chip's words are always a `.ph-text` span (DESIGN.md, "A chip"): bare text cannot be trimmed to the x-height band and sits a pixel off its row.
 function chipWords(el, text) {
   el.replaceChildren(Object.assign(document.createElement("span"), { className: "ph-text", textContent: text }));
   return el;
@@ -1343,15 +1320,13 @@ function chip(text, extraClass = "", onClick = null) {
   return span;
 }
 
-//: One filled button per dialog (DESIGN.md, "Buttons: the ramp"): a
-//: stage-gated pair hands the fill from `a` to `b` when b's turn comes.
+//: One filled button per dialog (DESIGN.md, "Buttons: the ramp"): a stage-gated pair hands the fill from `a` to `b` when b's turn comes.
 function stagePrimary(a, b, bTurn) {
   $(a)?.classList.toggle("ghost", !!bTurn);
   $(b)?.classList.toggle("ghost", !bTurn);
 }
 
-//: The one "working" ring (DESIGN.md, "Something is working on it"): in a
-//: label write `ph:spin Working…`. All of it is the `.spinner` class.
+//: The one "working" ring (DESIGN.md, "Something is working on it"): in a label write `ph:spin Working…`. All of it is the `.spinner` class.
 function spinnerEl() {
   const el = document.createElement("span");
   el.className = "spinner";
@@ -1359,8 +1334,7 @@ function spinnerEl() {
   return el;
 }
 
-//: A busy button: disabled, `aria-busy`, the ring first. `label` swaps the
-//: words meanwhile; off puts back exactly what was there. Idempotent.
+//: A busy button: disabled, `aria-busy`, the ring first. `label` swaps the words meanwhile; off puts back exactly what was there. Idempotent.
 function setBusy(button, busy, label = null) {
   if (!button) return;
   if (busy) {
@@ -1392,11 +1366,7 @@ function setBusy(button, busy, label = null) {
 // returns `undefined`, which `if (!confirm(...)) return;` reads as "no", so
 // the button silently did nothing ("the recycle bin empty now button doesn't
 // work either"). This dialog is styled like the app and can mark danger.
-//: `checkbox` (`{label, title, checked}`) adds one optional second decision
-//: ("also take this picture out of the notes that show it") and resolves to
-//: `{ok, checked}`; without it callers still get a plain boolean.
-//: **The button says what it does**, never "OK" where a verb fits: with no
-//: label, the question's first word is used when it is one of these actions.
+//: `checkbox` (`{label, title, checked}`) adds one optional second decision ("also take this picture out of the notes that show it") and resolves to `{ok, checked}`; without it callers still get a plain boolean. **The button says what it does**, never "OK" where a verb fits: with no label, the question's first word is used when it is one of these actions.
 const CONFIRM_VERBS = new Set([
   "delete", "remove", "clear", "discard", "reset", "replace", "archive", "leave",
   "disconnect", "overwrite", "restore", "empty", "forget", "unlink", "stop",
@@ -1431,10 +1401,7 @@ function confirmDialog(message, options = {}) {
     // Blank lines in these messages are deliberate paragraphs, the second is
     // usually the consequence ("This cannot be undone"), which is the part
     // worth reading, so it is not run together with the first.
-    //: With more than one paragraph the first is the question ("Quit
-    //: Tessellate?", "Delete this note?") and is set as the dialog's title,
-    //: the consequence under it in the body voice, the shape every native
-    //: confirm has. One paragraph stays one paragraph.
+    //: With more than one paragraph the first is the question ("Quit Tessellate?", "Delete this note?") and is set as the dialog's title, the consequence under it in the body voice, the shape every native confirm has. One paragraph stays one paragraph.
     const parts = String(message).split(/\n{2,}/);
     parts.forEach((part, index) => {
       const line = document.createElement(index === 0 && parts.length > 1 ? "strong" : "span");
@@ -1486,8 +1453,7 @@ function confirmDialog(message, options = {}) {
     const go = smallButton(confirmLabel, confirmLabel, () => close(true), false);
     if (danger) go.classList.add("danger");
     row.append(cancel, go);
-    //: `insertBefore`, because the checkbox above was appended to the card
-    //: already and the buttons belong under it.
+    //: `insertBefore`, because the checkbox above was appended to the card already and the buttons belong under it.
     card.insertBefore(text, card.firstChild);
     card.appendChild(row);
     overlay.appendChild(card);
@@ -1512,16 +1478,7 @@ function confirmDialog(message, options = {}) {
 //
 // Resolves to the trimmed text, or "" for cancel/empty. "" rather than null so
 // every caller's guard is the same shape as the confirm one.
-//: `segment`, when given, adds **one** segmented control under the field:
-//: `{label, options: [{value, label, title}], value}`. The dialog then
-//: resolves `{text, choice}` instead of a bare string.
-//:
-//: One extra control in the dialog that already exists, rather than a second
-//: dialog after this one. CLAUDE.md records why in as many words: bookmark URL
-//: editing was reported broken five times while working end-to-end every time,
-//: and the fault was never the handler, "a second modal that only appears
-//: *after* you commit the first is a bad way to expose a second field". Naming
-//: a new board and saying what kind of board it is are one decision.
+//: `segment`, when given, adds **one** segmented control under the field: `{label, options: [{value, label, title}], value}`. The dialog then resolves `{text, choice}` instead of a bare string.  One extra control in the dialog that already exists, rather than a second dialog after this one. CLAUDE.md records why in as many words: bookmark URL editing was reported broken five times while working end-to-end every time, and the fault was never the handler, "a second modal that only appears *after* you commit the first is a bad way to expose a second field". Naming a new board and saying what kind of board it is are one decision.
 function promptDialog(message, initial = "", { confirmLabel = "Save", segment = null } = {}) {
   return new Promise((resolve) => {
     const overlay = document.createElement("div");
@@ -1531,16 +1488,7 @@ function promptDialog(message, initial = "", { confirmLabel = "Save", segment = 
 
     const card = document.createElement("div");
     card.className = "card modal-card confirm-card prompt-card";
-    //: **A title row, not a sentence above a field.** Reported as one of two
-    //: dialogs off the modal recipe: this card's first child was a `<p>`, so
-    //: the "New board" dialog had no heading at all while every other dialog
-    //: in the app leads with one. Every `promptDialog` message is a short
-    //: prompt ("Name the new board", "Rename this chat", "Tag to add to the
-    //: selected notes"), which is a title, so all twenty-odd callers are
-    //: right to promote it rather than only this one.
-    //:
-    //: `confirmDialog`'s message stays a `<p>`: that one really is a
-    //: sentence, often two, and a question is body copy.
+    //: **A title row, not a sentence above a field.** Reported as one of two dialogs off the modal recipe: this card's first child was a `<p>`, so the "New board" dialog had no heading at all while every other dialog in the app leads with one. Every `promptDialog` message is a short prompt ("Name the new board", "Rename this chat", "Tag to add to the selected notes"), which is a title, so all twenty-odd callers are right to promote it rather than only this one.  `confirmDialog`'s message stays a `<p>`: that one really is a sentence, often two, and a question is body copy.
     const head = document.createElement("div");
     head.className = "row confirm-head";
     const text = document.createElement("h3");
@@ -1552,29 +1500,12 @@ function promptDialog(message, initial = "", { confirmLabel = "Save", segment = 
     input.value = initial;
     input.setAttribute("aria-label", message);
 
-    //: The optional segmented control. `.seg`, the app's own recipe: the
-    //: same one the Library's Cards/Rows switch and the dashboard's range
-    //: pickers use: so this is a control the user has already met.
+    //: The optional segmented control. `.seg`, the app's own recipe: the same one the Library's Cards/Rows switch and the dashboard's range pickers use: so this is a control the user has already met.
     let chosen = segment?.value ?? segment?.options?.[0]?.value ?? null;
     let segRow = null;
     let segField = null;
     if (segment?.options?.length) {
-      //: **The choice is named, and the two options fill their track.**
-      //: Reported: "also redesign that whiteboard and mindmap toggle in the
-      //: popup, its ugly", with a screenshot of the New board dialog. Two
-      //: things were wrong in it and both are about the track. `.seg` is
-      //: `display: inline-flex`, which in this card (a flex column that
-      //: stretches its children) makes the *track* full width while the two
-      //: buttons keep their content width: the right half of the pill was
-      //: empty, so the control read as a stray bar with two words in it. And
-      //: nothing on screen said what the choice was for, because
-      //: `segment.label` only ever reached `aria-label`, which a sighted
-      //: reader cannot see.
-      //:
-      //: The label is now drawn, the buttons share the track equally (the CSS
-      //: in 06-timeline-dialogs.css), and each option can carry an icon
-      //: through `setLabel`'s "ph:name Label" contract, so Board and Mind map
-      //: are told apart by shape before they are read.
+      //: **The choice is named, and the two options fill their track.** Reported: "also redesign that whiteboard and mindmap toggle in the popup, its ugly", with a screenshot of the New board dialog. Two things were wrong in it and both are about the track. `.seg` is `display: inline-flex`, which in this card (a flex column that stretches its children) makes the *track* full width while the two buttons keep their content width: the right half of the pill was empty, so the control read as a stray bar with two words in it. And nothing on screen said what the choice was for, because `segment.label` only ever reached `aria-label`, which a sighted reader cannot see.  The label is now drawn, the buttons share the track equally (the CSS in 06-timeline-dialogs.css), and each option can carry an icon through `setLabel`'s "ph:name Label" contract, so Board and Mind map are told apart by shape before they are read.
       segField = document.createElement("div");
       segField.className = "confirm-seg-field";
       if (segment.label) {
@@ -1660,33 +1591,7 @@ function promptDialog(message, initial = "", { confirmLabel = "Save", segment = 
   });
 }
 
-//: Shared by every overlay's backdrop-click-to-close.
-//:
-//: Reported directly: "when I try to highlight text in text boxes in popup
-//: displays, the popup often just closes." `click` fires wherever the mouse
-//: went *up*, not where it went down, so starting a text selection inside
-//: the card and releasing outside it (a completely normal way to select the
-//: last word or two) fires a click whose target is the backdrop, which every
-//: one of these listeners used to read as "the backdrop was clicked" and
-//: close on. Recording where the *mousedown* started tells the two apart: a
-//: real backdrop click starts and ends on the backdrop; a selection drag
-//: starts inside the card.
-//: `alsoBackdrop` is a selector for elements that *look* like empty space
-//: even though they are not the overlay itself, a full-width layout column
-//: whose own box extends well past the thing it is centring.
-//:
-//: Reported: "I cant click off the documents or images to close the lightbox
-//: and the close button doesnt work all the time." Measured with the viewer
-//: open on a 1440x900 window: `.lightbox-column` is **1396px wide and 134px
-//: tall**, so the whole horizontal band either side of the picture belongs to
-//: the column, not the backdrop. The four screen edges did close it, which is
-//: why this reads as intermittent rather than broken: whether a click "off
-//: the image" works depends on whether it landed above or beside it.
-//:
-//: The elements named by the caller are the ones with no content of their
-//: own. `e.target === el` still has to hold for each: a click that lands on
-//: the picture, the caption, a button or any other real child is a click on
-//: that child, and closes nothing.
+//: Shared by every overlay's backdrop-click-to-close.  Reported directly: "when I try to highlight text in text boxes in popup displays, the popup often just closes." `click` fires wherever the mouse went *up*, not where it went down, so starting a text selection inside the card and releasing outside it (a completely normal way to select the last word or two) fires a click whose target is the backdrop, which every one of these listeners used to read as "the backdrop was clicked" and close on. Recording where the *mousedown* started tells the two apart: a real backdrop click starts and ends on the backdrop; a selection drag starts inside the card. `alsoBackdrop` is a selector for elements that *look* like empty space even though they are not the overlay itself, a full-width layout column whose own box extends well past the thing it is centring.  Reported: "I cant click off the documents or images to close the lightbox and the close button doesnt work all the time." Measured with the viewer open on a 1440x900 window: `.lightbox-column` is **1396px wide and 134px tall**, so the whole horizontal band either side of the picture belongs to the column, not the backdrop. The four screen edges did close it, which is why this reads as intermittent rather than broken: whether a click "off the image" works depends on whether it landed above or beside it.  The elements named by the caller are the ones with no content of their own. `e.target === el` still has to hold for each: a click that lands on the picture, the caption, a button or any other real child is a click on that child, and closes nothing.
 function wireBackdropClose(overlay, close, alsoBackdrop = "") {
   const isBackdrop = (target) =>
     target === overlay || (alsoBackdrop && target instanceof Element && target.matches(alsoBackdrop));
@@ -1718,25 +1623,7 @@ function smallButton(label, title, onClick, ghost = true) {
   return button;
 }
 
-//: **A tab's code arrives when the tab does** (WORLD_CLASS_PLAN A1). Measured
-//: on this head before the change: 13 blocking scripts and 1,699 KB of
-//: compressed JS parsed before the first tab could draw, of which whiteboard
-//: (678 KB), documents (640 KB), library (404 KB) and the two graph files
-//: (334 KB) are surfaces most sessions never open. `ensureP5` above is the
-//: same idea for the one decoration that was bigger than all of them.
-//:
-//: Two bundles, not five, because the five files are not five independent
-//: modules: library.js renders the boards gallery from whiteboard.js and the
-//: documents list from documents.js, whiteboard.js calls back into both, and
-//: documents.js renders the library's own filters. That cycle is real (it is
-//: one surface split across three files, not three surfaces), so splitting it
-//: further would only mean loading two thirds of it and waiting for the rest.
-//: The graph pair has no edge into it at all once `formatFileSize` moved to
-//: this file, so it stands alone.
-//:
-//: `async = false` on a dynamically inserted script is what keeps them in
-//: document order: a dynamic script defaults to async, and library.js running
-//: before documents.js would be a different program.
+//: **A tab's code arrives when the tab does** (WORLD_CLASS_PLAN A1). Measured on this head before the change: 13 blocking scripts and 1,699 KB of compressed JS parsed before the first tab could draw, of which whiteboard (678 KB), documents (640 KB), library (404 KB) and the two graph files (334 KB) are surfaces most sessions never open. `ensureP5` above is the same idea for the one decoration that was bigger than all of them.  Two bundles, not five, because the five files are not five independent modules: library.js renders the boards gallery from whiteboard.js and the documents list from documents.js, whiteboard.js calls back into both, and documents.js renders the library's own filters. That cycle is real (it is one surface split across three files, not three surfaces), so splitting it further would only mean loading two thirds of it and waiting for the rest. The graph pair has no edge into it at all once `formatFileSize` moved to this file, so it stands alone.  `async = false` on a dynamically inserted script is what keeps them in document order: a dynamic script defaults to async, and library.js running before documents.js would be a different program.
 const LAZY_MODULES = {
   //: d3 (90 KB gzipped) comes with the two surfaces that use it, not at boot (audit FE-07); `ensureModule` fetches a file once whichever bundle names it first.
   graph: ["/vendor/d3.v7.min.js", "/css/graph-lazy.css", "/js/graph.js", "/js/graph-canvas.js"],
@@ -1849,7 +1736,7 @@ const LAZY_MODULES = {
   //: Tidy, the reviews with no AI (INBOX 691): tidy.js's header.
   tidy: ["/css/tidy-lazy.css", "/js/tidy.js"],
   semanticNotice: ["/css/semantic-notice-lazy.css", "/js/semantic-notice.js"],
-  //: The order the `<script>` tags had, kept: every cross-file call between these three is inside a function rather than at parse time, so it is not load-bearing, but it is the order the three files' own headers describe. documents-code.js and documents-prose.js were split out of documents.js (2026-09-24) and go *before* it, and that position is load-bearing: their own top level reads nothing from documents.js, while documents.js's top-level wiring names their functions, and each file here is followed by a microtask checkpoint before the next one runs. See their headers. documents-props.js and documents-mermaid.js (DC13) go before it likewise, as does whiteboard-map.js before whiteboard.js.
+  //: The order the `<script>` tags had, kept: every cross-file call between these three is inside a function rather than at parse time, so it is not load-bearing, but it is the order the three files' own headers describe. documents-code.js and documents-prose.js were split out of documents.js (2026-09-24) and go *before* it, and that position is load-bearing: their own top level reads nothing from documents.js, while documents.js's top-level wiring names their functions, and each file here is followed by a microtask checkpoint before the next one runs. See their headers. documents-props.js, documents-mermaid.js and documents-math.js (DC13) go before it likewise, as does whiteboard-map.js before whiteboard.js.
   library: [
     //: d3 before whiteboard.js, whose top level calls `d3.zoom()`.
     "/vendor/d3.v7.min.js",
@@ -1867,6 +1754,7 @@ const LAZY_MODULES = {
     "/js/documents-cm.js",
     "/js/documents-props.js",
     "/js/documents-mermaid.js",
+    "/js/documents-math.js",
     "/js/autocorrect.js",
     "/js/documents.js",
     "/js/margin-reader.js",

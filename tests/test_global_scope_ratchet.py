@@ -51,8 +51,9 @@ TOP_LEVEL_LETS_CAP = 699
 #: line diff (documents-history.js, 710 lines) wrapped whole, seven exports (measured 9,848). doc22-1102:
 #: the frontmatter model and properties panel (documents-props.js) wrapped whole, four exports; the
 #: cap is set to the measured count (9,785). doc23-1102: the Mermaid
-#: fences (documents-mermaid.js, 426 lines) wrapped whole, three exports; measured 9,775.
-GLOBAL_NAMES_CAP = 9775
+#: fences (documents-mermaid.js, 426 lines) wrapped whole, three exports; measured 9,775. doc23-1102: the TeX parser and MathML
+#: renderer (documents-math.js, 400 lines) wrapped whole, two exports; measured 9,754.
+GLOBAL_NAMES_CAP = 9754
 
 
 def _code() -> dict[str, str]:

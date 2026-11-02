@@ -450,7 +450,6 @@ LAZY_REACHED_AFTER_LOAD: dict[str, str] = {
     "manual.js:meaningAlts": "meaning.js is fetched by openManual (`await lazyScript(\"/js/meaning.js\")`, line 149) before the search box can be typed in",
     "manual.js:meaningHolds": "meaning.js is fetched by openManual (`await lazyScript(\"/js/meaning.js\")`, line 149) before the search box can be typed in",
     "manual.js:meaningNamed": "meaning.js is fetched by openManual (`await lazyScript(\"/js/meaning.js\")`, line 149) before the search box can be typed in",
-    "math-editor.js:docMathRender": "typeof-guarded tile face: the glyph is the designed fallback until the library bundle's renderer is in",
     "meetings.js:holdLiveCaptions": "behind `meetingLive.on`, which meetingLiveWordsStart sets only after `await ensureModule(\"captions\")`",
     "meetings.js:loadLibrary": "typeof-guarded refresh of the Library's list: skipping is right when it was never opened, and opening it loads and renders it (lazy-entries.js rule 2)",
     "meetings.js:stopRecorderWords": "behind `meetingLive.on`, which meetingLiveWordsStart sets only after `await ensureModule(\"captions\")`",

@@ -133,7 +133,7 @@ ALLOWED: dict[str, list[tuple[str, str]]] = {
     "frontend/js/notes-list.js": [
         ("block:const LATEX_SYMBOLS", "character data: what `\\rightarrow` means"),
     ],
-    "frontend/js/documents.js": [
+    "frontend/js/documents-math.js": [
         ("block:const DOC_MATH_LETTERS", "character data: what the math macros mean"),
         ("block:const DOC_MATH_OPERATORS", "character data: what the math macros mean"),
     ],

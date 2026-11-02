@@ -93,7 +93,9 @@ INSTEAD = {
 #: the redundant channel that makes the colour readable without it. An icon
 #: font would not serve that purpose any better and the four marks have to
 #: read as one family.
-ALLOWED_LINES = {("app.js", "const AI_STATUS_GLYPH")}
+#: DOC_MATH_ACCENTS is character data too (`\vec` draws U+2192); the scanner used to read past it
+#: inside documents.js because a backtick in the comment above it opened a template string.
+ALLOWED_LINES = {("app.js", "const AI_STATUS_GLYPH"), ("documents-math.js", "const DOC_MATH_ACCENTS")}
 
 #: Whole object literals that are *character data*, not interface. A LaTeX
 #: symbol table maps `\\times` onto U+00D7 and `\\to` onto U+2192 because those
@@ -104,8 +106,8 @@ ALLOWED_LINES = {("app.js", "const AI_STATUS_GLYPH")}
 #: block runs from `const NAME = {` to the first line that is `};`.
 ALLOWED_BLOCKS = {
     ("app.js", "LATEX_SYMBOLS"),
-    ("documents.js", "DOC_MATH_LETTERS"),
-    ("documents.js", "DOC_MATH_OPERATORS"),
+    ("documents-math.js", "DOC_MATH_LETTERS"),
+    ("documents-math.js", "DOC_MATH_OPERATORS"),
 }
 
 
@@ -117,14 +119,14 @@ def _allowed_line_numbers(name: str, source_lines: list[str]) -> set[int]:
     for number, line in enumerate(source_lines, 1):
         if open_block is None:
             for block in wanted:
-                if line.startswith(f"const {block} = {{"):
+                if line.lstrip().startswith(f"const {block} = {{"):  # indented in a wrapped file (documents-math.js)
                     open_block = block
                     break
             if open_block is not None:
                 inside.add(number)
             continue
         inside.add(number)
-        if line.rstrip() == "};":
+        if line.strip() == "};":
             open_block = None
     return inside
 

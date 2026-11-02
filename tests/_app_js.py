@@ -144,7 +144,7 @@ def stand_ins_source() -> str:
 #: own text (`docLivePlugin`, `docCmTheme`; audit 1031 DC13): a test that means
 #: "the documents editor's code" reads them joined, so a piece moving between
 #: these files does not move its tests.
-DOCUMENTS_PIECES = ("documents.js", "documents-cm.js", "documents-replace.js", "documents-export.js", "documents-ai.js", "documents-history.js", "documents-props.js", "documents-mermaid.js")
+DOCUMENTS_PIECES = ("documents.js", "documents-cm.js", "documents-replace.js", "documents-export.js", "documents-ai.js", "documents-history.js", "documents-props.js", "documents-mermaid.js", "documents-math.js")
 
 
 def documents_text() -> str:
