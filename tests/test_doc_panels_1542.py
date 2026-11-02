@@ -15,7 +15,7 @@ stored drag at 269,228 and a caret at 300,250):
 
 The class: a popover placed at an anchor was moved by an offset measured from
 a different anchor. A popover is now re-based on the middle of the window when
-it is adopted (`panelRebase`), so every stored place is measured from one
+it is adopted (`panelAdopt.rebase`), so every stored place is measured from one
 base; it fades in where it stands instead of growing from a caret it has left.
 These are source checks; the numbers come from the sweep named in the commit.
 """
@@ -38,8 +38,8 @@ def _body(source: str, name: str) -> str:
 
 def test_a_popover_is_rebased_before_any_saved_place_is_applied():
     adopt = _body(PANEL, "panelAdopt")
-    assert adopt.index("panelRebase(panel, st)") < adopt.index("panelStoreRead(")
-    rebase = _body(PANEL, "panelRebase")
+    assert adopt.index("panelAdopt.rebase(panel, st)") < adopt.index("panelStoreRead(")
+    rebase = PANEL[PANEL.index("panelAdopt.rebase = ") : PANEL.index("function panelAdopt(")]
     # The offset is the difference in layout, so a grow under way does not enter it.
     assert "offsetLeft" in rebase and "offsetTop" in rebase
     assert "getBoundingClientRect" not in rebase

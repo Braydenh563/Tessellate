@@ -542,7 +542,7 @@ function panelSave(panel) {
 //: the place it was given (the offset is the difference in layout, so a grow in
 //: progress does not enter it), and a place saved later opens there whatever
 //: the caret is by then, in the first frame, not the caret's and then the saved.
-function panelRebase(panel, st) {
+panelAdopt.rebase = (panel, st) => {
   if (!panel.matches(".help-popover:not(.popover-centred)")) return;
   const left = panel.offsetLeft;
   const top = panel.offsetTop;
@@ -552,7 +552,7 @@ function panelRebase(panel, st) {
   st.x = left - panel.offsetLeft;
   st.y = top - panel.offsetTop;
   panelApply(panel, st);
-}
+};
 //: Adopt a panel once: restore, add the grip. Cheap to call again.
 function panelAdopt(panel) {
   if (!panel || !panelMovableOn()) return;
@@ -567,7 +567,7 @@ function panelAdopt(panel) {
     panel.classList.add("panel-movable-on");
     panel.addEventListener("pointermove", panelAdopt.rimHover);
     panelWatchOpen(panel);
-    panelRebase(panel, st);
+    panelAdopt.rebase(panel, st);
     let saved = st.id && panelRestoreOn() ? panelStoreRead(st.id, panelLayout(panel)) : null;
     //: A stored entry that does not fit this panel opens it at the default and
     //: is forgotten, rather than applied and left broken (INBOX 1454).
@@ -949,7 +949,7 @@ function panelMinPlace() {
   tray.style.left = `${Math.round(left)}px`;
   tray.style.bottom = `${Math.round(window.innerHeight - floor + gap)}px`;
 }
-function panelChip(panel, host) {
+function panelChip(panel) {
   const title = panelTitle(panel);
   const chip = document.createElement("span");
   chip.className = "minimised-pill";
@@ -964,7 +964,6 @@ function panelChip(panel, host) {
   const name = document.createElement("span");
   name.textContent = title;
   open.append(icon, name);
-  open.addEventListener("click", () => panelRestore(host));
   const x = document.createElement("button");
   x.type = "button";
   x.className = "minimised-pill-x";
@@ -974,7 +973,6 @@ function panelChip(panel, host) {
   xi.className = "ph ph-x";
   xi.setAttribute("aria-hidden", "true");
   x.appendChild(xi);
-  x.addEventListener("click", () => panelRestore(host, true));
   chip.append(open, x);
   return chip;
 }
@@ -982,7 +980,7 @@ function panelMinimise(panel) {
   const host = panelMinHost(panel);
   if (PANEL_MIN.has(host)) return;
   const modal = host.tagName === "DIALOG" && host.matches(":modal");
-  const chip = panelChip(panel, host);
+  const chip = panelChip(panel);
   PANEL_MIN.set(host, { panel, chip, modal });
   host.setAttribute("data-panel-min", "");
   host.inert = true;
@@ -1010,6 +1008,20 @@ function panelRestore(host, close = false) {
   if (btn) btn.focus({ preventScroll: true });
   if (close) (btn ? btn.click() : host.tagName === "DIALOG" && host.close());
 }
+//: **The pill is never an outside press** (INBOX 1543, the owner: "I minimised
+//: it and tried to reopen it from the minimised pill but it didnt reopen"). A
+//: panel that closes on a press outside itself (the emoji picker, the Guide)
+//: closed on the press meant to restore it. The tray's presses stop at the
+//: window, before any such listener, and the click is answered here: one door
+//: for every panel that can minimise, not one fix per panel.
+panelAdopt.trayPress = (e) => {
+  const btn = e.target instanceof Element && e.target.closest("#panel-min-tray button");
+  if (!btn) return;
+  e.stopImmediatePropagation();
+  if (e.type !== "click") return;
+  const host = [...PANEL_MIN.keys()].find((h) => PANEL_MIN.get(h).chip.contains(btn));
+  if (host) panelRestore(host, btn.classList.contains("minimised-pill-x"));
+};
 function panelMinKey(e) {
   if (e.key !== "Escape" || !e.shiftKey || !(e.target instanceof Element)) return;
   const host = e.target.closest('dialog, [role="dialog"]');
@@ -1072,6 +1084,7 @@ if (typeof document !== "undefined" && document.addEventListener) {
     else if (p) panelAdopt(p);
   }, true);
   document.addEventListener("keydown", panelMinKey, true);
+  for (const type of ["pointerdown", "mousedown", "click"]) window.addEventListener(type, panelAdopt.trayPress, true);
   //: A pill rides above the page the reader is on: put it back after a tab change.
   document.addEventListener("click", () => { if (PANEL_MIN.size) setTimeout(panelMinPlace, 250); }, true);
   document.addEventListener("pointerover", (e) => {

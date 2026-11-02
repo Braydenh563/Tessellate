@@ -2,9 +2,9 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7559, frontend ids 2638, CSS sections 517, backend routes 640, backend modules 8485, test files 1861, tests 15815, plan headings 991, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7558, frontend ids 2638, CSS sections 517, backend routes 640, backend modules 8485, test files 1862, tests 15818, plan headings 991, app scripts 28, boot scripts 37, script files 234.
 
-## Frontend functions (7559)
+## Frontend functions (7558)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -5950,7 +5950,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `showOnboardingTurn` | frontend/js/onboarding.js:410 |
 | `whenFirstRunClear` | frontend/js/onboarding.js:341 |
 
-### frontend/js/panel-movable.js (66)
+### frontend/js/panel-movable.js (65)
 
 | Name | File:line |
 |---|---|
@@ -5980,10 +5980,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `panelLayout` | frontend/js/panel-movable.js:308 |
 | `panelMakesContext` | frontend/js/panel-movable.js:115 |
 | `panelMinHost` | frontend/js/panel-movable.js:879 |
-| `panelMinKey` | frontend/js/panel-movable.js:1013 |
+| `panelMinKey` | frontend/js/panel-movable.js:1025 |
 | `panelMinPlace` | frontend/js/panel-movable.js:939 |
 | `panelMinTray` | frontend/js/panel-movable.js:925 |
-| `panelMinimise` | frontend/js/panel-movable.js:981 |
+| `panelMinimise` | frontend/js/panel-movable.js:979 |
 | `panelMovableOn` | frontend/js/panel-movable.js:313 |
 | `panelOf` | frontend/js/panel-movable.js:323 |
 | `panelPinned` | frontend/js/panel-movable.js:219 |
@@ -5991,12 +5991,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `panelPushOn` | frontend/js/panel-movable.js:216 |
 | `panelPushSide` | frontend/js/panel-movable.js:228 |
 | `panelPushSync` | frontend/js/panel-movable.js:231 |
-| `panelPushToggle` | frontend/js/panel-movable.js:1023 |
-| `panelRebase` | frontend/js/panel-movable.js:545 |
+| `panelPushToggle` | frontend/js/panel-movable.js:1035 |
 | `panelReopen` | frontend/js/panel-movable.js:914 |
 | `panelReset` | frontend/js/panel-movable.js:507 |
 | `panelResetSize` | frontend/js/panel-movable.js:520 |
-| `panelRestore` | frontend/js/panel-movable.js:997 |
+| `panelRestore` | frontend/js/panel-movable.js:995 |
 | `panelRestoreOn` | frontend/js/panel-movable.js:256 |
 | `panelSafe` | frontend/js/panel-movable.js:181 |
 | `panelSave` | frontend/js/panel-movable.js:532 |
@@ -6017,7 +6016,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `panelTopLayer` | frontend/js/panel-movable.js:105 |
 | `panelUnsnap` | frontend/js/panel-movable.js:472 |
 | `panelWatchOpen` | frontend/js/panel-movable.js:486 |
-| `panelWindowResized` | frontend/js/panel-movable.js:1035 |
+| `panelWindowResized` | frontend/js/panel-movable.js:1047 |
 | `panelZoneFor` | frontend/js/panel-movable.js:252 |
 | `panelZoneRect` | frontend/js/panel-movable.js:80 |
 
@@ -23281,7 +23280,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15815)
+## Tests (15818)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23789,6 +23788,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_doc_outline_reuse.py | 2 |
 | tests/test_doc_page_break.py | 3 |
 | tests/test_doc_panels_1542.py | 3 |
+| tests/test_doc_panels_1543.py | 3 |
 | tests/test_doc_paste.py | 15 |
 | tests/test_doc_properties.py | 10 |
 | tests/test_doc_prose_panel_fit.py | 4 |
