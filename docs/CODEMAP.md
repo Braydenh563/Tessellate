@@ -12060,7 +12060,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/delete` | POST | `delete_tag` | src/tessellate/api/routes_tags.py:95 |
 | `/desktop/fullscreen` | GET | `desktop_fullscreen_state` | src/tessellate/api/routes_tasks.py:839 |
 | `/desktop/fullscreen` | POST | `desktop_fullscreen_toggle` | src/tessellate/api/routes_tasks.py:854 |
-| `/diagnostics` | GET | `diagnostics` | src/tessellate/api/routes_diag.py:86 |
+| `/diagnostics` | GET | `diagnostics` | src/tessellate/api/routes_diag.py:79 |
 | `/digest` | POST | `weekly_digest` | src/tessellate/api/routes_insights.py:839 |
 | `/digest/stream` | POST | `weekly_digest_stream` | src/tessellate/api/routes_insights.py:766 |
 | `/dismiss` | POST | `dismiss_insight` | src/tessellate/api/routes_insights.py:537 |
@@ -18710,11 +18710,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_job_failures` | src/tessellate/api/routes_diag.py:76 |
-| `_settings` | src/tessellate/api/routes_diag.py:81 |
-| `context` | src/tessellate/api/routes_diag.py:71 |
+| `_job_failures` | src/tessellate/api/routes_diag.py:69 |
+| `_settings` | src/tessellate/api/routes_diag.py:74 |
+| `context` | src/tessellate/api/routes_diag.py:64 |
 | `counts` | src/tessellate/api/routes_diag.py:37 |
-| `diagnostics` | src/tessellate/api/routes_diag.py:87 |
+| `diagnostics` | src/tessellate/api/routes_diag.py:80 |
 
 ### src/tessellate/api/routes_documents.py (63)
 
