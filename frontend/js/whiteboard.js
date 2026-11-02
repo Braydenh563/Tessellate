@@ -25139,6 +25139,9 @@ async function openWhiteboardBoard(boardId) {
   wbLinkParseCache.clear(); // the next board's sketches are other ids
   await new Promise((resolve) => setTimeout(resolve, 60));
   await nudgeSaved;
+  //: A board restored with the page gets here while the Library bundle is still loading; the
+  //: Library side (`wbSideState`, the tiles) is later in it (INBOX 1530 f).
+  await ensureModule("library");
   window.currentBoardId = boardId ?? null;
   wbUpdateUndoRedoButtons();
   // Anything a previous board's selection drag left behind goes now. The

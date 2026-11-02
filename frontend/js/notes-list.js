@@ -122,7 +122,7 @@ async function openNoteEditor(id, { focusTags = false } = {}) {
   //: The caret goes into the form (WCAG 2.4.3); it was left on <body>.
   if (focusTags) focusTagsAfterRender = id;
   else focusBodyAfterRender = id;
-  renderEntries();
+  await renderEntries();
   requestAnimationFrame(() => scrollEditingEntryIntoView(id));
   return true;
 }
@@ -3264,7 +3264,7 @@ async function refreshEntries(ids) {
   renderStatusBar();
   renderSidebar();
   const held = heldNoteControl();
-  renderEntries();
+  await renderEntries();
   restoreNoteControl(held);
   //: Categories the AI filed into since the last read need their ids.
   loadCategories();

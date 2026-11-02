@@ -326,6 +326,19 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   $("desktop-tray-hint")?.classList.toggle("hidden", !isDesktop);
   $("desktop-advanced-fold")?.classList.toggle("hidden", !isDesktop);
   $("desktop-companion-row")?.classList.toggle("hidden", !isDesktop);
+  //: In a browser tab the row above is hidden (no tray there), so About says where the setting
+  //: lives instead (INBOX 1530 b). Built here, not in index.html, so the boot document's element
+  //: count (tests/test_boot_diet3.py) and the shared scope's name count do not grow.
+  const companionHelp = $("desktop-companion-help");
+  let companionNote = document.getElementById("desktop-companion-note");
+  if (isDesktop || !companionHelp) companionNote?.remove();
+  else if (!companionNote) {
+    companionNote = document.createElement("p");
+    companionNote.id = "desktop-companion-note";
+    companionNote.className = "muted";
+    companionNote.textContent = "The companion on the desktop is a setting of the desktop app, so its row is not shown in a browser tab. Open Tessellate in its own window to find it.";
+    companionHelp.after(companionNote);
+  }
   // Same reasoning as the tray/console rows above: /system/restart can only
   // ever do something in the packaged desktop app on Windows specifically
   // (the one platform _spawn_desktop knows how to relaunch), not desktop in

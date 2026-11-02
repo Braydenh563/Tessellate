@@ -129,6 +129,8 @@ async function refreshNoteSearchWhy() {
     // only thing missing, so a failed call leaves the notes alone.
     return;
   }
+  //: A draw that is still waiting for the card file would paint without the reasons.
+  await renderEntries.waiting;
   if (noteSearch !== asked) return;
   noteSearchWhy.clear();
   for (const hit of body?.hits || []) noteSearchWhy.set(hit.id, hit);

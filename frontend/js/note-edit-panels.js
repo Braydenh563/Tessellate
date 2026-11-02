@@ -607,13 +607,13 @@ async function holdNoteEdit(id, body) {
   noteFormDraft = null;
   forgetNoteEditLocally();
   toast("Saved on this device. The change goes into your notebook as soon as the server answers.");
-  renderEntries();
+  await renderEntries();
   focusNoteRow(id);
   return true;
 }
 
 // Moved from notes-list.js (boot gzip): the edit form's Cancel and Escape are its callers.
-function closeNoteForm() {
+async function closeNoteForm() {
   //: The focus goes back to the note (WCAG 2.4.3): the redraw removes the form
   //: that held it.
   const back = editingId;
@@ -623,7 +623,7 @@ function closeNoteForm() {
   noteFormDirty = false;
   noteFormDraft = null;
   forgetNoteEditLocally();
-  renderEntries();
+  await renderEntries();
   if (back != null && wasInside) focusNoteRow(back);
 }
 

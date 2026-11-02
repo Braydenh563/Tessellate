@@ -87,13 +87,32 @@ def test_the_boot_document_does_not_grow():
 
 #: name -> a read of what it draws. A function that calls the name without
 #: awaiting it (or returning its promise) and then reads the drawn output is
-#: reading it before it is there.
-DRAWN = {
-    "renderEntries": re.compile(r"#entry-list (?:>|li)[^`\"']*li\[data-id|#entry-list li\[data-id"),
-    "openNotePage": re.compile(r"data-sheet=\"note\""),
-    "refreshNotePage": re.compile(r"data-sheet=\"note\""),
-}
+#: reading it before it is there. A read is a card selector in a string
+#: (`#entry-list li[data-id`, `#entry-list > li`), the list's element asked
+#: for a card (`$("entry-list").querySelector(`, `.children`, a `const list =
+#: $("entry-list")` alias asked the same), or a call to a helper that does one
+#: of those (`focusNoteRow`, `flashEntry`: followed one level, see `_readers`).
+_LIST_ASKS = r"\??\.(?:querySelector|querySelectorAll|children|firstElementChild|lastElementChild|getElementsBy\w+)"
+_LIST_ALIAS = re.compile(r"(?:const|let|var)\s+([\w$]+)\s*=\s*(?:\$\(|document\.getElementById\()[\"']entry-list[\"']\)")
+_CARD_STRING = re.compile(r"#entry-list\b")
+_CARD_ELEMENT = re.compile(r"(?:\$\(|getElementById\()[\"']entry-list[\"']\)" + _LIST_ASKS)
+_NOTE_SHEET = re.compile(r"data-sheet=\"note\"")
+
+
+def _reads_a_card(code: str, whole: str = "") -> bool:
+    """`code` reads a card; `whole` is the function it sits in, for an alias declared before it."""
+    if _CARD_STRING.search(code) or _CARD_ELEMENT.search(code):
+        return True
+    return any(re.search(rf"(?<![\w$.]){re.escape(alias)}{_LIST_ASKS}", code) for alias in _LIST_ALIAS.findall(whole or code))
+
+
+def _reads_the_sheet(code: str, whole: str = "") -> bool:
+    return _NOTE_SHEET.search(code) is not None
+
+
+DRAWN = {"renderEntries": _reads_a_card, "openNotePage": _reads_the_sheet, "refreshNotePage": _reads_the_sheet}
 FUNCTION = re.compile(r"^(?:async )?function [A-Za-z_$][\w$]*", re.M)
+_NAME = re.compile(r"(?:async )?function ([\w$]+)")
 
 
 def _functions(text: str):
@@ -102,19 +121,70 @@ def _functions(text: str):
         yield text[start : starts[i + 1] if i + 1 < len(starts) else len(text)]
 
 
-def _rest_of_block(body: str, at: int, indent: int) -> str:
-    """The lines after a call that stay in its block (as deep as the call's line)."""
+def _readers(fn: str, read) -> set[str]:
+    """Functions (any file) whose own body reads what `fn` draws: a caller that
+    reaches one of them right after an unawaited `fn()` reads it just the same."""
+    found = set()
+    for path in JS.glob("*.js"):
+        for body in _functions(path.read_text(encoding="utf-8")):
+            name = _NAME.match(body).group(1)
+            #: A helper that itself waits for a draw still in flight (`await renderEntries.waiting`) is safe to call.
+            if name != fn and read(body, body) and f"await {fn}" not in body:
+                found.add(name)
+    return found
+
+
+def _is_callback(line: str) -> bool:
+    return "=>" in line or (re.search(r"\bfunction\b", line) is not None and _NAME.match(line.strip()) is None)
+
+
+def _runs_after(body: str, at: int, indent: int) -> str:
+    """The code that runs after the call at `at`: the rest of its block, then the
+    rest of each enclosing block, up to the first callback (a callback's end hands
+    back to whoever called it, not to the next line) and minus a sibling `else`
+    branch, which runs instead of the call, not after it."""
+    stack: list[tuple[int, bool]] = []
+    for line in body[:at].split("\n")[:-1]:
+        if not line.strip():
+            continue
+        depth = len(line) - len(line.lstrip())
+        while stack and stack[-1][0] >= depth:
+            stack.pop()
+        if re.search(r"[{(\[]\s*$", line.rstrip()):
+            stack.append((depth, _is_callback(line)))
     lines = body[at:].split("\n")
-    kept = [lines[0]]
+    kept, floor, skipping = [lines[0]], indent, None
     for line in lines[1:]:
-        if line.strip() and len(line) - len(line.lstrip()) < indent:
-            break
+        if not line.strip():
+            continue
+        depth = len(line) - len(line.lstrip())
+        if skipping is not None:
+            if depth > skipping:
+                continue
+            closes = line.lstrip().startswith("}") and "else" not in line
+            skipping, floor = None, depth
+            if closes or line.lstrip().startswith(("} else", "else")):
+                skipping = None if closes else depth
+                continue
+        if depth < floor:
+            gone = []
+            while stack and stack[-1][0] >= depth:
+                gone.append(stack.pop())
+            if any(callback for _, callback in gone):
+                break
+            floor = depth
+        if line.lstrip().startswith(("} else", "else")):
+            floor = depth
+            if line.rstrip().endswith("{"):
+                skipping = depth
+            continue
         kept.append(line)
     return "\n".join(kept)
 
 
 def _unawaited_reads() -> list[str]:
     found = []
+    helpers = {fn: _readers(fn, read) for fn, read in DRAWN.items()}
     for path in sorted(JS.glob("*.js")):
         for body in _functions(path.read_text(encoding="utf-8")):
             name_line = body.split("\n", 1)[0]
@@ -124,13 +194,14 @@ def _unawaited_reads() -> list[str]:
                 for m in re.finditer(rf"(?<![\w$.])(?P<pre>(?:await |return )?){fn}\(", body):
                     line_start = body.rfind("\n", 0, m.start()) + 1
                     before_on_line = body[line_start : m.start()]
-                    after = _rest_of_block(body, m.end(), len(before_on_line) - len(before_on_line.lstrip()))
+                    after = _runs_after(body, m.end(), len(before_on_line) - len(before_on_line.lstrip()))
                     if m.group("pre") or ".then(" in after.split("\n", 1)[0] or "await" in before_on_line:
                         continue
                     if "typeof" in before_on_line:
                         continue
-                    if read.search(after):
-                        found.append(f"{path.name}: {name_line.strip()} calls {fn}() and reads its output without awaiting it")
+                    calls = [h for h in helpers[fn] if re.search(rf"(?<![\w$.]){h}\(", after)]
+                    if read(after, body) or calls:
+                        found.append(f"{path.name}: {name_line.strip()} calls {fn}() and reads its output without awaiting it ({', '.join(calls) or 'directly'})")
                         break
     return found
 
@@ -142,7 +213,33 @@ def test_no_caller_reads_a_card_before_the_file_that_draws_it_has_arrived():
 def test_the_probe_for_that_lint_sees_the_old_fault():
     bad = "function open(id) {\n  renderEntries();\n  const c = document.querySelector(`#entry-list li[data-id=\"${id}\"]`);\n}\n"
     (body,) = list(_functions(bad))
-    assert DRAWN["renderEntries"].search(body)
+    assert DRAWN["renderEntries"](body, body)
+
+
+def test_the_probe_sees_what_the_first_one_missed():
+    """INBOX 1530 (e): the lint saw only `renderEntries();` then a literal
+    `#entry-list li[data-id` in one block. It now also sees a helper that reads
+    the card, a list element asked for a card (directly or through an alias),
+    and a read after the block the call sits in; and it does not see a sibling
+    branch, or the next callback."""
+    def flagged(text):
+        (body,) = list(_functions(text))
+        at = body.index("renderEntries(") + len("renderEntries(")
+        line = body[body.rfind("\n", 0, at) + 1 : at]
+        indent = len(line) - len(line.lstrip())
+        after = _runs_after(body, at, indent)
+        calls = [h for h in ("focusNoteRow",) if re.search(rf"(?<![\w$.]){h}\(", after)]
+        return bool(DRAWN["renderEntries"](after, body) or calls)
+
+    helper = "function a(id) {\n  renderEntries();\n  focusNoteRow(id);\n}\n"
+    element = "function a(id) {\n  renderEntries();\n  return $(\"entry-list\").querySelector(`li[data-id=\"${id}\"]`);\n}\n"
+    alias = "function a(id) {\n  const list = $(\"entry-list\");\n  renderEntries();\n  return list.children[0];\n}\n"
+    nested = "function a(id) {\n  if (id) {\n    renderEntries();\n  }\n  focusNoteRow(id);\n}\n"
+    sibling = "function a(id) {\n  if (id) renderEntries();\n  else focusNoteRow(id);\n}\n"
+    braced = "function a(id) {\n  if (id) {\n    renderEntries();\n  } else {\n    focusNoteRow(id);\n  }\n}\n"
+    callback = "function a(items) {\n  items.push({\n    run: () => {\n      renderEntries();\n    },\n    other: () => focusNoteRow(1),\n  });\n}\n"
+    assert flagged(helper) and flagged(element) and flagged(alias) and flagged(nested)
+    assert not flagged(sibling) and not flagged(braced) and not flagged(callback)
 
 
 def test_a_deep_link_paints_through_its_target_until_the_card_exists():
