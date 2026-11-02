@@ -2541,7 +2541,7 @@ Detail: [docs76-1010.md](../archive/agent-remaining/docs76-1010.md).
 - Not verified in the browser: Chat's own path for the plan card and per-write undo (`chat-attach.js` onTool); an edit's diff under a step (pytest only).
 - The other tabs' starters (Notes, Chat, Graph, Library, Documents) are not in `ai/starter_acts.py`; with no model they get the composed answer (palette.js AGENT_TAB_STARTERS).
 - The reading does not take a note by its number ("pin note 12"): `commands._one_target`.
-- Dashboard quick links overflow by 4 px at 1440 and 390 (`#dash-quicklinks .launch-group`).
+- **Checked stale 2026-11-02:** scrollWidth equals clientWidth at 390 (364) and 1440 (1408); the row's -4 px left is `--ring-room` for focus rings (08-consistency.css). Dashboard quick links overflow by 4 px at 1440 and 390 (`#dash-quicklinks .launch-group`).
 - deepen72a.js's shared overlap measure now ignores a clipped scrolling edge, so other surfaces' overlap counts may drop; undo.js was not run on the agent surface.
 
 ## Left by the time85 agent (Brief 85, merged 2026-10-10)
@@ -2550,7 +2550,7 @@ Detail: [docs76-1010.md](../archive/agent-remaining/docs76-1010.md).
 - Timeline at 390: the On this day row moves the list down 44 px; a phone may want it folded (`#timeline-recall`).
 - deepen72b.js's timeline row at 390 waits for `.timeline-rows` but the phone keeps the table view, so it times out (deepen72b.js:61).
 - A `timeline-days` preference arriving after the click renders the timeline twice (once in nine runs at 5,000 notes).
-- A monthly repeat from the 31st lands on the 28th in February and stays there (recognise.py `_add_months`).
+- **Checked fixed 2026-11-02:** `_add_months` returns to the anchor (`repeat_day`), tests/test_recognise.py:268 (31 Jan, 28 Feb, 31 Mar, 30 Apr). A monthly repeat from the 31st lands on the 28th in February and stays there (recognise.py `_add_months`).
 - timelinepaging.js: the strip-click check fails on the base too; its 100 ms frame check passed once and failed twice under load.
 - Not verified: Firefox and Safari permission help, the webview's denied state, firing in a hidden tab (falls to the minute poll), a real non-UTC browser for the completion day maths, Move to an existing category, space or Publish drafts from the timeline bar.
 
