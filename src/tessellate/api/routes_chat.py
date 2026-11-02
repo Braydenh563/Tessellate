@@ -36,7 +36,7 @@ from starlette.concurrency import run_in_threadpool
 from sqlalchemy.orm import Session
 
 from tessellate.ai import capability, fact_check, composer, composer_social, composer_unplaced, note_language, composer_aware, composer_compose, composer_digest, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, note_rank, note_recency, personal, verdicts, vocative
-from tessellate.ai import ask_chips
+from tessellate.ai import ask_chips, composer_intent
 from tessellate.ai import recognise
 from tessellate.ai import (
     acts,
@@ -2131,10 +2131,10 @@ def _asked(body: ChatRequest, session: Session, skill: dict | None) -> tuple:
 
     Cleaned before anything reads it (INBOX 801): a stray backslash, a run of
     spaces, a sentence typed in capitals (`question_noise.tidy`). Everything
-    that routes, searches or plans reads its first `composer.PLAN_CHARS`
+    that routes, searches or plans reads its first `composer_intent.PLAN_CHARS`
     characters (those passes cost words x length: 38 s for a 20,000-character
     paste); the model is given all of it (`_in_full`)."""
-    head, tail = body.question[: composer.PLAN_CHARS], body.question[composer.PLAN_CHARS :]
+    head, tail = body.question[: composer_intent.PLAN_CHARS], body.question[composer_intent.PLAN_CHARS :]
     #: Filler ("errrmmm. hi") is read past before anything reads it (INBOX 1485).
     question, address = _address(skill["question"] if skill else question_noise.media_kind(question_noise.new_notes_as_newest(question_noise.drop_filler(question_noise.tidy(head)))) or head, session, skill)
     return question, address, None if skill else (body.raw_question or (question + tail if tail else None))

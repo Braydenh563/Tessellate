@@ -730,7 +730,7 @@ class _StreamRequest:
     #: What the message called the assistant ("hey lil bro, ..."), taken off
     #: `question` (`vocative.split`); `call` when that was all it said.
     address: vocative.Address | None = None
-    #: The whole of a question longer than `composer.PLAN_CHARS`, which only the
+    #: The whole of a question longer than `composer_intent.PLAN_CHARS`, which only the
     #: model and the saved turn read; `question` is what the app plans over.
     full_question: str | None = None
     #: Why the web search could not run this turn ("" when it ran): the

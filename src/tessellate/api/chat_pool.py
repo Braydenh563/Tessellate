@@ -16,7 +16,7 @@ from datetime import date
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import composer, composer_frame, composer_lists, composer_money, composer_slots, composer_sum, composer_versus, glossary, librarian, neighbours, question_noise
+from tessellate.ai import composer, composer_frame, composer_intent, composer_lists, composer_money, composer_slots, composer_sum, composer_versus, glossary, librarian, neighbours, question_noise
 from tessellate.api.chat_attach import _MEDIA_REF, _attached_boards, _attachment_readings, _media_readings, _mostly_pictures, _named_sources, _picture_alts, _picture_sizes
 from tessellate.core import deps
 from tessellate.core.database import Category, Entry, like_escape, LIKE_ESCAPE, MediaUpload
@@ -225,9 +225,9 @@ def _in_window(found: _Found, session: Session, asked, question: str) -> None:  
         #: "How much did I save in October": the question's own verb is no
         #: term, so nothing was searched; the window's notes are the pool the
         #: readers ask (audit 1031 C3).
-        stems = composer.window_verb_stems(question, asked.window_phrase)
+        stems = composer_intent.window_verb_stems(question, asked.window_phrase)
         window = search_manager.entries_between(session, asked.window[0], asked.window[1], limit=1000 if stems else 40, archived=archived)
-        found.entries = [e for e in window if composer.holds_any(stems, e.content or "")][:40] if stems else window
+        found.entries = [e for e in window if composer_intent.holds_any(stems, e.content or "")][:40] if stems else window
     found.mode, found.connected_ids, found.match_info, found.when_phrase = "window", set(), {}, asked.window_phrase
 
 
