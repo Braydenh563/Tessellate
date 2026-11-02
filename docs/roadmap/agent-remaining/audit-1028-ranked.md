@@ -55,10 +55,10 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 49 | E16 | med | compare gives identical lists for both sides | new | M |
 | 50 | E17 | med | digest says newest a day ago when written today | fixed 2026-11-02 (today, never a day ago) | S |
 | 51 | E18 | med | composer invents speech acts the notes do not contain | fixed 2026-11-02 (5e6147c) | S |
-| 52 | E19 | med | source lists mangled, author lowercased and split | new | S |
+| 52 | E19 | med | source lists mangled, author lowercased and split | fixed (e09a63e) | S |
 | 53 | E20 | med | weekday words in log notes treated as due dates | new | M |
-| 54 | E21 | med | lowercase month in computed days-until answer | new | S |
-| 55 | E22 | med | instruction words reported as missing evidence | new | S |
+| 54 | E21 | med | lowercase month in computed days-until answer | fixed (f210bc3) | S |
+| 55 | E22 | med | instruction words reported as missing evidence | fixed (239b496) | S |
 | 56 | E24 | med | generative requests answered with quotes, no needs-a-model reply | fixed 2026-11-02 (468c2d8) | S |
 | 57 | E25 | med | quoted note titles stored as body text | fixed 2026-11-02 (a8a56f0) | S |
 | 58 | E26 | med | reminder with no subject; impossible dates accepted | fixed 1030 | S |
@@ -92,7 +92,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 86 | D33 | med | replace-in-all and find-in-all separate from CM find panel | new | M |
 | 87 | D34 | med | autosave failure is tiny status text, no banner or retry | fixed (this batch) | S |
 | 88 | E23 | med | quiz cloze questions cut the subject off | new | M |
-| 89 | E27 | med | act summaries have lowercase verbs, ids and stale notice | new | S |
+| 89 | E27 | med | act summaries have lowercase verbs, ids and stale notice | fixed (b6c3e07) | S |
 | 90 | E28 | med | show my reminders not handled in the chat path | fixed 1030 | S |
 | 91 | E29 | med | identical reminders printed twice, no duplicate check | fixed 2026-11-02 (ca14588) | S |
 | 92 | E35 | med | chat transcript is not a live region for screen readers | fixed 1031 | S |
@@ -205,7 +205,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 199 | E46 | low | chat sidebar sort covers only the first page | docs/roadmap/BACKLOG.md:1148 | S |
 | 200 | E47 | low | no search of chats in the chat sidebar | fixed 2026-11-02 (bbc8003) | S |
 | 201 | E49 | low | editAndResend derives turn from DOM bubble index | fixed 2026-11-02 (c589253) | S |
-| 202 | E55 | low | untag with no tag named falls through to Q&A | new | S |
+| 202 | E55 | low | untag with no tag named falls through to Q&A | fixed (ccbf5f0) | S |
 | 203 | E56 | low | app-control phrases like timer and pomodoro parse to nothing | new | M |
 | 204 | E59 | low | no per-answer thumbs feedback | new | M |
 | 205 | E60 | low | no regenerate with another model, no continue after Stop | new | M |
@@ -230,15 +230,15 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 224 | E37 | low | AI status control reads as an error, red circle with x | new | S |
 | 225 | E41 | low | models pane jargon and redundant Use this model button | fixed 2026-11-02 (5ed769f) | S |
 | 226 | E51 | low | citation mark lands mid-sentence, date-only source | docs/roadmap/CHAT_PLAN.md:1810 | S |
-| 227 | E52 | low | coaching tip appended inside answer text | new | S |
-| 228 | E53 | low | double greeting and last-time line from app-made note | new | S |
+| 227 | E52 | low | coaching tip appended inside answer text | fixed (aea78bd, Chat stream only; Guide and Ask tab left, see a28x-1102.md) | S |
+| 228 | E53 | low | double greeting and last-time line from app-made note | fixed (already, checked 2026-11-02: tests/test_audit1028_e53.py pins no double greeting; the last-wrote clause names a note the person asked chat to create) | S |
 | 229 | E54 | low | identity muddled between Atlas and Tessellate | docs/roadmap/CHAT_PLAN.md:460 | S |
 | 230 | E61 | low | disabled Plan and Agent explain need only on hover | fixed 2026-11-02 (1789f37) | S |
-| 231 | E63 | low | three clauses joined as a run-on, no list | new | S |
+| 231 | E63 | low | three clauses joined as a run-on, no list | fixed (7cfe403) | S |
 | 232 | E67 | low | next chip row offers a single chip | fixed 2026-11-02 (2f1213f) | S |
 | 233 | E68 | low | typing dots role=status, no aria-busy on transcript | fixed 2026-11-02 (ecb69a5) | S |
 | 234 | E69 | low | chat autocorrect runs on names and codes unseen | new | S |
-| 235 | E72 | low | Why trail shows timing lines and a wrong nothing matched | new | S |
+| 235 | E72 | low | Why trail shows timing lines and a wrong nothing matched | fixed (f725872, wrong nothing matched only; timing lines are the owner's B30 design) | S |
 | 236 | S55 | low | settings labels mix case against sentence case | new | S |
 | 237 | S56 | low | toast stack covers bottom nav at phone width | new | S |
 | 238 | S58 | low | modal return-focus target is not consistent | new | S |

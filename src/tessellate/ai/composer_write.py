@@ -254,12 +254,18 @@ def _split_long(sentence: str) -> list[str]:
 # --- the passes ---------------------------------------------------------------------
 
 
+_LABELLED = re.compile(r"^[A-Za-z][\w']*(?: [\w']+){0,3}:\s+\S")
+
+
 def _bullet_items(line: str) -> list[str]:
     """One prose line as bullet texts: a sentence each, a `;` clause each,
     wordy phrases shortened, a repeat or a sentence that says nothing out."""
     items: list[str] = []
     for sentence in sentences(line):
-        for part in re.split(r";\s+", sentence):
+        #: "Sources: Clark, The Sleepwalkers; Macmillan, ..." is one entry: a
+        #: list after a label is split on its lines, never on its semicolons
+        #: (audit 1028 E19).
+        for part in [sentence] if _LABELLED.match(sentence) else re.split(r";\s+", sentence):
             part = trim(concise(part)).rstrip(".")
             if (len(part.split()) >= 2 or part.endswith("?")) and not _hedge(part) and not any(_same(part, x) for x in items):
                 items.append(part)
