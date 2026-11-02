@@ -120,7 +120,11 @@ PIECE_CAP = 32_000
 #: 2026-11-01, boot diet 3, step 3: 268,118 down to 260,019 (1,949,052 to
 #: 1,857,489 raw): a note's card (`entryItem`, entry-card.js; `renderEntries`
 #: waits for it, the bundles that carry answer-kit.js list it first).
-TOTAL_CAP = 260_300
+#: 2026-11-02, raised 260,300 to 260,350 with a reason: three merged audit rows
+#: put their wiring where it runs at boot (E47 chat list search, E61 the
+#: Plan and Agent gate as aria-disabled, S92 the Notes and Library counts
+#: announced), 26 bytes over together; the next boot diet takes it back.
+TOTAL_CAP = 260_350
 
 
 def _served_gzip_size(client, name: str) -> int:
