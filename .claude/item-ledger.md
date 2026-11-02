@@ -87,3 +87,4 @@ date | item | type | rung | rework | note
 2026-10-30 | shellux-1030 merge 1333 strip S26 (boot CSS byte) | ui | sonnet | 1 | 
 2026-10-30 | audit 1028 E35 E36 E39 E40 (byte budget trims) | bug | opus | 1 | 
 2026-10-30 | wb1313-1030 merge rows 7 13 14, keep_ratio fix | feature | sonnet | 0 | 
+2026-11-02 | INBOX 1530 resolve | docs | opus | 0 | 
