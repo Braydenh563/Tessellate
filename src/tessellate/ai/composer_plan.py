@@ -637,7 +637,25 @@ def _open_tasks(ctx: Ctx, limit: int = OPEN_LIMIT) -> list[tuple[str, dict]]:
         out += [(task, note) for task in study.open_tasks(str(note.get("content") or ""))]
         if len(out) >= limit:
             break
-    return out[:limit]
+    return _not_done_later(ctx, out[:limit])
+
+
+def _not_done_later(ctx: Ctx, tasks: list[tuple[str, dict]]) -> list[tuple[str, dict]]:
+    """Leaves out an unticked line a later note records as done: "what is
+    still open" agrees with "is X still on my list" (fable-eye F15). The
+    notes are read only when there is an open line to check."""
+    if not tasks:
+        return tasks
+    from tessellate.ai import composer_slots  # noqa: PLC0415  (composer imports this module)
+    from tessellate.ai.composer_read import read_note  # noqa: PLC0415
+
+    views = [v for i, n in enumerate(ctx.notes[:300]) if (v := read_note(n, i))]
+    by_id = {v.note.get("id"): v for v in views}
+    done: set[tuple[object, str]] = set()
+    for nid in {note.get("id") for _, note in tasks}:
+        if view := by_id.get(nid):
+            done |= {(nid, study.clean(re.sub(r"^\s*[-*]?\s*\[[ xX]\]\s*", "", s.text))) for s in view.sentences if composer_slots.recorded_later(views, view, s)}
+    return [(task, note) for task, note in tasks if (note.get("id"), task) not in done]
 
 
 def _open_reminders(ctx: Ctx) -> list[dict]:

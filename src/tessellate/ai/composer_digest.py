@@ -4353,12 +4353,20 @@ def _show_checklist(out: _Out, view: composer.NoteView) -> None:
     """A checklist note as the list it is: how many are ticked, then every
     item with its box, as the composer's own list block does."""
     tasks = [s for s in view.sentences if s.kind == "task"]
-    ticked = sum(1 for s in tasks if s.done)
+    #: A box never ticked but done in a later note is done here too, said as
+    #: that note: one item, one state (fable-eye F15).
+    views, today = _VIEWS.get(), _TODAY.get() or date.today()
+    later = composer_slots.done_later(views, view, tasks)
+    ticked = sum(1 for s in tasks if s.done or id(s) in later)
     total = realise.count_word(len(tasks))
     name = _your_note(view)
     done = f"{realise.count_word(ticked)} of {total}" if ticked else f"none of its {total}"
     opening = f"{name[0].upper()}{name[1:]} has {done} checklist items done"
-    boxes = [f"- [{'x' if s.done else ' '}] {s.text[:1].upper()}{s.text[1:]}" for s in tasks]
+    boxes = [
+        f"- [{'x' if s.done else ' '}] {s.text[:1].upper()}{s.text[1:]}"
+        + (composer_slots.done_later_note(later[id(s)], today) if id(s) in later else "")
+        for s in tasks
+    ]
     out.lines.append(opening + ":\n\n" + "\n".join(boxes))
     out.rows.append({"sentence": opening, "note_id": view.note.get("source_id", view.id), "source": tasks[0].text,
                      "start": tasks[0].start, "end": tasks[0].end, "score": 1.0, "digest": True,

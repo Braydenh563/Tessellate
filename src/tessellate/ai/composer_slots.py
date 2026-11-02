@@ -381,6 +381,18 @@ def recorded_later(views: list, view, task):  # noqa: ANN001, ANN202
     return _done_later([v for v in views if v is not view], _verb_forms(words[0]), obj, view)
 
 
+def done_later(views: list, view, tasks: list) -> dict[int, tuple]:  # noqa: ANN001
+    """`id(task)` to (later note, sentence) for each unticked line of `view`
+    a later note records as done: every reader that counts or shows a
+    checklist asks this, so a box reads one state everywhere (fable-eye F15)."""
+    return {id(t): got for t in tasks if (got := recorded_later(views, view, t))}
+
+
+def done_later_note(got: tuple, today: date) -> str:
+    """" (done: your note of 29 October says so)", after the item's line."""
+    return f" (done: {_note_of(got[0], today)} says so)"
+
+
 #: A line that plans the doing is not a record of it: "did I pay rent"
 #: beside "Remember to pay rent on the 1st" is "not yet" (audit 1030 Z19).
 _INTENT = re.compile(

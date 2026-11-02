@@ -238,11 +238,23 @@ def _list_lead(out: _Answer, view: NoteView, lead: str) -> None:
         out.t("it_lists")
 
 
+def _done_later(out: _Answer, view: NoteView, tasks: list[Sentence]) -> dict[int, tuple]:
+    from tessellate.ai import composer_slots  # noqa: PLC0415  (composer_slots imports composer, which imports this)
+
+    return composer_slots.done_later(list(out.views.values()), view, tasks)
+
+
+def _done_later_note(got: tuple, today) -> str:  # noqa: ANN001
+    from tessellate.ai import composer_slots  # noqa: PLC0415
+
+    return composer_slots.done_later_note(got, today)
+
+
 def _checklist_count(out: _Answer, view: NoteView, tasks: list[Sentence], lead: str) -> None:
     """How many of a checklist are ticked. Zero is "none of its three", one
     left unticked is "one item, not done": a count word before "of" is never
-    "no" (audit 1029 C6)."""
-    ticked = sum(1 for s in tasks if s.done)
+    "no" (audit 1029 C6). A line a later note records as done counts done."""
+    ticked = sum(1 for s in tasks if s.done) + len(_done_later(out, view, tasks))
     opening = lead == "opening"
     if opening:
         if view.titled:
@@ -265,10 +277,13 @@ def _list_block(out: _Answer, view: NoteView, items: list[Sentence], terms: list
     if tasks and len(tasks) == len(items):
         _checklist_count(out, view, tasks, lead)
         out.t("para")
+        later = _done_later(out, view, tasks)
         for i, s in enumerate(tasks):
             if i:
                 out.t("line")
             out.item(s, terms)
+            if id(s) in later:
+                out.m(_done_later_note(later[id(s)], out.today))
         return
     _list_lead(out, view, lead)
     if composer_tree.nested(items):

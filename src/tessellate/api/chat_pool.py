@@ -283,10 +283,12 @@ def _with_records(session: Session, question: str, entries: list, locale: str | 
     """An open checklist item may be done in a later note ("Renewed my library
     membership today" beside "[ ] Renew library membership"): a question
     about the checklist's state also fetches the notes that name its open
-    items, so the answer reads one state for the item (second eye F3)."""
-    if not composer_slots.asks_open(question):
-        return entries
+    items, so the answer reads one state for the item (second eye F3). So
+    does any answer that may show the checklist: an overview's boxes said
+    "none done" beside a note that records one (F15)."""
     doings = [d for e in entries for d in composer_slots.open_doings(e.content or "")][:6]
+    if not doings:
+        return entries
     merged, seen = list(entries), {e.id for e in entries}
     for doing in doings:
         for entry in search_manager.retrieve_detailed(session, doing, deps.get_embeddings(), limit=2, locale=locale).entries:
