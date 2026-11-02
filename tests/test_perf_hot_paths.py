@@ -193,7 +193,8 @@ def test_a_tab_switch_grows_only_the_boxes_that_could_be_wrong() -> None:
     assert "box._autoGrownValue !== box.value" in visible
     assert "box._autoGrownFor !== autoGrowInputs(box)" in visible
     assert visible.index("due.push(box)") < visible.index("for (const box of due) autoGrow(box);")
-    assert "autoGrowVisible();" in _body(app, "revealTab")
+    # At the frame rather than in the switch (INBOX 1530 c): still every switch.
+    assert "requestAnimationFrame(autoGrowVisible);" in _body(app, "revealTab")
     grow = _body(app, "autoGrow")
     assert "el._autoGrownFor = autoGrowInputs(el);" in grow
 

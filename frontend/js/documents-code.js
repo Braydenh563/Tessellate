@@ -2260,8 +2260,8 @@ function docIndentGuides(CM, unit) {
   //: The space's width is the face's, so it is measured when the face
   //: changes, not on every geometry change (a key that adds a line is one;
   //: 173 ms of a 20-key run at 4x, audit 1031 CE3).
-  const measureSpace = (view) => {
-    const font = getComputedStyle(view.contentDOM).font;
+  const spaceFont = (view) => getComputedStyle(view.contentDOM).font;
+  const measureSpace = (view, font = spaceFont(view)) => {
     const seen = (docIndentGuides.fonts ||= new WeakMap());
     if (seen.get(view.contentDOM) === font) return;
     seen.set(view.contentDOM, font);
@@ -2284,7 +2284,10 @@ function docIndentGuides(CM, unit) {
   const plugin = ViewPlugin.fromClass(
     class {
       constructor(view) {
-        measureSpace(view);
+        //: In the editor's own read phase, not here (INBOX 1530 c): the
+        //: constructor runs inside the open, after it has written, so the font
+        //: read forced the page's style (6 to 17 ms of `openDoc`).
+        view.requestMeasure({ key: measureSpace, read: spaceFont, write: (font, v) => measureSpace(v, font) });
         this.decorations = build(view);
       }
       update(update) {

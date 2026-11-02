@@ -831,6 +831,15 @@ const TABS = ["dashboard", "notes", "chat", "graph", "library", "timeline", "rem
 // is active. No network calls here, so this is safe to run before a token
 // exists: see revealTab("dashboard")'s module-level call below, and why
 // it's this instead of a full switchTab().
+//: Tab pages scrolled since `revealTab` last put them at the top; a scroll
+//: event says so without reading any layout (a capture listener, since a
+//: page's own scroll does not bubble). Kept on the function, not in the
+//: shared scope (tests/test_global_scope_ratchet.py).
+revealTab.scrolled = new WeakSet();
+document.addEventListener("scroll", (event) => {
+  if (event.target instanceof Element && event.target.classList.contains("tab-page")) revealTab.scrolled.add(event.target);
+}, { capture: true, passive: true });
+
 function revealTab(name) {
   //: One attribute on body is what the stylesheets key page-level rules on
   //: (toast placement). They used `body:has(#tab-x:not(.hidden))`, which made
@@ -872,12 +881,21 @@ function revealTab(name) {
   // A new tab starts at its own top, and the back-to-top button re-evaluates
   // (it stays off the graph). Each page keeps its own scroll position now, so
   // this is a deliberate reset rather than a side effect of one shared one.
-  scrollingPage()?.scrollTo({ top: 0, behavior: "auto" });
+  //: Only a page that scrolled since its last reset is reset (INBOX 1530 c):
+  //: `scrollTo` after the class flips above forced the whole newly shown
+  //: page's style and layout inside the click (15 to 25 ms of `openDoc`), a
+  //: second layout in a frame `openDocument` dirties again. A page that never
+  //: moved is already at its top, so it costs nothing.
+  const page = scrollingPage();
+  if (page && revealTab.scrolled.delete(page)) page.scrollTo({ top: 0, behavior: "auto" });
   scrollTopUpdate?.();
   // Any autogrow box that was measured while hidden gets its real height now
   // that its page is on screen. See autoGrow() for why a hidden measurement is
   // refused rather than applied, and autoGrowVisible() for which boxes that is.
-  autoGrowVisible();
+  //: At the frame, before it paints (INBOX 1530 c): its reads came straight
+  //: after the class flips above and laid the new page out inside the click
+  //: (14 to 47 ms of `openDoc`), which `openDocument` then dirtied again.
+  requestAnimationFrame(autoGrowVisible);
 }
 
 // --- back / forward through the pages you have visited ----------------------
@@ -2733,7 +2751,10 @@ function initScrollTopButton() {
   document.addEventListener("scroll", (e) => e.target === scrollTopTargetEl() && scheduleUpdate(), { passive: true, capture: true });
   window.addEventListener("resize", scheduleUpdate, { passive: true });
   update();
-  return update;
+  //: Callers get the scheduled run (INBOX 1530 c): `revealTab` called this
+  //: straight after flipping the tab classes, and its scroller reads forced
+  //: the newly shown page's layout inside the click (12 to 24 ms of `openDoc`).
+  return scheduleUpdate;
 }
 
 const chatTabNode = $("tab-chat");

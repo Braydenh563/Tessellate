@@ -62,7 +62,7 @@
  "menus.js::raf": 2,
  "mermaid-draw.js::mutation-observer": 1,
  "navigation.js::mutation-observer": 3,
- "navigation.js::raf": 4,
+ "navigation.js::raf": 5,
  "note-cards.js::resize-observer": 2,
  "note-edit-panels.js::raf": 4,
  "note-properties.js::raf": 1,

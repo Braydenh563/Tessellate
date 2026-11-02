@@ -895,7 +895,9 @@ function setDocView(mode, { persist = true } = {}) {
   // were halfway down.
   const editor = docSurface();
   //: Off the Documents tab the editor is hidden and reads 0: skipped, it forced a layout at load (27ms).
-  const editorRange = editor && prefs.get("activeTab", null) === "documents" ? editor.scrollHeight - editor.clientHeight : 0;
+  //: Only Read uses it (below; the other views follow with `syncDocScroll`): read for
+  //: every view it forced layout in the click that opens a document (INBOX 1530 c, 5 to 49 ms).
+  const editorRange = editor && docView === "rendered" && prefs.get("activeTab", null) === "documents" ? editor.scrollHeight - editor.clientHeight : 0;
   const editorRatio = editorRange > 0 ? editor.scrollTop / editorRange : null;
 
   // The editor is on screen in every mode but Read; the preview is shown in
@@ -1213,9 +1215,11 @@ async function openDocument(id) {
   //: with it, a frame after the text is painted rather than before: each
   //: lays the editor out again (the outline asks which line the caret shows),
   //: measured at 390 as 607ms of a 1,286ms open for the outline alone.
+  //: The outline first: it reads where the caret is before anything here
+  //: writes (INBOX 1530 c), and the status bar and prose check need no layout.
   docAfterFirstPaint(seq, () => {
-    renderDocTools();
     renderDocOutline();
+    renderDocTools();
     renderDocNotes();
     renderDocBacklinks();
     renderDocBookmarks();
@@ -2799,8 +2803,15 @@ function renderDocCrumbs(line) {
   });
   //: After the row is built, not before: the fade is a measurement of
   //: `scrollWidth` against `clientWidth`, and both are the previous trail's
-  //: until the new buttons are in the document.
-  window.syncEdgeFade?.(nav);
+  //: until the new buttons are in the document. After the frame's layout,
+  //: too (INBOX 1530 c): measured at once it forced the outline's rows,
+  //: written a moment before, to be laid out inside the open (2 to 10 ms).
+  if (renderDocCrumbs.fading) return;
+  renderDocCrumbs.fading = true;
+  afterFrames(() => setTimeout(() => {
+    renderDocCrumbs.fading = false;
+    window.syncEdgeFade?.(nav);
+  }), 1);
 }
 
 //: The caret's line, 0-based, for the callers that want the trail but do not
@@ -3620,6 +3631,10 @@ function renderDocOutline() {
   const list = $("doc-outline");
   const wrap = $("doc-outline-wrap");
   if (!list || !wrap) return;
+  //: Read first, before this writes a row (INBOX 1530 c): the caret's line was
+  //: asked after the rows were rebuilt, so the editor's geometry was laid out
+  //: again inside the open (18 to 107 ms forced, the 1530 sweep).
+  const where = docWhereLine();
   const text = docText();
   const lines = text.split("\n");
   //: A code file's outline is its symbols (INBOX 402), a markdown file's its
@@ -3713,7 +3728,7 @@ function renderDocOutline() {
   ]);
   if (outlineKey === docOutlineKey && docOutlineRows.length === headings.length && list.isConnected) {
     docOutlineHeadingList = headings;
-    renderDocCrumbs(docWhereLine());
+    renderDocCrumbs(where);
     return;
   }
   docOutlineKey = outlineKey;
@@ -3854,7 +3869,7 @@ function renderDocOutline() {
   //: that forgets where you are every time you stop typing is worse than one
   //: that never knew.
   docOutlineMarked = -1;
-  markDocOutline();
+  markDocOutline(where);
   //: **The focus ring, restored after a move rewrote the rows.** Kept across
   //: renders rather than applied once, because a move schedules a second
   //: render of its own (see `docOutlineNudge`), and given up the moment focus
@@ -3873,7 +3888,7 @@ function renderDocOutline() {
   //: here and the trail is redrawn on the same beat the outline is.
   docOutlineHeadingList = headings;
   docCrumbsKey = "";
-  renderDocCrumbs(docWhereLine());
+  renderDocCrumbs(where);
 }
 
 //: **Where you are in the document, marked in its outline.** The owner, of
@@ -4027,15 +4042,22 @@ function keepOutlineRowInView(el) {
   else if (row.bottom > frame.bottom) box.scrollTop += row.bottom - frame.bottom + 8;
 }
 
-function markDocOutline() {
+//: `known` is `docWhereLine()` read by a caller before it wrote anything; a
+//: render passes it, and the row is then brought into view after the frame's
+//: layout rather than measured against rows it has just built.
+function markDocOutline(known) {
   if (!docOutlineRows.length) return;
   //: The caret's section while the caret is on screen, the top of the view
   //: otherwise: see `docCaretVisibleLine` for why that is the order.
-  const caret = docCaretVisibleLine();
-  const top = caret === null ? docVisibleTopLine() : caret;
+  const cm = docSurface()?.kind === "codemirror";
+  let top = cm && known != null ? known : null;
+  if (top === null) {
+    const caret = docCaretVisibleLine();
+    top = caret === null ? docVisibleTopLine() : caret;
+  }
   //: The trail follows the same line (see `docWhereLine`); the textarea
   //: fallback keeps the caret for it.
-  renderDocCrumbs(docSurface()?.kind === "codemirror" ? top : docCaretLine());
+  renderDocCrumbs(cm ? top : docCaretLine());
   //: The last heading at or above the top of the view: the section whose text
   //: you are reading, not the next one down.
   let index = 0;
@@ -4069,7 +4091,8 @@ function markDocOutline() {
   //: the mark reach a screen reader instead of being a colour.
   button.setAttribute("aria-current", "location");
   docOutlineMarked = index;
-  keepOutlineRowInView(button);
+  if (known === undefined) keepOutlineRowInView(button);
+  else afterFrames(() => setTimeout(() => button.isConnected && keepOutlineRowInView(button)), 1);
 }
 
 //: One mark per frame. A scroll fires far faster than anything needs to be
