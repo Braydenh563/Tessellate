@@ -48,8 +48,15 @@ const MSG_ACTIONS_VISIBLE = 5;
 //: is not sent at all. One object, so no new names in the shared scope.
 const CLIP_LIMITS = ((cap) => ({ cap, warmMax: 500, warm: cap, search: cap, question: cap, followQuestion: cap, followAnswer: 20000 }))(4000);
 
+//: Over the cap, the opening and the end are kept, not the opening alone
+//: (INBOX 1528): a paste with its ask under it reached the server without
+//: the ask, which the server's long-question reading (`long_question.py`)
+//: then could not find. The last quarter of the cap, at most 1,000.
 function clipFor(route, text) {
-  return String(text ?? "").slice(0, CLIP_LIMITS[route]);
+  const all = String(text ?? ""), cap = CLIP_LIMITS[route];
+  if (all.length <= cap) return all;
+  const tail = Math.min(1000, cap >> 2);
+  return `${all.slice(0, cap - tail - 2)}\n\n${all.slice(-tail)}`;
 }
 
 //: **Work that follows an answer waits for the answer's frame** (audit 1031

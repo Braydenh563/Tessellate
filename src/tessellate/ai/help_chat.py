@@ -247,6 +247,7 @@ _MODIFIER = re.compile(
 _MODIFIER_NAMES = {"control": "ctrl", "cmd": "ctrl", "option": "alt"}
 
 
+@functools.lru_cache(maxsize=8192)  # 3,100 keywords a question: 1.5 million calls a 600-turn eval (CI time 1102)
 def _normalise_keys(lowered: str) -> str:
     return _MODIFIER.sub(lambda m: _MODIFIER_NAMES.get(m.group(1), m.group(1)) + "+", lowered)
 
@@ -294,19 +295,11 @@ def _keyword_regex(keyword: str) -> re.Pattern[str]:
 
 def _keyword_in(keyword: str, lowered: str) -> bool:
     """`_keyword_pattern(keyword)` found in `lowered`, compiled only when it can
-    match. All 2,200 patterns were compiled at import (about 0.5 s of the app's
-    start, INBOX 1307); a pattern can only match where its literal stem occurs,
-    so a substring test settles almost every keyword without a regex at all."""
-    return _keyword_stem(keyword) in lowered and _keyword_regex(keyword).search(lowered) is not None
-
-
-@functools.lru_cache(maxsize=None)
-def _keyword_stem(keyword: str) -> str:
-    """The literal a keyword's pattern needs, worked out once per keyword, not
-    once per keyword per question (1.5 million `_normalise_keys` calls in the
-    dialogue eval, CI time 1102)."""
+    match (compiling all 2,200 at import was 0.5 s of the start, INBOX 1307): a
+    pattern matches only where its literal stem occurs, so a substring test settles most."""
     normal = _normalise_keys(keyword)
-    return normal[:-1] if len(normal) > 3 and normal.endswith("y") and normal[-2] not in "aeiou" else normal
+    stem = normal[:-1] if len(normal) > 3 and normal.endswith("y") and normal[-2] not in "aeiou" else normal
+    return stem in lowered and _keyword_regex(keyword).search(lowered) is not None
 
 
 def _edit_distance_at_most_one(a: str, b: str) -> bool:

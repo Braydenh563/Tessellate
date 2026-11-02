@@ -116,9 +116,9 @@ def search(
     """
     from tessellate.search import search_manager
 
-    #: The first words only (audit 1031 AI9): a 20,000-character query took
+    #: Its ask and distinctive words, not the whole paste (audit 1031 AI9, INBOX 1528): a 20,000-character query took
     #: 2,233 ms to search, and the finder's box can be pasted into.
-    q = search_manager.clip_query(q)
+    q = search_manager.clip_query(session, q)
     kinds = [part.strip() for part in kind.split(",") if part.strip() in search_index.KINDS]
     ctx = _scope_of(entry_id, space)
     #: Paged by ranking deeper and slicing: one more than the page asks for,

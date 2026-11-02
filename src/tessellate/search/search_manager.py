@@ -29,6 +29,7 @@ from tessellate.ai.embeddings import (
 )
 from tessellate.core import cjk
 from tessellate.core.database import LIKE_ESCAPE, EmbeddingRecord, Entry, EntryDate, like_escape, link_strength
+from tessellate.search import long_question
 from tessellate.search import query as query_understanding
 
 # **No `TYPE_CHECKING: import numpy as np` here**, for the reason janitor.py
@@ -459,7 +460,7 @@ def warm(session: Session, query: str, embeddings: EmbeddingService) -> bool:
     if not embeddings.is_ready():
         _load_later(embeddings)
         return False
-    query = clip_query(query)
+    query = clip_query(session, query)
     #: The focus call carries no words: nothing to embed, so nothing to look up
     #: in the database for the user's "today" either.
     if not query:
@@ -1455,16 +1456,18 @@ def _when_nothing_ranked(session: Session, entries: list, asked, mentioned: set,
 #: chat question took 2,000 ms to search over 205 notes, and a 100,000-character
 #: tool query 1,612 ms. The rest of a long question is context for the model,
 #: which still gets all of it; a search over 300 words finds what 2,000 would.
+#: Those words are the question's ask and the paste's distinctive terms
+#: (`long_question`), not its first 300 (INBOX 1528).
 SEARCH_QUERY_WORDS = 300
 SEARCH_QUERY_CHARS = query_understanding.QUESTION_CAP
 
 
-def clip_query(query: str) -> str:
-    """The first `SEARCH_QUERY_WORDS` words of `query`, at most `SEARCH_QUERY_CHARS`."""
-    return _FIRST_WORDS.match(query).group(0)[:SEARCH_QUERY_CHARS]
-
-
-_FIRST_WORDS = re.compile(r"(?:\s*\S{1,%d}){0,%d}" % (SEARCH_QUERY_CHARS, SEARCH_QUERY_WORDS))
+def clip_query(session: Session, query: str) -> str:
+    """What the search reads of `query`: all of it up to `SEARCH_QUERY_WORDS`
+    words and `SEARCH_QUERY_CHARS` characters, else its ask plus the paste's
+    most distinctive words (`long_question`, INBOX 1528), never its opening
+    alone. Every path that narrows a question for search goes through here."""
+    return long_question.search_text(session, query, SEARCH_QUERY_WORDS, SEARCH_QUERY_CHARS)
 
 
 def _retrieve(
@@ -1481,7 +1484,7 @@ def _retrieve(
     # What the question is actually asking. A time phrase becomes a filter
     # instead of search terms, and the question's scaffolding comes off before
     # anything is embedded: see `search/query.py` for why both matter.
-    query = clip_query(query)
+    query = clip_query(session, query)
     asked = query_understanding.understand(query, _user_today(session), locale)
     found["since"] = asked.since
     found["until"] = asked.until

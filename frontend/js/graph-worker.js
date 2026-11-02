@@ -1741,9 +1741,15 @@ function applyGrouping(params) {
     .strength(pull);
 }
 
+//: The Tidy spacing switch, sent in the params (graph-canvas.js `gcWorkerParams`).
+function tidyOn(params) {
+  return !!(params && params.tidy === true);
+}
+
 function applyForces(params) {
   if (!simulation) return;
   applyGrouping(params);
+  simulation.force("clear", tidyOn(params) ? clearanceForce : null);
   const tuned = tuning(params);
   simulation.force("charge").strength(tuned.charge);
   simulation.force("link").distance(tuned.linkDistance).strength(linkStrength);
@@ -3577,7 +3583,10 @@ self.onmessage = (event) => {
         .force("groupX", d3.forceX(0).strength(0))
         .force("groupY", d3.forceY(0).strength(0))
         .force("orbit", orbitForce)
-        .force("clear", clearanceForce)
+        //: Tidy spacing (INBOX 1529, off by default): the line-clearance
+        //: pass is 53,000 checks a tick at 2,000 notes, so it runs only when
+        //: the reader turns it on.
+        .force("clear", tidyOn(message.params) ? clearanceForce : null)
         .force("hub", hubForce)
         .force("tether", tetherForce)
         .force("carry", carryForce)

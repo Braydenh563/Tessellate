@@ -67,7 +67,7 @@ def test_the_warm_route_refuses_past_the_cap_and_clips_what_it_embeds(client, mo
     assert all(len(text.split()) <= search_manager.SEARCH_QUERY_WORDS for text in seen)
 
 
-def test_the_finder_route_reads_the_first_words_of_a_long_query(client, monkeypatch):
+def test_the_finder_route_bounds_what_it_searches_of_a_long_query(client, monkeypatch):
     """GET /search read the whole query: 2,233 ms for 20,000 characters."""
     seen = []
     real = routes_search.engine.search
@@ -106,7 +106,8 @@ def test_the_desktop_companion_has_its_own_copy_of_the_cap():
     """Its page loads no chat.js, so `clipFor` is not there."""
     text = _js("desk-companion.js")
     assert re.search(r"const DESK_QUESTION_CAP = (\d+);", text).group(1) == str(search_query.QUESTION_CAP)
-    assert "/search?q=${encodeURIComponent(q.slice(0, DESK_QUESTION_CAP))}" in text
+    # INBOX 1528: the clip keeps the end too, the way chat.js `clipFor` does.
+    assert "/search?q=${encodeURIComponent(deskClip(q))}" in text
     assert "clipFor" not in text
 
 
