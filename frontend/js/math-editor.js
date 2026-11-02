@@ -469,7 +469,9 @@ function mathEditorMount({ host, target = null, done = () => {}, note = null, on
 
   //: Copy and Insert are the dialog's action row, pinned under the panes (reply-kit.js), so neither is a scroll away.
   host.replaceChildren(mode.seg, mathEditorLede(pane.toggle), pane.el, ...(note ? [note] : []), search, list);
-  if (focus) pane.start();
+  //: After the first paint: the field's first focus laid out the pane and its tiles inside the press
+  //: that opened it (245ms at 4x, INBOX 1534).
+  if (focus) afterFrames(() => setTimeout(() => host.isConnected && pane.start()), 1);
   onTex(pane.tex());
   return { close, focus: () => pane.focus(), copy: view.copy, insert: view.insert, ready: () => Boolean(pane.tex().trim()), label: start.editing ? "Update" : "Insert" };
 }

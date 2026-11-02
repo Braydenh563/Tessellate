@@ -132,7 +132,7 @@ def test_an_arrow_onto_equation_leaves_focus_on_the_tab() -> None:
     assert "const mount = ({ focus = true } = {})" in kit
     editor = _read("math-editor.js")
     assert "function mathEditorMount({ host, target = null, done = () => {}, note = null, onTex = () => {}, focus = true })" in editor
-    assert "if (focus) pane.start();" in editor
+    assert "if (focus) afterFrames(() => setTimeout(() => host.isConnected && pane.start()), 1);" in editor
 
 
 # --- one Tab stop per palette group (M5) -------------------------------------------

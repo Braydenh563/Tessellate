@@ -96,3 +96,17 @@ def test_the_companion_looks_for_a_popup_after_a_frame_has_drawn_the_press():
     block = src[i:i + 1400]
     assert "afterFrames(() => setTimeout(look), 1)" in block
     assert "setTimeout(afterPaint, 80)" in block and "setTimeout(afterPaint, 700)" in block
+
+
+def test_the_icon_picker_and_the_equation_pane_lay_out_after_the_frame_that_opened_them():
+    """Placing the picker and focusing its search forced the layout of every tile inside the
+    press (874ms at 4x); the Equation pane's first focus did the same (245ms)."""
+    src = frontend_text("icon-picker.js")
+    open_at = src.index("  draw();\n  document.body.appendChild(panel);")
+    block = src[open_at - 200:open_at + 900]
+    assert block.index("getBoundingClientRect") < block.index("draw();"), "the anchor is read while the layout is clean"
+    assert block.index("afterFrames(() => setTimeout(() => {") < block.index("placeHelpPopover(panel, anchor)")
+    assert block.index("placeHelpPopover(panel, anchor)") < block.index("search.focus({ preventScroll: true })")
+    assert 'panel.style.visibility = "hidden"' in block
+    math = frontend_text("math-editor.js")
+    assert "afterFrames(() => setTimeout(() => host.isConnected && pane.start()), 1)" in math
