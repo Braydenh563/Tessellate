@@ -46,6 +46,7 @@ import functools
 import math
 from datetime import datetime
 import re
+from collections import Counter
 from collections.abc import Iterator
 
 from tessellate import SUPPORT_EMAIL
@@ -336,10 +337,7 @@ _WORD = re.compile(r"[a-z0-9]+")
 _TYPO_MIN = 5
 
 #: How many topics each keyword belongs to, for the rarity weight below.
-_KEYWORD_TOPICS: dict[str, int] = {}
-for _topic in HELP_TOPICS:
-    for _keyword in set(_topic["keywords"]):
-        _KEYWORD_TOPICS[_keyword] = _KEYWORD_TOPICS.get(_keyword, 0) + 1
+_KEYWORD_TOPICS: dict[str, int] = Counter(k for t in HELP_TOPICS for k in set(t["keywords"]))
 
 #: Body vocabulary per topic, for tie-breaking only (see `_matching_topics`).
 _BODY_WORDS: dict[str, set[str]] = {
@@ -357,6 +355,7 @@ _STOP = frozenset(
 #: A runner-up worth showing scores at least this share of the best: below
 #: it, the second topic is noise the answer would be padded with.
 _RUNNER_UP_SHARE = 0.4
+_WORD_BAND = help_words.WordBand(HELP_TOPICS, _WORD, _STOP, _keyword_in)
 
 
 #: The asking frame of a how-to, taken off before the rest is read as a
@@ -450,9 +449,6 @@ def _repaired(question: str) -> str:
 _WHERE_FIND = re.compile(r"\bwhere (?:do|can|would|should|will) (?:i|you|we) (?:find|locate|get to)\b")
 
 
-_WORD_BAND = help_words.WordBand(HELP_TOPICS, _WORD, _STOP, _keyword_in)
-
-
 def _matching_topics(question: str) -> list[dict]:
     """Which `HELP_TOPICS` entries this question is about, best first.
 
@@ -496,8 +492,7 @@ def _matching_topics(question: str) -> list[dict]:
                 and any(len(w) >= _TYPO_MIN - 1 and _edit_distance_at_most_one(w, keyword) for w in words)
             ):
                 score += 0.8 * rarity
-        score = max(score, _WORD_BAND.score(words, lowered, topic["id"]))
-        if score > 0:
+        if (score := max(score, _WORD_BAND.score(words, lowered, topic["id"]))) > 0:
             scores[topic["id"]] = score
     if not scores:
         return _meaning_topics(question)
