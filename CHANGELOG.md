@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+Chat: "untag my gym note" (or "tag my gym note") with no tag named asks which tag, listing the note's own tags to take off, instead of falling through to a note search; a note with no tags says so (audit 1028 E55).
 Chat: an act's confirmation starts every sentence with a capital whichever wording the voice picks ("Created", not "Done. created"); the filled frame, not the caller, decides where the lower-case verb is allowed (audit 1028 E27).
 Chat: a worked answer no longer names an instruction word as missing from the notes ("numbers", "figures", "simply", "mark", "fits"): an order verb, a how-adverb and the generic words for a quantity are left out of the "none of these notes mention" line (audit 1028 E22).
 Chat: a date the person typed small ("12 november", "1 january") is said with its capital in a worked answer and in its "Read as" note (audit 1028 E21).
