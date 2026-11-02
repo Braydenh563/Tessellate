@@ -354,6 +354,16 @@ button.stats-tile.is-link:is(:focus-visible, :has(:focus-visible)) {
   min-width: 0;
 }
 
+/* The alarm's time opener and label field stand at the button's height too
+   (INBOX 1557; the timer row gets it from `.row.field-row`): measured 36.9
+   and 41.6px stacked above a 32px Set alarm. */
+.clock-alarm input[type="text"],
+.clock-alarm .select-opener {
+  min-height: max(var(--target-min), var(--button-min-h));
+  padding-block: 0;
+  margin-bottom: 0;
+}
+
 .clock-field {
   display: flex;
   flex-direction: column;

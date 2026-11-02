@@ -508,7 +508,7 @@ async function insertTemplate(template, caught) {
     presets.setAttribute("role", "group");
     presets.setAttribute("aria-label", "Start a timer of");
     for (const minutes of CLOCK_PRESETS) presets.append(smallButton(`${minutes} min`, `Start a ${minutes} minute timer`, () => startUtilityTimer(minutes)));
-    const form = clockEl("form", "row clock-length");
+    const form = clockEl("form", "row field-row clock-length");
     const input = clockEl("input");
     input.type = "text";
     input.autocomplete = "off";

@@ -6815,3 +6815,27 @@ def test_a_status_line_a_render_fills_is_never_collapsed_behind_a_question_mark(
     # collapsed into a '?' and left that '?' alone on its own line once emptied.
     body = frontend_text("settings.js").split("function collapseLongSettingHints(")[1].split("\n}\n")[0]
     assert 'label small.muted:not([id]), .setting-label small.muted:not([id])' in body
+
+
+def test_a_text_field_beside_a_button_is_one_row_at_one_control_height():
+    """The Clock's timer (the owner, 2026-11-02): the length field measured 41.6px
+    beside a 32px Start. A field and the button beside it are sized by two
+    unrelated rules, so a row that pairs them says the height and both take
+    it: `.row.field-row` (DESIGN.md, "A text field beside a button"). The one
+    expression is the button's own (`max(--target-min, --button-min-h)`), so a
+    coarse pointer lifts the field with the button, and the field zeroes its
+    vertical padding so the text centres in the shorter box. The Clock's
+    timer row uses it. scratchpad/ui-sweeps/inbox1557-field-button-height.js
+    measures the rows in the browser."""
+    css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    floor = "max(var(--target-min), var(--button-min-h))"
+    rules = {sel: body for sel, body in _rules(css) if ".row.field-row" in sel and "min-height" in body}
+    assert rules, "no `.row.field-row` height rule"
+    for body in rules.values():
+        assert f"min-height: {floor}" in body, body
+    names = " ".join(rules)
+    assert ".row.field-row > input" in names and ".row.field-row > button" in names and ".select-opener" in names
+    padding = next(body for sel, body in _rules(css) if sel.strip() == ".row.field-row > input")
+    assert "padding-block: 0" in padding
+    tools = frontend_text("utility-tools.js")
+    assert 'clockEl("form", "row field-row clock-length")' in tools
