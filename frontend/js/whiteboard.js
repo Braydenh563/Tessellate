@@ -19486,10 +19486,9 @@ async function wbCreateBlankBoard(name, kind) {
       //: `tree-right` placement happened to land it.** Reported: a new map's
       //: first node opened under the top bar. The root is real DOM now
       //: (`renderWhiteboardNow` just ran), so its true rendered box is
-      //: available for `wbCenterOn` (see `createConceptMap`'s matching fix
-      //: and its own comment for why a guessed coordinate cannot do this
-      //: instead: the visible canvas size is neither constant nor known
-      //: until it is actually measured).
+      //: available for `wbCenterOn` (a guessed coordinate cannot do this:
+      //: the visible canvas size is neither constant nor known until it is
+      //: actually measured).
       if (root) wbCenterOn(wbItemBBox("object", root), { animate: false });
       toast(`Mind map "${board.title}" created. Tab adds a branch, Enter one beside it. While you type a name, Enter is a new line and Ctrl+Enter adds the one beside it.`);
     } else {
@@ -22664,7 +22663,7 @@ function renderWhiteboard() {
       // was created *after* the last `loadEntries()` said "Loading…"
       // forever, because nothing here ever fetched it. Every path that
       // creates a note and immediately places it now refreshes that list
-      // first (`wbMindMapAddCard`, `createConceptMap`), which is the real
+      // first (`wbMindMapAddCard`), which is the real
       // fix; this branch is the honest fallback for the case that remains:
       // a card pointing at a note that has actually been deleted.
       card.append("div").attr("class", "wb-card-content muted").node().textContent =
@@ -25302,101 +25301,6 @@ document.getElementById("wb-gestures-dismiss")?.addEventListener("click", () => 
   wbGesturesDismissed = true;
   document.getElementById("wb-gestures")?.classList.add("hidden");
 });
-
-/** A new concept map: a board that opens with a core idea on it, selected
- *  and ready to branch from.
- *
- *  Asked for directly: "I want ways to make custom knowledge graphs that are
- *  like mindmaps where I can add and remove nodes, move them around, change
- *  how they connect and reasons, and just make my own thought process map",
- *  and on where it belongs, "I should be able to make and manage map graphs
- *  (maybe in library??)".
- *
- *  **Deliberately not a new canvas.** Everything a concept map needs already
- *  exists on the whiteboard, freely placed cards whose positions persist, a
- *  link tool, `Tab` for a new branch off the selected card and `Enter` for a
- *  sibling, "Arrange as mind map" to re-tidy, pan/zoom, undo, spaces,
- *  export. A parallel implementation would have been a second set of all of
- *  that, immediately behind on every fix either one got.
- *
- *  So what this adds is the three things that were actually missing, and
- *  they are all about *entry*:
- *
- *  1. **A name.** Nothing in the app said the words "concept map", so the
- *     feature was reachable only through a button called "New board" on a
- *     tab called Whiteboards. A feature nobody can name is a feature nobody
- *     finds: reported as missing while fully built.
- *  2. **A root.** An empty board is a blank rectangle; `Tab` and `Enter` do
- *     nothing until something is selected, so the one gesture that makes
- *     this a mind map was unreachable from the state the board opens in.
- *  3. **The gestures, said out loud, once**, at the moment they apply.
- *
- *  The map is a board, so a concept map exported to the whiteboard is a
- *  concept map: which closes the "maybe with a way to export that into a
- *  visual diagram on the whiteboard" half of the ask by construction rather
- *  than by building an exporter.
- */
-async function createConceptMap() {
-  const name = await promptDialog("What is this map about?", "");
-  if (!name || !name.trim()) return;
-  const title = name.trim();
-  try {
-    const board = await apiJson("/whiteboard/boards", {
-      method: "POST",
-      body: JSON.stringify({ name: title }),
-    });
-    // The root idea is a real note, the same as every other card on a board.
-    // That is the app's own premise rather than a shortcut: an idea here *is*
-    // a short note, which is what lets a map node carry tags, links, search
-    // and everything else a note has. `defer_filing` keeps the AI's
-    // categorisation off the critical path, the map should open now.
-    const root = await apiJson("/entries", {
-      method: "POST",
-      body: JSON.stringify({ content: `# ${title}`, tags: [], defer_filing: true, map_topic: true }),
-    });
-    await apiJson("/whiteboard/nodes", {
-      method: "POST",
-      body: JSON.stringify({
-        // A board-space coordinate the root can call home; the view is
-        // centred on it below once the canvas has actually rendered, so
-        // this number is arbitrary rather than a claim about the viewport.
-        entry_id: root.id,
-        board_id: board.id,
-        x: 400,
-        y: 260,
-        z: 1,
-      }),
-    });
-    window.wbLastCreatedBoard = board;
-    // Same reason as `wbMindMapAddCard`: the root card reads its text out of
-    // `allEntries`, and this note is newer than the last fetch.
-    await refreshEntries([root.id]);
-    await openWhiteboardBoard(board.id);
-    wbBoardMadeStep(board);
-    // Selected, because `Tab`/`Enter` act on the selection and an unselected
-    // root leaves the map's whole point one undiscoverable click away.
-    const placed = wbState.nodes.find((n) => n.entry_id === root.id);
-    if (placed) selectWbItem("node", placed.id);
-    //: **Centred on the root, not on a guessed coordinate.** Reported: a new
-    //: map's first node opened under the top bar rather than in the middle
-    //: of the canvas. The node was placed at a fixed (400, 260) on the
-    //: (correct, sound) theory that an unzoomed, unpanned view puts the
-    //: canvas origin at the container's own top-left, so (400, 260) would
-    //: read as "the middle" - but that assumed a container size that was
-    //: never measured, and the actual visible canvas (the window, minus the
-    //: top bar, the sidebar and the tool rail) is neither the number this
-    //: guessed nor a constant: `wbCenterOn` already exists for exactly this
-    //: (the navigator's own "jump to a match" uses it), reading the
-    //: container's real `getBoundingClientRect()` the way the guess did not.
-    //: Not animated: there is nothing to animate *from*, the board has just
-    //: opened.
-    if (placed) wbCenterOn(wbItemBBox("node", placed), { animate: false });
-    toast(`“${title}”: Tab adds a branch, Enter one beside it. While you type a name, Enter is a new line and Ctrl+Enter adds the one beside it.`);
-  } catch (err) {
-    toast(err.message || voiceLine("failed", { what: "create that map" }), true);
-  }
-}
-window.createConceptMap = createConceptMap;
 
 /** Full screen for the board, asked for directly ("the whiteboard
  *  definately needs a fullscreen mode because it feels too squished").

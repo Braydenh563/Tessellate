@@ -56,7 +56,6 @@ ALLOWED = {
     "quick-note.js:saveChatAnswerAsNote": _NEW,
     "selection.js:saveSelectionAsNote": _NEW,
     "web-clip.js:saveWebPageAsNote": _NEW,
-    "whiteboard.js:createConceptMap": _NEW,
 }
 
 SINKS = [

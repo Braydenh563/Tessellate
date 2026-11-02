@@ -347,8 +347,7 @@ def duplicate_board(board_id: int, db: Session = Depends(get_session)) -> BoardO
     template for the next one, and without this the only way to reuse a shape
     is to rebuild it card by card.
 
-    **A card is a real note**, which is the app's own premise (see
-    `createConceptMap`) and the reason this is not a shallow row copy: the
+    **A card is a real note**, which is the app's own premise and the reason this is not a shallow row copy: the
     duplicate gets *new* notes with the same text, so editing a card on the
     copy cannot rewrite the original's. The alternative: pointing both boards
     at one set of notes, looks identical the moment it is made and diverges

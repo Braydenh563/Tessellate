@@ -2287,7 +2287,7 @@ const LIBRARY_CREATE_BY_KIND = {
   // not have was a *name*, nothing in the app said "concept map", so the
   // one feature the user was asking for was sitting behind a button called
   // "New board" on a tab called Whiteboards, which is why they reported it
-  // missing. See `createConceptMap` for what the entry point adds on top.
+  // missing.
   //
   // It also answers the deferred half of the ask, "maybe with a way to
   // export that into a visual diagram on the whiteboard", by construction:

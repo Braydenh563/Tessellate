@@ -100,7 +100,7 @@ function featureCatalog() {
     ]},
     // Boards and maps were in the same position as Documents: built, reached
     // from the Library's own sub-tab, and mentioned nowhere in the list of
-    // what the app does. A map is a board (see `createConceptMap`), so the two
+    // what the app does. A map is a board, so the two
     // share a group rather than pretending to be separate canvases.
     { group: "Boards, maps & drawing", items: [
       { name: "New board", desc: "A whiteboard of cards, drawings, images and links you arrange yourself.", reveal: "board-new" },
