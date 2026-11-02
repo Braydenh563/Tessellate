@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7558, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8470, test files 1843, tests 15736, plan headings 990, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7558, frontend ids 2633, CSS sections 517, backend routes 640, backend modules 8470, test files 1844, tests 15737, plan headings 990, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7558)
 
@@ -2770,13 +2770,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `chatTooLong` | frontend/js/chat-edit.js:214 |
-| `confirmRerun` | frontend/js/chat-edit.js:201 |
+| `chatTooLong` | frontend/js/chat-edit.js:217 |
+| `confirmRerun` | frontend/js/chat-edit.js:204 |
 | `editAndResend` | frontend/js/chat-edit.js:19 |
-| `questionForBubble` | frontend/js/chat-edit.js:257 |
-| `regenerateFrom` | frontend/js/chat-edit.js:166 |
-| `regenerateLast` | frontend/js/chat-edit.js:235 |
-| `showCopyFallback` | frontend/js/chat-edit.js:120 |
+| `questionForBubble` | frontend/js/chat-edit.js:260 |
+| `regenerateFrom` | frontend/js/chat-edit.js:169 |
+| `regenerateLast` | frontend/js/chat-edit.js:238 |
+| `showCopyFallback` | frontend/js/chat-edit.js:123 |
 
 ### frontend/js/chat-private.js (5)
 
@@ -2821,23 +2821,23 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `addBubble` | frontend/js/chat-turn.js:2374 |
 | `agentTimeline` | frontend/js/chat-turn.js:1197 |
 | `appendRunResumeControls` | frontend/js/chat-turn.js:2268 |
-| `assistantMessageActions` | frontend/js/chat-turn.js:2467 |
+| `assistantMessageActions` | frontend/js/chat-turn.js:2469 |
 | `chatAttachmentStrip` | frontend/js/chat-turn.js:2143 |
 | `chatSendTurn` | frontend/js/chat-turn.js:11 |
 | `commitStagedImages` | frontend/js/chat-turn.js:2046 |
-| `continueRunControls` | frontend/js/chat-turn.js:2616 |
-| `deleteChatTurn` | frontend/js/chat-turn.js:2566 |
-| `forkFromBubble` | frontend/js/chat-turn.js:2661 |
-| `manualPauseControls` | frontend/js/chat-turn.js:2690 |
-| `markFollowup` | frontend/js/chat-turn.js:2716 |
+| `continueRunControls` | frontend/js/chat-turn.js:2622 |
+| `deleteChatTurn` | frontend/js/chat-turn.js:2568 |
+| `forkFromBubble` | frontend/js/chat-turn.js:2667 |
+| `manualPauseControls` | frontend/js/chat-turn.js:2696 |
+| `markFollowup` | frontend/js/chat-turn.js:2722 |
 | `mountChatTimer` | frontend/js/chat-turn.js:2095 |
 | `offerFollowups` | frontend/js/chat-turn.js:1981 |
 | `offerReminder` | frontend/js/chat-turn.js:1920 |
 | `paintChatTimer` | frontend/js/chat-turn.js:2082 |
-| `removeChatBubble` | frontend/js/chat-turn.js:2740 |
+| `removeChatBubble` | frontend/js/chat-turn.js:2746 |
 | `renderAgentQuestion` | frontend/js/chat-turn.js:1708 |
 | `renderMemoryProposal` | frontend/js/chat-turn.js:1792 |
-| `renderRecordsDetails` | frontend/js/chat-turn.js:2526 |
+| `renderRecordsDetails` | frontend/js/chat-turn.js:2528 |
 | `revalidateSelection` | frontend/js/chat-turn.js:1864 |
 | `saveFollowups` | frontend/js/chat-turn.js:2067 |
 | `selectionContextBlock` | frontend/js/chat-turn.js:2019 |
@@ -23255,7 +23255,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15736)
+## Tests (15737)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23468,6 +23468,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_chat_tab_has_ai9.py | 2 |
 | tests/test_chat_times.py | 8 |
 | tests/test_chat_transcript.py | 28 |
+| tests/test_chat_ui_a28u.py | 1 |
 | tests/test_chat_vision.py | 9 |
 | tests/test_chat_weather_1027.py | 4 |
 | tests/test_cheap_animations.py | 6 |

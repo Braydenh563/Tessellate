@@ -2379,6 +2379,8 @@ function addBubble(role, text, attachments = null) {
   //: The words as sent, so ArrowUp in an empty composer can reopen the last
   //: question for editing without reading them back out of the rendered DOM.
   if (role === "user" && typeof text === "string") bubble.dataset.sent = text;
+  //: The saved turn this question will be (E49): chat-edit.js cuts from it.
+  if (role === "user") bubble.dataset.turn = String(chatConv.turns.length);
 
   const label = document.createElement("div");
   label.className = "msg-role";
@@ -2589,6 +2591,10 @@ async function deleteChatTurn(assistantBubble) {
   }
   // The user bubble is the one immediately before this assistant bubble.
   const userBubble = assistantBubble.previousElementSibling;
+  //: Later questions move up one saved turn (E49).
+  for (let node = assistantBubble.nextElementSibling; node; node = node.nextElementSibling) {
+    if (node.dataset.turn) node.dataset.turn = String(Number(node.dataset.turn) - 1);
+  }
   if (userBubble && userBubble.classList.contains("user")) dropChatBubble(userBubble);
   assistantBubble.remove();
   chatConv.turns.splice(index, 1);
