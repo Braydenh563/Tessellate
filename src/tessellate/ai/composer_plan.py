@@ -235,10 +235,16 @@ def lookback(question: str, today: date) -> bool:
 def _reminder_events(ctx: Ctx, start: date, end: date) -> tuple[list[Event], list[Event]]:
     coming: list[Event] = []
     overdue: list[Event] = []
+    seen: set[tuple[str, datetime]] = set()
     for r in ctx.reminders:
         due = r.get("due_at")
         if not isinstance(due, datetime) or r.get("done"):
             continue
+        #: The same words at the same minute are one line (audit 1028 E29).
+        key = (" ".join(str(r.get("text") or "").split()).casefold(), due.replace(second=0, microsecond=0, tzinfo=None))
+        if key in seen:
+            continue
+        seen.add(key)
         at = f"{due:%H:%M}"
         ev = Event(due.date(), str(r.get("text") or "").strip(), "reminder", r.get("entry_id"), "", at, str(r.get("priority") or ""))
         if due.date() < ctx.now.date():

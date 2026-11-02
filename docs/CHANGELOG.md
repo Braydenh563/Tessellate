@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat without a model: the same reminder (same words, same time) is no longer made twice or listed twice (audit 1028 E29). Asking again says "You already have a reminder ..." with nothing to confirm, the set-reminder tool returns the one that exists, and what is due lists identical reminders once; the same words at another time still offer Add another.
 - Chat without a model: "create a note called \"Shopping\" with milk, eggs and bread" makes a note titled Shopping with the words as its body (audit 1028 E25); it kept the whole phrase as the body. Called, titled or named, quoted or not, joined by with, saying, containing, including, that says or a colon.
 - Chat without a model: the composer no longer says what the notes do not (audit 1028 E18). An instruction line is reported as "the same note adds: ..." instead of "you told yourself to" or "you reminded yourself to", and the quote lead-ins "This was your thought:", "You captured this:" and "You documented this:" are gone; only note words and measured values appear.
 - Chat without a model: a checklist line done in a later note now reads done in the note's checklist and leaves "what is still open", as "is it still on my list" already said (Fable eye F15).

@@ -1382,6 +1382,9 @@ def _plan_reminder(session: Session, parsed: dict, note_ids: list[int] | None) -
         arguments["note_id"] = note.id
     steps = [{"name": "set_reminder", "arguments": arguments}]
     card = _card(label, steps, items=[f"#{note.id} {note_title(note.content, size=48)}"] if note is not None else None)
+    if _open_reminder_at(session, parsed["text"], due):
+        #: The same words at the same time exist: said, with nothing to confirm (audit 1028 E29).
+        return {"line": f"You already have a reminder “{_clip(parsed['text'], 60)}” {when_said}."}
     if _has_open_reminder(session, parsed["text"]):
         return _add_another(f"a reminder “{_clip(parsed['text'], 60)}”", card)
     return {"line": f"{label}.", "card": card, "run": True}
@@ -1399,6 +1402,16 @@ def _has_note_saying(session: Session, content: str) -> bool:
     wanted = " ".join(content.split()).casefold()
     rows = session.scalars(select(Entry.content).where(Entry.deleted_at.is_(None), Entry.is_private.is_(False)).order_by(Entry.id.desc()).limit(200)).all()
     return any(" ".join((c or "").lstrip("# ").split()).casefold() == wanted for c in rows)
+
+
+def _open_reminder_at(session: Session, text: str, due) -> bool:  # noqa: ANN001
+    """Whether a waiting reminder says `text` at the same minute as `due`."""
+    from tessellate.core.database import Reminder
+
+    wanted = " ".join(text.split()).casefold()
+    rows = session.execute(select(Reminder.text, Reminder.due_at).where(Reminder.done.is_(False), Reminder.deleted_at.is_(None)).limit(500)).all()
+    minute = due.replace(second=0, microsecond=0, tzinfo=None)
+    return any(" ".join((t or "").split()).casefold() == wanted and d is not None and d.replace(second=0, microsecond=0, tzinfo=None) == minute for t, d in rows)
 
 
 def _has_open_reminder(session: Session, text: str) -> bool:
@@ -1786,7 +1799,7 @@ def _step_undo(name: str, args: dict, result: dict):  # noqa: ANN202
     """The step that reverses one that ran: the tool's own, or the one this
     module knows for a reminder, a completed task and a link."""
     step_undo = result.get("undo")
-    if name == "set_reminder" and result.get("id") is not None:
+    if name == "set_reminder" and result.get("id") is not None and not result.get("existing"):
         step_undo = {"tool": "bin_reminder", "arguments": {"reminder_id": result["id"]}}
     if name == "complete_reminder":
         step_undo = task_acts.undo_step(name, args)
