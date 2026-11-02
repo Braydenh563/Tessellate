@@ -185,6 +185,82 @@ def test_dx10_every_reader_asks_the_one_function():
     assert "readMinutes: total.minutes" in PROSE and "/ 238" not in PROSE
 
 
+# DX14, DX15 ----------------------------------------------------------------
+
+
+def _list_helpers() -> str:
+    return (
+        _slice(PROSE, "function docListEnter(line) {", "\n}\n")
+        + _slice(PROSE, "docListEnter.backspace = ", ";\n")
+        + _slice(PROSE, "docListEnter.renumber = ", "\n};\n")
+    )
+
+
+@node
+def test_dx14_backspace_on_an_empty_list_item_removes_the_marker_and_its_indent():
+    out = _node(
+        """({
+          bullet: docListEnter.backspace("- "),
+          nested: docListEnter.backspace("    - "),
+          numbered: docListEnter.backspace("12. "),
+          task: docListEnter.backspace("- [ ] "),
+          text: docListEnter.backspace("- one"),
+          quote: docListEnter.backspace("> "),
+          plain: docListEnter.backspace("hello"),
+        })""",
+        _list_helpers(),
+    )
+    assert out["bullet"] == out["nested"] == out["numbered"] == out["task"] == ""
+    assert out["text"] is None and out["quote"] is None and out["plain"] is None
+
+
+@node
+def test_dx15_an_ordered_list_is_numbered_again_around_an_edit():
+    out = _node(
+        """(() => {
+          const apply = (text, touched) => {
+            const lines = text.split("\\n");
+            for (const [i, from, to, insert] of docListEnter.renumber(lines, touched)) lines[i] = lines[i].slice(0, from) + insert + lines[i].slice(to);
+            return lines.join("\\n");
+          };
+          return {
+            gap: apply("1. a\\n3. c\\n4. d", [0, 1]),
+            keepsStart: apply("3. a\\n5. c\\n6. d", [1]),
+            lazy: apply("1. a\\n1. b\\n1. c", [1]),
+            single: apply("4. only", [0]),
+            nested: apply("1. a\\n   1. x\\n   3. y\\n3. b", [3]),
+            nestedRun: apply("1. a\\n   1. x\\n   3. y\\n3. b", [2]),
+            blank: apply("1. a\\n\\n3. b", [2]),
+            twoBlanks: apply("1. a\\n\\n\\n3. b", [3]),
+            other: apply("1. a\\n3) b", [0, 1]),
+            fence: apply("1. a\\n```\\n1. x\\n3. y\\n```", [3]),
+            bullets: apply("- a\\n- b", [0, 1]),
+            text: apply("1. a\\nplain\\n3. b", [0]),
+          };
+        })()""",
+        _list_helpers(),
+    )
+    assert out["gap"] == "1. a\n2. c\n3. d"
+    assert out["keepsStart"] == "3. a\n4. c\n5. d"
+    assert out["lazy"] == "1. a\n1. b\n1. c", "a list numbered 1 throughout is left alone"
+    assert out["single"] == "4. only"
+    assert out["nested"] == "1. a\n   1. x\n   3. y\n2. b", "the outer run counts past its nested list"
+    assert out["nestedRun"] == "1. a\n   1. x\n   2. y\n3. b"
+    assert out["blank"] == "1. a\n\n2. b", "a loose list is one list"
+    assert out["twoBlanks"] == "1. a\n\n\n3. b", "two blank lines end it"
+    assert out["other"] == "1. a\n3) b", "another delimiter is another list"
+    assert out["fence"] == "1. a\n```\n1. x\n3. y\n```", "code is not a list"
+    assert out["bullets"] == "- a\n- b"
+    assert out["text"] == "1. a\nplain\n3. b", "a paragraph ends the list"
+
+
+def test_dx14_dx15_are_wired_into_the_editor():
+    assert "docListEnter.backspace(line.text) === \"\"" in PROSE
+    assert "CM.state.EditorState.transactionFilter.of((tr) => {\n    if (!tr.docChanged || tr.newDoc.lines === tr.startState.doc.lines) return tr;" in PROSE
+    assert "sequential: true" in PROSE
+    assert "docProseGhostPlugin(CM), docProsePairKeymap(CM), docListFenceExtensions(CM, true), renumber]" in PROSE
+
+
 # DX11 ----------------------------------------------------------------------
 
 UNDO = (JS / "undo-store.js").read_text(encoding="utf-8")

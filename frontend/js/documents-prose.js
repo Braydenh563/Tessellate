@@ -1858,6 +1858,62 @@ function docListEnter(line) {
   const step = indent.length >= 4 && indent.length % 4 === 0 ? 4 : 2;
   return line.slice(Math.min(step, indent.length));
 }
+//: **Backspace on an empty list item removes the marker and its indent**
+//: (DX14, audit 1102), as Notion and Obsidian do. The markdown keymap's own
+//: Backspace swapped the marker for spaces to keep the text aligned, which left
+//: `- one` over a line of two spaces. Returns the line's new text ("") or null
+//: when the line is not an empty list item (a quote line is left to the keymap).
+docListEnter.backspace = (line) => (/^(\s*)(?:[-*+]|\d{1,9}[.)])(?: \[[ xX]\])? ?$/.test(line) ? "" : null);
+//: **An ordered list is numbered again after a line comes or goes** (DX15,
+//: audit 1102): deleting item 2 left `1. a`, `3. c`, and Live showed "3.". The
+//: items of a run (one indent and one delimiter, with deeper lines and single
+//: blank lines between) are counted from the run's first number. A run whose
+//: numbers are all equal (`1.` on every line, the lazy way) and one inside a code
+//: fence are left alone. `lines` is the document's lines and `touched` the
+//: 0-based lines an edit changed; returns `[line, from, to, digits]` edits.
+docListEnter.renumber = (lines, touched) => {
+  const item = (text) => /^(\s*)(\d{1,9})([.)])\s/.exec(text);
+  const fenced = new Array(lines.length).fill(false);
+  let open = false;
+  lines.forEach((text, i) => {
+    if (/^\s*(?:`{3,}|~{3,})/.test(text)) open = !open;
+    fenced[i] = open;
+  });
+  const edits = [];
+  const seen = new Set();
+  for (const at of touched) {
+    const here = at >= 0 && at < lines.length && !fenced[at] ? item(lines[at]) : null;
+    if (!here || seen.has(at)) continue;
+    const indent = here[1].length;
+    const member = (i) => {
+      const m = item(lines[i]);
+      return m && m[1].length === indent && m[3] === here[3] && !fenced[i];
+    };
+    const members = [at];
+    for (const step of [-1, 1]) {
+      let blank = 0;
+      for (let i = at + step; i >= 0 && i < lines.length && !fenced[i]; i += step) {
+        const text = lines[i];
+        if (member(i)) {
+          members[step < 0 ? "unshift" : "push"](i);
+          blank = 0;
+        } else if (!text.trim()) {
+          if ((blank += 1) > 1) break;
+        } else if (/^\s*/.exec(text)[0].length > indent) {
+          blank = 0;
+        } else break;
+      }
+    }
+    members.forEach((i) => seen.add(i));
+    const numbers = members.map((i) => Number(item(lines[i])[2]));
+    if (numbers.every((n) => n === numbers[0])) continue;
+    members.forEach((i, k) => {
+      const m = item(lines[i]);
+      if (numbers[k] !== numbers[0] + k) edits.push([i, m[1].length, m[1].length + m[2].length, String(numbers[0] + k)]);
+    });
+  }
+  return edits;
+};
 //: **Ending a list leaves the blank line after it** (dog2 item 6). The empty
 //: item became an empty line directly under the last item, so a heading or a
 //: fence typed next sat flush against the list. `next` is `docListEnter`'s
@@ -2067,6 +2123,11 @@ function docProsePairKeymap(CM, anyHost = false) {
       if (!range.empty || view.state.selection.ranges.length > 1) return false;
       const line = view.state.doc.lineAt(range.head);
       const col = range.head - line.from;
+      //: An empty list item goes whole (DX14), in markdown only and never in a fence.
+      if (range.head === line.to && line.text && (anyHost || docFileType().ext === "md") && docListEnter.backspace(line.text) === "" && !docInCodeAt(CM, view.state, range.head, anyHost)) {
+        view.dispatch({ changes: { from: line.from, to: line.to }, selection: { anchor: line.from }, userEvent: "delete.backward" });
+        return true;
+      }
       const n = docPairBackspace(line.text.slice(0, col), line.text.slice(col));
       if (!n) return false;
       view.dispatch({
@@ -2123,7 +2184,27 @@ function docListFenceExtensions(CM, inDocument) {
 
 //: Everything above, as one set of extensions for `docProseToolExtensions`.
 function docProseFillExtensions(CM) {
-  return [docProseInputHandler(CM), docProseGhostPlugin(CM), docProsePairKeymap(CM), docListFenceExtensions(CM, true)];
+  //: Appended to the same transaction as a sequential spec, so one Ctrl+Z
+  //: undoes the edit and the renumbering together (DX15,
+  //: `docListEnter.renumber`). A filter, not an extender: an extender's
+  //: changes are dropped by the library.
+  const renumber = CM.state.EditorState.transactionFilter.of((tr) => {
+    if (!tr.docChanged || tr.newDoc.lines === tr.startState.doc.lines) return tr;
+    if (!["input", "delete", "move"].some((event) => tr.isUserEvent(event))) return tr;
+    if (!docProseFillOn() || docFileType().ext !== "md") return tr;
+    const doc = tr.newDoc;
+    const touched = new Set();
+    tr.changes.iterChangedRanges((_a, _b, from, to) => {
+      for (let n = doc.lineAt(from).number - 1; n <= doc.lineAt(to).number + 1; n += 1) touched.add(n - 1);
+    });
+    const near = [...touched].some((n) => n >= 0 && n < doc.lines && /^\s*\d{1,9}[.)]\s/.test(doc.line(n + 1).text));
+    if (!near) return tr;
+    const edits = docListEnter.renumber(docStr(doc).split("\n"), [...touched]);
+    if (!edits.length) return tr;
+    const at = (line) => doc.line(line + 1).from;
+    return [tr, { changes: edits.map(([line, from, to, insert]) => ({ from: at(line) + from, to: at(line) + to, insert })), sequential: true }];
+  });
+  return [docProseInputHandler(CM), docProseGhostPlugin(CM), docProsePairKeymap(CM), docListFenceExtensions(CM, true), renumber];
 }
 
 // -----------------------------------------------------------------------------
