@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7558, frontend ids 2642, CSS sections 517, backend routes 640, backend modules 8487, test files 1867, tests 15872, plan headings 991, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7558, frontend ids 2642, CSS sections 517, backend routes 640, backend modules 8487, test files 1868, tests 15874, plan headings 991, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7558)
 
@@ -14727,16 +14727,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_frame_stems` | src/tessellate/ai/composer_unfound.py:118 |
-| `_is_unfound` | src/tessellate/ai/composer_unfound.py:123 |
-| `_missing` | src/tessellate/ai/composer_unfound.py:146 |
+| `_frame_stems` | src/tessellate/ai/composer_unfound.py:123 |
+| `_is_unfound` | src/tessellate/ai/composer_unfound.py:128 |
+| `_missing` | src/tessellate/ai/composer_unfound.py:151 |
 | `_one_edit` | src/tessellate/ai/composer_unfound.py:26 |
-| `_quoted_words` | src/tessellate/ai/composer_unfound.py:72 |
-| `_said_by_shape` | src/tessellate/ai/composer_unfound.py:90 |
-| `_says_every` | src/tessellate/ai/composer_unfound.py:84 |
+| `_quoted_words` | src/tessellate/ai/composer_unfound.py:73 |
+| `_said_by_shape` | src/tessellate/ai/composer_unfound.py:91 |
+| `_says_every` | src/tessellate/ai/composer_unfound.py:85 |
 | `_seen` | src/tessellate/ai/composer_unfound.py:38 |
-| `_shape_stems` | src/tessellate/ai/composer_unfound.py:80 |
-| `_unfound_terms` | src/tessellate/ai/composer_unfound.py:133 |
+| `_shape_stems` | src/tessellate/ai/composer_unfound.py:81 |
+| `_unfound_terms` | src/tessellate/ai/composer_unfound.py:138 |
 
 ### src/tessellate/ai/composer_unplaced.py (12)
 
@@ -23286,7 +23286,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15872)
+## Tests (15874)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23379,6 +23379,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_attachment_rename_route.py | 4 |
 | tests/test_audio_section.py | 4 |
 | tests/test_audit1028_e21.py | 1 |
+| tests/test_audit1028_e22.py | 2 |
 | tests/test_audit_1028_a28s.py | 9 |
 | tests/test_audit_1028_e_rows.py | 5 |
 | tests/test_audit_1028_e_rows_b.py | 6 |

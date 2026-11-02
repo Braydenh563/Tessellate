@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+Chat: a worked answer no longer names an instruction word as missing from the notes ("numbers", "figures", "simply", "mark", "fits"): an order verb, a how-adverb and the generic words for a quantity are left out of the "none of these notes mention" line (audit 1028 E22).
 Chat: a date the person typed small ("12 november", "1 january") is said with its capital in a worked answer and in its "Read as" note (audit 1028 E21).
 - The block-based Mermaid diagram builder (INBOX 1546) is designed in DOCUMENTS_PLAN.md ("1546 design": the model, two-way sync, surfaces, interaction, budgets and five build rows); DOCUMENTS Phase 7's record moved to HISTORY.md.
 - Settings, Search and index: once the model is downloaded the switch reads "Repair search by meaning by itself" instead of offering a download, and a model the app cannot fetch is marked "Through Ollama" (INBOX 1533).
