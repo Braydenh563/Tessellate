@@ -464,6 +464,14 @@ def plan_snooze(session: Session, parsed: dict, card, title, said_when, now=None
 OWN_STEPS = frozenset({"restore_reminder", "snooze_reminder"})
 
 
+def _named(session: Session, reminder_id: int) -> str:
+    """A reminder by its words, never its number (audit 1028 E64)."""
+    from tessellate.core.database import Reminder
+
+    held = session.get(Reminder, reminder_id)
+    return f"“{held.text[:60]}”" if held is not None and held.text else "that reminder"
+
+
 def run_step(session: Session, name: str, args: dict) -> dict:
     """Run `restore_reminder` (Undo of a cancel) or `snooze_reminder` through
     the reminders' own routes: {"label", "undo"}, or {"error"}."""
@@ -477,7 +485,7 @@ def run_step(session: Session, name: str, args: dict) -> dict:
     try:
         if name == "restore_reminder":
             rr.restore_reminder(reminder_id, session)
-            return {"label": f"Restored reminder #{reminder_id}", "undo": {"tool": "bin_reminder", "arguments": {"reminder_id": reminder_id}}}
+            return {"label": f"Restored reminder {_named(session, reminder_id)}", "undo": {"tool": "bin_reminder", "arguments": {"reminder_id": reminder_id}}}
         #: restore=True: the time was checked against the person's clock when
         #: planned, and Undo's old time is usually past (see ReminderUpdate).
         try:
@@ -488,7 +496,7 @@ def run_step(session: Session, name: str, args: dict) -> dict:
     except HTTPException as exc:
         return {"error": str(exc.detail)}
     back = {"reminder_id": reminder_id, "due_at": args["was"], "was": args["due_at"]} if args.get("was") else None
-    return {"label": f"Snoozed reminder #{reminder_id}", "undo": {"tool": "snooze_reminder", "arguments": back} if back else None}
+    return {"label": f"Snoozed reminder {_named(session, reminder_id)}", "undo": {"tool": "snooze_reminder", "arguments": back} if back else None}
 
 
 def undo_step(name: str, args: dict) -> dict | None:

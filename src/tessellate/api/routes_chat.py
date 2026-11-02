@@ -200,7 +200,8 @@ def _worked_out(question: str):
     """**Worked out, like a count** (CHAT_PLAN decision 41): a sum, a
     conversion, the time. Its sentence is exact and needs no model, so it
     travels the counted answer's road: no retrieval, said as it is.
-    Translating is a model's job when one runs: that one is chat."""
+    Translating and writing (`utilities.GENERATIVE_VERBS`) are a model's job
+    when one runs: those are chat."""
     from tessellate.ai import utilities
 
     kind = utilities.kind_of(question)
@@ -211,7 +212,7 @@ def _worked_out(question: str):
         #: from the composer with a model up and Web on).
         return intent.NOTES, None
     worked = None
-    if kind != "translate" or not deps.get_ollama().is_running():
+    if kind not in ("translate", "generate") or not deps.get_ollama().is_running():
         now = user_now(deps.get_config())
         worked = composer.compose(question, [], today=now.date(), now=now.replace(tzinfo=None))
     if worked and worked["shape"] == "utility":
@@ -2133,7 +2134,7 @@ def _asked(body: ChatRequest, session: Session, skill: dict | None) -> tuple:
     paste); the model is given all of it (`_in_full`)."""
     head, tail = body.question[: composer.PLAN_CHARS], body.question[composer.PLAN_CHARS :]
     #: Filler ("errrmmm. hi") is read past before anything reads it (INBOX 1485).
-    question, address = _address(skill["question"] if skill else question_noise.media_kind(question_noise.drop_filler(question_noise.tidy(head))) or head, session, skill)
+    question, address = _address(skill["question"] if skill else question_noise.media_kind(question_noise.new_notes_as_newest(question_noise.drop_filler(question_noise.tidy(head)))) or head, session, skill)
     return question, address, None if skill else (body.raw_question or (question + tail if tail else None))
 
 

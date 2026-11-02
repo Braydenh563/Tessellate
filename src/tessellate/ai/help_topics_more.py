@@ -591,7 +591,7 @@ MORE_TOPICS: list[dict] = [
             "palette (Activity). Its two tabs carry a glyph and a count, and each part is a card "
             "headed by a glyph and a title. Its Agent runs tab lists each run this session "
             "with its steps, and the log is in its menu. Stop the model, in the "
-            "menu and in Settings, Models beside Use this model, stops any answer "
+            "menu and in Settings, Models, stops any answer "
             "and unloads the model from memory (Ollama drops it at once; the chat's Stop reaches the model too); a server "
             "this app did not start keeps its own model, and the message says so."
         ),
@@ -1497,6 +1497,22 @@ MORE_TOPICS.extend(
             "badge": {"label": "Chat", "tab": "chat"},
         },
         {
+            "id": "chat-list",
+            "keywords": (
+                "search chats", "search my chats", "find a chat", "find an old chat", "old chats",
+                "saved chats", "chat list", "chats list", "chat sidebar", "sort chats", "pin a chat",
+            ),
+            "body": (
+                "The Chats list beside the chat shows your last eight saved chats. "
+                "The search box above it finds a chat by its title or by anything "
+                "said in it and lists up to 32 matches. Sort "
+                "puts them Recent, Most turns, Most tokens or A to Z, and a pinned "
+                "chat stays first. Each chat's menu renames, pins, archives or "
+                "deletes it. All in Library opens every chat, with the full search."
+            ),
+            "badge": {"label": "Chat", "tab": "chat"},
+        },
+        {
             "id": "chat-attach-cards",
             "keywords": (
                 "attached note", "attached a note", "attach a note to chat", "note card in chat",
@@ -2238,7 +2254,9 @@ MORE_TOPICS.extend(
                 "no Ctrl or Alt. A toast steps aside, fading and letting clicks "
                 "through, while the focused control is under it. For a screen "
                 "reader every tab has one main landmark, editors and panels have "
-                "names, and resize grips say how wide a panel is. Settings, "
+                "names, and resize grips say how wide a panel is. After Notes or "
+                "the Library loads or you filter it, one polite line says how "
+                "many are shown, and the window title follows the view. Settings, "
                 "Appearance has High contrast, Motion, Interface animations, "
                 "Text size and Zoom."
             ),
@@ -2668,6 +2686,7 @@ TOPIC_META: dict[str, dict] = {
     "attachments": {"title": "Pictures and files in a note", "path": "Capture, or a note being edited"},
     "chat-attach-cards": {"title": "Notes and files attached to a chat message", "path": "Chat, above the box and above a sent message"},
     "chat-model-picker": {"title": "Choosing the model for a box", "path": "Chat, Ask and Writing, beside the mode buttons"},
+    "chat-list": {"title": "Finding and sorting your saved chats", "path": "Chat tab, the Chats list"},
     "filing": {"title": "How a note is filed", "path": "A note's card, beside its category"},
     "suggested-tags": {"title": "Suggested tags", "path": "A note's card"},
     "tag-manager": {"title": "Managing tags", "path": "Notes tab, the ... menu, Manage tags"},
@@ -2715,7 +2734,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "tags-categories", "filing", "suggested-tags", "tag-manager", "manage-categories", "tidy",
     )),
     ("Asking Atlas", (
-        "ask-chat", "answers-from-notes", "chat-controls", "chat-private", "chat-attach-cards", "chat-model-picker", "wrap-lines", "slash-commands", "chat-acts", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
+        "ask-chat", "answers-from-notes", "chat-controls", "chat-private", "chat-attach-cards", "chat-model-picker", "chat-list", "wrap-lines", "slash-commands", "chat-acts", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (

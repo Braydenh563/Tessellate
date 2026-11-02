@@ -109,10 +109,13 @@ function renderChatModelPicker(status) {
       ? status.chat_model_chosen === false
         ? "No chat model is chosen yet. Pick one you have, or download one below."
         : `${aiNameNow()} was running “${status.chat_model}”, which is not installed any more. Pick another or download it below.`
-      : `${aiNameNow()}, running ${status.chat_model}${status.chat_model_chosen_why ? ` (chosen at start: ${status.chat_model_chosen_why})` : ""}`;
+      : `${aiNameNow()} answers with ${status.chat_model}${status.chat_model_chosen_why ? ` (chosen at start: ${status.chat_model_chosen_why})` : ""}.`;
+  const note = $("chat-model-note").textContent.slice(0, -1);
   //: B65: "Use this model" needs a model to pick; "Stop the model" needs
   //: something to stop. Both were enabled with no model at all.
   $("chat-model-apply").disabled = !names.length;
+  //: With one model and it already the one in use, the button has nothing to do.
+  $("chat-model-apply").classList.toggle("hidden", names.length === 1 && names[0] === status.chat_model);
   const stop = $("chat-model-stop");
   const noModel = status.chat_model_installed === false;
   stop.disabled = noModel; // the rest waits for /activity, so a poll does not flicker it
@@ -124,9 +127,9 @@ function renderChatModelPicker(status) {
       const loaded = body && body.model ? body.model.loaded : null;
       const answering = ((body && body.jobs) || []).some((job) => job.stoppable);
       stop.disabled = noModel || !(loaded === true || answering);
-      if (stop.disabled && !noModel) stop.title = "The model is not in memory, and no answer is running";
+      if (stop.disabled && !noModel) stop.title = "The model is not loaded, and no answer is running";
       if (loaded === null || noModel) return;
-      $("chat-model-note").textContent += loaded ? ", in memory now" : ", not in memory";
+      $("chat-model-note").textContent = `${note}${loaded ? ", which is ready now." : ", which loads when you ask."}`;
     })
     .catch(() => {
       stop.disabled = noModel;

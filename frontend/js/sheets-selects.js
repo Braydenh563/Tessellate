@@ -1813,14 +1813,18 @@ async function loadConversationList() {
   showSkeletons(list, 4, "li");
   if (!list.children.length || list.querySelector(".skeleton")) $("conv-empty")?.classList.add("hidden");
   //: A failed read says so with Try again; "No saved chats yet" is for a list that came back empty.
-  const loaded = await loadSurface($("conv-empty"), "your chats", () => apiJson("/conversations"));
+  //: The search box asks the server, which reads titles and message text (E47).
+  const term = $("chat-sidebar-search").value.trim();
+  const asked = (loadConversationList.n = -~loadConversationList.n); // the newest read owns the list
+  const loaded = await loadSurface($("conv-empty"), "your chats", () => apiJson(`/conversations?q=${encodeURIComponent(term)}`));
   clearSkeletons(list);
+  if (asked !== loadConversationList.n) return;
   if (!loaded) return list.replaceChildren();
-  const conversations = sortConversations(loaded, $("chat-sidebar-sort")?.value || "recent").slice(0, RECENT_CHATS_SHOWN);
+  const conversations = sortConversations(loaded, $("chat-sidebar-sort")?.value || "recent").slice(0, term ? 4 * RECENT_CHATS_SHOWN : RECENT_CHATS_SHOWN);
   list.replaceChildren();
   const empty = $("conv-empty");
   empty.classList.toggle("hidden", conversations.length > 0);
-  empty.textContent = "No saved chats yet. Ask something to start one.";
+  empty.textContent = term ? "No chats match that." : "No saved chats yet. Ask something to start one.";
 
   let sawUnpinned = false;
   for (const conversation of conversations) {

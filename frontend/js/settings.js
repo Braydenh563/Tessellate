@@ -1356,10 +1356,20 @@ function activeAccent() {
 // about the accent picker, so a curated palette changed every surface in the
 // app except the two canvases, leaving them wearing the previous theme. The
 // computed variable is the one source of truth once palettes can set it too.
+//: Kept until the root or body changes (INBOX 1534: a read per draw forced style).
 function currentAccentHex() {
-  const computed = getComputedStyle(document.documentElement)
+  const forget = () => (currentAccentHex.kept = "");
+  if (!currentAccentHex.watched) {
+    currentAccentHex.watched = true;
+    const watch = new MutationObserver(forget);
+    watch.observe(document.documentElement, { attributes: true });
+    if (document.body) watch.observe(document.body, { attributes: true });
+    matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", forget);
+  }
+  const computed = currentAccentHex.kept || getComputedStyle(document.documentElement)
     .getPropertyValue("--accent")
     .trim();
+  currentAccentHex.kept = computed;
   if (computed) return computed;
   return (
     prefs.get("accent-custom", null) ||

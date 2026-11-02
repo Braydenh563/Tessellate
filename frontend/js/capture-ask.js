@@ -832,9 +832,21 @@ const SEARCH_MODE_LABELS = {
 
 // Say something to a screen reader without putting anything on screen. Used
 // for changes whose only visible signal is colour or position.
-function announce(message) {
+//: `settle`: wait that long for the last call (a list drawn three times in one
+//: filter says its count once); `once`: not again while the last settled line is
+//: the same, so a redraw of an unchanged list is silent (audit 1028 S92).
+function announce(message, { settle = 0, once = false } = {}) {
   const region = $("live-region");
   if (!region) return;
+  if (settle) {
+    clearTimeout(announce.timer);
+    announce.timer = setTimeout(() => {
+      if (once && announce.said === message) return;
+      announce.said = message;
+      announce(message);
+    }, settle);
+    return;
+  }
   // Clearing first guarantees the change is seen as new even when the same
   // message is announced twice in a row.
   region.textContent = "";

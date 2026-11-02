@@ -781,6 +781,8 @@ function renderLibrary(options) {
         : items.filter(wordMatch);
   }
   items = librarySorted(items);
+  //: The count after a load or a filter, said once to a screen reader (audit 1028 S92).
+  if (prefs.get("activeTab", null) === "library") announce(`Library: ${nounCount(items.length, "item")}`, { settle: 600, once: true });
 
   // The server sends the newest page of a big kind; say so under the grid
   // rather than let 200 cards pass for all of them. A search reaches the

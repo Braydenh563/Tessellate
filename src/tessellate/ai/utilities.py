@@ -96,6 +96,38 @@ _COIN = lazy_compile(r"^(?:flip|toss)\s+a\s+coin$|^heads or tails$", re.I)
 _PICK = lazy_compile(r"^(?:pick|choose|give me)\s+a\s+(?:random\s+)?number\s+(?:between|from)\s+(-?\d{1,6})\s+(?:and|to)\s+(-?\d{1,6})$", re.I)
 _WEATHER = lazy_compile(r"\b(?:weather|forecast|temperature outside|going to rain|will it rain)\b", re.I)
 _TRANSLATE = lazy_compile(r"^(?:translate|say) \S.* (?:in|into|to) (?:french|spanish|german|italian|portuguese|dutch|japanese|chinese|korean|arabic|russian|hindi|greek|swedish|polish|turkish)$", re.I)
+#: **Generative asks** (audit 1028 E24): a model writes these, the composer
+#: only quotes. One list of verbs and one of things made; a note, a reminder or
+#: a list is the app's own act and is never in it. "Outline" and "report"
+#: are left out: "give me an outline of the databases lecture" is read from the notes.
+GENERATIVE_VERBS = (
+    "write", "draft", "compose", "generate", "create", "make", "produce", "prepare", "come up with", "put together",
+    "build",
+)
+GENERATIVE_THINGS = (
+    "essay", "poem", "story", "song", "lyrics", "speech", "toast", "joke", "haiku", "limerick", "paragraph", "intro", "introduction",
+    "conclusion", "cover letter", "letter", "email", "e-mail", "message", "text message", "caption", "tweet", "bio", "blurb",
+    "article", "blog post", "script", "timetable", "study plan", "revision plan", "revision schedule", "study schedule",
+    "meal plan", "workout plan", "training plan", "lesson plan", "plan", "schedule", "itinerary", "slogan", "pitch", "thank you note",
+)
+_THING = "|".join(sorted((re.escape(t) for t in GENERATIVE_THINGS), key=len, reverse=True))
+#: Words that end the run of adjectives before the thing ("make a note about my essay").
+_NOT_AN_ADJECTIVE = r"(?:note|notes|reminder|reminders|list|checklist|about|of|for|to|on|my|in|from|with|called|that|which)\b"
+_ADJECTIVES = r"(?:(?!" + _NOT_AN_ADJECTIVE + r")[\w'-]+ ){0,3}?"
+#: The verbs that make something (write, draft ...) may leave the article out;
+#: "give me", "get me" and "I need" ask for a thing, so they need "a" or "some"
+#: ("give me my schedule" is the notebook's, not a request to write one).
+_GENERATE = lazy_compile(
+    r"^(?:(?:help me|i need you to|i want you to|i'd like you to) )?(?:"
+    r"(?:" + "|".join(re.escape(v) for v in GENERATIVE_VERBS) + r") (?:me |us )?(?:(?:an?|some) )?" + _ADJECTIVES + r"(?:" + _THING + r")\b"
+    r"|(?:give me|get me|i need|i want|i'd like) (?:an?|some) " + _ADJECTIVES + r"(?:" + _THING + r")\b)",
+    re.I,
+)
+#: "explain the Krebs cycle simply": a plain-words rewrite of knowledge no note holds.
+_EXPLAIN_SIMPLY = lazy_compile(
+    r"^explain \S.*(?:\bsimply$|\bin (?:simple|plain|easy) (?:terms|words|english|language)$|\blike i(?:'m| am) (?:5|five|a (?:child|kid))$|\bto a (?:child|kid|beginner)$|\beli5$)",
+    re.I,
+)
 
 _WEEKDAY_NAMES = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
 _MONTH_NAMES = ("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
@@ -430,11 +462,20 @@ def _date_kind(text: str) -> str | None:
     return None
 
 
+def _generative(text: str) -> bool:
+    """Whether `text` asks for something written: a verb, then a thing made.
+    "give me a plan" is generative, "give me my schedule" and "make a note"
+    are not (the article, and the notebook's own nouns, decide)."""
+    return bool(_GENERATE.match(text) or _EXPLAIN_SIMPLY.match(text))
+
+
 def _other_kind(text: str) -> str | None:
     if _DIE.match(text) or _COIN.match(text) or _PICK.match(text):
         return "chance"
     if _TRANSLATE.match(text):
         return "translate"
+    if _generative(text):
+        return "generate"
     if _web_capability(text):
         return "web"
     if _WEATHER.search(text) and not re.search(r"\b(?:my|notes?|wrote)\b", text, re.I):
@@ -778,6 +819,7 @@ _ANSWERERS = {
     "dates": lambda ask: _dates(ask.text, ask.now),
     "chance": _answer_chance,
     "translate": lambda ask: [("phrase", "utility_translate")],
+    "generate": lambda ask: [("phrase", "utility_generate")],
     "web": lambda ask: [("phrase", "utility_web_on" if web_on() else "utility_web_off")],
 }
 

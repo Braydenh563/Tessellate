@@ -784,6 +784,9 @@ $("autonomous-trigger").addEventListener("click", () => {
 $("voice-skip-silence").addEventListener("change", (e) =>
   setPreference("voice_skip_silence", e.target.checked)
 );
+//: Read aloud's speed (E71), kept on this device; `speakText` reads it each time.
+$("pref-read-aloud-rate").value = prefs.get("read-aloud-rate", "1");
+$("pref-read-aloud-rate").addEventListener("change", (e) => prefs.set("read-aloud-rate", e.target.value));
 $("voice-language-select").addEventListener("change", (e) =>
   setPreference("voice_language", e.target.value)
 );

@@ -7430,6 +7430,18 @@ button.connection-row:is(:hover, :focus-visible) {
   justify-content: space-between;
   gap: var(--space-2);
 }
+/* What an emptied board says once its card is put away (audit 1028 B34): the
+   `p.muted.empty-line` recipe, centred on the canvas and click-through so the
+   board can still be drawn on. */
+.wb-empty-cue {
+  position: absolute;
+  inset-inline: var(--space-8);
+  inset-block-start: 50%;
+  margin: 0;
+  text-align: center;
+  pointer-events: none;
+  z-index: 1;
+}
 /* **The board's help and shortcut sheet** (INBOX 566; UX-03). The dialog
    recipe; what is new is the row. The old card set each row `nowrap` with
    the label and its keys pushed apart by flex, so a long label ran under its

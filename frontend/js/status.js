@@ -2207,8 +2207,8 @@ function syncModelGatedControls(status = modelStatus) {
   //: line says what a model would add rather than that nothing answers.
   renderAiOfflineNotice(
     $("chat-offline"),
-    "No model connected. Chat answers from your notes.",
-    { dismissible: true, detail: "Chat quotes your notes until one is connected. A model adds AI answers and Agent mode." }
+    "No model connected. Chat answers from your notes. Plan and Agent need a model.",
+    { dismissible: true, detail: "Chat quotes your notes until one is connected. A model adds AI answers, Plan and Agent mode." }
   );
   //: And the writing desk, which is the third surface that is nothing but
   //: Atlas: with no model it cannot draft at all, and before this the only
@@ -2829,7 +2829,10 @@ function renderChatModeSeg() {
   const agentButton = document.querySelector('#chat-mode-seg [data-chat-mode="agent"]');
   if (agentButton) {
     if (agentButton.dataset.enabledTitle === undefined) agentButton.dataset.enabledTitle = agentButton.title;
-    agentButton.disabled = gated;
+    //: aria-disabled, not disabled (E61): the button stays a Tab stop and a press opens the
+    //: same "Needs a model" popover Plan does (`openModelOffer`), so the reason is not hover-only.
+    agentButton.setAttribute("aria-disabled", String(gated));
+    agentButton.classList.toggle("ai-unavailable", gated);
     agentButton.title = gated
       ? `Agent mode needs a model, or the Needle extra, to call tools. ${AI_OFFLINE_HINT}.`
       : engine

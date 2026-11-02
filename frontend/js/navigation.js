@@ -1972,33 +1972,35 @@ async function switchTab(name) {
     //: The composer paints first (CHAT_PLAN 8 row 6): the welcome and the
     //: starter chips cost 60 to 120 ms of layout at 390 and were drawn
     //: before the frame that showed the box you came to type in.
+    //: The focus too (INBOX 1534: in the press it forced 100 to 140ms of style at 4x).
     requestAnimationFrame(() => setTimeout(() => {
+      if (prefs.get("activeTab", null) !== "chat") return;
+      //: **The composer takes the caret, but not the focus ring, on arrival.**
+      //: Reported as "chat panel shadow". Measured on a freshly loaded Chat tab
+      //: (`scratchpad/ui-sweeps/chatshadow.js`): `.chat-dock` computed
+      //: `box-shadow: rgba(79,109,245,0.14) 0 0 0 3px` with an accent-mixed
+      //: border, and `dockFocusWithin: true` with `#chat-input` as the active
+      //: element, all before anyone had touched anything. It is not a shadow,
+      //: it is `.chat-dock:focus-within`'s accent ring, and the focus that
+      //: lights it is the one below, not the reader's. So every visit to Chat
+      //: opened with a permanent blue halo round the composer, the loudest
+      //: thing on the screen and the only element in the app that rings itself
+      //: on load.
+      //:
+      //: The focus stays (arriving able to type is the point of it); the ring
+      //: waits until the focus is the reader's own. `chatDockArmRing` below
+      //: takes the marker back off at the first key, the first press inside the
+      //: dock, or the moment focus leaves it, so a deliberate click into the
+      //: composer rings exactly as it did.
+      chatDockSuppressRing();
+      $("chat-input").focus({ preventScroll: true });
+      // Nothing in a hidden tab can be measured, so the composer's fit is done
+      // here rather than at startup, the window may well have changed size
+      // since the last time this tab was visible.
+      refitComposer();
       renderChatEmptyState(); // welcome placeholder when the thread is empty
       loadChatSuggestions();
     }));
-    //: **The composer takes the caret, but not the focus ring, on arrival.**
-    //: Reported as "chat panel shadow". Measured on a freshly loaded Chat tab
-    //: (`scratchpad/ui-sweeps/chatshadow.js`): `.chat-dock` computed
-    //: `box-shadow: rgba(79,109,245,0.14) 0 0 0 3px` with an accent-mixed
-    //: border, and `dockFocusWithin: true` with `#chat-input` as the active
-    //: element, all before anyone had touched anything. It is not a shadow,
-    //: it is `.chat-dock:focus-within`'s accent ring, and the focus that
-    //: lights it is the line below, not the reader's. So every visit to Chat
-    //: opened with a permanent blue halo round the composer, the loudest
-    //: thing on the screen and the only element in the app that rings itself
-    //: on load.
-    //:
-    //: The focus stays (arriving able to type is the point of it); the ring
-    //: waits until the focus is the reader's own. `chatDockArmRing` below
-    //: takes the marker back off at the first key, the first press inside the
-    //: dock, or the moment focus leaves it, so a deliberate click into the
-    //: composer rings exactly as it did.
-    chatDockSuppressRing();
-    $("chat-input").focus();
-    // Nothing in a hidden tab can be measured, so the composer's fit is done
-    // here rather than at startup, the window may well have changed size
-    // since the last time this tab was visible.
-    refitComposer();
   }
   //: A return to the tab refreshes what is drawn in place (INBOX 602).
   if (name === "dashboard") whenScriptsLoaded().then(() => renderDashboard({ refresh: true }));

@@ -127,7 +127,7 @@ _BASE = {
     #: questions to ask: ..."), never as something the person said (C32).
     "a_list": "{name} lists {count} items: {items}",
     "a_list_asked": "{name} lists {count} questions to ask: {items}",
-    "told_self": ("you told yourself to", "you reminded yourself to"),
+    "told_self": ("the same note adds:",),
     "drift_woven": "though no later note says how that went",
     "meaning_loading": "The search by meaning is still loading, so this read your words only; ask again in a few seconds.",
     "meaning_off": "Search by meaning is off, so this read your words only; turn it on in Settings, Search and index.",
