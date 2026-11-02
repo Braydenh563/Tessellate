@@ -111,10 +111,29 @@ def _entry_points() -> dict[str, set[str]]:
     return out
 
 
+WINDOW_EXPORTS = re.compile(r"Object\.assign\(\s*(?:window|globalThis)\s*,\s*\{([^}]*)\}")
+
+
+def _window_exports(source: str) -> set[str]:
+    """Globals a wrapped file hands out: `Object.assign(window, { a, b: c })` binds `a` and `b`.
+
+    A file wrapped in one closure (documents-props.js, documents-math.js, ...) declares
+    nothing at column zero, so without this its globals were invisible to every lint here
+    (doc23-1102: `math-editor.js:docMathRender` read as stale and was dropped).
+    """
+    names: set[str] = set()
+    for body in WINDOW_EXPORTS.findall(source):
+        for part in body.split(","):
+            key = part.split(":", 1)[0].strip()
+            if re.fullmatch(r"[A-Za-z_$][\w$]*", key):
+                names.add(key)
+    return names
+
+
 def _top_level_functions(path: Path) -> set[str]:
-    """Only functions declared at column zero: a nested helper is not a global."""
+    """Only functions declared at column zero, and a wrapped file's window exports: a nested helper is not a global."""
     source = path.read_text(encoding="utf-8")
-    return set(re.findall(r"^(?:async )?function ([A-Za-z_$][\w$]*)", source, re.M))
+    return set(re.findall(r"^(?:async )?function ([A-Za-z_$][\w$]*)", source, re.M)) | _window_exports(source)
 
 
 def _declared_anywhere(path: Path) -> set[str]:
@@ -432,6 +451,8 @@ LAZY_REACHED_AFTER_LOAD: dict[str, str] = {
     "categories-panel.js:manageSorted": "the panel's opener awaits ensureModule(\"tagManager\") (line 29) before it renders a row",
     "chat-turn.js:docSurfaceById": "typeof-guarded with a designed fallback (the textarea's own text) when documents.js has never loaded",
     "chat-turn.js:setAtlasMood": "typeof-guarded cue: a mood is stale a moment later, and there is no face to move before the characters arrive",
+    "documents-codekit.js:docDiffLines": "in docAssistPropose, reached only from docAssistShow after `await lazyScript(\"/js/documents-history.js\")` (docAssistAsk)",
+    "documents-codekit.js:docRenderDiff": "in docAssistPropose, reached only from docAssistShow after `await lazyScript(\"/js/documents-history.js\")` (docAssistAsk)",
     "documents-export.js:mermaidInlineForExport": "after `await lazyModuleLoads.get(\"mermaid\")`: undefined (never asked for) skips it, a pending load is awaited",
     "documents-mermaid.js:mermaidSettled": "after `await lazyModuleLoads.get(\"mermaid\")`: undefined (never asked for) skips it, a pending load is awaited",
     "graph-canvas.js:refreshBoardList": "typeof-guarded refresh of a list that exists only once the library bundle is on screen (lazy-entries.js rule 2)",
@@ -712,7 +733,7 @@ def _top_level_bindings(path: Path) -> tuple[set[str], set[str]]:
     """Column-zero functions, and column-zero const/let/class names (`const a = 1, b`
     chains and destructuring are not read: a name a lint cannot see is one it cannot flag)."""
     source = path.read_text(encoding="utf-8")
-    funcs = set(re.findall(r"^(?:async )?function\*? ([A-Za-z_$][\w$]*)", source, re.M))
+    funcs = set(re.findall(r"^(?:async )?function\*? ([A-Za-z_$][\w$]*)", source, re.M)) | _window_exports(source)
     data = set(re.findall(r"^(?:const|let|class) ([A-Za-z_$][\w$]*)", source, re.M))
     return funcs, data
 
@@ -731,11 +752,13 @@ def _loader_chains() -> list[tuple[str, list[str]]]:
     return out
 
 
-def _direct_loads() -> dict[str, list[tuple[str, frozenset[str]]]]:
+def _direct_loads() -> dict[str, list[tuple[str, frozenset[str], frozenset[str]]]]:
     """Files loaded by a literal `lazyScript("/js/x.js")`: file to one `(asker, bundles it
-    awaited first)` per call site. A call site that follows `await ensureModule("library")`
-    in the same function loads the file with that whole bundle in."""
-    out: dict[str, list[tuple[str, frozenset[str]]]] = {}
+    awaited first, files loaded with it)` per call site. A call site that follows
+    `await ensureModule("library")` in the same function loads the file with that whole
+    bundle in; one beside or after another `lazyScript` in that function (documents.js's
+    `Promise.all([lazyScript(ai), lazyScript(history)])`) loads it with that file in."""
+    out: dict[str, list[tuple[str, frozenset[str], frozenset[str]]]] = {}
     for path in sorted((FRONTEND / "js").glob("*.js")):
         lines = path.read_text(encoding="utf-8").split("\n")
         for number, line in enumerate(lines):
@@ -747,7 +770,10 @@ def _direct_loads() -> dict[str, list[tuple[str, frozenset[str]]]]:
                 while start > 0 and not FUNCTION_START.match(lines[start]):
                     start -= 1
                 before = "\n".join(lines[start:number]) + "\n" + line[: m.start()]
-                out.setdefault(name, []).append((path.name, frozenset(re.findall(r'ensureModule\("(\w+)"\)', before))))
+                beside = before + line[m.end() :]
+                with_it = frozenset(f for f in re.findall(r'lazyScript\("/js/([A-Za-z0-9._-]+\.js)"\)', beside)
+                                    if f != name and (FRONTEND / "js" / f).exists())
+                out.setdefault(name, []).append((path.name, frozenset(re.findall(r'ensureModule\("(\w+)"\)', before)), with_it))
     return out
 
 
@@ -802,8 +828,9 @@ def lazy_to_lazy_gaps(used: set[str] | None = None) -> list[str]:
             if file_name in files and file_name != host:
                 before = set().union(*(names_of[f] for f in files[: files.index(file_name) + 1]))
                 out += [before | names_of.get(host, set()) | r for r in (host_routes(host, seen) or [set()])]
-        for host, awaited in direct.get(file_name, ()):
+        for host, awaited, with_it in direct.get(file_name, ()):
             loaded = set().union(set(), *(set().union(*(names_of.get(f) or _defined_any_form(FRONTEND / "js" / f) for f in lazy[b] if f.endswith(".js"))) for b in awaited if b in lazy))
+            loaded |= set().union(set(), *(names_of.get(f) or _defined_any_form(FRONTEND / "js" / f) for f in with_it))
             out += [names_of.get(file_name, set()) | names_of.get(host, set()) | loaded | r for r in (host_routes(host, seen) or [set()])]
         routes_memo[file_name] = out
         return out
@@ -896,3 +923,12 @@ def test_a_const_read_from_a_file_later_in_the_chain_is_a_gap(tmp_path, monkeypa
 def test_the_object_move_chain_is_read_in_load_order():
     chains = dict(_loader_chains())
     assert chains["obj-ref.js"] == ["obj-order.js", "obj-drag.js", "obj-reorder.js", "obj-clip.js", "obj-carry.js", "obj-tray.js"]
+
+
+def test_a_wrapped_file_s_window_exports_are_its_globals():
+    """doc23-1102: files wrapped in one closure declare nothing at column zero; their
+    `Object.assign(window, {...})` names are what the lints above must see."""
+    assert _window_exports("(() => {\n  function a() {}\n  Object.assign(window, { a, b: a, c });\n})();\n") == {"a", "b", "c"}
+    assert "docMathRender" in _top_level_functions(FRONTEND / "js" / "documents-math.js")
+    funcs, _ = _top_level_bindings(FRONTEND / "js" / "documents-history.js")
+    assert "docDiffLines" in funcs
