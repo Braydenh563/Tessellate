@@ -2674,16 +2674,16 @@ function initScrollTopButton() {
   document.body.appendChild(button);
 
   let wasVisible = false;
+  const scrolled = new WeakSet();
   const update = () => {
     const tab = prefs.get("activeTab", null) || "dashboard";
     const target = scrollTopTargetEl();
-    const scrollTop = target?.scrollTop || 0;
-    //: Chat flips the button over: it appears when you have scrolled *up*
-    //: away from the newest message, and it takes you back down. 200px rather
-    //: than 400 because a chat pane is shorter than a page and one message
-    //: scrolled past is already enough to lose the live one.
+    //: A scroller that has sent no scroll event is at the top: the read would
+    //: settle the page a press has just shown (101ms of style on a Library
+    //: press at 4x, INBOX 1534). Chat never shows the button (`NO_SCROLL_TOP_TABS`),
+    //: so its distance from the bottom is not measured either.
+    const scrollTop = target && scrolled.has(target) ? target.scrollTop : 0;
     const chat = tab === "chat";
-    const fromBottom = target ? target.scrollHeight - target.clientHeight - scrollTop : 0;
     //: **The dashboard shows it sooner, and that is the report.** The owner:
     //: "also no back to top button appears on the dashboard??" Measured on a
     //: seeded profile at 1440x900 it does appear, but only past 400px, and
@@ -2694,9 +2694,7 @@ function initScrollTopButton() {
     //: gets you back is still absent. 200px is chat's figure, for the same
     //: reason chat uses it: this pane is scrolled in short movements and one
     //: screen away is already lost.
-    const show = chat
-      ? fromBottom > 200
-      : scrollTop > (tab === "dashboard" ? 200 : 400) && !NO_SCROLL_TOP_TABS.has(tab);
+    const show = scrollTop > (tab === "dashboard" ? 200 : 400) && !NO_SCROLL_TOP_TABS.has(tab);
     //: Written only when they change: this runs on scroll, and a text or
     //: attribute write on every frame invalidates style that the layout reads
     //: just below (`coversAFormPrimary`, `positionScrollTopForNested`) then
@@ -2752,7 +2750,7 @@ function initScrollTopButton() {
   //: Only the scroller this button follows (INBOX 1465: 28 runs a second): a
   //: capture listener hears every scroller in the page, and a list, a rail or
   //: the timeline scrolling inside the tab has no bearing on the button.
-  document.addEventListener("scroll", (e) => e.target === scrollTopTargetEl() && scheduleUpdate(), { passive: true, capture: true });
+  document.addEventListener("scroll", (e) => e.target === scrollTopTargetEl() && (scrolled.add(e.target), scheduleUpdate()), { passive: true, capture: true });
   window.addEventListener("resize", scheduleUpdate, { passive: true });
   update();
   //: Callers get the scheduled run (INBOX 1530 c): `revealTab` called this
