@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7558, frontend ids 2642, CSS sections 517, backend routes 640, backend modules 8487, test files 1866, tests 15871, plan headings 991, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7558, frontend ids 2642, CSS sections 517, backend routes 640, backend modules 8487, test files 1867, tests 15872, plan headings 991, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7558)
 
@@ -13413,31 +13413,31 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_between` | src/tessellate/ai/composer_calc.py:180 |
-| `_change` | src/tessellate/ai/composer_calc.py:86 |
+| `_between` | src/tessellate/ai/composer_calc.py:182 |
+| `_change` | src/tessellate/ai/composer_calc.py:88 |
 | `_computed` | src/tessellate/ai/composer_calc.py:75 |
-| `_countdown` | src/tessellate/ai/composer_calc.py:211 |
-| `_countdown_words` | src/tessellate/ai/composer_calc.py:206 |
-| `_day_question` | src/tessellate/ai/composer_calc.py:164 |
-| `_define` | src/tessellate/ai/composer_calc.py:296 |
-| `_gap_words` | src/tessellate/ai/composer_calc.py:192 |
-| `_long` | src/tessellate/ai/composer_calc.py:141 |
+| `_countdown` | src/tessellate/ai/composer_calc.py:213 |
+| `_countdown_words` | src/tessellate/ai/composer_calc.py:208 |
+| `_day_question` | src/tessellate/ai/composer_calc.py:166 |
+| `_define` | src/tessellate/ai/composer_calc.py:298 |
+| `_gap_words` | src/tessellate/ai/composer_calc.py:194 |
+| `_long` | src/tessellate/ai/composer_calc.py:143 |
 | `_n` | src/tessellate/ai/composer_calc.py:67 |
-| `_needed` | src/tessellate/ai/composer_calc.py:124 |
-| `_note_count` | src/tessellate/ai/composer_calc.py:261 |
-| `_offset_question` | src/tessellate/ai/composer_calc.py:242 |
-| `_offset_reply` | src/tessellate/ai/composer_calc.py:153 |
-| `_pasted_count` | src/tessellate/ai/composer_calc.py:251 |
-| `_percent` | src/tessellate/ai/composer_calc.py:79 |
-| `_priced` | src/tessellate/ai/composer_calc.py:95 |
-| `_resolve` | src/tessellate/ai/composer_calc.py:145 |
+| `_needed` | src/tessellate/ai/composer_calc.py:126 |
+| `_note_count` | src/tessellate/ai/composer_calc.py:263 |
+| `_offset_question` | src/tessellate/ai/composer_calc.py:244 |
+| `_offset_reply` | src/tessellate/ai/composer_calc.py:155 |
+| `_pasted_count` | src/tessellate/ai/composer_calc.py:253 |
+| `_percent` | src/tessellate/ai/composer_calc.py:81 |
+| `_priced` | src/tessellate/ai/composer_calc.py:97 |
+| `_resolve` | src/tessellate/ai/composer_calc.py:147 |
 | `_said` | src/tessellate/ai/composer_calc.py:71 |
-| `_since` | src/tessellate/ai/composer_calc.py:228 |
-| `_split` | src/tessellate/ai/composer_calc.py:116 |
-| `_tip` | src/tessellate/ai/composer_calc.py:109 |
-| `_word_count` | src/tessellate/ai/composer_calc.py:277 |
-| `answer` | src/tessellate/ai/composer_calc.py:314 |
-| `glossary` | src/tessellate/ai/composer_calc.py:285 |
+| `_since` | src/tessellate/ai/composer_calc.py:230 |
+| `_split` | src/tessellate/ai/composer_calc.py:118 |
+| `_tip` | src/tessellate/ai/composer_calc.py:111 |
+| `_word_count` | src/tessellate/ai/composer_calc.py:279 |
+| `answer` | src/tessellate/ai/composer_calc.py:316 |
+| `glossary` | src/tessellate/ai/composer_calc.py:287 |
 
 ### src/tessellate/ai/composer_compose.py (29)
 
@@ -23286,7 +23286,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15871)
+## Tests (15872)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23378,6 +23378,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_attachment_path_containment.py | 3 |
 | tests/test_attachment_rename_route.py | 4 |
 | tests/test_audio_section.py | 4 |
+| tests/test_audit1028_e21.py | 1 |
 | tests/test_audit_1028_a28s.py | 9 |
 | tests/test_audit_1028_e_rows.py | 5 |
 | tests/test_audit_1028_e_rows_b.py | 6 |
