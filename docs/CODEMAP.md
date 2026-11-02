@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7563, frontend ids 2642, CSS sections 517, backend routes 640, backend modules 8491, test files 1895, tests 15994, plan headings 991, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7563, frontend ids 2642, CSS sections 517, backend routes 640, backend modules 8491, test files 1895, tests 15995, plan headings 991, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7563)
 
@@ -3730,34 +3730,34 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `docTableAddColumnEdits` | frontend/js/documents-tables.js:281 |
-| `docTableAddRowEdits` | frontend/js/documents-tables.js:254 |
-| `docTableAlignEdits` | frontend/js/documents-tables.js:381 |
+| `docTableAddColumnEdits` | frontend/js/documents-tables.js:303 |
+| `docTableAddRowEdits` | frontend/js/documents-tables.js:276 |
+| `docTableAlignEdits` | frontend/js/documents-tables.js:403 |
 | `docTableAlignOf` | frontend/js/documents-tables.js:141 |
-| `docTableApplyEdits` | frontend/js/documents-tables.js:488 |
-| `docTableCellAt` | frontend/js/documents-tables.js:496 |
-| `docTableCellSpan` | frontend/js/documents-tables.js:225 |
-| `docTableColumnPad` | frontend/js/documents-tables.js:239 |
-| `docTableEscapeCell` | frontend/js/documents-tables.js:567 |
-| `docTableExitEdit` | frontend/js/documents-tables.js:555 |
-| `docTableFillRowEdits` | frontend/js/documents-tables.js:363 |
-| `docTableFromGrid` | frontend/js/documents-tables.js:591 |
-| `docTableGridFromText` | frontend/js/documents-tables.js:580 |
+| `docTableApplyEdits` | frontend/js/documents-tables.js:510 |
+| `docTableCellAt` | frontend/js/documents-tables.js:518 |
+| `docTableCellSpan` | frontend/js/documents-tables.js:247 |
+| `docTableColumnPad` | frontend/js/documents-tables.js:261 |
+| `docTableEscapeCell` | frontend/js/documents-tables.js:589 |
+| `docTableExitEdit` | frontend/js/documents-tables.js:577 |
+| `docTableFillRowEdits` | frontend/js/documents-tables.js:385 |
+| `docTableFromGrid` | frontend/js/documents-tables.js:613 |
+| `docTableGridFromText` | frontend/js/documents-tables.js:602 |
 | `docTableIsDelimiter` | frontend/js/documents-tables.js:134 |
 | `docTableJoinRow` | frontend/js/documents-tables.js:115 |
-| `docTableMoveColumnEdits` | frontend/js/documents-tables.js:415 |
-| `docTableMoveRowEdits` | frontend/js/documents-tables.js:401 |
+| `docTableMoveColumnEdits` | frontend/js/documents-tables.js:437 |
+| `docTableMoveRowEdits` | frontend/js/documents-tables.js:423 |
 | `docTableParse` | frontend/js/documents-tables.js:159 |
-| `docTablePasteEdits` | frontend/js/documents-tables.js:631 |
-| `docTableRemoveColumnEdits` | frontend/js/documents-tables.js:334 |
-| `docTableRemoveRowEdits` | frontend/js/documents-tables.js:271 |
+| `docTablePasteEdits` | frontend/js/documents-tables.js:653 |
+| `docTableRemoveColumnEdits` | frontend/js/documents-tables.js:356 |
+| `docTableRemoveRowEdits` | frontend/js/documents-tables.js:293 |
 | `docTableRowLike` | frontend/js/documents-tables.js:128 |
-| `docTableSelectRanges` | frontend/js/documents-tables.js:463 |
-| `docTableSetCellEdits` | frontend/js/documents-tables.js:603 |
-| `docTableSortEdits` | frontend/js/documents-tables.js:434 |
+| `docTableSelectRanges` | frontend/js/documents-tables.js:485 |
+| `docTableSetCellEdits` | frontend/js/documents-tables.js:625 |
+| `docTableSortEdits` | frontend/js/documents-tables.js:456 |
 | `docTableSplitRow` | frontend/js/documents-tables.js:76 |
-| `docTableStepCell` | frontend/js/documents-tables.js:513 |
-| `docTableStepRow` | frontend/js/documents-tables.js:543 |
+| `docTableStepCell` | frontend/js/documents-tables.js:535 |
+| `docTableStepRow` | frontend/js/documents-tables.js:565 |
 
 ### frontend/js/documents-word.js (13)
 
@@ -23295,7 +23295,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (15994)
+## Tests (15995)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23833,7 +23833,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_doc_toolbar_reach.py | 7 |
 | tests/test_doc_type_fields.py | 2 |
 | tests/test_doc_type_picker.py | 6 |
-| tests/test_doc_typing_dx1.py | 11 |
+| tests/test_doc_typing_dx1.py | 12 |
 | tests/test_doc_view_held.py | 5 |
 | tests/test_docexport_bundle.py | 5 |
 | tests/test_dock_fold_word_s21.py | 2 |

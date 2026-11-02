@@ -5613,7 +5613,7 @@ function docTableGripsPlugin(CM) {
         //: in a table, and reading the document to say so on every keystroke of a
         //: long page would be the cost of a feature most lines never use.
         if (!doc.lineAt(head).text.includes("|") && !doc.lineAt(view.state.selection.main.anchor).text.includes("|")) return null;
-        const table = docTableParse(docStr(doc), head);
+        const table = docTableParse.at(doc, head);
         if (!table) return null;
         const scroller = view.scrollDOM;
         const sr = scroller.getBoundingClientRect();

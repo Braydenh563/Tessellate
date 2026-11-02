@@ -218,6 +218,28 @@
       aligns: rows[1].cells.map(docTableAlignOf),
     };
   }
+  //: **The same table, parsed from its own lines** (audit 1102 DX1): `doc` is the editor's
+  //: `Text`. The parse only ever reads the run of pipe lines around the offset, so the run is
+  //: all it is given, and the offsets and line indexes are moved back to the document's. The
+  //: whole-text call split all 3,120 lines once per visible table, per key. A property, not
+  //: a name: the shared scope is at its cap (test_global_scope_ratchet).
+  docTableParse.at = (doc, offset) => {
+    const here = doc.lineAt(offset);
+    if (!docTableRowLike(here.text)) return null;
+    let first = here.number;
+    let last = here.number;
+    while (first > 1 && docTableRowLike(doc.line(first - 1).text)) first -= 1;
+    while (last < doc.lines && docTableRowLike(doc.line(last + 1).text)) last += 1;
+    const base = doc.line(first).from;
+    const table = docTableParse(doc.sliceString(base, doc.line(last).to), offset - base);
+    if (!table) return null;
+    for (const row of table.rows) {
+      row.from += base;
+      row.to += base;
+      row.line += first - 1;
+    }
+    return { ...table, from: table.from + base, to: table.to + base, startLine: table.startLine + first - 1, endLine: table.endLine + first - 1 };
+  };
 
   //: Where one cell's raw text lives in the document. The sum of the cells
   //: before it plus one character per pipe between them, which is the only

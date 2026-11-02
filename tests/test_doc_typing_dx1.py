@@ -223,3 +223,48 @@ def test_the_caret_readout_is_drawn_once_per_key_in_the_engine():
     assert "if (docEventFromCm(document.activeElement)) return;" in listener
     update = _function(DOCS, "function docCmUpdate(")
     assert "if (!update.docChanged) renderDocCaret();" in update
+
+
+# The three levers of the second pass (agent a29i): a key inside one paragraph
+# patches the Live set instead of rebuilding the visible lines, a table is
+# parsed from its own lines, and a fresh frame closure is known by its source.
+ROOT = JS.parent.parent
+CMJS = (JS / "documents-cm.js").read_text(encoding="utf-8")
+_LOAD = f"""
+const fs = require("fs"), vm = require("vm");
+const read = (f) => fs.readFileSync({json.dumps(str(ROOT / "frontend"))} + "/" + f, "utf8");
+const ctx = {{ console }};
+ctx.window = ctx;
+vm.createContext(ctx);
+vm.runInContext(read("vendor/codemirror/codemirror.min.js") + ";globalThis.CM6 = CM6;", ctx);
+vm.runInContext(read("js/documents-tables.js"), ctx);
+"""
+
+
+@needs_node
+def test_a_table_parsed_from_its_own_lines_is_the_whole_text_parse():
+    text = (
+        "Prose with a | pipe\n| Name | Notes |\n| --- | --- |\n| One | Two |\n\nMore prose\n\n"
+        "  | a | b |   \n  | --- | :---: |\n  | 1 | 2 |  \n| x | y |\n|---|---|\n| 3 | 4 |\n\n"
+        "Name | Notes\n--- | ---\nOne | Two\n| no | delimiter |\n| at | all |\n"
+    )
+    got = _node(
+        _LOAD
+        + f"const T = {json.dumps(text)};\n"
+        + """
+const out = vm.runInContext(`(() => {
+  const doc = CM6.state.Text.of(T.split("\\\\n"));
+  let tables = 0, diff = [];
+  for (let at = 0; at <= T.length; at += 1) {
+    const whole = JSON.stringify(docTableParse(T, at));
+    if (whole !== "null") tables += 1;
+    if (JSON.stringify(docTableParse.at(doc, at)) !== whole) diff.push(at);
+  }
+  return { tables, diff };
+})()`, Object.assign(ctx, { T }));
+console.log(JSON.stringify(out));
+"""
+    )
+    assert got["tables"] > 100 and got["diff"] == []
+    assert "docTableParse.at(doc, line.from)" in CMJS and "docTableParse(source()" not in CMJS
+    assert "docTableParse.at(doc, head)" in DOCS, "the grips plugin reads the caret's table the same way"

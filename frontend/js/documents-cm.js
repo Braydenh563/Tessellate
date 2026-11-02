@@ -618,9 +618,9 @@ function docLivePlugin(CM) {
     //: the note beside `cm-md-fence-quiet` below.
     const gutterOn = docFenceGutterOn();
     const tree = syntaxTree(state);
-    //: The document as one string, for the table model, and at most once per
-    //: build: the model works in document offsets so it needs the whole text,
-    //: and a copy per visible line would be a copy per keystroke per line.
+    //: The document as one string, at most once per build, for a table's menu
+    //: and the frontmatter; a table itself is parsed from its own lines
+    //: (`docTableParse.at`).
     let sourceText = null;
     const source = () => {
       if (sourceText === null) sourceText = docStr(doc);
@@ -1297,7 +1297,7 @@ function docLivePlugin(CM) {
         if (tableSeen.has(line.number)) continue;
         tableSeen.add(line.number);
         if (!docTableRowLike(line.text)) continue;
-        const table = docTableParse(source(), line.from);
+        const table = docTableParse.at(doc, line.from);
         if (!table) continue;
         for (const row of table.rows) tableSeen.add(doc.lineAt(row.from).number);
         record.selFree = false;
