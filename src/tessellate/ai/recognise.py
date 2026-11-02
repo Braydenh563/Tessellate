@@ -2686,6 +2686,33 @@ def told_as_past(sentence: str) -> bool:
     return bool(_PAST_VERB.search(sentence or "")) and not _ARRANGED.search(sentence or "")
 
 
+#: A day the writer only counts by its weekday, and a line that records a
+#: measured result on it, are a log of a day gone ("Wednesday bench 60kg."),
+#: not a thing due on the next one (audit 1028 E20).
+_LOG_TITLE = lazy_compile(r"\b(?:log|logs|diary|journal|tracker|record|records|history|workout|workouts)\b", re.I)
+_PLAN_TITLE = lazy_compile(r"\b(?:plan|plans|schedule|programme|program|routine|timetable|agenda|to-?do|goals?|calendar|itinerary)\b", re.I)
+_MEASURE = lazy_compile(r"\b\d+(?:\.\d+)?\s?(?:kg|kgs|lbs?|reps?|sets?|km|kms|miles?|mi|kcal|steps|bpm)\b|\b\d+\s?[x\u00d7]\s?\d+\b", re.I)
+_WEEKDAY_WORD = lazy_compile(r"\b(?:mon|tues?|wed(?:nes)?|thu(?:rs?)?|fri|sat(?:ur)?|sun)(?:day)?\b", re.I)
+#: A day named some other way than by its weekday, or a cue that the line looks ahead.
+_CONCRETE_DAY = lazy_compile(
+    r"\b(?:today|tomorrow|tonight|yesterday|next|this|due|deadline|(?:by|before|until|till) (?:the |end of |mon|tue|wed|thu|fri|sat|sun)|"
+    r"\d{1,2}(?:st|nd|rd|th)\b|(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.? \d{1,2}|"
+    r"\d{1,2} (?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*|\d{1,2}[/.-]\d{1,2}|\d{4}-\d{2}-\d{2})\b", re.I)
+
+
+def logged_day(sentence: str, title: str = "") -> bool:
+    """Whether a line names its day by a bare weekday and records what was
+    done on it: a measured result ("Wednesday bench 60kg for 5 reps"), or
+    any line of a log, diary or tracker note. Its weekday is behind the
+    writer; a plan, schedule or routine note is the other way round."""
+    text = sentence or ""
+    if not _WEEKDAY_WORD.search(text) or _ARRANGED.search(text) or _CONCRETE_DAY.search(text):
+        return False
+    if _PLAN_TITLE.search(title or ""):
+        return False
+    return bool(_LOG_TITLE.search(title or "") or _MEASURE.search(text))
+
+
 def dated_sentence(text: str) -> bool:
     """Whether a sentence may name a day or a deadline at all."""
     return bool(_DATED_WIDE.search(text or ""))

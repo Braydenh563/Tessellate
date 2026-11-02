@@ -304,7 +304,10 @@ def _note_days(note: dict, now: datetime) -> tuple[tuple[date, str], ...]:
     if hit is not None:
         return hit
     found: list[tuple[date, str]] = []
+    title = study.title_of(content)
     for sentence in _dated_lines(content):
+        if recognise.logged_day(sentence, title):
+            continue  # "Wednesday bench 60kg." in a gym log: a day gone, not one due (E20)
         if recognise.told_as_past(sentence) and not re.search(r"\d{4}", sentence):
             #: "Slept badly on Tuesday." happened; its day is never ahead (Z26).
             continue

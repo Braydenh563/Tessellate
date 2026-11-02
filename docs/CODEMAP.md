@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7562, frontend ids 2642, CSS sections 518, backend routes 641, backend modules 8493, test files 1903, tests 16039, plan headings 992, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7562, frontend ids 2642, CSS sections 518, backend routes 641, backend modules 8494, test files 1904, tests 16043, plan headings 992, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7562)
 
@@ -12626,7 +12626,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8493)
+## Backend modules (8494)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14296,55 +14296,55 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `Event` | src/tessellate/ai/composer_plan.py:96 |
 | `_add_months` | src/tessellate/ai/composer_plan.py:140 |
 | `_anchor` | src/tessellate/ai/composer_plan.py:257 |
-| `_asks_due` | src/tessellate/ai/composer_plan.py:768 |
+| `_asks_due` | src/tessellate/ai/composer_plan.py:771 |
 | `_bounded` | src/tessellate/ai/composer_plan.py:162 |
-| `_busiest` | src/tessellate/ai/composer_plan.py:491 |
-| `_chip_title` | src/tessellate/ai/composer_plan.py:434 |
+| `_busiest` | src/tessellate/ai/composer_plan.py:494 |
+| `_chip_title` | src/tessellate/ai/composer_plan.py:437 |
 | `_dated_lines` | src/tessellate/ai/composer_plan.py:285 |
 | `_dated_phrase` | src/tessellate/ai/composer_plan.py:180 |
-| `_days_away` | src/tessellate/ai/composer_plan.py:362 |
-| `_due` | src/tessellate/ai/composer_plan.py:399 |
-| `_due_reply` | src/tessellate/ai/composer_plan.py:621 |
-| `_event_counting_down_to` | src/tessellate/ai/composer_plan.py:564 |
-| `_grouped` | src/tessellate/ai/composer_plan.py:374 |
-| `_item_chips` | src/tessellate/ai/composer_plan.py:421 |
-| `_left` | src/tessellate/ai/composer_plan.py:697 |
+| `_days_away` | src/tessellate/ai/composer_plan.py:365 |
+| `_due` | src/tessellate/ai/composer_plan.py:402 |
+| `_due_reply` | src/tessellate/ai/composer_plan.py:624 |
+| `_event_counting_down_to` | src/tessellate/ai/composer_plan.py:567 |
+| `_grouped` | src/tessellate/ai/composer_plan.py:377 |
+| `_item_chips` | src/tessellate/ai/composer_plan.py:424 |
+| `_left` | src/tessellate/ai/composer_plan.py:700 |
 | `_long` | src/tessellate/ai/composer_plan.py:132 |
-| `_merge` | src/tessellate/ai/composer_plan.py:339 |
+| `_merge` | src/tessellate/ai/composer_plan.py:342 |
 | `_name` | src/tessellate/ai/composer_plan.py:124 |
-| `_next_reminder` | src/tessellate/ai/composer_plan.py:462 |
-| `_not_done_later` | src/tessellate/ai/composer_plan.py:669 |
+| `_next_reminder` | src/tessellate/ai/composer_plan.py:465 |
+| `_not_done_later` | src/tessellate/ai/composer_plan.py:672 |
 | `_note_days` | src/tessellate/ai/composer_plan.py:299 |
-| `_note_events_of` | src/tessellate/ai/composer_plan.py:321 |
-| `_nothing_due` | src/tessellate/ai/composer_plan.py:454 |
-| `_open_reminders` | src/tessellate/ai/composer_plan.py:686 |
-| `_open_tasks` | src/tessellate/ai/composer_plan.py:660 |
-| `_overdue` | src/tessellate/ai/composer_plan.py:441 |
+| `_note_events_of` | src/tessellate/ai/composer_plan.py:324 |
+| `_nothing_due` | src/tessellate/ai/composer_plan.py:457 |
+| `_open_reminders` | src/tessellate/ai/composer_plan.py:689 |
+| `_open_tasks` | src/tessellate/ai/composer_plan.py:663 |
+| `_overdue` | src/tessellate/ai/composer_plan.py:444 |
 | `_plain` | src/tessellate/ai/composer_plan.py:264 |
-| `_plan` | src/tessellate/ai/composer_plan.py:543 |
-| `_plan_window` | src/tessellate/ai/composer_plan.py:596 |
-| `_range_words` | src/tessellate/ai/composer_plan.py:391 |
+| `_plan` | src/tessellate/ai/composer_plan.py:546 |
+| `_plan_window` | src/tessellate/ai/composer_plan.py:599 |
+| `_range_words` | src/tessellate/ai/composer_plan.py:394 |
 | `_reminder_events` | src/tessellate/ai/composer_plan.py:235 |
-| `_reminder_line` | src/tessellate/ai/composer_plan.py:691 |
+| `_reminder_line` | src/tessellate/ai/composer_plan.py:694 |
 | `_sentence_day` | src/tessellate/ai/composer_plan.py:268 |
 | `_short` | src/tessellate/ai/composer_plan.py:136 |
-| `_spread_line` | src/tessellate/ai/composer_plan.py:518 |
-| `_stems` | src/tessellate/ai/composer_plan.py:335 |
-| `_task_groups` | src/tessellate/ai/composer_plan.py:499 |
-| `_task_lines` | src/tessellate/ai/composer_plan.py:535 |
-| `_tasks` | src/tessellate/ai/composer_plan.py:476 |
+| `_spread_line` | src/tessellate/ai/composer_plan.py:521 |
+| `_stems` | src/tessellate/ai/composer_plan.py:338 |
+| `_task_groups` | src/tessellate/ai/composer_plan.py:502 |
+| `_task_lines` | src/tessellate/ai/composer_plan.py:538 |
+| `_tasks` | src/tessellate/ai/composer_plan.py:479 |
 | `_unit_span` | src/tessellate/ai/composer_plan.py:147 |
-| `_units` | src/tessellate/ai/composer_plan.py:508 |
-| `_until` | src/tessellate/ai/composer_plan.py:578 |
-| `_until_source` | src/tessellate/ai/composer_plan.py:572 |
-| `_when_is` | src/tessellate/ai/composer_plan.py:715 |
-| `_when_reply` | src/tessellate/ai/composer_plan.py:739 |
-| `_written_from` | src/tessellate/ai/composer_plan.py:747 |
-| `ahead_default` | src/tessellate/ai/composer_plan.py:616 |
-| `answer` | src/tessellate/ai/composer_plan.py:779 |
-| `events` | src/tessellate/ai/composer_plan.py:355 |
+| `_units` | src/tessellate/ai/composer_plan.py:511 |
+| `_until` | src/tessellate/ai/composer_plan.py:581 |
+| `_until_source` | src/tessellate/ai/composer_plan.py:575 |
+| `_when_is` | src/tessellate/ai/composer_plan.py:718 |
+| `_when_reply` | src/tessellate/ai/composer_plan.py:742 |
+| `_written_from` | src/tessellate/ai/composer_plan.py:750 |
+| `ahead_default` | src/tessellate/ai/composer_plan.py:619 |
+| `answer` | src/tessellate/ai/composer_plan.py:782 |
+| `events` | src/tessellate/ai/composer_plan.py:358 |
 | `lookback` | src/tessellate/ai/composer_plan.py:226 |
-| `note_events` | src/tessellate/ai/composer_plan.py:326 |
+| `note_events` | src/tessellate/ai/composer_plan.py:329 |
 | `window` | src/tessellate/ai/composer_plan.py:198 |
 
 ### src/tessellate/ai/composer_quote.py (21)
@@ -16391,72 +16391,72 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `variety` | src/tessellate/ai/realise.py:375 |
 | `wording` | src/tessellate/ai/realise.py:369 |
 
-### src/tessellate/ai/recognise.py (207)
+### src/tessellate/ai/recognise.py (208)
 
 | Name | File:line |
 |---|---|
-| `Measure` | src/tessellate/ai/recognise.py:3763 |
-| `Span` | src/tessellate/ai/recognise.py:2801 |
+| `Measure` | src/tessellate/ai/recognise.py:3790 |
+| `Span` | src/tessellate/ai/recognise.py:2828 |
 | `_add_months` | src/tessellate/ai/recognise.py:796 |
-| `_alert_cands` | src/tessellate/ai/recognise.py:3357 |
+| `_alert_cands` | src/tessellate/ai/recognise.py:3384 |
 | `_amount` | src/tessellate/ai/recognise.py:1273 |
-| `_anchor_day` | src/tessellate/ai/recognise.py:2744 |
-| `_anchored_cands` | src/tessellate/ai/recognise.py:3496 |
+| `_anchor_day` | src/tessellate/ai/recognise.py:2771 |
+| `_anchored_cands` | src/tessellate/ai/recognise.py:3523 |
 | `_back` | src/tessellate/ai/recognise.py:1347 |
-| `_bare_hour` | src/tessellate/ai/recognise.py:3014 |
-| `_base_cand` | src/tessellate/ai/recognise.py:3156 |
+| `_bare_hour` | src/tessellate/ai/recognise.py:3041 |
+| `_base_cand` | src/tessellate/ai/recognise.py:3183 |
 | `_calendar_unit_span` | src/tessellate/ai/recognise.py:1362 |
 | `_clock` | src/tessellate/ai/recognise.py:403 |
-| `_clock_after` | src/tessellate/ai/recognise.py:3269 |
-| `_clock_cands` | src/tessellate/ai/recognise.py:3233 |
+| `_clock_after` | src/tessellate/ai/recognise.py:3296 |
+| `_clock_cands` | src/tessellate/ai/recognise.py:3260 |
 | `_clock_hm` | src/tessellate/ai/recognise.py:652 |
-| `_clock_leading` | src/tessellate/ai/recognise.py:3142 |
-| `_clock_match` | src/tessellate/ai/recognise.py:2996 |
-| `_clock_trailing` | src/tessellate/ai/recognise.py:3132 |
-| `_clock_value` | src/tessellate/ai/recognise.py:3217 |
-| `_clock_words` | src/tessellate/ai/recognise.py:2845 |
-| `_contact_cands` | src/tessellate/ai/recognise.py:3449 |
+| `_clock_leading` | src/tessellate/ai/recognise.py:3169 |
+| `_clock_match` | src/tessellate/ai/recognise.py:3023 |
+| `_clock_trailing` | src/tessellate/ai/recognise.py:3159 |
+| `_clock_value` | src/tessellate/ai/recognise.py:3244 |
+| `_clock_words` | src/tessellate/ai/recognise.py:2872 |
+| `_contact_cands` | src/tessellate/ai/recognise.py:3476 |
 | `_count` | src/tessellate/ai/recognise.py:999 |
-| `_date_cands` | src/tessellate/ai/recognise.py:3175 |
+| `_date_cands` | src/tessellate/ai/recognise.py:3202 |
 | `_date_phrase` | src/tessellate/ai/recognise.py:1215 |
-| `_date_range_cands` | src/tessellate/ai/recognise.py:3544 |
-| `_dated_class_cands` | src/tessellate/ai/recognise.py:3641 |
+| `_date_range_cands` | src/tessellate/ai/recognise.py:3571 |
+| `_dated_class_cands` | src/tessellate/ai/recognise.py:3668 |
 | `_dated_said` | src/tessellate/ai/recognise.py:2135 |
 | `_day` | src/tessellate/ai/recognise.py:364 |
 | `_day_fits` | src/tessellate/ai/recognise.py:786 |
 | `_day_of_month` | src/tessellate/ai/recognise.py:1314 |
-| `_day_words` | src/tessellate/ai/recognise.py:2841 |
+| `_day_words` | src/tessellate/ai/recognise.py:2868 |
 | `_digit_clock` | src/tessellate/ai/recognise.py:428 |
-| `_duration_cand` | src/tessellate/ai/recognise.py:3405 |
-| `_duration_cands` | src/tessellate/ai/recognise.py:3379 |
-| `_duration_words` | src/tessellate/ai/recognise.py:2853 |
+| `_duration_cand` | src/tessellate/ai/recognise.py:3432 |
+| `_duration_cands` | src/tessellate/ai/recognise.py:3406 |
+| `_duration_words` | src/tessellate/ai/recognise.py:2880 |
 | `_early_clock` | src/tessellate/ai/recognise.py:635 |
 | `_end_of_day` | src/tessellate/ai/recognise.py:421 |
 | `_end_of_range` | src/tessellate/ai/recognise.py:1542 |
-| `_ends_of` | src/tessellate/ai/recognise.py:3515 |
-| `_figure` | src/tessellate/ai/recognise.py:3400 |
+| `_ends_of` | src/tessellate/ai/recognise.py:3542 |
+| `_figure` | src/tessellate/ai/recognise.py:3427 |
 | `_first_day` | src/tessellate/ai/recognise.py:565 |
-| `_first_end` | src/tessellate/ai/recognise.py:3536 |
+| `_first_end` | src/tessellate/ai/recognise.py:3563 |
 | `_first_reading` | src/tessellate/ai/recognise.py:625 |
 | `_hemisphere` | src/tessellate/ai/recognise.py:1934 |
 | `_holiday_said` | src/tessellate/ai/recognise.py:2188 |
 | `_hour24` | src/tessellate/ai/recognise.py:506 |
-| `_hour_from` | src/tessellate/ai/recognise.py:2990 |
+| `_hour_from` | src/tessellate/ai/recognise.py:3017 |
 | `_in_hours_minutes` | src/tessellate/ai/recognise.py:135 |
 | `_in_locale` | src/tessellate/ai/recognise.py:1941 |
-| `_is_class_phrase` | src/tessellate/ai/recognise.py:3628 |
+| `_is_class_phrase` | src/tessellate/ai/recognise.py:3655 |
 | `_is_time_words` | src/tessellate/ai/recognise.py:959 |
 | `_iso` | src/tessellate/ai/recognise.py:354 |
-| `_jsonable` | src/tessellate/ai/recognise.py:2819 |
+| `_jsonable` | src/tessellate/ai/recognise.py:2846 |
 | `_keep_due_day` | src/tessellate/ai/recognise.py:900 |
 | `_known_day` | src/tessellate/ai/recognise.py:844 |
-| `_lower` | src/tessellate/ai/recognise.py:2836 |
-| `_measure_cands` | src/tessellate/ai/recognise.py:3413 |
+| `_lower` | src/tessellate/ai/recognise.py:2863 |
+| `_measure_cands` | src/tessellate/ai/recognise.py:3440 |
 | `_midnight` | src/tessellate/ai/recognise.py:699 |
-| `_money_names` | src/tessellate/ai/recognise.py:2895 |
+| `_money_names` | src/tessellate/ai/recognise.py:2922 |
 | `_month_day_span` | src/tessellate/ai/recognise.py:1399 |
 | `_month_end` | src/tessellate/ai/recognise.py:1288 |
-| `_month_range_cands` | src/tessellate/ai/recognise.py:3568 |
+| `_month_range_cands` | src/tessellate/ai/recognise.py:3595 |
 | `_month_span` | src/tessellate/ai/recognise.py:1335 |
 | `_months_back` | src/tessellate/ai/recognise.py:991 |
 | `_named_year` | src/tessellate/ai/recognise.py:1325 |
@@ -16464,26 +16464,26 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_nearest_year` | src/tessellate/ai/recognise.py:307 |
 | `_nth_in_month` | src/tessellate/ai/recognise.py:1421 |
 | `_nth_of_month` | src/tessellate/ai/recognise.py:767 |
-| `_nth_weekday_cands` | src/tessellate/ai/recognise.py:3344 |
-| `_num_words` | src/tessellate/ai/recognise.py:2849 |
-| `_number_cands` | src/tessellate/ai/recognise.py:3489 |
+| `_nth_weekday_cands` | src/tessellate/ai/recognise.py:3371 |
+| `_num_words` | src/tessellate/ai/recognise.py:2876 |
+| `_number_cands` | src/tessellate/ai/recognise.py:3516 |
 | `_numbered_year` | src/tessellate/ai/recognise.py:2010 |
-| `_numeric_dates` | src/tessellate/ai/recognise.py:3025 |
+| `_numeric_dates` | src/tessellate/ai/recognise.py:3052 |
 | `_offset_from` | src/tessellate/ai/recognise.py:523 |
 | `_one_day` | src/tessellate/ai/recognise.py:1485 |
-| `_one_phrase` | src/tessellate/ai/recognise.py:3068 |
+| `_one_phrase` | src/tessellate/ai/recognise.py:3095 |
 | `_part_alone` | src/tessellate/ai/recognise.py:710 |
 | `_part_in` | src/tessellate/ai/recognise.py:1841 |
 | `_part_of_year` | src/tessellate/ai/recognise.py:1859 |
-| `_pattern_cands` | src/tessellate/ai/recognise.py:3110 |
-| `_phrase_cands` | src/tessellate/ai/recognise.py:3097 |
+| `_pattern_cands` | src/tessellate/ai/recognise.py:3137 |
+| `_phrase_cands` | src/tessellate/ai/recognise.py:3124 |
 | `_range_count` | src/tessellate/ai/recognise.py:2496 |
 | `_range_for` | src/tessellate/ai/recognise.py:2507 |
-| `_range_start` | src/tessellate/ai/recognise.py:3525 |
-| `_read_as` | src/tessellate/ai/recognise.py:3581 |
-| `_recognise` | src/tessellate/ai/recognise.py:3685 |
-| `_recurrence_cands` | src/tessellate/ai/recognise.py:3288 |
-| `_relative_cands` | src/tessellate/ai/recognise.py:3258 |
+| `_range_start` | src/tessellate/ai/recognise.py:3552 |
+| `_read_as` | src/tessellate/ai/recognise.py:3608 |
+| `_recognise` | src/tessellate/ai/recognise.py:3712 |
+| `_recurrence_cands` | src/tessellate/ai/recognise.py:3315 |
+| `_relative_cands` | src/tessellate/ai/recognise.py:3285 |
 | `_reminder_instant` | src/tessellate/ai/recognise.py:865 |
 | `_reminder_words` | src/tessellate/ai/recognise.py:879 |
 | `_repeat_and_alert` | src/tessellate/ai/recognise.py:969 |
@@ -16491,7 +16491,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_resolve_shortcut` | src/tessellate/ai/recognise.py:578 |
 | `_rolling_said` | src/tessellate/ai/recognise.py:2127 |
 | `_rule_parts` | src/tessellate/ai/recognise.py:761 |
-| `_rx` | src/tessellate/ai/recognise.py:2883 |
+| `_rx` | src/tessellate/ai/recognise.py:2910 |
 | `_season_cycles` | src/tessellate/ai/recognise.py:1957 |
 | `_season_first_months` | src/tessellate/ai/recognise.py:1951 |
 | `_season_pick` | src/tessellate/ai/recognise.py:1964 |
@@ -16526,15 +16526,15 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_span_week_before_last` | src/tessellate/ai/recognise.py:1524 |
 | `_span_weekday` | src/tessellate/ai/recognise.py:1722 |
 | `_span_weekend` | src/tessellate/ai/recognise.py:1645 |
-| `_spoken_cands` | src/tessellate/ai/recognise.py:3184 |
+| `_spoken_cands` | src/tessellate/ai/recognise.py:3211 |
 | `_spoken_clock` | src/tessellate/ai/recognise.py:454 |
 | `_spoken_instant` | src/tessellate/ai/recognise.py:850 |
 | `_still_tonight` | src/tessellate/ai/recognise.py:716 |
-| `_time_cands` | src/tessellate/ai/recognise.py:3254 |
-| `_time_range_cands` | src/tessellate/ai/recognise.py:3243 |
+| `_time_cands` | src/tessellate/ai/recognise.py:3281 |
+| `_time_range_cands` | src/tessellate/ai/recognise.py:3270 |
 | `_trim_dangling` | src/tessellate/ai/recognise.py:942 |
 | `_unit` | src/tessellate/ai/recognise.py:2264 |
-| `_unit_names` | src/tessellate/ai/recognise.py:2891 |
+| `_unit_names` | src/tessellate/ai/recognise.py:2918 |
 | `_valid_day` | src/tessellate/ai/recognise.py:778 |
 | `_week_of` | src/tessellate/ai/recognise.py:1298 |
 | `_weekday_named` | src/tessellate/ai/recognise.py:1710 |
@@ -16542,26 +16542,26 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_weeks_on_day` | src/tessellate/ai/recognise.py:539 |
 | `_window_words` | src/tessellate/ai/recognise.py:2056 |
 | `_with_clock` | src/tessellate/ai/recognise.py:689 |
-| `_with_part_said` | src/tessellate/ai/recognise.py:3195 |
-| `_without_edge` | src/tessellate/ai/recognise.py:3059 |
-| `_word_cands` | src/tessellate/ai/recognise.py:3204 |
+| `_with_part_said` | src/tessellate/ai/recognise.py:3222 |
+| `_without_edge` | src/tessellate/ai/recognise.py:3086 |
+| `_word_cands` | src/tessellate/ai/recognise.py:3231 |
 | `_word_clock` | src/tessellate/ai/recognise.py:478 |
 | `_word_clock_ok` | src/tessellate/ai/recognise.py:496 |
 | `a_topic_phrase` | src/tessellate/ai/recognise.py:2163 |
 | `adverbial` | src/tessellate/ai/recognise.py:2192 |
 | `ahead_window` | src/tessellate/ai/recognise.py:1450 |
-| `alert_words` | src/tessellate/ai/recognise.py:3370 |
-| `as_of_then` | src/tessellate/ai/recognise.py:3742 |
+| `alert_words` | src/tessellate/ai/recognise.py:3397 |
+| `as_of_then` | src/tessellate/ai/recognise.py:3769 |
 | `asks_computed` | src/tessellate/ai/recognise.py:248 |
 | `asks_time` | src/tessellate/ai/recognise.py:260 |
 | `capitalise_names` | src/tessellate/ai/recognise.py:2612 |
-| `class_window` | src/tessellate/ai/recognise.py:3660 |
+| `class_window` | src/tessellate/ai/recognise.py:3687 |
 | `configure_hemisphere` | src/tessellate/ai/recognise.py:1919 |
 | `count_of` | src/tessellate/ai/recognise.py:1280 |
 | `date_mentions` | src/tessellate/ai/recognise.py:282 |
-| `dated_sentence` | src/tessellate/ai/recognise.py:2689 |
-| `day_of_month` | src/tessellate/ai/recognise.py:3617 |
-| `day_offset` | src/tessellate/ai/recognise.py:2751 |
+| `dated_sentence` | src/tessellate/ai/recognise.py:2716 |
+| `day_of_month` | src/tessellate/ai/recognise.py:3644 |
+| `day_offset` | src/tessellate/ai/recognise.py:2778 |
 | `days_named` | src/tessellate/ai/recognise.py:321 |
 | `days_question` | src/tessellate/ai/recognise.py:2634 |
 | `days_since` | src/tessellate/ai/recognise.py:1019 |
@@ -16570,34 +16570,35 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `hemisphere_of` | src/tessellate/ai/recognise.py:1901 |
 | `is_lately` | src/tessellate/ai/recognise.py:2529 |
 | `iso_figures` | src/tessellate/ai/recognise.py:348 |
+| `logged_day` | src/tessellate/ai/recognise.py:2703 |
 | `looks_dated` | src/tessellate/ai/recognise.py:2085 |
-| `measures` | src/tessellate/ai/recognise.py:3779 |
+| `measures` | src/tessellate/ai/recognise.py:3806 |
 | `mid_sentence` | src/tessellate/ai/recognise.py:2220 |
 | `names_a_day` | src/tessellate/ai/recognise.py:2094 |
 | `next_occurrence` | src/tessellate/ai/recognise.py:811 |
 | `note_locale` | src/tessellate/ai/recognise.py:1927 |
 | `offset_question` | src/tessellate/ai/recognise.py:2644 |
 | `parse_reminder_text` | src/tessellate/ai/recognise.py:912 |
-| `part_of_day` | src/tessellate/ai/recognise.py:2778 |
+| `part_of_day` | src/tessellate/ai/recognise.py:2805 |
 | `proper_days` | src/tessellate/ai/recognise.py:2211 |
 | `question_day` | src/tessellate/ai/recognise.py:2545 |
 | `question_range` | src/tessellate/ai/recognise.py:2533 |
-| `recognise` | src/tessellate/ai/recognise.py:3674 |
+| `recognise` | src/tessellate/ai/recognise.py:3701 |
 | `relative_delta` | src/tessellate/ai/recognise.py:96 |
 | `relative_months` | src/tessellate/ai/recognise.py:149 |
 | `resolve` | src/tessellate/ai/recognise.py:670 |
 | `says_a_recent_day` | src/tessellate/ai/recognise.py:2110 |
 | `says_ahead` | src/tessellate/ai/recognise.py:2576 |
 | `says_past` | src/tessellate/ai/recognise.py:2600 |
-| `says_shape` | src/tessellate/ai/recognise.py:3757 |
+| `says_shape` | src/tessellate/ai/recognise.py:3784 |
 | `set_for_later` | src/tessellate/ai/recognise.py:2673 |
-| `shift_day` | src/tessellate/ai/recognise.py:2731 |
-| `since_question` | src/tessellate/ai/recognise.py:2701 |
+| `shift_day` | src/tessellate/ai/recognise.py:2758 |
+| `since_question` | src/tessellate/ai/recognise.py:2728 |
 | `span` | src/tessellate/ai/recognise.py:2029 |
-| `states_its_date` | src/tessellate/ai/recognise.py:2710 |
+| `states_its_date` | src/tessellate/ai/recognise.py:2737 |
 | `stored_repeat` | src/tessellate/ai/recognise.py:745 |
 | `strip_lead` | src/tessellate/ai/recognise.py:168 |
-| `tense_of` | src/tessellate/ai/recognise.py:2868 |
+| `tense_of` | src/tessellate/ai/recognise.py:2895 |
 | `told_as_past` | src/tessellate/ai/recognise.py:2681 |
 | `window` | src/tessellate/ai/recognise.py:2239 |
 | `without_ahead_words` | src/tessellate/ai/recognise.py:1457 |
@@ -23303,7 +23304,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16039)
+## Tests (16043)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23672,6 +23673,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_past_lines_z26.py | 2 |
 | tests/test_composer_phrasings_1025.py | 11 |
 | tests/test_composer_place_not_person_1029.py | 2 |
+| tests/test_composer_plan_e20.py | 4 |
 | tests/test_composer_plan_spread_z57.py | 2 |
 | tests/test_composer_polish.py | 8 |
 | tests/test_composer_quantity_1030.py | 18 |
