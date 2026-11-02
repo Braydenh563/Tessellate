@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- A phone's Documents kebab has About these controls: the dock's ? is hidden below 600, and a proxied row now presses its button a task later, so the help it opens is not shut by the same click (a29h leftover).
 - A document's "/" Templates group is the gallery's own writing and planning set (audit 1102 DX30), not the note shapes; your own templates still come first.
 - No import cycles again (CI red on PR 212): the done-later checklist reading (fable-eye F15) is its own leaf, `ai/composer_done.py`, so `composer_quote` and `composer_plan` no longer import `composer_slots` back through the composer (two cycle groups to none).
 - A lasting toast steps aside for a sheet's buttons after the sheet settles (E2E import, 2026-11-02): the import preview's card re-centred after focus landed, so the search-by-meaning question sat on Import; the sheet runs the check again once its focus has settled (4 of 4 timings covered before, 0 of 4 after).

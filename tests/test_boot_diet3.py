@@ -80,7 +80,9 @@ class _Count(HTMLParser):
 #: Symbol and Equation on the note strip (10, five buttons and their icons).
 #: To 7,921 the same day: audit 1028 S68 folds three imports on the settings-fold
 #: recipe (11: a details, summary, help wrap and slot each; the pane 2,747 to 2,427 px).
-BOOT_ELEMENTS_CAP = 7_921
+#: To 7,923 on 2026-11-02: a phone's Documents kebab gains About these controls
+#: (a button and its icon), since the dock's ? is hidden below 600 (a29h leftover).
+BOOT_ELEMENTS_CAP = 7_923
 
 
 def test_the_boot_document_does_not_grow():

@@ -275,9 +275,10 @@ document.getElementById("doc-dock-menu")?.addEventListener("click", (event) => {
   if (event.target.closest(".doc-dock-menu-item")) {
     document.getElementById("doc-dock-menu").open = false;
   }
-  //: A phone's row for a button the dock drops there (`data-click-proxy`, index.html) presses it.
+  //: A phone's row for a button the dock drops there (`data-click-proxy`, index.html) presses it,
+  //: a task later: pressed inside this click, the page's outside-click close shut the help it opened.
   const proxy = event.target.closest("[data-click-proxy]")?.dataset.clickProxy;
-  if (proxy) (document.getElementById(proxy) || document.querySelector(proxy))?.click();
+  if (proxy) setTimeout(() => (document.getElementById(proxy) || document.querySelector(proxy))?.click());
 });
 document.addEventListener("click", (event) => {
   const menu = document.getElementById("doc-dock-menu");
