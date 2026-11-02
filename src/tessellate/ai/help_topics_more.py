@@ -2206,7 +2206,7 @@ MORE_TOPICS.extend(
                 "Moving and resizing panels. On a computer with a mouse, any panel "
                 "with a title row (the agent, Find anything, Statistics, Settings "
                 "and the rest) can sit where you want it: drag its head to move it "
-                "and drag the small corner mark at its bottom right to resize it. "
+                "and drag any edge or corner to resize it from that side. "
                 "The head always stays on screen, and the content scrolls inside "
                 "when the panel is small. A moved panel drops the dark backdrop so "
                 "you can see what is beside it. Each panel remembers its place and size "

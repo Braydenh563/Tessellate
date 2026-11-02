@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7558, frontend ids 2638, CSS sections 517, backend routes 640, backend modules 8485, test files 1856, tests 15810, plan headings 991, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7558, frontend ids 2638, CSS sections 517, backend routes 640, backend modules 8485, test files 1859, tests 15816, plan headings 991, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7558)
 
@@ -4989,12 +4989,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `lagRafTop` | frontend/js/lag-watch.js:236 |
 | `lagRequest` | frontend/js/lag-watch.js:201 |
 | `lagScriptCause` | frontend/js/lag-watch.js:72 |
-| `lagSnapshot` | frontend/js/lag-watch.js:322 |
+| `lagSnapshot` | frontend/js/lag-watch.js:324 |
 | `lagStackOwner` | frontend/js/lag-watch.js:216 |
-| `lagStart` | frontend/js/lag-watch.js:357 |
+| `lagStart` | frontend/js/lag-watch.js:359 |
 | `lagTarget` | frontend/js/lag-watch.js:58 |
 | `lagView` | frontend/js/lag-watch.js:51 |
-| `lagWireSettings` | frontend/js/lag-watch.js:344 |
+| `lagWireSettings` | frontend/js/lag-watch.js:346 |
 
 ### frontend/js/lan-watch.js (19)
 
@@ -5956,34 +5956,34 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `panelAbove` | frontend/js/panel-movable.js:134 |
 | `panelAboveBy` | frontend/js/panel-movable.js:102 |
-| `panelAdopt` | frontend/js/panel-movable.js:540 |
+| `panelAdopt` | frontend/js/panel-movable.js:541 |
 | `panelApply` | frontend/js/panel-movable.js:349 |
-| `panelChip` | frontend/js/panel-movable.js:900 |
+| `panelChip` | frontend/js/panel-movable.js:935 |
 | `panelClamp` | frontend/js/panel-movable.js:385 |
 | `panelClampMove` | frontend/js/panel-movable.js:53 |
 | `panelClampSize` | frontend/js/panel-movable.js:59 |
 | `panelClipBox` | frontend/js/panel-movable.js:155 |
-| `panelCloseBtn` | frontend/js/panel-movable.js:858 |
+| `panelCloseBtn` | frontend/js/panel-movable.js:893 |
 | `panelContains` | frontend/js/panel-movable.js:152 |
 | `panelDock` | frontend/js/panel-movable.js:467 |
 | `panelFit` | frontend/js/panel-movable.js:452 |
 | `panelFull` | frontend/js/panel-movable.js:503 |
-| `panelGripDown` | frontend/js/panel-movable.js:730 |
-| `panelGripKey` | frontend/js/panel-movable.js:781 |
-| `panelGripRoom` | frontend/js/panel-movable.js:638 |
-| `panelHeadDown` | frontend/js/panel-movable.js:647 |
+| `panelGripDown` | frontend/js/panel-movable.js:758 |
+| `panelGripKey` | frontend/js/panel-movable.js:816 |
+| `panelGripRoom` | frontend/js/panel-movable.js:640 |
+| `panelHeadDown` | frontend/js/panel-movable.js:649 |
 | `panelHeadOf` | frontend/js/panel-movable.js:381 |
-| `panelHeadSettle` | frontend/js/panel-movable.js:841 |
+| `panelHeadSettle` | frontend/js/panel-movable.js:876 |
 | `panelId` | frontend/js/panel-movable.js:334 |
 | `panelInset` | frontend/js/panel-movable.js:431 |
 | `panelKeyDelta` | frontend/js/panel-movable.js:259 |
 | `panelLayout` | frontend/js/panel-movable.js:308 |
 | `panelMakesContext` | frontend/js/panel-movable.js:115 |
-| `panelMinHost` | frontend/js/panel-movable.js:827 |
-| `panelMinKey` | frontend/js/panel-movable.js:961 |
-| `panelMinPlace` | frontend/js/panel-movable.js:887 |
-| `panelMinTray` | frontend/js/panel-movable.js:873 |
-| `panelMinimise` | frontend/js/panel-movable.js:929 |
+| `panelMinHost` | frontend/js/panel-movable.js:862 |
+| `panelMinKey` | frontend/js/panel-movable.js:996 |
+| `panelMinPlace` | frontend/js/panel-movable.js:922 |
+| `panelMinTray` | frontend/js/panel-movable.js:908 |
+| `panelMinimise` | frontend/js/panel-movable.js:964 |
 | `panelMovableOn` | frontend/js/panel-movable.js:313 |
 | `panelOf` | frontend/js/panel-movable.js:323 |
 | `panelPinned` | frontend/js/panel-movable.js:219 |
@@ -5991,11 +5991,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `panelPushOn` | frontend/js/panel-movable.js:216 |
 | `panelPushSide` | frontend/js/panel-movable.js:228 |
 | `panelPushSync` | frontend/js/panel-movable.js:231 |
-| `panelPushToggle` | frontend/js/panel-movable.js:971 |
-| `panelReopen` | frontend/js/panel-movable.js:862 |
+| `panelPushToggle` | frontend/js/panel-movable.js:1006 |
+| `panelReopen` | frontend/js/panel-movable.js:897 |
 | `panelReset` | frontend/js/panel-movable.js:507 |
 | `panelResetSize` | frontend/js/panel-movable.js:520 |
-| `panelRestore` | frontend/js/panel-movable.js:945 |
+| `panelRestore` | frontend/js/panel-movable.js:980 |
 | `panelRestoreOn` | frontend/js/panel-movable.js:256 |
 | `panelSafe` | frontend/js/panel-movable.js:181 |
 | `panelSave` | frontend/js/panel-movable.js:532 |
@@ -6012,11 +6012,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `panelStoreRead` | frontend/js/panel-movable.js:276 |
 | `panelStoreWrite` | frontend/js/panel-movable.js:284 |
 | `panelSync` | frontend/js/panel-movable.js:479 |
-| `panelTitle` | frontend/js/panel-movable.js:830 |
+| `panelTitle` | frontend/js/panel-movable.js:865 |
 | `panelTopLayer` | frontend/js/panel-movable.js:105 |
 | `panelUnsnap` | frontend/js/panel-movable.js:472 |
 | `panelWatchOpen` | frontend/js/panel-movable.js:486 |
-| `panelWindowResized` | frontend/js/panel-movable.js:983 |
+| `panelWindowResized` | frontend/js/panel-movable.js:1018 |
 | `panelZoneFor` | frontend/js/panel-movable.js:252 |
 | `panelZoneRect` | frontend/js/panel-movable.js:80 |
 
@@ -11945,7 +11945,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/nav-history-lazy.css | 169 |
 | frontend/css/objmove-lazy.css | 123 |
 | frontend/css/offline-split-lazy.css | 71 |
-| frontend/css/panel-movable-lazy.css | 196 |
+| frontend/css/panel-movable-lazy.css | 209 |
 | frontend/css/plain-head-lazy.css | 17 |
 | frontend/css/popup-anatomy-lazy.css | 155 |
 | frontend/css/questions-lazy.css | 102 |
@@ -17724,65 +17724,65 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_Ask` | src/tessellate/ai/utilities.py:743 |
-| `_answer_age` | src/tessellate/ai/utilities.py:772 |
-| `_answer_chance` | src/tessellate/ai/utilities.py:788 |
-| `_answer_percent` | src/tessellate/ai/utilities.py:781 |
-| `_answer_root` | src/tessellate/ai/utilities.py:763 |
-| `_answer_sum` | src/tessellate/ai/utilities.py:754 |
-| `_calculation_kind` | src/tessellate/ai/utilities.py:430 |
-| `_clean` | src/tessellate/ai/utilities.py:136 |
-| `_clock` | src/tessellate/ai/utilities.py:675 |
-| `_clock_swap` | src/tessellate/ai/utilities.py:353 |
-| `_compile_convert` | src/tessellate/ai/utilities.py:46 |
-| `_compile_money` | src/tessellate/ai/utilities.py:66 |
-| `_convert` | src/tessellate/ai/utilities.py:186 |
-| `_currency` | src/tessellate/ai/utilities.py:207 |
-| `_date_kind` | src/tessellate/ai/utilities.py:454 |
-| `_dates` | src/tessellate/ai/utilities.py:234 |
-| `_day_words` | src/tessellate/ai/utilities.py:156 |
-| `_edits` | src/tessellate/ai/utilities.py:598 |
-| `_generative` | src/tessellate/ai/utilities.py:465 |
-| `_heading_at` | src/tessellate/ai/utilities.py:928 |
-| `_heard` | src/tessellate/ai/utilities.py:364 |
-| `_hm` | src/tessellate/ai/utilities.py:634 |
-| `_in_symbols` | src/tessellate/ai/utilities.py:302 |
-| `_is_clock` | src/tessellate/ai/utilities.py:638 |
-| `_kind_of` | src/tessellate/ai/utilities.py:423 |
-| `_kind_of_cached` | src/tessellate/ai/utilities.py:419 |
-| `_list_answer` | src/tessellate/ai/utilities.py:838 |
-| `_list_of` | src/tessellate/ai/utilities.py:344 |
-| `_month_days` | src/tessellate/ai/utilities.py:851 |
-| `_nearest_place` | src/tessellate/ai/utilities.py:585 |
-| `_number` | src/tessellate/ai/utilities.py:143 |
-| `_numbers` | src/tessellate/ai/utilities.py:335 |
-| `_one` | src/tessellate/ai/utilities.py:167 |
-| `_other_day` | src/tessellate/ai/utilities.py:670 |
-| `_other_kind` | src/tessellate/ai/utilities.py:472 |
-| `_patterns` | src/tessellate/ai/utilities.py:77 |
-| `_place_said` | src/tessellate/ai/utilities.py:646 |
-| `_plural` | src/tessellate/ai/utilities.py:160 |
-| `_said` | src/tessellate/ai/utilities.py:147 |
-| `_salted` | src/tessellate/ai/utilities.py:229 |
-| `_sum_of` | src/tessellate/ai/utilities.py:310 |
-| `_swap_answer` | src/tessellate/ai/utilities.py:860 |
-| `_temperature` | src/tessellate/ai/utilities.py:181 |
-| `_twelve` | src/tessellate/ai/utilities.py:625 |
-| `_utility_words` | src/tessellate/ai/utilities.py:392 |
-| `_web_capability` | src/tessellate/ai/utilities.py:728 |
-| `_where` | src/tessellate/ai/utilities.py:662 |
-| `_zone_cities` | src/tessellate/ai/utilities.py:555 |
-| `_zone_said` | src/tessellate/ai/utilities.py:652 |
-| `answer` | src/tessellate/ai/utilities.py:827 |
-| `counts` | src/tessellate/ai/utilities.py:901 |
-| `kind_of` | src/tessellate/ai/utilities.py:409 |
-| `now_day` | src/tessellate/ai/utilities.py:274 |
-| `outline` | src/tessellate/ai/utilities.py:944 |
-| `place_name_for` | src/tessellate/ai/utilities.py:567 |
-| `reading_time` | src/tessellate/ai/utilities.py:916 |
-| `until_subject` | src/tessellate/ai/utilities.py:283 |
-| `web_on` | src/tessellate/ai/utilities.py:714 |
-| `zone_for` | src/tessellate/ai/utilities.py:611 |
+| `_Ask` | src/tessellate/ai/utilities.py:746 |
+| `_answer_age` | src/tessellate/ai/utilities.py:775 |
+| `_answer_chance` | src/tessellate/ai/utilities.py:791 |
+| `_answer_percent` | src/tessellate/ai/utilities.py:784 |
+| `_answer_root` | src/tessellate/ai/utilities.py:766 |
+| `_answer_sum` | src/tessellate/ai/utilities.py:757 |
+| `_calculation_kind` | src/tessellate/ai/utilities.py:433 |
+| `_clean` | src/tessellate/ai/utilities.py:139 |
+| `_clock` | src/tessellate/ai/utilities.py:678 |
+| `_clock_swap` | src/tessellate/ai/utilities.py:356 |
+| `_compile_convert` | src/tessellate/ai/utilities.py:49 |
+| `_compile_money` | src/tessellate/ai/utilities.py:69 |
+| `_convert` | src/tessellate/ai/utilities.py:189 |
+| `_currency` | src/tessellate/ai/utilities.py:210 |
+| `_date_kind` | src/tessellate/ai/utilities.py:457 |
+| `_dates` | src/tessellate/ai/utilities.py:237 |
+| `_day_words` | src/tessellate/ai/utilities.py:159 |
+| `_edits` | src/tessellate/ai/utilities.py:601 |
+| `_generative` | src/tessellate/ai/utilities.py:468 |
+| `_heading_at` | src/tessellate/ai/utilities.py:931 |
+| `_heard` | src/tessellate/ai/utilities.py:367 |
+| `_hm` | src/tessellate/ai/utilities.py:637 |
+| `_in_symbols` | src/tessellate/ai/utilities.py:305 |
+| `_is_clock` | src/tessellate/ai/utilities.py:641 |
+| `_kind_of` | src/tessellate/ai/utilities.py:426 |
+| `_kind_of_cached` | src/tessellate/ai/utilities.py:422 |
+| `_list_answer` | src/tessellate/ai/utilities.py:841 |
+| `_list_of` | src/tessellate/ai/utilities.py:347 |
+| `_month_days` | src/tessellate/ai/utilities.py:854 |
+| `_nearest_place` | src/tessellate/ai/utilities.py:588 |
+| `_number` | src/tessellate/ai/utilities.py:146 |
+| `_numbers` | src/tessellate/ai/utilities.py:338 |
+| `_one` | src/tessellate/ai/utilities.py:170 |
+| `_other_day` | src/tessellate/ai/utilities.py:673 |
+| `_other_kind` | src/tessellate/ai/utilities.py:475 |
+| `_patterns` | src/tessellate/ai/utilities.py:80 |
+| `_place_said` | src/tessellate/ai/utilities.py:649 |
+| `_plural` | src/tessellate/ai/utilities.py:163 |
+| `_said` | src/tessellate/ai/utilities.py:150 |
+| `_salted` | src/tessellate/ai/utilities.py:232 |
+| `_sum_of` | src/tessellate/ai/utilities.py:313 |
+| `_swap_answer` | src/tessellate/ai/utilities.py:863 |
+| `_temperature` | src/tessellate/ai/utilities.py:184 |
+| `_twelve` | src/tessellate/ai/utilities.py:628 |
+| `_utility_words` | src/tessellate/ai/utilities.py:395 |
+| `_web_capability` | src/tessellate/ai/utilities.py:731 |
+| `_where` | src/tessellate/ai/utilities.py:665 |
+| `_zone_cities` | src/tessellate/ai/utilities.py:558 |
+| `_zone_said` | src/tessellate/ai/utilities.py:655 |
+| `answer` | src/tessellate/ai/utilities.py:830 |
+| `counts` | src/tessellate/ai/utilities.py:904 |
+| `kind_of` | src/tessellate/ai/utilities.py:412 |
+| `now_day` | src/tessellate/ai/utilities.py:277 |
+| `outline` | src/tessellate/ai/utilities.py:947 |
+| `place_name_for` | src/tessellate/ai/utilities.py:570 |
+| `reading_time` | src/tessellate/ai/utilities.py:919 |
+| `until_subject` | src/tessellate/ai/utilities.py:286 |
+| `web_on` | src/tessellate/ai/utilities.py:717 |
+| `zone_for` | src/tessellate/ai/utilities.py:614 |
 
 ### src/tessellate/ai/validate.py (16)
 
@@ -23280,7 +23280,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15810)
+## Tests (15816)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23899,6 +23899,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_entry_references.py | 32 |
 | tests/test_entry_writers_whole_1525.py | 4 |
 | tests/test_error_contract.py | 4 |
+| tests/test_error_log_1549.py | 1 |
 | tests/test_error_toasts.py | 8 |
 | tests/test_events.py | 25 |
 | tests/test_events_undo.py | 13 |
@@ -24501,6 +24502,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_palette_synonyms.py | 5 |
 | tests/test_panel_movable.py | 25 |
 | tests/test_panel_movable_whole_1448.py | 1 |
+| tests/test_panel_rim_1536.py | 3 |
 | tests/test_panel_scrim_lift_1029.py | 3 |
 | tests/test_passes.py | 7 |
 | tests/test_passive_capture.py | 9 |
@@ -24957,6 +24959,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_usage_ledger.py | 8 |
 | tests/test_user_profile_context.py | 8 |
 | tests/test_utilities_zones.py | 4 |
+| tests/test_utility_leads_1550.py | 2 |
 | tests/test_utility_timers_1029.py | 10 |
 | tests/test_ux1005_copy.py | 6 |
 | tests/test_ux_1031_ask.py | 8 |
@@ -25848,7 +25851,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1300 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:237 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:239 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4186 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |

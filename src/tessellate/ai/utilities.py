@@ -43,9 +43,12 @@ _UNITS = recognise.UNITS
 
 _UNIT_NAMES = "|".join(sorted((re.escape(n) for n in _UNITS), key=len, reverse=True))
 _NUM = r"(-?\d+(?:[.,]\d+)?)"
+#: What a person puts before a conversion: "what is 7000 km in miles" was a web
+#: search while "7000 km in miles" was worked out (INBOX 1550).
+_LEAD = r"(?:convert\s+|(?:what(?:'s|\s+is|\s+are)|whats|how\s+much\s+(?:is|are))\s+)?"
 def _compile_convert() -> tuple:
     return (
-    re.compile(rf"^(?:convert\s+)?{_NUM}\s*({_UNIT_NAMES})\s+(?:to|into|in|as)\s+({_UNIT_NAMES})$", re.I),
+    re.compile(rf"^{_LEAD}{_NUM}\s*({_UNIT_NAMES})\s+(?:to|into|in|as)\s+({_UNIT_NAMES})$", re.I),
     re.compile(rf"^how many\s+({_UNIT_NAMES})\s+(?:is|are|in|make|makes|equals?)\s+(?:a|an|{_NUM})\s*({_UNIT_NAMES})$", re.I),
     re.compile(rf"^how (?:much|far|long|heavy|big|hot|cold) is\s+{_NUM}\s*({_UNIT_NAMES})\s+in\s+({_UNIT_NAMES})$", re.I),
     )
@@ -65,7 +68,7 @@ _CURRENCY_NAMES = recognise.CURRENCY_NAMES
 _MONEY_NAMES = "|".join(sorted((re.escape(n) for n in _CURRENCY_NAMES), key=len, reverse=True))
 def _compile_money() -> tuple:
     return (
-        re.compile(rf"^(?:convert\s+|how much is\s+|what is\s+)?({_MONEY_NAMES})?\s*{_NUM}\s*({_MONEY_NAMES})?\s+(?:to|into|in)\s+({_MONEY_NAMES})$", re.I),
+        re.compile(rf"^{_LEAD}({_MONEY_NAMES})?\s*{_NUM}\s*({_MONEY_NAMES})?\s+(?:to|into|in)\s+({_MONEY_NAMES})$", re.I),
     )
 
 
