@@ -300,6 +300,14 @@ def _with_records(session: Session, question: str, entries: list, locale: str | 
     return merged
 
 
+def _records_beside(session: Session, question: str, attached: list, locale: str | None) -> list:  # noqa: ANN001
+    """A closed set of one named note ("what is in my admin bits note") still
+    reads a box a later note records as done: the notes that name its open
+    items ride beside it, never in its place (second eye F15)."""
+    have = {e.id for e in attached}
+    return [e for e in _with_records(session, question, list(attached), locale) if e.id not in have]
+
+
 _CHECKBOX = re.compile(r"^\s*[-*]\s*\[[ xX]\]", re.M)
 
 

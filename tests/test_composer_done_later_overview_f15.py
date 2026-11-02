@@ -47,7 +47,7 @@ def ask(client, session, monkeypatch):
     #: "My X note" is a counted ask: the route keeps the notes it counted and
     #: fetches no record notes, so the overview cannot see the later note.
     #: Needs the records carried beside the pool, not in it.
-    pytest.param("what is in my admin bits note", marks=pytest.mark.xfail(strict=True, reason="counted pool fetches no records")),
+    "what is in my admin bits note",
     "tell me about admin bits",
     "what do I still need to do",
     "what is still open on admin bits",
@@ -61,3 +61,22 @@ def test_a_task_done_in_a_later_note_is_not_still_to_do(ask, question):
     for line in low.splitlines():
         if "renew library membership" in line:
             assert "29 october" in line or "done" in line, said
+
+
+@pytest.mark.parametrize("question", [
+    "what is in my admin bits note",
+    "what is in the admin bits note",
+    "show me my admin bits note",
+    "what's left in my admin bits note",
+])
+def test_a_named_note_keeps_its_records_beside_it(client, session, question):
+    """The closed set of one named note fetches the notes that name its open
+    items beside it (the model's context too), never in its place."""
+    from tessellate.api import routes_chat as rc
+
+    first = manager.create_entry(session, NOTES[0][0])
+    later = manager.create_entry(session, NOTES[1][0])
+    session.commit()
+    found = rc._Found(detected="notes")
+    rc._retrieve_for(session, question, found, [first], True, None, None, True, False)
+    assert [e.id for e in found.entries] == [later.id]

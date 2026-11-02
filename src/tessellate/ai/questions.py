@@ -35,6 +35,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import facts, learning
+from tessellate.ai.composer_frame import note_title
 from tessellate.core.database import DerivedFact, Entry, utcnow
 
 STATES = ("open", "answered", "dropped")
@@ -84,22 +85,6 @@ def _plain(text: str) -> str:
     return re.sub(r"(\*\*|__)", "", text).strip()
 
 
-def _title(content: str) -> str:
-    """What a row calls a note: its first sentence of its first line, or the
-    line cut at 60 characters. A one-line note's whole text as its "title"
-    read as the sentence twice beside the quote of it (questions.js)."""
-    first = _plain((content or "").strip().split("\n", 1)[0].strip().lstrip("#").strip())
-    #: The first `.`, `!` or `?` that ends a word (followed by a space or the
-    #: end), after at least one character, and only if the sentence fits in
-    #: 60: so only the first 60 characters are ever read. This was
-    #: `re.match(r"(.+?[.!?])(?:\s|$)", first)`, linear already (anchored), but
-    #: CodeQL reads `.+?` as `py/polynomial-redos` and the loop is simpler.
-    for end in range(1, min(len(first), 60)):
-        if first[end] in ".!?" and (end + 1 == len(first) or first[end + 1].isspace()):
-            return first[: end + 1]
-    return first if len(first) <= 60 else first[:59].rstrip() + "\u2026"
-
-
 def _as_json(question: DerivedFact, answer: DerivedFact | None, notes: dict[int, Entry]) -> dict:
     payload = _payload(question)
     note = notes.get(question.entry_id)
@@ -110,7 +95,7 @@ def _as_json(question: DerivedFact, answer: DerivedFact | None, notes: dict[int,
         "display": _plain(question.text),
         "span": [question.span_start, question.span_end],
         "asked_at": note.created_at.isoformat() if note is not None and note.created_at else None,
-        "note_title": _title(note.content) if note is not None else "",
+        "note_title": note_title(note.content, size=60) if note is not None else "",
         "state": state_of(question, answer),
         "answered_by": None,
     }
@@ -122,7 +107,7 @@ def _as_json(question: DerivedFact, answer: DerivedFact | None, notes: dict[int,
             "text": answer.text,
             "span": [answer.span_start, answer.span_end],
             "at": by.created_at.isoformat() if by is not None and by.created_at else None,
-            "note_title": _title(by.content) if by is not None else "",
+            "note_title": note_title(by.content, size=60) if by is not None else "",
             "model": answer.model,
             "reason": _payload(answer).get("reason") or "",
             "by_hand": False,
@@ -135,7 +120,7 @@ def _as_json(question: DerivedFact, answer: DerivedFact | None, notes: dict[int,
             "text": "",
             "span": None,
             "at": payload.get("answered_at"),
-            "note_title": _title(by.content) if by is not None else "",
+            "note_title": note_title(by.content, size=60) if by is not None else "",
             "model": "you",
             "reason": "",
             "by_hand": True,

@@ -77,7 +77,7 @@ from tessellate.search import search_manager
 from sqlalchemy import func
 from tessellate.api.chat_attach import ATTACHED_MAP_CHARS, _MEDIA_REF, _attached_boards, _attached_documents, _attached_files, _attached_notes, _attachment_readings, _files_on, _grounding_candidates, _media_readings, _note_dates, _one_line, _picture_alts, _time_words  # noqa: F401  (moved; re-exported)
 from tessellate.api.chat_request import ChatRequest, _apply_open_this, _open_surface, ChatResponse, ChatTurn, CommandRunBody, CompressBody, FollowupBody, MAX_COMPRESS_TURNS, RememberBody, ToolExecuteBody, _NOTE_LINK, _NOT_A_NAME, _StreamRequest, _Turn, _apply_open, _apply_scope, _chat_model_sees_images, _check_refs, _composed, _event, _image_caption_context, _in_full, _meta_event, _named_note, _nothing_open, _resolve_chat_images, _resolve_mode, _resolve_persona, _resolve_skill  # noqa: F401  (moved; re-exported)
-from tessellate.api.chat_pool import _Found, _NoteCtx, _chat_payload, _composer_reads, _document_row, _filed_under, _frame_matches, _glossary, _holding, _holds_read_text, _in_window, _keep_window, _note_content, _whole_pool, _widened, _with_each_side, _with_neighbours, _with_records, _with_sources  # noqa: F401  (moved; re-exported)
+from tessellate.api.chat_pool import _Found, _NoteCtx, _chat_payload, _composer_reads, _document_row, _filed_under, _frame_matches, _glossary, _holding, _holds_read_text, _in_window, _keep_window, _note_content, _records_beside, _whole_pool, _widened, _with_each_side, _with_neighbours, _with_records, _with_sources  # noqa: F401  (moved; re-exported)
 from tessellate.api.chat_recent import AGENT_SURFACE, ASK_SURFACE, STARTER_SUGGESTIONS, _NAMES, _about, _asked_key, _feature_for, _fill, _recent_questions  # noqa: F401  (moved; re-exported)
 from tessellate.api.chat_web import WEB_PAGES, _can_start_searxng, _home_place, _link_events, _offer_events, _search_service, _unmatched_recents, _web_allowed, _web_chip, _web_first, _web_page_row, _web_pref_on  # noqa: F401  (moved; re-exported)
 from tessellate.api.chat_agent import _agent_events, _close_quietly, _first_agent_event, _refuse_failed, _refuse_if_off, _starter_read  # noqa: F401  (moved; re-exported)
@@ -324,6 +324,8 @@ def _retrieve_for(session: Session, question: str, found: _Found, attached: list
         found.mode = "stats"
     elif intent.needs_retrieval(found.detected) and not (attached_notes_only and (attached or held)):
         _search_notes(session, question, found, attached, as_of, locale, composed)
+    elif attached_notes_only and attached and as_of is None:
+        found.entries = _records_beside(session, question, attached, locale)
 
 
 def _rewind_as_of(session: Session, question: str, found: _Found, as_of, locale: str | None) -> None:  # noqa: ANN001
