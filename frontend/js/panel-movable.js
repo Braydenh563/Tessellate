@@ -1017,7 +1017,9 @@ if (typeof document !== "undefined" && document.addEventListener) {
   document.addEventListener("focusin", (e) => {
     const p = panelOf(e.target);
     if (p && press.down) press.wait.add(p);
-    else if (p) panelAdopt(p);
+    //: A panel not yet adopted is, after the frame the focus came in: its first look reads
+    //: the style the focus change has just invalidated (52 to 150ms at 4x, INBOX 1534).
+    else if (p) p.classList.contains("panel-movable-on") ? panelAdopt(p) : afterFrames(() => setTimeout(panelAdopt, 0, p), 1);
   }, true);
   document.addEventListener("keydown", panelMinKey, true);
   //: A pill rides above the page the reader is on: put it back after a tab change.

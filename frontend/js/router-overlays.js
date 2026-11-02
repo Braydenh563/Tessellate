@@ -124,8 +124,11 @@ function routerSettle() {
     if (!overlay.classList.contains("hidden")) return;
     const back = overlay.opener;
     overlay.opener = null;
-    const active = document.activeElement;
-    if (back && back.isConnected && (!active || active === document.body || overlay.contains(active))) back.focus?.();
+    //: After the frame that hid it: the focus settled the page the hide had just dirtied (65ms at 4x, INBOX 1534).
+    afterFrames(() => setTimeout(() => {
+      const active = document.activeElement;
+      if (back && back.isConnected && overlay.classList.contains("hidden") && (!active || active === document.body || overlay.contains(active))) back.focus?.();
+    }), 1);
   }).observe(overlay, { attributes: true, attributeFilter: ["class"] });
 })();
 

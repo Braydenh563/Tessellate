@@ -1552,27 +1552,34 @@ function openSheet({ label, sub = "", name, build, variant = "", modal = true, r
   //: after the tap). A tap that opened a sheet asked for the sheet, not for
   //: its first choice (nor a slider or a tickbox, which a script focus helps
   //: nobody with); the pointer and the keyboard keep the old landing.
-  const touchOnly = window.matchMedia("(hover: none), (pointer: coarse)").matches;
-  const field = touchOnly
-    ? [...card.querySelectorAll("input:not([type=hidden], [type=range], [type=checkbox], [type=radio]), textarea")].find(
-        (el) => el.offsetParent !== null
-      )
-    : card.querySelector("input:not([type=hidden]), select, textarea");
-  //: The first of these that actually takes focus: a field inside a closed
-  //: fold is `offsetParent`-visible to nobody and refuses the call, and
-  //: leaving the focus on the opener behind the sheet is the other failure.
-  if (!card.hasAttribute("tabindex")) card.tabIndex = -1;
-  for (const target of [
-    field,
-    card.querySelector('.sheet-row[aria-current="true"]'),
-    card.querySelector(".sheet-row"),
-    card.querySelector("button, [href]"),
-    card,
-  ]) {
-    if (!target) continue;
-    target.focus?.();
-    if (document.activeElement === target) break;
-  }
+  //: After the first paint, not in the press that opened it: the focus settled the
+  //: whole page's style and layout, and its focus events (a movable panel adopting
+  //: the sheet) read more (203ms of the Guide button's press at 4x, INBOX 1534). Not
+  //: if the sheet has gone, or focus has gone into it by itself.
+  afterFrames(() => setTimeout(() => {
+    if (!card.isConnected || card.contains(document.activeElement)) return;
+    const touchOnly = window.matchMedia("(hover: none), (pointer: coarse)").matches;
+    const field = touchOnly
+      ? [...card.querySelectorAll("input:not([type=hidden], [type=range], [type=checkbox], [type=radio]), textarea")].find(
+          (el) => el.offsetParent !== null
+        )
+      : card.querySelector("input:not([type=hidden]), select, textarea");
+    //: The first of these that actually takes focus: a field inside a closed
+    //: fold is `offsetParent`-visible to nobody and refuses the call, and
+    //: leaving the focus on the opener behind the sheet is the other failure.
+    if (!card.hasAttribute("tabindex")) card.tabIndex = -1;
+    for (const target of [
+      field,
+      card.querySelector('.sheet-row[aria-current="true"]'),
+      card.querySelector(".sheet-row"),
+      card.querySelector("button, [href]"),
+      card,
+    ]) {
+      if (!target) continue;
+      target.focus?.();
+      if (document.activeElement === target) break;
+    }
+  }), 1);
   return close;
 }
 

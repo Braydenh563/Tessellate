@@ -70,3 +70,29 @@ def test_a_dock_with_nothing_folded_is_not_written_to_before_it_is_read():
 def test_the_notes_strip_token_is_written_after_the_frame_not_in_the_observers_report():
     body = _body(frontend_text("phone-shell.js"), "function initNotesSubtabHeightToken(")
     assert 'setTimeout(() => page.style.setProperty("--notes-sticky-top", h))' in body
+
+
+def test_a_sheet_or_the_palette_takes_focus_after_the_first_paint():
+    """The focus settled the page the press had just changed, and its focus events read more
+    (Guide 203ms, the agent palette 348 to 560ms at 4x)."""
+    sheet = _body(frontend_text("phone-shell.js"), "function openSheet(")
+    assert sheet.index("afterFrames(() => setTimeout(() => {") < sheet.index("target.focus?.()")
+    assert "card.contains(document.activeElement)) return" in sheet
+    palette = _body(frontend_text("palette.js"), "function toggleAgentPalette(")
+    assert "afterFrames(() => setTimeout(() => cmdPaletteOverlay.classList.contains(\"hidden\") || cmdPaletteInput.focus()), 1)" in palette
+
+
+def test_the_palette_gives_focus_back_and_a_panel_is_adopted_after_the_frame():
+    back = frontend_text("router-overlays.js")
+    assert "afterFrames(() => setTimeout(() => {\n      const active = document.activeElement;" in back
+    assert 'overlay.classList.contains("hidden") && (!active' in back, "reopened in the gap, it keeps its own focus"
+    movable = frontend_text("panel-movable.js")
+    assert 'afterFrames(() => setTimeout(panelAdopt, 0, p), 1)' in movable
+
+
+def test_the_companion_looks_for_a_popup_after_a_frame_has_drawn_the_press():
+    src = frontend_text("avatars.js")
+    i = src.index('for (const type of ["click", "keyup"])')
+    block = src[i:i + 1400]
+    assert "afterFrames(() => setTimeout(look), 1)" in block
+    assert "setTimeout(afterPaint, 80)" in block and "setTimeout(afterPaint, 700)" in block

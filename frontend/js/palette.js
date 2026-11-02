@@ -406,7 +406,9 @@ function toggleAgentPalette() {
     syncAgentPaletteAvailability();
     agentBoardIndexAsked = false;
     syncAgentOpenNoteToggle();
-    cmdPaletteInput.focus();
+    //: After the first paint: focused here it settled the page the palette had just
+    //: been shown over, and its focus events read more (348 to 560ms at 4x, INBOX 1534).
+    afterFrames(() => setTimeout(() => cmdPaletteOverlay.classList.contains("hidden") || cmdPaletteInput.focus()), 1);
   } else {
     cmdPaletteOverlay.classList.add("hidden");
   }
