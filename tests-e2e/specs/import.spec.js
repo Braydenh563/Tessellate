@@ -9,6 +9,18 @@ const { openApp, api, makeZip } = require("../helpers");
 async function confirmPreview(page, count) {
   const sheet = page.locator('[data-sheet="import-preview"]');
   await expect(sheet).toContainText(`${count} notes will be imported`, { timeout: 20_000 });
+  // Diagnostic only (CI-only failure, five fixes): what the toast yield sees. Asserts nothing.
+  console.log("toast-yield probe", JSON.stringify(await page.evaluate(() => {
+    const box = document.getElementById("toast-box");
+    const a = document.activeElement;
+    const area = a && a.closest && a.closest("form, section, [role=dialog]");
+    const r = (el) => { const b = el.getBoundingClientRect(); return [b.x, b.y, b.width, b.height].map(Math.round); };
+    let err = null;
+    try { toastYield(); } catch (e) { err = String(e); }
+    return { active: a && `${a.tagName}#${a.id}.${a.className}`, area: area && `${area.tagName}.${area.className}[${area.getAttribute("role")}] role=${area.role}`,
+      work: area ? [...area.querySelectorAll("button:not(.panel-grip)")].map((b) => [b.textContent.trim().slice(0, 12), b.checkVisibility({ contentVisibilityAuto: true }), r(b)]) : null,
+      toasts: [...box.children].map((t) => [t.className, !!t.toastTimer, r(t)]), cls: box.className, err, ua: navigator.userAgent.slice(-30) };
+  })));
   await sheet.getByRole("button", { name: `Import ${count}` }).click();
 }
 
