@@ -28,10 +28,11 @@ from tessellate.ai.embeddings import bytes_to_vector, similar_pairs
 from tessellate.api import bounds
 from tessellate.core import cjk
 from tessellate.core import deps
-from tessellate.core.database import Attachment, EmbeddingRecord, Entry, EntryLink, EntryProperty, NoteType
+from tessellate.core.database import Attachment, EmbeddingRecord, Entry, EntryLink, NoteType
 from tessellate.core.deps import get_session
 from tessellate.entry import manager, paths
 from tessellate.repo import documents as documents_repo
+from tessellate.repo import properties as properties_repo
 from tessellate.repo import relation_types
 from tessellate.entry import topics as topic_finder
 from tessellate.search import search_manager
@@ -867,11 +868,7 @@ def _note_types_of(session: Session, node_ids: set[int]) -> dict[int, str]:
     for name in session.scalars(select(NoteType.name)):
         canonical[name.casefold()] = name
     type_of: dict[int, str] = {}
-    for entry_id, value in session.execute(
-        select(EntryProperty.entry_id, EntryProperty.value)
-        .where(EntryProperty.key == "type")
-        .order_by(EntryProperty.id)
-    ):
+    for entry_id, value in properties_repo.types(session):
         if entry_id in node_ids and value:
             type_of.setdefault(entry_id, canonical.get(value.casefold(), value))
     return type_of
