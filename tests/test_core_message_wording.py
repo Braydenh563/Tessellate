@@ -94,7 +94,7 @@ SOURCES: tuple[Source, ...] = (
     Source("entry/tidy.py", raises=("ValueError", "LookupError"), functions=("set_auto", "undo")),
     Source("ai/tools/categories.py", raises=("ToolError",)),
     Source(
-        "ai/tools/__init__.py",
+        "ai/tools/tool_turn.py",
         raises=("ToolError",),
         functions=("validate_make_plan", "summarise_turns"),
     ),

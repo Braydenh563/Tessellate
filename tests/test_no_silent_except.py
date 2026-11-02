@@ -32,8 +32,8 @@ SEED = frozenset(
 src/tessellate/__main__.py::_bootloader_splash::1
 src/tessellate/ai/margin.py::_date_card::1
 src/tessellate/ai/provider.py::Provider.preferred_context::1
-src/tessellate/ai/tools/__init__.py::prefetch_web.one::1
-src/tessellate/ai/tools/__init__.py::with_relation_types::1
+src/tessellate/ai/tools/tool_web.py::prefetch_web.one::1
+src/tessellate/ai/tools/tool_schema.py::with_relation_types::1
 src/tessellate/ai/vision_ocr.py::pdf_reader_or_none::1
 src/tessellate/ai/vision_ocr.py::pdf_vision_ocr_and_store::1
 src/tessellate/api/app.py::out_of_space_body::1

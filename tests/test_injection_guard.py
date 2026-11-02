@@ -24,13 +24,15 @@ private note, and nothing being auto-fetched.
 from __future__ import annotations
 
 import inspect
+from pathlib import Path
 
 from tessellate.ai import agent
 from tessellate.ai import tools
 
 
 def test_read_url_labels_its_result_as_data():
-    source = inspect.getsource(tools)
+    # `read_url` lives with the web tools since the split; `files.py` has a different `content_is_data`.
+    source = Path(tools.__file__).with_name("tool_web.py").read_text(encoding="utf-8")
     assert '"content_is_data"' in source, (
         "read_url must tell the model its payload is data, not instructions"
     )
