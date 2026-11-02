@@ -2621,7 +2621,7 @@ function renderDocStats() {
   const code = docIsCodeFile();
   button.classList.toggle("hidden", code);
   if (code) return;
-  const { words } = textCounts(docText());
+  const { words } = docPlainText.counts(docCommentStrip(docText()));
   const goal = currentDoc ? getDocWordGoal(currentDoc.id) : 0;
   button.setAttribute("aria-pressed", String(goal > 0));
   button.classList.toggle("has-findings", goal > 0 && words >= goal);
@@ -5034,7 +5034,7 @@ function docTablePasteEvent(event, view) {
 // (a heading, emphasis, a list, a link, a quote, code, a picture, a table):
 // a code editor's copy is coloured spans and divs, and turning those into
 // paragraphs would break the code it was copying.
-const DOC_RICH_TAGS = /<(h[1-6]|strong|b|em|i|a\s[^>]*href|ul|ol|blockquote|pre|code|img|table|del|s)[\s>]|mso-list/i;
+const DOC_RICH_TAGS = /<(h[1-6]|strong|b|em|i|a\s[^>]*href|ul|ol|blockquote|pre|code|img|table|del|s)[\s>]|<p[^>]*>(?:\s|&nbsp;)*[·•▪§Ø](?:\s|&nbsp;)|MsoList|mso-list/i;
 //: **Emphasis kept only in a span's style counts too** (dog3d-1026:7: a lone
 //: `<span style="font-weight:700">` arrived as plain text, because no tag in
 //: the list above was in it). Not when the copy is code: an editor's copy is a
@@ -5055,16 +5055,29 @@ let docPastePlain = false;
 //: list and "· item" arrived as plain text. Returns the Markdown line, indented
 //: by the item's level, or "" for any other paragraph.
 function docWordListLine(el, styleOf, inline) {
-  const list = styleOf(el, "mso-list");
-  if (!list || list === "none") return "";
-  const level = Number(/level(\d+)/.exec(list)?.[1] || 1);
+  const style = styleOf(el, "mso-list");
+  //: **A list paragraph with its `mso-list` style stripped is still a list**
+  //: (DX32, audit 1102): Word for the web, Outlook and a copy through another
+  //: editor keep the `MsoListParagraph` class or only the bullet glyph, and
+  //: "· item" arrived as a paragraph starting with a middle dot. One rule for
+  //: both: the style, the class, or a leading glyph (`·`, `•`, `▪`, `§`, or
+  //: Word's "o" set apart by two spaces) makes the paragraph an item.
+  const glyph = /^[\s\u00a0]*(?:[·•▪◦‣§Ø]|o(?=[\s\u00a0]{2}))[\s\u00a0]+\S/.test(el.textContent);
+  const styled = Boolean(style) && style !== "none";
+  if (!styled && !glyph && !/MsoList/i.test(el.getAttribute("class") || "")) return "";
+  const list = styled ? style : "";
+  //: Without the style the depth is the indent: Word steps a level by half an inch.
+  const inches = Number(/(\d*\.?\d+)in/.exec(styleOf(el, "margin-left"))?.[1] || 0);
+  const level = Number(/level(\d+)/.exec(list)?.[1] || (inches ? Math.round(inches / 0.5) : 1));
   //: The marker span is nested (`<span Symbol><span mso-list:Ignore>`), so it
   //: is found by its style wherever it sits, read, and taken out.
   const marks = [...el.querySelectorAll("[data-mm-style]")].filter((c) => styleOf(c, "mso-list") === "ignore");
   const mark = marks.map((c) => c.textContent).join("");
   marks.forEach((c) => c.remove());
   const number = /^\s*(\d+)[.)]/.exec(mark)?.[1] || (/^\s*[a-z]{1,4}[.)]/i.test(mark) ? "1" : "");
-  const text = [...el.childNodes].map(inline).join("").replace(/\s+/g, " ").trim();
+  let text = [...el.childNodes].map(inline).join("").replace(/\s+/g, " ").trim();
+  //: The glyph itself, when it was text rather than a marker span.
+  if (glyph && !marks.length) text = text.replace(/^(?:[·•▪◦‣§Ø]|o)\s+/, "");
   return text ? `${"  ".repeat(Math.max(0, level - 1))}${number ? `${number}.` : "-"} ${text}` : "";
 }
 
@@ -5165,7 +5178,8 @@ function docHtmlToMarkdown(html) {
       const heading = /^H([1-6])$/.exec(tag);
       if (wordItem) {
         //: Word's list paragraphs run together as one tight list.
-        if (wordRun === out.length - 1) out[wordRun] += `\n${wordItem}`;
+        //: `wordRun >= 0`: with nothing before it both sides were -1, and a list at the very start of a paste was appended to `out[-1]`, a property, and lost (DX32).
+        if (wordRun >= 0 && wordRun === out.length - 1) out[wordRun] += `\n${wordItem}`;
         else {
           out.push(wordItem);
           wordRun = out.length - 1;
@@ -5217,16 +5231,31 @@ function docRichPasteEvent(event, view) {
   if (!markdown) return false;
   event.preventDefault();
   const sel = view.state.selection.main;
+  const doc = view.state.doc;
+  //: Padded to start (and end) its own line when it is a block (DX3).
+  const insert = docRichPasteEvent.fit(markdown, doc.lineAt(sel.from).text.slice(0, sel.from - doc.lineAt(sel.from).from), doc.lineAt(sel.to).text.slice(sel.to - doc.lineAt(sel.to).from));
   docUndoBreak();
   view.dispatch({
-    changes: { from: sel.from, to: sel.to, insert: markdown },
-    selection: { anchor: sel.from + markdown.length },
+    changes: { from: sel.from, to: sel.to, insert },
+    selection: { anchor: sel.from + insert.length },
     userEvent: "input.paste",
     scrollIntoView: true,
   });
-  docPasteOfferRich(view, sel.from, markdown, event.clipboardData.getData("text/plain"));
+  docPasteOfferRich(view, sel.from, insert, event.clipboardData.getData("text/plain"));
   return true;
 }
+
+//: **A pasted block starts its own line** (DX3, audit 1102). `## Heading` or a
+//: fence written after "please" is not a heading or a fence, it is text with
+//: marks in it. One rule for every block kind (heading, list, fence, table,
+//: quote, rule, or more than one paragraph): when words come before the caret
+//: on its line a blank line goes first, and when words follow the selection
+//: on its line one goes after. Inline pastes (bold, a link) are left alone.
+docRichPasteEvent.fit = (markdown, before, after) => {
+  const block = /^(#{1,6} |[-*+] |\d+[.)] |```|\||>|---)/.test(markdown) || markdown.includes("\n\n");
+  if (!block) return markdown;
+  return `${before.trim() ? "\n\n" : ""}${markdown}${after.trim() ? "\n\n" : ""}`;
+};
 
 //: The whole table, for the one command that is not an edit inside it. The
 //: newline after it goes too, or deleting a table leaves the blank line it was
@@ -10263,7 +10292,7 @@ function docCaretStats(box) {
   //: and a selection count that lagged the selection would be worse than
   //: none. Counted only when there is a selection to count, so the common
   //: case (a caret, no range) still does no work at all.
-  const words = selected ? textCounts(box.text.slice(range.from, range.to)).words : 0;
+  const words = selected ? docPlainText.counts(docCommentStrip(box.text.slice(range.from, range.to))).words : 0;
   return {
     line: line.number,
     column: range.from - line.from + 1,
@@ -10464,7 +10493,8 @@ function renderDocCounts() {
   //: composer, this bar and the server share: characters are code points, as
   //: `wc -m` counts them, so an emoji is one, not two.
   const stripped = docCommentStrip(docText());
-  const { words, chars, read } = textCounts(stripped);
+  const { words, read } = docPlainText.counts(stripped);
+  const { chars } = textCounts(stripped);
   const lines = docLineCount(stripped);
   //: Characters first, because that is the one the existing header line never
   //: showed and the one that was asked for by name. Lines (OPEN ledger 299)
@@ -15533,7 +15563,10 @@ function docCmKeymap(CM) {
       run: () => {
         //: Arms the Tab escape hatch (see `docTabEscapes`); the search panel's
         //: own keymap closes itself on Escape, so this one never consumes it.
-        docTabEscapes = true;
+        //: Not when this Escape is about to close a menu or a tooltip: it was
+        //: spent on that, and arming then threw the next Tab out of the editor
+        //: minutes later (DX4, audit 1102).
+        docTabEscapes = ![...document.querySelectorAll('[role="menu"], .cm-tooltip')].some((el) => el.getClientRects().length > 0);
         return false;
       },
     },
@@ -15737,11 +15770,13 @@ function docCmExtensions(CM) {
     //: The disarming half of the Escape-then-Tab hatch. Anything that is not
     //: part of that chord means the writer went back to writing, and a flag
     //: still armed then would send the next Tab to the toolbar instead of
-    //: into the line. Registered as a plain DOM handler rather than as more
-    //: keymap entries because a keymap can only match keys it names, and this
-    //: has to see the ones it does not. Never handles the event (always
-    //: false), so nothing downstream changes.
-    CM.view.EditorView.domEventHandlers({
+    //: into the line. A plain DOM handler, because a keymap can only match keys
+    //: it names, and at the highest precedence, because a key the keymap
+    //: handles (an arrow, a letter's own binding) ends the event before a
+    //: default-precedence handler is asked, which left the flag armed after
+    //: "Escape, arrow, Tab" (DX4, audit 1102). A pointer press disarms it too,
+    //: whatever else answers the press. Never handles the event (always false).
+    CM.state.Prec.highest(CM.view.EditorView.domEventHandlers({
       keydown: (event) => {
         if (event.key !== "Tab" && event.key !== "Shift" && event.key !== "Escape") {
           docTabEscapes = false;
@@ -15750,10 +15785,13 @@ function docCmExtensions(CM) {
         docPastePlain = (event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === "v";
         return false;
       },
-      mousedown: (event, view) => {
+      mousedown: () => {
         docTabEscapes = false;
-        return docTableCellClick(event, view);
+        return false;
       },
+    })),
+    CM.view.EditorView.domEventHandlers({
+      mousedown: (event, view) => docTableCellClick(event, view),
     }),
     //: Ahead of the markdown language's own paste-a-URL-as-a-link, which would
     //: take a web address over selected words first and leave no paste chip.

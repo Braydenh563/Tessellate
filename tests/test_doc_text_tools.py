@@ -23,7 +23,10 @@ pytestmark = pytest.mark.skipif(shutil.which("node") is None, reason="node is no
 
 def _pure() -> str:
     src = PROSE.read_text(encoding="utf-8")
-    return src[src.index("const DOC_STOP_WORDS") : src.index("function docOpenStatistics")]
+    # The one word count (DX10, audit 1102) is settings-wiring's `textCounts`.
+    wiring = (ROOT / "frontend/js/settings-wiring.js").read_text(encoding="utf-8")
+    counts = wiring[wiring.index("const TEXT_READING_WPM") : wiring.index("function captureCountText")]
+    return counts + src[src.index("const DOC_STOP_WORDS") : src.index("function docOpenStatistics")]
 
 
 def _run(expr: str):

@@ -1262,7 +1262,9 @@ MORE_TOPICS: list[dict] = [
             "words, the characters with and without spaces, and the reading "
             "time, counted the way wc counts. With nothing selected it counts "
             "the whole editor you were in. The Capture box and a document also "
-            "show a running count as you type."
+            "show a running count as you type; a document leaves out its "
+            "Markdown marks, code and comments, and so matches its Document "
+            "statistics."
         ),
         "badge": {"label": "Notes", "tab": "notes"},
     },

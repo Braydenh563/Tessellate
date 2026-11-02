@@ -359,7 +359,7 @@ function editorFuzzyMatch(label, query) {
 //: to it ("table" finds Table before Table of contents), a label that
 //: starts with it, a word in the label that does, a keyword that does, the
 //: label containing it, a keyword containing it, and last the letters in
-//: order anywhere in the label ("twcl" finds Two columns). No query keeps the
+//: order anywhere in the label ("twc" finds Two columns; three letters at most). No query keeps the
 //: table's own order, which is the grouped menu.
 function editorFuzzyRank(rows, query) {
   const needle = String(query || "").toLowerCase().trim();
@@ -371,11 +371,14 @@ function editorFuzzyRank(rows, query) {
     let score = -1;
     if (label === needle) score = 0;
     else if (label.startsWith(needle)) score = 0.5;
-    else if (label.split(/[\s-]+/).some((word) => word.startsWith(needle))) score = 1;
+    else if (label.split(/[\s-]+/).some((word) => word.startsWith(needle)) || ` ${label}`.includes(` ${needle}`)) score = 1;
     else if (keywords.some((k) => k.startsWith(needle))) score = 2;
     else if (label.includes(needle)) score = 3;
     else if (keywords.some((k) => k.includes(needle))) score = 4;
-    else if (needle.length > 1 && editorFuzzyMatch(label, needle)) score = 5;
+    //: Letters in order is for a short abbreviation ("tbc"). From four letters
+    //: a word that matched nothing else is a word, not an abbreviation: "/file"
+    //: ranked the Failure callout first and Enter inserted it (DX7, audit 1102).
+    else if (needle.length > 1 && needle.length < 4 && editorFuzzyMatch(label, needle)) score = 5;
     if (score >= 0) scored.push({ row, score, index });
   });
   scored.sort((a, b) => a.score - b.score || a.index - b.index);
@@ -895,6 +898,9 @@ function editorBlockRows(context) {
   add({ id: "h1", group: "Basic", icon: "ph:text-h-one", label: "Heading 1", about: "The title of the page", keys: "#", keywords: ["h1", "title", "heading", "big"], sample: "# A page title", run: act("h1") });
   add({ id: "heading", group: "Basic", icon: "ph:text-h-two", label: "Heading 2", about: "A section, and a place the contents can jump to", keys: "##", keywords: ["h2", "section", "heading", "anchor"], sample: "## A section", run: act("h2") });
   add({ id: "h3", group: "Basic", icon: "ph:text-h-three", label: "Heading 3", about: "A sub-section", keys: "###", keywords: ["h3", "sub", "heading", "small"], sample: "### A sub-section", run: act("h3") });
+  add({ id: "h4", group: "Basic", icon: "ph:text-h-four", label: "Heading 4", about: "A heading under a sub-section", keys: "####", keywords: ["h4", "heading"], sample: "#### A smaller heading", run: act("h4") });
+  add({ id: "h5", group: "Basic", icon: "ph:text-h-five", label: "Heading 5", about: "Smaller again", keys: "#####", keywords: ["h5", "heading"], sample: "##### A smaller heading", run: act("h5") });
+  add({ id: "h6", group: "Basic", icon: "ph:text-h-six", label: "Heading 6", about: "The smallest heading", keys: "######", keywords: ["h6", "heading"], sample: "###### The smallest heading", run: act("h6") });
   add({ id: "bullets", group: "Basic", icon: "ph:list-bullets", label: "Bulleted list", about: "Points in no particular order", keys: "-", keywords: ["list", "bullet", "ul", "points"], sample: "- First point\n- Second point", run: act("ul") });
   add({ id: "numbered", group: "Basic", icon: "ph:list-numbers", label: "Numbered list", about: "Steps, in order", keys: "1.", keywords: ["ordered", "numbered", "list", "ol", "steps"], sample: "1. First step\n2. Second step", run: act("ol") });
   add({ id: "checklist", group: "Basic", icon: "ph:check-square", label: "To-do list", about: "Tick things off as they are done", keys: "- [ ]", keywords: ["task", "todo", "check", "checklist", "list"], sample: "- [x] Research\n- [ ] Draft\n- [ ] Send", run: act("task") });
@@ -1221,8 +1227,9 @@ function editorTokenAt(textarea, trigger) {
   if (trigger === "/") {
     const before = open === 0 ? "\n" : upto[open - 1];
     if (!/\s/.test(before)) return null;
-    // A slash command is one word. Once a space is typed it is prose.
-    if (/\s/.test(fragment)) return null;
+    // A slash command runs on past a space only while some row still holds the
+    // words typed so far; otherwise a space makes it prose.
+    if (/\s/.test(fragment) && !editorTokenAt.phrase(textarea, fragment)) return null;
   }
   //: The fence is only ever its own line's start, and a language is a word.
   if (trigger === "```") {
@@ -1231,6 +1238,19 @@ function editorTokenAt(textarea, trigger) {
   }
   return { start: open, fragment };
 }
+
+//: **Two or three words are one command** (DX7, audit 1102): "/page break",
+//: "/heading 4" and "/link to a note" closed the menu at the space and left the
+//: literal text. A multi-word fragment keeps the menu open while a row's label
+//: or a keyword holds it from a word boundary (Notion's rule), at most four
+//: words, never starting with a space.
+editorTokenAt.phrase = (textarea, fragment) => {
+  const phrase = fragment.toLowerCase().replace(/\s+/g, " ");
+  if (phrase.startsWith(" ") || phrase.trim().split(" ").length > 4) return false;
+  return editorCommands(editorSurfaceKind(textarea) || "note").some((row) =>
+    [row.label, ...(row.keywords || [])].some((text) => ` ${String(text).toLowerCase()}`.includes(` ${phrase}`))
+  );
+};
 
 //: Ranked by `editorFuzzyRank` (EDITOR-BLOCKS, tested in node): a label
 //: prefix, a word in the label, a keyword, then the letters in order anywhere.

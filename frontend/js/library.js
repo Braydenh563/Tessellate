@@ -1099,7 +1099,8 @@ function libraryActions(item) {
       // two-places problem the move was for.
       makeMenuItem("ph:trash Delete for good", `Permanently delete this ${bin.noun}`, async () => {
         if (!(await confirmDialog(`Delete this ${bin.noun} permanently?\n\nThis cannot be undone.`))) return;
-        await apiJson(bin.purge, { method: "DELETE" }).catch((e) => toast(e.message, true));
+        const gone = await apiJson(bin.purge, { method: "DELETE" }).catch((e) => toast(e.message, true));
+        if (gone) undoStoreClear.purged(bin.noun, item.id);
         reload();
       }),
     ];
@@ -1887,6 +1888,7 @@ $("binned-purge").addEventListener("click", async () => {
   if (!(await confirmDialog("Permanently delete this note?\n\nThis cannot be undone."))) return;
   try {
     await apiJson(`/entries/${id}/purge`, { method: "DELETE" });
+    undoStoreClear.purged("note", id);
     toast("Deleted for good.");
   } catch (error) {
     toast(voiceLine("failed", { what: "delete that note", why: error.message }), true);
@@ -2061,8 +2063,12 @@ $("library-bin-empty").addEventListener("click", async () => {
       "This cannot be undone."
   );
   if (!ok) return;
+  //: The binned ids, asked for before they are gone, so what this device kept of
+  //: each goes with it (`undoStoreClear.purged`).
+  const binned = (await apiJson("/library").catch(() => null))?.items?.filter((item) => item.kind === "archived") || [];
   try {
     await apiJson("/recycle-bin/empty", { method: "POST" });
+    for (const item of binned) undoStoreClear.purged(binRoutes(item).noun, item.id);
   } catch (e) {
     // Was unconditional before: a failed request still showed "The bin is
     // empty." right under its own error toast, one saying it worked and one
@@ -2173,6 +2179,7 @@ $("library-bulk-delete").addEventListener("click", async () => {
     try {
       const answer = await apiJson(route[0], { method: route[1] });
       deleted++;
+      if (item.kind === "archived") undoStoreClear.purged(binRoutes(item).noun, item.id);
       if (item.kind === "note") comeBack.push({ route, back: [`/entries/${item.id}/restore`, "POST"] });
       else if (item.kind === "document") comeBack.push({ route, back: [`/documents/${item.id}/restore`, "POST"] });
       else if (item.kind === "chat" && answer?.restore) comeBack.push({ route, chat: answer.restore });
