@@ -240,7 +240,8 @@ REACHED_AFTER_LOAD = {
     #: renderNotesRail awaits lazyScript('/js/connections.js') before any of them.
     "withBacklinks": "connections, renderNotesRail awaits lazyScript('/js/connections.js') before drawing",
     "buildConnectionGroups": "connections, renderNotesRail awaits lazyScript('/js/connections.js') before drawing",
-    "connectionRowEl": "connections, notesRailNearGroup runs inside renderNotesRail after it awaited the bundle",
+    "connectionRowEl": "connections, the forgotten group is drawn inside drawNotesRail, which renderNotesRail calls after it awaited the bundle",
+    "drawNotesRail": "connections, renderNotesRail awaits lazyScript('/js/connections.js') and then returns it (INBOX 1525: moved for the boot gzip cap)",
     #: Brief 89: the palette's small tools, each called in the .then of
     #: ensureModule('utilities') on its own palette row (settings-panes.js).
     "startUtilityTimer": "utilities, called in the .then of ensureModule('utilities') on the palette's timer rows",

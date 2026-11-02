@@ -294,8 +294,10 @@ async function noteTagChoices(entry, { fetchMore = true } = {}) {
   };
   (entry.suggested_tags || []).forEach(add);
   if (fetchMore && picked.length < 3 && !entry.is_private && entry.content) {
+    //: The model reads up to 4000 characters, so a clipped list row is read whole first (INBOX 1525).
+    const text = entry.content_truncated ? (await fullEntry(entry.id).catch(() => entry)).content : entry.content;
     const more = await apiJson("/entries/suggest-tags", {
-      method: "POST", silent: true, body: JSON.stringify({ content: entry.content.slice(0, 4000), tags: entry.tags || [] }),
+      method: "POST", silent: true, body: JSON.stringify({ content: text.slice(0, 4000), tags: entry.tags || [] }),
     }).catch((e) => console.warn("Tag suggestions were not fetched:", e.message) || null);
     for (const tag of more?.suggested_tags || []) add(tag);
     for (const [tag, why] of Object.entries(more?.suggested_tag_reasons || {})) entry.suggested_tag_reasons = { ...entry.suggested_tag_reasons, [tag]: why };

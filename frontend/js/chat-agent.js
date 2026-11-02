@@ -820,6 +820,8 @@ function restoreDraftLocally() {
 //: and a desk that already holds writing is asked about before it is
 //: replaced.
 async function translateNoteInDesk(entry) {
+  entry = await fullEntry(entry.id).catch(() => entry); // the list holds a preview (INBOX 1525)
+  if (entry.content_truncated) return;
   const busy = $("draft-thoughts").value.trim() || $("draft-text").value.trim();
   if (busy && !(await confirmDialog("Replace what is in the Writing room with this note?"))) return;
   switchTab("notes");

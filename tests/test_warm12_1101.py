@@ -87,7 +87,7 @@ def test_the_finder_route_bounds_what_it_searches_of_a_long_query(client, monkey
 SEARCH_CALLS = {
     "app-palette.js": 1,
     "library.js": 1,
-    "notes-lazy.js": 1,
+    "notes-lazy.js": 2,
     "notes-list.js": 2,
     "search.js": 2,
 }

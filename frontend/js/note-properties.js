@@ -139,6 +139,8 @@ async function openNotePropertiesSheet(entry) {
         if (typeSelect.value) properties.type = typeSelect.value;
         for (const r of rows) if (r.keyValue()) properties[r.keyValue()] = r.read();
         save.disabled = true;
+        //: The undo step below holds the text before the save: the whole text, not a list preview (INBOX 1525).
+        entry = await fullEntry(entry.id).catch(() => entry);
         const done = await apiJson(`/entries/${entry.id}/properties`, {
           method: "PUT",
           body: JSON.stringify({ properties, base_hash: entry.content_hash || null }),
@@ -148,7 +150,7 @@ async function openNotePropertiesSheet(entry) {
         });
         save.disabled = false;
         if (!done) return;
-        if (typeof done.content === "string" && typeof entry.content === "string" && done.content !== entry.content) {
+        if (!entry.content_truncated && typeof done.content === "string" && typeof entry.content === "string" && done.content !== entry.content) {
           pushEntryPutUndo(entry.id, "Changed a note's properties", { content: entry.content }, { content: done.content });
         }
         close();

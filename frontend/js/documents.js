@@ -1532,8 +1532,8 @@ async function docLinkMention(row, button) {
   try {
     let content = null;
     if (row.kind === "note") {
-      const known = (typeof allEntries !== "undefined" ? allEntries : []).find((e) => e.id === row.id);
-      content = known ? known.content : (await apiJson(`/entries/${row.id}`)).content;
+      //: Whole text: the offsets are into it and it is written back (`fullEntry`, INBOX 1525).
+      content = (await fullEntry(row.id)).content;
     } else {
       content = (await apiJson(`/documents/${row.id}`)).content;
     }

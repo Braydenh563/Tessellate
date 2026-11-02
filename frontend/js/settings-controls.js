@@ -1898,7 +1898,7 @@ async function mergeDuplicateGroup(ids, card) {
 
   //: The kept note's words and tags as they were, for Undo (INBOX 537): the
   //: others went to the bin, so Undo also brings them back.
-  const keeper = allEntries.find((e) => e.id === ids[0]);
+  const keeper = await fullEntry(ids[0]).catch(() => null);
   try {
     const result = await apiJson("/duplicates/merge", {
       method: "POST",

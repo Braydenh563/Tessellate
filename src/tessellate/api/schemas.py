@@ -279,6 +279,12 @@ class EntryOut(BaseModel):
     content: str
     #: `content` is the first part only (`GET /entries?preview=`).
     content_truncated: bool = False
+    #: What the whole text holds, for a row whose `content` is a part (`GET /entries?preview=`): the
+    #: words (`core/cjk.word_count`, the page's own rule) and the `- [ ]` and `- [x]` task lines.
+    #: None on a row that carries the whole text, where a caller counts it itself.
+    word_count: int | None = None
+    tasks_open: int | None = None
+    tasks_done: int | None = None
     #: The hash of `content` (api/edit_conflicts.py): an editor sends it back
     #: as `base_hash` so a save over a newer text is refused, not lost.
     content_hash: str = ""

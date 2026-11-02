@@ -233,7 +233,9 @@ function entryItem(entry, options = {}) {
     .filter((line) => line.trim() && !/^\s*!?\[[^\]]*\]\([^)]*\)\s*$/.test(line))
     .join("\n");
   const glance = meetingGlance(entry);
+  //: A row holding only a preview (`content_truncated`) is long by definition: there is more behind it.
   const isLong = !glance && (
+    entry.content_truncated ||
     textOnly.length > LONG_NOTE_CHARS ||
     textOnly.split("\n").length > LONG_NOTE_LINES);
   if (isLong && !expandedNotes.has(entry.id)) content.classList.add("entry-clamped");
@@ -243,10 +245,10 @@ function entryItem(entry, options = {}) {
   //: A clamped card's two lines are text, not the blank line between its
   //: paragraphs (INBOX 458: "Tonight, I have work." then a lone "..."):
   //: folded, the paragraphs run on one line each; opened, the note as written.
-  const body = entry.title ? bodyWithoutTitleLine(entry.content) : stripFrontmatter(entry.content);
+  const bodyText = () => (entry.title ? bodyWithoutTitleLine(entry.content) : stripFrontmatter(entry.content));
   const fillContent = () => renderNoteText(
     content,
-    content.classList.contains("entry-clamped") ? body.replace(/\n[ \t\r]*(?:\n[ \t\r]*)+/g, "\n") : body,
+    content.classList.contains("entry-clamped") ? bodyText().replace(/\n[ \t\r]*(?:\n[ \t\r]*)+/g, "\n") : bodyText(),
     searchHighlightTerms(),
     //: Heading hashes are source, not words (dogfood item 18). Run on the
     //: prose only, not the whole note: a code fence keeps its own `#` and `-`.
@@ -256,6 +258,8 @@ function entryItem(entry, options = {}) {
   content.addEventListener("remove-inline-image", async (e) => {
     e.stopPropagation();
     if (!(await confirmDialog("Remove this image from the note?"))) return;
+    //: The PUT sends the whole text back, so the card's preview is made whole first (INBOX 1525).
+    if (!(await fullEntry(entry.id).then(() => true, (error) => (toast(error.message, true), false)))) return;
     const contentBefore = entry.content;
     entry.content = entry.content.replace(e.detail.originalText, "").replace(/\n{3,}/g, "\n\n").trim();
     try {
@@ -317,6 +321,7 @@ function entryItem(entry, options = {}) {
       content.classList.toggle("entry-clamped", !expandedNotes.has(entry.id));
       fillContent();
       toggle.textContent = label();
+      if (entry.content_truncated && expandedNotes.has(entry.id)) fullEntry(entry.id).then(fillContent, () => {});
     });
     li.appendChild(toggle);
     // **Then check whether it was actually needed.** Reported: "a show
@@ -343,7 +348,7 @@ function entryItem(entry, options = {}) {
       fillContent();
       toggle.remove();
     };
-    noteClampFit.observe(content);
+    if (!entry.content_truncated) noteClampFit.observe(content);
   }
 
   const meta = document.createElement("div");
@@ -784,7 +789,7 @@ function entryItem(entry, options = {}) {
     );
     actions.appendChild(
       smallButton("ph:clipboard", "Copy this note's text", async () => {
-        if (await copyToClipboard(entry.content)) toast("Note copied.");
+        if (await copyToClipboard(entry.content_truncated ? (await fullEntry(entry.id)).content : entry.content)) toast("Note copied.");
       })
     );
     actions.appendChild(

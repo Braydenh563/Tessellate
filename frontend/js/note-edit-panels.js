@@ -222,6 +222,8 @@ function noteFormParts(content) {
 //: reaches it through its stand-in (`LAZY_ENTRY_POINTS.notePanels`), and the
 //: bundle is fetched a few seconds after boot so the first Edit is not a wait.
 function renderEditForm(li, entry) {
+  //: The form edits the whole text, never a list row's preview (INBOX 1525): a list reload while editing hands it a row with a part.
+  if (entry.content_truncated) return fullEntry(entry.id).then((whole) => renderEditForm(li, whole));
   const draft = noteFormDraft && noteFormDraft.id === entry.id ? noteFormDraft : null;
   noteFormDirty = Boolean(draft);
   //: **A title field, as Capture has** (INBOX 432: renaming a note meant

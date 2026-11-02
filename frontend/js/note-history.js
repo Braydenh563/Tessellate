@@ -13,6 +13,16 @@ async function openEntryHistory(entry) {
   list.replaceChildren();
   overlay.classList.remove("hidden");
   $("history-close").focus();
+  //: Put-this-back writes the whole text, so the sheet holds the whole note, not a list preview (INBOX 1525).
+  if (entry.content_truncated) {
+    try {
+      entry = await fullEntry(entry.id);
+    } catch {
+      $("history-status").textContent = "Couldn't read this note.";
+      $("history-status").classList.add("error");
+      return;
+    }
+  }
 
   let history;
   try {
