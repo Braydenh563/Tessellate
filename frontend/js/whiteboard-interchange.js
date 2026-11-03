@@ -1268,7 +1268,6 @@ async function wbThumbFlush() {
 // change redraws it and an edit is one Save. Double-click edits it in the block builder; "Turn
 // into shapes" (in its menu) hands the source to `wbImportMermaid` for editable shapes.
 
-const WB_DIAGRAM_SAMPLE = "flowchart TD\n  A[Start] --> B{Ready?}\n  B -->|yes| C[Ship it]";
 
 //: The drawing already made for this item's source in the theme in force, as
 //: an image address, or "": export and the thumbnail are synchronous.
@@ -1355,8 +1354,8 @@ async function wbInsertDiagram(source) {
 //: editor, in a dialog; the textarea dialog this was is gone). Done saves, Cancel changes nothing.
 function wbEditDiagram(d = null) {
   openDiagramBuilder({
-    source: d?.data?.mermaid || WB_DIAGRAM_SAMPLE,
-    title: d ? "Edit diagram" : "Mermaid diagram",
+    source: d?.data?.mermaid || diagramModel.starter,
+    title: d ? "Edit diagram" : "Diagram builder",
     shapes: d ? (source) => (wbMermaidKind(source) ? wbDiagramToShapes(d, source) : toast("Shapes cover flowchart, state, class and sequence diagrams.")) : null,
     onDone: (source, changed) => wbSaveDiagram(d, source, changed),
   });

@@ -2819,7 +2819,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "diagram-blocks", "diagram-kinds", "diagram-elsewhere", "documents-replace", "live-view-marks", "documents-features", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "document-history", "writing-checks", "code-files", "code-completions", "code-run",
+        "documents", "documents-controls", "diagram-builder", "diagram-blocks", "diagram-kinds", "diagram-elsewhere", "documents-replace", "live-view-marks", "documents-features", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "document-history", "writing-checks", "code-files", "code-completions", "code-run",
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
@@ -3133,7 +3133,7 @@ MORE_TOPICS.extend([
             "diagram fill", "diagram opacity", "solid diagram boxes",
         ),
         "body": (
-            "A live Mermaid diagram on a board: Insert, Mermaid diagram... opens the "
+            "A live Mermaid diagram on a board: Insert, Diagram builder... opens the "
             "block editor on a sample; Done places it at its drawing's shape. "
             "It is any Mermaid diagram (flowchart, sequence, class, state, Gantt, pie "
             "and the rest), drawn as a note draws it and redrawn with the theme. "
@@ -3147,6 +3147,24 @@ MORE_TOPICS.extend([
             "draw.io or board SVG brings a diagram in as shapes straight away."
         ),
         "badge": {"label": "Library", "tab": "library"},
+    },
+    {
+        "id": "diagram-builder",
+        "keywords": (
+            "diagram builder", "where is the diagram builder", "new diagram", "make a diagram", "mermaid",
+            "mmd", "flowchart", "insert a diagram", "diagram in a note", "diagram on a board", "mind map diagram",
+        ),
+        "body": (
+            "The Diagram builder makes a flowchart, mind map, timeline or sequence diagram from "
+            "blocks. Mermaid is only its file format (.mmd). Every door is the same row, "
+            "Diagram builder, with the same icon. Ctrl+K, Diagram builder, and Find anything, Tools "
+            "and features and Quick access list it too. Over a note, a document or a Chat box, "
+            "Insert (or / then diagram) opens the builder and Done writes the diagram there as a "
+            "code block. Over a board or a mind map, Insert, Diagram builder adds a diagram object "
+            "to double-click later. Anywhere else, and in the Library's Create, New, Diagram, it "
+            "starts a new diagram file that opens in Blocks. Cancel changes nothing."
+        ),
+        "badge": {"label": "Documents", "tab": "documents"},
     },
     {
         "id": "diagram-blocks",
@@ -3279,7 +3297,8 @@ TOPIC_META.update({
     "board-edit-data": {"title": "Edit data on a board item", "path": "A board's Format panel, Data"},
     "board-colours": {"title": "Fill, border and recent colours on a board", "path": "A shape's bar, Fill or Border"},
     "board-tables": {"title": "Tables on a board", "path": "A board's Insert menu, Table"},
-    "board-mermaid": {"title": "Live Mermaid diagrams on a board", "path": "A board's Insert menu, Mermaid diagram..."},
+    "board-mermaid": {"title": "Live Mermaid diagrams on a board", "path": "A board's Insert menu, Diagram builder..."},
+    "diagram-builder": {"title": "The Diagram builder", "path": "Ctrl+K, Diagram builder; Insert in a note, a document or a board; Library, Create, New diagram"},
     "diagram-blocks": {"title": "Editing a diagram as blocks", "path": "A diagram document, Blocks"},
     "diagram-kinds": {"title": "Mind maps, timelines and sequence diagrams as blocks", "path": "A diagram document, Blocks"},
     "diagram-elsewhere": {"title": "Editing a diagram in a document, on a board or from a reply, and saving its picture", "path": "A diagram in Live view, Edit as blocks"},

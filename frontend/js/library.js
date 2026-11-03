@@ -120,7 +120,9 @@ function docTypeItems(onPick) {
     title:
       type.ext === "md"
         ? "Markdown (.md): the rich text editor, formatted as you type"
-        : `${type.label} (.${type.ext})`,
+        : type.ext === "mmd"
+          ? "Diagram (.mmd): the Diagram builder, saved as a Mermaid file"
+          : `${type.label} (.${type.ext})`,
     group: type.group || "Code",
     run: () => onPick(type.ext),
   }));
@@ -2276,6 +2278,15 @@ const LIBRARY_CREATE_BY_KIND = {
       heads.find((h) => h.textContent === "Code")?.nextElementSibling?.querySelector("button")?.click();
     },
   },
+  //: The Diagram builder's Library door (INBOX 1588): the one opener (`diagramDoor`, documents-mermaid.js), asked for a document
+  //: so a board left open under the Boards sub-tab does not take the diagram.
+  diagram: {
+    label: "ph:flow-arrow New diagram",
+    run: async () => {
+      await ensureModule("library");
+      await window.diagramDoor({ doc: true });
+    },
+  },
   chat: {
     label: "ph:plus New chat",
     run: () => {
@@ -2390,6 +2401,7 @@ const LIBRARY_CREATE_HINTS = {
   note: ["ph:note-pencil", "A quick thought. Atlas files it and links it for you."],
   document: ["ph:file-text", "A long page: headings, an outline, templates, export."],
   code: ["ph:code", "A script, a page or a notebook with a Run button."],
+  diagram: ["ph:flow-arrow", "A flowchart, mind map, timeline or sequence diagram built from blocks, saved as a .mmd file."],
   map: ["ph:graph", "A board of note cards you branch with Tab and Enter; each topic is saved as a note."],
   mindmap: ["ph:tree-structure", "A tree of topics round one central idea, with branches you fold and colour."],
   board: ["ph:squares-four", "A canvas of cards, sketches and links you arrange freely."],
@@ -2402,7 +2414,7 @@ const LIBRARY_CREATE_HINTS = {
 //: then the things that arrive from elsewhere. The picker's sentence used to
 //: say "Five kinds of thing", which went stale the day a sixth row was
 //: added; it names no count now, so it cannot drift from the rows under it.
-const LIBRARY_CREATE_ORDER = ["note", "document", "code", "mindmap", "board", "chat", "meeting", "file"];
+const LIBRARY_CREATE_ORDER = ["note", "document", "code", "diagram", "mindmap", "board", "chat", "meeting", "file"];
 
 //: The kinds that have a chord of their own, by its name in the shortcut
 //: registry: the keycap is read from the live table, so a rebinding shows.
