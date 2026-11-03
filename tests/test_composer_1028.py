@@ -249,7 +249,8 @@ UNFINISHED_ACTS = [
 @pytest.mark.parametrize("question", UNFINISHED_ACTS)
 def test_an_act_missing_its_other_half_says_how_to_finish_it(ask, question):
     said = ask(question)
-    assert "say it like this" in said, said
+    # Case-blind since E55 (audit 1028): "Which tag should I add to X? Say it like this: ..." starts a sentence.
+    assert "say it like this" in said.lower(), said
     assert not QUOTES_UNRELATED.search(said), said
     assert "None of these" not in said
 

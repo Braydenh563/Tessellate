@@ -242,6 +242,14 @@ def test_an_attached_documents_content_actually_reaches_the_model(ai_client, fak
     assert any("Q3 plan" in m["content"] for m in sent)
 
 
+def _chat_request(fake, question):
+    """The chat's own model request, found by its question: an uploaded file
+    also starts background calls (filing, "Describe this document"), and on a
+    loaded CI runner one landed after the chat, so the last call was not the
+    chat's (CI 3.13 on c319404, 2026-11-02)."""
+    return next(c for c in reversed(fake.chat_calls) if any(question in m["content"] for m in c))
+
+
 def test_an_attached_library_files_text_reaches_the_model(ai_client, fake_ollama):
     """Asked for directly: "I want to be able to attach not just existing notes
     to a chat for context, but also already uploaded files, documents, and
@@ -259,7 +267,7 @@ def test_an_attached_library_files_text_reaches_the_model(ai_client, fake_ollama
         "/chat",
         json={"question": "what does the file say?", "file_ids": [attachment["id"]]},
     )
-    sent = fake_ollama.chat_calls[-1]
+    sent = _chat_request(fake_ollama, "what does the file say?")
     assert any("Ship the reader in March." in m["content"] for m in sent)
     assert any("plan.md" in m["content"] for m in sent)
 
@@ -277,7 +285,7 @@ def test_an_unreadable_attached_file_still_reaches_the_model_by_name(ai_client, 
     attachment = updated["attachments"][0]
 
     ai_client.post("/chat", json={"question": "what is it?", "file_ids": [attachment["id"]]})
-    sent = fake_ollama.chat_calls[-1]
+    sent = _chat_request(fake_ollama, "what is it?")
     assert any("scan.pdf" in m["content"] for m in sent)
 
 

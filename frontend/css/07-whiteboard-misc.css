@@ -2267,6 +2267,15 @@ body.scroll-top-visible .skills-split > .tab-main {
   margin-top: 0;
   padding-right: 0;
 }
+/* **"Recent" is a short word that must not be the part that gives way.**
+   Measured at 1440 and 1920 (audit 1102 DX20): the text is 53.44px and the box
+   it was shrunk to 53px, so a heading that fits was cut to "Rec...". Its row
+   holds three actions that do not shrink, and the sub-pixel overflow came out
+   of the heading. `flex: none` keeps the heading its own width; the actions
+   are the ones with room to spare here (the column has no collapse lane). */
+#doc-sidebar-list .sidebar-head h2 {
+  flex: none;
+}
 /* Each tab's whole content column, so #doc-outline-wrap's own `flex: 1 1
    auto` below still has a flex context stretching the height the tab strip
    left behind: the same nested-flex-column shape .doc-sidebar itself uses
@@ -4222,7 +4231,7 @@ summary:not(.icon-only):not(.icon-button):not(.fold-summary, .chat-sources-summa
 .row.field-row > input,
 .row.field-row > button,
 .row.field-row > .select-shell > .select-opener {
-  min-height: var(--control-h-lg);
+  min-height: max(var(--target-min), var(--button-min-h));
 }
 .row.field-row > input {
   padding-block: 0;
@@ -7429,6 +7438,18 @@ button.connection-row:is(:hover, :focus-visible) {
   flex-wrap: wrap;
   justify-content: space-between;
   gap: var(--space-2);
+}
+/* What an emptied board says once its card is put away (audit 1028 B34): the
+   `p.muted.empty-line` recipe, centred on the canvas and click-through so the
+   board can still be drawn on. */
+.wb-empty-cue {
+  position: absolute;
+  inset-inline: var(--space-8);
+  inset-block-start: 50%;
+  margin: 0;
+  text-align: center;
+  pointer-events: none;
+  z-index: 1;
 }
 /* **The board's help and shortcut sheet** (INBOX 566; UX-03). The dialog
    recipe; what is new is the row. The old card set each row `nowrap` with

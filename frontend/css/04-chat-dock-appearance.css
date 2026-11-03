@@ -4076,17 +4076,17 @@ span > .chip {
    with a wide empty gutter beside it. The padding is roomier than Split's for
    the same reason: nothing is competing for the width any more. */
 #doc-panes.reading>.doc-preview {
-  /* 46rem is 736px, which is 76 characters of the app's own sans: measured
+  /* The measure is `--doc-measure` (the page is 50em, 736px at this size), which is 76 characters of the app's own sans: measured
      with `scratchpad/ui-sweeps/docreadprint.js`, inside the 45 to 90 every
      typographic reference gives, and a width the owner has already had an
      opinion about twice ("idk why the document rendered views are so
      thin??"). It is left exactly where it is. The serif option, which holds
      93 characters in this same column because the face is narrower, takes its
      own cap in 09-editor.css beside the leading it already adjusts. */
-  max-width: 46rem;
+  max-width: calc(var(--doc-measure) + 2 * var(--doc-gutter));
   margin: 0 auto;
   width: 100%;
-  padding: 1.5rem;
+  padding: 1.5rem var(--doc-gutter);
 }
 
 /* Set by app.js the moment a person drags #doc-content's native resize

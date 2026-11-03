@@ -24,7 +24,7 @@ CSS = sorted((FRONTEND / "css").glob("*.css"))
 def _rules():
     for path in CSS:
         text = re.sub(r"/\*.*?\*/", "", path.read_text(encoding="utf-8"), flags=re.S)
-        for match in re.finditer(r"([^{}]+)\{([^{}]*)\}", text):
+        for match in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", text):
             yield path.name, match.group(1).strip(), match.group(2)
 
 

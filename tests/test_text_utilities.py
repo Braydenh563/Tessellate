@@ -35,7 +35,10 @@ def _wc() -> dict:
 def _function(path: Path, name: str) -> str:
     src = path.read_text(encoding="utf-8")
     start = src.index(f"function {name}(")
-    end = src.index("\n}\n", start) + 3
+    #: A wrapped file (one closure) keeps its functions two spaces in (doc24-1102).
+    line = src[src.rfind("\n", 0, start) + 1 : start]
+    close = "\n" + line[: len(line) - len(line.lstrip(" "))] + "}\n"
+    end = src.index(close, start) + len(close)
     return src[start:end]
 
 
@@ -74,7 +77,7 @@ def test_the_browser_and_the_server_count_words_the_same_way(text):
 @pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
 def test_the_editor_outline_is_the_servers():
     text = FIXTURE.read_text(encoding="utf-8")
-    fn = _function(JS / "documents.js", "docScanHeadings")
+    fn = _function(JS / "documents-outline.js", "docScanHeadings")
     got = _node(fn + f"\nconsole.log(JSON.stringify(docScanHeadings({json.dumps(text)})));")
     assert got == utilities.outline(text, max_level=4)
     assert [h["text"] for h in got] == ["Harbor plan", "Costs", "Notes for Sam", "Second part", "Open questions"]

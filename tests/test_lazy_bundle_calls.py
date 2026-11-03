@@ -111,10 +111,29 @@ def _entry_points() -> dict[str, set[str]]:
     return out
 
 
+WINDOW_EXPORTS = re.compile(r"Object\.assign\(\s*(?:window|globalThis)\s*,\s*\{([^}]*)\}")
+
+
+def _window_exports(source: str) -> set[str]:
+    """Globals a wrapped file hands out: `Object.assign(window, { a, b: c })` binds `a` and `b`.
+
+    A file wrapped in one closure (documents-props.js, documents-math.js, ...) declares
+    nothing at column zero, so without this its globals were invisible to every lint here
+    (doc23-1102: `math-editor.js:docMathRender` read as stale and was dropped).
+    """
+    names: set[str] = set()
+    for body in WINDOW_EXPORTS.findall(source):
+        for part in body.split(","):
+            key = part.split(":", 1)[0].strip()
+            if re.fullmatch(r"[A-Za-z_$][\w$]*", key):
+                names.add(key)
+    return names
+
+
 def _top_level_functions(path: Path) -> set[str]:
-    """Only functions declared at column zero: a nested helper is not a global."""
+    """Only functions declared at column zero, and a wrapped file's window exports: a nested helper is not a global."""
     source = path.read_text(encoding="utf-8")
-    return set(re.findall(r"^(?:async )?function ([A-Za-z_$][\w$]*)", source, re.M))
+    return set(re.findall(r"^(?:async )?function ([A-Za-z_$][\w$]*)", source, re.M)) | _window_exports(source)
 
 
 def _declared_anywhere(path: Path) -> set[str]:
@@ -137,6 +156,7 @@ REACHED_AFTER_LOAD = {
     #: `file:name` keys (INBOX 1521): the same name is safe in one boot file and
     #: not in another, so these are per file. Every one is a call that only runs
     #: once the bundle is in, with the line that proves it.
+    "editor.js:docTemplateFill": "inside `typeof DOC_TEMPLATES !== \"undefined\"` in editorCommands; DOC_TEMPLATES is defined in documents.js, the same library bundle, so the call runs only once it is in (audit 1102 DX30)",
     "chat-agent.js:atlasAvatar": "assistantAvatar runs only from paintAssistantAvatar's afterCharacters (chat-agent.js)",
     "chat-agent.js:atlasDraw": "assistantAvatar runs only from paintAssistantAvatar's afterCharacters (chat-agent.js)",
     "chat-agent.js:atlasLook": "chatHeadKey is a cache key; its typeof guard only trims the key, and it is asked for a face only after afterCharacters",
@@ -240,12 +260,15 @@ REACHED_AFTER_LOAD = {
     #: renderNotesRail awaits lazyScript('/js/connections.js') before any of them.
     "withBacklinks": "connections, renderNotesRail awaits lazyScript('/js/connections.js') before drawing",
     "buildConnectionGroups": "connections, renderNotesRail awaits lazyScript('/js/connections.js') before drawing",
-    "connectionRowEl": "connections, notesRailNearGroup runs inside renderNotesRail after it awaited the bundle",
+    "connectionRowEl": "connections, the forgotten group is drawn inside drawNotesRail, which renderNotesRail calls after it awaited the bundle",
+    "drawNotesRail": "connections, renderNotesRail awaits lazyScript('/js/connections.js') and then returns it (INBOX 1525: moved for the boot gzip cap)",
     #: Brief 89: the palette's small tools, each called in the .then of
     #: ensureModule('utilities') on its own palette row (settings-panes.js).
     "startUtilityTimer": "utilities, called in the .then of ensureModule('utilities') on the palette's timer rows",
     "openCalculator": "replyKit, called in the .then of ensureModule('replyKit') on the palette's Calculator row",
     "startStopwatch": "utilities, called in the .then of ensureModule('utilities') on the palette's stopwatch row",
+    "openClockPanel": "utilities, called in the .then of ensureModule('utilities') on the timer, stopwatch and alarm rows and the palette's typed timer",
+    "utilityOps": "utilities, used in the .then of ensureModule('utilities') by the dashboard's Focus widget (focusRow)",
     "countSelection": "utilities, called in the .then of ensureModule('utilities') on the palette's Count words row",
     #: Brief 47: the findAnything shortcut closes the box only while
     #: #finder-overlay is shown, and only openFinder (the same bundle) shows it.
@@ -411,7 +434,6 @@ REACHED_AFTER_LOAD = {
 LAZY_REACHED_AFTER_LOAD: dict[str, str] = {
     "answer-kit.js:agentTimeline": "addAssistantBubble has two callers: chat-turn.js (its own file) and sheets-selects.js's replay, after `await ensureModule(\"chatTurn\")` (line 1991)",
     "answer-kit.js:nameMark": "inside the afterCharacters callback (avatarHead and chatHead paths) or reached from it",
-    "app-features.js:paletteCaught": "popupToolMaths's one caller (settings-panes.js) awaits ensureModule(\"appPalette\") first, and the palette passes its own caught",
     "app-palette.js:quickAddPaletteRow": "typeof-guarded optional first row; null is the designed answer without it (the act row only exists once quickadd.js or the board is loaded)",
     "app-palette.js:wbPaletteActRow": "typeof-guarded optional first row; null is the designed answer without it (the act row only exists once quickadd.js or the board is loaded)",
     "appearance-panel.js:paintSettingRow": "the panel is opened only by openAppearancePanel, which awaits settingsControls and settings-rows.js (line 265) before it sets APPEARANCE_PANEL.open, and this returns while it is not open",
@@ -432,8 +454,10 @@ LAZY_REACHED_AFTER_LOAD: dict[str, str] = {
     "categories-panel.js:manageSorted": "the panel's opener awaits ensureModule(\"tagManager\") (line 29) before it renders a row",
     "chat-turn.js:docSurfaceById": "typeof-guarded with a designed fallback (the textarea's own text) when documents.js has never loaded",
     "chat-turn.js:setAtlasMood": "typeof-guarded cue: a mood is stale a moment later, and there is no face to move before the characters arrive",
+    "documents-codekit.js:docDiffLines": "in docAssistPropose, reached only from docAssistShow after `await lazyScript(\"/js/documents-history.js\")` (docAssistAsk)",
+    "documents-codekit.js:docRenderDiff": "in docAssistPropose, reached only from docAssistShow after `await lazyScript(\"/js/documents-history.js\")` (docAssistAsk)",
     "documents-export.js:mermaidInlineForExport": "after `await lazyModuleLoads.get(\"mermaid\")`: undefined (never asked for) skips it, a pending load is awaited",
-    "documents.js:mermaidSettled": "after `await lazyModuleLoads.get(\"mermaid\")`: undefined (never asked for) skips it, a pending load is awaited",
+    "documents-mermaid.js:mermaidSettled": "after `await lazyModuleLoads.get(\"mermaid\")`: undefined (never asked for) skips it, a pending load is awaited",
     "graph-canvas.js:refreshBoardList": "typeof-guarded refresh of a list that exists only once the library bundle is on screen (lazy-entries.js rule 2)",
     "graph-canvas.js:wbMapTidyFresh": "after `await openWhiteboardBoard(...)`, a stand-in that loads the library bundle (whiteboard-map.js) first",
     "graph.js:fillSearchSuggest": "inside `typeof searchSuggest !== \"undefined\" && searchSuggest?.input === box`: the object is search-suggest.js's own",
@@ -450,7 +474,6 @@ LAZY_REACHED_AFTER_LOAD: dict[str, str] = {
     "manual.js:meaningAlts": "meaning.js is fetched by openManual (`await lazyScript(\"/js/meaning.js\")`, line 149) before the search box can be typed in",
     "manual.js:meaningHolds": "meaning.js is fetched by openManual (`await lazyScript(\"/js/meaning.js\")`, line 149) before the search box can be typed in",
     "manual.js:meaningNamed": "meaning.js is fetched by openManual (`await lazyScript(\"/js/meaning.js\")`, line 149) before the search box can be typed in",
-    "math-editor.js:docMathRender": "typeof-guarded tile face: the glyph is the designed fallback until the library bundle's renderer is in",
     "meetings.js:holdLiveCaptions": "behind `meetingLive.on`, which meetingLiveWordsStart sets only after `await ensureModule(\"captions\")`",
     "meetings.js:loadLibrary": "typeof-guarded refresh of the Library's list: skipping is right when it was never opened, and opening it loads and renders it (lazy-entries.js rule 2)",
     "meetings.js:stopRecorderWords": "behind `meetingLive.on`, which meetingLiveWordsStart sets only after `await ensureModule(\"captions\")`",
@@ -713,7 +736,7 @@ def _top_level_bindings(path: Path) -> tuple[set[str], set[str]]:
     """Column-zero functions, and column-zero const/let/class names (`const a = 1, b`
     chains and destructuring are not read: a name a lint cannot see is one it cannot flag)."""
     source = path.read_text(encoding="utf-8")
-    funcs = set(re.findall(r"^(?:async )?function\*? ([A-Za-z_$][\w$]*)", source, re.M))
+    funcs = set(re.findall(r"^(?:async )?function\*? ([A-Za-z_$][\w$]*)", source, re.M)) | _window_exports(source)
     data = set(re.findall(r"^(?:const|let|class) ([A-Za-z_$][\w$]*)", source, re.M))
     return funcs, data
 
@@ -732,11 +755,13 @@ def _loader_chains() -> list[tuple[str, list[str]]]:
     return out
 
 
-def _direct_loads() -> dict[str, list[tuple[str, frozenset[str]]]]:
+def _direct_loads() -> dict[str, list[tuple[str, frozenset[str], frozenset[str]]]]:
     """Files loaded by a literal `lazyScript("/js/x.js")`: file to one `(asker, bundles it
-    awaited first)` per call site. A call site that follows `await ensureModule("library")`
-    in the same function loads the file with that whole bundle in."""
-    out: dict[str, list[tuple[str, frozenset[str]]]] = {}
+    awaited first, files loaded with it)` per call site. A call site that follows
+    `await ensureModule("library")` in the same function loads the file with that whole
+    bundle in; one beside or after another `lazyScript` in that function (documents.js's
+    `Promise.all([lazyScript(ai), lazyScript(history)])`) loads it with that file in."""
+    out: dict[str, list[tuple[str, frozenset[str], frozenset[str]]]] = {}
     for path in sorted((FRONTEND / "js").glob("*.js")):
         lines = path.read_text(encoding="utf-8").split("\n")
         for number, line in enumerate(lines):
@@ -748,7 +773,10 @@ def _direct_loads() -> dict[str, list[tuple[str, frozenset[str]]]]:
                 while start > 0 and not FUNCTION_START.match(lines[start]):
                     start -= 1
                 before = "\n".join(lines[start:number]) + "\n" + line[: m.start()]
-                out.setdefault(name, []).append((path.name, frozenset(re.findall(r'ensureModule\("(\w+)"\)', before))))
+                beside = before + line[m.end() :]
+                with_it = frozenset(f for f in re.findall(r'lazyScript\("/js/([A-Za-z0-9._-]+\.js)"\)', beside)
+                                    if f != name and (FRONTEND / "js" / f).exists())
+                out.setdefault(name, []).append((path.name, frozenset(re.findall(r'ensureModule\("(\w+)"\)', before)), with_it))
     return out
 
 
@@ -803,8 +831,9 @@ def lazy_to_lazy_gaps(used: set[str] | None = None) -> list[str]:
             if file_name in files and file_name != host:
                 before = set().union(*(names_of[f] for f in files[: files.index(file_name) + 1]))
                 out += [before | names_of.get(host, set()) | r for r in (host_routes(host, seen) or [set()])]
-        for host, awaited in direct.get(file_name, ()):
+        for host, awaited, with_it in direct.get(file_name, ()):
             loaded = set().union(set(), *(set().union(*(names_of.get(f) or _defined_any_form(FRONTEND / "js" / f) for f in lazy[b] if f.endswith(".js"))) for b in awaited if b in lazy))
+            loaded |= set().union(set(), *(names_of.get(f) or _defined_any_form(FRONTEND / "js" / f) for f in with_it))
             out += [names_of.get(file_name, set()) | names_of.get(host, set()) | loaded | r for r in (host_routes(host, seen) or [set()])]
         routes_memo[file_name] = out
         return out
@@ -897,3 +926,12 @@ def test_a_const_read_from_a_file_later_in_the_chain_is_a_gap(tmp_path, monkeypa
 def test_the_object_move_chain_is_read_in_load_order():
     chains = dict(_loader_chains())
     assert chains["obj-ref.js"] == ["obj-order.js", "obj-drag.js", "obj-reorder.js", "obj-clip.js", "obj-carry.js", "obj-tray.js"]
+
+
+def test_a_wrapped_file_s_window_exports_are_its_globals():
+    """doc23-1102: files wrapped in one closure declare nothing at column zero; their
+    `Object.assign(window, {...})` names are what the lints above must see."""
+    assert _window_exports("(() => {\n  function a() {}\n  Object.assign(window, { a, b: a, c });\n})();\n") == {"a", "b", "c"}
+    assert "docMathRender" in _top_level_functions(FRONTEND / "js" / "documents-math.js")
+    funcs, _ = _top_level_bindings(FRONTEND / "js" / "documents-history.js")
+    assert "docDiffLines" in funcs

@@ -374,7 +374,7 @@ function favouriteButton(entry) {
   );
   button.classList.add("favourite-btn");
   button.classList.toggle("is-favourite", Boolean(entry.pinned));
-  button.setAttribute("aria-pressed", String(Boolean(entry.pinned)));
+  button.setAttribute("aria-pressed", Boolean(entry.pinned));
   return button;
 }
 
@@ -602,7 +602,7 @@ function noteReviewActions(entry) {
   const split = smallButton(
     "ph:scissors Split…",
     "Split it into linked notes, with a preview first",
-    () => openExtractPreview(entry.content || "", { sourceEntryIds: [entry.id] })
+    () => fullEntry(entry.id).then((whole) => openExtractPreview(whole.content || "", { sourceEntryIds: [entry.id] }), (error) => toast(error.message, true))
   );
   row.append(accept, refile, split);
   return row;

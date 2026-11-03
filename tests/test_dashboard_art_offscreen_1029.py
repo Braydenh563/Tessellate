@@ -13,8 +13,9 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-SOURCE = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "dashboard.js").read_text(encoding="utf-8")
-SKETCH = SOURCE[SOURCE.index("const sketch = (p) =>") : SOURCE.index("artInstance = new p5(sketch, holder);")]
+# The constellation moved to the lazy dash-art.js (INBOX 1530 d), inside an IIFE.
+SOURCE = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "dash-art.js").read_text(encoding="utf-8")
+SKETCH = SOURCE[SOURCE.index("const sketch = (p) =>") : SOURCE.index("artInstance = live ? new p5(sketch, holder)")]
 
 
 def test_the_sketch_watches_whether_its_card_is_in_view():

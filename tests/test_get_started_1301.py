@@ -98,3 +98,16 @@ def test_help_names_the_new_controls():
         assert words in topic["body"], words
     popover = INDEX[INDEX.index('id="dash-help"') :].split("</div>")[0]
     assert "Show Get started" in popover
+
+
+def test_an_unchanged_card_is_not_rebuilt():
+    """E2E on PR 212: a dashboard refresh rebuilt the card while its menu was
+    open, so "Remove the sample notes" vanished under the click (and a
+    half-typed name would go with it). The card is rebuilt only when what it
+    shows changed."""
+    body = FIRST[FIRST.index("async function renderFirstSteps"):]
+    body = body[: body.index("\n}\n")]
+    keyed = body.index("host.dataset.stepsKey === key")
+    assert "state" in body[body.index("const key = "):keyed]
+    assert '"firstStepsCollapsed"' in body[body.index("const key = "):keyed]
+    assert keyed < body.index("host.replaceChildren(firstStepsCard(host, state))")

@@ -22,7 +22,8 @@ NEW = ("logic-right", "timeline", "fishbone", "tree-table")
 def _picker() -> list[tuple[str, str]]:
     body = INDEX[INDEX.index('<select id="wb-map-layout"') :]
     body = body[: body.index("</select>")]
-    return re.findall(r'<option value="([a-z-]+)">([^<]+)</option>', body)
+    #: An option may carry its icon (`data-icon`) since the picker became an icon menu.
+    return re.findall(r'<option value="([a-z-]+)"[^>]*>([^<]+)</option>', body)
 
 
 def _names() -> list[tuple[str, str]]:

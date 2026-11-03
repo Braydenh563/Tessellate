@@ -96,7 +96,7 @@ from tessellate.ai.composer_unfound import _FRAME_WORDS, _frame_stems, _missing,
 from tessellate.ai.composer_body import BROAD_NOTES, FULL_POINTS, _NOTE_NOUNS, _asked_span, _body, _compare, _confirmed_lead, _days_named, _disagreement, _disagreements, _insight_close, _insight_lead, _insights_for, _kinds, _mentions, _newest, _notes_named_by, _opening, _others, _relation, _span, _still_open, _summary, _timeline, _until_note, _versus_answer, heading_name, length_wish, _LEARNED, told_as_past  # noqa: F401  (moved; re-exported)
 from tessellate.ai.composer_dialogue import Dialogue, NEXT_MAX_CHARS, _BARE, _BOLD, _MORE, _ORDINAL, _ORDINALS, _PRONOUN, _RESTATES, _follow_pronoun, _named_notes, _next_questions, _standing, follow_on, refers_back  # noqa: F401  (moved; re-exported)
 from tessellate.ai.composer_smalltalk import INVITES, NEXT_STEPS, NEXT_STEPS_PROFESSIONAL, SOCIAL, SOCIAL_PROFESSIONAL, _social_line, call, call_asks, greeting_ask, invitation, social, social_kind, social_surfaces  # noqa: F401  (moved; re-exported)
-from tessellate.ai.composer_intent import PLAN_CHARS, Plan, _ACT_VERBS, _TAGGED, _WHY, _lead_act_verb, _plan_window, _time_phrase, holds_any, plan, window_verb_stems  # noqa: F401  (moved; re-exported)
+from tessellate.ai.composer_intent import _ACT_VERBS, _lead_act_verb, plan, tag_gap  # noqa: F401  (moved; re-exported)
 from tessellate.ai.composer_help import _act_sentence, _clauses, _feature_instead, _help_act, _help_act_stems, _help_answer, _in_window, _result, _utility, help_line, offered  # noqa: F401  (moved; re-exported)
 from tessellate.ai.composer_empty import _absent, _as_phrase, _as_typed, _bare_title, _did_you_mean, _filtered, _nothing, empty_window, _REGISTER, window_said  # noqa: F401  (moved; re-exported)
 from tessellate.ai.composer_recall import _BROAD, _month, _overview_answer, _recall, _recall_next, _span_of, _subject_stems  # noqa: F401  (moved; re-exported)
@@ -483,12 +483,11 @@ def _early_answer(question: str, notes: list[dict], *, said: str, recent: bool, 
     return None
 
 
-def _unfinished_act(question: str, now: datetime) -> dict | None:
+def _unfinished_act(question: str, now: datetime, notes: list[dict]) -> dict | None:
     """A command that starts like an act on a note but names no note or no
-    change ("rename my gym log", "tag my gym log"), which the acts could not
-    read: said with the way to say it, never answered by quoting whichever note
-    shares a word with it (E12: "rename my gym log" quoted the gym note and
-    called "rename" a word no note mentions)."""
+    change ("rename my gym log"), which the acts could not read: said with the
+    way to say it, never answered by quoting a note that shares a word (E12);
+    a tag act that names one note asks which tag (E55)."""
     first = _lead_act_verb(question)
     if first is None:
         return None
@@ -499,7 +498,7 @@ def _unfinished_act(question: str, now: datetime) -> dict | None:
     act = act_registry.ACTS.get(_ACT_VERBS[first])
     if act is None:
         return None
-    line = f"I could not tell which note to {first}, or what to change. To {act.label[0].lower() + act.label[1:]}, say it like this: {act.example}."
+    line = tag_gap(first, question, notes) or f"I could not tell which note to {first}, or what to change. To {act.label[0].lower() + act.label[1:]}, say it like this: {act.example}."
     return {**_result([("template", line)], "none"), "answered": True}
 
 
@@ -774,7 +773,7 @@ def _compose(
     recent = recent and _still_recent(question)
     early = _early_answer(question, notes, said=said, recent=recent, today=today, embed=embed, voice=voice, salt=salt, turn=turn, now=now)
     early = early or (None if said else _cannot_untick(question))
-    early = early or (None if said else _unfinished_act(question, now or datetime.combine(today, datetime.min.time())))
+    early = early or (None if said else _unfinished_act(question, now or datetime.combine(today, datetime.min.time()), notes))
     if early:
         return early
     notes = _correction_order(notes, prefer, dialogue) if prefer else notes

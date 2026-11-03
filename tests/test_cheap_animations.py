@@ -281,7 +281,7 @@ from tests.test_motion_tokens import DECORATIVE  # noqa: E402
 
 
 def _rules_of(text: str):
-    for m in re.finditer(r"([^{}]+)\{([^{}]*)\}", _blank_comments(text)):
+    for m in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", _blank_comments(text)):
         yield text.count("\n", 0, m.start()) + 1, " ".join(m.group(1).split()), m.group(2)
 
 

@@ -122,7 +122,8 @@ def test_a_typing_look_is_made_only_near_the_caret_or_while_faded() -> None:
 def test_the_dodge_listener_uses_the_typing_look_for_typing_keys() -> None:
     src = AVATARS[AVATARS.index("for (const type of [\"click\", \"keyup\"])") :][:900]
     assert "nameMarkBuddyTypingKey(e) ? nameMarkBuddyDodgeTyping : nameMarkBuddyDodge" in src
-    assert "setTimeout(look, 80)" in src and "setTimeout(look, 700)" in src
+    # The timers wrap `look` in a look after the frame (INBOX 1534).
+    assert "setTimeout(afterPaint, 80)" in src and "setTimeout(afterPaint, 700)" in src and "setTimeout(look), 1)" in src
 
 
 @needs_node

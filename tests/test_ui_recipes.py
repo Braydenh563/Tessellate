@@ -48,7 +48,7 @@ KNOWN_GLASS_DRIFT = set()
 
 def _rules(css: str):
     css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
-    for match in re.finditer(r"([^{}]+)\{([^{}]*)\}", css):
+    for match in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", css):
         yield match.group(1).strip(), match.group(2)
 
 
@@ -192,6 +192,25 @@ def test_a_submenu_is_a_menu_in_a_menu_with_a_nested_level_where_a_flyout_cannot
     assert re.search(r'Text and description", items: (?:words|menuRows\.filter)', lib), "the picture card's text rows are a flat list again"
     clip = (ROOT / "frontend" / "js" / "obj-clip.js").read_text(encoding="utf-8")
     assert "OBJ_MENU_FOLD = 10" in clip and "buildMenuGroupButton(" in clip, "a card's own rows no longer fold past ten"
+
+
+def test_a_dock_menu_flyout_walks_by_keyboard_and_leaves_with_escape_and_tab() -> None:
+    """Audit D48 (2026-11-02), driven with the keyboard in the Documents editor
+    (3 groups): a flyout's rows are the dock's own buttons and switches, which
+    carry no `role`, so Right on a group row left the focus there; the first
+    Escape in a flyout closed the whole menu from navigation.js's capture
+    handler and left the flyout drawn at `<body>`; and Tab walked off the end
+    of the document. Documents' own wiring (a lazy file, outside the boot gzip
+    ratchet) walks the rows and a `window` capture listener, which runs before
+    the `document` one, closes the flyout first."""
+    docs = documents_text()
+    body = docs.split("function foldDocMenuGroup(", 1)[1].split("const docDownloadGroup", 1)[0]
+    assert "const rowsOf = " in body and "getClientRects().length" in body, "the flyout's rows are not walked by the keyboard"
+    assert 'label:not(.hidden) > input' in body, "a switch row is unreachable by the keyboard again"
+    assert '"ArrowRight", "Enter", " "' in body, "Right on a group row no longer moves the focus into its flyout"
+    assert re.search(r'window\.addEventListener\(\s*"keydown",.*?closeActionMenus\(\);', docs.split("function foldDocMenuGroup(", 1)[1], re.S), (
+        "Escape and Tab no longer close a flyout before the menu's own Escape runs"
+    )
 
 
 def test_a_pointer_anchored_menu_is_the_recipe() -> None:
@@ -1136,6 +1155,8 @@ LIST_ROWS = {
     ".recording-row": ".recordings-list",
     #: A code file's snippets, in the code panel (INBOX 788).
     ".doc-snippet-row": ".doc-snippet-list",
+    #: A diagram's blocks, in the block pane (1546 P2; the tree is the one list, groups nest inside it).
+    ".dgm-card": ".dgm-tree",
 }
 
 
@@ -2557,7 +2578,7 @@ def _rule_bodies(css: str, selector: str) -> list[str]:
     """
     css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
     bodies = []
-    for match in re.finditer(r"([^{}]+)\{([^{}]*)\}", css):
+    for match in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", css):
         selectors = [part.strip() for part in match.group(1).split(",")]
         if any(part.split(":")[0].split(" ")[-1] == selector for part in selectors):
             bodies.append(match.group(2))
@@ -4353,6 +4374,25 @@ def test_a_comment_thread_is_one_popover_reached_three_ways() -> None:
     assert "Right-click an item, Comment…" in guide and "Comment… starts a thread" in guide
 
 
+def test_a_document_thread_is_a_sidecar_drawn_in_the_comments_rows() -> None:
+    """DOCUMENTS_PLAN DX24t (DESIGN.md's document-thread row): the thread is a
+    record beside the text and never in it, every save sends it, Reply and
+    Resolve share the head row (a row that grew a line for Reply showed 2
+    remarks where 4 fit), the panel is not redrawn under a reply being typed,
+    and the styles live in the lazy sheet, out of the boot budget."""
+    comments = (ROOT / "frontend" / "js" / "documents-comments.js").read_text(encoding="utf-8")
+    docs = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    lazy = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+    boot_css = (ROOT / "frontend" / "css" / "05-sidebars-themes.css").read_text(encoding="utf-8")
+    assert "threads: renderDocComments.threads()" in docs, "every save carries the sidecar"
+    assert "head.append(open, reply, resolve);" in comments
+    assert "if (docCommentReplying && list.contains(document.activeElement)" in comments
+    assert "innerHTML" not in comments[comments.index("function docCommentReplyForm") :], "built with the DOM, never markup"
+    for selector in (".doc-comment-who", ".doc-comment-replies", ".doc-comment-reply-form", ".doc-comments-resolved-toggle"):
+        assert selector + " {" in lazy, selector
+    assert ".doc-comment-item" not in boot_css, "the comments panel's styles are lazy"
+
+
 def test_the_writing_rooms_selects_get_their_own_line_on_a_phone() -> None:
     """OPEN.md, "Writing Room at phone width": one nowrap row held what to
     write, tone, length and Use notes, so each select was 62px wide at 390 with
@@ -5095,6 +5135,7 @@ SEG_BUILT_IN_SCRIPT = {
     ("whiteboard.js", "seg seg-compact wb-export-seg"): "Export this board: the format, a value",
     ("timeline-calendar.js", "seg seg-compact timeline-cal-span"): "not a popup: the calendar head's view mode (Month, Week, Day)",
     ("dashboard.js", "seg focus-presets-seg"): "not a popup: the focus timer's length, a value (UI_MODERNISATION V8)",
+    ("math-editor.js", "seg math-editor-mode"): "not a kind switch: Inline or Display, two exclusive values always in view (INBOX 1530 g L3; the dialog's own kinds are its tab strip)",
 }
 
 
@@ -5370,7 +5411,7 @@ def _served_rules():
     for path in CSS:
         served = strip_for_path(path.name, path.read_bytes()).decode("utf-8")
         served = re.sub(r"@(media|supports|container)[^{]*\{", "", served)
-        for m in re.finditer(r"([^{}]+)\{([^{}]*)\}", served):
+        for m in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", served):
             yield path.name, [s.strip() for s in m.group(1).split(",")], m.group(2)
 
 
@@ -5704,7 +5745,8 @@ def test_a_rows_repeated_action_is_quiet_and_three_fold_into_its_menu() -> None:
         r"button\.ghost\.quiet\.danger:hover,\s*button\.ghost\.quiet\.danger:is\(:focus-visible, :has\(:focus-visible\)\) \{[^}]*color: var\(--error\)",
         css,
     )
-    for name, needle in (("settings.js", "rowActions(acts, "), ("settings-data.js", "rowActions([")):
+    # The learned row (rowActions(acts, ...)) moved to settings-controls.js with the Learned section, 2026-11-02.
+    for name, needle in (("settings-controls.js", "rowActions(acts, "), ("settings-data.js", "rowActions([")):
         assert needle in (ROOT / "frontend" / "js" / name).read_text(encoding="utf-8"), name
 
 
@@ -6353,7 +6395,6 @@ PANEL_FIXED_JS = {
     "icon-picker.js": "an anchored picker",
     "lightbox-actions.js": "the image viewer's overlays",
     "lightbox-view.js": "the image viewer",
-    "reply-kit.js": "an anchored panel",
     "settings-controls.js": "an anchored control overlay",
     "sheets-selects.js": "the select popup",
     "skills.js": "an anchored panel",
@@ -6645,7 +6686,7 @@ def test_a_popup_head_keeps_its_tools_with_close_at_the_end() -> None:
     assert title and re.search(r"flex:\s*1 1 auto", title.group(1)), "the sheet title must grow so the end group sits together"
     # No shared head recipe may spread its children: the end group would split.
     for path in sorted((ROOT / "frontend" / "css").glob("*.css")):
-        for sel, body in re.findall(r"([^{}]+)\{([^{}]*)\}", path.read_text(encoding="utf-8")):
+        for sel, body in re.findall(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", path.read_text(encoding="utf-8")):
             names = [s.strip() for s in sel.split(",")]
             if any(re.fullmatch(r"(?:\.[\w-]+ )*\.(?:sheet-head|dialog-head)(?: > \.(?:sheet-head|dialog-head))?", n.split("}")[-1].strip()) for n in names):
                 assert "space-between" not in body, f"{path.name}: {sel.strip()[:60]} spreads a shared popup head"
@@ -6751,7 +6792,7 @@ def test_the_motion_vocabulary_is_one_set() -> None:
     # A plus becomes a minus: the lazy sheet draws it from transforms only, the
     # still sheet removes the turn, and nothing in the frontend uses SMIL.
     lazy = css["library-lazy.css"]
-    pm = [(s, b) for s, b in re.findall(r"([^{}]*\.ui-pm[^{}]*)\{([^{}]*)\}", lazy)]
+    pm = [(s, b) for s, b in re.findall(r"(?:(?<=[{}])|\A)([^{}]*\.ui-pm[^{}]*)\{([^{}]*)\}", lazy)]
     assert len(pm) >= 4, "the .ui-pm recipe moved; point this lint at it"
     for selector, body in pm:
         for m in re.finditer(r"transition:\s*([^;]*);", body):
@@ -6814,3 +6855,52 @@ def test_a_status_line_a_render_fills_is_never_collapsed_behind_a_question_mark(
     # collapsed into a '?' and left that '?' alone on its own line once emptied.
     body = frontend_text("settings.js").split("function collapseLongSettingHints(")[1].split("\n}\n")[0]
     assert 'label small.muted:not([id]), .setting-label small.muted:not([id])' in body
+
+
+def test_a_text_field_beside_a_button_is_one_row_at_one_control_height():
+    """The Clock's timer (the owner, 2026-11-02): the length field measured 41.6px
+    beside a 32px Start. A field and the button beside it are sized by two
+    unrelated rules, so a row that pairs them says the height and both take
+    it: `.row.field-row` (DESIGN.md, "A text field beside a button"). The one
+    expression is the button's own (`max(--target-min, --button-min-h)`), so a
+    coarse pointer lifts the field with the button, and the field zeroes its
+    vertical padding so the text centres in the shorter box. The Clock's
+    timer row uses it. scratchpad/ui-sweeps/inbox1557-field-button-height.js
+    measures the rows in the browser."""
+    css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    floor = "max(var(--target-min), var(--button-min-h))"
+    rules = {sel: body for sel, body in _rules(css) if ".row.field-row" in sel and "min-height" in body}
+    assert rules, "no `.row.field-row` height rule"
+    for body in rules.values():
+        assert f"min-height: {floor}" in body, body
+    names = " ".join(rules)
+    assert ".row.field-row > input" in names and ".row.field-row > button" in names and ".select-opener" in names
+    padding = next(body for sel, body in _rules(css) if sel.strip() == ".row.field-row > input")
+    assert "padding-block: 0" in padding
+    tools = frontend_text("utility-tools.js")
+    assert 'clockEl("form", "row field-row clock-length")' in tools
+
+
+def test_a_diagram_is_edited_as_blocks():
+    """DESIGN.md, "A diagram edited as blocks" (1546 P2): one tree, no `innerHTML`, and the
+    pointer mode answers ahead of `carry`.
+
+    The block pane is a tree of cards a hand drags and a keyboard walks, over the one model
+    the document's source is printed from. Three things keep it from becoming a second
+    editor: it has one tree (a second list of the same blocks would be two states to keep
+    equal), it builds its DOM from nodes (a label is a person's text, and a string of
+    markup is where it would stop being one), and its pointer mode is asked before the
+    generic `carry` grab, which takes every card and would win a press on a block."""
+    code = (ROOT / "frontend" / "js" / "diagram-builder.js").read_text(encoding="utf-8")
+    body = re.sub(r"//.*", "", code)
+    assert body.count('"role", "tree"') == 1
+    assert not re.search(r"innerHTML|insertAdjacentHTML|outerHTML|DOMParser", body)
+    drag = (ROOT / "frontend" / "js" / "obj-drag.js").read_text(encoding="utf-8")
+    seed = drag[drag.index("function objDragSeed(event) {") :]
+    seed = seed[: seed.index("\n}\n")]
+    assert "OBJ_MODES[name].seed?.(event)" in seed
+    assert seed.index("OBJ_MODES[name].seed?.(event)") < seed.index("OBJ_MODES[name].grab?.(hit)")
+    assert 'dataset.dockName = "diagram"' in code, "the palette is a dock"
+    css = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
+    assert "var(--row-h)" in css and "var(--row-gap)" in css, "the cards sit on the list-row tokens"
+

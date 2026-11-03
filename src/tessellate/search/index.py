@@ -282,6 +282,24 @@ def _table_missing(session: Session) -> bool:
     return not known
 
 
+#: Columns no index row reads: a chat question counts every note it surfaced
+#: as used, and rewriting those notes' rows was 96 writes per question
+#: (2026-11-02, 24 notes; audit 1028 E65 sweep).
+_BOOKKEEPING = frozenset({"access_count"})
+
+
+def _only_bookkeeping(obj: object) -> bool:
+    """Whether every column that changed on `obj` is one no index row reads."""
+    state = sa_inspect(obj)
+    changed = {a.key for a in state.attrs if a.history.has_changes()}
+    return bool(changed) and changed <= _BOOKKEEPING
+
+
+def _changed(session: Session) -> list:
+    """What this flush added, and what it changed in a column a row reads."""
+    return [*session.new, *(obj for obj in session.dirty if not _only_bookkeeping(obj))]
+
+
 @event.listens_for(Session, "after_flush")
 def _index_on_flush(session: Session, flush_context) -> None:  # noqa: ANN001
     """Keep the index in step with whatever just changed, in the same
@@ -309,7 +327,7 @@ def _index_on_flush(session: Session, flush_context) -> None:  # noqa: ANN001
             ref_id = getattr(obj, "id", None)
             if ref_id is not None:
                 work.append((source, ref_id, None))
-    for obj in [*session.new, *session.dirty]:
+    for obj in _changed(session):
         for source in _BY_MODEL.get(type(obj), ()):
             ref_id = getattr(obj, "id", None)
             if ref_id is None:

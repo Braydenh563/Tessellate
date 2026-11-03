@@ -335,6 +335,10 @@
 .chat-empty .empty-title {
   margin: 0.4rem 0 0.25rem;
 }
+/* E47: the saved-chat search, a gap above the list it filters. */
+.chat-sidebar-search {
+  margin-bottom: var(--space-2);
+}
 #conversation-list {
   list-style: none;
   margin: 0;

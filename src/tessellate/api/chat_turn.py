@@ -590,13 +590,16 @@ def _note_with_hint(note: dict) -> str:
     return f"{note.get('content') or ''}{librarian._dates_hint(note)}"
 
 
-def _why(req, prepared, grounding, composing, will_answer, tools_only, ollama_running, shape, marks) -> list[dict]:
-    """B30's lines for this turn (`ai/why.py`)."""
+def _why(req, prepared, grounding, composing, will_answer, tools_only, ollama_running, shape, marks, text="") -> list[dict]:
+    """B30's lines for this turn (`ai/why.py`). A note the answer links is a
+    note it used, whether or not retrieval or a grounding row counted it
+    (audit 1028 E72: a summary read its note and said "nothing matched")."""
+    linked = set(re.findall(r"\(#/notes/(\d+)\)", text or ""))
     return why.lines(
         intent=prepared["intent"],
         mode=prepared.get("search_mode"),
         matched=len(prepared.get("raw_results") or []),
-        used=len({row.get("note_id") for row in grounding if isinstance(row.get("note_id"), int)}),
+        used=len({str(row.get("note_id")) for row in grounding if isinstance(row.get("note_id"), int)} | linked),
         when=prepared.get("when_phrase"),
         scoped=bool(req.body.attached_notes_only or req.body.note_ids),
         composed=composing,

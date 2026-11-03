@@ -133,7 +133,7 @@ def test_the_selection_indicator_is_one_recipe():
     assert "anchor-name: --glide" not in flat and "position-anchor: --glide" not in flat, (
         "the anchored indicator is back beside the measured one: one recipe draws every strip"
     )
-    boxes = re.findall(r"([^{}]*::before)\s*\{([^{}]*var\(--glide-x\)[^{}]*)\}", css)
+    boxes = re.findall(r"(?:(?<=[{}])|\A)([^{}]*::before)\s*\{([^{}]*var\(--glide-x\)[^{}]*)\}", css)
     assert len(boxes) == 1, f"{len(boxes)} rules draw a sliding indicator; one does"
     selector, body = boxes[0]
     assert ".has-glide::before" in selector and "translate: var(--glide-x) var(--glide-y)" in body

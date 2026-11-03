@@ -20,6 +20,19 @@
     user-select: none;
     touch-action: none;
   }
+  /* Every edge and corner resizes (INBOX 1536): `data-rim` is the edge under the pointer. */
+  .panel-movable-on:is([data-rim="n"], [data-rim="s"]) {
+    cursor: ns-resize;
+  }
+  .panel-movable-on:is([data-rim="e"], [data-rim="w"]) {
+    cursor: ew-resize;
+  }
+  .panel-movable-on:is([data-rim="ne"], [data-rim="sw"]) {
+    cursor: nesw-resize;
+  }
+  .panel-movable-on:is([data-rim="nw"], [data-rim="se"]) {
+    cursor: nwse-resize;
+  }
   .panel-moving,
   .panel-moving .panel-drag-head {
     cursor: grabbing;

@@ -15,7 +15,7 @@ rule for what counts as math at all, which in a notebook full of prices is the
 thing most likely to embarrass this feature: `$5 and $10` must stay two
 prices.
 
-The marked region of documents.js (`DOC-MATH-BEGIN` to `DOC-MATH-END`) is pure
+The marked region of documents-math.js (`DOC-MATH-BEGIN` to `DOC-MATH-END`) is pure
 string and object work with no DOM in it, so node can run it, and that
 property is enforced by this test existing: the day it reaches for `document`
 it stops running here.
@@ -31,7 +31,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-DOCUMENTS_JS = ROOT / "frontend" / "js" / "documents.js"
+DOCUMENTS_JS = ROOT / "frontend" / "js" / "documents-math.js"  # the parser moved out of documents.js (DC13 remainder, doc23-1102)
 
 BEGIN = "// DOC-MATH-BEGIN"
 END = "// DOC-MATH-END"
@@ -41,7 +41,7 @@ def math_source() -> str:
     text = DOCUMENTS_JS.read_text(encoding="utf-8")
     start = text.find(BEGIN)
     end = text.find(END)
-    assert start != -1, f"{BEGIN} marker is missing from documents.js"
+    assert start != -1, f"{BEGIN} marker is missing from documents-math.js"
     assert end > start, f"{END} marker is missing or before {BEGIN}"
     return text[start + len(BEGIN) : end]
 

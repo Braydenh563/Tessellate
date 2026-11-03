@@ -25,6 +25,7 @@ from tests._css_paths import CSS_DIR
 ROOT = Path(__file__).resolve().parent.parent
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 LIST_JS = (ROOT / "frontend" / "js" / "notes-list.js").read_text(encoding="utf-8")
+CONNECTIONS_JS = (ROOT / "frontend" / "js" / "connections.js").read_text(encoding="utf-8")
 CSS = "\n".join(p.read_text(encoding="utf-8") for p in sorted(CSS_DIR.glob("*.css")))
 
 
@@ -68,7 +69,9 @@ def test_the_presence_rule_is_one_number_in_script_and_stylesheet():
 
 
 def test_the_rail_reads_the_two_routes_and_remembers_being_dismissed():
-    assert "/connections`" in LIST_JS and "/resurface/near/" in LIST_JS
+    #: The answer is drawn by connections.js (`drawNotesRail`, moved for the boot gzip cap, INBOX 1525).
+    rail = LIST_JS + CONNECTIONS_JS
+    assert "/connections`" in rail and "/resurface/near/" in rail
     assert 'NOTES_RAIL_KEY = "notes-rail"' in LIST_JS
     assert "prefs.set(NOTES_RAIL_KEY" in LIST_JS
 
@@ -78,7 +81,7 @@ def test_the_sheet_and_the_rail_draw_rows_with_one_builder():
     assert "function buildConnectionGroups(" in app
     sheet = app.split("async function openConnections(")[1].split("\n}\n")[0]
     assert "buildConnectionGroups(" in sheet, "the sheet draws its groups with the shared builder"
-    assert "buildConnectionGroups(" in LIST_JS, "and so does the rail"
+    assert "buildConnectionGroups(" in CONNECTIONS_JS.split("async function drawNotesRail(")[1], "and so does the rail"
 
 
 def test_the_rail_gives_way_before_the_list_drops_under_600():

@@ -42,11 +42,14 @@ def test_the_breadcrumb_follows_the_view_when_the_caret_is_off_screen() -> None:
     screen, the top of the view otherwise"; the trail must be redrawn by the
     same scroll-driven pass, and every other redraw must use the same line.
     """
-    start = DOCUMENTS_JS.index("function markDocOutline() {")
+    start = DOCUMENTS_JS.index("function markDocOutline(known) {")
     body = DOCUMENTS_JS[start: DOCUMENTS_JS.index("\n}\n", start)]
     assert "renderDocCrumbs(" in body, "scrolling no longer redraws the breadcrumb"
     assert "docCaretLine()" in body and 'kind === "codemirror"' in body, "the textarea fallback keeps the caret"
-    assert DOCUMENTS_JS.count("renderDocCrumbs(docWhereLine())") == 2, (
+    # The line is read once, before the outline writes (INBOX 1530 c), and
+    # the same `where` goes to the mark and to both of the trail's redraws.
+    assert DOCUMENTS_JS.count("const where = docWhereLine();") == 1
+    assert DOCUMENTS_JS.count("renderDocCrumbs(where)") == 2 and "markDocOutline(where)" in DOCUMENTS_JS, (
         "the outline's redraws must give the trail the same line the mark uses"
     )
 

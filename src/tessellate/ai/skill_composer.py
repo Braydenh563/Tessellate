@@ -170,7 +170,7 @@ def combine(session: Session) -> str:
     pairs = [p for p in starter_acts._best_pairs(entries, starter_acts._vectors(entries), starter_acts._linked(session)) if p[0] >= COMBINE_FLOOR]
     if not pairs:
         return "No two notes share enough words to be worth combining. I changed nothing."
-    lines = "\n".join(f"- #{a.id} {commands._title(a)} and #{b.id} {commands._title(b)}" for _, a, b in pairs)
+    lines = "\n".join(f"- {commands._title(a)} and {commands._title(b)}" for _, a, b in pairs)
     return f"These pairs share the most words, so they may be one note:\n\n{lines}\n\nI combined nothing and deleted nothing."
 
 

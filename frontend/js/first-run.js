@@ -279,6 +279,11 @@ async function renderFirstSteps(host, cardOff = false) {
     host.replaceChildren();
     return;
   }
+  //: A dashboard refresh with nothing changed keeps the card as it is: a
+  //: rebuild closed its open menu and cleared a half-typed name (E2E, PR 212).
+  const key = JSON.stringify([state, prefs.get("firstStepsCollapsed", ""), writeNoteHint()]);
+  if (host.firstChild && host.dataset.stepsKey === key) return;
+  host.dataset.stepsKey = key;
   host.replaceChildren(firstStepsCard(host, state));
   //: The greeting's "Add your name" is step one's second door: one is enough.
   document.getElementById("dash-name-nudge")?.remove();

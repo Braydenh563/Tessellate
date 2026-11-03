@@ -124,7 +124,7 @@ async def audio(session_id: str, request: Request, db: DbSession = Depends(get_s
     except captions.CaptionsError as exc:
         # The helper failed several times running: end the run, keep the text.
         captions.end(session_id)
-        _save(session, db)
+        await run_in_threadpool(_save, session, db)  # SQLite off the event loop (audit 1028 K29)
         raise HTTPException(status_code=503, detail=str(exc)) from exc
 
 

@@ -103,16 +103,24 @@ def test_each_phrase_reads_inside_its_budget():
 
 def test_no_network_and_no_app_imports():
     """Decision 56: nothing in the deterministic layer reaches past the computer."""
-    tree = ast.parse((ROOT / "src/tessellate/ai/recognise.py").read_text(encoding="utf-8"))
-    names = set()
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Import):
-            names |= {a.name.split(".")[0] for a in node.names}
-        elif isinstance(node, ast.ImportFrom) and node.module:
-            names.add(node.module.split(".")[0])
+    def imported(path: str) -> set[str]:
+        tree = ast.parse((ROOT / path).read_text(encoding="utf-8"))
+        names = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                names |= {a.name.split(".")[0] for a in node.names}
+            elif isinstance(node, ast.ImportFrom) and node.module:
+                names.add(node.module if node.module.startswith("tessellate.") else node.module.split(".")[0])
+        return names
+
     # contextlib and contextvars (2026-10-27): the call's locale for season words
     # rides a ContextVar; both are stdlib with no I/O, so the intent stands.
-    assert names <= {"__future__", "re", "dataclasses", "datetime", "typing", "contextlib", "contextvars"}, names
+    # tessellate.core.lazyre (2026-11-02): the patterns compile on first use so the
+    # composer imports cold under its budget; the one app module allowed, held below
+    # to the standard library with no I/O, so nothing reaches past the computer still.
+    names = imported("src/tessellate/ai/recognise.py")
+    assert names <= {"__future__", "re", "dataclasses", "datetime", "typing", "contextlib", "contextvars", "tessellate.core.lazyre"}, names
+    assert imported("src/tessellate/core/lazyre.py") <= {"__future__", "re", "threading"}
 
 
 def test_the_unit_table_has_150_units():

@@ -84,7 +84,7 @@ def _section() -> str:
 def _rules(section: str) -> list[tuple[str, str]]:
     """(selector text, declaration text) for every top-level rule."""
     section = re.sub(r"/\*.*?\*/", "", section, flags=re.S)
-    return [(m.group(1).strip(), m.group(2)) for m in re.finditer(r"([^{}]+)\{([^{}]*)\}", section)]
+    return [(m.group(1).strip(), m.group(2)) for m in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", section)]
 
 
 def test_the_token_exists_and_matches_the_base_ring():

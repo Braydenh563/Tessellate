@@ -73,7 +73,9 @@ def _said(value: float) -> str:
 
 
 def _computed(text: str, read: str) -> Reply:
-    return Reply(f"{text}\n\n_Read as {read}._")
+    #: The person's own "12 november" is said back with its capital, in the
+    #: answer and in the note on how it was read (audit 1028 E21).
+    return Reply(f"{recognise.proper_days(text)}\n\n_Read as {recognise.proper_days(read)}._")
 
 
 def _percent(match: re.Match) -> Reply | None:

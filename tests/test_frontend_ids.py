@@ -37,6 +37,9 @@ RUNTIME_IDS = {
     "focus-step-value",
     "focus-today",
     "copy-fallback",
+    #: Tidy spacing, drawn by graph.js `graphTidyRow` on the first Graph visit
+    #: (INBOX 1529; the boot element cap, test_boot_diet3).
+    "graph-tidy",
 }
 
 

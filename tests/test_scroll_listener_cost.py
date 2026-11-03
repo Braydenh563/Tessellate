@@ -114,7 +114,7 @@ def test_the_constellation_rests_when_unattended_and_resumes_where_it_stopped():
     focus returns), with its drift clock moved on by the rest so nothing
     jumps. The old test read the page-wide idle stamp; the intent, rest when
     unwatched and wake where it stopped, is the same with a shorter wait."""
-    src = (JS / "dashboard.js").read_text(encoding="utf-8")
+    src = (JS / "dash-art.js").read_text(encoding="utf-8")  # moved, INBOX 1530 d
     draw = src[src.index("p.draw = () => {"):]
     draw = draw[: draw.index("scene(reduceMotion")]
     assert "performance.now() > attendUntil" in draw

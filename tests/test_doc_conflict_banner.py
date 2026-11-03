@@ -34,6 +34,7 @@ let currentDoc = { id: 1, title: "T", content: "a", content_hash: "h0", file_typ
 let docs = [currentDoc];
 let docDirty = true, docEditSeq = 0, docConflictOpen = false, docSaveTimer = null, docConflictPending = null;
 const docSaveQueue = { inFlight: null, again: null };
+const docsMadeThisSession = new Set(); // documents.js state docSaveOnce reads since audit 1028 U38
 let text = "mine", conflict = true;
 const puts = [], prompts = [], kept = [];
 const saved = { textContent: "", children: [], append(n) { this.children.push(n); } };

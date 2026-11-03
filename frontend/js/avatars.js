@@ -3701,11 +3701,15 @@ for (const type of ["click", "keyup"]) {
     if (!document.getElementById("nm-buddy")) return;
     clearTimeout(nmbDodgeTimer);
     clearTimeout(nmbDodgeLate);
+    //: Looked after a frame has drawn what the press changed: the timer alone landed
+    //: between the press's writes and the frame, and its boxes settled the layout
+    //: (146 to 191ms at 4x, INBOX 1534).
     const look = nameMarkBuddyTypingKey(e) ? nameMarkBuddyDodgeTyping : nameMarkBuddyDodge;
-    nmbDodgeTimer = setTimeout(look, 80);
+    const afterPaint = () => afterFrames(() => setTimeout(look), 1);
+    nmbDodgeTimer = setTimeout(afterPaint, 80);
     //: And once the page has settled: a tour step that changes tab, or a
     //: panel that slides in, lands its box after the first look.
-    nmbDodgeLate = setTimeout(look, 700);
+    nmbDodgeLate = setTimeout(afterPaint, 700);
   }, { passive: true, capture: true });
 }
 
@@ -5157,7 +5161,8 @@ function nameMarkBuddyTempo() {
     return;
   }
   const now = performance.now();
-  if (now - nmbTempo.seen > 1000) {
+  //: Not while a page or popup is arriving: `getAnimations` flushes all the style it has dirtied (306ms at 4x, INBOX 1534).
+  if (now - nmbTempo.seen > 1000 && now >= (window.uiSettlingUntil || 0)) {
     nmbTempo.seen = now;
     //: Atlas's layer roots (atlas.js, `atlasDrawFigure`) animate on the
     //: compositor; stepping them here would put them back on the main
@@ -6392,7 +6397,11 @@ for (const type of ["pointerdown", "keydown", "wheel", "resize"]) {
   (type === "resize" ? window : document).addEventListener(type, () => {
     if (type !== "resize") {
       nmbClock.inputAt = Date.now();
-      document.documentElement.classList.remove("is-idle");
+      //: Only when it is on (DX1): `remove` writes the attribute even when the
+      //: class is absent, so every key woke each observer of `<html>` (the
+      //: diagrams' theme redraw ran 13 times in 60 keys, a style read each).
+      const root = document.documentElement;
+      if (root.classList.contains("is-idle")) root.classList.remove("is-idle");
     }
     if (!nmb.checkDue) nmbTickArm(1500);
     nmb.checkDue = true;
@@ -6544,7 +6553,11 @@ function nameMarkBuddyBeat() {
   }
   const tab = nameMarkBuddyTab();
   const own = nameMarkBuddySpots()[tab];
-  nameMarkBuddyIndexReset();
+  //: The page's measured spots (controls and surfaces) are kept across beats
+  //: while nothing has changed them: scroll, resize and the views observer
+  //: reset them, `NMB_COVERS_MAX_MS` bounds the rest (INBOX 1534: a beat on a
+  //: still page re-measured every control, 224ms at 4x, 31ms of it forced).
+  if (nmb.covers?.tab !== tab || performance.now() - nmb.covers.at >= NMB_COVERS_MAX_MS) nameMarkBuddyIndexReset();
   //: A new view in the tab (`nameMarkBuddyViewChanged`): a window bar was
   //: the last resort of the view it left, so it looks again, and by the
   //: tab's own preference rather than the nearest (a bar 15px away beat a

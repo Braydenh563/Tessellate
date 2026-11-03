@@ -158,13 +158,16 @@ test("toolbar menus close after an item is chosen", async ({ page }) => {
   const errors = watchErrors(page);
   await openNewDoc(page, "Hello");
   await page.keyboard.press("Control+Shift+X");
-  const summary = page.locator('#doc-toolbar summary[aria-label^="Insert"]:visible').first();
+  // Insert is a button that opens the / menu since DX6 (audit 1102); Style is the
+  // strip's menu now, so its Underline is the item chosen.
+  const summary = page.locator('#doc-toolbar summary[aria-label^="Style"]:visible').first();
   const menu = summary.locator("xpath=..");
+  const before = await docText(page);
   await summary.click();
   await expect(menu).toHaveAttribute("open", "");
-  await menu.locator('button[data-md="table"]').click();
-  expect(await docText(page)).toContain("| Column | Column | Column |");
-  await expect(menu, "the Insert menu stayed open after Table").not.toHaveAttribute("open", "");
+  await menu.locator('button[data-md="underline"]').click();
+  await expect.poll(() => docText(page)).not.toBe(before);
+  await expect(menu, "the Style menu stayed open after Underline").not.toHaveAttribute("open", "");
   expect(errors).toEqual([]);
 });
 

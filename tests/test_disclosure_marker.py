@@ -24,7 +24,7 @@ FAMILIES = (
 
 def _marker_rule():
     text = CSS["08-consistency.css"]
-    for m in re.finditer(r"([^{}]*)\{([^}]*)\}", text):
+    for m in re.finditer(r"(?:(?<=[{}])|\A)([^{}]*)\{([^}]*)\}", text):
         if "::before" in m.group(1) and all(f in m.group(1) for f in FAMILIES):
             return m.group(2)
     return None
@@ -41,7 +41,7 @@ def test_every_fold_family_draws_the_phosphor_caret():
 
 def test_no_fold_draws_a_chevron_from_borders():
     for name, text in CSS.items():
-        for m in re.finditer(r"([^{}]*)\{([^}]*)\}", text):
+        for m in re.finditer(r"(?:(?<=[{}])|\A)([^{}]*)\{([^}]*)\}", text):
             sel, body = m.group(1), m.group(2)
             if "summary" not in sel or "::before" not in sel:
                 continue

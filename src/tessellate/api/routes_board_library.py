@@ -57,15 +57,14 @@ from tessellate.api.routes_whiteboard import (
     _require_board,
     _require_object_data,
     _board_settings,
-    _object_state,
     _on_current_layer,
     _object_to_out,
-    _sketch_state,
     _store_board_background,
     _store_board_settings,
     _store_board_theme,
     BoardBackground,
 )
+from tessellate.core.events import object_state as _object_state, sketch_state as _sketch_state
 from tessellate.core import deps, events, undo_bin
 from tessellate.core.database import (
     BoardLibrary,

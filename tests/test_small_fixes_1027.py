@@ -59,10 +59,32 @@ def test_a_lasting_toast_steps_aside_for_the_buttons_of_the_section_in_use():
     body = js[js.index("function toastYield(target = document.activeElement) {"):]
     body = body[: body.index("\n}\n")]
     assert 'const area = target.closest("form, section, [role=dialog]");' in body
-    assert 'area?.querySelectorAll("button")' in body
+    assert 'area?.querySelectorAll("button:not(.panel-grip)")' in body  # INBOX 1548: not the resize grip
     assert '(area?.role == "dialog" || !el.toastTimer) && work.some(' in body
+    #: E2E import, 2026-11-02: the sheet's card re-centred after focus landed, so the
+    #: check measured the old place of Import; openSheet runs it again once focus has settled.
+    sheet = (ROOT / "frontend/js/phone-shell.js").read_text(encoding="utf-8")
+    opener = sheet[sheet.index("function openSheet(") :]
+    opener = opener[: opener.index("\n}\n")]
+    assert "if (document.activeElement === target) break;\n      }\n    }\n" in opener and "    toastYield();\n  }), 1);" in opener
     stack = js[js.index("function toastStack(box, change) {"):]
     assert 'if (box.id === "toast-box") toastYield();' in stack[: stack.index("\n}\n")]
+
+
+def test_with_nothing_focused_an_open_sheet_is_the_section_in_use():
+    """E2E import, 2026-11-02 (both tries, three heads): on CI the focus never
+    reached the import preview, so every check met the body and returned
+    before measuring; the box had no class at all and the search-by-meaning
+    question took the Import press for 90 s. With the body focused, the open
+    sheet is the area whose buttons a toast steps aside for (a drive with the
+    focus blurred: no class and the press blocked before, is-yielding and the
+    press landing after)."""
+    js = (ROOT / "frontend/js/status.js").read_text(encoding="utf-8")
+    body = js[js.index("function toastYield(target = document.activeElement) {"):]
+    body = body[: body.index("\n}\n")]
+    fallback = 'if (!target || target === document.body) target = [...document.querySelectorAll("[data-sheet][role=dialog]")].pop() || target;'
+    assert fallback in body
+    assert body.index(fallback) < body.index("return box?.classList.remove(")
 
 
 def test_a_connector_drag_never_leaves_the_delete_target_up():
@@ -212,3 +234,29 @@ def test_a_clause_split_ignores_semicolons_in_brackets():
     )
     clauses = composer._clauses(text)
     assert len(clauses) == 2 and clauses[0].count(";") == 2
+
+
+def test_a_sheet_focused_by_itself_still_measures_the_toasts():
+    """E2E import, 2026-11-02 (fifth head, new evidence): the first press met the
+    import card itself ("intercepts pointer events"), then the search-by-meaning
+    toast: the card moved after the focusin check. With focus already inside,
+    openSheet returned before its settled re-measure, so nothing measured Import
+    where it ended up. The re-measure runs whichever way the focus arrived."""
+    js = (ROOT / "frontend/js/phone-shell.js").read_text(encoding="utf-8")
+    tail = js[js.index("afterFrames(() => setTimeout(() => {\n    if (!card.isConnected"):]
+    tail = tail[: tail.index("}), 1);")]
+    assert "card.contains(document.activeElement)) return" not in tail
+    assert tail.rstrip().endswith("toastYield();")
+
+
+def test_a_sheet_re_measures_the_toasts_when_its_card_changes_size():
+    """E2E import, 2026-11-02 (CI probe 5325529): a toastYield call just before
+    the press yielded correctly on CI, yet without it the box had no class. The
+    preview fills in after the sheet opens and moves Import after every earlier
+    check, so the card's size changes re-measure."""
+    js = (ROOT / "frontend/js/phone-shell.js").read_text(encoding="utf-8")
+    opener = js[js.index("function openSheet(") :]
+    opener = opener[: opener.index("\n}\n")]
+    assert "new ResizeObserver(" in opener
+    assert "afterFrames(() => toastYield())" in opener
+    assert "toastRefit.observe(card);" in opener

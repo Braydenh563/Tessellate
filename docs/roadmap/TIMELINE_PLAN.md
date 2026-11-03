@@ -199,10 +199,7 @@ Written from working knowledge of the products, not a live teardown.
 
 Entries are the owner's words, then the recommendation.
 
-### Bugs
-
-- "The circle on the vertical line on the left isnt in line with the text line"
-  Recommendation: align the rail circle to the first line's centre in timeline.js and the timeline CSS, measured with getBoundingClientRect against the line box. Earlier notes on this fix were not verified; measure it again. Also carried by Brief 41 (timeline.js in its file list).
+The rail circle bug is built and moved to HISTORY.md ("Moved from the plans, 2026-11-02 (a30b: TIMELINE rail circle)").
 
 ### Placed from INBOX 561 (2026-10-17)
 

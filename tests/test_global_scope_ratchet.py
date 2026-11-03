@@ -48,8 +48,21 @@ TOP_LEVEL_LETS_CAP = 699
 #: ai1518's companion-remark.js and attachment-actions.js wrapped, one export each: 9870.
 #: gaps1521-1101: reminder-notify.js, dash-orphans.js, edit-conflict.js and attachment-peek.js
 #: wrapped, one export each (measured 9,866). docs-1101: the version history dialog and the
-#: line diff (documents-history.js, 710 lines) wrapped whole, seven exports (measured 9,848).
-GLOBAL_NAMES_CAP = 9848
+#: line diff (documents-history.js, 710 lines) wrapped whole, seven exports (measured 9,848). doc22-1102:
+#: the frontmatter model and properties panel (documents-props.js) wrapped whole, four exports; the
+#: cap is set to the measured count (9,785). doc23-1102: the Mermaid
+#: fences (documents-mermaid.js, 426 lines) wrapped whole, three exports; measured 9,775. doc23-1102: the TeX parser and MathML
+#: renderer (documents-math.js, 400 lines) wrapped whole, two exports; measured 9,754. doc23-1102: the comments
+#: model and panel (documents-comments.js, 436 lines) wrapped whole, five exports; measured 9,742. doc23-1102: embeds and wiki-link
+#: targets (documents-embeds.js, 335 lines) wrapped whole, seven exports; measured 9,739. doc24-1102: the table
+#: model (documents-tables.js, 676 lines) wrapped whole, 23 exports; measured 9,732. doc24-1102: the columns block
+#: (documents-columns.js, 267 lines) wrapped whole, three exports; measured 9,726. doc24-1102: a plain Ctrl+P and the page setup
+#: (documents-print.js, 186 lines) wrapped whole, six exports; measured 9,720. doc24-1102: the breadcrumb row and the outline's
+#: folds and filter (documents-outline.js, 327 lines) wrapped whole, ten exports; measured 9,714. a28z-1102 (INBOX 1556): the
+#: web panel's search and result rows (web-results.js, 400 lines) wrapped whole, eight exports, with the SearXNG start helper
+#: and failure row added inside it; measured 9,708. 1546 P1 (D4): the board's `wbMermaidParse` and `wbMermaidText` go and
+#: documents-mermaid.js exports `diagramModel`; measured 9,706.
+GLOBAL_NAMES_CAP = 9706
 
 
 def _code() -> dict[str, str]:

@@ -32,7 +32,8 @@ def test_a_small_set_is_left_alone():
     assert needle_provider.shortlist(few, "anything") == few
 
 
-def test_the_engine_receives_the_shortlist(monkeypatch):
+def test_the_engine_receives_the_shortlist(monkeypatch, app_state):
+    #: `app_state` points the data folder at a temporary one: alone, this test wrote the repo's `data/` (NeedleProvider reads its settings).
     seen: list[list] = []
 
     class _Engine:

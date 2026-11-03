@@ -1021,6 +1021,8 @@ def _tool_event(name: str, arguments: dict, result: dict) -> dict:
         #: Edit re-runs a turn that made a change (INBOX audit E2).
         "wrote": name in _WRITE_TOOLS and "error" not in result,
         "error": result.get("error"),
+        #: Why it failed, when a front end acts on the cause (`searxng_down`).
+        **({"reason": result["reason"]} if result.get("reason") else {}),
         "arguments": arguments,
         #: Titles, addresses and one line each of what was read,
         #: see `_tool_sources`. This is what the Sources panel

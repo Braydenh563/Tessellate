@@ -74,6 +74,10 @@ def ask(question: str, notes: list[dict] | None = None, **kwargs) -> dict:
         ("what are my app ideas", "app ideas"),
         ("what is there about games", "games"),
         ("whats there on uni?", "uni"),
+        #: Its frame was once the subject: "There are two notes on what are my sketch" (2026-11-02).
+        ("what are my sketch notes", "sketch"),
+        ("which are my game notes", "game"),
+        ("list my sketch notes", "sketch"),
     ],
 )
 def test_the_frames_that_ask_about_a_topic_as_a_whole(question, subject):

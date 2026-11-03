@@ -12,6 +12,8 @@ from __future__ import annotations
 import contextvars
 import functools
 import re
+
+from tessellate.core.lazyre import lazy_compile
 from datetime import date, datetime
 
 from tessellate.ai import composer_sides, composer_tables, question_noise, recognise as rec, variants
@@ -48,28 +50,28 @@ def month_name(month: int) -> str:
 #: latest" is a status before it is a "what", and a comparison can open with
 #: any word at all.
 _SHAPE_RULES: tuple[tuple[str, re.Pattern[str]], ...] = (
-    ("compare", re.compile(r"\b(compare|versus|vs\.?|differences? between)\b", re.I)),
-    ("count", re.compile(r"^\s*how (many|much|often|long)\b|\bnumber of\b", re.I)),
-    ("when", re.compile(r"^\s*(when|what (date|day|time|month|year)|which (date|day|month))\b", re.I)),
-    ("who", re.compile(r"^\s*(who|whom|whose)\b", re.I)),
+    ("compare", lazy_compile(r"\b(compare|versus|vs\.?|differences? between)\b", re.I)),
+    ("count", lazy_compile(r"^\s*how (many|much|often|long)\b|\bnumber of\b", re.I)),
+    ("when", lazy_compile(r"^\s*(when|what (date|day|time|month|year)|which (date|day|month))\b", re.I)),
+    ("who", lazy_compile(r"^\s*(who|whom|whose)\b", re.I)),
     (
         "status",
-        re.compile(
+        lazy_compile(
             r"\b(latest|status|progress|update on|updates on|newest|most recent|so far|"
             r"where (am i|are we|is it|are things) (with|on)|any (news|word) (on|about)|"
             r"how far along|what happened (with|to)|how (is|are) .{2,60}? (going|coming along|getting on))\b",
             re.I,
         ),
     ),
-    ("where", re.compile(r"^\s*(where|whereabouts|what (address|place|street|room))\b", re.I)),
+    ("where", lazy_compile(r"^\s*(where|whereabouts|what (address|place|street|room))\b", re.I)),
     (
         "explain",
-        re.compile(r"^\s*(why|how come|explain|what (made|makes|caused|causes)|how (do|does|did|can|could|should|to|is|are|was|were|would))\b", re.I),
+        lazy_compile(r"^\s*(why|how come|explain|what (made|makes|caused|causes)|how (do|does|did|can|could|should|to|is|are|was|were|would))\b", re.I),
     ),
     #: "What's in the soup", "what do I need for camping": what a note holds (Z46).
-    ("list", re.compile(r"^\s*(list|which|name)\b|^\s*what are (the|my|all)\b|^\s*what(?:'s| is| goes| go)? in(?:to)?\b(?! (?:my|the|your) (?:notes?|journal|diary|library)\b)"
+    ("list", lazy_compile(r"^\s*(list|which|name)\b|^\s*what are (the|my|all)\b|^\s*what(?:'s| is| goes| go)? in(?:to)?\b(?! (?:my|the|your) (?:notes?|journal|diary|library)\b)"
                         r"|^\s*what do (?:i|you) need (?:for|to make)\b", re.I)),
-    ("yesno", re.compile(r"^\s*(is|are|do|does|did|can|could|was|were|has|have|had|should|will|would|am)\b", re.I)),
+    ("yesno", lazy_compile(r"^\s*(is|are|do|does|did|can|could|was|were|has|have|had|should|will|would|am)\b", re.I)),
 )
 
 
@@ -116,38 +118,38 @@ _ASKING_WORDS = frozenset(
 #: dentist is"; "any idea if the deposit is paid" asks "is the deposit paid".
 #: Each is a fixed, tested pattern; what is left is the person's own words.
 _WRAPPERS = (
-    re.compile(r"^(?:hey|hi|hello|ok|okay|so|um+|uh+|right|quick question|question|hmm+)\b[,.!:]?\s+", re.I),
-    re.compile(r"^(?:please\s+)?(?:can|could|would|will) you\s+(?:please\s+)?(?:tell me|remind me(?: of)?|let me know|check|find(?: out)?|look up|show me|say|help me (?:find|remember))\s+", re.I),
-    re.compile(r"^(?:(?:do|does) )?(?:you|anyone) (?:know|remember|recall)\s+", re.I),
-    re.compile(
+    lazy_compile(r"^(?:hey|hi|hello|ok|okay|so|um+|uh+|right|quick question|question|hmm+)\b[,.!:]?\s+", re.I),
+    lazy_compile(r"^(?:please\s+)?(?:can|could|would|will) you\s+(?:please\s+)?(?:tell me|remind me(?: of)?|let me know|check|find(?: out)?|look up|show me|say|help me (?:find|remember))\s+", re.I),
+    lazy_compile(r"^(?:(?:do|does) )?(?:you|anyone) (?:know|remember|recall)\s+", re.I),
+    lazy_compile(
         r"^(?:i do not know|i don't know|i dunno|to be honest|honestly|not going to lie|by the way|"
         r"ty|thanks|thank you|thx|yo|lol|haha|ok|okay|oh|ah|so)\b[,.!:]?\s+",
         re.I,
     ),
-    re.compile(r"^(?:any idea|no idea|not sure)\s+", re.I),
-    re.compile(
+    lazy_compile(r"^(?:any idea|no idea|not sure)\s+", re.I),
+    lazy_compile(
         r"^i(?:'m| am)? (?:forgot|forget|can't remember|cannot remember|don't remember|do not remember|wonder|was wondering|"
         r"need to know|want to know|'d like to know|would like to know|need|want|have to check|can't recall)\s+",
         re.I,
     ),
-    re.compile(r"^(?:remind me|tell me|show me|let me know)\s+(?=(?:what|when|who|where|why|how|which|if|whether)\b)", re.I),
-    re.compile(r"^(?:remind me)\s+(?:of|about)\s+", re.I),
-    re.compile(r"^please\s+", re.I),
-    re.compile(r"^(?:and|but|also|plus)\s+(?=(?:what|when|where|who|why|how|which|is|are|do|does|did|can|should)\b)", re.I),
-    re.compile(r"^(?:right|alright|cool|nice|great|got it|k|kk|sure|fair enough|makes sense)\b[,.!:]?\s+(?=\w)", re.I),
-    re.compile(r"^(?:in short|in brief|briefly|quickly|quick one|tl;?dr|in a word|in detail)\b[,:]?\s+", re.I),
-    *(re.compile(pattern, re.I) for pattern in composer_tables.EXTRA_WRAPPERS),
+    lazy_compile(r"^(?:remind me|tell me|show me|let me know)\s+(?=(?:what|when|who|where|why|how|which|if|whether)\b)", re.I),
+    lazy_compile(r"^(?:remind me)\s+(?:of|about)\s+", re.I),
+    lazy_compile(r"^please\s+", re.I),
+    lazy_compile(r"^(?:and|but|also|plus)\s+(?=(?:what|when|where|who|why|how|which|is|are|do|does|did|can|should)\b)", re.I),
+    lazy_compile(r"^(?:right|alright|cool|nice|great|got it|k|kk|sure|fair enough|makes sense)\b[,.!:]?\s+(?=\w)", re.I),
+    lazy_compile(r"^(?:in short|in brief|briefly|quickly|quick one|tl;?dr|in a word|in detail)\b[,:]?\s+", re.I),
+    *(lazy_compile(pattern, re.I) for pattern in composer_tables.EXTRA_WRAPPERS),
 )
 
 
 #: "dentist when?", "spare key where": the question word typed last.
-_LAST_WORD = re.compile(r"^(?P<rest>[^?]*?\S)[,\s]+(?P<q>when|where|who|why|how many|how much|how long|how often)(?P<p>\s*\?*)$", re.I)
+_LAST_WORD = lazy_compile(r"^(?P<rest>[^?]*?\S)[,\s]+(?P<q>when|where|who|why|how many|how much|how long|how often)(?P<p>\s*\?*)$", re.I)
 
 
-_ASKS_FIRST = re.compile(r"^(?:what|when|where|who|whom|whose|why|how|which|is|are|do|does|did|can|could|should|will|would|was|were|has|have|had|am|if|whether|compare|list|name|tell|explain)\b", re.I)
+_ASKS_FIRST = lazy_compile(r"^(?:what|when|where|who|whom|whose|why|how|which|is|are|do|does|did|can|could|should|will|would|was|were|has|have|had|am|if|whether|compare|list|name|tell|explain)\b", re.I)
 
 
-_TRAILERS = re.compile(
+_TRAILERS = lazy_compile(
     #: Starts after a word, so a run of blanks is tried once, not from each blank (CodeQL).
     r"(?<![,\s])(?:[,\s]+(?:please|thanks|thank you|again|for me|real quick|quickly|by any chance|"
     + "|".join(re.escape(t) for t in composer_tables.EXTRA_TRAILERS)
@@ -158,19 +160,19 @@ _TRAILERS = re.compile(
 
 #: "whats", "how's" and the rest, spelled out so the shape rules read them.
 _CONTRACTIONS = (
-    (re.compile(r"^(what|how|where|when|who|why)(?:'s|s)\b", re.I), r"\1 is"),
-    (re.compile(r"^(what|how|where|when|who|why)(?:'re)\b", re.I), r"\1 are"),
-    *((re.compile(pattern, re.I), spelled) for pattern, spelled in composer_tables.EXTRA_CONTRACTIONS),
+    (lazy_compile(r"^(what|how|where|when|who|why)(?:'s|s)\b", re.I), r"\1 is"),
+    (lazy_compile(r"^(what|how|where|when|who|why)(?:'re)\b", re.I), r"\1 are"),
+    *((lazy_compile(pattern, re.I), spelled) for pattern, spelled in composer_tables.EXTRA_CONTRACTIONS),
 )
 
 
 #: "if the deposit is paid", left after "any idea", asks yes or no.
-_IF = re.compile(r"^(?:if|whether)\s+", re.I)
+_IF = lazy_compile(r"^(?:if|whether)\s+", re.I)
 
 
 #: "what about X", "anything on X", "is there anything about X", "do I have
 #: notes on X": everything on a subject, the broad answer.
-_ANYTHING_ON = re.compile(
+_ANYTHING_ON = lazy_compile(
     r"^(?:(?:is there )?anything (?:about|on)|do i have (?:any )?(?:notes? )?(?:about|on)|have i (?:written|got|noted) (?:anything |down )?(?:about|on)|"
     r"what(?: is|'s)? the deal with|what is going on with|what's going on with)\b",
     re.I,
@@ -186,7 +188,7 @@ def _still_recent(question: str) -> bool:
     return not subject_terms(question) or is_recency_ask(question)
 
 
-_UNNAMED_ASK = re.compile(r"^(?:who|where|how (?:much|many)|what (?:should|do you think|would you))\b")
+_UNNAMED_ASK = lazy_compile(r"^(?:who|where|how (?:much|many)|what (?:should|do you think|would you))\b")
 
 
 def _guessing_recent(question: str) -> bool:
@@ -207,7 +209,7 @@ def _respell(text: str) -> str:
 #: "define X" and "the meaning of X" ask what "what is X" asks, so they take
 #: its answer (audit 1029 C18). The text is single-spaced by here, so the
 #: pattern reads one literal space: linear on any input.
-_DEFINE = re.compile(r"^(?:define|(?:the )?(?:definition|meaning) of) (.+)$", re.I)
+_DEFINE = lazy_compile(r"^(?:define|(?:the )?(?:definition|meaning) of) (.+)$", re.I)
 
 
 def what_is(text: str) -> str:
@@ -524,9 +526,9 @@ def subject_terms(question: str) -> list[str]:
 
 
 _COMPARE_SIDES = (
-    re.compile(r"\bdifferences? between (?P<a>.+?) and (?P<b>.+?)[?.!]*$", re.I),
-    re.compile(r"\bcompare (?P<a>.+?) (?:and|with|to|vs\.?|versus) (?P<b>.+?)[?.!]*$", re.I),
-    re.compile(r"^(?P<a>[\w' -]+?) (?:vs\.?|versus) (?P<b>.+?)[?.!]*$", re.I),
+    lazy_compile(r"\bdifferences? between (?P<a>.+?) and (?P<b>.+?)[?.!]*$", re.I),
+    lazy_compile(r"\bcompare (?P<a>.+?) (?:and|with|to|vs\.?|versus) (?P<b>.+?)[?.!]*$", re.I),
+    lazy_compile(r"^(?P<a>[\w' -]+?) (?:vs\.?|versus) (?P<b>.+?)[?.!]*$", re.I),
 )
 
 
@@ -537,7 +539,7 @@ _COMPARE_SIDES = (*composer_tables.EXTRA_COMPARE_SIDES, *_COMPARE_SIDES)
 
 #: The extra comparison words ("cheaper than", "compared with", "pros and cons
 #: of ... and ..."), read as a comparison only when both sides can be named.
-_COMPARE_EXTRA = re.compile(composer_tables.COMPARE_SHAPE_EXTRA, re.I)
+_COMPARE_EXTRA = lazy_compile(composer_tables.COMPARE_SHAPE_EXTRA, re.I)
 
 
 _NOTES_NOUNS = ("note", "notes", "entries")
@@ -563,7 +565,7 @@ def _bare_side(side: str, shared_noun: bool = False) -> str:
     return side.strip(" ,") or side
 
 
-_SIDE_CONNECTOR = re.compile(r"\s(?:and|with|to|vs\.?|versus)\s", re.I)
+_SIDE_CONNECTOR = lazy_compile(r"\s(?:and|with|to|vs\.?|versus)\s", re.I)
 
 
 #: Strongest first: "Trip to Lisbon and Trip to Porto" splits at "and", the
@@ -636,7 +638,7 @@ _KNOWN: contextvars.ContextVar[frozenset] = contextvars.ContextVar("composer_kno
 
 #: "When was my gym log written", "what day did I create the pasta recipe",
 #: "what date was the essay started": about the note's own day, not its words.
-_WRITTEN_WHEN = re.compile(
+_WRITTEN_WHEN = lazy_compile(
     r"\b(?:when|what (?:day|date))\b.{0,50}?\b(?:written|wrote|write|made|make|created|create|(?:started|start|began|begun)(?!\s+(?:\w+ing|to\s+\w+)\b)|"
     r"added|add|saved|save|put together|jotted|typed)\b",
     re.I,
@@ -644,7 +646,7 @@ _WRITTEN_WHEN = re.compile(
 
 
 #: Words that make it a question about the notes' words or ends, not one note's day.
-_NOT_ONE_NOTE = re.compile(r"\b(?:about|mention\w*|says?|said|last|latest|newest|first|ever|any|every|all)\b", re.I)
+_NOT_ONE_NOTE = lazy_compile(r"\b(?:about|mention\w*|says?|said|last|latest|newest|first|ever|any|every|all)\b", re.I)
 
 
 _WHEN_NOISE = frozenset(

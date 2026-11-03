@@ -273,6 +273,8 @@ async function chatSendTurn(preset, opts = {}) {
   // this treatment already for the same reported-missing-on-reload reason.
   let groundingSentences = null;
   let chatOffer = null;
+  //: The screen-aware next step (E52): drawn beside the answer, never in its text.
+  let chatTip = "";
   let whyLines = null; // the why event (B30), drawn last
   let composedNext = []; // a composed answer's own next questions (INBOX 725)
   //: **Numbered while it streams, as the Ask tab is** (INBOX 320, the
@@ -328,6 +330,8 @@ async function chatSendTurn(preset, opts = {}) {
   const touchedItems = new Map();
   chatController = new AbortController();
   const controller = chatController;
+  //: Half-rendered markdown is not read out frame by frame while it streams (E68).
+  $("chat-messages").setAttribute("aria-busy", "true");
   //: The app's mark lifts its cells while a turn runs (phone-shell.js).
   syncEmblemBusy();
   //: Atlas looks up to think while a turn runs (avatars.js).
@@ -483,7 +487,8 @@ async function chatSendTurn(preset, opts = {}) {
       onMeta: (m) => {
         meta = m;
         //: No model runs: the answer is composed from the notes (INBOX 725).
-        status.textContent = m && m.composed ? "Composing from your notes, no AI…" : "Waking the model…";
+        //: A web reply's second meta (`chat_web.NOT_NOTES`) wakes no model.
+        if (!m?.web) status.textContent = m && m.composed ? "Composing from your notes, no AI…" : "Waking the model…";
       },
       onRelated: (event) => {
         ensureModule("replyKit").then(() => renderRelatedElsewhere(groundingHolder, event.items)).catch(() => {});
@@ -701,6 +706,7 @@ async function chatSendTurn(preset, opts = {}) {
         chatScrollToEnd();
       },
       onOffer: (event) => { chatOffer = event.offer || null; },
+      onTip: (event) => { chatTip = event.text || ""; },
       onWhy: (event) => { whyLines = event.lines; },
       onStats: (event) => {
         // A round finished. Asked for directly: *"a new chat should be saved
@@ -819,6 +825,7 @@ async function chatSendTurn(preset, opts = {}) {
     // leaving Stop wired to nothing while a stream was genuinely running.
     if (chatController === controller) {
       chatController = null;
+      $("chat-messages").removeAttribute("aria-busy"); // end, error and Stop all land here
       stopChatTimer();
       syncEmblemBusy();
       // The turn is over: it is saved (or about to be) and a reload of this
@@ -895,6 +902,12 @@ async function chatSendTurn(preset, opts = {}) {
     sources: turnSources,
   });
   if (sourcesPanel) recordsHolder.appendChild(sourcesPanel);
+  if (chatTip) {
+    const tip = document.createElement("p");
+    tip.className = "muted answer-tip";
+    tip.textContent = chatTip;
+    recordsHolder.prepend(tip);
+  }
   //: Why this answer (B30), the Ask box's own fold, after the sources.
   if (whyLines) ensureModule("askCompose").then(() => drawWhyTrail(recordsHolder, whyLines)).catch(() => {});
   // INBOX 272 part 1: drawn once the stream is over, same reason
@@ -2379,6 +2392,8 @@ function addBubble(role, text, attachments = null) {
   //: The words as sent, so ArrowUp in an empty composer can reopen the last
   //: question for editing without reading them back out of the rendered DOM.
   if (role === "user" && typeof text === "string") bubble.dataset.sent = text;
+  //: The saved turn this question will be (E49): chat-edit.js cuts from it.
+  if (role === "user") bubble.dataset.turn = String(chatConv.turns.length);
 
   const label = document.createElement("div");
   label.className = "msg-role";
@@ -2395,8 +2410,43 @@ function addBubble(role, text, attachments = null) {
   }
   const body = document.createElement("div");
   body.className = "msg-body";
-  body.textContent = text;
+  //: **A long question is drawn clipped** (warm12-1101): a 20,000-character question reached its
+  //: first token about 450 ms after a short one, all of it the browser laying out the whole text in
+  //: this bubble. Past `BUBBLE_CLIP` characters the first part shows, cut at a space, with the
+  //: notes' "Show more"; what reads the question back reads `dataset.sent`, never this body.
+  const BUBBLE_CLIP = 2000;
+  const long = role === "user" && typeof text === "string" && text.length > BUBBLE_CLIP * 1.2;
+  //: Cut at the last space or line break before the limit; with none near it, never inside a surrogate pair.
+  const space = long ? Math.max(text.lastIndexOf(" ", BUBBLE_CLIP), text.lastIndexOf("\n", BUBBLE_CLIP)) : -1;
+  const hard = long && /[\ud800-\udbff]/.test(text[BUBBLE_CLIP - 1]) ? BUBBLE_CLIP - 1 : BUBBLE_CLIP;
+  const clipped = long ? `${text.slice(0, space > BUBBLE_CLIP * 0.8 ? space : hard).trimEnd()}\u2026` : text;
+  body.textContent = long ? clipped : text;
   bubble.append(label, body);
+  //: **A question past ten lines folds** (the owner, 2026-11-02, "auto collapse with the see more/see less
+  //: at about like 10 lines", as Perplexity does): the body is the notes' clamp (`entry-clamped`, ten lines
+  //: for a question in chat.css), faded at its foot, with the notes' "Show more" under it. Whether it
+  //: overflows is read once, the frame after the bubble is in the page; a long text is also cut, above.
+  if (role === "user" && typeof text === "string") {
+    body.classList.add("entry-clamped");
+    requestAnimationFrame(() => {
+      if (!long && body.scrollHeight <= body.clientHeight + 1) return body.classList.remove("entry-clamped");
+      body.classList.add("is-folded");
+      const more = document.createElement("button");
+      more.type = "button";
+      more.className = "entry-more";
+      more.textContent = "Show more";
+      more.setAttribute("aria-expanded", "false");
+      more.addEventListener("click", () => {
+        const open = more.getAttribute("aria-expanded") !== "true";
+        if (long) body.textContent = open ? text : clipped;
+        body.classList.toggle("entry-clamped", !open);
+        body.classList.toggle("is-folded", !open);
+        more.textContent = open ? "Show less" : "Show more";
+        more.setAttribute("aria-expanded", String(open));
+      });
+      body.after(more);
+    });
+  }
   //: **The person's own mark** (INBOX 409: "auto generate other icons in
   //: other places like potentially the user chat bubbles"). Generated from
   //: the profile name the way a persona's is, so it is theirs and the same
@@ -2469,7 +2519,25 @@ function assistantMessageActions({ bubble, text, question, onEdit }) {
       title: "Fork the conversation from here",
       onClick: () => forkFromBubble(bubble),
     },
-    { label: "ph:speaker-high", title: "Read aloud", onClick: () => speakText(text) },
+    {
+      label: "ph:speaker-high",
+      title: "Read aloud",
+      speak: true,
+      //: Turns to Stop reading for as long as it speaks, the icon button and the same
+      //: item in the ⋯ menu alike (both carry `data-speak`, chatMessageActions).
+      onClick: () => {
+        const said = speakText(text);
+        const paint = (on) => {
+          for (const row of document.querySelectorAll("[data-speak]")) {
+            row.title = on ? "Stop reading" : "Read aloud";
+            setLabel(row, `ph:${on ? "stop" : "speaker-high"}${row.classList.contains("menu-item") ? ` ${row.title}` : ""}`);
+            row.setAttribute("aria-label", row.title);
+          }
+        };
+        if (said) said.onstart = () => paint(true);
+        if (said) said.onend = said.onerror = () => paint(false);
+      },
+    },
     {
       label: "ph:note-pencil",
       title: "Save this answer as a draft note",
@@ -2554,6 +2622,8 @@ async function deleteChatTurn(assistantBubble) {
   }
   // The user bubble is the one immediately before this assistant bubble.
   const userBubble = assistantBubble.previousElementSibling;
+  //: Later questions move up one saved turn (E49).
+  for (let node = assistantBubble; (node = node.nextElementSibling); ) if (node.dataset.turn) node.dataset.turn -= 1;
   if (userBubble && userBubble.classList.contains("user")) dropChatBubble(userBubble);
   assistantBubble.remove();
   chatConv.turns.splice(index, 1);

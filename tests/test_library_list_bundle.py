@@ -29,14 +29,17 @@ def test_the_library_tab_takes_the_list_bundle():
     assert 'library: "libraryList"' in APP and 'documents: "library"' in APP
     modules = _table("LAZY_MODULES")
     #: The list's own stylesheet rides with it (library-lazy.css's header).
-    assert re.search(r'libraryList: \[("/css/library-lazy\.css", )?"/js/library\.js"\]', modules)
+    #: undo-store.js since DX11 (audit 1102): a purge from the list forgets the item's stored history.
+    assert re.search(r'libraryList: \[("/css/library-lazy\.css", )?("/js/undo-store\.js", )?"/js/library\.js"\]', modules)
     library = re.search(r"\n  library: \[(.*?)\]", modules, re.S).group(1)
     assert '"/js/library.js"' in library, "the whole surface still includes the list"
 
 
 def test_every_editor_call_from_the_list_is_a_stand_in():
     defined = set()
-    for name in EDITORS:
+    #: A file the list bundle itself loads is present whenever library.js is.
+    listed = re.search(r"libraryList: \[(.*?)\]", _table("LAZY_MODULES")).group(1)
+    for name in [n for n in EDITORS if f'"/js/{n}"' not in listed]:
         defined |= set(re.findall(r"^(?:async\s+)?function\s+([A-Za-z_$][\w$]*)", (JS / name).read_text(encoding="utf-8"), re.M))
     code = "\n".join(
         line for line in (JS / "library.js").read_text(encoding="utf-8").splitlines() if not line.lstrip().startswith("//")

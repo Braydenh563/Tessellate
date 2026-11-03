@@ -21,7 +21,7 @@ PANEL = HTML[HTML.index('id="graph-options"') : HTML.index("<!-- Trace: the one 
 
 #: section id -> (its '?' panel, the control names the panel must say)
 SECTIONS = {
-    "graph-physics": ("graph-physics-help", ("Gravity", "Spread", "Link force", "Length by similarity", "Group by category", "Unpin all", "Reshuffle layout")),
+    "graph-physics": ("graph-physics-help", ("Gravity", "Spread", "Link force", "Length by similarity", "Group by category", "Tidy spacing", "Unpin all", "Reshuffle layout")),
     "graph-toggle-group": ("graph-show-help", ("Similarity", "Documents", "Boards", "Tags", "Attachments", "Unwritten links")),
     "graph-display": ("graph-display-help", ("Labels", "Curved links", "Cluster glow", "Label backgrounds", "Arrows", "Fit on view change", "Text fade", "Link thickness")),
     "graph-filter-section": ("graph-filter-help", ("Kinds of link", "Properties")),

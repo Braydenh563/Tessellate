@@ -122,7 +122,7 @@ async function openNoteEditor(id, { focusTags = false } = {}) {
   //: The caret goes into the form (WCAG 2.4.3); it was left on <body>.
   if (focusTags) focusTagsAfterRender = id;
   else focusBodyAfterRender = id;
-  renderEntries();
+  await renderEntries();
   requestAnimationFrame(() => scrollEditingEntryIntoView(id));
   return true;
 }
@@ -188,24 +188,9 @@ async function resolveCategoryChoice(select) {
 //: KG7: the structural terms, `-` included, quoted or [[bracketed]] values whole.
 //: And `prop:key="a value"` whole (query.py's `_TOKEN`).
 const LIVE_QUERY_RE = /(^|\s)(-?(?:type|prop|links|rel|entity):(?:\[\[[^\]]{1,120}\]\]|"[^"]{1,200}"|[^\s"=<>!]{1,60}[=<>!]{1,2}"[^"]{1,200}"|\S+))/gi;
-let liveQuery = { q: "", ids: null, pending: "" };
-
 //: The ids the server gives for these terms, or null while it is asked.
 function liveQueryIds(q) {
-  if (liveQuery.q === q && liveQuery.ids) return liveQuery.ids;
-  if (liveQuery.pending !== q) {
-    liveQuery.pending = q;
-    apiJson(`/entries/query?q=${encodeURIComponent(q)}`, { silent: true })
-      .then((body) => {
-        if (liveQuery.pending !== q) return;
-        liveQuery = { q, ids: new Set(body.ids || []), pending: "" };
-        renderEntries();
-      })
-      .catch(() => {
-        if (liveQuery.pending === q) liveQuery = { q, ids: new Set(), pending: "" };
-      });
-  }
-  return null;
+  return noteEngine.ask(noteEngine.live, q, () => apiJson(`/entries/query?q=${encodeURIComponent(q)}`, { silent: true }).then((body) => ({ ids: new Set(body.ids || []) })), new Set());
 }
 
 //: **The operators the engine owns** (`kind:`, `has:`, `space:`): the Notes
@@ -219,38 +204,50 @@ const ENGINE_QUERY_RE = /(^|\s)((?:kind|has|space|is(?=:(?:archived|done|open|ur
 //: `capped` says the engine's page (50) was full, `semanticFor` is the box text
 //: the Semantic toggle's results were loaded for, and `rank` their order.
 //: `jumpId` is set by `flashEntry` while it renders: the first paint must reach that id.
-const noteEngine = { q: "", ids: null, pending: "", capped: false, semanticFor: "", rank: new Map(), jumpId: null };
+//: `ask` is the one way a query is put to the server: the answer is kept on `slot` under `q`, `null` comes back until it
+//: lands (the list is redrawn then), and `fail` stands in for a refused ask. `body` is a note's words asked of the index
+//: (INBOX 1525): the rows hold a preview, `/search?ids_only` the whole text, and the rows answer until it has (and when
+//: it fails or says null).
+const noteEngine = {
+  q: "", ids: null, pending: "", capped: false, semanticFor: "", rank: new Map(), jumpId: null,
+  body: { q: "", ids: null, pending: "" },
+  live: { q: "", ids: null, pending: "" },
+  ask(slot, q, load, fail, done = renderEntries) {
+    if (slot.q === q) return slot.ids;
+    if (slot.pending !== q) {
+      slot.pending = q;
+      load()
+        .then((got) => slot.pending === q && (Object.assign(slot, got, { q, pending: "" }), done()))
+        .catch(() => slot.pending === q && Object.assign(slot, { q, ids: fail, capped: false, pending: "" }));
+    }
+    return null;
+  },
+  bodyIds(query) {
+    const text = [...query.words, ...query.phrases.map((p) => `"${p}"`), ...query.exclude.map((w) => `-${w}`)].join(" ");
+    return noteEngine.literal(noteEngine.body, text);
+  },
+  //: The same match for a picker's words (the `[[` link menu, Attach notes): `redraw` runs when it lands.
+  pick: { q: "", ids: null, pending: "" },
+  literal(slot, text, redraw) {
+    return noteEngine.ask(slot, text, () => apiJson(`/search?q=${encodeURIComponent(clipFor("search", text))}&kind=note&ids_only=true`, { silent: true }).then((r) => ({ ids: r.ids && new Set(r.ids) })), null, redraw);
+  },
+};
 
 //: The ids the engine gives for these operators, or null while it is asked.
 //: Notes only (`kind=note`) unless the terms name a kind themselves.
 //: Every page of the engine's answer, up to 500 notes (audit 1031 N16); `more` is true only if page ten had more.
-async function enginePages(q, kind) {
-  const ids = new Set();
-  let more = false;
-  for (let page = 1; page <= 10; page++) {
-    const body = await apiJson(`/search?q=${encodeURIComponent(clipFor("search", q))}${kind}&limit=50&page=${page}`, { silent: true });
-    for (const hit of body.hits || []) if (hit.kind === "note") ids.add(hit.id);
-    if (!(more = Boolean(body.more))) break;
-  }
-  return { ids, more };
-}
-
 function engineQueryIds(q) {
-  if (noteEngine.q === q && noteEngine.ids) return noteEngine.ids;
-  if (noteEngine.pending !== q) {
-    noteEngine.pending = q;
-    const kind = /(^|\s)kind:/i.test(q) ? "" : "&kind=note";
-    enginePages(q, kind)
-      .then(({ ids, more }) => {
-        if (noteEngine.pending !== q) return;
-        Object.assign(noteEngine, { q, ids, capped: more, pending: "" });
-        renderEntries();
-      })
-      .catch(() => {
-        if (noteEngine.pending === q) Object.assign(noteEngine, { q, ids: new Set(), capped: false, pending: "" });
-      });
-  }
-  return null;
+  const kind = /(^|\s)kind:/i.test(q) ? "" : "&kind=note";
+  return noteEngine.ask(noteEngine, q, async () => {
+    const ids = new Set();
+    let more = false;
+    for (let page = 1; page <= 10; page++) {
+      const body = await apiJson(`/search?q=${encodeURIComponent(clipFor("search", q))}${kind}&limit=50&page=${page}`, { silent: true });
+      for (const hit of body.hits || []) if (hit.kind === "note") ids.add(hit.id);
+      if (!(more = Boolean(body.more))) break;
+    }
+    return { ids, capped: more };
+  }, new Set());
 }
 
 // `tags:<2`, `tags:<=1`, `tags:0` and so on: "how many tags", not "which
@@ -448,7 +445,8 @@ function matchesSearch(entry) {
     }
     if (flag === "private" && !entry.is_private) return false;
     //: A [[wiki link]] in the text is a link too (INBOX 432).
-    if (flag === "linked" && !(entry.links || []).length && !/\[\[[^\]\n]{1,120}\]\]/.test(entry.content || "")) return false;
+    //: A clipped row holds 300 characters: the server says whether the whole text has one (`wiki_linked`).
+    if (flag === "linked" && !(entry.links || []).length && !(entry.wiki_linked ?? /\[\[[^\]\n]{1,120}\]\]/.test(entry.content || ""))) return false;
     if ((flag === "draft" || flag === "drafts") && !entry.is_draft) return false;
     if (flag === "untagged" && tags.length) return false;
     if (flag === "untitled" && entry.title) return false;
@@ -459,14 +457,18 @@ function matchesSearch(entry) {
     if (flag === "review" && !entryNeedsReview(entry)) return false;
   }
   if (query.tagCount && !matchesTagCount(query.tagCount, tags.length)) return false;
-  if (query.exclude.some((word) => haystack.includes(word))) return false;
+  const unwanted = query.exclude.some((word) => haystack.includes(word));
   //: With Semantic on, the list *is* the engine's answer for these words, which
   //: includes notes that share none of them; testing the words again here
   //: would drop exactly the notes the toggle exists to find.
-  if (noteSemanticLoaded()) return true;
-  if (!query.phrases.every((phrase) => content.includes(phrase))) return false;
-  // Every word must appear somewhere, in any order.
-  return query.words.every((word) => haystack.includes(word));
+  if (noteSemanticLoaded() || !(query.words.length || query.phrases.length || query.exclude.length)) return !unwanted;
+  //: **Literal text, on both halves** (INBOX 1525 review): every word and phrase somewhere, in any order, inside a
+  //: word too. The row holds a note's first 300 characters and the server's literal match (`engine.match_ids`) the
+  //: whole text: a note is in when either finds it, and a server still asking, or failed, leaves the rows' own
+  //: answer, never every note. A `-word` can be past a clipped row's preview, so there the server decides.
+  const served = noteEngine.bodyIds(query);
+  const held = !unwanted && query.phrases.every((phrase) => content.includes(phrase)) && query.words.every((word) => haystack.includes(word));
+  return Boolean(served?.has(entry.id)) || (held && !(served && entry.content_truncated && query.exclude.length));
 }
 
 // The inline marks the writing side inserts (MD_ACTIONS' toolbars in
@@ -1275,25 +1277,12 @@ function bodyWithoutTitleLine(content) {
 // a note's opening words, `editorLinkMatches`); documents fall back to an exact,
 // case-insensitive title. Private notes are never a target: they cannot be
 // linked, and resolving to one would leak that it exists.
-//: **The lowercased forms a wiki lookup compares against, computed once per
-//: note rather than once per note per link.**
-//:
-//: `resolveWikiTarget` runs for every `[[link]]` that renders, and it used to
-//: lowercase every note's whole body, twice (once plain, once with the
-//: heading marker stripped by a regex), on every one of those calls. At four
-//: thousand notes averaging 594 bytes that is up to 4.8 MB of string work per
-//: link, and a note list draws sixty cards at a time. Profiled over fourteen
-//: seconds of ordinary use, `opening` and `openingTitle` and their caller
-//: came to 267 ms of self time, more than the dashboard's p5 sketch.
-//:
-//: Two things fix it and neither can go stale. The forms are cached **on the
-//: entry, keyed by the content string they were derived from**, so an edit
-//: invalidates them by construction: no generation counter to forget to bump,
-//: no cache to clear when `allEntries` is replaced. And only the first
-//: `WIKI_PREFIX_MAX` characters are lowercased, because every comparison here
-//: is `startsWith` against a needle that is a title. A needle longer than that
-//: falls back to the full string, so the bound is an optimisation and never a
-//: behaviour.
+//: **The lowercased forms a wiki lookup compares against, computed once per note, not per link.**
+//: Lowercasing every note's whole body twice per `[[link]]` (`opening` and `openingTitle`, the plain form and the one
+//: with its heading marker stripped) cost 267 ms of self time in 14 s of ordinary use at
+//: four thousand notes. The forms are cached on the entry, keyed by the content they came from (an edit
+//: invalidates them by construction), and only the first `WIKI_PREFIX_MAX` characters are lowercased, since every
+//: comparison is a `startsWith` against a title; a longer needle falls back to the full string.
 const WIKI_PREFIX_MAX = 300;
 
 function wikiForms(entry, needleLength) {
@@ -1323,29 +1312,11 @@ function wikiStem(entry) {
   return entry._wikiStem;
 }
 
-//: **A board or a map named by its id**, the form the "/" menu and the
-//: board's own "Add to a note" write: `board:12|House jobs`, or `map:12|The
-//: house`.
-//:
-//: Why an id rather than the title every other `[[link]]` uses (INBOX 309,
-//: the owner: "there is also no way to attach a whiteboard or mindmap to a
-//: note as like an object in the notes"). A title-addressed object breaks the
-//: moment the board is renamed, and it breaks *silently*: a renamed board and
-//: a deleted one look identical to the resolver, so the note either points at
-//: nothing or tombstones a board that is still there. A board is an `Entry`,
-//: so its id is stable, and renaming it now leaves every note that carries it
-//: pointing at the same board.
-//:
-//: **The title travels with the id anyway**, for two reasons that are not
-//: decoration. It is what a tombstone says when the board really is gone
-//: ("Old plan" beats "board 12"), and it is what the backend's own reference
-//: scan matches on: `_reference_rows` in routes_entries.py finds a board's
-//: references with a LIKE over note content for the board's label, so a note
-//: carrying the title still counts towards the card's "on 1 board" chip with
-//: no backend change at all.
-//:
-//: `whiteboard` and `mindmap` are accepted as spellings of the same two
-//: things because somebody typing this by hand will write one of them.
+//: **A board or a map named by its id**, the form the "/" menu and "Add to a note" write: `board:12|House jobs`,
+//: `map:12|The house` (INBOX 309). An id, not the title every other `[[link]]` uses: a renamed board and a deleted
+//: one look the same to a title resolver, silently. The title travels with it anyway, as the tombstone's name and
+//: because `_reference_rows` (routes_entries.py) counts references by a LIKE on the label. `whiteboard` and
+//: `mindmap` are accepted spellings of the same two things.
 const BOARD_REF_PATTERN = /^\s*(board|whiteboard|map|mindmap)\s*:\s*(\d{1,9})\s*(?:\|\s*([^|]*))?$/i;
 
 function boardEmbedRef(name) {
@@ -1719,20 +1690,25 @@ function renderNoteInline(element, text, terms) {
 //: `appendInlineRun` come here) and left as its words for every other reader.
 //: The name is held to Phosphor's own character set, and it is only ever a
 //: class: nothing typed reaches the markup.
-const INLINE_ICON_RE = /:ph-([a-z0-9-]{1,40}):/g;
+const INLINE_ICON_RE = /:ph-([a-z0-9-]+):/g;
 
 function appendPlainText(element, text) {
   let cursor = 0;
-  for (const match of text.matchAll(/\[([ xX])\](?!\S)/g)) {
+  for (const match of text.matchAll(/\[([ xX])\](?!\S)|:ph-([a-z0-9-]+):/g)) {
+    const icon = match[2] && appendPlainText.icon?.(match[2]);
+    if (match[2] && !icon) continue;
     element.append(text.slice(cursor, match.index));
-    const box = document.createElement("input");
-    box.type = "checkbox";
-    box.className = "md-task-inline";
-    box.disabled = true;
-    box.checked = match[1] !== " ";
-    box.ariaLabel = box.checked ? "Done" : "Not done";
-    element.append(box);
-    cursor = match.index + 3;
+    if (icon) element.append(icon);
+    else {
+      const box = document.createElement("input");
+      box.type = "checkbox";
+      box.className = "md-task-inline";
+      box.disabled = true;
+      box.checked = match[1] !== " ";
+      box.ariaLabel = box.checked ? "Done" : "Not done";
+      element.append(box);
+    }
+    cursor = match.index + match[0].length;
   }
   element.append(text.slice(cursor));
 }
@@ -1998,12 +1974,17 @@ function windowRows(root, o) {
 
 const noteWindow = { win: null, fill: (li) => li, heights: new Map(), mode: "", items: null, list: null };
 
+//: Kept while it still holds the list: the walk read the computed style of every
+//: ancestor, which settled the page a Notes press had just drawn (88ms of style
+//: at 4x, INBOX 1534). A resize forgets it, as the one place the scroller moves.
 function notesScroller(list) {
+  if (notesScroller.kept?.contains(list)) return notesScroller.kept;
   for (let el = list.parentElement; el && el !== document.body; el = el.parentElement) {
-    if (/(auto|scroll)/.test(getComputedStyle(el).overflowY)) return el;
+    if (/(auto|scroll)/.test(getComputedStyle(el).overflowY)) return (notesScroller.kept = el);
   }
   return null;
 }
+window.addEventListener("resize", () => (notesScroller.kept = null), { passive: true });
 
 const NOTE_WINDOW_FIRST = 12;
 const noteRowStays = (li) => li.contains(document.activeElement) || Number(li.dataset.id) === editingId
@@ -2014,7 +1995,7 @@ function renderWindowed(list, items, buildItem, { keep, afterChunk, settled, gro
     //: The window stays; the new rows join its end and the rows built say how many there are now.
     noteWindow.items = items;
     noteWindow.win.add(list, grown);
-    for (const li of list.querySelectorAll(":scope > li[aria-setsize]")) li.setAttribute("aria-setsize", String(items.length));
+    for (const li of list.querySelectorAll(":scope > li[aria-setsize]")) li.setAttribute("aria-setsize", items.length);
     afterChunk?.();
     return;
   }
@@ -2032,8 +2013,8 @@ function renderWindowed(list, items, buildItem, { keep, afterChunk, settled, gro
     //: from screen readers.
     build: (item, i) => {
       const li = buildItem(item, i);
-      li.setAttribute("aria-posinset", String(i + 1));
-      li.setAttribute("aria-setsize", String(noteWindow.items.length));
+      li.setAttribute("aria-posinset", i + 1);
+      li.setAttribute("aria-setsize", noteWindow.items.length);
       return li;
     },
     stays: noteRowStays,
@@ -2155,8 +2136,8 @@ function applyNotesViewMode() {
   if (list) list.classList.toggle("is-rows", notesViewMode === "rows");
   $("notes-view-rows")?.classList.toggle("active", notesViewMode === "rows");
   $("notes-view-cards")?.classList.toggle("active", notesViewMode === "cards");
-  $("notes-view-rows")?.setAttribute("aria-pressed", String(notesViewMode === "rows"));
-  $("notes-view-cards")?.setAttribute("aria-pressed", String(notesViewMode === "cards"));
+  $("notes-view-rows")?.setAttribute("aria-pressed", notesViewMode === "rows");
+  $("notes-view-cards")?.setAttribute("aria-pressed", notesViewMode === "cards");
   updateExpandAllButton();
 }
 
@@ -2467,6 +2448,8 @@ function renderEntries(appendOnly = false) {
         ? `${scope}: ${visible.length} of ${total}`
         : scope;
   liveQueryBar(visible);
+  //: The count after a load or a filter, said once to a screen reader (audit 1028 S92).
+  if (prefs.get("activeTab", null) === "notes") announce(`${scope}: ${nounCount(visible.length, "note")}`, { settle: 600, once: true });
   // Distinguish "empty notebook" from "filter matched nothing".
   const notebookEmpty = allEntries.length === 0;
   empty.classList.toggle("hidden", !notebookEmpty);
@@ -3101,36 +3084,12 @@ async function _loadEntries() {
   referenceCountsCache.clear();
   reminderCountsCache.clear();
   noteTopicsCache.clear();
+  noteEngine.body.q = noteEngine.body.pending = "";
   showEntrySkeletons();
 
   const isSemantic = $("semantic-search-toggle")?.checked;
-  if (isSemantic && noteSearch) {
-    //: **The Semantic toggle asks the engine** (`GET /search`), the one place
-    //: words, meaning and the links are ranked together, rather than a second
-    //: cosine-only list path (retired). The engine's page
-    //: is at most 50 hits, so nothing here needs paging; the list is then read
-    //: by id, which is also what keeps the bin, the archive and the boards out
-    //: of it (the index holds them, flagged), and put in the engine's order.
-    const asked = noteSearch;
-    const found = await apiJson(`/search?q=${encodeURIComponent(clipFor("search", asked))}&kind=note&limit=50`);
-    const order = (found.hits || []).map((hit) => hit.id);
-    const rows = order.length ? await apiJson(`/entries?ids=${order.join(",")}`) : [];
-    if (generation !== _entriesLoadGeneration) return; // a newer load took over
-    const byId = new Map(rows.map((row) => [row.id, row]));
-    const results = order.filter((id) => byId.has(id)).map((id) => byId.get(id));
-    noteEngine.semanticFor = asked;
-    noteEngine.rank = new Map(results.map((row, place) => [row.id, place]));
-    allEntries = results;
-    entriesEverLoaded = true;
-    publishNotes(allEntries);
-    renderStatusBar();
-    renderSidebar();
-    loadCategories();
-    renderEntries();
-    ensureMapChipsFor(results, generation);
-    fillCategoryOptions($("entry-category"), null);
-    return;
-  }
+  //: The Semantic toggle asks the engine, in notes-lazy.js (`loadSemanticEntries`).
+  if (isSemantic && noteSearch) return loadSemanticEntries(noteSearch, generation);
 
   // Paginated: GET /entries used to return the whole notebook in one
   // response, which is fine at a few hundred notes and a real risk of
@@ -3154,7 +3113,7 @@ async function _loadEntries() {
   let cursor = "";
   while (offset < total) {
     const after = cursor ? `&cursor=${encodeURIComponent(cursor)}` : "";
-    const response = await api(`/entries?limit=${ENTRIES_PAGE_SIZE}${after}`);
+    const response = await api(`/entries?limit=${ENTRIES_PAGE_SIZE}${after}&preview=300`);
     const page = await response.json();
     if (generation !== _entriesLoadGeneration) return; // superseded mid-load
 
@@ -3237,7 +3196,8 @@ async function refreshEntries(ids) {
   let rows;
   let total;
   try {
-    const response = await api(`/entries?ids=${wanted.join(",")}`);
+    //: A note being edited is read whole, the rest as a preview (a row with `content_truncated` holds a part: `fullEntry`).
+    const response = await api(`/entries?ids=${wanted.join(",")}${wanted.includes(editingId) ? "" : "&preview=300"}`);
     rows = await response.json();
     total = Number(response.headers.get("X-Total-Count"));
   } catch {
@@ -3251,6 +3211,7 @@ async function refreshEntries(ids) {
   if (Number.isFinite(total) && total !== next.length) return loadEntries();
   allEntries = next;
   publishNotes(allEntries);
+  noteEngine.body.q = noteEngine.body.pending = "";
   for (const id of wanted) {
     referenceCountsCache.delete(id);
     reminderCountsCache.delete(id);
@@ -3264,7 +3225,7 @@ async function refreshEntries(ids) {
   renderStatusBar();
   renderSidebar();
   const held = heldNoteControl();
-  renderEntries();
+  await renderEntries();
   restoreNoteControl(held);
   //: Categories the AI filed into since the last read need their ids.
   loadCategories();
@@ -3497,7 +3458,7 @@ const CARD_COUNT_SOURCES = [
     empty: 0,
     chip(entry) {
       const count = this.cache.get(entry.id);
-      return count ? chip(`ph:question ${count} open question${count === 1 ? "" : "s"}`, "questions", (event) => {
+      return count ? chip(`ph:question ${nounCount(count, "open question")}`, "questions", (event) => {
         event.stopPropagation();
         showNotesSection("questions");
         ensureModule("questionsView").then(() => questionsForNote(entry.id));
@@ -3554,7 +3515,8 @@ function ensureOneCardCount(list, generation, source) {
 
 function ensureMapChipsFor(page, generation) {
   if (mapBoardIndexCache) return; // one index per session, as it always was
-  if (!page.some((entry) => String(entry.content || "").includes("[["))) return;
+  //: A clipped row holds 300 characters; the server says whether the whole text has a link.
+  if (!page.some((entry) => entry.wiki_linked ?? String(entry.content || "").includes("[["))) return;
   loadMapBoardIndex()
     .then(() => {
       if (generation === _entriesLoadGeneration) renderEntriesWhenShown();
@@ -3647,7 +3609,7 @@ function syncNotesRailToggle() {
   //: action on a column that was not there when no note was open.
   const on = !notesRailHiddenByChoice();
   setLabel(toggle, `${on ? "ph:check-square" : "ph:square"} Connections beside the note you're reading`);
-  toggle.setAttribute("aria-pressed", String(on));
+  toggle.setAttribute("aria-pressed", on);
 }
 
 async function renderNotesRail() {
@@ -3687,94 +3649,10 @@ async function renderNotesRail() {
   const body = $("notes-rail-body");
   const key = `${entry.id}:${_entriesLoadGeneration}`;
   if (body.dataset.key === key) return;
-  const seq = ++notesRailSeq;
   body.setAttribute("aria-busy", "true");
-  //: The rows are drawn by connections.js (the sheet's own bundle).
+  //: The rows are drawn by connections.js (the sheet's own bundle), which also draws the answer (`drawNotesRail`).
   await lazyScript("/js/connections.js");
-  let answer = notesRailCache.get(key);
-  if (!answer) {
-    const [links, near, back] = await Promise.all([
-      apiJson(`/entries/${entry.id}/connections`, { silent: true }).catch(() => null),
-      apiJson(`/resurface/near/${entry.id}`, { silent: true }).catch(() => null),
-      apiJson(`/entries/${entry.id}/backlinks`, { silent: true }).catch(() => null),
-    ]);
-    answer = { links: withBacklinks(links, back, entry.id), near };
-    if (links) notesRailCache.set(key, answer);
-  }
-  if (seq !== notesRailSeq) return;
-  body.removeAttribute("aria-busy");
-  body.dataset.key = answer.links ? key : "";
-  body.replaceChildren();
-  const count = $("notes-rail-count");
-  if (!answer.links) {
-    const failed = document.createElement("p");
-    failed.className = "muted notes-rail-note";
-    failed.textContent = "Couldn't read this note's connections.";
-    body.appendChild(failed);
-    count.textContent = "";
-    count.hidden = true;
-    return;
-  }
-  const shown = buildConnectionGroups(body, "entries", answer.links);
-  //: Forgotten takes days: a note written minutes ago is not slipping away
-  //: (dog3-1026 row 14, "Forgotten" on notes seconds old).
-  const nearItems = ((answer.near && answer.near.items) || []).filter((item) => (item.age_days || 0) >= 3);
-  if (nearItems.length) body.appendChild(notesRailNearGroup(nearItems));
-  //: One chip, the panel head's one fact: how many things this note is
-  //: joined to. The forgotten notes are suggestions, not connections, so they
-  //: are not counted in it.
-  //: Unlinked mentions are offers, not links, so they are not counted.
-  const linked = shown - (answer.links.mentions || []).length;
-  count.textContent = linked === 1 ? "1 link" : `${linked} links`;
-  //: "0 links" over a list of suggestions read as a contradiction; the
-  //: empty line below says it once there is nothing at all (dog3-1026 row 14).
-  count.hidden = !linked;
-  if (!shown && !nearItems.length) {
-    const empty = document.createElement("p");
-    empty.className = "muted notes-rail-note";
-    empty.textContent =
-      "Nothing is joined to this note yet. Link it to another note, attach it to a document, or drop it on a whiteboard.";
-    body.appendChild(empty);
-  }
-  //: "We could not ask" is a different fact from "nothing is faded near
-  //: this", and only the first is worth a line: a notebook too small to rank
-  //: (`resurface.MIN_NOTEBOOK`) answers an empty list by design.
-  if (!answer.near) {
-    const failed = document.createElement("p");
-    failed.className = "muted notes-rail-note";
-    failed.textContent = "Couldn't look for forgotten notes near this one.";
-    body.appendChild(failed);
-  }
-}
-
-//: The forgotten notes, drawn as one more connection group so the column reads
-//: as one list with one row recipe. Each row carries the route's own sentence
-//: for why it was chosen ("120 days old, no links, never opened"), which is
-//: checkable where a score would not be.
-function notesRailNearGroup(items) {
-  const section = document.createElement("div");
-  section.className = "connection-group notes-rail-near";
-  const head = document.createElement("p");
-  head.className = "connection-heading";
-  setLabel(head, "ph:hourglass-medium Forgotten, and close to this");
-  const count = document.createElement("span");
-  count.className = "connection-count";
-  count.textContent = String(items.length);
-  head.appendChild(count);
-  section.appendChild(head);
-  const holder = document.createElement("div");
-  holder.className = "connection-rows";
-  for (const item of items) {
-    //: The route's own sentence is the row's subline, in the same list recipe
-    //: as every other connection row (`connectionRowEl`, menus.js).
-    const row = connectionRowEl(
-      "ph:note", item.title, item.reason ? `Open this note\nWhy: ${item.reason}` : "Open this note", item.reason || "",
-      () => flashEntry(item.id)
-    );
-    holder.appendChild(row);
-  }
-  section.appendChild(holder);
-  return section;
+  return drawNotesRail(entry, key);
 }
 
 //: Back to the note the column is about, in the list: where Escape and hiding

@@ -3,8 +3,8 @@
 Every unlock (and any 401 that routes through the lock screen) runs
 `startApp()` again, whose `startReminderWatch` added a one-minute interval
 and two listeners each time: after four lock and unlock cycles an idle minute
-asked `/reminders` five times. The browser half is
-`scratchpad/ui-sweeps/fe1005-lockleak.js`; this holds the guard.
+asked `/reminders` five times. The browser half was a one-off sweep (retired
+with INBOX 1557 to hold the scratchpad cap); this holds the guard.
 """
 
 from __future__ import annotations

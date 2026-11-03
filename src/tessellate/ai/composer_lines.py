@@ -253,10 +253,10 @@ FRAMES: dict[str, tuple[Cand, ...]] = {
     ),
     # ---- greetings and welcome ----
     "hello": (
-        c("Good {tod}.", "wf"), c("Good {tod}, and welcome back.", "w"), c("Hello, and good {tod}.", "w"), c("Hi there. Good {tod}.", "w"),
-        c("Good {tod}.", "t"), c("Hi. Good {tod}.", "t"), c("Hello, {tod}.", "t"), c("Good {tod}. Back at it.", "t"),
+        c("Good {tod}.", "wf"), c("Good {tod}, and welcome back.", "w"), c("Good {tod}. Nice to see you.", "w"), c("Good {tod}. Ready when you are.", "w"),
+        c("Good {tod}.", "t"), c("Good {tod}. Ready.", "t"), c("Hello.", "t"), c("Good {tod}. Back at it.", "t"),
         c("Good {tod}. Welcome back to the notebook.", "f"), c("Good {tod}; I trust it has been a good day so far.", "f"),
-        c("Well, hello. Good {tod}.", "p"), c("Good {tod}, the notebook missed you.", "p"), c("Hey, good {tod}. The pages are ready.", "p"),
+        c("Well, good {tod}.", "p"), c("Good {tod}, the notebook missed you.", "p"), c("Good {tod}. The pages are ready.", "p"),
     ),
     "welcome_new": (
         c("Welcome. This notebook is empty, so the first note starts everything.", "w"), c("Welcome. Write your first note and I will start filing it.", "w"), c("Nothing in here yet. Your first note is the start.", "w"),

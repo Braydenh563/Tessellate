@@ -231,9 +231,12 @@ def shelved(session: Session, limit: int) -> list[Document]:
     ))
 
 
-def count(session: Session) -> int:
-    """How many documents there are."""
-    return session.scalar(select(func.count(Document.id))) or 0
+def count(session: Session, file_type: str | None = None) -> int:
+    """How many documents there are, or how many of one file type."""
+    stmt = select(func.count(Document.id))
+    if file_type:
+        stmt = stmt.where(Document.file_type == file_type)
+    return session.scalar(stmt) or 0
 
 
 def count_unbinned(session: Session) -> int:

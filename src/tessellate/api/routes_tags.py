@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from tessellate.core.deps import get_session
-from tessellate.entry import manager
+from tessellate.repo import tags as tags_repo
 
 router = APIRouter(prefix="/tags", tags=["tags"])
 
@@ -44,13 +44,9 @@ def list_tags(
     session: Session = Depends(get_session),
 ) -> dict[str, int]:
     """Every tag in use → how many entries carry it (most used first)."""
-    counts = manager.all_tags(session)
-    response.headers["X-Total-Count"] = str(len(counts))
-    if len(counts) <= limit:
-        return counts
-    #: Already ordered most-used first, so the cut keeps the tags that matter
-    #: most and drops the long tail, which is the right end to lose.
-    return dict(list(counts.items())[:limit])
+    counts, total = tags_repo.page(session, limit=limit)
+    response.headers["X-Total-Count"] = str(total)
+    return counts
 
 
 class MergeBody(BaseModel):
@@ -77,19 +73,23 @@ def _answer(before: dict[int, list[str]]) -> dict:
 def rename_tag(body: RenameBody, session: Session = Depends(get_session)) -> dict:
     """Rename a tag everywhere; renaming onto an existing tag merges them."""
     try:
-        return _answer(manager.rename_tags(session, [body.old], body.new))
+        before = tags_repo.rename(session, [body.old], body.new)
     except ValueError as exc:
         # A blank new name: a plain 400, not a tag of "" on every note.
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    session.commit()
+    return _answer(before)
 
 
 @router.post("/merge")
 def merge_tags(body: MergeBody, session: Session = Depends(get_session)) -> dict:
     """Fold several tags into one name (which may be new or already exist)."""
     try:
-        return _answer(manager.rename_tags(session, body.names, body.into))
+        before = tags_repo.rename(session, body.names, body.into)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    session.commit()
+    return _answer(before)
 
 
 @router.post("/delete")
@@ -98,19 +98,25 @@ def delete_tag(body: DeleteBody, session: Session = Depends(get_session)) -> dic
     wanted = [t for t in [body.name, *body.names] if t.strip()]
     if not wanted:
         raise HTTPException(status_code=400, detail="Say which tag to remove.")
-    return _answer(manager.remove_tags(session, wanted))
+    before = tags_repo.remove(session, wanted)
+    session.commit()
+    return _answer(before)
 
 
 @router.post("/bulk")
 def bulk_edit_tags(body: BulkBody, session: Session = Depends(get_session)) -> dict:
     """Add tags to, and remove tags from, the chosen notes in one go."""
-    return _answer(manager.edit_tags_on_notes(session, body.ids, body.add, body.remove))
+    before = tags_repo.bulk_edit(session, body.ids, body.add, body.remove)
+    session.commit()
+    return _answer(before)
 
 
 @router.post("/restore")
 def restore_tags(body: RestoreBody, session: Session = Depends(get_session)) -> dict:
     """Put notes' tags back to the given lists: the undo of the writes above."""
-    return _answer(manager.undo_tag_edit(session, body.notes))
+    before = tags_repo.restore(session, body.notes)
+    session.commit()
+    return _answer(before)
 
 
 #: How many turned-down tags the tag manager lists.

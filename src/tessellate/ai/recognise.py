@@ -28,6 +28,8 @@ pattern, except `entry/timewords.py`, which reads a saved note's own words.
 from __future__ import annotations
 
 import re
+
+from tessellate.core.lazyre import lazy_compile
 from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass
@@ -66,7 +68,7 @@ _FRACTIONS: list[tuple[str, timedelta]] = [
 ]
 
 _COUNT_WORDS = "|".join(sorted((re.escape(w) for w in _WORD_COUNTS), key=len, reverse=True))
-_IN_PATTERN = re.compile(
+_IN_PATTERN = lazy_compile(
     rf"in\s+(\d{{1,4}}(?:\.\d{{1,2}})?|{_COUNT_WORDS})\s*({'|'.join(sorted(_UNIT_SECONDS, key=len, reverse=True))})\b",
     re.IGNORECASE,
 )
@@ -80,11 +82,11 @@ _IN_HOURS_MINUTES_SRC = (
     rf"\bin\s+(\d{{1,3}}(?:\.\d{{1,2}})?|{_COUNT_WORDS})\s?(?:hours?|hrs?|h)"
     rf"(?:(?:\s+and\s+|\s+|,\s?)(\d{{1,3}}|{_COUNT_WORDS})\s?(?:minutes?|mins?|m)\b|(\d{{2}})(?:m(?:ins?)?)?\b|\b(?!\s+and\s+a\s+half))"
 )
-_IN_HOURS_MINUTES = re.compile(_IN_HOURS_MINUTES_SRC, re.IGNORECASE)
-_IN_MONTHS = re.compile(rf"\bin\s+(\d{{1,2}}|{_COUNT_WORDS})\s+(months?|years?)\b", re.IGNORECASE)
+_IN_HOURS_MINUTES = lazy_compile(_IN_HOURS_MINUTES_SRC, re.IGNORECASE)
+_IN_MONTHS = lazy_compile(rf"\bin\s+(\d{{1,2}}|{_COUNT_WORDS})\s+(months?|years?)\b", re.IGNORECASE)
 
 
-_FROM_NOW = re.compile(
+_FROM_NOW = lazy_compile(
     rf"\b(half\s+an\s+hour|an?\s+hour\s+and\s+a\s+half|(?:a\s+)?quarter\s+of\s+an\s+hour|"
     rf"(?:\d{{1,4}}(?:\.\d{{1,2}})?|{_COUNT_WORDS})\s*(?:{'|'.join(sorted(_UNIT_SECONDS, key=len, reverse=True))}))\s+from\s+now\b",
     re.IGNORECASE,
@@ -199,7 +201,7 @@ MONTH_NAMES = frozenset(_MONTHS)
 WEEKDAY_NAMES = frozenset(_WEEKDAYS) | {"thur"}
 #: A weekday named in full, plural too ("Mondays"), for the readers that
 #: find a day a note says (`composer`, `search_manager`).
-WEEKDAY_WORD = re.compile(r"\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)s?\b", re.I)
+WEEKDAY_WORD = lazy_compile(r"\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)s?\b", re.I)
 #: A span's unit in minutes, for checking a stated span against the facts
 #: (`ai/fact_check.py`): kept here as the one table of time units.
 SPAN_MINUTES = {
@@ -224,19 +226,19 @@ _NUMBERS = {
 #: Single spaces, not `\s+`: `resolve` has already folded every run of
 #: whitespace to one space, and a literal space leaves the engine nothing to
 #: backtrack over (CodeQL, polynomial regular expression).
-_ANCHORED = re.compile(
+_ANCHORED = lazy_compile(
     r"^(\d{1,3}|half an|a couple of|a few|[a-z-]+) (minutes?|mins?|hours?|hrs?) (before|after) (.+)$"
 )
-_CLOCK = re.compile(r"\b(\d{1,2})(?::(\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)?(?=\s|$)")
-_ISO_DATE = re.compile(r"\b(\d{4})-(\d{2})-(\d{2})\b")
-_DAY_MONTH = re.compile(r"\b(\d{1,2})(?:st|nd|rd|th)?\s+(?:of\s+)?([a-z]+)\b")
-_MONTH_DAY = re.compile(r"\b([a-z]+)\s+(\d{1,2})(?:st|nd|rd|th)?\b")
-_WEEKDAY = re.compile(r"\b(?:(this|on|next|coming)\s+)?(" + "|".join(_WEEKDAYS) + r")\b")
+_CLOCK = lazy_compile(r"\b(\d{1,2})(?::(\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)?(?=\s|$)")
+_ISO_DATE = lazy_compile(r"\b(\d{4})-(\d{2})-(\d{2})\b")
+_DAY_MONTH = lazy_compile(r"\b(\d{1,2})(?:st|nd|rd|th)?\s+(?:of\s+)?([a-z]+)\b")
+_MONTH_DAY = lazy_compile(r"\b([a-z]+)\s+(\d{1,2})(?:st|nd|rd|th)?\b")
+_WEEKDAY = lazy_compile(r"\b(?:(this|on|next|coming)\s+)?(" + "|".join(_WEEKDAYS) + r")\b")
 
 
 #: A question whose answer the app works out (a span, a countdown, a weekday):
 #: the figures in such a reply are computed, not quoted from a note.
-_COMPUTED = re.compile(
+_COMPUTED = lazy_compile(
     r"\b(?:how (?:long|many (?:days?|weeks?|months?|years?|hours?|minutes?)|far|soon)|ago|until|till|since|countdown|"
     r"what (?:day|date) (?:is|was|will)|days? (?:between|from|after|before))\b",
     re.IGNORECASE,
@@ -248,7 +250,7 @@ def asks_computed(question: str) -> bool:
 
 
 #: A question about time (INBOX 1441): only then does an answer say a date.
-_ASKS_TIME = re.compile(
+_ASKS_TIME = lazy_compile(
     r"\b(?:when|what time|dates?|dated|days?|weeks?|weekend|months?|years?|yesterday|today|tonight|tomorrow|"
     r"recent(?:ly)?|latest|newest|oldest|earliest|last|first|since|ago|before|after|until|timeline|history|"
     r"how long|how often|going|progress\w*|improv\w*|chang\w*|monday|tuesday|wednesday|thursday|friday|saturday|sunday|january|february|march|"
@@ -265,12 +267,12 @@ _WD_WORD = "|".join(sorted(_WEEKDAYS, key=len, reverse=True))
 _MO_WORD = "|".join(sorted(_MONTHS, key=len, reverse=True))
 _WD_PREFIX = rf"(?:\b({_WD_WORD})\.?,?\s+)?"
 _YEAR_SUFFIX = r"(?:,?\s+((?:19|20)\d\d)\b)?"
-_MENTION_DM = re.compile(rf"{_WD_PREFIX}\b(\d{{1,2}})(?:st|nd|rd|th)?\s+(?:of\s+)?({_MO_WORD})\b{_YEAR_SUFFIX}")
-_MENTION_MD = re.compile(rf"{_WD_PREFIX}\b({_MO_WORD})\.?\s+(\d{{1,2}})(?:st|nd|rd|th)?\b(?![\d:])(?!\s*(?:am|pm)\b){_YEAR_SUFFIX}")
-_MENTION_ISO = re.compile(rf"{_WD_PREFIX}\b(\d{{4}})-(\d\d)-(\d\d)(?=\b|t\d)")
+_MENTION_DM = lazy_compile(rf"{_WD_PREFIX}\b(\d{{1,2}})(?:st|nd|rd|th)?\s+(?:of\s+)?({_MO_WORD})\b{_YEAR_SUFFIX}")
+_MENTION_MD = lazy_compile(rf"{_WD_PREFIX}\b({_MO_WORD})\.?\s+(\d{{1,2}})(?:st|nd|rd|th)?\b(?![\d:])(?!\s*(?:am|pm)\b){_YEAR_SUFFIX}")
+_MENTION_ISO = lazy_compile(rf"{_WD_PREFIX}\b(\d{{4}})-(\d\d)-(\d\d)(?=\b|t\d)")
 #: "Thursday 29": a weekday and a day number, no month, not a clock time
 #: or a count ("friday 2 notes").
-_MENTION_WD_DAY = re.compile(
+_MENTION_WD_DAY = lazy_compile(
     rf"\b({_WD_WORD})\.?,?\s+(\d{{1,2}})(?:st|nd|rd|th)?\b(?![\d:])(?!\s*(?:am|pm)\b)(?!\s+(?!at\b|by\b|for\b|and\b|is\b|to\b|the\b)[a-z])"
 )
 #: (year or None, month or None, day, weekday or None)
@@ -340,7 +342,7 @@ def days_named(text: str, now: datetime) -> set[date]:
 
 
 #: A stamp as a tool result prints it, "2026-10-30T17:00:00".
-_ISO_STAMP = re.compile(r"(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2}))?)?")
+_ISO_STAMP = lazy_compile(r"(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2}))?)?")
 
 
 def iso_figures(text: str) -> list[str]:
@@ -513,7 +515,7 @@ def _hour24(hour: int, meridiem: str | None, evening: bool) -> int:
     return hour + 12 if 1 <= hour <= 6 else hour
 
 
-_FROM_DAY = re.compile(
+_FROM_DAY = lazy_compile(
     r"^(\d{1,3}|a|an|one|two|three|four|five|six|seven|eight|nine|ten|twelve|a couple of|a few) (days?|weeks?|fortnights?) from (.+)$"
 )
 
@@ -728,13 +730,13 @@ def _still_tonight(at: datetime | None, now: datetime, part: str | None) -> date
 # exactly what was read, by the same reader.
 
 # "Call mum tomorrow evening, high priority": the placeholder's own example.
-_PRIORITY = re.compile(r"\b(high|low)\s+priority\b", re.IGNORECASE)
+_PRIORITY = lazy_compile(r"\b(high|low)\s+priority\b", re.IGNORECASE)
 _TIME_KINDS = frozenset({"date", "datetime", "time", "range", "recurrence", "alert"})
 #: The reminder repeats the app can store (`routes_reminders.Recurring`).
 _STORED_REPEATS = {"FREQ=DAILY": "daily", "FREQ=WEEKLY": "weekly", "FREQ=MONTHLY": "monthly"}
 #: A rule the store keeps as itself (TIMELINE_PLAN 11 row 8): every other
 #: week, weekdays, the last Friday of the month. The hour is the due time's.
-STORED_RULE = re.compile(
+STORED_RULE = lazy_compile(
     r"FREQ=(?:DAILY|WEEKLY|MONTHLY|YEARLY)(?:;INTERVAL=\d{1,2})?"
     r"(?:;BYDAY=(?:-1|[1-4])?(?:MO|TU|WE|TH|FR|SA|SU)(?:,(?:MO|TU|WE|TH|FR|SA|SU)){0,6})?(?:;BYMONTHDAY=\d{1,2})?"
 )
@@ -892,7 +894,7 @@ def _reminder_words(text: str, spans: list) -> tuple[str, str]:
     return (rest or text.strip() or "Reminder"), priority
 
 
-_CLOCK_TAIL = re.compile(r"(?<!\s)\s+(?:(?:at\s+)?\d{1,2}(?::\d{2})?\s*(?:am|pm)|at\s+\d{1,2}(?::\d{2})?|\d{1,2}:\d{2})\Z", re.I)
+_CLOCK_TAIL = lazy_compile(r"(?<!\s)\s+(?:(?:at\s+)?\d{1,2}(?::\d{2})?\s*(?:am|pm)|at\s+\d{1,2}(?::\d{2})?|\d{1,2}:\d{2})\Z", re.I)
 
 
 def _keep_due_day(rest: str, cut_words: list[str]) -> str:
@@ -980,10 +982,10 @@ def _repeat_and_alert(parsed: dict, repeat: Span | None, spans: list) -> None:
 # date, so a model asked about "this week" had to work out which date that
 # was: the arithmetic the 2026-09-21 decision took away from it everywhere.
 
-_SPAN = re.compile(
+_SPAN = lazy_compile(
     r"^(?:the\s+)?(?:last|past|previous)\s+(?:(\d{1,3}|[a-z-]+)\s+)?(days?|weeks?|months?|years?)$"
 )
-_AGO = re.compile(r"^(\d{1,3}|[a-z-]+)\s+(days?|weeks?|months?|years?)\s+ago$")
+_AGO = lazy_compile(r"^(\d{1,3}|[a-z-]+)\s+(days?|weeks?|months?|years?)\s+ago$")
 
 
 def _months_back(today: date, months: int) -> date:
@@ -1486,7 +1488,7 @@ def _one_day(day: date) -> tuple[date, date, str]:
 
 #: Before any notebook: "before March last year" runs from here.
 _EPOCH_DAY = date(1970, 1, 1)
-_EDGE_WORDS = re.compile(r"(since|before|until|till|after) (.+)")
+_EDGE_WORDS = lazy_compile(r"(since|before|until|till|after) (.+)")
 
 
 def _span_edge(text: str, a: date, tense: str | None) -> Any:
@@ -1547,8 +1549,8 @@ def _end_of_range(side: str, a: date, tense: str | None, other: tuple | None = N
     return got
 
 
-_DAY_RUN_DAY_FIRST = re.compile(rf"(?:between )?(?:the )?({_DAY_NO}){_DAY_TO}({_DAY_NO}) (?:of )?{_MONTH_RE}(?: (\d{{4}}))?")
-_DAY_RUN_MONTH_FIRST = re.compile(rf"(?:between )?{_MONTH_RE} (?:the )?({_DAY_NO}){_DAY_TO}({_DAY_NO})(?:,? (\d{{4}}))?")
+_DAY_RUN_DAY_FIRST = lazy_compile(rf"(?:between )?(?:the )?({_DAY_NO}){_DAY_TO}({_DAY_NO}) (?:of )?{_MONTH_RE}(?: (\d{{4}}))?")
+_DAY_RUN_MONTH_FIRST = lazy_compile(rf"(?:between )?{_MONTH_RE} (?:the )?({_DAY_NO}){_DAY_TO}({_DAY_NO})(?:,? (\d{{4}}))?")
 
 
 def _span_day_run(text: str, a: date, tense: str | None) -> Any:
@@ -1610,7 +1612,7 @@ def _span_calendar_unit(text: str, a: date, tense: str | None) -> Any:
     return _calendar_unit_span(*found.groups(), a) if found else _MISS
 
 
-_RECENT = re.compile(rf"(?:({_PRE.strip()}) )?(?:(the|these|this) )?(last|past|previous) (?:({_COUNT}) )?({_RECENT_UNIT})")
+_RECENT = lazy_compile(rf"(?:({_PRE.strip()}) )?(?:(the|these|this) )?(last|past|previous) (?:({_COUNT}) )?({_RECENT_UNIT})")
 
 
 def _span_recent(text: str, a: date, tense: str | None) -> Any:
@@ -1770,7 +1772,7 @@ def _span_ordinal(text: str, a: date, tense: str | None) -> Any:
     return _one_day(day) if day else None
 
 
-_PART_OF_WORD_RX = re.compile(r"(mid|early|late|end of) (?:(this|next|last) (month|year)|(?P<year>\d{4})|" + _MONTH_RE + r"(?: (\d{4}))?)")
+_PART_OF_WORD_RX = lazy_compile(r"(mid|early|late|end of) (?:(this|next|last) (month|year)|(?P<year>\d{4})|" + _MONTH_RE + r"(?: (\d{4}))?)")
 
 
 def _span_part_of_month(text: str, a: date, tense: str | None) -> Any:
@@ -1830,7 +1832,7 @@ def _span_holiday(text: str, a: date, tense: str | None) -> Any:
 
 
 _WEEK_NUMBER = {"first": 1, "1st": 1, "second": 2, "2nd": 2, "third": 3, "3rd": 3, "fourth": 4, "4th": 4}
-_PART_OF_MONTH_RX = re.compile(
+_PART_OF_MONTH_RX = lazy_compile(
     r"(?:the )?(first|second|third|fourth|1st|2nd|3rd|4th|last|final|latter|back) (week|half) of "
     r"(?:(this|next|last) (month|year)|" + _MONTH_RE + r"(?: (\d{4}))?)"
 )
@@ -1949,7 +1951,7 @@ def _in_locale(locale: str | None):  # noqa: ANN202
 def _season_first_months() -> dict[str, int]:
     return _SEASON_START_SOUTH if _hemisphere() == "south" else _SEASON_START_NORTH
 
-_SEASON_RX = re.compile(r"(?:(?:in|during|over|throughout|through) )?(?:the )?(?:(last|this|next|previous|coming|past) )?" + _SEASON_RE + r"(?: (?:of )?(\d{4}))?")
+_SEASON_RX = lazy_compile(r"(?:(?:in|during|over|throughout|through) )?(?:the )?(?:(last|this|next|previous|coming|past) )?" + _SEASON_RE + r"(?: (?:of )?(\d{4}))?")
 
 
 def _season_cycles(name: str, a: date) -> list[tuple[date, date]]:
@@ -2001,8 +2003,8 @@ _SPAN_READERS = (
 )
 
 
-_YEAR_TAIL = re.compile(r"(?: of)? (last|this|next) year$")
-_DAY_WORD = re.compile(r"\d{1,2}(?:st|nd|rd|th)?(?:-\d{1,2}(?:st|nd|rd|th)?)?|the|to|through|until|till|and")
+_YEAR_TAIL = lazy_compile(r"(?: of)? (last|this|next) year$")
+_DAY_WORD = lazy_compile(r"\d{1,2}(?:st|nd|rd|th)?(?:-\d{1,2}(?:st|nd|rd|th)?)?|the|to|through|until|till|and")
 
 
 def _numbered_year(text: str, a: date) -> str:
@@ -2067,7 +2069,7 @@ def _window_words() -> re.Pattern[str]:
 
 #: A sentence that looks dated: the composer's score for a "when" answer,
 #: never turned into a value (that is `find` and `span`).
-_DATED = re.compile(
+_DATED = lazy_compile(
     r"\b(\d{1,2}(st|nd|rd|th)|\d{4}|today|tomorrow|tonight|yesterday|next (week|month|year|fortnight)|coming fortnight|"
     r"last (week|month|year)|this (week|month|year)|weekend|january|february|march|april|may|june|july|"
     r"august|september|october|november|december|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b",
@@ -2086,7 +2088,7 @@ def looks_dated(text: str) -> bool:
 
 #: A time phrase that names a day or a month by name ("3 March", "Friday",
 #: "tomorrow", "in June"); a bare "May" is the verb as often as the month.
-_NAMES_DAY = re.compile(r"\d|january|february|march|april|june|july|august|september|october|november|december|monday|tuesday|wednesday|thursday|friday|saturday|sunday|tomorrow|today", re.I)
+_NAMES_DAY = lazy_compile(r"\d|january|february|march|april|june|july|august|september|october|november|december|monday|tuesday|wednesday|thursday|friday|saturday|sunday|tomorrow|today", re.I)
 
 
 def names_a_day(phrase: str) -> bool:
@@ -2102,7 +2104,7 @@ AHEAD_DAY_WORDS = (
     r"(?:tomorrow|tonight|day after tomorrow|"
     r"(?:next|this coming|this) (?:week|month|weekend|(?:mon|tues|wednes|thurs|fri|satur|sun)day))"
 )
-_SAID_RECENT_DAY = re.compile(r"\b(?:today|yesterday|tonight|this morning)\b", re.I)
+_SAID_RECENT_DAY = lazy_compile(r"\b(?:today|yesterday|tonight|this morning)\b", re.I)
 
 
 def says_a_recent_day(text: str) -> bool:
@@ -2113,13 +2115,13 @@ def says_a_recent_day(text: str) -> bool:
 
 #: A time phrase that already carries its preposition, or needs none
 #: ("since 3 October", "last week", "today", "3 days ago").
-_ADVERB_LEAD = re.compile(r"^(?:in|on|at|since|during|between|from|before|after|by|until|till|over|within|for)\b", re.I)
-_ADVERB_BARE = re.compile(
+_ADVERB_LEAD = lazy_compile(r"^(?:in|on|at|since|during|between|from|before|after|by|until|till|over|within|for)\b", re.I)
+_ADVERB_BARE = lazy_compile(
     r"^(?:today|tonight|yesterday|tomorrow|this|last|next|previous|coming|recently|lately|"
     r"the (?:day|week|weekend|rest|next|last|past|previous|first|end)\b)|\bago\b", re.I)
 #: "the last 7 days", "past week": a rolling window is "in" it; "last week" and
 #: "last month" are calendar spans and read without.
-_ROLLING_SAID = re.compile(r"^(?P<the>the )?(?P<which>past|last|previous) (?P<n>(?:[\w-]+(?: of)? )?)?(?:days?|weeks?|months?|years?)$", re.I)
+_ROLLING_SAID = lazy_compile(r"^(?P<the>the )?(?P<which>past|last|previous) (?P<n>(?:[\w-]+(?: of)? )?)?(?:days?|weeks?|months?|years?)$", re.I)
 
 
 def _rolling_said(text: str) -> str:
@@ -2145,7 +2147,7 @@ def _dated_said(text: str, low: str) -> str:
 #: A time phrase that points at "now" or counts back from it: a window of
 #: when notes were written. Any other ("Christmas", "October", "the weekend")
 #: is a thing the notes may talk about.
-_DEICTIC_PHRASE = re.compile(
+_DEICTIC_PHRASE = lazy_compile(
     r"^(?:in |on |from |during |for )?(?:today|yesterday|tomorrow|tonight|now|(?:this|last|next|past|previous|coming)\b.*|(?:\d+|a|an|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|a couple of|a few) (?:days?|weeks?|fortnights?|months?|years?) ago)$",
     re.I,
 )
@@ -2155,7 +2157,7 @@ _TOPIC_HOLIDAYS = frozenset(
     "christmas xmas easter halloween thanksgiving diwali eid ramadan hanukkah passover valentines boxing new year new years".split()
 )
 #: A question that asks what was done or written is about when.
-_WHEN_ASK = re.compile(r"\b(?:did|have|had|was) (?:i|we)\b|\bwhat happened\b|\b(?:wrote|written|made|jotted|noted|added|captured)\b", re.I)
+_WHEN_ASK = lazy_compile(r"\b(?:did|have|had|was) (?:i|we)\b|\bwhat happened\b|\b(?:wrote|written|made|jotted|noted|added|captured)\b", re.I)
 
 
 def a_topic_phrase(question: str, phrase: str, *, holiday: bool = True) -> bool:
@@ -2212,7 +2214,7 @@ def proper_days(text: str) -> str:
     return re.sub(r"\b[a-z]+\b", lambda m: m.group(0).capitalize() if m.group(0) in MONTH_NAMES or m.group(0) in WEEKDAY_NAMES else m.group(0), text)
 
 
-_DEICTIC_LEAD = re.compile(r"^(?:Today|Tomorrow|Yesterday|Tonight)\b")
+_DEICTIC_LEAD = lazy_compile(r"^(?:Today|Tomorrow|Yesterday|Tonight)\b")
 
 
 def mid_sentence(span: str) -> str:
@@ -2568,7 +2570,7 @@ def question_day(text: str, today: date, locale: str | None = None) -> tuple[dat
     return None
 
 
-_AHEAD = re.compile(r"\b(?:next (?:week|month|year|fortnight)|coming fortnight)\b|\btomorrow\b", re.IGNORECASE)
+_AHEAD = lazy_compile(r"\b(?:next (?:week|month|year|fortnight)|coming fortnight)\b|\btomorrow\b", re.IGNORECASE)
 
 
 def says_ahead(text: str) -> bool:
@@ -2580,7 +2582,7 @@ def says_ahead(text: str) -> bool:
 #: A question about the change or the past ("what did I use to...", "a year
 #: ago"): `supersede.current` keeps every note for one. Read here, with the
 #: other date words (decision 46).
-_PAST = re.compile(
+_PAST = lazy_compile(
     r"\b(?:changed?|changes|used to|before|previous(?:ly)?|last (?:semester|term|year|time)|old|older|history|over time|"
     r"compare|comparison|difference|ago|in the past|originally|first)\b",
     re.I,
@@ -2589,7 +2591,7 @@ _PAST = re.compile(
 
 #: A question about how something has gone is about the run of notes, not the
 #: latest one: "how's the gym going" reads 80 kg and then 90 kg (INBOX 812).
-_PROGRESS = re.compile(
+_PROGRESS = lazy_compile(
     r"\bprogress\b|\bhow(?:'s|s| is| are| has| have|'ve)\b[^?.!]{0,40}?\b(?:going|been|coming along|progressing)\b",
     re.I,
 )
@@ -2601,7 +2603,7 @@ def says_past(text: str) -> bool:
 
 #: Day and month names that are always names. "march" and "may" are left out:
 #: they are as often a verb as a date.
-_CAPITAL_NAMES = re.compile(
+_CAPITAL_NAMES = lazy_compile(
     r"(?<![\w'])(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday|january|february|april|june|july|august|"
     r"september|october|november|december)(?![\w'])"
 )
@@ -2621,9 +2623,9 @@ def capitalise_names(text: str) -> str:
 #: "how many days until X", and the short forms people type (CHAT_PLAN A1):
 #: "days until 25 Dec", "number of days till christmas", "countdown to X".
 _HOW_MANY = r"^(?:how (?:many|long) (?P<unit>days|weeks|months)?|(?:the )?(?:number of |count of )?(?P<bare>days|weeks|months)|countdown)"
-_DAYS_UNTIL = re.compile(_HOW_MANY + r"\s*(?:is it |are there |left )?(?:until|till|til|to|before)\s+(?P<what>.+)$", re.I)
-_DAYS_SINCE = re.compile(_HOW_MANY + r"\s*(?:has it been |is it |ago was |have passed |)?(?:since)\s+(?P<what>.+)$", re.I)
-_DATE_FROM_NOW = re.compile(
+_DAYS_UNTIL = lazy_compile(_HOW_MANY + r"\s*(?:is it |are there |left )?(?:until|till|til|to|before)\s+(?P<what>.+)$", re.I)
+_DAYS_SINCE = lazy_compile(_HOW_MANY + r"\s*(?:has it been |is it |ago was |have passed |)?(?:since)\s+(?P<what>.+)$", re.I)
+_DATE_FROM_NOW = lazy_compile(
     r"^what (?:day|date)(?: of the week)? (?:is|will it be|was)\s+(?:it\s+)?(?:in\s+)?(\d{1,3}|a|an|one|two|three|four|five|six|seven|eight|nine|ten)\s+(days?|weeks?|months?|years?)(?:\s+(from now|from today|ago))?$",
     re.I,
 )
@@ -2650,7 +2652,7 @@ def offset_question(text: str) -> tuple[str, str, bool] | None:
 #: Any sentence that may carry a day, wider than `looks_dated`: abbreviated
 #: months and weekdays, "21st", "3/11", "due". A cheap test before the
 #: recogniser runs on it (notes are read by the hundred).
-_DATED_WIDE = re.compile(
+_DATED_WIDE = lazy_compile(
     r"\b(?:today|tomorrow|tonight|yesterday|next (?:week|month|year|[a-z]+day)|this (?:week|month|weekend)|weekend|"
     r"(?:mon|tues?|wed(?:nes)?|thu(?:rs?)?|fri|sat(?:ur)?|sun)(?:day)?|\d{1,2}(?:st|nd|rd|th)\b(?: of)?(?: (?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*)?|"
     r"(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.? \d{1,2}|\d{1,2} (?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*|"
@@ -2658,12 +2660,12 @@ _DATED_WIDE = re.compile(
 
 
 #: A verb that says a thing happened: an irregular past, or a regular one.
-_PAST_VERB = re.compile(
+_PAST_VERB = lazy_compile(
     r"\b(?:was|were|had|did|went|slept|ate|felt|saw|met|ran|got|came|left|took|made|spent|lost|won|"
     r"[a-z]{3,}ed)\b", re.I)
 #: Words that set a thing up for later, so the day they name is ahead:
 #: "booked for", "moved to", "due", "will", "next".
-_ARRANGED = re.compile(
+_ARRANGED = lazy_compile(
     r"\b(?:booked|scheduled|planned|moved|arranged|organised|organized|confirmed|registered|signed up|set|"
     r"rescheduled|postponed|pushed|due|will|going to|gonna|next|upcoming|deadline|need|needs|have to|has to)\b", re.I)
 
@@ -2689,7 +2691,7 @@ def dated_sentence(text: str) -> bool:
     return bool(_DATED_WIDE.search(text or ""))
 
 
-_SINCE_Q = re.compile(
+_SINCE_Q = lazy_compile(
     r"^(?:(?:so|ok|okay|hey|please|pls|can you|could you|quick question|tell me)[, ]+)*"
     r"(?:how (?:many|much) (?P<u>days|weeks|months)(?: (?:has it been|have passed|have gone by|has passed|ago was|ago is|ago did)| ago)?\s+(?:since|was|is)"
     r"|(?P<u2>days|weeks|months) since|how long (?:has it been )?since|how long ago (?:was|is|did|were))"
@@ -2719,7 +2721,7 @@ def states_its_date(text: str, now: datetime) -> bool:
     return False
 
 
-_DAY_OFFSET = re.compile(
+_DAY_OFFSET = lazy_compile(
     r"^(?P<in>in\s+)?(?P<n>\d{1,4}|a|an|one|two|three|four|five|six|seven|eight|nine|ten|twelve|a couple of|couple of|a few)\s+"
     r"(?P<u>days?|weeks?|fortnights?|months?|years?)\s*(?P<d>from now|from today|from|after|before|ago|since|later|earlier|hence|prior to|away)?\s*(?P<a>.*?)\W*$",
     re.I)
@@ -2769,8 +2771,8 @@ def day_offset(text: str, today: date) -> dict | None:
 
 # --- the part of the day a note was about ------------------------------------------
 
-_EVENING_SAID = re.compile(r"\b(?:after work|in the evening|this evening|tonight|after dinner)\b", re.IGNORECASE)
-_MORNING_SAID = re.compile(r"\b(?:before work|in the morning|this morning|early morning|at dawn)\b", re.IGNORECASE)
+_EVENING_SAID = lazy_compile(r"\b(?:after work|in the evening|this evening|tonight|after dinner)\b", re.IGNORECASE)
+_MORNING_SAID = lazy_compile(r"\b(?:before work|in the morning|this morning|early morning|at dawn)\b", re.IGNORECASE)
 
 
 def part_of_day(text: str) -> str | None:
@@ -2857,9 +2859,9 @@ def _duration_words(seconds: float) -> str:
     return " ".join(out) or "0 seconds"
 
 
-_PAST_CUE = re.compile(r"\b(?:did|was|were|wrote|written|had|went|met|saw|ran|made|said|happened|spent|paid|bought|"
+_PAST_CUE = lazy_compile(r"\b(?:did|was|were|wrote|written|had|went|met|saw|ran|made|said|happened|spent|paid|bought|"
                        r"finished|started|ago|earlier|previously|used to)\b")
-_FUTURE_CUE = re.compile(r"\b(?:will|remind|due|until|till|going to|need to|have to|should|plan to|book|schedule|"
+_FUTURE_CUE = lazy_compile(r"\b(?:will|remind|due|until|till|going to|need to|have to|should|plan to|book|schedule|"
                          r"upcoming|shall)\b")
 
 
@@ -3050,7 +3052,7 @@ def _numeric_dates(low: str, today: date, locale: str | None, tense: str | None)
     return out
 
 
-_MONTH_ONLY = re.compile(r"(?:in |during )?" + _MONTH_RE + _YEAR_AFTER_MONTH)
+_MONTH_ONLY = lazy_compile(r"(?:in |during )?" + _MONTH_RE + _YEAR_AFTER_MONTH)
 _END_OF_DAY_WORDS = ("end of day", "end of the day", "the end of the day", "eod")
 
 
@@ -3558,7 +3560,7 @@ def _date_range_cands(low: str, cands: list[tuple]) -> list[tuple]:
     return out
 
 
-_MONTH_TO_MONTH = re.compile(
+_MONTH_TO_MONTH = lazy_compile(
     r"\b(?:from|between)\s+" + _MONTH_RE + r"\s+(?:to|and|until|till|through)\s+" + _MONTH_RE + r"\b"
 )
 
@@ -3609,7 +3611,7 @@ def _read_as(kind: str, value: object, note: str) -> str:
     return f"{words} ({note})" if note else words
 
 
-_DAY_OF_MONTH = re.compile(r"(?:on )?(?:the )?(\d{1,2})(?:st|nd|rd|th)")
+_DAY_OF_MONTH = lazy_compile(r"(?:on )?(?:the )?(\d{1,2})(?:st|nd|rd|th)")
 
 
 def day_of_month(span: Span) -> int | None:
@@ -3747,9 +3749,9 @@ def as_of_then(text: str) -> str:
 
 #: Money and scores, for an answer that sums amounts or finds a word a note
 #: says by its shape ("money" by "$40", "rate" by "8/10"; 2026-10-30 sweep).
-_AMOUNT = re.compile(r"([$£€¥])\s?(\d[\d,]*(?:\.\d{1,2})?)(k\b)?")
-_MONEY = re.compile(r"[$£€¥]\s?\d|\b\d[\d,.]*\s?(?:dollars|pounds|euros|quid|bucks|usd|gbp|eur)\b", re.I)
-_SCORE = re.compile(r"\b\d+(?:\.\d+)?\s?(?:/\s?(?:5|10|20|100)\b|out of \d+|stars?\b)", re.I)
+_AMOUNT = lazy_compile(r"([$£€¥])\s?(\d[\d,]*(?:\.\d{1,2})?)(k\b)?")
+_MONEY = lazy_compile(r"[$£€¥]\s?\d|\b\d[\d,.]*\s?(?:dollars|pounds|euros|quid|bucks|usd|gbp|eur)\b", re.I)
+_SCORE = lazy_compile(r"\b\d+(?:\.\d+)?\s?(?:/\s?(?:5|10|20|100)\b|out of \d+|stars?\b)", re.I)
 
 
 def says_shape(shape: str, text: str) -> bool:

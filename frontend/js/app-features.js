@@ -100,7 +100,7 @@ function featureCatalog() {
     ]},
     // Boards and maps were in the same position as Documents: built, reached
     // from the Library's own sub-tab, and mentioned nowhere in the list of
-    // what the app does. A map is a board (see `createConceptMap`), so the two
+    // what the app does. A map is a board, so the two
     // share a group rather than pretending to be separate canvases.
     { group: "Boards, maps & drawing", items: [
       { name: "New board", desc: "A whiteboard of cards, drawings, images and links you arrange yourself.", reveal: "board-new" },
@@ -250,14 +250,22 @@ function featureCommandRows(groups) {
   return { group: "More commands", items };
 }
 
-//: The popup tools (settings-panes.js `POPUP_TOOLS`): Calculator and equations over the box the palette was opened from (its Insert buttons write there), else on its own; and the shortcuts dialog's Tools list.
-async function popupToolMaths(caught = paletteCaught) {
-  const target = caught.target;
-  const fit = target?.isConnected && (target.id === "question" || (typeof editorSurfaceKind === "function" && editorSurfaceKind(target)));
-  if (fit) target.focus();
+//: The popup tools (settings-panes.js `POPUP_TOOLS`): Calculator and equations over the box it is handed (`{target}`; its Insert buttons write there), else on its own. The box is passed, never remembered: a default of the palette's last box sent the shortcuts dialog's and the Guide's opens to a field from an earlier palette (INBOX 1530 g).
+async function popupToolMaths(caught = {}) {
+  const target = popupToolMaths.box(caught.target);
   await ensureModule("replyKit");
-  openCalculator("", "work", { target: fit ? target : null });
+  openCalculator("", "work", { target });
 }
+
+//: The box the palette was opened over when it takes text, focused, else null (the Insert of the calculator and the pick of the picker then go nowhere but the clipboard). By id first: `editorSurfaceKind` answers null until the Library bundle has loaded, so a palette opened over the Chat box early dropped its box and the dialog opened with no Insert.
+popupToolMaths.box = (target) => {
+  const fit = target?.isConnected && (target.id === "question" || target.id in EDITOR_SURFACES || (typeof editorSurfaceKind === "function" && editorSurfaceKind(target)));
+  if (fit) target.focus();
+  return fit ? target : null;
+};
+
+//: The picker's tab for a palette row (INBOX 1544).
+popupToolMaths.glyph = (mode) => editorPickGlyph(popupToolMaths.box(paletteCaughtNow().target), null, mode);
 
 function renderToolShortcutList(list) {
   if (!list) return;
@@ -513,9 +521,13 @@ function paletteCommands() {
     //: The small tools (Brief 89, UI_MODERNISATION utilities rows 2 to 4):
     //: "timer 10 minutes" and "insert template ..." also build their own rows
     //: from the words (`utilityPaletteRows`, app-palette.js).
-    ...POPUP_TOOLS.map((t) => ({ label: `${t.icon} ${t.name}`, keywords: t.keywords, about: t.about, keys: t.keys, act: t.open })),
+    ...POPUP_TOOLS.map((t) => ({ label: `${t.icon} ${t.name}`, keywords: t.keywords, about: t.about, keys: t.keys, quick: `tool-${t.id}`, act: () => t.open(paletteCaughtNow().target) })),
+    //: The picker's three tabs, each its own row (INBOX 1544): a pick goes into the box the palette was opened over, or is copied.
+    { label: "ph:smiley Emoji", keywords: "emoji emoticon smiley sticker kaomoji face insert", about: "Pick an emoji; it goes where you were writing, or is copied.", keys: "Ctrl+;", act: () => popupToolMaths.glyph("emoji") },
+    { label: "ph:shapes Icons", keywords: "icon icons glyph phosphor insert shortcode", about: "Pick an icon; it goes where you were writing as :ph-name:, or is copied.", keys: "Ctrl+Shift+;", act: () => popupToolMaths.glyph("icon") },
+    { label: "ph:pi Symbols", keywords: "symbol symbols arrow greek currency euro degree copyright maths character insert", about: "Arrows, maths, Greek, currency and writing marks; one goes where you were writing, or is copied.", keys: "Ctrl+'", act: () => popupToolMaths.glyph("symbol") },
     { label: "ph:closed-captioning Live captions", quick: "captions", keywords: "live captions subtitles transcribe speech microphone listen real time stop", about: "Write what the microphone hears as you go, on this computer. Run it again to stop and save a note.", act: () => toggleLiveCaptions() },
-    { label: "ph:text-aa Count words", keywords: "word count characters letters reading time selection length", about: "Words, characters and reading time of the selected text, or of the editor.", act: () => ensureModule("utilities").then(() => countSelection(paletteCaughtNow())) },
+    { label: "ph:text-aa Count words", keywords: "word count characters letters reading time selection length", about: "Words, characters and reading time of the selected text, or of the editor.", act: () => { const caught = { ...paletteCaughtNow() }; ensureModule("utilities").then(() => countSelection(caught)); } },
     { label: "ph:translate Translate this", keywords: "translate translation spanish language offline selection passage", about: "The selected passage into Spanish, offline (a package).", act: () => { const caught = { ...paletteCaughtNow() }; ensureModule("translate").then(() => translateCaught(caught)); } },
     { label: "ph:activity Activity", keywords: "running jobs stop background model unload memory agent runs", about: "Every job running now, with Stop, and the agent's runs.", act: () => openActivity("running") },
     { label: "ph:stop-circle Stop the model", keywords: "unload free memory model stop generating", about: "Stop any answer and unload the model from memory.", act: () => ensureModule("activity").then(() => window.stopActivityModel()) },
@@ -568,7 +580,7 @@ function quickCatalogue() {
   for (const row of rows) {
     //: A row that is an act (no tab, no reveal) is a tile only when it says so
     //: with `quick`, a short stable name: Live captions is one (libr-1011 1220).
-    const key = row.keys ? "" : row.tab ? `tab:${row.tab}` : row.reveal ? `reveal:${row.reveal}` : row.quick ? `act:${row.quick}` : "";
+    const key = row.keys && !row.quick ? "" : row.tab ? `tab:${row.tab}` : row.reveal ? `reveal:${row.reveal}` : row.quick ? `act:${row.quick}` : "";
     const parts = key && paletteRowParts(row, abouts);
     if (parts && parts.about && !out.has(key)) out.set(key, { id: key, icon: parts.icon.replace(/^(ph:)?/, "ph:"), label: parts.label, hint: parts.about, run: row.run });
   }

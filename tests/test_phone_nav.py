@@ -43,7 +43,7 @@ def test_the_bar_holds_dashboard_notes_chat_library_and_more():
     hidden = set()
     for path in CSS_DIR.glob("*.css"):
         for block in _phone_blocks(_strip_comments(path.read_text(encoding="utf-8"))):
-            for rule in re.finditer(r"([^{}]+)\{([^{}]*)\}", block):
+            for rule in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", block):
                 if re.search(r"display:\s*none", rule.group(2)):
                     hidden |= set(re.findall(r"#tab-bar #tab-btn-(\w+)", rule.group(1)))
     assert hidden == {"graph", "timeline", "reminders"}, hidden
@@ -57,7 +57,7 @@ def test_more_is_the_last_column_not_the_first():
     `order: 3` from the days it lived in the header put More at x=0."""
     for path in CSS_DIR.glob("*.css"):
         for block in _phone_blocks(_strip_comments(path.read_text(encoding="utf-8"))):
-            for rule in re.finditer(r"([^{}]+)\{([^{}]*)\}", block):
+            for rule in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", block):
                 selectors = [s.strip() for s in rule.group(1).split(",")]
                 if any(s in ("#tab-bar", "#phone-tab-dock > #tab-bar") for s in selectors):
                     assert not re.search(r"(^|;|\s)order\s*:", rule.group(2)), (

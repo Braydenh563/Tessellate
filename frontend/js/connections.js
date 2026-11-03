@@ -307,3 +307,94 @@ function buildConnectionGroups(list, kind, data, beforeOpen = () => {}) {
   return shown;
 }
 
+
+//: The Notes column's answer for one note, drawn (moved out of `renderNotesRail` for the gzip budget; INBOX 1525).
+async function drawNotesRail(entry, key) {
+  const body = $("notes-rail-body");
+  const seq = ++notesRailSeq;
+  let answer = notesRailCache.get(key);
+  if (!answer) {
+    const [links, near, back] = await Promise.all([
+      apiJson(`/entries/${entry.id}/connections`, { silent: true }).catch(() => null),
+      apiJson(`/resurface/near/${entry.id}`, { silent: true }).catch(() => null),
+      apiJson(`/entries/${entry.id}/backlinks`, { silent: true }).catch(() => null),
+    ]);
+    answer = { links: withBacklinks(links, back, entry.id), near };
+    if (links) notesRailCache.set(key, answer);
+  }
+  if (seq !== notesRailSeq) return;
+  body.removeAttribute("aria-busy");
+  body.dataset.key = answer.links ? key : "";
+  body.replaceChildren();
+  const count = $("notes-rail-count");
+  if (!answer.links) {
+    const failed = document.createElement("p");
+    failed.className = "muted notes-rail-note";
+    failed.textContent = "Couldn't read this note's connections.";
+    body.appendChild(failed);
+    count.textContent = "";
+    count.hidden = true;
+    return;
+  }
+  const shown = buildConnectionGroups(body, "entries", answer.links);
+  //: Forgotten takes days: a note written minutes ago is not slipping away
+  //: (dog3-1026 row 14, "Forgotten" on notes seconds old).
+  const nearItems = ((answer.near && answer.near.items) || []).filter((item) => (item.age_days || 0) >= 3);
+  if (nearItems.length) body.appendChild(notesRailNearGroup(nearItems));
+  //: One chip, the panel head's one fact: how many things this note is
+  //: joined to. The forgotten notes are suggestions, not connections, so they
+  //: are not counted in it.
+  //: Unlinked mentions are offers, not links, so they are not counted.
+  const linked = shown - (answer.links.mentions || []).length;
+  count.textContent = linked === 1 ? "1 link" : `${linked} links`;
+  //: "0 links" over a list of suggestions read as a contradiction; the
+  //: empty line below says it once there is nothing at all (dog3-1026 row 14).
+  count.hidden = !linked;
+  if (!shown && !nearItems.length) {
+    const empty = document.createElement("p");
+    empty.className = "muted notes-rail-note";
+    empty.textContent =
+      "Nothing is joined to this note yet. Link it to another note, attach it to a document, or drop it on a whiteboard.";
+    body.appendChild(empty);
+  }
+  //: "We could not ask" is a different fact from "nothing is faded near
+  //: this", and only the first is worth a line: a notebook too small to rank
+  //: (`resurface.MIN_NOTEBOOK`) answers an empty list by design.
+  if (!answer.near) {
+    const failed = document.createElement("p");
+    failed.className = "muted notes-rail-note";
+    failed.textContent = "Couldn't look for forgotten notes near this one.";
+    body.appendChild(failed);
+  }
+
+  //: The forgotten notes, drawn as one more connection group so the column reads
+  //: as one list with one row recipe. Each row carries the route's own sentence
+  //: for why it was chosen ("120 days old, no links, never opened"), which is
+  //: checkable where a score would not be.
+  function notesRailNearGroup(items) {
+    const section = document.createElement("div");
+    section.className = "connection-group notes-rail-near";
+    const head = document.createElement("p");
+    head.className = "connection-heading";
+    setLabel(head, "ph:hourglass-medium Forgotten, and close to this");
+    const count = document.createElement("span");
+    count.className = "connection-count";
+    count.textContent = String(items.length);
+    head.appendChild(count);
+    section.appendChild(head);
+    const holder = document.createElement("div");
+    holder.className = "connection-rows";
+    for (const item of items) {
+      //: The route's own sentence is the row's subline, in the same list recipe
+      //: as every other connection row (`connectionRowEl`, menus.js).
+      const row = connectionRowEl(
+        "ph:note", item.title, item.reason ? `Open this note\nWhy: ${item.reason}` : "Open this note", item.reason || "",
+        () => flashEntry(item.id)
+      );
+      holder.appendChild(row);
+    }
+    section.appendChild(holder);
+    return section;
+  }
+}
+

@@ -413,7 +413,7 @@ $("lock-password-show").addEventListener("click", (event) => {
   const show = field.type === "password";
   field.type = show ? "text" : "password";
   const button = event.currentTarget;
-  button.setAttribute("aria-pressed", String(show));
+  button.setAttribute("aria-pressed", show);
   button.title = show ? "Hide password" : "Show password";
   button.setAttribute("aria-label", button.title);
   button.querySelector("i").className = `ph ${show ? "ph-eye-slash" : "ph-eye"}`;
@@ -642,24 +642,17 @@ function saveWhatIsInFront() {
 const typingBurst = { at: 0 };
 
 document.addEventListener("keydown", (e) => {
-  // **Before anything else.** A locked notebook answers no shortcut, not a
-  // chorded one, not a bare one, not a tab jump. Typing is untouched: this
-  // returns before any shortcut is *dispatched*, so the password field still
-  // receives every keystroke, and Enter still submits it through the form's
-  // own handler rather than this one.
+  // **Before anything else.** A locked notebook answers no shortcut. Typing is
+  // untouched (this returns before dispatch), so the password field still works.
   if (notebookLocked()) return;
   // Rebinding swallows everything while it's listening.
   if (captureShortcutKey(e)) {
     e.preventDefault();
     return;
   }
-  // Chorded shortcuts (anything with a modifier) work even while typing, 
-  // Ctrl+K from inside the note box should still open the palette. Undo/redo
-  // are the deliberate exception: Ctrl+Z/Ctrl+Shift+Z are already the
-  // browser's own undo for whatever text field has focus (correcting a typo
-  // you just made), and that has to win over this app's global stack: 
-  // otherwise fixing a typo in the note box would silently restore a
-  // deleted note instead of undoing the keystroke.
+  // Chorded shortcuts (any modifier) work while typing: Ctrl+K opens the palette
+  // from the note box. Undo and redo are the exception: a text field keeps the
+  // browser's own, or fixing a typo would restore a deleted note.
   const chorded = e.ctrlKey || e.metaKey || e.altKey;
   //: **A chord the open board answers itself is the board's** (the
   //: conventions pass, 2026-09-23). Ctrl+Shift+G is Ungroup on every canvas
@@ -686,13 +679,9 @@ document.addEventListener("keydown", (e) => {
       //: editor binds Ctrl+D to "select the next match" (CodeMirror's search
       //: keymap), handles it at the target and marks it `defaultPrevented`.
       if (id === "todaysNote" && (boardHistoryActive() || e.defaultPrevented)) continue;
-      //: The same handoff for Ctrl+/ (INBOX 402): the documents editor's
-      //: keymap answers it with the comment toggle and marks it handled, and
-      //: this then wrote a "/" over the selection the toggle had just made,
-      //: so Ctrl+/ on a line of prose left a lone "/" where the line was
-      //: (measured, `doccodevs.js`). In a note box nothing answers it first,
-      //: so the blocks menu still opens there.
-      if (id === "editorMenu" && e.defaultPrevented) continue;
+      //: Ctrl+/ and Ctrl+K (INBOX 402, 1559): the documents editor answers them
+      //: first (comment toggle, link) and marks the press handled; a note box does not.
+      if ((id === "editorMenu" || id === "palette") && e.defaultPrevented) continue;
       if (matchesShortcut(e, def.keys)) {
         e.preventDefault();
         //: The chord goes through the same `performUndo`/`performRedo` the
@@ -1074,15 +1063,10 @@ const DEFAULT_SHORTCUTS = {
   stopAI: { keys: "Ctrl+.", label: "Stop the answer being written" },
   agentMode: { keys: "Ctrl+Shift+G", label: "Turn agent mode on or off" },
   quickSketch: { keys: "Ctrl+Shift+K", label: "Open the quick sketch pad" },
-  // **The agent bar's chord, declared here rather than bound loose.** It was
-  // moved off Ctrl+K once already, to settle a collision with the navigation
-  // palette: onto Ctrl+Shift+K, which `quickSketch` above had held all
-  // along, so the fix swapped one silent collision for another and the sketch
-  // pad and the agent bar both opened on one press (reported). The cause both
-  // times was the same: this chord lived in a `document.addEventListener` of
-  // its own, where nothing could see it. In the registry it is checked against
-  // every other chord by `test_frontend_shortcuts.py`, appears in the
-  // shortcuts help, and can be rebound like all the rest.
+  // **The agent bar's chord, declared here rather than bound loose.** It left
+  // Ctrl+K for Ctrl+Shift+K, which the sketch pad held, so both opened on one
+  // press. A chord in a listener of its own is invisible to
+  // `test_frontend_shortcuts.py`'s collision check, the help and rebinding.
   askAgent: { keys: "Ctrl+Shift+A", label: "Ask the agent anything" },
   //: Beside the agent's own chord, because they are the pair: one does things
   //: to your notes and the other explains the app. In the registry rather than
@@ -1493,7 +1477,11 @@ function closeShortcuts() {
   // leaves the handler swallowing every keypress in the app, the shortcut you
   // just set appears dead, and so does everything else.
   capturingShortcut = null;
-  $("shortcuts-overlay").classList.add("hidden");
+  const overlay = $("shortcuts-overlay");
+  const wasOpen = !overlay.classList.contains("hidden");
+  overlay.classList.add("hidden");
+  if (wasOpen) focusBackTo(overlay.returnFocus, "#tab-bar [aria-selected='true']");
+  overlay.returnFocus = null;
 }
 
 $("shortcuts-close").addEventListener("click", closeShortcuts);
@@ -1632,13 +1620,32 @@ $("notes-page-next").addEventListener("click", () => {
 //:
 //: Ids or elements: the edit form builds its host and textarea and calls this
 //: *before* the row is in the document, so a lookup by id would find neither.
-function renderEntryAttachmentChips(boxId = "entry-content", hostId = "entry-attachment-chips") {
+//:
+//: **A key in a long note costs a timer check** (z1c-1101): the regex reads the whole text, 0.29 ms a
+//: key at 200,000 characters. `paced` (the input listeners) runs it on the key up to
+//: `CHIPS_PACE_CHARS`, past that once per `CHIPS_PACE_MS` from the text as it is then, the rule the
+//: Capture count keeps. And a row that would come out the same is not rebuilt (`chipsSig`), so a key
+//: in a note with pictures no longer remakes every card.
+function renderEntryAttachmentChips(boxId = "entry-content", hostId = "entry-attachment-chips", { paced = false } = {}) {
+  const CHIPS_PACE_CHARS = 2000;
+  const CHIPS_PACE_MS = 150;
   const box = hostId instanceof HTMLElement ? hostId : $(hostId);
   const textarea = boxId instanceof HTMLElement ? boxId : $(boxId);
   if (!box || !textarea) return;
+  clearTimeout(textarea.chipsTimer);
+  textarea.chipsTimer = 0;
+  if (paced && textarea.value.length > CHIPS_PACE_CHARS) {
+    textarea.chipsTimer = setTimeout(() => renderEntryAttachmentChips(textarea, box), CHIPS_PACE_MS);
+    return;
+  }
   const pattern = /!?\[([^\]]{0,200})\]\(((?:\/media\/|\/files\/|staged:)[^)\s]{1,500})\)/g;
   const matches = [...textarea.value.matchAll(pattern)];
   const staged = textarea.id === "entry-content" ? captureStagedFiles : [];
+  const sig = matches.map(([markdown, , url]) => `${markdown}\u0000${stagedImageByUrl(url) ? 1 : 0}`)
+    .concat(staged.map((file) => `${file.name}\u0000${file.size}`)).join("\u0001");
+  if (box.chipsSig === sig && box.chipsFor === textarea) return;
+  box.chipsSig = sig;
+  box.chipsFor = textarea;
   box.replaceChildren();
   box.classList.toggle("hidden", matches.length + staged.length === 0);
   for (const [markdown, name, url] of matches) {
@@ -1746,7 +1753,7 @@ function captureCountText(text) {
 $("entry-content").addEventListener("input", () => {
   // Keep a draft so a half-typed thought survives a reload or a stray tab
   // switch: losing one is the most annoying thing this app could do.
-  renderEntryAttachmentChips();
+  renderEntryAttachmentChips("entry-content", "entry-attachment-chips", { paced: true });
   // The "go to it" link belongs to the note you just saved, not the one you
   // are now writing: drop it as soon as typing starts.
   $("save-status").querySelector(".jump-to-note")?.remove();

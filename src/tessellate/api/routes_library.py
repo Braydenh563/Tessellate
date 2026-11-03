@@ -45,6 +45,7 @@ from tessellate.entry.manager import extract_title, join_blocks, remove_title, s
 from tessellate.entry.properties import strip as strip_properties
 from tessellate.repo import content as content_repo
 from tessellate.repo import documents as documents_repo
+from tessellate.repo import tags as tags_repo
 
 router = APIRouter(tags=["library"])
 
@@ -52,6 +53,8 @@ router = APIRouter(tags=["library"])
 #: hand back 300 documents and no chats, every kind gets its own allowance, so
 #: the filter chips are never empty for a reason nobody can see.
 PER_KIND_LIMIT = 200
+#: The document type a diagram is (1546 D5): listed as `kind: "diagram"`, counted apart.
+DIAGRAM_FILE_TYPE = "mmd"
 
 def _like(query: str) -> str:
     """`query` as a literal LIKE pattern (see `like_escape`): a search for
@@ -232,7 +235,8 @@ def _documents(session: Session, q: str = "") -> list[dict]:
         words = cjk.word_count(doc.content)
         items.append(
             {
-                "kind": "document",
+                #: A diagram is a document of the `mmd` type (1546 D5), listed and counted apart.
+                "kind": "diagram" if doc.file_type == DIAGRAM_FILE_TYPE else "document",
                 "id": doc.id,
                 "title": doc.title or "Untitled",
                 "preview": _clip(doc.content),
@@ -966,7 +970,7 @@ def _tags(session: Session) -> list[dict]:
 
     Capped at PER_KIND_LIMIT, the same bound every other kind section in
     this file already carries, this was the one exception, left uncapped
-    when `manager.all_tags` was made cheap (§86, a cache keyed by notebook
+    when `tags_repo.counts` was made cheap (§86, a cache keyed by notebook
     fingerprint), which fixed the *cost* of computing the dict but not the
     length of what this endpoint sent to the browser. `all_tags()` is
     already most-used-first, so the slice keeps the tags anyone is actually
@@ -975,9 +979,7 @@ def _tags(session: Session) -> list[dict]:
     uncapped: its job is renaming or deleting *any* tag, including a
     rarely-used one that a length cap here would hide from it entirely.
     """
-    from tessellate.entry import manager
-
-    counts = list(manager.all_tags(session).items())[:PER_KIND_LIMIT]
+    counts = list(tags_repo.counts(session).items())[:PER_KIND_LIMIT]
     return [
         {
             "kind": "tag",
@@ -1033,11 +1035,13 @@ def _totals(session: Session) -> dict[str, int]:
     def count(stmt) -> int:
         return int(session.scalar(stmt) or 0)
 
+    diagrams = documents_repo.count(session, DIAGRAM_FILE_TYPE)
     return {
         "note": count(
             select(func.count(Entry.id)).where(*_LIVE_NOTE, Entry.is_board == False)  # noqa: E712
         ),
-        "document": documents_repo.count(session),
+        "document": documents_repo.count(session) - diagrams,
+        "diagram": diagrams,
         "chat": count(select(func.count(Conversation.id))),
     }
 

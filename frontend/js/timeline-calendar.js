@@ -209,7 +209,7 @@ function timelineCalDraw(box, span, first, last) {
   //: Writes, then reads, then the trim (INBOX 1446): cells have fixed
   //: heights, so the trim moves nothing the reads below measure.
   feed.classList.toggle("hidden", span !== "agenda");
-  $("timeline-count").textContent = `${shown}${timelineCal.more ? "+" : ""} item${shown === 1 ? "" : "s"} · ${period}`;
+  $("timeline-count").textContent = `${shown}${timelineCal.more ? "+" : ""} ${shown === 1 ? "item" : "items"} · ${period}`;
   let trim = null;
   if (span === "agenda") {
     timelineCalMount(box, head);

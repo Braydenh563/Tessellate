@@ -75,7 +75,7 @@ def _rules() -> list[tuple[str, str]]:
     selector *declares*, which is all this needs.
     """
     text = re.sub(r"/\*.*?\*/", "", css_text(), flags=re.S)
-    return [(sel.strip(), body) for sel, body in re.findall(r"([^{}]+)\{([^{}]*)\}", text)]
+    return [(sel.strip(), body) for sel, body in re.findall(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", text)]
 
 
 def _normalise(value: str) -> str:

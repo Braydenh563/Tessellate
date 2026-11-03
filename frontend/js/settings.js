@@ -169,7 +169,8 @@ function showSettingsSection(name) {
   if (name === "templates") renderTemplateSettings();
   if (name === "tools") renderToolSettings();
   if (name === "memory") renderMemorySettings().catch(() => {});
-  if (name === "learned") renderLearned().catch(() => {});
+  //: The Learned section lives in settings-controls.js (lazy, 2026-11-02, eager gzip headroom).
+  if (name === "learned") ensureModule("settingsControls").then(() => renderLearned()).catch(() => {});
   if (name === "tasks") renderAutonomousReview().catch(() => {});
   if (name === "tasks") {
     apiJson("/preferences")
@@ -326,6 +327,19 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   $("desktop-tray-hint")?.classList.toggle("hidden", !isDesktop);
   $("desktop-advanced-fold")?.classList.toggle("hidden", !isDesktop);
   $("desktop-companion-row")?.classList.toggle("hidden", !isDesktop);
+  //: In a browser tab the row above is hidden (no tray there), so About says where the setting
+  //: lives instead (INBOX 1530 b). Built here, not in index.html, so the boot document's element
+  //: count (tests/test_boot_diet3.py) and the shared scope's name count do not grow.
+  const companionHelp = $("desktop-companion-help");
+  let companionNote = document.getElementById("desktop-companion-note");
+  if (isDesktop || !companionHelp) companionNote?.remove();
+  else if (!companionNote) {
+    companionNote = document.createElement("p");
+    companionNote.id = "desktop-companion-note";
+    companionNote.className = "muted";
+    companionNote.textContent = "The companion on the desktop is a setting of the desktop app, so its row is not shown in a browser tab. Open Tessellate in its own window to find it.";
+    companionHelp.after(companionNote);
+  }
   // Same reasoning as the tray/console rows above: /system/restart can only
   // ever do something in the packaged desktop app on Windows specifically
   // (the one platform _spawn_desktop knows how to relaunch), not desktop in
@@ -1343,10 +1357,24 @@ function activeAccent() {
 // about the accent picker, so a curated palette changed every surface in the
 // app except the two canvases, leaving them wearing the previous theme. The
 // computed variable is the one source of truth once palettes can set it too.
+//: Kept while what sets `--accent` stands: the root's palette, mode, theme and
+//: accent, its inline accent, the custom CSS and the system scheme. Read fresh
+//: it settled the style a press or a click had just dirtied (18 to 60ms at 4x,
+//: INBOX 1534), and a class, the motion or the density says nothing about the
+//: colour. Keyed on those values, not watched: a change made in this same task
+//: is seen at once.
 function currentAccentHex() {
-  const computed = getComputedStyle(document.documentElement)
-    .getPropertyValue("--accent")
-    .trim();
+  if (!currentAccentHex.watched) {
+    currentAccentHex.watched = true;
+    matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", () => (currentAccentHex.kept = null));
+  }
+  const root = document.documentElement;
+  const key = ["data-palette", "data-mode", "data-theme", "data-accent"].map((n) => root.getAttribute(n)).join("|")
+    + root.style.getPropertyValue("--accent") + prefs.get("custom-css", "");
+  if (currentAccentHex.kept?.key !== key) {
+    currentAccentHex.kept = { key, value: getComputedStyle(root).getPropertyValue("--accent").trim() };
+  }
+  const computed = currentAccentHex.kept.value;
   if (computed) return computed;
   return (
     prefs.get("accent-custom", null) ||
@@ -2559,12 +2587,14 @@ function renderThemePresets() {
 //: The accent the theme wears with no accent chosen: read with the choice
 //: (the data-accent rule, an inline custom colour) lifted for one
 //: synchronous style read, so nothing paints in between.
-//: Kept for as long as nothing on the root but the accent itself, and the
-//: custom CSS, has changed: lifting the choice and putting it back is two
+//: Kept for as long as the palette, mode, theme and custom CSS stand: lifting the choice and putting it back is two
 //: whole-page style recalculations, once per Appearance open (the lag log).
 function themeDefaultAccent() {
   const root = document.documentElement;
-  const key = [...root.attributes].filter((a) => a.name !== "data-accent").map((a) => `${a.name}=${a.value.replace(/--accent:[^;]*;?/g, "")}`).join("|") + prefs.get("custom-css", "");
+  //: Only what a rule sets `--accent` from: the palette, the mode and the theme. Any other
+  //: attribute (`data-motion`, density, font) made a new key, and so a lift, a read and a
+  //: restore: 31ms of a motion choice at 4x (INBOX 1534).
+  const key = ["data-palette", "data-mode", "data-theme"].map((n) => root.getAttribute(n)).join("|") + prefs.get("custom-css", "");
   if (themeDefaultAccent.kept?.key === key) return themeDefaultAccent.kept.value;
   const chosen = root.dataset.accent;
   const inline = root.style.getPropertyValue("--accent");
@@ -3149,6 +3179,8 @@ function toggleBgArt(on) {
   applyAppearance(); // updates data-bg-art so the cards adjust with it
   if (on) startBgArt();
   else stopBgArt();
+  //: The constellation moves only with it on (INBOX 1530 d).
+  refreshArtForTheme();
 }
 
 $("theme-btn").addEventListener("click", toggleTheme);
@@ -3528,583 +3560,6 @@ $("settings-guide-btn")?.addEventListener("click", () => openHelpChat());
 $("settings-profile-btn")?.addEventListener("click", () => showSettingsSection("preferences"));
 
 
-// =============================================================================
-// What it learned (WORLD_CLASS_PLAN I9)
-// =============================================================================
-//
-// **The backend has been complete since 2026-09-13 and nothing called it.**
-// Found by scanning all 319 routes against every path the frontend fetches:
-// `GET /learned`, `GET|PUT /learned/switches`, `PATCH|DELETE /learned/{id}`,
-// `POST /learned/{id}/reset`, `GET /learned/export` and `DELETE /learned` had
-// no caller anywhere. The plan's own words for why that matters: "a model
-// that is wrong quietly is worse than no model", and every one of those
-// routes exists so a person can see the model being wrong and say so. With
-// no screen, `derived_facts` grew where nobody could read it.
-//
-// Built against what the backend ships rather than against the whole spec.
-// The bulk actions waited for `POST /learned/bulk` (2026-09-23) rather than
-// being a client-side loop over N rows, which is N requests that can half
-// fail: the route changes every selected row in one transaction.
-
-//: One page. 50 rather than the route's 100 default: this is a settings
-//: panel inside a modal, and a hundred rows is a scroll nobody finishes.
-const LEARNED_PAGE = 50;
-
-//: What each switch is, in the words a person would use. The keys are
-//: `ai/facts.py`'s `SWITCHES`, and a key that appears there and not here
-//: still renders, under its own name, rather than vanishing: a switch the
-//: person cannot see is a switch they cannot turn off, which is the one
-//: thing this section exists to prevent.
-const LEARNED_SWITCH_COPY = {
-  night_shift: ["Night shift", "Reads notes you have added or changed and works out what they claim."],
-  margin_reader: ["Margin reader", "Adds notes in the margin of a note as you read it."],
-  open_questions: ["Open questions", "Collects the questions your notes leave unanswered."],
-  resurfacing: ["Resurfacing", "Brings notes you have not looked at in a while back to the dashboard."],
-  evidence_checks: ["Evidence checks", "Shows each sentence of an answer beside the passage in your notes it came from."],
-  corrections: ["Learning from corrections", "Remembers when you refile a note or dismiss a suggestion, and stops repeating it."],
-  model_bench: ["Model bench", "Compares your installed models on your own notes."],
-};
-
-//: The master, which is not one of the seven: `facts.switches()` reports it
-//: alongside them and, when it is on, reports every other one as off.
-const LEARNED_MASTER = "paused";
-
-//: What a derived kind is called. `ai/facts.py`'s `KINDS` is ("claim",
-//: "question") today and the plan adds more (tensions, duplicates, entities,
-//: dates); an unknown kind shows its own name rather than being dropped.
-const LEARNED_KIND_COPY = {
-  claim: "Claim",
-  question: "Open question",
-  //: The person's own word (decision 60, B31, B32).
-  confirmed: "Confirmed by you",
-  pinned: "Pinned as true",
-  wrong: "Marked wrong",
-};
-
-let learnedOffset = 0;
-let learnedTotal = 0;
-//: The filter typing debounce, so a search box does not fire a request per
-//: keystroke against a table that can hold thousands of rows.
-let learnedSearchTimer = null;
-
-function learnedKindLabel(kind) {
-  return LEARNED_KIND_COPY[kind] || String(kind || "").replace(/_/g, " ") || "Fact";
-}
-
-async function renderLearnedSwitches() {
-  const host = $("learned-switches");
-  const banner = $("learned-paused-banner");
-  if (!host) return;
-  showSkeletons(host, 2);
-  const switches = await apiJson("/learned/switches").catch(() => null);
-  clearSkeletons(host);
-  if (!switches) {
-    host.replaceChildren();
-    return;
-  }
-  const paused = Boolean(switches[LEARNED_MASTER]);
-  host.replaceChildren();
-
-  //: **`.setting-check`, the app's own on/off recipe** (DESIGN.md's index:
-  //: "An on/off setting: `label.setting-check` with the switch first").
-  //: These were built as `.checkbox-label row align-center`, which is the
-  //: recipe for a checkbox *beside a word*, and it has no opinion about a
-  //: hint: the `<small>` stayed inline, so every row read "Night shiftReads
-  //: notes you have added or changed". Reported as "messy and not consistent
-  //: with the design.md rules and the rest of the application", which is
-  //: exactly what standing order 11 says happens when a new surface builds
-  //: its own shape instead of taking one from the index.
-  //:
-  //: `.setting-check` is a three-column grid whose label column is a flex
-  //: column, so the hint lands under its own title with the switch centred
-  //: beside both, and the row fills with `--accent-soft` when it is on.
-  const learnedRow = (title, hint) => {
-    const row = document.createElement("label");
-    row.className = "setting-check";
-    const box = document.createElement("input");
-    box.type = "checkbox";
-    const text = document.createElement("span");
-    //: The space is not decoration. `<small>` is a flex item in this column
-    //: so it draws on its own line either way, but the accessible name is
-    //: `textContent`, which without it reads "Night shiftReads notes you have
-    //: added or changed" to a screen reader. The markup rows in index.html
-    //: get the same space for free from their own indentation.
-    text.append(document.createTextNode(hint ? `${title} ` : title));
-    if (hint) {
-      const small = document.createElement("small");
-      small.className = "muted";
-      small.textContent = hint;
-      text.appendChild(small);
-    }
-    row.append(box, text);
-    return { row, box };
-  };
-
-  //: The master first and set apart, because it is the answer to "stop all of
-  //: this now" and a person looking for that is not going to read seven rows
-  //: to find it.
-  const master = learnedRow(
-    "Pause all learning",
-    "Nothing below runs while this is on. What has already been worked out is kept.",
-  );
-  master.row.classList.add("learned-master");
-  master.box.id = "learned-pause-all";
-  master.box.checked = paused;
-  master.box.addEventListener("change", async () => {
-    await learnedSetSwitch(LEARNED_MASTER, master.box.checked);
-  });
-  host.appendChild(master.row);
-
-  //: **The seven live in their own box, and that is a layout decision with a
-  //: rule behind it.** 08-consistency.css makes consecutive `.setting-check`
-  //: rows one stack: hairline between, square where they meet, rounded only
-  //: at the two outer ends. That is right for the seven, which are one set of
-  //: choices. It is wrong across the master, which is set apart by a gap, and
-  //: a row separated by a gap with a square top edge and a stack hairline on
-  //: it looks like a mistake rather than a boundary. Putting the seven in a
-  //: container means the adjacent-sibling rules simply stop at the master, so
-  //: it keeps all four of its corners and the seven get their own stack.
-  const stack = document.createElement("div");
-  stack.className = "learned-switch-stack";
-  host.appendChild(stack);
-
-  for (const [name, value] of Object.entries(switches)) {
-    if (name === LEARNED_MASTER) continue;
-    const [title, hint] = LEARNED_SWITCH_COPY[name] || [name.replace(/_/g, " "), ""];
-    const { row, box } = learnedRow(title, hint);
-    box.checked = Boolean(value);
-    //: Disabled rather than hidden while paused: the master says these are
-    //: off, and a row that disappeared would leave no way to see what the
-    //: master is holding down. `.disabled-row` is the app's own class for
-    //: exactly this ("a row whose parent control is switched off"), so the
-    //: seven dim together rather than each switch greying on its own.
-    box.disabled = paused;
-    row.classList.toggle("disabled-row", paused);
-    box.addEventListener("change", async () => {
-      await learnedSetSwitch(name, box.checked);
-    });
-    stack.appendChild(row);
-  }
-
-  if (banner) {
-    banner.classList.toggle("hidden", !paused);
-    banner.textContent = paused
-      ? `Paused. ${nounCount(learnedTotal, "thing")} already worked out are kept and stay editable below.`
-      : "";
-  }
-}
-
-async function learnedSetSwitch(name, value) {
-  try {
-    await apiJson("/learned/switches", {
-      method: "PUT",
-      body: JSON.stringify({ [name]: value }),
-    });
-  } catch (error) {
-    toast(error.message, true);
-  }
-  //: Re-read rather than trust the click: the master turns the other seven
-  //: off in the *reply*, not in the request, so the only correct picture of
-  //: the switches after any write is the one the server just sent back.
-  //: The answers' evidence view reads Evidence checks again too.
-  if (typeof evidenceSwitchReset === "function") evidenceSwitchReset();
-  await renderLearnedSwitches();
-}
-
-//: The ticked rows on the page on screen. Cleared whenever the page is
-//: redrawn: a selection you cannot see is one you cannot check before
-//: deleting it, so it never survives a page turn or a new search.
-const learnedSelected = new Map();
-
-function syncLearnedSelectbar() {
-  const bar = $("learned-selectbar");
-  if (!bar) return;
-  const count = learnedSelected.size;
-  bar.classList.toggle("hidden", count === 0);
-  $("learned-selected-count").textContent = `${count} selected`;
-  //: Reset only means something for a row you edited; offering it over a
-  //: selection with none would be a button that does nothing.
-  const edited = [...learnedSelected.values()].filter((fact) => fact.edited_by_user).length;
-  $("learned-bulk-reset").classList.toggle("hidden", edited === 0);
-}
-
-async function learnedBulk(action) {
-  const ids = [...learnedSelected.keys()];
-  if (!ids.length) return;
-  if (action === "delete") {
-    const ok = await confirmDialog(
-      `Delete ${ids.length === 1 ? "this" : `these ${ids.length}`} and never work ${ids.length === 1 ? "it" : "them"} out again?\n\nYour notes are not touched. Each deletion is remembered, so the next run will not derive the same things.`,
-      { confirmLabel: "Delete" }
-    );
-    if (!ok) return;
-  }
-  try {
-    const picked = [...learnedSelected.values()];
-    const reply = await apiJson("/learned/bulk", {
-      method: "POST",
-      body: JSON.stringify({ ids, action }),
-    });
-    const bulk = (what) => ["/learned/bulk", "POST", { ids, action: what }];
-    if (action === "delete") {
-      pushRoutePairUndo(`Deleted ${ids.length} learned thing${ids.length === 1 ? "" : "s"}`, bulk("restore"), bulk("delete"), () => renderLearnedList());
-    } else {
-      //: A reset puts the model's words back; Undo writes each edited text again.
-      const edited = picked.filter((fact) => fact.edited_by_user);
-      pushUndo(
-        `Reset ${edited.length} learned thing${edited.length === 1 ? "" : "s"}`,
-        async () => {
-          for (const fact of edited) await apiJson(`/learned/${fact.id}`, { method: "PATCH", body: JSON.stringify({ text: fact.text }) });
-          renderLearnedList();
-        },
-        async () => {
-          await apiJson("/learned/bulk", { method: "POST", body: JSON.stringify({ ids: edited.map((fact) => fact.id), action: "reset" }) });
-          renderLearnedList();
-        }
-      );
-    }
-    const verb = action === "delete" ? "Deleted" : "Reset";
-    const gone = reply.missing?.length ? `, ${reply.missing.length} already gone` : "";
-    toast(`${verb} ${reply.done}${gone}.`);
-    if (action === "delete" && learnedOffset > 0 && learnedTotal - reply.done <= learnedOffset) {
-      learnedOffset = Math.max(0, learnedOffset - LEARNED_PAGE);
-    }
-    renderLearnedList();
-  } catch (error) {
-    toast(error.message, true);
-  }
-}
-
-function learnedRow(fact) {
-  const li = document.createElement("li");
-  li.className = "entry-item learned-row";
-  li.dataset.factId = String(fact.id);
-
-  const head = document.createElement("div");
-  head.className = "row align-center learned-row-head";
-  const pick = document.createElement("input");
-  pick.type = "checkbox";
-  pick.className = "learned-select";
-  pick.setAttribute("aria-label", "Select this");
-  pick.checked = learnedSelected.has(fact.id);
-  pick.addEventListener("change", () => {
-    if (pick.checked) learnedSelected.set(fact.id, fact);
-    else learnedSelected.delete(fact.id);
-    syncLearnedSelectbar();
-  });
-  head.appendChild(pick);
-  const kind = document.createElement("span");
-  kind.className = "chip";
-  chipWords(kind, learnedKindLabel(fact.kind));
-  head.appendChild(kind);
-  if (fact.edited_by_user) {
-    const edited = document.createElement("span");
-    edited.className = "chip";
-    chipWords(edited, "Edited by you");
-    edited.title = "No later run overwrites this";
-    head.appendChild(edited);
-  }
-  li.appendChild(head);
-
-  const text = document.createElement("p");
-  text.className = "learned-text";
-  text.textContent = fact.text;
-  li.appendChild(text);
-
-  //: Where it came from, which is the whole difference between a claim you
-  //: can check and a sentence an app asserted at you.
-  const meta = document.createElement("p");
-  meta.className = "muted learned-meta";
-  const parts = [];
-  if (fact.model) parts.push(fact.model);
-  if (typeof fact.confidence === "number") parts.push(`${Math.round(fact.confidence * 100)}% sure`);
-  if (fact.computed_at) parts.push(relativeTime(fact.computed_at));
-  meta.textContent = parts.join(" · ");
-  li.appendChild(meta);
-
-  const acts = [];
-  if (fact.entry_id) {
-    acts.push({
-      label: "ph:arrow-square-out Open the note",
-      title: "Open the note this came from",
-      run: () => {
-        closeSettingsModal();
-        flashEntry(fact.entry_id);
-      },
-    });
-  }
-  acts.push({ label: "ph:pencil-simple Edit", title: "Correct what this says", run: () => learnedEdit(fact) });
-  if (fact.edited_by_user) {
-    acts.push({
-      label: "ph:arrow-counter-clockwise Reset",
-      title: "Put the model's own words back",
-      run: () => learnedReset(fact),
-    });
-  }
-  acts.push({
-    label: "ph:trash Delete",
-    title: "Delete this, and never work it out again",
-    run: () => learnedDelete(fact),
-    danger: true,
-  });
-  const actions = rowActions(acts, "More for this fact");
-  li.appendChild(actions);
-  return li;
-}
-
-async function renderLearnedList() {
-  const list = $("learned-list");
-  const empty = $("learned-empty");
-  const count = $("learned-count");
-  if (!list) return;
-  const kind = $("learned-kind")?.value || "";
-  const q = $("learned-search")?.value.trim() || "";
-  const query = new URLSearchParams({ limit: String(LEARNED_PAGE), offset: String(learnedOffset) });
-  if (kind) query.set("kind", kind);
-  if (q) query.set("q", q);
-  showSkeletons(list, 3, "li");
-  const data = await apiJson(`/learned?${query}`).catch(() => null);
-  clearSkeletons(list);
-  if (!data) {
-    list.replaceChildren();
-    if (count) count.textContent = "Couldn't load what it learned.";
-    return;
-  }
-  learnedTotal = Number(data.total) || 0;
-  learnedSelected.clear();
-  syncLearnedSelectbar();
-  list.replaceChildren(...data.items.map(learnedRow));
-  if (empty) empty.classList.toggle("hidden", data.items.length > 0 || Boolean(q) || Boolean(kind));
-  if (count) {
-    if (!learnedTotal) count.textContent = q || kind ? "Nothing matches." : "";
-    else {
-      const from = learnedOffset + 1;
-      const to = learnedOffset + data.items.length;
-      count.textContent = `${from} to ${to} of ${learnedTotal}`;
-    }
-  }
-  const prev = $("learned-prev");
-  const next = $("learned-next");
-  if (prev) prev.disabled = learnedOffset <= 0;
-  if (next) next.disabled = learnedOffset + LEARNED_PAGE >= learnedTotal;
-  //: The pager disappears rather than sitting there greyed out when one page
-  //: is the whole table, which is every notebook until it is not.
-  $("learned-pager")?.classList.toggle("hidden", learnedTotal <= LEARNED_PAGE);
-}
-
-async function learnedEdit(fact) {
-  //: `promptDialog`, the app's one text dialog, rather than an inline
-  //: textarea grown in the row: standing order 11, new UI comes from the
-  //: recipe index. Its field is one line, which suits a derived claim (20 to
-  //: 300 characters by `facts.MIN_SENTENCE_CHARS`/`MAX_SENTENCE_CHARS`).
-  const next = await promptDialog("What should this say?", fact.text, { confirmLabel: "Save" });
-  //: Empty is Cancel here, the way it is at every other `promptDialog` call
-  //: site in the app: the dialog resolves with `""` for Cancel, for Escape
-  //: and for a backdrop click alike, so a caller that treated empty as a
-  //: value would answer a cancelled dialog with an error toast. Clearing the
-  //: box and pressing Save therefore also does nothing, which is right:
-  //: deleting a fact is the button next to this one.
-  if (!next.trim() || next.trim() === fact.text.trim()) return;
-  try {
-    await apiJson(`/learned/${fact.id}`, {
-      method: "PATCH",
-      body: JSON.stringify({ text: next.trim() }),
-    });
-    pushRequestUndo("Edited a learned claim", `/learned/${fact.id}`, "PATCH", { text: fact.text }, { text: next.trim() }, () => renderLearnedList());
-    toast("Saved. No later run will overwrite it.");
-    renderLearnedList();
-  } catch (error) {
-    toast(error.message, true);
-  }
-}
-
-async function learnedReset(fact) {
-  try {
-    await apiJson(`/learned/${fact.id}/reset`, { method: "POST" });
-    pushUndo(
-      "Put the model's words back",
-      async () => {
-        await apiJson(`/learned/${fact.id}`, { method: "PATCH", body: JSON.stringify({ text: fact.text }) });
-        renderLearnedList();
-      },
-      async () => {
-        await apiJson(`/learned/${fact.id}/reset`, { method: "POST" });
-        renderLearnedList();
-      }
-    );
-    toast("Put the model's own words back.");
-    renderLearnedList();
-  } catch (error) {
-    toast(error.message, true);
-  }
-}
-
-async function learnedDelete(fact) {
-  const ok = await confirmDialog(
-    "Delete this and never work it out again?\n\nYour note is not touched. The deletion is remembered, so the next run will not derive the same thing.",
-    { confirmLabel: "Delete" }
-  );
-  if (!ok) return;
-  try {
-    await api(`/learned/${fact.id}`, { method: "DELETE" });
-    pushRoutePairUndo("Deleted a learned thing", [`/learned/${fact.id}/restore`, "POST"], [`/learned/${fact.id}`, "DELETE"], () => { renderLearnedList(); renderLearnedSwitches(); });
-    //: The page can be left holding nothing if the last row of the last page
-    //: went, which reads as a bug ("it deleted everything"). Step back one
-    //: page first, exactly as the note list does.
-    if (learnedOffset > 0 && learnedTotal - 1 <= learnedOffset) {
-      learnedOffset = Math.max(0, learnedOffset - LEARNED_PAGE);
-    }
-    renderLearnedList();
-    renderLearnedSwitches();
-  } catch (error) {
-    toast(error.message, true);
-  }
-}
-
-async function learnedForget() {
-  const ok = await confirmDialog(
-    "Forget everything the notebook has worked out?\n\nEvery derived claim, question and learned preference goes. Your notes, their history and everything you told it to remember are untouched. Undo brings it all back.",
-    { confirmLabel: "Forget it all" }
-  );
-  if (!ok) return;
-  try {
-    const gone = await apiJson("/learned", {
-      method: "DELETE",
-      body: JSON.stringify({ confirm: true }),
-    });
-    pushTokenUndo("Forgot everything learned", [{ del: ["/learned", "DELETE", { confirm: true }], restore: "/learned/unforget", token: gone.undo_token }], renderLearned);
-    learnedOffset = 0;
-    toast("Forgotten. Your notes are exactly as they were.");
-    renderLearned();
-  } catch (error) {
-    toast(error.message, true);
-  }
-}
-
-async function learnedExport() {
-  try {
-    const data = await apiJson("/learned/export");
-    const day = new Date().toISOString().slice(0, 10);
-    await downloadJson(`tessellate-learned-${day}.json`, data);
-  } catch (error) {
-    toast(error.message, true);
-  }
-}
-
-//: **One pass, now.** `POST /night/run` is the manual half of I1 and had no
-//: caller: the pass ran on its own schedule and a person who wanted to know
-//: what their notebook would make of a note they had just written had to
-//: wait for it. The reply is the pass's own report, and it is worth showing
-//: in full: `{paused}` when the switch above is off (which is the honest
-//: answer, not an error), and otherwise how many notes were read, how many
-//: things came out and why it stopped, because "it did nothing" and "it read
-//: four thousand notes and found nothing new" are different answers and this
-//: is the one screen that can tell them apart.
-async function learnedRunNow() {
-  const button = $("learned-run-now");
-  const note = $("learned-run-note");
-  if (!button) return;
-  button.disabled = true;
-  if (note) note.textContent = "Reading\u2026";
-  try {
-    const result = await apiJson("/night/run", {
-      method: "POST",
-      body: JSON.stringify({ budget: 20000 }),
-    });
-    if (result.paused) {
-      if (note) note.textContent = "Night shift is off. Turn it on above and press this again.";
-    } else {
-      const derived = Number(result.derived) || 0;
-      const scanned = Number(result.scanned) || 0;
-      const stopped = result.stopped_reason === "budget" ? ", stopped at this run's budget" : "";
-      if (note) {
-        note.textContent = derived
-          ? `Read ${nounCount(scanned, "note")}, worked out ${derived} new thing${derived === 1 ? "" : "s"}${stopped}.`
-          : `Read ${nounCount(scanned, "note")}, nothing new${stopped}.`;
-      }
-      if (derived) renderLearnedList();
-    }
-  } catch (error) {
-    if (note) note.textContent = error.message;
-  } finally {
-    button.disabled = false;
-  }
-}
-
-//: Built once, with the modal, not per open: these are static controls and
-//: rebinding them on every visit is how a settings panel ends up with six
-//: copies of one listener.
-function wireLearnedSection() {
-  const kind = $("learned-kind");
-  if (kind && kind.options.length <= 1) {
-    for (const [value, label] of Object.entries(LEARNED_KIND_COPY)) {
-      const option = document.createElement("option");
-      option.value = value;
-      option.textContent = label;
-      kind.appendChild(option);
-    }
-  }
-  kind?.addEventListener("change", () => {
-    learnedOffset = 0;
-    renderLearnedList();
-  });
-  $("learned-search")?.addEventListener("input", () => {
-    clearTimeout(learnedSearchTimer);
-    learnedSearchTimer = setTimeout(() => {
-      learnedOffset = 0;
-      renderLearnedList();
-    }, 250);
-  });
-  $("learned-prev")?.addEventListener("click", () => {
-    learnedOffset = Math.max(0, learnedOffset - LEARNED_PAGE);
-    renderLearnedList();
-  });
-  $("learned-next")?.addEventListener("click", () => {
-    learnedOffset += LEARNED_PAGE;
-    renderLearnedList();
-  });
-  $("learned-run-now")?.addEventListener("click", learnedRunNow);
-  $("learned-export")?.addEventListener("click", learnedExport);
-  $("learned-forget")?.addEventListener("click", learnedForget);
-  $("learned-bulk-delete")?.addEventListener("click", () => learnedBulk("delete"));
-  $("learned-bulk-reset")?.addEventListener("click", () => learnedBulk("reset"));
-  $("learned-bulk-done")?.addEventListener("click", () => {
-    learnedSelected.clear();
-    for (const box of document.querySelectorAll("#learned-list .learned-select")) box.checked = false;
-    syncLearnedSelectbar();
-  });
-}
-
-//: The "Learned from you" line (WORLD_CLASS_PLAN row 20, I7), from
-//: `GET /learned/summary`: corrections counted and filing accuracy read off
-//: the rows (`learning.filing_accuracy`), never estimated. Hidden while there
-//: is nothing to say, so a new notebook does not open on "0 corrections".
-function learnedFromYouText(sum) {
-  if (!sum || (!sum.corrections && !sum.notes)) return "";
-  const n = Number(sum.corrections) || 0;
-  const head = `Learned from you: ${nounCount(n, "correction")}.`;
-  if (!sum.notes || sum.accuracy == null) return `${head} No notes filed by Atlas yet.`;
-  const over = `over the last ${nounCount(sum.notes, "note")} it filed`;
-  if (sum.earlier != null && sum.later != null) {
-    return `${head} Filing accuracy ${sum.earlier}% to ${sum.later}% ${over}.`;
-  }
-  return `${head} Filing accuracy ${sum.accuracy}% ${over}.`;
-}
-
-async function renderLearnedFromYou() {
-  const line = $("learned-from-you");
-  if (!line) return;
-  const sum = await apiJson("/learned/summary").catch(() => null);
-  const text = learnedFromYouText(sum);
-  line.textContent = text;
-  line.classList.toggle("hidden", !text);
-}
-
-async function renderLearned() {
-  //: The list first, so the switches' "N things kept" line has a number.
-  await renderLearnedList();
-  await renderLearnedSwitches();
-  await renderLearnedFromYou();
-}
 
 
 //: **Long Settings panes fold their tuned-once groups** (INBOX 424 m:

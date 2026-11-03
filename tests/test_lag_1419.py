@@ -18,7 +18,9 @@ def test_a_strip_indicator_is_placed_after_the_click_not_inside_its_mutation_mic
     250ms at 4x CPU each); the frame then laid it out again."""
     glide = _body(frontend_text("shell-reminders.js"), "function glideStrip(")
     assert "new MutationObserver(() => place(true))" not in glide
-    assert "setTimeout(() => ((queued = 0), place(true))" in glide
+    #: Moved from a 16ms timer to the observer's own report (INBOX 1534): the
+    #: timer's first read paid a style pass the press had just dirtied.
+    assert "sized.unobserve(strip);\n    sized.observe(strip);" in glide
 
 
 def test_the_notes_strip_token_has_no_read_of_its_own_before_the_observer():

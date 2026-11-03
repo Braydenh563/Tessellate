@@ -163,7 +163,8 @@ def test_a_reminder_is_said_back_with_the_note_it_comes_from(client, session, mo
     out = _ask(client, phrase, use_tools=False)
     card = out["act"][0]
     assert card["label"] == "Remind you on Friday at 9: call the dentist", phrase
-    assert card["items"] == [f"#{dentist.id} Dentist"]
+    #: Audit 1028 E64 moved the intent: the note is named by its title, not "#id".
+    assert card["items"] == ["Dentist"]
     assert card["steps"][0]["arguments"]["note_id"] == dentist.id
     #: Said back in the composer's words (CHAT_PLAN 1353), the card's label exact.
     assert out["text"].endswith("remind you on Friday at 9: call the dentist.") and "!" not in out["text"], out["text"]

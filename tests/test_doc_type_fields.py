@@ -20,7 +20,7 @@ import pytest
 from tests.test_doc_frontmatter import model_source
 
 ROOT = Path(__file__).resolve().parents[1]
-DOCUMENTS_JS = ROOT / "frontend" / "js" / "documents.js"
+DOCUMENTS_JS = ROOT / "frontend" / "js" / "documents-props.js"  # the panel moved out of documents.js (DC13 remainder, doc22-1102)
 
 TYPES = [
     {"name": "Meeting", "fields": [

@@ -39,7 +39,13 @@ _ASKS = (
     re.compile(r"^\s*tell\s+me\s+about\s+(?:my\s+)?(?P<t>.+?)\s*\??$", re.I),
     re.compile(r"^\s*(?:what(?:'s|\s+is)\s+there|is\s+there\s+anything)\s+(?:about|on)\s+(?:my\s+)?(?P<t>.+?)\s*\??$", re.I),
     re.compile(r"^\s*(?:what\s+are\s+)?(?:my\s+|some\s+|any\s+)?(?P<t>ideas\s+(?:for|about)\s+.+?)\s*\??$", re.I),
-    re.compile(r"^\s*(?:all\s+)?(?:my\s+|the\s+)?(?P<t>[\w'][\w' -]{1,40}?)\s+notes\s*\??$", re.I),
+    #: "what are my sketch notes" is about sketch: its frame was once the
+    #: subject ("There are two notes on what are my sketch").
+    re.compile(
+        r"^\s*(?:(?:what|which|where)\s+(?:are|is)\s+|(?:list|find|see|read)\s+)?(?:all\s+)?(?:of\s+)?(?:my\s+|the\s+)?"
+        r"(?P<t>[\w'][\w' -]{1,40}?)\s+notes\s*\??$",
+        re.I,
+    ),
     #: "what is there about X" (decision 64): the overview, not one quoted line.
     re.compile(
         r"^\s*(?:what(?:'s|\s+is|s)\s+there|(?:is\s+there\s+)?anything|what\s+have\s+i\s+got)\s+(?:in\s+my\s+notes\s+)?(?:about|on)\s+(?:my\s+)?(?P<t>.+?)\s*\??$",
@@ -55,6 +61,8 @@ DOING = "working on"
 _DOING = re.compile(r"^\s*what\s+am\s+i\s+(?:working\s+on|doing|up\s+to|busy\s+with)(?:\s+(?:at\s+the\s+moment|now|right\s+now|these\s+days|lately))?\s*\??$", re.I)
 #: A subject that is itself an asking frame is no subject ("my notes").
 _NOT_TOPIC = re.compile(r"^(?:my|all|the|recent|latest|new|old|last|these|those|other|some|any|what|which)$", re.I)
+#: A subject that starts as a question is a frame read as a subject.
+_ASKING = re.compile(r"^(?:what|which|where|when|why|how|who|whose|are|is|do|does|did|can|could)\b", re.I)
 _TRAILING_NOTES = re.compile(r"\s+notes?$", re.I)
 #: "what are my notes about sourdough" is about sourdough: the subject was
 #: once "notes about sourdough" ("There are two notes on notes about ...").
@@ -71,7 +79,7 @@ def topic(question: str) -> str | None:
         if found:
             subject = _LEADING_NOTES.sub("", _TRAILING_NOTES.sub("", found.group("t"))).strip(" ?.,")
             subject = re.sub(r"^(?:the|a|an)\s+", "", subject, flags=re.I)
-            if subject and not _NOT_TOPIC.match(subject):
+            if subject and not _NOT_TOPIC.match(subject) and not _ASKING.match(subject):
                 return subject
     return None
 

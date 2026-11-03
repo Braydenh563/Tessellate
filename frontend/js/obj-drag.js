@@ -10,7 +10,7 @@
 // and a finger takes the hold itself: still for `OBJ_TOUCH_MS` lifts the card,
 // and the page stops scrolling under it. While live a small ghost card follows the pointer and the
 // current mode (`OBJ_MODES`: obj-reorder.js's `reorder`, obj-carry.js's
-// `carry`) decides what the pointer is over, and may hand the gesture to another
+// `carry`, diagram-builder.js's `diagram`) decides what the pointer is over, and may hand the gesture to another
 // mode (`route`). Escape or a press of another
 // button ends it with no change.
 
@@ -25,7 +25,7 @@ const OBJ_TOUCH_MS = 350;
 const OBJ_GRIP = "[data-obj-grip]";
 //: Where a press never starts a drag: the card's own controls.
 const OBJ_NO_GRAB = "input, select, textarea, [contenteditable='true'], button, a[href], summary, [draggable='true'], .chip-interactive, .menu-wrap, label";
-const OBJ_ICON = { note: "ph-note", document: "ph-file-text", board: "ph-squares-four", map: "ph-tree-structure", image: "ph-image", file: "ph-file" };
+const OBJ_ICON = { note: "ph-note", document: "ph-file-text", board: "ph-squares-four", map: "ph-tree-structure", image: "ph-image", file: "ph-file", block: "ph-squares-four" };
 
 //: The gesture in progress (armed or live), or null.
 let objDragNow = null;
@@ -63,6 +63,11 @@ function objPressInSelection(event) {
 //: The modes' `grab(hit)` may add to it (the reorder mode's surface).
 function objDragSeed(event) {
   if (event.button !== 0 || event.defaultPrevented) return null;
+  //: A mode with its own cards (`seed`: a diagram's blocks, diagram-builder.js) answers before the app's object cards do.
+  for (const name of Object.keys(OBJ_MODES)) {
+    const own = OBJ_MODES[name].seed?.(event);
+    if (own) return { ...own, mode: name, ...OBJ_MODES[name].grab(own) };
+  }
   const grip = objPressOnGrip(event.target);
   const control = event.target.closest?.(OBJ_NO_GRAB);
   //: A tray item is a button you click to paste and also drag out.

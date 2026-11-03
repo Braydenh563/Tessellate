@@ -284,7 +284,7 @@ async function saveDraftAsNote(asDraft = false) {
       // two would drift from the moment it was made. The same undo entry the
       // rest of the app records for an edited note, so this is as reversible
       // as any other change to it.
-      const before = allEntries.find((e) => e.id === draftNoteId)?.content ?? "";
+      const before = (await fullEntry(draftNoteId).catch(() => null))?.content ?? "";
       // The tags field only ever *adds* here: sending an empty list would
       // strip the tags the note already carries, and an empty box on this
       // desk means "I did not type any", never "take that note's tags off".

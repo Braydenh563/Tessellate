@@ -46,11 +46,12 @@ import functools
 import math
 from datetime import datetime
 import re
+from collections import Counter
 from collections.abc import Iterator
 
 from tessellate import SUPPORT_EMAIL
 from tessellate.ai import AI_NAME
-from tessellate.ai import act_registry, presets
+from tessellate.ai import act_registry, help_words, presets
 from tessellate.ai.help_topics_core import HELP_TOPICS  # the table, moved out whole (AI23)
 from tessellate.ai.help_topics_more import HELP_GROUPS, TOPIC_META
 from typing import TYPE_CHECKING
@@ -247,6 +248,7 @@ _MODIFIER = re.compile(
 _MODIFIER_NAMES = {"control": "ctrl", "cmd": "ctrl", "option": "alt"}
 
 
+@functools.lru_cache(maxsize=8192)  # 3,100 keywords a question: 1.5 million calls a 600-turn eval (CI time 1102)
 def _normalise_keys(lowered: str) -> str:
     return _MODIFIER.sub(lambda m: _MODIFIER_NAMES.get(m.group(1), m.group(1)) + "+", lowered)
 
@@ -294,9 +296,8 @@ def _keyword_regex(keyword: str) -> re.Pattern[str]:
 
 def _keyword_in(keyword: str, lowered: str) -> bool:
     """`_keyword_pattern(keyword)` found in `lowered`, compiled only when it can
-    match. All 2,200 patterns were compiled at import (about 0.5 s of the app's
-    start, INBOX 1307); a pattern can only match where its literal stem occurs,
-    so a substring test settles almost every keyword without a regex at all."""
+    match (compiling all 2,200 at import was 0.5 s of the start, INBOX 1307): a
+    pattern matches only where its literal stem occurs, so a substring test settles most."""
     normal = _normalise_keys(keyword)
     stem = normal[:-1] if len(normal) > 3 and normal.endswith("y") and normal[-2] not in "aeiou" else normal
     return stem in lowered and _keyword_regex(keyword).search(lowered) is not None
@@ -336,10 +337,7 @@ _WORD = re.compile(r"[a-z0-9]+")
 _TYPO_MIN = 5
 
 #: How many topics each keyword belongs to, for the rarity weight below.
-_KEYWORD_TOPICS: dict[str, int] = {}
-for _topic in HELP_TOPICS:
-    for _keyword in set(_topic["keywords"]):
-        _KEYWORD_TOPICS[_keyword] = _KEYWORD_TOPICS.get(_keyword, 0) + 1
+_KEYWORD_TOPICS: dict[str, int] = Counter(k for t in HELP_TOPICS for k in set(t["keywords"]))
 
 #: Body vocabulary per topic, for tie-breaking only (see `_matching_topics`).
 _BODY_WORDS: dict[str, set[str]] = {
@@ -357,6 +355,7 @@ _STOP = frozenset(
 #: A runner-up worth showing scores at least this share of the best: below
 #: it, the second topic is noise the answer would be padded with.
 _RUNNER_UP_SHARE = 0.4
+_WORD_BAND = help_words.WordBand(HELP_TOPICS, _WORD, _STOP, _keyword_in)
 
 
 #: The asking frame of a how-to, taken off before the rest is read as a
@@ -493,7 +492,7 @@ def _matching_topics(question: str) -> list[dict]:
                 and any(len(w) >= _TYPO_MIN - 1 and _edit_distance_at_most_one(w, keyword) for w in words)
             ):
                 score += 0.8 * rarity
-        if score > 0:
+        if (score := max(score, _WORD_BAND.score(words, lowered, topic["id"]))) > 0:
             scores[topic["id"]] = score
     if not scores:
         return _meaning_topics(question)
@@ -1124,7 +1123,8 @@ def _aware(reply: dict, question: str, tab: str | None, actions: list[str] | Non
     line = composer_aware.closing(
         composer_aware.build(tab=tab, actions=actions), seed=question.lower(), related=related, asked=question
     )
-    return with_asks({**reply, "content": f"{reply['content']}\n\n{line}"}) if line else reply
+    #: Beside the answer, not in it (audit 1028 E52), as Chat's `tip` event.
+    return with_asks({**reply, "tip": line}) if line else reply
 
 
 def with_asks(reply: dict) -> dict:
@@ -1134,7 +1134,7 @@ def with_asks(reply: dict) -> dict:
     that already carries its own asks (what to ask in Chat) is left alone."""
     from tessellate.ai import ask_chips
 
-    lifted = [] if reply.get("asks") else ask_chips.lift(str(reply.get("content") or ""))
+    lifted = [] if reply.get("asks") else ask_chips.lift(f"{reply.get('content') or ''}\n\n{reply.get('tip') or ''}")
     return {**reply, "asks": lifted, "asks_to": "guide"} if lifted else reply
 
 

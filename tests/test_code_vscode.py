@@ -30,7 +30,7 @@ ROOT = Path(__file__).resolve().parents[1]
 #: documents.js, so a test that reads "the documents editor" reads all three.
 DOCUMENTS_JS = tuple(
     ROOT / "frontend" / "js" / name
-    for name in ("documents.js", "documents-code.js", "documents-prose.js", "documents-cm.js")
+    for name in ("documents.js", "documents-code.js", "documents-prose.js", "documents-cm.js", "documents-outline.js")
 )
 
 
@@ -197,7 +197,9 @@ def test_ctrl_slash_has_one_owner_per_surface():
     registry's `editorMenu` wrote "/" over the selection. In a document the
     comment owns the chord; in a note box the blocks menu does."""
     app = app_js_text()
-    assert 'if (id === "editorMenu" && e.defaultPrevented) continue;' in app
+    #: DX16 (a29j, 132bf47) put Ctrl+K's palette on the same guard; the rule
+    #: for Ctrl+/ is unchanged.
+    assert 'if ((id === "editorMenu" || id === "palette") && e.defaultPrevented) continue;' in app
     notes = _function("noteSurfaceKeymap")
     # A note binds Ctrl+/ itself now, ahead of the engine's defaultKeymap,
     # whose own comment toggle wrote `<!--  -->` into a markdown note. The
