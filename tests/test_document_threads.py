@@ -72,6 +72,22 @@ def test_a_list_over_the_total_cap_is_refused_with_a_clear_422(client):
     assert client.get(f"/documents/{doc['id']}").json()["threads"] == [THREAD], "a refused save writes nothing"
 
 
+def test_a_fresh_database_lets_an_older_build_insert_a_document_without_threads(tmp_path):
+    import sqlite3
+
+    from tessellate.core.database import DatabaseManager
+
+    path = tmp_path / "fresh.db"
+    DatabaseManager(path).engine.dispose()
+    conn = sqlite3.connect(str(path))
+    try:
+        # What a build from before the column inserts: no `threads` in the list.
+        conn.execute("INSERT INTO documents (title, content, file_type, created_at, updated_at) VALUES ('Old', 'x', 'md', '2026-11-01', '2026-11-01')")
+        assert conn.execute("SELECT threads FROM documents").fetchone()[0] == ""
+    finally:
+        conn.close()
+
+
 def test_dump_and_load_round_trip_and_an_old_row_loads_empty():
     assert docthreads.load(docthreads.dump([THREAD])) == [THREAD]
     assert docthreads.load("") == []

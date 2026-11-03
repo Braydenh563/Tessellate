@@ -2,7 +2,7 @@
 
 Generated 2026-11-03 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7584, frontend ids 2644, CSS sections 519, backend routes 641, backend modules 8502, test files 1912, tests 16110, plan headings 987, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7584, frontend ids 2644, CSS sections 519, backend routes 641, backend modules 8502, test files 1912, tests 16111, plan headings 987, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7584)
 
@@ -20658,71 +20658,71 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `AskTurn` | src/tessellate/core/database.py:1069 |
-| `Attachment` | src/tessellate/core/database.py:992 |
-| `AuditLog` | src/tessellate/core/database.py:2139 |
-| `Base` | src/tessellate/core/database.py:132 |
-| `BinnedReading` | src/tessellate/core/database.py:1667 |
-| `BoardLibrary` | src/tessellate/core/database.py:1915 |
-| `BoardLibraryItem` | src/tessellate/core/database.py:1933 |
-| `BoardLibraryMark` | src/tessellate/core/database.py:1957 |
-| `Bookmark` | src/tessellate/core/database.py:1115 |
-| `Category` | src/tessellate/core/database.py:278 |
-| `ChunkVector` | src/tessellate/core/database.py:917 |
-| `Conversation` | src/tessellate/core/database.py:1034 |
-| `DatabaseManager` | src/tessellate/core/database.py:2320 |
-| `DateTime` | src/tessellate/core/database.py:94 |
-| `DerivedFact` | src/tessellate/core/database.py:1263 |
-| `DerivedTension` | src/tessellate/core/database.py:1329 |
-| `Document` | src/tessellate/core/database.py:1462 |
-| `DocumentAiEdit` | src/tessellate/core/database.py:1525 |
-| `DocumentBookmark` | src/tessellate/core/database.py:1171 |
-| `DocumentLink` | src/tessellate/core/database.py:1502 |
-| `DocumentRevision` | src/tessellate/core/database.py:1751 |
-| `DurableJob` | src/tessellate/core/database.py:2068 |
-| `EmbeddingRecord` | src/tessellate/core/database.py:902 |
-| `Entity` | src/tessellate/core/database.py:548 |
-| `EntityMention` | src/tessellate/core/database.py:588 |
-| `Entry` | src/tessellate/core/database.py:313 |
-| `EntryBookmark` | src/tessellate/core/database.py:1151 |
-| `EntryDate` | src/tessellate/core/database.py:1440 |
-| `EntryLink` | src/tessellate/core/database.py:728 |
-| `EntryOpen` | src/tessellate/core/database.py:1419 |
-| `EntryProperty` | src/tessellate/core/database.py:800 |
-| `EntryRevision` | src/tessellate/core/database.py:1401 |
-| `JobRun` | src/tessellate/core/database.py:2041 |
-| `LinkProps` | src/tessellate/core/database.py:662 |
-| `LinkReason` | src/tessellate/core/database.py:613 |
-| `MediaUpload` | src/tessellate/core/database.py:1969 |
-| `NightRun` | src/tessellate/core/database.py:1372 |
-| `NoteScore` | src/tessellate/core/database.py:1233 |
-| `NoteType` | src/tessellate/core/database.py:822 |
-| `PageRead` | src/tessellate/core/database.py:1565 |
-| `Recording` | src/tessellate/core/database.py:1700 |
-| `RelationType` | src/tessellate/core/database.py:782 |
-| `Reminder` | src/tessellate/core/database.py:1187 |
-| `Space` | src/tessellate/core/database.py:135 |
-| `StagedEmbedding` | src/tessellate/core/database.py:965 |
-| `User` | src/tessellate/core/database.py:243 |
-| `UserPreference` | src/tessellate/core/database.py:2111 |
-| `Vault` | src/tessellate/core/database.py:254 |
-| `WhiteboardNode` | src/tessellate/core/database.py:1793 |
-| `WhiteboardObject` | src/tessellate/core/database.py:1852 |
-| `WhiteboardSketch` | src/tessellate/core/database.py:1835 |
-| `WorkspaceMixin` | src/tessellate/core/database.py:157 |
-| `_add_workspace_filter` | src/tessellate/core/database.py:180 |
-| `_ensure_alembic_baseline` | src/tessellate/core/database.py:2215 |
-| `_hide_binned` | src/tessellate/core/database.py:219 |
-| `_migrations_root` | src/tessellate/core/database.py:2180 |
-| `_only_a_person_moves_a_boards_time` | src/tessellate/core/database.py:713 |
-| `_safety_copy_before_migrating` | src/tessellate/core/database.py:2195 |
-| `_set_workspace` | src/tessellate/core/database.py:234 |
-| `_stamp_done_at` | src/tessellate/core/database.py:1226 |
-| `like_escape` | src/tessellate/core/database.py:66 |
-| `link_strength` | src/tessellate/core/database.py:879 |
-| `plain_reason` | src/tessellate/core/database.py:605 |
-| `utcnow` | src/tessellate/core/database.py:55 |
-| `workspace_scoped_models` | src/tessellate/core/database.py:163 |
+| `AskTurn` | src/tessellate/core/database.py:1070 |
+| `Attachment` | src/tessellate/core/database.py:993 |
+| `AuditLog` | src/tessellate/core/database.py:2142 |
+| `Base` | src/tessellate/core/database.py:133 |
+| `BinnedReading` | src/tessellate/core/database.py:1670 |
+| `BoardLibrary` | src/tessellate/core/database.py:1918 |
+| `BoardLibraryItem` | src/tessellate/core/database.py:1936 |
+| `BoardLibraryMark` | src/tessellate/core/database.py:1960 |
+| `Bookmark` | src/tessellate/core/database.py:1116 |
+| `Category` | src/tessellate/core/database.py:279 |
+| `ChunkVector` | src/tessellate/core/database.py:918 |
+| `Conversation` | src/tessellate/core/database.py:1035 |
+| `DatabaseManager` | src/tessellate/core/database.py:2323 |
+| `DateTime` | src/tessellate/core/database.py:95 |
+| `DerivedFact` | src/tessellate/core/database.py:1264 |
+| `DerivedTension` | src/tessellate/core/database.py:1330 |
+| `Document` | src/tessellate/core/database.py:1463 |
+| `DocumentAiEdit` | src/tessellate/core/database.py:1528 |
+| `DocumentBookmark` | src/tessellate/core/database.py:1172 |
+| `DocumentLink` | src/tessellate/core/database.py:1505 |
+| `DocumentRevision` | src/tessellate/core/database.py:1754 |
+| `DurableJob` | src/tessellate/core/database.py:2071 |
+| `EmbeddingRecord` | src/tessellate/core/database.py:903 |
+| `Entity` | src/tessellate/core/database.py:549 |
+| `EntityMention` | src/tessellate/core/database.py:589 |
+| `Entry` | src/tessellate/core/database.py:314 |
+| `EntryBookmark` | src/tessellate/core/database.py:1152 |
+| `EntryDate` | src/tessellate/core/database.py:1441 |
+| `EntryLink` | src/tessellate/core/database.py:729 |
+| `EntryOpen` | src/tessellate/core/database.py:1420 |
+| `EntryProperty` | src/tessellate/core/database.py:801 |
+| `EntryRevision` | src/tessellate/core/database.py:1402 |
+| `JobRun` | src/tessellate/core/database.py:2044 |
+| `LinkProps` | src/tessellate/core/database.py:663 |
+| `LinkReason` | src/tessellate/core/database.py:614 |
+| `MediaUpload` | src/tessellate/core/database.py:1972 |
+| `NightRun` | src/tessellate/core/database.py:1373 |
+| `NoteScore` | src/tessellate/core/database.py:1234 |
+| `NoteType` | src/tessellate/core/database.py:823 |
+| `PageRead` | src/tessellate/core/database.py:1568 |
+| `Recording` | src/tessellate/core/database.py:1703 |
+| `RelationType` | src/tessellate/core/database.py:783 |
+| `Reminder` | src/tessellate/core/database.py:1188 |
+| `Space` | src/tessellate/core/database.py:136 |
+| `StagedEmbedding` | src/tessellate/core/database.py:966 |
+| `User` | src/tessellate/core/database.py:244 |
+| `UserPreference` | src/tessellate/core/database.py:2114 |
+| `Vault` | src/tessellate/core/database.py:255 |
+| `WhiteboardNode` | src/tessellate/core/database.py:1796 |
+| `WhiteboardObject` | src/tessellate/core/database.py:1855 |
+| `WhiteboardSketch` | src/tessellate/core/database.py:1838 |
+| `WorkspaceMixin` | src/tessellate/core/database.py:158 |
+| `_add_workspace_filter` | src/tessellate/core/database.py:181 |
+| `_ensure_alembic_baseline` | src/tessellate/core/database.py:2218 |
+| `_hide_binned` | src/tessellate/core/database.py:220 |
+| `_migrations_root` | src/tessellate/core/database.py:2183 |
+| `_only_a_person_moves_a_boards_time` | src/tessellate/core/database.py:714 |
+| `_safety_copy_before_migrating` | src/tessellate/core/database.py:2198 |
+| `_set_workspace` | src/tessellate/core/database.py:235 |
+| `_stamp_done_at` | src/tessellate/core/database.py:1227 |
+| `like_escape` | src/tessellate/core/database.py:67 |
+| `link_strength` | src/tessellate/core/database.py:880 |
+| `plain_reason` | src/tessellate/core/database.py:606 |
+| `utcnow` | src/tessellate/core/database.py:56 |
+| `workspace_scoped_models` | src/tessellate/core/database.py:164 |
 
 ### src/tessellate/core/deadline.py (4)
 
@@ -23342,7 +23342,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16110)
+## Tests (16111)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23916,7 +23916,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_document_rephrase.py | 9 |
 | tests/test_document_revisions.py | 14 |
 | tests/test_document_thread_model.py | 2 |
-| tests/test_document_threads.py | 22 |
+| tests/test_document_threads.py | 23 |
 | tests/test_document_tools.py | 6 |
 | tests/test_document_untitled_names.py | 9 |
 | tests/test_documents_api.py | 50 |
