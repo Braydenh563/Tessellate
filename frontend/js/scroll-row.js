@@ -20,7 +20,7 @@ function scrollRowArrows(bar, overflows) {
       button.setAttribute("aria-hidden", "true");
       button.append(Object.assign(document.createElement("i"), { className: `ph ph-caret-${side === 1 ? "right" : "left"}` }));
       button.addEventListener("click", () => {
-        const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const calm = reducedMotionWanted();
         bar.scrollBy({ left: side * bar.clientWidth * 0.8, behavior: calm ? "auto" : "smooth" });
       });
       return button;
