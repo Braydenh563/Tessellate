@@ -636,7 +636,7 @@ function wbRenderMapTemplates() {
     const entry = wbTemplateEntry("maps", item);
     const tile = document.createElement("button");
     tile.type = "button";
-    tile.className = "ghost wb-map-template-tile";
+    tile.className = "ghost quiet wb-map-template-tile";
     tile.dataset.wbTemplate = item.key;
     tile.title = item.hint ? `${item.name}: ${item.hint}` : item.name;
     tile.setAttribute("aria-label", item.name);

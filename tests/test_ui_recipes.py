@@ -6891,8 +6891,9 @@ KEY_GRIDS = {
     ("reply-kit.js", "calc-keys"): "the Calculator's keypad",
     ("math-editor.js", "math-editor-grid"): "the equation palette's tiles",
 }
-#: A tile or key still built as a bordered ghost, by file: only falls.
-GHOST_TILE_DRIFT = {("whiteboard-templates.js", "wb-map-template-tile")}
+#: A tile or key still built as a bordered ghost, by file: only falls. Empty: the map templates' tile is `ghost quiet`
+#: (no edge, no face, the tint under the pointer), measured at a 0px border.
+GHOST_TILE_DRIFT: set[tuple[str, str]] = set()
 #: A `.seg` and the row it shares with the control it governs, by (file, id or class string): scripted
 #: (`.className = "seg ..."`) and in index.html's markup alike. A lone one says `seg-fill` instead.
 SEG_SHARES_ROW: dict[tuple[str, str], str] = {
