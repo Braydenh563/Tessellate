@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Find anything's kind chips scroll with the one `.scroll-row` recipe (a thin bar on a mouse, the edge fade, an arrow at each end with more behind it, no running under Sort), as do the Library kind row, the phone launch rows and the map templates; the Activity heatmap opens at today and stays there on resize; apostrophe-less contractions (havent, ive, dont, isnt, im, youre, the n't, 've, 'll, 'd and 's forms) are corrected as a family, and ill, id, cant and wont only where the words around them say so
 - Windows splash: the taskbar shows Tessellate, not PowerShell (the splash takes the app's AppUserModelID before its window opens), and the logo tile has the mark's three stops, so it is no longer pinker than every other copy (INBOX 1574).
 - CodeQL: the diagram reply's fence and the note-slot reply's filler and tail are scanned, not matched by polynomial regexes; `_turn_label` moved to chat_extra, which ends an import cycle.
 - The keypad recipe (`.key-grid`, the equation editor and the calculator) loads with those two surfaces, not at boot (key-grid-lazy.css), which brings boot CSS back under its cap after the 1103 merges; Diagram Suggest has its keyboard twin and corner.
