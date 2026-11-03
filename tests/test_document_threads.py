@@ -7,8 +7,17 @@ so an export carries the remark as a footnote and nothing else.
 
 from __future__ import annotations
 
+import json
+import shutil
+import subprocess
+from pathlib import Path
+
+import pytest
+
 from tessellate.core import docthreads
 from tests._app_js import documents_text
+
+COMMENTS_JS = Path(__file__).resolve().parents[1] / "frontend" / "js" / "documents-comments.js"
 
 THREAD = {
     "id": "t1",
@@ -191,6 +200,52 @@ def test_nothing_is_sent_until_the_panel_has_read_the_document():
     assert "return currentDoc && docThreadsDoc === currentDoc.id ? docThreads : undefined;" in text, (
         "undefined drops out of the JSON, so a save before the first read cannot wipe the sidecar"
     )
+
+
+SYNC_DRIVER = r"""
+let currentDoc = { id: 1, threads: [] };
+let docThreads = [], docThreadsDoc = null, docThreadMap = {}, docCommentReplying = null;
+const dirtied = [];
+function markDocDirty() { dirtied.push(1); }
+function docThreadAuthor() { return "Sam"; }
+const comments = (text) => docCommentsParse(text);
+%SYNC%
+docThreadsSync(comments("a ==b== %%one%% c"));
+const afterOpen = dirtied.length;
+docThreadsSync(comments("a ==b== %%one%% c"));
+const afterQuiet = dirtied.length;
+docThreadsSync(comments("a ==b== %%one%% c %%two%%"));
+const afterNew = dirtied.length;
+docThreadsSync(comments("a ==b== %%one%% c %%two%%"));
+const afterSettled = dirtied.length;
+docThreadsSync(comments("a ==b== c"));
+const afterDropped = dirtied.length;
+process.stdout.write(JSON.stringify({ afterOpen, afterQuiet, afterNew, afterSettled, afterDropped, threads: docThreads.length }));
+"""
+
+
+def test_threads_made_or_dropped_by_the_reconcile_are_saved():
+    node = shutil.which("node")
+    if not node:  # pragma: no cover - node is in the sandbox and in CI
+        pytest.skip("node is not available")
+    source = COMMENTS_JS.read_text(encoding="utf-8")
+
+    def region(begin: str, end: str) -> str:
+        return source[source.index(begin) + len(begin) : source.index(end)]
+
+    sync = source[source.index("function docThreadsSync(") :]
+    sync = sync[: sync.index("\n  }\n") + 5]
+    model = region("// DOC-COMMENT-BEGIN", "// DOC-COMMENT-END") + region("// DOC-THREADS-BEGIN", "// DOC-THREADS-END")
+    out = subprocess.run(
+        [node, "-e", model + SYNC_DRIVER.replace("%SYNC%", sync)], capture_output=True, text=True, timeout=60, check=False
+    )
+    assert out.returncode == 0, out.stderr
+    got = json.loads(out.stdout)
+    assert got["afterOpen"] == 0, "opening a document is not an edit"
+    assert got["afterQuiet"] == 0
+    assert got["afterNew"] == 1, "a remark that appeared with no save of its own is a change to save"
+    assert got["afterSettled"] == 1
+    assert got["afterDropped"] == 2, "a thread whose remark is gone is a change to save"
 
 
 def test_a_save_without_threads_keeps_them_and_one_with_junk_items_is_refused(client):

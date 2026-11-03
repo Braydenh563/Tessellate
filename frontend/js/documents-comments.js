@@ -487,6 +487,11 @@
     const result = docThreadsReconcile(docThreads, comments, stamp);
     docThreads = result.threads;
     docThreadMap = result.byComment;
+    //: Threads made or dropped by the reconcile are a change to save even when
+    //: the text did not move (a remark that came back with a revision, one
+    //: whose words were edited away); the opening pass is not, or every open
+    //: would be an unsaved document.
+    if (!opening && result.changed) markDocDirty();
   }
 
   //: What a save sends: undefined (so JSON leaves it out and the server keeps

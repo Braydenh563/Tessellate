@@ -2,7 +2,7 @@
 
 Generated 2026-11-03 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7584, frontend ids 2644, CSS sections 519, backend routes 641, backend modules 8502, test files 1912, tests 16109, plan headings 987, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7584, frontend ids 2644, CSS sections 519, backend routes 641, backend modules 8502, test files 1912, tests 16110, plan headings 987, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7584)
 
@@ -3373,35 +3373,35 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `docAnnotateSelection` | frontend/js/documents-comments.js:792 |
-| `docCommentContext` | frontend/js/documents-comments.js:505 |
+| `docAnnotateSelection` | frontend/js/documents-comments.js:797 |
+| `docCommentContext` | frontend/js/documents-comments.js:510 |
 | `docCommentFootnotes` | frontend/js/documents-comments.js:208 |
-| `docCommentReplyForm` | frontend/js/documents-comments.js:537 |
+| `docCommentReplyForm` | frontend/js/documents-comments.js:542 |
 | `docCommentResolveEdit` | frontend/js/documents-comments.js:160 |
-| `docCommentRow` | frontend/js/documents-comments.js:562 |
+| `docCommentRow` | frontend/js/documents-comments.js:567 |
 | `docCommentSkipMask` | frontend/js/documents-comments.js:73 |
 | `docCommentStrip` | frontend/js/documents-comments.js:187 |
-| `docComments` | frontend/js/documents-comments.js:498 |
+| `docComments` | frontend/js/documents-comments.js:503 |
 | `docCommentsParse` | frontend/js/documents-comments.js:110 |
-| `docGoToComment` | frontend/js/documents-comments.js:708 |
-| `docReopenComment` | frontend/js/documents-comments.js:765 |
-| `docReplyToComment` | frontend/js/documents-comments.js:778 |
-| `docResolveComment` | frontend/js/documents-comments.js:742 |
-| `docResolvedRow` | frontend/js/documents-comments.js:639 |
-| `docShowComment` | frontend/js/documents-comments.js:726 |
+| `docGoToComment` | frontend/js/documents-comments.js:713 |
+| `docReopenComment` | frontend/js/documents-comments.js:770 |
+| `docReplyToComment` | frontend/js/documents-comments.js:783 |
+| `docResolveComment` | frontend/js/documents-comments.js:747 |
+| `docResolvedRow` | frontend/js/documents-comments.js:644 |
+| `docShowComment` | frontend/js/documents-comments.js:731 |
 | `docThreadAuthor` | frontend/js/documents-comments.js:461 |
 | `docThreadHash` | frontend/js/documents-comments.js:247 |
 | `docThreadKeys` | frontend/js/documents-comments.js:256 |
 | `docThreadReopen` | frontend/js/documents-comments.js:381 |
 | `docThreadReopenEdit` | frontend/js/documents-comments.js:391 |
-| `docThreadReplies` | frontend/js/documents-comments.js:517 |
+| `docThreadReplies` | frontend/js/documents-comments.js:522 |
 | `docThreadReply` | frontend/js/documents-comments.js:359 |
 | `docThreadResolve` | frontend/js/documents-comments.js:369 |
 | `docThreadWho` | frontend/js/documents-comments.js:465 |
-| `docThreadsForSave` | frontend/js/documents-comments.js:494 |
+| `docThreadsForSave` | frontend/js/documents-comments.js:499 |
 | `docThreadsReconcile` | frontend/js/documents-comments.js:278 |
 | `docThreadsSync` | frontend/js/documents-comments.js:473 |
-| `renderDocComments` | frontend/js/documents-comments.js:666 |
+| `renderDocComments` | frontend/js/documents-comments.js:671 |
 
 ### frontend/js/documents-embeds.js (10)
 
@@ -23342,7 +23342,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16109)
+## Tests (16110)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23916,7 +23916,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_document_rephrase.py | 9 |
 | tests/test_document_revisions.py | 14 |
 | tests/test_document_thread_model.py | 2 |
-| tests/test_document_threads.py | 21 |
+| tests/test_document_threads.py | 22 |
 | tests/test_document_tools.py | 6 |
 | tests/test_document_untitled_names.py | 9 |
 | tests/test_documents_api.py | 50 |
