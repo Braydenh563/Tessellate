@@ -100,7 +100,7 @@ function objLinkText(ref) {
 //: What a drop or a paste lands on, by the element under the pointer or the
 //: focus: first match wins, so the specific ones are first.
 const OBJ_DESTS = [
-  { type: "tray", sel: "#status-tray, #obj-tray" },
+  { type: "tray", sel: "#status-tray, .obj-tray" },
   { type: "chat", sel: "#chat-input, .chat-composer, .chat-dock" },
   { type: "reminder", sel: "#reminder-magic, #reminder-compose" },
   { type: "board", sel: "#whiteboard-container" },
