@@ -5113,7 +5113,7 @@ function nameMarkBuddyUnheld() {
 //: (one box read every 700ms; it was two seconds, in the air all that time,
 //: INBOX 521) catches only what changes with nothing announcing it
 //: (content arriving above the panel), eased rather than jumped.
-const nmbFollow = { movingAt: 0, moving: false, frame: 0, until: 0, poll: 0, observer: null, scrollAt: 0, recheck: 0, support: 0, nap: 0, rest: 0 };
+const nmbFollow = { animAt: 0, movingAt: 0, moving: false, frame: 0, until: 0, poll: 0, observer: null, scrollAt: 0, recheck: 0, support: 0, nap: 0, rest: 0 };
 function nameMarkBuddyKeepUp(ms = 1500, wake = true) {
   if (!nmb.glue) return;
   if (wake) nmbFollow.nap = nmbFollow.rest = 0;
@@ -5128,16 +5128,27 @@ function nameMarkBuddyKeepUp(ms = 1500, wake = true) {
 //: is found within 120ms and eased on foot anyway (`nameMarkBuddyCatchUp`).
 function nameMarkBuddyFollowFrame(now) {
   nmbFollow.frame = 0;
-  if (now >= nmbFollow.nap) {
+  //: **Not while a page is arriving** (INBOX 1575; `uiSettlingUntil`, set by `switchTab` and the
+  //: popups): the panel it follows is on the page that has just gone, and every read here (the
+  //: panel's box, `document.getAnimations()`) settled the arriving page's whole style, in the lag
+  //: log `avatars.js` forced layout 417 to 500 ms. The loop turns over without reading and looks
+  //: once the 400ms are out (the same hold the pacer has). Measured at 4x: 27 settling reads, 1.2 s
+  //: (max 268ms) in a nine-tab click series, none after.
+  const settling = !!nmb.glue && now < (window.uiSettlingUntil || 0);
+  if (settling) nmbFollow.until = Math.max(nmbFollow.until, window.uiSettlingUntil + 160);
+  if (!settling && now >= nmbFollow.nap) {
     const [x, y] = [nmb.x, nmb.y];
     nameMarkBuddyFollow();
     nmbFollow.rest = nmb.x === x && nmb.y === y ? nmbFollow.rest + 1 : 0;
     nmbFollow.nap = nmbFollow.rest >= 3 && !nmbFollow.moving ? now + 120 : 0;
     //: `document.getAnimations()` settles style for the whole page: asked
-    //: every 120ms while the loop runs, not every frame.
+    //: every 120ms while the loop runs, not every frame. **And only when something has been set
+    //: going** (INBOX 1575: 3.9 s of `getAnimations` in a nine-tab series): an animation or a
+    //: transition starts with an event (`nmbFollow.animAt`), so with none in the last 2.5 s and
+    //: the panel not already moving, there is nothing for it to find.
     if (now - nmbFollow.movingAt > 120) {
       nmbFollow.movingAt = now;
-      nmbFollow.moving = !!nmb.glue && nameMarkBuddyPanelMoving(nmb.glue.el);
+      nmbFollow.moving = !!nmb.glue && (nmbFollow.moving || now - nmbFollow.animAt < 2500) && nameMarkBuddyPanelMoving(nmb.glue.el);
     }
   }
   if (nmb.glue && (now < nmbFollow.until || nmbFollow.moving)) nmbFollow.frame = requestAnimationFrame(nameMarkBuddyFollowFrame);
@@ -5489,6 +5500,8 @@ for (const type of ["pointerdown", "pointerup", "keydown", "transitionrun", "ani
   document.addEventListener(type, (event) => {
     const el = nmb.glue?.el;
     if (!el || event.target?.closest?.("#nm-buddy")) return;
+    //: Not the companion's own (its drawing starts animations all day): only a page's can move its panel.
+    if (type === "transitionrun" || type === "animationstart") nmbFollow.animAt = performance.now();
     //: A transition or animation elsewhere (a typing dot, a fading line)
     //: moves nothing it perches on: it keeps the loop up without waking it.
     const near = !/^(?:transition|animation)/.test(type) || !(event.target instanceof Node) || event.target.contains(el) || el.contains(event.target);

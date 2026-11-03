@@ -3645,18 +3645,26 @@ function setAtlasMood(mood, forMs = 0, { quiet = false, easeMs = 0, backEaseMs =
 }
 
 //: A one-off move on every Atlas on the page (a nod, a spin, a hop, a
-//: wave): a class that comes off when it has played. All removed, one
-//: read, all added, so a restart costs one style pass, not one per mark.
+//: wave): a class that comes off when it has played. **Restarted by a frame,
+//: not by a read** (INBOX 1575): it took the class off, read a box to settle
+//: style, and put it back, and the read was the first one after a tab flip
+//: (the arriving page's whole restyle, in a click). The class goes back two
+//: frames on, the first of which restyles without it, so the move starts over;
+//: a newer play of the same move takes over from an older one still waiting.
 function atlasPlay(name, ms = 900) {
   const marks = [...document.querySelectorAll(".nm-atlas")];
   const cls = `atl-play-${name}`;
   for (const svg of marks) svg.classList.remove(cls);
-  if (!marks.length) return;
-  void marks[0].getBoundingClientRect();
-  for (const svg of marks) svg.classList.add(cls);
-  setTimeout(() => {
-    for (const svg of marks) svg.classList.remove(cls);
-  }, ms);
+  if (!marks.length || document.hidden) return;
+  const turns = (atlasPlay.turns ||= {});
+  const turn = (turns[name] = (turns[name] || 0) + 1);
+  afterFrames(() => {
+    if (turns[name] !== turn) return;
+    for (const svg of marks) if (svg.isConnected) svg.classList.add(cls);
+    setTimeout(() => {
+      for (const svg of marks) svg.classList.remove(cls);
+    }, ms);
+  }, 2);
 }
 
 //: App events by name, for the callers that are not a chat turn.
