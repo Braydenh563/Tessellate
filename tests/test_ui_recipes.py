@@ -6918,18 +6918,34 @@ KEY_GRIDS = {
     ("reply-kit.js", "calc-keys"): "the Calculator's keypad",
     ("math-editor.js", "math-editor-grid"): "the equation palette's tiles",
 }
-#: A tile or key still built as a bordered ghost, by file: only falls.
-GHOST_TILE_DRIFT = {("whiteboard-templates.js", "wb-map-template-tile")}
-#: A scripted `.seg` and the row it shares with the control it governs (a lone one says `seg-fill`).
-SEG_SHARES_ROW: dict[tuple[str, str], str] = {}
-#: Scripted `.seg`s nobody has judged against "alone on its line" yet: only falls.
-SEG_ROW_UNREVIEWED = {
-    ("app.js", "seg seg-compact confirm-seg"),
-    ("documents-export.js", "seg"),
-    ("skills.js", "seg seg-compact chat-skill-pace"),
-    ("whiteboard.js", "seg seg-compact wb-export-seg"),
-    ("timeline-calendar.js", "seg seg-compact timeline-cal-span"),
-    ("dashboard.js", "seg focus-presets-seg"),
+#: A tile or key still built as a bordered ghost, by file: only falls. Empty: the map templates' tile is `ghost quiet`
+#: (no edge, no face, the tint under the pointer), measured at a 0px border.
+GHOST_TILE_DRIFT: set[tuple[str, str]] = set()
+#: A `.seg` and the row it shares with the control it governs, by (file, id or class string): scripted
+#: (`.className = "seg ..."`) and in index.html's markup alike. A lone one says `seg-fill` instead.
+SEG_SHARES_ROW: dict[tuple[str, str], str] = {
+    ("documents-export.js", "seg"): "the print setup's `.doc-print-row`: the label, then its choices",
+    ("skills.js", "seg seg-compact chat-skill-pace"): "`paceRow`: the label, then Auto and Manual",
+    ("whiteboard.js", "seg seg-compact wb-export-seg"): "a grid of option tiles that spans the dialog's width",
+    ("timeline-calendar.js", "seg seg-compact timeline-cal-span"): "the calendar head, beside the month and its arrows",
+    ("dashboard.js", "seg focus-presets-seg"): "`.focus-presets`, beside the stepper",
+    ("index.html", "doc-history-filter"): "`.doc-history-bar`, beside Name this version",
+    ("index.html", "seg notes-view-toggle"): "the Notes dock, beside Sort and Select",
+    ("index.html", "seg capture-bar-modes"): "`#capture-bar-row`, beside the field and Add",
+    ("index.html", "chat-mode-seg"): "the chat tool row, beside the persona and skill pickers",
+    ("index.html", "timeline-view-seg"): "the Timeline dock",
+    ("index.html", "doc-view-seg"): "the Documents dock, beside the cluster's other controls",
+    ("index.html", "reminder-view-toggle"): "the Reminders dock",
+    ("index.html", "library-view"): "the Library dock",
+    ("index.html", "library-boards-view"): "the Library dock",
+    ("index.html", "seg library-media-view"): "the Library files dock",
+    ("index.html", "ocr-view"): "the OCR workspace's toolbar",
+    ("index.html", "theme-seg"): "a Settings row: the label and its help, then the control",
+    ("index.html", "fontsize-seg"): "a Settings row: the label and its help, then the control",
+    ("index.html", "border-style-seg"): "a Settings row: the label and its help, then the control",
+    ("index.html", "motion-seg"): "a Settings row: the label and its help, then the control",
+    ("index.html", "privacy-range"): "the receipt's `.privacy-range-row`, beside its heading",
+    ("index.html", "log-view-toggle"): "the log dock's arrange group",
 }
 #: Row builders held to "at most one bordered ghost, and only beside a filled button".
 ROW_BUILDERS = [
@@ -6952,7 +6968,7 @@ def _js_function(name: str, fn: str) -> str:
 
 
 def test_a_grid_of_keys_or_tiles_is_the_quiet_inset_fill_with_no_edge() -> None:
-    css = (ROOT / "frontend" / "css" / "reply-kit-lazy.css").read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "03-dashboard-widgets.css").read_text(encoding="utf-8")
     recipe = {sel: body for sel, body in _rules(css) if ".key-grid" in sel}
     base = recipe[".key-grid > button"]
     for want in ("border: 0;", "background: var(--chip-bg);", "box-shadow: none;"):
@@ -7008,7 +7024,7 @@ def test_a_row_has_at_most_one_bordered_ghost_and_only_beside_a_filled_button() 
 
 
 def test_a_seg_alone_on_its_line_spans_the_row() -> None:
-    css = (ROOT / "frontend" / "css" / "reply-kit-lazy.css").read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "03-dashboard-widgets.css").read_text(encoding="utf-8")
     well = _rule_exact(css, ".seg.seg-fill")
     assert "display: flex" in well and "width: 100%" in well
     assert "flex: 1 1 0" in _rule_exact(css, ".seg.seg-fill > button"), "the segments are equal"
@@ -7019,18 +7035,58 @@ def test_a_seg_alone_on_its_line_spans_the_row() -> None:
             if "seg-fill" in text[match.end() : match.end() + 300]:
                 continue
             judged.add((path.name, match.group(1)))
-    assert judged <= SEG_ROW_UNREVIEWED | set(SEG_SHARES_ROW), (
-        f"a `.seg` alone on its line spans the row (`seg-fill`), or SEG_SHARES_ROW names the row it joins: {sorted(judged - SEG_ROW_UNREVIEWED)}"
+    # The markup too (index.html): keyed by the element's id, else its class string.
+    html = re.sub(r"<!--.*?-->", "", (ROOT / "frontend" / "index.html").read_text(encoding="utf-8"), flags=re.S)
+    for match in re.finditer(r'<div\b([^>]*)>', html):
+        attrs = match.group(1)
+        cls = re.search(r'\bclass="([^"]*)"', attrs)
+        if not cls or "seg" not in cls.group(1).split() or "seg-fill" in cls.group(1).split():
+            continue
+        ident = re.search(r'\bid="([^"]*)"', attrs)
+        judged.add(("index.html", ident.group(1) if ident else cls.group(1)))
+    assert judged <= set(SEG_SHARES_ROW), (
+        f"a `.seg` alone on its line spans the row (`seg-fill`), or SEG_SHARES_ROW names the row it joins: {sorted(judged - set(SEG_SHARES_ROW))}"
     )
-    assert not SEG_ROW_UNREVIEWED - judged, f"judged now, take it out of SEG_ROW_UNREVIEWED: {sorted(SEG_ROW_UNREVIEWED - judged)}"
+    assert not set(SEG_SHARES_ROW) - judged, f"no such `.seg` now, take it out of SEG_SHARES_ROW: {sorted(set(SEG_SHARES_ROW) - judged)}"
+    assert all(len(reason) > 12 for reason in SEG_SHARES_ROW.values())
     modes = _js_function("math-editor.js", "mathEditorModes")
     assert 'classList.add("seg-fill")' in modes and 'classList.toggle("active"' in modes
 
 
-def test_a_radical_tile_leaves_room_between_the_sign_and_the_radicand() -> None:
-    """INBOX 1566: the x in the Radical group touched the root sign (one ink component at 4x; the radicand's top and left
-    edge are where the browser draws the bar and the hook). Padding on the radicand is room inside the sign: measured
-    1.5px between the sign's ink and the x's on both tiles (an ink-component count on a 4x capture)."""
-    css = (ROOT / "frontend" / "css" / "math-editor-lazy.css").read_text(encoding="utf-8")
-    body = _rule_exact(css, ".math-editor-tile :is(msqrt > *, mroot > :first-child)")
+def test_a_settings_action_is_text_not_a_boxed_ghost() -> None:
+    """INBOX 1566: Settings drew seventeen bordered ghosts on Import & export alone. A ghost in a Settings section is
+    text in the accent with no edge; only `.edged` (a lone secondary beside a filled button) and `.danger` keep one."""
+    css = (ROOT / "frontend" / "css" / "settings-controls-lazy.css").read_text(encoding="utf-8")
+    rules = {sel: body for sel, body in _rules(css) if "button.ghost" in sel and "#settings-modal" in sel}
+    base = next(body for sel, body in rules.items() if ":is(:hover" not in sel and ":first-child" not in sel)
+    for want in ("border-color: transparent;", "background: none;", "color: var(--accent-text);"):
+        assert want in base, want
+    sel = next(sel for sel, body in rules.items() if "border-color: transparent" in body)
+    assert ':not([data-contrast="on"])' in sel and all(f".{keep}" in sel for keep in ("edged", "danger", "icon-only", "quiet"))
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    assert re.findall(r'class="[^"]*\bedged\b[^"]*"', html) == ['class="ghost small edged"'], "`.edged` is for a lone secondary beside a filled one"
+
+
+def test_a_dialog_foot_has_one_bordered_secondary_and_its_third_action_is_quiet() -> None:
+    """INBOX 1566: Manage templates, Choose a file and Turn into shapes sat bordered beside Cancel and a filled button. A
+    foot's third action is `ghost quiet` and waits at the start; the Calculator's History bar, its panel buttons and the
+    chat's Change the model are quiet too."""
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    for ident in ("note-template-manage", "wb-import-choose", "wb-diagram-shapes"):
+        assert re.search(rf'class="ghost quiet small" id="{ident}"', html), ident
+    css = "\n".join(path.read_text(encoding="utf-8") for path in CSS)
+    assert "margin-inline-end: auto" in _rule_exact(css, ".space-dialog-actions > .quiet:first-child")
+    kit = frontend_text("reply-kit.js")
+    for want in ('"ghost quiet small calc-log-toggle"', '"ghost quiet small calc-again"', 'clear.classList.add("quiet")', 'change.classList.add("quiet")'):
+        assert want in kit, want
+    assert kit.count('"ghost quiet small reply-panel-open"') == 2
+
+
+def test_a_radical_leaves_room_between_the_sign_and_the_radicand() -> None:
+    """INBOX 1566: the x in the Radical group, a Live widget and the Read view touched the root sign (one ink component at 4x;
+    the radicand's top and left edge are where the browser draws the bar and the hook). Padding on the radicand is room inside
+    the sign; one boot rule on every `math`, not one per surface (documents-math.js draws all three)."""
+    css = (ROOT / "frontend" / "css" / "05-sidebars-themes.css").read_text(encoding="utf-8")
+    assert "msqrt > *" not in (ROOT / "frontend" / "css" / "math-editor-lazy.css").read_text(encoding="utf-8")
+    body = _rule_exact(css, "math :is(msqrt > *, mroot > :first-child)")
     assert re.search(r"padding:\s*0\.\d+em 0\.\d+em 0;", body), body

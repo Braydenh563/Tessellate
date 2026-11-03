@@ -879,17 +879,6 @@ details.tool-chip[open] > .tool-chip-body {
    badge, so it reads as a sentence and carries its number. `--ok` and
    `--error` are the two the rest of the app already uses for "this held" and
    "this did not". */
-.skill-verify {
-  font-size: var(--text-md);
-  padding: var(--space-2) 0;
-  color: var(--muted);
-}
-.skill-verify-ok {
-  color: var(--ok);
-}
-.skill-verify-not-ok {
-  color: var(--error);
-}
 .skill-change {
   display: flex;
   align-items: center;
@@ -1209,25 +1198,6 @@ body.graph-fullscreen-on .sidebar-panel {
 .graph-link-panel .confirm-actions {
   justify-content: center;
 }
-/* --- more than one route between the same two notes ------------------------
-   Asked for directly: "allow for multiple paths to be displayed if they
-   exist." All of them are drawn at once, because "is that the only way these
-   connect?" is a question about the picture, switching one at a time would
-   never show you that there are three.
-   Three colours, from tokens that already exist and already mean "a different
-   thing" in this app's charts and badges rather than three new hues invented
-   for one feature. The index wraps at 3 in `drawTrace`, so a fourth route (if
-   `MAX_ALTERNATE_PATHS` is ever raised) reuses the first colour rather than
-   computing one nobody chose. */
-.graph-path-route-0 {
-  stroke: var(--accent);
-}
-.graph-path-route-1 {
-  stroke: var(--ok);
-}
-.graph-path-route-2 {
-  stroke: var(--warn);
-}
 .graph-trace-route-chip {
   display: inline-flex;
   align-items: center;
@@ -1343,16 +1313,8 @@ body.graph-fullscreen-on .sidebar-panel {
   transform: scale(1.11);
 }
 .graph-node:hover .graph-core,
-.graph-node:hover .graph-orb-shine,
-.graph-node:is(:focus-visible, :has(:focus-visible)) .graph-core,
-.graph-node:is(:focus-visible, :has(:focus-visible)) .graph-orb-shine {
+.graph-node:is(:focus-visible, :has(:focus-visible)) .graph-core {
   transform: scale(var(--graph-hover-scale));
-}
-.graph-node .graph-orb-shine {
-  pointer-events: none;
-  transform-box: fill-box;
-  transform-origin: center;
-  transition: transform var(--motion-base) var(--ease-out);
 }
 .graph-node .graph-core {
   stroke: var(--card);
@@ -1373,8 +1335,7 @@ body.graph-fullscreen-on .sidebar-panel {
    has asked for less motion with no hover feedback on the graph at all beyond
    a slightly brighter halo. */
 :where(:root[data-motion="reduced"]) .graph-node .graph-halo,
-:where(:root[data-motion="reduced"]) .graph-node .graph-core,
-:where(:root[data-motion="reduced"]) .graph-node .graph-orb-shine {
+:where(:root[data-motion="reduced"]) .graph-node .graph-core {
   transition: none;
 }
 .graph-node .graph-core.graph-pinned {

@@ -28,15 +28,11 @@
 
 /* The two paths fill the width as equal halves, so neither reads as the
    default and both labels fit at 390. */
-.lock-forgot-seg {
-  display: flex;
-  width: 100%;
+.seg.lock-forgot-seg {
   margin-bottom: var(--space-3);
 }
 
 .lock-forgot-seg > button {
-  flex: 1 1 0;
-  min-width: 0;
   white-space: normal;
 }
 

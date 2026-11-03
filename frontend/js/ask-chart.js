@@ -275,6 +275,7 @@ function drawAskChart(host, chart) {
   const save = smallButton("ph:download-simple Save as PNG", "Save this chart as a picture", () =>
     askChartPng(host.querySelector(".ask-chart-svg"), chart.title).catch((error) => toast(error.message, true))
   );
+  save.classList.add("quiet");
   head.append(title, total, save);
   host.replaceChildren(head, svg, ...(chart.interactive && chart.onPick ? [askChartChips(chart)] : []), askChartTable(chart));
   host.classList.remove("hidden");

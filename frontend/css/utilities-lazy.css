@@ -312,6 +312,11 @@ button.stats-tile.is-link:is(:focus-visible, :has(:focus-visible)) {
   gap: var(--space-2);
 }
 
+/* Starter questions are text actions in the accent, so they still read as things to press once the edge is gone. */
+.stats-ask-chips > .stats-ask-chip {
+  color: var(--accent-text);
+}
+
 .stats-ask-answer {
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);

@@ -2685,6 +2685,10 @@ dialog::backdrop {
   margin-top: var(--space-5);
   gap: var(--space-2);
 }
+/* A third action (Manage templates, Choose a file) is quiet and waits at the start; the lone bordered secondary and the one filled button stay at the end. */
+.space-dialog-actions > .quiet:first-child {
+  margin-inline-end: auto;
+}
 /* Picking an icon from a grid rather than typing "ph-briefcase" into a text
    box, which is what the first version asked for and which nobody outside
    this repo could possibly know how to fill in. */

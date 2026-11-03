@@ -1598,6 +1598,11 @@ button.rich-picker-row:is(:hover, :focus-visible) .rich-picker-tile {
   display: inline-block;
   vertical-align: -0.1em;
 }
+/* **The radicand clears the radical** (INBOX 1566): the browser draws the bar on the radicand's top and the hook on its left
+   edge with no room, so the x touched the sign in Live, Read and the Radical tiles alike; padding is room inside the sign. */
+math :is(msqrt > *, mroot > :first-child) {
+  padding: 0.18em 0.12em 0;
+}
 .md-math-source {
   font-family: var(--mono, ui-monospace, monospace);
   font-size: var(--text-md);
