@@ -7055,10 +7055,11 @@ def test_a_dialog_foot_has_one_bordered_secondary_and_its_third_action_is_quiet(
     assert kit.count('"ghost quiet small reply-panel-open"') == 2
 
 
-def test_a_radical_tile_leaves_room_between_the_sign_and_the_radicand() -> None:
-    """INBOX 1566: the x in the Radical group touched the root sign (one ink component at 4x; the radicand's top and left
-    edge are where the browser draws the bar and the hook). Padding on the radicand is room inside the sign: measured
-    1.5px between the sign's ink and the x's on both tiles (an ink-component count on a 4x capture)."""
-    css = (ROOT / "frontend" / "css" / "math-editor-lazy.css").read_text(encoding="utf-8")
-    body = _rule_exact(css, ".math-editor-tile :is(msqrt > *, mroot > :first-child)")
+def test_a_radical_leaves_room_between_the_sign_and_the_radicand() -> None:
+    """INBOX 1566: the x in the Radical group, a Live widget and the Read view touched the root sign (one ink component at 4x;
+    the radicand's top and left edge are where the browser draws the bar and the hook). Padding on the radicand is room inside
+    the sign; one boot rule on every `math`, not one per surface (documents-math.js draws all three)."""
+    css = (ROOT / "frontend" / "css" / "05-sidebars-themes.css").read_text(encoding="utf-8")
+    assert "msqrt > *" not in (ROOT / "frontend" / "css" / "math-editor-lazy.css").read_text(encoding="utf-8")
+    body = _rule_exact(css, "math :is(msqrt > *, mroot > :first-child)")
     assert re.search(r"padding:\s*0\.\d+em 0\.\d+em 0;", body), body

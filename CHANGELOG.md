@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: the radicand clears the radical sign in Live, Read and the Radical tiles alike (one boot rule on every `math`; measured at 4x, sign to x from 0 to 0.5px apart to at least 2.5px) (INBOX 1566).
 - Whiteboard: the map template tiles are quiet (no edge until the pointer is on them), and the ghost-tile drift list is empty (INBOX 1566).
 - Calculator History bar, Copy in a widget, the Calculator and Statistics panel buttons, Change the model, Manage templates, Choose a file, Turn into shapes, Offer again, Save as PNG and the Statistics starter questions are quiet (no edge or face; the starters in the accent), and the Appearance panel's actions are text like Settings; a dialog foot keeps one bordered secondary beside its one filled button, its third action waits at the start (INBOX 1566).
 - Settings: a group's actions (Export JSON, Clear app cache, Check for updates and the rest) are words in the accent with no face and no edge, the tint under the pointer the only change, instead of a bordered grey box each; Import & export went from 17 bordered buttons to 0, About from 11 to 0, Settings as a whole from 67 to 2 (Draft with Atlas beside Add template, and the red Forget everything learned) (INBOX 1566).

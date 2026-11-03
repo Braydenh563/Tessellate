@@ -81,13 +81,6 @@
   pointer-events: none;
 }
 
-/* **The radicand clears the radical** (INBOX 1566, the owner: the x in the Radical group touches the root sign). The browser's own
-   MathML sets the vinculum on the radicand's top and the hook on its left edge with no room (measured: the sign and the x one
-   ink component at 4x); a little padding on the radicand is room inside the sign, so the bar rises and the x moves in. */
-.math-editor-tile :is(msqrt > *, mroot > :first-child) {
-  padding: 0.18em 0.12em 0;
-}
-
 .math-editor-glyph {
   line-height: 1;
 }
