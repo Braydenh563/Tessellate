@@ -1,0 +1,20 @@
+{
+  "clean": [
+    {"tag": "its", "text": "It's colour blind friendly, and it's colour themed too."},
+    {"tag": "its", "text": "It's colour coded, so you can scan it."},
+    {"tag": "its", "text": "Yes, it's colour-coded by kind."},
+    {"tag": "noun", "text": "The Callout block has twelve kinds. Callout kinds set the colour."},
+    {"tag": "noun", "text": "Callout blocks can sit inside a list."},
+    {"tag": "noun", "text": "Backup files are kept for thirty days."},
+    {"tag": "image", "text": "Some text.\n![alt text](cat.png)\n\nMore text."},
+    {"tag": "image", "text": "Here is a picture. ![alt text](cat.png) And more words."},
+    {"tag": "image", "text": "Before it.\n\n![](cat.png)\n\nAfter it, with an embed ![[Another note]] beside."}
+  ],
+  "planted": [
+    {"text": "The cat lost it's tail yesterday.", "expect": "it's"},
+    {"text": "It's colour is blue and bright.", "expect": "it's"},
+    {"text": "Callout the problem to the team.", "expect": "callout"},
+    {"text": "Wait , that is not right.", "expect": " ,"},
+    {"text": "Look at this !", "expect": " !"}
+  ]
+}

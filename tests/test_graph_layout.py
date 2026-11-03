@@ -83,7 +83,9 @@ const world = { left: -1200, top: -900, right: 1200, bottom: 900, aspect: 900 / 
 const init = {
   type: "init", epoch: 1, nodes: nodes.map((n) => (pinned && n.id === pinned.id ? { ...n, fx: pinned.x, fy: pinned.y, x: pinned.x, y: pinned.y } : n)),
   edges, world, alpha: 1,
-  params: { gravity: 50, spread: 50, linkForce: 50, lengthByScore: true, groupBy: true, orbit: true, curved: opts.curved !== false, shape: opts.shape || "organic" },
+  // Tidy spacing on: these layouts were measured with the clearance pass,
+  // a switch since INBOX 1529.
+  params: { gravity: 50, spread: 50, linkForce: 50, lengthByScore: true, groupBy: true, orbit: true, tidy: true, curved: opts.curved !== false, shape: opts.shape || "organic" },
 };
 // Place as the main thread does (the phyllotaxis spiral), so the run is the
 // app's own start.

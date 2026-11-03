@@ -126,6 +126,8 @@ _SHOWING = lazy_compile(r"\s(?:depicts|shows|contains|features|displays|captures
 #: Nouns that name a picture and add nothing to what it shows.
 _PICTURE_NOUNS = frozenset("image picture photo photograph pic snapshot shot".split())
 _LEADING = frozenset("a an the this one".split())
+#: The most words "a picture of X depicts ..." may name X in.
+_NAMED_WORDS = 5
 _OF = lazy_compile(r"^(?:(?:a|an|the|this|one)\s+)?(?:picture|photo|photograph|image|pic|snapshot)\s+of\s+(?=\S)", re.I)
 
 
@@ -153,7 +155,10 @@ def caption_said(caption: str) -> str:
     verb = _SHOWING.search(text)
     if verb:
         framed, named = _picture_frame(text[: verb.start()])
-        if framed:
+        #: Only a short name before the verb: "features" and "shows" are nouns
+        #: too, and "a hill with arrows pointing to different features and a
+        #: caption" was said as "a hill with arrows pointing to different" (1555).
+        if framed and len(named.split()) <= _NAMED_WORDS:
             text = named or text[verb.end():]
     text = _OF.sub("", text, count=1)
     first = text.split(" ", 1)[0]

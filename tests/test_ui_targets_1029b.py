@@ -28,7 +28,7 @@ JS = ROOT / "frontend" / "js"
 
 def _rule(text: str, selector: str) -> str:
     """The body of the rule whose selector list contains `selector`."""
-    for match in re.finditer(r"([^{}]+)\{([^{}]*)\}", re.sub(r"/\*.*?\*/", "", text, flags=re.S)):
+    for match in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", re.sub(r"/\*.*?\*/", "", text, flags=re.S)):
         if selector in [part.strip() for part in match.group(1).split(",")]:
             return match.group(2)
     raise AssertionError(f"no rule for {selector}")

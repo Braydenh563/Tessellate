@@ -29,7 +29,11 @@ const chip = { classList: { _s: new Set(), add(c) { this._s.add(c); }, remove(c)
 const timers = new Map();
 let nextTimer = 1;
 const sandbox = {
-  $: () => chip,
+  //: No lock card (INBOX 1553): the page is unlocked and its preferences are in, so a
+  //: finished timer speaks as it did before that rule.
+  $: (id) => (id === "lock-overlay" ? null : chip),
+  prefsCache: {},
+  performance: { now: () => now },
   setLabel: (el, text) => { chip.label = text; },
   toast: (t) => toasts.push(t),
   //: A stop is offered back (audit 1031 Z2); the stub keeps the closures.
@@ -40,6 +44,7 @@ const sandbox = {
     json: (k, d) => { try { return store.has(k) ? JSON.parse(store.get(k)) : d; } catch { return d; } },
     set: (k, v) => { store.set(k, String(v)); return true; },
     has: (k) => store.has(k),
+    get: (k) => (store.has(k) ? store.get(k) : null),
     remove: (k) => store.delete(k),
   },
   setInterval: (fn) => { const id = nextTimer++; timers.set(id, fn); return id; },
@@ -52,6 +57,8 @@ const sandbox = {
   Date: { now: () => now },
   Math, Number, String, Object, Array, JSON,
 };
+//: The page's global object (INBOX 1553's lock card wraps two of its functions there).
+sandbox.window = sandbox;
 vm.createContext(sandbox);
 vm.runInContext(__CODE__, sandbox);
 const run = (src) => vm.runInContext(src, sandbox);

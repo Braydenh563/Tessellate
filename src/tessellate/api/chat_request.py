@@ -30,6 +30,7 @@ from tessellate.api.chat_attach import _attached_boards, _attached_documents, _a
 from tessellate.api.schemas import EntryOut
 from tessellate.core import activity, deps
 from tessellate.core.database import Category, Entry, like_escape, LIKE_ESCAPE, MediaUpload
+from tessellate.repo import categories as categories_repo
 from tessellate.search import query as search_query
 
 
@@ -450,7 +451,7 @@ def _apply_open(session: Session, body: ChatRequest) -> None:
         if opened and composer_open.reads_note(body.question, {"content": opened[0].content}):
             body.note_ids = [body.open_note_id]
     else:
-        names = list(session.execute(select(Category.name)).scalars())
+        names = categories_repo.names(session)
         named = composer_digest.named_category(body.question, names)
         if named:
             body.note_ids = _category_note_ids(session, named)
@@ -729,12 +730,19 @@ class _StreamRequest:
     #: What the message called the assistant ("hey lil bro, ..."), taken off
     #: `question` (`vocative.split`); `call` when that was all it said.
     address: vocative.Address | None = None
-    #: The whole of a question longer than `composer.PLAN_CHARS`, which only the
+    #: The whole of a question longer than `composer_intent.PLAN_CHARS`, which only the
     #: model and the saved turn read; `question` is what the app plans over.
     full_question: str | None = None
     #: Why the web search could not run this turn ("" when it ran): the
     #: reply then names the service and links its setting (`composer_web`).
     web_down: str = ""
+    #: The screen-aware next step ("Shall we carry on with ..."), sent as its
+    #: own `tip` event so it is never part of the answer's saved, copied or
+    #: spoken text (audit 1028 E52).
+    tip: str = ""
+
+    def tip_events(self) -> list[dict]:
+        return [{"type": "tip", "text": self.tip}] if self.tip else []
 
 
 def _in_full(req: _StreamRequest) -> str:

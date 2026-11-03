@@ -109,9 +109,11 @@ def _function(text: str, name: str) -> str:
 
 
 def test_the_notes_list_semantic_toggle_asks_the_engine():
+    #: Moved out of `_loadEntries` into notes-lazy.js (INBOX 1525, the gzip budget); the ask is the same.
     body = _function(_read("notes-list.js"), "_loadEntries")
-    assert "semantic=true" not in body
-    assert "/search?q=" in body
+    assert "semantic=true" not in body and "loadSemanticEntries(" in body
+    ask = _function(_read("notes-lazy.js"), "loadSemanticEntries")
+    assert "semantic=true" not in ask and "/search?q=" in ask
 
 
 def test_the_notes_list_asks_the_engine_for_its_operators():
@@ -120,12 +122,10 @@ def test_the_notes_list_asks_the_engine_for_its_operators():
     assert "engine" in parse
     matches = _function(text, "matchesSearch")
     assert "engineQueryIds(" in matches
-    #: Audit 1031 N16: the request moved into the pager (`enginePages`), which reads
-    #: every page of the answer rather than the first 50; the intent, asking the engine, is the same.
+    #: Audit 1031 N16: every page of the answer, not the first 50 (the pager is inside `engineQueryIds`
+    #: since INBOX 1525, which paid the global name for `fullEntry`).
     ids = _function(text, "engineQueryIds")
-    assert "enginePages(" in ids
-    pages = _function(text, "enginePages")
-    assert "/search?q=" in pages and "page=${page}" in pages
+    assert "/search?q=" in ids and "page=${page}" in ids
 
 
 def test_the_library_semantic_toggle_asks_the_engine():

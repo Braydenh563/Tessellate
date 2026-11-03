@@ -40,8 +40,10 @@ from __future__ import annotations
 
 import importlib
 import itertools
+import json
 import logging
 import math
+import re
 import threading
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
@@ -51,7 +53,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai import variants
 from tessellate.core import cjk
-from tessellate.core.database import Attachment, EmbeddingRecord, Entry, EntryLink, Reminder
+from tessellate.core.database import LIKE_ESCAPE, Attachment, EmbeddingRecord, Entry, EntryLink, Reminder, like_escape
 from tessellate.entry.highlights import has_highlight
 from tessellate.entry.properties import strip as strip_properties
 from tessellate.search import chunks as search_chunks
@@ -901,6 +903,7 @@ def _keyword_pass(
     kinds: list[str],
     space: str | tuple[str, ...] | None,
     depth: int,
+    modes: tuple[str, ...] = ("all", "prefix", "any"),
 ) -> list[dict]:
     #: Words of an unsegmented script cannot be tokenised, so they are matched
     #: as substrings beside the MATCH for the rest (notes audit 1031 N2).
@@ -908,7 +911,7 @@ def _keyword_pass(
     phrases = [phrase for phrase in asked.phrases if not cjk.has(phrase)]
     substrings = [term for term in terms if cjk.has(term)] + [p.strip() for p in asked.phrases if cjk.has(p)]
     wanted_is, _has = _flag_filters(asked)
-    for mode in ("all", "prefix", "any"):
+    for mode in modes:
         expression = _match_expression(plain, phrases, asked.excluded, mode, _title_terms(asked))
         if not expression:
             return _substring_rows(session, asked, substrings, kinds, space, depth, wanted_is) if substrings else []
@@ -1274,7 +1277,7 @@ def _without_categories(session: Session, rows: list, asked) -> list:  # noqa: A
     return [row for row in rows if filed.get(row["ref_id"]) not in ruled_out]
 
 
-def _candidate_rows(session: Session, q: str, subject: str, terms: list, asked, wanted_kinds: list, space, hybrid: bool, limit: int, depth: int) -> tuple:  # noqa: ANN001
+def _candidate_rows(session: Session, q: str, subject: str, terms: list, asked, wanted_kinds: list, space, hybrid: bool, limit: int, depth: int, strict: bool = False) -> tuple:  # noqa: ANN001
     """The rows the words (or, with none, the filters) select, and the terms
     after any typo fix."""
     if not (terms or asked.phrases or _title_terms(asked)):
@@ -1293,6 +1296,9 @@ def _candidate_rows(session: Session, q: str, subject: str, terms: list, asked, 
             # is answered.
             rows = [row for row in rows if not _mentions(row, asked.excluded)]
         return rows, terms
+    if strict:
+        #: Every word as a prefix and nothing looser: no "any of them", no typo fix, no meaning.
+        return _keyword_pass(session, terms, asked, wanted_kinds, space, depth, ("prefix",)), terms
     rows = _keyword_pass(session, terms, asked, wanted_kinds, space, depth)
     if not rows and terms:
         # **A typo is still a question** (ARCH-07). The vocabulary fix the
@@ -1413,6 +1419,65 @@ def _rank_rows(session: Session, rows: list, subject: str, q: str, terms: list, 
     hits = [hit for hit in (_hit_for(row, best_raw, filters_only, cosines, hops, terms) for row in rows) if hit is not None]
     hits.sort(key=lambda hit: (-hit.score, hit.kind, -hit.ref_id))
     return hits
+
+
+#: One term of the Notes list's filter box, read as written: a `-`, then a "quoted phrase" or a word.
+_LITERAL_TERM = re.compile(r'(-?)"([^"]+)"|(\S+)')
+#: Past this many terms a filter box is a paste, and every term still narrows: the rest are dropped.
+_LITERAL_TERMS_MAX = 24
+
+
+def _literal_terms(q: str) -> tuple[list[str], list[str]]:
+    """The words and phrases `q` must hold and the ones it must not, lowercased, as typed."""
+    wanted, unwanted = [], []
+    for sign, phrase, word in _LITERAL_TERM.findall(q[:2000])[:_LITERAL_TERMS_MAX]:
+        if word.startswith("-") and len(word) > 1:
+            sign, word = "-", word[1:]
+        term = (phrase or word).strip().lower()
+        if term and term != "-":
+            (unwanted if sign else wanted).append(term)
+    return wanted, unwanted
+
+
+def _like(column, term: str):  # noqa: ANN001, ANN202
+    return column.like(f"%{like_escape(term)}%", escape=LIKE_ESCAPE)
+
+
+def match_ids(session: Session, q: str) -> list[int] | None:
+    """Every live note whose text or tags hold each word and phrase of `q` as
+    written (any case, inside a word too: "oadmap" finds "roadmap", "zeta150"
+    finds "zeta1500") and none of its `-words` (INBOX 1525 review).
+
+    The Notes list's filter box is a literal text filter over the whole
+    bodies its rows only hold the start of, never a question: no dates
+    ("roadmap yesterday" asks for both words), no scopes, no stop words
+    dropped ("the" is a word). The same rule as the list's own substring
+    match, so the two agree on what each can see. Private notes are not read
+    here (the list matches them on their own text). None when `q` names no
+    term, so the caller keeps its own answer.
+    """
+    wanted, unwanted = _literal_terms(q)
+    if not (wanted or unwanted):
+        return None
+    query = select(Entry.id, Entry.content, Entry.tags).where(
+        Entry.is_private == False,  # noqa: E712
+        Entry.is_deleted == False,  # noqa: E712
+        Entry.is_board == False,  # noqa: E712
+        Entry.archived_at.is_(None),
+    )
+    #: SQLite's LIKE folds ASCII case only, so it narrows by the ASCII terms and Python's `lower` decides.
+    for term in (t for t in wanted if t.isascii()):
+        query = query.where(or_(_like(Entry.content, term), _like(Entry.tags, term)))
+    found = []
+    for entry_id, content, tags in session.execute(query):
+        try:
+            tag_text = " ".join(str(tag) for tag in json.loads(tags or "[]"))
+        except (TypeError, ValueError):
+            tag_text = ""
+        held = f"{content or ''} {tag_text}".lower()
+        if all(term in held for term in wanted) and not any(term in held for term in unwanted):
+            found.append(entry_id)
+    return sorted(found)
 
 
 def search(

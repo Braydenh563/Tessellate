@@ -52,6 +52,9 @@ def scratch(tmp_path: Path) -> dict:
     (repo / "frontend" / "js" / "a.js").write_text("let a = 1;\n", encoding="utf-8")
     (repo / "frontend" / "sw.js").write_text("let s = 1;\n", encoding="utf-8")
     (repo / "marker.txt").write_text("committed", encoding="utf-8")
+    (repo / "scripts" / "codemap.py").write_text("# stand-in\n", encoding="utf-8")
+    (repo / "docs").mkdir()
+    (repo / "docs" / "CODEMAP.md").write_text("map of committed\n", encoding="utf-8")
     ruff = repo / ".venv" / "bin" / "ruff"
     ruff.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
     ruff.chmod(0o755)
@@ -64,6 +67,11 @@ def scratch(tmp_path: Path) -> dict:
             #!/bin/sh
             case "$*" in
               *"-m pytest"*) echo "RUN|$(pwd -P)|$(cat marker.txt 2>/dev/null)|$*" >> "$STUB_LOG" ;;
+            esac
+            # The stand-in map builder writes a map of the marker beside it.
+            case "$1" in
+              */scripts/codemap.py) d="$(dirname "$(dirname "$1")")"; mkdir -p "$d/docs"
+                echo "map of $(cat "$d/marker.txt")" > "$d/docs/CODEMAP.md" ;;
             esac
             exit 0
             """
@@ -132,3 +140,28 @@ def test_staged_with_nothing_staged_lints_the_working_tree_once(scratch):
     assert Path(cwd) == Path(scratch["repo"]).resolve()
     assert marker == "working"
     assert "staged-lints (nothing staged" in out
+
+
+def test_staged_builds_the_code_map_from_the_index_not_the_folder(scratch):
+    """2026-11-02: the map was built from the folder and staged, so a commit made while
+    other files had unstaged edits carried a map of code it did not hold, and
+    test_codemap_fresh failed in the staged lints (twice this session, and repo3a-1102)."""
+    _stage_a_change(scratch)
+    _gate(scratch, "--staged")
+    done = subprocess.run(["git", "-C", str(scratch["repo"]), "show", ":docs/CODEMAP.md"],
+                          capture_output=True, text=True, check=True)
+    assert done.stdout.strip() == "map of staged"
+
+
+def test_a_plain_gate_builds_the_code_map_from_the_folder(scratch):
+    (scratch["repo"] / "marker.txt").write_text("working", encoding="utf-8")
+    _gate(scratch)
+    assert (scratch["repo"] / "docs" / "CODEMAP.md").read_text(encoding="utf-8").strip() == "map of working"
+
+
+def test_staged_with_a_clean_folder_leaves_the_folder_map_matching_the_index(scratch):
+    marker = scratch["repo"] / "marker.txt"
+    marker.write_text("staged", encoding="utf-8")
+    _git(scratch["repo"], "add", "marker.txt")
+    _gate(scratch, "--staged")
+    assert (scratch["repo"] / "docs" / "CODEMAP.md").read_text(encoding="utf-8").strip() == "map of staged"

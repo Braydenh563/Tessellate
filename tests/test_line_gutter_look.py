@@ -26,7 +26,7 @@ CSS = "\n".join(p.read_text(encoding="utf-8") for p in sorted((ROOT / "frontend"
 def _rule(selector: str) -> str:
     """Every declaration block whose selector list is exactly `selector`."""
     out = []
-    for match in re.finditer(r"([^{}]+)\{([^{}]*)\}", CSS):
+    for match in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", CSS):
         selectors = [s.strip() for s in re.sub(r"/\*.*?\*/", "", match.group(1), flags=re.S).split(",")]
         if selectors == [selector]:
             out.append(match.group(2))

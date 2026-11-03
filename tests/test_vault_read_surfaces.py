@@ -63,7 +63,12 @@ def test_no_read_route_returns_a_locked_private_notes_words(client, locked_with_
         if path.startswith(("/static/", "/css/", "/js/", "/assets/", "/icons/", "/fonts/")):
             continue
         url = _fill(path).replace("/1/", f"/{entry_id}/")
-        response = client.get(url, params={"q": "combination", "query": "combination", "text": "combination"})
+        # `seconds=0`: a bounded stream (`/jobs/stream`) sends its one snapshot
+        # and ends. Without it the walk sat out that stream's full minute, 60 of
+        # this test's 64 s (CI time, 1102), and the snapshot is still read.
+        response = client.get(
+            url, params={"q": "combination", "query": "combination", "text": "combination", "seconds": 0}
+        )
         walked += 1
         body = response.text.lower()
         for needle in NEEDLES:

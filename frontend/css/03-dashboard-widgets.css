@@ -1135,6 +1135,16 @@ header#top-bar select,
   display: none;
 }
 
+/* The way out of "SearXNG is down" (INBOX 1556): a line and its button under the
+   message, in the web panel and under a failed web-search tool chip. */
+.searxng-down {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
 /* Two lines by design: "12 results via SearXNG (local)" is the answer, and
    "nothing left your machine but the query" is the reassurance under it. Glued
    together with a " · " they wrapped mid-phrase in a narrow panel. */
@@ -3300,6 +3310,23 @@ button.answer-figure-open {
   /* The answer body's own size (`.msg.assistant .bubble-answer` below writes
      it as 0.92rem, which is `--text-lg`): the two voices at one size. */
   font-size: var(--text-lg);
+}
+
+/* A question past ten lines folds (the owner, 2026-11-02): the notes' clamp at
+   ten lines, its last line faded into the bubble, "Show more" under it
+   (chat-turn.js addBubble). */
+.msg.user .msg-body {
+  --note-preview-lines: 10;
+}
+
+.msg.user .msg-body.is-folded {
+  -webkit-mask-image: linear-gradient(to bottom, currentColor calc(100% - 1.6em), transparent);
+  mask-image: linear-gradient(to bottom, currentColor calc(100% - 1.6em), transparent);
+}
+
+.msg.user > .entry-more {
+  color: inherit;
+  opacity: 0.8;
 }
 
 .msg.user .msg-role {

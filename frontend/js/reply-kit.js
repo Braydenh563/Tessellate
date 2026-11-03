@@ -316,8 +316,22 @@ function replyTimelinePanel(event) {
 //: it; the result is a live region; the last results come back with a press.
 //: Reached from a sum or a conversion's answer (its panel), /calc with
 //: nothing after it, and the palette's Calculator row.
-//: `tabs`: the dialog's, in order: sums, conversions, and the equation editor.
-const replyCalc = { history: [], units: null, tabs: [["work", "Work out"], ["convert", "Convert units"], ["equation", "Equation"]] };
+//: `tabs`: the dialog's, in order: sums, conversions, and the equation editor, all named for what they hold (INBOX 1530 g L4: a verb, a verb and a noun read as three tools). `opened` numbers the dialogs, for ids that never collide with one still leaving.
+const replyCalc = { units: null, opened: 0, tabs: [["work", "Sum"], ["convert", "Units"], ["equation", "Equation"]],
+  //: **The history, one list per tab** (INBOX 1541), kept in this browser's prefs store as `{work, convert, equation}`; `calcTex.log` holds its rules.
+  load: (tab) => calcTex.log.clean(prefs.json("calc-history", {})[tab]),
+  save: (tab, list) => prefs.setJSON("calc-history", { ...prefs.json("calc-history", {}), [tab]: list }),
+};
+
+//: The head '?' (INBOX 1530 g M6): the dialog is worked out by the app with no model; one line per tab, then where Insert writes.
+const REPLY_CALC_HELP = [
+  "Worked out by the app, with no model.",
+  "Sum: type or key a sum, a percentage or a conversion (12 * (3 + 4), 15% of 80, 5 km to miles). A preview shows as you type; Enter or = keeps it.",
+  "Units: pick a kind, an amount and two units. Currency rates are set by hand and dated, not today's rate.",
+  "Equation: click a dotted box to fill it. / makes a fraction, ^ and _ a power or a subscript, and LaTeX such as \\frac or \\alpha turns into the symbol as you type it. Pick a structure or a symbol from the palette; a selection goes into the first box. The row of groups jumps to one; Pin makes a tile a favourite, and Recent shows the last ones used. Inline sits in a sentence, Display on its own line. Click a drawn equation in a note, or open this with the cursor inside one, to edit it.",
+  "History: each tab keeps its last twenty answers on this device. Open History under the keypad, press a row to put it back in the fields, or use Copy, Edit (the next keep replaces that row) and Remove; Clear empties it, and Undo brings it back. Every answer has a Copy button beside it.",
+  "Insert writes into the text box you opened this from (Alt+= in a box, or Ctrl+K over one). With none open, Copy is the way out. Ctrl+Enter inserts an equation.",
+];
 
 const REPLY_CALC_KEYS = [
   ["C", "clear"], ["(", "("], [")", ")"], ["ph:divide", "/"],
@@ -378,66 +392,220 @@ function openCalculator(input = "", mode = "work", { target = null } = {}) {
   }
   openSheet({
     label: "Calculator and equations",
-    sub: "Sums, conversions and equations, worked out by the app with no model.",
     name: "calculator",
+    //: A half-written equation survives a stray press outside (the popover it replaced ignored one, maths1527).
+    hasWork: () => [...document.querySelectorAll('[data-sheet="calculator"] math-field')].some((f) => f.value?.trim()),
     build: (card, close) => replyCalcBuild(card, input, mode, { target, close }),
   });
 }
 
-function replyCalcBuild(card, input, mode = "work", { target = null, close = () => {} } = {}) {
+//: A dashboard widget's body (INBOX 1558): the Sum and Units tabs drawn into it through the dialog's own build, with no Insert and no focus taken.
+openCalculator.inline = (host, mode = "work") => replyCalcBuild(host, "", mode, { inline: true });
+
+function replyCalcBuild(card, input, mode = "work", { target = null, close = () => {}, inline = false } = {}) {
+  //: One height for all three tabs, the strip and the action row pinned and the panes between them scrolling (INBOX 1530 g M2: on a bottom-anchored sheet the strip moved 188 px between tabs and 4 to 40 px on a result).
+  card.classList.add("calc-card");
+  if (inline) card.classList.add("calc-inline");
+  //: An inline calculator has no Equation tab (the field needs its own bundle and a box to write into).
+  const kinds = inline ? replyCalc.tabs.filter(([key]) => key !== "equation") : replyCalc.tabs;
+  if (!kinds.some(([key]) => key === mode)) mode = "work";
   //: A tab strip, not a pill (DESIGN.md, "A popup that chooses a kind").
   const modes = document.createElement("div");
   modes.className = "tabs-line popup-kinds calc-modes";
   modes.setAttribute("role", "tablist");
   modes.setAttribute("aria-label", "Calculator mode");
-  const equation = replyCalcEquation(target, close);
-  const panes = { work: replyCalcWorkPane(input, { target, close }), convert: replyCalcConvertPane(), equation: equation.pane };
+  const actions = replyCalcActions(target, close, inline);
+  const equation = inline ? null : replyCalcEquation(target, close, actions);
+  const panes = { work: replyCalcWorkPane(input, actions), convert: replyCalcConvertPane(actions), ...(equation ? { equation: equation.pane } : {}) };
+  //: Where focus goes when a tab is chosen with a press; an arrow keeps it on the strip (INBOX 1530 g M4: the first arrow onto Equation put the caret in the math field, so the next arrow moved inside the equation instead of on to the tab after it).
   const focusIn = {
     work: () => panes.work.querySelector(".calc-input")?.focus(),
     convert: () => panes.convert.querySelector(".calc-amount")?.focus(),
-    equation: () => equation.mount(),
+    equation: () => equation?.mount(),
   };
+  const wrap = document.createElement("div");
+  wrap.className = "calc-panes";
+  //: Each tab names its panel and each panel its tab (INBOX 1530 g M3), by ids that carry the dialog's number.
+  const n = replyCalc.opened;
   for (const [key, pane] of Object.entries(panes)) {
     pane.setAttribute("role", "tabpanel");
+    pane.id = `calc-panel-${n}-${key}`;
+    pane.setAttribute("aria-labelledby", `calc-tab-${n}-${key}`);
     pane.classList.toggle("hidden", key !== mode);
   }
-  const tabs = replyCalc.tabs.map(([key, words]) => {
+  const select = (key, { focus = true } = {}) => {
+    for (const other of tabs) {
+      const on = other.dataset.tab === key;
+      other.setAttribute("aria-selected", String(on));
+      other.classList.toggle("active", on);
+      other.tabIndex = on ? 0 : -1;
+    }
+    for (const [name, pane] of Object.entries(panes)) pane.classList.toggle("hidden", name !== key);
+    wrap.scrollTop = 0;
+    actions.show(key);
+    if (focus) focusIn[key]();
+    else if (key === "equation") equation?.mount({ focus: false });
+  };
+  const tabs = kinds.map(([key, words]) => {
     const button = document.createElement("button");
     button.type = "button";
     button.setAttribute("role", "tab");
+    button.id = `calc-tab-${n}-${key}`;
+    button.setAttribute("aria-controls", `calc-panel-${n}-${key}`);
     button.textContent = words;
     button.dataset.tab = key;
-    button.addEventListener("click", () => {
-      for (const other of tabs) {
-        const on = other === button;
-        other.setAttribute("aria-selected", String(on));
-        other.classList.toggle("active", on);
-        other.tabIndex = on ? 0 : -1;
-      }
-      for (const [name, pane] of Object.entries(panes)) pane.classList.toggle("hidden", name !== key);
-      focusIn[key]();
-    });
+    button.addEventListener("click", () => select(key));
     return button;
   });
-  //: Arrows, Home and End walk the strip, which is one Tab stop.
+  //: Arrows, Home and End walk the strip, which is one Tab stop; the panel opens under the focus without taking it.
   modes.addEventListener("keydown", (event) => {
     const at = tabs.indexOf(document.activeElement);
     const to = { ArrowRight: (at + 1) % tabs.length, ArrowLeft: (at + tabs.length - 1) % tabs.length, Home: 0, End: tabs.length - 1 }[event.key];
     if (at < 0 || to === undefined) return;
     event.preventDefault();
-    tabs[to].click();
+    select(tabs[to].dataset.tab, { focus: false });
     tabs[to].focus();
   });
   modes.append(...tabs);
-  card.append(modes, ...Object.values(panes));
-  const first = Math.max(0, replyCalc.tabs.findIndex(([key]) => key === mode));
+  wrap.append(...Object.values(panes));
+  card.append(modes, wrap, actions.el);
+  //: **The head's '?'** (DESIGN.md, a dialog's head; INBOX 1530 g M6): what each tab does and where Insert writes, behind the title as every dialog's is. It replaces the sub line (a sentence the dialog carried at all times, 32 px of the card) and the Equation tab's own '?'.
+  const head = card.querySelector(".sheet-head");
+  if (head) {
+    const helpId = `calc-help-${n}`;
+    const help = document.createElement("button");
+    help.type = "button";
+    help.className = "icon-only ghost small dialog-head-btn";
+    help.setAttribute("data-help-for", helpId);
+    help.setAttribute("aria-controls", helpId);
+    help.setAttribute("aria-expanded", "false");
+    help.title = "About Calculator and equations";
+    help.setAttribute("aria-label", "About Calculator and equations");
+    const icon = document.createElement("i");
+    icon.className = "ph ph-question";
+    icon.setAttribute("aria-hidden", "true");
+    help.appendChild(icon);
+    const group = document.createElement("span");
+    group.className = "dialog-head-actions";
+    const closeButton = head.querySelector(".sheet-close");
+    if (closeButton) group.appendChild(closeButton);
+    head.querySelector(".sheet-title")?.after(help);
+    head.appendChild(group);
+    const body = document.createElement("div");
+    body.className = "help-body hidden";
+    body.id = helpId;
+    body.setAttribute("role", "dialog");
+    body.setAttribute("aria-label", "About Calculator and equations");
+    for (const line of REPLY_CALC_HELP) {
+      const p = document.createElement("p");
+      p.textContent = line;
+      body.appendChild(p);
+    }
+    head.after(body);
+  }
+  const first = Math.max(0, kinds.findIndex(([key]) => key === mode));
   for (const [i, tab] of tabs.entries()) {
     tab.setAttribute("aria-selected", String(i === first));
     tab.classList.toggle("active", i === first);
     tab.tabIndex = i === first ? 0 : -1;
   }
-  if (first) focusIn[replyCalc.tabs[first][0]]();
+  actions.show(kinds[first][0]);
+  if (inline) return;
+  if (first) focusIn[kinds[first][0]]();
   else requestAnimationFrame(() => focusIn.work());
+}
+
+//: **One action row for all three tabs** (INBOX 1530 g, H2, M1, L2, L6). The
+//: tabs read as three tools because Work out had a left ghost Insert row,
+//: Equation a right filled Insert beside a Cancel and Convert nothing; nothing
+//: said where Insert writes, and a dialog opened with no box had no Insert and
+//: no reason. Now every tab ends in the same row: a line saying where Insert
+//: writes (or that no box is open), then Copy, Insert as equation (Sum and
+//: Units) and the one filled Insert. A button with nothing to act on stays in
+//: the Tab order as `aria-disabled`, is described by that line, and says why
+//: when pressed (Copy on an empty result used to do nothing at all). A pane
+//: hands in what it can do with `provide(key, {ready, text, equation, ...})`.
+function replyCalcActions(target, close, inline = false) {
+  const id = `calc-where-${++replyCalc.opened}`;
+  const el = document.createElement("div");
+  el.className = "calc-actions";
+  const where = document.createElement("p");
+  where.className = "muted calc-where";
+  where.id = id;
+  const row = document.createElement("div");
+  row.className = "row right calc-actions-buttons";
+  const providers = {};
+  let shown = "work";
+  const current = () => providers[shown];
+  //: Where Insert writes, in the words a person would use for the box they were in (by id, as the opener does: `editorSurfaceKind` answers null until the Library bundle has loaded).
+  const kind = target ? EDITOR_SURFACES[target.id] || editorSurfaceKind(target) : null;
+  const name = target?.id === "question" ? "the Ask box" : { note: "the note", document: "the document", chat: "the Chat box", agent: "the Agent box", skill: "the skill steps" }[kind] || "the text box you came from";
+  const blocked = (kind) => {
+    const p = current();
+    if (kind !== "copy" && !target) return "No text box is open, so there is nowhere to insert. Use Copy.";
+    return p?.ready() ? "" : p?.first || "There is nothing here yet.";
+  };
+  const write = async (equation) => {
+    const p = current();
+    const text = equation ? p.equation() : p.text();
+    await ensureModule("mathEditor");
+    if (mathEditorWrite(target, text, { plain: !equation })) close();
+    else toast("Couldn't write into that box.", "info");
+  };
+  const act = (kind) => {
+    const why = blocked(kind);
+    if (why) return toast(why, "info");
+    const p = current();
+    if (kind === "copy") {
+      if (p.copy) return p.copy();
+      return navigator.clipboard?.writeText(p.text()).then(() => toast("Result copied."), () => toast("Couldn't copy the result.", "info"));
+    }
+    if (p.insert) return p.insert();
+    return write(kind === "equation");
+  };
+  const copy = smallButton("Copy", "Copy the result", () => act("copy"));
+  const asEquation = smallButton("Insert as equation", "Write the sum and its result as an equation", () => act("equation"));
+  const insert = smallButton("Insert", "Write the result into the text", () => act("insert"), false);
+  insert.classList.add("primary");
+  for (const button of [copy, asEquation, insert]) button.setAttribute("aria-describedby", id);
+  row.append(copy, asEquation, insert);
+  //: A widget has no box to write into: Copy is its one action, and the line about Insert is not drawn.
+  if (inline) where.classList.add("hidden");
+  el.append(where, row);
+  const sync = () => {
+    const p = current();
+    if (!p) return;
+    const ready = Boolean(p.ready());
+    const label = p.label?.() || "Insert";
+    setLabel(insert, label);
+    copy.title = p.copyTitle;
+    insert.title = p.insertTitle;
+    asEquation.classList.toggle("hidden", inline || !p.equation);
+    insert.classList.toggle("hidden", inline);
+    copy.setAttribute("aria-disabled", String(!ready));
+    insert.setAttribute("aria-disabled", String(!ready || !target));
+    asEquation.setAttribute("aria-disabled", String(!ready || !target));
+    where.textContent = !target
+      ? `No text box is open. Copy ${p.what}, then paste it where you want it.`
+      : ready
+        ? `${label} writes into ${name}.`
+        : `${label} writes into ${name} once there is ${p.needs}.`;
+  };
+  return {
+    el,
+    sync,
+    provide: (key, provider) => { providers[key] = provider; },
+    show: (key) => { shown = key; sync(); },
+    //: What the row does with a worked-out result (Sum and Units): the figure to copy or insert, and the sum with its figure as an equation.
+    result: (read, words) => ({
+      ...words,
+      copyTitle: "Copy the result",
+      insertTitle: "Write the result into the text",
+      ready: () => Boolean(read()),
+      text: () => calcFigure(read().answer, true),
+      equation: () => calcTex.toTex(read().input, calcFigure(read().answer, true)),
+    }),
+  };
 }
 
 // CALC-TEX-BEGIN
@@ -477,17 +645,54 @@ const calcTex = {
     return `${side(String(input || "").trim())} = ${side(String(figure || "").trim())}`;
   },
 };
+
+//: **What a history keeps** (INBOX 1541): newest first, twenty rows, a row told from another by its `key` (the words of a sum, the TeX of an equation). `replacing` is the key of a row being edited: the new row takes its place in the list rather than joining the top, and a row that is gone just adds.
+calcTex.log = {
+  max: 20,
+  add(list, entry, replacing = "") {
+    const at = replacing ? list.findIndex((row) => row.key === replacing) : -1;
+    const rest = list.filter((row) => row.key !== entry.key && row.key !== replacing);
+    if (at < 0) return [entry, ...rest].slice(0, calcTex.log.max);
+    rest.splice(list.slice(0, at).filter((row) => row.key !== entry.key && row.key !== replacing).length, 0, entry);
+    return rest.slice(0, calcTex.log.max);
+  },
+  remove: (list, key) => list.filter((row) => row.key !== key),
+  //: What was stored, as a list of rows: anything else (a hand-edited value, an older shape) is no history.
+  clean: (raw) => (Array.isArray(raw) ? raw.filter((row) => row && typeof row.key === "string" && row.key).slice(0, calcTex.log.max) : []),
+};
 // CALC-TEX-END
 
+//: **The result** (INBOX 1530 g L1). The figure is worded as a preview while it
+//: is one ("Preview. Enter keeps it."), not only greyed, and it is not itself
+//: the live region (an `<output>` is one by role, and it spoke on every key):
+//: a visually hidden status is set once the figure settles, at once for Enter
+//: and =, after a pause for typing (`replyCalcShow`).
 function replyCalcResult() {
-  const out = document.createElement("output");
+  const out = document.createElement("div");
   out.className = "calc-result";
-  out.setAttribute("aria-live", "polite");
+  const line = document.createElement("div");
+  line.className = "calc-figure-row";
   const figure = document.createElement("strong");
   figure.className = "calc-figure";
+  const tag = document.createElement("span");
+  tag.className = "muted calc-tag";
+  tag.textContent = "Preview. Enter keeps it.";
+  tag.hidden = true;
+  //: An answer is copied from where it is (INBOX 1541); an equation's value line reads "= 3.5" and copies "3.5".
+  const copy = smallButton("ph:copy", "Copy the result", () => {
+    const text = figure.textContent.replace(/^=\s*/, "");
+    if (text) navigator.clipboard?.writeText(text).then(() => toast("Result copied."), () => toast("Couldn't copy the result.", "info"));
+  });
+  copy.classList.add("calc-copy");
+  copy.hidden = true;
+  line.append(figure, tag, copy);
   const read = document.createElement("span");
   read.className = "muted calc-read";
-  out.append(figure, read);
+  const say = document.createElement("span");
+  say.className = "visually-hidden";
+  say.setAttribute("role", "status");
+  say.setAttribute("aria-live", "polite");
+  out.append(line, read, say);
   return out;
 }
 
@@ -503,23 +708,32 @@ function calcFigure(answer, dropRates) {
   return j >= 0 ? a.slice(0, j) : a.slice(0, -1);
 }
 
-function replyCalcShow(out, got, { final = false } = {}) {
+function replyCalcShow(out, got, { final = false, now = false } = {}) {
   const figure = out.querySelector(".calc-figure");
   const read = out.querySelector(".calc-read");
+  const say = out.querySelector(".visually-hidden");
   out.classList.toggle("is-error", Boolean(got?.error));
   out.classList.toggle("is-preview", !final);
+  //: Said after a pause, so a key held or a sum typed is one announcement, not one per character.
+  clearTimeout(out._said);
+  const announce = (words) => (now ? (say.textContent = words) : (out._said = setTimeout(() => (say.textContent = words), 800)));
   if (!got) {
     figure.textContent = "";
     read.textContent = "";
-    return;
+    out.querySelector(".calc-tag").hidden = true;
+    out.querySelector(".calc-copy").hidden = true;
+    return announce("");
   }
   //: The figure on its own ("84", not "12*(3+4) is 84."): the sum is in the
   //: box, and how the app read it is the line under.
   figure.textContent = got.error ? "" : calcFigure(got.answer, true);
   read.textContent = got.error ? got.error : got.read_as ? `Read as ${got.read_as}` : "";
+  out.querySelector(".calc-tag").hidden = final || Boolean(got.error);
+  out.querySelector(".calc-copy").hidden = !figure.textContent;
+  announce([figure.textContent, read.textContent].filter(Boolean).join(". ") + (final || got.error ? "" : ". Preview"));
 }
 
-function replyCalcWorkPane(input, { target = null, close = () => {} } = {}) {
+function replyCalcWorkPane(input, actions) {
   const pane = document.createElement("div");
   pane.className = "calc-pane";
   const box = document.createElement("input");
@@ -531,49 +745,35 @@ function replyCalcWorkPane(input, { target = null, close = () => {} } = {}) {
   box.spellcheck = false;
   box.value = input;
   const out = replyCalcResult();
-  const history = document.createElement("ul");
-  history.className = "calc-history";
-  history.setAttribute("aria-label", "Earlier results");
+  //: Restoring puts the sum back in the box (a preview, not a keep); Copy writes the figure.
+  const history = replyCalcHistory("work", {
+    label: (row) => `${row.input} = ${calcFigure(row.answer, false)}`,
+    copy: (row) => calcFigure(row.answer, true),
+    restore: (row) => {
+      box.value = row.input;
+      box.dispatchEvent(new Event("input"));
+      box.focus();
+    },
+  });
   let timer = 0;
   let asked = 0;
-  //: The result on show, for the Insert buttons (drawn only with a box to write into).
+  //: The result on show, for the action row.
   let last = null;
-  //: **Insert and Insert as equation** (INBOX 1527): the result on show goes
-  //: into the box the dialog was opened from, as its figure or as an equation
-  //: ("12 \times (3 + 4) = 84"); the dialog closes and focus is back in the box.
-  let inserts = null;
-  if (target) {
-    const row = document.createElement("div");
-    row.className = "row calc-insert-row";
-    const put = async (equation) => {
-      if (!last) return;
-      const figure = calcFigure(last.answer, true);
-      await ensureModule("mathEditor");
-      if (mathEditorWrite(target, equation ? calcTex.toTex(last.input, figure) : figure, { plain: !equation })) close();
-      else toast("Couldn't write into that box.", "info");
-    };
-    const buttons = [smallButton("Insert", "Write the result into the text", () => put(false)), smallButton("Insert as equation", "Write the sum and its result as an equation", () => put(true))];
-    row.append(...buttons);
-    inserts = { row, sync: () => buttons.forEach((button) => (button.disabled = !last)) };
-    inserts.sync();
-  }
+  actions.provide("work", actions.result(() => last, { what: "the result", needs: "a result", first: "Work out a sum first." }));
   const run = async (final) => {
     const mine = ++asked;
     try {
       const got = await replyCalcWork(box.value);
       if (mine !== asked) return;
-      replyCalcShow(out, got, { final });
+      replyCalcShow(out, got, { final, now: final });
       last = got?.answer && !got.error ? { input: box.value.trim(), answer: got.answer } : null;
-      inserts?.sync();
-      if (final && got?.answer) {
-        replyCalc.history = [{ input: box.value.trim(), answer: got.answer }, ...replyCalc.history.filter((h) => h.input !== box.value.trim())].slice(0, 5);
-        replyCalcHistory(history, box);
-      }
+      actions.sync();
+      if (final && last) history.record({ key: last.input, input: last.input, answer: last.answer });
     } catch (error) {
       if (mine !== asked) return;
-      replyCalcShow(out, { error: error.message }, { final });
+      replyCalcShow(out, { error: error.message }, { final, now: final });
       last = null;
-      inserts?.sync();
+      actions.sync();
     }
   };
   box.addEventListener("input", () => {
@@ -590,23 +790,7 @@ function replyCalcWorkPane(input, { target = null, close = () => {} } = {}) {
     clearTimeout(timer);
     run(true);
   });
-  //: Copy sits beside the figure it copies, outside the live region.
-  const foot = document.createElement("div");
-  foot.className = "calc-result-row";
-  const copy = document.createElement("button");
-  copy.type = "button";
-  copy.className = "ghost small icon-only";
-  setLabel(copy, "ph:copy");
-  copy.setAttribute("aria-label", "Copy result");
-  copy.title = "Copy result";
-  copy.addEventListener("click", () => {
-    const text = out.querySelector(".calc-figure").textContent;
-    if (!text) return;
-    navigator.clipboard?.writeText(text).then(() => toast("Result copied."), () => toast("Couldn't copy the result.", "info"));
-  });
-  foot.append(out, copy);
-  pane.append(box, foot, ...(inserts ? [inserts.row] : []), keys, history);
-  replyCalcHistory(history, box);
+  pane.append(box, out, keys, history.el);
   if (input) run(true);
   return pane;
 }
@@ -615,7 +799,7 @@ function replyCalcWorkPane(input, { target = null, close = () => {} } = {}) {
 //: first time the tab opens (its library is the heavy part), with the value
 //: of an equation made of numbers under the field, worked out by the same
 //: reader as Work out. `mount()` builds it, or puts focus back in it.
-function replyCalcEquation(target, close) {
+function replyCalcEquation(target, close, actions) {
   const pane = document.createElement("div");
   pane.className = "calc-pane calc-equation";
   const note = replyCalcResult();
@@ -624,7 +808,31 @@ function replyCalcEquation(target, close) {
   let loading = null;
   let timer = 0;
   let asked = 0;
+  //: The history (INBOX 1541): an equation is kept when it is copied or inserted, and a moment after the last change (not for the one the editor opened with).
+  let history = null;
+  let settle = 0;
+  let changed = false;
+  const keep = (auto = false) => {
+    const row = editor?.entry();
+    if (row) history?.record(row, auto);
+  };
+  //: The action row's Copy and Insert are the editor's own (it knows the display mode, the equation being edited and the box).
+  actions.provide("equation", {
+    what: "the equation",
+    needs: "an equation",
+    first: "Type an equation first.",
+    copyTitle: "Copy the equation, between dollar signs",
+    insertTitle: "Write the equation into the text (Ctrl+Enter)",
+    ready: () => Boolean(editor?.ready()),
+    label: () => editor?.label || "Insert",
+    copy: () => (keep(), editor.copy()),
+    insert: () => (keep(), editor.insert()),
+  });
   const onTex = (tex) => {
+    actions.sync();
+    clearTimeout(settle);
+    if (changed) settle = setTimeout(() => keep(true), 2500);
+    changed = true;
     clearTimeout(timer);
     const sum = calcTex.toSum(tex);
     const mine = ++asked;
@@ -649,13 +857,22 @@ function replyCalcEquation(target, close) {
     line.textContent = words;
     pane.replaceChildren(line);
   };
-  const mount = () => {
-    if (editor) return editor.focus();
+  const mount = ({ focus = true } = {}) => {
+    if (editor) return focus ? editor.focus() : undefined;
     if (!loading) {
       say("Loading the equation editor.");
       loading = ensureModule("mathEditor")
         .then((ok) => {
-          editor = ok && typeof mathEditorMount === "function" ? mathEditorMount({ host: pane, target, done: close, note, onTex }) : null;
+          //: Its rows are drawn by the editor's own tile face, so this waits for the editor to be loaded.
+          history = ok
+            ? replyCalcHistory("equation", {
+                label: (row) => mathEditorTileFace({ sample: row.tex }),
+                copy: (row) => mathEditorOutput(row.tex, row.display),
+                restore: (row) => editor?.load(row),
+              })
+            : null;
+          editor = ok && typeof mathEditorMount === "function" ? mathEditorMount({ host: pane, target, done: close, note, onTex, focus, log: history?.el }) : null;
+          changed = false;
           if (!editor) throw new Error("not loaded");
         })
         .catch(() => {
@@ -679,8 +896,8 @@ function replyCalcKeypad(box, equals) {
   const keys = REPLY_CALC_KEYS.map(([face, act], i) => {
     const key = document.createElement("button");
     key.type = "button";
-    // = is the pad's one primary action (the app's filled button); the rest are ghosts.
-    key.className = act === "equals" ? "calc-key" : `ghost calc-key${/^[0-9.]$/.test(act) ? "" : " is-op"}`;
+    // Every key is a ghost: the one filled button of the dialog is Insert, in the action row.
+    key.className = `ghost calc-key${/^[0-9.]$/.test(act) ? "" : " is-op"}`;
     setLabel(key, face);
     key.tabIndex = i === 0 ? 0 : -1;
     if (REPLY_CALC_NAMES[act]) key.setAttribute("aria-label", REPLY_CALC_NAMES[act]);
@@ -713,27 +930,115 @@ function replyCalcKeypad(box, equals) {
   return pad;
 }
 
-function replyCalcHistory(list, box) {
-  list.replaceChildren();
-  list.classList.toggle("hidden", !replyCalc.history.length);
-  for (const row of replyCalc.history) {
-    const item = document.createElement("li");
+//: **A tab's history** (INBOX 1541, the owner: "calculation, conversion and equation history ... an easy way to copy the answers ... if the user clicks on a history thing, they will be reentered in the fields ... clear or edit the history"). A bar under the pane, "History" with its count and Clear, closed until opened (kept per browser) so the keypad keeps its room; the rows newest first, each a button that puts it back in the fields (`restore`), then Copy (`copy` says what), Edit (the same, and the next keep replaces that row instead of adding one) and Remove. Clear and Remove can be undone from the toast. `record(row, auto)` adds a row; `auto` is a row kept after a pause (Units, the Equation), which replaces the last one made within eight seconds so typing does not fill the list.
+function replyCalcHistory(tab, { label, copy, restore }) {
+  let list = replyCalc.load(tab);
+  let replacing = "";
+  let editing = false;
+  let lastKey = "";
+  let lastAt = 0;
+  let open = prefs.bool("calc-history-open", false);
+  const el = document.createElement("div");
+  el.className = "calc-log";
+  const bar = document.createElement("div");
+  bar.className = "calc-log-bar";
+  const toggle = document.createElement("button");
+  toggle.type = "button";
+  toggle.className = "ghost small calc-log-toggle";
+  const count = document.createElement("span");
+  count.className = "calc-log-count";
+  const note = document.createElement("span");
+  note.className = "muted calc-log-note";
+  const clear = smallButton("Clear", "Clear the history", () => {
+    const before = list;
+    set([]);
+    toastAction("History cleared.", "Undo", () => set(before), { ms: 10000, record: false });
+  });
+  const rows = document.createElement("ul");
+  rows.className = "calc-history";
+  rows.id = `calc-history-${tab}-${replyCalc.opened}`;
+  rows.setAttribute("aria-label", "Earlier answers");
+  toggle.setAttribute("aria-controls", rows.id);
+  const caret = document.createElement("i");
+  caret.className = "ph ph-caret-down";
+  caret.setAttribute("aria-hidden", "true");
+  toggle.append("History", count, caret);
+  bar.append(toggle, note, clear);
+  el.append(bar, rows);
+  const set = (next) => {
+    list = next;
+    if (!list.some((row) => row.key === replacing)) {
+      replacing = "";
+      editing = false;
+    }
+    replyCalc.save(tab, list);
+    draw();
+  };
+  const row = (item) => {
+    const li = document.createElement("li");
+    li.classList.toggle("is-editing", editing && item.key === replacing);
     const again = document.createElement("button");
     again.type = "button";
     again.className = "ghost small calc-again";
-    again.textContent = `${row.input} = ${calcFigure(row.answer, false)}`;
-    again.title = "Put this back in the box";
-    again.addEventListener("click", () => {
-      box.value = row.input;
-      box.dispatchEvent(new Event("input"));
-      box.focus();
+    again.replaceChildren(label(item));
+    again.title = "Put this back in the fields";
+    again.addEventListener("click", () => restore(item));
+    const text = () => copy(item);
+    const out = smallButton("ph:copy", "Copy this answer", () => navigator.clipboard?.writeText(text()).then(() => toast("Copied."), () => toast("Couldn't copy it.", "info")));
+    const edit = smallButton("ph:pencil-simple", "Edit this one", () => {
+      replacing = item.key;
+      editing = true;
+      restore(item);
+      draw();
     });
-    item.appendChild(again);
-    list.appendChild(item);
+    const drop = smallButton("ph:x", "Remove from the history", () => {
+      const before = list;
+      set(calcTex.log.remove(list, item.key));
+      toastAction("Removed from the history.", "Undo", () => set(before), { ms: 10000, record: false });
+    });
+    li.append(again, out, edit, drop);
+    return li;
+  };
+  function draw() {
+    el.classList.toggle("hidden", !list.length);
+    count.textContent = ` ${list.length}`;
+    toggle.setAttribute("aria-expanded", String(open));
+    rows.hidden = !open;
+    clear.hidden = !open;
+    note.textContent = editing && open ? "Editing a saved row: keeping a result replaces it." : "";
+    rows.replaceChildren(...(open ? list.map(row) : []));
   }
+  toggle.addEventListener("click", () => {
+    open = !open;
+    prefs.set("calc-history-open", open ? "1" : "0");
+    draw();
+    //: One setting for the dialog: the other tabs' bars follow (each one's click lands here once, and stops when it matches).
+    for (const other of el.closest(".calc-card")?.querySelectorAll(".calc-log-toggle") || []) {
+      if (other !== toggle && other.getAttribute("aria-expanded") !== String(open)) other.click();
+    }
+  });
+  draw();
+  return {
+    el,
+    record(item, auto = false) {
+      const now = Date.now();
+      //: A row kept after a pause replaces the last one made so, within eight seconds, and a row being edited is replaced where it stands.
+      const prior = auto && lastKey && now - lastAt < 8000 ? lastKey : "";
+      list = calcTex.log.add(list, item, replacing || prior);
+      if (editing && auto) replacing = item.key;
+      else {
+        replacing = "";
+        editing = false;
+      }
+      lastKey = auto ? item.key : "";
+      lastAt = now;
+      replyCalc.save(tab, list);
+      draw();
+    },
+  };
 }
 
-function replyCalcConvertPane() {
+function replyCalcConvertPane(actions) {
   const pane = document.createElement("div");
   pane.className = "calc-pane calc-convert";
   const amount = document.createElement("input");
@@ -764,21 +1069,60 @@ function replyCalcConvertPane() {
     select.replaceChildren(...names.map((name) => new Option(name, name)));
     select.value = names.includes(pick) ? pick : names[0];
   };
+  //: The conversion on show, for the action row (the same shape as Sum's).
+  let last = null;
+  actions.provide("convert", actions.result(() => last, { what: "the result", needs: "a result", first: "Pick an amount and two units first." }));
+  //: Kept a moment after the last change (the conversion runs on every key); a row puts the kind, the amount and both units back.
+  let seen = 0;
+  let settle = 0;
+  //: Nothing is kept for the conversion the pane opens with: only after a press or a change in it.
+  let touched = false;
+  for (const type of ["input", "change", "click"]) pane.addEventListener(type, () => (touched = true), true);
+  const history = replyCalcHistory("convert", {
+    label: (row) => `${row.input} = ${calcFigure(row.answer, false)}`,
+    copy: (row) => calcFigure(row.answer, true),
+    restore: (row) => {
+      if (!replyCalc.units?.[row.kind]) return;
+      kind.value = row.kind;
+      fillKind();
+      [from.value, to.value, amount.value] = [row.from, row.to, row.amount];
+      run();
+    },
+  });
   const run = async () => {
-    if (!from.value || !to.value || amount.value === "") return replyCalcShow(out, null);
+    const mine = ++seen;
+    clearTimeout(settle);
+    last = null;
+    if (!from.value || !to.value || amount.value === "") {
+      replyCalcShow(out, null);
+      return actions.sync();
+    }
+    const asked = `${amount.value} ${from.value} to ${to.value}`;
     try {
-      replyCalcShow(out, await replyCalcWork(`${amount.value} ${from.value} to ${to.value}`), { final: true });
+      const got = await replyCalcWork(asked);
+      if (mine !== seen) return;
+      replyCalcShow(out, got, { final: true });
+      last = got?.answer && !got.error ? { input: asked, answer: got.answer } : null;
+      if (last && touched) {
+        const row = { key: asked, input: asked, answer: got.answer, kind: kind.value, amount: amount.value, from: from.value, to: to.value };
+        settle = setTimeout(() => history.record(row, true), 1500);
+      }
     } catch (error) {
+      if (mine !== seen) return;
       replyCalcShow(out, { error: error.message }, { final: true });
     }
+    actions.sync();
   };
-  const pickKind = () => {
+  const fillKind = () => {
     const names = replyCalc.units?.[kind.value] || [];
     const [one, two] = REPLY_CALC_PAIRS[kind.value] || [];
     fill(from, names, one);
     fill(to, names, two || names[1]);
     const dated = new Date(`${replyCalc.units?.rates_date}T12:00`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
     note.textContent = kind.value === "currency" ? `Rates from ${dated}, set by hand: not today's rate.` : "";
+  };
+  const pickKind = () => {
+    fillKind();
     run();
   };
   kind.addEventListener("change", pickKind);
@@ -790,7 +1134,7 @@ function replyCalcConvertPane() {
   const row = document.createElement("div");
   row.className = "calc-convert-row";
   row.append(amount, from, swap, to);
-  pane.append(kind, row, out, note);
+  pane.append(kind, row, out, note, history.el);
   (replyCalc.units ? Promise.resolve(replyCalc.units) : apiJson("/utilities/units"))
     .then((units) => {
       replyCalc.units = units;
@@ -1143,7 +1487,8 @@ function replyNoteCard(id, name) {
   title.textContent = content ? noteLabel({ content: head }, 60) : name || "A note";
   const facts = document.createElement("span");
   facts.className = "embed-card-meta";
-  const words = content ? wordCount(plainText(content)) : 0;
+  //: The server's count is over the whole note; a clipped list row holds its first 300 characters.
+  const words = entry?.word_count ?? (content ? wordCount(plainText(content)) : 0);
   facts.textContent = [
     "Note",
     entry?.category,

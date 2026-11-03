@@ -5,7 +5,7 @@
    It is the Calculator's Equation tab (INBOX 1527), so the card is the sheet's
    and this file only lays out what is inside the pane: the mode, the equation
    field (math-field-lazy.css draws it), the value line, the search, the
-   palette scroller and the foot, in one column that fits a phone. */
+   palette scroller, in one column that fits a phone. */
 
 .math-editor {
   display: flex;
@@ -20,9 +20,10 @@
   font-size: var(--text-xs);
 }
 
-/* The kind strip spans the panel under its head, as the icon picker's does. */
+/* Inline and Display: a `.seg`, its own width, with the pane's gap under it and none of the well's own margin. */
 .math-editor-mode {
-  align-self: stretch;
+  align-self: flex-start;
+  margin-bottom: 0;
 }
 
 /* The line under the head: the hint, and the LaTeX button that shows the TeX. */
@@ -44,13 +45,15 @@
   flex: none;
 }
 
-/* The sheet's card scrolls (a bottom sheet is two thirds of the window), so the
-   palette does not scroll again inside it: a scroll in a scroll traps a thumb. */
+/* The dialog's panes scroll (`.calc-panes`, reply-kit-lazy.css), so the
+   palette does not scroll again inside them: a scroll in a scroll traps a thumb. */
 .math-editor-list {
   min-width: 0;
 }
 
 .math-editor-group {
+  /* A jump lands the heading under the sticky row of groups, not behind it. */
+  scroll-margin-top: calc(var(--space-9) + var(--space-2));
   padding: var(--space-2) 0 var(--space-1);
   color: var(--muted);
   font-size: var(--text-xs);
@@ -86,6 +89,53 @@
   line-height: 1;
 }
 
-.math-editor-foot {
-  margin: 0;
+/* **Quicker than scrolling** (INBOX 1539): a row of the groups under the search, which stays in reach at the
+   top of the scrolling pane, jumps to a group and marks the one in view; the palette keeps its groups. */
+.math-editor-jump {
+  position: sticky;
+  top: calc(-1 * var(--space-1));
+  z-index: 2;
+  display: flex;
+  gap: var(--space-1);
+  padding: var(--space-1) 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  background: var(--modal-bg-opaque);
+  box-shadow: inset 0 -1px 0 var(--divider);
+}
+
+.math-editor-jump::-webkit-scrollbar {
+  display: none;
+}
+
+.math-editor-jump > button {
+  flex: none;
+  white-space: nowrap;
+  transition: color var(--ui-base) var(--ease-out), background-color var(--ui-base) var(--ease-out);
+}
+
+.math-editor-jump > button.active {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+/* A pinned tile wears a small mark at its corner; Pin mode says so in its button and in the line above. */
+.math-editor-tile {
+  position: relative;
+}
+
+.math-editor-tile.is-pinned::after {
+  content: "";
+  position: absolute;
+  top: var(--space-1);
+  right: var(--space-1);
+  width: var(--space-1);
+  height: var(--space-1);
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+}
+
+.math-editor-pinning .math-editor-tile {
+  outline: 1px dashed var(--accent);
+  outline-offset: -2px;
 }

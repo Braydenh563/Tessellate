@@ -38,15 +38,17 @@ function fillEntryMenu(menu, entry) {
       run: async () => {
         closeActionMenus();
         try {
+          //: The whole note: a list row holds its first 300 characters (`fullEntry`, INBOX 1525).
+          const { content } = await fullEntry(entry.id);
           const copy = await apiJson("/entries", {
             method: "POST",
             body: JSON.stringify({
               //: The copy's title is its first "# " line: the API takes no
               //: `title`, so the "(Copy)" this sent was dropped and the two
               //: notes were indistinguishable (INBOX 432).
-              content: /^#\s+\S/.test(entry.content || "")
-                ? entry.content.replace(/^#\s+[^\n]*/, (line) => `${line.trimEnd()} (copy)`)
-                : entry.content,
+              content: /^#\s+\S/.test(content || "")
+                ? content.replace(/^#\s+[^\n]*/, (line) => `${line.trimEnd()} (copy)`)
+                : content,
               category: entry.category,
               tags: entry.tags || [],
             }),

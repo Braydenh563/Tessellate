@@ -1,7 +1,7 @@
 """Comments parse, resolve and export the way the plan's decision says.
 
 DOCUMENTS_PLAN Phase 5 item 1. The model lives between `DOC-COMMENT-BEGIN` and
-`DOC-COMMENT-END` in documents.js and is pure string work with no DOM and no
+`DOC-COMMENT-END` in documents-comments.js and is pure string work with no DOM and no
 app globals in it, so python can run it in node. That is a property this test
 enforces by existing, the same way the table, frontmatter, columns and
 block-reference models are tested.
@@ -26,7 +26,7 @@ import pytest
 from tessellate.core import docexport
 
 ROOT = Path(__file__).resolve().parents[1]
-DOCUMENTS_JS = ROOT / "frontend" / "js" / "documents.js"
+DOCUMENTS_JS = ROOT / "frontend" / "js" / "documents-comments.js"  # the model moved out of documents.js (DC13 remainder, doc23-1102)
 
 BEGIN = "// DOC-COMMENT-BEGIN"
 END = "// DOC-COMMENT-END"
@@ -36,7 +36,7 @@ def comment_source() -> str:
     text = DOCUMENTS_JS.read_text(encoding="utf-8")
     start = text.find(BEGIN)
     stop = text.find(END)
-    assert start != -1, f"{BEGIN} marker is missing from documents.js"
+    assert start != -1, f"{BEGIN} marker is missing from documents-comments.js"
     assert stop > start, f"{END} marker is missing or before {BEGIN}"
     return text[start + len(BEGIN) : stop]
 

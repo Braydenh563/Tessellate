@@ -20,8 +20,9 @@ from sqlalchemy.orm import Session
 from tessellate.ai import inbox, learning
 from tessellate.ai.entities import merge_with_undo
 from tessellate.api.routes_mentions import note_names
-from tessellate.core.database import LINK_TYPES, Entity, EntityMention, Entry, EntryLink
+from tessellate.core.database import LINK_TYPES, Entity, EntityMention, Entry
 from tessellate.core.deps import get_session
+from tessellate.repo import relations as relations_repo
 from tessellate.entry import manager
 from tessellate.entry.manager import WIKI_LINK, plain_label
 from tessellate.entry.mentions import MENTION_MIN_TITLE_CHARS, backlink_spans, sentence_around
@@ -82,11 +83,7 @@ def _sentence(source: Entry, target: Entry) -> str:
 
 def _types(session: Session, visible_ids: set[int]) -> list[dict]:
     facts = []
-    links = list(
-        session.scalars(
-            select(EntryLink).where(EntryLink.link_type.is_(None)).order_by(EntryLink.id.desc()).limit(TYPE_SCAN_MAX)
-        )
-    )
+    links = relations_repo.untyped(session, limit=TYPE_SCAN_MAX)
     wanted = sorted(
         {end for link in links for end in (link.source_entry_id, link.target_entry_id) if end in visible_ids}
     )
@@ -169,7 +166,7 @@ class TypeDecision(BaseModel):
 @router.post("/types/accept")
 def accept_type(body: TypeDecision, session: Session = Depends(get_session)) -> dict:
     """Give the link the suggested type."""
-    link = session.get(EntryLink, body.link_id)
+    link = relations_repo.find(session, body.link_id)
     if link is None:
         raise HTTPException(status_code=404, detail="That link could not be found. Refresh the list.")
     if body.link_type not in LINK_TYPES:

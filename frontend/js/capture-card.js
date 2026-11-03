@@ -236,6 +236,7 @@ function setCaptureMode(mode, focus = true) {
   captureCardField("items").hidden = next !== "todo";
   for (const button of captureCard.root.querySelectorAll(".capture-card-modes [data-mode]")) {
     button.setAttribute("aria-pressed", String(button.dataset.mode === next));
+    button.classList.toggle("active", button.dataset.mode === next);
   }
   keepCaptureDraft();
   if (focus) focusCaptureCard();

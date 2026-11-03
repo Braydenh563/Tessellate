@@ -76,7 +76,10 @@ def test_a_reminder_is_offered_only_for_a_stated_task():
 
 def test_a_habit_is_reported_in_one_tense():
     text = _social()["text"]
-    assert "you interrupt when you're nervous, and you told yourself to count to two before answering" in text
+    #: Audit 1028 E18: "you told yourself to" was a speech act the note never
+    #: made; an instruction line is reported as what the note says (intent moved).
+    assert "you interrupt when you're nervous, and the same note adds: count to two before answering" in text
+    assert not re.search(r"told yourself|reminded yourself", text)
 
 
 def test_another_persons_plan_is_not_the_writers_drift():

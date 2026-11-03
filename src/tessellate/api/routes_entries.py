@@ -42,17 +42,16 @@ from tessellate.api.schemas import (
     LinkOut,
     SimilarOut,
 )
-from tessellate.core import deps, events, jobruns, jobs, vault
+from tessellate.core import cjk, deps, events, jobruns, jobs, vault
 from tessellate.core.events import ACTOR_USER_AND_AI
 from tessellate.core.validation_copy import Said
-from tessellate.core.database import (  # noqa: F401 (EntryLink used in link_suggestions)
+from tessellate.core.database import (
     AuditLog,
     DerivedTension,
     EmbeddingRecord,
     Entry,
     Entity,
     EntityMention,
-    EntryLink,
     EntryRevision,
     MediaUpload,
     WhiteboardNode,
@@ -65,8 +64,10 @@ from tessellate.core.deps import get_session
 from tessellate.entry import duplicates, link_facts, manager
 from tessellate.repo import bookmarks as bookmark_repo
 from tessellate.repo import relation_types
+from tessellate.repo import relations as relations_repo
 from tessellate.repo import content as content_repo
 from tessellate.repo import documents as documents_repo
+from tessellate.repo import tags as tags_repo
 from tessellate.repo.content import NOTES
 from tessellate.entry.mentions import MENTION_MIN_TITLE_CHARS, names_label
 from tessellate.entry import meetings as meeting_shape
@@ -1365,10 +1366,10 @@ def _tag_vocabulary(session: Session) -> list[str]:
 
     Both tag suggesters read this, so a note filed before saving and a note
     refiled afterwards are offered the same vocabulary and cannot drift
-    apart. `manager.all_tags` is cached by notebook fingerprint, so this is
+    apart. `tags_repo.counts` is cached by notebook fingerprint, so this is
     a dictionary lookup rather than a scan on the common path.
     """
-    counts = manager.all_tags(session)
+    counts = tags_repo.counts(session)
     return [tag for tag, _count in sorted(counts.items(), key=lambda row: (-row[1], row[0]))]
 
 
@@ -1895,8 +1896,8 @@ def link_suggestions(session: Session = Depends(get_session)) -> list[dict]:
 def _already_linked(session: Session, entries: list) -> set[frozenset[int]]:
     """Pairs with nothing left to suggest: linked, parent and child, or dismissed."""
     already_linked: set[frozenset[int]] = set()
-    for link in session.scalars(select(EntryLink)):
-        already_linked.add(frozenset((link.source_entry_id, link.target_entry_id)))
+    for source_id, target_id in relations_repo.pairs(session):
+        already_linked.add(frozenset((source_id, target_id)))
     # Threads are already a connection, don't re-suggest parent/child.
     for entry in entries:
         if entry.parent_id is not None:
@@ -1928,7 +1929,7 @@ def _recognised_pairs(session: Session, entries: list, candidates: dict, already
         similar = search_engine.cached_similar_pairs(
             session, LINK_SUGGESTION_THRESHOLD, only=set(candidates)
         )
-    edges = [(a, b) for a, b in session.execute(select(EntryLink.source_entry_id, EntryLink.target_entry_id))]
+    edges = relations_repo.pairs(session)
     edges += [(e.parent_id, e.id) for e in entries if e.parent_id is not None]
     mentions = [
         (name, entry_id)
@@ -2089,7 +2090,7 @@ def find_tensions(
     # alone deliberately: notes can be linked as "related" *and* disagree,
     # and that is one of the more interesting cases.
     known: set[str] = set(_dismissed_tensions())
-    for link in session.scalars(select(EntryLink).where(EntryLink.link_type == "contradicts")):
+    for link in relations_repo.with_type(session, "contradicts"):
         known.add(_tension_key(link.source_entry_id, link.target_entry_id))
     # WORLD_CLASS_PLAN B4: a pair already in the tensions table (found by an
     # earlier scan or the night shift, whatever became of it) is never asked
@@ -2263,7 +2264,7 @@ def reopen_tension(body: TensionReopen, session: Session = Depends(get_session))
     config.set_preference(TENSION_DISMISSED_KEY, stored)
     removed_link = False
     if body.remove_link:
-        for link in session.scalars(select(EntryLink).where(EntryLink.link_type == "contradicts")).all():
+        for link in relations_repo.with_type(session, "contradicts"):
             if {link.source_entry_id, link.target_entry_id} == pair:
                 manager.delete_link(session, link)
                 removed_link = True
@@ -2421,12 +2422,8 @@ def related_entries(entry_id: int, session: Session = Depends(get_session)) -> l
     #: note (`manager.create_link` refuses both with a 400).
     linked = {
         other_id
-        for pair in session.execute(
-            select(EntryLink.source_entry_id, EntryLink.target_entry_id).where(
-                or_(EntryLink.source_entry_id == entry.id, EntryLink.target_entry_id == entry.id)
-            )
-        )
-        for other_id in pair
+        for link in relations_repo.touching(session, entry.id)
+        for other_id in (link.source_entry_id, link.target_entry_id)
     }
     found = {
         other.id: other
@@ -2498,6 +2495,12 @@ ENTRIES_BY_IDS_MAX = 200
 ENTRIES_PREVIEW_MAX = 2000
 
 
+_TASK_OPEN = re.compile(r"^[ \t]*(?:[-*+]|\d+[.)])[ \t]+\[[ \t]\]", re.M)
+_TASK_DONE = re.compile(r"^[ \t]*(?:[-*+]|\d+[.)])[ \t]+\[[xX]\]", re.M)
+#: The list's own `[[wiki link]]` test (`matchesSearch`, `is:linked`), for the part of a note past the preview.
+_WIKI_LINK = re.compile(r"\[\[[^\]\n]{1,120}\]\]")
+
+
 def _previewed(rows: list[EntryOut], preview: int) -> list[EntryOut]:
     """`rows` with each note's text cut to `preview` characters (0 keeps it
     whole), at the last space before the cut when there is one, and
@@ -2507,7 +2510,16 @@ def _previewed(rows: list[EntryOut], preview: int) -> list[EntryOut]:
     if not preview:
         return rows
     for row in rows:
-        if len(row.content) > preview:
+        #: The numbers a list draws from the whole text (the dashboard's words and open tasks), counted before the cut.
+        row.word_count = cjk.word_count(row.content)
+        row.tasks_open = len(_TASK_OPEN.findall(row.content))
+        row.tasks_done = len(_TASK_DONE.findall(row.content))
+        row.wiki_linked = bool(_WIKI_LINK.search(row.content))
+        #: A meeting's card reads its sections from the whole text (`meetingGlance`), so a meeting is sent whole. So is
+        #: a private note: the index never reads one, so the list's filter box matches it on the text the list holds
+        #: (INBOX 1525 review). Locked, its text is the short placeholder anyway.
+        whole = row.is_private or "meeting" in {v.lower() for v in row.properties.get("type", [])}
+        if len(row.content) > preview and not whole:
             cut = row.content[:preview]
             row.content = (cut.rsplit(None, 1)[0] if " " in cut or "\n" in cut else cut).rstrip()
             row.content_truncated = True
@@ -4156,9 +4168,7 @@ def delete_link(
     entry_id: int, link_id: int, session: Session = Depends(get_session)
 ) -> EntryOut:
     entry = NOTES.writable(session, entry_id)
-    link = session.get(EntryLink, link_id)
-    if link is None or entry.id not in (link.source_entry_id, link.target_entry_id):
-        raise HTTPException(status_code=404, detail="That link could not be found.")
+    link = relations_repo.get_for_note(session, entry.id, link_id)
     manager.delete_link(session, link)
     return _to_out(session, entry)
 
@@ -4170,9 +4180,7 @@ def patch_link(
     """Change a link's type (GRAPH_PLAN KG9), its properties (KG3) or its
     direction (INBOX 693)."""
     entry = NOTES.writable(session, entry_id)
-    link = session.get(EntryLink, link_id)
-    if link is None or entry.id not in (link.source_entry_id, link.target_entry_id):
-        raise HTTPException(status_code=404, detail="That link could not be found.")
+    link = relations_repo.get_for_note(session, entry.id, link_id)
     sent = body.model_fields_set
     if "link_type" in sent:
         if body.link_type is not None and not manager.is_link_type(session, body.link_type):
@@ -4193,9 +4201,7 @@ def update_link_reason(
     with none, one somebody typed, or one `create_link` deduced on its own.
     """
     entry = NOTES.writable(session, entry_id)
-    link = session.get(EntryLink, link_id)
-    if link is None or entry.id not in (link.source_entry_id, link.target_entry_id):
-        raise HTTPException(status_code=404, detail="That link could not be found.")
+    link = relations_repo.get_for_note(session, entry.id, link_id)
     try:
         manager.set_link_reason(session, link, body.reason)
         return _to_out(session, entry)
@@ -4212,9 +4218,7 @@ def generate_link_reason_endpoint(
 ) -> dict:
     """Ask the model to generate a specific reason why these two notes are connected."""
     entry = NOTES.writable(session, entry_id)
-    link = session.get(EntryLink, link_id)
-    if link is None or entry.id not in (link.source_entry_id, link.target_entry_id):
-        raise HTTPException(status_code=404, detail="That link could not be found.")
+    link = relations_repo.get_for_note(session, entry.id, link_id)
 
     source = session.get(Entry, link.source_entry_id)
     target = session.get(Entry, link.target_entry_id)

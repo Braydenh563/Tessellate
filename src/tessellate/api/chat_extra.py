@@ -14,6 +14,7 @@ from tessellate.ai import activity, composer_digest, composer_extra, realise
 from tessellate.ai.composer_study import Ctx
 from tessellate.ai.tools._common import _visible
 from tessellate.core.database import Category, Entry
+from tessellate.repo import categories as categories_repo
 from tessellate.repo import reminders as reminder_repo
 
 NOTE_LIMIT = 400
@@ -41,7 +42,7 @@ def events(session: Session, question: str, history: list[dict], *, now: datetim
     #: "Summarise this" and "summarise Travel" read the open note or a whole
     #: category, which the digest does better than a title match here.
     if composer_digest.about_this(question) or composer_digest.named_category(
-        question, list(session.execute(select(Category.name)).scalars())
+        question, categories_repo.names(session)
     ):
         return None
     #: "Summarise my week" is the week's recap (`ai/activity`), not a note's summary.

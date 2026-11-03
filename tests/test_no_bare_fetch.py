@@ -54,6 +54,9 @@ ALLOWED = {
     # A Web Worker (the offline translator, Brief 83) has no app.js and so no
     # `api()`: its engine (.wasm) and model files, from an open route.
     "translate-worker.js": 2,
+    # The icon font for an exported page (INBOX 1545): a static file from the
+    # open /vendor mount, read as a blob to inline, not an API request.
+    "documents-export.js": 1,
 }
 
 #: `fetch(` as a call: not `.fetch(` (a method), not a word ending in fetch.

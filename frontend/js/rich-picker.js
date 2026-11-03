@@ -136,18 +136,28 @@ function richPickerRow({ icon, tint, face, label, about, keys, query, tag = "li"
     const line = document.createElement("span");
     line.className = "rich-picker-about";
     line.textContent = about;
-    text.appendChild(line);
+    //: A space between the two, so the row's text reads "Heading 1 The title"
+    //: and not "Heading 1The title": axe compares the visible text with the
+    //: name and found the run-together word (audit 1102 DX22). Both spans are
+    //: blocks, so the space draws nothing.
+    text.append(" ", line);
   }
   row.appendChild(text);
   //: Said as a phrase (audit 1031 N39): the label and the kind sit in two
   //: spans, and a reader joined them as "Harbor launch plannote".
-  if (about) row.setAttribute("aria-label", `${title.textContent}, ${about}`);
+  //: **The name holds every word the row shows, label first** (audit 1102
+  //: DX22): axe's label-content-name-mismatch compares the visible text
+  //: ("Numbered list Steps, in order 1.") with the name, and the keycap was
+  //: missing from it. The keycap is last, so the name still starts with the
+  //: label and reads as a phrase.
+  if (about) row.setAttribute("aria-label", [title.textContent, about, keys].filter(Boolean).join(", "));
 
   if (keys) {
     const cap = document.createElement("kbd");
     cap.className = "rich-picker-keys";
     cap.textContent = keys;
-    row.appendChild(cap);
+    //: The space keeps "in order1." from running together in the row's text.
+    row.append(" ", cap);
   }
   return row;
 }

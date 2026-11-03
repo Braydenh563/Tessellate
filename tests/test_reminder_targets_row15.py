@@ -58,7 +58,7 @@ def test_the_menus_offer_the_rows():
     note = LIBRARY.split('if (item.kind === "note") {', 1)[1].split("if (item.kind === \"tag\")", 1)[0]
     assert "remindAbout(" in note
     assert "linkNoteFromLibrary(" in note
-    document = LIBRARY.split('if (item.kind === "document") {', 1)[1].split('if (item.kind === "archived") {', 1)[0]
+    document = LIBRARY.split('if (item.kind === "document" || item.kind === "diagram") {', 1)[1].split('if (item.kind === "archived") {', 1)[0]
     assert "remindAbout(" in document
     #: The note's door takes a document too (note-cards.js, `{ document: true }`).
     assert "showNoteInGraph(item.id, { document: true })" in document

@@ -5258,6 +5258,8 @@ function gcWorkerParams(s = gcTab) {
     //: The lines the worker keeps clear of dots are the lines drawn
     //: (`clearanceForce`, INBOX 693): curved or straight.
     curved: gcCurvedLinks(s),
+    //: Tidy spacing (INBOX 1529): keep dots off the lines, off by default.
+    tidy: prefs.get("graph-tidy", null) === "1",
     //: How the force layout arranges itself (INBOX 693, `#graph-shape`; the
     //: worker's `SHAPES`).
     shape: gcShape(s),

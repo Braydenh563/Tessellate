@@ -33,11 +33,10 @@ from itertools import chain
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from starlette.concurrency import run_in_threadpool
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import capability, fact_check, composer, composer_social, composer_unplaced, note_language, composer_aware, composer_compose, composer_digest, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, note_rank, note_recency, personal, verdicts, vocative
-from tessellate.ai import ask_chips
+from tessellate.ai import ask_chips, composer_intent
 from tessellate.ai import recognise
 from tessellate.ai import (
     acts,
@@ -61,15 +60,15 @@ from tessellate.ai.grounding import (
     support as grounding_support,
 )
 from tessellate.ai.ollama_client import OllamaError
-from tessellate.api import chat_extra
+from tessellate.api import chat_extra, chat_web
 from tessellate.core import activity, deps, jobs, model_gate, private_turn
 from tessellate.core.database import (
     AuditLog,
-    Category,
     Entry,
 )
 from tessellate.core.config import user_now
 from tessellate.core.deps import get_session
+from tessellate.repo import categories as categories_repo
 from tessellate.core.logbuffer import safe_value
 from tessellate.entry import manager
 from tessellate.entry.manager import UNCATEGORISED
@@ -122,13 +121,7 @@ def remember_recent_question(body: RememberBody, session: Session = Depends(get_
 def suggestions(session: Session = Depends(get_session)) -> list[str]:
     """Recommended questions: content-aware ones built from the user's own
     categories, falling back to generic starters for an empty notebook."""
-    rows = session.execute(
-        select(Category.name, func.count(Entry.id))
-        .join(Entry, Entry.category_id == Category.id)
-        .where(Entry.is_deleted == False)  # noqa: E712
-        .group_by(Category.name)
-        .order_by(func.count(Entry.id).desc())
-    ).all()
+    rows = categories_repo.note_counts(session, Entry.is_deleted == False)  # noqa: E712
     categories = [name for name, _count in rows if name != UNCATEGORISED]
 
     asked = {_asked_key(question) for question in _recent_questions(session)}
@@ -207,7 +200,8 @@ def _worked_out(question: str):
     """**Worked out, like a count** (CHAT_PLAN decision 41): a sum, a
     conversion, the time. Its sentence is exact and needs no model, so it
     travels the counted answer's road: no retrieval, said as it is.
-    Translating is a model's job when one runs: that one is chat."""
+    Translating and writing (`utilities.GENERATIVE_VERBS`) are a model's job
+    when one runs: those are chat."""
     from tessellate.ai import utilities
 
     kind = utilities.kind_of(question)
@@ -218,7 +212,7 @@ def _worked_out(question: str):
         #: from the composer with a model up and Web on).
         return intent.NOTES, None
     worked = None
-    if kind != "translate" or not deps.get_ollama().is_running():
+    if kind not in ("translate", "generate") or not deps.get_ollama().is_running():
         now = user_now(deps.get_config())
         worked = composer.compose(question, [], today=now.date(), now=now.replace(tzinfo=None))
     if worked and worked["shape"] == "utility":
@@ -371,7 +365,7 @@ def _context_note(ctx: _NoteCtx, entry) -> dict:  # noqa: ANN001
         #: How many pictures the note holds: the prompt says so, because the
         #: answer shows them beside this note's citation (INBOX 502).
         "pictures": len(set(_MEDIA_REF.findall(entry.content or ""))),
-        "category": manager.category_name_for(ctx.session, entry),
+        "category": ctx.category_names.get(entry.category_id, manager.UNCATEGORISED),
         # Marked so the prompt can say which notes the user chose.
         "attached": entry.id in ctx.attached_ids,
         # Clipped from the web or imported (SEC-02): the agent starts the turn
@@ -412,6 +406,7 @@ def _context_notes(session: Session, found: _Found, attached: list, attached_doc
     ctx = _NoteCtx(
         session, found, attached_ids, now.tzinfo, now.date(),
         manager.entry_dates_bulk(session, ids), _files_on(session, ids), as_of,
+        manager.bulk_category_names(session, found.entries),
     )
     notes = [_context_note(ctx, entry) for entry in found.entries]
     #: Listed newest first for "my last note": said on the first, which a small
@@ -1061,7 +1056,6 @@ def _no_notes_line(req: _StreamRequest, ollama_running: bool) -> str:
     #: much did I save in May" asks about what the notes hold (audit 1031 C3).
     if not planned.window or planned.terms or not planned.window_phrase or planned.kind != "recall":
         return librarian.NO_RESULTS_MESSAGE
-    from sqlalchemy import func
 
     from tessellate.ai.tools._common import _visible
     from tessellate.core.database import Entry
@@ -1403,7 +1397,8 @@ def _with_next_step(text: str, size: str, req: _StreamRequest, cited: list[str] 
     #: here: how do I ask about one note", INBOX 1420).
     aware = composer_aware.closing(_awareness(req), f"{seed}:{req.question}", recent, related=not cited, asked=req.question or "", cited=cited or ()) if req.body.screen else ""
     if aware:
-        return f"{text}\n\n{aware}", []
+        req.tip = aware
+        return text, []
     if not named:
         return text, []
     #: Its heading, not a whole first line ("Project Atlas budget: Sam says ..."): a chip is short.
@@ -1437,10 +1432,10 @@ def _composed_events(req: _StreamRequest, prepared: dict, ollama_running: bool) 
     text = _with_older(text, older, result)
     text = _with_words_only(text, prepared, result)
     text = _with_lapsed(text, current, result, req)
-    events: list = [{"type": "answer", "delta": text}, *(_web_chip(req) if missed else [])]
+    events: list = [{"type": "answer", "delta": text}, *(_web_chip(req) if missed else []), *req.tip_events()]
     #: Every question the finished text suggests is a chip (INBOX 1497); one
     #: the grounding event already carries is not said twice.
-    suggested = [q for q in ask_chips.lift(text) if q not in (result.get("next") or []) and q not in asks]
+    suggested = [q for q in ask_chips.lift(f"{text}\n{req.tip}") if q not in (result.get("next") or []) and q not in asks]
     if result["grounding"]:
         _name_documents(req.session, result["grounding"])
         events.append(_composed_grounding_event(req, result, [*asks, *suggested]))
@@ -1502,10 +1497,11 @@ def _web_events_or_down(req: _StreamRequest, question: str) -> list | None:
     could not run; None when it ran and found nothing."""
     web = _web_answer(req, question)
     if web:
-        return list(_web_events(*web))
+        return [chat_web.NOT_NOTES, *_web_events(*web)]
     if req.web_down:
-        return _offer_events(composer_web.search_down(req.web_down, *_search_service(), can_start=_can_start_searxng()))
+        return [chat_web.NOT_NOTES, *_offer_events(composer_web.search_down(req.web_down, *_search_service(), can_start=_can_start_searxng()))]
     return None
+
 
 
 def _early_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list | None:
@@ -2104,7 +2100,7 @@ def _settle_turn(req: _StreamRequest, prepared: dict, t: _Turn) -> Iterator[str]
     yield from map(_event, _late_panel(prepared, req.question, t.answer_text, t.sent_kinds))
     if t.answer_text:
         t.marks["done"] = time.perf_counter() - t.started
-        yield _event({"type": "why", "lines": _why(req, prepared, grounding, t.composing, t.will_answer, t.tools_only, t.ollama_running, t.shape, t.marks)})
+        yield _event({"type": "why", "lines": _why(req, prepared, grounding, t.composing, t.will_answer, t.tools_only, t.ollama_running, t.shape, t.marks, t.answer_text)})
     yield _event({"type": "done"})
 
 
@@ -2135,12 +2131,12 @@ def _asked(body: ChatRequest, session: Session, skill: dict | None) -> tuple:
 
     Cleaned before anything reads it (INBOX 801): a stray backslash, a run of
     spaces, a sentence typed in capitals (`question_noise.tidy`). Everything
-    that routes, searches or plans reads its first `composer.PLAN_CHARS`
+    that routes, searches or plans reads its first `composer_intent.PLAN_CHARS`
     characters (those passes cost words x length: 38 s for a 20,000-character
     paste); the model is given all of it (`_in_full`)."""
-    head, tail = body.question[: composer.PLAN_CHARS], body.question[composer.PLAN_CHARS :]
+    head, tail = body.question[: composer_intent.PLAN_CHARS], body.question[composer_intent.PLAN_CHARS :]
     #: Filler ("errrmmm. hi") is read past before anything reads it (INBOX 1485).
-    question, address = _address(skill["question"] if skill else question_noise.media_kind(question_noise.drop_filler(question_noise.tidy(head))) or head, session, skill)
+    question, address = _address(skill["question"] if skill else question_noise.media_kind(question_noise.new_notes_as_newest(question_noise.drop_filler(question_noise.tidy(head)))) or head, session, skill)
     return question, address, None if skill else (body.raw_question or (question + tail if tail else None))
 
 

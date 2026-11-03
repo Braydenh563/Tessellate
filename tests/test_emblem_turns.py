@@ -80,7 +80,7 @@ def _blankets() -> list[str]:
     found = []
     for path in CSS:
         text = re.sub(r"/\*.*?\*/", "", path.read_text(encoding="utf-8"), flags=re.S)
-        for match in re.finditer(r"([^{}]+)\{([^{}]*)\}", text):
+        for match in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", text):
             body = match.group(2)
             if "animation-duration: 0.001ms !important" in body:
                 found.append(match.group(1).strip())
@@ -128,7 +128,7 @@ def test_the_chat_welcome_keeps_its_emblem_when_short() -> None:
     "missing" logo of the report. Short makes it smaller, never gone."""
     for path in CSS:
         text = re.sub(r"/\*.*?\*/", "", path.read_text(encoding="utf-8"), flags=re.S)
-        for match in re.finditer(r"([^{}]+)\{([^{}]*)\}", text):
+        for match in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", text):
             if "chat-empty-emblem" in match.group(1):
                 assert "display: none" not in match.group(2), (
                     f"{path.name} hides the chat welcome's emblem: {match.group(1).strip()}"

@@ -1265,7 +1265,7 @@
            Two choices, so it is the app's `.seg` rather than a select. -->
       <div class="doc-history-bar">
         <div class="seg" id="doc-history-filter" role="group" aria-label="Which versions to show">
-          <button type="button" data-history-filter="all" aria-pressed="true"
+          <button type="button" class="active" data-history-filter="all" aria-pressed="true"
             title="Every version this document has had">All</button>
           <button type="button" data-history-filter="named" aria-pressed="false"
             title="Only the versions you named">Named</button>
@@ -1721,6 +1721,8 @@
               <button type="button" data-md="task" title="Task list"><i class="ph ph-check-square ph-lead" aria-hidden="true"></i> <span class="toolbar-word">Task</span></button>
               <button type="button" class="icon-only" data-md="link" title="Link" aria-label="Link"><i class="ph ph-link" aria-hidden="true"></i></button>
               <button type="button" class="icon-only" data-md="emoji" title="Emoji or icon" aria-label="Emoji or icon"><i class="ph ph-smiley" aria-hidden="true"></i></button>
+              <button type="button" class="icon-only" data-md="symbol" title="Symbol" aria-label="Symbol"><i class="ph ph-pi" aria-hidden="true"></i></button>
+              <button type="button" class="icon-only" data-md="equation" title="Equation (Alt+=)" aria-label="Equation"><i class="ph ph-function" aria-hidden="true"></i></button>
               <span class="doc-toolbar-sep" aria-hidden="true"></span>
               <!-- Live or Source (INBOX 430): the box renders as you type; this
                    shows the markdown as typed instead (wiring.js setNoteSource). -->
@@ -2783,6 +2785,14 @@ Link to another note with [[its first few words]]."></textarea>
              bottom??"). The list takes the sidebar's free height, so a line
              after it sat at the foot, beside All in Library, a panel's
              height away from the heading it answers. -->
+        <!-- E47 (audit 1028): the search-field recipe, above the list. It asks the
+             server (`GET /conversations?q=`), which reads titles and what was said,
+             because the list below holds only the last few chats. -->
+        <div class="search-field chat-sidebar-search">
+          <i class="ph ph-magnifying-glass search-field-icon" aria-hidden="true"></i>
+          <input id="chat-sidebar-search" type="search" class="search-field-input" autocomplete="off"
+            placeholder="Search chats" aria-label="Search your saved chats" aria-controls="conversation-list">
+        </div>
         <p id="conv-empty" class="muted empty-line">No saved chats yet. Ask something to start one.</p>
         <ul id="conversation-list"></ul>
         <button id="conv-browse-all" class="ghost small conv-browse-all" type="button"
@@ -3354,6 +3364,8 @@ Link to another note with [[its first few words]]."></textarea>
                     title="Ask the Librarian about your notes. It reads and answers; it never changes anything."
                     aria-label="Ask the Librarian"><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> Ask<span class="chat-mode-long"> the Librarian</span></button>
                   <button data-chat-mode="agent" type="button"
+                    data-needs-model="Agent mode needs a model, or the Needle extra, to call tools"
+                    data-model-offer="Ask the Librarian answers from your notes without one."
                     title="Agent mode. Ask the Librarian to do something: it can use tools, search and read your notes, open web pages, create, tag, link and organise. Destructive actions always ask you first."
                     aria-label="Agent mode"><i class="ph ph-strategy ph-lead" aria-hidden="true"></i> Agent<span class="chat-mode-long"> mode</span></button>
                 </div>
@@ -4279,7 +4291,7 @@ Link to another note with [[its first few words]]."></textarea>
                 <li>Spread: how far apart linked notes sit.</li>
                 <li>Link force: how hard each link pulls its two notes together.</li>
                 <li>Length by similarity: notes that match more closely in meaning sit nearer each other.</li>
-                <li>Group by category: each category gathers in a place of its own, and a note with no links sits with its category.</li>
+                <li>Group by category: each category gathers in a place of its own, and a note with no links sits with its category. Tidy spacing, under it and off by default, moves dots off the lines they would sit on; a large notebook takes longer to settle.</li>
                 <li>Unpin all lets the notes you pinned move again, and Reshuffle layout lays the map out again from a new start.</li>
               </ul>
             </div>
@@ -4948,10 +4960,10 @@ Link to another note with [[its first few words]]."></textarea>
                Second in the stack, under the outline and above what links here,
                because it is the one of the four that changes while you write.
                Absent when there is nothing in it, like the two below it. -->
-          <div id="doc-comments-wrap" class="doc-outline-wrap doc-comments-wrap hidden">
-            <h3>Comments <span class="doc-outline-count" id="doc-comments-count"></span></h3>
-            <ul id="doc-comments" class="doc-outline doc-comments"></ul>
-          </div>
+          <!-- Empty here on purpose: `documents-comments.js` builds the heading, the list, the
+               resolved toggle and the resolved shelf on the first draw, since five elements
+               nobody sees until a remark exists are not worth the boot document (the element cap). -->
+          <div id="doc-comments-wrap" class="doc-outline-wrap doc-comments-wrap hidden"></div>
 
           <!-- What links *here*. The reverse of a [[wiki link]], and the
                single most-used panel in tools of this shape, you can always
@@ -5187,7 +5199,7 @@ Link to another note with [[its first few words]]."></textarea>
                 itself (Source), a preview beside it (Split) or just the text
                 (Plain), and Read shows the finished page. Formatting shows the
                 formatting toolbar (Ctrl+Shift+X). AI edit asks Atlas to rewrite the
-                document or the selection.</p>
+                document or the selection. In Live, a grip appears beside the block under the pointer: drag it to move the block, or press Alt+Up or Alt+Down.</p>
               <p>A code file adds Format (Shift+Alt+F), Run (Ctrl+Shift+Enter),
                 Go to line (Ctrl+G), Assistant and Snippets; on a phone the bar at
                 the foot holds Tab, Undo and the brackets instead of the writing buttons. Beside prose, Snippets reads Sections.
@@ -5211,6 +5223,21 @@ Link to another note with [[its first few words]]."></textarea>
                 title="More actions for this document"
                 aria-label="More actions for this document"><i class="ph ph-dots-three" aria-hidden="true"></i></summary>
               <div class="doc-dock-menu-list">
+                <!-- **On a phone the dock is one row** (audit 1102 DX13): back, the title,
+                     Edit / Read and this menu. What stood beside them (AI edit, Snippets,
+                     Focus, the other editing views) is a row here that presses the real
+                     button (`data-click-proxy`, documents.js), so no handler is duplicated.
+                     Hidden from 600 up, where the buttons are in the dock. -->
+                <button class="menu-item doc-dock-menu-item doc-phone-only" type="button" data-click-proxy="doc-ai"><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> AI edit</button>
+                <button class="menu-item doc-dock-menu-item doc-phone-only" type="button" data-click-proxy="doc-code-snippets-open"><i class="ph ph-puzzle-piece ph-lead" aria-hidden="true"></i> <span class="doc-code-only">Snippets</span><span class="doc-prose-only">Sections</span></button>
+                <button class="menu-item doc-dock-menu-item doc-phone-only" type="button" data-click-proxy="doc-focus-toggle"><i class="ph ph-corners-out ph-lead" aria-hidden="true"></i> Focus mode</button>
+                <button class="menu-item doc-dock-menu-item doc-phone-only" type="button" data-click-proxy="#tab-documents .doc-actions > [data-help-for=doc-dock-help]"><i class="ph ph-question ph-lead" aria-hidden="true"></i> About these controls</button>
+                <button class="menu-item doc-dock-menu-item doc-phone-only doc-code-only" type="button" data-click-proxy="doc-code-format"><i class="ph ph-brackets-curly ph-lead" aria-hidden="true"></i> Format</button>
+                <button class="menu-item doc-dock-menu-item doc-phone-only doc-code-only" type="button" data-click-proxy="doc-code-assist-open"><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> Assistant</button>
+                <button class="menu-item doc-dock-menu-item doc-phone-only" type="button" data-click-proxy="#doc-view-menu [data-doc-view=live]"><i class="ph ph-article ph-lead" aria-hidden="true"></i> Edit as Live</button>
+                <button class="menu-item doc-dock-menu-item doc-phone-only" type="button" data-click-proxy="#doc-view-menu [data-doc-view=source]"><i class="ph ph-code ph-lead" aria-hidden="true"></i> Edit as Source</button>
+                <button class="menu-item doc-dock-menu-item doc-phone-only" type="button" data-click-proxy="#doc-view-menu [data-doc-view=split]"><i class="ph ph-columns ph-lead" aria-hidden="true"></i> Edit as Split</button>
+                <button class="menu-item doc-dock-menu-item doc-phone-only" type="button" data-click-proxy="#doc-view-menu [data-doc-view=plain]"><i class="ph ph-text-align-left ph-lead" aria-hidden="true"></i> Edit as Plain text</button>
                 <button id="doc-format-toggle" class="menu-item doc-dock-menu-item" type="button" aria-pressed="false"
                   title="Show the formatting toolbar above the editor (Ctrl+Shift+X)"><i class="ph ph-text-aa ph-lead" aria-hidden="true"></i> <span id="doc-format-toggle-label">Show formatting toolbar</span></button>
 
@@ -5387,10 +5414,8 @@ Link to another note with [[its first few words]]."></textarea>
         <!-- Formatting without remembering the syntax. Everything here is
              plain markdown, so the file stays portable. -->
         <div class="doc-toolbar" id="doc-toolbar" role="toolbar" aria-label="Formatting">
-          <button type="button" data-md="h1" title="Heading 1">H1</button>
-          <button type="button" data-md="h2" title="Heading 2">H2</button>
-          <button type="button" data-md="h3" title="Heading 3">H3</button>
-          <span class="doc-toolbar-sep" aria-hidden="true"></span>
+          <!-- No H1 to H3 buttons (DX6, DX26): Heading 1 to 6 are rows of
+               Insert, Ctrl+1 to 3 still set a heading, and the strip is one row. -->
           <button type="button" data-md="bold" title="Bold (Ctrl+B)"><strong>B</strong></button>
           <button type="button" data-md="italic" title="Italic (Ctrl+I)"><em>I</em></button>
           <button type="button" data-md="strike" title="Strikethrough"><s>S</s></button>
@@ -5413,7 +5438,9 @@ Link to another note with [[its first few words]]."></textarea>
           <button type="button" data-md="task" title="Task list (Ctrl+Shift+9)"><i class="ph ph-check-square ph-lead" aria-hidden="true"></i> Task</button>
           <span class="doc-toolbar-sep" aria-hidden="true"></span>
           <button type="button" class="icon-only" data-md="link" title="Link" aria-label="Link"><i class="ph ph-link" aria-hidden="true"></i></button>
-          <!-- **Two folds, because twenty-five controls do not fit.** Reported:
+          <!-- **One fold now (DX6, DX26): Style.** Insert became a button on the "/" menu and
+               the Heading, Block and Links menus went, which leaves the strip on one row at 1440
+               (82.8 to 46.8 px). The history below is why a fold exists at all. Reported:
                "the documents toolbar takes up a second row so either group with
                dropdown sections like in the graph top dock and/or add more
                tools." Measured before this: one row at 1440px and two rows
@@ -5430,7 +5457,7 @@ Link to another note with [[its first few words]]."></textarea>
                query, so nesting them changes nothing about how they fire. -->
           <details class="doc-dock-menu doc-toolbar-menu" id="doc-toolbar-colour">
             <summary class="doc-dock-menu-btn doc-toolbar-menu-btn"
-              title="Highlight, colour and comment" aria-label="Highlight, colour and comment"><i class="ph ph-highlighter ph-lead" aria-hidden="true"></i> Highlight <i class="ph ph-caret-down doc-toolbar-menu-caret" aria-hidden="true"></i></summary>
+              title="Highlight, colour, underline, superscript and comment" aria-label="Style: highlight, colour, underline, superscript and comment"><i class="ph ph-text-aa ph-lead" aria-hidden="true"></i> Style <i class="ph ph-caret-down doc-toolbar-menu-caret" aria-hidden="true"></i></summary>
             <div class="doc-dock-menu-list">
               <button type="button" class="doc-dock-menu-item" data-md="highlight" title="Highlight (yellow)"><i class="ph ph-highlighter ph-lead" aria-hidden="true"></i> Highlight</button>
               <!-- Comment sits in this menu rather than in Insert because what
@@ -5448,22 +5475,21 @@ Link to another note with [[its first few words]]."></textarea>
                 aria-label="Text colour" title="Text colour">
                 <option value="">Text colour…</option>
               </select>
+              <button type="button" class="doc-dock-menu-item" data-md="underline" title="Underline"><i class="ph ph-text-underline ph-lead" aria-hidden="true"></i> Underline</button>
+              <button type="button" class="doc-dock-menu-item" data-md="sup" title="Superscript"><i class="ph ph-text-superscript ph-lead" aria-hidden="true"></i> Superscript</button>
+              <button type="button" class="doc-dock-menu-item" data-md="sub" title="Subscript"><i class="ph ph-text-subscript ph-lead" aria-hidden="true"></i> Subscript</button>
               <button type="button" class="doc-dock-menu-item" data-md="clearformat" title="Remove highlight or colour"><i class="ph ph-eraser ph-lead" aria-hidden="true"></i> Clear colour</button>
             </div>
           </details>
-          <details class="doc-dock-menu doc-toolbar-menu" id="doc-toolbar-insert">
-            <summary class="doc-dock-menu-btn doc-toolbar-menu-btn"
-              title="Insert a block" aria-label="Insert a block"><span class="ui-pm ph-lead" aria-hidden="true"></span> Insert <i class="ph ph-caret-down doc-toolbar-menu-caret" aria-hidden="true"></i></summary>
-            <div class="doc-dock-menu-list">
-              <button type="button" class="doc-dock-menu-item" data-md="quote" title="Quote"><i class="ph ph-quotes ph-lead" aria-hidden="true"></i> Quote</button>
-              <button type="button" class="doc-dock-menu-item" data-md="codeblock" title="Code block"><i class="ph ph-code-block ph-lead" aria-hidden="true"></i> Code block</button>
-              <button type="button" class="doc-dock-menu-item" data-md="table" title="Table"><i class="ph ph-table ph-lead" aria-hidden="true"></i> Table</button>
-              <button type="button" class="doc-dock-menu-item" data-md="hr" title="Divider"><i class="ph ph-minus ph-lead" aria-hidden="true"></i> Divider</button>
-              <button type="button" class="doc-dock-menu-item" data-md="ol" title="Numbered list (Ctrl+Shift+7)"><i class="ph ph-list-numbers ph-lead" aria-hidden="true"></i> Numbered list</button>
-              <button type="button" class="doc-dock-menu-item" data-md="emoji" title="Emoji or icon"><i class="ph ph-smiley ph-lead" aria-hidden="true"></i> Emoji or icon…</button>
-              <button type="button" class="doc-dock-menu-item" data-md="equation" title="Equation (Alt+=)"><i class="ph ph-function ph-lead" aria-hidden="true"></i> Equation…</button>
-            </div>
-          </details>
+          <!-- **Insert is the "/" menu, opened from a button (DX6).** There was a
+               third catalogue here, ten hand-written rows of its own beside
+               the Block and "Links and media" menus and the 66-row "/"
+               menu. It is now the one popup, `#editor-menu`: every block
+               `editorBlockRows` has, grouped, with its icon, its keycap, a
+               preview and a search box (what is typed after the "/"), so a
+               block added there appears here with no second edit. -->
+          <button type="button" id="doc-toolbar-insert" data-md="insert" aria-haspopup="true"
+            title="Insert a block, image, link, table, emoji or equation (or press /)"><span class="ui-pm ph-lead" aria-hidden="true"></span> Insert</button>
           <span class="doc-toolbar-sep" aria-hidden="true"></span>
           <button type="button" id="doc-find-toggle" data-shortcut="find" class="icon-only" title="Find and replace" aria-expanded="false" aria-label="Find and replace"><i class="ph ph-magnifying-glass" aria-hidden="true"></i></button>
           <!-- **The reading width, as a control rather than a constant.**
@@ -6870,6 +6896,8 @@ Link to another note with [[its first few words]]."></textarea>
           </div>
         </div>
       </div>
+      <!-- What the empty board says once its card is closed or turned off (audit 1028 B34): one line, gone with the first thing drawn. -->
+      <p id="wb-empty-cue" class="muted empty-line wb-empty-cue hidden">An empty board. Press ? for keys and controls.</p>
     </div>
     <!-- **One top bar, not two corner panels.** Reported, in the user's own
          words: "the panels always clash", "blocky, bulky", "I'd rather use
@@ -6913,12 +6941,12 @@ Link to another note with [[its first few words]]."></textarea>
           <div id="wb-insert-menu" class="wb-board-menu hidden" role="menu" aria-label="Insert">
             <div class="wb-menu-section">
               <span class="wb-panel-group-label">Add</span>
-              <button type="button" class="wb-menu-item" data-wb-insert="sticky"><i class="ph ph-note ph-lead" aria-hidden="true"></i><span>Sticky note</span><kbd>click</kbd></button>
+              <button type="button" class="wb-menu-item" data-wb-insert="sticky"><i class="ph ph-note ph-lead" aria-hidden="true"></i><span>Sticky note</span><kbd>N</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-insert="text"><i class="ph ph-text-t ph-lead" aria-hidden="true"></i><span>Text box</span><kbd>T</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-insert="frame" data-wb-surface="board"><i class="ph ph-frame-corners ph-lead" aria-hidden="true"></i><span>Frame</span><kbd>F</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="insert-table" data-wb-surface="board"><i class="ph ph-table ph-lead" aria-hidden="true"></i><span>Table</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="insert-diagram" data-wb-surface="board"><i class="ph ph-graph ph-lead" aria-hidden="true"></i><span>Mermaid diagram…</span></button>
-              <button type="button" class="wb-menu-item" data-wb-insert="image"><i class="ph ph-image ph-lead" aria-hidden="true"></i><span>Image from a file…</span></button>
+              <button type="button" class="wb-menu-item" data-wb-insert="image"><i class="ph ph-image ph-lead" aria-hidden="true"></i><span>Image from a file…</span><kbd>I</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-insert="note"><i class="ph ph-note-pencil ph-lead" aria-hidden="true"></i><span>A note from the library</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="open-library"><i class="ph ph-shapes ph-lead" aria-hidden="true"></i><span>Shapes, icons and frames…</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="insert-sticker"><i class="ph ph-smiley-sticker ph-lead" aria-hidden="true"></i><span>Emoji and icons…</span></button>
@@ -6929,7 +6957,7 @@ Link to another note with [[its first few words]]."></textarea>
               <button type="button" class="wb-menu-item" data-wb-insert="rect"><i class="ph ph-square ph-lead" aria-hidden="true"></i><span>Rectangle</span><kbd>R</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-insert="circle"><i class="ph ph-circle ph-lead" aria-hidden="true"></i><span>Circle</span><kbd>O</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-insert="arrow"><i class="ph ph-arrow-up-right ph-lead" aria-hidden="true"></i><span>Arrow</span><kbd>A</kbd></button>
-              <button type="button" class="wb-menu-item" data-wb-insert="link-curved"><i class="ph ph-flow-arrow ph-lead" aria-hidden="true"></i><span>Connector</span></button>
+              <button type="button" class="wb-menu-item" data-wb-insert="link-curved"><i class="ph ph-flow-arrow ph-lead" aria-hidden="true"></i><span>Connector</span><kbd>Shift+C</kbd></button>
             </div>
           </div>
         </div>
@@ -7371,16 +7399,16 @@ Link to another note with [[its first few words]]."></textarea>
         <span class="wb-tool-section-label" title="How the map arranges itself, and laying it out again">Layout</span>
         <div class="wb-tool-section-row">
         <select id="wb-map-layout" class="ghost small" aria-label="How this map is laid out" title="How this map is laid out" hidden>
-          <option value="tree-right">Tree, to the right</option>
-          <option value="tree-left">Tree, to the left</option>
-          <option value="tree-both">Tree, both sides</option>
-          <option value="tree-down">Tree, downward</option>
-          <option value="radial">Radial</option>
-          <option value="logic-right">Logic chart</option>
-          <option value="timeline">Timeline</option>
-          <option value="fishbone">Fishbone</option>
-          <option value="tree-table">Tree table</option>
-          <option value="free">Free</option>
+          <option value="tree-right" data-icon="arrow-elbow-down-right">Tree, to the right</option>
+          <option value="tree-left" data-icon="arrow-elbow-down-left">Tree, to the left</option>
+          <option value="tree-both" data-icon="arrows-horizontal">Tree, both sides</option>
+          <option value="tree-down" data-icon="tree-structure">Tree, downward</option>
+          <option value="radial" data-icon="asterisk">Radial</option>
+          <option value="logic-right" data-icon="git-fork">Logic chart</option>
+          <option value="timeline" data-icon="path">Timeline</option>
+          <option value="fishbone" data-icon="fish-simple">Fishbone</option>
+          <option value="tree-table" data-icon="table">Tree table</option>
+          <option value="free" data-icon="arrows-out-cardinal">Free</option>
         </select>
         <!-- The map's own line style (K31, the owner: "I have it on free mode,
              but these lines arent straight"): the theme's `edge_style`, beside
@@ -10577,7 +10605,7 @@ Link to another note with [[its first few words]]."></textarea>
               <div class="row help-head">
                 <label class="check-row">
                   <input type="checkbox" id="pref-semantic-auto-install">
-                  <span>Download search by meaning</span>
+                  <span id="semantic-auto-install-label">Download search by meaning</span>
                 </label>
                 <button type="button" class="icon-only ghost small graph-help-toggle"
                   data-help-for="semantic-auto-install-help" aria-controls="semantic-auto-install-help" aria-expanded="false"
@@ -10585,7 +10613,7 @@ Link to another note with [[its first few words]]."></textarea>
                   <i class="ph ph-question" aria-hidden="true"></i>
                 </button>
               </div>
-              <p class="muted small">Off, search uses keywords. About 130 MB, once, from huggingface.co and pypi.org.</p>
+              <p class="muted small" id="semantic-auto-install-hint">Off, search uses keywords. About 130 MB, once, from huggingface.co and pypi.org.</p>
               <div class="help-body hidden" id="semantic-auto-install-help" role="dialog" aria-label="About downloading search by meaning">
                 <p>
                   Search by meaning needs one Python package, fastembed, which
@@ -10606,6 +10634,10 @@ Link to another note with [[its first few words]]."></textarea>
                   left on this computer, with Remove.
                 </p>
                 <p>
+                  Once the model is on this computer the switch reads Repair search
+                  by meaning by itself: search matches by meaning either way, and on,
+                  a model with missing files is fetched again. Uninstall is in
+                  Embedding models.
                   Off, nothing is downloaded and search by keywords keeps working.
                   You can still install it yourself from Settings, Packages, or
                   pick an Ollama embedding model below instead.
@@ -12194,7 +12226,7 @@ Link to another note with [[its first few words]]."></textarea>
                 <input type="checkbox" id="bg-art-toggle">
                 <span>
                   Show a generative-art background
-                  <small class="muted">Appears behind every tab. Purely decorative and 100% offline.</small>
+                  <small class="muted">Appears behind every tab and sets the dashboard's constellation moving. Purely decorative and 100% offline.</small>
                 </span>
               </label>
 
@@ -12792,6 +12824,34 @@ Link to another note with [[its first few words]]."></textarea>
               <h3>Microphone</h3>
               <p class="muted">Which input records and how it is cleaned up, for dictation, voice notes, meetings and live captions.</p>
               <div id="mic-settings-controls"></div>
+            </div>
+            <!-- Read aloud's speed (audit 1028 E71): remembered on this device and read by
+                 `speakText` (media.js) each time a message is read. The help recipe is `data-help-for`. -->
+            <div class="settings-group" id="read-aloud-box">
+              <div class="row help-head">
+                <h3>Read aloud</h3>
+                <button type="button" class="icon-only ghost small graph-help-toggle"
+                  data-help-for="read-aloud-help" aria-controls="read-aloud-help" aria-expanded="false"
+                  title="About read aloud" aria-label="About read aloud">
+                  <i class="ph ph-question" aria-hidden="true"></i>
+                </button>
+              </div>
+              <div class="row space-between setting-row">
+                <label for="pref-read-aloud-rate">Speaking speed</label>
+                <select id="pref-read-aloud-rate" class="small-select">
+                  <option value="0.75">Slower (0.75x)</option>
+                  <option value="1">Normal (1x)</option>
+                  <option value="1.25">Faster (1.25x)</option>
+                  <option value="1.5">Fastest (1.5x)</option>
+                </select>
+              </div>
+              <div class="help-body hidden" id="read-aloud-help" role="dialog" aria-label="About read aloud">
+                <p>
+                  A message's Read aloud plays it in this computer's own voice. Press
+                  it again, now Stop reading, to stop. The speed is remembered on this
+                  device.
+                </p>
+              </div>
             </div>
             <!-- Simple mode and the usage ledger (WORLD_CLASS_PLAN H9, row 27):
                  usage-ledger.js (lazy) wires both; theme-boot.js applies
@@ -13516,8 +13576,12 @@ Link to another note with [[its first few words]]."></textarea>
               <p id="restore-bundle-status" class="status" role="status"></p>
             </div>
 
-            <div class="settings-group">
-              <h3>Import markdown</h3>
+            <!-- The four imports are folds on the settings-fold recipe
+                 (S68): the pane was 2,747px with every import drawn at full
+                 length; closed, a group is one row, and the first is open.
+                 Every control and id is where it was. -->
+            <details class="settings-group settings-fold" data-fold-key="import-markdown" open>
+              <summary><h3 class="inline-h3">Import markdown</h3></summary>
               <!-- One step each (INBOX 464 (18)): the button opens the
                    picker and choosing starts the import, the Library's
                    Upload shape; the picker's Cancel is the way out before,
@@ -13535,26 +13599,29 @@ Link to another note with [[its first few words]]."></textarea>
                   title="A whole folder, every .md inside it, with its folders kept"><i class="ph ph-folder-simple-plus ph-lead" aria-hidden="true"></i> Import a folder</button>
               </div>
               <p id="import-md-status" class="status" role="status"></p>
-              
-              <h3>Import from a folder path</h3>
+              <p class="muted">
+                Each file becomes a note. Obsidian-style frontmatter
+                (category, tags) is understood.
+              </p>
+              <label class="muted" for="import-dir-path">Or type a folder path</label>
               <div class="row settings-row-spaced" data-this-computer>
                 <input id="import-dir-path" aria-label="Folder path to import" type="text" class="import-dir-path-input" placeholder="C:\path\to\Obsidian\vault">
                 <button id="import-dir" class="small ghost">Import from path</button>
               </div>
               <p id="import-dir-status" class="status" role="status"></p>
-              <p class="muted">
-                Each file becomes a note. Obsidian-style frontmatter
-                (category, tags) is understood.
-              </p>
+            </details>
 
-              <div class="row help-head">
-                <h3>Import a document</h3>
-                <button type="button" class="icon-only ghost small graph-help-toggle"
-                  data-help-for="import-document-help" aria-controls="import-document-help" aria-expanded="false"
-                  title="About importing a document" aria-label="About importing a document">
-                  <i class="ph ph-question" aria-hidden="true"></i>
-                </button>
-              </div>
+            <div class="fold-help-wrap">
+              <button type="button" class="icon-only ghost small graph-help-toggle fold-help"
+                data-help-for="import-document-help" aria-controls="import-document-help" aria-expanded="false"
+                title="About importing a document" aria-label="About importing a document">
+                <i class="ph ph-question" aria-hidden="true"></i>
+              </button>
+            <details class="settings-group settings-fold" data-fold-key="import-document">
+              <summary><div class="row help-head">
+                <h3 class="inline-h3">Import a document</h3>
+                <span class="fold-help-slot" aria-hidden="true"></span>
+              </div></summary>
               <div class="row">
                 <input id="import-document-file" aria-label="Choose a document to import" title="Choose a document to import" type="file" accept=".pdf,.docx,.doc,.pptx,.ppt,.xlsx,.xls,.html,.htm" class="hidden">
                 <button id="import-document" class="ghost small" type="button"><i class="ph ph-file-arrow-up ph-lead" aria-hidden="true"></i> Import a document</button>
@@ -13569,20 +13636,23 @@ Link to another note with [[its first few words]]."></textarea>
                 </p>
               </div>
               <p class="status job-line" role="status" data-job-line="import"></p>
+            </details>
             </div>
 
             <!-- Import from another app (WORLD_CLASS_PLAN H6, row 25): one step
                  each, as the imports above (INBOX 464 (18)); app-import.js
                  (lazy) wires them, entry/app_import.py reads the exports. -->
-            <div class="settings-group" id="import-app-box">
-              <div class="row help-head">
-                <h3>Import from another app</h3>
-                <button type="button" class="icon-only ghost small graph-help-toggle"
-                  data-help-for="import-app-help" aria-controls="import-app-help" aria-expanded="false"
-                  title="About importing from another app" aria-label="About importing from another app">
-                  <i class="ph ph-question" aria-hidden="true"></i>
-                </button>
-              </div>
+            <div class="fold-help-wrap">
+              <button type="button" class="icon-only ghost small graph-help-toggle fold-help"
+                data-help-for="import-app-help" aria-controls="import-app-help" aria-expanded="false"
+                title="About importing from another app" aria-label="About importing from another app">
+                <i class="ph ph-question" aria-hidden="true"></i>
+              </button>
+            <details class="settings-group settings-fold" data-fold-key="import-app" id="import-app-box">
+              <summary><div class="row help-head">
+                <h3 class="inline-h3">Import from another app</h3>
+                <span class="fold-help-slot" aria-hidden="true"></span>
+              </div></summary>
               <p class="muted">Bring in your notes from Notion, Obsidian, Evernote or Apple Notes.</p>
               <div class="help-body hidden" id="import-app-help" role="dialog" aria-label="About importing from another app">
                 <p>
@@ -13624,20 +13694,23 @@ Link to another note with [[its first few words]]."></textarea>
                 <button id="import-memorymap" class="ghost small" type="button"><i class="ph ph-file-arrow-up ph-lead" aria-hidden="true"></i> From a Tessellate folder</button>
               </div>
               <p id="import-app-status" class="status" role="status" aria-live="polite"></p>
+            </details>
             </div>
 
             <!-- The web clipper (WORLD_CLASS_PLAN D9, row 24): a bookmark that
                  sends the page you are reading to clip.html, from your own
                  browser. web-clip.js (lazy) writes its address in. -->
-            <div class="settings-group" id="web-clip-box">
-              <div class="row help-head">
-                <h3>Web clipper</h3>
-                <button type="button" class="icon-only ghost small graph-help-toggle"
-                  data-help-for="web-clip-help" aria-controls="web-clip-help" aria-expanded="false"
-                  title="About the web clipper" aria-label="About the web clipper">
-                  <i class="ph ph-question" aria-hidden="true"></i>
-                </button>
-              </div>
+            <div class="fold-help-wrap">
+              <button type="button" class="icon-only ghost small graph-help-toggle fold-help"
+                data-help-for="web-clip-help" aria-controls="web-clip-help" aria-expanded="false"
+                title="About the web clipper" aria-label="About the web clipper">
+                <i class="ph ph-question" aria-hidden="true"></i>
+              </button>
+            <details class="settings-group settings-fold" data-fold-key="import-web-clip" id="web-clip-box">
+              <summary><div class="row help-head">
+                <h3 class="inline-h3">Web clipper</h3>
+                <span class="fold-help-slot" aria-hidden="true"></span>
+              </div></summary>
               <p class="muted">Drag this to your bookmarks bar, then press it on any page to keep that page as a note.</p>
               <div class="help-body hidden" id="web-clip-help" role="dialog" aria-label="About the web clipper">
                 <p>
@@ -13660,6 +13733,7 @@ Link to another note with [[its first few words]]."></textarea>
                 <button id="web-clip-copy" class="ghost small" type="button"><i class="ph ph-copy ph-lead" aria-hidden="true"></i> Copy the bookmark</button>
               </div>
               <p id="web-clip-status" class="status" role="status" aria-live="polite"></p>
+            </details>
             </div>
 
             <div class="settings-group">
@@ -14239,6 +14313,16 @@ Link to another note with [[its first few words]]."></textarea>
                 <option value="240">4 hours</option>
                 <option value="720">12 hours</option>
               </select>
+
+              <!-- INBOX 1553: kept on this device (`lock-notices`), listed by
+                   utility-tools.js on the lock card; wired in settings-rows.js. -->
+              <label class="setting-check" id="lock-notices-row" data-synonyms="lock screen timers reminders notifications show hide privacy">
+                <input type="checkbox" id="lock-notices-toggle">
+                <span>
+                  Show timers and reminders on the lock screen
+                  <small class="muted">Off by default. The lock screen lists your timers and the next few reminders by title and time, except a reminder about a private note; never the text of a note. Kept on this device.</small>
+                </span>
+              </label>
 
               <div class="row">
                 <button id="account-lock-all" class="ghost small">
@@ -15035,7 +15119,7 @@ Link to another note with [[its first few words]]."></textarea>
               </div>
               <div class="help-body hidden" id="desktop-companion-help" role="dialog" aria-label="About the desktop companion">
                 <p>
-                  Your companion (Appearance picks who; Atlas if none) waits in the
+                  In the desktop app, your companion (Appearance picks who; Atlas if none) waits in the
                   bottom-right corner while the window is in the tray, and goes away when
                   the window is open. Click it for Quick note, Quick search or Open
                   Tessellate; right-click for Settings or Hide. Drag it to move it.

@@ -237,7 +237,7 @@ def test_a_stage_gated_pair_hands_the_fill_over():
 def _rules() -> list[tuple[str, str]]:
     """(selector, body) for every innermost rule, comments stripped."""
     text = re.sub(r"/\*.*?\*/", "", css_text(), flags=re.S)
-    return [(sel.strip(), body) for sel, body in re.findall(r"([^{}]+)\{([^{}]*)\}", text)]
+    return [(sel.strip(), body) for sel, body in re.findall(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", text)]
 
 
 def _split_top_level(selector: str, separators: str) -> list[str]:

@@ -306,8 +306,10 @@ async function renderNotePickerList() {
   }
   // Attached rows stay on top even when the search would not match them, so
   // ticking one never makes it vanish from under the pointer.
+  //: A note row holds its first 300 characters; the server's literal match reads the whole text (INBOX 1525 review).
+  const served = source === "notes" && query ? noteEngine.literal(noteEngine.pick, query, renderNotePickerList) : null;
   const matches = rows.filter(
-    (row) => shape.isOn(row) || !query || shape.search(row).toLowerCase().includes(query)
+    (row) => shape.isOn(row) || !query || shape.search(row).toLowerCase().includes(query) || served?.has(row.id)
   );
   matches.sort((a, b) => (shape.isOn(a) ? 0 : 1) - (shape.isOn(b) ? 0 : 1));
   if (!matches.length) {

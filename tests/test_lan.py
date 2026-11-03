@@ -2102,7 +2102,7 @@ def _trust_phone(client) -> TestClient:
     )
 
 
-def test_a_new_device_waits_and_this_computer_allows_it(trust_lan_app):
+def test_a_new_device_waits_and_this_computer_allows_it(trust_lan_app, monkeypatch):
     here, phone = _trust_here(trust_lan_app), _trust_phone(trust_lan_app)
     refused = phone.post("/auth/unlock", json={"password": PASSWORD})
     assert refused.status_code == 403 and refused.json()["device_pending"] is True
@@ -2120,7 +2120,7 @@ def test_a_new_device_waits_and_this_computer_allows_it(trust_lan_app):
     asking = threading.Thread(
         target=lambda: result.update(r=phone.post("/auth/unlock", json={"password": PASSWORD}))
     )
-    routes_auth.DEVICE_WAIT_SECONDS = 5.0
+    monkeypatch.setattr(routes_auth, "DEVICE_WAIT_SECONDS", 5.0)  # restored after, unlike a bare assignment
     asking.start()
     deadline = __import__("time").monotonic() + 3
     while not lantrust.pending() and __import__("time").monotonic() < deadline:

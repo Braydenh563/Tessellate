@@ -23,7 +23,14 @@ ROOT = Path(__file__).resolve().parents[1]
 DOCS = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
 
 
+#: The heading scan and the section range moved to documents-outline.js, one closure (doc24-1102).
+OUTLINE = (ROOT / "frontend" / "js" / "documents-outline.js").read_text(encoding="utf-8")
+
+
 def _fn(name: str) -> str:
+    if f"function {name}(" in OUTLINE:
+        i = OUTLINE.index(f"function {name}(")
+        return OUTLINE[i : OUTLINE.index("\n  }\n", i) + 5]
     i = DOCS.index(f"function {name}(")
     return DOCS[i : DOCS.index("\n}\n", i) + 3]
 

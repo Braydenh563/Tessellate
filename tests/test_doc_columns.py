@@ -25,6 +25,8 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 DOCUMENTS_JS = ROOT / "frontend" / "js" / "documents.js"
+#: The columns parser moved to documents-columns.js (DC13 remainder, doc24-1102).
+COLUMNS_JS = ROOT / "frontend" / "js" / "documents-columns.js"
 IMAGE_LAYOUT_JS = ROOT / "frontend" / "js" / "image-layout.js"
 
 BEGIN = "// DOC-BLOCKS-BEGIN"
@@ -41,10 +43,10 @@ def _region(path: Path, begin: str, end: str) -> str:
 
 
 def blocks_source() -> str:
-    """The columns parser (documents.js) and the image-option parsers, which
+    """The columns parser (documents-columns.js) and the image-option parsers, which
     moved to image-layout.js so every surface that draws a note's picture
     shares them (INBOX 1465); both are pure string work."""
-    return _region(DOCUMENTS_JS, BEGIN, END) + _region(IMAGE_LAYOUT_JS, "// IMAGE-LAYOUT-BEGIN", "// IMAGE-LAYOUT-END")
+    return _region(COLUMNS_JS, BEGIN, END) + _region(IMAGE_LAYOUT_JS, "// IMAGE-LAYOUT-BEGIN", "// IMAGE-LAYOUT-END")
 
 
 #: What the toolbar and the "/" menu actually insert for a columns block, read

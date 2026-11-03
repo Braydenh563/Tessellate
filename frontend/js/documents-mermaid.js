@@ -1,0 +1,434 @@
+// documents-mermaid.js: Mermaid fences, the flowchart model and the Live
+// figure widget (split out of documents.js, audit 1031 DC13 remainder).
+//
+// What is here: the pure flowchart model (`diagramModel`: parse and print,
+// bracketed by `DIAGRAM-MODEL-BEGIN`/`END` for `tests/test_diagram_model.py`;
+// 1546 D1 to D4), the hand-over of a fence to the lazy `mermaid`
+// module (`docRenderMermaidIn`, `docMermaidWhenDrawn`) and the Live state field
+// that draws a fence as its figure (`docMermaidField`). What stayed in
+// documents.js: `docPhase2State` (shared with the embeds and the print sheet)
+// and the editor extension list that calls `docMermaidField`.
+//
+// **Loaded in the Library bundle, before documents.js**, the way
+// documents-props.js is: documents.js and documents-export.js call in here only
+// from inside functions, while this file's own top level declares and reads
+// nothing from either (`docPhase2State`, `docStr`, `ensureModule` are read when
+// a function runs). One closure; what other files call is the `Object.assign`
+// at the foot.
+(() => {
+  // -----------------------------------------------------------------------------
+  // Mermaid fences (DOCUMENTS_PLAN decisions 3 and 6, BACKLOG steps 8 and 12b)
+  // -----------------------------------------------------------------------------
+  //
+  //: **Every ```mermaid fence is drawn by Mermaid itself**, in Read (so in a print
+  //: and the HTML export) and in Live while the caret is outside the fence. The
+  //: library is vendored (`frontend/vendor/mermaid/`) and lives in a hidden
+  //: same-origin frame that the lazy `mermaid` module (mermaid-draw.js) creates
+  //: on the first fence; nothing of it is in the boot scripts. This file only
+  //: hands a fence over (`docRenderMermaidIn`, the Live widget below) and waits
+  //: for the picture when a page is printed or saved.
+  //:
+  //: What stays here is the flowchart model below (1546), pure and node-tested.
+  // DIAGRAM-MODEL-BEGIN
+  //: **1546 D1, D2 and D4: the one flowchart grammar.** `parse(source)` reads a
+  //: flowchart fence into `{kind, dir, nodes: [{id, text, shape, group}], edges:
+  //: [{from, to, label, style, arrow}], subgraphs: [{id, title, parent}], kept:
+  //: [{at, line}], front}` and `print(model)` writes the whole source back in
+  //: one canonical order (the header, subgraphs with their nodes, loose nodes,
+  //: edges), so the source is the only state. No coordinates: Mermaid source has
+  //: none. A line this reader cannot place whole (`style`, `classDef`, `click`,
+  //: `%%` comments, `@{ }` shapes, markdown-string labels, a shape it has no name
+  //: for) is a `kept` line, printed verbatim where it stood (`at` counts the
+  //: nodes, edges and subgraphs written before it), never dropped. `front` holds
+  //: the lines ahead of the header (frontmatter, `%%{init}%%`). Labels are
+  //: quoted and `#`, `"`, `<`, `>` (and `|` in an edge label) written as
+  //: Mermaid's entity codes, as the composer does (composer_mermaid.py).
+  //: Pure and node-tested (tests/test_diagram_model.py). A text that is another
+  //: kind of diagram is null.
+  const DGM_MAX_NODES = 120;
+  const DGM_SHAPES = [
+    ["([", "])", "stadium"], ["((", "))", "circle"], ["{{", "}}", "hexagon"],
+    ["[", "]", "rect"], ["(", ")", "round"], ["{", "}", "diamond"],
+  ];
+  const DGM_UNREAD_SHAPE = /^(?:\[\[|\[\(|\[[/\\|]|\(\(\(|>|@\{|:::|\{\{\{)/;
+  const DGM_KEPT = /^(?:%%|(?:style|classDef|class|linkStyle|click|direction|default)\s|acc(?:Title|Descr)\b)/;
+  const DGM_OTHER = /^(?:sequenceDiagram|classDiagram|stateDiagram|erDiagram|journey|gantt|pie|mindmap|timeline|gitGraph|C4\w+|quadrantChart|requirementDiagram|sankey|xychart|block|packet|kanban|architecture|zenuml)\b/i;
+  //: Longest first, so `-.->` is not read as `-.-` and a stray `>`.
+  const DGM_LINKS = [
+    ["-.->", "dotted", true], ["==>", "thick", true], ["-->", "solid", true],
+    ["-.-", "dotted", false], ["===", "thick", false], ["---", "solid", false],
+  ];
+  const DGM_WORDED = /^(--|-\.|==)\s*("[^"]*"|[^-.=|>"\s][^|>]*?)\s*(-->|\.->|==>|---|-\.-|===)/;
+  const DGM_ENTITY = { quot: '"', lt: "<", gt: ">", amp: "&" };
+  const DGM_CODE = { '"': "#quot;", "<": "#lt;", ">": "#gt;", "#": "#35;", "|": "#124;" };
+
+  function dgmDecode(text) {
+    return text.replace(/#(quot|lt|gt|amp|\d{1,7});/g, (all, k) => DGM_ENTITY[k] ?? (Number(k) <= 0x10ffff ? String.fromCodePoint(Number(k)) : all));
+  }
+
+  //: A line break in a label stays the `<br/>` Mermaid reads; every other `<` is a code.
+  function dgmEscape(text, inBars = false) {
+    return String(text ?? "").replace(/\s*\n\s*/g, " ").replace(/<br\s*\/?>|[#"<>|]/gi, (c) => (c.length > 1 || (c === "|" && !inBars) ? c : DGM_CODE[c]));
+  }
+
+  function dgmUnquote(text) {
+    const t = text.trim();
+    return t.length >= 2 && t[0] === '"' && t[t.length - 1] === '"' ? t.slice(1, -1) : t;
+  }
+
+  //: Lines and `;` statements. A `;` ends one only outside a quote and not as the
+  //: end of an entity code; a comment line is whole.
+  function dgmStatements(text) {
+    const out = [];
+    for (const line of text.split("\n")) {
+      const comment = line.trimStart().startsWith("%%");
+      let from = 0;
+      let quoted = false;
+      for (let i = 0; i < line.length && !comment; i++) {
+        if (line[i] === '"') quoted = !quoted;
+        else if (line[i] === ";" && !quoted && !/#\w{1,7}$/.test(line.slice(from, i))) {
+          out.push(line.slice(from, i));
+          from = i + 1;
+        }
+      }
+      out.push(line.slice(from));
+    }
+    return out.map((s) => s.trim()).filter(Boolean);
+  }
+
+  //: The text of a shape from after its opening mark: quoted (a backtick right
+  //: after the quote is a markdown string, which is kept) or up to the closing
+  //: mark. Null when it is not whole.
+  function dgmShapeText(rest, close) {
+    const lead = rest.length - rest.trimStart().length;
+    if (rest[lead] !== '"') {
+      const end = rest.indexOf(close);
+      return end === -1 ? null : { text: dgmDecode(rest.slice(0, end).trim()), used: end + close.length };
+    }
+    const end = rest.indexOf('"', lead + 1);
+    if (end === -1 || rest[lead + 1] === "`") return null;
+    const after = rest.slice(end + 1);
+    const gap = after.length - after.trimStart().length;
+    if (!after.startsWith(close, gap)) return null;
+    return { text: dgmDecode(rest.slice(lead + 1, end)), used: end + 1 + gap + close.length };
+  }
+
+  //: One node reference: an id and, optionally, its shape and text.
+  function dgmRef(src, at) {
+    //: A hyphen only between word characters: `a-->b` is a, a link and b.
+    const id = /^[\p{L}\p{N}_]+(?:-[\p{L}\p{N}_]+)*/u.exec(src.slice(at));
+    if (!id) return null;
+    const i = at + id[0].length;
+    const tail = src.slice(i);
+    if (DGM_UNREAD_SHAPE.test(tail)) return null;
+    for (const [open, close, shape] of DGM_SHAPES) {
+      if (!tail.startsWith(open)) continue;
+      const body = dgmShapeText(tail.slice(open.length), close);
+      return body && { id: id[0], shape, text: body.text, end: i + open.length + body.used };
+    }
+    return { id: id[0], shape: null, text: null, end: i };
+  }
+
+  //: A link: `-->`, `-.->`, `==>` and their open forms, a label in bars after it
+  //: or written inside it (`-- yes -->`).
+  function dgmLink(src, at) {
+    const rest = src.slice(at);
+    const worded = DGM_WORDED.exec(rest);
+    if (worded) {
+      const style = worded[1] === "-." ? "dotted" : worded[1] === "==" ? "thick" : "solid";
+      const arrow = worded[3] === "-->" || worded[3] === ".->" || worded[3] === "==>";
+      return { style, arrow, label: dgmDecode(dgmUnquote(worded[2])), end: at + worded[0].length };
+    }
+    const hit = DGM_LINKS.find(([token]) => rest.startsWith(token));
+    if (!hit) return null;
+    const piped = /^\s*\|("[^"]*"|[^|]*)\|/.exec(src.slice(at + hit[0].length));
+    return { style: hit[1], arrow: hit[2], label: piped ? dgmDecode(dgmUnquote(piped[1])) : "", end: at + hit[0].length + (piped ? piped[0].length : 0) };
+  }
+
+  //: A node-and-link statement (chains `a --> b --> c`, fans `a & b --> c`) as
+  //: its references and links, or null when any part is not read whole.
+  function dgmChain(src) {
+    const refs = [];
+    const links = [];
+    let at = 0;
+    let group = [];
+    let pending = null;
+    const skip = () => {
+      while (at < src.length && /\s/.test(src[at])) at++;
+    };
+    for (;;) {
+      skip();
+      const ref = dgmRef(src, at);
+      if (!ref) return null;
+      refs.push(ref);
+      group.push(ref.id);
+      at = ref.end;
+      skip();
+      if (src[at] === "&") {
+        at++;
+        continue;
+      }
+      if (pending) for (const from of pending.from) for (const to of group) links.push({ from, to, label: pending.label, style: pending.style, arrow: pending.arrow });
+      if (at >= src.length) return { refs, links };
+      const link = dgmLink(src, at);
+      if (!link) return null;
+      pending = { ...link, from: group };
+      group = [];
+      at = link.end;
+    }
+  }
+
+  //: `subgraph id [Title]`, `subgraph id["Title"]` or `subgraph Some title`.
+  function dgmSubgraph(rest, parent) {
+    const named = /^([A-Za-z0-9_][\w-]*)\s*\[\s*(.*?)\s*\]$/.exec(rest);
+    const id = named ? named[1] : dgmDecode(dgmUnquote(rest));
+    return { id, title: named ? dgmDecode(dgmUnquote(named[2])) || id : id, parent };
+  }
+
+  //: The canonical rows of a model, each `{depth, line, unit}` (`unit` null for an
+  //: `end`): subgraphs with their members first, then the loose nodes, then the
+  //: edges. Print writes them and parse counts them to place a kept line.
+  function dgmRows(m) {
+    const rows = [];
+    const ids = new Set(m.subgraphs.map((g) => g.id));
+    //: A parent that is missing or is itself leaves the subgraph at the top.
+    const parentOf = (g) => (ids.has(g.parent) && g.parent !== g.id ? g.parent : null);
+    const done = new Set();
+    const emit = (group, depth) => {
+      m.subgraphs.forEach((g, i) => {
+        if (parentOf(g) !== group || done.has(i)) return;
+        done.add(i);
+        const plain = /^[A-Za-z0-9_][\w-]*$/.test(g.id);
+        const line = plain && g.title !== g.id ? `subgraph ${g.id} ["${dgmEscape(g.title)}"]` : `subgraph ${g.id}`;
+        rows.push({ depth, line, unit: { t: "s", i } });
+        emit(g.id, depth + 1);
+        rows.push({ depth, line: "end", unit: null });
+      });
+      m.nodes.forEach((n, i) => {
+        if ((ids.has(n.group) ? n.group : null) !== group) return;
+        const [open, close] = DGM_SHAPES.find((s) => s[2] === n.shape) || ["[", "]"];
+        rows.push({ depth, line: `${n.id}${open}"${dgmEscape(n.text)}"${close}`, unit: { t: "n", i } });
+      });
+    };
+    emit(null, 0);
+    m.edges.forEach((e, i) => {
+      const token = (DGM_LINKS.find(([, style, arrow]) => style === e.style && arrow === e.arrow) || DGM_LINKS[2])[0];
+      const label = e.label ? `|"${dgmEscape(e.label, true)}"|` : "";
+      rows.push({ depth: 0, line: `${e.from} ${token}${label} ${e.to}`, unit: { t: "e", i } });
+    });
+    return rows;
+  }
+
+  function dgmPrint(m) {
+    const kept = (m.kept || []).map((k, i) => ({ ...k, i })).sort((a, b) => a.at - b.at || a.i - b.i);
+    const out = [...(m.front || []), `flowchart ${m.dir || "TD"}`];
+    const indent = (depth) => "  ".repeat(depth + 1);
+    let units = 0;
+    let next = 0;
+    const flush = (limit, depth) => {
+      while (next < kept.length && kept[next].at <= limit) out.push(indent(depth) + kept[next++].line);
+    };
+    for (const row of dgmRows(m)) {
+      if (row.unit) flush(units++, row.depth);
+      out.push(indent(row.depth) + row.line);
+    }
+    flush(Infinity, 0);
+    return out.join("\n") + "\n";
+  }
+
+  //: The lines of the text before its header: frontmatter and leading comments.
+  function dgmFront(text) {
+    const front = [];
+    const fm = /^---[ \t]*\n[\s\S]*?\n---[ \t]*(?:\n|$)/.exec(text);
+    if (fm) front.push(...fm[0].replace(/\n$/, "").split("\n"));
+    return { front, rest: fm ? text.slice(fm[0].length) : text };
+  }
+
+  function dgmParse(source) {
+    const { front, rest } = dgmFront(String(source ?? "").replace(/\r/g, ""));
+    const statements = dgmStatements(rest);
+    let at = 0;
+    while (at < statements.length && statements[at].startsWith("%%")) front.push(statements[at++]);
+    const head = /^(flowchart|graph)(?:\s+(TD|TB|BT|LR|RL))?$/i.exec(statements[at] || "");
+    if (!head && DGM_OTHER.test(statements[at] || "")) return null;
+    if (head) at++;
+    const m = { kind: "flowchart", dir: (head?.[2] || "TD").toUpperCase().replace("TB", "TD"), nodes: [], edges: [], subgraphs: [], kept: [], front };
+    const byId = new Map();
+    const born = new Map();
+    const open = [];
+    const snaps = [];
+    const touch = (ref) => {
+      let n = byId.get(ref.id);
+      if (!n) {
+        n = { id: ref.id, text: ref.text ?? ref.id, shape: ref.shape || "rect", group: null };
+        byId.set(ref.id, n);
+        born.set(ref.id, born.size);
+        m.nodes.push(n);
+      } else if (ref.shape) Object.assign(n, { shape: ref.shape, text: ref.text ?? n.text });
+      //: A node belongs to the first subgraph it is named inside.
+      if (n.group == null && open.length) n.group = open[open.length - 1];
+    };
+    const keep = (line) => {
+      m.kept.push({ at: 0, line });
+      snaps.push({ n: born.size, e: m.edges.length, s: m.subgraphs.length });
+    };
+    for (const s of statements.slice(at)) {
+      const sub = /^subgraph\s+(.+)$/.exec(s);
+      if (DGM_KEPT.test(s)) keep(s);
+      else if (sub) {
+        const g = dgmSubgraph(sub[1].trim(), open.length ? open[open.length - 1] : null);
+        if (!m.subgraphs.some((o) => o.id === g.id)) m.subgraphs.push(g);
+        open.push(g.id);
+      } else if (s === "end" && open.length) open.pop();
+      else {
+        const chain = s === "end" ? null : dgmChain(s);
+        if (!chain) keep(s);
+        else {
+          chain.refs.forEach(touch);
+          m.edges.push(...chain.links);
+        }
+      }
+    }
+    //: A subgraph named in an edge is the group, not a node of its own.
+    const groups = new Set(m.subgraphs.map((g) => g.id));
+    m.nodes = m.nodes.filter((n) => !groups.has(n.id));
+    const rows = dgmRows(m).filter((r) => r.unit);
+    const seen = (u, snap) => (u.t === "n" ? born.get(m.nodes[u.i].id) < snap.n : u.t === "e" ? u.i < snap.e : u.i < snap.s);
+    snaps.forEach((snap, k) => {
+      m.kept[k].at = rows.filter((r) => seen(r.unit, snap)).length;
+    });
+    return m;
+  }
+
+  const diagramModel = { MAX_NODES: DGM_MAX_NODES, parse: dgmParse, print: dgmPrint };
+  // DIAGRAM-MODEL-END
+
+  //: Read (and so the print and the HTML export, which are drawn from it): each
+  //: mermaid fence is handed to the lazy `mermaid` module (mermaid-draw.js), which
+  //: asks the diagram frame and swaps the fence for its picture; one the parser
+  //: refuses stays the code block with the reason under it. The promise is kept
+  //: so an export or a print can wait for the pictures before it saves the page.
+  function docRenderMermaidIn(container) {
+    if (!container.querySelector('.code-block code[data-lang="mermaid"]')) return;
+    docPhase2State.mermaidDrawn = ensureModule("mermaid")
+      .then((ok) => (ok ? mermaidDrawIn(container) : null))
+      .catch(() => null);
+  }
+
+  //: Resolves when the pictures of the page being saved or printed are in.
+  async function docMermaidWhenDrawn() {
+    await docPhase2State.mermaidDrawn;
+    //: Only a page that loaded the module has pictures to wait for.
+    if (await lazyModuleLoads.get("mermaid")) await mermaidSettled();
+  }
+
+  //: Live: a mermaid fence the caret is outside of is its figure, through a
+  //: state field for the reason the columns block gives (a replace that spans
+  //: line breaks may not come from a plugin). Pressing the figure puts the
+  //: caret on the fence's first line, which shows the text to edit.
+  function docMermaidBlocks(text) {
+    const blocks = [];
+    const re = /^```[ \t]*mermaid[^\n]*\n([\s\S]*?)\n```[ \t]*$/gm;
+    for (let m = re.exec(text); m; m = re.exec(text)) {
+      blocks.push({ from: m.index, to: m.index + m[0].length, source: m[1] });
+    }
+    return blocks;
+  }
+
+  function docMermaidField(CM) {
+    if (docPhase2State.mermaidFieldCache) return docPhase2State.mermaidFieldCache;
+    const { StateField, StateEffect } = CM.state;
+    const { Decoration, EditorView, WidgetType } = CM.view;
+    //: Sent when a fence the frame refused is known, so the field draws it as the
+    //: code it is (with the reason) instead of leaving a figure that never fills.
+    const recheck = StateEffect.define();
+    class DocMermaidWidget extends WidgetType {
+      constructor(source, from) {
+        super();
+        this.source = source;
+        this.from = from;
+      }
+      //: The source alone (DX1): with the start in it, a key typed above a diagram
+      //: moved every one below and each was drawn again, blob and image, per key.
+      eq(other) {
+        return other.source === this.source;
+      }
+      //: What CodeMirror assumes for a widget it has not measured; the figure's
+      //: placeholder is about this tall (mermaid-lazy.css), so the page does not jump.
+      get estimatedHeight() {
+        return 160;
+      }
+      ignoreEvent(event) {
+        return event.type !== "mousedown";
+      }
+      toDOM(view) {
+        const figure = document.createElement("figure");
+        figure.className = "md-mermaid cm-md-mermaid md-mermaid-pending";
+        figure.title = "Press to edit the diagram's text";
+        //: Async: the placeholder holds the room, then the picture replaces it
+        //: and the editor measures the widget again.
+        ensureModule("mermaid").then((ok) => {
+          if (!ok) return;
+          docPhase2State.mermaidReady = true;
+          mermaidFill(figure, this.source, (result) => {
+            if (result.svg) view.requestMeasure();
+            else view.dispatch({ effects: recheck.of(this.source) });
+          });
+        });
+        figure.addEventListener("mousedown", (event) => {
+          event.preventDefault();
+          const at = Math.min(view.posAtDOM(figure) + 4, view.state.doc.length);
+          view.dispatch({ selection: { anchor: at } });
+          view.focus();
+        });
+        return figure;
+      }
+    }
+    class DocMermaidReason extends WidgetType {
+      constructor(reason, source) {
+        super();
+        this.reason = reason;
+        this.source = source;
+      }
+      eq(other) {
+        return other.reason === this.reason && other.source === this.source;
+      }
+      toDOM() {
+        return mermaidFailure.note(this.reason, this.source);
+      }
+    }
+    //: The fences once per text (DX1): a caret move rescanned the whole document.
+    const blocksOf = new WeakMap();
+    const build = (state) => {
+      let blocks = blocksOf.get(state.doc);
+      if (!blocks) {
+        const text = docStr(state.doc);
+        blocks = text.includes("```mermaid") || /```[ \t]+mermaid/.test(text) ? docMermaidBlocks(text) : [];
+        blocksOf.set(state.doc, blocks);
+      }
+      if (!blocks.length) return Decoration.none;
+      const ranges = [];
+      for (const block of blocks) {
+        //: A reason exists only once the module drew here (the widget above).
+        const reason = docPhase2State.mermaidReady ? mermaidFailure(block.source) : "";
+        //: A fence the frame refused stays the code it is, with its reason under it.
+        if (reason) {
+          ranges.push(Decoration.widget({ widget: new DocMermaidReason(reason, block.source), block: true, side: 1 }).range(block.to));
+          continue;
+        }
+        if (docLiveSpanTouched.anchorIn(state.selection.ranges, block.from, block.to)) continue;
+        ranges.push(Decoration.replace({ widget: new DocMermaidWidget(block.source, block.from), block: true }).range(block.from, block.to));
+      }
+      return Decoration.set(ranges, true);
+    };
+    docPhase2State.mermaidFieldCache = StateField.define({
+      create: (state) => build(state),
+      update: (value, tr) => (tr.docChanged || tr.selection || tr.effects.some((e) => e.is(recheck)) ? build(tr.state) : value),
+      provide: (field) => EditorView.decorations.from(field),
+    });
+    return docPhase2State.mermaidFieldCache;
+  }
+
+  //: The file's whole surface: what documents.js and documents-export.js call.
+  Object.assign(window, { docRenderMermaidIn, docMermaidWhenDrawn, docMermaidField, diagramModel });
+})();

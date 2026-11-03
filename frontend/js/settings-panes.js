@@ -1117,44 +1117,54 @@ function catalogueRun(row) {
 
 //: **The popup tools, one registry** (INBOX K27): the palette, Tools and
 //: features, the shortcuts dialog's Tools list, both "/" menus and the Guide
-//: read it; tests/test_popup_tools.py fails for a tool missing from any.
+//: read it; tests/test_popup_tools.py fails for a tool missing from any. `widget`
+//: names the dashboard widget that draws the tool inline (`POPUP_WIDGETS`,
+//: dashboard.js), or `widgetExempt` gives the reason it has none (INBOX 1558).
 const POPUP_TOOLS = [
   {
-    id: "calculator", name: "Calculator and equations", icon: "ph:calculator", group: "Ask & chat",
+    id: "calculator", name: "Calculator and equations", icon: "ph:calculator", group: "Ask & chat", widget: "calculator",
     keywords: "calculator calc sum maths math work out percent convert units currency keypad equation formula symbol fraction greek matrix integral latex alt word",
     about: "Sums, conversions and equations in one dialog, with no model; Alt+= opens the equation tab in a text box, /calc the calculator in Chat.",
     keys: "Alt+= or /calc", where: "Equation in text boxes, Calculator in Chat",
     //: `t`: the box a slash row was typed in, which outranks the palette's last box (a stale one sent "/calc" in a note to the Ask box).
-    guide: "calculator", open: (t) => ensureModule("appPalette").then(() => popupToolMaths(t ? { target: t } : undefined)),
+    guide: "calculator", open: (t) => ensureModule("appPalette").then(() => popupToolMaths({ target: t || null })),
   },
   {
-    id: "convert", name: "Convert units", icon: "ph:ruler", group: "Ask & chat",
+    id: "convert", name: "Convert units", icon: "ph:ruler", group: "Ask & chat", widget: "calculator",
     keywords: "convert conversion unit units miles km kg pounds celsius fahrenheit litres currency",
     about: "Length, weight, temperature, volume and currency, with no model; the second tab of Calculator and equations.",
     keys: "/calc", where: "Convert units, in Calculator and equations",
     guide: "calculator", open: () => ensureModule("replyKit").then(() => openCalculator("", "convert")),
   },
   {
-    id: "timer", name: "Start a timer", icon: "ph:timer", group: "Plan & focus",
-    keywords: "timer countdown pomodoro alarm",
-    about: "25 minutes on the status bar, or type timer 10 minutes.",
+    id: "timer", name: "Start a timer", icon: "ph:timer", group: "Plan & focus", widget: "clock",
+    keywords: "timer countdown pomodoro",
+    about: "Opens the Clock.",
     keys: "Ctrl+K", where: "Start a timer",
-    guide: "timer", open: () => ensureModule("utilities").then(() => startUtilityTimer(25)),
+    guide: "timer", open: () => ensureModule("utilities").then(() => openClockPanel("timer")),
   },
   {
-    id: "stopwatch", name: "Start a stopwatch", icon: "ph:timer", group: "Plan & focus",
+    id: "stopwatch", name: "Start a stopwatch", icon: "ph:timer", group: "Plan & focus", widget: "clock",
     keywords: "stopwatch count up",
-    about: "Counts up on the status bar.",
+    about: "Opens the Clock.",
     keys: "Ctrl+K", where: "Start a stopwatch",
-    guide: "timer", open: () => ensureModule("utilities").then(() => startStopwatch()),
+    guide: "timer", open: () => ensureModule("utilities").then(() => openClockPanel("stopwatch")),
+  },
+  {
+    id: "alarm", name: "Set an alarm", icon: "ph:alarm", group: "Plan & focus", widget: "clock",
+    keywords: "alarm",
+    about: "Opens the Clock.",
+    keys: "Ctrl+K", where: "Set an alarm",
+    guide: "timer", open: () => ensureModule("utilities").then(() => openClockPanel("alarm")),
   },
 ];
 
 //: What the palette caught from the field it was opened over (`paletteCaught`,
 //: app-palette.js, lazy): nothing yet when that file is not in, so a caller
-//: other than the palette (Tools and features, audit 1031 Z17) cannot throw.
+//: other than the palette (Tools and features, audit 1031 Z17) cannot throw,
+//: and nothing once the row it ran has started (`live`, INBOX 1530 g).
 function paletteCaughtNow() {
-  return typeof paletteCaught === "undefined" ? { target: null, selection: "", start: null, end: null, range: null } : paletteCaught;
+  return typeof paletteCaught === "undefined" || !paletteCaught.live ? { target: null, selection: "", start: null, end: null, range: null } : paletteCaught;
 }
 
 //: **A row's keycap: the way to run it without the palette.** A chord the

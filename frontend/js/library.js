@@ -376,6 +376,9 @@ const LIBRARY_KINDS = [
   //: wherever it appears.
   { key: "board", icon: "ph:pencil-circle", label: "Boards" },
   { key: "map", icon: "ph:tree-structure", label: "Mind maps" },
+  //: A Mermaid diagram is a document of the `mmd` type (1546 D5); the server lists it as
+  //: its own kind, and it opens in the Documents editor like any document.
+  { key: "diagram", icon: "ph:flow-arrow", label: "Diagrams" },
   // Drafts used to be a Library sub-tab of its own. It is a *filter over
   // notes*, not a separate kind of thing, and it only sat up there because
   // this chip row did not exist when it was added, so it moved here, which
@@ -781,6 +784,8 @@ function renderLibrary(options) {
         : items.filter(wordMatch);
   }
   items = librarySorted(items);
+  //: The count after a load or a filter, said once to a screen reader (audit 1028 S92).
+  if (prefs.get("activeTab", null) === "library") announce(`Library: ${nounCount(items.length, "item")}`, { settle: 600, once: true });
 
   // The server sends the newest page of a big kind; say so under the grid
   // rather than let 200 cards pass for all of them. A search reaches the
@@ -954,7 +959,7 @@ function libraryCopyActions(kind, title, id) {
   const out = [
     makeMenuItem("ph:copy Copy title", "Copy the name to the clipboard", () => copyToClipboard(name)),
   ];
-  if (kind === "document") {
+  if (kind === "document" || kind === "diagram") {
     out.push(
       makeMenuItem("ph:brackets-square Copy wiki link", "Copy a [[wiki link]] to paste into a note or a document", () =>
         copyToClipboard(`[[${name}]]`)
@@ -962,6 +967,7 @@ function libraryCopyActions(kind, title, id) {
     );
   }
   if (id != null && ["note", "document", "chat", "board", "map"].includes(kind)) out.push(appLinkMenuItem(kind, id));
+  else if (id != null && kind === "diagram") out.push(appLinkMenuItem("document", id));
   return out;
 }
 
@@ -1038,7 +1044,7 @@ function libraryActions(item) {
       }),
     ];
   }
-  if (item.kind === "document") {
+  if (item.kind === "document" || item.kind === "diagram") {
     return [
       makeMenuItem("ph:pencil-simple Rename", "Rename this document", async () => {
         const next = await promptDialog("Rename this document", item.title);
@@ -1046,8 +1052,8 @@ function libraryActions(item) {
         await renameDocumentWithUndo(item, next).catch((e) => toast(e.message, true));
         reload();
       }),
-      makeMenuItem("ph:download-simple Download .md", "Save a copy as a markdown file", () => {
-        downloadFromApi(`/documents/${item.id}/export.md`, "document.md");
+      makeMenuItem(`ph:download-simple Download .${item.kind === "diagram" ? "mmd" : "md"}`, item.kind === "diagram" ? "Save a copy as a Mermaid file" : "Save a copy as a markdown file", () => {
+        downloadFromApi(`/documents/${item.id}/export.md`, item.kind === "diagram" ? "document.mmd" : "document.md");
       }),
       //: The shared "act on this" rows (INBOX 393): every object can be taken
       //: to the chat that answers about it.
@@ -1097,7 +1103,8 @@ function libraryActions(item) {
       // two-places problem the move was for.
       makeMenuItem("ph:trash Delete for good", `Permanently delete this ${bin.noun}`, async () => {
         if (!(await confirmDialog(`Delete this ${bin.noun} permanently?\n\nThis cannot be undone.`))) return;
-        await apiJson(bin.purge, { method: "DELETE" }).catch((e) => toast(e.message, true));
+        const gone = await apiJson(bin.purge, { method: "DELETE" }).catch((e) => toast(e.message, true));
+        if (gone) undoStoreClear.purged(bin.noun, item.id);
         reload();
       }),
     ];
@@ -1741,7 +1748,7 @@ $("library-grid").addEventListener("focusin", (event) => {
 // Each kind opens where it is actually worked on. The Library finds things; it
 // is not a fifth editor.
 function openLibraryItem(item) {
-  if (item.kind === "document") {
+  if (item.kind === "document" || item.kind === "diagram") {
     openDocumentFromNote(item.id); // the Documents page, on this document
   } else if (item.kind === "chat") {
     switchTab("chat");
@@ -1885,6 +1892,7 @@ $("binned-purge").addEventListener("click", async () => {
   if (!(await confirmDialog("Permanently delete this note?\n\nThis cannot be undone."))) return;
   try {
     await apiJson(`/entries/${id}/purge`, { method: "DELETE" });
+    undoStoreClear.purged("note", id);
     toast("Deleted for good.");
   } catch (error) {
     toast(voiceLine("failed", { what: "delete that note", why: error.message }), true);
@@ -2059,8 +2067,12 @@ $("library-bin-empty").addEventListener("click", async () => {
       "This cannot be undone."
   );
   if (!ok) return;
+  //: The binned ids, asked for before they are gone, so what this device kept of
+  //: each goes with it (`undoStoreClear.purged`).
+  const binned = (await apiJson("/library").catch(() => null))?.items?.filter((item) => item.kind === "archived") || [];
   try {
     await apiJson("/recycle-bin/empty", { method: "POST" });
+    for (const item of binned) undoStoreClear.purged(binRoutes(item).noun, item.id);
   } catch (e) {
     // Was unconditional before: a failed request still showed "The bin is
     // empty." right under its own error toast, one saying it worked and one
@@ -2160,7 +2172,7 @@ $("library-bulk-delete").addEventListener("click", async () => {
         ? [binRoutes(item).purge, "DELETE"]
         : item.kind === "note"
           ? [`/entries/${item.id}`, "DELETE"]
-          : item.kind === "document"
+          : item.kind === "document" || item.kind === "diagram"
             ? [`/documents/${item.id}`, "DELETE"]
             : item.kind === "chat"
               ? [`/conversations/${item.id}`, "DELETE"]
@@ -2171,8 +2183,9 @@ $("library-bulk-delete").addEventListener("click", async () => {
     try {
       const answer = await apiJson(route[0], { method: route[1] });
       deleted++;
+      if (item.kind === "archived") undoStoreClear.purged(binRoutes(item).noun, item.id);
       if (item.kind === "note") comeBack.push({ route, back: [`/entries/${item.id}/restore`, "POST"] });
-      else if (item.kind === "document") comeBack.push({ route, back: [`/documents/${item.id}/restore`, "POST"] });
+      else if (item.kind === "document" || item.kind === "diagram") comeBack.push({ route, back: [`/documents/${item.id}/restore`, "POST"] });
       else if (item.kind === "chat" && answer?.restore) comeBack.push({ route, chat: answer.restore });
     } catch {
       // counted below
@@ -2278,7 +2291,7 @@ const LIBRARY_CREATE_BY_KIND = {
   // not have was a *name*, nothing in the app said "concept map", so the
   // one feature the user was asking for was sitting behind a button called
   // "New board" on a tab called Whiteboards, which is why they reported it
-  // missing. See `createConceptMap` for what the entry point adds on top.
+  // missing.
   //
   // It also answers the deferred half of the ask, "maybe with a way to
   // export that into a visual diagram on the whiteboard", by construction:

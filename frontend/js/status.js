@@ -273,7 +273,7 @@ function renderNotifMuteToggle() {
   button.title = muted
     ? "Stop muting: everything will notify again"
     : "Mute notifications except reminders";
-  button.setAttribute("aria-pressed", String(muted));
+  button.setAttribute("aria-pressed", muted);
   //: Icon-only since the head lost its second row, so the tooltip is no
   //: longer backed by a visible word, the accessible name has to carry it.
   button.setAttribute("aria-label", button.title);
@@ -1002,6 +1002,8 @@ document.addEventListener("keydown", (e) => lockFieldWants(e)?.focus(), true);
 //: when a toast arrives over a focused control.
 function toastYield(target = document.activeElement) {
   const box = $("toast-box");
+  //: Nothing focused: the open sheet is still where the work is. On CI the focus never reached the import preview, so the box was never measured (E2E import, 2026-11-02: no class at all).
+  if (!target || target === document.body) target = [...document.querySelectorAll("[data-sheet][role=dialog]")].pop() || target;
   if (!box?.children.length || !target || box.contains(target) || target === document.body) return box?.classList.remove("is-yielding");
   const meets = (b, r) => r.width > 0 && b.left < r.right && b.right > r.left && b.top < r.bottom && b.bottom > r.top;
   const focused = target.getBoundingClientRect();
@@ -1009,7 +1011,8 @@ function toastYield(target = document.activeElement) {
   const wide = focused.width > innerWidth / 2 && focused.height > innerHeight / 2;
   //: Skipped content-visibility buttons are not drawn; measuring one lays it out alone (INBOX 1415).
   const area = target.closest("form, section, [role=dialog]");
-  const work = [...(area?.querySelectorAll("button") || [])].map((el) => el.checkVisibility({ contentVisibilityAuto: true }) && el.getBoundingClientRect());
+  //: Not the panel's resize grip (INBOX 1548): it is a button in the dialog's bottom-right corner, where every toast lands, so each one was drawn at 0.12 over Settings as if it were hiding a control.
+  const work = [...(area?.querySelectorAll("button:not(.panel-grip)") || [])].map((el) => el.checkVisibility({ contentVisibilityAuto: true }) && el.getBoundingClientRect());
   //: In a dialog a timed toast steps aside too: the pointer resting on it
   //: holds its timer, so the last import's Undo sat on the next preview's
   //: Import for as long as the press was tried (E2E import, 2026-11-01).
@@ -2206,8 +2209,8 @@ function syncModelGatedControls(status = modelStatus) {
   //: line says what a model would add rather than that nothing answers.
   renderAiOfflineNotice(
     $("chat-offline"),
-    "No model connected. Chat answers from your notes.",
-    { dismissible: true, detail: "Chat quotes your notes until one is connected. A model adds AI answers and Agent mode." }
+    "No model connected. Chat answers from your notes. Plan and Agent need a model.",
+    { dismissible: true, detail: "Chat quotes your notes until one is connected. A model adds AI answers, Plan and Agent mode." }
   );
   //: And the writing desk, which is the third surface that is nothing but
   //: Atlas: with no model it cannot draft at all, and before this the only
@@ -2792,7 +2795,7 @@ function toggleAiStatusPopup(force) {
   if (!button || !popup) return;
   const open = force !== undefined ? force : !button.classList.contains("pinned");
   button.classList.toggle("pinned", open);
-  button.setAttribute("aria-expanded", String(open));
+  button.setAttribute("aria-expanded", open);
   // Visibility, not the `hidden` attribute: `hidden` is display:none, which
   // the CSS hover rule would then have to fight. The stylesheet owns whether
   // the popup is shown; this only records that it has been pinned open.
@@ -2828,7 +2831,10 @@ function renderChatModeSeg() {
   const agentButton = document.querySelector('#chat-mode-seg [data-chat-mode="agent"]');
   if (agentButton) {
     if (agentButton.dataset.enabledTitle === undefined) agentButton.dataset.enabledTitle = agentButton.title;
-    agentButton.disabled = gated;
+    //: aria-disabled, not disabled (E61): the button stays a Tab stop and a press opens the
+    //: same "Needs a model" popover Plan does (`openModelOffer`), so the reason is not hover-only.
+    agentButton.setAttribute("aria-disabled", gated);
+    agentButton.classList.toggle("ai-unavailable", gated);
     agentButton.title = gated
       ? `Agent mode needs a model, or the Needle extra, to call tools. ${AI_OFFLINE_HINT}.`
       : engine

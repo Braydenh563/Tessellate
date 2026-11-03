@@ -1,10 +1,10 @@
 """The god modules' line caps, ratcheted so they only go down (audit AR3,
 ranked row 36, gods-1101).
 
-`composer.py` was 6,376 lines and `routes_chat.py` 6,198 before their layers
+`composer.py` was 6,376 lines, `routes_chat.py` 6,198, `routes_whiteboard.py` 6,344 and `ai/tools/__init__.py` 5,282 before their layers
 were moved out whole, each to a module with one reason to exist that imports
 only the layers below it (the design is in
-docs/roadmap/agent-remaining/gods-1101.md). A cap here is the file's size
+docs/roadmap/agent-remaining/gods-1101.md, gods2-1102.md and gods3-1102.md). A cap here is the file's size
 when that split landed. A file that grows past its cap fails: put the new
 code in the layer it belongs to, or start one. A file that shrinks well
 under its cap fails too, until the cap is lowered to the new size, so the
@@ -22,10 +22,26 @@ ROOT = Path(__file__).resolve().parents[1] / "src" / "tessellate"
 CAPS = {
     "ai/composer.py": 962,
     "api/routes_chat.py": 2474,
+    #: The routes and models moved out whole to the wb_*.py layers; this module only includes them (gods-2).
+    "api/routes_whiteboard.py": 64,
     #: The table moved out whole to help_topics_core.py (audit AI23): 3,740 lines before.
     "ai/help_chat.py": 1370,
     #: The rules and the turn plan moved out whole to agent_policy.py and agent_turn.py (audit AI23).
     "ai/agent.py": 1301,
+    #: The registry and the tools moved out whole to tool_*.py layers by tool family; `__init__` only re-exports (gods3-1102): 5,282 lines before.
+    "ai/tools/__init__.py": 48,
+    "ai/tools/tool_focus.py": 179,
+    "ai/tools/tool_handoff.py": 126,
+    "ai/tools/tool_learn.py": 229,
+    "ai/tools/tool_read.py": 1038,
+    "ai/tools/tool_run.py": 420,
+    "ai/tools/tool_schema.py": 342,
+    "ai/tools/tool_sets.py": 366,
+    "ai/tools/tool_skills.py": 153,
+    "ai/tools/tool_table.py": 1491,
+    "ai/tools/tool_turn.py": 346,
+    "ai/tools/tool_web.py": 157,
+    "ai/tools/tool_write.py": 539,
 }
 #: How far under its cap a file may fall before the cap must come down.
 SLACK = 50

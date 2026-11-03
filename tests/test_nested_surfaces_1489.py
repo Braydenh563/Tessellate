@@ -52,7 +52,7 @@ def _strip(css: str) -> str:
 def _rules():
     for sheet in CSS:
         text = _strip(sheet.read_text(encoding="utf-8"))
-        for match in re.finditer(r"([^{}]+)\{([^{}]*)\}", text):
+        for match in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", text):
             yield sheet.name, match.group(1).strip(), match.group(2)
 
 

@@ -42,6 +42,13 @@ const ACCEPTED = {
   //: keyboard (2.1.1). axe's rule wants the list itself focusable, which
   //: would add a Tab stop where the arrow keys do nothing.
   'scrollable-region-focusable|#palette-list': 'combobox with aria-activedescendant',
+  //: The slash menu is the same pattern with the editor as the combobox:
+  //: focus stays in the document box, which names the list (`aria-controls`,
+  //: `aria-haspopup="listbox"`) and carries `aria-activedescendant` while the
+  //: arrow keys move through the rows (`editorLinkBox`, editor.js), so every
+  //: row is reached and announced by keyboard. A Tab stop on the list would
+  //: take the focus out of the text being written (audit 1102 DX22).
+  'scrollable-region-focusable|#editor-menu-list': 'combobox with aria-activedescendant (the editor box)',
 };
 
 async function scan(page, where, context, seen, out) {

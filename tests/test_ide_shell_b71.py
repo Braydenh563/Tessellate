@@ -141,7 +141,8 @@ def test_the_python_console_in_cpython() -> None:
 
 def test_the_editor_palette_is_the_apps_palette_narrowed() -> None:
     assert 'input.value = "> "' in _function(IDE, "docIdeOpenPalette")
-    assert 'if (lowered.startsWith(">")) return paletteEditorMatches(' in PALETTE
+    #: The branch holds a fallback row since audit 1028 S62 (Search notes when nothing matches).
+    assert re.search(r'if \(lowered\.startsWith\(">"\)\) \{\s+const needle = lowered\.slice\(1\)\.trim\(\);\s+const rows = paletteEditorMatches\(needle\);', PALETTE)
     assert 'c.group === "This document"' in _function(PALETTE, "paletteEditorMatches")
 
 

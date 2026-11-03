@@ -41,8 +41,11 @@ function docLivePlugin(CM) {
       this.from = from;
       this.to = to;
     }
+    //: The tick and the marker's length, not its place (DX1): with the start
+    //: in it, every box below a typed key was built again, per key. The click
+    //: asks the view where the box is now.
     eq(other) {
-      return other.checked === this.checked && other.from === this.from;
+      return other.checked === this.checked && other.to - other.from === this.to - this.from;
     }
     //: **The view is handed in, and the listener goes on the element.** The
     //: first version toggled from the plugin's own `mousedown` handler, which
@@ -71,9 +74,11 @@ function docLivePlugin(CM) {
       box.checked = this.checked;
       box.setAttribute("aria-label", this.checked ? "Done" : "Not done");
       hit.appendChild(box);
-      const { from, to } = this;
+      const size = this.to - this.from;
       hit.addEventListener("click", (event) => {
         event.preventDefault();
+        const from = view.posAtDOM(hit);
+        const to = from + size;
         const marker = view.state.doc.sliceString(from, to);
         //: The source is what changes, and the tick follows it on the next
         //: repaint. Writing the two separately is how they come to disagree.
@@ -206,12 +211,12 @@ function docLivePlugin(CM) {
       this.at = at;
     }
     eq(other) {
+      //: Not the place (DX1): the buttons ask the view for their line when pressed.
       return (
         other.kind === this.kind &&
-        other.at === this.at &&
         other.titled === this.titled &&
         !!other.fold === !!this.fold &&
-        (!this.fold || (other.fold.at === this.fold.at && other.fold.closed === this.fold.closed))
+        (!this.fold || other.fold.closed === this.fold.closed)
       );
     }
     ignoreEvent() {
@@ -371,14 +376,16 @@ function docLivePlugin(CM) {
       this.body = body;
       this.at = at;
     }
+    //: The words, not the place (DX1): a key above the pin no longer draws it again, and
+    //: the click asks the view where the pin is now.
     eq(other) {
-      return other.body === this.body && other.at === this.at;
+      return other.body === this.body;
     }
     //: A control, not text: CodeMirror must not put a caret inside it.
     ignoreEvent() {
       return true;
     }
-    toDOM() {
+    toDOM(view) {
       const pin = document.createElement("button");
       pin.type = "button";
       pin.className = "doc-comment-pin";
@@ -388,10 +395,9 @@ function docLivePlugin(CM) {
       icon.className = "ph ph-chat-teardrop-text";
       icon.setAttribute("aria-hidden", "true");
       pin.appendChild(icon);
-      const at = this.at;
       pin.addEventListener("click", (event) => {
         event.preventDefault();
-        docShowComment(at);
+        docShowComment(view ? view.posAtDOM(pin) : this.at);
       });
       return pin;
     }
@@ -444,6 +450,20 @@ function docLivePlugin(CM) {
         });
       });
       return host;
+    }
+  }
+
+  //: An icon in a line, drawn by the renderer every other reader uses.
+  class DocIconWidget extends WidgetType {
+    constructor(name) {
+      super();
+      this.name = name;
+    }
+    eq(other) {
+      return other.name === this.name;
+    }
+    toDOM() {
+      return appendPlainText.icon(this.name) || document.createElement("span");
     }
   }
 
@@ -550,11 +570,14 @@ function docLivePlugin(CM) {
     //: that word or section", and an untouched document is the one case where
     //: nobody has clicked on anything at all.
     const focused = view.hasFocus;
-    const probe = (from, to) => {
-      const on = focused && docLiveSpanTouched(selRanges, from, to);
-      record.probes.push(from, to, on ? 1 : 0);
+    //: `held`: a rendered widget's rule (INBOX 1547), source only while a
+    //: selection starts in it, so a drag that crosses a diagram leaves it drawn.
+    const probe = (from, to, held = false) => {
+      const on = focused && (held ? docLiveSpanTouched.anchorIn(selRanges, from, to) : docLiveSpanTouched(selRanges, from, to));
+      record.probes.push(from, to, (on ? 1 : 0) | (held ? 2 : 0));
       return on;
     };
+    const widgetRevealed = (from, to) => probe(from, to, true);
     const touched = probe;
     const lineTouched = (pos) => {
       const line = doc.lineAt(pos);
@@ -596,9 +619,9 @@ function docLivePlugin(CM) {
     //: the note beside `cm-md-fence-quiet` below.
     const gutterOn = docFenceGutterOn();
     const tree = syntaxTree(state);
-    //: The document as one string, for the table model, and at most once per
-    //: build: the model works in document offsets so it needs the whole text,
-    //: and a copy per visible line would be a copy per keystroke per line.
+    //: The document as one string, at most once per build, for a table's menu
+    //: and the frontmatter; a table itself is parsed from its own lines
+    //: (`docTableParse.at`).
     let sourceText = null;
     const source = () => {
       if (sourceText === null) sourceText = docStr(doc);
@@ -707,7 +730,7 @@ function docLivePlugin(CM) {
             //: at the end of a note whose last line was the picture, so the
             //: line revealed as source and the picture went, which read as an
             //: image that never rendered. A widget after the source keeps it.
-            if (rangeRevealed(node.from, node.to)) {
+            if (widgetRevealed(node.from, node.to)) {
               ranges.push(
                 Decoration.widget({ widget: new DocImageWidget(src, text.slice(2, close), true), side: 1 }).range(node.to)
               );
@@ -1102,7 +1125,7 @@ function docLivePlugin(CM) {
       if (/\[toc\]/i.test(text)) {
         let tocEntries = null;
         scan(/^[ \t]*\[toc\][ \t]*$/gim, (match, from, to) => {
-          if (rangeRevealed(from, to)) return;
+          if (widgetRevealed(from, to)) return;
           if (!tocEntries) tocEntries = mdTocEntries(docStr(doc));
           ranges.push(Decoration.replace({ widget: new DocTocWidget(tocEntries) }).range(from, to));
         });
@@ -1110,7 +1133,7 @@ function docLivePlugin(CM) {
       scan(/%%([^\n]*?)%%/g, (match, from, to) => {
         const note = match[1].trim();
         if (!note) return;
-        if (rangeRevealed(from, to)) return;
+        if (widgetRevealed(from, to)) return;
         ranges.push(
           Decoration.replace({ widget: new DocCommentWidget(note, from) }).range(from, to)
         );
@@ -1131,7 +1154,7 @@ function docLivePlugin(CM) {
       scan(/\$\$([^$\n]{1,400})\$\$/g, (match, from, to) => {
         if (!docMathLooksLikeMath(match[1])) return;
         mathTaken.push([from, to]);
-        if (rangeRevealed(from, to)) return;
+        if (widgetRevealed(from, to)) return;
         ranges.push(
           Decoration.replace({ widget: new DocMathWidget(match[1], true) }).range(from, to)
         );
@@ -1139,10 +1162,19 @@ function docLivePlugin(CM) {
       scan(/\$([^$\n]{1,300})\$/g, (match, from, to) => {
         if (mathTaken.some(([start, end]) => from >= start && to <= end)) return;
         if (!docMathLooksLikeMath(match[1])) return;
-        if (rangeRevealed(from, to)) return;
+        if (widgetRevealed(from, to)) return;
         ranges.push(
           Decoration.replace({ widget: new DocMathWidget(match[1], false) }).range(from, to)
         );
+      });
+
+      //: **`:ph-name:` is the icon** (INBOX 1545), the token the icon picker
+      //: inserts and the reading view and an export draw; a name the font does
+      //: not have stays the text it is. Revealed as text under the caret.
+      scan(/:ph-([a-z0-9-]{1,40}):/g, (match, from, to) => {
+        const icon = appendPlainText.icon(match[1]);
+        if (!icon || widgetRevealed(from, to)) return;
+        ranges.push(Decoration.replace({ widget: new DocIconWidget(match[1]) }).range(from, to));
       });
 
       //: **Footnotes**, Phase 3 item 2. Two shapes of the same thing: a
@@ -1198,7 +1230,7 @@ function docLivePlugin(CM) {
         //: `![[name]]` is the embed form, and the `!` is one character to the
         //: left of what this pattern matched.
         const embed = from > 0 && doc.sliceString(from - 1, from) === "!";
-        if (embed && !rangeRevealed(from - 1, to)) {
+        if (embed && !widgetRevealed(from - 1, to)) {
           ranges.push(
             Decoration.replace({ widget: new DocEmbedWidget(spec) }).range(from - 1, to)
           );
@@ -1266,7 +1298,7 @@ function docLivePlugin(CM) {
         if (tableSeen.has(line.number)) continue;
         tableSeen.add(line.number);
         if (!docTableRowLike(line.text)) continue;
-        const table = docTableParse(source(), line.from);
+        const table = docTableParse.at(doc, line.from);
         if (!table) continue;
         for (const row of table.rows) tableSeen.add(doc.lineAt(row.from).number);
         record.selFree = false;
@@ -1501,6 +1533,78 @@ function docLivePlugin(CM) {
     return Decoration.set(ranges, true);
   }
 
+  //: **A key inside one paragraph rebuilds that paragraph** (audit 1102 DX1), with the line
+  //: above and below it for the blank-line gaps, instead of every visible line: 6 ms of a
+  //: key at 4x CPU in the 3,120-line document went on the visible rebuild. The rest of the
+  //: set is mapped through the edit. Only where nothing outside can depend on the
+  //: paragraph's words: the change has no line break, the caret starts and ends inside it,
+  //: the block is a paragraph or a task under nothing but lists both before and after (a
+  //: quote is out: a callout's kind is its first line), the block after it is unmoved, and
+  //: the lines hold no table row, no `$$` and no frontmatter. Anything else is null, and
+  //: the plugin rebuilds as before. `tests/test_doc_typing_dx1.py` compares the two.
+  const PATCH_LEAF = new Set(["Paragraph", "Task"]);
+  const PATCH_UNDER = new Set(["Document", "BulletList", "OrderedList", "ListItem"]);
+  const patchLeaf = (tree, from, to) => {
+    if (tree.length < to) return null;
+    for (const side of [1, -1]) {
+      for (let node = tree.resolveInner(from, side); node; node = node.parent) {
+        if (PATCH_LEAF.has(node.name)) {
+          if (node.from > from || node.to < to) break;
+          const chain = [];
+          for (let up = node.parent; up; up = up.parent) {
+            if (!PATCH_UNDER.has(up.name)) return null;
+            chain.push(up);
+          }
+          return { node, chain };
+        }
+      }
+    }
+    return null;
+  };
+  function patchRegion(update, visible) {
+    const { startState, state, changes, view } = update;
+    let fromA = Infinity, toA = -1, fromB = Infinity, toB = -1, broken = false;
+    changes.iterChanges((fa, ta, fb, tb, inserted) => {
+      if (inserted.lines > 1 || startState.doc.sliceString(fa, ta).includes("\n")) broken = true;
+      fromA = Math.min(fromA, fa);
+      toA = Math.max(toA, ta);
+      fromB = Math.min(fromB, fb);
+      toB = Math.max(toB, tb);
+    });
+    if (broken || toA < 0) return null;
+    const was = patchLeaf(syntaxTree(startState), fromA, toA);
+    const now = was && patchLeaf(syntaxTree(state), fromB, toB);
+    if (!now || was.node.name !== now.node.name || was.chain.length !== now.chain.length) return null;
+    const same = (a, b) => a.name === b.name && changes.mapPos(a.from, -1) === b.from && changes.mapPos(a.to, 1) === b.to;
+    if (!same(was.node, now.node) || was.chain.some((a, i) => !same(a, now.chain[i]))) return null;
+    const top = (hit) => (hit.chain.length > 1 ? hit.chain[hit.chain.length - 2] : hit.node);
+    const nextA = top(was).nextSibling;
+    const nextB = top(now).nextSibling;
+    if (!nextA !== !nextB || (nextA && !same(nextA, nextB))) return null;
+    const doc = state.doc;
+    const first = Math.max(1, doc.lineAt(now.node.from).number - 1);
+    const last = Math.min(doc.lines, doc.lineAt(now.node.to).number + 1);
+    const region = { from: doc.line(first).from, to: doc.line(last).to };
+    const old = { from: startState.doc.line(first).from, to: startState.doc.line(last).to };
+    const inside = (sel, r) => sel.ranges.every((range) => range.from >= r.from && range.to <= r.to);
+    if (!inside(startState.selection, old) || !inside(state.selection, region)) return null;
+    for (let n = first; n <= last; n += 1) if (docTableRowLike(doc.line(n).text)) return null;
+    if (doc.sliceString(region.from, region.to).includes("$$")) return null;
+    if (doc.length > 3 && doc.sliceString(0, 4) === "---\n") {
+      const fm = docFrontmatterParse(doc.sliceString(0, region.from));
+      if (!fm || fm.to >= region.from) return null;
+    }
+    //: The view's lines have to be the old ones moved by the edit, or lines the patch never
+    //: looks at would have come into view.
+    const ranges = [...view.visibleRanges, view.viewport];
+    if (ranges.length !== visible.length / 2) return null;
+    for (let i = 0; i < ranges.length; i += 1) {
+      if (changes.mapPos(visible[2 * i], -1) !== ranges[i].from || changes.mapPos(visible[2 * i + 1], 1) !== ranges[i].to) return null;
+    }
+    return { region, old };
+  }
+  const visibleOf = (view) => [...view.visibleRanges, view.viewport].flatMap((r) => [r.from, r.to]);
+
   docLivePluginCache = ViewPlugin.fromClass(
     class {
       constructor(view) {
@@ -1510,6 +1614,41 @@ function docLivePlugin(CM) {
       rebuild(view) {
         this.record = { probes: [], selFree: true };
         this.decorations = build(view, this.record);
+        this.visible = visibleOf(view);
+      }
+      //: The paragraph's decorations built again from a view that sees only its lines, laid
+      //: into the old set mapped through the edit (`patchRegion` says when that is exact).
+      patch(update) {
+        const hit = patchRegion(update, this.visible);
+        if (!hit) return false;
+        const { region, old } = hit;
+        const view = update.view;
+        const probes = [];
+        const was = this.record.probes;
+        for (let i = 0; i < was.length; i += 3) {
+          if (was[i] >= old.from && was[i + 1] <= old.to) continue;
+          probes.push(update.changes.mapPos(was[i], -1), update.changes.mapPos(was[i + 1], 1), was[i + 2]);
+        }
+        if (!docLiveRevealSame(probes, update.state.selection.ranges)) return false;
+        const record = { probes: [], selFree: true };
+        const part = build(
+          { state: update.state, hasFocus: view.hasFocus, dom: view.dom, contentDOM: view.contentDOM, visibleRanges: [region], viewport: region },
+          record
+        );
+        const add = [];
+        part.between(region.from, region.to, (from, to, value) => {
+          if (from >= region.from) add.push(value.range(from, to));
+        });
+        this.decorations = this.decorations.map(update.changes).update({
+          filter: (from) => from < region.from || from > region.to,
+          filterFrom: region.from,
+          filterTo: region.to,
+          add,
+          sort: true,
+        });
+        this.record = { probes: probes.concat(record.probes), selFree: this.record.selFree && record.selFree };
+        this.visible = visibleOf(view);
+        return true;
       }
       update(update) {
         //: Selection as well as document and viewport: the whole idea of this
@@ -1540,6 +1679,7 @@ function docLivePlugin(CM) {
         //: tree object, a pointer check, so a keystroke inside a stable tree
         //: costs nothing extra.
         const gutterOn = docFenceGutterOn();
+        if (update.docChanged && !update.focusChanged && gutterOn === this.gutterOn && this.patch(update)) return;
         const other = update.docChanged || update.viewportChanged || update.focusChanged
           || gutterOn !== this.gutterOn
           || syntaxTree(update.startState) !== syntaxTree(update.state);
@@ -1557,8 +1697,10 @@ function docLivePlugin(CM) {
     {
       decorations: (plugin) => plugin.decorations,
       eventHandlers: {
-        mousedown(event) {
+        mousedown(event, view) {
           const target = event.target;
+          //: A callout's line from where its button is drawn now, not where it was built.
+          const lineOf = (el, at) => (view ? view.state.doc.lineAt(view.posAtDOM(el)).from : Number(at));
           if (!(target instanceof Element)) return false;
           const wiki = target.closest("[data-doc-wiki]");
           if (wiki) {
@@ -1574,14 +1716,14 @@ function docLivePlugin(CM) {
             event.preventDefault();
             event.stopPropagation();
             const box = kindButton.getBoundingClientRect();
-            docCalloutKindMenu(Number(kindButton.dataset.docCalloutKind), box.left, box.bottom + 4);
+            docCalloutKindMenu(lineOf(kindButton, kindButton.dataset.docCalloutKind), box.left, box.bottom + 4);
             return true;
           }
           const fold = target.closest("[data-doc-callout-fold]");
           if (fold) {
             event.preventDefault();
             event.stopPropagation();
-            docToggleCalloutFold(Number(fold.dataset.docCalloutFold));
+            docToggleCalloutFold(lineOf(fold, fold.dataset.docCalloutFold));
             return true;
           }
           const note = target.closest("[data-doc-footnote]");
@@ -2384,10 +2526,12 @@ function docCmTheme(CM) {
       //: The gaps between blocks (17b), one token each; the note beside the
       //: decoration in `docLivePlugin` says why this is `line-height` and not
       //: `height`.
+      //: Read's heading margins (09-editor.css, audit 1102 DX25) are these same
+      //: three: 2rem and 1.5rem before a heading, `--space-4` after it, and 1.6 leading.
       ".cm-md-gap": { lineHeight: "var(--space-6)" },
       ".cm-md-gap-major": { lineHeight: "var(--space-9)" },
       ".cm-md-gap-minor": { lineHeight: "var(--space-8)" },
-      ".cm-md-gap-tight": { lineHeight: "var(--space-3)" },
+      ".cm-md-gap-tight": { lineHeight: "var(--space-4)" },
       ".cm-md-gap-extra": { lineHeight: "0" },
       //: The callout's kind, in the place its `[!note]` marker was. Set in
       //: `em` so it tracks the editor's own type scale, and in the muted ink
@@ -2459,7 +2603,14 @@ function docCmTheme(CM) {
         color: "var(--accent-text)",
         fontWeight: "600",
       },
-      ".cm-md-footnote-ref": { cursor: "pointer" },
+      ".cm-md-footnote-ref": {
+        cursor: "pointer",
+        //: A target of at least 24px (44 under touch) with no change to the
+        //: line: the padding is the hit area, the negative margin takes it
+        //: out of the layout (audit 1102 DX21, the same pair as `.md-fn-ref a`).
+        padding: "var(--space-3) var(--space-5)",
+        margin: "0 calc(var(--space-5) * -1)",
+      },
       //: The toggle's chevron sits with the callout's own label, in the same
       //: muted ink, because it is part of the same control.
       ".cm-md-callout-fold": { fontSize: "0.9em", opacity: "0.8" },
@@ -2485,6 +2636,7 @@ function docCmTheme(CM) {
       //: wrapping.
       ".cm-md-table": {
         display: "grid",
+        "--doc-table-col-min": "6em",
         borderLeft: "1px solid var(--border)",
         //: The cell menu is positioned against whichever row it is on.
         position: "relative",
@@ -2496,7 +2648,7 @@ function docCmTheme(CM) {
       //: show usefully in any case.
       ".cm-md-table-wide": {
         gridAutoFlow: "column",
-        gridAutoColumns: "minmax(0, 1fr)",
+        gridAutoColumns: "minmax(var(--doc-table-col-min), 1fr)",
       },
       ...docTableGridRules(),
       ".cm-md-table-head": {

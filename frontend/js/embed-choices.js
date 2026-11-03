@@ -62,7 +62,8 @@
     title.className = "entry-title";
     const name = document.createElement("strong");
     name.textContent = choice.label;
-    title.append(name, chip(choice.backend === "ollama" ? "Through Ollama" : "Runs in the app", "item-label"));
+    //: A model the app cannot fetch itself (its terms, or not built in yet) runs through Ollama, as its row says (INBOX 1533).
+    title.append(name, chip(choice.backend === "ollama" || !choice.one_press ? "Through Ollama" : "Runs in the app", "item-label"));
     if (inUse) title.appendChild(chip("ph:check-circle In use", "item-label is-ok"));
     else if (choice.default) title.appendChild(chip("Default", "item-label"));
     //: **The row's real state** (the owner, 2026-10-07): Downloaded with its size

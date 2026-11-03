@@ -280,9 +280,13 @@ function nameMarkBuddyMenu(buddy, at = null) {
   //: current choice in each is ticked. Each choice goes through its own
   //: Appearance control's change, so the menu and Settings cannot disagree.
   const tick = (on, label) => `${on ? "ph:check" : "ph:dot-outline"} ${label}`;
-  const choose = (id, value) => {
-    const select = document.getElementById(id);
+  //: `$` builds the Settings body and the change listeners are lazy: before
+  //: Settings had opened once, a choice here found no select, or one nothing
+  //: listened to, and did nothing (the owner: "I cant change atlas to feminine").
+  const choose = async (id, value) => {
+    const select = $(id);
     if (!select) return;
+    await ensureModule("settingsControls");
     select.value = value;
     select.dispatchEvent(new Event("change", { bubbles: true }));
   };

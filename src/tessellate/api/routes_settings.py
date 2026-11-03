@@ -37,10 +37,11 @@ from tessellate.ai import backend_hint, librarian, memory, presets, skill_compos
 from tessellate.api.routes_categories import CATEGORY_PALETTE_KEYS
 from tessellate.core import backup, backup_bundle, deps, embedmodels, events, extras, jobruns, jobs, logbuffer, paths, security
 from tessellate.core.config import default_preferences
-from tessellate.core.database import AuditLog, Category, Entry, EntryLink, utcnow
+from tessellate.core.database import AuditLog, Entry, utcnow
 from tessellate.core.deps import get_session
 from tessellate.entry import importer, manager
-from tessellate.repo import relation_types
+from tessellate.repo import categories as categories_repo
+from tessellate.repo import relation_types, relations
 from tessellate.repo.content import walk as content_walk
 from tessellate.entry.cleantext import import_path
 from tessellate.search import searxng_manager, websearch
@@ -2639,8 +2640,8 @@ def support_bundle(session: Session = Depends(get_session)) -> Response:
                 select(func.count(Entry.id)).where(Entry.is_private == True)  # noqa: E712
             )
             or 0,
-            "categories": session.scalar(select(func.count(Category.id))) or 0,
-            "links": session.scalar(select(func.count(EntryLink.id))) or 0,
+            "categories": categories_repo.count(session),
+            "links": relations.count(session),
         },
         {},
     )
@@ -2684,13 +2685,13 @@ def _models_status_snapshot() -> dict:
     }
 
 
-def _export_rows(session: Session) -> tuple[list[Category], list[Entry], list[EntryLink]]:
+def _export_rows(session: Session) -> tuple[list, list[Entry], list]:
     """Everything the user owns, including binned entries, an export
     should never silently drop data. The notes and boards come from the one
     export walker (`repo/content.walk`), the folder export's own."""
-    categories = list(session.scalars(select(Category).order_by(Category.id)))
+    categories = categories_repo.all_rows(session)
     entries = [row for _adapter, row in content_walk(session, ("note", "board"))]
-    links = list(session.scalars(select(EntryLink).order_by(EntryLink.id)))
+    links = relations.all_rows(session)
     return categories, entries, links
 
 

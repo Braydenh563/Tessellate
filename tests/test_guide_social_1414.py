@@ -53,7 +53,8 @@ HOWTOS = [
 
 def _reply(question: str, tab: str = "notes", actions=PINNED) -> str:
     out = help_chat._aware(help_chat.offline_answer(question, tab), question, tab, actions)
-    return out["content"]
+    #: What the person reads: the answer and, since E52, its tip line under it.
+    return "\n\n".join(filter(None, (out["content"], out.get("tip"))))
 
 
 @pytest.mark.parametrize("question", OPEN + HOWTOS)
@@ -170,3 +171,16 @@ def test_chat_closes_with_the_same_closing_so_a_finished_act_is_not_resumed_ther
     assert "composer_aware.closing(_awareness(req), f\"{seed}:{req.question}\", recent," in routes
     pinned = composer_aware.build(tab="chat", actions=PINNED)
     assert not RESUME.search(composer_aware.closing(pinned, "chat-seed"))
+
+
+def test_the_what_next_line_is_a_tip_beside_the_answer_not_in_it():
+    """Audit 1028 E52: the line was appended to the answer, so it was copied,
+    saved and sent back as history. It is the reply's `tip` now, still a chip,
+    and the Guide draws it as a muted line under the answer."""
+    out = help_chat._aware(help_chat.offline_answer("what is the graph", "graph"), "what is the graph", "graph", ["Opened the graph"])
+    assert out["tip"] and out["tip"] not in out["content"]
+    assert out["asks"] == ["How do I link two notes?"]
+    from pathlib import Path
+
+    js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "help-chat.js").read_text(encoding="utf-8")
+    assert 'className: "muted answer-tip", textContent: result.tip' in js and 'tip: done?.tip || ""' in js

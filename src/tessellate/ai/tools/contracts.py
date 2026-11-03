@@ -41,6 +41,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.core.database import Category, Entry, EntryLink, Reminder
 from tessellate.entry import manager
+from tessellate.repo import tags as tags_repo
 from tessellate.entry.tagnames import normalise_tags
 
 _log = logging.getLogger("tessellate.tools")
@@ -138,9 +139,9 @@ def _pre_tag_exists(field: str) -> Pre:
         name = str(args.get(field) or "").strip()
         if not name:
             return None
-        if _fold(name) in {_fold(tag) for tag in manager.all_tags(session)}:
+        if _fold(name) in {_fold(tag) for tag in tags_repo.counts(session)}:
             return None
-        known = ", ".join(list(manager.all_tags(session))[:12])
+        known = ", ".join(list(tags_repo.counts(session))[:12])
         return f"No note has the tag “{name}”." + (f" Tags in use: {known}." if known else "")
 
     return check
@@ -310,7 +311,7 @@ def _post_category_gone(arg: str) -> Post:
 
 def _post_tag_gone(session: Session, args: dict, result: dict) -> str | None:
     old = _fold(args.get("old") or args.get("name"))
-    if old and _fold(args.get("new")) != old and old in {_fold(t) for t in manager.all_tags(session)}:
+    if old and _fold(args.get("new")) != old and old in {_fold(t) for t in tags_repo.counts(session)}:
         return f"the tag “{args.get('old') or args.get('name')}” is still on a note"
     return None
 

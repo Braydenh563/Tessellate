@@ -359,7 +359,7 @@ function editorFuzzyMatch(label, query) {
 //: to it ("table" finds Table before Table of contents), a label that
 //: starts with it, a word in the label that does, a keyword that does, the
 //: label containing it, a keyword containing it, and last the letters in
-//: order anywhere in the label ("twcl" finds Two columns). No query keeps the
+//: order anywhere in the label ("twc" finds Two columns; three letters at most). No query keeps the
 //: table's own order, which is the grouped menu.
 function editorFuzzyRank(rows, query) {
   const needle = String(query || "").toLowerCase().trim();
@@ -371,11 +371,14 @@ function editorFuzzyRank(rows, query) {
     let score = -1;
     if (label === needle) score = 0;
     else if (label.startsWith(needle)) score = 0.5;
-    else if (label.split(/[\s-]+/).some((word) => word.startsWith(needle))) score = 1;
+    else if (label.split(/[\s-]+/).some((word) => word.startsWith(needle)) || ` ${label}`.includes(` ${needle}`)) score = 1;
     else if (keywords.some((k) => k.startsWith(needle))) score = 2;
     else if (label.includes(needle)) score = 3;
     else if (keywords.some((k) => k.includes(needle))) score = 4;
-    else if (needle.length > 1 && editorFuzzyMatch(label, needle)) score = 5;
+    //: Letters in order is for a short abbreviation ("tbc"). From four letters
+    //: a word that matched nothing else is a word, not an abbreviation: "/file"
+    //: ranked the Failure callout first and Enter inserted it (DX7, audit 1102).
+    else if (needle.length > 1 && needle.length < 4 && editorFuzzyMatch(label, needle)) score = 5;
     if (score >= 0) scored.push({ row, score, index });
   });
   scored.sort((a, b) => a.score - b.score || a.index - b.index);
@@ -460,23 +463,33 @@ function editorSplice(textarea, start, end, text, select) {
 //: (the map, the board, both editors) goes through. Resolves once the panel
 //: is open; a load that fails (offline, the file gone) does nothing.
 function pickIconOrEmoji(options) {
-  return openIconPicker(options);
+  //: The movable-panel module first, so the panel is placed once, in its final
+  //: place (INBOX 1542): adopted late, it was placed twice.
+  return Promise.all([ensureModule("panelMovable"), ensureModule("iconPicker")]).then(() => openIconPicker(options));
 }
 
 //: **An emoji or an icon at the caret** (MINDMAP_PLAN.md decision 46),
 //: from the one picker: an emoji as itself, an icon as `:ph-name:`, which
 //: the reading view draws. The caret's place is kept while the picker is
 //: open, since focus is in its search field by then.
-function editorPickGlyph(textarea, anchor = null) {
-  if (!textarea) return;
-  const start = textarea.selectionStart;
-  const end = textarea.selectionEnd;
+//: `mode` is the tab it opens on: the Emoji, Icons and Symbols doors (the "/"
+//: menu, the Insert menus, the palette, the chords) are one picker, three tabs
+//: (INBOX 1544). A symbol is inserted as the character. With no box to write
+//: into (the palette over nothing) a pick is copied instead of lost.
+function editorPickGlyph(box, anchor = null, mode = "emoji") {
+  //: The palette hands over the element that had the focus (a CodeMirror's content); the surface behind it is what takes a splice.
+  const textarea = editorSurfaceFor(box) || box;
+  const start = textarea?.selectionStart;
+  const end = textarea?.selectionEnd;
   pickIconOrEmoji({
-    anchor: anchor || (textarea.kind === "codemirror" ? null : textarea),
-    title: "Insert an emoji or icon",
+    anchor: anchor || (!textarea || textarea.kind === "codemirror" ? null : textarea),
+    title: "Insert an emoji, icon or symbol",
+    modes: ["emoji", "icon", "symbol"],
+    mode,
     onPick: (choice) => {
-      const text = choice.kind === "emoji" ? choice.value : `:ph-${choice.value}:`;
-      editorSplice(textarea, start, end, text, { from: text.length, to: text.length });
+      const text = choice.kind === "icon" ? `:ph-${choice.value}:` : choice.value;
+      if (textarea) editorSplice(textarea, start, end, text, { from: text.length, to: text.length });
+      else navigator.clipboard?.writeText(text).then(() => toast(`Copied ${choice.name}.`, "info"), () => {});
     },
   });
 }
@@ -885,13 +898,18 @@ function editorBlockRows(context) {
   add({ id: "h1", group: "Basic", icon: "ph:text-h-one", label: "Heading 1", about: "The title of the page", keys: "#", keywords: ["h1", "title", "heading", "big"], sample: "# A page title", run: act("h1") });
   add({ id: "heading", group: "Basic", icon: "ph:text-h-two", label: "Heading 2", about: "A section, and a place the contents can jump to", keys: "##", keywords: ["h2", "section", "heading", "anchor"], sample: "## A section", run: act("h2") });
   add({ id: "h3", group: "Basic", icon: "ph:text-h-three", label: "Heading 3", about: "A sub-section", keys: "###", keywords: ["h3", "sub", "heading", "small"], sample: "### A sub-section", run: act("h3") });
+  add({ id: "h4", group: "Basic", icon: "ph:text-h-four", label: "Heading 4", about: "A heading under a sub-section", keys: "####", keywords: ["h4", "heading"], sample: "#### A smaller heading", run: act("h4") });
+  add({ id: "h5", group: "Basic", icon: "ph:text-h-five", label: "Heading 5", about: "Smaller again", keys: "#####", keywords: ["h5", "heading"], sample: "##### A smaller heading", run: act("h5") });
+  add({ id: "h6", group: "Basic", icon: "ph:text-h-six", label: "Heading 6", about: "The smallest heading", keys: "######", keywords: ["h6", "heading"], sample: "###### The smallest heading", run: act("h6") });
   add({ id: "bullets", group: "Basic", icon: "ph:list-bullets", label: "Bulleted list", about: "Points in no particular order", keys: "-", keywords: ["list", "bullet", "ul", "points"], sample: "- First point\n- Second point", run: act("ul") });
   add({ id: "numbered", group: "Basic", icon: "ph:list-numbers", label: "Numbered list", about: "Steps, in order", keys: "1.", keywords: ["ordered", "numbered", "list", "ol", "steps"], sample: "1. First step\n2. Second step", run: act("ol") });
   add({ id: "checklist", group: "Basic", icon: "ph:check-square", label: "To-do list", about: "Tick things off as they are done", keys: "- [ ]", keywords: ["task", "todo", "check", "checklist", "list"], sample: "- [x] Research\n- [ ] Draft\n- [ ] Send", run: act("task") });
   add({ id: "quote", group: "Basic", icon: "ph:quotes", label: "Quote", about: "Somebody else's words, set apart", keys: ">", keywords: ["quote", "blockquote", "cite"], sample: "> Words worth keeping.", run: act("quote") });
   add({ id: "quote-cite", group: "Basic", icon: "ph:quotes", label: "Quote with attribution", about: "The words, and who said them", keys: "> ... -- Name", keywords: ["quote", "cite", "attribution", "author", "pull quote", "source"], sample: "> Stay hungry, stay foolish.\n> -- Stewart Brand", run: (t) => editorBlock(t, "> ", "Words worth keeping", "\n> -- Who said it") });
   //: MINDMAP_PLAN decision 46: the one icon and emoji picker, from "/".
-  add({ id: "emoji", group: "Basic", icon: "ph:smiley", label: "Emoji or icon", about: "Pick from every emoji and icon", keys: ":fire:", keywords: ["emoji", "icon", "sticker", "symbol", "smiley", "glyph"], run: (t) => editorPickGlyph(t) });
+  add({ id: "emoji", group: "Basic", icon: "ph:smiley", label: "Emoji or icon", about: "Pick from every emoji and icon", keys: ":fire:", keywords: ["emoji", "icon", "sticker", "smiley", "glyph"], run: (t) => editorPickGlyph(t) });
+  //: The picker's third tab, on its own row (INBOX 1544): a character a keyboard lacks.
+  add({ id: "symbol", group: "Basic", icon: "ph:pi", label: "Symbol", about: "Arrows, maths, Greek, currency and writing marks", keys: "Ctrl+'", keywords: ["symbol", "arrow", "greek", "pi", "currency", "euro", "degree", "copyright", "character"], run: (t) => editorPickGlyph(t, null, "symbol") });
   add({ id: "divider", group: "Basic", icon: "ph:minus", label: "Divider", about: "A hairline between two parts", keys: "---", keywords: ["divider", "rule", "hr", "separator", "line"], sample: "Above\n\n---\n\nBelow", run: (t) => editorBlock(t, "---") });
 
   // --- Structure: what turns a page of text into a document. ---------------
@@ -951,6 +969,8 @@ function editorBlockRows(context) {
   // --- Embeds: other things in this notebook, and the web. ------------------
   add({ id: "wikilink", group: "Embeds", icon: "ph:link", label: "Link to a note", about: "Pick a note, document or board to link", keys: "[[", keywords: ["link", "note", "wiki", "reference", "connect", "document"], run: (t) => { editorApplyAction(t, { insert: "[[" }); editorOpenMenu(t, "[["); } });
   add({ id: "embed", group: "Embeds", icon: "ph:paperclip", label: "Embed a note or document", about: "Its content, or a card for it, shown here", keys: "![[", keywords: ["embed", "transclude", "include", "inline", "note", "document", "card"], run: (t) => { editorApplyAction(t, { insert: "![[" }); editorOpenMenu(t, "[["); } });
+  //: DX7: "/file" used to land on the Failure callout. The `[[` picker already lists uploaded files beside notes, so this is its second door.
+  add({ id: "file-link", group: "Embeds", icon: "ph:file-arrow-up", label: "File attachment", about: "Pick an uploaded file to link here", keys: "[[", keywords: ["file", "attachment", "attach", "upload", "pdf", "document", "download"], run: (t) => { editorApplyAction(t, { insert: "[[" }); editorOpenMenu(t, "[["); } });
   add({ id: "board-object", group: "Embeds", icon: "ph:squares-four", label: "Board or mind map", about: "A live preview of it, here in the text", keys: "![[board:]]", keywords: ["board", "whiteboard", "map", "mindmap", "canvas", "object", "embed", "attach", "diagram"], run: (t) => editorInsertBoardObject(t) });
   //: A saved bookmark as a link where the caret is (owner, 0.3.31: "I want
   //: to attach bookmark links not just general links ... in notes and other
@@ -1020,6 +1040,7 @@ function editorCommands(context) {
         icon: "ph:sparkle", label: "Ask Atlas to write here",
         about: "Writes at the cursor, for you to keep or undo",
         keys: "Ctrl+J",
+        gate: "doc-ai",
         keywords: ["ai", "write", "inline", "here", "cursor", "ask", "generate", "continue"],
         run: (textarea) => inlineAiOpen(textarea),
       },
@@ -1028,6 +1049,7 @@ function editorCommands(context) {
         group: "AI",
         icon: "ph:sparkle", label: "AI edit this selection",
         about: "Rewrite, expand or tighten what is selected",
+        gate: "doc-ai",
         keywords: ["ai", "rewrite", "improve", "expand", "edit"],
         run: () => $("doc-ai")?.click(),
       },
@@ -1046,7 +1068,7 @@ function editorCommands(context) {
   // before ours" ordering loadTemplates() already uses for the dropdown.
   const custom = (typeof prefsCache !== "undefined" && prefsCache?.custom_templates) || [];
   const builtin = typeof BUILTIN_TEMPLATES !== "undefined" ? BUILTIN_TEMPLATES : [];
-  for (const template of [...custom, ...builtin]) {
+  for (const template of [...custom, ...(context === "document" && typeof DOC_TEMPLATES !== "undefined" ? [] : builtin)]) {
     if (!template?.name || !template?.content) continue;
     commands.push({
       id: `template-${template.name}`,
@@ -1070,6 +1092,28 @@ function editorCommands(context) {
     });
   }
 
+  //: A document's Templates group is the gallery's own writing and planning
+  //: set (audit 1102 DX30), not the note shapes; its heading line is left to
+  //: the document's title, and code templates make their own document type.
+  if (context === "document" && typeof DOC_TEMPLATES !== "undefined") {
+    for (const template of DOC_TEMPLATES) {
+      if (!template.content || template.group === "code") continue;
+      const text = () => docTemplateFill(template, " ").content.replace(/^#\s+/, "");
+      commands.push({
+        id: `template-${template.id}`,
+        group: "Templates",
+        icon: "ph:file-text",
+        label: template.title,
+        about: template.hint || "Insert this template",
+        keywords: ["template", template.title],
+        sample: text().split("\n").slice(0, 8).join("\n"),
+        run: (textarea) => {
+          const filled = text();
+          editorSplice(textarea, textarea.selectionStart, textarea.selectionEnd, filled, { from: filled.length, to: filled.length });
+        },
+      });
+    }
+  }
   return commands;
 }
 
@@ -1209,8 +1253,9 @@ function editorTokenAt(textarea, trigger) {
   if (trigger === "/") {
     const before = open === 0 ? "\n" : upto[open - 1];
     if (!/\s/.test(before)) return null;
-    // A slash command is one word. Once a space is typed it is prose.
-    if (/\s/.test(fragment)) return null;
+    // A slash command runs on past a space only while some row still holds the
+    // words typed so far; otherwise a space makes it prose.
+    if (/\s/.test(fragment) && !editorTokenAt.phrase(textarea, fragment)) return null;
   }
   //: The fence is only ever its own line's start, and a language is a word.
   if (trigger === "```") {
@@ -1219,6 +1264,19 @@ function editorTokenAt(textarea, trigger) {
   }
   return { start: open, fragment };
 }
+
+//: **Two or three words are one command** (DX7, audit 1102): "/page break",
+//: "/heading 4" and "/link to a note" closed the menu at the space and left the
+//: literal text. A multi-word fragment keeps the menu open while a row's label
+//: or a keyword holds it from a word boundary (Notion's rule), at most four
+//: words, never starting with a space.
+editorTokenAt.phrase = (textarea, fragment) => {
+  const phrase = fragment.toLowerCase().replace(/\s+/g, " ");
+  if (phrase.startsWith(" ") || phrase.trim().split(" ").length > 4) return false;
+  return editorCommands(editorSurfaceKind(textarea) || "note").some((row) =>
+    [row.label, ...(row.keywords || [])].some((text) => ` ${String(text).toLowerCase()}`.includes(` ${phrase}`))
+  );
+};
 
 //: Ranked by `editorFuzzyRank` (EDITOR-BLOCKS, tested in node): a label
 //: prefix, a word in the label, a keyword, then the letters in order anywhere.
@@ -1243,8 +1301,10 @@ function editorLinkMatches(needle) {
     const line = opening(e);
     return line.startsWith(query) ? 0 : line.includes(query) ? 1 : 2;
   };
+  //: A row holds a note's first 300 characters; the server's literal match reads the whole text (INBOX 1525 review).
+  const served = query && typeof noteEngine !== "undefined" ? noteEngine.literal(noteEngine.pick, query, () => editorMenuState.open && editorRefreshMenu()) : null;
   const notes = (typeof allEntries !== "undefined" ? allEntries : [])
-    .filter((e) => !e.is_private && (!query || (e.content || "").toLowerCase().includes(query)))
+    .filter((e) => !e.is_private && (!query || (e.content || "").toLowerCase().includes(query) || served?.has(e.id)))
     .map((e, order) => ({ e, order, rank: query ? rank(e) : 0 }))
     .sort((a, b) => a.rank - b.rank || a.order - b.order)
     .map((row) => row.e)
@@ -1437,6 +1497,15 @@ function editorRenderMenu() {
       className: "editor-menu-item",
     });
     row.dataset.index = String(position);
+    //: **An AI row follows the gate of the control it stands for** (`gate`, an
+    //: id; audit 1102 DX28): with no model it is dimmed and says that
+    //: control's reason, as `#doc-ai` does, and a press offers a model.
+    const gate = item.gate && aiIsOff() ? $(item.gate) : null;
+    if (gate) {
+      row.setAttribute("aria-disabled", "true");
+      row.classList.add("ai-unavailable");
+      row.title = gate.title;
+    }
 
     // mousedown, not click: the textarea must not lose focus first, or the
     // caret position the insertion depends on is already gone.
@@ -1605,6 +1674,8 @@ function editorRunItem(position) {
     textarea.setSelectionRange(keep, keep);
   }
   editorCloseMenu("ran");
+  const gate = item.gate && aiIsOff() ? $(item.gate) : null;
+  if (gate) return openModelOffer(gate);
   //: Remembered under its own id, not its "Recent" copy's.
   if (trigger === "/" && item.id && typeof item.run === "function") editorRememberBlock(item.recentOf || item.id);
 

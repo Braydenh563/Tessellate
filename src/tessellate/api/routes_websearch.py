@@ -82,7 +82,10 @@ def web_search(
             provider=provider,
         )
     except websearch.WebSearchError as exc:
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
+        #: The cause travels as `code` (INBOX 1556), so the panel offers to start
+        #: SearXNG without reading the sentence.
+        detail = {"detail": str(exc), "code": exc.reason} if exc.reason else str(exc)
+        raise HTTPException(status_code=502, detail=detail) from exc
     manager.log_action(session, "web_searched", "chat", detail=q[:120])
     session.commit()
     # Which engine actually answered, not which one was asked for, under

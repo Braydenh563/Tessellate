@@ -43,7 +43,7 @@ from datetime import date, datetime, time, timedelta
 from functools import lru_cache, wraps
 from pathlib import Path
 
-from tessellate.ai import composer, composer_doings, composer_frame, composer_threads, composer_lists, composer_money, composer_slots, composer_sum, composer_tables, filed_name, glossary, question_noise, realise, verdicts
+from tessellate.ai import composer, composer_doings, composer_done, composer_frame, composer_threads, composer_lists, composer_money, composer_slots, composer_sum, composer_tables, filed_name, glossary, question_noise, realise, verdicts
 from tessellate.ai.composer_lists import clean
 from tessellate.ai import recognise as recogniser
 from tessellate.ai import when as when_words
@@ -127,7 +127,7 @@ _BASE = {
     #: questions to ask: ..."), never as something the person said (C32).
     "a_list": "{name} lists {count} items: {items}",
     "a_list_asked": "{name} lists {count} questions to ask: {items}",
-    "told_self": ("you told yourself to", "you reminded yourself to"),
+    "told_self": ("the same note adds:",),
     "drift_woven": "though no later note says how that went",
     "meaning_loading": "The search by meaning is still loading, so this read your words only; ask again in a few seconds.",
     "meaning_off": "Search by meaning is off, so this read your words only; turn it on in Settings, Search and index.",
@@ -142,15 +142,17 @@ _BASE = {
         "You last added to it {age} ago, which is a while; a fresh note would bring it up to date.",
         "Nothing new on it for {age}, so this is where it stood then rather than now.",
     ),
+    #: `{ago}` is "today" or "a week ago": a note written today was "a day
+    #: ago" when the age was rounded up to one (audit 1028 E17).
     "burst": (
-        "{all_of} came within {span} of each other, the newest {age} ago.",
-        "They were written close together, within {span}, the newest {age} ago.",
+        "{all_of} came within {span} of each other, the newest written {ago}.",
+        "They were written close together, within {span}; the newest is from {ago}.",
     ),
     "cadence": (
-        "That's about one every {every}, the newest {age} ago.",
-        "You've come back to it roughly every {every}, most recently {age} ago.",
+        "That's about one every {every}, the newest written {ago}.",
+        "You've come back to it roughly every {every}, most recently {ago}.",
     ),
-    "fresh": ("The newest is from {age} ago, so it's current.", "The latest is only {age} old."),
+    "fresh": ("The newest is from {ago}, so it's current.", "The latest was written {ago}."),
     "aim_under": ("{said}, under your aim of {aim}.", "{said}, which keeps you inside your {aim}."),
     "aim_over": ("{said}, over your aim of {aim}.", "{said}, which is more than the {aim} you were aiming for."),
     "price_gap": ", a gap of {gap} between them",
@@ -804,6 +806,7 @@ def _from_source(view, fact: str, today: date) -> str:  # noqa: ANN001
     noun = _KIND_NOUN.get(getattr(view, "kind", "note") or "note")
     #: "... that work in most settings:, from your note" (INBOX 1420).
     fact = fact.rstrip().rstrip(":;,").rstrip()
+    fact = _clause_list(fact) or fact
     if not noun and _title_only(view) and fact.lower() == view.title.strip().lower():
         return _only_a_title(view, today)
     if noun and view.title:
@@ -927,6 +930,9 @@ def _starts_a_title(text: str, verb: bool) -> bool:
     return any(text.startswith(t) for t in _titles())
 
 
+_CITED = re.compile(r"[A-Z][\w'-]+(?: [A-Z][\w'-]+)?,? \(?(?:1[5-9]|20)\d\d[a-z]?\b")
+
+
 def _fragment(text: str, names: set[str]) -> str:
     """`text` placed after other words ("you noted ..."): its first letter
     lowered only when that word is a plain dictionary word. A name, a title
@@ -938,7 +944,8 @@ def _fragment(text: str, names: set[str]) -> str:
     if not first:
         return text
     word = first.group(0)
-    if _keeps_capital(word, names):
+    #: An author and a year ("Hunter 1999", "Clark (2012), The ...") is a citation (E19).
+    if _keeps_capital(word, names) or _CITED.match(text):
         return text
     verb = _verb_led(text) or _did(word) or word.lower() in _FUNCTION_WORDS
     if _starts_a_title(text, bool(verb)):
@@ -2040,6 +2047,16 @@ def _one_note_lines(groups: dict[str, list[Fact]]) -> list[tuple[str, list[Fact]
     return items
 
 
+def _clause_list(said: str) -> str:
+    """A sentence of three or more `;` clauses, each a few words, as bullets
+    (audit 1028 E63): one run-on line of 12 to 20 words a clause reads as a
+    wall. "" for a sentence that is not that."""
+    clauses = [c.strip() for c in said.rstrip(". ").split("; ")]
+    if len(clauses) < 3 or any(len(c.split()) < 3 for c in clauses):
+        return ""
+    return "\n".join(f"- {c[:1].upper() + c[1:]}" for c in clauses)
+
+
 def _lines(out: _Out, facts: list[Fact], limit: int, skip: set[tuple] | None = None, by_day: date | None = None, more: bool = False, weave: bool = False) -> int:
     """Facts grouped under their labels, oldest note first, one line a label;
     the line carries its first note for its one citation mark."""
@@ -2059,7 +2076,9 @@ def _lines(out: _Out, facts: list[Fact], limit: int, skip: set[tuple] | None = N
         if written:
             seen_days.append(written)
         said = said[:1].upper() + said[1:] if label == PHRASES["also"] else said
-        (out.lines if i < limit else out.more).append(f"{said}." if heading else f"**{label}:** {said}.")
+        listed = _clause_list(said)
+        (out.lines if i < limit else out.more).append(
+            (f"**{label}:**\n{listed}" if listed and not heading else listed or (f"{said}." if heading else f"**{label}:** {said}.")))
         out.rows.append(_line_row(line_body, held))
         shown += 1
     return shown
@@ -2531,14 +2550,15 @@ def _pattern(members: list[composer.NoteView], today: date) -> str:
         return _vary("stale").format(age=_gap(age)) if _CURRENT.get() else ""
     if not _TIMED.get():
         return ""
+    ago = "today" if age <= 0 else f"{_gap(age)} ago"
     if span <= 9:
         #: "Both came within a day", never "All two came" (2026-10-30).
         all_of = "Both" if len(days) == 2 else f"All {realise.count_word(len(days))}"
-        return _vary("burst").format(all_of=all_of, span=_gap(max(span, 1)), age=_gap(max(age, 1)))
+        return _vary("burst").format(all_of=all_of, span=_gap(max(span, 1)), ago=ago)
     if len(days) >= 3:
         every = _bare_gap(_gap(max(1, round(span / (len(days) - 1)))))
-        return _vary("cadence").format(every=every, age=_gap(max(age, 1)))
-    return _vary("fresh").format(age=_gap(max(age, 1)))
+        return _vary("cadence").format(every=every, ago=ago)
+    return _vary("fresh").format(ago=ago)
 
 
 def _row(said: str, fact: Fact) -> dict:
@@ -4350,12 +4370,21 @@ def _show_checklist(out: _Out, view: composer.NoteView) -> None:
     """A checklist note as the list it is: how many are ticked, then every
     item with its box, as the composer's own list block does."""
     tasks = [s for s in view.sentences if s.kind == "task"]
-    ticked = sum(1 for s in tasks if s.done)
+    #: A box never ticked but done in a later note is done here too, said as
+    #: that note: one item, one state (fable-eye F15).
+    #: The answer's day, never the server's clock (audit 1030 Z: tests fix the clock).
+    views, today = _VIEWS.get(), _TODAY.get() or view.written or date.min
+    later = composer_done.done_later(views, view, tasks)
+    ticked = sum(1 for s in tasks if s.done or id(s) in later)
     total = realise.count_word(len(tasks))
     name = _your_note(view)
     done = f"{realise.count_word(ticked)} of {total}" if ticked else f"none of its {total}"
     opening = f"{name[0].upper()}{name[1:]} has {done} checklist items done"
-    boxes = [f"- [{'x' if s.done else ' '}] {s.text[:1].upper()}{s.text[1:]}" for s in tasks]
+    boxes = [
+        f"- [{'x' if s.done else ' '}] {s.text[:1].upper()}{s.text[1:]}"
+        + (composer_done.done_later_note(later[id(s)], today) if id(s) in later else "")
+        for s in tasks
+    ]
     out.lines.append(opening + ":\n\n" + "\n".join(boxes))
     out.rows.append({"sentence": opening, "note_id": view.note.get("source_id", view.id), "source": tasks[0].text,
                      "start": tasks[0].start, "end": tasks[0].end, "score": 1.0, "digest": True,

@@ -1,0 +1,186 @@
+[
+ [
+  "is there a companion that can show outside of the app on my desktop?",
+  "desktop-companion"
+ ],
+ [
+  "can the pet sit on my desktop when the window is closed",
+  "desktop-companion"
+ ],
+ [
+  "does the companion appear outside the app, in the corner of my screen",
+  "desktop-companion"
+ ],
+ [
+  "does the desktop pet show on my screen",
+  "desktop-companion"
+ ],
+ [
+  "can i use my notes on my laptop and my desktop pc",
+  "two-computers"
+ ],
+ [
+  "how do i move everything to a new computer",
+  "two-computers"
+ ],
+ [
+  "keep two computers in step with the same notes",
+  "two-computers"
+ ],
+ [
+  "how do i get a notes shortcut that opens in its own window",
+  "install-app"
+ ],
+ [
+  "can i add this to my home screen as an app",
+  "install-app"
+ ],
+ [
+  "can i run it in its own window like an app",
+  "install-app"
+ ],
+ [
+  "is there a newer version of the app available",
+  "updates"
+ ],
+ [
+  "how do i get the latest release",
+  "updates"
+ ],
+ [
+  "where do i see what changed in the new release",
+  "updates"
+ ],
+ [
+  "i deleted a note by mistake, can i get it back",
+  "undo-bin"
+ ],
+ [
+  "where is the recycle bin for removed notes",
+  "undo-bin"
+ ],
+ [
+  "can i undelete a note i threw away",
+  "undo-bin"
+ ],
+ [
+  "can the assistant look things up on the internet",
+  "websearch"
+ ],
+ [
+  "how do i let it search online for answers",
+  "websearch"
+ ],
+ [
+  "can it browse the web to find things",
+  "websearch"
+ ],
+ [
+  "can i talk instead of typing my note",
+  "voice"
+ ],
+ [
+  "how do i turn my speech into text",
+  "voice"
+ ],
+ [
+  "can i use the microphone to dictate",
+  "voice"
+ ],
+ [
+  "how do i lock out the other devices that are signed in",
+  "lock"
+ ],
+ [
+  "how do i sign out my phone and the other devices",
+  "lock"
+ ],
+ [
+  "can i change my password and lock everywhere",
+  "lock"
+ ],
+ [
+  "is there a stopwatch or countdown i can start",
+  "timer"
+ ],
+ [
+  "can i time how long i work with a pomodoro",
+  "timer"
+ ],
+ [
+  "how do i set a timer for ten minutes",
+  "timer"
+ ],
+ [
+  "can i see how many words are in this note",
+  "count-words"
+ ],
+ [
+  "what is the reading time of a note",
+  "count-words"
+ ],
+ [
+  "how many words and how long to read is my note",
+  "count-words"
+ ],
+ [
+  "are my notes encrypted on disk",
+  "encryption"
+ ],
+ [
+  "is it secure to keep my notes here",
+  "encryption"
+ ],
+ [
+  "who can read my notes on this computer",
+  "encryption"
+ ],
+ [
+  "can i share this note with a friend",
+  "share-note"
+ ],
+ [
+  "how do i share one of my notes",
+  "share-note"
+ ],
+ [
+  "can i give someone a note",
+  "share-note"
+ ],
+ [
+  "how do i make a full backup of everything",
+  "import-export"
+ ],
+ [
+  "can i export my notes as markdown files",
+  "import-export"
+ ],
+ [
+  "can i import a folder of markdown files",
+  "import-export"
+ ],
+ [
+  "how do i get live subtitles while someone talks",
+  "live-captions"
+ ],
+ [
+  "where can i open the live captions",
+  "live-captions"
+ ],
+ [
+  "can it do live transcription of what i say",
+  "live-captions"
+ ],
+ [
+  "can i capture a note without opening the app at all",
+  "capture-anywhere"
+ ],
+ [
+  "can i capture from anywhere without opening the window",
+  "capture-anywhere"
+ ],
+ [
+  "how do i capture from anywhere on my computer",
+  "capture-anywhere"
+ ]
+]

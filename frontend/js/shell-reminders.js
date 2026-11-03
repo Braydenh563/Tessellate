@@ -366,23 +366,29 @@ function glideStrip(strip) {
   //: closing above the chosen row moves the row and not its size, so neither
   //: observer saw it and the fill stayed where the row had been (measured: 20
   //: px under it after an 18 px insert).
-  //: Placed a frame later, not in the mutation's microtask: there it read
-  //: the new page's layout before the click's own work had finished, and the
-  //: frame laid it out a second time (INBOX 1419: 100 to 250ms at 4x CPU).
-  let queued = 0;
+  //: Placed when the frame's layout is done, by the observer's own report: not
+  //: in the mutation's microtask (it read the new page's layout before the
+  //: click's work had finished: INBOX 1419) and not in a timer (it read a style
+  //: pass dirtied by whatever the press had just shown, 93ms of the Library
+  //: press at 4x: INBOX 1534). Observing the strip afresh reports it once,
+  //: after layout, where the reads in `place` cost nothing.
+  let glide = false;
+  const sized = new ResizeObserver(() => {
+    place(glide);
+    glide = false;
+  });
   new MutationObserver(() => {
-    queued ||= setTimeout(() => ((queued = 0), place(true)), 16);
+    glide = true;
+    sized.unobserve(strip);
+    sized.observe(strip);
   }).observe(strip, {
     attributes: true,
     attributeFilter: ["class", "aria-selected", "aria-current"],
     childList: true,
     subtree: true,
   });
-  if (window.ResizeObserver) {
-    const sized = new ResizeObserver(() => place(false));
-    sized.observe(strip);
-    for (const option of strip.querySelectorAll("button")) sized.observe(option);
-  }
+  sized.observe(strip);
+  for (const option of strip.querySelectorAll("button")) sized.observe(option);
   document.fonts?.ready?.then(() => place(false));
   place(false);
 }
@@ -411,7 +417,12 @@ function syncEdgeFade(bar) {
 function edgeFadeWire(bar) {
   if (!bar || bar.dataset.fadeWired) return;
   bar.dataset.fadeWired = "1";
-  syncEdgeFade(bar);
+  //: Told by the observer once the strip is laid out (and again when a hidden
+  //: one shows or its content changes width), never measured here: a strip a
+  //: script has just built read its width in the press that built it (21ms of
+  //: style and 14 of layout on a Dashboard press at 4x, INBOX 1534).
+  if (typeof ResizeObserver !== "undefined") new ResizeObserver(() => syncEdgeFade(bar)).observe(bar);
+  else syncEdgeFade(bar);
   bar.addEventListener("scroll", () => syncEdgeFade(bar), { passive: true });
   bar.addEventListener("click", (event) => {
     const pick = event.target.closest?.("button, [role=tab]");
@@ -419,14 +430,9 @@ function edgeFadeWire(bar) {
   });
 }
 
-for (const bar of document.querySelectorAll(".edge-fade")) {
-  edgeFadeWire(bar);
-  if (typeof ResizeObserver !== "undefined") {
-    // Fires when a hidden (0-width) strip becomes visible on tab switch,
-    // same as content changing width, no extra wiring needed per tab.
-    new ResizeObserver(() => syncEdgeFade(bar)).observe(bar);
-  }
-}
+// The observer in edgeFadeWire also fires when a hidden (0-width) strip becomes
+// visible on tab switch, same as content changing width.
+for (const bar of document.querySelectorAll(".edge-fade")) edgeFadeWire(bar);
 window.addEventListener("resize", () => {
   document.querySelectorAll(".edge-fade").forEach(syncEdgeFade);
 }, { passive: true });

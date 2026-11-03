@@ -87,3 +87,48 @@ date | item | type | rung | rework | note
 2026-10-30 | shellux-1030 merge 1333 strip S26 (boot CSS byte) | ui | sonnet | 1 | 
 2026-10-30 | audit 1028 E35 E36 E39 E40 (byte budget trims) | bug | opus | 1 | 
 2026-10-30 | wb1313-1030 merge rows 7 13 14, keep_ratio fix | feature | sonnet | 0 | 
+2026-11-02 | INBOX 1530 resolve | docs | opus | 0 | 
+2026-11-02 | maths1527 leftovers: Escape LaTeX, scrim, Alt+= | bugfix | opus | 1 | 
+2026-11-02 | z1c chips paced at 200k chars | perf | opus | 0 | 
+2026-11-02 | warm12 long question bubble clip | ui | opus | 0 | 
+2026-11-02 | CI red: composer cold import, lazy regex (e7fab01) | ci-fix | opus | 1 | 
+2026-11-02 | INBOX 1531 graph no-move release (g1531) | bugfix | opus | 1 | 
+2026-11-02 | Row 3a tags and properties repositories (repo3a) | refactor | sonnet | 0 | 
+2026-11-02 | OPEN.md stale running owners (3c7d13f) | docs | opus | 0 | 
+2026-11-02 | Row 22 documents.js splits: Mermaid, Math, Comments, Embeds (doc23) | refactor | sonnet | 0 | 
+2026-11-02 | gate --staged builds CODEMAP from the index (dc83607) | tooling | opus | 0 | 
+2026-11-02 | Lazy-bundle lint sees wrapped files (20dab9d) | tooling | opus | 0 | 
+2026-11-02 | CI red: notes menu title pin (fe48f81) | ci-fix | opus | 0 | 
+2026-11-02 | CodeQL 8 unused-import alerts PR 212 | fix | opus | 1 | 
+2026-11-02 | Chat tab press forced style (INBOX 1534 part) | perf | opus | 2 | 
+2026-11-02 | a28c composer rows E18 E25 E29 E64 E67 E24 + INBOX 1532 | fix | sonnet | 0 | 
+2026-11-02 | a28u chat UI rows E47 E49 E61 E68 E71 E41 | fix | sonnet | 0 | 
+2026-11-02 | a28s shell/board rows S62 S92 U38 U48 B32 B28 B34 D53 K35 | fix | sonnet | 0 | 
+2026-11-02 | 1554 companion menu choose before Settings | bugfix | opus | 0 | 
+2026-11-02 | 1555 caption cut at noun-verb; frame; link label | bugfix | opus | 0 | 
+2026-11-02 | a28m math panel 1537-1541 | feature | sonnet | 0 | 
+2026-11-02 | 1550 rest: percent, days between, web meta | bugfix | opus | 0 | 
+2026-11-02 | a28l lag 1534 second pass | perf | sonnet | 0 | 
+2026-11-02 | six pre-existing reds from audit merges | ci | opus | 0 | 
+2026-11-02 | a28t clock panel 1551 1548 1553 | feature | sonnet | 1 | 
+2026-11-02 | 1533 search-by-meaning switch wording | bugfix | opus | 0 | 
+2026-11-02 | 1546 mermaid builder design | design | opus | 0 | 
+2026-11-02 | 1549 CM crash repro (none) | bug | opus | 0 | 
+2026-11-02 | a28v companion lag: beat, mood, tail | perf | sonnet | 0 | 
+2026-11-02 | 1542-1545 doc insert panels | ui | sonnet | 0 | 
+2026-11-02 | Learned section lazy, boot gzip -7.2KB | perf | opus | 1 | 
+2026-11-02 | 1552 corner grip | ui | opus | 0 | 
+2026-11-02 | 1547 Live widget flicker | ui | opus | 1 | 
+2026-11-02 | a28x audit E rows composer | bug | sonnet | 1 | 
+2026-11-02 | a28y companion forced styles | perf | sonnet | 0 | 
+2026-11-02 | 1556 SearXNG start action | ui-fix | sonnet | 1 | 
+2026-11-02 | 1557 timer input and button heights | ui-fix | sonnet | 0 | 
+2026-11-02 | 1558 utility widgets and pins | feature | sonnet | 1 | 
+2026-11-02 | 1547 documents deep audit (32 findings) | audit | opus | 0 | 
+2026-11-02 | S69 restore counts | fix | opus | 1 | 
+2026-11-02 | E52 guide tip | feature | opus | 1 | 
+2026-11-02 | DX30 templates and slash group | feature | opus | 0 | 
+2026-11-02 | E2E import toast yield | fix | opus | 3 | 
+2026-11-02 | import cycle composer_done leaf | fix | opus | 1 | 
+2026-11-02 | merges a29h a29i a29j a29k test fallout | chore | opus | 1 | 
+2026-11-02 | phone documents help in kebab | fix | opus | 1 | 

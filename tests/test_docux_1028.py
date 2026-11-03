@@ -49,13 +49,14 @@ def test_u10_image_opens_a_picker_and_uploads_to_the_media_store():
     assert "docImageStub(box, boxId" in upload and "function docImageStub(" in DOCS_JS
 
 
-def test_u11_the_two_insert_menus_are_distinct():
+def test_u11_there_is_one_insert_and_it_is_the_slash_menu():
+    # U11 asked for two distinct Insert menus; DX6 (1102) made it one catalogue,
+    # so the intent (no menu listing the same row twice) is now kept by having
+    # no menu of its own at all.
     menus = DOCS_JS[DOCS_JS.index("const EDITOR_TOOLBAR_MENUS") : DOCS_JS.index("const EDITOR_TOOLBAR_BUTTONS")]
-    assert 'label: "Links and media"' in menus and 'label: "Insert"' not in menus
-    assert '["ol", "Numbered list"]' not in menus
-    block = INDEX[INDEX.index('id="doc-toolbar-insert"') :]
-    block = block[: block.index("</details>")]
-    assert 'data-md="ol"' in block
+    assert 'label: "Links and media"' not in menus and 'label: "Block"' not in menus and 'label: "Heading"' not in menus
+    assert 'id="doc-toolbar-insert" data-md="insert"' in INDEX
+    assert 'insert: { custom: "insert" }' in DOCS_JS and "editorOpenMenuByShortcut();" in DOCS_JS
 
 
 def test_find_panel_is_tokened_with_a_tappable_close_button():

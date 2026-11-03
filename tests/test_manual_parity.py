@@ -129,7 +129,10 @@ UTILITIES = {
     "statistics": ("statistics.js", 'helpBody.id = "stats-help";', "the heatmap's Statistics, the palette's Statistics", "statistics"),
     "timer": ("utility-tools.js", "function startUtilityTimer(minutes = 25)", "the palette's Start a timer, or timer 10 minutes", "timer"),
     "stopwatch": ("utility-tools.js", "function startStopwatch()", "the palette's Start a stopwatch", "timer"),
-    "stop the clock": ("utility-tools.js", '$("status-timer").addEventListener("click", stopUtilityClock);', "the status bar's timer chip", "timer"),
+    #: INBOX 1551: the rows and the chip open one Clock panel (Timer, Stopwatch, Alarm).
+    "open the clock": ("utility-tools.js", '$("status-timer").addEventListener("click", () => openClockPanel(utilityShown()?.kind', "the status bar's timer chip", "timer"),
+    "clock panel": ("utility-tools.js", 'function openClockPanel(tab = "timer")', "the palette's Start a timer, Start a stopwatch and Set an alarm", "timer"),
+    "alarm": ("settings-panes.js", 'id: "alarm", name: "Set an alarm"', "the palette's Set an alarm", "timer"),
     "no-model badge": ("reply-kit.js", "function replyByHelpPanel(kind)", "the From your notes badge", "ask-chat"),
     "calculator": ("reply-kit.js", 'function openCalculator(input = "", mode = "work", { target = null } = {})', "the palette's Calculator and equations, or /calc", "calculator"),
     "convert units": ("settings-panes.js", 'id: "convert", name: "Convert units"', "the palette's Convert units", "calculator"),
@@ -300,3 +303,23 @@ def test_check_what_it_learned_is_in_the_guide_the_panel_help_and_the_skill():
     assert '"Check what it learned"' in help_body and "Undo" in help_body
     assert "Check what it learned</button>" in html
     assert any(item["name"] == "Check what it learned" for item in skills.BUILTIN_SKILLS)
+
+
+def test_the_desktop_companion_row_is_named_as_a_desktop_app_setting():
+    """INBOX 1530 (b): the row (Settings, About) shows only when the server runs
+    with TESSELLATE_DESKTOP=1, so every place that names it says "in the desktop
+    app", and a browser tab's About pane says where the setting lives."""
+    from tessellate.ai import help_chat
+
+    named = [t for t in help_chat.HELP_TOPICS if "Show the companion on the desktop" in t["body"]]
+    assert named, "no Guide topic names the row any more"
+    for topic in named:
+        meta = help_chat.TOPIC_META.get(topic["id"], {})
+        assert "in the desktop app" in topic["body"].lower(), f"{topic['id']} names the row without saying it is in the desktop app"
+        assert meta.get("path", "").startswith("In the desktop app"), f"{topic['id']}'s path does not start with the desktop app"
+    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    popover = html.split('id="desktop-companion-help"', 1)[1].split("</div>", 1)[0]
+    assert "In the desktop app" in popover
+    settings = (FRONTEND / "js" / "settings.js").read_text(encoding="utf-8")
+    note = settings.split('let companionNote = document.getElementById("desktop-companion-note");', 1)[1][:900]
+    assert "setting of the desktop app" in note and "not shown in a browser tab" in note

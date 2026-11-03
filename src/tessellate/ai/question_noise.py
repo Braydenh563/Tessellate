@@ -451,6 +451,27 @@ def _strip_stray_tail(text: str) -> str:
     return text
 
 
+#: "new notes", "show new notes", "any new notes please", "see new notes about
+#: uni": the newest notes, listed (INBOX 1532: "new notes" was answered with the
+#: prompt for making one). "New" before a plural noun is the order word
+#: "newest", read as the other four are ("latest", "recent" ...); a singular
+#: "new note" with words stays the create act.
+_NEW_NOTES = lazy_compile(
+    r"^(?P<lead>(?:(?:please|pls|can you|could you|would you)\s+)?(?:(?:show|see|list|give|get|display|open|find|view|read)(?:\s+me)?\s+)?"
+    r"(?:(?:any|all|my|the|some|of)\s+)*)new\s+(?P<noun>notes|entries)(?P<tail>(?:\s+(?:about|on|for|from|regarding)\s+\S.*?)?(?:\s+(?:please|pls|now|today))?)[?.!\s]*$",
+    re.I,
+)
+
+
+def new_notes_as_newest(text: str) -> str:
+    """`text` with "new notes" said as "newest notes" when the whole turn asks
+    for them; any other text as it came."""
+    found = _NEW_NOTES.match(text or "")
+    if not found:
+        return text
+    return f"{found.group('lead')}newest {found.group('noun')}{found.group('tail')}"
+
+
 def strip_strays(text: str) -> str:
     """Stray keys off a text's edges and runs of spaces made one; nothing
     else changes (a tool's argument, INBOX 808)."""
@@ -2096,14 +2117,29 @@ def addressed_kind(message: str) -> str | None:
     return "who" if _OPINION_ASK.search(text) else None
 
 
+_PHRASE_TABLE: list = []
+
+
+def _phrase_table() -> list:
+    """(phrase, kind, pattern) for every social phrase, longest first, built
+    once. Sorting and compiling the 380-odd patterns on every call, past the
+    `re` cache's 512 entries, was 17 of the dialogue eval's 42 s (CI time
+    1102). Rebuilt if the table grew since."""
+    if len(_PHRASE_TABLE) != len(SOCIAL_PHRASES):
+        _PHRASE_TABLE[:] = [
+            (phrase, SOCIAL_PHRASES[phrase], re.compile(rf"(?:^|\s){re.escape(phrase)}(?=\s|$)"))
+            for phrase in sorted(SOCIAL_PHRASES, key=len, reverse=True)
+        ]
+    return _PHRASE_TABLE
+
+
 def _social_phrases(text: str) -> tuple[list[str], str]:
     """The kinds of the social phrases in `text`, longest first, and the text without them."""
     kinds: list[str] = []
-    for phrase in sorted(SOCIAL_PHRASES, key=len, reverse=True):
-        pattern = rf"(?:^|\s){re.escape(phrase)}(?=\s|$)"
-        if re.search(pattern, text):
-            kinds.append(SOCIAL_PHRASES[phrase])
-            text = re.sub(pattern, " ", text)
+    for phrase, kind, pattern in _phrase_table():
+        if phrase in text and pattern.search(text):  # the substring test skips nearly every pattern
+            kinds.append(kind)
+            text = pattern.sub(" ", text)
     return kinds, text
 
 
@@ -2277,6 +2313,17 @@ def _split(word: str) -> str | None:
 _COMMA_RUN = lazy_compile(r"(?<=[A-Za-z]),(?=[A-Za-z])")
 
 
+_SMALL_TALK: dict = {}
+
+
+def _small_talk_words() -> frozenset:
+    """SLANG and SOCIAL's words, built once, not as a new set per question."""
+    size = len(SLANG) + len(SOCIAL)
+    if _SMALL_TALK.get("size") != size:
+        _SMALL_TALK.update(size=size, words=frozenset(SLANG.keys() | SOCIAL.keys()))
+    return _SMALL_TALK["words"]
+
+
 def repair(text: str, report: list | None = None, known=frozenset(), fixed: list | None = None) -> str:  # noqa: ANN001
     """Slang spelled out, asking words put right, run-together words split
     and split words joined, then every other misspelt word read as the word it
@@ -2287,7 +2334,7 @@ def repair(text: str, report: list | None = None, known=frozenset(), fixed: list
     spelled out) is added to `fixed` as (typed, chosen), which is what lets an
     answer say how it read the question."""
     #: A small-talk word is a word: "hi test" was glued into "hitest" (INBOX 1485).
-    tokens = spelling.rejoin(_COMMA_RUN.sub(", ", strip_symbols(text)).split(" "), known, SLANG.keys() | SOCIAL.keys(), fixed)
+    tokens = spelling.rejoin(_COMMA_RUN.sub(", ", strip_symbols(text)).split(" "), known, _small_talk_words(), fixed)
     tokens = [spelling.drop_stray(t, known, fixed) for t in tokens]
     out: list[str] = []
     i = 0

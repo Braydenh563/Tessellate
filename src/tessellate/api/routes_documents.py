@@ -26,7 +26,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.api.edit_conflicts import content_hash, refuse_if_stale
 from tessellate.ai import drafter, utilities, vision_ocr
-from tessellate.core import activity, cjk, deps, docexport, docmeta, docview, filetypes, syntaxcheck
+from tessellate.core import activity, cjk, deps, docexport, docmeta, docthreads, docview, filetypes, syntaxcheck
 from tessellate.core.config import user_now
 from tessellate.core.database import (
     LIKE_ESCAPE,
@@ -110,6 +110,13 @@ class DocumentPatch(BaseModel):
     #: text another window has since changed is refused with 409 rather than
     #: silently overwriting it (api/edit_conflicts.py). None is unchecked.
     base_hash: str | None = Field(default=None, max_length=64)
+    #: The comment threads (core/docthreads.py). None leaves them alone, like
+    #: the fields above, so an autosave that sends only text cannot wipe them;
+    #: a list, even an empty one, replaces them.
+    threads: list[dict] | None = None
+    #: `threads_hash` of the list this edit started from, so a save over
+    #: threads another window has since changed is refused with 409 as text is.
+    base_threads_hash: str | None = Field(default=None, max_length=64)
 
     @field_validator("file_type")
     @classmethod
@@ -146,7 +153,15 @@ class AiEditBody(BaseModel):
 PREVIEW_CHARS = 240
 
 
-_TABLE_RULE = re.compile(r"^\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?$")
+#: `:-:` is an alignment cell too (one dash), and `---` on its own line is a rule.
+_TABLE_RULE = re.compile(r"^\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?$")
+_HORIZONTAL_RULE = re.compile(r"^\s*([-*_])(\s*\1){2,}\s*$")
+#: What is left of a line's syntax once its marker is off (DX27, audit 1102): an
+#: ordered number, a task box, a callout head, and `==highlight==`.
+_LEAD_ORDERED = re.compile(r"^\d{1,9}[.)]\s+")
+_LEAD_TASK = re.compile(r"^\[[ xX]\]\s+")
+_CALLOUT_HEAD = re.compile(r"^\[![\w-]+\][+-]?\s*")
+_HIGHLIGHT = re.compile(r"==([^=\n]+)==")
 
 
 def _preview_line(line: str) -> str:
@@ -157,7 +172,10 @@ def _preview_line(line: str) -> str:
         if _TABLE_RULE.match(line):
             return ""
         line = ", ".join(cell.strip() for cell in line.strip("|").split("|") if cell.strip())
-    return strip_inline_markdown(line).lstrip("#>-*+ \t")
+    if _HORIZONTAL_RULE.match(line):
+        return ""
+    line = strip_inline_markdown(_HIGHLIGHT.sub(r"\1", line)).lstrip("#>-*+ \t")
+    return _CALLOUT_HEAD.sub("", _LEAD_TASK.sub("", _LEAD_ORDERED.sub("", line)))
 
 
 def _preview(content: str) -> str:
@@ -218,7 +236,13 @@ def _summary(document: Document) -> dict:
 
 
 def _full(document: Document, session: Session | None = None) -> dict:
-    body = {**_summary(document), "content": document.content, "content_hash": content_hash(document.content)}
+    body = {
+        **_summary(document),
+        "content": document.content,
+        "content_hash": content_hash(document.content),
+        "threads": docthreads.load(document.threads),
+        "threads_hash": content_hash(document.threads),
+    }
     if session is not None:
         body["notes"] = _linked_notes(session, document.id)
     return body
@@ -705,6 +729,11 @@ def update_document(
     document_id: int, body: DocumentPatch, session: Session = Depends(get_session)
 ) -> dict:
     document = unshelved(DOCUMENTS.writable(session, document_id), unarchive=body.unarchive)
+    if body.threads is not None and docthreads.too_large(body.threads):
+        raise HTTPException(
+            status_code=422,
+            detail="This document has too many comments and replies to keep. Resolve or delete some, then save again.",
+        )
     #: Two windows, one document (WORLD_CLASS_PLAN 22.1 item 5), checked
     #: before anything is written, the title included.
     refuse_if_stale(
@@ -713,6 +742,9 @@ def update_document(
         new_text=body.content,
         current=lambda: _full(document, session),
         noun="document",
+        base_threads_hash=body.base_threads_hash,
+        current_threads=document.threads,
+        new_threads=None if body.threads is None else docthreads.dump(body.threads),
     )
     if body.title is not None:
         document.title = body.title.strip() or document.title
@@ -727,6 +759,8 @@ def update_document(
         document.content = body.content
     if body.file_type is not None:
         document.file_type = filetypes.normalise(body.file_type)
+    if body.threads is not None:
+        document.threads = docthreads.dump(body.threads)
     document.updated_at = utcnow()
     session.commit()
     if content_changed:

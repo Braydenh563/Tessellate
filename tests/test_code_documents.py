@@ -67,9 +67,12 @@ def test_every_language_the_brief_names_has_a_code_template(templates):
         #: The type is one the server keeps as given, so the document opens in
         #: the code view of that language rather than falling back to Markdown.
         assert filetypes.normalise(kind) == kind, template["id"]
-    #: Writing first, then Code: the gallery's group heads change once.
+    #: Writing, Planning, then Code (Planning split out by audit 1102 DX30): the
+    #: gallery's group heads change once each.
     groups = [t.get("group") or "writing" for t in templates]
-    assert groups == sorted(groups, key=lambda g: g == "code")
+    order = {"writing": 0, "planning": 1, "code": 2}
+    assert groups == sorted(groups, key=order.__getitem__)
+    assert {"letter", "report", "essay", "cv", "proposal"} <= {t["id"] for t in templates if not t.get("group")}
 
 
 @pytest.mark.parametrize("template_id", ["py-script", "py-cli", "fastapi", "notebook"])
@@ -823,12 +826,11 @@ def test_the_flowchart_starter_is_one_the_live_view_can_draw(tmp_path):
     row = re.search(r'add\(\{ id: "flowchart".*?run: \(t\) => editorBlock\(t, "```mermaid\\n(.*?)\\n```"', editor)
     assert row, "the Flowchart row has moved"
     docs = documents_text()
-    start = docs.index("const MERMAID_")
-    end = docs.index("\n}\n", docs.index("function mermaidFlowParse(")) + 2
-    helpers = docs[start:end]
+    #: 1546: the starter is read by the diagram model (documents-mermaid.js, DIAGRAM-MODEL region).
+    helpers = docs[docs.index("// DIAGRAM-MODEL-BEGIN") : docs.index("// DIAGRAM-MODEL-END")]
     source = row.group(1).replace("\\n", "\n")
-    graph = _node(helpers, f"mermaidFlowParse({json.dumps(source)})", tmp_path)
-    assert graph and len(graph["nodes"]) == 2, graph
+    graph = _node(helpers, f"diagramModel.parse({json.dumps(source)})", tmp_path)
+    assert graph and len(graph["nodes"]) == 2 and graph["kept"] == [], graph
 
 
 # Row 1139: p5.js names in a sketch, each one the vendored bundle has.
@@ -903,3 +905,19 @@ def test_a_piece_of_an_accented_word_is_not_a_spelling_finding():
     expr = "Object.fromEntries(Object.entries(" + json.dumps(cases) + ").map(([k, [t, s, e]]) => [k, docSpellable(t, t.slice(s, e), s, e)]))"
     got = _node(prelude, expr)
     assert got == {"cafe": False, "naive_tail": False, "naive_head": False, "plain": True}
+
+
+def test_a_documents_slash_templates_are_the_gallerys_writing_and_planning_set():
+    """Audit 1102 DX30: the "/" Templates group in a document offered the note
+    shapes (Journal, Recipe, Contact) while the gallery held letter, report
+    and the rest. A document's group now comes from DOC_TEMPLATES, code
+    templates left out (they make their own document type), and the note
+    built-ins give way there; the person's own templates still come first."""
+    editor = (Path(__file__).resolve().parents[1] / "frontend/js/editor.js").read_text(encoding="utf-8")
+    start = editor.index("function editorCommands(context)")
+    body = editor[start : editor.index("\n}\n", start)]
+    assert 'context === "document" && typeof DOC_TEMPLATES !== "undefined" ? [] : builtin' in body
+    rows = body[body.index("for (const template of DOC_TEMPLATES)") :]
+    assert 'template.group === "code") continue' in rows
+    assert "docTemplateFill(template" in rows and 'group: "Templates"' in rows
+    assert body.index("...custom") < body.index("for (const template of DOC_TEMPLATES)")

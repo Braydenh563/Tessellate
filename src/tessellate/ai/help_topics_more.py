@@ -401,13 +401,13 @@ MORE_TOPICS: list[dict] = [
         "body": (
             (
                 "Settings, Search and index. Search engine: the built-in one (recommended, about 300 MB "
-                "of memory while the app is open) or an Ollama embedding model such as nomic-embed-text. "
+                "of memory while open) or an Ollama model such as nomic-embed-text. "
                 "The built-in one needs the fastembed package (ONNX Runtime, no PyTorch) and a small model "
                 "from huggingface.co, about 130 MB in all. Nothing is downloaded without a yes: the first time a "
                 "save needs it Tessellate asks once, with Download and No thanks, and search uses "
                 "keywords until you say yes. The switch Download search by meaning turns it on later, "
-                "or off again, and Settings, Packages keeps a manual Install. Changing the engine re-reads every note in the background "
-                "(Background tasks shows it, with Stop) and search keeps using the current model until "
+                "or off (downloaded, it reads Repair search by meaning by itself); Settings, Packages keeps a manual Install. Changing the engine re-reads every note in the background "
+                "(Background tasks shows it, with Stop); search uses the current model until "
                 "the new one has read every note. Embedding models lists the choices, from MiniLM "
                 "(smallest, fastest) and BGE Small (the default) to multilingual ones (Multilingual E5, "
                 "BGE M3, Qwen3), with each one's size, languages, context and licence, and its state "
@@ -591,7 +591,7 @@ MORE_TOPICS: list[dict] = [
             "palette (Activity). Its two tabs carry a glyph and a count, and each part is a card "
             "headed by a glyph and a title. Its Agent runs tab lists each run this session "
             "with its steps, and the log is in its menu. Stop the model, in the "
-            "menu and in Settings, Models beside Use this model, stops any answer "
+            "menu and in Settings, Models, stops any answer "
             "and unloads the model from memory (Ollama drops it at once; the chat's Stop reaches the model too); a server "
             "this app did not start keeps its own model, and the message says so."
         ),
@@ -654,10 +654,14 @@ MORE_TOPICS: list[dict] = [
             "markdown files or a folder (Obsidian frontmatter is understood; a "
             "preview lists the files first, so you can untick any), "
             "or a PDF, Word file or slide deck, one note per chapter or slide. "
+            "The four import groups (Import markdown, Import a document, Import "
+            "from another app, Web clipper) are folded: press a heading to open "
+            "it, and the ? beside it opens it too. "
             "To keep a file whole as a document you can edit instead, open "
             "Library, Documents, the more menu, Import a file as a document. "
             "Backups: Back up now, and how many to keep; one is also taken "
-            "each day the app starts, and restoring snapshots first, so even a "
+            "each day the app starts. Restore first says how many notes and "
+            "documents the backup holds against now, and snapshots first, so even a "
             "restore can be undone. A line above the list gives the schedule, when "
             "it last ran and whether that worked, and when the next is due; in the "
             "desktop app, Also copy each backup to sends a second copy to a folder "
@@ -755,7 +759,8 @@ MORE_TOPICS: list[dict] = [
             "and carries on when you come back. Movement sets how much it moves and Intensity "
             "how strong it is. Page background in Theme & colour sets the "
             "colour under it. Performance mode and Battery-efficient mode both "
-            "stop it, and so does Motion off."
+            "stop it, and so does Motion off. The dashboard's constellation "
+            "moves only while it is on; off, it is a still picture."
         ),
         "badge": {"label": "Animated background", "section": "appearance", "target": "bg-style-row"},
     },
@@ -1077,26 +1082,36 @@ MORE_TOPICS: list[dict] = [
             "calculator and equations", "equation tab", "insert as equation",
         ),
         "body": (
-            "Calculator and equations is one dialog with three tabs: Work out, "
-            "Convert units and Equation. Open it from the command palette "
+            "Calculator and equations is one dialog with three tabs: Sum, "
+            "Units and Equation. Open it from the command palette "
             "(Ctrl+K, Calculator and equations, or Convert units for the "
-            "conversion tab; both are also in the / menu), by typing /calc with "
+            "Units tab; both are also in the / menu), by typing /calc with "
             "nothing after it, with Open the calculator under an answer that "
             "worked something out, or with Alt+= in a note, a document, a "
             "board's text, Chat or Ask, which opens it on the Equation tab over "
-            "that box. Work out takes a sum typed or keyed (12 * (3 + 4), 15% of "
-            "80, 5 km to miles), shows the result as you type and says how it "
-            "read it; Enter or = keeps it in the list of earlier results, and "
-            "Copy result copies it. When the dialog was opened from a text box, "
-            "Insert writes the result there and Insert as equation writes the sum "
-            "with its result as an equation. The keypad is one Tab stop: the "
-            "arrow keys move around it. Convert units picks a kind (length, "
+            "that box. Sum takes a sum typed or keyed (12 * (3 + 4), 15% of "
+            "80, 5 km to miles), shows a preview as you type and says how it "
+            "read it; Enter or = keeps it in History. "
+            "Every answer has a Copy button, and each tab has a History under "
+            "its fields (the last twenty, kept on this device): press a row to "
+            "put it back in the fields, or Copy it, Edit it (the next keep "
+            "replaces that row) or Remove it; Clear empties the list and Undo "
+            "brings it back. "
+            "Every tab ends in the same row: a line saying where Insert writes, "
+            "then Copy, Insert as equation (Sum and Units; the sum with its "
+            "result as an equation) and Insert. When the dialog was opened from "
+            "a text box, Insert writes there; with no box open the line says so "
+            "and Copy is the way out. The ? beside the title says the same in "
+            "short. The keypad is one Tab stop: the "
+            "arrow keys move around it. Units picks a kind (length, "
             "weight, currency and more), an amount and two units, with a swap "
             "button; currency rates are set by hand and dated, not today's rate. "
             "The Equation tab is the equation editor (see Equation editor): when "
             "an equation is made of numbers, its value is shown under it, worked "
-            "out the same way as Work out. The arrow keys, Home and End move "
-            "between the tabs."
+            "out the same way as Sum. The arrow keys, Home and End move "
+            "between the tabs. The Dashboard's Calculator widget (Customise, "
+            "Widgets) draws Sum and Units on the page, with Copy but no Insert. "
+            "Edit quick access can pin a tile for this tool and for each Clock tool."
         ),
         "badge": {"label": "Chat", "tab": "chat"},
     },
@@ -1130,23 +1145,35 @@ MORE_TOPICS: list[dict] = [
         "id": "timer",
         "keywords": (
             "timer", "countdown", "stopwatch", "pomodoro", "set a timer", "start a timer",
-            "stop the timer", "time how long",
+            "stop the timer", "time how long", "clock", "alarm", "set an alarm", "laps", "pause a timer",
+            "lock screen timers", "show reminders on the lock screen",
         ),
         "body": (
-            "Type timer in the command palette (Ctrl+K; its ? at the foot lists "
-            "the timer, the stopwatch and Count words) for Start a timer (25 "
-            "minutes) and Start a stopwatch, or type a length, such as timer 10 "
-            "minutes, 90s timer or countdown 2h, and press Enter. The time runs "
-            "on the status bar (on a phone the bar comes back while it runs); "
-            "press that timer chip in the status bar to stop the one it shows (Undo brings it back). Several "
-            "timers can run at once (the chip shows the one ending first), and they "
-            "come back after a reload. When a timer "
-            "runs out it says so in a message and a notification. The "
-            "Dashboard's Focus timer widget is a separate timer: a ring with "
-            "the time, lengths of 5, 15, 25 or 50 minutes (or minus and plus "
-            "for any other), one Start that becomes Pause, a chime and a "
-            "notification at the end, Breaks for a five-minute break after "
-            "each session, and the minutes focused today."
+            "The Clock is one window for timers, a stopwatch and alarms. Open it "
+            "from the command palette (Ctrl+K): Start a timer, Start a "
+            "stopwatch or Set an alarm, or from the \"/\" menu in Chat, or by "
+            "pressing the timer chip in the status bar, which opens the panel "
+            "and never stops the clock. Type a length in the palette, such as "
+            "timer 10 minutes, 90s timer or countdown 2h, and Enter starts it. "
+            "Drag its title bar to move it or its corner to resize it. "
+            "Timer: press 5, 10, 15, 25 or 45 minutes, or type a length (10, "
+            "90s, 1h30m or 1:30) and press Start. Several timers can run at "
+            "once, each with Pause, Resume, Reset and Stop in the Running list "
+            "(a stopped one comes back with Undo), and they survive a reload. "
+            "When one runs out it says so, notifies and chimes (Sound at the "
+            "end turns the chime off). Stopwatch: Start counts up, Lap writes "
+            "down the time so far and the lap, Pause holds it and Reset puts it "
+            "back to its start. Alarm: pick a time and a label and press Set "
+            "alarm; it makes an ordinary reminder, today or tomorrow. The "
+            "Dashboard's Clock widget (Customise, Widgets) draws the same tabs "
+            "on the page, over the same running clocks. The "
+            "Dashboard's Focus timer is a separate ring timer: 5, 15, 25 or 50 "
+            "minutes (or minus and plus), a chime at the end, Breaks, and the "
+            "minutes focused today. While the app is locked nothing is "
+            "announced; a timer that ran out speaks after you unlock. Settings, "
+            "Account & security, Show timers and reminders on the lock screen "
+            "(off by default) lists timers and the next few reminders by "
+            "title and time, except private notes', never a note's text."
         ),
         "badge": {"label": "Dashboard", "tab": "dashboard"},
     },
@@ -1239,7 +1266,9 @@ MORE_TOPICS: list[dict] = [
             "words, the characters with and without spaces, and the reading "
             "time, counted the way wc counts. With nothing selected it counts "
             "the whole editor you were in. The Capture box and a document also "
-            "show a running count as you type."
+            "show a running count as you type; a document leaves out its "
+            "Markdown marks, code and comments, and so matches its Document "
+            "statistics."
         ),
         "badge": {"label": "Notes", "tab": "notes"},
     },
@@ -1328,8 +1357,9 @@ MORE_TOPICS: list[dict] = [
             "In the desktop app on Windows the companion can sit in the bottom-right "
             "corner of your screen, above the taskbar, while the Tessellate window is "
             "in the tray, and go away when the window is open. It is off until you turn "
-            "it on: Settings, About, Show the companion on the desktop while the window "
-            "is in the tray, or Show desktop companion in the tray icon's menu. It is "
+            "it on, in the desktop app: Settings, About, Show the companion on the desktop "
+            "while the window is in the tray, or Show desktop companion in the tray icon's "
+            "menu. A browser tab has no such row, because only the desktop app has a tray. It is "
             "whoever you chose in Appearance (Atlas if you chose nobody). Click it for "
             "Quick note, Quick search or Open Tessellate; a note saved there is filed "
             "like any other, and a search result opens in the app. Right-click it for "
@@ -1476,6 +1506,22 @@ MORE_TOPICS.extend(
                 "or open it. Every model has a pin that lifts it to the top. The "
                 "arrows move, Enter chooses (in the search, the first match) and "
                 "Escape closes it. It is the same choice as Settings, Models."
+            ),
+            "badge": {"label": "Chat", "tab": "chat"},
+        },
+        {
+            "id": "chat-list",
+            "keywords": (
+                "search chats", "search my chats", "find a chat", "find an old chat", "old chats",
+                "saved chats", "chat list", "chats list", "chat sidebar", "sort chats", "pin a chat",
+            ),
+            "body": (
+                "The Chats list beside the chat shows your last eight saved chats. "
+                "The search box above it finds a chat by its title or by anything "
+                "said in it and lists up to 32 matches. Sort "
+                "puts them Recent, Most turns, Most tokens or A to Z, and a pinned "
+                "chat stays first. Each chat's menu renames, pins, archives or "
+                "deletes it. All in Library opens every chat, with the full search."
             ),
             "badge": {"label": "Chat", "tab": "chat"},
         },
@@ -2173,7 +2219,7 @@ MORE_TOPICS.extend(
                 "Moving and resizing panels. On a computer with a mouse, any panel "
                 "with a title row (the agent, Find anything, Statistics, Settings "
                 "and the rest) can sit where you want it: drag its head to move it "
-                "and drag the small corner mark at its bottom right to resize it. "
+                "and drag any edge or corner to resize it from that side. "
                 "The head always stays on screen, and the content scrolls inside "
                 "when the panel is small. A moved panel drops the dark backdrop so "
                 "you can see what is beside it. Each panel remembers its place and size "
@@ -2221,7 +2267,9 @@ MORE_TOPICS.extend(
                 "no Ctrl or Alt. A toast steps aside, fading and letting clicks "
                 "through, while the focused control is under it. For a screen "
                 "reader every tab has one main landmark, editors and panels have "
-                "names, and resize grips say how wide a panel is. Settings, "
+                "names, and resize grips say how wide a panel is. After Notes or "
+                "the Library loads or you filter it, one polite line says how "
+                "many are shown, and the window title follows the view. Settings, "
                 "Appearance has High contrast, Motion, Interface animations, "
                 "Text size and Zoom."
             ),
@@ -2304,6 +2352,7 @@ MORE_TOPICS.extend(
             "keywords": (
                 "emoji", "emojis", "icon", "icons", "sticker", "stickers", "emoji picker",
                 "icon picker", "insert an emoji", "insert an icon", "drag an icon", ":ph-",
+                "symbol", "symbols", "insert a symbol", "special characters", "greek letters", "arrows",
             ),
             "body": (
                 "Emoji and icons. One picker holds every Phosphor icon the app ships "
@@ -2317,9 +2366,22 @@ MORE_TOPICS.extend(
                 "as a sticker (no card, resize it like any item), an icon as a shape "
                 "you can recolour; dropped on a map topic, either becomes that "
                 "topic's icon. Each is one Undo step. In a note or a document, the "
-                "smiley in the formatting toolbar (the document's Insert menu) or "
+                "smiley in a note's formatting toolbar, the Insert button or "
                 "Emoji or icon in the / menu puts one at the caret: an emoji as "
-                "itself, an icon as :ph-name:, which reading shows as the icon."
+                "itself, an icon as :ph-name:, which reading, Live and an HTML "
+                "export show as the icon (a name the icon font lacks stays text). "
+                "Symbols is a third tab for characters a keyboard lacks: arrows, "
+                "maths, Greek letters, currency, writing marks and key caps, each "
+                "inserted as the character itself. Every panel has its own doors: "
+                "a document's Insert menu (the same list as /) has Emoji or icon, Symbol, Equation and "
+                "Calculator; Ctrl+K lists Emoji, Icons, Symbols and the calculator "
+                "over any text box (with none, a pick is copied); the chords, in "
+                "a document and in every note box, are Ctrl+; for emoji, "
+                "Ctrl+Shift+; for icons, Ctrl+' for symbols, Alt+= for an equation "
+                "and Ctrl+Shift+' for the calculator, all in the document's "
+                "shortcut sheet; the note editor's strip has Emoji or icon, Symbol "
+                "and Equation. Each opens the same movable panel, which comes up "
+                "where it will stay."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -2510,7 +2572,7 @@ TOPIC_META: dict[str, dict] = {
     "usage-ledger": {"title": "What you use", "path": "Settings, General, What you use", "target": "usage-box"},
     "statistics": {"title": "Statistics", "path": "Dashboard, Activity heatmap, Statistics"},
     "chat-private": {"title": "Private chat", "path": "Chat, the gear under the message box, Private chat"},
-    "timer": {"title": "Timer and stopwatch", "path": "Command palette, timer"},
+    "timer": {"title": "Clock: timer, stopwatch and alarm", "path": "Command palette, Start a timer; the status bar's timer"},
     "calculator": {"title": "Calculator and equations", "path": "Command palette, Calculator and equations; Alt+= in a text box; /calc in Chat"},
     "manual": {"title": "The manual", "path": "Settings, Help, Open the manual"},
     "first-steps": {"title": "First steps and the sample notebook", "path": "Dashboard, Get started"},
@@ -2543,7 +2605,7 @@ TOPIC_META: dict[str, dict] = {
     "companion-throw": {"title": "Throwing the companion", "path": "Settings, Appearance, Atlas and faces, Corner companion"},
     "companion-travel": {"title": "How the companion moves", "path": "Settings, Appearance, Atlas and faces, Corner companion"},
     "companion-remarks": {"title": "What the companion says", "path": "Settings, Appearance, Atlas and faces, Corner companion"},
-    "desktop-companion": {"title": "The companion on the desktop", "path": "Settings, About, Show the companion on the desktop"},
+    "desktop-companion": {"title": "The companion on the desktop", "path": "In the desktop app, Settings, About, Show the companion on the desktop"},
     "what-is-atlas": {"title": "What Atlas does", "path": "The Chat tab, or Ctrl+Shift+A over any tab"},
     "atlas-look": {"title": "How Atlas looks", "path": "Settings, Appearance, Atlas and faces, Atlas style and Atlas look"},
     "faces": {"title": "Generated faces", "path": "Settings, Appearance, Atlas and faces"},
@@ -2622,12 +2684,13 @@ TOPIC_META: dict[str, dict] = {
     "live-view-marks": {"title": "Markdown marks in Live view", "path": "Library tab, Documents, Edit, Live"},
     "documents-features": {"title": "Document editor features", "path": "Library tab, Documents"},
     "documents-paste": {"title": "Paste options and Paste special", "path": "Library tab, Documents, document menu"},
+    "documents-comments": {"title": "Comments in a document", "path": "Library tab, Documents, sidebar Outline, Comments"},
     "documents-turn-into": {"title": "Turn into: change a block to a heading, list, quote or code", "path": "Library tab, Documents, select text, Turn into"},
     "mind-map-features": {"title": "Mind map features", "path": "Library tab, Boards & maps"},
     "mind-map-import-export": {"title": "Mind map templates, import and export", "path": "Library tab, Boards & maps"},
     "mind-map-study": {"title": "Study the map", "path": "Library tab, Boards & maps, a map's board menu"},
     "mind-map-look": {"title": "How a map's topics look", "path": "Library tab, Boards & maps, a map"},
-    "emoji-and-icons": {"title": "Emoji and icons", "path": "The smiley on a board's or map's tool dock, or its Insert menu; a topic's Text menu"},
+    "emoji-and-icons": {"title": "Emoji, icons and symbols", "path": "A document's Insert menu, Ctrl+K, the note editor strip; the smiley on a board's or map's tool dock; a topic's Text menu"},
     "board-comments": {"title": "Comments on boards and maps", "path": "An item's right-click menu, Comment…"},
     "sticky-notes": {"title": "Sticky notes and text boxes", "path": "A board's tool dock, Add"},
     "callouts": {"title": "Callouts", "path": "Library tab, Documents"},
@@ -2651,6 +2714,7 @@ TOPIC_META: dict[str, dict] = {
     "attachments": {"title": "Pictures and files in a note", "path": "Capture, or a note being edited"},
     "chat-attach-cards": {"title": "Notes and files attached to a chat message", "path": "Chat, above the box and above a sent message"},
     "chat-model-picker": {"title": "Choosing the model for a box", "path": "Chat, Ask and Writing, beside the mode buttons"},
+    "chat-list": {"title": "Finding and sorting your saved chats", "path": "Chat tab, the Chats list"},
     "filing": {"title": "How a note is filed", "path": "A note's card, beside its category"},
     "suggested-tags": {"title": "Suggested tags", "path": "A note's card"},
     "tag-manager": {"title": "Managing tags", "path": "Notes tab, the ... menu, Manage tags"},
@@ -2698,11 +2762,11 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "tags-categories", "filing", "suggested-tags", "tag-manager", "manage-categories", "tidy",
     )),
     ("Asking Atlas", (
-        "ask-chat", "answers-from-notes", "chat-controls", "chat-private", "chat-attach-cards", "chat-model-picker", "wrap-lines", "slash-commands", "chat-acts", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
+        "ask-chat", "answers-from-notes", "chat-controls", "chat-private", "chat-attach-cards", "chat-model-picker", "chat-list", "wrap-lines", "slash-commands", "chat-acts", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "documents-replace", "live-view-marks", "documents-features", "documents-paste", "documents-turn-into", "callouts", "equation-editor", "document-history", "writing-checks", "code-files", "code-completions", "code-run",
+        "documents", "documents-controls", "documents-replace", "live-view-marks", "documents-features", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "document-history", "writing-checks", "code-files", "code-completions", "code-run",
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
@@ -3289,7 +3353,7 @@ MORE_TOPICS.append({
         "board's text or the Chat box, from a document's Insert menu, or with "
         "Alt+= there and in the Ask box (the same as Word's Alt+=), each over "
         "the box you were in; Ctrl+K, Calculator and equations opens the same "
-        "dialog on Work out, and the shortcuts list has it under Tools. The "
+        "dialog on Sum, and the shortcuts list has it under Tools. The "
         "equation is drawn as it will read, with "
         "dotted boxes where things go: click a box to fill it, Tab goes to the "
         "next one and the arrows move through the equation. Type it plainly: "
@@ -3300,11 +3364,13 @@ MORE_TOPICS.append({
         "and log, operator, matrix) and Greek, operators, relations, arrows, "
         "sets and calculus symbols; a selection goes into the first box. The "
         "LaTeX button shows the same equation as raw TeX to edit directly, and "
-        "the two stay in step. A drawn equation in a note or a document is "
+        "the two stay in step. A row of groups above the palette jumps to one "
+        "and marks the one in view; Pin, then a tile, makes it a favourite at "
+        "the top, and Recent shows the last ones used. A drawn equation in a note or a document is "
         "edited where it stands: click it, Enter or a click outside keeps the "
         "change as one undo step, Escape leaves it as it was. Inline sits in "
         "the sentence, Display on its own line; Ctrl+Enter inserts, and with no "
-        "box behind the dialog the button copies the equation instead. An "
+        "box behind the dialog Insert is off and Copy copies the equation. An "
         "equation made of numbers shows its value under the field. It writes "
         "TeX between dollar signs, so the note stays plain text. On a touch "
         "screen the field offers its own keyboard."

@@ -30,7 +30,7 @@ def test_a_note_card_reaches_the_graph_and_the_chat():
 
 
 def test_library_notes_and_documents_reach_the_chat():
-    document = _block(LIBRARY, 'if (item.kind === "document") {', 'if (item.kind === "archived") {')
+    document = _block(LIBRARY, 'if (item.kind === "document" || item.kind === "diagram") {', 'if (item.kind === "archived") {')
     note = _block(LIBRARY, 'if (item.kind === "note") {', "makeMenuItem(\"ph:archive Archive\", \"Keep it, but out of the way, not the bin\"")
     assert 'askAtlasAboutThing("document"' in document
     assert 'askAtlasAboutThing("note"' in note
@@ -41,7 +41,7 @@ def test_a_library_document_reaches_the_graph():
     """WORLD_CLASS_PLAN 1.3: the graph draws a document as `document:<id>`
     while its Documents switch is on, so the door turns the switch on and
     looks for that node, not the bare id a note has."""
-    document = _block(LIBRARY, 'if (item.kind === "document") {', 'if (item.kind === "archived") {')
+    document = _block(LIBRARY, 'if (item.kind === "document" || item.kind === "diagram") {', 'if (item.kind === "archived") {')
     assert "showNoteInGraph(item.id, { document: true })" in document
     assert "ph:graph Show in graph" in document
     #: The finding half moved to graph.js (2026-10-10, the boot budget).

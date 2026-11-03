@@ -732,11 +732,18 @@ function renderEvidenceView(view, sentences, support, rawResults, answerEl, numb
       card.type = "button";
       const head = evidenceSpan("citation-peek-head");
       const number = String(numberFor.get(citeKey(g.kind, g.note_id)) || "");
-      const title = noteLabel({ content }, 60);
+      //: The note's name, never its words run together (the owner: "random ahh sketch random ahh sketch").
+      const title = g.title || noteNamePlain(content, 60);
       head.append(evidenceSpan("citation-peek-number", number), evidenceSpan("citation-peek-title", title));
       const quote = evidenceSpan("citation-peek-body answer-evidence-quote");
-      const { before, passage, after } = citationPeekText(content, g.start, g.end, title);
-      quote.append(before, ...(passage ? [evidenceSpan("", passage, "mark")] : []), after);
+      const fill = (text) => {
+        const { before, passage, after } = citationPeekText(text, g.start, g.end, title);
+        quote.replaceChildren(before, ...(passage ? [evidenceSpan("", passage, "mark")] : []), after);
+        return passage;
+      };
+      let passage = fill(content);
+      //: The offsets are into the whole note; a clipped list row holds its first 300 characters (INBOX 1525 review).
+      if (entry?.content_truncated) fullEntry(g.note_id).then((whole) => (passage = fill(whole.content)), () => {});
       card.append(head, quote);
       const evidence = evidenceBlock(g);
       if (evidence) card.append(evidence);
@@ -781,7 +788,7 @@ function answerFigure(entry, n, k, alts, sizes) {
   img.addEventListener("error", () => figure.remove());
   const caption = node("figcaption", "answer-figure-caption", figure);
   if (words) node("span", "muted answer-figure-words", caption, words.split("\n")[0]);
-  const from = node("button", "link-button answer-figure-from", caption, `From note ${n}: ${noteLabel(entry, 40)}`);
+  const from = node("button", "link-button answer-figure-from", caption, `From note ${n}: ${noteNamePlain(entry.content, 40)}`);
   from.type = "button";
   from.addEventListener("click", () => flashEntry(entry.id));
   return figure;
@@ -1095,6 +1102,7 @@ async function streamChatEvents({
   onWebSources,
   onWhy,
   onOffer,
+  onTip,
   peek,
   attempt,
   isPrivate,
@@ -1270,6 +1278,8 @@ async function streamChatEvents({
       else if (event.type === "why" && onWhy) onWhy(event);
       //: A counted answer's one acting offer ("Open Statistics ..."), decision 70.
       else if (event.type === "offer" && onOffer) onOffer(event);
+      //: The screen-aware next step, apart from the answer's text (audit 1028 E52).
+      else if (event.type === "tip" && onTip) onTip(event);
       else if (event.type === "ask" && onAsk) onAsk(event);
       else if (event.type === "run_skill" && onRunSkill) onRunSkill(event);
       else if (event.type === "run_plan" && onRunPlan) onRunPlan(event);
@@ -1363,6 +1373,7 @@ function chatMessageActions(actions) {
     button.title = action.title;
     button.setAttribute("aria-label", action.title);
     button.addEventListener("click", action.onClick);
+    if (action.speak) button.dataset.speak = "1"; // speakText flips it to Stop reading (E71)
     return button;
   };
   //: **The row grew past what a row can hold.** An assistant message now
@@ -1375,17 +1386,18 @@ function chatMessageActions(actions) {
   for (const action of actions.slice(0, MSG_ACTIONS_VISIBLE)) row.appendChild(make(action));
   const overflow = actions.slice(MSG_ACTIONS_VISIBLE);
   if (overflow.length) {
-    row.appendChild(
-      kebabMenu(
-        overflow.map((action) => ({
-          label: `${action.label} ${action.title}`,
-          title: action.title,
-          danger: action.danger,
-          run: () => action.onClick({ currentTarget: null }),
-        })),
-        "More actions for this message"
-      )
+    const more = kebabMenu(
+      overflow.map((action) => ({
+        label: `${action.label} ${action.title}`,
+        title: action.title,
+        danger: action.danger,
+        run: () => action.onClick({ currentTarget: null }),
+      })),
+      "More actions for this message"
     );
+    const spoken = overflow.findIndex((action) => action.speak);
+    if (spoken >= 0) more.querySelectorAll(".action-menu .menu-item")[spoken].dataset.speak = "1";
+    row.appendChild(more);
   }
   return row;
 }
@@ -2053,6 +2065,16 @@ function markToolStep(node, step) {
 }
 
 function toolChip(label, ok = true, event = null) {
+  //: A web search that failed because SearXNG is down gets the same row the
+  //: web panel shows (INBOX 1556), told by the event's `reason`, not its words.
+  if (!ok && event?.reason === "searxng_down" && !event.downDrawn) {
+    const chip = toolChip(label, ok, { ...event, downDrawn: true });
+    const wrap = document.createElement("div");
+    wrap.className = "tool-chip-wrap";
+    wrap.append(chip);
+    ensureModule("webClip").then(() => searxngDownRow()).then((row) => wrap.append(row));
+    return markToolStep(wrap, chip.toolStep);
+  }
   const step = {
     kind: "tool",
     label,
@@ -2665,6 +2687,7 @@ function reattachStreamingTurn() {
   const host = $("chat-messages");
   clearChatEmptyState();
   for (const node of chatStreaming.nodes) host.appendChild(node);
+  if (chatController) host.setAttribute("aria-busy", "true"); // streaming again in view
   chatScrollToEnd();
   return true;
 }

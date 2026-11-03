@@ -31,12 +31,21 @@
 //: would not fit the boot script's gzip cap; this file is already preloaded.
 ["/css/objmove-lazy.css", "/js/obj-ref.js"].forEach(lazyScript);
 
-const DRAG_EDGE = { x: 0, y: 0, el: null, frame: 0 };
+//: `press` is the element a held button went down on; its zone is looked up
+//: on the first frame of a drag, not in the press (INBOX 1530 c: the zone's
+//: `getComputedStyle` and `scrollHeight` walk in `mousedown` forced 53 ms of
+//: layout on the click that opens a document, a click that never drags).
+const DRAG_EDGE = { x: 0, y: 0, el: null, press: null, frame: 0 };
 function dragEdgeTick() {
   const d = DRAG_EDGE;
   const sel = window.getSelection();
   d.frame = 0;
-  if (!d.el?.isConnected || sel.isCollapsed || !d.el.contains(sel.anchorNode)) return;
+  if (sel.isCollapsed) return;
+  if (d.press) {
+    d.el = dragEdgeZone(d.press);
+    d.press = null;
+  }
+  if (!d.el?.isConnected || !d.el.contains(sel.anchorNode)) return;
   //: 1 to 12px a frame between 56px and 20px from an edge, the browser's own below.
   const pace = (dist) => (dist > 20 && dist < 56 ? Math.round(1 + (11 * (56 - dist)) / 36) : 0);
   const box = d.el.getBoundingClientRect();
@@ -56,7 +65,8 @@ function dragEdgeZone(target) {
 function initDragSelectEdgeScroll() {
   const d = DRAG_EDGE;
   document.addEventListener("mousedown", (e) => {
-    d.el = e.button === 0 ? dragEdgeZone(e.target) : null;
+    d.el = null;
+    d.press = e.button === 0 ? e.target : null;
   }, true);
   //: **A drag already under way when this file arrives** (selection.js's
   //: `EDGE_SCROLL_HELD`): the press that fetched it, picked up here so the very
@@ -66,17 +76,18 @@ function initDragSelectEdgeScroll() {
   EDGE_SCROLL_HELD.ready = true;
   const held = EDGE_SCROLL_HELD.press;
   if (held) {
-    Object.assign(d, { el: dragEdgeZone(held.target), x: held.x, y: held.y });
-    if (d.el) d.frame = requestAnimationFrame(dragEdgeTick);
+    Object.assign(d, { press: held.target, x: held.x, y: held.y });
+    d.frame = requestAnimationFrame(dragEdgeTick);
   }
   document.addEventListener("mousemove", (e) => {
-    if (!d.el || !(e.buttons & 1)) return;
+    if (!(d.el || d.press) || !(e.buttons & 1)) return;
     d.x = e.clientX;
     d.y = e.clientY;
     d.frame ||= requestAnimationFrame(dragEdgeTick);
   }, true);
   document.addEventListener("mouseup", () => {
     d.el = null;
+    d.press = null;
     cancelAnimationFrame(d.frame);
     d.frame = 0;
   }, true);

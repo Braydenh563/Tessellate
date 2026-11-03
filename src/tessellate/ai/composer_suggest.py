@@ -162,6 +162,10 @@ def open_ended(question: str) -> str:
         #: opened, never "What should I look for?" (audit 1028 E28).
         if kind in ("find", "open") and (m.group("noun") or "").lower().startswith("reminder"):
             return ""
+        #: "new notes" is the newest notes, not the start of making one
+        #: (INBOX 1532); only the singular "new note" is unfinished.
+        if m.group("verb").lower() == "new" and (m.group("noun") or "").lower() == "notes":
+            return ""
         #: "make me a" and "add" alone are unfinished, not requests.
         return kind if (m.group("noun") or m.group("verb").lower() in ("open", "find", "search")) else ""
     return ""
@@ -193,6 +197,8 @@ _DETAIL = {
     "reminder": "What should I remind you about, and when? For example: “remind me to call mum on Friday at 9”.",
     "new": "What should the note say? Start with “note:” and the words, for example “note: buy milk and eggs”.",
 }
+#: A bare "new note" offers both readings: making one, or the newest ones (INBOX 1532).
+_DETAIL_ASKS = {"new": ("Show my newest notes",)}
 _VAGUE_TEXT = (
     "I can do a few useful things without a model. What are you in the mood for? Pick one, or say what you have in mind.",
     "Cool how? Here are some things worth trying, or tell me what you are after.",
@@ -218,7 +224,8 @@ def reply(question: str, titles: list[str], *, seed: str = "") -> dict:
             return {"text": text, "asks": ["Summarise my newest notes"] + [f"Summarise the note about {t}" for t in shown[:3]]}
         return {"text": text, "asks": [f"{verb} the note about {t}" for t in shown]}
     if kind in _DETAIL:
-        return {"text": _DETAIL[kind], "asks": []}
+        #: A bare "new note" offers both readings: making one, or the newest ones.
+        return {"text": _DETAIL[kind], "asks": list(_DETAIL_ASKS.get(kind, ()))}
     ideas = list(_TRY) + list(composer_replies.CALL_ASKS)
     ideas = list(dict.fromkeys(ideas))
     start = int(hashlib.sha1(f"ideas|{seed}|{question.lower()}".encode()).hexdigest(), 16) % len(ideas)

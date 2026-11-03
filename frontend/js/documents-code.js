@@ -2260,8 +2260,8 @@ function docIndentGuides(CM, unit) {
   //: The space's width is the face's, so it is measured when the face
   //: changes, not on every geometry change (a key that adds a line is one;
   //: 173 ms of a 20-key run at 4x, audit 1031 CE3).
-  const measureSpace = (view) => {
-    const font = getComputedStyle(view.contentDOM).font;
+  const spaceFont = (view) => getComputedStyle(view.contentDOM).font;
+  const measureSpace = (view, font = spaceFont(view)) => {
     const seen = (docIndentGuides.fonts ||= new WeakMap());
     if (seen.get(view.contentDOM) === font) return;
     seen.set(view.contentDOM, font);
@@ -2284,7 +2284,10 @@ function docIndentGuides(CM, unit) {
   const plugin = ViewPlugin.fromClass(
     class {
       constructor(view) {
-        measureSpace(view);
+        //: In the editor's own read phase, not here (INBOX 1530 c): the
+        //: constructor runs inside the open, after it has written, so the font
+        //: read forced the page's style (6 to 17 ms of `openDoc`).
+        view.requestMeasure({ key: measureSpace, read: spaceFont, write: (font, v) => measureSpace(v, font) });
         this.decorations = build(view);
       }
       update(update) {
@@ -2737,10 +2740,11 @@ function docShowReferences() {
 
 //: Ctrl+Shift+F: the app's Find anything, on documents, with the selection
 //: (one line of it) or the word at the caret.
-function docFindInDocuments() {
+function docFindInDocuments(typed = "") {
   const view = docCmView;
-  let query = "";
-  if (view) {
+  //: What the find panel holds, when it asked (D33); otherwise the selection or the word at the caret.
+  let query = typeof typed === "string" ? typed.slice(0, 100) : "";
+  if (!query && view) {
     const range = view.state.selection.main;
     if (!range.empty) query = view.state.sliceDoc(range.from, range.to).split("\n")[0].slice(0, 100);
     else query = docWordAt(view.state, range.head)?.name || "";
@@ -4108,7 +4112,7 @@ function docRunRow(level, text, line, into = null, follow = true) {
   }
   const words = document.createElement("span");
   words.className = "cm-run-text";
-  words.textContent = String(text).slice(0, 4000);
+  words.textContent = String(text).length > 4000 ? `${String(text).slice(0, 4000)}\nOutput cut at 4,000 characters.` : String(text);
   row.appendChild(words);
   if (Number.isInteger(line) && line > 0) {
     const link = document.createElement("button");
@@ -4188,7 +4192,7 @@ function docRunTestRow(name, state, ms, text, line) {
   if (text) {
     const why = document.createElement("pre");
     why.className = "cm-run-why";
-    why.textContent = String(text).slice(0, 4000);
+    why.textContent = String(text).length > 4000 ? `${String(text).slice(0, 4000)}\nOutput cut at 4,000 characters.` : String(text);
     row.appendChild(why);
   }
   if (kind === "fail" && Number.isInteger(line) && line > 0) {

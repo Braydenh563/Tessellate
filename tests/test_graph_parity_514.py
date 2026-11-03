@@ -6,6 +6,7 @@ attachments as nodes, each opt-in like entities and documents."""
 from __future__ import annotations
 
 import io
+import re
 from pathlib import Path
 
 
@@ -134,7 +135,7 @@ def test_arrows_are_off_by_default_and_drawn_as_sparks():
     canvas = (root / "js" / "graph-canvas.js").read_text(encoding="utf-8")
     assert 'prefs.get("graph-arrows", null) === "1"' in canvas
     graph = (root / "js" / "graph.js").read_text(encoding="utf-8")
-    assert '"graph-arrows": false,' in graph and 'GRAPH_STORED_OFF = ["graph-arrows"]' in graph
+    assert '"graph-arrows": false,' in graph and re.search(r'GRAPH_STORED_OFF = \["graph-arrows"[,\]]', graph)
     spark = canvas[canvas.index("function gcLinkSpark") : canvas.index("function gcFillSparks")]
     assert "gcQuadAt(a, c, b, 0.7)" in spark and "bucket.wide.quadraticCurveTo" in spark
     assert "bucket.glows.arc(" in spark and "bucket.sparks.quadraticCurveTo(" in spark

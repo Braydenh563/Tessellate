@@ -394,16 +394,23 @@ WHITEBOARD_WRITE_PREFIXES = (
 
 
 def _whiteboard_writes():
-    from tessellate.api import routes_whiteboard
+    import importlib
+    import pkgutil
 
+    import tessellate.api as api_pkg
+
+    #: The routes live in the layers `routes_whiteboard` includes (gods-2): every `wb_*` module, found, not
+    #: listed, so a write route in a layer added later (wb_preview has one) is not missed.
+    layers = [importlib.import_module(f"tessellate.api.{m.name}") for m in pkgutil.iter_modules(api_pkg.__path__) if m.name.startswith("wb_")]
     return sorted(
         name
-        for name, fn in inspect.getmembers(routes_whiteboard, inspect.isfunction)
+        for layer in layers
+        for name, fn in inspect.getmembers(layer, inspect.isfunction)
         if name.startswith(WHITEBOARD_WRITE_PREFIXES)
         # `functools.wraps` keeps `__module__` pointing at the module the
         # function was defined in, so the decorated routes are still found and
         # the manager helpers imported into that module are still excluded.
-        and fn.__module__ == routes_whiteboard.__name__
+        and fn.__module__ == layer.__name__
     )
 
 
@@ -589,7 +596,7 @@ def test_every_whiteboard_write_records_exactly_one_event(client, session):
     for name in writes:
         driver = drivers.get(name)
         assert driver is not None, (
-            f"{name} is a write route in api/routes_whiteboard.py with no driver "
+            f"{name} is a write route in api/wb_*.py with no driver "
             "in this test. Make it record exactly one event (wrap it in "
             "@events.writes and give its events.record a whole-field payload), "
             "then add a driver for it here."

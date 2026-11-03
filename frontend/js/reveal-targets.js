@@ -343,14 +343,13 @@ const REVEAL_TARGETS = {
   "doc-new": { tab: "documents", open: () => createDocument(), el: "doc-title", focus: true },
   "doc-templates": { tab: "documents", open: () => openDocTemplateDialog(), el: "doc-template-dialog", flash: false },
   "doc-insert": {
-    open: async () => (await revealDocument()) && (await revealStrip(), revealDetails("doc-toolbar-insert")),
+    open: async () => (await revealDocument()) && (await revealStrip()),
     el: "doc-toolbar-insert",
     fallback: "doc-new",
   },
   "doc-tables": {
-    open: async () => (await revealDocument()) && (await revealStrip(), revealDetails("doc-toolbar-insert")),
-    sel: '#doc-toolbar-insert [data-md="table"]',
-    built: "revealDetails",
+    open: async () => (await revealDocument()) && (await revealStrip()),
+    el: "doc-toolbar-insert",
     fallback: "doc-new",
   },
   "doc-outline": {
@@ -618,12 +617,14 @@ async function revealFeature(key, arg = "") {
 
 //: The passage, from a string or from the clicked card: its answer's first
 //: mark for this note carries the offsets into the note's text.
-function notePassageFor(id, from) {
+async function notePassageFor(id, from) {
   if (typeof from === "string") return from;
   const scope = from?.closest?.(".msg") || from?.closest?.("#tab-notes, #command-palette-results");
   const marker = scope?.querySelector(`.answer-citation[data-note-id="${id}"][data-start]`);
-  const entry = allEntries.find((e) => e.id === id);
-  if (!marker || !entry) return "";
+  const row = allEntries.find((e) => e.id === id);
+  if (!marker || !row) return "";
+  //: The mark's offsets are into the whole text; a clipped list row holds its first 300 characters.
+  const entry = await fullEntry(id).catch(() => row);
   return plainText(String(entry.content || "").slice(Number(marker.dataset.start), Number(marker.dataset.end)));
 }
 
@@ -660,10 +661,17 @@ function passageRange(root, passage) {
 }
 
 async function markNotePassage(id, from) {
-  const passage = notePassageFor(id, from);
+  const passage = await notePassageFor(id, from);
   if (!passage || !window.Highlight) return false;
   const body = await revealWait(() => document.querySelector(`#entry-list li[data-id="${id}"] .entry-content`), 2000);
-  const range = body && passageRange(body, passage);
+  let range = body && passageRange(body, passage);
+  //: A passage past a clipped card's first lines: open the card, which fills in the whole note, and look again.
+  const more = !range && !expandedNotes.has(id) && body?.parentNode.querySelector(":scope > .entry-more");
+  if (more) {
+    more.click();
+    await body.fillWhole?.();
+    range = passageRange(body, passage);
+  }
   if (!range) return false;
   CSS.highlights.set("source-quote", new window.Highlight(range));
   clearTimeout(markNotePassage.timer);
@@ -793,7 +801,10 @@ function openShortcuts() {
   } else if (boardNote) {
     boardNote.classList.remove("hidden");
   }
-  $("shortcuts-overlay").classList.remove("hidden");
+  //: Audit 1028 S58: what opened the sheet gets focus back when it closes.
+  const overlay = $("shortcuts-overlay");
+  if (overlay.classList.contains("hidden")) overlay.returnFocus = document.activeElement;
+  overlay.classList.remove("hidden");
   if (onBoard) $("shortcut-head-whiteboard")?.scrollIntoView({ block: "start" });
   $("shortcuts-close").focus();
 }

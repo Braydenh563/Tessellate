@@ -64,7 +64,9 @@ def test_z53_a_question_with_a_subject_of_its_own_is_not_pulled_back(ask):
 @pytest.mark.parametrize(("first", "then", "lead"), [
     ("what is on 4 November", "what time", "Here's the exact date: Dentist appointment on 4 November 2026 at 9:30"),
     ("what is on 4 November", "when is it", "The day noted down: Dentist appointment on 4 November 2026"),
-    ("what is on saturday", "who is it with", "Your own words: Coffee with Anna"),
+    #: The opener is the salt's pick: 5e6147c cut the invented speech acts
+    #: ("You captured this", "This was your thought"), which moved the pick.
+    ("what is on saturday", "who is it with", "Here is what you wrote: Coffee with Anna"),
 ])
 def test_z53_a_follow_on_after_a_date_list_keeps_its_first_item(ask, first, then, lead):
     """A date list cites no sources; the links it wrote name what it was about."""

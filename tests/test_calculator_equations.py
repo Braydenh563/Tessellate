@@ -1,8 +1,8 @@
 """One maths tool: the Calculator and the equation editor are one dialog (INBOX 1527).
 
 The owner, 2026-11-01: "I think the equations and calculator should be
-integrated together". The Calculator sheet has three tabs (Work out, Convert
-units, Equation); the Equation tab hosts the editor math-editor.js builds
+integrated together". The Calculator sheet has three tabs (Sum, Units,
+Equation); the Equation tab hosts the editor math-editor.js builds
 (`mathEditorMount`), Alt+= opens the sheet on that tab over the box it was
 pressed in, /calc opens it on Work out, a result offers Insert and Insert as
 equation, and an equation made of numbers shows its value through the same
@@ -79,13 +79,13 @@ def test_the_tex_converters_read_and_write_sums(converters: list[dict]) -> None:
 
 def test_the_calculator_has_three_tabs_and_takes_a_target() -> None:
     assert 'function openCalculator(input = "", mode = "work", { target = null } = {})' in KIT
-    assert '["work", "Work out"], ["convert", "Convert units"], ["equation", "Equation"]' in KIT
+    assert '["work", "Sum"], ["convert", "Units"], ["equation", "Equation"]' in KIT
     assert 'label: "Calculator and equations"' in KIT
     #: The Equation tab hosts the editor, built on first use, and a result
     #: offers Insert and Insert as equation only when there is a box.
     assert "mathEditorMount(" in KIT and 'ensureModule("mathEditor")' in KIT
     assert "Insert as equation" in KIT
-    assert "if (target) {" in KIT.split("function replyCalcWorkPane", 1)[1].split("function replyCalcKeypad", 1)[0]
+    assert "function replyCalcActions(target" in KIT and "calc-where" in KIT
     assert "mathEditorWrite(target," in KIT and "plain: !equation" in KIT
     #: The value of a numeric equation is the Work out evaluator's.
     assert "replyCalcWork(" in KIT.split("function replyCalcEquation", 1)[1]
@@ -116,7 +116,7 @@ def test_one_registry_row_carries_both_shortcuts() -> None:
     row = next(block for block in tools.split("\n  },") if 'id: "calculator"' in block)
     assert 'name: "Calculator and equations"' in row
     assert 'keys: "Alt+= or /calc"' in row
-    assert 'guide: "calculator"' in row and "popupToolMaths(t ? { target: t } : undefined)" in row
+    assert 'guide: "calculator"' in row and "popupToolMaths({ target: t || null })" in row
     #: Nothing else in the registry claims Alt+=.
     assert tools.count('keys: "Alt+=') == 1
 
@@ -148,4 +148,4 @@ def test_a_slash_row_hands_the_calculator_the_box_it_was_typed_in():
     editor = (js / "editor.js").read_text(encoding="utf-8")
     assert 'run: (t) => tool.open(t) });' in editor
     panes = (js / "settings-panes.js").read_text(encoding="utf-8")
-    assert "open: (t) => ensureModule(\"appPalette\").then(() => popupToolMaths(t ? { target: t } : undefined))," in panes
+    assert "open: (t) => ensureModule(\"appPalette\").then(() => popupToolMaths({ target: t || null }))," in panes

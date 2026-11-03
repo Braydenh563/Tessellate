@@ -138,8 +138,10 @@ async function attachFromLibrary(entry) {
       const markdown = isPdf(image.url)
         ? `[${image.original_name}](${image.url})\n`
         : `![${image.original_name}](${image.url})\n`;
-      const nextContent = `${entry.content.trim()}\n\n${markdown}`.trim();
       try {
+        //: The whole note, not a list row's first 300 characters (`fullEntry`).
+        const whole = await fullEntry(entry.id);
+        const nextContent = `${whole.content.trim()}\n\n${markdown}`.trim();
         await apiJson(`/entries/${entry.id}`, {
           method: "PUT",
           body: JSON.stringify({ content: nextContent }),
@@ -150,7 +152,7 @@ async function attachFromLibrary(entry) {
         pushEntryPutUndo(
           entry.id,
           `Attached ${image.original_name}`,
-          { content: entry.content },
+          { content: whole.content },
           { content: nextContent }
         );
       } catch (error) {

@@ -3276,6 +3276,20 @@ const nmb = {
   leanSide: "", leanAt: 0, stirAt: 0, groggyUntil: 0, grumpyUntil: 0, pokes: [], unlockDrop: true, lastHow: "",
   mood: { energy: 0.7, curiosity: 0.6, sociability: 0.7 }, edgeType: "", edgeLine: 72, reading: null, cool: {},
   anim: null, hopAnim: null, glue: null, heldTimer: 0, placeTimer: 0, movedAt: 0, pinned: false, menu: null, settle: [], checkFrame: 0,
+  //: **Not the pages that are not shown** (INBOX 1560, the owner's lag log:
+  //: `nameMarkBuddyBeat` 156 to 1838ms). A popup in a hidden tab page has no box,
+  //: and a hidden page keeps its whole list drawn in the document, so the walk
+  //: for popups is made over the chrome and the shown page only: the children of
+  //: `body`, and of `#app-main` less the pages with `hidden`.
+  liveRoots() {
+    const roots = [];
+    for (const child of document.body.children) {
+      if (child.classList.contains("hidden")) continue;
+      if (child.id !== "app-main") roots.push(child);
+      else for (const page of child.children) if (!page.classList.contains("hidden")) roots.push(page);
+    }
+    return roots;
+  },
 };
 
 //: The companion's own reading of reduced motion and Avatar animation Off:
@@ -3545,12 +3559,17 @@ function nameMarkBuddyControlsIn(root, boxes) {
 //: over the whole document: one such query over 17,000 elements was 6 to
 //: 50ms of the sweep at 4x CPU (parts3.js).
 function nameMarkBuddyFloaters() {
-  const out = [document.getElementById("toast-box"), document.getElementById("scroll-top"), document.getElementsByClassName("pointer-menu-host")[0]];
-  for (const name of ["dock-fab", "chat-jump-latest"]) out.push(...document.getElementsByClassName(name));
-  for (const el of document.getElementsByClassName("modal-overlay")) if (!el.classList.contains("hidden")) out.push(el);
+  const out = [document.getElementById("toast-box"), document.getElementById("scroll-top")];
+  for (const root of nmb.liveRoots()) {
+    for (const name of ["pointer-menu-host", "dock-fab", "chat-jump-latest"]) {
+      if (root.classList.contains(name)) out.push(root);
+      out.push(...root.getElementsByClassName(name));
+    }
+    if (root.classList.contains("modal-overlay") && !root.classList.contains("hidden")) out.push(root);
+    for (const el of root.getElementsByClassName("modal-overlay")) if (!el.classList.contains("hidden")) out.push(el);
+  }
   return out;
 }
-
 //: **Never over what you are working in** (INBOX 1463, the owner: "a non
 //: intrusive companion"). The focused control as a whole when it is small
 //: (a field, a button, a select: up to `NMB_FOCUS_AREA`), and in a page you
@@ -3632,9 +3651,13 @@ const NMB_POPUP_IDS = ["notif-panel", "tour-spot", "tour-card", "wb-format", "wb
 const NMB_POPUP_CLASSES = ["action-menu", "select-menu", "help-popover", "space-menu", "wb-board-menu", "wb-shape-menu", "wb-lib-list", "nav-history-menu", "rich-picker-list", "doc-suggest-menu", "doc-complete-list"];
 function nameMarkBuddyPopupEls() {
   const out = NMB_POPUP_IDS.map((id) => document.getElementById(id)).filter(Boolean);
-  for (const name of NMB_POPUP_CLASSES) out.push(...document.getElementsByClassName(name));
-  for (const d of document.getElementsByTagName("details")) if (d.open && /menu/.test(d.className)) out.push(...[...d.children].filter((c) => c.tagName !== "SUMMARY"));
-  for (const d of document.getElementsByTagName("dialog")) if (d.open) out.push(d);
+  for (const root of nmb.liveRoots()) {
+    if (root.localName === "dialog" && root.open) out.push(root);
+    else if (NMB_POPUP_CLASSES.some((name) => root.classList.contains(name))) out.push(root);
+    for (const name of NMB_POPUP_CLASSES) out.push(...root.getElementsByClassName(name));
+    for (const d of root.getElementsByTagName("details")) if (d.open && /menu/.test(d.className)) out.push(...[...d.children].filter((c) => c.tagName !== "SUMMARY"));
+    for (const d of root.getElementsByTagName("dialog")) if (d.open) out.push(d);
+  }
   return out;
 }
 //: Checked a moment after any press or key (the way a popup opens), from
@@ -3701,11 +3724,15 @@ for (const type of ["click", "keyup"]) {
     if (!document.getElementById("nm-buddy")) return;
     clearTimeout(nmbDodgeTimer);
     clearTimeout(nmbDodgeLate);
+    //: Looked after a frame has drawn what the press changed: the timer alone landed
+    //: between the press's writes and the frame, and its boxes settled the layout
+    //: (146 to 191ms at 4x, INBOX 1534).
     const look = nameMarkBuddyTypingKey(e) ? nameMarkBuddyDodgeTyping : nameMarkBuddyDodge;
-    nmbDodgeTimer = setTimeout(look, 80);
+    const afterPaint = () => afterFrames(() => setTimeout(look), 1);
+    nmbDodgeTimer = setTimeout(afterPaint, 80);
     //: And once the page has settled: a tour step that changes tab, or a
     //: panel that slides in, lands its box after the first look.
-    nmbDodgeLate = setTimeout(look, 700);
+    nmbDodgeLate = setTimeout(afterPaint, 700);
   }, { passive: true, capture: true });
 }
 
@@ -5157,7 +5184,8 @@ function nameMarkBuddyTempo() {
     return;
   }
   const now = performance.now();
-  if (now - nmbTempo.seen > 1000) {
+  //: Not while a page or popup is arriving: `getAnimations` flushes all the style it has dirtied (306ms at 4x, INBOX 1534).
+  if (now - nmbTempo.seen > 1000 && now >= (window.uiSettlingUntil || 0)) {
     nmbTempo.seen = now;
     //: Atlas's layer roots (atlas.js, `atlasDrawFigure`) animate on the
     //: compositor; stepping them here would put them back on the main
@@ -6392,7 +6420,11 @@ for (const type of ["pointerdown", "keydown", "wheel", "resize"]) {
   (type === "resize" ? window : document).addEventListener(type, () => {
     if (type !== "resize") {
       nmbClock.inputAt = Date.now();
-      document.documentElement.classList.remove("is-idle");
+      //: Only when it is on (DX1): `remove` writes the attribute even when the
+      //: class is absent, so every key woke each observer of `<html>` (the
+      //: diagrams' theme redraw ran 13 times in 60 keys, a style read each).
+      const root = document.documentElement;
+      if (root.classList.contains("is-idle")) root.classList.remove("is-idle");
     }
     if (!nmb.checkDue) nmbTickArm(1500);
     nmb.checkDue = true;
@@ -6542,9 +6574,34 @@ function nameMarkBuddyBeat() {
     nameMarkBuddyQueuePlace();
     return;
   }
+  //: **Looked after a frame has drawn** (INBOX 1560, the owner's lag log:
+  //: `nameMarkBuddyBeat` 156ms, 98 of it forced layout). A timer lands between
+  //: the page's writes and its frame, so the first box read below settled the
+  //: layout the frame was about to do anyway. One frame and a timer on (as
+  //: `queueNameMarkBuddyCheck`), the layout is clean and every read is cheap;
+  //: a page that stays hidden never draws one, so it does no look at all.
+  if (!nmb.beatDue) {
+    if (!nmb.beatFrame) {
+      nmb.beatFrame = 1;
+      afterFrames(() => setTimeout(() => {
+        nmb.beatFrame = 0;
+        nmb.beatDue = true;
+        try {
+          nameMarkBuddyBeat();
+        } finally {
+          nmb.beatDue = false;
+        }
+      }), 1);
+    }
+    return;
+  }
   const tab = nameMarkBuddyTab();
   const own = nameMarkBuddySpots()[tab];
-  nameMarkBuddyIndexReset();
+  //: The page's measured spots (controls and surfaces) are kept across beats
+  //: while nothing has changed them: scroll, resize and the views observer
+  //: reset them, `NMB_COVERS_MAX_MS` bounds the rest (INBOX 1534: a beat on a
+  //: still page re-measured every control, 224ms at 4x, 31ms of it forced).
+  if (nmb.covers?.tab !== tab || performance.now() - nmb.covers.at >= NMB_COVERS_MAX_MS) nameMarkBuddyIndexReset();
   //: A new view in the tab (`nameMarkBuddyViewChanged`): a window bar was
   //: the last resort of the view it left, so it looks again, and by the
   //: tab's own preference rather than the nearest (a bar 15px away beat a
