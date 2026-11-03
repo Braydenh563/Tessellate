@@ -20,12 +20,14 @@ const FIELD_CLEARS = [
   {
     button: "capture-clear-title",
     fields: ["entry-title"],
+    inline: "Clear the title",
     said: "Cleared the title.",
     undoLabel: "Cleared the title",
   },
   {
     button: "capture-clear-body",
     fields: ["entry-content"],
+    inline: "Clear the note",
     said: "Cleared the note.",
     undoLabel: "Cleared the note",
     //: Ends where Clear all ends (the third row): in the box, the tag suggestions drawn from the old words gone.
@@ -165,7 +167,30 @@ function fieldClearSyncAll() {
 }
 
 (() => {
+  //: A field's own x is built here, at its top edge, not shipped in index.html:
+  //: the boot page is at its element cap (tests/test_boot_diet3.py) and this
+  //: file loads a few seconds after boot, long before a person types a title.
+  function fieldClearInline(spec) {
+    const field = document.getElementById(spec.fields[0]);
+    if (!spec.inline || !field || document.getElementById(spec.button)) return;
+    const anchor = document.createElement("span");
+    anchor.className = "field-clear-anchor";
+    const button = document.createElement("button");
+    button.type = "button";
+    button.id = spec.button;
+    button.className = "ghost icon-only small field-clear field-clear-inline hidden";
+    button.title = spec.inline;
+    button.setAttribute("aria-label", spec.inline);
+    const icon = document.createElement("i");
+    icon.className = "ph ph-x";
+    icon.setAttribute("aria-hidden", "true");
+    button.append(icon);
+    anchor.append(button);
+    field.before(anchor);
+  }
+
   for (const spec of FIELD_CLEARS) {
+    fieldClearInline(spec);
     const button = document.getElementById(spec.button);
     if (!button) continue;
     button.addEventListener("click", () => fieldClearRun(spec));

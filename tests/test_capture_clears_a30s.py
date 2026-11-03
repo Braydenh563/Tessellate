@@ -29,13 +29,16 @@ def _composer() -> str:
 
 
 def test_the_title_and_the_body_each_have_their_own_x_and_clear_all_keeps_its_place():
+    # The two x buttons are built by field-clear.js before their field (the boot page is
+    # at its element cap), so the recipe is read from the builder, not from index.html.
     composer = _composer()
-    for ident, field in (("capture-clear-title", "entry-title"), ("capture-clear-body", "entry-content")):
-        tag = re.search(rf'<button[^>]*id="{ident}"[^>]*>', composer).group(0)
-        classes = set(re.search(r'class="([^"]*)"', tag).group(1).split())
-        assert {"ghost", "icon-only", "small", "field-clear", "field-clear-inline", "hidden"} <= classes
-        assert "ph-x" in composer[composer.index(tag) : composer.index(tag) + 300]
-        assert composer.index(tag) < composer.index(f'id="{field}"'), "the anchor sits before its field, at its top edge"
+    for ident, field, label in (("capture-clear-title", "entry-title", "Clear the title"), ("capture-clear-body", "entry-content", "Clear the note")):
+        assert re.search(rf'button: "{ident}",\s*fields: \["{field}"\],\s*inline: "{label}"', CLEAR)
+        assert f'id="{field}"' in composer
+    build = CLEAR[CLEAR.index("function fieldClearInline(spec)") :]
+    build = build[: build.index("\n  }\n")]
+    assert '"ghost icon-only small field-clear field-clear-inline hidden"' in build
+    assert '"ph ph-x"' in build and "field.before(anchor)" in build, "the anchor sits before its field, at its top edge"
     all_tag = re.search(r'<button[^>]*id="capture-clear"[^>]*>', composer).group(0)
     assert 'title="Clear all"' in all_tag and 'aria-label="Clear all"' in all_tag
 
