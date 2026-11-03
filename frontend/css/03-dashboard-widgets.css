@@ -3498,9 +3498,7 @@ button.answer-figure-open {
 .graph-zoom {
   display: flex;
   flex-direction: column;
-  /* The padding, gap and overflow are set again below, with the reason. */
-  gap: 0;
-  overflow: hidden;
+  /* The padding, gap and overflow are set below, with the reason. */
   /* The floating-control recipe (see `.scroll-top`): card fill, glass edge,
      glass shadow, the button radius. The buttons inside are plain, the
      strip is the control, not each segment of it. */

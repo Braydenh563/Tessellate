@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Suggested tags: each is one split chip, "+ tag" to add and an x half of its own to dismiss, a 24x24 target inside the 24px chip (it was a 28px box hung over the chip 4px after the words; 44px under a finger), each half with its own hover and focus tone; the recipe is in DESIGN.md (INBOX 1583).
 - Filing: one decision for the Capture hint, the saved line and the model's prompt (`lexical_filing.filing_call`): a confident match files and File in names it, a close call offers the closest two or three and the save says the same, a stray phrase from another subject is weighed by its share of the note (a bonus in a golf note no longer holds it as Finance), a category named for a taxonomy parent reaches its children, and the model is handed the words' candidates; the duplicate File under chip and `/entries/suggest-category` are gone (INBOX 1583).
 - Windows splash: the taskbar shows Tessellate, not PowerShell (the splash takes the app's AppUserModelID before its window opens), and the logo tile has the mark's three stops, so it is no longer pinker than every other copy (INBOX 1574).
 - CodeQL: the diagram reply's fence and the note-slot reply's filler and tail are scanned, not matched by polynomial regexes; `_turn_label` moved to chat_extra, which ends an import cycle.
