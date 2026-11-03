@@ -61,7 +61,7 @@ async function renderRelatedWhileEditing(li, entry) {
       panel.textContent = "All related notes are linked.";
       return;
     }
-    setLabel(toggle, `${list.hidden ? "ph:caret-right" : "ph:caret-down"} ${n} suggested link${n === 1 ? "" : "s"}`);
+    setLabel(toggle, `${list.hidden ? "ph:caret-right" : "ph:caret-down"} ${nounCount(n, "suggested link")}`);
   };
   toggle.addEventListener("click", () => {
     list.hidden = !list.hidden;

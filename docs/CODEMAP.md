@@ -2,7 +2,7 @@
 
 Generated 2026-11-03 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7584, frontend ids 2644, CSS sections 519, backend routes 641, backend modules 8499, test files 1913, tests 16096, plan headings 987, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7584, frontend ids 2644, CSS sections 519, backend routes 641, backend modules 8499, test files 1913, tests 16098, plan headings 987, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7584)
 
@@ -23339,7 +23339,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16096)
+## Tests (16098)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23440,7 +23440,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_audit1028_e55.py | 3 |
 | tests/test_audit1028_e63.py | 2 |
 | tests/test_audit1028_e72.py | 3 |
-| tests/test_audit1028_low_1102.py | 2 |
+| tests/test_audit1028_low_1102.py | 4 |
 | tests/test_audit1028_ux_boards.py | 11 |
 | tests/test_audit_1028_a28s.py | 9 |
 | tests/test_audit_1028_e_rows.py | 5 |
