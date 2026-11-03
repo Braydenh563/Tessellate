@@ -2,7 +2,7 @@
 
 Generated 2026-11-03 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7742, frontend ids 2635, CSS sections 522, backend routes 641, backend modules 8564, test files 1970, tests 16532, plan headings 991, app scripts 28, boot scripts 37, script files 245.
+Counts: frontend functions 7742, frontend ids 2635, CSS sections 522, backend routes 641, backend modules 8564, test files 1971, tests 16533, plan headings 991, app scripts 28, boot scripts 37, script files 245.
 
 ## Frontend functions (7742)
 
@@ -2186,7 +2186,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasDraw` | frontend/js/atlas.js:3222 |
 | `atlasDrawFigure` | frontend/js/atlas.js:2877 |
 | `atlasDressMarks` | frontend/js/atlas.js:3285 |
-| `atlasDrift` | frontend/js/atlas.js:3757 |
+| `atlasDrift` | frontend/js/atlas.js:3761 |
 | `atlasDrop` | frontend/js/atlas.js:1536 |
 | `atlasEars` | frontend/js/atlas.js:1805 |
 | `atlasExtras` | frontend/js/atlas.js:1647 |
@@ -2222,11 +2222,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasMirror` | frontend/js/atlas.js:871 |
 | `atlasMirrorPoints` | frontend/js/atlas.js:389 |
 | `atlasNightcap` | frontend/js/atlas.js:1636 |
-| `atlasOn` | frontend/js/atlas.js:3705 |
+| `atlasOn` | frontend/js/atlas.js:3709 |
 | `atlasOrbits` | frontend/js/atlas.js:3060 |
 | `atlasPaw` | frontend/js/atlas.js:884 |
 | `atlasPivot` | frontend/js/atlas.js:163 |
-| `atlasPlay` | frontend/js/atlas.js:3688 |
+| `atlasPlay` | frontend/js/atlas.js:3692 |
 | `atlasRepaint` | frontend/js/atlas.js:3545 |
 | `atlasRestingMood` | frontend/js/atlas.js:3593 |
 | `atlasRetune` | frontend/js/atlas.js:1366 |
@@ -2244,7 +2244,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasStem` | frontend/js/atlas.js:282 |
 | `atlasStemEdge` | frontend/js/atlas.js:403 |
 | `atlasStemSides` | frontend/js/atlas.js:184 |
-| `atlasStreak` | frontend/js/atlas.js:3778 |
+| `atlasStreak` | frontend/js/atlas.js:3782 |
 | `atlasStyle` | frontend/js/atlas.js:3394 |
 | `atlasTail` | frontend/js/atlas.js:1853 |
 | `atlasTailMasks` | frontend/js/atlas.js:2544 |
@@ -2256,9 +2256,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasTuneSegs` | frontend/js/atlas.js:1053 |
 | `atlasTuneStyle` | frontend/js/atlas.js:2838 |
 | `atlasTurnAbout` | frontend/js/atlas.js:968 |
-| `atlasWake` | frontend/js/atlas.js:3809 |
+| `atlasWake` | frontend/js/atlas.js:3813 |
 | `atlasWatchFigure` | frontend/js/atlas.js:3335 |
-| `charactersArrived` | frontend/js/atlas.js:3896 |
+| `charactersArrived` | frontend/js/atlas.js:3900 |
 | `setAtlasMood` | frontend/js/atlas.js:3613 |
 
 ### frontend/js/attach-to.js (4)
@@ -23620,7 +23620,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16532)
+## Tests (16533)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23704,6 +23704,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_atlas_frame_reads.py | 5 |
 | tests/test_atlas_idle_cost_1031.py | 6 |
 | tests/test_atlas_lids_1301.py | 5 |
+| tests/test_atlas_lite_mood_1565.py | 1 |
 | tests/test_atlas_micro.py | 10 |
 | tests/test_atlas_rest_1402.py | 10 |
 | tests/test_atlas_shape.py | 51 |

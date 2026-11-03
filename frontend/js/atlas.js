@@ -3660,8 +3660,12 @@ function setAtlasMood(mood, forMs = 0, { quiet = false, easeMs = 0, backEaseMs =
   //: the blend's read of every part, inside `uiSettlingUntil`, paid the new
   //: tab's whole restyle; the change waits the few hundred ms to its end.
   const settling = (window.uiSettlingUntil || 0) - performance.now();
-  if (boxes.length && settling > 0) setTimeout(() => nameMarkBuddyBlend(boxes, apply, 700), settling + 20);
-  else if (boxes.length) nameMarkBuddyBlend(boxes, apply, 700);
+  //: **Not on a slow machine** (`data-atlas-lite`, atlas-life.js's frame budget): the hand-over reads
+  //: every part before the change and after it, two settles of a page the rig keeps dirty, 222 to
+  //: 282ms of the 255 to 347ms a mood change cost at 4x CPU. A snap is cheaper than the stall.
+  const lite = document.documentElement.hasAttribute("data-atlas-lite");
+  if (boxes.length && !lite && settling > 0) setTimeout(() => nameMarkBuddyBlend(boxes, apply, 700), settling + 20);
+  else if (boxes.length && !lite) nameMarkBuddyBlend(boxes, apply, 700);
   else apply();
   if (next === "surprised" && forMs > 2000) {
     //: A failure startles first, then worries until it has passed.
