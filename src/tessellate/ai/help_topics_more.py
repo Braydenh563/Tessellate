@@ -2768,7 +2768,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "diagram-blocks", "documents-replace", "live-view-marks", "documents-features", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "document-history", "writing-checks", "code-files", "code-completions", "code-run",
+        "documents", "documents-controls", "diagram-blocks", "diagram-kinds", "documents-replace", "live-view-marks", "documents-features", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "document-history", "writing-checks", "code-files", "code-completions", "code-run",
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
@@ -3119,14 +3119,40 @@ MORE_TOPICS.extend([
             "Delete removes, Alt+Up and Alt+Down reorder, Alt+Right nests into the "
             "group above and Alt+Left lifts out. A line the blocks do not show, such as "
             "a style, stays where it was. Suggest, in the bar, starts a diagram three "
-            "ways: Templates (eight flowcharts, with a preview, then Use this template), "
+            "ways: Templates (twelve, with a preview, then Use this template), "
             "From my notes (pick notes, a checklist becomes steps, headings a mind map) "
             "and Describe it (say what it is; it needs a model and is dimmed with its "
             "reason when none is connected). On a blank diagram the suggestion becomes "
             "the diagram. On one with blocks, the new blocks arrive as dashed ghosts: "
             "Tab takes one, Shift+Tab lets it go, Enter adds the ones taken and "
             "Escape drops them all, and Ctrl+Z undoes the whole addition in one step. "
-            "A reply that holds no diagram says why and changes nothing."
+            "A reply that holds no diagram says why and changes nothing. Mind maps, timelines and "
+            "sequence diagrams have their own blocks: see the next topic."
+        ),
+        "badge": {"label": "Documents", "tab": "documents"},
+    },
+    {
+        "id": "diagram-kinds",
+        "keywords": (
+            "mind map blocks", "timeline blocks", "sequence diagram blocks", "mermaid mind map",
+            "mermaid timeline", "mermaid sequence", "sequence diagram", "diagram kinds",
+        ),
+        "body": (
+            "Blocks draw flowcharts, mind maps, timelines and sequence diagrams: the first word of "
+            "the source says which, and the bar offers that kind's blocks. A mind map has a branch "
+            "and a leaf (B and N) under its centre. A timeline has a section, a period and an event "
+            "(S, P and E), the events inside their period. A sequence diagram has an actor, "
+            "participant, message, reply, async, lost, note, loop, alt and opt (A, P, M, R, Y, X, T, "
+            "L, G and O); the first message adds the two participants it needs, a reply runs back "
+            "between the same two, and an alt starts with its else. The pane works as a flowchart's "
+            "does: drag a block to move or nest it, double-click a name, the block's ... menu, "
+            "arrows, Enter, Delete, Alt+Up, Alt+Down, Alt+Right and Alt+Left, Ctrl+Z. A line the "
+            "blocks do not show stays where it was, and a diagram they cannot read (a second mind "
+            "map centre, a sequence box, more than 120 blocks) stays in Source with its picture. "
+            "Suggest works in each: Templates include a brainstorm, a project plan, a sign in and a "
+            "request and reply. A suggestion of the diagram's own kind arrives as ghosts to take; "
+            "one of another kind says so and is left out when the diagram has blocks, and replaces "
+            "a blank one."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },
@@ -3180,6 +3206,7 @@ TOPIC_META.update({
     "board-tables": {"title": "Tables on a board", "path": "A board's Insert menu, Table"},
     "board-mermaid": {"title": "Live Mermaid diagrams on a board", "path": "A board's Insert menu, Mermaid diagram..."},
     "diagram-blocks": {"title": "Editing a diagram as blocks", "path": "A diagram document, Blocks"},
+    "diagram-kinds": {"title": "Mind maps, timelines and sequence diagrams as blocks", "path": "A diagram document, Blocks"},
     "board-hand-drawn": {"title": "The hand-drawn look", "path": "A board's View menu, Hand-drawn look"},
     "board-current-layer": {"title": "The current layer", "path": "A board's sidebar, Layers"},
     "board-keyboard-create": {"title": "Making and writing without a mouse", "path": "A board, Keys and controls"},

@@ -71,45 +71,68 @@
 
   const count = (n, one, many) => `${n} ${n === 1 ? one : many}`;
   const SHAPE_NAME = { rect: "box", round: "rounded box", stadium: "pill", circle: "circle", diamond: "decision", hexagon: "hexagon" };
+  const NOUN = { flowchart: "flowchart", mindmap: "mind map", timeline: "timeline", sequence: "sequence diagram" };
 
   //: Whether the diagram has nothing in it a suggestion could clash with.
   const isEmpty = (m) => !m.nodes.length && !m.subgraphs.length && !m.edges.length && !(m.kept || []).length;
+  //: The same for the pane's own kind (a flowchart's model, or a mind map's, a timeline's, a sequence diagram's).
+  const paneBlank = (S) => (S.k ? S.k.blank(S.m) : isEmpty(S.m));
+
+  //: The key of the first block of a kind's model (where the focus goes after a suggestion lands).
+  function firstKey(A, inc) {
+    const ops = diagramModel.kinds.ops;
+    let first = null;
+    ops.walk(A, inc, (n) => {
+      if (!first && n.type !== "k") first = ops.key(n);
+    });
+    return first;
+  }
 
   // --- a source arrives ------------------------------------------------------------
   //: `source` is Mermaid from a template, the composer or a model; `said` the one line
-  //: that goes with it. Answers once it has landed or been refused.
+  //: that goes with it. Answers once it has landed or been refused. A suggestion of the
+  //: pane's own kind lands as blocks (D8; 1546 P4 gave the other kinds the same): on a blank
+  //: diagram it becomes the diagram, otherwise its blocks arrive as ghosts. Another kind is
+  //: refused when the diagram has blocks, and replaces a blank one.
   async function receive(S, h, source, said) {
     S.note.classList.toggle("hidden", !S.plain);
-    const inc = diagramModel.parse(source);
+    const kind = diagramModel.builder.kindOf(source);
+    const mine = S.k ? S.k.name : "flowchart";
+    if (kind !== "flowchart" && !(await ensureModule("diagramKinds"))) return reason(S, h, "The block editor did not load."), false;
+    const A = kind === "flowchart" ? null : diagramModel.kinds[kind];
+    const inc = A ? A.parse(source) : diagramModel.parse(source);
     //: Blank: nothing in the diagram a suggestion could clash with, so it becomes the diagram.
-    const blank = !S.source.trim() || (!S.plain && isEmpty(S.m));
-    if (inc && blank) {
-      const keep = S.m.front || [];
-      S.m = inc;
-      if (!inc.front.length && keep.length) inc.front = keep;
-      S.sel = inc.nodes.length ? h.ops.key("n", inc.nodes[0].id) : null;
-      h.commit(S, said);
-      h.blockEl(S, S.sel)?.focus();
+    const blank = !S.source.trim() || (!S.plain && paneBlank(S));
+    if (inc && kind === mine && !S.plain) {
+      if (blank) {
+        const keep = S.m.front || [];
+        S.m = inc;
+        if (inc.front && !inc.front.length && keep.length) inc.front = keep;
+        S.sel = A ? firstKey(A, inc) : inc.nodes.length ? h.ops.key("n", inc.nodes[0].id) : null;
+        h.commit(S, said);
+        h.blockEl(S, S.sel)?.focus();
+        return true;
+      }
+      const spec = A ? diagramModel.kinds.ghostSpec(S, inc) : flowSpec(S, h, inc);
+      if (!spec.rows.length) return h.say(S, "There was nothing in it to add."), false;
+      ghosts(S, h, spec, said);
       return true;
     }
     if (inc && S.plain) return reason(S, h, "This diagram is another kind, so blocks cannot add to it. Source still works."), false;
-    if (inc) {
-      if (!inc.nodes.length && !inc.subgraphs.length) return h.say(S, "There was nothing in it to add."), false;
-      ghosts(S, h, inc, said);
-      return true;
-    }
-    //: Another kind of diagram (a mind map, a timeline): the pane draws flowcharts for now.
-    const kind = /^\s*(?:%%.*\n\s*)*([A-Za-z][\w-]*)/.exec(source)?.[1] || "diagram";
-    if (!blank) return reason(S, h, `That came back as a ${kind}, and blocks join flowcharts only for now. It was left out.`), false;
+    //: Another kind, or a source the reader cannot take.
+    const word = kind !== "flowchart" ? NOUN[kind] : /^\s*(?:%%.*\n\s*)*([A-Za-z][\w-]*)/.exec(source)?.[1] || "diagram";
+    if (!blank) return reason(S, h, kind === mine ? "Blocks cannot read what came back, so it was left out." : `That came back as a ${word}, and this is a ${NOUN[mine]}, so blocks cannot add to it. It was left out.`), false;
     //: On a blank diagram the other kind is drawn first: one the frame refuses shows its reason
-    //: and opens in Source so it can be mended there; one it draws becomes the source.
+    //: and opens in Source so it can be mended there; one it draws becomes the source, and the
+    //: pane of its kind opens in place of this one.
     const ok = await ensureModule("mermaid");
     const result = ok ? await mermaidRequest(source) : { error: "The diagram renderer did not load." };
-    S.io.set(source);
     if (result.svg) {
-      h.say(S, `${said} Blocks draw flowcharts for now, so it stays in Source with its picture.`);
+      diagramModel.builder.tell(said);
+      S.io.set(source);
       return true;
     }
+    S.io.set(source);
     setDocView("source", { persist: false });
     const first = String(result.error || "").split("\n").find((line) => line.trim()) || "It could not be drawn.";
     reason(S, h, `The picture could not be drawn: ${first.trim().slice(0, 140)}`);
@@ -124,10 +147,10 @@
   }
 
   // --- ghosts ----------------------------------------------------------------------
-  //: The Ghost topics recipe, in the tree's own place: a `role="group"` under the blocks
-  //: holding one toggle (`aria-pressed`, faded and dashed until taken) per incoming block.
-  function ghosts(S, h, inc, said) {
-    const layer = S.ghosts;
+  //: A flowchart's suggestion as the ghosts layer reads it: `rows` (key, level, glyph, text, meta,
+  //: aria), `subtree(key)` (the keys that go with a block) and `merge(take)`. A kind's comes from
+  //: diagram-kinds.js (`ghostSpec`) in the same shape.
+  function flowSpec(S, h, inc) {
     const flat = [];
     const walk = (items, level) => {
       for (const item of items) {
@@ -137,6 +160,31 @@
       }
     };
     walk(h.ops.layout({ ...inc, kept: [] }), 0);
+    return {
+      rows: flat.map((row) => {
+        const isGroup = row.type === "g";
+        const data = isGroup ? inc.subgraphs.find((g) => g.id === row.id) : inc.nodes.find((n) => n.id === row.id);
+        const name = isGroup ? data.title : data.text;
+        const glyph = isGroup ? h.el("i", "ph ph-stack dgm-group-icon") : h.el("span", "dgm-shape");
+        if (!isGroup) glyph.dataset.shape = data.shape;
+        glyph.setAttribute("aria-hidden", "true");
+        const outs = inc.edges.filter((e) => e.from === row.id).map((e) => inc.nodes.find((n) => n.id === e.to)?.text || inc.subgraphs.find((g) => g.id === e.to)?.title || e.to);
+        return { key: row.key, level: row.level, glyph, text: name, meta: outs.length ? `to ${outs.join(", ")}` : "", aria: `${name}, ${isGroup ? "group" : SHAPE_NAME[data.shape]}${outs.length ? `, joins to ${outs.join(", ")}` : ""}` };
+      }),
+      subtree: (key) => dgsSubtree(inc, key),
+      merge(take) {
+        const done = dgsMerge(h.ops, S.m, inc, take);
+        const lead = inc.nodes.find((n) => done.map.has(n.id));
+        const parts = [done.nodes ? count(done.nodes, "block", "blocks") : "", done.groups ? count(done.groups, "group", "groups") : "", done.edges ? count(done.edges, "join", "joins") : ""].filter(Boolean);
+        return { count: done.nodes + done.groups, skipped: done.skipped, parts: parts.join(", "), sel: lead ? h.ops.key("n", done.map.get(lead.id)) : h.ops.key("g", [...done.map.values()][0]) };
+      },
+    };
+  }
+
+  //: The Ghost topics recipe, in the tree's own place: a `role="group"` under the blocks
+  //: holding one toggle (`aria-pressed`, faded and dashed until taken) per incoming block.
+  function ghosts(S, h, spec, said) {
+    const layer = S.ghosts;
     const taken = new Set();
     const buttons = [];
     layer.replaceChildren();
@@ -145,28 +193,21 @@
     layer.setAttribute("aria-label", "Suggested blocks");
 
     const head = h.el("div", "dgm-ghost-head");
-    const title = h.el("strong", "", count(inc.nodes.length + inc.subgraphs.length, "suggested block", "suggested blocks"));
+    const title = h.el("strong", "", count(spec.rows.length, "suggested block", "suggested blocks"));
     const line = h.el("p", "muted", `${said || "Suggested by the composer."} Tab takes a block, Enter adds, Escape drops them.`);
     head.append(title, line);
 
     const list = h.el("div", "dgm-ghost-list");
-    for (const row of flat) {
-      const isGroup = row.type === "g";
-      const data = isGroup ? inc.subgraphs.find((g) => g.id === row.id) : inc.nodes.find((n) => n.id === row.id);
-      const name = isGroup ? data.title : data.text;
+    for (const row of spec.rows) {
       const ghost = h.el("button", "dgm-ghost");
       ghost.type = "button";
       ghost.dataset.key = row.key;
       ghost.dataset.level = String(Math.min(row.level, 4));
       ghost.setAttribute("aria-pressed", "false");
-      const glyph = isGroup ? h.el("i", "ph ph-stack dgm-group-icon") : h.el("span", "dgm-shape");
-      if (!isGroup) glyph.dataset.shape = data.shape;
-      glyph.setAttribute("aria-hidden", "true");
-      const outs = inc.edges.filter((e) => e.from === row.id).map((e) => inc.nodes.find((n) => n.id === e.to)?.text || inc.subgraphs.find((g) => g.id === e.to)?.title || e.to);
       const words = h.el("span", "dgm-ghost-words");
-      words.append(h.el("span", "dgm-ghost-text", name), ...(outs.length ? [h.el("span", "dgm-ghost-joins muted", `to ${outs.join(", ")}`)] : []));
-      ghost.append(glyph, words);
-      ghost.setAttribute("aria-label", `${name}, ${isGroup ? "group" : SHAPE_NAME[data.shape]}${outs.length ? `, joins to ${outs.join(", ")}` : ""}`);
+      words.append(h.el("span", "dgm-ghost-text", row.text), ...(row.meta ? [h.el("span", "dgm-ghost-joins muted", row.meta)] : []));
+      ghost.append(row.glyph, words);
+      ghost.setAttribute("aria-label", row.aria);
       ghost.addEventListener("click", () => toggle(ghost, !taken.has(row.key)));
       list.append(ghost);
       buttons.push(ghost);
@@ -180,7 +221,7 @@
     layer.append(head, list, foot);
 
     const toggle = (ghost, on) => {
-      for (const key of dgsSubtree(inc, ghost.dataset.key)) {
+      for (const key of spec.subtree(ghost.dataset.key)) {
         if (on) taken.add(key);
         else taken.delete(key);
         const b = buttons.find((x) => x.dataset.key === key);
@@ -203,14 +244,11 @@
     };
     //: Enter and the button: the taken blocks, else (the recipe) the one in focus, else all of them from the button.
     const finish = (focused = null) => {
-      const set = taken.size ? taken : focused ? new Set(dgsSubtree(inc, focused.dataset.key)) : null;
-      const done = dgsMerge(h.ops, S.m, inc, set);
-      if (!done.nodes && !done.groups) return h.say(S, `A diagram holds at most ${h.ops.MAX} blocks, so nothing was added.`);
-      const lead = inc.nodes.find((n) => done.map.has(n.id));
-      S.sel = lead ? h.ops.key("n", done.map.get(lead.id)) : h.ops.key("g", [...done.map.values()][0]);
-      const parts = [done.nodes ? count(done.nodes, "block", "blocks") : "", done.groups ? count(done.groups, "group", "groups") : "", done.edges ? count(done.edges, "join", "joins") : ""].filter(Boolean);
+      const done = spec.merge(taken.size ? taken : focused ? new Set(spec.subtree(focused.dataset.key)) : null);
+      if (!done.count) return h.say(S, `A diagram holds at most ${h.ops.MAX} blocks, so nothing was added.`);
+      S.sel = done.sel;
       end(true);
-      h.commit(S, `Added ${parts.join(", ")}.${done.skipped ? ` ${count(done.skipped, "block did", "blocks did")} not fit.` : ""} Undo takes them back.`);
+      h.commit(S, `Added ${done.parts || count(done.count, "block", "blocks")}.${done.skipped ? ` ${count(done.skipped, "block did", "blocks did")} not fit.` : ""} Undo takes them back.`);
     };
 
     layer.onkeydown = (event) => {
@@ -243,6 +281,27 @@
     h.say(S, `${count(buttons.length, "suggested block", "suggested blocks")}. ${said || ""} Tab takes one, Enter adds, Escape drops them.`);
   }
 
+  // --- the Suggest menu ---------------------------------------------------------------
+  //: The rows under the palette's Suggest button, made here so the builder does not carry them.
+  function items(S, h) {
+    const off = aiIsOff();
+    return [
+      { label: "ph:layout Templates", run: () => h.suggest(S, "templates"), group: "start" },
+      { label: "ph:note-pencil From my notes", run: () => h.suggest(S, "notes"), group: "start" },
+      {
+        label: "ph:sparkle Describe it",
+        disabled: off,
+        title: off ? "Describing a diagram needs a model. Connect a model in Settings." : "Say what the diagram is, and the model drafts it",
+        //: A dimmed row still answers: it says why, on the pane's own line (and aloud).
+        run: () => {
+          if (!off) return h.suggest(S, "describe");
+          reason(S, h, "Describing a diagram needs a model. Connect a model in Settings. Templates and From my notes work without one.");
+        },
+        group: "start",
+      },
+    ];
+  }
+
   // --- Templates ---------------------------------------------------------------------
   let cache = null;
   async function loadTemplates() {
@@ -257,9 +316,12 @@
   //: what the chosen row makes): a click chooses, Enter, a double click or the one filled
   //: button makes it, the arrows walk the rows, and the first row is chosen on open.
   async function templates(S, h) {
-    const rows = await loadTemplates().catch(() => []);
-    if (!rows.length) return reason(S, h, "The templates did not load. Try again in a moment.");
-    const fill = !isEmpty(S.m) || S.plain;
+    const all = await loadTemplates().catch(() => []);
+    if (!all.length) return reason(S, h, "The templates did not load. Try again in a moment.");
+    const fill = S.plain || !paneBlank(S);
+    //: A diagram with blocks takes only blocks of its own kind, so only its kind's templates are offered.
+    const mine = S.k ? S.k.name : "flowchart";
+    const rows = fill && !S.plain ? all.filter((t) => (t.kind || "flowchart") === mine) : all;
     const dialog = h.el("dialog", "card space-dialog doc-ai-history-dialog doc-template-dialog dgm-template-dialog");
     dialog.setAttribute("aria-label", "Start from a template");
     const returnFocus = document.activeElement;
@@ -278,7 +340,7 @@
       const mine = ++stamp;
       figure.replaceChildren();
       figure.classList.remove("md-mermaid", "md-mermaid-pending");
-      if (!diagramModel.parse(t.source)?.nodes.length) return figure.append(h.el("p", "muted dgm-hint", "An empty flowchart."));
+      if (!t.kind && !diagramModel.parse(t.source)?.nodes.length) return figure.append(h.el("p", "muted dgm-hint", "An empty flowchart."));
       ensureModule("mermaid").then((ok) => {
         if (ok && mine === stamp) mermaidFill(figure, t.source);
       });
@@ -370,7 +432,7 @@
     S.root.classList.add("dgm-busy");
     h.say(S, working);
     try {
-      const flow = isEmpty(S.m) && !S.plain ? "" : "flowchart";
+      const flow = !S.plain && paneBlank(S) ? "" : S.k ? S.k.want || "" : "flowchart";
       const res = await apiJson("/drafts/compose", { method: "POST", body: JSON.stringify({ kind: "diagram", instruction: flow, ...body }), silent: true });
       if (!res.diagram) return reason(S, h, res.diagram_error || res.message || "Nothing came back to draw.");
       return await receive(S, h, res.diagram, res.said || (res.by === "composer" ? "Drawn by plain rule, with no model." : "Drafted by the model."));
@@ -390,7 +452,7 @@
     const heads = outlineOf(doc.content);
     //: A document with sections is drawn from its headings (a mind map); otherwise from its text.
     return heads.length >= 2
-      ? compose(S, h, { draft: heads.join("\n").slice(0, 20000), instruction: isEmpty(S.m) && !S.plain ? "mind map" : "flowchart" }, `Reading the headings of ${pick.label}.`)
+      ? compose(S, h, { draft: heads.join("\n").slice(0, 20000), instruction: !S.plain && paneBlank(S) ? "mind map" : S.k ? S.k.want || "" : "flowchart" }, `Reading the headings of ${pick.label}.`)
       : compose(S, h, { draft: String(doc.content).slice(0, 20000) }, `Reading ${pick.label}.`);
   }
 
@@ -400,5 +462,5 @@
     return compose(S, h, { thoughts: text.slice(0, 8000) }, "Drafting from your description.");
   }
 
-  diagramModel.suggest = { templates, notes, describe };
+  diagramModel.suggest = { templates, notes, describe, items };
 })();

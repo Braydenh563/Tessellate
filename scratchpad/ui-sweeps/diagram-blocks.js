@@ -1,3 +1,5 @@
+// 1546 P4 adds a `kinds` mode (the three other kinds: see kindsRun); SCRATCH, BASE, THEME and the width are as below.
+//
 // 1546 P3 adds a `suggest` mode: the eight templates (blocks and joins counted after each), a
 // checklist note and a document's headings through From my notes, Describe it (dimmed with its
 // reason with no model; a mocked reply with one on), and the ghosts (Tab takes, Enter adds, one undo
@@ -64,6 +66,7 @@ async function suggestRun(page) {
   const out = { templates: {}, paths: {}, quiet: {} };
   const templates = JSON.parse(require("fs").readFileSync(require("path").join(__dirname, "../../frontend/board-library/diagram-templates.json"), "utf8")).templates;
   for (const t of templates) {
+    if (t.kind) continue; // the other kinds have their own run (kindsRun)
     await openNew(page, "Template " + t.id);
     out.quiet.suggest ||= await page.evaluate(() => { const b = document.querySelector(".dgm-suggest"); const c = getComputedStyle(b); const r = b.getBoundingClientRect(); return { w: Math.round(r.width), h: Math.round(r.height), border: c.borderTopColor, bg: c.backgroundColor, word: getComputedStyle(b.querySelector(".ph-text") || b).display }; });
     await page.click(".dgm-empty button");
@@ -162,6 +165,90 @@ async function suggestRun(page) {
   return out;
 }
 
+// 1546 P4, `kinds`: a mind map, a timeline and a sequence diagram open as blocks. Per template of a kind:
+// the pane's kind, the blocks by type, the source equal to the template's (the round trip), the picture.
+// Then the merge (a template of the same kind on a diagram with blocks arrives as ghosts, Tab Tab Enter
+// adds, one undo puts the source back), the refusal (another kind on a diagram with blocks says why and
+// changes nothing) and the composer's own mind map (a document's headings) and timeline (dated lines).
+const KIND_BLOCKS = (page) => page.evaluate(() => {
+  const by = {};
+  for (const b of document.querySelectorAll(".dgm-block:not(.dgm-kept)")) by[b.dataset.key[0]] = (by[b.dataset.key[0]] || 0) + 1;
+  return { kind: document.querySelector(".dgm")?.dataset.kind || "flowchart", by, total: document.querySelectorAll(".dgm-block:not(.dgm-kept)").length };
+});
+
+async function kindsRun(page) {
+  const out = { templates: {}, merge: {}, refuse: {}, composer: {} };
+  const templates = JSON.parse(require("fs").readFileSync(require("path").join(__dirname, "../../frontend/board-library/diagram-templates.json"), "utf8")).templates.filter((t) => t.kind);
+  const picks = async (id) => {
+    await page.waitForSelector(".dgm-template-dialog[open]");
+    await page.click(`.doc-template-choice[data-template="${id}"]`);
+    await page.waitForTimeout(700);
+    await page.click(".dgm-template-dialog button.accent");
+    await page.waitForTimeout(900);
+  };
+  for (const t of templates) {
+    await openNew(page, "Kind " + t.id);
+    await page.click(".dgm-empty button");
+    await picks(t.id);
+    const want = await page.evaluate(({ src, kind }) => { const A = diagramModel.kinds[kind]; return diagramModel.kinds.ops.count(A, A.parse(src)); }, { src: t.source, kind: t.kind }).catch(() => -1);
+    const got = await KIND_BLOCKS(page);
+    await page.waitForFunction(() => document.querySelector(".dgm-picture img")?.naturalWidth > 0, null, { timeout: 6000 }).catch(() => {});
+    out.templates[t.id] = { kind: got.kind, by: got.by, blocks: got.total, want, same: got.kind === t.kind && (await source(page)) === t.source, picture: await page.evaluate(() => document.querySelector(".dgm-picture img")?.naturalWidth || 0), roles: await page.evaluate(() => ({ tree: document.querySelector('.dgm-tree[role="tree"]') !== null, items: document.querySelectorAll('.dgm-block[role="treeitem"]').length, side: document.querySelector(".dgm-tree").scrollWidth <= document.querySelector(".dgm-tree").clientWidth })) };
+    // the merge: a template of the same kind on a diagram with blocks arrives as ghosts
+    const other = templates.filter((x) => x.kind === t.kind).find((x) => x.id !== t.id) || t;
+    const before = await KIND_BLOCKS(page);
+    const src0 = await source(page);
+    await page.click(".dgm-suggest");
+    await menuItem(page, "Templates").first().click();
+    await page.waitForSelector(".dgm-template-dialog[open]");
+    const offered = await page.evaluate(() => [...document.querySelectorAll(".doc-template-choice")].map((b) => b.dataset.template));
+    await page.click(`.doc-template-choice[data-template="${other.id}"]`);
+    await page.click(".dgm-template-dialog button.accent");
+    await page.waitForSelector(".dgm-ghost", { timeout: 8000 });
+    const ghosts = await page.evaluate(() => ({ n: document.querySelectorAll(".dgm-ghost").length, side: document.querySelector(".dgm-pane").scrollWidth <= document.querySelector(".dgm-pane").clientWidth, levels: [...new Set([...document.querySelectorAll(".dgm-ghost")].map((g) => g.dataset.level))].join("") }));
+    await page.keyboard.press("Tab"); await page.keyboard.press("Tab");
+    const taken = await page.evaluate(() => document.querySelectorAll('.dgm-ghost[aria-pressed="true"]').length);
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(600);
+    const after = await KIND_BLOCKS(page);
+    const reread = await page.evaluate(({ kind }) => { const A = diagramModel.kinds[kind]; const s = docText(); const m = A.parse(s); return { readable: Boolean(m), fixed: Boolean(m) && A.print(A.parse(A.print(m))) === A.print(m), count: m ? diagramModel.kinds.ops.count(A, m) : -1 }; }, { kind: t.kind });
+    await page.keyboard.press("Control+z");
+    await page.waitForTimeout(500);
+    out.merge[t.id] = { offered: offered.join(","), ghosts, taken, before: before.total, after: after.total, reread, undone: (await KIND_BLOCKS(page)).total, sourceBack: (await source(page)) === src0 };
+    // the refusal: a flowchart on this diagram says why and changes nothing
+    await page.route("**/drafts/compose", (route) => route.fulfill({ json: { draft: "", diagram: 'flowchart TD\n  a["Plan"] --> b["Do"]\n', diagram_error: "", said: "Drafted by the model.", ollama_running: true } }));
+    await page.evaluate(() => { modelStatus = { ...(modelStatus || {}), ollama_running: true, model_ready: true }; });
+    await page.click(".dgm-suggest");
+    await menuItem(page, "Describe it").click();
+    await page.waitForSelector(".prompt-card input");
+    await page.fill(".prompt-card input", "a flowchart");
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(800);
+    out.refuse[t.id] = { reason: await page.evaluate(() => document.querySelector(".dgm-hint:not(.hidden)")?.textContent.slice(0, 110) || null), unchanged: (await source(page)) === src0 && (await KIND_BLOCKS(page)).total === before.total };
+    await page.unroute("**/drafts/compose");
+  }
+  // the composer's own: a document's headings are a mind map, dated lines a timeline; each opens as blocks
+  await page.evaluate(async () => {
+    await api("/documents", { method: "POST", body: JSON.stringify({ title: "Garden plan kinds", content: "# Garden plan\n\n## Soil\n- test ph\n- add compost\n\n## Seeds\n- tomatoes\n\n## Water\n- weekly\n" }) });
+    await api("/documents", { method: "POST", body: JSON.stringify({ title: "Career dates", content: "- 2019: started the job\n- 2021: promoted\n- 2023: moved teams\n- 2025: led the launch\n" }) });
+  });
+  for (const [name, title, kind] of [["headings", "Garden plan kinds", "mindmap"], ["dates", "Career dates", "timeline"]]) {
+    await openNew(page, "Composer " + name);
+    await page.click(".dgm-suggest");
+    await menuItem(page, "From my notes").first().click();
+    await page.waitForSelector(".entry-pick-card");
+    await page.locator('[data-pick-kind="document"]').click();
+    await page.fill(".entry-pick-card input[type=search]", title);
+    await page.waitForTimeout(500);
+    await page.locator(".entry-pick-row").first().click();
+    await page.waitForFunction((k) => document.querySelector(".dgm")?.dataset.kind === k, kind, { timeout: 9000 }).catch(() => {});
+    await page.waitForTimeout(800);
+    const got = await KIND_BLOCKS(page);
+    out.composer[name] = { ...got, head: (await source(page)).split("\n").slice(0, 3), picture: await page.evaluate(() => document.querySelector(".dgm-picture img")?.naturalWidth || 0), note: await page.evaluate(() => document.querySelector(".dgm-hint:not(.hidden)")?.textContent.slice(0, 80) || null) };
+  }
+  return out;
+}
+
 async function mouseRun(page) {
   await openNew(page, "Mouse run");
   const tile = (shape) => page.locator(`.dgm-tile[data-shape="${shape}"]`);
@@ -221,8 +308,9 @@ async function keyRun(page) {
   await page.evaluate(() => { window.__csp = []; document.addEventListener("securitypolicyviolation", (e) => window.__csp.push([e.sourceFile, e.lineNumber, e.violatedDirective])); });
   const out = {};
   if (MODE === "suggest") out.suggest = await suggestRun(page);
-  if (MODE !== "key" && MODE !== "suggest") out.mouse = await mouseRun(page);
-  if (MODE !== "mouse" && MODE !== "suggest") out.key = await keyRun(page);
+  if (MODE === "kinds") out.kinds = await kindsRun(page);
+  if (MODE !== "key" && MODE !== "suggest" && MODE !== "kinds") out.mouse = await mouseRun(page);
+  if (MODE !== "mouse" && MODE !== "suggest" && MODE !== "kinds") out.key = await keyRun(page);
   console.log(JSON.stringify(out, null, 1));
   if (out.mouse && out.key) console.log("SAME SOURCE:", out.mouse === out.key);
   const t0 = Date.now();

@@ -255,11 +255,6 @@
   // ---------------------------------------------------------------------------
   const SHAPE_LABEL = { rect: "Box", round: "Rounded", stadium: "Pill", circle: "Circle", diamond: "Decision", hexagon: "Hexagon" };
   const SHAPE_TEXT = { rect: "Step", round: "Step", stadium: "Start", circle: "Event", diamond: "Question?", hexagon: "Prepare" };
-  //: The six link kinds, as the join chip's menu words them.
-  const LINKS = [
-    ["solid", true, "Arrow"], ["solid", false, "Line"], ["dotted", true, "Dotted arrow"],
-    ["dotted", false, "Dotted line"], ["thick", true, "Thick arrow"], ["thick", false, "Thick line"],
-  ];
   const DIRS = [["TD", "down", "Top to bottom"], ["LR", "right", "Left to right"], ["BT", "up", "Bottom to top"], ["RL", "left", "Right to left"]];
   //: The instance of a mounted pane, by its root element.
   const panes = new WeakMap();
@@ -286,7 +281,7 @@
   //: drawn again and `said` is announced. The first change to a source the
   //: printer would have written differently says so once.
   function commit(S, said) {
-    const src = diagramModel.print(S.m);
+    const src = (S.k || diagramModel).print(S.m);
     if (src !== S.source) {
       const tidy = S.tidy;
       S.tidy = false;
@@ -295,7 +290,7 @@
       if (tidy) said = `${said} Tidied the source.`;
     }
     say(S, said);
-    render(S);
+    (S.k ? S.k.render : render)(S);
     drawPicture(S);
   }
 
@@ -334,7 +329,7 @@
       const source = S.source;
       const stamp = ++S.drawn;
       //: A kind the blocks cannot read (S.plain) still has its picture; only a flowchart with no block yet is empty.
-      const empty = !source.trim() || (!S.plain && S.m && !S.m.nodes.length);
+      const empty = !source.trim() || (S.k ? !S.plain && S.k.blank(S.m) : !S.plain && S.m && !S.m.nodes.length);
       S.fig.classList.toggle("dgm-picture-empty", empty);
       if (empty) return S.fig.replaceChildren(el("p", "muted dgm-hint", "The picture appears here as you add blocks."));
       ensureModule("mermaid").then((ok) => {
@@ -468,40 +463,15 @@
     if (edge.label) chip.append(el("span", "dgm-join-label muted", edge.label));
     chip.title = "Change this join";
     chip.setAttribute("aria-label", `Join to ${to}${edge.label ? `, ${edge.label}` : ""}. Opens its menu.`);
-    chip.addEventListener("click", () => {
+    chip.addEventListener("click", async () => {
       const r = chip.getBoundingClientRect();
-      openMenuAtPoint(joinItems(S, edge), "This join", r.left, r.bottom, chip);
+      const rows = await joins(S, "items", edge);
+      if (rows) openMenuAtPoint(rows, "This join", r.left, r.bottom, chip);
     });
     return chip;
   }
 
   // --- menus ----------------------------------------------------------------------
-  function joinItems(S, edge) {
-    const to = titleOf(S, edge.to);
-    const links = LINKS.map(([style, arrow, name]) => ({
-      label: `${edge.style === style && edge.arrow === arrow ? "ph:check" : "ph:arrow-right"} ${name}`,
-      run: () => {
-        Object.assign(edge, { style, arrow });
-        commit(S, `Join to ${to} is now a ${name.toLowerCase()}.`);
-      },
-      group: "kind",
-    }));
-    return [
-      ...links,
-      {
-        label: "ph:text-t Label",
-        run: async () => {
-          const text = await promptDialog(`Label for the join to ${to}`, edge.label, { confirmLabel: "Save" });
-          if (text === null) return;
-          edge.label = text.trim();
-          commit(S, edge.label ? `Labelled the join ${edge.label}.` : "Cleared the join label.");
-        },
-        group: "edit",
-      },
-      { label: "ph:trash Remove join", danger: true, run: () => (diagramOps.unjoin(S.m, edge), commit(S, `Removed the join to ${to}.`)), group: "edit" },
-    ];
-  }
-
   function blockItems(S, key) {
     const [type] = diagramOps.split(key);
     const isNode = type === "n";
@@ -638,30 +608,6 @@
     commit(S, `Deleted ${name}${extra.length ? ` with ${extra.join(", ")}` : ""}.`);
   }
 
-  function joinPick(S, key) {
-    const from = diagramOps.split(key)[1];
-    const shell = pickerDialog({ title: `Join ${nameOf(S, key)} to`, placeholder: "Search the blocks…", searchLabel: "Search the blocks" });
-    const box = pickerListbox(shell, "Blocks");
-    const paint = () => {
-      const needle = shell.search.value.trim().toLowerCase();
-      const items = [
-        ...S.m.nodes.filter((n) => n.id !== from).map((n) => ({ icon: "ph:square", label: n.text, about: "Block", value: n.id })),
-        ...S.m.subgraphs.filter((g) => g.id !== from).map((g) => ({ icon: "ph:stack", label: g.title, about: "Group", value: g.id })),
-      ].filter((item) => !needle || item.label.toLowerCase().includes(needle));
-      box.fill(items, needle, { icon: "ph:squares-four", title: needle ? "No block matches" : "No other block yet", text: needle ? "Try other words." : "Add a block to join to." });
-    };
-    shell.search.addEventListener("input", paint);
-    paint();
-    new Promise((resolve) => shell.open(resolve)).then((to) => {
-      if (!to) return blockEl(S, key)?.focus();
-      const edge = diagramOps.join(S.m, from, to);
-      const name = titleOf(S, to);
-      if (!edge) return say(S, `${nameOf(S, key)} is already joined to ${name}.`);
-      S.sel = key;
-      commit(S, `Joined ${nameOf(S, key)} to ${name}.`);
-      blockEl(S, key)?.focus();
-    });
-  }
 
   // --- keyboard -------------------------------------------------------------------
   function onKey(S, event) {
@@ -814,30 +760,24 @@
   // --- suggestions (diagram-suggest.js, lazy) ---------------------------------------
   //: Templates, From my notes and Describe it. What comes back lands as blocks (D8): on an
   //: empty diagram it becomes the diagram, otherwise it arrives as ghosts to take or drop.
+  const helpers = { el, say, commit, ops: diagramOps, blockEl, suggest };
   async function suggest(S, how) {
     if (!(await ensureModule("diagramSuggest"))) return say(S, "The suggestions did not load.");
-    return diagramModel.suggest[how](S, { el, say, commit, ops: diagramOps, blockEl });
+    return diagramModel.suggest[how](S, helpers);
   }
 
-  function suggestItems(S) {
-    const off = aiIsOff();
-    return [
-      { label: "ph:layout Templates", run: () => suggest(S, "templates"), group: "start" },
-      { label: "ph:note-pencil From my notes", run: () => suggest(S, "notes"), group: "start" },
-      {
-        label: "ph:sparkle Describe it",
-        disabled: off,
-        title: off ? "Describing a diagram needs a model. Connect a model in Settings." : "Say what the diagram is, and the model drafts it",
-        //: A dimmed row still answers: it says why, on the pane's own line (and aloud).
-        run: () => {
-          if (!off) return suggest(S, "describe");
-          S.note.textContent = "Describing a diagram needs a model. Connect a model in Settings. Templates and From my notes work without one.";
-          S.note.classList.remove("hidden");
-          say(S, S.note.textContent);
-        },
-        group: "start",
-      },
-    ];
+  //: The join chip's menu and the picker that joins two blocks (diagram-joins.js, lazy): fetched on first use.
+  async function joins(S, how, arg) {
+    if (!(await ensureModule("diagramJoins"))) return void say(S, "Joins did not load.");
+    return diagramModel.joins[how](S, arg, helpers);
+  }
+  const joinPick = (S, key) => joins(S, "pick", key);
+
+  //: The Suggest button's menu is made by the lazy file, so it is fetched on the press.
+  async function suggestMenu(S, button) {
+    if (!(await ensureModule("diagramSuggest"))) return say(S, "The suggestions did not load.");
+    const r = button.getBoundingClientRect();
+    openMenuAtPoint(diagramModel.suggest.items(S, helpers), "Suggest a diagram", r.left, r.bottom, button);
   }
 
   // --- building the pane ----------------------------------------------------------
@@ -878,10 +818,7 @@
       S.dirs.append(b);
     }
     const actions = el("div", "dock-actions");
-    S.suggestBtn = smallButton("ph:sparkle Suggest", "Start from a template, your notes or a description", () => {
-      const r = S.suggestBtn.getBoundingClientRect();
-      openMenuAtPoint(suggestItems(S), "Suggest a diagram", r.left, r.bottom, S.suggestBtn);
-    });
+    S.suggestBtn = smallButton("ph:sparkle Suggest", "Start from a template, your notes or a description", () => suggestMenu(S, S.suggestBtn));
     S.suggestBtn.classList.add("dgm-suggest");
     S.suggestBtn.setAttribute("aria-haspopup", "menu");
     actions.append(S.suggestBtn);
@@ -946,7 +883,9 @@
     });
     S.fig.addEventListener("click", (event) => pictureClick(S, event));
     S.pane.addEventListener("keydown", (event) => {
-      if (event.target === S.pane && /^[nNgG]$|^Insert$/.test(event.key)) addBlock(S, { after: null, group: /^[gG]$/.test(event.key) });
+      if (event.target !== S.pane || !/^[nNgG]$|^Insert$/.test(event.key)) return;
+      event.preventDefault();
+      addBlock(S, { after: null, group: /^[gG]$/.test(event.key) });
     });
     sync(host, text, S);
     return S;
@@ -965,7 +904,7 @@
     S.plain = !parsed;
     S.root.classList.toggle("dgm-plain", !parsed);
     S.note.classList.toggle("hidden", Boolean(parsed));
-    S.note.textContent = parsed ? "" : big ? `This diagram has more than ${DGB_MAX} blocks. It stays in Source, and its picture is drawn here.` : "Blocks draw flowcharts for now. This diagram stays in Source, and its picture is drawn here.";
+    S.note.textContent = parsed ? "" : big ? `This diagram has more than ${DGB_MAX} blocks. It stays in Source, and its picture is drawn here.` : "Blocks draw flowcharts, mind maps, timelines and sequence diagrams. This diagram stays in Source, and its picture is drawn here.";
     S.m = parsed || { kind: "flowchart", dir: "TD", nodes: [], edges: [], subgraphs: [], kept: [], front: [] };
     if (!parsed) S.ghosts.replaceChildren(), S.ghosts.classList.add("hidden");
     S.root.querySelector(".dgm-dock").classList.toggle("hidden", !parsed);
@@ -977,14 +916,38 @@
 
   //: What documents.js calls: the pane in `host` for this source, mounted once,
   //: then only told the source when it changed from outside (a typed edit, an undo).
+  //: A mind map, a timeline or a sequence diagram is the lazy diagram-kinds.js's pane (1546 P4); the
+  //: flowchart path above never reads it. Any other text is a flowchart's, or a picture alone.
+  function kindOf(text) {
+    const first = diagramModel.front(String(text || "").replace(/\r/g, "")).rest.split("\n").map((l) => l.trim()).find((l) => l && !l.startsWith("%%"));
+    const hit = /^(mindmap|timeline|sequenceDiagram)\b/i.exec(first || "");
+    return hit ? hit[1].toLowerCase().replace("diagram", "") : "flowchart";
+  }
+  //: What the kinds' panes borrow: the same DOM helpers, so the two read as one pane.
+  const kit = { el, say, commit, drawPicture, beginEdit, blockEl, select, dropMark, suggest, suggestMenu };
+  //: A line a suggestion left for the pane that opens next (the kind changed under it).
+  let told = "";
+
   async function show(host, io, text) {
     await Promise.all(["/css/objmove-lazy.css", "/js/obj-ref.js", "/js/obj-drag.js"].map((file) => lazyScript(file)));
     if (typeof OBJ_MODES === "object" && !OBJ_MODES.diagram) OBJ_MODES.diagram = DIAGRAM_MODE;
-    const S = panes.get(host.querySelector(":scope > .dgm"));
-    if (!S) return mount(host, io, text);
-    S.io = io;
-    return text === S.source ? S : sync(host, text, S);
+    const kind = kindOf(text);
+    let S;
+    if (kind !== "flowchart") {
+      if (!(await ensureModule("diagramKinds"))) return host.replaceChildren(el("p", "muted", "The block editor for this kind did not load. Source still works."));
+      S = diagramModel.kinds.show(host, io, text, kind, kit);
+    } else {
+      S = panes.get(host.querySelector(":scope > .dgm"));
+      if (!S) S = mount(host, io, text);
+      else {
+        S.io = io;
+        if (text !== S.source) sync(host, text, S);
+      }
+    }
+    if (told && S) say(S, told);
+    told = "";
+    return S;
   }
 
-  diagramModel.builder = { show, ops: diagramOps };
+  diagramModel.builder = { show, kindOf, tell: (text) => (told = text), ops: diagramOps };
 })();

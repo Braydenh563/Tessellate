@@ -49,6 +49,34 @@
    "name": "Blank",
    "hint": "An empty flowchart to build with the blocks.",
    "source": "flowchart TD\n"
+  },
+  {
+   "id": "brainstorm",
+   "kind": "mindmap",
+   "name": "Brainstorm",
+   "hint": "A mind map with an idea in the middle and branches around it.",
+   "source": "mindmap\n  root((\"Project idea\"))\n    n1[\"Goals\"]\n      n2[\"What done looks like\"]\n      n3[\"Who it is for\"]\n    n4[\"People\"]\n      n5[\"Who helps\"]\n      n6[\"Who decides\"]\n    n7[\"Risks\"]\n      n8[\"What could go wrong\"]\n    n9[\"Next steps\"]\n"
+  },
+  {
+   "id": "project-plan",
+   "kind": "timeline",
+   "name": "Project plan",
+   "hint": "Periods and what happens in each, grouped in sections.",
+   "source": "timeline\n  title Project plan\n  section Plan\n    Week 1 : Kick off : Agree the goal\n    Week 2 : First draft\n  section Build\n    Week 3 : Review\n    Week 4 : Ship\n"
+  },
+  {
+   "id": "sign-in",
+   "kind": "sequence",
+   "name": "Sign in",
+   "hint": "A user, an app and a server, with a yes and a no.",
+   "source": "sequenceDiagram\n  actor U as User\n  participant A as App\n  participant S as Server\n  U->>A: Enter email and password\n  A->>S: Check the details\n  alt Details match\n    S-->>A: Signed in\n    A-->>U: Show the home page\n  else Details do not match\n    S-->>A: Refuse\n    A-->>U: Show the error\n  end\n"
+  },
+  {
+   "id": "request-reply",
+   "kind": "sequence",
+   "name": "Request and reply",
+   "hint": "A client asks, a server looks it up, the answer comes back.",
+   "source": "sequenceDiagram\n  participant C as Client\n  participant S as Server\n  participant D as Database\n  C->>S: Ask for the page\n  S->>D: Look up the data\n  D-->>S: Return the rows\n  S-->>C: Send the page\n  Note over C,S: The client waits for the reply\n"
   }
  ]
 }

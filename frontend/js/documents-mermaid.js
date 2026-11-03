@@ -300,7 +300,8 @@
     return m;
   }
 
-  const diagramModel = { MAX_NODES: DGM_MAX_NODES, parse: dgmParse, print: dgmPrint };
+  //: `decode`, `front` and `statements` are the readers the other kinds share (diagram-kinds.js).
+  const diagramModel = { MAX_NODES: DGM_MAX_NODES, parse: dgmParse, print: dgmPrint, decode: dgmDecode, front: dgmFront, statements: dgmStatements };
   // DIAGRAM-MODEL-END
 
   //: Read (and so the print and the HTML export, which are drawn from it): each
@@ -431,8 +432,8 @@
 
   //: The file's whole surface: what documents.js and documents-export.js call.
   Object.assign(window, { docRenderMermaidIn, docMermaidWhenDrawn, docMermaidField, diagramModel });
-  //: The block pane (1546 P2) is a bundle of its own, fetched when a diagram is first shown:
+  //: The block pane (1546 P2) is a bundle of its own, fetched when a diagram is first shown (the kinds, 1546 P4, when a mind map, timeline or sequence diagram is):
   //: every caller is in this bundle or opens a document first, so no stand-in is needed, and
   //: neither app.js nor lazy-entries.js (both at their caps) carries the row.
-  Object.assign(LAZY_MODULES, { diagramBuilder: ["/css/diagram-lazy.css", "/js/diagram-builder.js"], diagramSuggest: ["/js/diagram-suggest.js"] });
+  Object.assign(LAZY_MODULES, { diagramBuilder: ["/css/diagram-lazy.css", "/js/diagram-builder.js"], diagramSuggest: ["/js/diagram-suggest.js"], diagramKinds: ["/js/diagram-kinds.js"], diagramJoins: ["/js/diagram-joins.js"] });
 })();

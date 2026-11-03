@@ -123,6 +123,14 @@ def label(text: str) -> str:
     return f'"{text}"'
 
 
+def mind_label(text: str) -> str:
+    """Words for a mind map box: quoted, with no entity codes (a mind map draws `#35;` as written).
+
+    A quote becomes an apostrophe, and a `#` that would read as the start of a code is left out."""
+    text = re.sub(r"#(?=\w+;)", "", _words(text).replace('"', "'"))
+    return f'"{text}"'
+
+
 def _event(text: str) -> str:
     """Words for a timeline line, whose separators are `:` (and `;`, `#`)."""
     return _words(text).replace(":", " -").replace(";", ",").replace("#", "").replace('"', "'").strip() or "…"
@@ -324,11 +332,11 @@ def mindmap(root: str, branches: list[tuple[int, str]]) -> Diagram:
     """The root as a circle, each branch indented under its parent."""
     shown, more = _capped(branches, MAX_NODES - 1)
     top = min((d for d, _w in shown), default=1)
-    lines = ["mindmap", f"  root(({label(root)}))"]
+    lines = ["mindmap", f"  root(({mind_label(root)}))"]
     for i, (depth, words) in enumerate(shown):
-        lines.append("  " * (depth - top + 2) + f"n{i + 1}[{label(words)}]")
+        lines.append("  " * (depth - top + 2) + f"n{i + 1}[{mind_label(words)}]")
     if more:
-        lines.append(f"    n{len(shown) + 1}[{label(f'and {more} more')}]")
+        lines.append(f"    n{len(shown) + 1}[{mind_label(f'and {more} more')}]")
     return Diagram("mindmap", "\n".join(lines), 1 + len(shown) + (1 if more else 0))
 
 

@@ -71,7 +71,9 @@ def _compose(client, **body):
 
 
 def test_eight_flowcharts_each_read_back_as_blocks_the_printer_writes_unchanged():
-    rows = json.loads(TEMPLATES.read_text(encoding="utf-8"))["templates"]
+    #: 1546 P4 added a mind map, a timeline and two sequence diagrams (each with a `kind`); they are
+    #: held to the same rule by tests/test_diagram_kinds.py, so this one stays the flowcharts'.
+    rows = [t for t in json.loads(TEMPLATES.read_text(encoding="utf-8"))["templates"] if "kind" not in t]
     assert [t["id"] for t in rows] == ["process", "decision", "approval", "onboarding", "bug-triage", "user-flow", "swimlanes", "blank"]
     got = _node(
         f"const rows = {json.dumps(rows)};\n"
@@ -273,7 +275,8 @@ def test_the_template_dialog_is_the_dialog_of_choices_recipe_with_one_filled_but
 
 
 def test_describe_it_is_dimmed_with_its_reason_when_there_is_no_model():
-    code = BUILDER.read_text(encoding="utf-8")
+    #: The rows moved out of the builder in 1546 P4 (the builder is back under its size target); the rule is the same.
+    code = SUGGEST.read_text(encoding="utf-8")
     assert "disabled: off" in code and "needs a model" in code and "aiIsOff()" in code
     assert code.count('"describe"') == 1
 
