@@ -240,8 +240,15 @@
   gap: var(--space-2);
 }
 
+/* A button, not a caption (INBOX 1579: "Insert as equation" read as plain text): the keys' quiet fill and a glyph, no edge, so the row still holds one bordered button. */
 .calc-actions-buttons .calc-as-equation {
   margin-inline-end: auto;
+  background: var(--chip-bg);
+  color: var(--ink);
+}
+
+.calc-actions-buttons .calc-as-equation:is(:hover, :focus-visible) {
+  background: var(--ghost-btn-bg);
 }
 
 .calc-actions-buttons [aria-disabled="true"] {
@@ -252,6 +259,24 @@
 .calc-input {
   font-size: var(--text-lg);
   font-variant-numeric: tabular-nums;
+}
+
+/* The sum as typeset maths, as typed (INBOX 1579): one line the height of its tallest formula, always reserved so
+   the result and the keypad under it do not move when the first key is pressed; a long sum scrolls inside it. */
+.calc-typeset {
+  display: flex;
+  align-items: center;
+  min-height: var(--space-9);
+  padding: 0 var(--space-1);
+  overflow-x: auto;
+  overflow-y: hidden;
+  font-size: var(--text-h3);
+  scrollbar-width: thin;
+}
+
+.calc-typeset math {
+  /* Never wraps: a bracket cut from its sum reads as two sums. */
+  white-space: nowrap;
 }
 
 .calc-result {

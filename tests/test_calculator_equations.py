@@ -62,6 +62,28 @@ same("done: a percent", calcTex.pending("20%"), false);
 same("done: empty", calcTex.pending("   "), false);
 same("done: a question", calcTex.pending("15% of 80"), false);
 
+//: INBOX 1579: the sum typeset as typed, whatever is typed, and never a formula the renderer has to guess at.
+same("live: times and a group", calcTex.live("12*(3+4)"), "12 \\times (3+4)");
+same("live: divide", calcTex.live("12 / 4"), "12 \\div 4");
+same("live: a raised power", calcTex.live("2^10"), "2^{10}");
+same("live: a power with a bracket", calcTex.live("2^(1+2)"), "2^{1+2}");
+same("live: a root", calcTex.live("sqrt(16)"), "\\sqrt{16}");
+same("live: pi", calcTex.live("2pi"), "2\\pi");
+same("live: a function is upright", calcTex.live("sin(30)"), "\\sin (30)");
+same("live: a minus is the minus sign", calcTex.live("10 - 3"), "10\u22123");
+same("live: words are text", calcTex.live("5 km to miles"), "5\\;\\text{km to miles}");
+same("live: a long word is not a function", calcTex.live("tangent"), "\\text{tangent}");
+same("live: nothing", calcTex.live("  "), "");
+for (const typed of ["55*9+", "2^", "sqrt", "(1+2", "1+2)", "15% of 80", "5!", "e^2", "log10(100)", "asin(0.5)", "\u221a16", "20\u00b0", "1,000+1", "a & b", "$5", "x_{1}"]) {
+  let problem = "none";
+  try {
+    problem = docMathTree(calcTex.live(typed)).problem || "none";
+  } catch (error) {
+    problem = `threw ${error.message}`;
+  }
+  same(`live reads ${typed}`, problem, "none");
+}
+
 same("times", calcTex.toTex("12 * (3 + 4)", "84"), "12 \\times (3 + 4) = 84");
 same("fraction", calcTex.toTex("12/4", "3"), "\\frac{12}{4} = 3");
 same("power", calcTex.toTex("2^3", "8"), "2^{3} = 8");
@@ -76,7 +98,8 @@ def converters(tmp_path_factory) -> list[dict]:
     node = shutil.which("node")
     if not node:  # pragma: no cover - node is in the sandbox and in CI
         pytest.skip("node is not available")
-    source = _region(KIT, "// CALC-TEX-BEGIN", "// CALC-TEX-END")
+    source = _region((JS / "documents-math.js").read_text(encoding="utf-8"), "// DOC-MATH-BEGIN", "// DOC-MATH-END")
+    source += _region(KIT, "// CALC-TEX-BEGIN", "// CALC-TEX-END")
     script = tmp_path_factory.mktemp("calctex") / "run.js"
     script.write_text(source + DRIVER, encoding="utf-8")
     run = subprocess.run([node, str(script)], capture_output=True, text=True, timeout=60, check=False)

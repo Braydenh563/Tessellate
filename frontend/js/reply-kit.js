@@ -366,7 +366,8 @@ function replyCalcPanel(event) {
 }
 
 async function replyCalcWork(text) {
-  const asked = String(text || "").trim();
+  //: A typeset minus (U+2212), pasted from a note, is the sign the reader knows.
+  const asked = String(text || "").replace(/\u2212/g, "-").trim();
   if (!asked) return null;
   return apiJson(`/utilities/work?q=${encodeURIComponent(asked)}`);
 }
@@ -564,7 +565,7 @@ function replyCalcActions(target, close, inline = false) {
     return write(kind === "equation");
   };
   const copy = smallButton("Copy", "Copy the result", () => act("copy"));
-  const asEquation = smallButton("Insert as equation", "Write the sum and its result as an equation", () => act("equation"));
+  const asEquation = smallButton("ph:function Insert as equation", "Write the sum and its result as an equation", () => act("equation"));
   const insert = smallButton("Insert", "Write the result into the text", () => act("insert"), false);
   insert.classList.add("primary");
   for (const button of [copy, asEquation, insert]) button.setAttribute("aria-describedby", id);
@@ -634,6 +635,93 @@ const calcTex = {
     if (!sum) return false;
     const open = (sum.match(/\(/g) || []).length > (sum.match(/\)/g) || []).length;
     return open || /[-+*/×÷^(]$/.test(sum) || /\b(?:of|to|in|into|as|from|plus|minus|times|over|by|and|per)$/i.test(sum);
+  },
+
+  //: **The sum as typeset maths, as it is typed** (INBOX 1579): `12*(3+4)` as 12 × (3 + 4), `2^10` with a raised 10, `sqrt(16)` under a root, `pi` as π, `sin(30)` upright, words in text. It reads whatever is typed, unfinished or not, and never throws: a sign with nothing after it leaves an empty box, not a failure. The raw text stays in the field; this is only what is drawn under it. Returns TeX, "" for nothing.
+  live(text) {
+    const names = {
+      sin: "\\sin", cos: "\\cos", tan: "\\tan", sinh: "\\sinh", cosh: "\\cosh", tanh: "\\tanh", ln: "\\ln", log: "\\log", lg: "\\lg", exp: "\\exp",
+      asin: "\\arcsin", arcsin: "\\arcsin", acos: "\\arccos", arccos: "\\arccos", atan: "\\arctan", arctan: "\\arctan", log2: "\\log_{2}", log10: "\\log_{10}",
+    };
+    const consts = { pi: "\\pi", π: "\\pi", tau: "\\tau", τ: "\\tau", e: "e" };
+    //: The bracket that opens at `from`: its inside and where it ends (a bracket still open runs to the end).
+    const inside = (s, from) => {
+      let depth = 0;
+      for (let j = from; j < s.length; j++) {
+        if (s[j] === "(") depth++;
+        else if (s[j] === ")" && !--depth) return [s.slice(from + 1, j), j + 1];
+      }
+      return [s.slice(from + 1), s.length];
+    };
+    //: What a root or a power takes: a bracket, or the number or name right after it.
+    const operand = (s, at) => {
+      if (s[at] === "(") {
+        const [body, end] = inside(s, at);
+        return [walk(body) || "□", end];
+      }
+      const m = /^(?:-?\d[\d.]*|[A-Za-z]+|[πτ])/.exec(s.slice(at));
+      if (!m) return ["□", at];
+      const w = m[0].toLowerCase();
+      return [w in consts ? consts[w] : m[0], at + m[0].length];
+    };
+    const known = (w) => w in names || w in consts || w === "sqrt" || w === "cbrt";
+    const walk = (s) => {
+      let out = "";
+      let word = "";
+      const flush = () => {
+        if (word) out += `${out ? "\\;" : ""}\\text{${word}}\\;`;
+        word = "";
+      };
+      for (let i = 0; i < s.length; ) {
+        const c = s[i];
+        const rest = s.slice(i);
+        let m;
+        if (/\s/.test(c)) i++;
+        else if ((m = /^[A-Za-z]+[0-9]{0,2}|^[πτ]/.exec(rest))) {
+          //: A whole word, or a name with figures run on ("log10", "e2"); never the front of a longer word ("tangent").
+          let w = m[0].toLowerCase();
+          if (!known(w)) w = w.replace(/[0-9]+$/, "");
+          if (!known(w)) {
+            word += `${word ? " " : ""}${m[0]}`;
+            i += m[0].length;
+            continue;
+          }
+          flush();
+          i += w.length;
+          if (w === "sqrt" || w === "cbrt") {
+            const [body, end] = operand(s, i);
+            out += w === "cbrt" ? `\\sqrt[3]{${body}}` : `\\sqrt{${body}}`;
+            i = end;
+          } else out += w in names ? `${names[w]} ` : consts[w];
+        } else {
+          flush();
+          i++;
+          if (/\d|\./.test(c)) {
+            const n = /^(?:\d[\d,]*\.?\d*|\.\d+)/.exec(rest)?.[0] || c;
+            out += n.replace(/,/g, "");
+            i += n.length - 1;
+          } else if ("*×·⋅".includes(c)) out += " \\times ";
+          else if ("/÷".includes(c)) out += " \\div ";
+          else if (c === "−" || c === "-") out += "−";
+          else if ("+=()!".includes(c)) out += c;
+          else if (c === "%") out += "\\%";
+          else if (c === "²" || c === "³") out += c === "²" ? "^{2}" : "^{3}";
+          else if (c === "°") out += "^{\\circ}";
+          else if (c === "^") {
+            const [body, end] = operand(s, i);
+            out += `^{${body}}`;
+            i = end;
+          } else if (c === "√" || c === "∛") {
+            const [body, end] = operand(s, i);
+            out += c === "∛" ? `\\sqrt[3]{${body}}` : `\\sqrt{${body}}`;
+            i = end;
+          } else if (/[^\x00-\x7f]/.test(c)) out += `\\text{${c}}`;
+        }
+      }
+      flush();
+      return out.replace(/(?:\\;)+$/, "").trim();
+    };
+    return walk(String(text || ""));
   },
 
   //: A worked-out sum as an equation to write: "12 * (3 + 4)" and "84" to
@@ -756,6 +844,25 @@ function replyCalcWorkPane(input, actions) {
   box.autocomplete = "off";
   box.spellcheck = false;
   box.value = input;
+  //: **The sum as typeset maths, as it is typed** (INBOX 1579): × ÷ − and raised powers drawn by the document renderer, under the field. The field keeps the raw text, which is what is edited and read aloud, so this is hidden from a screen reader.
+  const typeset = document.createElement("div");
+  typeset.className = "calc-typeset";
+  typeset.setAttribute("aria-hidden", "true");
+  const paint = () => {
+    const tex = calcTex.live(box.value);
+    let drawn = null;
+    //: `docMathRender` is in this bundle (documents-math.js, listed before this file), never a guard.
+    if (tex) {
+      try {
+        drawn = docMathRender(tex, false);
+      } catch {
+        drawn = null;
+      }
+    }
+    typeset.replaceChildren(...(drawn ? [drawn] : []));
+  };
+  box.addEventListener("input", paint);
+  paint();
   const out = replyCalcResult();
   //: Restoring puts the sum back in the box (a preview, not a keep); Copy writes the figure.
   const history = replyCalcHistory("work", {
@@ -818,7 +925,7 @@ function replyCalcWorkPane(input, actions) {
     clearTimeout(timer);
     run(true);
   });
-  pane.append(box, out, keys, history.el);
+  pane.append(box, typeset, out, keys, history.el);
   if (input) run(true);
   return pane;
 }
