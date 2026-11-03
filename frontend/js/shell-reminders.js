@@ -382,11 +382,27 @@ function glideStrip(strip) {
   });
   sized.observe(strip);
   for (const option of strip.querySelectorAll("button")) sized.observe(option);
-  document.fonts?.ready?.then(() => place(false));
-  place(false);
+  //: **Wired by the pointer or the focus, it is placed by the observer's first report, not here**
+  //: (INBOX 1575, the owner's `pointerup on button.active in #notes-subtabs` 360ms and `frame
+  //: 274ms ... no source file`): the first `place` read a box in the `pointerover` that reached the
+  //: strip, and that read was the page's first after the last press, so it paid the whole style and
+  //: layout pass of what the press had shown (notes: `shell-reminders.js #document.onpointerover`
+  //: 255ms, 163ms of it forced layout, at 4x). Observing reports once after layout, before paint.
+  if (!strip.glideLater) {
+    document.fonts?.ready?.then(() => place(false));
+    place(false);
+  }
 }
 for (const type of ["pointerover", "focusin"]) {
-  document.addEventListener(type, (event) => glideStrip(event.target.closest?.(GLIDE_STRIPS)), { passive: true, capture: true });
+  document.addEventListener(
+    type,
+    (event) => {
+      const strip = event.target.closest?.(GLIDE_STRIPS);
+      if (strip && !strip.glide) strip.glideLater = true;
+      glideStrip(strip);
+    },
+    { passive: true, capture: true }
+  );
 }
 glideStrip($("tab-bar"));
 
