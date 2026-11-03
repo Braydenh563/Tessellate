@@ -1224,7 +1224,7 @@ def test_perches_are_top_edges_outside_card_content_and_measured_for_words() -> 
     choose = _fn("nameMarkBuddyChoose")
     assert "const words = nameMarkBuddyWordsUnder(perch.x, perch.y, perch.pose, perch.legs);" in choose
     assert choose.index('legs: "peek"') < choose.index("if (soiled) return soiled;")
-    words = _fn("nameMarkBuddyWordsUnder")
+    words = _fn("nameMarkBuddyWordsUnder") + AV[AV.index("  rootWords(root) {") : AV.index("\n  },", AV.index("  rootWords(root) {"))]  # the walk moved to its helper (INBOX 1575)
     assert "seen < 400" in words and "nameMarkBuddyScroller(root)" in words
 
 
@@ -1825,6 +1825,7 @@ def test_the_companions_words_check_counts_only_drawn_text():
     # under Atlas read as 0 over the "You asked:" line.
     js = (ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
     body = js[js.index("function nameMarkBuddyWordsUnder("):].split("\nconst NMB_WORDS_PX", 1)[0]
+    body += js[js.index("  rootWords(root) {") : js.index("\n  },", js.index("  rootWords(root) {"))]  # the walk moved to nmb.rootWords (INBOX 1575)
     assert "checkVisibility()" in body and "FILTER_REJECT" in body
     assert body.index("n.textContent.trim()") < body.index("seen += 1")
 

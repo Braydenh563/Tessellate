@@ -3276,6 +3276,67 @@ const nmb = {
   leanSide: "", leanAt: 0, stirAt: 0, groggyUntil: 0, grumpyUntil: 0, pokes: [], unlockDrop: true, lastHow: "",
   mood: { energy: 0.7, curiosity: 0.6, sociability: 0.7 }, edgeType: "", edgeLine: 72, reading: null, cool: {},
   anim: null, hopAnim: null, glue: null, heldTimer: 0, placeTimer: 0, movedAt: 0, pinned: false, menu: null, settle: [], checkFrame: 0,
+  //: **A placement's budget** (INBOX 1575, `nameMarkBuddyChoose`): hit tests and milliseconds it may spend, what is
+  //: left of them, and the walk's own limits (`rootWords`).
+  budget: { ms: 250, hits: 360, fitMs: 120, fitHits: 160, until: 0, left: 0, coverStop: 3, wordsEl: 1500, noWords: /^(img|picture|canvas|video|audio|iframe|style|script|template|noscript)$/ },
+  wordsCache: null,
+  //: **The topmost thing under a point that is not the companion** (INBOX 1575). `elementsFromPoint`
+  //: builds the whole stack at the point and was most of a placement: 1,010 to 1,412 calls a Library
+  //: or Timeline tab switch, 5.6 s of one at 4x CPU. `elementFromPoint` stops at the first hit
+  //: (about 40% cheaper, measured); the stack is asked for only when that hit is the companion.
+  under(px, py) {
+    const top = document.elementFromPoint(px, py);
+    if (!top || !top.closest("#nm-buddy")) return top;
+    return document.elementsFromPoint(px, py).find((node) => !node.closest("#nm-buddy"));
+  },
+  //: **A block's line boxes, read once a placement** (INBOX 1575): the perches along a ledge sit
+  //: over the same few blocks, and every one of them walked the block again and read every line's
+  //: rects again (37 calls and 1.3 s of one Timeline switch at 4x CPU). `nmb.wordsCache` lives for one
+  //: `nameMarkBuddyChoose` (until its stack unwinds); called outside one, the block is walked each time.
+  rootWords(root) {
+    const known = nmb.wordsCache?.get(root);
+    if (known) return known;
+    const rects = [];
+    nmb.wordsCache?.set(root, rects);
+    const scroller = nameMarkBuddyScroller(root);
+    const clip = scroller ? scroller.getBoundingClientRect() : { left: 0, top: 0, right: innerWidth, bottom: innerHeight };
+    const range = document.createRange();
+    let seen = 0;
+    let looked = 0;
+    //: **Only what is drawn counts toward the cap** (INBOX 812: Atlas over the
+    //: Ask answer's "You asked:" line). The walk used to count every text node,
+    //: and the Ask card holds hundreds that are not on screen (the closed
+    //: history list, the idle suggestions) ahead of the answer's own, so the
+    //: cap was spent before it got there and the words under the figure read
+    //: as 0 (measured: 1986 square px with 51 hidden nodes, 0 with 501). A
+    //: hidden subtree is skipped whole, and a node with no words is not one.
+    //: **Elements are counted too, and a drawing has no words** (INBOX 1575): the walk asked
+    //: `checkVisibility` of every element, however many, and one call over a dashboard's widgets
+    //: was 2.2 s at 4x CPU. A picture, a canvas, a frame or a stylesheet holds no line boxes and
+    //: is passed without the visibility check; past `nmb.budget.wordsEl` elements the walk ends.
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, {
+      acceptNode: (node) => {
+        if (node.nodeType !== 1) return NodeFilter.FILTER_ACCEPT;
+        looked += 1;
+        if (looked > nmb.budget.wordsEl || nmb.budget.noWords.test(node.localName)) return NodeFilter.FILTER_REJECT;
+        return typeof node.checkVisibility === "function" && !node.checkVisibility() ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT;
+      },
+    });
+    for (let n = walker.nextNode(); n && seen < 400 && looked <= nmb.budget.wordsEl; n = walker.nextNode()) {
+      if (n.nodeType !== 3 || !n.textContent.trim()) continue;
+      seen += 1;
+      if (n.parentElement?.closest("#nm-buddy")) continue;
+      range.selectNodeContents(n);
+      for (const r of range.getClientRects()) {
+        const left = Math.max(r.left, clip.left);
+        const right = Math.min(r.right, clip.right);
+        const top = Math.max(r.top, clip.top);
+        const bottom = Math.min(r.bottom, clip.bottom);
+        if (right > left && bottom > top) rects.push({ left, right, top, bottom });
+      }
+    }
+    return rects;
+  },
   //: **Not the pages that are not shown** (INBOX 1560, the owner's lag log:
   //: `nameMarkBuddyBeat` 156 to 1838ms). A popup in a hidden tab page has no box,
   //: and a hidden page keeps its whole list drawn in the document, so the walk
@@ -3869,6 +3930,9 @@ function nameMarkBuddyHits(x, y, pose, obstacles, legs = "") {
 //: sampled at a dozen points of its shape: a perch over an empty stretch
 //: of card beats one over a paragraph.
 function nameMarkBuddyCovers(x, y, pose, legs = "") {
+  //: The share is a ranking among perches that all sit over words, the last resort; three covered
+  //: points say it is one of those, and the other sixteen hit tests (the cost of a placement, INBOX
+  //: 1575) are not asked. A perch with fewer is counted in full.
   const drop = pose === "hang" ? NMB_DROP : 0;
   const points = [];
   for (const fx of [10, 24, 40, 54]) for (const fy of [8, 22, 36, 48]) points.push([x + fx, y + drop + fy]);
@@ -3892,11 +3956,13 @@ function nameMarkBuddyCovers(x, y, pose, legs = "") {
     const known = nmbCoverCache?.get(key);
     if (known !== undefined) {
       covered += known;
+      if (covered >= nmb.budget.coverStop) break;
       continue;
     }
     const hit = nameMarkBuddyCoverPoint(px, py);
     nmbCoverCache?.set(key, hit);
     covered += hit;
+    if (covered >= nmb.budget.coverStop) break;
   }
   return covered / points.length;
 }
@@ -3904,7 +3970,8 @@ let nmbCoverCache = null;
 
 //: Whether one point of the figure would be over something to read: 1 or 0.
 function nameMarkBuddyCoverPoint(px, py) {
-  const el = document.elementsFromPoint(px, py).find((node) => !node.closest("#nm-buddy"));
+  nmb.budget.left -= 1;
+  const el = nmb.under(px, py);
   if (!el || el === document.body || el === document.documentElement) return 0;
   //: A picture counts; a canvas or a drawing the size of a pane (the
   //: graph, a board) is a ground, not a picture, or every perch over it
@@ -4119,6 +4186,7 @@ function nameMarkBuddyInsideCard(el, box) {
 //: shape, in square px. At most 400 text nodes a call; only a perch about
 //: to be chosen is measured.
 function nameMarkBuddyWordsUnder(x, y, pose, legs = "") {
+  nmb.budget.left -= 20;
   const parts = nameMarkBuddyShape(x, y, pose, legs).map((p) => ({ left: p.left + 2, top: p.top + 2, right: p.right - 2, bottom: p.bottom - 2 }));
   const roots = new Set();
   for (const p of parts) {
@@ -4126,7 +4194,7 @@ function nameMarkBuddyWordsUnder(x, y, pose, legs = "") {
       const px = p.left + (p.right - p.left) * fx;
       const py = p.top + (p.bottom - p.top) * fy;
       if (px < 0 || py < 0 || px >= innerWidth || py >= innerHeight) continue;
-      const el = document.elementsFromPoint(px, py).find((node) => !node.closest("#nm-buddy"));
+      const el = nmb.under(px, py);
       if (!el || el === document.body || el === document.documentElement || el.closest("#top-bar, #status-bar")) continue;
       const root = el.closest(NMB_CARDS) || el.parentElement || el;
       if (!root.id?.startsWith("tab-")) roots.add(root);
@@ -4134,42 +4202,18 @@ function nameMarkBuddyWordsUnder(x, y, pose, legs = "") {
     }
   }
   let area = 0;
-  let seen = 0;
-  const range = document.createRange();
   for (const root of roots) {
-    const scroller = nameMarkBuddyScroller(root);
-    const clip = scroller ? scroller.getBoundingClientRect() : { left: 0, top: 0, right: innerWidth, bottom: innerHeight };
-    //: **Only what is drawn counts toward the cap** (INBOX 812: Atlas over the
-    //: Ask answer's "You asked:" line). The walk used to count every text node,
-    //: and the Ask card holds hundreds that are not on screen (the closed
-    //: history list, the idle suggestions) ahead of the answer's own, so the
-    //: cap was spent before it got there and the words under the figure read
-    //: as 0 (measured: 1986 square px with 51 hidden nodes, 0 with 501). A
-    //: hidden subtree is skipped whole, and a node with no words is not one.
-    const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, {
-      acceptNode: (node) => (node.nodeType === 1 && typeof node.checkVisibility === "function" && !node.checkVisibility() ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT),
-    });
-    for (let n = walker.nextNode(); n && seen < 400; n = walker.nextNode()) {
-      if (n.nodeType !== 3 || !n.textContent.trim()) continue;
-      seen += 1;
-      if (n.parentElement?.closest("#nm-buddy")) continue;
-      range.selectNodeContents(n);
-      for (const r of range.getClientRects()) {
-        const left = Math.max(r.left, clip.left);
-        const right = Math.min(r.right, clip.right);
-        const top = Math.max(r.top, clip.top);
-        const bottom = Math.min(r.bottom, clip.bottom);
-        if (right <= left || bottom <= top) continue;
-        for (const p of parts) {
-          const w = Math.min(right, p.right) - Math.max(left, p.left);
-          const h = Math.min(bottom, p.bottom) - Math.max(top, p.top);
-          if (w > 0 && h > 0) area += w * h;
-        }
+    for (const r of nmb.rootWords(root)) {
+      for (const p of parts) {
+        const w = Math.min(r.right, p.right) - Math.max(r.left, p.left);
+        const h = Math.min(r.bottom, p.bottom) - Math.max(r.top, p.top);
+        if (w > 0 && h > 0) area += w * h;
       }
     }
   }
   return area;
 }
+
 const NMB_WORDS_PX = 12;
 const NMB_FIT_SCALE = 0.75;
 
@@ -4246,12 +4290,30 @@ function nameMarkBuddyPerches(tab, focus = null) {
 //: then the tab's preference, then the right-hand end. The perch it is on
 //: already wins a close call, so a page that shifts a little does not send
 //: it pacing.
+//: **A placement has a budget** (INBOX 1575): 36 perches (120 on a tab change) at up to twenty hit
+//: tests each took 2 to 7 s of a Library, Timeline or Dashboard switch at 4x CPU, in the lag log
+//: `avatars.js go 540ms` and `setTimeout 749ms`. Perches come in the tab's own order of preference,
+//: so the search stops at the budget with the best found so far: 360 hit tests (the same on any
+//: machine, so the choice does not change with the load) or, for a machine where each is slow, 250ms.
+//: The retry at the smaller size gets its own, smaller, budget.
+//: (`nmb.budget`: the numbers, and what is left of them.)
 function nameMarkBuddyChoose(tab, obstacles, near = null, per = 12) {
   let best = null;
   let soiled = null;
   let scored = 0;
+  //: The retry at the smaller size (below) sets its own; every other entry starts a new budget.
+  if (!nmb.fitting) {
+    nmb.budget.until = performance.now() + nmb.budget.ms;
+    nmb.budget.left = nmb.budget.hits;
+  }
   nmbCoverCache = new Map();
+  //: Dropped when this call's stack unwinds, however it returns: the page can move after.
+  nmb.wordsCache = new Map();
+  queueMicrotask(() => {
+    nmb.wordsCache = null;
+  });
   for (const perch of nameMarkBuddyPerches(tab, near && per < 12 ? near[0] : null)) {
+    if (scored > 0 && (nmb.budget.left <= 0 || performance.now() > nmb.budget.until)) break;
     if (perch.x < 0 || perch.y < 0 || perch.y + NMB_H > innerHeight + 2) continue;
     const here = perch.kind === nmb.perch && perch.pose === nmb.pose && Math.abs(perch.x - nmb.x) < 24 && Math.abs(perch.y - nmb.y) < 24;
     //: Near (a panel scrolled away, a new tab): every 12px of the way costs
@@ -4309,6 +4371,8 @@ function nameMarkBuddyChoose(tab, obstacles, near = null, per = 12) {
     let small = null;
     try {
       nameMarkBuddyIndexReset();
+      nmb.budget.until = performance.now() + nmb.budget.fitMs;
+      nmb.budget.left = nmb.budget.fitHits;
       small = nameMarkBuddyChoose(tab, obstacles, near, per);
     } finally {
       nmb.scale = saved;
