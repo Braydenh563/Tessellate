@@ -94,7 +94,8 @@ def test_the_companion_looks_for_a_popup_after_a_frame_has_drawn_the_press():
     src = frontend_text("avatars.js")
     i = src.index('for (const type of ["click", "keyup"])')
     block = src[i:i + 1400]
-    assert "afterFrames(() => setTimeout(look), 1)" in block
+    # `nmb.afterClean`: a frame and a timer, and a frame more while the page is still written to (INBOX 1587).
+    assert "nmb.afterClean(look)" in block
     assert "setTimeout(afterPaint, 80)" in block and "setTimeout(afterPaint, 700)" in block
 
 

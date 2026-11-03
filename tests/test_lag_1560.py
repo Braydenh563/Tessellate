@@ -40,8 +40,10 @@ def test_the_floating_roots_are_found_the_same_way():
 def test_the_beat_looks_after_a_frame_has_drawn():
     # The first box read of a look settled the layout the frame was about to do anyway (the log:
     # 156ms with 98 forced, and 1838 with 1727 on the Library). One frame and a timer on, as the check.
+    # Since INBOX 1587 the frame and the timer are `nmb.afterClean`, which also waits out a page
+    # written to after that frame (tests/test_atlas_cover_1587.py holds its shape).
     beat = _fn("nameMarkBuddyBeat")
-    assert beat.index("document.hidden") < beat.index("afterFrames(() => setTimeout(")
-    assert beat.index("afterFrames(() => setTimeout(") < beat.index("nameMarkBuddyTab()")
+    assert beat.index("document.hidden") < beat.index("nmb.afterClean(() => {")
+    assert beat.index("nmb.afterClean(() => {") < beat.index("nameMarkBuddyTab()")
     assert "if (!nmb.beatDue) {" in beat and "nmb.beatDue = true;" in beat and "nmb.beatDue = false;" in beat
     assert "nmb.beatFrame" in beat

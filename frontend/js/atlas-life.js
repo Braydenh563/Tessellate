@@ -417,8 +417,9 @@ function atlasTailRest(tail, p) {
   const [rx, ry] = tail.rest[0];
   if (vb?.width) svg.style.transformOrigin = `${atlasFix(((rx - vb.x) / vb.width) * 100)}% ${atlasFix(((ry - vb.y) / vb.height) * 100)}%`;
   const deg = atlasFix(Math.min(7, Math.max(1.5, (p.amp * 180) / Math.PI * 0.3)));
-  const at = (d, k) => ({ transform: `rotate(${d}deg) scale(${k})` });
-  tail.sway = svg.animate([at(0, 1), at(deg, 1.015), at(0, 1), at(-deg, 0.99), at(0, 1)], {
+  const at = ([d, k]) => ({ transform: `rotate(${d}deg) scale(${k})` });
+  tail.swayKeys = [[0, 1], [deg, 1.015], [0, 1], [-deg, 0.99], [0, 1]];
+  tail.sway = svg.animate(tail.swayKeys.map(at), {
     duration: Math.round(Math.max(2.4, p.period) * 1000), iterations: Infinity, easing: "ease-in-out",
   });
 }
@@ -427,10 +428,22 @@ function atlasTailUnrest(tail) {
   tail.resting = false;
   box.dataset.atlTail = "live";
   if (!tail.sway) return;
-  const from = getComputedStyle(svg).transform;
+  //: Where the sway is, from its own clock and keyframes, not the style (INBOX
+  //: 1587): this runs on the rest beat's timer, and the computed transform
+  //: read there settled the whole page's style, 567ms at 1x CPU with Settings open
+  //: (a 719-element recalc). `progress` is the eased share of the swing.
+  const keys = tail.swayKeys || [];
+  const share = Number(tail.sway.effect?.getComputedTiming?.().progress);
+  let from = "";
+  if (Number.isFinite(share) && keys.length > 1) {
+    const x = Math.min(1, Math.max(0, share)) * (keys.length - 1);
+    const i = Math.min(keys.length - 2, Math.floor(x));
+    const [[d0, k0], [d1, k1]] = [keys[i], keys[i + 1]];
+    from = `rotate(${atlasFix(d0 + (d1 - d0) * (x - i))}deg) scale(${atlasFix(k0 + (k1 - k0) * (x - i))})`;
+  }
   tail.sway.cancel();
   tail.sway = null;
-  if (from && from !== "none") svg.animate([{ transform: from }, { transform: "none" }], { duration: 400, easing: "cubic-bezier(0.33, 0, 0.2, 1)" });
+  if (from) svg.animate([{ transform: from }, { transform: "none" }], { duration: 400, easing: "cubic-bezier(0.33, 0, 0.2, 1)" });
 }
 function atlasTailDraw(tail, bend, stretch) {
   const { pts, turn, segs } = atlasTailShape(tail.rest, bend, stretch);
