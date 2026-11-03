@@ -2,7 +2,7 @@
 
 Generated 2026-11-03 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7584, frontend ids 2645, CSS sections 519, backend routes 641, backend modules 8499, test files 1913, tests 16097, plan headings 987, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7584, frontend ids 2645, CSS sections 519, backend routes 641, backend modules 8499, test files 1913, tests 16098, plan headings 987, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7584)
 
@@ -11545,7 +11545,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | The glyph tab row | frontend/css/popup-anatomy-lazy.css:19 |
 | The guide panel as one surface (INBOX 270 part 4, the redesign) | frontend/css/08-consistency.css:1953 |
 | The head's glyph | frontend/css/popup-anatomy-lazy.css:11 |
-| The iPhone (phone-1011) | frontend/css/10-responsive.css:2658 |
+| The iPhone (phone-1011) | frontend/css/10-responsive.css:2665 |
 | The last icon-to-label gap family | frontend/css/08-consistency.css:1614 |
 | The last two head rows that were not on the bar recipe | frontend/css/08-consistency.css:1417 |
 | The m guide: one panel of key rows | frontend/css/08-consistency.css:4586 |
@@ -11808,7 +11808,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the board's context bar, wrapped (`wbUpdateSelectionBar`) | frontend/css/library-lazy.css:6960 |
 | the boot splash: one progress indicator, not two | frontend/css/08-consistency.css:4265 |
 | the bottom docks | frontend/css/07-whiteboard-misc.css:9744 |
-| the chat dock follows its own width (INBOX 694) | frontend/css/10-responsive.css:2550 |
+| the chat dock follows its own width (INBOX 694) | frontend/css/10-responsive.css:2557 |
 | the chat page fills its height (§36A) | frontend/css/06-timeline-dialogs.css:1346 |
 | the chat sidebar on a phone | frontend/css/02-chat-graph.css:4866 |
 | the chat toolbar, grouped (§36B) | frontend/css/06-timeline-dialogs.css:1465 |
@@ -11872,7 +11872,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the pad | frontend/css/sketch-pad.css:42 |
 | the page scrollers scroll on the compositor | frontend/css/08-consistency.css:4296 |
 | the page shell (§35L) | frontend/css/00-tokens-shell.css:3598 |
-| the palette on a touch screen (INBOX 464) | frontend/css/10-responsive.css:2536 |
+| the palette on a touch screen (INBOX 464) | frontend/css/10-responsive.css:2543 |
 | the phone header fits inside the phone | frontend/css/05-sidebars-themes.css:5779 |
 | the picker itself | frontend/css/05-sidebars-themes.css:3675 |
 | the primary action floats, where a dock has one | frontend/css/07-whiteboard-misc.css:10309 |
@@ -11944,7 +11944,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/07-whiteboard-misc.css | 11818 |
 | frontend/css/08-consistency.css | 10882 |
 | frontend/css/09-editor.css | 1108 |
-| frontend/css/10-responsive.css | 2721 |
+| frontend/css/10-responsive.css | 2728 |
 | frontend/css/appearance-panel-lazy.css | 305 |
 | frontend/css/appearance-panel-own-lazy.css | 86 |
 | frontend/css/ask-compose-lazy.css | 266 |
@@ -23340,7 +23340,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16097)
+## Tests (16098)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25057,7 +25057,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_unlock_throttle_per_client.py | 6 |
 | tests/test_unplaced_1490.py | 16 |
 | tests/test_unsaved_work_guard.py | 7 |
-| tests/test_unslop_1103.py | 3 |
+| tests/test_unslop_1103.py | 4 |
 | tests/test_untagged_filter.py | 5 |
 | tests/test_unwatched_answer.py | 4 |
 | tests/test_update.py | 39 |

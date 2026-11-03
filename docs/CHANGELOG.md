@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Dashboard on a phone: the search doorway reads "Search" in full instead of "Search your..." (the scope after the verb drops below 600px; unslop 1103, 4).
 - Dashboard: stacked widgets sit 16 to 17px apart like side-by-side ones, not 18 to 36 (the masonry's 24px span steps are gone; unslop 1103, 3).
 - Library, AI skills on a phone: the dock has a ... menu, so the sort and filter fold into it and the title no longer sits under the filter (unslop 1103, 2).
 - Reminders on a phone: the time is its own line under the words and the four actions share one row, so a reminder is 249px wide instead of 48 and the row 187px instead of 345 (unslop 1103, 1).

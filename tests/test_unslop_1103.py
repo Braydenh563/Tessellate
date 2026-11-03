@@ -51,3 +51,10 @@ def test_3_dashboard_spans_are_pixel_rows_with_the_card_gap_in_the_span():
     start = js.index("function sizeDashWidgetSpan(")
     body = js[start : js.index("\n}\n", start)]
     assert "cardGap" in body and "rowGap" in body
+
+
+def test_4_dashboard_find_label_drops_its_scope_on_a_phone():
+    """93px of text room cut "Search your notes, ..." to "Search your..."."""
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    assert '<span class="dash-find-scope"> your notes, documents, files and the app</span>' in html
+    assert "display: none" in _body(_css("10-responsive.css"), ".dash-find-scope")
