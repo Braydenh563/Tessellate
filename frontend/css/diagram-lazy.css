@@ -147,9 +147,20 @@
   transform: rotate(45deg) scale(0.8);
 }
 
+/* A clip-path cuts the border away, so the hexagon is an accent outline with its soft fill laid inside it: the
+   same weight as its neighbours (a solid one read as the selected tile, measured in the Add strip). */
 .dgm-shape[data-shape="hexagon"] {
+  position: relative;
   border: 0;
   background: var(--accent);
+  clip-path: polygon(20% 0, 80% 0, 100% 50%, 80% 100%, 20% 100%, 0 50%);
+}
+
+.dgm-shape[data-shape="hexagon"]::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  background: linear-gradient(var(--accent-soft), var(--accent-soft)), var(--surface-1);
   clip-path: polygon(20% 0, 80% 0, 100% 50%, 80% 100%, 20% 100%, 0 50%);
 }
 

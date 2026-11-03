@@ -45,7 +45,7 @@
   const titleOf = (S, id) => diagramOps.node(S.m, id)?.text ?? diagramOps.group(S.m, id)?.title ?? id;
   const nameOf = (S, key) => titleOf(S, diagramOps.split(key)[1]);
 
-  const blockEl = (S, key) => (key ? [...S.tree.querySelectorAll(".dgm-block")].find((b) => b.dataset.key === key) : null);
+  const blockEl = (S, key) => (key ? S.tree.querySelector(`.dgm-block[data-key="${key.replace(/["\\]/g, "\\$&")}"]`) : null);
 
   //: One change printed: the whole source goes out when it differs, the pane is
   //: drawn again and `said` is announced. The first change to a source the
@@ -76,7 +76,10 @@
       if (empty) return S.fig.replaceChildren(el("p", "muted dgm-hint", "The picture appears here as you add blocks."));
       ensureModule("mermaid").then((ok) => {
         if (!ok || stamp !== S.drawn) return;
+        const began = performance.now();
         mermaidFill(S.fig, source, (result) => {
+          //: A big diagram takes long to draw, so the next change waits half that long: edits in a row draw once.
+          S.drawWait = Math.min(600, Math.max(120, (performance.now() - began) / 2));
           if (stamp !== S.drawn) return;
           S.hit = result.svg ? diagramModel.picture.boxes(result.svg) : null;
           S.fig.onpaint?.();
@@ -85,7 +88,7 @@
           S.fig.replaceChildren(mermaidFailure.note(result.error, source));
         });
       });
-    }, 120);
+    }, S.drawWait || 120);
   }
 
   // --- the tree -------------------------------------------------------------------
@@ -93,24 +96,48 @@
     const had = S.tree.contains(document.activeElement);
     const layout = diagramOps.layout(S.m);
     const edgesFrom = new Map();
-    S.m.edges.forEach((e) => edgesFrom.set(e.from, [...(edgesFrom.get(e.from) || []), e]));
+    S.m.edges.forEach((e, i) => edgesFrom.set(e.from, [...(edgesFrom.get(e.from) || []), { e, i }]));
     if (S.sel && !blockKeys(layout).includes(S.sel)) S.sel = null;
-    S.tree.replaceChildren(...layout.map((item) => buildBlock(S, item, 1, edgesFrom)));
+    //: A block whose words, shape and connectors are unchanged keeps its element, and the tree keeps what it already
+    //: holds in place (`reconcile`), so a change lays out only the rows it touched.
+    const fresh = new Map();
+    S.cache ||= new Map();
+    const rows = layout.map((item) => buildBlock(S, item, 1, edgesFrom, fresh));
+    S.cache = fresh;
+    S.tree.querySelectorAll(".dgm-target, .dgm-connecting, .dgm-lifted").forEach((b) => b.classList.remove("dgm-target", "dgm-connecting", "dgm-lifted"));
+    reconcile(S.tree, rows);
     S.empty.classList.toggle("hidden", Boolean(layout.length));
     S.next.classList.toggle("hidden", !layout.length);
-    S.next.textContent = S.m.nodes.length < 2 ? "Add a second block, then press Connect to… on one to draw an arrow." : S.m.edges.length ? "Drag a grip to move or nest a block. Double-click a name to rename it." : "Press Connect to… on a block, or drag its grip onto another block, to draw an arrow.";
+    const next = S.m.nodes.length < 2 ? "Add a second block, then press Connect to… on one to draw an arrow." : S.m.edges.length ? "Drag a grip to move or nest a block. Double-click a name to rename it." : "Press Connect to… on a block, or drag its grip onto another block, to draw an arrow.";
+    if (S.next.textContent !== next) S.next.textContent = next;
     //: An empty pane is the one stop, so N and G work before there is a block to focus.
     S.pane.tabIndex = layout.length ? -1 : 0;
     const stop = blockEl(S, S.sel) || S.tree.querySelector(".dgm-block");
-    for (const b of S.tree.querySelectorAll(".dgm-block")) {
-      b.tabIndex = b === stop ? 0 : -1;
-      b.setAttribute("aria-selected", String(b.dataset.key === S.sel));
-    }
-    if (had) stop?.focus();
+    stops(S, stop);
+    if (had && document.activeElement !== stop) stop?.focus();
     for (const b of S.dirs.querySelectorAll("button")) {
       b.classList.toggle("active", b.dataset.dir === S.m.dir);
       b.setAttribute("aria-pressed", String(b.dataset.dir === S.m.dir));
     }
+  }
+
+  //: The one tab stop and the selected row: an attribute is written only where it differs, so a long list is not restyled.
+  function stops(S, stop) {
+    for (const b of S.tree.querySelectorAll(".dgm-block")) {
+      const index = b === stop ? "0" : "-1";
+      if (b.getAttribute("tabindex") !== index) b.tabIndex = Number(index);
+      const on = String(b.dataset.key === S.sel);
+      if (b.getAttribute("aria-selected") !== on) b.setAttribute("aria-selected", on);
+    }
+  }
+
+  //: Puts `rows` in `parent` in order, moving only what is out of place and removing what is gone.
+  function reconcile(parent, rows) {
+    const want = new Set(rows);
+    for (const child of [...parent.children]) if (!want.has(child)) child.remove();
+    rows.forEach((row, i) => {
+      if (parent.children[i] !== row) parent.insertBefore(row, parent.children[i] || null);
+    });
   }
 
   const blockKeys = (items) => items.flatMap((x) => (x.type === "k" ? [] : [diagramOps.key(x.type, x.id), ...blockKeys(x.kids || [])]));
@@ -122,7 +149,19 @@
     return glyph;
   }
 
-  function buildBlock(S, item, level, edgesFrom) {
+  //: A row is rebuilt only when its `sig` (everything below that it reads) changed since the last render.
+  function buildBlock(S, item, level, edgesFrom, fresh) {
+    const id = item.type === "k" ? `k:${item.index}` : diagramOps.key(item.type, item.id);
+    const kids = (item.kids || []).map((k) => buildBlock(S, k, level + 1, edgesFrom, fresh));
+    const own = item.type === "k" ? item.line : [item.type === "g" ? diagramOps.group(S.m, item.id).title : `${diagramOps.node(S.m, item.id).text}\n${diagramOps.node(S.m, item.id).shape}`, ...(edgesFrom.get(item.id) || []).map(({ e, i }) => `${i}:${titleOf(S, e.from)}>${titleOf(S, e.to)}:${e.label || ""}:${e.style}:${e.arrow}`)].join("\n");
+    const sig = `${level}\n${own}\n${kids.map((k) => fresh.get(k.dataset.key).sig).join("|")}`;
+    const hit = S.cache.get(id);
+    const made = hit && hit.sig === sig ? hit.el : buildRow(S, item, level, edgesFrom, kids);
+    fresh.set(id, { sig, el: made });
+    return made;
+  }
+
+  function buildRow(S, item, level, edgesFrom, built) {
     const block = el("div", "dgm-block");
     if (item.type === "k") {
       block.classList.add("dgm-kept");
@@ -170,13 +209,13 @@
     block.append(card);
     if (joins.length) {
       const row = el("div", "dgm-joins");
-      for (const edge of joins) row.append(joinChip(S, edge));
+      for (const { e, i } of joins) row.append(joinChip(S, e, i));
       block.append(row);
     }
     if (isGroup) {
       const kids = el("div", "dgm-kids");
       kids.setAttribute("role", "group");
-      if (item.kids.length) kids.append(...item.kids.map((k) => buildBlock(S, k, level + 1, edgesFrom)));
+      if (built.length) kids.append(...built);
       else kids.append(el("p", "dgm-hole muted", "Drop blocks here"));
       block.append(kids);
     }
@@ -190,7 +229,7 @@
   }
 
   //: A connector reads as what it is, "Start to Next" and its label, in a row that hangs off the block it leaves.
-  function joinChip(S, edge) {
+  function joinChip(S, edge, index) {
     const chip = el("button", "dgm-join");
     chip.type = "button";
     const [from, to] = [titleOf(S, edge.from), titleOf(S, edge.to)];
@@ -203,7 +242,8 @@
     chip.setAttribute("aria-label", `Connector from ${from} to ${to}${edge.label ? `, labelled ${edge.label}` : ""}. Opens its menu.`);
     chip.addEventListener("click", async () => {
       const r = chip.getBoundingClientRect();
-      const rows = await joins(S, "items", edge);
+      //: The row is kept across changes, so the connector is read from the model when pressed, not when drawn.
+      const rows = await joins(S, "items", S.m.edges[index] || edge);
       if (rows) openMenuAtPoint(rows, "This connector", r.left, r.bottom, chip);
     });
     return chip;
@@ -244,10 +284,7 @@
   // --- gestures -------------------------------------------------------------------
   function select(S, key, focus = false) {
     S.sel = key;
-    for (const b of S.tree.querySelectorAll(".dgm-block")) {
-      b.tabIndex = b.dataset.key === key ? 0 : -1;
-      b.setAttribute("aria-selected", String(b.dataset.key === key));
-    }
+    stops(S, blockEl(S, key));
     if (focus) {
       const b = blockEl(S, key);
       b?.focus();
@@ -309,7 +346,9 @@
       target.classList.remove("dgm-editing");
       if (keep && text !== was) done(text);
       else target.textContent = was;
-      if (key) blockEl(S, key)?.focus();
+      //: Not when the render that `done` made has already put focus there: a focus() after a change forces its layout.
+      const block = key && blockEl(S, key);
+      if (block && document.activeElement !== block) block.focus();
     };
     const onKey = (event) => {
       if (event.key !== "Enter" && event.key !== "Escape") return;

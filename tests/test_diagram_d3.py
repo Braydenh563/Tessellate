@@ -10,13 +10,15 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 BUILDER = (ROOT / "frontend" / "js" / "diagram-builder.js").read_text(encoding="utf-8")
+#: The names and the limit live with the pure ops (the lazy diagram-ops.js, 1594), the sentence in the builder.
+OPS = (ROOT / "frontend" / "js" / "diagram-ops.js").read_text(encoding="utf-8")
 
 
 def test_a_kind_the_blocks_do_not_draw_and_a_diagram_over_120_blocks_open_in_source_with_one_line_why():
     for kind in ("state diagrams", "class diagrams", "pie charts", "Gantt charts", "user journeys", "ER diagrams", "C4 diagrams"):
-        assert f'"{kind}"' in BUILDER, kind
-    assert "so it opens in Source with its picture." in BUILDER and "has more than ${DGB_MAX} blocks" in BUILDER
-    assert "const DGB_MAX = 120;" in BUILDER
+        assert f'"{kind}"' in OPS, kind
+    assert "so it opens in Source with its picture." in BUILDER and "has more than ${diagramOps.MAX} blocks" in BUILDER
+    assert "const DGB_MAX = 120;" in OPS
 
 
 
