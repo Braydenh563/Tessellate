@@ -2,7 +2,7 @@
 
 Generated 2026-11-03 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7738, frontend ids 2635, CSS sections 518, backend routes 641, backend modules 8561, test files 1956, tests 16437, plan headings 991, app scripts 28, boot scripts 37, script files 242.
+Counts: frontend functions 7738, frontend ids 2635, CSS sections 518, backend routes 641, backend modules 8561, test files 1956, tests 16438, plan headings 991, app scripts 28, boot scripts 37, script files 242.
 
 ## Frontend functions (7738)
 
@@ -2105,23 +2105,23 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `atlasBreathFrame` | frontend/js/atlas-life.js:583 |
+| `atlasBreathFrame` | frontend/js/atlas-life.js:596 |
 | `atlasFrameBudget` | frontend/js/atlas-life.js:264 |
-| `atlasPropLoops` | frontend/js/atlas-life.js:508 |
-| `atlasPropsFrame` | frontend/js/atlas-life.js:536 |
-| `atlasRigLower` | frontend/js/atlas-life.js:681 |
-| `atlasRigLowerAttach` | frontend/js/atlas-life.js:657 |
+| `atlasPropLoops` | frontend/js/atlas-life.js:521 |
+| `atlasPropsFrame` | frontend/js/atlas-life.js:549 |
+| `atlasRigLower` | frontend/js/atlas-life.js:694 |
+| `atlasRigLowerAttach` | frontend/js/atlas-life.js:670 |
 | `atlasRingLoops` | frontend/js/atlas-life.js:20 |
 | `atlasTailAttach` | frontend/js/atlas-life.js:154 |
 | `atlasTailBend` | frontend/js/atlas-life.js:105 |
 | `atlasTailCalm` | frontend/js/atlas-life.js:391 |
-| `atlasTailDraw` | frontend/js/atlas-life.js:435 |
+| `atlasTailDraw` | frontend/js/atlas-life.js:448 |
 | `atlasTailFrame` | frontend/js/atlas-life.js:290 |
 | `atlasTailPaths` | frontend/js/atlas-life.js:140 |
 | `atlasTailPick` | frontend/js/atlas-life.js:228 |
 | `atlasTailRest` | frontend/js/atlas-life.js:411 |
 | `atlasTailShape` | frontend/js/atlas-life.js:115 |
-| `atlasTailUnrest` | frontend/js/atlas-life.js:425 |
+| `atlasTailUnrest` | frontend/js/atlas-life.js:426 |
 
 ### frontend/js/atlas-micro.js (8)
 
@@ -23593,7 +23593,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16437)
+## Tests (16438)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23670,7 +23670,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_atlas_access.py | 6 |
 | tests/test_atlas_breath_687.py | 4 |
 | tests/test_atlas_composite_1101.py | 4 |
-| tests/test_atlas_cover_1587.py | 7 |
+| tests/test_atlas_cover_1587.py | 8 |
 | tests/test_atlas_frame_reads.py | 5 |
 | tests/test_atlas_idle_cost_1031.py | 6 |
 | tests/test_atlas_lids_1301.py | 5 |

@@ -11,8 +11,13 @@ that reads layout to that order, so a new timer that reads cannot slip past it.
 
 from __future__ import annotations
 
+import json
 import re
+import shutil
+import subprocess
 from pathlib import Path
+
+import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -116,3 +121,33 @@ def test_a_look_waits_for_a_frame_that_left_the_page_clean() -> None:
     for name in ("queueNameMarkBuddyCheck", "nameMarkBuddyBeat"):
         assert "nmb.afterClean(() => {" in _fn(AV, name), name
     assert "const afterPaint = () => nmb.afterClean(look);" in AV, "the dodge after a press"
+
+
+def test_the_tail_eases_home_without_reading_the_style() -> None:
+    # The tail's rest beat is a timer too (`atlasTailFrame`): its hand back to the live loop read
+    # `getComputedStyle(svg).transform`, a 719-element recalc of 567 ms at 1x CPU with Settings
+    # open. The pose comes from the sway's own eased progress and keyframes instead.
+    if not shutil.which("node"):
+        pytest.skip("node not installed")
+    life = (JS / "atlas-life.js").read_text(encoding="utf-8")
+    src = "const atlasFix = (v) => +v.toFixed(2);\n" + _fn(life, "atlasTailRest") + "\n" + _fn(life, "atlasTailUnrest")
+    script = r"""
+const vm = require("vm");
+const made = [];
+const svg = { style: {}, viewBox: { baseVal: { x: 0, y: 0, width: 100, height: 100 } },
+  animate: (keys, opts) => { const a = { keys, opts, cancel() { a.gone = true; }, effect: { getComputedTiming: () => ({ progress: 0.125 }) } }; made.push(a); return a; } };
+const ctx = { getComputedStyle: () => { throw new Error("style read"); } };
+vm.createContext(ctx);
+vm.runInContext(process.argv[1], ctx);
+const tail = { box: { dataset: {} }, svg, rest: [[50, 50]] };
+ctx.atlasTailRest(tail, { amp: 0.4, period: 3 });
+ctx.atlasTailUnrest(tail);
+process.stdout.write(JSON.stringify({ sway: made[0].keys[1].transform, gone: !!made[0].gone, back: made[1].keys, live: tail.box.dataset.atlTail }));
+"""
+    out = subprocess.run(["node", "-e", script, src], capture_output=True, text=True, timeout=30)
+    assert out.returncode == 0, out.stderr
+    got = json.loads(out.stdout)
+    deg = float(re.search(r"rotate\(([\d.]+)deg\)", got["sway"]).group(1))
+    # An eighth of the swing is half way to the first keyframe: half its turn, half its swell.
+    assert got["back"][0]["transform"] == f"rotate({round(deg / 2, 2):g}deg) scale(1.01)"
+    assert got["back"][1] == {"transform": "none"} and got["gone"] and got["live"] == "live"

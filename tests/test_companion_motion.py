@@ -1785,7 +1785,11 @@ def test_nothing_runs_behind_the_lock_and_an_idle_page_is_not_polled() -> None:
     assert "atlasTailRest(tail, p)" in frame and "tail.resting" in frame
     rest = _fn("atlasTailRest", life)
     assert "svg.animate(" in rest and "transform:" in rest and "setAttribute" not in rest
-    assert "getComputedStyle(svg).transform" in _fn("atlasTailUnrest", life)
+    # It eases home from where the sway was: read from the sway's own timing,
+    # not the style, which settled the page on the rest beat (INBOX 1587).
+    unrest = _fn("atlasTailUnrest", life)
+    assert "getComputedTiming" in unrest and "tail.swayKeys" in unrest and "getComputedStyle" not in unrest
+    assert "tail.swayKeys.map(at)" in rest
     atlas = (ROOT / "frontend" / "js" / "atlas.js").read_text(encoding="utf-8")
     sync = _fn("atlasHiddenSync", atlas)
     assert "lock-overlay" in sync and "atlasTailWake(box)" in sync
