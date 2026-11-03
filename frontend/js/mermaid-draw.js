@@ -504,6 +504,7 @@ function mermaidDrawBlock(block) {
   return mermaidFill(figure, code.textContent, (result) => {
     if (result.svg) {
       block.remove();
+      if (figure.closest(".step-answer, .answer")) mermaidFill.asDiagram(figure, code.textContent);
       return;
     }
     figure.remove();
@@ -516,6 +517,59 @@ function mermaidDrawIn(container) {
   const blocks = [...container.querySelectorAll('.code-block code[data-lang="mermaid"]')].map((c) => c.closest(".code-block"));
   return Promise.all(blocks.map(mermaidDrawBlock));
 }
+
+//: A reply's diagram (Chat, Ask) can become one of its own (1546 D6): "Open as a diagram" makes a Mermaid
+//: diagram document of the fence and opens it in Blocks. Properties of `mermaidFill`, not globals.
+mermaidFill.asDiagram = (figure, source) => {
+  const open = document.createElement("button");
+  open.type = "button";
+  open.className = "linklike md-mermaid-as";
+  open.textContent = "Open as a diagram";
+  open.title = "Make a diagram document of this and edit it as blocks";
+  open.addEventListener("click", async () => {
+    open.disabled = true;
+    try {
+      const doc = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title: mermaidAltFor(source).replace(/:.*/, ""), content: source, file_type: "mmd" }) });
+      switchTab("documents");
+      await openDocument(doc.id);
+      offerCreateUndo(doc);
+    } catch (error) {
+      toast(error.message || "Couldn't make the diagram.", true);
+    } finally {
+      open.disabled = false;
+    }
+  });
+  figure.after(open);
+};
+
+//: `![[a diagram]]` in a note or a document (1546 D6): the diagram document's source is fetched and
+//: drawn as a fence is (`mermaidDrawIn`); a line under it opens the document. A diagram that will not
+//: draw, or has nothing in it, is the document card it was.
+mermaidFill.embed = async (box, doc, name) => {
+  try {
+    const source = String((await apiJson(`/documents/${doc.id}`, { silent: true })).content || "").trim();
+    if (!source) throw new Error("empty");
+    const block = document.createElement("div");
+    block.className = "code-block";
+    const code = block.appendChild(document.createElement("pre")).appendChild(document.createElement("code"));
+    code.dataset.lang = "mermaid";
+    code.textContent = source;
+    box.append(block);
+    await mermaidDrawIn(box);
+    if (!box.querySelector("img")) throw new Error("not drawn");
+    const open = document.createElement("button");
+    open.type = "button";
+    open.className = "linklike diagram-embed-open";
+    open.textContent = `${doc.title || "Diagram"}: open the diagram`;
+    open.addEventListener("click", (event) => {
+      event.stopPropagation();
+      openDocument(doc.id);
+    });
+    box.append(open);
+  } catch {
+    box.replaceChildren(mdDocumentCard(doc, name, true));
+  }
+};
 
 //: A saved HTML file outlives this page's blob: URLs, so the export carries
 //: each picture as a data: URL of its own SVG. `live` and `clone` are the same

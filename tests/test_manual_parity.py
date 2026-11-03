@@ -375,7 +375,7 @@ def test_the_diagram_kinds_are_in_the_guide_in_the_controls_words() -> None:
     for words in ("flowcharts, mind maps, timelines and sequence diagrams", "a branch and a leaf (B and N)",
                   "a section, a period and an event (S, P and E)",
                   "actor, participant, message, reply, async, lost, note, loop, alt and opt (A, P, M, R, Y, X, T, L, G and O)",
-                  "stays in Source with its picture", "of another kind says so and is left out", "replaces a blank one"):
+                  "opens in Source with its picture", "of another kind says so and is left out", "replaces a blank one"):
         assert words in body, words
     assert "diagram-kinds" in TOPIC_META and "diagram-kinds" in dict(HELP_GROUPS)["Documents and code"]
     assert "next topic" in str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
@@ -384,3 +384,26 @@ def test_the_diagram_kinds_are_in_the_guide_in_the_controls_words() -> None:
         assert f'name: "{label}"' in kinds, label
     for letters in ('key: "b"', 'key: "n"', 'key: "s"', 'key: "p"', 'key: "e"', 'key: "m"', 'key: "r"', 'key: "y"', 'key: "x"', 'key: "t"', 'key: "l"', 'key: "g"', 'key: "o"', 'key: "a"'):
         assert letters in kinds, letters
+
+
+def test_the_diagram_dialog_the_reply_action_and_the_exports_are_in_the_guide_in_the_controls_words() -> None:
+    """1546 P5: Edit as blocks on a Live figure, the board's double-click, Open as a diagram under a reply,
+    `![[name]]`, the ... menu's four rows and Source beside Cancel, each said in the `diagram-elsewhere`
+    topic in the words the controls carry."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+    from tessellate.ai.help_topics_more import HELP_GROUPS, TOPIC_META
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-elsewhere"))
+    for words in ("Edit as blocks", "double-click a diagram object", "Open as a diagram", "![[name]]", "Done", "Cancel, Escape and the X",
+                  "SVG", "PNG", "Copy as Mermaid", "Copy as SVG", "Source"):
+        assert words in body, words
+    assert "diagram-elsewhere" in TOPIC_META and "diagram-elsewhere" in dict(HELP_GROUPS)["Documents and code"]
+    embed = (FRONTEND / "js" / "diagram-embed.js").read_text(encoding="utf-8")
+    builder = (FRONTEND / "js" / "diagram-builder.js").read_text(encoding="utf-8")
+    draw = (FRONTEND / "js" / "mermaid-draw.js").read_text(encoding="utf-8")
+    mermaid = (FRONTEND / "js" / "documents-mermaid.js").read_text(encoding="utf-8")
+    for label in ("Save as SVG", "Save as PNG", "Copy as Mermaid", "Copy as SVG"):
+        assert label in builder, label
+    assert '"Edit as blocks"' in mermaid and '"Open as a diagram"' in draw
+    for label in ('"Done"', '"Cancel"', '"Source"', '"Blocks"'):
+        assert label in embed, label

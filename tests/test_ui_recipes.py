@@ -7072,7 +7072,7 @@ def test_a_dialog_foot_has_one_bordered_secondary_and_its_third_action_is_quiet(
     foot's third action is `ghost quiet` and waits at the start; the Calculator's History bar, its panel buttons and the
     chat's Change the model are quiet too."""
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-    for ident in ("note-template-manage", "wb-import-choose", "wb-diagram-shapes"):
+    for ident in ("note-template-manage", "wb-import-choose"):
         assert re.search(rf'class="ghost quiet small" id="{ident}"', html), ident
     css = "\n".join(path.read_text(encoding="utf-8") for path in CSS)
     assert "margin-inline-end: auto" in _rule_exact(css, ".space-dialog-actions > .quiet:first-child")

@@ -548,3 +548,71 @@
     padding: 0;
   }
 }
+
+/* A diagram the blocks cannot read keeps only the ... menu in its bar (its picture can still be saved). */
+.dgm-plain .dgm-dock > :not(.dock-actions),
+.dgm-plain .dock-actions > :not(.dgm-more) {
+  display: none;
+}
+
+/* The builder in a dialog (diagram-embed.js, 1546 D6): the dialog head, the blocks and picture, the foot.
+   The window is large because the pane and the picture are side by side; on a phone it takes the screen. */
+.dgm-dialog {
+  gap: var(--space-4);
+  width: min(76rem, 96vw);
+  height: min(48rem, 92dvh);
+  max-height: none;
+}
+
+/* Blocks and Source wait at the foot's start, so the title keeps its room on a phone. */
+.dgm-views {
+  margin-inline-end: auto;
+}
+
+.dgm-dialog-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  gap: var(--space-5);
+}
+
+.dgm-host {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+}
+
+.dgm-source {
+  display: none;
+  flex: 0 0 min(30rem, 42%);
+  resize: none;
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: var(--text-sm);
+}
+
+.dgm-dialog[data-view="source"] .dgm-source {
+  display: block;
+}
+
+.dgm-dialog[data-view="source"] .dgm-dock,
+.dgm-dialog[data-view="source"] .dgm-pane {
+  display: none;
+}
+
+.dgm-dialog[data-view="source"] .dgm-body {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (max-width: 599.98px) {
+  .dgm-dialog {
+    height: 94dvh;
+  }
+
+  .dgm-dialog-body {
+    flex-direction: column;
+  }
+
+  .dgm-dialog[data-view="source"] .dgm-source {
+    flex: 0 0 9rem;
+  }
+}

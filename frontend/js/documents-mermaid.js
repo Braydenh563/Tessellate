@@ -300,8 +300,22 @@
     return m;
   }
 
+  //: The source range of the ```mermaid fence in `text` whose source is `source` (the one nearest `near`
+  //: when several repeat): `{from, to}`, the lines between the fences, so a replace keeps both fences
+  //: and everything around them byte for byte. Null when no fence holds it any more.
+  function dgmFence(text, source, near = 0) {
+    let best = null;
+    const re = /^```[ \t]*mermaid[^\n]*\n([\s\S]*?)\n```[ \t]*$/gm;
+    for (let m = re.exec(text); m; m = re.exec(text)) {
+      if (m[1] !== source) continue;
+      const from = m.index + m[0].indexOf("\n") + 1;
+      if (!best || Math.abs(m.index - near) < Math.abs(best.at - near)) best = { at: m.index, from, to: from + source.length };
+    }
+    return best && { from: best.from, to: best.to };
+  }
+
   //: `decode`, `front` and `statements` are the readers the other kinds share (diagram-kinds.js).
-  const diagramModel = { MAX_NODES: DGM_MAX_NODES, parse: dgmParse, print: dgmPrint, decode: dgmDecode, front: dgmFront, statements: dgmStatements };
+  const diagramModel = { MAX_NODES: DGM_MAX_NODES, parse: dgmParse, print: dgmPrint, decode: dgmDecode, front: dgmFront, statements: dgmStatements, fence: dgmFence };
   // DIAGRAM-MODEL-END
 
   //: Read (and so the print and the HTML export, which are drawn from it): each
@@ -363,6 +377,9 @@
         return event.type !== "mousedown";
       }
       toDOM(view) {
+        //: The figure and its tool in one box: a redraw (a theme change) replaces the figure's children, not the button.
+        const wrap = document.createElement("div");
+        wrap.className = "cm-md-mermaid-wrap";
         const figure = document.createElement("figure");
         figure.className = "md-mermaid cm-md-mermaid md-mermaid-pending";
         figure.title = "Press to edit the diagram's text";
@@ -382,7 +399,25 @@
           view.dispatch({ selection: { anchor: at } });
           view.focus();
         });
-        return figure;
+        //: Edit as blocks (1546 D6): the same builder a diagram document opens in, in a dialog; Done replaces this fence's lines only.
+        const edit = smallButton("ph:squares-four", "Edit as blocks", () => {
+          const near = Math.min(view.posAtDOM(figure), view.state.doc.length);
+          openDiagramBuilder({
+            source: this.source,
+            title: "Edit diagram",
+            onDone: (next, changed) => {
+              if (!changed) return;
+              const at = diagramModel.fence(docStr(view.state.doc), this.source, near);
+              //: The printer ends its source with a line break; the fence's closing line has its own.
+              if (at) view.dispatch({ changes: { from: at.from, to: at.to, insert: next.replace(/\n+$/, "") }, userEvent: "input.diagram" });
+              else toast("That diagram is no longer in the document.", "info");
+            },
+          });
+        });
+        edit.classList.add("md-mermaid-edit", "icon-only");
+        edit.addEventListener("mousedown", (event) => event.stopPropagation());
+        wrap.append(figure, edit);
+        return wrap;
       }
     }
     class DocMermaidReason extends WidgetType {
@@ -430,10 +465,19 @@
     return docPhase2State.mermaidFieldCache;
   }
 
+  //: The builder in a dialog (1546 D6) for every place that draws Mermaid from a source it can hand back
+  //: (a Live figure, a board's diagram): `{source, kind, title, onDone(source)}`. The code is the lazy
+  //: diagram-embed.js; this is its stand-in, because the callers are in this bundle.
+  async function openDiagramBuilder(options) {
+    if (await ensureModule("diagramEmbed")) return diagramModel.embed.open(options);
+    toast("The diagram editor did not load. Try again.", "info");
+    return null;
+  }
+
   //: The file's whole surface: what documents.js and documents-export.js call.
-  Object.assign(window, { docRenderMermaidIn, docMermaidWhenDrawn, docMermaidField, diagramModel });
+  Object.assign(window, { docRenderMermaidIn, docMermaidWhenDrawn, docMermaidField, diagramModel, openDiagramBuilder });
   //: The block pane (1546 P2) is a bundle of its own, fetched when a diagram is first shown (the kinds, 1546 P4, when a mind map, timeline or sequence diagram is):
   //: every caller is in this bundle or opens a document first, so no stand-in is needed, and
   //: neither app.js nor lazy-entries.js (both at their caps) carries the row.
-  Object.assign(LAZY_MODULES, { diagramBuilder: ["/css/diagram-lazy.css", "/js/diagram-builder.js"], diagramSuggest: ["/js/diagram-suggest.js"], diagramKinds: ["/js/diagram-kinds.js"], diagramJoins: ["/js/diagram-joins.js"] });
+  Object.assign(LAZY_MODULES, { diagramBuilder: ["/css/diagram-lazy.css", "/js/diagram-builder.js"], diagramEmbed: ["/js/diagram-embed.js"], diagramSuggest: ["/js/diagram-suggest.js"], diagramKinds: ["/js/diagram-kinds.js"], diagramJoins: ["/js/diagram-joins.js"] });
 })();

@@ -4048,9 +4048,14 @@ function renderDocPreview() {
   //: a typed edit or an undo comes back through here. Inline, not a named function: one global less.
   if (docFileType().ext === "mmd") {
     const text = docText();
-    const io = { set: (next) => (docUndoBreak(), (docSurface().text = next)), undo: () => docUndo(), redo: () => docRedo() };
+    const io = { name: $("doc-title").value, set: (next) => (docUndoBreak(), (docSurface().text = next)), undo: () => docUndo(), redo: () => docRedo() };
     ensureModule("diagramBuilder").then((ok) => {
-      if (ok) return diagramModel.builder.show(preview, io, text);
+      //: A diagram the blocks cannot take (another kind, over 120 blocks) opens in Split, which is Source with its picture
+      //: and the one line saying why; once per document, so a person who goes back to Blocks is not sent out again.
+      if (ok) return diagramModel.builder.show(preview, io, text).then((S) => {
+        const seen = (docViewState.plain ??= new Set());
+        if (S?.plain && docView === "rendered" && !seen.has(currentDoc?.id)) (seen.add(currentDoc?.id), setDocView("split", { persist: false }));
+      });
       preview.replaceChildren(Object.assign(document.createElement("p"), { className: "muted", textContent: "The block editor did not load. Source still works." }));
     });
     return;

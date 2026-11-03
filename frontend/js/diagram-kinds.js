@@ -973,6 +973,7 @@
       b.setAttribute("aria-label", label);
       actions.append(b);
     }
+    actions.append(kit.more(S));
     bar.append(tiles, kit.el("div", "dock-group"), actions);
     return bar;
   }
@@ -1048,10 +1049,9 @@
     S.plain = !parsed;
     S.root.classList.toggle("dgm-plain", !parsed);
     S.note.classList.toggle("hidden", Boolean(parsed));
-    S.note.textContent = parsed ? "" : big ? `This diagram has more than ${ops.MAX} blocks. It stays in Source, and its picture is drawn here.` : `Blocks cannot read this ${A.noun}, so it stays in Source, and its picture is drawn here.`;
+    S.note.textContent = parsed ? "" : big ? `This diagram has more than ${ops.MAX} blocks, so it opens in Source with its picture.` : `Blocks cannot read this ${A.noun}, so it opens in Source with its picture.`;
     S.m = parsed || A.empty();
     if (!parsed) S.ghosts.replaceChildren(), S.ghosts.classList.add("hidden");
-    S.root.querySelector(".dgm-dock").classList.toggle("hidden", !parsed);
     S.pane.classList.toggle("hidden", !parsed);
     render(S);
     kit.drawPicture(S);

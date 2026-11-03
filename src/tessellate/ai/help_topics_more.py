@@ -2789,7 +2789,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "diagram-blocks", "diagram-kinds", "documents-replace", "live-view-marks", "documents-features", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "document-history", "writing-checks", "code-files", "code-completions", "code-run",
+        "documents", "documents-controls", "diagram-blocks", "diagram-kinds", "diagram-elsewhere", "documents-replace", "live-view-marks", "documents-features", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "document-history", "writing-checks", "code-files", "code-completions", "code-run",
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
@@ -3104,13 +3104,14 @@ MORE_TOPICS.extend([
         ),
         "body": (
             "A live Mermaid diagram on a board: Insert, Mermaid diagram... opens the "
-            "source with a preview; Add to board places it at its drawing's shape. "
+            "block editor on a sample; Done places it at its drawing's shape. "
             "It is any Mermaid diagram (flowchart, sequence, class, state, Gantt, pie "
             "and the rest), drawn as a note draws it and redrawn with the theme. "
             "Select it and the Format panel's Style tab sets its Fill colour, Fill opacity "
             "and Line opacity (0, 25, 50, 75, 100; 100 is a fully solid fill), and the boxes redraw. "
-            "Double-click it to change the source; a mistake shows the reason in the "
-            "box instead of a picture. Turn into shapes, in the same window, replaces "
+            "Double-click it to change it in the block editor (Source is one button away); "
+            "a mistake shows the reason in the "
+            "box instead of a picture. Turn into shapes, in the editor's ... menu, replaces "
             "a flowchart, state, class or sequence diagram with shapes and connectors "
             "you can move one by one (Ctrl+Z puts the diagram back). Insert, Mermaid, "
             "draw.io or board SVG brings a diagram in as shapes straight away."
@@ -3169,11 +3170,32 @@ MORE_TOPICS.extend([
             "does: drag a block to move or nest it, double-click a name, the block's ... menu, "
             "arrows, Enter, Delete, Alt+Up, Alt+Down, Alt+Right and Alt+Left, Ctrl+Z. A line the "
             "blocks do not show stays where it was, and a diagram they cannot read (a second mind "
-            "map centre, a sequence box, more than 120 blocks) stays in Source with its picture. "
+            "map centre, a sequence box, more than 120 blocks) opens in Source with its picture. "
             "Suggest works in each: Templates include a brainstorm, a project plan, a sign in and a "
             "request and reply. A suggestion of the diagram's own kind arrives as ghosts to take; "
             "one of another kind says so and is left out when the diagram has blocks, and replaces "
             "a blank one."
+        ),
+        "badge": {"label": "Documents", "tab": "documents"},
+    },
+    {
+        "id": "diagram-elsewhere",
+        "keywords": (
+            "edit as blocks", "diagram in a document", "mermaid figure", "open as a diagram",
+            "diagram in chat", "embed a diagram", "export a diagram", "diagram png", "diagram svg",
+            "copy as mermaid", "diagram on a board",
+        ),
+        "body": (
+            "The block editor opens wherever a Mermaid diagram is drawn. In a document's Live view, "
+            "a diagram has an Edit as blocks button on its corner (always there on a touch screen): "
+            "it opens the editor in a window you can move and size, and Done puts the changes back "
+            "between that diagram's own fence marks and nothing else. Cancel, Escape and the X "
+            "ask before they drop changes. On a board, double-click a diagram object. In Chat or Ask, "
+            "a diagram in a reply has Open as a diagram under it, which makes a diagram document of it. "
+            "Type ![[name]] in a note or a document to draw a diagram document's picture there, with a "
+            "line that opens it. The ... menu in the editor's bar has Save as SVG, Save as PNG "
+            "(twice its size), Copy as Mermaid and Copy as SVG. Source, beside Cancel, shows "
+            "the text with the picture; a diagram the blocks cannot draw opens there."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },
@@ -3228,6 +3250,7 @@ TOPIC_META.update({
     "board-mermaid": {"title": "Live Mermaid diagrams on a board", "path": "A board's Insert menu, Mermaid diagram..."},
     "diagram-blocks": {"title": "Editing a diagram as blocks", "path": "A diagram document, Blocks"},
     "diagram-kinds": {"title": "Mind maps, timelines and sequence diagrams as blocks", "path": "A diagram document, Blocks"},
+    "diagram-elsewhere": {"title": "Editing a diagram in a document, on a board or from a reply, and saving its picture", "path": "A diagram in Live view, Edit as blocks"},
     "board-hand-drawn": {"title": "The hand-drawn look", "path": "A board's View menu, Hand-drawn look"},
     "board-current-layer": {"title": "The current layer", "path": "A board's sidebar, Layers"},
     "board-keyboard-create": {"title": "Making and writing without a mouse", "path": "A board, Keys and controls"},

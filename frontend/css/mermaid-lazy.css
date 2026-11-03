@@ -84,3 +84,41 @@
     break-inside: avoid;
   }
 }
+
+/* The Live figure's tool (documents-mermaid.js): Edit as blocks sits on the picture's corner, seen on
+   hover and focus, and always on a screen with no hover. */
+.cm-md-mermaid-wrap {
+  position: relative;
+}
+
+.md-mermaid-edit {
+  position: absolute;
+  inset-block-start: var(--space-2);
+  inset-inline-end: var(--space-2);
+  opacity: 0;
+}
+
+.cm-md-mermaid-wrap:is(:hover, :focus-within) .md-mermaid-edit {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .md-mermaid-edit {
+    opacity: 1;
+  }
+}
+
+/* A diagram embedded with ![[name]] and a reply's Open as a diagram: a line under the picture. */
+.diagram-embed-open,
+.md-mermaid-as {
+  display: block;
+  margin: 0 0 var(--space-4);
+  font-size: var(--text-sm);
+}
+
+@media (pointer: coarse) {
+  .diagram-embed-open,
+  .md-mermaid-as {
+    min-block-size: var(--control-h-lg);
+  }
+}

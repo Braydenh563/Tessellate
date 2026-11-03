@@ -21,6 +21,8 @@
   //: `direction` line inside a group is still inside it once a group is added above.
   const DGB_SHAPES = ["rect", "round", "stadium", "circle", "diamond", "hexagon"];
   const DGB_MAX = 120;
+  //: The kinds a person meets that the blocks do not draw (D3): named in the one line that sends them to Source.
+  const DGB_PLAIN = [[/^stateDiagram/i, "state diagrams"], [/^classDiagram/i, "class diagrams"], [/^pie$/i, "pie charts"], [/^gantt$/i, "Gantt charts"], [/^journey$/i, "user journeys"], [/^erDiagram/i, "ER diagrams"], [/^C4/i, "C4 diagrams"]];
 
   const dgbKey = (type, id) => `${type}:${id}`;
   const dgbSplit = (key) => [key.slice(0, 1), key.slice(2)];
@@ -295,34 +297,6 @@
   }
 
   // --- the picture ----------------------------------------------------------------
-  //: The nodes' boxes, read off the SVG text with patterns: `{id, x, y, w, h}` in the
-  //: picture's own units, from Mermaid's `flowchart-<id>-<n>` groups. Not through
-  //: DOMParser: a parsed document keeps the page's policy, and Mermaid's `style=`
-  //: attributes were refused one by one (measured: 19 console errors on a 3-node
-  //: diagram). Null when the picture has none.
-  function boxesOf(svg) {
-    const vb = /<svg\b[^>]*\bviewBox="([^"]+)"/.exec(svg)?.[1].trim().split(/[ ,]+/).map(Number);
-    if (!vb || vb.length !== 4 || vb.some(Number.isNaN)) return null;
-    const num = (tag, name) => Number(new RegExp("\\b" + name + '="(-?[\\d.]+)"').exec(tag)?.[1]) || 0;
-    const boxes = [];
-    for (const g of svg.matchAll(/<g\b[^>]*\bid="flowchart-([^"]+?)-\d+"[^>]*>/g)) {
-      const at = /transform="translate\(\s*(-?[\d.]+)[ ,]+(-?[\d.]+)/.exec(g[0]);
-      if (!at) continue;
-      const tail = svg.slice(g.index + g[0].length, g.index + g[0].length + 900);
-      const rect = /<rect\b[^>]*>/.exec(tail)?.[0] || "";
-      const poly = /<polygon\b[^>]*\bpoints="([^"]+)"/.exec(tail)?.[1].trim().split(/[ ,]+/).map(Number) || [];
-      const xs = poly.filter((_, i) => i % 2 === 0);
-      const ys = poly.filter((_, i) => i % 2 === 1);
-      const r = num(/<circle\b[^>]*>/.exec(tail)?.[0] || "", "r") * 2;
-      boxes.push({
-        id: g[1], x: Number(at[1]), y: Number(at[2]),
-        w: num(rect, "width") || (xs.length ? Math.max(...xs) - Math.min(...xs) : 0) || r || 80,
-        h: num(rect, "height") || (ys.length ? Math.max(...ys) - Math.min(...ys) : 0) || r || 40,
-      });
-    }
-    return boxes.length ? { vb, boxes } : null;
-  }
-
   function drawPicture(S) {
     clearTimeout(S.drawTimer);
     S.drawTimer = setTimeout(() => {
@@ -336,26 +310,13 @@
         if (!ok || stamp !== S.drawn) return;
         mermaidFill(S.fig, source, (result) => {
           if (stamp !== S.drawn) return;
-          S.hit = result.svg ? boxesOf(result.svg) : null;
+          S.hit = result.svg ? diagramModel.picture.boxes(result.svg) : null;
           if (result.svg) return;
           S.fig.classList.remove("md-mermaid-pending");
           S.fig.replaceChildren(mermaidFailure.note(result.error, source));
         });
       });
     }, 120);
-  }
-
-  //: A press on a drawn node selects its block. Not a drag: the picture is not a handle.
-  function pictureClick(S, event) {
-    const img = event.target.closest?.("img");
-    if (!img || !S.hit || !S.m) return;
-    const r = img.getBoundingClientRect();
-    const [vx, vy, vw, vh] = S.hit.vb;
-    const x = vx + ((event.clientX - r.left) / r.width) * vw;
-    const y = vy + ((event.clientY - r.top) / r.height) * vh;
-    const box = S.hit.boxes.find((b) => Math.abs(x - b.x) <= b.w / 2 && Math.abs(y - b.y) <= b.h / 2);
-    if (!box || !diagramOps.node(S.m, box.id)) return;
-    select(S, diagramOps.key("n", box.id), true);
   }
 
   // --- the tree -------------------------------------------------------------------
@@ -781,6 +742,15 @@
   }
 
   // --- building the pane ----------------------------------------------------------
+  //: The ... menu (1546 D7): what the host adds (`io.menu`, the dialog's Turn into shapes), then the
+  //: exports. They run from diagram-embed.js, fetched on the first press.
+  function more(S) {
+    const rows = [["ph:file-svg Save as SVG", "svg"], ["ph:file-png Save as PNG", "png"], ["ph:copy Copy as Mermaid", "mermaid"], ["ph:code Copy as SVG", "svgtext"]];
+    const menu = kebabMenu([...(S.io.menu || []), ...rows.map(([label, how]) => makeMenuItem(label, "", () => ensureModule("diagramEmbed").then((ok) => ok && diagramModel.embed.out(how, S.source, S.io.name))))], "More for this diagram");
+    menu.classList.add("dgm-more");
+    return menu;
+  }
+
   function buildPalette(S) {
     const bar = el("div", "dock dgm-dock");
     bar.dataset.dockName = "diagram";
@@ -828,6 +798,7 @@
       b.setAttribute("aria-label", label);
       actions.append(b);
     }
+    actions.append(more(S));
     bar.append(shapes, el("div", "dock-group"), actions);
     bar.children[1].append(S.dirs);
     return bar;
@@ -881,7 +852,10 @@
       const block = event.target.closest?.(".dgm-block");
       if (block && block.dataset.key[0] !== "k") openMenuAtPoint(blockItems(S, block.dataset.key), "Block menu", point.x, point.y, block);
     });
-    S.fig.addEventListener("click", (event) => pictureClick(S, event));
+    S.fig.addEventListener("click", (event) => {
+      const id = diagramModel.picture.pick(S, event);
+      if (id && diagramOps.node(S.m, id)) select(S, diagramOps.key("n", id), true);
+    });
     S.pane.addEventListener("keydown", (event) => {
       if (event.target !== S.pane || !/^[nNgG]$|^Insert$/.test(event.key)) return;
       event.preventDefault();
@@ -904,10 +878,10 @@
     S.plain = !parsed;
     S.root.classList.toggle("dgm-plain", !parsed);
     S.note.classList.toggle("hidden", Boolean(parsed));
-    S.note.textContent = parsed ? "" : big ? `This diagram has more than ${DGB_MAX} blocks. It stays in Source, and its picture is drawn here.` : "Blocks draw flowcharts, mind maps, timelines and sequence diagrams. This diagram stays in Source, and its picture is drawn here.";
+    const named = DGB_PLAIN.find(([re]) => re.test(diagramModel.front(text.replace(/\r/g, "")).rest.trim().split(/\s/, 1)[0] || ""));
+    S.note.textContent = parsed ? "" : big ? `This diagram has more than ${DGB_MAX} blocks, so it opens in Source with its picture.` : named ? `Blocks do not draw ${named[1]} yet, so it opens in Source with its picture.` : "Blocks draw flowcharts, mind maps, timelines and sequence diagrams, so this one opens in Source with its picture.";
     S.m = parsed || { kind: "flowchart", dir: "TD", nodes: [], edges: [], subgraphs: [], kept: [], front: [] };
     if (!parsed) S.ghosts.replaceChildren(), S.ghosts.classList.add("hidden");
-    S.root.querySelector(".dgm-dock").classList.toggle("hidden", !parsed);
     S.pane.classList.toggle("hidden", !parsed);
     render(S);
     drawPicture(S);
@@ -924,12 +898,12 @@
     return hit ? hit[1].toLowerCase().replace("diagram", "") : "flowchart";
   }
   //: What the kinds' panes borrow: the same DOM helpers, so the two read as one pane.
-  const kit = { el, say, commit, drawPicture, beginEdit, blockEl, select, dropMark, suggest, suggestMenu };
+  const kit = { el, more, say, commit, drawPicture, beginEdit, blockEl, select, dropMark, suggest, suggestMenu };
   //: A line a suggestion left for the pane that opens next (the kind changed under it).
   let told = "";
 
   async function show(host, io, text) {
-    await Promise.all(["/css/objmove-lazy.css", "/js/obj-ref.js", "/js/obj-drag.js"].map((file) => lazyScript(file)));
+    await Promise.all(["/css/objmove-lazy.css", "/js/obj-ref.js", "/js/obj-drag.js", "/js/diagram-picture.js"].map((file) => lazyScript(file)));
     if (typeof OBJ_MODES === "object" && !OBJ_MODES.diagram) OBJ_MODES.diagram = DIAGRAM_MODE;
     const kind = kindOf(text);
     let S;
