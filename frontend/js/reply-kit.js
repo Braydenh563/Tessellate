@@ -564,7 +564,7 @@ function replyCalcActions(target, close, inline = false) {
     return write(kind === "equation");
   };
   const copy = smallButton("Copy", "Copy the result", () => act("copy"));
-  const asEquation = smallButton("Insert as equation", "Write the sum and its result as an equation", () => act("equation"));
+  const asEquation = smallButton("ph:function Insert as equation", "Write the sum and its result as an equation", () => act("equation"));
   const insert = smallButton("Insert", "Write the result into the text", () => act("insert"), false);
   insert.classList.add("primary");
   for (const button of [copy, asEquation, insert]) button.setAttribute("aria-describedby", id);

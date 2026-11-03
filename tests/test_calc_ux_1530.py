@@ -87,7 +87,7 @@ def test_the_action_row_says_where_insert_writes_and_why_it_cannot() -> None:
     assert "No text box is open" in actions
     #: A button that cannot act stays reachable (aria-disabled) and says why when pressed.
     assert "aria-disabled" in actions and "toast(" in actions
-    assert '"Copy"' in actions and '"Insert"' in actions and '"Insert as equation"' in actions
+    assert '"Copy"' in actions and '"Insert"' in actions and '"ph:function Insert as equation"' in actions
     #: Copy has its own tooltip, never the Insert one (the Equation tab's Copy kept it).
     editor = _read("math-editor.js")
     assert "Write the equation into the text (Ctrl+Enter)" not in editor

@@ -612,26 +612,19 @@ button.ghost:active:not(:disabled) {
    the tint under the pointer or the keyboard. One rule for the family, so
    every card changes at once; `:where()` keeps it at the tonal rule's own
    weight, so a chosen or pressed state written anywhere still wins, and
-   `[data-contrast="on"]` still draws the edge. */
-:where(.card) button.ghost:where(:not(:is(dialog, .modal-card, .modal) *)) {
-  border-color: transparent;
-  background: none;
-  font-weight: 500;
-}
-:where(.card) button.ghost:where(:not(:is(dialog, .modal-card, .modal) *)):hover,
-:where(.card) button.ghost:where(:not(:is(dialog, .modal-card, .modal) *)):is(:focus-visible, :has(:focus-visible)) {
-  border-color: transparent;
-  background: var(--ghost-btn-bg);
-}
-/* The quiet tier by name, for the one place it is not given by a frame: a
-   second action beside a section's one filled button (Help's Replay the
-   welcome beside Start the tour, INBOX 804), and a row's repeated action
-   (DESIGN.md, Row actions). */
+   `[data-contrast="on"]` still draws the edge. The tier is also given by
+   name (`.quiet`: a second action beside a section's one filled button, INBOX
+   804; a row's repeated action). **Its words are the accent** (INBOX 1580, "hard
+   to tell that it's a button"), the hover and focus ground already there. */
+:where(.card) button.ghost:where(:not(:is(dialog, .modal-card, .modal) *)),
 button.ghost.quiet {
   border-color: transparent;
   background: none;
+  color: var(--accent-text);
   font-weight: 500;
 }
+:where(.card) button.ghost:where(:not(:is(dialog, .modal-card, .modal) *)):hover,
+:where(.card) button.ghost:where(:not(:is(dialog, .modal-card, .modal) *)):is(:focus-visible, :has(:focus-visible)),
 button.ghost.quiet:hover,
 button.ghost.quiet:is(:focus-visible, :has(:focus-visible)) {
   border-color: transparent;
@@ -3942,6 +3935,11 @@ html.modal-open body {
 }
 .dash-body>* {
   margin: 0;
+}
+/* A card's one action sits left under what it acts on (INBOX 1580); the column
+   stretched it across the card with its words centred. */
+.dash-body>button {
+  align-self: flex-start;
 }
 /* Keep one very tall widget (e.g. the weekly digest) from ballooning the row
    and leaving big gaps under its neighbours, cap the body and scroll inside.

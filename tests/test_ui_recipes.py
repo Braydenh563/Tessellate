@@ -5702,10 +5702,12 @@ def test_a_ghost_in_a_card_is_quiet() -> None:
     (`:where`), with the same tint under the pointer and the keyboard."""
     css = _forms_css()
     head = ":where(.card) button.ghost:where(:not(:is(dialog, .modal-card, .modal) *))"
-    rest = re.search(re.escape(head) + r" \{([^}]*)\}", css)
+    #: INBOX 1580: the card's ghost and `.quiet` are one rule, and its words are the accent.
+    rest = re.search(re.escape(head) + r",\s*button\.ghost\.quiet \{([^}]*)\}", css)
     assert rest and "border-color: transparent" in rest.group(1) and "background: none" in rest.group(1)
+    assert "color: var(--accent-text)" in rest.group(1)
     assert re.search(
-        re.escape(head) + r":hover,\s*" + re.escape(head) + r":is\(:focus-visible, :has\(:focus-visible\)\) \{[^}]*--ghost-btn-bg",
+        re.escape(head) + r":hover,\s*" + re.escape(head) + r":is\(:focus-visible, :has\(:focus-visible\)\),\s*button\.ghost\.quiet:hover,[^{]*\{[^}]*--ghost-btn-bg",
         css,
     )
     assert css.index(head) > css.index("button.ghost:hover,"), "after the tonal rule, so it wins on order"
@@ -7110,3 +7112,67 @@ def test_an_offer_with_a_dismiss_is_the_split_chip() -> None:
     assert "var(--error)" in _rule_exact(css, ".entry-meta > .chip.suggested-tag > .suggested-tag-dismiss:is(:hover, :focus-visible)")
     coarse = re.search(r"@media \(max-width: 819\.98px\), \(pointer: coarse\) \{\s*\.entry-meta > \.chip\.suggested-tag > \.suggested-tag-dismiss[^{]*\{([^}]*)\}", css)
     assert coarse and "width: var(--target-min)" in coarse.group(1) and "margin-inline-end: calc(1.5rem - var(--target-min))" in coarse.group(1)
+
+
+#: INBOX 1580 (the owner, of the Digest's "Generate this week's digest" and the
+#: Calculator's "Insert as equation": "it's kinda hard to tell that its a
+#: button"). A button with no face and no edge says "press me" only by its
+#: colour or its icon. The shared quiet tier (`button.ghost.quiet`, a ghost in a
+#: card) is accent-coloured, so a text action reaching it is a visible action;
+#: these are the other places a borderless `button.ghost` / `.quiet` is drawn,
+#: each led by an icon or standing in a row or bar whose frame is the cue.
+#: May only shrink: give one the accent (or an icon) and delete its row.
+BORDERLESS_ICON_LED = {
+    r"\.dock\b": "the dock: every control leads with its icon (DESIGN.md, the dock)",
+    r"\.sheet-head\b|\.monitor-header-actions": "the controls beside a panel title: icon-only buttons",
+    r"\.entry-actions|\.library-image-actions|\.category-actions": "a card's or a row's actions: an icon each, or a ⋯",
+    r"\.capture-tools-row|\.capture-filing-row": "the capture bar's tools: an icon each",
+    r"\.disclosure-row": "a disclosure: its caret leads",
+    r"\.tour-row|\.doc-template-choice": "a whole row or tile is the target, its icon leads",
+    r"\.graph-link-peek-notes": "a list row in the peek, its note's icon leads",
+}
+
+
+def test_a_borderless_text_button_is_accent_coloured_or_icon_led() -> None:
+    css_all = {path.name: path.read_text(encoding="utf-8") for path in CSS}
+    # The two routes into the quiet tier set the accent themselves.
+    forms = css_all["01-forms-settings.css"]
+    tier = next(body for selector, body in _rules(forms) if selector.startswith(":where(.card) button.ghost:where(:not(:is(dialog") and "button.ghost.quiet" in selector)
+    assert "color: var(--accent-text)" in tier, "the quiet tier lost its accent"
+    offenders = []
+    for name, css in css_all.items():
+        for selector, body in _rules(css):
+            if not re.search(r"border(-color)?:\s*(transparent|none|0)\b", body):
+                continue
+            if not re.search(r"(?<![-\w])background(-color)?:\s*(none|transparent)\b", body):
+                continue
+            if re.search(r"(?<![-\w])color:\s*var\(--accent", body):
+                continue
+            for part in (p.strip() for p in selector.split(",")):
+                if not re.search(r"button\.ghost|\.quiet\b", part):
+                    continue
+                if re.search(r":(hover|focus|active|disabled|where\(:not)|::|icon-only|icon-button|menu-item|kebab|\.danger|\.edged", part):
+                    continue
+                if any(re.search(pattern, part) for pattern in BORDERLESS_ICON_LED):
+                    continue
+                offenders.append(f"{name}: {part[:110]}")
+    assert not offenders, (
+        "A borderless text button is the accent (`color: var(--accent-text)`) or led by an icon, so it reads as a "
+        "button (INBOX 1580; DESIGN.md, text actions):\n  " + "\n  ".join(offenders)
+    )
+    every = "\n".join(css_all.values())
+    unused = [pattern for pattern in BORDERLESS_ICON_LED if not re.search(pattern, every)]
+    assert not unused, f"remove from BORDERLESS_ICON_LED: {unused}"
+
+
+def test_a_cards_one_action_sits_left_with_an_icon_and_a_dialogs_primary_stays_filled() -> None:
+    """INBOX 1580: the Dashboard Digest's button was stretched across its card (`.dash-body` is a
+    flex column) with its words centred; the two named actions lead with an icon; the Calculator's
+    one filled button is still `primary`."""
+    forms = (ROOT / "frontend" / "css" / "01-forms-settings.css").read_text(encoding="utf-8")
+    assert "align-self: flex-start" in _rule_exact(forms, ".dash-body>button")
+    dash = (ROOT / "frontend" / "js" / "dashboard.js").read_text(encoding="utf-8")
+    assert dash.count('smallButton("ph:sparkle Generate this week\'s digest"') == 2
+    kit = (ROOT / "frontend" / "js" / "reply-kit.js").read_text(encoding="utf-8")
+    assert 'smallButton("ph:function Insert as equation"' in kit
+    assert 'insert.classList.add("primary")' in kit and "false);\n  insert.classList.add" in kit
