@@ -280,15 +280,10 @@ Decisions: (a) a prop or icon on Atlas (`atlasPropsFrame`, atlas-life.js; the pr
 
 The owner: "is there more behaviour and npc improvements we can add". Read against what runs first: a saved note (`nameMarkBuddyCue("carry")`, `atlasOn("saved")`), the streak, a long silence (drowsy at 3 min, asleep at 8, boredom wander, a wave on return), pointer attention (`nameMarkBuddyNotice`), the open view (`nameMarkBuddyGlanceAtPage`), card-edge perches, the peek under the top bar and behind the bottom bar, pokes (five pools, grumpy, pout) and a drag (flip, throw) all exist. Every row: no `pointer-events`, never while a field is typed in (waits 1.5 s, dropped after four tries), transform and opacity only on the existing timers, nothing under `data-motion="reduced"`, layout read once per act at most; behind Settings, Companion, What it does, "Little habits and reactions" (`habits`).
 
+N1 to N7 built: HISTORY.md, "Moved from the plans, 2026-11-03 (a31b-1103: INBOX 1581, companion behaviours N1 to N7)".
+
 | # | Behaviour | What exists | Cost | State |
 | --- | --- | --- | --- | --- |
-| N1 | Moods by part of the day: morning, afternoon, evening, night pools for Atlas's drift and its small moves; the companion's energy follows | day or night only (`ATLAS_DRIFT_POOL`, `energyTarget`) | S | build |
-| N2 | Rare habits for Atlas: a look around, a hum, a settling breath, a double take; each at most once in 3 min | 11 small moves, none rare (`atlasMicroPick`) | S | build |
-| N3 | A search that finds nothing: a head tilt and a puzzled look; a find after a miss: a nod | Atlas's face only (`atlasOn("nothing")`) | S | build |
-| N4 | The pointer passing fast and close: a double take (a blink, a look back) | the eyes follow | S | build |
-| N5 | Put down after a long carry: it shakes itself off, dizzy after 5 s | landing squash, flip, throw | S | build |
-| N6 | A note moved to the bin: a small wince | none | S | build |
-| N7 | First-reader layouts after a tab flip wait for `uiSettlingUntil` (rig read, mood blend, follow frame); `atlasPlay` restarts with no forced layout | a30v's found list | S | build |
 | N8 | A menu or dialog opening: a glance at it before it steps aside | it steps aside (`nameMarkBuddyDodge`) | S | open |
 | N9 | A long writing run ends (a minute of typing, then a pause): a stretch | a nod while typing fast | S | open |
 | N10 | Milestones (the 10th, 100th note): a cheer, and Atlas's cast | none; needs the count | M | open |
