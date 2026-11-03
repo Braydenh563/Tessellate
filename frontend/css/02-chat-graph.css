@@ -2739,6 +2739,7 @@ kbd {
     background: none;
   }
   .action-menu.menu-nested > :not(.menu-group-open),
+  .wb-board-menu:has(> .menu-group-open) > :not(.menu-group-open),
   .menu-group-open > .menu-item:first-child {
     display: none;
   }

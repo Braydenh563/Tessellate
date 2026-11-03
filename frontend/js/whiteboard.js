@@ -14886,6 +14886,23 @@ function wbExportBoard() {
 //: is a wrapper around a native control (a select, a colour well, a checkbox
 //: in its own label) is `none`, which leaves that control exposed as itself
 //: rather than lying about it being a command.
+//: **The Arrange menu is submenus** (INBOX 1564, U15): each `[data-wb-submenu]`
+//: section ("ph:icon Name") becomes the menu recipe's own group row. The rows
+//: are moved, not rebuilt, so their `data-wb-cmd`, keycaps and ids stay. The
+//: flyout is a `.wb-board-menu` too: the row click, the outside-click test and
+//: the menu looks all find it. Under 820 it is a nested level (`.menu-nested`).
+function wbFoldMenuSubmenus(menu) {
+  for (const section of menu.querySelectorAll("[data-wb-submenu]")) {
+    const group = buildMenuGroupButton(section.dataset.wbSubmenu, [...section.children]);
+    const panel = group.querySelector(".submenu");
+    panel.classList.add("wb-board-menu");
+    //: Named once for the close below (a flyout sets it on each open too).
+    panel._escapedOpener = group.firstElementChild;
+    panel._escapedOpener.title = section.dataset.wbSubmenuTitle;
+    section.replaceWith(group);
+  }
+}
+
 function wbStampMenuRoles(menu) {
   for (const section of menu.querySelectorAll(".wb-menu-section")) {
     section.setAttribute("role", "group");
@@ -16632,6 +16649,7 @@ async function initWhiteboard() {
     .map((wrap) => ({ toggle: wrap.querySelector("[data-wb-menu-toggle]"), menu: wrap.querySelector(".wb-board-menu") }))
     .filter((pair) => pair.toggle && pair.menu);
   for (const { menu, toggle } of boardMenus) {
+    wbFoldMenuSubmenus(menu);
     wbStampMenuRoles(menu);
     //: The arrow keys, Home and End, from the same function every other menu
     //: in the app uses (`wireMenuKeyboard`, app.js). Measured before it was
@@ -16643,9 +16661,17 @@ async function initWhiteboard() {
     wireMenuKeyboard(menu, toggle);
   }
   const closeAllWbMenus = () => {
+    //: A flyout lives at <body> while open, so it is found there, not in a menu.
+    for (const sub of document.querySelectorAll(".submenu.wb-board-menu:not(.hidden)")) {
+      sub.classList.add("hidden");
+      sub._escapedOpener.setAttribute("aria-expanded", "false");
+      restoreEscapedMenu(sub);
+    }
     for (const { toggle, menu } of boardMenus) {
       menu.classList.add("hidden");
       toggle.setAttribute("aria-expanded", "false");
+      //: A nested level (under 820) reopens at the menu's top rows.
+      for (const open of menu.querySelectorAll(".menu-group-open")) open.classList.remove("menu-group-open");
       // Back where it lives, and the stylesheet's own cap back: the next open
       // measures from scratch rather than from a stale number.
       restoreEscapedMenu(menu);
@@ -16730,7 +16756,8 @@ async function initWhiteboard() {
     closeAllWbMenus();
   });
   document.addEventListener("keydown", (e) => {
-    if (e.key !== "Escape") return;
+    //: In a flyout (or a nested level) Escape is the flyout's: it closes back to its row.
+    if (e.key !== "Escape" || document.activeElement.closest(".submenu.wb-board-menu:not(.hidden)")) return;
     //: Escape hands the focus back to the toggle that opened the menu, which
     //: is the half of the contract that was missing: the menu closed and the
     //: focus stayed on the item that had just vanished, so the next Tab

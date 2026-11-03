@@ -6979,8 +6979,13 @@ Link to another note with [[its first few words]]."></textarea>
             <!-- Built against `WB_COMMANDS` like the Edit menu. Group, the
                  same sizes and Lock live here too (FEAT-19: they were only
                  on the context bar, a chord or the right-click menu). -->
-            <div class="wb-menu-section">
-              <span class="wb-panel-group-label">Align (2+ selected)</span>
+            <div class="wb-menu-section" data-wb-submenu="ph:stack Order" data-wb-submenu-title="Bring forward or send back">
+              <button type="button" class="wb-menu-item" data-wb-cmd="order-forward"><i class="ph ph-arrow-up ph-lead" aria-hidden="true"></i><span>Bring forward</span><kbd>]</kbd></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="order-backward"><i class="ph ph-arrow-down ph-lead" aria-hidden="true"></i><span>Send backward</span><kbd>[</kbd></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="order-front"><i class="ph ph-arrow-line-up ph-lead" aria-hidden="true"></i><span>Bring to front</span><kbd>Ctrl+]</kbd></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="order-back"><i class="ph ph-arrow-line-down ph-lead" aria-hidden="true"></i><span>Send to back</span><kbd>Ctrl+[</kbd></button>
+            </div>
+            <div class="wb-menu-section" data-wb-submenu="ph:align-left Align" data-wb-submenu-title="Needs two or more selected">
               <button type="button" class="wb-menu-item" data-wb-cmd="align-left"><i class="ph ph-align-left ph-lead" aria-hidden="true"></i><span>Left edges</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="align-hcenter"><i class="ph ph-align-center-horizontal ph-lead" aria-hidden="true"></i><span>Centres, horizontally</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="align-right"><i class="ph ph-align-right ph-lead" aria-hidden="true"></i><span>Right edges</span></button>
@@ -6988,8 +6993,7 @@ Link to another note with [[its first few words]]."></textarea>
               <button type="button" class="wb-menu-item" data-wb-cmd="align-vcenter"><i class="ph ph-align-center-vertical ph-lead" aria-hidden="true"></i><span>Centres, vertically</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="align-bottom"><i class="ph ph-align-bottom ph-lead" aria-hidden="true"></i><span>Bottom edges</span></button>
             </div>
-            <div class="wb-menu-section">
-              <span class="wb-panel-group-label">Distribute, size and flip</span>
+            <div class="wb-menu-section" data-wb-submenu="ph:columns Distribute, size and flip" data-wb-submenu-title="Spread, match sizes or mirror">
               <button type="button" class="wb-menu-item" data-wb-cmd="distribute-h"><i class="ph ph-columns ph-lead" aria-hidden="true"></i><span>Evenly, left to right</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="distribute-v"><i class="ph ph-rows ph-lead" aria-hidden="true"></i><span>Evenly, top to bottom</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="same-width"><i class="ph ph-arrows-out-line-horizontal ph-lead" aria-hidden="true"></i><span>Same width</span></button>
@@ -6997,26 +7001,14 @@ Link to another note with [[its first few words]]."></textarea>
               <button type="button" class="wb-menu-item" data-wb-cmd="flip-h"><i class="ph ph-flip-horizontal ph-lead" aria-hidden="true"></i><span>Flip left to right</span><kbd>Shift+H</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="flip-v"><i class="ph ph-flip-vertical ph-lead" aria-hidden="true"></i><span>Flip top to bottom</span><kbd>Shift+V</kbd></button>
             </div>
-            <div class="wb-menu-section">
-              <span class="wb-panel-group-label">Tidy as a tree (shapes and their connectors)</span>
+            <div class="wb-menu-section" data-wb-submenu="ph:tree-structure Tidy and connect" data-wb-submenu-title="Lay shapes out as a tree, join them or measure">
               <button type="button" class="wb-menu-item" data-wb-cmd="tidy-down"><i class="ph ph-tree-structure ph-lead" aria-hidden="true"></i><span>Top to bottom</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="tidy-right"><i class="ph ph-tree-view ph-lead" aria-hidden="true"></i><span>Left to right</span></button>
-            </div>
-            <div class="wb-menu-section">
-              <span class="wb-panel-group-label">Connect the selected</span>
               <button type="button" class="wb-menu-item" data-wb-cmd="join-chain"><i class="ph ph-arrow-elbow-down-right ph-lead" aria-hidden="true"></i><span>In a line</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="join-fan"><i class="ph ph-share-network ph-lead" aria-hidden="true"></i><span>All to the first picked</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="measure"><i class="ph ph-ruler ph-lead" aria-hidden="true"></i><span>Measure with a dimension line</span></button>
             </div>
-            <div class="wb-menu-section">
-              <span class="wb-panel-group-label">Order</span>
-              <button type="button" class="wb-menu-item" data-wb-cmd="order-forward"><i class="ph ph-arrow-up ph-lead" aria-hidden="true"></i><span>Bring forward</span><kbd>]</kbd></button>
-              <button type="button" class="wb-menu-item" data-wb-cmd="order-backward"><i class="ph ph-arrow-down ph-lead" aria-hidden="true"></i><span>Send backward</span><kbd>[</kbd></button>
-              <button type="button" class="wb-menu-item" data-wb-cmd="order-front"><i class="ph ph-arrow-line-up ph-lead" aria-hidden="true"></i><span>Bring to front</span><kbd>Ctrl+]</kbd></button>
-              <button type="button" class="wb-menu-item" data-wb-cmd="order-back"><i class="ph ph-arrow-line-down ph-lead" aria-hidden="true"></i><span>Send to back</span><kbd>Ctrl+[</kbd></button>
-            </div>
-            <div class="wb-menu-section">
-              <span class="wb-panel-group-label">Group and lock</span>
+            <div class="wb-menu-section" data-wb-submenu="ph:link Group and lock" data-wb-submenu-title="Group, ungroup and lock">
               <button type="button" class="wb-menu-item" data-wb-cmd="group" data-wb-either><i class="ph ph-link ph-lead" aria-hidden="true"></i><span>Group</span><kbd>Ctrl+G</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="ungroup" data-wb-either><i class="ph ph-link-break ph-lead" aria-hidden="true"></i><span>Ungroup</span><kbd>Ctrl+Shift+G</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="lock"><i class="ph ph-lock-simple ph-lead" aria-hidden="true"></i><span>Lock</span><kbd>Ctrl+Shift+L</kbd></button>

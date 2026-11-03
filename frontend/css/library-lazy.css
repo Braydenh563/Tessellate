@@ -5578,6 +5578,12 @@ button.ghost.doc-template-choice.wb-template-choice {
   padding-block: 0;
 }
 
+/* A submenu's row and its back row (U15) stand as tall as the rows around them. */
+.wb-board-menu :is(.menu-group > .menu-item, .menu-back) {
+  min-height: max(2.25rem, var(--target-min));
+  padding-block: 0;
+}
+
 .wb-board-menu label.wb-menu-row:hover,
 .wb-board-menu label.wb-menu-row:is(:focus-visible, :has(:focus-visible)) {
   background: var(--accent-soft);

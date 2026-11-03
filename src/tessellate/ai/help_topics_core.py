@@ -2065,7 +2065,7 @@ HELP_TOPICS.extend(
                 "locks the selection. Right-click an item, "
                 "Comment…, starts a thread. View, Present frames: one frame at a "
                 "time, the bar lists pages; ? shows every key; Ctrl+K finds any board action by name. Menus: Insert, Edit, "
-                "Arrange (align, distribute, size, flip, order, group, lock), View (panels, background, grid, "
+                "Arrange opens as submenus: Order, Align, Distribute, Tidy, Group, View (panels, background, grid, "
                 "snap, zoom) and Board (rename, new, export)."
             ),
             "badge": {"label": "Library", "tab": "library"},
@@ -2423,7 +2423,7 @@ HELP_TOPICS.extend(
                 "it along the line. The ends include the entity-relationship marks (one, zero or one, many, "
                 "one or many, zero or many). With one shape or text box selected, the four arrows round it "
                 "(or Alt+Shift and an arrow key) copy it that way and join facing sides with an elbow; "
-                "a note card's arrows make a new note there instead, joined and ready to type. With two or more selected, Arrange, Connect the selected joins them in a line or all to the first picked. Measure with a dimension line shows its length. Select a connector and drag a square at either end onto another shape to re-point it. "
+                "a note card's arrows make a new note there instead, joined and ready to type. With two or more selected, Arrange, Tidy and connect joins them in a line or all to the first picked. Measure with a dimension line shows its length. Select a connector and drag a square at either end onto another shape to re-point it. "
                 "Insert, Mermaid, draw.io or board SVG brings in a Mermaid flowchart, state, class or "
                 "sequence diagram, a .drawio file (pages and swimlanes as frames) or an SVG a board "
                 "here exported, as shapes and connectors; Export writes an Outline, a Mermaid flowchart or a .drawio file."
@@ -2459,7 +2459,7 @@ HELP_TOPICS.extend(
             ),
             "body": (
                 "Diagram tools on a board. Shift+2 (or View, Zoom to the selection) frames what is selected, "
-                "up to twice its size. Tidy as a tree, in Arrange, the selection's More and the right-click "
+                "up to twice its size. Tidy as a tree, in Arrange, Tidy and connect, the selection's More and the right-click "
                 "Arrange, lays the selected shapes out along the connectors between them, top to bottom or "
                 "left to right: a shape no connector points into is a root, siblings keep their order, and "
                 "one Undo takes it back. It is offered once the selection holds a connector. Change the "

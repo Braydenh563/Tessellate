@@ -480,7 +480,11 @@ function wbSyncCommandRows(menu) {
   const pair = [...menu.querySelectorAll("[data-wb-either]")];
   if (pair.length) {
     const live = pair.filter((row) => row.getAttribute("aria-disabled") === "false");
-    pair.forEach((row, i) => { row.hidden = live.length ? !live.includes(row) : i > 0; });
+    //: A row nobody can see is no menu item either: a submenu's arrow keys walk the roles (U15).
+    pair.forEach((row, i) => {
+      row.hidden = live.length ? !live.includes(row) : i > 0;
+      row.setAttribute("role", row.hidden ? "none" : "menuitem");
+    });
   }
 }
 
