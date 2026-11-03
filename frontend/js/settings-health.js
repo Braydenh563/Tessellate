@@ -43,6 +43,59 @@ async function renderHealthBlock() {
   //: A first count cut short (the folder is large) says "or more"; the next check has the whole.
   $("health-data-dir").textContent = `${formatFileSize(trust.data_dir_bytes) || "0 B"}${trust.data_dir_bytes_partial ? " or more" : ""}${asOf}`;
   paintIntegrity(trust.integrity);
+  //: The data folder's check (INBOX 1573, core/selfcheck.py): what the start
+  //: made again or kept aside, and each note whose attached file is gone, a
+  //: link that opens it.
+  function paintSelfCheck(report) {
+    const line = $("health-selfcheck");
+    const list = $("health-missing");
+    if (!line || !list) return;
+    if (!report || !report.at) {
+      line.textContent = "Not checked yet";
+      list.classList.add("hidden");
+      return;
+    }
+    const missing = report.missing_files || { count: 0, items: [] };
+    const parts = (report.repaired || []).slice();
+    if (missing.count) parts.push(`${nounCount(missing.count, "attached file is", "attached files are")} missing.`);
+    line.textContent = `${parts.length ? parts.join(" ") : "Everything is in place."} ${relativeTime(report.at)}`;
+    list.replaceChildren(
+      ...(missing.items || []).map((item) => {
+        const row = document.createElement("li");
+        if (item.entry_id) {
+          const open = document.createElement("button");
+          open.type = "button";
+          open.className = "link-button";
+          open.textContent = item.note;
+          open.addEventListener("click", () => {
+            closeSettingsModal();
+            flashEntry(item.entry_id);
+          });
+          row.append(open, ` \u00b7 ${item.filename}`);
+        } else row.textContent = `A picture or file in the library \u00b7 ${item.filename}`;
+        return row;
+      }),
+    );
+    if (missing.count > (missing.items || []).length) {
+      const more = document.createElement("li");
+      more.textContent = `and ${missing.count - missing.items.length} more`;
+      list.append(more);
+    }
+    list.classList.toggle("hidden", !missing.count);
+  }
+  paintSelfCheck(trust.self_check);
+  const run = $("health-selfcheck-run");
+  if (run) {
+    run.onclick = async () => {
+      setLabel(run, "ph:spin Checking");
+      try {
+        paintSelfCheck(await apiJson("/debug/health/self-check", { method: "POST" }));
+      } catch (e) {
+        toast(`The data folder check could not run: ${e.message}`, true, { action: ["Try again", () => run.click()] });
+      }
+      setLabel(run, "Check and repair");
+    };
+  }
   const running = trust.running || health.jobs?.running || [];
   jobs.textContent = (running.length ? running.map((job) => job.label).join(", ") : "Nothing running") + asOf;
   const last = trust.last_error || {};

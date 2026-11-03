@@ -4,7 +4,7 @@ d3-zoom multiplies a wheel delta by ten while ctrl is held, because a browser
 reports a trackpad pinch as ctrl+wheel with deltas of a few pixels. A mouse
 wheel notch with ctrl held is 100 to 120 pixels of the same event, so the
 default turned one notch into 2^2.4 = 5.3x and two notches took a map from 1x
-to its 4x ceiling (`maprender.md`). `zoomWheelDelta` (app.js) clamps the
+to its 4x ceiling (`maprender.md`). `zoomWheelDelta` (navigation.js) clamps the
 delta while ctrl is held and otherwise scales as d3's own default does. The
 board and the graph both hand it to `d3.zoom().wheelDelta`. Measured in
 Chromium by `scratchpad/ui-sweeps/ctrlwheelzoom.js`: one notch x1.39, a pinch
@@ -21,7 +21,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-APP = (JS / "app.js").read_text(encoding="utf-8")
+APP = (JS / "navigation.js").read_text(encoding="utf-8")  # moved from app.js (its gzip cap)
 
 
 def _delta(event: dict) -> float:

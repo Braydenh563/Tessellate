@@ -232,22 +232,6 @@ function refuseStagedUrls(body) {
   );
 }
 
-//: **A mouse wheel's ctrl+notch zooms by a notch, not by five times.** d3-zoom
-//: multiplies a wheel delta by ten while ctrl is held, because a browser
-//: reports a trackpad pinch as ctrl+wheel with deltas of a few pixels. A mouse
-//: wheel notch with ctrl held sends 100 to 120 of them and so got 2^2.4, a
-//: factor of 5.3: two notches took a map from 1x to its 4x ceiling
-//: (maprender.md measured it; unreported, but the likeliest reading of a zoom
-//: that "jumps" on a machine with a real mouse). The delta is clamped to 24
-//: pixels while ctrl is held (a notch is then 1.4x; a pinch is a few pixels
-//: an event and passes through unchanged), then scaled exactly as d3's own
-//: default scales it, so a plain wheel and a pinch zoom as they did.
-function zoomWheelDelta(event) {
-  let pixels = event.deltaY * (event.deltaMode === 1 ? 25 : event.deltaMode ? 500 : 1);
-  if (event.ctrlKey) pixels = Math.max(-24, Math.min(24, pixels));
-  return -pixels * 0.002 * (event.ctrlKey ? 10 : 1);
-}
-
 function mediaSrc(url) {
   //: A staged picture has no server url yet; its bytes are a Blob in this
   //: tab. Resolved here rather than at each `<img>` so every surface that
@@ -872,6 +856,7 @@ async function initAuth() {
   }
   if (status.setup_required) {
     showLockScreen(true);
+    showRestoreOffer(status.restore_offer);
     return;
   }
   $("lock-btn").classList.remove("hidden");

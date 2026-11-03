@@ -372,6 +372,9 @@ class ConfigManager:
         if notebook:
             _owner_only(self.data_dir)
 
+        from tessellate.core import selfcheck
+
+        selfcheck.observe_folders(self.data_dir)
         self.db_path = _adopt_old_db(self.data_dir)
         self.preferences_path = self.data_dir / "preferences.json"
         # Attached files live next to the data dir, so wiping
@@ -396,20 +399,34 @@ class ConfigManager:
         # `update_choice_made` records (routes_update.record_update_choice).
         if self.preferences_path.exists():
             try:
-                prefs.update(json.loads(self.preferences_path.read_text()))
-            except (OSError, json.JSONDecodeError) as exc:
+                saved = json.loads(self.preferences_path.read_text(encoding="utf-8"))
+                if not isinstance(saved, dict):
+                    raise ValueError("not a set of settings")
+                prefs.update(saved)
+            except (OSError, ValueError) as exc:
                 # Starting on defaults is the right behaviour; doing it
                 # silently is not. Every setting the user has ever chosen has
                 # just reverted, and without this line the only clue is that
-                # the app "forgot" everything.
+                # the app "forgot" everything. `ValueError` covers bytes that
+                # are not UTF-8 too, which stopped the server (INBOX 1573).
                 logging.getLogger("tessellate.config").warning(
-                    "couldn't read %s (%s): starting from the default "
-                    "preferences; your saved settings are not lost unless "
-                    "something writes over the file",
+                    "couldn't read %s (%s): starting from the default preferences",
                     self.preferences_path.name,
                     type(exc).__name__,
                 )
+                self._set_aside_preferences()
         return prefs
+
+    def _set_aside_preferences(self) -> None:
+        """The unreadable file renamed beside itself before the next setting
+        writes over it, so whatever it held can still be read by hand."""
+        from tessellate.core import selfcheck
+
+        try:
+            kept = selfcheck.set_aside(self.preferences_path, "unreadable")
+        except OSError:
+            return
+        selfcheck.note(f"preferences.json could not be read, so it was kept as {kept.name} and the defaults used.")
 
     def get_preference(self, key: str, default: Any = None) -> Any:
         return self._preferences.get(key, default)

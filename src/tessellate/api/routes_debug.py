@@ -30,7 +30,7 @@ from sqlalchemy.orm import Session
 
 from tessellate import __version__
 from tessellate.api import routes_tasks
-from tessellate.core import deps, jobs, logbuffer, taskhistory
+from tessellate.core import deps, jobs, logbuffer, selfcheck, taskhistory
 from tessellate.core.database import Attachment, Entry, MediaUpload
 from tessellate.repo import documents as documents_repo
 from tessellate.repo import reminders as reminder_repo
@@ -267,7 +267,18 @@ def _trust(config, error_lines: list[dict]) -> dict:  # noqa: ANN001
         "data_dir_bytes": data_dir_bytes,
         "data_dir_bytes_partial": data_dir_partial,
         "integrity": dict(_last_integrity),
+        #: The data folder's check at start (INBOX 1573): what was made again
+        #: or kept aside, and the attached files the disk lacks.
+        "self_check": selfcheck.last_report(),
     }
+
+
+@router.post("/health/self-check")
+def self_check(session: Session = Depends(get_session)) -> dict:
+    """Settings, About, Health's "Check and repair": the start's data folder
+    check run again now (`core/selfcheck.py`). It makes missing folders and
+    lists missing files; it never deletes or restores anything."""
+    return selfcheck.run(deps.get_config(), session)
 
 
 @router.post("/health/integrity")

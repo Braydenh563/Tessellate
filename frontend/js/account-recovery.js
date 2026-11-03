@@ -22,9 +22,8 @@
 
 //: One const for this file's state (tests/test_global_scope_ratchet.py: no new
 //: top-level lets). `wired`: the card's listeners are attached once.
-const RECOVERY = { wired: false, dialogWired: false };
+const RECOVERY = { wired: false, dialogWired: false, file: "tessellate-recovery-key.txt" };
 
-const RECOVERY_FILE = "tessellate-recovery-key.txt";
 const RECOVERY_LEAD =
   "Save it away from this computer, such as a password manager or on paper. It is shown only this once.";
 
@@ -263,7 +262,7 @@ async function saveRecoveryKeyFile(text) {
   const error = $("recovery-key-error");
   error.textContent = "";
   if (!(await desktopShell())) {
-    downloadBlob(new Blob([text], { type: "text/plain" }), RECOVERY_FILE);
+    downloadBlob(new Blob([text], { type: "text/plain" }), RECOVERY.file);
     return;
   }
   try {
@@ -433,4 +432,44 @@ function recoveryAccountRow(info) {
   button.textContent = made ? "Replace it" : "Make a recovery key";
   button.dataset.replacing = made ? "yes" : "no";
   return ["Recovery key", made ? `Made ${new Date(made).toLocaleDateString()}` : "None yet"];
+}
+
+//: INBOX 1573: the notebook has no account and a backup holds notes (the
+//: database deleted, damaged or its log lost). The person chooses: the backup
+//: (`POST /backups/restore`, which snapshots the empty file first), or a new
+//: notebook, which only hides the offer.
+function showRestoreOffer(offer) {
+  const box = $("lock-restore-offer");
+  if (!box) return;
+  box.classList.toggle("hidden", !offer);
+  if (!offer) return;
+  const reasons = {
+    missing: "Your notebook file is not in the data folder.",
+    damaged: `Your notebook file could not be opened, so it was kept as ${offer.kept_as} and a new one started.`,
+    empty: "This notebook is empty, but a backup holds your notes.",
+  };
+  const reason = reasons[offer.reason] || reasons.empty;
+  $("lock-restore-words").textContent =
+    `${reason} The newest backup, from ${whenText(offer.created_at)}, holds ${nounCount(offer.notes, "note")}.`;
+  const status = $("lock-restore-status");
+  status.textContent = "";
+  $("lock-restore-no").onclick = () => {
+    box.classList.add("hidden");
+    $("lock-password").focus();
+  };
+  $("lock-restore-yes").onclick = async () => {
+    setLabel(status, "ph:spin Restoring");
+    try {
+      await apiJson("/backups/restore", { method: "POST", body: JSON.stringify({ name: offer.name }) });
+    } catch (error) {
+      status.textContent = error.message;
+      return;
+    }
+    box.classList.add("hidden");
+    showLockScreen(false);
+    //: The note line, not the message: the PIN check rewrites the message.
+    const note = $("lock-setup-note");
+    note.textContent = "Restored. Enter the password this notebook had.";
+    note.classList.remove("hidden");
+  };
 }

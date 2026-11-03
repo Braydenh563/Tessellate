@@ -325,6 +325,21 @@
       <div id="lock-emblem" class="emblem emblem-lock" aria-hidden="true"></div>
       <h2 id="lock-title">Unlock Tessellate</h2>
       <p id="lock-message" class="muted"></p>
+      <!-- INBOX 1573: a notebook with no account while a backup holds notes
+           (the database deleted, damaged or its log lost) is offered that
+           backup here, before a new password is chosen. Never restored
+           without the press; `/auth/status` `restore_offer`, this computer only. -->
+      <div id="lock-restore-offer" class="notice hidden" role="region" aria-labelledby="lock-restore-words">
+        <i class="ph ph-clock-counter-clockwise" aria-hidden="true"></i>
+        <div>
+          <p id="lock-restore-words"></p>
+          <div class="row button-row">
+            <button type="button" id="lock-restore-yes">Restore backup</button>
+            <button type="button" id="lock-restore-no" class="ghost">Start a new notebook</button>
+          </div>
+          <p id="lock-restore-status" class="status" role="status"></p>
+        </div>
+      </div>
       <div class="lock-password-wrap">
         <input id="lock-password" type="password" placeholder="Password"
           aria-label="Password" aria-describedby="lock-error" autocomplete="current-password">
@@ -14820,6 +14835,40 @@ Link to another note with [[its first few words]]."></textarea>
                   <button id="health-integrity-check" class="ghost small" type="button">Check now</button>
                   <span class="muted" id="health-integrity">Not checked yet</span>
                 </span>
+              </div>
+              <!-- INBOX 1573: the data folder's check at start (core/selfcheck.py),
+                   and again on Check and repair. Drawn by `paintSelfCheck`. -->
+              <div class="setting-row setting-row-stack">
+                <div class="setting-label">
+                  <span class="row help-head">Data folder check
+                    <button type="button" class="icon-only ghost small graph-help-toggle"
+                      data-help-for="health-selfcheck-help" aria-controls="health-selfcheck-help" aria-expanded="false"
+                      title="About the data folder check" aria-label="About the data folder check">
+                      <i class="ph ph-question" aria-hidden="true"></i>
+                    </button>
+                  </span>
+                  <small class="muted">Missing folders made again, missing files listed. Nothing is deleted.</small>
+                </div>
+                <div class="help-body hidden" id="health-selfcheck-help" role="dialog" aria-label="About the data folder check">
+                  <p>
+                    Each start checks the data folder. A missing uploads, media
+                    or backups folder is made again, empty, and a missing
+                    backups folder gets a fresh backup. A settings file the app
+                    cannot read is kept beside itself and the defaults are used.
+                  </p>
+                  <p>
+                    A deleted or damaged notebook file is never replaced on its
+                    own: the lock screen offers the newest backup that holds
+                    notes, and a damaged file is kept aside. Attached files
+                    that are gone are listed here with their notes; a full
+                    backup file holds them.
+                  </p>
+                </div>
+                <span class="setting-control row">
+                  <button id="health-selfcheck-run" class="ghost small" type="button">Check and repair</button>
+                  <span class="muted" id="health-selfcheck">Not checked yet</span>
+                </span>
+                <ul class="muted health-missing hidden" id="health-missing"></ul>
               </div>
               <div class="setting-row">
                 <div class="setting-label">

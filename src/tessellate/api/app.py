@@ -702,6 +702,7 @@ def _startup_maintenance() -> None:
     with jobruns.started_by("start-up"), jobruns.job_run("maintenance") as run:
         steps = (
             ("_check_notebook_file", "Check the notebook file"),
+            ("_check_data_folder", "Check the data folder"),
             ("_purge_expired_bin_entries", "Clear expired notes from the bin"),
             ("_compact_event_log", "Tidy the edit history"),
             ("_backup_if_due", "Back up if today's is due"),
@@ -735,6 +736,20 @@ def _check_notebook_file() -> None:
     a damaged file is never copied over a good backup, because the daily
     backup checks its own copy (`backup.verify_copy`) and refuses it."""
     backup.check_at_boot(deps.get_config().db_path)
+
+
+def _check_data_folder() -> None:
+    """The folders the app owns made again, and the attached files the disk
+    lacks counted (INBOX 1573, `core/selfcheck.py`); Settings, About, Health
+    shows the report. Before the backup, so a missing backups folder is made
+    again and today's copy lands in it."""
+    from tessellate.core import selfcheck
+
+    session = deps.get_db().session()
+    try:
+        selfcheck.run(deps.get_config(), session)
+    finally:
+        session.close()
 
 
 def _backup_if_due() -> None:
