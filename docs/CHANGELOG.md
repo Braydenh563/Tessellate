@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Manage categories and tags scroll the tidy box with the list (the list kept 65 of 369 px at a 560 px window, now 222), the note edit form's head gaps use the card's tokens (title block 44 to 38 px), and a note's topic chip says which words named it (INBOX 1619, 1620).
 - Tag popover and Dashboard constellation (INBOX 1620): the Add tags popover closes instead of dropping to the window corner when its card was re-rendered under it, and the constellation repaints after a resize while resting (it was an empty box with 0 star pixels).
 - Extract notes with no model uses the composer's pieces (INBOX 1618): a heading that became the title leaves the note's body, one long paragraph is cut at its subject changes into short notes (own titles, each filed and tagged on its own words, at most four), no link runs from a note to its own source text, and sibling links read "Same text, next part".
 - Diagram builder: opened from Find anything, the palette or anywhere without a text box, it shows the builder at once and Done saves a new .mmd document (it used to start a blank page made only by a keystroke, so nothing appeared).
