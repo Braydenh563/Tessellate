@@ -268,7 +268,6 @@ def _real_bundles() -> tuple[dict[str, list[tuple[str, str]]], set[str]]:
 
 #: Reached at load but held by a value only the later file makes; each says what holds it.
 ONLY_ONCE_THE_LATER_FILE_RAN = {
-    "atlas.js: atlasTailWake": "wakes `box.atlasTail`, which only atlas-life.js assigns (atlasTailAttach), so a box with a tail means atlasTailFrame is defined",
 }
 
 

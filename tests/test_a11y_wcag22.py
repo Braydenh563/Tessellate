@@ -310,7 +310,8 @@ def test_a_disabled_task_box_on_a_note_card_says_why():
     at = js.index('item.className = "entry-task"')
     block = js[at : at + 1400]
     assert "box.disabled = true" in block
-    assert 'box.title = "' in block
+    #: The words carry the reason since unslop 22: the box lets the tap fall through to the card.
+    assert 'item.title = "' in block
 
 
 def test_the_chosen_chat_mode_keeps_a_visible_focus_ring_in_the_ink_palettes():

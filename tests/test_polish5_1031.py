@@ -73,7 +73,7 @@ def test_a_search_already_on_still_seeds_the_documents_for_the_first_reorder():
     src = _src("library.js")
     render = src[src.index("async function renderLibraryDocuments()") :]
     render = render[: render.index("\n}\n")]
-    assert "if (!needle) libraryDocsAll = docs;" in render
+    assert "if (!needle) {\n    libraryDocsAll = docs;" in render
     assert "else if (!libraryDocsAll.length) seedLibraryDocsAll();" in render
     seed = src[src.index("function seedLibraryDocsAll()") :]
     seed = seed[: seed.index("\n}\n")]

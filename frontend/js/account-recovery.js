@@ -445,9 +445,8 @@ function showRestoreOffer(offer) {
   if (!box && !offer) return;
   if (!box) {
     const make = (tag, props = {}) => Object.assign(document.createElement(tag), props);
+    //: A notice in the card's reading order; no label of its own (the Guide reads labels, test_forgot_password_ui).
     box = make("div", { id: "lock-restore-offer", className: "notice" });
-    box.setAttribute("role", "region");
-    box.setAttribute("aria-labelledby", "lock-restore-words");
     const icon = make("i", { className: "ph ph-clock-counter-clockwise" });
     icon.setAttribute("aria-hidden", "true");
     const row = make("div", { className: "row button-row" });

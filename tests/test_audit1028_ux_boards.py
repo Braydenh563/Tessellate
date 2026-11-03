@@ -188,7 +188,7 @@ def test_the_template_offers_close_button_is_a_real_target_and_the_strip_keeps_i
     assert "min-width: max(var(--button-min-h), var(--target-min))" in rule
     assert "min-height: max(var(--button-min-h), var(--target-min))" in rule
     # A tile cut at the strip's right edge is the cue that the row scrolls: the fade is what says so.
-    assert 'class="wb-map-templates-row edge-fade" id="wb-map-template-row"' in HTML
+    assert 'class="wb-map-templates-row edge-fade scroll-row" id="wb-map-template-row"' in HTML
 
 
 # B12 ------------------------------------------------------------------------
