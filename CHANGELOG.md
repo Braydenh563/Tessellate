@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Unslop 25: failure copy has one contraction ("Couldn't", 30 "Could not" strings), nine toasts that said "that" now name what failed, and an empty-state icon written as `i.ph.empty-icon` (search, a failed load) draws at 41.6px, not 16.9.
 - Unslop 23: the Timeline's Date column drops the year for this year's rows and narrows, so a phone shows 6 of 94 titles cut short instead of 11 (title column 202 to 250px); the hover keeps the whole date.
 - Unslop 19 and 20: an empty Graph no longer paints a legend and zoom strip with nothing to key or zoom, and an empty Dashboard keeps Quick capture instead of 349px of void.
 - Chats: an empty sidebar is the empty-state recipe (icon, 'No saved chats yet', one sentence, New chat) instead of a grey 13.6px line (unslop 1103, 17).

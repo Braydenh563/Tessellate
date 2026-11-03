@@ -196,7 +196,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
           }
         );
       } catch (err) {
-        toast(err.message || "Could not delete that reading.", true);
+        toast(err.message || "Couldn't delete that reading.", true);
       } finally {
         self.disabled = false;
       }

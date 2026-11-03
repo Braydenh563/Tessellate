@@ -4803,7 +4803,7 @@ function gcWireSelectionDock(s = gcTab) {
       body: JSON.stringify({ name, note_ids: [...ids], edges, root_id: picked }),
     }).catch(() => null);
     if (!board?.id) {
-      toast("Could not create the map.");
+      toast("Couldn't create the map.");
       return;
     }
     pushBinPairUndo(`Made the mind map “${name}”`, `/entries/${board.id}`, `/entries/${board.id}/restore`, true, () => (typeof refreshBoardList === "function" ? refreshBoardList() : null));

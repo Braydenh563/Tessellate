@@ -291,7 +291,7 @@ async function lanFillPanel(holder, after) {
   try {
     state = ready ? await apiJson("/auth/lan-access", { silent: true }) : null;
   } catch (error) {
-    holder.replaceChildren(lanPanelLine(`ph:warning ${error.message || "Could not read the network settings."}`, "muted"));
+    holder.replaceChildren(lanPanelLine(`ph:warning ${error.message || "Couldn't read the network settings."}`, "muted"));
     after?.();
     return;
   }

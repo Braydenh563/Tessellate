@@ -28,7 +28,7 @@ function surfaceFailed(el, what, retry) {
   icon.setAttribute("aria-hidden", "true");
   const title = document.createElement("p");
   title.className = "empty-title";
-  title.textContent = `Could not load ${what}`;
+  title.textContent = `Couldn't load ${what}`;
   const body = document.createElement("p");
   //: Says what is and is not true, because the first thing a person fears
   //: here is that the notes are gone.

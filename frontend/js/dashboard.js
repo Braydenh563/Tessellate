@@ -3865,7 +3865,7 @@ async function undoActorFrom(actor, since, byId, rerender) {
     await loadEntries().catch(() => {});
     rerender();
   } catch (error) {
-    toast(error.message || "Couldn't undo that.", true);
+    toast(error.message || `Couldn't undo what ${name} changed.`, true);
   }
 }
 
@@ -4133,7 +4133,7 @@ function dashTensionRow(tension, onGone) {
       onGone();
     } catch (error) {
       pressed.disabled = false;
-      toast(error.message || "Couldn't save that.", true);
+      toast(error.message || "Couldn't save that decision.", true);
     }
   };
   actions.append(

@@ -1129,7 +1129,7 @@ async function renderLogs() {
   clearSkeletons($("log-list"));
   if (!records) {
     const note = $("logs-dropped");
-    note.textContent = "Could not load the server log. The records from this browser are shown.";
+    note.textContent = "Couldn't load the server log. The records from this browser are shown.";
     note.classList.remove("hidden");
   }
   const served = records || [];

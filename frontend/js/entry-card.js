@@ -422,7 +422,7 @@ function entryItem(entry, options = {}) {
       flashEntry(entry.id);
       toast("Image removed.");
     } catch(err) {
-      toast(err.message || "Failed to remove image", true);
+      toast(err.message || "Couldn't remove that image.", true);
     }
   });
   if (glance) {

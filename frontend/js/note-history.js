@@ -369,6 +369,6 @@ async function undoSkillRun(span, button, onDone) {
     onDone?.();
     await loadEntries().catch(() => {});
   } catch (error) {
-    toast(error.message || "Couldn't undo that.", true);
+    toast(error.message || "Couldn't undo that run.", true);
   }
 }

@@ -1798,7 +1798,7 @@ async function addMemoryByHand() {
     input.value = "";
     renderMemorySettings();
   } catch (error) {
-    status.textContent = error.message || "Couldn't save that.";
+    status.textContent = error.message || "Couldn't save that memory.";
     status.classList.remove("hidden");
     status.classList.add("error");
   }
@@ -3564,7 +3564,7 @@ async function saveToolSwitch(check, name) {
     });
   } catch (error) {
     check.checked = !check.checked;
-    toast(error.message || "Couldn't save that. Try again.", true);
+    toast(error.message || "Couldn't save that tool setting. Try again.", true);
     return;
   }
   // The "N of 51 on" count is only true until someone flips one.
@@ -3609,7 +3609,7 @@ async function saveToolGroup(head) {
       body: JSON.stringify({ disabled_tools: [...next] }),
     });
   } catch (error) {
-    toast(error.message || "Couldn't save that. Try again.", true);
+    toast(error.message || "Couldn't save those tool settings. Try again.", true);
     return;
   }
   for (const check of boxes) check.checked = turnOn;

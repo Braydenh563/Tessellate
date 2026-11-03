@@ -386,7 +386,7 @@ mermaidFailure.note = (error, source) => {
   note.className = "md-mermaid-reason";
   note.setAttribute("role", "status");
   const plain = mermaidFailure.plain(error, source);
-  note.append(`Could not draw this diagram. ${plain}`);
+  note.append(`Couldn't draw this diagram. ${plain}`);
   if (plain !== error) {
     const more = document.createElement("details");
     more.className = "md-mermaid-raw";

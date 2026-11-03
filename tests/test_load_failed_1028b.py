@@ -18,7 +18,7 @@ PHRASE = re.compile(r"^(?:your|the|this|what)\b")
 
 def test_the_failure_title_adds_no_possessive():
     nav = (JS_DIR / "load-failed.js").read_text(encoding="utf-8")
-    assert "`Could not load ${what}`" in nav
+    assert "`Couldn't load ${what}`" in nav
     assert "Could not load your" not in nav
 
 

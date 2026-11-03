@@ -2445,7 +2445,7 @@ async function offerToCreateWikiTarget(name) {
       openDocument(doc.id);
     }
   } catch (error) {
-    toast(error.message || "Could not create that.", true);
+    toast(error.message || "Couldn't create that.", true);
   }
 }
 

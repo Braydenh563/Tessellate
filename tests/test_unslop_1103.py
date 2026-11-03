@@ -267,3 +267,15 @@ def test_23_the_timeline_date_drops_this_years_year_and_the_column_follows():
     css = _css("06-timeline-dialogs.css")
     assert "width: 5rem" in _body(css, ".timeline-table.timeline-this-year th:nth-child(2)")
     assert "width: 6.5rem" in _body(css, ".timeline-table th:nth-child(2)")
+
+
+def test_25_failure_copy_has_one_contraction_and_names_its_object():
+    """"Could not" 30 times beside "Couldn't" 226; seven toasts said "that" and one said "Failed to"."""
+    said = []
+    for path in sorted((ROOT / "frontend" / "js").glob("*.js")):
+        for number, line in enumerate(path.read_text(encoding="utf-8").split("\n"), 1):
+            if re.search(r"[\"`]Could not |Failed to remove|Couldn't (?:undo|save) that(?:\.|\s*\"|\s*`|,)", line) and not line.lstrip().startswith("//"):
+                said.append(f"{path.name}:{number}: {line.strip()[:110]}")
+    assert not said, said
+    css = _css("02-chat-graph.css")
+    assert "font-size: 2.6rem" in _body(css, ".ph.empty-icon"), "an `i.ph.empty-icon` lost to `.ph` and drew at 16.9px"

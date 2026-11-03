@@ -1442,7 +1442,7 @@ async function saveMeetingDocument() {
       openDocument(document_.id);
     }, `Saved “${title}” to your documents.`);
   } catch (error) {
-    status.textContent = error.message || "Couldn't save that.";
+    status.textContent = error.message || "Couldn't save that document.";
     status.classList.add("error");
   } finally {
     button.disabled = false;
@@ -1483,7 +1483,7 @@ async function saveVoiceNoteText(text, title) {
     await refreshEntries([made.id]).catch(() => {});
     meetingShowSaved(text, "Open the note", () => flashEntry(made.id));
   } catch (error) {
-    meetingSay(error.message || "Couldn't save that.", true);
+    meetingSay(error.message || "Couldn't save that voice note.", true);
   } finally {
     button.disabled = false;
   }

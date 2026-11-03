@@ -559,7 +559,7 @@ async function cmdPaletteSaveAsChat() {
     loadConversationList().catch(() => {});
     renderCmdPaletteMenu();
   } catch (error) {
-    setLabel(status, "ph:warning-circle Could not save this conversation");
+    setLabel(status, "ph:warning-circle Couldn't save this conversation");
   }
 }
 
@@ -992,7 +992,7 @@ async function agentCommitFiles() {
       if (got.documentId) sent.documentIds.push(got.documentId);
     } catch (error) {
       for (const other of agentStaged) other.state = "ready";
-      Object.assign(item, { state: "error", error: error.message || "Could not attach" });
+      Object.assign(item, { state: "error", error: error.message || "Couldn't attach that file" });
       agentRenderChips();
       for (const id of sent.imageMediaIds) await apiJson(`/media/${id}`, { method: "DELETE" }).catch(() => null);
       // An imported document would otherwise be duplicated by the retry.

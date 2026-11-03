@@ -447,7 +447,7 @@ function changeRow(change, options = {}) {
         loadEntries();
       } catch (error) {
         undo.disabled = false;
-        toast(error.message || "Couldn't undo that.", true);
+        toast(error.message || "Couldn't undo that change.", true);
       }
     });
     undo.dataset.changeUndo = "1";

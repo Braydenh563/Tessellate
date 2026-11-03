@@ -583,7 +583,7 @@ async function insertTemplate(template, caught) {
         seeReminders.classList.remove("hidden");
         label.value = "";
       } catch (error) {
-        note.textContent = error.message || "Could not set that alarm.";
+        note.textContent = error.message || "Couldn't set that alarm.";
       }
     });
     const actions = clockEl("div", "row");

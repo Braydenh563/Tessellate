@@ -92,7 +92,7 @@ async function renderSkillToolPicker(selected = []) {
   const catalog = await apiJson("/chat/tools").catch(() => null);
   box.replaceChildren();
   if (!catalog) {
-    box.textContent = "Could not load the tools a skill can use. Close this and open it again.";
+    box.textContent = "Couldn't load the tools a skill can use. Close this and open it again.";
     return;
   }
   for (const tool of catalog) {

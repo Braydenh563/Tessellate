@@ -2310,7 +2310,10 @@ kbd {
 .empty-state.is-failed .empty-title {
   color: var(--warn);
 }
-.empty-icon {
+/* `.ph.empty-icon` too: `.ph` (07) is later and as specific, so an `<i class="ph
+   empty-icon">` drew at 16.9px, not 41.6 (search, pickers, a failed load). */
+.empty-icon,
+.ph.empty-icon {
   font-size: 2.6rem;
   display: block;
   margin-bottom: 0.5rem;
