@@ -809,6 +809,51 @@ def _start_searxng_if_asked() -> None:
         )
 
 
+def _warm_routes(app) -> None:
+    """Pay FastAPI's one-time route build at launch, not on the first request (INBOX 1591).
+
+    The first dispatch of any request builds the effective routes of every
+    router under one lock: about 0.9 s here for ~240 paths, so the browser's
+    boot burst (`/models/status` among them) all waited on it, 3.9 s on the
+    owner's machine. One in-process `/health` takes that cost while the lock
+    screen is still open. On the pool's thread Jobs, not the event loop; a
+    failure only means the first real request pays as before. Skipped under
+    pytest, where every test app would pay a second for nothing.
+    """
+    if os.environ.get("PYTEST_CURRENT_TEST"):
+        return
+
+    def warm() -> None:
+        import asyncio
+
+        async def receive():
+            return {"type": "http.request", "body": b"", "more_body": False}
+
+        async def send(_message) -> None:
+            return None
+
+        scope = {
+            "type": "http",
+            "asgi": {"version": "3.0"},
+            "http_version": "1.1",
+            "method": "GET",
+            "scheme": "http",
+            "path": "/health",
+            "raw_path": b"/health",
+            "query_string": b"",
+            "root_path": "",
+            "headers": [(b"host", b"127.0.0.1")],
+            "client": ("127.0.0.1", 0),
+            "server": ("127.0.0.1", 80),
+        }
+        try:
+            asyncio.run(app(scope, receive, send))
+        except Exception:  # noqa: BLE001  # a warm-up that fails changes nothing but the first request's time
+            logging.getLogger("tessellate.startup").debug("route warm-up did not run", exc_info=True)
+
+    jobs.thread("route warm", warm)
+
+
 def _start_autonomous_loop() -> None:
     """Start the background librarian's scheduler (§39).
 
@@ -1695,6 +1740,7 @@ def create_app() -> FastAPI:
         # quiet kind, after the server is up (ARCH-19).
         concurrency.apply_worker_limit()
         routes_models.prewarm_installed()
+        _warm_routes(_app)
         afterunlock.defer("maintenance", lambda: jobs.enqueue("maintenance", _startup_maintenance, name="startup maintenance"))
         yield
         # Never raises: `stop_all` swallows per-job failures itself, and a
