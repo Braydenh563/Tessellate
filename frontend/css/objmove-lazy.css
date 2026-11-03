@@ -133,12 +133,6 @@ html.obj-dragging #status-tray:not(.obj-target) {
 .obj-tray.hidden {
   display: none;
 }
-.obj-tray-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-}
 .obj-tray-list {
   display: flex;
   flex-direction: column;

@@ -848,7 +848,7 @@ $("palette-input").addEventListener("input", () => {
   paletteAskNotes($("palette-input").value);
 });
 $("palette-input").addEventListener("keydown", paletteKeydown);
-wireBackdropClose($("palette-overlay"), () => closePalette());
+wireBackdropClose($("palette-overlay"), () => closePalette(), "#palette-close, #palette-close *");
 
 // ---- from palette.js (search-boot-1005): notesPaletteCommands ----
 // Moved whole. Every use is in this file, so it is not needed before this file loads.

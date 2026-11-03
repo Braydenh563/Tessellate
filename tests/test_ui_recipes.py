@@ -7360,3 +7360,24 @@ def test_an_inline_toggle_is_a_bare_switch():
     bodies = [b for s, b in re.findall(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", css) if s.strip() == ".checkbox-label"]
     assert any("border: 1px solid transparent" in b for b in bodies)
     assert ".checkbox-label:has(input:checked)" not in css, "the knob says on; a checked fill doubles it"
+
+
+def test_a_status_bar_popover_has_the_one_close_head() -> None:
+    """INBOX 1603: "this tray popup is now showing and I cant close it, there
+    isnt even a minimise or close x button". Every status-bar popover that holds
+    things (Tray, Other devices) builds its head with `popoverHead`, passing its
+    panel so the close x is made; none builds a bare title of its own."""
+    menus = frontend_text("js/menus.js")
+    panels = frontend_text("js/status-panels.js")
+    assert "function popoverHead(" in panels and '"popover-close"' in panels
+    for name, call in (("js/obj-tray.js", 'popoverHead("Tray"'), ("js/lan-watch.js", 'popoverHead("Other devices"')):
+        text = frontend_text(name)
+        assert call in text, name
+        assert 'textContent = "Tray"' not in text and 'textContent = "Other devices"' not in text, name
+    # A lost dragend must not keep the drag flag up (outside presses would never close again).
+    flag = menus[menus.index("const dragFlag"):menus.index("function closeActionMenusOnScroll")]
+    press = flag[flag.index('addEventListener("pointerdown"'):]
+    assert 'kinds.delete("native")' in press[:400]
+    html = frontend_text("index.html")
+    assert 'id="palette-close"' in html
+    assert '"#palette-close, #palette-close *"' in frontend_text("js/app-palette.js")

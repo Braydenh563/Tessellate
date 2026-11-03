@@ -44,7 +44,7 @@ const dragFlag = (() => {
   };
   document.addEventListener("dragstart", () => kinds.add("native"), true);
   document.addEventListener("dragend", () => release("native"), true);
-  document.addEventListener("pointerdown", (event) => { pressAt = { x: event.clientX, y: event.clientY }; pressUntil = Infinity; }, true);
+  document.addEventListener("pointerdown", (event) => { kinds.delete("native"); pressAt = { x: event.clientX, y: event.clientY }; pressUntil = Infinity; }, true);
   for (const type of ["pointerup", "pointercancel"]) document.addEventListener(type, () => { pressUntil = performance.now() + 200; }, true);
   window.addEventListener("blur", () => { pressUntil = 0; });
   return {

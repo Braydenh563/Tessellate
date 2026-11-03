@@ -3786,3 +3786,7 @@ deduplicated against the ledger above.
 - [wbpaste-1026.md] Found-not-fixed: app.js gzip cap (14,300) has no room for one more script line, so the shared helpers and the board paste code sit inside documents-prose.js and whiteboard-commands.js instead of their own files; a split needs the cap to come down elsewhere first.
 - [worldclass-1018.md] Found, not fixed (A): Escape on Settings rewrites the settings entry's address to the tab underneath (#/reminders), so Forward onto it shows the wrong hash although the dialog is right; a reload on that entry would open the tab, not Settings. Low impact.
 - [worldclass-1018.md] Found, not fixed (B), the real one: browser Back (history.back()) with an overlay open steps the tab history and leaves the overlay open on the other tab. Palette, finder, Guide, shortcuts and quick note: 5 of 5 left the overlay open and moved Timeline to Notes. Settings is right (closes, stays, 1 of 1). On a phone, where Back is the way out of a sheet, this matters more. Not measured at 390.
+
+## Boot budget, 2026-11-03
+
+- [ ] Win back the 2026-11-03 raise of the boot gzip cap (260,350 to 260,400, `tests/test_static_compression.py`, INBOX 1603): the next boot diet moves a boot-time wiring to a lazy file and lowers the cap again.

@@ -9162,7 +9162,9 @@ h3.wb-sidebar-title {
    sits directly in `.dialog-head`; History/Close sit in
    `.dialog-head-actions`; both are covered. */
 .dialog-head .dialog-head-btn.ghost,
-.dialog-head-actions > .dialog-head-btn.ghost {
+.dialog-head-actions > .dialog-head-btn.ghost,
+.popover-head > .popover-close.ghost,
+.palette-head > .dialog-head-btn.ghost {
   width: var(--dialog-head-btn-size);
   height: var(--dialog-head-btn-size);
   min-height: 0;
@@ -9178,7 +9180,9 @@ h3.wb-sidebar-title {
 .dialog-head .dialog-head-btn.ghost:hover,
 .dialog-head .dialog-head-btn.ghost[aria-expanded="true"],
 .dialog-head-actions > .dialog-head-btn.ghost:hover,
-.dialog-head-actions > .dialog-head-btn.ghost[aria-expanded="true"] {
+.dialog-head-actions > .dialog-head-btn.ghost[aria-expanded="true"],
+.popover-head > .popover-close.ghost:hover,
+.palette-head > .dialog-head-btn.ghost:hover {
   color: var(--ink);
   background: var(--chip-bg);
 }
@@ -9187,7 +9191,9 @@ h3.wb-sidebar-title {
    `.entry-actions > button.ghost:focus-visible`), which a low-contrast theme
    can render nearly invisible. This recipe's own buttons keep the ring. */
 .dialog-head .dialog-head-btn.ghost:focus-visible,
-.dialog-head-actions > .dialog-head-btn.ghost:focus-visible {
+.dialog-head-actions > .dialog-head-btn.ghost:focus-visible,
+.popover-head > .popover-close.ghost:focus-visible,
+.palette-head > .dialog-head-btn.ghost:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }

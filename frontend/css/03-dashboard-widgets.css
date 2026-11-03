@@ -4101,6 +4101,18 @@ button.answer-figure-open {
      popover grows from what opened it"). */
 }
 
+/* A status-bar popover's head (`popoverHead`, menus.js; INBOX 1603): its name
+   takes the room, its own actions follow, and the close x ends the row. */
+.popover-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.popover-head > .popover-title {
+  flex: 1;
+  min-width: 0;
+}
+
 /* The caret. Two squares rotated 45°, the back one carries the border, the
    front one covers the join so the panel's own edge reads as continuous. */
 .help-popover::before,

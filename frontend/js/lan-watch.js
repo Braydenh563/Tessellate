@@ -286,7 +286,7 @@ async function lanFillPanel(holder, after) {
   }
   //: The address block, the network rows and the switch are Settings' own
   //: (settings-controls.js), so the two surfaces cannot say it two ways.
-  const ready = await ensureModule("settingsControls");
+  const ready = (await ensureModule("statusPanels")) && (await ensureModule("settingsControls"));
   let state = null;
   try {
     state = ready ? await apiJson("/auth/lan-access", { silent: true }) : null;
@@ -325,11 +325,7 @@ function lanDrawPanel(holder, state, paint) {
   head.className = "lan-panel-head";
   head.dataset.lanState = look.name;
   //: A sheet's own head already says it (`openSheet`'s title).
-  if (!holder.closest(".sheet-card")) {
-    const title = document.createElement("strong");
-    title.textContent = "Other devices";
-    head.appendChild(title);
-  }
+  if (!holder.closest(".sheet-card")) head.appendChild(popoverHead("Other devices", [], holder));
   head.appendChild(lanPanelLine(`ph:${look.glyph} ${look.words}`));
   const parts = [head];
 

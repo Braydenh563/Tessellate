@@ -124,7 +124,11 @@ PIECE_CAP = 32_000
 #: put their wiring where it runs at boot (E47 chat list search, E61 the
 #: Plan and Agent gate as aria-disabled, S92 the Notes and Library counts
 #: announced), 26 bytes over together; the next boot diet takes it back.
-TOTAL_CAP = 260_350
+#: 2026-11-03, raised to 260,400 with a reason (INBOX 1603): the drag flag drops a
+#: native drag whose dragend was lost (every popover stayed open for good) and the
+#: palette's close x is wired at boot, 3 bytes over; the popover head itself went
+#: to the lazy status-panels.js. The next boot diet takes it back (OPEN.md).
+TOTAL_CAP = 260_400
 
 
 def _served_gzip_size(client, name: str) -> int:
