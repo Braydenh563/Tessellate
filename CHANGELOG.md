@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Reminders form: Quick set and the time steppers are 36px at the fields' corner, not 32px pills (unslop 1103, 12).
 - Dashboard: one filled button (Save), the digest's Generate is a ghost, and the highlighted first tile has no tinted edge at rest (unslop 1103, 11).
 - Settings rail: the Show all toggle is no longer clipped and On this page no longer wraps; the head stacks when the rail is narrow (unslop 1103, 10).
 - Settings: the head's profile, guide and back buttons stay put between sections; Peek sits beside the title (unslop 1103, 9).

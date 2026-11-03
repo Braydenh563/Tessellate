@@ -9989,14 +9989,23 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
   background-repeat: no-repeat;
   background-size: calc(100% - 2 * var(--space-3) - 2px) 1px;
 }
-/* 4. Reminders' When row draws one corner (INBOX 464 (17)). "Quick set" was
-      --radius-md (4.8px) beside two steppers at the pill on one line, at
-      1440 and at 390. The stepper is a quiet pill by recipe (DESIGN.md
-      "Stepper"), so the row's menu opener takes its corner, the way every
-      control in the chat composer's row is a pill; it is named in
-      PILL_CONTROLS for that reason. */
-#reminder-due-row>details>summary {
-  border-radius: var(--radius-pill);
+/* 4. Reminders' When row draws the form's own height and corner (INBOX 464
+      (17), then unslop 1103, 12). "Quick set" was --radius-md beside two
+      steppers at the pill, so INBOX 464 made the opener a pill too; but the
+      fields above them are 36px at --radius-md, so the card held three shapes
+      and four heights (36 / 32 pill / 32 pill / an 18px readout). The row's
+      controls now take the fields' height (44 under touch) and corner, and the
+      stepper's round buttons the concentric corner inside it. The stepper
+      recipe elsewhere (the map's size stepper, the zoom strip) is unchanged. */
+#reminder-due-row {
+  --button-min-h: var(--control-h-body);
+}
+#reminder-due-row > details > summary,
+#reminder-due-row .stepper {
+  border-radius: var(--radius-md);
+}
+#reminder-due-row .stepper-btn {
+  border-radius: var(--radius-in-md);
 }
 /* --- A note card's text leads; its metadata steps back (INBOX 505) ---
    The owner: "the metadata clashes with the note contents visually a bit

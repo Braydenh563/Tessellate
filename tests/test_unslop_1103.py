@@ -116,3 +116,12 @@ def test_11_dashboard_has_one_filled_button_and_no_tinted_edge_at_rest():
     assert js.count("Generate this week's digest") == 2
     assert 'smallButton("Generate this week\'s digest", "", runGeneration)' in js
     assert 'runGeneration, false' not in js
+
+
+def test_12_reminder_when_row_takes_the_fields_height_and_corner():
+    css = _css("08-consistency.css")
+    assert "--button-min-h: var(--control-h-body)" in _body(css, "#reminder-due-row")
+    for selector in ("#reminder-due-row > details > summary", "#reminder-due-row .stepper"):
+        assert "border-radius: var(--radius-md)" in _body(css, selector)
+        assert "radius-pill" not in _body(css, selector)
+    assert "border-radius: var(--radius-in-md)" in _body(css, "#reminder-due-row .stepper-btn")
