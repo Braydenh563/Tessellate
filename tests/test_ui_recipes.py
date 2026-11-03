@@ -7283,3 +7283,68 @@ def test_every_floating_popup_menu_tooltip_and_preview_class_carries_a_motion_re
     )
     stale = sorted(name for name in UNMOTIONED_FLOATING if name not in floating or name in motioned)
     assert not stale, f"remove from UNMOTIONED_FLOATING (it has a recipe now, or is gone): {stale}"
+
+
+class _SettingRows(HTMLParser):
+    """Every `.setting-row` in the page with its direct children, and whether a
+    child holds a control or any text."""
+
+    CONTROLS = {"input", "select", "textarea", "button", "a", "summary", "canvas", "svg", "img"}
+    VOID = {"input", "br", "img", "meta", "link", "hr", "source"}
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.stack: list[dict] = []
+        self.rows: list[dict] = []
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        node = {"tag": tag, "classes": (attrs.get("class") or "").split(), "id": attrs.get("id"), "kids": [], "controls": False, "text": False}
+        if self.stack:
+            self.stack[-1]["kids"].append(node)
+        if tag in self.CONTROLS:
+            for up in self.stack:
+                up["controls"] = True
+            node["controls"] = True
+        if "setting-row" in node["classes"]:
+            self.rows.append(node)
+        if tag not in self.VOID:
+            self.stack.append(node)
+
+    def handle_endtag(self, tag):
+        for index in range(len(self.stack) - 1, -1, -1):
+            if self.stack[index]["tag"] == tag:
+                del self.stack[index:]
+                break
+
+    def handle_data(self, data):
+        if data.strip():
+            for up in self.stack:
+                up["text"] = True
+
+
+def test_a_settings_row_with_a_text_value_shares_one_alignment() -> None:
+    """INBOX 1585 (the owner: "these arent aligned"): "Model latency" centred its
+    label on the help button while the value sat top-aligned, 5px high; a row with
+    a visible hint centred the value on the whole label block, 10.6px low. A text
+    value is `.setting-control.muted` (the doctor row's recipe too), and a row that
+    holds one aligns the value to the name's baseline, so the two share a line
+    wherever they sit side by side. The sweep reading the centres across Settings
+    at both widths and both themes: `scratchpad/ui-sweeps/settingsvalign.js`."""
+    parser = _SettingRows()
+    parser.feed((ROOT / "frontend" / "index.html").read_text(encoding="utf-8"))
+    plain = []
+    for row in parser.rows:
+        values = [kid for kid in row["kids"] if "setting-label" not in kid["classes"]]
+        if len(values) != 1 or values[0]["controls"] or not values[0]["text"]:
+            continue
+        if "muted" not in values[0]["classes"]:
+            plain.append(values[0]["id"] or " ".join(values[0]["classes"]) or values[0]["tag"])
+    assert not plain, f"a text value on a Settings row is `.setting-control.muted`: {plain}"
+    css = "\n".join(path.read_text(encoding="utf-8") for path in CSS)
+    rule = re.search(r"\.setting-row:has\(>\s*\.setting-control\.muted:not\(\.row\)\)\s*\{([^}]*)\}", css)
+    assert rule, "the text-value row rule is gone (04-chat-dock-appearance.css)"
+    assert re.search(r"align-items:\s*baseline", rule.group(1))
+    doctor = (ROOT / "frontend" / "js" / "settings-controls.js").read_text(encoding="utf-8")
+    assert 'value.className = "setting-control muted"' in doctor
+    assert "A Settings row whose right side is text" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")

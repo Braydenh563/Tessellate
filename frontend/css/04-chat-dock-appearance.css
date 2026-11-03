@@ -2021,6 +2021,18 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   align-items: flex-start;
 }
 
+/* A row whose right side is text (`.setting-control.muted`, not a control row)
+   puts the value on the name's baseline. Centring put it mid-block under a
+   visible hint (10.6px below the name) and top-aligning put it above the name
+   when the help button made the name's line taller (5px); the first baseline of
+   the label is the name's text either way (INBOX 1585). Side by side only: the
+   phone width stacks the row. */
+@media (min-width: 600px) {
+  .setting-row:has(> .setting-control.muted:not(.row)) {
+    align-items: baseline;
+  }
+}
+
 .setting-label {
   display: flex;
   flex-direction: column;
