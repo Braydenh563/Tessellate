@@ -7692,18 +7692,6 @@ input[type="color"].wb-mixed {
   font-size: var(--text-sm);
   text-align: center;
 }
-.wb-diagram-preview {
-  display: grid;
-  place-items: center;
-  min-height: calc(var(--control-h-lg) * 4);
-  max-height: 40vh;
-  margin: var(--space-2) 0;
-  overflow: auto;
-}
-.wb-diagram-preview > img {
-  max-width: 100%;
-  max-height: 38vh;
-}
 
 /* Voting dots and the workshop timer (INBOX 1313 row 14; DESIGN.md recipe index).
    The tally is a pill on an item's top-right corner, never a pointer target; the

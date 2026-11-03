@@ -192,14 +192,30 @@ function objDragRoute(g) {
 
 //: A held pointer at a scroller's top or bottom edge keeps scrolling it, so a
 //: long list can be reordered from end to end (no `pointermove` arrives while
-//: the hand is still).
+//: the hand is still). The edge is the part of the box that is on screen, so a pane that runs past
+//: the window has its edge at the window's. A mode with `ancestors` also hands the scroll to the
+//: scrollers around it (the diagram pane inside a short document page, 1546 P2), the inner one
+//: first, and only a scroller that can still move that way.
 function objDragTick(g) {
   if (objDragNow !== g) return;
-  const box = g.scroller?.getBoundingClientRect();
-  const near = box ? Math.max(0, 48 - (g.y - box.top), g.y - (box.bottom - 48)) : 0;
-  if (near > 0) {
-    g.scroller.scrollTop += (g.y < (box.top + box.bottom) / 2 ? -1 : 1) * Math.ceil(near / 6);
+  if (g.scroller && !g.edges) {
+    g.edges = [g.scroller];
+    if (OBJ_MODES[g.mode].ancestors) {
+      for (let node = g.scroller.parentElement; node && node !== document.body; node = node.parentElement) {
+        if (/auto|scroll/.test(getComputedStyle(node).overflowY)) g.edges.push(node);
+      }
+    }
+  }
+  for (const el of g.edges || []) {
+    const box = el.getBoundingClientRect();
+    const top = Math.max(box.top, 0);
+    const bottom = Math.min(box.bottom, innerHeight);
+    const near = Math.max(0, 48 - (g.y - top), g.y - (bottom - 48));
+    const way = g.y < (top + bottom) / 2 ? -1 : 1;
+    if (near <= 0 || (OBJ_MODES[g.mode].ancestors && (way < 0 ? el.scrollTop <= 0 : el.scrollTop + el.clientHeight >= el.scrollHeight - 1))) continue;
+    el.scrollTop += way * Math.ceil(near / 6);
     OBJ_MODES[g.mode].update(g);
+    break;
   }
   objDragSchedule(g);
 }
