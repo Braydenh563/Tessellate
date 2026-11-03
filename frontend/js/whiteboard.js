@@ -25593,7 +25593,7 @@ function wbPresentCaption(at, steps) {
 //: how it looks (INBOX 1577): the trail on or off, a look (dot, trail, ring,
 //: spotlight) and a colour from the board's palette, kept in this browser
 //: like the board's other display choices (`prefs`, key `wb-laser`). The
-//: looks animate with transform and opacity only, and under Reduce motion
+//: looks animate with transform and opacity only, and under reduced motion
 //: the trail is off whatever was chosen.
 const wbLaser = {
   looks: { dot: "Dot", trail: "Trail", ring: "Ring", spotlight: "Spotlight" },
@@ -25718,7 +25718,7 @@ function wbLaserTrail(event) {
     head.style.transform = `translate(${event.clientX}px, ${event.clientY}px)`;
     head.hidden = false;
   }
-  //: Reduce motion has no trail, whatever was chosen: the head alone shows
+  //: reduced motion has no trail, whatever was chosen: the head alone shows
   //: where the pointer is.
   if (!wbLaser.prefs().trail || reducedMotionWanted()) return;
   const dot = document.createElement("span");
