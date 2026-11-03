@@ -1603,6 +1603,20 @@ button.rich-picker-row:is(:hover, :focus-visible) .rich-picker-tile {
 math :is(msqrt > *, mroot > :first-child) {
   padding: 0.18em 0.12em 0;
 }
+/* `\boxed` and `\cancel` (a31m leftovers): a frame and a strike on the argument's row, from the renderer's classes. */
+math .math-boxed {
+  border: 1px solid currentColor;
+  padding: 0.1em 0.2em;
+}
+math .math-cancel {
+  background: linear-gradient(to top right, transparent calc(50% - 0.6px), currentColor calc(50% - 0.6px) calc(50% + 0.6px), transparent calc(50% + 0.6px));
+}
+math .math-bcancel {
+  background: linear-gradient(to bottom right, transparent calc(50% - 0.6px), currentColor calc(50% - 0.6px) calc(50% + 0.6px), transparent calc(50% + 0.6px));
+}
+math .math-xcancel {
+  background: linear-gradient(to top right, transparent calc(50% - 0.6px), currentColor calc(50% - 0.6px) calc(50% + 0.6px), transparent calc(50% + 0.6px)), linear-gradient(to bottom right, transparent calc(50% - 0.6px), currentColor calc(50% - 0.6px) calc(50% + 0.6px), transparent calc(50% + 0.6px));
+}
 .md-math-source {
   font-family: var(--mono, ui-monospace, monospace);
   font-size: var(--text-md);

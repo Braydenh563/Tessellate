@@ -73,7 +73,7 @@ def test_a_dashboard_redraw_while_the_card_is_open_hands_it_to_the_new_bar():
 
 def test_the_colour_row_is_one_line_and_none_is_not_alone_on_one():
     css = _css("capture-card-lazy.css")
-    row = "\n".join(b for s, b in re.findall(r"([^{}]+)\{([^{}]*)\}", css) if ".capture-card-colours .swatch-picker" in s)
+    row = "\n".join(b for s, b in re.findall(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", css) if ".capture-card-colours .swatch-picker" in s)
     assert "display: flex" in row and "flex-wrap: nowrap" in row and "overflow-x: auto" in row
     assert "grid-template-columns" not in row, "a grid row put None on its own line (it spans every column)"
 
