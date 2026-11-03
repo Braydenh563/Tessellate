@@ -682,6 +682,8 @@ const calcTex = {
       asin: "\\arcsin", arcsin: "\\arcsin", acos: "\\arccos", arccos: "\\arccos", atan: "\\arctan", arctan: "\\arctan", log2: "\\log_{2}", log10: "\\log_{10}",
     };
     const consts = { pi: "\\pi", π: "\\pi", tau: "\\tau", τ: "\\tau", e: "e" };
+    //: The empty box the math renderer draws where a sign has nothing after it yet.
+    const slot = "\u25a1";
     //: The bracket that opens at `from`: its inside and where it ends (a bracket still open runs to the end).
     const inside = (s, from) => {
       let depth = 0;
@@ -695,10 +697,10 @@ const calcTex = {
     const operand = (s, at) => {
       if (s[at] === "(") {
         const [body, end] = inside(s, at);
-        return [walk(body) || "□", end];
+        return [walk(body) || slot, end];
       }
       const m = /^(?:-?\d[\d.]*|[A-Za-z]+|[πτ])/.exec(s.slice(at));
-      if (!m) return ["□", at];
+      if (!m) return [slot, at];
       const w = m[0].toLowerCase();
       return [w in consts ? consts[w] : m[0], at + m[0].length];
     };

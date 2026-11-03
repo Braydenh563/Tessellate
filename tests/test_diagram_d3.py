@@ -1,6 +1,7 @@
 """The kinds the blocks do not draw (1546 D3) and a diagram over 120 blocks: each opens in Source with its picture and
 one line saying why. Read here for the names and the wording; the numbers (each kind's note, a picture drawn, the
-document on Split and the dialog on Source, 130 blocks) are in scratchpad/ui-sweeps/diagram-d3.js.
+document on Split and the dialog on Source, 130 blocks) were taken by scratchpad/ui-sweeps/diagram-d3.js, retired under the scratchpad cap
+(`git show cbb5ecf:scratchpad/ui-sweeps/diagram-d3.js`).
 """
 
 from __future__ import annotations

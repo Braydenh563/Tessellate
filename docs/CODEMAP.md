@@ -6379,44 +6379,44 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `calcFigure` | frontend/js/reply-kit.js:1001 |
-| `chatQueuePaint` | frontend/js/reply-kit.js:1946 |
+| `calcFigure` | frontend/js/reply-kit.js:1003 |
+| `chatQueuePaint` | frontend/js/reply-kit.js:1948 |
 | `openCalculator` | frontend/js/reply-kit.js:417 |
 | `renderRelatedElsewhere` | frontend/js/reply-kit.js:68 |
 | `renderReplyPanel` | frontend/js/reply-kit.js:23 |
-| `renderToolsUnsupportedNotice` | frontend/js/reply-kit.js:1618 |
-| `replyByHelpPanel` | frontend/js/reply-kit.js:1669 |
-| `replyByHover` | frontend/js/reply-kit.js:1690 |
-| `replyByline` | frontend/js/reply-kit.js:1722 |
-| `replyBylineFacts` | frontend/js/reply-kit.js:1647 |
+| `renderToolsUnsupportedNotice` | frontend/js/reply-kit.js:1620 |
+| `replyByHelpPanel` | frontend/js/reply-kit.js:1671 |
+| `replyByHover` | frontend/js/reply-kit.js:1692 |
+| `replyByline` | frontend/js/reply-kit.js:1724 |
+| `replyBylineFacts` | frontend/js/reply-kit.js:1649 |
 | `replyCalcActions` | frontend/js/reply-kit.js:567 |
 | `replyCalcBuild` | frontend/js/reply-kit.js:444 |
-| `replyCalcConvertPane` | frontend/js/reply-kit.js:1451 |
-| `replyCalcEquation` | frontend/js/reply-kit.js:1207 |
-| `replyCalcHistory` | frontend/js/reply-kit.js:1343 |
-| `replyCalcKeypad` | frontend/js/reply-kit.js:1296 |
+| `replyCalcConvertPane` | frontend/js/reply-kit.js:1453 |
+| `replyCalcEquation` | frontend/js/reply-kit.js:1209 |
+| `replyCalcHistory` | frontend/js/reply-kit.js:1345 |
+| `replyCalcKeypad` | frontend/js/reply-kit.js:1298 |
 | `replyCalcPanel` | frontend/js/reply-kit.js:392 |
-| `replyCalcResult` | frontend/js/reply-kit.js:970 |
-| `replyCalcShow` | frontend/js/reply-kit.js:1011 |
+| `replyCalcResult` | frontend/js/reply-kit.js:972 |
+| `replyCalcShow` | frontend/js/reply-kit.js:1013 |
 | `replyCalcWork` | frontend/js/reply-kit.js:406 |
-| `replyCalcWorkPane` | frontend/js/reply-kit.js:1036 |
+| `replyCalcWorkPane` | frontend/js/reply-kit.js:1038 |
 | `replyCompare` | frontend/js/reply-kit.js:173 |
 | `replyDrawAll` | frontend/js/reply-kit.js:34 |
 | `replyFillMeters` | frontend/js/reply-kit.js:193 |
-| `replyFinish` | frontend/js/reply-kit.js:1565 |
-| `replyFoldLong` | frontend/js/reply-kit.js:1803 |
-| `replyGist` | frontend/js/reply-kit.js:1798 |
+| `replyFinish` | frontend/js/reply-kit.js:1567 |
+| `replyFoldLong` | frontend/js/reply-kit.js:1805 |
+| `replyGist` | frontend/js/reply-kit.js:1800 |
 | `replyMeter` | frontend/js/reply-kit.js:160 |
 | `replyMonthName` | frontend/js/reply-kit.js:201 |
-| `replyNoteCard` | frontend/js/reply-kit.js:1896 |
-| `replyNoteEntry` | frontend/js/reply-kit.js:1845 |
-| `replyNoteId` | frontend/js/reply-kit.js:1840 |
-| `replyNotePreviews` | frontend/js/reply-kit.js:1849 |
+| `replyNoteCard` | frontend/js/reply-kit.js:1898 |
+| `replyNoteEntry` | frontend/js/reply-kit.js:1847 |
+| `replyNoteId` | frontend/js/reply-kit.js:1842 |
+| `replyNotePreviews` | frontend/js/reply-kit.js:1851 |
 | `replyPanelShell` | frontend/js/reply-kit.js:44 |
-| `replyPeekLink` | frontend/js/reply-kit.js:1868 |
-| `replyRecordReasons` | frontend/js/reply-kit.js:1600 |
-| `replyReveal` | frontend/js/reply-kit.js:1768 |
-| `replyRevealWanted` | frontend/js/reply-kit.js:1763 |
+| `replyPeekLink` | frontend/js/reply-kit.js:1870 |
+| `replyRecordReasons` | frontend/js/reply-kit.js:1602 |
+| `replyReveal` | frontend/js/reply-kit.js:1770 |
+| `replyRevealWanted` | frontend/js/reply-kit.js:1765 |
 | `replySpark` | frontend/js/reply-kit.js:136 |
 | `replyStatCard` | frontend/js/reply-kit.js:104 |
 | `replyStatCards` | frontend/js/reply-kit.js:206 |
@@ -26252,7 +26252,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1299 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:213 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:215 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4188 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
