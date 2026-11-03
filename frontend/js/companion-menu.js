@@ -340,6 +340,23 @@ function nameMarkBuddyMenu(buddy, at = null) {
       { label: "ph:mask-happy Personas", run: () => openSettingsModal("personas") },
     ],
   });
+  //: INBOX 1620: the desktop app's corner companion (a window of its own while
+  //: the app window is in the tray) is the same switch as Settings, About and
+  //: the tray icon's item. Only the desktop app has it, so a browser tab's menu
+  //: has no row; the answer is cached by `desktopShell()`, asked here for next time.
+  if (isDesktopShell === true) {
+    const onDesktop = Boolean(prefsCache?.desktop_companion);
+    items.push({
+      group: "hide",
+      label: onDesktop ? "ph:desktop Hide from desktop" : "ph:desktop Show on desktop",
+      run: async () => {
+        await setPreference("desktop_companion", !onDesktop);
+        toast(onDesktop ? "The desktop companion is off." : "Your companion will sit in the corner while the window is in the tray.");
+      },
+    });
+  } else if (isDesktopShell === null) {
+    desktopShell();
+  }
   items.push({ group: "hide", label: "ph:eye-slash Hide", run: () => nameMarkBuddyHide(buddy) });
   const box = face.getBoundingClientRect();
   //: In the enlarged view (`nmb.visit`) only who it is, its look and its

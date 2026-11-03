@@ -2,7 +2,7 @@
 
 Generated 2026-11-03 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7746, frontend ids 2636, CSS sections 522, backend routes 641, backend modules 8589, test files 1981, tests 16601, plan headings 992, app scripts 28, boot scripts 37, script files 245.
+Counts: frontend functions 7746, frontend ids 2636, CSS sections 522, backend routes 641, backend modules 8594, test files 1981, tests 16611, plan headings 992, app scripts 28, boot scripts 37, script files 245.
 
 ## Frontend functions (7746)
 
@@ -2885,25 +2885,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `companionPathAt` | frontend/js/companion-menu.js:936 |
-| `companionPathEase` | frontend/js/companion-menu.js:928 |
-| `companionPathKind` | frontend/js/companion-menu.js:952 |
-| `companionPathPeak` | frontend/js/companion-menu.js:959 |
-| `companionPathPlan` | frontend/js/companion-menu.js:969 |
-| `mountBuddyPresets` | frontend/js/companion-menu.js:587 |
-| `nameMarkBuddyApplyPreset` | frontend/js/companion-menu.js:567 |
-| `nameMarkBuddyHome` | frontend/js/companion-menu.js:880 |
-| `nameMarkBuddyKeepPresets` | frontend/js/companion-menu.js:536 |
+| `companionPathAt` | frontend/js/companion-menu.js:953 |
+| `companionPathEase` | frontend/js/companion-menu.js:945 |
+| `companionPathKind` | frontend/js/companion-menu.js:969 |
+| `companionPathPeak` | frontend/js/companion-menu.js:976 |
+| `companionPathPlan` | frontend/js/companion-menu.js:986 |
+| `mountBuddyPresets` | frontend/js/companion-menu.js:604 |
+| `nameMarkBuddyApplyPreset` | frontend/js/companion-menu.js:584 |
+| `nameMarkBuddyHome` | frontend/js/companion-menu.js:897 |
+| `nameMarkBuddyKeepPresets` | frontend/js/companion-menu.js:553 |
 | `nameMarkBuddyMenu` | frontend/js/companion-menu.js:211 |
-| `nameMarkBuddyPresets` | frontend/js/companion-menu.js:528 |
-| `nameMarkBuddySavePreset` | frontend/js/companion-menu.js:544 |
-| `nameMarkBuddyVisit` | frontend/js/companion-menu.js:810 |
+| `nameMarkBuddyPresets` | frontend/js/companion-menu.js:545 |
+| `nameMarkBuddySavePreset` | frontend/js/companion-menu.js:561 |
+| `nameMarkBuddyVisit` | frontend/js/companion-menu.js:827 |
 | `nameMarkViewerActs` | frontend/js/companion-menu.js:177 |
-| `nameMarkViewerBlinks` | frontend/js/companion-menu.js:506 |
-| `nameMarkViewerFace` | frontend/js/companion-menu.js:487 |
-| `nameMarkViewerFit` | frontend/js/companion-menu.js:399 |
-| `nameMarkViewerFollow` | frontend/js/companion-menu.js:441 |
-| `nameMarkViewerNear` | frontend/js/companion-menu.js:482 |
+| `nameMarkViewerBlinks` | frontend/js/companion-menu.js:523 |
+| `nameMarkViewerFace` | frontend/js/companion-menu.js:504 |
+| `nameMarkViewerFit` | frontend/js/companion-menu.js:416 |
+| `nameMarkViewerFollow` | frontend/js/companion-menu.js:458 |
+| `nameMarkViewerNear` | frontend/js/companion-menu.js:499 |
 | `openNameMarkViewer` | frontend/js/companion-menu.js:34 |
 
 ### frontend/js/companion-remark.js (1)
@@ -11720,7 +11720,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Rows: the default way a list of notes is shown | frontend/css/01-forms-settings.css:1446 |
 | Rules that used to be inline style="" attributes. | frontend/css/06-timeline-dialogs.css:645 |
 | SETTINGS: one control height, one right edge | frontend/css/01-forms-settings.css:5069 |
-| SETTINGS: spacing, hierarchy and proximity | frontend/css/01-forms-settings.css:5217 |
+| SETTINGS: spacing, hierarchy and proximity | frontend/css/01-forms-settings.css:5219 |
 | SIDEBAR COLLAPSE & PEEK | frontend/css/07-whiteboard-misc.css:464 |
 | SKILLS TAB | frontend/css/07-whiteboard-misc.css:821 |
 | Sage: quiet greens. The calmest of the set. | frontend/css/05-sidebars-themes.css:3213 |
@@ -11729,7 +11729,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Settings form rows share a label column (Phase 5.1) | frontend/css/07-whiteboard-misc.css:7943 |
 | Settings headings sit at one left edge | frontend/css/08-consistency.css:1451 |
 | Settings rows that wrap their actions under the title (INBOX 82) | frontend/css/08-consistency.css:2232 |
-| Settings, About, Maintenance (settings-controls.js, renderMaintenance). | frontend/css/01-forms-settings.css:6172 |
+| Settings, About, Maintenance (settings-controls.js, renderMaintenance). | frontend/css/01-forms-settings.css:6174 |
 | Settings: a section's intro sits under its heading, not above it | frontend/css/08-consistency.css:4558 |
 | TENSIONS: THE DISAGREEMENT REVIEW | frontend/css/inbox-lazy.css:244 |
 | THE CHAT ON A PHONE, MEASURED | frontend/css/04-chat-dock-appearance.css:5573 |
@@ -11817,7 +11817,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | a map line's end grips and the topic shapes (K31) | frontend/css/library-lazy.css:7379 |
 | a map's levels and a solid fill (MINDMAP_PLAN §14, decisions 38, 39) | frontend/css/library-lazy.css:3463 |
 | a menu is one column: rows, section labels and icons (INBOX 403) | frontend/css/08-consistency.css:8612 |
-| a model per feature (Settings, Models) | frontend/css/01-forms-settings.css:5589 |
+| a model per feature (Settings, Models) | frontend/css/01-forms-settings.css:5591 |
 | a named item in a Settings list: title, label, facts | frontend/css/08-consistency.css:3493 |
 | a narrow measure for prose, wide chrome around it | frontend/css/07-whiteboard-misc.css:5114 |
 | a note's connections: one pill each, its menu inside it | frontend/css/08-consistency.css:3255 |
@@ -11886,7 +11886,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | fields answer the pointer too | frontend/css/07-whiteboard-misc.css:3688 |
 | filter help (the list inside `#search-help-hint`, a `.help-body`) | frontend/css/05-sidebars-themes.css:652 |
 | finding a setting (§36B) | frontend/css/06-timeline-dialogs.css:1389 |
-| finding your way about inside Settings (INBOX 444) | frontend/css/01-forms-settings.css:5695 |
+| finding your way about inside Settings (INBOX 444) | frontend/css/01-forms-settings.css:5697 |
 | first-run onboarding tour | frontend/css/04-chat-dock-appearance.css:2296 |
 | forms | frontend/css/01-forms-settings.css:224 |
 | glass reaches the floating chrome that sat outside it | frontend/css/08-consistency.css:2664 |
@@ -11909,7 +11909,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | map nodes and their edges (MINDMAP_PLAN.md §5, Phase 2) | frontend/css/07-whiteboard-misc.css:8191 |
 | markdown tables | frontend/css/04-chat-dock-appearance.css:1871 |
 | meeting notes (§17) | frontend/css/02-chat-graph.css:1603 |
-| model cards: the Models screen's suggested downloads (INBOX 444) | frontend/css/01-forms-settings.css:5843 |
+| model cards: the Models screen's suggested downloads (INBOX 444) | frontend/css/01-forms-settings.css:5845 |
 | motion: a dialog element arrives and leaves like the popup recipe | frontend/css/ui-reveal-lazy.css:66 |
 | motion: a heavy page's first visit (INBOX 580) | frontend/css/08-consistency.css:9743 |
 | motion: a hover card leaves as it came | frontend/css/ui-reveal-lazy.css:57 |
@@ -11978,7 +11978,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | tab navigation (Wave A; pill style inside the top bar in Wave L) | frontend/css/00-tokens-shell.css:3551 |
 | text inputs (§36B) | frontend/css/01-forms-settings.css:225 |
 | the "/" menu and block frames | frontend/css/05-sidebars-themes.css:844 |
-| the "?" head row and its help body | frontend/css/01-forms-settings.css:5351 |
+| the "?" head row and its help body | frontend/css/01-forms-settings.css:5353 |
 | the 464 round: Settings groups, switch rows, the phone's chrome | frontend/css/08-consistency.css:9893 |
 | the AI skills dock: one row where it fits (INBOX 450, 599) | frontend/css/08-consistency.css:9411 |
 | the AI status dot | frontend/css/00-tokens-shell.css:1568 |
@@ -12096,7 +12096,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the selection tick in Rows (INBOX 426 z, image 91) | frontend/css/08-consistency.css:8964 |
 | the selection tick, in the app's own language | frontend/css/07-whiteboard-misc.css:4318 |
 | the settings jump list | frontend/css/07-whiteboard-misc.css:10491 |
-| the settings sheet takes the touch floor | frontend/css/01-forms-settings.css:5484 |
+| the settings sheet takes the touch floor | frontend/css/01-forms-settings.css:5486 |
 | the spine | frontend/css/00-tokens-shell.css:2283 |
 | the spine on the other edge (MINDMAP_PLAN.md §13e) | frontend/css/07-whiteboard-misc.css:8443 |
 | the status bar (§36D) | frontend/css/00-tokens-shell.css:3215 |
@@ -12132,7 +12132,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | user-tunable corner rounding | frontend/css/04-chat-dock-appearance.css:1900 |
 | web panel (search + reader) | frontend/css/03-dashboard-widgets.css:975 |
 | what a wide screen is for | frontend/css/00-tokens-shell.css:3651 |
-| what it learned (WORLD_CLASS_PLAN I9) | frontend/css/01-forms-settings.css:5542 |
+| what it learned (WORLD_CLASS_PLAN I9) | frontend/css/01-forms-settings.css:5544 |
 | what the AI remembers (ROADMAP §39B) | frontend/css/07-whiteboard-misc.css:2015 |
 | what the agent found, as things you can open | frontend/css/07-whiteboard-misc.css:5373 |
 | what the answering model is | frontend/css/02-chat-graph.css:4627 |
@@ -12146,7 +12146,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | File | Lines |
 |---|---|
 | frontend/css/00-tokens-shell.css | 4339 |
-| frontend/css/01-forms-settings.css | 6249 |
+| frontend/css/01-forms-settings.css | 6251 |
 | frontend/css/02-chat-graph.css | 5240 |
 | frontend/css/03-dashboard-widgets.css | 4869 |
 | frontend/css/04-chat-dock-appearance.css | 6499 |
@@ -12867,7 +12867,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8589)
+## Backend modules (8594)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -15643,8 +15643,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3322 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3450 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3325 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3453 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -16107,10 +16107,10 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `Part` | src/tessellate/ai/no_model_text.py:33 |
 | `_blocks` | src/tessellate/ai/no_model_text.py:148 |
-| `_by_subject` | src/tessellate/ai/no_model_text.py:241 |
+| `_by_subject` | src/tessellate/ai/no_model_text.py:243 |
 | `_clean_line` | src/tessellate/ai/no_model_text.py:66 |
 | `_count` | src/tessellate/ai/no_model_text.py:62 |
-| `_expand` | src/tessellate/ai/no_model_text.py:276 |
+| `_expand` | src/tessellate/ai/no_model_text.py:278 |
 | `_first_line_title` | src/tessellate/ai/no_model_text.py:94 |
 | `_heading` | src/tessellate/ai/no_model_text.py:38 |
 | `_headings` | src/tessellate/ai/no_model_text.py:168 |
@@ -16118,18 +16118,18 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_marks_end` | src/tessellate/ai/no_model_text.py:50 |
 | `_merge` | src/tessellate/ai/no_model_text.py:188 |
 | `_paragraph_chunks` | src/tessellate/ai/no_model_text.py:192 |
-| `_part` | src/tessellate/ai/no_model_text.py:308 |
-| `_plain_title` | src/tessellate/ai/no_model_text.py:303 |
+| `_part` | src/tessellate/ai/no_model_text.py:314 |
+| `_plain_title` | src/tessellate/ai/no_model_text.py:305 |
 | `_section_chunks` | src/tessellate/ai/no_model_text.py:206 |
 | `_split_heading` | src/tessellate/ai/no_model_text.py:83 |
 | `_strip_rules` | src/tessellate/ai/no_model_text.py:178 |
-| `_subject_stems` | src/tessellate/ai/no_model_text.py:233 |
-| `_tidy_title` | src/tessellate/ai/no_model_text.py:319 |
+| `_subject_stems` | src/tessellate/ai/no_model_text.py:235 |
+| `_tidy_title` | src/tessellate/ai/no_model_text.py:325 |
 | `_top_terms` | src/tessellate/ai/no_model_text.py:131 |
 | `_trim` | src/tessellate/ai/no_model_text.py:72 |
 | `_without_marks` | src/tessellate/ai/no_model_text.py:125 |
 | `draft_title` | src/tessellate/ai/no_model_text.py:104 |
-| `split_notes` | src/tessellate/ai/no_model_text.py:285 |
+| `split_notes` | src/tessellate/ai/no_model_text.py:287 |
 
 ### src/tessellate/ai/note_language.py (8)
 
@@ -21041,24 +21041,29 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `reset_app_state` | src/tessellate/core/deps.py:267 |
 | `store_quietly` | src/tessellate/core/deps.py:587 |
 
-### src/tessellate/core/desk_companion.py (15)
+### src/tessellate/core/desk_companion.py (20)
 
 | Name | File:line |
 |---|---|
-| `DeskApi` | src/tessellate/core/desk_companion.py:170 |
-| `DeskCompanion` | src/tessellate/core/desk_companion.py:203 |
+| `DeskApi` | src/tessellate/core/desk_companion.py:285 |
+| `DeskCompanion` | src/tessellate/core/desk_companion.py:318 |
 | `_config` | src/tessellate/core/desk_companion.py:64 |
-| `_follow` | src/tessellate/core/desk_companion.py:376 |
+| `_follow` | src/tessellate/core/desk_companion.py:507 |
 | `_pref` | src/tessellate/core/desk_companion.py:77 |
-| `_screen_area` | src/tessellate/core/desk_companion.py:115 |
+| `_screen_area` | src/tessellate/core/desk_companion.py:160 |
 | `_set_pref` | src/tessellate/core/desk_companion.py:89 |
-| `attach` | src/tessellate/core/desk_companion.py:351 |
-| `clamp_corner` | src/tessellate/core/desk_companion.py:126 |
-| `clean_size` | src/tessellate/core/desk_companion.py:135 |
+| `attach` | src/tessellate/core/desk_companion.py:482 |
+| `clamp_corner` | src/tessellate/core/desk_companion.py:176 |
+| `clean_size` | src/tessellate/core/desk_companion.py:250 |
+| `companion_ex_style` | src/tessellate/core/desk_companion.py:193 |
 | `enabled` | src/tessellate/core/desk_companion.py:85 |
-| `hit_script` | src/tessellate/core/desk_companion.py:147 |
-| `shutdown` | src/tessellate/core/desk_companion.py:393 |
-| `tray_menu_item` | src/tessellate/core/desk_companion.py:401 |
+| `hit_script` | src/tessellate/core/desk_companion.py:262 |
+| `monitor_areas` | src/tessellate/core/desk_companion.py:115 |
+| `pick_area` | src/tessellate/core/desk_companion.py:148 |
+| `raise_on_desktop` | src/tessellate/core/desk_companion.py:214 |
+| `shutdown` | src/tessellate/core/desk_companion.py:524 |
+| `tray_menu_item` | src/tessellate/core/desk_companion.py:532 |
+| `window_handle` | src/tessellate/core/desk_companion.py:206 |
 | `work_area` | src/tessellate/core/desk_companion.py:96 |
 
 ### src/tessellate/core/desktop_dialog.py (2)
@@ -23655,7 +23660,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16601)
+## Tests (16611)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24160,7 +24165,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_density_height.py | 4 |
 | tests/test_dependency_audit.py | 3 |
 | tests/test_derived_facts.py | 14 |
-| tests/test_desk_companion.py | 35 |
+| tests/test_desk_companion.py | 44 |
 | tests/test_desk_counts_63.py | 5 |
 | tests/test_desktop_fullscreen.py | 5 |
 | tests/test_desktop_launcher.py | 17 |
@@ -25422,7 +25427,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_typo_routing.py | 4 |
 | tests/test_ui_1017b.py | 7 |
 | tests/test_ui_batch_726.py | 13 |
-| tests/test_ui_recipes.py | 265 |
+| tests/test_ui_recipes.py | 266 |
 | tests/test_ui_signatures.py | 2 |
 | tests/test_ui_state.py | 6 |
 | tests/test_ui_targets_1029b.py | 9 |
@@ -26345,7 +26350,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1305 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:166 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:165 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4188 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |

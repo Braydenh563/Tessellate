@@ -428,3 +428,80 @@ def test_the_settings_switch_with_a_question_mark_gives_way_to_it():
     css = (ROOT / "frontend" / "css" / "settings-controls-lazy.css").read_text(encoding="utf-8")
     rule = css[css.index("#settings-modal .help-head > .check-row {") :][:120]
     assert "flex: 1 1 0" in rule and "min-width: 0" in rule
+
+
+# --- INBOX 1620: shown, on a monitor that is there, a tool window ---------------------
+
+
+def test_a_corner_saved_on_a_gone_monitor_comes_back_to_the_primary():
+    primary, second = (0, 0, 1920, 1040), (1920, 0, 3840, 1040)
+    assert dc.pick_area((3000, 500), [primary, second]) == second
+    assert dc.pick_area((1920, 500), [primary, second]) == primary  # the shared edge is the left one's
+    assert dc.pick_area((3000, 500), [primary]) == primary  # the second monitor was unplugged
+    assert dc.pick_area((-4000, 9000), [primary, second]) == primary
+    assert dc.pick_area((10, 10), []) is None
+    corner = dc.clamp_corner((3000, 500), dc.REST_SIZE, dc.pick_area((3000, 500), [primary]))
+    assert corner == (1920, 500)
+
+
+def test_a_saved_place_is_clamped_to_the_monitor_that_is_there(made, prefs, monkeypatch):
+    monkeypatch.setattr(dc, "monitor_areas", lambda: [(0, 0, 1920, 1040)])
+    prefs[dc.POS_PREF] = [5000, 900]
+    assert made._home() == (1920, 900)  # noqa: SLF001
+    prefs[dc.POS_PREF] = [-900, -900]
+    assert made._home() == dc.REST_SIZE  # noqa: SLF001
+
+
+def test_a_window_dragged_to_the_second_monitor_stays_there(made, prefs, monkeypatch):
+    monkeypatch.setattr(dc, "monitor_areas", lambda: [(0, 0, 1920, 1040), (1920, 0, 3840, 1040)])
+    prefs[dc.PREF] = True
+    made.main_window.hide()
+    assert made.move_to(2500, 300)
+    assert made.corner == (2500 + made.size[0], 300 + made.size[1])
+
+
+def test_the_window_is_a_tool_window_that_never_takes_focus():
+    style = dc.companion_ex_style(dc.WS_EX_APPWINDOW | 0x100)
+    assert style & dc.WS_EX_TOOLWINDOW and style & dc.WS_EX_NOACTIVATE
+    assert not style & dc.WS_EX_APPWINDOW  # an app window would bring the taskbar button back
+    assert style & 0x100  # what was there is kept
+
+
+def test_it_is_made_frameless_on_top_and_unfocused(made, prefs):
+    prefs[dc.PREF] = True
+    made.main_window.hide()
+    options = made.webview.made[0].options
+    assert options["frameless"] and options["on_top"] and options["focus"] is False
+
+
+def test_each_show_reasserts_the_stacking_where_it_can(made, prefs, monkeypatch):
+    raised = []
+    monkeypatch.setattr(dc, "raise_on_desktop", lambda window: raised.append(window))
+    prefs[dc.PREF] = True
+    made.main_window.hide()
+    made.main_window.show()
+    made.main_window.hide()
+    assert len(raised) == 2  # once per show, never on a hide
+
+
+def test_raise_on_desktop_does_nothing_off_windows():
+    assert dc.raise_on_desktop(object()) is False
+
+
+def test_the_installers_make_no_desktop_shortcut_unless_asked():
+    """INBOX 1620: the owner wants the app reachable from the Start menu and the
+    tray only. The Inno installer's desktop shortcut is an unticked task, and the
+    MSI has none; a Desktop link only comes from `start --shortcut` or Settings."""
+    iss = (ROOT / "packaging" / "windows" / "installer.iss").read_text(encoding="utf-8")
+    task = next(line for line in iss.splitlines() if line.startswith('Name: "desktopicon"'))
+    assert "unchecked" in task
+    assert [line for line in iss.splitlines() if "{autodesktop}" in line and "Tasks: desktopicon" not in line] == []
+    wxs = (ROOT / "packaging" / "windows" / "installer.wxs").read_text(encoding="utf-8")
+    assert "DesktopFolder" not in wxs
+
+
+def test_the_companions_menu_has_the_desktop_row_only_in_the_desktop_app():
+    menu = (ROOT / "frontend" / "js" / "companion-menu.js").read_text(encoding="utf-8")
+    assert "if (isDesktopShell === true)" in menu
+    assert "Hide from desktop" in menu and "Show on desktop" in menu
+    assert 'setPreference("desktop_companion", !onDesktop)' in menu
