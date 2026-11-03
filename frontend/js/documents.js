@@ -2559,7 +2559,7 @@ async function docSaveOnce(silent) {
       //: server (`currentDoc` is replaced by every save's answer), so a
       //: save over text another window has since saved is refused with 409
       //: rather than overwriting it (WORLD_CLASS_PLAN 22.1 item 5).
-      body: JSON.stringify({ title, content, file_type: currentDoc.file_type || "md", base_hash: currentDoc.content_hash, threads: renderDocComments.threads() }),
+      body: JSON.stringify({ title, content, file_type: currentDoc.file_type || "md", base_hash: currentDoc.content_hash, base_threads_hash: currentDoc.threads_hash, threads: renderDocComments.threads() }),
     });
     //: A name another document already has is said once per document and name, on the
     //: first save under it (a new document's first autosave, or a rename), and left as
@@ -2633,17 +2633,20 @@ async function docResolveConflict(current, mine, silent, fromSave = true) {
   }
   if (!currentDoc || currentDoc.id !== current.id) return;
   if (answer === "mine") {
-    currentDoc = { ...currentDoc, content_hash: current.content_hash };
+    currentDoc = { ...currentDoc, content_hash: current.content_hash, threads_hash: current.threads_hash };
     //: Directly, not through saveDocument, when this runs inside the save in
     //: flight; from the banner there is none, so the queue is the way in.
     if (fromSave) await docSaveOnce(silent);
     else await saveDocument({ silent: false });
   } else if (answer === "theirs") {
     currentDoc = { ...currentDoc, ...current };
+    //: Their comment threads too: the panel's copy is the one the next save sends.
+    renderDocComments.reload();
     //: The title box too (audit 1028 D10): left on the old title, the next
     //: save sent it back over the one just taken.
     $("doc-title").value = current.title || "";
     docSurface().text = current.content || "";
+    renderDocComments();
     renderDocPreview();
     docDirty = false;
     $("doc-saved").textContent = "Saved";

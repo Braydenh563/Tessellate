@@ -114,6 +114,9 @@ class DocumentPatch(BaseModel):
     #: the fields above, so an autosave that sends only text cannot wipe them;
     #: a list, even an empty one, replaces them.
     threads: list[dict] | None = None
+    #: `threads_hash` of the list this edit started from, so a save over
+    #: threads another window has since changed is refused with 409 as text is.
+    base_threads_hash: str | None = Field(default=None, max_length=64)
 
     @field_validator("file_type")
     @classmethod
@@ -238,6 +241,7 @@ def _full(document: Document, session: Session | None = None) -> dict:
         "content": document.content,
         "content_hash": content_hash(document.content),
         "threads": docthreads.load(document.threads),
+        "threads_hash": content_hash(document.threads),
     }
     if session is not None:
         body["notes"] = _linked_notes(session, document.id)
@@ -725,6 +729,11 @@ def update_document(
     document_id: int, body: DocumentPatch, session: Session = Depends(get_session)
 ) -> dict:
     document = unshelved(DOCUMENTS.writable(session, document_id), unarchive=body.unarchive)
+    if body.threads is not None and docthreads.too_large(body.threads):
+        raise HTTPException(
+            status_code=422,
+            detail="This document has too many comments and replies to keep. Resolve or delete some, then save again.",
+        )
     #: Two windows, one document (WORLD_CLASS_PLAN 22.1 item 5), checked
     #: before anything is written, the title included.
     refuse_if_stale(
@@ -733,6 +742,9 @@ def update_document(
         new_text=body.content,
         current=lambda: _full(document, session),
         noun="document",
+        base_threads_hash=body.base_threads_hash,
+        current_threads=document.threads,
+        new_threads=None if body.threads is None else docthreads.dump(body.threads),
     )
     if body.title is not None:
         document.title = body.title.strip() or document.title

@@ -30,11 +30,18 @@ def _run(steps: str) -> dict:
     )
     script = (
         """
-let currentDoc = { id: 1, title: "T", content: "a", content_hash: "h0", file_type: "md" };
+let currentDoc = { id: 1, title: "T", content: "a", content_hash: "h0", threads_hash: "p0", file_type: "md" };
 let docs = [currentDoc];
 let docDirty = true, docEditSeq = 0, docConflictOpen = false, docSaveTimer = null, docConflictPending = null;
 const docSaveQueue = { inFlight: null, again: null };
 const docsMadeThisSession = new Set(); // documents.js state docSaveOnce reads since audit 1028 U38
+function renderDocComments() {} // the comments panel (documents-comments.js): what a save sends beside the text
+const reloads = [], sentThreads = [{ id: "t1" }];
+renderDocComments.threads = () => sentThreads;
+renderDocComments.reload = () => { reloads.push(1); };
+const surface = { text: "" };
+function docSurface() { return surface; }
+function renderDocPreview() {}
 let text = "mine", conflict = true;
 const puts = [], prompts = [], kept = [];
 const saved = { textContent: "", children: [], append(n) { this.children.push(n); } };
@@ -57,7 +64,7 @@ function editConflictPrompt(o) { prompts.push(o); return Promise.resolve(answer)
 async function apiJson(url, opts) {
   const sent = JSON.parse(opts.body);
   puts.push(sent);
-  if (conflict) { const e = new Error("conflict"); e.conflict = true; e.detail = { current: { id: 1, content: "theirs", content_hash: "h9", title: "T" } }; throw e; }
+  if (conflict) { const e = new Error("conflict"); e.conflict = true; e.detail = { current: { id: 1, content: "theirs", content_hash: "h9", threads_hash: "p9", title: "T" } }; throw e; }
   return { ...currentDoc, content: sent.content, content_hash: "h10" };
 }
 const tick = () => new Promise((r) => setTimeout(r, 0));
@@ -104,6 +111,45 @@ if (puts[puts.length - 1].base_hash !== "h9") throw new Error("base_hash " + put
 """
     )
     assert got["prompts"] == 1 and got["pending"] is False and got["dirty"] is False
+
+
+@needs_node
+def test_a_save_sends_the_panels_threads_and_the_threads_hash_it_started_from():
+    got = _run(
+        """
+conflict = false;
+await saveDocument({ silent: false });
+const sent = puts[0];
+if (JSON.stringify(sent.threads) !== JSON.stringify(sentThreads)) throw new Error("threads " + JSON.stringify(sent.threads));
+if (sent.base_threads_hash !== "p0") throw new Error("base_threads_hash " + sent.base_threads_hash);
+"""
+    )
+    assert got["puts"] == 1
+
+
+@needs_node
+def test_keep_mine_sends_the_other_windows_threads_hash_and_take_theirs_reloads_the_panel():
+    mine = _run(
+        """
+await saveDocument({ silent: true });
+answer = "mine"; conflict = false;
+await saveDocument({ silent: false });
+if (puts[puts.length - 1].base_threads_hash !== "p9") throw new Error("base_threads_hash " + puts[puts.length - 1].base_threads_hash);
+if (reloads.length) throw new Error("keep mine must not reload the panel");
+"""
+    )
+    assert mine["dirty"] is False
+    theirs = _run(
+        """
+await saveDocument({ silent: true });
+answer = "theirs";
+await saveDocument({ silent: false });
+if (reloads.length !== 1) throw new Error("reloads " + reloads.length);
+if (currentDoc.threads_hash !== "p9") throw new Error("threads_hash " + currentDoc.threads_hash);
+if (surface.text !== "theirs") throw new Error("text " + surface.text);
+"""
+    )
+    assert theirs["dirty"] is False
 
 
 @needs_node

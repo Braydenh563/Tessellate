@@ -38,6 +38,7 @@ from sqlalchemy import (
     create_engine,
     event,
     inspect as sa_inspect,
+    text as sql_text,
 )
 from sqlalchemy.orm import (
     DeclarativeBase,
@@ -1487,7 +1488,9 @@ class Document(Base, WorkspaceMixin):
     #: The comment threads behind the inline `%%remark%%`s (author, time,
     #: replies, resolved), a JSON list kept beside the text and never in it
     #: (core/docthreads.py). Additive; "" is none, as every older row reads.
-    threads: Mapped[str] = mapped_column(Text, default="")
+    #: The server default too, so a build from before the column can still
+    #: insert a document into a database this one created.
+    threads: Mapped[str] = mapped_column(Text, default="", server_default=sql_text("''"))
     #: Where the Graph holds this document's node in place, as a note's
     #: `graph_pin_x`/`graph_pin_y` do (B78: a document node can be pinned by
     #: double-click or drag, and had nowhere to keep it). Additive.

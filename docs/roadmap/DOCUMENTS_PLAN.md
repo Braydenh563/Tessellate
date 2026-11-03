@@ -1575,3 +1575,7 @@ Read from the code against Notion and Obsidian. Sizes S, M, L. Nothing here is b
 
 - INBOX 1407 (Harper false positives): built 2026-10-27, see HISTORY.md "Moved from the plans, 2026-10-27 (docs-1027)".
 - INBOX 1408 (focus-mode sidebars resizable): built 2026-10-27, see HISTORY.md "Moved from the plans, 2026-10-27 (docs-1027)".
+
+## Placed from INBOX, 2026-11-03
+
+1562. **Owner, 2026-11-03, verbatim (screenshot: the code editor, Python, an `else:` block):** "indentation lines arent a single line and are instead individual separate lines on each row". The indent guides are drawn per line with a gap between rows (line padding or a background that does not fill the line box), so they read as dashes, not one rule. Recommendation: draw each guide over the whole line box (no vertical gap, including wrapped and blank lines inside the block), measured by sampling pixels down the guide's column at two zoom levels and both themes.

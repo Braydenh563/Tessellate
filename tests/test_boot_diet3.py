@@ -300,3 +300,20 @@ def test_what_reads_a_tables_bar_waits_for_it():
             if 'ensureModule("tableBlock")' not in code:
                 readers.append(path.name)
     assert not readers, f"read a table's bar without waiting for it: {readers}"
+
+
+def test_the_comments_panels_parts_are_built_on_the_first_draw() -> None:
+    """The Comments section's heading, list, resolved toggle and shelf (5
+    elements) were in the page, though nobody sees them until a remark exists
+    (the cap went 7,923 to 7,927 with them). The page keeps the wrap; the file
+    that draws the panel makes the rest, and one listener on the wrap serves the
+    toggle."""
+    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    wrap = html[html.index('id="doc-comments-wrap"') :]
+    assert wrap[wrap.index(">") + 1 :].lstrip().startswith("</div>"), "the wrap is empty in the page"
+    for ident in ("doc-comments", "doc-comments-count", "doc-comments-resolved-toggle", "doc-comments-resolved"):
+        assert f'id="{ident}"' not in html, ident
+    comments = (FRONTEND / "js" / "documents-comments.js").read_text(encoding="utf-8")
+    assert "if (wrap) docCommentsShell(wrap);" in comments
+    for ident in ("doc-comments", "doc-comments-count", "doc-comments-resolved-toggle", "doc-comments-resolved"):
+        assert f'"{ident}"' in comments[comments.index("function docCommentsShell") :], ident
