@@ -9143,6 +9143,13 @@ input[type="file"]:active::file-selector-button {
 .dialog-head > .help-head > .dialog-head-btn {
   flex: none;
 }
+/* Settings' Peek (unslop 1103, 9): after the title, taking the free space
+   after it so the utilities stay at the head's right edge whether or not the
+   section shows it. */
+.dialog-head > #settings-peek {
+  flex: none;
+  margin-inline-end: auto;
+}
 /* **A head never gives up its height** (INBOX 498, and 475 before it). In
    a card capped to the window, a flex column's items shrink by default, so
    when Find anything's results arrived its head went from 52px to 32px and

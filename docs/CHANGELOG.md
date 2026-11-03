@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Settings: the head's profile, guide and back buttons stay put between sections; Peek sits beside the title (unslop 1103, 9).
 - Library: cards line up with the sub-tabs (L16 / R1424 at 1440), not 4px inside them; the ring room's negative margin now has a box that grows into it (unslop 1103, 8).
 - Chat: the saved-chat search is the quiet inset every other search field is, not a form field with an ink edge (unslop 1103, 7).
 - Docks: the search field is the bar's control height, 28 like its neighbours, so a dock with a search is 46px not 50; DESIGN's dock row now says icon buttons are 28 (unslop 1103, 6).

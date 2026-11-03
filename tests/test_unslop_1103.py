@@ -90,3 +90,12 @@ def test_8_library_sections_grow_into_their_ring_room():
     body = _body(css, ".tab-page > .library-view-section")
     assert "width: calc(100% + 2 * var(--ring-room))" in body
     assert "max-width: calc(var(--content-max) + 2 * var(--ring-room))" in body
+
+
+def test_9_settings_peek_is_beside_the_title_not_among_the_utilities():
+    """Peek shown only on Appearance moved the utilities 91px between sections."""
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    head = html[html.index('<h2 class="dialog-head-title"><i class="ph ph-gear'):]
+    head = head[: head.index('id="settings-close"')]
+    assert head.index('id="settings-peek"') < head.index('id="settings-profile-btn"')
+    assert "margin-inline-end: auto" in _body(_css("08-consistency.css"), ".dialog-head > #settings-peek")
