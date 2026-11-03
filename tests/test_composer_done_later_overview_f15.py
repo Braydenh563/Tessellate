@@ -80,3 +80,20 @@ def test_a_named_note_keeps_its_records_beside_it(client, session, question):
     found = rc._Found(detected="notes")
     rc._retrieve_for(session, question, found, [first], True, None, None, True, False)
     assert [e.id for e in found.entries] == [later.id]
+
+
+@pytest.mark.parametrize("question", [
+    "summarise this", "give me the gist of this", "what is in this note", "what's in this", "what is this about",
+    "summarize this note",
+])
+def test_a_this_question_reads_the_screens_note_alone(client, session, question):
+    """The records ride beside a note the question names, not beside the note on
+    the screen: "summarise this" is that note as written (audit C29)."""
+    from tessellate.api import routes_chat as rc
+
+    first = manager.create_entry(session, NOTES[0][0])
+    manager.create_entry(session, NOTES[1][0])
+    session.commit()
+    found = rc._Found(detected="notes")
+    rc._retrieve_for(session, question, found, [first], True, None, None, True, False)
+    assert found.entries == []

@@ -324,7 +324,7 @@ def _retrieve_for(session: Session, question: str, found: _Found, attached: list
         found.mode = "stats"
     elif intent.needs_retrieval(found.detected) and not (attached_notes_only and (attached or held)):
         _search_notes(session, question, found, attached, as_of, locale, composed)
-    elif attached_notes_only and attached and as_of is None:
+    elif attached_notes_only and attached and as_of is None and not composer_digest.about_this(question):
         found.entries = _records_beside(session, question, attached, locale)
 
 

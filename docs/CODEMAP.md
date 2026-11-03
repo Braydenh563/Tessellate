@@ -2,7 +2,7 @@
 
 Generated 2026-11-03 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7563, frontend ids 2643, CSS sections 518, backend routes 641, backend modules 8501, test files 1911, tests 16074, plan headings 992, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7563, frontend ids 2643, CSS sections 518, backend routes 641, backend modules 8501, test files 1911, tests 16075, plan headings 992, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7563)
 
@@ -23313,7 +23313,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16074)
+## Tests (16075)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23641,7 +23641,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_dog2_1025.py | 16 |
 | tests/test_composer_doings_z23.py | 5 |
 | tests/test_composer_done_later_f15.py | 1 |
-| tests/test_composer_done_later_overview_f15.py | 2 |
+| tests/test_composer_done_later_overview_f15.py | 3 |
 | tests/test_composer_due_window_z27.py | 2 |
 | tests/test_composer_eval_725.py | 6 |
 | tests/test_composer_eval_741.py | 6 |
