@@ -3136,7 +3136,6 @@ PILL_CONTROLS = {
     "#entry-list .link-connection>.menu-wrap>button": "the round kebab inside a connection",
     ".entry-links>button.ghost.entry-links-more": "one more link pill in the row of link pills (INBOX 592)",
     ".stepper>.stepper-btn": "a round minus or plus inside the stepper's pill (DESIGN.md 'Stepper')",
-    "#reminder-due-row>details>summary": "Quick set beside the steppers: one corner per row, as the chat composer's (INBOX 464 (17))",
     "body .chip.item-label": "the status label: a tinted pill without an edge, the owner's decision (INBOX 553 (c))",
     ".entry-meta .chip.item-label": "the status label on a note line, the same pill (INBOX 553 (c))",
 }

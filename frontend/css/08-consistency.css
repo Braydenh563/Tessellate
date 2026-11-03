@@ -566,6 +566,11 @@ details[open] > .about-whats-new::before,
   flex: 1 1 12rem;
   min-width: 8rem;
   max-width: 28rem;
+  /* The bar's own height, like every control in it (unslop 1103, 6): the
+     field's 32 (`--control-h-lg`) stood 4px over its 28px neighbours and made
+     a dock with a search 50px high against 46 without. A touch target keeps
+     its floor. */
+  height: max(var(--control-h), var(--target-min));
   border-color: transparent;
   background: var(--field-inset);
   box-shadow: none;
@@ -742,6 +747,12 @@ details[open] > .about-whats-new::before,
 .dock-actions > :is(.icon-only, .dock-more, [class*="help"])
   + :is(.icon-only, .dock-more, [class*="help"]) {
   margin-left: calc(var(--space-1) - var(--space-3));
+}
+/* A dock's `...` with nothing in it is not drawn (unslop 1103, 2): the
+   skills dock has no menu of its own, only the one the folded sort and
+   filter move into on a phone. */
+.dock-more:has(> .dock-menu-list:empty) {
+  display: none;
 }
 /* **The one dock whose actions zone does not fit the "one filled control,
    then a few icon utilities" shape Phase 8 sized `margin-left: auto` for.**
@@ -4460,13 +4471,26 @@ body .chip.item-label,
   }
   #reminder-groups .entry-list li > .entry-meta {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    grid-template-columns: auto minmax(0, 1fr);
     grid-template-areas:
-      "tick text rep when"
-      "tick acts acts acts";
+      "tick text"
+      "tick when"
+      "acts acts";
     column-gap: var(--space-3);
     row-gap: 0;
     align-items: center;
+  }
+  /* The time is its own line (unslop 1103, 1): beside the words it took
+     185px of 301 and left the reminder 48px wide, a word a line. A repeat
+     chip shares that line, before the time. The four actions are 250px, one
+     more than the words' column, so their row spans under the tick too:
+     otherwise the kebab wrapped alone onto a fourth line. */
+  #reminder-groups .entry-list li > .entry-meta:has(> .chip) {
+    grid-template-columns: auto auto minmax(0, 1fr);
+    grid-template-areas:
+      "tick text text"
+      "tick rep when"
+      "acts acts acts";
   }
   #reminder-groups .entry-meta > input[type="checkbox"] {
     grid-area: tick;
@@ -4478,17 +4502,11 @@ body .chip.item-label,
   }
   #reminder-groups .entry-meta > .entry-date {
     grid-area: when;
-    padding-top: var(--space-2);
   }
-  /* The repeat chip's words line up with the text and date beside it (they
-     carry `padding-top: var(--space-2)`), but a chip is a painted box: giving
-     it that padding left its words 2.4px below the middle of its own fill
-     (INBOX 503, measured at 390). The same push as a margin (the row centres
-     the margin box, so it moves the chip by half of it, the 2.4px the padding
-     moved the words) moves the box and leaves the words centred in it. */
+  /* The repeat chip is a painted box on the time's line; the row centres it. */
   #reminder-groups .entry-meta > .chip {
     grid-area: rep;
-    margin-top: calc(var(--space-2) - 0.1rem);
+    justify-self: start;
   }
   #reminder-groups .entry-meta > .entry-actions {
     grid-area: acts;
@@ -9124,6 +9142,12 @@ input[type="file"]:active::file-selector-button {
 .dialog-head > .help-head > .dialog-head-btn {
   flex: none;
 }
+/* Settings' Peek (unslop 1103, 9): after the title, taking the free space
+   after it so the utilities stay at the head's right edge whether or not the
+   section shows it. */
+.dialog-head > #settings-peek {
+  margin-inline-end: auto;
+}
 /* **A head never gives up its height** (INBOX 498, and 475 before it). In
    a card capped to the window, a flex column's items shrink by default, so
    when Find anything's results arrived its head went from 52px to 32px and
@@ -9963,14 +9987,23 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
   background-repeat: no-repeat;
   background-size: calc(100% - 2 * var(--space-3) - 2px) 1px;
 }
-/* 4. Reminders' When row draws one corner (INBOX 464 (17)). "Quick set" was
-      --radius-md (4.8px) beside two steppers at the pill on one line, at
-      1440 and at 390. The stepper is a quiet pill by recipe (DESIGN.md
-      "Stepper"), so the row's menu opener takes its corner, the way every
-      control in the chat composer's row is a pill; it is named in
-      PILL_CONTROLS for that reason. */
-#reminder-due-row>details>summary {
-  border-radius: var(--radius-pill);
+/* 4. Reminders' When row draws the form's own height and corner (INBOX 464
+      (17), then unslop 1103, 12). "Quick set" was --radius-md beside two
+      steppers at the pill, so INBOX 464 made the opener a pill too; but the
+      fields above them are 36px at --radius-md, so the card held three shapes
+      and four heights (36 / 32 pill / 32 pill / an 18px readout). The row's
+      controls now take the fields' height (44 under touch) and corner, and the
+      stepper's round buttons the concentric corner inside it. The stepper
+      recipe elsewhere (the map's size stepper, the zoom strip) is unchanged. */
+#reminder-due-row {
+  --button-min-h: var(--control-h-body);
+}
+#reminder-due-row > details > summary,
+#reminder-due-row .stepper {
+  border-radius: var(--radius-md);
+}
+#reminder-due-row .stepper-btn {
+  border-radius: var(--radius-in-md);
 }
 /* --- A note card's text leads; its metadata steps back (INBOX 505) ---
    The owner: "the metadata clashes with the note contents visually a bit

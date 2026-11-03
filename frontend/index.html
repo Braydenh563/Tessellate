@@ -1442,7 +1442,7 @@
       <div class="dock-group dock-find">
         <button type="button" id="dash-find" data-shortcut="findAnything" title="Search your notes, documents, files and the app" class="ghost dash-find" aria-haspopup="dialog">
           <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
-          <span class="dash-find-text">Search your notes, documents, files and the app</span>
+          <span class="dash-find-text">Search<span class="dash-find-scope"> your notes, documents, files and the app</span></span>
           <span class="dash-find-keys" aria-hidden="true"></span>
         </button>
       </div>
@@ -6483,7 +6483,7 @@ Link to another note with [[its first few words]]."></textarea>
                rather than creating it. It keeps its id and its class, so the
                `.skills-search` rule and `renderSkillCards(search.value)`
                still mean what they meant. -->
-          <div class="dock" data-dock-name="library-skills" role="toolbar"
+          <div class="dock" data-dock-name="library-skills" data-dock-more="skills-more-menu" role="toolbar"
             aria-label="Skill library controls">
             <div class="dock-identity">
               <h2>AI skills</h2>
@@ -9917,6 +9917,22 @@ Link to another note with [[its first few words]]."></textarea>
            INBOX 479): its utilities were 28px beside a 32px Close. -->
       <div class="row space-between dialog-head">
         <h2 class="dialog-head-title"><i class="ph ph-gear pop-glyph" aria-hidden="true"></i>Settings</h2>
+          <!-- Peek sits beside the title, not among the utilities: it exists
+               only on Appearance, and in the right-hand group it moved the
+               profile, guide and back and forward buttons 91px between
+               sections (unslop 1103, 9). -->
+          <!-- Only meaningful on Appearance, so it is shown there and hidden
+               everywhere else: a control that does nothing on nine screens out
+               of ten is a control people learn to ignore. -->
+          <!-- A button, not a checkbox. Asked for directly, and it is the
+               right shape: Peek is something you *do* for a moment while you
+               judge a colour, not a setting you leave on, it clears itself
+               when the panel closes or you leave Appearance. A checkbox
+               promises a persistent state this does not have. `aria-pressed`
+               is what keeps it announced as a toggle for a screen reader. -->
+          <button type="button" class="ghost small hidden" id="settings-peek"
+            aria-pressed="false"
+            title="Hold the panel back so you can see your colour changes on the page behind it"><i class="ph ph-eye ph-lead" aria-hidden="true"></i> Peek</button>
         <div class="row">
           <!-- The status bar's own back/forward pair (footer, `#status-back`/
                `#status-forward`) sit at a lower z-index than every modal on
@@ -9955,18 +9971,6 @@ Link to another note with [[its first few words]]."></textarea>
             <button id="settings-nav-back" class="ghost small icon-only dialog-head-btn" type="button" disabled title="Nothing to go back to" aria-label="Nothing to go back to"><i class="ph ph-caret-left" aria-hidden="true"></i></button>
             <button id="settings-nav-forward" class="ghost small icon-only dialog-head-btn" type="button" disabled title="Nothing to go forward to" aria-label="Nothing to go forward to"><i class="ph ph-caret-right" aria-hidden="true"></i></button>
           </span>
-          <!-- Only meaningful on Appearance, so it is shown there and hidden
-               everywhere else: a control that does nothing on nine screens out
-               of ten is a control people learn to ignore. -->
-          <!-- A button, not a checkbox. Asked for directly, and it is the
-               right shape: Peek is something you *do* for a moment while you
-               judge a colour, not a setting you leave on, it clears itself
-               when the panel closes or you leave Appearance. A checkbox
-               promises a persistent state this does not have. `aria-pressed`
-               is what keeps it announced as a toggle for a screen reader. -->
-          <button type="button" class="ghost small hidden" id="settings-peek"
-            aria-pressed="false"
-            title="Hold the panel back so you can see your colour changes on the page behind it"><i class="ph ph-eye ph-lead" aria-hidden="true"></i> Peek</button>
           <span class="dialog-head-actions">
             <button id="settings-close" class="icon-only ghost small dialog-head-btn" type="button"
               title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>

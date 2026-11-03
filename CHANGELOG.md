@@ -9,6 +9,18 @@ below). Versioning is `0.x` while the app stabilises.
 - CodeQL: the re-export blocks in ai/agent.py, ai/composer.py and api/routes_chat.py are gone; every reader imports the name from the module that defines it (24 unused-import alerts on main), and a test file imports pathlib once.
 - Get started ticks Ask your notebook after an answer even when the history badge had read 0 before the answer was kept (E2E first-run, CI 2026-11-03).
 - Avatar lab and companion simulator load again: they bring the blink rig (atlas-motion.js) and the look pickers (companion-settings.js) the renderers moved to, and stand in for the app's lazy loaders (tools/lab-shims.js, tests/test_tools_benches.py) (the owner, 2026-11-03).
+- Reminders form: Quick set and the time steppers are 36px at the fields' corner, not 32px pills (unslop 1103, 12).
+- Dashboard: one filled button (Save), the digest's Generate is a ghost, and the highlighted first tile has no tinted edge at rest (unslop 1103, 11).
+- Settings rail: the Show all toggle is no longer clipped and On this page no longer wraps; the head stacks when the rail is narrow (unslop 1103, 10).
+- Settings: the head's profile, guide and back buttons stay put between sections; Peek sits beside the title (unslop 1103, 9).
+- Library: cards line up with the sub-tabs (L16 / R1424 at 1440), not 4px inside them; the ring room's negative margin now has a box that grows into it (unslop 1103, 8).
+- Chat: the saved-chat search is the quiet inset every other search field is, not a form field with an ink edge (unslop 1103, 7).
+- Docks: the search field is the bar's control height, 28 like its neighbours, so a dock with a search is 46px not 50; DESIGN's dock row now says icon buttons are 28 (unslop 1103, 6).
+- Mind map toolbar: the layout and line-style selects are rounded with the quiet inset like the tools beside them, not square with an ink edge (the square came from a radius token that is 0 at the default corner; unslop 1103, 5).
+- Dashboard on a phone: the search doorway reads "Search" in full instead of "Search your..." (the scope after the verb drops below 600px; unslop 1103, 4).
+- Dashboard: stacked widgets sit 16 to 17px apart like side-by-side ones, not 18 to 36 (the masonry's 24px span steps are gone; unslop 1103, 3).
+- Library, AI skills on a phone: the dock has a ... menu, so the sort and filter fold into it and the title no longer sits under the filter (unslop 1103, 2).
+- Reminders on a phone: the time is its own line under the words and the four actions share one row, so a reminder is 249px wide instead of 48 and the row 187px instead of 345 (unslop 1103, 1).
 - Chat: a long message of yours keeps a reading width (72% of the column, at most 42rem) instead of spanning it (the owner, 2026-11-03).
 - Dictation: an installed Whisper model loads from this computer alone; it no longer asks huggingface.co for the model's revision on every load (the owner, 2026-11-03).
 - Equations: the jump row of groups is a words-and-underline strip with a thin scrollbar, an edge fade and sideways wheel scrolling, not a row of boxed buttons (the owner, 2026-11-03).

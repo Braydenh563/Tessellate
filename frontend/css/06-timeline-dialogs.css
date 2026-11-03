@@ -1447,6 +1447,10 @@
    for the rest, remembered per device. */
 .settings-nav-groups-head {
   display: flex;
+  /* The label and the toggle stack when the rail is too narrow for both on a
+     line, rather than the toggle being clipped to "Show all 8 sectio..." and
+     the label breaking in two (unslop 1103, 10: 110px of text in 105). */
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
@@ -1454,10 +1458,15 @@
   color: var(--muted);
   font-size: var(--text-xs);
 }
+.settings-nav-groups-head > * {
+  white-space: nowrap;
+}
 .settings-nav-groups-head .linklike {
+  flex: none;
   padding: 0;
   font-size: var(--text-xs);
-  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
 }
 .settings-nav-groups:not(.is-open) .settings-nav-group:not([aria-current="location"]) {
   display: none;

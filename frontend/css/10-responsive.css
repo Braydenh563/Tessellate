@@ -2472,6 +2472,13 @@ header#top-bar[data-scrolled="1"],
   .dock[data-dock-name="dashboard"] > .dock-actions {
     flex: 0 0 auto;
   }
+  /* The doorway has 93px of a 368px row once the menu's four icons are in it,
+     so "Search your notes, documents, files and the app" was cut to "Search
+     your..." (unslop 1103, 4). The scope after the verb is the part that
+     goes; the button's title still names it. */
+  .dash-find-scope {
+    display: none;
+  }
   /* Customise keeps its glyph on a phone (INBOX 488); the word stays its
      accessible name through the button's own label. A dock's Filter does the
      same (INBOX 813: one filter trigger, icon and word, the icon alone on a
