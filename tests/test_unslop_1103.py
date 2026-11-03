@@ -187,3 +187,24 @@ def test_boot_win_the_inline_action_form_lives_with_its_one_caller():
     """The boot scripts' gzip total was 37 bytes under its cap; the form draws only from a lazy note card."""
     assert "function renderInlineAction(" not in _js("lightbox.js")
     assert "function renderInlineAction(" in _js("entry-card.js")
+
+
+def test_16_first_steps_names_what_it_opens_not_a_generic_get_started():
+    """The dock button said "Get started" and its card said "Get started, 0 of 3 done"."""
+    first = _js("first-run.js")
+    assert 'word.textContent = "First steps"' in first
+    assert 'title.textContent = "Three steps to a working notebook"' in first
+    assert '"Get started"' not in first, "no visible word left over from the old name"
+    assert "Show first steps" in _js("dashboard.js") and "Show first steps" in _js("app-features.js")
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    assert "Show first steps</button>" in html and "Show Get started" not in html
+    from tessellate.ai.help_topics_more import MORE_TOPICS
+
+    topic = next(t for t in MORE_TOPICS if t["id"] == "first-steps")
+    assert "Hide first steps" in topic["body"] and "Hide Get started" not in topic["body"]
+    # The longer title takes two lines beside the buttons on a phone; the count joins the bar below it.
+    phone = _css("first-run-lazy.css")
+    phone = phone[phone.index("max-width: 599.98px") :]
+    assert "grid-area: title" in phone and "grid-area: count" in phone and "grid-area: bar" in phone
+
+

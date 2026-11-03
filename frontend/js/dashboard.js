@@ -1463,8 +1463,8 @@ function dashCustomiseItems() {
   //: The way back from Get started's Hide or Mark all as done (INBOX 1301 D3).
   if (prefs.get("getStartedHidden", null) === "1" || prefs.get("getStartedDone", null) === "1") {
     items.push({
-      label: "ph:list-checks Show Get started",
-      title: "The first steps card and the Get started button, as they were",
+      label: "ph:list-checks Show first steps",
+      title: "The first steps card and button, as they were",
       group: "page",
       run: () => lazyScript("/js/first-run.js").then(() => getStartedShow()),
     });

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Dashboard: the First steps button and the three-step card say what they open (the card, "Three steps to a working notebook", was "Get started"); Help, the Guide and the palette follow; on a phone the title takes two lines and the count joins the bar (card 294 to 308 px tall; unchanged at 1440) (unslop 1103, 16).
 - The inline add-context and remind form moved from the boot scripts to the lazy note card that draws it (boot scripts 260,413 to 259,340 gzipped bytes under a 260,350 cap), so Library docks can say their count.
 - Library docks: a dock's title is a count ('12 documents', '2 boards and maps', 'No bookmarks') instead of the sub-tab's name again; the Timeline and Graph docks keep their title for a screen reader only beside the count chip (unslop 1103, 15).
 - Chat and Dashboard composers: no native drag grip over the field's corner; the Dashboard's Quick capture grows with its text like the Notes capture bar (unslop 1103, 14).

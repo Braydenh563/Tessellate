@@ -1183,10 +1183,10 @@ MORE_TOPICS: list[dict] = [
         "keywords": (
             "first steps", "start in three steps", "sample notebook", "sample notes", "example notes",
             "remove the sample notes", "demo notes", "try it out", "hide these steps", "get started", "setup popup", "closed the welcome", "checklist",
-            "hide get started", "mark all as done", "show get started", "fold the first steps",
+            "hide get started", "mark all as done", "show get started", "hide first steps", "show first steps", "three steps to a working notebook", "fold the first steps",
         ),
         "body": (
-            "A new notebook's Dashboard shows Get started, a checklist of three steps: 1. Your name, "
+            "A new notebook's Dashboard shows First steps, a card titled Three steps to a working notebook with a checklist: 1. Your name, "
             "2. Write a note, 3. Ask your notebook, with a bar showing how many are done. Each is ticked "
             "when it is done, and none of them needs an AI model: Ask answers from your notes' own "
             "words, and saving your first note offers Ask about it beside "
@@ -1195,9 +1195,9 @@ MORE_TOPICS: list[dict] = [
             "linked notes in the Graph); it is offered until you write your own "
             "first note. Remove the sample notes moves them all to the bin, where "
             "Restore brings one back, and takes away the categories they made. The steps leave once all three are done and "
-            "the sample notes are gone. Mark all as done ticks every step and puts the card away; Hide Get started "
-            "hides the card and the dock's Get started button. Settings, Help (Show Get started), Customise, the hide notice's Show again or the palette (Ctrl+K, Show Get started) brings them back. "
-            "Until then the dashboard's Get started menu (beside Customise) lists the same three, ticked as "
+            "the sample notes are gone. Mark all as done ticks every step and puts the card away; Hide first steps "
+            "hides the card and the dock's First steps button. Settings, Help (Show first steps), Customise, the hide notice's Show again or the palette (Ctrl+K, Show first steps) brings them back. "
+            "Until then the dashboard's First steps menu (beside Customise) lists the same three, ticked as "
             "they are done, with Take the tour and Replay the welcome, and the same checklist "
             "is the first row of the notifications bell until all three are done."
         ),
@@ -2576,7 +2576,7 @@ TOPIC_META: dict[str, dict] = {
     "timer": {"title": "Clock: timer, stopwatch and alarm", "path": "Command palette, Start a timer; the status bar's timer"},
     "calculator": {"title": "Calculator and equations", "path": "Command palette, Calculator and equations; Alt+= in a text box; /calc in Chat"},
     "manual": {"title": "The manual", "path": "Settings, Help, Open the manual"},
-    "first-steps": {"title": "First steps and the sample notebook", "path": "Dashboard, Get started"},
+    "first-steps": {"title": "First steps and the sample notebook", "path": "Dashboard, First steps"},
     "live-captions": {"title": "How do I get live captions", "path": "Library, Recordings, Captions"},
     "count-words": {"title": "Count words", "path": "Command palette, Count words"},
     "translate-offline": {"title": "Translate this, offline", "path": "Command palette, Translate this"},
