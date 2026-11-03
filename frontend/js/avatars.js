@@ -5149,7 +5149,7 @@ const NMB_HOLD_SHOWN = '[data-pose="hang"], [data-travel="climb"], .nm-buddy-dra
 //: The long, still acts are rest, and paced as rest: a stance, a nap, a
 //: book, a seat. Full rate is for the short ones, where it is moving.
 const NMB_RESTING_ACTS = new Set(["lie", "read", "beanbag", "chair", "nap", "peek", "peekdown", "meditate", ...Object.keys(NMB_STANCES)]);
-const nmbTempo = { held: true, timer: 0, anims: [], at: 0, seen: 0, clock: new WeakMap(), slow: new WeakSet(), gap: new WeakMap(), ticks: 0 };
+const nmbTempo = { held: true, timer: 0, anims: [], at: 0, seen: 0, clock: new WeakMap(), slow: new WeakSet(), gap: new WeakMap(), ticks: 0, stride: 1 };
 //: **A prop's slow loop is stepped slowly** (audit 1101, row 17's pacer
 //: leftover). Each step of an animation inside the drawing restyles the whole
 //: figure (5,800 elements at rest, 134 ms of style a second at 4x CPU with
@@ -5160,6 +5160,27 @@ const nmbTempo = { held: true, timer: 0, anims: [], at: 0, seen: 0, clock: new W
 //: quick one (a zap, a twinkle) keeps its rate and a slow one stops costing.
 const NMB_PROP_STEPS = 16;
 const NMB_PROP_GAP_MAX = 4;
+//: **The beat sleeps between steps** (audit 1103, the lag logs' forced
+//: layouts): with only slow props held (a coil's 3 s breath, every fourth
+//: beat), the 20Hz beat still read each animation's `playState` every 50ms,
+//: for a step that lands five times a second. When every animation is held
+//: and has a gap, the next beat is set at the gcd of the gaps and `ticks`
+//: moves on by as many, so the same beats step at the same times. Measured:
+//: wakes 20 a second to 4.6; style recalcs at 4x did not move (18.6 to 17.4,
+//: noise), so the idle restyle's other frames are the tail beat and the
+//: breath write (a30p-1103.md). A property of the pacer, not a global name
+//: (`tests/test_global_scope_ratchet.py`).
+nmbTempo.step = (anims, states, gaps) => {
+  if (!anims.length) return 1;
+  let g = 0;
+  const gcd = (a, b) => (b ? gcd(b, a % b) : a);
+  for (let i = 0; i < anims.length; i++) {
+    const gap = gaps.get(anims[i]);
+    if (!gap || states[i] !== "paused") return 1;
+    g = gcd(g, gap);
+  }
+  return g || 1;
+};
 function nameMarkBuddyPropGaps(anims) {
   const gaps = new WeakMap();
   for (const anim of anims) {
@@ -5226,7 +5247,10 @@ function nameMarkBuddyTempo() {
     nmbTempo.slow = new WeakSet(nmbTempo.anims.filter((a) => a.id !== "nmb-limb" && a.effect.target.closest("svg.atl-layer")));
     nmbTempo.gap = nameMarkBuddyPropGaps(nmbTempo.anims);
   }
-  nmbTempo.ticks += 1;
+  //: On the next multiple of the stride, so a gap's beat is the one that runs.
+  const stride = nmbTempo.stride;
+  nmbTempo.stride = 1;
+  nmbTempo.ticks = stride > 1 ? (Math.floor(nmbTempo.ticks / stride) + 1) * stride : nmbTempo.ticks + 1;
   const beat = nmbTempo.ticks % 2 === 0;
   //: A walk is paced too (round 5 review): its steps inside a drawing's
   //: svg (Atlas's legs) laid out and repainted the figure every frame, 60
@@ -5288,7 +5312,8 @@ function nameMarkBuddyTempo() {
     }
   });
   nmbTempo.at = now;
-  if (!document.hidden) nmbTempo.timer = setTimeout(nameMarkBuddyTempo, nmbTempo.anims.length ? NMB_TEMPO_MS : 1000);
+  if (!busy && !still) nmbTempo.stride = nmbTempo.step(nmbTempo.anims, states, nmbTempo.gap);
+  if (!document.hidden) nmbTempo.timer = setTimeout(nameMarkBuddyTempo, nmbTempo.anims.length ? NMB_TEMPO_MS * nmbTempo.stride : 1000);
 }
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden && !nmbTempo.timer) nameMarkBuddyTempo();
