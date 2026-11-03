@@ -8271,6 +8271,7 @@ input[type="color"].wb-mixed {
 #wb-map-templates-dismiss {
   min-width: max(var(--button-min-h), var(--target-min));
   min-height: max(var(--button-min-h), var(--target-min));
+}
 
 /* --- documents: the comments panel (DOCUMENTS_PLAN Phase 5 item 1) ----------
    **A comment row is a quoted subject, the remark, and one action**, in that
