@@ -81,6 +81,8 @@ Object.assign(LAZY_MODULES, {
 });
 setTimeout(() => ["loadFailed", "modelMenu", "entryCard"].forEach(ensureModule), 3000);
 installStandIns({
+  //: The lock card's offer of a backup when the notebook file is gone (INBOX 1573).
+  accountRecovery: ["showRestoreOffer"],
   companionSettings: ["mountBuddyCustom", "mountBuddyActivities", "mountProfileLook", "nameMarkBuddyMakeIt", "nameMarkBuddyHide", "nameMarkBuddyToggle", "nameMarkBuddyCallBack", "nameMarkRepaintAll"],
   spaceSwap: ["swapSpace", "spaceEnterFor"],
   companionRemark: ["nameMarkBuddyRemark"],

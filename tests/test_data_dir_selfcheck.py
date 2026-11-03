@@ -84,8 +84,11 @@ def test_a_deleted_database_is_offered_its_newest_backup_and_restored_on_the_cho
     assert restored.status_code == 200, restored.text
     status = again.get("/auth/status").json()
     assert status["setup_required"] is False and status["restore_offer"] is None
-    entries = again.get("/entries", headers=_unlock(again)).json()
+    headers = _unlock(again)
+    entries = again.get("/entries", headers=headers).json()
     assert [e["content"] for e in entries] == ["Tomatoes need full sun"]
+    report = again.get("/debug/health", headers=headers).json()["trust"]["self_check"]
+    assert report["missing_files"]["count"] == 0, "the report is about the restored notebook"
 
 
 def test_a_lost_log_beside_the_database_is_offered_the_backup_too(client, app_state):
@@ -157,6 +160,13 @@ def test_deleted_folders_are_made_again_and_missing_files_are_listed(client, app
     assert health["trust"]["self_check"]["missing_files"]["count"] == 1
 
 
+def test_a_folder_the_notebook_never_used_is_made_without_a_word(tmp_path):
+    """Measured: a new notebook with no picture was told its media folder had gone."""
+    lines = selfcheck.recreate_folders(tmp_path, {"uploads": True, "media": False, "backups": False})
+    assert all((tmp_path / name).is_dir() for name in selfcheck.OWNED_FOLDERS)
+    assert lines == ["The uploads folder was missing and was made again, empty."]
+
+
 def test_a_file_where_a_folder_belongs_is_reported_not_moved(tmp_path):
     (tmp_path / "media").write_text("mine")
     lines = selfcheck.recreate_folders(tmp_path)
@@ -220,3 +230,24 @@ def test_the_check_runs_in_the_start_up_housekeeping():
 
     source = inspect.getsource(app_module._startup_maintenance)
     assert source.index("_check_notebook_file") < source.index("_check_data_folder") < source.index("_backup_if_due")
+
+
+def test_the_offer_and_the_report_have_their_places_and_their_help():
+    """The lock screen asks, Settings, About, Health shows the report, and the
+    Guide answers "I deleted files" (standing orders 11 and 13)."""
+    from tessellate.ai.help_topics_more import MORE_TOPICS
+    from tests._app_js import app_js_text
+
+    html = (Path(__file__).resolve().parents[1] / "frontend" / "index.html").read_text(encoding="utf-8")
+    for element in ("lock-restore-offer", "lock-restore-yes", "lock-restore-no", "health-selfcheck-run", "health-missing"):
+        assert f'id="{element}"' in html
+    assert 'data-help-for="health-selfcheck-help"' in html and 'id="health-selfcheck-help"' in html
+    js = Path(__file__).resolve().parents[1] / "frontend" / "js"
+    assert "showRestoreOffer(status.restore_offer)" in app_js_text()
+    assert 'accountRecovery: ["showRestoreOffer"]' in (js / "lazy-entries.js").read_text(encoding="utf-8")
+    recovery = (js / "account-recovery.js").read_text(encoding="utf-8")
+    assert 'apiJson("/backups/restore", { method: "POST", body: JSON.stringify({ name: offer.name }) })' in recovery
+    health = (js / "settings-health.js").read_text(encoding="utf-8")
+    assert 'apiJson("/debug/health/self-check", { method: "POST" })' in health and "paintSelfCheck(trust.self_check)" in health
+    topic = next(t for t in MORE_TOPICS if t["id"] == "data-folder-check")
+    assert "Check and repair" in topic["body"] and "Restore backup or Start a new notebook" in topic["body"]

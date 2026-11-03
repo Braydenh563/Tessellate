@@ -7,6 +7,7 @@ Split out of `routes_settings.py`'s "backups" section
 from __future__ import annotations
 
 import contextlib
+import logging
 import os
 import shutil
 import tempfile
@@ -193,6 +194,19 @@ def _jobs_held(request: Request) -> Iterator[None]:
             yield
 
 
+def _recheck_data_folder() -> None:
+    """The data folder's check again, on the notebook just restored: the
+    start's report was about the file it replaced (INBOX 1573)."""
+    selfcheck.forget_offer()
+    session = deps.get_db().session()
+    try:
+        selfcheck.run(deps.get_config(), session)
+    except Exception:  # noqa: BLE001  # a report must not fail a restore that worked
+        logging.getLogger(__name__).warning("the data folder check after a restore did not run", exc_info=True)
+    finally:
+        session.close()
+
+
 class RestoreBody(BaseModel):
     name: str = Field(min_length=1, max_length=120)
 
@@ -216,7 +230,6 @@ def restore_backup(body: RestoreBody, request: Request) -> dict:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
         finally:
             deps.reload_db()
-            selfcheck.forget_offer()
     session = deps.get_db().session()
     try:
         manager.log_action(session, "restored", "data", detail=body.name)
@@ -226,6 +239,7 @@ def restore_backup(body: RestoreBody, request: Request) -> dict:
     # SEC-07: the restored file has its own vault row (and maybe its own
     # password), so every session ends and the key in memory is dropped; the
     # app shows the lock screen and the password unwraps the restored key.
+    _recheck_data_folder()
     routes_auth.end_every_session()
     return {"restored": body.name, "signed_out": True}
 
@@ -354,5 +368,6 @@ def restore_bundle(request: Request, file: UploadFile = File(...), password: str
     finally:
         session.close()
     # SEC-07, as `restore_backup`: the restored file has its own vault row.
+    _recheck_data_folder()
     routes_auth.end_every_session()
     return {"restored": True, "files": result["files"], "skipped": result["skipped"], "signed_out": True}

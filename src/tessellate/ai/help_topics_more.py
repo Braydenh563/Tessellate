@@ -547,6 +547,26 @@ MORE_TOPICS: list[dict] = [
         "badge": {"label": "About", "section": "about"},
     },
     {
+        "id": "data-folder-check",
+        "keywords": (
+            "deleted files", "deleted a folder", "deleted my data folder", "missing file", "file missing",
+            "data folder check", "check and repair", "repair", "deleted the database", "notebook file missing",
+            "restore after deleting", "preferences.json", "robust",
+        ),
+        "body": (
+            "Each start checks the data folder, and Settings, About, Health, Data "
+            "folder check, Check and repair runs it again. A missing uploads, media "
+            "or backups folder is made again, empty, and a missing backups folder "
+            "gets a fresh backup. A settings file the app cannot read is kept beside "
+            "itself and the defaults are used. A deleted or damaged notebook file is "
+            "never replaced on its own: the lock screen offers the newest backup "
+            "that holds notes, Restore backup or Start a new notebook, and a "
+            "damaged file is kept aside. Attached files that are gone are listed "
+            "with their notes; a full backup file holds them. Nothing is deleted."
+        ),
+        "badge": {"label": "About", "section": "about"},
+    },
+    {
         "id": "maintenance",
         "keywords": (
             "maintenance", "check this computer", "doctor", "doctor.sh", "doctor.bat", "start --doctor",
@@ -2619,6 +2639,7 @@ TOPIC_META: dict[str, dict] = {
     "answer-style": {"title": "Answer style", "path": "Settings, Personas, Answer style"},
     "background-tasks": {"title": "Background tasks", "path": "Settings, Background tasks"},
     "health": {"title": "Health", "path": "Settings, About, Health"},
+    "data-folder-check": {"title": "Deleted files and the data folder check", "path": "Settings, About, Health, Data folder check"},
     "maintenance": {"title": "Maintenance", "path": "Settings, About, Maintenance", "steps": (
         "Open Settings, About and find Maintenance.", "Check this computer shows one row per check, each with what to do.", "Reinstall on next start rebuilds the app's Python environment when the launcher next opens it; your notes are not touched.", "Uninstall… shows the steps and the command, with Export my notes first.")},
     "activity": {"title": "Activity", "path": "The status bar's job slot, or the palette, Activity"},
@@ -2796,7 +2817,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "search-index", "search-engine-moved", "packages",
     )),
     ("Privacy and your data", (
-        "privacy", "security", "encryption", "lock", "phone", "lan-networks", "two-computers", "delete-data", "storage", "import-export", "import-apps", "usage-ledger", "background-tasks", "activity", "health",
+        "privacy", "security", "encryption", "lock", "phone", "lan-networks", "two-computers", "delete-data", "storage", "import-export", "import-apps", "usage-ledger", "background-tasks", "activity", "health", "data-folder-check",
     )),
     ("Settings and support", (
         "profile", "general-settings", "desktop-companion", "updates", "maintenance", "logs", "troubleshooting", "credits",

@@ -124,18 +124,23 @@ def set_aside_damaged_database(db_path: Path) -> Path:
     return kept
 
 
-def recreate_folders(data_dir: Path) -> list[str]:
+def recreate_folders(data_dir: Path, in_use: dict[str, bool] | None = None) -> list[str]:
     """Each owned folder made again when it is missing. A file standing
-    where a folder should be is the person's, so it is reported, not moved."""
+    where a folder should be is the person's, so it is reported, not moved.
+
+    A remade folder is said only when the notebook had something in it
+    (`in_use`, by folder name): `media` is made on the first picture, so a
+    new notebook without one was told its media folder had gone (measured)."""
     lines = []
     with _lock:
         #: Said once: a later check from Settings does not repeat the start's.
         gone = _start.get("folders_missing") or []
         _start["folders_missing"] = []
+    in_use = in_use if in_use is not None else {name: True for name in OWNED_FOLDERS}
     for name in OWNED_FOLDERS:
         folder = Path(data_dir) / name
         if folder.is_dir():
-            if name in gone:
+            if name in gone and in_use.get(name):
                 lines.append(f"The {name} folder was missing and was made again, empty.")
             continue
         if folder.exists():
@@ -146,8 +151,21 @@ def recreate_folders(data_dir: Path) -> list[str]:
         except OSError as exc:
             lines.append(f"The {name} folder could not be made: {exc.strerror or 'the disk refused'}.")
             continue
-        lines.append(f"The {name} folder was missing and was made again, empty.")
+        if in_use.get(name):
+            lines.append(f"The {name} folder was missing and was made again, empty.")
     return lines
+
+
+def _in_use(session) -> dict[str, bool]:  # noqa: ANN001
+    """Which owned folders this notebook has put something in."""
+    from sqlalchemy import exists, select
+
+    from tessellate.core.database import Attachment, Entry, MediaUpload
+
+    def has(model) -> bool:  # noqa: ANN001
+        return bool(session.scalar(select(exists().where(model.id.is_not(None)))))
+
+    return {"uploads": has(Attachment), "media": has(MediaUpload), "backups": has(Entry)}
 
 
 def _names(folder: Path) -> set[str] | None:
@@ -201,7 +219,11 @@ def run(config, session) -> dict:  # noqa: ANN001  # ConfigManager, SQLAlchemy s
     """The check, once at start and again from Settings, About, Health."""
     started = time.perf_counter()
     data_dir = Path(config.data_dir)
-    repaired = recreate_folders(data_dir)
+    try:
+        in_use = _in_use(session)
+    except Exception:  # noqa: BLE001  # unknown means say it
+        in_use = None
+    repaired = recreate_folders(data_dir, in_use)
     for line in repaired:
         logger.warning("%s", line)
     try:
