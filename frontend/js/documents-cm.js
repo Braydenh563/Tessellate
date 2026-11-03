@@ -2216,12 +2216,24 @@ function docCmTheme(CM) {
         backgroundPosition: "50% 55%",
         backgroundRepeat: "no-repeat",
       },
-      //: Indentation guides: a hairline in `--border` at the left edge of
-      //: each step of the whitespace, so it stops where the code starts.
-      ".cm-indent-guide": {
-        backgroundImage: "linear-gradient(to right, var(--border) 0 1px, transparent 1px)",
+      //: Indentation guides (INBOX 402, 1562): the line draws them, a hairline
+      //: in `--border` at the left edge of each step, so a guide is one rule
+      //: over the whole row box (wrapped and blank rows too), not a dash per
+      //: row. A step is 2em of spaces or a tab's width; the gradient repeats
+      //: at the step and `.cm-indent-nN` cuts it to N steps.
+      ".cm-indent-lines": {
+        backgroundImage: "repeating-linear-gradient(to right, var(--border) 0 1px, transparent 1px var(--doc-indent-step))",
         backgroundRepeat: "no-repeat",
+        backgroundPosition: "0 0",
       },
+      ".cm-indent-spaces": { "--doc-indent-step": "2em" },
+      ".cm-indent-tabs": { "--doc-indent-step": "calc(var(--doc-tabs, 2) * var(--doc-space-w, 0.25em))" },
+      ...Object.fromEntries(
+        Array.from({ length: docIndentGuides.levels }, (_, i) => [
+          `.cm-indent-n${i + 1}`,
+          { backgroundSize: `calc(${i + 1} * var(--doc-indent-step)) 100%` },
+        ])
+      ),
       //: Every step drawn 2em wide, whatever its number of spaces
       //: (`docIndentGuides`, which measures `--doc-space-w`).
       ".cm-indent-w1": { letterSpacing: "calc(2em / 1 - var(--doc-space-w, 0.25em))" },

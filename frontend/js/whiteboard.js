@@ -991,9 +991,14 @@ let wbGuideBoxCache = null;
 //: for a plain drag and the whole selection for a group one. It used to be a
 //: single kind and id, so a group drag would have snapped its own members to
 //: each other, which is why group drags had no guides at all.
-function wbGuideBoxes(excludeKeys) {
+//:
+//: **`at` is the box being moved or sized, and it picks which frames' margins
+//: count** (INBOX 1563): a frame's four margin lines (`wbGuideBoxes.walls`)
+//: are targets only for a box whose centre is inside that frame, so a card
+//: far outside never snaps to a line it cannot see the use of.
+function wbGuideBoxes(excludeKeys, at = null) {
   const key = excludeKeys ? [...excludeKeys].sort().join(",") : "";
-  if (wbGuideBoxCache && wbGuideBoxCache.key === key) return wbGuideBoxCache.boxes;
+  if (wbGuideBoxCache && wbGuideBoxCache.key === key) return wbGuideBoxes.within(wbGuideBoxCache.boxes, at);
   const boxes = [];
   for (const [kind, listName] of [["node", "nodes"], ["object", "objects"]]) {
     for (const item of wbState[listName] || []) {
@@ -1019,9 +1024,73 @@ function wbGuideBoxes(excludeKeys) {
     const box = wbItemBBox("sketch", sketch);
     if (box) boxes.push(box);
   }
+  //: **A frame's margins are targets inside it** (INBOX 1563, the owner: "in
+  //: these frames, I cant align objects with a margin or like the header
+  //: text or have nice spacing between them"). Four zero-thickness boxes, the
+  //: inner left, right, top and bottom lines at the frame's own padding. They
+  //: are ordinary boxes to the alignment and the equal-spacing passes, so a
+  //: card lands on the margin, or the same distance from it as from its
+  //: neighbour, with the guide the canvas already draws.
+  for (const frame of wbState.objects || []) {
+    if (frame.kind !== "frame" || (excludeKeys && excludeKeys.has(wbMultiKey("object", frame.id)))) continue;
+    if (wbItemHidden("object", frame) || wbItemRotation("object", frame)) continue;
+    boxes.push(...wbGuideBoxes.walls(frame, wbGuideBoxes.insets(frame)));
+  }
   wbGuideBoxCache = { key, boxes };
-  return boxes;
+  return wbGuideBoxes.within(boxes, at);
 }
+
+//: The boxes a gesture sees: every box, less the margins of frames the moving
+//: box is not in (its centre outside the frame's outer box).
+wbGuideBoxes.within = (boxes, at) => {
+  if (!at || !boxes.some((b) => b.wall)) return boxes;
+  const cx = at.x + at.w / 2, cy = at.y + at.h / 2;
+  return boxes.filter((b) => !b.wall || (cx >= b.wall.minX && cx <= b.wall.maxX && cy >= b.wall.minY && cy <= b.wall.maxY));
+};
+
+//: A frame's four margin lines as boxes, given its insets (`{left, right,
+//: top, bottom}` from its outer edge); none when the margins leave no room.
+//: `only` names the one edge of a dragged box a line is for (the left line
+//: is for a left edge, not for a centre or a right edge that happens to pass
+//: it), and `wall` the frame's outer box, for `within`. Pure (node-tested).
+wbGuideBoxes.walls = (frame, ins) => {
+  if (!ins) return [];
+  const wall = { minX: frame.x, minY: frame.y, maxX: frame.x + frame.width, maxY: frame.y + frame.height };
+  const l = wall.minX + ins.left, r = wall.maxX - ins.right, t = wall.minY + ins.top, b = wall.maxY - ins.bottom;
+  if (r <= l || b <= t) return [];
+  return [
+    { minX: l, maxX: l, minY: t, maxY: b, only: "left", wall },
+    { minX: r, maxX: r, minY: t, maxY: b, only: "right", wall },
+    { minX: l, maxX: r, minY: t, maxY: t, only: "top", wall },
+    { minX: l, maxX: r, minY: b, maxY: b, only: "bottom", wall },
+  ];
+};
+
+//: How far a frame's margins sit inside its edge, in board units, read from
+//: what is drawn so they are the frame's own tokens and never a copy of them:
+//: the side and bottom margins are `--space-7`, the panel's padding; a
+//: panel's left is its header text's left edge (the title's own padding) and
+//: its top is under the header and the subtitle, a margin below the lower of
+//: the two. A frame whose title hangs above its edge has no header inside.
+//: Null when the frame is not drawn.
+wbGuideBoxes.insets = (frame) => {
+  const node = document.querySelector(`.wb-object[data-id="${frame.id}"]`);
+  if (!node) return null;
+  const probe = document.createElement("div");
+  probe.style.position = "absolute";
+  probe.style.visibility = "hidden";
+  probe.style.width = "var(--space-7)";
+  node.appendChild(probe);
+  const pad = parseFloat(getComputedStyle(probe).width) || 0;
+  probe.remove();
+  if (!node.classList.contains("wb-frame-panel")) return { left: pad, right: pad, top: pad, bottom: pad };
+  const border = parseFloat(getComputedStyle(node).borderLeftWidth) || 0;
+  const title = node.querySelector(".wb-frame-title");
+  const head = node.querySelector(".wb-frame-hint:not([hidden])") || title;
+  const text = title ? title.offsetLeft + (parseFloat(getComputedStyle(title).paddingLeft) || 0) : pad;
+  const below = head ? head.offsetTop + head.offsetHeight : 0;
+  return { left: border + text, right: border + text, top: border + below + pad, bottom: border + pad };
+};
 
 function wbClearGuideBoxCache() {
   wbGuideBoxCache = null;
@@ -1102,7 +1171,7 @@ function wbDragExcludeKeys(d, kind) {
 function wbAlignmentGuides(excludeKeys, x, y, w, h, tol = WB_ALIGN_SNAP_PX) {
   const dragged = { left: x, centerX: x + w / 2, right: x + w, top: y, centerY: y + h / 2, bottom: y + h };
   let bestX = null, bestY = null;
-  const others = wbGuideBoxes(excludeKeys);
+  const others = wbGuideBoxes(excludeKeys, { x, y, w, h });
   {
     for (const box of others) {
       const other = {
@@ -1110,12 +1179,14 @@ function wbAlignmentGuides(excludeKeys, x, y, w, h, tol = WB_ALIGN_SNAP_PX) {
         top: box.minY, centerY: (box.minY + box.maxY) / 2, bottom: box.maxY,
       };
       for (const edge of ["left", "centerX", "right"]) {
+        if (box.only && box.only !== edge) continue;
         const delta = other[edge] - dragged[edge];
         if (Math.abs(delta) <= tol && (!bestX || Math.abs(delta) < Math.abs(bestX.delta))) {
           bestX = { delta, at: other[edge], y1: Math.min(dragged.top, other.top), y2: Math.max(dragged.bottom, other.bottom), kind: edge === "centerX" ? "center" : "edge" };
         }
       }
       for (const edge of ["top", "centerY", "bottom"]) {
+        if (box.only && box.only !== edge) continue;
         const delta = other[edge] - dragged[edge];
         if (Math.abs(delta) <= tol && (!bestY || Math.abs(delta) < Math.abs(bestY.delta))) {
           bestY = { delta, at: other[edge], x1: Math.min(dragged.left, other.left), x2: Math.max(dragged.right, other.right), kind: edge === "centerY" ? "center" : "edge" };
@@ -1158,7 +1229,7 @@ function wbAlignmentGuides(excludeKeys, x, y, w, h, tol = WB_ALIGN_SNAP_PX) {
   // triple: that is what draw.io and PowerPoint show too, and it keeps this
   // O(n) per drag frame like the alignment pass above it, not O(n^2).
   if (!bestX) {
-    const rowMates = others.filter((b) => b.minY < dragged.bottom && b.maxY > dragged.top);
+    const rowMates = others.filter((b) => (!b.only || b.only === "left" || b.only === "right") && b.minY < dragged.bottom && b.maxY > dragged.top);
     const left = rowMates.filter((b) => b.maxX <= dragged.left + tol).sort((a, b) => b.maxX - a.maxX)[0];
     const right = rowMates.filter((b) => b.minX >= dragged.right - tol).sort((a, b) => a.minX - b.minX)[0];
     if (left && right) {
@@ -1184,7 +1255,7 @@ function wbAlignmentGuides(excludeKeys, x, y, w, h, tol = WB_ALIGN_SNAP_PX) {
     }
   }
   if (!bestY) {
-    const colMates = others.filter((b) => b.minX < dragged.right && b.maxX > dragged.left);
+    const colMates = others.filter((b) => (!b.only || b.only === "top" || b.only === "bottom") && b.minX < dragged.right && b.maxX > dragged.left);
     const above = colMates.filter((b) => b.maxY <= dragged.top + tol).sort((a, b) => b.maxY - a.maxY)[0];
     const below = colMates.filter((b) => b.minY >= dragged.bottom - tol).sort((a, b) => a.minY - b.minY)[0];
     if (above && below) {
@@ -1256,7 +1327,7 @@ function wbSpacingSeries(mates, dragged, axis, tol = WB_ALIGN_SNAP_PX) {
 //: `edges` the moving sides ("se", "w"). Pure apart from `wbGuideBoxes`
 //: (node-tested in tests/test_wb_resize_guides.py).
 function wbResizeGuides(excludeKeys, box, edges, { fit = null, grid = 0, min = 1, tol = WB_ALIGN_SNAP_PX } = {}) {
-  const others = wbGuideBoxes(excludeKeys);
+  const others = wbGuideBoxes(excludeKeys, box);
   const out = { x: box.x, y: box.y, w: box.w, h: box.h, guideLines: [] };
   const axis = (horizontal) => {
     const hi = horizontal ? edges.includes("e") : edges.includes("s");
@@ -1281,6 +1352,7 @@ function wbResizeGuides(excludeKeys, box, edges, { fit = null, grid = 0, min = 1
       const a = Math.min(crossLo, other[cMin]) - 20, b = Math.max(crossHi, other[cMax]) + 20;
       offer(other[minK], across(other[minK], a, b, "edge"));
       offer(other[maxK], across(other[maxK], a, b, "edge"));
+      if (other.only) continue; // a frame's margin line: an edge to land on, not a centre or a size
       offer((other[minK] + other[maxK]) / 2, across((other[minK] + other[maxK]) / 2, a, b, "center"));
       const span = other[maxK] - other[minK];
       offer(hi ? fixed + span : fixed - span, [
@@ -25565,16 +25637,20 @@ function wbPresentCaption(at, steps) {
       row?.focus({ preventScroll: true });
       row?.scrollIntoView({ block: "nearest" });
     });
+    //: Kept, as the laser menu's is: an open menu is parked on the body, and
+    //: a row's `run` steps the page (and lands here) before it is back, so a
+    //: lookup through the wrap finds nothing and the rows stay the old page's.
+    wrap.pickMenu = wrap.querySelector(".action-menu");
     slot.replaceChildren(wrap);
   } else {
-    wrap.querySelector(".action-menu")?.replaceChildren(...fresh.querySelector(".action-menu").children);
+    wrap.pickMenu.replaceChildren(...fresh.querySelector(".action-menu").children);
   }
   const opener = wrap.querySelector(":scope > button");
   const words = opener.querySelector(".wb-present-pick-title");
   words.textContent = caption;
   opener.title = caption;
   opener.setAttribute("aria-label", `${caption}. Go to a page`);
-  const rows = [...(wrap.querySelector(".action-menu")?.querySelectorAll(".menu-item") || [])];
+  const rows = [...wrap.pickMenu.querySelectorAll(".menu-item")];
   if (rows[at]) {
     rows[at].setAttribute("aria-current", "step");
     rows[at].classList.add("wb-present-pick-row");
