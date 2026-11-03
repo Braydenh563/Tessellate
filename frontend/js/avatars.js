@@ -7329,7 +7329,8 @@ function nameMarkBuddyAct(act, ms) {
   if (NMB_SCENE_ACTS.includes(was)) {
     buddy.classList.add("nmb-unwind");
     clearTimeout(nmb.unwindTimer);
-    nmb.unwindTimer = setTimeout(() => buddy.classList.remove("nmb-unwind"), NMB_UNWIND_MS);
+    //: The unwind out of a scene act lasts 1.3s (inlined to keep the shared scope at its cap, 1587).
+    nmb.unwindTimer = setTimeout(() => buddy.classList.remove("nmb-unwind"), 1300);
   }
   if (!act) {
     nameMarkBuddySchedule();
@@ -7474,7 +7475,6 @@ function nameMarkBuddyVary(buddy, act = "", ms = 1200) {
 const NMB_SCENE_ACTS = ["lie", "read", "beanbag", "chair", "facepalm", "shrug"];
 //: Where a manner's lean or give would show wrong (see `nameMarkBuddyVary`).
 const NMB_MANNER_STILL = new Set(["peek", "peekdown", "peekback", "emerge", "hide", "dangle", "onehand", "swing", "sloth", "meditate", ...NMB_SCENE_ACTS]);
-const NMB_UNWIND_MS = 1300;
 //: Its props: a still drawing behind it (the beanbag, the chair, the
 //: pillow) and one in front (the book), in its 64 by 92 box and scaled
 //: with it, made the first time one is needed and kept. Nothing on them

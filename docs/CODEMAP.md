@@ -2409,7 +2409,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyLedges` | frontend/js/avatars.js:3568 |
 | `nameMarkBuddyLegsNow` | frontend/js/avatars.js:5570 |
 | `nameMarkBuddyLieDown` | frontend/js/avatars.js:7630 |
-| `nameMarkBuddyLieRoom` | frontend/js/avatars.js:7411 |
+| `nameMarkBuddyLieRoom` | frontend/js/avatars.js:7412 |
 | `nameMarkBuddyLimbs` | frontend/js/avatars.js:5831 |
 | `nameMarkBuddyLockSync` | frontend/js/avatars.js:6520 |
 | `nameMarkBuddyLoud` | frontend/js/avatars.js:8567 |
@@ -2437,7 +2437,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyPerchShown` | frontend/js/avatars.js:3560 |
 | `nameMarkBuddyPerches` | frontend/js/avatars.js:4261 |
 | `nameMarkBuddyPet` | frontend/js/avatars.js:6242 |
-| `nameMarkBuddyPickVariant` | frontend/js/avatars.js:7431 |
+| `nameMarkBuddyPickVariant` | frontend/js/avatars.js:7432 |
 | `nameMarkBuddyPointer` | frontend/js/avatars.js:9159 |
 | `nameMarkBuddyPoof` | frontend/js/avatars.js:6344 |
 | `nameMarkBuddyPopupEls` | frontend/js/avatars.js:3733 |
@@ -2515,7 +2515,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyTypingFar` | frontend/js/avatars.js:3794 |
 | `nameMarkBuddyTypingKey` | frontend/js/avatars.js:3790 |
 | `nameMarkBuddyUnheld` | frontend/js/avatars.js:5115 |
-| `nameMarkBuddyVary` | frontend/js/avatars.js:7452 |
+| `nameMarkBuddyVary` | frontend/js/avatars.js:7453 |
 | `nameMarkBuddyViewChanged` | frontend/js/avatars.js:6794 |
 | `nameMarkBuddyWake` | frontend/js/avatars.js:8792 |
 | `nameMarkBuddyWalkIn` | frontend/js/avatars.js:7240 |
