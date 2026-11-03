@@ -3658,22 +3658,22 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `docMathArgument` | frontend/js/documents-math.js:147 |
-| `docMathBracedName` | frontend/js/documents-math.js:192 |
-| `docMathCells` | frontend/js/documents-math.js:206 |
-| `docMathCommand` | frontend/js/documents-math.js:272 |
-| `docMathElement` | frontend/js/documents-math.js:402 |
-| `docMathEnvironment` | frontend/js/documents-math.js:230 |
-| `docMathLooksLikeMath` | frontend/js/documents-math.js:388 |
-| `docMathNodes` | frontend/js/documents-math.js:319 |
-| `docMathNumbered` | frontend/js/documents-math.js:426 |
-| `docMathProblem` | frontend/js/documents-math.js:138 |
-| `docMathRender` | frontend/js/documents-math.js:410 |
-| `docMathRow` | frontend/js/documents-math.js:142 |
-| `docMathStructure` | frontend/js/documents-math.js:253 |
-| `docMathToken` | frontend/js/documents-math.js:161 |
-| `docMathTokens` | frontend/js/documents-math.js:81 |
-| `docMathTree` | frontend/js/documents-math.js:360 |
+| `docMathArgument` | frontend/js/documents-math.js:163 |
+| `docMathBracedName` | frontend/js/documents-math.js:210 |
+| `docMathCells` | frontend/js/documents-math.js:224 |
+| `docMathCommand` | frontend/js/documents-math.js:309 |
+| `docMathElement` | frontend/js/documents-math.js:442 |
+| `docMathEnvironment` | frontend/js/documents-math.js:248 |
+| `docMathLooksLikeMath` | frontend/js/documents-math.js:428 |
+| `docMathNodes` | frontend/js/documents-math.js:356 |
+| `docMathNumbered` | frontend/js/documents-math.js:466 |
+| `docMathProblem` | frontend/js/documents-math.js:154 |
+| `docMathRender` | frontend/js/documents-math.js:450 |
+| `docMathRow` | frontend/js/documents-math.js:158 |
+| `docMathStructure` | frontend/js/documents-math.js:271 |
+| `docMathToken` | frontend/js/documents-math.js:177 |
+| `docMathTokens` | frontend/js/documents-math.js:97 |
+| `docMathTree` | frontend/js/documents-math.js:400 |
 
 ### frontend/js/documents-mermaid.js (17)
 
@@ -5559,22 +5559,22 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `mathEditorBlockText` | frontend/js/math-editor.js:344 |
-| `mathEditorGroups` | frontend/js/math-editor.js:129 |
-| `mathEditorKeys` | frontend/js/math-editor.js:316 |
-| `mathEditorLede` | frontend/js/math-editor.js:377 |
-| `mathEditorModes` | frontend/js/math-editor.js:267 |
-| `mathEditorMount` | frontend/js/math-editor.js:407 |
-| `mathEditorOutput` | frontend/js/math-editor.js:151 |
-| `mathEditorPalette` | frontend/js/math-editor.js:224 |
-| `mathEditorSearch` | frontend/js/math-editor.js:296 |
-| `mathEditorSpan` | frontend/js/math-editor.js:159 |
-| `mathEditorStart` | frontend/js/math-editor.js:332 |
-| `mathEditorSurface` | frontend/js/math-editor.js:187 |
-| `mathEditorTile` | frontend/js/math-editor.js:205 |
-| `mathEditorTileFace` | frontend/js/math-editor.js:196 |
-| `mathEditorWrite` | frontend/js/math-editor.js:358 |
-| `openMathEditor` | frontend/js/math-editor.js:393 |
+| `mathEditorBlockText` | frontend/js/math-editor.js:433 |
+| `mathEditorGroups` | frontend/js/math-editor.js:217 |
+| `mathEditorKeys` | frontend/js/math-editor.js:405 |
+| `mathEditorLede` | frontend/js/math-editor.js:466 |
+| `mathEditorModes` | frontend/js/math-editor.js:356 |
+| `mathEditorMount` | frontend/js/math-editor.js:496 |
+| `mathEditorOutput` | frontend/js/math-editor.js:239 |
+| `mathEditorPalette` | frontend/js/math-editor.js:313 |
+| `mathEditorSearch` | frontend/js/math-editor.js:385 |
+| `mathEditorSpan` | frontend/js/math-editor.js:247 |
+| `mathEditorStart` | frontend/js/math-editor.js:421 |
+| `mathEditorSurface` | frontend/js/math-editor.js:275 |
+| `mathEditorTile` | frontend/js/math-editor.js:293 |
+| `mathEditorTileFace` | frontend/js/math-editor.js:284 |
+| `mathEditorWrite` | frontend/js/math-editor.js:447 |
+| `openMathEditor` | frontend/js/math-editor.js:482 |
 
 ### frontend/js/math-field.js (19)
 
@@ -12134,7 +12134,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/library-lazy.css | 8425 |
 | frontend/css/lightbox-lazy.css | 425 |
 | frontend/css/manual-lazy.css | 161 |
-| frontend/css/math-editor-lazy.css | 139 |
+| frontend/css/math-editor-lazy.css | 144 |
 | frontend/css/math-field-lazy.css | 72 |
 | frontend/css/meetings-lazy.css | 566 |
 | frontend/css/mermaid-lazy.css | 86 |
@@ -26211,7 +26211,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1299 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:219 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:217 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4186 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |

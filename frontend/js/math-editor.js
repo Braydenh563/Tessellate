@@ -56,6 +56,8 @@ const MATH_EDITOR_TEMPLATES = [
     ["double integral", "\\iint_{#?}#@", "\\iint_{D}f"],
     ["triple integral", "\\iiint_{#?}#@", "\\iiint_{V}f"],
     ["contour integral", "\\oint_{#?}#@", "\\oint_{C}f"],
+    ["integral with its differential", "\\int_{#?}^{#?}#@\\,d#?", "\\int_{a}^{b}f\\,dx"],
+    ["integral over the reals", "\\int_{-\\infty}^{\\infty}#@\\,d#?", "\\int_{-\\infty}^{\\infty}f\\,dx"],
   ]],
   ["operator-large", "Large operator", [
     ["sum", "\\sum_{#?}^{#?}#@", "\\sum_{i}^{n}a"],
@@ -63,6 +65,15 @@ const MATH_EDITOR_TEMPLATES = [
     ["coproduct", "\\coprod_{#?}^{#?}#@", "\\coprod_{i}^{n}a"],
     ["union", "\\bigcup_{#?}^{#?}#@", "\\bigcup_{i}^{n}A"],
     ["intersection", "\\bigcap_{#?}^{#?}#@", "\\bigcap_{i}^{n}A"],
+    ["sum, limit below", "\\sum_{#?}#@", "\\sum_{i}a"],
+    ["sum from 1 to n", "\\sum_{#?=1}^{#?}#@", "\\sum_{i=1}^{n}a"],
+    ["infinite series", "\\sum_{#?=0}^{\\infty}#@", "\\sum_{n=0}^{\\infty}a"],
+    ["product, limit below", "\\prod_{#?}#@", "\\prod_{i}a"],
+    ["product from 1 to n", "\\prod_{#?=1}^{#?}#@", "\\prod_{i=1}^{n}a"],
+    ["direct sum", "\\bigoplus_{#?}^{#?}#@", "\\bigoplus_{i}^{n}A"],
+    ["tensor product", "\\bigotimes_{#?}^{#?}#@", "\\bigotimes_{i}^{n}A"],
+    ["big or", "\\bigvee_{#?}^{#?}#@", "\\bigvee_{i}^{n}p"],
+    ["big and", "\\bigwedge_{#?}^{#?}#@", "\\bigwedge_{i}^{n}p"],
   ]],
   ["bracket", "Bracket", [
     ["parentheses", "\\left(#@\\right)", "\\left(x\\right)"],
@@ -89,6 +100,16 @@ const MATH_EDITOR_TEMPLATES = [
     ["dot", "\\dot{#@}", "\\dot{x}"],
     ["double dot", "\\ddot{#@}", "\\ddot{x}"],
     ["vector", "\\vec{#@}", "\\vec{v}"],
+    ["wide hat", "\\widehat{#@}", "\\widehat{xy}"],
+    ["wide tilde", "\\widetilde{#@}", "\\widetilde{xy}"],
+    ["acute", "\\acute{#@}", "\\acute{x}"],
+    ["grave", "\\grave{#@}", "\\grave{x}"],
+    ["breve", "\\breve{#@}", "\\breve{x}"],
+    ["check", "\\check{#@}", "\\check{x}"],
+    ["ring", "\\mathring{#@}", "\\mathring{x}"],
+    ["arrow over", "\\overrightarrow{#@}", "\\overrightarrow{AB}"],
+    ["arrow back over", "\\overleftarrow{#@}", "\\overleftarrow{AB}"],
+    ["underline", "\\underline{#@}", "\\underline{x}"],
   ]],
   ["limit", "Limit and log", [
     ["limit", "\\lim_{#? \\to #?}#@", "\\lim_{x \\to a}f"],
@@ -97,11 +118,23 @@ const MATH_EDITOR_TEMPLATES = [
     ["minimum", "\\min_{#?}#@", "\\min_{x}f"],
     ["supremum", "\\sup_{#?}#@", "\\sup_{x}f"],
     ["infimum", "\\inf_{#?}#@", "\\inf_{x}f"],
+    ["limit from the right", "\\lim_{#? \\to #?^{+}}#@", "\\lim_{x \\to a^{+}}f"],
+    ["limit from the left", "\\lim_{#? \\to #?^{-}}#@", "\\lim_{x \\to a^{-}}f"],
+    ["limit superior", "\\limsup_{#? \\to \\infty}#@", "\\limsup_{n \\to \\infty}a"],
+    ["limit inferior", "\\liminf_{#? \\to \\infty}#@", "\\liminf_{n \\to \\infty}a"],
+    ["argument of the maximum", "\\arg\\max_{#?}#@", "\\arg\\max_{x}f"],
+    ["argument of the minimum", "\\arg\\min_{#?}#@", "\\arg\\min_{x}f"],
   ]],
   ["operator", "Operator", [
     ["right arrow", "#@ \\to #?", "a \\to b"],
     ["arrow both ways", "#@ \\leftrightarrow #?", "a \\leftrightarrow b"],
     ["implies", "#@ \\Rightarrow #?", "a \\Rightarrow b"],
+    ["if and only if", "#@ \\Leftrightarrow #?", "a \\Leftrightarrow b"],
+    ["maps to", "#@ \\mapsto #?", "a \\mapsto b"],
+    ["not equal", "#@ \\ne #?", "a \\ne b"],
+    ["approximately equal", "#@ \\approx #?", "a \\approx b"],
+    ["less or equal", "#@ \\le #?", "a \\le b"],
+    ["greater or equal", "#@ \\ge #?", "a \\ge b"],
     ["text", "\\text{#@}", "\\text{abc}"],
   ]],
   ["matrix", "Matrix", [
@@ -110,18 +143,73 @@ const MATH_EDITOR_TEMPLATES = [
     ["square bracket matrix", "\\begin{bmatrix}#@&#?\\\\#?&#?\\end{bmatrix}", "\\begin{bmatrix} a & b \\\\ c & d \\end{bmatrix}"],
     ["determinant", "\\begin{vmatrix}#@&#?\\\\#?&#?\\end{vmatrix}", "\\begin{vmatrix} a & b \\\\ c & d \\end{vmatrix}"],
     ["cases", "\\begin{cases}#@&#?\\\\#?&#?\\end{cases}", "\\begin{cases} a & x > 0 \\\\ b & x \\le 0 \\end{cases}"],
+    ["3 by 3 square bracket matrix", "\\begin{bmatrix}#@&#?&#?\\\\#?&#?&#?\\\\#?&#?&#?\\end{bmatrix}", "\\begin{bmatrix} a & b & c \\\\ d & e & f \\\\ g & h & i \\end{bmatrix}"],
+    ["curly bracket matrix", "\\begin{Bmatrix}#@&#?\\\\#?&#?\\end{Bmatrix}", "\\begin{Bmatrix} a & b \\\\ c & d \\end{Bmatrix}"],
+    ["norm matrix", "\\begin{Vmatrix}#@&#?\\\\#?&#?\\end{Vmatrix}", "\\begin{Vmatrix} a & b \\\\ c & d \\end{Vmatrix}"],
+    ["3 by 3 determinant", "\\begin{vmatrix}#@&#?&#?\\\\#?&#?&#?\\\\#?&#?&#?\\end{vmatrix}", "\\begin{vmatrix} a & b & c \\\\ d & e & f \\\\ g & h & i \\end{vmatrix}"],
+    ["matrix without brackets", "\\begin{matrix}#@&#?\\\\#?&#?\\end{matrix}", "\\begin{matrix} a & b \\\\ c & d \\end{matrix}"],
+    ["row vector", "\\begin{pmatrix}#@&#?&#?\\end{pmatrix}", "\\begin{pmatrix} a & b & c \\end{pmatrix}"],
+    ["column vector", "\\begin{pmatrix}#@\\\\#?\\\\#?\\end{pmatrix}", "\\begin{pmatrix} a \\\\ b \\\\ c \\end{pmatrix}"],
+    ["matrix with dots", "\\begin{pmatrix}#@&\\cdots&#?\\\\\\vdots&\\ddots&\\vdots\\\\#?&\\cdots&#?\\end{pmatrix}", "\\begin{pmatrix} a & \\cdots & b \\\\ \\vdots & \\ddots & \\vdots \\\\ c & \\cdots & d \\end{pmatrix}"],
+    ["cases of three", "\\begin{cases}#@&#?\\\\#?&#?\\\\#?&#?\\end{cases}", "\\begin{cases} a & x < 0 \\\\ b & x = 0 \\\\ c & x > 0 \\end{cases}"],
+    ["system of equations", "\\begin{cases}#@\\\\#?\\end{cases}", "\\begin{cases} x + y = 1 \\\\ x - y = 0 \\end{cases}"],
+    ["aligned equations", "\\begin{aligned}#@&=#?\\\\#?&=#?\\end{aligned}", "\\begin{aligned} a &= b \\\\ c &= d \\end{aligned}"],
+  ]],
+  ["decoration", "Decoration", [
+    ["brace over", "\\overbrace{#@}^{#?}", "\\overbrace{x+y}^{n}"],
+    ["brace under", "\\underbrace{#@}_{#?}", "\\underbrace{x+y}_{n}"],
+    ["arrow with a label", "\\xrightarrow{#@}", "\\xrightarrow{f}"],
+    ["arrow back with a label", "\\xleftarrow{#@}", "\\xleftarrow{f}"],
+  ]],
+  //: **Common formulas**: whole formulas, not structures, so no boxes and no sample: a template without one is drawn as
+  //: itself. A selection is replaced by the formula.
+  ["formula", "Common formulas", [
+    ["quadratic formula", "x=\\frac{-b\\pm\\sqrt{b^{2}-4ac}}{2a}"],
+    ["Pythagorean theorem", "a^{2}+b^{2}=c^{2}"],
+    ["Euler's identity", "e^{i\\pi}+1=0"],
+    ["Euler's formula", "e^{i\\theta}=\\cos\\theta+i\\sin\\theta"],
+    ["mass and energy", "E=mc^{2}"],
+    ["Newton's second law", "F=ma"],
+    ["Ohm's law", "V=IR"],
+    ["kinetic energy", "E_{k}=\\frac{1}{2}mv^{2}"],
+    ["gravitation", "F=G\\frac{m_{1}m_{2}}{r^{2}}"],
+    ["area of a circle", "A=\\pi r^{2}"],
+    ["circumference", "C=2\\pi r"],
+    ["volume of a sphere", "V=\\frac{4}{3}\\pi r^{3}"],
+    ["slope", "m=\\frac{y_{2}-y_{1}}{x_{2}-x_{1}}"],
+    ["distance formula", "d=\\sqrt{(x_{2}-x_{1})^{2}+(y_{2}-y_{1})^{2}}"],
+    ["law of cosines", "c^{2}=a^{2}+b^{2}-2ab\\cos C"],
+    ["law of sines", "\\frac{a}{\\sin A}=\\frac{b}{\\sin B}=\\frac{c}{\\sin C}"],
+    ["sine and cosine identity", "\\sin^{2}\\theta+\\cos^{2}\\theta=1"],
+    ["binomial theorem", "(x+y)^{n}=\\sum_{k=0}^{n}\\binom{n}{k}x^{n-k}y^{k}"],
+    ["binomial coefficient", "\\binom{n}{k}=\\frac{n!}{k!(n-k)!}"],
+    ["geometric series", "S=\\frac{a(1-r^{n})}{1-r}"],
+    ["exponential series", "e^{x}=\\sum_{n=0}^{\\infty}\\frac{x^{n}}{n!}"],
+    ["change of base", "\\log_{b}x=\\frac{\\ln x}{\\ln b}"],
+    ["definition of the derivative", "f'(x)=\\lim_{h \\to 0}\\frac{f(x+h)-f(x)}{h}"],
+    ["fundamental theorem of calculus", "\\int_{a}^{b}f(x)\\,dx=F(b)-F(a)"],
+    ["mean", "\\bar{x}=\\frac{1}{n}\\sum_{i=1}^{n}x_{i}"],
+    ["standard deviation", "\\sigma=\\sqrt{\\frac{1}{n}\\sum_{i=1}^{n}(x_{i}-\\mu)^{2}}"],
+    ["normal distribution", "f(x)=\\frac{1}{\\sigma\\sqrt{2\\pi}}e^{-\\frac{(x-\\mu)^{2}}{2\\sigma^{2}}}"],
+    ["Bayes' theorem", "P(A\\mid B)=\\frac{P(B\\mid A)P(A)}{P(B)}"],
+    ["compound interest", "A=P\\left(1+\\frac{r}{n}\\right)^{nt}"],
   ]],
 ];
 
+
 //: Symbol groups as `name=glyph` pairs: the TeX is `\name`, which the
 //: renderer draws as the glyph (tests/test_math_editor.py checks every one).
+//: A third part, `name=glyph=tex`, is for the few whose TeX is not their name
+//: (an underscore in the name is a space).
 const MATH_EDITOR_SYMBOLS = [
-  ["greek", "Greek", "alpha=α beta=β gamma=γ delta=δ epsilon=ε zeta=ζ eta=η theta=θ iota=ι kappa=κ lambda=λ mu=μ nu=ν xi=ξ pi=π rho=ρ sigma=σ tau=τ upsilon=υ phi=φ chi=χ psi=ψ omega=ω Gamma=Γ Delta=Δ Theta=Θ Lambda=Λ Xi=Ξ Pi=Π Sigma=Σ Phi=Φ Psi=Ψ Omega=Ω"],
-  ["operators", "Operators", "times=× div=÷ cdot=⋅ pm=± mp=∓ circ=∘ oplus=⊕ otimes=⊗ star=⋆ infty=∞ ldots=… cdots=⋯ degree=°"],
-  ["relations", "Relations", "ne=≠ le=≤ ge=≥ approx=≈ equiv=≡ sim=∼ propto=∝ perp=⊥ parallel=∥ angle=∠"],
-  ["arrows", "Arrows", "to=→ leftarrow=← leftrightarrow=↔ Rightarrow=⇒ mapsto=↦"],
-  ["sets", "Sets and logic", "in=∈ notin=∉ subset=⊂ subseteq=⊆ supset=⊃ cup=∪ cap=∩ emptyset=∅ forall=∀ exists=∃ neg=¬ land=∧ lor=∨"],
-  ["calculus", "Calculus", "sum=∑ prod=∏ int=∫ iint=∬ oint=∮ partial=∂ nabla=∇ lim=lim sin=sin cos=cos tan=tan log=log ln=ln exp=exp"],
+  ["greek", "Greek, lower case", "alpha=α beta=β gamma=γ delta=δ epsilon=ϵ varepsilon=ε zeta=ζ eta=η theta=θ vartheta=ϑ iota=ι kappa=κ lambda=λ mu=μ nu=ν xi=ξ pi=π varpi=ϖ rho=ρ varrho=ϱ sigma=σ varsigma=ς tau=τ upsilon=υ phi=ϕ varphi=φ chi=χ psi=ψ omega=ω"],
+  ["greek-upper", "Greek, upper case", "Gamma=Γ Delta=Δ Theta=Θ Lambda=Λ Xi=Ξ Pi=Π Sigma=Σ Upsilon=Υ Phi=Φ Psi=Ψ Omega=Ω"],
+  ["operators", "Operators", "times=× div=÷ cdot=⋅ pm=± mp=∓ circ=∘ ast=∗ star=⋆ bullet=∙ oplus=⊕ ominus=⊖ otimes=⊗ odot=⊙ dagger=† ddagger=‡ diamond=⋄ infty=∞ degree=°"],
+  ["relations", "Relations", "ne=≠ le=≤ ge=≥ ll=≪ gg=≫ nleq=≰ ngeq=≱ nless=≮ ngtr=≯ approx=≈ equiv=≡ sim=∼ simeq=≃ cong=≅ ncong=≇ doteq=≐ triangleq=≜ asymp=≍ propto=∝ prec=≺ succ=≻ preceq=⪯ succeq=⪰ mid=∣ nmid=∤ perp=⊥ parallel=∥ vdash=⊢ dashv=⊣ models=⊨ bowtie=⋈"],
+  ["arrows", "Arrows", "to=→ leftarrow=← leftrightarrow=↔ Rightarrow=⇒ Leftarrow=⇐ Leftrightarrow=⇔ mapsto=↦ longrightarrow=⟶ longleftarrow=⟵ longleftrightarrow=⟷ Longrightarrow=⟹ Longleftarrow=⟸ Longleftrightarrow=⟺ longmapsto=⟼ implies=⟹ iff=⟺ uparrow=↑ downarrow=↓ updownarrow=↕ Uparrow=⇑ Downarrow=⇓ nearrow=↗ searrow=↘ swarrow=↙ nwarrow=↖ hookrightarrow=↪ hookleftarrow=↩ rightharpoonup=⇀ leftharpoonup=↼ rightleftharpoons=⇌"],
+  ["sets", "Sets and logic", "in=∈ notin=∉ ni=∋ subset=⊂ subseteq=⊆ subsetneq=⊊ nsubseteq=⊈ supset=⊃ supseteq=⊇ supsetneq=⊋ nsupseteq=⊉ cup=∪ cap=∩ setminus=∖ uplus=⊎ sqcup=⊔ sqcap=⊓ sqsubseteq=⊑ sqsupseteq=⊒ emptyset=∅ varnothing=∅ forall=∀ exists=∃ nexists=∄ neg=¬ land=∧ lor=∨ top=⊤ bot=⊥ therefore=∴ because=∵ natural_numbers=ℕ=\\mathbb{N} integers=ℤ=\\mathbb{Z} rational_numbers=ℚ=\\mathbb{Q} real_numbers=ℝ=\\mathbb{R} complex_numbers=ℂ=\\mathbb{C}"],
+  ["calculus", "Calculus and functions", "sum=∑ prod=∏ int=∫ iint=∬ iiint=∭ oint=∮ partial=∂ nabla=∇ lim=lim limsup=limsup liminf=liminf sin=sin cos=cos tan=tan cot=cot sec=sec csc=csc arcsin=arcsin arccos=arccos arctan=arctan sinh=sinh cosh=cosh tanh=tanh log=log ln=ln exp=exp max=max min=min sup=sup inf=inf det=det gcd=gcd dim=dim ker=ker arg=arg"],
+  ["marks", "Marks and dots", "hbar=ℏ ell=ℓ aleph=ℵ imath=ı jmath=ȷ wp=℘ Re=ℜ Im=ℑ prime=′ ldots=… cdots=⋯ vdots=⋮ ddots=⋱ angle=∠ triangle=△ square=□ blacksquare=■"],
 ];
 
 //: Every group as `{key, label, items: [{name, tex, glyph, sample}]}`: the
@@ -131,12 +219,12 @@ function mathEditorGroups() {
     key,
     label,
     structures: true,
-    items: items.map(([name, tex, sample]) => ({ name, tex, sample, glyph: "" })),
+    items: items.map(([name, tex, sample]) => ({ name, tex, sample: sample || tex, glyph: "" })),
   }));
   for (const [key, label, pairs] of MATH_EDITOR_SYMBOLS) {
     const items = pairs.split(" ").map((pair) => {
-      const [name, glyph] = pair.split("=");
-      return { name, tex: `\\${name}`, glyph, sample: "" };
+      const [name, glyph, tex] = pair.split("=");
+      return { name: name.replace(/_/g, " "), tex: tex || `\\${name}`, glyph, sample: "" };
     });
     groups.push({ key, label, structures: false, items });
   }
@@ -206,7 +294,8 @@ function mathEditorTile(item, pinned = false) {
   const button = document.createElement("button");
   button.type = "button";
   //: A key of a `.key-grid`: the quiet inset fill with no edge (DESIGN.md, "A grid of keys or tiles"), never a bordered ghost twenty times over.
-  button.className = `math-editor-tile${pinned ? " is-pinned" : ""}`;
+  //: A name drawn as letters (arccos, limsup) is wider than a key: `is-word` spans two columns (INBOX 1579: it overflowed its tile).
+  button.className = `math-editor-tile${pinned ? " is-pinned" : ""}${!item.sample && (item.glyph || "").length > 3 ? " is-word" : ""}`;
   //: Out of the Tab order; the group's current tile is put back by `mathEditorPalette`/`mathEditorRoving`.
   button.tabIndex = -1;
   button.title = item.name;

@@ -64,6 +64,11 @@
 
 /* Structures draw a whole formula, so each tile is as wide as its formula (INBOX 1579: a fixed 4.5rem column clipped the
    3x3 matrix's brackets, 28 tiles overflowed): a wrapping row, the tiles growing to fill it, never narrower than a key. */
+/* A function's name (arccos, limsup) is letters, not a glyph: two columns of the symbol grid. */
+.math-editor-grid > .math-editor-tile.is-word {
+  grid-column: span 2;
+}
+
 .math-editor-grid-wide {
   display: flex;
   flex-wrap: wrap;

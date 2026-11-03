@@ -3433,6 +3433,7 @@ MORE_TOPICS.append({
         "equation", "equations", "equation editor", "write an equation",
         "maths", "math", "formula", "fraction", "square root", "greek letter",
         "symbol", "integral", "matrix", "latex", "tex", "alt+=", "alt equals",
+        "common formulas", "quadratic formula", "arrows", "relations", "sets and logic",
     ),
     "body": (
         "The equation editor is the Equation tab of Calculator and equations "
@@ -3448,8 +3449,10 @@ MORE_TOPICS.append({
         "as \\frac or \\alpha turns into the symbol as you type it. The "
         "palette inserts the structures Word offers (fraction, script, "
         "radical, integral, large operator, bracket, function, accent, limit "
-        "and log, operator, matrix) and Greek, operators, relations, arrows, "
-        "sets and calculus symbols; a selection goes into the first box. The "
+        "and log, operator, matrix), braces and labelled arrows, common "
+        "formulas (the quadratic formula and more) and symbols: Greek in "
+        "lower and upper case, operators, relations, arrows, sets and logic, "
+        "calculus and function names, marks; a selection goes into the first box. The "
         "LaTeX button shows the same equation as raw TeX to edit directly, and "
         "the two stay in step. A row of groups above the palette jumps to one "
         "and marks the one in view; Pin, then a tile, makes it a favourite at "
