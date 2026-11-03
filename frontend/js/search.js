@@ -373,24 +373,10 @@ async function finderFeatureOffer(query) {
 //: itself unpressed to anything reading it, and a keyboard user lost focus to
 //: <body> on every filter change. The row is furniture; only its numbers and
 //: its pressed state change.
-//: Which ends of the kind row can still scroll, so the fade sits only on
-//: an edge with more behind it (the owner, 2026-09-24: the last chip,
-//: Actions, was faded with the row scrolled all the way to it).
-function finderSyncFilterEdges(bar) {
-  const max = bar.scrollWidth - bar.clientWidth;
-  bar.classList.toggle("fade-start", bar.scrollLeft > 1);
-  bar.classList.toggle("fade-end", max - bar.scrollLeft > 1);
-}
-
 function finderRenderFilters() {
   const bar = document.getElementById("finder-filters");
   if (!bar) return;
-  if (!bar.dataset.edgesWired) {
-    bar.dataset.edgesWired = "1";
-    bar.addEventListener("scroll", () => finderSyncFilterEdges(bar), { passive: true });
-    new ResizeObserver(() => finderSyncFilterEdges(bar)).observe(bar);
-  }
-  requestAnimationFrame(() => finderSyncFilterEdges(bar));
+  edgeFadeWire(bar);
   const wanted = [
     { key: "", label: "Everything", count: null },
     ...FINDER_KINDS.map((kind) => ({

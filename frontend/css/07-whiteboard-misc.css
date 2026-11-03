@@ -4624,7 +4624,6 @@ summary:not(.icon-only):not(.icon-button):not(.fold-summary, .chat-sources-summa
   display: flex;
   gap: var(--space-1);
   overflow-x: auto;
-  scrollbar-width: thin;
   overscroll-behavior-x: contain;
 }
 /* **The first-open hint** (MINDMAP_PLAN §12.5): the quietest line in the
@@ -9246,10 +9245,11 @@ input[type="file"] {
   .library-filters {
     flex-wrap: nowrap;
     overflow-x: auto;
+  }
+  .library-subtabs {
     scrollbar-width: none;
   }
-  .library-subtabs::-webkit-scrollbar,
-  .library-filters::-webkit-scrollbar {
+  .library-subtabs::-webkit-scrollbar {
     display: none;
   }
   .library-filters > * {
@@ -10454,10 +10454,6 @@ header#top-bar {
   .launch-row {
     flex-wrap: nowrap;
     overflow-x: auto;
-    scrollbar-width: none;
-  }
-  .launch-row::-webkit-scrollbar {
-    display: none;
   }
   .launch-row > * {
     flex: 0 0 auto;
@@ -11010,15 +11006,11 @@ header#top-bar {
 .finder-filters {
   flex-wrap: nowrap;
   overflow-x: auto;
-  scrollbar-width: none;
   padding-block: var(--space-1);
   margin-block: calc(var(--space-1) * -1);
   /* A settled height, so nothing the pointer does can resize the row. */
   align-items: center;
   min-height: var(--control-h);
-}
-.finder-filters::-webkit-scrollbar {
-  display: none;
 }
 .finder-sort {
   display: flex;

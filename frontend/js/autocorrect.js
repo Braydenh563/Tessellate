@@ -53,23 +53,23 @@ const AUTOCORRECT_TYPOS = {
   stlying: "styling", vissually: "visually", utlities: "utilities",
   wierdly: "weirdly", ocnstellation: "constellation",
 
-  //: **The contraction family** (INBOX 1582, the owner: "it didnt pick up my
-  //: misspell of havent", "or ive"): the apostrophe left out. None is a word
-  //: (checked against the vendored list), so each is a sure key, and "I" is
-  //: capitalised in the value. The ones that are also words (ill, id, cant,
-  //: wont) are not here: `autocorrectState.contextual` reads their neighbours.
-  //: `its`, `lets`, `were`, `well`, `wed`, `shell` and `hell` are left alone.
-  dont: "don't", doesnt: "doesn't", didnt: "didn't", isnt: "isn't", arent: "aren't",
-  wasnt: "wasn't", werent: "weren't", hasnt: "hasn't", havent: "haven't",
-  hadnt: "hadn't", wouldnt: "wouldn't", couldnt: "couldn't", shouldnt: "shouldn't",
-  mustnt: "mustn't", neednt: "needn't", aint: "ain't", im: "I'm", ive: "I've",
-  theyre: "they're", youve: "you've", weve: "we've", theyve: "they've",
-  youll: "you'll", theyll: "they'll", itll: "it'll", thatll: "that'll",
-  wholl: "who'll", thats: "that's", whats: "what's", theres: "there's",
-  heres: "here's", whos: "who's", wouldve: "would've", couldve: "could've",
-  shouldve: "should've", mightve: "might've", mustve: "must've",
-  youd: "you'd", theyd: "they'd",
+  //: The contraction family's irregular members (INBOX 1582); the regular
+  //: ones are built below. None is a word, ill, id, cant and wont are not here.
+  aint: "ain't", im: "I'm", ive: "I've", theyre: "they're",
 };
+
+//: **The contraction family** (INBOX 1582, "it didnt pick up my misspell of
+//: havent"): the apostrophe left out, stem plus ending. None is a word (checked
+//: against the vendored list), so each is a sure key. `its`, `lets`, `were`,
+//: `well`, `wed`, `shell` and `hell` are left alone; ill, id, cant and wont are
+//: words, so `autocorrectState.contextual` reads their neighbours.
+for (const [stems, end, mark] of [
+  ["do does did is are was were has have had would could should must need", "nt", "n't"],
+  ["you we they would could should might must", "ve", "'ve"],
+  ["you they it that who", "ll", "'ll"],
+  ["that what there here who", "s", "'s"],
+  ["you they", "d", "'d"],
+]) for (const stem of stems.split(" ")) AUTOCORRECT_TYPOS[stem + end] = stem + mark;
 
 const AUTOCORRECT_SECONDS = 5;
 //: A pointer resting on the underline asks after this long, and not at all
@@ -78,29 +78,23 @@ const AUTOCORRECT_HOVER_MS = 350;
 const AUTOCORRECT_TYPING_MS = 900;
 const autocorrectState = {
   key: 0,
-  //: **A contraction that is also a word** (ill, id, cant, wont): corrected
-  //: only where its neighbours say which it is. `lead` is the text before the
-  //: word, `ahead` the text after it (null while typing: the next word is not
-  //: there yet, so ill and id wait for a reading that has it). "cant" and
-  //: "wont" follow a subject ("I cant", "she just wont"); "ill" and "id" open
-  //: a clause and are followed by the verb of "I'll go" or "I'd like".
-  //: "the cant of", "ill health", "a shed" and "his wont" are left alone.
+  //: A contraction that is also a word (ill, id, cant, wont) is corrected only
+  //: where its neighbours say so: `lead` is the text before, `ahead` the text
+  //: after (null while typing, so ill and id wait). "the cant of", "ill health"
+  //: and "his wont" are left alone.
   contextual(lower, lead, ahead) {
-    const subject = /(?:^|[^A-Za-z'])(?:i|you|we|they|he|she|it|who|that|there|one|people)(?:\s+(?:just|also|still|really|simply|probably|honestly|actually|even|always|now|only|totally|seriously))?\s*$/i;
-    const opens = /(?:^|[^A-Za-z'])(?:and|but|so|then|if|when|that|because|maybe|think|guess|hope|bet|reckon|or|now|yeah|ok|okay|also|probably|sure|suppose|believe|promise|say|said|know|thought|until|once|while|before|after|since|though|although|unless|perhaps|well)[,;:]?\s*$/i;
-    const sentence = /(?:^|[.!?\n][)"'\]]*|^[ \t]*[-*+>][ \t]+)\s*$/;
+    const start = /(?:^|[.!?\n][)"'\]]*|^[ \t]*[-*+>][ \t]+)\s*$/.test(lead);
     const next = /^[ \t]+([A-Za-z]+)/.exec(ahead ?? "")?.[1]?.toLowerCase() ?? "";
-    const clause = sentence.test(lead) || opens.test(lead);
     if (lower === "cant" || lower === "wont") {
-      const bare = sentence.test(lead) && /^(?:be|do|go|see|wait|believe|find|get|make|help|stop|say|remember|think|seem|have|tell|take|stand|afford|access|log|open|connect|use|read|sleep|even|really|just|possibly|figure|decide|keep|imagine)$/.test(next);
-      return subject.test(lead) || bare ? (lower === "cant" ? "can't" : "won't") : "";
+      const subject = /(?:^|[^A-Za-z'])(?:i|you|we|they|he|she|it|who|that|there|one|people)(?:\s+(?:just|also|still|really|even|always|now|only))?\s*$/i;
+      const bare = start && /^(?:be|do|go|see|wait|believe|find|get|make|help|stop|say|think|have|tell|take|afford|use|even|really|just)$/.test(next);
+      return subject.test(lead) || bare ? lower[0] === "c" ? "can't" : "won't" : "";
     }
-    if (lower === "ill") return clause && /^(?:be|have|go|see|get|do|call|send|take|try|let|need|make|just|probably|never|always|also|come|check|bring|text|keep|find|think|tell|give|show|ask|help|look|write|use|start|finish|read|pay|meet|wait|stop|leave|talk|message|email|definitely|still|really|then|buy|book|pick|grab|add|fix|handle|sort|share|remind|reply|answer|update|order|cook|clean|join|change|move|set|work|run|review|test|build|plan|ping|follow|visit|stay|say|put|ring|phone)$/.test(next) ? "I'll" : "";
-    if (lower === "id") return clause && /^(?:like|love|rather|better|say|suggest|prefer|be|have|been|never|always|probably|definitely|guess|imagine|hate|want|need|go|do|take|try|think|expect|argue|agree|still|also|just|really|actually)$/.test(next) ? "I'd" : "";
-    return "";
+    const opens = /(?:^|[^A-Za-z'])(?:and|but|so|then|if|when|that|because|maybe|think|guess|hope|bet|or|now|yeah|ok|okay|also|probably|sure|suppose|believe|say|said|know|thought|until|once|while|before|after|since|though|unless|perhaps|well)[,;:]?\s*$/i;
+    const verb = /^(?:be|been|have|go|see|get|do|call|send|take|try|let|need|make|just|probably|never|always|also|come|check|bring|text|keep|find|think|tell|give|show|ask|help|look|write|use|start|read|pay|meet|wait|stop|leave|talk|definitely|still|really|then|buy|add|fix|share|reply|update|like|love|rather|better|say|suggest|prefer|guess|imagine|hate|want|expect|agree|actually)$/;
+    return (lower === "ill" || lower === "id") && (start || opens.test(lead)) && verb.test(next) ? lower === "ill" ? "I'll" : "I'd" : "";
   },
-  //: The same reading over a whole text, for the document editor's check,
-  //: which has both sides of the word: the contraction, or "".
+  //: The same over a whole text (the document check): the contraction, or "".
   inText(text, at, word) {
     if (!/^(?:ill|id|cant|wont)$/i.test(word)) return "";
     const end = at + word.length;

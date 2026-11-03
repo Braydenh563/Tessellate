@@ -4827,21 +4827,6 @@ body .chip.item-label,
 .finder-summary {
   margin-bottom: var(--space-2);
 }
-/* The kind chips scroll sideways when they do not fit (07's decision), and a
-   row that scrolls with nothing to say so hid its last chips under the Sort
-   label ("Link" cut in half, owner's screenshot). The row fades at the edge
-   it can still scroll toward, so the cut reads as "more", not as a fault. */
-.finder-filters.fade-end {
-  mask-image: linear-gradient(to right, #000 calc(100% - var(--space-6)), transparent);
-}
-/* Only an edge with more behind it fades (`finderSyncFilterEdges`): at the
-   end of the row the last chip is whole, at the start the first one is. */
-.finder-filters.fade-start {
-  mask-image: linear-gradient(to left, #000 calc(100% - var(--space-6)), transparent);
-}
-.finder-filters.fade-start.fade-end {
-  mask-image: linear-gradient(to right, transparent, #000 var(--space-6), #000 calc(100% - var(--space-6)), transparent);
-}
 /* --- Chat: the user's bubble as a quiet surface, not an accent slab --- */
 /* The owner, twice: "the user message bubbles in the chat still look too,
    and unprofessional much compared to the assistant bubbles ... maybe it's

@@ -134,7 +134,7 @@ async function quickAccessEdit() {
   head.append(heading, count, done);
 
   const row = document.createElement("div");
-  row.className = "launch-row launch-row-start quick-edit-row edge-fade";
+  row.className = "launch-row launch-row-start quick-edit-row edge-fade scroll-row";
   items.forEach((link, index) => row.appendChild(quickAccessTile(link, index, ids, row)));
   //: Always offered, even with the row full: the manager is also where one
   //: tile is swapped for another.

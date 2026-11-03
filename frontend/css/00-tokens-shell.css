@@ -1470,6 +1470,51 @@ header#top-bar.tabs-wrapped #tab-bar {
   mask-image: linear-gradient(to right, transparent 0, #000 var(--tab-fade),
       #000 calc(100% - var(--tab-fade)), transparent 100%);
 }
+/* **One recipe for a row of chips or tiles that scrolls sideways** (INBOX
+   1578: Find anything's kind row had no scrollbar and ran under Sort). A
+   `.scroll-row` is an `.edge-fade` row that also says how much is behind the
+   edge: a thin visible scrollbar on a pointer device, and an arrow at each end
+   that has more behind it (`scrollRowArrows`, shell-reminders.js). A touch
+   screen keeps the swipe and no bar. The row's own rules never hide the bar. */
+.scroll-row {
+  scrollbar-width: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .scroll-row {
+    scrollbar-width: thin;
+    scrollbar-color: var(--muted) transparent;
+  }
+}
+.scroll-row-host {
+  position: relative;
+}
+/* A ghost button over a card-coloured backing (the pseudo-element), so the
+   one hover is the ghost's own and the chips never show through it. */
+button.scroll-row-arrow {
+  position: absolute;
+  z-index: 1;
+  isolation: isolate;
+  transform: translateY(-50%);
+  width: var(--control-h-dense);
+  height: var(--control-h-dense);
+  padding: 0;
+}
+.scroll-row-arrow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+button.scroll-row-arrow[data-side="end"] {
+  transform: translate(-100%, -50%);
+}
+button.scroll-row-arrow[hidden] {
+  display: none;
+}
 #tab-bar.fade-end {
   -webkit-mask-image: linear-gradient(to right, #000 calc(100% - var(--tab-fade)), transparent 100%);
   mask-image: linear-gradient(to right, #000 calc(100% - var(--tab-fade)), transparent 100%);

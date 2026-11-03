@@ -326,6 +326,8 @@ The owner's reports this plan owns, moved whole from INBOX.md with their numbers
 - ~~**Document history**~~ **Built, see `core/database.py:1398` (`DocumentRevision`), `#doc-history-dialog` and DOCUMENTS_PLAN Phase 5 item 2.** Notes have `EntryRevision`; documents had no
   equivalent table, and the AI edit overwrote on accept
 
+- **D30: language packs for spelling and grammar** (from INBOX 1582, the owner: "can we make it so the user just has to install the packages for their language??"). Word's proofing tools are closed and cannot ship. Keep Harper plus the open Hunspell dictionaries (the LibreOffice and Mozilla word lists, per language) and LanguageTool's open rule sets where the licence allows (AGPL may take LGPL). One download per language from Setup (dictionary, affix rules, autocorrect list, contraction table), joined with the languages setting. The English contraction family is built (`autocorrectState` in autocorrect.js, a30x); a pack's autocorrect list plugs into the same table.
+
 ### Asked for this session, not yet built
 
 A round of use produced four requests about documents at once, and they are
