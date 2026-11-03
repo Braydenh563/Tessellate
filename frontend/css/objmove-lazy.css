@@ -47,6 +47,47 @@
 .obj-armed * {
   cursor: grab;
 }
+/* The grip (obj-drag.js, INBOX 1595; DESIGN.md, "A drag grip on a card"): one
+   handle that floats on the left edge of the card under the pointer or with the
+   keyboard focus, and takes the card at once with no hold. Present and see-through
+   at rest, so the script can measure it; a finger has the hold instead. */
+.obj-grip {
+  position: fixed;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  inline-size: var(--space-8);
+  block-size: var(--space-9);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--modal-bg-opaque);
+  color: var(--muted);
+  box-shadow: var(--shadow-sm);
+  cursor: grab;
+  opacity: 0;
+  pointer-events: none;
+  touch-action: none;
+  user-select: none;
+  transition: opacity var(--ui-fast) var(--ease-out);
+}
+.obj-grip.is-on {
+  opacity: 1;
+  pointer-events: auto;
+}
+.obj-grip:hover {
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+html.obj-dragging .obj-grip {
+  display: none;
+}
+@media (hover: none) {
+  .obj-grip {
+    display: none;
+  }
+}
+
 /* The card being moved is hidden by the script (an inline display), so no rule
    here has to out-shout the list's own. */
 
