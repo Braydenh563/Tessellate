@@ -1,8 +1,8 @@
 # Code map
 
-Generated 2026-11-02 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
+Generated 2026-11-03 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7563, frontend ids 2642, CSS sections 519, backend routes 641, backend modules 8493, test files 1905, tests 16049, plan headings 987, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7563, frontend ids 2642, CSS sections 519, backend routes 641, backend modules 8493, test files 1905, tests 16050, plan headings 987, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7563)
 
@@ -7285,73 +7285,73 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `renderWbShortcutSheet` | frontend/js/whiteboard-commands.js:430 |
-| `wbBoardToClient` | frontend/js/whiteboard-commands.js:1187 |
+| `renderWbShortcutSheet` | frontend/js/whiteboard-commands.js:437 |
+| `wbBoardToClient` | frontend/js/whiteboard-commands.js:1205 |
 | `wbClickId` | frontend/js/whiteboard-commands.js:108 |
-| `wbCloseHelpSheet` | frontend/js/whiteboard-commands.js:781 |
+| `wbCloseHelpSheet` | frontend/js/whiteboard-commands.js:799 |
 | `wbCommandApplies` | frontend/js/whiteboard-commands.js:304 |
 | `wbCommandMenuRow` | frontend/js/whiteboard-commands.js:353 |
 | `wbCommandOneSketch` | frontend/js/whiteboard-commands.js:37 |
 | `wbCommandSelectionCount` | frontend/js/whiteboard-commands.js:32 |
 | `wbCommandTextTarget` | frontend/js/whiteboard-commands.js:43 |
 | `wbCommandsLive` | frontend/js/whiteboard-commands.js:361 |
-| `wbFacingAnchors` | frontend/js/whiteboard-commands.js:841 |
-| `wbHelpRows` | frontend/js/whiteboard-commands.js:699 |
-| `wbHelpSections` | frontend/js/whiteboard-commands.js:711 |
-| `wbInitMoreMenu` | frontend/js/whiteboard-commands.js:585 |
-| `wbJoinPlan` | frontend/js/whiteboard-commands.js:848 |
-| `wbJoinSelection` | frontend/js/whiteboard-commands.js:860 |
-| `wbJoinableEntries` | frontend/js/whiteboard-commands.js:825 |
-| `wbJoinedPairs` | frontend/js/whiteboard-commands.js:831 |
-| `wbMapPasteMake` | frontend/js/whiteboard-commands.js:1424 |
-| `wbMapPasteReading` | frontend/js/whiteboard-commands.js:1166 |
-| `wbMapPasteSpecial` | frontend/js/whiteboard-commands.js:1442 |
-| `wbMapPasteWithChip` | frontend/js/whiteboard-commands.js:1430 |
-| `wbMeasureSelection` | frontend/js/whiteboard-commands.js:900 |
-| `wbOpenHelpSheet` | frontend/js/whiteboard-commands.js:766 |
+| `wbFacingAnchors` | frontend/js/whiteboard-commands.js:859 |
+| `wbHelpRows` | frontend/js/whiteboard-commands.js:717 |
+| `wbHelpSections` | frontend/js/whiteboard-commands.js:729 |
+| `wbInitMoreMenu` | frontend/js/whiteboard-commands.js:603 |
+| `wbJoinPlan` | frontend/js/whiteboard-commands.js:866 |
+| `wbJoinSelection` | frontend/js/whiteboard-commands.js:878 |
+| `wbJoinableEntries` | frontend/js/whiteboard-commands.js:843 |
+| `wbJoinedPairs` | frontend/js/whiteboard-commands.js:849 |
+| `wbMapPasteMake` | frontend/js/whiteboard-commands.js:1442 |
+| `wbMapPasteReading` | frontend/js/whiteboard-commands.js:1184 |
+| `wbMapPasteSpecial` | frontend/js/whiteboard-commands.js:1460 |
+| `wbMapPasteWithChip` | frontend/js/whiteboard-commands.js:1448 |
+| `wbMeasureSelection` | frontend/js/whiteboard-commands.js:918 |
+| `wbOpenHelpSheet` | frontend/js/whiteboard-commands.js:784 |
 | `wbPaletteActRow` | frontend/js/whiteboard-commands.js:395 |
 | `wbPaletteCommands` | frontend/js/whiteboard-commands.js:375 |
-| `wbPasteAnchor` | frontend/js/whiteboard-commands.js:1332 |
-| `wbPasteBranchItems` | frontend/js/whiteboard-commands.js:1105 |
-| `wbPasteBuild` | frontend/js/whiteboard-commands.js:1130 |
-| `wbPasteBulletShape` | frontend/js/whiteboard-commands.js:1061 |
-| `wbPasteChipChoose` | frontend/js/whiteboard-commands.js:1219 |
-| `wbPasteChipClose` | frontend/js/whiteboard-commands.js:1192 |
-| `wbPasteChipKey` | frontend/js/whiteboard-commands.js:1248 |
-| `wbPasteChipMenu` | frontend/js/whiteboard-commands.js:1233 |
-| `wbPasteChipOffer` | frontend/js/whiteboard-commands.js:1271 |
-| `wbPasteChipPlace` | frontend/js/whiteboard-commands.js:1203 |
-| `wbPasteImageSize` | frontend/js/whiteboard-commands.js:1157 |
-| `wbPasteIntoShape` | frontend/js/whiteboard-commands.js:1388 |
-| `wbPasteLinkLabel` | frontend/js/whiteboard-commands.js:1020 |
-| `wbPasteLook` | frontend/js/whiteboard-commands.js:1181 |
-| `wbPasteMake` | frontend/js/whiteboard-commands.js:1304 |
-| `wbPasteMenuOpen` | frontend/js/whiteboard-commands.js:1241 |
-| `wbPasteObject` | frontend/js/whiteboard-commands.js:1012 |
-| `wbPastePlan` | frontend/js/whiteboard-commands.js:978 |
-| `wbPasteReadClipboard` | frontend/js/whiteboard-commands.js:1355 |
-| `wbPasteSketch` | frontend/js/whiteboard-commands.js:1016 |
-| `wbPasteSpecialApply` | frontend/js/whiteboard-commands.js:1365 |
-| `wbPasteSpecialMenu` | frontend/js/whiteboard-commands.js:1406 |
-| `wbPasteStickyItems` | frontend/js/whiteboard-commands.js:1036 |
-| `wbPasteTableItem` | frontend/js/whiteboard-commands.js:1051 |
-| `wbPasteText` | frontend/js/whiteboard-commands.js:1340 |
-| `wbPasteTextBoxItem` | frontend/js/whiteboard-commands.js:1029 |
-| `wbPasteTree` | frontend/js/whiteboard-commands.js:1074 |
-| `wbPasteTreeRows` | frontend/js/whiteboard-commands.js:1089 |
-| `wbPasteVariantList` | frontend/js/whiteboard-commands.js:1298 |
-| `wbPasteVariants` | frontend/js/whiteboard-commands.js:991 |
-| `wbPastedLines` | frontend/js/whiteboard-commands.js:971 |
-| `wbPhoneCarries` | frontend/js/whiteboard-commands.js:506 |
-| `wbPhoneReachable` | frontend/js/whiteboard-commands.js:490 |
-| `wbRenderHelpSheet` | frontend/js/whiteboard-commands.js:717 |
+| `wbPasteAnchor` | frontend/js/whiteboard-commands.js:1350 |
+| `wbPasteBranchItems` | frontend/js/whiteboard-commands.js:1123 |
+| `wbPasteBuild` | frontend/js/whiteboard-commands.js:1148 |
+| `wbPasteBulletShape` | frontend/js/whiteboard-commands.js:1079 |
+| `wbPasteChipChoose` | frontend/js/whiteboard-commands.js:1237 |
+| `wbPasteChipClose` | frontend/js/whiteboard-commands.js:1210 |
+| `wbPasteChipKey` | frontend/js/whiteboard-commands.js:1266 |
+| `wbPasteChipMenu` | frontend/js/whiteboard-commands.js:1251 |
+| `wbPasteChipOffer` | frontend/js/whiteboard-commands.js:1289 |
+| `wbPasteChipPlace` | frontend/js/whiteboard-commands.js:1221 |
+| `wbPasteImageSize` | frontend/js/whiteboard-commands.js:1175 |
+| `wbPasteIntoShape` | frontend/js/whiteboard-commands.js:1406 |
+| `wbPasteLinkLabel` | frontend/js/whiteboard-commands.js:1038 |
+| `wbPasteLook` | frontend/js/whiteboard-commands.js:1199 |
+| `wbPasteMake` | frontend/js/whiteboard-commands.js:1322 |
+| `wbPasteMenuOpen` | frontend/js/whiteboard-commands.js:1259 |
+| `wbPasteObject` | frontend/js/whiteboard-commands.js:1030 |
+| `wbPastePlan` | frontend/js/whiteboard-commands.js:996 |
+| `wbPasteReadClipboard` | frontend/js/whiteboard-commands.js:1373 |
+| `wbPasteSketch` | frontend/js/whiteboard-commands.js:1034 |
+| `wbPasteSpecialApply` | frontend/js/whiteboard-commands.js:1383 |
+| `wbPasteSpecialMenu` | frontend/js/whiteboard-commands.js:1424 |
+| `wbPasteStickyItems` | frontend/js/whiteboard-commands.js:1054 |
+| `wbPasteTableItem` | frontend/js/whiteboard-commands.js:1069 |
+| `wbPasteText` | frontend/js/whiteboard-commands.js:1358 |
+| `wbPasteTextBoxItem` | frontend/js/whiteboard-commands.js:1047 |
+| `wbPasteTree` | frontend/js/whiteboard-commands.js:1092 |
+| `wbPasteTreeRows` | frontend/js/whiteboard-commands.js:1107 |
+| `wbPasteVariantList` | frontend/js/whiteboard-commands.js:1316 |
+| `wbPasteVariants` | frontend/js/whiteboard-commands.js:1009 |
+| `wbPastedLines` | frontend/js/whiteboard-commands.js:989 |
+| `wbPhoneCarries` | frontend/js/whiteboard-commands.js:524 |
+| `wbPhoneReachable` | frontend/js/whiteboard-commands.js:508 |
+| `wbRenderHelpSheet` | frontend/js/whiteboard-commands.js:735 |
 | `wbRunBoardAct` | frontend/js/whiteboard-commands.js:417 |
 | `wbRunCommand` | frontend/js/whiteboard-commands.js:314 |
-| `wbSelectMade` | frontend/js/whiteboard-commands.js:1321 |
-| `wbSetSelectValue` | frontend/js/whiteboard-commands.js:479 |
-| `wbSyncCommandRows` | frontend/js/whiteboard-commands.js:453 |
-| `wbSyncMoreMapRows` | frontend/js/whiteboard-commands.js:551 |
-| `wbSyncMoreMenu` | frontend/js/whiteboard-commands.js:520 |
+| `wbSelectMade` | frontend/js/whiteboard-commands.js:1339 |
+| `wbSetSelectValue` | frontend/js/whiteboard-commands.js:497 |
+| `wbSyncCommandRows` | frontend/js/whiteboard-commands.js:471 |
+| `wbSyncMoreMapRows` | frontend/js/whiteboard-commands.js:569 |
+| `wbSyncMoreMenu` | frontend/js/whiteboard-commands.js:538 |
 | `wbTool` | frontend/js/whiteboard-commands.js:109 |
 
 ### frontend/js/whiteboard-format.js (95)
@@ -23305,7 +23305,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16049)
+## Tests (16050)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23406,7 +23406,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_audit1028_e55.py | 3 |
 | tests/test_audit1028_e63.py | 2 |
 | tests/test_audit1028_e72.py | 3 |
-| tests/test_audit1028_ux_boards.py | 10 |
+| tests/test_audit1028_ux_boards.py | 11 |
 | tests/test_audit_1028_a28s.py | 9 |
 | tests/test_audit_1028_e_rows.py | 5 |
 | tests/test_audit_1028_e_rows_b.py | 6 |

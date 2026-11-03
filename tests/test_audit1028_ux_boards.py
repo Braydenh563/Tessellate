@@ -189,3 +189,20 @@ def test_the_template_offers_close_button_is_a_real_target_and_the_strip_keeps_i
     assert "min-height: max(var(--button-min-h), var(--target-min))" in rule
     # A tile cut at the strip's right edge is the cue that the row scrolls: the fade is what says so.
     assert 'class="wb-map-templates-row edge-fade" id="wb-map-template-row"' in HTML
+
+
+# B12 ------------------------------------------------------------------------
+
+
+def test_the_shortcut_sheet_reads_each_commands_surface_so_a_shared_key_is_never_ambiguous():
+    commands = (JS / "whiteboard-commands.js").read_text(encoding="utf-8")
+    render = _block(commands, "function renderWbShortcutSheet(list) {", "\n}\n")
+    # With a board open: that surface's keys only. Otherwise every key, a shared one naming its surface.
+    assert 'wbIsMap() ? "map" : "board"' in render
+    assert 'command.surface !== "both" && command.surface !== here' in render
+    assert '" (mind map)" : " (board)"' in render
+    # The ambiguity is real in the table: a key bound on both surfaces (M, Ctrl+Shift+S).
+    by_key: dict[str, set[str]] = {}
+    for keys, surface in re.findall(r'keys: "([^"]+)", surface: "(board|map)"', commands):
+        by_key.setdefault(keys, set()).add(surface)
+    assert any(len(s) == 2 for s in by_key.values())

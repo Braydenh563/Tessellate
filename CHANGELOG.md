@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Board: the keyboard shortcut sheet lists only the open surface's keys (23 rows on a map, 55 on a board) and names the surface on a key two surfaces share, M and Ctrl+Shift+S (audit 1028 B12).
 - Mind map: the template offer's close button is 32px with a mouse and 44px under touch, up from 28px (audit 1028 U26).
 - Board: the phone's tools sheet puts each tool's name under its icon, 18 tiles all 44px or more, and takes the names out again on close (audit 1028 U21).
 - Mind map: the text size stepper reads one scale: a root drawn at 22px read "22px" while its children read "M", now "L+" (a little over L) and the title keeps the pixels (audit 1028 U28).
