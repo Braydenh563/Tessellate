@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: the Comments section is built on its first draw instead of shipped in the page (5 fewer elements at boot, 7,927 to 7,922 against the cap of 7,923).
 - Documents: the comment threads column has its alembic revision (c8e4a1f7d3b9), so the add-column lint passes with its list unchanged.
 - Documents: a comment thread made or dropped by an undo, a restored revision or an edit that removed its remark is saved with the document at the next autosave, not only after the next typed change.
 - Documents: a document's comment threads are capped at 1 MB in all (the per-comment caps alone allowed about 200 MB); a save over it says there are too many comments and replies to keep, and writes nothing.

@@ -4960,12 +4960,10 @@ Link to another note with [[its first few words]]."></textarea>
                Second in the stack, under the outline and above what links here,
                because it is the one of the four that changes while you write.
                Absent when there is nothing in it, like the two below it. -->
-          <div id="doc-comments-wrap" class="doc-outline-wrap doc-comments-wrap hidden">
-            <h3>Comments <span class="doc-outline-count" id="doc-comments-count"></span></h3>
-            <ul id="doc-comments" class="doc-outline doc-comments"></ul>
-            <button type="button" id="doc-comments-resolved-toggle" class="ghost small doc-comments-resolved-toggle hidden" aria-expanded="false" aria-controls="doc-comments-resolved"></button>
-            <ul id="doc-comments-resolved" class="doc-outline doc-comments hidden"></ul>
-          </div>
+          <!-- Empty here on purpose: `documents-comments.js` builds the heading, the list, the
+               resolved toggle and the resolved shelf on the first draw, since five elements
+               nobody sees until a remark exists are not worth the boot document (the element cap). -->
+          <div id="doc-comments-wrap" class="doc-outline-wrap doc-comments-wrap hidden"></div>
 
           <!-- What links *here*. The reverse of a [[wiki link]], and the
                single most-used panel in tools of this shape, you can always
