@@ -843,4 +843,8 @@
   Object.assign(window, { docCommentStrip, docCommentFootnotes, renderDocComments, docShowComment, docAnnotateSelection });
   //: What a save sends beside the text; a property of the panel's own entry point so it takes no name in the shared scope (tests/test_global_scope_ratchet.py).
   renderDocComments.threads = docThreadsForSave;
+  //: The next draw reads the records from `currentDoc` again ("Take theirs" replaced them).
+  renderDocComments.reload = () => {
+    docThreadsDoc = null;
+  };
 })();

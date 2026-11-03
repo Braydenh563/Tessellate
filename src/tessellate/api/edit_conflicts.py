@@ -46,18 +46,38 @@ def refuse_if_stale(
     new_text: str | None,
     current: Callable[[], Any],
     noun: str,
+    base_threads_hash: str | None = None,
+    current_threads: str | None = None,
+    new_threads: str | None = None,
 ) -> None:
     """Raise 409 when a save started from text that is no longer there.
 
     `current` builds the object as a read would return it (a Pydantic model
     or a dict), sent back so the editor can show or take it without a second
     request; a callable, so a save that passes costs no second read.
+
+    A document's comment threads are a second thing a save can overwrite (the
+    PUT replaces the list whole), so they get the same check on their own:
+    `base_threads_hash` is the hash of the stored threads text the editor
+    started from, `current_threads` what is stored now and `new_threads` what
+    the save would store (None: the save sends none, so nothing is replaced).
     """
+    if _text_is_stale(base_hash, current_text, new_text) or _threads_are_stale(
+        base_threads_hash, current_threads, new_threads
+    ):
+        _refuse(409, current, noun)
+
+
+def _text_is_stale(base_hash: str | None, current_text: str | None, new_text: str | None) -> bool:
     if not base_hash or new_text is None:
-        return
-    if content_hash(current_text) == base_hash or (current_text or "") == new_text:
-        return
-    _refuse(409, current, noun)
+        return False
+    return not (content_hash(current_text) == base_hash or (current_text or "") == new_text)
+
+
+def _threads_are_stale(base: str | None, current: str | None, new: str | None) -> bool:
+    if not base or new is None:
+        return False
+    return not (content_hash(current) == base or (current or "") == new)
 
 
 #: The error's machine name for a refused `If-Match` (412), the HTTP form.

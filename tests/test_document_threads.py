@@ -8,6 +8,7 @@ so an export carries the remark as a footnote and nothing else.
 from __future__ import annotations
 
 from tessellate.core import docthreads
+from tests._app_js import documents_text
 
 THREAD = {
     "id": "t1",
@@ -76,3 +77,109 @@ def test_the_export_does_not_carry_the_sidecar(client):
     client.put(f"/documents/{doc['id']}", json={"threads": [THREAD]})
     exported = client.get(f"/documents/{doc['id']}/export.md").text
     assert "Sam" not in exported and "Done" not in exported
+
+
+def _other(thread_id: str) -> dict:
+    return {**THREAD, "id": thread_id, "key": f"k.{thread_id}", "resolved": False, "replies": []}
+
+
+def test_a_read_carries_the_hash_of_the_threads(client):
+    doc = client.post("/documents", json={"title": "T"}).json()
+    empty = doc["threads_hash"]
+    saved = client.put(f"/documents/{doc['id']}", json={"threads": [THREAD]}).json()
+    assert saved["threads_hash"] != empty
+    assert client.get(f"/documents/{doc['id']}").json()["threads_hash"] == saved["threads_hash"]
+
+
+def test_two_windows_do_not_overwrite_each_others_threads(client):
+    doc = client.post("/documents", json={"title": "T", "content": "a"}).json()
+    base = doc["threads_hash"]
+    # window A saves a thread first
+    a = client.put(f"/documents/{doc['id']}", json={"threads": [THREAD], "base_threads_hash": base})
+    assert a.status_code == 200
+    # window B, still on the empty list, saves its own: refused, with what A saved
+    b = client.put(f"/documents/{doc['id']}", json={"threads": [_other("t2")], "base_threads_hash": base})
+    assert b.status_code == 409
+    detail = b.json()["detail"]
+    assert detail["code"] == "edit_conflict"
+    assert detail["current"]["threads"] == [THREAD]
+    assert client.get(f"/documents/{doc['id']}").json()["threads"] == [THREAD]
+
+
+def test_a_save_that_started_from_the_current_threads_goes_through(client):
+    doc = client.post("/documents", json={"title": "T"}).json()
+    first = {"threads": [THREAD], "base_threads_hash": doc["threads_hash"]}
+    a = client.put(f"/documents/{doc['id']}", json=first).json()
+    second = {"threads": [THREAD, _other("t2")], "base_threads_hash": a["threads_hash"]}
+    b = client.put(f"/documents/{doc['id']}", json=second)
+    assert b.status_code == 200 and len(b.json()["threads"]) == 2
+
+
+def test_a_stale_threads_hash_with_the_same_list_is_not_a_conflict(client):
+    doc = client.post("/documents", json={"title": "T"}).json()
+    client.put(f"/documents/{doc['id']}", json={"threads": [THREAD]})
+    body = {"threads": [THREAD], "base_threads_hash": doc["threads_hash"]}
+    answer = client.put(f"/documents/{doc['id']}", json=body)
+    assert answer.status_code == 200
+
+
+def test_a_text_only_save_ignores_a_stale_threads_hash(client):
+    doc = client.post("/documents", json={"title": "T", "content": "a"}).json()
+    client.put(f"/documents/{doc['id']}", json={"threads": [THREAD]})
+    body = {"content": "ab", "base_hash": doc["content_hash"], "base_threads_hash": doc["threads_hash"]}
+    ok = client.put(f"/documents/{doc['id']}", json=body)
+    assert ok.status_code == 200, "no threads sent: nothing of the other window's would be replaced"
+    assert ok.json()["threads"] == [THREAD]
+
+
+def test_a_save_without_a_threads_hash_is_unchecked(client):
+    doc = client.post("/documents", json={"title": "T"}).json()
+    client.put(f"/documents/{doc['id']}", json={"threads": [THREAD]})
+    answer = client.put(f"/documents/{doc['id']}", json={"threads": [_other("t2")]})
+    assert answer.status_code == 200
+
+
+# --- the browser's side of it (wiring; the model itself is in test_document_thread_model.py) ---
+
+
+def _function_body(text: str, header: str) -> str:
+    start = text.index(header)
+    return text[start : start + 6000]
+
+
+def test_a_save_sends_the_panels_threads_and_the_hash_it_started_from():
+    save = _function_body(documents_text(), "async function docSaveOnce(")
+    assert "threads: renderDocComments.threads()" in save
+    assert "base_threads_hash: currentDoc.threads_hash" in save
+
+
+def test_keep_mine_adopts_their_threads_hash_and_take_theirs_reloads_the_panel():
+    resolve = _function_body(documents_text(), "async function docResolveConflict(")
+    assert "threads_hash: current.threads_hash" in resolve
+    theirs = resolve[resolve.index('answer === "theirs"') :]
+    assert "renderDocComments.reload()" in theirs
+    assert theirs.index("renderDocComments.reload()") < theirs.index("docSurface().text")
+
+
+def test_the_panel_reads_the_threads_off_the_document_when_it_opens():
+    sync = _function_body(documents_text(), "function docThreadsSync(")
+    assert "docThreads = Array.isArray(currentDoc.threads) ? currentDoc.threads : [];" in sync
+    assert "docThreadsDoc = currentDoc.id" in sync
+
+
+def test_nothing_is_sent_until_the_panel_has_read_the_document():
+    text = documents_text()
+    assert "return currentDoc && docThreadsDoc === currentDoc.id ? docThreads : undefined;" in text, (
+        "undefined drops out of the JSON, so a save before the first read cannot wipe the sidecar"
+    )
+
+
+def test_a_save_without_threads_keeps_them_and_one_with_junk_items_is_refused(client):
+    doc = client.post("/documents", json={"title": "T", "content": "a"}).json()
+    client.put(f"/documents/{doc['id']}", json={"threads": [THREAD]})
+    left_out = client.put(f"/documents/{doc['id']}", json={"content": "ab", "base_hash": doc["content_hash"]})
+    assert left_out.json()["threads"] == [THREAD], "the no-wipe case: a body without the key leaves the list"
+    for junk in (["text"], [1], [None], "nope", {"id": "x"}):
+        refused = client.put(f"/documents/{doc['id']}", json={"threads": junk})
+        assert refused.status_code == 422
+    assert client.get(f"/documents/{doc['id']}").json()["threads"] == [THREAD]

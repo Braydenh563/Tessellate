@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: a save over comment threads another window has changed is refused like a save over changed text, and "Take theirs" brings their threads in with their text, so two windows no longer overwrite each other's comments (review of the comment threads).
 - A sheet re-measures the toasts each time its card changes size, so a lasting toast steps aside for Import once the preview has filled in (E2E import; CI probe found the measurement stale, not wrong).
 - Board: the keyboard shortcut sheet lists only the open surface's keys (23 rows on a map, 55 on a board) and names the surface on a key two surfaces share, M and Ctrl+Shift+S (audit 1028 B12).
 - Mind map: the template offer's close button is 32px with a mouse and 44px under touch, up from 28px (audit 1028 U26).
