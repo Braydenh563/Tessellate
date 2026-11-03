@@ -3268,7 +3268,6 @@ HELP_TOPICS.extend(
                 "heads up",
                 "attach panel",
                 "attach a picture",
-                "context window",
                 "export the chat",
                 "stop the answer",
                 "stop an answer",
@@ -3320,6 +3319,22 @@ HELP_TOPICS.extend(
                 "each round, what it searched or read, then the answer. A number "
                 "or a name in an answer that nothing it read contains gets a "
                 "heads-up under the answer, so check it before relying on it."
+            ),
+            "badge": {"label": "Chat", "tab": "chat"},
+        },
+        {
+            "id": "chat-context",
+            "keywords": (
+                "context window", "context pill", "oldest messages", "oldest exchanges", "long chat",
+                "model forgot", "forget the start", "forgets earlier", "forgot earlier", "did not see", "no longer fit", "too long to fit",
+            ),
+            "body": (
+                "The context pill in the chat header shows how full the model's "
+                "window is; press it for what fills it. When a long chat outgrows "
+                "the window, the oldest exchanges are left out of what the model "
+                "reads, and a line under the reply says how many. Compress in the "
+                "header summarises the earlier messages so the gist stays in view; "
+                "a new chat (Ctrl+Shift+O) starts empty."
             ),
             "badge": {"label": "Chat", "tab": "chat"},
         },

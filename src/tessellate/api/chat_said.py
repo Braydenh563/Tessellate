@@ -672,12 +672,16 @@ def _open_note_answer(req: _StreamRequest, follow, current: list, today):  # noq
     """The open note's own answer to "what's left", "when is it due", "who is
     involved" (`ai/composer_open.py`): short, and different for every note."""
     opened = req.body.open_note_id
-    if follow or not opened or len(current) != 1 or current[0].get("id") != opened:
+    #: The notes that record the open one's items ride beside it (F15): the
+    #: open note is the one bound, whatever else the context holds.
+    bound = set(req.body.note_ids or [])
+    mine = [n for n in current if n.get("id") in bound] if bound else current
+    if follow or not opened or len(mine) != 1 or mine[0].get("id") != opened:
         return None
-    if not composer_open.reads_note(req.question, current[0]):
+    if not composer_open.reads_note(req.question, mine[0]):
         return None
     dialogue = composer.Dialogue.from_history(req.history)
-    return composer.open_note_answer(req.question, current[0], today=today, salt=dialogue.salt)
+    return composer.open_note_answer(req.question, mine[0], today=today, salt=dialogue.salt)
 
 
 #: What an answer says when it could not answer: its own "missing" lines and the

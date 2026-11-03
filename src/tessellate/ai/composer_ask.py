@@ -91,7 +91,7 @@ _ASKING_WORDS = frozenset(
     wrote written write mention mentions mentioning mentioned explain should
     could would way am i me my mine whose whom anyone someone near after
     before during without within over under around across through since
-    until also again just only some other one any every each main
+    until also again just only some other one ones any every each main
     remind idea forgot forget remember wonder wondering deal hows whats
     wheres whens whos whys going happen happened happening news anything
     something stuff info information details please thanks thank check
@@ -522,7 +522,9 @@ def subject_terms(question: str) -> list[str]:
         if word in _ASKING_WORDS or word in seen:
             continue
         seen.append(word)
-    return seen
+    #: A praise word alone names nothing ("anything interesting", "the cool
+    #: stuff"); beside a noun ("interesting bean") it stays (INBOX 1561).
+    return [] if all(w in question_noise.PRAISE_WORDS for w in seen) else seen
 
 
 _COMPARE_SIDES = (

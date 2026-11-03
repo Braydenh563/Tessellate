@@ -10460,6 +10460,7 @@ Link to another note with [[its first few words]]."></textarea>
                   <i class="ph ph-question" aria-hidden="true"></i>
                 </button>
               </div>
+              <p id="suggested-offline" class="notice hidden" role="note"></p>
               <div class="row suggested-hardware-row">
                 <p id="suggested-hardware" class="muted">Models Ollama can download for you.</p>
                 <button type="button" id="suggested-hardware-edit" class="ghost small hidden"
@@ -10486,7 +10487,9 @@ Link to another note with [[its first few words]]."></textarea>
                   card whose own memory holds the model counts instead of the
                   system memory, and memory that is free only right now can
                   take a Fits down to Tight. The line above the cards shows
-                  what was detected; Edit corrects it when it is wrong.
+                  what was detected; Edit corrects it when it is wrong. With
+                  Ollama not running the cards still show what fits; Download
+                  waits until it is installed and started.
                 </p>
                 <p>
                   Sizes with a ~ are the download size we shipped and have not

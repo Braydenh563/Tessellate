@@ -214,6 +214,22 @@ _RUNDOWN = re.compile(
 )
 
 
+#: Words that praise or pad a question about Atlas itself ("anything interesting
+#: you can do", "what cool stuff can you do"): read past, never asked about
+#: (INBOX 1561). Whole-word, so "what can you do" is untouched.
+_PRAISE = r"(?:(?:really |very |pretty |that(?: is|'s) )?(?:interesting|cool|fun|neat|useful|good|great|nice|awesome|amazing|impressive|special|best|fancy|clever|handy|helpful|exciting|different|new|else|other|more|all|any) ?)"
+_SELF_FORMS = re.compile(
+    r"^(?:(?:is|are) there |have you got |got )?(?:any ?thing|some ?thing|some|any|one thing|a few things|a thing) " + _PRAISE + r"*(?:(?:that )?(?:you|u) (?:can|could|are able to|do))(?: do)?(?: for me| here)?$"
+    r"|^(?:tell|show|give|name|list)(?: me)? (?:one |a few |any ?thing |some ?thing |some |a )?" + _PRAISE + r"*(?:things?|stuff|tricks?|features?|ways)?(?: that)? (?:you|u) (?:can|could|are able to) do(?: for me| here)?$"
+    r"|^(?:what|which)(?: are| is)? " + _PRAISE + r"*(?:things|stuff|tricks|features|abilities|functions|capabilities|skills|tools|options)(?: that)? (?:can|could|do|are|will)? ?(?:you|u)(?: do| have| offer| able to do)?(?: for me| here)?$"
+    r"|^what (?:can|could|do) (?:you|u) do (?:that(?:'s| is) )?" + _PRAISE + r"+$"
+    r"|^what (?:are|r) (?:the|your|atlas'?s?) " + _PRAISE + r"*(?:features|abilities|capabilities|skills|tricks|functions|options)$"
+    r"|^(?:do|have) (?:you|u) (?:have |got )?(?:any |some )?" + _PRAISE + r"*(?:features|abilities|capabilities|skills|tricks|functions|options)$"
+    r"|^what (?:are|r) (?:you|u) (?:good|useful|there) for$",
+    re.I,
+)
+
+
 def _clean(question: str) -> str:
     #: Read as the typo repair reads it (C15): "Wat cna u do??" is the question
     #: "what can you do", and gets its answer, not a search of the notes.
@@ -230,7 +246,7 @@ def _clean(question: str) -> str:
         if tail is None:
             break
         low, trimmed = low[: -len(tail)].rstrip(" ,"), True
-    if _RUNDOWN.match(low):
+    if _RUNDOWN.match(low) or _SELF_FORMS.match(low):
         return "what can you do"
     return low if trimmed and _OVERVIEW.match(low) else text
 

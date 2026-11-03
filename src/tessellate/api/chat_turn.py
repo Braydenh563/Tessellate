@@ -193,6 +193,9 @@ def _model_stream_events(req: _StreamRequest, prepared: dict, messages: list) ->
         "notes": len(messages[-1]["content"]) // context.CHARS_PER_TOKEN,
         "tool_schemas": 0,
     }
+    if dropped := librarian.history_dropped(req.history, messages):
+        #: Exchanges the window left out, for the chat's one-line notice (E57).
+        composition_tokens["history_dropped"] = dropped
     if prepared.get("brief"):
         #: The notes' tokens before and after the composer cut them, so the
         #: saving is a number on every turn rather than a claim.
@@ -608,6 +611,7 @@ def _why(req, prepared, grounding, composing, will_answer, tools_only, ollama_ru
         shape=shape,
         context=will_answer and ollama_running and _asks_capability(req, prepared),
         loading=bool(prepared.get("meaning_loading")),
+        read_by=str(prepared.get("read_by") or ""),
         marks=marks,
     )
 

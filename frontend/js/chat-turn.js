@@ -885,7 +885,7 @@ async function chatSendTurn(preset, opts = {}) {
   //: Who wrote it (INBOX 1300 C14), as a badge beside the name in the head.
   const head = bubble.querySelector(".msg-role");
   const model = stats?.model || meta?.answered_by;
-  finishReply(answerEls, { composed: meta?.composed, head, model, engine: Boolean(meta), bubble, unsupported: toolsUnsupportedEvent });
+  finishReply(answerEls, { composed: meta?.composed, head, model, engine: Boolean(meta), bubble, unsupported: toolsUnsupportedEvent, trimmed: stats?.composition?.history_dropped });
   //: An answer's one acting offer, the Ask box's (`digestOffer`): a place's link.
   if (chatOffer) ensureModule("askCompose").then(() => digestOffer([...bubble.querySelectorAll(".bubble-answer")].pop(), chatOffer)).catch(() => {});
   const answerRaw = timeline.text();

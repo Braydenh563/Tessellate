@@ -105,6 +105,8 @@ function modelState(model, status) {
     pull,
     roles: modelRoles(installed, status),
     kind: running ? "downloading" : installed ? "installed" : pull && pull.status === "error" ? "failed" : "available",
+    //: No backend answering (audit 1028 E38): the cards still show, Download waits.
+    offline: !status.ollama_running,
   };
 }
 
@@ -317,7 +319,7 @@ function modelProgressText(pull) {
 function modelSignature(model, state) {
   return JSON.stringify([
     model.name, model.fit, model.fit_reason, model.size,model.size_source, model.ram_gb, model.recommended,
-    state.kind, state.installed, state.roles,
+    state.kind, state.installed, state.roles, state.offline,
     state.pull ? [state.pull.status, state.pull.error] : null, modelHardwareGb,
   ]);
 }
@@ -426,6 +428,10 @@ function buildModelCard(model, state) {
     const label = state.kind === "failed" ? "Retry" : "Download";
     primary = smallButton(label, `Download ${model.name} with Ollama`, (event) => modelDownload(model, event.currentTarget), !filled || model.fit === "too_big");
     primary.dataset.thisComputer = "";
+    if (state.offline) {
+      primary.disabled = true;
+      primary.title = `Start Ollama first, then download ${model.name}`;
+    }
   }
   if (primary) {
     primary.classList.add("model-card-primary");
@@ -625,6 +631,11 @@ function renderSuggested(status) {
       const el = modelCardFor(model, status);
       if (grid.children[i] !== el) grid.insertBefore(el, grid.children[i] || null);
     });
+  }
+  const offline = $("suggested-offline");
+  if (offline) {
+    offline.classList.toggle("hidden", !!status.ollama_running);
+    if (!offline.textContent) setLabel(offline, "ph:info Ollama is not running, so nothing can download yet. Install it from ollama.com and start it first; then press Download.");
   }
   const note = $("suggested-hide-wrap")?.querySelector("span");
   if (note) note.textContent = hide && hidden ? `Hide models too big for this computer (${hidden} hidden)` : "Hide models too big for this computer";

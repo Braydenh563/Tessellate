@@ -1514,6 +1514,12 @@
   .chat-tool-group-end {
     margin-left: 0;
   }
+  /* Audit 1028 E50: four icons beside the title left it 94px and clipped. Fork
+     and Compress have rows in the header's menu (they click these buttons, so
+     the handlers stay here), and the title takes the room on a phone. */
+  #chat-fork, #chat-compress {
+    display: none;
+  }
 }
 /* --- the note card's metadata, ordered (§36B) -------------------------------
    Screenshotted: a note with six chips in a row, category, four tags, an AI

@@ -99,6 +99,7 @@ def lines(
     shape: str | None = None,
     context: bool = False,
     loading: bool = False,
+    read_by: str = "",
     marks: dict[str, float],
 ) -> list[dict]:
     """`[{"at": seconds, "text": words}]`, oldest first. `marks` holds the
@@ -116,7 +117,13 @@ def lines(
     matched = max(matched, used)
     reading = INTENTS.get(intent, "a question")
     say("read", f"Read the question as {reading}{f', for {when}' if when else ''}.")
-    retrieval = _search_say(say, intent, mode, matched, scoped, loading)
+    #: A reading the app does itself (what changed since yesterday) found the
+    #: notes: the trail names that step, never "nothing matched" (INBOX 1569).
+    if read_by:
+        say("searched", read_by)
+        retrieval = False
+    else:
+        retrieval = _search_say(say, intent, mode, matched, scoped, loading)
     kind = (shape or "").split(":", 1)[-1]
     _answer_say(say, composed, model, matched, context)
     if kind in SHAPES:
@@ -125,5 +132,6 @@ def lines(
         cited = f"Cited {used} of the {matched}" if used else "Cited none of them by line"
         say("done", f"{cited}{'; the rest are in the column beside it' if used and used < matched else ''}.")
     took = marks.get("done", 0.0)
-    say("done", f"Done in {_secs(took):.2f} s.")
+    #: The footer under the answer times the whole wait; this times the work (INBOX 1569).
+    say("done", f"Done in {_secs(took):.2f} s of work here; the time under the answer is the whole wait.")
     return out

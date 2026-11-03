@@ -1155,6 +1155,23 @@ function replyCalcConvertPane(actions) {
 //: a reply once its words are final, whoever wrote them: `finishReply`
 //: (capture-ask.js) hands it the answer's element, or a turn's several.
 function replyFinish(answers, opts = {}) {
+  //: **One line under a reply the window cut short** (audit 1028 E57): when a
+  //: long chat no longer fits the model's context, the oldest exchanges are left
+  //: out of the prompt, and a model that "forgot" the start of a chat looked like
+  //: a model that was wrong. The turn's first stats event carries the count
+  //: (`composition.history_dropped`); Compress in the header is the fix, named in
+  //: the line rather than pressed for the person.
+  function renderHistoryTrimmedNotice(container, dropped) {
+    if (!container || !(dropped > 0)) return;
+    const line = document.createElement("p");
+    line.className = "notice notice-warn history-trimmed-notice";
+    line.setAttribute("role", "note");
+    const many = dropped !== 1;
+    setLabel(line, `ph:warning The oldest ${many ? `${dropped} exchanges` : "exchange"} no longer fit the model's window, so this answer was written without ${many ? "them" : "it"}. Compress in the header keeps the gist.`);
+    container.insertBefore(line, container.querySelector(":scope > .msg-meta"));
+  }
+  //: Nested, not a global: the shared scope is capped (test_global_scope_ratchet).
+
   const list = (answers instanceof Element ? [answers] : [...(answers || [])]).filter((el) => el?.isConnected);
   if (!list.length) return;
   for (const answer of list) replyFoldLong(answer);
@@ -1162,6 +1179,7 @@ function replyFinish(answers, opts = {}) {
   if (opts.head && list.some((answer) => answer.textContent.trim())) replyByline(opts.head, opts);
   if (opts.composed) replyReveal(list);
   if (opts.unsupported) renderToolsUnsupportedNotice(opts.bubble, opts.unsupported);
+  if (opts.trimmed) renderHistoryTrimmedNotice(opts.bubble, opts.trimmed);
   if (opts.match_info) replyRecordReasons(opts.match_info);
 }
 

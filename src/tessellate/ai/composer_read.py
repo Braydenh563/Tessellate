@@ -250,6 +250,19 @@ def _depth(line: str) -> int:
     return min((len(flat) - len(flat.lstrip(" "))) // 2, 4)
 
 
+#: A subordinating word and a gerund open a clause that needs a main clause.
+_FRAGMENT_OPEN = re.compile(r"(?:after|before|when|while|once|until|upon|by|without|instead of|prior to|in order to|on)\s+[a-z]+ing\b", re.I)
+_OWN_SUBJECT = re.compile(r"\b(?:i|we|you|he|she|they|it|there)\b|[,;:]", re.I)
+
+
+def _dependent_fragment(text: str) -> bool:
+    """A clause with no main clause: opens "after/before/when ... -ing", has no
+    comma and no subject of its own, and is short. "After making coffee, I
+    left." and "Before leaving I locked up." are whole sentences."""
+    words = text.rstrip(".!? ").split()
+    return len(words) <= 10 and bool(_FRAGMENT_OPEN.match(text)) and not _OWN_SUBJECT.search(text)
+
+
 def _unit(view: NoteView, content: str, start: int, end: int, kind: str, done: bool | None) -> Sentence | None:
     """One sentence, trimmed as the rule allows, its offsets moved to match."""
     raw = content[start:end]
@@ -279,6 +292,11 @@ def _unit(view: NoteView, content: str, start: int, end: int, kind: str, done: b
     #: A script with no spaces is one "word" to `split`: its length is its characters.
     thin = len(text.split()) < 3 and not (composer_frame.NON_LATIN.search(text) and len(text) >= 6)
     if not words or (kind == "prose" and thin and not _short_fact(text)):
+        return None
+    #: "After making an initial connection." has no main clause: it is half of
+    #: a sentence a list finishes, and quoted alone it reads as a whole one
+    #: (INBOX 1561 d).
+    if kind == "prose" and _dependent_fragment(text):
         return None
     return Sentence(view.id, view.rank, start, end, text, words, kind, done)
 

@@ -153,8 +153,12 @@ def open_ended(question: str) -> str:
     """"vague" for a request with no direction, the act's name ("open",
     "find", "delete", "pin", ...) for a bare action with no object, else ""."""
     q = " ".join((question or "").split())
+    #: "can you do anything fun" asks what Atlas can do; it is answered, not
+    #: met with "Cool how?" (INBOX 1561).
+    from tessellate.ai import capability
+
     if _VAGUE.match(q):
-        return "vague"
+        return "" if capability.asks(q) else "vague"
     m = _BARE.match(q)
     if m:
         kind = _VERB_KIND[m.group("verb").lower()]
@@ -169,6 +173,68 @@ def open_ended(question: str) -> str:
         #: "make me a" and "add" alone are unfinished, not requests.
         return kind if (m.group("noun") or m.group("verb").lower() in ("open", "find", "search")) else ""
     return ""
+
+
+# --- the answer to "Which note?" (INBOX 1570) -----------------------------------------------
+#
+# "Pin a note" -> "Which note do you want pinned?" -> "erm, the interesting bean one": the
+# reply is that question's answer, read before anything routes it.
+
+#: Said while thinking or softening, never part of a note's name.
+_SLOT_FILLER = re.compile(r"^(?:(?:erm+|er+|um+|uh+|hmm+|like|so|well|ok|okay|yeah|yes|yep|oh|ah|just|maybe|i guess|i mean|please|pls)\b[ ,.]*)+", re.I)
+_SLOT_TAIL = re.compile(r"(?:[ ,.]+(?:please|pls|thanks|thank you|then))*[ .!]*$", re.I)
+#: "the one about X", "the one called X": the note is named after "one".
+_ONE_ABOUT = re.compile(r"^(?:(?:the|that|this|my) )?one (?:about|on|for|called|named|titled|with|that mentions?|mentioning) (?:the |my )?(?P<name>.+)$", re.I)
+#: "the X one", "that X note", "my X one": the note is the words between.
+_THE_ONE = re.compile(r"^(?:(?:the|that|this|my) )?(?P<name>.+?)(?: one| note| entry)?$", re.I)
+_SLOT_KINDS = ("open", "find", "delete", "pin", "unpin", "summarise")
+_BLANK_WORDS = frozenset("one ones note notes it this that them these those thing stuff".split())
+
+
+def reference(text: str) -> str:
+    """The note a reply points at ("erm, the interesting bean one" is "interesting
+    bean"), or "" when it names nothing: only filler, "it", "that one"."""
+    said = _SLOT_TAIL.sub("", _SLOT_FILLER.sub("", " ".join((text or "").split()))).strip(" \"'“”")
+    found = _ONE_ABOUT.match(said)
+    name = found.group("name") if found else (_THE_ONE.match(said).group("name") if _THE_ONE.match(said) else said)
+    name = name.strip(" \"'“”,.")
+    words = re.findall(r"[\w'’-]+", name.lower())
+    return "" if not words or all(w in _BLANK_WORDS for w in words) else name
+
+
+def pending_kind(history: list[dict]) -> str:
+    """The act the last answer was asking "which note?" for, else "": the last turn's
+    question was an act with no note, and its answer is the clarifying one (`reply`)."""
+    if not history:
+        return ""
+    last = history[-1]
+    kind = open_ended(str(last.get("question") or ""))
+    answer = " ".join(str(last.get("answer") or "").split())
+    return kind if kind in _SLOT_KINDS and answer in {" ".join(t.split()) for t in _WHICH[kind]} else ""
+
+
+def fill_slot(question: str, history: list[dict], notes: list[tuple[int, str]]) -> str | None:
+    """The act `question` completes, said whole ("Pin note 12"), when it answers the
+    note Atlas just asked for: the reply fills the act's slot before any routing.
+    `notes` are `(id, title)` pairs. None when the reply is its own request."""
+    kind = pending_kind(history)
+    if not kind or open_ended(question) or "?" in question:
+        return None
+    name = reference(question)
+    if not name or len(name.split()) > 8:
+        return None
+    #: A reply that is itself a command ("delete the boiler note") is routed as one.
+    if re.match(rf"^(?:{'|'.join(_VERB_KIND)})\b", name, re.I) and len(name.split()) > 2:
+        return None
+    key = " ".join(name.lower().split())
+    exact = [i for i, title in notes if " ".join(title.lower().split()) == key]
+    verb = _VERB_FOR[kind]
+    #: "Summarise note 12" reads as a topic, so it names the title instead.
+    if len(exact) == 1 and kind != "summarise":
+        return f"{verb} note {exact[0]}"
+    if len(exact) == 1:
+        return f"{verb} the note about {next(t for i, t in notes if i == exact[0])}"
+    return f"{verb} the note about {name}"
 
 
 def _pick(options: list, question: str, seed: str):  # noqa: ANN001, ANN202

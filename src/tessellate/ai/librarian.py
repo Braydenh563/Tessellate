@@ -308,6 +308,18 @@ MAX_HISTORY_ANSWER_CHARS = 600
 LAST_ANSWER_CHARS = 4_000
 
 
+def history_dropped(history: list[dict] | None, messages: list[dict]) -> int:
+    """How many whole exchanges the window budget left out of `messages`
+    (system first, the question last, the history between).
+
+    Audit 1028 E57: `context.fit_history` drops the oldest pairs without a
+    word, so a model that "forgot" the start of a long chat looked wrong. The
+    turn's stats carry this count so the chat can say so. The fixed
+    MAX_HISTORY_TURNS clip is not counted: that is a rule, not an overflow.
+    """
+    return max(0, len(history_messages(history)) - max(0, len(messages) - 2)) // 2
+
+
 def history_messages(history: list[dict] | None) -> list[dict]:
     """The recent turns as chat messages, oldest first.
 

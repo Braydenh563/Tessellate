@@ -2022,9 +2022,17 @@ def is_filler(word: str) -> bool:
     return bool(_FILLER.match(word))
 
 
+#: Adjectives that colour a request and are not what it is about ("anything
+#: interesting", "the cool stuff"): never a subject, so never a search word, a
+#: topic or a follow-on (INBOX 1561). One list for all three.
+PRAISE_WORDS = frozenset(
+    """interesting interested cool fun funny neat nice good great awesome amazing fascinating useful helpful
+    impressive special fancy clever handy exciting notable noteworthy""".split()
+)
+
 #: Words typed around a note, not naming one ("a random ahh note"): a chip
 #: about "random ahh" asks for nothing (INBOX 1496).
-_NO_SUBJECT = frozenset(
+_NO_SUBJECT = PRAISE_WORDS | frozenset(
     "random randomly ahh ahhh ahhhh lol lmao ngl tbh bruh idk whatever some any one thing things stuff something "
     "anything like just really very kinda sorta old new little bit".split()
 )

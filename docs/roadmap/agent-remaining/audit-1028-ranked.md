@@ -50,13 +50,13 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 44 | D29 | med | replace dialog lacks whole-word and match preview | fixed (this batch) | M |
 | 45 | D30 | med | spellcheck is English only, no per-document language | listed (a30h-1102: no other dictionary is vendored; recommendation in a30h-1102.md) | L |
 | 46 | E13 | med | bare undo after an answer gets help text, not undo | fixed 1030 | S |
-| 47 | E14 | med | follow-ups like pin that note lose their referent | new | M |
+| 47 | E14 | med | follow-ups like pin that note lose their referent | fixed (e3acb8f) | M |
 | 48 | E15 | med | stats route steals questions that name a note subject | fixed 1030 | S |
-| 49 | E16 | med | compare gives identical lists for both sides | new | M |
+| 49 | E16 | med | compare gives identical lists for both sides | fixed (53e0454) | M |
 | 50 | E17 | med | digest says newest a day ago when written today | fixed 2026-11-02 (today, never a day ago) | S |
 | 51 | E18 | med | composer invents speech acts the notes do not contain | fixed 2026-11-02 (5e6147c) | S |
 | 52 | E19 | med | source lists mangled, author lowercased and split | fixed (e09a63e) | S |
-| 53 | E20 | med | weekday words in log notes treated as due dates | new | M |
+| 53 | E20 | med | weekday words in log notes treated as due dates | fixed (54af546) | M |
 | 54 | E21 | med | lowercase month in computed days-until answer | fixed (f210bc3) | S |
 | 55 | E22 | med | instruction words reported as missing evidence | fixed (239b496) | S |
 | 56 | E24 | med | generative requests answered with quotes, no needs-a-model reply | fixed 2026-11-02 (468c2d8) | S |
@@ -64,10 +64,10 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 58 | E26 | med | reminder with no subject; impossible dates accepted | fixed 1030 | S |
 | 59 | E31 | med | guide answers the wrong topic for realistic questions | fixed (490e3c3, reconciled 2026-10-30) | M |
 | 60 | E32 | med | ChatGPT question gets local model not running answer | fixed 1030 | S |
-| 61 | E33 | med | guide answers are verbatim topic chunks, no lead path | new | M |
+| 61 | E33 | med | guide answers are verbatim topic chunks, no lead path | partial (grammar only; path-first lead is an owner decision, see a30e-1102.md) | M |
 | 62 | E39 | med | model download has no timeout or disk check | fixed 1031 | S |
 | 63 | E48 | med | edit and resend destroys later replies, no branches | new | L |
-| 64 | E57 | med | context overflow drops early turns with no inline notice | new | M |
+| 64 | E57 | med | context overflow drops early turns with no inline notice | fixed (d2e1629) | M |
 | 65 | S11 | med | server greeting lines can contradict dashboard state | fixed (b8cfb46) | S |
 | 66 | S25 | med | lock form gives little error feedback, no throttle hint | fixed (already: inline error, role alert, 429 names the wait; reconciled 2026-10-30) | S |
 | 67 | S27 | med | no backlinks panel in the note editor | fixed (already built; reconciled 2026-10-30) | M |
@@ -91,15 +91,15 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 85 | D32 | med | Mod-g means go to line in code and find-next in prose | fixed | S |
 | 86 | D33 | med | replace-in-all and find-in-all separate from CM find panel | fixed (b092d42) | M |
 | 87 | D34 | med | autosave failure is tiny status text, no banner or retry | fixed (this batch) | S |
-| 88 | E23 | med | quiz cloze questions cut the subject off | new | M |
+| 88 | E23 | med | quiz cloze questions cut the subject off | fixed (eab5bef) | M |
 | 89 | E27 | med | act summaries have lowercase verbs, ids and stale notice | fixed (b6c3e07) | S |
 | 90 | E28 | med | show my reminders not handled in the chat path | fixed 1030 | S |
 | 91 | E29 | med | identical reminders printed twice, no duplicate check | fixed 2026-11-02 (ca14588) | S |
 | 92 | E35 | med | chat transcript is not a live region for screen readers | fixed 1031 | S |
 | 93 | E36 | med | saved-chat rows are li with click and no keyboard path | fixed 1031 | S |
-| 94 | E38 | med | no-model Models page hides suggested cards and pickers | new | M |
+| 94 | E38 | med | no-model Models page hides suggested cards and pickers | fixed (0e2f514) | M |
 | 95 | E40 | med | two search-by-meaning toasts stack over Settings | fixed 1031 | S |
-| 96 | E50 | med | phone no-model banner and source cards take too much room | new | M |
+| 96 | E50 | med | phone no-model banner and source cards take too much room | fixed (fd04ca3) | M |
 | 97 | S12 | med | Duplicate sits under Add in the entry overflow menu | fixed (this batch) | S |
 | 98 | S13 | med | placeholder-only inputs have no visible or aria label | fixed | S |
 | 99 | S14 | med | tab-documents aria-labelledby points at wrong element | fixed (this batch) | S |

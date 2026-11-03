@@ -35,7 +35,8 @@ def _notebook(session):
         session.add(Entry(content=text, category_id=fit.id, created_at=old, updated_at=old))
     fresh = Entry(content="# Harbor deposit\nPaid 40 dollars. Should we book the boat for May?",
                   created_at=NAIVE - timedelta(hours=3), updated_at=NAIVE - timedelta(hours=3))
-    edited = Entry(content="Garden plan", created_at=NAIVE - timedelta(days=9), updated_at=NAIVE - timedelta(hours=1))
+    edited = Entry(content="Garden plan", created_at=NAIVE - timedelta(days=9), updated_at=NAIVE - timedelta(hours=1),
+                   edited_at=NAIVE - timedelta(hours=1))  # a person edit; updated_at alone is housekeeping (INBOX 1569)
     session.add_all([fresh, edited])
     session.flush()
     session.add(DerivedFact(entry_id=fresh.id, kind="question", text="Should we book the boat for May?",

@@ -94,7 +94,8 @@ def date_in_words(made: datetime, zone=None) -> str:  # noqa: ANN001
 def say(session: Session, ask: Ask, zone=None, linked: bool = True) -> tuple[str, int | None]:  # noqa: ANN001
     """(the sentence, the note's id or None). `linked` writes the title as the
     app's note link; the Statistics box shows plain words."""
-    from tessellate.ai import questions, tool_say
+    from tessellate.ai import tool_say
+    from tessellate.ai.composer_frame import note_title
 
     total = count(session)
     if total == 0:
@@ -103,6 +104,6 @@ def say(session: Session, ask: Ask, zone=None, linked: bool = True) -> tuple[str
     if row is None:
         noun = "note" if total == 1 else "notes"
         return f"You have {total} {noun}, so there is no {_which(ask)} one.", None
-    title = questions._title(row.content) or "Untitled"
+    title = note_title(row.content, size=60) or "Untitled"
     shown = tool_say.link(title, tool_say.note_at(row.id)) if linked else title
     return f"Your {_which(ask)} note is from {date_in_words(row.created_at, zone)}: {shown}", row.id

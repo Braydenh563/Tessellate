@@ -176,6 +176,29 @@ _NOTE_HEADS = re.compile(
 _NOTE_NUMBER = re.compile(r"(?:(?:the|this|my) )?(?:note|entry) ?#?(\d{1,9})", re.IGNORECASE)
 
 
+#: "the interesting bean one", "that gym one", "the one about the gym": a note
+#: pointed at by its name and the word "one" (INBOX 1570).
+_ONE_ABOUT = re.compile(r"(?:(?:the|that|this|my) )?one (?:about|on|for|called|named|titled|with|that mentions?|mentioning) (?:the |my )?(?P<name>.+)", re.IGNORECASE)
+_NAME_ONE = re.compile(r"(?:(?:the|that|this|my) )?(?P<name>.+?\S) one", re.IGNORECASE)
+
+
+def _one_named(text: str) -> str:
+    """The title inside "the X one" or "the one about X", else ""."""
+    said = text.strip(" .,!?")
+    found = _ONE_ABOUT.fullmatch(said) or _NAME_ONE.fullmatch(said)
+    name = found.group("name").strip() if found else ""
+    #: "the other one", "the second one", "the last one" point back at an answer
+    #: (`reading.follow`), not at a title.
+    words = set(re.findall(r"[a-z']+", name.lower()))
+    return "" if not name or words <= _POINTERS else name
+
+
+_POINTERS = frozenset(
+    "the that this my which every each any no a an other another last first second third fourth fifth next previous same old older "
+    "new newer newest oldest latest earlier later final top bottom left right one ones".split()
+)
+
+
 def _target(text: str) -> dict | None:
     """Which notes a phrase names: the attached ones ("these notes") or the
     ones a search finds ("my notes about Z", "my Z notes"), one by its number
@@ -186,6 +209,8 @@ def _target(text: str) -> dict | None:
         return {"about": f"note {number.group(1)}", "note_id": int(number.group(1)), "single": True}
     if low in _THESE:
         return {"these": True, "single": _THESE[low]}
+    if named := _one_named(text):
+        return {"about": _drop_article(named), "single": True}
     head = _NOTE_HEADS.match(text)
     if head:
         rest = text[head.end():]
@@ -232,6 +257,7 @@ def _bare_target(text: str) -> dict | None:
     E7: every one of them needed the literal word "note"). The notes are
     found later by the words, and no match or several is asked, never run."""
     phrase = _drop_article(re.sub(r"\s+(?:please|pls|thanks|thank you|now|for me)\W*$", "", text.strip(), flags=re.I).strip(" .,'\"“”"))
+    phrase = _drop_article(_one_named(phrase) or phrase)
     words = re.findall(r"[\w'’-]+", phrase.lower())
     if _VAGUE & set(words):
         return None
