@@ -41,3 +41,13 @@ def test_2_skills_dock_has_a_menu_to_fold_into():
     assert 'class="doc-dock-menu dock-menu dock-more" id="skills-more-menu"' in dock
     assert '<div class="doc-dock-menu-list dock-menu-list"></div>' in dock
     assert ".dock-more:has(> .dock-menu-list:empty)" in _css("08-consistency.css")
+
+
+def test_3_dashboard_spans_are_pixel_rows_with_the_card_gap_in_the_span():
+    """An 8px unit and a 16px row gap rounded every card up in 24px steps."""
+    grid = _body(_css("01-forms-settings.css"), "#dash-grid")
+    assert "grid-auto-rows: 1px" in grid and "row-gap: 0" in grid
+    js = (ROOT / "frontend" / "js" / "dashboard.js").read_text(encoding="utf-8")
+    start = js.index("function sizeDashWidgetSpan(")
+    body = js[start : js.index("\n}\n", start)]
+    assert "cardGap" in body and "rowGap" in body

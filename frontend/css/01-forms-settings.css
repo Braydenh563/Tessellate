@@ -3870,10 +3870,14 @@ html.modal-open body {
 #dash-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  grid-auto-rows: 8px;
+  grid-auto-rows: 1px;
   grid-auto-flow: row dense;
   /* pack short widgets into the gaps */
-  gap: 1rem;
+  /* Columns only: a card's span already includes the gap below it, in whole
+     pixels (`sizeDashWidgetSpan`). A row gap on a 1px unit would be added
+     once per spanned row. */
+  column-gap: var(--space-6);
+  row-gap: 0;
   /* Neither inset is this grid's to draw: the sides are --page-gutter and the
      bottom is --page-bottom, both already on .tab-page. The 2rem bottom here
      was doubling that, so the dashboard scrolled 4rem past its last widget. */
@@ -3885,9 +3889,9 @@ html.modal-open body {
   flex-direction: column;
 }
 /* Until the spans are measured, cards flow at natural height rather than
-   collapsing to one 8px row. */
+   collapsing to one 1px row. */
 #dash-grid:not(.spans-ready) .dash-widget {
-  grid-row: span 40;
+  grid-row: span 600;
 }
 /* Widgets can span two columns ("wide"), toggled in Edit layout. */
 .dash-widget.wide {

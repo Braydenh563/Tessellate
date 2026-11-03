@@ -816,8 +816,13 @@ let dashResizeObserver = null;
 //: height depends on its own content and the column width alone, never on
 //: another card's span, so all of them can be released first, measured
 //: together against one layout, and set together.
-function sizeDashWidgetSpan(card, height, rowUnit, gap) {
-  return `span ${Math.max(1, Math.ceil((height + gap) / (rowUnit + gap)))}`;
+//: **A 1px row unit and no row gap** (unslop 1103, 3). The unit was 8px with a
+//: 16px row gap, so a span could only grow in 24px steps and stacked cards sat
+//: 18 to 36px apart where side-by-side ones sit 16 (33, 18.2, 28.1, 33.2 ...
+//: measured). The gap between stacked cards is now the card gap, added to the
+//: height before it is rounded up to a whole pixel: 16 to 17px, always.
+function sizeDashWidgetSpan(card, height, rowUnit, rowGap, cardGap) {
+  return `span ${Math.max(1, Math.ceil((height + cardGap + rowGap) / (rowUnit + rowGap)))}`;
 }
 
 function sizeDashWidgets() {
@@ -828,14 +833,15 @@ function sizeDashWidgets() {
   //: (layout shift 0.34). The grid's own fire on showing it measures it right.
   if (!grid || (grid.checkVisibility && !grid.checkVisibility())) return;
   const styles = getComputedStyle(grid);
-  const rowUnit = Number.parseFloat(styles.getPropertyValue("grid-auto-rows")) || 8;
-  const gap = Number.parseFloat(styles.rowGap) || 16;
+  const rowUnit = Number.parseFloat(styles.getPropertyValue("grid-auto-rows")) || 1;
+  const rowGap = Number.parseFloat(styles.rowGap) || 0;
+  const cardGap = Number.parseFloat(styles.columnGap) || 16;
   const cards = [...grid.querySelectorAll(".dash-widget")];
   // Measure the cards' natural heights, not their grid-constrained ones.
   for (const card of cards) card.style.gridRowEnd = "span 1";
   const heights = cards.map((card) => card.getBoundingClientRect().height);
   cards.forEach((card, i) => {
-    card.style.gridRowEnd = sizeDashWidgetSpan(card, heights[i], rowUnit, gap);
+    card.style.gridRowEnd = sizeDashWidgetSpan(card, heights[i], rowUnit, rowGap, cardGap);
   });
   grid.classList.add("spans-ready");
 }
