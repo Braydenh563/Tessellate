@@ -97,7 +97,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 91 | E29 | med | identical reminders printed twice, no duplicate check | fixed 2026-11-02 (ca14588) | S |
 | 92 | E35 | med | chat transcript is not a live region for screen readers | fixed 1031 | S |
 | 93 | E36 | med | saved-chat rows are li with click and no keyboard path | fixed 1031 | S |
-| 94 | E38 | med | no-model Models page hides suggested cards and pickers | new | M |
+| 94 | E38 | med | no-model Models page hides suggested cards and pickers | fixed (see log, E38 commit) | M |
 | 95 | E40 | med | two search-by-meaning toasts stack over Settings | fixed 1031 | S |
 | 96 | E50 | med | phone no-model banner and source cards take too much room | new | M |
 | 97 | S12 | med | Duplicate sits under Add in the entry overflow menu | fixed (this batch) | S |

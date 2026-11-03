@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Audit E38: with Ollama not running, Settings, Models still shows the suggested downloads with how each fits this computer; every Download waits (disabled, "Start Ollama first") and a line above the cards says to install and start Ollama, so a new student can choose a model before installing anything.
 - Audit E57: when a long chat no longer fits the model's window, a line under the reply says how many of the oldest exchanges the model did not see and points at Compress; the turn's stats carry the count (`composition.history_dropped`) on the agent and Ask paths.
 - Audit E33 (part): a Guide answer whose place starts with "The" reads as a sentence ("It's in the gear in the top bar", not "It's in The gear"); the path-first lead the audit asks for waits on an owner decision.
 - Audit E14: a follow-up names the last answer's notes by place or as a group: "pin the second one", "the last one", "what about the third", "which of those is first", "compare those" are resolved against the cited notes, with a model and without; a place the answer lacks, or a sentence with its own subject ("the second world war"), is left alone.

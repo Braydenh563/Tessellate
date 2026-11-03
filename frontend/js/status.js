@@ -2995,11 +2995,10 @@ function renderSettings() {
   $("models-config").classList.toggle("hidden", !status.ollama_running);
   // Downloads are an Ollama capability. Every other backend is handed a model
   // that is already on disk, so the panel hides rather than offering a button
-  // that cannot work.
-  $("suggested-box").classList.toggle(
-    "hidden",
-    !status.ollama_running || status.supports_pull === false
-  );
+  // that cannot work. With Ollama simply not running (audit 1028 E38) the
+  // cards stay: choosing a model for this computer needs no backend, and
+  // each Download waits with the reason on it.
+  $("suggested-box").classList.toggle("hidden", status.supports_pull === false);
 
   // The search engine is always adjustable: its recommended option is the
   // built-in one, which needs no Ollama. Only the Ollama half of it depends
@@ -3027,6 +3026,9 @@ function renderSettings() {
     $("installed-box").classList.add("hidden");
     $("model-spec").classList.add("hidden");
     $("model-spec-health").classList.add("hidden");
+    //: The cards draw with no backend too (audit 1028 E38): what fits this
+    //: computer needs none. `window.` because the file is lazy, as above.
+    if (status.supports_pull !== false) window.renderSuggested?.(status);
   }
   renderReindex(status);
 }
