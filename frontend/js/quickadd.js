@@ -692,7 +692,8 @@ function noteOfferKey(offer) {
 
 //: `opts.after`: the element the row goes after (the box, not the textarea,
 //: which a live editor wraps); `opts.category`: the select a filing offer
-//: sets; `opts.entryId`: the note being edited, never linked to itself.
+//: sets; `opts.title`: Capture's title field, filed with the words as a save
+//: files it (INBOX 1583); `opts.entryId`: the note being edited, never linked to itself.
 function noteOffersAttach(field, opts = {}) {
   if (!field) return null;
   let state = noteOfferFields.get(field);
@@ -711,6 +712,10 @@ function noteOffersAttach(field, opts = {}) {
   state = { field, opts, row, why, seq: 0, timer: 0, done: new Set(), text: "" };
   noteOfferFields.set(field, state);
   field.addEventListener("input", () => noteOffersSchedule(state));
+  opts.title?.addEventListener("input", () => {
+    state.text = "";
+    noteOffersSchedule(state);
+  });
   if (field.value.trim()) noteOffersSchedule(state);
   return state;
 }
@@ -738,6 +743,7 @@ async function noteOffersFetch(state) {
         content: text,
         entry_id: state.opts.entryId || null,
         category: select && select.value && select.value !== "__new__" ? select.value : null,
+        title: state.opts.title?.value || "",
         tz_offset_minutes: -new Date().getTimezoneOffset(),
       }),
     });
@@ -757,7 +763,9 @@ function noteOffersDraw(state, offers) {
     el.title = offer.reason;
     el.dataset.kind = offer.kind;
     state.row.insertBefore(el, state.why);
-    if (offer.kind === "filing") filingWhy = offer.reason;
+    //: One line for the filing (INBOX 1583): where it files and why, or, for
+    //: the choices it waits on, why it waits (each chip's words are its title).
+    if (offer.kind === "filing" && !filingWhy) filingWhy = offer.value?.decided ? offer.reason : offer.waits || offer.reason;
   }
   state.why.textContent = filingWhy;
   state.why.classList.toggle("hidden", !filingWhy);
@@ -839,4 +847,5 @@ async function noteOfferTake(state, offer, el) {
 noteOffersAttach($("entry-content"), {
   after: $("entry-content")?.closest(".note-composer") || $("entry-content")?.parentElement,
   category: $("entry-category"),
+  title: $("entry-title"),
 });

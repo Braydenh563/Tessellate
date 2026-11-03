@@ -191,7 +191,7 @@ def category_support(
             Entry.id != (exclude_entry_id or 0),
         )
     )
-    tally = _tally(session, content, exclude_entry_id)
+    tally = _tally(session, content, exclude_entry_id, _stray_weights(content))
     share: float | None = None
     if tally is not None:
         votes, _supporters = tally
@@ -248,8 +248,44 @@ def suggest_categories_explained(
 TAXONOMY_CATEGORY_VOTE = 0.5
 
 
+def _topic_shares(content: str, hits: dict | None = None) -> dict[str, float]:
+    """Each subject topic's weight in the note against its leading one's
+    (1.0 for the subject, 0.5 for one stray phrase beside two of the subject's)."""
+    from tessellate.ai import taxonomy
+
+    weights = taxonomy.topic_weights(content, hits)
+    lead = max(weights.values(), default=0.0)
+    return {topic: weight / lead for topic, weight in weights.items()} if lead else {}
+
+
+def _stray_weights(content: str, hits: dict | None = None) -> dict[str, float]:
+    """The words of a stray phrase, each at its topic's share of the note
+    (`_topic_shares`); every other word counts whole.
+
+    **A stray phrase is not counted twice** (INBOX 1583): "seed sowing, then
+    pruning; also, league table" shared "league" and "table" with the Hobbies
+    notes ("rugby league", "table tennis"), so the words voted Hobbies on top
+    of the topic vote the pack already gave the phrase, and a gardening note
+    was filed in Hobbies. A word the note's own subject also says stays whole,
+    and so does a weak phrase's ("flight", "hotel"): the pack is unsure of its
+    topic, so it is no evidence that the words are stray (the 120-note
+    fixture's "Flight to Lisbon, hotel in Porto, car hire" reads as Transport)."""
+    from tessellate.ai import taxonomy
+
+    hits = taxonomy.topic_hits(content) if hits is None else hits
+    shares = _topic_shares(content, hits)
+    weak = taxonomy.weak_terms()
+    weight: dict[str, float] = {}
+    for topic, phrases in hits.items():
+        share = min(1.0, shares.get(topic, 1.0))
+        for phrase in phrases:
+            for word in tokens(phrase):
+                weight[word] = max(weight.get(word, 0.0), 1.0 if phrase in weak else share)
+    return {word: share for word, share in weight.items() if share < 1.0}
+
+
 def _tally(
-    session: Session, content: str, exclude_entry_id: int | None
+    session: Session, content: str, exclude_entry_id: int | None, stray: dict
 ) -> tuple[dict[str, float], dict[str, int]] | None:
     """Each category's vote for `content` and how many notes (or its name)
     stand behind it; None when there is nothing to count."""
@@ -287,7 +323,7 @@ def _tally(
             notes_in[name] = notes_in.get(name, 0) + 1
         scored = [
             (similarity, names[doc.category_id], USER_FILED_WEIGHT if doc.by_hand else 1)
-            for similarity, doc in corpus.nearest(query_bag, "tagged", docs)
+            for similarity, doc in corpus.nearest(query_bag, "tagged", docs, stray)
         ]
     scored.sort(reverse=True)
     votes: dict[str, float] = {}
@@ -484,15 +520,38 @@ def holds_sensitive(content: str, category: str | None = None) -> str | None:
         return None
     from tessellate.ai import taxonomy
 
-    sensitive_set = taxonomy.sensitive_topics()
-    hits = taxonomy.topic_hits(content)
-    topic = next((t for t in taxonomy.strong_topics(content, hits) if t in sensitive_set), None)
+    topic = sensitive_subject(content)
     #: The category counts only when it is the sensitive topic itself
     #: ("Health", "Money"): a word of its name is not enough, or "Dad Jokes"
     #: would be held as Relationships (CI on e2f37a1eb, 11 tests).
-    if topic is None and category in sensitive_set:
+    if topic is None and category in taxonomy.sensitive_topics():
         topic = category
     return topic
+
+
+#: A note reads as a sensitive topic only when the sensitive topics hold at
+#: least this share of what it is about (`taxonomy.topic_weights`, the whole
+#: note): one stray word is not the subject. INBOX 1583: "Uni is done", a
+#: final assignment, gym and golf, "paid for with my bonus" was held as
+#: Finance (2.0 of 6.5, 0.31), because `strong_topics` lists by score then
+#: name and Finance sorts before Fitness. "Gym then the GP about my knee" is
+#: an even split (0.5) and still waits: the safe side of decision 6.
+SENSITIVE_SHARE = 0.5
+
+
+def sensitive_subject(content: str, hits: dict | None = None) -> str | None:
+    """The sensitive topic `content` is about, weighed over the whole note,
+    or None. The one test `decide` and `holds_sensitive` share."""
+    from tessellate.ai import taxonomy
+
+    hits = taxonomy.topic_hits(content) if hits is None else hits
+    weights = taxonomy.topic_weights(content, hits)
+    sensitive_set = taxonomy.sensitive_topics()
+    total = sum(weights.values())
+    held = sum(weight for topic, weight in weights.items() if topic in sensitive_set)
+    if not total or held < SENSITIVE_SHARE * total:
+        return None
+    return next((topic for topic in taxonomy.strong_topics(content, hits) if topic in sensitive_set), None)
 
 
 def _auto_file_sensitive() -> bool:
@@ -646,12 +705,15 @@ def _word_counts(wanted: list) -> dict:
     return bag
 
 
-def _note_read(session: Session, note: tuple, query_bag: dict, corpus_side: tuple) -> _NoteRead:
+def _note_read(session: Session, note: tuple, query_bag: dict, corpus_side: tuple, stray: dict) -> _NoteRead:
     wanted, hits, note_topics, strong, knn_votes = note
     idf, sums, lengths, profiles = corpus_side
     query_vec = {word: (1.0 + math.log(n)) * idf[word] for word, n in query_bag.items() if idf[word]}
+    #: The note's length before the stray words are weighed down, as in `nearest`.
+    norm = math.sqrt(sum(v * v for v in query_vec.values())) or 1.0
+    query_vec = {word: value * stray.get(word, 1.0) for word, value in query_vec.items()}
     return _NoteRead(
-        wanted, hits, note_topics, strong, knn_votes, query_vec, math.sqrt(sum(v * v for v in query_vec.values())) or 1.0,
+        wanted, hits, note_topics, strong, knn_votes, query_vec, norm,
         idf, sums, lengths, profiles, personal_lexicon(session),
     )
 
@@ -669,23 +731,86 @@ def decide(session: Session, content: str, exclude_entry_id: int | None = None) 
     note_topics = taxonomy.topic_weights(content, hits)
     sensitive_set = taxonomy.sensitive_topics()
     strong = taxonomy.strong_topics(content, hits)
-    sensitive = next((topic for topic in strong if topic in sensitive_set), None)
+    sensitive = sensitive_subject(content, hits)
     if not wanted and not hits:
         return Decision(ranked=[], filed=None, sensitive=sensitive)
     names = dict(session.execute(select(Category.id, Category.name)).all())
-    tally = _tally(session, content, exclude_entry_id) if wanted else None
+    stray = _stray_weights(content, hits)
+    tally = _tally(session, content, exclude_entry_id, stray) if wanted else None
     knn_votes, _supporters = tally if tally is not None else ({}, {})
     query_bag = _word_counts(wanted)
     lengths, held, profiles, sums, idf = _corpus_view(session, names, exclude_entry_id, query_bag)
     if not held:
         return _with_proposal(Decision(ranked=[], filed=None, sensitive=sensitive), held, strong, hits, sensitive_set)
-    read = _note_read(session, (wanted, hits, note_topics, strong, knn_votes), query_bag, (idf, sums, lengths, profiles))
+    read = _note_read(session, (wanted, hits, note_topics, strong, knn_votes), query_bag, (idf, sums, lengths, profiles), stray)
     ranked = [c for c in (_candidate_for(name, count, read) for name, count in held.items()) if c is not None]
     ranked.sort(key=lambda c: c.score, reverse=True)
     decision = Decision(ranked=ranked, filed=None, sensitive=sensitive)
     if ranked:
         _file_if_clear(decision, sensitive_set)
     return _with_proposal(decision, held, strong, hits, sensitive_set)
+
+
+#: A close call offers the categories within this share of the best one's
+#: score, at most `CHOICES` of them, best first (INBOX 1583: "a close call
+#: offers the top two or three as one-tap chips").
+CHOICE_WITHIN = 0.75
+CHOICES = 3
+
+
+@dataclass
+class FilingCall:
+    """**The one filing decision with no model** (INBOX 1583): where a save
+    files the note, or why it waits and what it offers. The Capture hint, the
+    note editor's offers and the saved status all read this, so the hint and
+    the saved category can never disagree; the model path is handed the
+    same candidates (`candidates_line`)."""
+
+    #: Where a save files it; None when it waits for the person.
+    category: str | None
+    #: The words that decided, or why it waits.
+    why: str
+    #: When it waits: the one-tap choices, best first, each with its words.
+    choices: list[tuple[str, str]] = field(default_factory=list)
+    #: The sensitive topic that holds it (decision 6).
+    held: str | None = None
+    proposal: Proposal | None = None
+    confidence: int = 0
+
+    @property
+    def candidates(self) -> list[tuple[str, str]]:
+        """The categories it puts forward, best first, each with its words."""
+        return [(self.category, self.why)] if self.category else list(self.choices)
+
+
+def filing_call(session: Session, content: str, exclude_entry_id: int | None = None) -> FilingCall:
+    """Where the notebook's words file `content`, or the choices it offers."""
+    decision = decide(session, content, exclude_entry_id)
+    if decision.filed is not None:
+        return FilingCall(decision.filed.name, decision.filed.why, proposal=decision.proposal, confidence=decision.confidence)
+    ranked = [c for c in decision.ranked if c.score > 0]
+    best = ranked[0].score if ranked else 0.0
+    choices = [(c.name, c.why) for c in ranked if c.score >= CHOICE_WITHIN * best][:CHOICES]
+    held = decision.sensitive if decision.held or (choices and decision.sensitive) else None
+    if held:
+        why = f"It reads as {held}, so it waits for you to choose."
+    elif len(choices) > 1:
+        why = f"A close call between {_and_list([name for name, _ in choices])}, so it waits for you to choose."
+    else:
+        why = "Not sure enough to file it, so it waits for you to choose." if choices else ""
+    return FilingCall(None, why, choices, held, decision.proposal)
+
+
+def _and_list(names: list[str]) -> str:
+    return names[0] if len(names) == 1 else ", ".join(names[:-1]) + " and " + names[-1]
+
+
+def candidates_line(call: FilingCall) -> str:
+    """The words' candidates for the model's filing prompt (decision 75
+    parity: the model is never told less than the hint shows), or ""."""
+    if not call.candidates:
+        return ""
+    return "The notebook's own words point to, best first: " + "; ".join(f"{name} ({why})" for name, why in call.candidates)
 
 
 def category_profiles(session: Session) -> dict[str, tuple[int, dict[str, float], dict[str, float]]]:
@@ -953,8 +1078,18 @@ class _Corpus:
         doc.lengths[kind] = (self.epoch[kind], length)
         return length
 
+    def _query_share(self, query_bag: dict[str, float], kind: str, weights: dict) -> dict[str, float]:
+        """Each query word's share of a dot product with a doc's `1 + log n`.
+        The length is the note's before `weights` (`_stray_weights`): a stray
+        phrase weighed down must lower the similarity, not be scaled back up
+        by a shorter query."""
+        target = {word: (1.0 + math.log(n)) * self._idf(kind, word) for word, n in query_bag.items()}
+        target = {word: value for word, value in target.items() if value}
+        norm = math.sqrt(sum(v * v for v in target.values())) or 1.0
+        return {word: value * weights.get(word, 1.0) / norm * self._idf(kind, word) for word, value in target.items()}
+
     def nearest(
-        self, query_bag: dict[str, float], kind: str, docs: list[tuple[int, _Doc]]
+        self, query_bag: dict[str, float], kind: str, docs: list[tuple[int, _Doc]], weights: dict | None = None
     ) -> list[tuple[float, _Doc]]:
         """`(cosine, doc)` for the docs in `docs` that share a word with the
         query, best first: TF-IDF, each word's rarity taken over the whole
@@ -964,13 +1099,9 @@ class _Corpus:
         if abs(total - self._epoch_total[kind]) > EPOCH_DRIFT * max(self._epoch_total[kind], 1):
             self.epoch[kind] += 1
             self._epoch_total[kind] = total
-        target = {word: (1.0 + math.log(n)) * self._idf(kind, word) for word, n in query_bag.items()}
-        target = {word: value for word, value in target.items() if value}
-        if not target:
+        share = self._query_share(query_bag, kind, weights or {})
+        if not share:
             return []
-        norm = math.sqrt(sum(v * v for v in target.values())) or 1.0
-        #: Each query word's share of a dot product with a doc's `1 + log n`.
-        share = {word: value / norm * self._idf(kind, word) for word, value in target.items()}
         allowed = dict(docs)
         postings = self.postings[kind]
         by_words = kind == "words"

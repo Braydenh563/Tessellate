@@ -63,6 +63,9 @@ class OffersBody(BaseModel):
     tz_offset_minutes: int = Field(0, ge=-14 * 60, le=14 * 60)
     locale: str = Field("", max_length=16)
     now: str = Field("", max_length=40)
+    #: The Capture title: a save files the title with the words (`withTitle`),
+    #: so the filing offer reads it too (INBOX 1583). Never offered on.
+    title: str = Field("", max_length=300)
 
 
 @router.post("/read/offers")
@@ -73,7 +76,7 @@ def note_offers(body: OffersBody, session: Session = Depends(get_session)) -> di
     is longer than a query string should carry."""
     clock = _clock(body.tz_offset_minutes, body.now)
     found = offers.offers(session, body.content, now=clock, entry_id=body.entry_id,
-                          category=body.category, locale=body.locale or None)
+                          category=body.category, locale=body.locale or None, title=body.title)
     return {"offers": found}
 
 
