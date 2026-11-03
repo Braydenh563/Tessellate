@@ -101,3 +101,179 @@
    compositor's, beside the loops' `rotate`. */
 #nm-buddy :is(.atl-lw-lower, .atl-lw-tail) { transition: scale calc(var(--motion-slow) * 3) var(--ease-in-out); }
 #nm-buddy:is(.nmb-act-chair, .nmb-act-beanbag) :is(.atl-lw-lower, .atl-lw-tail) { scale: 1.1 0.5; }
+/* **The face's numbers do not inherit either** (INBOX 1591, the owner's lag log: a mood
+   change restyled 600 to 1,244 elements, 450 to 630ms on a slow machine). A mood, an act or
+   a pose writes 57 custom properties (the eyes, the mouth, the brows, the arms'
+   turns, the cues) on each drawing's root, and as inherited properties every one of them
+   restyled the root's whole subtree, the 400 paths of the body that read none of them. They
+   are registered not to inherit and pass down by `inherit` through the groups (any element
+   with children) and the readers named below, so a change restyles those and not the leaves
+   of the drawing. The list of readers is the one the lint
+   (tests/test_atlas_face_inherit_1591.py) keeps: a rule that reads one of these and is not
+   named here would read the initial value. The rule has no weight (`:where`), so a rule that
+   writes the property on a part itself (a pupil's look) still wins. */
+@property --atl-al0 { syntax: "*"; inherits: false; }
+@property --atl-al1 { syntax: "*"; inherits: false; }
+@property --atl-al2 { syntax: "*"; inherits: false; }
+@property --atl-ar0 { syntax: "*"; inherits: false; }
+@property --atl-ar1 { syntax: "*"; inherits: false; }
+@property --atl-ar2 { syntax: "*"; inherits: false; }
+@property --atl-bl-r { syntax: "*"; inherits: false; }
+@property --atl-bl-y { syntax: "*"; inherits: false; }
+@property --atl-br-r { syntax: "*"; inherits: false; }
+@property --atl-br-y { syntax: "*"; inherits: false; }
+@property --atl-brow-y { syntax: "*"; inherits: false; }
+@property --atl-cheek { syntax: "*"; inherits: false; }
+@property --atl-chin0 { syntax: "*"; inherits: false; }
+@property --atl-chin1 { syntax: "*"; inherits: false; }
+@property --atl-chin2 { syntax: "*"; inherits: false; }
+@property --atl-crest { syntax: "*"; inherits: false; }
+@property --atl-doze { syntax: "*"; inherits: false; }
+@property --atl-eye-s { syntax: "*"; inherits: false; }
+@property --atl-fx-bang { syntax: "*"; inherits: false; }
+@property --atl-fx-dots { syntax: "*"; inherits: false; }
+@property --atl-fx-hearts { syntax: "*"; inherits: false; }
+@property --atl-fx-q { syntax: "*"; inherits: false; }
+@property --atl-fx-sparkle { syntax: "*"; inherits: false; }
+@property --atl-fx-sweat { syntax: "*"; inherits: false; }
+@property --atl-fx-tear { syntax: "*"; inherits: false; }
+@property --atl-fx-zz { syntax: "*"; inherits: false; }
+@property --atl-glow { syntax: "*"; inherits: false; }
+@property --atl-halo-o { syntax: "*"; inherits: false; }
+@property --atl-happy { syntax: "*"; inherits: false; }
+@property --atl-head-y { syntax: "*"; inherits: false; }
+@property --atl-hearteye { syntax: "*"; inherits: false; }
+@property --atl-knit { syntax: "*"; inherits: false; }
+@property --atl-lid { syntax: "*"; inherits: false; }
+@property --atl-lid-r { syntax: "*"; inherits: false; }
+@property --atl-low { syntax: "*"; inherits: false; }
+@property --atl-m-big { syntax: "*"; inherits: false; }
+@property --atl-m-cat { syntax: "*"; inherits: false; }
+@property --atl-m-frown { syntax: "*"; inherits: false; }
+@property --atl-m-grin { syntax: "*"; inherits: false; }
+@property --atl-m-hmm { syntax: "*"; inherits: false; }
+@property --atl-m-laugh { syntax: "*"; inherits: false; }
+@property --atl-m-o { syntax: "*"; inherits: false; }
+@property --atl-m-rest { syntax: "*"; inherits: false; }
+@property --atl-m-set { syntax: "*"; inherits: false; }
+@property --atl-m-smile { syntax: "*"; inherits: false; }
+@property --atl-m-smug { syntax: "*"; inherits: false; }
+@property --atl-m-tinyo { syntax: "*"; inherits: false; }
+@property --atl-m-wavy { syntax: "*"; inherits: false; }
+@property --atl-nightcap { syntax: "*"; inherits: false; }
+@property --atl-open { syntax: "*"; inherits: false; }
+@property --atl-ps { syntax: "*"; inherits: false; }
+@property --atl-px { syntax: "*"; inherits: false; }
+@property --atl-py { syntax: "*"; inherits: false; }
+@property --atl-shut { syntax: "*"; inherits: false; }
+@property --atl-squeeze { syntax: "*"; inherits: false; }
+@property --atl-star { syntax: "*"; inherits: false; }
+@property --atl-tilt { syntax: "*"; inherits: false; }
+:where(.nm-atlas :not(:empty),
+  .nm-atlas.atl-layer-lids,
+  .nm-atlas :where(.nmb-arm-r, .atl-chin-hand),
+  .nm-atlas .nmb-arm-r,
+  .nm-atlas .nmb-arm-l,
+  .nm-atlas .atl-aura,
+  .nm-atlas .atl-cheek,
+  .nm-atlas .atl-eye,
+  .nm-atlas .atl-pupil,
+  .nm-atlas .atl-lid,
+  .nm-atlas .atl-lid-low,
+  .nm-atlas :is(.atl-ear-r, .atl-mane, .atl-wisps),
+  .nm-atlas .atl-ear-l,
+  .nm-atlas .atl-brow-l,
+  .nm-atlas .atl-brow-r,
+  .nm-atlas .atl-head,
+  .nm-atlas :is(.atl-tail-core, .atl-ring),
+  .nm-atlas .atl-core,
+  .nm-atlas .atl-star,
+  .nm-atlas .atl-eye-open,
+  .nm-atlas .atl-e-happy,
+  .nm-atlas .atl-e-shut,
+  .nm-atlas .atl-e-doze,
+  .nm-atlas .atl-e-squeeze,
+  .nm-atlas .atl-iris,
+  .nm-atlas .atl-heart-eye,
+  .nm-atlas .atl-m-smile,
+  .nm-atlas .atl-m-grin,
+  .nm-atlas .atl-m-big,
+  .nm-atlas .atl-m-laugh,
+  .nm-atlas .atl-m-o,
+  .nm-atlas .atl-m-tinyo,
+  .nm-atlas .atl-m-rest,
+  .nm-atlas .atl-m-hmm,
+  .nm-atlas .atl-m-wavy,
+  .nm-atlas .atl-m-frown,
+  .nm-atlas .atl-m-smug,
+  .nm-atlas .atl-m-cat,
+  .nm-atlas .atl-m-set,
+  .nm-atlas .atl-fx-sparkle,
+  .nm-atlas .atl-fx-hearts,
+  .nm-atlas .atl-fx-zz,
+  .nm-atlas .atl-nightcap,
+  .nm-atlas .atl-fx-dots,
+  .nm-atlas .atl-fx-q,
+  .nm-atlas .atl-fx-bang,
+  .nm-atlas .atl-fx-tear,
+  .nm-atlas .atl-fx-sweat,
+  .nm-atlas:is(.atl-head, .atl-tiny) .atl-brow-l,
+  .nm-atlas:is(.atl-head, .atl-tiny) .atl-brow-r) {
+  --atl-al0: inherit;
+  --atl-al1: inherit;
+  --atl-al2: inherit;
+  --atl-ar0: inherit;
+  --atl-ar1: inherit;
+  --atl-ar2: inherit;
+  --atl-bl-r: inherit;
+  --atl-bl-y: inherit;
+  --atl-br-r: inherit;
+  --atl-br-y: inherit;
+  --atl-brow-y: inherit;
+  --atl-cheek: inherit;
+  --atl-chin0: inherit;
+  --atl-chin1: inherit;
+  --atl-chin2: inherit;
+  --atl-crest: inherit;
+  --atl-doze: inherit;
+  --atl-eye-s: inherit;
+  --atl-fx-bang: inherit;
+  --atl-fx-dots: inherit;
+  --atl-fx-hearts: inherit;
+  --atl-fx-q: inherit;
+  --atl-fx-sparkle: inherit;
+  --atl-fx-sweat: inherit;
+  --atl-fx-tear: inherit;
+  --atl-fx-zz: inherit;
+  --atl-glow: inherit;
+  --atl-halo-o: inherit;
+  --atl-happy: inherit;
+  --atl-head-y: inherit;
+  --atl-hearteye: inherit;
+  --atl-knit: inherit;
+  --atl-lid: inherit;
+  --atl-lid-r: inherit;
+  --atl-low: inherit;
+  --atl-m-big: inherit;
+  --atl-m-cat: inherit;
+  --atl-m-frown: inherit;
+  --atl-m-grin: inherit;
+  --atl-m-hmm: inherit;
+  --atl-m-laugh: inherit;
+  --atl-m-o: inherit;
+  --atl-m-rest: inherit;
+  --atl-m-set: inherit;
+  --atl-m-smile: inherit;
+  --atl-m-smug: inherit;
+  --atl-m-tinyo: inherit;
+  --atl-m-wavy: inherit;
+  --atl-nightcap: inherit;
+  --atl-open: inherit;
+  --atl-ps: inherit;
+  --atl-px: inherit;
+  --atl-py: inherit;
+  --atl-shut: inherit;
+  --atl-squeeze: inherit;
+  --atl-star: inherit;
+  --atl-tilt: inherit;
+}
