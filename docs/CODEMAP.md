@@ -2,7 +2,7 @@
 
 Generated 2026-11-03 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7584, frontend ids 2644, CSS sections 519, backend routes 641, backend modules 8499, test files 1912, tests 16094, plan headings 987, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7584, frontend ids 2644, CSS sections 519, backend routes 641, backend modules 8499, test files 1913, tests 16105, plan headings 987, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7584)
 
@@ -583,22 +583,22 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `aiNameNow` | frontend/js/sheets-selects.js:2304 |
+| `aiNameNow` | frontend/js/sheets-selects.js:2311 |
 | `annotateSliders` | frontend/js/sheets-selects.js:1049 |
 | `applySidebarSheetMode` | frontend/js/sheets-selects.js:219 |
 | `applySidebarWidth` | frontend/js/sheets-selects.js:100 |
 | `applyWebPanelWidth` | frontend/js/sheets-selects.js:529 |
-| `builtinPersonas` | frontend/js/sheets-selects.js:2403 |
-| `builtinThinkingWords` | frontend/js/sheets-selects.js:2353 |
+| `builtinPersonas` | frontend/js/sheets-selects.js:2410 |
+| `builtinThinkingWords` | frontend/js/sheets-selects.js:2360 |
 | `clampToolbarMenu` | frontend/js/sheets-selects.js:1521 |
 | `dateFieldFace` | frontend/js/sheets-selects.js:1078 |
 | `eachSidebar` | frontend/js/sheets-selects.js:196 |
-| `editedMarker` | frontend/js/sheets-selects.js:1991 |
+| `editedMarker` | frontend/js/sheets-selects.js:1998 |
 | `enhanceAllSelects` | frontend/js/sheets-selects.js:1060 |
 | `enhanceDateField` | frontend/js/sheets-selects.js:1088 |
 | `enhanceSelect` | frontend/js/sheets-selects.js:736 |
-| `focusBackTo` | frontend/js/sheets-selects.js:2429 |
-| `focusFirstIn` | frontend/js/sheets-selects.js:2441 |
+| `focusBackTo` | frontend/js/sheets-selects.js:2436 |
+| `focusFirstIn` | frontend/js/sheets-selects.js:2448 |
 | `focusSelect` | frontend/js/sheets-selects.js:1151 |
 | `formatTokens` | frontend/js/sheets-selects.js:1749 |
 | `initResizableSidebars` | frontend/js/sheets-selects.js:477 |
@@ -609,16 +609,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `layoutIsTablet` | frontend/js/sheets-selects.js:79 |
 | `lightboxReadingsFor` | frontend/js/sheets-selects.js:1720 |
 | `listFilter` | frontend/js/sheets-selects.js:1284 |
-| `loadChatSuggestions` | frontend/js/sheets-selects.js:2231 |
-| `loadConversationList` | frontend/js/sheets-selects.js:1818 |
+| `loadChatSuggestions` | frontend/js/sheets-selects.js:2238 |
+| `loadConversationList` | frontend/js/sheets-selects.js:1825 |
 | `makeMenuItem` | frontend/js/sheets-selects.js:623 |
 | `makeSidebarResizable` | frontend/js/sheets-selects.js:338 |
 | `makeWebPanelResizable` | frontend/js/sheets-selects.js:566 |
 | `menuRowFits` | frontend/js/sheets-selects.js:1351 |
-| `openConversation` | frontend/js/sheets-selects.js:1999 |
+| `openConversation` | frontend/js/sheets-selects.js:2006 |
 | `openKebabSheet` | frontend/js/sheets-selects.js:1199 |
 | `parseServerTime` | frontend/js/sheets-selects.js:1758 |
-| `personaDisplayName` | frontend/js/sheets-selects.js:2310 |
+| `personaDisplayName` | frontend/js/sheets-selects.js:2317 |
 | `relativeTime` | frontend/js/sheets-selects.js:1768 |
 | `replaceOpenToolbarMenus` | frontend/js/sheets-selects.js:1629 |
 | `resetWebPanelWidth` | frontend/js/sheets-selects.js:547 |
@@ -631,9 +631,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `sidebarWidth` | frontend/js/sheets-selects.js:25 |
 | `sortConversations` | frontend/js/sheets-selects.js:1805 |
 | `syncSidebarInert` | frontend/js/sheets-selects.js:209 |
-| `thinkingWordsFor` | frontend/js/sheets-selects.js:2369 |
+| `thinkingWordsFor` | frontend/js/sheets-selects.js:2376 |
 | `trackSeparatorValue` | frontend/js/sheets-selects.js:317 |
-| `wantsThinkingWords` | frontend/js/sheets-selects.js:2390 |
+| `wantsThinkingWords` | frontend/js/sheets-selects.js:2397 |
 | `watchForSelects` | frontend/js/sheets-selects.js:1163 |
 | `webPanelIsNarrow` | frontend/js/sheets-selects.js:513 |
 | `webPanelMaxWidth` | frontend/js/sheets-selects.js:523 |
@@ -11632,7 +11632,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | appearance settings: grouped, scannable rows | frontend/css/04-chat-dock-appearance.css:1948 |
 | assistant message layout | frontend/css/05-sidebars-themes.css:4304 |
 | attaching notes to a chat message | frontend/css/04-chat-dock-appearance.css:2798 |
-| audit 1028 board and map rows (U14 to U28) | frontend/css/library-lazy.css:8171 |
+| audit 1028 board and map rows (U14 to U28) | frontend/css/library-lazy.css:8174 |
 | back / forward through pages | frontend/css/00-tokens-shell.css:4088 |
 | back-to-top button | frontend/css/04-chat-dock-appearance.css:2617 |
 | band 2 (820 to 1200): the tabs keep their names, set small | frontend/css/10-responsive.css:61 |
@@ -11665,7 +11665,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | document formatting toolbar | frontend/css/05-sidebars-themes.css:1968 |
 | documents tab | frontend/css/04-chat-dock-appearance.css:3672 |
 | documents: outline, live stats, and where the file actually is | frontend/css/05-sidebars-themes.css:2810 |
-| documents: the comments panel (DOCUMENTS_PLAN Phase 5 item 1) | frontend/css/library-lazy.css:8276 |
+| documents: the comments panel (DOCUMENTS_PLAN Phase 5 item 1) | frontend/css/library-lazy.css:8279 |
 | drag to delete (INBOX 660) | frontend/css/library-lazy.css:3520 |
 | duplicate tidy-up | frontend/css/05-sidebars-themes.css:1714 |
 | editing a question in place | frontend/css/05-sidebars-themes.css:315 |
@@ -11708,10 +11708,10 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | motion: a menu or popover grows from what opened it (INBOX 103, 2026-10-05) | frontend/css/10-responsive.css:230 |
 | motion: a note's hover card fades in (INBOX 1462) | frontend/css/graph-lazy.css:433 |
 | motion: a page arrives (INBOX 459 (2), 580) | frontend/css/08-consistency.css:9737 |
-| motion: a plus becomes a minus (INBOX 1506 B; the vocabulary is in | frontend/css/library-lazy.css:7850 |
+| motion: a plus becomes a minus (INBOX 1506 B; the vocabulary is in | frontend/css/library-lazy.css:7853 |
 | motion: a popup arrives, and leaves the way it came (INBOX 580, 2026-10-05) | frontend/css/08-consistency.css:9848 |
 | motion: a sidebar's contents arrive from its edge (INBOX 459 (2)) | frontend/css/08-consistency.css:9662 |
-| motion: an Insert menu's chevron turns open, as a select's does | frontend/css/library-lazy.css:7846 |
+| motion: an Insert menu's chevron turns open, as a select's does | frontend/css/library-lazy.css:7849 |
 | motion: one sliding indicator for every strip (INBOX 459 (2), 2026-10-05) | frontend/css/08-consistency.css:9520 |
 | motion: one vocabulary for what opens and folds (INBOX 1506 B) | frontend/css/08-consistency.css:9888 |
 | motion: the floating panels join the menu's recipe (INBOX 1415) | frontend/css/10-responsive.css:300 |
@@ -11774,7 +11774,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the Ask box reads as one composer | frontend/css/07-whiteboard-misc.css:3077 |
 | the Connections dialog (REDESIGN.md §R7.3) | frontend/css/07-whiteboard-misc.css:5196 |
 | the Dashboard's dock on a phone (INBOX 436) | frontend/css/10-responsive.css:2458 |
-| the Documents dock is one row on a phone (audit 1102 DX13) | frontend/css/library-lazy.css:8125 |
+| the Documents dock is one row on a phone (audit 1102 DX13) | frontend/css/library-lazy.css:8128 |
 | the Documents editor on a phone (INBOX 430) | frontend/css/10-responsive.css:2278 |
 | the Documents editor on a small laptop (INBOX 430's re-scope) | frontend/css/10-responsive.css:2384 |
 | the Graph dock's second row, and the nine pixels that cause it | frontend/css/08-consistency.css:2365 |
@@ -11802,7 +11802,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the bar: colours, size and style, the sheet | frontend/css/sketch-pad.css:114 |
 | the block bar (INBOX 421 b) | frontend/css/09-editor.css:1025 |
 | the board panel, sorted into the questions it answers | frontend/css/07-whiteboard-misc.css:4985 |
-| the board picker's face on a phone (polish5-1031) | frontend/css/library-lazy.css:7746 |
+| the board picker's face on a phone (polish5-1031) | frontend/css/library-lazy.css:7749 |
 | the board's bar takes the floor of the whole touch band, not just 600 | frontend/css/10-responsive.css:2139 |
 | the board's context bar, wrapped (`wbUpdateSelectionBar`) | frontend/css/library-lazy.css:6960 |
 | the boot splash: one progress indicator, not two | frontend/css/08-consistency.css:4259 |
@@ -11838,7 +11838,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the faded notes card (WORLD_CLASS_PLAN 15, I4) | frontend/css/03-dashboard-widgets.css:4461 |
 | the field: the glyph inside, Stop only while something is loading | frontend/css/03-dashboard-widgets.css:1057 |
 | the file picker, in the app's own clothes | frontend/css/08-consistency.css:8883 |
-| the file type picker (INBOX 1482) | frontend/css/library-lazy.css:7787 |
+| the file type picker (INBOX 1482) | frontend/css/library-lazy.css:7790 |
 | the first steps (first-run.js; the head row, the fold and the bar are | frontend/css/05-sidebars-themes.css:3792 |
 | the flat looks carry no glow on a button | frontend/css/08-consistency.css:3690 |
 | the flat looks: a selected tab is a place, not an action | frontend/css/08-consistency.css:2896 |
@@ -11967,7 +11967,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/improve-lazy.css | 110 |
 | frontend/css/inbox-lazy.css | 306 |
 | frontend/css/lan-lazy.css | 131 |
-| frontend/css/library-lazy.css | 8422 |
+| frontend/css/library-lazy.css | 8425 |
 | frontend/css/lightbox-lazy.css | 425 |
 | frontend/css/manual-lazy.css | 161 |
 | frontend/css/math-editor-lazy.css | 141 |
@@ -20656,69 +20656,69 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `AskTurn` | src/tessellate/core/database.py:1069 |
-| `Attachment` | src/tessellate/core/database.py:992 |
-| `AuditLog` | src/tessellate/core/database.py:2139 |
+| `AskTurn` | src/tessellate/core/database.py:1073 |
+| `Attachment` | src/tessellate/core/database.py:996 |
+| `AuditLog` | src/tessellate/core/database.py:2143 |
 | `Base` | src/tessellate/core/database.py:132 |
-| `BinnedReading` | src/tessellate/core/database.py:1667 |
-| `BoardLibrary` | src/tessellate/core/database.py:1915 |
-| `BoardLibraryItem` | src/tessellate/core/database.py:1933 |
-| `BoardLibraryMark` | src/tessellate/core/database.py:1957 |
-| `Bookmark` | src/tessellate/core/database.py:1115 |
-| `Category` | src/tessellate/core/database.py:278 |
-| `ChunkVector` | src/tessellate/core/database.py:917 |
-| `Conversation` | src/tessellate/core/database.py:1034 |
-| `DatabaseManager` | src/tessellate/core/database.py:2320 |
+| `BinnedReading` | src/tessellate/core/database.py:1671 |
+| `BoardLibrary` | src/tessellate/core/database.py:1919 |
+| `BoardLibraryItem` | src/tessellate/core/database.py:1937 |
+| `BoardLibraryMark` | src/tessellate/core/database.py:1961 |
+| `Bookmark` | src/tessellate/core/database.py:1119 |
+| `Category` | src/tessellate/core/database.py:282 |
+| `ChunkVector` | src/tessellate/core/database.py:921 |
+| `Conversation` | src/tessellate/core/database.py:1038 |
+| `DatabaseManager` | src/tessellate/core/database.py:2324 |
 | `DateTime` | src/tessellate/core/database.py:94 |
-| `DerivedFact` | src/tessellate/core/database.py:1263 |
-| `DerivedTension` | src/tessellate/core/database.py:1329 |
-| `Document` | src/tessellate/core/database.py:1462 |
-| `DocumentAiEdit` | src/tessellate/core/database.py:1525 |
-| `DocumentBookmark` | src/tessellate/core/database.py:1171 |
-| `DocumentLink` | src/tessellate/core/database.py:1502 |
-| `DocumentRevision` | src/tessellate/core/database.py:1751 |
-| `DurableJob` | src/tessellate/core/database.py:2068 |
-| `EmbeddingRecord` | src/tessellate/core/database.py:902 |
-| `Entity` | src/tessellate/core/database.py:548 |
-| `EntityMention` | src/tessellate/core/database.py:588 |
-| `Entry` | src/tessellate/core/database.py:313 |
-| `EntryBookmark` | src/tessellate/core/database.py:1151 |
-| `EntryDate` | src/tessellate/core/database.py:1440 |
-| `EntryLink` | src/tessellate/core/database.py:728 |
-| `EntryOpen` | src/tessellate/core/database.py:1419 |
-| `EntryProperty` | src/tessellate/core/database.py:800 |
-| `EntryRevision` | src/tessellate/core/database.py:1401 |
-| `JobRun` | src/tessellate/core/database.py:2041 |
-| `LinkProps` | src/tessellate/core/database.py:662 |
-| `LinkReason` | src/tessellate/core/database.py:613 |
-| `MediaUpload` | src/tessellate/core/database.py:1969 |
-| `NightRun` | src/tessellate/core/database.py:1372 |
-| `NoteScore` | src/tessellate/core/database.py:1233 |
-| `NoteType` | src/tessellate/core/database.py:822 |
-| `PageRead` | src/tessellate/core/database.py:1565 |
-| `Recording` | src/tessellate/core/database.py:1700 |
-| `RelationType` | src/tessellate/core/database.py:782 |
-| `Reminder` | src/tessellate/core/database.py:1187 |
+| `DerivedFact` | src/tessellate/core/database.py:1267 |
+| `DerivedTension` | src/tessellate/core/database.py:1333 |
+| `Document` | src/tessellate/core/database.py:1466 |
+| `DocumentAiEdit` | src/tessellate/core/database.py:1529 |
+| `DocumentBookmark` | src/tessellate/core/database.py:1175 |
+| `DocumentLink` | src/tessellate/core/database.py:1506 |
+| `DocumentRevision` | src/tessellate/core/database.py:1755 |
+| `DurableJob` | src/tessellate/core/database.py:2072 |
+| `EmbeddingRecord` | src/tessellate/core/database.py:906 |
+| `Entity` | src/tessellate/core/database.py:552 |
+| `EntityMention` | src/tessellate/core/database.py:592 |
+| `Entry` | src/tessellate/core/database.py:317 |
+| `EntryBookmark` | src/tessellate/core/database.py:1155 |
+| `EntryDate` | src/tessellate/core/database.py:1444 |
+| `EntryLink` | src/tessellate/core/database.py:732 |
+| `EntryOpen` | src/tessellate/core/database.py:1423 |
+| `EntryProperty` | src/tessellate/core/database.py:804 |
+| `EntryRevision` | src/tessellate/core/database.py:1405 |
+| `JobRun` | src/tessellate/core/database.py:2045 |
+| `LinkProps` | src/tessellate/core/database.py:666 |
+| `LinkReason` | src/tessellate/core/database.py:617 |
+| `MediaUpload` | src/tessellate/core/database.py:1973 |
+| `NightRun` | src/tessellate/core/database.py:1376 |
+| `NoteScore` | src/tessellate/core/database.py:1237 |
+| `NoteType` | src/tessellate/core/database.py:826 |
+| `PageRead` | src/tessellate/core/database.py:1569 |
+| `Recording` | src/tessellate/core/database.py:1704 |
+| `RelationType` | src/tessellate/core/database.py:786 |
+| `Reminder` | src/tessellate/core/database.py:1191 |
 | `Space` | src/tessellate/core/database.py:135 |
-| `StagedEmbedding` | src/tessellate/core/database.py:965 |
-| `User` | src/tessellate/core/database.py:243 |
-| `UserPreference` | src/tessellate/core/database.py:2111 |
-| `Vault` | src/tessellate/core/database.py:254 |
-| `WhiteboardNode` | src/tessellate/core/database.py:1793 |
-| `WhiteboardObject` | src/tessellate/core/database.py:1852 |
-| `WhiteboardSketch` | src/tessellate/core/database.py:1835 |
+| `StagedEmbedding` | src/tessellate/core/database.py:969 |
+| `User` | src/tessellate/core/database.py:247 |
+| `UserPreference` | src/tessellate/core/database.py:2115 |
+| `Vault` | src/tessellate/core/database.py:258 |
+| `WhiteboardNode` | src/tessellate/core/database.py:1797 |
+| `WhiteboardObject` | src/tessellate/core/database.py:1856 |
+| `WhiteboardSketch` | src/tessellate/core/database.py:1839 |
 | `WorkspaceMixin` | src/tessellate/core/database.py:157 |
 | `_add_workspace_filter` | src/tessellate/core/database.py:180 |
-| `_ensure_alembic_baseline` | src/tessellate/core/database.py:2215 |
-| `_hide_binned` | src/tessellate/core/database.py:219 |
-| `_migrations_root` | src/tessellate/core/database.py:2180 |
-| `_only_a_person_moves_a_boards_time` | src/tessellate/core/database.py:713 |
-| `_safety_copy_before_migrating` | src/tessellate/core/database.py:2195 |
-| `_set_workspace` | src/tessellate/core/database.py:234 |
-| `_stamp_done_at` | src/tessellate/core/database.py:1226 |
+| `_ensure_alembic_baseline` | src/tessellate/core/database.py:2219 |
+| `_hide_binned` | src/tessellate/core/database.py:223 |
+| `_migrations_root` | src/tessellate/core/database.py:2184 |
+| `_only_a_person_moves_a_boards_time` | src/tessellate/core/database.py:717 |
+| `_safety_copy_before_migrating` | src/tessellate/core/database.py:2199 |
+| `_set_workspace` | src/tessellate/core/database.py:238 |
+| `_stamp_done_at` | src/tessellate/core/database.py:1230 |
 | `like_escape` | src/tessellate/core/database.py:66 |
-| `link_strength` | src/tessellate/core/database.py:879 |
-| `plain_reason` | src/tessellate/core/database.py:605 |
+| `link_strength` | src/tessellate/core/database.py:883 |
+| `plain_reason` | src/tessellate/core/database.py:609 |
 | `utcnow` | src/tessellate/core/database.py:55 |
 | `workspace_scoped_models` | src/tessellate/core/database.py:163 |
 
@@ -23339,7 +23339,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16094)
+## Tests (16105)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23440,6 +23440,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_audit1028_e55.py | 3 |
 | tests/test_audit1028_e63.py | 2 |
 | tests/test_audit1028_e72.py | 3 |
+| tests/test_audit1028_low_1102.py | 11 |
 | tests/test_audit1028_ux_boards.py | 11 |
 | tests/test_audit_1028_a28s.py | 9 |
 | tests/test_audit_1028_e_rows.py | 5 |

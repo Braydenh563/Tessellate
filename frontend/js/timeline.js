@@ -735,7 +735,7 @@ async function timelineLoadMore(limit = TIMELINE_PAGE) {
 //: loaded and a plus ("300+ items"), never a total it is not. "1 day", not
 //: "1 days"; "1 item" only when nothing follows.
 function timelineUnitText(n, unit) {
-  return `${n} ${unit}${n === 1 ? "" : "s"}`;
+  return nounCount(n, unit);
 }
 //: Which kinds the items are (1031 SH15: "230 items" for 206 notes, the rest
 //: reminders, maps and documents, said nothing). Only when there is more than
@@ -746,7 +746,7 @@ function timelineKindsText(rows) {
   if (counts.size < 2) return "";
   const word = (kind, n) => {
     const name = (TIMELINE_KIND_NAMES[kind] || "Note").toLowerCase();
-    return `${n} ${name}${n === 1 ? "" : "s"}`;
+    return nounCount(n, name);
   };
   return ` (${TIMELINE_KINDS.filter((k) => counts.has(k.key)).map((k) => word(k.key, counts.get(k.key))).join(", ")})`;
 }

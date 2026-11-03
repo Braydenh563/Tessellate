@@ -7639,8 +7639,11 @@ input[type="color"].wb-mixed {
   background: var(--ghost-btn-bg-hover);
 }
 
-.doc-editor .cm-search label {
+.doc-editor .cm-editor .cm-panel.cm-search label {
   color: var(--muted);
+  /* CodeMirror's own 80% put these at 11.776px, off the type scale (audit
+     1028 U44). */
+  font-size: var(--text-xs);
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
