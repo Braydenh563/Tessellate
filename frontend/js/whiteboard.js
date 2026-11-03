@@ -19601,7 +19601,8 @@ async function wbCreateBlankBoard(name, kind) {
       //: the visible canvas size is neither constant nor known until it is
       //: actually measured).
       if (root) wbCenterOn(wbItemBBox("object", root), { animate: false });
-      toast(`Mind map "${board.title}" created. Tab adds a branch, Enter one beside it. While you type a name, Enter is a new line and Ctrl+Enter adds the one beside it.`);
+      //: One line and an action (U41, the owner 2026-11-03): the typing keys are in the Guide's map keys topic.
+      toast(`Mind map "${board.title}" created. Tab adds a branch, Enter one beside it.`, false, { action: ["All keys", () => askAtlas("Mind map keys and controls")] });
     } else {
       toast(`Board "${board.title}" created.`);
     }

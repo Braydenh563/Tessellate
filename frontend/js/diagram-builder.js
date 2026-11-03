@@ -25,7 +25,8 @@
   const SHAPE_TEXT = { rect: "Step", round: "Step", stadium: "Start", circle: "Event", diamond: "Question?", hexagon: "Prepare" };
   //: A narrow window or a touch screen: the phone's palette sheet, direction in the ... menu and the picture's pinch.
   const COMPACT = "(max-width: 599.98px), (pointer: coarse)";
-  const DIRS = [["TD", "down", "Top to bottom"], ["LR", "right", "Left to right"], ["BT", "up", "Bottom to top"], ["RL", "left", "Right to left"]];
+  //: Whole icon names, so tests/test_icon_names.py can check each is in the font.
+  const DIRS = [["TD", "ph:arrow-down", "Top to bottom"], ["LR", "ph:arrow-right", "Left to right"], ["BT", "ph:arrow-up", "Bottom to top"], ["RL", "ph:arrow-left", "Right to left"]];
   //: The instance of a mounted pane, by its root element.
   const panes = new WeakMap();
 
@@ -465,7 +466,7 @@
   function more(S) {
     const rows = [["ph:file-svg Save as SVG", "svg"], ["ph:file-png Save as PNG", "png"], ["ph:copy Copy as Mermaid", "mermaid"], ["ph:code Copy as SVG", "svgtext"]];
     //: Where the four direction buttons do not fit (a phone, a touch screen) they fold into this menu: a dock folds by width.
-    const fold = S.dirs && matchMedia(COMPACT).matches ? [{ label: "ph:compass Direction", items: DIRS.map(([dir, arrow, name]) => ({ label: `ph:arrow-${arrow} ${name}`, run: () => S.dirs.querySelector(`[data-dir="${dir}"]`).click() })), group: "view" }] : [];
+    const fold = S.dirs && matchMedia(COMPACT).matches ? [{ label: "ph:compass Direction", items: DIRS.map(([dir, arrow, name]) => ({ label: `${arrow} ${name}`, run: () => S.dirs.querySelector(`[data-dir="${dir}"]`).click() })), group: "view" }] : [];
     //: With the direction, Suggest folds in here too: Add, Undo, Redo and this menu are one row at 320 (INBOX 1596 d).
     if (S.suggestBtn && matchMedia(COMPACT).matches) fold.push({ label: "ph:sparkle Suggest…", group: "edit", run: () => suggestMenu(S, S.root.querySelector(".dgm-more button") || S.suggestBtn) });
     const menu = kebabMenu([...(S.io.menu || []), ...fold, ...rows.map(([label, how]) => makeMenuItem(label, "", () => ensureModule("diagramEmbed").then((ok) => ok && diagramModel.embed.out(how, S.source, S.io.name))))], "More for this diagram");
@@ -490,7 +491,7 @@
       b.dataset.dir = dir;
       b.title = name;
       b.setAttribute("aria-label", name);
-      const icon = el("i", `ph ph-arrow-${arrow}`);
+      const icon = el("i", `ph ${arrow.replace(":", "-")}`);
       icon.setAttribute("aria-hidden", "true");
       b.append(icon);
       b.addEventListener("click", () => {
