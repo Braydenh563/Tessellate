@@ -674,6 +674,8 @@
     const mod = event.ctrlKey || event.metaKey;
     if (mod && !event.altKey && /^[zy]$/i.test(event.key)) {
       event.preventDefault();
+      //: Not passed on: the app's own Ctrl+Z would undo a second step (measured: one press took a merge and the template before it).
+      event.stopPropagation();
       return event.shiftKey || /y/i.test(event.key) ? S.io.redo() : S.io.undo();
     }
     if (event.altKey && !mod) {
@@ -809,6 +811,35 @@
     },
   };
 
+  // --- suggestions (diagram-suggest.js, lazy) ---------------------------------------
+  //: Templates, From my notes and Describe it. What comes back lands as blocks (D8): on an
+  //: empty diagram it becomes the diagram, otherwise it arrives as ghosts to take or drop.
+  async function suggest(S, how) {
+    if (!(await ensureModule("diagramSuggest"))) return say(S, "The suggestions did not load.");
+    return diagramModel.suggest[how](S, { el, say, commit, ops: diagramOps, blockEl });
+  }
+
+  function suggestItems(S) {
+    const off = aiIsOff();
+    return [
+      { label: "ph:layout Templates", run: () => suggest(S, "templates"), group: "start" },
+      { label: "ph:note-pencil From my notes", run: () => suggest(S, "notes"), group: "start" },
+      {
+        label: "ph:sparkle Describe it",
+        disabled: off,
+        title: off ? "Describing a diagram needs a model. Connect a model in Settings." : "Say what the diagram is, and the model drafts it",
+        //: A dimmed row still answers: it says why, on the pane's own line (and aloud).
+        run: () => {
+          if (!off) return suggest(S, "describe");
+          S.note.textContent = "Describing a diagram needs a model. Connect a model in Settings. Templates and From my notes work without one.";
+          S.note.classList.remove("hidden");
+          say(S, S.note.textContent);
+        },
+        group: "start",
+      },
+    ];
+  }
+
   // --- building the pane ----------------------------------------------------------
   function buildPalette(S) {
     const bar = el("div", "dock dgm-dock");
@@ -847,6 +878,13 @@
       S.dirs.append(b);
     }
     const actions = el("div", "dock-actions");
+    S.suggestBtn = smallButton("ph:sparkle Suggest", "Start from a template, your notes or a description", () => {
+      const r = S.suggestBtn.getBoundingClientRect();
+      openMenuAtPoint(suggestItems(S), "Suggest a diagram", r.left, r.bottom, S.suggestBtn);
+    });
+    S.suggestBtn.classList.add("dgm-suggest");
+    S.suggestBtn.setAttribute("aria-haspopup", "menu");
+    actions.append(S.suggestBtn);
     for (const [icon, label, run] of [["ph:arrow-counter-clockwise", "Undo", () => S.io.undo()], ["ph:arrow-clockwise", "Redo", () => S.io.redo()]]) {
       const b = smallButton(icon, label, run);
       b.classList.add("icon-only");
@@ -868,12 +906,17 @@
     S.tree = el("div", "dgm-tree");
     S.tree.setAttribute("role", "tree");
     S.tree.setAttribute("aria-label", "Diagram blocks");
-    S.empty = el("p", "muted dgm-hint", "Press a shape above, or press N, to add the first block. Drag blocks to move, nest or join them.");
+    //: The empty state recipe: one sentence and one action, the filled button.
+    S.empty = el("div", "empty-state dgm-empty");
+    const start = smallButton("ph:layout Start from a template", "Pick a starting flowchart", () => suggest(S, "templates"), false);
+    start.classList.add("accent");
+    S.empty.append(el("p", "empty-title", "Start a diagram"), el("p", "", "Press a shape above, or press N, to add the first block. Drag blocks to move, nest or join them."), start);
+    S.ghosts = el("div", "dgm-ghosts hidden");
     S.drop = el("div", "dgm-drop hidden");
     S.pane = el("div", "dgm-pane");
     S.pane.setAttribute("aria-label", "Diagram blocks. Press N for a block or G for a group.");
     S.pane.setAttribute("role", "region");
-    S.pane.append(S.tree, S.empty, S.drop);
+    S.pane.append(S.tree, S.empty, S.ghosts, S.drop);
     S.fig = el("figure", "dgm-picture");
     const body = el("div", "dgm-body");
     body.append(S.pane, S.fig);
@@ -924,6 +967,7 @@
     S.note.classList.toggle("hidden", Boolean(parsed));
     S.note.textContent = parsed ? "" : big ? `This diagram has more than ${DGB_MAX} blocks. It stays in Source, and its picture is drawn here.` : "Blocks draw flowcharts for now. This diagram stays in Source, and its picture is drawn here.";
     S.m = parsed || { kind: "flowchart", dir: "TD", nodes: [], edges: [], subgraphs: [], kept: [], front: [] };
+    if (!parsed) S.ghosts.replaceChildren(), S.ghosts.classList.add("hidden");
     S.root.querySelector(".dgm-dock").classList.toggle("hidden", !parsed);
     S.pane.classList.toggle("hidden", !parsed);
     render(S);

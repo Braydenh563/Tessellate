@@ -310,6 +310,180 @@
   background: var(--accent-soft);
 }
 
+/* Suggest (1546 P3): a worded button in the dock, quiet like the bar around it: no edge,
+   no fill at rest, the tint under the pointer, the sparkle the one cue of colour. */
+.dgm-suggest {
+  border-color: transparent;
+  background: none;
+  box-shadow: none;
+  font-weight: 500;
+}
+
+.dgm-suggest:hover,
+.dgm-suggest[aria-expanded="true"] {
+  background: var(--ghost-btn-bg);
+}
+
+.dgm-suggest .ph {
+  color: var(--accent-text);
+}
+
+/* The empty pane: one sentence over the filled action (the empty state recipe). */
+.dgm-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-6) var(--space-4);
+  font-size: var(--text-sm);
+}
+
+/* The model or the composer is working: the picture waits, dimmed, never emptied. */
+.dgm-busy .dgm-picture {
+  opacity: 0.6;
+  transition: opacity var(--ui-fast) var(--ease-out);
+}
+
+/* Ghosts: the blocks of a suggestion, in the tree's own place under the real ones. A
+   ghost is a toggle: faded and dashed until taken, then firm (the Ghost topics recipe). */
+.dgm-ghosts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--row-gap);
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  border: 1px dashed var(--control-edge);
+  border-radius: var(--radius-md);
+  animation: dgm-arrive var(--ui-fast) var(--ease-out);
+}
+
+.dgm-ghosts.hidden {
+  display: none;
+}
+
+@keyframes dgm-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-1));
+  }
+}
+
+.dgm-ghost-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+}
+
+.dgm-ghost-head p {
+  margin: 0;
+}
+
+.dgm-ghost-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.dgm-ghost {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--row-h);
+  padding: var(--space-1) var(--space-2);
+  border: 1px dashed var(--control-edge);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink);
+  font-size: var(--text-sm);
+  text-align: start;
+  opacity: 0.7;
+  transition: opacity var(--ui-fast) var(--ease-out), background var(--ui-fast) var(--ease-out);
+}
+
+.dgm-ghost[data-level="1"] {
+  margin-inline-start: var(--space-4);
+}
+
+.dgm-ghost[data-level="2"] {
+  margin-inline-start: var(--space-8);
+}
+
+.dgm-ghost[data-level="3"],
+.dgm-ghost[data-level="4"] {
+  margin-inline-start: var(--space-9);
+}
+
+.dgm-ghost:hover,
+.dgm-ghost:focus-visible {
+  opacity: 1;
+  background: var(--hover-veil);
+}
+
+.dgm-ghost:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.dgm-ghost.is-taken {
+  opacity: 1;
+  border-style: solid;
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.dgm-ghost-words {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--space-2);
+  min-width: 0;
+}
+
+.dgm-ghost-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dgm-ghost.is-taken .dgm-ghost-text {
+  font-weight: 600;
+}
+
+.dgm-ghost-joins {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-xs);
+}
+
+.dgm-ghost-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+/* The template dialog is the documents' own (doc-template-*): only its preview is a picture. */
+.dgm-template-figure {
+  margin: 0;
+  padding: var(--space-3);
+}
+
+.dgm-template-figure .md-mermaid-img {
+  display: block;
+  max-inline-size: 100%;
+  max-block-size: 20rem;
+  margin: 0 auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dgm-ghosts {
+    animation: none;
+  }
+}
+
 @container (max-width: 599.98px) {
   .dgm-body {
     grid-template-columns: minmax(0, 1fr);
@@ -325,6 +499,11 @@
 
   .dgm-pane {
     min-block-size: 10rem;
+  }
+
+  /* Suggest keeps its sparkle and loses its word, like the tiles. */
+  .dgm-suggest .ph-text {
+    display: none;
   }
 
   .dgm-dirs button,
