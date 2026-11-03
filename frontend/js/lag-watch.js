@@ -186,7 +186,22 @@ function lagFrameWhy(e) {
   if (!e.renderStart) return "";
   const paint = Math.round(e.startTime + e.duration - e.renderStart);
   const before = Math.round(e.duration) - paint;
-  return before > paint ? `${before}ms of script with no source file, then ${paint}ms rendering` : `rendering and painting ${paint}ms after the scripts`;
+  if (before <= paint) return `rendering and painting ${paint}ms after the scripts`;
+  //: **What "script with no source file" was** (INBOX 1575: 1,340 ms on the dashboard, 256 to 458 ms
+  //: after boot). A frame's `scripts` lists only the ones that ran 5ms or more, and nothing else the
+  //: page does between two renders is a script: traced at 4x CPU on a 2,000-note notebook, these frames
+  //: were style and layout the browser ran on its own (a hit test for a pointer event on a page whose
+  //: tab had just flipped: 327 ms in one `UpdateLayoutTree`, no script), or, in the first seconds,
+  //: parsing and compiling the page's own scripts (`ParseHTML` 246 ms); one 522 ms task left no trace
+  //: event at all (a collection or the machine's load). The row says which it most likely was.
+  const input = e.firstUIEventTimestamp;
+  const owner =
+    e.startTime < 8000
+      ? "the page loading: parsing, compiling, style and layout"
+      : input > 0 && input >= e.startTime && input <= e.startTime + e.duration
+        ? "an input event waiting on style and layout"
+        : "the browser's own style, layout or garbage collection";
+  return `${before}ms before rendering with no script over 5ms in it (${owner}), then ${paint}ms rendering`;
 }
 
 function lagInput(e) {
