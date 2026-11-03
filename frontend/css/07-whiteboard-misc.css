@@ -4879,13 +4879,13 @@ rect.board-minimap-card,
      Improve): all now on one row with the document picker,
    - where it is **filed** and the act of **committing** it (File under, then
      Save as draft and Save).
-   The spacer is what carries the second half of that: the commit pair sits
+   The growing hint is what carries the second half of that: the commit pair sits
    at the far end of its row, after a gap, so Save is the last control in the
    panel and the only filled one. Nothing was removed, and no control changed
    what it does. */
-.capture-commit-spacer {
+.capture-space-hint {
   flex: 1 1 auto;
-  min-width: var(--space-4);
+  margin: 0 var(--space-2) 0 0;
 }
 .capture-commit-row {
   flex-wrap: wrap;

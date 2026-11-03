@@ -320,6 +320,7 @@
 }
 
 .dgm-suggest:hover,
+.dgm-suggest:is(:focus-visible, :has(:focus-visible)),
 .dgm-suggest[aria-expanded="true"] {
   background: var(--ghost-btn-bg);
 }
