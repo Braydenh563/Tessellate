@@ -22,7 +22,7 @@
 // request (`POST /documents/contents`), and the one undo step writes the
 // originals back the same way, so fifty documents change, or change back,
 // whole. Each changed document keeps the version it replaced in its history.
-const docReplace = { matches: [], skipped: new Set(), timer: 0, pool: null };
+const docReplace = { matches: [], skipped: new Set(), timer: 0, late: 0, pool: null };
 
 function docReplacePattern() {
   const find = $("doc-replace-find").value;
@@ -101,8 +101,11 @@ async function renderDocReplace() {
   list.replaceChildren();
   run.disabled = true;
   docReplace.matches = [];
+  clearTimeout(docReplace.late);
   if (!pattern || pattern.error) {
-    summary.textContent = pattern?.error ? `That pattern does not read: ${pattern.error}` : "Type what to find.";
+    //: A pattern half-typed ("(" , "[a-") is not wrong yet: its error waits for a pause (INBOX 1579).
+    summary.textContent = pattern?.error ? "" : "Type what to find.";
+    if (pattern?.error) docReplace.late = setTimeout(() => (summary.textContent = `That pattern does not read: ${pattern.error}`), 800);
     return;
   }
   summary.textContent = "Searching…";

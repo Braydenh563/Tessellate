@@ -1113,8 +1113,12 @@ MORE_TOPICS: list[dict] = [
             "board's text, Chat or Ask, which opens it on the Equation tab over "
             "that box. Sum takes a sum typed or keyed (12 * (3 + 4), 15% of "
             "80, 5 km to miles), shows a preview as you type and says how it "
-            "read it; Enter or = keeps it in History. "
-            "Every answer has a Copy button, and each tab has a History under "
+            "read it; Enter or = keeps it in History. The sum is drawn as maths "
+            "under the box and shows no error while a sign or bracket is "
+            "still open. Scientific adds trig, logs, powers, roots, a "
+            "factorial, pi and e, Degrees or Radians and a memory (MC, MR, "
+            "M+, M-), worked out with no model. "
+            "Each answer has Copy, and each tab has a History under "
             "its fields (the last twenty, kept on this device): press a row to "
             "put it back in the fields, or Copy it, Edit it (the next keep "
             "replaces that row) or Remove it; Clear empties the list and Undo "
@@ -1122,18 +1126,16 @@ MORE_TOPICS: list[dict] = [
             "Every tab ends in the same row: a line saying where Insert writes, "
             "then Copy, Insert as equation (Sum and Units; the sum with its "
             "result as an equation) and Insert. When the dialog was opened from "
-            "a text box, Insert writes there; with no box open the line says so "
-            "and Copy is the way out. The ? beside the title says the same in "
-            "short. The keypad is one Tab stop: the "
+            "a text box, Insert writes there; with none open the line says so "
+            "and Copy is the way out. The keypad is one Tab stop: the "
             "arrow keys move around it. Units picks a kind (length, "
             "weight, currency and more), an amount and two units, with a swap "
             "button; currency rates are set by hand and dated, not today's rate. "
             "The Equation tab is the equation editor (see Equation editor): when "
-            "an equation is made of numbers, its value is shown under it, worked "
-            "out the same way as Sum. The arrow keys, Home and End move "
-            "between the tabs. The Dashboard's Calculator widget (Customise, "
-            "Widgets) draws Sum and Units on the page, with Copy but no Insert. "
-            "Edit quick access can pin a tile for this tool and for each Clock tool."
+            "an equation is made of numbers, its value is shown under it, as in "
+            "Sum. The arrow keys, Home and End move "
+            "between the tabs. The Dashboard's Calculator widget draws "
+            "Sum and Units on the page, with Copy but no Insert."
         ),
         "badge": {"label": "Chat", "tab": "chat"},
     },
@@ -3462,6 +3464,7 @@ MORE_TOPICS.append({
         "equation", "equations", "equation editor", "write an equation",
         "maths", "math", "formula", "fraction", "square root", "greek letter",
         "symbol", "integral", "matrix", "latex", "tex", "alt+=", "alt equals",
+        "common formulas", "quadratic formula", "arrows", "relations", "sets and logic",
     ),
     "body": (
         "The equation editor is the Equation tab of Calculator and equations "
@@ -3477,8 +3480,10 @@ MORE_TOPICS.append({
         "as \\frac or \\alpha turns into the symbol as you type it. The "
         "palette inserts the structures Word offers (fraction, script, "
         "radical, integral, large operator, bracket, function, accent, limit "
-        "and log, operator, matrix) and Greek, operators, relations, arrows, "
-        "sets and calculus symbols; a selection goes into the first box. The "
+        "and log, operator, matrix), braces and labelled arrows, common "
+        "formulas (the quadratic formula and more) and symbols: Greek in "
+        "lower and upper case, operators, relations, arrows, sets and logic, "
+        "calculus and function names, marks; a selection goes into the first box. The "
         "LaTeX button shows the same equation as raw TeX to edit directly, and "
         "the two stay in step. A row of groups above the palette jumps to one "
         "and marks the one in view; Pin, then a tile, makes it a favourite at "

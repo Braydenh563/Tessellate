@@ -39,14 +39,15 @@
   //: operator (`mo`, spaced like one). Getting that split wrong is what makes
   //: hand-rolled math read as a string of glyphs.
   const DOC_MATH_LETTERS = {
-    alpha: "α", beta: "β", gamma: "γ", delta: "δ", epsilon: "ε",
-    varepsilon: "ε", zeta: "ζ", eta: "η", theta: "θ", iota: "ι",
-    kappa: "κ", lambda: "λ", mu: "μ", nu: "ν", xi: "ξ", pi: "π",
-    rho: "ρ", sigma: "σ", tau: "τ", upsilon: "υ", phi: "φ",
+    alpha: "α", beta: "β", gamma: "γ", delta: "δ", epsilon: "ϵ",
+    varepsilon: "ε", zeta: "ζ", eta: "η", theta: "θ", vartheta: "ϑ", iota: "ι",
+    kappa: "κ", lambda: "λ", mu: "μ", nu: "ν", xi: "ξ", pi: "π", varpi: "ϖ",
+    rho: "ρ", varrho: "ϱ", sigma: "σ", varsigma: "ς", tau: "τ", upsilon: "υ", phi: "ϕ",
     varphi: "φ", chi: "χ", psi: "ψ", omega: "ω",
     Gamma: "Γ", Delta: "Δ", Theta: "Θ", Lambda: "Λ", Xi: "Ξ",
-    Pi: "Π", Sigma: "Σ", Phi: "Φ", Psi: "Ψ", Omega: "Ω",
-    infty: "∞", partial: "∂", nabla: "∇", emptyset: "∅", ell: "ℓ",
+    Pi: "Π", Sigma: "Σ", Upsilon: "Υ", Phi: "Φ", Psi: "Ψ", Omega: "Ω",
+    infty: "∞", partial: "∂", nabla: "∇", emptyset: "∅", varnothing: "∅", ell: "ℓ",
+    hbar: "ℏ", aleph: "ℵ", imath: "ı", jmath: "ȷ", wp: "℘", Re: "ℜ", Im: "ℑ",
   };
 
   const DOC_MATH_OPERATORS = {
@@ -63,6 +64,21 @@
     sum: "∑", prod: "∏", int: "∫", iint: "∬", oint: "∮",
     bigcup: "⋃", bigcap: "⋂", sqrt: "√", iiint: "∭", coprod: "∐",
     lfloor: "⌊", rfloor: "⌋", lceil: "⌈", rceil: "⌉", langle: "⟨", rangle: "⟩",
+    //: The palette's wider groups (INBOX 1579): relations, arrows, sets and logic, big operators and marks.
+    ll: "≪", gg: "≫", simeq: "≃", cong: "≅", ncong: "≇", doteq: "≐", prec: "≺", succ: "≻", preceq: "⪯", succeq: "⪰",
+    mid: "∣", nmid: "∤", models: "⊨", vdash: "⊢", dashv: "⊣", asymp: "≍", bowtie: "⋈", triangleq: "≜",
+    nless: "≮", ngtr: "≯", nleq: "≰", ngeq: "≱",
+    Leftarrow: "⇐", Leftrightarrow: "⇔", longrightarrow: "⟶", longleftarrow: "⟵", longleftrightarrow: "⟷",
+    Longrightarrow: "⟹", Longleftarrow: "⟸", Longleftrightarrow: "⟺", longmapsto: "⟼", gets: "←",
+    uparrow: "↑", downarrow: "↓", updownarrow: "↕", Uparrow: "⇑", Downarrow: "⇓",
+    nearrow: "↗", searrow: "↘", swarrow: "↙", nwarrow: "↖", hookrightarrow: "↪", hookleftarrow: "↩",
+    rightharpoonup: "⇀", leftharpoonup: "↼", rightleftharpoons: "⇌", iff: "⟺", implies: "⟹", impliedby: "⟸",
+    ni: "∋", supseteq: "⊇", subsetneq: "⊊", supsetneq: "⊋", nsubseteq: "⊈", nsupseteq: "⊉", setminus: "∖",
+    nexists: "∄", wedge: "∧", vee: "∨", lnot: "¬", top: "⊤", bot: "⊥", therefore: "∴", because: "∵",
+    uplus: "⊎", sqcup: "⊔", sqcap: "⊓", sqsubseteq: "⊑", sqsupseteq: "⊒",
+    bigoplus: "⨁", bigotimes: "⨂", bigvee: "⋁", bigwedge: "⋀", biguplus: "⨄",
+    ominus: "⊖", odot: "⊙", ast: "∗", bullet: "∙", dagger: "†", ddagger: "‡", diamond: "⋄",
+    triangle: "△", square: "□", blacksquare: "■", prime: "′", ddots: "⋱",
   };
 
   //: A named function is set upright, not italic: `sin x` is a function applied
@@ -71,7 +87,7 @@
   const DOC_MATH_FUNCTIONS = [
     "sin", "cos", "tan", "sec", "csc", "cot", "arcsin", "arccos", "arctan",
     "sinh", "cosh", "tanh", "log", "ln", "exp", "lim", "max", "min", "sup", "inf",
-    "det", "dim", "gcd", "deg", "arg", "mod",
+    "det", "dim", "gcd", "deg", "arg", "mod", "limsup", "liminf", "ker", "Pr",
   ];
 
   //: Text, taken raw, because the tokeniser below throws whitespace away and
@@ -181,7 +197,9 @@
   });
 
   //: Accents over their argument, as `mover`: what each one draws.
-  const DOC_MATH_ACCENTS = Object.assign(Object.create(null), { vec: "→", hat: "^", bar: "‾", overline: "‾", tilde: "~", dot: "˙", ddot: "¨" });
+  const DOC_MATH_ACCENTS = Object.assign(Object.create(null), { vec: "→", hat: "^", bar: "‾", overline: "‾", tilde: "~", dot: "˙", ddot: "¨", widehat: "^", widetilde: "~", overrightarrow: "→", overleftarrow: "←", acute: "´", grave: "`", breve: "˘", check: "ˇ", mathring: "˚" });
+  //: `\mathbb{R}`: the double-struck letters a person writes sets with; any other letter stays as it is.
+  const DOC_MATH_DOUBLE_STRUCK = Object.assign(Object.create(null), { N: "ℕ", Z: "ℤ", Q: "ℚ", R: "ℝ", C: "ℂ", H: "ℍ", P: "ℙ" });
 
   //: The three tables below have no prototype: a name typed in a note (`\toString`,
   //: `\begin{constructor}`) must not find an Object.prototype member.
@@ -266,6 +284,25 @@
       return { tag: "mover", attrs: { accent: "true" }, kids: [base, { tag: "mo", text: DOC_MATH_ACCENTS[name] }] };
     }
     if (name in DOC_MATH_SPACES) return { tag: "mspace", attrs: { width: DOC_MATH_SPACES[name] } };
+    if (name === "underline") {
+      const base = docMathArgument(tokens, state);
+      return { tag: "munder", attrs: { accentunder: "true" }, kids: [base, { tag: "mo", text: "_" }] };
+    }
+    if (name === "overbrace" || name === "underbrace") {
+      //: A label goes above or below the brace (`^{n}`, `_{n}`): `docMathNodes` reads the brace back off the base.
+      const base = docMathArgument(tokens, state);
+      const over = name === "overbrace";
+      return { tag: over ? "mover" : "munder", kids: [base, { tag: "mo", text: over ? "\u23de" : "\u23df" }] };
+    }
+    if (name === "xrightarrow" || name === "xleftarrow") {
+      //: The label sits on the arrow, which stretches to it.
+      const label = docMathArgument(tokens, state);
+      return { tag: "mover", kids: [{ tag: "mo", attrs: { stretchy: "true" }, text: DOC_MATH_OPERATORS[name === "xrightarrow" ? "rightarrow" : "leftarrow"] }, label] };
+    }
+    if (name === "mathbb") {
+      const letter = docMathArgument(tokens, state);
+      return letter.tag === "mi" && letter.text in DOC_MATH_DOUBLE_STRUCK ? { tag: "mi", text: DOC_MATH_DOUBLE_STRUCK[letter.text] } : letter;
+    }
     return null;
   }
 
@@ -338,7 +375,10 @@
         const up = token.kind === "^";
         //: `x_i^2` is one element with two scripts, not a superscript on a
         //: subscript: written as the second it prints the 2 above the i.
-        if (base.tag === "msub" && up) {
+        const brace = up ? "\u23de" : "\u23df";
+        if (base.tag === (up ? "mover" : "munder") && base.kids[1] && base.kids[1].text === brace) {
+          kids.push({ tag: base.tag, kids: [base, script] });
+        } else if (base.tag === "msub" && up) {
           kids.push({ tag: "msubsup", kids: [base.kids[0], base.kids[1], script] });
         } else if (base.tag === "msup" && !up) {
           kids.push({ tag: "msubsup", kids: [base.kids[0], script, base.kids[1]] });

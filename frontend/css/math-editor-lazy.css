@@ -62,9 +62,21 @@
   grid-template-columns: repeat(auto-fill, minmax(2.75rem, 1fr));
 }
 
-/* Structures draw a whole formula, so their tiles are wider. */
+/* Structures draw a whole formula, so each tile is as wide as its formula (INBOX 1579: a fixed 4.5rem column clipped the
+   3x3 matrix's brackets, 28 tiles overflowed): a wrapping row, the tiles growing to fill it, never narrower than a key. */
+/* A function's name (arccos, limsup) is letters, not a glyph: two columns of the symbol grid. */
+.math-editor-grid > .math-editor-tile.is-word {
+  grid-column: span 2;
+}
+
 .math-editor-grid-wide {
-  grid-template-columns: repeat(auto-fill, minmax(4.5rem, 1fr));
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.math-editor-grid-wide > .math-editor-tile {
+  flex: 1 0 auto;
+  min-width: 4.5rem;
 }
 
 .math-editor .math-editor-tile {
@@ -72,8 +84,7 @@
   place-items: center;
   min-width: 0;
   min-height: var(--target-min);
-  padding: var(--space-1);
-  overflow: hidden;
+  padding: var(--space-1) var(--space-2);
   font-size: var(--text-lg);
 }
 
