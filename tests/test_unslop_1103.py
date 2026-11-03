@@ -99,3 +99,11 @@ def test_9_settings_peek_is_beside_the_title_not_among_the_utilities():
     head = head[: head.index('id="settings-close"')]
     assert head.index('id="settings-peek"') < head.index('id="settings-profile-btn"')
     assert "margin-inline-end: auto" in _body(_css("08-consistency.css"), ".dialog-head > #settings-peek")
+
+
+def test_10_settings_rail_head_wraps_instead_of_clipping_its_toggle():
+    css = _css("06-timeline-dialogs.css")
+    assert "flex-wrap: wrap" in _body(css, ".settings-nav-groups-head")
+    assert "white-space: nowrap" in _body(css, ".settings-nav-groups-head > *")
+    link = _body(css, ".settings-nav-groups-head .linklike")
+    assert "overflow: visible" in link and "text-overflow: clip" in link
