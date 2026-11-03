@@ -67,7 +67,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 61 | E33 | med | guide answers are verbatim topic chunks, no lead path | partial (grammar only; path-first lead is an owner decision, see a30e-1102.md) | M |
 | 62 | E39 | med | model download has no timeout or disk check | fixed 1031 | S |
 | 63 | E48 | med | edit and resend destroys later replies, no branches | new | L |
-| 64 | E57 | med | context overflow drops early turns with no inline notice | fixed (see log, E57 commit) | M |
+| 64 | E57 | med | context overflow drops early turns with no inline notice | fixed (d2e1629) | M |
 | 65 | S11 | med | server greeting lines can contradict dashboard state | fixed (b8cfb46) | S |
 | 66 | S25 | med | lock form gives little error feedback, no throttle hint | fixed (already: inline error, role alert, 429 names the wait; reconciled 2026-10-30) | S |
 | 67 | S27 | med | no backlinks panel in the note editor | fixed (already built; reconciled 2026-10-30) | M |
@@ -97,9 +97,9 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 91 | E29 | med | identical reminders printed twice, no duplicate check | fixed 2026-11-02 (ca14588) | S |
 | 92 | E35 | med | chat transcript is not a live region for screen readers | fixed 1031 | S |
 | 93 | E36 | med | saved-chat rows are li with click and no keyboard path | fixed 1031 | S |
-| 94 | E38 | med | no-model Models page hides suggested cards and pickers | fixed (see log, E38 commit) | M |
+| 94 | E38 | med | no-model Models page hides suggested cards and pickers | fixed (0e2f514) | M |
 | 95 | E40 | med | two search-by-meaning toasts stack over Settings | fixed 1031 | S |
-| 96 | E50 | med | phone no-model banner and source cards take too much room | fixed (see log, E50 commit) | M |
+| 96 | E50 | med | phone no-model banner and source cards take too much room | fixed (fd04ca3) | M |
 | 97 | S12 | med | Duplicate sits under Add in the entry overflow menu | fixed (this batch) | S |
 | 98 | S13 | med | placeholder-only inputs have no visible or aria label | fixed | S |
 | 99 | S14 | med | tab-documents aria-labelledby points at wrong element | fixed (this batch) | S |
