@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Lag (INBOX 1620, Atlas placement): a placement no longer pays for its own restyle. `nameMarkBuddyMoveTo` wrote the size, the edge line and the pose (each restyles the whole drawing, 100 to 150ms at 4x CPU) and then read the panel and the band, so `nameMarkBuddyGlue` and `nameMarkBuddyRideBox` forced it; it now reads the boxes first (`nmbPlace`), measures the band for the new pose before the pose is written, and takes the edge line from its own value, not from `getComputedStyle`. Three tab switches at 4x CPU with 400 notes: MoveTo 1340ms (max 279) to 117ms (max 31), Glue 693 to 95, RideBox 652 to 7.
 - Extract notes with no model uses the composer's pieces (INBOX 1618): a heading that became the title leaves the note's body, one long paragraph is cut at its subject changes into short notes (own titles, each filed and tagged on its own words, at most four), no link runs from a note to its own source text, and sibling links read "Same text, next part".
 - Diagram builder: opened from Find anything, the palette or anywhere without a text box, it shows the builder at once and Done saves a new .mmd document (it used to start a blank page made only by a keystroke, so nothing appeared).
 - Quick sketch: Fill only drew an empty button (it asked for `square-fill`, not in the icon subset); it is a drawn filled square now, and the icon-name lint reads `iconButton(name)` calls too.
