@@ -44,11 +44,11 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 38 | D10 | med | take-theirs leaves title box stale, next save resends old title | fixed 2026-10-30 | S |
 | 39 | D13 | med | POST documents/contents skips media hook and payload cap | fixed 2026-10-30: media hook, archived refused, JSON cap 16 MB (K4) | S |
 | 40 | D17 | med | blank title autosaved as Untitled document N | fixed (this batch) | S |
-| 41 | D26 | med | comments have no author, time, replies or resolved view | new | L |
+| 41 | D26 | med | comments have no author, time, replies or resolved view | fixed (65c01c4, e3aae86) | L |
 | 42 | D27 | med | no image resize handles or alt-text prompt on paste | fixed (61089b9) | M |
 | 43 | D28 | med | no continuous zoom, text size in three steps | won't fix (browser zoom gives continuous zoom; three prose sizes kept, 2026-10-30) | S |
 | 44 | D29 | med | replace dialog lacks whole-word and match preview | fixed (this batch) | M |
-| 45 | D30 | med | spellcheck is English only, no per-document language | new | L |
+| 45 | D30 | med | spellcheck is English only, no per-document language | listed (a30h-1102: no other dictionary is vendored; recommendation in a30h-1102.md) | L |
 | 46 | E13 | med | bare undo after an answer gets help text, not undo | fixed 1030 | S |
 | 47 | E14 | med | follow-ups like pin that note lose their referent | new | M |
 | 48 | E15 | med | stats route steals questions that name a note subject | fixed 1030 | S |
@@ -89,7 +89,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 83 | B20 | med | lock state shown only on hover, no persistent badge | fixed | S |
 | 84 | D31 | med | Mod-h unreachable on macOS, Ctrl+1-3 collide with browser | fixed in part (Mac Replace chord; Ctrl+1 to 3 headings kept, 2026-10-30) | S |
 | 85 | D32 | med | Mod-g means go to line in code and find-next in prose | fixed | S |
-| 86 | D33 | med | replace-in-all and find-in-all separate from CM find panel | new | M |
+| 86 | D33 | med | replace-in-all and find-in-all separate from CM find panel | fixed (b092d42) | M |
 | 87 | D34 | med | autosave failure is tiny status text, no banner or retry | fixed (this batch) | S |
 | 88 | E23 | med | quiz cloze questions cut the subject off | new | M |
 | 89 | E27 | med | act summaries have lowercase verbs, ids and stale notice | fixed (b6c3e07) | S |
