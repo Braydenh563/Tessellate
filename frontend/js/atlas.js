@@ -2051,6 +2051,11 @@ function atlasHandProps(armR, armL, look) {
   const grip = (ATLAS_LOOKS[look] || {}).propHand || hand;
   const shift = `translate(${+(grip[0] - hand[0]).toFixed(2)} ${+(grip[1] - hand[1]).toFixed(2)}) `;
   const upright = atlasMake("g", { transform: `${shift}rotate(70 ${hand[0]} ${hand[1]})` }, armR);
+  //: The carry act's note (INBOX 1589): a saved page held up, the classic companion's `nmp-note`.
+  const note = atlasGroup(upright, "nmp nmp-note");
+  atlasMake("path", { class: "atl-prop-page", d: "M44.4 62Q44.4 61.2 45.2 61.2H51.2Q52 61.2 52 62V70.2Q52 71 51.2 71H45.2Q44.4 71 44.4 70.2Z" }, note);
+  atlasMake("path", { class: "atl-prop-page-edge", d: "M46 63.6H50.4M46 65.8H50.4M46 68H48.6" }, note);
+  atlasMake("circle", { class: "atl-node-dot", cx: 50.2, cy: 69, r: 0.9 }, note);
   const bell = atlasGroup(upright, "nmp nmp-bell");
   atlasMake("circle", { class: "atl-prop-moon-glow", cx: 48.2, cy: 66.2, r: 6.5 }, bell);
   atlasMake("path", { class: "atl-prop-bell", d: "M44.2 68C44.2 61.6 52.2 61.6 52.2 68L53.6 69.8H42.8Z" }, bell);
@@ -2357,6 +2362,8 @@ function atlasBody(parent, id, props, look, route = null) {
     });
     for (const [side, d] of ATLAS_LIMBS.holds) {
       const hold = atlasGroup(layer, `nmb-hold nmb-hold-${side}`);
+      //: Raised, it turns about the same root as her arm (INBOX 1589), not his: the CSS's origin is his.
+      if (spec.armPivots) hold.style.transformOrigin = spec.armPivots[side].map((v) => `${v}px`).join(" ");
       atlasMake("path", { class: edge ? "atl-edge" : "atl-skin", d }, hold);
       if (!edge) atlasMake("path", { class: "atl-overlay atl-rim-body", d }, hold);
     }
@@ -3653,8 +3660,12 @@ function setAtlasMood(mood, forMs = 0, { quiet = false, easeMs = 0, backEaseMs =
   //: the blend's read of every part, inside `uiSettlingUntil`, paid the new
   //: tab's whole restyle; the change waits the few hundred ms to its end.
   const settling = (window.uiSettlingUntil || 0) - performance.now();
-  if (boxes.length && settling > 0) setTimeout(() => nameMarkBuddyBlend(boxes, apply, 700), settling + 20);
-  else if (boxes.length) nameMarkBuddyBlend(boxes, apply, 700);
+  //: **Not on a slow machine** (`data-atlas-lite`, atlas-life.js's frame budget): the hand-over reads
+  //: every part before the change and after it, two settles of a page the rig keeps dirty, 222 to
+  //: 282ms of the 255 to 347ms a mood change cost at 4x CPU. A snap is cheaper than the stall.
+  const lite = document.documentElement.hasAttribute("data-atlas-lite");
+  if (boxes.length && !lite && settling > 0) setTimeout(() => nameMarkBuddyBlend(boxes, apply, 700), settling + 20);
+  else if (boxes.length && !lite) nameMarkBuddyBlend(boxes, apply, 700);
   else apply();
   if (next === "surprised" && forMs > 2000) {
     //: A failure startles first, then worries until it has passed.

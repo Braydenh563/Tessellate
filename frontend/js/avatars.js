@@ -5133,7 +5133,7 @@ function nameMarkBuddyUnheld() {
 //: (one box read every 700ms; it was two seconds, in the air all that time,
 //: INBOX 521) catches only what changes with nothing announcing it
 //: (content arriving above the panel), eased rather than jumped.
-const nmbFollow = { animAt: 0, movingAt: 0, moving: false, frame: 0, until: 0, poll: 0, observer: null, scrollAt: 0, recheck: 0, support: 0, nap: 0, rest: 0 };
+const nmbFollow = { animAt: 0, movingAt: 0, pm: { el: null, at: -1e9, val: false }, moving: false, frame: 0, until: 0, poll: 0, observer: null, scrollAt: 0, recheck: 0, support: 0, nap: 0, rest: 0 };
 function nameMarkBuddyKeepUp(ms = 1500, wake = true) {
   if (!nmb.glue) return;
   if (wake) nmbFollow.nap = nmbFollow.rest = 0;
@@ -5157,19 +5157,20 @@ function nameMarkBuddyFollowFrame(now) {
   const settling = !!nmb.glue && now < (window.uiSettlingUntil || 0);
   if (settling) nmbFollow.until = Math.max(nmbFollow.until, window.uiSettlingUntil + 160);
   if (!settling && now >= nmbFollow.nap) {
-    const [x, y] = [nmb.x, nmb.y];
-    nameMarkBuddyFollow();
-    nmbFollow.rest = nmb.x === x && nmb.y === y ? nmbFollow.rest + 1 : 0;
-    nmbFollow.nap = nmbFollow.rest >= 3 && !nmbFollow.moving ? now + 120 : 0;
     //: `document.getAnimations()` settles style for the whole page: asked
     //: every 120ms while the loop runs, not every frame. **And only when something has been set
     //: going** (INBOX 1575: 3.9 s of `getAnimations` in a nine-tab series): an animation or a
     //: transition starts with an event (`nmbFollow.animAt`), so with none in the last 2.5 s and
-    //: the panel not already moving, there is nothing for it to find.
+    //: the panel not already moving, there is nothing for it to find. **Before the frame writes**
+    //: (INBOX 1591): the follow below moves the buddy, and a read after that settled style twice.
     if (now - nmbFollow.movingAt > 120) {
       nmbFollow.movingAt = now;
       nmbFollow.moving = !!nmb.glue && (nmbFollow.moving || now - nmbFollow.animAt < 2500) && nameMarkBuddyPanelMoving(nmb.glue.el);
     }
+    const [x, y] = [nmb.x, nmb.y];
+    nameMarkBuddyFollow();
+    nmbFollow.rest = nmb.x === x && nmb.y === y ? nmbFollow.rest + 1 : 0;
+    nmbFollow.nap = nmbFollow.rest >= 3 && !nmbFollow.moving ? now + 120 : 0;
   }
   if (nmb.glue && (now < nmbFollow.until || nmbFollow.moving)) nmbFollow.frame = requestAnimationFrame(nameMarkBuddyFollowFrame);
   //: Its panel came to rest somewhere new: a floating button may be over it
@@ -5206,21 +5207,30 @@ function nameMarkBuddyAnimProps(anim) {
     return ["all"];
   }
 }
+//: **One look in 120ms** (INBOX 1591): `getAnimations()` settles the page's style, and
+//: `nameMarkBuddyCatchUp` asked on every frame of a move, after the frame's own writes
+//: (32 forced recalcs in 4.7 s at 4x). The answer stands for the loop's own 120ms unless
+//: something was set going since (`nmbFollow.animAt`).
 function nameMarkBuddyPanelMoving(el) {
   if (!el?.isConnected || typeof document.getAnimations !== "function") return false;
+  const at = performance.now();
+  const pm = nmbFollow.pm;
+  if (pm.el === el && at - pm.at < 120 && pm.at >= nmbFollow.animAt) return pm.val;
+  pm.el = el;
+  pm.at = at;
+  pm.val = false;
   const buddy = document.getElementById("nm-buddy");
   for (const anim of document.getAnimations()) {
     if (anim.playState !== "running") continue;
     const target = anim.effect?.target;
     if (!target || !target.isConnected || buddy?.contains(target)) continue;
     const props = nameMarkBuddyAnimProps(anim);
-    if (target.contains(el)) {
-      if (props.some((p) => NMB_PLACES.test(p))) return true;
-    } else if (props.some((p) => NMB_LAYOUT.test(p)) && Number.isFinite(anim.effect.getComputedTiming?.().endTime)) {
-      return true;
+    if (target.contains(el) ? props.some((p) => NMB_PLACES.test(p)) : props.some((p) => NMB_LAYOUT.test(p)) && Number.isFinite(anim.effect.getComputedTiming?.().endTime)) {
+      pm.val = true;
+      break;
     }
   }
-  return false;
+  return pm.val;
 }
 
 //: **Its idle motion at a companion's pace** (INBOX 426 x, the owner: "the
@@ -5520,6 +5530,10 @@ document.addEventListener("scroll", (event) => {
 for (const type of ["pointerdown", "pointerup", "keydown", "transitionrun", "animationstart", "transitionend", "transitioncancel", "animationend"]) {
   document.addEventListener(type, (event) => {
     const el = nmb.glue?.el;
+    //: **A transition names what it changes** (INBOX 1591, the Focus timer's ring: a `stroke-dashoffset`
+    //: transition every second kept the loop up for ever, and each look settled the page's style, 157
+    //: forced settles in 30s at 4x CPU): one that places no box announces nothing.
+    if (type.startsWith("transition") && event.propertyName && !NMB_PLACES.test(event.propertyName)) return;
     if (!el || event.target?.closest?.("#nm-buddy")) return;
     //: Not the companion's own (its drawing starts animations all day): only a page's can move its panel.
     if (type === "transitionrun" || type === "animationstart") nmbFollow.animAt = performance.now();
