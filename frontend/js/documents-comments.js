@@ -487,6 +487,11 @@
     const result = docThreadsReconcile(docThreads, comments, stamp);
     docThreads = result.threads;
     docThreadMap = result.byComment;
+    //: Threads made or dropped by the reconcile are a change to save even when
+    //: the text did not move (a remark that came back with a revision, one
+    //: whose words were edited away); the opening pass is not, or every open
+    //: would be an unsaved document.
+    if (!opening && result.changed) markDocDirty();
   }
 
   //: What a save sends: undefined (so JSON leaves it out and the server keeps
@@ -660,11 +665,35 @@
     return item;
   }
 
+  //: The panel's parts are made on the first draw, not shipped in the page (the boot element cap).
+  function docCommentsShell(wrap) {
+    if (wrap.firstElementChild) return;
+    const heading = document.createElement("h3");
+    const count = document.createElement("span");
+    count.className = "doc-outline-count";
+    count.id = "doc-comments-count";
+    heading.append("Comments ", count);
+    const list = document.createElement("ul");
+    list.id = "doc-comments";
+    list.className = "doc-outline doc-comments";
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.id = "doc-comments-resolved-toggle";
+    toggle.className = "ghost small doc-comments-resolved-toggle hidden";
+    toggle.setAttribute("aria-expanded", "false");
+    toggle.setAttribute("aria-controls", "doc-comments-resolved");
+    const shelf = document.createElement("ul");
+    shelf.id = "doc-comments-resolved";
+    shelf.className = "doc-outline doc-comments hidden";
+    wrap.append(heading, list, toggle, shelf);
+  }
+
   //: Drawn from the document's own text on every facts pass, like the outline:
   //: there is no comment store and there must not be one, or a document copied
   //: into this app from anywhere else would arrive with its remarks invisible.
   function renderDocComments() {
     const wrap = $("doc-comments-wrap");
+    if (wrap) docCommentsShell(wrap);
     const list = $("doc-comments");
     const count = $("doc-comments-count");
     if (!wrap || !list) return;
@@ -834,7 +863,9 @@
   };
   // DOC-REMARK-END-END
 
-  $("doc-comments-resolved-toggle")?.addEventListener("click", () => {
+  //: One listener on the wrap, since the toggle inside it is made on the first draw.
+  $("doc-comments-wrap")?.addEventListener("click", (event) => {
+    if (!event.target.closest?.("#doc-comments-resolved-toggle")) return;
     docThreadsResolvedOpen = !docThreadsResolvedOpen;
     renderDocComments();
   });
@@ -843,4 +874,8 @@
   Object.assign(window, { docCommentStrip, docCommentFootnotes, renderDocComments, docShowComment, docAnnotateSelection });
   //: What a save sends beside the text; a property of the panel's own entry point so it takes no name in the shared scope (tests/test_global_scope_ratchet.py).
   renderDocComments.threads = docThreadsForSave;
+  //: The next draw reads the records from `currentDoc` again ("Take theirs" replaced them).
+  renderDocComments.reload = () => {
+    docThreadsDoc = null;
+  };
 })();

@@ -5526,8 +5526,8 @@ button.ghost.doc-template-choice {
   gap: var(--space-1);
   width: 100%;
   height: auto;
-  /* Room on the right for the chosen row's check, so choosing moves no text. */
-  padding: var(--space-2) var(--space-7) var(--space-2) var(--space-3);
+  /* Room on the right for the chosen row's check (16px at 8px in), so choosing moves no text. */
+  padding: var(--space-2) var(--space-9) var(--space-2) var(--space-3);
   border: none;
   border-radius: var(--radius-md);
   background: none;

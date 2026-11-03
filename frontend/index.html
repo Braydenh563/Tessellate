@@ -4960,12 +4960,10 @@ Link to another note with [[its first few words]]."></textarea>
                Second in the stack, under the outline and above what links here,
                because it is the one of the four that changes while you write.
                Absent when there is nothing in it, like the two below it. -->
-          <div id="doc-comments-wrap" class="doc-outline-wrap doc-comments-wrap hidden">
-            <h3>Comments <span class="doc-outline-count" id="doc-comments-count"></span></h3>
-            <ul id="doc-comments" class="doc-outline doc-comments"></ul>
-            <button type="button" id="doc-comments-resolved-toggle" class="ghost small doc-comments-resolved-toggle hidden" aria-expanded="false" aria-controls="doc-comments-resolved"></button>
-            <ul id="doc-comments-resolved" class="doc-outline doc-comments hidden"></ul>
-          </div>
+          <!-- Empty here on purpose: `documents-comments.js` builds the heading, the list, the
+               resolved toggle and the resolved shelf on the first draw, since five elements
+               nobody sees until a remark exists are not worth the boot document (the element cap). -->
+          <div id="doc-comments-wrap" class="doc-outline-wrap doc-comments-wrap hidden"></div>
 
           <!-- What links *here*. The reverse of a [[wiki link]], and the
                single most-used panel in tools of this shape, you can always
@@ -6485,7 +6483,7 @@ Link to another note with [[its first few words]]."></textarea>
                rather than creating it. It keeps its id and its class, so the
                `.skills-search` rule and `renderSkillCards(search.value)`
                still mean what they meant. -->
-          <div class="dock" data-dock-name="library-skills" role="toolbar"
+          <div class="dock" data-dock-name="library-skills" data-dock-more="skills-more-menu" role="toolbar"
             aria-label="Skill library controls">
             <div class="dock-identity">
               <h2>AI skills</h2>
@@ -6528,13 +6526,6 @@ Link to another note with [[its first few words]]."></textarea>
                 aria-label="What is this?">
                 <i class="ph ph-question" aria-hidden="true"></i>
               </button>
-              <!-- Empty until a narrow row folds the sort and filter into it
-                   (`foldDockArrange`); the empty list hides the button
-                   (unslop 1103, 2). No whitespace inside, or `:empty` fails. -->
-              <details class="doc-dock-menu dock-menu dock-more" id="skills-more-menu">
-                <summary class="ghost small icon-only doc-dock-menu-btn" title="More" aria-label="More"><i class="ph ph-dots-three" aria-hidden="true"></i></summary>
-                <div class="doc-dock-menu-list dock-menu-list"></div>
-              </details>
               <button id="skills-add-new" class="small" type="button"
                 title="Write a new skill"><i class="ph ph-plus ph-lead" aria-hidden="true"></i> New skill</button>
             </div>

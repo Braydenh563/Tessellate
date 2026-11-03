@@ -34,6 +34,10 @@
 .msg.user {
   align-self: flex-end;
   border-bottom-right-radius: 4px;
+  /* A long message of yours keeps a reading width and its side of the column (the owner,
+     2026-11-03: "long user chat message bubbles go the full screen width"): under the
+     answer's 82%, and a line length a person reads, whichever is narrower. */
+  max-width: min(72%, 42rem);
 }
 .msg.assistant {
   align-self: flex-start;
@@ -346,7 +350,6 @@
   box-shadow: none;
 }
 .search-field.chat-sidebar-search:focus-within {
-  border-color: var(--accent);
   background: var(--input-bg);
 }
 .search-field.chat-sidebar-search > .search-field-input {

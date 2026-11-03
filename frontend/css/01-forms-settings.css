@@ -3876,8 +3876,7 @@ html.modal-open body {
   /* Columns only: a card's span already includes the gap below it, in whole
      pixels (`sizeDashWidgetSpan`). A row gap on a 1px unit would be added
      once per spanned row. */
-  column-gap: var(--space-6);
-  row-gap: 0;
+  gap: 0 var(--space-6);
   /* Neither inset is this grid's to draw: the sides are --page-gutter and the
      bottom is --page-bottom, both already on .tab-page. The 2rem bottom here
      was doubling that, so the dashboard scrolled 4rem past its last widget. */

@@ -33,20 +33,25 @@ def test_1_reminder_time_is_its_own_phone_line():
     assert '"tick text"' in grid and '"tick when"' in grid and '"acts acts"' in grid
 
 
-def test_2_skills_dock_has_a_menu_to_fold_into():
-    """Without a `.dock-more` the dock cannot fold: the title sat under the select."""
+def test_2_skills_dock_builds_a_menu_to_fold_into():
+    """Without a `.dock-more` the dock cannot fold: the title sat under the select.
+
+    The menu is made by `foldDockArrange` when the dock first folds, not shipped
+    in the page (the boot element cap, tests/test_boot_diet3.py)."""
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-    dock = html[html.index('data-dock-name="library-skills"') :]
-    dock = dock[: dock.index("</section>")]
-    assert 'class="doc-dock-menu dock-menu dock-more" id="skills-more-menu"' in dock
-    assert '<div class="doc-dock-menu-list dock-menu-list"></div>' in dock
+    assert 'data-dock-name="library-skills" data-dock-more="skills-more-menu"' in html
+    assert 'id="skills-more-menu"' not in html
+    js = (ROOT / "frontend" / "js" / "phone-shell.js").read_text(encoding="utf-8")
+    start = js.index("function foldDockArrange(")
+    assert "doc-dock-menu dock-menu dock-more" in js[start : js.index("\n}\n", start)]
+    assert "ensureDockMore" not in js, "a named helper is one more global (test_global_scope_ratchet)"
     assert ".dock-more:has(> .dock-menu-list:empty)" in _css("08-consistency.css")
 
 
 def test_3_dashboard_spans_are_pixel_rows_with_the_card_gap_in_the_span():
     """An 8px unit and a 16px row gap rounded every card up in 24px steps."""
     grid = _body(_css("01-forms-settings.css"), "#dash-grid")
-    assert "grid-auto-rows: 1px" in grid and "row-gap: 0" in grid
+    assert "grid-auto-rows: 1px" in grid and "gap: 0 var(--space-6)" in grid
     js = (ROOT / "frontend" / "js" / "dashboard.js").read_text(encoding="utf-8")
     start = js.index("function sizeDashWidgetSpan(")
     body = js[start : js.index("\n}\n", start)]

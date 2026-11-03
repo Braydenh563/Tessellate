@@ -2050,6 +2050,29 @@ function dockTight(dock) {
 }
 
 function foldDockArrange(dock, fold) {
+  //: A dock whose `...` is only ever the fold's destination (`data-dock-more` names
+  //: it) gets the menu when the dock first folds, not in the page (the boot element
+  //: cap; the comments section's shell is the pattern). It sits before the dock's
+  //: last action, the filled one. Inline: a named function is a global.
+  const moreId = dock.dataset.dockMore;
+  const actions = dock.querySelector(":scope > .dock-actions");
+  if (fold && moreId && actions && !document.getElementById(moreId)) {
+    const more = document.createElement("details");
+    more.className = "doc-dock-menu dock-menu dock-more";
+    more.id = moreId;
+    const summary = document.createElement("summary");
+    summary.className = "ghost small icon-only doc-dock-menu-btn";
+    summary.title = "More";
+    summary.setAttribute("aria-label", "More");
+    const glyph = document.createElement("i");
+    glyph.className = "ph ph-dots-three";
+    glyph.setAttribute("aria-hidden", "true");
+    summary.append(glyph);
+    const list = document.createElement("div");
+    list.className = "doc-dock-menu-list dock-menu-list";
+    more.append(summary, list);
+    actions.lastElementChild.before(more);
+  }
   const menu = dock.querySelector(":scope > .dock-actions > .dock-more > .dock-menu-list");
   if (menu) {
     foldZoneIntoMenu(dock, menu, fold);

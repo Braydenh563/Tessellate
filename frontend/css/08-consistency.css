@@ -4502,7 +4502,6 @@ body .chip.item-label,
   }
   #reminder-groups .entry-meta > .entry-date {
     grid-area: when;
-    justify-self: start;
   }
   /* The repeat chip is a painted box on the time's line; the row centres it. */
   #reminder-groups .entry-meta > .chip {
@@ -9147,7 +9146,6 @@ input[type="file"]:active::file-selector-button {
    after it so the utilities stay at the head's right edge whether or not the
    section shows it. */
 .dialog-head > #settings-peek {
-  flex: none;
   margin-inline-end: auto;
 }
 /* **A head never gives up its height** (INBOX 498, and 475 before it). In

@@ -224,3 +224,49 @@ process.stdout.write(JSON.stringify(seen));
 """
     got = json.loads(subprocess.run([node, "-e", script], capture_output=True, text=True, check=True).stdout)
     assert got == [["typed words", "document"], ["caret", "document"], ["caret", "document"]]
+
+
+def test_a_regular_expression_reads_as_it_does_in_the_find_panel():
+    """Audit 1028 D33 follow-up: the find panel's regexp is multiline and unicode
+    (`^## ` finds every heading, `\\p{L}` reads), and the every-document dialog it
+    carries the pattern to built `g`/`gi` only, so `^## ` matched the first line
+    of a document and `\\p{L}` was an error. A plain find stays plain."""
+    import json
+    import shutil
+    import subprocess
+
+    import pytest
+
+    from tests._app_js import JS_DIR
+
+    if not shutil.which("node"):  # pragma: no cover - node is in the sandbox and in CI
+        pytest.skip("node is not available")
+    js = (JS_DIR / "documents-replace.js").read_text(encoding="utf-8")
+    fn = js[js.index("function docReplacePattern(") : js.index("//: `carry` is the find panel's query")]
+    script = fn + """
+const box = { "doc-replace-find": { value: "" }, "doc-replace-regex": { checked: false }, "doc-replace-case": { checked: false }, "doc-replace-word": { checked: false } };
+const $ = (id) => box[id];
+function ask(find, regex, caseOn = false) {
+  box["doc-replace-find"].value = find;
+  box["doc-replace-regex"].checked = regex;
+  box["doc-replace-case"].checked = caseOn;
+  return docReplacePattern();
+}
+const text = "# One\\n## Two\\ntext\\n## Three";
+const out = {
+  heads: (text.match(ask("^## ", true)) || []).length,
+  letters: ask("\\\\p{L}+", true).error || (text.match(ask("\\\\p{L}+", true)) || []).length,
+  oldEscape: ask("a\\\\-b", true).error || "ok",
+  plainCaret: text.match(ask("^## ", false)) === null,
+  flagsRegex: ask("x", true, true).flags,
+  flagsPlain: ask("x", false).flags,
+};
+process.stdout.write(JSON.stringify(out));
+"""
+    got = json.loads(subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True).stdout)
+    assert got["heads"] == 2, "^ anchors a line, as in the find panel"
+    assert got["letters"] == 4, "a unicode property escape reads"
+    assert got["oldEscape"] == "ok", "a pattern that read before still reads"
+    assert got["plainCaret"], "a plain find is not a pattern"
+    assert got["flagsRegex"] == "gmu"
+    assert got["flagsPlain"] == "gi"
