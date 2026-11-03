@@ -3666,16 +3666,32 @@ function gcDrawEdgeHover(ctx, s, k, fadeStep, curved) {
       ctx.stroke(edge._path2d);
       continue;
     }
-    ctx.moveTo(a.x, a.y);
-    if (curved && !s.tree) {
-      const bow = gcBowPoint(a, b);
-      ctx.quadraticCurveTo(bow.x, bow.y, b.x, b.y);
-    } else ctx.lineTo(b.x, b.y);
+    //: The lit line is drawn over the dots, so it starts and ends at each dot's
+    //: rim, not its centre (the owner, 2026-11-03: "the links visible go to the
+    //: centre and not the edge of the nodes"). Each end is pulled in toward the
+    //: curve's control point, which is the curve's own direction at that end.
+    const bow = curved && !s.tree ? gcBowPoint(a, b) : null;
+    const from = gcDrawEdgeHover.rim(a, bow || b, k);
+    const to = gcDrawEdgeHover.rim(b, bow || a, k);
+    ctx.moveTo(from.x, from.y);
+    if (bow) ctx.quadraticCurveTo(bow.x, bow.y, to.x, to.y);
+    else ctx.lineTo(to.x, to.y);
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
   return fading;
 }
+
+//: Where a line leaving `node` toward `toward` crosses the dot's drawn rim
+//: (its radius with the hover growth, never under the minimum dot size).
+gcDrawEdgeHover.rim = function gcEdgeRim(node, toward, k) {
+  const r = Math.max(node.r + (node._grow || 0), GC_MIN_DOT_PX / k) + 1 / k;
+  const dx = toward.x - node.x;
+  const dy = toward.y - node.y;
+  const len = Math.hypot(dx, dy);
+  if (!(len > r)) return node;
+  return { x: node.x + (dx / len) * r, y: node.y + (dy / len) * r };
+};
 
 //: One similarity score pill, at `alpha` of its full strength.
 function gcDrawPill(ctx, pill, k, alpha) {

@@ -1722,3 +1722,7 @@ Read against draw.io's Style, Text and Arrange tabs; the rows in "The draw.io pr
 8. Edit style as text (the item's `data` JSON, validated on Apply, one undo step). M.
 9. Board-wide style presets (a "Board style" row with nothing selected). M.
 Dropped, as before: glass, text shadow, SVG image styles. Subscript and superscript wait on rich text in shapes (section 2's row).
+
+## Placed from INBOX, 2026-11-03
+
+1563. **Owner, 2026-11-03, verbatim (screenshot: a board frame "Notes" with its header and subtitle, a sticky inside it showing a red dashed guide only at its top edge):** "in these frames, I cant align objects with a margin or like the header tex or have nice spacing between them which I can easily do with the alignment guides". Recommendation: inside a frame the alignment guides also snap to the frame's inner padding (left, right, top under the header and subtitle, bottom), to the header text's left edge, and to equal spacing between the frame's children (the spacing guide the canvas already shows between loose objects); the same tokens as the frame's own padding. Board agent, after the running batch.

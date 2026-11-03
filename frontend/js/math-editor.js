@@ -441,9 +441,18 @@ function mathEditorMount({ host, target = null, done = () => {}, note = null, on
   //: **Quicker than scrolling** (INBOX 1539): a row of the groups under the search, in reach at the top of the
   //: scrolling pane, jumps to a group and marks the one in view. It follows the palette (a search, a new Favourites row).
   const jump = document.createElement("div");
-  jump.className = "math-editor-jump";
+  //: The words-and-underline strip (`.tabs-line`, DESIGN "A second-level tab strip"), not a row of boxed buttons
+  //: (the owner, 2026-11-03: "redesign this quick jump scroll menu, also it doesnt have a horizontal scrollbar"):
+  //: a thin scrollbar under it, the edge fade where words run past, and a mouse wheel scrolls it sideways.
+  jump.className = "math-editor-jump tabs-line edge-fade";
   jump.setAttribute("role", "group");
   jump.setAttribute("aria-label", "Jump to a group");
+  edgeFadeWire(jump);
+  jump.addEventListener("wheel", (event) => {
+    if (Math.abs(event.deltaY) <= Math.abs(event.deltaX) || jump.scrollWidth <= jump.clientWidth) return;
+    event.preventDefault();
+    jump.scrollLeft += event.deltaY;
+  }, { passive: false });
   const scroller = host.closest(".calc-panes");
   const mark = () => {
     const edge = jump.getBoundingClientRect().bottom + 2;

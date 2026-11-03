@@ -97,26 +97,22 @@
   z-index: 2;
   display: flex;
   gap: var(--space-1);
-  padding: var(--space-1) 0;
+  padding: 0 0 var(--space-1);
   overflow-x: auto;
-  scrollbar-width: none;
+  /* The one sign that the row runs on, besides the edge fade: a thin bar, no arrows. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
   background: var(--modal-bg-opaque);
   box-shadow: inset 0 -1px 0 var(--divider);
 }
 
-.math-editor-jump::-webkit-scrollbar {
-  display: none;
-}
-
+/* A palette's row is denser than a page's strip: the strip's height and underline, its own side room. */
 .math-editor-jump > button {
   flex: none;
+  min-width: 0;
+  padding: 0 var(--space-3);
   white-space: nowrap;
-  transition: color var(--ui-base) var(--ease-out), background-color var(--ui-base) var(--ease-out);
-}
-
-.math-editor-jump > button.active {
-  background: var(--accent-soft);
-  color: var(--accent-text);
+  transition: color var(--ui-base) var(--ease-out);
 }
 
 /* A pinned tile wears a small mark at its corner; Pin mode says so in its button and in the line above. */
