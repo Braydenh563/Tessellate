@@ -175,7 +175,8 @@
   cursor: pointer;
 }
 
-.dgm-card:hover {
+.dgm-card:hover,
+.dgm-card:is(:focus-visible, :has(:focus-visible)) {
   background: var(--hover-veil);
 }
 
@@ -240,7 +241,8 @@
   font-size: var(--text-sm);
 }
 
-.dgm-join:hover {
+.dgm-join:hover,
+.dgm-join:focus-visible {
   background: var(--hover-veil);
 }
 
