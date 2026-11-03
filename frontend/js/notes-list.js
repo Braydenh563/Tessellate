@@ -2221,18 +2221,34 @@ $("notes-view-cards")?.addEventListener("click", () => setNotesViewMode("cards")
 //: Fetched a few seconds after boot too, while the server answers: the service worker keeps only what
 //: the page has already asked for, so a card never opened before going offline would not be there.
 setTimeout(() => navigator.connection?.saveData || ensureModule("captureCard"), 4000);
-function captureCardNeedsConnection(event) {
-  if (event.type === "input") return;
-  lazyLoadFailed("The capture bar");
-}
-for (const type of ["focusin", "click", "input"]) {
-  $("capture-bar-row")?.addEventListener(type, (event) => {
-    ensureModule("captureCard").then((loaded) => {
-      if (loaded) openCaptureCard(event.target, event.type);
-      else captureCardNeedsConnection(event);
+//: **One bar, two places** (INBOX 1592): the Notes tab's bar is in index.html and is wired below; the
+//: dashboard's Quick capture card makes `captureBar()`, a copy of its row. Either way the bar opens the one
+//: composer (capture-card.js) and saves the one way. A card left open by a redraw is handed to the new bar.
+function captureBar(bar = null) {
+  if (!bar) {
+    bar = document.createElement("div");
+    bar.className = "capture-bar";
+    bar.setAttribute("role", "group");
+    bar.setAttribute("aria-label", "Add a note");
+    const row = $("capture-bar-row").cloneNode(true);
+    for (const el of [row, ...row.querySelectorAll("[id]")]) el.removeAttribute("id");
+    bar.append(row);
+  }
+  for (const type of ["focusin", "click", "input", "keydown"]) {
+    bar.querySelector(".capture-bar-row").addEventListener(type, (event) => {
+      //: Enter on the bar's field opens the card again after Close; no other key does.
+      if (type === "keydown" && (event.key !== "Enter" || !event.target.classList.contains("capture-bar-input"))) return;
+      ensureModule("captureCard").then((loaded) => {
+        if (loaded) openCaptureCard(event.target, event.type);
+        else if (event.type !== "input") lazyLoadFailed("The capture bar");
+      });
     });
-  });
+  }
+  //: `captureCard` exists once the card's file has loaded: before that no card can be open.
+  if (typeof captureCard !== "undefined") captureCard.adopt(bar);
+  return bar;
 }
+if ($("capture-bar")) captureBar($("capture-bar"));
 
 //: **A map's topics live on their map** (audit 2026-10-05, UX-06). Each
 //: topic a concept map's Tab or Enter makes is a note (`map_topic`), and a

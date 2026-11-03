@@ -175,7 +175,8 @@ def test_the_bar_has_a_picture_button_after_the_input_that_opens_the_picker():
     # the picker opens from the lazy file, on the click that fetched it: no boot bytes
     notes = (JS / "notes-list.js").read_text(encoding="utf-8")
     assert "openCaptureCard(event.target, event.type)" in notes
-    assert 'from?.closest?.("#capture-bar-picture")' in _function_body(CARD, "openCaptureCard")
+    # a class, not an id: the dashboard's Quick capture carries a copy of the bar (INBOX 1592)
+    assert 'from?.closest?.(".capture-bar-picture")' in _function_body(CARD, "openCaptureCard")
 
 
 def test_pictures_are_uploaded_on_save_and_written_as_the_markdown_the_editor_writes():

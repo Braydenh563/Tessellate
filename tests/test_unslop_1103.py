@@ -161,10 +161,11 @@ def test_14_the_two_composers_have_no_drag_grip():
     chat = _body(_css("04-chat-dock-appearance.css"), ".chat-dock .chat-composer #chat-input")
     assert "resize" not in chat, "textarea.autogrow already says resize: none"
     assert "resize: none" in _body(_css("05-sidebars-themes.css"), "textarea.autogrow")
+    # INBOX 1592: the Dashboard's Quick capture is the capture card's bar now, so the grip rule is the card body's.
     js = _js("dashboard.js")
     start = js.index("async function renderQuickCaptureWidget(")
-    body = js[start : js.index("\n}\n", start)]
-    assert 'textarea.className = "autogrow"' in body and "autoGrow(textarea)" in body
+    assert "textarea" not in js[start : js.index("\n}\n", start)]
+    assert "resize: none" in _body(_css("capture-card-lazy.css"), ".capture-card-body")
 
 
 def test_15_a_dock_title_is_a_count_not_the_tab_name_again():

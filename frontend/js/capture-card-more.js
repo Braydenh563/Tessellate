@@ -47,6 +47,7 @@ async function syncCaptureExtras() {
     }),
   );
   paintCaptureBell();
+  captureCard.settle();
 }
 
 function captureBell() {
@@ -109,6 +110,7 @@ function renderCaptureSuggestions(tags, reasons) {
   const row = captureCardField("suggest");
   row.replaceChildren();
   row.classList.toggle("hidden", !tags.length);
+  captureCard.settle();
   if (!tags.length) return;
   const label = document.createElement("span");
   label.className = "muted";
@@ -174,6 +176,7 @@ function renderCaptureThumbs() {
   if (!box) return;
   box.replaceChildren(...captureCard.pictures.map(captureThumb));
   box.hidden = !captureCard.pictures.length;
+  captureCard.settle();
 }
 
 function captureThumb(picture) {

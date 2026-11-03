@@ -72,7 +72,7 @@ const DASH_WIDGETS = {
   questions: { title: "ph:chat-circle Recent questions", description: "The questions you've recently asked the notebook's chat.", render: renderQuestionsWidget },
   "on-this-day": { title: "ph:calendar-blank On this day", description: "What you wrote on this date in earlier months and years.", render: renderOnThisDayWidget },
   digest: { title: "ph:newspaper Digest", description: "Your day from the notes: what is due, open questions, what changed and quiet topics; Atlas writes the week on request.", render: renderDigestWidget },
-  capture: { title: "ph:pencil-simple Quick capture", description: "A one-line box to jot a note without leaving the dashboard.", render: renderQuickCaptureWidget },
+  capture: { title: "ph:pencil-simple Quick capture", description: "The Notes tab's take-a-note bar: a note, a to-do list or a drawing, without leaving the dashboard.", render: renderQuickCaptureWidget },
   reminders: { title: "ph:alarm Reminders", description: "Upcoming and overdue reminders, soonest first.", render: renderRemindersWidget },
   focus: { title: "ph:timer Focus timer", description: "A focus timer with breaks, a chime at the end and today's minutes.", render: renderFocusTimerWidget },
   heatmap: { title: "ph:calendar-check Activity heatmap", description: "A calendar-style heatmap of note activity over the past months.", render: renderHeatmapWidget },
@@ -2784,62 +2784,12 @@ async function renderDigestWidget(outer) {
   await dayDrawn;
 }
 
+//: **The Notes tab's composer, here** (INBOX 1592, the owner: "like the quick capture section at the
+//: top of your notes page"). The card is a copy of that tab's bar (`captureBar`, notes-list.js) and
+//: opens in place into the same card (capture-card.js): Note, To-do, Draw, pictures, colour, tags,
+//: Ctrl+Enter, one draft and one save path. A redraw while it is open hands it to the new bar.
 async function renderQuickCaptureWidget(body) {
-  const textarea = document.createElement("textarea");
-  //: A placeholder is not a label: it goes as soon as you type, and a
-  //: screen reader reads nothing for the field without one (the a11y sweep).
-  textarea.setAttribute("aria-label", "Quick capture");
-  textarea.rows = 2;
-  //: Grows with what is typed and has no drag grip, as the Notes capture bar
-  //: does (unslop 1103, 14).
-  textarea.className = "autogrow";
-  textarea.addEventListener("input", () => autoGrow(textarea));
-  // Don't promise AI filing when there's no AI to do it; the note still saves.
-  textarea.placeholder =
-    modelStatus && modelStatus.ollama_running === false
-      ? "Type a thought and press Save (Ctrl+Enter)."
-      : "Type a thought and press Save (Ctrl+Enter), Atlas files it.";
-  const row = document.createElement("div");
-  row.className = "row";
-  const status = document.createElement("span");
-  status.className = "status";
-  row.appendChild(
-    smallButton("Save", "", async () => {
-      const content = textarea.value.trim();
-      if (!content) return;
-      status.textContent = "Saving…";
-      try {
-        //: Saved at once and filed in the background, `#tags` read from the
-        //: text, as Capture's are (INBOX 434). It waited on the model before.
-        //: Held on this device when the server is gone (quick-note.js).
-        const result = await createNoteSafely({ content, tags: [] });
-        if (!result) throw new Error("The server is not answering. Your words are kept here.");
-        textarea.value = "";
-        if (result.queued) {
-          status.textContent = "Saved on this device. It goes in when the server answers.";
-          return;
-        }
-        const saved = result.saved;
-        status.textContent = saved.filing_state === "pending" ? "Saved. Filing it now." : `Filed under “${saved.category}”.`;
-        if (saved.filing_state === "pending") watchFiling(saved);
-        pushEntryCreateUndo(saved, "Saved a note from the dashboard");
-        loadEntries();
-      } catch (error) {
-        status.textContent = error.message;
-      }
-    }, false)
-  );
-  row.appendChild(status);
-  //: Ctrl+Enter (Cmd+Enter) saves, as it does in the capture box on the
-  //: Notes tab and in every multi-line "post" field people use; plain
-  //: Enter stays a new line.
-  textarea.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" && (event.ctrlKey || event.metaKey) && !event.isComposing) {
-      event.preventDefault();
-      row.querySelector("button")?.click();
-    }
-  });
-  body.append(textarea, row);
+  body.append(captureBar());
 }
 
 async function renderRemindersWidget(body) {

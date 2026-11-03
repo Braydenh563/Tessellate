@@ -9,7 +9,49 @@
 const CAPTURE_DRAFT_KEY = "captureCardDraft";
 const CAPTURE_TASK_LINE = /^\s*(?:[-*+]\s+(?:\[[ xX]\]\s+)?)?/;
 
-const captureCard = { root: null, returning: false, saving: false, mode: "note", colour: null, due: null, pictures: [], suggestTimer: 0, suggestSeq: 0, sketchHost: null };
+const captureCard = { root: null, host: null, returning: false, saving: false, mode: "note", colour: null, due: null, pictures: [], suggestTimer: 0, suggestSeq: 0, sketchHost: null, buddyTimer: 0 };
+
+
+//: **One card, two bars** (INBOX 1592): methods on the state, not more globals. `place` moves the card
+//: into `host`. Open in the other bar, it closes there first (its words are kept in the draft and come
+//: back when it shows here); a bar the dashboard threw away on a redraw leaves the card detached, and it
+//: is shut the same way.
+captureCard.place = (host) => {
+  if (captureCard.host === host && captureCard.root.parentElement === host) return;
+  if (!captureCard.root.hidden) {
+    keepCaptureDraft();
+    captureCard.root.hidden = true;
+  }
+  captureCard.host?.classList.remove("is-open");
+  captureCard.host = host;
+  host.append(captureCard.root);
+};
+
+//: A dashboard redraw while the card is open: the new bar (`captureBar`, notes-list.js) takes it over and
+//: shows it as it was, so a refresh never closes what you are typing in.
+captureCard.adopt = (host) => {
+  if (!captureCard.root || captureCard.root.hidden || captureCard.root.isConnected) return;
+  captureCard.place(host);
+  captureCard.root.hidden = false;
+  host.classList.add("is-open");
+  restoreCaptureDraft();
+  setCaptureMode(captureCard.mode, false);
+};
+
+//: **Atlas is never left over the card's controls** (INBOX 1592). Its check steps it aside once a control
+//: is under it, but only when asked, and the page observer asks for nothing: the card changes its box
+//: when it opens, closes, changes kind, and when the colours, the bell, the picture strip or the tag
+//: suggestions arrive, so each calls this. Once the layout has settled (a burst is one look) the card is
+//: brought fully into view (a dashboard card low on the page had its Save under the status bar: 840 to
+//: 872 in a scroller ending at 865), then the companion is told (`mm:controls-changed`, avatars.js).
+captureCard.settle = () => {
+  clearTimeout(captureCard.buddyTimer);
+  captureCard.buddyTimer = setTimeout(() => {
+    const root = captureCard.root;
+    if (!root.hidden && root.contains(document.activeElement)) root.scrollIntoView({ block: "nearest" });
+    document.dispatchEvent(new Event("mm:controls-changed"));
+  }, 200);
+};
 
 function captureCardEl(tag, className, attrs = {}) {
   const node = document.createElement(tag);
@@ -44,20 +86,17 @@ function captureModeSeg() {
   return seg;
 }
 
-function captureCardHead() {
+function buildCaptureCard() {
+  const root = captureCardEl("div", "capture-card", { id: "capture-card", role: "group", "aria-label": "New note", hidden: "" });
+  const composer = captureCardEl("div", "note-composer");
+  //: The title and the bell share a row.
   const head = captureCardEl("div", "capture-card-head");
   head.append(
     captureCardEl("input", "capture-card-title", { type: "text", maxlength: "200", placeholder: "Title", "aria-label": "Title", autocomplete: "off", "data-cc": "title" }),
     captureCardEl("span", "capture-card-bell", { "data-cc": "bell" }),
   );
-  return head;
-}
-
-function buildCaptureCard() {
-  const root = captureCardEl("div", "capture-card", { id: "capture-card", role: "group", "aria-label": "New note", hidden: "" });
-  const composer = captureCardEl("div", "note-composer");
   composer.append(
-    captureCardHead(),
+    head,
     captureCardEl("textarea", "capture-card-body", { id: "capture-card-body", rows: "3", placeholder: "Take a note…", "aria-label": "Note", "data-cc": "body", "data-autocorrect": "" }),
     captureItemsBox(),
     captureCardEl("input", "capture-card-tags", { type: "text", placeholder: "#tag1 #tag2", "aria-label": "Tags", autocomplete: "off", "data-cc": "tags" }),
@@ -77,7 +116,6 @@ function buildCaptureCard() {
     foot,
   );
   captureCard.root = root;
-  $("capture-bar").append(root);
   wireCaptureCard();
 }
 
@@ -94,10 +132,6 @@ function wireCaptureCard() {
   });
   captureCardField("close").addEventListener("click", closeCaptureCard);
   captureCardField("save").addEventListener("click", saveCaptureCard);
-  //: The bar keeps the focus after Close: Enter on it opens the card again.
-  $("capture-bar-input").addEventListener("keydown", (event) => {
-    if (event.key === "Enter") openCaptureCard(event.target);
-  });
 }
 
 function captureCardKeys(event) {
@@ -240,6 +274,7 @@ function setCaptureMode(mode, focus = true) {
   }
   keepCaptureDraft();
   if (focus) focusCaptureCard();
+  captureCard.settle();
 }
 
 function focusCaptureCard() {
@@ -288,40 +323,47 @@ function restoreCaptureDraft() {
   return restored;
 }
 
-//: Called by the bar's first focus (notes-list.js) with the field that took it
-//: and the event's type: a click on the bar's picture button opens the picker
-//: too, even when the press's focus has already opened the card.
+//: Called by a bar's first focus (notes-list.js `captureBar`) with the field
+//: that took it and the event's type: a click on the bar's picture button opens
+//: the picker too, even when the press's focus has already opened the card.
+//: One card, two bars (the Notes tab's and the dashboard's Quick capture): the
+//: card moves into the bar that was used, and the draft is the one draft.
 function openCaptureCard(from, type) {
   //: Closing hands the focus back to the bar, whose focusin would reopen the card.
   if (captureCard.returning) return;
+  const host = from?.closest?.(".capture-bar");
+  if (!host) return;
   if (!captureCard.root) buildCaptureCard();
+  captureCard.place(host);
   if (captureCard.root.hidden) showCaptureCard(from);
-  const pick = type === "click" && Boolean(from?.closest?.("#capture-bar-picture"));
+  const pick = type === "click" && Boolean(from?.closest?.(".capture-bar-picture"));
   //: The colour dots, the bell, the pictures and the tag suggestions are the second lazy file.
   lazyScript("/js/capture-card-more.js").then((ok) => ok && mountCaptureExtras(pick));
 }
 
 function showCaptureCard(from) {
-  const typed = from?.id === "capture-bar-input" ? from.value : "";
+  const typedInto = from?.classList?.contains("capture-bar-input");
+  const typed = typedInto ? from.value : "";
   const restored = restoreCaptureDraft();
   const body = captureCardField("body");
   if (typed) body.value = restored ? `${body.value}\n${typed}` : typed;
-  if (from?.id === "capture-bar-input") from.value = "";
+  if (typedInto) from.value = "";
   captureCard.root.hidden = false;
-  $("capture-bar").classList.add("is-open");
-  //: The bar's To-do icon opens the card as a list; anything else keeps the mode the draft was in.
-  setCaptureMode(from?.closest?.("#capture-bar-todo") ? "todo" : captureCard.mode);
+  captureCard.host.classList.add("is-open");
+  //: A bar's To-do icon opens the card as a list; anything else keeps the mode the draft was in.
+  setCaptureMode(from?.closest?.(".capture-bar-todo") ? "todo" : captureCard.mode);
 }
 
 function closeCaptureCard() {
   keepCaptureDraft();
   captureCard.root.hidden = true;
-  $("capture-bar").classList.remove("is-open");
+  captureCard.host.classList.remove("is-open");
   captureCard.returning = true;
-  $("capture-bar-input").focus({ preventScroll: true });
+  captureCard.host.querySelector(".capture-bar-input")?.focus({ preventScroll: true });
   setTimeout(() => {
     captureCard.returning = false;
   }, 0);
+  captureCard.settle();
 }
 
 function resetCaptureCard() {
