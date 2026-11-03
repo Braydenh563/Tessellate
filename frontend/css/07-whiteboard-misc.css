@@ -1845,6 +1845,17 @@ body.has-agent-monitor #timeline-scroll {
 body.scroll-top-visible .library-view-section {
   padding-bottom: var(--scroll-top-clearance);
 }
+/* The ring room (08-consistency.css) is padding with the same negative
+   margin, which only cancels when the box grows into the margin. A page's
+   children are `width: 100%` and centred (`.tab-page > *`), so the margin
+   never widened the section and every card in it sat `--ring-room` in from
+   the sub-tabs above (unslop 1103, 8: L20 / R1420 against L16 / R1424). The
+   width takes the room back; the ceiling grows with it. */
+.tab-page > .library-view-section,
+.tab-page > #library-view-whiteboard:not(.wb-fullscreen) {
+  width: calc(100% + 2 * var(--ring-room));
+  max-width: calc(var(--content-max) + 2 * var(--ring-room));
+}
 /* AI skills overrides the rule above rather than using it: reported "the ai
    skill sidebar isnt 100% height", and it measured true, but only once
    scrolled. `#library-view-skills` is `#skills-sidebar`'s own `100cqh`

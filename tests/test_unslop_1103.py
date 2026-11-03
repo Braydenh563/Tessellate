@@ -82,3 +82,11 @@ def test_7_chat_sidebar_search_is_the_quiet_inset():
     assert "border-color: transparent" in body and "background: var(--field-inset)" in body
     inner = _body(_css("02-chat-graph.css"), ".search-field.chat-sidebar-search > .search-field-input")
     assert "font-size: var(--text-md)" in inner
+
+
+def test_8_library_sections_grow_into_their_ring_room():
+    """Padding with a negative margin nets zero only if the box widens."""
+    css = _css("07-whiteboard-misc.css")
+    body = _body(css, ".tab-page > .library-view-section")
+    assert "width: calc(100% + 2 * var(--ring-room))" in body
+    assert "max-width: calc(var(--content-max) + 2 * var(--ring-room))" in body
