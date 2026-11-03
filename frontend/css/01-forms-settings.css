@@ -1845,8 +1845,13 @@ input.md-task-inline:disabled,
    visible keyboard focus ring. */
 .chip-interactive {
   cursor: pointer;
-  min-height: 1.5rem; /* the painted chip: a row of 24px pills */
   position: relative;
+}
+/* The painted chip: a row of 24px pills, and a reminder's facts line the same
+   (unslop 1103, 13: the tag chips were 21.2 beside the note chip's 24). */
+.chip-interactive,
+#reminder-groups .entry-links > .chip {
+  min-height: 1.5rem;
 }
 /* The target is `--target-min` tall whatever the paint (audit FE-14: the
    category and "Add tags" chips were 24px targets under the 28px floor).

@@ -144,4 +144,13 @@ def test_13_reminder_facts_are_one_line_of_equal_chips():
     assert body.count('className = "entry-links"') == 1, "the repeat, alert and note chips share one line"
     assert 'chip(`ph:flag ${reminder.priority === "high"' not in body, "the edge already says high"
     assert '"High priority. "' in body, "the words stay for a screen reader"
-    assert "min-height: 1.5rem" in _body(_css("08-consistency.css"), "#reminder-groups .entry-links > .chip")
+    assert "min-height: 1.5rem" in _body(_css("01-forms-settings.css"), "#reminder-groups .entry-links > .chip")
+
+
+def test_boot_win_the_m_guide_panel_is_a_lazy_sheet():
+    """The integration branch was 95 bytes over the boot CSS cap; the guide draws only after a first m."""
+    lazy = _css("chord-guide-lazy.css")
+    assert ".chord-guide-panel .chord-guide-row" in lazy and ".chord-guide {" in lazy
+    for boot in ("08-consistency.css", "10-responsive.css"):
+        assert "chord-guide-panel" not in _css(boot) or boot == "07-whiteboard-misc.css"
+    assert 'lazyScript("/css/chord-guide-lazy.css")' in _js("chord-guide.js")

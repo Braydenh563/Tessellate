@@ -104,6 +104,8 @@ CSS_FILES = [
     CSS_DIR / "dash-night-lazy.css",
     CSS_DIR / "inbox-lazy.css",
     CSS_DIR / "lightbox-lazy.css",
+    #: The `m` guide's panel (chord-guide.js, `LAZY_MODULES.chordGuide`).
+    CSS_DIR / "chord-guide-lazy.css",
     CSS_DIR / "quick-access-lazy.css",
     #: Files dragged in from outside the window (settings-wiring.js's dragenter stub).
     CSS_DIR / "file-drop-lazy.css",

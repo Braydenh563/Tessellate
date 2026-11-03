@@ -362,7 +362,10 @@ def _js(name: str) -> str:
 
 def test_a_reminders_priority_is_a_word_as_well_as_a_coloured_edge():
     js = _js("shell-reminders.js")
-    assert '"High" : "Low"} priority' in js
+    #: Unslop 1103, 13: high has the red edge and the bold words, so its word is
+    #: visually hidden text in the row (no chip repeating the edge); low, which
+    #: has no edge, keeps its chip.
+    assert '"High priority. "' in js and '"ph:flag Low priority"' in js
 
 
 def test_a_toggle_says_it_is_on_to_a_screen_reader_as_well_as_to_the_eye():
