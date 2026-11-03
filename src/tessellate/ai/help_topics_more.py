@@ -2766,7 +2766,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "documents-replace", "live-view-marks", "documents-features", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "document-history", "writing-checks", "code-files", "code-completions", "code-run",
+        "documents", "documents-controls", "diagram-blocks", "documents-replace", "live-view-marks", "documents-features", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "document-history", "writing-checks", "code-files", "code-completions", "code-run",
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
@@ -3095,6 +3095,32 @@ MORE_TOPICS.extend([
         "badge": {"label": "Library", "tab": "library"},
     },
     {
+        "id": "diagram-blocks",
+        "keywords": (
+            "diagram blocks", "edit a diagram", "mermaid blocks", "blocks view", "drag a diagram",
+            "join two blocks", "nest a block", "diagram without typing", "flowchart blocks",
+            "diagram keyboard", "mmd", "diagram file",
+        ),
+        "body": (
+            "A diagram is a document of the Mermaid diagram file type (the type button at "
+            "the document's foot, or Library, Diagrams). It opens in Blocks: the "
+            "pieces on the left, the picture drawing live beside them (above them on a "
+            "phone). Source and Split are the same diagram as text, and Ctrl+Z undoes "
+            "either. Press a shape in the bar, or drag it into the blocks, to add one. "
+            "Drag a block to move it: the top or bottom of another block puts it before "
+            "or after, the middle joins them with an arrow, and a group's body takes it "
+            "inside. Double-click a name to change it in place; Enter keeps, Escape "
+            "puts it back. A block's ... menu (long press on a phone) joins, "
+            "relabels, makes a group or deletes; a join shows under the block it "
+            "leaves, and its menu changes the line or removes it. Keys, with the "
+            "blocks focused: arrows walk, Enter renames, N adds, G adds a group, J joins, "
+            "Delete removes, Alt+Up and Alt+Down reorder, Alt+Right nests into the "
+            "group above and Alt+Left lifts out. A line the blocks do not show, such as "
+            "a style, stays where it was."
+        ),
+        "badge": {"label": "Documents", "tab": "documents"},
+    },
+    {
         "id": "board-edit-data",
         "keywords": (
             "edit data", "custom properties", "properties on a shape", "data on a shape",
@@ -3143,6 +3169,7 @@ TOPIC_META.update({
     "board-colours": {"title": "Fill, border and recent colours on a board", "path": "A shape's bar, Fill or Border"},
     "board-tables": {"title": "Tables on a board", "path": "A board's Insert menu, Table"},
     "board-mermaid": {"title": "Live Mermaid diagrams on a board", "path": "A board's Insert menu, Mermaid diagram..."},
+    "diagram-blocks": {"title": "Editing a diagram as blocks", "path": "A diagram document, Blocks"},
     "board-hand-drawn": {"title": "The hand-drawn look", "path": "A board's View menu, Hand-drawn look"},
     "board-current-layer": {"title": "The current layer", "path": "A board's sidebar, Layers"},
     "board-keyboard-create": {"title": "Making and writing without a mouse", "path": "A board, Keys and controls"},

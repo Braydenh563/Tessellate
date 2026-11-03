@@ -127,10 +127,17 @@ def _block(text: str, opener: str, closer: str) -> str:
 
 
 def lazy_modules_source() -> str:
-    """Every `LAZY_MODULES` row: app.js's table, then lazy-entries.js's."""
+    """Every `LAZY_MODULES` row: app.js's table, lazy-entries.js's, then the one documents-mermaid.js adds."""
     app = APP_JS.read_text(encoding="utf-8")
     extra = LAZY_ENTRIES.read_text(encoding="utf-8")
-    return _block(app, "const LAZY_MODULES = {", "\n};\n") + "\n" + _block(extra, "Object.assign(LAZY_MODULES, {", "\n});\n")
+    builder = (JS_DIR / "documents-mermaid.js").read_text(encoding="utf-8")
+    return (
+        _block(app, "const LAZY_MODULES = {", "\n};\n")
+        + "\n"
+        + _block(extra, "Object.assign(LAZY_MODULES, {", "\n});\n")
+        + "\n"
+        + _block(builder, "Object.assign(LAZY_MODULES, {", "});\n")
+    )
 
 
 def stand_ins_source() -> str:

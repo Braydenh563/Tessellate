@@ -1155,6 +1155,8 @@ LIST_ROWS = {
     ".recording-row": ".recordings-list",
     #: A code file's snippets, in the code panel (INBOX 788).
     ".doc-snippet-row": ".doc-snippet-list",
+    #: A diagram's blocks, in the block pane (1546 P2; the tree is the one list, groups nest inside it).
+    ".dgm-card": ".dgm-tree",
 }
 
 
@@ -6877,3 +6879,28 @@ def test_a_text_field_beside_a_button_is_one_row_at_one_control_height():
     assert "padding-block: 0" in padding
     tools = frontend_text("utility-tools.js")
     assert 'clockEl("form", "row field-row clock-length")' in tools
+
+
+def test_a_diagram_is_edited_as_blocks():
+    """DESIGN.md, "A diagram edited as blocks" (1546 P2): one tree, no `innerHTML`, and the
+    pointer mode answers ahead of `carry`.
+
+    The block pane is a tree of cards a hand drags and a keyboard walks, over the one model
+    the document's source is printed from. Three things keep it from becoming a second
+    editor: it has one tree (a second list of the same blocks would be two states to keep
+    equal), it builds its DOM from nodes (a label is a person's text, and a string of
+    markup is where it would stop being one), and its pointer mode is asked before the
+    generic `carry` grab, which takes every card and would win a press on a block."""
+    code = (ROOT / "frontend" / "js" / "diagram-builder.js").read_text(encoding="utf-8")
+    body = re.sub(r"//.*", "", code)
+    assert body.count('"role", "tree"') == 1
+    assert not re.search(r"innerHTML|insertAdjacentHTML|outerHTML|DOMParser", body)
+    drag = (ROOT / "frontend" / "js" / "obj-drag.js").read_text(encoding="utf-8")
+    seed = drag[drag.index("function objDragSeed(event) {") :]
+    seed = seed[: seed.index("\n}\n")]
+    assert "OBJ_MODES[name].seed?.(event)" in seed
+    assert seed.index("OBJ_MODES[name].seed?.(event)") < seed.index("OBJ_MODES[name].grab?.(hit)")
+    assert 'dataset.dockName = "diagram"' in code, "the palette is a dock"
+    css = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
+    assert "var(--row-h)" in css and "var(--row-gap)" in css, "the cards sit on the list-row tokens"
+
