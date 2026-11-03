@@ -10730,6 +10730,15 @@ header#top-bar button.space-switcher-btn:focus-visible {
 .capture-bar.is-open .capture-bar-row {
   visibility: hidden;
 }
+/* On the dashboard the same bar sits inside the Quick capture card (INBOX 1592): the card is the zone, so no rule above it, and an open composer takes the row's place instead of floating over what is below. */
+.dash-widget .capture-bar {
+  margin: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+.dash-widget .capture-bar.is-open .capture-bar-row {
+  display: none;
+}
 
 /* A note's own colour (INBOX 1479): a tenth of the swatch over the card and a
    coloured top edge (a left edge in rows). `entryItem` sets `--swatch`, the swatch the pickers draw. */

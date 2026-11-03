@@ -9972,6 +9972,13 @@ if (typeof MutationObserver === "function") {
   }
 }
 document.addEventListener("scrollend", queueNameMarkBuddyCheck, { passive: true, capture: true });
+//: A surface that puts controls where it may be standing says so (`mm:controls-changed`, the capture
+//: card's `settle`): the measured boxes are dropped and it looks once, so it is not left over them
+//: until its next beat (INBOX 1592). An event, not a call, because this file is a lazy bundle.
+document.addEventListener("mm:controls-changed", () => {
+  nameMarkBuddyIndexReset();
+  queueNameMarkBuddyCheck();
+});
 document.addEventListener("transitionend", (event) => {
   if (event.target?.closest?.("#scroll-top, .chat-jump-latest")) queueNameMarkBuddyCheck();
 });

@@ -170,6 +170,36 @@ test.describe("other ways in", () => {
     expect(saved.category).toBe("Travel");
   });
 
+  // INBOX 1592: the dashboard's Quick capture is the Notes tab's composer, not a second one.
+  test("the dashboard's Quick capture opens the Notes composer and saves a to-do", async ({ page }) => {
+    await openApp(page);
+    await openTab(page, "dashboard");
+    const bar = page.locator(".dash-widget .capture-bar");
+    await expect(bar.locator(".capture-bar-input")).toBeVisible();
+    await bar.locator(".capture-bar-todo").click();
+    const card = bar.locator("#capture-card");
+    await expect(card).toBeVisible();
+    await expect(card.locator('[data-cc="draw"]')).toBeVisible();
+    await expect(card.locator('[data-cc="picture"]')).toBeVisible();
+    const title = "Dashboard list for the Porto trip";
+    await card.locator('[data-cc="title"]').fill(title);
+    await card.locator(".capture-card-item-text").first().fill("rail pass printout");
+    await page.keyboard.press("Enter");
+    await page.keyboard.type("plug adapter");
+    await page.keyboard.press("Control+Enter");
+    await expect(card).toBeHidden();
+    let note;
+    await expect
+      .poll(async () => {
+        const list = await api(page, "/entries?limit=5");
+        note = list.find((e) => e.content.includes(title));
+        return !!note;
+      })
+      .toBe(true);
+    expect(note.content).toContain("- [ ] rail pass printout");
+    expect(note.content).toContain("- [ ] plug adapter");
+  });
+
   test("pasted text saves exactly as pasted", async ({ page }) => {
     await openApp(page);
     await openTab(page, "notes");

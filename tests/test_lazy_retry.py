@@ -61,6 +61,7 @@ def test_a_failed_load_is_retried_and_leaves_no_dead_tag(tmp_path):
 
 
 def test_the_capture_bar_checks_the_load_and_says_why():
-    block = NOTES[NOTES.index("The capture bar's card is the lazy capture-card.js") :][:900]
-    assert "captureCardNeedsConnection" in block
+    block = NOTES[NOTES.index("The capture bar's card is the lazy capture-card.js") :][:2000]
+    # said once per press, not per keystroke (INBOX 1592: the check is inline in `captureBar`, one global fewer)
+    assert 'else if (event.type !== "input") lazyLoadFailed("The capture bar");' in block
     assert 'ensureModule("captureCard")' in block

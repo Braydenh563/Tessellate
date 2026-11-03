@@ -63,7 +63,7 @@ def test_the_note_todo_seg_left_the_bar_and_to_do_is_an_icon_that_opens_the_card
     assert 'aria-label="' in todo and 'title="' in todo
     assert 'id="capture-bar-picture"' in bar and "capture-bar-icon" in re.search(r"<button[^>]*id=\"capture-bar-picture\"[^>]*>", bar).group(0)
     show = CARD[CARD.index("function showCaptureCard(") :]
-    assert 'from?.closest?.("#capture-bar-todo")' in show[: show.index("\nfunction ")]
+    assert 'from?.closest?.(".capture-bar-todo")' in show[: show.index("\nfunction ")]
 
 
 def test_the_card_opens_over_the_list_so_a_focus_moves_nothing():
