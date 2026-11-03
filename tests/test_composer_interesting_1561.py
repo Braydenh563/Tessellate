@@ -32,10 +32,9 @@ def ask(client, session):
                     event = json.loads(line)
                     if event["type"] == "answer":
                         text += event["delta"]
-                    elif event["type"] == "sources":
-                        sources = event.get("sources") or event.get("entries") or []
-                    elif event["type"] in ("follow_ups", "next"):
-                        nxt = event.get("items") or event.get("suggestions") or []
+                    elif event["type"] == "grounding":
+                        sources = event.get("sentences") or []
+                        nxt = event.get("next") or []
         return text, sources, nxt
 
     return go
@@ -67,3 +66,31 @@ def test_a_question_with_its_own_object_is_still_a_search(ask, question):
     reference, _s, _n = ask("what can you do")
     assert said != reference, said
 
+
+
+
+# (c) The count, the names and the sources are one set, and "other(s)" agrees.
+
+def _tail(total: int):
+    from datetime import date
+    from types import SimpleNamespace as NS
+
+    from tessellate.ai import composer_digest as digest
+
+    def view(i):
+        return NS(id=i, note={"source_id": i, "title": f"Note {i}", "content": f"Note {i}", "tags": []}, title=f"Note {i}", titled=True,
+                  kind="note", written=None, sentences=[])
+
+    out = digest._Out()
+    out.rows.append({"note_id": 1})
+    digest._overview_tail(out, "overview", [view(i) for i in range(1, total + 1)], date(2026, 1, 1), False, 1)
+    return out
+
+
+@pytest.mark.parametrize("total, line", [
+    (2, "The other is Note 2."), (3, "The others are Note 2 and Note 3."), (4, "The others are Note 2, Note 3 and Note 4."),
+])
+def test_the_others_agree_in_number_and_every_note_named_is_cited(total, line):
+    out = _tail(total)
+    assert out.lines == [line], out.lines
+    assert [r["note_id"] for r in out.rows] == list(range(1, total + 1)), out.rows

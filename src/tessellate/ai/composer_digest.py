@@ -62,6 +62,7 @@ _BASE = {
     "pick": "The {side}, by your notes: {why}.",
     "more_right": "{count} more on the right.",
     "more_named": "The others are {names}.",
+    "more_named_one": "The other is {names}.",
     "more_show": "Show {count} more",
     "overview_names": "They include {names}.",
     "stands_for": "{abbr} is short for {phrase}, from {name}‹, written on {day}›.",
@@ -3233,8 +3234,14 @@ def _overview_tail(out: _Out, kind: str, members, today: date, moved, shown: int
     #: "it said 4 notes but only showed or mentioned 2"): a few untold notes
     #: by name, more than that as a count.
     if len(hidden) <= 3 and shown <= LINES[kind]:
-        names = [composer_frame.short_name(v.note, _heading_said) for v in hidden]
-        out.lines.append(PHRASES["more_named"].format(names=realise.join_items(list(dict.fromkeys(names)))))
+        called = [composer_frame.short_name(v.note, _heading_said) for v in hidden]
+        names = list(dict.fromkeys(called))
+        #: "The other is X" for one, and each note the line names is cited, so
+        #: the count, the names and the sources are one set (INBOX 1561).
+        out.lines.append(PHRASES["more_named" if len(names) > 1 else "more_named_one"].format(names=realise.join_items(names)))
+        for v, name in zip(hidden, called):
+            out.rows.append({"sentence": name, "note_id": v.note.get("source_id", v.id), "source": name, "score": 1.0, "digest": True,
+                             "kind": getattr(v, "kind", "note")})
     else:
         out.lines.append(PHRASES["more_right"].format(count=_count(len(hidden)).capitalize()))
 
