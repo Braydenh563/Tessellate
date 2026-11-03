@@ -2,7 +2,7 @@
 
 Generated 2026-11-03 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7737, frontend ids 2635, CSS sections 522, backend routes 641, backend modules 8564, test files 1961, tests 16489, plan headings 991, app scripts 28, boot scripts 37, script files 242.
+Counts: frontend functions 7737, frontend ids 2635, CSS sections 522, backend routes 641, backend modules 8564, test files 1962, tests 16494, plan headings 991, app scripts 28, boot scripts 37, script files 242.
 
 ## Frontend functions (7737)
 
@@ -6001,24 +6001,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `objDragArm` | frontend/js/obj-drag.js:84 |
-| `objDragBegin` | frontend/js/obj-drag.js:161 |
-| `objDragCue` | frontend/js/obj-drag.js:97 |
-| `objDragFinish` | frontend/js/obj-drag.js:244 |
-| `objDragFrame` | frontend/js/obj-drag.js:179 |
-| `objDragKey` | frontend/js/obj-drag.js:229 |
-| `objDragListen` | frontend/js/obj-drag.js:105 |
-| `objDragMove` | frontend/js/obj-drag.js:145 |
-| `objDragNoMenu` | frontend/js/obj-drag.js:124 |
-| `objDragNoNative` | frontend/js/obj-drag.js:130 |
-| `objDragNoScroll` | frontend/js/obj-drag.js:119 |
-| `objDragRoute` | frontend/js/obj-drag.js:187 |
-| `objDragSchedule` | frontend/js/obj-drag.js:175 |
+| `objDragArm` | frontend/js/obj-drag.js:90 |
+| `objDragBegin` | frontend/js/obj-drag.js:171 |
+| `objDragCue` | frontend/js/obj-drag.js:103 |
+| `objDragFinish` | frontend/js/obj-drag.js:254 |
+| `objDragFrame` | frontend/js/obj-drag.js:189 |
+| `objDragKey` | frontend/js/obj-drag.js:239 |
+| `objDragListen` | frontend/js/obj-drag.js:111 |
+| `objDragMove` | frontend/js/obj-drag.js:151 |
+| `objDragNoMenu` | frontend/js/obj-drag.js:130 |
+| `objDragNoNative` | frontend/js/obj-drag.js:136 |
+| `objDragNoScroll` | frontend/js/obj-drag.js:125 |
+| `objDragRoute` | frontend/js/obj-drag.js:197 |
+| `objDragSchedule` | frontend/js/obj-drag.js:185 |
 | `objDragSeed` | frontend/js/obj-drag.js:64 |
-| `objDragSwallowClick` | frontend/js/obj-drag.js:238 |
-| `objDragTick` | frontend/js/obj-drag.js:201 |
-| `objDragUp` | frontend/js/obj-drag.js:225 |
-| `objDragVerdict` | frontend/js/obj-drag.js:137 |
+| `objDragSwallowClick` | frontend/js/obj-drag.js:248 |
+| `objDragTick` | frontend/js/obj-drag.js:211 |
+| `objDragUp` | frontend/js/obj-drag.js:235 |
+| `objDragVerdict` | frontend/js/obj-drag.js:143 |
 | `objGhostMake` | frontend/js/obj-drag.js:35 |
 | `objPressInSelection` | frontend/js/obj-drag.js:55 |
 | `objPressOnGrip` | frontend/js/obj-drag.js:49 |
@@ -12167,7 +12167,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/model-menu-lazy.css | 96 |
 | frontend/css/motion-still.css | 75 |
 | frontend/css/nav-history-lazy.css | 169 |
-| frontend/css/objmove-lazy.css | 132 |
+| frontend/css/objmove-lazy.css | 173 |
 | frontend/css/offline-split-lazy.css | 71 |
 | frontend/css/panel-movable-lazy.css | 209 |
 | frontend/css/plain-head-lazy.css | 17 |
@@ -15618,8 +15618,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3299 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3427 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3300 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3428 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -23600,7 +23600,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16489)
+## Tests (16494)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24841,6 +24841,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_notifications_centre.py | 8 |
 | tests/test_obj_clip.py | 5 |
 | tests/test_obj_drag_hold.py | 3 |
+| tests/test_obj_grip_1595.py | 5 |
 | tests/test_obj_order.py | 9 |
 | tests/test_obj_ref.py | 6 |
 | tests/test_obj_review_1031.py | 24 |
@@ -26270,7 +26271,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1299 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:155 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:153 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4188 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
