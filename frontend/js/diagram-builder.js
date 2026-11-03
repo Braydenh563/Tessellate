@@ -70,8 +70,11 @@
     S.drawTimer = setTimeout(() => {
       const source = S.source;
       const stamp = ++S.drawn;
-      //: A kind the blocks cannot read (S.plain) still has its picture; only a flowchart with no block yet is empty.
-      const empty = !source.trim() || (S.k ? !S.plain && S.k.blank(S.m) : !S.plain && S.m && !S.m.nodes.length);
+      //: A kind the blocks cannot read (S.plain) still has its picture. Empty is a source with no block and nothing but
+      //: its header: a kept line the reader could not place is still drawn, so the picture says why it cannot (INBOX 1596 b).
+      const blank = S.k ? S.k.blank(S.m) : S.m && !S.m.nodes.length;
+      const bare = diagramModel.front(source.replace(/\r/g, "")).rest.split("\n").every((l) => !l.trim() || /^\s*(%%|flowchart\b|graph\b|mindmap\b|timeline\b|sequenceDiagram\b)/i.test(l));
+      const empty = !source.trim() || (!S.plain && blank && bare);
       S.fig.classList.toggle("dgm-picture-empty", empty);
       if (empty) return S.fig.replaceChildren(el("p", "muted dgm-hint", "The picture appears here as you add blocks."));
       ensureModule("mermaid").then((ok) => {
@@ -607,7 +610,7 @@
     return hit ? hit[1].toLowerCase().replace("diagram", "") : "flowchart";
   }
   //: What the kinds' panes borrow: the same DOM helpers, so the two read as one pane.
-  const kit = { el, more, say, commit, drawPicture, beginEdit, blockEl, select, suggest, suggestMenu };
+  const kit = { el, more, say, commit, drawPicture, beginEdit, blockEl, select, suggest, suggestMenu, reconcile, stops };
   //: A line a suggestion left for the pane that opens next (the kind changed under it).
   let told = "";
 

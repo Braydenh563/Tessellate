@@ -651,21 +651,46 @@
   // --- the tree -------------------------------------------------------------------
   const keysOf = (rows) => rows.flatMap((r) => (r.type === "k" ? [] : [ops.key(r), ...keysOf(r.kids || [])]));
 
+  //: A row whose words, kind, glyph and menu are unchanged keeps its element (the flowchart's rule, diagram-builder.js
+  //: `render`), and the tree moves only what is out of place, so a change lays out only the rows it touched.
   function render(S) {
     const had = S.tree.contains(document.activeElement);
     const rows = ops.rows(S.k, S.m);
     if (S.sel && !keysOf(rows).includes(S.sel)) S.sel = null;
-    S.tree.replaceChildren(...rows.map((r) => buildBlock(S, r, 1)));
-    S.empty.classList.toggle("hidden", !S.k.blank(S.m));
-    S.pane.tabIndex = S.k.blank(S.m) ? 0 : -1;
+    const fresh = new Map();
+    S.cache ||= new Map();
+    const built = rows.map((r) => buildBlock(S, r, 1, fresh));
+    S.cache = fresh;
+    S.tree.querySelectorAll(".dgm-target, .dgm-connecting, .dgm-lifted").forEach((b) => b.classList.remove("dgm-target", "dgm-connecting", "dgm-lifted"));
+    kit.reconcile(S.tree, built);
+    const blank = S.k.blank(S.m);
+    S.empty.classList.toggle("hidden", !blank);
+    S.pane.tabIndex = blank ? 0 : -1;
     const stop = kit.blockEl(S, S.sel) || S.tree.querySelector(".dgm-block");
-    for (const b of S.tree.querySelectorAll(".dgm-block")) {
-      b.tabIndex = b === stop ? 0 : -1;
-      b.setAttribute("aria-selected", String(b.dataset.key === S.sel));
-    }
-    if (had) stop?.focus();
+    kit.stops(S, stop);
+    if (had && document.activeElement !== stop) stop?.focus();
   }
-  function buildBlock(S, row, level) {
+
+  //: What a row shows and what its menu offers, as one string. The node is kept beside it: the menu's actions hold that
+  //: object, so a re-read source (undo, an edit in Source) makes new nodes and every row is built again.
+  function fieldsOf(S, row, level, kids) {
+    if (row.type === "k") return `k${level}\n${row.line}`;
+    const n = row.node;
+    const { meta, kind } = words(S, n);
+    return [level, row.fixed, n.type, S.k.text(n), meta, kind, n.shape, n.arrow, n.act, n.pos, n.kw, n.actor, n.from, n.to, Boolean(row.kids), kids.map((k) => k.sig).join("|")].join("\u0001");
+  }
+
+  function buildBlock(S, row, level, fresh) {
+    const key = row.type === "k" ? `k:${row.uid}` : ops.key(row);
+    const kids = (row.kids || []).map((k) => buildBlock(S, k, level + 1, fresh));
+    const sig = fieldsOf(S, row, level, kids.map((k) => fresh.get(k.dataset.key)));
+    const hit = S.cache.get(key);
+    const made = hit && hit.sig === sig && hit.node === row.node ? hit.el : buildRow(S, row, level, kids);
+    fresh.set(key, { sig, node: row.node, el: made });
+    return made;
+  }
+
+  function buildRow(S, row, level, built) {
     const block = kit.el("div", "dgm-block");
     block.setAttribute("role", "treeitem");
     block.setAttribute("aria-level", String(level));
@@ -705,7 +730,7 @@
     if (boxed || row.kids?.length) {
       const kids = kit.el("div", "dgm-kids");
       kids.setAttribute("role", "group");
-      if (row.kids.length) kids.append(...row.kids.map((k) => buildBlock(S, k, level + 1)));
+      if (row.kids.length) kids.append(...built);
       else kids.append(kit.el("p", "dgm-hole muted", "Drop blocks here"));
       block.append(kids);
     }
