@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Mind map toolbar: the layout and line-style selects are rounded with the quiet inset like the tools beside them, not square with an ink edge (the square came from a radius token that is 0 at the default corner; unslop 1103, 5).
 - Dashboard on a phone: the search doorway reads "Search" in full instead of "Search your..." (the scope after the verb drops below 600px; unslop 1103, 4).
 - Dashboard: stacked widgets sit 16 to 17px apart like side-by-side ones, not 18 to 36 (the masonry's 24px span steps are gone; unslop 1103, 3).
 - Library, AI skills on a phone: the dock has a ... menu, so the sort and filter fold into it and the title no longer sits under the filter (unslop 1103, 2).

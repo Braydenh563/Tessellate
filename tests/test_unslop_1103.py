@@ -58,3 +58,11 @@ def test_4_dashboard_find_label_drops_its_scope_on_a_phone():
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert '<span class="dash-find-scope"> your notes, documents, files and the app</span>' in html
     assert "display: none" in _body(_css("10-responsive.css"), ".dash-find-scope")
+
+
+def test_5_map_toolbar_selects_take_the_quiet_inset_not_radius_inner():
+    """`--radius-inner` is 0 at the default corner: square, ink-edged selects."""
+    body = _body(_css("07-whiteboard-misc.css"), ".wb-rail .select-shell > .select-opener")
+    assert "radius-inner" not in body
+    assert "border-radius: var(--radius-md)" in body and "var(--field-inset)" in body
+    assert "border: 1px solid transparent" in body
