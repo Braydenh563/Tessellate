@@ -1,4 +1,4 @@
-Counts: fixed 11, open 60, unsure 73. Source: audit-1028-ranked.md rows with planned at new (144 rows), checked 2026-11-02.
+Counts: fixed 13, open 59, unsure 72. Source: audit-1028-ranked.md rows with planned at new (144 rows), checked 2026-11-02.
 
 | id | verdict | evidence | size |
 |---|---|---|---|
@@ -50,8 +50,8 @@ Counts: fixed 11, open 60, unsure 73. Source: audit-1028-ranked.md rows with pla
 | D46 | open | documents*.js comment lines are 10,103 of 36,378 (28 percent). | M |
 | B3 | open | whiteboard.js:21916 renderWhiteboard still clears the map size cache and item element cache each render. | L |
 | B4 | open | wbScheduleRender (whiteboard.js:21762) has no dirty set; renderWhiteboard runs the full board per frame. | L |
-| D26 | open | documents-comments.js has no author, reply or show-resolved view. | L |
-| D30 | open | Spellcheck still uses one en.txt wordlist (vendor/wordlist); no per-document language. | L |
+| D26 | fixed (65c01c4, e3aae86) | Threads: author, time, replies, Show resolved and Reopen in the Comments rows (a30h-1102). | L |
+| D30 | open | Spellcheck still uses one en.txt wordlist (vendor/wordlist, ASCII, lowercased); no other dictionary is vendored, so a per-document language needs new lists first (a30h-1102.md). | L |
 | E48 | open | chat-edit.js has no branch or pager; edit still truncates later turns. | L |
 | D22 | open | documents.js is still 857,982 bytes and unminified; CodeMirror now loads lazily (documents.js:16443). | L |
 | B15 | open | whiteboard.js:17922 still dispatches a synthetic MouseEvent mousemove bridge. | L |
@@ -109,7 +109,7 @@ Counts: fixed 11, open 60, unsure 73. Source: audit-1028-ranked.md rows with pla
 | E20 | unsure | Needs the q1 run to see weekday words listed as due; cue logic in composer_plan.py not read in full. | M |
 | E33 | unsure | OFFLINE_LEAD unchanged (help_chat.py:836); whether the lead gives the path needs the h1 run. | M |
 | B12 | unsure | Tab guards on boards and maps at whiteboard.js:66 and 3140; a per-mode shortcut table was not found. | M |
-| D33 | unsure | Find and replace are separate modules (documents-history, documents-replace); scope UI needs a check. | M |
+| D33 | fixed (b092d42) | The find panel has All documents and Replace in all, carrying its query and options (a30h-1102). | M |
 | E23 | unsure | No cloze builder found by grep in ai/*.py; needs the quiz run. | M |
 | E38 | unsure | No-model Models page needs a browser run. | M |
 | E50 | unsure | Phone banner and card sizes need the pw9 measurement. | M |

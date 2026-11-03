@@ -2740,10 +2740,11 @@ function docShowReferences() {
 
 //: Ctrl+Shift+F: the app's Find anything, on documents, with the selection
 //: (one line of it) or the word at the caret.
-function docFindInDocuments() {
+function docFindInDocuments(typed = "") {
   const view = docCmView;
-  let query = "";
-  if (view) {
+  //: What the find panel holds, when it asked (D33); otherwise the selection or the word at the caret.
+  let query = typeof typed === "string" ? typed.slice(0, 100) : "";
+  if (!query && view) {
     const range = view.state.selection.main;
     if (!range.empty) query = view.state.sliceDoc(range.from, range.to).split("\n")[0].slice(0, 100);
     else query = docWordAt(view.state, range.head)?.name || "";

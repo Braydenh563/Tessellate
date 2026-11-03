@@ -4372,6 +4372,25 @@ def test_a_comment_thread_is_one_popover_reached_three_ways() -> None:
     assert "Right-click an item, Comment…" in guide and "Comment… starts a thread" in guide
 
 
+def test_a_document_thread_is_a_sidecar_drawn_in_the_comments_rows() -> None:
+    """DOCUMENTS_PLAN DX24t (DESIGN.md's document-thread row): the thread is a
+    record beside the text and never in it, every save sends it, Reply and
+    Resolve share the head row (a row that grew a line for Reply showed 2
+    remarks where 4 fit), the panel is not redrawn under a reply being typed,
+    and the styles live in the lazy sheet, out of the boot budget."""
+    comments = (ROOT / "frontend" / "js" / "documents-comments.js").read_text(encoding="utf-8")
+    docs = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    lazy = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+    boot_css = (ROOT / "frontend" / "css" / "05-sidebars-themes.css").read_text(encoding="utf-8")
+    assert "threads: renderDocComments.threads()" in docs, "every save carries the sidecar"
+    assert "head.append(open, reply, resolve);" in comments
+    assert "if (docCommentReplying && list.contains(document.activeElement)" in comments
+    assert "innerHTML" not in comments[comments.index("function docCommentReplyForm") :], "built with the DOM, never markup"
+    for selector in (".doc-comment-who", ".doc-comment-replies", ".doc-comment-reply-form", ".doc-comments-resolved-toggle"):
+        assert selector + " {" in lazy, selector
+    assert ".doc-comment-item" not in boot_css, "the comments panel's styles are lazy"
+
+
 def test_the_writing_rooms_selects_get_their_own_line_on_a_phone() -> None:
     """OPEN.md, "Writing Room at phone width": one nowrap row held what to
     write, tone, length and Use notes, so each select was 62px wide at 390 with

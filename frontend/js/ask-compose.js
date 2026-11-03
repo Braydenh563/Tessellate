@@ -1472,3 +1472,33 @@ function setAsking(active) {
   $("stop-btn").classList.toggle("hidden", !active);
   $("question").disabled = active;
 }
+
+//: **The trail above an Ask answer** (INBOX 490): the questions this one
+//: followed on from, each a link (`followupTrail`, chat-attach.js) that opens
+//: that earlier answer in place under the trail, since Ask shows one answer
+//: at a time and there is no earlier turn on screen to scroll to.
+function renderAskTrail() {
+  const host = $("ask-trail");
+  if (!host) return;
+  const turns = askTrail.map((i) => conversation[i]).filter(Boolean);
+  host.replaceChildren();
+  host.classList.toggle("hidden", !turns.length);
+  if (!turns.length) return;
+  const peek = document.createElement("div");
+  peek.className = "ask-trail-peek answer hidden";
+  peek.id = "ask-trail-peek";
+  let shown = -1;
+  const trail = followupTrail(turns.map((turn) => turn.question), (i, link) => {
+    shown = shown === i ? -1 : i;
+    for (const other of trail.querySelectorAll(".chat-trail-link")) {
+      other.setAttribute("aria-expanded", other === link && shown === i);
+    }
+    peek.classList.toggle("hidden", shown === -1);
+    if (shown !== -1) renderMarkdown(peek, turns[i].answer || "");
+  });
+  for (const link of trail.querySelectorAll(".chat-trail-link")) {
+    link.setAttribute("aria-expanded", "false");
+    link.setAttribute("aria-controls", peek.id);
+  }
+  host.append(trail, peek);
+}

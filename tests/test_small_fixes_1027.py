@@ -247,3 +247,16 @@ def test_a_sheet_focused_by_itself_still_measures_the_toasts():
     tail = tail[: tail.index("}), 1);")]
     assert "card.contains(document.activeElement)) return" not in tail
     assert tail.rstrip().endswith("toastYield();")
+
+
+def test_a_sheet_re_measures_the_toasts_when_its_card_changes_size():
+    """E2E import, 2026-11-02 (CI probe 5325529): a toastYield call just before
+    the press yielded correctly on CI, yet without it the box had no class. The
+    preview fills in after the sheet opens and moves Import after every earlier
+    check, so the card's size changes re-measure."""
+    js = (ROOT / "frontend/js/phone-shell.js").read_text(encoding="utf-8")
+    opener = js[js.index("function openSheet(") :]
+    opener = opener[: opener.index("\n}\n")]
+    assert "new ResizeObserver(" in opener
+    assert "afterFrames(() => toastYield())" in opener
+    assert "toastRefit.observe(card);" in opener

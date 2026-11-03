@@ -1585,6 +1585,11 @@ function openSheet({ label, sub = "", name, build, variant = "", modal = true, r
     //: re-centres): the focusin check measured Import where it was (E2E import, 2026-11-02).
     toastYield();
   }), 1);
+  //: The preview fills in after the sheet opens, so Import moves after every
+  //: check above: CI's probe (5325529) found the yield right when measured just
+  //: before the press, and stale without it. Each change of the card's size re-measures.
+  const toastRefit = new ResizeObserver(() => (card.isConnected ? afterFrames(() => toastYield()) : toastRefit.disconnect()));
+  toastRefit.observe(card);
   return close;
 }
 

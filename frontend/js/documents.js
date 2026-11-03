@@ -191,13 +191,15 @@ function syncDocFileType({ prose = true } = {}) {
     //: Plain is offered for a code file as readily as Source: "use the
     //: documents tab as a plain text editor" is exactly the thing you would
     //: want on a `.csv` or a `.php` the bundle has no mode for.
-    const rendered = !DOC_VIEWS_UNRENDERED.includes(button.dataset.docView);
-    button.disabled = rendered && !type.previewable;
+    button.disabled = !docViewState.allows(type, button.dataset.docView);
     button.title = button.disabled
-      ? `A .${type.ext} file has no rendered form, this is for markdown.`
+      ? type.ext === "mmd" ? "A diagram shows its picture beside the source, in Split." : `A .${type.ext} file has no rendered form, this is for markdown.`
       : button.dataset.docTitle || button.title;
   }
-  if (!type.previewable && !DOC_VIEWS_UNRENDERED.includes(docView)) setDocView("source");
+  //: A diagram opens in Split the first time its type is synced after another type.
+  const toDiagram = type.ext === "mmd" && docViewState.type !== "mmd";
+  docViewState.type = type.ext;
+  if (!docViewState.allows(type, docView) || toDiagram) setDocView(type.ext === "mmd" ? "split" : "source");
   //: And back: a markdown type again, and Source was only the code file's.
   else if (type.previewable && docViewState.held) setDocView(docDefaultView());
   //: The engine's own language and wrapping, where it is mounted.
@@ -487,7 +489,16 @@ let docView = "source";
 //: switched back from `.py` to `.md` stayed there). Nothing stored, nothing
 //: remembered as the last editing view; the file type coming back to a
 //: markdown one restores the view the person actually chose.
-const docViewState = { held: false, tableGrips: null, blockHandle: null };
+//: `allows(type, mode)`: a markdown document may be in any view, a code file in the two that
+//: need no rendered form, and a diagram (the `mmd` type, 1546 D5) also in Split, where its
+//: picture is the preview. `type` is the last file type synced, so a diagram opens in Split.
+const docViewState = {
+  held: false,
+  tableGrips: null,
+  blockHandle: null,
+  type: "md",
+  allows: (type, mode) => type.previewable || DOC_VIEWS_UNRENDERED.includes(mode) || (type.ext === "mmd" && mode === "split"),
+};
 
 //: One-time reset (owner, 2026-10-25: Live should be the default, but their
 //: browser held "source" from before). A view stored before this version key
@@ -917,10 +928,11 @@ function setDocView(mode, { persist = true } = {}) {
   // A code file has no rendered form, so it can only be one of the two views
   // that do not need one. Asked for any other, that is the honest answer
   // rather than an empty pane.
-  if (!type.previewable && !DOC_VIEWS_UNRENDERED.includes(mode)) mode = "source";
+  if (!docViewState.allows(type, mode)) mode = "source";
   docView = DOC_VIEWS.includes(mode) ? mode : "source";
-  //: Source in a code file is the file's only editing view, not a choice.
-  docViewState.held = !type.previewable && docView === "source";
+  //: Source in a code file is the file's only editing view, not a choice; a diagram's view is
+  //: never stored, so the markdown documents after it open in the view the person chose.
+  docViewState.held = !type.previewable && (docView === "source" || type.ext === "mmd");
   if (persist) try {
     if (!docViewState.held) prefs.set(DOC_VIEW_KEY, docView);
   } catch {
@@ -2536,7 +2548,7 @@ async function docSaveOnce(silent) {
       //: server (`currentDoc` is replaced by every save's answer), so a
       //: save over text another window has since saved is refused with 409
       //: rather than overwriting it (WORLD_CLASS_PLAN 22.1 item 5).
-      body: JSON.stringify({ title, content, file_type: currentDoc.file_type || "md", base_hash: currentDoc.content_hash }),
+      body: JSON.stringify({ title, content, file_type: currentDoc.file_type || "md", base_hash: currentDoc.content_hash, threads: renderDocComments.threads() }),
     });
     //: A name another document already has is said once per document and name, on the
     //: first save under it (a new document's first autosave, or a rename), and left as
@@ -4019,6 +4031,13 @@ function renderDocPreview() {
   preview.replaceChildren();
   const title = ($("doc-title").value || "").trim();
   const text = docText();
+  //: 1546 D5: a diagram's preview is its picture, drawn through the fence path (the frame
+  //: draws it, and refuses what it cannot with the reason under the source).
+  if (docFileType().ext === "mmd") {
+    docRenderBody(preview, "```mermaid\n" + text + "\n```");
+    docRenderMermaidIn(preview);
+    return;
+  }
   //: **The properties are not prose.** Rendered as markdown, a frontmatter
   //: block is a horizontal rule, a paragraph of `key: value` lines and
   //: another rule, which is what the preview showed until now for every
@@ -7351,9 +7370,9 @@ function exportDocumentBundle() {
 
 //: Replace in every document: the dialog's code is documents-replace.js,
 //: fetched on the first press (audit 1031 DC13).
-async function openDocReplace() {
-  if (!(await lazyScript("/js/documents-replace.js"))) return toast("Replace in every document could not be loaded.", true, { action: ["Try again", openDocReplace] });
-  return docReplaceOpen();
+async function openDocReplace(carry = null) {
+  if (!(await lazyScript("/js/documents-replace.js"))) return toast("Replace in every document could not be loaded.", true, { action: ["Try again", () => openDocReplace(carry)] });
+  return docReplaceOpen(carry);
 }
 
 //: Written in the browser by documents-word.js (Brief 42), loaded on the
@@ -15827,9 +15846,21 @@ function docCmSearchCount(CM) {
       if (!out) {
         out = Object.assign(document.createElement("span"), { className: "cm-search-count muted text-sm" });
         out.setAttribute("role", "status");
+        //: **One find panel for this document and for all of them** (audit 1028 D33): the same words and options carry to the
+        //: every-document find and replace, which used to start empty from a different place.
+        const all = Object.assign(document.createElement("span"), { className: "cm-search-all" });
+        const asked = () => CM.search.getSearchQuery(view.state);
+        const find = Object.assign(document.createElement("button"), { type: "button", className: "cm-button", name: "all-documents", textContent: "All documents", title: "Find this in every document (Ctrl+Shift+F)" });
+        find.addEventListener("click", () => docFindInDocuments(asked().search));
+        const swap = Object.assign(document.createElement("button"), { type: "button", className: "cm-button", name: "replace-in-all", textContent: "Replace in all", title: "Replace this in every document" });
+        swap.addEventListener("click", () => {
+          const q = asked();
+          openDocReplace({ find: q.search, replace: q.replace, caseSensitive: q.caseSensitive, regexp: q.regexp, wholeWord: q.wholeWord });
+        });
+        all.append(find, swap);
         const lineBreak = panel.querySelector("br");
-        if (lineBreak) lineBreak.before(out);
-        else panel.appendChild(out);
+        if (lineBreak) lineBreak.before(out, all);
+        else panel.append(out, all);
       }
       out.textContent = docSearchCountText(view.state, CM);
     }

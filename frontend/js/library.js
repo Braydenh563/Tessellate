@@ -376,6 +376,9 @@ const LIBRARY_KINDS = [
   //: wherever it appears.
   { key: "board", icon: "ph:pencil-circle", label: "Boards" },
   { key: "map", icon: "ph:tree-structure", label: "Mind maps" },
+  //: A Mermaid diagram is a document of the `mmd` type (1546 D5); the server lists it as
+  //: its own kind, and it opens in the Documents editor like any document.
+  { key: "diagram", icon: "ph:flow-arrow", label: "Diagrams" },
   // Drafts used to be a Library sub-tab of its own. It is a *filter over
   // notes*, not a separate kind of thing, and it only sat up there because
   // this chip row did not exist when it was added, so it moved here, which
@@ -956,7 +959,7 @@ function libraryCopyActions(kind, title, id) {
   const out = [
     makeMenuItem("ph:copy Copy title", "Copy the name to the clipboard", () => copyToClipboard(name)),
   ];
-  if (kind === "document") {
+  if (kind === "document" || kind === "diagram") {
     out.push(
       makeMenuItem("ph:brackets-square Copy wiki link", "Copy a [[wiki link]] to paste into a note or a document", () =>
         copyToClipboard(`[[${name}]]`)
@@ -964,6 +967,7 @@ function libraryCopyActions(kind, title, id) {
     );
   }
   if (id != null && ["note", "document", "chat", "board", "map"].includes(kind)) out.push(appLinkMenuItem(kind, id));
+  else if (id != null && kind === "diagram") out.push(appLinkMenuItem("document", id));
   return out;
 }
 
@@ -1040,7 +1044,7 @@ function libraryActions(item) {
       }),
     ];
   }
-  if (item.kind === "document") {
+  if (item.kind === "document" || item.kind === "diagram") {
     return [
       makeMenuItem("ph:pencil-simple Rename", "Rename this document", async () => {
         const next = await promptDialog("Rename this document", item.title);
@@ -1048,8 +1052,8 @@ function libraryActions(item) {
         await renameDocumentWithUndo(item, next).catch((e) => toast(e.message, true));
         reload();
       }),
-      makeMenuItem("ph:download-simple Download .md", "Save a copy as a markdown file", () => {
-        downloadFromApi(`/documents/${item.id}/export.md`, "document.md");
+      makeMenuItem(`ph:download-simple Download .${item.kind === "diagram" ? "mmd" : "md"}`, item.kind === "diagram" ? "Save a copy as a Mermaid file" : "Save a copy as a markdown file", () => {
+        downloadFromApi(`/documents/${item.id}/export.md`, item.kind === "diagram" ? "document.mmd" : "document.md");
       }),
       //: The shared "act on this" rows (INBOX 393): every object can be taken
       //: to the chat that answers about it.
@@ -1744,7 +1748,7 @@ $("library-grid").addEventListener("focusin", (event) => {
 // Each kind opens where it is actually worked on. The Library finds things; it
 // is not a fifth editor.
 function openLibraryItem(item) {
-  if (item.kind === "document") {
+  if (item.kind === "document" || item.kind === "diagram") {
     openDocumentFromNote(item.id); // the Documents page, on this document
   } else if (item.kind === "chat") {
     switchTab("chat");
@@ -2168,7 +2172,7 @@ $("library-bulk-delete").addEventListener("click", async () => {
         ? [binRoutes(item).purge, "DELETE"]
         : item.kind === "note"
           ? [`/entries/${item.id}`, "DELETE"]
-          : item.kind === "document"
+          : item.kind === "document" || item.kind === "diagram"
             ? [`/documents/${item.id}`, "DELETE"]
             : item.kind === "chat"
               ? [`/conversations/${item.id}`, "DELETE"]
@@ -2181,7 +2185,7 @@ $("library-bulk-delete").addEventListener("click", async () => {
       deleted++;
       if (item.kind === "archived") undoStoreClear.purged(binRoutes(item).noun, item.id);
       if (item.kind === "note") comeBack.push({ route, back: [`/entries/${item.id}/restore`, "POST"] });
-      else if (item.kind === "document") comeBack.push({ route, back: [`/documents/${item.id}/restore`, "POST"] });
+      else if (item.kind === "document" || item.kind === "diagram") comeBack.push({ route, back: [`/documents/${item.id}/restore`, "POST"] });
       else if (item.kind === "chat" && answer?.restore) comeBack.push({ route, chat: answer.restore });
     } catch {
       // counted below

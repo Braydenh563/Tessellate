@@ -131,6 +131,14 @@ Away run 2026-10-27, branch claude/loving-edison-4d0din, PR 204, head bc27f5d; s
 
 `composer_lists.clean` reads "whens" as "when's" and drops a trailing repair ("no the new one", "I mean the moved one"), asking "now". `composer_money._bare_total` reads "how much desk all up" word by word, "money back" as refunds. `composer_slots._counted` answers "how many grocery items are checked off" and "how many are still open" with the count and the items. `composer.superseded` (moved from the digest) halves a note a newer correction outdates in the plain composer's ranking too, when the question asks for the value now (otherwise both are said, older "but" newer). Tests: `tests/test_composer_informal_1030.py`.
 
+## Moved from the plans, 2026-11-03 (comment threads DX24t, find in all D33)
+
+From `DOCUMENTS_PLAN.md` (DX24t) and audit 1028 D26, D33, agent a30h-1102. Tests: `tests/test_document_threads.py` (the sidecar), `tests/test_document_thread_model.py` (the pure model, in node), `tests/test_ui_recipes.py` (`test_a_document_thread_is_a_sidecar_drawn_in_the_comments_rows`), `tests/test_documents_replace_all.py`; drive: `scratchpad/ui-sweeps/doccomments.js`.
+
+- **Built 65c01c4, e3aae86 (DX24t, D26).** The plan row, as written: Recommendation taken: a comment stays the inline `%%remark%%` in the file (it travels with exports and history), and a thread is a sidecar keyed by the remark's text hash in the document's properties: `{id, author, at, text, replies: [{author, at, text}], resolved}`. The Comments panel (documents-comments.js:410 area) lists threads with Reply and Resolve; a resolved thread hides its mark and keeps the record. Author is the device name (LAN mode names the speaker). Gate: reply, resolve and reopen survive a reload and a rename of the surrounding text; export drops the sidecar. Size M.
+- **Decisions made building it (standing order 3; none were written, the smallest choice each).** (1) The sidecar is a `threads` Text column on the document (JSON, additive, `""` for every older row), not a frontmatter key: the plan said "the document's properties", and a frontmatter key would travel in the file and show in the Properties panel, against "export drops the sidecar". It is validated and capped in `core/docthreads.py` (500 threads, 100 replies, 2,000 characters) and a save that omits `threads` leaves it alone. (2) Author is the Settings display name, "You" until there is one (no device name exists in the code; LAN mode has no per-speaker identity to read). (3) The key is the remark's FNV-1a text hash plus its place among identical remarks; a thread follows an edited remark when exactly one remark and one thread are unmatched, so typing in a remark does not orphan its replies. (4) A remark written before threads gets a record on first sight with no author and no time and claims none; only remarks that appear after a document is open are stamped. (5) Resolve keeps removing the remark from the text (one undo step, as before); the record stays, resolved, with the words, the line and whether the remark had its line to itself. Reopen finds the words again (first place outside code and frontmatter), else puts the remark back on its line, else at the end. (6) Ctrl+Z after Resolve brings the thread back, with its replies, if the remark returns within ten minutes; later, the same words are a new thread. (7) A thread whose remark was deleted by hand is dropped if it has no replies, and kept resolved if it has: replies are never lost to a deleted line. (8) Reply and Resolve are the head row's two icons (a Reply button on its own line made a row 121px against 85 and showed two remarks where four fit); the resolved shelf is one folded "Show N resolved" disclosure. (9) The comment styles moved from the boot sheet to library-lazy.css (the new rules took boot CSS over its cap; moving the block won it back to 179,087 of 179,300 gzipped bytes).
+- **Built b092d42 (D33).** The find panel (Ctrl+F) gains All documents and Replace in all beside its match count (32px, like its own buttons): they open the every-document find and replace with the words, replacement and match case, regexp and by word options typed there. Not done: the app's own fallback find bar (the textarea editor) has no such buttons.
+
 ## Moved from the plans, 2026-11-02 (insert panels, INBOX 1542 to 1545)
 
 From `DOCUMENTS_PLAN.md` ("Placed from INBOX, 2026-11-02"), agent a28p-1102. Each row is the owner's words with the class fixed, not the case. Tests: `tests/test_doc_panels_1542.py`, `test_doc_panels_1543.py`, `test_doc_panels_1544.py`, `test_doc_icons_1545.py`.
@@ -51962,3 +51970,118 @@ plans, 2026-09-13". The python-docx row is closed too: `core/extras.py` has
    `.docx` from the editor's model), both vendored under `frontend/vendor`
    with their notices in THIRD_PARTY.md. The python-docx extra, its route
    and `docexport.to_docx` are retired (Brief 42, docs42b, 2026-10-10).
+
+## Moved from the plans, 2026-11-02 (a30b: UI_MODERNISATION rows found built)
+
+From UI_MODERNISATION_PLAN.md, each checked against the code and its test on 2026-11-02 and found already built; the plan text is below as it stood.
+
+Evidence: indent guides, `docIndentGuides` (documents-code.js) with `tests/test_code_vscode.py` (section 6, lines 229 to 274); INBOX 760, `tests/test_ui_recipes.py::test_a_note_cards_details_line_ends_the_card_and_keeps_the_space_before_edited`; INBOX 761, `tests/test_note_order_1345.py` and `tests/test_search_maps.py` (a board is a board, not a note), CHANGELOG line "mind maps and boards no longer appear as notes"; INBOX 762, `tests/test_board_modified_time.py`; INBOX 767, `tests/test_ui_recipes.py::test_the_no_model_notice_is_one_row_on_the_notice_recipe`; the lightbox row, `tests/test_lightbox.py::test_the_lightbox_row_is_one_height`; INBOX 796, `tests/test_menus_close_others.py` (`GRAPH_HEAD_MENUS`, graph.js); T1 and T2, tidy.js (comments "(T1)", "(T2)"); T4, `tests/test_ui_recipes.py::test_a_menu_has_no_gap_at_its_ends`. All of these tests pass on this branch.
+
+- 8, indent guides in the code editor: Brief 42 (DOCUMENTS 25 row 3); the active line is built.
+- **INBOX 760, card dates.** The time floats mid-card on a card the grid stretched taller than its content (about 110px under it on the tallest card, 40px on short ones); "1 week ago· edited" has lost its space. Pin the details line to the card's bottom edge, measured on a row of unequal cards; the space restored. Carddate agent.
+- **INBOX 761, mind maps listed as notes.** The Ask results show a mind map as an Uncategorised note card; check every reader of notes (Ask, Notes, search, graph, timeline, dashboard counts, Find anything, palette) and exclude what a board keeps behind its topics, with a test per reader. Mapnotes agent.
+- **INBOX 762, "just now" on an untouched mind map.** The Library card's modified time moved without the owner; find what writes `updated_at` on a board when it is only opened, listed, indexed, searched or thumbnailed, stop it, and pin it with a test. Mapnotes agent.
+- **INBOX 767, the no-model notice.** One row at 1440 (icon, one short sentence, the action as a link-styled button, the X at the end), wraps to two only under 600px; the five surfaces share it (`renderAiOfflineNotice`). Measured: notice height equals one line height plus padding at 1440; copy under 90 characters. Notice agent.
+- "These elements in the lightbox aren’t the same height"
+  Recommendation: give lightbox controls one height token and measure their heights in the sweep. No brief carries it; Brief 41 (density) is the nearest.
+- INBOX 796, bug, graph, the owner 2026-10-10 23:00Z, two screenshots: "dropdown menus in the graph dont close when another is opened causing a visual clash and overlay for all 3 of these buttons" (the ?, settings and ⋯ menus in the graph head open on top of each other.) Owner: graphfeel.
+- T1. Tidy is one list of reviews with counts; a review opens in place with a back link (not a bordered button beside a small title), its one-line description, and its rows. An empty review says so in one line with no selection bar: All, None and the disabled action show only when there are rows.
+- T2. Recent runs is a quiet disclosure row (DESIGN "Row actions"), not a full-width bordered box.
+- T4. A menu's first and last items sit one menu padding from its edge, never a group label's or a separator's gap (owner: grammar57, with 813's one dropdown grammar).
+Rows: T1 and T2 (owner: voiceup, with V7's dialog work); T3 learnaudit; T4 grammar57.
+
+## Moved from the plans, 2026-11-02 (a30b: TIMELINE rail circle)
+
+From TIMELINE_PLAN.md "Placed from the owner's list, 2026-10-10", measured again as that row asked. Seeded 48 notes with a snippet under every title (`seed-timeline.js`, `seed-timeline.py`), `getBoundingClientRect` on the mark against the title's first line box: the mark's centre is 0 px from the first line's centre at 1440 and 390 (12 rows each), and the spine was 1 px left of the mark's centre at both widths because the rule ignored the row's 1px border and the spine's own width. Now 0.5 px from the spine's left edge, which is the centre of its 1px line (`.timeline-rows::before`, 06-timeline-dialogs.css; `tests/test_timeline_rail_centre.py`). Not verified: a 2x or 3x display, where the mark paints on the device grid.
+
+### Bugs
+
+- "The circle on the vertical line on the left isnt in line with the text line"
+  Recommendation: align the rail circle to the first line's centre in timeline.js and the timeline CSS, measured with getBoundingClientRect against the line box. Earlier notes on this fix were not verified; measure it again. Also carried by Brief 41 (timeline.js in its file list).
+
+
+## Moved from the plans, 2026-11-02 (a30b: GRAPH phases 1, 2, 3 and 6)
+
+From GRAPH_PLAN.md "5. Phases"; each phase was already marked built (the "Built" headings in the plan point at HISTORY.md, 2026-09-09 and 2026-09-13), and its spec text had stayed behind. Moved whole:
+
+### Phase 1: the canvas renderer and physical drag (1–2 sessions)
+Canvas 2D renderer behind the same `renderGraph()` entry; d3-force in a
+Worker; quadtree hit-testing; drag with `alphaTarget(0.3)` on start and
+decay on end, `forceCollide` from radius, `velocityDecay 0.4`, a weak
+centre force; node radius by degree (`4 + 2·√degree`, clamped); labels by
+zoom (`k > 1.4`) and on hover/selection; hover dims non-neighbours to
+20%; the existing search highlight, trace, focus mode, colour modes, time
+slider and saved views keep working through the new renderer.
+**Gate:** a 2,000-note fixture built by a script (`scratchpad/graph-
+fixture.js`) paints its first frame < 300 ms and holds ≥ 55 fps during a
+2 s drag (Playwright `requestAnimationFrame` counter); no frame > 16 ms
+on a 200-note board; `errors.js` 0.
+
+### Phase 2: the space (½ session)
+The graph fills the tab; the dock, legend, minimap and zoom strip float
+over it on the popover shell; the page does not scroll on Graph; the
+stats line becomes a chip in the dock's identity zone; fullscreen is
+just "hide the app chrome". Dark theme measured with `contrast.js`.
+
+### Phase 3: colour rules and groups (½ session)
+"Colour by" becomes a rule picker (category, tag, space, age, cluster,
+has a map, has a file) plus **groups**: a saved search → a colour, listed
+in the legend, stored with the view. Legend entries toggle visibility.
+
+### Phase 6: the node panel (½ session, INBOX 59)
+The popup that opens on a node is a form with nine equal buttons under it.
+Target: a header (title, category chip, the confidence as a small mark
+beside it, not a chip), one muted meta line (date, links, views), the
+attachment as a compact row, the content editor sized to its text (four
+lines minimum, grows), tags, and a single primary Save that appears only
+when something changed. Actions become one toolbar row of icon buttons
+with tooltips in three groups: read (Open, Similar, Trace), shape (Grow,
+Focus, Link, Remind), keep (Favourite; Bin last, separated, ghost). Open
+is the one filled button. Width and the dock grammar per DESIGN.md; the
+panel scrolls inside, never the page; measured at 1440 and 1024 and on
+390 as a sheet. Gate: `scratchpad/ui-sweeps/graph4b.js` plus a node-panel
+probe that counts buttons per row and the panel's own scrollHeight.
+
+
+## Moved from the plans, 2026-11-02 (a30b: UI_MODERNISATION Phase 7 items 1 to 5)
+
+From UI_MODERNISATION_PLAN.md "Phase 7"; the plan already said items 1, 3, 4 and 5 were built (HISTORY.md, "Moved from the plans, 2026-09-09") and item 2 was struck through, but their text had stayed behind. Moved whole:
+
+Each one was triaged against the running app this session; these are the ones
+that need building rather than fixing.
+
+1. **The lightbox is an image viewer showing a document.** Reported: "the
+   lightbox needs improving for file and pdf previews, no sections or info are
+   below it really compared to the images." An image gets caption, read text,
+   badges and usage under it; a PDF gets the page and nothing else. It should
+   carry the same block, plus what only a document has: page count, which pages
+   have been read, and a way into the OCR Workspace at that page.
+2. ~~**Line numbers as a setting, in all three editors.**~~ **Built** (HISTORY.md, "Moved from the plans, 2026-10-05 (docs hygiene before 0.4.0: UI_MODERNISATION_PLAN)"; `mountGutterFor`, `docGutterWanted` in documents.js).
+3. **Captioning for documents, not just photographs.** Reported: "image
+   captioning, how it is done and displayed needs to be refined for pdf
+   documents and other similar documents. with graphs, images and diagrams in
+   them." A page of slides is not a photograph: the caption prompt, and where
+   the answer is shown, both assume one image with one subject. Needs a
+   per-page, per-figure model and a place to show it that is not a single line
+   under a thumbnail.
+4. **Region select → read just that.** Asked as a question, and it is a good
+   one: "can there be a way for the user to manually outline and single out
+   regions on a pdf or similar document and then the ai will read what is in
+   those regions?? like maybe the user can outline a graph or diagram on a pdf
+   slide and then the user cna get the image or ocr model to analyse and caption
+   that thing." The workspace already draws region boxes from Tesseract and
+   already has a page raster; this is a drag-to-draw on that layer, a crop, and
+   the existing read/caption call on the crop. Scoped small, high value.
+5. **The Files sub-tab has to show more than a row can hold.** OCR text for a
+   long document does not fit where a photo's caption fits; the row needs a
+   summary plus a way to open the reading, not a clamped paragraph.
+
+## Moved from the plans, 2026-11-02 (a30b: UI_MODERNISATION focus ring, measured, not reproduced)
+
+From UI_MODERNISATION_PLAN.md Phase 12 "Open": "One focus ring at 1:1 (Chat, an `.active` button whose ring takes the ground's colour; `focusring.js`)." Re-measured on a seeded 48-note profile at 1440 with `scratchpad/ui-sweeps/focusring.js` (30 Tab stops on each of eight tabs, 239 stops): light 0 stops under 2px or 3:1, minimum 3.56:1; dark 0 under, minimum 7.03:1. The stops with no ring are the text fields that mark focus by their own border or caret (`#chat-input`, `#capture-card-body`, `.capture-card-tags`, and in dark the documents editor). Not verified: an `.active` button with a hover ring over a tinted ground on a real model-backed Chat (no model was connected here).
+
+## Moved from the plans, 2026-11-02 (a30a-1102: 1546 P1, the diagram model)
+
+From DOCUMENTS_PLAN.md "Placed from INBOX, 2026-11-02", the 1546 P1 row, built:
+
+- **1546 P1, the model and two-way sync (flowchart).** `diagramModel` (documents-mermaid.js, `DIAGRAM-MODEL-BEGIN`/`END`): `parse(source)` to `{kind, dir, nodes, edges, subgraphs, kept, front}` and `print(model)` to the whole source in D2's canonical order, a line it cannot place (`style`, `classDef`, `click`, `%%`, `@{ }`, markdown-string labels, an unnamed shape such as `[( )]` or `[[ ]]`) kept verbatim where it stood (`at` counts the nodes, edges and subgraphs before it), labels quoted with `#`, `"`, `<`, `>` (and `|` in an edge label) as entity codes, `<br/>` left alone. It replaces `mermaidFlowParse` and `mermaidFlowLayout` (no caller in the app) and the board's `wbMermaidParse` and `wbMermaidText`; the board import (`wbImportMermaid`) reads the model and `wbMermaidLayout` takes it unchanged. The `mmd` file type (core/filetypes.py, group Documents, glyph `flow-arrow`, `%%` comments), `kind: "diagram"` in the Library (routes_library.py `_documents`, `_totals`; library.js Diagrams chip after Mind maps; open, menu, delete and undo take the document routes) and an `.mmd` opening in Split with its picture beside the source (documents.js `docViewState.allows`; `renderDocPreview` hands the source to the fence path; the view is held, never stored). Tests: tests/test_diagram_model.py (node: D2's invariants over 25 and more fences, kept lines in place, awkward labels, a hand-made model, 120 nodes), tests/test_diagram_document.py (the type, the Library, the editor wiring); tests/test_doc_mermaid.py went with the dead reader (its reader cases are in the new file), tests/test_wb_interchange.py changes its call (a stand-in that folds the model to the board's three shapes, `dashed` and `skipped`) and no assertion; global names 9,708 to 9,706. Measured: parse plus print of a 120-node fence with edge labels, median of 20 in node, 1.1 ms (the test bounds it at 150 ms for a slow runner).

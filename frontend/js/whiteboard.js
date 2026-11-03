@@ -16238,6 +16238,7 @@ async function initWhiteboard() {
   // shape menu are the ones that were already there, so a tool added to the
   // rail is in the sheet without anybody remembering to add it twice.
   let wbToolsSheetClose = null;
+  let wbToolsWords = [];
   const toolsOpener = document.getElementById("wb-tools-opener");
 
   function wbSyncToolsOpener() {
@@ -16264,6 +16265,32 @@ async function initWhiteboard() {
         body.className = "wb-tools-palette";
         body.appendChild(toolGroup);
         card.appendChild(body);
+        //: **A word under every icon** (audit 1028 U21: 31 icon-only tiles, and
+        //: a touch screen has no tooltip to ask). The word is the button's own
+        //: name without its key, so the accessible name still contains it (WCAG
+        //: 2.5.3), and it is taken out again on close: the rail above 600px is
+        //: icons by design.
+        for (const button of toolGroup.querySelectorAll("button[aria-label], button[title]")) {
+          if (button.textContent.trim()) continue;
+          const full = (button.getAttribute("aria-label") || button.title || "").replace(/\s*\(.*$/, "").replace(/ tool$/i, "").trim();
+          // A name too long for one line of a tile gets its short word; the short word is still inside the full name.
+          const short = {
+            "Upload an image onto the board": "Image",
+            "Emoji and icons": "Emoji",
+            "Lasso select": "Lasso",
+            "Sticky note": "Sticky",
+            "Straight link": "Straight",
+            "Curved link": "Curved",
+          };
+          const name = short[full] || full;
+          if (!name) continue;
+          const word = document.createElement("span");
+          word.className = "wb-tool-word";
+          word.textContent = name;
+          button.appendChild(word);
+          button.classList.add("wb-tool-worded");
+          wbToolsWords.push(word);
+        }
         //: Picking a tool is the end of the errand, so the sheet gets out of
         //: the way and the board is there to draw on. The `close` the recipe
         //: hands `build`, not the variable the call assigns afterwards, and
@@ -16284,6 +16311,11 @@ async function initWhiteboard() {
         );
       },
       onClose: () => {
+        for (const word of wbToolsWords) {
+          word.parentElement?.classList.remove("wb-tool-worded");
+          word.remove();
+        }
+        wbToolsWords = [];
         home.parent.insertBefore(toolGroup, home.next);
         wbToolsSheetClose = null;
         toolsOpener?.setAttribute("aria-expanded", "false");
@@ -22297,7 +22329,23 @@ function renderWhiteboard() {
     return crossLinkIds.has(`${parsed?.sourceId}:${parsed?.targetId}`);
   });
 
+  //: **A pen or highlighter stroke is repainted only when its look can have
+  //: changed** (audit 1028 B3, B4): the key is its data plus what decides the
+  //: ink (the board's colour and the light or dark mode), the way
+  //: `wbObjectPaintKey` does for a topic. Null for everything else: a
+  //: connector's path comes from the items at its ends, and a shape has a
+  //: label and a rough look. 300 strokes cost 90ms a render at 4x throttle
+  //: whatever had moved; a gesture that moved a stroke's drawn path and did
+  //: not put it back is caught by the skip's own check of that path.
+  const strokeInk = `${wbBoardBg()}|${document.documentElement.dataset.mode}`;
+  const strokePaintKey = (d) =>
+    typeof d.data === "string" && !d.data.includes("link-") && /"shape":\s*"(?:draw|highlighter)"/.test(d.data)
+      ? `${d.data}|${strokeInk}`
+      : null;
   sketchUpdate.each(function(d) {
+    const strokeKey = strokePaintKey(d);
+    const drawn = this.querySelector(".sketch-path");
+    if (strokeKey && this._wbStrokeKey === strokeKey && drawn?.getAttribute("d") === this._wbStrokeD) return;
     let pathData = d.data;
     let hitboxData = null;
     let stroke = "var(--text-color)";
@@ -22417,6 +22465,8 @@ function renderWhiteboard() {
     // After the path, which the label is laid out from (decision 12).
     wbPaintShapeLabel(this, shapeData, d);
     wbPaintLinkLabel(this, d, linkData);
+    this._wbStrokeKey = strokeKey;
+    this._wbStrokeD = strokeKey ? pathData : null;
   });
 
   sketchSelection.exit().remove();

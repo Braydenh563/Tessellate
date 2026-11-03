@@ -17,8 +17,8 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 11 | U8 | high | new document opens in Read mode on phone | fixed (673039d, reconciled 2026-10-30) | S |
 | 12 | U9 | high | find and replace panel is unstyled CodeMirror default | fixed (styling 673039d; match count this batch) | M |
 | 13 | U10 | high | image menu inserts bare stub with no picker | fixed (673039d, reconciled 2026-10-30) | M |
-| 14 | B3 | high | every render clears caches and rebuilds all map nodes | new | L |
-| 15 | B4 | high | full board render per frame with no dirty set | new | L |
+| 14 | B3 | high | every render clears caches and rebuilds all map nodes | already fixed in fact (13a-open paint key): 500 of 500 topic elements survive a render, 72.8 ms median at 4x throttle for one moved topic (10.6 ms at 200 topics unthrottled) | L |
+| 15 | B4 | high | full board render per frame with no dirty set | fixed 1102 a30g for pen strokes (300 sketches idle render 90 to 42 ms at 4x throttle); topics already keyed; connectors and shapes still repaint, see a30g-1102.md | L |
 | 16 | D7 | high | prose spell pass walks whole document every pause | fixed (673039d, reconciled 2026-10-30) | M |
 | 17 | S2 | high | graph layout blocks the main thread at about 2,000 notes | fixed 2026-10-30 (graph-1030: 25 to 9-10 s, long tasks 149 to 20) | L |
 | 18 | S3 | high | 1.1 MB index.html with comments and mascot code in boot path | fixed 1031: avatars and atlas lazy (boot bytes 0.77x, lock FCP 0.71x); comment stripping left | M |
@@ -44,11 +44,11 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 38 | D10 | med | take-theirs leaves title box stale, next save resends old title | fixed 2026-10-30 | S |
 | 39 | D13 | med | POST documents/contents skips media hook and payload cap | fixed 2026-10-30: media hook, archived refused, JSON cap 16 MB (K4) | S |
 | 40 | D17 | med | blank title autosaved as Untitled document N | fixed (this batch) | S |
-| 41 | D26 | med | comments have no author, time, replies or resolved view | new | L |
+| 41 | D26 | med | comments have no author, time, replies or resolved view | fixed (65c01c4, e3aae86) | L |
 | 42 | D27 | med | no image resize handles or alt-text prompt on paste | fixed (61089b9) | M |
 | 43 | D28 | med | no continuous zoom, text size in three steps | won't fix (browser zoom gives continuous zoom; three prose sizes kept, 2026-10-30) | S |
 | 44 | D29 | med | replace dialog lacks whole-word and match preview | fixed (this batch) | M |
-| 45 | D30 | med | spellcheck is English only, no per-document language | new | L |
+| 45 | D30 | med | spellcheck is English only, no per-document language | listed (a30h-1102: no other dictionary is vendored; recommendation in a30h-1102.md) | L |
 | 46 | E13 | med | bare undo after an answer gets help text, not undo | fixed 1030 | S |
 | 47 | E14 | med | follow-ups like pin that note lose their referent | fixed (e3acb8f) | M |
 | 48 | E15 | med | stats route steals questions that name a note subject | fixed 1030 | S |
@@ -84,12 +84,12 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 78 | S48 | med | no tag rename or merge in the tags UI | fixed (already built; reconciled 2026-10-30) | M |
 | 79 | S49 | med | no note version history view | fixed (already built; reconciled 2026-10-30) | L |
 | 80 | S50 | med | no search operators such as tag: and before: | already built (search operators, measured; negated -tag: not supported) | M |
-| 81 | B12 | med | same keys mean different things by mode | new | M |
+| 81 | B12 | med | same keys mean different things by mode | fixed (d75c6ac, 2026-11-03: sheet lists the open surface's keys, a shared key names its surface) | M |
 | 82 | B13 | med | shortcuts hidden in menu subtitles, no cheat sheet | fixed (already built; reconciled 2026-10-30) | S |
 | 83 | B20 | med | lock state shown only on hover, no persistent badge | fixed | S |
 | 84 | D31 | med | Mod-h unreachable on macOS, Ctrl+1-3 collide with browser | fixed in part (Mac Replace chord; Ctrl+1 to 3 headings kept, 2026-10-30) | S |
 | 85 | D32 | med | Mod-g means go to line in code and find-next in prose | fixed | S |
-| 86 | D33 | med | replace-in-all and find-in-all separate from CM find panel | new | M |
+| 86 | D33 | med | replace-in-all and find-in-all separate from CM find panel | fixed (b092d42) | M |
 | 87 | D34 | med | autosave failure is tiny status text, no banner or retry | fixed (this batch) | S |
 | 88 | E23 | med | quiz cloze questions cut the subject off | fixed (eab5bef) | M |
 | 89 | E27 | med | act summaries have lowercase verbs, ids and stale notice | fixed (b6c3e07) | S |
@@ -122,19 +122,19 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 116 | S52 | med | graph has no find box on the main bar | fixed (#graph-search on the graph bar, 1029 rank 39) | S |
 | 117 | S53 | med | timeline and notes list page separately | left (shell-1031.md) | M |
 | 118 | U11 | med | two menus both named Insert with different contents | fixed (673039d, reconciled 2026-10-30) | S |
-| 119 | U12 | med | insert menu hides key hints for most tools | new | S |
+| 119 | U12 | med | insert menu hides key hints for most tools | fixed (99b211b, 2026-11-03) | S |
 | 120 | U13 | med | two buttons labelled Library on the board | fixed (this batch) | S |
-| 121 | U14 | med | delete tool 2px from undo and redo | new | S |
-| 122 | U15 | med | arrange menu has 23 items and clips at smaller heights | new | M |
-| 123 | U16 | med | side tabs 28px, below phone parity size | new | S |
-| 124 | U17 | med | object grip glyph 1.87:1 contrast | new | S |
-| 125 | U21 | med | tools sheet items icon-only, toast covers heading | new | S |
-| 126 | U22 | med | board phone header 104px and title clipped | new | M |
-| 127 | U23 | med | mind map on phone not panned to new node | new | M |
-| 128 | U24 | med | newest node 5px from canvas right edge | new | S |
-| 129 | U26 | med | template strip clipped at right edge | new | S |
-| 130 | U27 | med | layout menu is text-only, two clicks | new | M |
-| 131 | U28 | med | font size stepper mixes 22px and M | new | S |
+| 121 | U14 | med | delete tool 2px from undo and redo | fixed (1e8d860, 2026-11-03: gap 2px to 10px) | S |
+| 122 | U15 | med | arrange menu has 23 items and clips at smaller heights | n/a (does not clip 2026-11-03: 1366x768 bottom 760 of 768 and scrolls; 24 rows left, a30f-1102) | M |
+| 123 | U16 | med | side tabs 28px, below phone parity size | fixed (60afd82, 2026-11-03: 28px to 32px, 44px under touch) | S |
+| 124 | U17 | med | object grip glyph 1.87:1 contrast | n/a (not reproduced 2026-11-03: 5.91:1 light, 6.80 to 7.96:1 dark across 14 looks) | S |
+| 125 | U21 | med | tools sheet items icon-only, toast covers heading | fixed (f978761, 2026-11-03: 18 tiles named, all 44px or more; the toast was not seen) | S |
+| 126 | U22 | med | board phone header 104px and title clipped | fixed (4f48262, 2026-11-03: 104.4px to 54px at 390x844) | M |
+| 127 | U23 | med | mind map on phone not panned to new node | n/a (not reproduced 2026-11-03: newest topic in view on 4 of 4 adds; the title half is U22) | M |
+| 128 | U24 | med | newest node 5px from canvas right edge | fixed (4dbce7c, 2026-11-03: 5px to 24px) | S |
+| 129 | U26 | med | template strip clipped at right edge | fixed (a3a9f85, 2026-11-03: close button 28px to 32px, 44px under touch; the cut tile is the edge-fade cue) | S |
+| 130 | U27 | med | layout menu is text-only, two clicks | fixed (460f3c4, 2026-11-03: a glyph on each of ten rows) | M |
+| 131 | U28 | med | font size stepper mixes 22px and M | fixed (4a32c26, 2026-11-03: 22px reads L+) | S |
 | 132 | U29 | med | two New document buttons on the empty state | fixed | S |
 | 133 | U31 | med | formatting toolbar hidden by default | skipped (decision PLAN.md D1: the strip starts collapsed, chrome 171 to 89px; the Formatting button already says Show or Hide formatting toolbar and carries aria-pressed) | S |
 | 134 | U32 | med | export three clicks deep in More menu | fixed (efa1ffd) | S |
@@ -146,21 +146,21 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 140 | B5 | med | 14+ separate pointermove listeners, several unthrottled | fixed (9e83452, reconciled 2026-10-30) | M |
 | 141 | B17 | med | link-sketch lookups parse every sketch JSON | fixed | M |
 | 142 | B18 | med | item and map size caches cleared per render, forcing layout reads | fixed | M |
-| 143 | D12 | med | replace-in-all re-downloads every document on each keystroke | docs/roadmap/DOCUMENTS_PLAN.md:1324 | M |
-| 144 | D18 | med | live view rebuilds decorations per change, table copies text | new | L |
+| 143 | D12 | med | replace-in-all re-downloads every document on each keystroke | fixed (board1518-1101): 3 requests for three keystrokes to 1, tests/test_documents_replace_all.py | M |
+| 144 | D18 | med | live view rebuilds decorations per change, table copies text | not reproduced 1102 a30g: the live plugin patches incrementally and `docStr` is memoised per immutable CM text, so one 100 KB copy per keystroke (0.1 ms); a keystroke in a 100 KB document with a TOC and tables is 19 to 28 ms median at 4x throttle (worst about 100); the other plugins' per-keystroke scans are in a30g-1102.md | L |
 | 145 | D19 | med | docText toString called 35 times, each O(n) | fixed (7add0bf) | M |
 | 146 | D20 | med | five whole-document renders per pause even when hidden | fixed (7add0bf) | M |
 | 147 | D21 | med | four document-wide listeners run on every tab | fixed (already: 4000 mouseover + 2000 click events on the dashboard tab cost 5.5 ms and 24 ms in all of documents.js, 1.4 and 12 microseconds per event) | S |
-| 148 | D22 | med | 1.1 MB documents.js plus CodeMirror bundle loaded eagerly | new | L |
+| 148 | D22 | med | 1.1 MB documents.js plus CodeMirror bundle loaded eagerly | already lazy in fact (a29, DC13): boot loads no documents, CodeMirror, whiteboard or d3 file; the Library tab adds library.js 331 KB, the first document open adds the editor files and CodeMirror 832 KB; the remaining cost (whiteboard and graph files riding with the document bundle) is a design note in a30g-1102.md | L |
 | 149 | K30 | med | link-suggestions loads every entry per request, no cache | fixed 2026-10-30: kept until a session write, 300 s backstop | M |
 | 150 | K31 | med | GET /entities reads every mention then slices in Python | fixed 2026-10-30: counted in SQL | S |
-| 151 | E34 | med | live markdown re-renders whole answer every 66 ms | new | M |
+| 151 | E34 | med | live markdown re-renders whole answer every 66 ms | fixed 1102 a30g (4x throttle, 9.8 KB stream: render time 1481 to 166 ms, worst 115 to 36 ms, long tasks 41 totalling 4098 ms to 2 totalling 141 ms) | M |
 | 152 | S16 | med | notes list never recycles rows, DOM grows unbounded | left (large; notes list already windowed, shell-1031.md) | L |
 | 153 | S37 | med | list filter re-renders without debounce | fixed (already: the notes filter waits 150 ms, settings-wiring.js) | S |
 | 154 | S38 | med | many timers run independent intervals | fixed (b8cfb46) | S |
-| 155 | U18 | med | long tasks up to 225 ms on board interactions | new | M |
-| 156 | U19 | med | mind map sibling add long tasks up to 509 ms | new | M |
-| 157 | U20 | med | code file open long task of 305 ms | new | M |
+| 155 | U18 | med | long tasks up to 225 ms on board interactions | not reproduced 1102 a30g: board list open 0 long tasks over three opens, undo on a 200-topic board 0 long tasks at 1x; only an undo on a board with 300 link sketches reaches 412 ms render plus 187 ms thumbnail export (candidate in a30g-1102.md) | M |
+| 156 | U19 | med | mind map sibling add long tasks up to 509 ms | not reproduced 1102 a30g: steady-state sibling add on a 200-topic map stays inside the 100 ms add gate (provisional topic defers transforms and edges); the audit figure matches a cold first add in a fresh page | M |
+| 157 | U20 | med | code file open long task of 305 ms | not reproduced as one task 1102 a30g: a 2,000-line .py file opens with the cost split across tasks (outline 51 ms, tools 15 ms, indent-mix scan 30 ms); splitting `docAfterFirstPaint` is in a30g-1102.md | M |
 | 158 | B6 | med | 319 addEventListener vs 7 remove; re-init double-fires handlers | fixed | M |
 | 159 | B15 | med | four overlapping drag mechanisms plus synthetic MouseEvent bridge | new | L |
 | 160 | D23 | med | hot-spot functions and 255 shared lets in one file | new | L |
@@ -173,8 +173,8 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 167 | S17 | med | four copies of the relative-time helper | fixed | S |
 | 168 | S20 | med | cache prefix still carries the old product name | fixed (already built; reconciled 2026-10-30) | S |
 | 169 | S44 | med | mixed button heights and radii across toolbars | fixed (b8cfb46, lint; toolbar sizes already tokens) | M |
-| 170 | U25 | med | collapse chevrons overlap node edges | new | S |
-| 171 | U30 | med | editor toolbar heights inconsistent | new | S |
+| 170 | U25 | med | collapse chevrons overlap node edges | fixed (2c27387, 2026-11-03: 13px overlap to 3px outside) | S |
+| 171 | U30 | med | editor toolbar heights inconsistent | n/a (not reproduced 2026-11-03: outer toolbar 32px everywhere; inner segmented buttons 28px by recipe) | S |
 | 172 | B40 | low | catch blocks swallow save and delete errors silently | docs/roadmap/WORLD_CLASS_PLAN.md:3877 | S |
 | 173 | K11 | low | llm_api_key stored in plain text in preferences.json | new | M |
 | 174 | K13 | low | MCP server has no auth and offers write tools | docs/roadmap/BACKLOG.md:4396 | M |

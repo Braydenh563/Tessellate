@@ -1480,6 +1480,10 @@ class Document(Base, WorkspaceMixin):
     # every document that existed before file types did as markdown, which is
     # what all of them are.
     file_type: Mapped[str] = mapped_column(String(20), default="md")
+    #: The comment threads behind the inline `%%remark%%`s (author, time,
+    #: replies, resolved), a JSON list kept beside the text and never in it
+    #: (core/docthreads.py). Additive; "" is none, as every older row reads.
+    threads: Mapped[str] = mapped_column(Text, default="")
     #: Where the Graph holds this document's node in place, as a note's
     #: `graph_pin_x`/`graph_pin_y` do (B78: a document node can be pinned by
     #: double-click or drag, and had nowhere to keep it). Additive.
