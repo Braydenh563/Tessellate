@@ -23,6 +23,7 @@ from sqlalchemy import func, or_, select, text
 from sqlalchemy.orm import Session
 
 from tessellate.ai import recognise, variants
+from tessellate.ai.note_recency import _RECENCY_ASK, is_recency_ask  # noqa: F401  # where recency is worded; re-exported for its callers
 from tessellate.ai.embeddings import (
     EmbeddingService,
     bytes_to_vector,
@@ -1132,30 +1133,6 @@ def _rank_inner(
     if semantic:
         return [entry for entry, _s in semantic][:limit], "semantic"
     return keyword[:limit], "keyword"
-
-
-_RECENCY_ASK = re.compile(
-    r"\b(?:last|latest|newest|most recent|recent)\s+(?:\w+\s+){0,2}?(?:note|notes|entry|entries|thing i (?:wrote|saved|added))\b"
-    r"|\b(?:write|wrote|written|saved|added|captured)\b[^.?!]{0,20}\b(?:last|most recently)$"
-    #: "What have I saved recently?" (INBOX 441): the whole question is the
-    #: verb and the time word, nothing between them to search for. A topic
-    #: in between ("written about golf recently") stays a search.
-    r"|^what\s+(?:have|did|had)\s+i\s+(?:been\s+)?(?:write|wrote|written|writing|save|saved|saving|add|added|adding|capture|captured|capturing|note|noted)\s+(?:down\s+)?(?:recently|lately)$",
-    re.IGNORECASE,
-)
-
-
-def is_recency_ask(query: str) -> bool:
-    r"""Whether a question asks for the newest notes rather than a subject.
-
-    The trailing whitespace and closing marks are stripped here, in code,
-    so the pattern ends on a word and `$` with no quantifier before it:
-    any `\s*` (or `[\s?.!]*`) ahead of `$` backtracks over a run of tabs
-    on every start position `search` tries (CodeQL 443 and 445, the second
-    after a 300-character slice the analysis cannot see). Read on the first
-    300 characters: a recency question is short.
-    """
-    return bool(_RECENCY_ASK.search(query[:300].strip().rstrip("?.! \t\r\n")))
 
 
 #: The words a question about a whole category is made of besides the

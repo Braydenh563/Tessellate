@@ -4713,10 +4713,17 @@ mark.lightbox-hit {
    entirely from `#chat-messages`, its only flow child), can only ever
    overlap the transcript: `.hidden` toggling this element now changes
    nothing about `.chat-transcript`'s own box. */
+/* **The pill's own strip** (INBOX 1590: it sat over the source cards and the
+   Next chips). A transcript that scrolls keeps this much room under its pane,
+   set by `syncChatJumpLatest`; the pill is anchored to the bottom of that
+   padding, so it is outside the pane's box and cannot cover a card or chip. */
+.chat-transcript.has-jump-gap {
+  padding-bottom: calc(var(--space-9) + var(--space-5));
+}
 .chat-jump-latest {
   position: absolute;
   left: 50%;
-  bottom: var(--space-3);
+  bottom: var(--space-1);
   transform: translateX(-50%);
   z-index: 4;
   display: inline-flex;

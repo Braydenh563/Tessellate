@@ -608,12 +608,71 @@ def _has_content(subject: str) -> bool:
 #: Words that carry no signal in a search. Matching on them is worse than
 #: useless: "a" appears in nearly every note ever written, so a broad question
 #: would return the whole notebook ranked by noise.
-STOPWORDS = frozenset(
-    """a an and are as at be been but by can did do does for from had has have
-    how i if in into is it its me my of on or our so than that the their them
-    then there these they this to was we were what when where which who why
-    will with would you your""".split()
+#: What an apostrophe leaves behind in a contraction, and the contractions
+#: written without one: "I've" splits to "i" and "ve", "dont" never splits at
+#: all. None names anything, so none is ever a subject (INBOX 1590: "recent
+#: notes I've made" was searched, answered and offered as "about ve").
+CONTRACTION_PIECES = frozenset(
+    """ve re ll s t d m ive im youre theyre weve dont doesnt didnt isnt arent wasnt werent cant couldnt
+    shouldnt wouldnt wont havent hasnt hadnt thats whats whos theres""".split()
 )
+
+STOPWORDS = (
+    frozenset(
+        """a an and are as at be been but by can did do does for from had has have
+        how i if in into is it its me my of on or our so than that the their them
+        then there these they this to was we were what when where which who why
+        will with would you your""".split()
+    )
+    | CONTRACTION_PIECES
+)
+
+#: Words a chip's subject is never made of beyond `STOPWORDS`: the pronouns
+#: and owners a person says instead of naming something.
+_PRONOUNS = frozenset(
+    """he she him her his hers us ours mine yours theirs myself yourself himself herself itself ourselves
+    themselves one someone anyone everyone nobody""".split()
+)
+
+#: A word with an apostrophe in it, either mark: "I've", "you’re", "don't", "Alice's".
+_APOSTROPHE_WORD = re.compile(r"\b([^\W\d_]+)['\u2019]([^\W\d_]+)\b")
+#: The bases whose "'s", "'d" or "'ll" is a pronoun or an auxiliary, never a possessive.
+_SPEAKER_BASES = frozenset(
+    """i you we they he she it that this there here who what where when why how which would could should might must
+    let""".split()
+)
+
+
+def without_contractions(text: str) -> str:
+    """`text` with each contraction taken out: "I've", "don't" and "it's" go
+    whole, a possessive keeps its owner ("Alice's notes" is "Alice notes"),
+    either apostrophe. Words that only look like contractions are left alone."""
+
+    def keep(m: re.Match) -> str:
+        base, tail = m.group(1), m.group(2).lower()
+        if tail == "t" and base.lower().endswith("n"):
+            return " "
+        if tail in ("ve", "re", "ll", "d", "m", "s", "t"):
+            return " " if base.lower() in _SPEAKER_BASES else base
+        return m.group(0)
+
+    return _APOSTROPHE_WORD.sub(keep, text or "")
+
+
+def is_chip_subject(subject: str) -> bool:
+    """Whether `subject` can be what a follow-on chip asks about: at least one
+    word of three letters or more that is no stop word, pronoun, function word
+    or piece of a contraction. "ve", "I've", "they" and "it" make no chip. A
+    two-letter word counts only typed in capitals ("AI", "UK"): an acronym, not
+    a fragment."""
+    for word in (w for w in re.split(r"[\W\d_]+", without_contractions(subject or "")) if w):
+        low = word.lower()
+        if low in STOPWORDS or low in FUNCTION_WORDS or low in _PRONOUNS:
+            continue
+        if len(low) >= 3 or (len(low) == 2 and word.isupper()):
+            return True
+    return False
+
 
 #: Words that join a sentence and name nothing, beyond `STOPWORDS` (which
 #: search needs to stay narrow: "about" still matches a note that says it).
@@ -651,7 +710,7 @@ def search_terms(text: str) -> list[str]:
     """
     #: "pull up my uni notes": the command is not a word to find ("up" is in a
     #: dozen notes); only at the start, so "look up" inside a subject stays.
-    words = [w for w in re.split(r"\W+", _LEADING_COMMAND.sub("", (text or "").lower())) if w]
+    words = [w for w in re.split(r"\W+", without_contractions(_LEADING_COMMAND.sub("", (text or "").lower()))) if w]
     terms = [w for w in words if len(w) > 1 and w not in STOPWORDS]
     #: "what do I know about Lisbon": "about" introduces the subject and is not
     #: part of it, so it matched every note that merely says "about" (audit

@@ -51,6 +51,7 @@ from tessellate.ai import composer_select
 from tessellate.ai.composer_lists import clean
 from tessellate.ai import recognise as recogniser
 from tessellate.ai import when as when_words
+from tessellate.search import query as query_understanding
 
 #: The connecting words, one table (decision 72: a voice swaps this, never
 #: the facts). `{}` slots are filled in order.
@@ -5034,7 +5035,7 @@ def _next_asks(kind: str, question: str, rows: list[dict]) -> list[str]:
     said = ["".join(part[1] for part in p) for p in picks]
     members = [v for v in views if v.id in cited]
     topic = _topic(question, members) if members else ""
-    if topic and topic != "this" and len(topic) <= 40 and not question_noise.filler_subject(topic):
+    if topic and topic != "this" and len(topic) <= 40 and not question_noise.filler_subject(topic) and query_understanding.is_chip_subject(topic):
         topic = _chip_subject(topic, question)
         said += [q.format(t=topic) for q in _NEXT_ABOUT.get(kind, _NEXT_ABOUT["fact"])]
     return _fresh_chips(said, question)[:3]
