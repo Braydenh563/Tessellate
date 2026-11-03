@@ -844,6 +844,8 @@ function sizeDashWidgets() {
     card.style.gridRowEnd = sizeDashWidgetSpan(card, heights[i], rowUnit, rowGap, cardGap);
   });
   grid.classList.add("spans-ready");
+  //: A card that changed size may be the heatmap's: it keeps its end in view.
+  for (const heat of grid.querySelectorAll(".heatmap")) heat.dispatchEvent(new Event("dash-refit"));
 }
 
 // Widget bodies fill in asynchronously, so re-measure whenever one changes
@@ -2949,18 +2951,33 @@ async function renderHeatmapWidget(body) {
       cell.title = `${day.toLocaleDateString()}, ${nounCount(count, "note")}`;
       grid.appendChild(cell);
     });
-    // The grid runs oldest → newest, so the interesting end is the right
-    // one. Start scrolled there instead of making the user drag across
-    // empty squares to find today.
-    requestAnimationFrame(() => {
-      grid.scrollLeft = grid.scrollWidth;
-    });
   }
 
-  //: No `ResizeObserver` any more: the grid's own width no longer decides
-  //: how many weeks are drawn (the column width is fixed in CSS), so a
-  //: widget resize has nothing left for a repaint to change.
+  //: **Opens at today, and stays there** (INBOX 1578: it opened at the far
+  //: left of an empty year). The grid runs oldest to newest, so the data is at
+  //: the right. `scrollLeft = scrollWidth` in a frame after the build set
+  //: nothing: the grid is `content-visibility: auto`, and until its cells are
+  //: laid out its `scrollWidth` reads its box (304 of 701 at 1440), so the
+  //: write clamped to 0. The end is read from the last cell's rect instead
+  //: (that read lays the cells out), and re-taken when the grid is laid out
+  //: (the observer, which also fires when a hidden tab shows), when it stops
+  //: being skipped, and on a resize, for as long as the reader has not
+  //: scrolled away from the end.
+  let atEnd = true;
+  function toEnd() {
+    const last = grid.lastElementChild;
+    if (!atEnd || !last) return;
+    grid.scrollLeft += last.getBoundingClientRect().right - grid.getBoundingClientRect().right;
+  }
+  grid.addEventListener("scroll", () => {
+    atEnd = grid.scrollWidth - grid.clientWidth - grid.scrollLeft < 2;
+  }, { passive: true });
+  grid.addEventListener("contentvisibilityautostatechange", toEnd);
+  //: The dashboard's own card observer tells it (`sizeDashWidgets`), so no
+  //: observer of its own.
+  grid.addEventListener("dash-refit", toEnd);
   paint();
+  requestAnimationFrame(toEnd);
 
   const legend = document.createElement("div");
   legend.className = "heat-legend muted";
