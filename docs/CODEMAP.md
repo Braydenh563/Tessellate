@@ -2,9 +2,9 @@
 
 Generated 2026-11-03 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7737, frontend ids 2635, CSS sections 518, backend routes 641, backend modules 8561, test files 1951, tests 16407, plan headings 993, app scripts 28, boot scripts 37, script files 242.
+Counts: frontend functions 7738, frontend ids 2635, CSS sections 518, backend routes 641, backend modules 8561, test files 1952, tests 16417, plan headings 993, app scripts 28, boot scripts 37, script files 242.
 
-## Frontend functions (7737)
+## Frontend functions (7738)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -5600,29 +5600,30 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `mathEditorWrite` | frontend/js/math-editor.js:447 |
 | `openMathEditor` | frontend/js/math-editor.js:482 |
 
-### frontend/js/math-field.js (19)
+### frontend/js/math-field.js (20)
 
 | Name | File:line |
 |---|---|
-| `closeMathInPlace` | frontend/js/math-field.js:262 |
-| `mathFieldAllowStyles` | frontend/js/math-field.js:108 |
+| `closeMathInPlace` | frontend/js/math-field.js:364 |
+| `mathFieldAllowStyles` | frontend/js/math-field.js:173 |
 | `mathFieldBoxes` | frontend/js/math-field.js:70 |
-| `mathFieldChange` | frontend/js/math-field.js:80 |
-| `mathFieldConfigure` | frontend/js/math-field.js:129 |
-| `mathFieldCreate` | frontend/js/math-field.js:154 |
-| `mathFieldFoot` | frontend/js/math-field.js:280 |
+| `mathFieldChange` | frontend/js/math-field.js:145 |
+| `mathFieldConfigure` | frontend/js/math-field.js:194 |
+| `mathFieldCreate` | frontend/js/math-field.js:219 |
+| `mathFieldFoot` | frontend/js/math-field.js:382 |
 | `mathFieldGroupEnd` | frontend/js/math-field.js:26 |
-| `mathFieldKeys` | frontend/js/math-field.js:345 |
-| `mathFieldLatexBox` | frontend/js/math-field.js:176 |
-| `mathFieldOwns` | frontend/js/math-field.js:258 |
-| `mathFieldPane` | frontend/js/math-field.js:197 |
-| `mathFieldPlace` | frontend/js/math-field.js:268 |
-| `mathFieldRead` | frontend/js/math-field.js:167 |
+| `mathFieldKeys` | frontend/js/math-field.js:447 |
+| `mathFieldLatexBox` | frontend/js/math-field.js:241 |
+| `mathFieldOwns` | frontend/js/math-field.js:360 |
+| `mathFieldPane` | frontend/js/math-field.js:262 |
+| `mathFieldPlace` | frontend/js/math-field.js:370 |
+| `mathFieldRead` | frontend/js/math-field.js:232 |
+| `mathFieldSlots` | frontend/js/math-field.js:85 |
 | `mathFieldStored` | frontend/js/math-field.js:60 |
-| `mathFieldTouch` | frontend/js/math-field.js:92 |
+| `mathFieldTouch` | frontend/js/math-field.js:157 |
 | `mathFieldUnplace` | frontend/js/math-field.js:43 |
-| `mathFieldWrite` | frontend/js/math-field.js:171 |
-| `openMathInPlace` | frontend/js/math-field.js:297 |
+| `mathFieldWrite` | frontend/js/math-field.js:236 |
+| `openMathInPlace` | frontend/js/math-field.js:399 |
 
 ### frontend/js/meaning.js (18)
 
@@ -6379,44 +6380,44 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `calcFigure` | frontend/js/reply-kit.js:1001 |
-| `chatQueuePaint` | frontend/js/reply-kit.js:1946 |
-| `openCalculator` | frontend/js/reply-kit.js:417 |
+| `calcFigure` | frontend/js/reply-kit.js:1009 |
+| `chatQueuePaint` | frontend/js/reply-kit.js:1952 |
+| `openCalculator` | frontend/js/reply-kit.js:425 |
 | `renderRelatedElsewhere` | frontend/js/reply-kit.js:68 |
 | `renderReplyPanel` | frontend/js/reply-kit.js:23 |
-| `renderToolsUnsupportedNotice` | frontend/js/reply-kit.js:1618 |
-| `replyByHelpPanel` | frontend/js/reply-kit.js:1669 |
-| `replyByHover` | frontend/js/reply-kit.js:1690 |
-| `replyByline` | frontend/js/reply-kit.js:1722 |
-| `replyBylineFacts` | frontend/js/reply-kit.js:1647 |
-| `replyCalcActions` | frontend/js/reply-kit.js:567 |
-| `replyCalcBuild` | frontend/js/reply-kit.js:444 |
-| `replyCalcConvertPane` | frontend/js/reply-kit.js:1451 |
-| `replyCalcEquation` | frontend/js/reply-kit.js:1207 |
-| `replyCalcHistory` | frontend/js/reply-kit.js:1343 |
-| `replyCalcKeypad` | frontend/js/reply-kit.js:1296 |
-| `replyCalcPanel` | frontend/js/reply-kit.js:392 |
-| `replyCalcResult` | frontend/js/reply-kit.js:970 |
-| `replyCalcShow` | frontend/js/reply-kit.js:1011 |
-| `replyCalcWork` | frontend/js/reply-kit.js:406 |
-| `replyCalcWorkPane` | frontend/js/reply-kit.js:1036 |
+| `renderToolsUnsupportedNotice` | frontend/js/reply-kit.js:1624 |
+| `replyByHelpPanel` | frontend/js/reply-kit.js:1675 |
+| `replyByHover` | frontend/js/reply-kit.js:1696 |
+| `replyByline` | frontend/js/reply-kit.js:1728 |
+| `replyBylineFacts` | frontend/js/reply-kit.js:1653 |
+| `replyCalcActions` | frontend/js/reply-kit.js:575 |
+| `replyCalcBuild` | frontend/js/reply-kit.js:452 |
+| `replyCalcConvertPane` | frontend/js/reply-kit.js:1457 |
+| `replyCalcEquation` | frontend/js/reply-kit.js:1212 |
+| `replyCalcHistory` | frontend/js/reply-kit.js:1348 |
+| `replyCalcKeypad` | frontend/js/reply-kit.js:1301 |
+| `replyCalcPanel` | frontend/js/reply-kit.js:400 |
+| `replyCalcResult` | frontend/js/reply-kit.js:978 |
+| `replyCalcShow` | frontend/js/reply-kit.js:1019 |
+| `replyCalcWork` | frontend/js/reply-kit.js:414 |
+| `replyCalcWorkPane` | frontend/js/reply-kit.js:1044 |
 | `replyCompare` | frontend/js/reply-kit.js:173 |
 | `replyDrawAll` | frontend/js/reply-kit.js:34 |
 | `replyFillMeters` | frontend/js/reply-kit.js:193 |
-| `replyFinish` | frontend/js/reply-kit.js:1565 |
-| `replyFoldLong` | frontend/js/reply-kit.js:1803 |
-| `replyGist` | frontend/js/reply-kit.js:1798 |
+| `replyFinish` | frontend/js/reply-kit.js:1571 |
+| `replyFoldLong` | frontend/js/reply-kit.js:1809 |
+| `replyGist` | frontend/js/reply-kit.js:1804 |
 | `replyMeter` | frontend/js/reply-kit.js:160 |
 | `replyMonthName` | frontend/js/reply-kit.js:201 |
-| `replyNoteCard` | frontend/js/reply-kit.js:1896 |
-| `replyNoteEntry` | frontend/js/reply-kit.js:1845 |
-| `replyNoteId` | frontend/js/reply-kit.js:1840 |
-| `replyNotePreviews` | frontend/js/reply-kit.js:1849 |
+| `replyNoteCard` | frontend/js/reply-kit.js:1902 |
+| `replyNoteEntry` | frontend/js/reply-kit.js:1851 |
+| `replyNoteId` | frontend/js/reply-kit.js:1846 |
+| `replyNotePreviews` | frontend/js/reply-kit.js:1855 |
 | `replyPanelShell` | frontend/js/reply-kit.js:44 |
-| `replyPeekLink` | frontend/js/reply-kit.js:1868 |
-| `replyRecordReasons` | frontend/js/reply-kit.js:1600 |
-| `replyReveal` | frontend/js/reply-kit.js:1768 |
-| `replyRevealWanted` | frontend/js/reply-kit.js:1763 |
+| `replyPeekLink` | frontend/js/reply-kit.js:1874 |
+| `replyRecordReasons` | frontend/js/reply-kit.js:1606 |
+| `replyReveal` | frontend/js/reply-kit.js:1774 |
+| `replyRevealWanted` | frontend/js/reply-kit.js:1769 |
 | `replySpark` | frontend/js/reply-kit.js:136 |
 | `replyStatCard` | frontend/js/reply-kit.js:104 |
 | `replyStatCards` | frontend/js/reply-kit.js:206 |
@@ -12156,7 +12157,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/library-lazy.css | 8477 |
 | frontend/css/lightbox-lazy.css | 425 |
 | frontend/css/manual-lazy.css | 161 |
-| frontend/css/math-editor-lazy.css | 144 |
+| frontend/css/math-editor-lazy.css | 156 |
 | frontend/css/math-field-lazy.css | 72 |
 | frontend/css/meetings-lazy.css | 566 |
 | frontend/css/mermaid-lazy.css | 124 |
@@ -12172,7 +12173,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/quick-access-lazy.css | 105 |
 | frontend/css/quickadd-lazy.css | 35 |
 | frontend/css/recovery-lazy.css | 111 |
-| frontend/css/reply-kit-lazy.css | 760 |
+| frontend/css/reply-kit-lazy.css | 789 |
 | frontend/css/reveal-lazy.css | 10 |
 | frontend/css/search-lazy.css | 153 |
 | frontend/css/semantic-notice-lazy.css | 10 |
@@ -23592,7 +23593,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16407)
+## Tests (16417)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23771,6 +23772,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_breakpoints.py | 3 |
 | tests/test_budgets.py | 6 |
 | tests/test_calc_panel_1102.py | 13 |
+| tests/test_calc_redesign_1584.py | 10 |
 | tests/test_calc_ux_1530.py | 16 |
 | tests/test_calculator_equations.py | 10 |
 | tests/test_caption_whole_1555.py | 3 |

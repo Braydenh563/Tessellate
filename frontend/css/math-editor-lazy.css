@@ -96,12 +96,26 @@
   line-height: 1;
 }
 
-/* **Quicker than scrolling** (INBOX 1539): a row of the groups under the search, which stays in reach at the
-   top of the scrolling pane, jumps to a group and marks the one in view; the palette keeps its groups. */
-.math-editor-jump {
+/* **Quicker than scrolling** (INBOX 1539): a row of the groups under the search, which stays in reach at the top of the
+   scrolling pane, jumps to a group and marks the one in view; the palette keeps its groups.
+   **The strip is a band of its own** (INBOX 1584): the band is the sticky, opaque part (the card's own colour, a line under
+   it), so the strip's edge fade runs into that colour and not over the heading or the tiles scrolling under it, and the
+   strip's thin scrollbar is inside the band, under the words, never across the tiles. */
+.math-editor-band {
   position: sticky;
   top: calc(-1 * var(--space-1));
   z-index: 2;
+  margin-inline: calc(-1 * var(--space-1));
+  padding-inline: var(--space-1);
+  background: var(--modal-bg-opaque);
+  box-shadow: inset 0 -1px 0 var(--divider);
+}
+
+.math-editor-band[hidden] {
+  display: none;
+}
+
+.math-editor-jump {
   display: flex;
   gap: var(--space-1);
   padding: 0 0 var(--space-1);
@@ -109,8 +123,6 @@
   /* The one sign that the row runs on, besides the edge fade: a thin bar, no arrows. */
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
-  background: var(--modal-bg-opaque);
-  box-shadow: inset 0 -1px 0 var(--divider);
 }
 
 /* A palette's row is denser than a page's strip: the strip's height and underline, its own side room. */

@@ -7075,14 +7075,15 @@ def test_a_settings_action_is_text_not_a_boxed_ghost() -> None:
 def test_a_dialog_foot_has_one_bordered_secondary_and_its_third_action_is_quiet() -> None:
     """INBOX 1566: Manage templates, Choose a file and Turn into shapes sat bordered beside Cancel and a filled button. A
     foot's third action is `ghost quiet` and waits at the start; the Calculator's History bar, its panel buttons and the
-    chat's Change the model are quiet too."""
+    chat's Change the model are quiet too. INBOX 1584: the History toggle itself became a `disclosure-row` (the label and its
+    count on the left), and Clear is the one quiet text action on that line."""
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     for ident in ("note-template-manage", "wb-import-choose"):
         assert re.search(rf'class="ghost quiet small" id="{ident}"', html), ident
     css = "\n".join(path.read_text(encoding="utf-8") for path in CSS)
     assert "margin-inline-end: auto" in _rule_exact(css, ".space-dialog-actions > .quiet:first-child")
     kit = frontend_text("reply-kit.js")
-    for want in ('"ghost quiet small calc-log-toggle"', '"ghost quiet small calc-again"', 'clear.classList.add("quiet")', 'change.classList.add("quiet")'):
+    for want in ('"ghost small disclosure-row calc-log-toggle"', '"ghost quiet small calc-again"', 'clear.classList.add("quiet")', 'change.classList.add("quiet")'):
         assert want in kit, want
     assert kit.count('"ghost quiet small reply-panel-open"') == 2
 

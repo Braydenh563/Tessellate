@@ -97,8 +97,9 @@ check("nothing to do is the same string", refill("a+b") === "a+b", "");
 
 def test_the_field_refills_after_every_edit() -> None:
     pane = FIELD.split("function mathFieldPane", 1)[1].split("\n}\n", 1)[0]
-    assert "mathFieldBoxes(latex, true)" in pane, "the pane's input handler never restores an emptied box"
-    assert pane.index("mathFieldBoxes(latex, true)") < pane.index("onChange()"), "the change is announced before the box is back"
+    # 1584: the TeX is first run through the slot rules (got.tex), so the call names that, not the raw latex.
+    assert "mathFieldBoxes(got.tex, true)" in pane, "the pane's input handler never restores an emptied box"
+    assert pane.index("mathFieldBoxes(got.tex, true)") < pane.index("onChange()"), "the change is announced before the box is back"
 
 
 # --- 1540: the Inline and Display pill glides ------------------------------------------
@@ -134,8 +135,11 @@ def test_the_palette_has_a_jump_row_recent_and_favourites() -> None:
 
 
 def test_the_jump_row_stays_in_reach_while_the_palette_scrolls() -> None:
-    body = _rule(EDITOR_CSS, ".math-editor-jump")
-    assert "position: sticky" in body and "overflow-x: auto" in body
+    # 1584: the strip scrolls sideways on its own; the sticky part moved to the band around it, which also owns the
+    # opaque ground and the divider, so the fade and the scrollbar can no longer cross the tiles under it.
+    band = _rule(EDITOR_CSS, ".math-editor-band")
+    assert "position: sticky" in band and "var(--modal-bg-opaque)" in band
+    assert "overflow-x: auto" in _rule(EDITOR_CSS, ".math-editor-jump")
 
 
 # --- 1541: history for sums, conversions and equations ---------------------------------

@@ -540,6 +540,10 @@ function mathEditorMount({ host, target = null, done = () => {}, note = null, on
   jump.setAttribute("role", "group");
   jump.setAttribute("aria-label", "Jump to a group");
   edgeFadeWire(jump);
+  //: **The strip has a band of its own** (INBOX 1584: its fade ran over the "Functions" heading and the tiles, and its bar across them): the band is sticky and opaque in the card's own colour, so the fade at the strip's ends is into that colour and never into what scrolls under it, and the bar sits inside the band under the words.
+  const band = document.createElement("div");
+  band.className = "math-editor-band";
+  band.append(jump);
   jump.addEventListener("wheel", (event) => {
     if (Math.abs(event.deltaY) <= Math.abs(event.deltaX) || jump.scrollWidth <= jump.clientWidth) return;
     event.preventDefault();
@@ -547,7 +551,7 @@ function mathEditorMount({ host, target = null, done = () => {}, note = null, on
   }, { passive: false });
   const scroller = host.closest(".calc-panes");
   const mark = () => {
-    const edge = jump.getBoundingClientRect().bottom + 2;
+    const edge = band.getBoundingClientRect().bottom + 2;
     let on = jump.firstChild;
     for (const chip of jump.children) if (chip._head.getBoundingClientRect().top <= edge) on = chip;
     for (const chip of jump.children) {
@@ -573,7 +577,7 @@ function mathEditorMount({ host, target = null, done = () => {}, note = null, on
         return chip;
       })
     );
-    jump.hidden = !jump.children.length;
+    band.hidden = !jump.children.length;
     mark();
     //: A row arriving above (a pin) must not move what is being looked at.
     if (scroller?.scrollTop > 0) scroller.scrollTop += scroller.scrollHeight - before;
@@ -656,7 +660,7 @@ function mathEditorMount({ host, target = null, done = () => {}, note = null, on
   host.addEventListener("keydown", (event) => event.stopPropagation());
 
   //: Copy and Insert are the dialog's action row, pinned under the panes (reply-kit.js), so neither is a scroll away.
-  host.replaceChildren(mode.seg, ledeRow, pane.el, ...(note ? [note] : []), ...(log ? [log] : []), search, jump, list);
+  host.replaceChildren(mode.seg, ledeRow, pane.el, ...(note ? [note] : []), ...(log ? [log] : []), search, band, list);
   draw();
   //: After the first paint: the field's first focus laid out the pane and its tiles inside the press
   //: that opened it (245ms at 4x, INBOX 1534).
