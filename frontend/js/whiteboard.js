@@ -25589,13 +25589,86 @@ function wbPresentCaption(at, steps) {
 //: **A laser pointer while presenting** (canvasdepth; Excalidraw's and
 //: tldraw's): L or the bar's button; the pointer leaves a short trail that
 //: fades by CSS (`wb-laser-fade`), so no frame loop runs for it, and it
-//: draws nothing on the board.
+//: draws nothing on the board. Beside the button a small `kebabMenu` sets
+//: how it looks (INBOX 1577): the trail on or off, a look (dot, trail, ring,
+//: spotlight) and a colour from the board's palette, kept in this browser
+//: like the board's other display choices (`prefs`, key `wb-laser`). The
+//: looks animate with transform and opacity only, and under Reduce motion
+//: the trail is off whatever was chosen.
+const wbLaser = {
+  looks: { dot: "Dot", trail: "Trail", ring: "Ring", spotlight: "Spotlight" },
+  prefs() {
+    const saved = prefs.json("wb-laser", {});
+    return {
+      trail: saved.trail !== false,
+      look: Object.hasOwn(wbLaser.looks, saved.look) ? saved.look : "trail",
+      colour: Object.hasOwn(WB_RUN_SWATCHES, saved.colour) ? saved.colour : "red",
+    };
+  },
+  set(change) {
+    prefs.setJSON("wb-laser", { ...wbLaser.prefs(), ...change });
+    wbLaser.apply();
+    wbLaser.menu();
+  },
+  //: The layer wears the look and the colour as a data attribute and a custom
+  //: property, so a change repaints the head and the tail without rebuilding.
+  apply() {
+    const layer = document.getElementById("wb-laser-layer");
+    if (!layer) return;
+    const { look, colour } = wbLaser.prefs();
+    layer.dataset.look = look;
+    layer.style.setProperty("--wb-laser", colour === "red" ? "var(--error)" : WB_RUN_SWATCHES[colour]);
+  },
+  //: Rows are rebuilt on each change so the chosen ones carry a check, the way
+  //: the page picker marks its current page.
+  menu() {
+    const button = document.getElementById("wb-present-laser");
+    if (!button) return;
+    const now = wbLaser.prefs();
+    const items = [
+      { label: now.trail ? "Trail: on" : "Trail: off", group: "trail", run: () => wbLaser.set({ trail: !now.trail }) },
+      ...Object.entries(wbLaser.looks).map(([key, name]) => ({ label: name, group: "look", run: () => wbLaser.set({ look: key }) })),
+      {
+        label: "Colour",
+        group: "colour",
+        items: Object.keys(WB_RUN_SWATCHES).map((key) => ({
+          label: key[0].toUpperCase() + key.slice(1),
+          run: () => wbLaser.set({ colour: key }),
+        })),
+      },
+    ];
+    const fresh = kebabMenu(items, "Laser pointer options");
+    let wrap = document.getElementById("wb-present-laser-menu");
+    if (!wrap) {
+      wrap = fresh;
+      wrap.id = "wb-present-laser-menu";
+      wrap.querySelector(":scope > button").id = "wb-present-laser-opener";
+      //: Kept, because an open menu is moved to the body and a row's `run`
+      //: fires before it is back, so a lookup through the wrap finds nothing.
+      wrap.laserMenu = wrap.querySelector(".action-menu");
+      button.after(wrap);
+    } else {
+      wrap.laserMenu.replaceChildren(...fresh.querySelector(".action-menu").children);
+    }
+    const chosen = new Set([wbLaser.looks[now.look], now.colour[0].toUpperCase() + now.colour.slice(1)]);
+    for (const row of wrap.laserMenu.querySelectorAll(".menu-item")) {
+      if (!chosen.has(row.textContent.trim())) continue;
+      row.setAttribute("aria-current", "true");
+      const mark = document.createElement("i");
+      mark.className = "ph ph-check wb-present-pick-check";
+      mark.setAttribute("aria-hidden", "true");
+      row.append(mark);
+    }
+  },
+};
+
 function wbPresentLaserButton() {
   if (document.getElementById("wb-present-laser")) return;
   const button = smallButton("ph:cursor-click", "Laser pointer (L)", () => {});
   button.id = "wb-present-laser";
   button.setAttribute("aria-pressed", "false");
   document.getElementById("wb-present-end")?.before(button);
+  wbLaser.menu();
 }
 
 function wbPresentLaser(on = null) {
@@ -25623,6 +25696,7 @@ function wbPresentLaser(on = null) {
     head.hidden = true;
     layer.append(head);
     document.body.append(layer);
+    wbLaser.apply();
     container.addEventListener("pointermove", wbLaserTrail);
     container.addEventListener("pointerleave", wbLaserLeave);
   }
@@ -25644,6 +25718,9 @@ function wbLaserTrail(event) {
     head.style.transform = `translate(${event.clientX}px, ${event.clientY}px)`;
     head.hidden = false;
   }
+  //: Reduce motion has no trail, whatever was chosen: the head alone shows
+  //: where the pointer is.
+  if (!wbLaser.prefs().trail || reducedMotionWanted()) return;
   const dot = document.createElement("span");
   dot.className = "wb-laser-dot";
   dot.style.left = `${event.clientX}px`;

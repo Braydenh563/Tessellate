@@ -4,6 +4,7 @@ button; the trail fades by CSS, so no frame loop is added (the wake-source
 ratchet holds whiteboard.js's count), and nothing is drawn on the board. The
 browser half is `scratchpad/ui-sweeps/wblaser.js`."""
 
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -36,3 +37,34 @@ def test_the_laser_has_a_steady_head_and_the_count_cell_is_fixed():
     misc = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
     cell = misc[misc.index(".wb-present-count {") :].split("}")[0]
     assert "width: min(" in cell
+
+
+def test_the_laser_has_a_menu_for_its_look_and_it_is_remembered():
+    """INBOX 1577: a kebabMenu beside the button; trail on or off, four looks, a colour from
+    the board's palette, kept in this browser (`prefs`, key `wb-laser`)."""
+    laser = WB[WB.index("const wbLaser = {") : WB.index("function wbPresentLaserButton(")]
+    assert 'kebabMenu(items, "Laser pointer options")' in laser and "WB_RUN_SWATCHES" in laser
+    assert 'looks: { dot: "Dot", trail: "Trail", ring: "Ring", spotlight: "Spotlight" }' in laser
+    assert 'prefs.setJSON("wb-laser"' in laser and 'prefs.json("wb-laser"' in laser
+    assert "wbLaser.menu()" in _body("wbPresentLaserButton")
+    assert "wbLaser.apply();" in _body("wbPresentLaser")
+
+
+def test_reduce_motion_turns_the_trail_off_and_looks_animate_only_transform_and_opacity():
+    trail = _body("wbLaserTrail")
+    assert "reducedMotionWanted()" in trail and "wbLaser.prefs().trail" in trail
+    looks = CSS[CSS.index('.wb-laser-layer[data-look="dot"]') : CSS.index("/* The template gallery")]
+    assert "prefers-reduced-motion" not in looks
+    for keyframes in ("wb-laser-pulse", "wb-laser-fade"):
+        body = CSS[CSS.index(f"@keyframes {keyframes}") :].split("\n}\n")[0]
+        props = set(re.findall(r"^\s+([a-z-]+):", body, re.M))
+        assert props <= {"opacity", "transform"}, (keyframes, props)
+    assert looks.count('[data-motion="reduced"]') >= 2
+
+
+def test_a_menu_opens_at_least_as_wide_as_its_labelled_opener():
+    """INBOX 1577: the present bar's page picker (320px) opened a 206px list."""
+    menus = (ROOT / "frontend" / "js" / "menus.js").read_text(encoding="utf-8")
+    body = menus[menus.index("function openActionMenu(") :]
+    body = body[: body.index("escapeMenuIfClipped(menu, opener);")]
+    assert 'aria-haspopup") === "menu"' in body and "icon-only" in body and "menu.style.minWidth" in body

@@ -491,6 +491,17 @@ function openActionMenu(menu, opener) {
     menu.style.maxHeight = "";
     menu._fitCap = false;
   }
+  //: **A menu opens at least as wide as the control that opened it** (INBOX
+  //: 1577: the present bar's page picker, a 320px trigger over a 206px list).
+  //: A labelled menu button reads as a dropdown, and a dropdown narrower than
+  //: its own box looks cut off; an icon-only opener (the ⋯) is a glyph, not a
+  //: box to match. Capped at the menu's own max-width (24rem), because a
+  //: min-width would otherwise win over it.
+  menu.style.minWidth = "";
+  if (opener.getAttribute("aria-haspopup") === "menu" && !opener.classList.contains("icon-only")) {
+    const match = Math.min(Math.round(opener.getBoundingClientRect().width), 384);
+    if (match > 200) menu.style.minWidth = `${match}px`;
+  }
   menu.classList.remove("hidden", "action-menu-flip");
   opener.setAttribute("aria-expanded", "true");
   // Whichever ancestor is the stacking context this menu is trapped in. On a

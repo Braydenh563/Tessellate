@@ -2692,6 +2692,7 @@ TOPIC_META: dict[str, dict] = {
     "mind-maps": {"title": "Mind maps", "path": "Library tab, Boards & maps"},
     "whiteboard-controls": {"title": "Whiteboard keys: tools and moving around", "path": "Library tab, Boards & maps"},
     "whiteboard-selection": {"title": "Whiteboard keys: selection, menus and presenting", "path": "Library tab, Boards & maps"},
+    "board-laser": {"title": "The laser pointer while presenting", "path": "A board or map, View, Present, then the pointer button or L"},
     "board-history": {"title": "A board's history, and putting it back", "path": "A board, Board, History…"},
     "board-library": {"title": "The board's library, layers and pages", "path": "A board, the Sidebar button in its top bar"},
     "board-library-saving": {"title": "Saving to the board's library", "path": "A board, Ctrl+Shift+S or right-click, Library"},
@@ -2794,7 +2795,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
-        "whiteboard", "whiteboard-controls", "whiteboard-selection", "board-history", "board-library", "board-library-saving", "board-templates", "board-format", "board-connectors", "board-diagram-tools", "board-workshop", "board-paste", "make-a-diagram", "mind-maps", "mind-map-controls", "mind-map-features", "mind-map-import-export", "mind-map-study", "mind-map-look", "emoji-and-icons",
+        "whiteboard", "whiteboard-controls", "whiteboard-selection", "board-laser", "board-history", "board-library", "board-library-saving", "board-templates", "board-format", "board-connectors", "board-diagram-tools", "board-workshop", "board-paste", "make-a-diagram", "mind-maps", "mind-map-controls", "mind-map-features", "mind-map-import-export", "mind-map-study", "mind-map-look", "emoji-and-icons",
         "board-comments", "sticky-notes",
         "mind-map-structure", "mind-map-lines", "mind-map-callouts", "board-current-layer", "board-keyboard-create", "board-hand-drawn", "board-tables", "board-mermaid", "board-edit-data", "board-colours",
     )),

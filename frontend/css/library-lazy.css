@@ -5707,6 +5707,7 @@ button.ghost.doc-template-choice.wb-template-choice {
    the board that fade by themselves; the board's cursor is hidden inline
    (`wbPresentLaser`) so the dot is the pointer. */
 .wb-laser-layer {
+  --wb-laser: var(--error);
   position: fixed;
   inset: 0;
   pointer-events: none;
@@ -5724,11 +5725,52 @@ button.ghost.doc-template-choice.wb-template-choice {
   height: var(--space-3);
   margin: calc(var(--space-3) / -2) 0 0 calc(var(--space-3) / -2);
   border-radius: var(--radius-md);
-  background: var(--error);
-  box-shadow: 0 0 var(--space-2) var(--error);
+  background: var(--wb-laser);
+  box-shadow: 0 0 var(--space-2) var(--wb-laser);
 }
 .wb-laser-dot {
   animation: wb-laser-fade 0.6s ease-out forwards;
+}
+/* The looks (INBOX 1577) change the head only; the tail is the same dots.
+   The head moves by transform from JS, so a look's own motion lives on a
+   pseudo-element and uses transform and opacity alone. */
+.wb-laser-layer[data-look="dot"] .wb-laser-head {
+  box-shadow: none;
+}
+.wb-laser-layer[data-look="ring"] .wb-laser-head {
+  width: var(--space-8);
+  height: var(--space-8);
+  margin: calc(var(--space-8) / -2) 0 0 calc(var(--space-8) / -2);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  border: 2px solid var(--wb-laser);
+  box-shadow: none;
+}
+.wb-laser-layer[data-look="ring"] .wb-laser-head::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border: 2px solid var(--wb-laser);
+  border-radius: inherit;
+  animation: wb-laser-pulse 1.2s ease-out infinite;
+}
+.wb-laser-layer[data-look="spotlight"] .wb-laser-head {
+  width: calc(var(--space-9) * 3);
+  height: calc(var(--space-9) * 3);
+  margin: calc(var(--space-9) * -1.5) 0 0 calc(var(--space-9) * -1.5);
+  border-radius: var(--radius-pill);
+  background: radial-gradient(circle, color-mix(in srgb, var(--wb-laser) 45%, transparent), transparent 70%);
+  box-shadow: none;
+}
+@keyframes wb-laser-pulse {
+  from {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.8);
+  }
 }
 @keyframes wb-laser-fade {
   to {
@@ -5736,8 +5778,30 @@ button.ghost.doc-template-choice.wb-template-choice {
     transform: scale(0.3);
   }
 }
+/* Reduce motion: no trail at all (the script stops adding dots too) and a
+   ring that holds still. */
 :where(:root[data-motion="reduced"]) .wb-laser-dot {
-  animation-duration: 0.15s;
+  display: none;
+}
+:where(:root[data-motion="reduced"]) .wb-laser-layer[data-look="ring"] .wb-laser-head::after {
+  animation: none;
+  opacity: 0;
+}
+
+/* On a phone the bar's five buttons and a 195px page picker are wider than
+   the screen (the End button sat past the edge), so the picker takes the top
+   line and the buttons the one below (INBOX 1577 added the laser's menu). */
+@media (max-width: 599.98px) {
+  .wb-present-bar {
+    width: calc(100% - 2 * var(--space-4));
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .wb-present-count.wb-present-pick-slot {
+    flex: 1 0 100%;
+    order: -1;
+    width: auto;
+  }
 }
 
 /* The template gallery's group heads (INBOX 788, `openDocTemplateDialog`):
@@ -6394,7 +6458,7 @@ button.ghost.doc-template-choice.wb-template-choice {
 .wb-swatch-dot {
   width: var(--space-4);
   height: var(--space-4);
-  border-radius: 50%;
+  border-radius: var(--radius-pill);
   /* The swatch recipe's own colour token, set on each dot by script. */
   background: var(--swatch);
   box-shadow: inset 0 0 0 1px var(--muted);
@@ -7338,7 +7402,7 @@ input[type="color"].wb-mixed {
 .wb-map-node[data-shape="circle"] {
   container-type: inline-size;
   aspect-ratio: 1;
-  border-radius: 50%;
+  border-radius: var(--radius-pill);
   justify-content: center;
   text-align: center;
 }

@@ -2035,8 +2035,6 @@ HELP_TOPICS.extend(
                 "presentation",
                 "slides",
                 "slideshow",
-                "laser",
-                "laser pointer",
                 "drag to delete",
                 "drop to delete",
                 "drag onto delete",
@@ -2069,6 +2067,25 @@ HELP_TOPICS.extend(
                 "time, the bar lists pages; ? shows every key; Ctrl+K finds any board action by name. Menus: Insert, Edit, "
                 "Arrange (align, distribute, size, flip, order, group, lock), View (panels, background, grid, "
                 "snap, zoom) and Board (rename, new, export)."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
+            "id": "board-laser",
+            "keywords": (
+                "laser",
+                "laser pointer",
+                "laser trail",
+                "laser colour",
+                "pointer while presenting",
+                "present with a pointer",
+            ),
+            "body": (
+                "The laser pointer, while presenting a board or a map. Press L, or the pointer button in the "
+                "presentation bar, and the cursor becomes a dot that follows your mouse; nothing is drawn on the "
+                "board. The small menu beside the button sets the trail (on or off), the look (dot, trail, ring "
+                "or spotlight) and the colour (from the board's colours). Your choice is kept in this browser. "
+                "With Reduce motion on, the trail is off and the look holds still."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
