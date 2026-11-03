@@ -9,6 +9,7 @@ import hashlib
 import re
 
 from tessellate.ai import realise
+from tessellate.search import query as query_understanding
 
 #: After a ping's own line: was it a search, and how many notes would answer.
 PING_ASK: dict[str, tuple[str, ...]] = {
@@ -65,7 +66,7 @@ def ping(said: str, count: int, subject: str, voice: str = "natural", seed: str 
 
 def ping_asks(subject: str) -> list[str]:
     """The chip a ping offers: the notes it counted."""
-    return [f"Show my notes about {subject}"] if subject else []
+    return [f"Show my notes about {subject}"] if subject and query_understanding.is_chip_subject(subject) else []
 
 
 def read_as(last: dict) -> str:

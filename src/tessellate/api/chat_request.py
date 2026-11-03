@@ -122,8 +122,12 @@ class ChatRequest(BaseModel):
             return data
         data = {k: v for k, v in data.items() if k != "raw_question"}
         typed = data.get("question")
-        if isinstance(typed, str) and bounds.squeeze_blanks(typed) != typed:
-            data = {**data, "question": bounds.squeeze_blanks(typed), "raw_question": typed}
+        #: A curly apostrophe is read as a straight one by every reader ("I’ve"
+        #: is "I've", INBOX 1590: a phone keyboard types the curly one); the
+        #: model and the saved turn still get what was typed (`raw_question`).
+        scanned = bounds.squeeze_blanks(typed).replace("\u2019", "'") if isinstance(typed, str) else typed
+        if isinstance(typed, str) and scanned != typed:
+            data = {**data, "question": scanned, "raw_question": typed}
         return data
 
     #: Answer from the notebook as it stood at the end of this day

@@ -42,7 +42,7 @@ from datetime import date, datetime, time, timedelta
 from sqlalchemy import and_, case, func, select
 from sqlalchemy.orm import Session, aliased
 
-from tessellate.ai import composer_frame, plain_words, spelling
+from tessellate.ai import composer_frame, note_recency, plain_words, spelling
 from tessellate.core.database import Category, Document, Entry, EntryLink, EntryRevision, Reminder, utcnow
 from tessellate.entry import manager
 
@@ -313,7 +313,8 @@ def _whole_notebook(text: str, session: Session) -> StatAnswer | None:
     word "cover" (owner, 2026-10-17). "Stats" and "statistics" only for the
     figures: "summary" and "overview" of a subject ask for the notes' content
     ("a summary of the trip"), which the composer answers."""
-    if _COVERAGE.match(text.rstrip("?!. ")):
+    #: "What have I written lately" asks for the newest notes (INBOX 441, 1590), not the topics covered.
+    if _COVERAGE.match(text.rstrip("?!. ")) and not note_recency.is_recency_ask(text):
         return _coverage(session)
     if _asks(text, r"\bstat(?:istic)?s\b"):
         return _general_stats(session)

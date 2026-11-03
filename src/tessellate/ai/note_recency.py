@@ -28,6 +28,17 @@ _TIME_AFTER = frozenset({
 })
 _DEFAULT_MANY = 5
 _WORD = re.compile(r"[a-z0-9']+")
+#: "i've", "you're", "don't": the person speaking, not a word of the subject
+#: (INBOX 1590: "recent notes I've made" searched for "i've"). A possessive
+#: ("alice's") keeps its owner, as `search.query.without_contractions` does.
+_CONTRACTED = re.compile(r"^(?:[a-z]+n't|(?:i|you|we|they|he|she|it|that|there|who|what|let)'(?:ve|re|ll|d|m|s)|[a-z]+'(?:ve|re|ll|d|m))$")
+
+
+def _tokens(text: str, limit: int = 60) -> list[str]:
+    """The lower-cased words of the first 300 characters, a curly apostrophe
+    read as a straight one and each contraction dropped."""
+    words = _WORD.findall((text or "").lower()[:300].replace("\u2019", "'"))
+    return [w.split("'")[0] if "'" in w and not _CONTRACTED.match(w) else w for w in words if not _CONTRACTED.match(w)][:limit]
 
 
 class Recent:
@@ -84,7 +95,7 @@ def recency(text: str, *, bare: bool = False) -> Recent | None:
     no subject and no count, which the newest-notes reader already answers.
     `bare` reads the topic of a find ("latest", "last three"), whose noun the
     command parser already dropped."""
-    words = _WORD.findall((text or "").lower()[:300])[:60]
+    words = _tokens(text)
     found = _after_newest(words)
     if found is None:
         return None
@@ -114,7 +125,7 @@ def status_subject(text: str) -> str:
     """The subject of a "what's the latest on X" question; empty for any other.
     Every note on X is the pool (the newest leads the answer), so the notes
     the search happened to rank first never decide which is the latest."""
-    words = _WORD.findall((text or "").lower()[:300])[:60]
+    words = _tokens(text)
     at = next((i for i, w in enumerate(words) if w in _LATEST_WORDS), -1)
     if at < 0 or "most" in words[:at - 1]:
         found = _NEWS.search(" ".join(words))
@@ -136,3 +147,33 @@ def _status_named(subject: list[str]) -> str:
     if not subject or subject[0] in {"last", "this", "next", "yesterday", "today", "it", "that", "this"}:
         return ""  # a time, not a subject
     return "" if subject[0] in _NOUNS and len(subject) == 1 else " ".join(subject)
+
+
+#: The notes a person made, said by their maker and not by a subject: "notes
+#: I've made", "the notes I wrote" (with "lately" or "recently" it is a window,
+#: the activity answer's: INBOX 1590: "recent notes I've made" was searched for the word "ve").
+_MADE = r"(?:made|make|written|write|wrote|saved|save|added|add|created|create|took|taken|typed|jotted down|captured)"
+_RECENCY_ASK = re.compile(
+    r"\b(?:last|latest|newest|most recent|recent)\s+(?:\w+\s+){0,2}?(?:note|notes|entry|entries|thing i (?:wrote|saved|added))\b"
+    r"|\b(?:write|wrote|written|saved|added|captured)\b[^.?!]{0,20}\b(?:last|most recently)$"
+    #: "What have I saved recently?" (INBOX 441): the whole question is the
+    #: verb and the time word, nothing between them to search for. A topic
+    #: in between ("written about golf recently") stays a search.
+    r"|^what\s+(?:have|did|had)\s+i\s+(?:been\s+)?(?:write|wrote|written|writing|save|saved|saving|add|added|adding|capture|captured|capturing|note|noted)\s+(?:down\s+)?(?:recently|lately)$"
+    rf"|^(?:(?:show|list|give|get)(?:\s+me)?\s+)?(?:all\s+)?(?:(?:of\s+)?(?:my|the)\s+)?(?:notes|entries)\s+(?:that\s+)?i(?:'?ve|\s+have)?\s+{_MADE}$",
+    re.IGNORECASE,
+)
+
+
+def is_recency_ask(query: str) -> bool:
+    r"""Whether a question asks for the newest notes rather than a subject.
+
+    The trailing whitespace and closing marks are stripped here, in code,
+    so the pattern ends on a word and `$` with no quantifier before it:
+    any `\s*` (or `[\s?.!]*`) ahead of `$` backtracks over a run of tabs
+    on every start position `search` tries (CodeQL 443 and 445, the second
+    after a 300-character slice the analysis cannot see). Read on the first
+    300 characters: a recency question is short. A curly apostrophe is a
+    straight one (INBOX 1590).
+    """
+    return bool(_RECENCY_ASK.search(query[:300].replace("\u2019", "'").strip().rstrip("?.! \t\r\n")))

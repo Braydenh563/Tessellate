@@ -79,7 +79,8 @@ def _subject_pick(question: str, shape: str, terms: list[str]) -> list[tuple] | 
     #: check-up", "sourdough"), asked the other way round in time.
     own = _own_terms(terms)
     subject = _asked_span(question, own)
-    if subject and len(subject.split()) == len(own) <= 3 and shape not in ("status", "recent", "compare"):
+    #: Never a stop word, a pronoun or a piece of a contraction (INBOX 1590: "about ve").
+    if subject and query_understanding.is_chip_subject(subject) and len(subject.split()) == len(own) <= 3 and shape not in ("status", "recent", "compare"):
         prefix = "next_latest_a" if shape == "when" or _pick(question, "next", ["a", "b"]) == "a" else "next_when_a"
         return [("template", PHRASES[prefix]), ("asked", subject), ("template", PHRASES["next_tag_b"])]
     return None
