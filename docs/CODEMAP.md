@@ -2,7 +2,7 @@
 
 Generated 2026-11-03 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7585, frontend ids 2640, CSS sections 519, backend routes 641, backend modules 8502, test files 1914, tests 16128, plan headings 991, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7585, frontend ids 2640, CSS sections 519, backend routes 641, backend modules 8502, test files 1915, tests 16129, plan headings 991, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7585)
 
@@ -11407,7 +11407,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Section | File:line |
 |---|---|
 | "Tools it can use": the row, measured against a normal one | frontend/css/03-dashboard-widgets.css:4352 |
-| "how are these connected?" | frontend/css/02-chat-graph.css:3762 |
+| "how are these connected?" | frontend/css/02-chat-graph.css:3766 |
 | 08-consistency.css - one recipe per repeated shape | frontend/css/08-consistency.css:1 |
 | 1. One menu row | frontend/css/08-consistency.css:24 |
 | 1. touch targets, one step, one block | frontend/css/07-whiteboard-misc.css:9678 |
@@ -11564,18 +11564,18 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Two floating buttons that sit over content: opaque, readable hover | frontend/css/08-consistency.css:4861 |
 | WCAG 2.5.8 target size | frontend/css/06-timeline-dialogs.css:3228 |
 | WHITEBOARD TAB | frontend/css/06-timeline-dialogs.css:2316 |
-| Wave B: threads, inline actions, templates | frontend/css/02-chat-graph.css:388 |
-| Wave E: graph view | frontend/css/02-chat-graph.css:912 |
-| Wave F: command palette | frontend/css/02-chat-graph.css:1490 |
-| Wave F: mobile / PWA responsive pass | frontend/css/02-chat-graph.css:1562 |
-| Wave G: agentic tools + skills | frontend/css/02-chat-graph.css:479 |
-| Wave H: voice + read-aloud | frontend/css/02-chat-graph.css:1597 |
-| Wave I: skeletons, focus, reduced motion | frontend/css/02-chat-graph.css:1779 |
+| Wave B: threads, inline actions, templates | frontend/css/02-chat-graph.css:392 |
+| Wave E: graph view | frontend/css/02-chat-graph.css:916 |
+| Wave F: command palette | frontend/css/02-chat-graph.css:1494 |
+| Wave F: mobile / PWA responsive pass | frontend/css/02-chat-graph.css:1566 |
+| Wave G: agentic tools + skills | frontend/css/02-chat-graph.css:483 |
+| Wave H: voice + read-aloud | frontend/css/02-chat-graph.css:1601 |
+| Wave I: skeletons, focus, reduced motion | frontend/css/02-chat-graph.css:1783 |
 | Wave J: accent presets + appearance picker | frontend/css/05-sidebars-themes.css:1 |
-| Wave J: generative art + note tools + undo toast | frontend/css/02-chat-graph.css:1884 |
-| Wave K: empty states, mobile tap targets, high-contrast | frontend/css/02-chat-graph.css:2318 |
-| Wave L: skip link, action menus, contrast + type polish | frontend/css/02-chat-graph.css:2443 |
-| Wave M: graph filters, thumbnails, lightbox, batch bar | frontend/css/02-chat-graph.css:2887 |
+| Wave J: generative art + note tools + undo toast | frontend/css/02-chat-graph.css:1888 |
+| Wave K: empty states, mobile tap targets, high-contrast | frontend/css/02-chat-graph.css:2322 |
+| Wave L: skip link, action menus, contrast + type polish | frontend/css/02-chat-graph.css:2447 |
+| Wave M: graph filters, thumbnails, lightbox, batch bar | frontend/css/02-chat-graph.css:2891 |
 | Wave N: improve-writing, link suggestions, tasks | frontend/css/03-dashboard-widgets.css:1 |
 | Wave O: AI Tools toggles | frontend/css/03-dashboard-widgets.css:684 |
 | Wave O: brand logo + a more present background | frontend/css/03-dashboard-widgets.css:270 |
@@ -11616,7 +11616,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | a settings row where nothing squashes anything else | frontend/css/07-whiteboard-misc.css:4170 |
 | a sheet (DESIGN.md's recipe index, "A sheet") | frontend/css/10-responsive.css:807 |
 | a sticker (MINDMAP_PLAN decision 44, INBOX 642) | frontend/css/library-lazy.css:3497 |
-| a stored file that is no longer stored | frontend/css/02-chat-graph.css:4155 |
+| a stored file that is no longer stored | frontend/css/02-chat-graph.css:4159 |
 | a traced path (§9) | frontend/css/graph-lazy.css:283 |
 | a turn that is still working says so, for as long as it is | frontend/css/03-dashboard-widgets.css:4122 |
 | a zone that cannot shrink says so, instead of spilling | frontend/css/10-responsive.css:1085 |
@@ -11653,7 +11653,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | chat: an organised sidebar, readable code, correctable answers | frontend/css/05-sidebars-themes.css:2472 |
 | choice controls, the owner's 2026-09-24 pass (INBOX 409, 411) | frontend/css/08-consistency.css:8580 |
 | column-flex cards keep their full width | frontend/css/07-whiteboard-misc.css:3735 |
-| compressing a long conversation (§35I) | frontend/css/02-chat-graph.css:798 |
+| compressing a long conversation (§35I) | frontend/css/02-chat-graph.css:802 |
 | curated themes | frontend/css/01-forms-settings.css:3461 |
 | dark glass reads flatter, and here is which half of it does | frontend/css/10-responsive.css:334 |
 | dashboard + reminders (Wave D) | frontend/css/01-forms-settings.css:3651 |
@@ -11679,7 +11679,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | forms | frontend/css/01-forms-settings.css:224 |
 | glass reaches the floating chrome that sat outside it | frontend/css/08-consistency.css:2656 |
 | glass restraint (UI_MODERNISATION_PLAN.md, Phase 3) | frontend/css/07-whiteboard-misc.css:7895 |
-| graph minimap | frontend/css/02-chat-graph.css:3614 |
+| graph minimap | frontend/css/02-chat-graph.css:3618 |
 | graph polish | frontend/css/03-dashboard-widgets.css:3474 |
 | graph: depth, halos and legible labels | frontend/css/04-chat-dock-appearance.css:1517 |
 | graph: physics sliders + node popup | frontend/css/04-chat-dock-appearance.css:1554 |
@@ -11688,7 +11688,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | help | frontend/css/sketch-pad.css:591 |
 | help guide accordion | frontend/css/04-chat-dock-appearance.css:2358 |
 | help mini AI chat (item 40's second half) | frontend/css/04-chat-dock-appearance.css:2390 |
-| hovering a node | frontend/css/02-chat-graph.css:1308 |
+| hovering a node | frontend/css/02-chat-graph.css:1312 |
 | icon-only buttons are square, everywhere | frontend/css/07-whiteboard-misc.css:3448 |
 | left-aligned button lists stay left-aligned | frontend/css/07-whiteboard-misc.css:3709 |
 | line numbers for any textarea (UI_MODERNISATION_PLAN Phase 7.2) | frontend/css/07-whiteboard-misc.css:8035 |
@@ -11696,9 +11696,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | lock screen (Phase 4) | frontend/css/01-forms-settings.css:2041 |
 | map nodes and their edges (MINDMAP_PLAN.md §5, Phase 2) | frontend/css/07-whiteboard-misc.css:8157 |
 | markdown tables | frontend/css/04-chat-dock-appearance.css:1886 |
-| meeting notes (§17) | frontend/css/02-chat-graph.css:1668 |
+| meeting notes (§17) | frontend/css/02-chat-graph.css:1672 |
 | model cards: the Models screen's suggested downloads (INBOX 444) | frontend/css/01-forms-settings.css:5836 |
-| more than one route between the same two notes | frontend/css/02-chat-graph.css:1196 |
+| more than one route between the same two notes | frontend/css/02-chat-graph.css:1200 |
 | motion: a heavy page's first visit (INBOX 580) | frontend/css/08-consistency.css:9769 |
 | motion: a hover eases (2026-10-05) | frontend/css/08-consistency.css:9652 |
 | motion: a list settles in where its skeleton was (2026-10-05) | frontend/css/08-consistency.css:9632 |
@@ -11723,7 +11723,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | notes page polish | frontend/css/03-dashboard-widgets.css:2044 |
 | nothing interactive is bare text | frontend/css/07-whiteboard-misc.css:3989 |
 | notifications | frontend/css/08-consistency.css:3713 |
-| numbered citations inside an answer | frontend/css/02-chat-graph.css:3824 |
+| numbered citations inside an answer | frontend/css/02-chat-graph.css:3828 |
 | one control height per Library header row | frontend/css/07-whiteboard-misc.css:5380 |
 | one gap under every card heading | frontend/css/01-forms-settings.css:4822 |
 | one line of facts: a note's meta row | frontend/css/08-consistency.css:2688 |
@@ -11784,10 +11784,10 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the Library, second pass: cards in reading order, one anatomy | frontend/css/library-lazy.css:304 |
 | the OCR rail's own switch | frontend/css/07-whiteboard-misc.css:6555 |
 | the Skills dropdown | frontend/css/04-chat-dock-appearance.css:1142 |
-| the Sources panel | frontend/css/02-chat-graph.css:4339 |
+| the Sources panel | frontend/css/02-chat-graph.css:4343 |
 | the accessible card: the title opens it (INBOX 433) | frontend/css/08-consistency.css:2974 |
 | the agent activity panel: nothing scrolls sideways, nothing folds onto | frontend/css/07-whiteboard-misc.css:10549 |
-| the agent's run, as a timeline | frontend/css/02-chat-graph.css:588 |
+| the agent's run, as a timeline | frontend/css/02-chat-graph.css:592 |
 | the app emblem, reused across the UI | frontend/css/03-dashboard-widgets.css:2963 |
 | the app's one help popover | frontend/css/03-dashboard-widgets.css:4061 |
 | the app's own dropdown | frontend/css/07-whiteboard-misc.css:3762 |
@@ -11806,9 +11806,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the bottom docks | frontend/css/07-whiteboard-misc.css:9744 |
 | the chat dock follows its own width (INBOX 694) | frontend/css/10-responsive.css:2550 |
 | the chat page fills its height (§36A) | frontend/css/06-timeline-dialogs.css:1346 |
-| the chat sidebar on a phone | frontend/css/02-chat-graph.css:4866 |
+| the chat sidebar on a phone | frontend/css/02-chat-graph.css:4870 |
 | the chat toolbar, grouped (§36B) | frontend/css/06-timeline-dialogs.css:1465 |
-| the citation peek (INBOX 80) | frontend/css/02-chat-graph.css:3886 |
+| the citation peek (INBOX 80) | frontend/css/02-chat-graph.css:3890 |
 | the code editor: gutter + monospace | frontend/css/04-chat-dock-appearance.css:4428 |
 | the code panel, one compact header and a padded body (the owner, | frontend/css/library-lazy.css:5034 |
 | the composer dock (asked for directly) | frontend/css/04-chat-dock-appearance.css:886 |
@@ -11850,10 +11850,10 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the help popover is a popover, not a page (INBOX 206) | frontend/css/08-consistency.css:2536 |
 | the in-app confirm dialog (§35F) | frontend/css/06-timeline-dialogs.css:1125 |
 | the lightbox on a phone (INBOX 430) | frontend/css/10-responsive.css:2249 |
-| the live action line | frontend/css/02-chat-graph.css:4186 |
+| the live action line | frontend/css/02-chat-graph.css:4190 |
 | the lock screen | frontend/css/08-consistency.css:3749 |
 | the log console (§1) | frontend/css/06-timeline-dialogs.css:702 |
-| the map is the tab, and its controls float over it | frontend/css/02-chat-graph.css:4890 |
+| the map is the tab, and its controls float over it | frontend/css/02-chat-graph.css:4894 |
 | the mind map's outline and markers (MINDMAP_PLAN decisions 33, 34) | frontend/css/library-lazy.css:2991 |
 | the node edit strip (MINDMAP_PLAN.md §12.1 item 2) | frontend/css/07-whiteboard-misc.css:8594 |
 | the node radial (MINDMAP_PLAN.md §12.1 item 3) | frontend/css/07-whiteboard-misc.css:8859 |
@@ -11889,7 +11889,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the status bar on a small phone | frontend/css/00-tokens-shell.css:3481 |
 | the status bar's Other devices icon and panel (INBOX 896) | frontend/css/lan-lazy.css:77 |
 | the status line and the recent searches | frontend/css/03-dashboard-widgets.css:1126 |
-| the step group (Perplexity's "Finished N steps") | frontend/css/02-chat-graph.css:4259 |
+| the step group (Perplexity's "Finished N steps") | frontend/css/02-chat-graph.css:4263 |
 | the strip's three doors (MINDMAP_PLAN.md §13b) | frontend/css/07-whiteboard-misc.css:8692 |
 | the strips that appear only when they apply | frontend/css/00-tokens-shell.css:1885 |
 | the structural blocks (INBOX 421 b) | frontend/css/05-sidebars-themes.css:1433 |
@@ -11920,7 +11920,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | what it learned (WORLD_CLASS_PLAN I9) | frontend/css/01-forms-settings.css:5535 |
 | what the AI remembers (ROADMAP §39B) | frontend/css/07-whiteboard-misc.css:2004 |
 | what the agent found, as things you can open | frontend/css/07-whiteboard-misc.css:5339 |
-| what the answering model is | frontend/css/02-chat-graph.css:4693 |
+| what the answering model is | frontend/css/02-chat-graph.css:4697 |
 | what the phone block assumed, and the sheet undoes | frontend/css/07-whiteboard-misc.css:10027 |
 | whiteboard fixes (§41) | frontend/css/07-whiteboard-misc.css:2109 |
 | whiteboard objects: images and text boxes, neither tied to a note | frontend/css/07-whiteboard-misc.css:1 |
@@ -11932,7 +11932,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 |---|---|
 | frontend/css/00-tokens-shell.css | 4296 |
 | frontend/css/01-forms-settings.css | 6242 |
-| frontend/css/02-chat-graph.css | 5299 |
+| frontend/css/02-chat-graph.css | 5303 |
 | frontend/css/03-dashboard-widgets.css | 4844 |
 | frontend/css/04-chat-dock-appearance.css | 6502 |
 | frontend/css/05-sidebars-themes.css | 6169 |
@@ -23339,7 +23339,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16128)
+## Tests (16129)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23569,6 +23569,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_chat_times.py | 8 |
 | tests/test_chat_transcript.py | 28 |
 | tests/test_chat_ui_a28u.py | 6 |
+| tests/test_chat_user_bubble_width.py | 1 |
 | tests/test_chat_vision.py | 9 |
 | tests/test_chat_weather_1027.py | 4 |
 | tests/test_cheap_animations.py | 6 |

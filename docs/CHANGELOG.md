@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat: a long message of yours keeps a reading width (72% of the column, at most 42rem) instead of spanning it (the owner, 2026-11-03).
 - Dictation: an installed Whisper model loads from this computer alone; it no longer asks huggingface.co for the model's revision on every load (the owner, 2026-11-03).
 - Equations: the jump row of groups is a words-and-underline strip with a thin scrollbar, an edge fade and sideways wheel scrolling, not a row of boxed buttons (the owner, 2026-11-03).
 - Graph: a hovered link starts and ends at each dot's rim instead of running into its centre (the owner, 2026-11-03).
