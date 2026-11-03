@@ -34,8 +34,6 @@ with its owner named in the entry.
 
 ## Open items
 
-1591. **Owner, 2026-11-03, pasted lag lines (later batch):** notes-list.js Response.json.then 160ms (forced layout 85ms) on the dashboard ([apiJson /entries/most-accessed, /chat/recent from dashboard.js]); dashboard "1439ms of script with no source file" after boot; avatars.js TimerHandler:setTimeout 630ms (forced layout 486ms) on a library subtab; pointerdown on div.modal-overlay.nm-viewer 608ms and pointerup on button.nm-buddy-face 328 to 376ms, each followed by 250 to 370ms of no-source script; pointerout on div.card.modal-card 392ms; companion-menu.js setTimeout 30ms forced layout; graph-canvas.js gcRequestDraw 27 calls/s at 5.9ms on an idle graph; /models/status 3908ms. Recommendation: routed to the running lag agents (1575 dashboard and viewer, 1587 Atlas timer); the notes-list forced layout and the idle graph redraw go to the next lag slot with 1588's pass.
-
 
 
 1574. **Owner, 2026-11-03, verbatim (screenshots: the Windows launcher splash with the PowerShell icon on the taskbar; the splash's logo tile next to the app's):** "at least on my version, when the splash is showing before the app window starts up, the windows taskbar icon is the powershell logo and not tessellate. also the colour gradient on the splash isnt the same as all the others and has much more pink" Recommendation: the splash window sets the app's AppUserModelID and its window icon (the same .ico as the app window) so the taskbar shows Tessellate; the splash logo uses the one brand gradient (the icon file itself, or the tokens the app's mark uses), with a test that the splash's gradient stops equal the mark's.

@@ -19,7 +19,10 @@ def test_sizing_waits_for_a_visible_grid():
     body = _fn(frontend_text("dashboard.js"), "sizeDashWidgets")
     guard = body.index("checkVisibility")
     assert guard < body.index("getBoundingClientRect"), "measure only a laid-out grid"
-    assert guard < body.index('style.gridRowEnd = "span 1"'), "never release spans of a hidden grid"
+    # The release to `span 1` is gone (INBOX 1591: a start-aligned card is its content's height at any span),
+    # so a hidden grid cannot be released either; the guard still comes before the first write.
+    assert 'style.gridRowEnd = "span 1"' not in body
+    assert guard < body.index("style.gridRowEnd ="), "never write the spans of a hidden grid"
 
 
 def test_the_digest_widget_is_drawn_only_when_its_day_lines_are():

@@ -2,7 +2,7 @@
 
 Generated 2026-11-03 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7744, frontend ids 2635, CSS sections 522, backend routes 641, backend modules 8583, test files 1969, tests 16551, plan headings 991, app scripts 28, boot scripts 37, script files 245.
+Counts: frontend functions 7744, frontend ids 2635, CSS sections 522, backend routes 641, backend modules 8584, test files 1971, tests 16559, plan headings 991, app scripts 28, boot scripts 37, script files 245.
 
 ## Frontend functions (7744)
 
@@ -1406,137 +1406,137 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `activityActorName` | frontend/js/dashboard.js:3789 |
-| `activityUndoControl` | frontend/js/dashboard.js:3867 |
-| `activityUndoPlanText` | frontend/js/dashboard.js:3796 |
-| `activityUndoStarts` | frontend/js/dashboard.js:3852 |
-| `afterFrames` | frontend/js/dashboard.js:1951 |
-| `applyDashDensity` | frontend/js/dashboard.js:1264 |
+| `activityActorName` | frontend/js/dashboard.js:3803 |
+| `activityUndoControl` | frontend/js/dashboard.js:3881 |
+| `activityUndoPlanText` | frontend/js/dashboard.js:3810 |
+| `activityUndoStarts` | frontend/js/dashboard.js:3866 |
+| `afterFrames` | frontend/js/dashboard.js:1962 |
+| `applyDashDensity` | frontend/js/dashboard.js:1268 |
 | `cachedGreetingPhrase` | frontend/js/dashboard.js:310 |
-| `closeFeatures` | frontend/js/dashboard.js:1544 |
-| `dashActionRow` | frontend/js/dashboard.js:3582 |
-| `dashActivityItems` | frontend/js/dashboard.js:3700 |
-| `dashContinueNote` | frontend/js/dashboard.js:1390 |
-| `dashCustomiseItems` | frontend/js/dashboard.js:1439 |
-| `dashDensity` | frontend/js/dashboard.js:1132 |
-| `dashDensityChosen` | frontend/js/dashboard.js:1138 |
+| `closeFeatures` | frontend/js/dashboard.js:1548 |
+| `dashActionRow` | frontend/js/dashboard.js:3596 |
+| `dashActivityItems` | frontend/js/dashboard.js:3714 |
+| `dashContinueNote` | frontend/js/dashboard.js:1394 |
+| `dashCustomiseItems` | frontend/js/dashboard.js:1443 |
+| `dashDensity` | frontend/js/dashboard.js:1136 |
+| `dashDensityChosen` | frontend/js/dashboard.js:1142 |
 | `dashDragOverCard` | frontend/js/dashboard.js:22 |
-| `dashEmpty` | frontend/js/dashboard.js:3635 |
+| `dashEmpty` | frontend/js/dashboard.js:3649 |
 | `dashEntries` | frontend/js/dashboard.js:484 |
-| `dashFillingSkeleton` | frontend/js/dashboard.js:1962 |
-| `dashFillingSkeletonDone` | frontend/js/dashboard.js:2007 |
+| `dashFillingSkeleton` | frontend/js/dashboard.js:1973 |
+| `dashFillingSkeletonDone` | frontend/js/dashboard.js:2021 |
 | `dashGlanceFacts` | frontend/js/dashboard.js:608 |
-| `dashGridShape` | frontend/js/dashboard.js:1759 |
+| `dashGridShape` | frontend/js/dashboard.js:1763 |
 | `dashLayout` | frontend/js/dashboard.js:180 |
 | `dashLineDraw` | frontend/js/dashboard.js:498 |
-| `dashMarkMenu` | frontend/js/dashboard.js:1232 |
+| `dashMarkMenu` | frontend/js/dashboard.js:1236 |
 | `dashMeetingWhen` | frontend/js/dashboard.js:687 |
-| `dashMoreItems` | frontend/js/dashboard.js:1407 |
+| `dashMoreItems` | frontend/js/dashboard.js:1411 |
 | `dashReminders` | frontend/js/dashboard.js:464 |
-| `dashStatsButton` | frontend/js/dashboard.js:2311 |
-| `dashStreak` | frontend/js/dashboard.js:2299 |
-| `dashTensionRow` | frontend/js/dashboard.js:4071 |
-| `dashWidgetRow` | frontend/js/dashboard.js:2063 |
-| `dashWidgetToggle` | frontend/js/dashboard.js:2037 |
-| `dashWidgetsSummary` | frontend/js/dashboard.js:2175 |
+| `dashStatsButton` | frontend/js/dashboard.js:2325 |
+| `dashStreak` | frontend/js/dashboard.js:2313 |
+| `dashTensionRow` | frontend/js/dashboard.js:4085 |
+| `dashWidgetRow` | frontend/js/dashboard.js:2077 |
+| `dashWidgetToggle` | frontend/js/dashboard.js:2051 |
+| `dashWidgetsSummary` | frontend/js/dashboard.js:2189 |
 | `dashboardGreetingText` | frontend/js/dashboard.js:291 |
-| `dashboardMarkSeed` | frontend/js/dashboard.js:1168 |
+| `dashboardMarkSeed` | frontend/js/dashboard.js:1172 |
 | `fallbackGreetingPhrase` | frontend/js/dashboard.js:259 |
-| `featureRow` | frontend/js/dashboard.js:1556 |
-| `featuresPaint` | frontend/js/dashboard.js:1574 |
+| `featureRow` | frontend/js/dashboard.js:1560 |
+| `featuresPaint` | frontend/js/dashboard.js:1578 |
 | `fetchDashGraph` | frontend/js/dashboard.js:444 |
 | `fetchDashStats` | frontend/js/dashboard.js:419 |
-| `firstNoteImage` | frontend/js/dashboard.js:2393 |
-| `focusChime` | frontend/js/dashboard.js:3361 |
-| `focusRing` | frontend/js/dashboard.js:3296 |
-| `focusStep` | frontend/js/dashboard.js:3435 |
-| `focusTimeLabel` | frontend/js/dashboard.js:3278 |
-| `focusTimerEnded` | frontend/js/dashboard.js:3382 |
-| `focusTimerTick` | frontend/js/dashboard.js:3350 |
-| `focusTodaySeconds` | frontend/js/dashboard.js:3285 |
-| `generateDigest` | frontend/js/dashboard.js:2658 |
+| `firstNoteImage` | frontend/js/dashboard.js:2407 |
+| `focusChime` | frontend/js/dashboard.js:3375 |
+| `focusRing` | frontend/js/dashboard.js:3310 |
+| `focusStep` | frontend/js/dashboard.js:3449 |
+| `focusTimeLabel` | frontend/js/dashboard.js:3292 |
+| `focusTimerEnded` | frontend/js/dashboard.js:3396 |
+| `focusTimerTick` | frontend/js/dashboard.js:3364 |
+| `focusTodaySeconds` | frontend/js/dashboard.js:3299 |
+| `generateDigest` | frontend/js/dashboard.js:2672 |
 | `greetingBlock` | frontend/js/dashboard.js:250 |
 | `greetingCacheSlot` | frontend/js/dashboard.js:297 |
-| `loadDigestCache` | frontend/js/dashboard.js:2644 |
-| `miniEntryList` | frontend/js/dashboard.js:2430 |
-| `mountWidgetBody` | frontend/js/dashboard.js:1677 |
-| `moveDashWidget` | frontend/js/dashboard.js:2044 |
-| `noteRowFile` | frontend/js/dashboard.js:2425 |
-| `noteRowImage` | frontend/js/dashboard.js:2410 |
-| `noteSkillRun` | frontend/js/dashboard.js:996 |
-| `openAskFromDashboard` | frontend/js/dashboard.js:902 |
-| `openFeatures` | frontend/js/dashboard.js:1529 |
+| `loadDigestCache` | frontend/js/dashboard.js:2658 |
+| `miniEntryList` | frontend/js/dashboard.js:2444 |
+| `mountWidgetBody` | frontend/js/dashboard.js:1681 |
+| `moveDashWidget` | frontend/js/dashboard.js:2058 |
+| `noteRowFile` | frontend/js/dashboard.js:2439 |
+| `noteRowImage` | frontend/js/dashboard.js:2424 |
+| `noteSkillRun` | frontend/js/dashboard.js:1000 |
+| `openAskFromDashboard` | frontend/js/dashboard.js:906 |
+| `openFeatures` | frontend/js/dashboard.js:1533 |
 | `paintDashClock` | frontend/js/dashboard.js:386 |
-| `paintDashEmblem` | frontend/js/dashboard.js:1194 |
-| `paintDashFace` | frontend/js/dashboard.js:1181 |
-| `paintFadedNotes` | frontend/js/dashboard.js:3079 |
-| `paintFocusTimer` | frontend/js/dashboard.js:3320 |
-| `quickLinkButton` | frontend/js/dashboard.js:1332 |
-| `quickTintColours` | frontend/js/dashboard.js:1326 |
-| `quickTintKey` | frontend/js/dashboard.js:1315 |
-| `quickTints` | frontend/js/dashboard.js:1367 |
-| `recentSkillLinks` | frontend/js/dashboard.js:1067 |
+| `paintDashEmblem` | frontend/js/dashboard.js:1198 |
+| `paintDashFace` | frontend/js/dashboard.js:1185 |
+| `paintFadedNotes` | frontend/js/dashboard.js:3093 |
+| `paintFocusTimer` | frontend/js/dashboard.js:3334 |
+| `quickLinkButton` | frontend/js/dashboard.js:1336 |
+| `quickTintColours` | frontend/js/dashboard.js:1330 |
+| `quickTintKey` | frontend/js/dashboard.js:1319 |
+| `quickTints` | frontend/js/dashboard.js:1371 |
+| `recentSkillLinks` | frontend/js/dashboard.js:1071 |
 | `refreshAiGreeting` | frontend/js/dashboard.js:330 |
-| `refreshArtForTheme` | frontend/js/dashboard.js:2276 |
-| `refreshDashWidgets` | frontend/js/dashboard.js:1734 |
-| `renderActivityWidget` | frontend/js/dashboard.js:3713 |
-| `renderBoardsWidget` | frontend/js/dashboard.js:3656 |
-| `renderBookmarksWidget` | frontend/js/dashboard.js:3935 |
-| `renderCategoriesWidget` | frontend/js/dashboard.js:2978 |
+| `refreshArtForTheme` | frontend/js/dashboard.js:2290 |
+| `refreshDashWidgets` | frontend/js/dashboard.js:1738 |
+| `renderActivityWidget` | frontend/js/dashboard.js:3727 |
+| `renderBoardsWidget` | frontend/js/dashboard.js:3670 |
+| `renderBookmarksWidget` | frontend/js/dashboard.js:3949 |
+| `renderCategoriesWidget` | frontend/js/dashboard.js:2992 |
 | `renderDashGlance` | frontend/js/dashboard.js:704 |
-| `renderDashMore` | frontend/js/dashboard.js:1499 |
+| `renderDashMore` | frontend/js/dashboard.js:1503 |
 | `renderDashSubmessage` | frontend/js/dashboard.js:500 |
-| `renderDashWidgetsList` | frontend/js/dashboard.js:2204 |
-| `renderDashboard` | frontend/js/dashboard.js:1763 |
+| `renderDashWidgetsList` | frontend/js/dashboard.js:2218 |
+| `renderDashboard` | frontend/js/dashboard.js:1767 |
 | `renderDashboardGreeting` | frontend/js/dashboard.js:562 |
-| `renderDigestWidget` | frontend/js/dashboard.js:2717 |
-| `renderDocumentsWidget` | frontend/js/dashboard.js:3898 |
-| `renderFeatures` | frontend/js/dashboard.js:1608 |
-| `renderFirstStepsLazy` | frontend/js/dashboard.js:1662 |
-| `renderFocusTimerWidget` | frontend/js/dashboard.js:3442 |
-| `renderHeatmapWidget` | frontend/js/dashboard.js:2841 |
-| `renderMostLinkedWidget` | frontend/js/dashboard.js:2564 |
-| `renderMostOpenedWidget` | frontend/js/dashboard.js:2527 |
-| `renderMostUsedWidget` | frontend/js/dashboard.js:2553 |
+| `renderDigestWidget` | frontend/js/dashboard.js:2731 |
+| `renderDocumentsWidget` | frontend/js/dashboard.js:3912 |
+| `renderFeatures` | frontend/js/dashboard.js:1612 |
+| `renderFirstStepsLazy` | frontend/js/dashboard.js:1666 |
+| `renderFocusTimerWidget` | frontend/js/dashboard.js:3456 |
+| `renderHeatmapWidget` | frontend/js/dashboard.js:2855 |
+| `renderMostLinkedWidget` | frontend/js/dashboard.js:2578 |
+| `renderMostOpenedWidget` | frontend/js/dashboard.js:2541 |
+| `renderMostUsedWidget` | frontend/js/dashboard.js:2567 |
 | `renderNameNudge` | frontend/js/dashboard.js:768 |
-| `renderOnThisDayWidget` | frontend/js/dashboard.js:4129 |
-| `renderPaceWidget` | frontend/js/dashboard.js:4204 |
-| `renderPinnedWidget` | frontend/js/dashboard.js:2522 |
-| `renderQuestionsWidget` | frontend/js/dashboard.js:2613 |
-| `renderQuickCaptureWidget` | frontend/js/dashboard.js:2791 |
-| `renderRandomNoteWidget` | frontend/js/dashboard.js:3051 |
-| `renderRandomShuffle` | frontend/js/dashboard.js:3134 |
-| `renderRecentNotesWidget` | frontend/js/dashboard.js:2583 |
-| `renderRemindersWidget` | frontend/js/dashboard.js:2803 |
-| `renderReviewWidget` | frontend/js/dashboard.js:2532 |
-| `renderStatsWidget` | frontend/js/dashboard.js:2349 |
-| `renderStreakWidget` | frontend/js/dashboard.js:2317 |
-| `renderTagCloudWidget` | frontend/js/dashboard.js:3238 |
-| `renderTensionsWidget` | frontend/js/dashboard.js:4009 |
-| `renderTopTagsWidget` | frontend/js/dashboard.js:2592 |
-| `renderUnfinishedWidget` | frontend/js/dashboard.js:3961 |
+| `renderOnThisDayWidget` | frontend/js/dashboard.js:4143 |
+| `renderPaceWidget` | frontend/js/dashboard.js:4218 |
+| `renderPinnedWidget` | frontend/js/dashboard.js:2536 |
+| `renderQuestionsWidget` | frontend/js/dashboard.js:2627 |
+| `renderQuickCaptureWidget` | frontend/js/dashboard.js:2805 |
+| `renderRandomNoteWidget` | frontend/js/dashboard.js:3065 |
+| `renderRandomShuffle` | frontend/js/dashboard.js:3148 |
+| `renderRecentNotesWidget` | frontend/js/dashboard.js:2597 |
+| `renderRemindersWidget` | frontend/js/dashboard.js:2817 |
+| `renderReviewWidget` | frontend/js/dashboard.js:2546 |
+| `renderStatsWidget` | frontend/js/dashboard.js:2363 |
+| `renderStreakWidget` | frontend/js/dashboard.js:2331 |
+| `renderTagCloudWidget` | frontend/js/dashboard.js:3252 |
+| `renderTensionsWidget` | frontend/js/dashboard.js:4023 |
+| `renderTopTagsWidget` | frontend/js/dashboard.js:2606 |
+| `renderUnfinishedWidget` | frontend/js/dashboard.js:3975 |
 | `saveDashLayout` | frontend/js/dashboard.js:213 |
-| `saveQuickAccess` | frontend/js/dashboard.js:1363 |
-| `saveQuickTints` | frontend/js/dashboard.js:1372 |
-| `setFocusTimer` | frontend/js/dashboard.js:3425 |
+| `saveQuickAccess` | frontend/js/dashboard.js:1367 |
+| `saveQuickTints` | frontend/js/dashboard.js:1376 |
+| `setFocusTimer` | frontend/js/dashboard.js:3439 |
 | `sizeDashWidgetSpan` | frontend/js/dashboard.js:824 |
 | `sizeDashWidgets` | frontend/js/dashboard.js:828 |
-| `skillRunTimes` | frontend/js/dashboard.js:987 |
+| `skillRunTimes` | frontend/js/dashboard.js:991 |
 | `startDashClock` | frontend/js/dashboard.js:359 |
-| `startFocusTimer` | frontend/js/dashboard.js:3405 |
-| `stopArt` | frontend/js/dashboard.js:2273 |
+| `startFocusTimer` | frontend/js/dashboard.js:3419 |
+| `stopArt` | frontend/js/dashboard.js:2287 |
 | `stopDashClock` | frontend/js/dashboard.js:354 |
-| `stopFocusTimer` | frontend/js/dashboard.js:3414 |
-| `streamDigest` | frontend/js/dashboard.js:2677 |
-| `todayStamp` | frontend/js/dashboard.js:2640 |
+| `stopFocusTimer` | frontend/js/dashboard.js:3428 |
+| `streamDigest` | frontend/js/dashboard.js:2691 |
+| `todayStamp` | frontend/js/dashboard.js:2654 |
 | `toggleDashWidgetHidden` | frontend/js/dashboard.js:224 |
 | `toggleDashWidgetWide` | frontend/js/dashboard.js:232 |
-| `truncateMarkdownSafe` | frontend/js/dashboard.js:3036 |
-| `undoActorFrom` | frontend/js/dashboard.js:3814 |
-| `watchDashWidgets` | frontend/js/dashboard.js:853 |
-| `wireDashDensity` | frontend/js/dashboard.js:1300 |
+| `truncateMarkdownSafe` | frontend/js/dashboard.js:3050 |
+| `undoActorFrom` | frontend/js/dashboard.js:3828 |
+| `watchDashWidgets` | frontend/js/dashboard.js:855 |
+| `wireDashDensity` | frontend/js/dashboard.js:1304 |
 | `withDisplayName` | frontend/js/dashboard.js:274 |
-| `withoutLeadingEmoji` | frontend/js/dashboard.js:1053 |
+| `withoutLeadingEmoji` | frontend/js/dashboard.js:1057 |
 
 ### frontend/js/timeline.js (79)
 
@@ -12317,7 +12317,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/bulk` | POST | `bulk_edit_tags` | src/tessellate/api/routes_tags.py:106 |
 | `/capabilities` | GET | `capabilities` | src/tessellate/api/routes_capabilities.py:77 |
 | `/change-password` | POST | `change_password` | src/tessellate/api/routes_auth.py:1660 |
-| `/changelog` | GET | `changelog` | src/tessellate/api/app.py:1633 |
+| `/changelog` | GET | `changelog` | src/tessellate/api/app.py:1678 |
 | `/changes` | GET | `entry_changes` | src/tessellate/api/routes_entries.py:2689 |
 | `/charts/question` | POST | `chart_for_question` | src/tessellate/api/routes_vision.py:409 |
 | `/chat-model` | POST | `set_chat_model` | src/tessellate/api/routes_models.py:966 |
@@ -12443,7 +12443,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/hardware` | GET | `hardware_memory` | src/tessellate/api/routes_models.py:905 |
 | `/hardware` | PUT | `save_hardware` | src/tessellate/api/routes_models.py:913 |
 | `/health` | GET | `debug_health` | src/tessellate/api/routes_debug.py:99 |
-| `/health` | GET | `health` | src/tessellate/api/app.py:1568 |
+| `/health` | GET | `health` | src/tessellate/api/app.py:1613 |
 | `/health/integrity` | POST | `integrity_check` | src/tessellate/api/routes_debug.py:284 |
 | `/health/self-check` | POST | `self_check` | src/tessellate/api/routes_debug.py:276 |
 | `/heatmap` | GET | `heatmap` | src/tessellate/api/routes_insights.py:389 |
@@ -12464,8 +12464,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/import/reports/{report_id}` | GET | `import_report_page` | src/tessellate/api/routes_import.py:138 |
 | `/improve` | POST | `improve_writing` | src/tessellate/api/routes_entries.py:1720 |
 | `/inspect` | POST | `inspect_model` | src/tessellate/api/routes_models.py:938 |
-| `/instance` | GET | `instance` | src/tessellate/api/app.py:1594 |
-| `/instance/focus` | POST | `instance_focus` | src/tessellate/api/app.py:1608 |
+| `/instance` | GET | `instance` | src/tessellate/api/app.py:1639 |
+| `/instance/focus` | POST | `instance_focus` | src/tessellate/api/app.py:1653 |
 | `/items/save-many` | PUT | `save_items` | src/tessellate/api/wb_items.py:337 |
 | `/jobs` | GET | `list_jobs` | src/tessellate/api/routes_tasks.py:613 |
 | `/jobs/cancel` | POST | `cancel_job` | src/tessellate/api/routes_models.py:1175 |
@@ -12548,7 +12548,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/merges/accept` | POST | `accept_merge` | src/tessellate/api/routes_inbox.py:140 |
 | `/merges/dismiss` | POST | `dismiss_merge` | src/tessellate/api/routes_inbox.py:154 |
 | `/merges/{undo_id}/undo` | POST | `undo_merge_route` | src/tessellate/api/routes_entities.py:228 |
-| `/mermaid-frame` | GET | `mermaid_frame` | src/tessellate/api/app.py:1547 |
+| `/mermaid-frame` | GET | `mermaid_frame` | src/tessellate/api/app.py:1592 |
 | `/models/{size}` | DELETE | `remove_model` | src/tessellate/api/routes_voice.py:51 |
 | `/modes` | GET | `list_modes` | src/tessellate/api/routes_chat.py:2390 |
 | `/most-accessed` | GET | `most_accessed` | src/tessellate/api/routes_entries.py:2664 |
@@ -12569,7 +12569,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/ocr-readers` | GET | `ocr_readers` | src/tessellate/api/routes_files.py:3308 |
 | `/ocr/language` | POST | `set_ocr_language` | src/tessellate/api/routes_files.py:3357 |
 | `/on-this-day` | GET | `on_this_day` | src/tessellate/api/routes_insights.py:572 |
-| `/openapi.json` | GET | `openapi_schema` | src/tessellate/api/app.py:1530 |
+| `/openapi.json` | GET | `openapi_schema` | src/tessellate/api/app.py:1575 |
 | `/outline` | GET | `documents_outline` | src/tessellate/api/routes_documents.py:478 |
 | `/parse` | POST | `magic_add_reminder` | src/tessellate/api/routes_reminders.py:605 |
 | `/password-on-open` | POST | `set_password_on_open` | src/tessellate/api/routes_auth.py:1189 |
@@ -12686,7 +12686,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/support-bundle` | GET | `support_bundle` | src/tessellate/api/routes_settings.py:2598 |
 | `/switches` | GET | `get_switches` | src/tessellate/api/routes_learned.py:223 |
 | `/switches` | PUT | `put_switches` | src/tessellate/api/routes_learned.py:229 |
-| `/system/clear-static-cache` | POST | `system_clear_static_cache` | src/tessellate/api/app.py:1540 |
+| `/system/clear-static-cache` | POST | `system_clear_static_cache` | src/tessellate/api/app.py:1585 |
 | `/system/console-mode` | POST | `set_console_mode` | src/tessellate/api/routes_settings.py:1331 |
 | `/system/desktop-shortcut` | POST | `desktop_shortcut` | src/tessellate/api/routes_maintenance.py:85 |
 | `/system/doctor` | GET | `run_doctor` | src/tessellate/api/routes_maintenance.py:44 |
@@ -12864,7 +12864,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8583)
+## Backend modules (8584)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -18190,44 +18190,45 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_secs` | src/tessellate/ai/why.py:55 |
 | `lines` | src/tessellate/ai/why.py:89 |
 
-### src/tessellate/api/app.py (37)
+### src/tessellate/api/app.py (38)
 
 | Name | File:line |
 |---|---|
-| `Layer` | src/tessellate/api/app.py:1309 |
-| `RequestPulse` | src/tessellate/api/app.py:1174 |
+| `Layer` | src/tessellate/api/app.py:1354 |
+| `RequestPulse` | src/tessellate/api/app.py:1219 |
 | `RevalidatedStatic` | src/tessellate/api/app.py:331 |
-| `SpaceGuard` | src/tessellate/api/app.py:1101 |
+| `SpaceGuard` | src/tessellate/api/app.py:1146 |
 | `_UnversionedStatic` | src/tessellate/api/app.py:322 |
-| `_add_middleware` | src/tessellate/api/app.py:1409 |
-| `_add_system_routes` | src/tessellate/api/app.py:1526 |
+| `_add_middleware` | src/tessellate/api/app.py:1454 |
+| `_add_system_routes` | src/tessellate/api/app.py:1571 |
 | `_backup_if_due` | src/tessellate/api/app.py:755 |
 | `_check_data_folder` | src/tessellate/api/app.py:741 |
 | `_check_notebook_file` | src/tessellate/api/app.py:733 |
 | `_choose_chat_model_if_missing` | src/tessellate/api/app.py:684 |
-| `_code_for_status` | src/tessellate/api/app.py:857 |
+| `_code_for_status` | src/tessellate/api/app.py:902 |
 | `_compact_event_log` | src/tessellate/api/app.py:602 |
 | `_compact_step` | src/tessellate/api/app.py:648 |
-| `_content_length` | src/tessellate/api/app.py:1153 |
-| `_has_password` | src/tessellate/api/app.py:1284 |
-| `_include_routers` | src/tessellate/api/app.py:1516 |
+| `_content_length` | src/tessellate/api/app.py:1198 |
+| `_has_password` | src/tessellate/api/app.py:1329 |
+| `_include_routers` | src/tessellate/api/app.py:1561 |
 | `_install_pending_extras` | src/tessellate/api/app.py:656 |
 | `_purge_expired_bin_entries` | src/tessellate/api/app.py:578 |
 | `_purge_step` | src/tessellate/api/app.py:644 |
 | `_read_note_dates` | src/tessellate/api/app.py:725 |
-| `_register_error_handlers` | src/tessellate/api/app.py:868 |
+| `_register_error_handlers` | src/tessellate/api/app.py:913 |
 | `_stamp_for` | src/tessellate/api/app.py:237 |
-| `_start_autonomous_loop` | src/tessellate/api/app.py:812 |
+| `_start_autonomous_loop` | src/tessellate/api/app.py:857 |
 | `_start_searxng_if_asked` | src/tessellate/api/app.py:780 |
-| `_start_services` | src/tessellate/api/app.py:1211 |
+| `_start_services` | src/tessellate/api/app.py:1256 |
 | `_startup_maintenance` | src/tessellate/api/app.py:695 |
 | `_static_gzip` | src/tessellate/api/app.py:517 |
-| `_warm_search_at_launch` | src/tessellate/api/app.py:1298 |
+| `_warm_routes` | src/tessellate/api/app.py:812 |
+| `_warm_search_at_launch` | src/tessellate/api/app.py:1343 |
 | `asset_hash` | src/tessellate/api/app.py:213 |
 | `asset_stamps` | src/tessellate/api/app.py:242 |
 | `clear_static_cache` | src/tessellate/api/app.py:558 |
-| `create_app` | src/tessellate/api/app.py:1669 |
-| `out_of_space_body` | src/tessellate/api/app.py:1071 |
+| `create_app` | src/tessellate/api/app.py:1714 |
+| `out_of_space_body` | src/tessellate/api/app.py:1116 |
 | `pin_static_mime_types` | src/tessellate/api/app.py:180 |
 | `served_index_html` | src/tessellate/api/app.py:287 |
 | `served_offline_html` | src/tessellate/api/app.py:271 |
@@ -23646,7 +23647,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16551)
+## Tests (16559)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24618,6 +24619,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_lag_choose_1575.py | 5 |
 | tests/test_lag_forced_layout_1560.py | 6 |
 | tests/test_lag_forced_layout_1575.py | 4 |
+| tests/test_lag_forced_layout_1591.py | 5 |
 | tests/test_lag_layout_reads.py | 11 |
 | tests/test_lag_log.py | 6 |
 | tests/test_lan.py | 126 |
@@ -24806,6 +24808,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_models_composer_line_k13.py | 2 |
 | tests/test_models_doc_sizes.py | 4 |
 | tests/test_models_offline_cards_e38.py | 4 |
+| tests/test_models_status_cold_1591.py | 3 |
 | tests/test_module_line_caps.py | 2 |
 | tests/test_motion_endings.py | 2 |
 | tests/test_motion_recipes.py | 6 |
@@ -26324,7 +26327,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1299 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:147 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:145 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4188 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
