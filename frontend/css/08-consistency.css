@@ -4460,13 +4460,26 @@ body .chip.item-label,
   }
   #reminder-groups .entry-list li > .entry-meta {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    grid-template-columns: auto minmax(0, 1fr);
     grid-template-areas:
-      "tick text rep when"
-      "tick acts acts acts";
+      "tick text"
+      "tick when"
+      "acts acts";
     column-gap: var(--space-3);
     row-gap: 0;
     align-items: center;
+  }
+  /* The time is its own line (unslop 1103, 1): beside the words it took
+     185px of 301 and left the reminder 48px wide, a word a line. A repeat
+     chip shares that line, before the time. The four actions are 250px, one
+     more than the words' column, so their row spans under the tick too:
+     otherwise the kebab wrapped alone onto a fourth line. */
+  #reminder-groups .entry-list li > .entry-meta:has(> .chip) {
+    grid-template-columns: auto auto minmax(0, 1fr);
+    grid-template-areas:
+      "tick text text"
+      "tick rep when"
+      "acts acts acts";
   }
   #reminder-groups .entry-meta > input[type="checkbox"] {
     grid-area: tick;
@@ -4478,17 +4491,12 @@ body .chip.item-label,
   }
   #reminder-groups .entry-meta > .entry-date {
     grid-area: when;
-    padding-top: var(--space-2);
+    justify-self: start;
   }
-  /* The repeat chip's words line up with the text and date beside it (they
-     carry `padding-top: var(--space-2)`), but a chip is a painted box: giving
-     it that padding left its words 2.4px below the middle of its own fill
-     (INBOX 503, measured at 390). The same push as a margin (the row centres
-     the margin box, so it moves the chip by half of it, the 2.4px the padding
-     moved the words) moves the box and leaves the words centred in it. */
+  /* The repeat chip is a painted box on the time's line; the row centres it. */
   #reminder-groups .entry-meta > .chip {
     grid-area: rep;
-    margin-top: calc(var(--space-2) - 0.1rem);
+    justify-self: start;
   }
   #reminder-groups .entry-meta > .entry-actions {
     grid-area: acts;
