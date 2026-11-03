@@ -64,64 +64,6 @@ with its owner named in the entry.
 
 1560. **Owner, 2026-11-03 (pasted logs, Windows, 0.6.2-2f2e9850e8):** `Lag: frame 362ms on notes: avatars.js nameMarkBuddyBeat 156ms (forced layout 98ms); avatars.js nameMarkBuddyDodge 12ms`; `input 368ms on notes: pointerup on button.active in #notes-subtabs`; `input 1016ms on dashboard: pointerout on div#dash-grid.spans-ready` with `frame 534ms: 525ms of script with no source file`; `input 464ms on dashboard: pointerout on span.dash-list-title in #dash-grid`; `frame 860ms on dashboard: animation loops (top: atlas-motion.js atlasRigFrame) 8ms`; `request 3339ms on dashboard: /models/status`; `frame 410ms on dashboard: theme-boot.js 8ms` (boot, while the jobs ran). Later on Graph, at rest: `raf 397ms: graph-canvas.js gcRequestDraw 55 calls/s, 7.2ms each` (a redraw every frame with nothing moving). On Documents: `library.js openDoc 94ms (forced layout 53ms)`, `icon-picker.js BUTTON.onclick 256ms (forced layout 247ms)`, `mermaid-frame.js DOMWindow.onmessage 234ms`, `input 880ms pointerup on div.cm-content`; Notes: `media.js Promise.resolve 194ms`, `math-editor.js onload 202ms (forced layout 167ms)`; `request 18447ms /voice/transcribe` (the model load plus a needless huggingface.co check, fixed with local_files_only). Then on Chat: `frame 216ms: avatars.js Promise.resolve 177ms (forced layout 104ms); avatars.js nameMarkBuddyDodge 9ms`; `input 472ms on chat: keydown on textarea#chat-input`; `frame 245ms on chat: app.js Response.json.then 218ms (forced layout 125ms) [apiJson /conversations/100/truncate from whiteboard-history.js apiJson]; chat-agent.js DIV#chat-messages.onscroll 12ms`. Recommendation: a perf agent reproduces each at 4x CPU, removes the forced layout in nameMarkBuddyBeat (read geometry once per beat, write after), finds the pointerout handler on #dash-grid, and makes /models/status answer from cache while the backend probe runs.
 
-730. **The owner, 2026-10-06, verbatim**: "also would the composer be able to
-     somewhat accurately put new notes into a category using meaning similarity,
-     mathematical shenanigans, keyword, and more and like the embedding model as
-     well?? the embedding model should still be accessible and usable without the
-     ai right??" Answer: yes, filing without a model already runs (lexical
-     filing, category centroids and nearest neighbours over the embedder, which
-     needs no AI model); next is measuring its accuracy on a held-out set and
-     letting the composer explain each filing in one line.
-     Owner: Brief 39b (filing and the taxonomy), WORLD_CLASS_PLAN 23; the held-out accuracy measure and the one-line explanation of each filing are its rows.
-
-810. **The owner, 2026-10-11, verbatim** (screenshots: the personas' quiet
-     Edit and Delete text buttons; Keyboard shortcuts with a bordered tinted
-     "Change" on every row; What it learned, three "Claim" cards with a large
-     checkbox and a tall empty bottom, one of them a joke): "also on the
-     personas, see the edit and delete buttons?? I want the same styling for
-     other areas on the app and/or settings like with the change buttons on
-     the keyboard shortcuts?? maybe?? is that a good design decision?? I want
-     your opinion. I want controls and tools and stuff around the app to be
-     cleaned up more. also in the what it learned, some of the things like me
-     writing when my uni days are are correct, but with other test notes, like
-     with the homework joke i had are incorrect. if it learns something it
-     also needs to make sure that the context od the thing it thinks it is
-     learning is correct, like that note is tagged as a joke yk?? the composer
-     needs A LOT more contextual understanding and needs to actually do its job
-     right. it needs to be the siri for the application, the user should be
-     able to ask it general questions like for maths, timezones, statistics,
-     what the app cna do, what the user can do on the app, things like history
-     records, maybe if it web searches it can show a panel of the web results
-     in a dropdown like with the thinking box?? maybe if it finds a web site it
-     can render the extracted website in a dropdown or panel?? things like that
-     are only the surface. the composer. like I asked if it could web search
-     and then searched the web for the word "web" and then didnt even output
-     the results. it needs soo much more work. also using the composer for
-     other application functions in the background and suggestions and search
-     history, prefilling responses or suggesting sentence or word completions
-     with the greyed out text that they can tab to or use arrows to accept etc
-     yk?? and also if the app collects insights or questions, then I thing the
-     ai should be able to or go through and clean them up and audit them to
-     make sure they are correct, maybe as a bg job, skill, runnable audit etc.
-     things like that. expand on this to a full feature and improvement, Im
-     just spurting out words but I know there is so much more I havent
-     covered." Placed: CHAT_PLAN "Placed from INBOX, 2026-10-11 (the owner:
-     Atlas as the app's assistant)", decisions 65 to 69; the row actions to
-     grammar57 (DESIGN.md "Row actions").
-
-1298. **The owner, 2026-10-12, verbatim.** "Make the exceptions for the
-     complexity but mark them to be fixed start of next pr". The 17 `composer_digest.py` rows are split and deleted
-     (composer-1018b, the composer tests as the net). cx1298-1018 split 13 more under 15 with no
-     behaviour change (`_stream_lines` 105, `_plain_events` 81, `recognise.py` span 60, resolve 44,
-     `_date_cands` 45, `_time_cands` 22, `parse_reminder_text` 27, `factgraph._note_facts` 105,
-     `routes_tasks.collect` 74, `engine.search` 69, `composer._follow_one` 66 and `_compose` 77,
-     `lexical_filing.decide` 59; list in `archive/agent-remaining/cx1298-1018.md`); cx1298b-1018 split the
-     five largest (`run_agent` 78, `_retrieve` 60, `_run_one_step` 53, `_prepare` 52,
-     `restore_board` 49; `archive/agent-remaining/cx1298b-1018.md`). Left, largest first:
-     `routes_files.analyse_attachment` 47, `inbox.merge_candidates` 46 and the rest of
-     `python scripts/complexity.py` (223 over 15): split each toward its seed, lower the row in
-     `tests/complexity_seed.json`, start of the next PR.
-
 904. **The owner, 2026-10-17, verbatim** (a OneNote bug list pasted into a Word document, 86 items, screenshots described in `archive/agent-remaining/bugs-1017.md`; the pasted model-thinking transcript under B42 is elided). Triage and per-bug status: `docs/roadmap/archive/agent-remaining/bugs-1017.md`.
 
      B01. A first install setup popup showed as I was looking through the app but I accidentally clicked off it and idk what it was, there should be some way to access it, like a get started dropdown checklist to complete and maybe they can go in the notifications as well??
@@ -222,6 +164,7 @@ with its owner named in the entry.
 
 ## Placed (last 20, newest first)
 
+- 2026-11-03: 730 (filing without a model) to WORLD_CLASS_PLAN 23 and Brief 39b; 810 (Atlas as the app's assistant) to CHAT_PLAN decisions 65 to 69; 1298 (complexity exceptions) to BACKLOG "Placed from INBOX, 2026-11-03b".
 - 1571 (friendly local name) and 1513 (graph motion; left: the untangle freeze, GR1) to BACKLOG "Placed from INBOX, 2026-11-03b".
 - 2026-11-03: 1561 (a question about Atlas read as a topic), 1569 (background jobs counted as edits), 1570 (an answer to a clarifying question not bound to its act): BACKLOG "Placed from INBOX, 2026-11-03 (chat; CHAT_PLAN is at its cap)".
 - 2026-11-03: 1562 (code editor indent guides) DOCUMENTS_PLAN, 1563 (frame margins in the alignment guides) WHITEBOARD_PLAN, 1565 (app-wide quiet motion) UI_MODERNISATION_PLAN, each under "Placed from INBOX, 2026-11-03".
