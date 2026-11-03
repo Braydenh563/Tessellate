@@ -149,6 +149,23 @@ function syncChatJumpLatest() {
   //: INBOX 34: re-derived from the live rect each call, not the stored flag:
   //: `replaceChildren()` on a new chat fires no scroll event, so a stale
   //: `data-stuck="0"` kept the pill up over an empty transcript.
+  //: INBOX 1590: the pill sits in a strip of its own under the transcript
+  //: (`.has-jump-gap`), never over a source card or a Next chip. The strip
+  //: exists when the transcript overflows the height it would have WITH the
+  //: strip, whichever state it is in now, so adding it cannot flip the
+  //: overflow it was added for.
+  const transcript = pane.parentElement;
+  const hasMessages = Boolean(pane.querySelector(".msg"));
+  if (transcript && transcript.classList.contains("chat-transcript")) {
+    const had = transcript.classList.contains("has-jump-gap");
+    const spare = pane.scrollHeight - pane.clientHeight; // read before the strip changes the pane's height
+    if (!had) transcript.classList.add("has-jump-gap");
+    const gap = parseFloat(getComputedStyle(transcript).paddingBottom) || 0;
+    const needed = hasMessages && spare + (had ? 0 : gap) > SCROLL_STICK_SLACK;
+    if (!needed) transcript.classList.remove("has-jump-gap");
+    //: A pane that was following the end keeps following it through the resize.
+    if (needed !== had && pane.dataset.stuck !== "0") pane.scrollTop = pane.scrollHeight;
+  }
   const distance = pane.scrollHeight - pane.scrollTop - pane.clientHeight;
   //: Far from the bottom is "away" only once the reader left (`followBottom`);
   //: growth under a following pane is the pin's to close (INBOX 534).
@@ -157,7 +174,6 @@ function syncChatJumpLatest() {
   const overflowing = pane.scrollHeight - pane.clientHeight > SCROLL_STICK_SLACK;
   //: And never on a transcript with no messages: the owner's screenshot of a
   //: new chat had the pill under the welcome, which is "latest" of nothing.
-  const hasMessages = Boolean(pane.querySelector(".msg"));
   button.classList.toggle("hidden", !(scrolledAway && overflowing && hasMessages));
   const streaming = Boolean(chatStreaming);
   button.classList.toggle("is-generating-pill", streaming);
