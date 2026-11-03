@@ -31,6 +31,9 @@ from datetime import date
 from pathlib import Path
 
 from tessellate.ai import composer, composer_answer
+from tessellate.ai import composer_ask
+from tessellate.ai import composer_body
+from tessellate.ai import composer_smalltalk
 
 FIXTURE = Path(__file__).parent / "fixtures" / "composer" / "showcase_725.json"
 
@@ -72,7 +75,7 @@ def measured_values(notes: list[dict], on: date) -> set[str]:
     values |= {_count_word(n).capitalize() for n in range(most + 1)}
     for note in notes:
         day = date.fromisoformat(str(note["created_at"])[:10])
-        month = composer._MONTHS[day.month - 1]
+        month = composer_ask._MONTHS[day.month - 1]
         #: A span by month (INBOX 787's overview: "from July to September").
         values |= {f"{day.day} {month}", f"{day.day} {month} {day.year}", month, f"{month} {day.year}"}
         if day == on:
@@ -115,7 +118,7 @@ def rederived_insights(question: str, notes: list[dict], on: date) -> set[str]:
     from tessellate.ai import insights
 
     terms = composer.subject_terms(question)
-    subjects = {composer._asked_span(question, terms), *terms} - {""}
+    subjects = {composer_body._asked_span(question, terms), *terms} - {""}
     found = [i for subject in subjects for i in insights.for_subject(subject, notes, on, question)]
     #: After a lead that said the count, a recurrence closes in its short form.
     return {i.text for i in found} | {insights.after_lead(i) for i in found if i.rule == "recurrence"}
@@ -713,8 +716,8 @@ def run_conversation() -> list[dict]:
             got = "smalltalk" if small else f"question:{composer.classify(message)}"
             reply = ""
         else:
-            got = composer.social_kind(message) if small else "searched"
-            reply = composer.social(message, "smalltalk", previous, last_question) if small else ""
+            got = composer_smalltalk.social_kind(message) if small else "searched"
+            reply = composer_smalltalk.social(message, "smalltalk", previous, last_question) if small else ""
         rows.append({"message": message, "expect": expect, "got": got, "right": got == expect, "searched": not small, "reply": reply})
         previous = reply or previous
     return rows

@@ -278,10 +278,11 @@ def _old(pattern):
 
 
 def _f14_patterns():
-    from tessellate.ai import activity, composer, composer_frame, recognise, task_acts
+    from tessellate.ai import activity, composer_frame, recognise, task_acts
+    from tessellate.ai import composer_ask
 
     return {
-        "compare-than": composer._COMPARE_SIDES[0],
+        "compare-than": composer_ask._COMPARE_SIDES[0],
         "digest-compare": composer_digest._ASKS["compare"],
         "done-tail": task_acts._DONE_TAIL,
         "date-stub": activity._DATE_STUB,

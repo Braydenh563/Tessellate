@@ -27,7 +27,7 @@ CAPS = {
     #: The table moved out whole to help_topics_core.py (audit AI23): 3,740 lines before.
     "ai/help_chat.py": 1370,
     #: The rules and the turn plan moved out whole to agent_policy.py and agent_turn.py (audit AI23).
-    "ai/agent.py": 1301,
+    "ai/agent.py": 1228,
     #: The registry and the tools moved out whole to tool_*.py layers by tool family; `__init__` only re-exports (gods3-1102): 5,282 lines before.
     "ai/tools/__init__.py": 48,
     "ai/tools/tool_focus.py": 179,

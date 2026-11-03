@@ -1270,9 +1270,9 @@ def test_a_map_a_tool_touched_becomes_a_chip_in_the_transcript():
     read a whole map showed a bare tool name and no way to open what it read,
     which is the failure that line exists to prevent.
     """
-    from tessellate.ai import agent
+    from tessellate.ai import agent_policy
 
-    rows = agent._touched_items(
+    rows = agent_policy._touched_items(
         {"board_id": 7, "board_title": "Thesis map", "node_count": 12, "outline": "…"}
     )
     assert rows == [{"kind": "map", "id": 7, "label": "Thesis map"}]
@@ -1282,16 +1282,16 @@ def test_a_created_map_is_named_from_title_when_there_is_no_board_title():
     """`create_mindmap` returns `title`, `read_mindmap` returns `board_title`.
     Both are the map's name, and a chip reading "map #12" for one of them
     would be the same bug wearing a different key."""
-    from tessellate.ai import agent
+    from tessellate.ai import agent_policy
 
-    rows = agent._touched_items({"board_id": 12, "title": "New map", "root_id": 3})
+    rows = agent_policy._touched_items({"board_id": 12, "title": "New map", "root_id": 3})
     assert rows == [{"kind": "map", "id": 12, "label": "New map"}]
 
 
 def test_a_result_with_no_board_id_still_contributes_nothing():
-    from tessellate.ai import agent
+    from tessellate.ai import agent_policy
 
-    assert agent._touched_items({"ok": True}) == []
+    assert agent_policy._touched_items({"ok": True}) == []
 
 
 def test_a_map_and_its_notes_are_a_node_and_edges_in_the_graph(client):
@@ -1481,7 +1481,7 @@ def test_an_empty_map_says_it_is_empty_rather_than_nothing(client):
 
 def test_a_long_outline_is_truncated_to_the_budget(client):
     """Every character here is resent on every round of the turn."""
-    from tessellate.api import routes_chat
+    from tessellate.api import chat_attach
 
     board = _map(client, name="Huge")
     root = _node(client, board["id"], text="Root")
@@ -1493,7 +1493,7 @@ def test_a_long_outline_is_truncated_to_the_budget(client):
         if n.get("category") == "Mind map"
     ][0]["content"]
     assert "[…truncated]" in content
-    assert len(content) < routes_chat.ATTACHED_MAP_CHARS + 400
+    assert len(content) < chat_attach.ATTACHED_MAP_CHARS + 400
 
 
 def test_the_chat_request_caps_attached_maps_at_four(client):

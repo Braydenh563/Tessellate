@@ -17,6 +17,7 @@ import re
 from datetime import date, timedelta
 
 from tessellate.ai import composer, composer_done, composer_versus, filed_name, note_recency, realise, recognise, utilities
+from tessellate.ai import composer_body
 
 #: At most this many lines under the opening; the rest are on the right.
 SHOWN = 8
@@ -300,13 +301,13 @@ def _sentence_at(view, at: int):  # noqa: ANN001
 
 
 def _dated(view, today: date, tense: str) -> list[tuple[date, int]]:  # noqa: ANN001
-    return composer._days_named(view, today, tense)
+    return composer_body._days_named(view, today, tense)
 
 
 def _find(views: list, subject: str, today: date, tense: str):  # noqa: ANN202
     """`(view, day, sentence)` of the note that names `subject` with a day
     nearest today on the side `tense` asks ("future", "past" or "any")."""
-    wanted = {composer._stem(w) for w in composer._words(subject) if len(w) > 2} - {composer._stem(w) for w in composer._NOTE_NOUNS}
+    wanted = {composer._stem(w) for w in composer._words(subject) if len(w) > 2} - {composer._stem(w) for w in composer_body._NOTE_NOUNS}
     if not wanted:
         return None
     #: The note titled as the subject first, then one whose title holds it

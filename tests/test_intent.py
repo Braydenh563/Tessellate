@@ -15,6 +15,7 @@ from __future__ import annotations
 import pytest
 
 from tessellate.ai import composer
+from tessellate.ai import composer_ask
 
 SHOWCASE = [
     ("What is the Harbor launch plan?", "what"),
@@ -61,4 +62,4 @@ def test_every_showcase_question_keeps_its_shape(question, shape):
 )
 def test_a_to_in_a_question_is_never_a_translation(question):
     assert composer.classify(question) not in {"translate", "convert"}
-    assert "translate" not in composer.SHAPES
+    assert "translate" not in composer_ask.SHAPES

@@ -64,12 +64,12 @@ def _stems(words: list[str]) -> list[str]:
 def _defines(subject_words: list[str], content: str) -> bool:
     """Whether a sentence in the note's first lines says what the subject is
     ("Sourdough is ...", "The sourdough starter means ...")."""
-    from tessellate.ai import composer
+    from tessellate.ai import composer_read
 
     if not subject_words:
         return False
     said = re.compile(r"^(?:the\s+|a\s+|an\s+)?" + r"\s+".join(re.escape(w) for w in subject_words) + r"\s+(?:is|are|means|refers to)\b", re.I)
-    title, start = composer._title(content)  # noqa: SLF001
+    title, start = composer_read._title(content)  # noqa: SLF001
     body = content[start:] if start else content
     lines = [ln.strip(" \t-*#>") for ln in body.splitlines() if ln.strip()]
     for line in lines[:2]:
@@ -81,10 +81,10 @@ def _defines(subject_words: list[str], content: str) -> bool:
 
 def key(note: Any, subject_words: list[str], stems: list[str]) -> tuple[int, int]:
     """The note's tier (0 best) and, inside the title tier, its extra words."""
-    from tessellate.ai import composer
+    from tessellate.ai import composer_read
 
     content = _content(note)
-    title = composer._title(content)[0]  # noqa: SLF001
+    title = composer_read._title(content)[0]  # noqa: SLF001
     title_stems = _stems([w.lower() for w in re.findall(r"[A-Za-z0-9']+", title)])
     wanted = set(stems)
     if wanted and set(title_stems) - {_stems(["note"])[0]} == wanted:

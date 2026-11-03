@@ -7,6 +7,7 @@ from __future__ import annotations
 import pytest
 
 from tessellate.ai import composer
+from tessellate.ai import composer_smalltalk
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.api import routes_chat
 from tessellate.entry import manager
@@ -17,7 +18,7 @@ from tests.test_composer_route_688 import _ask
 @pytest.mark.parametrize("kind", ["who", "about_app"])
 @pytest.mark.parametrize("voice", ["natural", "professional"])
 def test_every_identity_line_names_atlas(kind, voice):
-    lines = composer.SOCIAL_PROFESSIONAL[kind] if voice == "professional" else composer.SOCIAL[kind]
+    lines = composer_smalltalk.SOCIAL_PROFESSIONAL[kind] if voice == "professional" else composer_smalltalk.SOCIAL[kind]
     assert lines and all("Atlas" in line for line in lines)
     assert all("!" not in line and chr(0x2014) not in line for line in lines)
 

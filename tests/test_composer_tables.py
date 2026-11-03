@@ -14,6 +14,9 @@ from __future__ import annotations
 import pytest
 
 from tessellate.ai import composer, composer_tables
+from tessellate.ai import composer_ask
+from tessellate.ai import composer_read
+from tessellate.ai import composer_smalltalk
 from tests import _composer_eval as ev
 from tests.test_composer_688 import NOTES, TODAY, _note, ask
 
@@ -24,13 +27,13 @@ EM_DASH = chr(0x2014)
 
 def test_the_tables_are_at_least_twice_what_they_were():
     assert len(composer.PHRASES) >= 198
-    assert len(composer.SYNONYM_GROUPS) >= 40
-    assert len(composer.LEAD_INS) >= 60
-    assert len(composer._WRAPPERS) >= 24
-    assert len(composer._CONTRACTIONS) >= 4
-    assert len(composer._COMPARE_SIDES) >= 6
-    assert sum(len(lines) for lines in composer.SOCIAL.values()) >= 68
-    assert len(composer.NEXT_STEPS) >= 6
+    assert len(composer_ask.SYNONYM_GROUPS) >= 40
+    assert len(composer_read.LEAD_INS) >= 60
+    assert len(composer_ask._WRAPPERS) >= 24
+    assert len(composer_ask._CONTRACTIONS) >= 4
+    assert len(composer_ask._COMPARE_SIDES) >= 6
+    assert sum(len(lines) for lines in composer_smalltalk.SOCIAL.values()) >= 68
+    assert len(composer_smalltalk.NEXT_STEPS) >= 6
 
 
 def test_every_joining_phrase_and_opener_has_both_voices():
@@ -146,7 +149,7 @@ def test_a_voice_gives_more_distinct_openers_than_one_fixed_phrase():
 def test_each_new_synonym_group_reads_as_one_thing_said_several_ways(group):
     stems = {composer._stem(w) for w in group}
     for stem in stems:
-        others = composer._alternatives(stem)
+        others = composer_ask._alternatives(stem)
         assert (stems - {stem}) <= others, (group, stem)
         assert composer._holds(stem, set(stems))
 
@@ -298,7 +301,7 @@ def test_a_new_lead_in_is_taken_off_a_sentence_with_its_comma(lead):
     assert view.sentences[0].text == "the hills are steep here." or view.sentences[0].text == "The hills are steep here.", view.sentences[0].text
 
 
-@pytest.mark.parametrize("lead", sorted(composer.LEAD_INS_BARE))
+@pytest.mark.parametrize("lead", sorted(composer_read.LEAD_INS_BARE))
 def test_a_bare_lead_in_is_taken_off_before_a_lowercase_word(lead):
     note = _note(1, f"# Hills\n\n{lead.capitalize()} the hills are steep here.", 2)
     assert composer.read_note(note, 0).sentences[0].text.endswith("hills are steep here.")
@@ -309,8 +312,8 @@ def test_a_bare_lead_in_is_taken_off_before_a_lowercase_word(lead):
 
 
 def test_the_professional_voice_has_every_kind_the_natural_one_has():
-    assert set(composer.SOCIAL_PROFESSIONAL) == set(composer.SOCIAL)
-    assert all(len(lines) >= 2 for lines in composer.SOCIAL_PROFESSIONAL.values())
+    assert set(composer_smalltalk.SOCIAL_PROFESSIONAL) == set(composer_smalltalk.SOCIAL)
+    assert all(len(lines) >= 2 for lines in composer_smalltalk.SOCIAL_PROFESSIONAL.values())
 
 
 @pytest.mark.parametrize("line", [line for lines in composer_tables.SOCIAL_PROFESSIONAL.values() for line in lines])
@@ -322,7 +325,7 @@ def test_every_professional_social_line_follows_the_copy_rules(line):
 @pytest.mark.parametrize("line", [line for lines in composer_tables.SOCIAL_NATURAL_EXTRA.values() for line in lines])
 def test_every_added_natural_social_line_follows_the_copy_rules(line):
     assert EM_DASH not in line and "!" not in line and "Oops" not in line
-    assert line[0].isupper() and line in [x for lines in composer.SOCIAL.values() for x in lines]
+    assert line[0].isupper() and line in [x for lines in composer_smalltalk.SOCIAL.values() for x in lines]
 
 
 @pytest.mark.parametrize(
@@ -331,15 +334,15 @@ def test_every_added_natural_social_line_follows_the_copy_rules(line):
      ("lol", "laugh"), ("wow", "reaction"), ("what", "confused"), ("ok", "ack"), ("who are you", "who")],
 )
 def test_a_professional_reply_is_of_the_turns_kind(message, kind):
-    assert composer.social(message, voice="professional") in composer.social_surfaces(kind, True)
-    assert composer.social(message) in composer.social_surfaces(kind)
+    assert composer_smalltalk.social(message, voice="professional") in composer_smalltalk.social_surfaces(kind, True)
+    assert composer_smalltalk.social(message) in composer_smalltalk.social_surfaces(kind)
 
 
 def test_the_professional_reply_is_never_the_one_before_and_offers_a_professional_next_step():
-    first = composer.social("ok", voice="professional")
-    assert composer.social("ok", previous=first, voice="professional") != first
-    reply = composer.social("thanks", last_question="When is the sync rewrite?", voice="professional")
-    assert any(step.split("{subject}")[0] in reply for step in composer.NEXT_STEPS_PROFESSIONAL)
+    first = composer_smalltalk.social("ok", voice="professional")
+    assert composer_smalltalk.social("ok", previous=first, voice="professional") != first
+    reply = composer_smalltalk.social("thanks", last_question="When is the sync rewrite?", voice="professional")
+    assert any(step.split("{subject}")[0] in reply for step in composer_smalltalk.NEXT_STEPS_PROFESSIONAL)
 
 
 @pytest.mark.parametrize("step", composer_tables.NEXT_STEPS_EXTRA + composer_tables.NEXT_STEPS_PROFESSIONAL)
@@ -372,10 +375,10 @@ def test_chat_with_no_model_follows_the_voice_preference(client):
 
     client.put("/preferences", json={"composer_voice": "professional"})
     out = _ask(client, "thanks", use_tools=False)
-    assert out["text"] in composer.SOCIAL_PROFESSIONAL["thanks"]
+    assert out["text"] in composer_smalltalk.SOCIAL_PROFESSIONAL["thanks"]
     client.put("/preferences", json={"composer_voice": "natural"})
     out = _ask(client, "thanks", use_tools=False)
-    assert out["text"] in composer.SOCIAL["thanks"]
+    assert out["text"] in composer_smalltalk.SOCIAL["thanks"]
 
 
 def test_a_composed_chat_answer_follows_the_voice_preference(ai_client, session):

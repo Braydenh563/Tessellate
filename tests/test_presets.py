@@ -230,9 +230,9 @@ def test_the_hint_reaches_the_system_prompt():
 
 
 def test_the_agent_prompt_gets_it_too():
-    from tessellate.ai import agent
+    from tessellate.ai import agent_turn
 
-    quick = agent.build_agent_messages("q", [], mode="quick")
+    quick = agent_turn.build_agent_messages("q", [], mode="quick")
     assert librarian.length_hint("quick") in quick[0]["content"]
 
 
@@ -256,7 +256,7 @@ def test_the_hint_is_counted_in_the_budget():
     for piece in ("AGENT_GROUNDING", "tools_guide(", "length_hint(mode)"):
         assert piece in measurement, f"{piece} is in the prompt but not the budget"
 
-    # The guide is now window-dependent (agent.tools_guide picks a short one
+    # The guide is now window-dependent (agent_policy.tools_guide picks a short one
     # below 8k), which makes this stricter rather than looser: measuring the
     # long guide while sending the short one, or the reverse, would be a
     # budget wrong by 1,800 characters, in the mode that can least afford it.

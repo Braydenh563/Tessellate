@@ -24,6 +24,7 @@ import re
 from datetime import date, timedelta
 
 from tessellate.ai import composer, composer_voice
+from tessellate.ai import composer_answer
 from tests import _composer_eval
 
 EM_DASH = chr(0x2014)
@@ -54,7 +55,7 @@ def notes_until(data: dict, day: date) -> list[dict]:
 def measured(notes: list[dict], on: date) -> set[str]:
     values: set[str] = set()
     for n in range(len(notes) + 2):
-        word = composer._count_word(n)
+        word = composer_answer._count_word(n)
         values |= {str(n), word, word.capitalize()}
     answer = composer._Answer({}, on)
     for note in notes:

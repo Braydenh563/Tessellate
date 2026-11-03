@@ -27,7 +27,8 @@ from pathlib import Path
 
 import pytest
 
-from tessellate.ai import composer, composer_digest, guide_intent, help_chat
+from tessellate.ai import composer_digest, guide_intent, help_chat
+from tessellate.ai import composer_empty
 
 ROOT = Path(__file__).resolve().parents[1]
 #: Not the composer's grammar: the person's words and names, markdown tables.
@@ -76,7 +77,7 @@ def _corpus() -> list[str]:
                           ("How do I use the app??", "graph"), ("help", "graph")):
         texts.append(help_chat.offline_answer(question, tab)["content"])
     texts += list(guide_intent._HELP_LINES)
-    texts += [composer.empty_window("last month", date(2026, 10, 1), date(2026, 10, 17), voice=v, seed=str(i)) for v in ("natural", "professional") for i in range(12)]
+    texts += [composer_empty.empty_window("last month", date(2026, 10, 1), date(2026, 10, 17), voice=v, seed=str(i)) for v in ("natural", "professional") for i in range(12)]
     return [re.sub(r"\*\*|\[([^\]]+)\]\([^)]+\)", lambda m: m.group(1) or "", t) for t in texts]
 
 

@@ -225,14 +225,14 @@ def test_a_long_sentence_leads_with_the_clause_that_answers():
 
 
 def test_a_clause_split_ignores_semicolons_in_brackets():
-    from tessellate.ai import composer
+    from tessellate.ai import composer_help
 
     text = (
         "Pick a subject (a topic you keep writing about; a busy week; anything else you like to see) "
         "and the list narrows to it, which is useful when a great many notes pile up over the months and years; "
         "clear the filter to see every note again, whatever the subject was, in the order you wrote them."
     )
-    clauses = composer._clauses(text)
+    clauses = composer_help._clauses(text)
     assert len(clauses) == 2 and clauses[0].count(";") == 2
 
 

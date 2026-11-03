@@ -67,11 +67,11 @@ def test_what_did_i_write_this_week_after_a_countdown(ask):
 
 
 def test_the_chat_topic_is_a_word_the_answer_used():
-    from tessellate.api import routes_chat
+    from tessellate.api import chat_said
     history = [{"question": "what's left to write", "answer": "That's general knowledge."}]
-    assert routes_chat._chat_topic(history) == ""
+    assert chat_said._chat_topic(history) == ""
     history = [{"question": "tell me about scheduling", "answer": "Scheduling decides which process runs next."}]
-    assert routes_chat._chat_topic(history) == "scheduling"
+    assert chat_said._chat_topic(history) == "scheduling"
 
 
 # --- 3: what's left to do --------------------------------------------------------------------

@@ -14,6 +14,7 @@ from datetime import date
 import pytest
 
 from tessellate.ai import composer, composer_slots
+from tessellate.ai import composer_ask
 from tessellate.api import routes_chat
 from tessellate.core import config
 from tessellate.entry import manager
@@ -204,7 +205,7 @@ def test_the_verb_noun_pairs_are_synonyms():
     for pair in [*composer_tables.VERB_NOUN_PAIRS, *grouped]:
         verb, *nouns = pair
         for noun in nouns:
-            assert composer._stem(noun) in composer._alternatives(composer._stem(verb)), (verb, noun)
+            assert composer._stem(noun) in composer_ask._alternatives(composer._stem(verb)), (verb, noun)
 
 
 @MODES

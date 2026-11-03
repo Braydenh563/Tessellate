@@ -1751,7 +1751,8 @@ def _filed_notes(session: Session, filed: str) -> tuple | None:
 
 def _plan_read(session: Session, parsed: dict) -> dict:
     """Find or open: run the agent's own search and hand back its tool event."""
-    from tessellate.ai import agent, cards, tool_say, tools
+    from tessellate.ai import cards, tool_say, tools
+    from tessellate.ai import agent_policy
 
     if parsed.get("note_id") is not None:
         result = tools.execute_tool(session, "get_note", {"note_id": parsed["note_id"]})
@@ -1781,7 +1782,7 @@ def _plan_read(session: Session, parsed: dict) -> dict:
         "arguments": args,
         "label": result.get("label") or name,
         "ok": True,
-        "touched": agent._touched_items(result),
+        "touched": agent_policy._touched_items(result),
         "cards": cards.result_cards(name, result),
     }
     return {"line": line, "tool": event}

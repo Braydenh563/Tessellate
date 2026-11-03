@@ -21,6 +21,7 @@ from pathlib import Path
 import pytest
 
 from tessellate.ai import composer, composer_replies, phrasing, vocative
+from tessellate.ai import composer_smalltalk
 
 PROMPTS = json.loads((Path(__file__).parent / "fixtures" / "reply_variety_prompts.json").read_text(encoding="utf-8"))
 OPENER_FLOOR = 0.95
@@ -34,31 +35,31 @@ def _session(kind: str, seed: str = "s") -> list[str]:
     for turn in range(TURNS):
         message = prompts[(turn * 3) % len(prompts)]
         if kind == "call":
-            reply = composer.call(vocative.split(message).names, recent=replies, seed=seed)
+            reply = composer_smalltalk.call(vocative.split(message).names, recent=replies, seed=seed)
         else:
             intent = "about_app" if kind == "about_app" else "smalltalk"
-            reply = composer.social(message, intent, replies[-1] if replies else "", "", recent=replies, seed=seed)
+            reply = composer_smalltalk.social(message, intent, replies[-1] if replies else "", "", recent=replies, seed=seed)
         replies.append(reply)
     return replies
 
 
 def test_every_family_has_eight_phrasings_in_both_voices():
-    for kind in composer.SOCIAL:
-        assert len(composer.SOCIAL[kind]) >= 8, kind
-        assert len(composer.SOCIAL_PROFESSIONAL[kind]) >= 8, kind
+    for kind in composer_smalltalk.SOCIAL:
+        assert len(composer_smalltalk.SOCIAL[kind]) >= 8, kind
+        assert len(composer_smalltalk.SOCIAL_PROFESSIONAL[kind]) >= 8, kind
     for voice, lines in composer_replies.CALL.items():
         assert len(lines) >= 8, voice
 
 
 def test_every_family_is_measured():
-    assert set(PROMPTS) == set(composer.SOCIAL) | {"call"}
+    assert set(PROMPTS) == set(composer_smalltalk.SOCIAL) | {"call"}
     assert all(len(prompts) >= 8 for prompts in PROMPTS.values())
 
 
 @pytest.mark.parametrize("kind", [k for k in PROMPTS if k != "call"])
 def test_the_prompts_read_as_their_family(kind):
     intent = "about_app" if kind == "about_app" else "smalltalk"
-    wrong = [(m, composer.social_kind(m, intent)) for m in PROMPTS[kind] if composer.social_kind(m, intent) != kind]
+    wrong = [(m, composer_smalltalk.social_kind(m, intent)) for m in PROMPTS[kind] if composer_smalltalk.social_kind(m, intent) != kind]
     assert not wrong, wrong
 
 
@@ -76,7 +77,7 @@ def test_the_same_seed_gives_the_same_words():
 
 
 def test_a_family_holds_more_than_one_shape():
-    for table in (composer.SOCIAL, composer.SOCIAL_PROFESSIONAL, composer_replies.CALL):
+    for table in (composer_smalltalk.SOCIAL, composer_smalltalk.SOCIAL_PROFESSIONAL, composer_replies.CALL):
         for kind, lines in table.items():
             assert len({phrasing.shape(line) for line in lines}) >= 3, kind
 
@@ -92,11 +93,11 @@ def test_house_style(line):
 
 def test_a_nickname_is_said_back_now_and_then():
     """Some call lines say the name; most do not, and none laughs at "Atlas"."""
-    said = [composer.call(["brotato"], seed=str(i)) for i in range(40)]
+    said = [composer_smalltalk.call(["brotato"], seed=str(i)) for i in range(40)]
     named = sum("Brotato" in line for line in said)
     assert 0 < named < len(said) / 2
-    assert not any(line.startswith("Ha") for line in (composer.call(["Atlas"], seed=str(i)) for i in range(40)))
-    assert len(composer.call_asks("x")) == 3
+    assert not any(line.startswith("Ha") for line in (composer_smalltalk.call(["Atlas"], seed=str(i)) for i in range(40)))
+    assert len(composer_smalltalk.call_asks("x")) == 3
 
 
 #: Nothing found, 50 turns of one conversation asking what no note holds.

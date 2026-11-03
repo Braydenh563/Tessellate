@@ -44,6 +44,10 @@ from functools import lru_cache, wraps
 from pathlib import Path
 
 from tessellate.ai import composer, composer_doings, composer_done, composer_frame, composer_threads, composer_lists, composer_money, composer_slots, composer_sum, composer_tables, filed_name, glossary, question_noise, realise, verdicts
+from tessellate.ai import composer_answer
+from tessellate.ai import composer_ask
+from tessellate.ai import composer_read
+from tessellate.ai import composer_select
 from tessellate.ai.composer_lists import clean
 from tessellate.ai import recognise as recogniser
 from tessellate.ai import when as when_words
@@ -313,7 +317,7 @@ _ECHO: ContextVar[tuple] = ContextVar("digest_echo", default=())
 def _set_timing(question: str) -> None:
     """What this answer may say about time, from the question (INBOX 1441),
     and in which register (INBOX 1461)."""
-    _TIMED.set(composer.asks_time(question))
+    _TIMED.set(composer_ask.asks_time(question))
     _CURRENT.set(bool(_ASKS_CURRENT.search(question or "")))
     asked = question or ""
     register = "ago" if _AGO.search(asked) else "exact" if _EXACT.search(asked) else "casual" if _CASUAL.search(asked) else "plain"
@@ -405,7 +409,7 @@ def _when_gone(on: str, start: date, today: date, week: bool = False) -> str:
     distance = _gone_distance(gap, week, last_week and not exact)
     name = _DAY_NAMES[start.weekday()]
     weekday = f"on {name}" if start >= this_monday else f"last {name}"
-    month = composer._MONTHS[start.month - 1] + ("" if start.year == today.year else f" {start.year}")
+    month = composer_ask._MONTHS[start.month - 1] + ("" if start.year == today.year else f" {start.year}")
     about = _about_ago(gap) if rel.endswith(" ago") else rel
     return _SAY_WHEN[_REGISTER.get()][distance].format(
         on=on, rel=rel, month=month, weekday=weekday, on_weekday=f"on {name} {_day(start, today)}", about=about)
@@ -826,7 +830,7 @@ def _from_source(view, fact: str, today: date) -> str:  # noqa: ANN001
 def _day(d: date | None, today: date) -> str:
     if d is None:
         return "an undated day"
-    month = composer._MONTHS[d.month - 1]
+    month = composer_ask._MONTHS[d.month - 1]
     return f"{d.day} {month}" if d.year == today.year else f"{d.day} {month} {d.year}"
 
 
@@ -1114,7 +1118,7 @@ def _pin(text: str, written: date) -> str:
         if unit == "month":
             index = written.month - 1 + step
             year, month = written.year + index // 12, index % 12 + 1
-            name = composer._MONTHS[month - 1] + (f" {year}" if year != today.year else "")
+            name = composer_ask._MONTHS[month - 1] + (f" {year}" if year != today.year else "")
             if m.group("nth"):
                 return f"{pre}{int(m.group('nth'))} {name}"
             return f"{pre if pre.strip().lower() != 'in' else ''}in {name}"
@@ -1480,7 +1484,7 @@ def _facts(view: composer.NoteView, names: set[str], subject: set[str] | None = 
     out: list[Fact] = []
     note_label = ""
     #: Verdicts are on notes: a document's id is another table's.
-    known = _KNOWN.get() if composer.source_kind(view.note) == "note" else None
+    known = _KNOWN.get() if composer_read.source_kind(view.note) == "note" else None
     for i, s in enumerate(view.sentences):
         if _left_out(view, s, known):
             continue
@@ -1645,7 +1649,7 @@ _OWNED_FOR = re.compile(r"\b(the|my|our)\s+([a-z][\w'-]*)\s+for\s+(.+?)\s*\??$",
 
 def _topic_owned(q: str) -> str:
     found = _OWNED_FOR.search(q)
-    if not found or found[2].lower() in composer._ASKING_WORDS:  # noqa: SLF001
+    if not found or found[2].lower() in composer_ask._ASKING_WORDS:  # noqa: SLF001
         return ""
     rest = recogniser.without_windows(found[3]).strip(" ,")
     if not rest:
@@ -1855,7 +1859,7 @@ rinse drain soak toast roast fry grill steam blend squat press lift stretch
 
 #: A weekday the app pinned to its date ("Saturday 3 October"): inside a
 #: quotation it is the note's own words, so the date goes outside it.
-_PINNED_DAY = re.compile(rf"\b((?:Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day) (\d{{1,2}} (?:{'|'.join(composer._MONTHS)})(?: \d{{4}})?)\b")  # noqa: SLF001
+_PINNED_DAY = re.compile(rf"\b((?:Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day) (\d{{1,2}} (?:{'|'.join(composer_ask._MONTHS)})(?: \d{{4}})?)\b")  # noqa: SLF001
 
 
 def _unpinned(said: str) -> tuple[str, str]:
@@ -2773,7 +2777,7 @@ def _when_now(when: str, written: date, today: date) -> tuple[str, bool]:
     if unit == "month":
         ahead = (start.year, start.month) >= (today.year, today.month)
         same = (start.year, start.month) == (today.year, today.month)
-        return ("this month" if same else f"in {composer._MONTHS[start.month - 1]}"), ahead
+        return ("this month" if same else f"in {composer_ask._MONTHS[start.month - 1]}"), ahead
     weeks = (start - (today - timedelta(days=today.weekday()))).days // 7
     return ({0: "this week", 1: "next week"}.get(weeks) or f"the week of {_day(start, today)}"), weeks >= 0
 
@@ -2921,8 +2925,8 @@ def _numbered_sections(own: list[Fact]) -> tuple[list[Fact], str]:
 def _heading_sections(view: composer.NoteView) -> str:
     """The shape of a note in markdown sections, two or more, or ""."""
     content = str(view.note.get("content") or "")
-    _, start = composer._title(content)
-    heads = [h for line in content[start:].splitlines() if (h := composer._heading_text(line)) is not None]
+    _, start = composer_read._title(content)
+    heads = [h for line in content[start:].splitlines() if (h := composer_read._heading_text(line)) is not None]
     if len(heads) < 2:
         return ""
     labelled = [_split_label(h) for h in heads]
@@ -3367,7 +3371,7 @@ def _gone_quiet(members: list[composer.NoteView]) -> str:
         for s in v.sentences:
             for word, *_rest in _measures(s.text):
                 if word not in said_last:
-                    return PHRASES["gone_quiet"].format(word=word, month=composer._MONTHS[v.written.month - 1])
+                    return PHRASES["gone_quiet"].format(word=word, month=composer_ask._MONTHS[v.written.month - 1])
     return ""
 
 
@@ -3389,12 +3393,12 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
         stems -= {composer._stem(w) for w in ("cost", "price", "pay", "paid", "charge", "much")}  # noqa: SLF001
     #: A timing or kind word counts less than the subject ("when are the
     #: designs coming": the designs, not the plumber who is coming).
-    weight = composer._term_weights(sorted(stems))  # noqa: SLF001
+    weight = composer_select._term_weights(sorted(stems))  # noqa: SLF001
     #: A note a newer one corrects says the old value: "when's the dentist
     #: now" is the moved slot, not the first booking (stress run 2026-10-30).
-    old = composer.superseded(composer.subject_terms(clean(question)), list({id(f.view): f.view for f in facts}.values()))
+    old = composer_select.superseded(composer.subject_terms(clean(question)), list({id(f.view): f.view for f in facts}.values()))
 
-    figures = composer.figures_of(question)
+    figures = composer_answer.figures_of(question)
     asks_feeling = bool(_FEELING_ASK.search(question))
     latest = bool(_LATEST_ASK.search(question))
     did_ask = bool(_WHEN_DID.match(clean(question)))
@@ -3408,7 +3412,7 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
         own = sum(weight[st] for st in stems if composer._holds(st, words))
         hits = sum(weight[st] for st in stems if composer._holds(st, words | f.view.filed_words | f.view.title_words))
         #: The amount asked about ("8 km") beats a sentence that only shares the verb.
-        same_figure = bool(figures & composer.figures_of(f.sentence.text)) if figures else False
+        same_figure = bool(figures & composer_answer.figures_of(f.sentence.text)) if figures else False
         #: Between sources that say it equally well, the one the search ranked first.
         #: Of the notes that fit the subject equally, the newest one for a "latest" ask.
         newest = (f.view.written or date.min) if latest else date.min
@@ -4168,7 +4172,7 @@ def exact(question: str, notes: list[dict], *, today: date | None = None) -> dic
     on and off alike (second eye F6, CHAT_PLAN decision 75). Its lines only:
     no closing, offer or chips."""
     today = today or composer.user_today()
-    asked = composer.what_is(clean(question))
+    asked = composer_ask.what_is(clean(question))
     if _kind_if_mine(asked) is None or composer._lead_act_verb(question):  # noqa: SLF001
         return None
     views, _ = _scope(question, asked, notes, today, "natural", 0, None)
@@ -4320,7 +4324,7 @@ def _corrected_first(asked: str, members: list) -> list:
     if len(members) < 2 or not members[0].written:
         return members
     lead = members[0]
-    later = [v for v in composer.correcting(composer.subject_terms(clean(asked)), members) if v.written > lead.written]
+    later = [v for v in composer_select.correcting(composer.subject_terms(clean(asked)), members) if v.written > lead.written]
     if not later:
         return members
     newest = max(later, key=lambda v: v.written)
@@ -4438,7 +4442,7 @@ def answer(
     when the question is not one this shape answers (a sum, a time, a
     command, nothing found): the caller then asks `composer.compose`."""
     today = today or composer.user_today()
-    asked = composer.what_is(clean(question))
+    asked = composer_ask.what_is(clean(question))
     kind = _kind_if_mine(asked)
     #: An act ("rename my gym log") is not a topic to digest: with its verb off
     #: the subject, it would find the gym log and summarise it.

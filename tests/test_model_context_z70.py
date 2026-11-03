@@ -7,7 +7,8 @@ from __future__ import annotations
 
 import pytest
 
-from tessellate.ai import agent, librarian
+from tessellate.ai import librarian
+from tessellate.ai import agent_turn
 
 
 def _note(category: str) -> dict:
@@ -19,7 +20,7 @@ def _prompt(build, category: str) -> str:  # noqa: ANN001
     return "\n".join(str(m.get("content")) for m in messages)
 
 
-BUILDS = pytest.mark.parametrize("build", [librarian.build_messages, agent.build_agent_messages], ids=["plain", "tools"])
+BUILDS = pytest.mark.parametrize("build", [librarian.build_messages, agent_turn.build_agent_messages], ids=["plain", "tools"])
 
 
 @BUILDS

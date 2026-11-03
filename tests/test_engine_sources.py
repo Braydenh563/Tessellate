@@ -6,6 +6,7 @@ from __future__ import annotations
 from datetime import date
 
 from tessellate.ai import composer
+from tessellate.ai import composer_read
 from tessellate.core.database import MediaUpload
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
@@ -49,10 +50,10 @@ def test_a_picture_listed_in_a_note_is_read_as_the_picture():
 
 
 def test_the_source_kinds():
-    assert composer.source_kind({"kind": "board"}) == "board"
-    assert composer.source_kind({"category": "Mind map"}) == "map"
-    assert composer.source_kind({"category": "File"}) == "file"
-    assert composer.source_kind({"category": "Work"}) == "note"
+    assert composer_read.source_kind({"kind": "board"}) == "board"
+    assert composer_read.source_kind({"category": "Mind map"}) == "map"
+    assert composer_read.source_kind({"category": "File"}) == "file"
+    assert composer_read.source_kind({"category": "Work"}) == "note"
 
 
 def test_a_caption_is_content_on_the_route_for_any_note_with_a_picture(client, session):

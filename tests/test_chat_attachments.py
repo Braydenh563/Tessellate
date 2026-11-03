@@ -247,7 +247,7 @@ def test_the_model_is_told_what_the_pictures_in_an_attached_note_say(session):
     not. A note's content carries `/media/<filename>` and nothing else, so a
     note whose whole point was a photographed whiteboard reached the model as a
     sentence and a link."""
-    from tessellate.api.routes_chat import _media_readings
+    from tessellate.api.chat_attach import _media_readings
     from tessellate.core.database import MediaUpload
 
     session.add(
@@ -270,7 +270,7 @@ def test_a_picture_with_no_reading_yet_contributes_nothing(session):
     """"If they already exist" is the operative half: nothing here generates a
     caption or runs vision OCR. Captioning may not have run, may be off, or may
     have no model: and a chat turn is the worst place to start one."""
-    from tessellate.api.routes_chat import _media_readings
+    from tessellate.api.chat_attach import _media_readings
     from tessellate.core.database import MediaUpload
 
     session.add(MediaUpload(filename="blank.png", original_name="blank.png"))
@@ -287,7 +287,7 @@ def test_the_model_is_told_whats_inside_a_notes_own_attached_file(client, sessio
     separate list on the note. Round-tripped through the real upload route
     so this exercises the same stored_name/uploads_dir path the reader
     uses, not a hand-built row."""
-    from tessellate.api.routes_chat import _attachment_readings
+    from tessellate.api.chat_attach import _attachment_readings
     from tessellate.core.database import Entry
 
     entry = Entry(content="See the attached notes.")
@@ -306,7 +306,7 @@ def test_the_model_is_told_whats_inside_a_notes_own_attached_file(client, sessio
 
 
 def test_a_note_with_no_attachments_gets_no_attachment_reading(session):
-    from tessellate.api.routes_chat import _attachment_readings
+    from tessellate.api.chat_attach import _attachment_readings
     from tessellate.core.database import Entry
 
     entry = Entry(content="Nothing attached here.")

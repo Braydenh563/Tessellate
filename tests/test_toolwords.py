@@ -9,7 +9,8 @@ from __future__ import annotations
 
 import pytest
 
-from tessellate.ai import agent, tools, toolwords
+from tessellate.ai import tools, toolwords
+from tessellate.ai import agent_policy
 
 CORE = set(tools.CORE_TOOLS) | {"web_search", "read_url"}
 
@@ -192,7 +193,7 @@ def test_a_narrowed_turn_tells_the_model_the_list_is_a_suggestion():
     saying so. Without it a well-behaved model treats the list as exhaustive,
     which is what makes a narrow guess expensive rather than merely wrong.
     """
-    note = agent.FOCUS_NOTE.lower()
+    note = agent_policy.FOCUS_NOTE.lower()
     assert "suggestion" in note
     assert "not a limit" in note
     assert "call it by name anyway" in note

@@ -194,8 +194,8 @@ def test_every_invitation_offers_an_ask():
     """The hello row above failed once the rotation landed on an invite that
     named the note but asked nothing ("Carry on from your latest note with
     ..."): every invite, in both voices, now says what to ask."""
-    from tessellate.ai import composer
+    from tessellate.ai import composer_smalltalk
 
-    for voice, lines in composer.INVITES.items():
+    for voice, lines in composer_smalltalk.INVITES.items():
         for line in lines:
             assert re.search(r"\?|help|look|find|ask", line), (voice, line)

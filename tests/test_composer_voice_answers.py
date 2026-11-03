@@ -11,6 +11,8 @@ from __future__ import annotations
 import pytest
 
 from tessellate.ai import composer
+from tessellate.ai import composer_ask
+from tessellate.ai import composer_phrases
 from tests.test_composer_688 import NOTES, TODAY, _note, assert_traceable
 
 
@@ -73,11 +75,11 @@ def test_a_synonym_finds_the_note_and_is_not_reported_missing():
 
 def test_synonym_groups_are_symmetric_and_never_hold_a_word_twice():
     seen: set[str] = set()
-    for group in composer.SYNONYM_GROUPS:
+    for group in composer_ask.SYNONYM_GROUPS:
         assert len(group) == len(set(group))
         assert not (set(group) & seen), group
         seen |= set(group)
-    synonyms = composer._build_synonyms()
+    synonyms = composer_ask._build_synonyms()
     for stem, others in synonyms.items():
         for other in others:
             assert stem in synonyms[other]
@@ -99,7 +101,7 @@ def test_a_yes_no_answered_in_the_notes_words_never_says_yes_or_no():
     notes = [_note(1, "# Lisbon\n\nThe hotel deposit is paid, the rest is due on arrival.", 5)]
     text = ask("Is the hotel deposit paid?", notes)["text"]
     assert text.startswith(
-        tuple(f"{w}, the hotel deposit is paid" for w in composer.phrase_options("going_by")) + composer.phrase_options("notes_have")
+        tuple(f"{w}, the hotel deposit is paid" for w in composer_phrases.phrase_options("going_by")) + composer_phrases.phrase_options("notes_have")
     )
     assert not text.lower().startswith(("yes", "no"))
 

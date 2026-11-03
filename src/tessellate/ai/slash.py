@@ -105,10 +105,12 @@ def _made(session: Session, arg: str, now: datetime) -> str:
     ))
     if not rows:
         from tessellate.ai import composer
+        from tessellate.ai import composer_empty
 
         first, last = session.execute(select(func.min(entry.created_at), func.max(entry.created_at)).where(*visible)).one()
-        return composer.empty_window(phrase, first.date() if first else None, last.date() if last else None, seed=arg, today=now.date())
+        return composer_empty.empty_window(phrase, first.date() if first else None, last.date() if last else None, seed=arg, today=now.date())
     from tessellate.ai import composer
+    from tessellate.ai import composer_empty
 
     lead = f"You wrote {realise.count_noun(len(rows), 'note')} {composer.window_said(phrase)}:"
     return f"{lead}\n\n{_rows(session, rows)}{_more(len(rows))}"

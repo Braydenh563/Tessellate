@@ -9,7 +9,8 @@ round of every turn and nothing downstream trims it for the persona's sake.
 
 from __future__ import annotations
 
-from tessellate.ai import agent, librarian
+from tessellate.ai import librarian
+from tessellate.ai import agent_policy
 
 
 def _save(client, content):
@@ -45,7 +46,7 @@ def test_the_cap_is_a_small_share_of_the_prose_budget():
     """The profile sits in the same system message as the persona and the
     tools guide. Its worst case is stated here so a later raise of the cap is
     a decision rather than a drift."""
-    assert librarian.PROFILE_CONTEXT_MAX_CHARS * 4 <= agent.PROSE_BUDGET_CHARS
+    assert librarian.PROFILE_CONTEXT_MAX_CHARS * 4 <= agent_policy.PROSE_BUDGET_CHARS
 
 
 def test_the_name_is_collapsed_and_capped():

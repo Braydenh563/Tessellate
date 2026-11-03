@@ -15,6 +15,7 @@ from datetime import date, timedelta
 import pytest
 
 from tessellate.ai import composer, composer_read
+from tessellate.ai import composer_phrases
 from tests import _composer_eval as ev
 from tests._app_js import with_pieces
 
@@ -150,7 +151,7 @@ def test_a_long_sentence_is_cut_at_a_word_and_says_so():
     long = "This sentence goes on " + "and on " * 80 + "until it ends."
     view = composer.read_note(_note(99, f"# Long\n\n{long}", 1), 0)
     text = view.sentences[0].text
-    assert text.endswith("…") and len(text) <= composer.MAX_QUOTE_CHARS + 1
+    assert text.endswith("…") and len(text) <= composer_read.MAX_QUOTE_CHARS + 1
 
 
 # --- composition, one test per shape ----------------------------------------------
@@ -193,7 +194,7 @@ def test_when_lists_the_other_notes_in_the_order_they_were_written():
     ]
     result = ask("When is the boiler service?", notes)
     text = result["text"]
-    heading = next(w for w in composer.phrase_options("timeline") if w in text)
+    heading = next(w for w in composer_phrases.phrase_options("timeline") if w in text)
     timeline = text.split(heading, 1)[1]
     days = re.findall(r"^- (\d+ \w+): ", timeline, re.M)
     parsed = [date(2026, composer_read._MONTH_INDEX[d.split()[1].lower()], int(d.split()[0])) for d in days]
@@ -238,7 +239,7 @@ def test_compare_draws_two_sides_with_measured_counts():
     assert text.startswith(
         tuple(
             f"{lead}one mentions Lisbon and one mentions Porto.\n\n**Lisbon**\n"
-            for lead in composer.phrase_options("of_found") + composer.phrase_options("across_found")
+            for lead in composer_phrases.phrase_options("of_found") + composer_phrases.phrase_options("across_found")
         )
     ), text
     #: The lead names only what follows (probe P15, ledger row 443): no
@@ -266,7 +267,7 @@ def test_status_leads_with_the_newest_and_walks_back_through_the_earlier():
     assert "**Sync rewrite, week 3**" in first and "3 October" in first
     assert "the sync rewrite now keeps both versions and asks." in first.lower()
     #: Any of the "before that" variants: the order is the point, not the wording.
-    assert any(f"\n\n{w}17 August, the conflict rule" in text for w in composer.phrase_options("before_that"))
+    assert any(f"\n\n{w}17 August, the conflict rule" in text for w in composer_phrases.phrase_options("before_that"))
     assert "[**Sync rewrite, first notes**]" in text
 
 
@@ -276,7 +277,7 @@ def test_yes_no_never_answers_yes_or_no():
     #: INBOX 741: a sentence holding every word asked is said as the notes'
     #: answer ("Going by your notes, ..."), never as a yes or a no.
     assert first.startswith(
-        tuple(text for key in ("closest_a", "closest_b", "going_by", "notes_have") for text in composer.phrase_options(key))
+        tuple(text for key in ("closest_a", "closest_b", "going_by", "notes_have") for text in composer_phrases.phrase_options(key))
     )
     assert "Beta testers did not know Harbor works offline." in first
     assert not re.search(r"\b(yes|no)\b[,.]", result["text"].split("\n\n", 1)[0], re.I)
@@ -286,9 +287,9 @@ def test_two_notes_that_may_disagree_are_said_as_a_but():
     result = ask("What is the launch date?")
     text = result["text"]
     assert "**Standup**" in _first_line(result)
-    assert any(f"\n\n{w}, the launch date is the 21st" in text for w in composer.phrase_options("but_newer"))
+    assert any(f"\n\n{w}, the launch date is the 21st" in text for w in composer_phrases.phrase_options("but_newer"))
     assert "[**Standup again**]" in text
-    assert any(wording in text for wording in composer.phrase_options("disagree_check"))
+    assert any(wording in text for wording in composer_phrases.phrase_options("disagree_check"))
     #: Each side said once.
     assert text.lower().count("the launch date is the 21st") == 1 and text.lower().count("the launch date is the 14th") == 1
 
@@ -300,24 +301,24 @@ def test_two_other_notes_that_may_disagree_are_named_older_first():
         _note(3, "# Friday\n\nThe boiler pressure was at 0.8 bar this morning.", 2),
     ]
     text = ask("What about the boiler pressure?", notes)["text"]
-    lead = next(w for w in composer.phrase_options("disagree_lead") if w in text)
+    lead = next(w for w in composer_phrases.phrase_options("disagree_lead") if w in text)
     pair = text.split(lead, 1)[1]
-    but = next(w for w in composer.phrase_options("but_newer") if w in pair)
+    but = next(w for w in composer_phrases.phrase_options("but_newer") if w in pair)
     assert pair.index("**Monday**") < pair.index(but) < pair.index("**Friday**")
 
 
 def test_words_no_note_found_holds_are_named_in_the_closing_line():
     result = ask("What hotel is near the Porto lodge?")
-    assert result["text"].endswith(tuple(f"{w}“hotel”." for w in composer.phrase_options("missing")))
+    assert result["text"].endswith(tuple(f"{w}“hotel”." for w in composer_phrases.phrase_options("missing")))
 
 
 def test_the_closing_line_is_left_out_when_nothing_matched_at_all():
     result = ask("What is the capital of Peru?")
     #: Engine probe P1: the no-answer names the words no note found holds.
     #: One of eight leads and eight questions back (the owner: "can it have more varied responses??").
-    lead = next(w for w in composer.phrase_options("none_found") if result["text"].startswith(w))
+    lead = next(w for w in composer_phrases.phrase_options("none_found") if result["text"].startswith(w))
     assert result["text"][len(lead):].startswith("“capital” or “Peru”. ")
-    assert result["text"].endswith(tuple(composer.phrase_options("nothing_ask")))
+    assert result["text"].endswith(tuple(composer_phrases.phrase_options("nothing_ask")))
     assert result["grounding"] == [] and result["next"] == []
 
 

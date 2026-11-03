@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import json
 
-from tessellate.ai.agent import RESULT_SUMMARY_CHARS, _result_summary
+from tessellate.ai.agent_policy import RESULT_SUMMARY_CHARS, _result_summary
 
 
 def test_a_tools_own_summary_wins():

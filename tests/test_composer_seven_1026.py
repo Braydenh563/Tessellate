@@ -30,12 +30,12 @@ def test_small_talk_has_twenty_surfaces_a_voice(kind, voice):
 
 
 def test_small_talk_follows_the_voice_and_the_emotion():
-    from tessellate.ai import composer
+    from tessellate.ai import composer_smalltalk
 
-    calm = {composer.social("sorry", voice="plain", seed=str(n)) for n in range(40)}
-    formal = {composer.social("sorry", voice="professional", seed=str(n)) for n in range(40)}
+    calm = {composer_smalltalk.social("sorry", voice="plain", seed=str(n)) for n in range(40)}
+    formal = {composer_smalltalk.social("sorry", voice="professional", seed=str(n)) for n in range(40)}
     assert not calm & formal
-    stressed = {composer.social("sorry i am so stressed about the deadline", voice="natural", seed=str(n)) for n in range(40)}
+    stressed = {composer_smalltalk.social("sorry i am so stressed about the deadline", voice="natural", seed=str(n)) for n in range(40)}
     assert any("one thing at a time" in x or "plate" in x or "pressing" in x or "juggling" in x or "stress" in x.lower() for x in stressed)
 
 
@@ -91,13 +91,14 @@ def test_identity_kinds_name_the_assistant(kind, voice):
 ])
 @pytest.mark.parametrize("voice", _VOICES)
 def test_stored_kinds_are_composed_and_vary(message, kind, intent, voice):
-    from tessellate.ai import composer, phrasing
+    from tessellate.ai import phrasing
+    from tessellate.ai import composer_smalltalk
 
     said: list[str] = []
     for n in range(24):
-        said.append(composer.social(message, intent, said[-1] if said else "", "", voice=voice, recent=said, seed=f"s{n}"))
+        said.append(composer_smalltalk.social(message, intent, said[-1] if said else "", "", voice=voice, recent=said, seed=f"s{n}"))
     assert phrasing.repeats(said) == 0, (kind, voice)
-    built = set(composer.social_surfaces(kind)) | set(composer.social_surfaces(kind, True))
+    built = set(composer_smalltalk.social_surfaces(kind)) | set(composer_smalltalk.social_surfaces(kind, True))
     assert all(x in built for x in said), (kind, voice, [x for x in said if x not in built][:2])
 
 
@@ -124,13 +125,13 @@ def test_the_nothing_found_line_follows_the_register():
 def test_composing_the_rest_is_cheap():
     import time
 
-    from tessellate.ai import composer
+    from tessellate.ai import composer_smalltalk
 
     for msg in ("tell me a joke", "asdfgh", "test", "you're useless"):
-        composer.social(msg, voice="playful", seed="warm")
+        composer_smalltalk.social(msg, voice="playful", seed="warm")
         began = time.perf_counter()
         for n in range(20):
-            composer.social(msg, voice="playful", seed=str(n))
+            composer_smalltalk.social(msg, voice="playful", seed=str(n))
         assert (time.perf_counter() - began) / 20 < 0.005, msg
 
 
@@ -138,12 +139,12 @@ def test_composing_the_rest_is_cheap():
 def test_an_empty_window_is_said_in_the_chat_voice(register):
     from datetime import date
 
-    from tessellate.ai import composer
+    from tessellate.ai import composer_empty
 
-    said = {composer.empty_window("last month", date(2026, 9, 1), date(2026, 10, 20), seed=str(n), register=register) for n in range(60)}
+    said = {composer_empty.empty_window("last month", date(2026, 9, 1), date(2026, 10, 20), seed=str(n), register=register) for n in range(60)}
     assert len(said) >= 8, (register, len(said))
     assert all("!" not in s and chr(0x2014) not in s and s[0].isupper() for s in said), said
-    one = composer.empty_window("last month", date(2026, 9, 1), date(2026, 9, 1), register=register)
+    one = composer_empty.empty_window("last month", date(2026, 9, 1), date(2026, 9, 1), register=register)
     assert "1 September" in one, one
 
 

@@ -241,13 +241,14 @@ def streak(session: Session, now: datetime, timed: bool) -> StatAnswer:
 
 def answer(question: str, session: Session, now: datetime) -> StatAnswer | None:
     """The answer to a new, changed or streak question, or None."""
-    from tessellate.ai import composer, question_noise
+    from tessellate.ai import question_noise
+    from tessellate.ai import composer_ask
 
     text = question_noise.repair(question_noise.tidy(question or ""))
     asked = read(text)
     if asked is None:
         return None
-    timed = composer.asks_time(question)
+    timed = composer_ask.asks_time(question)
     if asked.shape == "streak":
         return streak(session, now, timed)
     return new(text, asked, session, now, timed)

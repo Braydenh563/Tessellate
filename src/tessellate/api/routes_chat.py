@@ -36,7 +36,7 @@ from starlette.concurrency import run_in_threadpool
 from sqlalchemy.orm import Session
 
 from tessellate.ai import capability, fact_check, composer, composer_social, composer_unplaced, note_language, composer_aware, composer_compose, composer_digest, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, note_rank, note_recency, personal, verdicts, vocative
-from tessellate.ai import ask_chips, composer_intent
+from tessellate.ai import ask_chips, composer_dialogue, composer_empty, composer_intent, composer_smalltalk
 from tessellate.ai import recognise
 from tessellate.ai import (
     acts,
@@ -75,14 +75,14 @@ from tessellate.entry.manager import UNCATEGORISED
 from tessellate.search import chunks as search_chunks
 from tessellate.search import search_manager
 from sqlalchemy import func
-from tessellate.api.chat_attach import ATTACHED_MAP_CHARS, _MEDIA_REF, _attached_boards, _attached_documents, _attached_files, _attached_notes, _attachment_readings, _files_on, _grounding_candidates, _media_readings, _note_dates, _one_line, _picture_alts, _time_words  # noqa: F401  (moved; re-exported)
-from tessellate.api.chat_request import ChatRequest, _apply_open_this, _open_surface, ChatResponse, ChatTurn, CommandRunBody, CompressBody, FollowupBody, MAX_COMPRESS_TURNS, RememberBody, ToolExecuteBody, _NOTE_LINK, _NOT_A_NAME, _StreamRequest, _Turn, _apply_open, _apply_scope, _chat_model_sees_images, _check_refs, _composed, _event, _image_caption_context, _in_full, _meta_event, _named_note, _nothing_open, _resolve_chat_images, _resolve_mode, _resolve_persona, _resolve_skill  # noqa: F401  (moved; re-exported)
-from tessellate.api.chat_pool import _Found, _NoteCtx, _chat_payload, _composer_reads, _document_row, _filed_under, _frame_matches, _glossary, _holding, _holds_read_text, _in_window, _keep_window, _note_content, _whole_pool, _widened, _with_each_side, _with_neighbours, _with_records, _with_sources  # noqa: F401  (moved; re-exported)
-from tessellate.api.chat_recent import AGENT_SURFACE, ASK_SURFACE, STARTER_SUGGESTIONS, _NAMES, _about, _asked_key, _feature_for, _fill, _recent_questions  # noqa: F401  (moved; re-exported)
-from tessellate.api.chat_web import WEB_PAGES, _can_start_searxng, _home_place, _link_events, _offer_events, _search_service, _unmatched_recents, _web_allowed, _web_chip, _web_first, _web_page_row, _web_pref_on  # noqa: F401  (moved; re-exported)
-from tessellate.api.chat_agent import _agent_events, _close_quietly, _first_agent_event, _refuse_failed, _refuse_if_off, _starter_read  # noqa: F401  (moved; re-exported)
-from tessellate.api.chat_said import MODEL_STOPPED_NOTE, _says_cannot, _HOW_TO, _ROWS_KEPT, _app_answers, _asked_before, _asks_capability, _asks_only_a_time, _awareness, _chart_line, _chat_topic, _cited_titles, _composed_lines, _current_notes, _diagram_events, _engine_counts, _engine_stands, _filed_or_counted_events, _first_cited_has_list, _held_reply, _help_events, _in_notes, _late_panel, _linked_notes, _listed_below, _model_said, _name_documents, _newest_titles, _newest_word, _open_note_answer, _ping_offer, _related_elsewhere, _related_sentence, _remember_rows, _reminder_window, _reply_seed, _row_source, _rows_key, _run_title, _said_events, _save_ask_turn, _saved_joke_reply, _search_footer, _sees, _slash_chart, _stats_chart, _stats_listed, _suggest_events, _with_words_only, reply_panel  # noqa: F401  (moved; re-exported)
-from tessellate.api.chat_turn import _COUNT_WORDS, _LEAD_IN, _asks_change, _chat_reply, _checks_grounding, _cited_scope, _composes_offline, _detect_intent, _engine_answers, _facts_turn, _fold_event, _insight_level, _insight_memory, _is_composing, _log_question, _may_digest, _meaning_loading, _model_stream_events, _note_kind, _note_with_hint, _notes_first, _notes_messages, _relay_events, _searched_question, _social_line, _trim_answer, _uncut, _verdicts, _why, _will_answer  # noqa: F401  (moved; re-exported)
+from tessellate.api.chat_attach import _MEDIA_REF, _attached_boards, _attached_documents, _attached_files, _attached_notes, _files_on, _grounding_candidates, _note_dates, _time_words
+from tessellate.api.chat_request import ChatRequest, ChatResponse, CommandRunBody, CompressBody, FollowupBody, RememberBody, ToolExecuteBody, _StreamRequest, _Turn, _apply_open, _apply_scope, _chat_model_sees_images, _check_refs, _composed, _event, _image_caption_context, _in_full, _meta_event, _nothing_open, _resolve_chat_images, _resolve_mode, _resolve_persona, _resolve_skill
+from tessellate.api.chat_pool import _Found, _NoteCtx, _chat_payload, _composer_reads, _document_row, _frame_matches, _glossary, _holds_read_text, _in_window, _keep_window, _note_content, _whole_pool, _widened, _with_each_side, _with_neighbours, _with_records, _with_sources
+from tessellate.api.chat_recent import AGENT_SURFACE, ASK_SURFACE, STARTER_SUGGESTIONS, _about, _asked_key, _feature_for, _fill, _recent_questions
+from tessellate.api.chat_web import WEB_PAGES, _can_start_searxng, _home_place, _link_events, _offer_events, _search_service, _unmatched_recents, _web_allowed, _web_chip, _web_first, _web_page_row, _web_pref_on
+from tessellate.api.chat_agent import _agent_events, _close_quietly, _first_agent_event, _refuse_failed, _refuse_if_off, _starter_read
+from tessellate.api.chat_said import MODEL_STOPPED_NOTE, _says_cannot, _ROWS_KEPT, _app_answers, _asked_before, _asks_capability, _asks_only_a_time, _awareness, _chart_line, _cited_titles, _composed_lines, _current_notes, _diagram_events, _engine_counts, _engine_stands, _filed_or_counted_events, _first_cited_has_list, _held_reply, _help_events, _in_notes, _late_panel, _linked_notes, _listed_below, _model_said, _name_documents, _newest_titles, _newest_word, _open_note_answer, _ping_offer, _related_elsewhere, _related_sentence, _remember_rows, _reminder_window, _reply_seed, _row_source, _rows_key, _run_title, _said_events, _save_ask_turn, _saved_joke_reply, _search_footer, _sees, _slash_chart, _stats_chart, _stats_listed, _suggest_events, _with_words_only, reply_panel
+from tessellate.api.chat_turn import _asks_change, _chat_reply, _checks_grounding, _cited_scope, _composes_offline, _detect_intent, _engine_answers, _facts_turn, _insight_level, _insight_memory, _is_composing, _log_question, _may_digest, _meaning_loading, _model_stream_events, _note_with_hint, _notes_first, _notes_messages, _relay_events, _searched_question, _social_line, _trim_answer, _uncut, _verdicts, _why, _will_answer
 
 
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -898,7 +898,7 @@ def _hello_reply(req: _StreamRequest, seed: str, recent: list[str]) -> str:
     sees = composer_aware.opening(_awareness(req), seed) if req.body.screen else ""
     #: The welcome already names the last note: no second sentence about it.
     invite = "" if "“" in welcome or "](#/notes/" in welcome else _newest_word(req.session)
-    asks = composer.invitation(req.question, invite, _composer_voice(), seed) if invite else composer.greeting_ask(req.question, _composer_voice(), seed)
+    asks = composer_smalltalk.invitation(req.question, invite, _composer_voice(), seed) if invite else composer_smalltalk.greeting_ask(req.question, _composer_voice(), seed)
     return "\n\n".join(p for p in (" ".join(p for p in (welcome, asks) if p), sees) if p)
 
 
@@ -910,14 +910,14 @@ def _social_reply(req: _StreamRequest, prepared: dict) -> str:
     #: A next step names only a subject whose notes were found: the turn
     #: before named notes (its `objects`), never "nothing matched" (INBOX 1459).
     asked = str(last.get("question") or "") if last.get("objects") else ""
-    kind = composer.social_kind(req.question, prepared["intent"])
+    kind = composer_smalltalk.social_kind(req.question, prepared["intent"])
     if kind in ("greeting", "morning") and (hello := _hello_reply(req, seed, recent)):
         return hello
     if kind == "repair":
         return _repair_reply(req, last, seed)
     if kind == "joke" and (joke := _saved_joke_reply(req, seed)):
         return joke
-    said = composer.social(
+    said = composer_smalltalk.social(
         req.question,
         prepared["intent"],
         str(last.get("answer") or ""),
@@ -942,7 +942,7 @@ def _repair_reply(req: _StreamRequest, last: dict, seed: str) -> str:
     asked = str(last.get("question") or "")
     better = personal.about_me(asked) or ""
     if not better and question_noise.social_kind(asked) == "who":
-        better = composer.social(asked, intent.SMALLTALK, voice=_chat_voice(req), seed=seed)
+        better = composer_smalltalk.social(asked, intent.SMALLTALK, voice=_chat_voice(req), seed=seed)
     return composer_social.repair(asked, last, better, _composer_voice(), seed)
 
 
@@ -950,10 +950,10 @@ def _call_events(req: _StreamRequest) -> list[dict]:
     """A message that only called the assistant: here, and three things to
     ask next as chips (an "ask" offer; the follow-up strip draws them)."""
     recent, seed = _reply_seed(req)
-    line = composer.call(req.address.names, recent=recent, seed=seed, voice=_composer_voice())
+    line = composer_smalltalk.call(req.address.names, recent=recent, seed=seed, voice=_composer_voice())
     return [
         {"type": "answer", "delta": line},
-        {"type": "offer", "offer": {"kind": "ask", "label": "", "asks": composer.call_asks(seed)}},
+        {"type": "offer", "offer": {"kind": "ask", "label": "", "asks": composer_smalltalk.call_asks(seed)}},
     ]
 
 
@@ -1061,7 +1061,7 @@ def _no_notes_line(req: _StreamRequest, ollama_running: bool) -> str:
     from tessellate.core.database import Entry
 
     first, last = req.session.query(func.min(Entry.created_at), func.max(Entry.created_at)).filter(*_visible()).one()
-    return composer.empty_window(
+    return composer_empty.empty_window(
         planned.window_phrase,
         first.date() if first else None,
         last.date() if last else None,
@@ -1313,7 +1313,7 @@ def _composed_result(req: _StreamRequest, prepared: dict) -> tuple:
     #: running?", "and last month?", "the second one") is answered the
     #: same way as the first turn (B8); "tell me more", "shorter" and a
     #: correction lean on the turn before and keep the composer's.
-    restated = follow is not None and follow.kind in composer._RESTATES
+    restated = follow is not None and follow.kind in composer_dialogue._RESTATES
     today = user_now(deps.get_config()).date()
     #: O11: a newer note on the same thing is the current one.
     current, older = _current_notes(req, prepared["notes"])

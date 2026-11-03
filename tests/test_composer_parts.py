@@ -9,7 +9,8 @@ from __future__ import annotations
 
 import pytest
 
-from tessellate.ai import composer, composer_parts, phrasing
+from tessellate.ai import composer_parts, phrasing
+from tessellate.ai import composer_smalltalk
 
 KINDS = ("greeting", "thanks", "bye")
 MESSAGE = {"greeting": "hi", "thanks": "thanks", "bye": "bye"}
@@ -30,14 +31,14 @@ def test_the_parts_join_into_sentences(voice, kind):
 @pytest.mark.parametrize("voice", ["natural", "professional"])
 @pytest.mark.parametrize("kind", KINDS)
 def test_the_family_is_the_parts(voice, kind):
-    table = composer.SOCIAL_PROFESSIONAL if voice == "professional" else composer.SOCIAL
+    table = composer_smalltalk.SOCIAL_PROFESSIONAL if voice == "professional" else composer_smalltalk.SOCIAL
     assert table[kind] == composer_parts.lines(voice)[kind]
 
 
 @pytest.mark.parametrize("voice", ["natural", "professional"])
 @pytest.mark.parametrize("kind", KINDS)
 def test_many_seeds_say_many_things(voice, kind):
-    said = {composer.social(MESSAGE[kind], voice=voice, seed=str(i)) for i in range(300)}
+    said = {composer_smalltalk.social(MESSAGE[kind], voice=voice, seed=str(i)) for i in range(300)}
     assert len(said) >= 60, (kind, voice, len(said))
 
 
@@ -46,7 +47,7 @@ def test_a_tail_is_not_said_twice_running(kind):
     """Fifty replies in a row: no repeat of the last three, tails included."""
     replies: list[str] = []
     for turn in range(50):
-        replies.append(composer.social(MESSAGE[kind], "smalltalk", replies[-1] if replies else "", "", recent=replies, seed="s"))
+        replies.append(composer_smalltalk.social(MESSAGE[kind], "smalltalk", replies[-1] if replies else "", "", recent=replies, seed="s"))
     assert phrasing.repeats(replies) == 0
     tails = [r.split(". ", 1)[1] if ". " in r else "" for r in replies]
     assert all(not (a and a == b) for a, b in zip(tails, tails[1:], strict=False))

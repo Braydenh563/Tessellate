@@ -18,6 +18,7 @@ from __future__ import annotations
 import json
 
 from tessellate.ai import agent, model_manager
+from tessellate.ai import agent_policy
 
 
 class _Session:
@@ -231,9 +232,9 @@ def test_a_small_model_stops_at_four_rounds(monkeypatch, app_state):
     # Tool rounds: the one after them (INBOX 527) offers no tools and only
     # answers from what was found.
     tool_rounds = [offered for offered in small.offered if offered]
-    assert len(tool_rounds) <= agent.SMALL_MODEL_MAX_ROUNDS, len(tool_rounds)
+    assert len(tool_rounds) <= agent_policy.SMALL_MODEL_MAX_ROUNDS, len(tool_rounds)
     assert small.offered[-1] == []
-    assert len(executed) <= agent.SMALL_MODEL_MAX_ROUNDS
+    assert len(executed) <= agent_policy.SMALL_MODEL_MAX_ROUNDS
 
 
 def test_a_large_model_keeps_its_earned_rounds(monkeypatch, app_state):
@@ -249,7 +250,7 @@ def test_a_large_model_keeps_its_earned_rounds(monkeypatch, app_state):
         rounds=rounds,
         results=[{"notes": [{"id": index}]} for index in range(12)],
     )
-    assert len(large.offered) > agent.SMALL_MODEL_MAX_ROUNDS, len(large.offered)
+    assert len(large.offered) > agent_policy.SMALL_MODEL_MAX_ROUNDS, len(large.offered)
 
 
 # --- the text-embedded call ---------------------------------------------------

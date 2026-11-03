@@ -14,6 +14,7 @@ import json
 import pytest
 
 from tessellate.ai import agent
+from tessellate.ai import agent_policy
 
 
 def test_a_missing_id_says_to_search_rather_than_guess():
@@ -124,7 +125,7 @@ def test_a_successful_call_carries_no_advice(monkeypatch, app_state):
 
 def test_the_prompt_tells_the_model_multiple_rounds_are_expected():
     """Asked for directly: 'I need agents to use tools more and better'."""
-    guide = agent.TOOLS_GUIDE
+    guide = agent_policy.TOOLS_GUIDE
     assert "several turns is normal and expected" in guide.lower()
     # A snippet is not a page, read_url before relying on a result.
     assert "read_url" in guide

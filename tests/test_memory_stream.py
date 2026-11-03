@@ -9,7 +9,8 @@ keeps it from growing without bound.
 
 from __future__ import annotations
 
-from tessellate.ai import agent, memory, tools
+from tessellate.ai import memory, tools
+from tessellate.ai import agent_policy
 from tessellate.core.database import UserPreference
 from tests._app_js import app_js_text
 
@@ -38,7 +39,7 @@ def test_the_memory_stream_cannot_grow_past_its_budget(session):
     session.commit()
 
     persona = memory.persona_with_memory(session, "P.")
-    assert len(persona) <= len("P.") + agent.MEMORY_STREAM_BUDGET_CHARS + 80
+    assert len(persona) <= len("P.") + agent_policy.MEMORY_STREAM_BUDGET_CHARS + 80
 
 
 def test_an_over_long_preference_is_refused(session):
@@ -81,7 +82,7 @@ def test_the_saved_preferences_can_be_listed(ai_client, session):
     assert [p["content"] for p in body["preferences"]] == ["Be concise"]
     assert body["preferences"][0]["active"] is True
     assert body["preferences"][0]["proposed"] is False
-    assert body["budget_chars"] == agent.MEMORY_STREAM_BUDGET_CHARS
+    assert body["budget_chars"] == agent_policy.MEMORY_STREAM_BUDGET_CHARS
 
 
 def test_a_preference_can_be_switched_off_without_deleting_it(ai_client, session):

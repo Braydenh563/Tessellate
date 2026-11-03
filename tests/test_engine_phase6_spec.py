@@ -23,6 +23,7 @@ from pathlib import Path
 import pytest
 
 from tessellate.ai import composer
+from tessellate.ai import composer_smalltalk
 
 SEED = json.loads((Path(__file__).parent / "fixtures" / "composer" / "phase6_seed.json").read_text(encoding="utf-8"))
 TODAY = date.fromisoformat(SEED["today"])
@@ -283,7 +284,7 @@ def test_a_correction_reranks():
 
 
 def test_who_are_you_answers_as_atlas():
-    reply = composer.social("who are you", intent="about_app")
+    reply = composer_smalltalk.social("who are you", intent="about_app")
     assert "Atlas" in reply
 
 

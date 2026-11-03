@@ -8,6 +8,7 @@ whose text escapes to a caller, an address checked once and connected to twice.
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 
 import pytest
 
@@ -137,10 +138,9 @@ def test_the_embedding_modules_do_not_import_each_other_in_a_circle():
     imported back from either. A cycle here is currently only survivable
     because of a deferred import, which is a workaround, not a shape."""
     import ast
-    import pathlib
 
     def module_level_imports(path: str) -> set[str]:
-        tree = ast.parse(pathlib.Path(path).read_text())
+        tree = ast.parse(Path(path).read_text())
         found = set()
         for node in ast.walk(tree):
             if isinstance(node, ast.ImportFrom) and node.module:
@@ -197,7 +197,6 @@ def test_cryptography_is_pinned_past_the_two_advisories():
     real conflict, which is the part worth pinning so it cannot recur.
     """
     import re
-    from pathlib import Path
 
     requirements = (Path(__file__).resolve().parents[1] / "requirements.txt").read_text()
     spec = re.search(r"^cryptography([^\n]*)$", requirements, re.M)

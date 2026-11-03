@@ -17,7 +17,8 @@ from collections.abc import Iterator
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import composer, composer_digest, composer_lists, composer_slots, context, fence, intent, librarian, question_noise, recognise, verdicts, why
+from tessellate.ai import composer_digest, composer_lists, composer_slots, context, fence, intent, librarian, question_noise, recognise, verdicts, why
+from tessellate.ai import composer_dialogue
 from tessellate.ai.answer_trim import trim_assistant_padding
 from tessellate.ai.grounding import SentenceGrounder
 from tessellate.ai.ollama_client import OllamaError
@@ -287,7 +288,7 @@ def _cited_scope(req: _StreamRequest, follow) -> list[int]:  # noqa: ANN001
     keeps its subject, and the slot runs on that note rather than on
     whichever note best matches the bare words."""
     objects = ((req.history or [{}])[-1].get("objects") or []) if req.history else []
-    if not objects or req.body.note_ids or (follow is not None and follow.kind != "pronoun") or not composer.refers_back(req.question):
+    if not objects or req.body.note_ids or (follow is not None and follow.kind != "pronoun") or not composer_dialogue.refers_back(req.question):
         return []
     label = str(objects[0]).strip().lower()
     rows = req.session.execute(

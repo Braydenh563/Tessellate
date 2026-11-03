@@ -17,6 +17,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import composer, composer_frame, composer_intent, composer_lists, composer_money, composer_slots, composer_sum, composer_versus, glossary, librarian, neighbours, question_noise
+from tessellate.ai import composer_ask
 from tessellate.api.chat_attach import _MEDIA_REF, _attached_boards, _attachment_readings, _media_readings, _mostly_pictures, _named_sources, _picture_alts, _picture_sizes
 from tessellate.core import deps
 from tessellate.core.database import Category, Entry, like_escape, LIKE_ESCAPE, MediaUpload
@@ -135,7 +136,7 @@ def _by_synonym(session: Session, subject: str) -> list:
     overview (`composer_overview.members`)."""
     found: list = []
     for word in composer.subject_terms(subject)[:3]:
-        for other in sorted(a for a in composer._alternatives(composer._stem(word)) if len(a) >= 3 and a.isalpha()):  # noqa: SLF001
+        for other in sorted(a for a in composer_ask._alternatives(composer._stem(word)) if len(a) >= 3 and a.isalpha()):  # noqa: SLF001
             found += search_manager.keyword_search(session, other, limit=OVERVIEW_LIMIT) + _filed_under(session, [other])
     return found
 
@@ -545,7 +546,7 @@ def _matched_rows(session: Session, question: str, skip: set[tuple[str, int]]) -
     partial match does not bring a source in. Read as the named ones are, so
     the answer says the kind ("on your Cloud map"). `skip` holds
     (document or board, id) pairs already in."""
-    terms = [t for t in search_manager._meaningful_terms(question or "") if t not in composer._ASKING_WORDS]  # noqa: SLF001
+    terms = [t for t in search_manager._meaningful_terms(question or "") if t not in composer_ask._ASKING_WORDS]  # noqa: SLF001
     if not terms or len(question or "") > 300:
         return []
     hits = engine.search(session, " ".join(terms), kinds=["board", "map", "document"], limit=8, hybrid=False)

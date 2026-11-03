@@ -993,10 +993,10 @@ def test_a_compare_s_side_headings_start_with_a_capital(notebook, question):
 
 
 def test_no_voice_of_the_compare_openers_claims_a_process():
-    from tessellate.ai import composer
+    from tessellate.ai import composer_phrases
 
     for key in ("of_found", "across_found"):
-        for lead in composer.phrase_options(key):
+        for lead in composer_phrases.phrase_options(key):
             assert not any(p in lead.lower() for p in _PROCESS), lead
 
 

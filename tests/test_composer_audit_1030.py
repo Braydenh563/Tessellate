@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from tessellate.ai import composer, composer_ask, spelling
+from tessellate.ai import composer_unfound
 
 
 def test_z65_a_typo_is_spell_checked_once_per_question(monkeypatch):
@@ -91,10 +92,10 @@ def test_z60_a_tick_that_ran_says_so_and_asks_no_confirm(client, session):
 def test_z16_a_questions_frame_words_are_never_called_missing(question, framed):
     """"These notes do not mention “turn”" sat under answers that answered:
     the words that shape a question are not its topic."""
-    stems = composer._frame_stems(question)  # noqa: SLF001
+    stems = composer_unfound._frame_stems(question)  # noqa: SLF001
     assert {composer._stem(w) for w in framed} <= stems, stems  # noqa: SLF001
     #: The thing asked for after "what" is the topic, and stays checkable.
-    assert composer._stem("hotel") not in composer._frame_stems("What hotel is near the Porto lodge?")  # noqa: SLF001
+    assert composer._stem("hotel") not in composer_unfound._frame_stems("What hotel is near the Porto lodge?")  # noqa: SLF001
 
 
 _PEOPLE = [

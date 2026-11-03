@@ -56,10 +56,10 @@ def test_no_timezone_falls_back_to_the_server_clock(client):
 
 def test_the_agent_is_told_the_users_local_time(client):
     """The prompt line that "remind me in 10 minutes" is computed from."""
-    from tessellate.ai import agent
+    from tessellate.ai import agent_turn
 
     client.put("/preferences", json={"timezone": "Australia/Brisbane"})
-    messages = agent.build_agent_messages("remind me in 10 minutes", [])
+    messages = agent_turn.build_agent_messages("remind me in 10 minutes", [])
     system = messages[0]["content"]
     assert "The current date and time is" in system
     assert "+10:00" in system
@@ -68,9 +68,9 @@ def test_the_agent_is_told_the_users_local_time(client):
 def test_agent_prompt_includes_current_time_and_reminder_hint():
     """The other half of the same line: it also has to point at the tool
     that acts on it, or the model knows the time and not what to do with it."""
-    from tessellate.ai import agent
+    from tessellate.ai import agent_turn
 
-    messages = agent.build_agent_messages("remind me to fold washing in 10 minutes", [])
+    messages = agent_turn.build_agent_messages("remind me to fold washing in 10 minutes", [])
     system = messages[0]["content"]
     assert "current date and time is" in system
     assert "set_reminder" in system

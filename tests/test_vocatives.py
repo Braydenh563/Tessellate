@@ -98,21 +98,22 @@ def _stream(client, question, history=()):
 
 
 def test_a_call_through_the_route_answers_and_offers_three_asks(client):
-    from tessellate.ai import composer, composer_replies
+    from tessellate.ai import composer_replies
+    from tessellate.ai import composer_smalltalk
 
     text, offers = _stream(client, "yo brotatockiibidyrizzler")
     lines = {line.replace("{name}", "Brotatockiibidyrizzler") for line in composer_replies.CALL["natural"]}
     assert text in lines, text
     assert offers and offers[0]["kind"] == "ask" and len(offers[0]["asks"]) == 3
     assert set(offers[0]["asks"]) <= set(composer_replies.CALL_ASKS)
-    assert composer.call_asks("x") == composer.call_asks("x")
+    assert composer_smalltalk.call_asks("x") == composer_smalltalk.call_asks("x")
 
 
 def test_a_nickname_on_small_talk_is_small_talk(client):
-    from tessellate.ai import composer
+    from tessellate.ai import composer_smalltalk
 
     text, _offers = _stream(client, "thanks legend")
-    assert any(text.startswith(line) for line in composer.SOCIAL["thanks"]), text
+    assert any(text.startswith(line) for line in composer_smalltalk.SOCIAL["thanks"]), text
 
 
 def test_the_chips_are_drawn_by_the_follow_up_strip():

@@ -21,7 +21,8 @@ import re
 import pytest
 
 import tests._seed_1030 as seed_1030
-from tessellate.ai import composer, composer_versus, note_recency
+from tessellate.ai import composer_versus, note_recency
+from tessellate.ai import composer_body
 from tessellate.entry import manager
 from tests.test_composer_class_1031 import uni  # noqa: F401  (a fixture)
 
@@ -223,7 +224,7 @@ def test_the_reader_leaves_other_asks_alone(text):
     ("our flat", "flat"), ("a trip", "trip"), ("Lisbon", "Lisbon"), ("theatre", "theatre"), ("the", "the"),
 ])
 def test_heading_name_drops_a_leading_article(label, said):
-    assert composer.heading_name(label) == said
+    assert composer_body.heading_name(label) == said
 
 
 @pytest.mark.parametrize("question", [

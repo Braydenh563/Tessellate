@@ -24,6 +24,8 @@ from __future__ import annotations
 import pytest
 
 from tessellate.ai import agent, context, librarian, tools
+from tessellate.ai import agent_policy
+from tessellate.ai import agent_turn
 from tessellate.ai.ollama_client import OllamaClient
 from tessellate.core.database import Entry
 
@@ -31,7 +33,7 @@ WINDOWS = [2048, 4096, 8192, 16384, 32768, 131072]
 
 
 def _system_chars() -> int:
-    return len(f"{librarian.DEFAULT_PERSONA} {agent.AGENT_GROUNDING} {agent.TOOLS_GUIDE}")
+    return len(f"{librarian.DEFAULT_PERSONA} {agent_policy.AGENT_GROUNDING} {agent_policy.TOOLS_GUIDE}")
 
 
 # --- the whole point --------------------------------------------------------
@@ -230,14 +232,14 @@ def test_notes_that_did_not_fit_are_declared_rather_than_dropped_silently():
     that does not will answer as though it saw the whole notebook."""
     notes = [{"id": i, "category": "General", "content": "x" * 800} for i in range(20)]
     plan = context.plan(4096, _system_chars())
-    messages = agent.build_agent_messages("q", notes, budget=plan)
+    messages = agent_turn.build_agent_messages("q", notes, budget=plan)
     assert "did not fit" in messages[-1]["content"]
 
 
 def test_a_turn_that_fits_says_nothing_about_dropping():
     notes = [{"id": 1, "category": "General", "content": "short"}]
     plan = context.plan(32768, _system_chars())
-    messages = agent.build_agent_messages("q", notes, budget=plan)
+    messages = agent_turn.build_agent_messages("q", notes, budget=plan)
     assert "did not fit" not in messages[-1]["content"]
 
 

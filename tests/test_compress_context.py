@@ -94,7 +94,7 @@ def test_an_empty_history_is_rejected(ai_client, fake_ollama):
 def test_an_absurd_history_is_rejected(ai_client, fake_ollama):
     """Bounded because the summary itself would get long enough to be worth
     summarising, which is the wrong direction."""
-    from tessellate.api.routes_chat import MAX_COMPRESS_TURNS
+    from tessellate.api.chat_request import MAX_COMPRESS_TURNS
 
     response = ai_client.post(
         "/chat/compress", json={"history": _turns(MAX_COMPRESS_TURNS + 1)}

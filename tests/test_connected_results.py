@@ -91,7 +91,8 @@ def test_a_connected_notes_reason_reaches_both_prompts_not_just_the_api(client):
     match types but none for "connected", so a reason traced all the way to
     the Link row was still dropped right before it reached the prompt text,
     on both the plain librarian path and agent mode."""
-    from tessellate.ai import agent, librarian
+    from tessellate.ai import librarian
+    from tessellate.ai import agent_turn
 
     note = {
         "id": 1,
@@ -105,7 +106,7 @@ def test_a_connected_notes_reason_reaches_both_prompts_not_just_the_api(client):
     messages = librarian.build_messages("what about the shed?", [note])
     assert "both about the shed" in messages[-1]["content"]
 
-    agent_messages = agent.build_agent_messages("what about the shed?", [note])
+    agent_messages = agent_turn.build_agent_messages("what about the shed?", [note])
     assert "both about the shed" in agent_messages[-1]["content"]
 
 

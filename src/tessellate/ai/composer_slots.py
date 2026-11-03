@@ -18,6 +18,8 @@ from datetime import date
 from typing import NamedTuple
 
 from tessellate.ai import composer, composer_doings, composer_lists, realise, recognise
+from tessellate.ai import composer_ask
+from tessellate.ai import composer_body
 from tessellate.ai import when as when_words
 from tessellate.ai.composer_done import (  # noqa: F401  (moved; re-exported)
     _DOING_END, _FILLER, _INTENT, _UNDONE, _asked_thing, _done_later, _holds, _says_verb, _stems, _verb_forms,
@@ -68,9 +70,9 @@ _VERB_LISTS = {"buy": (["shop"], ["grocer"]), "bought": (["shop"], ["grocer"]), 
 def _tasks(views: list, stems: list[str]) -> tuple[list, list]:
     """`(open, done)` task sentences of the best note the stems name: one
     whose title holds every stem first, then one filed or worded so
-    (`composer._notes_named_by`, the reader "still open" questions share)."""
+    (`composer_body._notes_named_by`, the reader "still open" questions share)."""
     for want in (stems, *_VERB_LISTS.get(stems[0], ())) if stems else ():
-        named = composer._notes_named_by(views, set(want))  # noqa: SLF001
+        named = composer_body._notes_named_by(views, set(want))  # noqa: SLF001
         for view in sorted(named, key=lambda v: (not _title_holds(v, want), v.rank)):
             tasks = [s for s in view.sentences if s.kind == "task"]
             if tasks:
@@ -494,7 +496,7 @@ def _one_line(found):  # noqa: ANN001, ANN202
 
 
 def _when_said(view, sentence, today: date) -> date | None:  # noqa: ANN001
-    for day, at in composer._days_named(view, today, "past"):  # noqa: SLF001
+    for day, at in composer_body._days_named(view, today, "past"):  # noqa: SLF001
         if sentence.start <= at < sentence.end:
             return day
     return view.written
@@ -583,7 +585,7 @@ def _pair(out, q: str, views: list, today: date) -> bool:  # noqa: ANN001
     stems = _stems(low)
     if not stems:
         return False
-    named = composer._notes_named_by(views, set(stems))  # noqa: SLF001
+    named = composer_body._notes_named_by(views, set(stems))  # noqa: SLF001
     named = sorted(named, key=lambda v: (not _title_holds(v, stems), v.rank))
     if not named:
         return False
@@ -635,8 +637,8 @@ _CUES = frozenset({"temperature", "temp", "degrees", "date", "day", "many", "muc
 #: A superlative asks which note is first or next, the ranker's question.
 _RANKED = frozenset({"next", "first", "last", "latest", "newest", "upcoming", "previous", "earliest"})
 #: Regular pasts the unit and slot readers match by their lemma too; the
-#: irregular ones are the stemmer's own (`composer.IRREGULAR_PAST`).
-_IRREGULAR = {**composer.IRREGULAR_PAST, "baked": "bake", "cycled": "cycle", "walked": "walk"}
+#: irregular ones are the stemmer's own (`composer_ask.IRREGULAR_PAST`).
+_IRREGULAR = {**composer_ask.IRREGULAR_PAST, "baked": "bake", "cycled": "cycle", "walked": "walk"}
 #: Unit aliases by the unit a question names; the first is how the note's own
 #: figure is read back to the person.
 _UNITS = {
@@ -888,7 +890,7 @@ def _start_day(view, today: date) -> tuple[date, object] | None:  # noqa: ANN001
     for s in view.sentences:
         if not _START & set(_norm(s.text)):
             continue
-        for day, at in composer._days_named(view, today, "past"):  # noqa: SLF001
+        for day, at in composer_body._days_named(view, today, "past"):  # noqa: SLF001
             if s.start <= at < s.end:
                 found.append((day, s))
     return min(found, key=lambda f: f[0]) if found else None
@@ -900,7 +902,7 @@ def _old(out, rest: list[str], views: list, today: date) -> bool:  # noqa: ANN00
     stems = _stems(" ".join(rest))
     if not stems:
         return False
-    named = composer._notes_named_by(views, set(stems))  # noqa: SLF001
+    named = composer_body._notes_named_by(views, set(stems))  # noqa: SLF001
     named = sorted(named, key=lambda v: (not _title_holds(v, stems), v.rank))
     if not named:
         return False

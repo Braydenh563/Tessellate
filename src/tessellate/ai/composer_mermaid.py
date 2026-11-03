@@ -282,15 +282,15 @@ def fenced(made: Diagram) -> str:
 
 def _note_day(note: dict) -> date | None:
     """A note's day: an ISO `written` (the Writing room's sources) or
-    `created_at`, else the chat route's `written` words (`composer._written`)."""
+    `created_at`, else the chat route's `written` words (`composer_read._written`)."""
     for raw in (note.get("written"), note.get("created_at")):
         if isinstance(raw, date):
             return raw
         if raw and re.match(r"\d{4}-\d{2}-\d{2}", str(raw)):
             return date.fromisoformat(str(raw)[:10])
-    from tessellate.ai import composer
+    from tessellate.ai import composer_read
 
-    return composer._written(note)
+    return composer_read._written(note)
 
 
 def _day_words(day: date) -> str:

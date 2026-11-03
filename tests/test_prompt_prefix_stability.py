@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import datetime as dt
 
-from tessellate.ai import agent
+from tessellate.ai import agent_turn
 
 CLOCK_MARKER = " The current date and time is "
 
@@ -27,7 +27,7 @@ def _system(monkeypatch, when: dt.datetime, **kwargs) -> str:
     from tessellate.core import config
 
     monkeypatch.setattr(config, "user_now", lambda cfg: when)
-    messages = agent.build_agent_messages("what did I do?", [], **kwargs)
+    messages = agent_turn.build_agent_messages("what did I do?", [], **kwargs)
     return messages[0]["content"]
 
 
