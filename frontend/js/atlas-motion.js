@@ -220,7 +220,6 @@ function atlasRigGesture(arm, raise, buddy) {
   //: A wave holds the forearm about upright whatever the upper arm does
   //: (his swings to 102 degrees, hers to 146), never over the head.
   if (arm.side === "r" && has("nmb-act-wave")) [el, wr] = [-Math.max(10, Math.min(60, 175 - raise)), -12];
-  else if (arm.side === "r" && has("nmb-act-map")) [el, wr] = [-10, -8];
   else if (arm.side === "r" && (has("nmb-act-bell") || has("nmb-act-lantern") || has("nmb-act-carry"))) [el, wr] = [-8, 0];
   return [Math.max(ATLAS_EL_UP, Math.min(135, el)), wr];
 }

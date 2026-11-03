@@ -37,7 +37,7 @@ const body = animEl("body");
 const ears = [animEl("ear-l"), animEl("ear-r")];
 const buddy = { id: "nm-buddy", dataset: { pose: "stand" }, classList: { contains: (c) => buddy.on.has(c), [Symbol.iterator]: () => buddy.on[Symbol.iterator]() }, on: new Set() };
 const box = {
-  isConnected: true, dataset: { atlasMood: "calm", atlasLook: "feminine" }, atlasRig: { heads, arms: [{ side: "r", hand: null, geo: { segs: [[0, 0, 0, 0, 0, 0, 40, 30], [0, 0, 0, 0, 0, 0, 46, 38]] } }, { side: "l", hand, geo: { segs: [[0, 0, 0, 0, 0, 0, 20, 30], [0, 0, 0, 0, 0, 0, 14, 38]] } }] }, classList: { contains: () => false },
+  isConnected: true, dataset: { atlasMood: "calm", atlasLook: "feminine" }, atlasRig: { heads, arms: [{ side: "r", hand, geo: { segs: [[0, 0, 0, 0, 0, 0, 40, 30], [0, 0, 0, 0, 0, 0, 46, 38]] } }, { side: "l", hand: null, geo: { segs: [[0, 0, 0, 0, 0, 0, 20, 30], [0, 0, 0, 0, 0, 0, 14, 38]] } }] }, classList: { contains: () => false },
   closest: () => buddy,
   querySelector: (s) => (s.includes("atl-lw-body") ? body : null),
   querySelectorAll: (s) => (s.includes("atl-ear") ? ears : []),
@@ -210,7 +210,9 @@ setTimeout(() => process.stdout.write(JSON.stringify({
     assert out["made"] is True and out["first"] >= 3, "a small handful"
     assert out["again"] is False and out["during"] == out["first"], "one cast at a time"
     assert out["parents"] == ["hand"], "from her left hand, riding with it"
-    assert set(out["at"][0]) == {14, 38}, "drawn at the hand's wrist, where the rig puts the hand"
+    # Her left hand is the rig's arm "r", drawn on the viewer's right, where the
+    # owner saw the stars (INBOX 1589; 1576 cast from arm "l", the other hand).
+    assert set(out["at"][0]) == {46, 38}, "drawn at the hand's wrist, where the rig puts the hand"
     # Only the compositor's properties: transform and opacity (and the keyframes' offsets).
     assert set(out["props"]) <= {"transform", "opacity", "offset"}, out["props"]
     assert all("composite" not in o for o in out["opts"])
@@ -229,7 +231,7 @@ def test_a_cast_does_nothing_under_reduced_motion_or_off_the_feminine_look() -> 
 const res = {};
 ok = false; res.reduced = ctx.__cast(box);
 ok = true; box.dataset.atlasLook = "masculine"; res.masculine = ctx.__cast(box); box.dataset.atlasLook = "feminine";
-box.atlasRig.arms[1].hand = null; res.handless = ctx.__cast(box); box.atlasRig.arms[1].hand = hand;
+box.atlasRig.arms[0].hand = null; res.handless = ctx.__cast(box); box.atlasRig.arms[0].hand = hand;
 ok = false; ctx.__start(); for (let i = 0; i < 40; i += 1) { const [f] = timers.shift() || []; if (f) f(); }
 res.stars = calls.sparks.length;
 process.stdout.write(JSON.stringify(res));
