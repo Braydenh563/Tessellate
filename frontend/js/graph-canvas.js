@@ -5779,6 +5779,8 @@ function gcShowEmpty(show, filtered = null) {
   empty.style.display = show ? "grid" : "none";
   empty.classList.toggle("hidden", !show);
   const isFiltered = Boolean(show && filtered);
+  //: Nothing to map means nothing to key or zoom (graph-lazy.css, `.graph-bare`); a map the filters emptied keeps both, they are how it comes back.
+  document.getElementById("tab-graph")?.classList.toggle("graph-bare", Boolean(show && !filtered));
   document.getElementById("graph-empty-fresh")?.classList.toggle("hidden", isFiltered);
   document.getElementById("graph-empty-filtered")?.classList.toggle("hidden", !isFiltered);
   if (!isFiltered) return;

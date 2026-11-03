@@ -233,3 +233,23 @@ def test_18_an_empty_state_does_not_repeat_the_dock_button_above_it():
     assert "<button" not in reminders and "Add one above" in reminders
     boards = html[html.index('<div id="library-boards-empty"') :].split("</div>", 1)[0]
     assert 'data-empty-action="new-board"' not in boards and 'id="library-boards-new-map"' in boards
+
+
+def test_19_an_empty_graph_paints_no_legend_and_no_zoom_but_a_filtered_one_keeps_both():
+    """201x29 "Bigger dot, more links" and a 42x150 zoom strip over "Nothing to map yet"."""
+    js = _js("graph-canvas.js")
+    start = js.index("function gcShowEmpty(")
+    body = js[start : js.index("\n}\n", start)]
+    assert 'classList.toggle("graph-bare", Boolean(show && !filtered))' in body
+    css = _css("graph-lazy.css")
+    assert "display: none" in _body(css, ".graph-bare .graph-legend-row") and "display: none" in _body(css, ".graph-bare .graph-zoom")
+
+
+def test_20_an_empty_notebooks_dashboard_keeps_the_one_widget_that_needs_no_notes():
+    """349px of nothing between the steps and the status bar; Quick capture needs no data."""
+    js = _js("dashboard.js")
+    start = js.index("async function renderDashboard(")
+    body = js[start : js.index("\n}\n", start)]
+    assert "const bare = entriesEverLoaded && !allEntries.length && !dashEditMode;" in body
+    assert 'if (bare && name !== "capture") continue;' in body
+    assert "window.dashSettled = Promise.resolve();" not in body, "the early return that left the grid empty is gone"

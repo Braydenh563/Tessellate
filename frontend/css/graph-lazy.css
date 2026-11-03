@@ -582,3 +582,12 @@
 .graph-trace-story[open] > summary > .doc-toolbar-menu-caret {
   transform: rotate(180deg);
 }
+
+/* **A notebook with nothing to map has nothing to key or zoom** (unslop 1103,
+   19): the legend said "Bigger dot, more links" and the zoom strip floated
+   over "Nothing to map yet". `gcShowEmpty` sets the class for that case only;
+   a map the filters emptied keeps both, because they are how it comes back. */
+.graph-bare .graph-legend-row,
+.graph-bare .graph-zoom {
+  display: none;
+}

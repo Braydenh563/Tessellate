@@ -1797,17 +1797,14 @@ async function renderDashboard({ refresh = false } = {}) {
   // `entriesEverLoaded` and not just the length: before the first GET /entries
   // comes back these are indistinguishable, and guessing "empty" paints the
   // brand-new-notebook card over a notebook full of notes.
-  if (entriesEverLoaded && !allEntries.length && !dashEditMode) {
-    //: It has nothing to wait for. Left on, `.dash-filling` (added above)
-    //: kept a brand-new notebook's empty grid hidden for good.
-    grid.classList.remove("dash-filling");
-    window.dashSettled = Promise.resolve();
-    return;
-  }
+  //: The one widget that needs no notes stays (unslop 1103, 20): the first screen was
+  //: 349px of nothing under the steps, and Quick capture is the first thing to do.
+  const bare = entriesEverLoaded && !allEntries.length && !dashEditMode;
 
   for (const name of layout.order) {
     const hidden = layout.hidden.includes(name);
     if (hidden && !dashEditMode) continue;
+    if (bare && name !== "capture") continue;
 
     const widget = DASH_WIDGETS[name];
     const isWide = layout.wide.includes(name);

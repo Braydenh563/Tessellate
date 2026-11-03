@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Unslop 19 and 20: an empty Graph no longer paints a legend and zoom strip with nothing to key or zoom, and an empty Dashboard keeps Quick capture instead of 349px of void.
 - Chats: an empty sidebar is the empty-state recipe (icon, 'No saved chats yet', one sentence, New chat) instead of a grey 13.6px line (unslop 1103, 17).
 - Empty states do not repeat their own action (unslop 1103, 18): with nothing in them the dock's Create (Library, Everything), Upload (Images) and Add bookmark step aside for the empty state's own button, Boards' empty state keeps only New mind map (the dock's New makes a board), and Reminders' empty state points at the form above instead of repeating it.
 - Dashboard: the First steps button and the three-step card say what they open (the card, "Three steps to a working notebook", was "Get started"); Help, the Guide and the palette follow; on a phone the title takes two lines and the count joins the bar (card 294 to 308 px tall; unchanged at 1440) (unslop 1103, 16).
