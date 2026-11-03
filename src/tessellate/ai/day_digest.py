@@ -111,8 +111,10 @@ def _questions(session: Session) -> list[dict]:
 def _changed(session: Session, now: datetime) -> list[dict]:
     since = _naive(now) - timedelta(days=1)
     made = session.scalars(_notes().where(Entry.created_at >= since).order_by(Entry.created_at.desc())).all()
+    #: `edited_at`, not `updated_at`: date reading, filing, embeddings and housekeeping
+    #: all move `updated_at`, and none of them is the person editing (INBOX 1569).
     edited = session.scalars(
-        _notes().where(Entry.created_at < since, Entry.updated_at >= since).order_by(Entry.updated_at.desc())
+        _notes().where(Entry.created_at < since, Entry.edited_at >= since).order_by(Entry.edited_at.desc())
     ).all()
     if not made and not edited:
         return []
@@ -123,11 +125,17 @@ def _changed(session: Session, now: datetime) -> list[dict]:
         said.append(f"{realise.count_noun(len(edited), 'note')} edited")
     lines = [{"part": "changed", "kind": "count", "counts": [n for n in (len(made), len(edited)) if n],
               "text": (" and ".join(said) + " since this time yesterday.").capitalize()}]
+    shown = 0
     for entry in (made + edited)[:QUOTES]:
         head = _cut(_first_line(entry.content))
         if head:
+            shown += 1
             lines.append({"part": "changed", "kind": "quote", "quote": head, "source": {"entry_id": entry.id},
                           "text": f"“{head}”"})
+    #: The list agrees with its count: what the quotes leave out is said (INBOX 1569).
+    rest = len(made) + len(edited) - shown
+    if rest > 0:
+        lines.append({"part": "changed", "kind": "more", "counts": [rest], "text": f"And {realise.count_word(rest)} more."})
     return lines
 
 

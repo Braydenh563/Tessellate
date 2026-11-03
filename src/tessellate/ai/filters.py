@@ -178,7 +178,8 @@ def _where_dated(session: Session, query, item: dict):  # noqa: ANN001
 
     if item["kind"] == "untouched":
         return query.where(Entry.updated_at < _midnight(item["since"]))
-    column = Entry.updated_at if item["kind"] == "edited" else Entry.created_at
+    #: A person's edit (`edited_at`), not any change of `updated_at` (INBOX 1569).
+    column = Entry.edited_at if item["kind"] == "edited" else Entry.created_at
     return query.where(column >= _midnight(item["start"]), column < _midnight(item["end"]) + timedelta(days=1))
 
 

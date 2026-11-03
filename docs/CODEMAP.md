@@ -2,7 +2,7 @@
 
 Generated 2026-11-03 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7585, frontend ids 2641, CSS sections 519, backend routes 641, backend modules 8511, test files 1927, tests 16177, plan headings 991, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7585, frontend ids 2641, CSS sections 519, backend routes 641, backend modules 8511, test files 1928, tests 16181, plan headings 991, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7585)
 
@@ -14952,8 +14952,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_naive` | src/tessellate/ai/day_digest.py:32 |
 | `_notes` | src/tessellate/ai/day_digest.py:68 |
 | `_questions` | src/tessellate/ai/day_digest.py:96 |
-| `_quiet` | src/tessellate/ai/day_digest.py:134 |
-| `compose` | src/tessellate/ai/day_digest.py:157 |
+| `_quiet` | src/tessellate/ai/day_digest.py:142 |
+| `compose` | src/tessellate/ai/day_digest.py:165 |
 
 ### src/tessellate/ai/docreader.py (3)
 
@@ -15249,15 +15249,15 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_read_dates` | src/tessellate/ai/filters.py:94 |
 | `_read_labels` | src/tessellate/ai/filters.py:106 |
 | `_read_links` | src/tessellate/ai/filters.py:86 |
-| `_where_content` | src/tessellate/ai/filters.py:196 |
+| `_where_content` | src/tessellate/ai/filters.py:197 |
 | `_where_dated` | src/tessellate/ai/filters.py:176 |
 | `_where_has` | src/tessellate/ai/filters.py:161 |
-| `_where_labelled` | src/tessellate/ai/filters.py:185 |
+| `_where_labelled` | src/tessellate/ai/filters.py:186 |
 | `_where_links` | src/tessellate/ai/filters.py:144 |
 | `_window` | src/tessellate/ai/filters.py:60 |
 | `read` | src/tessellate/ai/filters.py:126 |
-| `resolve` | src/tessellate/ai/filters.py:213 |
-| `setting_words` | src/tessellate/ai/filters.py:236 |
+| `resolve` | src/tessellate/ai/filters.py:214 |
+| `setting_words` | src/tessellate/ai/filters.py:237 |
 
 ### src/tessellate/ai/find_it.py (17)
 
@@ -23349,7 +23349,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16177)
+## Tests (16181)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23550,6 +23550,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_category_rename_vectors.py | 4 |
 | tests/test_category_space_integrity.py | 8 |
 | tests/test_category_tools.py | 19 |
+| tests/test_changed_today_1569.py | 4 |
 | tests/test_changelog.py | 3 |
 | tests/test_characters_lazy.py | 5 |
 | tests/test_chat_act_card_once.py | 1 |
