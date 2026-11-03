@@ -737,15 +737,15 @@ const ATLAS_LOOKS = {
     //: left does, the upper arm 13 degrees off vertical, a 13 degree bend
     //: at the elbow, the forearm falling straight beside the hip; slimmer
     //: (4.2 to 1.9, `armWidth`). A gesture turns it up from there (its mood
-    //: angles are the old ones less a right angle, the CSS). The seeds she
-    //: sows now drift down from the hanging hand, as the reference's star
-    //: particles fall from her hand.
+    //: angles are the old ones less a right angle, the CSS). The seeds that
+    //: hung off this hand at all times are gone (INBOX 1589, the owner: it
+    //: "still has starts permanently coming from it"): she casts them from it
+    //: now and then, while the arm is her own (`atlasMicroCast`).
     arm: [[35.6, 40.4, 36.6, 43.4, 37.4, 46.6, 37.8, 49.6], [37.8, 49.6, 38.2, 52.6, 38.2, 55, 37.8, 57.2]],
     armL: [[26.4, 40.4, 25.4, 43.4, 24.6, 46.6, 24.2, 49.6], [24.2, 49.6, 23.8, 52.6, 23.8, 55, 24.2, 57.2]],
     armWidth: [4.2, 1.9],
     armPivots: { l: [26.4, 40.6], r: [35.6, 40.6] },
     propHand: [38, 59],
-    seeds: [[40, 60.6, 0.5], [42.2, 62.4, 0.4], [41.2, 65.4, 0.6], [44.2, 66.2, 0.35], [43, 69.2, 0.45], [46, 70.6, 0.35], [44.8, 63.6, 0.3]],
     //: **The hair, drawn full** (the owner, round 5: "flowing, voluminous";
     //: the definitive stand, 63.png, where the hair is a mass the size of
     //: the head rising from the crown and streaming back in thick wavy
@@ -983,7 +983,7 @@ function atlasArmPath(rig, bend, wrist) {
   return atlasStem(bend || wrist ? atlasArmSegs(rig.segs, bend, wrist) : rig.segs, rig.width, { samples: 14, tip: rig.hand });
 }
 //: Where the hand went: the transform that carries what the rest hand
-//: holds (a bell, the seeds) to the bent arm's hand, as an SVG attribute.
+//: holds (a bell, a cast's stars) to the bent arm's hand, as an SVG attribute.
 function atlasArmHand(rig, bend, wrist) {
   const [, s1] = rig.segs;
   const W0 = [s1[6], s1[7]];
@@ -1999,16 +1999,42 @@ function atlasCoilProp(layer) {
   atlasSpecks(coil, [[8, 74, 0.45], [20, 78.6, 0.35], [44, 78, 0.5], [54, 72, 0.35], [36, 65.6, 0.3]]);
   return coil;
 }
+//: **Its seats are its own, sat on** (INBOX 1589, the owner: "it still looks
+//: like it is standing up", "it doesnt even look like it is sitting in the
+//: chair"). The companion's generic chair and beanbag were a 38-unit chair and
+//: a flat dome behind a figure that stood on: Atlas now has a chair and a
+//: beanbag in its own paint, behind the body, drawn where the act's lowering
+//: of the whole figure (the CSS: 6 and 12px) puts the seat under its hips
+//: (59 in the figure's units), and the CSS folds its lower body onto it. A
+//: property, not a global (`tests/test_global_scope_ratchet.py`).
+atlasCoilProp.seats = function (layer) {
+  const chair = atlasGroup(layer, "nmp nmp-chair");
+  atlasMake("path", { class: "atl-prop-seat", d: "M12 59V40Q12 35 17 35H45Q50 35 50 40V59Z" }, chair);
+  for (const x of [12.5, 46.5]) atlasMake("rect", { class: "atl-prop-seat", x, y: 62, width: 3, height: 22, rx: 1.2 }, chair);
+  atlasMake("rect", { class: "atl-prop-seat atl-prop-seat-top", x: 10, y: 57, width: 42, height: 6.5, rx: 2 }, chair);
+  for (const [x, y] of [[15, 41], [47.4, 45.6], [15.6, 51.4]]) atlasMake("circle", { class: "atl-node-dot", cx: x, cy: y, r: 0.6 }, chair);
+  const bag = atlasGroup(layer, "nmp nmp-beanbag");
+  atlasMake("path", { class: "atl-prop-bag", d: "M8 80C0 74 1 57 9 51C14 47 20 50 23 56Q31 61 39 56C42 50 48 47 53 51C61 57 62 74 54 80Z" }, bag);
+  atlasMake("ellipse", { class: "atl-prop-bag-sheen", cx: 12.5, cy: 58, rx: 3.6, ry: 2, transform: "rotate(-40 12.5 58)" }, bag);
+  atlasMake("path", { class: "atl-prop-page-edge", d: "M14 74Q31 79.5 48 74" }, bag);
+  return [chair, bag];
+};
 
-//: The starry map (the grid's `Starry Map` cell): a small panel of night
-//: sky with a constellation on it, at Atlas's right, that it leans on. The
-//: companion's `nmb-act-map` shows it and turns the arm onto it.
+//: The starry map (the grid's `Starry Map` cell): a folded panel of night
+//: sky with two constellations on it. **Held open in front, read** (INBOX
+//: 1589, the owner: "the read a map is like behind half atlas's body and it
+//: doesnt even look at the map"): it was a 30 by 38 panel drawn behind the
+//: body at its right, the arm turned onto it. Now it is drawn over the body
+//: (the front layer, with the book), 23 by 14 at the belly, its lower
+//: corners at the hands (the CSS turns each arm 13 degrees out to them), and
+//: the eyes and the head go down to it.
 function atlasMapProp(layer) {
   const map = atlasGroup(layer, "nmp nmp-map");
-  atlasMake("ellipse", { class: "atl-prop-moon-glow", cx: 57, cy: 74, rx: 20, ry: 16 }, map);
-  atlasMake("path", { class: "atl-prop-map", d: "M43 62.4Q42.6 60.4 44.6 60L70 54.4Q72 54 72 56L70.6 86Q70.5 88 68.5 88.4L44 92.4Q42 92.8 42 90.8Z" }, map);
-  atlasMake("path", { class: "atl-thread", d: "M47.4 70L53.6 64.4L59.4 71.8L65.4 62.6M50 82L56.6 78.4L62.4 84" }, map);
-  for (const [x, y] of [[47.4, 70], [53.6, 64.4], [59.4, 71.8], [65.4, 62.6], [50, 82], [56.6, 78.4], [62.4, 84]]) atlasMake("circle", { class: "atl-node-dot", cx: x, cy: y, r: 0.6 }, map);
+  atlasMake("ellipse", { class: "atl-prop-moon-glow", cx: 31, cy: 55, rx: 14, ry: 9 }, map);
+  atlasMake("path", { class: "atl-prop-map", d: "M20.6 49.4Q20.8 48.2 22 48.2L40 48.2Q41.2 48.2 41.4 49.4L42.8 60.4Q43 61.8 41.6 61.8L20.4 61.8Q19 61.8 19.2 60.4Z" }, map);
+  atlasMake("path", { class: "atl-prop-page-edge", d: "M31 48.6V61.4" }, map);
+  atlasMake("path", { class: "atl-thread", d: "M22.8 57.6L25.8 52.4L29 55.6M33 53.2L36.2 58.2L39.4 52.6" }, map);
+  for (const [x, y] of [[22.8, 57.6], [25.8, 52.4], [29, 55.6], [33, 53.2], [36.2, 58.2], [39.4, 52.6]]) atlasMake("circle", { class: "atl-node-dot", cx: x, cy: y, r: 0.5 }, map);
   return map;
 }
 
@@ -2253,7 +2279,7 @@ function atlasBody(parent, id, props, look, route = null) {
     }
     if (!edge && props) {
       atlasCoilProp(back.fill);
-      atlasMapProp(back.fill);
+      atlasCoilProp.seats(back.fill);
     }
     //: The mermaid lower body (the feminine look): one ribbon from the
     //: hips sweeping down to the left and curling, in the tail's paint,
@@ -2406,15 +2432,6 @@ function atlasBody(parent, id, props, look, route = null) {
         //: transition away); the rig reads that angle as the shoulder's
         //: target and eases the drawn arm there.
         if (spec.armRig) atlasMake("g", { class: `nmb-arm nmb-arm-${side} atl-arm-probe` }, layer);
-        //: The galaxy-seed gesture (the female sheets' Seed Sower): star
-        //: seeds drifting up from the open hand.
-        if (side === "r" && spec.seeds) {
-          const seeds = atlasGroup(hand, "atl-seeds");
-          spec.seeds.forEach(([x, y, r], k) => {
-            atlasMake("circle", { class: "atl-seed", cx: x, cy: y, r }, seeds).style.setProperty("--atl-k", String(k));
-          });
-          for (const [k, size] of [[2, 1.4], [5, 1]]) atlasSpark(seeds, spec.seeds[k][0], spec.seeds[k][1], size, "atl-glint atl-seed-star");
-        }
       }
     }
     //: **The shoulders belong to the body** (round 9, the owner: "the part
@@ -2496,6 +2513,7 @@ function atlasBody(parent, id, props, look, route = null) {
   if (props) {
     atlasHandProps(arms.r, arms.l, look);
     atlasBookProp(frontAt.fill);
+    atlasMapProp(frontAt.fill);
     //: Startled, a translucent bubble round the whole figure (the
     //: reference's `startle` cell); the CSS shows it.
     const bubble = atlasGroup(frontAt.fill, "nmp nmp-bubble");

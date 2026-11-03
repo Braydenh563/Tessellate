@@ -72,9 +72,15 @@ function objDragSeed(event) {
   const control = event.target.closest?.(OBJ_NO_GRAB);
   //: A tray item and a chat source card are buttons you click and also drag: a held drag carries the object.
   if (control && !control.matches(".obj-tray-use, .chat-source-card[data-obj]") && !grip) return null;
-  if (!grip && objPressInSelection(event)) return null;
-  const hit = objCardAt(event.target);
+  //: The floating grip (below) is not inside the card it moves; it names it.
+  const hit = objCardAt(event.target.closest?.(OBJ_GRIP)?.objCard || event.target);
+  if (!grip && objPressInSelection(event)) {
+    //: Words a failed try left selected on this card give way to a new hold (INBOX 1595); any other selection is the reader's.
+    if (!hit?.card.objFailed) return null;
+    window.getSelection().removeAllRanges();
+  }
   if (!hit) return null;
+  hit.card.objFailed = false;
   const mode = Object.keys(OBJ_MODES).find((name) => OBJ_MODES[name].grab?.(hit));
   //: A picture has no text to select, so a press on one is a grip.
   const quick = grip || (event.pointerType !== "touch" && event.target.tagName === "IMG");
@@ -151,7 +157,11 @@ function objDragMove(event) {
   g.moved ||= Math.hypot(g.x - g.x0, g.y - g.y0) >= OBJ_DRAG_PX * 3;
   if (!g.live) {
     const verdict = objDragVerdict(g, event);
-    if (verdict === "swipe") return objDragFinish(true, event);
+    if (verdict === "swipe") {
+      //: A mouse press that moved before the hold selects words under it; remember whose, so a press on them can retry.
+      if (!g.touch) g.card.objFailed = true;
+      return objDragFinish(true, event);
+    }
     if (verdict === "wait") return;
     objDragBegin(g);
   }
@@ -262,3 +272,81 @@ function objDragFinish(cancel, event) {
 }
 
 window.addEventListener("pointerdown", objDragArm, true);
+
+//: The grip (INBOX 1595): one handle that floats on the left edge of the card the pointer is
+//: over or that has the keyboard focus, and takes the card at once, with no hold. It is not part
+//: of any card's markup (a card renderer never changes) and names its card in `objCard`, which
+//: `objDragSeed` reads. Closed in a function so it adds no name to the shared scope. A finger has
+//: its own hold, so the stylesheet hides the grip where there is no hover.
+(() => {
+  let grip = null;
+  let card = null;
+  let timer = 0;
+
+  //: The card under `target` that some mode would move, or null.
+  const movable = (target) => {
+    const hit = objDragNow || !target?.closest ? null : objCardAt(target);
+    return hit && Object.keys(OBJ_MODES).some((name) => OBJ_MODES[name].grab?.(hit)) ? hit.card : null;
+  };
+
+  const hide = () => {
+    clearTimeout(timer);
+    card = null;
+    grip?.classList.remove("is-on");
+    window.removeEventListener("scroll", hide, true);
+  };
+
+  //: Keyboard focus keeps the grip after the pointer leaves; nothing else does.
+  const settle = () => {
+    if (card?.querySelector(":focus-visible") || card?.matches(":focus-visible")) return;
+    hide();
+  };
+
+  function show(next) {
+    clearTimeout(timer);
+    if (next === card) return;
+    if (!grip) {
+      grip = document.createElement("span");
+      grip.className = "obj-grip";
+      grip.dataset.objGrip = "";
+      grip.setAttribute("aria-hidden", "true");
+      grip.title = "Drag to move this card";
+      //: Above the cards and their sticky heads, under the drag ghost (3100); set here so it is not a layer in the stylesheets' budget.
+      grip.style.zIndex = "3050";
+      const dots = document.createElement("i");
+      dots.className = "ph ph-dots-six-vertical";
+      grip.append(dots);
+      document.body.append(grip);
+    }
+    card = next;
+    grip.objCard = next;
+    const box = next.getBoundingClientRect();
+    //: Half out of the card's left edge, level with the middle of a short card or the first line of a tall one.
+    grip.style.left = `${Math.max(2, box.left - grip.offsetWidth / 2)}px`;
+    grip.style.top = `${Math.max(2, box.top + Math.min(box.height, 56) / 2 - grip.offsetHeight / 2)}px`;
+    grip.classList.add("is-on");
+    window.addEventListener("scroll", hide, { capture: true, passive: true });
+  }
+
+  document.addEventListener("pointerover", (event) => {
+    if (event.pointerType === "touch") return;
+    if (event.target === grip || grip?.contains(event.target)) return clearTimeout(timer);
+    const next = movable(event.target);
+    if (next) return show(next);
+    if (card) {
+      clearTimeout(timer);
+      timer = setTimeout(settle, 160);
+    }
+  }, true);
+  document.addEventListener("focusin", (event) => {
+    const next = movable(event.target);
+    if (next && event.target.matches?.(":focus-visible")) show(next);
+  }, true);
+  document.addEventListener("focusout", () => {
+    if (card) timer = setTimeout(settle, 0);
+  }, true);
+  //: A press on the grip starts the drag; the handle then gets out of the way until the pointer moves on.
+  window.addEventListener("pointerdown", (event) => {
+    if (event.target === grip || grip?.contains(event.target)) hide();
+  }, true);
+})();
