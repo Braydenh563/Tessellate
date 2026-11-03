@@ -542,8 +542,9 @@ def test_it_keeps_out_of_the_tours_ring() -> None:
     assert '"tour-spot", "tour-card"' in re.search(r"^const NMB_POPUP_IDS = \[(.*)\];$", AV, re.M).group(1)
     # (The late look is `look`: `nameMarkBuddyDodge`, or the cheaper typing look for a plain
     # character in a field, audit 1101.)
-    # Looked after a frame has drawn the press (INBOX 1534): the timer wraps `look`.
-    assert "nmbDodgeLate = setTimeout(afterPaint, 700);" in AV and "afterFrames(() => setTimeout(look), 1)" in AV
+    # Looked after a frame has drawn the press (INBOX 1534): the timer wraps `look` (since INBOX
+    # 1587 through `nmb.afterClean`, a frame and a timer, tests/test_atlas_cover_1587.py).
+    assert "nmbDodgeLate = setTimeout(afterPaint, 700);" in AV and "const afterPaint = () => nmb.afterClean(look);" in AV
     assert "const look = nameMarkBuddyTypingKey(e) ? nameMarkBuddyDodgeTyping : nameMarkBuddyDodge;" in AV
     assert 'buddy.querySelector(".nm-figure")' in _fn("nameMarkBuddyDodge")
 
@@ -1784,7 +1785,11 @@ def test_nothing_runs_behind_the_lock_and_an_idle_page_is_not_polled() -> None:
     assert "atlasTailRest(tail, p)" in frame and "tail.resting" in frame
     rest = _fn("atlasTailRest", life)
     assert "svg.animate(" in rest and "transform:" in rest and "setAttribute" not in rest
-    assert "getComputedStyle(svg).transform" in _fn("atlasTailUnrest", life)
+    # It eases home from where the sway was: read from the sway's own timing,
+    # not the style, which settled the page on the rest beat (INBOX 1587).
+    unrest = _fn("atlasTailUnrest", life)
+    assert "getComputedTiming" in unrest and "tail.swayKeys" in unrest and "getComputedStyle" not in unrest
+    assert "tail.swayKeys.map(at)" in rest
     atlas = (ROOT / "frontend" / "js" / "atlas.js").read_text(encoding="utf-8")
     sync = _fn("atlasHiddenSync", atlas)
     assert "lock-overlay" in sync and "atlasTailWake(box)" in sync

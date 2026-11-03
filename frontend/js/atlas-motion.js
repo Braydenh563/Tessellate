@@ -35,6 +35,9 @@ function atlasBlinkMay(box) {
   const lids = box.querySelector(".atl-layer-lids:not(.atl-layer-lidf)");
   const buddy = box.closest("#nm-buddy");
   if (!lids || box.querySelector(".atl-blinking, .atl-blinking-slow") || box.hasAttribute("data-atl-moving") || buddy?.classList.contains("nmb-act-hide")) return false;
+  //: Not behind a modal (INBOX 1587): unseen, and the read below settled the
+  //: open overlay (237ms at 4x CPU with Settings open).
+  if (buddy && nameMarkBuddyBehindCover()) return false;
   //: A closed-eye mood, or an act that moves the head, sets the layer's
   //: scale to 0 (the CSS): nothing to blink. Read once per mood and set
   //: of classes, not every blink (each read makes the page restyle).

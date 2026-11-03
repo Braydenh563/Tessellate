@@ -3352,6 +3352,25 @@ const nmb = {
     }
     return roots;
   },
+  //: **A look reads a page left clean by the frame before it** (INBOX 1587,
+  //: 1591, the owner's lag log: `avatars.js TimerHandler:setTimeout 630ms
+  //: (forced layout 486ms)` on a Library sub-tab press). One frame and a
+  //: timer on was clean only when nothing wrote in between; a page still
+  //: filling in (a list drawn in parts, a sub-tab's rows arriving) had, and
+  //: the look's first box read laid the whole page out on its own. Written to
+  //: since that frame (`pageAt`, the views observer) or inside
+  //: `uiSettlingUntil`, it waits one frame more, six at most.
+  pageAt: 0,
+  afterClean(fn, tries = 6) {
+    afterFrames(() => {
+      const frame = performance.now();
+      setTimeout(() => {
+        const dirty = nmb.pageAt > frame || performance.now() < (window.uiSettlingUntil || 0);
+        if (dirty && tries > 1) nmb.afterClean(fn, tries - 1);
+        else fn();
+      });
+    }, 1);
+  },
 };
 
 //: The companion's own reading of reduced motion and Avatar animation Off:
@@ -3728,7 +3747,7 @@ function nameMarkBuddyPopupEls() {
 //: is over it any more, it fades back.
 function nameMarkBuddyDodge() {
   const buddy = document.getElementById("nm-buddy");
-  if (!buddy || nmb.visit) return;
+  if (!buddy || nmb.visit || nameMarkBuddyBehindCover()) return;
   //: Not mid-flight or carried: the press that let it go is a click too,
   //: and its look (a layout read, 7 to 56ms) landed in the flight's frames
   //: (the owner's lag log, 2026-10-27). Looked at once it is down.
@@ -3790,7 +3809,7 @@ for (const type of ["click", "keyup"]) {
     //: between the press's writes and the frame, and its boxes settled the layout
     //: (146 to 191ms at 4x, INBOX 1534).
     const look = nameMarkBuddyTypingKey(e) ? nameMarkBuddyDodgeTyping : nameMarkBuddyDodge;
-    const afterPaint = () => afterFrames(() => setTimeout(look), 1);
+    const afterPaint = () => nmb.afterClean(look);
     nmbDodgeTimer = setTimeout(afterPaint, 80);
     //: And once the page has settled: a tour step that changes tab, or a
     //: panel that slides in, lands its box after the first look.
@@ -5097,7 +5116,7 @@ function nameMarkBuddyUnheld() {
   nmb.heldTimer = 0;
   const buddy = document.getElementById("nm-buddy");
   if (!buddy || !nmb.glue?.held || nmb.pinned || buddy.classList.contains("nm-buddy-dragging")) return;
-  if (nameMarkBuddyMenuOpen()) {
+  if (nameMarkBuddyMenuOpen() || nameMarkBuddyBehindCover()) {
     nmb.heldTimer = setTimeout(nameMarkBuddyUnheld, 600);
     return;
   }
@@ -5282,7 +5301,8 @@ function nameMarkBuddyTempo() {
   }
   const now = performance.now();
   //: Not while a page or popup is arriving: `getAnimations` flushes all the style it has dirtied (306ms at 4x, INBOX 1534).
-  const due = now - nmbTempo.seen > 1000 && now >= (window.uiSettlingUntil || 0);
+  //: Nor behind a modal (INBOX 1587): the beats go on with the list it has.
+  const due = now - nmbTempo.seen > 1000 && now >= (window.uiSettlingUntil || 0) && !nameMarkBuddyBehindCover();
   //: **The periodic look waits for the page to be drawn** (the lag log: `avatars.js TimerHandler:setTimeout
   //: 623ms (forced layout 465ms)`; 15 reads, 596ms, max 514ms at 4x CPU across seven tab clicks, right after
   //: the hold below ended and the arriving page was still dirty). An idle callback runs after the frame that
@@ -6513,6 +6533,17 @@ function nameMarkBuddyCoverCheck() {
   if (cover) buddy.dataset.cover = cover;
   else delete buddy.dataset.cover;
 }
+//: **Nothing is measured behind a modal** (INBOX 1587, the owner's lag log:
+//: `avatars.js TimerHandler:setTimeout 846ms (forced layout 810ms)` every one
+//: to two seconds with Settings open). Covered, it is drawn at opacity 0, yet
+//: the perch check went on walking every control in the open overlay (7,248
+//: boxes in 10 s, the first read settling the whole page: 821ms at 4x CPU).
+//: Every timer that looks at the page asks this first; the cover lifting
+//: queues a check (`nameMarkBuddyCoverWatch`), which looks again. Not in its
+//: large view (`nmb.visit`), which is the dialog.
+function nameMarkBuddyBehindCover() {
+  return Boolean(document.getElementById("nm-buddy")?.dataset.cover) && !nmb.visit;
+}
 function nameMarkBuddyCoverWatch(records) {
   const hit = (n) => n.nodeType === 1 && (n.matches(NMB_COVER_SEL) || n.querySelector(NMB_COVER_SEL));
   const touched = records.some((m) => (m.type === "attributes" ? m.target.matches(NMB_COVER_SEL) : [...m.addedNodes, ...m.removedNodes].some(hit)));
@@ -6591,7 +6622,7 @@ function nameMarkBuddyStillGood(obstacles) {
 //: next beat (`nameMarkBuddyQueuePlace`).
 function nameMarkBuddyCheck() {
   const buddy = document.getElementById("nm-buddy");
-  if (!buddy || nmb.pinned || nmb.away || nmb.visit || buddy.classList.contains("nm-buddy-dragging") || buddy.classList.contains("nmb-walking")) return;
+  if (!buddy || nmb.pinned || nmb.away || nmb.visit || nameMarkBuddyBehindCover() || buddy.classList.contains("nm-buddy-dragging") || buddy.classList.contains("nmb-walking")) return;
   //: Not while an answer is being written: its transcript dirties the layout
   //: every frame and the sweep reads every control (the lag log: 94 to 160ms).
   const thinking = buddy.classList.contains("nmb-think");
@@ -6655,17 +6686,19 @@ function nameMarkBuddyCheck() {
 //: A timer past the frame, not the frame callback: its sweep reads a box per
 //: control on the tab, and run inside the frame the first read settled the
 //: layout the frame was about to do anyway (the lag log: 94 to 160ms, 62 to
-//: 136 of it forced); one timer on, the layout is clean.
+//: 136 of it forced); one timer on, the layout is clean, if nothing wrote
+//: to the page since (`nmb.afterClean`).
 function queueNameMarkBuddyCheck() {
   if (nmb.checkFrame || !document.getElementById("nm-buddy")) return;
-  nmb.checkFrame = requestAnimationFrame(() => setTimeout(() => {
+  nmb.checkFrame = 1;
+  nmb.afterClean(() => {
     nmb.checkFrame = 0;
     if (nmb.coverDirty) {
       nmb.coverDirty = false;
       nameMarkBuddyCoverCheck();
     }
-    nameMarkBuddyCheck();
-  }));
+    if (!nameMarkBuddyBehindCover()) nameMarkBuddyCheck();
+  });
 }
 
 //: **On its own time** (INBOX 426 m, the owner: "atlas needs to move and
@@ -6697,7 +6730,7 @@ function nameMarkBuddyBeat() {
   const buddy = document.getElementById("nm-buddy");
   if (!buddy || nmb.pinned || nmb.away || nmb.visit) return;
   const busy = buddy.classList.contains("nm-buddy-dragging") || buddy.classList.contains("nmb-walking")
-    || nameMarkBuddyMenuOpen() || buddy.classList.contains("nmb-think");
+    || nameMarkBuddyMenuOpen() || buddy.classList.contains("nmb-think") || nameMarkBuddyBehindCover();
   if (busy || document.hidden) {
     nameMarkBuddyQueuePlace();
     return;
@@ -6711,7 +6744,7 @@ function nameMarkBuddyBeat() {
   if (!nmb.beatDue) {
     if (!nmb.beatFrame) {
       nmb.beatFrame = 1;
-      afterFrames(() => setTimeout(() => {
+      nmb.afterClean(() => {
         nmb.beatFrame = 0;
         nmb.beatDue = true;
         try {
@@ -6719,7 +6752,7 @@ function nameMarkBuddyBeat() {
         } finally {
           nmb.beatDue = false;
         }
-      }), 1);
+      });
     }
     return;
   }
@@ -6767,8 +6800,10 @@ function nameMarkBuddyViewChanged() {
 }
 if (globalThis.MutationObserver) {
   const views = new MutationObserver((records) => {
-    //: The tab's controls are measured again on the next look (`nmb.covers`).
+    //: The tab's controls are measured again on the next look (`nmb.covers`),
+    //: after a frame that has drawn this change (`nmb.afterClean`).
     nmb.covers = null;
+    nmb.pageAt = performance.now();
     for (const r of records) {
       const el = r.target;
       if (r.type !== "attributes" || el.classList.contains("tab-page") || !el.matches(NMB_VIEWS)) continue;
@@ -7883,7 +7918,7 @@ function nameMarkBuddyTick() {
     return;
   }
   const locked = document.getElementById("lock-overlay") && !document.getElementById("lock-overlay").classList.contains("hidden");
-  if (locked || nameMarkBuddyMenuOpen() || buddy.classList.contains("nm-buddy-dragging") || buddy.classList.contains("nmb-walking") || buddy.classList.contains("nmb-think")) {
+  if (locked || nameMarkBuddyBehindCover() || nameMarkBuddyMenuOpen() || buddy.classList.contains("nm-buddy-dragging") || buddy.classList.contains("nmb-walking") || buddy.classList.contains("nmb-think")) {
     nameMarkBuddySchedule();
     return;
   }

@@ -35,7 +35,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import reminder_parser, task_acts, when
+from tessellate.ai import note_recency, reminder_parser, task_acts, when
 from tessellate.ai import act_registry
 from tessellate.ai.composer_frame import note_title
 from tessellate.ai.act_registry import CONFIRM_INTENTS
@@ -624,6 +624,10 @@ def _listing(text: str, head: str, rest: str) -> dict | None:
     gold, 2026-10-11); "list my work notes" the Work notes, or the notes
     tagged work (ledger row 442); None for any other find."""
     if _WHOLE_LISTING.fullmatch(rest):
+        return {}
+    #: "show my newest notes", "list the notes I've made": the recent-notes
+    #: listing the composer answers, never a find for the word "newest" (INBOX 1590).
+    if head in _LIST_HEADS and re.search(r"\b(?:notes|entries)\b", rest, re.I) and note_recency.is_recency_ask(rest):
         return {}
     if head in _LIST_HEADS:
         filed = filed_listing(text)

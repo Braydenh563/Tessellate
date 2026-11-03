@@ -3626,7 +3626,11 @@ function setAtlasMood(mood, forMs = 0, { quiet = false, easeMs = 0, backEaseMs =
   //: frame). Each part a loop leaves is eased from where it is into what
   //: now moves it, over 0.7s (`nameMarkBuddyBlend`, the companion's own
   //: hand-over), in every layered figure on screen.
-  const boxes = [...document.querySelectorAll(".atl-figure-box:not(.atl-off)")];
+  //: Not the corner figure while a modal covers it (INBOX 1587): drawn at
+  //: opacity 0, its hand-over is never seen, and its read settled the open
+  //: overlay's whole restyle (251 to 300ms at 4x CPU with Settings open).
+  const hidden = nameMarkBuddyBehindCover() ? document.getElementById("nm-buddy") : null;
+  const boxes = [...document.querySelectorAll(".atl-figure-box:not(.atl-off)")].filter((box) => !hidden?.contains(box));
   //: **And never the first to read an arriving page** (a30v's found list):
   //: the blend's read of every part, inside `uiSettlingUntil`, paid the new
   //: tab's whole restyle; the change waits the few hundred ms to its end.
