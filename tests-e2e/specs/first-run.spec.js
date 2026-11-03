@@ -19,8 +19,8 @@ test("a new notebook starts in three steps, and the sample notebook comes and go
   await page.locator(".confirm-overlay button", { hasText: "Don't check" }).click({ timeout: 10_000 }).catch(() => {});
   await openTab(page, "dashboard");
   const steps = page.locator(".first-steps");
-  // The one-row head since INBOX 1301 D2: "Get started", "0 of 3 done".
-  await expect(steps.locator("#first-steps-title")).toHaveText("Get started");
+  // The one-row head since INBOX 1301 D2; its title names what it leads to (unslop 16, was "Get started").
+  await expect(steps.locator("#first-steps-title")).toHaveText("Three steps to a working notebook");
   await expect(steps.locator(".first-steps-count")).toHaveText("0 of 3 done");
   await expect(steps.locator(".start-step.is-done")).toHaveCount(0);
 
