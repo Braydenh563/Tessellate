@@ -7370,9 +7370,9 @@ function exportDocumentBundle() {
 
 //: Replace in every document: the dialog's code is documents-replace.js,
 //: fetched on the first press (audit 1031 DC13).
-async function openDocReplace() {
-  if (!(await lazyScript("/js/documents-replace.js"))) return toast("Replace in every document could not be loaded.", true, { action: ["Try again", openDocReplace] });
-  return docReplaceOpen();
+async function openDocReplace(carry = null) {
+  if (!(await lazyScript("/js/documents-replace.js"))) return toast("Replace in every document could not be loaded.", true, { action: ["Try again", () => openDocReplace(carry)] });
+  return docReplaceOpen(carry);
 }
 
 //: Written in the browser by documents-word.js (Brief 42), loaded on the
@@ -15846,9 +15846,21 @@ function docCmSearchCount(CM) {
       if (!out) {
         out = Object.assign(document.createElement("span"), { className: "cm-search-count muted text-sm" });
         out.setAttribute("role", "status");
+        //: **One find panel for this document and for all of them** (audit 1028 D33): the same words and options carry to the
+        //: every-document find and replace, which used to start empty from a different place.
+        const all = Object.assign(document.createElement("span"), { className: "cm-search-all" });
+        const asked = () => CM.search.getSearchQuery(view.state);
+        const find = Object.assign(document.createElement("button"), { type: "button", className: "cm-button", name: "all-documents", textContent: "All documents", title: "Find this in every document (Ctrl+Shift+F)" });
+        find.addEventListener("click", () => docFindInDocuments(asked().search));
+        const swap = Object.assign(document.createElement("button"), { type: "button", className: "cm-button", name: "replace-in-all", textContent: "Replace in all", title: "Replace this in every document" });
+        swap.addEventListener("click", () => {
+          const q = asked();
+          openDocReplace({ find: q.search, replace: q.replace, caseSensitive: q.caseSensitive, regexp: q.regexp, wholeWord: q.wholeWord });
+        });
+        all.append(find, swap);
         const lineBreak = panel.querySelector("br");
-        if (lineBreak) lineBreak.before(out);
-        else panel.appendChild(out);
+        if (lineBreak) lineBreak.before(out, all);
+        else panel.append(out, all);
       }
       out.textContent = docSearchCountText(view.state, CM);
     }

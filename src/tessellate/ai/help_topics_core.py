@@ -2807,7 +2807,10 @@ HELP_TOPICS.extend(
                 "leave it out. When more than one document would change, the "
                 "first press of Replace all asks and the second does it; the "
                 "toast's Undo takes every document back at once. A pattern that "
-                "does not read says so before anything runs."
+                "does not read says so before anything runs. The find panel "
+                "(Ctrl+F) has All documents and Replace in all beside its match "
+                "count: they open these with what you typed, its replacement "
+                "and its options."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

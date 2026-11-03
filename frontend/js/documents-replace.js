@@ -38,7 +38,8 @@ function docReplacePattern() {
   }
 }
 
-async function docReplaceOpen() {
+//: `carry` is the find panel's query (D33: one entry point): its words, replacement and three options become the dialog's.
+async function docReplaceOpen(carry = null) {
   if (docDirty) await saveDocument({ silent: true });
   const dialog = $("doc-replace-dialog");
   if (!dialog) return;
@@ -46,6 +47,13 @@ async function docReplaceOpen() {
   const view = docCmView;
   const picked = view && !view.state.selection.main.empty ? view.state.sliceDoc(view.state.selection.main.from, view.state.selection.main.to).split("\n")[0] : "";
   if (picked) $("doc-replace-find").value = picked;
+  if (carry && typeof carry.find === "string" && carry.find) {
+    $("doc-replace-find").value = carry.find;
+    $("doc-replace-with").value = carry.replace || "";
+    $("doc-replace-case").checked = Boolean(carry.caseSensitive);
+    $("doc-replace-regex").checked = Boolean(carry.regexp);
+    $("doc-replace-word").checked = Boolean(carry.wholeWord);
+  }
   $("doc-replace-find").focus();
   $("doc-replace-find").select();
   docReplace.pool = null;
