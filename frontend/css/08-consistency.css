@@ -566,6 +566,11 @@ details[open] > .about-whats-new::before,
   flex: 1 1 12rem;
   min-width: 8rem;
   max-width: 28rem;
+  /* The bar's own height, like every control in it (unslop 1103, 6): the
+     field's 32 (`--control-h-lg`) stood 4px over its 28px neighbours and made
+     a dock with a search 50px high against 46 without. A touch target keeps
+     its floor. */
+  height: max(var(--control-h), var(--target-min));
   border-color: transparent;
   background: var(--field-inset);
   box-shadow: none;

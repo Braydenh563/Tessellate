@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Docks: the search field is the bar's control height, 28 like its neighbours, so a dock with a search is 46px not 50; DESIGN's dock row now says icon buttons are 28 (unslop 1103, 6).
 - Mind map toolbar: the layout and line-style selects are rounded with the quiet inset like the tools beside them, not square with an ink edge (the square came from a radius token that is 0 at the default corner; unslop 1103, 5).
 - Dashboard on a phone: the search doorway reads "Search" in full instead of "Search your..." (the scope after the verb drops below 600px; unslop 1103, 4).
 - Dashboard: stacked widgets sit 16 to 17px apart like side-by-side ones, not 18 to 36 (the masonry's 24px span steps are gone; unslop 1103, 3).

@@ -66,3 +66,11 @@ def test_5_map_toolbar_selects_take_the_quiet_inset_not_radius_inner():
     assert "radius-inner" not in body
     assert "border-radius: var(--radius-md)" in body and "var(--field-inset)" in body
     assert "border: 1px solid transparent" in body
+
+
+def test_6_dock_search_is_the_docks_control_height():
+    """The search was 32 (`--control-h-lg`) in a bar of 28s; DESIGN says 28."""
+    body = _body(_css("08-consistency.css"), ".dock .dock-search")
+    assert "height: max(var(--control-h), var(--target-min))" in body
+    design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+    assert "(32px, 44 under touch; refresh" not in design
