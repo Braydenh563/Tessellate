@@ -30,3 +30,12 @@ def test_manage_panels_scroll_the_tidy_box_and_the_rows_together():
     assert "overflow-y" not in css[css.index(".manage-cat-list {") :].split("}", 1)[0]
     for name in ("categories-panel.js", "tag-manager.js"):
         assert "manageScroll(suggest, list)" in frontend_text(name)
+
+
+def test_note_edit_form_head_uses_the_cards_gap_tokens():
+    misc = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    title = misc[misc.index(".entry-list input.note-edit-title {") :].split("}", 1)[0]
+    assert "padding: var(--space-2) var(--space-4) var(--space-1);" in title
+    side = (ROOT / "frontend" / "css" / "05-sidebars-themes.css").read_text(encoding="utf-8")
+    meta = side[side.index(".note-edit-meta {") :].split("}", 1)[0]
+    assert "padding: 0 var(--space-4) var(--space-2);" in meta
