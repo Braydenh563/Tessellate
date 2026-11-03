@@ -5304,7 +5304,7 @@ def test_a_note_cards_details_line_ends_the_card_and_keeps_the_space_before_edit
     dates and times". The wiki-link row, the why line and the review answers
     are built after `.entry-meta`, so a card with links showed its time 48px
     (one row) to 113px (three, at 390) above the card's foot against 7.4px on
-    a card with none (`scratchpad/ui-sweeps/carddate.js`). Card view is a
+    a card with none (`scratchpad/ui-sweeps/carddate.js`, retired: `git show 625b385:scratchpad/ui-sweeps/carddate.js`). Card view is a
     column flex whose details line has the last `order`, and the "· edited"
     suffix keeps its space as a no-break space, because a plain leading space
     collapses inside the date's inline flex box."""

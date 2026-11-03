@@ -16152,11 +16152,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_is_count` | src/tessellate/ai/note_recency.py:53 |
 | `_leading_count` | src/tessellate/ai/note_recency.py:79 |
 | `_order_word` | src/tessellate/ai/note_recency.py:57 |
-| `_status_named` | src/tessellate/ai/note_recency.py:146 |
-| `_status_rest` | src/tessellate/ai/note_recency.py:136 |
+| `_status_named` | src/tessellate/ai/note_recency.py:147 |
+| `_status_rest` | src/tessellate/ai/note_recency.py:137 |
 | `_subject_of` | src/tessellate/ai/note_recency.py:85 |
 | `_tokens` | src/tessellate/ai/note_recency.py:37 |
-| `is_recency_ask` | src/tessellate/ai/note_recency.py:168 |
+| `is_recency_ask` | src/tessellate/ai/note_recency.py:169 |
 | `recency` | src/tessellate/ai/note_recency.py:91 |
 | `status_subject` | src/tessellate/ai/note_recency.py:124 |
 

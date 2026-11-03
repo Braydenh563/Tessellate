@@ -1556,4 +1556,4 @@ Rows: T3 (learnaudit); T1, T2 and T4 are built (HISTORY.md, "Moved from the plan
 
 ## Placed from INBOX, 2026-11-03
 
-**1565** (app-wide quiet motion, the hover card's fade): built 9ba5bda, 6d7b9b6, moved to HISTORY.md ("Moved from the plans, 2026-11-03 (a31e-1103: 1565 quiet motion)"); leftovers in `agent-remaining/a31e-1103.md`.
+**1565** (app-wide quiet motion, the hover card's fade): built 9ba5bda, 6d7b9b6, moved to HISTORY.md ("Moved from the plans, 2026-11-03 (a31k-1103: 1565 quiet motion)"); leftovers in `agent-remaining/a31k-1103.md`.

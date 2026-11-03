@@ -128,7 +128,8 @@ def status_subject(text: str) -> str:
     words = _tokens(text)
     at = next((i for i, w in enumerate(words) if w in _LATEST_WORDS), -1)
     if at < 0 or "most" in words[:at - 1]:
-        found = _NEWS.search(" ".join(words))
+        #: Read on every word: "what's new with X" leads with a contraction `_tokens` drops (INBOX 1590).
+        found = _NEWS.search(" ".join(_WORD.findall((text or "").lower()[:300].replace("\u2019", "'"))))
         return _status_rest(["on", *found.group(1).split()]) if found else ""
     return _status_rest(words[at + 1:])
 

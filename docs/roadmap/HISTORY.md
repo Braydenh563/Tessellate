@@ -131,7 +131,7 @@ Away run 2026-10-27, branch claude/loving-edison-4d0din, PR 204, head bc27f5d; s
 
 `composer_lists.clean` reads "whens" as "when's" and drops a trailing repair ("no the new one", "I mean the moved one"), asking "now". `composer_money._bare_total` reads "how much desk all up" word by word, "money back" as refunds. `composer_slots._counted` answers "how many grocery items are checked off" and "how many are still open" with the count and the items. `composer.superseded` (moved from the digest) halves a note a newer correction outdates in the plain composer's ranking too, when the question asks for the value now (otherwise both are said, older "but" newer). Tests: `tests/test_composer_informal_1030.py`.
 
-## Moved from the plans, 2026-11-03 (a31e-1103: 1565 quiet motion)
+## Moved from the plans, 2026-11-03 (a31k-1103: 1565 quiet motion)
 
 From UI_MODERNISATION_PLAN.md "Placed from INBOX, 2026-11-03", the 1565 row, built (9ba5bda, 6d7b9b6). The owner's words, verbatim, were: "also I LOVE the subtle animation upon hover when that info panel card shows when hovering over graph nodes ... I want the same professional animations that are cheap but make the application feel really refined to be used application wide, not necessarily the same animation, but the the concept of using animations like that to take the edge and unclean feel from its ui and ux".
 
