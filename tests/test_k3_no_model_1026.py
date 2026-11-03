@@ -128,7 +128,7 @@ SPLITS = [
     ("a heading's several paragraphs stay together", f"# Garden\n\n{P1}\n\n{P2}\n\n# Budget\n\n{P3}", 2, ["Garden", "Budget"]),
     ("a lone heading titles the first paragraph", f"# Plans\n\n{P1}\n\n{P2}", 2, None),
     ("horizontal rules from a board selection", f"{P1}\n\n---\n\n{P2}\n\n---\n\n{P3}", 3, None),
-    ("one block with no blank lines", f"{P1} {P2} {P3}", 1, None),
+    ("one block with three subjects is cut at them", f"{P1} {P2} {P3}", 3, None),
     ("a list stays whole", f"Things to buy:\n- oat milk\n- bananas\n- a bus pass\n\n{P2}", 2, None),
     ("a code fence is not split by its blank lines", f"{P1}\n\n```\nfirst = 1\n\nsecond = 2\n```\n\n{P3}", 3, None),
     ("a hash with no space is not a heading", f"#tag {P1}\n\n#another {P2}", 2, None),
@@ -142,13 +142,15 @@ def test_a_text_is_split_by_its_own_structure(name, text, count, titles):
     if titles:
         assert [n.title for n in notes] == titles
     kept = [w for n in notes for w in _words(n.content)]
-    assert kept == _words(text), "words lost, added or reordered"
+    # A heading that titles a part is its title now (INBOX 1618), not body.
+    body = "\n".join(line for line in text.splitlines() if not line.startswith("#") or line.startswith("#tag") or line.startswith("#another"))
+    assert kept == _words(body), "words lost, added or reordered"
     assert all(n.content.strip() for n in notes)
 
 
-def test_a_section_keeps_its_heading_as_the_notes_title_line():
+def test_a_section_heading_is_its_title_and_leaves_the_body():
     notes = no_model_text.split_notes(f"# Garden\n\n{P1}\n\n# Shed\n\n{P2}", 4)
-    assert notes[0].content.startswith("# Garden") and notes[1].content.startswith("# Shed")
+    assert [n.content for n in notes] == [P1, P2]
 
 
 @pytest.mark.parametrize("n", [5, 6, 9, 20])

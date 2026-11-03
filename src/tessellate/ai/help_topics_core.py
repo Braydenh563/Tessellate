@@ -53,7 +53,7 @@ HELP_TOPICS: list[dict] = [
             "A note's ... menu has Generate title, which with no model takes the title from the "
             "note's first sentence and is named Title from its words. The Writing room has "
             '"Split into notes", which turns a block of pasted text into several '
-            "notes, split by its headings and paragraphs with no model and by meaning, "
+            "notes, split by its headings, paragraphs and subjects with no model and by meaning, "
             "auto-linked, with one. A formatting toolbar, here or in a document, is one Tab stop: "
             "Tab reaches it once, Left and Right move between its buttons, and Tab goes on to the page."
         ),
@@ -956,7 +956,7 @@ HELP_TOPICS: list[dict] = [
             "Split into notes, in the More menu of the Writing room (Notes "
             "tab), turns a block of pasted free text into several notes "
             "instead of one long one: with no model it cuts at the text's "
-            "headings and paragraphs and links the parts, with one it splits by "
+            "headings, paragraphs and subjects and links the parts, with one it splits by "
             "meaning and links with reasons. A preview comes first either way. "
             "The Writing room is for turning rough, unstructured thoughts into "
             "a proper note before it's saved: Suggest a title there takes the "

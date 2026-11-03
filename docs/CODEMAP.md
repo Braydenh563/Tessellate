@@ -2,7 +2,7 @@
 
 Generated 2026-11-03 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7746, frontend ids 2636, CSS sections 522, backend routes 641, backend modules 8584, test files 1979, tests 16586, plan headings 991, app scripts 28, boot scripts 37, script files 245.
+Counts: frontend functions 7746, frontend ids 2636, CSS sections 522, backend routes 641, backend modules 8589, test files 1980, tests 16597, plan headings 991, app scripts 28, boot scripts 37, script files 245.
 
 ## Frontend functions (7746)
 
@@ -152,40 +152,40 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `afterMenuExit` | frontend/js/menus.js:764 |
-| `buildMenuGroupButton` | frontend/js/menus.js:1436 |
-| `buildMenuItemButton` | frontend/js/menus.js:1403 |
-| `cardOpener` | frontend/js/menus.js:445 |
-| `closeActionMenus` | frontend/js/menus.js:110 |
-| `closeActionMenusOnScroll` | frontend/js/menus.js:64 |
-| `closeHelpPopovers` | frontend/js/menus.js:283 |
-| `docBacklinkContext` | frontend/js/menus.js:1179 |
+| `afterMenuExit` | frontend/js/menus.js:759 |
+| `buildMenuGroupButton` | frontend/js/menus.js:1431 |
+| `buildMenuItemButton` | frontend/js/menus.js:1398 |
+| `cardOpener` | frontend/js/menus.js:440 |
+| `closeActionMenus` | frontend/js/menus.js:105 |
+| `closeActionMenusOnScroll` | frontend/js/menus.js:59 |
+| `closeHelpPopovers` | frontend/js/menus.js:278 |
+| `docBacklinkContext` | frontend/js/menus.js:1174 |
 | `dragFlag` | frontend/js/menus.js:37 |
-| `entryOverflowMenu` | frontend/js/menus.js:1597 |
-| `escapeAndCapMenu` | frontend/js/menus.js:813 |
-| `escapeMenuIfClipped` | frontend/js/menus.js:712 |
-| `escapeMenuToBody` | frontend/js/menus.js:734 |
-| `fitActionMenuInWindow` | frontend/js/menus.js:492 |
-| `focusMenuItem` | frontend/js/menus.js:625 |
-| `generateEntryTitle` | frontend/js/menus.js:1288 |
-| `historyActorLabel` | frontend/js/menus.js:1222 |
+| `entryOverflowMenu` | frontend/js/menus.js:1592 |
+| `escapeAndCapMenu` | frontend/js/menus.js:808 |
+| `escapeMenuIfClipped` | frontend/js/menus.js:707 |
+| `escapeMenuToBody` | frontend/js/menus.js:729 |
+| `fitActionMenuInWindow` | frontend/js/menus.js:487 |
+| `focusMenuItem` | frontend/js/menus.js:620 |
+| `generateEntryTitle` | frontend/js/menus.js:1283 |
+| `historyActorLabel` | frontend/js/menus.js:1217 |
 | `inlineActionIs` | frontend/js/menus.js:8 |
-| `isEditConflict` | frontend/js/menus.js:1667 |
-| `menuClippingAncestor` | frontend/js/menus.js:639 |
-| `menuExitMs` | frontend/js/menus.js:771 |
-| `menuSidePlan` | frontend/js/menus.js:470 |
-| `nearestScrollParent` | frontend/js/menus.js:166 |
-| `openActionMenu` | frontend/js/menus.js:512 |
-| `placeEscapedMenu` | frontend/js/menus.js:679 |
-| `placeHelpPopover` | frontend/js/menus.js:197 |
-| `removeEntryTitle` | frontend/js/menus.js:1313 |
-| `restoreEscapedMenu` | frontend/js/menus.js:778 |
-| `restoreEscapedMenuAfterExit` | frontend/js/menus.js:759 |
-| `toggleEntryPrivacy` | frontend/js/menus.js:1245 |
-| `wireEscapedActionMenu` | frontend/js/menus.js:882 |
-| `wireEscapedMenuResize` | frontend/js/menus.js:1162 |
-| `wireHelpPopover` | frontend/js/menus.js:346 |
-| `wireMenuKeyboard` | frontend/js/menus.js:1342 |
+| `isEditConflict` | frontend/js/menus.js:1662 |
+| `menuClippingAncestor` | frontend/js/menus.js:634 |
+| `menuExitMs` | frontend/js/menus.js:766 |
+| `menuSidePlan` | frontend/js/menus.js:465 |
+| `nearestScrollParent` | frontend/js/menus.js:161 |
+| `openActionMenu` | frontend/js/menus.js:507 |
+| `placeEscapedMenu` | frontend/js/menus.js:674 |
+| `placeHelpPopover` | frontend/js/menus.js:192 |
+| `removeEntryTitle` | frontend/js/menus.js:1308 |
+| `restoreEscapedMenu` | frontend/js/menus.js:773 |
+| `restoreEscapedMenuAfterExit` | frontend/js/menus.js:754 |
+| `toggleEntryPrivacy` | frontend/js/menus.js:1240 |
+| `wireEscapedActionMenu` | frontend/js/menus.js:877 |
+| `wireEscapedMenuResize` | frontend/js/menus.js:1157 |
+| `wireHelpPopover` | frontend/js/menus.js:341 |
+| `wireMenuKeyboard` | frontend/js/menus.js:1337 |
 
 ### frontend/js/lightbox.js (2)
 
@@ -1956,7 +1956,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `closePalette` | frontend/js/app-palette.js:163 |
-| `notesPaletteCommands` | frontend/js/app-palette.js:857 |
+| `notesPaletteCommands` | frontend/js/app-palette.js:856 |
 | `openPalette` | frontend/js/app-palette.js:120 |
 | `paletteActRows` | frontend/js/app-palette.js:449 |
 | `paletteArrow` | frontend/js/app-palette.js:810 |
@@ -1969,7 +1969,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `paletteFeatureRows` | frontend/js/app-palette.js:432 |
 | `paletteFind` | frontend/js/app-palette.js:698 |
 | `paletteFuzzyScore` | frontend/js/app-palette.js:189 |
-| `paletteGoToCategory` | frontend/js/app-palette.js:943 |
+| `paletteGoToCategory` | frontend/js/app-palette.js:942 |
 | `paletteKeydown` | frontend/js/app-palette.js:819 |
 | `paletteLight` | frontend/js/app-palette.js:784 |
 | `paletteMatches` | frontend/js/app-palette.js:223 |
@@ -1979,7 +1979,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `paletteNearestRows` | frontend/js/app-palette.js:667 |
 | `paletteNoteAbout` | frontend/js/app-palette.js:38 |
 | `paletteNoteRows` | frontend/js/app-palette.js:45 |
-| `paletteNotesInHand` | frontend/js/app-palette.js:933 |
+| `paletteNotesInHand` | frontend/js/app-palette.js:932 |
 | `palettePick` | frontend/js/app-palette.js:607 |
 | `palettePicks` | frontend/js/app-palette.js:588 |
 | `palettePool` | frontend/js/app-palette.js:410 |
@@ -12867,7 +12867,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8584)
+## Backend modules (8589)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -15283,13 +15283,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `ExtractedNote` | src/tessellate/ai/extractor.py:120 |
 | `_extract_json_object` | src/tessellate/ai/extractor.py:125 |
 | `_link` | src/tessellate/ai/extractor.py:288 |
-| `_model_links` | src/tessellate/ai/extractor.py:304 |
+| `_model_links` | src/tessellate/ai/extractor.py:308 |
 | `_plain_links` | src/tessellate/ai/extractor.py:292 |
 | `_plain_split` | src/tessellate/ai/extractor.py:272 |
 | `_reason_for` | src/tessellate/ai/extractor.py:218 |
 | `_short_preview` | src/tessellate/ai/extractor.py:213 |
 | `_split` | src/tessellate/ai/extractor.py:276 |
-| `build_extraction` | src/tessellate/ai/extractor.py:324 |
+| `build_extraction` | src/tessellate/ai/extractor.py:328 |
 | `find_related` | src/tessellate/ai/extractor.py:235 |
 | `merge_near_duplicates` | src/tessellate/ai/extractor.py:177 |
 | `offline_message` | src/tessellate/ai/extractor.py:103 |
@@ -16101,14 +16101,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `pick` | src/tessellate/ai/neighbours.py:42 |
 | `reads_whole` | src/tessellate/ai/neighbours.py:25 |
 
-### src/tessellate/ai/no_model_text.py (20)
+### src/tessellate/ai/no_model_text.py (25)
 
 | Name | File:line |
 |---|---|
 | `Part` | src/tessellate/ai/no_model_text.py:33 |
 | `_blocks` | src/tessellate/ai/no_model_text.py:148 |
+| `_by_subject` | src/tessellate/ai/no_model_text.py:241 |
 | `_clean_line` | src/tessellate/ai/no_model_text.py:66 |
 | `_count` | src/tessellate/ai/no_model_text.py:62 |
+| `_expand` | src/tessellate/ai/no_model_text.py:276 |
 | `_first_line_title` | src/tessellate/ai/no_model_text.py:94 |
 | `_heading` | src/tessellate/ai/no_model_text.py:38 |
 | `_headings` | src/tessellate/ai/no_model_text.py:168 |
@@ -16116,15 +16118,18 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_marks_end` | src/tessellate/ai/no_model_text.py:50 |
 | `_merge` | src/tessellate/ai/no_model_text.py:188 |
 | `_paragraph_chunks` | src/tessellate/ai/no_model_text.py:192 |
-| `_part` | src/tessellate/ai/no_model_text.py:237 |
+| `_part` | src/tessellate/ai/no_model_text.py:308 |
+| `_plain_title` | src/tessellate/ai/no_model_text.py:303 |
 | `_section_chunks` | src/tessellate/ai/no_model_text.py:206 |
 | `_split_heading` | src/tessellate/ai/no_model_text.py:83 |
 | `_strip_rules` | src/tessellate/ai/no_model_text.py:178 |
+| `_subject_stems` | src/tessellate/ai/no_model_text.py:233 |
+| `_tidy_title` | src/tessellate/ai/no_model_text.py:319 |
 | `_top_terms` | src/tessellate/ai/no_model_text.py:131 |
 | `_trim` | src/tessellate/ai/no_model_text.py:72 |
 | `_without_marks` | src/tessellate/ai/no_model_text.py:125 |
 | `draft_title` | src/tessellate/ai/no_model_text.py:104 |
-| `split_notes` | src/tessellate/ai/no_model_text.py:221 |
+| `split_notes` | src/tessellate/ai/no_model_text.py:285 |
 
 ### src/tessellate/ai/note_language.py (8)
 
@@ -23650,7 +23655,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16586)
+## Tests (16597)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24348,6 +24353,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_export_paint.py | 4 |
 | tests/test_export_spaces_private.py | 8 |
 | tests/test_exports_list.py | 5 |
+| tests/test_extract_by_subject_1103.py | 11 |
 | tests/test_extract_notes.py | 21 |
 | tests/test_extractive_answer.py | 9 |
 | tests/test_extras.py | 47 |
