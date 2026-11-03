@@ -2684,6 +2684,7 @@ TOPIC_META: dict[str, dict] = {
     "live-view-marks": {"title": "Markdown marks in Live view", "path": "Library tab, Documents, Edit, Live"},
     "documents-features": {"title": "Document editor features", "path": "Library tab, Documents"},
     "documents-paste": {"title": "Paste options and Paste special", "path": "Library tab, Documents, document menu"},
+    "documents-comments": {"title": "Comments in a document", "path": "Library tab, Documents, sidebar Outline, Comments"},
     "documents-turn-into": {"title": "Turn into: change a block to a heading, list, quote or code", "path": "Library tab, Documents, select text, Turn into"},
     "mind-map-features": {"title": "Mind map features", "path": "Library tab, Boards & maps"},
     "mind-map-import-export": {"title": "Mind map templates, import and export", "path": "Library tab, Boards & maps"},
@@ -2765,7 +2766,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "documents-replace", "live-view-marks", "documents-features", "documents-paste", "documents-turn-into", "callouts", "equation-editor", "document-history", "writing-checks", "code-files", "code-completions", "code-run",
+        "documents", "documents-controls", "documents-replace", "live-view-marks", "documents-features", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "document-history", "writing-checks", "code-files", "code-completions", "code-run",
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (

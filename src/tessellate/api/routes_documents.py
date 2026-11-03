@@ -26,7 +26,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.api.edit_conflicts import content_hash, refuse_if_stale
 from tessellate.ai import drafter, utilities, vision_ocr
-from tessellate.core import activity, cjk, deps, docexport, docmeta, docview, filetypes, syntaxcheck
+from tessellate.core import activity, cjk, deps, docexport, docmeta, docthreads, docview, filetypes, syntaxcheck
 from tessellate.core.config import user_now
 from tessellate.core.database import (
     LIKE_ESCAPE,
@@ -110,6 +110,10 @@ class DocumentPatch(BaseModel):
     #: text another window has since changed is refused with 409 rather than
     #: silently overwriting it (api/edit_conflicts.py). None is unchecked.
     base_hash: str | None = Field(default=None, max_length=64)
+    #: The comment threads (core/docthreads.py). None leaves them alone, like
+    #: the fields above, so an autosave that sends only text cannot wipe them;
+    #: a list, even an empty one, replaces them.
+    threads: list[dict] | None = None
 
     @field_validator("file_type")
     @classmethod
@@ -229,7 +233,12 @@ def _summary(document: Document) -> dict:
 
 
 def _full(document: Document, session: Session | None = None) -> dict:
-    body = {**_summary(document), "content": document.content, "content_hash": content_hash(document.content)}
+    body = {
+        **_summary(document),
+        "content": document.content,
+        "content_hash": content_hash(document.content),
+        "threads": docthreads.load(document.threads),
+    }
     if session is not None:
         body["notes"] = _linked_notes(session, document.id)
     return body
@@ -738,6 +747,8 @@ def update_document(
         document.content = body.content
     if body.file_type is not None:
         document.file_type = filetypes.normalise(body.file_type)
+    if body.threads is not None:
+        document.threads = docthreads.dump(body.threads)
     document.updated_at = utcnow()
     session.commit()
     if content_changed:

@@ -227,6 +227,190 @@
 
   // DOC-COMMENT-END
 
+  // DOC-THREADS-BEGIN
+
+  //: **A thread is a sidecar record, never text in the file** (DOCUMENTS_PLAN
+  //: DX24t; audit 1102 DX24, audit 1028 D26). The remark stays the inline
+  //: `%%remark%%` above, so a document still opens in Obsidian and an export
+  //: still carries it as a footnote; what the file cannot say (who wrote it,
+  //: when, what was answered, that it is settled) is a record in
+  //: `documents.threads` (core/docthreads.py). Everything between these
+  //: markers is pure (no DOM, no globals) and runs in node in
+  //: tests/test_document_thread_model.py.
+  //:
+  //: **The key** is the remark's text hash plus its place among remarks that
+  //: say the same thing (`2f9a41c3.1`), so a rename of the words around a
+  //: remark, or a move of the paragraph, changes nothing. FNV-1a, because it
+  //: is ten lines and a collision costs two threads swapping places.
+  const DOC_THREAD_UNDO_MS = 10 * 60 * 1000;
+
+  function docThreadHash(body) {
+    let hash = 0x811c9dc5;
+    for (let index = 0; index < body.length; index += 1) {
+      hash ^= body.charCodeAt(index);
+      hash = Math.imul(hash, 0x01000193) >>> 0;
+    }
+    return hash.toString(16).padStart(8, "0");
+  }
+
+  function docThreadKeys(comments) {
+    const seen = new Map();
+    return comments.map((comment) => {
+      const hash = docThreadHash(comment.body);
+      const nth = seen.get(hash) || 0;
+      seen.set(hash, nth + 1);
+      return `${hash}.${nth}`;
+    });
+  }
+
+  //: Match records to the remarks now in the text, in four passes, each only
+  //: over what the one before left: the key; the same words (a reopened thread
+  //: comes back with no key, and deleting one of two identical remarks shifts
+  //: the other's place); the one remark and the one open record left over (the
+  //: remark was edited, and a thread must follow its remark through the typing,
+  //: each keystroke being a new hash); then the rest. A remark with no record is
+  //: new and is stamped (`stamp.author`, `stamp.at`; both empty on the pass that
+  //: opens a document, so a remark written before threads existed claims no
+  //: author or time it does not have). A record whose remark is gone is dropped
+  //: if nobody answered it, and kept as resolved if they did: replies are never
+  //: lost to a deleted line. Returns the new list, the record of each remark by
+  //: comment id, and whether anything changed.
+  function docThreadsReconcile(threads, comments, stamp = {}) {
+    const keys = docThreadKeys(comments);
+    const open = (threads || []).filter((thread) => !thread.resolved);
+    const kept = (threads || []).filter((thread) => thread.resolved);
+    const made = stamp.id || (() => `t${Math.random().toString(36).slice(2, 10)}`);
+    const owner = new Array(comments.length).fill(null);
+    const used = new Set();
+    let changed = false;
+    const claim = (index, thread, patch = null) => {
+      owner[index] = patch ? { ...thread, ...patch } : thread;
+      used.add(thread);
+      if (patch) changed = true;
+    };
+
+    const byKey = new Map();
+    for (const thread of open) if (!byKey.has(thread.key)) byKey.set(thread.key, thread);
+    comments.forEach((comment, index) => {
+      const thread = byKey.get(keys[index]);
+      if (thread && !used.has(thread)) claim(index, thread);
+    });
+    comments.forEach((comment, index) => {
+      if (owner[index]) return;
+      const thread = open.find((candidate) => !used.has(candidate) && candidate.text === comment.body);
+      if (thread) claim(index, thread, { key: keys[index] });
+    });
+    const freeComments = comments.map((c, index) => index).filter((index) => !owner[index]);
+    const freeThreads = open.filter((thread) => !used.has(thread));
+    const reclaimed = new Set();
+    if (freeComments.length === 1 && freeThreads.length === 1) {
+      const index = freeComments[0];
+      claim(index, freeThreads[0], { key: keys[index], text: comments[index].body });
+    } else {
+      const now = Date.parse(stamp.at || "");
+      for (const index of freeComments) {
+        //: **Ctrl+Z after Resolve puts the remark back, and its thread with it.**
+        //: A remark that returns with the words of one resolved a moment ago is
+        //: that thread reopened, not a stranger: replies and all. Only a recent
+        //: one (`DOC_THREAD_UNDO_MS`), or writing the same words again next month
+        //: would resurrect a settled thread.
+        const back = Number.isNaN(now)
+          ? null
+          : (threads || [])
+              .filter((t) => t.resolved && !reclaimed.has(t) && t.text === comments[index].body && now - Date.parse(t.resolved_at || "") <= DOC_THREAD_UNDO_MS)
+              .sort((a, b) => Date.parse(b.resolved_at) - Date.parse(a.resolved_at))[0];
+        if (back) {
+          reclaimed.add(back);
+          owner[index] = { ...back, resolved: false, resolved_at: "", key: keys[index] };
+        } else {
+          owner[index] = {
+            id: made(),
+            key: keys[index],
+            author: stamp.author || "",
+            at: stamp.at || "",
+            text: comments[index].body,
+            replies: [],
+            resolved: false,
+            resolved_at: "",
+            target: "",
+            line: 1,
+            own: false,
+          };
+        }
+        changed = true;
+      }
+    }
+    const orphans = open.filter((thread) => !used.has(thread) && !owner.includes(thread));
+    const fallen = [];
+    for (const thread of orphans) {
+      changed = true;
+      if (thread.replies && thread.replies.length) fallen.push({ ...thread, resolved: true, resolved_at: thread.resolved_at || stamp.at || "" });
+    }
+    const byComment = {};
+    comments.forEach((comment, index) => {
+      byComment[comment.id] = owner[index];
+    });
+    //: Resolved records first, then the open ones in the order of the text: the
+    //: stored order is stable, which keeps a save from rewriting an unchanged list.
+    const next = [...kept.filter((thread) => !reclaimed.has(thread)), ...fallen, ...owner];
+    return { threads: next, byComment, changed };
+  }
+
+  function docThreadReply(threads, id, author, at, text) {
+    const said = String(text || "").trim();
+    if (!said || !threads.some((thread) => thread.id === id)) return threads;
+    return threads.map((thread) => (thread.id === id ? { ...thread, replies: [...thread.replies, { author: author || "", at: at || "", text: said }] } : thread));
+  }
+
+  //: What Reopen needs is kept on the record at the moment of resolving, when
+  //: the remark is still in the text: the words it was about, the line, and
+  //: whether it was alone on its line (`own`, which `docCommentResolveEdit`
+  //: removed whole).
+  function docThreadResolve(threads, id, comment, text, at) {
+    const edit = docCommentResolveEdit(text, comment);
+    const own = Boolean(edit) && text.slice(edit.from, edit.to).replace(/\n$/, "") === text.slice(comment.from, comment.to);
+    return threads.map((thread) =>
+      thread.id === id
+        ? { ...thread, resolved: true, resolved_at: at || "", text: comment.body, target: comment.target || "", line: comment.line || 1, own }
+        : thread
+    );
+  }
+
+  //: Reopened with no key, so the reconcile after the edit below finds the
+  //: remark by its words and the thread (replies and all) is back.
+  function docThreadReopen(threads, id) {
+    return threads.map((thread) => (thread.id === id ? { ...thread, resolved: false, resolved_at: "", key: "" } : thread));
+  }
+
+  //: The edit that puts a resolved remark back. Its words are looked for in the
+  //: text as it is now (the first place outside code and frontmatter) and
+  //: highlighted again; failing that, a standing remark goes where it was (its
+  //: own line, or the end of its line), and one in a place that is code now goes
+  //: to the end of the document. Nothing is lost if the words changed: the
+  //: remark comes back, attached to the line rather than the words.
+  function docThreadReopenEdit(text, thread) {
+    const body = typeof text === "string" ? text : "";
+    const remark = `%%${thread.text}%%`;
+    const skip = docCommentSkipMask(body);
+    if (thread.target) {
+      let at = body.indexOf(thread.target);
+      while (at !== -1 && skip[at] === 1) at = body.indexOf(thread.target, at + 1);
+      if (at !== -1) return { from: at, to: at + thread.target.length, insert: `==${thread.target}== ${remark}` };
+    }
+    const starts = [0];
+    for (let index = 0; index < body.length; index += 1) if (body[index] === "\n") starts.push(index + 1);
+    const line = Math.min(Math.max(1, thread.line || 1), starts.length);
+    const lineStart = starts[line - 1];
+    const lineEnd = line < starts.length ? starts[line] - 1 : body.length;
+    const end = { from: body.length, to: body.length, insert: `${body && !body.endsWith("\n") ? "\n" : ""}${remark}` };
+    if (skip[lineStart] === 1 || skip[Math.max(0, lineEnd - 1)] === 1) return end;
+    if (thread.own) return { from: lineStart, to: lineStart, insert: `${remark}\n` };
+    const lineText = body.slice(lineStart, lineEnd);
+    return { from: lineEnd, to: lineEnd, insert: lineText.trim() ? ` ${remark}` : remark };
+  }
+
+  // DOC-THREADS-END
+
   // --- the comments panel -------------------------------------------------------
   //
   // **Where a comment is listed, and why it is not a right-hand panel.** The plan
@@ -258,6 +442,59 @@
   //: without re-parsing to find out which one it was.
   let docCommentCurrent = null;
 
+  // --- the threads behind the remarks (DOCUMENTS_PLAN DX24t) ----------------
+  //
+  // **Where the records live while a document is open.** In this closure, keyed
+  // by the document they belong to, loaded from `currentDoc.threads` on the
+  // first pass after an open and sent back by every save (`docThreadsForSave`,
+  // read by `docSaveOnce`). The first pass stamps nothing (a remark written
+  // before threads existed has no author or time and claims none); a remark
+  // that appears after it is stamped with the account's name (the display name
+  // in Settings, "You" until there is one) and the moment. Single user,
+  // local-first: the name is for reading a thread back, not for access.
+  let docThreads = [];
+  let docThreadsDoc = null;
+  let docThreadMap = {};
+  let docThreadsResolvedOpen = false;
+  let docCommentReplying = null;
+
+  function docThreadAuthor() {
+    return ((typeof prefsCache === "object" && prefsCache?.display_name) || "").trim() || "You";
+  }
+
+  function docThreadWho(author, at) {
+    const when = at ? relativeTime(at) : "";
+    return [author, when].filter(Boolean).join(" \u00b7 ");
+  }
+
+  //: Reconcile the records with the remarks in the text now. Called by every
+  //: draw of the panel, so the records follow the text through typing, undo and
+  //: a restored revision with no hook of their own.
+  function docThreadsSync(comments) {
+    if (!currentDoc) {
+      docThreads = [];
+      docThreadsDoc = null;
+      docThreadMap = {};
+      return;
+    }
+    const opening = docThreadsDoc !== currentDoc.id;
+    if (opening) {
+      docThreads = Array.isArray(currentDoc.threads) ? currentDoc.threads : [];
+      docThreadsDoc = currentDoc.id;
+      docCommentReplying = null;
+    }
+    const stamp = opening ? { author: "", at: "" } : { author: docThreadAuthor(), at: new Date().toISOString() };
+    const result = docThreadsReconcile(docThreads, comments, stamp);
+    docThreads = result.threads;
+    docThreadMap = result.byComment;
+  }
+
+  //: What a save sends: undefined (so JSON leaves it out and the server keeps
+  //: what it has) until this document's records have been read.
+  function docThreadsForSave() {
+    return currentDoc && docThreadsDoc === currentDoc.id ? docThreads : undefined;
+  }
+
   function docComments() {
     return docCommentsParse(docText());
   }
@@ -275,7 +512,55 @@
     return rest || `Line ${comment.line}`;
   }
 
+  //: Who and when, then the replies under a remark, the same in an open row and
+  //: a resolved one.
+  function docThreadReplies(thread) {
+    const list = document.createElement("ol");
+    list.className = "doc-comment-replies";
+    for (const reply of thread.replies) {
+      const item = document.createElement("li");
+      item.className = "doc-comment-reply";
+      const who = document.createElement("span");
+      who.className = "doc-comment-who";
+      who.textContent = docThreadWho(reply.author, reply.at);
+      const said = document.createElement("p");
+      said.className = "doc-comment-body";
+      said.textContent = reply.text;
+      item.append(who, said);
+      list.appendChild(item);
+    }
+    return list;
+  }
+
+  //: One line and Enter to post, Escape to cancel: a reply is a sentence. The
+  //: field is the app's plain text input, not a second editor.
+  function docCommentReplyForm(thread) {
+    const form = document.createElement("form");
+    form.className = "doc-comment-reply-form";
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = "doc-comment-reply-input";
+    input.maxLength = 2000;
+    input.placeholder = "Write a reply";
+    input.setAttribute("aria-label", "Reply to this comment");
+    input.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      docCommentReplying = null;
+      renderDocComments();
+    });
+    const post = smallButton("Post", "Post the reply", () => {}, false);
+    post.type = "submit";
+    form.append(input, post);
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      docReplyToComment(thread, input.value);
+    });
+    return form;
+  }
+
   function docCommentRow(comment) {
+    const thread = docThreadMap[comment.id] || null;
     const item = document.createElement("li");
     item.className = "doc-comment-item";
     item.dataset.comment = comment.id;
@@ -319,9 +604,59 @@
       () => docResolveComment(comment)
     );
     resolve.classList.add("doc-outline-row-action", "doc-comment-action");
-    head.append(open, resolve);
+    resolve.classList.add("doc-comment-resolve");
+    //: Reply is the head row's second icon, beside Resolve, for the same reason
+    //: Resolve is there: a row that grows a line for it is a panel that shows two
+    //: remarks instead of four (a remark with no thread, one written before
+    //: threads, has no Reply and is unchanged).
+    if (thread && docCommentReplying !== thread.id) {
+      const reply = smallButton("ph:arrow-bend-up-left", "Reply to this comment", () => {
+        docCommentReplying = thread.id;
+        renderDocComments();
+        document.querySelector("#doc-comments .doc-comment-reply-input")?.focus();
+      });
+      reply.classList.add("doc-outline-row-action", "doc-comment-action", "doc-comment-reply-open");
+      head.append(open, reply, resolve);
+    } else head.append(open, resolve);
 
-    item.append(head, body);
+    item.append(head);
+    const who = thread ? docThreadWho(thread.author, thread.at) : "";
+    if (who) {
+      const byline = document.createElement("span");
+      byline.className = "doc-comment-who";
+      byline.textContent = who;
+      item.append(byline);
+    }
+    item.append(body);
+    if (thread?.replies.length) item.append(docThreadReplies(thread));
+    if (thread && docCommentReplying === thread.id) item.append(docCommentReplyForm(thread));
+    return item;
+  }
+
+  //: A resolved thread: the words it was about, who said what, and Reopen. Its
+  //: remark is not in the text (resolving removes it, undoably); Reopen puts it
+  //: back where the words are (`docThreadReopenEdit`).
+  function docResolvedRow(thread) {
+    const item = document.createElement("li");
+    item.className = "doc-comment-item doc-comment-resolved";
+    item.dataset.thread = thread.id;
+    const head = document.createElement("div");
+    head.className = "doc-outline-row doc-comment-head";
+    const context = document.createElement("span");
+    context.className = "outline-link doc-comment-open doc-comment-context";
+    context.textContent = thread.target || `Line ${thread.line}`;
+    const reopen = smallButton("ph:arrow-counter-clockwise", "Reopen: put the remark back in the document", () => docReopenComment(thread));
+    reopen.classList.add("doc-outline-row-action", "doc-comment-action");
+    head.append(context, reopen);
+    const meta = document.createElement("span");
+    meta.className = "doc-comment-who";
+    meta.textContent = [docThreadWho(thread.author, thread.at), thread.resolved_at ? `resolved ${relativeTime(thread.resolved_at)}` : "resolved"].filter(Boolean).join(" \u00b7 ");
+    const body = document.createElement("p");
+    body.className = "doc-comment-body";
+    body.textContent = thread.text;
+    body.title = thread.text;
+    item.append(head, meta, body);
+    if (thread.replies.length) item.append(docThreadReplies(thread));
     return item;
   }
 
@@ -333,19 +668,36 @@
     const list = $("doc-comments");
     const count = $("doc-comments-count");
     if (!wrap || !list) return;
+    //: A reply being typed is not redrawn under the person typing it: the facts
+    //: pass runs on every edit and would swap the field out from under the caret.
+    if (docCommentReplying && list.contains(document.activeElement) && document.activeElement.matches?.(".doc-comment-reply-input")) return;
     const comments = currentDoc ? docComments() : [];
+    docThreadsSync(comments);
     if (docCommentCurrent && !comments.some((c) => c.id === docCommentCurrent)) {
       docCommentCurrent = null;
     }
     list.replaceChildren();
     for (const comment of comments) list.appendChild(docCommentRow(comment));
+    const resolved = docThreads.filter((thread) => thread.resolved);
+    const toggle = $("doc-comments-resolved-toggle");
+    const shelf = $("doc-comments-resolved");
+    if (toggle && shelf) {
+      toggle.classList.toggle("hidden", !resolved.length);
+      if (!resolved.length) docThreadsResolvedOpen = false;
+      toggle.setAttribute("aria-expanded", String(docThreadsResolvedOpen));
+      toggle.textContent = `${docThreadsResolvedOpen ? "Hide" : "Show"} ${resolved.length} resolved`;
+      shelf.classList.toggle("hidden", !docThreadsResolvedOpen || !resolved.length);
+      shelf.replaceChildren();
+      if (docThreadsResolvedOpen) for (const thread of resolved) shelf.appendChild(docResolvedRow(thread));
+    }
     //: The whole section goes when there is nothing in it, which is what the two
     //: sections under it already do (`renderDocBacklinks`, `renderDocNotes`) and
     //: what this panel's own stylesheet measured the cost of not doing: 69px of
     //: column for an eyebrow over nothing. A sentence explaining what a comment
     //: is would be the right answer for a tab that carries the word in its name;
-    //: a section is allowed to be absent.
-    wrap.classList.toggle("hidden", !comments.length);
+    //: a section is allowed to be absent. Resolved threads keep it, so they can
+    //: be reopened from a document with no open remark left in it.
+    wrap.classList.toggle("hidden", !comments.length && !resolved.length);
     if (count) count.textContent = comments.length ? String(comments.length) : "";
   }
 
@@ -392,7 +744,12 @@
     if (!surface) return;
     const edit = docCommentResolveEdit(surface.text, comment);
     if (!edit) return;
+    const thread = docThreadMap[comment.id];
+    //: The record first, from the text as it is before the edit: the words, the
+    //: line and whether the remark had its line to itself are what Reopen needs.
+    if (thread) docThreads = docThreadResolve(docThreads, thread.id, comment, surface.text, new Date().toISOString());
     docReplaceRange(surface, edit.from, edit.to, edit.insert);
+    if (docCommentReplying === thread?.id) docCommentReplying = null;
     if (docCommentCurrent === comment.id) docCommentCurrent = null;
     markDocDirty();
     renderDocComments();
@@ -400,7 +757,32 @@
     renderDocCounts();
     //: Says where it went rather than only that it happened: the remark is gone
     //: from the text and the undo that brings it back is the ordinary one.
-    toast("Resolved. Ctrl+Z puts it back.");
+    toast("Resolved. Ctrl+Z puts it back, or Show resolved lists it.");
+  }
+
+  //: The remark goes back into the text and the thread with it; the
+  //: reconcile after the edit finds it by its words.
+  function docReopenComment(thread) {
+    const surface = docSurface();
+    if (!surface) return;
+    const edit = docThreadReopenEdit(surface.text, thread);
+    docThreads = docThreadReopen(docThreads, thread.id);
+    docReplaceRange(surface, edit.from, edit.to, edit.insert);
+    markDocDirty();
+    renderDocComments();
+    scheduleDocPreview();
+    renderDocCounts();
+    toast("Reopened. Ctrl+Z puts it back.");
+  }
+
+  function docReplyToComment(thread, text) {
+    const next = docThreadReply(docThreads, thread.id, docThreadAuthor(), new Date().toISOString(), text);
+    if (next === docThreads) return;
+    docThreads = next;
+    docCommentReplying = null;
+    //: Saved with the document: a reply is a change like any other.
+    markDocDirty();
+    renderDocComments();
   }
 
   //: A remark on the selection, which is the way a comment is made. `custom` in
@@ -452,6 +834,13 @@
   };
   // DOC-REMARK-END-END
 
+  $("doc-comments-resolved-toggle")?.addEventListener("click", () => {
+    docThreadsResolvedOpen = !docThreadsResolvedOpen;
+    renderDocComments();
+  });
+
   //: The file's whole surface: what documents.js, documents-cm.js and documents-prose.js call.
   Object.assign(window, { docCommentStrip, docCommentFootnotes, renderDocComments, docShowComment, docAnnotateSelection });
+  //: What a save sends beside the text; a property of the panel's own entry point so it takes no name in the shared scope (tests/test_global_scope_ratchet.py).
+  renderDocComments.threads = docThreadsForSave;
 })();

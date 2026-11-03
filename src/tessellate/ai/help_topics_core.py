@@ -2807,7 +2807,10 @@ HELP_TOPICS.extend(
                 "leave it out. When more than one document would change, the "
                 "first press of Replace all asks and the second does it; the "
                 "toast's Undo takes every document back at once. A pattern that "
-                "does not read says so before anything runs."
+                "does not read says so before anything runs. The find panel "
+                "(Ctrl+F) has All documents and Replace in all beside its match "
+                "count: they open these with what you typed, its replacement "
+                "and its options."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -2867,6 +2870,34 @@ HELP_TOPICS.extend(
                 "choices beside Cut, Copy, Paste, Turn into and Select all (hold "
                 "on a phone); Shift+right-click opens the browser's own menu, with "
                 "its spelling suggestions."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
+            "id": "documents-comments",
+            "keywords": (
+                "document comments",
+                "remark",
+                "remarks",
+                "reply to a remark",
+                "resolve a remark",
+                "resolved remarks",
+                "reopen a remark",
+                "comment thread in a document",
+                "who wrote a comment",
+            ),
+            "body": (
+                "Comments in a document. Select words and choose Style, Comment: "
+                "they are highlighted and a remark follows them, kept in the text "
+                "as ==words== %%the remark%%, so it opens anywhere else the same. "
+                "The sidebar's Outline lists every remark with the words it is "
+                "about, who wrote it (your name from Settings, Profile) and when. "
+                "Reply on a row adds a line under it; Enter posts, Esc cancels. "
+                "Resolve takes the remark out of the text and keeps the thread: "
+                "Show resolved lists it, and Reopen puts the remark back on its "
+                "words (Ctrl+Z right after a resolve does the same). Replies and "
+                "bylines are saved with the document but are not in the text, so a "
+                "download shows each remark as a footnote and nothing more."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
