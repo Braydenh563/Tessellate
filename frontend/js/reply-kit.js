@@ -568,7 +568,9 @@ function replyCalcActions(target, close, inline = false) {
   const insert = smallButton("Insert", "Write the result into the text", () => act("insert"), false);
   insert.classList.add("primary");
   for (const button of [copy, asEquation, insert]) button.setAttribute("aria-describedby", id);
-  row.append(copy, asEquation, insert);
+  //: The dialog foot: the one filled Insert last, Copy the lone bordered secondary beside it, and the third (a different kind of write) a quiet one at the start of the row.
+  asEquation.classList.add("quiet", "calc-as-equation");
+  row.append(asEquation, copy, insert);
   //: A widget has no box to write into: Copy is its one action, and the line about Insert is not drawn.
   if (inline) where.classList.add("hidden");
   el.append(where, row);
@@ -890,14 +892,14 @@ function replyCalcEquation(target, close, actions) {
 //: reader ("Times", not the icon's name).
 function replyCalcKeypad(box, equals) {
   const pad = document.createElement("div");
-  pad.className = "calc-keys";
+  pad.className = "key-grid calc-keys";
   pad.setAttribute("role", "group");
   pad.setAttribute("aria-label", "Keypad");
   const keys = REPLY_CALC_KEYS.map(([face, act], i) => {
     const key = document.createElement("button");
     key.type = "button";
-    // Every key is a ghost: the one filled button of the dialog is Insert, in the action row.
-    key.className = `ghost calc-key${/^[0-9.]$/.test(act) ? "" : " is-op"}`;
+    // A key of a `.key-grid`: the quiet inset fill, operators tinted, and `=` the grid's one filled key (the dialog's own is Insert, in the foot).
+    key.className = `calc-key${/^[-+*/%]$/.test(act) ? " is-op" : ""}${act === "equals" ? " is-equals" : ""}`;
     setLabel(key, face);
     key.tabIndex = i === 0 ? 0 : -1;
     if (REPLY_CALC_NAMES[act]) key.setAttribute("aria-label", REPLY_CALC_NAMES[act]);

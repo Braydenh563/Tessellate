@@ -9,6 +9,7 @@ below). Versioning is `0.x` while the app stabilises.
 - Chat: a long message of yours keeps a reading width (72% of the column, at most 42rem) instead of spanning it (the owner, 2026-11-03).
 - Dictation: an installed Whisper model loads from this computer alone; it no longer asks huggingface.co for the model's revision on every load (the owner, 2026-11-03).
 - Equations: the jump row of groups is a words-and-underline strip with a thin scrollbar, an edge fade and sideways wheel scrolling, not a row of boxed buttons (the owner, 2026-11-03).
+- Calculator and equations: Inline and Display span the row in equal segments, Pin and LaTeX are quiet text buttons, the keypad and equation tiles are a quiet inset fill with no edge (operators tinted, `=` the one filled key), group heads are on the type scale, the foot ends in the one filled Insert, and the root tiles leave room between the sign and the x; DESIGN.md and a lint carry the rule (the owner, 2026-11-03).
 - Graph: a hovered link starts and ends at each dot's rim instead of running into its centre (the owner, 2026-11-03).
 - Library: an empty board's thumbnail ghosts three loose cards with no curves between them, 0 branch curves down from 2, so it no longer reads as a mind map (audit 1028 U40).
 - Docs: SECURITY.md says plainly that a space is organisation, not a security boundary (audit 1028 K16).

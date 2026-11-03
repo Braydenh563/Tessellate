@@ -20,12 +20,6 @@
   font-size: var(--text-xs);
 }
 
-/* Inline and Display: a `.seg`, its own width, with the pane's gap under it and none of the well's own margin. */
-.math-editor-mode {
-  align-self: flex-start;
-  margin-bottom: 0;
-}
-
 /* The line under the head: the hint, and the LaTeX button that shows the TeX. */
 .math-editor-lede-row {
   display: flex;
@@ -45,25 +39,27 @@
   flex: none;
 }
 
+/* Pin and LaTeX are the toolbar's quiet buttons (`.quiet`: words, no edge); a switched-on one takes the accent's tint. */
+.math-editor-lede-tools > button[aria-pressed="true"] {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
 /* The dialog's panes scroll (`.calc-panes`, reply-kit-lazy.css), so the
    palette does not scroll again inside them: a scroll in a scroll traps a thumb. */
 .math-editor-list {
   min-width: 0;
 }
 
+/* The group's head is the type scale's eyebrow (`.eyebrow`: `--text-sm`, 600, muted, caps), not a size of its own. */
 .math-editor-group {
   /* A jump lands the heading under the sticky row of groups, not behind it. */
   scroll-margin-top: calc(var(--space-9) + var(--space-2));
-  padding: var(--space-2) 0 var(--space-1);
-  color: var(--muted);
-  font-size: var(--text-xs);
-  font-weight: 600;
+  padding: var(--space-3) 0 var(--space-2);
 }
 
 .math-editor-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(2.5rem, 1fr));
-  gap: var(--space-1);
+  grid-template-columns: repeat(auto-fill, minmax(2.75rem, 1fr));
 }
 
 /* Structures draw a whole formula, so their tiles are wider. */
@@ -78,11 +74,18 @@
   min-height: var(--target-min);
   padding: var(--space-1);
   overflow: hidden;
-  font-size: var(--text-base);
+  font-size: var(--text-lg);
 }
 
 .math-editor-tile math {
   pointer-events: none;
+}
+
+/* **The radicand clears the radical** (INBOX 1566, the owner: the x in the Radical group touches the root sign). The browser's own
+   MathML sets the vinculum on the radicand's top and the hook on its left edge with no room (measured: the sign and the x one
+   ink component at 4x); a little padding on the radicand is room inside the sign, so the bar rises and the x moves in. */
+.math-editor-tile :is(msqrt > *, mroot > :first-child) {
+  padding: 0.18em 0.12em 0;
 }
 
 .math-editor-glyph {

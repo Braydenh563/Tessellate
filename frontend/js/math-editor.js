@@ -205,7 +205,8 @@ function mathEditorTileFace(item) {
 function mathEditorTile(item, pinned = false) {
   const button = document.createElement("button");
   button.type = "button";
-  button.className = `ghost math-editor-tile${pinned ? " is-pinned" : ""}`;
+  //: A key of a `.key-grid`: the quiet inset fill with no edge (DESIGN.md, "A grid of keys or tiles"), never a bordered ghost twenty times over.
+  button.className = `math-editor-tile${pinned ? " is-pinned" : ""}`;
   //: Out of the Tab order; the group's current tile is put back by `mathEditorPalette`/`mathEditorRoving`.
   button.tabIndex = -1;
   button.title = item.name;
@@ -239,10 +240,10 @@ function mathEditorPalette(list, query) {
     });
     if (!items.length) continue;
     const head = document.createElement("div");
-    head.className = "math-editor-group";
+    head.className = "eyebrow math-editor-group";
     head.textContent = group.label;
     const grid = document.createElement("div");
-    grid.className = group.structures ? "math-editor-grid math-editor-grid-wide" : "math-editor-grid";
+    grid.className = group.structures ? "key-grid math-editor-grid math-editor-grid-wide" : "key-grid math-editor-grid";
     grid.setAttribute("role", "group");
     grid.setAttribute("aria-label", group.label);
     grid.append(...items.map((item) => mathEditorTile(item, pinned.has(item.tex))));
@@ -266,6 +267,8 @@ function mathEditorPalette(list, query) {
 function mathEditorModes(display, onChange) {
   const seg = document.createElement("div");
   seg.className = "seg math-editor-mode";
+  //: Alone on its line, so it spans the row in equal segments (DESIGN.md, "A `.seg` alone on its line"), not a pill thrown to one side.
+  seg.classList.add("seg-fill");
   seg.setAttribute("role", "group");
   seg.setAttribute("aria-label", "Inline or display");
   const buttons = [["inline", "Inline", "In the sentence"], ["display", "Display", "On its own line, centred"]].map(([value, label, title]) => {
@@ -496,6 +499,8 @@ function mathEditorMount({ host, target = null, done = () => {}, note = null, on
     ledeRow.querySelector(".math-editor-lede").textContent = pinning ? "Press a tile to pin it to the top, or to unpin it." : lede;
   });
   pin.setAttribute("aria-pressed", "false");
+  //: A toolbar's secondary actions carry no edge (DESIGN.md, "The bordered ghost"): words with the tint under the pointer.
+  pin.classList.add("quiet");
   const ledeRow = mathEditorLede(pin, pane.toggle);
   const togglePin = (tile) => {
     const tex = tile._item.tex;
