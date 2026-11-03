@@ -10,6 +10,12 @@
   max-width: none;
 }
 
+/* The pane is a size container, so it has no width of its own: a preview that stacks under the editor
+   (a window under 60rem, Split) takes the card's whole width, not the nothing its content asks for. */
+#doc-preview:has(> .dgm) {
+  width: 100%;
+}
+
 .dgm {
   container-type: inline-size;
   display: flex;
@@ -515,6 +521,11 @@
     min-block-size: 10rem;
   }
 
+  /* A diagram the blocks do not draw: its picture first, the line why under it, so a short pane shows the picture. */
+  .dgm-plain .dgm-hint {
+    order: 1;
+  }
+
   /* Suggest keeps its sparkle and loses its word, like the tiles. */
   .dgm-suggest .ph-text {
     display: none;
@@ -636,6 +647,14 @@
 
 .dgm-dialog[data-view="source"] .dgm-body {
   grid-template-columns: minmax(0, 1fr);
+}
+
+/* The pane is its own container, so a container query cannot size it: on a phone a diagram the blocks do not
+   draw grows with its picture and the page scrolls, rather than overflowing a half-height preview. */
+@media (max-width: 599.98px) {
+  .dgm-plain {
+    height: auto;
+  }
 }
 
 @media (max-width: 599.98px) {
