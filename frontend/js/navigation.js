@@ -1672,6 +1672,9 @@ document.addEventListener("click", async (event) => {
     // Going there was the whole action.
   } else if (action === "ask") {
     $("chat-input")?.focus();
+  } else if (action === "new-chat") {
+    newChatConversation();
+    $("chat-input")?.focus(); // from an empty chat a new one changes nothing to see otherwise
   } else if (action === "untagged") {
     showNotesFilter("is:untagged");
   } else if (action === "suggest-links") {

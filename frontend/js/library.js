@@ -900,6 +900,8 @@ function renderLibrary(options) {
         createBtn.replaceChildren(...[...dockCreate.childNodes].map((n) => n.cloneNode(true)));
         createBtn.title = dockCreate.title;
       }
+      //: One Create at a time (unslop 1103, 18): the empty state's is the action while there is nothing, so the dock's steps aside, as Documents' does.
+      dockCreate?.classList.toggle("hidden", offerCreate && Boolean(dockCreate));
     }
     const fresh = !items.length && !query && !madeAnything;
     const freshText = $("library-empty-text");
@@ -9078,6 +9080,8 @@ function filterLibraryImagesGallery() {
     .filter((i) => libraryMediaKind === "files" || libraryImageOriginsOn.has(libraryImageOrigin(i)));
   renderLibraryImageOrigins();
   nounCount.dock("library-media", ofKind.length, libraryMediaKind === "files" ? "file" : "image");
+  //: The empty state's Upload is the action while there is nothing (unslop 1103, 18); the dock's steps aside.
+  $("library-images-upload")?.classList.toggle("hidden", !ofKind.length);
   const matched = query
     ? ofKind.filter(
         (i) =>
@@ -11270,6 +11274,8 @@ async function renderBookmarks() {
   }
   empty.classList.toggle("hidden", bookmarksCache.length > 0);
   nounCount.dock("library-links", bookmarksCache.length, "bookmark");
+  //: The empty state's Add a bookmark is the action while there is nothing (unslop 1103, 18); the dock's steps aside.
+  $("bookmark-add")?.classList.toggle("hidden", !bookmarksCache.length);
   renderBookmarkGroupChips();
   filterBookmarks();
   syncSelectbarCount("library-links", libraryLinksSelection.size);

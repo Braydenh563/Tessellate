@@ -208,3 +208,28 @@ def test_16_first_steps_names_what_it_opens_not_a_generic_get_started():
     assert "grid-area: title" in phone and "grid-area: count" in phone and "grid-area: bar" in phone
 
 
+
+
+def test_17_the_empty_chat_sidebar_is_the_empty_state_recipe():
+    """A bare 13.6px grey line in a 40px strip, where every other empty list has icon, title, sentence, action."""
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    assert '<div id="conv-empty" class="empty-state hidden"></div>' in html, "one element in the page: the rest is drawn on demand"
+    js = _js("sheets-selects.js")
+    start = js.index("async function loadConversationList(")
+    body = js[start : js.index("\n}\n", start)]
+    for part in ('icon.className = "empty-icon"', 'setLabel(icon, "ph:chats")', 'title.className = "empty-title"', 'start.dataset.emptyAction = "new-chat"', '"ph:plus New chat"'):
+        assert part in body, part
+    assert 'action === "new-chat"' in _js("navigation.js")
+
+
+def test_18_an_empty_state_does_not_repeat_the_dock_button_above_it():
+    """Library Create, Images Upload, Boards New, Bookmarks Add and Reminders Add each showed twice."""
+    lib = _js("library.js")
+    assert 'dockCreate?.classList.toggle("hidden", offerCreate && Boolean(dockCreate))' in lib
+    assert '$("library-images-upload")?.classList.toggle("hidden", !ofKind.length)' in lib
+    assert '$("bookmark-add")?.classList.toggle("hidden", !bookmarksCache.length)' in lib
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    reminders = html[html.index('<div id="reminders-empty"') :].split("</div>", 1)[0]
+    assert "<button" not in reminders and "Add one above" in reminders
+    boards = html[html.index('<div id="library-boards-empty"') :].split("</div>", 1)[0]
+    assert 'data-empty-action="new-board"' not in boards and 'id="library-boards-new-map"' in boards

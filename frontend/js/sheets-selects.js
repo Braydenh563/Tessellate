@@ -1840,7 +1840,28 @@ async function loadConversationList() {
   list.replaceChildren();
   const empty = $("conv-empty");
   empty.classList.toggle("hidden", conversations.length > 0);
-  empty.textContent = term ? "No chats match that." : "No saved chats yet. Ask something to start one.";
+  //: The empty-state recipe (icon, title, one sentence, one action), drawn here and not
+  //: shipped in the page (the boot element cap); the grey line it replaces had none of them.
+  if (!conversations.length) {
+    const icon = document.createElement("span");
+    icon.className = "empty-icon";
+    icon.setAttribute("aria-hidden", "true");
+    setLabel(icon, "ph:chats");
+    const title = document.createElement("p");
+    title.className = "empty-title";
+    title.textContent = term ? "No chats match" : "No saved chats yet";
+    const hint = document.createElement("p");
+    hint.textContent = term ? "The search reads titles and what was said." : "Ask something to start one.";
+    empty.replaceChildren(icon, title, hint);
+    if (!term) {
+      const start = document.createElement("button");
+      start.type = "button";
+      start.className = "ghost small";
+      start.dataset.emptyAction = "new-chat";
+      setLabel(start, "ph:plus New chat");
+      empty.appendChild(start);
+    }
+  }
 
   let sawUnpinned = false;
   for (const conversation of conversations) {

@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chats: an empty sidebar is the empty-state recipe (icon, 'No saved chats yet', one sentence, New chat) instead of a grey 13.6px line (unslop 1103, 17).
+- Empty states do not repeat their own action (unslop 1103, 18): with nothing in them the dock's Create (Library, Everything), Upload (Images) and Add bookmark step aside for the empty state's own button, Boards' empty state keeps only New mind map (the dock's New makes a board), and Reminders' empty state points at the form above instead of repeating it.
 - Dashboard: the First steps button and the three-step card say what they open (the card, "Three steps to a working notebook", was "Get started"); Help, the Guide and the palette follow; on a phone the title takes two lines and the count joins the bar (card 294 to 308 px tall; unchanged at 1440) (unslop 1103, 16).
 - The inline add-context and remind form moved from the boot scripts to the lazy note card that draws it (boot scripts 260,413 to 259,340 gzipped bytes under a 260,350 cap), so Library docks can say their count.
 - Library docks: a dock's title is a count ('12 documents', '2 boards and maps', 'No bookmarks') instead of the sub-tab's name again; the Timeline and Graph docks keep their title for a screen reader only beside the count chip (unslop 1103, 15).

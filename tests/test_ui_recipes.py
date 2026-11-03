@@ -4656,11 +4656,11 @@ def test_the_chat_sidebar_head_is_one_quiet_row():
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     start = html.index('<aside class="card sidebar-panel" id="chat-sidebar">')
     aside = html[start : html.index("</aside>", start)]
-    head = re.sub(r"<!--.*?-->", "", aside[aside.index('class="row space-between sidebar-head"') : aside.index('<p id="conv-empty"')], flags=re.S)
+    head = re.sub(r"<!--.*?-->", "", aside[aside.index('class="row space-between sidebar-head"') : aside.index('<div id="conv-empty"')], flags=re.S)
     #: The empty line sits between the head and the list (the owner,
     #: 2026-10-10: "should that no chats text be at the top not the bottom??").
-    between = aside[aside.index('<p id="conv-empty"') : aside.index('<ul id="conversation-list">')]
-    assert between.rstrip().endswith("</p>") and between.count("<") == 2
+    between = aside[aside.index('<div id="conv-empty"') : aside.index('<ul id="conversation-list">')]
+    assert between.rstrip().endswith("</div>") and between.count("<") == 2
     assert 'id="chat-sidebar-sort"' in head and 'data-select-icon="ph-sort-descending"' in head
     new = re.search(r'<button id="chat-new"[^>]*>', head).group(0)
     assert 'class="ghost small icon-only"' in new and 'aria-label="New chat"' in new

@@ -2792,7 +2792,7 @@ Link to another note with [[its first few words]]."></textarea>
           <input id="chat-sidebar-search" type="search" class="search-field-input" autocomplete="off"
             placeholder="Search chats" aria-label="Search your saved chats" aria-controls="conversation-list">
         </div>
-        <p id="conv-empty" class="muted empty-line">No saved chats yet. Ask something to start one.</p>
+        <div id="conv-empty" class="empty-state hidden"></div>
         <ul id="conversation-list"></ul>
         <button id="conv-browse-all" class="ghost small conv-browse-all" type="button"
           title="Search and sort everything you have ever asked"><i class="ph ph-books ph-lead" aria-hidden="true"></i> All in Library <i class="ph ph-arrow-right ph-trail" aria-hidden="true"></i></button>
@@ -6124,8 +6124,7 @@ Link to another note with [[its first few words]]."></textarea>
       <div id="reminders-empty" class="empty-state hidden">
         <span class="empty-icon" aria-hidden="true"><i class="ph ph-alarm ph-lead" aria-hidden="true"></i></span>
         <p class="empty-title">No reminders yet</p>
-        <p class="muted">Add one here, or hit Remind on any note.</p>
-        <button class="ghost small" type="button" data-empty-action="reminder"><i class="ph ph-plus ph-lead" aria-hidden="true"></i> Add a reminder</button>
+        <p class="muted">Add one above, or hit Remind on any note.</p>
       </div>
     </section>
   </div>
@@ -6727,10 +6726,9 @@ Link to another note with [[its first few words]]."></textarea>
           <p class="empty-title">No boards yet</p>
           <p>A board is a canvas for notes, sketches and images; a mind map is a tree of topics. Each starts blank or from a template.</p>
           <!-- The owner, 2026-10-10: "also si there meant to be a default
-               board??" No (WHITEBOARD_PLAN decision 38): a fresh install has
-               this, and both kinds are one press from it. -->
+               board??" No (WHITEBOARD_PLAN decision 38): a fresh install has this. The dock's New makes a board,
+               so the one button here is the other kind. -->
           <span class="row wb-empty-actions">
-            <button class="ghost small" type="button" data-empty-action="new-board"><i class="ph ph-squares-four ph-lead" aria-hidden="true"></i> New board</button>
             <button class="ghost small" type="button" id="library-boards-new-map"><i class="ph ph-tree-structure ph-lead" aria-hidden="true"></i> New mind map</button>
           </span>
         </div>
