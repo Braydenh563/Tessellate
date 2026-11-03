@@ -3167,7 +3167,7 @@ MORE_TOPICS.extend([
             "Insert (or / then diagram) opens the builder and Done writes the diagram there as a "
             "code block. Over a board or a mind map, Insert, Diagram builder adds a diagram object "
             "to double-click later. Anywhere else, and in the Library's Create, New, Diagram, it "
-            "starts a new diagram file that opens in Blocks. Cancel changes nothing."
+            "opens the builder, and Done saves it as a new diagram file. Cancel changes nothing."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },

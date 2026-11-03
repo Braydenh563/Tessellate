@@ -478,15 +478,28 @@
   //: features, Quick access, both "/" menus, Chat, the Library's Create, the board's Insert) ends here, through the `diagram`
   //: row of `POPUP_TOOLS`. Over a board or a mind map it is the board's own `wbEditDiagram` (a diagram object lands on Done);
   //: over a text box it opens the builder on the starter and writes the fence at the caret on Done; anywhere else (or `doc`) it
-  //: starts a .mmd document, which opens in Blocks. Cancel changes nothing; Done keeps what the dialog shows.
+  //: opens the builder and saves a new .mmd document on Done. Cancel changes nothing; Done keeps what the dialog shows.
   async function diagramDoor({ target = null, doc = false } = {}) {
     const onBoard = !doc && wbCommandsLive() && (!target || Boolean(target.closest?.("#library-view-whiteboard")));
     if (onBoard) return wbEditDiagram();
     //: The text box as a surface (the adapter `editorBlock` writes through), whether it was handed a surface, a textarea or an editable inside one.
     const box = !doc && target && target.isConnected !== false && (target.id === "question" || target.id in EDITOR_SURFACES || editorSurfaceKind(target)) ? editorSurfaceFor(target) : null;
+    //: **Anywhere else, the builder itself, then a .mmd document on Done** (the owner: "searching up and clicking
+    //: the diagram builder in the find anything search took me to the documents editor and did nothing else, it
+    //: didnt even show the panel"). A blank .mmd page is made by its first keystroke, so the door used to show
+    //: the last document and no builder. Cancel makes nothing.
     if (!box) {
-      switchTab("documents");
-      return libraryNewDocument("mmd");
+      return openDiagramBuilder({
+        source: diagramModel.starter,
+        title: "Diagram builder",
+        onDone: async (next) => {
+          const made = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title: "Diagram", content: next, file_type: "mmd" }) }).catch(() => null);
+          if (!made) return;
+          switchTab("documents");
+          await loadDocuments(made.id);
+          offerCreateUndo(made);
+        },
+      });
     }
     return openDiagramBuilder({
       source: diagramModel.starter,
