@@ -5530,6 +5530,10 @@ document.addEventListener("scroll", (event) => {
 for (const type of ["pointerdown", "pointerup", "keydown", "transitionrun", "animationstart", "transitionend", "transitioncancel", "animationend"]) {
   document.addEventListener(type, (event) => {
     const el = nmb.glue?.el;
+    //: **A transition names what it changes** (INBOX 1591, the Focus timer's ring: a `stroke-dashoffset`
+    //: transition every second kept the loop up for ever, and each look settled the page's style, 157
+    //: forced settles in 30s at 4x CPU): one that places no box announces nothing.
+    if (type.startsWith("transition") && event.propertyName && !NMB_PLACES.test(event.propertyName)) return;
     if (!el || event.target?.closest?.("#nm-buddy")) return;
     //: Not the companion's own (its drawing starts animations all day): only a page's can move its panel.
     if (type === "transitionrun" || type === "animationstart") nmbFollow.animAt = performance.now();
