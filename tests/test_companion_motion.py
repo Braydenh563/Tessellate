@@ -880,7 +880,9 @@ def test_its_gaze_has_one_reach_for_every_kind_and_drifts_back() -> None:
     assert "const reach = size;" in notice and "if (dist > 220 * reach && !loud) {" in notice
     assert "Math.max(0.7, nmb.scale || 1)];" in _fn("nameMarkBuddyHeadAt")
     release = _fn("nameMarkBuddyRelease")
-    assert 'buddy.style.setProperty("--nmb-ex", "0");' in release
+    # The look is written on the four kinds of element that read it, not on #nm-buddy (the three
+    # properties do not inherit now: one inherited write was 113 ms at 4x CPU, INBOX 1560).
+    assert 'nameMarkBuddyAim.set(buddy, "--nmb-ex", "0");' in release
     assert "#nm-buddy .name-mark .nm-eyes { transition: translate calc(var(--motion-slow) * 3) var(--ease-in-out); }" in CSS08
 
 

@@ -93,7 +93,7 @@ res.woken = take();
 // An animation on the arm (a gesture's) keeps it reading every frame.
 probeAnims = [{}];
 ctx.__wake(box);
-run(30);
+run(60);
 res.anim = take();
 probeAnims = [];
 run(60);
@@ -106,7 +106,8 @@ process.stdout.write(JSON.stringify(res));
     assert out["walk"]["cs"] <= 3 * 20, f"60 walking frames read style {out['walk']['cs']} times; it reads only until the arms hold still"
     assert out["walk"]["cs"] >= 3, "it reads at least once after a wake"
     assert out["woken"]["cs"] >= 3, "a wake reads the arms again"
-    assert out["anim"]["cs"] >= 3 * 30, "while an animation runs on the arm it reads every frame"
+    # The corner companion's rig draws at 30 a second (every other 60 Hz frame), so 60 frames are 30 drawn ones.
+    assert out["anim"]["cs"] >= 3 * 30, "while an animation runs on the arm it reads every drawn frame"
     assert out["after"]["cs"] <= 3 * 20, "and stops once the animation is over and the arm holds"
 
 

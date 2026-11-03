@@ -3264,7 +3264,7 @@ function atlasDressMarks(root = document) {
 //: a figure has no tail to wake before then, so this stays at boot).
 function atlasTailWake(box) {
   const tail = box?.atlasTail;
-  if (tail && !tail.raf) tail.raf = requestAnimationFrame((now) => atlasTailFrame(tail, now));
+  if (tail && !tail.raf) tail.raf = atlasRigWake.after((now) => atlasTailFrame(tail, now), 2);
 }
 
 

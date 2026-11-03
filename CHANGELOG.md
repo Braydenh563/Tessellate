@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Lag (INBOX 1560, the owner's Windows logs, reproduced at 4x CPU): a tab click no longer settles the arriving page inside the click (the tab buttons update before the pages flip: `BUTTON.onclick` forced layout 1704 to 3275 ms in seven clicks, to none), the pacer's periodic animation look waits for an idle moment and holds while a page arrives, a wake reads a frame later, the corner companion's rig draws at 30 a second (`atlasRigFrame` juggling at 1x: 115 to 66 ms a second, 58 to 31 drawn frames), and the companion's look (`--nmb-ex/ey/hx`) is written on the four elements that read it, not inherited by 647 (113 ms to 0.6 ms a write).
 - The keypad recipe (`.key-grid`, the equation editor and the calculator) loads with those two surfaces, not at boot (key-grid-lazy.css), which brings boot CSS back under its cap after the 1103 merges; Diagram Suggest has its keyboard twin and corner.
 - CodeQL: the re-export blocks in ai/agent.py, ai/composer.py and api/routes_chat.py are gone; every reader imports the name from the module that defines it (24 unused-import alerts on main), and a test file imports pathlib once.
 - Get started ticks Ask your notebook after an answer even when the history badge had read 0 before the answer was kept (E2E first-run, CI 2026-11-03).

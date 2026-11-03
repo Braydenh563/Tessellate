@@ -5184,9 +5184,6 @@ body .chip.item-label,
 #nm-buddy {
   --nmb-lean: 0;
   --nmb-edge: 72px;
-  --nmb-ex: 0;
-  --nmb-ey: 0;
-  --nmb-hx: 0;
   --nmb-tilt: 0;
   --nmb-scale: 1;
   position: absolute;
@@ -6031,6 +6028,14 @@ body .chip.item-label,
 @property --nmb-tilt { syntax: "<number>"; inherits: false; initial-value: 0; }
 @property --nmb-lean { syntax: "<number>"; inherits: false; initial-value: 0; }
 #nm-buddy :is(.nm-buddy-face, .nm-buddy-char) { --nmb-tilt: inherit; --nmb-lean: inherit; }
+/* **The look does not inherit either** (the lag log: `input 384ms pointerout on div.modal-overlay.nm-viewer`):
+   `--nmb-ex`, `--nmb-ey` and `--nmb-hx` were inherited, so one write on `#nm-buddy` restyled all 647
+   descendants (113ms at 4x CPU) for the four elements that read them: the faces' `.nm-eyes` and
+   `.nm-buddy-head`, Atlas's `.atl-layer-lids` and `.atl-iris`. avatars.js `nameMarkBuddyAim.set`
+   writes them on those (0.6ms). A new reader is added to `nameMarkBuddyAim.readers` there. */
+@property --nmb-ex { syntax: "<number>"; inherits: false; initial-value: 0; }
+@property --nmb-ey { syntax: "<number>"; inherits: false; initial-value: 0; }
+@property --nmb-hx { syntax: "<number>"; inherits: false; initial-value: 0; }
 #nm-buddy.nmb-duck .nm-buddy-char { transform: translateY(10px); }
 /* Tucked behind the bottom bar (the last resort in a small window): only
    its eyes over the edge, ducking out of sight when the pointer is near. */
