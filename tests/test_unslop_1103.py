@@ -253,3 +253,17 @@ def test_20_an_empty_notebooks_dashboard_keeps_the_one_widget_that_needs_no_note
     assert "const bare = entriesEverLoaded && !allEntries.length && !dashEditMode;" in body
     assert 'if (bare && name !== "capture") continue;' in body
     assert "window.dashSettled = Promise.resolve();" not in body, "the early return that left the grid empty is gone"
+
+
+def test_23_the_timeline_date_drops_this_years_year_and_the_column_follows():
+    """390: 11 of 94 titles ended in an ellipsis, with 128px of Date column spent on "Dec 14, 2026"."""
+    js = _js("timeline.js")
+    assert "TIMELINE_ROW_FULL_DATE.thisYear = new Intl.DateTimeFormat(undefined, { day: \"numeric\", month: \"short\" })" in js
+    start = js.index("function timelineTableRow(")
+    body = js[start : js.index("\n}\n", start)]
+    assert "TIMELINE_ROW_FULL_DATE.thisYear : TIMELINE_ROW_FULL_DATE).format(row.when)" in body
+    assert "TIMELINE_ROW_FULL_DATE.format(row.when)}. Written" in body, "the hover keeps the whole date"
+    assert 'classList.toggle("timeline-this-year"' in js
+    css = _css("06-timeline-dialogs.css")
+    assert "width: 5rem" in _body(css, ".timeline-table.timeline-this-year th:nth-child(2)")
+    assert "width: 6.5rem" in _body(css, ".timeline-table th:nth-child(2)")

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Unslop 23: the Timeline's Date column drops the year for this year's rows and narrows, so a phone shows 6 of 94 titles cut short instead of 11 (title column 202 to 250px); the hover keeps the whole date.
 - Unslop 19 and 20: an empty Graph no longer paints a legend and zoom strip with nothing to key or zoom, and an empty Dashboard keeps Quick capture instead of 349px of void.
 - Chats: an empty sidebar is the empty-state recipe (icon, 'No saved chats yet', one sentence, New chat) instead of a grey 13.6px line (unslop 1103, 17).
 - Empty states do not repeat their own action (unslop 1103, 18): with nothing in them the dock's Create (Library, Everything), Upload (Images) and Add bookmark step aside for the empty state's own button, Boards' empty state keeps only New mind map (the dock's New makes a board), and Reminders' empty state points at the form above instead of repeating it.
