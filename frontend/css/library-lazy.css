@@ -8264,3 +8264,11 @@ input[type="color"].wb-mixed {
   -webkit-line-clamp: 2;
   line-clamp: 2;
 }
+
+/* **The template offer's close button is 32px, 44px under touch** (U26: 28px).
+   The tiles beside it already scroll with an end fade (`edge-fade`), so a
+   tile cut at the right edge is the scroll cue, not a clip. */
+#wb-map-templates-dismiss {
+  min-width: max(var(--button-min-h), var(--target-min));
+  min-height: max(var(--button-min-h), var(--target-min));
+}
