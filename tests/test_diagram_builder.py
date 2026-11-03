@@ -274,3 +274,18 @@ def test_the_document_shows_blocks_for_a_diagram_and_hands_its_edits_to_the_hist
     # Before the preview is emptied: the pane keeps its own DOM between changes.
     assert preview.index('docFileType().ext === "mmd"') < preview.index("preview.replaceChildren()")
     assert "function docDiagramPane" not in docs, "a named function is a new global name"
+
+
+def test_a_diagram_over_the_block_limit_stays_in_source_with_one_line_saying_so():
+    # P1 left this to the pane (D3 and the 120-node cap): the picture is drawn, the blocks are not.
+    code = BUILDER.read_text(encoding="utf-8")
+    sync = code[code.index("function sync(host, text") :]
+    sync = sync[: sync.index("\n  }\n")]
+    assert "read.nodes.length > DGB_MAX" in sync and "more than ${DGB_MAX} blocks" in sync
+    assert 'classList.toggle("dgm-plain", !parsed)' in sync
+    # And the picture is still drawn for it: only a flowchart with no block yet is "empty".
+    assert "S.plain = !parsed" in sync
+    draw = code[code.index("function drawPicture(S)") :]
+    draw = draw[: draw.index("\n  }\n")]
+    assert "!S.plain && S.m && !S.m.nodes.length" in draw
+

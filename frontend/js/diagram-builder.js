@@ -333,7 +333,8 @@
     S.drawTimer = setTimeout(() => {
       const source = S.source;
       const stamp = ++S.drawn;
-      const empty = !source.trim() || (S.m && !S.m.nodes.length);
+      //: A kind the blocks cannot read (S.plain) still has its picture; only a flowchart with no block yet is empty.
+      const empty = !source.trim() || (!S.plain && S.m && !S.m.nodes.length);
       S.fig.classList.toggle("dgm-picture-empty", empty);
       if (empty) return S.fig.replaceChildren(el("p", "muted dgm-hint", "The picture appears here as you add blocks."));
       ensureModule("mermaid").then((ok) => {
@@ -913,11 +914,15 @@
   function sync(host, text, S = panes.get(host.querySelector(".dgm"))) {
     if (!S) return null;
     S.source = text;
-    const parsed = diagramModel.parse(text);
+    //: More blocks than the pane holds (`DGB_MAX`) is the same answer as another kind: the picture and a line.
+    const read = diagramModel.parse(text);
+    const big = Boolean(read && read.nodes.length > DGB_MAX);
+    const parsed = big ? null : read;
     S.tidy = Boolean(parsed && text.trim() && diagramModel.print(parsed) !== text);
+    S.plain = !parsed;
     S.root.classList.toggle("dgm-plain", !parsed);
     S.note.classList.toggle("hidden", Boolean(parsed));
-    S.note.textContent = parsed ? "" : "Blocks draw flowcharts for now. This diagram stays in Source, and its picture is drawn here.";
+    S.note.textContent = parsed ? "" : big ? `This diagram has more than ${DGB_MAX} blocks. It stays in Source, and its picture is drawn here.` : "Blocks draw flowcharts for now. This diagram stays in Source, and its picture is drawn here.";
     S.m = parsed || { kind: "flowchart", dir: "TD", nodes: [], edges: [], subgraphs: [], kept: [], front: [] };
     S.root.querySelector(".dgm-dock").classList.toggle("hidden", !parsed);
     S.pane.classList.toggle("hidden", !parsed);
