@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Diagrams: the block editor opens wherever Mermaid draws (a Live figure's Edit as blocks, a board diagram's double-click, a reply's Open as a diagram) with Save as SVG, Save as PNG, Copy as Mermaid and Copy as SVG; on a phone the shapes are an Add sheet and the picture pinches, pans and fits on a double tap; a drag scrolls the pane and the page around it; a press on the picture selects its block again (it never did on Mermaid 12); state, class, pie, gantt, journey, ER and C4 diagrams, and any over 120 blocks, open in Source with their picture and a line why (on a phone the picture is there: the preview had been 32 px wide).
 - Windows splash: the taskbar shows Tessellate, not PowerShell (the splash takes the app's AppUserModelID before its window opens), and the logo tile has the mark's three stops, so it is no longer pinker than every other copy (INBOX 1574).
 - CodeQL: the diagram reply's fence and the note-slot reply's filler and tail are scanned, not matched by polynomial regexes; `_turn_label` moved to chat_extra, which ends an import cycle.
 - The keypad recipe (`.key-grid`, the equation editor and the calculator) loads with those two surfaces, not at boot (key-grid-lazy.css), which brings boot CSS back under its cap after the 1103 merges; Diagram Suggest has its keyboard twin and corner.
