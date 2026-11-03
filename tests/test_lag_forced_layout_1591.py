@@ -57,3 +57,14 @@ def test_the_loading_outline_is_placed_in_a_frame_not_in_the_notes_cascade() -> 
     assert "}, 1);" in body[place : place + 200]
     assert 'grid.classList.contains("dash-filling")' in body[place - 200 : place], "and it is not placed once the grid has settled"
     assert body.index("let outline = null;") < place < body.index("dashFillingSkeletonDone(outline)")
+
+
+def test_the_outline_reads_the_grid_once_before_it_appends_anything() -> None:
+    # Measured at 4x CPU (1,200 notes): `grid.offsetTop` after `host.appendChild(outline)` laid the page out a
+    # second time, 86ms, beside the 173ms of the first read. The outline is absolute, so the grid's offset is
+    # the same before the append: one read, used for the placement and for the follow's origin.
+    body = _body(DASH, "function dashFillingSkeleton(")
+    assert body.count("= grid.offsetTop;") == 1
+    assert body.index("= grid.offsetTop;") < body.index("host.appendChild(outline)")
+    assert "grid.offsetTop - top0" in body
+

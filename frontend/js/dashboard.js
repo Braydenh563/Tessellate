@@ -821,7 +821,7 @@ let dashResizeObserver = null;
 //: 18 to 36px apart where side-by-side ones sit 16 (33, 18.2, 28.1, 33.2 ...
 //: measured). The gap between stacked cards is now the card gap, added to the
 //: height before it is rounded up to a whole pixel: 16 to 17px, always.
-function sizeDashWidgetSpan(card, height, rowUnit, rowGap, cardGap) {
+function sizeDashWidgetSpan(height, rowUnit, rowGap, cardGap) {
   return `span ${Math.max(1, Math.ceil((height + cardGap + rowGap) / (rowUnit + rowGap)))}`;
 }
 
@@ -845,7 +845,7 @@ function sizeDashWidgets() {
   const heights = cards.map((card) => card.getBoundingClientRect().height);
   for (const heat of grid.querySelectorAll(".heatmap")) heat.dispatchEvent(new Event("dash-refit"));
   cards.forEach((card, i) => {
-    card.style.gridRowEnd = sizeDashWidgetSpan(card, heights[i], rowUnit, rowGap, cardGap);
+    card.style.gridRowEnd = sizeDashWidgetSpan(heights[i], rowUnit, rowGap, cardGap);
   });
   grid.classList.add("spans-ready");
 }
@@ -1979,10 +1979,14 @@ function dashFillingSkeleton(grid, count) {
   outline.className = "dash-grid-skeleton";
   outline.setAttribute("aria-hidden", "true");
   const columns = Math.max(1, cs.gridTemplateColumns.split(" ").length);
+  //: Every read before the first write: the append below dirties the layout, and `grid.offsetTop` read after it
+  //: laid the page out a second time (86ms at 4x CPU on 1,200 notes, INBOX 1591). The outline is absolute, so
+  //: the grid does not move for it.
+  const top0 = grid.offsetTop;
   Object.assign(outline.style, {
     position: "absolute",
     left: `${grid.offsetLeft}px`,
-    top: `${grid.offsetTop}px`,
+    top: `${top0}px`,
     width: `${grid.offsetWidth}px`,
     maxHeight: `${Math.max(0, innerHeight - grid.getBoundingClientRect().top)}px`,
     overflow: "hidden",
@@ -2000,7 +2004,6 @@ function dashFillingSkeleton(grid, count) {
   //: 2026-10-12). Cheap: two reads and two writes a frame for a second.
   //: By `translate`, which the compositor moves without a layout: writing
   //: `top` here counted as 0.077 of layout shift at boot.
-  const top0 = grid.offsetTop;
   //: Read after a paint (INBOX 1419): in a timer it landed while the widgets
   //: filling in had left the layout dirty, and each read laid the page out.
   const follow = () => {
