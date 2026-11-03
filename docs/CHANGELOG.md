@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Desktop companion (INBOX 1620, 1611): its window is a tool window (no taskbar button) shown topmost without taking focus, put back above the desktop layer on every show and onto a monitor that is there (a place saved on an unplugged screen returns to the primary); the companion's own menu has Show on desktop / Hide from desktop in the desktop app; Guide updated. The installers already make no desktop shortcut unless asked, now pinned by a test.
 - Extract notes with no model uses the composer's pieces (INBOX 1618): a heading that became the title leaves the note's body, one long paragraph is cut at its subject changes into short notes (own titles, each filed and tagged on its own words, at most four), no link runs from a note to its own source text, and sibling links read "Same text, next part".
 - Diagram builder: opened from Find anything, the palette or anywhere without a text box, it shows the builder at once and Done saves a new .mmd document (it used to start a blank page made only by a keystroke, so nothing appeared).
 - Quick sketch: Fill only drew an empty button (it asked for `square-fill`, not in the icon subset); it is a drawn filled square now, and the icon-name lint reads `iconButton(name)` calls too.

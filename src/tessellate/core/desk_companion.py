@@ -112,7 +112,57 @@ def work_area() -> tuple[int, int, int, int] | None:
         return None
 
 
-def _screen_area(webview: Any) -> tuple[int, int, int, int]:
+def monitor_areas() -> list[tuple[int, int, int, int]]:
+    """Every connected monitor's work area (left, top, right, bottom), primary
+    first; empty where it cannot be asked (every platform but Windows)."""
+    if sys.platform != "win32":
+        return []
+    try:
+        import ctypes
+        import ctypes.wintypes as wt
+
+        class _MonitorInfo(ctypes.Structure):
+            _fields_ = [("cbSize", wt.DWORD), ("rcMonitor", wt.RECT), ("rcWork", wt.RECT), ("dwFlags", wt.DWORD)]
+
+        found: list[tuple[int, int, int, int]] = []
+        user32 = ctypes.windll.user32
+        callback_type = ctypes.WINFUNCTYPE(ctypes.c_int, wt.HANDLE, wt.HDC, ctypes.POINTER(wt.RECT), wt.LPARAM)
+
+        def _each(monitor: Any, _dc: Any, _rect: Any, _data: Any) -> int:
+            info = _MonitorInfo()
+            info.cbSize = ctypes.sizeof(_MonitorInfo)
+            if user32.GetMonitorInfoW(monitor, ctypes.byref(info)):
+                work = info.rcWork
+                area = (work.left, work.top, work.right, work.bottom)
+                # MONITORINFOF_PRIMARY (1) goes first.
+                found.insert(0, area) if info.dwFlags & 1 else found.append(area)
+            return 1
+
+        user32.EnumDisplayMonitors(None, None, callback_type(_each), 0)
+        return found
+    except Exception:  # noqa: BLE001
+        logger.debug("could not list the monitors", exc_info=True)
+        return []
+
+
+def pick_area(
+    corner: tuple[int, int], areas: list[tuple[int, int, int, int]]
+) -> tuple[int, int, int, int] | None:
+    """The work area a bottom-right `corner` belongs to: the one that holds it
+    (its right and bottom edges count), else the primary (first), so a place saved
+    on a monitor that has been unplugged comes back onto one that is there."""
+    for left, top, right, bottom in areas:
+        if left < corner[0] <= right and top < corner[1] <= bottom:
+            return left, top, right, bottom
+    return areas[0] if areas else None
+
+
+def _screen_area(webview: Any, corner: tuple[int, int] | None = None) -> tuple[int, int, int, int]:
+    areas = monitor_areas()
+    if areas:
+        picked = pick_area(corner, areas) if corner is not None else areas[0]
+        if picked:
+            return picked
     area = work_area()
     if area:
         return area
@@ -130,6 +180,71 @@ def clamp_corner(corner: tuple[int, int], size: tuple[int, int], area: tuple[int
     x = min(max(int(corner[0]), left + size[0]), right)
     y = min(max(int(corner[1]), top + size[1]), bottom)
     return x, y
+
+
+#: Win32 extended window styles. A tool window has no taskbar button and no
+#: Alt+Tab entry; no-activate means showing it never steals the keyboard from
+#: what the person is typing in. APPWINDOW would force a taskbar button back.
+WS_EX_TOOLWINDOW = 0x00000080
+WS_EX_NOACTIVATE = 0x08000000
+WS_EX_APPWINDOW = 0x00040000
+
+
+def companion_ex_style(style: int) -> int:
+    """`style` (a window's extended style) as the companion needs it: a tool
+    window that does not take focus, never an app window."""
+    return (int(style) | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE) & ~WS_EX_APPWINDOW
+
+
+#: SetWindowPos: HWND_TOPMOST, and the flags that move nothing, resize nothing,
+#: take no focus and show the window.
+HWND_TOPMOST = -1
+SWP_FLAGS = 0x0001 | 0x0002 | 0x0010 | 0x0040  # NOSIZE | NOMOVE | NOACTIVATE | SHOWWINDOW
+SW_SHOWNOACTIVATE = 4
+
+
+def window_handle(window: Any) -> int | None:
+    """The native handle of a pywebview window on Windows (its WinForms form), or None."""
+    try:
+        return int(window.native.Handle.ToInt64())
+    except Exception:  # noqa: BLE001 - not WinForms, or not built yet
+        return None
+
+
+def raise_on_desktop(window: Any) -> bool:
+    """Windows only: make the shown window a tool window (no taskbar button),
+    topmost and not minimised, and put it back above the other topmost windows.
+
+    Why a window can be invisible although the taskbar's thumbnail shows it:
+    Wallpaper Engine and similar tools parent their wallpaper under the desktop's
+    WorkerW layer, and a window that is minimised, off every monitor, or not
+    topmost when the wallpaper window is re-stacked can end up behind it. Called
+    after every show, so the order is reasserted each time it is due."""
+    if sys.platform != "win32":
+        return False
+    handle = window_handle(window)
+    if not handle:
+        return False
+    try:
+        import ctypes
+
+        try:
+            window.native.ShowInTaskbar = False  # WinForms: no taskbar button
+        except Exception:  # noqa: BLE001
+            logger.debug("could not clear ShowInTaskbar", exc_info=True)
+        user32 = ctypes.windll.user32
+        get_style, set_style = user32.GetWindowLongPtrW, user32.SetWindowLongPtrW
+        get_style.restype = set_style.restype = ctypes.c_ssize_t
+        gwl_exstyle = -20
+        set_style(handle, gwl_exstyle, companion_ex_style(get_style(handle, gwl_exstyle)))
+        if user32.IsIconic(handle):
+            user32.ShowWindow(handle, 9)  # SW_RESTORE
+        user32.ShowWindow(handle, SW_SHOWNOACTIVATE)
+        user32.SetWindowPos(handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_FLAGS)
+        return True
+    except Exception:  # noqa: BLE001
+        logger.debug("could not raise the companion window", exc_info=True)
+        return False
 
 
 def clean_size(width: Any, height: Any) -> tuple[int, int]:
@@ -233,10 +348,13 @@ class DeskCompanion:
 
     def _home(self) -> tuple[int, int]:
         """The saved corner, held inside the screen, else bottom-right above the taskbar."""
-        area = _screen_area(self.webview)
         saved = _pref(POS_PREF, None)
         if isinstance(saved, (list, tuple)) and len(saved) == 2 and all(isinstance(v, int) for v in saved):
+            # The monitor the corner is on, else the primary: a place saved on a
+            # screen that is gone must not leave the window where no one can see it.
+            area = _screen_area(self.webview, (saved[0], saved[1]))
             return clamp_corner((saved[0], saved[1]), REST_SIZE, area)
+        area = _screen_area(self.webview)
         return area[2] - MARGIN, area[3] - MARGIN
 
     def top_left(self) -> tuple[int, int]:
@@ -248,7 +366,8 @@ class DeskCompanion:
         left of the companion rather than off the screen's edge."""
         with _lock:
             self.size = (width, height)
-            self.corner = clamp_corner(self.corner or self._home(), self.size, _screen_area(self.webview))
+            corner = self.corner or self._home()
+            self.corner = clamp_corner(corner, self.size, _screen_area(self.webview, corner))
             if self.window is not None:
                 self.window.resize(width, height)
                 self.window.move(*self.top_left())
@@ -258,8 +377,8 @@ class DeskCompanion:
         with _lock:
             if self.window is None:
                 return False
-            area = _screen_area(self.webview)
-            self.corner = clamp_corner((x + self.size[0], y + self.size[1]), self.size, area)
+            corner = (x + self.size[0], y + self.size[1])
+            self.corner = clamp_corner(corner, self.size, _screen_area(self.webview, corner))
             self.window.move(*self.top_left())
             return True
 
@@ -292,13 +411,16 @@ class DeskCompanion:
             "transparent": self.transparent,
             "hidden": True,
             "js_api": DeskApi(self),
+            # Does not take focus when shown; the taskbar button is removed in
+            # `raise_on_desktop` (pywebview has no option for it).
+            "focus": False,
         }
         try:
             return self.webview.create_window("Tessellate companion", **options)
         except TypeError:
             # An older pywebview without one of the newer options: a plainer
             # window beats none.
-            for name in ("hidden", "easy_drag", "transparent"):
+            for name in ("hidden", "easy_drag", "transparent", "focus"):
                 options.pop(name, None)
             return self.webview.create_window("Tessellate companion", **options)
 
@@ -313,6 +435,15 @@ class DeskCompanion:
                     return
                 (self.window.show if due else self.window.hide)()
                 self.shown = due
+                if due:
+                    # Back onto a monitor that is there (one may have gone while it
+                    # was hidden), then a tool window above the desktop layer.
+                    corner = self.corner or self._home()
+                    fixed = clamp_corner(corner, self.size, _screen_area(self.webview, corner))
+                    if fixed != self.corner:
+                        self.corner = fixed
+                        self.window.move(*self.top_left())
+                    raise_on_desktop(self.window)
             except Exception:  # noqa: BLE001 - a companion that fails never takes the app with it
                 logger.warning("the desktop companion window failed", exc_info=True)
 

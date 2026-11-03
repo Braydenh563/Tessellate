@@ -2,7 +2,7 @@
 
 Generated 2026-11-03 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7746, frontend ids 2636, CSS sections 522, backend routes 641, backend modules 8589, test files 1980, tests 16597, plan headings 991, app scripts 28, boot scripts 37, script files 245.
+Counts: frontend functions 7746, frontend ids 2636, CSS sections 522, backend routes 641, backend modules 8594, test files 1980, tests 16606, plan headings 992, app scripts 28, boot scripts 37, script files 245.
 
 ## Frontend functions (7746)
 
@@ -2885,25 +2885,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `companionPathAt` | frontend/js/companion-menu.js:936 |
-| `companionPathEase` | frontend/js/companion-menu.js:928 |
-| `companionPathKind` | frontend/js/companion-menu.js:952 |
-| `companionPathPeak` | frontend/js/companion-menu.js:959 |
-| `companionPathPlan` | frontend/js/companion-menu.js:969 |
-| `mountBuddyPresets` | frontend/js/companion-menu.js:587 |
-| `nameMarkBuddyApplyPreset` | frontend/js/companion-menu.js:567 |
-| `nameMarkBuddyHome` | frontend/js/companion-menu.js:880 |
-| `nameMarkBuddyKeepPresets` | frontend/js/companion-menu.js:536 |
+| `companionPathAt` | frontend/js/companion-menu.js:953 |
+| `companionPathEase` | frontend/js/companion-menu.js:945 |
+| `companionPathKind` | frontend/js/companion-menu.js:969 |
+| `companionPathPeak` | frontend/js/companion-menu.js:976 |
+| `companionPathPlan` | frontend/js/companion-menu.js:986 |
+| `mountBuddyPresets` | frontend/js/companion-menu.js:604 |
+| `nameMarkBuddyApplyPreset` | frontend/js/companion-menu.js:584 |
+| `nameMarkBuddyHome` | frontend/js/companion-menu.js:897 |
+| `nameMarkBuddyKeepPresets` | frontend/js/companion-menu.js:553 |
 | `nameMarkBuddyMenu` | frontend/js/companion-menu.js:211 |
-| `nameMarkBuddyPresets` | frontend/js/companion-menu.js:528 |
-| `nameMarkBuddySavePreset` | frontend/js/companion-menu.js:544 |
-| `nameMarkBuddyVisit` | frontend/js/companion-menu.js:810 |
+| `nameMarkBuddyPresets` | frontend/js/companion-menu.js:545 |
+| `nameMarkBuddySavePreset` | frontend/js/companion-menu.js:561 |
+| `nameMarkBuddyVisit` | frontend/js/companion-menu.js:827 |
 | `nameMarkViewerActs` | frontend/js/companion-menu.js:177 |
-| `nameMarkViewerBlinks` | frontend/js/companion-menu.js:506 |
-| `nameMarkViewerFace` | frontend/js/companion-menu.js:487 |
-| `nameMarkViewerFit` | frontend/js/companion-menu.js:399 |
-| `nameMarkViewerFollow` | frontend/js/companion-menu.js:441 |
-| `nameMarkViewerNear` | frontend/js/companion-menu.js:482 |
+| `nameMarkViewerBlinks` | frontend/js/companion-menu.js:523 |
+| `nameMarkViewerFace` | frontend/js/companion-menu.js:504 |
+| `nameMarkViewerFit` | frontend/js/companion-menu.js:416 |
+| `nameMarkViewerFollow` | frontend/js/companion-menu.js:458 |
+| `nameMarkViewerNear` | frontend/js/companion-menu.js:499 |
 | `openNameMarkViewer` | frontend/js/companion-menu.js:34 |
 
 ### frontend/js/companion-remark.js (1)
@@ -12867,7 +12867,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8589)
+## Backend modules (8594)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -15643,8 +15643,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3322 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3450 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3326 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3454 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -21041,24 +21041,29 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `reset_app_state` | src/tessellate/core/deps.py:267 |
 | `store_quietly` | src/tessellate/core/deps.py:587 |
 
-### src/tessellate/core/desk_companion.py (15)
+### src/tessellate/core/desk_companion.py (20)
 
 | Name | File:line |
 |---|---|
-| `DeskApi` | src/tessellate/core/desk_companion.py:170 |
-| `DeskCompanion` | src/tessellate/core/desk_companion.py:203 |
+| `DeskApi` | src/tessellate/core/desk_companion.py:285 |
+| `DeskCompanion` | src/tessellate/core/desk_companion.py:318 |
 | `_config` | src/tessellate/core/desk_companion.py:64 |
-| `_follow` | src/tessellate/core/desk_companion.py:376 |
+| `_follow` | src/tessellate/core/desk_companion.py:507 |
 | `_pref` | src/tessellate/core/desk_companion.py:77 |
-| `_screen_area` | src/tessellate/core/desk_companion.py:115 |
+| `_screen_area` | src/tessellate/core/desk_companion.py:160 |
 | `_set_pref` | src/tessellate/core/desk_companion.py:89 |
-| `attach` | src/tessellate/core/desk_companion.py:351 |
-| `clamp_corner` | src/tessellate/core/desk_companion.py:126 |
-| `clean_size` | src/tessellate/core/desk_companion.py:135 |
+| `attach` | src/tessellate/core/desk_companion.py:482 |
+| `clamp_corner` | src/tessellate/core/desk_companion.py:176 |
+| `clean_size` | src/tessellate/core/desk_companion.py:250 |
+| `companion_ex_style` | src/tessellate/core/desk_companion.py:193 |
 | `enabled` | src/tessellate/core/desk_companion.py:85 |
-| `hit_script` | src/tessellate/core/desk_companion.py:147 |
-| `shutdown` | src/tessellate/core/desk_companion.py:393 |
-| `tray_menu_item` | src/tessellate/core/desk_companion.py:401 |
+| `hit_script` | src/tessellate/core/desk_companion.py:262 |
+| `monitor_areas` | src/tessellate/core/desk_companion.py:115 |
+| `pick_area` | src/tessellate/core/desk_companion.py:148 |
+| `raise_on_desktop` | src/tessellate/core/desk_companion.py:214 |
+| `shutdown` | src/tessellate/core/desk_companion.py:524 |
+| `tray_menu_item` | src/tessellate/core/desk_companion.py:532 |
+| `window_handle` | src/tessellate/core/desk_companion.py:206 |
 | `work_area` | src/tessellate/core/desk_companion.py:96 |
 
 ### src/tessellate/core/desktop_dialog.py (2)
@@ -23655,7 +23660,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16597)
+## Tests (16606)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24160,7 +24165,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_density_height.py | 4 |
 | tests/test_dependency_audit.py | 3 |
 | tests/test_derived_facts.py | 14 |
-| tests/test_desk_companion.py | 35 |
+| tests/test_desk_companion.py | 44 |
 | tests/test_desk_counts_63.py | 5 |
 | tests/test_desktop_fullscreen.py | 5 |
 | tests/test_desktop_launcher.py | 17 |
@@ -25642,7 +25647,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_zoom_frame_1508.py | 3 |
 | tests/test_zoom_wheel_delta.py | 3 |
 
-## Plan headings (991)
+## Plan headings (992)
 
 Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, except the HISTORY.md archive. Sorted by heading.
 
@@ -26344,7 +26349,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1305 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:161 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:166 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4188 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
@@ -26454,6 +26459,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-11-02 (the owner: the calculator, equations, insert panels and a diagram builder) | docs/roadmap/DOCUMENTS_PLAN.md:470 |
 | Placed from INBOX, 2026-11-03 | docs/roadmap/UI_MODERNISATION_PLAN.md:1557 |
 | Placed from INBOX, 2026-11-03 (chat; CHAT_PLAN is at its cap) | docs/roadmap/BACKLOG.md:4448 |
+| Placed from INBOX, 2026-11-03 (the composer's captions and quotes) | docs/roadmap/CHAT_PLAN.md:1893 |
 | Placed from INBOX, 2026-11-03b | docs/roadmap/BACKLOG.md:4458 |
 | Placed from INBOX, built (pointers) | docs/roadmap/UI_MODERNISATION_PLAN.md:1062 |
 | Placed from INBOX: 107d, the segmented mini bars | docs/roadmap/DOCUMENTS_PLAN.md:509 |
