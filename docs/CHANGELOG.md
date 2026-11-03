@@ -7,6 +7,17 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - A sheet re-measures the toasts each time its card changes size, so a lasting toast steps aside for Import once the preview has filled in (E2E import; CI probe found the measurement stale, not wrong).
+- Board: the keyboard shortcut sheet lists only the open surface's keys (23 rows on a map, 55 on a board) and names the surface on a key two surfaces share, M and Ctrl+Shift+S (audit 1028 B12).
+- Mind map: the template offer's close button is 32px with a mouse and 44px under touch, up from 28px (audit 1028 U26).
+- Board: the phone's tools sheet puts each tool's name under its icon, 18 tiles all 44px or more, and takes the names out again on close (audit 1028 U21).
+- Mind map: the text size stepper reads one scale: a root drawn at 22px read "22px" while its children read "M", now "L+" (a little over L) and the title keeps the pixels (audit 1028 U28).
+- Mind map: the Layout menu draws a glyph before each of its ten shapes (audit 1028 U27).
+- Mind map: the fold chevron and its count stand 3px outside the topic's edge (the chevron overlapped it by 13px at 1440x900); a downward tree hangs it under the topic's middle (audit 1028 U25).
+- Board and map: on a phone the top bar is one row again, 54px instead of 104px (390x844, board and map), so the board's name gets about 103px beside the menus instead of being cut; the Format panel button leaves the bar and stays in More (audit 1028 U22, U23 title).
+- Board: the sidebar's tabs are 32px with a mouse (they were 28px); touch keeps its 44px (audit 1028 U16).
+- Mind map: a new or navigated-to topic within 24px of the canvas edge is brought in to that margin (it stayed 5px from the right edge, counted as in view); measured 5px before, 24px after at 1440x900 (audit 1028 U24).
+- Board: the Delete tool sits 10px from Undo and Redo in the dock (it was 2px, measured at 1440x900), and the side dock's grid is unchanged (audit 1028 U14).
+- Board: the Insert menu shows the key that does the thing (Sticky note N, it said click; Image I and Connector Shift+C, which showed none), read from the same key table the board binds, so every item that has a key says it (audit 1028 U12).
 - Plans: the focus ring that was said to take the ground's colour on an active button does not reproduce (239 Tab stops across eight tabs: none under 2px or 3:1, minimum 3.56:1 light and 7.03:1 dark), so its plan row is closed with the numbers (a30b).
 - Plans: GRAPH phases 1, 2, 3 and 6 and UI_MODERNISATION Phase 7 items 1 to 5, already built and pointed at HISTORY.md, no longer keep their spec text in the plans (a30b); CODEMAP regenerated.
 - Timeline: the spine now runs through the centre of every kind mark (it sat 1px left of it, ignoring the row's border and its own width); the mark was already level with the title's first line (0px at 1440 and 390).

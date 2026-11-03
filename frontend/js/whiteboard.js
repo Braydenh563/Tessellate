@@ -16238,6 +16238,7 @@ async function initWhiteboard() {
   // shape menu are the ones that were already there, so a tool added to the
   // rail is in the sheet without anybody remembering to add it twice.
   let wbToolsSheetClose = null;
+  let wbToolsWords = [];
   const toolsOpener = document.getElementById("wb-tools-opener");
 
   function wbSyncToolsOpener() {
@@ -16264,6 +16265,32 @@ async function initWhiteboard() {
         body.className = "wb-tools-palette";
         body.appendChild(toolGroup);
         card.appendChild(body);
+        //: **A word under every icon** (audit 1028 U21: 31 icon-only tiles, and
+        //: a touch screen has no tooltip to ask). The word is the button's own
+        //: name without its key, so the accessible name still contains it (WCAG
+        //: 2.5.3), and it is taken out again on close: the rail above 600px is
+        //: icons by design.
+        for (const button of toolGroup.querySelectorAll("button[aria-label], button[title]")) {
+          if (button.textContent.trim()) continue;
+          const full = (button.getAttribute("aria-label") || button.title || "").replace(/\s*\(.*$/, "").replace(/ tool$/i, "").trim();
+          // A name too long for one line of a tile gets its short word; the short word is still inside the full name.
+          const short = {
+            "Upload an image onto the board": "Image",
+            "Emoji and icons": "Emoji",
+            "Lasso select": "Lasso",
+            "Sticky note": "Sticky",
+            "Straight link": "Straight",
+            "Curved link": "Curved",
+          };
+          const name = short[full] || full;
+          if (!name) continue;
+          const word = document.createElement("span");
+          word.className = "wb-tool-word";
+          word.textContent = name;
+          button.appendChild(word);
+          button.classList.add("wb-tool-worded");
+          wbToolsWords.push(word);
+        }
         //: Picking a tool is the end of the errand, so the sheet gets out of
         //: the way and the board is there to draw on. The `close` the recipe
         //: hands `build`, not the variable the call assigns afterwards, and
@@ -16284,6 +16311,11 @@ async function initWhiteboard() {
         );
       },
       onClose: () => {
+        for (const word of wbToolsWords) {
+          word.parentElement?.classList.remove("wb-tool-worded");
+          word.remove();
+        }
+        wbToolsWords = [];
         home.parent.insertBefore(toolGroup, home.next);
         wbToolsSheetClose = null;
         toolsOpener?.setAttribute("aria-expanded", "false");

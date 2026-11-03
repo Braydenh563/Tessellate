@@ -6941,12 +6941,12 @@ Link to another note with [[its first few words]]."></textarea>
           <div id="wb-insert-menu" class="wb-board-menu hidden" role="menu" aria-label="Insert">
             <div class="wb-menu-section">
               <span class="wb-panel-group-label">Add</span>
-              <button type="button" class="wb-menu-item" data-wb-insert="sticky"><i class="ph ph-note ph-lead" aria-hidden="true"></i><span>Sticky note</span><kbd>click</kbd></button>
+              <button type="button" class="wb-menu-item" data-wb-insert="sticky"><i class="ph ph-note ph-lead" aria-hidden="true"></i><span>Sticky note</span><kbd>N</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-insert="text"><i class="ph ph-text-t ph-lead" aria-hidden="true"></i><span>Text box</span><kbd>T</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-insert="frame" data-wb-surface="board"><i class="ph ph-frame-corners ph-lead" aria-hidden="true"></i><span>Frame</span><kbd>F</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="insert-table" data-wb-surface="board"><i class="ph ph-table ph-lead" aria-hidden="true"></i><span>Table</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="insert-diagram" data-wb-surface="board"><i class="ph ph-graph ph-lead" aria-hidden="true"></i><span>Mermaid diagram…</span></button>
-              <button type="button" class="wb-menu-item" data-wb-insert="image"><i class="ph ph-image ph-lead" aria-hidden="true"></i><span>Image from a file…</span></button>
+              <button type="button" class="wb-menu-item" data-wb-insert="image"><i class="ph ph-image ph-lead" aria-hidden="true"></i><span>Image from a file…</span><kbd>I</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-insert="note"><i class="ph ph-note-pencil ph-lead" aria-hidden="true"></i><span>A note from the library</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="open-library"><i class="ph ph-shapes ph-lead" aria-hidden="true"></i><span>Shapes, icons and frames…</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="insert-sticker"><i class="ph ph-smiley-sticker ph-lead" aria-hidden="true"></i><span>Emoji and icons…</span></button>
@@ -6957,7 +6957,7 @@ Link to another note with [[its first few words]]."></textarea>
               <button type="button" class="wb-menu-item" data-wb-insert="rect"><i class="ph ph-square ph-lead" aria-hidden="true"></i><span>Rectangle</span><kbd>R</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-insert="circle"><i class="ph ph-circle ph-lead" aria-hidden="true"></i><span>Circle</span><kbd>O</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-insert="arrow"><i class="ph ph-arrow-up-right ph-lead" aria-hidden="true"></i><span>Arrow</span><kbd>A</kbd></button>
-              <button type="button" class="wb-menu-item" data-wb-insert="link-curved"><i class="ph ph-flow-arrow ph-lead" aria-hidden="true"></i><span>Connector</span></button>
+              <button type="button" class="wb-menu-item" data-wb-insert="link-curved"><i class="ph ph-flow-arrow ph-lead" aria-hidden="true"></i><span>Connector</span><kbd>Shift+C</kbd></button>
             </div>
           </div>
         </div>
@@ -7399,16 +7399,16 @@ Link to another note with [[its first few words]]."></textarea>
         <span class="wb-tool-section-label" title="How the map arranges itself, and laying it out again">Layout</span>
         <div class="wb-tool-section-row">
         <select id="wb-map-layout" class="ghost small" aria-label="How this map is laid out" title="How this map is laid out" hidden>
-          <option value="tree-right">Tree, to the right</option>
-          <option value="tree-left">Tree, to the left</option>
-          <option value="tree-both">Tree, both sides</option>
-          <option value="tree-down">Tree, downward</option>
-          <option value="radial">Radial</option>
-          <option value="logic-right">Logic chart</option>
-          <option value="timeline">Timeline</option>
-          <option value="fishbone">Fishbone</option>
-          <option value="tree-table">Tree table</option>
-          <option value="free">Free</option>
+          <option value="tree-right" data-icon="arrow-elbow-down-right">Tree, to the right</option>
+          <option value="tree-left" data-icon="arrow-elbow-down-left">Tree, to the left</option>
+          <option value="tree-both" data-icon="arrows-horizontal">Tree, both sides</option>
+          <option value="tree-down" data-icon="tree-structure">Tree, downward</option>
+          <option value="radial" data-icon="asterisk">Radial</option>
+          <option value="logic-right" data-icon="git-fork">Logic chart</option>
+          <option value="timeline" data-icon="path">Timeline</option>
+          <option value="fishbone" data-icon="fish-simple">Fishbone</option>
+          <option value="tree-table" data-icon="table">Tree table</option>
+          <option value="free" data-icon="arrows-out-cardinal">Free</option>
         </select>
         <!-- The map's own line style (K31, the owner: "I have it on free mode,
              but these lines arent straight"): the theme's `edge_style`, beside

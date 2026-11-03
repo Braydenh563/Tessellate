@@ -427,11 +427,28 @@ function wbRunBoardAct(act) {
 
 //: The shortcut sheet's whiteboard section, from the same table, so the two
 //: cannot disagree. Called by `openShortcuts` (settings-wiring.js).
+//:
+//: **One key, two meanings by surface** (audit 1028 B12: M is "move under" on a
+//: map and the highlighter on a board; Ctrl+Shift+S saves a branch or a
+//: selection). Each command already says which `surface` it is for, and the
+//: sheet ignored it. With a board open it lists that surface's keys only; from
+//: anywhere else it lists all of them and names the surface on a key that two
+//: surfaces share.
 function renderWbShortcutSheet(list) {
   if (!list) return;
   list.replaceChildren();
+  const live = wbCommandsLive();
+  const here = live ? (wbIsMap() ? "map" : "board") : "";
+  const shared = new Set();
+  const seen = new Map();
+  for (const command of WB_COMMANDS) {
+    if (!command.keys || command.surface === "both") continue;
+    if (seen.has(command.keys) && seen.get(command.keys) !== command.surface) shared.add(command.keys);
+    seen.set(command.keys, command.surface);
+  }
   for (const command of WB_COMMANDS) {
     if (!command.keys) continue;
+    if (here && command.surface !== "both" && command.surface !== here) continue;
     const li = document.createElement("li");
     const keys = document.createElement("span");
     keys.className = "shortcut-keys";
@@ -442,7 +459,8 @@ function renderWbShortcutSheet(list) {
       keys.append(kbd);
     }
     const what = document.createElement("span");
-    what.textContent = command.label;
+    const tag = !here && shared.has(command.keys) ? (command.surface === "map" ? " (mind map)" : " (board)") : "";
+    what.textContent = command.label + tag;
     li.append(keys, what);
     list.append(li);
   }

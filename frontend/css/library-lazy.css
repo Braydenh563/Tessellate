@@ -8167,3 +8167,108 @@ input[type="color"].wb-mixed {
     background: transparent;
   }
 }
+
+/* --- audit 1028 board and map rows (U14 to U28) ----------------------------
+   Lazy on purpose: the boot stylesheets are at their gzip cap
+   (tests/test_boot_budget.py), so a board's rule lands here. */
+
+/* **Delete stands apart from Undo and Redo** (U14: 2px between the one tool
+   that destroys and the two that take it back, so a slip on Undo deleted).
+   2px of row gap plus this margin is 10px at the default density; the side
+   dock's grid spaces its own cells. */
+.wb-tool-section-row > [data-tool="delete"] {
+  margin-inline-end: var(--space-3);
+}
+.whiteboard-floating-panel[data-dock="side"] .wb-tool-section-row > [data-tool="delete"] {
+  margin-inline-end: 0;
+}
+
+/* **The sidebar's tabs are 32px, 44px under touch** (U16: 28px was the
+   24px floor with 4px to spare, beside a rail of 36px tools). The id keeps
+   it over `button.icon-only`'s own floor. */
+#wb-sidebar .wb-side-tab {
+  min-width: max(var(--button-min-h), var(--target-min));
+  min-height: max(var(--button-min-h), var(--target-min));
+}
+
+/* **One row on a phone, again** (U22: the bar had grown to 104px in two rows
+   at 390 and the board's name was cut). The Format button came to the bar
+   after the one-row rule above was measured, and its 44px put the right half
+   past the left half's 7.5rem; the More menu already carries "Format panel",
+   so on a phone the button goes (`wbPhoneCarries` reads this rule). The three
+   menu toggles drop their carets and the halves' gap, which gives the name the
+   room the carets used (82px before, about 110px). */
+@media (max-width: 599.98px) {
+  .wb-topbar #wb-format-btn,
+  .wb-topbar .wb-menu-toggle .wb-menu-caret {
+    display: none;
+  }
+  .wb-topbar .wb-topbar-right {
+    gap: 0;
+  }
+}
+
+/* **The fold chevron and its count stand outside the topic** (U25: the chevron
+   hung 16px off a 28px button, so 13px of it sat on the topic's own edge, over
+   the text's padding and where the connector leaves; measured 1440x900).
+   Placed from the topic's far edge with a 4px gap, and scaled from its inner
+   edge so the zoom floor grows it away from the topic, never into it. A tree
+   that grows downward hangs it under the topic's middle instead. */
+.wb-map-collapse {
+  right: auto;
+  left: calc(100% + var(--space-1));
+  transform-origin: 0 50%;
+}
+.wb-map-down .wb-map-collapse {
+  right: auto;
+  left: 50%;
+  top: calc(100% + var(--space-1));
+  bottom: auto;
+  translate: -50% 0;
+  transform-origin: 50% 0;
+}
+.wb-map-count {
+  right: auto;
+  left: calc(100% + var(--space-1));
+  transform-origin: 0 100%;
+}
+
+/* **The tools sheet names its tiles** (U21): the icon over its word, the word
+   from the button's own name (whiteboard.js, `wbOpenToolsSheet`). A tile is as
+   wide as its word up to 4.75rem; a longer name wraps to two lines and is then
+   cut with an ellipsis, so "Rounded rectangle" never pushes a row wider than
+   the sheet. Rounded square rather than the rail's circle: a circle cannot hold
+   a caption. */
+.wb-tools-palette button.wb-tool-worded {
+  width: auto;
+  height: auto;
+  min-width: 3.5rem;
+  max-width: 4.75rem;
+  aspect-ratio: auto;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+}
+.wb-tool-word {
+  display: -webkit-box;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--text-xs);
+  line-height: 1.2;
+  text-align: center;
+  text-overflow: ellipsis;
+  overflow-wrap: break-word;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+/* **The template offer's close button is 32px, 44px under touch** (U26: 28px).
+   The tiles beside it already scroll with an end fade (`edge-fade`), so a
+   tile cut at the right edge is the scroll cue, not a clip. */
+#wb-map-templates-dismiss {
+  min-width: max(var(--button-min-h), var(--target-min));
+  min-height: max(var(--button-min-h), var(--target-min));
+}

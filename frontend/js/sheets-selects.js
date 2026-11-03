@@ -863,6 +863,15 @@ function enhanceSelect(select) {
     row.setAttribute("role", "option");
     row.dataset.value = option.value;
     row.textContent = option.textContent.trim();
+    //: **A picture before the name** (`data-icon`, a Phosphor name; audit 1028
+    //: U27: the Layout list was ten lines of text for ten shapes). Decorative:
+    //: the name beside it is the label.
+    if (option.dataset.icon) {
+      const glyph = document.createElement("i");
+      glyph.className = `ph ph-${option.dataset.icon} ph-lead`;
+      glyph.setAttribute("aria-hidden", "true");
+      row.prepend(glyph);
+    }
     //: **An option that wants its row drawn its own way** names a class in
     //: `data-menu-class` (Settings' Font list sets each row in its own face,
     //: INBOX 670). The menu is lifted to <body>, so no selector can reach a
