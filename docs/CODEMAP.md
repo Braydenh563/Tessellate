@@ -2,9 +2,9 @@
 
 Generated 2026-11-03 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7735, frontend ids 2635, CSS sections 518, backend routes 642, backend modules 8550, test files 1943, tests 16341, plan headings 992, app scripts 28, boot scripts 37, script files 240.
+Counts: frontend functions 7738, frontend ids 2635, CSS sections 518, backend routes 642, backend modules 8550, test files 1944, tests 16345, plan headings 992, app scripts 28, boot scripts 37, script files 241.
 
-## Frontend functions (7735)
+## Frontend functions (7738)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3100,13 +3100,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addBlock` | frontend/js/diagram-builder.js:483 |
-| `beginEdit` | frontend/js/diagram-builder.js:512 |
+| `addBlock` | frontend/js/diagram-builder.js:484 |
+| `beginEdit` | frontend/js/diagram-builder.js:513 |
 | `blockEl` | frontend/js/diagram-builder.js:280 |
-| `blockItems` | frontend/js/diagram-builder.js:436 |
-| `blockKeys` | frontend/js/diagram-builder.js:345 |
-| `buildBlock` | frontend/js/diagram-builder.js:354 |
-| `buildPalette` | frontend/js/diagram-builder.js:754 |
+| `blockItems` | frontend/js/diagram-builder.js:437 |
+| `blockKeys` | frontend/js/diagram-builder.js:346 |
+| `buildBlock` | frontend/js/diagram-builder.js:355 |
+| `buildPalette` | frontend/js/diagram-builder.js:756 |
 | `commit` | frontend/js/diagram-builder.js:285 |
 | `dgbAddGroup` | frontend/js/diagram-builder.js:154 |
 | `dgbAddNode` | frontend/js/diagram-builder.js:146 |
@@ -3131,35 +3131,35 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dgbUnits` | frontend/js/diagram-builder.js:76 |
 | `dgbUnjoin` | frontend/js/diagram-builder.js:192 |
 | `drawPicture` | frontend/js/diagram-builder.js:300 |
-| `dropApply` | frontend/js/diagram-builder.js:679 |
-| `dropAt` | frontend/js/diagram-builder.js:637 |
-| `dropMark` | frontend/js/diagram-builder.js:658 |
+| `dropApply` | frontend/js/diagram-builder.js:680 |
+| `dropAt` | frontend/js/diagram-builder.js:638 |
+| `dropMark` | frontend/js/diagram-builder.js:659 |
 | `el` | frontend/js/diagram-builder.js:264 |
-| `groupGlyph` | frontend/js/diagram-builder.js:410 |
-| `joinChip` | frontend/js/diagram-builder.js:416 |
-| `joinPick` | frontend/js/diagram-builder.js:735 |
-| `joins` | frontend/js/diagram-builder.js:731 |
-| `kindOf` | frontend/js/diagram-builder.js:895 |
-| `menuAt` | frontend/js/diagram-builder.js:611 |
-| `more` | frontend/js/diagram-builder.js:747 |
-| `mount` | frontend/js/diagram-builder.js:807 |
+| `groupGlyph` | frontend/js/diagram-builder.js:411 |
+| `joinChip` | frontend/js/diagram-builder.js:417 |
+| `joinPick` | frontend/js/diagram-builder.js:737 |
+| `joins` | frontend/js/diagram-builder.js:733 |
+| `kindOf` | frontend/js/diagram-builder.js:897 |
+| `menuAt` | frontend/js/diagram-builder.js:612 |
+| `more` | frontend/js/diagram-builder.js:749 |
+| `mount` | frontend/js/diagram-builder.js:809 |
 | `nameOf` | frontend/js/diagram-builder.js:278 |
-| `nestBlock` | frontend/js/diagram-builder.js:552 |
-| `onKey` | frontend/js/diagram-builder.js:574 |
-| `relabel` | frontend/js/diagram-builder.js:500 |
-| `removeBlock` | frontend/js/diagram-builder.js:560 |
-| `render` | frontend/js/diagram-builder.js:323 |
+| `nestBlock` | frontend/js/diagram-builder.js:553 |
+| `onKey` | frontend/js/diagram-builder.js:575 |
+| `relabel` | frontend/js/diagram-builder.js:501 |
+| `removeBlock` | frontend/js/diagram-builder.js:561 |
+| `render` | frontend/js/diagram-builder.js:324 |
 | `say` | frontend/js/diagram-builder.js:271 |
-| `seedBlock` | frontend/js/diagram-builder.js:622 |
-| `select` | frontend/js/diagram-builder.js:468 |
-| `shapeGlyph` | frontend/js/diagram-builder.js:347 |
-| `show` | frontend/js/diagram-builder.js:905 |
-| `stepBlock` | frontend/js/diagram-builder.js:546 |
-| `suggest` | frontend/js/diagram-builder.js:725 |
-| `suggestMenu` | frontend/js/diagram-builder.js:738 |
-| `sync` | frontend/js/diagram-builder.js:870 |
+| `seedBlock` | frontend/js/diagram-builder.js:623 |
+| `select` | frontend/js/diagram-builder.js:469 |
+| `shapeGlyph` | frontend/js/diagram-builder.js:348 |
+| `show` | frontend/js/diagram-builder.js:907 |
+| `stepBlock` | frontend/js/diagram-builder.js:547 |
+| `suggest` | frontend/js/diagram-builder.js:727 |
+| `suggestMenu` | frontend/js/diagram-builder.js:740 |
+| `sync` | frontend/js/diagram-builder.js:872 |
 | `titleOf` | frontend/js/diagram-builder.js:277 |
-| `within` | frontend/js/diagram-builder.js:635 |
+| `within` | frontend/js/diagram-builder.js:636 |
 
 ### frontend/js/diagram-embed.js (5)
 
@@ -3186,11 +3186,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `addTile` | frontend/js/diagram-kinds.js:781 |
 | `buildBlock` | frontend/js/diagram-kinds.js:668 |
-| `buildPalette` | frontend/js/diagram-kinds.js:947 |
+| `buildPalette` | frontend/js/diagram-kinds.js:948 |
 | `dropApply` | frontend/js/diagram-kinds.js:907 |
 | `dropAt` | frontend/js/diagram-kinds.js:879 |
 | `find` | frontend/js/diagram-kinds.js:618 |
-| `ghostSpec` | frontend/js/diagram-kinds.js:1063 |
+| `ghostSpec` | frontend/js/diagram-kinds.js:1064 |
 | `glyph` | frontend/js/diagram-kinds.js:623 |
 | `icon` | frontend/js/diagram-kinds.js:613 |
 | `itemsFor` | frontend/js/diagram-kinds.js:731 |
@@ -3229,7 +3229,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `kxWalk` | frontend/js/diagram-kinds.js:263 |
 | `kxWithin` | frontend/js/diagram-kinds.js:283 |
 | `menuAt` | frontend/js/diagram-kinds.js:859 |
-| `mount` | frontend/js/diagram-kinds.js:981 |
+| `mount` | frontend/js/diagram-kinds.js:982 |
 | `nameOf` | frontend/js/diagram-kinds.js:619 |
 | `nestBlock` | frontend/js/diagram-kinds.js:805 |
 | `onKey` | frontend/js/diagram-kinds.js:824 |
@@ -3238,9 +3238,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `removeBlock` | frontend/js/diagram-kinds.js:811 |
 | `render` | frontend/js/diagram-kinds.js:654 |
 | `seedBlock` | frontend/js/diagram-kinds.js:866 |
-| `show` | frontend/js/diagram-kinds.js:1086 |
+| `show` | frontend/js/diagram-kinds.js:1087 |
 | `stepBlock` | frontend/js/diagram-kinds.js:799 |
-| `sync` | frontend/js/diagram-kinds.js:1041 |
+| `sync` | frontend/js/diagram-kinds.js:1042 |
 | `whoLabel` | frontend/js/diagram-kinds.js:620 |
 | `withinNode` | frontend/js/diagram-kinds.js:901 |
 | `words` | frontend/js/diagram-kinds.js:639 |
@@ -3273,6 +3273,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `reason` | frontend/js/diagram-suggest.js:143 |
 | `receive` | frontend/js/diagram-suggest.js:97 |
 | `templates` | frontend/js/diagram-suggest.js:318 |
+
+### frontend/js/diagram-touch.js (3)
+
+| Name | File:line |
+|---|---|
+| `addSheet` | frontend/js/diagram-touch.js:11 |
+| `wire` | frontend/js/diagram-touch.js:110 |
+| `zoomable` | frontend/js/diagram-touch.js:36 |
 
 ### frontend/js/documents-ai.js (15)
 
@@ -5998,9 +6006,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `objDragArm` | frontend/js/obj-drag.js:84 |
 | `objDragBegin` | frontend/js/obj-drag.js:161 |
 | `objDragCue` | frontend/js/obj-drag.js:97 |
-| `objDragFinish` | frontend/js/obj-drag.js:226 |
+| `objDragFinish` | frontend/js/obj-drag.js:242 |
 | `objDragFrame` | frontend/js/obj-drag.js:177 |
-| `objDragKey` | frontend/js/obj-drag.js:211 |
+| `objDragKey` | frontend/js/obj-drag.js:227 |
 | `objDragListen` | frontend/js/obj-drag.js:105 |
 | `objDragMove` | frontend/js/obj-drag.js:145 |
 | `objDragNoMenu` | frontend/js/obj-drag.js:124 |
@@ -6009,9 +6017,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `objDragRoute` | frontend/js/obj-drag.js:185 |
 | `objDragSchedule` | frontend/js/obj-drag.js:173 |
 | `objDragSeed` | frontend/js/obj-drag.js:64 |
-| `objDragSwallowClick` | frontend/js/obj-drag.js:220 |
-| `objDragTick` | frontend/js/obj-drag.js:196 |
-| `objDragUp` | frontend/js/obj-drag.js:207 |
+| `objDragSwallowClick` | frontend/js/obj-drag.js:236 |
+| `objDragTick` | frontend/js/obj-drag.js:199 |
+| `objDragUp` | frontend/js/obj-drag.js:223 |
 | `objDragVerdict` | frontend/js/obj-drag.js:137 |
 | `objGhostMake` | frontend/js/obj-drag.js:35 |
 | `objPressInSelection` | frontend/js/obj-drag.js:55 |
@@ -12129,7 +12137,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 150 |
-| frontend/css/diagram-lazy.css | 618 |
+| frontend/css/diagram-lazy.css | 653 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 140 |
 | frontend/css/forced-colors-lazy.css | 28 |
@@ -15602,8 +15610,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3263 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3389 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3265 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3391 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -23570,7 +23578,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16341)
+## Tests (16345)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24077,6 +24085,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_kinds.py | 30 |
 | tests/test_diagram_model.py | 12 |
 | tests/test_diagram_suggest.py | 21 |
+| tests/test_diagram_touch.py | 4 |
 | tests/test_dialogue_b8.py | 1 |
 | tests/test_dictation_options.py | 8 |
 | tests/test_digest_structure.py | 24 |

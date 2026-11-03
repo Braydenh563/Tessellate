@@ -3183,7 +3183,7 @@ MORE_TOPICS.extend([
         "keywords": (
             "edit as blocks", "diagram in a document", "mermaid figure", "open as a diagram",
             "diagram in chat", "embed a diagram", "export a diagram", "diagram png", "diagram svg",
-            "copy as mermaid", "diagram on a board",
+            "copy as mermaid", "diagram on a board", "zoom a diagram", "add a block on a phone",
         ),
         "body": (
             "The block editor opens wherever a Mermaid diagram is drawn. In a document's Live view, "
@@ -3195,7 +3195,9 @@ MORE_TOPICS.extend([
             "Type ![[name]] in a note or a document to draw a diagram document's picture there, with a "
             "line that opens it. The ... menu in the editor's bar has Save as SVG, Save as PNG "
             "(twice its size), Copy as Mermaid and Copy as SVG. Source, beside Cancel, shows "
-            "the text with the picture; a diagram the blocks cannot draw opens there."
+            "the text with the picture; a diagram the blocks cannot draw, or one over 120 blocks, opens there. "
+            "On a phone the shapes are one Add button that opens a sheet of them; pinch the picture to "
+            "zoom, drag it to move, and double tap to fit it again."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },

@@ -521,10 +521,26 @@
   }
 
   .dgm-dirs button,
-  .dgm-dock .dock-actions button {
+  .dgm-dock .dock-actions button:not(.dgm-add) {
     inline-size: 2.25rem;
     min-inline-size: 0;
     padding-inline: 0;
+  }
+
+  /* Once diagram-touch.js has run, the shapes are one Add button and a sheet: the dock is one row. */
+  .dgm-compact .dgm-palette {
+    display: none;
+  }
+
+  .dgm-compact .dgm-add {
+    display: inline-flex;
+  }
+
+  /* Add and the history lead the dock; the direction wraps under them. */
+  .dgm-compact .dock-actions {
+    order: -1;
+    margin-left: 0;
+    justify-content: flex-start;
   }
 
   /* The palette is one row of shapes: the glyph says it, the name is its label. */
@@ -547,6 +563,25 @@
     min-inline-size: 0;
     padding: 0;
   }
+}
+
+/* The sheet's rows give every glyph about the same width, so the names line up. */
+.sheet-row > .dgm-shape {
+  margin-inline: calc(var(--space-1) / 2);
+}
+
+.sheet-row > .dgm-group-icon {
+  font-size: var(--text-h3);
+}
+
+/* The Add button is the phone's palette (diagram-touch.js); it is there only in a narrow pane. */
+.dgm-add {
+  display: none;
+}
+
+/* The picture on a touch screen: it takes every touch, to pinch it and to pan it itself. */
+.dgm-compact .dgm-picture {
+  touch-action: none;
 }
 
 /* A diagram the blocks cannot read keeps only the ... menu in its bar (its picture can still be saved). */

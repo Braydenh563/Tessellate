@@ -915,6 +915,7 @@
   }
 
   const KIND_MODE = {
+    ancestors: true,
     seed: seedBlock,
     grab: () => ({}),
     begin(g) {

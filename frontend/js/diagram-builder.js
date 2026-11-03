@@ -311,6 +311,7 @@
         mermaidFill(S.fig, source, (result) => {
           if (stamp !== S.drawn) return;
           S.hit = result.svg ? diagramModel.picture.boxes(result.svg) : null;
+          S.fig.onpaint?.();
           if (result.svg) return;
           S.fig.classList.remove("md-mermaid-pending");
           S.fig.replaceChildren(mermaidFailure.note(result.error, source));
@@ -696,6 +697,7 @@
   }
 
   const DIAGRAM_MODE = {
+    ancestors: true,
     seed: seedBlock,
     grab: () => ({}),
     begin(g) {
@@ -918,6 +920,8 @@
         if (text !== S.source) sync(host, text, S);
       }
     }
+    //: A narrow window or a touch screen gets the phone's palette sheet and the picture's pinch (diagram-touch.js).
+    if (S && matchMedia("(max-width: 599.98px), (pointer: coarse)").matches && (await ensureModule("diagramTouch"))) diagramModel.touch.wire(S);
     if (told && S) say(S, told);
     told = "";
     return S;
