@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Quick sketch: Fill only drew an empty button (it asked for `square-fill`, not in the icon subset); it is a drawn filled square now, and the icon-name lint reads `iconButton(name)` calls too.
 - Logs (INBOX 1608): Settings' SearXNG status read is silent, so "Still checking whether Docker is up" (a 503 that means not yet) is no longer logged as a browser error.
 - Ask (INBOX 1601): the AI switch follows the status pill as well as the offline notice, so with no model it shows off and disabled at once instead of looking on until a click; a click before it caught up stores nothing.
 - Toggles (INBOX 1600): an inline toolbar toggle (Pinned only, Semantic search, Smart Model Routing, Ask's AI) is a bare pill switch and its words, no bordered pill around it and no checked fill; recipe and lint in DESIGN.md and test_ui_recipes.

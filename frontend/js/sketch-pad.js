@@ -388,7 +388,7 @@
     const modes = h("div", { class: "sp-modes", role: "group", "aria-label": "Shape style", "data-rove": "" },
       iconButton("square", "Outline only", () => setMode("outline"), { extra: "sp-mode", data: { mode: "outline" } }),
       iconButton("square-half", "Outline and fill", () => setMode("both"), { extra: "sp-mode", data: { mode: "both" } }),
-      iconButton("square-fill", "Fill only", () => setMode("fill"), { extra: "sp-mode", data: { mode: "fill" } }));
+      iconButton("square", "Fill only", () => setMode("fill"), { extra: "sp-mode", data: { mode: "fill" } }));
     return h("div", { class: "sp-group sp-stroke" }, size, modes);
   }
 
