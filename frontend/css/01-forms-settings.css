@@ -5103,10 +5103,12 @@ select {
 #settings-modal .settings-section .select-opener,
 #settings-modal .settings-section summary,
 #settings-modal .settings-section input[type="text"],
-#settings-modal .settings-section input[type="search"],
+#settings-modal .settings-section input[type="search"]:not(.search-field-input),
 #settings-modal .settings-section input[type="number"],
 #settings-modal .settings-section input[type="password"],
 #settings-modal .settings-section input[type="url"] {
+  /* Not a search field's input (INBOX 1609): its box is the field's, and this
+     32px set its text 3px below the icon in the Logs dock's 28px field. */
   height: var(--settings-control-h);
   min-height: 0;
   padding-block: 0;

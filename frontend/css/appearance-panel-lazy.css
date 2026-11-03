@@ -15,7 +15,7 @@
 #appearance-panel .settings-section .select-opener,
 #appearance-panel .settings-section summary,
 #appearance-panel .settings-section input[type="text"],
-#appearance-panel .settings-section input[type="search"],
+#appearance-panel .settings-section input[type="search"]:not(.search-field-input),
 #appearance-panel .settings-section input[type="number"],
 #appearance-panel .settings-section input[type="password"],
 #appearance-panel .settings-section input[type="url"] {

@@ -7381,3 +7381,21 @@ def test_a_status_bar_popover_has_the_one_close_head() -> None:
     html = frontend_text("index.html")
     assert 'id="palette-close"' in html
     assert '"#palette-close, #palette-close *"' in frontend_text("js/app-palette.js")
+
+
+def test_no_settings_field_height_reaches_a_search_fields_input() -> None:
+    """INBOX 1609: "the icon and text in the logs search bar arent aligned". The
+    Settings-wide control height (an id rule) reached the search field recipe's
+    bare input and made it 32px inside a 28px field. A rule that sizes
+    `input[type="search"]` under an id must leave `.search-field-input` out."""
+    offenders = []
+    for path in CSS:
+        text = path.read_text(encoding="utf-8")
+        for m in re.finditer(r"([^{}]+)\{([^{}]*)\}", text):
+            if not re.search(r"(^|[;\s])(height|min-height)\s*:", m.group(2)):
+                continue
+            for sel in m.group(1).split(","):
+                sel = re.sub(r"/\*.*?\*/", "", sel, flags=re.S).strip()
+                if "#" in sel and sel.endswith('input[type="search"]'):
+                    offenders.append(f"{path.name}: {sel}")
+    assert offenders == [], offenders

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Search fields (INBOX 1609): the Settings-wide control height no longer reaches a search field's input, so the Logs filter's text sits on its icon's centre line (it was 3px low); the same in the Appearance panel, with a lint.
 - Tray (INBOX 1603): the Tray and Other devices popovers have a head with a close x (Escape and a press outside still close them), and a native drag whose dragend was lost no longer keeps every popover open; the command palette has a close x; a tray row drags from its body with no hold (a click still pastes); the page does not edge-scroll while a drag is over the tray; the tray button pads its icon and count; t then y opens the tray.
 - Extract notes with no model uses the composer's pieces (INBOX 1618): a heading that became the title leaves the note's body, one long paragraph is cut at its subject changes into short notes (own titles, each filed and tagged on its own words, at most four), no link runs from a note to its own source text, and sibling links read "Same text, next part".
 - Diagram builder: opened from Find anything, the palette or anywhere without a text box, it shows the builder at once and Done saves a new .mmd document (it used to start a blank page made only by a keystroke, so nothing appeared).

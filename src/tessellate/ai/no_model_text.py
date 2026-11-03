@@ -227,7 +227,9 @@ SUBJECT_MIN_WORDS = 8
 _SHIFTS = frozenset(
     "now next then later also meanwhile anyway afterwards afterward tomorrow tonight yesterday today separately finally".split()
 )
-_EMOTICON = re.compile(r"\s*[:;=][-^]?[)(DPpOo]+\s*$")
+#: Matched on a right-stripped heading, with no leading `\s*`: that prefix made the
+#: search polynomial on a heading of many tabs (CodeQL 2002).
+_EMOTICON = re.compile(r"[:;=][-^]?[)(DPpOo]+$")
 
 
 def _subject_stems(sentence: str) -> set[str]:
@@ -302,7 +304,11 @@ def split_notes(text: str, limit: int) -> list[Part]:
 
 def _plain_title(heading: str) -> str:
     """A heading as a title: the shouting and the trailing emoticon off."""
-    return _EMOTICON.sub("", heading).rstrip(" !?.") or heading
+    bare = heading.rstrip()
+    found = _EMOTICON.search(bare)
+    if found:
+        bare = bare[: found.start()]
+    return bare.rstrip(" \t!?.") or heading
 
 
 def _part(chunk: str) -> Part:
