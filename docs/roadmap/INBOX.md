@@ -34,6 +34,8 @@ with its owner named in the entry.
 
 ## Open items
 
+1596. **Agent a31h, 2026-11-03 (from 1588 and 1594, found not fixed):** (a) `switchTab` straight after boot threw "addEventListener of null" twice (library.js:1884, documents.js:9804), gone after 2.5 s: a boot race, a real bug on a fast click; (b) an invalid or non-diagram source opens in Blocks as one kept line and the picture says "appears here as you add blocks" instead of the error; (c) diagram-kinds.js (mind map, timeline, sequence) rebuilds every row on a change, as the flowchart did before 1588; (d) the builder dock wraps at 320 px. Recommendation, taken: one agent, in that order, measured.
+
 1595. **Agent a31j, 2026-11-03 (from 1593, decision taken by standing order 3):** a press and move inside the 250 ms hold makes a text selection, and while it stands a press on its words never starts a drag (`obj-drag.js` `objPressInSelection`), part of the owner's "hard to drag". Recommendation, taken: a grip on each card shown on hover and focus (`OBJ_GRIP`) that drags with no hold, and a press on a selection left by a failed drag clears it and starts the hold. Also: whiteboard and mind-map objects carry no `data-obj` (`wbPlaceNote`), so they cannot reach the tray; phone sheet drops untested.
 
 
