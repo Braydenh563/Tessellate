@@ -3276,6 +3276,20 @@ const nmb = {
   leanSide: "", leanAt: 0, stirAt: 0, groggyUntil: 0, grumpyUntil: 0, pokes: [], unlockDrop: true, lastHow: "",
   mood: { energy: 0.7, curiosity: 0.6, sociability: 0.7 }, edgeType: "", edgeLine: 72, reading: null, cool: {},
   anim: null, hopAnim: null, glue: null, heldTimer: 0, placeTimer: 0, movedAt: 0, pinned: false, menu: null, settle: [], checkFrame: 0,
+  //: **Not the pages that are not shown** (INBOX 1560, the owner's lag log:
+  //: `nameMarkBuddyBeat` 156 to 1838ms). A popup in a hidden tab page has no box,
+  //: and a hidden page keeps its whole list drawn in the document, so the walk
+  //: for popups is made over the chrome and the shown page only: the children of
+  //: `body`, and of `#app-main` less the pages with `hidden`.
+  liveRoots() {
+    const roots = [];
+    for (const child of document.body.children) {
+      if (child.classList.contains("hidden")) continue;
+      if (child.id !== "app-main") roots.push(child);
+      else for (const page of child.children) if (!page.classList.contains("hidden")) roots.push(page);
+    }
+    return roots;
+  },
 };
 
 //: The companion's own reading of reduced motion and Avatar animation Off:
@@ -3545,12 +3559,17 @@ function nameMarkBuddyControlsIn(root, boxes) {
 //: over the whole document: one such query over 17,000 elements was 6 to
 //: 50ms of the sweep at 4x CPU (parts3.js).
 function nameMarkBuddyFloaters() {
-  const out = [document.getElementById("toast-box"), document.getElementById("scroll-top"), document.getElementsByClassName("pointer-menu-host")[0]];
-  for (const name of ["dock-fab", "chat-jump-latest"]) out.push(...document.getElementsByClassName(name));
-  for (const el of document.getElementsByClassName("modal-overlay")) if (!el.classList.contains("hidden")) out.push(el);
+  const out = [document.getElementById("toast-box"), document.getElementById("scroll-top")];
+  for (const root of nmb.liveRoots()) {
+    for (const name of ["pointer-menu-host", "dock-fab", "chat-jump-latest"]) {
+      if (root.classList.contains(name)) out.push(root);
+      out.push(...root.getElementsByClassName(name));
+    }
+    if (root.classList.contains("modal-overlay") && !root.classList.contains("hidden")) out.push(root);
+    for (const el of root.getElementsByClassName("modal-overlay")) if (!el.classList.contains("hidden")) out.push(el);
+  }
   return out;
 }
-
 //: **Never over what you are working in** (INBOX 1463, the owner: "a non
 //: intrusive companion"). The focused control as a whole when it is small
 //: (a field, a button, a select: up to `NMB_FOCUS_AREA`), and in a page you
@@ -3632,9 +3651,13 @@ const NMB_POPUP_IDS = ["notif-panel", "tour-spot", "tour-card", "wb-format", "wb
 const NMB_POPUP_CLASSES = ["action-menu", "select-menu", "help-popover", "space-menu", "wb-board-menu", "wb-shape-menu", "wb-lib-list", "nav-history-menu", "rich-picker-list", "doc-suggest-menu", "doc-complete-list"];
 function nameMarkBuddyPopupEls() {
   const out = NMB_POPUP_IDS.map((id) => document.getElementById(id)).filter(Boolean);
-  for (const name of NMB_POPUP_CLASSES) out.push(...document.getElementsByClassName(name));
-  for (const d of document.getElementsByTagName("details")) if (d.open && /menu/.test(d.className)) out.push(...[...d.children].filter((c) => c.tagName !== "SUMMARY"));
-  for (const d of document.getElementsByTagName("dialog")) if (d.open) out.push(d);
+  for (const root of nmb.liveRoots()) {
+    if (root.localName === "dialog" && root.open) out.push(root);
+    else if (NMB_POPUP_CLASSES.some((name) => root.classList.contains(name))) out.push(root);
+    for (const name of NMB_POPUP_CLASSES) out.push(...root.getElementsByClassName(name));
+    for (const d of root.getElementsByTagName("details")) if (d.open && /menu/.test(d.className)) out.push(...[...d.children].filter((c) => c.tagName !== "SUMMARY"));
+    for (const d of root.getElementsByTagName("dialog")) if (d.open) out.push(d);
+  }
   return out;
 }
 //: Checked a moment after any press or key (the way a popup opens), from
@@ -6549,6 +6572,27 @@ function nameMarkBuddyBeat() {
     || nameMarkBuddyMenuOpen() || buddy.classList.contains("nmb-think");
   if (busy || document.hidden) {
     nameMarkBuddyQueuePlace();
+    return;
+  }
+  //: **Looked after a frame has drawn** (INBOX 1560, the owner's lag log:
+  //: `nameMarkBuddyBeat` 156ms, 98 of it forced layout). A timer lands between
+  //: the page's writes and its frame, so the first box read below settled the
+  //: layout the frame was about to do anyway. One frame and a timer on (as
+  //: `queueNameMarkBuddyCheck`), the layout is clean and every read is cheap;
+  //: a page that stays hidden never draws one, so it does no look at all.
+  if (!nmb.beatDue) {
+    if (!nmb.beatFrame) {
+      nmb.beatFrame = 1;
+      afterFrames(() => setTimeout(() => {
+        nmb.beatFrame = 0;
+        nmb.beatDue = true;
+        try {
+          nameMarkBuddyBeat();
+        } finally {
+          nmb.beatDue = false;
+        }
+      }), 1);
+    }
     return;
   }
   const tab = nameMarkBuddyTab();

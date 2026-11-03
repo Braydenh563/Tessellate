@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Companion: the look for popups and floating panels walks the chrome and the shown page, not the tab pages that are hidden (38.4ms to 0.6ms a walk at 4x CPU on 39,750 elements), and a beat looks after a frame has drawn instead of settling the layout itself (INBOX 1560, the owner's lag log: nameMarkBuddyBeat 156 to 1838ms).
 - Library: an empty board's thumbnail ghosts three loose cards with no curves between them, 0 branch curves down from 2, so it no longer reads as a mind map (audit 1028 U40).
 - Docs: SECURITY.md says plainly that a space is organisation, not a security boundary (audit 1028 K16).
 - Chat: with more than five chats pinned, the switcher still shows the three newest others (nine pinned used to fill all eight rows), and a failed caption chunk saves its words off the event loop, which a new lint holds for every async route (audit 1028 E46, K29).
