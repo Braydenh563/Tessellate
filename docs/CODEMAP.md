@@ -2,7 +2,7 @@
 
 Generated 2026-11-03 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7585, frontend ids 2640, CSS sections 519, backend routes 641, backend modules 8502, test files 1914, tests 16128, plan headings 990, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7585, frontend ids 2640, CSS sections 519, backend routes 641, backend modules 8502, test files 1914, tests 16128, plan headings 991, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7585)
 
@@ -25260,7 +25260,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_zoom_frame_1508.py | 3 |
 | tests/test_zoom_wheel_delta.py | 3 |
 
-## Plan headings (990)
+## Plan headings (991)
 
 Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, except the HISTORY.md archive. Sorted by heading.
 
@@ -26072,6 +26072,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-11-03 | docs/roadmap/DOCUMENTS_PLAN.md:1579 |
 | Placed from INBOX, 2026-11-03 | docs/roadmap/UI_MODERNISATION_PLAN.md:1557 |
 | Placed from INBOX, 2026-11-03 | docs/roadmap/WHITEBOARD_PLAN.md:1726 |
+| Placed from INBOX, 2026-11-03 (chat; CHAT_PLAN is at its cap) | docs/roadmap/BACKLOG.md:4446 |
 | Placed from INBOX, built (pointers) | docs/roadmap/UI_MODERNISATION_PLAN.md:1062 |
 | Placed from INBOX: 107d, the segmented mini bars | docs/roadmap/DOCUMENTS_PLAN.md:503 |
 | Placed from INBOX: the composer everywhere (the owner, 2026-10-06) | docs/roadmap/CHAT_PLAN.md:689 |
