@@ -265,10 +265,10 @@
    the result and the keypad under it do not move when the first key is pressed; a long sum scrolls inside it. */
 .calc-typeset {
   display: flex;
-  flex: 1 1 0;
+  flex: none;
   min-width: 0;
   align-items: center;
-  min-height: var(--space-9);
+  min-height: var(--space-8);
   padding: 0 var(--space-1);
   overflow-x: auto;
   overflow-y: hidden;
@@ -325,26 +325,32 @@
   grid-template-columns: repeat(4, 1fr);
 }
 
-/* **Standard or Scientific** (INBOX 1579): the kind is a `.seg` at the end of the typeset sum's row; in Scientific a second row holds the angle unit and the memory's value. */
-.calc-sumline {
+/* **One head row** (INBOX 1584, the owner: "poor design"): Standard and Scientific as the `.seg` at the start, the angle
+   unit beside it in Scientific only, the memory's value at the end, one row and never two. The angle unit's
+   words are their short forms (Deg, Rad: the button's name stays the full word), so the row is still one row at 390. */
+.calc-head {
   display: flex;
   align-items: center;
   gap: var(--space-3);
 }
 
-.calc-sumline .calc-seg {
+.calc-head .calc-seg {
   flex: none;
+  margin: 0;
 }
 
-.calc-mode-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2) var(--space-3);
+/* A ring is the keyboard's: after a press with the pointer the segment keeps no ring. */
+.calc-seg.is-pointer button:focus-visible {
+  outline-color: transparent;
 }
 
 .calc-memory {
-  margin-inline-start: auto;
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  text-align: end;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: var(--text-sm);
   font-variant-numeric: tabular-nums;
 }
@@ -360,9 +366,10 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* **History** (INBOX 1541): a bar under the pane, "History" with its count and Clear, closed until opened so
-   the keypad keeps its room; the rows under it newest first, each a button that puts the row back in the
-   fields, then Copy, Edit and Remove as quiet icons. */
+/* **History** (INBOX 1541, 1584): a disclosure row under the pane (`button.ghost.disclosure-row`: the caret, History, the
+   count as a muted badge) with Clear at the end of the same line as the quiet text action; closed until opened so the
+   keypad keeps its room, the rows under it newest first, each a button that puts the row back in the fields, then
+   Copy, Edit and Remove as quiet icons. No filled ground at rest, open or shut. */
 .calc-log {
   display: flex;
   flex-direction: column;
@@ -375,23 +382,45 @@
   gap: var(--space-2);
 }
 
-.calc-log-bar .calc-log-note {
+button.ghost.disclosure-row.calc-log-toggle {
   flex: 1 1 auto;
+  width: auto;
   min-width: 0;
-  font-size: var(--text-sm);
+  gap: var(--space-2);
+  color: var(--ink);
 }
 
 .calc-log-toggle .calc-log-count {
+  min-width: 1.25rem;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--chip-bg);
   color: var(--muted);
+  font-size: var(--text-sm);
   font-variant-numeric: tabular-nums;
+  line-height: 1.25rem;
+  text-align: center;
 }
 
-.calc-log-toggle .ph-caret-down {
+.calc-log-toggle[aria-expanded="false"] .contents-caret {
+  rotate: -90deg;
+}
+
+.calc-log-toggle .contents-caret {
   transition: rotate var(--ui-base) var(--ease-out);
 }
 
-.calc-log-toggle[aria-expanded="true"] .ph-caret-down {
-  rotate: 180deg;
+:where(:root[data-motion="reduced"]) .calc-log-toggle .contents-caret {
+  transition: none;
+}
+
+.calc-log .calc-log-note {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+.calc-log .calc-log-note:empty {
+  display: none;
 }
 
 .calc-history {

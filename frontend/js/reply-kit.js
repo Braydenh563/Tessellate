@@ -340,14 +340,22 @@ const replyCalc = { units: null, opened: 0, tabs: [["work", "Sum"], ["convert", 
     seg.className = "seg calc-seg";
     seg.setAttribute("role", "group");
     seg.setAttribute("aria-label", label);
-    const buttons = choices.map(([key, words]) => {
+    //: A choice's third element is the short form it shows (Deg, Rad: the head fits one row at 390 with no width query); the full words stay its name and its title.
+    const buttons = choices.map(([key, words, short]) => {
       const b = document.createElement("button");
       b.type = "button";
       b.dataset.value = key;
-      b.textContent = words;
+      b.textContent = short || words;
+      if (short) {
+        b.setAttribute("aria-label", words);
+        b.title = words;
+      }
       b.addEventListener("click", () => onChange(key));
       return b;
     });
+    //: A ring is for the keyboard (INBOX 1584): a press with the pointer marks the strip, so a ring Tab left on a segment does not stay after a click; the next key press takes the mark off.
+    seg.addEventListener("pointerdown", () => seg.classList.add("is-pointer"));
+    seg.addEventListener("keydown", () => seg.classList.remove("is-pointer"));
     const sync = (now) => {
       for (const b of buttons) {
         const chosen = b.dataset.value === now;
@@ -366,7 +374,7 @@ const REPLY_CALC_HELP = [
   "Worked out by the app, with no model.",
   "Sum: type or key a sum, a percentage or a conversion (12 * (3 + 4), 15% of 80, 5 km to miles). It is drawn as maths under the box as you type, and a preview shows once it is a whole sum; Enter or = keeps it. Scientific adds sine, cosine, tangent and their inverses, logs, powers, roots, a factorial, pi and e, with Degrees or Radians and a memory (MC, MR, M+, M-).",
   "Units: pick a kind, an amount and two units. Currency rates are set by hand and dated, not today's rate.",
-  "Equation: click a dotted box to fill it. / makes a fraction, ^ and _ a power or a subscript, and LaTeX such as \\frac or \\alpha turns into the symbol as you type it. Pick a structure or a symbol from the palette; a selection goes into the first box. The row of groups jumps to one; Pin makes a tile a favourite, and Recent shows the last ones used. Inline sits in a sentence, Display on its own line. Click a drawn equation in a note, or open this with the cursor inside one, to edit it.",
+  "Equation: click a dotted box to fill it; a box you empty again comes back. / makes a fraction, ^ and _ a power or a subscript, and LaTeX such as \\frac or \\alpha turns into the symbol as you type it. Pick a structure or a symbol from the palette; a selection goes into the first box. The row of groups jumps to one; Pin makes a tile a favourite, and Recent shows the last ones used. Inline sits in a sentence, Display on its own line. Click a drawn equation in a note, or open this with the cursor inside one, to edit it.",
   "History: each tab keeps its last twenty answers on this device. Open History under the keypad, press a row to put it back in the fields, or use Copy, Edit (the next keep replaces that row) and Remove; Clear empties it, and Undo brings it back. Every answer has a Copy button beside it.",
   "Insert writes into the text box you opened this from (Alt+= in a box, or Ctrl+K over one). With none open, Copy is the way out. Ctrl+Enter inserts an equation.",
 ];
@@ -1050,13 +1058,11 @@ function replyCalcWorkPane(input, actions) {
   const saved = prefs.json("calc-sci", {});
   const mode = { on: saved.on === true, angle: saved.angle === "rad" ? "rad" : "deg", memory: Number.isFinite(saved.memory) ? saved.memory : 0 };
   const keep = () => prefs.setJSON("calc-sci", mode);
-  //: One row under the field: the typeset sum, and the kind at its end (a row of its own would push the keypad past the card at 390: INBOX 1537 wants Sum without a scroll). Scientific adds a second row for the angle unit and the memory.
-  const sumline = document.createElement("div");
-  sumline.className = "calc-sumline";
-  const bar = document.createElement("div");
-  bar.className = "calc-mode-bar";
+  //: **One head row** (INBOX 1584): the kind at the start, the angle unit beside it in Scientific only, the memory's value at the end. The angle unit's words shorten to Deg and Rad below 26rem (a third element of a choice) so the row stays one row at 390.
+  const head = document.createElement("div");
+  head.className = "calc-head";
   const kind = replyCalc.seg("Calculator kind", [["standard", "Standard"], ["scientific", "Scientific"]], mode.on ? "scientific" : "standard", (value) => setMode(value === "scientific"));
-  const angle = replyCalc.seg("Angle unit", [["deg", "Degrees"], ["rad", "Radians"]], mode.angle, (value) => {
+  const angle = replyCalc.seg("Angle unit", [["deg", "Degrees", "Deg"], ["rad", "Radians", "Rad"]], mode.angle, (value) => {
     mode.angle = value;
     keep();
     angle.sync(value);
@@ -1065,7 +1071,7 @@ function replyCalcWorkPane(input, actions) {
   const memory = document.createElement("span");
   memory.className = "muted calc-memory";
   memory.setAttribute("role", "status");
-  bar.append(angle.seg, memory);
+  head.append(kind.seg, angle.seg, memory);
   //: **The sum as typeset maths, as it is typed** (INBOX 1579): × ÷ − and raised powers drawn by the document renderer, under the field. The field keeps the raw text, which is what is edited and read aloud, so this is hidden from a screen reader.
   const typeset = document.createElement("div");
   typeset.className = "calc-typeset";
@@ -1085,7 +1091,6 @@ function replyCalcWorkPane(input, actions) {
   };
   box.addEventListener("input", paint);
   paint();
-  sumline.append(typeset, kind.seg);
   const out = replyCalcResult();
   //: Restoring puts the sum back in the box (a preview, not a keep), in the kind it was worked out in; Copy writes the figure.
   const history = replyCalcHistory("work", {
@@ -1190,14 +1195,14 @@ function replyCalcWorkPane(input, actions) {
     mode.on = on;
     keep();
     sciKeys.classList.toggle("hidden", !on);
-    bar.classList.toggle("hidden", !on);
+    angle.seg.classList.toggle("hidden", !on);
     kind.sync(on ? "scientific" : "standard");
     showMemory();
     box.placeholder = on ? "sin(30), 2 * pi, sqrt(16), 5!" : "12 * (3 + 4), 15% of 80, 5 km to miles";
     rerun();
   };
   setMode(mode.on);
-  pane.append(box, sumline, bar, out, sciKeys, keys, history.el);
+  pane.append(box, typeset, head, out, sciKeys, keys, history.el);
   if (input) run(true);
   return pane;
 }
@@ -1355,7 +1360,7 @@ function replyCalcHistory(tab, { label, copy, restore }) {
   bar.className = "calc-log-bar";
   const toggle = document.createElement("button");
   toggle.type = "button";
-  toggle.className = "ghost quiet small calc-log-toggle";
+  toggle.className = "ghost small disclosure-row calc-log-toggle";
   const count = document.createElement("span");
   count.className = "calc-log-count";
   const note = document.createElement("span");
@@ -1371,12 +1376,13 @@ function replyCalcHistory(tab, { label, copy, restore }) {
   rows.id = `calc-history-${tab}-${replyCalc.opened}`;
   rows.setAttribute("aria-label", "Earlier answers");
   toggle.setAttribute("aria-controls", rows.id);
+  //: The one disclosure row (DESIGN.md): the caret first, History, its count as a muted badge, and Clear at the end of the same line as the quiet text action.
   const caret = document.createElement("i");
-  caret.className = "ph ph-caret-down";
+  caret.className = "ph ph-caret-down contents-caret";
   caret.setAttribute("aria-hidden", "true");
-  toggle.append("History", count, caret);
-  bar.append(toggle, note, clear);
-  el.append(bar, rows);
+  toggle.append(caret, "History", count);
+  bar.append(toggle, clear);
+  el.append(bar, note, rows);
   const set = (next) => {
     list = next;
     if (!list.some((row) => row.key === replacing)) {
@@ -1413,7 +1419,7 @@ function replyCalcHistory(tab, { label, copy, restore }) {
   };
   function draw() {
     el.classList.toggle("hidden", !list.length);
-    count.textContent = ` ${list.length}`;
+    count.textContent = String(list.length);
     toggle.setAttribute("aria-expanded", String(open));
     rows.hidden = !open;
     clear.hidden = !open;
