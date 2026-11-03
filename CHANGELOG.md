@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Deleted or damaged files in the data folder: each start checks it (core/selfcheck.py); a deleted or damaged notebook file, or a lost -wal, is offered the newest backup holding notes on the lock screen (Restore backup or Start a new notebook; a damaged file and an unreadable preferences.json are kept aside, never deleted), the owned folders are made again, attached files that are gone are listed in Settings, About, Health, Data folder check with Check and repair, a clean quit folds the -wal into the file, and a non-UTF-8 preferences.json no longer stops the server (INBOX 1573).
 - CodeQL: the re-export blocks in ai/agent.py, ai/composer.py and api/routes_chat.py are gone; every reader imports the name from the module that defines it (24 unused-import alerts on main), and a test file imports pathlib once.
 - Get started ticks Ask your notebook after an answer even when the history badge had read 0 before the answer was kept (E2E first-run, CI 2026-11-03).
 - Avatar lab and companion simulator load again: they bring the blink rig (atlas-motion.js) and the look pickers (companion-settings.js) the renderers moved to, and stand in for the app's lazy loaders (tools/lab-shims.js, tests/test_tools_benches.py) (the owner, 2026-11-03).
