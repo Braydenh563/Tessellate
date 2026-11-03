@@ -7067,11 +7067,12 @@ function wbMapPickRow(select) {
 //: smallest first. A size on a step is its name; a size between two is the step
 //: below with a plus ("L+", so it reads as "a little over L" and the minus
 //: button visibly lands on "L"); under the smallest step it is that step.
-function wbMapSizeName(size, steps) {
+//: A property of the stepper, not a shared-scope name (ranked row 37a).
+wbMapSizeStepper.sizeName = function wbMapSizeName(size, steps) {
   if (!steps.length) return `${size}px`;
   const below = [...steps].reverse().find((step) => step.px <= size) || steps[0];
   return below.px === size || size < steps[0].px ? below.name : `${below.name}+`;
-}
+};
 
 function wbMapSizeStepper(select) {
   const wrap = document.createElement("div");
@@ -7099,7 +7100,7 @@ function wbMapSizeStepper(select) {
     const drawn = Number(wbMapThemedData(wbSelectedMapNode())?.font_size);
     return { size: drawn > 0 ? drawn : Number(chosen?.dataset.inherits) || WB_MAP_TEXT_DEFAULT, following: true };
   };
-  const nameOf = (size) => wbMapSizeName(size, choices().map((o) => ({ name: o.textContent.trim(), px: px(o) })));
+  const nameOf = (size) => wbMapSizeStepper.sizeName(size, choices().map((o) => ({ name: o.textContent.trim(), px: px(o) })));
   const step = (dir) => {
     const { size } = now();
     const list = choices();

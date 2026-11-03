@@ -145,7 +145,7 @@ def test_the_size_readout_is_one_scale_never_pixels():
     if not node:
         pytest.skip("node is not installed")
     start = MAP.index("function wbMapSizeName(")
-    fn = MAP[start : MAP.index("\n}\n", start) + 3]
+    fn = MAP[start : MAP.index("\n};\n", start) + 2] + "\n"
     steps = "[{name:'S',px:12},{name:'M',px:14},{name:'L',px:19},{name:'XL',px:25}]"
     script = fn + f"console.log(JSON.stringify([12,14,19,25,22,17,30,10,16].map((n) => wbMapSizeName(n, {steps}))));"
     out = subprocess.run([node, "-e", script], capture_output=True, text=True, check=True).stdout
