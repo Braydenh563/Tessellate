@@ -80,6 +80,15 @@
 //    (whiteboard.js) and renderLibraryImagesGallery()/renderLibraryDocuments()
 //    (this file) exactly as before; only the listener's *location* changed.
 
+//: A dock's title says what the tab above it cannot: how many (unslop 1103, 15).
+//: The sub-tab already names the thing, so "Documents" under "Documents" was an echo.
+//: A property of nounCount, not a global of its own (tests/test_global_scope_ratchet.py),
+//: and here, not in prefs.js: only the Library's docks call it (the boot scripts' gzip total).
+nounCount.dock = function (dock, n, one, many = `${one}s`) {
+  const title = document.querySelector(`.dock[data-dock-name="${dock}"] .dock-identity h2`);
+  if (title) title.textContent = n ? nounCount(n, one, many) : `No ${many}`;
+};
+
 //: [{ext, label, line_comment, block_comment, indent, previewable}], server
 //: order preserved: the picker's order is a decision (see filetypes.py) and
 //: sorting it here would quietly undo it. Here, not in documents.js: the
@@ -538,6 +547,7 @@ function renderLibraryFilters() {
         : kind.key === "meeting"
           ? libraryItems.filter((i) => i.kind === "note" && (i.tags || []).includes("meeting")).length
           : libraryCounts[kind.key] || 0;
+    if (kind.key === "all") nounCount.dock("library", count, "item");
     const button = document.createElement("button");
     button.type = "button";
     button.className =
@@ -2865,6 +2875,7 @@ function renderSkillCards(query = "") {
   //: it was a pill well of three).
   const yours = skillCardsCache.filter(({ skill }) => !skill.builtin).length;
   const counts = { all: skillCardsCache.length, yours, builtin: skillCardsCache.length - yours };
+  nounCount.dock("library-skills", counts.all, "skill");
   const kindSelect = $("skills-kind");
   if (kindSelect) {
     for (const option of kindSelect.options) {
@@ -3503,8 +3514,10 @@ async function renderLibraryDocuments() {
   }
   surfaceRecovered(empty);
   //: Every document, before any filter or page: the first reorder stores this (obj-reorder.js).
-  if (!needle) libraryDocsAll = docs;
-  else if (!libraryDocsAll.length) seedLibraryDocsAll();
+  if (!needle) {
+    libraryDocsAll = docs;
+    nounCount.dock("library-docs", docs.length, "document");
+  } else if (!libraryDocsAll.length) seedLibraryDocsAll();
 
   //: The property filter's options come from what the *search* left, so the
   //: control offers the properties of the documents on screen rather than of
@@ -9064,6 +9077,7 @@ function filterLibraryImagesGallery() {
     //: the sort still runs over what is left.
     .filter((i) => libraryMediaKind === "files" || libraryImageOriginsOn.has(libraryImageOrigin(i)));
   renderLibraryImageOrigins();
+  nounCount.dock("library-media", ofKind.length, libraryMediaKind === "files" ? "file" : "image");
   const matched = query
     ? ofKind.filter(
         (i) =>
@@ -11255,6 +11269,7 @@ async function renderBookmarks() {
     if (!liveLinkIds.has(id)) libraryLinksSelection.delete(id);
   }
   empty.classList.toggle("hidden", bookmarksCache.length > 0);
+  nounCount.dock("library-links", bookmarksCache.length, "bookmark");
   renderBookmarkGroupChips();
   filterBookmarks();
   syncSelectbarCount("library-links", libraryLinksSelection.size);

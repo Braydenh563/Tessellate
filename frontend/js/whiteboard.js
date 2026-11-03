@@ -25006,6 +25006,7 @@ function drawLibraryBoardsGallery(listed) {
     return;
   }
   surfaceRecovered(empty);
+  nounCount.dock("library-boards", boards.length, "board or map", "boards and maps");
   // See `createNewBoard`'s own comment: a board with nothing on it yet
   // doesn't come back from the server at all.
   const created = window.wbLastCreatedBoard;

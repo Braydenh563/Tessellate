@@ -76,6 +76,119 @@ entryItem.copyText = async (entry) => {
   }
 };
 
+//: Moved here from lightbox.js (unslop 1103, boot gzip): its one caller is below, in the lazy note card.
+// The inline result of a re-evaluate: new confidence, plus tag and link
+// suggestions the user applies with a click (nothing is applied on its own).
+function renderInlineAction(entry) {
+  const wrap = document.createElement("div");
+  wrap.className = "inline-action";
+
+  if (inlineAction.kind === "reevaluate") {
+    renderReevaluateResult(entry, wrap);
+    return wrap;
+  }
+
+  if (inlineAction.kind === "document") {
+    renderAttachToDocument(entry, wrap);
+    return wrap;
+  }
+
+  if (inlineAction.kind === "board") {
+    renderAttachToBoard(entry, wrap);
+    return wrap;
+  }
+
+  if (inlineAction.kind === "remind") {
+    const shown = stripFrontmatter(entry.content).trim();
+    const preview = shown.length > 40 ? shown.slice(0, 39) + "…" : shown;
+    const textInput = document.createElement("input");
+    textInput.type = "text";
+    textInput.value = `Follow up: ${preview}`;
+    const dueInput = document.createElement("input");
+    dueInput.type = "datetime-local";
+    dueInput.value = defaultDueValue();
+    const row = document.createElement("div");
+    row.className = "row";
+    row.appendChild(
+      smallButton("Set reminder", "", async () => {
+        //: A refusal (a time already gone) is said, not an unhandled rejection.
+        try {
+          if (!(await addReminder(textInput.value.trim(), dueInput.value, entry.id))) return;
+        } catch (error) {
+          if (!error.isLockout) toast(error.message || "Couldn't set that reminder.", true);
+          return;
+        }
+        inlineAction = null;
+        renderEntries();
+      }, false)
+    );
+    row.appendChild(
+      smallButton("Cancel", "", () => {
+        inlineAction = null;
+        renderEntries();
+      })
+    );
+    wrap.append(textInput, dueInput, row);
+    setTimeout(() => textInput.focus(), 0);
+    return wrap;
+  }
+
+  const isContext = inlineAction.kind === "context";
+
+  const textarea = document.createElement("textarea");
+  textarea.rows = 2;
+  textarea.placeholder = isContext
+    ? "Add detail: Atlas re-reads the whole note and may refile it…"
+    : "Continue this train of thought…";
+  wrap.appendChild(textarea);
+
+  const row = document.createElement("div");
+  row.className = "row";
+  row.appendChild(
+    smallButton(
+      isContext ? "Add context" : "Add to thread",
+      "",
+      async () => {
+        const text = textarea.value.trim();
+        if (!text) return;
+        try {
+          if (isContext) {
+            const updated = await apiJson(`/entries/${entry.id}/context`, {
+              method: "POST",
+              body: JSON.stringify({ text }),
+            });
+            toast(
+              updated.category === entry.category
+                ? `Context added: still filed under “${updated.category}”.`
+                : `Context added: refiled under “${updated.category}”.`
+            );
+          } else {
+            await apiJson("/entries", {
+              method: "POST",
+              body: JSON.stringify({ content: text, parent_id: entry.id }),
+            });
+            toast("Thread continued.");
+          }
+          inlineAction = null;
+          await loadEntries();
+        } catch (error) {
+          toast(error.message, true);
+        }
+      },
+      false
+    )
+  );
+  row.appendChild(
+    smallButton("Cancel", "", () => {
+      inlineAction = null;
+      renderEntries();
+    })
+  );
+  wrap.appendChild(row);
+  setTimeout(() => textarea.focus(), 0);
+  return wrap;
+}
+
 function entryItem(entry, options = {}) {
   const li = document.createElement("li");
   li.dataset.id = entry.id;

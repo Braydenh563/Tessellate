@@ -48,7 +48,7 @@ ALLOWED = {
     "graph-canvas.js:gcWriteUnresolved": _NEW,
     "graph.js:saveGraphNewNote": _NEW,
     "library.js:<top>": _NEW,
-    "lightbox.js:renderInlineAction": _NEW,
+    "entry-card.js:renderInlineAction": _NEW,
     "media.js:saveSketch": _NEW,
     "meetings.js:saveVoiceNoteText": _NEW,
     "meetings.js:transcribeRecording": _NEW,

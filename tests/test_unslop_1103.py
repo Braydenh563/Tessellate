@@ -165,3 +165,25 @@ def test_14_the_two_composers_have_no_drag_grip():
     start = js.index("async function renderQuickCaptureWidget(")
     body = js[start : js.index("\n}\n", start)]
     assert 'textarea.className = "autogrow"' in body and "autoGrow(textarea)" in body
+
+
+def test_15_a_dock_title_is_a_count_not_the_tab_name_again():
+    """The sub-tab says Documents; the dock under it said Documents too (50px, 16px / 600, twice)."""
+    assert "nounCount.dock = function (" in _js("library.js"), "a property, not one more global; not in the boot scripts (test_static_compression)"
+    calls = {
+        "library.js": ('nounCount.dock("library-docs"', 'nounCount.dock("library-media"', 'nounCount.dock("library-links"', 'nounCount.dock("library-skills"', 'nounCount.dock("library",'),
+        "whiteboard.js": ('nounCount.dock("library-boards"',),
+        "meetings.js": ('nounCount.dock?.("library-recordings"',),
+    }
+    for name, needles in calls.items():
+        for needle in needles:
+            assert needle in _js(name), f"{name} no longer writes {needle}"
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    # The Timeline and the Graph have a count chip beside the title already: the title stays for a screen reader only.
+    assert '<h2 class="visually-hidden">Timeline</h2>' in html and '<h2 class="visually-hidden">Graph</h2>' in html
+
+
+def test_boot_win_the_inline_action_form_lives_with_its_one_caller():
+    """The boot scripts' gzip total was 37 bytes under its cap; the form draws only from a lazy note card."""
+    assert "function renderInlineAction(" not in _js("lightbox.js")
+    assert "function renderInlineAction(" in _js("entry-card.js")

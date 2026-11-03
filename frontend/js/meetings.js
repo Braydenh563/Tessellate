@@ -1540,6 +1540,7 @@ async function renderRecordings() {
   }
   noteRecoveredRecordings(body.recovered);
   const rows = body.recordings;
+  if (!q) nounCount.dock?.("library-recordings", rows.length, "recording");
   list.replaceChildren(...rows.map(recordingRow));
   if (!rows.length) list.appendChild(recordingsEmpty(q ? "match" : "none"));
 }
