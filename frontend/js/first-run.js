@@ -36,9 +36,12 @@ function firstStepsState() {
 async function firstStepsRead() {
   const named = Boolean(((typeof prefsCache === "object" && prefsCache?.display_name) || "").trim());
   //: An answer from Ask is kept in the Ask history, a chat in the chat list:
-  //: either one is the third step done.
+  //: either one is the third step done. Only a count above 0 is taken from the
+  //: badge: a 0 it read may predate the answer's record (the badge re-reads one
+  //: frame after an answer, which can be before the server has kept it; E2E
+  //: first-run, 2026-11-03), and a stale 0 left the step unticked.
   const [asks, chats, sample] = await Promise.all([
-    askBadgeTotal === null ? apiJson("/ask-history/stats").catch(() => ({ total: 0 })) : { total: askBadgeTotal },
+    askBadgeTotal ? { total: askBadgeTotal } : apiJson("/ask-history/stats").catch(() => ({ total: 0 })),
     apiJson("/conversations?limit=1").catch(() => []),
     apiJson("/help/sample-notebook").catch(() => ({ live: 0, added: true })),
   ]);

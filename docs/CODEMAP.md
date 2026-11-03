@@ -2,7 +2,7 @@
 
 Generated 2026-11-03 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7585, frontend ids 2640, CSS sections 519, backend routes 641, backend modules 8502, test files 1915, tests 16129, plan headings 991, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7585, frontend ids 2640, CSS sections 519, backend routes 641, backend modules 8502, test files 1917, tests 16132, plan headings 992, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7585)
 
@@ -4405,21 +4405,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `firstStepButton` | frontend/js/first-run.js:53 |
-| `firstStepName` | frontend/js/first-run.js:79 |
-| `firstStepsBellRow` | frontend/js/first-run.js:344 |
-| `firstStepsCard` | frontend/js/first-run.js:206 |
-| `firstStepsMenuItems` | frontend/js/first-run.js:185 |
+| `firstStepButton` | frontend/js/first-run.js:56 |
+| `firstStepName` | frontend/js/first-run.js:82 |
+| `firstStepsBellRow` | frontend/js/first-run.js:347 |
+| `firstStepsCard` | frontend/js/first-run.js:209 |
+| `firstStepsMenuItems` | frontend/js/first-run.js:188 |
 | `firstStepsRead` | frontend/js/first-run.js:36 |
-| `firstStepsSample` | frontend/js/first-run.js:120 |
+| `firstStepsSample` | frontend/js/first-run.js:123 |
 | `firstStepsState` | frontend/js/first-run.js:27 |
-| `getStartedHide` | frontend/js/first-run.js:164 |
-| `getStartedItems` | frontend/js/first-run.js:319 |
-| `getStartedMarkDone` | frontend/js/first-run.js:173 |
-| `getStartedShow` | frontend/js/first-run.js:157 |
-| `getStartedSteps` | frontend/js/first-run.js:299 |
-| `renderFirstSteps` | frontend/js/first-run.js:271 |
-| `renderGetStarted` | frontend/js/first-run.js:386 |
+| `getStartedHide` | frontend/js/first-run.js:167 |
+| `getStartedItems` | frontend/js/first-run.js:322 |
+| `getStartedMarkDone` | frontend/js/first-run.js:176 |
+| `getStartedShow` | frontend/js/first-run.js:160 |
+| `getStartedSteps` | frontend/js/first-run.js:302 |
+| `renderFirstSteps` | frontend/js/first-run.js:274 |
+| `renderGetStarted` | frontend/js/first-run.js:389 |
 | `writeNoteHint` | frontend/js/first-run.js:16 |
 
 ### frontend/js/gesture-kit.js (5)
@@ -23339,7 +23339,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16129)
+## Tests (16132)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24046,6 +24046,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_find_repaint_1526.py | 6 |
 | tests/test_finder_star_790.py | 3 |
 | tests/test_first_run_472.py | 14 |
+| tests/test_first_steps_ask_count.py | 1 |
 | tests/test_fixa2_1025.py | 5 |
 | tests/test_flaw_class_lints.py | 2 |
 | tests/test_focus_feedback_1029.py | 8 |
@@ -25029,6 +25030,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_tool_verifiers.py | 8 |
 | tests/test_toolbar_sizes_are_tokens_s44.py | 1 |
 | tests/test_toolrank.py | 8 |
+| tests/test_tools_benches.py | 2 |
 | tests/test_toolwords.py | 14 |
 | tests/test_topbar_mode.py | 3 |
 | tests/test_topic_names.py | 9 |
@@ -25261,7 +25263,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_zoom_frame_1508.py | 3 |
 | tests/test_zoom_wheel_delta.py | 3 |
 
-## Plan headings (991)
+## Plan headings (992)
 
 Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, except the HISTORY.md archive. Sorted by heading.
 
@@ -25839,7 +25841,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E4 · The honest positives, so the section is not one-sided (read) | docs/roadmap/MODERNISATION_AUDIT.md:676 |
 | Earlier morning summary (2026-10-30) | docs/roadmap/HANDOVER.md:30 |
 | Earlier morning summary (away run 2026-10-18b, branch claude/magical-feynman-7bgj7j, PR 192, 0.6.0) | docs/roadmap/HANDOVER.md:49 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:584 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:586 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4280 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |
@@ -25962,7 +25964,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1299 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:241 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:245 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4186 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
@@ -26074,6 +26076,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-11-03 | docs/roadmap/UI_MODERNISATION_PLAN.md:1557 |
 | Placed from INBOX, 2026-11-03 | docs/roadmap/WHITEBOARD_PLAN.md:1726 |
 | Placed from INBOX, 2026-11-03 (chat; CHAT_PLAN is at its cap) | docs/roadmap/BACKLOG.md:4446 |
+| Placed from INBOX, 2026-11-03b | docs/roadmap/BACKLOG.md:4456 |
 | Placed from INBOX, built (pointers) | docs/roadmap/UI_MODERNISATION_PLAN.md:1062 |
 | Placed from INBOX: 107d, the segmented mini bars | docs/roadmap/DOCUMENTS_PLAN.md:503 |
 | Placed from INBOX: the composer everywhere (the owner, 2026-10-06) | docs/roadmap/CHAT_PLAN.md:689 |
