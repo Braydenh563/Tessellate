@@ -410,16 +410,25 @@ function mapPreviewDraw(svg, board, size) {
 
   if (!items.length) {
     // The one designed empty state, in the same language as a real preview:
-    // three nodes and two curves, ghosted. See the header comment.
+    // a map ghosts a root with two branches; a board ghosts three loose
+    // cards with no curves between them, so an empty board does not read as
+    // a mind map (audit 1028 U40).
     paper.classList.add("board-minimap-paper-empty");
     const ghost = document.createElementNS(NS, "g");
     ghost.setAttribute("class", "board-minimap-ghost");
-    const shape = [
-      { x: 0.04, y: 0.5 },
-      { x: 0.72, y: 0.16 },
-      { x: 0.72, y: 0.84 },
-    ];
-    for (const child of shape.slice(1)) {
+    const isMap = board?.type === "map";
+    const shape = isMap
+      ? [
+          { x: 0.04, y: 0.5 },
+          { x: 0.72, y: 0.16 },
+          { x: 0.72, y: 0.84 },
+        ]
+      : [
+          { x: 0.1, y: 0.18 },
+          { x: 0.52, y: 0.4 },
+          { x: 0.2, y: 0.7 },
+        ];
+    for (const child of isMap ? shape.slice(1) : []) {
       ghost.appendChild(
         mapPreviewEdge(NS, px, py, blockW, blockH, {
           x1: shape[0].x,

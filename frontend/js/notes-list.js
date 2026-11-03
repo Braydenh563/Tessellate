@@ -3458,7 +3458,7 @@ const CARD_COUNT_SOURCES = [
     empty: 0,
     chip(entry) {
       const count = this.cache.get(entry.id);
-      return count ? chip(`ph:question ${count} open question${count === 1 ? "" : "s"}`, "questions", (event) => {
+      return count ? chip(`ph:question ${nounCount(count, "open question")}`, "questions", (event) => {
         event.stopPropagation();
         showNotesSection("questions");
         ensureModule("questionsView").then(() => questionsForNote(entry.id));
