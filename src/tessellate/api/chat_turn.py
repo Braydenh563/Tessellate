@@ -24,6 +24,7 @@ from tessellate.ai.grounding import SentenceGrounder
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.api.chat_agent import _starter_read
 from tessellate.api.chat_pool import _Found
+from tessellate.api.chat_extra import _turn_label
 from tessellate.api.chat_request import ChatRequest, _StreamRequest, _Turn, _event, _in_full
 from tessellate.api.chat_said import MODEL_STOPPED_NOTE, _app_answers, _asks_capability, _in_notes
 from tessellate.core import deps, private_turn
@@ -275,13 +276,6 @@ def _may_digest(prepared: dict, question: str) -> bool:
     the composer's: but "all the dates in my notes" reads as newest-first
     and is a computed answer (`ai/composer_lists.py`)."""
     return not str(prepared.get("search_mode") or "").endswith("recent") or composer_lists.computed_kind(question) is not None or composer_digest.shows_the_lot(question)
-
-
-def _turn_label(content: str) -> str:
-    """A note as a history turn names it (`chatTurnObjects` in chat-attach.js):
-    its first line without heading or list marks, up to the first stop."""
-    first = re.sub(r"^[#*>\-\s]+", "", (content or "").strip().split("\n", 1)[0])
-    return re.split(r"[:.!?]", first)[0].strip()[:80]
 
 
 def _cited_scope(req: _StreamRequest, follow) -> list[int]:  # noqa: ANN001

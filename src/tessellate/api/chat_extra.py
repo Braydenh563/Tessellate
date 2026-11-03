@@ -5,6 +5,7 @@ stream events. Kept out of `routes_chat.py`, which is large enough."""
 from __future__ import annotations
 
 import logging
+import re
 from datetime import datetime, timedelta
 
 from sqlalchemy import select
@@ -150,12 +151,19 @@ def mentioning(session: Session, word: str) -> int:
         return 0
 
 
+def _turn_label(content: str) -> str:
+    """(Lives here, not in chat_turn: slot_reply reads it and chat_turn imports this
+    module, so the other way round was an import cycle, CodeQL 1998.)
+    A note as a history turn names it (`chatTurnObjects` in chat-attach.js):
+    its first line without heading or list marks, up to the first stop."""
+    first = re.sub(r"^[#*>\-\s]+", "", (content or "").strip().split("\n", 1)[0])
+    return re.split(r"[:.!?]", first)[0].strip()[:80]
+
+
 def slot_reply(session: Session, question: str, history: list[dict]) -> str:
     """The reply to "Which note do you want pinned?" completes that act before anything
     routes it ("erm, the interesting bean one" is "Pin note 3"; INBOX 1570). The
     question itself when the last answer was not asking for a note."""
-    from tessellate.api.chat_turn import _turn_label
-
     if not composer_suggest.pending_kind(history):
         return question
     rows = session.execute(

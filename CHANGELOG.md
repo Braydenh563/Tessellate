@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Windows splash: the taskbar shows Tessellate, not PowerShell (the splash takes the app's AppUserModelID before its window opens), and the logo tile has the mark's three stops, so it is no longer pinker than every other copy (INBOX 1574).
+- CodeQL: the diagram reply's fence and the note-slot reply's filler and tail are scanned, not matched by polynomial regexes; `_turn_label` moved to chat_extra, which ends an import cycle.
 - The keypad recipe (`.key-grid`, the equation editor and the calculator) loads with those two surfaces, not at boot (key-grid-lazy.css), which brings boot CSS back under its cap after the 1103 merges; Diagram Suggest has its keyboard twin and corner.
 - CodeQL: the re-export blocks in ai/agent.py, ai/composer.py and api/routes_chat.py are gone; every reader imports the name from the module that defines it (24 unused-import alerts on main), and a test file imports pathlib once.
 - Get started ticks Ask your notebook after an answer even when the history badge had read 0 before the answer was kept (E2E first-run, CI 2026-11-03).

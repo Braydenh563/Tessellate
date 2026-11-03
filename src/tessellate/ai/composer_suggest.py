@@ -181,8 +181,24 @@ def open_ended(question: str) -> str:
 # reply is that question's answer, read before anything routes it.
 
 #: Said while thinking or softening, never part of a note's name.
-_SLOT_FILLER = re.compile(r"^(?:(?:erm+|er+|um+|uh+|hmm+|like|so|well|ok|okay|yeah|yes|yep|oh|ah|just|maybe|i guess|i mean|please|pls)\b[ ,.]*)+", re.I)
-_SLOT_TAIL = re.compile(r"(?:[ ,.]+(?:please|pls|thanks|thank you|then))*[ .!]*$", re.I)
+#: One filler word and its trailing commas and stops; `_unfilled` steps them off the front
+#: one at a time. A repeated group with a trailing `$` was polynomial on runs of blanks
+#: (CodeQL 1997), so the front and the tail are walked, not matched whole.
+_SLOT_FILLER = re.compile(r"(?:erm+|er+|um+|uh+|hmm+|like|so|well|ok|okay|yeah|yes|yep|oh|ah|just|maybe|i guess|i mean|please|pls)\b[ ,.]*", re.I)
+_SLOT_TAIL_WORDS = ("thank you", "please", "thanks", "pls", "then")
+
+
+def _unfilled(said: str) -> str:
+    at = 0
+    while (found := _SLOT_FILLER.match(said, at)) and found.end() > at:
+        at = found.end()
+    said = said[at:].rstrip(" .!")
+    while True:
+        low = said.lower()
+        word = next((w for w in _SLOT_TAIL_WORDS if low.endswith(w) and len(said) > len(w) and said[-len(w) - 1] in " ,."), "")
+        if not word:
+            return said
+        said = said[: -len(word)].rstrip(" ,.")
 #: "the one about X", "the one called X": the note is named after "one".
 _ONE_ABOUT = re.compile(r"^(?:(?:the|that|this|my) )?one (?:about|on|for|called|named|titled|with|that mentions?|mentioning) (?:the |my )?(?P<name>.+)$", re.I)
 #: "the X one", "that X note", "my X one": the note is the words between.
@@ -194,7 +210,7 @@ _BLANK_WORDS = frozenset("one ones note notes it this that them these those thin
 def reference(text: str) -> str:
     """The note a reply points at ("erm, the interesting bean one" is "interesting
     bean"), or "" when it names nothing: only filler, "it", "that one"."""
-    said = _SLOT_TAIL.sub("", _SLOT_FILLER.sub("", " ".join((text or "").split()))).strip(" \"'“”")
+    said = _unfilled(" ".join((text or "").split())).strip(" \"'“”")
     found = _ONE_ABOUT.match(said)
     name = found.group("name") if found else (_THE_ONE.match(said).group("name") if _THE_ONE.match(said) else said)
     name = name.strip(" \"'“”,.")

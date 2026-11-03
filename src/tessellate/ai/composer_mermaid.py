@@ -341,8 +341,34 @@ def fenced(made: Diagram) -> str:
 _HEADERS = re.compile(
     r"^(?:flowchart|graph|mindmap|timeline|sequenceDiagram|classDiagram|stateDiagram(?:-v2)?|erDiagram|journey|gantt|pie|gitGraph|quadrantChart|requirementDiagram|sankey(?:-beta)?|xychart(?:-beta)?|block(?:-beta)?|kanban)\b"
 )
-_FENCE = re.compile(r"```[ \t]*(?:mermaid)?[ \t]*\n(.*?)\n[ \t]*```", re.S)
 MAX_SOURCE = 20000
+
+
+def _skip_blank(text: str, at: int) -> int:
+    while at < len(text) and text[at] in " \t":
+        at += 1
+    return at
+
+
+def _fence_body(text: str) -> str | None:
+    """The body of the first ```` ``` ```` or ```` ```mermaid ```` fence that closes, or None.
+    A scan, not a regex: a lazy body before a closing fence with blanks either side
+    is polynomial on a reply of fences and tabs (CodeQL 1996), and the reply is the
+    model's, so its shape is not ours to trust."""
+    start = text.find("```")
+    while start >= 0:
+        at = _skip_blank(text, start + 3)
+        if text.startswith("mermaid", at):
+            at = _skip_blank(text, at + 7)
+        if at < len(text) and text[at] == "\n":
+            line = text.find("\n", at + 1)
+            while line >= 0:
+                if text.startswith("```", _skip_blank(text, line + 1)):
+                    return text[at + 1 : line]
+                line = text.find("\n", line + 1)
+            return None
+        start = text.find("```", start + 3)
+    return None
 
 
 def source_of(reply: str) -> tuple[str, str]:
@@ -351,9 +377,9 @@ def source_of(reply: str) -> tuple[str, str]:
     closes, prose with no diagram, a first line that opens no diagram kind. The
     reason is one plain sentence for the person; nothing is guessed at."""
     text = (reply or "").strip()
-    found = _FENCE.search(text)
-    if found:
-        body = found.group(1).strip("\n")
+    fenced_body = _fence_body(text)
+    if fenced_body is not None:
+        body = fenced_body.strip("\n")
     elif "```" in text:
         return "", "The model's diagram was cut off before the fence closed. Try again, or describe fewer steps."
     else:
