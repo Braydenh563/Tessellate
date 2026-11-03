@@ -171,7 +171,9 @@ def test_the_table_holds_the_editors_and_the_owners_typos():
     #: Brief 90's fixtures: the owner's own slips, the unambiguous ones.
     assert {"everwhere", "proffesionalising", "hwo", "cna", "mroe", "somthing", "featrues"} <= table
     #: A real word is never a key: the cost of being wrong is a silent change.
-    assert not {"thes", "ny", "ro", "mut", "od", "cant", "dont", "ahs"} & table
+    #: ("dont" left this list in INBOX 1582: it is not a word, it is "don't" with the apostrophe left
+    #: out, and the owner asked for the whole contraction family corrected; "cant" stays, it is a word.)
+    assert not {"thes", "ny", "ro", "mut", "od", "cant", "ahs"} & table
 
 
 def test_help_moves_with_it():
