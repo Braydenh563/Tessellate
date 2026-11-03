@@ -22297,7 +22297,23 @@ function renderWhiteboard() {
     return crossLinkIds.has(`${parsed?.sourceId}:${parsed?.targetId}`);
   });
 
+  //: **A pen or highlighter stroke is repainted only when its look can have
+  //: changed** (audit 1028 B3, B4): the key is its data plus what decides the
+  //: ink (the board's colour and the light or dark mode), the way
+  //: `wbObjectPaintKey` does for a topic. Null for everything else: a
+  //: connector's path comes from the items at its ends, and a shape has a
+  //: label and a rough look. 300 strokes cost 90ms a render at 4x throttle
+  //: whatever had moved; a gesture that moved a stroke's drawn path and did
+  //: not put it back is caught by the skip's own check of that path.
+  const strokeInk = `${wbBoardBg()}|${document.documentElement.dataset.mode}`;
+  const strokePaintKey = (d) =>
+    typeof d.data === "string" && !d.data.includes("link-") && /"shape":\s*"(?:draw|highlighter)"/.test(d.data)
+      ? `${d.data}|${strokeInk}`
+      : null;
   sketchUpdate.each(function(d) {
+    const strokeKey = strokePaintKey(d);
+    const drawn = this.querySelector(".sketch-path");
+    if (strokeKey && this._wbStrokeKey === strokeKey && drawn?.getAttribute("d") === this._wbStrokeD) return;
     let pathData = d.data;
     let hitboxData = null;
     let stroke = "var(--text-color)";
@@ -22417,6 +22433,8 @@ function renderWhiteboard() {
     // After the path, which the label is laid out from (decision 12).
     wbPaintShapeLabel(this, shapeData, d);
     wbPaintLinkLabel(this, d, linkData);
+    this._wbStrokeKey = strokeKey;
+    this._wbStrokeD = strokeKey ? pathData : null;
   });
 
   sketchSelection.exit().remove();

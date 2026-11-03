@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard: a render repaints only the pen and highlighter strokes whose data, ink or live path changed (the way a topic already does), so a board of 300 sketches renders in 42 ms instead of 90 ms at 4x CPU throttle after a topic moves or an undo (audit B4).
 - Streaming answers: a live answer draws only its open block and keeps finished blocks, so a 9.8 KB stream at 4x CPU throttle spends 166 ms rendering instead of 1481 ms and has 2 long tasks (141 ms) instead of 41 (4098 ms); the finished answer is identical (audit E34); the trail renderer and the evidence bars moved into the lazy Ask files to pay for the bytes.
 - Plans: the focus ring that was said to take the ground's colour on an active button does not reproduce (239 Tab stops across eight tabs: none under 2px or 3:1, minimum 3.56:1 light and 7.03:1 dark), so its plan row is closed with the numbers (a30b).
 - Plans: GRAPH phases 1, 2, 3 and 6 and UI_MODERNISATION Phase 7 items 1 to 5, already built and pointed at HISTORY.md, no longer keep their spec text in the plans (a30b); CODEMAP regenerated.

@@ -17,8 +17,8 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 11 | U8 | high | new document opens in Read mode on phone | fixed (673039d, reconciled 2026-10-30) | S |
 | 12 | U9 | high | find and replace panel is unstyled CodeMirror default | fixed (styling 673039d; match count this batch) | M |
 | 13 | U10 | high | image menu inserts bare stub with no picker | fixed (673039d, reconciled 2026-10-30) | M |
-| 14 | B3 | high | every render clears caches and rebuilds all map nodes | new | L |
-| 15 | B4 | high | full board render per frame with no dirty set | new | L |
+| 14 | B3 | high | every render clears caches and rebuilds all map nodes | already fixed in fact (13a-open paint key): 500 of 500 topic elements survive a render, 72.8 ms median at 4x throttle for one moved topic (10.6 ms at 200 topics unthrottled) | L |
+| 15 | B4 | high | full board render per frame with no dirty set | fixed 1102 a30g for pen strokes (300 sketches idle render 90 to 42 ms at 4x throttle); topics already keyed; connectors and shapes still repaint, see a30g-1102.md | L |
 | 16 | D7 | high | prose spell pass walks whole document every pause | fixed (673039d, reconciled 2026-10-30) | M |
 | 17 | S2 | high | graph layout blocks the main thread at about 2,000 notes | fixed 2026-10-30 (graph-1030: 25 to 9-10 s, long tasks 149 to 20) | L |
 | 18 | S3 | high | 1.1 MB index.html with comments and mascot code in boot path | fixed 1031: avatars and atlas lazy (boot bytes 0.77x, lock FCP 0.71x); comment stripping left | M |
@@ -146,7 +146,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 140 | B5 | med | 14+ separate pointermove listeners, several unthrottled | fixed (9e83452, reconciled 2026-10-30) | M |
 | 141 | B17 | med | link-sketch lookups parse every sketch JSON | fixed | M |
 | 142 | B18 | med | item and map size caches cleared per render, forcing layout reads | fixed | M |
-| 143 | D12 | med | replace-in-all re-downloads every document on each keystroke | docs/roadmap/DOCUMENTS_PLAN.md:1324 | M |
+| 143 | D12 | med | replace-in-all re-downloads every document on each keystroke | fixed (board1518-1101): 3 requests for three keystrokes to 1, tests/test_documents_replace_all.py | M |
 | 144 | D18 | med | live view rebuilds decorations per change, table copies text | new | L |
 | 145 | D19 | med | docText toString called 35 times, each O(n) | fixed (7add0bf) | M |
 | 146 | D20 | med | five whole-document renders per pause even when hidden | fixed (7add0bf) | M |
