@@ -1876,3 +1876,34 @@ def test_marks_hold_still_after_two_minutes_without_input_unless_busy() -> None:
     rule = css[css.rindex("\n", 0, at) : css.index("{", at)]
     assert ":not(.is-busy)" in rule and 'data-motion="reduced"' in rule
     assert "NMB_IDLE_MARK_MS = 120000" in AV and 'classList.remove("is-idle")' in AV
+
+
+def test_the_feminine_atlas_casts_her_stars_instead_of_wearing_them_1576() -> None:
+    """INBOX 1576, the owner: "those stars permanently stuck to the end of the
+    feminine atlas are a little awkward being permanently there, I think they
+    should instead become a movement or animation or behaviour (the stars in
+    its left hand)". At rest the swirl's loose end and the wisp by her left hand
+    carry none; a short cast from that hand (on a wave, a cheer, the greeting,
+    now and then on an idle beat) fades a handful in over about a second and
+    takes them off again, on the compositor's properties only, and not at all
+    under reduced motion."""
+    atlas = frontend_text("atlas.js")
+    micro = frontend_text("atlas-micro.js")
+    band = _fn("atlasBand", atlas)
+    assert "ATLAS_BAND_STARS.filter(([deg]) => deg < 404)" in band, "the strand's last stars are not drawn at rest"
+    assert 'atlasBandSplit(ATLAS_BAND_STARS, part));' in band, "the masculine dots are unchanged"
+    # The gestures that cast: the act's start, and the greeting (the corner and the large view's figures alike).
+    act = _fn("nameMarkBuddyAct")
+    assert re.search(r'if \(act === "wave" \|\| act === "cheer"\) window\.atlasMicroCast\?\.\(\);', act)
+    assert "window.atlasMicroCast?.();" in _fn("atlasOn", atlas)
+    cast = _fn("atlasMicroCast", micro)
+    # Never a read of the page, a frame loop or an add: it costs the compositor and a few nodes.
+    for banned in ("getBoundingClientRect", "getComputedStyle", "requestAnimationFrame", "composite", "offsetWidth", "getAnimations"):
+        assert banned not in cast, banned
+    assert "atlasMotionOK(box)" in cast and "finished.then(" in cast and ".remove()" in cast
+    # The look of one: a white four-point glint that is invisible until it plays, so a cast that
+    # never started (or ended) leaves nothing on the figure; none under reduced motion.
+    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    rule = re.search(r"\.nm-atlas \.atl-cast-star \{([^}]*)\}", css)
+    assert rule and "opacity: 0" in rule.group(1) and "transform-box: fill-box" in rule.group(1) and "fill: white" in rule.group(1)
+    assert re.search(r'html\[data-motion="reduced"\][^{]*\.atl-cast-star[^{]*\{ display: none', css)

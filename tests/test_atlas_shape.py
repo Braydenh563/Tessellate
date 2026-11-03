@@ -969,7 +969,9 @@ def test_the_feminine_look_has_astral_wisps_that_drift_on_a_box():
     # their own whose box drifts (`rotate` and `translate`, the compositor's
     # on a box, never on an svg root), still under reduced motion.
     feminine = _look("feminine")
-    assert feminine.count("sparkles: [0.") == 3
+    # INBOX 1576: the third wisp, the one by her left hand, keeps no stars at rest (she casts them,
+    # `atlasMicroCast`); the other two keep their trails.
+    assert feminine.count("sparkles: [0.") == 2 and feminine.count("sparkles: []") == 1
     for cls in ("atl-astral-glow", "atl-astral-core", "atl-astral-edge"):
         rule = re.search(r"\.nm-atlas \." + cls + r" \{([^}]*)\}", CSS)
         assert rule and "stroke" not in rule.group(1), cls

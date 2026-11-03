@@ -684,7 +684,7 @@ const ATLAS_LOOKS = {
     wisps: [
       { seg: [[34, 47.4, 28, 45.6, 16, 45.8, 12.6, 50.2], [12.6, 50.2, 10.4, 54.6, 16, 58.6, 26, 58.6], [26, 58.6, 36, 58.6, 46, 56.4, 47.4, 60.2], [47.4, 60.2, 48.4, 63.6, 43, 65.6, 37, 65]], back: [[0, 0.25], [0.75, 1]], sparkles: [0.18, 0.34, 0.47, 0.6, 0.7, 0.86], low: true },
       { seg: [[35, 69, 29, 66.6, 19, 67.4, 16.6, 71.4], [16.6, 71.4, 14.6, 75, 19, 78.4, 27, 77.4], [27, 77.4, 35, 76.4, 40.6, 77.6, 39.4, 81], [39.4, 81, 38.4, 83.6, 33.4, 83.4, 28, 81.6]], back: [[0, 0.25], [0.75, 1]], sparkles: [0.2, 0.36, 0.5, 0.64, 0.72, 0.84], low: true },
-      { seg: [[43.4, 31.6, 49.4, 26.4, 56, 29.6, 54.6, 36.4]], sparkles: [0.3, 0.75] },
+      { seg: [[43.4, 31.6, 49.4, 26.4, 56, 29.6, 54.6, 36.4]], sparkles: [] },
     ],
     //: The dress's centreline, from the waist (y 51) down, out to the left
     //: and lifting at its end: INBOX 535's tail, kept (INBOX 559, the owner:
@@ -1897,7 +1897,12 @@ function atlasBand(layer, id, part = "back", look = "masculine") {
   for (const [cx, cy, rx, ry, colour] of atlasBandSplit(ATLAS_BAND_CLOUDS, part)) atlasMake("ellipse", { class: `atl-band-cloud atl-band-cloud-${colour}`, cx, cy, rx, ry }, clouds);
   atlasMake("path", { class: "atl-band-stream", d: band.stream }, g);
   atlasMake("path", { class: "atl-band-edge atl-band-edge-soft", d: band.edge }, g);
-  if (look === "feminine") for (const [x, y, r] of atlasBandSplit(ATLAS_BAND_STARS, part)) atlasSpark(g, atlasFix(x), atlasFix(y), atlasFix(r * 2.6), "atl-band-glint");
+  //: **The strand's last stars (past 404 degrees) are not drawn on the feminine
+  //: look** (INBOX 1576, the owner: stars "permanently stuck to the end of the
+  //: feminine atlas ... should instead become a movement or animation or
+  //: behaviour"): they sat at the swirl's loose end by her left hand. She casts
+  //: her own now, from that hand (`atlasMicroCast`, atlas-micro.js).
+  if (look === "feminine") for (const [x, y, r] of atlasBandSplit(ATLAS_BAND_STARS.filter(([deg]) => deg < 404), part)) atlasSpark(g, atlasFix(x), atlasFix(y), atlasFix(r * 2.6), "atl-band-glint");
   else atlasSpecks(g, atlasBandSplit(ATLAS_BAND_STARS, part));
   return g;
 }
@@ -3665,6 +3670,7 @@ function atlasOn(event) {
     setAtlasMood("happy", 3600, { quiet: true });
     atlasPlay("wave", 1600);
     if (typeof nameMarkBuddyAct === "function" && document.getElementById("nm-buddy")) nameMarkBuddyAct("wave");
+    window.atlasMicroCast?.();
   } else if (event === "streak") {
     setAtlasMood("delighted", 3600);
     atlasPlay("spin", 900);

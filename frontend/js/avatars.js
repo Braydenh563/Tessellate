@@ -7265,6 +7265,8 @@ function nameMarkBuddyAct(act, ms) {
   nmb.mind?.start(buddy, act, ms || spec?.ms || 1200);
   nmb.act = act;
   nmb.lastAct = act;
+  //: A wave or a cheer throws her stars (the feminine Atlas only; INBOX 1576).
+  if (act === "wave" || act === "cheer") window.atlasMicroCast?.();
   nameMarkBuddyState(buddy);
   //: The idle pool's memory (Brief 34 step 5, ledger 678 and 679): the last
   //: five acts, so `nameMarkBuddyDecide` does not reach for one of them.
