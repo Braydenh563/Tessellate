@@ -6528,6 +6528,13 @@ Link to another note with [[its first few words]]."></textarea>
                 aria-label="What is this?">
                 <i class="ph ph-question" aria-hidden="true"></i>
               </button>
+              <!-- Empty until a narrow row folds the sort and filter into it
+                   (`foldDockArrange`); the empty list hides the button
+                   (unslop 1103, 2). No whitespace inside, or `:empty` fails. -->
+              <details class="doc-dock-menu dock-menu dock-more" id="skills-more-menu">
+                <summary class="ghost small icon-only doc-dock-menu-btn" title="More" aria-label="More"><i class="ph ph-dots-three" aria-hidden="true"></i></summary>
+                <div class="doc-dock-menu-list dock-menu-list"></div>
+              </details>
               <button id="skills-add-new" class="small" type="button"
                 title="Write a new skill"><i class="ph ph-plus ph-lead" aria-hidden="true"></i> New skill</button>
             </div>

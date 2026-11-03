@@ -743,6 +743,12 @@ details[open] > .about-whats-new::before,
   + :is(.icon-only, .dock-more, [class*="help"]) {
   margin-left: calc(var(--space-1) - var(--space-3));
 }
+/* A dock's `...` with nothing in it is not drawn (unslop 1103, 2): the
+   skills dock has no menu of its own, only the one the folded sort and
+   filter move into on a phone. */
+.dock-more:has(> .dock-menu-list:empty) {
+  display: none;
+}
 /* **The one dock whose actions zone does not fit the "one filled control,
    then a few icon utilities" shape Phase 8 sized `margin-left: auto` for.**
    Owner: "the ui at the top of the boards and maps subtab dock is broken

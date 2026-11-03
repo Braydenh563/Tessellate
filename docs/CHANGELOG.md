@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Library, AI skills on a phone: the dock has a ... menu, so the sort and filter fold into it and the title no longer sits under the filter (unslop 1103, 2).
 - Reminders on a phone: the time is its own line under the words and the four actions share one row, so a reminder is 249px wide instead of 48 and the row 187px instead of 345 (unslop 1103, 1).
 - A sheet re-measures the toasts each time its card changes size, so a lasting toast steps aside for Import once the preview has filled in (E2E import; CI probe found the measurement stale, not wrong).
 - Board: the keyboard shortcut sheet lists only the open surface's keys (23 rows on a map, 55 on a board) and names the surface on a key two surfaces share, M and Ctrl+Shift+S (audit 1028 B12).

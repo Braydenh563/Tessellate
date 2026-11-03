@@ -31,3 +31,13 @@ def test_1_reminder_time_is_its_own_phone_line():
     css = _css("08-consistency.css")
     grid = _body(css, "#reminder-groups .entry-list li > .entry-meta")
     assert '"tick text"' in grid and '"tick when"' in grid and '"acts acts"' in grid
+
+
+def test_2_skills_dock_has_a_menu_to_fold_into():
+    """Without a `.dock-more` the dock cannot fold: the title sat under the select."""
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    dock = html[html.index('data-dock-name="library-skills"') :]
+    dock = dock[: dock.index("</section>")]
+    assert 'class="doc-dock-menu dock-menu dock-more" id="skills-more-menu"' in dock
+    assert '<div class="doc-dock-menu-list dock-menu-list"></div>' in dock
+    assert ".dock-more:has(> .dock-menu-list:empty)" in _css("08-consistency.css")
