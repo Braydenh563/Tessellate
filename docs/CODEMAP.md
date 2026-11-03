@@ -2,7 +2,7 @@
 
 Generated 2026-11-03 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7728, frontend ids 2642, CSS sections 518, backend routes 642, backend modules 8550, test files 1943, tests 16343, plan headings 992, app scripts 28, boot scripts 37, script files 238.
+Counts: frontend functions 7728, frontend ids 2642, CSS sections 518, backend routes 642, backend modules 8550, test files 1943, tests 16344, plan headings 992, app scripts 28, boot scripts 37, script files 238.
 
 ## Frontend functions (7728)
 
@@ -6354,44 +6354,44 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `calcFigure` | frontend/js/reply-kit.js:801 |
-| `chatQueuePaint` | frontend/js/reply-kit.js:1672 |
-| `openCalculator` | frontend/js/reply-kit.js:379 |
+| `calcFigure` | frontend/js/reply-kit.js:1001 |
+| `chatQueuePaint` | frontend/js/reply-kit.js:1946 |
+| `openCalculator` | frontend/js/reply-kit.js:417 |
 | `renderRelatedElsewhere` | frontend/js/reply-kit.js:68 |
 | `renderReplyPanel` | frontend/js/reply-kit.js:23 |
-| `renderToolsUnsupportedNotice` | frontend/js/reply-kit.js:1344 |
-| `replyByHelpPanel` | frontend/js/reply-kit.js:1395 |
-| `replyByHover` | frontend/js/reply-kit.js:1416 |
-| `replyByline` | frontend/js/reply-kit.js:1448 |
-| `replyBylineFacts` | frontend/js/reply-kit.js:1373 |
-| `replyCalcActions` | frontend/js/reply-kit.js:529 |
-| `replyCalcBuild` | frontend/js/reply-kit.js:406 |
-| `replyCalcConvertPane` | frontend/js/reply-kit.js:1177 |
-| `replyCalcEquation` | frontend/js/reply-kit.js:937 |
-| `replyCalcHistory` | frontend/js/reply-kit.js:1069 |
-| `replyCalcKeypad` | frontend/js/reply-kit.js:1026 |
-| `replyCalcPanel` | frontend/js/reply-kit.js:354 |
-| `replyCalcResult` | frontend/js/reply-kit.js:770 |
-| `replyCalcShow` | frontend/js/reply-kit.js:811 |
-| `replyCalcWork` | frontend/js/reply-kit.js:368 |
-| `replyCalcWorkPane` | frontend/js/reply-kit.js:836 |
+| `renderToolsUnsupportedNotice` | frontend/js/reply-kit.js:1618 |
+| `replyByHelpPanel` | frontend/js/reply-kit.js:1669 |
+| `replyByHover` | frontend/js/reply-kit.js:1690 |
+| `replyByline` | frontend/js/reply-kit.js:1722 |
+| `replyBylineFacts` | frontend/js/reply-kit.js:1647 |
+| `replyCalcActions` | frontend/js/reply-kit.js:567 |
+| `replyCalcBuild` | frontend/js/reply-kit.js:444 |
+| `replyCalcConvertPane` | frontend/js/reply-kit.js:1451 |
+| `replyCalcEquation` | frontend/js/reply-kit.js:1207 |
+| `replyCalcHistory` | frontend/js/reply-kit.js:1343 |
+| `replyCalcKeypad` | frontend/js/reply-kit.js:1296 |
+| `replyCalcPanel` | frontend/js/reply-kit.js:392 |
+| `replyCalcResult` | frontend/js/reply-kit.js:970 |
+| `replyCalcShow` | frontend/js/reply-kit.js:1011 |
+| `replyCalcWork` | frontend/js/reply-kit.js:406 |
+| `replyCalcWorkPane` | frontend/js/reply-kit.js:1036 |
 | `replyCompare` | frontend/js/reply-kit.js:173 |
 | `replyDrawAll` | frontend/js/reply-kit.js:34 |
 | `replyFillMeters` | frontend/js/reply-kit.js:193 |
-| `replyFinish` | frontend/js/reply-kit.js:1291 |
-| `replyFoldLong` | frontend/js/reply-kit.js:1529 |
-| `replyGist` | frontend/js/reply-kit.js:1524 |
+| `replyFinish` | frontend/js/reply-kit.js:1565 |
+| `replyFoldLong` | frontend/js/reply-kit.js:1803 |
+| `replyGist` | frontend/js/reply-kit.js:1798 |
 | `replyMeter` | frontend/js/reply-kit.js:160 |
 | `replyMonthName` | frontend/js/reply-kit.js:201 |
-| `replyNoteCard` | frontend/js/reply-kit.js:1622 |
-| `replyNoteEntry` | frontend/js/reply-kit.js:1571 |
-| `replyNoteId` | frontend/js/reply-kit.js:1566 |
-| `replyNotePreviews` | frontend/js/reply-kit.js:1575 |
+| `replyNoteCard` | frontend/js/reply-kit.js:1896 |
+| `replyNoteEntry` | frontend/js/reply-kit.js:1845 |
+| `replyNoteId` | frontend/js/reply-kit.js:1840 |
+| `replyNotePreviews` | frontend/js/reply-kit.js:1849 |
 | `replyPanelShell` | frontend/js/reply-kit.js:44 |
-| `replyPeekLink` | frontend/js/reply-kit.js:1594 |
-| `replyRecordReasons` | frontend/js/reply-kit.js:1326 |
-| `replyReveal` | frontend/js/reply-kit.js:1494 |
-| `replyRevealWanted` | frontend/js/reply-kit.js:1489 |
+| `replyPeekLink` | frontend/js/reply-kit.js:1868 |
+| `replyRecordReasons` | frontend/js/reply-kit.js:1600 |
+| `replyReveal` | frontend/js/reply-kit.js:1768 |
+| `replyRevealWanted` | frontend/js/reply-kit.js:1763 |
 | `replySpark` | frontend/js/reply-kit.js:136 |
 | `replyStatCard` | frontend/js/reply-kit.js:104 |
 | `replyStatCards` | frontend/js/reply-kit.js:206 |
@@ -12150,7 +12150,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/quick-access-lazy.css | 105 |
 | frontend/css/quickadd-lazy.css | 35 |
 | frontend/css/recovery-lazy.css | 111 |
-| frontend/css/reply-kit-lazy.css | 729 |
+| frontend/css/reply-kit-lazy.css | 760 |
 | frontend/css/reveal-lazy.css | 10 |
 | frontend/css/search-lazy.css | 153 |
 | frontend/css/semantic-notice-lazy.css | 10 |
@@ -15592,8 +15592,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3240 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3366 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3242 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3368 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -23560,7 +23560,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16343)
+## Tests (16344)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23740,7 +23740,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_budgets.py | 6 |
 | tests/test_calc_panel_1102.py | 13 |
 | tests/test_calc_ux_1530.py | 16 |
-| tests/test_calculator_equations.py | 9 |
+| tests/test_calculator_equations.py | 10 |
 | tests/test_caption_whole_1555.py | 3 |
 | tests/test_captioning.py | 17 |
 | tests/test_captions.py | 16 |

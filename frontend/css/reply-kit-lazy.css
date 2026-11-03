@@ -265,6 +265,8 @@
    the result and the keypad under it do not move when the first key is pressed; a long sum scrolls inside it. */
 .calc-typeset {
   display: flex;
+  flex: 1 1 0;
+  min-width: 0;
   align-items: center;
   min-height: var(--space-9);
   padding: 0 var(--space-1);
@@ -321,6 +323,35 @@
 
 .calc-keys {
   grid-template-columns: repeat(4, 1fr);
+}
+
+/* **Standard or Scientific** (INBOX 1579): the kind is a `.seg` at the end of the typeset sum's row; in Scientific a second row holds the angle unit and the memory's value. */
+.calc-sumline {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.calc-sumline .calc-seg {
+  flex: none;
+}
+
+.calc-mode-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.calc-memory {
+  margin-inline-start: auto;
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The function keys are words and signs, not digits: a size down from the keypad's, and the same four columns. */
+.calc-keys-sci .calc-key {
+  font-size: var(--text-md);
 }
 
 .calc-key {

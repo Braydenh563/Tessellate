@@ -321,12 +321,50 @@ const replyCalc = { units: null, opened: 0, tabs: [["work", "Sum"], ["convert", 
   //: **The history, one list per tab** (INBOX 1541), kept in this browser's prefs store as `{work, convert, equation}`; `calcTex.log` holds its rules.
   load: (tab) => calcTex.log.clean(prefs.json("calc-history", {})[tab]),
   save: (tab, list) => prefs.setJSON("calc-history", { ...prefs.json("calc-history", {}), [tab]: list }),
+  //: **The scientific keys** (INBOX 1579): four columns like the keypad, each inserting what it shows ("sin(" waits for its number), the last row the memory.
+  sciKeys: [
+    ["sin", "sin("], ["cos", "cos("], ["tan", "tan("], ["π", "pi"],
+    ["sin⁻¹", "asin("], ["cos⁻¹", "acos("], ["tan⁻¹", "atan("], ["e", "e"],
+    ["ln", "ln("], ["log", "log("], ["√", "sqrt("], ["x²", "^2"],
+    ["xʸ", "^"], ["n!", "!"], ["|x|", "abs("], ["eˣ", "exp("],
+    ["MC", "mc"], ["MR", "mr"], ["M+", "m+"], ["M−", "m-"],
+  ],
+  sciNames: {
+    "sin(": "Sine", "cos(": "Cosine", "tan(": "Tangent", pi: "Pi", "asin(": "Inverse sine", "acos(": "Inverse cosine", "atan(": "Inverse tangent", e: "e",
+    "ln(": "Natural logarithm", "log(": "Logarithm, base 10", "sqrt(": "Square root", "^2": "Squared", "^": "To the power of", "!": "Factorial",
+    "abs(": "Absolute value", "exp(": "e to the power of", mc: "Memory clear", mr: "Memory recall", "m+": "Memory add", "m-": "Memory subtract",
+  },
+  //: **A `.seg` of exclusive choices** (DESIGN.md: `aria-pressed`, `.active` for the glide), the editor's Inline and Display built the same way: `sync(value)` moves the choice.
+  seg(label, choices, value, onChange) {
+    const seg = document.createElement("div");
+    seg.className = "seg calc-seg";
+    seg.setAttribute("role", "group");
+    seg.setAttribute("aria-label", label);
+    const buttons = choices.map(([key, words]) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.dataset.value = key;
+      b.textContent = words;
+      b.addEventListener("click", () => onChange(key));
+      return b;
+    });
+    const sync = (now) => {
+      for (const b of buttons) {
+        const chosen = b.dataset.value === now;
+        b.setAttribute("aria-pressed", String(chosen));
+        b.classList.toggle("active", chosen);
+      }
+    };
+    seg.append(...buttons);
+    sync(value);
+    return { seg, sync };
+  },
 };
 
 //: The head '?' (INBOX 1530 g M6): the dialog is worked out by the app with no model; one line per tab, then where Insert writes.
 const REPLY_CALC_HELP = [
   "Worked out by the app, with no model.",
-  "Sum: type or key a sum, a percentage or a conversion (12 * (3 + 4), 15% of 80, 5 km to miles). A preview shows as you type; Enter or = keeps it.",
+  "Sum: type or key a sum, a percentage or a conversion (12 * (3 + 4), 15% of 80, 5 km to miles). It is drawn as maths under the box as you type, and a preview shows once it is a whole sum; Enter or = keeps it. Scientific adds sine, cosine, tangent and their inverses, logs, powers, roots, a factorial, pi and e, with Degrees or Radians and a memory (MC, MR, M+, M-).",
   "Units: pick a kind, an amount and two units. Currency rates are set by hand and dated, not today's rate.",
   "Equation: click a dotted box to fill it. / makes a fraction, ^ and _ a power or a subscript, and LaTeX such as \\frac or \\alpha turns into the symbol as you type it. Pick a structure or a symbol from the palette; a selection goes into the first box. The row of groups jumps to one; Pin makes a tile a favourite, and Recent shows the last ones used. Inline sits in a sentence, Display on its own line. Click a drawn equation in a note, or open this with the cursor inside one, to edit it.",
   "History: each tab keeps its last twenty answers on this device. Open History under the keypad, press a row to put it back in the fields, or use Copy, Edit (the next keep replaces that row) and Remove; Clear empties it, and Undo brings it back. Every answer has a Copy button beside it.",
@@ -634,7 +672,7 @@ const calcTex = {
     const sum = String(text || "").trim();
     if (!sum) return false;
     const open = (sum.match(/\(/g) || []).length > (sum.match(/\)/g) || []).length;
-    return open || /[-+*/×÷^(]$/.test(sum) || /\b(?:of|to|in|into|as|from|plus|minus|times|over|by|and|per)$/i.test(sum);
+    return open || /[-+*/×÷^(√∛]$/.test(sum) || /\b(?:of|to|in|into|as|from|plus|minus|times|over|by|and|per|sin|cos|tan|asin|acos|atan|sinh|cosh|tanh|ln|log|sqrt|cbrt|exp|abs)$/i.test(sum);
   },
 
   //: **The sum as typeset maths, as it is typed** (INBOX 1579): `12*(3+4)` as 12 × (3 + 4), `2^10` with a raised 10, `sqrt(16)` under a root, `pi` as π, `sin(30)` upright, words in text. It reads whatever is typed, unfinished or not, and never throws: a sign with nothing after it leaves an empty box, not a failure. The raw text stays in the field; this is only what is drawn under it. Returns TeX, "" for nothing.
@@ -746,6 +784,168 @@ const calcTex = {
   },
 };
 
+//: **The scientific reader** (INBOX 1579): a sum with functions, constants and a factorial, read by a small
+//: tokenizer and a recursive descent, never `eval` or `Function`. `evaluate(text, {angle})` answers
+//: `{value, angled}` or throws an `Error` whose `.sci` is true: `.notMath` when the text is not a sum at all
+//: (words, units: the server's reader gets it) and a message otherwise ("divide by zero").
+calcTex.sci = {
+  functions: {
+    sin: "trig", cos: "trig", tan: "trig", asin: "arc", acos: "arc", atan: "arc",
+    sinh: Math.sinh, cosh: Math.cosh, tanh: Math.tanh,
+    ln: Math.log, log: Math.log10, log2: Math.log2, lg: Math.log10, sqrt: Math.sqrt, cbrt: Math.cbrt,
+    abs: Math.abs, exp: Math.exp, floor: Math.floor, ceil: Math.ceil, round: Math.round,
+  },
+  aliases: { arcsin: "asin", arccos: "acos", arctan: "atan", log10: "log", "√": "sqrt", "∛": "cbrt" },
+  constants: { pi: Math.PI, π: Math.PI, e: Math.E, tau: 2 * Math.PI, τ: 2 * Math.PI },
+
+  tokens(text) {
+    const out = [];
+    const src = String(text).replace(/(\d),(?=\d{3}\b)/g, "$1").replace(/²/g, "^2").replace(/³/g, "^3").replace(/[−–]/g, "-").replace(/[×·⋅]/g, "*").replace(/÷/g, "/");
+    const bad = (words, notMath) => Object.assign(new Error(words), { sci: true, notMath });
+    for (let i = 0; i < src.length; ) {
+      const c = src[i];
+      if (/\s/.test(c)) i++;
+      else if (/[0-9.]/.test(c)) {
+        const m = /^(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+(?![\w]))?/.exec(src.slice(i));
+        if (!m) throw bad("A number is not finished.", false);
+        out.push({ n: Number(m[0]) });
+        i += m[0].length;
+      } else if (/[a-zA-Zπτ√∛]/.test(c)) {
+        const word = /^(?:[a-zA-Z]+[0-9]{0,2}|[πτ√∛])/.exec(src.slice(i))[0];
+        const sci = calcTex.sci;
+        const known = (w) => w in sci.functions || w in sci.aliases || w in sci.constants;
+        //: A word may run into what follows ("sin30", "sinpi"): the longest known name first.
+        let cut = word.length;
+        while (cut > 0 && !known(word.slice(0, cut).toLowerCase())) cut--;
+        if (!cut) throw bad("Not a sum.", true);
+        const low = word.slice(0, cut).toLowerCase();
+        out.push(low in sci.constants ? { n: sci.constants[low], c: true } : { f: sci.aliases[low] || low });
+        i += cut;
+      } else if ("+-*/^()!%".includes(c)) {
+        out.push({ op: c });
+        i++;
+      } else throw bad("Not a sum.", true);
+    }
+    return out;
+  },
+
+  evaluate(text, { angle = "deg" } = {}) {
+    const sci = calcTex.sci;
+    const tokens = sci.tokens(text);
+    const bad = (words) => Object.assign(new Error(words), { sci: true });
+    let at = 0;
+    let angled = false;
+    const peek = () => tokens[at];
+    const isOp = (...ops) => peek()?.op !== undefined && ops.includes(peek().op);
+    const starts = (t) => t && (t.n !== undefined || t.f !== undefined || t.op === "(");
+    //: What may follow a value with no sign between ("2pi", "3(4)", "2sin(30)"); two plain numbers side by side are not a product.
+    const joins = (t) => t && (t.c || t.f !== undefined || t.op === "(");
+    const toRad = (x) => (angle === "deg" ? (x * Math.PI) / 180 : x);
+    const fromRad = (x) => (angle === "deg" ? (x * 180) / Math.PI : x);
+    const fact = (x) => {
+      if (!Number.isInteger(x) || x < 0 || x > 170) throw bad("A factorial needs a whole number from 0 to 170.");
+      let r = 1;
+      for (let k = 2; k <= x; k++) r *= k;
+      return r;
+    };
+    const apply = (name, x) => {
+      const f = sci.functions[name];
+      if (!f) throw bad(`${name} is not a function here.`);
+      if (f === "trig") {
+        angled = true;
+        const r = toRad(x);
+        if (name === "tan" && Math.abs(Math.cos(r)) < 1e-12) throw bad("tan is undefined there.");
+        const v = Math[name](r);
+        return Math.abs(v) < 1e-12 ? 0 : v;
+      }
+      if (f === "arc") {
+        angled = true;
+        if (Math.abs(x) > 1 && name !== "atan") throw bad(`${name} needs a number from -1 to 1.`);
+        return fromRad(Math[name](x));
+      }
+      if ((name === "ln" || name === "log" || name === "log2" || name === "lg") && x <= 0) throw bad("A logarithm needs a number above 0.");
+      if (name === "sqrt" && x < 0) throw bad("There is no real square root of a negative number.");
+      return f(x);
+    };
+    const primary = () => {
+      const t = tokens[at++];
+      if (!t) throw bad("The sum is not finished.");
+      if (t.n !== undefined) return t.n;
+      if (t.f) {
+        //: A function takes its bracket, or the one number, constant or function after it ("sin 30", "sqrt16").
+        if (isOp("(")) return apply(t.f, primary());
+        if (starts(peek()) && !isOp("(")) return apply(t.f, postfix(true));
+        throw bad(`${t.f} needs a number after it.`);
+      }
+      if (t.op === "(") {
+        const v = expr();
+        if (!isOp(")")) throw bad("A bracket is not closed.");
+        at++;
+        return v;
+      }
+      throw bad(t.op === ")" ? "A bracket closes with none open." : "The sum is not finished.");
+    };
+    const postfix = (bare = false) => {
+      let v = primary();
+      while (true) {
+        if (isOp("!")) {
+          at++;
+          v = fact(v);
+        } else if (!bare && isOp("%") && !starts(tokens[at + 1])) {
+          at++;
+          v /= 100;
+        } else return v;
+      }
+    };
+    const power = () => {
+      const base = postfix();
+      if (!isOp("^")) return base;
+      at++;
+      return base ** unary();
+    };
+    const unary = () => {
+      if (isOp("-")) return (at++, -unary());
+      if (isOp("+")) return (at++, unary());
+      return power();
+    };
+    const term = () => {
+      let v = unary();
+      while (true) {
+        if (isOp("*")) (at++, (v *= unary()));
+        else if (isOp("/")) {
+          at++;
+          const d = unary();
+          if (d === 0) throw bad("Cannot divide by zero.");
+          v /= d;
+        } else if (isOp("%") && starts(tokens[at + 1])) {
+          at++;
+          const d = unary();
+          if (d === 0) throw bad("Cannot divide by zero.");
+          v %= d;
+        } else if (joins(peek())) v *= unary();
+        else return v;
+      }
+    };
+    const expr = () => {
+      let v = term();
+      while (isOp("+", "-")) v = tokens[at++].op === "+" ? v + term() : v - term();
+      return v;
+    };
+    if (!tokens.length) throw Object.assign(new Error("Nothing to work out."), { sci: true, notMath: true });
+    const value = expr();
+    if (at < tokens.length) throw bad(tokens[at].op === ")" ? "A bracket closes with none open." : "Put a sign between the numbers.");
+    if (!Number.isFinite(value)) throw bad("That is too large to show.");
+    return { value, angled };
+  },
+
+  //: A value in the words the server's reader uses: twelve significant figures, no float dust ("0.1 + 0.2" is 0.3), commas by thousands.
+  format(value) {
+    const v = Number(value.toPrecision(12));
+    if (Math.abs(v) >= 1e15 || (v !== 0 && Math.abs(v) < 1e-6)) return String(v).replace("e+", "e");
+    return v.toLocaleString("en-GB", { maximumFractionDigits: 12 });
+  },
+};
+
 //: **What a history keeps** (INBOX 1541): newest first, twenty rows, a row told from another by its `key` (the words of a sum, the TeX of an equation). `replacing` is the key of a row being edited: the new row takes its place in the list rather than joining the top, and a row that is gone just adds.
 calcTex.log = {
   max: 20,
@@ -844,6 +1044,26 @@ function replyCalcWorkPane(input, actions) {
   box.autocomplete = "off";
   box.spellcheck = false;
   box.value = input;
+  //: **Standard or Scientific** (INBOX 1579): two choices in view, remembered with the angle unit and the memory in this browser's prefs. Scientific adds the function keys and reads sums with trig, logs, powers, roots, a factorial, pi and e (`calcTex.sci`, no `eval`); anything it does not read as a sum (a percentage of, a conversion, a date) still goes to the app's own reader.
+  const saved = prefs.json("calc-sci", {});
+  const mode = { on: saved.on === true, angle: saved.angle === "rad" ? "rad" : "deg", memory: Number.isFinite(saved.memory) ? saved.memory : 0 };
+  const keep = () => prefs.setJSON("calc-sci", mode);
+  //: One row under the field: the typeset sum, and the kind at its end (a row of its own would push the keypad past the card at 390: INBOX 1537 wants Sum without a scroll). Scientific adds a second row for the angle unit and the memory.
+  const sumline = document.createElement("div");
+  sumline.className = "calc-sumline";
+  const bar = document.createElement("div");
+  bar.className = "calc-mode-bar";
+  const kind = replyCalc.seg("Calculator kind", [["standard", "Standard"], ["scientific", "Scientific"]], mode.on ? "scientific" : "standard", (value) => setMode(value === "scientific"));
+  const angle = replyCalc.seg("Angle unit", [["deg", "Degrees"], ["rad", "Radians"]], mode.angle, (value) => {
+    mode.angle = value;
+    keep();
+    angle.sync(value);
+    rerun();
+  });
+  const memory = document.createElement("span");
+  memory.className = "muted calc-memory";
+  memory.setAttribute("role", "status");
+  bar.append(angle.seg, memory);
   //: **The sum as typeset maths, as it is typed** (INBOX 1579): × ÷ − and raised powers drawn by the document renderer, under the field. The field keeps the raw text, which is what is edited and read aloud, so this is hidden from a screen reader.
   const typeset = document.createElement("div");
   typeset.className = "calc-typeset";
@@ -863,12 +1083,14 @@ function replyCalcWorkPane(input, actions) {
   };
   box.addEventListener("input", paint);
   paint();
+  sumline.append(typeset, kind.seg);
   const out = replyCalcResult();
-  //: Restoring puts the sum back in the box (a preview, not a keep); Copy writes the figure.
+  //: Restoring puts the sum back in the box (a preview, not a keep), in the kind it was worked out in; Copy writes the figure.
   const history = replyCalcHistory("work", {
     label: (row) => `${row.input} = ${calcFigure(row.answer, false)}`,
     copy: (row) => calcFigure(row.answer, true),
     restore: (row) => {
+      if (row.sci && !mode.on) setMode(true);
       box.value = row.input;
       box.dispatchEvent(new Event("input"));
       box.focus();
@@ -878,6 +1100,41 @@ function replyCalcWorkPane(input, actions) {
   let asked = 0;
   //: The result on show, for the action row.
   let last = null;
+  //: A sum read by the scientific reader, in the server's shape (`answer` "sin(30) is 0.5."); null when the text is not a sum at all, which the app's reader then takes.
+  const sciRead = (text) => {
+    try {
+      const got = calcTex.sci.evaluate(text, { angle: mode.angle });
+      return { answer: `${text.trim()} is ${calcTex.sci.format(got.value)}.`, read_as: got.angled ? `angles in ${mode.angle === "deg" ? "degrees" : "radians"}` : "" };
+    } catch (error) {
+      if (error.sci) return error.notMath ? null : { error: error.message };
+      throw error;
+    }
+  };
+  const rerun = () => {
+    if (!box.value.trim()) return;
+    clearTimeout(timer);
+    run(false);
+  };
+  const showMemory = () => {
+    memory.textContent = mode.on && mode.memory ? `Memory ${calcTex.sci.format(mode.memory)}` : "";
+  };
+  //: MC clears, MR types the stored number, M+ and M− add or take away the value of what is in the box.
+  const onKey = (act) => {
+    if (act === "mc") mode.memory = 0;
+    else if (act === "mr") return String(mode.memory);
+    else if (act === "m+" || act === "m-") {
+      const got = sciRead(box.value);
+      const value = got && !got.error ? calcTex.sci.evaluate(box.value, { angle: mode.angle }).value : null;
+      if (value === null) {
+        toast("Work out a sum first, then store it.", "info");
+        return false;
+      }
+      mode.memory = Number((mode.memory + (act === "m+" ? value : -value)).toPrecision(12));
+    } else return undefined;
+    keep();
+    showMemory();
+    return false;
+  };
   actions.provide("work", actions.result(() => last, { what: "the result", needs: "a result", first: "Work out a sum first." }));
   const run = async (final) => {
     const mine = ++asked;
@@ -889,7 +1146,7 @@ function replyCalcWorkPane(input, actions) {
       return actions.sync();
     }
     try {
-      const got = await replyCalcWork(box.value);
+      const got = (mode.on && sciRead(box.value)) || (await replyCalcWork(box.value));
       if (mine !== asked) return;
       if (final && got?.error && calcTex.pending(box.value)) got.error = "That sum is not finished. Add what comes after the last sign.";
       if (!final && got?.error) {
@@ -902,7 +1159,7 @@ function replyCalcWorkPane(input, actions) {
       replyCalcShow(out, got, { final, now: final });
       last = got?.answer && !got.error ? { input: box.value.trim(), answer: got.answer } : null;
       actions.sync();
-      if (final && last) history.record({ key: last.input, input: last.input, answer: last.answer });
+      if (final && last) history.record({ key: last.input, input: last.input, answer: last.answer, ...(mode.on ? { sci: true } : {}) });
     } catch (error) {
       if (mine !== asked) return;
       replyCalcShow(out, { error: error.message }, { final, now: final });
@@ -921,11 +1178,24 @@ function replyCalcWorkPane(input, actions) {
     clearTimeout(timer);
     run(true);
   });
-  const keys = replyCalcKeypad(box, () => {
+  const equals = () => {
     clearTimeout(timer);
     run(true);
-  });
-  pane.append(box, typeset, out, keys, history.el);
+  };
+  const keys = replyCalcKeypad(box, equals);
+  const sciKeys = replyCalcKeypad(box, equals, { keys: replyCalc.sciKeys, names: replyCalc.sciNames, label: "Scientific keys", extra: "calc-keys-sci", onKey });
+  const setMode = (on) => {
+    mode.on = on;
+    keep();
+    sciKeys.classList.toggle("hidden", !on);
+    bar.classList.toggle("hidden", !on);
+    kind.sync(on ? "scientific" : "standard");
+    showMemory();
+    box.placeholder = on ? "sin(30), 2 * pi, sqrt(16), 5!" : "12 * (3 + 4), 15% of 80, 5 km to miles";
+    rerun();
+  };
+  setMode(mode.on);
+  pane.append(box, sumline, bar, out, sciKeys, keys, history.el);
   if (input) run(true);
   return pane;
 }
@@ -1023,26 +1293,30 @@ function replyCalcEquation(target, close, actions) {
 //: The keypad: one Tab stop (a roving `tabindex`), the arrows walk its four
 //: columns, Home and End its row; each key says what it does to a screen
 //: reader ("Times", not the icon's name).
-function replyCalcKeypad(box, equals) {
+function replyCalcKeypad(box, equals, { keys: layout = REPLY_CALC_KEYS, names = REPLY_CALC_NAMES, label = "Keypad", extra = "", onKey = null } = {}) {
   const pad = document.createElement("div");
-  pad.className = "key-grid calc-keys";
+  pad.className = `key-grid calc-keys ${extra}`.trim();
   pad.setAttribute("role", "group");
-  pad.setAttribute("aria-label", "Keypad");
-  const keys = REPLY_CALC_KEYS.map(([face, act], i) => {
+  pad.setAttribute("aria-label", label);
+  const keys = layout.map(([face, act], i) => {
     const key = document.createElement("button");
     key.type = "button";
     // A key of a `.key-grid`: the quiet inset fill, operators tinted, and `=` the grid's one filled key (the dialog's own is Insert, in the foot).
     key.className = `calc-key${/^[-+*/%]$/.test(act) ? " is-op" : ""}${act === "equals" ? " is-equals" : ""}`;
     setLabel(key, face);
     key.tabIndex = i === 0 ? 0 : -1;
-    if (REPLY_CALC_NAMES[act]) key.setAttribute("aria-label", REPLY_CALC_NAMES[act]);
+    if (names[act]) key.setAttribute("aria-label", names[act]);
     key.addEventListener("click", () => {
       if (act === "equals") return equals();
-      if (act === "clear") box.value = "";
+      //: A key with its own work (the memory) answers `false` when it typed nothing, or the text to type instead.
+      const handled = onKey ? onKey(act) : undefined;
+      if (handled === false) return;
+      const text = typeof handled === "string" ? handled : act;
+      if (text === "clear") box.value = "";
       else {
         const start = box.selectionStart ?? box.value.length;
         const end = box.selectionEnd ?? box.value.length;
-        box.setRangeText(act, start, end, "end");
+        box.setRangeText(text, start, end, "end");
       }
       box.dispatchEvent(new Event("input"));
     });

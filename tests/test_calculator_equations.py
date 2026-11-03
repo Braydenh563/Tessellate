@@ -74,6 +74,47 @@ same("live: a minus is the minus sign", calcTex.live("10 - 3"), "10\u22123");
 same("live: words are text", calcTex.live("5 km to miles"), "5\\;\\text{km to miles}");
 same("live: a long word is not a function", calcTex.live("tangent"), "\\text{tangent}");
 same("live: nothing", calcTex.live("  "), "");
+//: INBOX 1579: the scientific reader. `sci(text)` is the figure as shown, "ERR" for a sum it will not work out, "WORDS" for text that is not a sum.
+const sci = (text, angle = "deg") => {
+  try {
+    return calcTex.sci.format(calcTex.sci.evaluate(text, { angle }).value);
+  } catch (error) {
+    return error.notMath ? "WORDS" : `ERR ${error.message}`;
+  }
+};
+same("sci: sine in degrees", sci("sin(30)"), "0.5");
+same("sci: cosine of 90 is zero, not float dust", sci("cos(90)"), "0");
+same("sci: tangent of 45", sci("tan(45)"), "1");
+same("sci: tangent of 90 is undefined", sci("tan(90)"), "ERR tan is undefined there.");
+same("sci: sine in radians", sci("sin(pi/2)", "rad"), "1");
+same("sci: inverse sine answers in degrees", sci("asin(1)"), "90");
+same("sci: inverse sine answers in radians", sci("asin(1)", "rad"), "1.57079632679");
+same("sci: pi with a number against it", sci("2pi"), "6.28318530718");
+same("sci: e to a power", sci("e^2"), "7.38905609893");
+same("sci: natural log of e", sci("ln(e)"), "1");
+same("sci: log is base ten", sci("log(1000)"), "3");
+same("sci: a root and a factorial", sci("sqrt(16)+5!"), "124");
+same("sci: a root sign", sci("\u221a16"), "4");
+same("sci: zero factorial", sci("0!"), "1");
+same("sci: a factorial of a fraction", sci("3.5!"), "ERR A factorial needs a whole number from 0 to 170.");
+same("sci: powers are right to left", sci("2^3^2"), "512");
+same("sci: a minus binds looser than a power", sci("-2^2"), "-4");
+same("sci: a percent", sci("200*10%"), "20");
+same("sci: a remainder", sci("10 % 3"), "1");
+same("sci: a group beside a group", sci("(1+2)(3+4)"), "21");
+same("sci: float dust is trimmed", sci("0.1+0.2"), "0.3");
+same("sci: divide by zero", sci("1/0"), "ERR Cannot divide by zero.");
+same("sci: a negative root", sci("sqrt(-1)"), "ERR There is no real square root of a negative number.");
+same("sci: a log of zero", sci("ln(0)"), "ERR A logarithm needs a number above 0.");
+same("sci: an open bracket", sci("(1+2"), "ERR A bracket is not closed.");
+same("sci: two numbers side by side", sci("2 3"), "ERR Put a sign between the numbers.");
+same("sci: a conversion is the app's, not this reader's", sci("5 km to miles"), "WORDS");
+same("sci: a percentage of is the app's", sci("15% of 80"), "WORDS");
+same("sci: a thousands comma", sci("1,000+1"), "1,001");
+same("sci: a word that starts like a function is not one", sci("tangent"), "WORDS");
+same("pending: a function name waiting for its bracket", calcTex.pending("sin"), true);
+same("pending: a root sign waiting", calcTex.pending("\u221a"), true);
+same("done: a name inside a word is not pending", calcTex.pending("5 singles"), false);
 for (const typed of ["55*9+", "2^", "sqrt", "(1+2", "1+2)", "15% of 80", "5!", "e^2", "log10(100)", "asin(0.5)", "\u221a16", "20\u00b0", "1,000+1", "a & b", "$5", "x_{1}"]) {
   let problem = "none";
   try {
@@ -194,3 +235,21 @@ def test_no_live_field_shows_an_error_while_it_is_being_typed() -> None:
     assert "docReplace.late = setTimeout" in replace
     board = (JS / "whiteboard.js").read_text(encoding="utf-8")
     assert "wbBoardSearch.late = setTimeout" in board
+
+
+def test_the_scientific_mode_is_a_seg_with_its_own_keys_and_no_eval() -> None:
+    """INBOX 1579: Standard or Scientific is a `.seg` on the recipe, keyboard reachable, and the reader never hands text to `eval`."""
+    region = _region(KIT, "// CALC-TEX-BEGIN", "// CALC-TEX-END")
+    assert "eval(" not in region and "new Function" not in region and "Function(" not in region
+    work = KIT.split("function replyCalcWorkPane", 1)[1].split("function replyCalcEquation", 1)[0]
+    assert 'replyCalc.seg("Calculator kind"' in work and 'replyCalc.seg("Angle unit"' in work
+    assert "replyCalcKeypad(box, equals, { keys: replyCalc.sciKeys" in work
+    seg = KIT.split("  seg(label, choices, value, onChange) {", 1)[1].split("\n  },", 1)[0]
+    assert '"seg calc-seg"' in seg and "aria-pressed" in seg and 'classList.toggle("active"' in seg
+    #: One Tab stop per keypad and the arrows walk it: the same function builds both.
+    assert KIT.count("function replyCalcKeypad(") == 1
+    from tessellate.ai import help_topics_more
+
+    topic = next(t for t in help_topics_more.MORE_TOPICS if t["id"] == "calculator")
+    assert "Scientific" in topic["body"] and "Radians" in topic["body"] and "memory" in topic["body"]
+    assert "Scientific adds" in KIT
