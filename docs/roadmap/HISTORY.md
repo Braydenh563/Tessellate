@@ -52178,6 +52178,8 @@ From DOCUMENTS_PLAN.md "Placed from INBOX, 2026-11-02", the 1546 P1 row, built:
 
 1600. **Owner, 2026-11-03 (screenshot, Ask history):** "should the style of the pinned only toggle in the ask history be changed or kept the same?" The switch sits inside its own bordered pill. Recommendation (taken): change it to the bare switch plus label the Ask bar's AI switch uses (one switch recipe, no outer pill), with a DESIGN.md recipe line and a lint.
 
+1618. **Owner, 2026-11-03 (screenshot, Extract notes with no model):** "can you make other features like extracting notes better with the composer? also I permit 2 agents at a time". The no-model split of a one-paragraph note kept "# Uni is done!! :D" both as the title and as the body's first line, proposed one note for three subjects (the assignment, the gym, golf at Windaroo), filed it under Courses & Study, and offered a link from the note to its own text ("source: Taken from this note's text"). Recommendation (taken): the no-model extract uses the composer's own pieces (sentence split, subject terms, the filing and tag suggesters): a heading that became the title leaves the body, a long paragraph splits at its subject changes into short notes, each filed and tagged on its own words, no link from a note to itself or to its own source text; then the same audit on the other no-model writers (summaries, titles, tidy). Agent cap: two at once (budget mode otherwise).
+
 ## Moved from the plans, 2026-11-03 (a31d-1103: 1562 indent guides, 1563 frame margins, the page picker)
 
 From DOCUMENTS_PLAN.md and WHITEBOARD_PLAN.md "Placed from INBOX, 2026-11-03", built (7f51db8, a3da5d0, db97ccd):
