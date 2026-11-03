@@ -74,3 +74,11 @@ def test_6_dock_search_is_the_docks_control_height():
     assert "height: max(var(--control-h), var(--target-min))" in body
     design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
     assert "(32px, 44 under touch; refresh" not in design
+
+
+def test_7_chat_sidebar_search_is_the_quiet_inset():
+    """It was the one search field drawn as a form field (ink edge, white fill)."""
+    body = _body(_css("02-chat-graph.css"), ".search-field.chat-sidebar-search")
+    assert "border-color: transparent" in body and "background: var(--field-inset)" in body
+    inner = _body(_css("02-chat-graph.css"), ".search-field.chat-sidebar-search > .search-field-input")
+    assert "font-size: var(--text-md)" in inner

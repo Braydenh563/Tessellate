@@ -339,6 +339,22 @@
 .chat-sidebar-search {
   margin-bottom: var(--space-2);
 }
+/* The other search fields are an inset with no edge at rest and an edge on
+   focus (08-consistency.css, `.dock .dock-search`); this was the one still
+   drawn as a form field, a 58% ink edge round white, its words at 12px
+   (unslop 1103, 7). The same three declarations, in a sidebar. */
+.search-field.chat-sidebar-search {
+  border-color: transparent;
+  background: var(--field-inset);
+  box-shadow: none;
+}
+.search-field.chat-sidebar-search:focus-within {
+  border-color: var(--accent);
+  background: var(--input-bg);
+}
+.search-field.chat-sidebar-search > .search-field-input {
+  font-size: var(--text-md);
+}
 #conversation-list {
   list-style: none;
   margin: 0;
