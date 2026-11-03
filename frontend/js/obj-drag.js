@@ -82,8 +82,9 @@ function objDragSeed(event) {
   if (!hit) return null;
   hit.card.objFailed = false;
   const mode = Object.keys(OBJ_MODES).find((name) => OBJ_MODES[name].grab?.(hit));
-  //: A picture has no text to select, so a press on one is a grip.
-  const quick = grip || (event.pointerType !== "touch" && event.target.tagName === "IMG");
+  //: A picture or a tray row has no text to select, so a press on one is a grip:
+  //: a press that moves carries, a click that does not still pastes (INBOX 1603).
+  const quick = grip || (event.pointerType !== "touch" && (event.target.tagName === "IMG" || Boolean(event.target.closest?.(".obj-tray-use"))));
   return mode ? { ...hit, mode, grip: quick, ...OBJ_MODES[mode].grab(hit) } : null;
 }
 
@@ -210,6 +211,9 @@ function objDragRoute(g) {
 //: first, and only a scroller that can still move that way.
 function objDragTick(g) {
   if (objDragNow !== g) return;
+  //: Over the tray's drop zone the page holds still (INBOX 1603: "if I drag something
+  //: over the tray, I dont want the page to scroll"); the status bar sits on the edge.
+  if (objTrayDoor.hit(g.x, g.y)) return objDragSchedule(g);
   if (g.scroller && !g.edges) {
     g.edges = [g.scroller];
     if (OBJ_MODES[g.mode].ancestors) {

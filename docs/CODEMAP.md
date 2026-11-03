@@ -2,7 +2,7 @@
 
 Generated 2026-11-03 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7746, frontend ids 2636, CSS sections 522, backend routes 641, backend modules 8589, test files 1980, tests 16597, plan headings 991, app scripts 28, boot scripts 37, script files 245.
+Counts: frontend functions 7746, frontend ids 2636, CSS sections 522, backend routes 641, backend modules 8589, test files 1981, tests 16601, plan headings 992, app scripts 28, boot scripts 37, script files 245.
 
 ## Frontend functions (7746)
 
@@ -1205,52 +1205,52 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `_isChatComposer` | frontend/js/settings-wiring.js:1936 |
+| `_isChatComposer` | frontend/js/settings-wiring.js:1938 |
 | `activeOverlay` | frontend/js/settings-wiring.js:944 |
-| `captureCountText` | frontend/js/settings-wiring.js:1697 |
-| `captureShortcutKey` | frontend/js/settings-wiring.js:1445 |
-| `clearStagedImages` | frontend/js/settings-wiring.js:2103 |
-| `closeOverlaysForChord` | frontend/js/settings-wiring.js:1240 |
-| `closeShortcuts` | frontend/js/settings-wiring.js:1475 |
-| `comboFromEvent` | frontend/js/settings-wiring.js:1276 |
-| `commitCaptureImages` | frontend/js/settings-wiring.js:2088 |
-| `fileDropBox` | frontend/js/settings-wiring.js:1945 |
+| `captureCountText` | frontend/js/settings-wiring.js:1699 |
+| `captureShortcutKey` | frontend/js/settings-wiring.js:1447 |
+| `clearStagedImages` | frontend/js/settings-wiring.js:2105 |
+| `closeOverlaysForChord` | frontend/js/settings-wiring.js:1242 |
+| `closeShortcuts` | frontend/js/settings-wiring.js:1477 |
+| `comboFromEvent` | frontend/js/settings-wiring.js:1278 |
+| `commitCaptureImages` | frontend/js/settings-wiring.js:2090 |
+| `fileDropBox` | frontend/js/settings-wiring.js:1947 |
 | `flashSaved` | frontend/js/settings-wiring.js:496 |
-| `handleFileUpload` | frontend/js/settings-wiring.js:2135 |
-| `hideChordGuide` | frontend/js/settings-wiring.js:1258 |
+| `handleFileUpload` | frontend/js/settings-wiring.js:2137 |
+| `hideChordGuide` | frontend/js/settings-wiring.js:1260 |
 | `inEditable` | frontend/js/settings-wiring.js:942 |
-| `loadForgottenOrder` | frontend/js/settings-wiring.js:1556 |
+| `loadForgottenOrder` | frontend/js/settings-wiring.js:1558 |
 | `loadShortcuts` | frontend/js/settings-wiring.js:1113 |
 | `localizeStaticChords` | frontend/js/settings-wiring.js:1156 |
 | `lockFail` | frontend/js/settings-wiring.js:269 |
 | `lockFailed` | frontend/js/settings-wiring.js:281 |
 | `lockRequest` | frontend/js/settings-wiring.js:375 |
 | `mapEditorShown` | frontend/js/settings-wiring.js:939 |
-| `matchesShortcut` | frontend/js/settings-wiring.js:1294 |
+| `matchesShortcut` | frontend/js/settings-wiring.js:1296 |
 | `maybeShowOnboarding` | frontend/js/settings-wiring.js:965 |
 | `notebookLocked` | frontend/js/settings-wiring.js:481 |
 | `persistSavedSearches` | frontend/js/settings-wiring.js:53 |
-| `renderCaptureFiles` | frontend/js/settings-wiring.js:1662 |
-| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1629 |
-| `renderInstallRow` | frontend/js/settings-wiring.js:1864 |
+| `renderCaptureFiles` | frontend/js/settings-wiring.js:1664 |
+| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1631 |
+| `renderInstallRow` | frontend/js/settings-wiring.js:1866 |
 | `renderSavedSearches` | frontend/js/settings-wiring.js:17 |
-| `resetShortcuts` | frontend/js/settings-wiring.js:1412 |
+| `resetShortcuts` | frontend/js/settings-wiring.js:1414 |
 | `restampShortcutHints` | frontend/js/settings-wiring.js:1166 |
-| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2076 |
-| `runShortcut` | frontend/js/settings-wiring.js:1303 |
+| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2078 |
+| `runShortcut` | frontend/js/settings-wiring.js:1305 |
 | `saveCurrentSearch` | frontend/js/settings-wiring.js:61 |
-| `saveShortcutOverrides` | frontend/js/settings-wiring.js:1264 |
+| `saveShortcutOverrides` | frontend/js/settings-wiring.js:1266 |
 | `saveWhatIsInFront` | frontend/js/settings-wiring.js:559 |
 | `savedSearches` | frontend/js/settings-wiring.js:13 |
-| `setShortcutStatus` | frontend/js/settings-wiring.js:1429 |
-| `setShortcutStatusError` | frontend/js/settings-wiring.js:1436 |
-| `singleKeysOn` | frontend/js/settings-wiring.js:2274 |
-| `stagedImageUrl` | frontend/js/settings-wiring.js:2053 |
+| `setShortcutStatus` | frontend/js/settings-wiring.js:1431 |
+| `setShortcutStatusError` | frontend/js/settings-wiring.js:1438 |
+| `singleKeysOn` | frontend/js/settings-wiring.js:2276 |
+| `stagedImageUrl` | frontend/js/settings-wiring.js:2055 |
 | `stampShortcutTitles` | frontend/js/settings-wiring.js:1142 |
 | `submitLockForm` | frontend/js/settings-wiring.js:305 |
-| `textCounts` | frontend/js/settings-wiring.js:1687 |
-| `uploadStagedFiles` | frontend/js/settings-wiring.js:2112 |
-| `wordCount` | frontend/js/settings-wiring.js:1682 |
+| `textCounts` | frontend/js/settings-wiring.js:1689 |
+| `uploadStagedFiles` | frontend/js/settings-wiring.js:2114 |
+| `wordCount` | frontend/js/settings-wiring.js:1684 |
 
 ### frontend/js/spaces-find.js (25)
 
@@ -6023,24 +6023,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `objDragArm` | frontend/js/obj-drag.js:90 |
-| `objDragBegin` | frontend/js/obj-drag.js:171 |
-| `objDragCue` | frontend/js/obj-drag.js:103 |
-| `objDragFinish` | frontend/js/obj-drag.js:254 |
-| `objDragFrame` | frontend/js/obj-drag.js:189 |
-| `objDragKey` | frontend/js/obj-drag.js:239 |
-| `objDragListen` | frontend/js/obj-drag.js:111 |
-| `objDragMove` | frontend/js/obj-drag.js:151 |
-| `objDragNoMenu` | frontend/js/obj-drag.js:130 |
-| `objDragNoNative` | frontend/js/obj-drag.js:136 |
-| `objDragNoScroll` | frontend/js/obj-drag.js:125 |
-| `objDragRoute` | frontend/js/obj-drag.js:197 |
-| `objDragSchedule` | frontend/js/obj-drag.js:185 |
+| `objDragArm` | frontend/js/obj-drag.js:91 |
+| `objDragBegin` | frontend/js/obj-drag.js:172 |
+| `objDragCue` | frontend/js/obj-drag.js:104 |
+| `objDragFinish` | frontend/js/obj-drag.js:258 |
+| `objDragFrame` | frontend/js/obj-drag.js:190 |
+| `objDragKey` | frontend/js/obj-drag.js:243 |
+| `objDragListen` | frontend/js/obj-drag.js:112 |
+| `objDragMove` | frontend/js/obj-drag.js:152 |
+| `objDragNoMenu` | frontend/js/obj-drag.js:131 |
+| `objDragNoNative` | frontend/js/obj-drag.js:137 |
+| `objDragNoScroll` | frontend/js/obj-drag.js:126 |
+| `objDragRoute` | frontend/js/obj-drag.js:198 |
+| `objDragSchedule` | frontend/js/obj-drag.js:186 |
 | `objDragSeed` | frontend/js/obj-drag.js:64 |
-| `objDragSwallowClick` | frontend/js/obj-drag.js:248 |
-| `objDragTick` | frontend/js/obj-drag.js:211 |
-| `objDragUp` | frontend/js/obj-drag.js:235 |
-| `objDragVerdict` | frontend/js/obj-drag.js:143 |
+| `objDragSwallowClick` | frontend/js/obj-drag.js:252 |
+| `objDragTick` | frontend/js/obj-drag.js:212 |
+| `objDragUp` | frontend/js/obj-drag.js:239 |
+| `objDragVerdict` | frontend/js/obj-drag.js:144 |
 | `objGhostMake` | frontend/js/obj-drag.js:35 |
 | `objPressInSelection` | frontend/js/obj-drag.js:55 |
 | `objPressOnGrip` | frontend/js/obj-drag.js:49 |
@@ -12192,7 +12192,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/model-menu-lazy.css | 96 |
 | frontend/css/motion-still.css | 75 |
 | frontend/css/nav-history-lazy.css | 169 |
-| frontend/css/objmove-lazy.css | 168 |
+| frontend/css/objmove-lazy.css | 170 |
 | frontend/css/offline-split-lazy.css | 71 |
 | frontend/css/panel-movable-lazy.css | 209 |
 | frontend/css/plain-head-lazy.css | 17 |
@@ -23655,7 +23655,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16597)
+## Tests (16601)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25417,6 +25417,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_transcript_copy.py | 2 |
 | tests/test_translate_offline.py | 7 |
 | tests/test_tray.py | 18 |
+| tests/test_tray_1603.py | 4 |
 | tests/test_tray_drag_1593.py | 15 |
 | tests/test_typo_routing.py | 4 |
 | tests/test_ui_1017b.py | 7 |
@@ -25642,7 +25643,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_zoom_frame_1508.py | 3 |
 | tests/test_zoom_wheel_delta.py | 3 |
 
-## Plan headings (991)
+## Plan headings (992)
 
 Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, except the HISTORY.md archive. Sorted by heading.
 
@@ -26344,7 +26345,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1305 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:161 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:166 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4188 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
@@ -26454,6 +26455,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-11-02 (the owner: the calculator, equations, insert panels and a diagram builder) | docs/roadmap/DOCUMENTS_PLAN.md:470 |
 | Placed from INBOX, 2026-11-03 | docs/roadmap/UI_MODERNISATION_PLAN.md:1557 |
 | Placed from INBOX, 2026-11-03 (chat; CHAT_PLAN is at its cap) | docs/roadmap/BACKLOG.md:4448 |
+| Placed from INBOX, 2026-11-03 (the composer's captions and quotes) | docs/roadmap/CHAT_PLAN.md:1893 |
 | Placed from INBOX, 2026-11-03b | docs/roadmap/BACKLOG.md:4458 |
 | Placed from INBOX, built (pointers) | docs/roadmap/UI_MODERNISATION_PLAN.md:1062 |
 | Placed from INBOX: 107d, the segmented mini bars | docs/roadmap/DOCUMENTS_PLAN.md:509 |

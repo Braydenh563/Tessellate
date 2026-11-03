@@ -462,6 +462,7 @@ LAZY_REACHED_AFTER_LOAD: dict[str, str] = {
     "graph-canvas.js:wbMapTidyFresh": "after `await openWhiteboardBoard(...)`, a stand-in that loads the library bundle (whiteboard-map.js) first",
     "graph.js:fillSearchSuggest": "inside `typeof searchSuggest !== \"undefined\" && searchSuggest?.input === box`: the object is search-suggest.js's own",
     "lan-watch.js:popoverHead": "lanDrawPanel's only caller is the panel's opener, which awaits ensureModule(\"statusPanels\") with settingsControls before it draws",
+    "obj-drag.js:objTrayDoor": "only in objDragTick, which runs during a carry; obj-ref.js loads obj-drag.js and obj-carry.js together and a drag needs both (INBOX 1603)",
     "obj-tray.js:popoverHead": "the tray's wiring awaits ensureModule(\"statusPanels\") before its first paint; a change before that draws nothing until it, by design (INBOX 1603)",
     "lan-watch.js:lanAllowHere": "lanDrawPanel's only caller is the panel's opener, which awaits ensureModule(\"settingsControls\") (line 289) before it draws",
     "lan-watch.js:lanEmptyRow": "lanDrawPanel's only caller is the panel's opener, which awaits ensureModule(\"settingsControls\") (line 289) before it draws",

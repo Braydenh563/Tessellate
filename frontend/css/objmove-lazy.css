@@ -116,6 +116,8 @@ html.obj-dragging #status-tray:not(.obj-target) {
 /* The tray: a count on the status bar's control, and its panel. */
 #status-tray.has-count {
   aspect-ratio: auto;
+  /* Its icon and count clear its edges (INBOX 1603: "they are right on the edge"). */
+  padding-inline: var(--space-2);
 }
 #status-tray .status-tray-count {
   margin-inline-start: var(--space-1);

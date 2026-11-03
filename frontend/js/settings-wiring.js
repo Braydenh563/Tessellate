@@ -1228,6 +1228,8 @@ const CHORD_ACTIONS = {
   //: nav"): `group: "go"` draws it under "Go to", and it opens the way the
   //: Library's own door does, through the reveal target.
   o: { label: "OCR workspace", icon: "ph:scan", group: "go", run: () => revealFeature("page-reader") },
+  //: The tray had no key (INBOX 1603); its button opens the phone's sheet too.
+  y: { label: "Tray", icon: "ph:tray", run: () => $("status-tray")?.click() },
 };
 let tabJumpArmedAt = 0;
 

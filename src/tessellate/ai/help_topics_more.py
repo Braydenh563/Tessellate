@@ -857,7 +857,7 @@ MORE_TOPICS: list[dict] = [
             "everything else in one place. Timeline: everything by date. "
             "Reminders: what is due. Settings (the gear, or Ctrl+,) holds the "
             "rest, and Atlas the guide (this chat) answers how-to questions "
-            "from any tab. Press t then a letter to jump between tabs (o opens the OCR workspace), and "
+            "from any tab. Press t then a letter to jump between tabs (o opens the OCR workspace, y the tray), and "
             "Settings, Help starts the guided tour."
         ),
         "badge": {"label": "Help", "section": "help"},
