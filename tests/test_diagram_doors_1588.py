@@ -33,7 +33,7 @@ def _entry() -> str:
 def test_the_registry_row_is_named_and_drawn_once_for_every_list():
     entry = _entry()
     assert 'name: "Diagram builder"' in entry and 'icon: "ph:flow-arrow"' in entry
-    assert "diagramDoor({ target: t || null })" in entry
+    assert "diagramModel.door({ target: t || null })" in entry
     assert 'guide: "diagram-builder"' in entry
     # The lists read the registry; none holds its own copy of the row.
     assert "...POPUP_TOOLS.map(" in _read("app-features.js") and "of POPUP_TOOLS" in _read("app-features.js")
@@ -44,10 +44,10 @@ def test_the_registry_row_is_named_and_drawn_once_for_every_list():
 def test_there_is_one_opener_and_every_hand_written_door_calls_it():
     mermaid = _read("documents-mermaid.js")
     assert mermaid.count("async function diagramDoor(") == 1
-    assert "diagramDoor }" in mermaid.split("Object.assign(window, {")[-1]
+    assert "diagramModel.door = diagramDoor;" in mermaid and "diagramDoor }" not in mermaid.split("Object.assign(window, {")[1].split("});")[0]
     library = _read("library.js")
     create = library.split("  diagram: {\n    label: \"ph:flow-arrow New diagram\"", 1)[1][:300]
-    assert "window.diagramDoor({ doc: true })" in create
+    assert "diagramModel.door({ doc: true })" in create
     assert '"diagram"' in library.split("const LIBRARY_CREATE_ORDER = [", 1)[1].split("]", 1)[0]
     commands = _read("whiteboard-commands.js")
     row = next(line for line in commands.splitlines() if 'id: "insert-diagram"' in line)

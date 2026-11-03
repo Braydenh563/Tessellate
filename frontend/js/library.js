@@ -2278,13 +2278,13 @@ const LIBRARY_CREATE_BY_KIND = {
       heads.find((h) => h.textContent === "Code")?.nextElementSibling?.querySelector("button")?.click();
     },
   },
-  //: The Diagram builder's Library door (INBOX 1588): the one opener (`diagramDoor`, documents-mermaid.js), asked for a document
+  //: The Diagram builder's Library door (INBOX 1588): the one opener (`diagramModel.door`, documents-mermaid.js), asked for a document
   //: so a board left open under the Boards sub-tab does not take the diagram.
   diagram: {
     label: "ph:flow-arrow New diagram",
     run: async () => {
       await ensureModule("library");
-      await window.diagramDoor({ doc: true });
+      await diagramModel.door({ doc: true });
     },
   },
   chat: {

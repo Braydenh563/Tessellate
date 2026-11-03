@@ -26,6 +26,7 @@ from tests._app_js import lazy_modules_source
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 BUILDER = JS / "diagram-builder.js"
+OPS = JS / "diagram-ops.js"
 SUGGEST = JS / "diagram-suggest.js"
 MERMAID = JS / "documents-mermaid.js"
 TEMPLATES = ROOT / "frontend" / "board-library" / "diagram-templates.json"
@@ -44,7 +45,7 @@ def _node(body: str):
     if not node:
         pytest.skip("node is not installed")
     code = "\n".join(
-        [_region(MERMAID, "DIAGRAM-MODEL"), _region(BUILDER, "DIAGRAM-OPS"), _region(SUGGEST, "DIAGRAM-GHOST"), body]
+        [_region(MERMAID, "DIAGRAM-MODEL"), _region(OPS, "DIAGRAM-OPS"), _region(SUGGEST, "DIAGRAM-GHOST"), body]
     )
     with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8") as handle:
         handle.write(code)

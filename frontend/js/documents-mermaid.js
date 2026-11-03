@@ -482,8 +482,9 @@
   async function diagramDoor({ target = null, doc = false } = {}) {
     const onBoard = !doc && wbCommandsLive() && (!target || Boolean(target.closest?.("#library-view-whiteboard")));
     if (onBoard) return wbEditDiagram();
-    const fits = !doc && target && target.isConnected !== false && (target.id === "question" || target.id in EDITOR_SURFACES || editorSurfaceKind(target));
-    if (!fits) {
+    //: The text box as a surface (the adapter `editorBlock` writes through), whether it was handed a surface, a textarea or an editable inside one.
+    const box = !doc && target && target.isConnected !== false && (target.id === "question" || target.id in EDITOR_SURFACES || editorSurfaceKind(target)) ? editorSurfaceFor(target) : null;
+    if (!box) {
       switchTab("documents");
       return libraryNewDocument("mmd");
     }
@@ -491,16 +492,18 @@
       source: diagramModel.starter,
       title: "Diagram builder",
       onDone: (next) => {
-        target.focus?.();
-        editorBlock(target, `\`\`\`mermaid\n${next.replace(/\n+$/, "")}\n\`\`\``, "", "");
+        box.focus?.();
+        editorBlock(box, `\`\`\`mermaid\n${next.replace(/\n+$/, "")}\n\`\`\``, "", "");
       },
     });
   }
   //: What a new diagram opens on, so the blocks and the picture show at once (the board's Insert used the same lines).
   diagramModel.starter = "flowchart TD\n  A[Start] --> B{Ready?}\n  B -->|yes| C[Ship it]";
+  //: Exported on `diagramModel`, not as a global name of its own: the callers are in other files and ask for the library bundle first.
+  diagramModel.door = diagramDoor;
 
   //: The file's whole surface: what documents.js and documents-export.js call.
-  Object.assign(window, { docRenderMermaidIn, docMermaidWhenDrawn, docMermaidField, diagramModel, openDiagramBuilder, diagramDoor });
+  Object.assign(window, { docRenderMermaidIn, docMermaidWhenDrawn, docMermaidField, diagramModel, openDiagramBuilder });
   //: The block pane (1546 P2) is a bundle of its own, fetched when a diagram is first shown (the kinds, 1546 P4, when a mind map, timeline or sequence diagram is):
   //: every caller is in this bundle or opens a document first, so no stand-in is needed, and
   //: neither app.js nor lazy-entries.js (both at their caps) carries the row.
