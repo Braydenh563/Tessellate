@@ -387,6 +387,8 @@ _STEPS = {
 
 
 def step(kind: str) -> str:
+    """The Why trail's line for a starter. A starter's figures are the app's own count, so
+    the turn also skips the number check (`prepared["app_first"]`; INBOX 1569)."""
     return _STEPS.get(kind, "Read what this needs from your notes and reminders.")
 
 

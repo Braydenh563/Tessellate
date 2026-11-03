@@ -1777,11 +1777,7 @@ def _first_events(req: _StreamRequest, prepared: dict, ollama_running: bool, too
         return _act_events(req, prepared)
     starter = _starter_read(req, ollama_running or tools_only)
     if starter:
-        #: Its figures are the app's own reading (a count of rows), in no note:
-        #: the number check does not read them, and the Why trail names this
-        #: step, not a search (INBOX 1569).
-        prepared["app_first"] = True
-        prepared["read_by"] = starter_acts.step(starter[0])
+        prepared.update(app_first=True, read_by=starter_acts.step(starter[0]))
         return _starter_events(req, starter)
     return _plain_events(req, prepared, ollama_running)
 
@@ -2205,6 +2201,7 @@ def _stream_request(body: ChatRequest, session: Session) -> _StreamRequest:
     if body.as_of is not None and not skill:
         use_tools = False
     question, address, full_question = _asked(body, session, skill)
+    question = question if skill else chat_extra.slot_reply(session, question, history)
     allowed_tools = skill["tools"] if skill else None
     if skill and skill["acts"]:
         # An action skill without tools is just a paragraph, so the route

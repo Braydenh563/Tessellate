@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import activity, composer_digest, composer_extra, realise
+from tessellate.ai import activity, composer_digest, composer_extra, composer_suggest, realise
 from tessellate.ai.composer_study import Ctx
 from tessellate.ai.tools._common import _visible
 from tessellate.core.database import Category, Entry
@@ -148,3 +148,17 @@ def mentioning(session: Session, word: str) -> int:
     except Exception:  # noqa: BLE001  # no index yet: nothing is counted
         log.exception("chat: counting the notes a ping names failed")
         return 0
+
+
+def slot_reply(session: Session, question: str, history: list[dict]) -> str:
+    """The reply to "Which note do you want pinned?" completes that act before anything
+    routes it ("erm, the interesting bean one" is "Pin note 3"; INBOX 1570). The
+    question itself when the last answer was not asking for a note."""
+    from tessellate.api.chat_turn import _turn_label
+
+    if not composer_suggest.pending_kind(history):
+        return question
+    rows = session.execute(
+        select(Entry.id, Entry.content).where(Entry.is_deleted == False, Entry.is_private == False, Entry.is_board == False)  # noqa: E712
+    ).all()
+    return composer_suggest.fill_slot(question, history, [(row.id, _turn_label(row.content)) for row in rows]) or question
