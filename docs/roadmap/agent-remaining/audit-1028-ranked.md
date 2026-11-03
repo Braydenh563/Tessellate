@@ -17,8 +17,8 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 11 | U8 | high | new document opens in Read mode on phone | fixed (673039d, reconciled 2026-10-30) | S |
 | 12 | U9 | high | find and replace panel is unstyled CodeMirror default | fixed (styling 673039d; match count this batch) | M |
 | 13 | U10 | high | image menu inserts bare stub with no picker | fixed (673039d, reconciled 2026-10-30) | M |
-| 14 | B3 | high | every render clears caches and rebuilds all map nodes | new | L |
-| 15 | B4 | high | full board render per frame with no dirty set | new | L |
+| 14 | B3 | high | every render clears caches and rebuilds all map nodes | already fixed in fact (13a-open paint key): 500 of 500 topic elements survive a render, 72.8 ms median at 4x throttle for one moved topic (10.6 ms at 200 topics unthrottled) | L |
+| 15 | B4 | high | full board render per frame with no dirty set | fixed 1102 a30g for pen strokes (300 sketches idle render 90 to 42 ms at 4x throttle); topics already keyed; connectors and shapes still repaint, see a30g-1102.md | L |
 | 16 | D7 | high | prose spell pass walks whole document every pause | fixed (673039d, reconciled 2026-10-30) | M |
 | 17 | S2 | high | graph layout blocks the main thread at about 2,000 notes | fixed 2026-10-30 (graph-1030: 25 to 9-10 s, long tasks 149 to 20) | L |
 | 18 | S3 | high | 1.1 MB index.html with comments and mascot code in boot path | fixed 1031: avatars and atlas lazy (boot bytes 0.77x, lock FCP 0.71x); comment stripping left | M |
@@ -146,21 +146,21 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 140 | B5 | med | 14+ separate pointermove listeners, several unthrottled | fixed (9e83452, reconciled 2026-10-30) | M |
 | 141 | B17 | med | link-sketch lookups parse every sketch JSON | fixed | M |
 | 142 | B18 | med | item and map size caches cleared per render, forcing layout reads | fixed | M |
-| 143 | D12 | med | replace-in-all re-downloads every document on each keystroke | docs/roadmap/DOCUMENTS_PLAN.md:1324 | M |
-| 144 | D18 | med | live view rebuilds decorations per change, table copies text | new | L |
+| 143 | D12 | med | replace-in-all re-downloads every document on each keystroke | fixed (board1518-1101): 3 requests for three keystrokes to 1, tests/test_documents_replace_all.py | M |
+| 144 | D18 | med | live view rebuilds decorations per change, table copies text | not reproduced 1102 a30g: the live plugin patches incrementally and `docStr` is memoised per immutable CM text, so one 100 KB copy per keystroke (0.1 ms); a keystroke in a 100 KB document with a TOC and tables is 19 to 28 ms median at 4x throttle (worst about 100); the other plugins' per-keystroke scans are in a30g-1102.md | L |
 | 145 | D19 | med | docText toString called 35 times, each O(n) | fixed (7add0bf) | M |
 | 146 | D20 | med | five whole-document renders per pause even when hidden | fixed (7add0bf) | M |
 | 147 | D21 | med | four document-wide listeners run on every tab | fixed (already: 4000 mouseover + 2000 click events on the dashboard tab cost 5.5 ms and 24 ms in all of documents.js, 1.4 and 12 microseconds per event) | S |
-| 148 | D22 | med | 1.1 MB documents.js plus CodeMirror bundle loaded eagerly | new | L |
+| 148 | D22 | med | 1.1 MB documents.js plus CodeMirror bundle loaded eagerly | already lazy in fact (a29, DC13): boot loads no documents, CodeMirror, whiteboard or d3 file; the Library tab adds library.js 331 KB, the first document open adds the editor files and CodeMirror 832 KB; the remaining cost (whiteboard and graph files riding with the document bundle) is a design note in a30g-1102.md | L |
 | 149 | K30 | med | link-suggestions loads every entry per request, no cache | fixed 2026-10-30: kept until a session write, 300 s backstop | M |
 | 150 | K31 | med | GET /entities reads every mention then slices in Python | fixed 2026-10-30: counted in SQL | S |
-| 151 | E34 | med | live markdown re-renders whole answer every 66 ms | new | M |
+| 151 | E34 | med | live markdown re-renders whole answer every 66 ms | fixed 1102 a30g (4x throttle, 9.8 KB stream: render time 1481 to 166 ms, worst 115 to 36 ms, long tasks 41 totalling 4098 ms to 2 totalling 141 ms) | M |
 | 152 | S16 | med | notes list never recycles rows, DOM grows unbounded | left (large; notes list already windowed, shell-1031.md) | L |
 | 153 | S37 | med | list filter re-renders without debounce | fixed (already: the notes filter waits 150 ms, settings-wiring.js) | S |
 | 154 | S38 | med | many timers run independent intervals | fixed (b8cfb46) | S |
-| 155 | U18 | med | long tasks up to 225 ms on board interactions | new | M |
-| 156 | U19 | med | mind map sibling add long tasks up to 509 ms | new | M |
-| 157 | U20 | med | code file open long task of 305 ms | new | M |
+| 155 | U18 | med | long tasks up to 225 ms on board interactions | not reproduced 1102 a30g: board list open 0 long tasks over three opens, undo on a 200-topic board 0 long tasks at 1x; only an undo on a board with 300 link sketches reaches 412 ms render plus 187 ms thumbnail export (candidate in a30g-1102.md) | M |
+| 156 | U19 | med | mind map sibling add long tasks up to 509 ms | not reproduced 1102 a30g: steady-state sibling add on a 200-topic map stays inside the 100 ms add gate (provisional topic defers transforms and edges); the audit figure matches a cold first add in a fresh page | M |
+| 157 | U20 | med | code file open long task of 305 ms | not reproduced as one task 1102 a30g: a 2,000-line .py file opens with the cost split across tasks (outline 51 ms, tools 15 ms, indent-mix scan 30 ms); splitting `docAfterFirstPaint` is in a30g-1102.md | M |
 | 158 | B6 | med | 319 addEventListener vs 7 remove; re-init double-fires handlers | fixed | M |
 | 159 | B15 | med | four overlapping drag mechanisms plus synthetic MouseEvent bridge | new | L |
 | 160 | D23 | med | hot-spot functions and 255 shared lets in one file | new | L |
