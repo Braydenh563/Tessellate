@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: the find panel's labels are 12px on the type scale, not CodeMirror's 80% (11.776px), and a template row's hint no longer runs under the chosen row's check mark: 32px of room on the right, down from 20px (audit 1028 U44, U39).
 - A sheet re-measures the toasts each time its card changes size, so a lasting toast steps aside for Import once the preview has filled in (E2E import; CI probe found the measurement stale, not wrong).
 - Board: the keyboard shortcut sheet lists only the open surface's keys (23 rows on a map, 55 on a board) and names the surface on a key two surfaces share, M and Ctrl+Shift+S (audit 1028 B12).
 - Mind map: the template offer's close button is 32px with a mouse and 44px under touch, up from 28px (audit 1028 U26).
