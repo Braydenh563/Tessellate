@@ -3277,24 +3277,17 @@ aside[data-resizable="1"] {
   gap: var(--space-2);
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-pill);
-  /* A resting border, not just a hover background: with the native checkbox
-     visually hidden below, an unchecked toggle (Semantic search, "Pinned
-     only") had no boundary at all at rest, it read as plain icon+text next
-     to bordered buttons like Select, not as a control you could click.
-     Reported directly against the Semantic toggle specifically. */
-  border: 1px solid var(--border);
+  /* **No resting chip border** (INBOX 1600, the owner on "Pinned only"): the
+     pill switch's own track is the control's boundary now, and a switch inside
+     a bordered pill read as two containers. One look with the Ask bar's AI
+     switch; the hover and focus fill still shows the whole target. */
+  border: 1px solid transparent;
   transition: background var(--ui-base) var(--ease-out), color var(--ui-base) var(--ease-out),
     border-color var(--ui-base) var(--ease-out);
 }
 .checkbox-label:hover,
 .checkbox-label:is(:focus-visible, :has(:focus-visible)) {
   background: var(--chip-bg);
-}
-.checkbox-label:has(input:checked) {
-  background: var(--accent-soft);
-  border-color: var(--accent);
-  color: var(--accent-text);
-  font-weight: 600;
 }
 /* A saved look, shown as the look. It was a text pill and a ✕, which told you
    a look called "Sea of Prosperity" existed and nothing about what it was, so

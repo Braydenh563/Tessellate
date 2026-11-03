@@ -71,7 +71,8 @@ function wireAskUseAi() {
   if (!box || box.dataset.wired) return;
   box.dataset.wired = "1";
   box.addEventListener("change", () => {
-    if (box.disabled) return;
+    //: A click before the switch caught up with a model that is off stores nothing (INBOX 1601).
+    if (box.disabled || aiIsOff()) return renderAskUseAi();
     prefs.set(ASK_ANSWER_FROM_KEY, box.checked ? "ai" : "notes");
     renderAskUseAi();
   });
@@ -81,7 +82,13 @@ function wireAskUseAi() {
   //: in step with the model starting and stopping, and rewrites the notice's
   //: sentence with the cause (its button already opens Settings, Models).
   const offline = $("ask-offline");
-  if (offline) new MutationObserver(renderAskUseAi).observe(offline, { attributes: true, attributeFilter: ["class"], childList: true });
+  //: **And the AI pill's level** (INBOX 1601): the notice does not change when it is hidden, or when it was
+  //: drawn before this file loaded, so the switch stayed in its neutral look (reads as on) until a click.
+  //: The pill's `data-level` changes on every status that differs; one observer watches both.
+  const watch = new MutationObserver(renderAskUseAi);
+  if (offline) watch.observe(offline, { attributes: true, attributeFilter: ["class"], childList: true });
+  const pill = $("ai-status");
+  if (pill) watch.observe(pill, { attributes: true, attributeFilter: ["data-level"] });
   renderAskUseAi();
 }
 

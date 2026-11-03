@@ -7116,8 +7116,12 @@ def test_an_offer_with_a_dismiss_is_the_split_chip() -> None:
     css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
     dismiss = _rule_exact(css, ".entry-meta > .chip.suggested-tag > .suggested-tag-dismiss")
     assert "width: 1.5rem" in dismiss, dismiss
-    assert "border-inline-end: 1px solid var(--border)" in _rule_exact(css, ".entry-meta > .chip.suggested-tag > .suggested-tag-take")
-    assert "var(--chip-bg)" in _rule_exact(css, ".entry-meta > .chip.suggested-tag > :is(button:hover, button:focus-visible)")
+    # INBOX 1597 (intent moved, the owner: "these suggested tags still look wierd"): no divider between the
+    # halves and the take's hover tints the whole chip, so it reads as one chip, not two boxes.
+    assert "border-inline-end" not in _rule_exact(css, ".entry-meta > .chip.suggested-tag > .suggested-tag-take")
+    assert "var(--chip-bg)" in _rule_exact(css, ".entry-meta > .chip.suggested-tag:has(> .suggested-tag-take:is(:hover, :focus-visible))")
+    assert "outline: 1px dashed var(--border)" in _rule_exact(css, ".entry-meta > .chip.suggested-tag")
+    assert "border-radius: var(--radius-pill)" in dismiss
     assert "var(--error)" in _rule_exact(css, ".entry-meta > .chip.suggested-tag > .suggested-tag-dismiss:is(:hover, :focus-visible)")
     coarse = re.search(r"@media \(max-width: 819\.98px\), \(pointer: coarse\) \{\s*\.entry-meta > \.chip\.suggested-tag > \.suggested-tag-dismiss[^{]*\{([^}]*)\}", css)
     assert coarse and "width: var(--target-min)" in coarse.group(1) and "margin-inline-end: calc(1.5rem - var(--target-min))" in coarse.group(1)
@@ -7348,3 +7352,11 @@ def test_a_settings_row_with_a_text_value_shares_one_alignment() -> None:
     doctor = (ROOT / "frontend" / "js" / "settings-controls.js").read_text(encoding="utf-8")
     assert 'value.className = "setting-control muted"' in doctor
     assert "A Settings row whose right side is text" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+
+
+def test_an_inline_toggle_is_a_bare_switch():
+    """INBOX 1600: a switch inside a bordered pill read as two containers; the track is the boundary."""
+    css = re.sub(r"/\*.*?\*/", "", (ROOT / "frontend" / "css" / "06-timeline-dialogs.css").read_text(encoding="utf-8"), flags=re.S)
+    bodies = [b for s, b in re.findall(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", css) if s.strip() == ".checkbox-label"]
+    assert any("border: 1px solid transparent" in b for b in bodies)
+    assert ".checkbox-label:has(input:checked)" not in css, "the knob says on; a checked fill doubles it"
