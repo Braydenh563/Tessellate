@@ -2,7 +2,7 @@
 
 Generated 2026-11-03 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7737, frontend ids 2635, CSS sections 518, backend routes 641, backend modules 8561, test files 1950, tests 16391, plan headings 992, app scripts 28, boot scripts 37, script files 242.
+Counts: frontend functions 7737, frontend ids 2635, CSS sections 518, backend routes 641, backend modules 8561, test files 1951, tests 16393, plan headings 992, app scripts 28, boot scripts 37, script files 242.
 
 ## Frontend functions (7737)
 
@@ -8231,7 +8231,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addBoardToNote` | frontend/js/whiteboard.js:25943 |
+| `addBoardToNote` | frontend/js/whiteboard.js:25947 |
 | `boardItemCount` | frontend/js/whiteboard.js:24860 |
 | `boardSort` | frontend/js/whiteboard.js:24864 |
 | `boardTypeFilter` | frontend/js/whiteboard.js:24907 |
@@ -8244,10 +8244,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `drawLibraryBoardsGallery` | frontend/js/whiteboard.js:24996 |
 | `fetchWhiteboardState` | frontend/js/whiteboard.js:19110 |
 | `handleWbZoom` | frontend/js/whiteboard.js:617 |
-| `highlighterBlend` | frontend/js/whiteboard.js:25963 |
+| `highlighterBlend` | frontend/js/whiteboard.js:25967 |
 | `initWhiteboard` | frontend/js/whiteboard.js:14826 |
 | `openWhiteboardBoard` | frontend/js/whiteboard.js:25243 |
-| `pickNotesDialog` | frontend/js/whiteboard.js:25855 |
+| `pickNotesDialog` | frontend/js/whiteboard.js:25859 |
 | `redrawLibraryBoardsGallery` | frontend/js/whiteboard.js:24965 |
 | `refreshBoardList` | frontend/js/whiteboard.js:19149 |
 | `renameCurrentBoard` | frontend/js/whiteboard.js:19258 |
@@ -8540,8 +8540,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbKeepsRatio` | frontend/js/whiteboard.js:11823 |
 | `wbKeyboardEnter` | frontend/js/whiteboard.js:11642 |
 | `wbLabelBand` | frontend/js/whiteboard.js:20173 |
-| `wbLaserLeave` | frontend/js/whiteboard.js:25735 |
-| `wbLaserTrail` | frontend/js/whiteboard.js:25711 |
+| `wbLaserLeave` | frontend/js/whiteboard.js:25739 |
+| `wbLaserTrail` | frontend/js/whiteboard.js:25715 |
 | `wbLayoutCloneGrips` | frontend/js/whiteboard.js:9174 |
 | `wbLayoutLinkLabel` | frontend/js/whiteboard.js:20356 |
 | `wbLayoutShapeLabel` | frontend/js/whiteboard.js:19897 |
@@ -8668,8 +8668,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbPortFractions` | frontend/js/whiteboard.js:4122 |
 | `wbPortsForPath` | frontend/js/whiteboard.js:4142 |
 | `wbPresentCaption` | frontend/js/whiteboard.js:25526 |
-| `wbPresentLaser` | frontend/js/whiteboard.js:25674 |
-| `wbPresentLaserButton` | frontend/js/whiteboard.js:25665 |
+| `wbPresentLaser` | frontend/js/whiteboard.js:25678 |
+| `wbPresentLaserButton` | frontend/js/whiteboard.js:25669 |
 | `wbPresentShow` | frontend/js/whiteboard.js:25489 |
 | `wbPresentSteps` | frontend/js/whiteboard.js:25445 |
 | `wbPropsText` | frontend/js/whiteboard.js:3678 |
@@ -8832,7 +8832,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbStickerSize` | frontend/js/whiteboard.js:5755 |
 | `wbStickyFolds` | frontend/js/whiteboard.js:11624 |
 | `wbStickyRemind` | frontend/js/whiteboard.js:23363 |
-| `wbStopPresenting` | frontend/js/whiteboard.js:25740 |
+| `wbStopPresenting` | frontend/js/whiteboard.js:25744 |
 | `wbSvgEscape` | frontend/js/whiteboard.js:13170 |
 | `wbSvgRunLines` | frontend/js/whiteboard.js:13215 |
 | `wbSvgText` | frontend/js/whiteboard.js:13201 |
@@ -23592,7 +23592,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16391)
+## Tests (16393)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25476,6 +25476,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_wb_place_box.py | 5 |
 | tests/test_wb_place_ghost.py | 2 |
 | tests/test_wb_ports.py | 7 |
+| tests/test_wb_present_picker_open.py | 2 |
 | tests/test_wb_prune_selection.py | 4 |
 | tests/test_wb_rail_kind.py | 1 |
 | tests/test_wb_resize_follow.py | 3 |

@@ -25560,14 +25560,14 @@ function wbPresentCaption(at, steps) {
     });
     slot.replaceChildren(wrap);
   } else {
-    wrap.querySelector(".action-menu")?.replaceChildren(...fresh.querySelector(".action-menu").children);
+    wrap.pickMenu.replaceChildren(...fresh.querySelector(".action-menu").children);
   }
   const opener = wrap.querySelector(":scope > button");
   const words = opener.querySelector(".wb-present-pick-title");
   words.textContent = caption;
   opener.title = caption;
   opener.setAttribute("aria-label", `${caption}. Go to a page`);
-  const rows = [...(wrap.querySelector(".action-menu")?.querySelectorAll(".menu-item") || [])];
+  const rows = [...wrap.pickMenu.querySelectorAll(".menu-item")];
   if (rows[at]) {
     rows[at].setAttribute("aria-current", "step");
     rows[at].classList.add("wb-present-pick-row");
@@ -25630,6 +25630,10 @@ const wbLaser = {
       ...Object.entries(wbLaser.looks).map(([key, name]) => ({ label: name, group: "look", run: () => wbLaser.set({ look: key }) })),
       {
         label: "Colour",
+    //: Kept, as the laser menu's is: an open menu is parked on the body, and
+    //: a row's `run` steps the page (and lands here) before it is back, so a
+    //: lookup through the wrap finds nothing and the rows stay the old page's.
+    wrap.pickMenu = wrap.querySelector(".action-menu");
         group: "colour",
         items: Object.keys(WB_RUN_SWATCHES).map((key) => ({
           label: key[0].toUpperCase() + key.slice(1),
