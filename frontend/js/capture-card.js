@@ -309,7 +309,8 @@ function showCaptureCard(from) {
   if (from?.id === "capture-bar-input") from.value = "";
   captureCard.root.hidden = false;
   $("capture-bar").classList.add("is-open");
-  setCaptureMode(from?.closest?.(".capture-bar-modes button")?.dataset.mode || captureCard.mode);
+  //: The bar's To-do icon opens the card as a list; anything else keeps the mode the draft was in.
+  setCaptureMode(from?.closest?.("#capture-bar-todo") ? "todo" : captureCard.mode);
 }
 
 function closeCaptureCard() {

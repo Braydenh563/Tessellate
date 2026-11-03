@@ -10794,37 +10794,39 @@ header#top-bar button.space-switcher-btn:focus-visible {
   opacity: 1;
 }
 
-/* **The Notes tab's capture bar** (INBOX 1479): one line above the list that
-   opens in place into the card (capture-card-lazy.css) while `.is-open`. */
+/* The capture bar is its own zone (INBOX 1572; tests/test_capture_bar_zone_a30s.py): a divider and a gap below the dock, one quiet row, its card over the list. */
 .capture-bar {
-  margin-bottom: var(--space-4);
+  position: relative;
+  margin: var(--space-6) 0;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--divider);
 }
 .capture-bar-row {
   display: flex;
-  align-items: stretch;
+  align-items: center;
   gap: var(--space-3);
 }
-.capture-bar-modes {
-  flex: 0 0 auto;
-  flex-wrap: nowrap;
-  margin-bottom: 0;
+.capture-bar-row .capture-bar-input,
+.capture-bar-row .capture-bar-icon {
+  height: var(--control-h-body);
+  min-height: var(--control-h-body);
+  margin: 0;
 }
 .capture-bar-row .capture-bar-input {
   flex: 1 1 auto;
   min-width: 0;
-  width: auto;
-  height: auto;
-  min-height: var(--control-h-lg);
-  margin: 0;
   padding: 0 var(--space-4);
-  border-radius: var(--radius-lg);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: none;
+  box-shadow: none;
 }
-.capture-bar-picture {
-  flex: 0 0 auto;
-  align-self: center;
+.capture-bar-row .capture-bar-input:hover,
+.capture-bar-row .capture-bar-input:focus-visible {
+  background: var(--chip-bg);
 }
 .capture-bar.is-open .capture-bar-row {
-  display: none;
+  visibility: hidden;
 }
 
 /* A note's own colour (INBOX 1479): a tenth of the swatch over the card and a

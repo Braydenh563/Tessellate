@@ -16,9 +16,26 @@
 // five booleans while the page is visible does the job instead.
 
 const FIELD_CLEARS = [
+  //: The title and the note each clear on their own (INBOX 1567): one undo step apiece, and the toast says which.
+  {
+    button: "capture-clear-title",
+    fields: ["entry-title"],
+    said: "Cleared the title.",
+    undoLabel: "Cleared the title",
+  },
+  {
+    button: "capture-clear-body",
+    fields: ["entry-content"],
+    said: "Cleared the note.",
+    undoLabel: "Cleared the note",
+    //: Ends where Clear all ends (the third row): in the box, the tag suggestions drawn from the old words gone.
+    after: () => FIELD_CLEARS[2].after(),
+  },
   {
     button: "capture-clear",
     fields: ["entry-content", "entry-title", "entry-tags"],
+    said: "Cleared everything.",
+    undoLabel: "Cleared the note box",
     //: Files staged for Save go with the words, and come back with them.
     held: () => (typeof captureStagedFiles !== "undefined" ? captureStagedFiles.length : 0),
     take() {
@@ -88,9 +105,9 @@ function fieldClearRun(spec) {
   };
   //: On the app's Undo stack too (INBOX 898), so Ctrl+Z brings the words back
   //: after the notice has gone and Ctrl+Shift+Z clears the box again.
-  const step = pushUndo("Cleared a box", undo, redo);
+  const step = pushUndo(spec.undoLabel || "Cleared a box", undo, redo);
   const line = spec.status && document.getElementById(spec.status);
-  if (!line) return toastAction("Cleared.", "Undo", () => { settleUndoFromToast(step); undo(); });
+  if (!line) return toastAction(spec.said || "Cleared.", "Undo", () => { settleUndoFromToast(step); undo(); });
   const undoButton = document.createElement("button");
   undoButton.type = "button";
   undoButton.className = "link-button";

@@ -1241,29 +1241,6 @@ body.graph-fullscreen-on .sidebar-panel {
 .graph-trace-route-chip[data-route="2"] .graph-trace-route-swatch {
   background: var(--warn);
 }
-.graph-node.graph-on-path .graph-core {
-  stroke: var(--accent);
-  stroke-width: 3.5px;
-  filter: drop-shadow(0 0 6px var(--accent));
-}
-.graph-node.graph-on-path .graph-label {
-  opacity: 1;
-  font-weight: 600;
-}
-/* The two ends of the trace, which are the notes you actually asked about. */
-.graph-node.graph-path-end .graph-core {
-  stroke-width: 5px;
-}
-/* Drag-to-link: the note you are hovering over lights up *before* you let go.
-   Without it the drop is a guess, and every miss makes a link nobody meant. */
-.graph-node.graph-drop-target .graph-core {
-  stroke: var(--ok);
-  stroke-width: 4px;
-  filter: drop-shadow(0 0 8px var(--ok));
-}
-.graph-node.graph-drop-target .graph-halo {
-  opacity: 0.5;
-}
 .graph-node {
   cursor: pointer;
   /* Declared here so the token has a live value of its own, and overridden per
@@ -1273,23 +1250,6 @@ body.graph-fullscreen-on .sidebar-panel {
      node drawn before the script has set its property still grows by about the
      right amount rather than by a number chosen to look harmless. */
   --graph-hover-scale: 1.2;
-}
-/* During an active pan, native `:hover` matching still fires per node the
-   cursor sweeps under even though the JS-level highlight is muted
-   (`graphIsPanning` in graph.js): that hit-testing and the CSS transitions
-   it triggers were a measured, real cost. Node drags never set this class
-   (their own mousedown stops propagation before the pan gesture starts). */
-.graph-panning .graph-node {
-  pointer-events: none;
-}
-/* Soft coloured halo behind each node → depth, and hubs read brighter. */
-.graph-node .graph-halo {
-  opacity: 0.18;
-  filter: blur(2px);
-  pointer-events: none;
-  transform-box: fill-box;
-  transform-origin: center;
-  transition: opacity var(--motion-fast) var(--ease-out), transform var(--motion-base) var(--ease-out);
 }
 /* --- hovering a node --------------------------------------------------------
    Asked for: "can you make graph nodes temporarily expand to fill their glow
@@ -1307,11 +1267,6 @@ body.graph-fullscreen-on .sidebar-panel {
    `transform-box: fill-box` is what makes `transform-origin: center` mean the
    circle's own centre. Without it the origin is the SVG viewport's, and every
    node would fly across the canvas instead of growing in place. */
-.graph-node:hover .graph-halo,
-.graph-node:is(:focus-visible, :has(:focus-visible)) .graph-halo {
-  opacity: 0.31;
-  transform: scale(1.11);
-}
 .graph-node:hover .graph-core,
 .graph-node:is(:focus-visible, :has(:focus-visible)) .graph-core {
   transform: scale(var(--graph-hover-scale));
@@ -1334,12 +1289,8 @@ body.graph-fullscreen-on .sidebar-panel {
    the pointer is on it. Taking the scale away as well would leave a reader who
    has asked for less motion with no hover feedback on the graph at all beyond
    a slightly brighter halo. */
-:where(:root[data-motion="reduced"]) .graph-node .graph-halo,
 :where(:root[data-motion="reduced"]) .graph-node .graph-core {
   transition: none;
-}
-.graph-node .graph-core.graph-pinned {
-  stroke: var(--warn);
 }
 /* Well-connected "hub" notes get a bright ring so structure is visible. */
 .graph-node .graph-core.graph-hub {
@@ -2889,11 +2840,6 @@ html {
 .graph-node,
 .graph-edge {
   transition: opacity var(--motion-slow) var(--ease-out);
-}
-.graph-node.graph-match .graph-core {
-  stroke: var(--accent);
-  stroke-width: 3px;
-  filter: drop-shadow(0 0 4px var(--accent-soft));
 }
 .graph-node.graph-held .graph-core {
   stroke: var(--ink);

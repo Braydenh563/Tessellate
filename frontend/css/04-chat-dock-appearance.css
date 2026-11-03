@@ -1517,19 +1517,6 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
 /* --- graph: depth, halos and legible labels -------------------------------- */
 /* These come after the base .graph-node rules so they win the specificity tie
    and the halo never picks up the node's stroke. */
-.graph-node circle.graph-halo {
-  stroke: none;
-  opacity: 0.16;
-  pointer-events: none;
-  transition: opacity var(--motion-base) var(--ease-out), r var(--motion-base) var(--ease-out);
-}
-
-.graph-node:hover circle.graph-halo,
-.graph-node.graph-focus circle.graph-halo,
-.graph-node:is(:focus-visible, :has(:focus-visible)) circle.graph-halo {
-  opacity: 0.34;
-}
-
 .graph-node text.graph-label {
   font-weight: 500;
   fill: var(--ink);

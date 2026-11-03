@@ -34,7 +34,9 @@ def _button(ident: str) -> str:
 def test_every_box_has_a_quiet_labelled_icon_button_that_starts_hidden() -> None:
     for ident in BUTTONS:
         tag = _button(ident)
-        assert 'aria-label="Clear"' in tag and 'title="Clear"' in tag
+        #: INBOX 1567: Capture's button is Clear all now; the title and the note have their own x.
+        name = "Clear all" if ident == "capture-clear" else "Clear"
+        assert f'aria-label="{name}"' in tag and f'title="{name}"' in tag
         classes = re.search(r'class="([^"]*)"', tag).group(1).split()
         assert {"ghost", "icon-only", "small", "field-clear", "hidden"} <= set(classes), ident
         assert "ph-eraser" in tag
@@ -52,7 +54,7 @@ def test_capture_clears_the_title_the_tags_and_the_staged_files_and_undo_returns
 
 
 def test_undo_is_the_toast_recipe_or_the_status_line_under_a_dialog() -> None:
-    assert 'toastAction("Cleared.", "Undo", () => { settleUndoFromToast(step); undo(); })' in JS
+    assert 'toastAction(spec.said || "Cleared.", "Undo", () => { settleUndoFromToast(step); undo(); })' in JS
     # A modal dialog and the agent's overlay are drawn above the toasts.
     assert 'status: "quick-note-status"' in JS and 'status: "command-palette-status"' in JS
 

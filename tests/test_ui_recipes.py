@@ -6931,7 +6931,6 @@ SEG_SHARES_ROW: dict[tuple[str, str], str] = {
     ("dashboard.js", "seg focus-presets-seg"): "`.focus-presets`, beside the stepper",
     ("index.html", "doc-history-filter"): "`.doc-history-bar`, beside Name this version",
     ("index.html", "seg notes-view-toggle"): "the Notes dock, beside Sort and Select",
-    ("index.html", "seg capture-bar-modes"): "`#capture-bar-row`, beside the field and Add",
     ("index.html", "chat-mode-seg"): "the chat tool row, beside the persona and skill pickers",
     ("index.html", "timeline-view-seg"): "the Timeline dock",
     ("index.html", "doc-view-seg"): "the Documents dock, beside the cluster's other controls",
