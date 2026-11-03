@@ -43,7 +43,7 @@ from dataclasses import dataclass
 
 from sqlalchemy.orm import Session
 
-from tessellate.ai import janitor, librarian, no_model_text, offline
+from tessellate.ai import janitor, librarian, no_model_text, offline, tagging
 from tessellate.ai.embeddings import EmbeddingService, cosine_similarity
 from tessellate.ai.links import _clean_reason, _is_vague_reason
 from tessellate.ai.model_manager import ModelManager
@@ -102,8 +102,8 @@ SPLIT_SYSTEM_PROMPT = (
 #: split rather than one note, and says who did it.
 def offline_message() -> str:
     return offline.offline_message(
-        "No model is connected, so this was split by its headings and "
-        "paragraphs. Read each note before saving."
+        "No model is connected, so this was split by its headings, "
+        "paragraphs and subjects. Read each note before saving."
     )
 
 
@@ -111,8 +111,8 @@ def offline_message() -> str:
 OFFLINE_MESSAGE = offline_message()
 
 SPLIT_FAILED_MESSAGE = (
-    "The AI couldn't split this cleanly, so it was split by its headings "
-    "and paragraphs instead. Read each note before saving."
+    "The AI couldn't split this cleanly, so it was split by its headings, "
+    "paragraphs and subjects instead. Read each note before saving."
 )
 
 
@@ -289,15 +289,19 @@ def _link(source: str, target: str, preview: str, reason: str, kind: str) -> dic
     return {"source_ref": source, "target_ref": target, "target_preview": preview, "reason": reason, "kind": kind}
 
 
-def _plain_links(notes: list[ExtractedNote], source_entries: list) -> list[dict]:
+def _plain_links(notes: list[ExtractedNote], source_entries: list, text: str) -> list[dict]:
     """The links that are true without a model: each part came from the
     selected notes, and the parts are one text."""
+    # A source that is the whole extracted text would only link each part to
+    # a preview of itself, so it gets no link; a selection from a bigger note does.
+    whole = " ".join(text.split())
     links = [
         _link(f"n{i}", f"existing:{entry.id}", _short_preview(entry.content), "Taken from this note's text", "source")
         for i in range(len(notes))
         for entry in source_entries
+        if " ".join(entry.content.split()) != whole
     ]
-    links += [_link(f"n{i}", f"n{i + 1}", "", "Parts of the same text", "sibling") for i in range(len(notes) - 1)]
+    links += [_link(f"n{i}", f"n{i + 1}", "", "Same text, next part", "sibling") for i in range(len(notes) - 1)]
     return links
 
 
@@ -373,13 +377,13 @@ def build_extraction(
             "title": note.title,
             "content": note.content,
             "category": category,
-            "tags": [],
+            "tags": tagging.suggest(session, note.content, []) if message else [],
             "confidence": confidence,
             "filed_by": filed_by,
         })
 
     if message:
-        links = _plain_links(notes, source_entries)
+        links = _plain_links(notes, source_entries, text)
     elif ollama_running:
         links = _model_links(session, notes, source_entries, embeddings, model_manager, ollama)
     else:
