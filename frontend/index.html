@@ -1677,6 +1677,7 @@
                  typed as the note's own first line ("# Recipe") work exactly
                  the same way. Starting a note with a single # already becomes
                  a title without touching this box at all. -->
+            <span class="field-clear-anchor"><button type="button" id="capture-clear-title" class="ghost icon-only small field-clear field-clear-inline hidden" title="Clear the title" aria-label="Clear the title"><i class="ph ph-x" aria-hidden="true"></i></button></span>
             <input id="entry-title" data-autocorrect type="text" maxlength="200"
               placeholder="Optional title"
               aria-label="Optional title: becomes the note's leading heading">
@@ -1732,12 +1733,13 @@
                 <i class="ph ph-code ph-lead" aria-hidden="true"></i> <span class="toolbar-word">Source</span>
               </button>
             </div>
+            <span class="field-clear-anchor"><button type="button" id="capture-clear-body" class="ghost icon-only small field-clear field-clear-inline hidden" title="Clear the note" aria-label="Clear the note"><i class="ph ph-x" aria-hidden="true"></i></button></span>
             <textarea id="entry-content" data-autocorrect rows="3" class="autogrow" aria-label="New note"
               placeholder="Type anything: a joke, a shopping list, a race result…
 Link to another note with [[its first few words]]."></textarea>
-            <!-- The box's own foot: Clear (field-clear.js, INBOX 466) at the left, the count at the right. -->
+            <!-- The box's own foot: Clear all (field-clear.js, INBOX 466) at the left, the count at the right; the title and the note have their own x (INBOX 1567). -->
             <div class="note-composer-foot">
-              <button type="button" id="capture-clear" class="ghost icon-only small field-clear hidden" title="Clear" aria-label="Clear"><i class="ph ph-eraser" aria-hidden="true"></i></button>
+              <button type="button" id="capture-clear" class="ghost icon-only small field-clear hidden" title="Clear all" aria-label="Clear all"><i class="ph ph-eraser" aria-hidden="true"></i></button>
               <div class="char-count muted" id="entry-count" aria-live="polite">0 words</div>
             </div>
           </div>

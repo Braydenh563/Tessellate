@@ -1445,8 +1445,8 @@ MORE_TOPICS.extend(
                 "dashboard's Quick capture saves the same way. A bare link pasted "
                 "into Capture or Quick note offers its page as a note through the "
                 "web clipper, only while web search is allowed. \"Clear\" (the eraser "
-                "icon) is in every box you type into: Capture, with its title, tags "
-                "and files, Quick note, Ask, Chat and the popup agent. It shows only "
+                "icon) is in every box you type into: Capture (as Clear all, with its title, tags "
+                "and files; its title and its note also have an x of their own, which clears just that one), Quick note, Ask, Chat and the popup agent. It shows only "
                 "while the box holds something, empties it, and Undo (in the toast, "
                 "or beside the box in a popup) puts it all back."
             ),
