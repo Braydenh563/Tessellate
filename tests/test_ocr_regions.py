@@ -203,6 +203,8 @@ def test_without_tesseract_the_sections_come_from_the_reading(client, monkeypatc
     claims to be the whole page is a wrong answer, not a missing one.
     """
     monkeypatch.setattr(ocr, "extract_regions", lambda path: None)
+    # Forced, not assumed: a machine with Tesseract installed must not change what this test checks.
+    monkeypatch.setattr(ocr, "local_available", lambda: False)
     created = client.post("/entries", json={"content": "host note"}).json()
     files = {"file": ("scan.png", b"\x89PNG\r\n\x1a\n" + b"0" * 32, "image/png")}
     upload = client.post(f"/entries/{created['id']}/files", files=files)
@@ -216,8 +218,7 @@ def test_without_tesseract_the_sections_come_from_the_reading(client, monkeypatc
     assert body["regions"][0]["text"] == "Invoice"
     # Nothing measured where these are, so nothing claims to have.
     assert all(r["box"] is None for r in body["regions"])
-    # Tesseract is genuinely missing here (not mocked), so the message
-    # tells you to install it, the honest instruction for this case.
+    # With no local reader, the message tells you to install one, the honest instruction for this case.
     assert "Install Tesseract" in body["message"]
 
 
