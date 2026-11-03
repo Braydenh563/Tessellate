@@ -2,7 +2,7 @@
 
 Generated 2026-11-03 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7737, frontend ids 2635, CSS sections 518, backend routes 641, backend modules 8561, test files 1950, tests 16392, plan headings 992, app scripts 28, boot scripts 37, script files 242.
+Counts: frontend functions 7737, frontend ids 2635, CSS sections 522, backend routes 641, backend modules 8561, test files 1950, tests 16393, plan headings 992, app scripts 28, boot scripts 37, script files 242.
 
 ## Frontend functions (7737)
 
@@ -103,18 +103,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `afterCharacters` | frontend/js/lazy-entries.js:159 |
-| `charactersLost` | frontend/js/lazy-entries.js:168 |
-| `emblemHead` | frontend/js/lazy-entries.js:176 |
-| `installCharacterStandIns` | frontend/js/lazy-entries.js:205 |
-| `lazyLoadFailed` | frontend/js/lazy-entries.js:238 |
-| `loadCharactersIdle` | frontend/js/lazy-entries.js:199 |
-| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:226 |
-| `onDomReady` | frontend/js/lazy-entries.js:249 |
-| `plainHead` | frontend/js/lazy-entries.js:182 |
-| `runCharacterJob` | frontend/js/lazy-entries.js:190 |
-| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:261 |
-| `warmOnFirst` | frontend/js/lazy-entries.js:280 |
+| `afterCharacters` | frontend/js/lazy-entries.js:161 |
+| `charactersLost` | frontend/js/lazy-entries.js:170 |
+| `emblemHead` | frontend/js/lazy-entries.js:178 |
+| `installCharacterStandIns` | frontend/js/lazy-entries.js:207 |
+| `lazyLoadFailed` | frontend/js/lazy-entries.js:240 |
+| `loadCharactersIdle` | frontend/js/lazy-entries.js:201 |
+| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:228 |
+| `onDomReady` | frontend/js/lazy-entries.js:251 |
+| `plainHead` | frontend/js/lazy-entries.js:184 |
+| `runCharacterJob` | frontend/js/lazy-entries.js:192 |
+| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:263 |
+| `warmOnFirst` | frontend/js/lazy-entries.js:282 |
 
 ### frontend/js/note-cards.js (27)
 
@@ -11587,7 +11587,7 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `zoom-slider` | frontend/index.html:11748 |
 | `zoom-value` | frontend/index.html:11752 |
 
-## CSS sections (518)
+## CSS sections (522)
 
 Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 
@@ -11885,12 +11885,16 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | markdown tables | frontend/css/04-chat-dock-appearance.css:1871 |
 | meeting notes (§17) | frontend/css/02-chat-graph.css:1596 |
 | model cards: the Models screen's suggested downloads (INBOX 444) | frontend/css/01-forms-settings.css:5843 |
+| motion: a dialog element arrives and leaves like the popup recipe | frontend/css/ui-reveal-lazy.css:66 |
 | motion: a heavy page's first visit (INBOX 580) | frontend/css/08-consistency.css:9695 |
+| motion: a hover card leaves as it came | frontend/css/ui-reveal-lazy.css:57 |
 | motion: a hover eases (2026-10-05) | frontend/css/08-consistency.css:9578 |
 | motion: a list settles in where its skeleton was (2026-10-05) | frontend/css/08-consistency.css:9558 |
 | motion: a menu or popover grows from what opened it (INBOX 103, 2026-10-05) | frontend/css/10-responsive.css:230 |
+| motion: a menu that hangs off a button grows from it (INBOX 1565) | frontend/css/ui-reveal-lazy.css:28 |
 | motion: a note's hover card fades in (INBOX 1462) | frontend/css/graph-lazy.css:433 |
 | motion: a page arrives (INBOX 459 (2), 580) | frontend/css/08-consistency.css:9663 |
+| motion: a panel or bar that a click shows fades in (INBOX 1565) | frontend/css/ui-reveal-lazy.css:8 |
 | motion: a plus becomes a minus (INBOX 1506 B; the vocabulary is in | frontend/css/library-lazy.css:7905 |
 | motion: a popup arrives, and leaves the way it came (INBOX 580, 2026-10-05) | frontend/css/08-consistency.css:9774 |
 | motion: a sidebar's contents arrive from its edge (INBOX 459 (2)) | frontend/css/08-consistency.css:9588 |
@@ -12183,6 +12187,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/tidy-lazy.css | 331 |
 | frontend/css/timeline-calendar-lazy.css | 299 |
 | frontend/css/timeline-ticks-lazy.css | 42 |
+| frontend/css/ui-reveal-lazy.css | 91 |
 | frontend/css/update-bar-lazy.css | 15 |
 | frontend/css/usage-lazy.css | 34 |
 | frontend/css/utilities-lazy.css | 489 |
@@ -23592,7 +23597,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16392)
+## Tests (16393)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25331,7 +25336,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_typo_routing.py | 4 |
 | tests/test_ui_1017b.py | 7 |
 | tests/test_ui_batch_726.py | 13 |
-| tests/test_ui_recipes.py | 261 |
+| tests/test_ui_recipes.py | 262 |
 | tests/test_ui_signatures.py | 2 |
 | tests/test_ui_state.py | 6 |
 | tests/test_ui_targets_1029b.py | 9 |

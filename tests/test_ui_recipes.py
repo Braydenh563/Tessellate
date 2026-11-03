@@ -7219,3 +7219,60 @@ def test_a_cards_one_action_sits_left_with_an_icon_and_a_dialogs_primary_stays_f
     kit = (ROOT / "frontend" / "js" / "reply-kit.js").read_text(encoding="utf-8")
     assert 'smallButton("ph:function Insert as equation"' in kit
     assert 'insert.classList.add("primary")' in kit and "false);\n  insert.classList.add" in kit
+
+
+#: The popups, menus, tooltips and previews that float and still arrive with no
+#: motion recipe (INBOX 1565). May only shrink: give one its recipe in
+#: ui-reveal-lazy.css (or beside its menu in 10-responsive.css) and delete it
+#: here; a new floating class that is not here must carry a recipe in the same
+#: commit. A preview that is a swatch drawn in place, not a thing that opens,
+#: stays on the list.
+UNMOTIONED_FLOATING = {
+    "theme-preview",
+}
+FLOATING_SUFFIXES = ("menu", "popup", "popover", "tooltip", "hovercard", "dropdown", "suggest", "peek", "preview")
+
+
+def _floating_and_motioned_classes() -> tuple[dict[str, str], set[str]]:
+    """Classes named like a floating thing that are laid out over the page
+    (position absolute or fixed, a z-index or a medium/large shadow in a rule
+    whose last compound selector is the class), and every class that appears in
+    a rule which moves: a `ui-` keyframe or an opacity/transform transition."""
+    class_re = re.compile(r"\.([a-z][a-z0-9]*(?:-[a-z0-9]+)*)")
+    floating: dict[str, str] = {}
+    motioned: set[str] = set()
+    for path in CSS:
+        for selector, body in _rules(path.read_text(encoding="utf-8")):
+            moves = bool(
+                re.search(r"animation(?:-name)?\s*:[^;]*\bui-(?:fade|grow|row)", body)
+                or re.search(r"transition\s*:[^;]*\b(?:opacity|scale|translate|transform)\b", body)
+            )
+            lays_over = bool(re.search(r"position\s*:\s*(?:absolute|fixed)|z-index\s*:|box-shadow\s*:\s*var\(--shadow-(?:md|lg)", body))
+            for part in selector.split(","):
+                part = part.strip()
+                if moves:
+                    motioned.update(class_re.findall(part))
+                if lays_over and part:
+                    for name in class_re.findall(re.split(r"[\s>+~]+", part)[-1]):
+                        if name.endswith(FLOATING_SUFFIXES):
+                            floating.setdefault(name, path.name)
+    return floating, motioned
+
+
+def test_every_floating_popup_menu_tooltip_and_preview_class_carries_a_motion_recipe() -> None:
+    """INBOX 1565, the owner: the graph hover card's fade is the quality wanted
+    app wide. A class named `*-menu`, `*-popup`, `*-popover`, `*-tooltip`,
+    `*-hovercard`, `*-dropdown`, `*-suggest`, `*-peek` or `*-preview` that is
+    laid over the page must be named in a rule that moves (`ui-fade` and
+    `ui-grow`, or a transition of opacity, scale or translate), so a new popup
+    cannot arrive in one frame. `scratchpad/ui-sweeps/motionflag.js` measures
+    what the browser then draws."""
+    floating, motioned = _floating_and_motioned_classes()
+    assert len(floating) >= 20, "the lint found too few floating classes: the suffixes or the detection moved"
+    missing = sorted(name for name in floating if name not in motioned and name not in UNMOTIONED_FLOATING)
+    assert not missing, (
+        "A popup, menu, tooltip or preview class with no motion recipe (add it to a `:is()` list in "
+        "ui-reveal-lazy.css or 10-responsive.css):\n  " + "\n  ".join(f"{n} ({floating[n]})" for n in missing)
+    )
+    stale = sorted(name for name in UNMOTIONED_FLOATING if name not in floating or name in motioned)
+    assert not stale, f"remove from UNMOTIONED_FLOATING (it has a recipe now, or is gone): {stale}"
