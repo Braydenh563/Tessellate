@@ -699,7 +699,7 @@ function chatCommands() {
     { id: "chat-plan", primary: true, group: "This message", icon: "ph:compass", label: "Plan first", hint: "toggle", keywords: ["plan", "steps", "think"], run: press("chat-plan") },
     { id: "chat-skills", primary: true, group: "This message", icon: "ph:lightning", label: "Skills", hint: "run a saved skill", keywords: ["skill", "skills", "run", "workflow"], run: press("chat-skills-btn") },
     { id: "chat-equation", group: "This message", icon: "ph:function", label: "Equation", hint: "build a formula, Alt+=", keywords: ["equation", "math", "maths", "formula", "symbol"], run: afterPress(() => openMathEditor({ target: document.getElementById("chat-input") })) },
-    ...POPUP_TOOLS.map((tool) => ({ id: `chat-tool-${tool.id}`, group: "This message", icon: tool.icon, label: tool.name, hint: "opens a panel", keywords: tool.keywords.split(" "), run: afterPress(() => tool.open()) })),
+    ...POPUP_TOOLS.map((tool) => ({ id: `chat-tool-${tool.id}`, group: "This message", icon: tool.icon, label: tool.name, hint: "opens a panel", keywords: tool.keywords.split(" "), run: afterPress(() => tool.open(tool.id === "diagram" ? document.getElementById("chat-input") : undefined)) })),
     ...chatSlashRows(afterPress),
     { id: "chat-mode-agent", group: "Mode", icon: "ph:strategy", label: "Agent mode", hint: "let it act on the notebook", keywords: ["agent", "mode", "tools", "act"], run: mode("agent") },
     { id: "chat-mode-chat", group: "Mode", icon: "ph:sparkle", label: "Ask mode", hint: "answer only", keywords: ["ask", "chat", "mode", "answer"], run: mode("chat") },

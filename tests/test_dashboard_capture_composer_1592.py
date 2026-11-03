@@ -35,7 +35,9 @@ def _function(source: str, name: str) -> str:
 
 def test_the_dashboard_card_mounts_the_notes_bar_and_has_no_composer_of_its_own():
     body = _function(_js("dashboard.js"), "renderQuickCaptureWidget")
-    assert "captureBar()" in body
+    # the copy of the Notes bar is made here, in the lazy file, and wired by notes-list.js's `captureBar`
+    # (it moved out of the boot file to keep the app scripts under their gzip ratchet)
+    assert "captureBar(bar)" in body and 'removeAttribute("id")' in body
     for old in ("textarea", "createNoteSafely", "smallButton", "Ctrl+Enter", "apiJson", "watchFiling", "loadEntries"):
         assert old not in body, f"the dashboard card still has its own {old}"
 
@@ -52,8 +54,7 @@ def test_both_bars_are_wired_by_the_same_function():
     notes = _js("notes-list.js")
     bar = _function(notes, "captureBar")
     assert 'if ($("capture-bar")) captureBar($("capture-bar"));' in notes
-    # the copy has no ids (two bars on one page): the card finds a bar by class
-    assert 'removeAttribute("id")' in bar and "openCaptureCard(event.target, event.type)" in bar
+    assert "openCaptureCard(event.target, event.type)" in bar
     assert 'typeof captureCard !== "undefined"' in bar and "captureCard.adopt(bar)" in bar
 
 
@@ -73,7 +74,7 @@ def test_a_dashboard_redraw_while_the_card_is_open_hands_it_to_the_new_bar():
 
 def test_the_colour_row_is_one_line_and_none_is_not_alone_on_one():
     css = _css("capture-card-lazy.css")
-    row = "\n".join(b for s, b in re.findall(r"([^{}]+)\{([^{}]*)\}", css) if ".capture-card-colours .swatch-picker" in s)
+    row = "\n".join(b for s, b in re.findall(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", css) if ".capture-card-colours .swatch-picker" in s)
     assert "display: flex" in row and "flex-wrap: nowrap" in row and "overflow-x: auto" in row
     assert "grid-template-columns" not in row, "a grid row put None on its own line (it spans every column)"
 

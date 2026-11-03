@@ -21,7 +21,7 @@ JS = ROOT / "frontend" / "js"
 
 def test_mmd_is_one_row_of_the_file_type_table():
     row = filetypes.get("mmd")
-    assert row.ext == "mmd" and row.label == "Mermaid diagram"
+    assert row.ext == "mmd" and row.label == "Diagram"
     assert row.group == "Documents" and row.icon == "flow-arrow" and row.line_comment == "%%"
     # The server says previewable only for markdown; the editor draws a diagram's picture itself.
     assert not row.previewable

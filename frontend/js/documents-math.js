@@ -299,6 +299,11 @@
       const label = docMathArgument(tokens, state);
       return { tag: "mover", kids: [{ tag: "mo", attrs: { stretchy: "true" }, text: DOC_MATH_OPERATORS[name === "xrightarrow" ? "rightarrow" : "leftarrow"] }, label] };
     }
+    //: A box and a strike are a frame on the argument's own row, drawn by the documents CSS (`.math-boxed`,
+    //: `.math-cancel`): Chromium has no `menclose`, and a class is what the CSP lets a formula carry.
+    if (name === "boxed" || name === "cancel" || name === "bcancel" || name === "xcancel") {
+      return { tag: "mrow", attrs: { class: name === "boxed" ? "math-boxed" : name === "cancel" ? "math-cancel" : `math-cancel math-${name}` }, kids: [docMathArgument(tokens, state)] };
+    }
     if (name === "mathbb") {
       const letter = docMathArgument(tokens, state);
       return letter.tag === "mi" && letter.text in DOC_MATH_DOUBLE_STRUCK ? { tag: "mi", text: DOC_MATH_DOUBLE_STRUCK[letter.text] } : letter;
@@ -353,6 +358,12 @@
     return { tag: "mi", text: name };
   }
 
+  //: Integrals keep their limits beside the sign, as TeX does; the sums, products, unions and the named limits stack.
+  const DOC_MATH_STACKED = new Set(["∑", "∏", "∐", "⋃", "⋂", "⨁", "⨂", "⋁", "⋀", "⨄", "lim", "max", "min", "sup", "inf", "limsup", "liminf", "det", "gcd", "Pr"]);
+  function docMathLimitsBase(node) {
+    return DOC_MATH_STACKED.has(node.text) && (node.tag === "mo" || (node.tag === "mi" && node.attrs && node.attrs.mathvariant === "normal"));
+  }
+
   function docMathNodes(tokens, state, nested = false) {
     const kids = [];
     let closed = false;
@@ -378,6 +389,13 @@
         const brace = up ? "\u23de" : "\u23df";
         if (base.tag === (up ? "mover" : "munder") && base.kids[1] && base.kids[1].text === brace) {
           kids.push({ tag: base.tag, kids: [base, script] });
+        } else if (base.limits && base.tag === (up ? "munder" : "mover")) {
+          kids.push({ tag: "munderover", limits: true, kids: up ? [base.kids[0], base.kids[1], script] : [base.kids[0], script, base.kids[1]] });
+        } else if (docMathLimitsBase(base)) {
+          //: A big operator's limits stack above and below it, as TeX sets them: `movablelimits` lets the
+          //: browser put them beside it again in a line of prose, where TeX does the same.
+          const op = { tag: "mo", attrs: { movablelimits: "true" }, text: base.text };
+          kids.push({ tag: up ? "mover" : "munder", limits: true, kids: [op, script] });
         } else if (base.tag === "msub" && up) {
           kids.push({ tag: "msubsup", kids: [base.kids[0], base.kids[1], script] });
         } else if (base.tag === "msup" && !up) {

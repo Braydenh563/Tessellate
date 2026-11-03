@@ -347,6 +347,27 @@ def test_the_diagram_blocks_keys_menu_and_views_are_in_the_guide() -> None:
     assert '"Blocks"' in docs and "A diagram has Blocks, Split and Source." in docs
 
 
+def test_the_diagram_add_library_and_connect_to_are_in_the_guide_in_the_controls_words() -> None:
+    """INBOX 1594: the Add library's four groups, its hints, the sheet on a phone, Connect to... on a
+    block (pick one, or type a new name), a connector's row and the C key, said in the Guide's
+    `diagram-blocks` topic in the words the pane carries."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
+    for words in ("Add holds the shapes by meaning", "Steps, Decisions, Start and end, Notes and groups", "point at one for its hint",
+                  "on a phone, Add opens the same list", "Connect to... on a block", "type a new name to make it",
+                  "Start to Next and its label", "C or J joins"):
+        assert words in body, words
+    js = FRONTEND / "js"
+    builder = (js / "diagram-builder.js").read_text(encoding="utf-8")
+    library = (js / "diagram-library.js").read_text(encoding="utf-8")
+    joins = (js / "diagram-joins.js").read_text(encoding="utf-8")
+    for label in ("Steps", "Decisions", "Start and end", "Notes and groups"):
+        assert f'["{label}", [' in library, label
+    assert "Connect to…" in builder and "`${from} to ${to}`" in builder and "A new block" in joins
+    assert 'c: () => key[0] !== "k" && joinPick(S, key)' in builder
+
+
 def test_the_diagram_suggestions_are_in_the_guide_in_the_controls_words() -> None:
     """1546 P3: Suggest and its three ways in, the ghosts and their keys, and the dimmed
     Describe it, each said in the words the controls carry."""

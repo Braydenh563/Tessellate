@@ -160,6 +160,8 @@ const MATH_EDITOR_TEMPLATES = [
     ["brace under", "\\underbrace{#@}_{#?}", "\\underbrace{x+y}_{n}"],
     ["arrow with a label", "\\xrightarrow{#@}", "\\xrightarrow{f}"],
     ["arrow back with a label", "\\xleftarrow{#@}", "\\xleftarrow{f}"],
+    ["box", "\\boxed{#@}", "\\boxed{x}"],
+    ["cancel", "\\cancel{#@}", "\\cancel{x}"],
   ]],
   //: **Common formulas**: whole formulas, not structures, so no boxes and no sample: a template without one is drawn as
   //: itself. A selection is replaced by the formula.
@@ -306,7 +308,7 @@ function mathEditorTile(item, pinned = false) {
 }
 
 //: The palette, filtered by the words typed: every word must be in the
-//: name, the group's name or the TeX. With none typed, **Favourites and Recent
+//: name, the group's name or the TeX (a structure's commands). With none typed, **Favourites and Recent
 //: lead the list** (INBOX 1539): what a person pinned, then what they last
 //: inserted, kept by the TeX each inserts (this browser's prefs store) so a
 //: tile that moves group is still found.
@@ -324,7 +326,9 @@ function mathEditorPalette(list, query) {
   }
   for (const group of groups) {
     const items = group.items.filter((item) => {
-      const hay = `${item.name} ${group.label} ${group.structures ? "" : item.tex}`.toLowerCase();
+      //: A structure's TeX is searched by its commands only (`\overbrace` finds the brace), never its boxes and sample letters.
+      const tex = group.structures ? (item.tex.match(/\\[A-Za-z]+/g) || []).join(" ") : item.tex;
+      const hay = `${item.name} ${group.label} ${tex}`.toLowerCase();
       return words.every((word) => hay.includes(word));
     });
     if (!items.length) continue;

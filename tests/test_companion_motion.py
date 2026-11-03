@@ -1557,7 +1557,8 @@ def test_an_act_or_a_walk_is_let_go_not_dropped():
     blend = _fn("nameMarkBuddyBlend")
     assert "nameMarkIdleQuiet()" in blend and "{ ...moved, offset: 0 }" in blend
     assert 'id: "nmb-blend"' in blend
-    assert "nameMarkBuddyBlend(buddy, () => buddy.classList.remove(`nmb-act-${was}`));" in _fn("nameMarkBuddyAct")
+    # (INBOX 1589: the hand-over also takes `nmb-arms` off with the last act that moves the arms.)
+    assert "nameMarkBuddyBlend(buddy, () => {\n    buddy.classList.remove(`nmb-act-${was}`);" in _fn("nameMarkBuddyAct")
     assert 'nameMarkBuddyBlend(buddy, () => buddy.classList.remove("nmb-walking"));' in AV
     assert 'a.id !== "nmb-blend"' in _fn("nameMarkBuddyTempo")
     css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
@@ -1898,9 +1899,11 @@ def test_the_feminine_atlas_casts_her_stars_instead_of_wearing_them_1576() -> No
     band = _fn("atlasBand", atlas)
     assert "ATLAS_BAND_STARS.filter(([deg]) => deg < 404)" in band, "the strand's last stars are not drawn at rest"
     assert 'atlasBandSplit(ATLAS_BAND_STARS, part));' in band, "the masculine dots are unchanged"
-    # The gestures that cast: the act's start, and the greeting (the corner and the large view's figures alike).
+    # The gestures that cast: the end of a wave or a cheer (INBOX 1589 moved it
+    # from the act's start, where the stars rode a raised arm as a third one),
+    # and the greeting (the corner and the large view's figures alike).
     act = _fn("nameMarkBuddyAct")
-    assert re.search(r'if \(act === "wave" \|\| act === "cheer"\) window\.atlasMicroCast\?\.\(\);', act)
+    assert re.search(r'if \(quiet && \(was === "wave" \|\| was === "cheer"\)\) window\.atlasMicroCast\?\.\(\);', act)
     assert "window.atlasMicroCast?.();" in _fn("atlasOn", atlas)
     cast = _fn("atlasMicroCast", micro)
     # Never a read of the page, a frame loop or an add: it costs the compositor and a few nodes.

@@ -468,7 +468,7 @@ def test_the_flowchart_pane_file_stays_lean_and_its_joins_load_when_used():
     import gzip
 
     size = len(gzip.compress(BUILDER.read_bytes(), 9))
-    assert size <= 13900, size
+    assert size <= 12000, size
     rows = lazy_modules_source()
     assert 'diagramJoins: ["/js/diagram-joins.js"]' in rows
     builder = BUILDER.read_text(encoding="utf-8")

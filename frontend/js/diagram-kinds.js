@@ -458,8 +458,8 @@
     text: (n) => n.text,
     setText: (n, text) => (delete n.raw, (n.text = text)),
     tiles: [
-      { id: "branch", name: "Branch", icon: "tree-structure", key: "b", into: true, type: "b", fields: { text: "Branch" }, about: "a branch under the selected block" },
-      { id: "leaf", name: "Leaf", icon: "leaf", key: "n", type: "b", fields: { text: "Idea" }, about: "a leaf next to the selected block" },
+      { id: "branch", group: "Ideas", name: "Branch", icon: "tree-structure", key: "b", into: true, type: "b", fields: { text: "Branch" }, about: "a branch under the selected block" },
+      { id: "leaf", group: "Ideas", name: "Leaf", icon: "leaf", key: "n", type: "b", fields: { text: "Idea" }, about: "a leaf next to the selected block" },
     ],
     primary: "leaf",
     hint: () => "Add the central idea first.",
@@ -481,9 +481,9 @@
     text: (n) => (n.type === "s" ? n.title : n.type === "p" ? n.when : n.text),
     setText: (n, text) => (n.type === "s" ? (n.title = text) : n.type === "p" ? (n.when = text) : (n.text = text)),
     tiles: [
-      { id: "section", name: "Section", icon: "rows", key: "s", type: "s", fields: { title: "Section" }, about: "a section, a heading over periods" },
-      { id: "period", name: "Period", icon: "calendar-blank", key: "p", type: "p", fields: { when: "When" }, about: "a period, a date or a time" },
-      { id: "event", name: "Event", icon: "flag", key: "e", type: "e", fields: { text: "Event" }, about: "an event in the selected period" },
+      { id: "section", group: "Headings", name: "Section", icon: "rows", key: "s", type: "s", fields: { title: "Section" }, about: "a section, a heading over periods" },
+      { id: "period", group: "Headings", name: "Period", icon: "calendar-blank", key: "p", type: "p", fields: { when: "When" }, about: "a period, a date or a time" },
+      { id: "event", group: "What happened", name: "Event", icon: "flag", key: "e", type: "e", fields: { text: "Event" }, about: "an event in the selected period" },
     ],
     primary: "event",
     hint: (type) => (type === "e" ? "Add a period first, then its events." : "Nothing to add there."),
@@ -572,16 +572,16 @@
       return gone;
     },
     tiles: [
-      { id: "actor", name: "Actor", icon: "user", key: "a", type: "a", fields: { actor: true }, about: "an actor, a person on the left of the picture" },
-      { id: "participant", name: "Participant", icon: "user-circle", key: "p", type: "a", fields: {}, about: "a participant, a system or a service" },
-      { id: "message", name: "Message", icon: "arrow-right", key: "m", type: "m", fields: { arrow: "->>", text: "Message" }, about: "a message between two participants" },
-      { id: "reply", name: "Reply", icon: "arrow-bend-up-left", key: "r", type: "m", fields: { arrow: "-->>", text: "Reply" }, about: "a dashed reply, back the other way" },
-      { id: "async", name: "Async", icon: "lightning", key: "y", type: "m", fields: { arrow: "-)", text: "Async" }, about: "an async message, sent without waiting" },
-      { id: "lost", name: "Lost", icon: "x-circle", key: "x", type: "m", fields: { arrow: "-x", text: "Lost" }, about: "a message that never arrives" },
-      { id: "note", name: "Note", icon: "note-pencil", key: "t", type: "t", fields: { text: "Note" }, about: "a note beside a participant" },
-      { id: "loop", name: "Loop", icon: "repeat", key: "l", type: "b", fields: { kw: "loop", text: "Repeat" }, about: "a loop around steps" },
-      { id: "alt", name: "Alt", icon: "shuffle", key: "g", type: "b", fields: { kw: "alt", text: "Condition" }, about: "an alt, one way or the other" },
-      { id: "opt", name: "Opt", icon: "question", key: "o", type: "b", fields: { kw: "opt", text: "Optional" }, about: "an optional step" },
+      { id: "actor", group: "Who", name: "Actor", icon: "user", key: "a", type: "a", fields: { actor: true }, about: "an actor, a person on the left of the picture" },
+      { id: "participant", group: "Who", name: "Participant", icon: "user-circle", key: "p", type: "a", fields: {}, about: "a participant, a system or a service" },
+      { id: "message", group: "Messages", name: "Message", icon: "arrow-right", key: "m", type: "m", fields: { arrow: "->>", text: "Message" }, about: "a message between two participants" },
+      { id: "reply", group: "Messages", name: "Reply", icon: "arrow-bend-up-left", key: "r", type: "m", fields: { arrow: "-->>", text: "Reply" }, about: "a dashed reply, back the other way" },
+      { id: "async", group: "Messages", name: "Async", icon: "lightning", key: "y", type: "m", fields: { arrow: "-)", text: "Async" }, about: "an async message, sent without waiting" },
+      { id: "lost", group: "Messages", name: "Lost", icon: "x-circle", key: "x", type: "m", fields: { arrow: "-x", text: "Lost" }, about: "a message that never arrives" },
+      { id: "note", group: "Notes and boxes", name: "Note", icon: "note-pencil", key: "t", type: "t", fields: { text: "Note" }, about: "a note beside a participant" },
+      { id: "loop", group: "Notes and boxes", name: "Loop", icon: "repeat", key: "l", type: "b", fields: { kw: "loop", text: "Repeat" }, about: "a loop around steps" },
+      { id: "alt", group: "Notes and boxes", name: "Alt", icon: "shuffle", key: "g", type: "b", fields: { kw: "alt", text: "Condition" }, about: "an alt, one way or the other" },
+      { id: "opt", group: "Notes and boxes", name: "Opt", icon: "question", key: "o", type: "b", fields: { kw: "opt", text: "Optional" }, about: "an optional step" },
     ],
     primary: "message",
     spare: 2,
@@ -950,19 +950,13 @@
     bar.dataset.dockName = "diagram";
     bar.setAttribute("role", "toolbar");
     bar.setAttribute("aria-label", "Diagram blocks");
-    const tiles = kit.el("div", "dock-group dgm-palette");
-    for (const t of S.k.tiles) {
-      const tile = kit.el("button", "dgm-tile");
-      tile.type = "button";
-      tile.dataset.tile = t.id;
-      tile.dataset.objGrip = "";
-      tile.title = `Add ${t.about}: press, or drag it into the blocks`;
-      tile.setAttribute("aria-label", `Add ${t.name.toLowerCase()}`);
-      tile.setAttribute("aria-keyshortcuts", t.key.toUpperCase());
-      tile.append(icon(t.icon), kit.el("span", "dgm-tile-name", t.name));
-      tile.addEventListener("click", () => addTile(S, t));
-      tiles.append(tile);
-    }
+    //: The Add library (diagram-library.js): the tiles by meaning, each with its hint.
+    const tiles = diagramModel.library.build(
+      S.k.tiles.map((t) => ({
+        group: t.group, name: t.name, hint: `Adds ${t.about}.`, glyph: icon(t.icon), keys: t.key.toUpperCase(),
+        label: `Add ${t.name.toLowerCase()}. Adds ${t.about}.`, data: { tile: t.id }, press: () => addTile(S, t),
+      }))
+    );
     const actions = kit.el("div", "dock-actions");
     S.suggestBtn = smallButton("ph:sparkle Suggest", "Start from a template, your notes or a description", () => kit.suggestMenu(S, S.suggestBtn));
     S.suggestBtn.classList.add("dgm-suggest");
@@ -975,7 +969,7 @@
       actions.append(b);
     }
     actions.append(kit.more(S));
-    bar.append(tiles, kit.el("div", "dock-group"), actions);
+    bar.append(tiles, kit.el("div", "dock-group"), actions, tiles.hint);
     return bar;
   }
 

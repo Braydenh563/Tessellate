@@ -71,7 +71,13 @@ const CASES = [
   ["x_i^2", "math[msubsup[mi(x) mi(i) mn(2)]]"],
   ["x^2_i", "math[msubsup[mi(x) mi(i) mn(2)]]"],
   ["x_{i+1}", "math[msub[mi(x) mrow[mi(i) mo(+) mn(1)]]]"],
-  ["\\sum_{n=1}^{10} n", "math[mrow[msubsup[mo(∑) mrow[mi(n) mo(=) mn(1)] mn(10)] mi(n)]]"],
+  //: A sum's limits stack under and over it, as TeX sets them (they were `msubsup` beside it until a31m).
+  ["\\sum_{n=1}^{10} n", "math[mrow[munderover[mo(∑) mrow[mi(n) mo(=) mn(1)] mn(10)] mi(n)]]"],
+  ["\\prod^{n}_{k=1} k", "math[mrow[munderover[mo(∏) mrow[mi(k) mo(=) mn(1)] mi(n)] mi(k)]]"],
+  ["\\lim_{x \\to 0} f", "math[mrow[munder[mo(lim) mrow[mi(x) mo(→) mn(0)]] mi(f)]]"],
+  ["\\int_0^1 x", "math[mrow[msubsup[mo(∫) mn(0) mn(1)] mi(x)]]"],
+  ["\\boxed{x}", "math[mrow[mi(x)]]"],
+  ["\\cancel{x+1}", "math[mrow[mrow[mi(x) mo(+) mn(1)]]]"],
   ["\\sin x", "math[mrow[mi(sin) mi(x)]]"],
   ["\\text{one two}", "math[mtext(one two)]"],
   //: `\left` and `\right` are sizing hints, not a group: they come out as
@@ -102,6 +108,14 @@ for (const [tex, want] of CASES) {
   }
   check(`tree/${tex}`, got === want, `${got} (wanted ${want})`);
 }
+
+//: `\boxed` and `\cancel` are drawn, not flagged: a class on the argument's row that the documents CSS frames or strikes.
+for (const [tex, cls] of [["\\boxed{x}", "math-boxed"], ["\\cancel{x}", "math-cancel"], ["\\bcancel{x}", "math-cancel math-bcancel"], ["\\xcancel{x}", "math-cancel math-xcancel"]]) {
+  const tree = docMathTree(tex);
+  check(`drawn/${tex}`, !tree.problem && tree.kids[0].attrs && tree.kids[0].attrs.class === cls, `${tree.problem} ${JSON.stringify(tree.kids[0].attrs)}`);
+}
+//: A stacked operator keeps `movablelimits`, so a sum in a line of prose sets its limits beside it, as TeX does.
+check("movablelimits", JSON.stringify(docMathTree("\\sum_{i}^{n}")).includes('"movablelimits":"true"'), JSON.stringify(docMathTree("\\sum_{i}^{n}")));
 
 // A function name is upright; a variable is not.
 {

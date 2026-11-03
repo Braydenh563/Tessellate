@@ -7,24 +7,34 @@
 (() => {
   const MAX_ZOOM = 5;
 
-  //: The sheet: one row per tile, the tile's own glyph and name. A tile is pressed, so its handler adds the block.
+  //: The sheet: the Add library's groups (diagram-library.js), a heading each, then a row per tile with the tile's own glyph,
+  //: its name and its hint (1594). A tile is pressed, so its handler adds the block.
   function addSheet(root, opener) {
-    const tiles = [...root.querySelectorAll(".dgm-palette .dgm-tile")];
+    const groups = [...root.querySelectorAll(".dgm-palette .dgm-lib-group")];
     openSheet({
       label: "Add a block",
       name: "diagram-add",
       returnFocus: opener,
       build: (card, close) => {
         const list = document.createElement("div");
-        list.className = "dgm-add-list";
-        for (const tile of tiles) {
-          const name = tile.querySelector(".dgm-tile-name")?.textContent || tile.dataset.title || tile.getAttribute("aria-label");
-          const row = sheetRow("ph ph-square", name, () => {
-            close();
-            tile.click();
-          });
-          row.firstElementChild.replaceWith(tile.firstElementChild.cloneNode(true));
-          list.append(row);
+        list.className = "sheet-list dgm-add-list";
+        for (const group of groups) {
+          const head = document.createElement("p");
+          head.className = "dgm-add-head muted";
+          head.textContent = group.querySelector(".dgm-lib-head").textContent;
+          list.append(head);
+          for (const tile of group.querySelectorAll(".dgm-tile")) {
+            const row = sheetRow("ph ph-square", tile.querySelector(".dgm-tile-name").textContent, () => {
+              close();
+              tile.click();
+            });
+            row.firstElementChild.replaceWith(tile.firstElementChild.cloneNode(true));
+            const hint = document.createElement("small");
+            hint.className = "dgm-add-hint muted";
+            hint.textContent = tile.dataset.hint;
+            row.lastElementChild.append(hint);
+            list.append(row);
+          }
         }
         card.append(list);
       },

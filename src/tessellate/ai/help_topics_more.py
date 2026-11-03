@@ -2226,13 +2226,14 @@ MORE_TOPICS.extend(
             ),
             "body": (
                 "Drag a card to put a list in your own order: Notes, and Library's "
-                "Documents, Boards and maps, Images and Files. Press and hold a card "
-                "still for a moment, then move; a dashed gap shows where it lands, "
-                "and moving at once selects its text instead. A picture needs no wait, "
+                "Documents, Boards and maps, Images and Files. Take the grip at a card's left "
+                "edge, or press and hold the card still, then move; a dashed gap shows where it lands, "
+                "and moving at once selects its text (press those words and hold to retry). "
+                "A picture needs no wait, "
                 "and on a phone you hold a card until it lifts, then move it. The sort then reads "
                 "Custom order. Drop it where it started, or press Escape, and nothing "
                 "changes. The toast has Undo. In Custom order a line above the list and the "
-                "card's menu say how to move a card. The sort is in the Sort and view button when the row is narrow. "
+                "card's menu say how to move a card. "
                 "From the keyboard, focus a card and press "
                 "Alt+Up or Alt+Down to move it one place, or choose Move up or Move "
                 "down in its menu (on a phone too). To copy a card, focus it and "
@@ -2247,7 +2248,7 @@ MORE_TOPICS.extend(
                 "space, to file it (with Undo). "
                 "Chat sources carry too. "
                 "The tray in the status bar holds cards across pages: "
-                "drop one on it (held over its button, it opens and stays open while you drag) "
+                "drop one on it (held over its button, it opens) "
                 "or choose Add to tray, then drag cards out or click "
                 "one to paste it where you were typing, or attach it to the chat. In a long card menu a row "
                 "with an arrow (Text and description on a picture, Copy and arrange "
@@ -2823,7 +2824,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "diagram-blocks", "diagram-kinds", "diagram-elsewhere", "documents-replace", "live-view-marks", "documents-features", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "document-history", "writing-checks", "code-files", "code-completions", "code-run",
+        "documents", "documents-controls", "diagram-builder", "diagram-blocks", "diagram-kinds", "diagram-elsewhere", "documents-replace", "live-view-marks", "documents-features", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "document-history", "writing-checks", "code-files", "code-completions", "code-run",
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
@@ -3137,7 +3138,7 @@ MORE_TOPICS.extend([
             "diagram fill", "diagram opacity", "solid diagram boxes",
         ),
         "body": (
-            "A live Mermaid diagram on a board: Insert, Mermaid diagram... opens the "
+            "A live Mermaid diagram on a board: Insert, Diagram builder... opens the "
             "block editor on a sample; Done places it at its drawing's shape. "
             "It is any Mermaid diagram (flowchart, sequence, class, state, Gantt, pie "
             "and the rest), drawn as a note draws it and redrawn with the theme. "
@@ -3153,6 +3154,24 @@ MORE_TOPICS.extend([
         "badge": {"label": "Library", "tab": "library"},
     },
     {
+        "id": "diagram-builder",
+        "keywords": (
+            "diagram builder", "where is the diagram builder", "new diagram", "make a diagram", "mermaid",
+            "mmd", "flowchart", "insert a diagram", "diagram in a note", "diagram on a board", "mind map diagram",
+        ),
+        "body": (
+            "The Diagram builder makes a flowchart, mind map, timeline or sequence diagram from "
+            "blocks. Mermaid is only its file format (.mmd). Every door is the same row, "
+            "Diagram builder, with the same icon. Ctrl+K, Diagram builder, and Find anything, Tools "
+            "and features and Quick access list it too. Over a note, a document or a Chat box, "
+            "Insert (or / then diagram) opens the builder and Done writes the diagram there as a "
+            "code block. Over a board or a mind map, Insert, Diagram builder adds a diagram object "
+            "to double-click later. Anywhere else, and in the Library's Create, New, Diagram, it "
+            "starts a new diagram file that opens in Blocks. Cancel changes nothing."
+        ),
+        "badge": {"label": "Documents", "tab": "documents"},
+    },
+    {
         "id": "diagram-blocks",
         "keywords": (
             "diagram blocks", "edit a diagram", "mermaid blocks", "blocks view", "drag a diagram",
@@ -3164,26 +3183,28 @@ MORE_TOPICS.extend([
             "the document's foot, or Library, Diagrams). It opens in Blocks: the "
             "pieces on the left, the picture drawing live beside them (above them on a "
             "phone). Source and Split are the same diagram as text, and Ctrl+Z undoes "
-            "either. Press a shape in the bar, or drag it into the blocks, to add one. "
-            "Drag a block to move it: the top or bottom of another block puts it before "
-            "or after, the middle joins them with an arrow, and a group's body takes it "
-            "inside. Double-click a name to change it in place; Enter keeps, Escape "
-            "puts it back. A block's ... menu (long press on a phone) joins, "
-            "relabels, makes a group or deletes; a join shows under the block it "
-            "leaves, and its menu changes the line or removes it. Keys, with the "
-            "blocks focused: arrows walk, Enter renames, N adds, G adds a group, J joins, "
+            "either. Add holds the shapes by meaning (Steps, Decisions, Start and end, Notes "
+            "and groups): point at one for its hint, press it, or drag it into the blocks, to "
+            "add one (on a phone, Add opens the same list). Connect to... on a block draws an "
+            "arrow from it: pick a block, or type a new name to make it. Drag a block to move "
+            "it: the top or bottom of another block puts it before or after, the middle joins "
+            "them with an arrow, and a group's body takes it inside. A connector shows under "
+            "the block it leaves as Start to Next and its label; its menu changes the line or "
+            "removes it. Double-click a name to change it in place; Enter keeps, Escape puts "
+            "it back. A block's ... menu (long press on a phone) connects, relabels, makes a "
+            "group or deletes. Keys, with the "
+            "blocks focused: arrows walk, Enter renames, N adds, G adds a group, C or J joins, "
             "Delete removes, Alt+Up and Alt+Down reorder, Alt+Right nests into the "
-            "group above and Alt+Left lifts out. A line the blocks do not show, such as "
-            "a style, stays where it was. Suggest, in the bar, starts a diagram three "
-            "ways: Templates (twelve, with a preview, then Use this template), "
+            "group above and Alt+Left lifts out. A line the blocks cannot show stays as it was. "
+            "Suggest starts a diagram three "
+            "ways: Templates (with a preview, then Use this template), "
             "From my notes (pick notes, a checklist becomes steps, headings a mind map) "
             "and Describe it (say what it is; it needs a model and is dimmed with its "
             "reason when none is connected). On a blank diagram the suggestion becomes "
             "the diagram. On one with blocks, the new blocks arrive as dashed ghosts: "
             "Tab takes one, Shift+Tab lets it go, Enter adds the ones taken and "
             "Escape drops them all, and Ctrl+Z undoes the whole addition in one step. "
-            "A reply that holds no diagram says why and changes nothing. Mind maps, timelines and "
-            "sequence diagrams have their own blocks: see the next topic."
+            "Mind maps, timelines and sequence diagrams have their own blocks: see the next topic."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },
@@ -3283,7 +3304,8 @@ TOPIC_META.update({
     "board-edit-data": {"title": "Edit data on a board item", "path": "A board's Format panel, Data"},
     "board-colours": {"title": "Fill, border and recent colours on a board", "path": "A shape's bar, Fill or Border"},
     "board-tables": {"title": "Tables on a board", "path": "A board's Insert menu, Table"},
-    "board-mermaid": {"title": "Live Mermaid diagrams on a board", "path": "A board's Insert menu, Mermaid diagram..."},
+    "board-mermaid": {"title": "Live Mermaid diagrams on a board", "path": "A board's Insert menu, Diagram builder..."},
+    "diagram-builder": {"title": "The Diagram builder", "path": "Ctrl+K, Diagram builder; Insert in a note, a document or a board; Library, Create, New diagram"},
     "diagram-blocks": {"title": "Editing a diagram as blocks", "path": "A diagram document, Blocks"},
     "diagram-kinds": {"title": "Mind maps, timelines and sequence diagrams as blocks", "path": "A diagram document, Blocks"},
     "diagram-elsewhere": {"title": "Editing a diagram in a document, on a board or from a reply, and saving its picture", "path": "A diagram in Live view, Edit as blocks"},

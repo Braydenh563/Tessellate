@@ -2800,7 +2800,15 @@ async function renderDigestWidget(outer) {
 //: opens in place into the same card (capture-card.js): Note, To-do, Draw, pictures, colour, tags,
 //: Ctrl+Enter, one draft and one save path. A redraw while it is open hands it to the new bar.
 async function renderQuickCaptureWidget(body) {
-  body.append(captureBar());
+  const bar = document.createElement("div");
+  bar.className = "capture-bar";
+  bar.setAttribute("role", "group");
+  bar.setAttribute("aria-label", "Add a note");
+  const row = $("capture-bar-row").cloneNode(true);
+  //: No ids on the copy (two bars on one page): the card finds a bar by class.
+  for (const el of [row, ...row.querySelectorAll("[id]")]) el.removeAttribute("id");
+  bar.append(row);
+  body.append(captureBar(bar));
 }
 
 async function renderRemindersWidget(body) {

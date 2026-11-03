@@ -474,6 +474,34 @@
     return null;
   }
 
+  //: **The one door to the Diagram builder** (INBOX 1588). Every list that offers it (the palette, Find anything, Tools and
+  //: features, Quick access, both "/" menus, Chat, the Library's Create, the board's Insert) ends here, through the `diagram`
+  //: row of `POPUP_TOOLS`. Over a board or a mind map it is the board's own `wbEditDiagram` (a diagram object lands on Done);
+  //: over a text box it opens the builder on the starter and writes the fence at the caret on Done; anywhere else (or `doc`) it
+  //: starts a .mmd document, which opens in Blocks. Cancel changes nothing; Done keeps what the dialog shows.
+  async function diagramDoor({ target = null, doc = false } = {}) {
+    const onBoard = !doc && wbCommandsLive() && (!target || Boolean(target.closest?.("#library-view-whiteboard")));
+    if (onBoard) return wbEditDiagram();
+    //: The text box as a surface (the adapter `editorBlock` writes through), whether it was handed a surface, a textarea or an editable inside one.
+    const box = !doc && target && target.isConnected !== false && (target.id === "question" || target.id in EDITOR_SURFACES || editorSurfaceKind(target)) ? editorSurfaceFor(target) : null;
+    if (!box) {
+      switchTab("documents");
+      return libraryNewDocument("mmd");
+    }
+    return openDiagramBuilder({
+      source: diagramModel.starter,
+      title: "Diagram builder",
+      onDone: (next) => {
+        box.focus?.();
+        editorBlock(box, `\`\`\`mermaid\n${next.replace(/\n+$/, "")}\n\`\`\``, "", "");
+      },
+    });
+  }
+  //: What a new diagram opens on, so the blocks and the picture show at once (the board's Insert used the same lines).
+  diagramModel.starter = "flowchart TD\n  A[Start] --> B{Ready?}\n  B -->|yes| C[Ship it]";
+  //: Exported on `diagramModel`, not as a global name of its own: the callers are in other files and ask for the library bundle first.
+  diagramModel.door = diagramDoor;
+
   //: The file's whole surface: what documents.js and documents-export.js call.
   Object.assign(window, { docRenderMermaidIn, docMermaidWhenDrawn, docMermaidField, diagramModel, openDiagramBuilder });
   //: The block pane (1546 P2) is a bundle of its own, fetched when a diagram is first shown (the kinds, 1546 P4, when a mind map, timeline or sequence diagram is):
