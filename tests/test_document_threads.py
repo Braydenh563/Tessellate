@@ -44,6 +44,25 @@ def test_clean_caps_the_sizes():
     assert len(out[0]["replies"]) == docthreads.MAX_REPLIES
 
 
+def test_the_per_item_caps_do_not_bound_the_total_so_the_total_has_its_own():
+    fat = {**THREAD, "text": "x" * docthreads.MAX_TEXT, "replies": [{"author": "a", "at": "", "text": "y" * docthreads.MAX_TEXT}] * docthreads.MAX_REPLIES}
+    assert len(docthreads.dump([fat] * docthreads.MAX_THREADS)) > docthreads.MAX_TOTAL, "the per-item caps alone allow about 200 MB"
+    assert docthreads.too_large([fat] * docthreads.MAX_THREADS)
+    assert not docthreads.too_large([THREAD])
+    assert not docthreads.too_large(None)
+
+
+def test_a_list_over_the_total_cap_is_refused_with_a_clear_422(client):
+    doc = client.post("/documents", json={"title": "T"}).json()
+    client.put(f"/documents/{doc['id']}", json={"threads": [THREAD]})
+    reply = {"author": "a", "at": "", "text": "y" * docthreads.MAX_TEXT}
+    fat = {**THREAD, "replies": [reply] * docthreads.MAX_REPLIES}
+    refused = client.put(f"/documents/{doc['id']}", json={"threads": [{**fat, "id": f"t{n}"} for n in range(10)]})
+    assert refused.status_code == 422
+    assert "too many comments" in refused.json()["detail"].lower()
+    assert client.get(f"/documents/{doc['id']}").json()["threads"] == [THREAD], "a refused save writes nothing"
+
+
 def test_dump_and_load_round_trip_and_an_old_row_loads_empty():
     assert docthreads.load(docthreads.dump([THREAD])) == [THREAD]
     assert docthreads.load("") == []

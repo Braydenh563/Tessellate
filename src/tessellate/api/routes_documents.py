@@ -729,6 +729,11 @@ def update_document(
     document_id: int, body: DocumentPatch, session: Session = Depends(get_session)
 ) -> dict:
     document = unshelved(DOCUMENTS.writable(session, document_id), unarchive=body.unarchive)
+    if body.threads is not None and docthreads.too_large(body.threads):
+        raise HTTPException(
+            status_code=422,
+            detail="This document has too many comments and replies to keep. Resolve or delete some, then save again.",
+        )
     #: Two windows, one document (WORLD_CLASS_PLAN 22.1 item 5), checked
     #: before anything is written, the title included.
     refuse_if_stale(
