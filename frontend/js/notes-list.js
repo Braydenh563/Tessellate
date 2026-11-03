@@ -1587,8 +1587,11 @@ function renderNoteText(element, text, terms, prose = (s) => s) {
       //: marks taken off, as the card draws them.
       box.setAttribute("aria-label", `${box.checked ? "Done" : "To do"}: ${task[2].replace(/[*_`~]|\[\[|\]\]/g, "").trim()}`);
       //: A disabled control says why (vibecheck, "muted disabled"): the card is
-      //: a preview, and a note's tasks are ticked on its own page.
-      box.title = "Open the note to tick this off";
+      //: a preview, and a note's tasks are ticked on its own page. The words
+      //: carry it, not the box: a disabled box swallows the tap (no click, an
+      //: 18px dead spot in a card that opens on tap), so the box lets it fall
+      //: through (`pointer-events: none`) and the tooltip cannot live on it.
+      item.title = "Open the note to tick this off";
       item.appendChild(box);
       renderNoteInline(item, task[2], terms);
       element.appendChild(item);

@@ -645,7 +645,7 @@ def test_jsx_in_a_js_document_gets_the_jsx_pass_and_nothing_else(tmp_path):
     assert got["returned"] and got["assigned"] and got["fragment"] and got["byName"]
     assert not got["compare"] and not got["generic"]
     #: Only the JSX pass: a type annotation in a .js file is still an error.
-    assert got["typed"].startswith("Could not read this as JSX")
+    assert got["typed"].startswith("Couldn't read this as JSX")
     assert "React.createElement" in got["ran"] and "<div>" not in got["ran"]
 
 

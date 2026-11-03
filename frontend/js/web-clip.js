@@ -202,7 +202,7 @@ async function analyseWebPage() {
       body: JSON.stringify({ blocks: blocks.slice(0, 2500) }),
     });
   } catch (error) {
-    toast(error.message || "Could not analyse this page.");
+    toast(error.message || "Couldn't analyse this page.");
     return;
   }
   if (webReaderPage !== page) return;

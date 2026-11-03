@@ -298,7 +298,7 @@ $("notif-activity-mode")?.addEventListener("change", async (event) => {
       body: JSON.stringify({ agent_activity_notices: value }),
     });
   } catch (error) {
-    toast(error.message || "Couldn't save that.", true);
+    toast(error.message || "Couldn't save that notification setting.", true);
   }
   renderAgentActivityMode();
 });
@@ -1665,7 +1665,7 @@ async function performUndoNow() {
     // Nothing changed: put it back rather than silently dropping it off
     // the stack, so a transient network error doesn't cost the undo itself.
     undoStack.push(action);
-    toast(error.message || "Couldn't undo that.", true);
+    toast(error.message || `Couldn't undo “${action.label}”.`, true);
   }
   renderUndoBar();
 }

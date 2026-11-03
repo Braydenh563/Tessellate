@@ -5,7 +5,7 @@
 // draws only after a person picks that action from a note's menu. Loaded on
 // first use by `LAZY_MODULES.attachTo` (app.js), whose stand-ins for
 // `renderAttachToBoard` and `renderAttachToDocument` fetch this file and then
-// call the real one. Their one caller (`renderInlineAction`, lightbox.js)
+// call the real one. Their one caller (`renderInlineAction`, entry-card.js)
 // reads neither's result: both are `async` and fill the `wrap` element it
 // already returned, so the picker appears a moment late on the first use of a
 // session and on time after that.

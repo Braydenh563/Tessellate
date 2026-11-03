@@ -334,7 +334,7 @@
 /* --- Wave O: expanded appearance (theme/size/density/glass) ---------------------- */
 .seg {
   display: inline-flex;
-  gap: 0.15rem;
+  gap: var(--space-1);
   padding: 0.25rem;
   border-radius: var(--radius-choice);
   background: var(--chip-bg);
@@ -3613,7 +3613,7 @@ button.answer-figure-open {
   border: 1px solid transparent;
   border-radius: var(--radius-choice);
   padding: 0.25rem;
-  gap: 0.15rem;
+  gap: var(--space-1);
 }
 
 /* No glass-off well of its own (INBOX 621): it drew a card-white well with a

@@ -125,7 +125,7 @@ function attachmentChip({ name, size, thumb, icon, facts: factsText, onOpen, sta
     state === "uploading"
       ? `Uploading ${Math.round(progress * 100)}%`
       : state === "error"
-        ? error || "Could not attach"
+        ? error || "Couldn't attach that file"
         : factsText || [kind, formatFileSize(size)].filter(Boolean).join(" · ");
   facts.textContent = pill && state === "ready" ? `[${(factsText || kind || "File").split(" · ")[0]}]` : factsLine;
   const body = document.createElement("span");

@@ -1046,7 +1046,7 @@ async function clearDoneReminders() {
   //: To the end, or this clears the first page's done rows and reports that
   //: count as if it were all of them.
   const all = await apiPagedList("/reminders", 200).catch(() => null);
-  if (!all) return toast("Could not load your reminders. Try again.", true, { action: ["Try again", clearDoneReminders] });
+  if (!all) return toast("Couldn't load your reminders. Try again.", true, { action: ["Try again", clearDoneReminders] });
   const done = all.filter((r) => r.done);
   if (!done.length) return;
   if (!(await confirmDialog(`Delete ${done.length} completed reminder${done.length === 1 ? "" : "s"}?`))) {
@@ -1141,10 +1141,17 @@ function reminderItem(reminder, label) {
   //: it to nothing at 320 ("every last Friday of the month" is 118px).
   const when = document.createElement("div");
   when.className = "entry-links";
-  //: The coloured edge and the weight said "high" and nothing said it in
-  //: words (uisweep-1011: a state shown only by colour), so the line does.
-  if (reminder.priority === "high" || reminder.priority === "low") {
-    const level = chip(`ph:flag ${reminder.priority === "high" ? "High" : "Low"} priority`, "tag");
+  //: The coloured edge and the weight say "high" to the eye, so no chip
+  //: repeats it (unslop 1103, 13); the words go to a screen reader in the
+  //: row (uisweep-1011: a state shown only by colour). Low has no edge, only
+  //: a quieter text, so its chip stays.
+  if (reminder.priority === "high") {
+    const said = document.createElement("span");
+    said.className = "visually-hidden";
+    said.textContent = "High priority. ";
+    text.prepend(said);
+  } else if (reminder.priority === "low") {
+    const level = chip("ph:flag Low priority", "tag");
     level.title = "Set in Edit this reminder";
     when.appendChild(level);
   }
@@ -1259,16 +1266,14 @@ function reminderItem(reminder, label) {
   actions.appendChild(kebabMenu(menuItems, `Actions for the reminder “${reminder.text}”`, { vertical: true }));
   row.appendChild(actions);
   li.appendChild(row);
-  if (when.childElementCount) li.appendChild(when);
-
+  //: The note it points at joins the same line as the repeat and the alert:
+  //: three short facts are one row, not three (unslop 1103, 13).
   if (target && (reminder.target_title || reminder.entry_preview)) {
-    const linkRow = document.createElement("div");
-    linkRow.className = "entry-links";
     const noteChip = chip(`${target.icon} ${reminder.target_title || reminder.entry_preview}`, "link", target.open);
     noteChip.title = target.label.replace(/^ph:\S+ /, "");
-    linkRow.appendChild(noteChip);
-    li.appendChild(linkRow);
+    when.appendChild(noteChip);
   }
+  if (when.childElementCount) li.appendChild(when);
   return li;
 }
 

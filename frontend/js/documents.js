@@ -1251,7 +1251,7 @@ async function openDocument(id) {
   //: A fetch that failed says so (audit 1028 D35): the editor stays on the
   //: document it had, and the list goes back to marking that one.
   if (!doc) {
-    toast("Could not open that document. The one on screen is unchanged.", true, { action: ["Try again", () => openDocument(id)] });
+    toast("Couldn't open that document. The one on screen is unchanged.", true, { action: ["Try again", () => openDocument(id)] });
     renderDocList();
     return;
   }
@@ -6987,7 +6987,7 @@ async function docImageUpload(box, boxId, file, said = "") {
       }
       docImageUpload(box, boxId, file, said);
     };
-    toast("Could not upload that picture. Add its address by hand.", true, { action: ["Try again", retry] });
+    toast("Couldn't upload that picture. Add its address by hand.", true, { action: ["Try again", retry] });
   }
 }
 

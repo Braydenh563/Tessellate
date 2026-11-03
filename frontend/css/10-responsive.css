@@ -453,27 +453,6 @@ header#top-bar[data-scrolled="1"],
   fill: #12151c;
   opacity: 1;
 }
-/* --- the quick-nav chord's guide -----------------------------------------
-   A mode, not a notification (it was a `.toast` whose pairs wrapped
-   mid-pair): centred over a scrim that says the next key means something.
-   The scrim lets clicks through; the panel takes them, since its rows are
-   buttons (the owner: "make these popup options when I press m, actual
-   clickable nav buttons"). The panel itself is in 08-consistency.css. */
-.chord-guide {
-  position: fixed;
-  inset: 0;
-  /* Above every surface it is meant to navigate out of (modals sit at 1040
-     to 1050, the highest fixed layer at 3000): the chord works while
-     Settings is open, so its guide must not draw under it. */
-  z-index: 3100;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: var(--glass-filter-clear);
-  -webkit-backdrop-filter: var(--glass-filter-clear);
-  pointer-events: none;
-}
 /* The heatmap's gap was costing more than its cells (the owner: "the heatmap
    on the dashboard is a little small"). Measured in a 306px column: 53 weekly
    columns at a 3px gap spend 156px on gaps and leave 2.8px per cell. At 1px

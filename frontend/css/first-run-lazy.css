@@ -62,10 +62,29 @@
   transform: rotate(-90deg);
 }
 @media (max-width: 599.98px) {
+  /* The title names what the card is for (unslop 1103, 16): it may take two
+     lines beside the two 44px buttons, and the count joins the bar below. */
+  .first-steps-head {
+    display: grid;
+    grid-template:
+      "title title fold menu" auto
+      "count bar bar bar" auto / auto 1fr auto auto;
+  }
+  .first-steps-head h2 {
+    grid-area: title;
+  }
+  .first-steps-count {
+    grid-area: count;
+  }
   .first-steps-progress {
-    order: 5;
-    flex-basis: 100%;
+    grid-area: bar;
     max-width: none;
+  }
+  .first-steps-fold {
+    grid-area: fold;
+  }
+  .first-steps-head > .menu-wrap {
+    grid-area: menu;
   }
 }
 :where(:root[data-motion="reduced"]) .first-steps-fill,

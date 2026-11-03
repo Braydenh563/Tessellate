@@ -328,7 +328,7 @@ async function docWordExport() {
     await saveFile(docExportName(currentDoc.title, "docx"), blob);
     return true;
   } catch (error) {
-    toast(`Could not write the Word file: ${error.message}`, true);
+    toast(`Couldn't write the Word file: ${error.message}`, true);
     return false;
   }
 }

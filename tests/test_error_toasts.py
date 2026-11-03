@@ -218,7 +218,7 @@ for _name, _messages in EXPECTED_RULE4.items():
 #: `.message` has to appear here.
 FAULTS = {
     'entity-page.js': {
-        '"Could not load the people and things in your notes. Try again."': 'the entities request failed',
+        '"Couldn\'t load the people and things in your notes. Try again."': 'the entities request failed',
     },
     'media.js': {
         '"Couldn\'t open the sketch pad."': 'the pad\'s lazy script or stylesheet failed to load: a broken asset',
@@ -247,11 +247,11 @@ FAULTS = {
     'documents.js': {
         '"The Word writer could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"The history could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
-        '"Could not open that document. The one on screen is unchanged."': 'fetching a document failed (audit 1028 D35); the editor keeps the one it had',
+        '"Couldn\'t open that document. The one on screen is unchanged."': 'fetching a document failed (audit 1028 D35); the editor keeps the one it had',
         '"Replace in every document could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"The export could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"The Atlas panel could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
-        '"Could not upload that picture. Add its address by hand."': 'the picture upload to the media store failed (audit 1028 U10)',
+        '"Couldn\'t upload that picture. Add its address by hand."': 'the picture upload to the media store failed (audit 1028 U10)',
         '"The code panel could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
     },
     'graph-canvas.js': {
@@ -290,7 +290,7 @@ FAULTS = {
         '"Couldn\'t reset that setting."': 'resetting a setting failed',
     },
     'shell-reminders.js': {
-        '"Could not load your reminders. Try again."': 'the reminders request failed before clearing the done ones',
+        '"Couldn\'t load your reminders. Try again."': 'the reminders request failed before clearing the done ones',
         "`Couldn't delete ${left.length} of the reminders.`": 'a bulk delete partly failed',
         "`Couldn't bring back ${left.length} of the reminders.`": 'a bulk restore partly failed',
     },

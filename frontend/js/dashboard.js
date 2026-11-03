@@ -1463,8 +1463,8 @@ function dashCustomiseItems() {
   //: The way back from Get started's Hide or Mark all as done (INBOX 1301 D3).
   if (prefs.get("getStartedHidden", null) === "1" || prefs.get("getStartedDone", null) === "1") {
     items.push({
-      label: "ph:list-checks Show Get started",
-      title: "The first steps card and the Get started button, as they were",
+      label: "ph:list-checks Show first steps",
+      title: "The first steps card and button, as they were",
       group: "page",
       run: () => lazyScript("/js/first-run.js").then(() => getStartedShow()),
     });
@@ -1797,17 +1797,14 @@ async function renderDashboard({ refresh = false } = {}) {
   // `entriesEverLoaded` and not just the length: before the first GET /entries
   // comes back these are indistinguishable, and guessing "empty" paints the
   // brand-new-notebook card over a notebook full of notes.
-  if (entriesEverLoaded && !allEntries.length && !dashEditMode) {
-    //: It has nothing to wait for. Left on, `.dash-filling` (added above)
-    //: kept a brand-new notebook's empty grid hidden for good.
-    grid.classList.remove("dash-filling");
-    window.dashSettled = Promise.resolve();
-    return;
-  }
+  //: The one widget that needs no notes stays (unslop 1103, 20): the first screen was
+  //: 349px of nothing under the steps, and Quick capture is the first thing to do.
+  const bare = entriesEverLoaded && !allEntries.length && !dashEditMode;
 
   for (const name of layout.order) {
     const hidden = layout.hidden.includes(name);
     if (hidden && !dashEditMode) continue;
+    if (bare && name !== "capture") continue;
 
     const widget = DASH_WIDGETS[name];
     const isWide = layout.wide.includes(name);
@@ -2791,6 +2788,10 @@ async function renderQuickCaptureWidget(body) {
   //: screen reader reads nothing for the field without one (the a11y sweep).
   textarea.setAttribute("aria-label", "Quick capture");
   textarea.rows = 2;
+  //: Grows with what is typed and has no drag grip, as the Notes capture bar
+  //: does (unslop 1103, 14).
+  textarea.className = "autogrow";
+  textarea.addEventListener("input", () => autoGrow(textarea));
   // Don't promise AI filing when there's no AI to do it; the note still saves.
   textarea.placeholder =
     modelStatus && modelStatus.ollama_running === false
@@ -3864,7 +3865,7 @@ async function undoActorFrom(actor, since, byId, rerender) {
     await loadEntries().catch(() => {});
     rerender();
   } catch (error) {
-    toast(error.message || "Couldn't undo that.", true);
+    toast(error.message || `Couldn't undo what ${name} changed.`, true);
   }
 }
 
@@ -4132,7 +4133,7 @@ function dashTensionRow(tension, onGone) {
       onGone();
     } catch (error) {
       pressed.disabled = false;
-      toast(error.message || "Couldn't save that.", true);
+      toast(error.message || "Couldn't save that decision.", true);
     }
   };
   actions.append(

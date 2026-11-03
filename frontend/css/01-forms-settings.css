@@ -1345,6 +1345,7 @@ input.md-task-inline:disabled,
   vertical-align: middle;
   box-shadow: none;
   cursor: default;
+  pointer-events: none;
 }
 #entry-list .entry-content .entry-task > input[type="checkbox"]:disabled:checked {
   background: var(--muted);
@@ -1845,8 +1846,13 @@ input.md-task-inline:disabled,
    visible keyboard focus ring. */
 .chip-interactive {
   cursor: pointer;
-  min-height: 1.5rem; /* the painted chip: a row of 24px pills */
   position: relative;
+}
+/* The painted chip: a row of 24px pills, and a reminder's facts line the same
+   (unslop 1103, 13: the tag chips were 21.2 beside the note chip's 24). */
+.chip-interactive,
+#reminder-groups .entry-links > .chip {
+  min-height: 1.5rem;
 }
 /* The target is `--target-min` tall whatever the paint (audit FE-14: the
    category and "Add tags" chips were 24px targets under the 28px floor).
@@ -2155,7 +2161,7 @@ button:not(.ghost) > .spinner {
   gap: 0.4rem;
 }
 .entry-actions button {
-  padding: 0.15rem 0.5rem;
+  padding: var(--space-1) var(--space-3);
   font-size: var(--text-base);
 }
 .entry-links {
@@ -3361,7 +3367,7 @@ mark.global-find-hit.global-find-current {
 .modal-nav {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: var(--space-1);
   /* Long nav on a short window scrolls on its own rather than pushing the
      dialog taller than the viewport. */
   overflow-y: auto;
@@ -3375,7 +3381,7 @@ mark.global-find-hit.global-find-current {
 .modal-nav>div {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: var(--space-1);
 }
 /* Group labels: quiet enough to scan past, clear enough to orient by. */
 /* Type comes from the eyebrow recipe at the top of this file. */

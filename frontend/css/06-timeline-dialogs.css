@@ -526,6 +526,15 @@
     font-weight: 400;
     color: var(--muted);
   }
+  /* The Date column is only as wide as its words: "Nov 21" when every row is
+     this year (`paintTimelineTable` says so), "Nov 21, 2025" when one is not
+     (unslop 1103, 23). The title takes the rest. */
+  .timeline-table th:nth-child(2) {
+    width: 6.5rem;
+  }
+  .timeline-table.timeline-this-year th:nth-child(2) {
+    width: 5rem;
+  }
 }
 /* **Between 600px and 1024px, three columns give way** (TIMELINE_PLAN section
    7's second measurement, taken 2026-09-20 with

@@ -93,7 +93,7 @@ async function runStripTypes(source, { jsx = false, types = true } = {}) {
     return sucrase.transform(source, { transforms, production: true }).code;
   } catch (error) {
     const where = /\((\d+):(\d+)\)/.exec(String(error?.message || ""));
-    const failure = new Error(`Could not read this as ${types ? "TypeScript" : "JSX"}: ${String(error?.message || error).replace(/\s*\(\d+:\d+\)$/, "")}`);
+    const failure = new Error(`Couldn't read this as ${types ? "TypeScript" : "JSX"}: ${String(error?.message || error).replace(/\s*\(\d+:\d+\)$/, "")}`);
     if (where) failure.line = Number(where[1]);
     throw failure;
   }

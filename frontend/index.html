@@ -1459,7 +1459,7 @@
           data-help-for="dash-help" aria-controls="dash-help" aria-expanded="false"
           title="About the dashboard" aria-label="About the dashboard"><i class="ph ph-question" aria-hidden="true"></i></button>
         <div class="help-body hidden" id="dash-help" role="dialog" aria-label="About the dashboard">
-          <p>Today at a glance: your recent notes, reminders and widgets. Search finds notes, documents, files and app actions, and Ctrl+K opens the command palette for commands and places. Get started lists the first steps, ticked as you finish them; its menu can mark them all done or hide it, and Customise, Show Get started (or the palette's Show Get started) brings it back. Customise, then Edit layout, lets you add, move, resize and remove widgets. In the Focused view the greeting card shows what is due today, your meetings, the notes to file and the note you were last in.</p>
+          <p>Today at a glance: your recent notes, reminders and widgets. Search finds notes, documents, files and app actions, and Ctrl+K opens the command palette for commands and places. First steps lists the three steps, ticked as you finish them; its menu can mark them all done or hide it, and Customise, Show first steps (or the palette's Show first steps) brings it back. Customise, then Edit layout, lets you add, move, resize and remove widgets. In the Focused view the greeting card shows what is due today, your meetings, the notes to file and the note you were last in.</p>
         </div>
         <span id="dash-more" class="dock-more dash-more"></span>
       </div>
@@ -2791,7 +2791,7 @@ Link to another note with [[its first few words]]."></textarea>
           <input id="chat-sidebar-search" type="search" class="search-field-input" autocomplete="off"
             placeholder="Search chats" aria-label="Search your saved chats" aria-controls="conversation-list">
         </div>
-        <p id="conv-empty" class="muted empty-line">No saved chats yet. Ask something to start one.</p>
+        <div id="conv-empty" class="empty-state hidden"></div>
         <ul id="conversation-list"></ul>
         <button id="conv-browse-all" class="ghost small conv-browse-all" type="button"
           title="Search and sort everything you have ever asked"><i class="ph ph-books ph-lead" aria-hidden="true"></i> All in Library <i class="ph ph-arrow-right ph-trail" aria-hidden="true"></i></button>
@@ -3612,7 +3612,7 @@ Link to another note with [[its first few words]]."></textarea>
            reads, driven by the segment. -->
       <div class="dock" data-dock-name="timeline" role="toolbar" aria-label="Timeline controls">
         <div class="dock-identity">
-          <h2>Timeline</h2>
+          <h2 class="visually-hidden">Timeline</h2>
           <span id="timeline-count" class="dock-chip"></span>
         </div>
         <div class="dock-group dock-find">
@@ -3953,7 +3953,7 @@ Link to another note with [[its first few words]]."></textarea>
       <div class="graph-overlay">
         <div class="dock" data-dock-name="graph" role="toolbar" aria-label="Graph controls">
           <div class="dock-identity">
-            <h2>Graph</h2>
+            <h2 class="visually-hidden">Graph</h2>
             <!-- The stats line, which was a paragraph of its own between the
                  controls and the map (GRAPH_PLAN.md Phase 2: "the stats line
                  becomes a chip in the dock's identity zone"). It is context for
@@ -6123,8 +6123,7 @@ Link to another note with [[its first few words]]."></textarea>
       <div id="reminders-empty" class="empty-state hidden">
         <span class="empty-icon" aria-hidden="true"><i class="ph ph-alarm ph-lead" aria-hidden="true"></i></span>
         <p class="empty-title">No reminders yet</p>
-        <p class="muted">Add one here, or hit Remind on any note.</p>
-        <button class="ghost small" type="button" data-empty-action="reminder"><i class="ph ph-plus ph-lead" aria-hidden="true"></i> Add a reminder</button>
+        <p class="muted">Add one above, or hit Remind on any note.</p>
       </div>
     </section>
   </div>
@@ -6726,10 +6725,9 @@ Link to another note with [[its first few words]]."></textarea>
           <p class="empty-title">No boards yet</p>
           <p>A board is a canvas for notes, sketches and images; a mind map is a tree of topics. Each starts blank or from a template.</p>
           <!-- The owner, 2026-10-10: "also si there meant to be a default
-               board??" No (WHITEBOARD_PLAN decision 38): a fresh install has
-               this, and both kinds are one press from it. -->
+               board??" No (WHITEBOARD_PLAN decision 38): a fresh install has this. The dock's New makes a board,
+               so the one button here is the other kind. -->
           <span class="row wb-empty-actions">
-            <button class="ghost small" type="button" data-empty-action="new-board"><i class="ph ph-squares-four ph-lead" aria-hidden="true"></i> New board</button>
             <button class="ghost small" type="button" id="library-boards-new-map"><i class="ph ph-tree-structure ph-lead" aria-hidden="true"></i> New mind map</button>
           </span>
         </div>
@@ -14640,11 +14638,11 @@ Link to another note with [[its first few words]]."></textarea>
                  (DESIGN.md, "A guided tour step"). -->
             <div class="settings-group tour-replay">
               <h3>Welcome and tours</h3>
-              <p class="muted">See the welcome again, bring back Get started, or take the guided tour of the whole app or one part of it.</p>
+              <p class="muted">See the welcome again, bring back the first steps, or take the guided tour of the whole app or one part of it.</p>
               <div class="row wrap tour-replay-row">
                 <button id="tour-start-btn" class="small" type="button">Start the tour</button>
                 <button id="show-guide-btn" class="ghost small quiet" type="button"><i class="ph ph-play ph-lead" aria-hidden="true"></i> Replay the welcome</button>
-                <button id="show-get-started-btn" class="ghost small quiet" type="button" title="Bring back the dashboard's Get started button and checklist"><i class="ph ph-list-checks ph-lead" aria-hidden="true"></i> Show Get started</button>
+                <button id="show-get-started-btn" class="ghost small quiet" type="button" title="Bring back the dashboard's First steps button and checklist"><i class="ph ph-list-checks ph-lead" aria-hidden="true"></i> Show first steps</button>
               </div>
               <!-- One row per part of the app, its name over what it covers
                    (INBOX 804: it was a wall of fourteen bordered buttons). -->

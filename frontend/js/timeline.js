@@ -111,6 +111,8 @@ function timelineRowMoment(entry) {
 }
 
 const TIMELINE_ROW_FULL_DATE = new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short", year: "numeric" });
+//: The same without the year, for a date in the current one (unslop 1103, 23): the table's Date column took the width the titles needed. A property, not a global of its own.
+TIMELINE_ROW_FULL_DATE.thisYear = new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short" });
 
 function timelineRow(entry) {
   // A board *is* an `Entry` (MINDMAP_PLAN.md §2) and `/timeline` has always
@@ -2102,6 +2104,8 @@ function paintTimelineTable(rows) {
   const fragment = document.createDocumentFragment();
   for (const row of sorted) fragment.appendChild(timelineTableRow(row));
   body.appendChild(fragment);
+  //: No other year on the page: the Date column can be narrow (06-timeline-dialogs.css).
+  $("timeline-table").classList.toggle("timeline-this-year", sorted.every((row) => row.when.getFullYear() === new Date().getFullYear()));
 
   // The head says what it is sorted by, to the eye and to a screen reader.
   for (const button of $("timeline-table-head").querySelectorAll(".timeline-sort")) {
@@ -2192,7 +2196,8 @@ function timelineTableRow(row) {
   const when = document.createElement("td");
   const time = document.createElement("time");
   time.dateTime = row.whenIso;
-  time.textContent = TIMELINE_ROW_FULL_DATE.format(row.when);
+  //: The year only when it is not this one; the hover below keeps the whole date either way.
+  time.textContent = (row.when.getFullYear() === new Date().getFullYear() ? TIMELINE_ROW_FULL_DATE.thisYear : TIMELINE_ROW_FULL_DATE).format(row.when);
   time.title =
     row.placedBy === "mentioned"
       ? `“${row.phrase}” in this note meant ${TIMELINE_ROW_FULL_DATE.format(row.when)}. Written ${shortDate(row.writtenAt)}.`

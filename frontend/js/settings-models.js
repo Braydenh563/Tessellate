@@ -707,7 +707,7 @@ async function saveModelHardware(body) {
   try {
     await putModelHardware(body);
   } catch (error) {
-    toast(error.message || "Could not save that.", true);
+    toast(error.message || "Couldn't save the hardware override.", true);
     return;
   }
   openModelHardwareForm(false);

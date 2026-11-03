@@ -219,7 +219,7 @@ async function renderStorageBreakdown() {
   legend.replaceChildren();
   if (!storage) {
     bar.setAttribute("aria-label", "Storage could not be read");
-    legend.textContent = "Could not read the sizes.";
+    legend.textContent = "Couldn't read the sizes.";
     return;
   }
   const kinds = STORAGE_KINDS.map(([key, label]) => ({ key, label, bytes: Number(storage[key]) || 0 }));
@@ -1155,7 +1155,7 @@ async function settingsHistoryUndo(change) {
     settleUndoFromToast(action);
     toast(`Undone: ${change.label}`);
   } catch (error) {
-    toast(error.message || "Couldn't undo that.", true);
+    toast(error.message || "Couldn't undo that setting change.", true);
   }
 }
 

@@ -611,7 +611,7 @@ EXEMPT: dict[str, str] = {
     "library.js:ocrReadRange": "read: reads or asks the model; shows a result, writes nothing",
     "lightbox-view.js:buildMoreMenu": "read: menu of analysis actions on a picture",
     "lightbox-actions.js:reevaluateEntry": "read: asks the model to re-check a note, applied through renderReevaluateResult",
-    "lightbox.js:renderInlineAction": "read: asks the model about a note",
+    "entry-card.js:renderInlineAction": "read: asks the model about a note",
     "margin-reader.js:marginAsk": "read: reads or asks the model; shows a result, writes nothing",
     "meetings.js:meetingSummarise": "read: asks the model for a summary",
     "meetings.js:meetingTakeFinish": "send: closes the take started by meetingTakeBegin; the finished recording is the step (Undo bins it)",

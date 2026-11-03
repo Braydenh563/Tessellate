@@ -2772,7 +2772,7 @@ dialog::backdrop {
 .dash-list-text {
   display: flex;
   flex-direction: column;
-  gap: 0.05rem;
+  gap: 0;
   overflow: hidden;
   min-width: 0;
 }

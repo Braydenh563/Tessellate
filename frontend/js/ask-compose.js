@@ -698,7 +698,7 @@ async function askKeepAsMap() {
   const board = await apiJson("/whiteboard/maps/from-notes", {
     method: "POST",
     body: JSON.stringify({ name, note_ids: ids }),
-  }).catch((error) => toast(error.message || "Could not make the map.", true));
+  }).catch((error) => toast(error.message || "Couldn't make the map.", true));
   if (!board?.id) return;
   pushUndo(
     "Made a mind map from an answer",
@@ -900,7 +900,7 @@ async function fetchComposedPeek(question, history, body) {
     renderMarkdown(body, text || "Nothing in your notes answers this.");
     body.classList.toggle("muted", !text);
   } catch (error) {
-    body.textContent = "Could not read your notes just now.";
+    body.textContent = "Couldn't read your notes just now.";
     body.closest("details").dataset.failed = "1";
   }
 }
