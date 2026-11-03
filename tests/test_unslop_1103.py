@@ -154,3 +154,14 @@ def test_boot_win_the_m_guide_panel_is_a_lazy_sheet():
     for boot in ("08-consistency.css", "10-responsive.css"):
         assert "chord-guide-panel" not in _css(boot) or boot == "07-whiteboard-misc.css"
     assert 'lazyScript("/css/chord-guide-lazy.css")' in _js("chord-guide.js")
+
+
+def test_14_the_two_composers_have_no_drag_grip():
+    """The native grip was drawn over the chat box's corner and the Dashboard's."""
+    chat = _body(_css("04-chat-dock-appearance.css"), ".chat-dock .chat-composer #chat-input")
+    assert "resize" not in chat, "textarea.autogrow already says resize: none"
+    assert "resize: none" in _body(_css("05-sidebars-themes.css"), "textarea.autogrow")
+    js = _js("dashboard.js")
+    start = js.index("async function renderQuickCaptureWidget(")
+    body = js[start : js.index("\n}\n", start)]
+    assert 'textarea.className = "autogrow"' in body and "autoGrow(textarea)" in body

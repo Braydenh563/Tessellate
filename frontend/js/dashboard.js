@@ -2791,6 +2791,10 @@ async function renderQuickCaptureWidget(body) {
   //: screen reader reads nothing for the field without one (the a11y sweep).
   textarea.setAttribute("aria-label", "Quick capture");
   textarea.rows = 2;
+  //: Grows with what is typed and has no drag grip, as the Notes capture bar
+  //: does (unslop 1103, 14).
+  textarea.className = "autogrow";
+  textarea.addEventListener("input", () => autoGrow(textarea));
   // Don't promise AI filing when there's no AI to do it; the note still saves.
   textarea.placeholder =
     modelStatus && modelStatus.ollama_running === false

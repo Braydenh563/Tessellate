@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat and Dashboard composers: no native drag grip over the field's corner; the Dashboard's Quick capture grows with its text like the Notes capture bar (unslop 1103, 14).
 - The m guide's panel styles load with chord-guide.js, not at boot (boot CSS 179,395 to 178,934 gzipped, under its cap again).
 - Reminders: a reminder's repeat, alert and note are one line of 24px chips (107px rows to 80), and a high-priority reminder no longer repeats its red edge as a chip (unslop 1103, 13).
 - CodeQL: the re-export blocks in ai/agent.py, ai/composer.py and api/routes_chat.py are gone; every reader imports the name from the module that defines it (24 unused-import alerts on main), and a test file imports pathlib once.

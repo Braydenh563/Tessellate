@@ -1380,7 +1380,6 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
 
 .chat-dock .chat-composer #chat-input {
   min-height: var(--composer-h);
-  resize: vertical;
 }
 
 /* The picker wraps its button and the popup panel; without this it stretches
