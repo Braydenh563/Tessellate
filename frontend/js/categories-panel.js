@@ -115,7 +115,7 @@ async function openManageCategories(focusName = null) {
       footer.className = "manage-cat-footer hidden";
       footer.setAttribute("role", "region");
       footer.setAttribute("aria-label", "Selected categories");
-      card.append(sub, helpBody, tools, suggest, list, footer);
+      card.append(sub, helpBody, tools, manageScroll(suggest, list), footer);
       initHelpToggles(card);
       function redraw() {
         drawManageCategoryRows(list, footer, state);
