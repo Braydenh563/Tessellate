@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Menus: the rows arrive half a step apart, so a menu is not drawn tall and empty while its last rows fade in (285ms, was 390ms).
 - The quiet text action reads as a button: every borderless ghost (`ghost quiet`, a ghost in a card) is the accent (7.7:1 light, 8.8:1 dark at rest; 6.1 and 5.3 on the hover tint), the Digest's "Generate this week's digest" and the Calculator's "Insert as equation" lead with an icon, a card's one action sits left under its content instead of stretched with centred words, and a lint holds that every borderless text button is the accent or icon-led (INBOX 1580).
 - Present mode: the page picker menu opens at least as wide as its trigger (320px over a 206px list; every labelled menu opener now does, an icon-only ⋯ stays its own width), and the laser pointer has a small menu beside its button: trail on or off, a look (dot, trail, ring, spotlight) and a board colour, remembered in this browser; the trail is off under Reduce motion, and the presentation bar wraps on a phone instead of running past the edge (INBOX 1577).
 - Suggested tags: each is one split chip, "+ tag" to add and an x half of its own to dismiss, a 24x24 target inside the 24px chip (it was a 28px box hung over the chip 4px after the words; 44px under a finger), each half with its own hover and focus tone; the recipe is in DESIGN.md (INBOX 1583).
