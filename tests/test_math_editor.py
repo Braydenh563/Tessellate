@@ -157,3 +157,15 @@ def test_its_help_is_the_dialogs_head_popover_and_a_guide_topic() -> None:
     assert "Alt+=" in topic["body"] and "/equation" in topic["body"]
     assert "LaTeX" in topic["body"] and "dotted box" in topic["body"]
     assert help_topics_more.TOPIC_META["equation-editor"]["title"] == "Equation editor"
+
+
+def test_structure_tiles_size_to_their_formula() -> None:
+    """INBOX 1579: a fixed 4.5rem column clipped the 3x3 matrix's brackets (28 tiles overflowed at 1440 and 390).
+
+    Measured in the running app: every tile's scrollWidth equals its clientWidth, light and dark, at both widths.
+    """
+    css = (ROOT / "frontend" / "css" / "math-editor-lazy.css").read_text(encoding="utf-8")
+    wide = re.search(r"\.math-editor-grid-wide \{([^}]*)\}", css)
+    assert wide and "display: flex" in wide.group(1) and "flex-wrap: wrap" in wide.group(1)
+    tile = re.search(r"\.math-editor \.math-editor-tile \{([^}]*)\}", css)
+    assert tile and "overflow" not in tile.group(1), "a tile that hides its overflow clips a wide formula"
