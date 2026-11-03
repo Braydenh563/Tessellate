@@ -466,6 +466,8 @@
     const rows = [["ph:file-svg Save as SVG", "svg"], ["ph:file-png Save as PNG", "png"], ["ph:copy Copy as Mermaid", "mermaid"], ["ph:code Copy as SVG", "svgtext"]];
     //: Where the four direction buttons do not fit (a phone, a touch screen) they fold into this menu: a dock folds by width.
     const fold = S.dirs && matchMedia(COMPACT).matches ? [{ label: "ph:compass Direction", items: DIRS.map(([dir, arrow, name]) => ({ label: `ph:arrow-${arrow} ${name}`, run: () => S.dirs.querySelector(`[data-dir="${dir}"]`).click() })), group: "view" }] : [];
+    //: With the direction, Suggest folds in here too: Add, Undo, Redo and this menu are one row at 320 (INBOX 1596 d).
+    if (S.suggestBtn && matchMedia(COMPACT).matches) fold.push({ label: "ph:sparkle Suggest…", group: "edit", run: () => suggestMenu(S, S.root.querySelector(".dgm-more button") || S.suggestBtn) });
     const menu = kebabMenu([...(S.io.menu || []), ...fold, ...rows.map(([label, how]) => makeMenuItem(label, "", () => ensureModule("diagramEmbed").then((ok) => ok && diagramModel.embed.out(how, S.source, S.io.name))))], "More for this diagram");
     menu.classList.add("dgm-more");
     return menu;

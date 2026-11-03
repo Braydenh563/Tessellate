@@ -59,3 +59,15 @@ def test_a_kinds_render_keeps_the_rows_that_did_not_change_as_the_flowchart_does
     for field in ("row.fixed", "n.type", "S.k.text(n)", "meta", "kind", "n.shape", "n.arrow", "n.act", "n.pos", "n.kw", "n.actor", "n.from", "n.to", "Boolean(row.kids)"):
         assert field in fields, field
     assert "reconcile, stops };" in BUILDER
+
+
+def test_the_dock_is_one_row_at_320_because_suggest_folds_into_the_more_menu():
+    css = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
+    rule = css.split(".dgm-compact .dgm-suggest {", 1)[1].split("}", 1)[0]
+    assert "display: none;" in rule
+    more = BUILDER.split("  function more(S) {", 1)[1].split("\n  }\n", 1)[0]
+    # The hidden button's rect is empty, so the menu anchors the suggestions to its own trigger.
+    assert "S.suggestBtn && matchMedia(COMPACT).matches" in more
+    assert "ph:sparkle Suggest…" in more and ".dgm-more button" in more
+    help_text = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+    assert "Suggest (in the ... menu on a phone)" in help_text
