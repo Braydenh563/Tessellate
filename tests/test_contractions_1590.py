@@ -51,12 +51,12 @@ def test_a_split_half_is_not_a_subject(fragment):
     assert not query_understanding.is_chip_subject(fragment)
 
 
-@pytest.mark.parametrize("subject", ["ve", "I've", "i", "you", "it", "the", "they", "she", "re", "ai", "", "  ", "ive", "dont", "my", "this"])
+@pytest.mark.parametrize("subject", ["ve", "I've", "i", "you", "it", "the", "they", "she", "re", "ai", "uk", "", "  ", "ive", "dont", "my", "this", "IT", "IS", "RE", "VE"])
 def test_no_chip_subject_from_a_stop_word_pronoun_or_fragment(subject):
     assert not query_understanding.is_chip_subject(subject), subject
 
 
-@pytest.mark.parametrize("subject", ["dentist", "uni", "Ice Breakers", "my uni friend", "boiler repair"])
+@pytest.mark.parametrize("subject", ["dentist", "uni", "Ice Breakers", "my uni friend", "boiler repair", "AI", "the UK trip", "UK"])
 def test_a_real_subject_is_a_chip_subject(subject):
     assert query_understanding.is_chip_subject(subject), subject
 

@@ -662,9 +662,17 @@ def without_contractions(text: str) -> str:
 def is_chip_subject(subject: str) -> bool:
     """Whether `subject` can be what a follow-on chip asks about: at least one
     word of three letters or more that is no stop word, pronoun, function word
-    or piece of a contraction. "ve", "I've", "they" and "it" make no chip."""
-    words = [w for w in re.split(r"[\W\d_]+", without_contractions(subject or "").lower()) if w]
-    return any(len(w) >= 3 and w not in STOPWORDS and w not in FUNCTION_WORDS and w not in _PRONOUNS for w in words)
+    or piece of a contraction. "ve", "I've", "they" and "it" make no chip. A
+    two-letter word counts only typed in capitals ("AI", "UK"): an acronym, not
+    a fragment."""
+    for word in (w for w in re.split(r"[\W\d_]+", without_contractions(subject or "")) if w):
+        low = word.lower()
+        if low in STOPWORDS or low in FUNCTION_WORDS or low in _PRONOUNS:
+            continue
+        if len(low) >= 3 or (len(low) == 2 and word.isupper()):
+            return True
+    return False
+
 
 #: Words that join a sentence and name nothing, beyond `STOPWORDS` (which
 #: search needs to stay narrow: "about" still matches a note that says it).
