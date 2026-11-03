@@ -2222,18 +2222,9 @@ $("notes-view-cards")?.addEventListener("click", () => setNotesViewMode("cards")
 //: the page has already asked for, so a card never opened before going offline would not be there.
 setTimeout(() => navigator.connection?.saveData || ensureModule("captureCard"), 4000);
 //: **One bar, two places** (INBOX 1592): the Notes tab's bar is in index.html and is wired below; the
-//: dashboard's Quick capture card makes `captureBar()`, a copy of its row. Either way the bar opens the one
+//: dashboard's Quick capture card wires a copy of its row (made in the lazy dashboard.js, off the boot budget). Either way the bar opens the one
 //: composer (capture-card.js) and saves the one way. A card left open by a redraw is handed to the new bar.
-function captureBar(bar = null) {
-  if (!bar) {
-    bar = document.createElement("div");
-    bar.className = "capture-bar";
-    bar.setAttribute("role", "group");
-    bar.setAttribute("aria-label", "Add a note");
-    const row = $("capture-bar-row").cloneNode(true);
-    for (const el of [row, ...row.querySelectorAll("[id]")]) el.removeAttribute("id");
-    bar.append(row);
-  }
+function captureBar(bar) {
   for (const type of ["focusin", "click", "input", "keydown"]) {
     bar.querySelector(".capture-bar-row").addEventListener(type, (event) => {
       //: Enter on the bar's field opens the card again after Close; no other key does.
