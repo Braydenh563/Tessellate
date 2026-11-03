@@ -23,7 +23,7 @@ from sqlalchemy import func, or_, select, text
 from sqlalchemy.orm import Session
 
 from tessellate.ai import recognise, variants
-from tessellate.ai.note_recency import _RECENCY_ASK, is_recency_ask  # noqa: F401  # where recency is worded; re-exported for its callers
+from tessellate.ai.note_recency import is_recency_ask
 from tessellate.ai.embeddings import (
     EmbeddingService,
     bytes_to_vector,

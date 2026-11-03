@@ -183,7 +183,7 @@ def _still_recent(question: str) -> bool:
     """Whether a retrieval that fell back to the newest notes still answers
     `question`: it does when there is no subject, or when the whole question is
     a recency ask ("What have I saved recently?": "saved" is a verb there)."""
-    from tessellate.search.search_manager import is_recency_ask
+    from tessellate.ai.note_recency import is_recency_ask
 
     return not subject_terms(question) or is_recency_ask(question)
 
@@ -194,7 +194,7 @@ _UNNAMED_ASK = lazy_compile(r"^(?:who|where|how (?:much|many)|what (?:should|do 
 def _guessing_recent(question: str) -> bool:
     """A fallback to the newest notes for a who, where or how-much that names
     nothing to look for: the answer says it is a fallback (audit 1030 Z34)."""
-    from tessellate.search.search_manager import is_recency_ask
+    from tessellate.ai.note_recency import is_recency_ask
 
     return bool(_UNNAMED_ASK.match(" ".join(question.lower().split()))) and not is_recency_ask(question) and rec.without_windows(question) == question
 

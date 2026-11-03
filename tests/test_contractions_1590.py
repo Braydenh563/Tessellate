@@ -18,7 +18,7 @@ from tessellate.api import routes_chat
 from tessellate.core import config
 from tessellate.entry import manager
 from tessellate.search import query as query_understanding
-from tessellate.search.search_manager import is_recency_ask
+from tessellate.ai.note_recency import is_recency_ask
 
 NOW = datetime(2026, 11, 3, 12, 0)
 

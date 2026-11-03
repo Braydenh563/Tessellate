@@ -119,7 +119,7 @@ def test_the_first_starter_is_one_ask_answers_without_a_model():
     """UX-07: "What have I saved so far?" was the first suggested question, and
     with no model it answered that no note shared enough with it to quote. A
     recency question is answered from the newest notes, by rule."""
-    from tessellate.search.search_manager import is_recency_ask
+    from tessellate.ai.note_recency import is_recency_ask
 
     assert is_recency_ask(_starters()[0]), _starters()[0]
 

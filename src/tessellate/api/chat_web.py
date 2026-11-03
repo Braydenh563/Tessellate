@@ -32,7 +32,7 @@ def _unmatched_recents(req: _StreamRequest, prepared: dict) -> bool:
         return False
     if not req.ollama.is_running() or _composed(req, True):
         return False
-    from tessellate.search.search_manager import is_recency_ask
+    from tessellate.ai.note_recency import is_recency_ask
 
     #: Two or more subject words is a topic ("mortgage rate zebra paddock");
     #: one is as often the notebook itself ("tell me about my notebook").
