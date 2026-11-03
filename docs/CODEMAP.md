@@ -2,7 +2,7 @@
 
 Generated 2026-11-03 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7585, frontend ids 2641, CSS sections 519, backend routes 641, backend modules 8510, test files 1923, tests 16167, plan headings 987, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7585, frontend ids 2641, CSS sections 519, backend routes 641, backend modules 8511, test files 1924, tests 16170, plan headings 987, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7585)
 
@@ -12649,7 +12649,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8510)
+## Backend modules (8511)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14399,31 +14399,32 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_your_kind` | src/tessellate/ai/composer_quote.py:220 |
 | `decap` | src/tessellate/ai/composer_quote.py:316 |
 
-### src/tessellate/ai/composer_read.py (21)
+### src/tessellate/ai/composer_read.py (22)
 
 | Name | File:line |
 |---|---|
 | `NoteView` | src/tessellate/ai/composer_read.py:71 |
 | `Sentence` | src/tessellate/ai/composer_read.py:42 |
-| `_cue` | src/tessellate/ai/composer_read.py:548 |
+| `_cue` | src/tessellate/ai/composer_read.py:566 |
+| `_dependent_fragment` | src/tessellate/ai/composer_read.py:258 |
 | `_depth` | src/tessellate/ai/composer_read.py:247 |
 | `_discourse` | src/tessellate/ai/composer_read.py:147 |
-| `_distinct_ids` | src/tessellate/ai/composer_read.py:416 |
+| `_distinct_ids` | src/tessellate/ai/composer_read.py:434 |
 | `_heading_text` | src/tessellate/ai/composer_read.py:178 |
-| `_line_units` | src/tessellate/ai/composer_read.py:494 |
-| `_not_prose` | src/tessellate/ai/composer_read.py:437 |
-| `_picture_groups` | src/tessellate/ai/composer_read.py:317 |
-| `_picture_spans` | src/tessellate/ai/composer_read.py:373 |
-| `_picture_text_breaks` | src/tessellate/ai/composer_read.py:356 |
-| `_picture_units` | src/tessellate/ai/composer_read.py:391 |
-| `_short_fact` | src/tessellate/ai/composer_read.py:295 |
+| `_line_units` | src/tessellate/ai/composer_read.py:512 |
+| `_not_prose` | src/tessellate/ai/composer_read.py:455 |
+| `_picture_groups` | src/tessellate/ai/composer_read.py:335 |
+| `_picture_spans` | src/tessellate/ai/composer_read.py:391 |
+| `_picture_text_breaks` | src/tessellate/ai/composer_read.py:374 |
+| `_picture_units` | src/tessellate/ai/composer_read.py:409 |
+| `_short_fact` | src/tessellate/ai/composer_read.py:313 |
 | `_title` | src/tessellate/ai/composer_read.py:219 |
-| `_unit` | src/tessellate/ai/composer_read.py:253 |
+| `_unit` | src/tessellate/ai/composer_read.py:266 |
 | `_written` | src/tessellate/ai/composer_read.py:160 |
 | `bold_line` | src/tessellate/ai/composer_read.py:204 |
 | `plain_words` | src/tessellate/ai/composer_read.py:210 |
-| `read_note` | src/tessellate/ai/composer_read.py:442 |
-| `source_kind` | src/tessellate/ai/composer_read.py:429 |
+| `read_note` | src/tessellate/ai/composer_read.py:460 |
+| `source_kind` | src/tessellate/ai/composer_read.py:447 |
 
 ### src/tessellate/ai/composer_recall.py (18)
 
@@ -23348,7 +23349,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16167)
+## Tests (16170)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23690,6 +23691,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_foot_1466.py | 8 |
 | tests/test_composer_form_1301.py | 13 |
 | tests/test_composer_four_1025.py | 16 |
+| tests/test_composer_fragment_1561.py | 3 |
 | tests/test_composer_frames_1029.py | 15 |
 | tests/test_composer_grammar.py | 3 |
 | tests/test_composer_grammar_1029b.py | 14 |
