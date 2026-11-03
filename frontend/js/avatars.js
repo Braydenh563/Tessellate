@@ -5822,9 +5822,12 @@ function nameMarkBuddyRoute(dx, dy, size, flies, poseChanged, roll) {
 //: frames: each adds to the pose's own `transform` and comes back to it, and
 //: a cancelled one leaves the pose as it was. The walk's arm swing and the
 //: climb's reach are the CSS's (`.nmb-walking`, `data-travel`), looped.
+//: **Never a T** (INBOX 1589, the owner: arms "going in like opposite
+//: directions but like fully extended"): a glide's wings open the arms to
+//: about 55 degrees from the floating pose's 28, not 94 (straight out).
 const NMB_LIMB_MOVES = {
   leap: { arm: [[0.14, -16], [0.5, 52], [0.84, 16]], leg: [[0.14, 0, 0.84], [0.5, 16, 0.76], [0.86, -4, 1.05]], lower: [[0.2, -4], [0.55, 10], [0.86, -3]] },
-  glide: { arm: [[0.22, 66], [0.76, 60]], leg: [[0.25, -5, 0.86], [0.75, -5, 0.86]], lower: [[0.25, 12], [0.75, 9]] },
+  glide: { arm: [[0.22, 28], [0.76, 24]], leg: [[0.25, -5, 0.86], [0.75, -5, 0.86]], lower: [[0.25, 12], [0.75, 9]] },
   float: { arm: [[0.25, -12], [0.6, 30], [0.86, 8]], lower: [[0.3, 10], [0.72, 6], [0.9, -3]] },
   cue: { arm: [[0.4, 20]] },
 };

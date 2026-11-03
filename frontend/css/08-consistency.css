@@ -7094,6 +7094,9 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
    them by 2.8 floating). */
 #nm-buddy.nmb-act-clasp .atl-figure .nmb-arm-r { transform: rotate(10deg); }
 #nm-buddy.nmb-act-clasp .atl-figure .nmb-arm-l { transform: rotate(-10deg); }
+/* Her drawn arms hang closer in: at 10 degrees her hands overlapped by 2.5. */
+#nm-buddy.nmb-act-clasp .atl-figure[data-atlas-look="feminine"] .nmb-arm-r { transform: rotate(6deg); }
+#nm-buddy.nmb-act-clasp .atl-figure[data-atlas-look="feminine"] .nmb-arm-l { transform: rotate(-6deg); }
 /* Atlas's arm is a short nub from a shoulder just under the chin, so the
    companion's generic raise (-125deg, for a long arm from a low shoulder)
    would put its hand over its own cheek; -70deg holds a bell or a lantern out
