@@ -2528,10 +2528,8 @@ header#top-bar.tabs-wrapped #tab-bar {
    thumbnails is still thumbnails, and full on hover/focus as before.
    (`:has(...[open])` went with the `<details>` menu it was written for, the
    gallery uses the app's own `kebabMenu` now, whose open state lives on a
-   `.action-menu` sibling, and the row no longer fades at all.) */
-.library-image-actions {
-  opacity: 0.6;
-}
+   `.action-menu` sibling, and the row no longer fades at all.) The 0.6 is
+   set in the row's main rule above. */
 /* **The row is a container, so only its buttons may take a click.** Reported:
    "I cant click the select radio buttons in any of the images in the library
    images subtab." Measured with `elementFromPoint` at the centre of each

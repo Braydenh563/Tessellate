@@ -24,7 +24,7 @@ from tessellate.ai import arithmetic, lexical_filing, recognise
 #: The row under the editor holds this many; more is a list nobody reads.
 LIMIT = 5
 #: Per kind, so one kind cannot fill the row.
-PER_KIND = {"reminder": 2, "sum": 2, "link": 2, "filing": 1}
+PER_KIND = {"reminder": 2, "sum": 2, "link": 2, "filing": lexical_filing.CHOICES}
 #: Too little text to file: the same floor the tag suggestions use.
 FILING_MIN_CHARS = 20
 #: A reminder for a day with no time said is set for this hour, and the
@@ -205,26 +205,37 @@ def _links(session: Session, text: str, spans: list[recognise.Span], quoted: lis
 
 
 def _filing(session: Session, text: str, entry_id: int | None, category: str | None) -> list[dict]:
+    """The one filing decision (`lexical_filing.filing_call`, INBOX 1583):
+    "File in X" where a save would file it (`decided`), else the two or three
+    choices it waits on, each with the words that put it forward. Nothing once
+    the person has picked one of them."""
     if len(text.strip()) < FILING_MIN_CHARS:
         return []
-    picks = lexical_filing.suggest_categories_explained(session, text, exclude_entry_id=entry_id, limit=1)
-    if not picks or not picks[0][1] or picks[0][0] == category:
+    call = lexical_filing.filing_call(session, text, exclude_entry_id=entry_id)
+    if category and category in {name for name, _ in call.candidates}:
         return []
-    name, why = picks[0]
+    if call.category:
+        picks = [(call.category, call.why)]
+    else:
+        picks = [(name, f"{why} {call.why}") for name, why in call.choices]
+    #: `waits`: the one line the row says for choices ("A close call between ...").
     return [{"kind": "filing", "start": -1, "end": -1, "said": "", "label": f"File in {name}", "reason": why,
-             "value": {"category": name}}]
+             "waits": "" if call.category else call.why,
+             "value": {"category": name, "decided": bool(call.category)}} for name, why in picks]
 
 
 def offers(session: Session, text: str, *, now: datetime, entry_id: int | None = None,
-           category: str | None = None, locale: str | None = None) -> list[dict]:
-    """The editor's offers for `text`, in the order the row shows them."""
+           category: str | None = None, locale: str | None = None, title: str = "") -> list[dict]:
+    """The editor's offers for `text`, in the order the row shows them. A
+    `title` is filed with the text, as a save files it, and offered on never."""
     text = str(text or "")
     if not text.strip():
         return []
     quoted = quoted_ranges(text)
     spans = recognise.recognise(text, now=now, locale=locale or "en-GB")
     found = (_reminders(text, spans, now, quoted) + _sums(text, quoted) + _totals(text, quoted)
-             + _links(session, text, spans, quoted, entry_id) + _filing(session, text, entry_id, category))
+             + _links(session, text, spans, quoted, entry_id)
+             + _filing(session, f"# {title.strip()}\n\n{text}" if title.strip() else text, entry_id, category))
     out: list[dict] = []
     taken: dict[str, int] = {}
     for offer in found:

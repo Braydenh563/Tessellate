@@ -1241,35 +1241,40 @@ def _filing_similar(session: Session, entry) -> dict | None:  # noqa: ANN001
     return {"id": other.id, "preview": _connection_label(other, 60)}
 
 
-def _offered_categories(session: Session, entry, category: str) -> tuple[list[str], dict[str, str], dict | None, dict | None]:  # noqa: ANN001
-    """`(suggestions, reasons, proposal, held)`: up to three categories to offer as
+def _offered_categories(session: Session, entry, category: str) -> tuple[list[str], dict[str, str], dict | None, dict | None, str]:  # noqa: ANN001
+    """`(suggestions, reasons, proposal, held, why)`: up to three categories to offer as
     one-tap choices (INBOX 434), each one's line, a new category the pack proposes
-    (WORLD_CLASS 23, decisions 2, 3 and 6), and a sensitive topic that held it back."""
+    (WORLD_CLASS 23, decisions 2, 3 and 6), a sensitive topic that held it back, and
+    why it waits. The choices are the filing call's own, first and in its order
+    (`lexical_filing.filing_call`, INBOX 1583), so the saved note offers what the
+    Capture hint offered; recent categories fill the row only after them."""
     from tessellate.ai import lexical_filing
 
-    suggestions: list[str] = []
-    reasons: dict[str, str] = {}
+    explained: list[tuple[str, str]] = []
     proposal = None
     held = None
+    why = ""
     try:
         content = manager.readable_content(entry) or ""
-        explained = [
-            (name, reason)
-            for name, reason in lexical_filing.suggest_categories_explained(
-                session, content, exclude_entry_id=entry.id, limit=4,
-            )
-            if name != category
-        ][:3]
-        suggestions = [name for name, _ in explained]
-        reasons = {name: reason for name, reason in explained if reason}
-        decision = lexical_filing.decide(session, content, exclude_entry_id=entry.id)
-        if decision.proposal is not None:
-            proposal = {"name": decision.proposal.name, "why": decision.proposal.why}
-        if decision.held and decision.ranked:
-            held = {"category": decision.ranked[0].name, "topic": decision.sensitive}
+        call = lexical_filing.filing_call(session, content, exclude_entry_id=entry.id)
+        explained = [(name, reason) for name, reason in call.choices if name != category]
+        if len(explained) < 3:
+            taken = {name for name, _ in explained} | {category}
+            for name, reason in lexical_filing.suggest_categories_explained(session, content, exclude_entry_id=entry.id, limit=4):
+                if name not in taken:
+                    explained.append((name, reason))
+                    taken.add(name)
+        explained = explained[:3]
+        if call.proposal is not None:
+            proposal = {"name": call.proposal.name, "why": call.proposal.why}
+        if call.held and call.choices:
+            held = {"category": call.choices[0][0], "topic": call.held}
+        why = call.why
     except Exception:  # noqa: BLE001 - a hint never fails the status
         logger.debug("no category suggestions for entry %s", entry.id, exc_info=True)
-    return suggestions, reasons, proposal, held
+    suggestions = [name for name, _ in explained]
+    reasons = {name: reason for name, reason in explained if reason}
+    return suggestions, reasons, proposal, held, why
 
 
 def _filing_why(session: Session, entry, category: str) -> str:  # noqa: ANN001
@@ -1320,8 +1325,9 @@ def filing_status(entry_id: int, session: Session = Depends(get_session)) -> dic
     why = ""
     proposal = None
     held = None
+    waits = ""
     if (filed_by == "none" and category == manager.UNCATEGORISED) or unsure_pick:
-        suggestions, reasons, proposal, held = _offered_categories(session, entry, category)
+        suggestions, reasons, proposal, held, waits = _offered_categories(session, entry, category)
     elif filed_by == "words" and category != manager.UNCATEGORISED:
         why = _filing_why(session, entry, category)
     return {
@@ -1336,6 +1342,9 @@ def filing_status(entry_id: int, session: Session = Depends(get_session)) -> dic
         "why": why,
         "proposal": proposal,
         "held_sensitive": held,
+        #: Why the words left it waiting ("A close call between Hobbies and
+        #: Study, so it waits for you to choose."), said by the saved line.
+        "waits_why": waits if filed_by == "none" else "",
     }
 
 
@@ -1382,34 +1391,6 @@ class SuggestTagsBody(BaseModel):
 
 #: Said once per process, not once per keystroke pause.
 _SAID_ONCE: set[str] = set()
-
-
-@router.post("/suggest-category")
-def suggest_category_for_draft(body: SuggestTagsBody, session: Session = Depends(get_session)) -> dict:
-    """The category the notebook's own words point to for a note that is not
-    saved yet, with the reason (INBOX 1330: "a live, inline organization
-    suggestion while typing"). The words only, no model and no write: the
-    same decision filing makes with no model, so what is offered here is what
-    saving would have done. Nothing comes back where it has no reason to give
-    (a recently used category is a filing fallback, not a suggestion), and a
-    sensitive topic is offered like any other: it is a chip to press, and
-    pressing is the person filing it (decision 6)."""
-    from tessellate.ai import lexical_filing
-
-    content = body.content.strip()
-    if body.title.strip() and content:
-        content = f"# {body.title.strip()}\n\n{content}"
-    if not content:
-        return {"category": None, "reason": ""}
-    try:
-        decision = lexical_filing.decide(session, content)
-    except Exception:  # noqa: BLE001 - a hint never fails the form
-        logger.debug("no category suggestion for a draft", exc_info=True)
-        return {"category": None, "reason": ""}
-    pick = decision.filed or next((c for c in decision.ranked if c.score > 0 and c.why), None)
-    if pick is None or not pick.why:
-        return {"category": None, "reason": ""}
-    return {"category": pick.name, "reason": pick.why}
 
 
 @router.post("/suggest-tags")

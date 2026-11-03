@@ -1699,7 +1699,6 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   margin-bottom: calc(-1 * var(--graph-popup-pad));
   padding-inline: var(--graph-popup-pad);
   padding-bottom: var(--graph-popup-pad);
-  background: var(--chip-bg);
   border-bottom-left-radius: var(--radius);
   border-bottom-right-radius: var(--radius);
   /* No column gap: the divider's own margins are the space between two

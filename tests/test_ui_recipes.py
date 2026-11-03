@@ -7090,3 +7090,23 @@ def test_a_radical_leaves_room_between_the_sign_and_the_radicand() -> None:
     assert "msqrt > *" not in (ROOT / "frontend" / "css" / "math-editor-lazy.css").read_text(encoding="utf-8")
     body = _rule_exact(css, "math :is(msqrt > *, mroot > :first-child)")
     assert re.search(r"padding:\s*0\.\d+em 0\.\d+em 0;", body), body
+
+
+def test_an_offer_with_a_dismiss_is_the_split_chip() -> None:
+    """DESIGN.md, "An offer on a thing that is taken or dismissed": a
+    suggested tag is two halves inside one edge, a 24px dismiss half and not
+    `.unlink`'s glyph after the words (INBOX 1583: the x's 28px box hung over
+    the 24px chip, 4px after the words). Each half has its hover and focus
+    twin, and under a finger the dismiss keeps the touch floor."""
+    js = frontend_text("entry-card.js")
+    loop = js[js.index("for (const tag of suggestions) {") :]
+    loop = loop[: loop.index("meta.appendChild(group);")]
+    assert 'discard.className = "suggested-tag-dismiss"' in loop and '"unlink"' not in loop
+    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    dismiss = _rule_exact(css, ".entry-meta > .chip.suggested-tag > .suggested-tag-dismiss")
+    assert "width: 1.5rem" in dismiss, dismiss
+    assert "border-inline-end: 1px solid var(--border)" in _rule_exact(css, ".entry-meta > .chip.suggested-tag > .suggested-tag-take")
+    assert "var(--chip-bg)" in _rule_exact(css, ".entry-meta > .chip.suggested-tag > :is(button:hover, button:focus-visible)")
+    assert "var(--error)" in _rule_exact(css, ".entry-meta > .chip.suggested-tag > .suggested-tag-dismiss:is(:hover, :focus-visible)")
+    coarse = re.search(r"@media \(max-width: 819\.98px\), \(pointer: coarse\) \{\s*\.entry-meta > \.chip\.suggested-tag > \.suggested-tag-dismiss[^{]*\{([^}]*)\}", css)
+    assert coarse and "width: var(--target-min)" in coarse.group(1) and "margin-inline-end: calc(1.5rem - var(--target-min))" in coarse.group(1)

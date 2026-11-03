@@ -652,8 +652,8 @@ function entryItem(entry, options = {}) {
   }
   //: Where the tags that do not fit go (INBOX 455 (1), `fitNoteMetas`).
   meta.appendChild(noteMetaMore(entry));
-  //: Tags filing suggested, kept on the note (INBOX 440): a press takes one,
-  //: its × discards it for good.
+  //: Tags filing suggested, kept on the note (INBOX 440): a split chip, its
+  //: first half takes the tag, its x half dismisses it for good.
   const suggestions = options.actions && !entry.is_board ? entry.suggested_tags || [] : [];
   for (const tag of suggestions) {
     //: Two sibling buttons in one chip, take and discard, not a button
@@ -680,7 +680,9 @@ function entryItem(entry, options = {}) {
     group.appendChild(take);
     const discard = document.createElement("button");
     discard.type = "button";
-    discard.className = "unlink";
+    //: Its own half of the chip, not `.unlink`'s glyph after the words
+    //: (INBOX 1583: "those x button on the suggested tags are badly designed").
+    discard.className = "suggested-tag-dismiss";
     setLabel(discard, "ph:x");
     discard.title = `Dismiss: stop suggesting #${tag} for this note`;
     discard.addEventListener("click", (event) => {

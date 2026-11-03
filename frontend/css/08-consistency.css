@@ -294,14 +294,11 @@
 /* Section boundaries inside a menu are one hairline, in `--divider` - the
    separator tier, not the edge tier (DESIGN.md, "the border budget"). Three
    menus drew this three ways: `--divider` on the dock menus, `--glass-border`
-   on the shape menu, `--border` on the space menu. */
+   on the shape menu, `--border` on the space menu. The dock menus' own rule
+   is in 07-whiteboard-misc.css (`.wb-menu-section + .wb-menu-section`). */
 .wb-shape-menu-divider,
 .space-menu-divider {
   background: var(--divider);
-}
-.wb-board-menu .wb-menu-section + .wb-menu-section {
-  border-top: 1px solid var(--divider);
-  padding-top: var(--space-2);
 }
 /* One padding on the shell, so the gap above the first row equals the gap
    beside it. `.wb-board-menu` was on `--space-3` with a `--space-3` row gap
@@ -3557,24 +3554,64 @@ body .chip.item-label,
 }
 /* **A suggested tag is a tag not yet taken** (INBOX 440): the tag's own
    words in muted ink inside a hairline, so it reads as on offer rather than
-   on the note; the tint and the ink come up on hover, like any chip (a chip
-   tones, it never lifts). Its × is the unlink recipe the documents use. */
+   on the note. **A split chip, two targets** (INBOX 1583, the owner: "those
+   x button on the suggested tags are badly designed"): the x was a 1rem
+   glyph 4px after the words, its 28px box hanging over the 24px chip. Now
+   the take half (+ and the words) and a 24px square dismiss half sit inside
+   the one edge, a hairline between them, and each half tones itself on hover
+   and focus (take: the chip tint and the ink; dismiss: the error's), so the
+   pointer shows which half acts. A chip tones, it never lifts. */
 .entry-meta > .chip.suggested-tag {
+  gap: 0;
+  padding: 0;
   background: transparent;
   box-shadow: inset 0 0 0 1px var(--border);
   color: var(--muted);
 }
-.entry-meta > .chip.suggested-tag:hover,
-.entry-meta > .chip.suggested-tag:focus-within {
-  background: var(--chip-bg);
-  color: var(--ink);
-}
 .entry-meta > .chip.suggested-tag > .suggested-tag-take {
-  cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
+  padding-inline: var(--space-2);
+  border-inline-end: 1px solid var(--border);
+  border-start-start-radius: inherit;
+  border-end-start-radius: inherit;
+}
+.entry-meta > .chip.suggested-tag > .suggested-tag-dismiss {
   position: relative;
+  width: 1.5rem;
+  border-start-end-radius: inherit;
+  border-end-end-radius: inherit;
+}
+.entry-meta > .chip.suggested-tag > :is(button:hover, button:focus-visible) {
+  background: var(--chip-bg);
+  color: var(--ink);
+}
+.entry-meta > .chip.suggested-tag > .suggested-tag-dismiss:is(:hover, :focus-visible) {
+  background: color-mix(in srgb, var(--error) 14%, transparent);
+  color: var(--error);
+}
+/* Under a finger the half's box is the touch floor (iconfloor.js), its
+   overhang taken back out past the chip's end, so the chip stays 24px. */
+@media (max-width: 819.98px), (pointer: coarse) {
+  .entry-meta > .chip.suggested-tag > .suggested-tag-dismiss:is(*, :hover, :focus-visible) {
+    width: var(--target-min);
+    height: var(--target-min);
+    margin-block: calc((1.5rem - var(--target-min)) / 2);
+    margin-inline-end: calc(1.5rem - var(--target-min));
+    background: none;
+  }
+  .suggested-tag > .suggested-tag-dismiss::before,
+  .suggested-tag > .suggested-tag-dismiss::after {
+    content: "";
+    position: absolute;
+    inset-block: calc((var(--target-min) - 1.5rem) / 2);
+    inset-inline: 0 calc(var(--target-min) - 1.5rem);
+    border-radius: inherit;
+  }
+  .suggested-tag-dismiss:is(:hover, :focus-visible)::before {
+    background: color-mix(in srgb, var(--error) 14%, transparent);
+  }
 }
 .entry-meta > .chip.filing-sure {
   gap: var(--space-1);
@@ -4663,11 +4700,14 @@ body .chip.item-label,
    exact centre (centred by construction, in any font, at any zoom), in the
    muted ink at rest with no disc; the disc and the error ink come on hover
    and focus, as the action's warning. The glyph stays for its accessible
-   name and is hidden from sight. */
-.chip > .unlink:last-child > .ph-x {
+   name and is hidden from sight. A suggested tag's dismiss half draws the
+   same x (INBOX 1583). */
+.chip > .unlink:last-child > .ph-x,
+.suggested-tag-dismiss > .ph-x {
   visibility: hidden;
 }
-.chip > .unlink:last-child:has(> .ph-x)::after {
+.chip > .unlink:last-child:has(> .ph-x)::after,
+.suggested-tag-dismiss::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -10771,6 +10811,7 @@ header#top-bar button.space-switcher-btn:focus-visible {
 }
 /* A suggested tag's two controls are buttons (N37) that keep the chip's face. */
 .entry-meta > .chip.suggested-tag > button {
+  cursor: pointer;
   background: none;
   border: 0;
   padding: 0;
