@@ -44,3 +44,26 @@ def test_a_downloaded_size_can_be_removed_and_nothing_else(client, monkeypatch, 
     assert gone.status_code == 404
     huge = client.delete("/voice/models/huge")  # not a size we offer
     assert huge.status_code == 404
+
+
+def test_an_installed_model_loads_without_asking_the_internet(monkeypatch):
+    """The owner, 2026-11-03: dictation reached huggingface.co with the model already
+    installed. An installed size loads with `local_files_only=True`; a missing one may
+    download."""
+    import sys
+    import types
+
+    from tessellate.ai import voice
+
+    made = []
+
+    class WhisperModel:
+        def __init__(self, size, **kwargs):
+            made.append((size, kwargs.get("local_files_only")))
+
+    monkeypatch.setitem(sys.modules, "faster_whisper", types.SimpleNamespace(WhisperModel=WhisperModel))
+    monkeypatch.setattr(voice, "_loaded", None)
+    monkeypatch.setattr(voice, "model_states", lambda: {"base": {"installed": True}, "small": {"installed": False}})
+    voice._get_model("base")
+    voice._get_model("small")
+    assert made == [("base", True), ("small", False)]

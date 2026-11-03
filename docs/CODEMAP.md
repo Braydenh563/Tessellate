@@ -2,7 +2,7 @@
 
 Generated 2026-11-03 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7585, frontend ids 2640, CSS sections 519, backend routes 641, backend modules 8502, test files 1914, tests 16127, plan headings 990, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7585, frontend ids 2640, CSS sections 519, backend routes 641, backend modules 8502, test files 1914, tests 16128, plan headings 990, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7585)
 
@@ -17914,17 +17914,17 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_decode_samples` | src/tessellate/ai/voice.py:219 |
+| `_decode_samples` | src/tessellate/ai/voice.py:224 |
 | `_dir_bytes` | src/tessellate/ai/voice.py:98 |
 | `_get_model` | src/tessellate/ai/voice.py:151 |
 | `_options` | src/tessellate/ai/voice.py:70 |
 | `_whisper_dir` | src/tessellate/ai/voice.py:92 |
-| `iter_segments` | src/tessellate/ai/voice.py:172 |
+| `iter_segments` | src/tessellate/ai/voice.py:177 |
 | `model_states` | src/tessellate/ai/voice.py:106 |
 | `options_from` | src/tessellate/ai/voice.py:51 |
 | `remove_model` | src/tessellate/ai/voice.py:123 |
-| `transcribe` | src/tessellate/ai/voice.py:162 |
-| `transcribe_segments` | src/tessellate/ai/voice.py:167 |
+| `transcribe` | src/tessellate/ai/voice.py:167 |
+| `transcribe_segments` | src/tessellate/ai/voice.py:172 |
 | `whisper_available` | src/tessellate/ai/voice.py:77 |
 
 ### src/tessellate/ai/why.py (4)
@@ -23339,7 +23339,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16127)
+## Tests (16128)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25105,7 +25105,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_vision_rows_row11.py | 10 |
 | tests/test_vocatives.py | 12 |
 | tests/test_voice_api.py | 16 |
-| tests/test_voice_models.py | 2 |
+| tests/test_voice_models.py | 3 |
 | tests/test_voice_tables.py | 5 |
 | tests/test_waiting_cards.py | 4 |
 | tests/test_warm12_1101.py | 10 |
@@ -25961,7 +25961,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1299 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:239 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:241 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4186 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
