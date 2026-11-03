@@ -16,7 +16,7 @@
 # Regenerate it whenever you change this file.
 
 # Web server
-fastapi>=0.161.1,<1.0
+fastapi>=0.162.0,<1.0
 uvicorn[standard]>=0.54.0,<1.0
 
 # Database (SQLite via ORM)
@@ -40,7 +40,7 @@ python-dotenv>=1.2.4,<2.0
 # `user_now`). This is that fallback's actual cause on Windows, not a bad
 # zone name. tzdata is pure data, ~500KB, and safe to install unconditionally
 # on every platform (Python prefers the system database when one exists).
-tzdata>=2026.5
+tzdata>=2026.6
 
 # AI (Phase 2)
 requests>=2.34.2,<3.0      # talks to the local Ollama REST API
@@ -85,7 +85,7 @@ python-multipart>=0.0.32,<1.0
 defusedxml>=0.7.1,<1.0
 
 # Tests
-pytest>=9.1.1,<10.0
+pytest>=9.2.0,<10.0
 httpx>=0.28.1,<1.0  # FastAPI's TestClient needs this
 # Runs the suite across every core (`pytest -n auto`): 25 minutes serial,
 # under 9 on four cores. Every test already has its own data dir.

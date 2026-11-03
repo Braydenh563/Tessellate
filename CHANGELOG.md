@@ -16,6 +16,10 @@ below). Versioning is `0.x` while the app stabilises.
 - Audit E16: comparing two named notes no longer gives both sides the same lines: a note whose name holds both sides' words belongs to the side its name opens with, and a line picked for both is said under the side it names, with what speaks of both, or not at all.
 - Audit E20: a bare weekday in a log note ("Wednesday bench 60kg for 5 reps" in a gym log) is a day gone, not a day due; a plan, schedule or routine note keeps its weekdays as arranged, and so does any line with a deadline cue or a date.
 - Second eye F13 and F15 closed: the questions row names a note with the one shared reader (its own title function and the byte-equal pin are gone), and a named note ("what is in my admin bits note") fetches the notes that record its open items beside it, so a box a later note says is done is not listed as still to do.
+- Chat: a long message of yours keeps a reading width (72% of the column, at most 42rem) instead of spanning it (the owner, 2026-11-03).
+- Dictation: an installed Whisper model loads from this computer alone; it no longer asks huggingface.co for the model's revision on every load (the owner, 2026-11-03).
+- Equations: the jump row of groups is a words-and-underline strip with a thin scrollbar, an edge fade and sideways wheel scrolling, not a row of boxed buttons (the owner, 2026-11-03).
+- Graph: a hovered link starts and ends at each dot's rim instead of running into its centre (the owner, 2026-11-03).
 - Library: an empty board's thumbnail ghosts three loose cards with no curves between them, 0 branch curves down from 2, so it no longer reads as a mind map (audit 1028 U40).
 - Docs: SECURITY.md says plainly that a space is organisation, not a security boundary (audit 1028 K16).
 - Chat: with more than five chats pinned, the switcher still shows the three newest others (nine pinned used to fill all eight rows), and a failed caption chunk saves its words off the event loop, which a new lint holds for every async route (audit 1028 E46, K29).
