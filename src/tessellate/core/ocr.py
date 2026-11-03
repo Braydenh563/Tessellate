@@ -38,7 +38,7 @@ import sys
 import time
 from pathlib import Path
 
-from tessellate.core import jobs
+from tessellate.core import jobs, ocr_prep
 from tessellate.core.subproc import NO_WINDOW
 
 logger = logging.getLogger("tessellate.ocr")
@@ -705,8 +705,7 @@ def extract_text(image_path: Path, choice: str = "") -> str:
     _one_thread_for_tesseract()
     try:
         with Image.open(image_path) as img:
-            text = pytesseract.image_to_string(img, **_language_kwargs())
-        return text.strip()
+            return _read_with_fallbacks(pytesseract, img, _PAGE_MODES)
     except Exception:
         # A single unreadable image (corrupt file, an animated GIF Tesseract
         # chokes on, a format Pillow can't decode) must never take down the
@@ -714,6 +713,69 @@ def extract_text(image_path: Path, choice: str = "") -> str:
         # missing: logged with the traceback so a real recurring failure is
         # still diagnosable, just not surfaced to the person who uploaded it.
         logger.warning("OCR failed for %s", image_path.name, exc_info=True)
+        return ""
+
+
+#: Page-segmentation modes tried in order. `None` is Tesseract's own default
+#: (automatic page layout, right for a page of paragraphs); 6 is one uniform
+#: block of text, right for a drawn region round one label or paragraph; 11 is
+#: sparse text, which finds words wherever they sit and is the one that reads a
+#: board of small labels over a canvas (INBOX 1568: "No text was found in that
+#: region" came from the automatic mode finding no layout in a crop).
+_PAGE_MODES: tuple[int | None, ...] = (None, 11)
+_REGION_MODES: tuple[int | None, ...] = (6, 11)
+
+
+def _prepared(img) -> ocr_prep.Prepared:
+    """`ocr_prep.prepare`, or the picture as it came when Pillow cannot prepare
+    it: a preparation fault must cost the improvement, never the read."""
+    try:
+        return ocr_prep.prepare(img)
+    except Exception:  # noqa: BLE001  # the plain read below is the old behaviour
+        logger.info("OCR preparation skipped", exc_info=True)
+        return ocr_prep.Prepared(img, 1.0)
+
+
+def _read_string(pytesseract, img, mode: int | None) -> str:
+    """One `image_to_string`; the default mode is the call it always was."""
+    kwargs = _language_kwargs()
+    if mode is not None:
+        kwargs["config"] = f"--psm {mode}"
+    return str(pytesseract.image_to_string(img, **kwargs) or "").strip()
+
+
+def _read_with_fallbacks(pytesseract, img, modes: tuple[int | None, ...]) -> str:
+    """The text of `img` from the first mode that finds any, read from the
+    prepared picture (`ocr_prep`), and from the picture as it came as the last
+    resort, so preparing can only add reads, never remove one that worked."""
+    prepared = _prepared(img)
+    for mode in modes:
+        text = _read_string(pytesseract, prepared.image, mode)
+        if text:
+            return text
+    if prepared.image is not img:
+        return _read_string(pytesseract, img, modes[0])
+    return ""
+
+
+def extract_region_text(image_path: Path, choice: str = "") -> str:
+    """`extract_text` for a drawn region: a crop is one block, so Tesseract is
+    asked for a single uniform block first and for sparse text second. Another
+    engine reads exactly as `extract_text` does."""
+    if engine(choice) != "tesseract" or choice == "rapidocr" or not tesseract_available():
+        return extract_text(image_path, choice) if choice else extract_text(image_path)
+    try:
+        import pytesseract
+        from PIL import Image
+    except ImportError:
+        _log_package_missing()
+        return ""
+    _one_thread_for_tesseract()
+    try:
+        with Image.open(image_path) as img:
+            return _read_with_fallbacks(pytesseract, img, _REGION_MODES)
+    except Exception:
+        logger.warning("OCR failed for region %s", image_path.name, exc_info=True)
         return ""
 
 
@@ -732,6 +794,23 @@ REGION_MIN_CONFIDENCE = 30
 #: labelling a region "table" from box geometry alone would be a guess
 #: presented as a fact.
 REGION_HEADING_RATIO = 1.45
+
+
+def _region_data(pytesseract, img) -> tuple[dict, float]:
+    """Tesseract's word table for `img`, read from the prepared picture, and the
+    scale between that picture and `img` (its boxes are in the larger one). A
+    table with no words is read again as sparse text."""
+    prepared = _prepared(img)
+
+    def table(**extra) -> dict:
+        return pytesseract.image_to_data(
+            prepared.image, output_type=pytesseract.Output.DICT, **_language_kwargs(), **extra
+        )
+
+    data = table()
+    if prepared.image is not img and not any(str(w).strip() for w in data.get("text", [])):
+        data = table(config="--psm 11")
+    return data, (prepared.scale if prepared.scale > 0 else 1.0)
 
 
 def extract_regions(image_path: Path, choice: str = "") -> dict | None:
@@ -771,9 +850,7 @@ def extract_regions(image_path: Path, choice: str = "") -> dict | None:
     try:
         with Image.open(image_path) as img:
             width, height = img.size
-            data = pytesseract.image_to_data(
-                img, output_type=pytesseract.Output.DICT, **_language_kwargs()
-            )
+            data, scale = _region_data(pytesseract, img)
     except Exception:
         logger.warning("OCR regions failed for %s", image_path.name, exc_info=True)
         return None
@@ -796,8 +873,10 @@ def extract_regions(image_path: Path, choice: str = "") -> dict | None:
         if confidence < REGION_MIN_CONFIDENCE:
             continue
         key = (int(data["page_num"][i]), int(data["block_num"][i]))
-        left, top = float(data["left"][i]), float(data["top"][i])
-        word_w, word_h = float(data["width"][i]), float(data["height"][i])
+        #: Boxes come back in the prepared picture's pixels; the page the
+        #: person sees is the original, so they are divided by the scale.
+        left, top = float(data["left"][i]) / scale, float(data["top"][i]) / scale
+        word_w, word_h = float(data["width"][i]) / scale, float(data["height"][i]) / scale
         heights.append(word_h)
         block = blocks.setdefault(
             key,
