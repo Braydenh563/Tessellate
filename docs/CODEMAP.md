@@ -2,9 +2,9 @@
 
 Generated 2026-11-03 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7739, frontend ids 2635, CSS sections 522, backend routes 641, backend modules 8564, test files 1959, tests 16463, plan headings 991, app scripts 28, boot scripts 37, script files 242.
+Counts: frontend functions 7738, frontend ids 2635, CSS sections 522, backend routes 641, backend modules 8564, test files 1960, tests 16478, plan headings 991, app scripts 28, boot scripts 37, script files 242.
 
-## Frontend functions (7739)
+## Frontend functions (7738)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -148,43 +148,44 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderAttachmentCards` | frontend/js/note-cards.js:425 |
 | `showNoteInGraph` | frontend/js/note-cards.js:617 |
 
-### frontend/js/menus.js (33)
+### frontend/js/menus.js (34)
 
 | Name | File:line |
 |---|---|
-| `afterMenuExit` | frontend/js/menus.js:722 |
-| `buildMenuGroupButton` | frontend/js/menus.js:1394 |
-| `buildMenuItemButton` | frontend/js/menus.js:1361 |
-| `cardOpener` | frontend/js/menus.js:403 |
-| `closeActionMenus` | frontend/js/menus.js:70 |
-| `closeActionMenusOnScroll` | frontend/js/menus.js:25 |
-| `closeHelpPopovers` | frontend/js/menus.js:243 |
-| `docBacklinkContext` | frontend/js/menus.js:1137 |
-| `entryOverflowMenu` | frontend/js/menus.js:1555 |
-| `escapeAndCapMenu` | frontend/js/menus.js:771 |
-| `escapeMenuIfClipped` | frontend/js/menus.js:670 |
-| `escapeMenuToBody` | frontend/js/menus.js:692 |
-| `fitActionMenuInWindow` | frontend/js/menus.js:450 |
-| `focusMenuItem` | frontend/js/menus.js:583 |
-| `generateEntryTitle` | frontend/js/menus.js:1246 |
-| `historyActorLabel` | frontend/js/menus.js:1180 |
+| `afterMenuExit` | frontend/js/menus.js:759 |
+| `buildMenuGroupButton` | frontend/js/menus.js:1431 |
+| `buildMenuItemButton` | frontend/js/menus.js:1398 |
+| `cardOpener` | frontend/js/menus.js:440 |
+| `closeActionMenus` | frontend/js/menus.js:105 |
+| `closeActionMenusOnScroll` | frontend/js/menus.js:59 |
+| `closeHelpPopovers` | frontend/js/menus.js:278 |
+| `docBacklinkContext` | frontend/js/menus.js:1174 |
+| `dragFlag` | frontend/js/menus.js:37 |
+| `entryOverflowMenu` | frontend/js/menus.js:1592 |
+| `escapeAndCapMenu` | frontend/js/menus.js:808 |
+| `escapeMenuIfClipped` | frontend/js/menus.js:707 |
+| `escapeMenuToBody` | frontend/js/menus.js:729 |
+| `fitActionMenuInWindow` | frontend/js/menus.js:487 |
+| `focusMenuItem` | frontend/js/menus.js:620 |
+| `generateEntryTitle` | frontend/js/menus.js:1283 |
+| `historyActorLabel` | frontend/js/menus.js:1217 |
 | `inlineActionIs` | frontend/js/menus.js:8 |
-| `isEditConflict` | frontend/js/menus.js:1625 |
-| `menuClippingAncestor` | frontend/js/menus.js:597 |
-| `menuExitMs` | frontend/js/menus.js:729 |
-| `menuSidePlan` | frontend/js/menus.js:428 |
-| `nearestScrollParent` | frontend/js/menus.js:126 |
-| `openActionMenu` | frontend/js/menus.js:470 |
-| `placeEscapedMenu` | frontend/js/menus.js:637 |
-| `placeHelpPopover` | frontend/js/menus.js:157 |
-| `removeEntryTitle` | frontend/js/menus.js:1271 |
-| `restoreEscapedMenu` | frontend/js/menus.js:736 |
-| `restoreEscapedMenuAfterExit` | frontend/js/menus.js:717 |
-| `toggleEntryPrivacy` | frontend/js/menus.js:1203 |
-| `wireEscapedActionMenu` | frontend/js/menus.js:840 |
-| `wireEscapedMenuResize` | frontend/js/menus.js:1120 |
-| `wireHelpPopover` | frontend/js/menus.js:304 |
-| `wireMenuKeyboard` | frontend/js/menus.js:1300 |
+| `isEditConflict` | frontend/js/menus.js:1662 |
+| `menuClippingAncestor` | frontend/js/menus.js:634 |
+| `menuExitMs` | frontend/js/menus.js:766 |
+| `menuSidePlan` | frontend/js/menus.js:465 |
+| `nearestScrollParent` | frontend/js/menus.js:161 |
+| `openActionMenu` | frontend/js/menus.js:507 |
+| `placeEscapedMenu` | frontend/js/menus.js:674 |
+| `placeHelpPopover` | frontend/js/menus.js:192 |
+| `removeEntryTitle` | frontend/js/menus.js:1308 |
+| `restoreEscapedMenu` | frontend/js/menus.js:773 |
+| `restoreEscapedMenuAfterExit` | frontend/js/menus.js:754 |
+| `toggleEntryPrivacy` | frontend/js/menus.js:1240 |
+| `wireEscapedActionMenu` | frontend/js/menus.js:877 |
+| `wireEscapedMenuResize` | frontend/js/menus.js:1157 |
+| `wireHelpPopover` | frontend/js/menus.js:341 |
+| `wireMenuKeyboard` | frontend/js/menus.js:1337 |
 
 ### frontend/js/lightbox.js (2)
 
@@ -1840,23 +1841,23 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `actNavigate` | frontend/js/answer-kit.js:2211 |
 | `addAssistantBubble` | frontend/js/answer-kit.js:1804 |
 | `addInlineCitations` | frontend/js/answer-kit.js:195 |
-| `agentRunStep` | frontend/js/answer-kit.js:2770 |
-| `agentRunTitle` | frontend/js/answer-kit.js:2748 |
-| `agentRunTool` | frontend/js/answer-kit.js:2802 |
+| `agentRunStep` | frontend/js/answer-kit.js:2776 |
+| `agentRunTitle` | frontend/js/answer-kit.js:2754 |
+| `agentRunTool` | frontend/js/answer-kit.js:2808 |
 | `answerFigure` | frontend/js/answer-kit.js:762 |
 | `answerObject` | frontend/js/answer-kit.js:855 |
-| `applyPendingChatTitle` | frontend/js/answer-kit.js:2722 |
-| `applyPlanMode` | frontend/js/answer-kit.js:2740 |
+| `applyPendingChatTitle` | frontend/js/answer-kit.js:2728 |
+| `applyPlanMode` | frontend/js/answer-kit.js:2746 |
 | `askNotesOnTheRight` | frontend/js/answer-kit.js:949 |
 | `askOpenContext` | frontend/js/answer-kit.js:21 |
 | `assistantLabel` | frontend/js/answer-kit.js:1359 |
-| `buildFollowupStrip` | frontend/js/answer-kit.js:2631 |
+| `buildFollowupStrip` | frontend/js/answer-kit.js:2637 |
 | `chatHistoryToSend` | frontend/js/answer-kit.js:1343 |
 | `chatMessageActions` | frontend/js/answer-kit.js:1364 |
 | `chatScrollToEnd` | frontend/js/answer-kit.js:1743 |
 | `chatSourcesFrom` | frontend/js/answer-kit.js:2253 |
 | `chatSourcesPanel` | frontend/js/answer-kit.js:2404 |
-| `chatTurnObjects` | frontend/js/answer-kit.js:2588 |
+| `chatTurnObjects` | frontend/js/answer-kit.js:2594 |
 | `citationInsertionPoint` | frontend/js/answer-kit.js:165 |
 | `citationKey` | frontend/js/answer-kit.js:123 |
 | `citationMarker` | frontend/js/answer-kit.js:290 |
@@ -1874,17 +1875,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `evidenceRows` | frontend/js/answer-kit.js:695 |
 | `evidenceToggle` | frontend/js/answer-kit.js:663 |
 | `finishReply` | frontend/js/answer-kit.js:964 |
-| `followupChain` | frontend/js/answer-kit.js:2657 |
-| `followupParent` | frontend/js/answer-kit.js:2651 |
+| `followupChain` | frontend/js/answer-kit.js:2663 |
+| `followupParent` | frontend/js/answer-kit.js:2657 |
 | `groundingThumbs` | frontend/js/answer-kit.js:513 |
-| `isStreamingConversation` | frontend/js/answer-kit.js:2674 |
+| `isStreamingConversation` | frontend/js/answer-kit.js:2680 |
 | `livingInterval` | frontend/js/answer-kit.js:1622 |
 | `markToolStep` | frontend/js/answer-kit.js:2062 |
 | `matchReasonBadge` | frontend/js/answer-kit.js:990 |
 | `messageMetaLine` | frontend/js/answer-kit.js:1447 |
 | `metaItem` | frontend/js/answer-kit.js:1413 |
 | `notePictures` | frontend/js/answer-kit.js:501 |
-| `noticeUnwatchedAnswer` | frontend/js/answer-kit.js:2704 |
+| `noticeUnwatchedAnswer` | frontend/js/answer-kit.js:2710 |
 | `numberMatchingRecords` | frontend/js/answer-kit.js:440 |
 | `paintNamedHead` | frontend/js/answer-kit.js:1784 |
 | `paintPersonaAvatar` | frontend/js/answer-kit.js:1772 |
@@ -1894,14 +1895,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `planStepWrites` | frontend/js/answer-kit.js:1852 |
 | `progressLine` | frontend/js/answer-kit.js:1643 |
 | `pushAgentChangeUndo` | frontend/js/answer-kit.js:1860 |
-| `reattachStreamingTurn` | frontend/js/answer-kit.js:2685 |
+| `reattachStreamingTurn` | frontend/js/answer-kit.js:2691 |
 | `refreshAfterToolChanges` | frontend/js/answer-kit.js:2216 |
-| `refreshFollowupVisibility` | frontend/js/answer-kit.js:2611 |
+| `refreshFollowupVisibility` | frontend/js/answer-kit.js:2617 |
 | `renderAnswerGrounding` | frontend/js/answer-kit.js:548 |
 | `renderAnswerSupport` | frontend/js/answer-kit.js:475 |
 | `renderAskAnswerFoot` | frontend/js/answer-kit.js:895 |
 | `renderEvidenceView` | frontend/js/answer-kit.js:717 |
-| `renderFollowups` | frontend/js/answer-kit.js:2597 |
+| `renderFollowups` | frontend/js/answer-kit.js:2603 |
 | `renderToolConfirm` | frontend/js/answer-kit.js:2146 |
 | `restoreChatPosition` | frontend/js/answer-kit.js:1732 |
 | `rewriteAnswerWith` | frontend/js/answer-kit.js:1603 |
@@ -1911,7 +1912,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `showCitedPassage` | frontend/js/answer-kit.js:392 |
 | `sourceLines` | frontend/js/answer-kit.js:2242 |
 | `sourcesByFirstMention` | frontend/js/answer-kit.js:2369 |
-| `startPlannedRun` | frontend/js/answer-kit.js:2699 |
+| `startPlannedRun` | frontend/js/answer-kit.js:2705 |
 | `streamChat` | frontend/js/answer-kit.js:1010 |
 | `streamChatEvents` | frontend/js/answer-kit.js:1054 |
 | `toolCardChips` | frontend/js/answer-kit.js:1977 |
@@ -1922,7 +1923,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `toolPreviewPanel` | frontend/js/answer-kit.js:1955 |
 | `toolTouchedRow` | frontend/js/answer-kit.js:2050 |
 | `userMarkEl` | frontend/js/answer-kit.js:1755 |
-| `verificationRow` | frontend/js/answer-kit.js:2760 |
+| `verificationRow` | frontend/js/answer-kit.js:2766 |
 | `webPageContextBlock` | frontend/js/answer-kit.js:1611 |
 
 ### frontend/js/app-features.js (9)
@@ -5969,21 +5970,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `runNotificationGo` | frontend/js/notifications.js:28 |
 | `setNotificationUnread` | frontend/js/notifications.js:316 |
 
-### frontend/js/obj-carry.js (11)
+### frontend/js/obj-carry.js (9)
 
 | Name | File:line |
 |---|---|
-| `objCarryBegin` | frontend/js/obj-carry.js:79 |
-| `objCarryDrop` | frontend/js/obj-carry.js:102 |
-| `objCarryEnd` | frontend/js/obj-carry.js:93 |
-| `objCarryFileTarget` | frontend/js/obj-carry.js:26 |
-| `objCarryMark` | frontend/js/obj-carry.js:44 |
-| `objCarryNav` | frontend/js/obj-carry.js:53 |
-| `objCarryOutline` | frontend/js/obj-carry.js:84 |
-| `objCarryRoute` | frontend/js/obj-carry.js:109 |
-| `objCarrySpaceMenu` | frontend/js/obj-carry.js:68 |
-| `objCarryTarget` | frontend/js/obj-carry.js:34 |
-| `objCarryUpdate` | frontend/js/obj-carry.js:88 |
+| `objCarryBegin` | frontend/js/obj-carry.js:123 |
+| `objCarryDrop` | frontend/js/obj-carry.js:155 |
+| `objCarryEnd` | frontend/js/obj-carry.js:143 |
+| `objCarryFileTarget` | frontend/js/obj-carry.js:80 |
+| `objCarryNav` | frontend/js/obj-carry.js:101 |
+| `objCarryRoute` | frontend/js/obj-carry.js:162 |
+| `objCarryTarget` | frontend/js/obj-carry.js:88 |
+| `objCarryUpdate` | frontend/js/obj-carry.js:129 |
+| `objTrayDoor` | frontend/js/obj-carry.js:34 |
 
 ### frontend/js/obj-clip.js (9)
 
@@ -6006,20 +6005,20 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `objDragArm` | frontend/js/obj-drag.js:84 |
 | `objDragBegin` | frontend/js/obj-drag.js:161 |
 | `objDragCue` | frontend/js/obj-drag.js:97 |
-| `objDragFinish` | frontend/js/obj-drag.js:242 |
-| `objDragFrame` | frontend/js/obj-drag.js:177 |
-| `objDragKey` | frontend/js/obj-drag.js:227 |
+| `objDragFinish` | frontend/js/obj-drag.js:244 |
+| `objDragFrame` | frontend/js/obj-drag.js:179 |
+| `objDragKey` | frontend/js/obj-drag.js:229 |
 | `objDragListen` | frontend/js/obj-drag.js:105 |
 | `objDragMove` | frontend/js/obj-drag.js:145 |
 | `objDragNoMenu` | frontend/js/obj-drag.js:124 |
 | `objDragNoNative` | frontend/js/obj-drag.js:130 |
 | `objDragNoScroll` | frontend/js/obj-drag.js:119 |
-| `objDragRoute` | frontend/js/obj-drag.js:185 |
-| `objDragSchedule` | frontend/js/obj-drag.js:173 |
+| `objDragRoute` | frontend/js/obj-drag.js:187 |
+| `objDragSchedule` | frontend/js/obj-drag.js:175 |
 | `objDragSeed` | frontend/js/obj-drag.js:64 |
-| `objDragSwallowClick` | frontend/js/obj-drag.js:236 |
-| `objDragTick` | frontend/js/obj-drag.js:199 |
-| `objDragUp` | frontend/js/obj-drag.js:223 |
+| `objDragSwallowClick` | frontend/js/obj-drag.js:238 |
+| `objDragTick` | frontend/js/obj-drag.js:201 |
+| `objDragUp` | frontend/js/obj-drag.js:225 |
 | `objDragVerdict` | frontend/js/obj-drag.js:137 |
 | `objGhostMake` | frontend/js/obj-drag.js:35 |
 | `objPressInSelection` | frontend/js/obj-drag.js:55 |
@@ -12169,7 +12168,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/model-menu-lazy.css | 96 |
 | frontend/css/motion-still.css | 75 |
 | frontend/css/nav-history-lazy.css | 169 |
-| frontend/css/objmove-lazy.css | 123 |
+| frontend/css/objmove-lazy.css | 132 |
 | frontend/css/offline-split-lazy.css | 71 |
 | frontend/css/panel-movable-lazy.css | 209 |
 | frontend/css/plain-head-lazy.css | 17 |
@@ -15620,8 +15619,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3295 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3423 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3296 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3424 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -23602,7 +23601,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16463)
+## Tests (16478)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25345,6 +25344,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_transcript_copy.py | 2 |
 | tests/test_translate_offline.py | 7 |
 | tests/test_tray.py | 18 |
+| tests/test_tray_drag_1593.py | 15 |
 | tests/test_typo_routing.py | 4 |
 | tests/test_ui_1017b.py | 7 |
 | tests/test_ui_batch_726.py | 13 |
@@ -26270,7 +26270,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1299 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:160 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:158 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4188 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |

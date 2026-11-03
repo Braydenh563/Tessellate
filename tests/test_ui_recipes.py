@@ -6535,6 +6535,11 @@ def test_a_card_is_one_reference_and_a_list_reorders_by_drag() -> None:
     assert "`OBJ_MODES.carry`" in design and "`#obj-tray`" in design
     edge = (js / "drag-edge.js").read_text(encoding="utf-8")
     assert "/js/obj-ref.js" in edge and "/css/objmove-lazy.css" in edge
+    # INBOX 1593: one drag flag for every kind of drag, and the tray is a zone with a cue.
+    assert "`dragFlag.active()`" in design and "`objTrayDoor`" in design
+    holders = [p.name for p in js.glob("*.js") if "const dragFlag = " in p.read_text(encoding="utf-8")]
+    assert holders == ["menus.js"], f"the drag flag is defined in {holders}; one flag, one place"
+    assert "html.obj-dragging #status-tray:not(.obj-target)" in css and "dashed" in css
 
 
 def test_a_live_view_mark_reveals_per_span() -> None:

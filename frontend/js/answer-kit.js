@@ -2470,6 +2470,12 @@ function chatSourcesPanel(input) {
     //: An id rather than the index, because the panel caps its rows and the
     //: numbering falls back past the cap.
     if (source.kind === "note" && source.id != null) card.dataset.noteId = String(source.id);
+    //: And a reference, so the card can be carried to the tray, a note or a
+    //: board like any other card (INBOX 1593; obj-drag.js lets this button grab).
+    if (["note", "document", "board", "map"].includes(source.kind) && source.id != null) {
+      card.dataset.obj = `${source.kind}:${source.id}`;
+      card.dataset.objTitle = String(source.label || "");
+    }
     const head = document.createElement("span");
     head.className = "chat-source-head";
     const number = document.createElement("span");

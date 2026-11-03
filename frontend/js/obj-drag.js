@@ -70,8 +70,8 @@ function objDragSeed(event) {
   }
   const grip = objPressOnGrip(event.target);
   const control = event.target.closest?.(OBJ_NO_GRAB);
-  //: A tray item is a button you click to paste and also drag out.
-  if (control && !control.matches(".obj-tray-use") && !grip) return null;
+  //: A tray item and a chat source card are buttons you click and also drag: a held drag carries the object.
+  if (control && !control.matches(".obj-tray-use, .chat-source-card[data-obj]") && !grip) return null;
   if (!grip && objPressInSelection(event)) return null;
   const hit = objCardAt(event.target);
   if (!hit) return null;
@@ -160,6 +160,8 @@ function objDragMove(event) {
 
 function objDragBegin(g) {
   g.live = true;
+  //: The shared drag flag (menus.js): no popover closes under a card being carried.
+  dragFlag.hold("obj");
   window.getSelection()?.removeAllRanges();
   document.documentElement.classList.add("obj-dragging");
   document.addEventListener("selectstart", objDragNoNative, true);
@@ -247,11 +249,16 @@ function objDragFinish(cancel, event) {
   g?.card.classList.remove("obj-armed");
   if (!g?.live) return;
   cancelAnimationFrame(g.tick);
-  OBJ_MODES[g.mode][cancel ? "cancel" : "drop"](g, event);
-  g.ghost.remove();
-  document.removeEventListener("selectstart", objDragNoNative, true);
-  document.documentElement.classList.remove("obj-dragging");
-  objDragSwallowClick();
+  //: In a `finally`: a drop that throws must not leave the flag set, or no popover would ever close again.
+  try {
+    OBJ_MODES[g.mode][cancel ? "cancel" : "drop"](g, event);
+  } finally {
+    dragFlag.release("obj");
+    g.ghost.remove();
+    document.removeEventListener("selectstart", objDragNoNative, true);
+    document.documentElement.classList.remove("obj-dragging");
+    objDragSwallowClick();
+  }
 }
 
 window.addEventListener("pointerdown", objDragArm, true);

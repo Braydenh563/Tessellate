@@ -22,6 +22,40 @@ function inlineActionIs(id, kind) {
 //: wheel scroll (27ms on the Library). The collection holds only the menus.
 const ACTION_MENUS = document.getElementsByClassName("action-menu");
 
+
+//: **One drag flag for every kind of drag** (INBOX 1593: the tray closed under
+//: a card being carried to it). A drag that is live registers its kind with
+//: `dragFlag.hold(kind)` (the object drag of obj-drag.js; the browser's own drags
+//: below) and every closer that fires on the page's behalf, not the hand's, asks
+//: `dragFlag.active()` first: the outside click, the scroll of a list the drag is
+//: edge-scrolling, an action menu's scroll close. It stays true for 200 ms after
+//: the last drag ends, because that scroll event arrives a frame late. One name in
+//: the shared scope, with the press tracking beside it: `travelled(click)` is a
+//: press that moved over 6 px (a drag attempt or a text selection, not an outside
+//: click), `pressing()` is the button down on the page or just up, when a scroll
+//: is the browser's selection autoscroll and not a hand scrolling away.
+const dragFlag = (() => {
+  const kinds = new Set();
+  let endedAt = -1e9;
+  let pressAt = null;
+  let pressUntil = 0;
+  const release = (kind) => {
+    if (kinds.delete(kind)) endedAt = performance.now();
+  };
+  document.addEventListener("dragstart", () => kinds.add("native"), true);
+  document.addEventListener("dragend", () => release("native"), true);
+  document.addEventListener("pointerdown", (event) => { pressAt = { x: event.clientX, y: event.clientY }; pressUntil = Infinity; }, true);
+  for (const type of ["pointerup", "pointercancel"]) document.addEventListener(type, () => { pressUntil = performance.now() + 200; }, true);
+  window.addEventListener("blur", () => { pressUntil = 0; });
+  return {
+    hold: (kind) => kinds.add(kind),
+    release,
+    active: () => kinds.size > 0 || performance.now() - endedAt < 200,
+    travelled: (event) => Boolean(pressAt) && event.detail > 0 && Math.hypot(event.clientX - pressAt.x, event.clientY - pressAt.y) > 6,
+    pressing: () => performance.now() < pressUntil,
+  };
+})();
+
 function closeActionMenusOnScroll(event) {
   const openMenus = [];
   for (const menu of ACTION_MENUS) if (!menu.classList.contains("hidden")) openMenus.push(menu);
@@ -34,6 +68,7 @@ function closeActionMenusOnScroll(event) {
   //: no menu (round 5; the `companionmenu.js` flake). A scroll the reader
   //: makes after the menu is open still closes it.
   if (performance.now() - (window._menuOpenedAt || 0) < 200) return;
+  if (dragFlag.active()) return;
 
   // Trackpads send small deltaX values along with deltaY when scrolling vertically.
   // If a dropdown lacks horizontal scroll, browsers often chain the deltaX to the 
@@ -253,6 +288,7 @@ function closeHelpPopovers() {
 //: page. These read the open set instead, so wiring a popover costs the two
 //: listeners on its own elements, collected with them.
 document.addEventListener("click", (event) => {
+  if (dragFlag.active() || dragFlag.travelled(event)) return;
   for (const entry of [...openHelpPopovers]) {
     if (entry.panel.contains(event.target) || entry.trigger.contains(event.target)) continue;
     entry.close();
@@ -295,6 +331,7 @@ window.addEventListener("resize", () => {
 // element that actually scrolled; only close a popover for the page moving
 // under its anchor, never for the popover scrolling itself.
 window.addEventListener("scroll", (event) => {
+  if (dragFlag.active() || dragFlag.pressing()) return;
   for (const entry of [...openHelpPopovers]) {
     if (entry.panel.contains(event.target)) continue;
     entry.close();
