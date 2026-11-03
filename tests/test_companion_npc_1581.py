@@ -311,9 +311,14 @@ def test_first_readers_wait_for_an_arriving_page() -> None:
     assert "rig.still = busy || (settling && rig.dirty) ? 0" in frame, "it stays awake until it has read again"
     mood = _fn(ATLAS, "setAtlasMood")
     assert "window.uiSettlingUntil" in mood and "setTimeout(() => nameMarkBuddyBlend(boxes, apply, 700), settling + 20)" in mood
-    # Tried and taken out: the follow frame waiting for the settle measured
-    # 41 reads, 220 ms against 32, 131 ms without it (two flip runs each at 4x).
-    assert "uiSettlingUntil" not in _fn(AV, "nameMarkBuddyFollowFrame")
+    # The follow frame holds only while it is glued to a panel (1575's hold). One
+    # harness (1575's nine-tab series at 4x, 500 seeded notes, three runs each),
+    # reads and forced ms under the follow frame: glue-only 155 and 2.65 s, no hold
+    # 218 and 3.05 s, an unconditional hold 152 and 2.86 s (1581's two flip runs
+    # had favoured no hold over the unconditional one, 32 and 131 ms against 41
+    # and 220; neither was the glue-only hold).
+    follow = _fn(AV, "nameMarkBuddyFollowFrame")
+    assert "const settling = !!nmb.glue && now < (window.uiSettlingUntil || 0);" in follow
 
 
 @needs_node
@@ -322,20 +327,26 @@ def test_atlas_play_restarts_with_no_forced_layout() -> None:
 const vm = require("vm");
 let reads = 0;
 const rafs = [];
-const mk = () => { const c = new Set(); return { classList: { add: (x) => c.add(x), remove: (x) => c.delete(x), contains: (x) => c.has(x) }, getBoundingClientRect: () => { reads += 1; return {}; }, c }; };
+const mk = () => { const c = new Set(); return { classList: { add: (x) => c.add(x), remove: (x) => c.delete(x), contains: (x) => c.has(x) }, getBoundingClientRect: () => { reads += 1; return {}; }, isConnected: true, c }; };
 const marks = [mk(), mk()];
-const ctx = { document: { querySelectorAll: () => marks }, requestAnimationFrame: () => { throw new Error("no frame"); }, setTimeout: (f, ms) => { if (ms < 100) rafs.push(f); } };
+// The move goes on two frames on (1575's afterFrames, merged here); a second
+// call before then takes the first one's place (its turn guard).
+const ctx = { document: { querySelectorAll: () => marks, hidden: false }, requestAnimationFrame: () => { throw new Error("no frame"); }, afterFrames: (f) => rafs.push(f), setTimeout: () => {} };
 vm.createContext(ctx);
 vm.runInContext(process.argv[1], ctx);
 ctx.atlasPlay("nod");
+rafs.shift()();
 const first = marks.map((m) => m.c.has("atl-play-nod"));
 ctx.atlasPlay("nod");
 const during = marks.map((m) => m.c.has("atl-play-nod"));
-while (rafs.length) rafs.shift()();
+ctx.atlasPlay("nod");
+rafs.shift()();
+const stale = marks.map((m) => m.c.has("atl-play-nod"));
+rafs.shift()();
 const after = marks.map((m) => m.c.has("atl-play-nod"));
-process.stdout.write(JSON.stringify({ reads, first, during, after }));
+process.stdout.write(JSON.stringify({ reads, first, during, stale, after }));
 """, _fn(ATLAS, "atlasPlay"))
-    assert out == {"reads": 0, "first": [True, True], "during": [False, False], "after": [True, True]}
+    assert out == {"reads": 0, "first": [True, True], "during": [False, False], "stale": [False, False], "after": [True, True]}
 
 
 # --- N7: the switch, its help and its Guide topic (standing order 13) ------------------------

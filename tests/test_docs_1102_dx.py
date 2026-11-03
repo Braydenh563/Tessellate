@@ -104,17 +104,18 @@ console.log(JSON.stringify({
   env: probe("\\begin{bad}x"),
   noEnd: probe("\\begin{matrix} a & b"),
   stray: probe("a } b"),
-  command: probe("\\mathbb{R}"),
+  //: An unknown command. `\\mathbb{R}` was the probe until the palette drew it (INBOX 1579); it is in `fine` now.
+  command: probe("\\qwerty{R}"),
   fine: [
     "x^2", "\\frac{a}{b}", "\\sqrt[3]{x}", "\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}",
-    "\\left(x\\right)", "a\\,b", "\\sum_{n=1}^{10} n", "\\text{one two}", "\\vec{v}", "a \\\\ b",
+    "\\left(x\\right)", "a\\,b", "\\sum_{n=1}^{10} n", "\\text{one two}", "\\vec{v}", "a \\\\ b", "\\mathbb{R}",
   ].map(probe),
 }));
 """
     out = _node_region(ROOT / "frontend/js/documents-math.js", "// DOC-MATH-BEGIN", "// DOC-MATH-END", body)
     for key in ("open", "missing", "env", "noEnd", "stray", "command"):
         assert out[key], key
-    assert out["fine"] == [""] * 10
+    assert out["fine"] == [""] * 11
 
 
 def test_dx18_the_error_is_tinted_in_one_wrapper_for_live_and_read():

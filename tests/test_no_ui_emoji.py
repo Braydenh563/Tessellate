@@ -160,12 +160,16 @@ ALLOWED: dict[str, list[tuple[str, str]]] = {
     "frontend/js/documents-math.js": [
         ("block:const DOC_MATH_LETTERS", "character data: what the math macros mean"),
         ("block:const DOC_MATH_OPERATORS", "character data: what the math macros mean"),
+        ('"\\u23de" : "\\u23df"', "character data: the stretchy brace \\overbrace and \\underbrace draw, and the test that finds it again (INBOX 1579)"),
     ],
     "frontend/js/documents-cm.js": [
         (
             r'replace(/\{\s*\}/g, "{\u25a1}")',
             "an empty slot inside a TeX string, drawn by the math renderer (the equation field's dotted box), not the UI",
         ),
+    ],
+    "frontend/js/reply-kit.js": [
+        ('const slot = "\\u25a1"', "an empty slot in the calculator's typeset sum, drawn by the math renderer, not the UI (INBOX 1579)"),
     ],
     "frontend/index.html": [
         ("⋯ menu", "help prose naming the kebab control, which is a word here, not an icon"),

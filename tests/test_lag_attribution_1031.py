@@ -76,7 +76,7 @@ run("lagFrame")({ entryType: "longtask", duration: 5000, startTime: 9000, script
 console.log(JSON.stringify(run("LAG.queue").map((e) => e.cause)));
 """
     )
-    assert out[0] == "4000ms of script with no source file, then 1000ms rendering"
+    assert out[0] == "4000ms before rendering with no script over 5ms in it (the page loading: parsing, compiling, style and layout), then 1000ms rendering"
     assert out[1] == "rendering and painting 700ms after the scripts"
     assert out[2].startswith("page task in iframe")
     assert "no script attributed" not in " ".join(out)
@@ -122,3 +122,21 @@ console.log(JSON.stringify(run("LAG.queue").map((e) => e.cause)));
 """
     )
     assert out == ["pointerover on an element that has gone", "input on div in #dash-grid"]
+
+
+@needs_node
+def test_a_frame_with_no_script_over_five_ms_says_what_else_it_was():
+    # INBOX 1575: "script with no source file" was never a script. A pointer event in the frame, or
+    # the first seconds of the page, name the usual owners of the time; the rest is the browser's.
+    out = _node(
+        r"""
+let t = 5_000_000; Date.now = () => (t += 1000);
+run("lagFrame")({ duration: 900, startTime: 20000, scripts: [], renderStart: 20800, firstUIEventTimestamp: 20010 });
+t += 600000;
+run("lagFrame")({ duration: 900, startTime: 30000, scripts: [], renderStart: 30800, firstUIEventTimestamp: 0 });
+console.log(JSON.stringify(run("LAG.queue").map((e) => e.cause)));
+"""
+    )
+    assert "an input event waiting on style and layout" in out[0]
+    assert "the browser's own style, layout or garbage collection" in out[1]
+    assert "script with no source file" not in " ".join(out)
