@@ -51,7 +51,7 @@
    in front too, a doorman's stance (INBOX 1402: "a bored or grumpy
    gangster"): now both arms a little out, one further than the other. */
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="calm"] { --atl-ar0: -16deg; --atl-al0: 12deg; --atl-ar1: -52deg; --atl-al1: 8deg; --atl-ar2: -24deg; --atl-al2: 30deg; }
-.nm-atlas[data-atlas-look="feminine"][data-atlas-mood="calm"] { --atl-ar0: -26deg; --atl-al0: 8deg; --atl-ar1: -48deg; --atl-al1: 10deg; --atl-ar2: 24deg; --atl-al2: -34deg; }
+.nm-atlas[data-atlas-look="feminine"][data-atlas-mood="calm"] { --atl-ar0: -26deg; --atl-al0: 8deg; --atl-ar1: -48deg; --atl-al1: 10deg; --atl-ar2: 12deg; --atl-al2: -12deg; }
 /* Carried or thrown (B87a), the slow idle loops hold where they are and
    go on from there when it lands. While a main frame is drawn every
    vsync, as it is for the whole carry and flight, Chromium restyles each
@@ -71,4 +71,33 @@
 #nm-buddy.nmb-away :is(.nm-atlas, .nm-atlas *, .atl-lw, .atl-lw-breathe, .atl-figure-box, .atl-orbits *),
 #nm-buddy.nm-buddy-dragging :is(.atl-lw, .atl-lw-breathe, .atl-orbit-arm, .atl-orbiter) { animation-play-state: paused !important; }
 :root[data-atlas-lite] .atl-orbiter :is(.atl-orbiter-glow, .atl-orbiter-swirl) { display: none; }
-
+/* Atlas's acts (INBOX 1589), here with the faces so boot CSS stays under its
+   budget: drawn only once Atlas is, and this sheet comes after
+   08-consistency.css. */
+/* **The eyes and the head go to what it holds** (INBOX 1589, the owner: "it
+   doesnt even look at the map"): down to the map or the book, up to the
+   stars it juggles, out to the bell or the lantern in its right hand. The
+   look at the pointer (`nmb-attend`) gives way while it does. */
+#nm-buddy:is(.nmb-act-map, .nmb-act-read, .nmb-act-juggle, .nmb-act-bell, .nmb-act-lantern) .nm-atlas .atl-iris { translate: none; }
+#nm-buddy:is(.nmb-act-map, .nmb-act-read) .nm-atlas { --atl-head-y: 1px; --atl-tilt: 3deg; --atl-tail: -8deg; }
+#nm-buddy:is(.nmb-act-map, .nmb-act-read) .nm-atlas .atl-pupil { --atl-px: 0px; --atl-py: 1.8px; }
+#nm-buddy.nmb-act-juggle .nm-atlas { --atl-brow-y: -1px; }
+#nm-buddy.nmb-act-juggle .nm-atlas .atl-pupil { --atl-px: 0px; --atl-py: -1.6px; }
+#nm-buddy:is(.nmb-act-bell, .nmb-act-lantern) .nm-atlas { --atl-tilt: 4deg; }
+#nm-buddy:is(.nmb-act-bell, .nmb-act-lantern) .nm-atlas .atl-pupil { --atl-px: 1.6px; --atl-py: 0.6px; }
+/* Its seats (atlas.js, `atlasCoilProp.seats`, INBOX 1589): behind the body,
+   shown by the act, the hands resting on them (the arms, above). A chair of
+   night sky with a lit rim, a beanbag in the strand's lilac. */
+#nm-buddy.nmb-act-chair .atl-figure .nmp-chair,
+#nm-buddy.nmb-act-beanbag .atl-figure .nmp-beanbag { opacity: 1; }
+.nm-atlas .atl-prop-seat { fill: var(--atl-navy); stroke: var(--atl-glow-c); stroke-width: 0.5; }
+.nm-atlas .atl-prop-seat-top { fill: color-mix(in oklab, var(--atl-navy) 80%, var(--atl-glow-c)); }
+.nm-atlas .atl-prop-bag { fill: color-mix(in oklab, var(--atl-lilac) 70%, var(--atl-navy)); stroke: var(--atl-glow-c); stroke-width: 0.5; }
+.nm-atlas .atl-prop-bag-sheen { fill: white; opacity: 0.35; }
+/* **Sat, not stood** (INBOX 1589): on a chair or a beanbag the lower body
+   and the tail fold onto the seat about the hips (their boxes' own pivots),
+   half their height and a little wider, as legs seen from the front are when
+   seated, so the seat shows under them. `scale` on the boxes, the
+   compositor's, beside the loops' `rotate`. */
+#nm-buddy :is(.atl-lw-lower, .atl-lw-tail) { transition: scale calc(var(--motion-slow) * 3) var(--ease-in-out); }
+#nm-buddy:is(.nmb-act-chair, .nmb-act-beanbag) :is(.atl-lw-lower, .atl-lw-tail) { scale: 1.1 0.5; }

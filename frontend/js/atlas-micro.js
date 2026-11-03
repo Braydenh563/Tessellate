@@ -112,20 +112,29 @@ atlasMicroDo.glance = function (box) {
     if (Math.random() < 0.35 && atlasMicroMay(box)) atlasBlink(box);
   }, 700 + Math.random() * 1300);
 };
-//: A cast from the figure's left hand: `only` is one figure's box, none is every
-//: figure on the page (a gesture: the corner's and the large view's). Returns
-//: whether a cast began. Each star is a glint drawn in the hand's own group,
-//: so it rides with the hand; it is invisible (the CSS) until its animation
-//: plays, and is removed when that ends, so nothing of it is left at rest.
+//: A cast from her left hand (on screen the right one, the arm drawn `r`, which
+//: wore the seeds): `only` is one figure's box, none is every figure on the
+//: page (the corner's and the large view's). Returns whether a cast began.
+//: Each star is a glint drawn in the hand's own group, so it rides with the
+//: hand; it is invisible (the CSS) until its animation plays, and is removed
+//: when that ends, so nothing of it is left at rest.
+//: **The stars are that arm's own state** (INBOX 1589, the owner: the star
+//: hand "still has starts permanently coming from it", and a cheer "spawns a
+//: 3rd arm"): no cast while the companion is in an act that has the arms (a
+//: wave, a cheer, a book: any but the small ones that leave them be), and an
+//: act that starts stops a cast under way (`atlasMicroCast.stop`). A wave or
+//: a cheer casts as it ends, from the hand come back to her side.
 function atlasMicroCast(only) {
   if (document.hidden) return false;
+  if (nmb.act && !NMB_FACELESS_ACTS.includes(nmb.act) && document.getElementById("nm-buddy")) return false;
   let cast = false;
   for (const box of only ? [only] : document.querySelectorAll(".atl-figure-box")) {
-    const arm = box.atlasRig?.arms?.find((a) => a.side === "l");
+    const arm = box.atlasRig?.arms?.find((a) => a.side === "r");
     const wrist = arm?.geo?.segs?.[1];
     if (box.dataset.atlasLook !== "feminine" || !arm?.hand || !wrist || box.atlasCasting || !box.isConnected || box.classList.contains("atl-off") || !atlasMotionOK(box)) continue;
     cast = true;
     box.atlasCasting = true;
+    box.atlasCastAnims = [];
     atlasMicroState.castAt = Date.now();
     //: Outward from the body, and up.
     const out = Math.sign(wrist[6] - 32) || 1;
@@ -150,12 +159,20 @@ function atlasMicroCast(only) {
         if (!live) box.atlasCasting = false;
       };
       const anim = star.animate?.(frames, { duration: ms, delay: i * 260, easing: "ease-out", fill: "backwards" });
-      if (anim?.finished) anim.finished.then(done, done);
-      else done();
+      if (anim?.finished) {
+        box.atlasCastAnims.push(anim);
+        anim.finished.then(done, done);
+      } else done();
     }
   }
   return cast;
 }
+//: An act that takes the arms stops a cast under way: each star's animation is
+//: cancelled, and a cancelled one is removed (its `finished` rejects). The
+//: cast's own list, not a scan of the page's animations.
+atlasMicroCast.stop = function () {
+  for (const box of document.querySelectorAll(".atl-figure-box")) for (const anim of box.atlasCastAnims || []) anim.cancel();
+};
 //: The rare habits: the head's `transform` and the body's `translate`, as
 //: the tilt and the shift play them, and the look as a glance aims it.
 atlasMicroDo.rare = function (kind, box, sign) {

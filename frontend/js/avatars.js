@@ -7315,7 +7315,14 @@ function nameMarkBuddyAct(act, ms) {
   //: (`nmb-easing`), not in the frame its class comes off. The small ones
   //: (a blink, a look) have no face of their own.
   if (was && was !== act && !NMB_FACELESS_ACTS.includes(was)) nameMarkBuddyEase(buddy, 1800);
-  if (was) nameMarkBuddyBlend(buddy, () => buddy.classList.remove(`nmb-act-${was}`));
+  //: `nmb-arms` marks an act that moves the arms (any but the faceless ones),
+  //: so the mood's chin hand gives way to it (INBOX 1589: it was a cheer's
+  //: third arm). Kept while another such act's class is on, whichever of the
+  //: two blends lands first.
+  if (was) nameMarkBuddyBlend(buddy, () => {
+    buddy.classList.remove(`nmb-act-${was}`);
+    if (![...buddy.classList].some((c) => c.startsWith("nmb-act-") && !NMB_FACELESS_ACTS.includes(c.slice(8)))) buddy.classList.remove("nmb-arms");
+  });
   if (was === "lie" && act !== "lie" && !buddy.classList.contains("nmb-sleep")) nameMarkBuddyGetUp(buddy);
   if (act !== "emerge") buddy.classList.remove("nmb-duck");
   if (was === "turn" || was === "glance") delete buddy.dataset.turn;
@@ -7332,6 +7339,11 @@ function nameMarkBuddyAct(act, ms) {
     //: The unwind out of a scene act lasts 1.3s (inlined to keep the shared scope at its cap, 1587).
     nmb.unwindTimer = setTimeout(() => buddy.classList.remove("nmb-unwind"), 1300);
   }
+  //: Her stars are her left arm's own (INBOX 1576, 1589): a wave or a cheer
+  //: casts them as it ends, and an act that takes the arms stops a cast.
+  const quiet = !act || NMB_FACELESS_ACTS.includes(act);
+  if (quiet && (was === "wave" || was === "cheer")) window.atlasMicroCast?.();
+  else if (!quiet) window.atlasMicroCast?.stop();
   if (!act) {
     nameMarkBuddySchedule();
     return;
@@ -7371,7 +7383,7 @@ function nameMarkBuddyAct(act, ms) {
   //: **Into an act eased** (INBOX 619): parts mid-swing are handed over from
   //: where they were. Down from a throw nothing swings (its loops restart
   //: with the flight's end), so the land skips the 8 to 40ms read.
-  const into = () => buddy.classList.add(`nmb-act-${act}`);
+  const into = () => buddy.classList.add(`nmb-act-${act}`, ...(NMB_FACELESS_ACTS.includes(act) ? [] : ["nmb-arms"]));
   if (act === "land" && nmb.afterLand) into();
   else nameMarkBuddyBlend(buddy, into, NMB_BLEND_IN_MS);
   //: A new act starts with its arms (INBOX 469): a small lift and back.
@@ -7379,8 +7391,6 @@ function nameMarkBuddyAct(act, ms) {
   nmb.mind?.start(buddy, act, ms || spec?.ms || 1200);
   nmb.act = act;
   nmb.lastAct = act;
-  //: A wave or a cheer throws her stars (the feminine Atlas only; INBOX 1576).
-  if (act === "wave" || act === "cheer") window.atlasMicroCast?.();
   nameMarkBuddyState(buddy);
   //: The idle pool's memory (Brief 34 step 5, ledger 678 and 679): the last
   //: five acts, so `nameMarkBuddyDecide` does not reach for one of them.
@@ -7483,7 +7493,8 @@ const NMB_MANNER_STILL = new Set(["peek", "peekdown", "peekback", "emerge", "hid
 function nameMarkBuddyScene(buddy) {
   const face = buddy.querySelector(".nm-buddy-face");
   const char = buddy.querySelector(".nm-buddy-char");
-  if (!face || !char || face.querySelector(".nmb-scene")) return;
+  //: Atlas draws its own seats (atlas.js, `atlasCoilProp.seats`, INBOX 1589).
+  if (!face || !char || face.querySelector(".nmb-scene, .atl-figure-box")) return;
   const ns = "http://www.w3.org/2000/svg";
   const make = (tag, attrs, parent) => {
     const el = document.createElementNS(ns, tag);

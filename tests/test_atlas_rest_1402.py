@@ -140,8 +140,10 @@ def _raise(side: str, deg: float) -> float:
 
 def _relaxed(look: str, r: float, left: float) -> bool:
     out = all(6 <= a <= 60 for a in (r, left))
-    # Hers may bring both hands together low in front (the owner's clasp).
-    clasp = look == "feminine" and all(-48 <= a <= -15 for a in (r, left))
+    # Hers may bring both hands together low in front (the owner's clasp),
+    # meeting at the middle: past 12 degrees in her hands crossed (INBOX 1589,
+    # the owner: "inverted in front of it like it is trying to cross its arms").
+    clasp = look == "feminine" and all(-12 <= a <= -6 for a in (r, left))
     return out or clasp
 
 
