@@ -2761,7 +2761,7 @@ async function renderDigestWidget(outer) {
       })
       .catch((error) => {
         if (!body.isConnected) return;
-        const retry = smallButton("Generate this week's digest", "", runGeneration);
+        const retry = smallButton("ph:sparkle Generate this week's digest", "", runGeneration);
         body.replaceChildren(retry);
         toast(error.message, true);
       });
@@ -2778,7 +2778,7 @@ async function renderDigestWidget(outer) {
     //: model, once on, writes the next one.
     //: Ghost: the Dashboard has one filled button, Save in Quick capture
     //: (unslop 1103, 11: two at once, 208x32 and 58x32).
-    const generate = smallButton("Generate this week's digest", "", runGeneration);
+    const generate = smallButton("ph:sparkle Generate this week's digest", "", runGeneration);
     body.append(generate);
   }
   await dayDrawn;

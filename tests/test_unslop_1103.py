@@ -119,7 +119,7 @@ def test_11_dashboard_has_one_filled_button_and_no_tinted_edge_at_rest():
     assert "border-color" not in tinted
     js = (ROOT / "frontend" / "js" / "dashboard.js").read_text(encoding="utf-8")
     assert js.count("Generate this week's digest") == 2
-    assert 'smallButton("Generate this week\'s digest", "", runGeneration)' in js
+    assert 'smallButton("ph:sparkle Generate this week\'s digest", "", runGeneration)' in js
     assert 'runGeneration, false' not in js
 
 
