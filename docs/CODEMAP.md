@@ -2,9 +2,9 @@
 
 Generated 2026-11-03 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7659, frontend ids 2642, CSS sections 518, backend routes 642, backend modules 8549, test files 1941, tests 16285, plan headings 992, app scripts 28, boot scripts 37, script files 236.
+Counts: frontend functions 7728, frontend ids 2642, CSS sections 518, backend routes 642, backend modules 8550, test files 1942, tests 16316, plan headings 992, app scripts 28, boot scripts 37, script files 238.
 
-## Frontend functions (7659)
+## Frontend functions (7728)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3097,19 +3097,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `diagSections` | frontend/js/diag-report.js:106 |
 | `diagTable` | frontend/js/diag-report.js:96 |
 
-### frontend/js/diagram-builder.js (60)
+### frontend/js/diagram-builder.js (61)
 
 | Name | File:line |
 |---|---|
-| `addBlock` | frontend/js/diagram-builder.js:552 |
-| `beginEdit` | frontend/js/diagram-builder.js:581 |
-| `blockEl` | frontend/js/diagram-builder.js:283 |
-| `blockItems` | frontend/js/diagram-builder.js:505 |
-| `blockKeys` | frontend/js/diagram-builder.js:389 |
-| `boxesOf` | frontend/js/diagram-builder.js:308 |
-| `buildBlock` | frontend/js/diagram-builder.js:398 |
-| `buildPalette` | frontend/js/diagram-builder.js:844 |
-| `commit` | frontend/js/diagram-builder.js:288 |
+| `addBlock` | frontend/js/diagram-builder.js:522 |
+| `beginEdit` | frontend/js/diagram-builder.js:551 |
+| `blockEl` | frontend/js/diagram-builder.js:278 |
+| `blockItems` | frontend/js/diagram-builder.js:475 |
+| `blockKeys` | frontend/js/diagram-builder.js:384 |
+| `boxesOf` | frontend/js/diagram-builder.js:303 |
+| `buildBlock` | frontend/js/diagram-builder.js:393 |
+| `buildPalette` | frontend/js/diagram-builder.js:784 |
+| `commit` | frontend/js/diagram-builder.js:283 |
 | `dgbAddGroup` | frontend/js/diagram-builder.js:152 |
 | `dgbAddNode` | frontend/js/diagram-builder.js:144 |
 | `dgbEdit` | frontend/js/diagram-builder.js:88 |
@@ -3132,53 +3132,132 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dgbStep` | frontend/js/diagram-builder.js:220 |
 | `dgbUnits` | frontend/js/diagram-builder.js:74 |
 | `dgbUnjoin` | frontend/js/diagram-builder.js:190 |
-| `drawPicture` | frontend/js/diagram-builder.js:331 |
-| `dropApply` | frontend/js/diagram-builder.js:772 |
-| `dropAt` | frontend/js/diagram-builder.js:730 |
-| `dropMark` | frontend/js/diagram-builder.js:751 |
-| `el` | frontend/js/diagram-builder.js:267 |
-| `groupGlyph` | frontend/js/diagram-builder.js:454 |
-| `joinChip` | frontend/js/diagram-builder.js:460 |
-| `joinItems` | frontend/js/diagram-builder.js:479 |
-| `joinPick` | frontend/js/diagram-builder.js:641 |
-| `menuAt` | frontend/js/diagram-builder.js:704 |
-| `mount` | frontend/js/diagram-builder.js:899 |
-| `nameOf` | frontend/js/diagram-builder.js:281 |
-| `nestBlock` | frontend/js/diagram-builder.js:621 |
-| `onKey` | frontend/js/diagram-builder.js:667 |
-| `pictureClick` | frontend/js/diagram-builder.js:354 |
-| `relabel` | frontend/js/diagram-builder.js:569 |
-| `removeBlock` | frontend/js/diagram-builder.js:629 |
-| `render` | frontend/js/diagram-builder.js:367 |
-| `say` | frontend/js/diagram-builder.js:274 |
-| `seedBlock` | frontend/js/diagram-builder.js:715 |
-| `select` | frontend/js/diagram-builder.js:537 |
-| `shapeGlyph` | frontend/js/diagram-builder.js:391 |
-| `show` | frontend/js/diagram-builder.js:980 |
-| `stepBlock` | frontend/js/diagram-builder.js:615 |
-| `suggest` | frontend/js/diagram-builder.js:817 |
-| `suggestItems` | frontend/js/diagram-builder.js:822 |
-| `sync` | frontend/js/diagram-builder.js:957 |
-| `titleOf` | frontend/js/diagram-builder.js:280 |
-| `within` | frontend/js/diagram-builder.js:728 |
+| `drawPicture` | frontend/js/diagram-builder.js:326 |
+| `dropApply` | frontend/js/diagram-builder.js:718 |
+| `dropAt` | frontend/js/diagram-builder.js:676 |
+| `dropMark` | frontend/js/diagram-builder.js:697 |
+| `el` | frontend/js/diagram-builder.js:262 |
+| `groupGlyph` | frontend/js/diagram-builder.js:449 |
+| `joinChip` | frontend/js/diagram-builder.js:455 |
+| `joinPick` | frontend/js/diagram-builder.js:774 |
+| `joins` | frontend/js/diagram-builder.js:770 |
+| `kindOf` | frontend/js/diagram-builder.js:921 |
+| `menuAt` | frontend/js/diagram-builder.js:650 |
+| `mount` | frontend/js/diagram-builder.js:836 |
+| `nameOf` | frontend/js/diagram-builder.js:276 |
+| `nestBlock` | frontend/js/diagram-builder.js:591 |
+| `onKey` | frontend/js/diagram-builder.js:613 |
+| `pictureClick` | frontend/js/diagram-builder.js:349 |
+| `relabel` | frontend/js/diagram-builder.js:539 |
+| `removeBlock` | frontend/js/diagram-builder.js:599 |
+| `render` | frontend/js/diagram-builder.js:362 |
+| `say` | frontend/js/diagram-builder.js:269 |
+| `seedBlock` | frontend/js/diagram-builder.js:661 |
+| `select` | frontend/js/diagram-builder.js:507 |
+| `shapeGlyph` | frontend/js/diagram-builder.js:386 |
+| `show` | frontend/js/diagram-builder.js:931 |
+| `stepBlock` | frontend/js/diagram-builder.js:585 |
+| `suggest` | frontend/js/diagram-builder.js:764 |
+| `suggestMenu` | frontend/js/diagram-builder.js:777 |
+| `sync` | frontend/js/diagram-builder.js:896 |
+| `titleOf` | frontend/js/diagram-builder.js:275 |
+| `within` | frontend/js/diagram-builder.js:674 |
 
-### frontend/js/diagram-suggest.js (13)
+### frontend/js/diagram-joins.js (4)
 
 | Name | File:line |
 |---|---|
-| `compose` | frontend/js/diagram-suggest.js:369 |
+| `items` | frontend/js/diagram-joins.js:17 |
+| `nameOf` | frontend/js/diagram-joins.js:15 |
+| `pick` | frontend/js/diagram-joins.js:43 |
+| `titleOf` | frontend/js/diagram-joins.js:14 |
+
+### frontend/js/diagram-kinds.js (60)
+
+| Name | File:line |
+|---|---|
+| `addTile` | frontend/js/diagram-kinds.js:781 |
+| `buildBlock` | frontend/js/diagram-kinds.js:668 |
+| `buildPalette` | frontend/js/diagram-kinds.js:947 |
+| `dropApply` | frontend/js/diagram-kinds.js:907 |
+| `dropAt` | frontend/js/diagram-kinds.js:879 |
+| `find` | frontend/js/diagram-kinds.js:618 |
+| `ghostSpec` | frontend/js/diagram-kinds.js:1063 |
+| `glyph` | frontend/js/diagram-kinds.js:623 |
+| `icon` | frontend/js/diagram-kinds.js:613 |
+| `itemsFor` | frontend/js/diagram-kinds.js:731 |
+| `keysOf` | frontend/js/diagram-kinds.js:652 |
+| `kxAdd` | frontend/js/diagram-kinds.js:318 |
+| `kxAddWho` | frontend/js/diagram-kinds.js:498 |
+| `kxCount` | frontend/js/diagram-kinds.js:269 |
+| `kxEsc` | frontend/js/diagram-kinds.js:29 |
+| `kxFind` | frontend/js/diagram-kinds.js:274 |
+| `kxFreshId` | frontend/js/diagram-kinds.js:493 |
+| `kxKey` | frontend/js/diagram-kinds.js:31 |
+| `kxLast` | frontend/js/diagram-kinds.js:443 |
+| `kxLevel` | frontend/js/diagram-kinds.js:282 |
+| `kxLift` | frontend/js/diagram-kinds.js:392 |
+| `kxLines` | frontend/js/diagram-kinds.js:35 |
+| `kxMake` | frontend/js/diagram-kinds.js:442 |
+| `kxMerge` | frontend/js/diagram-kinds.js:416 |
+| `kxMmParse` | frontend/js/diagram-kinds.js:67 |
+| `kxMmPlain` | frontend/js/diagram-kinds.js:96 |
+| `kxMmPrint` | frontend/js/diagram-kinds.js:98 |
+| `kxMmRead` | frontend/js/diagram-kinds.js:52 |
+| `kxMove` | frontend/js/diagram-kinds.js:304 |
+| `kxNest` | frontend/js/diagram-kinds.js:382 |
+| `kxPad` | frontend/js/diagram-kinds.js:32 |
+| `kxRelabel` | frontend/js/diagram-kinds.js:403 |
+| `kxRemove` | frontend/js/diagram-kinds.js:350 |
+| `kxRows` | frontend/js/diagram-kinds.js:291 |
+| `kxSeqParse` | frontend/js/diagram-kinds.js:198 |
+| `kxSeqPrint` | frontend/js/diagram-kinds.js:237 |
+| `kxSpot` | frontend/js/diagram-kinds.js:330 |
+| `kxStep` | frontend/js/diagram-kinds.js:370 |
+| `kxSteps` | frontend/js/diagram-kinds.js:502 |
+| `kxTlParse` | frontend/js/diagram-kinds.js:130 |
+| `kxTlPrint` | frontend/js/diagram-kinds.js:172 |
+| `kxUid` | frontend/js/diagram-kinds.js:30 |
+| `kxWalk` | frontend/js/diagram-kinds.js:263 |
+| `kxWithin` | frontend/js/diagram-kinds.js:283 |
+| `menuAt` | frontend/js/diagram-kinds.js:859 |
+| `mount` | frontend/js/diagram-kinds.js:980 |
+| `nameOf` | frontend/js/diagram-kinds.js:619 |
+| `nestBlock` | frontend/js/diagram-kinds.js:805 |
+| `onKey` | frontend/js/diagram-kinds.js:824 |
+| `pickWho` | frontend/js/diagram-kinds.js:717 |
+| `relabel` | frontend/js/diagram-kinds.js:768 |
+| `removeBlock` | frontend/js/diagram-kinds.js:811 |
+| `render` | frontend/js/diagram-kinds.js:654 |
+| `seedBlock` | frontend/js/diagram-kinds.js:866 |
+| `show` | frontend/js/diagram-kinds.js:1086 |
+| `stepBlock` | frontend/js/diagram-kinds.js:799 |
+| `sync` | frontend/js/diagram-kinds.js:1040 |
+| `whoLabel` | frontend/js/diagram-kinds.js:620 |
+| `withinNode` | frontend/js/diagram-kinds.js:901 |
+| `words` | frontend/js/diagram-kinds.js:639 |
+
+### frontend/js/diagram-suggest.js (17)
+
+| Name | File:line |
+|---|---|
+| `compose` | frontend/js/diagram-suggest.js:431 |
 | `count` | frontend/js/diagram-suggest.js:72 |
-| `describe` | frontend/js/diagram-suggest.js:397 |
+| `describe` | frontend/js/diagram-suggest.js:459 |
 | `dgsMerge` | frontend/js/diagram-suggest.js:25 |
 | `dgsSubtree` | frontend/js/diagram-suggest.js:62 |
-| `ghosts` | frontend/js/diagram-suggest.js:129 |
-| `isEmpty` | frontend/js/diagram-suggest.js:76 |
-| `loadTemplates` | frontend/js/diagram-suggest.js:248 |
-| `notes` | frontend/js/diagram-suggest.js:384 |
-| `outlineOf` | frontend/js/diagram-suggest.js:357 |
-| `reason` | frontend/js/diagram-suggest.js:120 |
-| `receive` | frontend/js/diagram-suggest.js:81 |
-| `templates` | frontend/js/diagram-suggest.js:259 |
+| `firstKey` | frontend/js/diagram-suggest.js:82 |
+| `flowSpec` | frontend/js/diagram-suggest.js:153 |
+| `ghosts` | frontend/js/diagram-suggest.js:186 |
+| `isEmpty` | frontend/js/diagram-suggest.js:77 |
+| `items` | frontend/js/diagram-suggest.js:286 |
+| `loadTemplates` | frontend/js/diagram-suggest.js:307 |
+| `notes` | frontend/js/diagram-suggest.js:446 |
+| `outlineOf` | frontend/js/diagram-suggest.js:419 |
+| `paneBlank` | frontend/js/diagram-suggest.js:79 |
+| `reason` | frontend/js/diagram-suggest.js:143 |
+| `receive` | frontend/js/diagram-suggest.js:97 |
+| `templates` | frontend/js/diagram-suggest.js:318 |
 
 ### frontend/js/documents-ai.js (15)
 
@@ -3614,10 +3693,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dgmStatements` | frontend/js/documents-mermaid.js:81 |
 | `dgmSubgraph` | frontend/js/documents-mermaid.js:182 |
 | `dgmUnquote` | frontend/js/documents-mermaid.js:74 |
-| `docMermaidBlocks` | frontend/js/documents-mermaid.js:329 |
-| `docMermaidField` | frontend/js/documents-mermaid.js:338 |
-| `docMermaidWhenDrawn` | frontend/js/documents-mermaid.js:319 |
-| `docRenderMermaidIn` | frontend/js/documents-mermaid.js:311 |
+| `docMermaidBlocks` | frontend/js/documents-mermaid.js:330 |
+| `docMermaidField` | frontend/js/documents-mermaid.js:339 |
+| `docMermaidWhenDrawn` | frontend/js/documents-mermaid.js:320 |
+| `docRenderMermaidIn` | frontend/js/documents-mermaid.js:312 |
 
 ### frontend/js/documents-outline.js (12)
 
@@ -12039,7 +12118,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 150 |
-| frontend/css/diagram-lazy.css | 538 |
+| frontend/css/diagram-lazy.css | 552 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 121 |
 | frontend/css/forced-colors-lazy.css | 28 |
@@ -12736,7 +12815,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8549)
+## Backend modules (8550)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14201,48 +14280,49 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `mention_subject` | src/tessellate/ai/composer_lists.py:440 |
 | `window_of` | src/tessellate/ai/composer_lists.py:151 |
 
-### src/tessellate/ai/composer_mermaid.py (39)
+### src/tessellate/ai/composer_mermaid.py (40)
 
 | Name | File:line |
 |---|---|
 | `Diagram` | src/tessellate/ai/composer_mermaid.py:53 |
-| `_about` | src/tessellate/ai/composer_mermaid.py:542 |
-| `_capped` | src/tessellate/ai/composer_mermaid.py:295 |
-| `_checklist` | src/tessellate/ai/composer_mermaid.py:175 |
-| `_day_words` | src/tessellate/ai/composer_mermaid.py:413 |
-| `_drawn` | src/tessellate/ai/composer_mermaid.py:464 |
-| `_event` | src/tessellate/ai/composer_mermaid.py:126 |
-| `_fence_body` | src/tessellate/ai/composer_mermaid.py:353 |
-| `_given_text` | src/tessellate/ai/composer_mermaid.py:518 |
-| `_lines` | src/tessellate/ai/composer_mermaid.py:134 |
-| `_listed_steps` | src/tessellate/ai/composer_mermaid.py:163 |
-| `_named` | src/tessellate/ai/composer_mermaid.py:438 |
-| `_note_day` | src/tessellate/ai/composer_mermaid.py:400 |
-| `_notes_branches` | src/tessellate/ai/composer_mermaid.py:426 |
-| `_notes_flowchart` | src/tessellate/ai/composer_mermaid.py:417 |
-| `_notes_lead` | src/tessellate/ai/composer_mermaid.py:551 |
-| `_outline` | src/tessellate/ai/composer_mermaid.py:275 |
-| `_outline_branches` | src/tessellate/ai/composer_mermaid.py:229 |
-| `_rooted` | src/tessellate/ai/composer_mermaid.py:261 |
-| `_sentences` | src/tessellate/ai/composer_mermaid.py:157 |
-| `_skip_blank` | src/tessellate/ai/composer_mermaid.py:347 |
-| `_sort_key` | src/tessellate/ai/composer_mermaid.py:200 |
-| `_subject` | src/tessellate/ai/composer_mermaid.py:530 |
+| `_about` | src/tessellate/ai/composer_mermaid.py:550 |
+| `_capped` | src/tessellate/ai/composer_mermaid.py:303 |
+| `_checklist` | src/tessellate/ai/composer_mermaid.py:183 |
+| `_day_words` | src/tessellate/ai/composer_mermaid.py:421 |
+| `_drawn` | src/tessellate/ai/composer_mermaid.py:472 |
+| `_event` | src/tessellate/ai/composer_mermaid.py:134 |
+| `_fence_body` | src/tessellate/ai/composer_mermaid.py:361 |
+| `_given_text` | src/tessellate/ai/composer_mermaid.py:526 |
+| `_lines` | src/tessellate/ai/composer_mermaid.py:142 |
+| `_listed_steps` | src/tessellate/ai/composer_mermaid.py:171 |
+| `_named` | src/tessellate/ai/composer_mermaid.py:446 |
+| `_note_day` | src/tessellate/ai/composer_mermaid.py:408 |
+| `_notes_branches` | src/tessellate/ai/composer_mermaid.py:434 |
+| `_notes_flowchart` | src/tessellate/ai/composer_mermaid.py:425 |
+| `_notes_lead` | src/tessellate/ai/composer_mermaid.py:559 |
+| `_outline` | src/tessellate/ai/composer_mermaid.py:283 |
+| `_outline_branches` | src/tessellate/ai/composer_mermaid.py:237 |
+| `_rooted` | src/tessellate/ai/composer_mermaid.py:269 |
+| `_sentences` | src/tessellate/ai/composer_mermaid.py:165 |
+| `_skip_blank` | src/tessellate/ai/composer_mermaid.py:355 |
+| `_sort_key` | src/tessellate/ai/composer_mermaid.py:208 |
+| `_subject` | src/tessellate/ai/composer_mermaid.py:538 |
 | `_words` | src/tessellate/ai/composer_mermaid.py:109 |
-| `answer` | src/tessellate/ai/composer_mermaid.py:557 |
+| `answer` | src/tessellate/ai/composer_mermaid.py:565 |
 | `asks` | src/tessellate/ai/composer_mermaid.py:98 |
-| `dated` | src/tessellate/ai/composer_mermaid.py:213 |
-| `diagram` | src/tessellate/ai/composer_mermaid.py:484 |
-| `drafted` | src/tessellate/ai/composer_mermaid.py:497 |
-| `fenced` | src/tessellate/ai/composer_mermaid.py:335 |
-| `flowchart` | src/tessellate/ai/composer_mermaid.py:299 |
-| `from_notes` | src/tessellate/ai/composer_mermaid.py:445 |
+| `dated` | src/tessellate/ai/composer_mermaid.py:221 |
+| `diagram` | src/tessellate/ai/composer_mermaid.py:492 |
+| `drafted` | src/tessellate/ai/composer_mermaid.py:505 |
+| `fenced` | src/tessellate/ai/composer_mermaid.py:343 |
+| `flowchart` | src/tessellate/ai/composer_mermaid.py:307 |
+| `from_notes` | src/tessellate/ai/composer_mermaid.py:453 |
 | `label` | src/tessellate/ai/composer_mermaid.py:120 |
-| `mindmap` | src/tessellate/ai/composer_mermaid.py:323 |
-| `source_of` | src/tessellate/ai/composer_mermaid.py:374 |
-| `steps` | src/tessellate/ai/composer_mermaid.py:186 |
-| `timeline` | src/tessellate/ai/composer_mermaid.py:307 |
-| `tree` | src/tessellate/ai/composer_mermaid.py:245 |
+| `mind_label` | src/tessellate/ai/composer_mermaid.py:126 |
+| `mindmap` | src/tessellate/ai/composer_mermaid.py:331 |
+| `source_of` | src/tessellate/ai/composer_mermaid.py:382 |
+| `steps` | src/tessellate/ai/composer_mermaid.py:194 |
+| `timeline` | src/tessellate/ai/composer_mermaid.py:315 |
+| `tree` | src/tessellate/ai/composer_mermaid.py:253 |
 | `wanted` | src/tessellate/ai/composer_mermaid.py:89 |
 
 ### src/tessellate/ai/composer_money.py (89)
@@ -15511,8 +15591,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3213 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3339 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3240 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3366 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -23479,7 +23559,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16285)
+## Tests (16316)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23982,6 +24062,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagnostics_1430.py | 9 |
 | tests/test_diagram_builder.py | 18 |
 | tests/test_diagram_document.py | 7 |
+| tests/test_diagram_kinds.py | 30 |
 | tests/test_diagram_model.py | 12 |
 | tests/test_diagram_suggest.py | 21 |
 | tests/test_dialogue_b8.py | 1 |
@@ -24519,7 +24600,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_make_plan.py | 21 |
 | tests/test_manage_lists_504.py | 5 |
 | tests/test_manual_entry_points.py | 3 |
-| tests/test_manual_parity.py | 16 |
+| tests/test_manual_parity.py | 17 |
 | tests/test_map_actions_clear_of_label.py | 1 |
 | tests/test_map_add_speed.py | 6 |
 | tests/test_map_branch_colour_order.py | 3 |

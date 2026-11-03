@@ -359,5 +359,28 @@ def test_the_diagram_suggestions_are_in_the_guide_in_the_controls_words() -> Non
     builder = (FRONTEND / "js" / "diagram-builder.js").read_text(encoding="utf-8")
     suggest = (FRONTEND / "js" / "diagram-suggest.js").read_text(encoding="utf-8")
     for label in ("Templates", "From my notes", "Describe it", "Suggest"):
-        assert label in builder, label
+        assert label in builder + suggest, label
     assert "Use this template" in suggest
+
+
+def test_the_diagram_kinds_are_in_the_guide_in_the_controls_words() -> None:
+    """1546 P4: the mind map, timeline and sequence panes, the letter on each bar button, the
+    two things a suggestion of another kind does, and a source the blocks cannot read, each
+    said in the Guide's `diagram-kinds` topic (its own, so `diagram-blocks` keeps its room) in
+    the words the pane carries."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+    from tessellate.ai.help_topics_more import HELP_GROUPS, TOPIC_META
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-kinds"))
+    for words in ("flowcharts, mind maps, timelines and sequence diagrams", "a branch and a leaf (B and N)",
+                  "a section, a period and an event (S, P and E)",
+                  "actor, participant, message, reply, async, lost, note, loop, alt and opt (A, P, M, R, Y, X, T, L, G and O)",
+                  "stays in Source with its picture", "of another kind says so and is left out", "replaces a blank one"):
+        assert words in body, words
+    assert "diagram-kinds" in TOPIC_META and "diagram-kinds" in dict(HELP_GROUPS)["Documents and code"]
+    assert "next topic" in str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
+    kinds = (FRONTEND / "js" / "diagram-kinds.js").read_text(encoding="utf-8")
+    for label in ("Branch", "Leaf", "Section", "Period", "Event", "Actor", "Participant", "Message", "Reply", "Async", "Lost", "Note", "Loop", "Alt", "Opt"):
+        assert f'name: "{label}"' in kinds, label
+    for letters in ('key: "b"', 'key: "n"', 'key: "s"', 'key: "p"', 'key: "e"', 'key: "m"', 'key: "r"', 'key: "y"', 'key: "x"', 'key: "t"', 'key: "l"', 'key: "g"', 'key: "o"', 'key: "a"'):
+        assert letters in kinds, letters

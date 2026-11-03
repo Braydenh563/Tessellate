@@ -208,6 +208,20 @@
   text-overflow: ellipsis;
 }
 
+/* The other kinds' cards carry one quiet line after the words (who a message is between, a period's date),
+   so their grid has a column for it; it gives way to the label before the label gives way to it. */
+.dgm-card:has(> .dgm-meta) {
+  grid-template-columns: auto auto minmax(0, 1fr) minmax(0, max-content) auto;
+}
+
+.dgm-meta {
+  max-inline-size: 12rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: var(--text-xs);
+}
+
 .dgm-label.dgm-editing {
   overflow: visible;
   text-overflow: clip;
