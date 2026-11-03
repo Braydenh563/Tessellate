@@ -316,6 +316,7 @@
   border-color: transparent;
   background: none;
   box-shadow: none;
+  border-radius: var(--radius-md);
   font-weight: 500;
 }
 

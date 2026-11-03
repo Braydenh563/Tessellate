@@ -31,7 +31,7 @@ Object.assign(LAZY_MODULES, {
   //: The dashboard's Loose ends, While you were away and day digest widgets.
   dashLazy: ["/css/dash-orphans-lazy.css", "/css/dash-night-lazy.css", "/js/dash-orphans.js", "/js/dash-night.js", "/js/dash-day.js"],
   //: What the app draws into a reply beside its words (reply-kit.js's header).
-  replyKit: ["/css/reply-kit-lazy.css", "/js/citation-peek.js", "/js/reply-kit.js"],
+  replyKit: ["/css/key-grid-lazy.css", "/css/reply-kit-lazy.css", "/js/citation-peek.js", "/js/reply-kit.js"],
   //: The phone bar's More sheet (phone-more.js's header; INBOX 1314).
   phoneMore: ["/js/phone-more.js"],
   //: The generative background's styles and runtime (bg-art.js, 20 KB gzipped):
@@ -48,7 +48,7 @@ Object.assign(LAZY_MODULES, {
   //: the first edit of a rendered `$...$` and the guided equation editor both fetch it.
   mathField: ["/css/math-field-lazy.css", "/vendor/mathlive/mathlive.min.js", "/js/math-field.js"],
   //: The guided equation editor (math-editor.js's header; DOCUMENTS_PLAN 16), on the same field.
-  mathEditor: ["/css/math-field-lazy.css", "/vendor/mathlive/mathlive.min.js", "/js/math-field.js", "/css/math-editor-lazy.css", "/js/math-editor.js"],
+  mathEditor: ["/css/key-grid-lazy.css", "/css/math-field-lazy.css", "/vendor/mathlive/mathlive.min.js", "/js/math-field.js", "/css/math-editor-lazy.css", "/js/math-editor.js"],
   //: The model badge's spec panel, editing an answer, a note's Explain row, the extract preview's Save (gesture-kit.js's header).
   gestureKit: ["/js/gesture-kit.js"],
   //: One chat turn (chat-turn.js): `sendChatMessage` awaits it; the chat box's focus warms it.

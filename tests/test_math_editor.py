@@ -123,7 +123,7 @@ def test_the_templates_output_and_span(core_checks: list[dict]) -> None:
 def test_one_lazy_module_behind_one_stand_in() -> None:
     entries = (JS / "lazy-entries.js").read_text(encoding="utf-8")
     assert (
-        'mathEditor: ["/css/math-field-lazy.css", "/vendor/mathlive/mathlive.min.js", "/js/math-field.js", '
+        'mathEditor: ["/css/key-grid-lazy.css", "/css/math-field-lazy.css", "/vendor/mathlive/mathlive.min.js", "/js/math-field.js", '
         '"/css/math-editor-lazy.css", "/js/math-editor.js"]'
     ) in entries
     assert 'mathEditor: ["openMathEditor"]' in entries

@@ -6968,7 +6968,7 @@ def _js_function(name: str, fn: str) -> str:
 
 
 def test_a_grid_of_keys_or_tiles_is_the_quiet_inset_fill_with_no_edge() -> None:
-    css = (ROOT / "frontend" / "css" / "03-dashboard-widgets.css").read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "key-grid-lazy.css").read_text(encoding="utf-8")
     recipe = {sel: body for sel, body in _rules(css) if ".key-grid" in sel}
     base = recipe[".key-grid > button"]
     for want in ("border: 0;", "background: var(--chip-bg);", "box-shadow: none;"):

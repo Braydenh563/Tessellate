@@ -1,0 +1,55 @@
+/* The keypad recipe, lazy: only the equation editor and the calculator draw a
+   `.key-grid`, and both load this file with their own (lazy-entries.js). */
+
+/* **A grid of keys or tiles** (INBOX 1566, "I dont like excessive use of these glowy grey styled buttons"; DESIGN.md,
+   "A grid of keys or tiles"): twenty keys that each carried a ghost's fill, hairline and weight read as a wall of boxes.
+   The quiet fill and no edge, the glyph centred; the pointer's tint is the only change. An operator is tinted, and
+   the one key that does the work (`=`) is the one filled key. High contrast gets its edge back. */
+.key-grid {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.key-grid > button {
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--chip-bg);
+  box-shadow: none;
+  color: var(--ink);
+  font-weight: 500;
+  line-height: 1;
+}
+
+.key-grid > button:is(:hover, :focus-visible) {
+  background: var(--ghost-btn-bg);
+}
+
+.key-grid > button:active:not(:disabled) {
+  background: var(--ghost-btn-bg-hover);
+}
+
+.key-grid > button.is-op {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+.key-grid > button.is-op:is(:hover, :focus-visible) {
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px var(--accent-text);
+}
+
+.key-grid > button.is-equals {
+  background: var(--accent-surface);
+  color: var(--on-accent);
+}
+
+.key-grid > button.is-equals:is(:hover, :focus-visible) {
+  background: var(--accent-surface-hover);
+  box-shadow: none;
+}
+
+:root[data-contrast="on"] .key-grid > button {
+  border: 1px solid var(--ghost-btn-border);
+}

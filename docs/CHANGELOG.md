@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The keypad recipe (`.key-grid`, the equation editor and the calculator) loads with those two surfaces, not at boot (key-grid-lazy.css), which brings boot CSS back under its cap after the 1103 merges; Diagram Suggest has its keyboard twin and corner.
 - CodeQL: the re-export blocks in ai/agent.py, ai/composer.py and api/routes_chat.py are gone; every reader imports the name from the module that defines it (24 unused-import alerts on main), and a test file imports pathlib once.
 - Get started ticks Ask your notebook after an answer even when the history badge had read 0 before the answer was kept (E2E first-run, CI 2026-11-03).
 - Avatar lab and companion simulator load again: they bring the blink rig (atlas-motion.js) and the look pickers (companion-settings.js) the renderers moved to, and stand in for the app's lazy loaders (tools/lab-shims.js, tests/test_tools_benches.py) (the owner, 2026-11-03).
