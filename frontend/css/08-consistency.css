@@ -2899,6 +2899,12 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
   color: var(--muted);
   font-weight: 400;
 }
+/* A reminder's facts (repeat, alert, its note) are one wrapping line of chips
+   that all paint 24: the tag chip was 21.2 beside the link chip's 24
+   (unslop 1103, 13). */
+#reminder-groups .entry-links > .chip {
+  min-height: 1.5rem;
+}
 .entry-links > .chip-interactive.link:hover,
 .entry-links > .chip-interactive.link:is(:focus-visible, :has(:focus-visible)) {
   color: var(--ink);

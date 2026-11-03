@@ -130,3 +130,18 @@ def test_12_reminder_when_row_takes_the_fields_height_and_corner():
         assert "border-radius: var(--radius-md)" in _body(css, selector)
         assert "radius-pill" not in _body(css, selector)
     assert "border-radius: var(--radius-in-md)" in _body(css, "#reminder-due-row .stepper-btn")
+
+
+def _js(name: str) -> str:
+    return (ROOT / "frontend" / "js" / name).read_text(encoding="utf-8")
+
+
+def test_13_reminder_facts_are_one_line_of_equal_chips():
+    """Three stacked rows (107px) for a priority, a repeat and a note; the chips 21 and 24."""
+    js = _js("shell-reminders.js")
+    start = js.index('row.className = "entry-meta"')
+    body = js[start : js.index("async function openCalendarPage(", start)]
+    assert body.count('className = "entry-links"') == 1, "the repeat, alert and note chips share one line"
+    assert 'chip(`ph:flag ${reminder.priority === "high"' not in body, "the edge already says high"
+    assert '"High priority. "' in body, "the words stay for a screen reader"
+    assert "min-height: 1.5rem" in _body(_css("08-consistency.css"), "#reminder-groups .entry-links > .chip")
