@@ -710,8 +710,11 @@ def search_terms(text: str) -> list[str]:
     """
     #: "pull up my uni notes": the command is not a word to find ("up" is in a
     #: dozen notes); only at the start, so "look up" inside a subject stays.
-    words = [w for w in re.split(r"\W+", without_contractions(_LEADING_COMMAND.sub("", (text or "").lower()))) if w]
-    terms = [w for w in words if len(w) > 1 and w not in STOPWORDS]
+    plain = without_contractions(_LEADING_COMMAND.sub("", (text or "").lower()))
+    #: A piece before a hyphen is a prefix, not half a contraction: "re-measured"
+    #: keeps its "re", which the composer's sentence lengths count (test_select_score_paths).
+    words = [(m.group(), plain[m.end():m.end() + 1] == "-") for m in re.finditer(r"\w+", plain)]
+    terms = [w for w, prefix in words if len(w) > 1 and (w not in STOPWORDS or (prefix and w in CONTRACTION_PIECES))]
     #: "what do I know about Lisbon": "about" introduces the subject and is not
     #: part of it, so it matched every note that merely says "about" (audit
     #: 1030 Z41). Alone, it is still a word to look for.
