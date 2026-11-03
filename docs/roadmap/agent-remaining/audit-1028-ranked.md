@@ -67,7 +67,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 61 | E33 | med | guide answers are verbatim topic chunks, no lead path | partial (grammar only; path-first lead is an owner decision, see a30e-1102.md) | M |
 | 62 | E39 | med | model download has no timeout or disk check | fixed 1031 | S |
 | 63 | E48 | med | edit and resend destroys later replies, no branches | new | L |
-| 64 | E57 | med | context overflow drops early turns with no inline notice | new | M |
+| 64 | E57 | med | context overflow drops early turns with no inline notice | fixed (see log, E57 commit) | M |
 | 65 | S11 | med | server greeting lines can contradict dashboard state | fixed (b8cfb46) | S |
 | 66 | S25 | med | lock form gives little error feedback, no throttle hint | fixed (already: inline error, role alert, 429 names the wait; reconciled 2026-10-30) | S |
 | 67 | S27 | med | no backlinks panel in the note editor | fixed (already built; reconciled 2026-10-30) | M |

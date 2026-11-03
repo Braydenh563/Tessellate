@@ -691,6 +691,8 @@ def _prepare_turn(
             session, question, history, tier, budget, offered, unoffered
         )
     composition_tokens = _composition_tokens(messages, offered)
+    if dropped := librarian.history_dropped(history, messages):
+        composition_tokens["history_dropped"] = dropped
 
     granted, ceiling = _round_limits(max_rounds, earned_rounds, tier)
     return _TurnPlan(
