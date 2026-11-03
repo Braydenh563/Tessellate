@@ -79,14 +79,17 @@ def test_the_library_chip_and_the_open_path_know_the_kind():
     assert library.count('item.kind === "document" || item.kind === "diagram"') >= 4
 
 
-def test_an_mmd_document_opens_in_split_and_its_view_is_never_stored():
+def test_an_mmd_document_opens_in_blocks_and_its_view_is_never_stored():
+    # 1546 P2 moved the intent: the diagram's own view is Blocks (the Read button, relabelled), with
+    # Split and Source beside it, so the opening view and the fallback changed from Split.
     docs = (JS / "documents.js").read_text(encoding="utf-8")
     state = docs[docs.index("const docViewState = {") :]
     state = state[: state.index("\n};")]
-    assert 'type.ext === "mmd" && mode === "split"' in state and "type.previewable" in state
+    assert 'type.ext === "mmd" && (mode === "split" || mode === "rendered")' in state and "type.previewable" in state
     sync = docs[docs.index("function syncDocFileType(") :]
     sync = sync[: sync.index("\n  docCmSyncFileType();")]
-    assert 'setDocView(type.ext === "mmd" ? "split" : "source")' in sync and "docViewState.allows(type, docView)" in sync
+    assert 'setDocView(type.ext === "mmd" ? "rendered" : "source")' in sync and "docViewState.allows(type, docView)" in sync
+    assert '"Blocks"' in sync and "A diagram has Blocks, Split and Source." in sync
     setter = docs[docs.index("function setDocView(") :]
     setter = setter[: setter.index("\n}\n")]
     # held means "not written to the prefs a markdown document reads".
@@ -94,4 +97,5 @@ def test_an_mmd_document_opens_in_split_and_its_view_is_never_stored():
     assert "if (!docViewState.held) prefs.set(DOC_VIEW_KEY, docView)" in setter
     preview = docs[docs.index("function renderDocPreview() {") :]
     preview = preview[: preview.index("\n}\n")]
-    assert '"```mermaid\\n" + text' in preview and "docRenderMermaidIn(preview)" in preview
+    # The preview is the block pane (it keeps its own DOM), not a fence drawn through the frame.
+    assert 'ensureModule("diagramBuilder")' in preview and '"```mermaid\\n" + text' not in preview

@@ -25,6 +25,7 @@ below). Versioning is `0.x` while the app stabilises.
 - Dictation: an installed Whisper model loads from this computer alone; it no longer asks huggingface.co for the model's revision on every load (the owner, 2026-11-03).
 - Equations: the jump row of groups is a words-and-underline strip with a thin scrollbar, an edge fade and sideways wheel scrolling, not a row of boxed buttons (the owner, 2026-11-03).
 - Graph: a hovered link starts and ends at each dot's rim instead of running into its centre (the owner, 2026-11-03).
+- Documents: a diagram (the Mermaid diagram file type) opens in Blocks, a tree of blocks you drag to move, nest, reorder or join, rename in place and walk by keys (N, G, J, Delete, Alt+arrows), with the picture drawing live beside it and Source and Split still the same diagram as text; each change is one undo step, and the editor loads only when a diagram is opened (1546 P2).
 - Library: an empty board's thumbnail ghosts three loose cards with no curves between them, 0 branch curves down from 2, so it no longer reads as a mind map (audit 1028 U40).
 - Docs: SECURITY.md says plainly that a space is organisation, not a security boundary (audit 1028 K16).
 - Chat: with more than five chats pinned, the switcher still shows the three newest others (nine pinned used to fill all eight rows), and a failed caption chunk saves its words off the event loop, which a new lint holds for every async route (audit 1028 E46, K29).

@@ -193,13 +193,23 @@ function syncDocFileType({ prose = true } = {}) {
     //: want on a `.csv` or a `.php` the bundle has no mode for.
     button.disabled = !docViewState.allows(type, button.dataset.docView);
     button.title = button.disabled
-      ? type.ext === "mmd" ? "A diagram shows its picture beside the source, in Split." : `A .${type.ext} file has no rendered form, this is for markdown.`
+      ? type.ext === "mmd" ? "A diagram has Blocks, Split and Source." : `A .${type.ext} file has no rendered form, this is for markdown.`
       : button.dataset.docTitle || button.title;
   }
-  //: A diagram opens in Split the first time its type is synced after another type.
+  //: A diagram's Read button is Blocks (its pane with the picture beside it, no source).
+  const read = document.querySelector('#doc-view-seg [data-doc-view="rendered"]');
+  if (read) {
+    read.dataset.readWords ??= read.textContent.trim();
+    read.dataset.readTitle ??= read.title;
+    const blocks = type.ext === "mmd";
+    read.lastChild.textContent = ` ${blocks ? "Blocks" : read.dataset.readWords}`;
+    read.querySelector("i").className = `ph ${blocks ? "ph-squares-four" : "ph-book-open"} ph-lead`;
+    read.title = blocks ? "The diagram as blocks with its picture, without the source" : read.dataset.readTitle;
+  }
+  //: A diagram opens in Blocks the first time its type is synced after another type.
   const toDiagram = type.ext === "mmd" && docViewState.type !== "mmd";
   docViewState.type = type.ext;
-  if (!docViewState.allows(type, docView) || toDiagram) setDocView(type.ext === "mmd" ? "split" : "source");
+  if (!docViewState.allows(type, docView) || toDiagram) setDocView(type.ext === "mmd" ? "rendered" : "source");
   //: And back: a markdown type again, and Source was only the code file's.
   else if (type.previewable && docViewState.held) setDocView(docDefaultView());
   //: The engine's own language and wrapping, where it is mounted.
@@ -490,14 +500,15 @@ let docView = "source";
 //: remembered as the last editing view; the file type coming back to a
 //: markdown one restores the view the person actually chose.
 //: `allows(type, mode)`: a markdown document may be in any view, a code file in the two that
-//: need no rendered form, and a diagram (the `mmd` type, 1546 D5) also in Split, where its
-//: picture is the preview. `type` is the last file type synced, so a diagram opens in Split.
+//: need no rendered form, and a diagram (the `mmd` type, 1546 D5) also in Blocks (the Read
+//: button's mode) and Split, where the block pane is the preview. `type` is the last file type
+//: synced, so a diagram opens in Blocks.
 const docViewState = {
   held: false,
   tableGrips: null,
   blockHandle: null,
   type: "md",
-  allows: (type, mode) => type.previewable || DOC_VIEWS_UNRENDERED.includes(mode) || (type.ext === "mmd" && mode === "split"),
+  allows: (type, mode) => type.previewable || DOC_VIEWS_UNRENDERED.includes(mode) || (type.ext === "mmd" && (mode === "split" || mode === "rendered")),
 };
 
 //: One-time reset (owner, 2026-10-25: Live should be the default, but their
@@ -928,7 +939,7 @@ function setDocView(mode, { persist = true } = {}) {
   // A code file has no rendered form, so it can only be one of the two views
   // that do not need one. Asked for any other, that is the honest answer
   // rather than an empty pane.
-  if (!docViewState.allows(type, mode)) mode = "source";
+  if (!docViewState.allows(type, mode)) mode = type.ext === "mmd" ? "split" : "source";
   docView = DOC_VIEWS.includes(mode) ? mode : "source";
   //: Source in a code file is the file's only editing view, not a choice; a diagram's view is
   //: never stored, so the markdown documents after it open in the view the person chose.
@@ -4031,16 +4042,22 @@ function scheduleDocPreview() {
 function renderDocPreview() {
   const preview = $("doc-preview");
   if (preview.classList.contains("hidden")) return;
+  //: 1546 D5: a diagram's preview is the block pane with its picture beside the blocks (diagram-
+  //: builder.js); it keeps its own DOM between changes, so the preview is not emptied first.
+  //: Each block gesture hands its printed source to `set` (one history step each: `docUndoBreak`);
+  //: a typed edit or an undo comes back through here. Inline, not a named function: one global less.
+  if (docFileType().ext === "mmd") {
+    const text = docText();
+    const io = { set: (next) => (docUndoBreak(), (docSurface().text = next)), undo: () => docUndo(), redo: () => docRedo() };
+    ensureModule("diagramBuilder").then((ok) => {
+      if (ok) return diagramModel.builder.show(preview, io, text);
+      preview.replaceChildren(Object.assign(document.createElement("p"), { className: "muted", textContent: "The block editor did not load. Source still works." }));
+    });
+    return;
+  }
   preview.replaceChildren();
   const title = ($("doc-title").value || "").trim();
   const text = docText();
-  //: 1546 D5: a diagram's preview is its picture, drawn through the fence path (the frame
-  //: draws it, and refuses what it cannot with the reason under the source).
-  if (docFileType().ext === "mmd") {
-    docRenderBody(preview, "```mermaid\n" + text + "\n```");
-    docRenderMermaidIn(preview);
-    return;
-  }
   //: **The properties are not prose.** Rendered as markdown, a frontmatter
   //: block is a horizontal rule, a paragraph of `key: value` lines and
   //: another rule, which is what the preview showed until now for every

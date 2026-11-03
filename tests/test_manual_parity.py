@@ -323,3 +323,25 @@ def test_the_desktop_companion_row_is_named_as_a_desktop_app_setting():
     settings = (FRONTEND / "js" / "settings.js").read_text(encoding="utf-8")
     note = settings.split('let companionNote = document.getElementById("desktop-companion-note");', 1)[1][:900]
     assert "setting of the desktop app" in note and "not shown in a browser tab" in note
+
+
+def test_the_diagram_blocks_keys_menu_and_views_are_in_the_guide() -> None:
+    """1546 P2: what the block pane does by pointer it does by keys and a menu, and the
+    Guide's `diagram-blocks` topic says each of them in the words the controls use. The
+    topic is in the Documents group, the pane's keys are the ones it names, and the Read
+    button reads Blocks for a diagram."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+    from tessellate.ai.help_topics_more import HELP_GROUPS, TOPIC_META
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
+    for words in ("Blocks", "Source and Split", "Ctrl+Z", "drag it into the blocks", "joins them", "inside",
+                  "Enter renames", "N adds", "G adds a group", "J joins", "Delete removes", "Alt+Up and Alt+Down",
+                  "Alt+Right nests", "Alt+Left lifts", "long press"):
+        assert words in body, words
+    assert "diagram-blocks" in TOPIC_META
+    assert "diagram-blocks" in dict(HELP_GROUPS)["Documents and code"]
+    builder = (FRONTEND / "js" / "diagram-builder.js").read_text(encoding="utf-8")
+    for key in ("Insert", "Delete", "Backspace", "ContextMenu"):
+        assert key in builder, key
+    docs = (FRONTEND / "js" / "documents.js").read_text(encoding="utf-8")
+    assert '"Blocks"' in docs and "A diagram has Blocks, Split and Source." in docs

@@ -431,4 +431,8 @@
 
   //: The file's whole surface: what documents.js and documents-export.js call.
   Object.assign(window, { docRenderMermaidIn, docMermaidWhenDrawn, docMermaidField, diagramModel });
+  //: The block pane (1546 P2) is a bundle of its own, fetched when a diagram is first shown:
+  //: every caller is in this bundle or opens a document first, so no stand-in is needed, and
+  //: neither app.js nor lazy-entries.js (both at their caps) carries the row.
+  Object.assign(LAZY_MODULES, { diagramBuilder: ["/css/diagram-lazy.css", "/js/diagram-builder.js"] });
 })();
