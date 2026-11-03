@@ -1157,6 +1157,8 @@ LIST_ROWS = {
     ".doc-snippet-row": ".doc-snippet-list",
     #: A diagram's blocks, in the block pane (1546 P2; the tree is the one list, groups nest inside it).
     ".dgm-card": ".dgm-tree",
+    #: The ghosts a suggestion leaves in that pane, one row each (1546 P3, design D8).
+    ".dgm-ghost": ".dgm-ghosts",
 }
 
 

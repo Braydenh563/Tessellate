@@ -3116,7 +3116,15 @@ MORE_TOPICS.extend([
             "blocks focused: arrows walk, Enter renames, N adds, G adds a group, J joins, "
             "Delete removes, Alt+Up and Alt+Down reorder, Alt+Right nests into the "
             "group above and Alt+Left lifts out. A line the blocks do not show, such as "
-            "a style, stays where it was."
+            "a style, stays where it was. Suggest, in the bar, starts a diagram three "
+            "ways: Templates (eight flowcharts, with a preview, then Use this template), "
+            "From my notes (pick notes, a checklist becomes steps, headings a mind map) "
+            "and Describe it (say what it is; it needs a model and is dimmed with its "
+            "reason when none is connected). On a blank diagram the suggestion becomes "
+            "the diagram. On one with blocks, the new blocks arrive as dashed ghosts: "
+            "Tab takes one, Shift+Tab lets it go, Enter adds the ones taken and "
+            "Escape drops them all, and Ctrl+Z undoes the whole addition in one step. "
+            "A reply that holds no diagram says why and changes nothing."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },

@@ -2,9 +2,9 @@
 
 Generated 2026-11-03 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7643, frontend ids 2640, CSS sections 519, backend routes 641, backend modules 8502, test files 1916, tests 16149, plan headings 991, app scripts 28, boot scripts 37, script files 235.
+Counts: frontend functions 7658, frontend ids 2640, CSS sections 519, backend routes 641, backend modules 8510, test files 1917, tests 16171, plan headings 991, app scripts 28, boot scripts 37, script files 236.
 
-## Frontend functions (7643)
+## Frontend functions (7658)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3096,7 +3096,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `diagSections` | frontend/js/diag-report.js:106 |
 | `diagTable` | frontend/js/diag-report.js:96 |
 
-### frontend/js/diagram-builder.js (58)
+### frontend/js/diagram-builder.js (60)
 
 | Name | File:line |
 |---|---|
@@ -3107,7 +3107,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `blockKeys` | frontend/js/diagram-builder.js:389 |
 | `boxesOf` | frontend/js/diagram-builder.js:308 |
 | `buildBlock` | frontend/js/diagram-builder.js:398 |
-| `buildPalette` | frontend/js/diagram-builder.js:813 |
+| `buildPalette` | frontend/js/diagram-builder.js:844 |
 | `commit` | frontend/js/diagram-builder.js:288 |
 | `dgbAddGroup` | frontend/js/diagram-builder.js:152 |
 | `dgbAddNode` | frontend/js/diagram-builder.js:144 |
@@ -3132,16 +3132,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dgbUnits` | frontend/js/diagram-builder.js:74 |
 | `dgbUnjoin` | frontend/js/diagram-builder.js:190 |
 | `drawPicture` | frontend/js/diagram-builder.js:331 |
-| `dropApply` | frontend/js/diagram-builder.js:770 |
-| `dropAt` | frontend/js/diagram-builder.js:728 |
-| `dropMark` | frontend/js/diagram-builder.js:749 |
+| `dropApply` | frontend/js/diagram-builder.js:772 |
+| `dropAt` | frontend/js/diagram-builder.js:730 |
+| `dropMark` | frontend/js/diagram-builder.js:751 |
 | `el` | frontend/js/diagram-builder.js:267 |
 | `groupGlyph` | frontend/js/diagram-builder.js:454 |
 | `joinChip` | frontend/js/diagram-builder.js:460 |
 | `joinItems` | frontend/js/diagram-builder.js:479 |
 | `joinPick` | frontend/js/diagram-builder.js:641 |
-| `menuAt` | frontend/js/diagram-builder.js:702 |
-| `mount` | frontend/js/diagram-builder.js:861 |
+| `menuAt` | frontend/js/diagram-builder.js:704 |
+| `mount` | frontend/js/diagram-builder.js:899 |
 | `nameOf` | frontend/js/diagram-builder.js:281 |
 | `nestBlock` | frontend/js/diagram-builder.js:621 |
 | `onKey` | frontend/js/diagram-builder.js:667 |
@@ -3150,14 +3150,34 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `removeBlock` | frontend/js/diagram-builder.js:629 |
 | `render` | frontend/js/diagram-builder.js:367 |
 | `say` | frontend/js/diagram-builder.js:274 |
-| `seedBlock` | frontend/js/diagram-builder.js:713 |
+| `seedBlock` | frontend/js/diagram-builder.js:715 |
 | `select` | frontend/js/diagram-builder.js:537 |
 | `shapeGlyph` | frontend/js/diagram-builder.js:391 |
-| `show` | frontend/js/diagram-builder.js:936 |
+| `show` | frontend/js/diagram-builder.js:980 |
 | `stepBlock` | frontend/js/diagram-builder.js:615 |
-| `sync` | frontend/js/diagram-builder.js:914 |
+| `suggest` | frontend/js/diagram-builder.js:817 |
+| `suggestItems` | frontend/js/diagram-builder.js:822 |
+| `sync` | frontend/js/diagram-builder.js:957 |
 | `titleOf` | frontend/js/diagram-builder.js:280 |
-| `within` | frontend/js/diagram-builder.js:726 |
+| `within` | frontend/js/diagram-builder.js:728 |
+
+### frontend/js/diagram-suggest.js (13)
+
+| Name | File:line |
+|---|---|
+| `compose` | frontend/js/diagram-suggest.js:369 |
+| `count` | frontend/js/diagram-suggest.js:72 |
+| `describe` | frontend/js/diagram-suggest.js:397 |
+| `dgsMerge` | frontend/js/diagram-suggest.js:25 |
+| `dgsSubtree` | frontend/js/diagram-suggest.js:62 |
+| `ghosts` | frontend/js/diagram-suggest.js:129 |
+| `isEmpty` | frontend/js/diagram-suggest.js:76 |
+| `loadTemplates` | frontend/js/diagram-suggest.js:248 |
+| `notes` | frontend/js/diagram-suggest.js:384 |
+| `outlineOf` | frontend/js/diagram-suggest.js:357 |
+| `reason` | frontend/js/diagram-suggest.js:120 |
+| `receive` | frontend/js/diagram-suggest.js:81 |
+| `templates` | frontend/js/diagram-suggest.js:259 |
 
 ### frontend/js/documents-ai.js (15)
 
@@ -12017,7 +12037,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 150 |
-| frontend/css/diagram-lazy.css | 355 |
+| frontend/css/diagram-lazy.css | 534 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 121 |
 | frontend/css/forced-colors-lazy.css | 28 |
@@ -12180,8 +12200,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/command` | GET | `capture_command` | src/tessellate/api/routes_usage.py:46 |
 | `/command/run` | POST | `run_command` | src/tessellate/api/routes_chat.py:1791 |
 | `/commands` | GET | `list_commands` | src/tessellate/api/routes_chat.py:2377 |
-| `/compose` | POST | `compose_draft` | src/tessellate/api/routes_drafts.py:78 |
-| `/compose/stream` | POST | `compose_draft_stream` | src/tessellate/api/routes_drafts.py:120 |
+| `/compose` | POST | `compose_draft` | src/tessellate/api/routes_drafts.py:92 |
+| `/compose/stream` | POST | `compose_draft_stream` | src/tessellate/api/routes_drafts.py:134 |
 | `/compress` | POST | `compress_history` | src/tessellate/api/routes_chat.py:2413 |
 | `/compute` | POST | `compute` | src/tessellate/api/routes_resurface.py:76 |
 | `/confirm` | POST | `confirm_insight` | src/tessellate/api/routes_insights.py:520 |
@@ -12558,7 +12578,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/tidy-proposals` | GET | `tidy_proposals` | src/tessellate/api/routes_vision.py:196 |
 | `/tidy-proposals/dismiss` | POST | `dismiss_tidy` | src/tessellate/api/routes_vision.py:250 |
 | `/tidy-proposals/undismiss` | POST | `undismiss_tidy` | src/tessellate/api/routes_vision.py:262 |
-| `/title` | POST | `draft_title` | src/tessellate/api/routes_drafts.py:157 |
+| `/title` | POST | `draft_title` | src/tessellate/api/routes_drafts.py:171 |
 | `/today-line` | GET | `today_line` | src/tessellate/api/routes_insights.py:472 |
 | `/tools` | GET | `list_tools` | src/tessellate/api/routes_chat.py:2407 |
 | `/tools/execute` | POST | `execute_confirmed_tool` | src/tessellate/api/routes_chat.py:2440 |
@@ -12712,7 +12732,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8502)
+## Backend modules (8510)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14173,40 +14193,47 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `mention_subject` | src/tessellate/ai/composer_lists.py:439 |
 | `window_of` | src/tessellate/ai/composer_lists.py:150 |
 
-### src/tessellate/ai/composer_mermaid.py (30)
+### src/tessellate/ai/composer_mermaid.py (37)
 
 | Name | File:line |
 |---|---|
-| `Diagram` | src/tessellate/ai/composer_mermaid.py:51 |
-| `_about` | src/tessellate/ai/composer_mermaid.py:412 |
-| `_capped` | src/tessellate/ai/composer_mermaid.py:236 |
-| `_day_words` | src/tessellate/ai/composer_mermaid.py:296 |
-| `_drawn` | src/tessellate/ai/composer_mermaid.py:334 |
-| `_event` | src/tessellate/ai/composer_mermaid.py:124 |
-| `_given_text` | src/tessellate/ai/composer_mermaid.py:388 |
-| `_lines` | src/tessellate/ai/composer_mermaid.py:132 |
-| `_listed_steps` | src/tessellate/ai/composer_mermaid.py:160 |
-| `_note_day` | src/tessellate/ai/composer_mermaid.py:283 |
-| `_notes_flowchart` | src/tessellate/ai/composer_mermaid.py:300 |
-| `_notes_lead` | src/tessellate/ai/composer_mermaid.py:421 |
-| `_sentences` | src/tessellate/ai/composer_mermaid.py:154 |
-| `_sort_key` | src/tessellate/ai/composer_mermaid.py:185 |
-| `_subject` | src/tessellate/ai/composer_mermaid.py:400 |
-| `_words` | src/tessellate/ai/composer_mermaid.py:107 |
-| `answer` | src/tessellate/ai/composer_mermaid.py:427 |
-| `asks` | src/tessellate/ai/composer_mermaid.py:96 |
-| `dated` | src/tessellate/ai/composer_mermaid.py:198 |
-| `diagram` | src/tessellate/ai/composer_mermaid.py:354 |
-| `drafted` | src/tessellate/ai/composer_mermaid.py:367 |
-| `fenced` | src/tessellate/ai/composer_mermaid.py:276 |
-| `flowchart` | src/tessellate/ai/composer_mermaid.py:240 |
-| `from_notes` | src/tessellate/ai/composer_mermaid.py:309 |
-| `label` | src/tessellate/ai/composer_mermaid.py:118 |
-| `mindmap` | src/tessellate/ai/composer_mermaid.py:264 |
-| `steps` | src/tessellate/ai/composer_mermaid.py:172 |
-| `timeline` | src/tessellate/ai/composer_mermaid.py:248 |
-| `tree` | src/tessellate/ai/composer_mermaid.py:214 |
-| `wanted` | src/tessellate/ai/composer_mermaid.py:87 |
+| `Diagram` | src/tessellate/ai/composer_mermaid.py:53 |
+| `_about` | src/tessellate/ai/composer_mermaid.py:516 |
+| `_capped` | src/tessellate/ai/composer_mermaid.py:295 |
+| `_checklist` | src/tessellate/ai/composer_mermaid.py:175 |
+| `_day_words` | src/tessellate/ai/composer_mermaid.py:387 |
+| `_drawn` | src/tessellate/ai/composer_mermaid.py:438 |
+| `_event` | src/tessellate/ai/composer_mermaid.py:126 |
+| `_given_text` | src/tessellate/ai/composer_mermaid.py:492 |
+| `_lines` | src/tessellate/ai/composer_mermaid.py:134 |
+| `_listed_steps` | src/tessellate/ai/composer_mermaid.py:163 |
+| `_named` | src/tessellate/ai/composer_mermaid.py:412 |
+| `_note_day` | src/tessellate/ai/composer_mermaid.py:374 |
+| `_notes_branches` | src/tessellate/ai/composer_mermaid.py:400 |
+| `_notes_flowchart` | src/tessellate/ai/composer_mermaid.py:391 |
+| `_notes_lead` | src/tessellate/ai/composer_mermaid.py:525 |
+| `_outline` | src/tessellate/ai/composer_mermaid.py:275 |
+| `_outline_branches` | src/tessellate/ai/composer_mermaid.py:229 |
+| `_rooted` | src/tessellate/ai/composer_mermaid.py:261 |
+| `_sentences` | src/tessellate/ai/composer_mermaid.py:157 |
+| `_sort_key` | src/tessellate/ai/composer_mermaid.py:200 |
+| `_subject` | src/tessellate/ai/composer_mermaid.py:504 |
+| `_words` | src/tessellate/ai/composer_mermaid.py:109 |
+| `answer` | src/tessellate/ai/composer_mermaid.py:531 |
+| `asks` | src/tessellate/ai/composer_mermaid.py:98 |
+| `dated` | src/tessellate/ai/composer_mermaid.py:213 |
+| `diagram` | src/tessellate/ai/composer_mermaid.py:458 |
+| `drafted` | src/tessellate/ai/composer_mermaid.py:471 |
+| `fenced` | src/tessellate/ai/composer_mermaid.py:335 |
+| `flowchart` | src/tessellate/ai/composer_mermaid.py:299 |
+| `from_notes` | src/tessellate/ai/composer_mermaid.py:419 |
+| `label` | src/tessellate/ai/composer_mermaid.py:120 |
+| `mindmap` | src/tessellate/ai/composer_mermaid.py:323 |
+| `source_of` | src/tessellate/ai/composer_mermaid.py:348 |
+| `steps` | src/tessellate/ai/composer_mermaid.py:186 |
+| `timeline` | src/tessellate/ai/composer_mermaid.py:307 |
+| `tree` | src/tessellate/ai/composer_mermaid.py:245 |
+| `wanted` | src/tessellate/ai/composer_mermaid.py:89 |
 
 ### src/tessellate/ai/composer_money.py (89)
 
@@ -15469,8 +15496,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3182 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3308 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3190 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3316 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -18962,16 +18989,17 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `update_document` | src/tessellate/api/routes_documents.py:728 |
 | `write_contents` | src/tessellate/api/routes_documents.py:570 |
 
-### src/tessellate/api/routes_drafts.py (6)
+### src/tessellate/api/routes_drafts.py (7)
 
 | Name | File:line |
 |---|---|
 | `ComposeBody` | src/tessellate/api/routes_drafts.py:33 |
 | `TitleBody` | src/tessellate/api/routes_drafts.py:74 |
 | `_sources` | src/tessellate/api/routes_drafts.py:52 |
-| `compose_draft` | src/tessellate/api/routes_drafts.py:79 |
-| `compose_draft_stream` | src/tessellate/api/routes_drafts.py:121 |
-| `draft_title` | src/tessellate/api/routes_drafts.py:158 |
+| `_with_diagram` | src/tessellate/api/routes_drafts.py:78 |
+| `compose_draft` | src/tessellate/api/routes_drafts.py:93 |
+| `compose_draft_stream` | src/tessellate/api/routes_drafts.py:135 |
+| `draft_title` | src/tessellate/api/routes_drafts.py:172 |
 
 ### src/tessellate/api/routes_duplicates.py (7)
 
@@ -23403,7 +23431,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16149)
+## Tests (16171)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23895,6 +23923,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_builder.py | 18 |
 | tests/test_diagram_document.py | 7 |
 | tests/test_diagram_model.py | 12 |
+| tests/test_diagram_suggest.py | 21 |
 | tests/test_dialogue_b8.py | 1 |
 | tests/test_dictation_options.py | 8 |
 | tests/test_digest_structure.py | 24 |
@@ -24424,7 +24453,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_make_plan.py | 21 |
 | tests/test_manage_lists_504.py | 5 |
 | tests/test_manual_entry_points.py | 3 |
-| tests/test_manual_parity.py | 15 |
+| tests/test_manual_parity.py | 16 |
 | tests/test_map_actions_clear_of_label.py | 1 |
 | tests/test_map_add_speed.py | 6 |
 | tests/test_map_branch_colour_order.py | 3 |

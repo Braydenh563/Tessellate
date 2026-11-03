@@ -345,3 +345,19 @@ def test_the_diagram_blocks_keys_menu_and_views_are_in_the_guide() -> None:
         assert key in builder, key
     docs = (FRONTEND / "js" / "documents.js").read_text(encoding="utf-8")
     assert '"Blocks"' in docs and "A diagram has Blocks, Split and Source." in docs
+
+
+def test_the_diagram_suggestions_are_in_the_guide_in_the_controls_words() -> None:
+    """1546 P3: Suggest and its three ways in, the ghosts and their keys, and the dimmed
+    Describe it, each said in the words the controls carry."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
+    for words in ("Suggest", "Templates", "From my notes", "Describe it", "Use this template", "dimmed",
+                  "ghosts", "Tab takes", "Shift+Tab lets it go", "Enter adds", "Escape drops", "Ctrl+Z undoes the whole addition"):
+        assert words in body, words
+    builder = (FRONTEND / "js" / "diagram-builder.js").read_text(encoding="utf-8")
+    suggest = (FRONTEND / "js" / "diagram-suggest.js").read_text(encoding="utf-8")
+    for label in ("Templates", "From my notes", "Describe it", "Suggest"):
+        assert label in builder, label
+    assert "Use this template" in suggest
