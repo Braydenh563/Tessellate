@@ -617,7 +617,7 @@ function renderQuickLinks() {
   //: line it covers nothing, which was the fault of the ⋯ this row had once.
   head.append(heading, kebabMenu(dashCustomiseItems().filter((item) => item.group === "quick"), "Quick access options"));
   const row = document.createElement("div");
-  row.className = "launch-row launch-row-start edge-fade";
+  row.className = "launch-row launch-row-start edge-fade scroll-row";
   const tints = quickTints();
   quickAccessCurrent().forEach((link, index) => row.appendChild(quickLinkButton(link, quickTintKey(link.id, index, tints))));
   const group = document.createElement("div");

@@ -260,12 +260,7 @@ function syncTabOverflowFade() {
     header.classList.toggle("tabs-wrapped", mode === "wrapped");
     header.classList.toggle("tabs-centred", mode === "centred");
   }
-  // 1px of slack at each end: sub-pixel layout makes scrollWidth exceed
-  // clientWidth by a fraction on plenty of widths where nothing is cut off,
-  // and a scroll offset lands on .5 of a pixel as often as not.
-  const hidden = bar.scrollWidth - bar.clientWidth;
-  bar.classList.toggle("fade-start", hidden > 1 && bar.scrollLeft > 1);
-  bar.classList.toggle("fade-end", hidden - bar.scrollLeft > 1);
+  syncEdgeFade(bar);
 }
 
 // Selecting a tab brings it into view, so the fade is only over a tab you
@@ -281,7 +276,7 @@ function revealActiveTab() {
   syncTabOverflowFade();
 }
 
-window.addEventListener("resize", syncTabOverflowFade, { passive: true });
+window.addEventListener("resize", syncTabOverflowFade);
 //: Once more when the webfont lands: the boot measurement sees fallback
 //: glyphs, and a strip that fit in those can wrap or collide in the real face.
 document.fonts?.ready?.then(() => syncTabOverflowFade());
@@ -290,13 +285,11 @@ document.fonts?.ready?.then(() => syncTabOverflowFade());
 //: measurement had counted as the strip's. Measured at 1240: the boot sync
 //: left the strip unwrapped and 13px under the controls, and the same call
 //: a moment later wrapped it (INBOX 195).
-if (window.ResizeObserver) {
-  const headerWatch = new ResizeObserver(() => syncTabOverflowFade());
-  for (const child of $("top-bar")?.children || []) {
-    if (child.id !== "tab-bar") headerWatch.observe(child);
-  }
+{
+  const headerWatch = new ResizeObserver(syncTabOverflowFade);
+  for (const child of $("top-bar")?.children || []) if (child.id !== "tab-bar") headerWatch.observe(child);
 }
-$("tab-bar")?.addEventListener("scroll", syncTabOverflowFade, { passive: true });
+$("tab-bar")?.addEventListener("scroll", syncTabOverflowFade);
 
 //: **One sliding indicator for every strip** (the owner, 2026-10-04: "a
 //: slight css sliding animation ... cheap but looks professional", and
@@ -403,9 +396,17 @@ glideStrip($("tab-bar"));
 // half of syncTabOverflowFade, reused rather than duplicated.
 function syncEdgeFade(bar) {
   if (!bar) return;
+  // 1px of slack at each end: sub-pixel layout makes scrollWidth exceed
+  // clientWidth by a fraction on plenty of widths where nothing is cut off,
+  // and a scroll offset lands on .5 of a pixel as often as not.
   const hidden = bar.scrollWidth - bar.clientWidth;
   bar.classList.toggle("fade-start", hidden > 1 && bar.scrollLeft > 1);
   bar.classList.toggle("fade-end", hidden - bar.scrollLeft > 1);
+  //: scroll-row.js, the arrows, is fetched by the first row that overflows.
+  if (bar.matches(".scroll-row")) {
+    if (window.scrollRowArrows) scrollRowArrows(bar, hidden > 1);
+    else if (hidden > 1) lazyScript("/js/scroll-row.js").then(() => syncEdgeFade(bar));
+  }
 }
 
 //: **One recipe for a strip that scrolls** (1031 UX6: the launch row held 760
@@ -421,9 +422,8 @@ function edgeFadeWire(bar) {
   //: one shows or its content changes width), never measured here: a strip a
   //: script has just built read its width in the press that built it (21ms of
   //: style and 14 of layout on a Dashboard press at 4x, INBOX 1534).
-  if (typeof ResizeObserver !== "undefined") new ResizeObserver(() => syncEdgeFade(bar)).observe(bar);
-  else syncEdgeFade(bar);
-  bar.addEventListener("scroll", () => syncEdgeFade(bar), { passive: true });
+  new ResizeObserver(() => syncEdgeFade(bar)).observe(bar);
+  bar.addEventListener("scroll", () => syncEdgeFade(bar));
   bar.addEventListener("click", (event) => {
     const pick = event.target.closest?.("button, [role=tab]");
     if (pick && bar.contains(pick) && /(^|\s)fade-(start|end)(\s|$)/.test(bar.className)) pick.scrollIntoView({ block: "nearest", inline: "nearest" });
@@ -433,9 +433,7 @@ function edgeFadeWire(bar) {
 // The observer in edgeFadeWire also fires when a hidden (0-width) strip becomes
 // visible on tab switch, same as content changing width.
 for (const bar of document.querySelectorAll(".edge-fade")) edgeFadeWire(bar);
-window.addEventListener("resize", () => {
-  document.querySelectorAll(".edge-fade").forEach(syncEdgeFade);
-}, { passive: true });
+window.addEventListener("resize", () => document.querySelectorAll(".edge-fade").forEach(syncEdgeFade));
 
 // --- the scroll edge effect (UI_MODERNISATION_PLAN Phase 10, INBOX 100) -----
 //
@@ -669,7 +667,7 @@ function syncScrollEdges() {
   $("phone-tab-dock")?.removeAttribute("data-receded");
 }
 
-window.addEventListener("resize", syncScrollEdges, { passive: true });
+window.addEventListener("resize", syncScrollEdges);
 
 // A tab switch is a class change on the pages, not an event this file
 // publishes, and observing it here keeps the whole effect in one block
@@ -910,9 +908,11 @@ async function loadReminders() {
   //: on screen until the answer replaces it.
   if (!loadReminders.loaded) showSkeletons($("reminder-groups"), 3);
   const all = await apiPagedList("/reminders", 200).catch(() => null);
-  if (all) loadReminders.loaded = true;
   //: A reminder just made or moved is the soonest one: the due timer follows.
-  if (all) armReminderTimer(all);
+  if (all) {
+    loadReminders.loaded = true;
+    armReminderTimer(all);
+  }
   clearSkeletons($("reminder-groups"));
   if (!all) {
     surfaceFailed($("reminders-empty"), "your reminders", loadReminders);
@@ -928,9 +928,7 @@ async function loadReminders() {
   const groupsBox = $("reminder-groups");
   groupsBox.replaceChildren();
 
-  const reminders = all.filter((r) =>
-    reminderFilter === "all" ? true : reminderFilter === "done" ? r.done : !r.done
-  );
+  const reminders = all.filter((r) => reminderFilter === "all" || (reminderFilter === "done" ? r.done : !r.done));
   $("reminders-empty").classList.toggle("hidden", all.length > 0);
   $("reminder-clear-done").classList.toggle("hidden", !all.some((r) => r.done));
   // Surface anything due on the tab itself, from wherever you are.
@@ -1012,17 +1010,13 @@ function updateReminderBadge(reminders) {
   const button = $("tab-btn-reminders");
   if (!button) return;
   const now = new Date();
-  const due = (reminders || []).filter(
-    (r) => !r.done && new Date(r.due_at) <= now
-  ).length;
+  const open = (reminders || []).filter((r) => !r.done);
+  const due = open.filter((r) => new Date(r.due_at) <= now).length;
   // The status bar's reminder slot is fed from here rather than from its own
   // fetch: this function is the one place both callers of /reminders land, so
   // the bar and the tab badge cannot disagree and no second timer exists to
   // drift from the first.
-  reminderCounts = {
-    open: (reminders || []).filter((r) => !r.done).length,
-    due,
-  };
+  reminderCounts = { open: open.length, due };
   renderStatusBar();
   syncPhoneMoreRuns();
 
@@ -1178,12 +1172,12 @@ function reminderItem(reminder, label) {
   if (!reminder.done) {
     actions.appendChild(
       smallButton("+1h", "Snooze one hour", () =>
-        snoozeReminderTo(reminder, new Date(Date.now() + 60 * 60 * 1000))
+        lazyScript("/js/reminder-edit.js").then(() => snoozeReminderTo(reminder, new Date(Date.now() + 60 * 60 * 1000)))
       )
     );
     actions.appendChild(
       smallButton("ph:arrow-right Tomorrow", "Snooze to tomorrow 9am", () =>
-        snoozeReminderTo(reminder, presetDate("tomorrow"))
+        lazyScript("/js/reminder-edit.js").then(() => snoozeReminderTo(reminder, presetDate("tomorrow")))
       )
     );
   }
@@ -1225,7 +1219,7 @@ function reminderItem(reminder, label) {
   if (!reminder.done) {
     menuItems.push({
       label: "ph:clock-countdown Snooze 10 minutes",
-      run: () => snoozeReminderTo(reminder, new Date(Date.now() + 10 * 60 * 1000)),
+      run: () => lazyScript("/js/reminder-edit.js").then(() => snoozeReminderTo(reminder, new Date(Date.now() + 10 * 60 * 1000))),
       group: "snooze",
     });
   }
@@ -1477,29 +1471,6 @@ function refreshReminderDefaults() {
     syncPartsFromDue();
     updateDueReadout();
   }
-}
-
-async function snoozeReminderTo(reminder, when) {
-  const before = { due_at: reminder.due_at, done: Boolean(reminder.done) };
-  const put = (body) =>
-    apiJson(`/reminders/${reminder.id}`, { method: "PUT", body: JSON.stringify({ ...body, restore: true }) });
-  await put({ due_at: when.toISOString(), done: false });
-  loadReminders();
-  //: Undo puts the old time and state back (WORLD_CLASS_PLAN row 32, from
-  //: the world-class branch's 2d867a1); `restore` lets a time already past
-  //: through (an overdue reminder is the one that gets snoozed).
-  const back = async () => {
-    await put(before);
-    loadReminders();
-  };
-  const action = pushUndo("Snoozed a reminder", back, async () => {
-    await put({ due_at: when.toISOString(), done: false });
-    loadReminders();
-  });
-  toastAction(`Snoozed to ${whenText(when)}.`, "Undo", async () => {
-    settleUndoFromToast(action);
-    await back();
-  });
 }
 
 //: **Every reminder act undoes** (TIMELINE_PLAN 11 row 1): create, complete

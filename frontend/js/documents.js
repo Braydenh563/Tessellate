@@ -11648,6 +11648,21 @@ function docProseFindings(text) {
       });
       continue;
     }
+    //: A contraction that is also a word ("I cant go", "ill be there"): the
+    //: neighbours decide (`autocorrectState.contextual`), and the word is
+    //: known to the dictionary, so it is asked before the dictionary is.
+    const said = autocorrectState.inText(text, hit.index, hit[0]);
+    if (said) {
+      found.push({
+        rule: "spelling",
+        message: `“${hit[0]}” is probably “${said}”`,
+        start: hit.index,
+        end: hit.index + hit[0].length,
+        text: hit[0],
+        replacement: said,
+      });
+      continue;
+    }
     //: **Everything else, against the dictionary.** The table above is 42
     //: entries and keeps its place only because it carries the one certain
     //: answer for each of them; this is the check that makes the other
@@ -11794,7 +11809,7 @@ function docCodeSpellFindings(text, win = null) {
     if (dictionary.has(lower)) continue;
     const at = hit.index;
     const base = { start: at + shift, end: at + shift + hit[0].length, text: hit[0], rule: "spelling" };
-    const better = DOC_AUTOCORRECT[lower];
+    const better = DOC_AUTOCORRECT[lower] || autocorrectState.inText(masked, at, hit[0]);
     if (better) {
       found.push({ ...base, message: `“${hit[0]}” is probably “${better}”`, replacement: docMatchCase(hit[0], better) });
       continue;

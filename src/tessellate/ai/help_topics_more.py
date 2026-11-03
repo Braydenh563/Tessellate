@@ -751,7 +751,9 @@ MORE_TOPICS: list[dict] = [
             "search as a row under Saved searches in the Notes sidebar. Sort has Best "
             "match, Group by category (a note under its category, the rest under "
             "their kind), Newest first and Oldest first. Its '?' lists "
-            "the operators. It lists the command "
+            "the operators. The kind chips under the box scroll sideways when they do "
+            "not fit: a thin bar on a mouse or trackpad, an arrow at the end that has "
+            "more, a swipe on touch. It lists the command "
             "palette's actions too, so \"dark\" finds Toggle light/dark, after the "
             "notes and files. The command palette (Ctrl+K) sends what you type "
             "here: its last row, Search everything for, opens this box with "
@@ -3304,7 +3306,9 @@ MORE_TOPICS.append({
     ),
     "body": (
         "Autocorrect fixes a clear typo, such as teh, as you finish the "
-        "word, in the note boxes, the chat and Ask composers, the reminder boxes and the titles. "
+        "word, and puts back a missing apostrophe (havent, ive, dont, youre and the rest "
+        "become haven't, I've, don't, you're; ill, id, cant and wont only where "
+        "the words around them say so), in the note boxes, the chat and Ask composers, the reminder boxes and the titles. "
         "The corrected word is underlined for five seconds: rest the pointer on "
         "it or click it for a small menu to keep it, put back what you typed, "
         "or edit the word (a document gets the same underline), "

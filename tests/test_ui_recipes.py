@@ -7110,3 +7110,44 @@ def test_an_offer_with_a_dismiss_is_the_split_chip() -> None:
     assert "var(--error)" in _rule_exact(css, ".entry-meta > .chip.suggested-tag > .suggested-tag-dismiss:is(:hover, :focus-visible)")
     coarse = re.search(r"@media \(max-width: 819\.98px\), \(pointer: coarse\) \{\s*\.entry-meta > \.chip\.suggested-tag > \.suggested-tag-dismiss[^{]*\{([^}]*)\}", css)
     assert coarse and "width: var(--target-min)" in coarse.group(1) and "margin-inline-end: calc(1.5rem - var(--target-min))" in coarse.group(1)
+
+
+# --- A row of chips that scrolls sideways (INBOX 1578) ------------------------
+
+_SCROLL_ROW_MEMBERS = (".finder-filters", ".library-filters", ".wb-map-templates-row", ".launch-row")
+
+
+def test_a_sideways_chip_row_is_the_scroll_row_recipe() -> None:
+    """Find anything's kind row hid its bar and ran under Sort. The class: a chip
+    row that scrolls on x is `edge-fade scroll-row` (a thin bar on a pointer,
+    the fade, arrows at an end with more behind it), and no rule of its own hides
+    the bar again."""
+    shell = (ROOT / "frontend" / "css" / "00-tokens-shell.css").read_text(encoding="utf-8")
+    assert re.search(r"\.scroll-row \{\s*scrollbar-width: none;", shell)
+    fine = shell.split("@media (hover: hover) and (pointer: fine) {\n  .scroll-row {", 1)[1].split("}", 1)[0]
+    assert "scrollbar-width: thin" in fine
+    # every class list that names scroll-row names edge-fade too (the arrows hang off the fade's classes)
+    seen = 0
+    for path in [ROOT / "frontend" / "index.html", *JS]:
+        for classes in re.findall(r'(?:class="|className = ")([^"]*\bscroll-row\b(?!-)[^"]*)"', path.read_text(encoding="utf-8")):
+            seen += 1
+            assert "edge-fade" in classes.split(), (path.name, classes)
+    assert seen >= 5, seen
+    # no rule for a member of the recipe hides its bar
+    for css in CSS:
+        for sel, body in _rules(css.read_text(encoding="utf-8")):
+            if any(m in sel for m in _SCROLL_ROW_MEMBERS):
+                assert "scrollbar-width: none" not in body, (css.name, sel)
+                if "::-webkit-scrollbar" in sel:
+                    assert "display: none" not in body, (css.name, sel)
+    # the arrows come with the fade, and only for the class
+    fade = (ROOT / "frontend" / "js" / "shell-reminders.js").read_text(encoding="utf-8")
+    sync = fade.split("function syncEdgeFade(", 1)[1].split("\n}\n", 1)[0]
+    assert 'bar.matches(".scroll-row")' in sync and "scrollRowArrows(bar, hidden > 1)" in sync
+    # the arrows are a lazy file the first overflowing row fetches (`lazyScript`), not boot's weight
+    assert 'lazyScript("/js/scroll-row.js")' in sync
+    arrows = (ROOT / "frontend" / "js" / "scroll-row.js").read_text(encoding="utf-8")
+    assert 'button.setAttribute("aria-hidden", "true")' in arrows and "button.tabIndex = -1" in arrows
+    # the finder has no wiring of its own
+    assert "finderSyncFilterEdges" not in app_js_text()
+    assert "`.scroll-row`" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")

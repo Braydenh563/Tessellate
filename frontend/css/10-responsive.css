@@ -1771,7 +1771,6 @@ header#top-bar[data-scrolled="1"],
   #tab-library .library-filters {
     flex-wrap: nowrap;
     overflow-x: auto;
-    scrollbar-width: none;
   }
   #tab-library .library-filters > * {
     flex: 0 0 auto;

@@ -82,8 +82,6 @@
  "quick-note.js::mutation-observer": 1,
  "reply-kit.js::raf": 4,
  "router-overlays.js::mutation-observer": 1,
- "search.js::raf": 1,
- "search.js::resize-observer": 1,
  "settings-controls.js::raf": 1,
  "settings-find.js::mutation-observer": 1,
  "settings-find.js::raf": 3,
