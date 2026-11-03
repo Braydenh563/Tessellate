@@ -696,6 +696,11 @@
   }
 }
 
+/* Suggest is the ... menu's row on a phone (diagram-builder.js `more`): Add, Undo, Redo and the menu are one row at 320. */
+.dgm-compact .dgm-suggest {
+  display: none;
+}
+
 /* The sheet's rows give every glyph about the same width, so the names line up. */
 .sheet-row > .dgm-shape {
   margin-inline: calc(var(--space-1) / 2);

@@ -2858,6 +2858,12 @@ def _local_text(path: Path, choice: str = "") -> str:
         return ocr.extract_text(path, choice) if choice else ocr.extract_text(path)
 
 
+def _local_region_text(path: Path, choice: str = "") -> str:
+    """`ocr.extract_region_text`: a crop is read as one block (INBOX 1568)."""
+    with activity.track("ocr", "Reading text from a picture", stoppable=False):
+        return ocr.extract_region_text(path, choice)
+
+
 def _local_regions(path: Path, choice: str = "") -> dict | None:
     """`ocr.extract_regions`, the same way as `_local_text`."""
     return ocr.extract_regions(path, choice) if choice else ocr.extract_regions(path)
@@ -3660,7 +3666,7 @@ def _region_text(data: bytes, mode: str, reader: str, local: bool, model: str) -
             #: the *figure*, which is what the prompt asks for either way.
             return captioning.page_caption_text(crop_path, 0, 1, model, deps.get_ollama())
         if local:
-            return (_local_text(crop_path, _engine_choice(reader)) or "").strip()
+            return (_local_region_text(crop_path, _engine_choice(reader)) or "").strip()
         return (vision_ocr.vision_ocr_text(crop_path, model, deps.get_ollama()) or "").strip()
 
 

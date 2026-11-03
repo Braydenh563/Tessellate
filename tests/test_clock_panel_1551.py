@@ -129,7 +129,8 @@ def test_a_set_an_alarm_row_opens_the_alarm_tab():
 
 def test_chat_s_slash_menu_runs_the_row_and_says_it_opens_a_panel():
     editor = (JS / "editor.js").read_text(encoding="utf-8")
-    assert 'hint: "opens a panel"' in editor and "tool.open()" in editor
+    # `tool.open(` takes the chat field as its target for the Diagram builder (1588), so the call has an argument now
+    assert 'hint: "opens a panel"' in editor and "afterPress(() => tool.open(" in editor
 
 
 def test_the_palette_timer_rows_open_the_panel_too():

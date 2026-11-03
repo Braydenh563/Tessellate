@@ -3196,7 +3196,7 @@ MORE_TOPICS.extend([
             "blocks focused: arrows walk, Enter renames, N adds, G adds a group, C or J joins, "
             "Delete removes, Alt+Up and Alt+Down reorder, Alt+Right nests into the "
             "group above and Alt+Left lifts out. A line the blocks cannot show stays as it was. "
-            "Suggest starts a diagram three "
+            "Suggest (in the ... menu on a phone) starts a diagram three "
             "ways: Templates (with a preview, then Use this template), "
             "From my notes (pick notes, a checklist becomes steps, headings a mind map) "
             "and Describe it (say what it is; it needs a model and is dimmed with its "
@@ -3204,7 +3204,7 @@ MORE_TOPICS.extend([
             "the diagram. On one with blocks, the new blocks arrive as dashed ghosts: "
             "Tab takes one, Shift+Tab lets it go, Enter adds the ones taken and "
             "Escape drops them all, and Ctrl+Z undoes the whole addition in one step. "
-            "Mind maps, timelines and sequence diagrams have their own blocks: see the next topic."
+            "The other kinds have their own blocks: see the next topic."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },
