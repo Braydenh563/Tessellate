@@ -3627,7 +3627,12 @@ function setAtlasMood(mood, forMs = 0, { quiet = false, easeMs = 0, backEaseMs =
   //: now moves it, over 0.7s (`nameMarkBuddyBlend`, the companion's own
   //: hand-over), in every layered figure on screen.
   const boxes = [...document.querySelectorAll(".atl-figure-box:not(.atl-off)")];
-  if (boxes.length) nameMarkBuddyBlend(boxes, apply, 700);
+  //: **And never the first to read an arriving page** (a30v's found list):
+  //: the blend's read of every part, inside `uiSettlingUntil`, paid the new
+  //: tab's whole restyle; the change waits the few hundred ms to its end.
+  const settling = (window.uiSettlingUntil || 0) - performance.now();
+  if (boxes.length && settling > 0) setTimeout(() => nameMarkBuddyBlend(boxes, apply, 700), settling + 20);
+  else if (boxes.length) nameMarkBuddyBlend(boxes, apply, 700);
   else apply();
   if (next === "surprised" && forMs > 2000) {
     //: A failure startles first, then worries until it has passed.
@@ -3689,6 +3694,8 @@ function atlasOn(event) {
     clearTimeout(atlasDriftState.searchTimer);
     atlasDriftState.searchTimer = setTimeout(() => {
       if (atlasMoodNow === "calm" || atlasMoodNow === "curious") setAtlasMood(event === "found" ? "happy" : "confused", 2600, { quiet: true, backEaseMs: 1200 });
+      //: And the companion's body, whoever it is (INBOX 1581, `NMB_MIND.saw`).
+      nameMarkBuddyReact(event);
     }, 1500);
   }
 }
@@ -3704,16 +3711,26 @@ function atlasOn(event) {
 //: back: curious, pleased, bashful, proud, fond, a laugh, a thought; at
 //: night drowsier ones. Never one of the last two, never on a hidden tab or
 //: behind the lock. One timer, one mood change a minute at most.
+//: **The day has four parts** (INBOX 1581, the owner: "more behaviour and npc
+//: improvements"): bright and curious in the morning, thoughtful in the
+//: afternoon, softer in the evening, drowsy at night, and the drift comes
+//: less often as the day winds down (`atlasDriftState.pace`). The part of the day
+//: is `atlasDriftState.phase(hour)`, which the small moves (atlas-micro.js)
+//: and the companion's energy (avatars.js) read too.
 const ATLAS_DRIFT_POOL = {
-  day: [["curious", 3], ["happy", 3], ["shy", 1.5], ["thinking", 1.2], ["proud", 1], ["love", 0.7], ["laughing", 0.5]],
+  morning: [["curious", 3], ["happy", 3.4], ["proud", 1.1], ["laughing", 0.7], ["shy", 1], ["thinking", 0.7]],
+  afternoon: [["thinking", 2.2], ["curious", 2.6], ["happy", 2.4], ["proud", 1.4], ["shy", 1], ["love", 0.5]],
+  evening: [["happy", 2.4], ["love", 1.3], ["shy", 1.8], ["curious", 1.6], ["thinking", 0.7], ["sleepy", 0.6]],
   night: [["sleepy", 2], ["curious", 1.5], ["happy", 1], ["shy", 1], ["love", 0.5]],
 };
+atlasDriftState.pace = { morning: 0.85, afternoon: 1, evening: 1.15, night: 1.3 };
+atlasDriftState.phase = (hour) => (hour >= 22 || hour < 6 ? "night" : hour < 11 ? "morning" : hour < 17 ? "afternoon" : "evening");
 function atlasDrift() {
-  atlasDriftState.timer = setTimeout(atlasDrift, 35000 + Math.random() * 40000);
+  const phase = atlasDriftState.phase(new Date().getHours());
+  atlasDriftState.timer = setTimeout(atlasDrift, (35000 + Math.random() * 40000) * atlasDriftState.pace[phase]);
   if (document.documentElement.hasAttribute("data-atlas-hidden") || atlasMoodNow !== "calm" || Date.now() - atlasDriftState.changedAt < 20000) return;
   if (!document.querySelector(".nm-atlas")) return;
-  const hour = new Date().getHours();
-  const pool = ATLAS_DRIFT_POOL[hour >= 22 || hour < 6 ? "night" : "day"].filter(([mood]) => !atlasDriftState.recent.includes(mood));
+  const pool = ATLAS_DRIFT_POOL[phase].filter(([mood]) => !atlasDriftState.recent.includes(mood));
   let r = Math.random() * pool.reduce((sum, [, w]) => sum + w, 0);
   let pick = pool[0][0];
   for (const [mood, w] of pool) {

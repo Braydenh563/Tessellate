@@ -311,9 +311,11 @@ def test_first_readers_wait_for_an_arriving_page() -> None:
     assert "rig.still = busy || (settling && rig.dirty) ? 0" in frame, "it stays awake until it has read again"
     mood = _fn(ATLAS, "setAtlasMood")
     assert "window.uiSettlingUntil" in mood and "setTimeout(() => nameMarkBuddyBlend(boxes, apply, 700), settling + 20)" in mood
-    # Tried and taken out: the follow frame waiting for the settle measured
-    # 41 reads, 220 ms against 32, 131 ms without it (two flip runs each at 4x).
-    assert "uiSettlingUntil" not in _fn(AV, "nameMarkBuddyFollowFrame")
+    # The follow frame's own hold moved to 1575 (only while it follows a panel,
+    # `nmb.glue`): measured 27 settling reads, 1.2 s, gone in a nine-tab series at
+    # 4x, where this agent's earlier unconditional hold had measured worse on flip
+    # runs; tests/test_lag_forced_layout_1575.py pins it.
+    assert "!!nmb.glue && now < (window.uiSettlingUntil" in _fn(AV, "nameMarkBuddyFollowFrame")
 
 
 @needs_node
@@ -322,12 +324,14 @@ def test_atlas_play_restarts_with_no_forced_layout() -> None:
 const vm = require("vm");
 let reads = 0;
 const rafs = [];
-const mk = () => { const c = new Set(); return { classList: { add: (x) => c.add(x), remove: (x) => c.delete(x), contains: (x) => c.has(x) }, getBoundingClientRect: () => { reads += 1; return {}; }, c }; };
+const mk = () => { const c = new Set(); return { isConnected: true, classList: { add: (x) => c.add(x), remove: (x) => c.delete(x), contains: (x) => c.has(x) }, getBoundingClientRect: () => { reads += 1; return {}; }, c }; };
 const marks = [mk(), mk()];
-const ctx = { document: { querySelectorAll: () => marks }, requestAnimationFrame: () => { throw new Error("no frame"); }, setTimeout: (f, ms) => { if (ms < 100) rafs.push(f); } };
+//: The move goes back on after two frames (`afterFrames`, dashboard.js, merged with 1575), never by a read.
+const ctx = { document: { querySelectorAll: () => marks }, requestAnimationFrame: () => { throw new Error("no frame"); }, afterFrames: (f) => rafs.push(f), setTimeout: () => {} };
 vm.createContext(ctx);
 vm.runInContext(process.argv[1], ctx);
 ctx.atlasPlay("nod");
+while (rafs.length) rafs.shift()();
 const first = marks.map((m) => m.c.has("atl-play-nod"));
 ctx.atlasPlay("nod");
 const during = marks.map((m) => m.c.has("atl-play-nod"));
