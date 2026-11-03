@@ -39,8 +39,9 @@ def test_the_filters_leave_the_right_notes(session):
     hub = Entry(content="Harbor\nThe boat shed plan.", updated_at=naive - timedelta(days=1), created_at=naive - timedelta(days=200))
     old = Entry(content="Crane hire quote", tags='["work"]', category_id=work.id, updated_at=naive - timedelta(days=150),
                 created_at=naive - timedelta(days=150))
+    #: "Edited" is a person's edit, `edited_at`, not any change of `updated_at` (INBOX 1569).
     fresh = Entry(content="Paint list with Sam", tags='["work"]', pinned=True, updated_at=naive - timedelta(days=2),
-                  created_at=naive - timedelta(days=2))
+                  edited_at=naive - timedelta(days=2), created_at=naive - timedelta(days=2))
     alone = Entry(content="A lonely thought", updated_at=naive - timedelta(days=3), created_at=naive - timedelta(days=3))
     session.add_all([hub, old, fresh, alone])
     session.flush()

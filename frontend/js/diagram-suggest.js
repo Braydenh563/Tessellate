@@ -316,8 +316,10 @@
   //: what the chosen row makes): a click chooses, Enter, a double click or the one filled
   //: button makes it, the arrows walk the rows, and the first row is chosen on open.
   async function templates(S, h) {
-    const all = await loadTemplates().catch(() => []);
-    if (!all.length) return reason(S, h, "The templates did not load. Try again in a moment.");
+    //: A failed read says so; an empty list is not dressed up as one (test_load_failed_1028b).
+    const all = await loadTemplates().catch(() => null);
+    if (!all) return reason(S, h, "The templates did not load. Try again in a moment.");
+    if (!all.length) return reason(S, h, "There are no templates yet.");
     const fill = S.plain || !paneBlank(S);
     //: A diagram with blocks takes only blocks of its own kind, so only its kind's templates are offered.
     const mine = S.k ? S.k.name : "flowchart";

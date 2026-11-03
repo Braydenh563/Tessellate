@@ -494,10 +494,8 @@
   margin: 0 auto;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .dgm-ghosts {
-    animation: none;
-  }
+:where(:root[data-motion="reduced"]) .dgm-ghosts {
+  animation: none;
 }
 
 @container (max-width: 599.98px) {

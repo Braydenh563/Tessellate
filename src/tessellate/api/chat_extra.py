@@ -166,7 +166,5 @@ def slot_reply(session: Session, question: str, history: list[dict]) -> str:
     question itself when the last answer was not asking for a note."""
     if not composer_suggest.pending_kind(history):
         return question
-    rows = session.execute(
-        select(Entry.id, Entry.content).where(Entry.is_deleted == False, Entry.is_private == False, Entry.is_board == False)  # noqa: E712
-    ).all()
-    return composer_suggest.fill_slot(question, history, [(row.id, _turn_label(row.content)) for row in rows]) or question
+    #: The notes the other readers here read (`_notes`: visible, newest 400), not a query of its own.
+    return composer_suggest.fill_slot(question, history, [(n["id"], _turn_label(n["content"])) for n in _notes(session)]) or question

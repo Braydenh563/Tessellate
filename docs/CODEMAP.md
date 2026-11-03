@@ -3241,9 +3241,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `compose` | frontend/js/diagram-suggest.js:431 |
+| `compose` | frontend/js/diagram-suggest.js:433 |
 | `count` | frontend/js/diagram-suggest.js:72 |
-| `describe` | frontend/js/diagram-suggest.js:459 |
+| `describe` | frontend/js/diagram-suggest.js:461 |
 | `dgsMerge` | frontend/js/diagram-suggest.js:25 |
 | `dgsSubtree` | frontend/js/diagram-suggest.js:62 |
 | `firstKey` | frontend/js/diagram-suggest.js:82 |
@@ -3252,8 +3252,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `isEmpty` | frontend/js/diagram-suggest.js:77 |
 | `items` | frontend/js/diagram-suggest.js:286 |
 | `loadTemplates` | frontend/js/diagram-suggest.js:307 |
-| `notes` | frontend/js/diagram-suggest.js:446 |
-| `outlineOf` | frontend/js/diagram-suggest.js:419 |
+| `notes` | frontend/js/diagram-suggest.js:448 |
+| `outlineOf` | frontend/js/diagram-suggest.js:421 |
 | `paneBlank` | frontend/js/diagram-suggest.js:79 |
 | `reason` | frontend/js/diagram-suggest.js:143 |
 | `receive` | frontend/js/diagram-suggest.js:97 |
@@ -12118,7 +12118,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 150 |
-| frontend/css/diagram-lazy.css | 552 |
+| frontend/css/diagram-lazy.css | 550 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 121 |
 | frontend/css/forced-colors-lazy.css | 28 |
