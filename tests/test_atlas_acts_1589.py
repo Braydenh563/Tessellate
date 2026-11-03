@@ -47,7 +47,7 @@ def _acts() -> list[str]:
 def _rules(css: str) -> list[tuple[int, str, str]]:
     """Every flat rule: (offset, selector, declarations), comments removed."""
     flat = re.sub(r"/\*.*?\*/", lambda m: " " * len(m.group(0)), css, flags=re.S)
-    return [(m.start(), m.group(1).strip(), m.group(2)) for m in re.finditer(r"([^{}]+)\{([^{}]*)\}", flat)]
+    return [(m.start(), m.group(1).strip(), m.group(2)) for m in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", flat)]
 
 
 RULES = _rules(CSS08)
