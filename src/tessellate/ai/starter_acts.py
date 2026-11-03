@@ -377,5 +377,18 @@ _HANDLERS = {
     "append_today": _append_today,
 }
 
+#: The Why trail's line for a starter the app reads itself: the step that found
+#: the notes, in place of a search.
+_STEPS = {
+    "changed": "Looked at when your notes were written and edited, since this time yesterday.",
+    "loose_ends": "Read your reminders, open questions and quiet topics.",
+    "due": "Read your reminders due today and overdue.",
+}
+
+
+def step(kind: str) -> str:
+    return _STEPS.get(kind, "Read what this needs from your notes and reminders.")
+
+
 #: For the tests and the Guide: what each starter reading is, in a few words.
 KINDS = tuple(_HANDLERS)

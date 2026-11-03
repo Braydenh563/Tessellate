@@ -610,6 +610,7 @@ def _why(req, prepared, grounding, composing, will_answer, tools_only, ollama_ru
         shape=shape,
         context=will_answer and ollama_running and _asks_capability(req, prepared),
         loading=bool(prepared.get("meaning_loading")),
+        read_by=str(prepared.get("read_by") or ""),
         marks=marks,
     )
 
