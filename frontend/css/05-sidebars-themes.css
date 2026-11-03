@@ -2511,7 +2511,7 @@ body.resizing-sidebar {
 .conv-title {
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
+  gap: var(--space-1);
   min-width: 0;
 }
 .conv-name {

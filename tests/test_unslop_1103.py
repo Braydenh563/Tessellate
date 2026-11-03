@@ -279,3 +279,29 @@ def test_25_failure_copy_has_one_contraction_and_names_its_object():
     assert not said, said
     css = _css("02-chat-graph.css")
     assert "font-size: 2.6rem" in _body(css, ".ph.empty-icon"), "an `i.ph.empty-icon` lost to `.ph` and drew at 16.9px"
+
+
+def test_22_a_task_box_on_a_note_card_hands_the_tap_to_the_card():
+    """18x18 and no click event at all (a disabled box swallows it); switches and the star chip are not targets."""
+    css = _css("01-forms-settings.css")
+    body = _body(css, '#entry-list .entry-content .entry-task > input[type="checkbox"]:disabled')
+    assert "pointer-events: none" in body
+    js = _js("notes-list.js")
+    assert 'item.title = "Open the note to tick this off";' in js and "box.title" not in js
+
+
+def test_21_the_micro_gaps_sit_on_the_scale_not_between_its_steps():
+    """602 off-scale readings (gap 0.8, 1.6, 2.4px; padding-block 2.4px) across six tabs and two panes, 118 left."""
+    expect = {
+        "01-forms-settings.css": {".modal-nav": "gap: var(--space-1)", ".modal-nav>div": "gap: var(--space-1)",
+                                  ".entry-actions button": "padding: var(--space-1) var(--space-3)"},
+        "03-dashboard-widgets.css": {".seg": "gap: var(--space-1)", ".segmented-control": "gap: var(--space-1)"},
+        "04-chat-dock-appearance.css": {".setting-label": "gap: var(--space-1)", ".setting-check>span": "gap: var(--space-1)",
+                                        ".category-actions": "gap: var(--space-1)"},
+        "05-sidebars-themes.css": {".conv-title": "gap: var(--space-1)"},
+        "07-whiteboard-misc.css": {".dash-list-text": "gap: 0"},
+    }
+    for name, rules in expect.items():
+        css = _css(name)
+        for selector, declaration in rules.items():
+            assert declaration in _body(css, selector), f"{name}: {selector} should have {declaration}"

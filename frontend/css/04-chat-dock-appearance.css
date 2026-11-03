@@ -2038,7 +2038,7 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
 .setting-label {
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
+  gap: var(--space-1);
   min-width: var(--form-label-col);
 }
 
@@ -2236,7 +2236,7 @@ label.setting-check,
 .setting-check>span {
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
+  gap: var(--space-1);
   font-size: var(--text-lg);
   font-weight: 600;
 }
@@ -2731,7 +2731,7 @@ span > .chip {
   top: 50%;
   transform: translateY(-50%);
   display: flex;
-  gap: 0.15rem;
+  gap: var(--space-1);
   opacity: 0;
   /* Not clickable while invisible, or it would swallow clicks meant for the
      category itself along the right-hand edge of every row. */
