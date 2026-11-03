@@ -19,7 +19,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from tessellate.api import routes_auth
-from tessellate.core import backup, backup_bundle, deps, diskspace, extras, jobruns, jobs
+from tessellate.core import backup, backup_bundle, deps, diskspace, extras, jobruns, jobs, selfcheck
 from tessellate.core.deps import get_session
 from tessellate.entry import manager
 from tessellate.api.this_computer import this_computer_only
@@ -216,6 +216,7 @@ def restore_backup(body: RestoreBody, request: Request) -> dict:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
         finally:
             deps.reload_db()
+            selfcheck.forget_offer()
     session = deps.get_db().session()
     try:
         manager.log_action(session, "restored", "data", detail=body.name)

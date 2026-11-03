@@ -305,11 +305,11 @@ def test_full_auth_flow(client):
     # Fresh app: setup required, API open (nothing to protect yet).
     # `auto_session` is False: sign-in is on by default (INBOX 426 aa).
     # `reset_here` is False: the test client is not a loopback address (INBOX 663).
-    assert client.get("/auth/status").json() == {"setup_required": True, "auto_session": False, "reset_here": False, "pin_here": False}
+    assert client.get("/auth/status").json() == {"setup_required": True, "auto_session": False, "reset_here": False, "pin_here": False, "restore_offer": None}
     assert client.post("/entries", json={"content": "pre-password note"}).status_code == 201
 
     token = client.post("/auth/setup", json={"password": "hunter22"}).json()["token"]
-    assert client.get("/auth/status").json() == {"setup_required": False, "auto_session": False, "reset_here": False, "pin_here": False}
+    assert client.get("/auth/status").json() == {"setup_required": False, "auto_session": False, "reset_here": False, "pin_here": False, "restore_offer": None}
 
     # Once a password exists the data routes lock without a token…
     assert client.get("/entries").status_code == 401

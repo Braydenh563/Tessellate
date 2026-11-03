@@ -815,7 +815,19 @@ def status(
         # Whether this caller may type a PIN: set, and this computer. Any
         # other device is told False whether or not there is one.
         "pin_here": _from_this_computer(request) and pinstore.is_set(config.data_dir),
+        # INBOX 1573: a notebook with no account while a backup holds notes
+        # (the database deleted, damaged or its log lost) is offered that
+        # backup. This computer only: another device learns nothing of them.
+        "restore_offer": _restore_offer(request, session, config),
     }
+
+
+def _restore_offer(request: Request, session: Session, config: ConfigManager) -> dict | None:
+    if not _from_this_computer(request):
+        return None
+    from tessellate.core import selfcheck
+
+    return selfcheck.restore_offer(Path(config.db_path), Path(config.data_dir), has_user=_get_user(session) is not None)
 
 
 @router.post("/setup")
