@@ -1,0 +1,91 @@
+/* ui-reveal-lazy.css: loaded three seconds after boot (lazy-entries.js
+   `uiReveal`) rather than at boot, for the gzip budget. What a click, a hover
+   or a focus brings onto the screen arrives the way the graph's hover card
+   does and, where it floats and is not under the pointer, leaves the same
+   way (INBOX 1565). `scratchpad/ui-sweeps/motionflag.js` lists what still
+   appears or vanishes in one frame. */
+
+/* --- motion: a panel or bar that a click shows fades in (INBOX 1565) --------
+   The owner loved the hover card's fade ("so subtle ... smoothly appears and
+   disappears"), so the recipe is that fade: `ui-fade` (10-responsive.css) over
+   `--ui-base`, `opacity` alone, so nothing it sits among moves. It is an
+   animation on the shown state, so every way of showing it (a class, the
+   `hidden` attribute, a `:has()` or an ancestor's mode) gets it with no JS. A
+   page's own arrival and the interface animations switch are the same as
+   everywhere: reduced motion stills the keyframes (motion-still.css), and the
+   switch off stills nothing here because there is no transition to still.
+   A Settings fold's contents are in the list too (`details.settings-fold[open]`,
+   at zero weight): a `<details>` has no other way to say it arrived. */
+:is(.wb-search-bar, .wb-navigator, .wb-format, .wb-context, .wb-sidebar-panel, .doc-prose-panel,
+  .selection-bar, .graph-options, .capture-card, #capture.card, .status.error, .stepper-reset, .timeline-row-detail,
+  .search-suggest, .tag-suggest, .rich-picker-preview, .panel-snap-preview, #settings-peek, #suggested-hardware-form,
+  #profile-look-parts, .prefs-save-row, .settings-nav-group, .model-grid, #tour-block, #batch-bar, .skill-fact-panel):not(.hidden, [hidden]),
+#tab-documents.doc-focus > .doc-focus-bar,
+:where(details.settings-fold[open]) > :not(summary) {
+  animation: ui-fade var(--ui-base) var(--ease-out);
+}
+
+/* --- motion: a menu that hangs off a button grows from it (INBOX 1565) ------
+   The board's Insert menu and the documents dock's lists took no part in the
+   menu recipe (10-responsive.css) because they are not `.action-menu`; they
+   take the same two keyframes out of the corner nearest their opener, and
+   leave the way an action menu does (a fade and a shrink back over
+   `--ui-exit`, `display` held as a discrete transition, no pointer on it). */
+:is(.wb-board-menu, .wb-map-strip-menu, .wb-shape-menu, .wb-colour-menu, .wb-ctx-menu, .graph-node-menu, .sp-menu,
+  .doc-dock-menu[open] > .doc-dock-menu-list):not(.hidden, [hidden]) {
+  --menu-origin-x: 100%;
+  --menu-origin-y: 0%;
+  transform-origin: var(--menu-origin-x) var(--menu-origin-y);
+  animation: ui-fade var(--ui-base) var(--ease-out), ui-grow var(--ui-slow) var(--ease-spring) 1ms;
+}
+:is(.wb-board-menu, .wb-map-strip-menu, .wb-shape-menu, .wb-colour-menu, .sp-menu).hidden {
+  opacity: 0;
+  scale: 0.96;
+  pointer-events: none;
+  transition: opacity var(--ui-exit) var(--ease-out), scale var(--ui-exit) var(--ease-out),
+    display var(--ui-exit) linear allow-discrete;
+}
+
+/* The board's sidebar panel fades out by opacity alone: it is a column, not a
+   thing that grows from a button. */
+.wb-sidebar-panel.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--ui-exit) var(--ease-out), display var(--ui-exit) linear allow-discrete;
+}
+
+/* --- motion: a hover card leaves as it came --------------------------------
+   The graph's card is placed by its own `transform`, so it fades by `opacity`
+   alone both ways; the pointer is never on it (`pointer-events: none`), so
+   its exit costs a click nothing. */
+.graph-hovercard[hidden] {
+  opacity: 0;
+  transition: opacity var(--ui-exit) var(--ease-out), display var(--ui-exit) linear allow-discrete;
+}
+
+/* --- motion: a dialog element arrives and leaves like the popup recipe ------
+   (08-consistency.css): a rise of one step from a touch smaller, the scrim
+   fading with it, `display` and `overlay` held for the exit so the top layer
+   keeps it until it has faded. */
+dialog.space-dialog {
+  transition: opacity var(--ui-exit) var(--ease-out), translate var(--ui-exit) var(--ease-out),
+    display var(--ui-exit) linear allow-discrete, overlay var(--ui-exit) linear allow-discrete;
+}
+dialog.space-dialog:not([open]) {
+  opacity: 0;
+  translate: 0 var(--space-2);
+  pointer-events: none;
+}
+dialog.space-dialog[open] {
+  animation: ui-fade var(--ui-base) var(--ease-out), ui-grow var(--ui-slow) var(--ease-out) 1ms;
+}
+dialog.space-dialog::backdrop {
+  transition: opacity var(--ui-exit) var(--ease-out), display var(--ui-exit) linear allow-discrete,
+    overlay var(--ui-exit) linear allow-discrete;
+}
+dialog.space-dialog:not([open])::backdrop {
+  opacity: 0;
+}
+dialog.space-dialog[open]::backdrop {
+  animation: ui-fade var(--ui-base) var(--ease-out);
+}

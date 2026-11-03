@@ -78,8 +78,10 @@ Object.assign(LAZY_MODULES, {
   //: What a person does to the companion on purpose: the Settings controls, Show or
   //: hide, Call back, the Look repaint (companion-settings.js's header; audit AI23).
   companionSettings: ["/js/companion-settings.js"],
+  //: What a click, a hover or a focus brings onto the screen fades in, and out where it floats (INBOX 1565): ui-reveal-lazy.css.
+  uiReveal: ["/css/ui-reveal-lazy.css"],
 });
-setTimeout(() => ["loadFailed", "modelMenu", "entryCard"].forEach(ensureModule), 3000);
+setTimeout(() => ["loadFailed", "modelMenu", "entryCard", "uiReveal"].forEach(ensureModule), 3000);
 installStandIns({
   //: The lock card's offer of a backup when the notebook file is gone (INBOX 1573).
   accountRecovery: ["showRestoreOffer"],
