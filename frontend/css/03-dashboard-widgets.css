@@ -1644,7 +1644,9 @@ header#top-bar select,
   --quick-tint: var(--accent);
   --quick-tint-ink: var(--accent-text);
   background: color-mix(in oklab, var(--quick-tint) 14%, var(--card));
-  border-color: color-mix(in oklab, var(--quick-tint) 55%, transparent);
+  /* No tinted edge at rest (unslop 1103, 11): the fill, the icon, and a filled
+     button and a link were four accent signals above the fold. The edge takes
+     the tint with the pointer, below. */
   border-radius: var(--radius-md);
 }
 

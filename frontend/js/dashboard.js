@@ -2762,12 +2762,7 @@ async function renderDigestWidget(outer) {
       })
       .catch((error) => {
         if (!body.isConnected) return;
-        const retry = smallButton(
-          "Generate this week's digest",
-          "",
-          runGeneration,
-          false
-        );
+        const retry = smallButton("Generate this week's digest", "", runGeneration);
         body.replaceChildren(retry);
         toast(error.message, true);
       });
@@ -2782,7 +2777,9 @@ async function renderDigestWidget(outer) {
     //: Never gated on a model (owner-1026b K3): with none, the server
     //: composes the week from the notes' own rows (`activity.week`), and a
     //: model, once on, writes the next one.
-    const generate = smallButton("Generate this week's digest", "", runGeneration, false);
+    //: Ghost: the Dashboard has one filled button, Save in Quick capture
+    //: (unslop 1103, 11: two at once, 208x32 and 58x32).
+    const generate = smallButton("Generate this week's digest", "", runGeneration);
     body.append(generate);
   }
   await dayDrawn;

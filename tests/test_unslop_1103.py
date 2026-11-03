@@ -107,3 +107,12 @@ def test_10_settings_rail_head_wraps_instead_of_clipping_its_toggle():
     assert "white-space: nowrap" in _body(css, ".settings-nav-groups-head > *")
     link = _body(css, ".settings-nav-groups-head .linklike")
     assert "overflow: visible" in link and "text-overflow: clip" in link
+
+
+def test_11_dashboard_has_one_filled_button_and_no_tinted_edge_at_rest():
+    tinted = _body(_css("03-dashboard-widgets.css"), ".quick-link-tinted")
+    assert "border-color" not in tinted
+    js = (ROOT / "frontend" / "js" / "dashboard.js").read_text(encoding="utf-8")
+    assert js.count("Generate this week's digest") == 2
+    assert 'smallButton("Generate this week\'s digest", "", runGeneration)' in js
+    assert 'runGeneration, false' not in js
