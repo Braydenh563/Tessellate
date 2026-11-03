@@ -202,3 +202,23 @@
     white-space: nowrap;
   }
 }
+
+/* **A Settings group's actions are text, not a wall of boxes** (INBOX 1566, the owner: "I dont like excessive use of these
+   glowy grey styled buttons ... use them intentionally"). Data alone drew seventeen bordered ghosts, About eleven, each a
+   second field-sized box beside a sentence. Words in the accent with no face and no edge say "press me" as clearly, and the
+   tint under the pointer is the only change. The bordered ghost stays for a lone secondary action beside a filled one and
+   says so with `.edged` (Draft with Atlas beside Add template); a destructive one keeps its red edge and an icon button
+   is already quiet. High contrast keeps the ghost as it was (the rules say `:not([data-contrast="on"])`). */
+:root:not([data-contrast="on"]) #settings-modal :is(.settings-section, .settings-pane-title, .dialog-head) button.ghost:not(.icon-only, .icon-button, .danger, .linklike, .quiet, .edged, .split-button-main) {
+  border-color: transparent;
+  background: none;
+  color: var(--accent-text);
+  font-weight: 500;
+  /* The words, not the invisible box, line up with the sentence above, on every line a row wraps to. */
+  padding-inline: var(--space-3);
+  margin-inline-start: calc(-1 * var(--space-3));
+}
+
+:root:not([data-contrast="on"]) #settings-modal :is(.settings-section, .settings-pane-title, .dialog-head) button.ghost:not(.icon-only, .icon-button, .danger, .linklike, .quiet, .edged, .split-button-main):is(:hover, :focus-visible, :has(:focus-visible)) {
+  background: var(--ghost-btn-bg);
+}

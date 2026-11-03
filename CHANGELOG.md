@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Settings: a group's actions (Export JSON, Clear app cache, Check for updates and the rest) are words in the accent with no face and no edge, the tint under the pointer the only change, instead of a bordered grey box each; Import & export went from 17 bordered buttons to 0, About from 11 to 0, Settings as a whole from 67 to 2 (Draft with Atlas beside Add template, and the red Forget everything learned) (INBOX 1566).
 - App-wide: a lone segmented choice spans its row (the New board and Forgot password dialogs), the lint reads index.html's segs as well as the scripted ones (every one judged: fills its row, or names the row it shares), and the keypad and tile grid and the lone-seg rules are in the boot stylesheet so any surface can use them (INBOX 1566).
 - Chat: a long message of yours keeps a reading width (72% of the column, at most 42rem) instead of spanning it (the owner, 2026-11-03).
 - Dictation: an installed Whisper model loads from this computer alone; it no longer asks huggingface.co for the model's revision on every load (the owner, 2026-11-03).

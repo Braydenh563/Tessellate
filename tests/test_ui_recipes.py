@@ -7025,6 +7025,20 @@ def test_a_seg_alone_on_its_line_spans_the_row() -> None:
     assert 'classList.add("seg-fill")' in modes and 'classList.toggle("active"' in modes
 
 
+def test_a_settings_action_is_text_not_a_boxed_ghost() -> None:
+    """INBOX 1566: Settings drew seventeen bordered ghosts on Import & export alone. A ghost in a Settings section is
+    text in the accent with no edge; only `.edged` (a lone secondary beside a filled button) and `.danger` keep one."""
+    css = (ROOT / "frontend" / "css" / "settings-controls-lazy.css").read_text(encoding="utf-8")
+    rules = {sel: body for sel, body in _rules(css) if "button.ghost" in sel and "#settings-modal" in sel}
+    base = next(body for sel, body in rules.items() if ":is(:hover" not in sel and ":first-child" not in sel)
+    for want in ("border-color: transparent;", "background: none;", "color: var(--accent-text);"):
+        assert want in base, want
+    sel = next(sel for sel, body in rules.items() if "border-color: transparent" in body)
+    assert ':not([data-contrast="on"])' in sel and all(f".{keep}" in sel for keep in ("edged", "danger", "icon-only", "quiet"))
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    assert re.findall(r'class="[^"]*\bedged\b[^"]*"', html) == ['class="ghost small edged"'], "`.edged` is for a lone secondary beside a filled one"
+
+
 def test_a_radical_tile_leaves_room_between_the_sign_and_the_radicand() -> None:
     """INBOX 1566: the x in the Radical group touched the root sign (one ink component at 4x; the radicand's top and left
     edge are where the browser draws the bar and the hook). Padding on the radicand is room inside the sign: measured
