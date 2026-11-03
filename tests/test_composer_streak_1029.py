@@ -111,6 +111,10 @@ def test_a_question_about_time_is_answered_with_the_window(client, session, cloc
 @pytest.mark.parametrize("question", BARE)
 def test_a_bare_what_changed_is_counted(client, session, clock, question):
     _seed(session)
+    # The person edits a note yesterday evening. This used to pass only because the seed's own
+    # flush moved `updated_at`, which is housekeeping and not an edit (INBOX 1569 a).
+    session.query(Entry).filter(Entry.content.like("# Chess opening 6%")).one().edited_at = dt.datetime(2026, 10, 28, 20, 0)
+    session.commit()
     _, ask = _stream(client, question, **ASK)
     assert "Harbor launch plan" in ask and "Chess opening 5" in ask, ask
     _, chat = _stream(client, question, **CHAT)
