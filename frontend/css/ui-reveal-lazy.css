@@ -19,7 +19,7 @@
 :is(.wb-search-bar, .wb-navigator, .wb-format, .wb-context, .wb-sidebar-panel, .doc-prose-panel,
   .selection-bar, .graph-options, .capture-card, #capture.card, .status.error, .stepper-reset, .timeline-row-detail,
   .search-suggest, .tag-suggest, .rich-picker-preview, .panel-snap-preview, #settings-peek, #suggested-hardware-form,
-  #profile-look-parts, .prefs-save-row, .settings-nav-group, .model-grid, #tour-block):not(.hidden, [hidden]),
+  #profile-look-parts, .prefs-save-row, .settings-nav-group, .model-grid, #tour-block, #batch-bar, .skill-fact-panel):not(.hidden, [hidden]),
 #tab-documents.doc-focus > .doc-focus-bar,
 :where(details.settings-fold[open]) > :not(summary) {
   animation: ui-fade var(--ui-base) var(--ease-out);
