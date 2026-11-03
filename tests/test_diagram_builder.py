@@ -286,9 +286,10 @@ def test_a_diagram_over_the_block_limit_stays_in_source_with_one_line_saying_so(
     sync = sync[: sync.index("\n  }\n")]
     assert "read.nodes.length > diagramOps.MAX" in sync and "more than ${diagramOps.MAX} blocks" in sync
     assert 'classList.toggle("dgm-plain", !parsed)' in sync
-    # And the picture is still drawn for it: only a flowchart with no block yet is "empty".
+    # And the picture is still drawn for it: only a source with no block and nothing but its header is "empty" (1596 b:
+    # a kept line the blocks could not place is drawn, so the picture says why it cannot be).
     assert "S.plain = !parsed" in sync
     draw = code[code.index("function drawPicture(S)") :]
     draw = draw[: draw.index("\n  }\n")]
-    assert "!S.plain && S.m && !S.m.nodes.length" in draw
+    assert "S.m && !S.m.nodes.length" in draw and "!S.plain && blank && bare" in draw
 

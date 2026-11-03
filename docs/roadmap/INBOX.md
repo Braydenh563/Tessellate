@@ -34,9 +34,6 @@ with its owner named in the entry.
 
 ## Open items
 
-1596. **Agent a31h, 2026-11-03 (from 1588 and 1594, found not fixed):** (a) `switchTab` straight after boot threw "addEventListener of null" twice (library.js:1884, documents.js:9804), gone after 2.5 s: a boot race, a real bug on a fast click; (b) an invalid or non-diagram source opens in Blocks as one kept line and the picture says "appears here as you add blocks" instead of the error; (c) diagram-kinds.js (mind map, timeline, sequence) rebuilds every row on a change, as the flowchart did before 1588; (d) the builder dock wraps at 320 px. Recommendation, taken: one agent, in that order, measured.
-
-
 1591. **Owner, 2026-11-03, pasted lag lines (later batch):** notes-list.js Response.json.then 160ms (forced layout 85ms) on the dashboard ([apiJson /entries/most-accessed, /chat/recent from dashboard.js]); dashboard "1439ms of script with no source file" after boot; avatars.js TimerHandler:setTimeout 630ms (forced layout 486ms) on a library subtab; pointerdown on div.modal-overlay.nm-viewer 608ms and pointerup on button.nm-buddy-face 328 to 376ms, each followed by 250 to 370ms of no-source script; pointerout on div.card.modal-card 392ms; companion-menu.js setTimeout 30ms forced layout; graph-canvas.js gcRequestDraw 27 calls/s at 5.9ms on an idle graph; /models/status 3908ms. Recommendation: routed to the running lag agents (1575 dashboard and viewer, 1587 Atlas timer); the notes-list forced layout and the idle graph redraw go to the next lag slot with 1588's pass.
 
 
