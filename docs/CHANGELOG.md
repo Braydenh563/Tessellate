@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Notes capture bar (INBOX 1572, unslop 1103 item 24): the "Add a note" row is its own zone, a divider and 16px under the filter row (it sat 9.6px under the dock and read as a second search field); at rest one quiet line with To-do and Pictures icons (the Note / To-do seg stays in the card), all three exactly 36px (36.4 and 28 before); the card opens over the list, so a focus moves the list 0px (256px before).
 - CodeQL: the re-export blocks in ai/agent.py, ai/composer.py and api/routes_chat.py are gone; every reader imports the name from the module that defines it (24 unused-import alerts on main), and a test file imports pathlib once.
 - Get started ticks Ask your notebook after an answer even when the history badge had read 0 before the answer was kept (E2E first-run, CI 2026-11-03).
 - Avatar lab and companion simulator load again: they bring the blink rig (atlas-motion.js) and the look pickers (companion-settings.js) the renderers moved to, and stand in for the app's lazy loaders (tools/lab-shims.js, tests/test_tools_benches.py) (the owner, 2026-11-03).

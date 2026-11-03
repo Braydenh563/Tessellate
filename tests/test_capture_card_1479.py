@@ -83,9 +83,11 @@ def test_quick_note_and_the_card_share_the_saved_announcement():
 # --- step 2: To-do mode -------------------------------------------------------
 
 
-def test_the_mode_switch_is_a_seg_in_the_bar_and_the_card():
-    assert 'class="seg capture-bar-modes"' in INDEX
-    assert 'data-mode="note"' in INDEX and 'data-mode="todo"' in INDEX
+def test_the_mode_switch_is_a_seg_in_the_card_and_a_todo_icon_in_the_bar():
+    # INBOX 1572 (the owner: the bar is "a little trippy to use"): the Note / To-do seg left the bar's
+    # row; the bar keeps one To-do icon that opens the card as a list, and the card keeps the seg.
+    assert 'class="seg capture-bar-modes"' not in INDEX
+    assert 'id="capture-bar-todo"' in INDEX and 'data-mode="todo"' in INDEX
     assert '"seg capture-card-modes"' in _function_body(CARD, "captureModeSeg")
     assert "aria-pressed" in _function_body(CARD, "setCaptureMode")
 
