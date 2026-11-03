@@ -524,14 +524,7 @@ def subject_terms(question: str) -> list[str]:
         seen.append(word)
     #: A praise word alone names nothing ("anything interesting", "the cool
     #: stuff"); beside a noun ("interesting bean") it stays (INBOX 1561).
-    return [] if all(w in _PRAISE_WORDS for w in seen) else seen
-
-
-#: Adjectives that colour a request and are not what it is about.
-_PRAISE_WORDS = frozenset(
-    """interesting interested cool fun funny neat nice good great awesome amazing fascinating useful helpful
-    impressive special fancy clever handy exciting notable noteworthy""".split()
-)
+    return [] if all(w in question_noise.PRAISE_WORDS for w in seen) else seen
 
 
 _COMPARE_SIDES = (
