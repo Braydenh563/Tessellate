@@ -84,7 +84,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 78 | S48 | med | no tag rename or merge in the tags UI | fixed (already built; reconciled 2026-10-30) | M |
 | 79 | S49 | med | no note version history view | fixed (already built; reconciled 2026-10-30) | L |
 | 80 | S50 | med | no search operators such as tag: and before: | already built (search operators, measured; negated -tag: not supported) | M |
-| 81 | B12 | med | same keys mean different things by mode | new | M |
+| 81 | B12 | med | same keys mean different things by mode | fixed (d75c6ac, 2026-11-03: sheet lists the open surface's keys, a shared key names its surface) | M |
 | 82 | B13 | med | shortcuts hidden in menu subtitles, no cheat sheet | fixed (already built; reconciled 2026-10-30) | S |
 | 83 | B20 | med | lock state shown only on hover, no persistent badge | fixed | S |
 | 84 | D31 | med | Mod-h unreachable on macOS, Ctrl+1-3 collide with browser | fixed in part (Mac Replace chord; Ctrl+1 to 3 headings kept, 2026-10-30) | S |
@@ -122,19 +122,19 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 116 | S52 | med | graph has no find box on the main bar | fixed (#graph-search on the graph bar, 1029 rank 39) | S |
 | 117 | S53 | med | timeline and notes list page separately | left (shell-1031.md) | M |
 | 118 | U11 | med | two menus both named Insert with different contents | fixed (673039d, reconciled 2026-10-30) | S |
-| 119 | U12 | med | insert menu hides key hints for most tools | new | S |
+| 119 | U12 | med | insert menu hides key hints for most tools | fixed (99b211b, 2026-11-03) | S |
 | 120 | U13 | med | two buttons labelled Library on the board | fixed (this batch) | S |
-| 121 | U14 | med | delete tool 2px from undo and redo | new | S |
-| 122 | U15 | med | arrange menu has 23 items and clips at smaller heights | new | M |
-| 123 | U16 | med | side tabs 28px, below phone parity size | new | S |
-| 124 | U17 | med | object grip glyph 1.87:1 contrast | new | S |
-| 125 | U21 | med | tools sheet items icon-only, toast covers heading | new | S |
-| 126 | U22 | med | board phone header 104px and title clipped | new | M |
-| 127 | U23 | med | mind map on phone not panned to new node | new | M |
-| 128 | U24 | med | newest node 5px from canvas right edge | new | S |
-| 129 | U26 | med | template strip clipped at right edge | new | S |
-| 130 | U27 | med | layout menu is text-only, two clicks | new | M |
-| 131 | U28 | med | font size stepper mixes 22px and M | new | S |
+| 121 | U14 | med | delete tool 2px from undo and redo | fixed (1e8d860, 2026-11-03: gap 2px to 10px) | S |
+| 122 | U15 | med | arrange menu has 23 items and clips at smaller heights | n/a (does not clip 2026-11-03: 1366x768 bottom 760 of 768 and scrolls; 24 rows left, a30f-1102) | M |
+| 123 | U16 | med | side tabs 28px, below phone parity size | fixed (60afd82, 2026-11-03: 28px to 32px, 44px under touch) | S |
+| 124 | U17 | med | object grip glyph 1.87:1 contrast | n/a (not reproduced 2026-11-03: 5.91:1 light, 6.80 to 7.96:1 dark across 14 looks) | S |
+| 125 | U21 | med | tools sheet items icon-only, toast covers heading | fixed (f978761, 2026-11-03: 18 tiles named, all 44px or more; the toast was not seen) | S |
+| 126 | U22 | med | board phone header 104px and title clipped | fixed (4f48262, 2026-11-03: 104.4px to 54px at 390x844) | M |
+| 127 | U23 | med | mind map on phone not panned to new node | n/a (not reproduced 2026-11-03: newest topic in view on 4 of 4 adds; the title half is U22) | M |
+| 128 | U24 | med | newest node 5px from canvas right edge | fixed (4dbce7c, 2026-11-03: 5px to 24px) | S |
+| 129 | U26 | med | template strip clipped at right edge | fixed (a3a9f85, 2026-11-03: close button 28px to 32px, 44px under touch; the cut tile is the edge-fade cue) | S |
+| 130 | U27 | med | layout menu is text-only, two clicks | fixed (460f3c4, 2026-11-03: a glyph on each of ten rows) | M |
+| 131 | U28 | med | font size stepper mixes 22px and M | fixed (4a32c26, 2026-11-03: 22px reads L+) | S |
 | 132 | U29 | med | two New document buttons on the empty state | fixed | S |
 | 133 | U31 | med | formatting toolbar hidden by default | skipped (decision PLAN.md D1: the strip starts collapsed, chrome 171 to 89px; the Formatting button already says Show or Hide formatting toolbar and carries aria-pressed) | S |
 | 134 | U32 | med | export three clicks deep in More menu | fixed (efa1ffd) | S |
@@ -173,8 +173,8 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 167 | S17 | med | four copies of the relative-time helper | fixed | S |
 | 168 | S20 | med | cache prefix still carries the old product name | fixed (already built; reconciled 2026-10-30) | S |
 | 169 | S44 | med | mixed button heights and radii across toolbars | fixed (b8cfb46, lint; toolbar sizes already tokens) | M |
-| 170 | U25 | med | collapse chevrons overlap node edges | new | S |
-| 171 | U30 | med | editor toolbar heights inconsistent | new | S |
+| 170 | U25 | med | collapse chevrons overlap node edges | fixed (2c27387, 2026-11-03: 13px overlap to 3px outside) | S |
+| 171 | U30 | med | editor toolbar heights inconsistent | n/a (not reproduced 2026-11-03: outer toolbar 32px everywhere; inner segmented buttons 28px by recipe) | S |
 | 172 | B40 | low | catch blocks swallow save and delete errors silently | docs/roadmap/WORLD_CLASS_PLAN.md:3877 | S |
 | 173 | K11 | low | llm_api_key stored in plain text in preferences.json | new | M |
 | 174 | K13 | low | MCP server has no auth and offers write tools | docs/roadmap/BACKLOG.md:4396 | M |
