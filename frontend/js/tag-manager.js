@@ -551,6 +551,7 @@ async function drawTurnedDown(box) {
       }
       drawTurnedDown(box);
     });
+    again.classList.add("quiet");
     again.setAttribute("aria-label", `Offer again: ${tag}`);
     row.append(names, again);
     box.appendChild(row);

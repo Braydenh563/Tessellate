@@ -262,7 +262,7 @@ function replyStatsPanel() {
   const { panel, head } = replyPanelShell("reply-stats", "Your notebook", "ph:chart-bar");
   const open = document.createElement("button");
   open.type = "button";
-  open.className = "ghost small reply-panel-open";
+  open.className = "ghost quiet small reply-panel-open";
   setLabel(open, "ph:arrow-square-out Open Statistics");
   open.title = "The Statistics page: notebook, reminders and usage, counted";
   open.addEventListener("click", () => openStatistics());
@@ -355,7 +355,7 @@ function replyCalcPanel(event) {
   const { panel, head } = replyPanelShell("reply-calc", "Calculator", "ph:calculator");
   const open = document.createElement("button");
   open.type = "button";
-  open.className = "ghost small reply-panel-open";
+  open.className = "ghost quiet small reply-panel-open";
   setLabel(open, "ph:arrow-square-out Open the calculator");
   open.title = "Work it out again, change it, or convert units";
   open.addEventListener("click", () => openCalculator(event.input || ""));
@@ -571,6 +571,8 @@ function replyCalcActions(target, close, inline = false) {
   //: The dialog foot: the one filled Insert last, Copy the lone bordered secondary beside it, and the third (a different kind of write) a quiet one at the start of the row.
   asEquation.classList.add("quiet", "calc-as-equation");
   row.append(asEquation, copy, insert);
+  //: A widget has no Insert, so Copy is alone in its row and takes no edge.
+  if (inline) copy.classList.add("quiet");
   //: A widget has no box to write into: Copy is its one action, and the line about Insert is not drawn.
   if (inline) where.classList.add("hidden");
   el.append(where, row);
@@ -946,7 +948,7 @@ function replyCalcHistory(tab, { label, copy, restore }) {
   bar.className = "calc-log-bar";
   const toggle = document.createElement("button");
   toggle.type = "button";
-  toggle.className = "ghost small calc-log-toggle";
+  toggle.className = "ghost quiet small calc-log-toggle";
   const count = document.createElement("span");
   count.className = "calc-log-count";
   const note = document.createElement("span");
@@ -956,6 +958,7 @@ function replyCalcHistory(tab, { label, copy, restore }) {
     set([]);
     toastAction("History cleared.", "Undo", () => set(before), { ms: 10000, record: false });
   });
+  clear.classList.add("quiet");
   const rows = document.createElement("ul");
   rows.className = "calc-history";
   rows.id = `calc-history-${tab}-${replyCalc.opened}`;
@@ -981,7 +984,7 @@ function replyCalcHistory(tab, { label, copy, restore }) {
     li.classList.toggle("is-editing", editing && item.key === replacing);
     const again = document.createElement("button");
     again.type = "button";
-    again.className = "ghost small calc-again";
+    again.className = "ghost quiet small calc-again";
     again.replaceChildren(label(item));
     again.title = "Put this back in the fields";
     again.addEventListener("click", () => restore(item));
@@ -1197,11 +1200,11 @@ function renderToolsUnsupportedNotice(container, event) {
   setLabel(line, `ph:warning ${event.message || "This model can't call tools."}`);
   const row = document.createElement("div");
   row.className = "row tools-unsupported-fix-row";
-  row.appendChild(
-    smallButton("ph:gear Change the model", "Open Settings, Models", () => {
-      openSettingsModal("models", "chat-model-select");
-    })
-  );
+  const change = smallButton("ph:gear Change the model", "Open Settings, Models", () => {
+    openSettingsModal("models", "chat-model-select");
+  });
+  change.classList.add("quiet");
+  row.appendChild(change);
   //: Above the turn's facts line, where it was drawn before it moved here.
   container.insertBefore(row, container.querySelector(":scope > .msg-meta"));
   row.before(line);

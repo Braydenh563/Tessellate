@@ -7039,6 +7039,21 @@ def test_a_settings_action_is_text_not_a_boxed_ghost() -> None:
     assert re.findall(r'class="[^"]*\bedged\b[^"]*"', html) == ['class="ghost small edged"'], "`.edged` is for a lone secondary beside a filled one"
 
 
+def test_a_dialog_foot_has_one_bordered_secondary_and_its_third_action_is_quiet() -> None:
+    """INBOX 1566: Manage templates, Choose a file and Turn into shapes sat bordered beside Cancel and a filled button. A
+    foot's third action is `ghost quiet` and waits at the start; the Calculator's History bar, its panel buttons and the
+    chat's Change the model are quiet too."""
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    for ident in ("note-template-manage", "wb-import-choose", "wb-diagram-shapes"):
+        assert re.search(rf'class="ghost quiet small" id="{ident}"', html), ident
+    css = "\n".join(path.read_text(encoding="utf-8") for path in CSS)
+    assert "margin-inline-end: auto" in _rule_exact(css, ".space-dialog-actions > .quiet:first-child")
+    kit = frontend_text("reply-kit.js")
+    for want in ('"ghost quiet small calc-log-toggle"', '"ghost quiet small calc-again"', 'clear.classList.add("quiet")', 'change.classList.add("quiet")'):
+        assert want in kit, want
+    assert kit.count('"ghost quiet small reply-panel-open"') == 2
+
+
 def test_a_radical_tile_leaves_room_between_the_sign_and_the_radicand() -> None:
     """INBOX 1566: the x in the Radical group touched the root sign (one ink component at 4x; the radicand's top and left
     edge are where the browser draws the bar and the hook). Padding on the radicand is room inside the sign: measured
