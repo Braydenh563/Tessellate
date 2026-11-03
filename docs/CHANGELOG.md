@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- INBOX 1561 ("anything interesting you can do??", model off): a question about the assistant in any wording gets the capabilities answer; a praise word alone (interesting, cool, fun) is never a search subject or a follow-on; "The other is" for one note and each note named is cited; half a sentence that a list finishes ("After making an initial connection.") is not quoted as a whole one.
 - Audit E50: on a phone the chat title gets the header row (94px clipped to 194px): Fork and Compress leave the row and stay in the header's menu. The rest of the row was already done: the no-model line is 94px with a close (was about 190) and the sources are one line opening a sheet of 55px rows (were 115px cards).
 - Audit E38: with Ollama not running, Settings, Models still shows the suggested downloads with how each fits this computer; every Download waits (disabled, "Start Ollama first") and a line above the cards says to install and start Ollama, so a new student can choose a model before installing anything.
 - Audit E57: when a long chat no longer fits the model's window, a line under the reply says how many of the oldest exchanges the model did not see and points at Compress; the turn's stats carry the count (`composition.history_dropped`) on the agent and Ask paths.
