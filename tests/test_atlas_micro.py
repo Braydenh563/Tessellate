@@ -46,10 +46,10 @@ let ok = true;
 const ctx = {
   console, Math: Object.assign(Object.create(Math), { random: rnd }), Number, Object, Set, Map, JSON, Date, Array,
   setTimeout: (f, ms) => { timers.push([f, ms]); return timers.length; }, clearTimeout() {},
-  document: { hidden: false, activeElement: null, documentElement: { hasAttribute: () => false }, querySelectorAll: () => [box], querySelector: () => box },
+  document: { hidden: false, activeElement: null, documentElement: { hasAttribute: () => false, dataset: {} }, querySelectorAll: () => [box], querySelector: () => box },
   innerWidth: 1200, innerHeight: 800,
   requestAnimationFrame: () => { calls.raf += 1; },
-  atlasMotionOK: () => ok, atlasBlink: () => { calls.blink += 1; },
+  atlasMotionOK: () => ok, atlasBlink: () => { calls.blink += 1; }, nameMarkBuddyActOff: () => false,
   nmb: { pointer: [600, 300], lastInput: 0, keyAt: 0, act: "", visit: null },
   nameMarkBuddyAim: (p) => calls.aim.push(p), nameMarkBuddyMenuOpen: () => false,
   atlasSpark: (parent, x, y, k, cls) => {

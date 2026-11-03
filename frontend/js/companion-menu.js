@@ -735,6 +735,41 @@ const NMB_MIND = {
       buddy.querySelector(".nm-buddy-char")?.animate?.([{ translate: "0 0" }, { translate: "0 -1.4px", offset: 0.35 }, { translate: "0 0.8px", offset: 0.7 }, { translate: "0 0" }], { duration: ms, easing: "ease-in-out", composite: "add" });
     }
   },
+  //: **What it does about what you did** (INBOX 1581; the gate, the
+  //: cooldowns and the wait for the keys are `nameMarkBuddyReact`'s). Faces
+  //: are pictures swapped in, the tilt is its custom property's eased turn,
+  //: and the shake is the body's `translate` for 640ms (in place of its own,
+  //: never added: `tests/test_atlas_composite_1101.py`): nothing here
+  //: reads the page, and nothing is left running.
+  saw(kind, buddy, now) {
+    const atlas = isAtlasSeed(buddy.dataset.seed || "");
+    const side = Math.random() < 0.5 ? -0.55 : 0.55;
+    if (kind === "nothing") {
+      nmb.missAt = now;
+      nameMarkBuddyTilt(side, 1700);
+      //: Atlas's own face answers the search already (`atlasOn("nothing")`).
+      if (!atlas) nameMarkBuddyExpress("confused", 2200);
+    } else if (kind === "found") {
+      nmb.missAt = 0;
+      nameMarkBuddyAct("nod");
+      if (!atlas) nameMarkBuddyExpress("happy", 1800);
+    } else if (kind === "whoosh") {
+      const p = nmb.pointer;
+      setTimeout(() => {
+        if (!buddy.isConnected || nameMarkBuddyStill() || nmb.act) return;
+        if (p) nameMarkBuddyAim(p);
+        nameMarkBuddyAct("blink");
+      }, 380);
+    } else if (kind === "carried") {
+      const shake = (x) => ({ translate: `${x}px 0px` });
+      buddy.querySelector(".nm-buddy-char")?.animate?.([shake(0), shake(-1.6), shake(1.6), shake(-1.1), shake(0.8), shake(0)], { duration: 640, easing: "ease-in-out" });
+      nameMarkBuddyExpress(atlas ? "happy" : nmb.carriedMs > 5000 ? "dizzy" : "happy", 1800, { drift: atlas });
+    } else if (kind === "binned") {
+      nameMarkBuddyTilt(side * 0.6, 1200);
+      if (atlas) setAtlasMood("worried", 1600, { quiet: true, backEaseMs: 900 });
+      else nameMarkBuddyExpress("nervous", 1800);
+    }
+  },
   //: Out of an act: a breath out after a big one, and what follows, if
   //: anything does and suits the moment ("" when nothing).
   after(buddy, act, roll = Math.random(), now = Date.now()) {

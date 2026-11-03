@@ -3187,6 +3187,7 @@ const NMB_ACTIVITIES = [
   ["rub", "Lean into a rub (the pointer back and forth over it)", ["rub"]],
   ["flip", "Turn upside down when shaken while carried", ["flip"]],
   ["remark", "Say something from your notes now and then", ["remark"]],
+  ["habits", "Little habits and reactions (a search that finds nothing, a fast pointer, a long carry)", ["habits"]],
 ];
 function nameMarkBuddyActivitiesOff() {
   try {
@@ -7280,6 +7281,9 @@ function nameMarkBuddyAct(act, ms) {
     const next = act === "land" && nmb.afterLand ? "look" : nmb.mind?.after(buddy, act) || "";
     if (act === "land") nmb.afterLand = false;
     nameMarkBuddyAct(next);
+    //: Held a while, it shakes itself off once it has landed (INBOX 1581).
+    if (act === "land" && nmb.carriedMs >= 2500) setTimeout(() => nameMarkBuddyReact("carried"), 250);
+    if (act === "land") nmb.carriedMs = 0;
   }, (ms || spec?.ms || 1200) * (act === "land" ? 1 : 1 + Math.random() * 0.3));
 }
 
@@ -7843,7 +7847,8 @@ function nameMarkBuddyTick() {
   //: The mood moves every tick, a yawn's included: it used to be worked out
   //: after the yawn's early return, so a tick that yawned skipped it and a
   //: night of yawns kept the day's energy (review, round 6).
-  const energyTarget = (night ? 0.3 : 0.75) - Math.min(0.3, idle / (20 * 60 * 1000));
+  //: By the part of the day (INBOX 1581, `atlasDriftState.phase`): fullest in the morning, winding down from the afternoon.
+  const energyTarget = { morning: 0.85, afternoon: 0.72, evening: 0.55, night: 0.3 }[atlasDriftState.phase(hour)] - Math.min(0.3, idle / (20 * 60 * 1000));
   const drift = (value, toward) => value + (toward - value) * 0.1;
   nmb.mood.energy = drift(nmb.mood.energy, energyTarget);
   nmb.mood.curiosity = drift(nmb.mood.curiosity, 0.6);
@@ -8021,6 +8026,21 @@ const NMB_REACTIONS = {
   toast: { cool: 8000, ms: 2000 },
   //: Something from the notebook, in words (companion-remark.js), a few times a day at most.
   remark: { cool: 3 * 60 * 60 * 1000, ms: 0 },
+  //: **Little habits and reactions** (INBOX 1581, the owner: "more behaviour
+  //: and npc improvements"), played by `NMB_MIND.saw` (companion-menu.js):
+  //:   nothing  a search found nothing: a head tilt, a puzzled look;
+  //:   found    a search found something within 30 s of a miss: a nod;
+  //:   whoosh   the pointer passed fast and close: a double take;
+  //:   carried  put down after a carry of 2.5 s or more: it shakes itself off;
+  //:   binned   a note moved to the bin: a small wince.
+  //: Each waits for the keys to rest (1.5 s, four tries, then it is dropped),
+  //: never plays over an act, never under `data-motion="reduced"`, and is off
+  //: with "Little habits and reactions" in What it does.
+  nothing: { cool: 45000, habit: true },
+  found: { cool: 45000, habit: true },
+  whoosh: { cool: 30000, habit: true },
+  carried: { cool: 20000, habit: true, over: ["look"] },
+  binned: { cool: 30000, habit: true },
 };
 const NMB_REACT_GAP = 6000;
 function nameMarkBuddyReact(kind, target = null) {
@@ -8031,6 +8051,25 @@ function nameMarkBuddyReact(kind, target = null) {
   const now = Date.now();
   nmb.reactCool = nmb.reactCool || {};
   if ((nmb.reactCool[kind] || 0) > now || now - (nmb.reactAt || 0) < NMB_REACT_GAP) return false;
+  if (spec.habit) {
+    if (document.documentElement.dataset.motion === "reduced" || nameMarkBuddyActOff("habits") || (nmb.act && !spec.over?.includes(nmb.act))) return false;
+    //: The mind comes at the first tick; one sooner than that fetches it and plays once it is in.
+    if (!nmb.mind) {
+      if (!target?.retry) ensureModule("companionMenu").then((ok) => ok && nmb.mind && nameMarkBuddyReact(kind, { retry: true }));
+      return false;
+    }
+    if (target?.retry) target = null;
+    if (kind === "found" && !(now - (nmb.missAt || 0) < 30000)) return false;
+    const wait = (nmb.habitWait ||= {});
+    const typed = now - (nmb.keyAt || 0);
+    if (typed < 1500) {
+      wait[kind] = (wait[kind] || 0) + 1;
+      if (wait[kind] <= 4) setTimeout(() => nameMarkBuddyReact(kind, target), 1600 - typed);
+      else wait[kind] = 0;
+      return false;
+    }
+    wait[kind] = 0;
+  }
   nmb.reactCool[kind] = now + spec.cool;
   nmb.reactAt = now;
   nmb.reacted = kind;
@@ -8067,6 +8106,8 @@ function nameMarkBuddyReact(kind, target = null) {
     nameMarkBuddyAct("hide", spec.ms);
   } else if (kind === "remark") {
     nameMarkBuddyRemark();
+  } else if (spec.habit) {
+    nmb.mind.saw(kind, buddy, now);
   }
   return true;
 }
@@ -8743,6 +8784,14 @@ function nameMarkBuddyNotice(x, y, now, salient = "") {
   }
   nmb.nearSince = 0;
   const loud = (speed > 1800 && dist < 400) || (salient && dist < 300);
+  //: Fast and close, past it: a double take a moment later (INBOX 1581).
+  //: Close is the nearest point of the path since the last sample, since a
+  //: flick crosses the head between two samples (100 ms apart).
+  if (!salient && speed > 2200 && last && !buddy.classList.contains("nmb-drowsy")) {
+    const [dx, dy] = [x - last[0], y - last[1]];
+    const t = Math.max(0, Math.min(1, ((cx - last[0]) * dx + (cy - last[1]) * dy) / (dx * dx + dy * dy || 1)));
+    if (Math.hypot(last[0] + t * dx - cx, last[1] + t * dy - cy) < 160) nameMarkBuddyReact("whoosh");
+  }
   if (buddy.classList.contains("nmb-drowsy") && !loud) return;
   //: **Its eyes on the pointer, as Appearance says** (round 5): with Faces
   //: follow the pointer off, a pointer merely passing is not followed (a
@@ -9410,6 +9459,7 @@ function nameMarkBuddyBuild() {
     if (!drag.moved && Math.hypot(drag.x - drag.sx, drag.y - drag.sy) < 4) return;
     if (!drag.moved) {
       drag.moved = true;
+      drag.at = event.timeStamp;
       ensureModule("companionThrow");
       nmb.flight?.stop();
       const box = buddy.getBoundingClientRect();
@@ -9485,6 +9535,8 @@ function nameMarkBuddyBuild() {
       nmb.afterLand = true;
       nameMarkBuddyMoveTo(buddy, landed);
       if (!nmb.anim || nmb.anim.playState === "finished" || nmb.anim.playState === "idle") nameMarkBuddyAct("land");
+      //: How long it was held: the landing's end reads it (`nameMarkBuddyAct`).
+      nmb.carriedMs = (event?.timeStamp ?? performance.now()) - drag.at;
       const spots = nameMarkBuddySpots();
       delete spots["*"];
       spots[nameMarkBuddyTab()] = nameMarkBuddySpotFor(landed);

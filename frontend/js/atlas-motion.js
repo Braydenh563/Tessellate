@@ -443,7 +443,13 @@ function atlasRigFrame(rig, now) {
   //: which wakes the rig (`rig.dirty`), or while an animation runs on the
   //: arm; once both arms and the turn have held a quarter second with none
   //: running, the rig works from what it read until the next wake.
-  const look = rig.dirty || !rig.reads;
+  //: **Not the first to read a page that has just flipped** (INBOX 1560's
+  //: found list, a30v): inside `uiSettlingUntil` (a tab, a dialog arriving)
+  //: a read here paid the whole arriving page's restyle, 71 to 262ms at 4x.
+  //: It works from what it read until the page has settled, and stays awake
+  //: until it has read again.
+  const settling = !!rig.reads && now < (globalThis.uiSettlingUntil || 0);
+  const look = (rig.dirty || !rig.reads) && !settling;
   const reads = look ? rig.arms.map((arm) => ({ ...atlasRigRead(arm), anim: live && arm.running.size > 0 })) : rig.reads;
   const turnMatrix = !look ? rig.turnMatrix : rig.pose && rig.heads.length ? /matrix\(([^)]+)\)/.exec(getComputedStyle(rig.pose).transform) : null;
   if (look) {
@@ -554,7 +560,7 @@ function atlasRigFrame(rig, now) {
   }
   box.toggleAttribute("data-atl-moving", busy);
   //: Six quiet frames in a row and it sleeps until the next change.
-  rig.still = busy ? 0 : rig.still + 1;
+  rig.still = busy || (settling && rig.dirty) ? 0 : rig.still + 1;
   if (live && rig.still < 6) rig.raf = requestAnimationFrame((t) => atlasRigFrame(rig, t));
   else rig.at = 0;
 }

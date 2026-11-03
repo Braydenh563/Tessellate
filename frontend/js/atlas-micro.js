@@ -26,11 +26,23 @@
 //: when calm and after a wave, a cheer or the greeting: four small glints rise
 //: from her left hand, each fading in over about a second and out again,
 //: `transform` and `opacity` only, then they are taken off the figure.
-const atlasMicroState = { timer: 0, last: "", sinceMood: 9, castAt: 0 };
+//:
+//: **Rare habits, and the part of the day** (INBOX 1581, the owner: "more
+//: behaviour and npc improvements"). Four moves come seldom, each at most
+//: once in three minutes (`atlasMicroPick.rareMs`): a look around (one side,
+//: then the other), a hum (three small nods of the head), a settling breath
+//: (the body sinks a pixel and comes up) and a double take at the pointer.
+//: Settings, Companion, What it does, "Little habits and reactions" turns them
+//: off. The weights lean with the part of the day (`atlasDriftState.phase`):
+//: more glances in the morning, more focus in the afternoon, slower blinks
+//: and drowsier faces in the evening and at night.
+const atlasMicroState = { timer: 0, last: "", sinceMood: 9, castAt: 0, rareAt: {} };
 const ATLAS_MICRO_BASE = {
   glance: 4, tilt: 2.2, shift: 2.5, ear: 1.5, blink: 2,
   curious: 0.9, focus: 0.4, pleased: 0.7, sleepy: 0.2, surprised: 0.15, cast: 1.1,
+  around: 0.35, hum: 0.3, settle: 0.4, double: 0.3,
 };
+
 const ATLAS_MICRO_MOOD = { curious: "curious", focus: "determined", pleased: "happy", sleepy: "sleepy", surprised: "surprised" };
 function atlasMicroGap() {
   //: Skewed short: a quarter of the gaps are over six seconds.
@@ -39,9 +51,13 @@ function atlasMicroGap() {
 function atlasMicroPick(c, last = "") {
   const w = { ...ATLAS_MICRO_BASE };
   const night = c.hour >= 22 || c.hour < 6;
-  if (c.typing) Object.assign(w, { glance: w.glance * 0.4, tilt: w.tilt * 0.5, curious: w.curious * 0.5, focus: w.focus * 6, sleepy: w.sleepy * 0.1, surprised: 0 });
+  if (c.typing) Object.assign(w, { glance: w.glance * 0.4, tilt: w.tilt * 0.5, curious: w.curious * 0.5, focus: w.focus * 6, sleepy: w.sleepy * 0.1, surprised: 0, around: 0, hum: 0, double: 0 });
   if (c.idle > 60000) Object.assign(w, { sleepy: w.sleepy * 4, shift: w.shift * 1.5, glance: w.glance * 0.6, focus: 0 });
   if (night) w.sleepy *= 5;
+  for (const [k, f] of Object.entries(atlasMicroPick.phase[c.phase] || {})) w[k] *= f;
+  //: The rare ones: switched off, too soon after the last of their kind, a double take with no pointer.
+  for (const k of atlasMicroPick.rare) if (c.rareOff || (c.now || 0) - (c.rareAt?.[k] ?? -Infinity) < atlasMicroPick.rareMs) w[k] = 0;
+  if (!c.pointer) w.double = 0;
   //: Hers alone, and a pause (30 s) between two casts, a gesture's included.
   if (c.look !== "feminine" || c.sinceCast < 30000) w.cast = 0;
   if (c.typing) w.cast *= 0.3;
@@ -58,6 +74,16 @@ function atlasMicroPick(c, last = "") {
   }
   return "shift";
 }
+//: The rare ones, their pause, and the part of the day's lean: function
+//: properties, not globals (the shared scope's cap, `tests/test_global_scope_ratchet.py`).
+atlasMicroPick.rare = ["around", "hum", "settle", "double"];
+atlasMicroPick.rareMs = 180000;
+atlasMicroPick.phase = {
+  morning: { glance: 1.3, shift: 1.2, curious: 1.3, sleepy: 0.3, around: 1.4 },
+  afternoon: { focus: 1.5, tilt: 1.2, hum: 1.3 },
+  evening: { blink: 1.3, sleepy: 2, glance: 0.85, settle: 1.5 },
+  night: { blink: 1.4, settle: 1.6, around: 0.5, hum: 0.4 },
+};
 function atlasMicroMay(box) {
   const buddy = box.closest("#nm-buddy");
   if (!box.isConnected || !buddy || document.hidden || document.documentElement.hasAttribute("data-atlas-hidden") || !atlasMotionOK(box)) return false;
@@ -130,9 +156,40 @@ function atlasMicroCast(only) {
   }
   return cast;
 }
+//: The rare habits: the head's `transform` and the body's `translate`, as
+//: the tilt and the shift play them, and the look as a glance aims it.
+atlasMicroDo.rare = function (kind, box, sign) {
+  atlasMicroState.rareAt[kind] = Date.now();
+  const back = () => atlasMicroMay(box) && nameMarkBuddyAim(nmb.pointer && Date.now() - (nmb.lastInput || 0) < 4000 ? nmb.pointer : null);
+  if (kind === "around") {
+    const y = innerHeight * (0.35 + Math.random() * 0.2);
+    const side = (k) => [k < 0 ? innerWidth * 0.08 : innerWidth * 0.92, y];
+    nameMarkBuddyAim(side(sign));
+    setTimeout(() => atlasMicroMay(box) && nameMarkBuddyAim(side(-sign)), 900 + Math.random() * 300);
+    setTimeout(back, 2000 + Math.random() * 400);
+  } else if (kind === "double") {
+    const p = nmb.pointer;
+    nameMarkBuddyAim(p);
+    setTimeout(() => atlasMicroMay(box) && nameMarkBuddyAim(null), 420);
+    setTimeout(() => {
+      if (!atlasMicroMay(box)) return;
+      nameMarkBuddyAim(p);
+      atlasBlink(box);
+    }, 760);
+    setTimeout(back, 2200);
+  } else if (kind === "hum") {
+    const nod = (deg) => ({ transform: `rotate(${(sign * deg).toFixed(2)}deg)` });
+    const frames = [nod(0), { ...nod(1.4), offset: 0.17 }, { ...nod(-0.6), offset: 0.33 }, { ...nod(1.2), offset: 0.5 }, { ...nod(-0.5), offset: 0.67 }, { ...nod(1), offset: 0.83 }, nod(0)];
+    for (const head of box.atlasRig?.heads || []) atlasMicroPlay(head, frames, 1800 + Math.random() * 400);
+  } else {
+    const sink = (y) => ({ translate: `0px ${y}px` });
+    atlasMicroPlay(box.querySelector(".atl-lw-body"), [sink(0), { ...sink(0.9), offset: 0.45 }, { ...sink(0.9), offset: 0.6 }, sink(0)], 2200 + Math.random() * 600);
+  }
+};
 function atlasMicroDo(kind, box) {
   const sign = Math.random() < 0.5 ? -1 : 1;
   if (kind === "glance") return atlasMicroDo.glance(box);
+  if (atlasMicroPick.rare.includes(kind)) return atlasMicroDo.rare(kind, box, sign);
   if (kind === "cast") return atlasMicroCast(box);
   if (kind === "tilt") {
     const d = sign * (1.8 + Math.random() * 2.4);
@@ -199,7 +256,11 @@ function atlasMicroTick() {
   atlasMicroState.sinceMood += 1;
   if (!atlasMicroMay(box)) return;
   const now = Date.now();
-  const kind = atlasMicroPick({ typing: now - (nmb.keyAt || 0) < 5000, idle: now - (nmb.lastInput || 0), hour: new Date().getHours(), mood: atlasMoodNow, look: box.dataset.atlasLook, sinceCast: now - atlasMicroState.castAt }, atlasMicroState.last);
+  const hour = new Date().getHours();
+  const kind = atlasMicroPick({
+    typing: now - (nmb.keyAt || 0) < 5000, idle: now - (nmb.lastInput || 0), hour, phase: atlasDriftState.phase?.(hour), mood: atlasMoodNow, look: box.dataset.atlasLook,
+    sinceCast: now - atlasMicroState.castAt, now, rareAt: atlasMicroState.rareAt, rareOff: nameMarkBuddyActOff("habits") || document.documentElement.dataset.motion === "reduced", pointer: !!nmb.pointer,
+  }, atlasMicroState.last);
   atlasMicroState.last = kind;
   atlasMicroDo(kind, box);
 }
