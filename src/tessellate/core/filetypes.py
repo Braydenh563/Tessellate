@@ -73,7 +73,7 @@ FILE_TYPES: tuple[FileType, ...] = (
     #: 1546 D5: a Mermaid diagram is a document, so history, versions, search, links, the
     #: bin and export come with it. Not `previewable` (that is markdown's); the editor
     #: draws its picture beside the source itself (documents.js `docViewAllowed`).
-    FileType("mmd", "Mermaid diagram", line_comment="%%", group="Documents", icon="flow-arrow"),
+    FileType("mmd", "Diagram", line_comment="%%", group="Documents", icon="flow-arrow"),
     FileType("csv", "CSV", line_comment="#", group="Data", icon="file-csv"),
     FileType("json", "JSON", line_comment="//", group="Data", icon="brackets-curly"),
     FileType("yaml", "YAML", line_comment="#", group="Data", icon="list-bullets"),

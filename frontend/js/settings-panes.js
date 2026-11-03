@@ -1157,6 +1157,15 @@ const POPUP_TOOLS = [
     keys: "Ctrl+K", where: "Set an alarm",
     guide: "timer", open: () => ensureModule("utilities").then(() => openClockPanel("alarm")),
   },
+  //: The Diagram builder (INBOX 1588): one door for every list. `open(t)` is the one opener (`diagramModel.door`, documents-mermaid.js):
+  //: over a text box it builds, then writes the fence there; over a board or a mind map it adds a diagram object; else it starts a .mmd document.
+  {
+    id: "diagram", name: "Diagram builder", icon: "ph:flow-arrow", group: "Documents", widgetExempt: "It builds in a full dialog or a document, so there is no small form to draw in a card.",
+    keywords: "diagram builder flowchart flow chart mind map timeline sequence blocks mermaid mmd draw chart process boxes arrows",
+    about: "Build a flowchart, mind map, timeline or sequence diagram from blocks; it lands in what you are writing or on the board, else it is a new .mmd file.",
+    keys: "/diagram", where: "Diagram builder, from Insert or Ctrl+K",
+    guide: "diagram-builder", open: (t) => ensureModule("library").then(() => diagramModel.door({ target: t || null })),
+  },
 ];
 
 //: What the palette caught from the field it was opened over (`paletteCaught`,

@@ -1,6 +1,6 @@
 """The diagram block pane (1546 P2; DOCUMENTS_PLAN "1546 design" D5 to D10).
 
-`DIAGRAM-OPS-BEGIN` to `-END` in diagram-builder.js is the pure half: the model
+`DIAGRAM-OPS-BEGIN` to `-END` in diagram-ops.js (it was in diagram-builder.js until 1594) is the pure half: the model
 changes a gesture makes (place, move, nest, join, relabel, delete), run here in
 node beside the model's own region (documents-mermaid.js). The invariants are
 D2's: every change prints to a source that parses back to the same blocks, and a
@@ -25,6 +25,7 @@ from tests._app_js import lazy_modules_source
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 BUILDER = JS / "diagram-builder.js"
+OPS = JS / "diagram-ops.js"
 MERMAID = JS / "documents-mermaid.js"
 
 
@@ -37,7 +38,7 @@ def _run(body: str):
     node = shutil.which("node")
     if not node:
         pytest.skip("node is not installed")
-    ops = _region(BUILDER, "DIAGRAM-OPS")
+    ops = _region(OPS, "DIAGRAM-OPS")
     assert "document." not in ops and "window." not in ops, "the pure region reached for the DOM"
     code = _region(MERMAID, "DIAGRAM-MODEL") + "\n" + ops + "\n" + body
     with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8") as handle:
@@ -197,7 +198,7 @@ console.log(JSON.stringify({ bad: bad.slice(0, 2), nodes: m.nodes.length, groups
         pytest.skip("node is not installed")
     for seed_source in (NESTED, KEPT):
         code = (
-            _region(MERMAID, "DIAGRAM-MODEL") + "\n" + _region(BUILDER, "DIAGRAM-OPS") + f"\nconst CORPUS = {json.dumps(seed_source)};\n" + body
+            _region(MERMAID, "DIAGRAM-MODEL") + "\n" + _region(OPS, "DIAGRAM-OPS") + f"\nconst CORPUS = {json.dumps(seed_source)};\n" + body
         )
         with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8") as handle:
             handle.write(code)
@@ -245,8 +246,10 @@ def test_the_pointer_mode_is_ahead_of_carry_and_the_drag_asks_it_first():
     assert seed.index("OBJ_MODES[name].seed?.(event)") < seed.index("OBJ_MODES[name].grab?.(hit)")
     carry = (JS / "obj-carry.js").read_text(encoding="utf-8")
     assert "grab: () => ({})" in carry and "OBJ_MODES.carry" in carry
+    #: The mode is made by diagram-pointer.js (1594) and set where the builder shows.
     code = BUILDER.read_text(encoding="utf-8")
-    assert "OBJ_MODES.diagram = DIAGRAM_MODE" in code and "seed: seedBlock" in code
+    pointer = (JS / "diagram-pointer.js").read_text(encoding="utf-8")
+    assert "OBJ_MODES.diagram = diagramModel.pointer.make(helpers)" in code and "seed: seedBlock" in pointer
     assert 'block: "ph-squares-four"' in drag
 
 
@@ -281,7 +284,7 @@ def test_a_diagram_over_the_block_limit_stays_in_source_with_one_line_saying_so(
     code = BUILDER.read_text(encoding="utf-8")
     sync = code[code.index("function sync(host, text") :]
     sync = sync[: sync.index("\n  }\n")]
-    assert "read.nodes.length > DGB_MAX" in sync and "more than ${DGB_MAX} blocks" in sync
+    assert "read.nodes.length > diagramOps.MAX" in sync and "more than ${diagramOps.MAX} blocks" in sync
     assert 'classList.toggle("dgm-plain", !parsed)' in sync
     # And the picture is still drawn for it: only a flowchart with no block yet is "empty".
     assert "S.plain = !parsed" in sync

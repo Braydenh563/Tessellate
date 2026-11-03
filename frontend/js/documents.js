@@ -8197,7 +8197,7 @@ function mountEditorToolbarExtras(bar) {
     insert.type = "button";
     insert.dataset.md = "insert";
     insert.dataset.mdExtra = "1";
-    insert.title = "Insert a block, image, link, table, emoji or equation (or press /)";
+    insert.title = "Insert a block, image, link, table, diagram, emoji or equation (or press /)";
     setLabel(insert, "ph:plus Insert");
     bar.appendChild(insert);
   }

@@ -21,7 +21,7 @@ CSS = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8
 
 def test_the_touch_code_is_its_own_lazy_file_asked_for_only_on_a_narrow_window_or_a_touch_screen():
     assert 'diagramTouch: ["/js/diagram-touch.js"]' in MERMAID
-    assert 'matchMedia("(max-width: 599.98px), (pointer: coarse)")' in BUILDER and 'ensureModule("diagramTouch")' in BUILDER
+    assert 'const COMPACT = "(max-width: 599.98px), (pointer: coarse)"' in BUILDER and "matchMedia(COMPACT).matches" in BUILDER and 'ensureModule("diagramTouch")' in BUILDER
     assert "diagramModel.touch = { wire }" in TOUCH
     #: One wiring per pane, whichever pane it is (a flowchart's or a kind's).
     assert "S.root.dataset.touch" in TOUCH
@@ -35,7 +35,7 @@ def test_the_phone_palette_is_one_button_and_a_sheet_that_presses_the_tiles():
     #: Hidden until the module runs and only in a narrow pane; the tiles stay in the page for the sheet.
     assert ".dgm-add {\n  display: none;\n}" in CSS
     narrow = CSS[CSS.index("@container (max-width: 599.98px)") :]
-    assert ".dgm-compact .dgm-palette {\n    display: none;" in narrow
+    assert ".dgm-compact :is(.dgm-palette, .dgm-lib-hint, .dock-group:has(> .dgm-dirs)) {\n    display: none;" in narrow
     assert ".dgm-compact .dgm-add {\n    display: inline-flex;" in narrow
 
 
@@ -53,5 +53,5 @@ def test_a_drag_scrolls_the_pane_and_the_page_around_it_at_the_edge_of_what_is_o
     tick = DRAG[DRAG.index("function objDragTick") : DRAG.index("function objDragUp")]
     assert "Math.min(box.bottom, innerHeight)" in tick and "Math.max(box.top, 0)" in tick
     assert "OBJ_MODES[g.mode].ancestors" in tick and "el.scrollTop + el.clientHeight >= el.scrollHeight - 1" in tick
-    assert "ancestors: true" in BUILDER and "ancestors: true" in KINDS
+    assert "ancestors: true" in (JS / "diagram-pointer.js").read_text(encoding="utf-8") and "ancestors: true" in KINDS
 
