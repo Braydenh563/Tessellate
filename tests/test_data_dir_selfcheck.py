@@ -238,11 +238,15 @@ def test_the_offer_and_the_report_have_their_places_and_their_help():
     from tessellate.ai.help_topics_more import MORE_TOPICS
     from tests._app_js import app_js_text
 
-    html = (Path(__file__).resolve().parents[1] / "frontend" / "index.html").read_text(encoding="utf-8")
-    for element in ("lock-restore-offer", "lock-restore-yes", "lock-restore-no", "health-selfcheck-run", "health-missing"):
-        assert f'id="{element}"' in html
-    assert 'data-help-for="health-selfcheck-help"' in html and 'id="health-selfcheck-help"' in html
+    #: Both are built by script when they are needed, not shipped in
+    #: index.html (the boot page is at its element cap), so their ids are read
+    #: from the builders.
     js = Path(__file__).resolve().parents[1] / "frontend" / "js"
+    built = (js / "account-recovery.js").read_text(encoding="utf-8") + (js / "settings-health.js").read_text(encoding="utf-8")
+    for element in ("lock-restore-offer", "lock-restore-yes", "lock-restore-no", "health-selfcheck-run", "health-missing"):
+        assert f'id: "{element}"' in built
+    assert 'help.dataset.helpFor = "health-selfcheck-help"' in built and 'id: "health-selfcheck-help"' in built
+    assert "initHelpToggles(row)" in built
     assert "showRestoreOffer(status.restore_offer)" in app_js_text()
     assert 'accountRecovery: ["showRestoreOffer"]' in (js / "lazy-entries.js").read_text(encoding="utf-8")
     recovery = (js / "account-recovery.js").read_text(encoding="utf-8")

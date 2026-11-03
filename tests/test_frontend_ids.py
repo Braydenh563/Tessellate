@@ -40,6 +40,11 @@ RUNTIME_IDS = {
     #: Tidy spacing, drawn by graph.js `graphTidyRow` on the first Graph visit
     #: (INBOX 1529; the boot element cap, test_boot_diet3).
     "graph-tidy",
+    #: The data folder check's row, built by settings-health.js `selfCheckRow`
+    #: when About's health block opens (INBOX 1573; the boot element cap).
+    "health-missing",
+    "health-selfcheck",
+    "health-selfcheck-run",
 }
 
 

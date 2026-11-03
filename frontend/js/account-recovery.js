@@ -438,9 +438,30 @@ function recoveryAccountRow(info) {
 //: database deleted, damaged or its log lost). The person chooses: the backup
 //: (`POST /backups/restore`, which snapshots the empty file first), or a new
 //: notebook, which only hides the offer.
+//: Built here, on the one start that has an offer, not shipped in index.html:
+//: the boot page is at its element cap (tests/test_boot_diet3.py).
 function showRestoreOffer(offer) {
-  const box = $("lock-restore-offer");
-  if (!box) return;
+  let box = $("lock-restore-offer");
+  if (!box && !offer) return;
+  if (!box) {
+    const make = (tag, props = {}) => Object.assign(document.createElement(tag), props);
+    box = make("div", { id: "lock-restore-offer", className: "notice" });
+    box.setAttribute("role", "region");
+    box.setAttribute("aria-labelledby", "lock-restore-words");
+    const icon = make("i", { className: "ph ph-clock-counter-clockwise" });
+    icon.setAttribute("aria-hidden", "true");
+    const row = make("div", { className: "row button-row" });
+    row.append(
+      make("button", { type: "button", id: "lock-restore-yes", textContent: "Restore backup" }),
+      make("button", { type: "button", id: "lock-restore-no", className: "ghost", textContent: "Start a new notebook" }),
+    );
+    const status = make("p", { id: "lock-restore-status", className: "status" });
+    status.setAttribute("role", "status");
+    const body = make("div");
+    body.append(make("p", { id: "lock-restore-words" }), row, status);
+    box.append(icon, body);
+    $("lock-message").after(box);
+  }
   box.classList.toggle("hidden", !offer);
   if (!offer) return;
   const reasons = {

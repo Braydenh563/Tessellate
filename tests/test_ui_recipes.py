@@ -6397,6 +6397,7 @@ PANEL_FIXED_JS = {
     "lightbox-actions.js": "the image viewer's overlays",
     "lightbox-view.js": "the image viewer",
     "settings-controls.js": "an anchored control overlay",
+    "settings-health.js": "a help body (the data folder check's popover)",
     "sheets-selects.js": "the select popup",
     "skills.js": "an anchored panel",
     "status-panels.js": "an anchored readout (the model offer popover)",
