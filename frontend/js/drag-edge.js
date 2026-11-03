@@ -52,7 +52,12 @@ function dragEdgeTick() {
   const step = pace(box.bottom - d.y) || -pace(d.y - box.top);
   const was = d.el.scrollTop;
   d.el.scrollTop = was + step;
-  const at = d.el.scrollTop !== was && document.caretPositionFromPoint?.(d.x, d.y);
+  //: **Asleep unless it moved something** (INBOX 1620: 58 to 61 calls a second, 2.4 to 3.1ms each, on
+  //: Notes with no drag under way): a frame that scrolled nothing (the pointer outside the zones, or
+  //: the list at its end) books no next one, and the next `mousemove` with the button down wakes it.
+  //: Measured, a selection released outside the window: 180 frames in 3 s, then none.
+  if (d.el.scrollTop === was) return;
+  const at = document.caretPositionFromPoint?.(d.x, d.y);
   if (at && d.el.contains(at.offsetNode)) sel.extend(at.offsetNode, at.offset);
   d.frame = requestAnimationFrame(dragEdgeTick);
 }
@@ -79,18 +84,26 @@ function initDragSelectEdgeScroll() {
     Object.assign(d, { press: held.target, x: held.x, y: held.y });
     d.frame = requestAnimationFrame(dragEdgeTick);
   }
-  document.addEventListener("mousemove", (e) => {
-    if (!(d.el || d.press) || !(e.buttons & 1)) return;
-    d.x = e.clientX;
-    d.y = e.clientY;
-    d.frame ||= requestAnimationFrame(dragEdgeTick);
-  }, true);
-  document.addEventListener("mouseup", () => {
+  //: A button that came up where no `mouseup` reaches the page (outside the window, or a native
+  //: drag took it) is found by the next move with the button up.
+  const release = () => {
     d.el = null;
     d.press = null;
     cancelAnimationFrame(d.frame);
     d.frame = 0;
+  };
+  document.addEventListener("mousemove", (e) => {
+    if (!(e.buttons & 1)) {
+      if (d.el || d.press || d.frame) release();
+      return;
+    }
+    if (!(d.el || d.press)) return;
+    d.x = e.clientX;
+    d.y = e.clientY;
+    d.frame ||= requestAnimationFrame(dragEdgeTick);
   }, true);
+  document.addEventListener("mouseup", release, true);
+  window.addEventListener("blur", release);
 }
 
 //: **The lag log rides this bundle** (lag-watch.js): app.js is at its gzip
