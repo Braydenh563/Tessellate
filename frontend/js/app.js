@@ -1412,6 +1412,7 @@ function promptDialog(message, initial = "", { confirmLabel = "Save", segment = 
       }
       segRow = document.createElement("div");
       segRow.className = "seg seg-compact confirm-seg";
+      segRow.classList.add("seg-fill");
       segRow.setAttribute("role", "group");
       segRow.setAttribute("aria-label", segment.label || message);
       segField.appendChild(segRow);

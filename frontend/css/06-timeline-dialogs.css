@@ -1056,16 +1056,6 @@
   font-size: var(--text-sm);
   color: var(--muted);
 }
-.confirm-card .seg.confirm-seg {
-  display: flex;
-  width: 100%;
-  margin-bottom: 0;
-}
-.confirm-card .seg.confirm-seg > button {
-  flex: 1 1 0;
-  min-width: 0;
-  justify-content: center;
-}
 /* (`.chat-skill-hint` lived here: the sentence of description that used to sit
    beside the skill picker. It was the widest thing in the dock and was clipped
    to one line anyway, so it says the same thing better as the select's own

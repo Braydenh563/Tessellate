@@ -6893,16 +6893,31 @@ KEY_GRIDS = {
 }
 #: A tile or key still built as a bordered ghost, by file: only falls.
 GHOST_TILE_DRIFT = {("whiteboard-templates.js", "wb-map-template-tile")}
-#: A scripted `.seg` and the row it shares with the control it governs (a lone one says `seg-fill`).
-SEG_SHARES_ROW: dict[tuple[str, str], str] = {}
-#: Scripted `.seg`s nobody has judged against "alone on its line" yet: only falls.
-SEG_ROW_UNREVIEWED = {
-    ("app.js", "seg seg-compact confirm-seg"),
-    ("documents-export.js", "seg"),
-    ("skills.js", "seg seg-compact chat-skill-pace"),
-    ("whiteboard.js", "seg seg-compact wb-export-seg"),
-    ("timeline-calendar.js", "seg seg-compact timeline-cal-span"),
-    ("dashboard.js", "seg focus-presets-seg"),
+#: A `.seg` and the row it shares with the control it governs, by (file, id or class string): scripted
+#: (`.className = "seg ..."`) and in index.html's markup alike. A lone one says `seg-fill` instead.
+SEG_SHARES_ROW: dict[tuple[str, str], str] = {
+    ("documents-export.js", "seg"): "the print setup's `.doc-print-row`: the label, then its choices",
+    ("skills.js", "seg seg-compact chat-skill-pace"): "`paceRow`: the label, then Auto and Manual",
+    ("whiteboard.js", "seg seg-compact wb-export-seg"): "a grid of option tiles that spans the dialog's width",
+    ("timeline-calendar.js", "seg seg-compact timeline-cal-span"): "the calendar head, beside the month and its arrows",
+    ("dashboard.js", "seg focus-presets-seg"): "`.focus-presets`, beside the stepper",
+    ("index.html", "doc-history-filter"): "`.doc-history-bar`, beside Name this version",
+    ("index.html", "seg notes-view-toggle"): "the Notes dock, beside Sort and Select",
+    ("index.html", "seg capture-bar-modes"): "`#capture-bar-row`, beside the field and Add",
+    ("index.html", "chat-mode-seg"): "the chat tool row, beside the persona and skill pickers",
+    ("index.html", "timeline-view-seg"): "the Timeline dock",
+    ("index.html", "doc-view-seg"): "the Documents dock, beside the cluster's other controls",
+    ("index.html", "reminder-view-toggle"): "the Reminders dock",
+    ("index.html", "library-view"): "the Library dock",
+    ("index.html", "library-boards-view"): "the Library dock",
+    ("index.html", "seg library-media-view"): "the Library files dock",
+    ("index.html", "ocr-view"): "the OCR workspace's toolbar",
+    ("index.html", "theme-seg"): "a Settings row: the label and its help, then the control",
+    ("index.html", "fontsize-seg"): "a Settings row: the label and its help, then the control",
+    ("index.html", "border-style-seg"): "a Settings row: the label and its help, then the control",
+    ("index.html", "motion-seg"): "a Settings row: the label and its help, then the control",
+    ("index.html", "privacy-range"): "the receipt's `.privacy-range-row`, beside its heading",
+    ("index.html", "log-view-toggle"): "the log dock's arrange group",
 }
 #: Row builders held to "at most one bordered ghost, and only beside a filled button".
 ROW_BUILDERS = [
@@ -6925,7 +6940,7 @@ def _js_function(name: str, fn: str) -> str:
 
 
 def test_a_grid_of_keys_or_tiles_is_the_quiet_inset_fill_with_no_edge() -> None:
-    css = (ROOT / "frontend" / "css" / "reply-kit-lazy.css").read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "03-dashboard-widgets.css").read_text(encoding="utf-8")
     recipe = {sel: body for sel, body in _rules(css) if ".key-grid" in sel}
     base = recipe[".key-grid > button"]
     for want in ("border: 0;", "background: var(--chip-bg);", "box-shadow: none;"):
@@ -6981,7 +6996,7 @@ def test_a_row_has_at_most_one_bordered_ghost_and_only_beside_a_filled_button() 
 
 
 def test_a_seg_alone_on_its_line_spans_the_row() -> None:
-    css = (ROOT / "frontend" / "css" / "reply-kit-lazy.css").read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "03-dashboard-widgets.css").read_text(encoding="utf-8")
     well = _rule_exact(css, ".seg.seg-fill")
     assert "display: flex" in well and "width: 100%" in well
     assert "flex: 1 1 0" in _rule_exact(css, ".seg.seg-fill > button"), "the segments are equal"
@@ -6992,10 +7007,20 @@ def test_a_seg_alone_on_its_line_spans_the_row() -> None:
             if "seg-fill" in text[match.end() : match.end() + 300]:
                 continue
             judged.add((path.name, match.group(1)))
-    assert judged <= SEG_ROW_UNREVIEWED | set(SEG_SHARES_ROW), (
-        f"a `.seg` alone on its line spans the row (`seg-fill`), or SEG_SHARES_ROW names the row it joins: {sorted(judged - SEG_ROW_UNREVIEWED)}"
+    # The markup too (index.html): keyed by the element's id, else its class string.
+    html = re.sub(r"<!--.*?-->", "", (ROOT / "frontend" / "index.html").read_text(encoding="utf-8"), flags=re.S)
+    for match in re.finditer(r'<div\b([^>]*)>', html):
+        attrs = match.group(1)
+        cls = re.search(r'\bclass="([^"]*)"', attrs)
+        if not cls or "seg" not in cls.group(1).split() or "seg-fill" in cls.group(1).split():
+            continue
+        ident = re.search(r'\bid="([^"]*)"', attrs)
+        judged.add(("index.html", ident.group(1) if ident else cls.group(1)))
+    assert judged <= set(SEG_SHARES_ROW), (
+        f"a `.seg` alone on its line spans the row (`seg-fill`), or SEG_SHARES_ROW names the row it joins: {sorted(judged - set(SEG_SHARES_ROW))}"
     )
-    assert not SEG_ROW_UNREVIEWED - judged, f"judged now, take it out of SEG_ROW_UNREVIEWED: {sorted(SEG_ROW_UNREVIEWED - judged)}"
+    assert not set(SEG_SHARES_ROW) - judged, f"no such `.seg` now, take it out of SEG_SHARES_ROW: {sorted(set(SEG_SHARES_ROW) - judged)}"
+    assert all(len(reason) > 12 for reason in SEG_SHARES_ROW.values())
     modes = _js_function("math-editor.js", "mathEditorModes")
     assert 'classList.add("seg-fill")' in modes and 'classList.toggle("active"' in modes
 
