@@ -5206,8 +5206,23 @@ function nameMarkBuddyTempo() {
   }
   const now = performance.now();
   //: Not while a page or popup is arriving: `getAnimations` flushes all the style it has dirtied (306ms at 4x, INBOX 1534).
-  if (now - nmbTempo.seen > 1000 && now >= (window.uiSettlingUntil || 0)) {
+  const due = now - nmbTempo.seen > 1000 && now >= (window.uiSettlingUntil || 0);
+  //: **The periodic look waits for the page to be drawn** (the lag log: `avatars.js TimerHandler:setTimeout
+  //: 623ms (forced layout 465ms)`; 15 reads, 596ms, max 514ms at 4x CPU across seven tab clicks, right after
+  //: the hold below ended and the arriving page was still dirty). An idle callback runs after the frame that
+  //: settled it, and the next beat takes the look. One asked for (`seen` set to 0: an act or a walk starting)
+  //: is taken at once, as is any look where there is no idle callback.
+  if (due && nmbTempo.seen > 0 && !nmbTempo.ready) {
+    if (!nmbTempo.idle) {
+      nmbTempo.idle = window.requestIdleCallback?.(() => {
+        nmbTempo.idle = 0;
+        nmbTempo.ready = true;
+      }, { timeout: 600 });
+      if (nmbTempo.idle === undefined) nmbTempo.ready = true;
+    }
+  } else if (due) {
     nmbTempo.seen = now;
+    nmbTempo.ready = false;
     //: Atlas's layer roots (atlas.js, `atlasDrawFigure`) animate on the
     //: compositor; stepping them here would put them back on the main
     //: thread, so only what animates inside a drawing is paced.
@@ -5278,6 +5293,16 @@ function nameMarkBuddyTempo() {
   //: in general is ever so slightly laggy"): each step inside a drawing is a
   //: layout and a repaint the arriving view's frames are waiting on.
   const still = now - nmbFollow.scrollAt < 300 || now < (window.uiSettlingUntil || 0);
+  //: **And not read either while held** (the lag log: `avatars.js TimerHandler:setTimeout 623ms
+  //: (forced layout 465ms)`, 1.2 s at 4x CPU across seven tab clicks). The play states below are
+  //: a style read, and a beat inside the arriving page's 400ms paid for the page's whole restyle
+  //: to learn what it would not step anyway. Not busy and settling: look again after the hold (a
+  //: scroll is not held this way: the pause below still lands within the beat).
+  if (now < (window.uiSettlingUntil || 0) && !busy) {
+    nmbTempo.at = now;
+    if (!document.hidden) nmbTempo.timer = setTimeout(nameMarkBuddyTempo, NMB_TEMPO_MS * 2);
+    return;
+  }
   const step = Math.min(now - (nmbTempo.at || now), 250);
   //: Every read first, then every write: reading an animation's state
   //: after one has been stepped makes the page lay itself out again, once
@@ -7240,6 +7265,8 @@ function nameMarkBuddyAct(act, ms) {
   nmb.mind?.start(buddy, act, ms || spec?.ms || 1200);
   nmb.act = act;
   nmb.lastAct = act;
+  //: A wave or a cheer throws her stars (the feminine Atlas only; INBOX 1576).
+  if (act === "wave" || act === "cheer") window.atlasMicroCast?.();
   nameMarkBuddyState(buddy);
   //: The idle pool's memory (Brief 34 step 5, ledger 678 and 679): the last
   //: five acts, so `nameMarkBuddyDecide` does not reach for one of them.
@@ -7408,22 +7435,36 @@ function nameMarkBuddyAim(point, near = false) {
   //: so while the pointer kept moving it never came. Each change is eased by
   //: the CSS's own transitions, so ten a second reads as one smooth look.
   const dead = near ? 0.05 : 0.15;
-  if (Math.abs(lx - nmb.ex) < dead && Math.abs(ly - nmb.ey) < dead) return;
+  //: A figure drawn since the last look (a new expression, a redraw) has none of it written yet.
+  const char = buddy.querySelector(".nm-buddy-char");
+  const drawn = char === nmb.aimChar;
+  if (drawn && Math.abs(lx - nmb.ex) < dead && Math.abs(ly - nmb.ey) < dead) return;
+  nmb.aimChar = char;
   nmb.ex = lx;
   nmb.ey = ly;
-  buddy.style.setProperty("--nmb-ex", lx.toFixed(2));
-  buddy.style.setProperty("--nmb-ey", ly.toFixed(2));
+  nameMarkBuddyAim.set(buddy, "--nmb-ex", lx.toFixed(2));
+  nameMarkBuddyAim.set(buddy, "--nmb-ey", ly.toFixed(2));
   buddy.classList.add("nmb-attend");
   clearTimeout(nmb.headTimer);
   if (near && Date.now() >= nmb.groggyUntil) {
-    buddy.style.setProperty("--nmb-hx", (lx * 0.8).toFixed(2));
+    nameMarkBuddyAim.set(buddy, "--nmb-hx", (lx * 0.8).toFixed(2));
     return;
   }
   const groggy = Date.now() < nmb.groggyUntil;
   nmb.headTimer = setTimeout(() => {
-    buddy.style.setProperty("--nmb-hx", (lx * 0.8).toFixed(2));
+    nameMarkBuddyAim.set(buddy, "--nmb-hx", (lx * 0.8).toFixed(2));
   }, (groggy ? 450 : 150) + Math.random() * 150);
 }
+//: **The look is written on what reads it, not on the companion** (the lag log: `input 384ms
+//: pointerout on div.modal-overlay.nm-viewer`; a30p-1103.md, 113ms a write at 4x CPU). The three
+//: properties were inherited, so each write on `#nm-buddy` restyled all 647 of its descendants
+//: for the four elements that read them. They are registered `inherits: false` now
+//: (08-consistency.css) and set on those four kinds directly: 0.6ms a write. Properties of the function, not globals
+//: (`tests/test_global_scope_ratchet.py`).
+nameMarkBuddyAim.readers = ".name-mark .nm-eyes, .nm-char .nm-buddy-head, .atl-layer-lids, .nm-atlas .atl-iris";
+nameMarkBuddyAim.set = (buddy, name, value) => {
+  for (const el of buddy.querySelectorAll(nameMarkBuddyAim.readers)) el.style.setProperty(name, value);
+};
 
 //: Leans its body `side` (-1 left, 1 right, 0 upright), a few degrees about
 //: its feet, for `ms` (0: until told otherwise). One custom property, eased
@@ -7526,9 +7567,9 @@ function nameMarkBuddyRelease() {
   nmb.leanSide = "";
   if (!buddy) return;
   buddy.classList.remove("nmb-attend");
-  buddy.style.setProperty("--nmb-ex", "0");
-  buddy.style.setProperty("--nmb-ey", "0");
-  buddy.style.setProperty("--nmb-hx", "0");
+  nameMarkBuddyAim.set(buddy, "--nmb-ex", "0");
+  nameMarkBuddyAim.set(buddy, "--nmb-ey", "0");
+  nameMarkBuddyAim.set(buddy, "--nmb-hx", "0");
   nmb.leanState = 0;
   nmb.leanSmooth = 0;
   if (!nmb.act || nmb.act !== "tilt") nameMarkBuddyTilt(0);

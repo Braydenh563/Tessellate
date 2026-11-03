@@ -5051,9 +5051,6 @@ body .chip.item-label,
 #nm-buddy {
   --nmb-lean: 0;
   --nmb-edge: 72px;
-  --nmb-ex: 0;
-  --nmb-ey: 0;
-  --nmb-hx: 0;
   --nmb-tilt: 0;
   --nmb-scale: 1;
   position: absolute;
@@ -5898,6 +5895,14 @@ body .chip.item-label,
 @property --nmb-tilt { syntax: "<number>"; inherits: false; initial-value: 0; }
 @property --nmb-lean { syntax: "<number>"; inherits: false; initial-value: 0; }
 #nm-buddy :is(.nm-buddy-face, .nm-buddy-char) { --nmb-tilt: inherit; --nmb-lean: inherit; }
+/* **The look does not inherit either** (the lag log: `input 384ms pointerout on div.modal-overlay.nm-viewer`):
+   `--nmb-ex`, `--nmb-ey` and `--nmb-hx` were inherited, so one write on `#nm-buddy` restyled all 647
+   descendants (113ms at 4x CPU) for the four elements that read them: the faces' `.nm-eyes` and
+   `.nm-buddy-head`, Atlas's `.atl-layer-lids` and `.atl-iris`. avatars.js `nameMarkBuddyAim.set`
+   writes them on those (0.6ms). A new reader is added to `nameMarkBuddyAim.readers` there. */
+@property --nmb-ex { syntax: "<number>"; inherits: false; initial-value: 0; }
+@property --nmb-ey { syntax: "<number>"; inherits: false; initial-value: 0; }
+@property --nmb-hx { syntax: "<number>"; inherits: false; initial-value: 0; }
 #nm-buddy.nmb-duck .nm-buddy-char { transform: translateY(10px); }
 /* Tucked behind the bottom bar (the last resort in a small window): only
    its eyes over the edge, ducking out of sight when the pointer is near. */
@@ -7419,6 +7424,11 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .nm-atlas .atl-st-ink-0 { stop-color: black; stop-opacity: 0; }
 .nm-atlas :is(.atl-wisp-glint, .atl-band-glint) { fill: white; }
 .nm-atlas .atl-glint-halo { fill: var(--atl-tip); opacity: 0.85; }
+/* The stars she casts from her left hand (`atlasMicroCast`, INBOX 1576): invisible
+   until their animation plays, and removed when it ends, so none is ever at rest;
+   a glint scales about its own middle. None at all under Reduce motion. */
+.nm-atlas .atl-cast-star { fill: white; opacity: 0; transform-box: fill-box; transform-origin: center; }
+html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-star { display: none; }
 /* The glints twinkle (atlas.js, `glint-a`, `glint-b`): an opacity loop on
    each layer's root, the compositor's, on two clocks so neighbours are out
    of step; their boxes drift with the wisps'. Still under Reduce motion,

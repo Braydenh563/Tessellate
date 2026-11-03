@@ -829,15 +829,11 @@ document.addEventListener("scroll", (event) => {
 }, { capture: true, passive: true });
 
 function revealTab(name) {
-  //: One attribute on body is what the stylesheets key page-level rules on
-  //: (toast placement). They used `body:has(#tab-x:not(.hidden))`, which made
-  //: the engine re-match that rule against every tab flip (lag-1029.md).
-  document.body.dataset.tab = name;
-  for (const tab of TABS) {
-    $(`tab-${tab}`).classList.toggle("hidden", tab !== name);
-  }
-  scheduleUndoBar();
-  if (name === "notes" && $("entry-list").dataset.stale) renderEntries();
+  //: **The tab buttons first, before the pages flip** (the lag log: `BUTTON#tab-btn-reminders.onclick`
+  //: 95ms, 83 of it forced layout). A button's `tabIndex` write while it holds focus (it was just
+  //: clicked) makes the page settle style to ask whether it is still focusable; after the pages'
+  //: `hidden` flips below, that settled the whole arriving page inside the click (473ms at 4x CPU).
+  //: Done while only the buttons are dirty, it costs the buttons.
   // `documents` is a sub-view of Library, there is no `data-tab="documents"`
   // button in the tab bar, so the name that determines which button is active
   // must be "library" whenever we are showing the documents pane. Without
@@ -849,8 +845,6 @@ function revealTab(name) {
   // inaccessible" was giving them their own section in the Library instead of
   // leaving them inside a catch-all view called "Documents" that showed
   // everything. Worth the note so the next session does not re-derive it.
-  //: The companion finds its perch on the tab it is now on (avatars.js).
-  window.nameMarkBuddyTabChanged?.();
   const activeTabName = name === "documents" ? "library" : name;
   for (const button of document.querySelectorAll("#tab-bar button")) {
     const active = button.dataset.tab === activeTabName;
@@ -860,6 +854,17 @@ function revealTab(name) {
     button.setAttribute("aria-selected", active);
     button.tabIndex = active ? 0 : -1;
   }
+  //: One attribute on body is what the stylesheets key page-level rules on
+  //: (toast placement). They used `body:has(#tab-x:not(.hidden))`, which made
+  //: the engine re-match that rule against every tab flip (lag-1029.md).
+  document.body.dataset.tab = name;
+  for (const tab of TABS) {
+    $(`tab-${tab}`).classList.toggle("hidden", tab !== name);
+  }
+  scheduleUndoBar();
+  if (name === "notes" && $("entry-list").dataset.stale) renderEntries();
+  //: The companion finds its perch on the tab it is now on (avatars.js).
+  window.nameMarkBuddyTabChanged?.();
   // When the strip is narrow enough to scroll, the tab you just chose is the
   // one that must be legible, see revealActiveTab.
   revealActiveTab?.();

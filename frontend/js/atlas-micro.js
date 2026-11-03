@@ -18,10 +18,18 @@
 //: and while anything else has the companion: asleep, carried, walking,
 //: lying down, in an act, or a menu open. An expression only borrows a calm
 //: face; it never replaces a mood something else set.
-const atlasMicroState = { timer: 0, last: "", sinceMood: 9 };
+//:
+//: **The feminine look casts stars** (INBOX 1576, the owner: stars "permanently
+//: stuck to the end of the feminine atlas ... should instead become a movement
+//: or animation or behaviour (the stars in its left hand)"). She wears none at
+//: rest; a cast (`atlasMicroCast`) is the one beat only she has, now and then
+//: when calm and after a wave, a cheer or the greeting: four small glints rise
+//: from her left hand, each fading in over about a second and out again,
+//: `transform` and `opacity` only, then they are taken off the figure.
+const atlasMicroState = { timer: 0, last: "", sinceMood: 9, castAt: 0 };
 const ATLAS_MICRO_BASE = {
   glance: 4, tilt: 2.2, shift: 2.5, ear: 1.5, blink: 2,
-  curious: 0.9, focus: 0.4, pleased: 0.7, sleepy: 0.2, surprised: 0.15,
+  curious: 0.9, focus: 0.4, pleased: 0.7, sleepy: 0.2, surprised: 0.15, cast: 1.1,
 };
 const ATLAS_MICRO_MOOD = { curious: "curious", focus: "determined", pleased: "happy", sleepy: "sleepy", surprised: "surprised" };
 function atlasMicroGap() {
@@ -34,6 +42,9 @@ function atlasMicroPick(c, last = "") {
   if (c.typing) Object.assign(w, { glance: w.glance * 0.4, tilt: w.tilt * 0.5, curious: w.curious * 0.5, focus: w.focus * 6, sleepy: w.sleepy * 0.1, surprised: 0 });
   if (c.idle > 60000) Object.assign(w, { sleepy: w.sleepy * 4, shift: w.shift * 1.5, glance: w.glance * 0.6, focus: 0 });
   if (night) w.sleepy *= 5;
+  //: Hers alone, and a pause (30 s) between two casts, a gesture's included.
+  if (c.look !== "feminine" || c.sinceCast < 30000) w.cast = 0;
+  if (c.typing) w.cast *= 0.3;
   if (c.mood && c.mood !== "calm") for (const k of Object.keys(ATLAS_MICRO_MOOD)) w[k] = 0;
   let total = 0;
   for (const k of Object.keys(w)) {
@@ -59,7 +70,8 @@ function atlasMicroMay(box) {
 function atlasMicroPlay(el, frames, ms) {
   el?.animate?.(frames, { duration: ms, easing: "ease-in-out" });
 }
-function atlasMicroGlance(box) {
+//: A function property, not a global: the shared scope has a cap on names (`tests/test_global_scope_ratchet.py`).
+atlasMicroDo.glance = function (box) {
   const field = document.activeElement;
   const fr = field && field !== document.body ? field.getBoundingClientRect?.() : null;
   const r = Math.random();
@@ -73,10 +85,55 @@ function atlasMicroGlance(box) {
     nameMarkBuddyAim(nmb.pointer && Date.now() - (nmb.lastInput || 0) < 4000 ? nmb.pointer : null);
     if (Math.random() < 0.35 && atlasMicroMay(box)) atlasBlink(box);
   }, 700 + Math.random() * 1300);
+};
+//: A cast from the figure's left hand: `only` is one figure's box, none is every
+//: figure on the page (a gesture: the corner's and the large view's). Returns
+//: whether a cast began. Each star is a glint drawn in the hand's own group,
+//: so it rides with the hand; it is invisible (the CSS) until its animation
+//: plays, and is removed when that ends, so nothing of it is left at rest.
+function atlasMicroCast(only) {
+  if (document.hidden) return false;
+  let cast = false;
+  for (const box of only ? [only] : document.querySelectorAll(".atl-figure-box")) {
+    const arm = box.atlasRig?.arms?.find((a) => a.side === "l");
+    const wrist = arm?.geo?.segs?.[1];
+    if (box.dataset.atlasLook !== "feminine" || !arm?.hand || !wrist || box.atlasCasting || !box.isConnected || box.classList.contains("atl-off") || !atlasMotionOK(box)) continue;
+    cast = true;
+    box.atlasCasting = true;
+    atlasMicroState.castAt = Date.now();
+    //: Outward from the body, and up.
+    const out = Math.sign(wrist[6] - 32) || 1;
+    let live = 0;
+    for (const [i, size] of [2.4, 1.7, 2.1, 1.4].entries()) {
+      const star = atlasSpark(arm.hand, wrist[6], wrist[7], size, "atl-cast-star");
+      const dx = out * (2.4 + i * 1.8 + Math.random() * 1.4);
+      const dy = -(4 + i * 2.2 + Math.random() * 2);
+      const at = (k, scale) => `translate(${(dx * k).toFixed(2)}px, ${(dy * k).toFixed(2)}px) scale(${scale})`;
+      const ms = 2300 + Math.random() * 400;
+      //: Up by 42% of its time (about a second), held, then away.
+      const frames = [
+        { transform: at(0, 0.2), opacity: 0 },
+        { transform: at(0.55, 1), opacity: 1, offset: 0.42 },
+        { transform: at(0.8, 0.9), opacity: 1, offset: 0.7 },
+        { transform: at(1, 0.5), opacity: 0 },
+      ];
+      live += 1;
+      const done = () => {
+        star.remove();
+        live -= 1;
+        if (!live) box.atlasCasting = false;
+      };
+      const anim = star.animate?.(frames, { duration: ms, delay: i * 260, easing: "ease-out", fill: "backwards" });
+      if (anim?.finished) anim.finished.then(done, done);
+      else done();
+    }
+  }
+  return cast;
 }
 function atlasMicroDo(kind, box) {
   const sign = Math.random() < 0.5 ? -1 : 1;
-  if (kind === "glance") return atlasMicroGlance(box);
+  if (kind === "glance") return atlasMicroDo.glance(box);
+  if (kind === "cast") return atlasMicroCast(box);
   if (kind === "tilt") {
     const d = sign * (1.8 + Math.random() * 2.4);
     const ms = 1700 + Math.random() * 1900;
@@ -142,7 +199,7 @@ function atlasMicroTick() {
   atlasMicroState.sinceMood += 1;
   if (!atlasMicroMay(box)) return;
   const now = Date.now();
-  const kind = atlasMicroPick({ typing: now - (nmb.keyAt || 0) < 5000, idle: now - (nmb.lastInput || 0), hour: new Date().getHours(), mood: atlasMoodNow }, atlasMicroState.last);
+  const kind = atlasMicroPick({ typing: now - (nmb.keyAt || 0) < 5000, idle: now - (nmb.lastInput || 0), hour: new Date().getHours(), mood: atlasMoodNow, look: box.dataset.atlasLook, sinceCast: now - atlasMicroState.castAt }, atlasMicroState.last);
   atlasMicroState.last = kind;
   atlasMicroDo(kind, box);
 }
