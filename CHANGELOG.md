@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: a diagram now has Suggest in its bar: Templates (eight flowcharts with a preview), From my notes (a checklist becomes steps, headings a mind map) and Describe it (dimmed with its reason when no model is connected); on a blank diagram the suggestion becomes the diagram, otherwise its blocks arrive as ghosts you take with Tab, add with Enter or drop with Escape, one undo step; Ctrl+Z in the block pane no longer undoes two steps (1546 P3).
 - Documents: a diagram (the Mermaid diagram file type) opens in Blocks, a tree of blocks you drag to move, nest, reorder or join, rename in place and walk by keys (N, G, J, Delete, Alt+arrows), with the picture drawing live beside it and Source and Split still the same diagram as text; each change is one undo step, and the editor loads only when a diagram is opened (1546 P2).
 - Chat: a long message of yours keeps a reading width (72% of the column, at most 42rem) instead of spanning it (the owner, 2026-11-03).
 - Dictation: an installed Whisper model loads from this computer alone; it no longer asks huggingface.co for the model's revision on every load (the owner, 2026-11-03).
