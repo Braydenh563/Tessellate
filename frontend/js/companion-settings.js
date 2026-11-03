@@ -189,6 +189,7 @@ function mountBuddyActivities() {
     text.textContent = label;
     row.append(input, text);
     host.appendChild(row);
+    if (key === "habits") mountBuddyActivities.help(host, row);
   }
   host.addEventListener("change", (event) => {
     const input = event.target.closest?.("input[data-activity]");
@@ -207,6 +208,34 @@ function mountBuddyActivities() {
     if (buddy) nameMarkBuddyToggles(buddy);
   });
 }
+
+//: The habits row's '?' (INBOX 1581, standing order 13): the button in the
+//: row, its popover after it (outside the label, so a click in the text
+//: never flips the switch); built here, not in index.html, which is at its
+//: element cap (tests/test_boot_diet3.py).
+mountBuddyActivities.help = (host, row) => {
+  const make = (tag, props = {}) => Object.assign(document.createElement(tag), props);
+  const id = "avatar-buddy-habits-help";
+  const name = "About little habits and reactions";
+  const help = make("button", { type: "button", className: "icon-only ghost small graph-help-toggle", title: name });
+  help.dataset.helpFor = id;
+  help.setAttribute("aria-controls", id);
+  help.setAttribute("aria-expanded", "false");
+  help.setAttribute("aria-label", name);
+  const mark = make("i", { className: "ph ph-question" });
+  mark.setAttribute("aria-hidden", "true");
+  help.append(mark);
+  row.append(help);
+  const body = make("div", { className: "help-body hidden", id });
+  body.setAttribute("role", "dialog");
+  body.setAttribute("aria-label", name);
+  body.append(
+    make("p", { textContent: "Small things it does now and then: a puzzled tilt when a search finds nothing and a nod when the next one does, a double take when the pointer rushes past, a shake after you carry it a while, a wince when a note goes to the bin. Atlas also looks around, hums, settles with a breath and takes a second look at the pointer." }),
+    make("p", { textContent: "None of it happens while you type, while Motion is reduced, or over something else it is doing. Its moods also follow the part of the day: brighter in the morning, quieter in the evening." }),
+  );
+  row.after(body);
+  initHelpToggles(host);
+};
 
 //: Companion > Showy entrances (INBOX 1463): off unless chosen.
 function mountBuddyShowy() {

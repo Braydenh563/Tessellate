@@ -82,6 +82,29 @@ MORE_TOPICS: list[dict] = [
         "badge": {"label": "Corner companion", "section": "appearance", "target": "avatar-buddy-row"},
     },
     {
+        "id": "companion-habits",
+        "keywords": (
+            "companion habits", "companion reactions", "companion reacts to search",
+            "companion tilts its head", "companion double take", "companion shakes itself",
+            "companion winces", "atlas looks around", "atlas hums", "companion mood time of day",
+            "stop the companion reacting",
+        ),
+        "body": (
+            "Now and then the corner companion reacts to what you do: a puzzled tilt "
+            "when a search finds nothing and a nod when the next one does, a double "
+            "take when the pointer rushes past it, a shake once you put it down after "
+            "carrying it a while, and a small wince when a note goes to the bin. Atlas "
+            "also has rare habits of its own: a look around, a hum, a settling breath "
+            "and a second look at the pointer, each at most once in three minutes. Its "
+            "moods follow the part of the day, brighter in the morning and quieter in "
+            "the evening. None of it happens while you type, while Motion is reduced, "
+            "or over something else it is doing. To stop it, turn off Little habits and "
+            "reactions in Settings, Appearance, Atlas and faces, Corner companion, What "
+            "it does on its own."
+        ),
+        "badge": {"label": "Corner companion", "section": "appearance", "target": "avatar-buddy-row"},
+    },
+    {
         "id": "companion-travel",
         "keywords": (
             "companion portal", "companion puff of smoke", "companion vanishes",
@@ -2629,6 +2652,7 @@ TOPIC_META: dict[str, dict] = {
     "companion-throw": {"title": "Throwing the companion", "path": "Settings, Appearance, Atlas and faces, Corner companion"},
     "companion-travel": {"title": "How the companion moves", "path": "Settings, Appearance, Atlas and faces, Corner companion"},
     "companion-remarks": {"title": "What the companion says", "path": "Settings, Appearance, Atlas and faces, Corner companion"},
+    "companion-habits": {"title": "The companion's habits and reactions", "path": "Settings, Appearance, Atlas and faces, Corner companion"},
     "desktop-companion": {"title": "The companion on the desktop", "path": "In the desktop app, Settings, About, Show the companion on the desktop"},
     "what-is-atlas": {"title": "What Atlas does", "path": "The Chat tab, or Ctrl+Shift+A over any tab"},
     "atlas-look": {"title": "How Atlas looks", "path": "Settings, Appearance, Atlas and faces, Atlas style and Atlas look"},
@@ -2813,7 +2837,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
     )),
     ("Look and feel", (
         "appearance", "appearance-panel", "themes", "simple-mode", "accessibility", "movable-panels", "performance", "background-art",
-        "statusbar", "companion", "companion-travel", "companion-remarks", "companion-throw", "atlas-look", "faces",
+        "statusbar", "companion", "companion-travel", "companion-remarks", "companion-habits", "companion-throw", "atlas-look", "faces",
     )),
     ("Models and the AI", (
         "models", "what-is-atlas", "model-downloads", "model-bench", "tools-setting", "autonomous", "websearch",
