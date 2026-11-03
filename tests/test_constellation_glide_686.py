@@ -186,4 +186,4 @@ def test_the_constellation_keeps_its_shape_and_its_height_across_a_theme_change(
     # on only by an idle rest, so the stars go on from where they stopped).
     assert "const artClock = { epoch: performance.now() };" in js
     assert "p.millis() * 0.0003" not in js
-    assert js.count("artDriftMs() * 0.0003") == 2
+    assert js.count("artDriftMs() * 0.0003") == 3  # draw, saveSettled, the repaint after a resize (1620)

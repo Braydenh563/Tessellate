@@ -418,7 +418,13 @@ async function openNoteTagPopover(entry, anchor) {
   if (!off && choices.length < 3 && !entry.is_private && entry.content) {
     const mine = noteTagPop;
     noteTagChoices(entry).then((more) => {
-      if (noteTagPop !== mine || more.length <= choices.length) return;
+      if (noteTagPop !== mine) return;
+      //: A list re-render (a search settling, a filter) can replace the card
+      //: while the top-up is in flight. Its "+ Tag" is then detached and
+      //: measures as an all-zero rect, which `placeHelpPopover` turns into the
+      //: window's corner (INBOX 1620): close instead of re-placing.
+      if (!anchor.isConnected) { closeNoteTagPopover(); return; }
+      if (more.length <= choices.length) return;
       suggestions.replaceChildren();
       for (const tag of more) {
         const reason = entry.suggested_tag_reasons?.[tag];

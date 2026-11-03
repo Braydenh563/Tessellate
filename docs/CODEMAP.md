@@ -2,7 +2,7 @@
 
 Generated 2026-11-03 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7746, frontend ids 2636, CSS sections 522, backend routes 641, backend modules 8589, test files 1980, tests 16597, plan headings 991, app scripts 28, boot scripts 37, script files 245.
+Counts: frontend functions 7746, frontend ids 2636, CSS sections 522, backend routes 641, backend modules 8589, test files 1981, tests 16599, plan headings 992, app scripts 28, boot scripts 37, script files 245.
 
 ## Frontend functions (7746)
 
@@ -3001,7 +3001,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `artLineFade` | frontend/js/dash-art.js:246 |
 | `artRetarget` | frontend/js/dash-art.js:256 |
 | `artSeed` | frontend/js/dash-art.js:107 |
-| `artStill` | frontend/js/dash-art.js:753 |
+| `artStill` | frontend/js/dash-art.js:759 |
 | `buildArtParticles` | frontend/js/dash-art.js:166 |
 | `categoryHue` | frontend/js/dash-art.js:82 |
 | `ensureP5` | frontend/js/dash-art.js:20 |
@@ -7200,7 +7200,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addTagTo` | frontend/js/tag-suggest.js:437 |
+| `addTagTo` | frontend/js/tag-suggest.js:443 |
 | `answerSuggestedTags` | frontend/js/tag-suggest.js:224 |
 | `closeNoteTagPopover` | frontend/js/tag-suggest.js:260 |
 | `closeTagSuggest` | frontend/js/tag-suggest.js:25 |
@@ -7210,7 +7210,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openNoteTagPopover` | frontend/js/tag-suggest.js:308 |
 | `openTagSuggest` | frontend/js/tag-suggest.js:147 |
 | `placeTagSuggest` | frontend/js/tag-suggest.js:39 |
-| `renderReevaluateResult` | frontend/js/tag-suggest.js:451 |
+| `renderReevaluateResult` | frontend/js/tag-suggest.js:457 |
 | `tagSuggestSaid` | frontend/js/tag-suggest.js:121 |
 | `tagSuggestToken` | frontend/js/tag-suggest.js:19 |
 | `takeTagSuggest` | frontend/js/tag-suggest.js:132 |
@@ -23655,7 +23655,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16597)
+## Tests (16599)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24906,6 +24906,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_notes_rail_resize.py | 4 |
 | tests/test_notes_rows_719.py | 8 |
 | tests/test_notes_select_tick.py | 3 |
+| tests/test_notesui_1103.py | 2 |
 | tests/test_notif_dismiss.py | 4 |
 | tests/test_notification_actions.py | 20 |
 | tests/test_notification_detail_period_1029.py | 3 |
@@ -25642,7 +25643,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_zoom_frame_1508.py | 3 |
 | tests/test_zoom_wheel_delta.py | 3 |
 
-## Plan headings (991)
+## Plan headings (992)
 
 Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, except the HISTORY.md archive. Sorted by heading.
 
@@ -26344,7 +26345,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1305 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:161 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:166 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4188 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
@@ -26454,6 +26455,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-11-02 (the owner: the calculator, equations, insert panels and a diagram builder) | docs/roadmap/DOCUMENTS_PLAN.md:470 |
 | Placed from INBOX, 2026-11-03 | docs/roadmap/UI_MODERNISATION_PLAN.md:1557 |
 | Placed from INBOX, 2026-11-03 (chat; CHAT_PLAN is at its cap) | docs/roadmap/BACKLOG.md:4448 |
+| Placed from INBOX, 2026-11-03 (the composer's captions and quotes) | docs/roadmap/CHAT_PLAN.md:1893 |
 | Placed from INBOX, 2026-11-03b | docs/roadmap/BACKLOG.md:4458 |
 | Placed from INBOX, built (pointers) | docs/roadmap/UI_MODERNISATION_PLAN.md:1062 |
 | Placed from INBOX: 107d, the segmented mini bars | docs/roadmap/DOCUMENTS_PLAN.md:509 |
