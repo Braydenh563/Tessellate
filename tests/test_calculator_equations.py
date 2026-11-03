@@ -50,6 +50,18 @@ same("a bare number has nothing to work out", calcTex.toSum("5"), null);
 same("a symbol is not a number", calcTex.toSum("\\alpha+2"), null);
 same("empty", calcTex.toSum("  "), null);
 
+//: INBOX 1579: a sum still being typed is not an error.
+same("pending: a trailing plus", calcTex.pending("55*9+"), true);
+same("pending: a trailing times sign", calcTex.pending("55 ×"), true);
+same("pending: an open bracket", calcTex.pending("12*(3+4"), true);
+same("pending: a joining word", calcTex.pending("5 km to"), true);
+same("pending: a power sign", calcTex.pending("2^"), true);
+same("done: a finished sum", calcTex.pending("55*9+1"), false);
+same("done: balanced", calcTex.pending("12*(3+4)"), false);
+same("done: a percent", calcTex.pending("20%"), false);
+same("done: empty", calcTex.pending("   "), false);
+same("done: a question", calcTex.pending("15% of 80"), false);
+
 same("times", calcTex.toTex("12 * (3 + 4)", "84"), "12 \\times (3 + 4) = 84");
 same("fraction", calcTex.toTex("12/4", "3"), "\\frac{12}{4} = 3");
 same("power", calcTex.toTex("2^3", "8"), "2^{3} = 8");
@@ -149,3 +161,13 @@ def test_a_slash_row_hands_the_calculator_the_box_it_was_typed_in():
     assert 'run: (t) => tool.open(t) });' in editor
     panes = (js / "settings-panes.js").read_text(encoding="utf-8")
     assert "open: (t) => ensureModule(\"appPalette\").then(() => popupToolMaths({ target: t || null }))," in panes
+
+
+def test_no_live_field_shows_an_error_while_it_is_being_typed() -> None:
+    """INBOX 1579: "55*9+" showed "That is not a sum". An unfinished sum clears the preview, any other error waits about 800 ms, and a pattern field holds its error the same way."""
+    work = KIT.split("function replyCalcWorkPane", 1)[1].split("function replyCalcEquation", 1)[0]
+    assert "calcTex.pending(box.value)" in work and "out._late" in work and "That sum is not finished" in work
+    replace = (JS / "documents-replace.js").read_text(encoding="utf-8")
+    assert "docReplace.late = setTimeout" in replace
+    board = (JS / "whiteboard.js").read_text(encoding="utf-8")
+    assert "wbBoardSearch.late = setTimeout" in board

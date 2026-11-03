@@ -628,6 +628,14 @@ const calcTex = {
     return plain && /[+\-*/^%]/.test(sum.replace(/^\s*-/, "")) ? sum.trim() : null;
   },
 
+  //: Whether a typed sum is still being written: it ends in a sign, a joining word ("5 km to") or has a bracket left open. Such a sum is not an error yet (INBOX 1579).
+  pending(text) {
+    const sum = String(text || "").trim();
+    if (!sum) return false;
+    const open = (sum.match(/\(/g) || []).length > (sum.match(/\)/g) || []).length;
+    return open || /[-+*/×÷^(]$/.test(sum) || /\b(?:of|to|in|into|as|from|plus|minus|times|over|by|and|per)$/i.test(sum);
+  },
+
   //: A worked-out sum as an equation to write: "12 * (3 + 4)" and "84" to
   //: "12 \times (3 + 4) = 84"; words ("15% of 80", "5 km to miles") stay words
   //: in `\text`.
@@ -766,9 +774,24 @@ function replyCalcWorkPane(input, actions) {
   actions.provide("work", actions.result(() => last, { what: "the result", needs: "a result", first: "Work out a sum first." }));
   const run = async (final) => {
     const mine = ++asked;
+    clearTimeout(out._late);
+    //: **No error while a sum is being typed** (INBOX 1579, "55*9+" showed "That is not a sum"): a sum that ends in a sign or an open bracket is unfinished, not wrong, so the preview waits for the next key; any other error waits for a pause (about 800 ms with the key delay), or Enter, which says the sum is unfinished.
+    if (!final && calcTex.pending(box.value)) {
+      replyCalcShow(out, null);
+      last = null;
+      return actions.sync();
+    }
     try {
       const got = await replyCalcWork(box.value);
       if (mine !== asked) return;
+      if (final && got?.error && calcTex.pending(box.value)) got.error = "That sum is not finished. Add what comes after the last sign.";
+      if (!final && got?.error) {
+        replyCalcShow(out, null);
+        last = null;
+        actions.sync();
+        out._late = setTimeout(() => mine === asked && replyCalcShow(out, got, { final }), 550);
+        return;
+      }
       replyCalcShow(out, got, { final, now: final });
       last = got?.answer && !got.error ? { input: box.value.trim(), answer: got.answer } : null;
       actions.sync();
@@ -782,6 +805,7 @@ function replyCalcWorkPane(input, actions) {
   };
   box.addEventListener("input", () => {
     clearTimeout(timer);
+    clearTimeout(out._late);
     timer = setTimeout(() => run(false), 250);
   });
   box.addEventListener("keydown", (event) => {

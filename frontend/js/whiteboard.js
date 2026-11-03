@@ -3604,7 +3604,7 @@ function wbToggleNavigator(force) {
 // --- Find a card on this board ---------------------------------------------
 
 //: `word` and `regex` are the find bar's two options; they outlive a close.
-const wbBoardSearch = { query: "", matches: [], index: -1, word: false, regex: false, error: "" };
+const wbBoardSearch = { query: "", matches: [], index: -1, word: false, regex: false, error: "", late: 0 };
 
 /**
  * Every searchable string an item carries, lowercased.
@@ -3853,8 +3853,15 @@ function wbUpdateSearchCount() {
   const el = document.getElementById("wb-search-count");
   if (!el) return;
   const total = wbBoardSearch.matches.length;
+  clearTimeout(wbBoardSearch.late);
   if (!wbBoardSearch.query.trim()) {
     el.textContent = "";
+    return;
+  }
+  //: A pattern half-typed is not wrong yet: its error waits for a pause (INBOX 1579).
+  if (!total && wbBoardSearch.error) {
+    el.textContent = "";
+    wbBoardSearch.late = setTimeout(() => (el.textContent = wbBoardSearch.error), 800);
     return;
   }
   // "3 of 12", not a bare number, a screen reader reading this aria-live
