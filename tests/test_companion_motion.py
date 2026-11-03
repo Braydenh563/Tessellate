@@ -542,8 +542,9 @@ def test_it_keeps_out_of_the_tours_ring() -> None:
     assert '"tour-spot", "tour-card"' in re.search(r"^const NMB_POPUP_IDS = \[(.*)\];$", AV, re.M).group(1)
     # (The late look is `look`: `nameMarkBuddyDodge`, or the cheaper typing look for a plain
     # character in a field, audit 1101.)
-    # Looked after a frame has drawn the press (INBOX 1534): the timer wraps `look`.
-    assert "nmbDodgeLate = setTimeout(afterPaint, 700);" in AV and "afterFrames(() => setTimeout(look), 1)" in AV
+    # Looked after a frame has drawn the press (INBOX 1534): the timer wraps `look` (since INBOX
+    # 1587 through `nmb.afterClean`, a frame and a timer, tests/test_atlas_cover_1587.py).
+    assert "nmbDodgeLate = setTimeout(afterPaint, 700);" in AV and "const afterPaint = () => nmb.afterClean(look);" in AV
     assert "const look = nameMarkBuddyTypingKey(e) ? nameMarkBuddyDodgeTyping : nameMarkBuddyDodge;" in AV
     assert 'buddy.querySelector(".nm-figure")' in _fn("nameMarkBuddyDodge")
 

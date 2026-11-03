@@ -565,7 +565,10 @@ function settingsIndexBuild(name) {
       { passive: true }
     );
   }
-  settingsIndexMark(name);
+  //: Marked in the next frame, where its reads are that frame's own layout: here,
+  //: after the list and the jump options went in, the read settled them a second
+  //: time (INBOX 1587: 33ms at 4x CPU, with the strip's own read 43 to 180ms).
+  afterFrames(() => settingsIndexMark(name), 1);
 }
 
 //: Called when a section opens: build now, again once its async content has

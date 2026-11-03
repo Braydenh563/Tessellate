@@ -120,6 +120,7 @@ def _check(since_last: int):
             "const nmb = { pinned: false, away: false, visit: false, tab: 'reminders', glue: null, x: 100, y: 600, unheldAt: NOW - " + str(since_last) + " };",
             "const document = { getElementById: () => buddy };",
             "function nameMarkBuddyMenuOpen() { return false; }",
+            "function nameMarkBuddyBehindCover() { return false; }",
             "function nameMarkBuddyTab() { return 'reminders'; }",
             "function nameMarkBuddyQueuePlace() {}",
             "function nameMarkBuddySupported() { return false; }",

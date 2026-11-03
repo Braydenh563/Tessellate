@@ -381,9 +381,11 @@ function glideStrip(strip) {
     subtree: true,
   });
   sized.observe(strip);
+  //: Its first place is the observer's first report too, after layout (INBOX
+  //: 1587: the call here read a strip just built, `settingsIndexBuild`'s 43 to
+  //: 180ms of forced layout at 4x CPU); the webfont arriving resizes the
+  //: options, which the observer sees.
   for (const option of strip.querySelectorAll("button")) sized.observe(option);
-  document.fonts?.ready?.then(() => place(false));
-  place(false);
 }
 for (const type of ["pointerover", "focusin"]) {
   document.addEventListener(type, (event) => glideStrip(event.target.closest?.(GLIDE_STRIPS)), { passive: true, capture: true });
