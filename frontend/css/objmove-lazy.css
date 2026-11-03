@@ -75,7 +75,8 @@
   opacity: 1;
   pointer-events: auto;
 }
-.obj-grip:hover {
+.obj-grip:hover,
+.obj-grip:is(:focus-visible, :has(:focus-visible)) {
   border-color: var(--accent);
   color: var(--accent-text);
 }

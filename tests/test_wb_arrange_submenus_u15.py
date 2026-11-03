@@ -63,8 +63,10 @@ def test_escape_in_a_flyout_closes_the_flyout_first() -> None:
 
 def test_a_nested_level_hides_the_boards_other_rows() -> None:
     css = "".join(p.read_text(encoding="utf-8") for p in (ROOT / "frontend" / "css").glob("*.css"))
-    #: Not `.menu-nested`: menus.js sets that only on an `.action-menu`, and this is not one.
-    assert ".wb-board-menu:has(> .menu-group-open) > :not(.menu-group-open)" in css
+    #: 2026-11-03: menus.js marks the open group's own menu `.menu-nested`, a board menu too, so the
+    #: rule needs no `:has()` anchor with a universal child (test_tab_entry_cost). Same intent.
+    assert ".wb-board-menu.menu-nested > :not(.menu-group-open)" in css
+    assert 'parentElement.classList.add("menu-nested")' in (ROOT / "frontend" / "js" / "menus.js").read_text(encoding="utf-8")
 
 
 def test_help_and_the_recipe_say_so() -> None:

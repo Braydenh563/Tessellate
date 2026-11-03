@@ -16672,6 +16672,7 @@ async function initWhiteboard() {
       toggle.setAttribute("aria-expanded", "false");
       //: A nested level (under 820) reopens at the menu's top rows.
       for (const open of menu.querySelectorAll(".menu-group-open")) open.classList.remove("menu-group-open");
+      menu.classList.remove("menu-nested");
       // Back where it lives, and the stylesheet's own cap back: the next open
       // measures from scratch rather than from a stale number.
       restoreEscapedMenu(menu);

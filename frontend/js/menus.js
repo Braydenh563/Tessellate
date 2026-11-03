@@ -1501,7 +1501,7 @@ function buildMenuGroupButton(label, subItems) {
     submenu.prepend(back);
   };
   const openSubmenu = () => {
-    // One flyout at a time; tracked directly, as a sibling's may live at `<body>`.
+    // One flyout at a time; tracked, as a sibling's may live at `<body>`.
     if (openGroupSubmenu && openGroupSubmenu !== submenu) closeSubmenuState(openGroupSubmenu);
     submenu.classList.remove("hidden");
     trigger.setAttribute("aria-expanded", "true");
@@ -1509,7 +1509,7 @@ function buildMenuGroupButton(label, subItems) {
     if (stacked()) {
       backRow();
       groupWrap.classList.add("menu-group-open");
-      groupWrap.closest(".action-menu")?.classList.add("menu-nested");
+      groupWrap.parentElement.classList.add("menu-nested");
       submenu.firstElementChild.focus();
     } else {
       submenu._escapedHome = { parent: submenu.parentElement, next: submenu.nextSibling };
@@ -1528,7 +1528,7 @@ function buildMenuGroupButton(label, subItems) {
     target.classList.remove("submenu-left");
     const wrap = target.closest(".menu-group-open");
     wrap?.classList.remove("menu-group-open");
-    wrap?.closest(".action-menu")?.classList.remove("menu-nested");
+    wrap?.parentElement.classList.remove("menu-nested");
     wrap?.firstElementChild.setAttribute("aria-expanded", "false");
     if (openGroupSubmenu === target) openGroupSubmenu = null;
   }

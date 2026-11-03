@@ -293,6 +293,7 @@ META_EDGED = {
     # it like every other fact.
     # A suggested tag (INBOX 440) is two buttons in one box, take and
     # discard: the box is the group's edge, as `.link-connection` is a link's.
+    # INBOX 1597, 2026-11-03: that edge is a dashed outline now (an offer).
     ".chip.suggested-tag",
 }
 
@@ -328,6 +329,10 @@ def test_meta_chips_do_not_draw_borders_or_answer_hover():
     )
 
 
+#: An edge drawn as an outline is still an edge (INBOX 1597: the suggested tag's dashed one).
+_OUTLINE_DRAWN = re.compile(r"(?<![\w-])outline(?:-(?:width|style))?\s*:\s*(?!0\b|none\b)")
+
+
 def test_the_edged_chips_are_still_drawn_with_an_edge():
     """An exception for a recipe that lost its edge is a hole for the next one."""
     edged = {
@@ -335,7 +340,7 @@ def test_the_edged_chips_are_still_drawn_with_an_edge():
         for selector, body in _rules()
         for subject in _subjects(selector)
         for name in META_EDGED
-        if subject.startswith(name) and ":hover" not in subject and _BORDER_DRAWN.search(body)
+        if subject.startswith(name) and ":hover" not in subject and (_BORDER_DRAWN.search(body) or _OUTLINE_DRAWN.search(body))
     }
     assert edged == META_EDGED, f"drop from META_EDGED: {META_EDGED - edged}"
 
