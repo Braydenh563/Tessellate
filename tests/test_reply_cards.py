@@ -74,7 +74,7 @@ def test_the_calculator_works_out_through_the_chat_tools_reader(ai_client):
 def test_every_answer_surface_draws_the_panel_with_one_renderer():
     code = app_js_text()
     assert 'event.type === "panel" && onPanel' in code
-    assert re.search(r'replyKit: \["/css/key-grid-lazy\.css", "/css/reply-kit-lazy\.css", "/js/citation-peek\.js", "/js/reply-kit\.js"\]', code)
+    assert re.search(r'replyKit: \["/css/key-grid-lazy\.css", "/css/reply-kit-lazy\.css", "/js/citation-peek\.js", "/js/documents-math\.js", "/js/reply-kit\.js"\]', code)
     kit = (JS / "reply-kit.js").read_text(encoding="utf-8")
     assert "function renderReplyPanel(holder, event)" in kit
     assert "onPanel:" in with_pieces("chat-attach.js")
