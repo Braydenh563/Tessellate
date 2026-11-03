@@ -2,7 +2,7 @@
 
 Generated 2026-11-03 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7585, frontend ids 2640, CSS sections 519, backend routes 641, backend modules 8502, test files 1912, tests 16112, plan headings 987, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7585, frontend ids 2640, CSS sections 519, backend routes 641, backend modules 8502, test files 1912, tests 16113, plan headings 987, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7585)
 
@@ -3741,15 +3741,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `docReplaceDisarm` | frontend/js/documents-replace.js:78 |
-| `docReplaceOpen` | frontend/js/documents-replace.js:42 |
+| `docReplaceDisarm` | frontend/js/documents-replace.js:87 |
+| `docReplaceOpen` | frontend/js/documents-replace.js:51 |
 | `docReplacePattern` | frontend/js/documents-replace.js:27 |
-| `docReplaceRow` | frontend/js/documents-replace.js:114 |
-| `docReplaceScan` | frontend/js/documents-replace.js:68 |
-| `docReplaceSnippet` | frontend/js/documents-replace.js:137 |
-| `docWriteContents` | frontend/js/documents-replace.js:151 |
-| `renderDocReplace` | frontend/js/documents-replace.js:86 |
-| `runDocReplace` | frontend/js/documents-replace.js:160 |
+| `docReplaceRow` | frontend/js/documents-replace.js:123 |
+| `docReplaceScan` | frontend/js/documents-replace.js:77 |
+| `docReplaceSnippet` | frontend/js/documents-replace.js:146 |
+| `docWriteContents` | frontend/js/documents-replace.js:160 |
+| `renderDocReplace` | frontend/js/documents-replace.js:95 |
+| `runDocReplace` | frontend/js/documents-replace.js:169 |
 
 ### frontend/js/documents-tables.js (28)
 
@@ -23339,7 +23339,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16112)
+## Tests (16113)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23919,7 +23919,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_documents_api.py | 50 |
 | tests/test_documents_help.py | 4 |
 | tests/test_documents_outline.py | 5 |
-| tests/test_documents_replace_all.py | 11 |
+| tests/test_documents_replace_all.py | 12 |
 | tests/test_documents_row_patch.py | 4 |
 | tests/test_documents_undo_acts.py | 7 |
 | tests/test_docux_1028.py | 6 |

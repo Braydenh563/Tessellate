@@ -28,14 +28,23 @@ function docReplacePattern() {
   const find = $("doc-replace-find").value;
   if (!find) return null;
   const flags = $("doc-replace-case").checked ? "g" : "gi";
-  const source = $("doc-replace-regex").checked ? find : find.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex = $("doc-replace-regex").checked;
+  const source = regex ? find : find.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   //: Whole word by letters in any script, not `\b`, which ends a word at "é" (D29).
   const word = $("doc-replace-word").checked;
-  try {
-    return word ? new RegExp(`(?<![\\p{L}\\p{N}_])(?:${source})(?![\\p{L}\\p{N}_])`, `${flags}u`) : new RegExp(source, flags);
-  } catch (error) {
-    return { error: error.message };
+  const wrapped = word ? `(?<![\\p{L}\\p{N}_])(?:${source})(?![\\p{L}\\p{N}_])` : source;
+  //: A regular expression reads as it does in the find panel it may have come from (D33): `^` and `$` are
+  //: a line's ends (`m`), and `\p{L}` reads (`u`). A pattern only valid without `u` still reads (whole word needs `u`).
+  const tries = regex ? (word ? [`${flags}mu`] : [`${flags}mu`, `${flags}m`]) : [word ? `${flags}u` : flags];
+  let failure = null;
+  for (const set of tries) {
+    try {
+      return new RegExp(wrapped, set);
+    } catch (error) {
+      failure ||= error;
+    }
   }
+  return { error: failure.message };
 }
 
 //: `carry` is the find panel's query (D33: one entry point): its words, replacement and three options become the dialog's.

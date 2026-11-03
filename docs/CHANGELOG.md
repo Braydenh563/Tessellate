@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: a regular expression in the every-document find and replace reads as it does in the find panel it came from: `^` and `$` are a line's ends and `\p{L}` reads, where it matched only the first line of a document and `\p{L}` was an error (audit 1028 D33 follow-up).
 - Documents: the Comments section is built on its first draw instead of shipped in the page (5 fewer elements at boot, 7,927 to 7,922 against the cap of 7,923).
 - Documents: the comment threads column has its alembic revision (c8e4a1f7d3b9), so the add-column lint passes with its list unchanged.
 - Documents: a comment thread made or dropped by an undo, a restored revision or an edit that removed its remark is saved with the document at the next autosave, not only after the next typed change.
