@@ -176,7 +176,8 @@ function mathFieldWrite(field, tex) {
 function mathFieldLatexBox() {
   const toggle = document.createElement("button");
   toggle.type = "button";
-  toggle.className = "ghost small math-field-toggle";
+  //: `quiet`: a toolbar action beside the Pin button, no edge (DESIGN.md, "The bordered ghost").
+  toggle.className = "ghost quiet small math-field-toggle";
   toggle.textContent = "LaTeX";
   toggle.title = "Show the equation as LaTeX to edit it directly";
   toggle.setAttribute("aria-pressed", "false");
