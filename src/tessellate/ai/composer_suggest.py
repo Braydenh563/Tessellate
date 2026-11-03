@@ -153,8 +153,12 @@ def open_ended(question: str) -> str:
     """"vague" for a request with no direction, the act's name ("open",
     "find", "delete", "pin", ...) for a bare action with no object, else ""."""
     q = " ".join((question or "").split())
+    #: "can you do anything fun" asks what Atlas can do; it is answered, not
+    #: met with "Cool how?" (INBOX 1561).
+    from tessellate.ai import capability
+
     if _VAGUE.match(q):
-        return "vague"
+        return "" if capability.asks(q) else "vague"
     m = _BARE.match(q)
     if m:
         kind = _VERB_KIND[m.group("verb").lower()]

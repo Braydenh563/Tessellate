@@ -2,7 +2,7 @@
 
 Generated 2026-11-03 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7585, frontend ids 2641, CSS sections 519, backend routes 641, backend modules 8510, test files 1921, tests 16161, plan headings 987, app scripts 28, boot scripts 37, script files 234.
+Counts: frontend functions 7585, frontend ids 2641, CSS sections 519, backend routes 641, backend modules 8510, test files 1922, tests 16163, plan headings 987, app scripts 28, boot scripts 37, script files 234.
 
 ## Frontend functions (7585)
 
@@ -13064,12 +13064,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `Capability` | src/tessellate/ai/capability.py:47 |
-| `_clean` | src/tessellate/ai/capability.py:217 |
-| `_private` | src/tessellate/ai/capability.py:263 |
-| `answer` | src/tessellate/ai/capability.py:280 |
-| `asks` | src/tessellate/ai/capability.py:249 |
+| `_clean` | src/tessellate/ai/capability.py:233 |
+| `_private` | src/tessellate/ai/capability.py:279 |
+| `answer` | src/tessellate/ai/capability.py:296 |
+| `asks` | src/tessellate/ai/capability.py:265 |
 | `overview` | src/tessellate/ai/capability.py:184 |
-| `privacy_line` | src/tessellate/ai/capability.py:272 |
+| `privacy_line` | src/tessellate/ai/capability.py:288 |
 
 ### src/tessellate/ai/captioning.py (7)
 
@@ -14639,16 +14639,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `Option` | src/tessellate/ai/composer_suggest.py:95 |
-| `_app_tool` | src/tessellate/ai/composer_suggest.py:243 |
+| `_app_tool` | src/tessellate/ai/composer_suggest.py:247 |
 | `_catalogue` | src/tessellate/ai/composer_suggest.py:116 |
 | `_cosine` | src/tessellate/ai/composer_suggest.py:143 |
-| `_pick` | src/tessellate/ai/composer_suggest.py:174 |
+| `_pick` | src/tessellate/ai/composer_suggest.py:178 |
 | `_stem` | src/tessellate/ai/composer_suggest.py:102 |
 | `_tokens` | src/tessellate/ai/composer_suggest.py:109 |
 | `closest` | src/tessellate/ai/composer_suggest.py:124 |
 | `open_ended` | src/tessellate/ai/composer_suggest.py:152 |
-| `reply` | src/tessellate/ai/composer_suggest.py:210 |
-| `unknown_action` | src/tessellate/ai/composer_suggest.py:259 |
+| `reply` | src/tessellate/ai/composer_suggest.py:214 |
+| `unknown_action` | src/tessellate/ai/composer_suggest.py:263 |
 
 ### src/tessellate/ai/composer_sum.py (16)
 
@@ -23348,7 +23348,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16161)
+## Tests (16163)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23695,6 +23695,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_grammar_1029b.py | 14 |
 | tests/test_composer_hobbies_1512.py | 10 |
 | tests/test_composer_informal_1030.py | 5 |
+| tests/test_composer_interesting_1561.py | 2 |
 | tests/test_composer_labels_1018.py | 2 |
 | tests/test_composer_learn_z59.py | 2 |
 | tests/test_composer_leftovers_1029c.py | 13 |
