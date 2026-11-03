@@ -1200,7 +1200,7 @@ async function refreshSearxngHost() {
   const badge = $("searxng-host-state");
   const start = $("searxng-start");
   const stop = $("searxng-stop");
-  const info = await apiJson("/websearch/searxng/status").catch(() => null);
+  const info = await apiJson("/websearch/searxng/status", { silent: true }).catch(() => null);
   if (!info) {
     badge.textContent = "Unknown";
     return;
