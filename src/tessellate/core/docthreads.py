@@ -27,6 +27,10 @@ MAX_THREADS = 500
 MAX_REPLIES = 100
 MAX_TEXT = 2000
 MAX_SHORT = 120
+#: The whole list as stored. The caps above bound one item each, and together
+#: they allow about 200 MB (500 threads x 100 replies x 2,000 characters), far
+#: past what a document's comments are for; the PUT refuses a list over this.
+MAX_TOTAL = 1_000_000
 
 
 def _text(value: Any, limit: int) -> str:
@@ -78,6 +82,11 @@ def dump(threads: Any) -> str:
     """The column's text; an empty list is the empty string, as a new row has."""
     kept = clean(threads)
     return json.dumps(kept, separators=(",", ":")) if kept else ""
+
+
+def too_large(threads: Any) -> bool:
+    """Whether the list, once cleaned, would be stored over `MAX_TOTAL`."""
+    return len(dump(threads)) > MAX_TOTAL
 
 
 def load(stored: str | None) -> list[dict]:

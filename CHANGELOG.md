@@ -11,6 +11,12 @@ below). Versioning is `0.x` while the app stabilises.
 - Chat: with more than five chats pinned, the switcher still shows the three newest others (nine pinned used to fill all eight rows), and a failed caption chunk saves its words off the event loop, which a new lint holds for every async route (audit 1028 E46, K29).
 - Timeline, notes and the note editor count in words through the one plural helper (nounCount), and a new lint refuses a const, let or class declared by two scripts of the shared scope (audit 1028 S67, S66).
 - Documents: the find panel's labels are 12px on the type scale, not CodeMirror's 80% (11.776px), and a template row's hint no longer runs under the chosen row's check mark: 32px of room on the right, down from 20px (audit 1028 U44, U39).
+- Documents: a regular expression in the every-document find and replace reads as it does in the find panel it came from: `^` and `$` are a line's ends and `\p{L}` reads, where it matched only the first line of a document and `\p{L}` was an error (audit 1028 D33 follow-up).
+- Documents: the Comments section is built on its first draw instead of shipped in the page (5 fewer elements at boot, 7,927 to 7,922 against the cap of 7,923).
+- Documents: the comment threads column has its alembic revision (c8e4a1f7d3b9), so the add-column lint passes with its list unchanged.
+- Documents: a comment thread made or dropped by an undo, a restored revision or an edit that removed its remark is saved with the document at the next autosave, not only after the next typed change.
+- Documents: a document's comment threads are capped at 1 MB in all (the per-comment caps alone allowed about 200 MB); a save over it says there are too many comments and replies to keep, and writes nothing.
+- Documents: a save over comment threads another window has changed is refused like a save over changed text, and "Take theirs" brings their threads in with their text, so two windows no longer overwrite each other's comments (review of the comment threads).
 - A sheet re-measures the toasts each time its card changes size, so a lasting toast steps aside for Import once the preview has filled in (E2E import; CI probe found the measurement stale, not wrong).
 - Board: the keyboard shortcut sheet lists only the open surface's keys (23 rows on a map, 55 on a board) and names the surface on a key two surfaces share, M and Ctrl+Shift+S (audit 1028 B12).
 - Mind map: the template offer's close button is 32px with a mouse and 44px under touch, up from 28px (audit 1028 U26).
