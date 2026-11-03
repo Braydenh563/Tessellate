@@ -178,6 +178,10 @@ def workspace_scoped_models() -> tuple[type, ...]:
 
 @event.listens_for(Session, "do_orm_execute")
 def _add_workspace_filter(execute_state):
+    # Organisation, not a boundary (docs/SECURITY.md, audit 1028 K16): this narrows
+    # ORM selects to the space the request's X-Workspace-ID names; a `session.get`
+    # identity hit or a raw `text()` statement is not narrowed, and the header is
+    # the caller's own. A feature that needs a space to be private has to enforce it.
     # Only filter if the statement is a select() or similar ORM statement
     if execute_state.is_select or execute_state.is_update or execute_state.is_delete:
         workspace_id = execute_state.session.info.get("workspace_id")

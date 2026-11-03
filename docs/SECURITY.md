@@ -112,7 +112,10 @@ disclosure timeline. Thank you for helping keep Tessellate safe.
 
 The app is single-user and local, so multi-tenant data leaks do not apply. Web
 threats still do, because a page open in another browser tab can send requests to
-`localhost`. The areas most worth scrutiny are:
+`localhost`. A **space** is a way to organise notes, not a security boundary: the
+app narrows what a request sees by the `X-Workspace-ID` header the page sends, so
+anyone who can reach the app can read every space, and a private note's protection
+is its key, not the space it sits in. The areas most worth scrutiny are:
 
 - the unlock and sign-in flow, sessions, and the wait after wrong passwords;
 - the origin and Host checks, the Content-Security-Policy, and the cross-site
