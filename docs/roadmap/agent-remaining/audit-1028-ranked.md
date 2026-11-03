@@ -99,7 +99,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 93 | E36 | med | saved-chat rows are li with click and no keyboard path | fixed 1031 | S |
 | 94 | E38 | med | no-model Models page hides suggested cards and pickers | fixed (see log, E38 commit) | M |
 | 95 | E40 | med | two search-by-meaning toasts stack over Settings | fixed 1031 | S |
-| 96 | E50 | med | phone no-model banner and source cards take too much room | new | M |
+| 96 | E50 | med | phone no-model banner and source cards take too much room | fixed (see log, E50 commit) | M |
 | 97 | S12 | med | Duplicate sits under Add in the entry overflow menu | fixed (this batch) | S |
 | 98 | S13 | med | placeholder-only inputs have no visible or aria label | fixed | S |
 | 99 | S14 | med | tab-documents aria-labelledby points at wrong element | fixed (this batch) | S |
