@@ -52389,3 +52389,13 @@ From DOCUMENTS_PLAN.md and WHITEBOARD_PLAN.md "Placed from INBOX, 2026-11-03", b
 
 1613. **Owner, 2026-11-03 (screenshots, Diagram builder):** "those shape icons are incorrect and I feel I should be able to click the shape on each object row and be able to change it". The row's shape menu (Box, Rounded, Pill, Circle, Decision, Hexagon) shows an empty checkbox beside every shape and a tick on the chosen one, not the shapes; the row's own shape swatch (a rounded box beside "Step") does nothing on a click. Recommendation (taken): each menu row draws its shape (a small outline of that shape, the chosen one marked by the menu's check recipe), and the row's swatch is the button that opens that menu, with its shape's name as its label; one test over every shape that the swatch and the menu icon match the drawn node.
 
+## Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R1 and R2)
+
+Built: R1 in 324f174 (merge be41265), R2 in 4d3afd9 and 455d3c5 (merge 606730c); numbers in `agent-remaining/diagram-r1-1104.md` and `diagram-r2-1104.md`.
+
+- **R1 (1613) Shape menu and swatch.**
+  - Work: menu rows draw their shape and the chosen one carries the check. `setLabel` takes only `ph:` icons (app.js:1123-1148), so the route is a lazy-only menu builder in a new lazy file that makes the rows itself with the `.dgm-shape` glyph (`shapeGlyph` :149; CSS diagram-lazy.css:119-159) and a trailing `ph:check`. It first checks whether `makeMenuItem` takes an element icon; it does not edit app.js or sheets-selects.js (at APP_JS_CAP 14,300 and TOTAL_CAP 260,620). The swatch becomes a button named by `SHAPE_LABEL` (:22) that opens the menu; the row click (:551-555) must not swallow it.
+  - Check: a table test, for all six `DGB_SHAPES`, of shape to the Mermaid brackets from `print()` (`[]`, `()`, `([])`, `(())`, `{}`, `{{}}`) against `data-shape` and the glyph in both the swatch and the menu row; swatch hit box at least 24 px by `getBoundingClientRect`; a visible focus ring; click opens the menu.
+- **R2 (1614) Shared height and zoom.**
+  - Work: first reproduce on both mounts (the dialog, where a grid already stretches both panes, and the Documents page, where `.dgm {height:100%}` sits in `#doc-preview`) and record the numbers in the row. Then the stage fills the pane height, plus zoom, pan and fit (section 3), the listener list, and `diagram-view.js`.
+  - Check: at container widths of 600 px and up, `.dgm-picture` and the blocks pane heights match within 1 px at three sizes, on both mounts. Below 600 px, the picture is its own measurement (26vh). Ctrl+wheel changes the image width by a measured step; Fit leaves the box inside the pane with an 8 px margin; zoom survives an edit and resets on a kind change.

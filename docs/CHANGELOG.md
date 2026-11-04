@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Diagram builder: the picture and the blocks pane share one height, and the picture zooms (bar, Ctrl+wheel, pinch, + - 0, arrows, drag to pan) (INBOX 1614).
 - Desktop companion: asks for a minimum no bigger than itself, so pywebview's 200 by 100 default no longer widens it into a dark card with the character in its right half (INBOX 1633).
 - Desktop companion: placed at its exact size and corner after every show, so a 200% display no longer doubles it off the screen's edge (INBOX 1633).
 - Desktop companion: placed in logical pixels at each monitor's own scale, so on a scaled display (125%, 150%) it sits in the corner instead of past the screen's edge (INBOX 1633).

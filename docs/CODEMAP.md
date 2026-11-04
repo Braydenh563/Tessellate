@@ -25867,7 +25867,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 22.3 Where the design is below standard (measured or seen, 2026-09-27) | docs/roadmap/WORLD_CLASS_PLAN.md:2372 |
 | 22.4 Phased rows | docs/roadmap/DOCUMENTS_PLAN.md:1537 |
 | 22.4 The devibecode programme: one surface at a time, every skill | docs/roadmap/WORLD_CLASS_PLAN.md:2387 |
-| 22.5 Risks and out of scope | docs/roadmap/DOCUMENTS_PLAN.md:1572 |
+| 22.5 Risks and out of scope | docs/roadmap/DOCUMENTS_PLAN.md:1567 |
 | 22.5 Where the app goes next (release path) | docs/roadmap/WORLD_CLASS_PLAN.md:2416 |
 | 23. Filing and the taxonomy: candidates, a decision, an explanation (2026-10-10; Brief 39b) | docs/roadmap/WORLD_CLASS_PLAN.md:1452 |
 | 23. Organisation: manual grouping and multi-category notes | docs/roadmap/BACKLOG.md:1621 |
