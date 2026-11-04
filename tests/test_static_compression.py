@@ -137,7 +137,10 @@ PIECE_CAP = 32_000
 #: 2026-11-04, +100 (INBOX 1604, lag 1560): three quick-nav chords (New note, Find
 #: anything, Calculator) and the companion's one-read placement cache, which
 #: took two whole-page layouts out of every placement; same win-back item.
-TOTAL_CAP = 260_620
+#: 2026-11-04 later, +140 (INBOX 1672): the status bar sheds its clock, LAN dot
+#: and tray instead of running past its edge from 600 to 820, inside the edge
+#: fade's own observer (no new global, observer or CSS); same win-back item.
+TOTAL_CAP = 260_760
 
 
 def _served_gzip_size(client, name: str) -> int:

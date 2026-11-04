@@ -2,9 +2,9 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7757, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8707, test files 2025, tests 17064, plan headings 1000, app scripts 28, boot scripts 37, script files 248.
+Counts: frontend functions 7756, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8707, test files 2026, tests 17066, plan headings 1000, app scripts 28, boot scripts 37, script files 248.
 
-## Frontend functions (7757)
+## Frontend functions (7756)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -695,61 +695,60 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `syncSkillVerifyRow` | frontend/js/skills.js:155 |
 | `updateBatchCount` | frontend/js/skills.js:1035 |
 
-### frontend/js/shell-reminders.js (51)
+### frontend/js/shell-reminders.js (50)
 
 | Name | File:line |
 |---|---|
-| `addReminder` | frontend/js/shell-reminders.js:1553 |
+| `addReminder` | frontend/js/shell-reminders.js:1526 |
 | `armMinuteTick` | frontend/js/shell-reminders.js:41 |
-| `clearDoneReminders` | frontend/js/shell-reminders.js:1092 |
-| `clipText` | frontend/js/shell-reminders.js:861 |
-| `curtainShell` | frontend/js/shell-reminders.js:1693 |
-| `defaultDueValue` | frontend/js/shell-reminders.js:1604 |
-| `edgeFadeWire` | frontend/js/shell-reminders.js:438 |
-| `fitStatusBar` | frontend/js/shell-reminders.js:468 |
+| `clearDoneReminders` | frontend/js/shell-reminders.js:1065 |
+| `clipText` | frontend/js/shell-reminders.js:834 |
+| `curtainShell` | frontend/js/shell-reminders.js:1666 |
+| `defaultDueValue` | frontend/js/shell-reminders.js:1577 |
+| `edgeFadeWire` | frontend/js/shell-reminders.js:442 |
 | `glideStrip` | frontend/js/shell-reminders.js:309 |
-| `liftLockScreen` | frontend/js/shell-reminders.js:1716 |
-| `loadReminders` | frontend/js/shell-reminders.js:947 |
-| `markScrollEdge` | frontend/js/shell-reminders.js:540 |
-| `markTabBarRecede` | frontend/js/shell-reminders.js:615 |
-| `notePreviewText` | frontend/js/shell-reminders.js:896 |
-| `nudgeDue` | frontend/js/shell-reminders.js:1499 |
-| `onScrollEdge` | frontend/js/shell-reminders.js:647 |
-| `openCalendarPage` | frontend/js/shell-reminders.js:1332 |
-| `paginateDoneReminders` | frontend/js/shell-reminders.js:1043 |
-| `presetDate` | frontend/js/shell-reminders.js:1388 |
-| `previewBlocks` | frontend/js/shell-reminders.js:888 |
-| `refreshMediaSession` | frontend/js/shell-reminders.js:1657 |
-| `refreshReminderDefaults` | frontend/js/shell-reminders.js:1520 |
-| `relativeWhen` | frontend/js/shell-reminders.js:1368 |
-| `reminderComposeIsPristine` | frontend/js/shell-reminders.js:1508 |
-| `reminderItem` | frontend/js/shell-reminders.js:1133 |
-| `reminderMadeUndo` | frontend/js/shell-reminders.js:1544 |
-| `reminderPutUndoably` | frontend/js/shell-reminders.js:1532 |
-| `reminderTarget` | frontend/js/shell-reminders.js:1349 |
+| `liftLockScreen` | frontend/js/shell-reminders.js:1689 |
+| `loadReminders` | frontend/js/shell-reminders.js:920 |
+| `markScrollEdge` | frontend/js/shell-reminders.js:513 |
+| `markTabBarRecede` | frontend/js/shell-reminders.js:588 |
+| `notePreviewText` | frontend/js/shell-reminders.js:869 |
+| `nudgeDue` | frontend/js/shell-reminders.js:1472 |
+| `onScrollEdge` | frontend/js/shell-reminders.js:620 |
+| `openCalendarPage` | frontend/js/shell-reminders.js:1305 |
+| `paginateDoneReminders` | frontend/js/shell-reminders.js:1016 |
+| `presetDate` | frontend/js/shell-reminders.js:1361 |
+| `previewBlocks` | frontend/js/shell-reminders.js:861 |
+| `refreshMediaSession` | frontend/js/shell-reminders.js:1630 |
+| `refreshReminderDefaults` | frontend/js/shell-reminders.js:1493 |
+| `relativeWhen` | frontend/js/shell-reminders.js:1341 |
+| `reminderComposeIsPristine` | frontend/js/shell-reminders.js:1481 |
+| `reminderItem` | frontend/js/shell-reminders.js:1106 |
+| `reminderMadeUndo` | frontend/js/shell-reminders.js:1517 |
+| `reminderPutUndoably` | frontend/js/shell-reminders.js:1505 |
+| `reminderTarget` | frontend/js/shell-reminders.js:1322 |
 | `revealActiveTab` | frontend/js/shell-reminders.js:269 |
-| `safeMdSlice` | frontend/js/shell-reminders.js:775 |
-| `setDue` | frontend/js/shell-reminders.js:1437 |
+| `safeMdSlice` | frontend/js/shell-reminders.js:748 |
+| `setDue` | frontend/js/shell-reminders.js:1410 |
 | `startClockTicker` | frontend/js/shell-reminders.js:77 |
 | `startMinuteTicker` | frontend/js/shell-reminders.js:60 |
 | `stopClockTicker` | frontend/js/shell-reminders.js:81 |
-| `stripFrontmatter` | frontend/js/shell-reminders.js:871 |
-| `syncDueFromParts` | frontend/js/shell-reminders.js:1451 |
+| `stripFrontmatter` | frontend/js/shell-reminders.js:844 |
+| `syncDueFromParts` | frontend/js/shell-reminders.js:1424 |
 | `syncEdgeFade` | frontend/js/shell-reminders.js:413 |
-| `syncPartsFromDue` | frontend/js/shell-reminders.js:1443 |
-| `syncScrollEdges` | frontend/js/shell-reminders.js:700 |
+| `syncPartsFromDue` | frontend/js/shell-reminders.js:1416 |
+| `syncScrollEdges` | frontend/js/shell-reminders.js:673 |
 | `syncTabOverflowFade` | frontend/js/shell-reminders.js:232 |
 | `tabBarMode` | frontend/js/shell-reminders.js:226 |
 | `tabCentreSpace` | frontend/js/shell-reminders.js:163 |
 | `tabContentWidth` | frontend/js/shell-reminders.js:203 |
 | `tabRowSpace` | frontend/js/shell-reminders.js:138 |
 | `tickClocks` | frontend/js/shell-reminders.js:12 |
-| `toLocalInputValue` | frontend/js/shell-reminders.js:1381 |
-| `updateDueReadout` | frontend/js/shell-reminders.js:1463 |
-| `updateReminderBadge` | frontend/js/shell-reminders.js:1062 |
-| `wikiLinkLabel` | frontend/js/shell-reminders.js:822 |
-| `wikiLinkShown` | frontend/js/shell-reminders.js:848 |
-| `wikiLinkTarget` | frontend/js/shell-reminders.js:839 |
+| `toLocalInputValue` | frontend/js/shell-reminders.js:1354 |
+| `updateDueReadout` | frontend/js/shell-reminders.js:1436 |
+| `updateReminderBadge` | frontend/js/shell-reminders.js:1035 |
+| `wikiLinkLabel` | frontend/js/shell-reminders.js:795 |
+| `wikiLinkShown` | frontend/js/shell-reminders.js:821 |
+| `wikiLinkTarget` | frontend/js/shell-reminders.js:812 |
 
 ### frontend/js/markdown.js (34)
 
@@ -12186,7 +12185,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/07-whiteboard-misc.css | 11854 |
 | frontend/css/08-consistency.css | 10874 |
 | frontend/css/09-editor.css | 1108 |
-| frontend/css/10-responsive.css | 2714 |
+| frontend/css/10-responsive.css | 2709 |
 | frontend/css/appearance-panel-lazy.css | 323 |
 | frontend/css/appearance-panel-own-lazy.css | 86 |
 | frontend/css/ask-compose-lazy.css | 263 |
@@ -23852,7 +23851,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17064)
+## Tests (17066)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25286,6 +25285,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_provider_sockets.py | 9 |
 | tests/test_providers.py | 71 |
 | tests/test_pwa_shell.py | 25 |
+| tests/test_pytest_tmp_retention.py | 2 |
 | tests/test_python_host.py | 7 |
 | tests/test_qa_1005_polish.py | 10 |
 | tests/test_qrsvg.py | 5 |

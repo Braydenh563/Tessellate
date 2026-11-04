@@ -28,23 +28,28 @@ def test_only_a_strip_that_scrolls_is_faded() -> None:
 
 
 def test_the_status_bar_sheds_optional_items_in_order() -> None:
-    js = app_js_text()
-    assert 'const STATUS_SHED = ["status-clock", "status-lan", "status-tray"];' in js
-    body = _fn("fitStatusBar")
-    assert 'classList.remove("status-shed")' in body
-    assert "bar.scrollWidth <= bar.clientWidth" in body
+    body = _fn("syncEdgeFade")
+    assert '["status-clock", "status-lan", "status-tray"]' in body
+    # every pass starts from all shown, then sheds in order while it overflows
+    assert "item.hidden = false" in body
+    assert "bar.scrollWidth > bar.clientWidth" in body
+    assert "item.hidden = true" in body
     # an item already hidden frees nothing, so it is not counted as shed
     assert '!item.classList.contains("hidden")' in body
     # a bar that scrolls (under 400) sheds nothing
-    assert 'overflowX !== "visible"' in body
+    # and one that started scrolling gets back what it shed at a wider size
+    assert re.search(r'item\.hidden = false;\s*if \(overflow === "visible"\)', body)
 
 
 def test_the_fit_is_told_by_an_observer_not_a_timer() -> None:
-    js = app_js_text()
-    assert "new ResizeObserver(fitStatusBar)" in js
-    assert 'querySelectorAll("[data-status-zone]")) fit.observe(zone)' in js
+    # the edge-fade observer the bar already has, also watching its zones
+    # (an item showing changes a zone's width, not the bar's)
+    body = _fn("edgeFadeWire")
+    assert 'bar.querySelectorAll("[data-status-zone]")' in body
+    assert "seen.observe(box)" in body
 
 
 def test_a_shed_item_is_not_drawn() -> None:
-    css = (ROOT / "frontend/css/10-responsive.css").read_text(encoding="utf-8")
-    assert re.search(r"#status-bar \.status-item\.status-shed \{\s*display: none;", css)
+    # the hidden attribute, which `[hidden] { display: none !important; }` covers
+    css = (ROOT / "frontend/css/02-chat-graph.css").read_text(encoding="utf-8")
+    assert re.search(r"\[hidden\] \{\s*display: none !important;", css)

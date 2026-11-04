@@ -415,10 +415,14 @@ function syncEdgeFade(bar) {
   // 1px of slack at each end: sub-pixel layout makes scrollWidth exceed
   // clientWidth by a fraction on plenty of widths where nothing is cut off,
   // and a scroll offset lands on .5 of a pixel as often as not.
-  //: Only a strip that scrolls is faded (INBOX 1672): the status bar from 600
-  //: to 640 ran 41px past its edge with `overflow: visible`, and the fade said
-  //: "scroll" over a Redo nothing could reach.
+  //: Only a strip that scrolls is faded; the status bar, which cannot (its AI
+  //: popup would clip), sheds the clock, LAN dot, then tray to fit (1672).
   const overflow = getComputedStyle(bar).overflowX;
+  if (bar.id === "status-bar") {
+    const shed = ["status-clock", "status-lan", "status-tray"].map($).filter(Boolean);
+    for (const item of shed) item.hidden = false;
+    if (overflow === "visible") for (const item of shed) if (bar.scrollWidth > bar.clientWidth && !item.classList.contains("hidden")) item.hidden = true;
+  }
   const hidden = overflow === "auto" || overflow === "scroll" ? bar.scrollWidth - bar.clientWidth : 0;
   bar.classList.toggle("fade-start", hidden > 1 && bar.scrollLeft > 1);
   bar.classList.toggle("fade-end", hidden - bar.scrollLeft > 1);
@@ -442,7 +446,9 @@ function edgeFadeWire(bar) {
   //: one shows or its content changes width), never measured here: a strip a
   //: script has just built read its width in the press that built it (21ms of
   //: style and 14 of layout on a Dashboard press at 4x, INBOX 1534).
-  new ResizeObserver(() => syncEdgeFade(bar)).observe(bar);
+  //: And the status bar's zones, which an item showing resizes.
+  const seen = new ResizeObserver(() => syncEdgeFade(bar));
+  for (const box of [bar, ...bar.querySelectorAll("[data-status-zone]")]) seen.observe(box);
   bar.addEventListener("scroll", () => syncEdgeFade(bar));
   bar.addEventListener("click", (event) => {
     const pick = event.target.closest?.("button, [role=tab]");
@@ -454,39 +460,6 @@ function edgeFadeWire(bar) {
 // visible on tab switch, same as content changing width.
 for (const bar of document.querySelectorAll(".edge-fade")) edgeFadeWire(bar);
 window.addEventListener("resize", () => document.querySelectorAll(".edge-fade").forEach(syncEdgeFade));
-
-//: **The status bar sheds, it does not run off** (INBOX 1672, the owner at 680
-//: wide: "it looks like it is faded out on the right but it isnt scrollable").
-//: Below 820 every item is a 44px finger target, so the bar needs 649px with
-//: nothing optional showing, and about 750 with the clock: past its edge, and
-//: not scrollable, because the AI popup is positioned inside it and a
-//: scrolling bar would clip it. So the optional items go first, one at a time
-//: until the rest fit: the clock (the system's own taskbar has one), the LAN
-//: dot (Settings says the same), then the inbox tray (Notes has it). Under 400
-//: the bar scrolls instead (10-responsive.css), and nothing is shed there.
-const STATUS_SHED = ["status-clock", "status-lan", "status-tray"];
-function fitStatusBar() {
-  const bar = $("status-bar");
-  if (!bar) return;
-  for (const id of STATUS_SHED) $(id)?.classList.remove("status-shed");
-  if (getComputedStyle(bar).overflowX !== "visible") return;
-  for (const id of STATUS_SHED) {
-    if (bar.scrollWidth <= bar.clientWidth) break;
-    const item = $(id);
-    if (item && !item.classList.contains("hidden")) item.classList.add("status-shed");
-  }
-}
-{
-  //: Told by the observer (the bar's width, and each zone's as an item shows
-  //: or hides), never measured on a timer. Shedding inside the callback ends
-  //: at the size it started from, so it does not notify itself again.
-  const bar = $("status-bar");
-  if (bar) {
-    const fit = new ResizeObserver(fitStatusBar);
-    fit.observe(bar);
-    for (const zone of bar.querySelectorAll("[data-status-zone]")) fit.observe(zone);
-  }
-}
 
 // --- the scroll edge effect (UI_MODERNISATION_PLAN Phase 10, INBOX 100) -----
 //
