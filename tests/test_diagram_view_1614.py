@@ -97,3 +97,10 @@ def test_the_zoom_bar_is_a_corner_dock_hidden_until_there_is_a_picture():
     assert ".dgm-stage:not(.dgm-zoomable) .dgm-zoom {\n  display: none;" in CSS
     narrow = CSS[CSS.index("@container (max-width: 599.98px)") :]
     assert ".dgm-stage > .dgm-picture {\n    block-size: auto;" in narrow
+
+
+def test_the_corner_readout_names_the_true_zoom_after_every_path_1652():
+    # 100% is the drawing's own size; the last button is the live readout, repainted by every zoom path (they all end in paint).
+    assert _math("m.percent(1)") == 100 and _math("m.percent(1.25)") == 125 and _math("m.percent(0.333)") == 33
+    assert "buttons.actual.textContent = now" in VIEW and "math.percent(state.scale)" in VIEW
+    assert VIEW.index("buttons.actual.textContent = now") < VIEW.index("buttons.out.disabled =")

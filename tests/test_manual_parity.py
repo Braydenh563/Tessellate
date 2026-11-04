@@ -440,7 +440,7 @@ def test_the_diagram_picture_zoom_is_in_the_guide_in_the_controls_words() -> Non
     from tessellate.ai.help_chat import HELP_TOPICS
 
     body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
-    for words in ("corner bar zooms (Zoom in, Zoom out, Fit, 100%)", "Ctrl+wheel", "a pinch", "arrow keys pan"):
+    for words in ("corner bar zooms (Zoom in, Zoom out, Fit)", "reads the zoom now", "100% is the drawing's own size", "Ctrl+wheel", "a pinch", "arrow keys pan"):
         assert words in body, words
     view = (FRONTEND / "js" / "diagram-view.js").read_text(encoding="utf-8")
     for label in ('"Zoom in"', '"Zoom out"', '"Fit"', '"100%"', "event.ctrlKey", "ArrowLeft"):

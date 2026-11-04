@@ -28,6 +28,8 @@
       const m = /viewBox="\s*[-\d.e]+[ ,]+[-\d.e]+[ ,]+([\d.e]+)[ ,]+([\d.e]+)\s*"/i.exec(String(svg || ""));
       return m && Number(m[1]) > 0 && Number(m[2]) > 0 ? { w: Number(m[1]), h: Number(m[2]) } : null;
     },
+    //: The readout: px per drawing unit as a percent, so 100% is the drawing's own size (a Fit that shrinks a big diagram reads under 100).
+    percent: (scale) => Math.max(1, Math.round(scale * 100)),
     //: A wheel notch (100) is one step; a trackpad's small deltas are smaller steps.
     wheel: (dy) => Math.pow(STEP, -Math.max(-100, Math.min(100, dy)) / 100),
   };
@@ -78,6 +80,12 @@
       img.style.maxWidth = "none";
       img.style.width = `${d.w * state.scale}px`;
       fig.dataset.zoom = state.fit ? "fit" : (state.scale / f).toFixed(2);
+      //: The 100% button is also the live readout (INBOX 1652): it names the zoom now and a press goes to 100%.
+      const now = `${math.percent(state.scale)}%`;
+      if (buttons.actual.textContent !== now) {
+        buttons.actual.textContent = now;
+        buttons.actual.setAttribute("aria-label", `Zoom ${now}. Show the diagram at its drawn size, 100%`);
+      }
       buttons.out.disabled = state.scale <= math.MIN * f * 1.001;
       buttons.in.disabled = state.scale >= math.MAX * f * 0.999;
     };
@@ -122,7 +130,7 @@
       out: smallButton("ph:minus", "Zoom out", () => by(1 / STEP)),
       in: smallButton("ph:plus", "Zoom in", () => by(STEP)),
       fit: smallButton("Fit", "Fit the diagram to the pane", fitTo),
-      actual: smallButton("100%", "Show the diagram at its drawn size", actual),
+      actual: smallButton("100%", "Zoom now. Press for the drawn size, 100%", actual),
     };
     group.append(buttons.out, buttons.in, buttons.fit, buttons.actual);
     bar.append(group);
