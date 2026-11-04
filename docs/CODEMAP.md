@@ -2,9 +2,9 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7780, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8715, test files 2048, tests 17208, plan headings 1001, app scripts 28, boot scripts 37, script files 253.
+Counts: frontend functions 7781, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8726, test files 2049, tests 17233, plan headings 1001, app scripts 28, boot scripts 37, script files 253.
 
-## Frontend functions (7780)
+## Frontend functions (7781)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -12953,7 +12953,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8715)
+## Backend modules (8726)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -22209,11 +22209,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Engine` | src/tessellate/core/overlay/engine.py:259 |
-| `Monitor` | src/tessellate/core/overlay/engine.py:223 |
-| `Output` | src/tessellate/core/overlay/engine.py:230 |
-| `Perch` | src/tessellate/core/overlay/engine.py:214 |
-| `_adjoins` | src/tessellate/core/overlay/engine.py:248 |
+| `Engine` | src/tessellate/core/overlay/engine.py:290 |
+| `Monitor` | src/tessellate/core/overlay/engine.py:251 |
+| `Output` | src/tessellate/core/overlay/engine.py:258 |
+| `Perch` | src/tessellate/core/overlay/engine.py:242 |
+| `_adjoins` | src/tessellate/core/overlay/engine.py:279 |
 
 ### src/tessellate/core/overlay/host.py (2)
 
@@ -23933,7 +23933,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17208)
+## Tests (17233)
 
 `def test_` lines in each `tests/test_*.py`.
 
