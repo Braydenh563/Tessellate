@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7747, frontend ids 2637, CSS sections 522, backend routes 641, backend modules 8594, test files 1992, tests 16671, plan headings 994, app scripts 28, boot scripts 37, script files 245.
+Counts: frontend functions 7747, frontend ids 2637, CSS sections 522, backend routes 641, backend modules 8594, test files 1992, tests 16673, plan headings 994, app scripts 28, boot scripts 37, script files 245.
 
 ## Frontend functions (7747)
 
@@ -21050,11 +21050,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `DeskApi` | src/tessellate/core/desk_companion.py:303 |
 | `DeskCompanion` | src/tessellate/core/desk_companion.py:336 |
 | `_config` | src/tessellate/core/desk_companion.py:64 |
-| `_follow` | src/tessellate/core/desk_companion.py:535 |
+| `_follow` | src/tessellate/core/desk_companion.py:539 |
 | `_pref` | src/tessellate/core/desk_companion.py:77 |
 | `_screen_area` | src/tessellate/core/desk_companion.py:160 |
 | `_set_pref` | src/tessellate/core/desk_companion.py:89 |
-| `attach` | src/tessellate/core/desk_companion.py:510 |
+| `attach` | src/tessellate/core/desk_companion.py:514 |
 | `clamp_corner` | src/tessellate/core/desk_companion.py:176 |
 | `clean_size` | src/tessellate/core/desk_companion.py:268 |
 | `companion_ex_style` | src/tessellate/core/desk_companion.py:193 |
@@ -21063,8 +21063,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `monitor_areas` | src/tessellate/core/desk_companion.py:115 |
 | `pick_area` | src/tessellate/core/desk_companion.py:148 |
 | `raise_on_desktop` | src/tessellate/core/desk_companion.py:223 |
-| `shutdown` | src/tessellate/core/desk_companion.py:552 |
-| `tray_menu_item` | src/tessellate/core/desk_companion.py:560 |
+| `shutdown` | src/tessellate/core/desk_companion.py:572 |
+| `tray_menu_item` | src/tessellate/core/desk_companion.py:580 |
 | `window_handle` | src/tessellate/core/desk_companion.py:212 |
 | `work_area` | src/tessellate/core/desk_companion.py:96 |
 
@@ -23662,7 +23662,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16671)
+## Tests (16673)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24172,7 +24172,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_density_height.py | 4 |
 | tests/test_dependency_audit.py | 3 |
 | tests/test_derived_facts.py | 14 |
-| tests/test_desk_companion.py | 47 |
+| tests/test_desk_companion.py | 49 |
 | tests/test_desk_counts_63.py | 5 |
 | tests/test_desktop_fullscreen.py | 5 |
 | tests/test_desktop_launcher.py | 17 |

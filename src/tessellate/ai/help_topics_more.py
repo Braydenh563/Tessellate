@@ -1410,9 +1410,9 @@ MORE_TOPICS: list[dict] = [
         "body": (
             "In the desktop app on Windows the companion can sit in the bottom-right "
             "corner of your screen, above the taskbar, while the Tessellate window is "
-            "in the tray, and go away when the window is open. It is off until you turn "
+            "minimised or in the tray, and go away when the window is open. It is off until you turn "
             "it on, on the computer Tessellate runs on: Settings, Appearance, Corner companion, Show the companion on the desktop "
-            "while the window is in the tray, or Show desktop companion in the tray icon's "
+            "while the window is minimised or in the tray, or Show desktop companion in the tray icon's "
             "menu, or Show on desktop in the companion's own right-click menu (it reads Hide from "
             "desktop once it is on). The Settings row works from a browser tab on that computer too, and takes effect while "
             "the desktop app runs; another device has no such row. It is "

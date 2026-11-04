@@ -52241,3 +52241,5 @@ From DOCUMENTS_PLAN.md and WHITEBOARD_PLAN.md "Placed from INBOX, 2026-11-03", b
 
 **1565** (app-wide quiet motion, the hover card's fade): built 9ba5bda, 6d7b9b6, moved to HISTORY.md ("Moved from the plans, 2026-11-03 (a31k-1103: 1565 quiet motion)"); leftovers in `agent-remaining/a31k-1103.md`.
 
+1636. **Owner, 2026-11-04 (screenshot, desktop with the app minimised):** "can the desktop companion show even when I still have the applciation open but minimised?" Built: the companion follows pywebview's minimized, restored and maximized events as well as the tray; the Settings row, its help, the toasts, the tray balloon and the Guide say "minimised or in the tray".
+

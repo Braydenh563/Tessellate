@@ -557,3 +557,42 @@ def test_the_tray_toggle_runs_the_show_on_a_worker(made, prefs):
     item = dc.tray_menu_item(SimpleNamespace(MenuItem=Item))
     item.action(SimpleNamespace(notify=lambda *a: None), item)
     assert ran == ["desk-companion"]
+
+
+class _Event:
+    """pywebview's window event, as far as the companion uses it."""
+
+    def __init__(self):
+        self.handlers = []
+
+    def __iadd__(self, fn):
+        self.handlers.append(fn)
+        return self
+
+    def fire(self, window):
+        for fn in self.handlers:
+            fn(window)
+
+
+def test_a_minimised_window_brings_the_companion_and_a_restore_sends_it(prefs):
+    """The owner, 2026-11-04: "can the desktop companion show even when I
+    still have the application open but minimised?"."""
+    webview, main = FakeWebview(), FakeWindow()
+    main.events = SimpleNamespace(minimized=_Event(), restored=_Event(), maximized=_Event())
+    companion = dc.attach(webview, main, lambda script="": None, lambda: "http://127.0.0.1:8000/desktop-companion.html", transparent=False)
+    companion._dispatch = lambda name, fn: fn()  # noqa: SLF001
+    prefs[dc.PREF] = True
+    main.events.minimized.fire(main)
+    assert companion.shown and len(webview.made) == 1
+    main.events.restored.fire(main)
+    assert not companion.shown
+    main.events.minimized.fire(main)
+    main.events.maximized.fire(main)
+    assert not companion.shown
+    dc.shutdown()
+
+
+def test_a_window_without_those_events_still_follows_the_tray(made, prefs):
+    prefs[dc.PREF] = True
+    made.main_window.hide()
+    assert made.shown

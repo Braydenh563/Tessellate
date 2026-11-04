@@ -9,7 +9,7 @@ quick search, or to open the app window."
 A second pywebview window, frameless and on top, that draws the chosen
 companion (`frontend/desktop-companion.html`, which loads the app's own
 drawing files) and is visible only while the preference `desktop_companion`
-is on and the main window is hidden in the tray. The page's own requests are
+is on and the main window is minimised or hidden in the tray. The page's own requests are
 the app's (the same sign-in token, the same origin check); what the page asks
 of the *window* (resize, move, open the app, hide) goes through pywebview's
 `js_api`, not an HTTP route, so nothing on the network can raise or move a
@@ -443,19 +443,23 @@ class DeskCompanion:
             return self.webview.create_window("Tessellate companion", **options)
 
     def sync(self) -> None:
-        """Show it when it is due (on, and the main window in the tray), else hide it."""
+        """Show it when it is due (on, and the main window minimised or in the tray), else hide it."""
         if not _lock.acquire(timeout=LOCK_WAIT):
             logger.warning("the desktop companion is still busy with its last show or hide; this one is skipped")
             return
         try:
             due = enabled() and self.main_hidden and not self.closing
+            #: One line a step (INBOX 1633: the owner could not see it; the log says where it stopped).
+            logger.info("desk companion: due=%s (on=%s, window away=%s, shown=%s)", due, enabled(), self.main_hidden, self.shown)
             try:
                 if due and self.window is None:
                     self.window = self._make()
+                    logger.info("desk companion: window made at %s, size %s", self.top_left(), self.size)
                 if self.window is None or due == self.shown:
                     return
                 (self.window.show if due else self.window.hide)()
                 self.shown = due
+                logger.info("desk companion: %s", "shown" if due else "hidden")
                 if due:
                     # Back onto a monitor that is there (one may have gone while it
                     # was hidden), then a tool window above the desktop layer.
@@ -464,7 +468,7 @@ class DeskCompanion:
                     if fixed != self.corner:
                         self.corner = fixed
                         self.window.move(*self.top_left())
-                    raise_on_desktop(self.window)
+                    logger.info("desk companion: raised above the desktop: %s", raise_on_desktop(self.window))
             except Exception:  # noqa: BLE001 - a companion that fails never takes the app with it
                 logger.warning("the desktop companion window failed", exc_info=True)
         finally:
@@ -547,6 +551,22 @@ def _follow(main_window: Any, companion: DeskCompanion) -> None:
         return result
 
     main_window.show, main_window.hide = shown, hidden
+    #: Minimised counts as away too (the owner, 2026-11-04: "can the desktop
+    #: companion show even when I still have the application open but
+    #: minimised?"). pywebview's window events, where this version has them.
+    events = getattr(main_window, "events", None)
+    for name, away in (("minimized", True), ("restored", False), ("maximized", False)):
+        event = getattr(events, name, None)
+        if event is None:
+            continue
+
+        def follow(*_args: Any, _away: bool = away) -> None:
+            companion.set_main_hidden(_away)
+
+        try:
+            event += follow
+        except TypeError:
+            logger.debug("desk companion: the window has no %s event to follow", name)
 
 
 def shutdown() -> None:
@@ -570,7 +590,7 @@ def tray_menu_item(pystray: Any) -> Any:
             companion._dispatch("desk-companion", companion.sync)  # noqa: SLF001
         if on:
             try:
-                icon.notify("It sits in the corner while the window is in the tray.", "Tessellate")
+                icon.notify("It sits in the corner while the window is minimised or in the tray.", "Tessellate")
             except Exception:  # noqa: BLE001 - balloons are optional
                 logger.debug("could not show the companion balloon", exc_info=True)
 

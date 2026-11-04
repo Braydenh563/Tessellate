@@ -351,7 +351,7 @@ function nameMarkBuddyMenu(buddy, at = null) {
       label: onDesktop ? "ph:desktop Hide from desktop" : "ph:desktop Show on desktop",
       run: async () => {
         await setPreference("desktop_companion", !onDesktop);
-        toast(onDesktop ? "The desktop companion is off." : "Your companion will sit in the corner while the window is in the tray.");
+        toast(onDesktop ? "The desktop companion is off." : "Your companion will sit in the corner while the window is minimised or in the tray.");
       },
     });
   } else if (isDesktopShell === null) {

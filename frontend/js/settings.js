@@ -341,7 +341,7 @@ async function openSettingsModal(section = "models", scrollToId = null) {
     companionNote = document.createElement("p");
     companionNote.id = "desktop-companion-note";
     companionNote.className = "muted";
-    companionNote.textContent = "The companion shows on the desktop while the desktop app runs with its window in the tray; set it here or there.";
+    companionNote.textContent = "The companion shows on the desktop while the desktop app runs with its window minimised or in the tray; set it here or there.";
     companionHelp.after(companionNote);
   }
   // Same reasoning as the tray/console rows above: /system/restart can only

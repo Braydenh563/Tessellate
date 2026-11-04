@@ -602,7 +602,7 @@ $("pref-close-to-tray")?.addEventListener("change", (e) => {
 $("pref-desktop-companion")?.addEventListener("change", (e) => {
   const checked = e.target.checked;
   setPreference("desktop_companion", checked);
-  toast(checked ? "Your companion will sit in the corner while the window is in the tray." : "The desktop companion is off.");
+  toast(checked ? "Your companion will sit in the corner while the window is minimised or in the tray." : "The desktop companion is off.");
 });
 
 $("exports-refresh")?.addEventListener("click", renderExportsList);
