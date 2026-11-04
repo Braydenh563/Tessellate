@@ -175,6 +175,7 @@ with its owner named in the entry.
 
 ## Placed (last 20, newest first)
 
+- 2026-11-04: 1681 (more poses and variants) to BACKLOG "Placed from INBOX, 2026-11-04", after 1680.
 - 2026-11-04: 1678 (a deeper companion mind) to BACKLOG "Placed from INBOX, 2026-11-04"; 1679 (the Fable diagram deep dive) to DOCUMENTS_PLAN "Placed from INBOX, 2026-11-04".
 - 2026-11-03: 730 (filing without a model) to WORLD_CLASS_PLAN 23 and Brief 39b; 810 (Atlas as the app's assistant) to CHAT_PLAN decisions 65 to 69; 1298 (complexity exceptions) to BACKLOG "Placed from INBOX, 2026-11-03b".
 - 1571 (friendly local name) and 1513 (graph motion; left: the untangle freeze, GR1) to BACKLOG "Placed from INBOX, 2026-11-03b".
