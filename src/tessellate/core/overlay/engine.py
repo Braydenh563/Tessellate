@@ -1265,8 +1265,9 @@ class Engine:
         return f"idle{self._idle_index(now)}" if self._idling() else "stand"
 
     def _idling(self) -> bool:
-        """Standing with life in its parts: not reduced, not typing-quiet, frames present."""
-        return self.state == "stand" and not self.reduced and not self.quiet and self.idle_frames > 0
+        """Standing with life in its parts: not reduced, frames present. Typing keeps it in
+        place, not lifeless (INBOX 1670: "it is also not animated")."""
+        return self.state == "stand" and not self.reduced and self.idle_frames > 0
 
     def _idle_index(self, now: float) -> int:
         return int(now * IDLE_FPS + 1e-6) % self.idle_frames
@@ -1300,9 +1301,10 @@ class Engine:
 
     def _bobbing(self) -> bool:
         """A floater out in the air, standing or drifting, with motion allowed: it bobs
-        and sways (never on a window it rests on, or while reduced or typing-quiet)."""
+        and sways (never on a window it rests on, or while reduced; typing keeps it in place
+        but still bobbing, INBOX 1670)."""
         return (
-            self.gait == "float" and self.state in ("stand", "drift") and not self.reduced and not self.quiet
+            self.gait == "float" and self.state in ("stand", "drift") and not self.reduced
             and self.perch is None and self.sink <= 0
         )
 

@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import collections
 import logging
+import math
 import os
 import time
 from pathlib import Path
@@ -98,6 +99,11 @@ class OverlayRunner:
         self.visible = False
         self.busy = False
         self.paused = False
+        #: Where the pointer was at the last busy check and when it last moved:
+        #: GetLastInputInfo counts mouse moves too, and a person using the mouse
+        #: is not typing (INBOX 1670: "it doesnt move" while the mouse was in use).
+        self._busy_ptr: tuple[int, int] | None = None
+        self._ptr_moved_at = -math.inf
         self._stopped = False
         self._resume = False
         self._last_key: tuple[str, int, bool, tuple[int, int, int, int] | None] | None = None
@@ -205,7 +211,7 @@ class OverlayRunner:
             if self._resume:
                 self._resume = False
                 engine.resume(now)
-            hold = self._busy_gate(now)
+            hold = self._busy_gate(now, pointer)
             if hold is not None:
                 return hold
             while self._cards:
@@ -257,15 +263,19 @@ class OverlayRunner:
         due = max(30, int((self._next_scan - self.clock()) * 1000))
         return due if wake is None else min(wake, due)
 
-    def _busy_gate(self, now: float) -> int | None:
+    def _busy_gate(self, now: float, pointer: tuple[int, int] | None = None) -> int | None:
         """Hide while something fullscreen is in the way; None when free to move."""
         if now < self._next_busy_check and not self.busy:
             return None
         self._next_busy_check = now + BUSY_EVERY
+        if pointer is not None:
+            if self._busy_ptr is not None and pointer != self._busy_ptr:
+                self._ptr_moved_at = now
+            self._busy_ptr = pointer
         age = k.last_input_age(self.w)
         engine = self.engine
-        if engine is not None:  # typing or working: it only stands (nothing big)
-            engine.quiet = age is not None and age < TYPING_AGE
+        if engine is not None:  # typing: it stays put (nothing big); the mouse alone is not typing
+            engine.quiet = age is not None and age < TYPING_AGE and now - self._ptr_moved_at > age
         state = k.notification_state(self.w)
         away = state in k.QUNS_HIDE
         if away and not self.busy:

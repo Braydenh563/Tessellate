@@ -377,3 +377,25 @@ def test_the_click_rect_is_the_figures_drawn_box_not_the_window() -> None:
     right = r.drawn_rect(1000, 500, "stand", True)[0] - 1000
     assert left != right  # the margin really swings with the mirror
     r.stop()
+
+
+def test_a_moving_mouse_is_not_typing() -> None:
+    # INBOX 1670: GetLastInputInfo counts mouse moves, so a person using the mouse
+    # kept the figure "typing-quiet" and it never travelled.
+    r, fake, clock, *_ = make(reduced=False)
+    assert r.start()
+    r.show()
+    assert wait_for(lambda: r.host.visible)
+    fake.last_input = (10_000, 9_000)  # an input 1 s ago
+    clock.t += 5
+    r._next_busy_check = 0.0
+    r._busy_gate(clock.t, (100, 100))
+    r._next_busy_check = 0.0
+    clock.t += 0.5
+    r._busy_gate(clock.t, (180, 140))  # the pointer moved: that input was the mouse
+    assert r.engine.quiet is False
+    r._next_busy_check = 0.0
+    clock.t += 3
+    r._busy_gate(clock.t, (180, 140))  # still pointer, a fresh input: a key
+    assert r.engine.quiet is True
+    r.stop()

@@ -53,12 +53,12 @@ def test_a_wake_lands_on_a_new_frame_not_the_same_one_again() -> None:
         assert out.frame != before
 
 
-@pytest.mark.parametrize("why", ["reduced", "quiet", "no_frames"])
+# "quiet" (typing) left this list 2026-11-04: the owner's "it is also not animated"
+# (INBOX 1670); typing keeps the figure in place, its idle frames still play.
+@pytest.mark.parametrize("why", ["reduced", "no_frames"])
 def test_a_still_figure_is_one_frame_and_costs_no_idle_wake(why: str) -> None:
     kw = {"reduced": True} if why == "reduced" else {"idle_frames": 0} if why == "no_frames" else {}
     e = make(**kw)
-    if why == "quiet":
-        e.quiet = True
     frames, t = set(), 0.0
     for _ in range(30):
         out = e.update(t)
@@ -111,3 +111,16 @@ def test_a_roaming_figure_still_does_acts_after_three_minutes_away() -> None:
         frames.add(e.update(t).frame)
     assert any(f.startswith("walk") for f in frames)
     assert "sit" not in frames
+
+
+def test_typing_keeps_it_in_place_but_its_idle_frames_still_play() -> None:
+    e = make()
+    e.quiet = True
+    e._enter("stand", 0.0)
+    e.state_until = 1e9
+    frames, t = set(), 0.0
+    for _ in range(40):
+        out = e.update(t)
+        frames.add(out.frame)
+        t += 0.1
+    assert any(f.startswith("idle") for f in frames)

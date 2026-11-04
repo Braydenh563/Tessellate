@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import random
 
+from tessellate.core.overlay import engine as eng
 from tessellate.core.overlay.engine import Engine, Monitor
 
 SIZE = (100, 120)
@@ -62,14 +63,18 @@ def test_a_resting_floater_still_bobs_and_sways_and_plays_the_idle_cycle() -> No
     assert any(f.startswith("idle") for f in frames)
 
 
-def test_a_reduced_or_typing_floater_does_not_bob() -> None:
+def test_a_reduced_floater_does_not_bob_and_a_typing_one_bobs_in_place() -> None:
+    # Typing moved from "no bob" to "bobs in place" 2026-11-04: the owner's "it is also
+    # not animated" (INBOX 1670). It still does not travel: x stays within the sway.
     r = Engine(SIZE, ONE, rng=random.Random(3), home=(800, 920), gait="float", reduced=True)
     assert len({(o.x, o.y) for o in (r.update(0.1 * i) for i in range(1, 40))}) == 1
     q = make(3)
     q.quiet = True
     q._enter("stand", 0.0)
     q.state_until = 1e9
-    assert len({(o.x, o.y) for o in (q.update(0.1 * i) for i in range(1, 40))}) == 1
+    seen = [(o.x, o.y) for o in (q.update(0.1 * i) for i in range(1, 40))]
+    assert len({y for _x, y in seen}) > 1
+    assert max(x for x, _y in seen) - min(x for x, _y in seen) <= 2 * eng.FLOAT_SWAY + 2
 
 
 def test_the_bob_never_leaves_the_work_area_or_enters_a_window_it_rests_on() -> None:
