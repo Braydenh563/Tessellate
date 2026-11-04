@@ -45,8 +45,6 @@ XA_ATOM, XA_CARDINAL, XA_STRING, XA_WINDOW = 4, 6, 31, 33
 #: Alpha under this is clear (the same floor the Windows overlay uses).
 ALPHA_FLOOR = 8
 
-_ARGS_LOADED = False
-
 
 class _Visual(c.Structure):
     pass

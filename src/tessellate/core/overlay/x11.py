@@ -361,7 +361,7 @@ class X11Host:
         try:
             os.write(self._wr, b"x")
         except OSError:
-            pass
+            pass  # the pipe is full (a wake is already waiting) or just closed: either way the loop wakes or has ended
 
     def _call(self, *command: Any) -> None:
         if threading.get_ident() == self._tid:
@@ -489,7 +489,7 @@ class X11Host:
             try:
                 os.close(fd)
             except OSError:
-                pass
+                pass  # already closed: closing is all that was asked
 
     def _event(self, kind: str) -> None:
         if self.on_event is None:

@@ -46,7 +46,7 @@ class FakeX:
             try:
                 os.read(self._rd, 4096)
             except OSError:
-                pass
+                pass  # nothing left to drain (the wake pipe is non-blocking): the events are the answer
         return out
 
     def create_window(self, title: str) -> int:

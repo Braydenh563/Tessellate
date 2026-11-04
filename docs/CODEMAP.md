@@ -22376,24 +22376,24 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `XButtonEvent` | src/tessellate/core/overlay/xlib.py:85 |
-| `XConn` | src/tessellate/core/overlay/xlib.py:173 |
-| `XErrorEvent` | src/tessellate/core/overlay/xlib.py:141 |
-| `XEvent` | src/tessellate/core/overlay/xlib.py:103 |
-| `XImage` | src/tessellate/core/overlay/xlib.py:107 |
-| `XPropertyEvent` | src/tessellate/core/overlay/xlib.py:96 |
-| `XRRMonitorInfo` | src/tessellate/core/overlay/xlib.py:115 |
-| `XScreenSaverInfo` | src/tessellate/core/overlay/xlib.py:123 |
-| `XSetWindowAttributes` | src/tessellate/core/overlay/xlib.py:63 |
-| `XVisualInfo` | src/tessellate/core/overlay/xlib.py:55 |
-| `XWindowAttributes` | src/tessellate/core/overlay/xlib.py:73 |
-| `_Visual` | src/tessellate/core/overlay/xlib.py:51 |
-| `_lib` | src/tessellate/core/overlay/xlib.py:130 |
-| `_on_x_error` | src/tessellate/core/overlay/xlib.py:153 |
-| `_sig` | src/tessellate/core/overlay/xlib.py:135 |
-| `alpha_bitmap` | src/tessellate/core/overlay/xlib.py:614 |
-| `libraries_present` | src/tessellate/core/overlay/xlib.py:168 |
-| `shape_key` | src/tessellate/core/overlay/xlib.py:163 |
+| `XButtonEvent` | src/tessellate/core/overlay/xlib.py:83 |
+| `XConn` | src/tessellate/core/overlay/xlib.py:171 |
+| `XErrorEvent` | src/tessellate/core/overlay/xlib.py:139 |
+| `XEvent` | src/tessellate/core/overlay/xlib.py:101 |
+| `XImage` | src/tessellate/core/overlay/xlib.py:105 |
+| `XPropertyEvent` | src/tessellate/core/overlay/xlib.py:94 |
+| `XRRMonitorInfo` | src/tessellate/core/overlay/xlib.py:113 |
+| `XScreenSaverInfo` | src/tessellate/core/overlay/xlib.py:121 |
+| `XSetWindowAttributes` | src/tessellate/core/overlay/xlib.py:61 |
+| `XVisualInfo` | src/tessellate/core/overlay/xlib.py:53 |
+| `XWindowAttributes` | src/tessellate/core/overlay/xlib.py:71 |
+| `_Visual` | src/tessellate/core/overlay/xlib.py:49 |
+| `_lib` | src/tessellate/core/overlay/xlib.py:128 |
+| `_on_x_error` | src/tessellate/core/overlay/xlib.py:151 |
+| `_sig` | src/tessellate/core/overlay/xlib.py:133 |
+| `alpha_bitmap` | src/tessellate/core/overlay/xlib.py:612 |
+| `libraries_present` | src/tessellate/core/overlay/xlib.py:166 |
+| `shape_key` | src/tessellate/core/overlay/xlib.py:161 |
 
 ### src/tessellate/core/passes.py (21)
 
@@ -26696,7 +26696,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E4 · The honest positives, so the section is not one-sided (read) | docs/roadmap/MODERNISATION_AUDIT.md:676 |
 | Earlier morning summary (2026-10-30) | docs/roadmap/HANDOVER.md:35 |
 | Earlier morning summary (away run 2026-10-18b) | docs/roadmap/HANDOVER.md:54 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:490 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:492 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4272 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |
