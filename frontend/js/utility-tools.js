@@ -738,12 +738,15 @@ async function insertTemplate(template, caught) {
     clockName(row.reset, `Reset ${label}`);
     clockName(row.stop, `Stop ${label}`);
     clockName(row.lap, `Lap ${label}`);
-    row.lap.classList.toggle("hidden", clock.kind !== "stopwatch");
+    const isWatch = clock.kind === "stopwatch";
+    row.lap.classList.toggle("hidden", !isWatch);
+    //: A stopwatch's laps area holds its full height from the start (INBOX 1651): the card is anchored to the window's foot, so a list that grew with each lap lifted the Lap button away from the pointer.
+    row.laps.classList.toggle("clock-laps-held", isWatch);
     const laps = clock.laps || [];
     if (row.laps.children.length !== laps.length) {
       //: Newest first, each with the time it took since the one before.
       row.laps.replaceChildren(...laps.map((at, i) => clockEl("li", "", `Lap ${i + 1}: ${utilityOps.lapText(at)}, +${utilityOps.lapText(at - (laps[i - 1] || 0))}`)).reverse());
-      row.laps.classList.toggle("hidden", !laps.length);
+      row.laps.classList.toggle("hidden", !laps.length && !isWatch);
     }
   }
 

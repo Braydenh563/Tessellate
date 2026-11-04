@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7751, frontend ids 2637, CSS sections 522, backend routes 641, backend modules 8636, test files 2002, tests 16805, plan headings 998, app scripts 28, boot scripts 37, script files 246.
+Counts: frontend functions 7751, frontend ids 2637, CSS sections 522, backend routes 641, backend modules 8636, test files 2002, tests 16807, plan headings 998, app scripts 28, boot scripts 37, script files 246.
 
 ## Frontend functions (7751)
 
@@ -3307,8 +3307,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `kindWord` | frontend/js/diagram-view.js:35 |
-| `wire` | frontend/js/diagram-view.js:42 |
+| `kindWord` | frontend/js/diagram-view.js:37 |
+| `wire` | frontend/js/diagram-view.js:44 |
 
 ### frontend/js/documents-ai.js (15)
 
@@ -12226,7 +12226,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/ui-reveal-lazy.css | 91 |
 | frontend/css/update-bar-lazy.css | 15 |
 | frontend/css/usage-lazy.css | 34 |
-| frontend/css/utilities-lazy.css | 495 |
+| frontend/css/utilities-lazy.css | 500 |
 | frontend/css/web-lazy.css | 88 |
 | frontend/css/writing-desk-lazy.css | 27 |
 
@@ -15659,8 +15659,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3342 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3470 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3343 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3471 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -23738,7 +23738,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16805)
+## Tests (16807)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24000,7 +24000,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_clipped_readers_1525c.py | 13 |
 | tests/test_clock_panel_1551.py | 22 |
 | tests/test_clock_weekday.py | 5 |
-| tests/test_clock_widgets_1617.py | 4 |
+| tests/test_clock_widgets_1617.py | 5 |
 | tests/test_cm_measure_loop_1031.py | 5 |
 | tests/test_code_completion.py | 29 |
 | tests/test_code_documents.py | 49 |
@@ -24270,7 +24270,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_model.py | 12 |
 | tests/test_diagram_suggest.py | 21 |
 | tests/test_diagram_touch.py | 4 |
-| tests/test_diagram_view_1614.py | 6 |
+| tests/test_diagram_view_1614.py | 7 |
 | tests/test_dialogue_b8.py | 1 |
 | tests/test_dictation_options.py | 8 |
 | tests/test_digest_structure.py | 24 |
@@ -26454,7 +26454,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:178 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:174 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4178 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |

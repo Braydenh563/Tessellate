@@ -47,3 +47,11 @@ def test_one_pane_no_strip_and_a_list_of_its_own_kind():
 def test_the_alarm_is_still_an_ordinary_reminder_and_the_stopwatch_keeps_laps():
     assert "utilityOps.alarmSet(" in CLOCK and "addReminder(label" in CLOCK
     assert "row.laps.replaceChildren" in CLOCK and 'clockEl("ol", "clock-laps muted")' in CLOCK
+
+
+def test_a_stopwatchs_laps_area_holds_its_height_so_lap_never_moves_1651():
+    # The card is anchored to the window's foot: a laps list that grew per press lifted the Lap button 18px each time.
+    assert 'row.laps.classList.toggle("clock-laps-held", isWatch)' in CLOCK
+    held = CSS.split(".clock-laps-held {", 1)[1].split("}", 1)[0]
+    cap = re.search(r"\.clock-laps \{[^}]*max-height: ([^;]+);", CSS).group(1)
+    assert f"min-height: {cap}" in held
