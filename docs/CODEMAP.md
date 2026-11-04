@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7754, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8675, test files 2012, tests 16955, plan headings 999, app scripts 28, boot scripts 37, script files 248.
+Counts: frontend functions 7754, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8675, test files 2013, tests 16965, plan headings 999, app scripts 28, boot scripts 37, script files 248.
 
 ## Frontend functions (7754)
 
@@ -22102,11 +22102,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Engine` | src/tessellate/core/overlay/engine.py:213 |
-| `Monitor` | src/tessellate/core/overlay/engine.py:177 |
-| `Output` | src/tessellate/core/overlay/engine.py:184 |
-| `Perch` | src/tessellate/core/overlay/engine.py:168 |
-| `_adjoins` | src/tessellate/core/overlay/engine.py:202 |
+| `Engine` | src/tessellate/core/overlay/engine.py:220 |
+| `Monitor` | src/tessellate/core/overlay/engine.py:184 |
+| `Output` | src/tessellate/core/overlay/engine.py:191 |
+| `Perch` | src/tessellate/core/overlay/engine.py:175 |
+| `_adjoins` | src/tessellate/core/overlay/engine.py:209 |
 
 ### src/tessellate/core/overlay/host.py (2)
 
@@ -22132,13 +22132,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Frame` | src/tessellate/core/overlay/sprites.py:54 |
-| `SpriteSet` | src/tessellate/core/overlay/sprites.py:112 |
-| `clear_faint_alpha` | src/tessellate/core/overlay/sprites.py:96 |
-| `clipped` | src/tessellate/core/overlay/sprites.py:65 |
-| `frames_dir` | src/tessellate/core/overlay/sprites.py:84 |
-| `look_for` | src/tessellate/core/overlay/sprites.py:91 |
-| `premultiplied_bgra` | src/tessellate/core/overlay/sprites.py:107 |
+| `Frame` | src/tessellate/core/overlay/sprites.py:59 |
+| `SpriteSet` | src/tessellate/core/overlay/sprites.py:117 |
+| `clear_faint_alpha` | src/tessellate/core/overlay/sprites.py:101 |
+| `clipped` | src/tessellate/core/overlay/sprites.py:70 |
+| `frames_dir` | src/tessellate/core/overlay/sprites.py:89 |
+| `look_for` | src/tessellate/core/overlay/sprites.py:96 |
+| `premultiplied_bgra` | src/tessellate/core/overlay/sprites.py:112 |
 
 ### src/tessellate/core/overlay/win32.py (27)
 
@@ -23812,7 +23812,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16955)
+## Tests (16965)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25138,7 +25138,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_outside_text_taints_chat.py | 3 |
 | tests/test_overlay_engine.py | 30 |
 | tests/test_overlay_host.py | 25 |
-| tests/test_overlay_moves.py | 23 |
+| tests/test_overlay_idle.py | 8 |
+| tests/test_overlay_moves.py | 25 |
 | tests/test_overlay_roam.py | 19 |
 | tests/test_overlay_roam_runner.py | 10 |
 | tests/test_overlay_runner.py | 19 |

@@ -19,7 +19,7 @@ def test_every_look_has_every_frame() -> None:
     for look in sprites.LOOKS:
         files = sorted(p.stem for p in (DIR / look).glob("*.png"))
         assert files == sorted(sprites.FRAME_NAMES), look
-    assert len(sprites.FRAME_NAMES) == 20 and len(sprites.WALK_FRAMES) == 6
+    assert len(sprites.FRAME_NAMES) == 32 and len(sprites.WALK_FRAMES) == 6 and len(sprites.IDLE_FRAMES) == 12
 
 
 def test_frames_of_a_look_share_one_size_and_stay_small() -> None:

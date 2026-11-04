@@ -342,3 +342,32 @@ def test_a_moving_floater_asks_for_ticks_and_a_resting_one_asks_for_none() -> No
     assert e.update(0.1).wake_ms == eng.TICK_WALK_MS
     r = make(gait="float", reduced=True)
     assert r.update(0.1).wake_ms is None
+
+
+# --- grabbing a figure that is drawn away from where it is (review2, low) -------------------
+
+def test_grabbing_a_peeking_figure_moves_it_by_the_pointer_not_by_its_sink() -> None:
+    e = make()
+    e._go((e.x, e.floor_y()), "peek_bottom", 1.0)
+    t = 1.0
+    while e.sink < 0.3 and t < 20:
+        t += 0.016
+        e.update(t)
+    assert e.state == "peek" and e.sink >= 0.3
+    x0, y0 = e.x, e.y
+    e.update(t + 0.01, event=("down", int(x0) + 50, int(y0) + 20))
+    e.update(t + 0.02, event=("move", int(x0) + 60, int(y0) + 20))
+    assert (e.x, e.y) == (x0 + 10, y0)  # the pointer's own 10 px, no jump by the sunk rows
+
+
+def test_grabbing_a_swaying_hang_moves_it_by_the_pointer_not_by_its_sway() -> None:
+    e = make()
+    e.update(1.0)
+    e._enter("hang", 1.0)
+    e.x, e.y = 800.0, 0.0
+    t = 1.0 + 0.5 / eng.SWAY_HZ / 2  # near the sway's widest
+    e.update(t)
+    x0, y0 = e.x, e.y
+    e.update(t + 0.01, event=("down", 850, 20))
+    e.update(t + 0.02, event=("move", 860, 20))
+    assert (e.x, e.y) == (x0 + 10, y0)

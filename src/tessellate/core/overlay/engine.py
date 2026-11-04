@@ -71,9 +71,16 @@ HOP_FOR = 0.4
 NOTICE_FOR = 1.5
 STARTLE_FOR = 0.5
 NOTICE_COOLDOWN = 8.0
-#: Not touched for this long: sits, then sleeps.
-IDLE_SIT = 180.0
-IDLE_SLEEP = 360.0
+#: Not touched for this long: sits, then sleeps. Ten and twenty minutes (the owner's
+#: open call, taken): it keeps doing small acts while the person is away from the
+#: keyboard, since the big acts (hang, peek) come two to four minutes apart.
+IDLE_SIT = 600.0
+IDLE_SLEEP = 1200.0
+#: The idle cycle (`idle0` to `idle11`, one tail beat and one breath): a standing
+#: figure draws these at `IDLE_FPS` so the parts move; reduced or typing-quiet it
+#: is the one `stand` frame and costs no wake.
+IDLE_FRAMES = 12
+IDLE_FPS = 8.0
 
 #: Logical pixels (scaled by the monitor's dpi).
 WALK_SPEED = 55.0
@@ -221,10 +228,12 @@ class Engine:
         reduced: bool = False,
         roam_windows: bool = True,
         gait: str = "walk",
+        idle_frames: int = IDLE_FRAMES,
         rng: random.Random | None = None,
         now: float = 0.0,
     ) -> None:
         self.size = size
+        self.idle_frames = max(0, int(idle_frames))
         self.monitors = list(monitors) or [Monitor((0, 0, 1920, 1040))]
         self.roam = roam
         self.reduced = reduced
@@ -1011,8 +1020,7 @@ class Engine:
         kind, px, py = event
         if kind == "down":
             self.press = (px, py)
-            dx, dy = self._display_pos()
-            self.grab = (px - dx, py - dy)
+            self.grab = (px - self.x, py - self.y)
             self.carrying = False
             self.trail = [(now, px, py)]
             self.pre_press = self.state
@@ -1127,13 +1135,28 @@ class Engine:
             if now < self.bonk_until:
                 return "hop"
             return f"spin{int(round(self.angle / (2 * math.pi / SPIN_STEPS))) % SPIN_STEPS}"
-        if s == "rise":
-            return "hop" if self.gait == "walk" else f"walk{int((now - self.phase_started) / 0.125) % 6}"
-        if s == "peek":
-            return "stand" if self.sink < self.sink_max * 0.5 or now - self.peek_started < 0.8 else "look"
+        if s in ("rise", "peek"):
+            return self._edge_frame(now)
         if s == "stand":
-            return self.flash[0] if self.flash else "stand"
+            return self._stand_frame(now)
         return s  # sit, sleep, wave, fall, land
+
+    def _edge_frame(self, now: float) -> str:
+        if self.state == "rise":
+            return "hop" if self.gait == "walk" else f"walk{int((now - self.phase_started) / 0.125) % 6}"
+        return "stand" if self.sink < self.sink_max * 0.5 or now - self.peek_started < 0.8 else "look"
+
+    def _stand_frame(self, now: float) -> str:
+        if self.flash:
+            return self.flash[0]
+        return f"idle{self._idle_index(now)}" if self._idling() else "stand"
+
+    def _idling(self) -> bool:
+        """Standing with life in its parts: not reduced, not typing-quiet, frames present."""
+        return self.state == "stand" and not self.reduced and not self.quiet and self.idle_frames > 0
+
+    def _idle_index(self, now: float) -> int:
+        return int(now * IDLE_FPS + 1e-6) % self.idle_frames
 
     def _wake(self, now: float) -> int | None:
         s = self.state
@@ -1153,10 +1176,12 @@ class Engine:
         if s == "stand":
             due += [self.flash[1]] if self.flash else [self.next_ambient]
             due.append(self.last_active + IDLE_SIT)
+        if self._idling():  # the next idle frame: a redraw only when the index changes
+            due.append((math.floor(now * IDLE_FPS + 1e-6) + 1) / IDLE_FPS)
         soonest = min(due)
         if soonest == math.inf:
             return None
-        return max(MIN_WAKE_MS, int(math.ceil((soonest - now) * 1000)))
+        return max(MIN_WAKE_MS, int(math.ceil((soonest - now) * 1000)) + 1)
 
     def _display(self) -> tuple[float, float, tuple[int, int, int, int] | None]:
         """Where the window is drawn and which part of the frame shows: the rest
@@ -1174,10 +1199,6 @@ class Engine:
         if self.peek_edge == "left":
             return x - hidden, y, (hidden, 0, w, h)
         return x + hidden, y, (0, 0, w - hidden, h)
-
-    def _display_pos(self) -> tuple[float, float]:
-        x, y, _clip = self._display()
-        return x, y
 
     def _output(self, now: float) -> Output:
         x, y, clip = self._display()
