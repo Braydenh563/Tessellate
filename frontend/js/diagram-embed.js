@@ -127,9 +127,9 @@
 
   //: `{source, kind, title, shapes, onDone(source, changed)}`. `kind` names the blank diagram to start
   //: when there is no source. `shapes` is a function that receives the source and makes board shapes
-  //: of it (Turn into shapes). `offer` is what Save may link. Done calls `onDone` once; Cancel, Escape and the X call nothing, after
+  //: of it (Turn into shapes). `existing` is `{pick, open}` for the door. `offer` is what Save may link. Done calls `onDone` once; Cancel, Escape and the X call nothing, after
   //: asking when there are changes.
-  async function open({ source = "", kind = "flowchart", title = "Edit diagram", shapes = null, offer = null, onDone = null } = {}) {
+  async function open({ source = "", kind = "flowchart", title = "Edit diagram", shapes = null, offer = null, onDone = null, existing = null } = {}) {
     if (!(await ensureModule("diagramBuilder"))) return toast("The block editor did not load. Try again.", "info");
     const first = String(source || "").trim() ? String(source) : STARTS[kind] || STARTS.flowchart;
     const history = [first];
@@ -225,7 +225,14 @@
     const cancel = smallButton("Cancel", "Close without keeping changes", () => finish(false));
     const go = smallButton("Done", "Keep the diagram", () => finish(true), false);
     go.classList.add("accent");
-    foot.append(seg, cancel, go);
+    //: The door's dialog also opens a diagram that exists (1679 slice 9): `existing.pick()` answers a row or nothing, `existing.open(row)` shows it.
+    const known = existing ? smallButton("ph:folder-open Open an existing diagram", "Leave this one and open a diagram you already made", async () => {
+      const row = await existing.pick();
+      if (!row) return;
+      leave();
+      existing.open(row);
+    }, false) : null;
+    foot.append(seg, ...(known ? [known] : []), cancel, go);
     const head = dialogHead(title, () => finish(false));
     const body = el("div", "dgm-dialog-body");
     body.append(field, host);

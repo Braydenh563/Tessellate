@@ -393,7 +393,11 @@
       }
     });
     const body = h.el("div", "doc-template-body");
-    body.append(list, preview);
+    //: Fourteen rows are typed to (DESIGN.md row 714); Escape clears the field before it closes the dialog.
+    const column = h.el("div", "dgm-template-column");
+    column.append(list);
+    body.append(column, preview);
+    listFilter(list, { label: "Search the templates" });
     const foot = h.el("div", "row right space-dialog-actions");
     const cancel = smallButton("Cancel", "Close without starting", () => dialog.close());
     const go = smallButton(fill ? "Add its blocks" : "Use this template", "Start from the chosen template", use, false);

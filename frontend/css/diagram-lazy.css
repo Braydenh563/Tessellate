@@ -875,6 +875,14 @@
 }
 
 /* The template dialog is the documents' own (doc-template-*): only its preview is a picture. */
+.dgm-template-column {
+  min-width: 0;
+}
+
+.dgm-template-column .list-filter {
+  margin-top: var(--space-4);
+}
+
 .dgm-template-figure {
   margin: 0;
   padding: var(--space-3);
