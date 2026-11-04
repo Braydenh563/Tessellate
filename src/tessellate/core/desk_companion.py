@@ -693,9 +693,9 @@ class DeskCompanion:
         """Which Atlas look the app window draws and whether the companion may
         move, asked of it in one round trip (the choices live in that window's
         storage). Bounded; no answer keeps the last look and leaves the motion
-        to the runner's Windows flag (None)."""
+        to the last motion answer (the Windows flag before any)."""
         answer = self._ask_main(LOOK_SCRIPT, "its look and motion")
-        look, motion = self.look, None
+        look, motion = self.look, self.motion
         data: Any = None
         if isinstance(answer, str) and answer.startswith("{"):
             try:
@@ -705,6 +705,7 @@ class DeskCompanion:
         elif answer in ("masculine", "feminine"):
             data = {"look": answer}
         if isinstance(data, dict):
+            motion = None  # an answer without a motion block hands it back to the Windows flag
             if data.get("look") in ("masculine", "feminine"):
                 look = data["look"]
             m = data.get("motion")
@@ -832,11 +833,17 @@ class DeskCompanion:
 
     def _hide_panel_window(self) -> None:
         if self.window is not None and self.panel_shown:
-            try:
-                # The page clears its menu first, so the next open does not show the last one.
-                self.window.evaluate_js("window.dispatchEvent(new CustomEvent('desk-close'))")
-            except Exception:  # noqa: BLE001 - hiding matters more than tidying
-                logger.debug("desk companion: the quick panel page did not clear", exc_info=True)
+            window = self.window
+
+            def clear() -> None:
+                try:
+                    # The page clears its menu, so the next open does not show the last one.
+                    window.evaluate_js("window.dispatchEvent(new CustomEvent('desk-close'))")
+                except Exception:  # noqa: BLE001 - hiding matters more than tidying
+                    logger.debug("desk companion: the quick panel page did not clear", exc_info=True)
+
+            # On a worker: callers hold _lock, and a stuck page must not hold it.
+            jobs.thread("desk-panel-clear", clear)
             self.window.hide()
             self.panel_shown = False
 

@@ -122,7 +122,9 @@
     if (!panel.scrollHeight || !root) return fallback;
     const style = getComputedStyle(root);
     const pad = (parseFloat(style.paddingTop) || 0) + (parseFloat(style.paddingBottom) || 0);
-    return Math.ceil(panel.scrollHeight + (panel.offsetHeight - panel.clientHeight) + pad);
+    const wanted = Math.ceil(panel.scrollHeight + (panel.offsetHeight - panel.clientHeight) + pad);
+    // Capped to the screen; the panel scrolls inside if it cannot fit.
+    return Math.min(wanted, Math.max(fallback, Math.floor((window.screen.availHeight || wanted) * 0.9)));
   }
 
   //: Why the figure stands still, for the right-click menu's one muted line.
@@ -159,7 +161,7 @@
         rows.push(why);
       }
       rows.push(item("Settings", "gear", () => leave(() => ask("open_app", "settings"))));
-      if (motion?.still && motion.reason !== "avatar") rows.push(item("Let it walk", "person-simple-walk", () => leave(() => ask("let_it_walk"))));
+      if (!locked && motion?.still && motion.reason !== "avatar") rows.push(item("Let it walk", "person-simple-walk", () => leave(() => ask("let_it_walk"))));
       rows.push(item("Hide", "eye-slash", () => (overlay ? leave(() => ask("hide_companion")) : ask("hide_companion"))));
     } else if (locked) {
       const note = document.createElement("p");

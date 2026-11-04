@@ -279,7 +279,7 @@ def test_a_full_answer_moves_and_no_answer_leaves_it_to_the_windows_flag(over):
     over.closing = False
     over.runner = None
     over.main_window.evaluate_js = lambda script: ""
-    over.look, over.motion = "masculine", (False, "")
+    over.look, over.motion = "masculine", None  # no earlier answer: the Windows flag decides
     over.set_main_hidden(True)
     assert FakeRunner.started[-1].reduced is None
 
@@ -360,3 +360,35 @@ def test_the_menu_is_measured_by_its_content_not_a_fixed_height():
     assert "function menuHeight(" in js and "panel.scrollHeight" in js
     show = js.split("function show(next)")[1].split("\n  }\n")[0]
     assert "menuHeight(height)" in show and 'next === "context"' in show
+
+
+def test_an_unanswered_read_keeps_the_last_motion_answer(over):
+    over.main_window.evaluate_js = _says(mode="full")
+    over.set_main_hidden(True)
+    assert over.motion == (False, "")
+    over.main_window.evaluate_js = lambda script: ""
+    over.set_main_hidden(False)
+    over.set_main_hidden(True)
+    assert len(FakeRunner.started) == 1 and over.motion == (False, "")
+
+
+def test_hiding_the_panel_never_waits_on_its_page(over):
+    import threading
+    import time
+
+    release = threading.Event()
+    over.window = FakeWindow()
+    over.window.evaluate_js = lambda script: release.wait(5)
+    over.panel_shown = True
+    t0 = time.monotonic()
+    over._hide_panel_window()  # noqa: SLF001
+    assert time.monotonic() - t0 < 0.5 and over.panel_shown is False
+    release.set()
+
+
+def test_the_menu_height_is_capped_and_walk_is_not_offered_when_locked():
+    from pathlib import Path
+
+    js = (Path(__file__).resolve().parent.parent / "frontend" / "js" / "desk-companion.js").read_text(encoding="utf-8")
+    assert "screen.availHeight" in js.split("function menuHeight(")[1].split("\n  }\n")[0]
+    assert "!locked && motion?.still" in js
