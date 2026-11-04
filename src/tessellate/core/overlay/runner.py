@@ -348,7 +348,8 @@ class OverlayRunner:
             return None
         try:
             hwnd = int(self.w.user32.GetForegroundWindow() or 0)
-        except Exception:  # noqa: BLE001
+        except Exception:  # noqa: BLE001 - no foreground window to read is no band
+            logger.debug("overlay: foreground window unreadable", exc_info=True)
             return None
         kept = self._zone
         if kept is not None and kept[0] == hwnd and now - kept[1] < ZONE_EVERY:

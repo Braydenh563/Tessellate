@@ -65,7 +65,8 @@ def test_a_tab_press_looks_for_its_scroller_on_a_clean_page() -> None:
 
 def test_the_card_grip_looks_once_a_frame_not_once_a_pointerover() -> None:
     src = _src("obj-drag.js")
-    assert "overFrame = requestAnimationFrame(() => setTimeout(look))" in src
+    # the file's one frame helper (afterFrames), not a second raf in obj-drag.js (the wake-source ratchet)
+    assert "afterFrames(() => setTimeout(look), 1)" in src
     handler = src[src.index('document.addEventListener("pointerover"') :]
     handler = handler[: handler.index("}, true);")]
     assert "movable(" not in handler, "the read of the card happens in the frame callback"

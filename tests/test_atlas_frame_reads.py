@@ -61,7 +61,7 @@ const ctx = {
   getComputedStyle: () => { reads.cs += 1; return { transform: `matrix(${Math.cos(ang)}, ${Math.sin(ang)}, ${-Math.sin(ang)}, ${Math.cos(ang)}, 0, 0)`, rotate: "none", opacity: "1" }; },
   requestAnimationFrame: (f) => { frames.push(f); return frames.length; },
   atlasTailWake() {}, atlasFix: (n) => +n.toFixed(2), atlasArmPath: () => "M0 0", atlasArmHand: () => "", atlasState: {},
-  ATLAS_LOOKS: {},
+  ATLAS_LOOKS: {}, nameMarkBuddyBehindCover: () => false,  // 1667: the rig holds its reads behind a dialog
 };
 let clock = 0;
 vm.createContext(ctx);

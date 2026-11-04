@@ -78,10 +78,15 @@ class PaceTimer:
 
     def arm(self, delay: float) -> None:
         if self._thread is None:
-            self._thread = threading.Thread(target=self._wait, name="overlay-pace", daemon=True)
-            self._thread.start()
+            self._thread = jobs.thread("overlay-pace", self._wait, stop=self._wake)
         due = ctypes.c_longlong(-max(1, int(delay * 1e7)))  # negative: relative, in 100 ns
         self.armed = bool(self.w.kernel32.SetWaitableTimer(self.handle, ctypes.byref(due), 0, None, None, False))
+
+    def _wake(self) -> None:
+        """Quit-time stop for the wait thread: stop flag up, then fire the timer once so the wait returns."""
+        self._stopped = True
+        due = ctypes.c_longlong(-1)
+        self.w.kernel32.SetWaitableTimer(self.handle, ctypes.byref(due), 0, None, None, False)
 
     def disarm(self) -> None:
         if self.armed:
@@ -100,11 +105,9 @@ class PaceTimer:
                     logger.debug("overlay: pace post failed", exc_info=True)
 
     def close(self) -> None:
-        self._stopped = True
         thread = self._thread
+        self._wake()
         if thread is not None:
-            due = ctypes.c_longlong(-1)
-            self.w.kernel32.SetWaitableTimer(self.handle, ctypes.byref(due), 0, None, None, False)
             thread.join(1.0)
         self.w.kernel32.CloseHandle(self.handle)
         self.armed = False

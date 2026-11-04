@@ -165,7 +165,7 @@ html:has(> .desk-page) {
 .desk-hit-kind {
   text-transform: capitalize;
   margin-inline-end: var(--space-2);
-  color: var(--accent);
+  color: var(--accent-text);
 }
 /* Two lines of a title and of a snippet, so a single hit is not a screen of its own
    (a window of this size holds three or four). */

@@ -50,7 +50,7 @@ const ctx = {
   innerWidth: 1200, innerHeight: 800,
   requestAnimationFrame: () => { calls.raf += 1; },
   atlasMotionOK: () => ok, atlasBlink: () => { calls.blink += 1; }, nameMarkBuddyActOff: () => false,
-  nmb: { pointer: [600, 300], lastInput: 0, keyAt: 0, act: "", visit: null },
+  nmb: { pointer: [600, 300], lastInput: 0, keyAt: 0, act: "", visit: null, afterClean: (fn) => fn() },  // 1667: the tick lands a clean frame on; the page is always clean here
   nameMarkBuddyAim: (p) => calls.aim.push(p), nameMarkBuddyMenuOpen: () => false,
   atlasSpark: (parent, x, y, k, cls) => {
     const el = animEl(cls);

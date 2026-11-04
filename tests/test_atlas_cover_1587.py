@@ -110,11 +110,13 @@ def test_a_look_waits_for_a_frame_that_left_the_page_clean() -> None:
     # INBOX 1591: a Library sub-tab press, rows still arriving after the frame, and the look's first
     # read laid the page out (630 ms, 486 forced). The views observer stamps a write; the look waits
     # a frame more while one landed after the last frame, six at most.
-    start = AV.index("  afterClean(fn, tries = 6) {")
+    # INBOX 1667 added `snap` (run instead of `fn` when the page is still dirty after the last try); the
+    # wait-a-frame-more, six-at-most intent is unchanged.
+    start = AV.index("  afterClean(fn, tries = 6, snap = fn) {")
     clean = AV[start : AV.index("\n};\n", start)]
     assert "afterFrames(() => {" in clean and "setTimeout(() => {" in clean, "a timer past a frame"
     assert "nmb.pageAt > frame" in clean and "window.uiSettlingUntil" in clean
-    assert "if (dirty && tries > 1) nmb.afterClean(fn, tries - 1);" in clean and "else fn();" in clean
+    assert "if (dirty && tries > 1) nmb.afterClean(fn, tries - 1, snap);" in clean and "else (dirty ? snap : fn)();" in clean
     assert "requestAnimationFrame(" not in clean, "the file's one frame helper (the wake-source ratchet)"
     observer = AV[AV.index("const views = new MutationObserver(") :][:400]
     assert "nmb.pageAt = performance.now();" in observer

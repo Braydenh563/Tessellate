@@ -142,7 +142,8 @@ def test_atlas_mood_writes_its_ease_after_the_hand_over_has_read():
     apply = body.index("const apply = () => {")
     for needle in ('classList.add("atl-easing")', 'classList.remove("atl-easing")', "atlasState.easeTimer = setTimeout"):
         assert body.index(needle) > apply, needle
-    assert body.index("nameMarkBuddyBlend(boxes, apply") > apply
+    # INBOX 1667: the hand-over runs `latest` (apply, only for the newest call), defined after `apply`.
+    assert body.index("nameMarkBuddyBlend(boxes, latest") > body.index("const latest = ") > apply
 
 
 
