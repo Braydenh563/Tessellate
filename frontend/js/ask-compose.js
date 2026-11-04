@@ -155,9 +155,10 @@ function linkCitedTitles(targets, sentences, byId, numberFor) {
 //: an answer composed from the notes marks each of its rows `said`, "quoted"
 //: (the note's words as written) or "shifted" (said back to the person who
 //: wrote them, "I went" as "you went", the row keeping the note's own words
-//: as `original`). Each is wrapped in `.said` (ask-compose-lazy.css, a left
-//: rule in the quote style; never quotation marks, which are not the note's
-//: and broke grounding when they were added to the text); a shifted one
+//: as `original`). Each is wrapped in `.said` (ask-compose-lazy.css: plain
+//: text in full ink, no bar and no grey, INBOX 1602; never quotation marks,
+//: which are not the note's and broke grounding when they were added to the
+//: text); a shifted one
 //: carries the note's own words as its hover text, and the citation peek
 //: shows them too. Found by the letters the citations use
 //: (`citationTextIndex`); a sentence that crosses an element edge is left

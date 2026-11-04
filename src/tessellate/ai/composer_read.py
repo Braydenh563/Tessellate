@@ -104,6 +104,10 @@ _HEADING_LEAD = re.compile(r"[ \t]{0,3}#{1,6}[ \t]+")
 #: A list line, or a checkbox written with no bullet ("[ ] Buy mint.", as
 #: pasted from many apps; stress run 2026-10-30 read those as prose, so an
 #: open task answered "did I" with "Yes").
+#: A line indented under a list item, carrying on its words.
+_CONTINUES = re.compile(r"^(?:\t| {2,})\S")
+
+
 _ITEM = re.compile(r"^(\s*(?:[-*+]|\d{1,3}[.)])\s+|\s*(?=\[[ xX]\]\s))(\[[ xX]\]\s+)?")
 
 
@@ -485,6 +489,7 @@ def read_note(note: dict, rank: int) -> NoteView | None:
     view.words = set(_words(content))
     in_fence = False
     in_pictures = False
+    item_open: tuple[int, int, str, bool | None] | None = None
     offset = 0
     for line in content.splitlines(keepends=True):
         line_start, offset = offset, offset + len(line)
@@ -502,8 +507,25 @@ def read_note(note: dict, rank: int) -> NoteView | None:
             in_fence = not in_fence
             continue
         if in_fence or not stripped or _not_prose(line, stripped):
+            item_open = None
             continue
+        line_end = line_start + len(line.rstrip("\r\n"))
+        if item_open and _CONTINUES.match(line) and not _ITEM.match(line):
+            #: A list item wrapped onto an indented line ("- hub-finish-ui and"
+            #: / "  O47-merge-wip are in main") is one item, not an item and a
+            #: sentence cut at the wrap (INBOX 1602).
+            at, first, kind, done = item_open
+            joined = _unit(view, content, first, line_end, kind, done)
+            if joined and at < len(view.sentences):
+                joined.depth = view.sentences[at].depth
+                view.sentences[at] = joined
+            continue
+        before = len(view.sentences)
         _line_units(view, content, line_start, line)
+        item = _ITEM.match(line)
+        item_open = None
+        if item and len(view.sentences) == before + 1 and view.sentences[-1].kind in ("item", "task"):
+            item_open = (before, line_start + item.end(), view.sentences[-1].kind, view.sentences[-1].done)
     for i, sentence in enumerate(view.sentences):
         sentence.order = i
     return view
