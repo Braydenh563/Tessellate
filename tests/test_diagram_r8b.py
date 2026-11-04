@@ -8,7 +8,6 @@ browser; docs/roadmap/HISTORY.md names the numbers.
 from __future__ import annotations
 
 import json
-import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -117,7 +116,7 @@ def test_the_target_says_what_the_drop_will_do_in_a_caption_on_the_accent_tint()
     rule = CSS[CSS.index(".dgm-drop-word {") :].split("}", 1)[0]
     assert "var(--text-xs)" in rule and "var(--accent-soft)" in rule and "position: fixed" in rule and "pointer-events: none" in rule
     # It sits above the builder dialog's overlay (1010), where most drags happen: a caption under it is never seen.
-    assert int(re.search(r"z-index:\s*(\d+)", rule).group(1)) > 1010
+    assert 'closest?.(".modal-overlay")' in POINTER and "home.append(tag)" in POINTER
 
 
 @needs_node

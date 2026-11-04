@@ -9,14 +9,16 @@
 (() => {
   //: The caption that says what a drop will do (1679 slice 12): one element for the page, fixed under the target, moved with it.
   let tag = null;
-  function word(text, r) {
+  function word(text, r, host) {
     if (!text || !r) return tag?.classList.add("hidden");
     if (!tag) {
       tag = document.createElement("span");
       tag.className = "dgm-drop-word hidden";
       tag.setAttribute("aria-hidden", "true");
-      document.body.append(tag);
     }
+    //: Inside the open dialog's overlay when the drag is in one (that overlay is a z-index 1010 layer, so a caption on the body is under it); last child paints over the dialog.
+    const home = host?.closest?.(".modal-overlay") || document.body;
+    if (tag.parentElement !== home || tag !== home.lastElementChild) home.append(tag);
     tag.textContent = text;
     tag.classList.remove("hidden");
     const below = r.bottom + 28 < innerHeight;
@@ -28,7 +30,7 @@
   function dropMark(g, target) {
     const r = target?.word && target.card ? target.card.getBoundingClientRect() : null;
     mark(g, target);
-    word(target?.word, r);
+    word(target?.word, r, target?.card);
   }
 
   function mark(g, target) {
