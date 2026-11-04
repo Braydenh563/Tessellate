@@ -86,7 +86,7 @@
           S.drawWait = Math.min(600, Math.max(120, (performance.now() - began) / 2));
           if (stamp !== S.drawn) return;
           S.hit = result.svg ? diagramModel.picture.boxes(result.svg) : null;
-          S.fig.onpaint?.();
+          for (const paint of S.fig.onpaint || []) paint();
           if (result.svg) return;
           S.fig.classList.remove("md-mermaid-pending");
           S.fig.replaceChildren(mermaidFailure.note(result.error, source));
@@ -685,6 +685,8 @@
     }
     //: A narrow window or a touch screen gets the phone's palette sheet and the picture's pinch (diagram-touch.js).
     if (S && matchMedia(COMPACT).matches && (await ensureModule("diagramTouch"))) diagramModel.touch.wire(S);
+    //: Zoom, pan and fit for the picture, in every window (diagram-view.js, 1614).
+    if (S && (await ensureModule("diagramView"))) diagramModel.view.wire(S);
     if (told && S) say(S, told);
     told = "";
     return S;

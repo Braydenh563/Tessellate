@@ -40,14 +40,16 @@ def test_the_phone_palette_is_one_button_and_a_sheet_that_presses_the_tiles():
 
 
 def test_the_picture_pinches_pans_and_fits_on_a_double_tap_and_keeps_its_zoom_across_a_redraw():
-    for needle in ('event.pointerType !== "touch"', "start.scale * (now.d / start.d)", "MAX_ZOOM", "fig.scrollLeft -=", "apply(scale > 1.01 ? 1 : 2"):
-        assert needle in TOUCH, needle
-    #: The zoom is a width on the image, put back by `onpaint` (which the builder calls after each draw).
-    assert "fig.onpaint = paint" in TOUCH and "S.fig.onpaint?.()" in BUILDER and "`${fit * scale}px`" in TOUCH
+    #: 1614: the pinch moved out of diagram-touch.js into diagram-view.js, which every window gets (the same technique:
+    #: a width on the image, put back by the paint listeners, and the figure's own scroll).
+    view = (JS / "diagram-view.js").read_text(encoding="utf-8")
+    assert "zoomable" not in TOUCH and "MAX_ZOOM" not in TOUCH and "fig.onpaint" not in TOUCH
+    for needle in ('event.pointerType !== "touch"', "start.scale * (now.d / start.d)", "fig.scrollLeft -=", "zoomTo(f * 2", "img.style.width"):
+        assert needle in view, needle
+    assert "(fig.onpaint ||= []).push(paint)" in view and "for (const paint of S.fig.onpaint || []) paint();" in BUILDER
     assert ".dgm-compact .dgm-picture {\n  touch-action: none;" in CSS
     #: A pan or a pinch is not a press on a block.
-    assert "travel > 12" in TOUCH
-
+    assert "travel > 12" in view
 
 def test_a_drag_scrolls_the_pane_and_the_page_around_it_at_the_edge_of_what_is_on_screen():
     tick = DRAG[DRAG.index("function objDragTick") : DRAG.index("function objDragUp")]

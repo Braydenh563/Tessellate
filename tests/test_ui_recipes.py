@@ -7400,3 +7400,17 @@ def test_no_settings_field_height_reaches_a_search_fields_input() -> None:
                 if "#" in sel and sel.endswith('input[type="search"]'):
                     offenders.append(f"{path.name}: {sel}")
     assert offenders == [], offenders
+
+
+def test_the_diagram_zoom_bar_is_a_plain_corner_dock():
+    """DESIGN.md, "A zoom control on a picture that scrolls": a plain `.dock` over the stage, not a new bar."""
+    view = (ROOT / "frontend" / "js" / "diagram-view.js").read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
+    assert 'bar.className = "dock dgm-zoom"' in view and "data-dock-name" not in view and "dockName" not in view
+    # In the stage beside the scrolling figure, so it stays in its corner while the figure scrolls.
+    assert "stage.append(bar)" in view and "stage.append(fig)" in view
+    rule = css[css.index(".dgm-zoom {") : css.index("}", css.index(".dgm-zoom {"))]
+    assert "position: absolute;" in rule and "box-shadow: var(--shadow-md);" in rule and "--modal-bg" in rule
+    # Every control is a button with a title (the icon-only ones become aria-labels).
+    assert view.count("smallButton(") == 4
+    assert "A zoom control on a picture that scrolls" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")

@@ -1,0 +1,99 @@
+"""INBOX 1614 (DOCUMENTS_PLAN 22.4 R2): the picture shares the blocks pane's height, and it zooms, pans and fits.
+
+The heights themselves are measured in a browser (docs/roadmap/agent-remaining/diagram-r2-1104.md names the
+sweep and the numbers); this file holds what a diff can break: the cascade that left the picture 19px short,
+the narrow rule that keeps its own 26vh, and the zoom maths (run under node where it is installed).
+"""
+
+from __future__ import annotations
+
+import json
+import re
+import shutil
+import subprocess
+from pathlib import Path
+
+import pytest
+
+ROOT = Path(__file__).resolve().parents[1]
+JS = ROOT / "frontend" / "js"
+CSS = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
+MERMAID_CSS = (ROOT / "frontend" / "css" / "mermaid-lazy.css").read_text(encoding="utf-8")
+needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
+
+
+def _rule(css: str, selector: str) -> str:
+    start = css.index(selector + " {")
+    return css[start : css.index("}", start)]
+
+
+def test_the_picture_margin_is_not_beaten_by_the_mermaid_figure_rule():
+    # `.md-mermaid` (a later file) gives every figure a block margin; the picture's own `margin: 0` must out-rank it.
+    assert "margin: var(--space-4) 0;" in _rule(MERMAID_CSS, ".md-mermaid")
+    assert "margin: 0;" in _rule(CSS, ".dgm .dgm-picture")
+    assert not re.search(r"^\.dgm-picture \{", CSS, re.M)
+
+
+def test_the_two_panes_stretch_together_in_a_wide_container_and_the_picture_keeps_26vh_below_600():
+    body = _rule(CSS, ".dgm-body")
+    assert "display: grid;" in body and "align-items" not in body
+    assert "26vh" not in CSS[: CSS.index("@container (max-width: 599.98px)")]
+    narrow = CSS[CSS.index("@container (max-width: 599.98px)") :]
+    assert "block-size: 26vh;" in narrow
+
+
+VIEW = (JS / "diagram-view.js").read_text(encoding="utf-8")
+BUILDER = (JS / "diagram-builder.js").read_text(encoding="utf-8")
+MERMAID_JS = (JS / "documents-mermaid.js").read_text(encoding="utf-8")
+
+
+def _math(expr: str):
+    script = (
+        "const vm=require('vm');const ctx={diagramModel:{}};vm.createContext(ctx);"
+        f"vm.runInContext(require('fs').readFileSync({json.dumps(str(JS / 'diagram-view.js'))},'utf8'),ctx);"
+        f"const m=ctx.diagramModel.view.math;process.stdout.write(JSON.stringify({expr}));"
+    )
+    return json.loads(subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True).stdout)
+
+
+@needs_node
+def test_fit_keeps_an_8px_margin_never_enlarges_and_the_range_is_a_quarter_to_five_times_fit():
+    # A tall drawing in a wide pane is fitted by height: 400 drawn units into 300px leave 8px above and below.
+    assert _math("m.fitScale(200, 400, 800, 300)") == pytest.approx(284 / 400)
+    # A drawing smaller than the pane stays at its drawn size.
+    assert _math("m.fitScale(100, 50, 800, 600)") == 1
+    # The range is relative to Fit, not to the drawn size.
+    assert _math("[m.clamp(0.001, 0.4), m.clamp(99, 0.4)]") == [pytest.approx(0.1), pytest.approx(2.0)]
+    assert _math("[m.MIN, m.MAX, m.MARGIN]") == [0.25, 5, 8]
+
+
+@needs_node
+def test_a_wheel_notch_is_one_step_and_a_trackpad_delta_is_smaller_and_the_size_comes_from_the_viewbox():
+    assert _math("[m.wheel(-100), m.wheel(100)]") == [pytest.approx(1.25), pytest.approx(0.8)]
+    assert 1 < _math("m.wheel(-4)") < 1.01
+    assert _math("m.wheel(-9999)") == pytest.approx(1.25)
+    assert _math('m.size(\'<svg viewBox="0 0 360 1006.5" width="100%">\')') == {"w": 360, "h": 1006.5}
+    assert _math("m.size('<svg></svg>')") is None
+
+
+def test_the_view_is_one_lazy_file_with_one_export_a_zoom_bar_on_the_dock_recipe_and_a_listener_list():
+    assert 'diagramView: ["/js/diagram-view.js"]' in MERMAID_JS
+    assert VIEW.startswith("//") and "\n(() => {" in VIEW and VIEW.rstrip().endswith("})();")
+    assert VIEW.count("diagramModel.view = ") == 1 and "window." not in VIEW
+    assert 'ensureModule("diagramView")' in BUILDER and "diagramModel.view.wire(S)" in BUILDER
+    assert "onpaint?." not in BUILDER and "(fig.onpaint ||= []).push(paint)" in VIEW
+    # Ctrl+wheel and pinch about the pointer, + - 0 and the arrows, and the four buttons in a plain .dock.
+    for needle in ("event.ctrlKey", "{ passive: false }", 'ArrowLeft:', 'event.key === "0"', 'bar.className = "dock dgm-zoom"', '"Zoom in"', '"Zoom out"', '"Fit"', '"100%"'):
+        assert needle in VIEW, needle
+    # The zoom is a width on the image plus the figure's scroll (the technique of the old `zoomable`), never a transform.
+    assert "img.style.width" in VIEW and "style.transform" not in VIEW
+    # Zoom is kept across a redraw as a scale and reset only when the diagram's kind word changes.
+    assert "state.kind && kind !== state.kind" in VIEW
+
+
+def test_the_zoom_bar_is_a_corner_dock_hidden_until_there_is_a_picture():
+    bar = _rule(CSS, ".dgm-zoom")
+    assert "position: absolute;" in bar and "background: var(--modal-bg);" in bar
+    assert ".dgm-stage:not(.dgm-zoomable) .dgm-zoom {\n  display: none;" in CSS
+    narrow = CSS[CSS.index("@container (max-width: 599.98px)") :]
+    assert ".dgm-stage > .dgm-picture {\n    block-size: auto;" in narrow
