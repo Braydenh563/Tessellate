@@ -183,6 +183,93 @@ def test_reduced_motion_follows_the_system_animation_setting() -> None:
     r.stop()
 
 
+def test_the_apps_answer_beats_the_windows_flag_and_no_answer_falls_back_to_it() -> None:
+    fake = FakeWin32()
+    fake.animations = 0
+    r, *_ = make(fake, reduced=False)  # the app says it may move
+    assert r.start() and not r.engine.reduced
+    r.stop()
+    fake = FakeWin32()
+    r, *_ = make(fake, reduced=True, reduced_reason="app")
+    assert r.start() and r.engine.reduced and r.reduced_reason == "app"
+    r.stop()
+    fake = FakeWin32()
+    fake.animations = 0
+    r, *_ = make(fake)  # None: no answer
+    assert r.start() and r.engine.reduced and r.reduced_reason == "os"
+    r.stop()
+
+
+def _pump(r, fake, clock, seconds: float, until=None) -> float:
+    """Fire the timer the overlay asked for, in fake time: each WM_TIMER is posted
+    after the clock moved by the asked-for wait. Returns the fake seconds used."""
+    used = 0.0
+    while used < seconds:
+        if not wait_for(lambda: fake.timers.get(1) is not None, 0.5):
+            break
+        ms = fake.timers.pop(1)
+        clock.t += ms / 1000
+        used += ms / 1000
+        fake.post(k.WM_TIMER)
+        time.sleep(0.01)
+        if until and until():
+            break
+    return used
+
+
+def test_a_moving_figure_keeps_asking_for_ticks_and_changes_frame_or_place() -> None:
+    """Owner report 2026-11-04 (a, b): rule out that the moving path is also stuck.
+    After start and show the host must be asked for a wake, and each answer must
+    ask for the next, so within a few fake seconds the figure blinks, looks or walks."""
+    r, fake, clock, *_ = make(reduced=False)
+    assert r.start()
+    r.show()
+    assert wait_for(lambda: r.host.visible)
+    seen = {r._last_key}
+    places = {r._last_pos}
+    _pump(r, fake, clock, 60.0, until=lambda: len({key[0] for key in seen if key}) > 1 or len(places) > 1)
+    seen.add(r._last_key)
+    places.add(r._last_pos)
+    assert len({key[0] for key in seen if key}) > 1 or len(places) > 1, (seen, places)
+    r.stop()
+
+
+def test_a_drop_in_mid_air_falls_with_ticks_to_the_floor() -> None:
+    r, fake, clock, clicks, settled = make(reduced=False)
+    assert r.start()
+    r.show()
+    assert wait_for(lambda: r.host.visible)
+    fake.cursor = (850, 950)
+    fake.post(k.WM_LBUTTONDOWN)
+    assert wait_for(lambda: r.engine.state == "pressed")
+    fake.cursor = (900, 300)
+    fake.post(k.WM_MOUSEMOVE)
+    assert wait_for(lambda: r.engine.state == "held")
+    fake.post(k.WM_LBUTTONUP)
+    assert wait_for(lambda: r.engine.state == "fall")
+    assert wait_for(lambda: fake.timers.get(1) is not None)  # a fall asks for ticks
+    _pump(r, fake, clock, 10.0, until=lambda: bool(settled))
+    assert settled and r.engine.y == r.engine.floor_y()
+    r.stop()
+
+
+def test_a_still_figure_dropped_in_mid_air_is_on_the_floor_at_once() -> None:
+    r, fake, clock, clicks, settled = make(reduced=True, reduced_reason="setting")
+    assert r.start()
+    r.show()
+    assert wait_for(lambda: r.host.visible)
+    fake.cursor = (850, 950)
+    fake.post(k.WM_LBUTTONDOWN)
+    assert wait_for(lambda: r.engine.state == "pressed")
+    fake.cursor = (900, 300)
+    fake.post(k.WM_MOUSEMOVE)
+    assert wait_for(lambda: r.engine.state == "held")
+    fake.post(k.WM_LBUTTONUP)
+    assert wait_for(lambda: settled)
+    assert r.engine.y == r.engine.floor_y() and settled[0][1] == r.engine.floor_y()
+    r.stop()
+
+
 def test_hide_and_stop() -> None:
     r, fake, *_ = make()
     assert r.start()

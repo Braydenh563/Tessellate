@@ -2119,10 +2119,22 @@ def _attach_desk_companion(webview, window, tray_icon):  # noqa: ANN001
     from tessellate.core import desk_companion
 
     def _open_main(script: str = "") -> None:
-        window.show()
-        _focus_window(window)
+        # The same way a second launch brings the window forward: restored if it
+        # was minimised (a bare `show` leaves it minimised on some backends; the
+        # owner's Settings click did nothing visible, 2026-11-04), then shown and
+        # focused. The script runs on a worker once it is up: `evaluate_js` on a
+        # window that is not yet drawn can wait, and no click may wait on that.
+        _bring_forward(window)
         if script:
-            window.evaluate_js(script)
+            from tessellate.core import jobs
+
+            def run() -> None:
+                try:
+                    window.evaluate_js(script)
+                except Exception as exc:  # noqa: BLE001 - the window still came forward
+                    logger.warning("the companion's script did not run in the app window: %s", exc)
+
+            jobs.thread("desk-open-script", run)
 
     return desk_companion.attach(
         webview,

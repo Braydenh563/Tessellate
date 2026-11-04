@@ -41,7 +41,8 @@ class OverlayRunner:
         self,
         *,
         look: str = "masculine",
-        reduced: bool = False,
+        reduced: bool | None = None,
+        reduced_reason: str = "",
         home: tuple[int, int] | None = None,
         on_click: Callable[[str, tuple[int, int, int, int], int], Any] | None = None,
         on_settle: Callable[[int, int], Any] | None = None,
@@ -52,7 +53,10 @@ class OverlayRunner:
         dispatch: Callable[[str, Callable[[], None]], Any] | None = None,
     ) -> None:
         self.look = sprites.look_for(look)
+        #: True or False is the app's answer (Appearance > Companion movement);
+        #: None means it gave none, and the Windows animation flag decides in `_ready`.
         self.reduced = reduced
+        self.reduced_reason = reduced_reason
         self.home = home
         self.on_click = on_click
         self.on_settle = on_settle
@@ -202,15 +206,20 @@ class OverlayRunner:
         if spr.missing():
             raise OSError(f"overlay frames missing: {spr.missing()[:3]}")
         self.sprites = spr
-        reduced = self.reduced or not k.animations_enabled(self.w)
+        reduced = self.reduced
+        if reduced is None:
+            reduced = not k.animations_enabled(self.w)
+            self.reduced_reason = "os" if reduced else ""
+        self.reduced = reduced
         first = self.monitors[0]
         self.dpi = first.dpi
         self.engine = eng.Engine(spr.size(first.dpi), self.monitors, home=self.home, reduced=reduced, now=self.clock())
         out = self.engine.update(self.clock())
         self._apply(out)
         logger.info(
-            "overlay: ready, look=%s, monitors=%s, frames=%d at %s px, reduced=%s",
+            "overlay: ready, look=%s, monitors=%s, frames=%d at %s px, reduced=%s%s",
             self.look, [(m.area, m.dpi) for m in self.monitors], len(sprites.FRAME_NAMES), spr.size(first.dpi), reduced,
+            f" ({self.reduced_reason})" if reduced and self.reduced_reason else "",
         )
 
     def _apply(self, out: eng.Output) -> int | None:

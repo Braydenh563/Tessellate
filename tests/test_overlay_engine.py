@@ -281,13 +281,14 @@ def test_reduced_motion_never_moves_blinks_or_asks_to_be_woken() -> None:
     assert e.update(61.0, pointer=(e.x + 50, e.y + 60)).frame == "sit"  # does not notice
 
 
-def test_reduced_motion_still_clicks_and_carries_and_drops_without_a_fall() -> None:
+def test_reduced_motion_still_clicks_and_carries_and_a_drop_lands_on_the_floor_at_once() -> None:
     e, _ = make(reduced=True)
     assert e.update(1.0, event=("down", 850, 950)) and e.update(1.1, event=("up", 850, 950)).click == "left"
     e.update(2.0, event=("down", 850, 950))
     e.update(2.01, event=("move", 1000, 400))
     out = e.update(2.02, event=("up", 1000, 400))
-    assert out.frame == "sit" and out.settled and out.y == 400 - 30
+    # Owner report 2026-11-04 (b): a drop used to stay where it was let go, in mid-air.
+    assert out.frame == "sit" and out.settled and out.y == e.floor_y() and out.wake_ms is None
     assert run(e, 5.0, t0=2.02)[-1].y == out.y
 
 

@@ -18,7 +18,8 @@ figure; walking on to a monitor with a lower floor is a fall, a higher one a hop
 or change (3 to 8 s apart). About 30 Hz only while walking, carried or falling.
 `dt` is clamped to 100 ms so a stalled process or a resume never teleports it.
 Reduced motion: no walking, no noticing, no blinking; it sits at its place, can
-still be clicked and carried, and a drop is placed where it is let go.
+still be clicked and carried, and a drop lands on the floor of its monitor at
+once (a figure that cannot fall must not hang in mid-air; owner, 2026-11-04).
 """
 
 from __future__ import annotations
@@ -404,8 +405,9 @@ class Engine:
         self.carrying = False
         self.x = min(max(self.x, self.current_monitor().area[0]), self.current_monitor().area[2] - self.size[0])
         if self.reduced:
-            # Placed where it is let go, without a fall.
-            self.y = min(max(self.y, self.current_monitor().area[1]), self.current_monitor().area[3] - self.size[1])
+            # On the floor at once, without a fall: it would otherwise hang
+            # where it was let go, in mid-air, with nothing to bring it down.
+            self._place_on_floor()
             self.settled_now = True
             self._enter("sit", now)
         elif self.y >= self.floor_y() - 0.5:

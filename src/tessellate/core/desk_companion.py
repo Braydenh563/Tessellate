@@ -60,14 +60,31 @@ MARGIN = 12
 #: is a logical bottom-right corner, a different thing).
 OVERLAY_POS_PREF = "desktop_companion_overlay_pos"
 #: The quick panel opened by a click on the overlay figure, and its gap to it.
-PANEL_SIZE = (208, 312)
+#: The size the panel window is made and shown at, by the click that opened it: the
+#: page then measures its own menu and asks for the exact height (`menuHeight` in
+#: desk-companion.js), so this only has to be close, never the other menu's size.
+PANEL_SIZES = {"menu": (208, 168), "context": (208, 124)}
 PANEL_GAP = 8
 LOOK_WAIT = 1.5
 #: A click on the figure this soon after the panel closed itself on losing focus
 #: is the press that took the focus: it closes the panel, it does not reopen it.
 BLUR_GRACE = 0.6
-#: Asks the app window which Atlas look it draws; empty when it cannot say.
-LOOK_SCRIPT = "(function(){try{return typeof atlasLook==='function'?atlasLook():''}catch(e){return ''}})()"
+#: Asks the app window which Atlas look it draws and how the companion may move
+#: (Appearance > Companion movement, resolved by `nameMarkBuddyMotion`), in one
+#: round trip; empty when it cannot say. A bare look string is still understood.
+LOOK_SCRIPT = (
+    "(function(){try{return JSON.stringify({"
+    "look:typeof atlasLook==='function'?atlasLook():'',"
+    "motion:typeof nameMarkBuddyMotion==='function'?nameMarkBuddyMotion():null})}catch(e){return ''}})()"
+)
+#: "Let it walk": the app's own setting set to Always, as its menu would, then the
+#: setting's hint refreshed. True when the app window did it.
+WALK_SCRIPT = (
+    "(function(){try{prefs.set('avatar-buddy-motion','always');"
+    "if(typeof nameMarkBuddyMotionApply==='function')nameMarkBuddyMotionApply();return true}catch(e){return false}})()"
+)
+MOTION_MODES = ("full", "fades", "still")
+MOTION_REASONS = ("", "os", "app", "setting", "avatar", "perf-ignored", "app-ignored", "os-ignored")
 
 _KIND = re.compile(r"[a-z]{1,16}")
 _lock = threading.RLock()
@@ -501,6 +518,12 @@ class DeskApi:
     def panel_kind(self) -> str:
         return self._owner.panel_kind()
 
+    def panel_motion(self) -> dict[str, Any]:
+        return self._owner.panel_motion()
+
+    def let_it_walk(self) -> bool:
+        return self._owner.let_it_walk()
+
 
 class DeskCompanion:
     """The second window and when it is shown (see the module's docstring)."""
@@ -544,6 +567,12 @@ class DeskCompanion:
         self.runner: Any = None
         self.overlay_failed = False
         self.look = "masculine"
+        #: How the companion may move, as the app window last said: None until it
+        #: answers (then the runner falls back to the Windows animation flag).
+        self.motion: tuple[bool, str] | None = None
+        #: "Let it walk" when the app window could not be written to: the choice
+        #: stands for the session.
+        self._walk_forced = False
         #: The figure's rectangle (logical pixels) at the last click, and whether
         #: `window` is the quick panel beside it rather than the card.
         self.pet_rect: tuple[int, int, int, int] | None = None
@@ -610,7 +639,7 @@ class DeskCompanion:
     def _make(self) -> Any:
         """The window, hidden, made the first time it is due."""
         url = self._url() + ("?card=1&overlay=1" if self.panel else "" if self.transparent else "?card=1")
-        self.size = PANEL_SIZE if self.panel else REST_SIZE
+        self.size = self.size if self.panel else REST_SIZE
         self.corner = self.corner if self.panel and self.corner else self._home()
         x, y = self.top_left()
         options: dict[str, Any] = {
@@ -645,24 +674,48 @@ class DeskCompanion:
 
     # --- the overlay (Windows) ---------------------------------------------------
 
-    def _read_look(self) -> str:
-        """Which Atlas look the app window draws, asked of it (its choice lives in
-        that window's storage). Bounded: a hidden window may not answer, and then
-        the last look stands."""
+    def _ask_main(self, script: str, what: str) -> Any:
+        """One script run in the app window on a worker, waited for at most
+        LOOK_WAIT: a hidden window may not answer, and no click may wait on it."""
         found: list[Any] = []
 
         def ask() -> None:
             try:
-                found.append(self.main.evaluate_js(LOOK_SCRIPT))
-            except Exception:  # noqa: BLE001 - the last look stands
-                logger.debug("desk companion: could not ask the app window for its look", exc_info=True)
+                found.append(self.main.evaluate_js(script))
+            except Exception:  # noqa: BLE001 - the last answer stands
+                logger.debug("desk companion: could not ask the app window for %s", what, exc_info=True)
 
         worker = jobs.thread("desk-look", ask)
         worker.join(LOOK_WAIT)
-        if found and found[0] in ("masculine", "feminine"):
-            return found[0]
-        logger.info("desk companion: the app window gave no look, keeping %s", self.look)
-        return self.look
+        return found[0] if found else None
+
+    def _read_look(self) -> tuple[str, tuple[bool, str] | None]:
+        """Which Atlas look the app window draws and whether the companion may
+        move, asked of it in one round trip (the choices live in that window's
+        storage). Bounded; no answer keeps the last look and leaves the motion
+        to the runner's Windows flag (None)."""
+        answer = self._ask_main(LOOK_SCRIPT, "its look and motion")
+        look, motion = self.look, None
+        data: Any = None
+        if isinstance(answer, str) and answer.startswith("{"):
+            try:
+                data = json.loads(answer)
+            except ValueError:
+                data = None
+        elif answer in ("masculine", "feminine"):
+            data = {"look": answer}
+        if isinstance(data, dict):
+            if data.get("look") in ("masculine", "feminine"):
+                look = data["look"]
+            m = data.get("motion")
+            if isinstance(m, dict) and m.get("mode") in MOTION_MODES:
+                reason = m.get("reason") if m.get("reason") in MOTION_REASONS else ""
+                motion = (m["mode"] != "full", str(reason))
+        else:
+            logger.info("desk companion: the app window gave no look, keeping %s", self.look)
+        if self._walk_forced and (motion is None or motion[0]):
+            motion = (False, "")
+        return look, motion
 
     def _overlay_home(self) -> tuple[int, int] | None:
         saved = _pref(OVERLAY_POS_PREF, None)
@@ -671,20 +724,25 @@ class DeskCompanion:
         return None
 
     def _start_overlay(self) -> bool:
-        """The runner for the look in force, made when first due and again if the
-        look changed; False (a warning logged) when it cannot start."""
-        look = self._read_look()
-        if self.runner is not None and self.look == look:
+        """The runner for the look and motion in force, made when first due and
+        again if either changed; False (a warning logged) when it cannot start."""
+        look, motion = self._read_look()
+        if self.runner is not None and self.look == look and self.motion == motion:
             return True
-        self.look = look
+        place = self._runner_place()
+        self.look, self.motion = look, motion
         self._stop_runner()
+        kw: dict[str, Any] = {}
+        if motion is not None:
+            kw = {"reduced": motion[0], "reduced_reason": motion[1]}
         try:
             runner = self._overlay_factory(  # type: ignore[misc]
                 look=look,
-                home=self._overlay_home(),
+                home=place or self._overlay_home(),
                 on_click=self._overlay_click,
                 on_settle=self._overlay_settle,
                 on_died=self._overlay_died,
+                **kw,
             )
             started = runner.start()
         except Exception:  # noqa: BLE001 - any failure means the card window instead
@@ -695,8 +753,53 @@ class DeskCompanion:
             logger.warning("desk companion: the overlay could not start, using the card window instead")
             return False
         self.runner = runner
-        logger.info("desk companion: overlay started, look=%s", look)
+        logger.info(
+            "desk companion: overlay started, look=%s, motion=%s (%s)",
+            look, "unknown, the system flag decides" if motion is None else "still" if motion[0] else "moving", motion[1] if motion else "",
+        )
         return True
+
+    def _runner_place(self) -> tuple[int, int] | None:
+        """Where the running figure is, so a restart does not send it home."""
+        engine = getattr(self.runner, "engine", None)
+        x, y = getattr(engine, "x", None), getattr(engine, "y", None)
+        if isinstance(x, (int, float)) and isinstance(y, (int, float)):
+            return int(x), int(y)
+        return None
+
+    def panel_motion(self) -> dict[str, Any]:
+        """Whether the figure is standing still and why, for the right-click menu."""
+        with _lock:
+            runner = self.runner
+            still = bool(getattr(runner, "reduced", False)) if runner is not None else False
+            reason = getattr(runner, "reduced_reason", "") if still else ""
+        return {"still": still, "reason": str(reason or "")}
+
+    def let_it_walk(self) -> bool:
+        """The menu's "Let it walk": the app's Companion movement set to Always
+        (through its own window), and the figure restarted moving."""
+        done = self._ask_main(WALK_SCRIPT, "the walk setting") is True
+        if not _lock.acquire(timeout=LOCK_WAIT):
+            logger.warning("desk companion: busy, let it walk was skipped")
+            return False
+        try:
+            self._walk_forced = not done
+            if self.closing or self.runner is None:
+                return False
+            before = self.runner
+            if not self._start_overlay():
+                self.shown = False
+                self._sync_card(enabled() and self.main_hidden)
+                return False
+            if self.runner is not before and self.shown:
+                self.runner.show()
+            logger.info("desk companion: let it walk (setting written: %s)", done)
+            return True
+        except Exception:  # noqa: BLE001 - the figure stays as it was
+            logger.warning("desk companion: let it walk failed", exc_info=True)
+            return False
+        finally:
+            _lock.release()
 
     def _stop_runner(self) -> None:
         runner, self.runner = self.runner, None
@@ -729,6 +832,11 @@ class DeskCompanion:
 
     def _hide_panel_window(self) -> None:
         if self.window is not None and self.panel_shown:
+            try:
+                # The page clears its menu first, so the next open does not show the last one.
+                self.window.evaluate_js("window.dispatchEvent(new CustomEvent('desk-close'))")
+            except Exception:  # noqa: BLE001 - hiding matters more than tidying
+                logger.debug("desk companion: the quick panel page did not clear", exc_info=True)
             self.window.hide()
             self.panel_shown = False
 
@@ -828,7 +936,7 @@ class DeskCompanion:
             self._pending_kind = "context" if kind == "right" else "menu"
             area = _screen_area(self.webview, (self.pet_rect[0], self.pet_rect[1] + self.pet_rect[3]))
             self.panel = True
-            self.size = PANEL_SIZE
+            self.size = PANEL_SIZES[self._pending_kind]
             self.corner = panel_corner(self.pet_rect, self.size, area)
             fresh = self.window is None
             if fresh:
