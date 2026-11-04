@@ -133,3 +133,4 @@ date | item | type | rung | rework | note
 2026-11-02 | merges a29h a29i a29j a29k test fallout | chore | opus | 1 | 
 2026-11-02 | phone documents help in kebab | fix | opus | 1 | 
 2026-11-04 | CI ratchets: background registry, HANDOVER cap, CODEMAP | ci-fix | opus | 0 | 
+2026-11-04 | 1641 running copies review fixes | review-fix | sonnet | 1 | 
