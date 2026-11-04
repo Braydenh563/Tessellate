@@ -477,7 +477,7 @@
   //: **The one door to the Diagram builder** (INBOX 1588). Every list that offers it (the palette, Find anything, Tools and
   //: features, Quick access, both "/" menus, Chat, the Library's Create, the board's Insert) ends here, through the `diagram`
   //: row of `POPUP_TOOLS`. Over a board or a mind map it is the board's own `wbEditDiagram` (a diagram object lands on Done);
-  //: over a text box it opens the builder on the starter and writes the fence at the caret on Done; anywhere else (or `doc`) it
+  //: over a text box it opens the builder on the starter and makes a .mmd document and writes `![[Title]]` at the caret on Done (1621 D5); anywhere else (or `doc`) it
   //: opens the builder and saves a new .mmd document on Done. Cancel changes nothing; Done keeps what the dialog shows.
   async function diagramDoor({ target = null, doc = false } = {}) {
     const onBoard = !doc && wbCommandsLive() && (!target || Boolean(target.closest?.("#library-view-whiteboard")));
@@ -490,7 +490,8 @@
     //: the last document and no builder. Cancel makes nothing.
     if (!box) {
       return openDiagramBuilder({
-        source: diagramModel.starter,
+        //: Empty, so the walkthrough shows (R6.8); its "Start from an example" button loads the starter.
+        source: "flowchart TD",
         title: "Diagram builder",
         onDone: async (next) => {
           const made = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title: "Diagram", content: next, file_type: "mmd" }) }).catch(() => null);
@@ -504,9 +505,14 @@
     return openDiagramBuilder({
       source: diagramModel.starter,
       title: "Diagram builder",
-      onDone: (next) => {
+      //: Done makes the `.mmd` row and writes a live reference to it (1621 D5), so the diagram has one home and a page of its own.
+      //: A stamp in the title keeps `![[Title]]` pointing at this row and not at an earlier "Diagram".
+      onDone: async (next) => {
+        const title = `Diagram ${new Date().toISOString().slice(0, 16).replace("T", " ")}`;
+        const made = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title, content: next, file_type: "mmd" }) }).catch(() => null);
+        if (!made) return toast("The diagram was not saved. Try Done again.", "info");
         box.focus?.();
-        editorBlock(box, `\`\`\`mermaid\n${next.replace(/\n+$/, "")}\n\`\`\``, "", "");
+        editorBlock(box, `![[${made.title || title}]]`, "", "");
       },
     });
   }
@@ -520,5 +526,5 @@
   //: The block pane (1546 P2) is a bundle of its own, fetched when a diagram is first shown (the kinds, 1546 P4, when a mind map, timeline or sequence diagram is):
   //: every caller is in this bundle or opens a document first, so no stand-in is needed, and
   //: neither app.js nor lazy-entries.js (both at their caps) carries the row.
-  Object.assign(LAZY_MODULES, { diagramBuilder: ["/css/diagram-lazy.css", "/js/diagram-builder.js"], diagramEmbed: ["/js/diagram-embed.js"], diagramTouch: ["/js/diagram-touch.js"], diagramView: ["/js/diagram-view.js"], diagramSplit: ["/js/diagram-split.js"], diagramSteps: ["/js/diagram-steps.js"], diagramSuggest: ["/js/diagram-suggest.js"], diagramKinds: ["/js/diagram-kinds.js"], diagramJoins: ["/js/diagram-joins.js"] });
+  Object.assign(LAZY_MODULES, { diagramBuilder: ["/css/diagram-lazy.css", "/js/diagram-builder.js"], diagramEmbed: ["/js/diagram-embed.js"], diagramTouch: ["/js/diagram-touch.js"], diagramView: ["/js/diagram-view.js"], diagramOverlay: ["/js/diagram-overlay.js"], diagramCanvas: ["/js/diagram-canvas.js"], diagramSplit: ["/js/diagram-split.js"], diagramMulti: ["/js/diagram-multi.js"], diagramSteps: ["/js/diagram-steps.js"], diagramSuggest: ["/js/diagram-suggest.js"], diagramKinds: ["/js/diagram-kinds.js"], diagramJoins: ["/js/diagram-joins.js"] });
 })();

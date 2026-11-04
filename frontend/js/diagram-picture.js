@@ -15,16 +15,27 @@
     for (const g of svg.matchAll(/<g\b[^>]*\bid="(?:[^"]*?-)?flowchart-([^"]+?)-\d+"[^>]*>/g)) {
       const at = /transform="translate\(\s*(-?[\d.]+)[ ,]+(-?[\d.]+)/.exec(g[0]);
       if (!at) continue;
-      const tail = svg.slice(g.index + g[0].length, g.index + g[0].length + 900);
+      //: This node's own text: up to the next node's group, so a shape-less node never borrows its neighbour's rect.
+      const rest = svg.slice(g.index + g[0].length);
+      const own = rest.slice(0, rest.search(/\bid="[^"]*flowchart-/) >= 0 ? rest.search(/\bid="[^"]*flowchart-/) : 8000);
+      const tail = own.slice(0, 900);
       const rect = /<rect\b[^>]*>/.exec(tail)?.[0] || "";
       const poly = /<polygon\b[^>]*\bpoints="([^"]+)"/.exec(tail)?.[1].trim().split(/[ ,]+/).map(Number) || [];
       const xs = poly.filter((_, i) => i % 2 === 0);
       const ys = poly.filter((_, i) => i % 2 === 1);
       const r = num(/<circle\b[^>]*>/.exec(tail)?.[0] || "", "r") * 2;
+      //: A pill or other rough shape is one path: its extent is the span of the path's own points, read only when no plain shape was found.
+      let span = null;
+      if (!rect && !xs.length && !r) {
+        const d = /<path\b[^>]*\bd="([^"]+)"/.exec(own)?.[1].match(/-?\d*\.?\d+/g)?.map(Number) || [];
+        const px = d.filter((_, i) => i % 2 === 0);
+        const py = d.filter((_, i) => i % 2 === 1);
+        if (px.length > 1) span = [Math.max(...px) - Math.min(...px), Math.max(...py) - Math.min(...py)];
+      }
       found.push({
         id: g[1], x: Number(at[1]), y: Number(at[2]),
-        w: num(rect, "width") || (xs.length ? Math.max(...xs) - Math.min(...xs) : 0) || r || 80,
-        h: num(rect, "height") || (ys.length ? Math.max(...ys) - Math.min(...ys) : 0) || r || 40,
+        w: num(rect, "width") || (xs.length ? Math.max(...xs) - Math.min(...xs) : 0) || r || span?.[0] || 80,
+        h: num(rect, "height") || (ys.length ? Math.max(...ys) - Math.min(...ys) : 0) || r || span?.[1] || 40,
       });
     }
     return found.length ? { vb, boxes: found } : null;

@@ -6945,6 +6945,7 @@ SEG_SHARES_ROW: dict[tuple[str, str], str] = {
     ("index.html", "chat-mode-seg"): "the chat tool row, beside the persona and skill pickers",
     ("index.html", "timeline-view-seg"): "the Timeline dock",
     ("index.html", "doc-view-seg"): "the Documents dock, beside the cluster's other controls",
+    ("index.html", "doc-diagram-seg"): "the Documents dock, in place of Edit and Read for a diagram",
     ("index.html", "reminder-view-toggle"): "the Reminders dock",
     ("index.html", "library-view"): "the Library dock",
     ("index.html", "library-boards-view"): "the Library dock",
@@ -7414,6 +7415,15 @@ def test_the_diagram_zoom_bar_is_a_plain_corner_dock():
     # Every control is a button with a title (the icon-only ones become aria-labels).
     assert view.count("smallButton(") == 4
     assert "A zoom control on a picture that scrolls" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+
+
+def test_the_canvas_draws_its_drop_target_and_marquee_on_the_overlay():
+    """DESIGN.md, "A drop target, a lifted shape and a marquee on a picture": classes on overlay boxes, tokens only."""
+    css = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
+    rule = css[css.index(".dgm-marquee {") : css.index("}", css.index(".dgm-marquee {"))]
+    assert "var(--accent)" in rule and "var(--accent-soft)" in rule and "pointer-events: none;" in rule
+    assert ".dgm-box.dgm-target," in css and ".dgm-box.dgm-lifted" in css
+    assert "A drop target, a lifted shape and a marquee on a picture" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
 
 
 def test_a_split_inside_a_dialog_or_page_is_the_sidebar_handle_on_a_grid():
