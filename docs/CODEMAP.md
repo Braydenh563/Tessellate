@@ -2,9 +2,9 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7792, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8791, test files 2053, tests 17337, plan headings 1001, app scripts 28, boot scripts 37, script files 253.
+Counts: frontend functions 7791, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8791, test files 2053, tests 17337, plan headings 1001, app scripts 28, boot scripts 37, script files 253.
 
-## Frontend functions (7792)
+## Frontend functions (7791)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -4095,7 +4095,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docWordText` | frontend/js/documents-word.js:337 |
 | `docWordUploadPicture` | frontend/js/documents-word.js:61 |
 
-### frontend/js/documents.js (497)
+### frontend/js/documents.js (496)
 
 | Name | File:line |
 |---|---|
@@ -4206,7 +4206,6 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docDefaultView` | frontend/js/documents.js:547 |
 | `docDesktopFs` | frontend/js/documents.js:9665 |
 | `docDesktopFullscreenToggle` | frontend/js/documents.js:9670 |
-| `docDiagramSeg` | frontend/js/documents.js:175 |
 | `docDictionary` | frontend/js/documents.js:14369 |
 | `docDictionaryAdd` | frontend/js/documents.js:14404 |
 | `docDictionaryAddTyped` | frontend/js/documents.js:15481 |
@@ -4571,7 +4570,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `showNoDocument` | frontend/js/documents.js:1211 |
 | `slugify` | frontend/js/documents.js:2105 |
 | `startBlankDocument` | frontend/js/documents.js:2284 |
-| `syncDocFileType` | frontend/js/documents.js:200 |
+| `syncDocFileType` | frontend/js/documents.js:177 |
 | `syncDocGutterMetrics` | frontend/js/documents.js:4535 |
 | `syncDocScroll` | frontend/js/documents.js:6755 |
 | `syncDocToolbarMore` | frontend/js/documents.js:10451 |

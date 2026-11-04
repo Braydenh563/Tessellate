@@ -18,10 +18,11 @@ CSS = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8
 
 
 def test_the_documents_dock_has_a_canvas_blocks_source_well_for_a_diagram():
-    #: The three buttons are made on the first diagram (docDiagramSeg), not shipped in the
+    #: The three buttons are made on the first diagram (syncDocFileType.diagramSeg), not shipped in the
     #: page: the boot element cap moved them out of index.html, the well itself did not change.
-    seg = DOCS[DOCS.index("function docDiagramSeg(") :]
-    seg = seg[: seg.index("\n}\n")]
+    # On syncDocFileType, its one caller, so it adds no name to the shared scope (test_global_scope_ratchet).
+    seg = DOCS[DOCS.index("syncDocFileType.diagramSeg = function (seg) {") :]
+    seg = seg[: seg.index("\n};\n")]
     for mode in ("canvas", "blocks", "source"):
         assert f'["{mode}",' in seg, mode
     # A well of three (the recipe's limit), in place of Edit and Read, which mean nothing for a diagram.
