@@ -370,17 +370,42 @@ window.addEventListener("pointerdown", objDragArm, true);
     }
   };
   //: Not for a card that scrolled under a resting pointer (INBOX 1667: 59 calls in a wheel, 1.5s of forced
-  //: layout at 4x; a scroll lays the page out again after every frame, so any read pays for it).
+  //: layout at 4x; a scroll lays the page out again after every frame, so any read pays for it). The
+  //: pointer's place is kept, and once the scroll has been still for 200ms the card under it is looked at
+  //: once, so a grip still appears under a resting pointer without a move.
   let scrolledAt = 0;
-  window.addEventListener("scroll", () => { scrolledAt = performance.now(); }, { capture: true, passive: true });
+  let rest = null;
+  let restTimer = 0;
+  const restLook = () => {
+    restTimer = 0;
+    if (!rest || performance.now() - scrolledAt < 200) return;
+    over = document.elementFromPoint(rest.x, rest.y);
+    rest = null;
+    look();
+  };
+  window.addEventListener("scroll", () => {
+    scrolledAt = performance.now();
+    if (rest) {
+      clearTimeout(restTimer);
+      restTimer = setTimeout(restLook, 220);
+    }
+  }, { capture: true, passive: true });
   document.addEventListener("pointerover", (event) => {
-    if (event.pointerType === "touch" || performance.now() - scrolledAt < 200) return;
+    if (event.pointerType === "touch") return;
+    if (performance.now() - scrolledAt < 200) {
+      rest = { x: event.clientX, y: event.clientY };
+      clearTimeout(restTimer);
+      restTimer = setTimeout(restLook, 220);
+      return;
+    }
+    rest = null;
     if (event.target === grip || grip?.contains(event.target)) {
       over = null;
       return clearTimeout(timer);
     }
     over = event.target;
-    if (!overFrame) overFrame = requestAnimationFrame(look);
+    //: A timer after the frame, so the read is not the one that pays for the frame's own layout.
+    if (!overFrame) overFrame = requestAnimationFrame(() => setTimeout(look));
   }, true);
   document.addEventListener("focusin", (event) => {
     const next = movable(event.target);
