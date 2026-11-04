@@ -59,38 +59,66 @@ function settingRows() {
   return settingRows.rows;
 }
 
+//: **A pane is scanned again only when it changed** (INBOX 1620: `settingRowsScan` 452ms over six
+//: keys at 4x CPU, a clone of every label in every pane on each letter). A pane's rows are kept
+//: until a mutation inside it (not its own hidden flip, which the search makes on every key)
+//: marks it stale; the observer is wired by the first scan.
 function settingRowsScan() {
+  const modal = $("settings-modal");
+  if (modal && !settingRowsScan.watch) {
+    settingRowsScan.watch = new MutationObserver((records) => {
+      for (const rec of records) {
+        const pane = rec.target.nodeType === 1 ? rec.target : rec.target.parentElement;
+        if (rec.type === "attributes" && pane?.classList.contains("settings-section")) continue;
+        const owner = pane?.closest(".settings-section");
+        if (owner) settingRowsScan.panes.delete(owner);
+      }
+    });
+    settingRowsScan.watch.observe(modal, {
+      childList: true, subtree: true, characterData: true, attributes: true,
+      attributeFilter: ["class", "hidden", "open", "title", "aria-label", "aria-hidden", "data-keys", "data-find", "data-synonyms"],
+    });
+  }
   const rows = [];
   for (const pane of document.querySelectorAll("#settings-modal .settings-section")) {
-    const name = pane.id.slice("settings-".length);
-    const nav = document.querySelector(`#settings-nav [data-section="${name}"]`);
-    const sectionLabel = nav ? nav.textContent.trim() : name;
-    for (const el of pane.querySelectorAll(SETTING_ROW_SELECTOR)) {
-      if (el.closest(".help-body, .settings-pane-title, [aria-hidden='true'], .skeleton")) continue;
-      //: Outermost only: a label inside a `.setting-check` is the same row.
-      const outer = el.parentElement?.closest(SETTING_ROW_SELECTOR);
-      if (outer && pane.contains(outer) && !outer.matches("h3, h4")) continue;
-      const hiddenBy = el.closest(".hidden");
-      if (hiddenBy && hiddenBy !== pane && pane.contains(hiddenBy)) continue;
-      const text = settingRowText(el);
-      //: A switch's own words can run long ("Load the search model when the
-      //: app starts (off: ...)"); it is still a setting, where a long run of
-      //: words with no control in it is a paragraph.
-      if (text.length < 3 || (text.length > 110 && !el.querySelector("input, select, textarea"))) continue;
-      const group = el.closest(".settings-group, details.settings-fold");
-      const head = el.matches("h3, h4") ? null : group?.querySelector("h3, h4, summary h3");
-      //: A help topic says which group of topics it is in (INBOX 448).
-      const where = head ? head.textContent.replace(/\s+/g, " ").trim() : el.closest("[data-help-group]")?.dataset.helpGroup || "";
-      //: `data-keys` and `data-find`: a help topic's keywords and text, so it is found by
-      //: the words a person types, not only by its title.
-      //: The row's whole text too, its helper copy included: a setting is
-      //: found by what it does ("battery"), not only by its label.
-      const haystack = `${text} ${el.textContent || ""} ${el.getAttribute("title") || ""} ${el.querySelector("input, select, textarea")?.getAttribute("aria-label") || ""} ${el.dataset.keys || ""} ${el.dataset.find || ""} ${el.dataset.synonyms || ""}`.toLowerCase();
-      rows.push({ section: name, sectionLabel, where, text, haystack, keys: el.dataset.keys || "", synonyms: (el.dataset.synonyms || "").toLowerCase().split(/\s+/).filter(Boolean), el, isHead: el.matches("h3, h4") });
-    }
+    let part = settingRowsScan.panes.get(pane);
+    if (!part) settingRowsScan.panes.set(pane, (part = settingRowsScan.pane(pane)));
+    rows.push(...part);
   }
   return rows;
 }
+
+settingRowsScan.panes = new WeakMap();
+settingRowsScan.pane = function (pane) {
+  const rows = [];
+  const name = pane.id.slice("settings-".length);
+  const nav = document.querySelector(`#settings-nav [data-section="${name}"]`);
+  const sectionLabel = nav ? nav.textContent.trim() : name;
+  for (const el of pane.querySelectorAll(SETTING_ROW_SELECTOR)) {
+    if (el.closest(".help-body, .settings-pane-title, [aria-hidden='true'], .skeleton")) continue;
+    //: Outermost only: a label inside a `.setting-check` is the same row.
+    const outer = el.parentElement?.closest(SETTING_ROW_SELECTOR);
+    if (outer && pane.contains(outer) && !outer.matches("h3, h4")) continue;
+    const hiddenBy = el.closest(".hidden");
+    if (hiddenBy && hiddenBy !== pane && pane.contains(hiddenBy)) continue;
+    const text = settingRowText(el);
+    //: A switch's own words can run long ("Load the search model when the
+    //: app starts (off: ...)"); it is still a setting, where a long run of
+    //: words with no control in it is a paragraph.
+    if (text.length < 3 || (text.length > 110 && !el.querySelector("input, select, textarea"))) continue;
+    const group = el.closest(".settings-group, details.settings-fold");
+    const head = el.matches("h3, h4") ? null : group?.querySelector("h3, h4, summary h3");
+    //: A help topic says which group of topics it is in (INBOX 448).
+    const where = head ? head.textContent.replace(/\s+/g, " ").trim() : el.closest("[data-help-group]")?.dataset.helpGroup || "";
+    //: `data-keys` and `data-find`: a help topic's keywords and text, so it is found by
+    //: the words a person types, not only by its title.
+    //: The row's whole text too, its helper copy included: a setting is
+    //: found by what it does ("battery"), not only by its label.
+    const haystack = `${text} ${el.textContent || ""} ${el.getAttribute("title") || ""} ${el.querySelector("input, select, textarea")?.getAttribute("aria-label") || ""} ${el.dataset.keys || ""} ${el.dataset.find || ""} ${el.dataset.synonyms || ""}`.toLowerCase();
+    rows.push({ section: name, sectionLabel, where, text, haystack, keys: el.dataset.keys || "", synonyms: (el.dataset.synonyms || "").toLowerCase().split(/\s+/).filter(Boolean), el, isHead: el.matches("h3, h4") });
+  }
+  return rows;
+};
 
 //: Matching settings for a typed query: every thing it names must appear, a row that
 //: starts with the word or has it at a word start ranks above one that merely
