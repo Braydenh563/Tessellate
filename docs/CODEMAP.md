@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7781, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8726, test files 2049, tests 17233, plan headings 1001, app scripts 28, boot scripts 37, script files 253.
+Counts: frontend functions 7781, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8744, test files 2050, tests 17251, plan headings 1001, app scripts 28, boot scripts 37, script files 253.
 
 ## Frontend functions (7781)
 
@@ -12953,7 +12953,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8726)
+## Backend modules (8744)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -15757,8 +15757,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3377 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3505 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3376 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3504 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -22193,27 +22193,27 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Activity` | src/tessellate/core/overlay/behaviour.py:76 |
-| `Mind` | src/tessellate/core/overlay/behaviour.py:153 |
-| `Pose` | src/tessellate/core/overlay/behaviour.py:33 |
-| `Trail` | src/tessellate/core/overlay/behaviour.py:223 |
-| `_amplitude` | src/tessellate/core/overlay/behaviour.py:267 |
-| `_k` | src/tessellate/core/overlay/behaviour.py:93 |
-| `activity_frame` | src/tessellate/core/overlay/behaviour.py:210 |
-| `mood_of` | src/tessellate/core/overlay/behaviour.py:138 |
-| `quantised` | src/tessellate/core/overlay/behaviour.py:45 |
-| `sample` | src/tessellate/core/overlay/behaviour.py:63 |
-| `smooth` | src/tessellate/core/overlay/behaviour.py:55 |
+| `Activity` | src/tessellate/core/overlay/behaviour.py:88 |
+| `Mind` | src/tessellate/core/overlay/behaviour.py:165 |
+| `Pose` | src/tessellate/core/overlay/behaviour.py:45 |
+| `Trail` | src/tessellate/core/overlay/behaviour.py:247 |
+| `_amplitude` | src/tessellate/core/overlay/behaviour.py:291 |
+| `_k` | src/tessellate/core/overlay/behaviour.py:105 |
+| `activity_frame` | src/tessellate/core/overlay/behaviour.py:234 |
+| `mood_of` | src/tessellate/core/overlay/behaviour.py:150 |
+| `quantised` | src/tessellate/core/overlay/behaviour.py:57 |
+| `sample` | src/tessellate/core/overlay/behaviour.py:75 |
+| `smooth` | src/tessellate/core/overlay/behaviour.py:67 |
 
 ### src/tessellate/core/overlay/engine.py (5)
 
 | Name | File:line |
 |---|---|
-| `Engine` | src/tessellate/core/overlay/engine.py:290 |
-| `Monitor` | src/tessellate/core/overlay/engine.py:251 |
-| `Output` | src/tessellate/core/overlay/engine.py:258 |
-| `Perch` | src/tessellate/core/overlay/engine.py:242 |
-| `_adjoins` | src/tessellate/core/overlay/engine.py:279 |
+| `Engine` | src/tessellate/core/overlay/engine.py:314 |
+| `Monitor` | src/tessellate/core/overlay/engine.py:270 |
+| `Output` | src/tessellate/core/overlay/engine.py:277 |
+| `Perch` | src/tessellate/core/overlay/engine.py:261 |
+| `_adjoins` | src/tessellate/core/overlay/engine.py:303 |
 
 ### src/tessellate/core/overlay/host.py (2)
 
@@ -22235,7 +22235,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `OverlayRunner` | src/tessellate/core/overlay/runner.py:61 |
 
-### src/tessellate/core/overlay/sprites.py (8)
+### src/tessellate/core/overlay/sprites.py (9)
 
 | Name | File:line |
 |---|---|
@@ -22244,41 +22244,64 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_drawn_box` | src/tessellate/core/overlay/sprites.py:125 |
 | `clear_faint_alpha` | src/tessellate/core/overlay/sprites.py:114 |
 | `clipped` | src/tessellate/core/overlay/sprites.py:83 |
+| `effect` | src/tessellate/core/overlay/sprites.py:327 |
 | `frames_dir` | src/tessellate/core/overlay/sprites.py:102 |
 | `look_for` | src/tessellate/core/overlay/sprites.py:109 |
 | `premultiplied_bgra` | src/tessellate/core/overlay/sprites.py:131 |
 
-### src/tessellate/core/overlay/win32.py (27)
+### src/tessellate/core/overlay/travel.py (15)
 
 | Name | File:line |
 |---|---|
-| `BITMAPINFO` | src/tessellate/core/overlay/win32.py:149 |
-| `BITMAPINFOHEADER` | src/tessellate/core/overlay/win32.py:140 |
-| `BLENDFUNCTION` | src/tessellate/core/overlay/win32.py:133 |
+| `Warp` | src/tessellate/core/overlay/travel.py:39 |
+| `_by_mood` | src/tessellate/core/overlay/travel.py:122 |
+| `_by_recent` | src/tessellate/core/overlay/travel.py:130 |
+| `crosses_middle` | src/tessellate/core/overlay/travel.py:74 |
+| `edge_x` | src/tessellate/core/overlay/travel.py:105 |
+| `far` | src/tessellate/core/overlay/travel.py:96 |
+| `in_edge_zone` | src/tessellate/core/overlay/travel.py:109 |
+| `in_middle` | src/tessellate/core/overlay/travel.py:81 |
+| `middle` | src/tessellate/core/overlay/travel.py:67 |
+| `nearest_edge` | src/tessellate/core/overlay/travel.py:100 |
+| `out_of_middle` | src/tessellate/core/overlay/travel.py:87 |
+| `overlaps` | src/tessellate/core/overlay/travel.py:114 |
+| `padded` | src/tessellate/core/overlay/travel.py:118 |
+| `pick_mode` | src/tessellate/core/overlay/travel.py:139 |
+| `warp_for` | src/tessellate/core/overlay/travel.py:60 |
+
+### src/tessellate/core/overlay/win32.py (29)
+
+| Name | File:line |
+|---|---|
+| `BITMAPINFO` | src/tessellate/core/overlay/win32.py:157 |
+| `BITMAPINFOHEADER` | src/tessellate/core/overlay/win32.py:148 |
+| `BLENDFUNCTION` | src/tessellate/core/overlay/win32.py:141 |
+| `GUITHREADINFO` | src/tessellate/core/overlay/win32.py:109 |
 | `LASTINPUTINFO` | src/tessellate/core/overlay/win32.py:105 |
-| `MONITORINFO` | src/tessellate/core/overlay/win32.py:153 |
-| `MSG` | src/tessellate/core/overlay/win32.py:117 |
-| `POINT` | src/tessellate/core/overlay/win32.py:109 |
-| `SIZE` | src/tessellate/core/overlay/win32.py:113 |
-| `WNDCLASSEXW` | src/tessellate/core/overlay/win32.py:124 |
-| `Win32` | src/tessellate/core/overlay/win32.py:231 |
-| `WinInfo` | src/tessellate/core/overlay/win32.py:329 |
-| `_cloaked` | src/tessellate/core/overlay/win32.py:352 |
-| `_frame_rect` | src/tessellate/core/overlay/win32.py:338 |
-| `_listed` | src/tessellate/core/overlay/win32.py:363 |
-| `_monitor_dpi` | src/tessellate/core/overlay/win32.py:302 |
-| `_read_window` | src/tessellate/core/overlay/win32.py:368 |
-| `animations_enabled` | src/tessellate/core/overlay/win32.py:440 |
-| `apply_signatures` | src/tessellate/core/overlay/win32.py:239 |
-| `cursor_pos` | src/tessellate/core/overlay/win32.py:407 |
-| `dpi_at_point` | src/tessellate/core/overlay/win32.py:315 |
-| `last_error` | src/tessellate/core/overlay/win32.py:451 |
-| `last_input_age` | src/tessellate/core/overlay/win32.py:426 |
-| `load` | src/tessellate/core/overlay/win32.py:261 |
-| `monitors` | src/tessellate/core/overlay/win32.py:281 |
-| `notification_state` | src/tessellate/core/overlay/win32.py:413 |
-| `signatures` | src/tessellate/core/overlay/win32.py:159 |
-| `windows` | src/tessellate/core/overlay/win32.py:385 |
+| `MONITORINFO` | src/tessellate/core/overlay/win32.py:161 |
+| `MSG` | src/tessellate/core/overlay/win32.py:125 |
+| `POINT` | src/tessellate/core/overlay/win32.py:117 |
+| `SIZE` | src/tessellate/core/overlay/win32.py:121 |
+| `WNDCLASSEXW` | src/tessellate/core/overlay/win32.py:132 |
+| `Win32` | src/tessellate/core/overlay/win32.py:242 |
+| `WinInfo` | src/tessellate/core/overlay/win32.py:340 |
+| `_cloaked` | src/tessellate/core/overlay/win32.py:363 |
+| `_frame_rect` | src/tessellate/core/overlay/win32.py:349 |
+| `_listed` | src/tessellate/core/overlay/win32.py:374 |
+| `_monitor_dpi` | src/tessellate/core/overlay/win32.py:313 |
+| `_read_window` | src/tessellate/core/overlay/win32.py:379 |
+| `animations_enabled` | src/tessellate/core/overlay/win32.py:477 |
+| `apply_signatures` | src/tessellate/core/overlay/win32.py:250 |
+| `caret_rect` | src/tessellate/core/overlay/win32.py:451 |
+| `cursor_pos` | src/tessellate/core/overlay/win32.py:418 |
+| `dpi_at_point` | src/tessellate/core/overlay/win32.py:326 |
+| `last_error` | src/tessellate/core/overlay/win32.py:488 |
+| `last_input_age` | src/tessellate/core/overlay/win32.py:437 |
+| `load` | src/tessellate/core/overlay/win32.py:272 |
+| `monitors` | src/tessellate/core/overlay/win32.py:292 |
+| `notification_state` | src/tessellate/core/overlay/win32.py:424 |
+| `signatures` | src/tessellate/core/overlay/win32.py:167 |
+| `windows` | src/tessellate/core/overlay/win32.py:396 |
 
 ### src/tessellate/core/passes.py (21)
 
@@ -23933,7 +23956,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17233)
+## Tests (17251)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25290,6 +25313,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_idle.py | 9 |
 | tests/test_overlay_life_1670.py | 25 |
 | tests/test_overlay_moves.py | 26 |
+| tests/test_overlay_rest_1670.py | 18 |
 | tests/test_overlay_ride_1670.py | 16 |
 | tests/test_overlay_roam.py | 19 |
 | tests/test_overlay_roam_runner.py | 10 |
