@@ -436,6 +436,10 @@ def test_1658_the_panel_is_made_once_ahead_and_a_click_shows_it_with_one_placeme
     assert panel.calls.index(("show",)) > max(i for i, c in enumerate(panel.calls) if c[0] in ("resize", "move"))
 
 
+# The menu window is 248 wide since the 1670 menu rows (long labels); read it from the source.
+MENU_W = dc.PANEL_SIZES["menu"][0]
+
+
 def test_1658_the_pages_height_report_after_show_places_nothing_and_is_kept_for_next_time(over):
     over.set_main_hidden(True)
     runner = FakeRunner.started[0]
@@ -444,12 +448,12 @@ def test_1658_the_pages_height_report_after_show_places_nothing_and_is_kept_for_
     placed = list(panel.calls)
     api = dc.DeskApi(over)
     for _ in range(10):  # the owner's log: ten alternating placements in two seconds
-        api.set_size(208, 154, "menu")
+        api.set_size(MENU_W, 154, "menu")
     assert panel.calls == placed and over.size == dc.PANEL_SIZES["menu"]
     runner.on_click("left", (1000, 800, 200, 240), 96)  # closes
     panel.calls.clear()
     runner.on_click("left", (1000, 800, 200, 240), 96)
-    assert [c[1:] for c in panel.calls if c[0] == "resize"] == [(208, 154)]
+    assert [c[1:] for c in panel.calls if c[0] == "resize"] == [(MENU_W, 154)]
     assert _count(panel, "show") == 1 and _count(panel, "resize") == 1
 
 
@@ -460,5 +464,5 @@ def test_1658_a_note_opened_from_the_menu_is_still_a_real_resize_and_back(over):
     api = dc.DeskApi(over)
     api.set_size(320, 376, "note")
     assert panel.calls[-2][1:] == (320, 376)
-    api.set_size(208, 154, "menu")
-    assert panel.calls[-2][1:] == (208, 154)
+    api.set_size(MENU_W, 154, "menu")
+    assert panel.calls[-2][1:] == (MENU_W, 154)

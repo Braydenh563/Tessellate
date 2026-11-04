@@ -58,11 +58,11 @@ def test_a_click_places_the_panel_at_the_scale_of_the_monitor_under_the_figure(o
     runner = _runner(over)
     runner.on_click("left", (-600, 880, 100, 120), 96)
     box, dpi = over.panel_box
-    assert dpi == 96 and box == (-600 - dc.PANEL_GAP - 208, 1000 - 168, 208, 168)
+    assert dpi == 96 and box == (-600 - dc.PANEL_GAP - 248, 1000 - 168, 248, 168)
     runner.on_click("left", (-600, 880, 100, 120), 96)  # closes
     runner.on_click("left", (1200, 800, 150, 180), 144)
     box, dpi = over.panel_box
-    assert dpi == 144 and box[2:] == (312, 252)
+    assert dpi == 144 and box[2:] == (372, 252)
 
 
 def test_a_drop_on_another_monitor_re_places_the_open_panel_with_that_monitors_dpi(over) -> None:
@@ -73,7 +73,7 @@ def test_a_drop_on_another_monitor_re_places_the_open_panel_with_that_monitors_d
     box, dpi = over.panel_box
     assert dpi == 144
     assert over._pet_phys == (150, 180, 144)  # the figure's own size at that scale
-    assert box == dc.panel_placement((1200, 700, 150, 180), (208, 168), MONITORS)[0]
+    assert box == dc.panel_placement((1200, 700, 150, 180), (248, 168), MONITORS)[0]
     runner.on_settle(-700, 800)  # and back to the 100 percent one
     assert over.panel_box[1] == 96 and over._pet_phys[2] == 96
 
@@ -81,9 +81,9 @@ def test_a_drop_on_another_monitor_re_places_the_open_panel_with_that_monitors_d
 def test_the_page_asking_for_a_height_re_places_the_panel_physically(over) -> None:
     runner = _runner(over)
     runner.on_click("left", (1200, 800, 150, 180), 144)
-    over.resize(208, 120)
+    over.resize(248, 120)
     box, dpi = over.panel_box
-    assert dpi == 144 and box[2:] == (312, 180)
+    assert dpi == 144 and box[2:] == (372, 180)
 
 
 def test_with_no_monitor_list_the_logical_corner_still_places_it(over) -> None:
