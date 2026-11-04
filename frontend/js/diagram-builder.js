@@ -358,7 +358,8 @@
     if (!b || key[0] === "k") return;
     const label = b.querySelector(":scope > .dgm-card > .dgm-label");
     beginEdit(S, label, nameOf(S, key), (text) => {
-      if (!diagramOps.relabel(S.m, key, text)) return;
+      //: An empty name is refused; the list would keep showing it empty while the picture says the old one, so draw it back.
+      if (!diagramOps.relabel(S.m, key, text)) return render(S);
       if (text === nameOf(S, key) && S.source === diagramModel.print(S.m)) return render(S);
       commit(S, `Renamed to ${text}.`);
     }, key);

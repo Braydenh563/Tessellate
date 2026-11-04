@@ -191,7 +191,7 @@
   //: A label, in place. An empty one is refused (Mermaid draws an empty box as nothing).
   function dgbRelabel(m, key, text) {
     const [type, id] = dgbSplit(key);
-    const clean = String(text ?? "").replace(/\s*\n\s*/g, " ").trim();
+    const clean = String(text ?? "").replace(/\s*\n\s*/g, " ").trim().slice(0, 120);
     const item = type === "n" ? dgbNode(m, id) : type === "g" ? dgbGroup(m, id) : null;
     if (!item || !clean) return false;
     if (type === "n") item.text = clean;

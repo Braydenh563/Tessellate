@@ -44,6 +44,8 @@
       const b = smallButton("ph:arrow-bend-down-right", "Connect to another block. Drag it to a block, or press it and click one", () => {});
       b.className = "dgm-handle ghost small hidden";
       b.dataset.side = side;
+      //: Four tab stops, so each says which edge it leaves from.
+      b.setAttribute("aria-label", `Connect from the ${side} edge to another block`);
       b.type = "button";
       layer.append(b);
       return b;
@@ -61,7 +63,7 @@
       const on = layer.querySelectorAll(".dgm-box.on:not(.dgm-cluster)");
       return on.length === 1 ? on[0].dataset.node : "";
     };
-    const current = () => conn?.from || armed || hover || sole();
+    const current = () => conn?.from || armed || sole() || hover;
     //: Where a side's handle sits on a placed block, and where its arrow leaves from.
     const anchor = (at, side) => [at.x + (side === "left" ? 0 : side === "right" ? at.w : at.w / 2), at.y + (side === "top" ? 0 : side === "bottom" ? at.h : at.h / 2)];
     const showHandle = () => {
@@ -89,6 +91,7 @@
       input.className = "dgm-rename";
       input.value = was;
       input.setAttribute("aria-label", "Name");
+      input.maxLength = 120;
       const width = Math.max(120, wide);
       input.style.width = `${width}px`;
       input.style.transform = `translate(${at.x + at.w / 2 - width / 2}px, ${at.y + at.h / 2 - 16}px)`;

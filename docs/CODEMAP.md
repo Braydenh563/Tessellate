@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7809, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8796, test files 2058, tests 17381, plan headings 1003, app scripts 28, boot scripts 37, script files 255.
+Counts: frontend functions 7809, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8796, test files 2059, tests 17385, plan headings 1003, app scripts 28, boot scripts 37, script files 255.
 
 ## Frontend functions (7809)
 
@@ -3127,30 +3127,30 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `addBlock` | frontend/js/diagram-builder.js:338 |
-| `beginEdit` | frontend/js/diagram-builder.js:368 |
+| `beginEdit` | frontend/js/diagram-builder.js:369 |
 | `blockEl` | frontend/js/diagram-builder.js:42 |
 | `blockItems` | frontend/js/diagram-builder.js:297 |
 | `blockKeys` | frontend/js/diagram-builder.js:137 |
 | `buildBlock` | frontend/js/diagram-builder.js:201 |
-| `buildPalette` | frontend/js/diagram-builder.js:526 |
+| `buildPalette` | frontend/js/diagram-builder.js:527 |
 | `buildRow` | frontend/js/diagram-builder.js:212 |
 | `commit` | frontend/js/diagram-builder.js:47 |
 | `drawPicture` | frontend/js/diagram-builder.js:62 |
 | `el` | frontend/js/diagram-builder.js:26 |
 | `groupGlyph` | frontend/js/diagram-builder.js:273 |
 | `joinChip` | frontend/js/diagram-builder.js:280 |
-| `joinPick` | frontend/js/diagram-builder.js:498 |
-| `joins` | frontend/js/diagram-builder.js:494 |
-| `kindOf` | frontend/js/diagram-builder.js:623 |
-| `menuAt` | frontend/js/diagram-builder.js:478 |
-| `more` | frontend/js/diagram-builder.js:515 |
-| `mount` | frontend/js/diagram-builder.js:528 |
+| `joinPick` | frontend/js/diagram-builder.js:499 |
+| `joins` | frontend/js/diagram-builder.js:495 |
+| `kindOf` | frontend/js/diagram-builder.js:624 |
+| `menuAt` | frontend/js/diagram-builder.js:479 |
+| `more` | frontend/js/diagram-builder.js:516 |
+| `mount` | frontend/js/diagram-builder.js:529 |
 | `nameOf` | frontend/js/diagram-builder.js:40 |
-| `nestBlock` | frontend/js/diagram-builder.js:410 |
-| `onKey` | frontend/js/diagram-builder.js:432 |
+| `nestBlock` | frontend/js/diagram-builder.js:411 |
+| `onKey` | frontend/js/diagram-builder.js:433 |
 | `reconcile` | frontend/js/diagram-builder.js:129 |
 | `relabel` | frontend/js/diagram-builder.js:356 |
-| `removeBlock` | frontend/js/diagram-builder.js:418 |
+| `removeBlock` | frontend/js/diagram-builder.js:419 |
 | `render` | frontend/js/diagram-builder.js:91 |
 | `say` | frontend/js/diagram-builder.js:33 |
 | `select` | frontend/js/diagram-builder.js:324 |
@@ -3158,13 +3158,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `shapeGlyph` | frontend/js/diagram-builder.js:139 |
 | `shapeItems` | frontend/js/diagram-builder.js:147 |
 | `shapeRow` | frontend/js/diagram-builder.js:160 |
-| `show` | frontend/js/diagram-builder.js:633 |
-| `stepBlock` | frontend/js/diagram-builder.js:404 |
+| `show` | frontend/js/diagram-builder.js:634 |
+| `stepBlock` | frontend/js/diagram-builder.js:405 |
 | `stops` | frontend/js/diagram-builder.js:119 |
-| `styleDo` | frontend/js/diagram-builder.js:500 |
-| `suggest` | frontend/js/diagram-builder.js:488 |
-| `suggestMenu` | frontend/js/diagram-builder.js:506 |
-| `sync` | frontend/js/diagram-builder.js:598 |
+| `styleDo` | frontend/js/diagram-builder.js:501 |
+| `suggest` | frontend/js/diagram-builder.js:489 |
+| `suggestMenu` | frontend/js/diagram-builder.js:507 |
+| `sync` | frontend/js/diagram-builder.js:599 |
 | `titleOf` | frontend/js/diagram-builder.js:39 |
 
 ### frontend/js/diagram-canvas.js (7)
@@ -24061,7 +24061,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17381)
+## Tests (17385)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24619,6 +24619,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_r8c.py | 11 |
 | tests/test_diagram_r9b.py | 9 |
 | tests/test_diagram_r9c.py | 9 |
+| tests/test_diagram_review_1679.py | 4 |
 | tests/test_diagram_split_r3_r4.py | 8 |
 | tests/test_diagram_suggest.py | 21 |
 | tests/test_diagram_touch.py | 4 |
