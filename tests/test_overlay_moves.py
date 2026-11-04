@@ -113,7 +113,8 @@ def test_a_throw_that_hits_the_ceiling_hangs_then_lets_go_and_falls() -> None:
     e = make()
     out, t = throw(e, to=(900, 100), start=(850, 600))
     seen, frames = False, []
-    while t < 40 and not (seen and e.state in ("land", "stand")):
+    # A hang lasts 30 to 200 s since INBOX 1670 (13:28Z); the old 40 s bound only held while the draw happened to be short.
+    while t < 260 and not (seen and e.state in ("land", "stand")):
         t += 0.016
         out = e.update(t)
         frames.append(out.frame)

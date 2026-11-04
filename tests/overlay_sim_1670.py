@@ -75,7 +75,10 @@ def _run(gait, seed, secs, setup, pointer, look) -> dict:
     out = e.update(0.0, (px, 600) if pointer else None)
 
     def feet(o) -> float:
-        return o.y + e.metrics.get((o.frame, o.flip), (0, 0, 0, 0))[3]
+        # The rest cycle shares one line (the tail tip of a few feminine frames is a row lower than the feet,
+        # not a step): its pictures count at the stand's, the window's own y being what the engine moves.
+        name = "stand" if o.frame.startswith("idle") else o.frame
+        return o.y + e.metrics.get((name, o.flip), (0, 0, 0, 0))[3]
 
     rest_t = rest_win = rest_feet = rest_changed = moving_t = 0.0
     starts: Counter = Counter()

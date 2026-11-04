@@ -57,15 +57,15 @@ def test_default_home_is_in_from_the_right_edge_on_the_floor() -> None:
 def test_standing_sleeps_to_the_next_blink_or_look_not_a_fixed_tick() -> None:
     e, _ = make(roam=False)
     count, outs = wakes(e, 60)
-    assert count <= 20, count
+    assert count <= 40, count  # INBOX 1670, 15:40Z: a blink every 3 to 7 s (was 25 to 45), two wakes each
     assert {o.frame for o in outs} <= {"stand", "blink", "look"}
     assert all(o.wake_ms >= eng.MIN_WAKE_MS for o in outs if o.wake_ms)
 
 
-def test_sixty_seconds_of_standing_is_at_most_twenty_wakes_for_any_seed() -> None:
+def test_sixty_seconds_of_standing_is_at_most_forty_wakes_for_any_seed() -> None:
     for seed in range(60):
         e, _ = make(roam=False, rng=random.Random(seed))
-        assert wakes(e, 60)[0] <= 20, seed
+        assert wakes(e, 60)[0] <= 40, seed  # blinks every 3 to 7 s now (INBOX 1670, 15:40Z)
 
 
 def test_blink_and_look_appear_while_standing() -> None:
@@ -133,7 +133,9 @@ def test_pointer_near_makes_it_look_and_very_near_startles() -> None:
     e2, _ = make(roam=False)
     very = e2.update(5.0, (int(e2.x + 50 + 20), int(e2.y + 60)))
     assert very.frame == "hop"
-    far = make(roam=False)[0].update(5.0, (0, 0))
+    e3, _ = make(roam=False)
+    e3.next_ambient = float("inf")  # a blink comes every 3 to 7 s now (INBOX 1670, 15:40Z): this asks about the pointer only
+    far = e3.update(5.0, (0, 0))
     assert far.frame == "stand"
 
 
@@ -161,15 +163,19 @@ def test_sits_then_sleeps_when_nobody_touches_it() -> None:
     assert names.index("sit") < names.index("sleep")
     first_sit = next(t for t, f in frames if f == "sit")
     assert eng.IDLE_SIT <= first_sit < eng.IDLE_SIT + 5
-    assert out.wake_ms in (None, eng.POLL_QUIET_MS)
+    # a sleeper breathes in place now (INBOX 1670, 15:40Z): its wake is the next breath step, never faster than 12 a second
+    assert out.wake_ms is None or eng.REST_DRAW_MS <= out.wake_ms <= eng.POLL_QUIET_MS
 
 
-def test_sleeping_costs_at_most_a_wake_every_two_seconds() -> None:
+def test_sleeping_breathes_in_place_at_most_twelve_wakes_a_second() -> None:
+    # Was a wake every two seconds, nothing drawn (stated intent moved: INBOX 1670, 15:40Z, the sleeper breathes,
+    # slower than a sitter). The window is never moved, and the wakes follow the breath's steps, not a fixed tick.
     e, _ = make()
     e._enter("sleep", 0.0)
     e.last_active = -1000.0
     count, outs = wakes(e, 60)
-    assert count <= 31 and all(o.frame == "sleep" for o in outs)
+    assert 20 <= count <= 12 * 60 // 4 and all(o.frame == "sleep" for o in outs)
+    assert len({(o.x, o.y) for o in outs}) == 1
 
 
 def test_hovering_the_pet_wakes_it() -> None:

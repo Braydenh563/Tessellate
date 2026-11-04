@@ -1430,8 +1430,9 @@ MORE_TOPICS: list[dict] = [
         "body": (
             "In the desktop app on Windows and Linux (X11) the companion can live on your desktop while the Tessellate window is "
             "minimised or in the tray, and go away when it is open. Atlas floats like a wind spirit (others walk the bottom), sits "
-            "and then sleeps when you have been away, can be picked up and thrown, hangs from the top now and then, and peeks up from"
-            " behind the taskbar or a screen edge. It keeps to a home spot by an edge, sits still for minutes at a time and makes "
+            "and then sleeps when you have been away, can be picked up and thrown (only a hard throw up catches the top), "
+            "hangs from the top now and then, and peeks up from behind the taskbar or a screen edge. It keeps to a home spot by an "
+            "edge and stays there for minutes, alive in place (breathing, blinking, a swaying tail), and makes "
             "only a few short trips an hour: a portal, a puff of smoke, a glide, a jump between window tops or a walk off one edge "
             "and in at the other, never across the middle of the screen, and clear of the text you type in. Let go near a title bar "
             "and it hangs. Now and then it climbs onto the top of a window and walks along it (Roam over windows turns that off), and"

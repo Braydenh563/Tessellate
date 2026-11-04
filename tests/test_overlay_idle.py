@@ -30,7 +30,6 @@ def test_the_engine_and_the_frames_agree_on_the_cycle() -> None:
 def test_standing_cycles_through_every_idle_frame_at_about_six_a_second() -> None:
     e = make()
     seen, t = [], 0.0
-    e.burst_start, e.burst_until = 0.0, 100.0  # INBOX 1670: the cycle plays in a burst now, not all the time
     out = e.update(t)
     # Intent moved (INBOX 1670: "bobs up and down quite fast ... more slow and graceful", then "very
     # framey"): the cycle is still a 4 s breath, now in 24 frames at IDLE_FPS = 6 (was 12 at 3).
@@ -48,7 +47,6 @@ def test_standing_cycles_through_every_idle_frame_at_about_six_a_second() -> Non
 def test_a_wake_lands_on_a_new_frame_not_the_same_one_again() -> None:
     e = make()
     out, t = e.update(0.0), 0.0
-    e.burst_start, e.burst_until = 0.0, 100.0  # a burst of the tail cycle (INBOX 1670)
     for _ in range(40):
         before = out.frame
         t += out.wake_ms / 1000.0
@@ -125,7 +123,6 @@ def test_typing_keeps_it_in_place_but_its_idle_frames_still_play() -> None:
     e.quiet = True
     e._enter("stand", 0.0)
     e.state_until = 1e9
-    e.burst_start, e.burst_until = 0.0, 100.0  # in a burst of the tail cycle (INBOX 1670)
     frames, t = set(), 0.0
     for _ in range(40):
         out = e.update(t)

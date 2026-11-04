@@ -91,7 +91,6 @@ def test_cycle_frames_per_second_as_drawn() -> None:
     e2, rec2 = sim.floating(sim.paced_host())
     print(f"walk cycle {walk_fps:.1f} frames/s; float cycle {sim.cycle_fps(rec2, ('drift',), 'walk'):.1f} frames/s")
     idle = sim.make("masculine", "float", 2)[0]
-    idle.burst_start, idle.burst_until = 0.0, 100.0
     seen, t = [], 0.0
     while t < 8.0:
         out = idle.update(t)
@@ -103,10 +102,12 @@ def test_cycle_frames_per_second_as_drawn() -> None:
     assert len(set(names)) == 24
 
 
-def test_idle_wakes_at_rest_are_not_higher_than_before() -> None:
+def test_idle_wakes_at_rest_stay_under_the_redraw_cap() -> None:
     wakes = sim.rest_wakes_per_minute(sim.paced_host(), secs=900.0)
     print(f"rest wakes a minute: before {REST_WAKES_BEFORE}, after {wakes:.0f}")
-    assert wakes <= REST_WAKES_BEFORE * 1.15, wakes
+    # Intent moved (INBOX 1670, 15:40Z): rest lives in place now (the cycle at 6 a second, blinks), so the bar is the
+    # rest redraw cap of 12 a second, not the old burst-only rate.
+    assert wakes <= 12 * 60, wakes
     # and a still figure asks for nothing at all
     e, _s = sim.make("masculine", "float", 2)
     e.reduced = True

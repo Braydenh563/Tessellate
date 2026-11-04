@@ -70,8 +70,10 @@ def test_a_walker_rises_so_the_hands_meet_the_top_too() -> None:
 
 def test_a_thrown_floater_that_reaches_the_ceiling_hangs_by_the_hands() -> None:
     e = make()
-    e.x, e.y, e.vx, e.vy = 800.0, 40.0, 0.0, -900.0
-    e._start_fly(0.0, -900.0)
+    # Intent kept, the throw made hard: the ceiling holds a hard upward throw only (INBOX 1670, 15:45Z: "nearly every
+    # time I throw it no matter how hard, it goes to the top"), so this one is launched at 2,600 px/s, not 900.
+    e.x, e.y, e.vx, e.vy = 800.0, 40.0, 0.0, -2600.0
+    e._start_fly(0.0, -2600.0)
     run_to(e, "hang", 1.0, 5.0)
     assert e.state == "hang" and hands(e) == pytest.approx(0.0)
 
