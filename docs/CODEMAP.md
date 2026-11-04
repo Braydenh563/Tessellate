@@ -2,9 +2,9 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7750, frontend ids 2637, CSS sections 522, backend routes 641, backend modules 8594, test files 1994, tests 16685, plan headings 999, app scripts 28, boot scripts 37, script files 245.
+Counts: frontend functions 7751, frontend ids 2637, CSS sections 522, backend routes 641, backend modules 8594, test files 1995, tests 16693, plan headings 999, app scripts 28, boot scripts 37, script files 246.
 
-## Frontend functions (7750)
+## Frontend functions (7751)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3296,13 +3296,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `receive` | frontend/js/diagram-suggest.js:97 |
 | `templates` | frontend/js/diagram-suggest.js:318 |
 
-### frontend/js/diagram-touch.js (3)
+### frontend/js/diagram-touch.js (2)
 
 | Name | File:line |
 |---|---|
-| `addSheet` | frontend/js/diagram-touch.js:12 |
-| `wire` | frontend/js/diagram-touch.js:120 |
-| `zoomable` | frontend/js/diagram-touch.js:46 |
+| `addSheet` | frontend/js/diagram-touch.js:10 |
+| `wire` | frontend/js/diagram-touch.js:43 |
+
+### frontend/js/diagram-view.js (2)
+
+| Name | File:line |
+|---|---|
+| `kindWord` | frontend/js/diagram-view.js:35 |
+| `wire` | frontend/js/diagram-view.js:42 |
 
 ### frontend/js/documents-ai.js (15)
 
@@ -12175,7 +12181,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 150 |
-| frontend/css/diagram-lazy.css | 831 |
+| frontend/css/diagram-lazy.css | 887 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 140 |
 | frontend/css/forced-colors-lazy.css | 28 |
@@ -15648,8 +15654,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3334 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3462 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3336 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3464 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -23665,7 +23671,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16685)
+## Tests (16693)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24195,6 +24201,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_model.py | 12 |
 | tests/test_diagram_suggest.py | 21 |
 | tests/test_diagram_touch.py | 4 |
+| tests/test_diagram_view_1614.py | 6 |
 | tests/test_dialogue_b8.py | 1 |
 | tests/test_dictation_options.py | 8 |
 | tests/test_digest_structure.py | 24 |
@@ -24743,7 +24750,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_make_plan.py | 21 |
 | tests/test_manage_lists_504.py | 5 |
 | tests/test_manual_entry_points.py | 3 |
-| tests/test_manual_parity.py | 19 |
+| tests/test_manual_parity.py | 20 |
 | tests/test_map_actions_clear_of_label.py | 1 |
 | tests/test_map_add_speed.py | 6 |
 | tests/test_map_branch_colour_order.py | 3 |
@@ -25444,7 +25451,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_typo_routing.py | 4 |
 | tests/test_ui_1017b.py | 7 |
 | tests/test_ui_batch_726.py | 13 |
-| tests/test_ui_recipes.py | 266 |
+| tests/test_ui_recipes.py | 267 |
 | tests/test_ui_signatures.py | 2 |
 | tests/test_ui_state.py | 6 |
 | tests/test_ui_targets_1029b.py | 9 |

@@ -432,3 +432,16 @@ def test_the_diagram_dialog_the_reply_action_and_the_exports_are_in_the_guide_in
     assert '"Edit as blocks"' in mermaid and '"Open as a diagram"' in draw
     for label in ('"Done"', '"Cancel"', '"Source"', '"Blocks"'):
         assert label in embed, label
+
+
+def test_the_diagram_picture_zoom_is_in_the_guide_in_the_controls_words() -> None:
+    """INBOX 1614: the corner bar's four buttons, Ctrl+wheel, the pinch and the arrow keys, said in the
+    `diagram-blocks` topic in the words diagram-view.js carries."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
+    for words in ("corner bar zooms (Zoom in, Zoom out, Fit, 100%)", "Ctrl+wheel", "a pinch", "arrow keys pan"):
+        assert words in body, words
+    view = (FRONTEND / "js" / "diagram-view.js").read_text(encoding="utf-8")
+    for label in ('"Zoom in"', '"Zoom out"', '"Fit"', '"100%"', "event.ctrlKey", "ArrowLeft"):
+        assert label in view, label
