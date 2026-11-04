@@ -61,6 +61,11 @@ MARGIN = 12
 OVERLAY_POS_PREF = "desktop_companion_overlay_pos"
 #: "Roam over windows" (right-click menu): on by default, a pref the person can turn off.
 ROAM_PREF = "desktop_companion_roam"
+#: The look and motion a readable (unlocked) app window last gave. A locked
+#: window has not read its prefs and answers the default look, so these stand
+#: until it is unlocked (INBOX 1670: masculine until unlocked).
+LOOK_PREF = "desktop_companion_look"
+MOTION_PREF = "desktop_companion_motion"
 #: What a click on a reminder's card runs in the app window: the Reminders tab, behind
 #: the same lock guard as the tray's items and a notification's own click.
 REMINDERS_SCRIPT = (
@@ -81,7 +86,8 @@ BLUR_GRACE = 0.6
 #: (Appearance > Companion movement, resolved by `nameMarkBuddyMotion`), in one
 #: round trip; empty when it cannot say. A bare look string is still understood.
 LOOK_SCRIPT = (
-    "(function(){try{return JSON.stringify({"
+    "(function(){try{const lk=document.getElementById('lock-overlay');return JSON.stringify({"
+    "locked:!!(lk&&!lk.classList.contains('hidden')),"
     "look:typeof atlasLook==='function'?atlasLook():'',"
     "motion:typeof nameMarkBuddyMotion==='function'?nameMarkBuddyMotion():null})}catch(e){return ''}})()"
 )
@@ -912,6 +918,17 @@ class DeskCompanion:
             if isinstance(m, dict) and m.get("mode") in MOTION_MODES:
                 reason = m.get("reason") if m.get("reason") in MOTION_REASONS else ""
                 motion = (m["mode"] != "full", str(reason))
+            saved_look = _pref(LOOK_PREF, None)
+            if data.get("locked") is True and saved_look in ("masculine", "feminine"):
+                look = saved_look
+                saved_motion = _pref(MOTION_PREF, None)
+                if isinstance(saved_motion, (list, tuple)) and len(saved_motion) == 2 and saved_motion[0] in MOTION_MODES:
+                    reason = saved_motion[1] if saved_motion[1] in MOTION_REASONS else ""
+                    motion = (saved_motion[0] != "full", str(reason))
+            elif data.get("locked") is not True:
+                _set_pref(LOOK_PREF, look)
+                if isinstance(m, dict) and m.get("mode") in MOTION_MODES:
+                    _set_pref(MOTION_PREF, [m["mode"], motion[1] if motion else ""])
         else:
             logger.info("desk companion: the app window gave no look, keeping %s", self.look)
         if self._walk_forced and (motion is None or motion[0]):
