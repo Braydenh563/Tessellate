@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+
+- Desk companion tests: the overlay runner tests pin the engine hour, so the activity they pick no longer depends on when CI runs (INBOX 1670).
 - Desktop companion (INBOX 1670, row B): it has a life and keeps to a home spot near an edge: a behaviour model (needs, mood, 26 weighted idle activities with no repeat within minutes), micro expressions blended over the pose (squash about the feet, lean, turn through a sliver, crouch before a run, landing squash), a slow 4 s bob of 2 px at rest, steps, walks and runs by distance eased in and out, rare short trips that come home, a spring-chain tail in the desktop frames and in the in-app companion, one shared nebula veil across the idle frames so the nebula stops flickering, and far fewer wakes while idle
 - Tests keep only a failing test's temp folder (pytest.ini `tmp_path_retention_policy = failed`): a full run left 7GB of per-test data folders, filled the CI runner's disk, and the last thousand tests failed with `disk I/O error`. The status bar's shedding now rides the edge fade's own observer and the `hidden` attribute (no new global, observer or CSS), and gives back what it shed once the bar scrolls.
 - The status bar no longer runs past the window's edge from 600 to 820 wide: it drops the clock, the LAN dot and then the inbox tray until the rest fit, and a strip that cannot scroll is never faded as if it could (INBOX 1672).
