@@ -153,6 +153,60 @@
     return glyph;
   }
 
+  //: The shapes a block can take, as the menu words them. `setLabel` takes only `ph:` icons, so a row that draws the shape is made by `shapeRow`.
+  function shapeItems(S, key) {
+    const id = diagramOps.split(key)[1];
+    return diagramOps.SHAPES.map((shape) => ({
+      shape,
+      on: diagramOps.node(S.m, id).shape === shape,
+      run: () => {
+        diagramOps.node(S.m, id).shape = shape;
+        commit(S, `${nameOf(S, key)} is now a ${SHAPE_LABEL[shape].toLowerCase()}.`);
+      },
+    }));
+  }
+
+  //: One row of the shape menu: the shape drawn where an icon goes, the chosen one ending in the menu's check.
+  function shapeRow({ shape, on, run }) {
+    const row = el("button", "menu-item dgm-shape-row");
+    row.type = "button";
+    row.setAttribute("role", "menuitem");
+    if (on) row.setAttribute("aria-current", "true");
+    row.append(shapeGlyph(shape), el("span", "menu-item-words", SHAPE_LABEL[shape]));
+    if (on) {
+      const check = el("i", "ph ph-check dgm-shape-check");
+      check.setAttribute("aria-hidden", "true");
+      row.append(check);
+    }
+    row.addEventListener("click", (event) => {
+      event.stopPropagation();
+      closeActionMenus();
+      run();
+    });
+    return row;
+  }
+
+  //: The row's swatch: the shape itself, and a button that opens the shape menu (1613).
+  function shapeButton(S, key, shape, text) {
+    const button = el("button", "dgm-swatch");
+    button.type = "button";
+    button.setAttribute("aria-label", `Shape: ${SHAPE_LABEL[shape]}`);
+    button.title = `Shape: ${SHAPE_LABEL[shape]}. Press to change it.`;
+    button.setAttribute("aria-haspopup", "menu");
+    button.append(shapeGlyph(shape));
+    button.addEventListener("click", () => {
+      select(S, key);
+      const r = button.getBoundingClientRect();
+      const items = shapeItems(S, key);
+      openMenuAtPoint(items.map((item) => ({ label: SHAPE_LABEL[item.shape], run: item.run })), `Shape of ${text}`, r.left, r.bottom, button);
+      //: The menu opens as plain rows and each is swapped for the drawn one, so the keyboard walk and the close are the menu's own.
+      const menu = document.querySelector(".action-menu:not(.hidden):not(.submenu)");
+      menu?.querySelectorAll(":scope > .menu-item").forEach((row, i) => row.replaceWith(shapeRow(items[i])));
+      menu?.querySelector(".menu-item")?.focus({ preventScroll: true });
+    });
+    return button;
+  }
+
   //: A row is rebuilt only when its `sig` (everything below that it reads) changed since the last render.
   function buildBlock(S, item, level, edgesFrom, fresh) {
     const id = item.type === "k" ? `k:${item.index}` : diagramOps.key(item.type, item.id);
@@ -201,7 +255,7 @@
     dots.setAttribute("aria-hidden", "true");
     grip.append(dots);
     const label = el("span", "dgm-label", text);
-    card.append(grip, isGroup ? groupGlyph() : shapeGlyph(data.shape), label);
+    card.append(grip, isGroup ? groupGlyph() : shapeButton(S, key, data.shape, text), label);
     //: Connecting is one act on every row; the words show on the chosen row, the arrow is always there.
     const connect = smallButton("ph:arrow-bend-down-right Connect to…", "Draw an arrow from this block to another", () => joinPick(S, key));
     connect.classList.add("dgm-connect");
@@ -265,13 +319,7 @@
     if (isNode) {
       items.push({
         label: "ph:diamond Shape",
-        items: diagramOps.SHAPES.map((shape) => ({
-          label: `${diagramOps.node(S.m, diagramOps.split(key)[1]).shape === shape ? "ph:check" : "ph:square"} ${SHAPE_LABEL[shape]}`,
-          run: () => {
-            diagramOps.node(S.m, diagramOps.split(key)[1]).shape = shape;
-            commit(S, `${nameOf(S, key)} is now a ${SHAPE_LABEL[shape].toLowerCase()}.`);
-          },
-        })),
+        items: shapeItems(S, key).map(shapeRow),
         group: "edit",
       });
     }
@@ -395,7 +443,7 @@
   // --- keyboard -------------------------------------------------------------------
   function onKey(S, event) {
     const block = event.target.closest?.(".dgm-block");
-    if (event.target.isContentEditable || !block || event.target.closest(".menu-wrap, .dgm-join, .dgm-connect")) return;
+    if (event.target.isContentEditable || !block || event.target.closest(".menu-wrap, .dgm-join, .dgm-connect, .dgm-swatch")) return;
     const key = block.dataset.key;
     const all = [...S.tree.querySelectorAll(".dgm-block")];
     const at = all.indexOf(block);
@@ -550,7 +598,7 @@
     S.tree.addEventListener("keydown", (event) => onKey(S, event));
     S.tree.addEventListener("click", (event) => {
       const block = event.target.closest(".dgm-block");
-      if (block && !event.target.closest(".menu-wrap, .dgm-join, .dgm-connect")) select(S, block.dataset.key);
+      if (block && !event.target.closest(".menu-wrap, .dgm-join, .dgm-connect, .dgm-swatch")) select(S, block.dataset.key);
     });
     S.tree.addEventListener("dblclick", (event) => {
       const label = event.target.closest(".dgm-label");

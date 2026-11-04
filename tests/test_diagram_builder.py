@@ -293,3 +293,32 @@ def test_a_diagram_over_the_block_limit_stays_in_source_with_one_line_saying_so(
     draw = draw[: draw.index("\n  }\n")]
     assert "S.m && !S.m.nodes.length" in draw and "!S.plain && blank && bare" in draw
 
+
+
+# --- INBOX 1613 / DOCUMENTS_PLAN 22.4 R1: the shape menu and the row's swatch ---------------------
+
+SHAPE_BRACKETS = [("rect", "[", "]"), ("round", "(", ")"), ("stadium", "([", "])"), ("circle", "((", "))"), ("diamond", "{", "}"), ("hexagon", "{{", "}}")]
+
+
+@pytest.mark.parametrize(("shape", "open_", "close"), SHAPE_BRACKETS)
+def test_each_shape_prints_its_mermaid_brackets_and_has_a_glyph_in_the_swatch_and_the_menu_row(shape, open_, close):
+    got = _script("flowchart TD\n  A[\"Step\"]\n", f"o.node(m, 'A').shape = {json.dumps(shape)};")
+    assert f'A{open_}"Step"{close}' in got["src"], got["src"]
+    assert got["again"] == got["src"]
+    code = BUILDER.read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
+    # The glyph is drawn from data-shape; the swatch and the menu row both come from shapeGlyph.
+    assert shape == "rect" or f'.dgm-shape[data-shape="{shape}"]' in css
+    assert shape in re.search(r"SHAPE_LABEL = \{([^}]*)\}", code).group(1)
+    assert code.count("shapeGlyph(") >= 3, "the definition, the swatch button and the menu row each use it"
+
+
+def test_the_row_swatch_is_a_named_button_and_the_shape_menu_rows_draw_their_shape_and_a_check():
+    code = BUILDER.read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
+    assert "`Shape: ${SHAPE_LABEL[shape]}`" in code and '"aria-haspopup", "menu"' in code
+    # A real button, and the row click leaves it alone (it opens the menu, it does not select).
+    assert 'el("button", "dgm-swatch")' in code and ".dgm-swatch" in code.split("S.tree.addEventListener(\"click\"")[1][:300]
+    # The menu rows are made here because setLabel takes only ph: icons.
+    assert "shapeRow(" in code and "ph-check" in code and "ph:square" not in code
+    assert ".dgm-swatch" in css and "min-inline-size: 1.5rem" in css and ".dgm-swatch:focus-visible" in css

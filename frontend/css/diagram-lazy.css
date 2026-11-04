@@ -795,3 +795,37 @@
     flex: 0 0 9rem;
   }
 }
+
+/* The row's swatch is a button (1613): the shape stays what it draws, the hit box is the 24 px minimum. */
+.dgm-swatch {
+  display: inline-grid;
+  place-items: center;
+  min-inline-size: 1.5rem;
+  min-block-size: 1.5rem;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.dgm-swatch:hover {
+  background: var(--hover-veil);
+}
+
+.dgm-swatch:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* A shape menu row: the drawn shape, its name, and the check at the end for the chosen one. */
+.dgm-shape-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.dgm-shape-row > .dgm-shape-check {
+  margin-inline-start: auto;
+}
