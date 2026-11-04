@@ -649,3 +649,13 @@ def test_every_show_hands_its_rect_to_the_raise(made, prefs, monkeypatch):
     prefs[dc.PREF] = True
     made.main_window.hide()
     assert seen and seen[-1] == (*made.top_left(), *made.size)
+
+
+def test_the_window_asks_for_a_minimum_no_wider_than_its_resting_size(made, prefs):
+    # pywebview's default minimum is 200 by 100: a 112-wide window grew to a
+    # card with the character in its right half (INBOX 1633, the owner at 200%).
+    prefs[dc.PREF] = True
+    made.main_window.hide()
+    options = made.webview.made[0].options if hasattr(made.webview.made[0], "options") else vars(made.webview.made[0])
+    low = options["min_size"]
+    assert low[0] <= dc.REST_SIZE[0] and low[1] <= dc.REST_SIZE[1]

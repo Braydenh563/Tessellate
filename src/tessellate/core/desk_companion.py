@@ -502,13 +502,17 @@ class DeskCompanion:
             # Does not take focus when shown; the taskbar button is removed in
             # `raise_on_desktop` (pywebview has no option for it).
             "focus": False,
+            # pywebview's default minimum is 200 by 100: wider than the resting
+            # 112, so the form grew to a card with the character in its right
+            # half (the owner's screenshot at 200%, INBOX 1633).
+            "min_size": MIN_SIZE,
         }
         try:
             return self.webview.create_window("Tessellate companion", **options)
         except TypeError:
             # An older pywebview without one of the newer options: a plainer
             # window beats none.
-            for name in ("hidden", "easy_drag", "transparent", "focus"):
+            for name in ("hidden", "easy_drag", "transparent", "focus", "min_size"):
                 options.pop(name, None)
             return self.webview.create_window("Tessellate companion", **options)
 
