@@ -8165,7 +8165,8 @@ function nameMarkBuddyDecide(now = Date.now(), hour = new Date().getHours()) {
     if (!calm && NMB_LOUD_ACTS.includes(act)) continue;
     let w = spec.w;
     if (act === "yawn") w = idle > NMB_YAWN_MS ? 4 : night ? 2 : 0;
-    if (act === "nap") w = idle > 90 * 1000 ? 3 : night ? 1 : 0;
+    //: At night a nap still wants a quiet half minute, and none just after it was woken (it nodded off again at once).
+    if (act === "nap") w = idle > 90 * 1000 ? 3 : night && idle > 30 * 1000 && now >= (nmb.awakeUntil || 0) ? 1 : 0;
     if (act === "glance" && !nmb.pointer) w = 0;
     w *= (byMood[act] || 1) * (byKind[act] || 1);
     //: Its own slow mood: energy, curiosity and sociability (0 to 1).

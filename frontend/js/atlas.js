@@ -3590,10 +3590,13 @@ const ATLAS_WAKE_MS = 2400;
 const ATLAS_AWAKE_HOLD_MS = 45 * 1000;
 const ATLAS_DOZE_MS = 3000;
 
+//: Sleepy only once nobody has been about for a while: ten minutes by day, three in the small hours. The small hours
+//: used to be sleepy whatever you did, so a woken Atlas dozed again 45 s later while you worked (the owner, 2026-11-04,
+//: about 2:40 am: "atlas always just instantly falls back asleep even when I wake it").
 function atlasRestingMood() {
   if (Date.now() < atlasAwakeUntil) return "calm";
-  const hour = new Date().getHours();
-  return Date.now() - atlasLastInput > 10 * 60 * 1000 || hour < 5 ? "sleepy" : "calm";
+  const quiet = new Date().getHours() < 5 ? 3 : 10;
+  return Date.now() - atlasLastInput > quiet * 60 * 1000 ? "sleepy" : "calm";
 }
 //: The blink's pending timer, the rig's trace when a sweep records one
 //: (`atlasluster.js` sets `rigTrace` to an array and reads it back), and the
@@ -3810,10 +3813,14 @@ for (const type of ["pointerdown", "keydown"]) {
 
 //: Sleepy to calm over `ATLAS_WAKE_MS`, then awake for at least
 //: `ATLAS_AWAKE_HOLD_MS` before the resting mood may be sleepy again.
-//: `easeMs` is shorter when it is asked for something (the large view's acts).
+//: `easeMs` is shorter when it is asked for something (the large view's acts). Woken again within a quarter of an
+//: hour, it stays up longer each time (45 s, 90 s, 3, 6, then 10 minutes): roused often, it is properly awake.
 function atlasWake(easeMs = ATLAS_WAKE_MS) {
-  atlasLastInput = Date.now();
-  atlasAwakeUntil = Date.now() + easeMs + ATLAS_AWAKE_HOLD_MS;
+  const now = Date.now();
+  atlasLastInput = now;
+  atlasWake.recent = (atlasWake.recent || []).filter((t) => now - t < 15 * 60 * 1000).concat(now);
+  const hold = Math.min(10 * 60 * 1000, ATLAS_AWAKE_HOLD_MS * 2 ** (atlasWake.recent.length - 1));
+  atlasAwakeUntil = now + easeMs + hold;
   if (atlasMoodNow === "sleepy") setAtlasMood("calm", 0, { quiet: true, easeMs });
 }
 
