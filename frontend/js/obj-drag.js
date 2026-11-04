@@ -322,12 +322,19 @@ window.addEventListener("pointerdown", objDragArm, true);
       grip.append(dots);
       document.body.append(grip);
     }
-    card = next;
-    grip.objCard = next;
     const box = next.getBoundingClientRect();
     //: Half out of the card's left edge, level with the middle of a short card or the first line of a tall one.
-    grip.style.left = `${Math.max(2, box.left - grip.offsetWidth / 2)}px`;
-    grip.style.top = `${Math.max(2, box.top + Math.min(box.height, 56) / 2 - grip.offsetHeight / 2)}px`;
+    const left = Math.max(2, box.left - grip.offsetWidth / 2);
+    const top = Math.max(2, box.top + Math.min(box.height, 56) / 2 - grip.offsetHeight / 2);
+    //: Only where the card's own column is on top: a popup over the card's edge (the
+    //: activity panel, a dialog) keeps the grip off it (owner, 2026-11-03: "the drag icon
+    //: button shows ... in front of popup windows"). The grip is a body layer above them all.
+    const under = document.elementsFromPoint(left + grip.offsetWidth / 2, top + grip.offsetHeight / 2).find((el) => !grip.contains(el));
+    if (under && !under.contains(next) && !next.contains(under)) return hide();
+    card = next;
+    grip.objCard = next;
+    grip.style.left = `${left}px`;
+    grip.style.top = `${top}px`;
     grip.classList.add("is-on");
     window.addEventListener("scroll", hide, { capture: true, passive: true });
   }

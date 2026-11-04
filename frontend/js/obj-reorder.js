@@ -157,7 +157,16 @@ const OBJ_LEAVE_PX = 24;
 function objReorderRoute(g) {
   const box = g.surface.list.getBoundingClientRect();
   const out = g.x < box.left - OBJ_LEAVE_PX || g.x > box.right + OBJ_LEAVE_PX || g.y < box.top - OBJ_LEAVE_PX || g.y > box.bottom + OBJ_LEAVE_PX;
-  return out ? "carry" : "reorder";
+  return out || !objListOnTop(g) ? "carry" : "reorder";
+}
+
+//: Whether the pointer is over the list itself, not over something drawn on top of it.
+//: A long list runs on under the status bar and the tray's popup, so its box alone kept
+//: a card over the open tray reordering, and the tray never took it (the owner,
+//: 2026-11-03: "I still cant drag and drop objects like notes onto the tray window").
+function objListOnTop(g) {
+  const el = document.elementFromPoint(g.x, g.y);
+  return !el || g.surface.list.contains(el) || el.contains(g.surface.list);
 }
 
 OBJ_MODES.reorder = { grab: objReorderGrab, begin: objReorderBegin, update: objReorderUpdate, drop: objReorderDrop, cancel: objReorderRelease, route: objReorderRoute };

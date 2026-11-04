@@ -98,7 +98,10 @@ def test_a_carried_card_is_valid_over_fields_that_hold_a_link_and_no_others() ->
 @needs_node
 def test_a_card_leaving_its_list_is_carried_and_coming_back_reorders() -> None:
     out = run(FILES, STUBS + """
-    const list = { getBoundingClientRect: () => ({ left: 0, right: 300, top: 0, bottom: 600 }) };
+    const row = {}, popup = { contains: () => false };
+    const list = { getBoundingClientRect: () => ({ left: 0, right: 300, top: 0, bottom: 600 }), contains: (el) => el === row };
+    let over = row;
+    document.elementFromPoint = () => over;
     const g = { surface: { list, unit: { isConnected: true } }, x: 100, y: 100 };
     const verdicts = [];
     verdicts.push(objReorderRoute(g));
@@ -107,9 +110,11 @@ def test_a_card_leaving_its_list_is_carried_and_coming_back_reorders() -> None:
     verdicts.push(objCarryRoute(g));                // carried, not back yet
     g.x = 200; verdicts.push(objCarryRoute(g));     // back over the list
     verdicts.push(objCarryRoute({ x: 1, y: 1 }));   // no home list: always carried
+    // Inside the list's box but under a popup drawn over it (the open tray): carried.
+    over = popup; verdicts.push(objReorderRoute(g), objCarryRoute(g));
     __out(verdicts);
     """)
-    assert out == ["reorder", "reorder", "carry", "carry", "reorder", "carry"]
+    assert out == ["reorder", "reorder", "carry", "carry", "reorder", "carry", "carry", "carry"]
 
 
 @needs_node

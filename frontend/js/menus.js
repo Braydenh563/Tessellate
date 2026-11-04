@@ -190,6 +190,9 @@ function nearestScrollParent(el) {
 // its own trigger with a caret pointing back at it, and closed the three
 // ways every other popover here closes.
 function placeHelpPopover(panel, trigger, retry = true) {
+  //: A trigger re-rendered away (a card redrawn while its popover was open) has no
+  //: place to point at: the popover closes rather than land in the window's corner.
+  if (!trigger.isConnected) return [...openHelpPopovers].find((o) => o.panel === panel)?.close();
   const margin = 8;
   const anchor = trigger.getBoundingClientRect();
   //: **The other half of the flicker, which this function did not have.**
@@ -265,6 +268,9 @@ function placeHelpPopover(panel, trigger, retry = true) {
   panel.style.top = `${Math.round(top)}px`;
   panel.style.visibility = "";
   panel.classList.toggle("help-popover-above", above);
+  //: The caret under a popover that opens upwards stuck out of its scroll box and
+  //: gave a short one an 8px scrollbar (the empty tray); one that fits shows it whole.
+  panel.style.overflow = above && panel.scrollHeight <= panel.clientHeight + 12 ? "visible" : "";
   // The caret is positioned against the panel, but it has to point at the
   // trigger: which is only the panel's own centre when nothing clamped it.
   const caretX = Math.min(Math.max(anchor.left + anchor.width / 2 - left, 14), Math.max(box.width - 14, 14));

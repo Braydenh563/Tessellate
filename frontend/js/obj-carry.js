@@ -163,7 +163,7 @@ function objCarryRoute(g) {
   if (!g.surface) return "carry";
   const box = g.surface.list.getBoundingClientRect();
   const inside = g.x >= box.left && g.x <= box.right && g.y >= box.top && g.y <= box.bottom;
-  return inside && g.surface.unit.isConnected ? "reorder" : "carry";
+  return inside && g.surface.unit.isConnected && objListOnTop(g) ? "reorder" : "carry";
 }
 
 //: Last in `OBJ_MODES`: every card that no earlier mode took is carried.

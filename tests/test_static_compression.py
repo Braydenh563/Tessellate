@@ -128,7 +128,10 @@ PIECE_CAP = 32_000
 #: native drag whose dragend was lost (every popover stayed open for good) and the
 #: palette's close x is wired at boot, 3 bytes over; the popover head itself went
 #: to the lazy status-panels.js. The next boot diet takes it back (OPEN.md).
-TOTAL_CAP = 260_400
+#: 2026-11-03 later, +40: a card over the open tray is carried, not reordered (the
+#: owner could not drop on it), the grip stays off popups, and an upward popover's
+#: caret no longer scrolls it; same OPEN.md win-back item.
+TOTAL_CAP = 260_440
 
 
 def _served_gzip_size(client, name: str) -> int:

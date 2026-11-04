@@ -1,6 +1,6 @@
 """INBOX 1603, the tray: the row body drags, the page holds still over the tray,
 the button's icon and count clear its edges, and `t` then `y` opens it.
-Measured in the app by scratchpad/ui-sweeps/traymore.js and traystuck.js."""
+Measured in the app by Playwright sweeps (one-offs, not kept; the numbers are in CHANGELOG)."""
 
 from __future__ import annotations
 
@@ -37,3 +37,30 @@ def test_t_then_y_opens_the_tray():
     keys = wiring[wiring.index("const TAB_JUMP_KEYS"):wiring.index("const CHORD_ACTIONS")]
     assert "  y:" not in keys
     assert "(t then y)" in frontend_text("index.html")
+
+
+def test_a_card_over_the_open_tray_is_carried_not_reordered():
+    # A long list runs on under the status bar and the tray's popup; its box alone
+    # kept the card reordering and the tray never took it (a sweep dragging from a list taller than the window,
+    # held 0 before, 1 after).
+    reorder = frontend_text("js/obj-reorder.js")
+    route = reorder[reorder.index("function objReorderRoute"):reorder.index("function objListOnTop")]
+    assert "!objListOnTop(g)" in route
+    on_top = reorder[reorder.index("function objListOnTop"):]
+    assert "document.elementFromPoint(g.x, g.y)" in on_top[: on_top.index("\n}")]
+    carry = frontend_text("js/obj-carry.js")
+    back = carry[carry.index("function objCarryRoute"):]
+    assert "objListOnTop(g)" in back[: back.index("\n}")]
+
+
+def test_the_grip_stays_off_a_popup_over_the_card():
+    drag = frontend_text("js/obj-drag.js")
+    show = drag[drag.index("document.elementsFromPoint(left"):]
+    assert "return hide();" in show[: show.index("grip.classList.add(\"is-on\")")]
+
+
+def test_an_upward_popover_that_fits_has_no_caret_scrollbar():
+    menus = frontend_text("js/menus.js")
+    place = menus[menus.index("function placeHelpPopover"):menus.index("const openHelpPopovers")]
+    assert "if (!trigger.isConnected)" in place[:400]
+    assert 'panel.style.overflow = above && panel.scrollHeight <= panel.clientHeight' in place

@@ -3789,4 +3789,4 @@ deduplicated against the ledger above.
 
 ## Boot budget, 2026-11-03
 
-- [ ] Win back the 2026-11-03 raise of the boot gzip cap (260,350 to 260,400, `tests/test_static_compression.py`, INBOX 1603): the next boot diet moves a boot-time wiring to a lazy file and lowers the cap again.
+- [ ] Win back the 2026-11-03 raise of the boot gzip cap (260,350 to 260,440, `tests/test_static_compression.py`, INBOX 1603 and the tray drop): the next boot diet moves a boot-time wiring to a lazy file and lowers the cap again.
