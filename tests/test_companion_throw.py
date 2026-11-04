@@ -212,6 +212,6 @@ def test_a_throw_that_comes_down_over_controls_is_never_left_floating_over_them(
     # is not, and the nearest good perch is where it comes down.
     over, clear = _drop("[{ left: 1300, top: 789, right: 1400, bottom: 821 }]")
     assert over["pose"] == "stand" and over["kind"] == "dock", over
-    assert clear["pose"] == "float" and clear["kind"] == "yours", clear
+    assert clear["pose"] == "stand" and clear["kind"] == "dock", clear
     free, _ = _drop("[]")
-    assert free["pose"] == "float", "open air with no control under it still floats where it was let go"
+    assert free["pose"] == "stand", "open air with no control under it is a perch too"

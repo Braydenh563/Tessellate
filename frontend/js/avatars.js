@@ -4564,8 +4564,8 @@ function nameMarkBuddyRestore(spot) {
   const x = toRight < NMB_EDGE_NEAR && toRight < sx ? innerWidth - (w - sx) : sx;
   const y = toBottom < NMB_EDGE_NEAR && toBottom < sy ? innerHeight - (h - sy) : sy;
   if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
-  //: A place pinned on every page keeps its pose; a spot dropped in open
-  //: air floats.
+  //: A place pinned on every page keeps its pose; a spot in open air comes
+  //: back as a float for `nameMarkBuddyNextSpot` to drop onto a perch.
   return spot.keep
     ? { kind: "yours", pose: spot.pose || "float", legs: spot.legs || "", side: spot.side || "", x: clampX(x), y: clampY(y) }
     : { kind: "yours", pose: "float", legs: "", x: clampX(x), y: clampY(y) };
@@ -4597,8 +4597,8 @@ function nameMarkBuddyStepAside(spot, obstacles, far = 320) {
 //: standing on a top edge, hanging from an underside, leaning on a side.
 //: Measured from the part of it that would touch the edge (its seat, its
 //: soles, its hands, its side). With nothing that close it falls to the
-//: first top edge under it; with nothing under it at all it floats where it
-//: was let go.
+//: first top edge under it; with nothing under it at all, the chooser's
+//: nearest perch (INBOX 1640: it never rests in open air).
 //: **Where you put it, it may rest** (the owner: "atlas or the companion
 //: wont let me rest it on the start something buttons on the dashboard").
 //: Measured (perchbuttons.js): let go above a Start something tile it fell
@@ -4674,19 +4674,23 @@ function nameMarkBuddyDrop(x, y, reach = 48) {
     }
   }
   if (fall) return fall;
-  //: Nothing under it: it floats, stepped aside from a control; one it cannot
-  //: clear (chat's mode switch) gets the nearest good perch instead.
-  //: Over the bottom bar's buttons (a row with no gap): just above them, a
-  //: few px up, before any step along them or the chooser's perch across
-  //: the screen (INBOX 1402). Over any other control it is still the chooser's.
+  //: **It always ends on a perch** (INBOX 1640, the owner: "it now just
+  //: floats on my screen when on the app and doesnt actually perch"; measured
+  //: throwsettle1402.js: 4 of 7 throws ended in open air, over a widget's
+  //: words or 8px above the bar). Nothing under it to fall to, or the bar's
+  //: buttons in the way of a stance: the nearest perch to where it was let
+  //: go (the chooser, a toss's weight of 4, never over words). Only a tab
+  //: with no perch at all (the chooser has none) leaves it in open air, as
+  //: before: stepped aside from a control, or just above the bar's buttons.
+  const near = nameMarkBuddyChoose(tab, obstacles, [x, y], 4);
+  if (near) return near;
   const at = { kind: "yours", pose: "float", legs: "", x, y: Math.min(y, lowest) };
   if (!nameMarkBuddyHits(at.x, at.y, "float", obstacles)) return at;
   const onBar = bar && nameMarkBuddyHits(at.x, at.y, "float", obstacles.filter((b) => b.top >= bar.top));
   for (let up = 8; onBar && up <= 120 && at.y - up >= 0; up += 8) {
     if (!nameMarkBuddyHits(at.x, at.y - up, "float", obstacles)) return { ...at, y: at.y - up };
   }
-  const open = nameMarkBuddyStepAside(at, obstacles);
-  return nameMarkBuddyHits(open.x, open.y, "float", obstacles) ? nameMarkBuddyChoose(tab, obstacles, [x, y], 4) || open : open;
+  return nameMarkBuddyStepAside(at, obstacles);
 }
 
 //: **Where it is drawn: one `transform` on the host.** Its `left` and
@@ -6327,7 +6331,10 @@ function nameMarkBuddyLandNear(x, y, spot) {
       const px = Math.round(x + r * Math.cos(a));
       const py = Math.round(y + r * Math.sin(a));
       if (px < 0 || px > innerWidth - NMB_W || py < lo || py > hi) continue;
-      if (!nameMarkBuddyHits(px, py, "float", obstacles)) return { kind: "yours", pose: "float", legs: "", x: px, y: py };
+      if (nameMarkBuddyHits(px, py, "float", obstacles)) continue;
+      //: Open air there is only where to look: the perch under or beside it (INBOX 1640).
+      const perch = nameMarkBuddyDrop(px, py);
+      return perch.pose !== "float" && Math.hypot(perch.x - x, perch.y - y) < far ? perch : spot;
     }
   }
   return spot;
@@ -7002,10 +7009,14 @@ function nameMarkBuddyNextSpot(tab, near = null) {
   const obstacles = nameMarkBuddyObstacles(tab);
   const spots = nameMarkBuddySpots();
   if (spots["*"] && !spots[tab]) {
-    const pinned = nameMarkBuddyRestore(spots["*"]);
+    let pinned = nameMarkBuddyRestore(spots["*"]);
+    if (pinned && pinned.pose === "float") pinned = nameMarkBuddyDrop(pinned.x, pinned.y);
     if (pinned) return { ...pinned, kind: "pinned" };
   }
-  const restored = spots[tab] ? nameMarkBuddyRestore(spots[tab]) : null;
+  //: A kept place in open air (an older save, or one whose panel is gone) is
+  //: dropped from there to the perch under or near it, never restored as a float (INBOX 1640).
+  let restored = spots[tab] ? nameMarkBuddyRestore(spots[tab]) : null;
+  if (restored && restored.pose === "float") restored = nameMarkBuddyDrop(restored.x, restored.y);
   return restored ? nameMarkBuddyStepAside(restored, nameMarkBuddyYoursObstacles(obstacles, restored)) : nameMarkBuddyChoose(tab, obstacles, near);
 }
 
