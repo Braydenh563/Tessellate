@@ -169,6 +169,8 @@ def prewarm_installed() -> None:
             if key in _installed_flights or key in _installed_known:
                 return
             _start_flight(client, key)
+        if _ocr_probe_state["value"] is None:
+            bgpool.thread("ocr-probe", _ocr_probe_refresh)  # the first poll then finds the reader known
     except Exception:  # noqa: BLE001  # a warm-up must never stop the launch
         logging.getLogger(__name__).info("model list warm-up skipped; Settings asks again when opened", exc_info=True)
 
@@ -676,9 +678,57 @@ def status(session: Session = Depends(get_session)) -> dict:
         # at all". A `shutil.which` check, cheap enough for every poll.
         #: Any local engine (RapidOCR reads where Tesseract is not ready,
         #: `ocr.engine`); the key keeps the name the frontend reads.
-        "tesseract_available": ocr.local_available(),
-        "ocr_engine": ocr.engine_name(),
+        "tesseract_available": ocr_probe()[0],
+        "ocr_engine": ocr_probe()[1],
     }
+
+
+#: **The OCR reader question is answered from memory** (INBOX 1662, the owner's lag log:
+#: `/models/status` 3287 ms at start-up). Asking it is `shutil.which`, a probe of the
+#: Windows install folders and three `find_spec` disk looks, done twice a poll; the answer
+#: changes only when something is installed. A poll serves the last answer; one older than
+#: this is refreshed on a pool thread for the next. Only the very first poll asks inline.
+OCR_PROBE_TTL = 30.0
+_ocr_probe_state: dict = {"value": None, "at": 0.0, "refreshing": False}
+_ocr_probe_lock = threading.Lock()
+
+
+def _ocr_probe_ask() -> tuple[bool, str]:
+    return bool(ocr.local_available()), ocr.engine_name()
+
+
+def _ocr_probe_refresh() -> None:
+    try:
+        value = _ocr_probe_ask()
+    except Exception:  # noqa: BLE001  # a failed look keeps the last answer
+        logging.getLogger(__name__).info("OCR reader look failed; the last answer stands", exc_info=True)
+        value = _ocr_probe_state["value"]
+    with _ocr_probe_lock:
+        if value is not None:
+            _ocr_probe_state["value"] = value
+        _ocr_probe_state["at"] = time.monotonic()
+        _ocr_probe_state["refreshing"] = False
+
+
+def ocr_probe() -> tuple[bool, str]:
+    """`(a local reader can read, its name)`, remembered for `OCR_PROBE_TTL` seconds."""
+    with _ocr_probe_lock:
+        value = _ocr_probe_state["value"]
+        stale = time.monotonic() - _ocr_probe_state["at"] > OCR_PROBE_TTL
+        refresh = value is not None and stale and not _ocr_probe_state["refreshing"]
+        if refresh:
+            _ocr_probe_state["refreshing"] = True
+    if value is None:
+        _ocr_probe_refresh()
+        return _ocr_probe_state["value"] or (False, "Tesseract")
+    if refresh:
+        bgpool.thread("ocr-probe", _ocr_probe_refresh)
+    return value
+
+
+def forget_ocr_probe() -> None:
+    with _ocr_probe_lock:
+        _ocr_probe_state.update(value=None, at=0.0, refreshing=False)
 
 
 @router.get("/spec")

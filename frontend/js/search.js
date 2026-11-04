@@ -615,21 +615,25 @@ function finderRender() {
 function finderMove(step) {
   const rows = [...document.querySelectorAll("#finder-results .finder-row")];
   if (!rows.length) return;
+  //: **Reads first, then writes** (INBOX 1662: `onkeydown` 160ms, 101 of it forced layout): the row's box was
+  //: read after the class change, so every arrow press laid the list out.
+  const next = (finderState.active + step + rows.length) % rows.length;
+  const row = rows[next];
+  const box = row.parentElement;
+  const top = row.offsetTop;
+  const bottom = top + row.offsetHeight;
+  const seen = { top: box.scrollTop, height: box.clientHeight };
   if (finderState.active >= 0 && rows[finderState.active]) {
     rows[finderState.active].setAttribute("aria-selected", "false");
     rows[finderState.active].classList.remove("is-active");
   }
-  finderState.active = (finderState.active + step + rows.length) % rows.length;
-  const row = rows[finderState.active];
+  finderState.active = next;
   row.setAttribute("aria-selected", "true");
   row.classList.add("is-active");
   //: The list's own `scrollTop`, never `scrollIntoView`, which walks every
   //: scrolling ancestor including the page (DESIGN.md, the recipe index).
-  const box = row.parentElement;
-  const top = row.offsetTop;
-  const bottom = top + row.offsetHeight;
-  if (top < box.scrollTop) box.scrollTop = top;
-  else if (bottom > box.scrollTop + box.clientHeight) box.scrollTop = bottom - box.clientHeight;
+  if (top < seen.top) box.scrollTop = top;
+  else if (bottom > seen.top + seen.height) box.scrollTop = bottom - seen.height;
 }
 
 //: `opts.kind` opens on one kind's filter (the code editor's Ctrl+Shift+F

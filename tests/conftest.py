@@ -413,6 +413,21 @@ def _forget_the_docker_probe():
 
 
 @pytest.fixture(autouse=True)
+def _forget_the_ocr_probe():
+    """`/models/status` remembers the OCR reader question for thirty seconds
+    (routes_models.ocr_probe); a test that fakes a reader must not leave its
+    answer to the next one. Read from `sys.modules`, as the fixture below."""
+    def forget():
+        module = sys.modules.get("tessellate.api.routes_models")
+        if module is not None:
+            module.forget_ocr_probe()
+
+    forget()
+    yield
+    forget()
+
+
+@pytest.fixture(autouse=True)
 def _forget_ollama_down():
     """The refused-connection memory is module level; a test that refused one
     must not make the next test's Ollama look off. Read from `sys.modules`,

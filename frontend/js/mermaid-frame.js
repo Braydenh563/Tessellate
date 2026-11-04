@@ -97,15 +97,24 @@ function mermaidFrameConfigure(variables) {
 
 const mermaidFrameRun = { seq: 0, chain: Promise.resolve() };
 
+
+
 async function mermaidFrameDraw(request) {
+  const mermaidFrameYield = () => new Promise((resolve) => setTimeout(resolve, 0));
   const source = request.source.trim();
   if (!source) return { error: "The diagram is empty." };
   if (source.length > MERMAID_FRAME_MAX_SOURCE) return { error: "This diagram is too long to draw here." };
   mermaidFrameConfigure(mermaidFrameVariables(request.themeVariables));
   const domId = `mmd${++mermaidFrameRun.seq}`;
   try {
+    //: **Each step is its own task** (INBOX 1662: `DOMWindow.onmessage 245ms`): the draw ran inside the
+    //: message's promise chain, so the parse, the layout and the SVG build were all billed to one handler
+    //: and the page waited on the whole. A turn of the loop between them lets input and paint run.
+    await mermaidFrameYield();
     await mermaid.parse(source);
+    await mermaidFrameYield();
     const { svg } = await mermaid.render(domId, source);
+    await mermaidFrameYield();
     const ground = mermaidFrameVariables(request.themeVariables).background;
     return { svg: mermaidFrameSized(svg, typeof ground === "string" ? ground : "") };
   } catch (error) {
