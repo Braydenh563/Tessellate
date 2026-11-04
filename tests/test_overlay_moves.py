@@ -113,7 +113,8 @@ def test_a_throw_that_hits_the_ceiling_hangs_then_lets_go_and_falls() -> None:
     e = make()
     out, t = throw(e, to=(900, 100), start=(850, 600))
     seen, frames = False, []
-    while t < 40 and not (seen and e.state in ("land", "stand")):
+    # A hang lasts 30 to 200 s since INBOX 1670 (13:28Z); the old 40 s bound only held while the draw happened to be short.
+    while t < 260 and not (seen and e.state in ("land", "stand")):
         t += 0.016
         out = e.update(t)
         frames.append(out.frame)
@@ -159,7 +160,7 @@ def test_a_floater_drifts_across_the_width_and_a_band_above_its_rest_line_not_th
     # INBOX 1663 ("wayyy to high"): the height it uses is about its own, no more.
     # Intent moved (INBOX 1670, a buddy): it stays near home on the rest line, in a band no higher
     # than its own, and walks a few steps, not across the width.
-    assert max(ys) - min(ys) <= eng.FLOAT_BAND * e.size[1] + eng.HOVER[1] + eng.BOB + 2
+    assert max(ys) - min(ys) <= eng.FLOAT_BAND * e.size[1] + eng.HOVER[1] + 2  # no bob any more (16:40Z)
     assert 20 < max(xs) - min(xs) <= 2 * eng.STROLL + 20
     assert {"walk0", "walk3"} & frames
 

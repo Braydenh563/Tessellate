@@ -328,16 +328,18 @@ def test_the_desktop_companion_row_is_named_as_a_this_computer_setting():
     # The owner's report of 2026-11-04 moved this: Atlas floats (others walk), can be thrown,
     # hangs from the top and peeks from behind the taskbar, in both places.
     # The roam request of the same day: window tops, the switch and a reminder's card.
+    # Intent moved (INBOX 1670, 15:40Z): "sits still for minutes at a time" became "alive in place" (it stays put but
+    # breathes, blinks and sways its tail); both places still say how long it stays and that it is not bobbing.
     for words in ("floats like a wind spirit", "sleeps", "thrown", "hangs from the top", "peeks up from behind the taskbar", "animation effects",
                   "climbs onto the top of a window", "Roam over windows", "a card when a reminder falls due",
-                  "sits still for minutes at a time", "a portal, a puff of smoke, a glide", "never across the middle of the screen",
+                  "alive in place", "a portal, a puff of smoke, a glide", "never across the middle of the screen",
                   "right-click for Companion (Atlas masculine or feminine, or a saved Atlas companion)"):
         assert words in " ".join(popover.split()), words
     for topic in named:
         flat = " ".join(topic["body"].split())
         for words in ("floats like a wind spirit", "thrown", "hangs from the top", "peeks up from behind the taskbar", "animation effects",
                       "climbs onto the top of a window", "Roam over windows", "a card to click",
-                      "sits still for minutes at a time", "a portal, a puff of smoke, a glide", "never across the middle of the screen",
+                      "alive in place", "a portal, a puff of smoke, a glide", "never across the middle of the screen",
                       "Right-click it for Companion (Atlas masculine or feminine, or a saved Atlas companion; the rest show in the app only)"):
             assert words in flat, (topic["id"], words)
             assert len(topic["body"]) < 1900, topic["id"]

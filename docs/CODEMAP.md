@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7806, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8796, test files 2059, tests 17388, plan headings 1003, app scripts 28, boot scripts 37, script files 255.
+Counts: frontend functions 7806, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8796, test files 2063, tests 17419, plan headings 1003, app scripts 28, boot scripts 37, script files 255.
 
 ## Frontend functions (7806)
 
@@ -15792,8 +15792,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3368 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3496 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3369 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3497 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -22246,11 +22246,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Engine` | src/tessellate/core/overlay/engine.py:328 |
-| `Monitor` | src/tessellate/core/overlay/engine.py:284 |
-| `Output` | src/tessellate/core/overlay/engine.py:291 |
-| `Perch` | src/tessellate/core/overlay/engine.py:275 |
-| `_adjoins` | src/tessellate/core/overlay/engine.py:317 |
+| `Engine` | src/tessellate/core/overlay/engine.py:353 |
+| `Monitor` | src/tessellate/core/overlay/engine.py:309 |
+| `Output` | src/tessellate/core/overlay/engine.py:316 |
+| `Perch` | src/tessellate/core/overlay/engine.py:300 |
+| `_adjoins` | src/tessellate/core/overlay/engine.py:342 |
 
 ### src/tessellate/core/overlay/host.py (3)
 
@@ -22277,23 +22277,23 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `OverlayRunner` | src/tessellate/core/overlay/runner.py:80 |
-| `default_backend` | src/tessellate/core/overlay/runner.py:70 |
+| `OverlayRunner` | src/tessellate/core/overlay/runner.py:82 |
+| `default_backend` | src/tessellate/core/overlay/runner.py:72 |
 
 ### src/tessellate/core/overlay/sprites.py (10)
 
 | Name | File:line |
 |---|---|
-| `Frame` | src/tessellate/core/overlay/sprites.py:71 |
-| `SpriteSet` | src/tessellate/core/overlay/sprites.py:139 |
-| `_drawn_box` | src/tessellate/core/overlay/sprites.py:128 |
-| `clear_faint_alpha` | src/tessellate/core/overlay/sprites.py:117 |
-| `clipped` | src/tessellate/core/overlay/sprites.py:86 |
-| `effect` | src/tessellate/core/overlay/sprites.py:342 |
-| `frames_dir` | src/tessellate/core/overlay/sprites.py:105 |
-| `look_for` | src/tessellate/core/overlay/sprites.py:112 |
-| `mix` | src/tessellate/core/overlay/sprites.py:323 |
-| `premultiplied_bgra` | src/tessellate/core/overlay/sprites.py:134 |
+| `Frame` | src/tessellate/core/overlay/sprites.py:83 |
+| `SpriteSet` | src/tessellate/core/overlay/sprites.py:151 |
+| `_drawn_box` | src/tessellate/core/overlay/sprites.py:140 |
+| `clear_faint_alpha` | src/tessellate/core/overlay/sprites.py:129 |
+| `clipped` | src/tessellate/core/overlay/sprites.py:98 |
+| `effect` | src/tessellate/core/overlay/sprites.py:392 |
+| `frames_dir` | src/tessellate/core/overlay/sprites.py:117 |
+| `look_for` | src/tessellate/core/overlay/sprites.py:124 |
+| `mix` | src/tessellate/core/overlay/sprites.py:373 |
+| `premultiplied_bgra` | src/tessellate/core/overlay/sprites.py:146 |
 
 ### src/tessellate/core/overlay/travel.py (15)
 
@@ -24058,7 +24058,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17388)
+## Tests (17419)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25413,6 +25413,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_outbound_inventory.py | 4 |
 | tests/test_output_forms.py | 7 |
 | tests/test_outside_text_taints_chat.py | 3 |
+| tests/test_overlay_alive_1670.py | 12 |
 | tests/test_overlay_bob_1670.py | 3 |
 | tests/test_overlay_engine.py | 30 |
 | tests/test_overlay_float.py | 6 |
@@ -25423,12 +25424,15 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_life_1670.py | 25 |
 | tests/test_overlay_moves.py | 26 |
 | tests/test_overlay_rest_1670.py | 21 |
+| tests/test_overlay_rest_life_1670.py | 7 |
 | tests/test_overlay_ride_1670.py | 16 |
 | tests/test_overlay_roam.py | 19 |
 | tests/test_overlay_roam_runner.py | 10 |
 | tests/test_overlay_runner.py | 24 |
 | tests/test_overlay_smooth_1670.py | 11 |
 | tests/test_overlay_sprites.py | 17 |
+| tests/test_overlay_throw_ceiling_1670.py | 6 |
+| tests/test_overlay_tumble_1670.py | 6 |
 | tests/test_overlay_x11.py | 38 |
 | tests/test_overview_counts_1524.py | 3 |
 | tests/test_owner_typos.py | 21 |
@@ -26831,7 +26835,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:174 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:173 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4178 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |

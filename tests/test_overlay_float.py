@@ -60,16 +60,16 @@ def test_the_floater_stays_by_its_home_and_does_not_cross_the_screen_in_a_minute
     # in 60 s (1658, "it just floats there"). Now it lives by its home spot; a trip is rare.
     for seed in range(1, 9):
         _share, extent, _ticks = follow(make(seed), 60.0)
-        assert extent <= 2 * eng.STROLL + 2 * eng.FLOAT_SWAY + 4, (seed, extent)
+        assert extent <= 2 * eng.STROLL + 4, (seed, extent)  # no sway now (16:40Z)
 
 
-def test_a_resting_floater_does_not_bob_and_plays_the_idle_cycle_only_in_a_burst() -> None:
-    # Intent moved (INBOX 1670): no bob or sway at rest; the tail cycle plays now and then, in place.
+def test_a_resting_floater_does_not_bob_and_plays_the_idle_cycle_without_pause() -> None:
+    # Intent moved (INBOX 1670; 15:40Z): no bob or sway at rest; the tail cycle plays all the time, in place
+    # (it was a burst now and then, then a plain stand).
     e = make(3)
     e._enter("stand", 0.0)
     e.state_until = 1e9
     e.next_ambient = 1e9
-    e.burst_start, e.burst_until = 0.0, 4.0
     seen, frames, t = set(), set(), 0.0
     for _ in range(120):
         t += 0.066
@@ -77,8 +77,8 @@ def test_a_resting_floater_does_not_bob_and_plays_the_idle_cycle_only_in_a_burst
         seen.add((o.x, o.y))
         frames.add(o.frame)
     assert len(seen) == 1
-    assert any(f.startswith("idle") for f in frames)
-    assert o.frame == "stand"  # the burst is over: a plain stand again
+    assert {f for f in frames if f.startswith("idle")} >= {f"idle{i}" for i in range(0, 12, 2)}
+    assert o.frame.startswith("idle")  # still in the cycle
 
 
 def test_a_reduced_floater_does_not_bob_and_neither_does_a_typing_one() -> None:

@@ -59,19 +59,39 @@ from . import travel as tv
 
 #: Seconds.
 MAX_DT = 0.1
-#: One ambient moment (a blink, now and then a look) this far apart: each costs two
-#: wakes (start and end), so 60 s of standing is at most 20 (about 14).
-AMBIENT_EVERY = (25.0, 45.0)
-LOOK_SHARE = 0.25
+#: One ambient moment (a blink, now and then a look) this far apart, like the in-app companion's blinks
+#: (INBOX 1670, 16:40Z: irregular, 2 to 7 s): each costs two wakes (start and end). The gap is drawn
+#: skewed to the short end (a person blinks more often than not within 4 s), and one blink in `DOUBLE_SHARE`
+#: is followed by a second after `DOUBLE_GAP` seconds.
+AMBIENT_EVERY = (2.0, 7.0)
+AMBIENT_SKEW = 1.4
+DOUBLE_SHARE = 0.14
+DOUBLE_GAP = 0.16
+LOOK_SHARE = 0.12
 BLINK_FOR = 0.18
 LOOK_FOR = 1.2
 STAND_FOR = (3.0, 8.0)
 #: A settled spell (INBOX 1670, 13:15Z: "it can't sit still"): standing, it stays put this long before it
 #: so much as picks something to do (median about six minutes); a blink or a tail beat does not break it.
 SETTLE_FOR = (200.0, 520.0)
-#: Standing, the idle cycle (a tail beat and a breath, `IDLE_FRAMES` frames) plays once in a while, not
-#: all the time: a still figure costs no redraws between.
-IDLE_BURST = (20.0, 40.0)
+#: Sitting and sleeping live in place on the body pose (INBOX 1670, 15:40Z: "doesnt have any subtle animation",
+#: like the in-app companion): a breath and a slow tail sway, as (breath period s, share of height, tail px,
+#: tail period s). The window never moves; asleep the breath is slower and deeper. The tail's period is not a
+#: multiple of the breath's, wanders by `TAIL_WANDER` of itself over `TAIL_WANDER_S` and trails the body by
+#: `TAIL_LAG` seconds, with a second, faster sway over the first (INBOX 1670, 16:40Z: no rigid loop, like the
+#: in-app tail), so the pair never repeats; every picture is on the pose grid and the cache holds the recent ones.
+REST_LIFE = {"sit": (4.8, 0.012, 3.0, 3.7), "sleep": (7.5, 0.016, 2.0, 11.3)}
+TAIL_WANDER = 0.12
+TAIL_WANDER_S = 43.0
+TAIL_LAG = 0.9
+#: Finer than the walk's grid so a 1.5 px breath is a few smooth steps, not a hard on and off.
+Q_BREATH = 0.005
+#: A drifting floater breathes in the figure (share of height, period s) now that the window does not bob.
+DRIFT_BREATH = 0.012
+DRIFT_BREATH_S = 4.4
+#: A rest redraw is at most this often: 12 a second.
+REST_DRAW_MS = 84
+STAND_FAMILY = ("stand", "blink", "look")
 WALK_FOR = (4.0, 12.0)
 SIT_FOR = (8.0, 20.0)
 WAVE_FOR = 1.4
@@ -85,9 +105,9 @@ NOTICE_COOLDOWN = 8.0
 #: keyboard, since the big acts (hang, peek) come two to four minutes apart.
 IDLE_SIT = 600.0
 IDLE_SLEEP = 1200.0
-#: The idle cycle (`idle0` to `idle11`, one tail beat and one breath): a standing
-#: figure draws these at `IDLE_FPS` so the parts move; reduced or typing-quiet it
-#: is the one `stand` frame and costs no wake.
+#: The idle cycle (`idle0` to `idle23`, one tail beat and one breath): a standing figure draws these at
+#: `IDLE_FPS` all the time so the parts never stop (INBOX 1670, 15:40Z); reduced it is the one `stand` frame
+#: and costs no wake.
 IDLE_FRAMES = 24
 #: 24 frames at 6 a second keep the cycle at 4 s (one tail beat, one breath) with twice the in-betweens.
 #: Faster would be the energetic child the owner does not want (INBOX 1670, 14:10Z).
@@ -154,30 +174,42 @@ THROW_MIN = 350.0
 THROW_MAX = 3200.0
 BOUNCE_DAMP = 0.55
 BONK_FOR = 0.3
-#: Radians per second of spin at full throw speed, and the angles the frames come in.
+#: A thrown figure's spin (INBOX 1670, 17:05Z: it turned "by 45 degrees each time, at 1 second intervals"):
+#: the angle is continuous and drawn in `SPIN_STEPS` frames of 7.5 degrees. The turn rate is set at the
+#: release (`SPIN_OMEGA` rad/s from a slow throw to a hard one, plus `SPIN_SWIRL` for a throw that curls),
+#: fades by its own drag, and a contact changes it; it is not tied to the speed of the flight.
 #: Slower than this (px per second at 96 dpi) a thrown figure stops tumbling.
 FLY_SPIN_MIN = 60.0
 #: It lays the tumble down only after being this slow for this long (s): a vertical throw is
 #: under FLY_SPIN_MIN for a few frames at its apex, and the held pose (a smaller canvas) in
 #: between flickered the window's size and offset (review of INBOX 1670).
 FLY_REST_DWELL = 0.3
-SPIN_RATE = 9.0
-SPIN_STEPS = 8
+SPIN_OMEGA = (2.5, 11.0)
+SPIN_SWIRL = 3.0
+SPIN_DRAG = 0.5
+SPIN_CONTACT = 0.6
+#: Once the flight is this slow (px per second at 96 dpi), or it is on the floor, it rights itself with an
+#: eased turn (a critically damped spring to the nearest upright, `RIGHT_W` rad/s, ramped in over `RIGHT_RAMP`
+#: s so the turn rate stays continuous) and is laid down only when upright.
+RIGHT_SPEED = 150.0
+RIGHT_W = 2.6
+RIGHT_RAMP = 0.4
+SPIN_STEPS = 48
 SPIN_FRAMES_ENGINE = tuple(f"spin{i}" for i in range(SPIN_STEPS))
 #: A floater: hover height range above the floor, speed, turn rate, air drag,
 #: and the pull back to its hover height (per second squared per pixel).
 #: Its rest line: a hand's breadth above the work area's bottom, so the feet are on the
-#: taskbar (INBOX 1670: "it still sits like 20px above the bottom bar"). The bob lifts it
-#: from there; it never sinks below. Was (24, 80), a figure's height up.
+#: taskbar (INBOX 1670: "it still sits like 20px above the bottom bar"). It never sinks below. Was (24, 80), a figure's height up.
 HOVER = (0.0, 0.0)
-#: How fast the bob and sway fade in and out (share of full per second), so a state that
-#: ends the bob eases it away and never snaps the figure by its height (INBOX 1670: "jolting").
-BOB_EASE = 3.0
-#: ... and how fast it fades when it arrives: about a second (INBOX 1670, 13:25Z: "why does it bob up and
-#: down so much, it is floating"). It bobs only while it travels; at rest it is still.
-BOB_EASE_OUT = 1.0
 #: How far below the work area's top a released figure's head may be and still take hold.
 HANG_REACH = 0.3
+#: The ceiling takes hold of a throw only when it was thrown hard and mostly upward (INBOX 1670, 15:45Z: "nearly every
+#: time I throw it no matter how hard, it goes to the top to hang"): this much upward launch speed (logical px per
+#: second, over half of `THROW_MAX`) and at least this share of the throw's speed pointing up. It is read at the
+#: launch, not at the top, because a floater's drag takes most of a hard throw's speed before it gets there. Any
+#: other throw bounces off the top like a side wall.
+CEIL_CATCH = 2000.0
+CEIL_UPWARD = 0.8
 FLOAT_SPEED = 85.0
 FLOAT_TURN = 1.8
 FLOAT_DRAG = 3.0
@@ -185,20 +217,13 @@ FLOAT_PULL = 3.0
 REACHED = 2.0
 #: A floater travels (INBOX 1658: "it just floats there"): each leg is at least this share
 #: of the work area's width, it rests only a moment between legs, and while it is
-#: out it bobs (up to BOB logical px) and sways (FLOAT_SWAY), redrawn when it moves a pixel.
+#: out it travels; the window never bobs or sways (INBOX 1670, 16:40Z: it must not jitter up and down).
 FLOAT_LEG = (0.35, 0.8)
 FLOAT_STAND_FOR = (0.8, 2.0)
 #: A wandering leg aims within this many figure heights above the rest line (INBOX 1663:
 #: "floats wayyy to high"); only a trip to a window or an edge goes higher.
 FLOAT_BAND = 0.35
 FLOAT_MOVE_WEIGHT = 150
-#: The bob is slow and small (INBOX 1670: "bobs up and down quite fast"): a 4 s period, 2 px at rest
-#: on the floor (so the feet are within 2 px of the taskbar), up to 4 px well off it.
-BOB = 4.0
-BOB_REST = 2.0
-BOB_HZ = 0.25
-FLOAT_SWAY = 2.0
-FLOAT_SWAY_HZ = 0.18
 #: Hang from the top edge, and the climb up to it. The window holds still while it hangs
 #: (INBOX 1663: "slides a little from side to side"): any life is in the frames.
 HANG_FOR = (45.0, 120.0)
@@ -349,6 +374,9 @@ class Engine:
         self.roam = roam
         self.reduced = reduced
         self.rng = rng or random.Random()
+        #: Blinks and glances draw from their own stream (seeded from the engine's, not drawn from it), so the
+        #: far more frequent ambient moments leave every other choice the same for a seed.
+        self.life_rng = random.Random(self.rng.getstate()[1][0])
         self.gait = "float" if gait == "float" else "walk"
         #: The share of the hang frame's height that is clear above the hands.
         self.hang_top = min(max(float(hang_top), 0.0), 0.5)
@@ -362,7 +390,7 @@ class Engine:
         self.facing = -1  # the frames face right; -1 is left (mirrored)
         self.vx = self.vy = 0.0
         self.last_active = now
-        self.next_ambient = now + self.rng.uniform(*AMBIENT_EVERY)
+        self.next_ambient = now + self._ambient_gap()
         self.flash: tuple[str, float] | None = None  # (frame, until): a blink or a look
         self.notice_ready = now
         self.walk_started = now
@@ -376,7 +404,11 @@ class Engine:
         self.pre_press = "stand"
         self.bonk_until = 0.0
         self.angle = 0.0
-        self.spin_dir = 1
+        self.omega = 0.0  # a thrown figure's turn rate, rad/s
+        self.right_t = 0.0  # seconds it has been righting itself
+        self.grounded = False  # a walker's tumble that has reached the floor
+        self.laid = False  # upright and slow: the held pose, for good until the next throw
+        self.ground_mon: Monitor | None = None  # the screen a walker's tumble landed on
         self.slow_for = 0.0  # seconds a thrown figure has been under FLY_SPIN_MIN
         self.heading = 0.0
         self.goal: tuple[float, float] | None = None
@@ -441,14 +473,14 @@ class Engine:
         self.hang_started = now
         self.hang_phase = 0.0
         self.hang_glance_at = math.inf
-        self.burst_start = 0.0
-        self.burst_until = -1e9
+        self.idle_start = 0.0
+        self.launch = (0.0, 0.0)  # the last throw's velocity: the ceiling holds a hard upward one
         self.plain_legs = False  # tests: every leg is the plain walk or drift, no vanish, no glide
         self.relocate_at: float | None = None
         #: The drawn box of every frame, `(name, mirrored) -> (left, top, right, bottom)` in px
         #: from where the window is placed (`SpriteSet.metrics`); empty means "the whole window".
         self.metrics: dict[tuple[str, bool], tuple[float, float, float, float]] = {}
-        self.bob_gain = 0.0
+        self._stand_bottom: float | None = None
         self.sink_max = PEEK_HEAD
         self.peek_edge: str | None = None
         self.peek_started = now
@@ -468,6 +500,7 @@ class Engine:
 
     def set_metrics(self, metrics: dict[tuple[str, bool], tuple[float, float, float, float]]) -> None:
         self.metrics = dict(metrics)
+        self._stand_bottom = None
 
     def _box(self, frame: str, flip: bool | None = None) -> tuple[float, float, float, float]:
         flip = self.facing < 0 if flip is None else flip
@@ -481,12 +514,27 @@ class Engine:
             return 0.0
         if frame.startswith("spin"):
             frame = "held"
+        elif frame in STAND_FAMILY or frame.startswith(("idle", "walk")) or frame == "wave":
+            # the wave and the walk or drift cycle stand on the stand's line: their own boxes are up to 4 px
+            # lower on one look (its tail), which hopped the window at entry and with every step (16:40Z)
+            return max(0.0, self.size[1] - self._stand_family_bottom())
+        elif frame == "sitblink":
+            frame = "sit"
         return max(0.0, self.size[1] - self._box(frame, False)[3])
+
+    def _stand_family_bottom(self) -> float:
+        """The lowest drawn row of the stand, its blink and look and the whole idle cycle: they share one
+        rest line, so the window never moves while the figure lives in place (INBOX 1670, 15:40Z) and no
+        picture of the cycle dips under the floor."""
+        if self._stand_bottom is None:
+            names = (*STAND_FAMILY, *(f"idle{i}" for i in range(IDLE_FRAMES)))
+            self._stand_bottom = max(self.metrics[(n, False)][3] for n in names if (n, False) in self.metrics)
+        return self._stand_bottom
 
     def _fly_frame(self) -> str:
         """What a thrown figure shows: the tumble while it has speed, a limp upright pose
         (the held one, same foot offset) once it drifts to rest, so the settle is no step."""
-        if self.slow_for >= FLY_REST_DWELL:
+        if self.laid:
             return "held"
         return f"spin{int(round(self.angle / (2 * math.pi / SPIN_STEPS))) % SPIN_STEPS}"
 
@@ -589,7 +637,7 @@ class Engine:
     def resume(self, now: float) -> None:
         """After a suspend or a long stall: no jump, no catching up."""
         self.now = now
-        self.next_ambient = now + self.rng.uniform(*AMBIENT_EVERY)
+        self.next_ambient = now + self._ambient_gap()
         self.state_until = max(self.state_until, now + 1.0)
         self.last_active = now
         if self.state in ("peek", "emerge"):
@@ -611,6 +659,8 @@ class Engine:
         self.trip = False
         if state != "warp":
             self.warp = None
+        if state == "stand":
+            self.idle_start = now  # the cycle starts from its first picture
         if state in HOLD_RANGES:
             self.state_until = now + self.rng.uniform(*HOLD_RANGES[state])
         elif state in HOLD_FIXED:
@@ -623,7 +673,6 @@ class Engine:
             self.state_until = min(self.state_until, max(now + 1.0, self.perch_until))
 
     def _on_warp(self, now: float) -> None:
-        self.bob_gain = 0.0
         self.state_until = math.inf
 
     def _on_walk(self, now: float) -> None:
@@ -646,7 +695,6 @@ class Engine:
             self.heading = self.rng.uniform(0, 2 * math.pi)
 
     def _on_hang(self, now: float) -> None:
-        self.bob_gain = 0.0  # hands on an edge hold still
         self.state_until = now + self.rng.uniform(*bh.HANG_BY_MOOD.get(self.mind.mood(now, self.hour), HANG_FOR))
         self.phase_started = self.hang_started = now
         self.hang_phase = self.rng.uniform(0.0, 2 * math.pi)
@@ -657,7 +705,6 @@ class Engine:
         self.phase_started = now
 
     def _on_peek(self, now: float) -> None:
-        self.bob_gain = 0.0  # the hidden strip must lie exactly past the edge
         self.peek_started, self.peek_turned = now, False
         self.state_until = now + PEEK_PLAN[-1][0]
 
@@ -706,7 +753,6 @@ class Engine:
             self._keep_off_caret(now)
         if self.turn_to:  # a turn begun in an act or a stand still finishes
             self._turning(now)
-        self._ease_bob(dt)
         self._follow_through(now, dt)
         if self.settled_now and self.placed:  # where the person left it is home
             self.home_x, self.placed = self.x, False
@@ -766,6 +812,8 @@ class Engine:
         elif s_ in ("walk", "drift") and self.turn_to == 0:
             speed = min(1.0, abs(self.vx_px) / (WALK_SPEED * self._scale() * 1.2))
             lean = LEAN_MAX * speed * (1 if self.vx_px > 0 else -1) * (1.6 if self.mode == "dash" else 1.0)
+            if self.gait == "float":  # the window never bobs: a floater's breath is in the figure
+                sy = 1.0 + DRIFT_BREATH * (1.0 - math.cos(2 * math.pi * now / DRIFT_BREATH_S)) / 2.0
             if self.gait == "walk":  # a ground companion bounces with its steps
                 sy = 1.0 + 0.012 * math.sin(self.travel / self._scale() * 2 * math.pi / (STRIDE * 2))
         elif s_ == "stand":
@@ -778,16 +826,40 @@ class Engine:
         edge (those frames carry their own shape, and a spin sits on a bigger canvas)."""
         if self.state in POSE_OFF:
             return None
-        q = bh.quantised(self.cur)
+        q = self._life_pose(self.now)
         return None if q is None else (q.sx, q.sy, q.lean, q.drag)
 
-    def _ease_bob(self, dt: float) -> None:
-        """The bob's strength follows whether it should bob, at `BOB_EASE` a second."""
-        want = 1.0 if self._bobbing() else 0.0
-        if want > self.bob_gain:
-            self.bob_gain = min(want, self.bob_gain + BOB_EASE * dt)
-        else:
-            self.bob_gain = max(want, self.bob_gain - BOB_EASE_OUT * dt)
+    def _life_pose(self, at: float) -> bh.Pose | None:
+        """The eased body pose with the breath and tail sway of a sit or a sleep over it, on the grid."""
+        life = REST_LIFE.get(self.state)
+        if life is None or self.reduced:
+            return bh.quantised(self.cur)
+        breath, depth, sway, sway_s = life
+        c = self.cur
+        swell = (1.0 - math.cos(2 * math.pi * at / breath)) / 2.0
+        return bh.quantised(bh.Pose(c.sx, c.sy * (1.0 + depth * swell), c.lean, c.drag + self._rest_tail(at, life)), Q_BREATH)
+
+    def _rest_tail(self, at: float, life: tuple[float, float, float, float]) -> float:
+        """The tail's lag, px: a slow sway whose period drifts, a faster one over it, and the body's own breath a
+        beat late, so a sit never repeats and the tail follows the body rather than keeping time with it."""
+        breath, _depth, sway, sway_s = life
+        tau = 2 * math.pi
+        drift = TAIL_WANDER * TAIL_WANDER_S / sway_s * math.sin(tau * at / TAIL_WANDER_S)  # period within +-12 percent
+        slow = math.sin(tau * at / sway_s + drift)
+        fast = math.sin(tau * at / (sway_s * 0.62) + 1.7)
+        late = (1.0 - math.cos(tau * (at - TAIL_LAG) / breath)) / 2.0 - 0.5
+        return sway * self._scale() * (0.65 * slow + 0.3 * fast + 0.4 * late)
+
+    def _next_life_change(self, now: float) -> float:
+        """The next time a sit's or a sleep's breath or sway crosses a step of the grid, looking ahead
+        at most `POLL_QUIET_MS` and never sooner than a redraw's pace (12 a second)."""
+        base = self._life_pose(now)
+        t, pace = now, REST_DRAW_MS / 1000.0
+        while t < now + POLL_QUIET_MS / 1000.0:
+            t += pace
+            if self._life_pose(t) != base:
+                return t
+        return now + POLL_QUIET_MS / 1000.0
 
     def _advance(self, now: float, dt: float, pointer: tuple[int, int] | None) -> None:
         handler = getattr(self, f"_do_{self.state}")
@@ -799,21 +871,24 @@ class Engine:
 
     # --- states -----------------------------------------------------------------------------
 
+    def _ambient_gap(self) -> float:
+        lo, hi = AMBIENT_EVERY
+        return lo + (hi - lo) * self.life_rng.random() ** AMBIENT_SKEW
+
     def _ambient(self, now: float) -> None:
-        """Blink and look about: only while standing, and only when motion is allowed."""
+        """Blink, and now and then look about: while standing (a sit blinks, it does not look), and only
+        when motion is allowed."""
         if self.reduced:
             return
         if self.flash and now >= self.flash[1]:
+            if self.flash[0] == "look":  # the cycle resumes where the look paused it, not on another picture
+                self.idle_start += now - (self.flash[1] - LOOK_FOR)
             self.flash = None
         if self.flash is None and now >= self.next_ambient:
-            roll = self.rng.random()
-            if roll < LOOK_SHARE:
-                self.flash = ("look", now + LOOK_FOR)
-            elif roll < LOOK_SHARE + 0.12 and self.idle_frames > 0:  # one tail beat and breath, then still
-                self.burst_start, self.burst_until = now, now + self.idle_frames / self._idle_fps()
-            else:
-                self.flash = ("blink", now + BLINK_FOR)
-            self.next_ambient = now + self.rng.uniform(*AMBIENT_EVERY)
+            look = self.state == "stand" and self.life_rng.random() < LOOK_SHARE
+            self.flash = ("look", now + LOOK_FOR) if look else ("blink", now + BLINK_FOR)
+            double = not look and self.life_rng.random() < DOUBLE_SHARE
+            self.next_ambient = now + (BLINK_FOR + DOUBLE_GAP if double else self._ambient_gap())
 
     def _after_stand(self, now: float) -> None:
         idle = now - self.last_active
@@ -1793,6 +1868,7 @@ class Engine:
         self._after_stand(now)
 
     def _do_sit(self, now: float, dt: float) -> None:
+        self._ambient(now)
         idle = now - self.last_active
         if idle >= IDLE_SLEEP:
             self._enter("sleep", now)
@@ -1968,6 +2044,11 @@ class Engine:
         self.y = max(self.y, uy0)  # a step may carry it past the top: the drawn box stops at the edge
         if self.y > max(top - self._lift(), uy0):
             return False
+        if not self._ceiling_holds():  # it bounces off the top like a side wall and drifts back down
+            self.vy = abs(self.vy) * BOUNCE_DAMP
+            self.bonk_until = now + BONK_FOR
+            self._spin_contact(1.0 if self.vx >= 0 else -1.0)
+            return False
         hang_y, drawn = top - self._lift(), self.y + self._dy("held")
         self.vx = self.vy = self.angle = 0.0
         if abs(drawn - hang_y) > 4.0 * scale:  # caught above where the hands go: reach up to it
@@ -1976,6 +2057,11 @@ class Engine:
             self.y = hang_y
             self._enter("hang", now)
         return True
+
+    def _ceiling_holds(self) -> bool:
+        """Whether the throw now reaching the top was hard and mostly upward (see `CEIL_CATCH`)."""
+        vx, vy = self.launch
+        return -vy >= CEIL_CATCH * self._scale() and -vy >= CEIL_UPWARD * math.hypot(vx, vy)
 
     def _track_rest(self, speed: float, dt: float) -> None:
         """Count how long a thrown figure has been slow. Once it has been long enough it is laid
@@ -1988,7 +2074,7 @@ class Engine:
         """Thrown: ballistic (gravity for a walker; for a floater air drag and a gentle
         pull to its hover height). Bounces off the outer walls, hangs from the ceiling."""
         scale = self._scale()
-        m = self.current_monitor()
+        m = self.ground_mon if self.grounded and self.ground_mon else self.current_monitor()
         floater = self.gait == "float"
         if floater:
             decay = math.exp(-FLOAT_DRAG * dt)
@@ -2000,15 +2086,8 @@ class Engine:
         self.y += self.vy * dt
         speed = math.hypot(self.vx, self.vy)
         self._track_rest(speed, dt)
-        self.angle += self.spin_dir * SPIN_RATE * min(1.0, speed / (THROW_MAX * 0.4 * scale)) * dt
-        # the walls are of what is drawn: the tumble's widest frame, not the window around it
-        ux0, ux1, uy0, uy1 = self._ride_limits("fly")
-        if self.x < ux0 and self._open_side(m, "left"):
-            self.x, self.vx = ux0, abs(self.vx) * BOUNCE_DAMP
-            self.bonk_until = now + BONK_FOR
-        elif self.x > ux1 and self._open_side(m, "right"):
-            self.x, self.vx = ux1, -abs(self.vx) * BOUNCE_DAMP
-            self.bonk_until = now + BONK_FOR
+        self._spin(dt, speed)
+        uy0, uy1 = self._fly_walls(m, now)
         if self._hit_ceiling(m, uy0, now):
             return
         floor = min(self.floor_y(m), uy1) if self._open_side(m, "bottom") else self.floor_y(m)
@@ -2016,13 +2095,40 @@ class Engine:
             self.y = min(self.y, floor)
             # at the drawn-box limit counts as down: the tumble's box is taller than the figure, so the
             # limit can sit above the rest line, and it hung there in the limp pose (INBOX 1670)
-            if speed < 25 * scale and (abs(self.ground_y(m) - self.y) < 4 * scale or self.y >= floor - 0.5):
+            if speed < 25 * scale and self._righted() and (abs(self.ground_y(m) - self.y) < 4 * scale or self.y >= floor - 0.5):
                 self.vx = self.vy = 0.0
                 self.y = self.ground_y(m)
                 self.settled_now = True
                 self._enter("stand", now)
         elif self.y >= floor:
-            self.y, self.vy, self.vx = self.floor_y(m), 0.0, 0.0
+            self._land_tumble(m, floor, dt, now)
+
+    def _fly_walls(self, m: Monitor, now: float) -> tuple[float, float]:
+        """Bounce off an open side wall (the walls are of what is drawn: the tumble's widest frame, not the
+        window around it); returns the drawn box's top and bottom limits."""
+        ux0, ux1, uy0, uy1 = self._ride_limits("fly")
+        if self.x < ux0 and self._open_side(m, "left"):
+            self.x, self.vx = ux0, abs(self.vx) * BOUNCE_DAMP
+            self.bonk_until = now + BONK_FOR
+            self._spin_contact(1.0)
+        elif self.x > ux1 and self._open_side(m, "right"):
+            self.x, self.vx = ux1, -abs(self.vx) * BOUNCE_DAMP
+            self.bonk_until = now + BONK_FOR
+            self._spin_contact(-1.0)
+        return uy0, uy1
+
+    def _land_tumble(self, m: Monitor, floor: float, dt: float, now: float) -> None:
+        """A walker's tumble reaches the floor: it slides to a stop and rights itself there, then lands."""
+        self.y, self.vy = floor, 0.0
+        if not self.grounded:
+            self.grounded = True
+            self.ground_mon = m  # the slide stays on the screen it landed on: a seam would jump the floor under it
+            self._spin_contact(1.0 if self.vx >= 0 else -1.0)
+        self.vx *= math.exp(-6.0 * dt)
+        self.x = min(max(self.x, m.area[0]), m.area[2] - self.size[0])
+        if self._righted() and abs(self.vx) < 20 * self._scale():
+            self.vx = 0.0
+            self.y = self.floor_y(m)
             self.settled_now = True
             self._enter("land", now)
 
@@ -2097,11 +2203,48 @@ class Engine:
         self.y += self._dy(self._frame(self.now)) - self._dy("fall")  # drawn where it was
         self._enter("fall", self.now)
 
-    def _start_fly(self, vx: float, vy: float) -> None:
+    def _launch_spin(self, vx: float, vy: float, swirl: float) -> float:
+        """The turn rate a throw leaves with: faster for a harder throw, in the direction it moves sideways,
+        and a curling throw adds its swirl (-1 to 1, clockwise positive). A drop (no speed) leaves none."""
+        speed = math.hypot(vx, vy)
+        if speed < 1.0:
+            return 0.0
+        lo, hi = SPIN_OMEGA
+        rate = lo + (hi - lo) * min(1.0, speed / (THROW_MAX * 0.5 * self._scale()))
+        turn = (1.0 if vx > 0 else -1.0) if abs(vx) > 1.0 else (1.0 if swirl >= 0 else -1.0)
+        return max(-hi, min(hi, turn * rate + SPIN_SWIRL * swirl))
+
+    def _spin(self, dt: float, speed: float) -> None:
+        """One step of the turn: its own drag, and once the flight is slow (or on the floor) an eased turn
+        to the nearest upright."""
+        self.omega *= math.exp(-SPIN_DRAG * dt)
+        slow = speed < RIGHT_SPEED * self._scale() or self.grounded
+        self.right_t = self.right_t + dt if slow else 0.0
+        if self.right_t > 0.0:
+            gain = bh.smooth(min(1.0, self.right_t / RIGHT_RAMP))
+            err = self.angle - round(self.angle / (2 * math.pi)) * 2 * math.pi
+            self.omega -= gain * (RIGHT_W * RIGHT_W * err + 2 * RIGHT_W * self.omega) * dt
+        self.angle += self.omega * dt
+        if self.slow_for >= FLY_REST_DWELL and self._righted():
+            self.laid = True  # laid down for good until the next throw: the held pose never swaps back to the tumble
+
+    def _righted(self) -> bool:
+        """Upright and still turning no more than a drift: safe to lay down."""
+        err = self.angle - round(self.angle / (2 * math.pi)) * 2 * math.pi
+        return abs(err) < 0.06 and abs(self.omega) < 0.5
+
+    def _spin_contact(self, push: float) -> None:
+        """A bounce takes some of the turn, reverses it and adds the kick of the surface (`push` -1 to 1)."""
+        hi = SPIN_OMEGA[1]
+        self.omega = max(-hi, min(hi, -SPIN_CONTACT * self.omega + SPIN_SWIRL * 0.5 * push))
+
+    def _start_fly(self, vx: float, vy: float, swirl: float = 0.0) -> None:
         self.vx, self.vy = vx, vy
-        self.slow_for = 0.0
+        self.launch = (vx, vy)
+        self.slow_for = self.right_t = 0.0
+        self.grounded = self.laid = False
         self.y += self._dy(self._frame(self.now)) - self._dy("spin0")  # drawn where it was
-        self.spin_dir = 1 if vx >= 0 else -1
+        self.angle, self.omega = 0.0, self._launch_spin(vx, vy, swirl)
         if abs(vx) > 1:
             self.facing = 1 if vx > 0 else -1
         self._enter("fly", self.now)
@@ -2196,13 +2339,23 @@ class Engine:
         m = self.current_monitor()
         x0, x1, _y0, _y1 = self._ride_limits("held")
         self.x = min(max(self.x, max(x0, m.area[0] - self._ride_box("held")[0])), min(x1, m.area[2] - self._ride_box("held")[2]))
-        if self._grab_edge(now):
-            return
         velocity = None if self.reduced else self._throw_velocity(now, px, py)
-        if velocity is not None:
-            self._start_fly(*velocity)
-        else:
+        if velocity is not None:  # a throw is a throw: only a release that is not one takes hold near an edge
+            self._start_fly(*velocity, self._swirl(now, px, py))
+        elif not self._grab_edge(now):
             self._drop(now)
+
+    def _swirl(self, now: float, px: int, py: int) -> float:
+        """How much the pointer's path curled over the throw window, -1 to 1 (clockwise on screen positive):
+        the mean of the turn between each pair of steps. A straight flick is 0."""
+        pts = [(x, y) for t, x, y in self.trail if t >= now - THROW_WINDOW] + [(px, py)]
+        turns = []
+        for a, b, c in zip(pts, pts[1:], pts[2:]):
+            d1, d2 = (b[0] - a[0], b[1] - a[1]), (c[0] - b[0], c[1] - b[1])
+            norm = math.hypot(*d1) * math.hypot(*d2)
+            if norm > 1e-6:
+                turns.append((d1[0] * d2[1] - d1[1] * d2[0]) / norm)
+        return max(-1.0, min(1.0, 3.0 * sum(turns) / len(turns))) if turns else 0.0
 
     def _grab_edge(self, now: float) -> bool:
         """Let go with the head near the work area's top, or near the bottom edge of a window's
@@ -2311,6 +2464,8 @@ class Engine:
             return self._edge_frame(now)
         if s == "stand":
             return self._stand_frame(now)
+        if s == "sit" and self.flash:  # eyelids over the sat figure's eyes (`SpriteSet` derives the frame)
+            return "sitblink"
         return s  # sit, sleep, wave, fall, land
 
     def _step_frame(self, now: float, s: str) -> str:
@@ -2336,14 +2491,14 @@ class Engine:
     def _idling(self) -> bool:
         """Standing with life in its parts: not reduced, frames present. Typing keeps it in
         place, not lifeless (INBOX 1670: "it is also not animated")."""
-        return self.state == "stand" and not self.reduced and self.idle_frames > 0 and self.now < self.burst_until
+        return self.state == "stand" and not self.reduced and self.idle_frames > 0
 
     def _idle_fps(self) -> float:
         """Frames a second: a shipped set of fewer frames plays slower, so the cycle stays 4 s."""
         return IDLE_FPS * max(1, self.idle_frames) / IDLE_FRAMES
 
     def _idle_index(self, now: float) -> int:
-        return int((now - self.burst_start) * self._idle_fps() + 1e-6) % self.idle_frames
+        return int((now - self.idle_start) * self._idle_fps() + 1e-6) % self.idle_frames
 
     def _wake(self, now: float) -> int | None:
         s = self.state
@@ -2362,10 +2517,11 @@ class Engine:
             return TAIL_TICK_MS
         if s == "pressed":
             return None
-        if self.bob_gain > 0 and not self._bobbing():  # the bob is easing away: keep drawing it
-            return TICK_WALK_MS
-        if s in ("sleep", "sit"):
-            return POLL_QUIET_MS
+        if s in REST_LIFE:  # alive in place: the next step of the breath or the tail (or a sit's blink), else the pointer look
+            nxt = self._next_life_change(now)
+            if s == "sit":
+                nxt = min(nxt, self.flash[1] if self.flash else self.next_ambient)
+            return max(REST_DRAW_MS if not self.flash else MIN_WAKE_MS, min(POLL_QUIET_MS, int(math.ceil((nxt - now) * 1000))))
         return self._wake_at_rest(now, s)
 
     def _wake_at_rest(self, now: float, s: str) -> int | None:
@@ -2388,49 +2544,15 @@ class Engine:
         return max(abs(a - b) for a, b in zip(self.cur, self.pose_goal)) > 0.006
 
     def _due(self, now: float) -> list[float]:
-        """The times a calm state next needs a redraw: its end, an ambient act, a bob step, an idle frame."""
+        """The times a calm state next needs a redraw: its end, an ambient act, an idle frame."""
         s = self.state
         due = [self.state_until] if s != "stand" or (self.roam and not self.reduced) else []
         if s == "stand":
             due += [self.flash[1]] if self.flash else [self.next_ambient]
             due.append(self.last_active + IDLE_SIT)
-        if self._bobbing() or self.bob_gain > 0:  # the next bob step (or the end of one)
-            due.append(self._next_bob_step(now))
         if self._idling():  # the next idle frame: a redraw only when the index changes
-            due.append(min(self.burst_until, self.burst_start + (math.floor((now - self.burst_start) * self._idle_fps() + 1e-6) + 1) / self._idle_fps()))
+            due.append(self.idle_start + (math.floor((now - self.idle_start) * self._idle_fps() + 1e-6) + 1) / self._idle_fps())
         return due
-
-    def _bobbing(self) -> bool:
-        """A floater out in the air, standing or drifting, with motion allowed: it bobs
-        and sways (never on a window it rests on, or while reduced; typing keeps it in place
-        but still bobbing, INBOX 1670)."""
-        return (
-            self.gait == "float" and self.state == "drift" and not self.reduced
-            and self.perch is None and self.sink <= 0 and not (self.trip and self.then.split("_")[0] in ("hang", "peek"))
-        )
-
-    def _bobbed(self, x: float, y: float, at: float) -> tuple[float, float]:
-        """The rest position with the bob and sway of time `at` (a slow breath, `BOB_HZ`)."""
-        m, k, w = self.current_monitor(), self._scale(), self.size[0]
-        tau, g = 2 * math.pi * at, self.bob_gain
-        air = min(1.0, max(0.0, (self.ground_y(m) - self.y) / (30 * k)))
-        amp = BOB_REST + (BOB - BOB_REST) * air
-        y = max(m.area[1], y - g * amp * k * (0.5 + 0.5 * math.sin(tau * BOB_HZ)))
-        x = min(max(x + g * FLOAT_SWAY * k * math.sin(tau * FLOAT_SWAY_HZ + 1.3), m.area[0]), m.area[2] - w)
-        return x, y
-
-    def _next_bob_step(self, now: float) -> float:
-        """The next time the bob moves the drawn window by a whole pixel (up to a second away):
-        a redraw before that would draw the same thing."""
-        here = self._bobbed(self.x, self.y, now)
-        base = (round(here[0]), round(here[1]))
-        t = now
-        while t < now + 1.0:
-            t += 0.05
-            there = self._bobbed(self.x, self.y, t)
-            if (round(there[0]), round(there[1])) != base:
-                return t
-        return now + 1.0
 
     def _next_pose_change(self, now: float, horizon: float = 1.0) -> float:
         """The next time the body pose crosses a step of the cache grid, looking ahead."""
@@ -2444,11 +2566,9 @@ class Engine:
 
     def _display(self, frame: str) -> tuple[float, float, tuple[int, int, int, int] | None]:
         """Where the window is drawn and which part of the frame shows: the rest
-        position, less the sink behind an edge, plus the bob and sway of a floater."""
+        position, less the sink behind an edge."""
         w, h = self.size
         x, y = self.x, self.y
-        if self.bob_gain > 0:
-            x, y = self._bobbed(x, y, self.now)
         # a bonk shows the startle frame in mid-air: no foot offset of its own
         y += self._dy("held" if self.state == "fly" else frame)
         x += self._flip_dx(frame, self.facing < 0)

@@ -54,13 +54,13 @@ NEUTRAL = Pose()
 Q_SCALE, Q_LEAN, Q_DRAG = 0.02, 0.02, 1.0
 
 
-def quantised(p: Pose) -> Pose | None:
-    """The pose snapped to the cache grid, or None when it is the plain frame."""
+def quantised(p: Pose, q_sy: float = Q_SCALE) -> Pose | None:
+    """The pose snapped to the cache grid (`q_sy` is the height's step), or None when it is the plain frame."""
     q = Pose(
-        round(p.sx / Q_SCALE) * Q_SCALE, round(p.sy / Q_SCALE) * Q_SCALE,
+        round(p.sx / Q_SCALE) * Q_SCALE, round(p.sy / q_sy) * q_sy,
         round(p.lean / Q_LEAN) * Q_LEAN, round(p.drag / Q_DRAG) * Q_DRAG,
     )
-    q = Pose(round(q.sx, 2), round(q.sy, 2), round(q.lean, 2), float(q.drag))
+    q = Pose(round(q.sx, 2), round(q.sy, 3), round(q.lean, 2), float(q.drag))
     return None if q == NEUTRAL else q
 
 
