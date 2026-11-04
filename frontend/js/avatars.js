@@ -4159,6 +4159,7 @@ function nameMarkBuddyEdges(tab) {
     count += 1;
     if (count >= NMB_SURFACE_CAP) break;
   }
+  if (nameMarkBuddyOnBoard()) edges.push(...nmb.boardEdges(floor, ceiling));
   nameMarkBuddyIndex = { tab, edges };
   if (page && typeof ResizeObserver === "function") {
     if (!nameMarkBuddyIndexObserver) nameMarkBuddyIndexObserver = new ResizeObserver(nameMarkBuddyIndexReset);
@@ -4167,6 +4168,39 @@ function nameMarkBuddyEdges(tab) {
   }
   return edges;
 }
+//: **A board's object or a map's node is a perch** (INBOX 1629, the owner:
+//: "atlas cant properly sit on mindmap nodes as it can on the whiteboard
+//: diagram"): one `top` edge at its drawn top, of a kind the tab's order does
+//: not list, so a drop or a kept spot can use it and the chooser never walks
+//: there on its own. The span is the crown, not the box: where the outline
+//: has fallen 3px (`ry`, `rx` from the radius: an ellipse's is half the box, a
+//: pill's the full height), so an oval or a pill is stood on near its middle
+//: and a clip-path shape (hexagon, diamond, cloud) only at its centre. The glue
+//: (`nameMarkBuddyGlue`) holds it through a pan, a zoom and a relayout, and
+//: `nameMarkBuddySupported` lets go when the object folds away or is deleted.
+nmb.boardEdges = (floor, ceiling) => {
+  const board = document.getElementById("whiteboard-container");
+  const view = nameMarkBuddyShown(board);
+  if (!view) return [];
+  const out = [];
+  for (const el of board.querySelectorAll(".wb-object")) {
+    if (out.length >= 60) break;
+    const b = nameMarkBuddyPerchShown(el);
+    if (!b || b.width < 44 || b.height < 20 || el.dataset.shape === "none") continue;
+    if (b.top <= Math.max(floor, view.top) + 20 || b.top >= Math.min(ceiling, view.bottom) - 20 || b.right <= view.left || b.left >= view.right) continue;
+    const cs = getComputedStyle(el);
+    const [ax, ay = ax] = cs.borderTopLeftRadius.split(" ");
+    const radius = (v, size) => Math.min(size / 2, /%$/.test(v) ? (size * parseFloat(v)) / 100 : parseFloat(v) || 0);
+    const rx = radius(ax, b.width);
+    const ry = radius(ay, b.height);
+    let inset = ry > 0 ? rx * (1 - Math.sqrt(1 - (1 - Math.min(1, 3 / ry)) ** 2)) : 0;
+    if (cs.clipPath !== "none") inset = b.width * 0.4;
+    const mid = (b.left + b.right) / 2;
+    const half = Math.max(12, b.width / 2 - inset);
+    out.push({ el, type: "top", kind: "node", y: b.top, left: mid - half, right: mid + half, top: b.top, bottom: b.bottom });
+  }
+  return out;
+};
 window.addEventListener("resize", nameMarkBuddyIndexReset, { passive: true });
 document.addEventListener("scroll", nameMarkBuddyIndexReset, { passive: true, capture: true });
 
@@ -4932,6 +4966,10 @@ function nameMarkBuddyGlue(spot, x, y) {
   nmb.glue = {
     el, sel: nameMarkBuddySelector(el), w: box.width, cls: el.className, dx: x - box.left, dy: y - box.top,
     scroller, band: null, pose: spot.pose, legs: spot.legs || "", lost: false, held: false,
+    //: On a board's object it keeps its share of the object's width, not a
+    //: pixel offset: a zoom out shrinks the object under a fixed offset and
+    //: leaves it standing in the air beside it (INBOX 1629).
+    fx: el.matches(".wb-object") && box.width ? (x + NMB_W / 2 - box.left) / box.width : undefined,
   };
   nameMarkBuddyGlueBand(nmb.glue, y);
   nameMarkBuddyRide(nameMarkBuddyScrollsWith(el, scroller) ? scroller : null, x, y);
@@ -4995,6 +5033,7 @@ function nameMarkBuddyFollow(eased = false) {
   }
   const folded = g.folded;
   const box = g.el.isConnected && !folded ? g.el.getBoundingClientRect() : null;
+  if (box && g.fx !== undefined && box.width) g.dx = g.fx * box.width - NMB_W / 2;
   if (!box || (!box.width && !box.height)) {
     //: Its area gone with its panel (another tab): it lets go of the
     //: scroll where it is in the window, so it does not vanish with the tab.
@@ -5577,6 +5616,10 @@ function nameMarkBuddyCanvasScale(k) {
 }
 //: From the board's zoom (whiteboard.js, `wbZoomFrameWork`).
 function nameMarkBuddyCanvasZoom(k) {
+  //: A pan or zoom moves what it sits on with no scroll, click or
+  //: transition to announce it (a gesture's own events end before the
+  //: transform eases): the follow loop is kept up through it (INBOX 1629).
+  nameMarkBuddyKeepUp(900);
   if (nmb.canvas) nameMarkBuddySetSize(nameMarkBuddyScaleSaved() * nameMarkBuddyCanvasScale(k), false);
 }
 
@@ -6473,7 +6516,7 @@ function nameMarkBuddySupported() {
   //: The edge it chose, where it still is and still shows (a surface that
   //: takes no pointer is missed by a hit test).
   const el = nmb.spot?.edge?.el || nmb.spot?.anchor;
-  const box = el?.isConnected && !el.closest(NMB_CANVAS) ? nameMarkBuddyPerchShown(el) : null;
+  const box = el?.isConnected && (!el.closest(NMB_CANVAS) || el.matches(".wb-object")) ? nameMarkBuddyPerchShown(el) : null;
   if (box && Math.abs((hang ? box.bottom : box.top) - line) <= 2 && box.left <= mid && box.right >= mid) return true;
   const band = document.getElementById("nm-buddy-band");
   for (const f of [0.3, 0.5, 0.7]) {

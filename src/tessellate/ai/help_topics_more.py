@@ -119,7 +119,7 @@ MORE_TOPICS: list[dict] = [
             "The corner companion travels rarely and never while you type or "
             "carry it. It never sits on a menu, a popup, the field you are "
             "typing in or the line your caret is on, and when the pointer rests "
-            "on a control beside it, it steps aside. Atlas and the animals "
+            "on a control beside it, it steps aside. Drop it on a board shape or a mind map topic and it sits on its top edge, moving with the pan and zoom. Atlas and the animals "
             "decide the same way: Atlas keeps more room and plays less, a cat "
             "or an owl keeps its distance, a dog or a fox wanders more. When it has somewhere far to go it takes a calm way: it "
             "opens a portal and walks through, vanishes in a puff of smoke, walks "
