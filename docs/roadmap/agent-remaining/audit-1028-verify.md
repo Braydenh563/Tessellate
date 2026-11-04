@@ -6,7 +6,7 @@ Counts: fixed 13, open 59, unsure 72. Source: audit-1028-ranked.md rows with pla
 | E24 | open | composer_write.py:55-58 covers translate and rewrite only; essay and timetable asks get no needs-a-model reply. | S |
 | E25 | open | commands.py:515 _new_note keeps the quoted title as body text; no split on with. | S |
 | E29 | open | No duplicate reminder check in act_registry.py or commands.py. | S |
-| D24 | open | Paste and drop file upload still in settings-wiring.js:1922, with fileDropBox at 1957. | S |
+| D24 | fixed 483b6a6 | The document editor drop target (`docFileDropBox`) moved to documents-embeds.js; the shared paste and drop listeners stay in settings-wiring.js because chat, palette and notes use them too. | S |
 | K16 | open | Space isolation is still an ORM filter on a client header (core/deps.py:378); no not-a-boundary note. | S |
 | B28 | open | No text/uri-list handling in the whiteboard.js paste path. | S |
 | E47 | open | index.html has no chat list search box; no find-in-chat control found. | S |
@@ -55,7 +55,7 @@ Counts: fixed 13, open 59, unsure 72. Source: audit-1028-ranked.md rows with pla
 | E48 | open | chat-edit.js has no branch or pager; edit still truncates later turns. | L |
 | D22 | open | documents.js is still 857,982 bytes and unminified; CodeMirror now loads lazily (documents.js:16443). | L |
 | B15 | open | whiteboard.js:17922 still dispatches a synthetic MouseEvent mousemove bridge. | L |
-| D23 | open | docLivePlugin still in documents-cm.js:28 and docCmTheme at 1608; split by file only. | L |
+| D23 | partial 483b6a6 | docCmTheme is documents-cm-theme.js; docLivePlugin (1,720 lines) still one function, line in DOCUMENTS_PLAN. | L |
 | K24 | open | Nine Python files still exceed 3,000 lines, e.g. composer_digest.py 5,203 and routes_entries.py 4,373. | L |
 | K25 | open | _start_tray is 351 lines and _run_desktop 325 (__main__.py:2162, 1780); 10 functions over 150 lines. | L |
 | E44 | open | chat-turn.js:11 chatSendTurn still runs 1,171 lines. | L |

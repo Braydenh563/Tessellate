@@ -112,15 +112,21 @@ def _written(note: Any) -> float:
         return 0.0
 
 
+def lead_by(items: list, question: str, note_of: Any = lambda x: x) -> list:
+    """The items (notes, or composer views that carry one) with the ones most
+    plainly about the subject first; the same list when the question names no
+    subject. Inside a title tier the newest leads, so Ask and Chat agree
+    whatever order they were handed; the rest keeps the order given."""
+    words = subject(question)
+    if not words or len(items) < 2:
+        return list(items)
+    stems = _stems(words)
+    keyed = [(key(note_of(it), words, stems), i, it) for i, it in enumerate(items)]
+    keyed.sort(key=lambda k: (k[0], -_written(note_of(k[2])) if k[0][0] < 3 else 0.0, k[1]))
+    return [it for _, _, it in keyed]
+
+
 def lead(notes: list, question: str) -> list:
     """The notes with the ones that are most plainly about the subject
     first; the same list when the question names no subject."""
-    words = subject(question)
-    if not words or len(notes) < 2:
-        return list(notes)
-    stems = _stems(words)
-    keyed = [(key(n, words, stems), i, n) for i, n in enumerate(notes)]
-    #: Inside a title tier the newest leads, so Ask and Chat agree whatever
-    #: order they were handed; the rest keeps the order retrieval gave.
-    keyed.sort(key=lambda k: (k[0], -_written(k[2]) if k[0][0] < 3 else 0.0, k[1]))
-    return [n for _, _, n in keyed]
+    return lead_by(notes, question)

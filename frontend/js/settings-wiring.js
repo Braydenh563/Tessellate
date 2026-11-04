@@ -1940,9 +1940,6 @@ document.addEventListener("dragleave", (e) => {
 // `#chat-input` is excluded here and given its own branch instead of a
 // second global listener, so there is exactly one place either kind of
 // composer's drop/paste behaviour is decided.
-function _isChatComposer(target) {
-  return target && target.id === "chat-input";
-}
 
 //: **The note box under the editor, not only a bare textarea** (INBOX 434).
 //: Capture and the edit form are a live editor mounted over their textarea,
@@ -1951,15 +1948,9 @@ function _isChatComposer(target) {
 //: listeners run in the capture phase, ahead of the editor's own handling.
 function fileDropBox(el) {
   if (el?.tagName === "TEXTAREA") return el;
-  //: **The document editor is neither** (docdog-1026): its engine sits under
-  //: `#doc-editor`, not `.note-surface`, so a screenshot pasted or a picture
-  //: dropped into a document did nothing at all, while the "/" menu's Image
-  //: row promised both. Its surface answers the same box interface. A code
-  //: document is text, and keeps what it was given.
-  if (el?.closest?.("#doc-editor")) {
-    const surface = window.docSurface?.();
-    return surface && !surface.classList.contains("doc-content-code") ? surface : null;
-  }
+  //: The document editor is neither a textarea nor a note surface; documents-embeds.js
+  //: answers for it (`docFileDropBox`, docdog-1026).
+  if (el?.closest?.("#doc-editor")) return docFileDropBox();
   const host = el?.closest?.(".note-surface")?.noteSurfaceHost;
   return host instanceof HTMLTextAreaElement ? host : null;
 }
@@ -1983,7 +1974,7 @@ document.addEventListener("drop", async (e) => {
   }
 
   if (box.id === "command-palette-input") return agentStageFiles(Array.from(e.dataTransfer.files));
-  if (_isChatComposer(box)) {
+  if (box.id === "chat-input") {
     const files = Array.from(e.dataTransfer.files);
     const images = files.filter((f) => f.type.startsWith("image/"));
     if (images.length) await attachImageFiles(images);
@@ -2021,7 +2012,7 @@ document.addEventListener("paste", async (e) => {
 
   if (box.id === "command-palette-input") return agentStageFiles(files);
 
-  if (_isChatComposer(box)) {
+  if (box.id === "chat-input") {
     const images = files.filter((f) => f.type.startsWith("image/"));
     if (images.length) await attachImageFiles(images);
     if (images.length < files.length) {

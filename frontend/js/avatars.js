@@ -9444,8 +9444,11 @@ document.addEventListener("keydown", (event) => {
   //: Typing fast (keys under 180ms apart, five in a row), it nods along.
   nmb.keyRun = now - nmb.keyAt < 180 ? nmb.keyRun + 1 : 0;
   nmb.keyAt = now;
-  buddy.classList.add("nmb-watch");
-  buddy.classList.toggle("nmb-nod", nmb.keyRun >= 5);
+  //: Only on a change (audit 1102 DX1): `add` of a class already there still
+  //: rewrites the attribute, which woke the rig's observer on every key.
+  if (!buddy.classList.contains("nmb-watch")) buddy.classList.add("nmb-watch");
+  const nod = nmb.keyRun >= 5;
+  if (nod !== buddy.classList.contains("nmb-nod")) buddy.classList.toggle("nmb-nod", nod);
   clearTimeout(nmb.watchTimer);
   nmb.watchTimer = setTimeout(() => buddy.classList.remove("nmb-watch", "nmb-nod"), 1800);
 }, { passive: true, capture: true });

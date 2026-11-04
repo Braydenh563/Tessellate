@@ -47,8 +47,9 @@ CROSS_RESOURCE = {"routes_spaces.py"}
 #: repo/relations.py: 717; the categories' name and count reads (the category
 #: routes' lookup, Insights and chat suggestion counts, the search hit's
 #: category, the graph fingerprint, exports and counts, the map's and the
-#: board's category names) to repo/categories.py: 694.
-ORM_CALLS_CAP = 694
+#: board's category names) to repo/categories.py: 694; the spaces' id, list, find
+#: and count reads to repo/spaces.py: 688.
+ORM_CALLS_CAP = 688
 
 _ORM = re.compile(
     r"\b(?:session|db)\.(?:query|get|execute|scalar|scalars|add|add_all|delete|merge)\("
