@@ -168,8 +168,19 @@ def upload_file(
     return _to_out(session, entry)
 
 
+def _refuse_while_sealed(session: Session, attachment: Attachment) -> Attachment:
+    """SEC-A2: a file is part of its note, so a locked private note's files
+    answer 409 like its export and history do (`manager.note_is_sealed`)."""
+    owner = session.get(Entry, attachment.entry_id)
+    if owner is not None and manager.note_is_sealed(owner.is_private):
+        raise HTTPException(status_code=409, detail="Unlock first.")
+    return attachment
+
+
 def _existing_attachment(session: Session, attachment_id: int) -> Attachment:
-    return deps.get_or_404(session, Attachment, attachment_id, "That attachment could not be found.")
+    return _refuse_while_sealed(
+        session, deps.get_or_404(session, Attachment, attachment_id, "That attachment could not be found.")
+    )
 
 
 @media_router.get("/files/{attachment_id}")
@@ -637,7 +648,7 @@ def analyse_attachment(
     vision path rasterises PDF pages so a scan with no text layer at all
     still has something a model can look at.
     """
-    attachment = FILES.writable(session, attachment_id)
+    attachment = _refuse_while_sealed(session, FILES.writable(session, attachment_id))
     path = _within(deps.get_config().uploads_dir, attachment.stored_name)
     suffix = Path(attachment.filename).suffix.lower()
     is_image = suffix in captioning.CAPTION_SUFFIXES
@@ -762,7 +773,7 @@ def save_attached_file_text(
     a client is not the authority on what may be overwritten, and the file can
     have been replaced between the two calls.
     """
-    attachment = FILES.writable(session, attachment_id)
+    attachment = _refuse_while_sealed(session, FILES.writable(session, attachment_id))
     path = _within(deps.get_config().uploads_dir, attachment.stored_name)
     viewed = docview.extract(path)
     editable, edit_message = docview.editability(path, viewed)
@@ -952,7 +963,7 @@ def delete_file(
     reason, same default. An attached image can be embedded in the note it is
     attached to (`![](/files/12)`), and deleting the file used to leave that
     markdown behind forever."""
-    attachment = FILES.writable(session, attachment_id)
+    attachment = _refuse_while_sealed(session, FILES.writable(session, attachment_id))
     entry = _existing_entry(session, attachment.entry_id)
     config = deps.get_config()
     changed: dict = {}
@@ -1494,6 +1505,11 @@ def list_media(
     #: sandbox cannot render": the tile used to guess from the name and 404).
     can_draw_pages = pdfpages.available()
     media_pages_read = _page_read_count_map("upload", [u.id for u in uploads])
+    def _unplaced(u: MediaUpload) -> bool:
+        # SEC-A2: with a private note locked, an upload no readable note names
+        # may be that note's picture; its readings stay back until unlock.
+        return usage_incomplete and not used.get(u.filename)
+
     return [
         MediaUploadOut(
             id=u.id,
@@ -1503,11 +1519,11 @@ def list_media(
             size_bytes=u.size_bytes or 0,
             url=f"/media/{u.filename}",
             original_name=u.original_name,
-            ocr_text=u.ocr_text or "",
-            caption=u.caption or "",
+            ocr_text="" if _unplaced(u) else u.ocr_text or "",
+            caption="" if _unplaced(u) else u.caption or "",
             caption_model=u.caption_model or "",
             caption_edited=u.caption_edited,
-            vision_ocr_text=u.vision_ocr_text or media_page_text.get(u.id, ""),
+            vision_ocr_text="" if _unplaced(u) else u.vision_ocr_text or media_page_text.get(u.id, ""),
             vision_ocr_model=u.vision_ocr_model or "",
             created_at=u.created_at.isoformat() if u.created_at else "",
             has_pages=can_draw_pages and Path(u.filename).suffix.lower() == ".pdf",

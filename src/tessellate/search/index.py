@@ -842,7 +842,12 @@ def _attachment_row(att) -> Row | None:  # noqa: ANN001
     if att is None:
         return None
     from tessellate.core import readings
+    from tessellate.core.database import Entry
 
+    # SEC-A2: a private note's files are never indexed, as the note is not.
+    owner = object_session(att)
+    if owner is not None and getattr(owner.get(Entry, att.entry_id), "is_private", False):
+        return None
     return Row(
         title=att.filename or "",
         # Every reading, pages included (F10, `core/readings.text_of`).

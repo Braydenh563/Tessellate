@@ -3036,6 +3036,11 @@ def set_private(session: Session, entry: Entry, private: bool) -> bool:
         entry.is_private = False
         record_dates(session, entry)  # readable again, so it can be read again
         _unseal_link_reasons(session, entry)
+    # SEC-A2: its files' search rows follow the note (a private note's files
+    # are not indexed, `search/index._attachment_row`).
+    search_index = importlib.import_module("tessellate.search.index")
+    for attachment_id in session.scalars(select(Attachment.id).where(Attachment.entry_id == entry.id)).all():
+        search_index.touch(session, "attachments", attachment_id)
     # The payload carries the content as it now stands (ciphertext when the
     # note was just made private), so a replay of this note's events rebuilds
     # what is actually in the column rather than the plaintext it stopped

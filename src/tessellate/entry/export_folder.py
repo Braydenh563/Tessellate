@@ -205,7 +205,8 @@ def note_record(entry, related: _Related, uploads_dir: Path) -> dict:  # noqa: A
     from tessellate.entry import manager
 
     text, sealed = _readable(entry)
-    attachments = related.attachments.get(entry.id, [])
+    # SEC-A2: a locked private note's files are plain bytes on disk; they stay out.
+    attachments = [] if manager.note_is_sealed(entry.is_private) else related.attachments.get(entry.id, [])
     record = {"id": entry.id, "content": text, "sealed": sealed,
               "category": related.category.get(entry.category_id, manager.UNCATEGORISED),
               "tags": manager.entry_tags(entry)}
