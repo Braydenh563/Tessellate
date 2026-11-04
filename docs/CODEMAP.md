@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7822, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8797, test files 2068, tests 17477, plan headings 1003, app scripts 28, boot scripts 37, script files 257.
+Counts: frontend functions 7822, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8797, test files 2069, tests 17478, plan headings 1003, app scripts 28, boot scripts 37, script files 257.
 
 ## Frontend functions (7822)
 
@@ -4696,7 +4696,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `entryItem` | frontend/js/entry-card.js:192 |
+| `entryItem` | frontend/js/entry-card.js:198 |
 | `meetingGlance` | frontend/js/entry-card.js:34 |
 | `renderInlineAction` | frontend/js/entry-card.js:82 |
 | `tagAddChipKind` | frontend/js/entry-card.js:16 |
@@ -6016,7 +6016,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `forgetNoteEditLocally` | frontend/js/note-edit-panels.js:646 |
 | `holdNoteEdit` | frontend/js/note-edit-panels.js:605 |
 | `keepNoteEditLocally` | frontend/js/note-edit-panels.js:642 |
-| `noteEditToolbar` | frontend/js/note-edit-panels.js:741 |
+| `noteEditToolbar` | frontend/js/note-edit-panels.js:742 |
 | `noteFormParts` | frontend/js/note-edit-panels.js:210 |
 | `offerKeptNoteEdit` | frontend/js/note-edit-panels.js:672 |
 | `openBookmarkAttachPicker` | frontend/js/note-edit-panels.js:175 |
@@ -24085,7 +24085,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17477)
+## Tests (17478)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24766,6 +24766,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_edit_conflicts.py | 7 |
 | tests/test_edit_conflicts_ui.py | 2 |
 | tests/test_edit_embeds_off_request.py | 3 |
+| tests/test_edit_form_survives_redraw.py | 1 |
 | tests/test_egress_call_sites.py | 2 |
 | tests/test_egress_ledger_writes.py | 7 |
 | tests/test_egress_purposes.py | 9 |

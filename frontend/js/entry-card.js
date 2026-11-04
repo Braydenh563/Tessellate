@@ -189,7 +189,18 @@ function renderInlineAction(entry) {
   return wrap;
 }
 
+//: **An open edit form is never redrawn** (the notes.spec.js edit-form flake). A redraw
+//: (filing event, change poll, late refresh) built the form again: a bare textarea whose
+//: editor mounts only on a focus nobody gave it, a click on it losing its target. The
+//: form's row is kept here and handed back, unless the redraw is a fresh open (a focus
+//: request pending) or the form was closed since (`editingId` moved).
+
 function entryItem(entry, options = {}) {
+  if (entryItem.live?.dataset.id == entry.id) {
+    if (editingId !== entry.id) entryItem.live = null;
+    else if (options.actions && focusBodyAfterRender !== entry.id && focusTagsAfterRender !== entry.id
+      && (!entryItem.live.isConnected || entryItem.live.parentElement.id === "entry-list")) return entryItem.live;
+  }
   const li = document.createElement("li");
   li.dataset.id = entry.id;
   if (rowEnterIds && rowEnterIds.size && !rowEnterIds.has(String(entry.id))) li.classList.add("row-enter");
@@ -217,6 +228,7 @@ function entryItem(entry, options = {}) {
     //: (188px, then 15, then 277, with note-edit-panels.js held 3s). The
     //: real function draws at once and answers nothing, so only the
     //: stand-in's promise puts placeholders up.
+    entryItem.live = li;
     const drawn = renderEditForm(li, entry);
     if (drawn instanceof Promise) {
       showSkeletons(li, 2);
