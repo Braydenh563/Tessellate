@@ -208,7 +208,7 @@ function atlasStemSides(segs, width, samples, shift) {
   return { left, right };
 }
 
-const atlasFix = (v) => +v.toFixed(2);
+const atlasFix = (v) => Math.round(v * 100) / 100;
 
 //: The point `t` of the way along a run of cubic segments, each segment an
 //: equal share of `t`, as `atlasStemSides` samples them: where a speck sits
@@ -3896,14 +3896,23 @@ if (typeof registerCharacter === "function") {
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => atlasDressMarks());
 else atlasDressMarks();
 
-//: A task of its own, so the files' parse and this are two long tasks, not one.
+//: A task of its own, so the files' parse and this are two long tasks, not one;
+//: and then one task a job, in call order (INBOX 1657: all seven in one task
+//: were 161ms at 4x CPU, 47ms of it forced layout), so a frame can land
+//: between them.
 function charactersArrived() {
   setTimeout(() => {
     charactersLoaded = true;
-    const waiting = [...characterWaiters];
+    const jobs = [...characterWaiters].map((fn) => [fn, []]);
+    for (const [name, args] of characterBacklog) jobs.push([name, args]);
     characterWaiters.clear();
-    for (const fn of waiting) runCharacterJob(fn);
-    for (const [name, args] of characterBacklog) runCharacterJob(window[name], args);
     characterBacklog.clear();
+    const step = () => {
+      const job = jobs.shift();
+      if (!job) return;
+      runCharacterJob(typeof job[0] === "string" ? window[job[0]] : job[0], job[1]);
+      setTimeout(step, 0);
+    };
+    step();
   }, 0);
 }

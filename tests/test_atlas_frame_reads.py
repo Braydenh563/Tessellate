@@ -185,3 +185,21 @@ def test_carried_or_thrown_the_idle_loops_hold() -> None:
     frame = _fn(LIFE, "atlasTailFrame")
     assert 'const loops = live && !box.closest("#nm-buddy.nm-buddy-dragging") && !document.documentElement.hasAttribute("data-atlas-lite");' in frame
     assert "loops ? anim.play() : anim.pause()" in frame
+
+
+def test_lag_1657_tail_path_numbers_are_rounded_with_math_round():
+    """INBOX 1657: the tail's paths are rounded ~3,000 times a draw; `toFixed`
+    plus a unary plus made `atlasTailPaths` 2.8 to 3.9 ms a draw at 4x CPU,
+    `Math.round(v * 100) / 100` 1.7 to 1.8 (same two decimals)."""
+    atlas = (JS / "atlas.js").read_text(encoding="utf-8")
+    assert "const atlasFix = (v) => Math.round(v * 100) / 100;" in atlas
+    assert "toFixed" not in atlas[atlas.index("function atlasStem("):atlas.index("//: **Hands and feet**")]
+
+
+def test_lag_1657_character_jobs_run_one_task_each():
+    """INBOX 1657: the seven jobs the characters' arrival releases were one
+    161 ms task at 4x CPU (47 ms forced layout); each is its own task now."""
+    atlas = (JS / "atlas.js").read_text(encoding="utf-8")
+    body = atlas[atlas.index("function charactersArrived()"):]
+    assert "const step = () => {" in body and "setTimeout(step, 0)" in body
+    assert "for (const fn of waiting)" not in body
