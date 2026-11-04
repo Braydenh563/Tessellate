@@ -117,7 +117,7 @@ def test_it_never_moonwalks_and_turns_through_a_sliver_before_going_back() -> No
     e, _s = make("masculine", "walk", plain=True)
     calm(e)
     e._go((1300.0, e.ground_y()), "stand", 0.0)
-    t, last_facing, squeezed, wrong, x0 = 0.0, e.facing, 1.0, 0, e.x
+    t, squeezed, wrong = 0.0, 1.0, 0
     for _ in range(400):
         t += 1 / 30
         if t > 3.0 and e.goal is not None and e.goal[0] > 1000:  # called back the other way mid-walk
