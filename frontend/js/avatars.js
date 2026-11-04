@@ -4701,7 +4701,7 @@ function nameMarkBuddyPut(buddy, x, y) {
   nmb.y = y;
   const r = nmb.ride;
   nmb.lx = r ? x - r.left : x;
-  nmb.ly = r ? y - r.top + r.el.scrollTop : y;
+  nmb.ly = r ? y - r.top + nmb.place.client(r.el).st : y;
   buddy.style.transform = `translate(${nmb.lx}px, ${nmb.ly}px)`;
   if (nmb.menuPlace && nameMarkBuddyMenuOpen()) nmb.menuPlace();
 }
@@ -4825,8 +4825,9 @@ function nameMarkBuddyRideBox(x = nmb.x, y = nmb.y, fresh = false, pose = undefi
     const over = nameMarkBuddyOverhang(pose);
     r.insetTop = Math.min(lo, y - over.top) - box.top;
     r.insetBottom = box.bottom - Math.max(hi, y + NMB_H + over.bottom);
-    r.insetLeft = Math.min(box.left + r.el.clientLeft, x - over.left) - box.left;
-    r.insetRight = box.right - Math.max(box.left + r.el.clientLeft + r.el.clientWidth, x + NMB_W + over.right);
+    const own = nmb.place.client(r.el);
+    r.insetLeft = Math.min(box.left + own.cl, x - over.left) - box.left;
+    r.insetRight = box.right - Math.max(box.left + own.cl + own.cw, x + NMB_W + over.right);
     lines = { lo, hi };
   }
   const left = Math.round(box.left + r.insetLeft);
@@ -4839,7 +4840,7 @@ function nameMarkBuddyRideBox(x = nmb.x, y = nmb.y, fresh = false, pose = undefi
     //: was perched at; and how far the line it touches its perch on (its
     //: seat, its soles, its hands) is from each bar.
     const touch = { sit: NMB_SEAT, stand: NMB_FEET, hang: NMB_GRIP }[nmb.glue?.pose || nmb.pose] ?? 0;
-    r.s0 = r.el.scrollTop;
+    r.s0 = nmb.place.client(r.el).st;
     r.up = Math.max(0, Math.ceil(lines.lo) - top);
     r.down = Math.max(0, top + height - Math.floor(lines.hi));
     r.upSpan = y + touch - lines.lo;
@@ -4953,16 +4954,23 @@ function nameMarkBuddyBand(scroller, el = null) {
 //: not move in a placement: only the figure and its band do).
 nmb.place = {
   boxes: null,
+  sizes: null,
   rect(el) {
     return this.boxes?.get(el) || el.getBoundingClientRect();
+  },
+  //: A scroller's client box and scroll, read with its rect (INBOX 1634: the band's and `Put`'s
+  //: reads of them came after the ride's writes, two more whole-page layouts on a landing).
+  client(el) {
+    return this.sizes?.get(el) || { cl: el.clientLeft, cw: el.clientWidth, st: el.scrollTop };
   },
   glueEl(spot) {
     return spot.kind === "pinned" ? null : spot.anchor || (spot.edge && !["bar", "hang"].includes(spot.edge.kind) ? spot.edge.el : null);
   },
   read(spot) {
     this.boxes = new Map();
+    this.sizes = new Map();
     queueMicrotask(() => {
-      this.boxes = null;
+      this.boxes = this.sizes = null;
     });
     //: The two ledges the band is cut by (`nameMarkBuddyLedges`).
     for (const id of ["top-bar", "phone-tab-dock", "status-bar"]) {
@@ -4973,7 +4981,10 @@ nmb.place = {
     if (!el?.isConnected) return;
     this.boxes.set(el, el.getBoundingClientRect());
     const scroller = nameMarkBuddyScroller(el);
-    if (scroller) this.boxes.set(scroller, scroller.getBoundingClientRect());
+    if (scroller) {
+      this.boxes.set(scroller, scroller.getBoundingClientRect());
+      this.sizes.set(scroller, { cl: scroller.clientLeft, cw: scroller.clientWidth, st: scroller.scrollTop });
+    }
   },
 };
 
@@ -6601,6 +6612,9 @@ document.addEventListener("pointerup", nameMarkBuddySupportSoon, { passive: true
 document.addEventListener("wheel", (event) => {
   const buddy = document.getElementById("nm-buddy");
   if (!buddy || event.ctrlKey || !buddy.contains(event.target)) return;
+  //: **Never while it is carried or flying** (INBOX 1634: "when I try to throw the companion, the page scrolls"):
+  //: a throw's wheel input is not a scroll, and the landing's pause queued it until it scrolled the list.
+  if (nmb.grabbed || nmb.flight) return event.preventDefault();
   const under = document.elementsFromPoint(event.clientX, event.clientY).find((el) => !buddy.contains(el));
   if (!under) return;
   const passed = new WheelEvent("wheel", event);
@@ -9969,8 +9983,11 @@ function nameMarkBuddyBuild() {
     //: The drag has a keyboard twin (WCAG 2.5.7): an arrow moves it 16px,
     //: with Shift 64, and the place is kept like a drop's (AI17).
     const step = NMB_NUDGE[event.key];
-    if (step && !nmb.visit && !event.altKey && !event.ctrlKey && !event.metaKey) {
-      event.preventDefault();
+    //: The keys that scroll the page never do from the figure (INBOX 1634), a visit included.
+    if (!step && /^(Page(Up|Down)|Home|End)$/.test(event.key)) event.preventDefault();
+    const plain = !event.altKey && !event.ctrlKey && !event.metaKey;
+    if (step && plain) event.preventDefault();
+    if (step && plain && !nmb.visit) {
       const far = event.shiftKey ? 64 : 16;
       nameMarkBuddyNudge(buddy, step[0] * far, step[1] * far);
     }

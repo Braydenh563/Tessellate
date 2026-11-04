@@ -71,7 +71,8 @@ function initDragSelectEdgeScroll() {
   const d = DRAG_EDGE;
   document.addEventListener("mousedown", (e) => {
     d.el = null;
-    d.press = e.button === 0 ? e.target : null;
+    //: Never the companion's own drag or throw (INBOX 1634): its pull is no text selection.
+    d.press = e.button === 0 && !e.target.closest?.("#nm-buddy") ? e.target : null;
   }, true);
   //: **A drag already under way when this file arrives** (selection.js's
   //: `EDGE_SCROLL_HELD`): the press that fetched it, picked up here so the very
