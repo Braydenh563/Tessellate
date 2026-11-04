@@ -152,7 +152,7 @@ def test_an_ambient_run_climbs_when_windows_are_there_and_stays_off_when_none() 
         e.set_windows(windows, 0.0)
         t, n, prev = 0.0, 0, None
         out = e.update(t)
-        while t < 40 * 60:
+        while t < 3 * 3600:
             t += (out.wake_ms or 1000) / 1000.0
             out = e.update(t, event=("move", 0, 0)) if int(t) % 25 == 0 else e.update(t)
             if e.perch is not None and prev is None:
@@ -163,7 +163,9 @@ def test_an_ambient_run_climbs_when_windows_are_there_and_stays_off_when_none() 
 
     assert climbs([]) == 0
     got = climbs([WIN])
-    assert 2 <= got <= 40 * 60 / eng.CLIMB_EVERY[0] + 1
+    # Intent moved (INBOX 1670, a buddy not a nuisance): a window is one purpose of a rare trip,
+    # so the bar is three hours and at most one climb per trip interval, not forty minutes.
+    assert 2 <= got <= 3 * 3600 / eng.TRIP_EVERY[0] + 1
 
 
 # --- Atlas floats down onto it ------------------------------------------------------------------

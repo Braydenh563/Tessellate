@@ -89,6 +89,7 @@ class OverlayRunner:
         self.roam_windows = roam_windows
         self.w = w
         self.clock = clock
+        self.clock_hour: int | None = None
         self.frames = frames
         self._dispatch = dispatch or jobs.thread
         self.host: host_mod.OverlayHost | None = None
@@ -230,7 +231,7 @@ class OverlayRunner:
             return False
         if e.perch is not None or e.target is not None or e.state in ("pressed", "held"):
             return True  # carried: a title bar under it may be taken hold of
-        return e.state in ("stand", "walk", "drift") and now >= e.climb_ready - SCAN_SLACK
+        return e.state in ("stand", "walk", "drift", "act", "crouch") and now >= e.trip_ready - SCAN_SLACK
 
     def _scan(self, now: float) -> None:
         engine = self.engine
@@ -345,9 +346,11 @@ class OverlayRunner:
             engine.set_monitors(self.monitors, spr.size(dpi))
             engine.set_metrics(spr.metrics(dpi))
             self._last_key = None
-        key = (out.frame, self.dpi, out.flip, out.clip)
+        engine.hour = time.localtime().tm_hour if self.clock_hour is None else self.clock_hour
+        key = (out.frame, self.dpi, out.flip, out.clip, out.pose)
         if key != self._last_key:
-            frame = sprites.clipped(spr.frame(out.frame, self.dpi, out.flip), out.clip)
+            posed = spr.posed(out.frame, self.dpi, out.flip, out.pose) if out.pose else spr.frame(out.frame, self.dpi, out.flip)
+            frame = sprites.clipped(posed, out.clip)
             host.present(frame.bgra, frame.width, frame.height, out.x - frame.pad_x, out.y - frame.pad_y)
             self._last_key, self._last_pos = key, (out.x, out.y)
         elif (out.x, out.y) != self._last_pos:

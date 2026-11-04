@@ -2101,27 +2101,28 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `assistantEmblemInto` | frontend/js/assistant-avatar.js:18 |
 
-### frontend/js/atlas-life.js (17)
+### frontend/js/atlas-life.js (18)
 
 | Name | File:line |
 |---|---|
-| `atlasBreathFrame` | frontend/js/atlas-life.js:717 |
-| `atlasFrameBudget` | frontend/js/atlas-life.js:385 |
-| `atlasPropLoops` | frontend/js/atlas-life.js:642 |
-| `atlasPropsFrame` | frontend/js/atlas-life.js:670 |
-| `atlasRigLower` | frontend/js/atlas-life.js:815 |
-| `atlasRigLowerAttach` | frontend/js/atlas-life.js:791 |
+| `atlasBreathFrame` | frontend/js/atlas-life.js:745 |
+| `atlasFrameBudget` | frontend/js/atlas-life.js:412 |
+| `atlasPropLoops` | frontend/js/atlas-life.js:670 |
+| `atlasPropsFrame` | frontend/js/atlas-life.js:698 |
+| `atlasRigLower` | frontend/js/atlas-life.js:843 |
+| `atlasRigLowerAttach` | frontend/js/atlas-life.js:819 |
 | `atlasRingLoops` | frontend/js/atlas-life.js:20 |
-| `atlasTailAttach` | frontend/js/atlas-life.js:275 |
+| `atlasTailAttach` | frontend/js/atlas-life.js:302 |
 | `atlasTailBend` | frontend/js/atlas-life.js:105 |
-| `atlasTailCalm` | frontend/js/atlas-life.js:512 |
-| `atlasTailDraw` | frontend/js/atlas-life.js:569 |
-| `atlasTailFrame` | frontend/js/atlas-life.js:411 |
-| `atlasTailKit` | frontend/js/atlas-life.js:148 |
-| `atlasTailPick` | frontend/js/atlas-life.js:349 |
-| `atlasTailRest` | frontend/js/atlas-life.js:532 |
-| `atlasTailShape` | frontend/js/atlas-life.js:115 |
-| `atlasTailUnrest` | frontend/js/atlas-life.js:547 |
+| `atlasTailCalm` | frontend/js/atlas-life.js:540 |
+| `atlasTailDraw` | frontend/js/atlas-life.js:597 |
+| `atlasTailFollow` | frontend/js/atlas-life.js:116 |
+| `atlasTailFrame` | frontend/js/atlas-life.js:438 |
+| `atlasTailKit` | frontend/js/atlas-life.js:175 |
+| `atlasTailPick` | frontend/js/atlas-life.js:376 |
+| `atlasTailRest` | frontend/js/atlas-life.js:560 |
+| `atlasTailShape` | frontend/js/atlas-life.js:142 |
+| `atlasTailUnrest` | frontend/js/atlas-life.js:575 |
 
 ### frontend/js/atlas-micro.js (8)
 
@@ -22188,6 +22189,22 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `reset_for_tests` | src/tessellate/core/origin.py:71 |
 | `run_deferred` | src/tessellate/core/origin.py:58 |
 
+### src/tessellate/core/overlay/behaviour.py (11)
+
+| Name | File:line |
+|---|---|
+| `Activity` | src/tessellate/core/overlay/behaviour.py:76 |
+| `Mind` | src/tessellate/core/overlay/behaviour.py:153 |
+| `Pose` | src/tessellate/core/overlay/behaviour.py:33 |
+| `Trail` | src/tessellate/core/overlay/behaviour.py:223 |
+| `_amplitude` | src/tessellate/core/overlay/behaviour.py:267 |
+| `_k` | src/tessellate/core/overlay/behaviour.py:93 |
+| `activity_frame` | src/tessellate/core/overlay/behaviour.py:210 |
+| `mood_of` | src/tessellate/core/overlay/behaviour.py:138 |
+| `quantised` | src/tessellate/core/overlay/behaviour.py:45 |
+| `sample` | src/tessellate/core/overlay/behaviour.py:63 |
+| `smooth` | src/tessellate/core/overlay/behaviour.py:55 |
+
 ### src/tessellate/core/overlay/engine.py (5)
 
 | Name | File:line |
@@ -22222,14 +22239,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Frame` | src/tessellate/core/overlay/sprites.py:59 |
-| `SpriteSet` | src/tessellate/core/overlay/sprites.py:127 |
-| `_drawn_box` | src/tessellate/core/overlay/sprites.py:116 |
-| `clear_faint_alpha` | src/tessellate/core/overlay/sprites.py:105 |
-| `clipped` | src/tessellate/core/overlay/sprites.py:74 |
-| `frames_dir` | src/tessellate/core/overlay/sprites.py:93 |
-| `look_for` | src/tessellate/core/overlay/sprites.py:100 |
-| `premultiplied_bgra` | src/tessellate/core/overlay/sprites.py:122 |
+| `Frame` | src/tessellate/core/overlay/sprites.py:68 |
+| `SpriteSet` | src/tessellate/core/overlay/sprites.py:136 |
+| `_drawn_box` | src/tessellate/core/overlay/sprites.py:125 |
+| `clear_faint_alpha` | src/tessellate/core/overlay/sprites.py:114 |
+| `clipped` | src/tessellate/core/overlay/sprites.py:83 |
+| `frames_dir` | src/tessellate/core/overlay/sprites.py:102 |
+| `look_for` | src/tessellate/core/overlay/sprites.py:109 |
+| `premultiplied_bgra` | src/tessellate/core/overlay/sprites.py:131 |
 
 ### src/tessellate/core/overlay/win32.py (27)
 
@@ -25271,6 +25288,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_hang_throw_1670.py | 3 |
 | tests/test_overlay_host.py | 25 |
 | tests/test_overlay_idle.py | 9 |
+| tests/test_overlay_life_1670.py | 25 |
 | tests/test_overlay_moves.py | 26 |
 | tests/test_overlay_ride_1670.py | 16 |
 | tests/test_overlay_roam.py | 19 |

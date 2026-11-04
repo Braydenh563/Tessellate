@@ -41,8 +41,8 @@ def tick(r, clock, dt: float = 0.1, n: int = 1, pointer=(900, 300)) -> None:
 
 
 def due(r, clock) -> None:
-    """Past the first climb's delay, standing: a climb could come now."""
-    clock.t = r.engine.climb_ready + 5
+    """Past the first trip's delay, standing: a trip (to a window) could come now."""
+    clock.t = r.engine.trip_ready + 5
     r.engine.last_active = clock.t
 
 
@@ -126,7 +126,7 @@ def test_an_idle_minute_costs_at_most_one_scan_a_second_and_its_window_calls() -
     r.engine.last_active = 1e9  # never idle long enough to sit: it stays standing
     r.engine.next_ambient = 1e9
     r.engine.state_until = 1e9
-    r.engine.climb_ready = clock.t  # due, but nothing picks it: the test only counts reads
+    r.engine.trip_ready = clock.t  # due, but nothing picks it: the test only counts reads
     r.engine.big_ready = 1e9
     start = len(fake.calls)
     for _ in range(600):  # ten ticks a second for a minute
