@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7748, frontend ids 2636, CSS sections 522, backend routes 641, backend modules 8594, test files 1982, tests 16618, plan headings 993, app scripts 28, boot scripts 37, script files 245.
+Counts: frontend functions 7748, frontend ids 2636, CSS sections 522, backend routes 641, backend modules 8594, test files 1983, tests 16623, plan headings 994, app scripts 28, boot scripts 37, script files 245.
 
 ## Frontend functions (7748)
 
@@ -5606,22 +5606,22 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `mathEditorBlockText` | frontend/js/math-editor.js:437 |
+| `mathEditorBlockText` | frontend/js/math-editor.js:444 |
 | `mathEditorGroups` | frontend/js/math-editor.js:219 |
-| `mathEditorKeys` | frontend/js/math-editor.js:409 |
-| `mathEditorLede` | frontend/js/math-editor.js:470 |
-| `mathEditorModes` | frontend/js/math-editor.js:360 |
-| `mathEditorMount` | frontend/js/math-editor.js:500 |
+| `mathEditorKeys` | frontend/js/math-editor.js:416 |
+| `mathEditorLede` | frontend/js/math-editor.js:477 |
+| `mathEditorModes` | frontend/js/math-editor.js:357 |
+| `mathEditorMount` | frontend/js/math-editor.js:507 |
 | `mathEditorOutput` | frontend/js/math-editor.js:241 |
 | `mathEditorPalette` | frontend/js/math-editor.js:315 |
-| `mathEditorSearch` | frontend/js/math-editor.js:389 |
+| `mathEditorSearch` | frontend/js/math-editor.js:396 |
 | `mathEditorSpan` | frontend/js/math-editor.js:249 |
-| `mathEditorStart` | frontend/js/math-editor.js:425 |
+| `mathEditorStart` | frontend/js/math-editor.js:432 |
 | `mathEditorSurface` | frontend/js/math-editor.js:277 |
 | `mathEditorTile` | frontend/js/math-editor.js:295 |
 | `mathEditorTileFace` | frontend/js/math-editor.js:286 |
-| `mathEditorWrite` | frontend/js/math-editor.js:451 |
-| `openMathEditor` | frontend/js/math-editor.js:486 |
+| `mathEditorWrite` | frontend/js/math-editor.js:458 |
+| `openMathEditor` | frontend/js/math-editor.js:493 |
 
 ### frontend/js/math-field.js (20)
 
@@ -6402,44 +6402,44 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `calcFigure` | frontend/js/reply-kit.js:1011 |
-| `chatQueuePaint` | frontend/js/reply-kit.js:1954 |
-| `openCalculator` | frontend/js/reply-kit.js:425 |
+| `calcFigure` | frontend/js/reply-kit.js:1018 |
+| `chatQueuePaint` | frontend/js/reply-kit.js:1963 |
+| `openCalculator` | frontend/js/reply-kit.js:432 |
 | `renderRelatedElsewhere` | frontend/js/reply-kit.js:68 |
 | `renderReplyPanel` | frontend/js/reply-kit.js:23 |
-| `renderToolsUnsupportedNotice` | frontend/js/reply-kit.js:1626 |
-| `replyByHelpPanel` | frontend/js/reply-kit.js:1677 |
-| `replyByHover` | frontend/js/reply-kit.js:1698 |
-| `replyByline` | frontend/js/reply-kit.js:1730 |
-| `replyBylineFacts` | frontend/js/reply-kit.js:1655 |
-| `replyCalcActions` | frontend/js/reply-kit.js:575 |
-| `replyCalcBuild` | frontend/js/reply-kit.js:452 |
-| `replyCalcConvertPane` | frontend/js/reply-kit.js:1459 |
-| `replyCalcEquation` | frontend/js/reply-kit.js:1214 |
-| `replyCalcHistory` | frontend/js/reply-kit.js:1350 |
-| `replyCalcKeypad` | frontend/js/reply-kit.js:1303 |
-| `replyCalcPanel` | frontend/js/reply-kit.js:400 |
-| `replyCalcResult` | frontend/js/reply-kit.js:980 |
-| `replyCalcShow` | frontend/js/reply-kit.js:1021 |
-| `replyCalcWork` | frontend/js/reply-kit.js:414 |
-| `replyCalcWorkPane` | frontend/js/reply-kit.js:1046 |
+| `renderToolsUnsupportedNotice` | frontend/js/reply-kit.js:1635 |
+| `replyByHelpPanel` | frontend/js/reply-kit.js:1686 |
+| `replyByHover` | frontend/js/reply-kit.js:1707 |
+| `replyByline` | frontend/js/reply-kit.js:1739 |
+| `replyBylineFacts` | frontend/js/reply-kit.js:1664 |
+| `replyCalcActions` | frontend/js/reply-kit.js:582 |
+| `replyCalcBuild` | frontend/js/reply-kit.js:459 |
+| `replyCalcConvertPane` | frontend/js/reply-kit.js:1468 |
+| `replyCalcEquation` | frontend/js/reply-kit.js:1223 |
+| `replyCalcHistory` | frontend/js/reply-kit.js:1359 |
+| `replyCalcKeypad` | frontend/js/reply-kit.js:1312 |
+| `replyCalcPanel` | frontend/js/reply-kit.js:407 |
+| `replyCalcResult` | frontend/js/reply-kit.js:987 |
+| `replyCalcShow` | frontend/js/reply-kit.js:1028 |
+| `replyCalcWork` | frontend/js/reply-kit.js:421 |
+| `replyCalcWorkPane` | frontend/js/reply-kit.js:1053 |
 | `replyCompare` | frontend/js/reply-kit.js:173 |
 | `replyDrawAll` | frontend/js/reply-kit.js:34 |
 | `replyFillMeters` | frontend/js/reply-kit.js:193 |
-| `replyFinish` | frontend/js/reply-kit.js:1573 |
-| `replyFoldLong` | frontend/js/reply-kit.js:1811 |
-| `replyGist` | frontend/js/reply-kit.js:1806 |
+| `replyFinish` | frontend/js/reply-kit.js:1582 |
+| `replyFoldLong` | frontend/js/reply-kit.js:1820 |
+| `replyGist` | frontend/js/reply-kit.js:1815 |
 | `replyMeter` | frontend/js/reply-kit.js:160 |
 | `replyMonthName` | frontend/js/reply-kit.js:201 |
-| `replyNoteCard` | frontend/js/reply-kit.js:1904 |
-| `replyNoteEntry` | frontend/js/reply-kit.js:1853 |
-| `replyNoteId` | frontend/js/reply-kit.js:1848 |
-| `replyNotePreviews` | frontend/js/reply-kit.js:1857 |
+| `replyNoteCard` | frontend/js/reply-kit.js:1913 |
+| `replyNoteEntry` | frontend/js/reply-kit.js:1862 |
+| `replyNoteId` | frontend/js/reply-kit.js:1857 |
+| `replyNotePreviews` | frontend/js/reply-kit.js:1866 |
 | `replyPanelShell` | frontend/js/reply-kit.js:44 |
-| `replyPeekLink` | frontend/js/reply-kit.js:1876 |
-| `replyRecordReasons` | frontend/js/reply-kit.js:1608 |
-| `replyReveal` | frontend/js/reply-kit.js:1776 |
-| `replyRevealWanted` | frontend/js/reply-kit.js:1771 |
+| `replyPeekLink` | frontend/js/reply-kit.js:1885 |
+| `replyRecordReasons` | frontend/js/reply-kit.js:1617 |
+| `replyReveal` | frontend/js/reply-kit.js:1785 |
+| `replyRevealWanted` | frontend/js/reply-kit.js:1780 |
 | `replySpark` | frontend/js/reply-kit.js:136 |
 | `replyStatCard` | frontend/js/reply-kit.js:104 |
 | `replyStatCards` | frontend/js/reply-kit.js:206 |
@@ -12187,7 +12187,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/library-lazy.css | 8483 |
 | frontend/css/lightbox-lazy.css | 425 |
 | frontend/css/manual-lazy.css | 161 |
-| frontend/css/math-editor-lazy.css | 156 |
+| frontend/css/math-editor-lazy.css | 169 |
 | frontend/css/math-field-lazy.css | 72 |
 | frontend/css/meetings-lazy.css | 566 |
 | frontend/css/mermaid-lazy.css | 124 |
@@ -12203,7 +12203,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/quick-access-lazy.css | 105 |
 | frontend/css/quickadd-lazy.css | 35 |
 | frontend/css/recovery-lazy.css | 111 |
-| frontend/css/reply-kit-lazy.css | 789 |
+| frontend/css/reply-kit-lazy.css | 838 |
 | frontend/css/reveal-lazy.css | 10 |
 | frontend/css/search-lazy.css | 153 |
 | frontend/css/semantic-notice-lazy.css | 10 |
@@ -23662,7 +23662,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16618)
+## Tests (16623)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23846,6 +23846,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_brand_name.py | 10 |
 | tests/test_breakpoints.py | 3 |
 | tests/test_budgets.py | 6 |
+| tests/test_calc_fit_1622.py | 5 |
 | tests/test_calc_panel_1102.py | 13 |
 | tests/test_calc_redesign_1584.py | 10 |
 | tests/test_calc_ux_1530.py | 16 |
@@ -25651,7 +25652,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_zoom_frame_1508.py | 3 |
 | tests/test_zoom_wheel_delta.py | 3 |
 
-## Plan headings (993)
+## Plan headings (994)
 
 Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, except the HISTORY.md archive. Sorted by heading.
 
@@ -26230,7 +26231,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E4 · The honest positives, so the section is not one-sided (read) | docs/roadmap/MODERNISATION_AUDIT.md:676 |
 | Earlier morning summary (2026-10-30) | docs/roadmap/HANDOVER.md:32 |
 | Earlier morning summary (away run 2026-10-18b, branch claude/magical-feynman-7bgj7j, PR 192, 0.6.0) | docs/roadmap/HANDOVER.md:51 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:593 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:595 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4282 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |
@@ -26466,6 +26467,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-11-03 (the composer's captions and quotes) | docs/roadmap/CHAT_PLAN.md:1893 |
 | Placed from INBOX, 2026-11-03b | docs/roadmap/BACKLOG.md:4458 |
 | Placed from INBOX, 2026-11-04 | docs/roadmap/MINDMAP_PLAN.md:1902 |
+| Placed from INBOX, 2026-11-04 | docs/roadmap/WHITEBOARD_PLAN.md:1728 |
 | Placed from INBOX, built (pointers) | docs/roadmap/UI_MODERNISATION_PLAN.md:1062 |
 | Placed from INBOX: 107d, the segmented mini bars | docs/roadmap/DOCUMENTS_PLAN.md:515 |
 | Placed from INBOX: the composer everywhere (the owner, 2026-10-06) | docs/roadmap/CHAT_PLAN.md:689 |

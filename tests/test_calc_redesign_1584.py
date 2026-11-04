@@ -166,9 +166,10 @@ def test_the_angle_unit_shows_a_short_form_and_keeps_its_name() -> None:
 
 
 def test_a_ring_is_for_the_keyboard() -> None:
+    """INBOX 1622: the strip's own `:focus-visible` is the only ring, so the `is-pointer` workaround of the old `.seg` is gone."""
     seg = KIT.split("seg(label, choices, value, onChange)", 1)[1].split("\n  },\n", 1)[0]
-    assert '"pointerdown"' in seg and '"keydown"' in seg
-    assert "outline-color: transparent" in _rule(KIT_CSS, ".calc-seg.is-pointer button:focus-visible")
+    assert '"pointerdown"' not in seg and "is-pointer" not in seg and "is-pointer" not in KIT_CSS
+    assert '"keydown"' in seg
 
 
 # --- (b) History ----------------------------------------------------------------------------

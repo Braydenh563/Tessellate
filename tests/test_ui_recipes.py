@@ -5136,8 +5136,6 @@ SEG_BUILT_IN_SCRIPT = {
     ("whiteboard.js", "seg seg-compact wb-export-seg"): "Export this board: the format, a value",
     ("timeline-calendar.js", "seg seg-compact timeline-cal-span"): "not a popup: the calendar head's view mode (Month, Week, Day)",
     ("dashboard.js", "seg focus-presets-seg"): "not a popup: the focus timer's length, a value (UI_MODERNISATION V8)",
-    ("reply-kit.js", "seg calc-seg"): "not a kind switch of the dialog (its kinds are its tab strip): the Sum tab's keypad, Standard or Scientific, and the angle unit, values always in view (INBOX 1579)",
-    ("math-editor.js", "seg math-editor-mode"): "not a kind switch: Inline or Display, two exclusive values always in view (INBOX 1530 g L3; the dialog's own kinds are its tab strip)",
 }
 
 
@@ -6939,7 +6937,6 @@ SEG_SHARES_ROW: dict[tuple[str, str], str] = {
     ("whiteboard.js", "seg seg-compact wb-export-seg"): "a grid of option tiles that spans the dialog's width",
     ("timeline-calendar.js", "seg seg-compact timeline-cal-span"): "the calendar head, beside the month and its arrows",
     ("dashboard.js", "seg focus-presets-seg"): "`.focus-presets`, beside the stepper",
-    ("reply-kit.js", "seg calc-seg"): "the Sum tab: Standard or Scientific beside the typeset sum, Degrees or Radians beside the memory",
     ("index.html", "doc-history-filter"): "`.doc-history-bar`, beside Name this version",
     ("index.html", "seg notes-view-toggle"): "the Notes dock, beside Sort and Select",
     ("index.html", "chat-mode-seg"): "the chat tool row, beside the persona and skill pickers",
@@ -7059,8 +7056,9 @@ def test_a_seg_alone_on_its_line_spans_the_row() -> None:
     )
     assert not set(SEG_SHARES_ROW) - judged, f"no such `.seg` now, take it out of SEG_SHARES_ROW: {sorted(set(SEG_SHARES_ROW) - judged)}"
     assert all(len(reason) > 12 for reason in SEG_SHARES_ROW.values())
+    #: Inline and Display is a `.tabs-line` since INBOX 1622 (no pills in a popup), so it is no `.seg` to span.
     modes = _js_function("math-editor.js", "mathEditorModes")
-    assert 'classList.add("seg-fill")' in modes and 'classList.toggle("active"' in modes
+    assert "tabs-line popup-kinds" in modes and 'classList.toggle("active"' in modes
 
 
 def test_a_settings_action_is_text_not_a_boxed_ghost() -> None:

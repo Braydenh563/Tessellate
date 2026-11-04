@@ -245,7 +245,7 @@ def test_the_scientific_mode_is_a_seg_with_its_own_keys_and_no_eval() -> None:
     assert 'replyCalc.seg("Calculator kind"' in work and 'replyCalc.seg("Angle unit"' in work
     assert "replyCalcKeypad(box, equals, { keys: replyCalc.sciKeys" in work
     seg = KIT.split("  seg(label, choices, value, onChange) {", 1)[1].split("\n  },", 1)[0]
-    assert '"seg calc-seg"' in seg and "aria-pressed" in seg and 'classList.toggle("active"' in seg
+    assert '"tabs-line popup-kinds calc-seg"' in seg and "aria-selected" in seg and 'classList.toggle("active"' in seg
     #: One Tab stop per keypad and the arrows walk it: the same function builds both.
     assert KIT.count("function replyCalcKeypad(") == 1
     from tessellate.ai import help_topics_more

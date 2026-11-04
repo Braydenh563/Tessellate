@@ -334,16 +334,17 @@ const replyCalc = { units: null, opened: 0, tabs: [["work", "Sum"], ["convert", 
     "ln(": "Natural logarithm", "log(": "Logarithm, base 10", "sqrt(": "Square root", "^2": "Squared", "^": "To the power of", "!": "Factorial",
     "abs(": "Absolute value", "exp(": "e to the power of", mc: "Memory clear", mr: "Memory recall", "m+": "Memory add", "m-": "Memory subtract",
   },
-  //: **A `.seg` of exclusive choices** (DESIGN.md: `aria-pressed`, `.active` for the glide), the editor's Inline and Display built the same way: `sync(value)` moves the choice.
+  //: **A `.tabs-line` of exclusive choices** (DESIGN.md, "A popup that chooses a kind": no pills in popups, INBOX 715 and 1622): words with a 2px line under the chosen one, `role="tab"` and `aria-selected`, one Tab stop with the arrows and Home and End walking it. The ring is `:focus-visible` only (the strip's own rule), so a press with the pointer draws none. `sync(value)` moves the choice.
   seg(label, choices, value, onChange) {
     const seg = document.createElement("div");
-    seg.className = "seg calc-seg";
-    seg.setAttribute("role", "group");
+    seg.className = "tabs-line popup-kinds calc-seg";
+    seg.setAttribute("role", "tablist");
     seg.setAttribute("aria-label", label);
     //: A choice's third element is the short form it shows (Deg, Rad: the head fits one row at 390 with no width query); the full words stay its name and its title.
     const buttons = choices.map(([key, words, short]) => {
       const b = document.createElement("button");
       b.type = "button";
+      b.setAttribute("role", "tab");
       b.dataset.value = key;
       b.textContent = short || words;
       if (short) {
@@ -353,14 +354,20 @@ const replyCalc = { units: null, opened: 0, tabs: [["work", "Sum"], ["convert", 
       b.addEventListener("click", () => onChange(key));
       return b;
     });
-    //: A ring is for the keyboard (INBOX 1584): a press with the pointer marks the strip, so a ring Tab left on a segment does not stay after a click; the next key press takes the mark off.
-    seg.addEventListener("pointerdown", () => seg.classList.add("is-pointer"));
-    seg.addEventListener("keydown", () => seg.classList.remove("is-pointer"));
+    seg.addEventListener("keydown", (event) => {
+      const at = buttons.indexOf(document.activeElement);
+      const to = { ArrowRight: (at + 1) % buttons.length, ArrowLeft: (at + buttons.length - 1) % buttons.length, Home: 0, End: buttons.length - 1 }[event.key];
+      if (at < 0 || to === undefined) return;
+      event.preventDefault();
+      onChange(buttons[to].dataset.value);
+      buttons[to].focus();
+    });
     const sync = (now) => {
       for (const b of buttons) {
         const chosen = b.dataset.value === now;
-        b.setAttribute("aria-pressed", String(chosen));
+        b.setAttribute("aria-selected", String(chosen));
         b.classList.toggle("active", chosen);
+        b.tabIndex = chosen ? 0 : -1;
       }
     };
     seg.append(...buttons);
@@ -478,7 +485,7 @@ function replyCalcBuild(card, input, mode = "work", { target = null, close = () 
     pane.setAttribute("role", "tabpanel");
     pane.id = `calc-panel-${n}-${key}`;
     pane.setAttribute("aria-labelledby", `calc-tab-${n}-${key}`);
-    pane.classList.toggle("hidden", key !== mode);
+    pane.classList.toggle("is-off", key !== mode);
   }
   const select = (key, { focus = true } = {}) => {
     for (const other of tabs) {
@@ -487,7 +494,7 @@ function replyCalcBuild(card, input, mode = "work", { target = null, close = () 
       other.classList.toggle("active", on);
       other.tabIndex = on ? 0 : -1;
     }
-    for (const [name, pane] of Object.entries(panes)) pane.classList.toggle("hidden", name !== key);
+    for (const [name, pane] of Object.entries(panes)) pane.classList.toggle("is-off", name !== key);
     wrap.scrollTop = 0;
     actions.show(key);
     if (focus) focusIn[key]();
@@ -1195,6 +1202,8 @@ function replyCalcWorkPane(input, actions) {
     mode.on = on;
     keep();
     sciKeys.classList.toggle("hidden", !on);
+    //: Scientific lays the function keys beside the digits when the card is wide enough (reply-kit-lazy.css, `.is-sci`), so its card is no taller than Standard's.
+    pane.classList.toggle("is-sci", on);
     angle.seg.classList.toggle("hidden", !on);
     kind.sync(on ? "scientific" : "standard");
     showMemory();
