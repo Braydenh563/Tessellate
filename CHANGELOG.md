@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Companion throw: one layout read per landing instead of three, and the page no longer scrolls under a wheel or key press while the companion is carried or flying (INBOX 1634, part).
 - Focus timer: type any minutes from 1 to 180, steps of 1 under 10 and 5 above, and a 60 preset; new Stopwatch (laps), Alarm (a reminder at a time of day) and Convert (units, currency, time zones offline) widgets (INBOX 1617).
 - Settings: the changed-row bar sits 16px in on every row, the corner companion row lines up with its title, and Help's Where line keeps the body's indent; the selection bar takes the pane head's box, the Files list has a gap under its bar and the drag grip no longer covers a card's tick; Logs says how many records the filters hide with a Show them button, draws older records on scroll and has a Refresh button; the desktop companion switch moved to Appearance (INBOX 1605, 1608, 1610, 1611).
 - Graph node popups: the hover card and the detail panel stay below the top bar, the panel scrolls only its body with no gap under the dock, a resize keeps the edge it was pressed on and no longer jitters, and the draw loop stops after 300 self-requested frames (INBOX 1630).
