@@ -88,6 +88,7 @@
       }
       buttons.out.disabled = state.scale <= math.MIN * f * 1.001;
       buttons.in.disabled = state.scale >= math.MAX * f * 0.999;
+      for (const after of fig.onzoom || []) after();
     };
     //: Zoom to `next` keeping the point under (cx, cy) where it is.
     const zoomTo = (next, cx, cy) => {
@@ -170,7 +171,8 @@
     });
     fig.addEventListener("pointermove", (event) => {
       const last = points.get(event.pointerId);
-      if (!last) return;
+      //: A node being moved (obj-drag.js) is not a pan.
+      if (!last || document.documentElement.classList.contains("obj-dragging")) return;
       points.set(event.pointerId, { x: event.clientX, y: event.clientY });
       if (points.size === 2 && start) {
         const now = span();
