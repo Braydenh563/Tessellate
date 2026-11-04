@@ -44,20 +44,25 @@
       if (!S || target.closest(".menu-wrap, .dgm-join, .dgm-connect, [contenteditable]") || (block?.classList.contains("dgm-kept") && !tile)) return null;
       const key = tile ? null : block.dataset.key;
       const title = tile ? tile.dataset.title : h.name(S, key);
-      return { card: tile || block.querySelector(":scope > .dgm-card"), ref: { kind: "block", id: key || tile.dataset.shape, title }, grip: Boolean(target.closest("[data-obj-grip]")), S, key, tile };
+      const many = carried(S, key)?.length;
+      return { card: tile || block.querySelector(":scope > .dgm-card"), ref: { kind: "block", id: key || tile.dataset.shape, title: many ? `${many} blocks` : title }, grip: Boolean(target.closest("[data-obj-grip]")), S, key, tile };
     }
 
     //: Whether the block `k` is the dragged group or sits inside it.
     const within = (m, k, group) => h.ops.inside(m, k[0] === "g" ? k.slice(2) : h.ops.node(m, k.slice(2))?.group, group);
 
+    //: The picked keys when the grabbed one is among them (R5): the grip of any picked row carries all of them.
+    const carried = (S, key) => (key && S.picked?.size > 1 && S.picked.has(key) ? [...S.picked] : null);
+
     function dropAt(g) {
       const { S, key } = g;
+      const set = carried(S, key);
       const at = document.elementFromPoint(g.x, g.y);
       if (!at || !S.pane.contains(at)) return null;
       const block = at.closest(".dgm-block");
       if (!block) return { op: "into", group: null, before: null };
       const over = block.dataset.key;
-      if (over[0] === "k" || (key && (over === key || (key[0] === "g" && within(S.m, over, key.slice(2)))))) return null;
+      if (over[0] === "k" || (key && (over === key || (key[0] === "g" && within(S.m, over, key.slice(2))))) || set?.some((p) => p === over || (p[0] === "g" && within(S.m, over, p.slice(2))))) return null;
       const card = block.querySelector(":scope > .dgm-card");
       const r = card.getBoundingClientRect();
       const f = (g.y - r.top) / r.height;
@@ -79,6 +84,13 @@
         if (target.op === "join") return;
         return h.add(S, { shape: group ? S.shape : g.tile.dataset.shape, text: g.tile.dataset.text, group, after: null, into: null, before: target.before ?? null, edit: false, ...(target.group ? { into: h.ops.key("g", target.group) } : {}) });
       }
+      const set = carried(S, g.key);
+      if (set) {
+        if (target.op === "join") return h.say(S, "Drop between blocks to move them together.");
+        if (!h.ops.moveMany(m, set, target.group, target.before)) return h.say(S, "A group cannot go inside itself.");
+        return h.commit(S, `Moved ${set.length} blocks.`);
+      }
+      S.picked?.clear();
       if (target.op === "join") {
         const from = g.key.slice(2);
         const edge = h.ops.join(m, from, target.key.slice(2));
@@ -96,8 +108,8 @@
       grab: () => ({}),
       begin(g) {
         g.scroller = g.S.pane;
-        g.dragEl = g.tile ? null : h.blockEl(g.S, g.key);
-        g.dragEl?.classList.add("dgm-lifted");
+        g.dragEls = g.tile ? [] : (carried(g.S, g.key) || [g.key]).map((k) => h.blockEl(g.S, k));
+        g.dragEls.forEach((b) => b?.classList.add("dgm-lifted"));
       },
       update(g) {
         g.target = dropAt(g);
@@ -105,12 +117,12 @@
       },
       drop(g) {
         dropMark(g, null);
-        g.dragEl?.classList.remove("dgm-lifted");
+        g.dragEls?.forEach((b) => b?.classList.remove("dgm-lifted"));
         if (g.target) dropApply(g, g.target);
       },
       cancel(g) {
         dropMark(g, null);
-        g.dragEl?.classList.remove("dgm-lifted");
+        g.dragEls?.forEach((b) => b?.classList.remove("dgm-lifted"));
       },
     };
     return mode;

@@ -6945,6 +6945,7 @@ SEG_SHARES_ROW: dict[tuple[str, str], str] = {
     ("index.html", "chat-mode-seg"): "the chat tool row, beside the persona and skill pickers",
     ("index.html", "timeline-view-seg"): "the Timeline dock",
     ("index.html", "doc-view-seg"): "the Documents dock, beside the cluster's other controls",
+    ("index.html", "doc-diagram-seg"): "the Documents dock, in place of Edit and Read for a diagram",
     ("index.html", "reminder-view-toggle"): "the Reminders dock",
     ("index.html", "library-view"): "the Library dock",
     ("index.html", "library-boards-view"): "the Library dock",

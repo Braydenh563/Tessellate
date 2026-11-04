@@ -266,7 +266,7 @@ def test_the_document_shows_blocks_for_a_diagram_and_hands_its_edits_to_the_hist
     docs = (JS / "documents.js").read_text(encoding="utf-8")
     state = docs[docs.index("const docViewState = {") :]
     state = state[: state.index("\n};")]
-    assert '(mode === "split" || mode === "rendered")' in state
+    assert '["split", "rendered", "canvas", "blocks"].includes(mode)' in state
     preview = docs[docs.index("function renderDocPreview() {") :]
     preview = preview[: preview.index("\n}\n")]
     pane = preview[preview.index('docFileType().ext === "mmd"') :]
