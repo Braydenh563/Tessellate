@@ -31,7 +31,7 @@ def test_an_undragged_popup_stands_clear_of_its_node_and_hides_off_view():
     assert "const clear = (x, y)" in body
     assert 'classList.toggle("graph-popup-away", gone)' in body
     place = _fn("placeGraphPopup")
-    assert "graphLate.popupDragged" in place and "graphPopupFollowSpot(box, room, size)" in place
+    assert "graphLate.popupDragged" in place and "graphPopupFollowSpot(box, room, size, floor)" in place
 
 
 def test_the_head_drags_and_a_dragged_popup_stays_until_closed():

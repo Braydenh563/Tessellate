@@ -593,3 +593,26 @@
 .graph-bare .graph-zoom {
   display: none;
 }
+
+/* The detail panel scrolls its body only (INBOX 1630): head, Save row and dock are fixed rows. */
+#graph-popup {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-bottom: 0;
+}
+#graph-popup.hidden {
+  display: none;
+}
+/* The grip overlays the dock end, so no strip sits under the dock. */
+#graph-popup > button.panel-grip {
+  margin-top: calc(-1 * var(--target-min));
+}
+#graph-popup > .graph-popup-actions {
+  padding-inline-end: calc(var(--target-min) + var(--space-1));
+}
+.graph-popup-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}

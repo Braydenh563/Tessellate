@@ -1830,43 +1830,6 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   overscroll-behavior: contain;
 }
 
-/* **The detail panel scrolls its body only** (INBOX 1630: "the scrollbar goes
-   the whole height and there can be a gap below the bottom dock"). The panel
-   is a column: the head, then `.graph-popup-body` (the one scroller), then the
-   save row and the dock, which are the column's own last rows rather than
-   sticky rows inside a scroller, so no scrollbar runs beside the dock and the
-   dock ends at the panel's bottom edge (no bottom padding on the panel). */
-#graph-popup {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  padding-bottom: 0;
-}
-#graph-popup.hidden {
-  display: none;
-}
-#graph-popup > .graph-popup-head,
-#graph-popup > .graph-popup-saverow,
-#graph-popup > .graph-popup-actions {
-  flex: 0 0 auto;
-}
-/* The resize grip is the shared recipe's last row; on this panel it would be a
-   28px strip under the dock (the "gap below the bottom dock"). It is pulled up
-   over the dock's own right end by its height, so the dock is flush at the
-   foot, and the dock keeps that end free so the grip never covers a button. */
-#graph-popup > button.panel-grip {
-  margin-top: calc(-1 * var(--target-min));
-}
-#graph-popup > .graph-popup-actions {
-  padding-inline-end: calc(var(--target-min) + var(--space-1));
-}
-.graph-popup-body {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-}
-
 .graph-popup.hidden {
   display: none;
 }

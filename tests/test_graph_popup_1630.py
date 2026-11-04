@@ -46,7 +46,7 @@ def test_the_detail_panel_scrolls_its_body_only():
     body = popup.index('<div class="graph-popup-body">')
     assert popup.index("graph-popup-head") < body < popup.index('id="graph-popup-content"')
     assert popup.index('id="graph-popup-tags"') < popup.index("</div>", popup.index('id="graph-popup-tags"')) < popup.index('id="graph-popup-saverow"')
-    css = _css("04-chat-dock-appearance.css")
+    css = _css("graph-lazy.css")
     panel = css[css.index("#graph-popup {") :]
     panel = panel[: panel.index("}")]
     assert "display: flex;" in panel and "flex-direction: column;" in panel
@@ -54,13 +54,14 @@ def test_the_detail_panel_scrolls_its_body_only():
     scroller = css[css.index(".graph-popup-body {") :]
     scroller = scroller[: scroller.index("}")]
     assert "overflow-y: auto;" in scroller and "min-height: 0;" in scroller
-    dock = css[css.index(".graph-popup-actions {") :]
+    base = _css("04-chat-dock-appearance.css")
+    dock = base[base.index(".graph-popup-actions {") :]
     dock = dock[: dock.index("}")]
     assert "position: sticky" not in dock and "margin-bottom: 0;" in dock
 
 
 def test_the_grip_is_not_a_strip_under_the_dock():
-    css = _css("04-chat-dock-appearance.css")
+    css = _css("graph-lazy.css")
     grip = css[css.index("#graph-popup > button.panel-grip {") :]
     assert "margin-top: calc(-1 * var(--target-min));" in grip[: grip.index("}")]
     assert "#graph-popup > .graph-popup-actions {" in css
