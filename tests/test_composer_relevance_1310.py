@@ -73,12 +73,13 @@ def test_the_answer_groups_its_notes_by_theme_and_says_why_each_group_answers():
     #: Found by its tag, not its frame: the frames vary group to group (INBOX 1512).
     gym = next(i for i, p in enumerate(paragraphs) if "gym notes" in p.lower() and "#gym" in p)
     gaming = next(i for i, p in enumerate(paragraphs) if "gaming notes" in p.lower() and "#gaming" in p)
-    loose = next(i for i, p in enumerate(paragraphs) if "loosely" in p.lower())
+    #: The category's own loose notes are headed "More from" and told below, never named twice (INBOX 1665 f).
+    loose = next(i for i, p in enumerate(paragraphs) if p.startswith("More from") or "loosely" in p.lower())
     #: Equal scores: the bigger theme first; the loose notes last.
     assert gaming < gym < loose, text
     #: Each group's line says why it answers: what joins it, and its notes.
     assert "#gym" in paragraphs[gym] and "Gym Routine Overview" in paragraphs[gym], paragraphs[gym]
-    assert "movie review" in paragraphs[loose].lower() and "golf" in paragraphs[loose].lower(), paragraphs[loose]
+    assert "movie review" in " ".join(paragraphs[loose:]).lower() and "golf" in " ".join(paragraphs[loose:]).lower(), text
     #: The gym notes are told together, under their line, not by date order.
     legs = next(i for i, p in enumerate(paragraphs) if "9pm on Tuesday, legs" in p)
     assert gym < legs < loose, text

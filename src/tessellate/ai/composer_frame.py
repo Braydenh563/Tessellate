@@ -57,6 +57,8 @@ class Group:
     joined_by: str = ""
     score: float = 0.0
     band: str = "also"
+    #: Loose notes the question's own category holds: counted, not "loosely related".
+    in_topic: bool = False
     links: list[tuple[int, int]] = field(default_factory=list)
 
 
@@ -623,6 +625,11 @@ def _shared_line(group: Group, theme: str, by_id: dict[int, dict], lower) -> str
     the tag share it; the others are in the group through a link (audit 1031 C14)."""
     holders = [i for i in group.ids if group.name in _tag_list(by_id[i])]
     others = [i for i in group.ids if i not in holders]
+    if len(group.ids) > NAMED_MAX:
+        #: A big group says what joins it and how many are linked in, not a
+        #: run of titles: each note is told on its own line below (INBOX 1665 b).
+        more = f", and {realise.count_word(len(others))} more {'is' if len(others) == 1 else 'are'} linked to {'it' if len(holders) == 1 else 'them'}"
+        return f"{theme} {group.joined_by}{more if holders and others else ''}"
     line = f"{theme} {group.joined_by}: {_names(holders or group.ids, by_id, lower)}"
     if holders and others:
         line += f"; {_names(others, by_id, lower)} {'is' if len(others) == 1 else 'are'} linked to {'it' if len(holders) == 1 else 'them'}"
@@ -669,7 +676,9 @@ def group_line(group: Group, notes: list[dict], topic: str, lower=_lower, i: int
     “go to the gym at 9pm on Tuesday”, both tagged #gym."."""
     by_id = {n["id"]: ({**n, "_by_day": True} if n["id"] in by_day else n) for n in notes}
     if group.band == "loose":
-        return f"More loosely related to {topic}: {_names(group.ids, by_id, lower)}."
+        #: No names: each of these notes is told on its own line below, and a
+        #: name here said it twice (INBOX 1665 f).
+        return f"More from {topic}." if group.in_topic else f"More loosely related to {topic}."
     linked = _link_said(group, by_id, lower, i)
     theme = f"your {group.name} notes" if group.name else "two of your notes" if len(group.ids) == 2 else "some of your notes"
     line = _group_clause(group, topic, theme, by_id, lower, i)
