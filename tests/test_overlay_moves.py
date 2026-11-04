@@ -160,7 +160,7 @@ def test_a_floater_drifts_across_the_width_and_a_band_above_its_rest_line_not_th
     # INBOX 1663 ("wayyy to high"): the height it uses is about its own, no more.
     # Intent moved (INBOX 1670, a buddy): it stays near home on the rest line, in a band no higher
     # than its own, and walks a few steps, not across the width.
-    assert max(ys) - min(ys) <= eng.FLOAT_BAND * e.size[1] + eng.HOVER[1] + eng.BOB + 2
+    assert max(ys) - min(ys) <= eng.FLOAT_BAND * e.size[1] + eng.HOVER[1] + 2  # no bob any more (16:40Z)
     assert 20 < max(xs) - min(xs) <= 2 * eng.STROLL + 20
     assert {"walk0", "walk3"} & frames
 

@@ -106,6 +106,22 @@ def crop_box(images: list[Image.Image]) -> tuple[int, int, int, int]:
     return max(0, left - PAD), max(0, top - PAD), min(width, right + PAD), min(height, bottom + PAD)
 
 
+def clip_idle_tails(folder: Path) -> None:
+    """Clip an idle picture's tail tip to at most one source pixel below the stand's bottom (INBOX 1670,
+    16:40Z: the feminine idle bottom stepped 258 to 261 and the figure seemed to jitter). The tip is a few
+    near-transparent rows of the swish, so clipping it costs nothing a person can see."""
+    def bottom(im: Image.Image) -> int:
+        return im.getchannel("A").point(lambda v: 255 if v >= 24 else 0).getbbox()[3]
+
+    limit = bottom(Image.open(folder / "stand.png").convert("RGBA")) + 1
+    for path in sorted(folder.glob("idle*.png")):
+        im = Image.open(path).convert("RGBA")
+        if bottom(im) <= limit:
+            continue
+        im.paste((0, 0, 0, 0), (0, limit, im.width, im.height))
+        im.quantize(colors=COLOURS, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE).save(path, optimize=True)
+
+
 def main() -> int:
     out = ROOT / "frontend" / "img" / "desk"
     with tempfile.TemporaryDirectory() as raw:
@@ -140,6 +156,7 @@ def main() -> int:
                 small = im.quantize(colors=COLOURS, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE)
                 small.save(target / f"{name}.png", optimize=True)
                 total += (target / f"{name}.png").stat().st_size
+            clip_idle_tails(target)
             render_card_frames.render_look(look)
             print(f"{look}: {len(images)} frames, {box[2] - box[0]}x{box[3] - box[1]} px")
         print(f"total {total / 1024:.0f} KB")

@@ -51,9 +51,11 @@ logger = logging.getLogger(__name__)
 #: A pose change dissolves over this long, in this many steps (one a display frame at 60 Hz), among these
 #: picture families (INBOX 1670, 14:14Z: "framey and not seamless").
 BLEND_S = 0.12
+#: A look is a head turn (INBOX 1670, 16:40Z: it snapped): its dissolve, in and out, is slower than a pose change's.
+BLEND_LOOK_S = 0.24
 BLEND_STEPS = 7
 BLEND_TICK_MS = 16
-BLENDED = ("stand", "walk", "idle", "sit", "sleep", "wave", "land", "hang")
+BLENDED = ("stand", "walk", "idle", "look", "sit", "sleep", "wave", "land", "hang")
 BUSY_EVERY = 2.0
 #: Input this recent means the person is typing or working: no acts, only standing.
 TYPING_AGE = 2.5
@@ -137,6 +139,7 @@ class OverlayRunner:
         self._target: sprites.Frame | None = None
         self._blend: tuple[sprites.Frame | None, float] | None = None
         self._blend_step = -1
+        self._blend_s = BLEND_S
         self._next_busy_check = 0.0
         #: The foreground window's text band, kept per window: (hwnd, read at, band).
         self._zone: tuple[int, float, tuple[int, int, int, int] | None] | None = None
@@ -440,12 +443,7 @@ class OverlayRunner:
         key = (out.frame, self.dpi, out.flip, out.clip, out.pose, out.fx, out.alpha)
         blending = False
         if key != self._last_key:
-            posed = spr.posed(out.frame, self.dpi, out.flip, out.pose) if out.pose else spr.frame(out.frame, self.dpi, out.flip)
-            frame = sprites.effect(sprites.clipped(posed, out.clip), out.fx, out.alpha)
-            self._blend = (self._target, self.clock()) if self._blends(self._last_key, key, self._target, frame) else None
-            self._target, self._blend_step = frame, -1
-            self._last_key = key
-            blending = self._show(frame, out, True)
+            blending = self._new_picture(out, key)
         elif self._blend is not None:
             blending = self._show(self._target, out, False)
         elif (out.x, out.y) != self._last_pos:
@@ -466,9 +464,22 @@ class OverlayRunner:
             wake = BLEND_TICK_MS if wake is None else min(wake, BLEND_TICK_MS)
         return wake
 
+    def _new_picture(self, out: eng.Output, key: tuple) -> bool:
+        """A new picture: build it, start a dissolve from the last one when the change earns one (a look's is
+        the slow head turn), and present it. True while the dissolve has more to come."""
+        spr = self.sprites
+        assert spr is not None
+        posed = spr.posed(out.frame, self.dpi, out.flip, out.pose) if out.pose else spr.frame(out.frame, self.dpi, out.flip)
+        frame = sprites.effect(sprites.clipped(posed, out.clip), out.fx, out.alpha)
+        self._blend = (self._target, self.clock()) if self._blends(self._last_key, key, self._target, frame) else None
+        self._blend_s = BLEND_LOOK_S if self._last_key and "look" in (self._last_key[0], key[0]) else BLEND_S
+        self._target, self._blend_step = frame, -1
+        self._last_key = key
+        return self._show(frame, out, True)
+
     def _blends(self, before: tuple | None, after: tuple, prev: sprites.Frame | None, frame: sprites.Frame) -> bool:
         """A pose change dissolves (INBOX 1670: "framey"): standing to walking, sitting up, a wave, a landing.
-        Not the cycle's own in-betweens, not a blink or a look (quick on purpose), not a reaction to the person
+        Not the cycle's own in-betweens, not a blink (quick on purpose; a look dissolves slowly, as a head turn), not a reaction to the person
         (held, thrown, falling), not a vanish or a peek, and never in reduced motion."""
         if prev is None or before is None or self.reduced or self.engine is None:
             return False
@@ -485,7 +496,7 @@ class OverlayRunner:
         shown, more = frame, False
         if self._blend is not None:
             prev, t0 = self._blend
-            u = (self.clock() - t0) / BLEND_S
+            u = (self.clock() - t0) / self._blend_s
             if u >= 1.0:
                 self._blend = None
             else:

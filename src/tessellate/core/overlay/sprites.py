@@ -49,11 +49,23 @@ FRAME_NAMES = (
 #: Drawn by `scripts/render_card_frames.py`, not captured from the app.
 CARD_FRAMES = ("card0", "card1")
 WALK_FRAMES = tuple(f"walk{i}" for i in range(WALK_COUNT))
-#: Rotated copies of the "tumble" frame, for a thrown figure: `spin0` to `spin7`
-#: are 45 degree steps. Built once per dpi (and flip) with Pillow, then cached.
-SPIN_STEPS = 8
+#: Rotated copies of the "tumble" frame, for a thrown figure: `spin0` to `spin47` are 7.5 degree steps
+#: (INBOX 1670, 17:05Z: eight 45 degree frames turned "by 45 degrees each time"). Each is built on first use
+#: per dpi (and flip) with Pillow and cached, so a throw pays for the angles it passes through and a session
+#: that never throws pays for none. `SPIN_COARSE` of them (45 degrees apart) give the engine its boxes.
+SPIN_STEPS = 48
+SPIN_COARSE = 8
 SPIN_FRAMES = tuple(f"spin{i}" for i in range(SPIN_STEPS))
 SPIN_BASE = "tumble"
+#: The sat figure with its eyes shut (INBOX 1670, 16:40Z: a sit had no blink). Not a shipped file: derived at
+#: load from `sit` with closed lids drawn over its eyes, so the frame set and its byte budget do not move.
+#: Asleep the eyes are already shut. `LID_EYES` is each look's two eyes as one box in shipped px on `stand`;
+#: the sit is a few px off it, found by matching the box.
+LID_FRAME = "sitblink"
+LID_EYES = {"masculine": (112, 112, 152, 126), "feminine": (108, 110, 154, 126)}
+LID_REACH = 6
+LID_INK = (44, 42, 112)
+DERIVED_FRAMES = (*SPIN_FRAMES, LID_FRAME)
 #: "float" (Atlas, a wisp for a lower body: hovers and drifts) or "walk".
 GAITS = {"masculine": "float", "feminine": "float"}
 #: Pixels around the solid body that stay the frame's own (its soft edge), at the shipped scale.
@@ -169,12 +181,45 @@ class SpriteSet:
         if name not in self._source:
             from PIL import Image
 
+            if name == LID_FRAME:
+                self._source[name] = self._lidded()
+                return self._source[name]
             with Image.open(self.directory / f"{name}.png") as im:
                 loaded = im.convert("RGBA")
             # as shipped: the standing family already carries one shared nebula stream (render_desk_frames.py
             # `shared_stream`); a loader-side veil swap cut it away under the body and added a step (INBOX 1670)
             self._source[name] = loaded
         return self._source[name]
+
+    def _lidded(self) -> Any:
+        """`sit` with a closed lid over each eye: the eye box is matched from `stand` into the sit (the head is a
+        few px off), each eye is filled with the skin beside it and a lash line is drawn across it, supersampled
+        so its edge is soft like the art."""
+        from PIL import Image, ImageChops, ImageDraw, ImageStat
+
+        stand, sit = self._load("stand"), self._load("sit")
+        box = LID_EYES[self.look]
+        ref, best = stand.crop(box), None
+        for dy in range(-LID_REACH, LID_REACH + 1):
+            for dx in range(-LID_REACH, LID_REACH + 1):
+                here = sit.crop((box[0] + dx, box[1] + dy, box[2] + dx, box[3] + dy))
+                err = sum(ImageStat.Stat(ImageChops.difference(ref, here)).mean)
+                if best is None or err < best[0]:
+                    best = (err, dx, dy)
+        _err, dx, dy = best
+        x0, y0, x1, y1 = box[0] + dx, box[1] + dy, box[2] + dx, box[3] + dy
+        up = 4
+        patch = sit.crop((x0, y0, x1, y1)).resize(((x1 - x0) * up, (y1 - y0) * up), Image.Resampling.NEAREST)
+        skin = sit.getpixel(((x0 + x1) // 2, (y0 + y1) // 2))  # between the eyes
+        draw = ImageDraw.Draw(patch)
+        for side in (0.25, 0.75):  # each eye: its centre is a quarter in from its side of the box
+            cx, cy = (x1 - x0) * up * side, (y1 - y0) * up * 0.5
+            rx, ry = 10 * up, 7 * up
+            draw.ellipse((cx - rx, cy - ry, cx + rx, cy + ry), fill=skin)
+            draw.arc((cx - rx * 0.8, cy - ry * 0.9, cx + rx * 0.8, cy + ry * 0.9), 20, 160, fill=(*LID_INK, 255), width=2 * up)
+        done = sit.copy()
+        done.paste(patch.resize((x1 - x0, y1 - y0), Image.Resampling.LANCZOS), (x0, y0))
+        return done
 
     def _raw(self, name: str) -> Any:
         from PIL import Image
@@ -212,7 +257,7 @@ class SpriteSet:
     def frame(self, name: str, dpi: int = 96, flip: bool = False) -> Frame:
         """The frame as premultiplied BGRA at the dpi, mirrored when `flip`
         (the shipped frames face right; walking left is the mirror)."""
-        if name not in FRAME_NAMES and name not in SPIN_FRAMES:
+        if name not in FRAME_NAMES and name not in DERIVED_FRAMES:
             raise KeyError(name)
         key = (name, int(dpi), bool(flip))
         cached = self._cache.get(key)
@@ -288,15 +333,20 @@ class SpriteSet:
         where the window is placed (`out.x`, `out.y`), so a rotated frame's pad is taken off.
         The engine plants feet and keeps a ride inside the work area from these (INBOX 1670)."""
         found = {}
-        for name in (*self.available(), *SPIN_FRAMES):
+        step = SPIN_STEPS // SPIN_COARSE
+        for name in (*self.available(), *DERIVED_FRAMES):
+            if name in SPIN_FRAMES:  # a spin's box is its nearest 45 degree neighbour's: not 48 frames built up front
+                near = SPIN_FRAMES[round(SPIN_FRAMES.index(name) / step) * step % SPIN_STEPS]
+            else:
+                near = name
             for flip in (False, True):
-                f = self.frame(name, dpi, flip)
+                f = self.frame(near, dpi, flip)
                 left, top, right, bottom = f.box
                 found[(name, flip)] = (left - f.pad_x, top - f.pad_y, right - f.pad_x, bottom - f.pad_y)
         return found
 
     def _spun(self, image: Any, step: int, width: int, height: int) -> Frame:
-        """The picture turned by `step` x 45 degrees on a square canvas big enough
+        """The picture turned by `step` of `SPIN_STEPS` turns on a square canvas big enough
         for any angle (the diagonal), so no corner is cut; the pad tells the window
         where the figure's own box sits in it."""
         import math

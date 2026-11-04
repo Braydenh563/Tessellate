@@ -60,7 +60,7 @@ def test_the_floater_stays_by_its_home_and_does_not_cross_the_screen_in_a_minute
     # in 60 s (1658, "it just floats there"). Now it lives by its home spot; a trip is rare.
     for seed in range(1, 9):
         _share, extent, _ticks = follow(make(seed), 60.0)
-        assert extent <= 2 * eng.STROLL + 2 * eng.FLOAT_SWAY + 4, (seed, extent)
+        assert extent <= 2 * eng.STROLL + 4, (seed, extent)  # no sway now (16:40Z)
 
 
 def test_a_resting_floater_does_not_bob_and_plays_the_idle_cycle_without_pause() -> None:

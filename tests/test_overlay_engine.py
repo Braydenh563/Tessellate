@@ -246,7 +246,17 @@ def test_let_go_on_the_floor_lands_without_a_fall() -> None:
     e.update(1.0, event=("down", 850, 950))
     e.update(1.01, event=("move", 900, 950))
     out = e.update(1.02, event=("up", 900, 950))
+    # Intent moved (INBOX 1670, 17:05Z, "rotates ... not realistic"): a flick along the floor is a tumble that
+    # slides to a stop and rights itself with an eased turn before it lands, not an instant stop; it never leaves
+    # the floor line, and it still lands standing.
+    seen = [out]
+    for i in range(1, 400):
+        seen.append(e.update(1.02 + i * 0.016))
+        if seen[-1].frame == "land":
+            break
+    out = seen[-1]
     assert out.frame == "land" and out.settled and out.y == 1040 - 120
+    assert all(o.y <= 1040 - 120 for o in seen)
 
 
 def test_a_drop_on_a_lower_monitor_lands_on_that_floor() -> None:
@@ -255,7 +265,8 @@ def test_a_drop_on_a_lower_monitor_lands_on_that_floor() -> None:
     e.update(1.0, event=("down", 850, 950))
     e.update(1.01, event=("move", 3000, 400))
     e.update(1.02, event=("up", 3000, 400))
-    out = run(e, 3.0, step=0.016, t0=1.02)[-1]
+    # Intent moved (INBOX 1670, 17:05Z): the throw tumbles and rights itself before it lands, so it is given 6 s.
+    out = run(e, 6.0, step=0.016, t0=1.02)[-1]
     assert out.y == 1180 - 120 and out.x >= 1920
 
 

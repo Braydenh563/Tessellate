@@ -27,22 +27,18 @@ def run(e: Engine, t: float, seconds: float, pointer=None, step: float | None = 
     return outs, t
 
 
-BOB_EASE_CHECK = eng.BOB_EASE_OUT * 1.2
-
-
 def calm(e: Engine) -> Engine:
     e.big_ready = e.trip_ready = math.inf
     return e
 
 
-# --- (5) the bob is slow and small --------------------------------------------------------------
+# --- (5) the window never bobs ------------------------------------------------------------------
 
 
 @pytest.mark.parametrize("look", LOOKS)
-def test_the_bob_is_only_while_travelling_and_eases_out_in_about_a_second(look: str) -> None:
-    # Intent moved (INBOX 1670: "why does it bob up and down so much, it is floating"): it used to be a
-    # 3 to 5 s breath at rest. At rest the window now stays on one row; a floater bobs only while it travels
-    # and the bob eases out over BOB_EASE_OUT after it arrives.
+def test_the_window_never_bobs_at_rest_or_while_drifting_and_the_breath_is_in_the_figure(look: str) -> None:
+    # Intent moved (INBOX 1670, 16:40Z: "it randomly jitters up and down"): the window bob and sway are gone
+    # (it was 4 px up and down while a floater drifted). A drift is its own path; the breath is a pose.
     e, _s = make(look, "float", plain=True)
     e._enter("stand", 0.0)
     e.state_until = math.inf
@@ -52,28 +48,21 @@ def test_the_bob_is_only_while_travelling_and_eases_out_in_about_a_second(look: 
     t, ys = 0.0, []
     for _ in range(30 * 20):
         t += 1 / 30
-        e.update(t)
-        ys.append(round(e._bobbed(e.x, e.y, t)[1]))
+        o = e.update(t)
+        ys.append(o.y)
     assert max(ys) == min(ys), "no bob at rest"
-    assert e.bob_gain == 0.0
     e.state_until = 0.0
-    e.goal, e.then, e.trip = (e.x + 500.0, e.y - 60.0), "stand", True
+    e.goal, e.then, e.trip = (e.x + 500.0, e.y, ), "stand", True
     e._enter("drift", t)
-    e.goal, e.trip, e.state_until = (e.x + 500.0, e.y - 60.0), True, math.inf
-    moving = []
+    e.goal, e.trip, e.state_until = (e.x + 500.0, e.y), True, math.inf
+    ys, sys_ = [], []
     for _ in range(30 * 4):
         t += 1 / 30
-        e.update(t)
-        moving.append(e.bob_gain)
-    assert max(moving) > 0.5, "it bobs while travelling"
-    e._enter("stand", t)
-    e.state_until = math.inf
-    e.next_ambient = math.inf
-    end = t + BOB_EASE_CHECK
-    while t < end:
-        t += 1 / 30
-        e.update(t)
-    assert e.bob_gain < 0.05, e.bob_gain
+        o = e.update(t)
+        ys.append(o.y)
+        sys_.append(o.pose[1] if o.pose else 1.0)
+    assert max(ys) - min(ys) <= 1, "a level drift keeps its row"
+    assert max(sys_) - min(sys_) >= 0.004, "it breathes in the figure while it drifts"
 
 
 # --- (6) only Atlas floats ----------------------------------------------------------------------
@@ -81,9 +70,7 @@ def test_the_bob_is_only_while_travelling_and_eases_out_in_about_a_second(look: 
 
 def test_a_ground_companion_never_bobs_in_the_air_and_floating_acts_are_not_its_own() -> None:
     e, _s = make("masculine", "walk")
-    assert not e._bobbing()
     outs, _t = run(calm(e), 0.0, 120.0)
-    assert e.bob_gain == 0.0
     assert len({round(o.y - e._dy(o.frame)) for o in outs}) == 1  # on the floor all the time: no air to bob in
     mind = bh.Mind()
     names = {n for n, _w in mind.weights(0.0, "walk")}

@@ -107,7 +107,7 @@ def test_idle_wakes_at_rest_stay_under_the_redraw_cap() -> None:
     print(f"rest wakes a minute: before {REST_WAKES_BEFORE}, after {wakes:.0f}")
     # Intent moved (INBOX 1670, 15:40Z): rest lives in place now (the cycle at 6 a second, blinks), so the bar is the
     # rest redraw cap of 12 a second, not the old burst-only rate.
-    assert wakes <= 12 * 60, wakes
+    assert wakes <= 480, wakes  # measured 383 (6 a second standing); the cap is a ceiling, this holds the rate (review: CPU)
     # and a still figure asks for nothing at all
     e, _s = sim.make("masculine", "float", 2)
     e.reduced = True

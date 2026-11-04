@@ -19,20 +19,17 @@ from tessellate.core.overlay.sprites import IDLE_COUNT, LOOKS, frames_dir
 ONE = [Monitor((0, 0, 1920, 1040), 96)]
 
 
-def test_the_engine_bob_is_slow_and_small() -> None:
+def test_the_engine_has_no_bob_and_the_drawn_window_does_not_move_in_the_air() -> None:
+    # Intent moved (INBOX 1670, 16:40Z: "it randomly jitters up and down"): the slow, small bob of the 12:17Z fix is
+    # gone altogether; the window stays on its row (the breath is in the figure's pose).
     e = Engine((100, 120), ONE, rng=random.Random(1), gait="float", home=(800, 920))
     e.y = 700.0
-    e.bob_gain = 1.0
     ys = []
     for i in range(0, 60 * 40):  # 40 s at 60 fps
         e.now = i / 60.0
         ys.append(e._display("stand")[1])
-    ys = np.array(ys) - np.mean(ys)
-    assert ys.max() - ys.min() <= 5.0, ys.max() - ys.min()
-    freq = np.abs(np.fft.rfft(ys))
-    hz = np.fft.rfftfreq(len(ys), 1 / 60.0)[int(np.argmax(freq[1:])) + 1]
-    assert hz < 0.3, hz
-    assert eng.BOB_HZ < 0.3 and eng.BOB <= 5.0
+    assert max(ys) == min(ys)
+    assert not hasattr(eng, "BOB") and not hasattr(e, "bob_gain")
 
 
 def centroid_y(path: Path) -> float:
