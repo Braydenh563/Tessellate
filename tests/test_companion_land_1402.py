@@ -166,7 +166,7 @@ def test_a_drop_over_the_bars_buttons_floats_just_above_them():
 def test_a_drop_and_a_restored_open_air_spot_end_on_a_perch_not_a_float():
     drop = _fn("nameMarkBuddyDrop")
     # The open-air path asks the chooser first; the float below it is for a tab with no perch at all.
-    assert drop.index("nameMarkBuddyChoose(tab, obstacles, [x, y], 4)") < drop.index('pose: "float"')
+    assert drop.index("nameMarkBuddyChoose(tab, obstacles, [x, y], 4, true)") < drop.index('pose: "float"')
     land = _fn("nameMarkBuddyLandNear")
     assert "nameMarkBuddyDrop(px, py)" in land and 'pose: "float"' not in land
     nxt = _fn("nameMarkBuddyNextSpot")
