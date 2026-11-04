@@ -147,6 +147,10 @@ class OverlayHost:
     def _run(self) -> None:
         try:
             self._setup()
+            if self.on_event is not None:
+                #: Once, on this thread, with the window made: the owner builds what
+                #: needs this thread's dpi awareness. An exception is a failed start.
+                self.on_event("ready", 0, 0)
         except Exception as exc:  # noqa: BLE001 - reported to start(); the coordinator falls back
             logger.warning("overlay: setup failed", exc_info=True)
             self._error = f"{type(exc).__name__}: {exc}"

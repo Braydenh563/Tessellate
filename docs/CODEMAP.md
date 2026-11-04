@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7751, frontend ids 2637, CSS sections 522, backend routes 641, backend modules 8628, test files 1998, tests 16766, plan headings 999, app scripts 28, boot scripts 37, script files 246.
+Counts: frontend functions 7751, frontend ids 2637, CSS sections 522, backend routes 641, backend modules 8629, test files 1999, tests 16778, plan headings 999, app scripts 28, boot scripts 37, script files 246.
 
 ## Frontend functions (7751)
 
@@ -12878,7 +12878,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8628)
+## Backend modules (8629)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -22072,6 +22072,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `OverlayHost` | src/tessellate/core/overlay/host.py:59 |
 | `premultiplied_dib_bytes` | src/tessellate/core/overlay/host.py:54 |
 
+### src/tessellate/core/overlay/runner.py (1)
+
+| Name | File:line |
+|---|---|
+| `OverlayRunner` | src/tessellate/core/overlay/runner.py:39 |
+
 ### src/tessellate/core/overlay/sprites.py (6)
 
 | Name | File:line |
@@ -23725,7 +23731,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16766)
+## Tests (16778)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25042,7 +25048,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_output_forms.py | 7 |
 | tests/test_outside_text_taints_chat.py | 3 |
 | tests/test_overlay_engine.py | 30 |
-| tests/test_overlay_host.py | 23 |
+| tests/test_overlay_host.py | 24 |
+| tests/test_overlay_runner.py | 11 |
 | tests/test_overlay_sprites.py | 11 |
 | tests/test_overview_counts_1524.py | 3 |
 | tests/test_owner_typos.py | 21 |

@@ -32,7 +32,7 @@ def wait_for(cond: Any, timeout: float = 2.0) -> bool:
 def started():
     events: list[tuple[str, int, int]] = []
     fake = FakeWin32()
-    host = host_mod.OverlayHost(fake, on_event=lambda kind, x, y: events.append((kind, x, y)))
+    host = host_mod.OverlayHost(fake, on_event=lambda kind, x, y: events.append((kind, x, y)) if kind != "ready" else None)
     assert host.start()
     yield fake, host, events
     host.stop()
@@ -287,3 +287,18 @@ def test_calls_before_start_or_after_stop_do_nothing() -> None:
     host.present(b"\x00" * 4, 1, 1, 0, 0)
     host.show()
     assert not host.alive
+
+
+def test_the_owner_hears_ready_once_on_the_overlay_thread_and_a_failure_there_fails_start() -> None:
+    seen: list[tuple[str, int]] = []
+    host = host_mod.OverlayHost(FakeWin32(), on_event=lambda kind, x, y: seen.append((kind, threading.get_ident())))
+    assert host.start()
+    assert [k for k, _ in seen] == ["ready"] and seen[0][1] != threading.get_ident()
+    host.stop()
+
+    def boom(kind: str, x: int, y: int) -> None:
+        raise OSError("no frames")
+
+    bad = host_mod.OverlayHost(FakeWin32(), on_event=boom)
+    assert bad.start() is False and "no frames" in (bad._error or "")
+    assert bad.stop()

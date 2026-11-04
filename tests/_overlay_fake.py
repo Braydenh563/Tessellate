@@ -38,6 +38,10 @@ class FakeWin32:
         self.layered: list[dict[str, Any]] = []
         self.dib_bits: Any = None
         self.timers: dict[int, int] = {}
+        #: (work area, dpi) of each monitor, and the answers the shell gives.
+        self.monitor_list: list[tuple[tuple[int, int, int, int], int]] = [((0, 0, 1920, 1040), 96)]
+        self.notification = 5  # QUNS_ACCEPTS_NOTIFICATIONS
+        self.animations = 1
         for name in ("user32", "gdi32", "kernel32", "shcore", "shell32"):
             setattr(self, name, FakeDll(self, name))
 
@@ -118,4 +122,27 @@ class FakeWin32:
                 "pixels": bytes(self.dib_bits.raw),
             }
         )
+        return 1
+
+    def _EnumDisplayMonitors(self, _dc: Any, _rect: Any, callback: Any, _data: Any) -> int:
+        for index in range(len(self.monitor_list)):
+            callback(index + 100, None, None, 0)
+        return 1
+
+    def _GetMonitorInfoW(self, hmon: Any, ref: Any) -> int:
+        (left, top, right, bottom), _dpi = self.monitor_list[int(hmon) - 100]
+        work = ref._obj.rcWork
+        work.left, work.top, work.right, work.bottom = left, top, right, bottom
+        return 1
+
+    def _GetDpiForMonitor(self, hmon: Any, _kind: int, x_ref: Any, y_ref: Any) -> int:
+        x_ref._obj.value = y_ref._obj.value = self.monitor_list[int(hmon) - 100][1]
+        return 0
+
+    def _SHQueryUserNotificationState(self, ref: Any) -> int:
+        ref._obj.value = self.notification
+        return 0
+
+    def _SystemParametersInfoW(self, _action: int, _param: int, ref: Any, _flags: int) -> int:
+        ref._obj.value = self.animations
         return 1
