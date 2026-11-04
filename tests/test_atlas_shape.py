@@ -1271,7 +1271,7 @@ def test_the_lower_body_moves_with_the_torso_and_turns_about_the_join():
         assert not re.search(r"rotate|scale\(", rule), (pose, rule)
     # The rig's pose for a state turns the lower body at most 4 degrees.
     states = ATLAS[ATLAS.index("const ATLAS_LOWER_STATES = {"):ATLAS.index("const ATLAS_HAIR_STATES")]
-    for state in ("sit", "lie", "startle"):
+    for state in ("sit", "lie", "startle", "curl"):
         row = re.search(rf"  {state}: \{{.*?v: \[(.*)\] \}},", states).group(1)
         turns = [abs(float(v)) for v in re.findall(r"\[(-?[0-9.]+),", row)]
         assert turns and max(turns) <= 4, (state, turns)
