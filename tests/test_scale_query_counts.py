@@ -236,7 +236,7 @@ def test_notes_list_fetches_attachments_once_not_once_per_note(client, session):
     assert len(hits) <= 1, f"one query per page, got {len(hits)}"
 
 
-# --- the three surfaces added since (2026-09-13, `scratchpad/probe_list_queries.py`) ---
+# --- the three surfaces added since (2026-09-13, probe since retired; CHANGELOG records its numbers) ---
 #
 # The probe drives every list endpoint at a page of 5 and a page of 100 over
 # the same notebook and reports whether the statement count moves. It found
