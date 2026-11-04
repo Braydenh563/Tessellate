@@ -879,7 +879,7 @@ def _until_note(out: _Answer, question: str, views: list[NoteView], today: date)
     wanted = {_stem(w) for w in _words(asked[1]) if len(w) > 2} - {_stem(w) for w in _NOTE_NOUNS}
     #: The note titled as the subject first (note_rank's order), so "the
     #: dentist" is the Dentist note and not a to-do that says "call the dentist".
-    from tessellate.ai import note_rank  # at the call: note_rank reads the composer, so a module import closes a cycle
+    from tessellate.ai import note_rank 
 
     for view in note_rank.lead_by(sorted(views, key=lambda v: v.rank), asked[1], lambda v: v.note):
         if not wanted or not wanted & {_stem(w) for w in _words(str(view.note.get("content") or ""))}:

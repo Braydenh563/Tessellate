@@ -41,11 +41,11 @@ def _content(note: Any) -> str:
 def subject(question: str) -> list[str]:
     """The words the request is about, as typed, lower-cased: its subject
     terms without the framing words ("open", "main", "notes")."""
-    from tessellate.ai import composer
+    from tessellate.ai import composer_ask  # the defining module: `composer` re-exports it and reads this module back
 
     #: composer_lists.clean, inline: importing it closes a cycle through the plan.
     text = " ".join((question or "").split()).lstrip("\\/'\"` ").rstrip("\\/'\"` ")
-    terms = composer.subject_terms(text)
+    terms = composer_ask.subject_terms(text)
     kept = [t.lower() for t in terms if t.lower() not in _FRAME]
     return kept[:_MAX_TERMS]
 
@@ -56,9 +56,9 @@ def stems_of(text: str) -> list[str]:
 
 
 def _stems(words: list[str]) -> list[str]:
-    from tessellate.ai import composer
+    from tessellate.ai import composer_ask
 
-    return [composer._stem(w) for w in words]  # noqa: SLF001  # the composer's own stemmer, so both read words alike
+    return [composer_ask._stem(w) for w in words]  # noqa: SLF001  # the composer's own stemmer (defined in composer_ask), so both read words alike
 
 
 def _defines(subject_words: list[str], content: str) -> bool:
