@@ -1428,7 +1428,7 @@ MORE_TOPICS: list[dict] = [
             "companion when the window is closed", "show desktop companion",
         ),
         "body": (
-            "In the desktop app on Windows the companion can live on your desktop while the "
+            "In the desktop app on Windows and Linux the companion can live on your desktop while the "
             "Tessellate window is minimised or in the tray, and go away when it is open. "
             "Atlas floats like a wind spirit "
             "over the whole screen (others walk the bottom), sits and "
@@ -1450,7 +1450,7 @@ MORE_TOPICS: list[dict] = [
             "Quick note, Quick search or Open Tessellate. Right-click it for Companion (Atlas masculine or feminine, or a saved Atlas "
             "companion; the rest show in the app only), Settings or Hide. Drag it; it "
             "remembers the spot. While locked it shows only the "
-            "companion and Open Tessellate."
+            "companion and Open Tessellate. On Linux (X11) it is the same figure in a see-through window; on Wayland, which cannot place a window above others, it stays in the app."
         ),
         "badge": {"label": "Desktop companion", "section": "appearance", "target": "desktop-companion-row"},
     },

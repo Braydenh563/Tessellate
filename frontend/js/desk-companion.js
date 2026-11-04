@@ -175,7 +175,13 @@
     const menu = $("desk-menu");
     const rows = [];
     if (kind === "context") {
-      const motion = overlay ? await Promise.resolve(ask("panel_motion")).catch(() => null) : null;
+      const motion = await Promise.resolve(ask("panel_motion")).catch(() => null);
+      if (!overlay && motion?.note) {
+        const why = document.createElement("p");
+        why.className = "muted desk-note";
+        why.textContent = motion.note;
+        rows.push(why);
+      }
       if (motion?.still) {
         const why = document.createElement("p");
         why.className = "muted desk-note";
@@ -184,7 +190,7 @@
       }
       if (overlay) rows.push(item("Companion", "user-switch", openCompanion));
       rows.push(item("Settings", "gear", () => leave(() => ask("open_app", "settings"))));
-      if (!locked && motion?.still && motion.reason !== "avatar") rows.push(item("Let it walk", "person-simple-walk", () => leave(() => ask("let_it_walk"))));
+      if (overlay && !locked && motion?.still && motion.reason !== "avatar") rows.push(item("Let it walk", "person-simple-walk", () => leave(() => ask("let_it_walk"))));
       //: Roam over windows: a switch, not a one-way action, so it says which way it is
       //: (a checked menu item) and flips it.
       if (overlay && motion && typeof motion.roam === "boolean") {

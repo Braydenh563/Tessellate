@@ -33,6 +33,7 @@ import collections
 import logging
 import math
 import os
+import sys
 import time
 from pathlib import Path
 from typing import Any, Callable
@@ -42,7 +43,7 @@ from tessellate.core.overlay import engine as eng
 from tessellate.core.overlay import host as host_mod
 from tessellate.core.overlay import perches
 from tessellate.core.overlay import sprites
-from tessellate.core.overlay import win32 as k
+from tessellate.core.overlay import win32
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +59,16 @@ SCAN_SLACK = 1.0
 PERCH_ROOM = 20
 
 
+def default_backend(w: Any = None) -> Any:
+    """Windows' calls on Windows, X11's everywhere else; a handed-in connection says which it is
+    (the Windows fakes carry `user32`)."""
+    if (w is not None and hasattr(w, "user32")) or (w is None and sys.platform == "win32"):
+        return win32
+    from tessellate.core.overlay import x11
+
+    return x11
+
+
 class OverlayRunner:
     def __init__(
         self,
@@ -71,11 +82,14 @@ class OverlayRunner:
         on_died: Callable[[], Any] | None = None,
         on_card: Callable[[Any], Any] | None = None,
         roam_windows: bool = True,
+        backend: Any = None,
         w: Any = None,
         clock: Callable[[], float] = time.monotonic,
         frames: Path | None = None,
         dispatch: Callable[[str, Callable[[], None]], Any] | None = None,
     ) -> None:
+        #: The platform's half (`win32` or `x11`): its connection, window, monitors and window list.
+        self.k = backend or default_backend(w)
         self.look = sprites.look_for(look)
         #: True or False is the app's answer (Appearance > Companion movement);
         #: None means it gave none, and the Windows animation flag decides in `_ready`.
@@ -121,8 +135,8 @@ class OverlayRunner:
         the coordinator then falls back to the card window."""
         try:
             if self.w is None:
-                self.w = k.load()
-            self.host = host_mod.OverlayHost(self.w, on_event=self._on_event, on_exit=self._exited)
+                self.w = self.k.load()
+            self.host = getattr(self.k, "Host", host_mod.OverlayHost)(self.w, on_event=self._on_event, on_exit=self._exited)
             ok = self.host.start(timeout)
         except Exception:  # noqa: BLE001 - any failure means the card window instead
             logger.warning("overlay: could not start", exc_info=True)
@@ -161,7 +175,7 @@ class OverlayRunner:
     def dpi_at(self, x: int, y: int) -> int:
         """The dpi of the monitor under a physical point (MonitorFromPoint, then
         GetDpiForMonitor); the monitor list's, then 96, when Windows cannot say."""
-        found = k.dpi_at_point(self.w, x, y) if self.w is not None else None
+        found = self.k.dpi_at_point(self.w, x, y) if self.w is not None else None
         if found:
             return found
         for area, dpi in ((m.area, m.dpi) for m in list(self.monitors)):
@@ -245,7 +259,7 @@ class OverlayRunner:
             return
         self._next_scan = now + SCAN_EVERY
         try:
-            wins = k.windows(
+            wins = self.k.windows(
                 self.w, os.getpid(), self.host.hwnd if self.host else None, [m.area for m in self.monitors],
             )
         except Exception:  # noqa: BLE001 - no window list means no roaming, never a crash
@@ -271,14 +285,14 @@ class OverlayRunner:
 
     def _read_typing(self, now: float) -> None:
         """Whether keys are going in, and where: the caret, else (an app with none) the window's bottom band."""
-        age = k.last_input_age(self.w)
+        age = self.k.last_input_age(self.w)
         engine = self.engine
         if engine is None:  # typing: it stays put (nothing big); the mouse alone is not typing
             return
         engine.quiet = age is not None and age < TYPING_AGE and now - self._ptr_moved_at > age
         # at BUSY_EVERY (0.5 Hz); Chromium and Electron give no caret (INBOX 1670 13:22Z)
-        caret = k.caret_rect(self.w)
-        engine.set_caret(caret if caret is not None or not engine.quiet else k.text_zone(self.w))
+        caret = self.k.caret_rect(self.w)
+        engine.set_caret(caret if caret is not None or not engine.quiet else self.k.text_zone(self.w))
 
     def _busy_gate(self, now: float, pointer: tuple[int, int] | None = None) -> int | None:
         """Hide while something fullscreen is in the way; None when free to move."""
@@ -290,8 +304,8 @@ class OverlayRunner:
                 self._ptr_moved_at = now
             self._busy_ptr = pointer
         self._read_typing(now)
-        state = k.notification_state(self.w)
-        away = state in k.QUNS_HIDE
+        state = self.k.notification_state(self.w)
+        away = state in self.k.QUNS_HIDE
         if away and not self.busy:
             logger.info("overlay: hidden while something fullscreen or busy is up (state %s)", state)
             self.busy = True
@@ -305,7 +319,7 @@ class OverlayRunner:
         return int(BUSY_EVERY * 1000) if self.busy else None
 
     def _read_monitors(self) -> list[eng.Monitor]:
-        found = [eng.Monitor(area, dpi) for area, dpi in k.monitors(self.w)]
+        found = [eng.Monitor(area, dpi) for area, dpi in self.k.monitors(self.w)]
         if not found:
             raise OSError("no monitor was reported")
         return found
@@ -333,7 +347,7 @@ class OverlayRunner:
         self.sprites = spr
         reduced = self.reduced
         if reduced is None:
-            reduced = not k.animations_enabled(self.w)
+            reduced = not self.k.animations_enabled(self.w)
             self.reduced_reason = "os" if reduced else ""
         self.reduced = reduced
         first = self.monitors[0]
