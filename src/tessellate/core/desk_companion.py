@@ -329,10 +329,30 @@ def raise_on_desktop(window: Any, rect: tuple[int, int, int, int] | None = None)
                 dpi = _system_dpi()
             x, y, width, height = physical_rect(rect, dpi)
             user32.SetWindowPos(handle, HWND_TOPMOST, x, y, width, height, SWP_PLACE)
+            #: The move is posted (`SWP_ASYNCWINDOWPOS`), so where it really
+            #: landed is read a moment later: one log line that says whether
+            #: the size and corner held (INBOX 1633, the owner's 200% display).
+            timer = threading.Timer(0.5, _log_placed, (handle, (x, y, width, height), dpi))
+            timer.daemon = True
+            timer.start()
         return True
     except Exception:  # noqa: BLE001
         logger.debug("could not raise the companion window", exc_info=True)
         return False
+
+
+def _log_placed(handle: int, want: tuple[int, int, int, int], dpi: int) -> None:
+    """Log the window's real rectangle against the one asked for (physical pixels)."""
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        box = wintypes.RECT()
+        ctypes.windll.user32.GetWindowRect(handle, ctypes.byref(box))
+        got = (box.left, box.top, box.right - box.left, box.bottom - box.top)
+        logger.info("desk companion: placed at %s, asked %s, dpi %s, held: %s", got, want, dpi, got == want)
+    except Exception:  # noqa: BLE001 - a log line, never worth a failure
+        logger.debug("could not read the companion's place back", exc_info=True)
 
 
 def clean_size(width: Any, height: Any) -> tuple[int, int]:

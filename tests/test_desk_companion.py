@@ -659,3 +659,8 @@ def test_the_window_asks_for_a_minimum_no_wider_than_its_resting_size(made, pref
     options = made.webview.made[0].options if hasattr(made.webview.made[0], "options") else vars(made.webview.made[0])
     low = options["min_size"]
     assert low[0] <= dc.REST_SIZE[0] and low[1] <= dc.REST_SIZE[1]
+
+
+def test_the_place_read_back_never_raises_where_there_is_no_win32():
+    # A log line only: off Windows (no ctypes.windll) it logs at debug and returns.
+    assert dc._log_placed(1, (0, 0, 224, 304), 192) is None

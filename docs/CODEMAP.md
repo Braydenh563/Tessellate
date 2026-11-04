@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7750, frontend ids 2637, CSS sections 522, backend routes 641, backend modules 8597, test files 1994, tests 16691, plan headings 999, app scripts 28, boot scripts 37, script files 245.
+Counts: frontend functions 7750, frontend ids 2637, CSS sections 522, backend routes 641, backend modules 8598, test files 1994, tests 16692, plan headings 999, app scripts 28, boot scripts 37, script files 245.
 
 ## Frontend functions (7750)
 
@@ -12872,7 +12872,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8597)
+## Backend modules (8598)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -21046,31 +21046,32 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `reset_app_state` | src/tessellate/core/deps.py:267 |
 | `store_quietly` | src/tessellate/core/deps.py:587 |
 
-### src/tessellate/core/desk_companion.py (23)
+### src/tessellate/core/desk_companion.py (24)
 
 | Name | File:line |
 |---|---|
-| `DeskApi` | src/tessellate/core/desk_companion.py:373 |
-| `DeskCompanion` | src/tessellate/core/desk_companion.py:406 |
+| `DeskApi` | src/tessellate/core/desk_companion.py:393 |
+| `DeskCompanion` | src/tessellate/core/desk_companion.py:426 |
 | `_config` | src/tessellate/core/desk_companion.py:64 |
-| `_follow` | src/tessellate/core/desk_companion.py:619 |
+| `_follow` | src/tessellate/core/desk_companion.py:639 |
+| `_log_placed` | src/tessellate/core/desk_companion.py:344 |
 | `_pref` | src/tessellate/core/desk_companion.py:77 |
 | `_screen_area` | src/tessellate/core/desk_companion.py:200 |
 | `_set_pref` | src/tessellate/core/desk_companion.py:89 |
 | `_system_dpi` | src/tessellate/core/desk_companion.py:115 |
-| `attach` | src/tessellate/core/desk_companion.py:592 |
+| `attach` | src/tessellate/core/desk_companion.py:612 |
 | `clamp_corner` | src/tessellate/core/desk_companion.py:216 |
-| `clean_size` | src/tessellate/core/desk_companion.py:338 |
+| `clean_size` | src/tessellate/core/desk_companion.py:358 |
 | `companion_ex_style` | src/tessellate/core/desk_companion.py:233 |
 | `enabled` | src/tessellate/core/desk_companion.py:85 |
-| `hit_script` | src/tessellate/core/desk_companion.py:350 |
+| `hit_script` | src/tessellate/core/desk_companion.py:370 |
 | `monitor_areas` | src/tessellate/core/desk_companion.py:144 |
 | `physical_rect` | src/tessellate/core/desk_companion.py:268 |
 | `pick_area` | src/tessellate/core/desk_companion.py:188 |
 | `raise_on_desktop` | src/tessellate/core/desk_companion.py:285 |
-| `shutdown` | src/tessellate/core/desk_companion.py:656 |
+| `shutdown` | src/tessellate/core/desk_companion.py:676 |
 | `to_logical` | src/tessellate/core/desk_companion.py:96 |
-| `tray_menu_item` | src/tessellate/core/desk_companion.py:664 |
+| `tray_menu_item` | src/tessellate/core/desk_companion.py:684 |
 | `window_handle` | src/tessellate/core/desk_companion.py:252 |
 | `work_area` | src/tessellate/core/desk_companion.py:125 |
 
@@ -23668,7 +23669,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16691)
+## Tests (16692)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24178,7 +24179,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_density_height.py | 4 |
 | tests/test_dependency_audit.py | 3 |
 | tests/test_derived_facts.py | 14 |
-| tests/test_desk_companion.py | 55 |
+| tests/test_desk_companion.py | 56 |
 | tests/test_desk_counts_63.py | 5 |
 | tests/test_desktop_fullscreen.py | 5 |
 | tests/test_desktop_launcher.py | 17 |
