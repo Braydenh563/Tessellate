@@ -4867,8 +4867,6 @@ Link to another note with [[its first few words]]."></textarea>
               <button id="doc-new-template" class="ghost small icon-only" type="button"
                 title="New from a template" aria-label="New document from a template"
                 aria-haspopup="dialog" aria-controls="doc-template-dialog"><i class="ph ph-layout" aria-hidden="true"></i></button>
-              <button id="doc-new-diagram" class="ghost small icon-only" type="button"
-                title="New diagram" aria-label="New diagram"><i class="ph ph-flow-arrow" aria-hidden="true"></i></button>
             </span>
           </div>
           <div class="help-body hidden" id="doc-list-help" role="dialog" aria-label="About the documents list">
@@ -5264,9 +5262,7 @@ Link to another note with [[its first few words]]."></textarea>
                   title="Make a new mind map from this document's headings, with a topic that leads back here"><i class="ph ph-tree-structure ph-lead" aria-hidden="true"></i> Map the headings</button>
                 <button id="doc-export-md" class="menu-item doc-dock-menu-item" type="button"
                   title="Download as a .md file"><i class="ph ph-download-simple ph-lead" aria-hidden="true"></i> Download as .md</button>
-                <!-- A diagram's picture (DOCUMENTS_PLAN 22, R10): shown for a diagram only, drawn by the lazy export file. -->
-                <button id="doc-export-svg" class="menu-item doc-dock-menu-item hidden" type="button"
-                  title="Download the diagram as an SVG picture"><i class="ph ph-file-svg ph-lead" aria-hidden="true"></i> Download as .svg</button>
+                <!-- A diagram's picture (DOCUMENTS_PLAN 22, R10): shown for a diagram only, drawn by the lazy export file. The .svg row is built in documents.js (buildDiagramControls), before this one. -->
                 <button id="doc-export-picture" class="menu-item doc-dock-menu-item hidden" type="button"
                   title="Download the diagram as a PNG picture"><i class="ph ph-file-png ph-lead" aria-hidden="true"></i> Download as .png</button>
                 <button id="doc-copy-picture" class="menu-item doc-dock-menu-item hidden" type="button"

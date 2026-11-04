@@ -50,8 +50,13 @@ def test_the_diagram_seg_is_one_tab_stop_and_the_arrow_keys_move_inside_it():
 
 
 def test_the_export_menu_of_a_diagram_has_save_as_svg_png_and_copy_as_picture():
-    for ident in ("doc-export-svg", "doc-export-picture", "doc-copy-picture"):
+    # Intent moved, not weakened: the .svg row is built in documents.js (buildDiagramControls) because index.html is capped at a
+    # fixed element count (test_boot_diet3); it still exists, with its label, right before the .png row.
+    for ident in ("doc-export-picture", "doc-copy-picture"):
         assert f'id="{ident}"' in HTML and ident in DOCS
+    build = DOCS[DOCS.index("function buildDiagramControls()") :][:1500]
+    assert 'row.id = "doc-export-svg"' in build and "ph:file-svg Download as .svg" in build and 'add($("doc-export-picture"), "before", row)' in build
+    assert 'id="doc-export-svg"' not in HTML
     # Wired to the diagram's own export (diagram-embed.js `out`), svg and png downloads, the picture copied.
     assert '[["doc-export-svg", "svg"], ["doc-export-picture", "png"], ["doc-copy-picture", "picture"]]' in DOCS
     assert "diagramModel.embed.out(how, docText(), currentDoc?.title)" in DOCS
@@ -67,9 +72,11 @@ def test_the_builder_takes_the_pages_room_and_the_phones_list_head_is_two_lines(
 
 def test_diagram_is_a_button_beside_new_not_only_a_row_behind_the_chevron():
     # The blind tester missed it: the type menu behind New's caret was the only way (2 clicks). One icon button, the template button's neighbour.
-    button = HTML[HTML.index('id="doc-new-diagram"') - 60 : HTML.index('id="doc-new-diagram"') + 400]
-    assert "ghost small icon-only" in button and 'aria-label="New diagram"' in button and "ph-flow-arrow" in button
-    assert HTML.index('id="doc-new-template"') < HTML.index('id="doc-new-diagram"') < HTML.index('id="doc-new-diagram"') + 400
+    # Intent moved, not weakened: the button is built in documents.js (buildDiagramControls), not index.html, which is capped at a fixed
+    # element count (test_boot_diet3). Same classes, label and icon, placed right after the template button.
+    build = DOCS[DOCS.index("function buildDiagramControls()") :][:1500]
+    assert 'b.className = "ghost small icon-only"' in build and 'b.setAttribute("aria-label", "New diagram")' in build and "ph ph-flow-arrow" in build
+    assert 'add($("doc-new-template"), "after", b)' in build and 'id="doc-new-diagram"' not in HTML
     assert '$("doc-new-diagram")?.addEventListener("click", () => diagramModel.door({ doc: true }));' in DOCS
     # About this list names it.
     assert "diagram button" in HTML[HTML.index('id="doc-list-help"') : HTML.index('id="doc-list-help"') + 1200]
