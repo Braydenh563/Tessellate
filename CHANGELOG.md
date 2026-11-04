@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Present mode (INBOX 1628): the ring pointer's pulse is a switch like the trail (Pulse: on / off in the pointer's menu while the look is Ring, kept with the other choices; measured: animation wb-laser-pulse on, none off).
 - Desktop companion (INBOX 1631): the Settings, About switch shows in a browser tab on the computer Tessellate runs on (it was only in the desktop window), with a line saying it takes effect while the desktop app runs; another device still has no row.
 - Calculator (INBOX 1622): the window is the calculator's own height in every mode (Standard 688px, Scientific 670px, no scroll; it was a fixed 672px that scrolled), Scientific's function keys sit beside the keypad from 600px, Standard / Scientific, Deg / Rad and Inline / Display are the flat tabs strip (no pill in a pill), the result and its Copy button share a centre line (2.9px off before), and Display shows its equation centred and larger than Inline.
 - Mind map (INBOX 1625, 1626): undo of a node's glow (or any style painted straight onto a node) redraws the node, with a lint that every map data write reaches the undo store; pressing the radial's More again closes its menu, with a lint that every menu opener toggles.

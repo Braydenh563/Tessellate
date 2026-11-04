@@ -5785,10 +5785,11 @@ button.ghost.doc-template-choice.wb-template-choice {
   }
 }
 /* Reduce motion: no trail at all (the script stops adding dots too) and a
-   ring that holds still. */
+   ring that holds still; the Pulse switch off holds it still too (INBOX 1628). */
 :where(:root[data-motion="reduced"]) .wb-laser-dot {
   display: none;
 }
+.wb-laser-layer[data-pulse="off"] .wb-laser-head::after,
 :where(:root[data-motion="reduced"]) .wb-laser-layer[data-look="ring"] .wb-laser-head::after {
   animation: none;
   opacity: 0;

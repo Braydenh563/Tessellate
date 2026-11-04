@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7747, frontend ids 2636, CSS sections 522, backend routes 641, backend modules 8594, test files 1985, tests 16628, plan headings 994, app scripts 28, boot scripts 37, script files 245.
+Counts: frontend functions 7747, frontend ids 2636, CSS sections 522, backend routes 641, backend modules 8594, test files 1985, tests 16629, plan headings 994, app scripts 28, boot scripts 37, script files 245.
 
 ## Frontend functions (7747)
 
@@ -8255,7 +8255,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addBoardToNote` | frontend/js/whiteboard.js:26074 |
+| `addBoardToNote` | frontend/js/whiteboard.js:26079 |
 | `boardItemCount` | frontend/js/whiteboard.js:24987 |
 | `boardSort` | frontend/js/whiteboard.js:24991 |
 | `boardTypeFilter` | frontend/js/whiteboard.js:25034 |
@@ -8268,10 +8268,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `drawLibraryBoardsGallery` | frontend/js/whiteboard.js:25123 |
 | `fetchWhiteboardState` | frontend/js/whiteboard.js:19236 |
 | `handleWbZoom` | frontend/js/whiteboard.js:617 |
-| `highlighterBlend` | frontend/js/whiteboard.js:26094 |
+| `highlighterBlend` | frontend/js/whiteboard.js:26099 |
 | `initWhiteboard` | frontend/js/whiteboard.js:14922 |
 | `openWhiteboardBoard` | frontend/js/whiteboard.js:25370 |
-| `pickNotesDialog` | frontend/js/whiteboard.js:25986 |
+| `pickNotesDialog` | frontend/js/whiteboard.js:25991 |
 | `redrawLibraryBoardsGallery` | frontend/js/whiteboard.js:25092 |
 | `refreshBoardList` | frontend/js/whiteboard.js:19275 |
 | `renameCurrentBoard` | frontend/js/whiteboard.js:19384 |
@@ -8565,8 +8565,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbKeepsRatio` | frontend/js/whiteboard.js:11902 |
 | `wbKeyboardEnter` | frontend/js/whiteboard.js:11721 |
 | `wbLabelBand` | frontend/js/whiteboard.js:20300 |
-| `wbLaserLeave` | frontend/js/whiteboard.js:25866 |
-| `wbLaserTrail` | frontend/js/whiteboard.js:25842 |
+| `wbLaserLeave` | frontend/js/whiteboard.js:25871 |
+| `wbLaserTrail` | frontend/js/whiteboard.js:25847 |
 | `wbLayoutCloneGrips` | frontend/js/whiteboard.js:9253 |
 | `wbLayoutLinkLabel` | frontend/js/whiteboard.js:20483 |
 | `wbLayoutShapeLabel` | frontend/js/whiteboard.js:20024 |
@@ -8693,8 +8693,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbPortFractions` | frontend/js/whiteboard.js:4201 |
 | `wbPortsForPath` | frontend/js/whiteboard.js:4221 |
 | `wbPresentCaption` | frontend/js/whiteboard.js:25653 |
-| `wbPresentLaser` | frontend/js/whiteboard.js:25805 |
-| `wbPresentLaserButton` | frontend/js/whiteboard.js:25796 |
+| `wbPresentLaser` | frontend/js/whiteboard.js:25810 |
+| `wbPresentLaserButton` | frontend/js/whiteboard.js:25801 |
 | `wbPresentShow` | frontend/js/whiteboard.js:25616 |
 | `wbPresentSteps` | frontend/js/whiteboard.js:25572 |
 | `wbPropsText` | frontend/js/whiteboard.js:3750 |
@@ -8857,7 +8857,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbStickerSize` | frontend/js/whiteboard.js:5834 |
 | `wbStickyFolds` | frontend/js/whiteboard.js:11703 |
 | `wbStickyRemind` | frontend/js/whiteboard.js:23490 |
-| `wbStopPresenting` | frontend/js/whiteboard.js:25871 |
+| `wbStopPresenting` | frontend/js/whiteboard.js:25876 |
 | `wbSvgEscape` | frontend/js/whiteboard.js:13249 |
 | `wbSvgRunLines` | frontend/js/whiteboard.js:13294 |
 | `wbSvgText` | frontend/js/whiteboard.js:13280 |
@@ -11815,7 +11815,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | a help popover opens over the surface that asked for it (INBOX 205) | frontend/css/08-consistency.css:2571 |
 | a label that lost its capitals keeps its rank | frontend/css/08-consistency.css:4380 |
 | a list of rows reads as a list | frontend/css/07-whiteboard-misc.css:4437 |
-| a map line's end grips and the topic shapes (K31) | frontend/css/library-lazy.css:7379 |
+| a map line's end grips and the topic shapes (K31) | frontend/css/library-lazy.css:7380 |
 | a map's levels and a solid fill (MINDMAP_PLAN §14, decisions 38, 39) | frontend/css/library-lazy.css:3463 |
 | a menu is one column: rows, section labels and icons (INBOX 403) | frontend/css/08-consistency.css:8612 |
 | a model per feature (Settings, Models) | frontend/css/01-forms-settings.css:5591 |
@@ -11842,7 +11842,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | appearance settings: grouped, scannable rows | frontend/css/04-chat-dock-appearance.css:1933 |
 | assistant message layout | frontend/css/05-sidebars-themes.css:4323 |
 | attaching notes to a chat message | frontend/css/04-chat-dock-appearance.css:2795 |
-| audit 1028 board and map rows (U14 to U28) | frontend/css/library-lazy.css:8232 |
+| audit 1028 board and map rows (U14 to U28) | frontend/css/library-lazy.css:8233 |
 | back / forward through pages | frontend/css/00-tokens-shell.css:4131 |
 | back-to-top button | frontend/css/04-chat-dock-appearance.css:2614 |
 | band 2 (820 to 1200): the tabs keep their names, set small | frontend/css/10-responsive.css:61 |
@@ -11875,7 +11875,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | document formatting toolbar | frontend/css/05-sidebars-themes.css:1987 |
 | documents tab | frontend/css/04-chat-dock-appearance.css:3669 |
 | documents: outline, live stats, and where the file actually is | frontend/css/05-sidebars-themes.css:2829 |
-| documents: the comments panel (DOCUMENTS_PLAN Phase 5 item 1) | frontend/css/library-lazy.css:8337 |
+| documents: the comments panel (DOCUMENTS_PLAN Phase 5 item 1) | frontend/css/library-lazy.css:8338 |
 | drag to delete (INBOX 660) | frontend/css/library-lazy.css:3520 |
 | duplicate tidy-up | frontend/css/05-sidebars-themes.css:1733 |
 | editing a question in place | frontend/css/05-sidebars-themes.css:315 |
@@ -11921,15 +11921,15 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | motion: a note's hover card fades in (INBOX 1462) | frontend/css/graph-lazy.css:433 |
 | motion: a page arrives (INBOX 459 (2), 580) | frontend/css/08-consistency.css:9711 |
 | motion: a panel or bar that a click shows fades in (INBOX 1565) | frontend/css/ui-reveal-lazy.css:8 |
-| motion: a plus becomes a minus (INBOX 1506 B; the vocabulary is in | frontend/css/library-lazy.css:7911 |
+| motion: a plus becomes a minus (INBOX 1506 B; the vocabulary is in | frontend/css/library-lazy.css:7912 |
 | motion: a popup arrives, and leaves the way it came (INBOX 580, 2026-10-05) | frontend/css/08-consistency.css:9822 |
 | motion: a sidebar's contents arrive from its edge (INBOX 459 (2)) | frontend/css/08-consistency.css:9636 |
-| motion: an Insert menu's chevron turns open, as a select's does | frontend/css/library-lazy.css:7907 |
+| motion: an Insert menu's chevron turns open, as a select's does | frontend/css/library-lazy.css:7908 |
 | motion: one sliding indicator for every strip (INBOX 459 (2), 2026-10-05) | frontend/css/08-consistency.css:9494 |
 | motion: one vocabulary for what opens and folds (INBOX 1506 B) | frontend/css/08-consistency.css:9862 |
 | motion: the floating panels join the menu's recipe (INBOX 1415) | frontend/css/10-responsive.css:303 |
 | motion: the opening curtain lifts (INBOX 577) | frontend/css/08-consistency.css:9883 |
-| moved from 07-whiteboard-misc.css (boot CSS cap, 2026-10-17): the OCR workspace's own rules, whose selectors name only ocr-* classes and ids that no boot rule | frontend/css/library-lazy.css:6507 |
+| moved from 07-whiteboard-misc.css (boot CSS cap, 2026-10-17): the OCR workspace's own rules, whose selectors name only ocr-* classes and ids that no boot rule | frontend/css/library-lazy.css:6508 |
 | moved from 07-whiteboard-misc.css (canvasui, the boot CSS budget): board-only rules whose class names no boot file draws and no later boot rule competes with, in their old order | frontend/css/library-lazy.css:5101 |
 | moved from the boot sheets (Brief 101a, room under the boot CSS cap): rules whose selectors name only the Library | frontend/css/library-lazy.css:16 |
 | moved from the boot sheets (the boot CSS budget, test_boot_budget.py): rules only the Library | frontend/css/library-lazy.css:841 |
@@ -11987,7 +11987,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the Ask box reads as one composer | frontend/css/07-whiteboard-misc.css:3112 |
 | the Connections dialog (REDESIGN.md §R7.3) | frontend/css/07-whiteboard-misc.css:5230 |
 | the Dashboard's dock on a phone (INBOX 436) | frontend/css/10-responsive.css:2439 |
-| the Documents dock is one row on a phone (audit 1102 DX13) | frontend/css/library-lazy.css:8186 |
+| the Documents dock is one row on a phone (audit 1102 DX13) | frontend/css/library-lazy.css:8187 |
 | the Documents editor on a phone (INBOX 430) | frontend/css/10-responsive.css:2259 |
 | the Documents editor on a small laptop (INBOX 430's re-scope) | frontend/css/10-responsive.css:2365 |
 | the Graph dock's second row, and the nine pixels that cause it | frontend/css/08-consistency.css:2373 |
@@ -12015,9 +12015,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the bar: colours, size and style, the sheet | frontend/css/sketch-pad.css:114 |
 | the block bar (INBOX 421 b) | frontend/css/09-editor.css:1025 |
 | the board panel, sorted into the questions it answers | frontend/css/07-whiteboard-misc.css:5019 |
-| the board picker's face on a phone (polish5-1031) | frontend/css/library-lazy.css:7807 |
+| the board picker's face on a phone (polish5-1031) | frontend/css/library-lazy.css:7808 |
 | the board's bar takes the floor of the whole touch band, not just 600 | frontend/css/10-responsive.css:2120 |
-| the board's context bar, wrapped (`wbUpdateSelectionBar`) | frontend/css/library-lazy.css:7030 |
+| the board's context bar, wrapped (`wbUpdateSelectionBar`) | frontend/css/library-lazy.css:7031 |
 | the boot splash: one progress indicator, not two | frontend/css/08-consistency.css:4303 |
 | the bottom docks | frontend/css/07-whiteboard-misc.css:9779 |
 | the chat dock follows its own width (INBOX 694) | frontend/css/10-responsive.css:2538 |
@@ -12031,7 +12031,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the composer, as one surface | frontend/css/04-chat-dock-appearance.css:5200 |
 | the connections rail (WORLD_CLASS_PLAN D2; `renderNotesRail`) | frontend/css/04-chat-dock-appearance.css:290 |
 | the context bar (WHITEBOARD_PLAN.md Phase 2, decision 2) | frontend/css/07-whiteboard-misc.css:7113 |
-| the context bar's folded groups (`wbFoldContextBar`) | frontend/css/library-lazy.css:7063 |
+| the context bar's folded groups (`wbFoldContextBar`) | frontend/css/library-lazy.css:7064 |
 | the dashboard and the labels, de-vibecoded | frontend/css/08-consistency.css:3038 |
 | the dashboard's greeting banner, on a phone | frontend/css/07-whiteboard-misc.css:10472 |
 | the dashboard's quick actions stop wrapping | frontend/css/07-whiteboard-misc.css:10450 |
@@ -12051,7 +12051,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the faded notes card (WORLD_CLASS_PLAN 15, I4) | frontend/css/03-dashboard-widgets.css:4486 |
 | the field: the glyph inside, Stop only while something is loading | frontend/css/03-dashboard-widgets.css:1070 |
 | the file picker, in the app's own clothes | frontend/css/08-consistency.css:8845 |
-| the file type picker (INBOX 1482) | frontend/css/library-lazy.css:7848 |
+| the file type picker (INBOX 1482) | frontend/css/library-lazy.css:7849 |
 | the first steps (first-run.js; the head row, the fold and the bar are | frontend/css/05-sidebars-themes.css:3811 |
 | the flat looks carry no glow on a button | frontend/css/08-consistency.css:3734 |
 | the flat looks: a selected tab is a place, not an action | frontend/css/08-consistency.css:2904 |
@@ -12183,7 +12183,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/inbox-lazy.css | 306 |
 | frontend/css/key-grid-lazy.css | 55 |
 | frontend/css/lan-lazy.css | 131 |
-| frontend/css/library-lazy.css | 8483 |
+| frontend/css/library-lazy.css | 8484 |
 | frontend/css/lightbox-lazy.css | 425 |
 | frontend/css/manual-lazy.css | 161 |
 | frontend/css/math-editor-lazy.css | 169 |
@@ -23661,7 +23661,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16628)
+## Tests (16629)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25554,7 +25554,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_wb_key_object.py | 4 |
 | tests/test_wb_keyboard_enter.py | 5 |
 | tests/test_wb_label_drag_1027.py | 6 |
-| tests/test_wb_laser.py | 6 |
+| tests/test_wb_laser.py | 7 |
 | tests/test_wb_layer_and_hollow_ends.py | 3 |
 | tests/test_wb_library_scroll.py | 1 |
 | tests/test_wb_line_ends.py | 5 |

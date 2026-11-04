@@ -2086,7 +2086,7 @@ HELP_TOPICS.extend(
                 "The laser pointer, while presenting a board or a map. Press L, or the pointer button in the "
                 "presentation bar, and the cursor becomes a dot that follows your mouse; nothing is drawn on the "
                 "board. The small menu beside the button sets the trail (on or off), the look (dot, trail, ring "
-                "or spotlight) and the colour (from the board's colours). Your choice is kept in this browser. "
+                "or spotlight), the ring's pulse (on or off, shown while the look is Ring) and the colour (from the board's colours). Your choice is kept in this browser. "
                 "With Reduce motion on, the trail is off and the look holds still."
             ),
             "badge": {"label": "Library", "tab": "library"},

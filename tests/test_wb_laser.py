@@ -68,3 +68,17 @@ def test_a_menu_opens_at_least_as_wide_as_its_labelled_opener():
     body = menus[menus.index("function openActionMenu(") :]
     body = body[: body.index("escapeMenuIfClipped(menu, opener);")]
     assert 'aria-haspopup") === "menu"' in body and "icon-only" in body and "menu.style.minWidth" in body
+
+
+def test_the_rings_pulse_is_a_switch_like_the_trail():
+    """INBOX 1628, the owner: "that pulsing on the ring option ... should be like the trail
+    in that it can be toggled on or off". On by default, kept with the other choices, a
+    menu row while the ring is the look, and off stills the pulse in CSS."""
+    laser = WB[WB.index("const wbLaser = {") : WB.index("function wbPresentLaserButton(")]
+    assert "pulse: saved.pulse !== false," in laser
+    assert 'layer.dataset.pulse = pulse ? "on" : "off";' in laser
+    assert 'now.look === "ring" ? [{ label: now.pulse ? "Pulse: on" : "Pulse: off"' in laser
+    assert "wbLaser.set({ pulse: !now.pulse })" in laser
+    css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+    still = css[css.index('.wb-laser-layer[data-pulse="off"] .wb-laser-head::after'):]
+    assert "animation: none;" in still[: still.index("}")]

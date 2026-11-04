@@ -25721,7 +25721,7 @@ function wbPresentCaption(at, steps) {
 //: tldraw's): L or the bar's button; the pointer leaves a short trail that
 //: fades by CSS (`wb-laser-fade`), so no frame loop runs for it, and it
 //: draws nothing on the board. Beside the button a small `kebabMenu` sets
-//: how it looks (INBOX 1577): the trail on or off, a look (dot, trail, ring,
+//: how it looks (INBOX 1577): the trail on or off, the ring's pulse on or off (1628), a look (dot, trail, ring,
 //: spotlight) and a colour from the board's palette, kept in this browser
 //: like the board's other display choices (`prefs`, key `wb-laser`). The
 //: looks animate with transform and opacity only, and under reduced motion
@@ -25732,6 +25732,8 @@ const wbLaser = {
     const saved = prefs.json("wb-laser", {});
     return {
       trail: saved.trail !== false,
+      //: The ring's pulse, a switch like the trail (the owner, 2026-11-04, INBOX 1628).
+      pulse: saved.pulse !== false,
       look: Object.hasOwn(wbLaser.looks, saved.look) ? saved.look : "trail",
       colour: Object.hasOwn(WB_RUN_SWATCHES, saved.colour) ? saved.colour : "red",
     };
@@ -25746,8 +25748,9 @@ const wbLaser = {
   apply() {
     const layer = document.getElementById("wb-laser-layer");
     if (!layer) return;
-    const { look, colour } = wbLaser.prefs();
+    const { look, colour, pulse } = wbLaser.prefs();
     layer.dataset.look = look;
+    layer.dataset.pulse = pulse ? "on" : "off";
     layer.style.setProperty("--wb-laser", colour === "red" ? "var(--error)" : WB_RUN_SWATCHES[colour]);
   },
   //: Rows are rebuilt on each change so the chosen ones carry a check, the way
@@ -25758,6 +25761,8 @@ const wbLaser = {
     const now = wbLaser.prefs();
     const items = [
       { label: now.trail ? "Trail: on" : "Trail: off", group: "trail", run: () => wbLaser.set({ trail: !now.trail }) },
+      //: Only the ring pulses, so the row shows while the ring is the look.
+      ...(now.look === "ring" ? [{ label: now.pulse ? "Pulse: on" : "Pulse: off", group: "trail", run: () => wbLaser.set({ pulse: !now.pulse }) }] : []),
       ...Object.entries(wbLaser.looks).map(([key, name]) => ({ label: name, group: "look", run: () => wbLaser.set({ look: key }) })),
       {
         label: "Colour",
