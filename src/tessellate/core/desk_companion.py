@@ -334,7 +334,10 @@ def raise_on_desktop(window: Any, rect: tuple[int, int, int, int] | None = None)
             #: The move is posted (`SWP_ASYNCWINDOWPOS`), so where it really
             #: landed is read a moment later: one log line that says whether
             #: the size and corner held (INBOX 1633, the owner's 200% display).
-            timer = threading.Timer(0.5, _log_placed, (handle, (x, y, width, height), dpi))
+            #: The first show can land as a smaller square (WinForms rescales
+            #: the new form after the move; INBOX 1650), so a show that did not
+            #: hold is placed once more.
+            timer = threading.Timer(0.5, _log_placed, (handle, (x, y, width, height), dpi, True))
             timer.daemon = True
             timer.start()
         return True
@@ -371,8 +374,9 @@ def place_on_screen(window: Any, rect: tuple[int, int, int, int]) -> bool:
         return False
 
 
-def _log_placed(handle: int, want: tuple[int, int, int, int], dpi: int) -> None:
-    """Log the window's real rectangle against the one asked for (physical pixels)."""
+def _log_placed(handle: int, want: tuple[int, int, int, int], dpi: int, again: bool = False) -> None:
+    """Log the window's real rectangle against the one asked for (physical
+    pixels); with `again`, a place that did not hold is set once more."""
     try:
         import ctypes
         import ctypes.wintypes
@@ -381,6 +385,11 @@ def _log_placed(handle: int, want: tuple[int, int, int, int], dpi: int) -> None:
         ctypes.windll.user32.GetWindowRect(handle, ctypes.byref(box))
         got = (box.left, box.top, box.right - box.left, box.bottom - box.top)
         logger.info("desk companion: placed at %s, asked %s, dpi %s, held: %s", got, want, dpi, got == want)
+        if again and got != want:
+            ctypes.windll.user32.SetWindowPos(handle, 0, *want, (SWP_PLACE & ~0x0040) | 0x0004)
+            timer = threading.Timer(0.5, _log_placed, (handle, want, dpi))
+            timer.daemon = True
+            timer.start()
     except Exception:  # noqa: BLE001 - a log line, never worth a failure
         logger.debug("could not read the companion's place back", exc_info=True)
 

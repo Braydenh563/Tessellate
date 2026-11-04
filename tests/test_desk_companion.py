@@ -666,6 +666,42 @@ def test_the_place_read_back_never_raises_where_there_is_no_win32():
     assert dc._log_placed(1, (0, 0, 224, 304), 192) is None
 
 
+def test_a_first_show_that_did_not_hold_is_placed_once_more(monkeypatch):
+    # INBOX 1650: the first show landed as a 232 by 233 square for a 224 by
+    # 304 ask, and only a drag set it right. The show's read-back places it
+    # again, once; a drag's read-back (no `again`) only logs.
+    import ctypes
+
+    calls = []
+
+    class User32:
+        def GetWindowRect(self, handle, ref):
+            box = ref._obj
+            box.left, box.top, box.right, box.bottom = 880, 512, 880 + 232, 512 + 233
+
+        def SetWindowPos(self, *args):
+            calls.append(args)
+
+    class Timer:
+        def __init__(self, delay, fn, args):
+            calls.append(("timer", args))
+            self.daemon = False
+
+        def start(self):
+            pass
+
+    monkeypatch.setattr(ctypes, "windll", type("W", (), {"user32": User32()})(), raising=False)
+    monkeypatch.setattr(dc.threading, "Timer", Timer)
+    want = (880, 512, 224, 304)
+    dc._log_placed(7, want, 192, True)
+    places = [c for c in calls if c[0] != "timer"]
+    assert places and places[0][:6] == (7, 0, *want)
+    assert ("timer", (7, want, 192)) in calls
+    calls.clear()
+    dc._log_placed(7, want, 192)
+    assert calls == []
+
+
 def test_hiding_it_from_its_own_menu_refreshes_the_tray_tick(made, prefs):
     # INBOX 1642: pystray builds the Windows menu once, so the tick stayed on
     # after Hide until the tray was told to rebuild it.

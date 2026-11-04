@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Desktop companion: a first show that Windows rescaled to a smaller square is placed once more at its real size (INBOX 1650).
 - Composer: a picture's caption reads as English ("shows a green fox", or a full sentence quoted as described), and a quote reads as plain answer text, with a wrapped list item kept whole (CHAT_PLAN 1599, 1602).
 - A docked panel sits between the top bar and the status bar, never over them, whatever it draws above (INBOX 1648).
 - Labels with an icon end in an ellipsis where they are cut (the tray's items first), and a tray row's remove button is a minus so it no longer looks like the tray's close (INBOX 1646, 1647).
