@@ -47,6 +47,15 @@ html:has(> .desk-page) {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
+  /* A dialog header's own padding (16px round) doubled the panel's, and made the
+     head 68px tall for a 20px title (INBOX 1670). */
+  padding: 0;
+}
+/* The close button keeps its 44px target without stretching the head: it reaches
+   into the panel's padding instead. */
+.desk-close {
+  margin-block: calc(-1 * var(--space-2));
+  margin-inline-end: calc(-1 * var(--space-2));
 }
 .desk-title {
   margin: 0;
@@ -62,6 +71,15 @@ html:has(> .desk-page) {
 }
 .desk-panel textarea {
   resize: none;
+  /* Four lines at least: the window is sized from the content, so this is what
+     keeps the note from being squashed to one clipped line (INBOX 1670). */
+  min-block-size: 6.5em;
+}
+/* The overlay's panel fills its window, so the window is never taller than the
+   panel (no band above it); its rows keep their own height. */
+.desk-overlay .desk-panel {
+  flex: 1 1 auto;
+  align-content: start;
 }
 .desk-item {
   display: flex;
@@ -83,6 +101,10 @@ html:has(> .desk-page) {
 }
 .desk-hit {
   display: grid;
+  /* One full-width column: the button's own centring put a hit with no snippet
+     (a short track) half way across (INBOX 1670, "test draft"). */
+  grid-template-columns: minmax(0, 1fr);
+  justify-content: stretch;
   gap: var(--space-1);
   width: 100%;
   text-align: start;

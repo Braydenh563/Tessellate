@@ -105,27 +105,49 @@
     for (const id of new Set(Object.values(PANELS))) $(id).classList.toggle("hidden", PANELS[next] !== id);
     $("desk-pet").setAttribute("aria-expanded", String(next === "menu" || next === "context"));
     if (overlay && next === "rest") return;
-    let height = SIZES[next][1] - (overlay ? OVERLAY_TRIM : 0);
-    if (overlay && (next === "menu" || next === "context")) height = menuHeight(height);
-    ask("set_size", SIZES[next][0], height, next);
+    asked = 0;
+    fit();
   }
 
-  //: The menu's own height in CSS pixels: its rows plus its padding and border,
-  //: plus the page's padding round it, so a two or three row menu never shows a
-  //: scrollbar at any Windows scale (the owner, 2026-11-04: the fixed 108 was too
-  //: small for two rows). The panel is a flex item that takes its content's
-  //: height when it fits, so its scrollHeight is the content's either way.
-  //: `fallback` is used only when the page has no layout to measure.
-  function menuHeight(fallback) {
-    const panel = $("desk-menu");
-    const root = panel.parentElement;
-    if (!panel.scrollHeight || !root) return fallback;
-    const style = getComputedStyle(root);
-    const pad = (parseFloat(style.paddingTop) || 0) + (parseFloat(style.paddingBottom) || 0);
-    const wanted = Math.ceil(panel.scrollHeight + (panel.offsetHeight - panel.clientHeight) + pad);
-    // Capped to the screen; the panel scrolls inside if it cannot fit.
-    return Math.min(wanted, Math.max(fallback, Math.floor((window.screen.availHeight || wanted) * 0.9)));
+  //: The overlay's window is as tall as the open panel's content, every panel, not
+  //: the menu alone: a fixed 216 squashed Quick note's field to one line, and a fixed
+  //: 280 left a band above Quick search (INBOX 1670). Asked again when the width
+  //: changes the wrapping and when search hits arrive; only a change is asked.
+  let asked = 0;
+  function fit() {
+    if (state === "rest") return;
+    let height = SIZES[state][1] - (overlay ? OVERLAY_TRIM : 0);
+    if (overlay) height = panelHeight($(PANELS[state]), height, state);
+    if (Math.abs(height - asked) <= 2) return;
+    asked = height;
+    ask("set_size", SIZES[state][0], height, state);
   }
+  window.addEventListener("resize", () => {
+    if (overlay) fit();
+  });
+
+  //: A panel's own height in CSS pixels: its children's extent plus its padding and
+  //: border, plus the page's padding round it, so a two or three row menu never shows
+  //: a scrollbar at any Windows scale (the owner, 2026-11-04: the fixed 108 was too
+  //: small for two rows). Measured from the children, not the panel, because the
+  //: panel fills the window (no band above it). `fallback` is used only when the
+  //: page has no layout to measure.
+  function panelHeight(panel, fallback, kind) {
+    const root = panel.parentElement;
+    const kids = [...panel.children].filter((k) => k.getClientRects().length && getComputedStyle(k).position !== "absolute");
+    if (!kids.length || !root) return fallback;
+    const top = Math.min(...kids.map((k) => k.getBoundingClientRect().top));
+    const bottom = Math.max(...kids.map((k) => k.getBoundingClientRect().bottom));
+    if (!(bottom > top)) return fallback;
+    const ps = getComputedStyle(panel);
+    const rs = getComputedStyle(root);
+    const edge = ["paddingTop", "paddingBottom", "borderTopWidth", "borderBottomWidth"].reduce((sum, k) => sum + (parseFloat(ps[k]) || 0), 0);
+    const wanted = Math.ceil(bottom - top + edge + (parseFloat(rs.paddingTop) || 0) + (parseFloat(rs.paddingBottom) || 0));
+    // Capped to the screen (search to a compact column); the panel scrolls inside past it.
+    const most = Math.floor((window.screen.availHeight || wanted) * 0.9);
+    return Math.min(wanted, kind === "search" ? Math.min(most, SEARCH_MOST) : most);
+  }
+  const SEARCH_MOST = 520;
 
   //: Why the figure stands still, for the right-click menu's one muted line.
   const STILL_WHY = {
@@ -337,6 +359,7 @@
     if (!q) {
       list.replaceChildren();
       $("desk-search-status").textContent = "";
+      if (overlay) fit();
       return;
     }
     try {
@@ -351,6 +374,7 @@
       const body = await response.json();
       list.replaceChildren(...(body.hits || []).map(hitRow));
       $("desk-search-status").textContent = body.hits?.length ? "" : "Nothing found.";
+      if (overlay) fit();
     } catch (error) {
       if (mine === searchSeq) $("desk-search-status").textContent = error.message || "Search is not available right now.";
     }

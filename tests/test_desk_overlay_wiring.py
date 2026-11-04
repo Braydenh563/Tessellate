@@ -367,13 +367,15 @@ def test_a_later_click_of_the_other_kind_is_sized_before_it_is_shown(over):
     assert first_resize < shown_at and panel.calls[first_resize][1:] == dc.PANEL_SIZES["context"]
 
 
-def test_the_menu_is_measured_by_its_content_not_a_fixed_height():
+def test_every_panel_is_measured_by_its_content_not_a_fixed_height():
+    # Widened 2026-11-04 from the menu alone to every panel (INBOX 1670: a fixed
+    # 216 squashed Quick note, a fixed 280 left a band above Quick search).
     from pathlib import Path
 
     js = (Path(__file__).resolve().parent.parent / "frontend" / "js" / "desk-companion.js").read_text(encoding="utf-8")
-    assert "function menuHeight(" in js and "panel.scrollHeight" in js
-    show = js.split("function show(next)")[1].split("\n  }\n")[0]
-    assert "menuHeight(height)" in show and 'next === "context"' in show
+    assert "function panelHeight(" in js and "getBoundingClientRect" in js.split("function panelHeight(")[1]
+    fit = js.split("function fit()")[1].split("\n  }\n")[0]
+    assert "panelHeight($(PANELS[state])" in fit and "fit();" in js.split("function show(next)")[1].split("\n  }\n")[0]
 
 
 def test_an_unanswered_read_keeps_the_last_motion_answer(over):
@@ -404,7 +406,7 @@ def test_the_menu_height_is_capped_and_walk_is_not_offered_when_locked():
     from pathlib import Path
 
     js = (Path(__file__).resolve().parent.parent / "frontend" / "js" / "desk-companion.js").read_text(encoding="utf-8")
-    assert "screen.availHeight" in js.split("function menuHeight(")[1].split("\n  }\n")[0]
+    assert "screen.availHeight" in js.split("function panelHeight(")[1].split("\n  }\n")[0]
     assert "!locked && motion?.still" in js
 
 
