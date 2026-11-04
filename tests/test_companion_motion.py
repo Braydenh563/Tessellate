@@ -1558,7 +1558,10 @@ def test_an_act_or_a_walk_is_let_go_not_dropped():
     assert "nameMarkIdleQuiet()" in blend and "{ ...moved, offset: 0 }" in blend
     assert 'id: "nmb-blend"' in blend
     # (INBOX 1589: the hand-over also takes `nmb-arms` off with the last act that moves the arms.)
-    assert "nameMarkBuddyBlend(buddy, () => {\n    buddy.classList.remove(`nmb-act-${was}`);" in _fn("nameMarkBuddyAct")
+    # (INBOX 1634: the leave is written inside the enter's change, one hand-over for both.)
+    act_fn = _fn("nameMarkBuddyAct")
+    assert "const leave = () => {\n    buddy.classList.remove(`nmb-act-${was}`);" in act_fn
+    assert "joined ? () => (leave(), into()) : into" in act_fn and "nameMarkBuddyBlend(buddy, leave)" in act_fn
     assert 'nameMarkBuddyBlend(buddy, () => buddy.classList.remove("nmb-walking"));' in AV
     assert 'a.id !== "nmb-blend"' in _fn("nameMarkBuddyTempo")
     css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
