@@ -2331,11 +2331,14 @@ function gcCameraStill(s) {
 //: each, back to back, and the worker's start and first tick waited behind
 //: them (first tick at 25 s). The fit draws (`gcRevealAfterBalance`), and so
 //: does `gcReveal`, whatever shows the map.
+//: Frames in a row the draw may ask for by itself (about 5 s at 60 fps).
+const GC_SELF_FRAMES = 300;
 const gcUnframed = (s) => s.canvas?.style.opacity === "0" && !s.fittedOnce;
 
 //: `cheap`: only the camera or the hover changed, so the frame may be composed
 //: from the scene layers (`gcDrawComposed`); anything else repaints them.
 function gcRequestDraw(s = gcTab, cheap = false) {
+  if (!s.drawAsking) s.selfFrames = 0;
   if (!cheap) s.sceneStale = true;
   if (s.drawQueued || !s.ctx || gcTabHidden(s) || gcUnframed(s)) return;
   s.drawQueued = true;
@@ -2625,7 +2628,18 @@ function gcDrawComposed(s) {
     s.paintMode = null;
   }
   s.composed = true;
-  if (moving) gcRequestDraw(s, true);
+  //: A composed frame that is still moving asks for itself like any other:
+  //: it counts toward the same bound (INBOX 1643).
+  if (moving && (s.selfFrames = (s.selfFrames || 0) + 1) <= GC_SELF_FRAMES) {
+    s.drawAsking = true;
+    try {
+      gcRequestDraw(s, true);
+    } finally {
+      s.drawAsking = false;
+    }
+  } else if (!moving) {
+    s.selfFrames = 0;
+  }
   return true;
 }
 
@@ -3549,18 +3563,32 @@ function gcDraw(s = gcTab) {
   //: 300 of them in a row has a value that is not landing. The next
   //: frame lands every fade at once (`s.fadeSnap`); if it is still asking
   //: after that, the loop stops and waits for the next real change.
-  if ((easing || fading) && !gliding && !s.bornPending) {
+  //: INBOX 1643 ("54 calls/s" for 10 s after that cap): the cap skipped a
+  //: glide and a fade-in, which are the other two things a frame asks for
+  //: itself, so a value stuck there still drew every frame. All four count
+  //: now, and any request from outside the draw (a tick, a pointer, a
+  //: resize) starts the count again (`gcRequestDraw`), so a tick-driven glide
+  //: is never cut short; only a chain the draw keeps going alone is.
+  if (easing || fading || gliding || s.bornPending) {
     s.selfFrames = (s.selfFrames || 0) + 1;
-    if (s.selfFrames === 300) s.fadeSnap = true;
-    else if (s.selfFrames > 300) {
+    if (s.selfFrames === GC_SELF_FRAMES) {
+      s.fadeSnap = true;
+      gcGlideFinish(s);
+      for (const node of s.nodes) node._born = undefined;
+    } else if (s.selfFrames > GC_SELF_FRAMES) {
       s.selfFrames = 0;
       return;
     }
   } else {
     s.selfFrames = 0;
   }
-  if (cheap && (easing || busy)) gcRequestDraw(s, true);
-  else if (easing || fading || gliding || s.bornPending) gcRequestDraw(s);
+  s.drawAsking = true;
+  try {
+    if (cheap && (easing || busy)) gcRequestDraw(s, true);
+    else if (easing || fading || gliding || s.bornPending) gcRequestDraw(s);
+  } finally {
+    s.drawAsking = false;
+  }
 }
 
 //: The line under the pointer, drawn again over the rest, wider and in its
