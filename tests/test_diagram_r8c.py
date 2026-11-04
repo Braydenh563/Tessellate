@@ -105,3 +105,14 @@ def test_the_new_gestures_are_in_the_guide_in_the_controls_words():
     body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-builder"))
     assert len(body) < 1900
     assert "drag the round handle" in body and "double-click" in body
+
+
+def test_a_picked_block_shows_four_handles_one_a_side_that_keep_the_ghost_class_and_an_accent_ink():
+    """INBOX 1679: the handle was filled-button ink on the canvas colour (1.1:1) and only on the right, on hover. Four sides now,
+    `ghost small` kept, glyph and ring in the accent (measured 7.7 to 8.8:1 glyph to disc, 5.9 light and 7.0 dark ring to canvas)."""
+    assert '["top", "right", "bottom", "left"]' in EDGES and 'b.className = "dgm-handle ghost small hidden"' in EDGES
+    assert "b.dataset.side = side" in EDGES and "anchor(at, handle.dataset.side)" in EDGES
+    rule = CSS[CSS.index(".dgm-handle.ghost.small {") : CSS.index("}", CSS.index(".dgm-handle.ghost.small {"))]
+    assert "color: var(--accent-text);" in rule and "border: 2px solid var(--accent);" in rule
+    for side in ("top", "bottom", "left"):
+        assert f'.dgm-handle[data-side="{side}"]' in CSS

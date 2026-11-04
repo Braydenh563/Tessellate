@@ -681,6 +681,17 @@
   font-weight: 600;
 }
 
+/* A step done: the number gives way to a tick, and the words quiet down. */
+.dgm-step.dgm-done .dgm-step-text {
+  color: var(--muted);
+}
+
+/* The example and the template button are for an empty page; the list stays, ticked, until the first arrow. */
+.dgm-empty.dgm-started .dgm-example,
+.dgm-empty.dgm-started > button.accent {
+  display: none;
+}
+
 .dgm-step-text {
   flex: 1 1 auto;
   min-width: 0;
@@ -1203,12 +1214,36 @@
   cursor: crosshair;
 }
 
-.dgm-handle.hidden {
-  display: none;
+/* The glyph and the ring are the accent, the disc the modal surface: 3:1 or better against the disc and the canvas in both
+   themes (INBOX 1679). Written on the button's own two classes so `ghost small` (kept, for its focus ring) does not win. */
+.dgm-handle.ghost.small {
+  padding: 0;
+  min-inline-size: 0;
+  min-block-size: 0;
+  border: 2px solid var(--accent);
+  background: var(--modal-bg);
+  color: var(--accent-text);
 }
 
-.dgm-handle[aria-pressed="true"] {
+.dgm-handle.ghost.small[aria-pressed="true"] {
   background: var(--accent-soft);
+}
+
+/* One handle a side; the glyph turns to point out of its own edge. */
+.dgm-handle[data-side="top"] > :first-child {
+  rotate: -90deg;
+}
+
+.dgm-handle[data-side="bottom"] > :first-child {
+  rotate: 90deg;
+}
+
+.dgm-handle[data-side="left"] > :first-child {
+  rotate: 180deg;
+}
+
+.dgm-handle.hidden {
+  display: none;
 }
 
 @media (pointer: coarse) {

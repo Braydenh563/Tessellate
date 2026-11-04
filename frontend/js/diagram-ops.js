@@ -191,7 +191,7 @@
   //: A label, in place. An empty one is refused (Mermaid draws an empty box as nothing).
   function dgbRelabel(m, key, text) {
     const [type, id] = dgbSplit(key);
-    const clean = String(text ?? "").replace(/\s*\n\s*/g, " ").trim();
+    const clean = String(text ?? "").replace(/\s*\n\s*/g, " ").trim().slice(0, 120);
     const item = type === "n" ? dgbNode(m, id) : type === "g" ? dgbGroup(m, id) : null;
     if (!item || !clean) return false;
     if (type === "n") item.text = clean;
@@ -318,11 +318,13 @@
     return null;
   }
 
-  //: A branch off a decision needs words (yes, no): an arrow with none that is the second or later out of a diamond (R6.3).
-  const dgbNeedsLabel = (m, edge) => Boolean(edge) && !edge.label && dgbNode(m, edge.from)?.shape === "diamond" && m.edges.filter((e) => e.from === edge.from).length >= 2;
+  //: A branch off a decision needs words (yes, no): any arrow out of a diamond with none (R6.3; the first too since INBOX 1679, when a lone unlabelled branch read as a mistake).
+  const dgbNeedsLabel = (m, edge) => Boolean(edge) && !edge.label && dgbNode(m, edge.from)?.shape === "diamond";
+  //: The word offered for that arrow: yes, or no once another arrow out of the same decision says yes.
+  const dgbBranchWord = (m, edge) => (m.edges.some((e) => e !== edge && e.from === edge.from && /^yes$/i.test(e.label || "")) ? "no" : "yes");
 
   const diagramOps = {
-    needsLabel: dgbNeedsLabel, layout: dgbLayout, key: dgbKey, split: dgbSplit, node: dgbNode, group: dgbGroup, sisters: dgbSisters, parentOf: dgbParentOf,
+    needsLabel: dgbNeedsLabel, branchWord: dgbBranchWord, layout: dgbLayout, key: dgbKey, split: dgbSplit, node: dgbNode, group: dgbGroup, sisters: dgbSisters, parentOf: dgbParentOf,
     addNode: dgbAddNode, addGroup: dgbAddGroup, move: dgbMove, remove: dgbRemove, join: dgbJoin, unjoin: dgbUnjoin,
     relabel: dgbRelabel, roots: dgbRoots, moveMany: dgbMoveMany, duplicate: dgbDuplicate, wrap: dgbWrap, step: dgbStep, nest: dgbNest, lift: dgbLift, inside: dgbInside, SHAPES: DGB_SHAPES, MAX: DGB_MAX, PLAIN: DGB_PLAIN,
   };

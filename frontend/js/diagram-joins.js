@@ -79,12 +79,23 @@
     open?.querySelector(".menu-item")?.focus({ preventScroll: true });
   }
 
-  //: A second branch off a decision with no words on it is asked for them (R6.3). Cancel keeps the arrow as it is.
+  //: The words for a decision's arrow, in one dialog: the field holds the offer (yes, then no) and a yes | no pair fills it, so one press answers. "" when cancelled.
+  async function words(h, m, edge, message) {
+    const word = h.ops.branchWord(m, edge);
+    const options = ["yes", "no"].map((value) => ({ value, label: value }));
+    const asked = promptDialog(message, word, { confirmLabel: "Save", segment: { label: "Quick answer", options, value: word } });
+    //: The dialog's pair only picks; here a press is also the answer, so it is written into the field too.
+    const card = document.querySelector(".prompt-card");
+    card?.querySelectorAll(".seg button").forEach((b) => b.addEventListener("click", () => (card.querySelector("input").value = b.dataset.value)));
+    return (await asked)?.text?.trim() || "";
+  }
+
+  //: Every arrow off a decision with no words on it is asked for them (R6.3, the first one too since INBOX 1679). Cancel keeps the arrow as it is.
   async function ask(S, edge, h) {
     if (!h.ops.needsLabel(S.m, edge)) return;
-    const text = await promptDialog(`Words for the arrow to ${titleOf(h, S, edge.to)}, such as yes or no`, "", { confirmLabel: "Save" });
-    if (!text?.trim()) return;
-    edge.label = text.trim();
+    const text = await words(h, S.m, edge, `Words for the arrow to ${titleOf(h, S, edge.to)}`);
+    if (!text) return;
+    edge.label = text;
     h.commit(S, `Labelled the connector ${edge.label}.`);
   }
 
@@ -113,9 +124,10 @@
       if (to === NEW) {
         //: Asked before the block is made, so the arrow's words and then the block's name are two steps, not two fields at once.
         const probe = { from, label: "" };
-        const words = h.ops.needsLabel({ ...S.m, edges: [...S.m.edges, probe] }, probe) ? await promptDialog("Words for the new arrow, such as yes or no", "", { confirmLabel: "Save" }) : "";
+        const ahead = { ...S.m, edges: [...S.m.edges, probe] };
+        const said = h.ops.needsLabel(ahead, probe) ? await words(h, ahead, probe, "Words for the new arrow") : "";
         //: A box, not the shape in hand: from a decision the next block was a decision too.
-        return h.add(S, { after: key, from, shape: "rect", text: typed || undefined, label: (words || "").trim(), edit: !typed });
+        return h.add(S, { after: key, from, shape: "rect", text: typed || undefined, label: said, edit: !typed });
       }
       const edge = h.ops.join(S.m, from, to);
       const name = titleOf(h, S, to);

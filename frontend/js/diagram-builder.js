@@ -103,9 +103,9 @@
     S.cache = fresh;
     S.tree.querySelectorAll(".dgm-target, .dgm-connecting, .dgm-lifted").forEach((b) => b.classList.remove("dgm-target", "dgm-connecting", "dgm-lifted"));
     reconcile(S.tree, rows);
-    S.empty.classList.toggle("hidden", Boolean(layout.length));
+    diagramModel.steps.sync(S, layout.length);
     S.next.classList.toggle("hidden", !layout.length);
-    const next = S.m.nodes.length < 2 ? "Add a second block, then press Connect to… on one to draw an arrow." : S.m.edges.length ? "Drag a grip to move or nest a block (the picture lays itself out). Double-click a name to rename it." : "Press Connect to… on a block, or drag its grip onto another block, to draw an arrow.";
+    const next = S.m.edges.length ? "Drag a grip to move or nest a block (the picture lays itself out). Double-click a name to rename it." : `Double-click a name, or press Enter, to rename it. ${S.m.nodes.length < 2 ? "Add a second block, then press Connect to… on one." : "Press Connect to… on a block, or drag its grip onto another block, to draw an arrow."}`;
     if (S.next.textContent !== next) S.next.textContent = next;
     //: An empty pane is the one stop, so N and G work before there is a block to focus.
     S.pane.tabIndex = layout.length ? -1 : 0;
@@ -358,7 +358,8 @@
     if (!b || key[0] === "k") return;
     const label = b.querySelector(":scope > .dgm-card > .dgm-label");
     beginEdit(S, label, nameOf(S, key), (text) => {
-      if (!diagramOps.relabel(S.m, key, text)) return;
+      //: An empty name is refused; the list would keep showing it empty while the picture says the old one, so draw it back.
+      if (!diagramOps.relabel(S.m, key, text)) return render(S);
       if (text === nameOf(S, key) && S.source === diagramModel.print(S.m)) return render(S);
       commit(S, `Renamed to ${text}.`);
     }, key);
