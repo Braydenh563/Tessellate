@@ -34,12 +34,13 @@ def test_the_picture_margin_is_not_beaten_by_the_mermaid_figure_rule():
     assert not re.search(r"^\.dgm-picture \{", CSS, re.M)
 
 
-def test_the_two_panes_stretch_together_in_a_wide_container_and_the_picture_keeps_26vh_below_600():
+def test_the_two_panes_stretch_together_in_a_wide_container_and_the_picture_keeps_38dvh_below_600():
     body = _rule(CSS, ".dgm-body")
     assert "display: grid;" in body and "align-items" not in body
-    assert "26vh" not in CSS[: CSS.index("@container (max-width: 599.98px)")]
+    assert "38dvh" not in CSS[: CSS.index("@container (max-width: 599.98px)")]
     narrow = CSS[CSS.index("@container (max-width: 599.98px)") :]
-    assert "block-size: 26vh;" in narrow
+    # R6.1: 26vh drew a three-block flowchart at 48% with 6 px text, and the zoom bar covered its lower node.
+    assert "block-size: 38dvh;" in narrow
 
 
 VIEW = (JS / "diagram-view.js").read_text(encoding="utf-8")

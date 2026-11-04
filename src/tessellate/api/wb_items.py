@@ -12,7 +12,7 @@ import json
 from pydantic import BaseModel, Field
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from tessellate.core.database import WhiteboardNode, WhiteboardObject, WhiteboardSketch
+from tessellate.core.database import Document, WhiteboardNode, WhiteboardObject, WhiteboardSketch
 from tessellate.core import deps, events
 from tessellate.core.deps import get_session
 from sqlalchemy import select
@@ -222,6 +222,18 @@ def delete_sketch(sketch_id: int, db: Session = Depends(get_session)) -> dict:
 # or a text box, hence a third kind of thing on the canvas.
 
 
+def _require_diagram_row(db: Session, body: WhiteboardObjectBase) -> None:
+    """A link to a row that is gone is fine (the board draws its snapshot); one to a row that is not a diagram is not."""
+    row_id = body.data.diagram_id
+    if row_id is None:
+        return
+    if body.kind != "diagram":
+        raise HTTPException(status_code=422, detail="Only a diagram can point at a Library diagram.")
+    doc = db.get(Document, row_id)
+    if doc is not None and doc.file_type != "mmd":
+        raise HTTPException(status_code=422, detail="That is not a diagram in the Library.")
+
+
 @router.post("/objects", response_model=WhiteboardObjectOut, status_code=201)
 @events.writes("whiteboard_object", "created")
 def create_object(
@@ -229,6 +241,7 @@ def create_object(
 ) -> WhiteboardObjectOut:
     _require_board(db, body.board_id)
     _require_object_data(body)
+    _require_diagram_row(db, body)
     obj = WhiteboardObject(
         kind=body.kind,
         data=json.dumps(_on_current_layer(db, body.board_id, body.data.model_dump(mode="json", exclude_none=True)), separators=(",", ":")),
@@ -274,6 +287,7 @@ def update_object(
     obj = deps.get_or_404(db, WhiteboardObject, object_id, "That item could not be found.")
     _require_board(db, body.board_id)
     _require_object_data(body)
+    _require_diagram_row(db, body)
     _save_object(db, obj, body)
     db.commit()
     db.refresh(obj)
@@ -357,6 +371,7 @@ def save_items(body: ItemsSaveMany, db: Session = Depends(get_session)) -> dict:
         _require_entry(db, entry_id)
     for item in body.objects:
         _require_object_data(item)
+        _require_diagram_row(db, item)
     for item in body.nodes:
         _save_node(db, nodes[item.id], item)
     for item in body.sketches:

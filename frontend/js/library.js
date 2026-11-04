@@ -908,7 +908,7 @@ function renderLibrary(options) {
     const fresh = !items.length && !query && !madeAnything;
     const freshText = $("library-empty-text");
     if (freshText) {
-      freshText.textContent = fresh ? "Make a document, a board or a map, or upload a file." : "";
+      freshText.textContent = fresh ? "Make a document, a diagram, a board or a map, or upload a file." : "";
       freshText.classList.toggle("hidden", !fresh);
     }
     if (!items.length) {
@@ -2457,7 +2457,15 @@ function openLibraryCreatePicker() {
     if (event.key === "Escape") {
       event.stopPropagation();
       close();
+      return;
     }
+    //: Up and Down walk the kinds (R6.6); Enter then makes the one in focus, not the first.
+    const step = { ArrowDown: 1, ArrowUp: -1 }[event.key];
+    if (!step) return;
+    const rows = [...list.querySelectorAll("button")];
+    event.preventDefault();
+    event.stopPropagation();
+    rows[(Math.max(0, rows.indexOf(document.activeElement)) + step + rows.length) % rows.length]?.focus();
   };
 
   for (const kind of LIBRARY_CREATE_ORDER) {
