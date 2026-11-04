@@ -873,6 +873,12 @@
     min-block-size: 10rem;
   }
 
+  /* An empty diagram has nothing to draw: its picture shrinks so the three steps and both example buttons fit above the foot (390: they sat below it). */
+  .dgm-picture.dgm-picture-empty,
+  .dgm-stage:has(> .dgm-picture-empty) {
+    block-size: 6rem;
+  }
+
   /* A diagram the blocks do not draw: its picture first, the line why under it, so a short pane shows the picture. */
   .dgm-plain .dgm-hint {
     order: 1;
@@ -1246,10 +1252,21 @@
   font-weight: 400;
 }
 
-/* The blocks list hidden (the toolbar's list button): the picture takes the room, keys still work from it. */
+/* The blocks list hidden (the toolbar's list button): the picture takes the room, keys still work from it. On a phone the
+   list is stacked under the picture and its button leaves the toolbar, so the seven 44 px controls fit one row (390: 338 in 306). */
 .dgm-no-outline .dgm-pane,
 .dgm-no-outline .dgm-split-handle {
   display: none;
+}
+
+@media (max-width: 599.98px) {
+  .dgm-dock .dgm-outline-toggle {
+    display: none;
+  }
+
+  .dgm-no-outline .dgm-pane {
+    display: block;
+  }
 }
 
 .dgm-no-outline .dgm-body,

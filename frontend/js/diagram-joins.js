@@ -114,7 +114,8 @@
         //: Asked before the block is made, so the arrow's words and then the block's name are two steps, not two fields at once.
         const probe = { from, label: "" };
         const words = h.ops.needsLabel({ ...S.m, edges: [...S.m.edges, probe] }, probe) ? await promptDialog("Words for the new arrow, such as yes or no", "", { confirmLabel: "Save" }) : "";
-        return h.add(S, { after: key, from, text: typed || undefined, label: (words || "").trim(), edit: !typed });
+        //: A box, not the shape in hand: from a decision the next block was a decision too.
+        return h.add(S, { after: key, from, shape: "rect", text: typed || undefined, label: (words || "").trim(), edit: !typed });
       }
       const edge = h.ops.join(S.m, from, to);
       const name = titleOf(h, S, to);

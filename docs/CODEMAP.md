@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7795, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8715, test files 2050, tests 17221, plan headings 1001, app scripts 28, boot scripts 37, script files 255.
+Counts: frontend functions 7795, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8715, test files 2050, tests 17222, plan headings 1001, app scripts 28, boot scripts 37, script files 255.
 
 ## Frontend functions (7795)
 
@@ -3103,12 +3103,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `build` | frontend/js/diagram-bar.js:47 |
 | `hintOf` | frontend/js/diagram-bar.js:17 |
-| `key` | frontend/js/diagram-bar.js:120 |
+| `key` | frontend/js/diagram-bar.js:121 |
 | `last` | frontend/js/diagram-bar.js:18 |
 | `nameOf` | frontend/js/diagram-bar.js:23 |
 | `optionsOf` | frontend/js/diagram-bar.js:22 |
 | `paintOutline` | frontend/js/diagram-bar.js:26 |
-| `rootKey` | frontend/js/diagram-bar.js:130 |
+| `rootKey` | frontend/js/diagram-bar.js:131 |
 | `sync` | frontend/js/diagram-bar.js:33 |
 
 ### frontend/js/diagram-builder.js (40)
@@ -12277,7 +12277,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 176 |
-| frontend/css/diagram-lazy.css | 1268 |
+| frontend/css/diagram-lazy.css | 1285 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 140 |
 | frontend/css/forced-colors-lazy.css | 28 |
@@ -23941,7 +23941,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17221)
+## Tests (17222)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24473,7 +24473,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagnostics_1430.py | 9 |
 | tests/test_diagram_1596.py | 4 |
 | tests/test_diagram_1661a.py | 6 |
-| tests/test_diagram_1661b.py | 7 |
+| tests/test_diagram_1661b.py | 8 |
 | tests/test_diagram_blind_fixes.py | 4 |
 | tests/test_diagram_builder.py | 20 |
 | tests/test_diagram_d3.py | 2 |
@@ -26188,7 +26188,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 22.3 Where the design is below standard (measured or seen, 2026-09-27) | docs/roadmap/WORLD_CLASS_PLAN.md:2372 |
 | 22.4 Phased rows | docs/roadmap/DOCUMENTS_PLAN.md:1537 |
 | 22.4 The devibecode programme: one surface at a time, every skill | docs/roadmap/WORLD_CLASS_PLAN.md:2387 |
-| 22.5 Risks and out of scope | docs/roadmap/DOCUMENTS_PLAN.md:1570 |
+| 22.5 Risks and out of scope | docs/roadmap/DOCUMENTS_PLAN.md:1571 |
 | 22.5 Where the app goes next (release path) | docs/roadmap/WORLD_CLASS_PLAN.md:2416 |
 | 23. Filing and the taxonomy: candidates, a decision, an explanation (2026-10-10; Brief 39b) | docs/roadmap/WORLD_CLASS_PLAN.md:1452 |
 | 23. Organisation: manual grouping and multi-category notes | docs/roadmap/BACKLOG.md:1614 |
