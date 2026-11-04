@@ -6318,23 +6318,23 @@ def test_the_foot_under_a_growing_field_is_pinned_to_the_scroll() -> None:
     for sheet, selector in (
         ("library-lazy.css", ".note-edit-foot"),
         ("library-lazy.css", "#capture .capture-commit-row"),
-        ("graph-lazy.css", ".graph-popup-saverow:has(#graph-popup-save:not(.hidden))"),
     ):
         body = _sheet_rule(sheet, selector)
         assert "position: sticky" in body and "bottom: 0" in body, selector
 
 
 def test_the_popups_save_row_stands_above_the_action_dock() -> None:
-    """INBOX 1421: both are sticky at the panel's foot, the Save row one z-index
-    higher, so at `bottom: 0` it was drawn over the dock (Save 36px inside it,
-    measured 567 against a dock top of 531). The offset is the dock's own
-    height, which `placeGraphPopup` writes (CSSOM: a custom property would cost a token)."""
+    """INBOX 1421, then 1630: the detail panel is a column (head, scrolling body,
+    Save row, dock), so the Save row sits above the dock by order and no sticky
+    offset is written by `placeGraphPopup` any more."""
     graph = (ROOT / "frontend" / "js" / "graph.js").read_text(encoding="utf-8")
     place = graph[graph.index("function placeGraphPopup(") :]
     place = place[: place.index("\n}\n")]
-    assert "saveRow.style.bottom" in place and "dock.offsetHeight" in place
+    assert "saveRow.style.bottom" not in place
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    assert html.index('id="graph-popup-saverow"') < html.index('id="graph-popup-actions"')
     dock = _sheet_rule("04-chat-dock-appearance.css", ".graph-popup-actions")
-    assert "position: sticky" in dock and "z-index: 1" in dock
+    assert "position: sticky" not in dock
 
 
 def test_a_text_run_is_the_documented_recipe_and_never_a_style_attribute() -> None:

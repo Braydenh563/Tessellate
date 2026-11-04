@@ -4683,6 +4683,10 @@ Link to another note with [[its first few words]]."></textarea>
             </span>
             <button id="graph-popup-close" class="icon-only ghost small dialog-head-btn" type="button" aria-label="Close" title="Close (Esc)"><i class="ph ph-x" aria-hidden="true"></i></button>
           </div>
+          <!-- The body is the one part that scrolls (INBOX 1630): the head above and
+               the save row and dock below stay put, so the scrollbar never runs
+               beside the dock. -->
+          <div class="graph-popup-body">
           <!-- Date, links, views: one muted line, because they are the same
                rank of fact and five chips said they were five ranks. -->
           <p id="graph-popup-info" class="graph-popup-meta muted"></p>
@@ -4701,6 +4705,7 @@ Link to another note with [[its first few words]]."></textarea>
           <textarea id="graph-popup-content" data-autocorrect class="autogrow" rows="4" aria-label="Note content"></textarea>
           <input id="graph-popup-tags" type="text" placeholder="Tags, comma separated"
             aria-label="Tags">
+          </div>
           <!-- The button is hidden until the note is actually edited: a Save
                that is always there is a permanent call to action on a panel
                you mostly open to read. The status line stays in the row

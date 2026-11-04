@@ -780,6 +780,21 @@ panelAdopt.rimHover = (e) => {
     else delete panel.dataset.rim;
   }
 };
+//: **The edge is named again at the press** (INBOX 1630, "chooses the wrong
+//: edge resize like a corner for an edge"): the hover reads the box once, so a
+//: panel that moved or changed size under a still pointer (the graph's panel
+//: follows its note and grows as its body loads) kept naming the edge of its old
+//: box. A press is the one moment a layout read is free, so it names the edge
+//: from the box as it is now, and presses off every edge resize nothing.
+panelAdopt.rimFresh = (panel, e) => {
+  const r = panel.getBoundingClientRect();
+  const st = panelSt(panel);
+  st.rim = { top: r.top, bottom: r.bottom, left: r.left, right: r.right, bar: panel.scrollHeight > panel.clientHeight };
+  const edge = panelAdopt.rimEdge(st.rim, e.clientX, e.clientY);
+  if (edge) panel.dataset.rim = edge;
+  else delete panel.dataset.rim;
+  return edge;
+};
 function panelGripDown(e, rimmed) {
   const grip = rimmed || e.target.closest(".panel-grip");
   const panel = rimmed || (grip && grip.parentElement);
@@ -1104,7 +1119,8 @@ if (typeof document !== "undefined" && document.addEventListener) {
   }, true);
   document.addEventListener("pointerdown", (e) => {
     if (!(e.target instanceof Element)) return;
-    const rim = e.target.closest(".panel-movable-on[data-rim]");
+    let rim = e.target.closest(".panel-movable-on[data-rim]");
+    if (rim && !panelAdopt.rimFresh(rim, e)) rim = null;
     if (e.target.closest(".panel-grip")) panelGripDown(e);
     else if (rim && e.button === 0) {
       e.stopPropagation();

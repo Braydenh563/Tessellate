@@ -1696,7 +1696,7 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   align-items: center;
   justify-content: center;
   margin-inline: calc(-1 * var(--graph-popup-pad));
-  margin-bottom: calc(-1 * var(--graph-popup-pad));
+  margin-bottom: 0;
   padding-inline: var(--graph-popup-pad);
   padding-bottom: var(--graph-popup-pad);
   border-bottom-left-radius: var(--radius);
@@ -1714,13 +1714,9 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
      because these carry no label to widen them. */
   --control-h: var(--control-h-lg);
   /* **Pinned at the panel's foot** (the owner, 2026-10-11: "the graph
-     popups get cut off now at the bottom"): a long note scrolls under it,
-     so the dock is always whole and in reach. Sticky against the panel's
-     own scrollport; the chip tint over the panel's opaque ground, so text
-     scrolling under it does not show through. */
-  position: sticky;
-  bottom: calc(-1 * var(--graph-popup-pad));
-  z-index: 1;
+     popups get cut off now at the bottom"): the body scrolls above it, so
+     the dock is always whole and in reach (the panel is a column, INBOX
+     1630). The chip tint over the panel's opaque ground. */
   background: linear-gradient(var(--chip-bg) 0 0), var(--modal-bg-opaque);
 }
 

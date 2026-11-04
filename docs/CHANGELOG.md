@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Graph node popups: the hover card and the detail panel stay below the top bar, the panel scrolls only its body with no gap under the dock, a resize keeps the edge it was pressed on and no longer jitters, and the draw loop stops after 300 self-requested frames (INBOX 1630).
 - Atlas: both eyes blink together (curious no longer winks one shut) and no lid rests over the eyes; the companion's resize grip stays reachable while it hangs from the top bar and sizes at one rate; it can perch on a board object or mind map node and stays on it through pan and zoom (INBOX 1607, 1624, 1629).
 - Desktop companion: it no longer hangs ("not responding") on its first show or freezes the tray icon; no WinForms property is set off the window's own thread (INBOX 1635).
 - The companion stays on screen while a panel such as Settings is minimised to the tray (INBOX 1632).
