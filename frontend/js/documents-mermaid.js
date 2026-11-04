@@ -513,6 +513,7 @@
         const title = `Diagram ${new Date().toISOString().slice(0, 16).replace("T", " ")}`;
         const made = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title, content: next, file_type: "mmd" }) }).catch(() => (toast("The diagram was not saved. Try Done again.", "info"), null));
         if (!made) return;
+        offerCreateUndo(made);
         box.focus?.();
         editorBlock(box, `![[${made.title || title}]]`, "", "");
       },
