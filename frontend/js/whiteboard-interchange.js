@@ -1314,6 +1314,22 @@ function wbBuildDiagram(el, d) {
 function wbPaintDiagram(node, d) {
   const source = d.data?.mermaid || "";
   node.setAttribute("aria-label", `Mermaid ${wbMermaidKind(source) || ""} diagram`.replace("  ", " "));
+  //: 1621 D3, the snapshot rule: a linked diagram redraws from its Library row and rewrites `data.mermaid`
+  //: as an ordinary silent save when they differ; a row that is gone draws the snapshot and says so.
+  if (d.data?.diagram_id && !node._wbRow) {
+    node._wbRow = apiJson(`/documents/${d.data.diagram_id}`, { silent: true }).then((row) => {
+      const text = String(row?.content || "").trim();
+      if (row?.file_type !== "mmd" || !text || text === source.trim()) return;
+      d.data = { ...d.data, mermaid: text };
+      wbSaveObject(d);
+      wbPaintDiagram(node, d);
+    }, (error) => {
+      if (error?.status !== 404) return;
+      d._wbGone = true;
+      node.setAttribute("title", "The linked diagram was deleted");
+      wbAnnounce("The linked diagram was deleted");
+    });
+  }
   ensureModule("mermaid").then(() => {
     const key = `${source}\u0000${mermaidThemeNow(wbDiagramLook(d)).key}`;
     if (node._wbDiagramKey === key) return;
@@ -1372,6 +1388,9 @@ async function wbSaveDiagram(d, source, changed) {
   //: The new drawing's own shape, about the box's centre.
   const fit = await wbDiagramSize(text);
   d.data = { ...d.data, mermaid: text };
+  //: A live link writes the row too, or the next redraw would put the old source back.
+  if (d._wbGone) delete d.data.diagram_id;
+  else if (d.data.diagram_id) await apiJson(`/documents/${d.data.diagram_id}`, { method: "PUT", body: JSON.stringify({ content: text }), silent: true }).catch(() => { d._wbGone = true; delete d.data.diagram_id; });
   Object.assign(d, { x: Math.round(d.x + (d.width - fit.width) / 2), y: Math.round(d.y + (d.height - fit.height) / 2) }, fit);
   await wbSaveObject(d);
   wbScheduleRender();

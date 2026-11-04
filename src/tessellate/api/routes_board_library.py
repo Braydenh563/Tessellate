@@ -161,6 +161,7 @@ def _clean_object_item(raw: dict, item: dict[str, Any]) -> None:
     data = dict(raw.get("data") or {})
     data.pop("library_ref", None)
     data.pop("comments", None)
+    data.pop("diagram_id", None)  # a template does not point at a notebook row (1621 D3)
     try:
         checked = WhiteboardObjectData(**data).model_dump(exclude_none=True)
     except ValueError as err:

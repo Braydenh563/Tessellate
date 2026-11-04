@@ -233,6 +233,8 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--surface-1);
+  /* A press and drag on the picture pans it; it must not smear a text selection over the drawing (R6.2). */
+  user-select: none;
 }
 
 .dgm-picture .md-mermaid-img {
@@ -245,6 +247,7 @@
 .dgm-picture > :not(.md-mermaid-img) {
   flex: 1 1 auto;
   min-width: 0;
+  user-select: text;
 }
 
 /* The stage (diagram-view.js): the picture, which scrolls, and the zoom bar, which stays in its corner. */
@@ -291,6 +294,32 @@
   margin: 0;
 }
 
+/* The overlay (diagram-overlay.js): one box over each drawn node, never a target for a press. Its position is the
+   figure's padding box, set from script; a box is placed by a transform so a zoom or a scroll moves no layout. */
+.dgm-overlay {
+  position: absolute;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.dgm-box {
+  position: absolute;
+  inset: 0 auto auto 0;
+  box-sizing: border-box;
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm);
+  transition: border-color var(--ui-fast) var(--ease-out), background-color var(--ui-fast) var(--ease-out);
+}
+
+.dgm-box.hover {
+  border-color: var(--accent);
+}
+
+.dgm-box.on {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
 .dgm-tree {
   display: flex;
   flex-direction: column;
@@ -324,6 +353,17 @@
 .dgm-card:hover,
 .dgm-card:is(:focus-visible, :has(:focus-visible)) {
   background: var(--hover-veil);
+}
+
+/* Several blocks picked (R5): the Library's selection bar inside the list's own scroller, pinned at its top. */
+.dgm-selectbar {
+  margin-block: 0 var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  gap: var(--space-2);
+}
+
+.dgm-selectbar.hidden {
+  display: none;
 }
 
 .dgm-block[aria-selected="true"] > .dgm-card {
@@ -463,8 +503,13 @@
   display: none;
 }
 
-/* Over another block's middle a drop connects, and its Connect to… shows its words to say so. */
-.dgm-block[aria-selected="true"] > .dgm-card .dgm-connect .ph-text,
+/* The bar's words go the same way where the list is tight or the window narrow: icons, each named by its aria-label. */
+.dgm-tight .dgm-selectbar .ph-text {
+  display: none;
+}
+
+/* Over another block's middle a drop connects, and its Connect to… shows its words to say so. The chosen row alone does not
+   (blind test: its 105 px of words cut the name to "S.."); a row that is pointed at or focused does. */
 .dgm-card:is(:hover, :focus-within, .dgm-connecting) .dgm-connect .ph-text {
   display: inline;
 }
@@ -473,6 +518,11 @@
 .dgm-next {
   margin: var(--space-3) var(--space-2) 0;
   font-size: var(--text-xs);
+  /* In a short pane (a document's embedded editor) the hint stays at the pane's foot instead of being cut off below it (R6.12). */
+  position: sticky;
+  inset-block-end: 0;
+  padding-block: var(--space-1);
+  background: var(--surface-1);
 }
 
 /* A group's blocks sit in it, one step in, behind a rule. */
@@ -764,13 +814,26 @@
   .dgm-stage {
     order: -1;
     /* A fixed height, not a cap: a picture that grows with each change pushed the blocks
-       down under a drag in progress (measured at 390: the pane moved 53px between drops). */
-    block-size: 26vh;
+       down under a drag in progress (measured at 390: the pane moved 53px between drops). 38dvh, not the old quarter-height
+       that drew a three-block flowchart at 48% with 6 px text (R6.1). */
+    block-size: 38dvh;
   }
 
-  /* Wrapped in its stage, the picture is the stage's height rather than 26vh of its own. */
+  /* Wrapped in its stage, the picture is the stage's height less the zoom bar, which is a row under it: over the
+     picture it covered the lower node (R6.1). */
+  .dgm-stage {
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
   .dgm-stage > .dgm-picture {
     block-size: auto;
+  }
+
+  .dgm-zoom {
+    position: static;
+    align-self: flex-end;
+    box-shadow: none;
   }
 
   .dgm-pane {
@@ -782,6 +845,7 @@
     order: 1;
   }
 
+  .dgm-selectbar .ph-text,
   .dgm-connect .ph-text {
     display: none;
   }
@@ -844,11 +908,14 @@
 }
 
 /* The sheet's rows give every glyph about the same width, so the names line up. */
-.sheet-row > .dgm-shape {
-  margin-inline: calc(var(--space-1) / 2);
+.dgm-add-glyph {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  inline-size: 1.5rem;
 }
 
-.sheet-row > .dgm-group-icon {
+.dgm-add-glyph > .dgm-group-icon {
   font-size: var(--text-h3);
 }
 
@@ -972,4 +1039,149 @@
 
 .dgm-shape-row > .dgm-shape-check {
   margin-inline-start: auto;
+}
+
+/* A connector menu row's line kind, drawn: the stroke (solid, dotted, thick) and the head (R6.4). */
+.dgm-link {
+  position: relative;
+  flex: none;
+  inline-size: 1.25rem;
+  block-size: 0;
+  border-block-start: 2px solid currentColor;
+}
+
+.dgm-link[data-style="dotted"] {
+  border-block-start-style: dotted;
+}
+
+.dgm-link[data-style="thick"] {
+  border-block-start-width: 4px;
+}
+
+.dgm-link[data-arrow="true"]::after {
+  content: "";
+  position: absolute;
+  inset-inline-end: -1px;
+  inset-block-start: -5px;
+  border-block: 4px solid transparent;
+  border-inline-start: 6px solid currentColor;
+}
+
+.dgm-example {
+  margin-block-start: var(--space-3);
+}
+
+/* A touch screen's controls are 44 px (R6.10); the narrow rule above makes them 36. */
+@media (pointer: coarse) {
+  .dgm-dirs button,
+  .dgm-dock .dock-actions button:not(.dgm-add) {
+    inline-size: 2.75rem;
+  }
+}
+
+/* The two layouts of the one view (R7, 1621 D6). Blocks is the list at its old width with the picture beside it. Canvas
+   gives the picture the room: a narrower list, and on a phone a taller picture (on the page, not in the dialog, whose body has no room for it). */
+[data-dgm-layout="canvas"] .dgm-body.dgm-split {
+  --dgm-list: 16rem;
+}
+
+[data-dgm-layout="blocks"] .dgm-body.dgm-split {
+  --dgm-list: 22rem;
+}
+
+@container (max-width: 599.98px) {
+  [data-dgm-layout="canvas"]:not(.dgm-host) .dgm-picture,
+  [data-dgm-layout="canvas"]:not(.dgm-host) .dgm-stage {
+    block-size: 60dvh;
+  }
+
+  [data-dgm-layout="canvas"]:not(.dgm-host) .dgm-stage > .dgm-picture {
+    block-size: auto;
+  }
+}
+
+/* The canvas (diagram-canvas.js): the drop target is an overlay box (or the whole overlay), the marquee a tinted rectangle. */
+.dgm-box.dgm-target,
+.dgm-box.swept {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.dgm-box.dgm-lifted {
+  opacity: 0.4;
+}
+
+.dgm-overlay.dgm-target {
+  outline-offset: -2px;
+  background: transparent;
+}
+
+.dgm-marquee {
+  position: absolute;
+  box-sizing: border-box;
+  border: 1px solid var(--accent);
+  background: var(--accent-soft);
+  pointer-events: none;
+}
+
+/* Groups, the edge handle and the in-place input (diagram-overlay.js, diagram-edges.js; R8c). A group's box lies under the
+   nodes'; the handle, the input and the rubber band are the only parts of the overlay that take a press. */
+.dgm-box.dgm-cluster {
+  z-index: 0;
+}
+
+.dgm-box.dgm-cluster.dgm-target {
+  border-color: var(--accent);
+}
+
+.dgm-handle {
+  position: absolute;
+  inset: 0 auto auto 0;
+  z-index: 2;
+  inline-size: calc(var(--space-6) * 1.5);
+  block-size: calc(var(--space-6) * 1.5);
+  padding: 0;
+  border-radius: var(--radius-pill);
+  background: var(--modal-bg);
+  box-shadow: var(--shadow-md);
+  pointer-events: auto;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.dgm-handle.hidden {
+  display: none;
+}
+
+.dgm-handle[aria-pressed="true"] {
+  background: var(--accent-soft);
+}
+
+@media (pointer: coarse) {
+  .dgm-handle {
+    inline-size: 44px;
+    block-size: 44px;
+  }
+}
+
+.dgm-rubber {
+  position: absolute;
+  inset: 0 auto auto 0;
+  block-size: 2px;
+  transform-origin: 0 50%;
+  background: var(--accent);
+  pointer-events: none;
+}
+
+.dgm-rubber.hidden {
+  display: none;
+}
+
+.dgm-rename {
+  position: absolute;
+  inset: 0 auto auto 0;
+  z-index: 2;
+  box-sizing: border-box;
+  inline-size: 120px;
+  pointer-events: auto;
 }

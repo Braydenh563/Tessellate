@@ -1061,6 +1061,7 @@ function wbLibSelectionPayload({ quiet = false } = {}) {
       const data = { ...(item.data || {}) };
       delete data.comments;
       delete data.library_ref;
+      delete data.diagram_id;
       delete data.locked;
       items.push({
         key, kind: "object", type: item.kind, data,
