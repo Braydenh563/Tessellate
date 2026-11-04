@@ -1380,6 +1380,24 @@ MORE_TOPICS: list[dict] = [
         "badge": {"label": "Capture from anywhere", "section": "shortcuts", "target": "capture-anywhere-box"},
     },
     {
+        "id": "running-copies",
+        "keywords": (
+            "running copies", "other copies", "another copy", "second copy",
+            "port in use", "port 8000", "already running", "shut down a copy",
+            "close another copy", "stuck copy", "next free port",
+        ),
+        "body": (
+            "Settings, About, Running copies lists the other copies of "
+            "Tessellate running on this computer, each with its port, when it "
+            "started and its data folder, and says so when there are none. "
+            "Shut down asks that copy to quit the way its own Quit does. This "
+            "copy is marked and has no Shut down; use Quit for it. When the "
+            "launcher finds its usual port taken it uses the next free one, "
+            "so a copy left running in the background is found here."
+        ),
+        "badge": {"label": "Running copies", "section": "about", "target": "running-copies-group"},
+    },
+    {
         "id": "install-app",
         "keywords": (
             "install", "install the app", "install as an app", "add to home screen",
@@ -2654,6 +2672,7 @@ TOPIC_META: dict[str, dict] = {
     "insert-template": {"title": "Insert a template", "path": "Command palette, insert template"},
     "capture-anywhere": {"title": "Capture from anywhere", "path": "Settings, Keyboard shortcuts, Capture from anywhere", "target": "capture-anywhere-box"},
     "install-app": {"title": "Install as an app", "path": "Settings, About, Install as an app"},
+    "running-copies": {"title": "Running copies", "path": "Settings, About, Running copies", "target": "running-copies-group"},
     "storage": {"title": "Where your data lives", "path": "Settings, Import & export"},
     "websearch": {"title": "Web search", "path": "Settings, Web search"},
     "privacy": {"title": "Privacy", "path": "Settings, Privacy"},
@@ -2827,7 +2846,7 @@ TOPIC_META: dict[str, dict] = {
 HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
     ("Getting started", (
         "tabs-overview", "phone-nav", "first-steps", "tour", "guide", "manual", "hidden-features", "shortcuts",
-        "command-palette", "find-anything", "find-a-place", "search", "addresses", "settings-overview", "settings-reset", "install-app", "name",
+        "command-palette", "find-anything", "find-a-place", "search", "addresses", "settings-overview", "settings-reset", "install-app", "running-copies", "name",
     )),
     ("Writing notes", (
         "capture", "quick-note", "quick-add", "editor-offers", "autocorrect", "share-note", "capture-anywhere", "note-outbox", "attachments", "quick-sketch", "notes-controls",

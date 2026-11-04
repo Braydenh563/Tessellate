@@ -1670,6 +1670,31 @@ def _add_system_routes(app: FastAPI, locked: list) -> None:
             raise HTTPException(status_code=403, detail="Not this instance's token.")
         return {"focused": instance_lock.focus()}
 
+    @app.post("/instance/shutdown", include_in_schema=False)
+    def instance_shutdown(
+        request: Request, x_instance_token: str | None = Header(default=None)
+    ) -> dict[str, bool]:
+        """Another copy's Settings, Running copies asking this one to quit
+        (INBOX 1641). Guarded like `/instance/focus` by the token in this
+        copy's `instance.lock` and per-user record (nothing a web page can
+        send or read), and loopback only. A POST with a custom header is
+        never a simple cross-site request, and this app answers no CORS
+        preflight, so a page in the browser cannot reach it either way."""
+        from tessellate.api import routes_tasks
+        from tessellate.api.this_computer import is_another_device
+        from tessellate.core import instance_lock
+
+        expected = instance_lock.current_token()
+        if (
+            is_another_device(request)
+            or not expected
+            or not x_instance_token
+            or not hmac.compare_digest(expected.encode(), x_instance_token.encode())
+        ):
+            raise HTTPException(status_code=403, detail="Not this instance's token.")
+        routes_tasks.stop_process_soon()
+        return {"stopping": True}
+
     # GET /update/check, /update/releases, /update/source-status, and
     # POST /update/apply all live in routes_update.py now, this endpoint
     # used to be defined inline here, but it feeds and is fed by the rest

@@ -1,6 +1,59 @@
 // settings-health.js: Settings, About's health block and the sampling rows, moved out of settings.js on 2026-10-12 for the boot gzip budget. Drawn when their pane opens; `LAZY_ENTRY_POINTS.settingsHealth` (app.js) stands in.
 
 async function renderHealthBlock() {
+  //: Settings, About, Running copies (INBOX 1641): other copies of this app on
+  //: this computer, each with Shut down; this copy is named and has none.
+  async function renderRunningCopies() {
+    const group = $("running-copies-group");
+    const list = $("running-copies-list");
+    if (!group || !list) return;
+    const data = await apiJson("/running-copies", { silent: true }).catch(() => null);
+    if (!data) {
+      group.classList.add("hidden"); // another device, or the notebook is locked
+      return;
+    }
+    group.classList.remove("hidden");
+    list.replaceChildren();
+    const others = data.copies.filter((c) => !c.this_copy);
+    for (const copy of data.copies) {
+      const item = document.createElement("div");
+      item.className = "setting-row";
+      const label = document.createElement("div");
+      label.className = "setting-label";
+      const title = document.createElement("span");
+      title.textContent = copy.this_copy ? `This copy, port ${copy.port}` : `Port ${copy.port}`;
+      const detail = document.createElement("small");
+      detail.className = "muted";
+      const started = new Date(copy.started * 1000);
+      detail.textContent = `Started ${started.toLocaleString()}${copy.data_dir ? ` · ${copy.data_dir}` : ""}`;
+      label.append(title, detail);
+      item.append(label);
+      if (!copy.this_copy) {
+        const stop = document.createElement("button");
+        stop.type = "button";
+        stop.className = "ghost small";
+        stop.textContent = "Shut down";
+        stop.addEventListener("click", async () => {
+          stop.disabled = true;
+          try {
+            await api(`/running-copies/${copy.pid}/shutdown`, { method: "POST" });
+            toast(`Shut down the copy on port ${copy.port}.`);
+          } catch (err) {
+            stop.disabled = false;
+            toast(err?.message || "That copy did not answer, so it was left running.", "info");
+            return;
+          }
+          setTimeout(() => renderRunningCopies().catch(() => {}), 1500);
+        });
+        item.append(stop);
+      }
+      list.append(item);
+    }
+    $("running-copies-note").textContent = others.length
+      ? "Other copies of Tessellate running on this computer."
+      : "No other copies of Tessellate are running on this computer.";
+  }
+  renderRunningCopies().catch(() => {});
   const dbSize = $("health-db-size");
   const counts = $("health-counts");
   const jobs = $("health-jobs");
@@ -98,7 +151,7 @@ async function renderHealthBlock() {
     line.textContent = `${parts.length ? parts.join(" ") : "Everything is in place."} ${relativeTime(report.at)}`;
     list.replaceChildren(
       ...(missing.items || []).map((item) => {
-        const row = document.createElement("li");
+        const row = document.createElement("div");
         if (item.entry_id) {
           const open = document.createElement("button");
           open.type = "button";
@@ -114,7 +167,7 @@ async function renderHealthBlock() {
       }),
     );
     if (missing.count > (missing.items || []).length) {
-      const more = document.createElement("li");
+      const more = document.createElement("div");
       more.textContent = `and ${missing.count - missing.items.length} more`;
       list.append(more);
     }
