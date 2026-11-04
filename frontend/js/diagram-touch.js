@@ -26,7 +26,11 @@
               close();
               tile.click();
             });
-            row.firstElementChild.replaceWith(tile.firstElementChild.cloneNode(true));
+            //: Every glyph in a slot of one width, so the names start at the same x (R6.11: 57, 54 and 56 px before).
+            const slot = document.createElement("span");
+            slot.className = "dgm-add-glyph";
+            slot.append(tile.firstElementChild.cloneNode(true));
+            row.firstElementChild.replaceWith(slot);
             const hint = document.createElement("small");
             hint.className = "dgm-add-hint muted";
             hint.textContent = tile.dataset.hint;
