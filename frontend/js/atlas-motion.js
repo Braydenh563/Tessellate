@@ -268,8 +268,12 @@ function atlasRigWake(host) {
   rig.dirty = true;
   if (!rig.observer && typeof MutationObserver === "function" && box.isConnected) {
     rig.host = box.closest("#nm-buddy") || box;
-    rig.observer = new MutationObserver(() => atlasRigWake(box));
-    const attributes = { attributes: true, attributeFilter: ["class", "data-pose", "data-atlas-variant", "data-atlas-mood", "data-travel", "data-side"] };
+    //: A class record whose value is what it was (a `classList.add` of a class already
+    //: there) changed nothing the CSS can show, so it does not wake the rig (DX1).
+    rig.observer = new MutationObserver((records) => {
+      if (records.some((r) => r.attributeName !== "class" || r.oldValue !== r.target.getAttribute("class"))) atlasRigWake(box);
+    });
+    const attributes = { attributes: true, attributeOldValue: true, attributeFilter: ["class", "data-pose", "data-atlas-variant", "data-atlas-mood", "data-travel", "data-side"] };
     for (const el of new Set([rig.host, box, rig.body])) rig.observer.observe(el, attributes);
   }
   rig.still = 0;

@@ -16,4 +16,5 @@ Sweep: session scratchpad `graphlag.js` (hover 40 moves, wheel zoom 12 steps, rA
 done: step 1 (G6), step 2 (G5/G8 composed frame).
 remaining:
 - Hover p50 is 50 ms, against a 16 ms target. An in-page A/B puts the hover card's refill on each new note at about 17 ms of it (50 with the card, 33.3 without). The rest is the floor here: SwiftShader software compositing (`SoftwareRenderer::DoDrawQuad`) on a loaded machine. Possible next steps: refill the card only once the pointer rests (a UX decision for the owner, so an INBOX entry), and re-measure on an idle machine with a real GPU.
-- The graph renders twice on open (two worker inits, the second warm at alpha 0); harmless since G6, but it costs work.
+- Second init on open: not real. Counting worker `init` posts on 300 notes (first open, reload with the map restored, leave and return) gives exactly one each; the earlier second init came from a sweep calling `switchTab('graph')` on a tab the reload had already restored. Nothing to skip.
+- Hover p50 stays open on the owner's call (card refill on rest); placed in GRAPH_PLAN "Placed from INBOX, 2026-11-04"; no code change this batch.

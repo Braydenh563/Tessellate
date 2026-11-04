@@ -12,7 +12,8 @@ import json
 from pydantic import BaseModel, Field
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from tessellate.core.database import Document, WhiteboardNode, WhiteboardObject, WhiteboardSketch
+from tessellate.core.database import WhiteboardNode, WhiteboardObject, WhiteboardSketch
+from tessellate.repo import documents as documents_repo
 from tessellate.core import deps, events
 from tessellate.core.deps import get_session
 from sqlalchemy import select
@@ -229,7 +230,7 @@ def _require_diagram_row(db: Session, body: WhiteboardObjectBase) -> None:
         return
     if body.kind != "diagram":
         raise HTTPException(status_code=422, detail="Only a diagram can point at a Library diagram.")
-    doc = db.get(Document, row_id)
+    doc = documents_repo.find(db, row_id)
     if doc is not None and doc.file_type != "mmd":
         raise HTTPException(status_code=422, detail="That is not a diagram in the Library.")
 

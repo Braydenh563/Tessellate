@@ -1584,3 +1584,5 @@ Critique points rejected or changed:
 - Point 4, "say what the own page changes": adopted with a different answer from the critique's options. It is the Documents mount in a diagram layout, with no new route. The draft's "full page" mount was dropped.
 - Point 6, "a new Canvas | Blocks seg makes three toggles": resolved with a single Canvas | Blocks | Source seg instead of dropping the canvas toggle.
 - Point 3, "undo": agreed on the shared history. Not verified: `docUndo` behaviour inside the dialog mount, which uses its own `io` (diagram-embed.js:96-97).
+
+- Audit 160 D23 (open, L): docCmTheme is its own file (documents-cm-theme.js, 1,075 lines); docLivePlugin is still one 1,720-line function in documents-cm.js (1,748 lines now), to be split by responsibility (build, patch, widgets) in a later step.

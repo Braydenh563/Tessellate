@@ -461,19 +461,47 @@ _DRAFTED = frozenset("message messages email emails text reply letter note".spli
 _BIN_WORDS = frozenset("bin trash".split())
 
 
+def _is_clause_start(words: list[str], at: int) -> bool:
+    """A word opens a clause at the start, after a comma or semicolon, after
+    "then", and after "and" when a command with its object follows ("and merge
+    the two"), so "my running notes and my baking notes" keeps both halves."""
+    if at == 0:
+        return True
+    prev = words[at - 1]
+    if prev[-1:] in ",;" or prev.casefold() == "then":
+        return True
+    return prev.casefold() == "and" and at + 1 < len(words) and words[at + 1].casefold() in _COMMAND_FILLER
+
+
 def _without_command(text: str) -> str:
-    """The subject without the command that wraps it, one pass over the words:
+    """The subject without the commands that wrap it, one pass over the words:
     "draft a message to Sara" is Sara, "move the budget to the bin" is budget,
-    "merge the two lentil soup notes" is lentil soup. Only a verb that opens
-    the sentence is a command, so "books I am reading" keeps its verb."""
+    "merge the two lentil soup notes" is lentil soup. A verb is a command where
+    it leads a clause (the sentence, or after a comma, "then", "and merge the"),
+    so "books I am reading" keeps its verb."""
     words = text.split()
+    out: list[str] = []
     at = 0
-    while at < len(words) and words[at].casefold() in _COMMAND_LEADS:
+    changed = False
+    while at < len(words):
+        start = at
+        while start < len(words) and words[start].casefold() in _COMMAND_LEADS and _is_clause_start(words, start):
+            start += 1
+        if start < len(words) and words[start].casefold() in _COMMAND_VERBS and _is_clause_start(words, start):
+            end = len(words)
+            for nxt in range(start + 1, len(words)):
+                if _is_clause_start(words, nxt) and words[nxt].casefold() in _COMMAND_VERBS | _COMMAND_LEADS:
+                    end = nxt
+                    break
+            clause = _without_bin(words[_past_filler(words, start):end])
+            if clause:
+                out.extend(clause)
+                changed = True
+                at = end
+                continue
+        out.append(words[at])
         at += 1
-    if at >= len(words) or words[at].casefold() not in _COMMAND_VERBS:
-        return text
-    rest = _without_bin(words[_past_filler(words, at):])
-    return " ".join(rest) or text
+    return " ".join(out) if changed else text
 
 
 def _past_filler(words: list[str], at: int) -> int:

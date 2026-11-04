@@ -48,7 +48,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 42 | D27 | med | no image resize handles or alt-text prompt on paste | fixed (61089b9) | M |
 | 43 | D28 | med | no continuous zoom, text size in three steps | won't fix (browser zoom gives continuous zoom; three prose sizes kept, 2026-10-30) | S |
 | 44 | D29 | med | replace dialog lacks whole-word and match preview | fixed (this batch) | M |
-| 45 | D30 | med | spellcheck is English only, no per-document language | listed (a30h-1102: no other dictionary is vendored; recommendation in a30h-1102.md) | L |
+| 45 | D30 | med | spellcheck is English only, no per-document language | partly fixed df0b1d3 (steps 1 and 4: `lang` key reads, checker off for non-English; packs open, a30h-1102.md) | L |
 | 46 | E13 | med | bare undo after an answer gets help text, not undo | fixed 1030 | S |
 | 47 | E14 | med | follow-ups like pin that note lose their referent | fixed (e3acb8f) | M |
 | 48 | E15 | med | stats route steals questions that name a note subject | fixed 1030 | S |
@@ -163,8 +163,8 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 157 | U20 | med | code file open long task of 305 ms | not reproduced as one task 1102 a30g: a 2,000-line .py file opens with the cost split across tasks (outline 51 ms, tools 15 ms, indent-mix scan 30 ms); splitting `docAfterFirstPaint` is in a30g-1102.md | M |
 | 158 | B6 | med | 319 addEventListener vs 7 remove; re-init double-fires handlers | fixed | M |
 | 159 | B15 | med | four overlapping drag mechanisms plus synthetic MouseEvent bridge | new | L |
-| 160 | D23 | med | hot-spot functions and 255 shared lets in one file | new | L |
-| 161 | D24 | med | document paste upload lives in settings-wiring.js | new | S |
+| 160 | D23 | med | hot-spot functions and 255 shared lets in one file | partial 483b6a6 (theme split) | L |
+| 161 | D24 | med | document paste upload lives in settings-wiring.js | fixed 483b6a6 | S |
 | 162 | D25 | med | document styles scattered across 11 CSS files | new | M |
 | 163 | K24 | med | god modules, whiteboard router 6,123 lines | new | L |
 | 164 | K25 | med | 18 functions over 150 lines, _start_tray at 346 | new | L |

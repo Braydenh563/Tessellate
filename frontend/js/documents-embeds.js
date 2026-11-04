@@ -330,6 +330,17 @@
     else window.open(clean, "_blank", "noopener,noreferrer");
   }
 
+  //: **The document editor as a paste and drop target** (docdog-1026, moved from
+  //: settings-wiring.js, audit 161 D24). Its engine sits under `#doc-editor`, not
+  //: `.note-surface`, so a screenshot pasted or a picture dropped into a document
+  //: did nothing at all, while the "/" menu's Image row promised both. The
+  //: surface answers the same box interface as a textarea. A code document is
+  //: text, and keeps what it was given.
+  function docFileDropBox() {
+    const surface = window.docSurface?.();
+    return surface && !surface.classList.contains("doc-content-code") ? surface : null;
+  }
+
   //: The file's whole surface: what documents.js and documents-cm.js call.
-  Object.assign(window, { docEmbedFill, docImageLive, docResolveWikiTarget, docWikiTargetLabel, docOpenResolvedWikiTarget, docOpenWikiTarget, docOpenLink });
+  Object.assign(window, { docEmbedFill, docImageLive, docResolveWikiTarget, docWikiTargetLabel, docOpenResolvedWikiTarget, docOpenWikiTarget, docOpenLink, docFileDropBox });
 })();

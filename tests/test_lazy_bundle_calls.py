@@ -157,6 +157,7 @@ REACHED_AFTER_LOAD = {
     #: not in another, so these are per file. Every one is a call that only runs
     #: once the bundle is in, with the line that proves it.
     "editor.js:docTemplateFill": "inside `typeof DOC_TEMPLATES !== \"undefined\"` in editorCommands; DOC_TEMPLATES is defined in documents.js, the same library bundle, so the call runs only once it is in (audit 1102 DX30)",
+    "settings-wiring.js:docFileDropBox": "inside `el?.closest?.(\"#doc-editor\")` in fileDropBox: the element exists only while the Documents page, and so the library bundle, is mounted (audit 161 D24)",
     "chat-agent.js:atlasAvatar": "assistantAvatar runs only from paintAssistantAvatar's afterCharacters (chat-agent.js)",
     "chat-agent.js:atlasDraw": "assistantAvatar runs only from paintAssistantAvatar's afterCharacters (chat-agent.js)",
     "chat-agent.js:atlasLook": "chatHeadKey is a cache key; its typeof guard only trims the key, and it is asked for a face only after afterCharacters",
