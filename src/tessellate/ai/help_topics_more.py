@@ -3255,14 +3255,15 @@ MORE_TOPICS.extend([
         "id": "diagram-reading",
         "keywords": (
             "diagram list order", "flow order", "diagram indent", "connector rows", "org chart blocks",
-            "diagram too small", "turn it sideways", "diagram direction", "diagram fit",
+            "diagram too small", "turn it sideways", "diagram direction", "diagram fit", "blocks list phone",
         ),
         "body": (
             "Reading a diagram. The blocks list is drawn in flow order: a block sits under the one that points at it, "
             "indented a step, and a block made by Connect to... lands under its siblings, so an org chart reads like the chart. "
             "The printed source keeps its own order, and Alt+Up and Alt+Down still move a block among its siblings there. "
             "A block's arrows share one line under it, each as an arrow to the block it reaches and its words; press one for its menu. "
-            "Fit stops at readable text (11 px) and the picture scrolls past it. A tall chart in a wide pane offers Turn it sideways once; Direction is a menu of Down, Right, Up and Left, and Shift turns it back one step."
+            "Fit stops at readable text (11 px) and the picture scrolls past it. A tall chart in a wide pane offers Turn it sideways once; Direction is a menu of Down, Right, Up and Left, and Shift turns it back one step. "
+            "On a phone, once there is an arrow the picture takes the page and the Blocks list button opens the blocks as a sheet; Connect to... then puts the cursor in the search."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },

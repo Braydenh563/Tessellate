@@ -250,7 +250,7 @@
     const label = el("span", "dgm-label", text);
     card.append(grip, isGroup ? groupGlyph() : shapeButton(S, key, data.shape, text), label);
     //: The arrow is on every row, its words on the chosen one.
-    const connect = smallButton("ph:arrow-bend-down-right Connect to…", "Draw an arrow from this block to another", () => joinPick(S, key));
+    const connect = smallButton("ph:arrow-bend-down-right Connect to…", "Draw an arrow from this block to another", (event) => ((S.tapped = event.detail > 0), joinPick(S, key)));
     connect.classList.add("dgm-connect");
     connect.setAttribute("aria-label", `Connect to…, from ${text}`);
     card.append(connect);

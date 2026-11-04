@@ -145,8 +145,12 @@
       h.blockEl(S, key)?.focus();
       ask(S, edge, h);
     });
-    //: A phone does not get its keyboard over the list at once (R6.9): focus rests on the dialog, the field is a tap away.
-    if (matchMedia("(pointer: coarse)").matches) {
+    //: A tap on Connect to… wants the keyboard (1679, slice 11: typing a name needed a second tap); a key press or the menu keeps R6.9's choice,
+    //: that a phone does not get its keyboard over the list at once, so focus rests on the dialog and the field is a tap away.
+    const tapped = S.tapped;
+    S.tapped = false;
+    if (tapped) shell.search.focus();
+    else if (matchMedia("(pointer: coarse)").matches) {
       shell.card.tabIndex = -1;
       shell.card.focus({ preventScroll: true });
     }

@@ -934,6 +934,29 @@
     min-block-size: 10rem;
   }
 
+  /* With an arrow drawn the list is a sheet (diagram-touch.js) and the picture takes the page. */
+  .dgm-listsheet.dgm-listless .dgm-body > .dgm-pane {
+    display: none;
+  }
+
+  .dgm-listsheet.dgm-listless .dgm-body {
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .dgm.dgm-listsheet.dgm-listless :is(.dgm-picture, .dgm-stage) {
+    block-size: auto;
+    min-block-size: 0;
+  }
+
+  /* Basis 0: the drawing's own height must not set the picture's, or the stage outgrows the body (measured 506 in 375). */
+  .dgm.dgm-listsheet.dgm-listless .dgm-stage > .dgm-picture {
+    flex: 1 1 0;
+  }
+
+  .dgm-listsheet.dgm-listless .dgm-stage > .dgm-picture {
+    block-size: auto;
+  }
+
   /* An empty diagram has nothing to draw: its picture shrinks so the three steps and both example buttons fit above the foot (390: they sat below it). */
   .dgm-picture.dgm-picture-empty,
   .dgm-stage:has(> .dgm-picture-empty) {
@@ -1205,6 +1228,14 @@
   }
 }
 
+/* The list is a sheet, so the page gives the picture its height: the preview is tall enough that the stage fills the body
+   (1679, slice 11: at 390 the stage was 60dvh in a 375 px body and lay over the Documents list). */
+@media (max-width: 599.98px) {
+  #doc-preview:has(> .dgm-listsheet.dgm-listless) {
+    min-block-size: 80dvh;
+  }
+}
+
 /* The canvas (diagram-canvas.js): the drop target is an overlay box (or the whole overlay), the marquee a tinted rectangle. */
 .dgm-box.dgm-target,
 .dgm-box.swept {
@@ -1361,6 +1392,13 @@
 
 /* Targets are 44 px on a touch screen and on a phone-width window (the swatch, Connect and the connector rows measured 24, 40 and 40). */
 @media (pointer: coarse), (max-width: 599.98px) {
+  .dgm-grip {
+    display: inline-grid;
+    place-items: center;
+    min-inline-size: 2.75rem;
+    min-block-size: 2.75rem;
+  }
+
   .dgm-swatch,
   .dgm-card > button.dgm-connect,
   .dgm-join {
@@ -1434,4 +1472,19 @@
   .dgm-tree .dgm-join {
     min-height: calc(var(--control-h-dense) - var(--space-1));
   }
+}
+
+/* The blocks list inside its sheet: the pane's own frame goes, the card is the frame. */
+.sheet-card > .dgm-pane {
+  max-block-size: 60dvh;
+  border: 0;
+  background: transparent;
+}
+
+.dgm-listbtn {
+  display: none;
+}
+
+.dgm-listsheet .dgm-listbtn {
+  display: inline-flex;
 }
