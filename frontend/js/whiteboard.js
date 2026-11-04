@@ -15299,6 +15299,10 @@ async function initWhiteboard() {
   //: hidden in between gave a box of zeroes at click time. Kept for the one
   //: click that follows (a few seconds at most), and copied, so nothing later
   //: can change it under the menu.
+  window.addEventListener("pointerdown", (event) => {
+    const slot = $("wb-radial-more");
+    if (slot) slot._menuWasOpen = event.target.closest?.("#wb-radial-more") ? Boolean(wbCtxMenuEl && !wbCtxMenuEl.classList.contains("hidden")) : undefined;
+  }, true);
   $("wb-radial-more")?.addEventListener("pointerdown", (event) => {
     const slot = event.currentTarget;
     const rect = wbMapRadialSectorRect(slot);
@@ -15318,6 +15322,21 @@ async function initWhiteboard() {
     const ring = document.getElementById("wb-map-radial");
     const box = ring?.getBoundingClientRect();
     if (!node) return;
+    //: **A second press on More closes its menu** (INBOX 1626: "if I click a
+    //: button ... and a popup menu shows, if I click that button again, I
+    //: expect the popup menu to close"). This handler stops the click, so the
+    //: page's outside-click close never sees it. The ring stays, and the
+    //: focus stays on More.
+    //: Read at the press, in the window's capture phase, because the page's
+    //: outside-press close has already hidden the menu by the time this
+    //: click arrives (a keyboard Enter has no press, so its live state).
+    const wasOpen = slot._menuWasOpen ?? (wbCtxMenuEl && !wbCtxMenuEl.classList.contains("hidden"));
+    slot._menuWasOpen = undefined;
+    if (wasOpen) {
+      wbCloseContextMenu();
+      slot.focus({ preventScroll: true });
+      return;
+    }
     //: **The ring stays while its menu is open** (owner: "the referring
     //: radial menu closes when I open the more menu"): the menu is the ring's
     //: own overflow, and the ring is what says which topic it is about. The
