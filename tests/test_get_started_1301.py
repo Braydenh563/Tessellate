@@ -111,3 +111,6 @@ def test_an_unchanged_card_is_not_rebuilt():
     assert "state" in body[body.index("const key = "):keyed]
     assert '"firstStepsCollapsed"' in body[body.index("const key = "):keyed]
     assert keyed < body.index("host.replaceChildren(firstStepsCard(host, state))")
+    # An open ⋯ menu holds the card: a rebuild took its item from under a press.
+    held = body.index("""'.kebab-opener[aria-expanded="true"]'""")
+    assert keyed < held < body.index("host.dataset.stepsKey = key")

@@ -2,9 +2,9 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7748, frontend ids 2636, CSS sections 522, backend routes 641, backend modules 8594, test files 1983, tests 16623, plan headings 994, app scripts 28, boot scripts 37, script files 245.
+Counts: frontend functions 7747, frontend ids 2636, CSS sections 522, backend routes 641, backend modules 8594, test files 1983, tests 16623, plan headings 994, app scripts 28, boot scripts 37, script files 245.
 
-## Frontend functions (7748)
+## Frontend functions (7747)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -4617,19 +4617,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `firstStepButton` | frontend/js/first-run.js:56 |
 | `firstStepName` | frontend/js/first-run.js:82 |
-| `firstStepsBellRow` | frontend/js/first-run.js:347 |
+| `firstStepsBellRow` | frontend/js/first-run.js:352 |
 | `firstStepsCard` | frontend/js/first-run.js:209 |
 | `firstStepsMenuItems` | frontend/js/first-run.js:188 |
 | `firstStepsRead` | frontend/js/first-run.js:36 |
 | `firstStepsSample` | frontend/js/first-run.js:123 |
 | `firstStepsState` | frontend/js/first-run.js:27 |
 | `getStartedHide` | frontend/js/first-run.js:167 |
-| `getStartedItems` | frontend/js/first-run.js:322 |
+| `getStartedItems` | frontend/js/first-run.js:327 |
 | `getStartedMarkDone` | frontend/js/first-run.js:176 |
 | `getStartedShow` | frontend/js/first-run.js:160 |
-| `getStartedSteps` | frontend/js/first-run.js:302 |
+| `getStartedSteps` | frontend/js/first-run.js:307 |
 | `renderFirstSteps` | frontend/js/first-run.js:274 |
-| `renderGetStarted` | frontend/js/first-run.js:389 |
+| `renderGetStarted` | frontend/js/first-run.js:394 |
 | `writeNoteHint` | frontend/js/first-run.js:16 |
 
 ### frontend/js/gesture-kit.js (5)
@@ -6000,7 +6000,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `objCarryEnd` | frontend/js/obj-carry.js:143 |
 | `objCarryFileTarget` | frontend/js/obj-carry.js:80 |
 | `objCarryNav` | frontend/js/obj-carry.js:101 |
-| `objCarryRoute` | frontend/js/obj-carry.js:162 |
+| `objCarryRoute` | frontend/js/obj-carry.js:163 |
 | `objCarryTarget` | frontend/js/obj-carry.js:88 |
 | `objCarryUpdate` | frontend/js/obj-carry.js:129 |
 | `objTrayDoor` | frontend/js/obj-carry.js:34 |
@@ -6078,24 +6078,23 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `objRefFromCard` | frontend/js/obj-ref.js:84 |
 | `objRender` | frontend/js/obj-ref.js:168 |
 
-### frontend/js/obj-reorder.js (22)
+### frontend/js/obj-reorder.js (21)
 
 | Name | File:line |
 |---|---|
-| `objListOnTop` | frontend/js/obj-reorder.js:167 |
-| `objOrderHintSync` | frontend/js/obj-reorder.js:238 |
-| `objOrderHints` | frontend/js/obj-reorder.js:253 |
-| `objRefocus` | frontend/js/obj-reorder.js:205 |
+| `objOrderHintSync` | frontend/js/obj-reorder.js:236 |
+| `objOrderHints` | frontend/js/obj-reorder.js:251 |
+| `objRefocus` | frontend/js/obj-reorder.js:203 |
 | `objReorderBegin` | frontend/js/obj-reorder.js:108 |
 | `objReorderCommit` | frontend/js/obj-reorder.js:84 |
 | `objReorderDrop` | frontend/js/obj-reorder.js:149 |
 | `objReorderGrab` | frontend/js/obj-reorder.js:103 |
-| `objReorderKey` | frontend/js/obj-reorder.js:176 |
-| `objReorderKeysNamed` | frontend/js/obj-reorder.js:266 |
-| `objReorderKick` | frontend/js/obj-reorder.js:226 |
+| `objReorderKey` | frontend/js/obj-reorder.js:174 |
+| `objReorderKeysNamed` | frontend/js/obj-reorder.js:264 |
+| `objReorderKick` | frontend/js/obj-reorder.js:224 |
 | `objReorderRelease` | frontend/js/obj-reorder.js:143 |
-| `objReorderRoute` | frontend/js/obj-reorder.js:157 |
-| `objReorderStep` | frontend/js/obj-reorder.js:192 |
+| `objReorderRoute` | frontend/js/obj-reorder.js:162 |
+| `objReorderStep` | frontend/js/obj-reorder.js:190 |
 | `objReorderUpdate` | frontend/js/obj-reorder.js:128 |
 | `objScrollerOf` | frontend/js/obj-reorder.js:121 |
 | `objSetSort` | frontend/js/obj-reorder.js:66 |

@@ -44,13 +44,12 @@ def test_a_card_over_the_open_tray_is_carried_not_reordered():
     # kept the card reordering and the tray never took it (a sweep dragging from a list taller than the window,
     # held 0 before, 1 after).
     reorder = frontend_text("js/obj-reorder.js")
-    route = reorder[reorder.index("function objReorderRoute"):reorder.index("function objListOnTop")]
-    assert "!objListOnTop(g)" in route
-    on_top = reorder[reorder.index("function objListOnTop"):]
-    assert "document.elementFromPoint(g.x, g.y)" in on_top[: on_top.index("\n}")]
+    route = reorder[reorder.index("function objReorderRoute"):]
+    route = route[: route.index("\n}")]
+    assert "document.elementFromPoint(g.x, g.y)" in route and "!onTop" in route
     carry = frontend_text("js/obj-carry.js")
     back = carry[carry.index("function objCarryRoute"):]
-    assert "objListOnTop(g)" in back[: back.index("\n}")]
+    assert "OBJ_MODES.reorder.route(g)" in back[: back.index("\n}")]
 
 
 def test_the_grip_stays_off_a_popup_over_the_card():

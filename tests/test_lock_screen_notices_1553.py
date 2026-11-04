@@ -260,7 +260,7 @@ PRESSED_SETTERS = {
     "capture-card.js": 'button.setAttribute("aria-pressed", String(button.dataset.mode === next));',
     "documents-history.js": 'other.setAttribute("aria-pressed", other === button ? "true" : "false");',
     "documents-export.js": 'b.setAttribute("aria-pressed", String(setup[key] === value));',
-    "math-editor.js": 'b.setAttribute("aria-pressed", String(chosen));',
+    "math-editor.js": 'b.setAttribute("aria-selected", String(chosen));',
 }
 
 

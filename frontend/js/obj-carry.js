@@ -158,12 +158,13 @@ function objCarryDrop(g) {
   if (dest) objPasteAt(g.ref, { ...dest, at: { x: g.x, y: g.y } });
 }
 
-//: Back over the list the card came from, it is a reorder again.
+//: Back over the list the card came from, and not over a popup drawn on it, it is a
+//: reorder again (the reorder route says which).
 function objCarryRoute(g) {
   if (!g.surface) return "carry";
   const box = g.surface.list.getBoundingClientRect();
   const inside = g.x >= box.left && g.x <= box.right && g.y >= box.top && g.y <= box.bottom;
-  return inside && g.surface.unit.isConnected && objListOnTop(g) ? "reorder" : "carry";
+  return inside && g.surface.unit.isConnected ? OBJ_MODES.reorder.route(g) : "carry";
 }
 
 //: Last in `OBJ_MODES`: every card that no earlier mode took is carried.

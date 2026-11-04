@@ -286,6 +286,11 @@ async function renderFirstSteps(host, cardOff = false) {
   //: rebuild closed its open menu and cleared a half-typed name (E2E, PR 212).
   const key = JSON.stringify([state, prefs.get("firstStepsCollapsed", ""), writeNoteHint()]);
   if (host.firstChild && host.dataset.stepsKey === key) return;
+  //: Nor while its ⋯ menu is open: a refresh that landed between the menu
+  //: opening and the press removed the item from under the pointer (E2E
+  //: first-run, CI run 41741228993). The key is left stale, so the next
+  //: refresh after the menu closes rebuilds.
+  if (host.querySelector('.kebab-opener[aria-expanded="true"]')) return;
   host.dataset.stepsKey = key;
   host.replaceChildren(firstStepsCard(host, state));
   //: The greeting's "Add your name" is step one's second door: one is enough.
