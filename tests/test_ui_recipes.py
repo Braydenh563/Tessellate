@@ -7414,3 +7414,21 @@ def test_the_diagram_zoom_bar_is_a_plain_corner_dock():
     # Every control is a button with a title (the icon-only ones become aria-labels).
     assert view.count("smallButton(") == 4
     assert "A zoom control on a picture that scrolls" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+
+
+def test_a_split_inside_a_dialog_or_page_is_the_sidebar_handle_on_a_grid():
+    """DESIGN.md, "A split inside a dialog or page": `.sidebar-resize` as a grid item, not a handle of its own."""
+    split = (ROOT / "frontend" / "js" / "diagram-split.js").read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
+    assert 'className = "sidebar-resize dgm-split-handle"' in split
+    for needle in ('"role", "separator"', '"aria-orientation", "vertical"', '"tabindex", "0"', "trackSeparatorValue(", "prefs.set(", "ArrowLeft", "event.shiftKey"):
+        assert needle in split, needle
+    # A grid item, not the sidebars' absolute strip, and a variable on the grid, not a width on a panel.
+    start = css.index(".dgm-split-handle.sidebar-resize {")
+    assert "position: static;" in css[start : css.index("}", start)]
+    assert "--dgm-list" in css and "minmax(14rem, min(var(--dgm-list)" in css and "240px" in css
+    # The diagram files never build a second handle of their own.
+    for js in JS:
+        if js.name.startswith("diagram-") and js.name != "diagram-split.js":
+            assert 'className = "sidebar-resize' not in js.read_text(encoding="utf-8"), js.name
+    assert "A split inside a dialog or page" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")

@@ -554,14 +554,17 @@
     S.suggestBtn.setAttribute("aria-haspopup", "menu");
     actions.append(S.suggestBtn);
     for (const [icon, label, run] of [["ph:arrow-counter-clockwise", "Undo", () => S.io.undo()], ["ph:arrow-clockwise", "Redo", () => S.io.redo()]]) {
-      const b = smallButton(icon, label, run);
-      b.classList.add("icon-only");
-      b.setAttribute("aria-label", label);
+      //: Words with the icon; the narrow rule in diagram-lazy.css takes the word off where the row does not fit.
+      const b = smallButton(`${icon} ${label}`, label, run);
+      b.classList.add("dgm-hist");
       actions.append(b);
     }
     actions.append(more(S));
     bar.append(shapes, el("div", "dock-group"), actions, shapes.hint);
-    bar.children[1].append(S.dirs);
+    //: A caption over the four arrows (1615 f): the arrows alone do not say what they set.
+    const caption = el("span", "dgm-dirs-caption", "Direction");
+    caption.setAttribute("aria-hidden", "true");
+    bar.children[1].append(caption, S.dirs);
     return bar;
   }
 
@@ -579,7 +582,8 @@
     S.empty = el("div", "empty-state dgm-empty");
     const start = smallButton("ph:layout Start from a template", "Pick a starting flowchart", () => suggest(S, "templates"), false);
     start.classList.add("accent");
-    S.empty.append(el("p", "empty-title", "Start a diagram"), el("p", "", "Press a shape in Add, or press N, to add the first block. Then press Connect to… on a block to draw an arrow to the next."), start);
+    //: The three-step walkthrough (diagram-steps.js, 1615 f); each button reaches the pane through these.
+    S.empty.append(diagramModel.steps.build(S, { el, add: addBlock, rename: relabel, connect: joinPick }), start);
     S.ghosts = el("div", "dgm-ghosts hidden");
     S.drop = el("div", "dgm-drop hidden");
     S.pane = el("div", "dgm-pane");
@@ -671,6 +675,7 @@
     if (typeof OBJ_MODES === "object" && !OBJ_MODES.diagram) OBJ_MODES.diagram = diagramModel.pointer.make(helpers);
     kit.dropMark ||= diagramModel.pointer.dropMark;
     const kind = kindOf(text);
+    if (kind === "flowchart" && !(await ensureModule("diagramSteps"))) return host.replaceChildren(el("p", "muted", "The block editor did not load. Source still works."));
     let S;
     if (kind !== "flowchart") {
       if (!(await ensureModule("diagramKinds"))) return host.replaceChildren(el("p", "muted", "The block editor for this kind did not load. Source still works."));
@@ -687,6 +692,8 @@
     if (S && matchMedia(COMPACT).matches && (await ensureModule("diagramTouch"))) diagramModel.touch.wire(S);
     //: Zoom, pan and fit for the picture, in every window (diagram-view.js, 1614).
     if (S && (await ensureModule("diagramView"))) diagramModel.view.wire(S);
+    //: The divider between the blocks and the picture (diagram-split.js, 1615 e).
+    if (S && (await ensureModule("diagramSplit"))) diagramModel.split.wire(S);
     if (told && S) say(S, told);
     told = "";
     return S;
