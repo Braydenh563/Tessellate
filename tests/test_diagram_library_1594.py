@@ -77,7 +77,8 @@ def test_connect_to_is_on_every_row_and_in_the_menu_and_the_picker_can_make_the_
     pointer = _read("diagram-pointer.js")
     assert 'toggle("dgm-connecting", target.op === "join")' in pointer and "Connected ${h.name(S, g.key)} to" in pointer
     joins = _read("diagram-joins.js")
-    assert 'value: NEW' in joins and "h.add(S, { after: key, from, text: typed || undefined" in joins
+    # Intent moved (1661 blind test, bug 7): a block made from Connect's "A new block" is a box, not the shape in hand.
+    assert 'value: NEW' in joins and 'h.add(S, { after: key, from, shape: "rect", text: typed || undefined' in joins
     assert "Connect ${nameOf(h, S, key)} to" in joins
     # Making the block and the connector is one change, so one undo.
     add = builder.split("function addBlock(", 1)[1].split("function relabel", 1)[0]
