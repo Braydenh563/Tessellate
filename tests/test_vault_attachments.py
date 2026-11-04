@@ -22,16 +22,18 @@ def sealed_attachment(client, session):
     made = client.post(f"/entries/{entry['id']}/files", files={"file": ("s.txt", SECRET.encode(), "text/plain")})
     assert made.status_code == 201, made.text
     attachment_id = made.json()["attachments"][0]["id"]
-    assert client.post(f"/entries/{entry['id']}/privacy", json={"private": True}).status_code == 200
+    made_private = client.post(f"/entries/{entry['id']}/privacy", json={"private": True})
+    assert made_private.status_code == 200
     vault.close()
     return attachment_id
 
 
 def test_a_locked_private_notes_files_are_refused(client, sealed_attachment):
     aid = sealed_attachment
-    assert client.get(f"/files/{aid}").status_code == 409
-    assert client.get(f"/files/{aid}/text").status_code == 409
-    assert client.put(f"/files/{aid}/text", json={"text": "overwritten"}).status_code == 409
+    download = client.get(f"/files/{aid}")
+    text = client.get(f"/files/{aid}/text")
+    overwrite = client.put(f"/files/{aid}/text", json={"text": "overwritten"})
+    assert (download.status_code, text.status_code, overwrite.status_code) == (409, 409, 409)
 
 
 def test_the_folder_export_leaves_out_a_locked_private_notes_files(client, sealed_attachment):
@@ -52,7 +54,8 @@ def test_files_come_back_once_unlocked(client, session, sealed_attachment):
     from tessellate.core import vault
 
     vault.open_with(session, PASSPHRASE)
-    assert client.get(f"/files/{sealed_attachment}").status_code == 200
+    reply = client.get(f"/files/{sealed_attachment}")
+    assert reply.status_code == 200
     vault.close()
 
 
@@ -77,21 +80,25 @@ def _sealed_image(client, session, *, also_plain=False):
     row.ocr_text = "IMGSECRET"
     session.commit()
     note = client.post("/entries", json={"content": f"private pic ![]({url})"}).json()
-    assert client.post(f"/entries/{note['id']}/privacy", json={"private": True}).status_code == 200
+    made_private = client.post(f"/entries/{note['id']}/privacy", json={"private": True})
+    assert made_private.status_code == 200
     if also_plain:
-        assert client.post("/entries", json={"content": f"plain pic ![]({url})"}).status_code == 201
+        plain = client.post("/entries", json={"content": f"plain pic ![]({url})"})
+        assert plain.status_code == 201
     vault.close()
     return url
 
 
 def test_a_locked_private_notes_picture_is_not_served(client, session):
     url = _sealed_image(client, session)
-    assert client.get(url).status_code == 403
+    reply = client.get(url)
+    assert reply.status_code == 403
 
 
 def test_a_picture_a_readable_note_also_uses_stays_served(client, session):
     url = _sealed_image(client, session, also_plain=True)
-    assert client.get(url).status_code == 200
+    reply = client.get(url)
+    assert reply.status_code == 200
 
 
 def test_the_picture_comes_back_once_unlocked(client, session):
@@ -99,7 +106,8 @@ def test_the_picture_comes_back_once_unlocked(client, session):
 
     url = _sealed_image(client, session)
     vault.open_with(session, PASSPHRASE)
-    assert client.get(url).status_code == 200
+    reply = client.get(url)
+    assert reply.status_code == 200
     vault.close()
 
 

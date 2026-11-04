@@ -21,7 +21,8 @@ def _notes(client):
 
 def _seed(client):
     for text in ("alpha note", "beta note", "gamma note"):
-        assert client.post("/entries", json={"content": text}).status_code == 201
+        made = client.post("/entries", json={"content": text})
+        assert made.status_code == 201
     uploads = deps.get_config().data_dir / "uploads"
     uploads.mkdir(parents=True, exist_ok=True)
     (uploads / "scan.pdf").write_bytes(b"%PDF-1.4 a scanned page")

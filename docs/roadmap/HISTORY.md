@@ -7,6 +7,28 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from HANDOVER, 2026-11-04 (line cap)
+
+**And its twin, learned the same hour, in the other direction.** A staged
+file is not yours either: `git add` leaves it in the index, and the next
+agent to run a plain `git commit` in the shared worktree takes it. The
+`--staged` change above landed inside an agent's commit `3ef6b9b` ("The
+line numbers go away with the box they number") for exactly that reason,
+which is why that commit also carries `scripts/gate.sh`, `CLAUDE.md` and
+this file. The content is right and the attribution is not; rewriting a
+shared branch's history to fix that would cost more than it is worth.
+**Stage and commit in one step, and never leave the index populated.**
+In practice that means `git commit -m ... -- <paths>`, which commits
+those paths directly and leaves the index alone, rather than `git add`
+followed by `git commit`. It happened three times in one evening before
+the habit changed, each time putting the orchestrator's work inside an
+agent's unrelated commit: `scripts/gate.sh` went in with a preview
+gutter fix, and `ai/learning.py` with a picture-card note. Nothing was
+lost either time, and the history now says things it does not mean,
+which is its own slow cost when the next session reads it. The same three symptoms in the
+console are the signature: one real error, then `X is not defined` and
+`Cannot access Y before initialization` from everything declared after it.
+
 ## Moved from HANDOVER, 2026-11-02 (session record past 600 lines)
 
 **Now (2026-10-06, PR 167, 0.4.1):** 0.4.1 is ready to merge from

@@ -1443,6 +1443,18 @@ MEDIA_PAGE_SIZE = 200
 MEDIA_PAGE_SIZE_MAX = 500
 
 
+def _readings(upload: MediaUpload, used: dict, usage_incomplete: bool, page_text: dict) -> dict:
+    """SEC-A2: with a private note locked, an upload that note embeds and no
+    readable note names keeps its readings back until unlock."""
+    if usage_incomplete and upload.in_private_note and not used.get(upload.filename):
+        return {"ocr_text": "", "caption": "", "vision_ocr_text": ""}
+    return {
+        "ocr_text": upload.ocr_text or "",
+        "caption": upload.caption or "",
+        "vision_ocr_text": upload.vision_ocr_text or page_text.get(upload.id, ""),
+    }
+
+
 @router.get("/media", response_model=list[MediaUploadOut])
 def list_media(
     response: Response,
@@ -1505,11 +1517,6 @@ def list_media(
     #: sandbox cannot render": the tile used to guess from the name and 404).
     can_draw_pages = pdfpages.available()
     media_pages_read = _page_read_count_map("upload", [u.id for u in uploads])
-    def _unplaced(u: MediaUpload) -> bool:
-        # SEC-A2: with a private note locked, an upload no readable note names
-        # may be that note's picture; its readings stay back until unlock.
-        return usage_incomplete and u.in_private_note and not used.get(u.filename)
-
     return [
         MediaUploadOut(
             id=u.id,
@@ -1519,11 +1526,9 @@ def list_media(
             size_bytes=u.size_bytes or 0,
             url=f"/media/{u.filename}",
             original_name=u.original_name,
-            ocr_text="" if _unplaced(u) else u.ocr_text or "",
-            caption="" if _unplaced(u) else u.caption or "",
+            **_readings(u, used, usage_incomplete, media_page_text),
             caption_model=u.caption_model or "",
             caption_edited=u.caption_edited,
-            vision_ocr_text="" if _unplaced(u) else u.vision_ocr_text or media_page_text.get(u.id, ""),
             vision_ocr_model=u.vision_ocr_model or "",
             created_at=u.created_at.isoformat() if u.created_at else "",
             has_pages=can_draw_pages and Path(u.filename).suffix.lower() == ".pdf",
