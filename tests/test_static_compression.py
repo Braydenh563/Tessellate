@@ -140,7 +140,10 @@ PIECE_CAP = 32_000
 #: 2026-11-04 later, +140 (INBOX 1672): the status bar sheds its clock, LAN dot
 #: and tray instead of running past its edge from 600 to 820, inside the edge
 #: fade's own observer (no new global, observer or CSS); same win-back item.
-TOTAL_CAP = 260_760
+#: 2026-11-04, +40 (R9c): a Library diagram has its own chat card and kind through
+#: attach and send, and the board hands the builder its link target; the save and
+#: link code is in the lazy diagram-embed.js; same win-back item.
+TOTAL_CAP = 260_800
 
 
 def _served_gzip_size(client, name: str) -> int:

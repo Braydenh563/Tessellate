@@ -149,8 +149,8 @@ const OBJ_STAGED = {
 };
 
 
-//: A diagram is a document of the `mmd` type, so it stages as one.
-OBJ_STAGE.diagram = OBJ_STAGE.document;
+//: A diagram stages as a document, with its own card.
+OBJ_STAGE.diagram = (ref) => attachDocumentToChat(ref.id, ref.title, "diagram");
 OBJ_STAGED.diagram = OBJ_STAGED.document;
 
 //: Text goes in through the browser's edit pipeline, so the field's own Ctrl+Z

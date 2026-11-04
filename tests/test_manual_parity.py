@@ -447,6 +447,10 @@ def test_the_diagram_dialog_the_reply_action_and_the_exports_are_in_the_guide_in
     for label in ("Save as SVG", "Save as PNG", "Copy as Mermaid", "Copy as SVG"):
         assert label in builder, label
     assert '"Edit as blocks"' in mermaid and '"Open as a diagram"' in draw
+    #: R9c (1621 D4, D7): Save to Library on a fence and in the menu, the swap offer, and the chat card.
+    for words in ("Save to Library", "replace the fence with a link", "link a board's diagram", "Attach a Library diagram to Chat"):
+        assert words in body, words
+    assert 'smallButton("ph:books", "Save to Library"' in mermaid and "Save to Library" in embed
     for label in ('"Done"', '"Cancel"', '"Source"', '"Blocks"'):
         assert label in embed, label
 

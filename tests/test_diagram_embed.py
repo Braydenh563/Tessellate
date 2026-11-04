@@ -73,7 +73,7 @@ def test_the_live_figure_has_edit_as_blocks_and_replaces_only_its_range():
     #: A Done with no change touches nothing; the figure's own press (the caret) is not the button's.
     assert "if (!changed) return;" in live and 'addEventListener("mousedown", (event) => event.stopPropagation())' in live
     #: The tool is outside the figure, which a redraw empties.
-    assert "wrap.append(figure, edit)" in live
+    assert "wrap.append(figure, edit, keep)" in live
 
 
 def test_the_builder_opens_in_a_dialog_with_the_dialog_head_and_hands_back_the_source():

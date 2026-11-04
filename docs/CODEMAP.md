@@ -2,9 +2,9 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7777, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8708, test files 2036, tests 17149, plan headings 1000, app scripts 28, boot scripts 37, script files 252.
+Counts: frontend functions 7780, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8709, test files 2038, tests 17175, plan headings 1000, app scripts 28, boot scripts 37, script files 252.
 
-## Frontend functions (7777)
+## Frontend functions (7780)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -473,49 +473,49 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `assistantAvatar` | frontend/js/chat-agent.js:346 |
-| `cancelDraft` | frontend/js/chat-agent.js:1067 |
-| `cardTextPreview` | frontend/js/chat-agent.js:671 |
-| `changeDiff` | frontend/js/chat-agent.js:478 |
-| `changeRow` | frontend/js/chat-agent.js:390 |
-| `chatHeadIsAtlas` | frontend/js/chat-agent.js:320 |
-| `chatHeadKey` | frontend/js/chat-agent.js:325 |
+| `assistantAvatar` | frontend/js/chat-agent.js:348 |
+| `cancelDraft` | frontend/js/chat-agent.js:1069 |
+| `cardTextPreview` | frontend/js/chat-agent.js:673 |
+| `changeDiff` | frontend/js/chat-agent.js:480 |
+| `changeRow` | frontend/js/chat-agent.js:392 |
+| `chatHeadIsAtlas` | frontend/js/chat-agent.js:322 |
+| `chatHeadKey` | frontend/js/chat-agent.js:327 |
 | `chatPositions` | frontend/js/chat-agent.js:99 |
-| `clearDraftTarget` | frontend/js/chat-agent.js:958 |
-| `draftTranslateKind` | frontend/js/chat-agent.js:854 |
-| `dropChatBubble` | frontend/js/chat-agent.js:269 |
+| `clearDraftTarget` | frontend/js/chat-agent.js:960 |
+| `draftTranslateKind` | frontend/js/chat-agent.js:856 |
+| `dropChatBubble` | frontend/js/chat-agent.js:271 |
 | `followBottom` | frontend/js/chat-agent.js:39 |
 | `followReleased` | frontend/js/chat-agent.js:28 |
-| `isImageCardUrl` | frontend/js/chat-agent.js:663 |
+| `isImageCardUrl` | frontend/js/chat-agent.js:665 |
 | `keepAtBottom` | frontend/js/chat-agent.js:123 |
 | `nestedTakesWheelUp` | frontend/js/chat-agent.js:33 |
 | `noteChatPosition` | frontend/js/chat-agent.js:104 |
-| `notebookCard` | frontend/js/chat-agent.js:213 |
-| `paintAssistantAvatar` | frontend/js/chat-agent.js:366 |
-| `paintAssistantHeads` | frontend/js/chat-agent.js:380 |
-| `paintUserMarks` | frontend/js/chat-agent.js:251 |
-| `paneWordCount` | frontend/js/chat-agent.js:974 |
-| `pushDraftUndo` | frontend/js/chat-agent.js:998 |
-| `putDraftBack` | frontend/js/chat-agent.js:1023 |
-| `rememberDraftVersion` | frontend/js/chat-agent.js:925 |
-| `renderDraftSources` | frontend/js/chat-agent.js:864 |
-| `renderDraftTarget` | frontend/js/chat-agent.js:945 |
-| `renderDraftVersions` | frontend/js/chat-agent.js:896 |
-| `repaintAssistantAvatars` | frontend/js/chat-agent.js:373 |
-| `restoreDraftLocally` | frontend/js/chat-agent.js:801 |
-| `saveDraftLocally` | frontend/js/chat-agent.js:779 |
-| `setDraftStatus` | frontend/js/chat-agent.js:966 |
-| `showWaiting` | frontend/js/chat-agent.js:683 |
-| `sourceHost` | frontend/js/chat-agent.js:748 |
+| `notebookCard` | frontend/js/chat-agent.js:215 |
+| `paintAssistantAvatar` | frontend/js/chat-agent.js:368 |
+| `paintAssistantHeads` | frontend/js/chat-agent.js:382 |
+| `paintUserMarks` | frontend/js/chat-agent.js:253 |
+| `paneWordCount` | frontend/js/chat-agent.js:976 |
+| `pushDraftUndo` | frontend/js/chat-agent.js:1000 |
+| `putDraftBack` | frontend/js/chat-agent.js:1025 |
+| `rememberDraftVersion` | frontend/js/chat-agent.js:927 |
+| `renderDraftSources` | frontend/js/chat-agent.js:866 |
+| `renderDraftTarget` | frontend/js/chat-agent.js:947 |
+| `renderDraftVersions` | frontend/js/chat-agent.js:898 |
+| `repaintAssistantAvatars` | frontend/js/chat-agent.js:375 |
+| `restoreDraftLocally` | frontend/js/chat-agent.js:803 |
+| `saveDraftLocally` | frontend/js/chat-agent.js:781 |
+| `setDraftStatus` | frontend/js/chat-agent.js:968 |
+| `showWaiting` | frontend/js/chat-agent.js:685 |
+| `sourceHost` | frontend/js/chat-agent.js:750 |
 | `syncChatJumpLatest` | frontend/js/chat-agent.js:145 |
-| `thinkingFold` | frontend/js/chat-agent.js:275 |
-| `thinkingFoldIn` | frontend/js/chat-agent.js:295 |
-| `thinkingPaint` | frontend/js/chat-agent.js:289 |
-| `translateNoteInDesk` | frontend/js/chat-agent.js:838 |
-| `undoDraft` | frontend/js/chat-agent.js:1047 |
-| `updateDraftCount` | frontend/js/chat-agent.js:980 |
-| `updateDraftUndoButton` | frontend/js/chat-agent.js:1034 |
-| `userMarkSeed` | frontend/js/chat-agent.js:240 |
+| `thinkingFold` | frontend/js/chat-agent.js:277 |
+| `thinkingFoldIn` | frontend/js/chat-agent.js:297 |
+| `thinkingPaint` | frontend/js/chat-agent.js:291 |
+| `translateNoteInDesk` | frontend/js/chat-agent.js:840 |
+| `undoDraft` | frontend/js/chat-agent.js:1049 |
+| `updateDraftCount` | frontend/js/chat-agent.js:982 |
+| `updateDraftUndoButton` | frontend/js/chat-agent.js:1036 |
+| `userMarkSeed` | frontend/js/chat-agent.js:242 |
 
 ### frontend/js/chat-attach.js (55)
 
@@ -3161,17 +3161,20 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `overlay` | frontend/js/diagram-edges.js:12 |
 | `wire` | frontend/js/diagram-edges.js:30 |
 
-### frontend/js/diagram-embed.js (7)
+### frontend/js/diagram-embed.js (10)
 
 | Name | File:line |
 |---|---|
 | `copyPicture` | frontend/js/diagram-embed.js:48 |
 | `el` | frontend/js/diagram-embed.js:10 |
-| `open` | frontend/js/diagram-embed.js:92 |
+| `link` | frontend/js/diagram-embed.js:115 |
+| `open` | frontend/js/diagram-embed.js:131 |
 | `out` | frontend/js/diagram-embed.js:63 |
 | `outDoc` | frontend/js/diagram-embed.js:79 |
 | `pngOf` | frontend/js/diagram-embed.js:28 |
+| `save` | frontend/js/diagram-embed.js:93 |
 | `svgOf` | frontend/js/diagram-embed.js:19 |
+| `swapRange` | frontend/js/diagram-embed.js:87 |
 
 ### frontend/js/diagram-joins.js (6)
 
@@ -3802,12 +3805,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dgmStatements` | frontend/js/documents-mermaid.js:81 |
 | `dgmSubgraph` | frontend/js/documents-mermaid.js:182 |
 | `dgmUnquote` | frontend/js/documents-mermaid.js:74 |
-| `diagramDoor` | frontend/js/documents-mermaid.js:482 |
+| `diagramDoor` | frontend/js/documents-mermaid.js:484 |
 | `docMermaidBlocks` | frontend/js/documents-mermaid.js:344 |
 | `docMermaidField` | frontend/js/documents-mermaid.js:353 |
 | `docMermaidWhenDrawn` | frontend/js/documents-mermaid.js:334 |
 | `docRenderMermaidIn` | frontend/js/documents-mermaid.js:326 |
-| `openDiagramBuilder` | frontend/js/documents-mermaid.js:471 |
+| `openDiagramBuilder` | frontend/js/documents-mermaid.js:473 |
 
 ### frontend/js/documents-outline.js (12)
 
@@ -7798,7 +7801,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbDiagramFillShare` | frontend/js/whiteboard-interchange.js:1294 |
 | `wbDiagramLook` | frontend/js/whiteboard-interchange.js:1277 |
 | `wbDiagramSize` | frontend/js/whiteboard-interchange.js:1349 |
-| `wbDiagramToShapes` | frontend/js/whiteboard-interchange.js:1401 |
+| `wbDiagramToShapes` | frontend/js/whiteboard-interchange.js:1403 |
 | `wbDrawioBox` | frontend/js/whiteboard-interchange.js:1049 |
 | `wbDrawioCells` | frontend/js/whiteboard-interchange.js:1001 |
 | `wbDrawioLook` | frontend/js/whiteboard-interchange.js:505 |
@@ -7831,7 +7834,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbMermaidStateParse` | frontend/js/whiteboard-interchange.js:289 |
 | `wbOpenImportDialog` | frontend/js/whiteboard-interchange.js:986 |
 | `wbPaintDiagram` | frontend/js/whiteboard-interchange.js:1314 |
-| `wbSaveDiagram` | frontend/js/whiteboard-interchange.js:1381 |
+| `wbSaveDiagram` | frontend/js/whiteboard-interchange.js:1383 |
 | `wbThumbBoardId` | frontend/js/whiteboard-interchange.js:1196 |
 | `wbThumbFlush` | frontend/js/whiteboard-interchange.js:1206 |
 | `wbThumbMark` | frontend/js/whiteboard-interchange.js:1200 |
@@ -12262,7 +12265,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/math-editor-lazy.css | 169 |
 | frontend/css/math-field-lazy.css | 72 |
 | frontend/css/meetings-lazy.css | 566 |
-| frontend/css/mermaid-lazy.css | 124 |
+| frontend/css/mermaid-lazy.css | 129 |
 | frontend/css/model-menu-lazy.css | 96 |
 | frontend/css/motion-still.css | 75 |
 | frontend/css/nav-history-lazy.css | 169 |
@@ -12944,7 +12947,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8708)
+## Backend modules (8709)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14239,65 +14242,66 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `nth` | src/tessellate/ai/composer_follow.py:140 |
 | `why` | src/tessellate/ai/composer_follow.py:161 |
 
-### src/tessellate/ai/composer_frame.py (55)
+### src/tessellate/ai/composer_frame.py (56)
 
 | Name | File:line |
 |---|---|
 | `Group` | src/tessellate/ai/composer_frame.py:49 |
-| `_base` | src/tessellate/ai/composer_frame.py:752 |
-| `_by_link` | src/tessellate/ai/composer_frame.py:736 |
-| `_by_meaning` | src/tessellate/ai/composer_frame.py:722 |
-| `_by_word` | src/tessellate/ai/composer_frame.py:729 |
-| `_clipped` | src/tessellate/ai/composer_frame.py:337 |
+| `_base` | src/tessellate/ai/composer_frame.py:761 |
+| `_by_link` | src/tessellate/ai/composer_frame.py:745 |
+| `_by_meaning` | src/tessellate/ai/composer_frame.py:731 |
+| `_by_word` | src/tessellate/ai/composer_frame.py:738 |
+| `_clipped` | src/tessellate/ai/composer_frame.py:346 |
 | `_components` | src/tessellate/ai/composer_frame.py:87 |
-| `_diary_name` | src/tessellate/ai/composer_frame.py:484 |
-| `_feeling_name` | src/tessellate/ai/composer_frame.py:477 |
-| `_first_line` | src/tessellate/ai/composer_frame.py:537 |
-| `_flat_quote` | src/tessellate/ai/composer_frame.py:669 |
-| `_group_clause` | src/tessellate/ai/composer_frame.py:639 |
+| `_diary_name` | src/tessellate/ai/composer_frame.py:493 |
+| `_feeling_name` | src/tessellate/ai/composer_frame.py:486 |
+| `_first_line` | src/tessellate/ai/composer_frame.py:546 |
+| `_flat_quote` | src/tessellate/ai/composer_frame.py:678 |
+| `_group_clause` | src/tessellate/ai/composer_frame.py:648 |
 | `_joined` | src/tessellate/ai/composer_frame.py:116 |
-| `_link_said` | src/tessellate/ai/composer_frame.py:611 |
+| `_link_said` | src/tessellate/ai/composer_frame.py:620 |
 | `_links` | src/tessellate/ai/composer_frame.py:81 |
-| `_list_item` | src/tessellate/ai/composer_frame.py:256 |
+| `_list_item` | src/tessellate/ai/composer_frame.py:265 |
 | `_lower` | src/tessellate/ai/composer_frame.py:214 |
-| `_marked` | src/tessellate/ai/composer_frame.py:273 |
-| `_named_by_clause` | src/tessellate/ai/composer_frame.py:563 |
-| `_named_by_subject` | src/tessellate/ai/composer_frame.py:545 |
-| `_names` | src/tessellate/ai/composer_frame.py:594 |
-| `_opens_section` | src/tessellate/ai/composer_frame.py:265 |
-| `_plain` | src/tessellate/ai/composer_frame.py:252 |
+| `_marked` | src/tessellate/ai/composer_frame.py:282 |
+| `_named_by_clause` | src/tessellate/ai/composer_frame.py:572 |
+| `_named_by_subject` | src/tessellate/ai/composer_frame.py:554 |
+| `_names` | src/tessellate/ai/composer_frame.py:603 |
+| `_opens_section` | src/tessellate/ai/composer_frame.py:274 |
+| `_plain` | src/tessellate/ai/composer_frame.py:261 |
 | `_plain_lower` | src/tessellate/ai/composer_frame.py:222 |
-| `_presented` | src/tessellate/ai/composer_frame.py:437 |
-| `_relation` | src/tessellate/ai/composer_frame.py:762 |
-| `_said_line` | src/tessellate/ai/composer_frame.py:411 |
-| `_sayer` | src/tessellate/ai/composer_frame.py:743 |
+| `_presented` | src/tessellate/ai/composer_frame.py:446 |
+| `_relation` | src/tessellate/ai/composer_frame.py:771 |
+| `_said_line` | src/tessellate/ai/composer_frame.py:420 |
+| `_sayer` | src/tessellate/ai/composer_frame.py:752 |
 | `_score` | src/tessellate/ai/composer_frame.py:73 |
-| `_shared_line` | src/tessellate/ai/composer_frame.py:623 |
+| `_shared_line` | src/tessellate/ai/composer_frame.py:632 |
 | `_tag_list` | src/tessellate/ai/composer_frame.py:65 |
 | `_tag_pairs` | src/tessellate/ai/composer_frame.py:104 |
 | `_tags` | src/tessellate/ai/composer_frame.py:69 |
-| `_title_of` | src/tessellate/ai/composer_frame.py:283 |
-| `_titled` | src/tessellate/ai/composer_frame.py:313 |
-| `_whole_clause` | src/tessellate/ai/composer_frame.py:320 |
+| `_title_of` | src/tessellate/ai/composer_frame.py:292 |
+| `_titled` | src/tessellate/ai/composer_frame.py:322 |
+| `_whole_clause` | src/tessellate/ai/composer_frame.py:329 |
 | `bind_lower` | src/tessellate/ai/composer_frame.py:206 |
-| `clipped_name` | src/tessellate/ai/composer_frame.py:350 |
-| `echoed` | src/tessellate/ai/composer_frame.py:654 |
-| `group_line` | src/tessellate/ai/composer_frame.py:673 |
+| `clipped_name` | src/tessellate/ai/composer_frame.py:359 |
+| `echoed` | src/tessellate/ai/composer_frame.py:663 |
+| `group_line` | src/tessellate/ai/composer_frame.py:682 |
 | `groups` | src/tessellate/ai/composer_frame.py:150 |
-| `lead_line` | src/tessellate/ai/composer_frame.py:702 |
-| `lower_name` | src/tessellate/ai/composer_frame.py:396 |
-| `note_label` | src/tessellate/ai/composer_frame.py:383 |
-| `note_title` | src/tessellate/ai/composer_frame.py:373 |
+| `lead_line` | src/tessellate/ai/composer_frame.py:711 |
+| `lower_name` | src/tessellate/ai/composer_frame.py:405 |
+| `note_label` | src/tessellate/ai/composer_frame.py:392 |
+| `note_title` | src/tessellate/ai/composer_frame.py:382 |
 | `note_words` | src/tessellate/ai/composer_frame.py:191 |
-| `own_title` | src/tessellate/ai/composer_frame.py:417 |
+| `own_title` | src/tessellate/ai/composer_frame.py:426 |
 | `plain_snippet` | src/tessellate/ai/composer_frame.py:172 |
-| `reason_said` | src/tessellate/ai/composer_frame.py:605 |
-| `reasons` | src/tessellate/ai/composer_frame.py:775 |
-| `short_name` | src/tessellate/ai/composer_frame.py:508 |
+| `reason_said` | src/tessellate/ai/composer_frame.py:614 |
+| `reasons` | src/tessellate/ai/composer_frame.py:784 |
+| `short_name` | src/tessellate/ai/composer_frame.py:517 |
+| `strip_end_emoticon` | src/tessellate/ai/composer_frame.py:252 |
 | `themes` | src/tessellate/ai/composer_frame.py:131 |
-| `thread_name` | src/tessellate/ai/composer_frame.py:692 |
-| `title_line` | src/tessellate/ai/composer_frame.py:305 |
-| `topic_words` | src/tessellate/ai/composer_frame.py:709 |
+| `thread_name` | src/tessellate/ai/composer_frame.py:701 |
+| `title_line` | src/tessellate/ai/composer_frame.py:314 |
+| `topic_words` | src/tessellate/ai/composer_frame.py:718 |
 
 ### src/tessellate/ai/composer_help.py (25)
 
@@ -14730,13 +14734,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `NoteView` | src/tessellate/ai/composer_read.py:71 |
 | `Sentence` | src/tessellate/ai/composer_read.py:42 |
-| `_cue` | src/tessellate/ai/composer_read.py:647 |
+| `_cue` | src/tessellate/ai/composer_read.py:646 |
 | `_dependent_fragment` | src/tessellate/ai/composer_read.py:267 |
 | `_depth` | src/tessellate/ai/composer_read.py:256 |
 | `_discourse` | src/tessellate/ai/composer_read.py:156 |
 | `_distinct_ids` | src/tessellate/ai/composer_read.py:443 |
 | `_heading_text` | src/tessellate/ai/composer_read.py:187 |
-| `_line_units` | src/tessellate/ai/composer_read.py:592 |
+| `_line_units` | src/tessellate/ai/composer_read.py:591 |
 | `_not_prose` | src/tessellate/ai/composer_read.py:464 |
 | `_open_item` | src/tessellate/ai/composer_read.py:493 |
 | `_picture_groups` | src/tessellate/ai/composer_read.py:344 |
@@ -14744,18 +14748,18 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_picture_text_breaks` | src/tessellate/ai/composer_read.py:383 |
 | `_picture_units` | src/tessellate/ai/composer_read.py:418 |
 | `_read_line` | src/tessellate/ai/composer_read.py:483 |
-| `_read_title` | src/tessellate/ai/composer_read.py:529 |
+| `_read_title` | src/tessellate/ai/composer_read.py:528 |
 | `_short_fact` | src/tessellate/ai/composer_read.py:322 |
 | `_title` | src/tessellate/ai/composer_read.py:228 |
-| `_title_unit` | src/tessellate/ai/composer_read.py:518 |
+| `_title_unit` | src/tessellate/ai/composer_read.py:517 |
 | `_unit` | src/tessellate/ai/composer_read.py:275 |
 | `_wrap_item` | src/tessellate/ai/composer_read.py:469 |
 | `_written` | src/tessellate/ai/composer_read.py:169 |
 | `bold_line` | src/tessellate/ai/composer_read.py:213 |
 | `plain_words` | src/tessellate/ai/composer_read.py:219 |
-| `read_note` | src/tessellate/ai/composer_read.py:537 |
+| `read_note` | src/tessellate/ai/composer_read.py:536 |
 | `source_kind` | src/tessellate/ai/composer_read.py:456 |
-| `title_is_content` | src/tessellate/ai/composer_read.py:508 |
+| `title_is_content` | src/tessellate/ai/composer_read.py:507 |
 
 ### src/tessellate/ai/composer_recall.py (18)
 
@@ -15746,8 +15750,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3373 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3501 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3377 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3505 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -22181,11 +22185,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Engine` | src/tessellate/core/overlay/engine.py:241 |
-| `Monitor` | src/tessellate/core/overlay/engine.py:205 |
-| `Output` | src/tessellate/core/overlay/engine.py:212 |
-| `Perch` | src/tessellate/core/overlay/engine.py:196 |
-| `_adjoins` | src/tessellate/core/overlay/engine.py:230 |
+| `Engine` | src/tessellate/core/overlay/engine.py:256 |
+| `Monitor` | src/tessellate/core/overlay/engine.py:220 |
+| `Output` | src/tessellate/core/overlay/engine.py:227 |
+| `Perch` | src/tessellate/core/overlay/engine.py:211 |
+| `_adjoins` | src/tessellate/core/overlay/engine.py:245 |
 
 ### src/tessellate/core/overlay/host.py (2)
 
@@ -23896,7 +23900,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17149)
+## Tests (17175)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24290,7 +24294,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_owner_1017.py | 15 |
 | tests/test_composer_owner_1030.py | 3 |
 | tests/test_composer_owner_1459.py | 24 |
-| tests/test_composer_owner_1665.py | 21 |
+| tests/test_composer_owner_1665.py | 22 |
 | tests/test_composer_parts.py | 4 |
 | tests/test_composer_past_lines_z26.py | 2 |
 | tests/test_composer_phrasings_1025.py | 11 |
@@ -24445,6 +24449,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_r8b.py | 9 |
 | tests/test_diagram_r8c.py | 10 |
 | tests/test_diagram_r9b.py | 9 |
+| tests/test_diagram_r9c.py | 9 |
 | tests/test_diagram_split_r3_r4.py | 8 |
 | tests/test_diagram_suggest.py | 21 |
 | tests/test_diagram_touch.py | 4 |
@@ -25243,6 +25248,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_host.py | 25 |
 | tests/test_overlay_idle.py | 9 |
 | tests/test_overlay_moves.py | 26 |
+| tests/test_overlay_ride_1670.py | 16 |
 | tests/test_overlay_roam.py | 19 |
 | tests/test_overlay_roam_runner.py | 10 |
 | tests/test_overlay_runner.py | 22 |
@@ -26646,7 +26652,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:177 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:176 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4178 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |

@@ -118,7 +118,7 @@ async function chatSendTurn(preset, opts = {}) {
       caption: "",
       text: "",
     })),
-    ...attachedDocuments.map((d) => ({ kind: "document", id: d.id, name: d.name })),
+    ...attachedDocuments.map((d) => ({ kind: d.kind || "document", id: d.id, name: d.name })),
     // Library files: the same card list as the other kinds, so the bubble
     // shows every reference the question was given rather than three of four.
     ...attachedFiles.map((f) => ({ kind: "file", id: f.id, name: f.name })),
