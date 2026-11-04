@@ -22,13 +22,27 @@ def test_a_command_verb_leading_a_later_clause_is_dropped(text, kept):
     assert flat(got) == flat(kept), got
 
 
-@pytest.mark.parametrize("text", [
-    "compare my running notes and my baking notes",
-    "books I am reading and add",
-    "what did I add to the pasta",
+@pytest.mark.parametrize(("text", "want"), [
+    ("compare my running notes and my baking notes", "running notes and my baking notes"),
+    ("books I am reading and add", "books I am reading and add"),
+    ("what did I add to the pasta", "what did I add to the pasta"),
+    ("my notes and add the pasta", "my notes and pasta"),
+    ("what is in my notes; list the groceries", "what is in my notes; list the groceries"),
 ])
-def test_a_verb_inside_a_clause_is_kept(text):
-    assert composer_ask._without_command(text) == text or text.startswith("compare")
+def test_a_verb_inside_a_clause_is_kept(text, want):
+    assert composer_ask._without_command(text) == want
+
+
+@pytest.mark.parametrize("question", [
+    "show me what I did in the hotel",
+    "list notes with the lentils",
+    "tell me about my week in the garden",
+    "tell me what I wrote in a hotel",
+])
+def test_a_place_after_an_order_verb_is_still_a_topic(question):
+    stems = composer_unfound._frame_stems(question)
+    for word in ("hotel", "lentils", "garden"):
+        assert composer_unfound._stem(word) not in stems
 
 
 @pytest.mark.parametrize(("question", "word"), [

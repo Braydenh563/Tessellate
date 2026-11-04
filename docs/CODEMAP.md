@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7756, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8695, test files 2027, tests 17051, plan headings 1000, app scripts 28, boot scripts 37, script files 248.
+Counts: frontend functions 7756, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8695, test files 2027, tests 17052, plan headings 1000, app scripts 28, boot scripts 37, script files 248.
 
 ## Frontend functions (7756)
 
@@ -23839,7 +23839,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17051)
+## Tests (17052)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24178,7 +24178,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_classes_1026e.py | 5 |
 | tests/test_composer_classes_1026f.py | 7 |
 | tests/test_composer_classes_1357.py | 1 |
-| tests/test_composer_clauses_shape_1104.py | 4 |
+| tests/test_composer_clauses_shape_1104.py | 5 |
 | tests/test_composer_commands.py | 14 |
 | tests/test_composer_compare_1029.py | 2 |
 | tests/test_composer_compare_e16.py | 2 |

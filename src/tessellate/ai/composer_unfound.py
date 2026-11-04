@@ -131,7 +131,7 @@ _SHAPE_ASKED = re.compile(
 )
 _ORDER_SHAPE = re.compile(
     r"^\s*(?:please\s+|(?:can|could|would) you\s+(?:please\s+)?)?(?:summari[sz]e|give|write|draft|explain|describe|show|tell|list|put|format|turn|sum)\b"
-    r".*?\b(?:in|with) (?:a|an|the) (\w+)",
+    r"(?:(?!\b(?:what|which|who|where|when|how|about|my|our)\b).)*?\b(?:in|with) (?:a|an) (\w+)",
     re.I,
 )
 
