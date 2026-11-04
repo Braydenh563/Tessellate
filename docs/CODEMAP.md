@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7774, frontend ids 2642, CSS sections 522, backend routes 644, backend modules 8689, test files 2028, tests 17094, plan headings 999, app scripts 28, boot scripts 37, script files 252.
+Counts: frontend functions 7774, frontend ids 2642, CSS sections 522, backend routes 644, backend modules 8690, test files 2030, tests 17110, plan headings 1000, app scripts 28, boot scripts 37, script files 252.
 
 ## Frontend functions (7774)
 
@@ -7794,8 +7794,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbDiagramFillColour` | frontend/js/whiteboard-interchange.js:1288 |
 | `wbDiagramFillShare` | frontend/js/whiteboard-interchange.js:1294 |
 | `wbDiagramLook` | frontend/js/whiteboard-interchange.js:1277 |
-| `wbDiagramSize` | frontend/js/whiteboard-interchange.js:1333 |
-| `wbDiagramToShapes` | frontend/js/whiteboard-interchange.js:1382 |
+| `wbDiagramSize` | frontend/js/whiteboard-interchange.js:1349 |
+| `wbDiagramToShapes` | frontend/js/whiteboard-interchange.js:1401 |
 | `wbDrawioBox` | frontend/js/whiteboard-interchange.js:1049 |
 | `wbDrawioCells` | frontend/js/whiteboard-interchange.js:1001 |
 | `wbDrawioLook` | frontend/js/whiteboard-interchange.js:505 |
@@ -7806,7 +7806,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbDrawioShape` | frontend/js/whiteboard-interchange.js:525 |
 | `wbDrawioStyle` | frontend/js/whiteboard-interchange.js:464 |
 | `wbDrawioText` | frontend/js/whiteboard-interchange.js:483 |
-| `wbEditDiagram` | frontend/js/whiteboard-interchange.js:1355 |
+| `wbEditDiagram` | frontend/js/whiteboard-interchange.js:1371 |
 | `wbExportDrawio` | frontend/js/whiteboard-interchange.js:967 |
 | `wbExportMermaid` | frontend/js/whiteboard-interchange.js:957 |
 | `wbExportOutline` | frontend/js/whiteboard-interchange.js:978 |
@@ -7816,7 +7816,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbImportMermaid` | frontend/js/whiteboard-interchange.js:800 |
 | `wbImportMermaidSequence` | frontend/js/whiteboard-interchange.js:885 |
 | `wbImportText` | frontend/js/whiteboard-interchange.js:1148 |
-| `wbInsertDiagram` | frontend/js/whiteboard-interchange.js:1342 |
+| `wbInsertDiagram` | frontend/js/whiteboard-interchange.js:1358 |
 | `wbMermaidCap` | frontend/js/whiteboard-interchange.js:851 |
 | `wbMermaidClassParse` | frontend/js/whiteboard-interchange.js:354 |
 | `wbMermaidFrameOf` | frontend/js/whiteboard-interchange.js:945 |
@@ -7828,7 +7828,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbMermaidStateParse` | frontend/js/whiteboard-interchange.js:289 |
 | `wbOpenImportDialog` | frontend/js/whiteboard-interchange.js:986 |
 | `wbPaintDiagram` | frontend/js/whiteboard-interchange.js:1314 |
-| `wbSaveDiagram` | frontend/js/whiteboard-interchange.js:1365 |
+| `wbSaveDiagram` | frontend/js/whiteboard-interchange.js:1381 |
 | `wbThumbBoardId` | frontend/js/whiteboard-interchange.js:1196 |
 | `wbThumbFlush` | frontend/js/whiteboard-interchange.js:1206 |
 | `wbThumbMark` | frontend/js/whiteboard-interchange.js:1200 |
@@ -7838,47 +7838,47 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `wbCloseSidebar` | frontend/js/whiteboard-library.js:115 |
-| `wbKeepOwnLayer` | frontend/js/whiteboard-library.js:1818 |
-| `wbLayerButton` | frontend/js/whiteboard-library.js:1704 |
-| `wbLayerEntry` | frontend/js/whiteboard-library.js:2048 |
-| `wbLayerEntryByKey` | frontend/js/whiteboard-library.js:1634 |
-| `wbLayerFocus` | frontend/js/whiteboard-library.js:2054 |
-| `wbLayerIcon` | frontend/js/whiteboard-library.js:2037 |
-| `wbLayerName` | frontend/js/whiteboard-library.js:1625 |
-| `wbLayerOwning` | frontend/js/whiteboard-library.js:1736 |
-| `wbLayerRename` | frontend/js/whiteboard-library.js:2123 |
-| `wbLayerRestack` | frontend/js/whiteboard-library.js:2151 |
-| `wbLayerRows` | frontend/js/whiteboard-library.js:1640 |
-| `wbLayerSaysOwner` | frontend/js/whiteboard-library.js:1741 |
-| `wbLayerSelect` | frontend/js/whiteboard-library.js:2062 |
-| `wbLayerToggleHidden` | frontend/js/whiteboard-library.js:2093 |
-| `wbLayerToggleLock` | frontend/js/whiteboard-library.js:2108 |
-| `wbLayersSelectedHead` | frontend/js/whiteboard-library.js:2030 |
+| `wbKeepOwnLayer` | frontend/js/whiteboard-library.js:1819 |
+| `wbLayerButton` | frontend/js/whiteboard-library.js:1705 |
+| `wbLayerEntry` | frontend/js/whiteboard-library.js:2049 |
+| `wbLayerEntryByKey` | frontend/js/whiteboard-library.js:1635 |
+| `wbLayerFocus` | frontend/js/whiteboard-library.js:2055 |
+| `wbLayerIcon` | frontend/js/whiteboard-library.js:2038 |
+| `wbLayerName` | frontend/js/whiteboard-library.js:1626 |
+| `wbLayerOwning` | frontend/js/whiteboard-library.js:1737 |
+| `wbLayerRename` | frontend/js/whiteboard-library.js:2124 |
+| `wbLayerRestack` | frontend/js/whiteboard-library.js:2152 |
+| `wbLayerRows` | frontend/js/whiteboard-library.js:1641 |
+| `wbLayerSaysOwner` | frontend/js/whiteboard-library.js:1742 |
+| `wbLayerSelect` | frontend/js/whiteboard-library.js:2063 |
+| `wbLayerToggleHidden` | frontend/js/whiteboard-library.js:2094 |
+| `wbLayerToggleLock` | frontend/js/whiteboard-library.js:2109 |
+| `wbLayersSelectedHead` | frontend/js/whiteboard-library.js:2031 |
 | `wbLibAnnounceCount` | frontend/js/whiteboard-library.js:581 |
 | `wbLibApplyPalette` | frontend/js/whiteboard-library.js:852 |
 | `wbLibApplyStyle` | frontend/js/whiteboard-library.js:837 |
-| `wbLibBranchOf` | frontend/js/whiteboard-library.js:1225 |
+| `wbLibBranchOf` | frontend/js/whiteboard-library.js:1226 |
 | `wbLibCentre` | frontend/js/whiteboard-library.js:618 |
 | `wbLibContentBox` | frontend/js/whiteboard-library.js:636 |
-| `wbLibCreate` | frontend/js/whiteboard-library.js:1098 |
+| `wbLibCreate` | frontend/js/whiteboard-library.js:1099 |
 | `wbLibDelete` | frontend/js/whiteboard-library.js:1000 |
 | `wbLibDuplicate` | frontend/js/whiteboard-library.js:977 |
 | `wbLibEmptyYours` | frontend/js/whiteboard-library.js:572 |
 | `wbLibEntries` | frontend/js/whiteboard-library.js:225 |
-| `wbLibExport` | frontend/js/whiteboard-library.js:1289 |
+| `wbLibExport` | frontend/js/whiteboard-library.js:1290 |
 | `wbLibFits` | frontend/js/whiteboard-library.js:299 |
 | `wbLibGrabPoint` | frontend/js/whiteboard-library.js:666 |
 | `wbLibGroup` | frontend/js/whiteboard-library.js:439 |
 | `wbLibIconEntry` | frontend/js/whiteboard-library.js:249 |
-| `wbLibImportFile` | frontend/js/whiteboard-library.js:1300 |
+| `wbLibImportFile` | frontend/js/whiteboard-library.js:1301 |
 | `wbLibInk` | frontend/js/whiteboard-library.js:607 |
 | `wbLibMenuItems` | frontend/js/whiteboard-library.js:887 |
 | `wbLibMove` | frontend/js/whiteboard-library.js:991 |
 | `wbLibNewBoardFrom` | frontend/js/whiteboard-library.js:816 |
-| `wbLibNewLibrary` | frontend/js/whiteboard-library.js:1320 |
+| `wbLibNewLibrary` | frontend/js/whiteboard-library.js:1321 |
 | `wbLibOpenMenu` | frontend/js/whiteboard-library.js:927 |
 | `wbLibPairStep` | frontend/js/whiteboard-library.js:803 |
-| `wbLibPanelMenu` | frontend/js/whiteboard-library.js:1328 |
+| `wbLibPanelMenu` | frontend/js/whiteboard-library.js:1329 |
 | `wbLibPeekClose` | frontend/js/whiteboard-library.js:365 |
 | `wbLibPeekOpen` | frontend/js/whiteboard-library.js:372 |
 | `wbLibPeekSoon` | frontend/js/whiteboard-library.js:403 |
@@ -7896,37 +7896,37 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbLoadIcons` | frontend/js/whiteboard-library.js:212 |
 | `wbLoadLibrary` | frontend/js/whiteboard-library.js:161 |
 | `wbLoadShapeSets` | frontend/js/whiteboard-library.js:198 |
-| `wbMoveSelectionToLayer` | frontend/js/whiteboard-library.js:1769 |
-| `wbNamedLayerItems` | frontend/js/whiteboard-library.js:1842 |
-| `wbNamedLayerMenu` | frontend/js/whiteboard-library.js:1850 |
-| `wbNamedLayerOf` | frontend/js/whiteboard-library.js:1726 |
-| `wbNamedLayerSet` | frontend/js/whiteboard-library.js:1838 |
-| `wbNewNamedLayer` | frontend/js/whiteboard-library.js:1804 |
+| `wbMoveSelectionToLayer` | frontend/js/whiteboard-library.js:1770 |
+| `wbNamedLayerItems` | frontend/js/whiteboard-library.js:1843 |
+| `wbNamedLayerMenu` | frontend/js/whiteboard-library.js:1851 |
+| `wbNamedLayerOf` | frontend/js/whiteboard-library.js:1727 |
+| `wbNamedLayerSet` | frontend/js/whiteboard-library.js:1839 |
+| `wbNewNamedLayer` | frontend/js/whiteboard-library.js:1805 |
 | `wbOpenSidebar` | frontend/js/whiteboard-library.js:63 |
 | `wbOpenStickerPicker` | frontend/js/whiteboard-library.js:288 |
-| `wbPageFocus` | frontend/js/whiteboard-library.js:2332 |
-| `wbPageGo` | frontend/js/whiteboard-library.js:2342 |
-| `wbPageMenu` | frontend/js/whiteboard-library.js:2397 |
-| `wbPageMove` | frontend/js/whiteboard-library.js:2354 |
-| `wbPagePresent` | frontend/js/whiteboard-library.js:2413 |
-| `wbPageRename` | frontend/js/whiteboard-library.js:2379 |
+| `wbPageFocus` | frontend/js/whiteboard-library.js:2333 |
+| `wbPageGo` | frontend/js/whiteboard-library.js:2343 |
+| `wbPageMenu` | frontend/js/whiteboard-library.js:2398 |
+| `wbPageMove` | frontend/js/whiteboard-library.js:2355 |
+| `wbPagePresent` | frontend/js/whiteboard-library.js:2414 |
+| `wbPageRename` | frontend/js/whiteboard-library.js:2380 |
 | `wbPlaceSticker` | frontend/js/whiteboard-library.js:266 |
-| `wbRenderLayers` | frontend/js/whiteboard-library.js:1938 |
+| `wbRenderLayers` | frontend/js/whiteboard-library.js:1939 |
 | `wbRenderLibrary` | frontend/js/whiteboard-library.js:472 |
-| `wbRenderNamedLayers` | frontend/js/whiteboard-library.js:1879 |
-| `wbRenderPages` | frontend/js/whiteboard-library.js:2292 |
+| `wbRenderNamedLayers` | frontend/js/whiteboard-library.js:1880 |
+| `wbRenderPages` | frontend/js/whiteboard-library.js:2293 |
 | `wbRenderSideMap` | frontend/js/whiteboard-library.js:153 |
-| `wbSaveBoardAsTemplate` | frontend/js/whiteboard-library.js:1253 |
-| `wbSaveBranchToLibrary` | frontend/js/whiteboard-library.js:1239 |
-| `wbSaveNamedLayers` | frontend/js/whiteboard-library.js:1746 |
-| `wbSavePaletteToLibrary` | frontend/js/whiteboard-library.js:1183 |
-| `wbSavePresetToLibrary` | frontend/js/whiteboard-library.js:1203 |
-| `wbSaveSelectionToLibrary` | frontend/js/whiteboard-library.js:1121 |
-| `wbSaveShapeToLibrary` | frontend/js/whiteboard-library.js:1135 |
+| `wbSaveBoardAsTemplate` | frontend/js/whiteboard-library.js:1254 |
+| `wbSaveBranchToLibrary` | frontend/js/whiteboard-library.js:1240 |
+| `wbSaveNamedLayers` | frontend/js/whiteboard-library.js:1747 |
+| `wbSavePaletteToLibrary` | frontend/js/whiteboard-library.js:1184 |
+| `wbSavePresetToLibrary` | frontend/js/whiteboard-library.js:1204 |
+| `wbSaveSelectionToLibrary` | frontend/js/whiteboard-library.js:1122 |
+| `wbSaveShapeToLibrary` | frontend/js/whiteboard-library.js:1136 |
 | `wbSaveSideState` | frontend/js/whiteboard-library.js:53 |
-| `wbSaveStyleToLibrary` | frontend/js/whiteboard-library.js:1161 |
-| `wbSetCurrentLayer` | frontend/js/whiteboard-library.js:1832 |
-| `wbSideRefreshSoon` | frontend/js/whiteboard-library.js:2511 |
+| `wbSaveStyleToLibrary` | frontend/js/whiteboard-library.js:1162 |
+| `wbSetCurrentLayer` | frontend/js/whiteboard-library.js:1833 |
+| `wbSideRefreshSoon` | frontend/js/whiteboard-library.js:2512 |
 | `wbSideState` | frontend/js/whiteboard-library.js:48 |
 | `wbSyncSidebarKind` | frontend/js/whiteboard-library.js:134 |
 
@@ -12350,20 +12350,20 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/backups/summary` | GET | `backup_summary` | src/tessellate/api/routes_backups.py:112 |
 | `/backups/{name:path}` | DELETE | `delete_backup` | src/tessellate/api/routes_backups.py:249 |
 | `/bin/{kind}/{item_id}/restore` | POST | `restore_from_bin` | src/tessellate/api/routes_library.py:1098 |
-| `/board-library` | GET | `list_library` | src/tessellate/api/routes_board_library.py:538 |
-| `/board-library` | POST | `create_library_item` | src/tessellate/api/routes_board_library.py:597 |
-| `/board-library/export` | GET | `export_library` | src/tessellate/api/routes_board_library.py:786 |
-| `/board-library/import` | POST | `import_library` | src/tessellate/api/routes_board_library.py:819 |
-| `/board-library/libraries` | POST | `create_library` | src/tessellate/api/routes_board_library.py:738 |
-| `/board-library/libraries/restore` | POST | `restore_library` | src/tessellate/api/routes_board_library.py:669 |
-| `/board-library/libraries/{library_id}` | DELETE | `delete_library` | src/tessellate/api/routes_board_library.py:756 |
-| `/board-library/libraries/{library_id}` | PUT | `rename_library` | src/tessellate/api/routes_board_library.py:748 |
-| `/board-library/marks` | POST | `mark_builtin` | src/tessellate/api/routes_board_library.py:722 |
-| `/board-library/new-board` | POST | `new_board_from_template` | src/tessellate/api/routes_board_library.py:1373 |
-| `/board-library/{item_id}` | DELETE | `delete_library_item` | src/tessellate/api/routes_board_library.py:653 |
-| `/board-library/{item_id}` | PUT | `update_library_item` | src/tessellate/api/routes_board_library.py:629 |
-| `/board-library/{item_id}/duplicate` | POST | `duplicate_library_item` | src/tessellate/api/routes_board_library.py:701 |
-| `/board-library/{item_id}/restore` | POST | `restore_library_item` | src/tessellate/api/routes_board_library.py:690 |
+| `/board-library` | GET | `list_library` | src/tessellate/api/routes_board_library.py:539 |
+| `/board-library` | POST | `create_library_item` | src/tessellate/api/routes_board_library.py:598 |
+| `/board-library/export` | GET | `export_library` | src/tessellate/api/routes_board_library.py:787 |
+| `/board-library/import` | POST | `import_library` | src/tessellate/api/routes_board_library.py:820 |
+| `/board-library/libraries` | POST | `create_library` | src/tessellate/api/routes_board_library.py:739 |
+| `/board-library/libraries/restore` | POST | `restore_library` | src/tessellate/api/routes_board_library.py:670 |
+| `/board-library/libraries/{library_id}` | DELETE | `delete_library` | src/tessellate/api/routes_board_library.py:757 |
+| `/board-library/libraries/{library_id}` | PUT | `rename_library` | src/tessellate/api/routes_board_library.py:749 |
+| `/board-library/marks` | POST | `mark_builtin` | src/tessellate/api/routes_board_library.py:723 |
+| `/board-library/new-board` | POST | `new_board_from_template` | src/tessellate/api/routes_board_library.py:1374 |
+| `/board-library/{item_id}` | DELETE | `delete_library_item` | src/tessellate/api/routes_board_library.py:654 |
+| `/board-library/{item_id}` | PUT | `update_library_item` | src/tessellate/api/routes_board_library.py:630 |
+| `/board-library/{item_id}/duplicate` | POST | `duplicate_library_item` | src/tessellate/api/routes_board_library.py:702 |
+| `/board-library/{item_id}/restore` | POST | `restore_library_item` | src/tessellate/api/routes_board_library.py:691 |
 | `/boards` | GET | `list_boards` | src/tessellate/api/wb_boards.py:40 |
 | `/boards` | POST | `create_board` | src/tessellate/api/wb_boards.py:297 |
 | `/boards/generate` | POST | `generate_map` | src/tessellate/api/wb_make.py:252 |
@@ -12539,7 +12539,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/instance` | GET | `instance` | src/tessellate/api/app.py:1639 |
 | `/instance/focus` | POST | `instance_focus` | src/tessellate/api/app.py:1653 |
 | `/instance/shutdown` | POST | `instance_shutdown` | src/tessellate/api/app.py:1673 |
-| `/items/save-many` | PUT | `save_items` | src/tessellate/api/wb_items.py:337 |
+| `/items/save-many` | PUT | `save_items` | src/tessellate/api/wb_items.py:349 |
 | `/jobs` | GET | `list_jobs` | src/tessellate/api/routes_tasks.py:613 |
 | `/jobs/cancel` | POST | `cancel_job` | src/tessellate/api/routes_models.py:1225 |
 | `/jobs/last-runs` | GET | `jobs_last_runs` | src/tessellate/api/routes_tasks.py:576 |
@@ -12635,9 +12635,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/note-types` | POST | `create_note_type` | src/tessellate/api/routes_properties.py:145 |
 | `/note-types/{type_id}` | DELETE | `delete_note_type` | src/tessellate/api/routes_properties.py:189 |
 | `/note-types/{type_id}` | PATCH | `patch_note_type` | src/tessellate/api/routes_properties.py:167 |
-| `/objects` | POST | `create_object` | src/tessellate/api/wb_items.py:225 |
-| `/objects/{object_id}` | DELETE | `delete_object` | src/tessellate/api/wb_items.py:370 |
-| `/objects/{object_id}` | PUT | `update_object` | src/tessellate/api/wb_items.py:269 |
+| `/objects` | POST | `create_object` | src/tessellate/api/wb_items.py:235 |
+| `/objects/{object_id}` | DELETE | `delete_object` | src/tessellate/api/wb_items.py:383 |
+| `/objects/{object_id}` | PUT | `update_object` | src/tessellate/api/wb_items.py:280 |
 | `/ocr-model` | POST | `set_ocr_model` | src/tessellate/api/routes_models.py:1071 |
 | `/ocr-readers` | GET | `ocr_readers` | src/tessellate/api/routes_files.py:3329 |
 | `/ocr/language` | POST | `set_ocr_language` | src/tessellate/api/routes_files.py:3378 |
@@ -12819,8 +12819,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/websearch/searxng/status` | GET | `searxng_status` | src/tessellate/api/routes_websearch.py:138 |
 | `/websearch/searxng/stop` | POST | `searxng_stop` | src/tessellate/api/routes_websearch.py:229 |
 | `/when` | POST | `read_when` | src/tessellate/api/routes_reminders.py:554 |
-| `/whiteboard/boards/{board_id}/paste` | POST | `paste_board_items` | src/tessellate/api/routes_board_library.py:1333 |
-| `/whiteboard/boards/{board_id}/place` | POST | `place_library_item` | src/tessellate/api/routes_board_library.py:1202 |
+| `/whiteboard/boards/{board_id}/paste` | POST | `paste_board_items` | src/tessellate/api/routes_board_library.py:1334 |
+| `/whiteboard/boards/{board_id}/place` | POST | `place_library_item` | src/tessellate/api/routes_board_library.py:1203 |
 | `/{bookmark_id}` | DELETE | `delete_bookmark` | src/tessellate/api/routes_bookmarks.py:98 |
 | `/{bookmark_id}` | PUT | `update_bookmark` | src/tessellate/api/routes_bookmarks.py:89 |
 | `/{category_id}` | DELETE | `delete_category` | src/tessellate/api/routes_categories.py:336 |
@@ -12939,7 +12939,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8689)
+## Backend modules (8690)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -15724,8 +15724,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3369 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3497 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3371 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3499 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -18839,82 +18839,82 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `ImportBody` | src/tessellate/api/routes_board_library.py:812 |
-| `LibraryBody` | src/tessellate/api/routes_board_library.py:734 |
-| `LibraryItemCreate` | src/tessellate/api/routes_board_library.py:580 |
-| `LibraryItemOut` | src/tessellate/api/routes_board_library.py:434 |
-| `LibraryItemUpdate` | src/tessellate/api/routes_board_library.py:614 |
-| `LibraryRestoreBody` | src/tessellate/api/routes_board_library.py:665 |
-| `MarkBody` | src/tessellate/api/routes_board_library.py:717 |
-| `NewBoardBody` | src/tessellate/api/routes_board_library.py:1366 |
-| `PasteBody` | src/tessellate/api/routes_board_library.py:1271 |
-| `PasteItem` | src/tessellate/api/routes_board_library.py:1260 |
-| `PlaceBody` | src/tessellate/api/routes_board_library.py:934 |
-| `_band_tops` | src/tessellate/api/routes_board_library.py:1154 |
-| `_builtin` | src/tessellate/api/routes_board_library.py:415 |
-| `_builtin_index` | src/tessellate/api/routes_board_library.py:370 |
-| `_builtin_matches` | src/tessellate/api/routes_board_library.py:519 |
-| `_builtin_set_names` | src/tessellate/api/routes_board_library.py:512 |
-| `_clean_branch` | src/tessellate/api/routes_board_library.py:242 |
-| `_clean_element` | src/tessellate/api/routes_board_library.py:223 |
-| `_clean_items` | src/tessellate/api/routes_board_library.py:186 |
-| `_clean_links` | src/tessellate/api/routes_board_library.py:209 |
+| `ImportBody` | src/tessellate/api/routes_board_library.py:813 |
+| `LibraryBody` | src/tessellate/api/routes_board_library.py:735 |
+| `LibraryItemCreate` | src/tessellate/api/routes_board_library.py:581 |
+| `LibraryItemOut` | src/tessellate/api/routes_board_library.py:435 |
+| `LibraryItemUpdate` | src/tessellate/api/routes_board_library.py:615 |
+| `LibraryRestoreBody` | src/tessellate/api/routes_board_library.py:666 |
+| `MarkBody` | src/tessellate/api/routes_board_library.py:718 |
+| `NewBoardBody` | src/tessellate/api/routes_board_library.py:1367 |
+| `PasteBody` | src/tessellate/api/routes_board_library.py:1272 |
+| `PasteItem` | src/tessellate/api/routes_board_library.py:1261 |
+| `PlaceBody` | src/tessellate/api/routes_board_library.py:935 |
+| `_band_tops` | src/tessellate/api/routes_board_library.py:1155 |
+| `_builtin` | src/tessellate/api/routes_board_library.py:416 |
+| `_builtin_index` | src/tessellate/api/routes_board_library.py:371 |
+| `_builtin_matches` | src/tessellate/api/routes_board_library.py:520 |
+| `_builtin_set_names` | src/tessellate/api/routes_board_library.py:513 |
+| `_clean_branch` | src/tessellate/api/routes_board_library.py:243 |
+| `_clean_element` | src/tessellate/api/routes_board_library.py:224 |
+| `_clean_items` | src/tessellate/api/routes_board_library.py:187 |
+| `_clean_links` | src/tessellate/api/routes_board_library.py:210 |
 | `_clean_number` | src/tessellate/api/routes_board_library.py:130 |
 | `_clean_object_item` | src/tessellate/api/routes_board_library.py:156 |
-| `_clean_palette` | src/tessellate/api/routes_board_library.py:279 |
-| `_clean_payload` | src/tessellate/api/routes_board_library.py:317 |
+| `_clean_palette` | src/tessellate/api/routes_board_library.py:280 |
+| `_clean_payload` | src/tessellate/api/routes_board_library.py:318 |
 | `_clean_sketch_item` | src/tessellate/api/routes_board_library.py:138 |
-| `_clean_style` | src/tessellate/api/routes_board_library.py:270 |
-| `_clean_tags` | src/tessellate/api/routes_board_library.py:330 |
-| `_clean_template` | src/tessellate/api/routes_board_library.py:286 |
-| `_drop_media` | src/tessellate/api/routes_board_library.py:861 |
+| `_clean_style` | src/tessellate/api/routes_board_library.py:271 |
+| `_clean_tags` | src/tessellate/api/routes_board_library.py:331 |
+| `_clean_template` | src/tessellate/api/routes_board_library.py:287 |
+| `_drop_media` | src/tessellate/api/routes_board_library.py:862 |
 | `_fail` | src/tessellate/api/routes_board_library.py:120 |
-| `_grouped_parts` | src/tessellate/api/routes_board_library.py:1038 |
-| `_icons` | src/tessellate/api/routes_board_library.py:407 |
-| `_ink` | src/tessellate/api/routes_board_library.py:972 |
-| `_item_or_404` | src/tessellate/api/routes_board_library.py:622 |
-| `_item_out` | src/tessellate/api/routes_board_library.py:448 |
-| `_item_rows` | src/tessellate/api/routes_board_library.py:481 |
-| `_library_or_404` | src/tessellate/api/routes_board_library.py:588 |
-| `_library_out` | src/tessellate/api/routes_board_library.py:466 |
-| `_map_has_no_centre` | src/tessellate/api/routes_board_library.py:1089 |
-| `_marks_and_recent` | src/tessellate/api/routes_board_library.py:494 |
+| `_grouped_parts` | src/tessellate/api/routes_board_library.py:1039 |
+| `_icons` | src/tessellate/api/routes_board_library.py:408 |
+| `_ink` | src/tessellate/api/routes_board_library.py:973 |
+| `_item_or_404` | src/tessellate/api/routes_board_library.py:623 |
+| `_item_out` | src/tessellate/api/routes_board_library.py:449 |
+| `_item_rows` | src/tessellate/api/routes_board_library.py:482 |
+| `_library_or_404` | src/tessellate/api/routes_board_library.py:589 |
+| `_library_out` | src/tessellate/api/routes_board_library.py:467 |
+| `_map_has_no_centre` | src/tessellate/api/routes_board_library.py:1090 |
+| `_marks_and_recent` | src/tessellate/api/routes_board_library.py:495 |
 | `_media_urls` | src/tessellate/api/routes_board_library.py:124 |
-| `_name_matcher` | src/tessellate/api/routes_board_library.py:470 |
-| `_onto_current_layer` | src/tessellate/api/routes_board_library.py:1195 |
-| `_paste_object` | src/tessellate/api/routes_board_library.py:1282 |
-| `_paste_sketch` | src/tessellate/api/routes_board_library.py:1296 |
-| `_place_branch` | src/tessellate/api/routes_board_library.py:1106 |
-| `_place_element` | src/tessellate/api/routes_board_library.py:1073 |
-| `_place_link_part` | src/tessellate/api/routes_board_library.py:1014 |
-| `_place_object_part` | src/tessellate/api/routes_board_library.py:995 |
-| `_place_parts` | src/tessellate/api/routes_board_library.py:1048 |
-| `_place_sketch_part` | src/tessellate/api/routes_board_library.py:976 |
-| `_point_link_ends` | src/tessellate/api/routes_board_library.py:1275 |
-| `_process_pasted_images` | src/tessellate/api/routes_board_library.py:1313 |
-| `_record_paste` | src/tessellate/api/routes_board_library.py:1321 |
-| `_resolve` | src/tessellate/api/routes_board_library.py:950 |
-| `_shape_sets` | src/tessellate/api/routes_board_library.py:355 |
-| `_stack_on_top` | src/tessellate/api/routes_board_library.py:1170 |
-| `_yours` | src/tessellate/api/routes_board_library.py:456 |
-| `create_library` | src/tessellate/api/routes_board_library.py:739 |
-| `create_library_item` | src/tessellate/api/routes_board_library.py:599 |
-| `delete_library` | src/tessellate/api/routes_board_library.py:757 |
-| `delete_library_item` | src/tessellate/api/routes_board_library.py:655 |
-| `drawings_under_cards` | src/tessellate/api/routes_board_library.py:390 |
-| `duplicate_library_item` | src/tessellate/api/routes_board_library.py:703 |
-| `export_library` | src/tessellate/api/routes_board_library.py:787 |
-| `import_library` | src/tessellate/api/routes_board_library.py:821 |
-| `list_library` | src/tessellate/api/routes_board_library.py:539 |
-| `mark_builtin` | src/tessellate/api/routes_board_library.py:723 |
-| `new_board_from_template` | src/tessellate/api/routes_board_library.py:1375 |
-| `paste_board_items` | src/tessellate/api/routes_board_library.py:1334 |
-| `place_library_item` | src/tessellate/api/routes_board_library.py:1203 |
-| `rename_library` | src/tessellate/api/routes_board_library.py:749 |
-| `restore_library` | src/tessellate/api/routes_board_library.py:670 |
-| `restore_library_item` | src/tessellate/api/routes_board_library.py:692 |
-| `transform_path` | src/tessellate/api/routes_board_library.py:880 |
-| `update_library_item` | src/tessellate/api/routes_board_library.py:631 |
+| `_name_matcher` | src/tessellate/api/routes_board_library.py:471 |
+| `_onto_current_layer` | src/tessellate/api/routes_board_library.py:1196 |
+| `_paste_object` | src/tessellate/api/routes_board_library.py:1283 |
+| `_paste_sketch` | src/tessellate/api/routes_board_library.py:1297 |
+| `_place_branch` | src/tessellate/api/routes_board_library.py:1107 |
+| `_place_element` | src/tessellate/api/routes_board_library.py:1074 |
+| `_place_link_part` | src/tessellate/api/routes_board_library.py:1015 |
+| `_place_object_part` | src/tessellate/api/routes_board_library.py:996 |
+| `_place_parts` | src/tessellate/api/routes_board_library.py:1049 |
+| `_place_sketch_part` | src/tessellate/api/routes_board_library.py:977 |
+| `_point_link_ends` | src/tessellate/api/routes_board_library.py:1276 |
+| `_process_pasted_images` | src/tessellate/api/routes_board_library.py:1314 |
+| `_record_paste` | src/tessellate/api/routes_board_library.py:1322 |
+| `_resolve` | src/tessellate/api/routes_board_library.py:951 |
+| `_shape_sets` | src/tessellate/api/routes_board_library.py:356 |
+| `_stack_on_top` | src/tessellate/api/routes_board_library.py:1171 |
+| `_yours` | src/tessellate/api/routes_board_library.py:457 |
+| `create_library` | src/tessellate/api/routes_board_library.py:740 |
+| `create_library_item` | src/tessellate/api/routes_board_library.py:600 |
+| `delete_library` | src/tessellate/api/routes_board_library.py:758 |
+| `delete_library_item` | src/tessellate/api/routes_board_library.py:656 |
+| `drawings_under_cards` | src/tessellate/api/routes_board_library.py:391 |
+| `duplicate_library_item` | src/tessellate/api/routes_board_library.py:704 |
+| `export_library` | src/tessellate/api/routes_board_library.py:788 |
+| `import_library` | src/tessellate/api/routes_board_library.py:822 |
+| `list_library` | src/tessellate/api/routes_board_library.py:540 |
+| `mark_builtin` | src/tessellate/api/routes_board_library.py:724 |
+| `new_board_from_template` | src/tessellate/api/routes_board_library.py:1376 |
+| `paste_board_items` | src/tessellate/api/routes_board_library.py:1335 |
+| `place_library_item` | src/tessellate/api/routes_board_library.py:1204 |
+| `rename_library` | src/tessellate/api/routes_board_library.py:750 |
+| `restore_library` | src/tessellate/api/routes_board_library.py:671 |
+| `restore_library_item` | src/tessellate/api/routes_board_library.py:693 |
+| `transform_path` | src/tessellate/api/routes_board_library.py:881 |
+| `update_library_item` | src/tessellate/api/routes_board_library.py:632 |
 
 ### src/tessellate/api/routes_bookmarks.py (7)
 
@@ -20717,30 +20717,31 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_xmind_marks` | src/tessellate/api/wb_import.py:345 |
 | `_xmind_style` | src/tessellate/api/wb_import.py:327 |
 
-### src/tessellate/api/wb_items.py (21)
+### src/tessellate/api/wb_items.py (22)
 
 | Name | File:line |
 |---|---|
-| `ItemsSaveMany` | src/tessellate/api/wb_items.py:320 |
-| `SaveManyNode` | src/tessellate/api/wb_items.py:308 |
-| `SaveManyObject` | src/tessellate/api/wb_items.py:316 |
-| `SaveManySketch` | src/tessellate/api/wb_items.py:312 |
+| `ItemsSaveMany` | src/tessellate/api/wb_items.py:332 |
+| `SaveManyNode` | src/tessellate/api/wb_items.py:320 |
+| `SaveManyObject` | src/tessellate/api/wb_items.py:328 |
+| `SaveManySketch` | src/tessellate/api/wb_items.py:324 |
 | `_apply_comments` | src/tessellate/api/wb_items.py:26 |
-| `_delete_one_object` | src/tessellate/api/wb_items.py:448 |
-| `_rows_by_id` | src/tessellate/api/wb_items.py:328 |
+| `_delete_one_object` | src/tessellate/api/wb_items.py:461 |
+| `_require_diagram_row` | src/tessellate/api/wb_items.py:225 |
+| `_rows_by_id` | src/tessellate/api/wb_items.py:340 |
 | `_save_node` | src/tessellate/api/wb_items.py:92 |
-| `_save_object` | src/tessellate/api/wb_items.py:283 |
+| `_save_object` | src/tessellate/api/wb_items.py:295 |
 | `_save_sketch` | src/tessellate/api/wb_items.py:179 |
-| `_subtree` | src/tessellate/api/wb_items.py:417 |
+| `_subtree` | src/tessellate/api/wb_items.py:430 |
 | `create_node` | src/tessellate/api/wb_items.py:35 |
-| `create_object` | src/tessellate/api/wb_items.py:227 |
+| `create_object` | src/tessellate/api/wb_items.py:237 |
 | `create_sketch` | src/tessellate/api/wb_items.py:138 |
 | `delete_node` | src/tessellate/api/wb_items.py:117 |
-| `delete_object` | src/tessellate/api/wb_items.py:372 |
+| `delete_object` | src/tessellate/api/wb_items.py:385 |
 | `delete_sketch` | src/tessellate/api/wb_items.py:198 |
-| `save_items` | src/tessellate/api/wb_items.py:339 |
+| `save_items` | src/tessellate/api/wb_items.py:351 |
 | `update_node` | src/tessellate/api/wb_items.py:80 |
-| `update_object` | src/tessellate/api/wb_items.py:271 |
+| `update_object` | src/tessellate/api/wb_items.py:282 |
 | `update_sketch` | src/tessellate/api/wb_items.py:168 |
 
 ### src/tessellate/api/wb_make.py (10)
@@ -20787,19 +20788,19 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `WhiteboardComment` | src/tessellate/api/wb_model.py:254 |
 | `WhiteboardNodeBase` | src/tessellate/api/wb_model.py:307 |
 | `WhiteboardNodeOut` | src/tessellate/api/wb_model.py:330 |
-| `WhiteboardObjectBase` | src/tessellate/api/wb_model.py:842 |
+| `WhiteboardObjectBase` | src/tessellate/api/wb_model.py:846 |
 | `WhiteboardObjectData` | src/tessellate/api/wb_model.py:408 |
-| `WhiteboardObjectOut` | src/tessellate/api/wb_model.py:865 |
+| `WhiteboardObjectOut` | src/tessellate/api/wb_model.py:869 |
 | `WhiteboardSketchBase` | src/tessellate/api/wb_model.py:339 |
 | `WhiteboardSketchIn` | src/tessellate/api/wb_model.py:389 |
 | `WhiteboardSketchOut` | src/tessellate/api/wb_model.py:399 |
-| `WhiteboardStateOut` | src/tessellate/api/wb_model.py:967 |
+| `WhiteboardStateOut` | src/tessellate/api/wb_model.py:973 |
 | `_bad_sketch_field` | src/tessellate/api/wb_model.py:357 |
 | `_clamp` | src/tessellate/api/wb_model.py:290 |
 | `_is_one_emoji` | src/tessellate/api/wb_model.py:207 |
-| `_object_to_out` | src/tessellate/api/wb_model.py:912 |
-| `_require_object_data` | src/tessellate/api/wb_model.py:939 |
-| `_require_table_cells` | src/tessellate/api/wb_model.py:929 |
+| `_object_to_out` | src/tessellate/api/wb_model.py:916 |
+| `_require_object_data` | src/tessellate/api/wb_model.py:943 |
+| `_require_table_cells` | src/tessellate/api/wb_model.py:933 |
 | `check_sketch_data` | src/tessellate/api/wb_model.py:373 |
 
 ### src/tessellate/api/wb_preview.py (27)
@@ -21138,39 +21139,39 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `DeskApi` | src/tessellate/core/desk_companion.py:622 |
-| `DeskCompanion` | src/tessellate/core/desk_companion.py:679 |
-| `_config` | src/tessellate/core/desk_companion.py:167 |
-| `_default_overlay_factory` | src/tessellate/core/desk_companion.py:1372 |
-| `_follow` | src/tessellate/core/desk_companion.py:1413 |
-| `_log_placed` | src/tessellate/core/desk_companion.py:569 |
-| `_pref` | src/tessellate/core/desk_companion.py:180 |
-| `_read_back` | src/tessellate/core/desk_companion.py:558 |
-| `_screen_area` | src/tessellate/core/desk_companion.py:305 |
-| `_set_pref` | src/tessellate/core/desk_companion.py:192 |
-| `_system_dpi` | src/tessellate/core/desk_companion.py:218 |
-| `attach` | src/tessellate/core/desk_companion.py:1382 |
-| `carry_due` | src/tessellate/core/desk_companion.py:1450 |
-| `clamp_corner` | src/tessellate/core/desk_companion.py:321 |
-| `clean_size` | src/tessellate/core/desk_companion.py:587 |
-| `companion_ex_style` | src/tessellate/core/desk_companion.py:395 |
-| `companion_options` | src/tessellate/core/desk_companion.py:138 |
-| `enabled` | src/tessellate/core/desk_companion.py:188 |
-| `hit_script` | src/tessellate/core/desk_companion.py:599 |
-| `monitor_areas` | src/tessellate/core/desk_companion.py:247 |
-| `monitor_for` | src/tessellate/core/desk_companion.py:343 |
-| `panel_corner` | src/tessellate/core/desk_companion.py:330 |
-| `panel_placement` | src/tessellate/core/desk_companion.py:355 |
-| `physical_rect` | src/tessellate/core/desk_companion.py:430 |
-| `pick_area` | src/tessellate/core/desk_companion.py:293 |
-| `place_on_screen` | src/tessellate/core/desk_companion.py:507 |
-| `place_physical` | src/tessellate/core/desk_companion.py:533 |
-| `raise_on_desktop` | src/tessellate/core/desk_companion.py:447 |
-| `shutdown` | src/tessellate/core/desk_companion.py:1471 |
-| `to_logical` | src/tessellate/core/desk_companion.py:199 |
-| `tray_menu_item` | src/tessellate/core/desk_companion.py:1479 |
-| `window_handle` | src/tessellate/core/desk_companion.py:414 |
-| `work_area` | src/tessellate/core/desk_companion.py:228 |
+| `DeskApi` | src/tessellate/core/desk_companion.py:628 |
+| `DeskCompanion` | src/tessellate/core/desk_companion.py:685 |
+| `_config` | src/tessellate/core/desk_companion.py:173 |
+| `_default_overlay_factory` | src/tessellate/core/desk_companion.py:1389 |
+| `_follow` | src/tessellate/core/desk_companion.py:1430 |
+| `_log_placed` | src/tessellate/core/desk_companion.py:575 |
+| `_pref` | src/tessellate/core/desk_companion.py:186 |
+| `_read_back` | src/tessellate/core/desk_companion.py:564 |
+| `_screen_area` | src/tessellate/core/desk_companion.py:311 |
+| `_set_pref` | src/tessellate/core/desk_companion.py:198 |
+| `_system_dpi` | src/tessellate/core/desk_companion.py:224 |
+| `attach` | src/tessellate/core/desk_companion.py:1399 |
+| `carry_due` | src/tessellate/core/desk_companion.py:1467 |
+| `clamp_corner` | src/tessellate/core/desk_companion.py:327 |
+| `clean_size` | src/tessellate/core/desk_companion.py:593 |
+| `companion_ex_style` | src/tessellate/core/desk_companion.py:401 |
+| `companion_options` | src/tessellate/core/desk_companion.py:144 |
+| `enabled` | src/tessellate/core/desk_companion.py:194 |
+| `hit_script` | src/tessellate/core/desk_companion.py:605 |
+| `monitor_areas` | src/tessellate/core/desk_companion.py:253 |
+| `monitor_for` | src/tessellate/core/desk_companion.py:349 |
+| `panel_corner` | src/tessellate/core/desk_companion.py:336 |
+| `panel_placement` | src/tessellate/core/desk_companion.py:361 |
+| `physical_rect` | src/tessellate/core/desk_companion.py:436 |
+| `pick_area` | src/tessellate/core/desk_companion.py:299 |
+| `place_on_screen` | src/tessellate/core/desk_companion.py:513 |
+| `place_physical` | src/tessellate/core/desk_companion.py:539 |
+| `raise_on_desktop` | src/tessellate/core/desk_companion.py:453 |
+| `shutdown` | src/tessellate/core/desk_companion.py:1488 |
+| `to_logical` | src/tessellate/core/desk_companion.py:205 |
+| `tray_menu_item` | src/tessellate/core/desk_companion.py:1496 |
+| `window_handle` | src/tessellate/core/desk_companion.py:420 |
+| `work_area` | src/tessellate/core/desk_companion.py:234 |
 
 ### src/tessellate/core/desktop_dialog.py (2)
 
@@ -22178,7 +22179,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `OverlayRunner` | src/tessellate/core/overlay/runner.py:60 |
+| `OverlayRunner` | src/tessellate/core/overlay/runner.py:61 |
 
 ### src/tessellate/core/overlay/sprites.py (8)
 
@@ -23867,7 +23868,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17094)
+## Tests (17110)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24385,6 +24386,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_derived_facts.py | 14 |
 | tests/test_desk_companion.py | 63 |
 | tests/test_desk_counts_63.py | 5 |
+| tests/test_desk_look_locked_1670.py | 5 |
 | tests/test_desk_overlay_companion.py | 10 |
 | tests/test_desk_overlay_roam.py | 15 |
 | tests/test_desk_overlay_wiring.py | 36 |
@@ -24411,6 +24413,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_r8a.py | 5 |
 | tests/test_diagram_r8b.py | 9 |
 | tests/test_diagram_r8c.py | 10 |
+| tests/test_diagram_r9b.py | 9 |
 | tests/test_diagram_split_r3_r4.py | 8 |
 | tests/test_diagram_suggest.py | 21 |
 | tests/test_diagram_touch.py | 4 |
@@ -25206,11 +25209,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_float.py | 6 |
 | tests/test_overlay_hang.py | 11 |
 | tests/test_overlay_host.py | 25 |
-| tests/test_overlay_idle.py | 8 |
+| tests/test_overlay_idle.py | 9 |
 | tests/test_overlay_moves.py | 26 |
 | tests/test_overlay_roam.py | 19 |
 | tests/test_overlay_roam_runner.py | 10 |
-| tests/test_overlay_runner.py | 21 |
+| tests/test_overlay_runner.py | 22 |
 | tests/test_overlay_sprites.py | 16 |
 | tests/test_overview_counts_1524.py | 3 |
 | tests/test_owner_typos.py | 21 |
@@ -25902,7 +25905,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_zoom_frame_1508.py | 3 |
 | tests/test_zoom_wheel_delta.py | 3 |
 
-## Plan headings (999)
+## Plan headings (1000)
 
 Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, except the HISTORY.md archive. Sorted by heading.
 
@@ -26609,7 +26612,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:179 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:177 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4178 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
@@ -26721,6 +26724,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-11-03 (chat; CHAT_PLAN is at its cap) | docs/roadmap/BACKLOG.md:4435 |
 | Placed from INBOX, 2026-11-03b | docs/roadmap/BACKLOG.md:4445 |
 | Placed from INBOX, 2026-11-04 | docs/roadmap/MINDMAP_PLAN.md:1902 |
+| Placed from INBOX, 2026-11-04 | docs/roadmap/PLAN.md:318 |
 | Placed from INBOX, 2026-11-04 | docs/roadmap/WHITEBOARD_PLAN.md:1728 |
 | Placed from INBOX, 2026-11-04 (1657, what the two lag rounds left) | docs/roadmap/UI_MODERNISATION_PLAN.md:1560 |
 | Placed from INBOX, built (pointers) | docs/roadmap/UI_MODERNISATION_PLAN.md:1062 |

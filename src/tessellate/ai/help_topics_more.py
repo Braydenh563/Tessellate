@@ -345,7 +345,9 @@ MORE_TOPICS: list[dict] = [
             "flowchart, sequence, state, Gantt or pie chart live. A note's menu, under AI actions, "
             "Make a mind map, builds a map from that note's headings and lists. "
             "The Writing room's diagram needs a model for anything beyond a rule-made "
-            "flowchart, timeline or mind map."
+            "flowchart, timeline or mind map. "
+            "A diagram on a board can follow a Library diagram: it redraws from it, and if that "
+            "diagram is deleted the board keeps its last picture and says so."
         ),
         "badge": {"label": "Mind maps", "tab": "library"},
     },

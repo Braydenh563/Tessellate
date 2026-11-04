@@ -52686,3 +52686,12 @@ Built: R9a (1621), tests in `tests/test_diagram_object_kind.py`. Row text: Add `
 - **Not verified:** a real press-hold-drag with the pointer from the card (the reference and render were called directly); the chat attach of a diagram.
 - **Found, not fixed:** `tests/test_blindux_1031.py` object-move ranking (2 cases) and `test_inbox_is_a_tray_not_a_backlog` (20 items) fail at the merge base.
 
+
+## Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R9b)
+
+Built: R9b (1621), tests in `tests/test_diagram_r9b.py`. Row text: `data.diagram_id` and its validator (wb_model.py:950; object routes wb_items.py:225, :269), the snapshot rule (D3), the strip on library save and import. Check: 0, negative and non-int ids rejected; the key rejected on other kinds; a deleted row falls back to the snapshot; a library save strips it.
+
+- **What it does:** `WhiteboardObjectData.diagram_id` is a strict int from 1 (`wb_model.py`), refused on any kind but a diagram (`_require_object_data`); `wb_items.py` `_require_diagram_row` refuses an id that names an existing row which is not an `mmd` document (create, update and save-many) and lets a missing row through. `wbPaintDiagram` fetches the row once per node, rewrites `data.mermaid` silently when it differs, and on a 404 titles the node "The linked diagram was deleted"; `wbSaveDiagram` writes the row too while the link lives and drops `diagram_id` once it is gone. The library save leaves the key out (`whiteboard-library.js`, `routes_board_library.py`). No new global names.
+- **Measured** (Playwright on `serve.sh` port 8858, 1440 and 390, light and dark): a row edited elsewhere, the board reopened: `data.mermaid` equal to the row's text in all four runs; row deleted and the board reopened from another board: title set, snapshot image drawn, box 320 by 200 and image 320 by 200 at both widths. The only console errors are the 404 of the deleted row's own fetch.
+- **Help:** `make-a-diagram` Guide topic names the link and the deleted case.
+- **Not verified:** nothing creates a link in the UI yet (R9c's Save to Library); the tests and sweep made the object through the API. A private note's id is just a number among documents, so no leak path exists; the test checks the response.

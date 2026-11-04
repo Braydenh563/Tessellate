@@ -14,7 +14,7 @@ import re
 import unicodedata
 
 from typing import Annotated
-from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, StringConstraints, field_validator, model_serializer
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, StrictInt, StringConstraints, field_validator, model_serializer
 from fastapi import HTTPException
 from tessellate.core.validation_copy import Said
 from tessellate.core.database import WhiteboardObject
@@ -428,6 +428,10 @@ class WhiteboardObjectData(BaseModel):
     header: bool | None = None
     #: A diagram's Mermaid source (`DIAGRAM_KIND`).
     mermaid: str | None = Field(default=None, max_length=MAX_MERMAID_CHARS)
+    #: The Library diagram (a `documents` row of type mmd) this object shows, the mermaid above
+    #: being its snapshot (1621 D3). Not `ref_id`, which is `MAP_REFERENCE_KINDS` only. Strict, so
+    #: "7", 7.0 and true are refused; a deleted row is a valid state, so existence is not checked here.
+    diagram_id: StrictInt | None = Field(default=None, ge=1)
     #: **A table's column widths** (wb5): one relative weight per column, so
     #: [2, 1, 1] is a first column twice the others and the box's width the
     #: sum. Absent means equal; a length other than the columns is refused.
