@@ -494,6 +494,21 @@
   //: row of `POPUP_TOOLS`. Over a board or a mind map it is the board's own `wbEditDiagram` (a diagram object lands on Done);
   //: over a text box it opens the builder on the starter and makes a .mmd document and writes `![[Title]]` at the caret on Done (1621 D5); anywhere else (or `doc`) it
   //: opens the builder and saves a new .mmd document on Done. Cancel changes nothing; Done keeps what the dialog shows.
+  //: The `.mmd` rows, in the app's one picker (1679 slice 9): a row opens its page, the same as the Documents list does.
+  async function pickExistingDiagram() {
+    const shell = pickerDialog({ title: "Open a diagram", placeholder: "Search your diagrams…", searchLabel: "Search your diagrams" });
+    const box = pickerListbox(shell, "Diagrams");
+    const rows = (Array.isArray(docs) && docs.length ? docs : await apiPagedList("/documents", 200).catch(() => [])).filter((d) => d.file_type === "mmd");
+    const paint = () => {
+      const needle = shell.search.value.trim().toLowerCase();
+      const items = rows.filter((d) => (d.title || "Untitled").toLowerCase().includes(needle)).map((d) => ({ icon: "ph:graph", label: d.title || "Untitled", about: "", value: d }));
+      box.fill(items, needle, { icon: "ph:graph", title: "No diagrams yet", text: "Make one with the blocks and it will be listed here." });
+    };
+    shell.search.addEventListener("input", paint);
+    paint();
+    return new Promise((resolve) => shell.open(resolve));
+  }
+
   async function diagramDoor({ target = null, doc = false } = {}) {
     const onBoard = !doc && wbCommandsLive() && (!target || Boolean(target.closest?.("#library-view-whiteboard")));
     if (onBoard) return wbEditDiagram();
@@ -508,6 +523,7 @@
         //: Empty, so the walkthrough shows (R6.8); its "Start from an example" button loads the starter.
         source: "flowchart TD",
         title: "Diagram builder",
+        existing: { pick: pickExistingDiagram, open: async (row) => (switchTab("documents"), loadDocuments(row.id)) },
         onDone: async (next) => {
           const made = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title: "Diagram", content: next, file_type: "mmd" }) }).catch(() => (toast("The diagram was not saved. Try Done again.", "info"), null));
           if (!made) return;

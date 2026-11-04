@@ -71,11 +71,16 @@ def _compose(client, **body):
 # --- the templates -------------------------------------------------------------------
 
 
-def test_eight_flowcharts_each_read_back_as_blocks_the_printer_writes_unchanged():
+def test_fourteen_flowcharts_each_read_back_as_blocks_the_printer_writes_unchanged():
     #: 1546 P4 added a mind map, a timeline and two sequence diagrams (each with a `kind`); they are
     #: held to the same rule by tests/test_diagram_kinds.py, so this one stays the flowcharts'.
     rows = [t for t in json.loads(TEMPLATES.read_text(encoding="utf-8"))["templates"] if "kind" not in t]
-    assert [t["id"] for t in rows] == ["process", "decision", "approval", "onboarding", "bug-triage", "user-flow", "swimlanes", "blank"]
+    #: 1679 slice 9 moved the intent from "eight" to fourteen: an org chart and an architecture lead, then
+    #: the first seven, then a lifecycle, a checklist, sideways lanes and a loop, and Blank last.
+    assert [t["id"] for t in rows] == [
+        "org-chart", "architecture", "process", "decision", "approval", "onboarding", "bug-triage", "user-flow",
+        "swimlanes", "state-lifecycle", "checklist-flow", "swimlanes-sideways", "request-loop", "blank",
+    ]  # fmt: skip
     got = _node(
         f"const rows = {json.dumps(rows)};\n"
         "console.log(JSON.stringify(rows.map((t) => { const m = diagramModel.parse(t.source);"
@@ -86,6 +91,9 @@ def test_eight_flowcharts_each_read_back_as_blocks_the_printer_writes_unchanged(
     by_id = {row["id"]: row for row in got}
     assert all(row["same"] and row["kept"] == 0 and row["known"] for row in got), got
     assert by_id["blank"]["nodes"] == 0 and by_id["swimlanes"]["groups"] == 3
+    assert by_id["architecture"]["groups"] == 3 and by_id["swimlanes-sideways"]["groups"] == 3
+    assert by_id["org-chart"]["groups"] == 0 and by_id["org-chart"]["edges"] == by_id["org-chart"]["nodes"] - 1
+    assert all(row["nodes"] >= 5 for row in got if row["id"] != "blank")
     # Every other one is a real diagram with a join for each box but one at least.
     assert all(row["nodes"] >= 5 and row["edges"] >= row["nodes"] - 1 for row in got if row["id"] not in ("blank",)), got
     # The decision, approval and triage flows ask a question: a diamond with two ways out.
@@ -288,3 +296,13 @@ def test_the_suggestions_are_a_bundle_of_their_own_never_at_boot():
     for boot in ("app.js", "lazy-entries.js"):
         assert "diagramSuggest" not in (JS / boot).read_text(encoding="utf-8"), boot
     assert "diagram-suggest.js" not in (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+
+
+def test_the_template_picker_filters_and_the_door_offers_the_existing_diagrams():
+    """1679 slice 9: fourteen rows are typed to through the one recipe, and the door's dialog opens a diagram that exists."""
+    suggest = (ROOT / "frontend" / "js" / "diagram-suggest.js").read_text(encoding="utf-8")
+    assert 'listFilter(list, { label: "Search the templates"' in suggest
+    embed = (ROOT / "frontend" / "js" / "diagram-embed.js").read_text(encoding="utf-8")
+    assert "existing" in embed and "Open an existing diagram" in embed
+    mermaid = (ROOT / "frontend" / "js" / "documents-mermaid.js").read_text(encoding="utf-8")
+    assert 'file_type === "mmd"' in mermaid and "pickerDialog(" in mermaid

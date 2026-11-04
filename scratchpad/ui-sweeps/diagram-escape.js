@@ -1,6 +1,6 @@
 // INBOX 1679 diagram sweeps in one file (the scratchpad count is capped): node diagram-escape.js <mode> [width], BASE=http://127.0.0.1:PORT.
 // Modes: escape (Escape mid-drag, slice 4), keys (Alt+Up in the flow-ordered list), sheet-escape (390: the Connect picker and the Blocks sheet),
-// phone-picture (390 picture share, slice 11), fit-floor (Fit floor, slice 7), open-new (New diagram dialog).
+// phone-picture (390 picture share, slice 11), fit-floor (Fit floor, slice 7), open-new (New diagram dialog), templates (slice 9).
 process.env.BASE ||= "http://127.0.0.1:8781";
 process.env.SCRATCH ||= require("os").tmpdir();
 const { boot } = require("./lib.js");
@@ -241,6 +241,74 @@ const W = Number(process.argv[2] || 390), touch = W < 600;
   }
   console.log(JSON.stringify(out));
   await page.screenshot({ path: process.env.SCRATCH + `/open-new-${W}.png` });
+  await browser.close();
+})();
+
+};
+modes["templates"] = () => {
+const W = Number(process.argv[3] || 1440), touch = W < 600;
+(async () => {
+  const { browser, page } = await boot({ viewport: { width: W, height: touch ? 844 : 900 }, ...(touch ? { hasTouch: true, isMobile: true } : {}) });
+  const out = { W };
+  await page.evaluate(async () => {
+    const r = await api("/documents", { method: "POST", body: JSON.stringify({ title: "Known " + Date.now(), content: "flowchart TD\n  A-->B\n", file_type: "mmd" }) });
+    await r.json();
+    switchTab("documents");
+  });
+  await page.waitForTimeout(1500);
+  await page.evaluate(() => document.getElementById("doc-new-diagram")?.click());
+  await page.waitForSelector(".dgm-dialog", { timeout: 12000 });
+  await page.waitForTimeout(800);
+  await page.evaluate(() => [...document.querySelectorAll(".dgm-dialog button")].find((b) => /template/i.test(b.textContent))?.click());
+  await page.waitForSelector(".dgm-template-dialog .doc-template-choice", { timeout: 8000 });
+  await page.waitForTimeout(600);
+  out.dialog = await page.evaluate(() => {
+    const d = document.querySelector(".dgm-template-dialog");
+    const r = d.getBoundingClientRect();
+    const f = d.querySelector(".list-filter");
+    const fr = f?.getBoundingClientRect();
+    return { rows: d.querySelectorAll(".doc-template-choice").length, filter: f ? !f.classList.contains("hidden") : null, filterH: fr && Math.round(fr.height), rect: [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)], fits: r.bottom <= innerHeight + 1 && r.right <= innerWidth + 1 };
+  });
+  await page.fill(".dgm-template-dialog .list-filter input", "swim");
+  await page.waitForTimeout(300);
+  out.typed = await page.evaluate(() => [...document.querySelectorAll(".dgm-template-dialog .doc-template-choice")].filter((b) => b.offsetParent).map((b) => b.dataset.template));
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(300);
+  out.escapeKeptDialog = await page.evaluate(() => Boolean(document.querySelector(".dgm-template-dialog[open]")));
+  // The door: Open an existing diagram.
+  await page.evaluate(() => document.querySelector(".dgm-template-dialog")?.close());
+  await page.waitForTimeout(300);
+  out.known = await page.evaluate(() => {
+    const b = [...document.querySelectorAll(".dgm-dialog button")].find((x) => /existing diagram/i.test(x.textContent));
+    if (!b) return null;
+    const r = b.getBoundingClientRect();
+    return { w: Math.round(r.width), h: Math.round(r.height), inView: r.right <= innerWidth && r.bottom <= innerHeight };
+  });
+  await page.evaluate(() => [...document.querySelectorAll(".dgm-dialog button")].find((x) => /existing diagram/i.test(x.textContent))?.click());
+  await page.waitForTimeout(800);
+  out.list = await page.evaluate(() => [...document.querySelectorAll("[role=option]")].map((o) => o.textContent.trim().slice(0, 30)));
+  await page.keyboard.press("Enter");
+  await page.waitForTimeout(2500);
+  out.opened = await page.evaluate(() => ({ dlg: Boolean(document.querySelector(".dgm-dialog")), title: document.getElementById("doc-title")?.value, picture: Boolean(document.querySelector(".dgm-picture")) }));
+  // Each template: a document made from it renders every box after a reload.
+  const all = await page.evaluate(async () => (await (await fetch("/board-library/diagram-templates.json")).json()).templates.filter((t) => !t.kind));
+  out.each = [];
+  for (const t of all) {
+    const id = await page.evaluate(async (t) => { const r = await api("/documents", { method: "POST", body: JSON.stringify({ title: "T " + t.id, content: t.source, file_type: "mmd" }) }); return (await r.json()).id; }, t);
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(1200);
+    await page.evaluate(async (id) => { switchTab("documents"); await openDocument(id); setDocView("canvas", { persist: false }); }, id);
+    try { await page.waitForSelector(".dgm-picture .md-mermaid-img", { timeout: 10000 }); } catch { out.each.push({ id: t.id, error: "no picture" }); continue; }
+    await page.waitForFunction((t) => { const m = diagramModel.parse(t.source); return !m.nodes.length || (document.querySelector(".dgm-picture .md-mermaid-img")?.mermaidSvg || "").includes(m.nodes[m.nodes.length - 1].text.split(" ")[0]); }, t, { timeout: 10000 }).catch(() => {});
+    out.each.push(await page.evaluate((t) => {
+      const img = document.querySelector(".dgm-picture .md-mermaid-img");
+      if (!img || !img.mermaidSvg) return { id: t.id, error: "no svg" };
+      const m = diagramModel.parse(t.source);
+      const boxes = m.nodes.filter((n) => img.mermaidSvg.includes(n.text.split(" ")[0].replace(/&/g, "&amp;"))).length;
+      return { id: t.id, nodes: m.nodes.length, drawn: boxes, same: diagramModel.print(m) === t.source };
+    }, t));
+  }
+  console.log(JSON.stringify(out));
   await browser.close();
 })();
 

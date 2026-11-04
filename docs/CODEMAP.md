@@ -2,9 +2,9 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7816, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8797, test files 2068, tests 17468, plan headings 1003, app scripts 28, boot scripts 37, script files 257.
+Counts: frontend functions 7817, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8797, test files 2068, tests 17469, plan headings 1003, app scripts 28, boot scripts 37, script files 257.
 
-## Frontend functions (7816)
+## Frontend functions (7817)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3390,9 +3390,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `compose` | frontend/js/diagram-suggest.js:433 |
+| `compose` | frontend/js/diagram-suggest.js:437 |
 | `count` | frontend/js/diagram-suggest.js:72 |
-| `describe` | frontend/js/diagram-suggest.js:461 |
+| `describe` | frontend/js/diagram-suggest.js:465 |
 | `dgsMerge` | frontend/js/diagram-suggest.js:25 |
 | `dgsSubtree` | frontend/js/diagram-suggest.js:62 |
 | `firstKey` | frontend/js/diagram-suggest.js:82 |
@@ -3401,8 +3401,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `isEmpty` | frontend/js/diagram-suggest.js:77 |
 | `items` | frontend/js/diagram-suggest.js:286 |
 | `loadTemplates` | frontend/js/diagram-suggest.js:307 |
-| `notes` | frontend/js/diagram-suggest.js:448 |
-| `outlineOf` | frontend/js/diagram-suggest.js:421 |
+| `notes` | frontend/js/diagram-suggest.js:452 |
+| `outlineOf` | frontend/js/diagram-suggest.js:425 |
 | `paneBlank` | frontend/js/diagram-suggest.js:79 |
 | `reason` | frontend/js/diagram-suggest.js:143 |
 | `receive` | frontend/js/diagram-suggest.js:97 |
@@ -3847,7 +3847,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docMathTokens` | frontend/js/documents-math.js:97 |
 | `docMathTree` | frontend/js/documents-math.js:418 |
 
-### frontend/js/documents-mermaid.js (21)
+### frontend/js/documents-mermaid.js (22)
 
 | Name | File:line |
 |---|---|
@@ -3866,12 +3866,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dgmSubgraph` | frontend/js/documents-mermaid.js:182 |
 | `dgmTint` | frontend/js/documents-mermaid.js:225 |
 | `dgmUnquote` | frontend/js/documents-mermaid.js:74 |
-| `diagramDoor` | frontend/js/documents-mermaid.js:497 |
+| `diagramDoor` | frontend/js/documents-mermaid.js:512 |
 | `docMermaidBlocks` | frontend/js/documents-mermaid.js:357 |
 | `docMermaidField` | frontend/js/documents-mermaid.js:366 |
 | `docMermaidWhenDrawn` | frontend/js/documents-mermaid.js:347 |
 | `docRenderMermaidIn` | frontend/js/documents-mermaid.js:339 |
 | `openDiagramBuilder` | frontend/js/documents-mermaid.js:486 |
+| `pickExistingDiagram` | frontend/js/documents-mermaid.js:498 |
 
 ### frontend/js/documents-outline.js (12)
 
@@ -12308,7 +12309,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 226 |
-| frontend/css/diagram-lazy.css | 1497 |
+| frontend/css/diagram-lazy.css | 1505 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 140 |
 | frontend/css/forced-colors-lazy.css | 28 |
@@ -24079,7 +24080,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17468)
+## Tests (17469)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24642,7 +24643,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_r9c.py | 9 |
 | tests/test_diagram_review_1679.py | 4 |
 | tests/test_diagram_split_r3_r4.py | 8 |
-| tests/test_diagram_suggest.py | 21 |
+| tests/test_diagram_suggest.py | 22 |
 | tests/test_diagram_touch.py | 7 |
 | tests/test_diagram_view_1614.py | 10 |
 | tests/test_dialogue_b8.py | 1 |
