@@ -2,9 +2,9 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7753, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8657, test files 2008, tests 16862, plan headings 998, app scripts 28, boot scripts 37, script files 248.
+Counts: frontend functions 7758, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8657, test files 2009, tests 16880, plan headings 998, app scripts 28, boot scripts 37, script files 249.
 
-## Frontend functions (7753)
+## Frontend functions (7758)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3099,44 +3099,44 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addBlock` | frontend/js/diagram-builder.js:350 |
-| `beginEdit` | frontend/js/diagram-builder.js:380 |
+| `addBlock` | frontend/js/diagram-builder.js:353 |
+| `beginEdit` | frontend/js/diagram-builder.js:383 |
 | `blockEl` | frontend/js/diagram-builder.js:49 |
-| `blockItems` | frontend/js/diagram-builder.js:311 |
-| `blockKeys` | frontend/js/diagram-builder.js:147 |
-| `buildBlock` | frontend/js/diagram-builder.js:211 |
-| `buildPalette` | frontend/js/diagram-builder.js:525 |
-| `buildRow` | frontend/js/diagram-builder.js:222 |
+| `blockItems` | frontend/js/diagram-builder.js:313 |
+| `blockKeys` | frontend/js/diagram-builder.js:149 |
+| `buildBlock` | frontend/js/diagram-builder.js:213 |
+| `buildPalette` | frontend/js/diagram-builder.js:528 |
+| `buildRow` | frontend/js/diagram-builder.js:224 |
 | `commit` | frontend/js/diagram-builder.js:54 |
 | `drawPicture` | frontend/js/diagram-builder.js:69 |
 | `el` | frontend/js/diagram-builder.js:33 |
-| `groupGlyph` | frontend/js/diagram-builder.js:283 |
-| `joinChip` | frontend/js/diagram-builder.js:290 |
-| `joinPick` | frontend/js/diagram-builder.js:502 |
-| `joins` | frontend/js/diagram-builder.js:498 |
-| `kindOf` | frontend/js/diagram-builder.js:662 |
-| `menuAt` | frontend/js/diagram-builder.js:482 |
-| `more` | frontend/js/diagram-builder.js:514 |
-| `mount` | frontend/js/diagram-builder.js:571 |
+| `groupGlyph` | frontend/js/diagram-builder.js:285 |
+| `joinChip` | frontend/js/diagram-builder.js:292 |
+| `joinPick` | frontend/js/diagram-builder.js:505 |
+| `joins` | frontend/js/diagram-builder.js:501 |
+| `kindOf` | frontend/js/diagram-builder.js:665 |
+| `menuAt` | frontend/js/diagram-builder.js:485 |
+| `more` | frontend/js/diagram-builder.js:517 |
+| `mount` | frontend/js/diagram-builder.js:574 |
 | `nameOf` | frontend/js/diagram-builder.js:47 |
-| `nestBlock` | frontend/js/diagram-builder.js:422 |
-| `onKey` | frontend/js/diagram-builder.js:444 |
-| `reconcile` | frontend/js/diagram-builder.js:139 |
-| `relabel` | frontend/js/diagram-builder.js:368 |
-| `removeBlock` | frontend/js/diagram-builder.js:430 |
+| `nestBlock` | frontend/js/diagram-builder.js:425 |
+| `onKey` | frontend/js/diagram-builder.js:447 |
+| `reconcile` | frontend/js/diagram-builder.js:141 |
+| `relabel` | frontend/js/diagram-builder.js:371 |
+| `removeBlock` | frontend/js/diagram-builder.js:433 |
 | `render` | frontend/js/diagram-builder.js:99 |
 | `say` | frontend/js/diagram-builder.js:40 |
-| `select` | frontend/js/diagram-builder.js:337 |
-| `shapeButton` | frontend/js/diagram-builder.js:190 |
-| `shapeGlyph` | frontend/js/diagram-builder.js:149 |
-| `shapeItems` | frontend/js/diagram-builder.js:157 |
-| `shapeRow` | frontend/js/diagram-builder.js:170 |
-| `show` | frontend/js/diagram-builder.js:672 |
-| `stepBlock` | frontend/js/diagram-builder.js:416 |
-| `stops` | frontend/js/diagram-builder.js:129 |
-| `suggest` | frontend/js/diagram-builder.js:492 |
-| `suggestMenu` | frontend/js/diagram-builder.js:505 |
-| `sync` | frontend/js/diagram-builder.js:637 |
+| `select` | frontend/js/diagram-builder.js:339 |
+| `shapeButton` | frontend/js/diagram-builder.js:192 |
+| `shapeGlyph` | frontend/js/diagram-builder.js:151 |
+| `shapeItems` | frontend/js/diagram-builder.js:159 |
+| `shapeRow` | frontend/js/diagram-builder.js:172 |
+| `show` | frontend/js/diagram-builder.js:675 |
+| `stepBlock` | frontend/js/diagram-builder.js:419 |
+| `stops` | frontend/js/diagram-builder.js:131 |
+| `suggest` | frontend/js/diagram-builder.js:495 |
+| `suggestMenu` | frontend/js/diagram-builder.js:508 |
+| `sync` | frontend/js/diagram-builder.js:640 |
 | `titleOf` | frontend/js/diagram-builder.js:46 |
 
 ### frontend/js/diagram-embed.js (5)
@@ -3233,12 +3233,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `flow` | frontend/js/diagram-library.js:29 |
 | `make` | frontend/js/diagram-library.js:21 |
 
-### frontend/js/diagram-ops.js (22)
+### frontend/js/diagram-multi.js (1)
+
+| Name | File:line |
+|---|---|
+| `wire` | frontend/js/diagram-multi.js:14 |
+
+### frontend/js/diagram-ops.js (26)
 
 | Name | File:line |
 |---|---|
 | `dgbAddGroup` | frontend/js/diagram-ops.js:146 |
 | `dgbAddNode` | frontend/js/diagram-ops.js:138 |
+| `dgbDuplicate` | frontend/js/diagram-ops.js:278 |
 | `dgbEdit` | frontend/js/diagram-ops.js:82 |
 | `dgbFreshId` | frontend/js/diagram-ops.js:26 |
 | `dgbGroup` | frontend/js/diagram-ops.js:23 |
@@ -3249,16 +3256,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dgbLayout` | frontend/js/diagram-ops.js:35 |
 | `dgbLift` | frontend/js/diagram-ops.js:232 |
 | `dgbMove` | frontend/js/diagram-ops.js:115 |
+| `dgbMoveMany` | frontend/js/diagram-ops.js:259 |
 | `dgbNest` | frontend/js/diagram-ops.js:225 |
 | `dgbNode` | frontend/js/diagram-ops.js:22 |
 | `dgbParentOf` | frontend/js/diagram-ops.js:96 |
 | `dgbRelabel` | frontend/js/diagram-ops.js:192 |
 | `dgbRemove` | frontend/js/diagram-ops.js:156 |
+| `dgbRoots` | frontend/js/diagram-ops.js:242 |
 | `dgbSisters` | frontend/js/diagram-ops.js:203 |
 | `dgbSplit` | frontend/js/diagram-ops.js:20 |
 | `dgbStep` | frontend/js/diagram-ops.js:214 |
 | `dgbUnits` | frontend/js/diagram-ops.js:68 |
 | `dgbUnjoin` | frontend/js/diagram-ops.js:184 |
+| `dgbWrap` | frontend/js/diagram-ops.js:311 |
 
 ### frontend/js/diagram-picture.js (2)
 
@@ -12197,7 +12207,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 154 |
-| frontend/css/diagram-lazy.css | 975 |
+| frontend/css/diagram-lazy.css | 992 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 140 |
 | frontend/css/forced-colors-lazy.css | 28 |
@@ -23788,7 +23798,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16862)
+## Tests (16880)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24321,6 +24331,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_kinds.py | 30 |
 | tests/test_diagram_library_1594.py | 7 |
 | tests/test_diagram_model.py | 12 |
+| tests/test_diagram_multi_r5.py | 17 |
 | tests/test_diagram_split_r3_r4.py | 8 |
 | tests/test_diagram_suggest.py | 21 |
 | tests/test_diagram_touch.py | 4 |
@@ -24874,7 +24885,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_make_plan.py | 21 |
 | tests/test_manage_lists_504.py | 5 |
 | tests/test_manual_entry_points.py | 3 |
-| tests/test_manual_parity.py | 21 |
+| tests/test_manual_parity.py | 22 |
 | tests/test_map_actions_clear_of_label.py | 1 |
 | tests/test_map_add_speed.py | 6 |
 | tests/test_map_branch_colour_order.py | 3 |
@@ -25813,7 +25824,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 0. Performance and "not device heavy" (cross-cutting, first) | docs/roadmap/PLAN.md:26 |
 | 0. The diagnosis in one page | docs/roadmap/WORLD_CLASS_PLAN.md:25 |
 | 0. The operating protocol (read every session, it is short) | docs/roadmap/SESSION_BRIEFS.md:17 |
-| 0.6.01 bug-document pass (2026-10-22, branch claude/project-thread-ol5yuv) | docs/roadmap/HANDOVER.md:44 |
+| 0.6.01 bug-document pass (2026-10-22, branch claude/project-thread-ol5yuv) | docs/roadmap/HANDOVER.md:45 |
 | 1. Format panel, Style tab | docs/roadmap/WHITEBOARD_PLAN.md:978 |
 | 1. Live log console (started, not finished) | docs/roadmap/BACKLOG.md:31 |
 | 1. Research read, 2026-10-10, and what each changes here | docs/roadmap/CHAT_PLAN.md:1553 |
@@ -25977,7 +25988,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 20. A model per feature (asked for directly, 2026-09-21) | docs/roadmap/WORLD_CLASS_PLAN.md:2213 |
 | 20. Backend | docs/roadmap/BACKLOG.md:1309 |
 | 20. The 2026-10-05 feature audit: decisions | docs/roadmap/DOCUMENTS_PLAN.md:956 |
-| 2026-09-08, the third night: read this block first, whoever you are | docs/roadmap/HANDOVER.md:91 |
+| 2026-09-08, the third night: read this block first, whoever you are | docs/roadmap/HANDOVER.md:92 |
 | 21. Every failure names its way out (INBOX 272 part 1, 2026-09-21) | docs/roadmap/WORLD_CLASS_PLAN.md:2283 |
 | 21. Skills: rebuilt; what is left | docs/roadmap/BACKLOG.md:1445 |
 | 21. The code editor against VS Code, and writing checks everywhere (INBOX 646) | docs/roadmap/DOCUMENTS_PLAN.md:299 |
@@ -25993,7 +26004,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 22.3 Where the design is below standard (measured or seen, 2026-09-27) | docs/roadmap/WORLD_CLASS_PLAN.md:2372 |
 | 22.4 Phased rows | docs/roadmap/DOCUMENTS_PLAN.md:1537 |
 | 22.4 The devibecode programme: one surface at a time, every skill | docs/roadmap/WORLD_CLASS_PLAN.md:2387 |
-| 22.5 Risks and out of scope | docs/roadmap/DOCUMENTS_PLAN.md:1576 |
+| 22.5 Risks and out of scope | docs/roadmap/DOCUMENTS_PLAN.md:1574 |
 | 22.5 Where the app goes next (release path) | docs/roadmap/WORLD_CLASS_PLAN.md:2416 |
 | 23. Filing and the taxonomy: candidates, a decision, an explanation (2026-10-10; Brief 39b) | docs/roadmap/WORLD_CLASS_PLAN.md:1452 |
 | 23. Organisation: manual grouping and multi-category notes | docs/roadmap/BACKLOG.md:1614 |
@@ -26387,16 +26398,16 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E2 · The complexity of the AI path is where the next bug will be, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:653 |
 | E3 · Model calls are scattered across request handlers, background threads and module singletons, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:666 |
 | E4 · The honest positives, so the section is not one-sided (read) | docs/roadmap/MODERNISATION_AUDIT.md:676 |
-| Earlier morning summary (2026-10-30) | docs/roadmap/HANDOVER.md:33 |
-| Earlier morning summary (away run 2026-10-18b, branch claude/magical-feynman-7bgj7j, PR 192, 0.6.0) | docs/roadmap/HANDOVER.md:52 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:596 |
+| Earlier morning summary (2026-10-30) | docs/roadmap/HANDOVER.md:34 |
+| Earlier morning summary (away run 2026-10-18b, branch claude/magical-feynman-7bgj7j, PR 192, 0.6.0) | docs/roadmap/HANDOVER.md:53 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:597 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4272 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |
 | F1 · Boot is ~1 s and tab switches are ~10–50 ms. The app is not slow; it is *heavy*: Medium | docs/roadmap/MODERNISATION_AUDIT.md:687 |
 | F2 · Fourteen requests in sixty idle seconds, from three separate timers, High | docs/roadmap/MODERNISATION_AUDIT.md:708 |
 | F3 · List rendering is solved; list *fetching* is not, Medium | docs/roadmap/MODERNISATION_AUDIT.md:733 |
-| Fable's working notes for Opus (2026-09-09 05:10 UTC) | docs/roadmap/HANDOVER.md:243 |
+| Fable's working notes for Opus (2026-09-09 05:10 UTC) | docs/roadmap/HANDOVER.md:244 |
 | Found by an agent while measuring something else (2026-09-08, graph) | docs/roadmap/CHAT_PLAN.md:578 |
 | G. Mobile and responsive | docs/roadmap/MODERNISATION_AUDIT.md:743 |
 | G. Test-suite gaps | docs/roadmap/AUDIT.md:123 |
@@ -26423,7 +26434,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Harness robustness, 2026-10-04 (INBOX 527) | docs/roadmap/AGENT_SKILLS_REFORM.md:202 |
 | Harper (Automattic) | docs/roadmap/ANALYSIS.md:1783 |
 | Headroom: evaluated, not adopted | docs/roadmap/BACKLOG.md:729 |
-| How far each plan actually is (honest, as of 2026-10-03) | docs/roadmap/HANDOVER.md:379 |
+| How far each plan actually is (honest, as of 2026-10-03) | docs/roadmap/HANDOVER.md:380 |
 | How to proceed after PR 149 (written 2026-09-14; the live order is CLAUDE.md standing order 1 and HANDOVER's Now line) | docs/ROADMAP.md:295 |
 | How to read the evidence in here | docs/roadmap/MODERNISATION_AUDIT.md:23 |
 | How to work on this repo | docs/ROADMAP.md:364 |
@@ -26441,7 +26452,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/CHAT_PLAN.md:912 |
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1389 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3117 |
-| If Opus is the orchestrator (no Fable available) | docs/roadmap/HANDOVER.md:101 |
+| If Opus is the orchestrator (no Fable available) | docs/roadmap/HANDOVER.md:102 |
 | Image notes and the Library, against photocraft and lightcraft | docs/roadmap/ANALYSIS.md:3955 |
 | Is its backend better designed? No: and it says so about itself | docs/roadmap/ANALYSIS.md:810 |
 | KnowNote (MrSibe) | docs/roadmap/ANALYSIS.md:1932 |
@@ -26450,7 +26461,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Looked at and deliberately not taken | docs/roadmap/ANALYSIS.md:713 |
 | Looked at and not recommended | docs/roadmap/ANALYSIS.md:882 |
 | Mind map, against designcraft's canvas and MINDMAP_PLAN's references | docs/roadmap/ANALYSIS.md:3769 |
-| Morning summary | docs/roadmap/HANDOVER.md:23 |
+| Morning summary | docs/roadmap/HANDOVER.md:24 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:344 |
 | Next: weeks 5–8: "a small model can finish a job, and so can the app" | docs/roadmap/MODERNISATION_AUDIT.md:1049 |
@@ -26465,7 +26476,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1360 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4387 |
 | PDF viewer and OCR workspace, against pdfcraft | docs/roadmap/ANALYSIS.md:3922 |
-| PR 144 is done when (the owner's checklist, 2026-09-09 05:30 UTC) | docs/roadmap/HANDOVER.md:140 |
+| PR 144 is done when (the owner's checklist, 2026-09-09 05:30 UTC) | docs/roadmap/HANDOVER.md:141 |
 | Parity matrix, 2026-10-10 | docs/roadmap/ANALYSIS.md:3703 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:679 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:561 |
@@ -26685,9 +26696,9 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Six repositories read for Tessellate, 2026-09-20 | docs/roadmap/ANALYSIS.md:1760 |
 | Sources | docs/roadmap/MINDMAP_PLAN.md:280 |
 | Speech, four projects read by name, and what this app already does | docs/roadmap/ANALYSIS.md:3102 |
-| Standing orders for this session (whoever the model is) | docs/roadmap/HANDOVER.md:315 |
+| Standing orders for this session (whoever the model is) | docs/roadmap/HANDOVER.md:316 |
 | Start of the next PR (the owner, 2026-10-12, "log everything I've mentioned") | docs/roadmap/BACKLOG.md:4312 |
-| State of the branch (`claude/notes-flow-rebuild`, PR #162) | docs/roadmap/HANDOVER.md:399 |
+| State of the branch (`claude/notes-flow-rebuild`, PR #162) | docs/roadmap/HANDOVER.md:400 |
 | Steps | docs/roadmap/UI_MODERNISATION_PLAN.md:1048 |
 | Steps | docs/roadmap/WORLD_CLASS_PLAN.md:1524 |
 | Still open | docs/roadmap/WORLD_CLASS_PLAN.md:2260 |

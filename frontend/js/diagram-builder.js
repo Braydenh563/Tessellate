@@ -101,7 +101,9 @@
     const layout = diagramOps.layout(S.m);
     const edgesFrom = new Map();
     S.m.edges.forEach((e, i) => edgesFrom.set(e.from, [...(edgesFrom.get(e.from) || []), { e, i }]));
-    if (S.sel && !blockKeys(layout).includes(S.sel)) S.sel = null;
+    const live = blockKeys(layout);
+    if (S.sel && !live.includes(S.sel)) S.sel = null;
+    S.rendered?.(live);
     //: A block whose words, shape and connectors are unchanged keeps its element, and the tree keeps what it already
     //: holds in place (`reconcile`), so a change lays out only the rows it touched.
     const fresh = new Map();
@@ -130,7 +132,7 @@
     for (const b of S.tree.querySelectorAll(".dgm-block")) {
       const index = b === stop ? "0" : "-1";
       if (b.getAttribute("tabindex") !== index) b.tabIndex = Number(index);
-      const on = String(b.dataset.key === S.sel);
+      const on = String(b.dataset.key === S.sel || S.picked?.has(b.dataset.key) === true);
       if (b.getAttribute("aria-selected") !== on) b.setAttribute("aria-selected", on);
     }
   }
@@ -336,6 +338,7 @@
   // --- gestures -------------------------------------------------------------------
   function select(S, key, focus = false) {
     S.sel = key;
+    S.picked?.clear();
     stops(S, blockEl(S, key));
     if (focus) {
       const b = blockEl(S, key);
@@ -488,7 +491,7 @@
   // --- suggestions (diagram-suggest.js, lazy) ---------------------------------------
   //: Templates, From my notes and Describe it. What comes back lands as blocks (D8): on an
   //: empty diagram it becomes the diagram, otherwise it arrives as ghosts to take or drop.
-  const helpers = { el, say, commit, blockEl, suggest, add: addBlock, panes, name: nameOf };
+  const helpers = { el, say, commit, blockEl, stops, suggest, add: addBlock, panes, name: nameOf };
   async function suggest(S, how) {
     if (!(await ensureModule("diagramSuggest"))) return say(S, "The suggestions did not load.");
     return diagramModel.suggest[how](S, helpers);
@@ -692,6 +695,8 @@
     if (S && matchMedia(COMPACT).matches && (await ensureModule("diagramTouch"))) diagramModel.touch.wire(S);
     //: Zoom, pan and fit for the picture, in every window (diagram-view.js, 1614).
     if (S && (await ensureModule("diagramView"))) diagramModel.view.wire(S);
+    //: Several blocks at once (diagram-multi.js, 1615 a).
+    if (S && !S.k && (await ensureModule("diagramMulti"))) diagramModel.multi.wire(S, helpers);
     //: The divider between the blocks and the picture (diagram-split.js, 1615 e).
     if (S && (await ensureModule("diagramSplit"))) diagramModel.split.wire(S);
     if (told && S) say(S, told);

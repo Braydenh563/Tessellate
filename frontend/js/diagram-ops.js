@@ -237,10 +237,91 @@
     return dgbMove(m, key, dgbGroup(m, parent).parent ?? null, key[0] === "g" ? after : null);
   }
 
+  //: R5, several blocks at once. The roots of a pick: in layout order, no kept line, none twice (a block under a picked
+  //: group rides with it), and a key with no block is dropped.
+  function dgbRoots(m, keys) {
+    const want = new Set(keys);
+    const out = [];
+    const walk = (items, covered) => {
+      for (const it of items) {
+        if (it.type === "k") continue;
+        const hit = want.has(dgbKey(it.type, it.id));
+        if (hit && !covered) out.push(dgbKey(it.type, it.id));
+        if (it.kids) walk(it.kids, covered || hit);
+      }
+    };
+    walk(dgbLayout({ ...m, kept: [] }), false);
+    return out;
+  }
+
+  //: Moves the roots of a pick into `group` before `before`, keeping their order; the count moved, 0 when refused (a
+  //: group cannot go inside a picked group or into itself). A drop before a picked block lands before the next that stays.
+  function dgbMoveMany(m, keys, group = null, before = null) {
+    const roots = dgbRoots(m, keys);
+    if (!roots.length || (group && (!dgbGroup(m, group) || roots.some((k) => k[0] === "g" && dgbInside(m, group, k.slice(2)))))) return 0;
+    let at = before;
+    if (at && roots.includes(at)) {
+      const sis = dgbSisters(m, at).keys;
+      at = sis.slice(sis.indexOf(at) + 1).find((k) => k[0] !== "k" && !roots.includes(k)) || null;
+    }
+    //: Last to first, each in front of the one placed after it of its own kind (the source prints groups ahead of nodes).
+    const anchor = { n: at, g: at };
+    for (const key of roots.slice().reverse()) {
+      if (!dgbMove(m, key, group, anchor[key[0]])) continue;
+      anchor[key[0]] = key;
+    }
+    return roots.length;
+  }
+
+  //: Copies the roots with what they hold, under fresh ids in the same parents; only the joins with both ends inside the
+  //: copy are copied. `{keys}` names the copies; null when the block limit would pass or nothing was picked.
+  function dgbDuplicate(m, keys) {
+    const roots = dgbRoots(m, keys);
+    const nodes = [];
+    const groups = [];
+    const take = (g) => {
+      groups.push(g);
+      m.subgraphs.filter((x) => x.parent === g.id).forEach(take);
+      m.nodes.filter((n) => n.group === g.id).forEach((n) => nodes.push(n));
+    };
+    for (const k of roots) k[0] === "g" ? take(dgbGroup(m, k.slice(2))) : nodes.push(dgbNode(m, k.slice(2)));
+    if (!roots.length || m.nodes.length + nodes.length > DGB_MAX) return null;
+    return dgbEdit(m, () => {
+      const ids = new Map();
+      const copies = groups.map((g) => {
+        const c = { ...g, id: dgbFreshId(m, true) };
+        ids.set(g.id, c.id);
+        m.subgraphs.push(c);
+        return [g, c];
+      });
+      for (const [g, c] of copies) c.parent = ids.get(g.parent) ?? g.parent;
+      const made = nodes.map((n) => {
+        const c = { ...n, id: dgbFreshId(m, false), group: n.group };
+        ids.set(n.id, c.id);
+        m.nodes.push(c);
+        return c;
+      });
+      for (const c of made) c.group = ids.get(c.group) ?? c.group;
+      for (const e of m.edges.slice()) if (ids.has(e.from) && ids.has(e.to)) m.edges.push({ ...e, from: ids.get(e.from), to: ids.get(e.to) });
+      return { keys: roots.map((k) => dgbKey(k[0], ids.get(k.slice(2)))) };
+    });
+  }
+
+  //: Puts the roots of a pick in a new group, which takes the place of the first one; its id, or null.
+  function dgbWrap(m, keys, title = "Group") {
+    const roots = dgbRoots(m, keys);
+    if (!roots.length) return null;
+    const id = dgbAddGroup(m, { title, parent: dgbParentOf(m, roots[0]), before: roots[0] });
+    if (!id) return null;
+    if (dgbMoveMany(m, roots, id, null)) return id;
+    dgbRemove(m, dgbKey("g", id));
+    return null;
+  }
+
   const diagramOps = {
     layout: dgbLayout, key: dgbKey, split: dgbSplit, node: dgbNode, group: dgbGroup, sisters: dgbSisters, parentOf: dgbParentOf,
     addNode: dgbAddNode, addGroup: dgbAddGroup, move: dgbMove, remove: dgbRemove, join: dgbJoin, unjoin: dgbUnjoin,
-    relabel: dgbRelabel, step: dgbStep, nest: dgbNest, lift: dgbLift, inside: dgbInside, SHAPES: DGB_SHAPES, MAX: DGB_MAX, PLAIN: DGB_PLAIN,
+    relabel: dgbRelabel, roots: dgbRoots, moveMany: dgbMoveMany, duplicate: dgbDuplicate, wrap: dgbWrap, step: dgbStep, nest: dgbNest, lift: dgbLift, inside: dgbInside, SHAPES: DGB_SHAPES, MAX: DGB_MAX, PLAIN: DGB_PLAIN,
   };
   // DIAGRAM-OPS-END
 

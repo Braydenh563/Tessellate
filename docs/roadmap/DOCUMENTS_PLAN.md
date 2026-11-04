@@ -1541,9 +1541,7 @@ Each row is one Sonnet-high agent session, ships alone, and is gated with target
 - **R1 (1613), R2 (1614):** built 2026-11-04, moved to HISTORY ("Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R1 and R2)").
 - **R3 (1615 e), R4 (1615 c, d, f) minus the tester:** built 2026-11-04, moved to HISTORY ("Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R3 and R4)").
 - **R4 left: the blind-tester pass (1615 c, d).** The `blind-tester` runs "make a flowchart with a decision and two branches, then rearrange it"; its list goes to INBOX in order and R6 takes it. Check: the tester's list exists, each item placed in a row or INBOX.
-- **R5 (1615 a, b) Multiselect and group drag.**
-  - Work: `S.sel` stays the one primary key, because diagram-kinds.js (8 places), diagram-suggest.js (4), diagram-joins.js, diagram-pointer.js and `kit.select` read it. A new ordered `S.picked` set holds the rest. The bar as in section 3; the grip of any selected row carries all of them. New pure functions in `diagramOps`: group-move, duplicate (fresh ids, inner edges kept) and wrap (group into a box).
-  - Check: `tests/test_diagram_builder.py` cases (order kept, a node under a selected group not moved twice, no drop into itself, `DGB_MAX` 120 respected, diagram-ops.js:15, duplicate keeps inner edges only); the kinds panes' tests still pass; a Playwright pass: Shift+click three rows, drag one grip, the source line order matches.
+- **R5 (1615 a, b):** built 2026-11-04, moved to HISTORY ("Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R5)").
 - **R6 (R4's list, 2026-11-04) What the tester finds.** Present already (section 0): rename, undo and redo, keyboard reorder, row-to-row connect. Expected left: a search over blocks and edge labels edited in place. Check: one test per item in R4's list.
   - R6.1: At 390 px the picture pane is about 220 px tall at 48% zoom and the Fit/zoom bar covers the lower node; node text is about 6 px.
   - R6.2: Dragging a row in the list reorders the list only; the picture does not change, and dragging a node in the picture only smears a text selection (R8b covers the move).
