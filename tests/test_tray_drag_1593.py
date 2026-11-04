@@ -257,7 +257,8 @@ def test_every_kind_of_object_lands_in_the_tray() -> None:
     }
     __out(landed);
     """)
-    assert out == {kind: [f"{kind}:3"] for kind in ["note", "document", "board", "map", "image", "file"]}
+    #: Diagram joined the object kinds with the diagram builder (R7); every kind lands, so it is listed.
+    assert out == {kind: [f"{kind}:3"] for kind in ["note", "document", "board", "map", "diagram", "image", "file"]}
 
 
 @needs_node

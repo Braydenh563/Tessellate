@@ -34,6 +34,9 @@ class Clock:
         return self.t
 
 
+DAY_HOUR = 13
+
+
 def make(fake: FakeWin32 | None = None, **kw: Any):
     fake = fake or FakeWin32()
     clicks: list[Any] = []
@@ -44,6 +47,9 @@ def make(fake: FakeWin32 | None = None, **kw: Any):
         w=fake, clock=clock, frames=FRAMES, on_click=lambda *a: clicks.append(a), on_settle=lambda x, y: settled.append((x, y)),
         dispatch=lambda name, fn: fn(), **kw,
     )
+    # Fixed clock: the engine's hour feeds mood, rest need and activity weights, so the
+    # real wall-clock hour made these tests depend on when CI ran (CLAUDE.md section 8).
+    r.clock_hour = DAY_HOUR if r.clock_hour is None else r.clock_hour
     return r, fake, clock, clicks, settled
 
 
@@ -421,4 +427,17 @@ def test_a_moving_mouse_is_not_typing() -> None:
     clock.t += 3
     r._busy_gate(clock.t, (180, 140))  # still pointer, a fresh input: a key
     assert r.engine.quiet is True
+    r.stop()
+
+
+def test_the_runner_tests_never_read_the_real_hour(monkeypatch) -> None:
+    import time as real_time
+
+    night = real_time.struct_time((2026, 1, 1, 3, 0, 0, 3, 1, 0))
+    monkeypatch.setattr(runner_mod.time, "localtime", lambda *a: night)
+    r, *_ = make()
+    assert r.start()
+    assert r.engine is not None
+    r._apply(r.engine.update(1.0))
+    assert r.engine.hour == DAY_HOUR
     r.stop()

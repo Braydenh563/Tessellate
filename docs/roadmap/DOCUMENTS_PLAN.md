@@ -1554,6 +1554,13 @@ Each row is one Sonnet-high agent session, ships alone, and is gated with target
 - **R10 (1621):** built 2026-11-04, moved to HISTORY ("Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R10)").
 
 - **R11 (blind test, 2026-11-04) left:** `/diagram` and Insert open a starter, not an existing diagram (add a "pick an existing diagram" row); Done creates a document silently; first paint blank about 1 s; 27 Tab stops to the first block; 390 px: tap scrolls the toolbar under the header and targets (tabs 28, grips 14x19, swatches 24, Connect 44x40) are under 44 px; chat chip says "Document" and the list "17 words" for a diagram; export items missing from the document's own menu; Boards empty state links only New mind map.
+- **R12 (blind test of 0931c35, fixed: phone toolbar fits one row, empty steps visible at 390, shape menu under its caret, Connect's new block is a box) left:** Done from a document or board opens the starter and saves a separate `Diagram <stamp>` file (decide: empty builder or pick an existing diagram, the R11 first item); the Embed row inserts a bare `![[` with no picker and renders "Nothing called" until reload; board Mermaid import drops block colour and stacks edge labels; a template on a non-empty builder only lists ghost blocks; the first branch off a decision is silent (the prompt is for the second); 390 picture is 47 to 59% zoom with the connect handle over a diamond; Box in the Add menu adds at once; key hints show on touch; the list row truncation at 1440 was not reproduced (rows 105 px, no overflow).
+
+- **R12 (1661 B, find):** Ctrl+F filters the outline and boxes get `dgm-found`, Enter walking matches (`listFilter`, DESIGN row 714).
+- **R13 (1661 B, layout):** curve (straight, curved, stepped) and spacing in a View popover, written to the kept `%%{init}%%` line (previews row 751).
+- **R14 (1661 B):** double-headed arrows (`<-->`) and the unread shapes (cylinder, parallelogram) in the shape menu and connector kinds.
+- **R15 (1661 B, only if a diagram routinely overflows the stage):** a corner minimap, a plain `.dock`.
+- **R16 (1661 B left):** edge colour (`linkStyle N` lines regenerated in canonical edge order, same swatch picker, arrow menu); six more flowchart templates plus a `listFilter` in the picker; colour in the multi-select bar. Block colour and the shortcuts sheet are built (`diagram-style.js`). Declined: align and distribute (Mermaid owns layout).
 
 Order: R1 to R4, then R5, R6, R7; R8a after R2 and R5, then R8b, R8c; R9a any time, then R9b; R9c after R9a and R7; R10 after R7.
 

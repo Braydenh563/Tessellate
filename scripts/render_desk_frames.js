@@ -26,7 +26,7 @@ const FRAMES = [
   //: root and the lower wisp skews, in a wave that travels down it (each part
   //: a little behind the one above). No `nmb-walking` class: its animations
   //: would otherwise be paused mid-way and fight the inline values.
-  ...[0, 1, 2, 3, 4, 5].map((i) => ({ name: `walk${i}`, pose: "stand", classes: [], float: i / 6 })),
+  ...Array.from({ length: 12 }, (_, i) => ({ name: `walk${i}`, pose: "stand", classes: [], float: i / 12 })),
   { name: "sit", pose: "sit", classes: [] },
   { name: "sleep", pose: "sit", classes: ["nmb-sleep"], at: 1.0 },
   { name: "wave", pose: "stand", classes: ["nmb-act-wave"], at: 0.45 },
@@ -40,12 +40,12 @@ const FRAMES = [
   //: no tumble of its own, so this one is a transform of an existing pose).
   { name: "tumble", pose: "stand", classes: ["nmb-act-startle"], at: 0.25, spin: 115 },
 ];
-//: The idle cycle (`idle0` to `idle11`, engine.IDLE_FRAMES): the rig's own standing
+//: The idle cycle (`idle0` to `idle23`, engine.IDLE_FRAMES): the rig's own standing
 //: motion sampled at fixed times, one full beat of the tail (`atlasTailBend` with
 //: the sway act's own numbers, `atlas-life.js`) and one breath (`atlasBreathFrame`'s
 //: raised cosine on the torso, plus a small rise of the whole figure so the
 //: breath shows at this size), so the loop closes on itself.
-const IDLE_N = 12;
+const IDLE_N = 24;
 FRAMES.push(...Array.from({ length: IDLE_N }, (_, i) => ({ name: `idle${i}`, pose: "stand", classes: [], idle: i / IDLE_N })));
 const LOOKS = (process.env.LOOKS || "masculine,feminine").split(",");
 //: The capture box around the figure, in CSS pixels: roomy, cropped later. INBOX 1663: at

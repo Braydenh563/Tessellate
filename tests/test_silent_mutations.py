@@ -25,7 +25,7 @@ SILENT = re.compile(r"\.catch\(\s*\(\s*\w?\s*\)\s*=>\s*(\{\s*\}|null|undefined|f
 WRITE = re.compile(r'method:\s*"(POST|PUT|PATCH|DELETE)"')
 
 #: 2026-10-05: the count after the named ones were fixed. Only ever lowered.
-SILENT_WRITES = 33
+SILENT_WRITES = 31
 
 
 def _silent_writes() -> list[str]:

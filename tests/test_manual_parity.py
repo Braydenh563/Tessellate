@@ -357,7 +357,7 @@ def test_the_diagram_blocks_keys_menu_and_views_are_in_the_guide() -> None:
     from tessellate.ai.help_topics_more import HELP_GROUPS, TOPIC_META
 
     body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
-    for words in ("Blocks", "Source and Split", "Ctrl+Z", "drag it into the blocks", "joins them", "inside",
+    for words in ("Blocks", "Source and Split", "Ctrl+Z", "press its arrow", "joins them", "inside",
                   "Enter renames", "N adds", "G adds a group", "J joins", "Delete removes", "Alt+Up and Alt+Down",
                   "Alt+Right nests", "Alt+Left lifts", "long press", "shape swatch"):
         assert words in body, words
@@ -377,8 +377,8 @@ def test_the_diagram_add_library_and_connect_to_are_in_the_guide_in_the_controls
     from tessellate.ai.help_chat import HELP_TOPICS
 
     body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
-    for words in ("Add holds the shapes by meaning", "Steps, Decisions, Start and end, Notes and groups", "point at one for its hint",
-                  "on a phone, Add opens the same list", "Connect to... on a block", "type a new name to make it",
+    # 1661 D2: the tile strip became one Add split (the last shape, and a menu of every shape with its key).
+    for words in ("Add shows the last shape you used", "press its arrow", "for every shape and its key", "Connect to... on a block", "type a new name to make it",
                   "Start to Next and its label", "C or J joins"):
         assert words in body, words
     js = FRONTEND / "js"
@@ -476,11 +476,11 @@ def test_the_diagram_divider_direction_caption_and_walkthrough_are_in_the_guide_
 
     body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
     assert len(body) < 1900
-    for words in ("A divider sizes the blocks and the picture", "Shift for more", "Direction sets the flow", "Add a shape, Name it, Connect it"):
+    for words in ("A divider sizes the blocks and the picture", "Shift for more", "Direction (one button) turns the flow", "Add a shape, Name it, Connect it"):
         assert words in body, words
     js = FRONTEND / "js"
-    builder = (js / "diagram-builder.js").read_text(encoding="utf-8")
-    assert '"Direction"' in builder
+    # 1661 D2: the caption over four arrows became one button that says "Direction: Down" (diagram-bar.js).
+    assert "Direction: ${WORD[dir]}" in (js / "diagram-bar.js").read_text(encoding="utf-8")
     steps = (js / "diagram-steps.js").read_text(encoding="utf-8")
     for label in ('"Add a shape"', '"Name it"', '"Connect it"'):
         assert label in steps, label

@@ -25,7 +25,7 @@ LIBRARY = (JS / "library.js").read_text(encoding="utf-8")
 
 def _rule(selector: str) -> str:
     """The body of the first rule whose selector list contains `selector` (outside any at-rule is not required)."""
-    for match in re.finditer(r"([^{}]+)\{([^{}]*)\}", re.sub(r"/\*.*?\*/", "", CSS, flags=re.S)):
+    for match in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", re.sub(r"/\*.*?\*/", "", CSS, flags=re.S)):
         if selector in [s.strip() for s in match.group(1).split(",")]:
             return match.group(2)
     raise AssertionError(f"no rule for {selector}")
@@ -106,7 +106,7 @@ def test_r6_9_the_connect_picker_draws_each_blocks_shape_and_does_not_raise_a_ph
 
 def test_r6_10_the_phone_controls_are_44_px_and_a_row_names_its_connect_button():
     coarse = CSS[CSS.index("(pointer: coarse)", CSS.index("@container (max-width: 599.98px)")) :]
-    assert re.search(r"\.dgm-dirs button[^{]*\{[^}]*inline-size: 2\.75rem", coarse)
+    assert re.search(r"\.dgm-dirs,[^{]*\{[^}]*min-inline-size: 2\.75rem", coarse)  # 1661 D2: Direction is one button, Add is a split
     assert 'connect.setAttribute("aria-label", `Connect to…, from ${text}`)' in BUILDER
     assert "Draw an arrow from this block to another" in BUILDER
 
@@ -128,10 +128,13 @@ def test_r6_12_the_hint_stays_in_view_and_the_library_counts_lines_as_the_status
     assert next(d for d in client.get("/documents").json() if d["id"] == bare["id"])["lines"] == 2
 
 
-def test_r6_13_n_adds_a_box_and_shift_n_repeats_the_selected_shape():
+def test_r6_13_n_adds_a_box_and_shift_n_repeats_the_last_shape_added():
+    # Revised by 1661 D2: Shift+N adds the LAST-USED shape (what the Add button shows), not the selected block's shape,
+    # so the button and the key say the same thing. 1 to 7 add a shape; diagram-bar.js owns the table.
     keys = BUILDER[BUILDER.index("const plain = {") : BUILDER.index("if (!plain ||")]
-    assert 'shape: "rect"' in keys and "event.shiftKey" in keys
-    assert "shapeOfKey" in BUILDER or "diagramOps.node(S.m, diagramOps.split(key)[1])?.shape" in keys
+    assert 'shape: "rect"' in keys and "diagramModel.bar.key(event)" in keys
+    bar = (JS / "diagram-bar.js").read_text(encoding="utf-8")
+    assert 'event.key === "N" ? last()' in bar and "diagramModel.keys = KEYS" in bar
     # The pane with no block: N is a Box too, not the shape the last palette press left behind.
     pane = BUILDER[BUILDER.index("S.pane.addEventListener(\"keydown\""):]
     assert 'shape: "rect"' in pane[:500]

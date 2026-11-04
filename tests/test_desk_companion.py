@@ -273,7 +273,7 @@ def test_a_bad_hit_opens_the_app_with_no_script(made, prefs):
 
 def test_the_page_can_ask_for_nothing_else():
     public = {name for name in dir(dc.DeskApi) if not name.startswith("_")}
-    assert public == {"open_app", "open_hit", "set_size", "drag_start", "drag_to", "drag_end", "hide_companion", "hide_panel", "panel_blur", "panel_kind", "panel_motion", "let_it_walk", "set_roam", "companion_choices", "choose_companion"}
+    assert public == {"open_app", "open_hit", "set_size", "drag_start", "drag_to", "drag_end", "hide_companion", "hide_panel", "panel_blur", "panel_kind", "panel_motion", "let_it_walk", "set_roam", "figure_do", "set_stay", "snooze", "companion_choices", "choose_companion"}
 
 
 def test_hide_turns_the_preference_off_and_hides_the_window(made, prefs):
@@ -432,7 +432,8 @@ def test_the_page_decides_locked_from_the_notebook_and_fails_closed():
     assert 'call("/preferences")' in probe and "locked = !response.ok" in probe
     assert "catch {\n      locked = true;" in probe, "an unreachable server reads as locked"
     menu = js.split("async function openMenu(kind)")[1].split("\n  //: Run")[0]
-    assert menu.index("else if (locked)") < menu.index('"Quick note"'), "locked is answered before the note and search rows"
+    # The menu moved to grouped rows (INBOX 1670, row C): the lock is still read before the note and search rows.
+    assert menu.index("const capture = locked") < menu.index('"Quick note"'), "locked is answered before the note and search rows"
     assert js.count('openMenu("menu")') >= 3, "a 401 mid-panel returns to the menu"
 
 

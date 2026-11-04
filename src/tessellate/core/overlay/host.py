@@ -31,9 +31,11 @@ import ctypes
 import logging
 import queue
 import threading
+import time
 from typing import Any, Callable
 
 from tessellate.core import jobs
+from tessellate.core.overlay import pacing
 from tessellate.core.overlay import win32 as k
 
 logger = logging.getLogger(__name__)
@@ -41,15 +43,71 @@ logger = logging.getLogger(__name__)
 CLASS_NAME = "TessellateOverlayWindow"
 #: Posted by other threads: "the queue has something".
 WM_QUEUE = k.WM_APP + 1
+#: Posted by the pace timer's thread: "a frame is due" (the answer to the high-resolution timer).
+WM_PACE = k.WM_APP + 2
 TIMER_ID = 1
 #: A timer shorter than this is a busy loop (Windows rounds to about 15.6 ms anyway).
 MIN_WAKE_MS = 10
+#: A pace post this much before its due time is a stale one (timer wake-ups are never early).
+PACE_EARLY_S = 0.003
 
 #: window procedures in use, by host: kept alive for as long as Windows may call them.
 _CALLBACKS: list[Any] = []
 
 #: What `on_event` hears: (kind, screen x, screen y) -> the next wake in ms, or None.
 EventHandler = Callable[[str, int, int], "int | None"]
+
+
+class PaceTimer:
+    """A high-resolution waitable timer and the thread that waits on it, for a moving figure (see
+    `pacing.py` for why this and not `SetTimer`). `arm(delay)` fires once, `delay` seconds on, as a
+    `WM_PACE` post to the window. The thread starts on the first arm and blocks with no timeout, so a
+    resting figure costs it nothing; `close` fires the timer once more with the stop flag set."""
+
+    def __init__(self, w: Any, post: Callable[[], Any]) -> None:
+        self.w = w
+        self.post = post
+        self.handle = w.kernel32.CreateWaitableTimerExW(None, None, k.CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, k.TIMER_ALL_ACCESS)
+        if not self.handle:  # Windows before 10 1803 has no high-resolution flag: the caller keeps SetTimer
+            raise OSError(f"no high-resolution timer (error {k.last_error()})")
+        self.armed = False
+        #: When the armed wait is due, on the host's clock; `_on_pace` drops a post that comes before it.
+        self.due = 0.0
+        self._stopped = False
+        self._thread: threading.Thread | None = None
+
+    def arm(self, delay: float) -> None:
+        if self._thread is None:
+            self._thread = threading.Thread(target=self._wait, name="overlay-pace", daemon=True)
+            self._thread.start()
+        due = ctypes.c_longlong(-max(1, int(delay * 1e7)))  # negative: relative, in 100 ns
+        self.armed = bool(self.w.kernel32.SetWaitableTimer(self.handle, ctypes.byref(due), 0, None, None, False))
+
+    def disarm(self) -> None:
+        if self.armed:
+            self.w.kernel32.CancelWaitableTimer(self.handle)
+            self.armed = False
+
+    def _wait(self) -> None:
+        kernel32 = self.w.kernel32
+        while not self._stopped:
+            if kernel32.WaitForSingleObject(self.handle, 0xFFFFFFFF) != k.WAIT_OBJECT_0:
+                return  # the handle failed: no more frames from here (the caller's SetTimer takes over)
+            if not self._stopped:
+                try:
+                    self.post()
+                except Exception:  # noqa: BLE001 - a post that fails is a skipped frame
+                    logger.debug("overlay: pace post failed", exc_info=True)
+
+    def close(self) -> None:
+        self._stopped = True
+        thread = self._thread
+        if thread is not None:
+            due = ctypes.c_longlong(-1)
+            self.w.kernel32.SetWaitableTimer(self.handle, ctypes.byref(due), 0, None, None, False)
+            thread.join(1.0)
+        self.w.kernel32.CloseHandle(self.handle)
+        self.armed = False
 
 
 def premultiplied_dib_bytes(width: int, height: int) -> int:
@@ -84,6 +142,12 @@ class OverlayHost:
         self._handlers = self._build_handlers()
         self._drawn = False
         self._logged_ok = False
+        self.pacer = pacing.Pacer()
+        self._pace: PaceTimer | None = None
+        self._pace_failed = False
+        self._timer_set = False
+        #: The clock the pacer's grid is on; tests replace it.
+        self.monotonic: Callable[[], float] = time.monotonic
 
     # --- life ------------------------------------------------------------------
 
@@ -218,6 +282,7 @@ class OverlayHost:
     def _teardown(self) -> None:
         g, u = self.w.gdi32, self.w.user32
         for step in (
+            lambda: self._pace and self._pace.close(),
             lambda: self._old_bitmap and g.SelectObject(self._mem_dc, self._old_bitmap),
             lambda: self._bitmap and g.DeleteObject(self._bitmap),
             lambda: self._mem_dc and g.DeleteDC(self._mem_dc),
@@ -260,6 +325,7 @@ class OverlayHost:
         return {
             WM_QUEUE: self._on_queue,
             k.WM_TIMER: self._on_timer,
+            WM_PACE: self._on_pace,
             k.WM_LBUTTONDOWN: self._on_down,
             k.WM_MOUSEMOVE: lambda _h, _w: self._answered("move"),
             k.WM_LBUTTONUP: self._on_up,
@@ -290,6 +356,16 @@ class OverlayHost:
 
     def _on_timer(self, hwnd: Any, _wparam: int) -> int:
         self.w.user32.KillTimer(hwnd, TIMER_ID)
+        self._timer_set = False
+        return self._answered("tick")
+
+    def _on_pace(self, _hwnd: Any, _wparam: int) -> int:
+        pace = self._pace
+        if pace is None or not pace.armed:  # a frame posted before the timer was re-armed or cancelled
+            return 0
+        if self.monotonic() < pace.due - PACE_EARLY_S:  # a post from the wait before a re-arm: the real one follows
+            return 0
+        pace.armed = False
         return self._answered("tick")
 
     def _on_down(self, hwnd: Any, _wparam: int) -> int:
@@ -341,7 +417,34 @@ class OverlayHost:
             self._set_timer(wake)
 
     def _set_timer(self, ms: int) -> None:
-        self.w.user32.SetTimer(self.hwnd, TIMER_ID, max(MIN_WAKE_MS, int(ms)), None)
+        """Wake after `ms`: a moving figure's next-frame ask on the pacing grid, any other as a `SetTimer`.
+        One of the two is pending at a time."""
+        ms = int(ms)
+        pace = self._pace_timer() if self.pacer.paced(ms) else self._pace
+        if pace is not None and self.pacer.paced(ms):
+            if self._timer_set:
+                self.w.user32.KillTimer(self.hwnd, TIMER_ID)
+                self._timer_set = False
+            now = self.monotonic()
+            delay = max(0.0, self.pacer.next(now, ms) - now)
+            pace.arm(delay)
+            pace.due = now + delay
+            return
+        self.pacer.reset()
+        if pace is not None:
+            pace.disarm()
+        self.w.user32.SetTimer(self.hwnd, TIMER_ID, max(MIN_WAKE_MS, ms), None)
+        self._timer_set = True
+
+    def _pace_timer(self) -> PaceTimer | None:
+        if self._pace is None and not self._pace_failed:
+            try:
+                hwnd = self.hwnd
+                self._pace = PaceTimer(self.w, lambda: self.w.user32.PostMessageW(hwnd, WM_PACE, 0, 0))
+            except Exception as exc:  # noqa: BLE001 - the figure still moves, on the system tick
+                logger.info("overlay: frame pacing unavailable, using the system timer (%s)", exc)
+                self._pace_failed = True
+        return self._pace
 
     # --- commands, on the window's thread -------------------------------------------------
 
@@ -360,6 +463,9 @@ class OverlayHost:
             self._log_ok()
         elif name == "hide":
             self.w.user32.KillTimer(self.hwnd, TIMER_ID)
+            self._timer_set = False
+            if self._pace is not None:
+                self._pace.disarm()
             self.w.user32.ShowWindow(self.hwnd, k.SW_HIDE)
             self.visible = False
         elif name == "wake":

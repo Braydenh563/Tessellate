@@ -19,7 +19,8 @@ def test_every_look_has_every_frame() -> None:
     for look in sprites.LOOKS:
         files = sorted(p.stem for p in (DIR / look).glob("*.png"))
         assert files == sorted(sprites.FRAME_NAMES), look
-    assert len(sprites.FRAME_NAMES) == 32 and len(sprites.WALK_FRAMES) == 6 and len(sprites.IDLE_FRAMES) == 12
+    # Intent moved (INBOX 1670, "very framey"): 12 walk and 24 idle frames, in-betweens of the old 6 and 12.
+    assert len(sprites.FRAME_NAMES) == 50 and len(sprites.WALK_FRAMES) == 12 and len(sprites.IDLE_FRAMES) == 24
 
 
 def test_frames_of_a_look_share_one_size_and_stay_small() -> None:
@@ -108,7 +109,23 @@ def test_look_names_and_missing_frames() -> None:
     assert sprites.look_for("Feminine") == "feminine"
     assert sprites.look_for("auto") == "masculine" and sprites.look_for(None) == "masculine"
     assert sprites.SpriteSet("masculine", DIR).missing() == []
-    assert len(sprites.SpriteSet("masculine", DIR / "nowhere").missing()) == len(sprites.FRAME_NAMES)
+    # an older, shorter set (6 walk, 12 idle) still runs, so those extras are not required
+    older = (sprites.WALK_COUNT - sprites.OLD_WALK_COUNT) + (sprites.IDLE_COUNT - sprites.OLD_IDLE_COUNT)
+    assert len(sprites.SpriteSet("masculine", DIR / "nowhere").missing()) == len(sprites.FRAME_NAMES) - older
+
+
+def test_a_shorter_shipped_set_runs_with_its_own_counts(tmp_path) -> None:
+    import shutil
+
+    spr = sprites.SpriteSet("masculine", DIR)
+    assert spr.walk_count() == 12 and spr.idle_count() == 24
+    keep = tmp_path / "masculine"
+    keep.mkdir()
+    for n in spr.available():
+        if n not in (*sprites.WALK_FRAMES[6:], *sprites.IDLE_FRAMES[12:]):
+            shutil.copy(DIR / "masculine" / f"{n}.png", keep / f"{n}.png")
+    old = sprites.SpriteSet("masculine", tmp_path)
+    assert old.missing() == [] and old.walk_count() == 6 and old.idle_count() == 12
 
 
 def test_the_shipped_frames_are_loadable_with_the_default_directory() -> None:

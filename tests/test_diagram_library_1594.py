@@ -38,7 +38,7 @@ def test_the_add_library_is_grouped_by_meaning_and_every_tile_has_a_hint():
     # The hint of the pointed-at tile shows under the strip, and is also in the tile's name for a screen reader.
     assert 'strip.addEventListener("pointerover", say)' in library and 'strip.addEventListener("focusin", say)' in library
     assert "tile.setAttribute(\"aria-label\", t.label)" in library and "label: `Add a ${name.toLowerCase()}. ${hint}`" in library
-    assert "strip.hint = hint" in library and "shapes.hint" in _read("diagram-builder.js")
+    assert "strip.hint = hint" in library and "tiles.hint" in _read("diagram-kinds.js")  # 1661 D2: the flowchart has the Add menu, not the strip
     # Wrapping, so the last tile is never cut off; the hint line is not shown on a phone, where the sheet carries the hints.
     assert ".dgm-lib-tiles {\n  display: flex;\n  flex-wrap: wrap;" in CSS and ".dgm-palette {\n  flex-wrap: wrap;" in CSS
     assert ".dgm-compact :is(.dgm-palette, .dgm-lib-hint" in CSS
@@ -77,7 +77,8 @@ def test_connect_to_is_on_every_row_and_in_the_menu_and_the_picker_can_make_the_
     pointer = _read("diagram-pointer.js")
     assert 'toggle("dgm-connecting", target.op === "join")' in pointer and "Connected ${h.name(S, g.key)} to" in pointer
     joins = _read("diagram-joins.js")
-    assert 'value: NEW' in joins and "h.add(S, { after: key, from, text: typed || undefined" in joins
+    # Intent moved (1661 blind test, bug 7): a block made from Connect's "A new block" is a box, not the shape in hand.
+    assert 'value: NEW' in joins and 'h.add(S, { after: key, from, shape: "rect", text: typed || undefined' in joins
     assert "Connect ${nameOf(h, S, key)} to" in joins
     # Making the block and the connector is one change, so one undo.
     add = builder.split("function addBlock(", 1)[1].split("function relabel", 1)[0]
@@ -95,11 +96,12 @@ def test_the_empty_list_and_the_space_under_the_blocks_say_what_to_do_next():
     assert ".dgm-next {" in CSS
 
 
-def test_the_phone_dock_is_one_row_because_the_direction_folds_into_the_more_menu():
+def test_the_dock_is_one_row_at_every_width_because_direction_is_one_button_and_suggest_folds_on_a_phone():
+    # 1661 D2 (was: the four direction buttons fold into the more menu on a phone): Direction is one button now, so only Suggest folds.
     builder = _read("diagram-builder.js")
     more = builder.split("function more(S) {", 1)[1].split("\n  }\n", 1)[0]
-    assert "matchMedia(COMPACT).matches" in more and '"ph:compass Direction"' in more
-    assert ".dock-group:has(> .dgm-dirs)" in CSS
+    assert "matchMedia(COMPACT).matches" in more and '"ph:compass Direction"' not in more and "Suggest…" in more
+    assert "flex-wrap: nowrap" in CSS.split(".dgm-dock {", 1)[1].split("}", 1)[0]
     assert "gap: var(--space-1);" in CSS.split(".dgm-compact .dock-actions {", 1)[1].split("}", 1)[0]
 
 
@@ -114,3 +116,14 @@ def test_the_builder_is_under_its_size_target_because_its_lazy_halves_are_files_
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     for file in ("diagram-library.js", "diagram-pointer.js", "diagram-ops.js"):
         assert file not in html, file
+
+
+def test_a_name_being_typed_keeps_its_row_and_a_tight_list_shows_connects_words_only_on_a_drop():
+    # The owner, 2026-11-04 ("the text box got crushed in the diagram builder"): renaming a block focuses its row, which showed
+    # Connect to…'s words (121 px), and in a 241 px row the box being typed in was left 15 px. Measured with
+    # scratchpad dgm-rename.js at 1440 and 900. While a name is typed the words go; in a tight list they show only on a drop.
+    assert ".dgm-card:has(> .dgm-editing) .dgm-connect .ph-text {\n  display: none;" in CSS
+    assert ".dgm-tight .dgm-card:is(:hover, :focus-within):not(.dgm-connecting) .dgm-connect .ph-text {\n  display: none;" in CSS
+    # After the rule that shows them, so they win at equal or higher specificity.
+    shows = CSS.index(".dgm-card:is(:hover, :focus-within, .dgm-connecting) .dgm-connect .ph-text")
+    assert CSS.index(".dgm-card:has(> .dgm-editing) .dgm-connect .ph-text") > shows

@@ -76,12 +76,12 @@ def test_blink_and_look_appear_while_standing() -> None:
     assert "blink" in frames and "look" in frames
 
 
-def test_walks_along_the_floor_and_cycles_six_frames_at_30hz() -> None:
+def test_walks_along_the_floor_and_cycles_twelve_frames() -> None:
     e, _ = make(rng=random.Random(3))
     e._enter("walk", 0.0)
     e.facing = 1
     outs = run(e, 3.0)
-    assert {o.frame for o in outs} == {f"walk{i}" for i in range(6)}
+    assert {o.frame for o in outs} == {f"walk{i}" for i in range(12)}
     assert all(o.y == 1040 - 120 for o in outs)
     assert outs[-1].x > outs[0].x
     assert outs[0].wake_ms == eng.TICK_WALK_MS

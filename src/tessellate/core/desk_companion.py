@@ -61,6 +61,11 @@ MARGIN = 12
 OVERLAY_POS_PREF = "desktop_companion_overlay_pos"
 #: "Roam over windows" (right-click menu): on by default, a pref the person can turn off.
 ROAM_PREF = "desktop_companion_roam"
+#: "Stay here" (menu): it stands where it is and does not wander until "Roam" is chosen.
+STAY_PREF = "desktop_companion_stay"
+#: "Hide for 10 minutes" (menu): minutes, and the menu requests the figure takes.
+SNOOZE_MINUTES = 10
+FIGURE_COMMANDS = ("wave", "come", "wander", "nap", "wake", "perch")
 #: The look and motion a readable (unlocked) app window last gave. A locked
 #: window has not read its prefs and answers the default look, so these stand
 #: until it is unlocked (INBOX 1670: masculine until unlocked).
@@ -76,7 +81,7 @@ REMINDERS_SCRIPT = (
 #: The size the panel window is made and shown at, by the click that opened it: the
 #: page then measures its own menu and asks for the exact height (`menuHeight` in
 #: desk-companion.js), so this only has to be close, never the other menu's size.
-PANEL_SIZES = {"menu": (208, 168), "context": (208, 124)}
+PANEL_SIZES = {"menu": (248, 168), "context": (248, 124)}
 PANEL_GAP = 8
 LOOK_WAIT = 1.5
 #: A click on the figure this soon after the panel closed itself on losing focus
@@ -275,9 +280,34 @@ def _system_dpi() -> int:
         return 96
 
 
+def _linux_areas() -> list[tuple[int, int, int, int]]:
+    """Each monitor's work area on an X11 desktop (EWMH struts and `_NET_WORKAREA`), in the
+    logical pixels pywebview takes; empty on Wayland or without a display. A short-lived
+    connection: the panel is placed once per click."""
+    ok, _note = overlay_support()
+    if not ok:
+        return []
+    try:
+        from tessellate.core.overlay import x11
+
+        conn = x11.load()
+        try:
+            mons = x11.monitors(conn)
+            dpi = mons[0][1] if mons else 96
+            return [to_logical(a, dpi) for a in x11.work_areas(conn)]
+        finally:
+            conn.close()
+    except Exception:  # noqa: BLE001 - the pywebview screen list is the fallback
+        logger.debug("could not read the X11 work area", exc_info=True)
+        return []
+
+
 def work_area() -> tuple[int, int, int, int] | None:
     """The screen minus the taskbar, as (left, top, right, bottom) in logical
-    pixels, or None where it cannot be asked (every platform but Windows)."""
+    pixels, or None where it cannot be asked (Windows and X11 desktops can)."""
+    if sys.platform.startswith("linux"):
+        areas = _linux_areas()
+        return areas[0] if areas else None
     if sys.platform != "win32":
         return None
     try:
@@ -297,7 +327,9 @@ def work_area() -> tuple[int, int, int, int] | None:
 def monitor_areas() -> list[tuple[int, int, int, int]]:
     """Every connected monitor's work area (left, top, right, bottom) in logical
     pixels at that monitor's own scale, primary first; empty where it cannot be
-    asked (every platform but Windows)."""
+    asked (Windows and X11 desktops can)."""
+    if sys.platform.startswith("linux"):
+        return _linux_areas()
     if sys.platform != "win32":
         return []
     try:
@@ -669,6 +701,19 @@ SETTINGS_SCRIPT = (
 )
 
 
+#: New reminder and Open today: the Reminders tab with its quick field focused, and the dashboard,
+#: both only past the lock screen like Settings.
+NEW_REMINDER_SCRIPT = (
+    "if (document.getElementById('lock-overlay')?.classList.contains('hidden')"
+    " && typeof switchTab === 'function') { switchTab('reminders');"
+    " setTimeout(() => document.getElementById('reminder-magic')?.focus(), 400); }"
+)
+TODAY_SCRIPT = (
+    "if (document.getElementById('lock-overlay')?.classList.contains('hidden')"
+    " && typeof switchTab === 'function') { switchTab('dashboard'); }"
+)
+
+
 class DeskApi:
     """What the companion's page may ask of its window. Only public methods
     are exposed to the page (pywebview), and each validates what it is given:
@@ -678,7 +723,8 @@ class DeskApi:
         self._owner = owner
 
     def open_app(self, where: str = "") -> bool:
-        return self._owner.open_main(SETTINGS_SCRIPT if where == "settings" else "")
+        scripts = {"settings": SETTINGS_SCRIPT, "reminder": NEW_REMINDER_SCRIPT, "today": TODAY_SCRIPT}
+        return self._owner.open_main(scripts.get(where, "") if isinstance(where, str) else "")
 
     def open_hit(self, kind: Any, ident: Any) -> bool:
         return self._owner.open_main(hit_script(kind, ident))
@@ -719,6 +765,15 @@ class DeskApi:
     def set_roam(self, on: Any) -> bool:
         return self._owner.set_roam(on is True)
 
+    def figure_do(self, name: Any) -> bool:
+        return self._owner.figure_do(name if isinstance(name, str) else "")
+
+    def set_stay(self, on: Any) -> bool:
+        return self._owner.set_stay(on is True)
+
+    def snooze(self) -> bool:
+        return self._owner.snooze()
+
     def companion_choices(self) -> dict[str, Any]:
         return self._owner.companion_choices()
 
@@ -756,6 +811,9 @@ class DeskCompanion:
         self.size = REST_SIZE
         self.corner: tuple[int, int] | None = None
         self.shown = False
+        #: Hidden by "Hide for 10 minutes" until this time on `_now`'s clock.
+        self.snooze_until = -1e9
+        self._snooze_timer: Any = None
         #: The tray's own refresh (pystray `Icon.update_menu`): its menu is
         #: built once on Windows, so a tick it shows is only as fresh as the
         #: last rebuild (INBOX 1642: hidden from its own menu, still ticked).
@@ -767,6 +825,8 @@ class DeskCompanion:
         self._overlay_factory = overlay_factory
         self.runner: Any = None
         self.overlay_failed = False
+        #: Why the see-through figure is not used on this machine (Wayland), shown in the card's menu.
+        self.overlay_note = ""
         self.look = "masculine"
         #: How the companion may move, as the app window last said: None until it
         #: answers (then the runner falls back to the Windows animation flag).
@@ -981,6 +1041,7 @@ class DeskCompanion:
                 on_died=self._overlay_died,
                 on_card=self._overlay_card,
                 roam_windows=bool(_pref(ROAM_PREF, True)),
+                stay=bool(_pref(STAY_PREF, False)),
                 **kw,
             )
             started = runner.start()
@@ -1012,7 +1073,15 @@ class DeskCompanion:
             runner = self.runner
             still = bool(getattr(runner, "reduced", False)) if runner is not None else False
             reason = getattr(runner, "reduced_reason", "") if still else ""
-        return {"still": still, "reason": str(reason or ""), "roam": bool(_pref(ROAM_PREF, True))}
+        note = self.overlay_note or ("The see-through figure could not start here, so the companion stays in the app." if self.overlay_failed else "")
+        engine = getattr(runner, "engine", None)
+        out: dict[str, Any] = {
+            "still": still, "reason": str(reason or ""), "roam": bool(_pref(ROAM_PREF, True)), "stay": bool(_pref(STAY_PREF, False)),
+            "asleep": getattr(engine, "state", "") == "sleep", "figure": runner is not None and hasattr(runner, "command"),
+        }
+        if note:
+            out["note"] = note
+        return out
 
     def set_roam(self, on: bool) -> bool:
         """The menu's "Roam over windows": saved, and the running figure follows."""
@@ -1020,6 +1089,36 @@ class DeskCompanion:
         runner = self.runner
         if runner is not None and hasattr(runner, "set_roam"):
             runner.set_roam(bool(on))
+        return True
+
+    def figure_do(self, name: str) -> bool:
+        """A request from the menu to the walking figure (wave, come here, go somewhere else, nap,
+        wake, sit on a window). False when there is no figure to ask or the name is not one of them."""
+        runner = self.runner
+        if name not in FIGURE_COMMANDS or runner is None or not self.shown or not hasattr(runner, "command"):
+            return False
+        return bool(runner.command(name))
+
+    def set_stay(self, on: bool) -> bool:
+        """"Stay here" or "Roam": saved, and the running figure follows."""
+        _set_pref(STAY_PREF, bool(on))
+        runner = self.runner
+        if runner is not None and hasattr(runner, "set_stay"):
+            runner.set_stay(bool(on))
+        return True
+
+    def snooze(self) -> bool:
+        """"Hide for 10 minutes": the figure goes now and comes back by itself, as long as it is
+        still turned on and the app window is still away. The clock is the injected one."""
+        self.snooze_until = self._now() + SNOOZE_MINUTES * 60
+        timer = threading.Timer(SNOOZE_MINUTES * 60 + 1, lambda: self._dispatch("desk-companion", self.sync))
+        timer.daemon = True
+        with _lock:
+            old, self._snooze_timer = self._snooze_timer, timer
+        if old is not None:
+            old.cancel()
+        timer.start()
+        self._dispatch("desk-companion", self.sync)
         return True
 
     def carry_reminder(self, token: Any) -> bool:
@@ -1311,7 +1410,7 @@ class DeskCompanion:
             if on != self._ticked:
                 self._ticked = on
                 self._refresh_tray()
-            due = on and self.main_hidden and not self.closing
+            due = on and self.main_hidden and not self.closing and self._now() >= self.snooze_until
             #: One line a step (INBOX 1633: the owner could not see it; the log says where it stopped).
             logger.info("desk companion: due=%s (on=%s, window away=%s, shown=%s)", due, enabled(), self.main_hidden, self.shown)
             try:
@@ -1392,11 +1491,14 @@ class DeskCompanion:
         got = _lock.acquire(timeout=LOCK_WAIT)
         try:
             self.closing = True
+            timer, self._snooze_timer = self._snooze_timer, None
             window, self.window = self.window, None
             self.shown = False
         finally:
             if got:
                 _lock.release()
+        if timer is not None:
+            timer.cancel()
         self._stop_runner()
         if window is not None:
             try:
@@ -1405,10 +1507,32 @@ class DeskCompanion:
                 logger.debug("could not destroy the companion window", exc_info=True)
 
 
+def overlay_support() -> tuple[bool, str]:
+    """(usable, one-line note) for the see-through figure here: Windows always; Linux on an X11
+    session (Wayland cannot place a window above others, so the companion stays in the app and
+    the note says so); every other platform keeps the card window."""
+    if sys.platform == "win32":
+        return True, ""
+    if sys.platform.startswith("linux"):
+        from tessellate.core.overlay import x11
+
+        return x11.support()
+    return False, ""
+
+
+#: Why the see-through figure is not used on this machine (empty when it is, or when nothing needs saying).
+OVERLAY_NOTE = ""
+
+
 def _default_overlay_factory() -> Callable[..., Any] | None:
-    """The see-through figure is the Windows default; elsewhere the card window
-    (or the see-through web window) stays."""
-    if sys.platform != "win32":
+    """The see-through figure is the default on Windows and on an X11 desktop; elsewhere the
+    card window (or the see-through web window) stays, with a note on Linux saying why."""
+    global OVERLAY_NOTE
+    ok, note = overlay_support()
+    OVERLAY_NOTE = note
+    if not ok:
+        if note:
+            logger.info("desk companion: %s", note)
         return None
     from tessellate.core.overlay.runner import OverlayRunner
 
@@ -1429,15 +1553,19 @@ def attach(
     tray. `transparent` defaults to every platform but Windows, where a frameless
     web view cannot be made see-through and the page draws a card instead."""
     global _active
+    factory = _default_overlay_factory() if overlay_factory == "auto" else overlay_factory
     companion = DeskCompanion(
         webview,
         main_window,
         open_main,
         url,
-        transparent=(sys.platform != "win32") if transparent is None else transparent,
-        overlay_factory=_default_overlay_factory() if overlay_factory == "auto" else overlay_factory,
+        #: The see-through figure draws itself, so its quick panel is an ordinary window;
+        #: without it (Wayland, other platforms) the card window is the see-through one.
+        transparent=(sys.platform != "win32" and factory is None) if transparent is None else transparent,
+        overlay_factory=factory,
     )
     companion.on_change = on_change
+    companion.overlay_note = OVERLAY_NOTE if overlay_factory == "auto" else ""
     followed = _follow(main_window, companion)
     with _lock:
         _active = companion

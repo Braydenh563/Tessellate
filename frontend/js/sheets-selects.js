@@ -1451,6 +1451,13 @@ function kebabMenu(items, ariaLabel, { vertical = false } = {}) {
     if (item.danger) button.classList.add("menu-danger");
     button.setAttribute("role", "menuitem");
     setLabel(button, item.label);
+    if (item.keys) {
+      const hint = document.createElement("kbd");
+      hint.className = "menu-keys";
+      hint.textContent = item.keys;
+      button.append(hint);
+      button.setAttribute("aria-keyshortcuts", item.keys.replace(/ or /g, " "));
+    }
     if (item.title) button.title = item.title;
     menuRowFits(button, item.title || "");
     // Muted, not `disabled`, a native disabled button also blocks its own

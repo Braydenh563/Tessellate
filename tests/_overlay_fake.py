@@ -38,6 +38,11 @@ class FakeWin32:
         self.layered: list[dict[str, Any]] = []
         self.dib_bits: Any = None
         self.timers: dict[int, int] = {}
+        #: The high-resolution pace timer: `SetWaitableTimer` files its delay under timer id 1 as well (so a
+        #: test that waits for "the next wake" sees either kind), and the timer fires only when a test calls
+        #: `fire_pace()`: a fake that fired by itself would run the figure at full speed.
+        self.pace_delays: list[float] = []
+        self.pace_fire = threading.Event()
         #: (work area, dpi) of each monitor, and the answers the shell gives.
         self.monitor_list: list[tuple[tuple[int, int, int, int], int]] = [((0, 0, 1920, 1040), 96)]
         self.notification = 5  # QUNS_ACCEPTS_NOTIFICATIONS
@@ -100,6 +105,30 @@ class FakeWin32:
 
     def _DefWindowProcW(self, *_args: Any) -> int:
         return 0
+
+    def _CreateWaitableTimerExW(self, *_args: Any) -> int:
+        return 4321
+
+    def _SetWaitableTimer(self, _handle: Any, due_ref: Any, *_rest: Any) -> int:
+        due = int(due_ref._obj.value)
+        if due == -1:  # the host closing: wake the waiting thread so it can end
+            self.pace_fire.set()
+            return 1
+        self.pace_delays.append(-due / 1e7)
+        self.timers[1] = max(1, round(-due / 1e4))
+        return 1
+
+    def _CancelWaitableTimer(self, _handle: Any) -> int:
+        self.timers.pop(1, None)
+        return 1
+
+    def _WaitForSingleObject(self, _handle: Any, _ms: int) -> int:
+        self.pace_fire.wait()
+        self.pace_fire.clear()
+        return 0
+
+    def fire_pace(self) -> None:
+        self.pace_fire.set()
 
     def _SetTimer(self, _hwnd: Any, ident: int, ms: int, _cb: Any) -> int:
         self.timers[ident] = ms
