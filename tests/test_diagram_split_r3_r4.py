@@ -81,3 +81,17 @@ def test_the_empty_state_is_a_three_step_walkthrough_with_a_button_each():
         assert f'"{words}"' in steps, words
     assert 'diagramSteps: ["/js/diagram-steps.js"]' in MERMAID_JS and 'ensureModule("diagramSteps")' in BUILDER
     assert "dgm-steps" in steps and "dgm-steps" in CSS
+
+
+@needs_node
+def test_an_unmounted_body_does_not_pull_a_saved_width_down_to_the_least():
+    # Review finding 2: wired while the body is not laid out (width 0), a saved 400 px must stay 400 px.
+    assert _math("m.clamp(400, 0, 0)") == 400
+    assert _math("m.clamp(100, 0, 0)") == 224
+
+
+def test_reset_and_resize_keep_the_tight_class_and_aria_max_true():
+    # Review findings 1 and 3: Home / double-click re-derives dgm-tight; a resize refreshes aria-valuemax.
+    home = SPLIT[SPLIT.index('event.key === "Home"') :][:400]
+    assert "tight()" in home
+    assert "aria-valuemax" in SPLIT[SPLIT.index("const tight = ") :][:500]

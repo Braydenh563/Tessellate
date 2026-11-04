@@ -15,7 +15,9 @@
   const math = {
     MIN,
     KEEP,
-    clamp: (want, total, grip = 0) => Math.round(Math.min(Math.max(want, MIN), Math.max(MIN, total - grip - KEEP))),
+    // A body not laid out yet (total 0) has no ceiling to measure: keep the wish rather than the least.
+    clamp: (want, total, grip = 0) =>
+      Math.round(Math.min(Math.max(want, MIN), total > 0 ? Math.max(MIN, total - grip - KEEP) : Infinity)),
   };
 
   function wire(S) {
@@ -58,6 +60,7 @@
     const tight = () => {
       if (!body.isConnected) return window.removeEventListener("resize", tight); // the pane was remounted
       body.classList.toggle("dgm-tight", S.pane.getBoundingClientRect().width < TIGHT);
+      handle.setAttribute("aria-valuemax", Math.max(MIN, Math.round(room() - KEEP)) || 640);
     };
     window.addEventListener("resize", tight);
     tight();
@@ -83,6 +86,7 @@
       else if (event.key === "ArrowRight") apply(now + step);
       else if (event.key === "Home") {
         body.style.removeProperty("--dgm-list");
+        tight(); // the words on the rows come back with the default width
         try {
           prefs.set(KEY, "");
         } catch {

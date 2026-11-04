@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7753, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8656, test files 2007, tests 16855, plan headings 998, app scripts 28, boot scripts 37, script files 248.
+Counts: frontend functions 7753, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8656, test files 2007, tests 16857, plan headings 998, app scripts 28, boot scripts 37, script files 248.
 
 ## Frontend functions (7753)
 
@@ -3278,7 +3278,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `wire` | frontend/js/diagram-split.js:21 |
+| `wire` | frontend/js/diagram-split.js:23 |
 
 ### frontend/js/diagram-steps.js (1)
 
@@ -23787,7 +23787,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16855)
+## Tests (16857)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24319,7 +24319,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_kinds.py | 30 |
 | tests/test_diagram_library_1594.py | 7 |
 | tests/test_diagram_model.py | 12 |
-| tests/test_diagram_split_r3_r4.py | 6 |
+| tests/test_diagram_split_r3_r4.py | 8 |
 | tests/test_diagram_suggest.py | 21 |
 | tests/test_diagram_touch.py | 4 |
 | tests/test_diagram_view_1614.py | 7 |
@@ -25991,7 +25991,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 22.3 Where the design is below standard (measured or seen, 2026-09-27) | docs/roadmap/WORLD_CLASS_PLAN.md:2372 |
 | 22.4 Phased rows | docs/roadmap/DOCUMENTS_PLAN.md:1537 |
 | 22.4 The devibecode programme: one surface at a time, every skill | docs/roadmap/WORLD_CLASS_PLAN.md:2387 |
-| 22.5 Risks and out of scope | docs/roadmap/DOCUMENTS_PLAN.md:1563 |
+| 22.5 Risks and out of scope | docs/roadmap/DOCUMENTS_PLAN.md:1576 |
 | 22.5 Where the app goes next (release path) | docs/roadmap/WORLD_CLASS_PLAN.md:2416 |
 | 23. Filing and the taxonomy: candidates, a decision, an explanation (2026-10-10; Brief 39b) | docs/roadmap/WORLD_CLASS_PLAN.md:1452 |
 | 23. Organisation: manual grouping and multi-category notes | docs/roadmap/BACKLOG.md:1614 |
