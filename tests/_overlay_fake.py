@@ -178,7 +178,7 @@ class FakeWin32:
         if self.caret is None:
             info.hwndCaret = None
             return 1
-        (left, top, right, bottom), _origin = self.caret
+        left, top, right, bottom = self.caret[0]  # client space; ClientToScreen adds self.caret[1]
         info.hwndCaret = 901
         info.rcCaret.left, info.rcCaret.top, info.rcCaret.right, info.rcCaret.bottom = left, top, right, bottom
         return 1
