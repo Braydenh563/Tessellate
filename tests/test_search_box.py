@@ -270,3 +270,28 @@ def test_a_tag_alone_finds_every_note_it_is_on_not_the_newest_page(client):
         session.commit()
     answer = client.get("/search?q=tag:rarebird&limit=50&hybrid=false")
     assert len(answer.json()["hits"]) == 3
+
+
+def test_search_rows_of_a_private_notes_files_are_removed_at_the_next_start(app_state):
+    """SEC-A2: rows indexed before files of private notes were left out are cleared once."""
+    from tessellate.core.database import Attachment, Entry
+    from tessellate.search import index
+
+    with deps.get_db().session() as session:
+        private = Entry(content="p", is_private=True)
+        plain = Entry(content="q")
+        session.add_all([private, plain])
+        session.flush()
+        hidden = Attachment(entry_id=private.id, filename="hid.txt", stored_name="h1", mime="text/plain", size=1)
+        shown = Attachment(entry_id=plain.id, filename="shown.txt", stored_name="s1", mime="text/plain", size=1)
+        session.add_all([hidden, shown])
+        session.commit()
+        source = index.source_for("attachments")
+        index._write(session.connection(), source, hidden.id, index.Row(title="hid.txt", body="LEAKWORD"))
+        index._write(session.connection(), source, shown.id, index.Row(title="shown.txt", body="fine"))
+        session.commit()
+        assert index.reconcile_private_files(session) is True
+        session.commit()
+        assert index.reconcile_private_files(session) is False
+        left = [r[0] for r in session.execute(sa_text("SELECT title FROM search_index WHERE kind = 'file'")).all()]
+        assert "hid.txt" not in left and "shown.txt" in left

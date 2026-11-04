@@ -2425,7 +2425,8 @@ class DatabaseManager:
                 # Either may write; `or` would skip the second once the first did.
                 boards = search_index.reconcile_boards(session)
                 late = search_index.reconcile_sources(session)
-                if boards or late:
+                private_files = search_index.reconcile_private_files(session)
+                if boards or late or private_files:
                     session.commit()
             return
         # Only on the one startup that creates the table: every write after

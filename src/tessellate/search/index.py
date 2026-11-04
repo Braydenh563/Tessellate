@@ -1001,4 +1001,39 @@ def reconcile_sources(session: Session) -> bool:
     return changed
 
 
+def reconcile_private_files(session: Session) -> bool:
+    """Drop the search rows of files on private notes (SEC-A2).
+
+    Returns True when anything was removed. Files on private notes were
+    indexed until the row builder began leaving them out; the write path only
+    clears a row when the note's privacy changes, so rows made before that fix
+    stay until this runs. Run at every startup beside `reconcile_boards`: one
+    indexed read once clean.
+    """
+    from tessellate.core.database import Attachment, Entry
+
+    if _table_missing(session):
+        return False
+    source = _SOURCES["attachments"]
+    low, high = source.slot * SLOT_STRIDE, (source.slot + 1) * SLOT_STRIDE
+    connection = session.connection()
+    held = {
+        int(ref_id)
+        for (ref_id,) in connection.exec_driver_sql(
+            "SELECT ref_id FROM search_index WHERE rowid >= ? AND rowid < ?", (low, high)
+        ).all()
+    }
+    if not held:
+        return False
+    private = set(
+        session.scalars(
+            select(Attachment.id).join(Entry, Entry.id == Attachment.entry_id).where(Entry.is_private == True)  # noqa: E712
+        ).all()
+    )
+    stale = held & private
+    for ref_id in stale:
+        _write(connection, source, ref_id, None)
+    return bool(stale)
+
+
 _register_all()
