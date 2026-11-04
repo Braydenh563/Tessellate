@@ -147,15 +147,42 @@ def _social_run(text: str) -> bool:
 #: notes", "why is the chat so slow", "how do i tag a note", "how do i make a
 #: mind map"): the Guide's, never a notes search (the Chromium after-run,
 #: 2026-10-11; the bug sweep, 2026-10-12).
+#: A request for the app in any frame: "how do I ...", "can I ...", "I want to
+#: ...", "help me ..." (INBOX 1649: "I want to edit a note" was searched for).
+_REQUEST_FRAME = (
+    r"(?:how (?:do|can|could|would|should) i|how to|(?:can|could|may) i|i (?:want|need|have|wanna|would like|'d like|'ld like) to"
+    r"|i wanna|i'd like to|i would like to|help me(?: to)?|is it possible to|is there a way to|let me|show me how to"
+    r"|tell me how to|what(?:'s| is) the way to)"
+)
+#: What an app verb takes: a generic thing, never one named note ("my pasta
+#: note", "the note about pasta" stay notes questions and acts).
+_GENERIC_THING = (
+    r"(?:(?:on|in|to|with|into)\s+)?(?:(?:a|an|some|two|another|new|the|my|this)\s+){0,2}(?:new\s+)?(?:notes?|documents?|docs?|tags?|mind ?maps?|white ?boards?"
+    r"|reminders?|categor(?:y|ies)|folders?)\b"
+)
+_NOT_NAMED = r"(?!\s+(?:about|on|for|from|with|that|in|called|named|titled|of|regarding)\b)(?!\s+\w+\s+(?:note|document|doc)\b)"
+_APP_VERBS = (
+    "add|set|make|create|use|remove|delete|edit|rename|merge|draw|start|open|change|write|move|share|export|copy|duplicate|format"
+    "|lock|unlock|hide|unhide|archive|unarchive|sort|undo|restore|pin|unpin|link|unlink|star|unstar|colou?r|tag|untag|split|print"
+    "|favou?rite|bookmark|attach|rewrite|update|clear|reorder|organi[sz]e|file|save|trash|turn off|turn on|enable|disable"
+)
 _APP_FIRST = re.compile(
-    r"^how (?:do|can|would|should) i (?:export|import|back ?up|sync|install|print|restore|encrypt)\b"
-    r"|^how (?:do|can|would|should) i tag\b"
-    r"|^how (?:do|can|would|should) i (?:un)?(?:pin|link|star|rename|delete|archive|restore|merge|duplicate|favou?rite|colou?r) "
-    r"(?:(?:a|an|the|my|this|some|two) )?(?:\w+ )?notes?\b(?! (?:about|on|for|from|with|that|called))"
-    r"|^how (?:do|can|would|should) i (?:add|set|make|create|use|remove|delete|edit|rename|merge|draw|start|open) "
-    r"(?:\w+ ){0,2}(?:tags?|mind ?maps?|white ?boards?|reminders?)\b(?! (?:about|on|for|from|with|that|in|called))"
+    rf"^{_REQUEST_FRAME} (?:export|import|back ?up|sync|install|print|restore|encrypt)\b(?!\s+(?:the |my |a )?\w+ note\b)"
+    rf"|^{_REQUEST_FRAME} (?:un)?tag\b(?!\s+(?:the|my) \w+ note)"
+    rf"|^{_REQUEST_FRAME} (?:{_APP_VERBS}) {_GENERIC_THING}(?:\s+(?:for me|please|now))?{_NOT_NAMED}"
     r"|^why (?:is|does) (?:the )?(?:app|chat|search|graph|atlas|tessellate|this|it) (?:so |really |very )?(?:slow|laggy|sluggish|lag)\b"
 )
+_FRAME_RE = re.compile(rf"^{_REQUEST_FRAME}\s+", re.IGNORECASE)
+
+
+def request_core(message: str) -> str:
+    """"I want to edit a note" as "how do I edit a note": the request frame
+    swapped for the one the Guide's lookup reads, so every frame finds the same
+    topic and sentence (INBOX 1649)."""
+    text = message.strip()
+    if _FRAME_RE.match(text) and not re.match(r"how ", text, re.IGNORECASE):
+        return _FRAME_RE.sub("how do I ", text, count=1)
+    return message
 
 
 def _about_app_first(message: str, text: str) -> bool:

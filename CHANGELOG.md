@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat: a request to do something in the app ("I want to edit a note", "can I pin a note", "help me make a mind map", any app verb and request frame) is the Guide's how-to, not a search of notes that share its words, and the edit answer names Edit in the note menu and F2; a quoted line never ends on "and" or another dangling word; "your only note on it" is said only for a topic, never for a request (INBOX 1649).
 - Settings, About, Running copies lists the other copies of Tessellate on this computer, each with Shut down, which asks that copy to quit with its own token and never ends a process by pid (INBOX 1641).
 - Atlas blinks with both eyes in the idle blink, in both looks (INBOX 1644).
 - Stopwatch: the Lap button stays under the pointer while laps are added (the laps area holds its height from the first lap), and the diagram picture's zoom label shows the true scale after every zoom (INBOX 1651, 1652).
