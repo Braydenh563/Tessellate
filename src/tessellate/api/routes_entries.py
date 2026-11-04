@@ -3204,11 +3204,16 @@ class PrivacyBody(BaseModel):
 HISTORY_PAGE = 50
 
 
-def _stored_form(entry, text: str) -> str:  # noqa: ANN001
-    """A past version's text, in the form this note stores it in now."""
+def _stored_form(entry, text: str, session: Session | None = None) -> str:  # noqa: ANN001
+    """A past version's text, in the form this note stores it in now.
+
+    A private note's restored text marks the pictures it embeds, as an edit
+    does (SEC-A2): a picture only an older version used was served locked."""
     stored = manager.content_for_entry(entry, text or "")
     if stored is None:
         raise HTTPException(status_code=409, detail="Unlock the app first: this version needs the encryption key.")
+    if session is not None and entry.is_private:
+        manager.flag_private_media(session, _readable(stored))
     return stored
 
 
@@ -3702,7 +3707,7 @@ def restore_event(
         )
 
     if "content" in state:
-        restored = _stored_form(entry, state["content"])
+        restored = _stored_form(entry, state["content"], session)
     manager.record_revision(session, entry)
     if "content" in state:
         entry.content = restored
@@ -3742,7 +3747,7 @@ def restore_revision(
     if revision is None or revision.entry_id != entry.id:
         raise HTTPException(status_code=404, detail="That version no longer exists.")
 
-    restored = _stored_form(entry, revision.content)
+    restored = _stored_form(entry, revision.content, session)
     manager.record_revision(session, entry)
     entry.content = restored
     entry.tags = revision.tags

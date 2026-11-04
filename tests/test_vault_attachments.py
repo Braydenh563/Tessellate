@@ -121,3 +121,28 @@ def test_the_media_list_blanks_only_pictures_of_sealed_notes(client, session):
     assert "IMGSECRET" not in text
     assert "ORPHANTEXT" in text
     assert url
+
+
+def test_a_private_note_restored_to_a_version_with_a_picture_keeps_it_sealed(client, session):
+    # The restore paths write a private note's text without the edit path's
+    # flag (the SEC-A2 follow-up's residual gap 2): a picture only an older
+    # version embedded came back served to a locked session.
+    from tessellate.core import vault
+    from tessellate.core.database import EntryRevision
+    from tessellate.entry import manager
+
+    vault.close()
+    vault.create(session, PASSPHRASE)
+    session.commit()
+    url = client.post("/media/upload", files={"file": ("r.png", PNG, "image/png")}).json()["url"]
+    note = client.post("/entries", json={"content": f"old pic ![]({url})"}).json()
+    edited = client.put(f"/entries/{note['id']}", json={"content": "no picture now"})
+    assert edited.status_code == 200
+    made_private = client.post(f"/entries/{note['id']}/privacy", json={"private": True})
+    assert made_private.status_code == 200
+    revision = next(r for r in session.query(EntryRevision).filter_by(entry_id=note["id"]) if "old pic" in manager.readable_content(r))
+    restored = client.post(f"/entries/{note['id']}/history/{revision.id}/restore")
+    assert restored.status_code == 200, restored.text
+    vault.close()
+    reply = client.get(url)
+    assert reply.status_code == 403
