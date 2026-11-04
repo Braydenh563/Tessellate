@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7780, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8715, test files 2044, tests 17196, plan headings 1001, app scripts 28, boot scripts 37, script files 252.
+Counts: frontend functions 7780, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8715, test files 2045, tests 17198, plan headings 1001, app scripts 28, boot scripts 37, script files 253.
 
 ## Frontend functions (7780)
 
@@ -47,18 +47,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `clearApiCache` | frontend/js/app.js:557 |
 | `confirmDialog` | frontend/js/app.js:1265 |
 | `confirmVerb` | frontend/js/app.js:1256 |
-| `ensureModule` | frontend/js/app.js:1720 |
+| `ensureModule` | frontend/js/app.js:1721 |
 | `enterWithoutPassword` | frontend/js/app.js:636 |
 | `hide` | frontend/js/app.js:164 |
 | `hideBootSplash` | frontend/js/app.js:832 |
 | `initAuth` | frontend/js/app.js:845 |
-| `installStandIns` | frontend/js/app.js:1889 |
-| `lazyAssetStamp` | frontend/js/app.js:1677 |
-| `lazyScript` | frontend/js/app.js:1699 |
+| `installStandIns` | frontend/js/app.js:1890 |
+| `lazyAssetStamp` | frontend/js/app.js:1678 |
+| `lazyScript` | frontend/js/app.js:1700 |
 | `lockFieldForPin` | frontend/js/app.js:752 |
 | `lockNow` | frontend/js/app.js:806 |
 | `mediaSrc` | frontend/js/app.js:235 |
-| `mountNoteSurfaceNow` | frontend/js/app.js:1744 |
+| `mountNoteSurfaceNow` | frontend/js/app.js:1745 |
 | `promptDialog` | frontend/js/app.js:1363 |
 | `purgeLockedContent` | frontend/js/app.js:793 |
 | `recordBrowserLog` | frontend/js/app.js:23 |
@@ -78,7 +78,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `stagedImageByUrl` | frontend/js/app.js:196 |
 | `startApp` | frontend/js/app.js:894 |
 | `startWithoutPassword` | frontend/js/app.js:621 |
-| `whenScriptsLoaded` | frontend/js/app.js:1658 |
+| `whenScriptsLoaded` | frontend/js/app.js:1659 |
 | `wireBackdropClose` | frontend/js/app.js:1477 |
 
 ### frontend/js/prefs.js (6)
@@ -1201,22 +1201,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `toggleWebSearch` | frontend/js/wiring.js:1438 |
 | `watchFullscreenSurface` | frontend/js/wiring.js:1230 |
 
-### frontend/js/settings-wiring.js (46)
+### frontend/js/settings-wiring.js (45)
 
 | Name | File:line |
 |---|---|
-| `_isChatComposer` | frontend/js/settings-wiring.js:1943 |
 | `activeOverlay` | frontend/js/settings-wiring.js:944 |
 | `captureCountText` | frontend/js/settings-wiring.js:1704 |
 | `captureShortcutKey` | frontend/js/settings-wiring.js:1452 |
-| `clearStagedImages` | frontend/js/settings-wiring.js:2110 |
+| `clearStagedImages` | frontend/js/settings-wiring.js:2101 |
 | `closeOverlaysForChord` | frontend/js/settings-wiring.js:1247 |
 | `closeShortcuts` | frontend/js/settings-wiring.js:1482 |
 | `comboFromEvent` | frontend/js/settings-wiring.js:1283 |
-| `commitCaptureImages` | frontend/js/settings-wiring.js:2095 |
-| `fileDropBox` | frontend/js/settings-wiring.js:1952 |
+| `commitCaptureImages` | frontend/js/settings-wiring.js:2086 |
+| `fileDropBox` | frontend/js/settings-wiring.js:1949 |
 | `flashSaved` | frontend/js/settings-wiring.js:496 |
-| `handleFileUpload` | frontend/js/settings-wiring.js:2142 |
+| `handleFileUpload` | frontend/js/settings-wiring.js:2133 |
 | `hideChordGuide` | frontend/js/settings-wiring.js:1265 |
 | `inEditable` | frontend/js/settings-wiring.js:942 |
 | `loadForgottenOrder` | frontend/js/settings-wiring.js:1563 |
@@ -1236,7 +1235,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderSavedSearches` | frontend/js/settings-wiring.js:17 |
 | `resetShortcuts` | frontend/js/settings-wiring.js:1419 |
 | `restampShortcutHints` | frontend/js/settings-wiring.js:1166 |
-| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2083 |
+| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2074 |
 | `runShortcut` | frontend/js/settings-wiring.js:1310 |
 | `saveCurrentSearch` | frontend/js/settings-wiring.js:61 |
 | `saveShortcutOverrides` | frontend/js/settings-wiring.js:1271 |
@@ -1244,12 +1243,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `savedSearches` | frontend/js/settings-wiring.js:13 |
 | `setShortcutStatus` | frontend/js/settings-wiring.js:1436 |
 | `setShortcutStatusError` | frontend/js/settings-wiring.js:1443 |
-| `singleKeysOn` | frontend/js/settings-wiring.js:2281 |
-| `stagedImageUrl` | frontend/js/settings-wiring.js:2060 |
+| `singleKeysOn` | frontend/js/settings-wiring.js:2272 |
+| `stagedImageUrl` | frontend/js/settings-wiring.js:2051 |
 | `stampShortcutTitles` | frontend/js/settings-wiring.js:1142 |
 | `submitLockForm` | frontend/js/settings-wiring.js:305 |
 | `textCounts` | frontend/js/settings-wiring.js:1694 |
-| `uploadStagedFiles` | frontend/js/settings-wiring.js:2119 |
+| `uploadStagedFiles` | frontend/js/settings-wiring.js:2110 |
 | `wordCount` | frontend/js/settings-wiring.js:1689 |
 
 ### frontend/js/spaces-find.js (25)
@@ -3389,12 +3388,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `syncDocAiPanel` | frontend/js/documents-ai.js:148 |
 | `toggleDocAiHunk` | frontend/js/documents-ai.js:118 |
 
-### frontend/js/documents-cm.js (2)
+### frontend/js/documents-cm-theme.js (1)
 
 | Name | File:line |
 |---|---|
-| `docCmTheme` | frontend/js/documents-cm.js:1750 |
-| `docLivePlugin` | frontend/js/documents-cm.js:28 |
+| `docCmTheme` | frontend/js/documents-cm-theme.js:10 |
+
+### frontend/js/documents-cm.js (1)
+
+| Name | File:line |
+|---|---|
+| `docLivePlugin` | frontend/js/documents-cm.js:27 |
 
 ### frontend/js/documents-code.js (180)
 
@@ -3677,7 +3681,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docThreadsSync` | frontend/js/documents-comments.js:473 |
 | `renderDocComments` | frontend/js/documents-comments.js:694 |
 
-### frontend/js/documents-embeds.js (10)
+### frontend/js/documents-embeds.js (11)
 
 | Name | File:line |
 |---|---|
@@ -3685,6 +3689,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docEmbedFill` | frontend/js/documents-embeds.js:180 |
 | `docEmbedNode` | frontend/js/documents-embeds.js:56 |
 | `docEmbedTarget` | frontend/js/documents-embeds.js:40 |
+| `docFileDropBox` | frontend/js/documents-embeds.js:339 |
 | `docImageLive` | frontend/js/documents-embeds.js:126 |
 | `docOpenLink` | frontend/js/documents-embeds.js:323 |
 | `docOpenResolvedWikiTarget` | frontend/js/documents-embeds.js:296 |
@@ -23911,7 +23916,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17196)
+## Tests (17198)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24513,6 +24518,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_doc_sections.py | 7 |
 | tests/test_doc_sidebar_narrow.py | 2 |
 | tests/test_doc_spell_lang_1104.py | 3 |
+| tests/test_doc_split_160_161.py | 2 |
 | tests/test_doc_statusbar_one_row.py | 2 |
 | tests/test_doc_surface.py | 6 |
 | tests/test_doc_table_manage.py | 3 |

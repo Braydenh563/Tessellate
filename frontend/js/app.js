@@ -1632,6 +1632,7 @@ const LAZY_MODULES = {
     "/js/documents-print.js",
     "/js/documents-outline.js",
     "/js/documents-cm.js",
+    "/js/documents-cm-theme.js",
     "/js/documents-props.js",
     "/js/documents-mermaid.js",
     "/js/documents-math.js",

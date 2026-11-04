@@ -2859,7 +2859,7 @@ def test_code_diagnostics_are_drawn_in_the_apps_ink() -> None:
     #: out of documents.js on 2026-09-24), joined.
     docs = "\n".join(
         (ROOT / "frontend" / "js" / name).read_text(encoding="utf-8")
-        for name in ("documents.js", "documents-code.js", "documents-cm.js")
+        for name in ("documents.js", "documents-code.js", "documents-cm.js", "documents-cm-theme.js")
     )
     theme = docs.split("function docCmTheme(CM) {", 1)[1].split("\nfunction ", 1)[0]
     for selector in (

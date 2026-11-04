@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents editor split (audit 160 D23, 161 D24): `docCmTheme` is its own file (documents-cm-theme.js, 1,075 lines; documents-cm.js 2,823 to 1,748), and the document editor's paste and drop target answer (`docFileDropBox`) moved from settings-wiring.js to documents-embeds.js; docLivePlugin split stays open in DOCUMENTS_PLAN.
 - Documents spelling language (audit 1028 D30, step 1 and 4 of a30h-1102): a `lang` (or `language`) property other than English turns the spelling check off for that document and the empty Suggestions panel says why, instead of flagging every word of a French note; the per-language packs stay open (`tests/test_doc_spell_lang_1104.py`).
 - Graph labels (PF10, row 19): a name fading in or out at rest repaints only the names over the kept canvas (`gcDrawLabels.frame`), not the whole map; 36 notes at 4x CPU, one fade 13 frames at 4.6 ms (draw JS 85 to 65 ms median), the settled canvas pixel-identical to a full redraw at 1440 and 390. The worker's own 11 to 14 s and the at-rest scene repaint stay open in the graph plan.
 - Graph perf audit (rank 36) re-checked: the map posts exactly one worker init per open (first, reload, return; 300 notes), so the suspected second init was a sweep artefact; hover p50 stays open on the owner's card-refill decision.
