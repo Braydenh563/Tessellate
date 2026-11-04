@@ -31,6 +31,7 @@ _ROWS: tuple[tuple[str, str, tuple[str, ...]], ...] = (
     ("attach-chat", r"\b(?:attach|add|upload|send|include|drop|put|give)\b.{0,30}\b(?:file|files|document|documents|image|picture|photo|pdf|note|notes|screenshot)\b.{0,30}\b(?:chat|message|question|ask|prompt|conversation|atlas|ai)\b|\b(?:chat|ask|message|conversation)\b.{0,30}\b(?:attach|upload|paperclip)\b|\bpaperclip\b", ("chat-controls", "ask-chat")),
     ("stop-ai", r"\b(?:stop|cancel|interrupt|abort|halt|end|kill|shut up|quit)\b.{0,20}\b(?:the |my )?(?:ai|answer|reply|response|model|atlas|chat|generating|generation|writing|typing|it)\b|\bstop generat|\bmake it stop\b|\btoo (?:long|much text)\b.{0,15}\bstop\b", ("chat-controls", "activity")),
     ("delete-all", r"\b(?:delete|erase|wipe|remove|clear|purge|destroy|reset|get rid of)\b.{0,15}\b(?:all|every|everything|whole|entire)\b.{0,25}\b(?:data|notes|notebook|my stuff|content|info|information|files|history)\b|\bstart (?:over|from scratch|fresh)\b|\bwipe (?:it|everything|the app)\b|\bfactory reset\b|\b(?:delete|erase|wipe|remove|clear|purge|destroy|get rid of)\b.{0,8}\b(?:everything|it all|all of it)\b", ("delete-data", "storage")),
+    ("delete-note", r"\b(?:delete|remove|trash|bin|get rid of|throw away)\b.{0,10}\b(?:a |the |my |this |that )?(?:note|notes)\b(?!.{0,20}\b(?:from|in|to)\b.{0,12}\b(?:link|tag|categor|folder|board|chat|map)\w*)", ("undo-bin",)),
     ("delete-account", r"\b(?:delete|close|remove|cancel)\b.{0,10}\b(?:my )?(?:account|profile|login)\b|\buninstall\b", ("delete-data", "lock")),
     ("model-for-laptop", r"\b(?:which|what|best|right|good|recommend\w*|suggest\w*|pick|choose|choosing|should i (?:use|get|pick|download|choose|install))\b.{0,40}\bmodels?\b.{0,40}\b(?:laptop|computer|pc|machine|mac|macbook|hardware|ram|memory|gpu|graphics|spec|specs|device|old|cheap|weak|small|low)\b|\b(?:laptop|computer|pc|machine|mac|macbook|hardware|gpu|device)\b.{0,40}\bmodels?\b|\bmodel\b.{0,20}\b(?:fit|fits|run on|work on|suit)\b|\bwhat can (?:my|this) (?:laptop|computer|pc|machine|mac)\b.{0,20}\brun\b|\bwill (?:it|a model|the model) run on\b", ("model-downloads", "model-bench", "models")),
     ("ram-need", r"\b(?:how much|how many|what|enough|minimum|required|requirements?|need|needs|use|uses|using|eat|eats)\b.{0,30}\b(?:ram|memory|gigabytes|gb|vram|cpu)\b|\b(?:ram|vram|memory)\b.{0,20}\b(?:need|needed|required|enough|use|usage|requirement)\b|\bsystem requirements?\b|\bminimum specs?\b|\bspecs? (?:do i|i) need\b", ("performance", "model-downloads")),
@@ -100,7 +101,7 @@ HARD = frozenset(
     {
         "pdf-out", "edit-question", "regenerate", "attach-chat", "stop-ai", "delete-all", "model-for-laptop",
         "ram-need", "ai-slow", "app-slow", "use-chatgpt", "no-answer", "export-chat", "clear-chat", "fork-chat",
-        "delete-account", "connect-model", "switch-model",
+        "delete-account", "delete-note", "connect-model", "switch-model",
     }
 )
 
