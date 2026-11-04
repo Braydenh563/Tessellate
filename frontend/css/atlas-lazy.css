@@ -301,7 +301,13 @@
     & :is(.atl-lw-pose-wisps, .atl-lw-pose-wisps-back, .atl-lw-pose-glint-a, .atl-lw-pose-glint-b) { animation: atl-lw-sway-wisps 6.4s ease-in-out -2.4s infinite alternate; }
     & .atl-lw-pose-tail { animation: atl-lw-sway-tail 6.4s ease-in-out -1.5s infinite alternate; }
   }
-  #nm-buddy:is(.nmb-sleep, .nmb-act-nap, .nmb-act-lie, [data-pose^="lie"], [data-pose^="curl"]) .nm-live {
+  /* Same gates as above: without them a sleeping figure with avatar motion
+     off ran one 10 s sway (the sleep rule only swapped the name, so the
+     iteration count fell back to 1) and then snapped back. */
+  :is(
+    :root:not([data-avatar-motion="off"]):not([data-motion="reduced"]),
+    :root[data-buddy-motion="full"]:not([data-avatar-motion="off"])
+  ) #nm-buddy:is(.nmb-sleep, .nmb-act-nap, .nmb-act-lie, [data-pose^="lie"], [data-pose^="curl"]) .nm-live {
     & .atl-lw-pose-lower { animation-name: atl-lw-sleep-lower; animation-duration: 10.5s; }
     & :is(.atl-lw-pose-wisps, .atl-lw-pose-wisps-back, .atl-lw-pose-glint-a, .atl-lw-pose-glint-b) { animation-name: atl-lw-sleep-wisps; animation-duration: 10.5s; }
     & .atl-lw-pose-tail { animation-name: atl-lw-sleep-tail; animation-duration: 10.5s; }

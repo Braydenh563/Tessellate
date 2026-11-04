@@ -800,7 +800,7 @@ const ATLAS_LOWER_STATES = {
   //: Asleep (INBOX 1680, the owner: "even when it is sleeping, it still sticks
   //: up"): the lower body curls and droops, a slow ease, shorter and wider
   //: than a lie, the tail wrapped round (a turn well past a lie's).
-  curl: { ms: 1600, ease: "cubic-bezier(0.45, 0, 0.35, 1)", v: [[4, 1.1, 0.74, -6, 38], [-3, 1.12, 0.72, 6, -34], [5, 1.08, 0.76, -5, 44]] },
+  curl: { ms: 1600, ease: "cubic-bezier(0.45, 0, 0.35, 1)", v: [[4, 1.1, 0.74, -6, 38], [-3, 1.12, 0.72, 6, -34], [3.5, 1.08, 0.76, -5, 44]] },
 };
 //: The hair's turn about the crown and the nebula stream's [turn, width,
 //: height] about the figure's middle, per state (INBOX 575, the owner:
