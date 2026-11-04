@@ -102,9 +102,36 @@ const ATLAS_TAIL_BY_STATE = {
 //: a point close by; with as many bends as the main waves it cancelled
 //: itself along the length. With it, and the stretch on the same clock
 //: (`atlasTailFrame`), no behaviour holds its tip still over about 0.6s.
-function atlasTailBend(s, p, ph, ph2, drift, ph3 = 0) {
+function atlasTailBend(s, p, ph, ph2, drift, ph3 = 0, follow = 0) {
   const e = s ** 1.5;
-  return (p.curl + drift) * s * s + p.amp * e * Math.sin(ph - p.k * s) + Math.max(0.13, 0.35 * p.amp) * e * Math.sin(ph2 - 1.7 * p.k * s + 0.7) + 0.07 * Math.sqrt(s) * Math.sin(ph3 - 0.8 * s);
+  return (p.curl + drift + follow) * s * s + p.amp * e * Math.sin(ph - p.k * s) + Math.max(0.13, 0.35 * p.amp) * e * Math.sin(ph2 - 1.7 * p.k * s + 0.7) + 0.07 * Math.sqrt(s) * Math.sin(ph3 - 0.8 * s);
+}
+//: **Follow-through** (INBOX 1670, "its tail needs better and more realistic movement and
+//: physics"): a chain of three springs, each pulled toward the one before it and thrown by the
+//: companion's acceleration, so the tail streams behind a start, swings past on a stop and
+//: round a turn, and settles. Its last link (px) becomes a bend (radians) added to the curl,
+//: which the tail's own acts ride on. Same constants as the desktop companion's `Trail`
+//: (`core/overlay/behaviour.py`). At rest it is exactly 0 and costs a few multiplies a draw.
+const ATLAS_FOLLOW = { links: 3, stiff: 90, damp: 9, kick: 0.8, max: 26, bend: 0.55 };
+function atlasTailFollow(tail, dt, x) {
+  const f = (tail.follow ||= { pos: [0, 0, 0], vel: [0, 0, 0], x, v: 0 });
+  if (!Number.isFinite(x) || dt <= 0) return 0;
+  const v = (x - f.x) / dt;
+  const accel = (v - f.v) / dt;
+  f.x = x;
+  f.v = v;
+  const n = Math.max(1, Math.ceil(dt / 0.02));
+  const h = dt / n;
+  const A = ATLAS_FOLLOW;
+  for (let k = 0; k < n; k += 1) {
+    let prev = 0;
+    for (let i = 0; i < A.links; i += 1) {
+      f.vel[i] += (A.stiff * (prev - f.pos[i]) - A.damp * f.vel[i] - Math.max(-4000, Math.min(4000, accel)) * A.kick * 0.01 * (1 + i)) * h;
+      f.pos[i] = Math.max(-A.max, Math.min(A.max, f.pos[i] + f.vel[i] * h));
+      prev = f.pos[i];
+    }
+  }
+  return (f.pos[A.links - 1] / A.max) * A.bend;
 }
 //: The tail's centreline bent as `bend(s)` says, as a run of cubics
 //: through the bent points (Catmull-Rom), each an equal share of the
@@ -475,6 +502,7 @@ function atlasTailFrame(tail, now) {
     tail.ph3 += (2 * Math.PI * dt) / 1.73;
   }
   const secs = (now - tail.t0) / 1000;
+  const follow = live ? atlasTailFollow(tail, dt, typeof nmb !== "undefined" ? nmb.x : NaN) : 0;
   const p = Object.fromEntries(Object.entries(tail.p).map(([k, j]) => [k, live ? j.x : k === "curl" || k === "amp" ? 0 : j.x]));
   const drift = live ? 0.13 * Math.sin((2 * Math.PI * secs) / 11.3) + 0.08 * Math.sin((2 * Math.PI * secs) / 17.9 + 1.3) : 0;
   //: The ripple's clock also draws the tail out and back along its length
@@ -483,7 +511,7 @@ function atlasTailFrame(tail, now) {
   //: tip one way only, across the tail, and dwells at each turning point
   //: (a stepped 60s of `stiff` read 1.4s still at the tip with bends only).
   const stretch = live ? () => 1 + 0.03 * Math.cos(tail.ph3) : null;
-  atlasTailDraw(tail, (s) => atlasTailBend(s, p, live ? tail.ph : 0, live ? tail.ph2 : 0, drift, live ? tail.ph3 : 0), stretch);
+  atlasTailDraw(tail, (s) => atlasTailBend(s, p, live ? tail.ph : 0, live ? tail.ph2 : 0, drift, live ? tail.ph3 : 0, follow), stretch);
   tail.drawn = true;
   //: **At rest in its corner, fifteen draws a second, not thirty** (Brief 34
   //: decision 7: the companion must never cost the rest of the app).

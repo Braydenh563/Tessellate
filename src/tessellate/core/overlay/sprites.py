@@ -50,6 +50,15 @@ SPIN_FRAMES = tuple(f"spin{i}" for i in range(SPIN_STEPS))
 SPIN_BASE = "tumble"
 #: "float" (Atlas, a wisp for a lower body: hovers and drifts) or "walk".
 GAITS = {"masculine": "float", "feminine": "float"}
+#: Frames that share one nebula veil (the standing family and its moves); the poses that change
+#: the body's shape (sit, sleep, hang, held, fall, tumble, cards) keep their own.
+STREAM_FAMILY = ("stand", "blink", "look", "wave", "hop", "land", *WALK_FRAMES, *IDLE_FRAMES)
+#: Pixels around the solid body that stay the frame's own (its soft edge), at the shipped scale.
+CORE_GROW = 5
+#: Posed frames kept (a pose is a squash, a lean, a lag): the least recently used go.
+POSED_KEEP = 40
+#: Horizontal strips a pose is warped in.
+POSE_STRIPS = 24
 #: Alpha under this is clear: the click-through guard.
 ALPHA_FLOOR = 8
 #: The shipped frames are at twice the CSS pixel size.
@@ -133,6 +142,8 @@ class SpriteSet:
         self.directory = (directory or frames_dir()) / self.look
         self._source: dict[str, Any] = {}
         self._cache: dict[tuple[str, int, bool], Frame] = {}
+        self._veil: Any = None
+        self._posed: dict[tuple[str, int, bool, tuple[float, ...]], Frame] = {}
 
     def missing(self) -> list[str]:
         return [n for n in FRAME_NAMES if not (self.directory / f"{n}.png").is_file()]
@@ -142,8 +153,46 @@ class SpriteSet:
             from PIL import Image
 
             with Image.open(self.directory / f"{name}.png") as im:
-                self._source[name] = im.convert("RGBA")
+                loaded = im.convert("RGBA")
+            self._source[name] = self._steadied(name, loaded)
         return self._source[name]
+
+    def _steadied(self, name: str, image: Any) -> Any:
+        """One nebula stream for the whole standing family (INBOX 1670: "the nebular flow keeps
+        flickering in and out"). Each frame was captured at a different moment of the live
+        nebula, so its soft veil outside the body differed by up to a fifth of its pixels from the
+        next frame's, and the idle cycle played those differences eight times a second. The body
+        (and a hand's breadth of its own soft edge) is kept per frame; the veil beyond it is
+        the `stand` frame's, the same in every frame of the family."""
+        if name not in STREAM_FAMILY:
+            return image
+        from PIL import Image, ImageChops
+
+        if self._veil is None:
+            base = self._raw("stand")
+            gone = ImageChops.invert(self._core(base))
+            veil = base.copy()
+            veil.putalpha(ImageChops.multiply(base.getchannel("A"), gone))
+            self._veil = veil
+        if name == "stand":
+            return image
+        body = image.copy()
+        body.putalpha(ImageChops.multiply(image.getchannel("A"), self._core(image)))
+        return Image.alpha_composite(self._veil, body)
+
+    def _raw(self, name: str) -> Any:
+        from PIL import Image
+
+        with Image.open(self.directory / f"{name}.png") as im:
+            return im.convert("RGBA")
+
+    @staticmethod
+    def _core(image: Any) -> Any:
+        """The body and its own soft edge: solid pixels grown by `CORE_GROW` px."""
+        from PIL import ImageFilter
+
+        solid = image.getchannel("A").point(lambda a: 255 if a >= 250 else 0)
+        return solid.filter(ImageFilter.MaxFilter(CORE_GROW * 2 + 1))
 
     def top_share(self, name: str = "hang") -> float:
         """How much of a frame's height is clear above its first drawn row, measured from
@@ -189,6 +238,54 @@ class SpriteSet:
         built = Frame(width, height, premultiplied_bgra(clear), box=_drawn_box(clear))
         self._cache[key] = built
         return built
+
+    def posed(self, name: str, dpi: int, flip: bool, pose: tuple[float, float, float, float]) -> Frame:
+        """The frame with a body pose over it: `pose` is (sx, sy, lean, drag), see
+        `behaviour.Pose`. A bottom-anchored squash or stretch, a turn-about squeeze about the
+        middle, a lean (the head moves by `lean` of the height, the feet stay) and a lag of the
+        lower part (the tail and wisp trail by `drag` px, growing toward the bottom), by a mesh of
+        horizontal strips. Cached by the pose, `POSED_KEEP` of them; the plain frame when the pose is."""
+        sx, sy, lean, drag = pose
+        if (sx, sy, lean, drag) == (1.0, 1.0, 0.0, 0.0):
+            return self.frame(name, dpi, flip)
+        key = (name, int(dpi), bool(flip), (sx, sy, lean, drag))
+        hit = self._posed.pop(key, None)
+        if hit is None:
+            hit = self._warp(self.frame(name, dpi, flip), self._pose_image(name, dpi, flip), sx, sy, lean, drag)
+        self._posed[key] = hit  # most recent last
+        while len(self._posed) > POSED_KEEP:
+            del self._posed[next(iter(self._posed))]
+        return hit
+
+    def _pose_image(self, name: str, dpi: int, flip: bool) -> Any:
+        from PIL import Image, ImageOps
+
+        image = self._load(SPIN_BASE if name in SPIN_FRAMES else name)
+        if flip:
+            image = ImageOps.mirror(image)
+        width, height = self.size(dpi)
+        return image.resize((width, height), Image.Resampling.LANCZOS) if (width, height) != image.size else image
+
+    def _warp(self, base: Frame, image: Any, sx: float, sy: float, lean: float, drag: float) -> Frame:
+        from PIL import Image
+
+        w, h = image.size
+        scale = w / (self._load("stand").size[0])  # px of this dpi per px of the shipped frame
+        feet = base.box[3] or h  # squash is about the feet
+        mid = (base.box[0] + base.box[2]) / 2 if base.box[2] else w / 2
+        step = h / POSE_STRIPS
+        mesh = []
+        for i in range(POSE_STRIPS):
+            y0, y1 = round(i * step), round((i + 1) * step)
+            ym = (y0 + y1) / 2
+            lag = drag * scale * (ym / h) ** 2
+            shift = lean * (feet - ym) * 0.9 - lag
+            sy0, sy1 = feet + (y0 - feet) / sy, feet + (y1 - feet) / sy
+            a, b = mid + (0 - mid - shift) / sx, mid + (w - mid - shift) / sx
+            mesh.append(((0, y0, w, y1), (a, sy0, a, sy1, b, sy1, b, sy0)))
+        warped = image.transform((w, h), Image.Transform.MESH, mesh, Image.Resampling.BILINEAR)
+        clear = clear_faint_alpha(warped)
+        return Frame(w, h, premultiplied_bgra(clear), box=_drawn_box(clear))
 
     def metrics(self, dpi: int = 96) -> dict[tuple[str, bool], tuple[int, int, int, int]]:
         """The drawn box of every frame, both mirrors, in the engine's own coordinates: from

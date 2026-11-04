@@ -275,9 +275,34 @@ def _system_dpi() -> int:
         return 96
 
 
+def _linux_areas() -> list[tuple[int, int, int, int]]:
+    """Each monitor's work area on an X11 desktop (EWMH struts and `_NET_WORKAREA`), in the
+    logical pixels pywebview takes; empty on Wayland or without a display. A short-lived
+    connection: the panel is placed once per click."""
+    ok, _note = overlay_support()
+    if not ok:
+        return []
+    try:
+        from tessellate.core.overlay import x11
+
+        conn = x11.load()
+        try:
+            mons = x11.monitors(conn)
+            dpi = mons[0][1] if mons else 96
+            return [to_logical(a, dpi) for a in x11.work_areas(conn)]
+        finally:
+            conn.close()
+    except Exception:  # noqa: BLE001 - the pywebview screen list is the fallback
+        logger.debug("could not read the X11 work area", exc_info=True)
+        return []
+
+
 def work_area() -> tuple[int, int, int, int] | None:
     """The screen minus the taskbar, as (left, top, right, bottom) in logical
-    pixels, or None where it cannot be asked (every platform but Windows)."""
+    pixels, or None where it cannot be asked (Windows and X11 desktops can)."""
+    if sys.platform.startswith("linux"):
+        areas = _linux_areas()
+        return areas[0] if areas else None
     if sys.platform != "win32":
         return None
     try:
@@ -297,7 +322,9 @@ def work_area() -> tuple[int, int, int, int] | None:
 def monitor_areas() -> list[tuple[int, int, int, int]]:
     """Every connected monitor's work area (left, top, right, bottom) in logical
     pixels at that monitor's own scale, primary first; empty where it cannot be
-    asked (every platform but Windows)."""
+    asked (Windows and X11 desktops can)."""
+    if sys.platform.startswith("linux"):
+        return _linux_areas()
     if sys.platform != "win32":
         return []
     try:
@@ -767,6 +794,8 @@ class DeskCompanion:
         self._overlay_factory = overlay_factory
         self.runner: Any = None
         self.overlay_failed = False
+        #: Why the see-through figure is not used on this machine (Wayland), shown in the card's menu.
+        self.overlay_note = ""
         self.look = "masculine"
         #: How the companion may move, as the app window last said: None until it
         #: answers (then the runner falls back to the Windows animation flag).
@@ -1012,7 +1041,11 @@ class DeskCompanion:
             runner = self.runner
             still = bool(getattr(runner, "reduced", False)) if runner is not None else False
             reason = getattr(runner, "reduced_reason", "") if still else ""
-        return {"still": still, "reason": str(reason or ""), "roam": bool(_pref(ROAM_PREF, True))}
+        note = self.overlay_note or ("The see-through figure could not start here, so the companion stays in the app." if self.overlay_failed else "")
+        out: dict[str, Any] = {"still": still, "reason": str(reason or ""), "roam": bool(_pref(ROAM_PREF, True))}
+        if note:
+            out["note"] = note
+        return out
 
     def set_roam(self, on: bool) -> bool:
         """The menu's "Roam over windows": saved, and the running figure follows."""
@@ -1405,10 +1438,32 @@ class DeskCompanion:
                 logger.debug("could not destroy the companion window", exc_info=True)
 
 
+def overlay_support() -> tuple[bool, str]:
+    """(usable, one-line note) for the see-through figure here: Windows always; Linux on an X11
+    session (Wayland cannot place a window above others, so the companion stays in the app and
+    the note says so); every other platform keeps the card window."""
+    if sys.platform == "win32":
+        return True, ""
+    if sys.platform.startswith("linux"):
+        from tessellate.core.overlay import x11
+
+        return x11.support()
+    return False, ""
+
+
+#: Why the see-through figure is not used on this machine (empty when it is, or when nothing needs saying).
+OVERLAY_NOTE = ""
+
+
 def _default_overlay_factory() -> Callable[..., Any] | None:
-    """The see-through figure is the Windows default; elsewhere the card window
-    (or the see-through web window) stays."""
-    if sys.platform != "win32":
+    """The see-through figure is the default on Windows and on an X11 desktop; elsewhere the
+    card window (or the see-through web window) stays, with a note on Linux saying why."""
+    global OVERLAY_NOTE
+    ok, note = overlay_support()
+    OVERLAY_NOTE = note
+    if not ok:
+        if note:
+            logger.info("desk companion: %s", note)
         return None
     from tessellate.core.overlay.runner import OverlayRunner
 
@@ -1429,15 +1484,19 @@ def attach(
     tray. `transparent` defaults to every platform but Windows, where a frameless
     web view cannot be made see-through and the page draws a card instead."""
     global _active
+    factory = _default_overlay_factory() if overlay_factory == "auto" else overlay_factory
     companion = DeskCompanion(
         webview,
         main_window,
         open_main,
         url,
-        transparent=(sys.platform != "win32") if transparent is None else transparent,
-        overlay_factory=_default_overlay_factory() if overlay_factory == "auto" else overlay_factory,
+        #: The see-through figure draws itself, so its quick panel is an ordinary window;
+        #: without it (Wayland, other platforms) the card window is the see-through one.
+        transparent=(sys.platform != "win32" and factory is None) if transparent is None else transparent,
+        overlay_factory=factory,
     )
     companion.on_change = on_change
+    companion.overlay_note = OVERLAY_NOTE if overlay_factory == "auto" else ""
     followed = _follow(main_window, companion)
     with _lock:
         _active = companion

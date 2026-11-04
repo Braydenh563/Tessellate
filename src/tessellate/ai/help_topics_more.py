@@ -1428,13 +1428,12 @@ MORE_TOPICS: list[dict] = [
             "companion when the window is closed", "show desktop companion",
         ),
         "body": (
-            "In the desktop app on Windows the companion can live on your desktop while the "
+            "In the desktop app on Windows and Linux the companion can live on your desktop while the "
             "Tessellate window is minimised or in the tray, and go away when it is open. "
-            "It is the figure alone: Atlas floats like a wind spirit "
-            "over the whole screen (other companions walk along the bottom above the taskbar), sits and "
-            "then sleeps when you have been away, can be picked up and thrown "
-            "(it bounces off the screen edges), hangs from the top now and then, and peeks up from behind the "
-            "taskbar or a screen edge (click it to bring it out). Let go near the top or a title bar and it hangs. Now and then it climbs onto the top of a "
+            "Atlas floats like a wind spirit "
+            "over the whole screen (others walk the bottom), sits and "
+            "then sleeps when you have been away, can be picked up and thrown, hangs from the top now and then, and peeks up from behind the "
+            "taskbar or a screen edge. It keeps to a home spot by an edge. Let go near the top or a title bar and it hangs. Now and then it climbs onto the top of a "
             "window and walks along it (Roam over windows turns that off); it never "
             "touches a window, and when a reminder falls due it brings you a card to click. It steps "
             "aside for full screen, and follows Companion movement in Appearance: it "
@@ -1445,13 +1444,11 @@ MORE_TOPICS: list[dict] = [
             "while the window is minimised or in the tray, or Show desktop companion in the tray icon's "
             "menu, or Show on desktop in the companion's own right-click menu (it reads Hide from "
             "desktop once it is on). The Settings row works from a browser tab on that computer too, and takes effect while "
-            "the desktop app runs; another device has no such row. It is "
-            "whoever you chose in Appearance. Click it for "
-            "Quick note, Quick search or Open Tessellate, in a panel beside it; a note saved there is filed "
-            "like any other. Right-click it for Companion (Atlas masculine or feminine, or a saved Atlas "
+            "the desktop app runs; another device has no such row. Click it for "
+            "Quick note, Quick search or Open Tessellate, in a panel beside it. Right-click it for Companion (Atlas masculine or feminine, or a saved Atlas "
             "companion; the rest show in the app only), Settings or Hide. Drag it; it "
             "remembers the spot. While Tessellate is locked it shows only the "
-            "companion and Open Tessellate, never a note or a result."
+            "companion and Open Tessellate, never a note or a result. On Linux (X11) it is the same figure in a see-through window; on Wayland, which cannot place a window above others, it stays in the app."
         ),
         "badge": {"label": "Desktop companion", "section": "appearance", "target": "desktop-companion-row"},
     },

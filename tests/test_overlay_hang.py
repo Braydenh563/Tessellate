@@ -133,7 +133,8 @@ def test_it_keeps_hanging_when_the_window_stays_and_follows_a_tiny_move() -> Non
 
 def test_a_window_that_goes_while_it_floats_over_ends_the_trip_without_a_hang() -> None:
     e = hang_on_window()
-    assert e.state == "drift" and e.then == "hang"
+    # A long trip starts with a short crouch (INBOX 1670: a transition, not a snap).
+    assert e.state in ("crouch", "drift") and e.then == "hang"
     e.set_windows([], 1.2)
     assert e.state == "stand" and e.hang_on is None
     run_to(e, "hang", 1.3, 3.0)
@@ -154,7 +155,7 @@ def test_it_never_hangs_where_no_edge_is_under_the_hands() -> None:
             e._enter("stand", t)
             e.big_ready = 0.0
             e._perform("hang", t)
-            while e.state in ("drift", "stand") and t < 1000:
+            while e.state in ("crouch", "drift", "stand") and t < 1000:
                 t += 0.016
                 e.update(t)
                 if e.state == "stand":
