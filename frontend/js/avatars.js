@@ -9492,7 +9492,9 @@ function nameMarkBuddyBuild() {
     const move = (e) => {
       if (!press.moved && Math.hypot(e.clientX - press.x, e.clientY - press.y) < 4) return;
       press.moved = true;
-      nameMarkBuddySetSize(was * Math.hypot(e.clientX - ox, e.clientY - oy) / from, false);
+      //: A pull sizes at one rate in every pose (INBOX 1624): the hang point
+      //: is 29px from the handle, so a plain ratio moved it 6 times faster.
+      nameMarkBuddySetSize(was * (1 + (Math.hypot(e.clientX - ox, e.clientY - oy) - from) / Math.max(from, 100)), false);
     };
     const end = () => {
       grip.removeEventListener("pointermove", move);

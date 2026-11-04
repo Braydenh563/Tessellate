@@ -1916,3 +1916,16 @@ def test_the_feminine_atlas_casts_her_stars_instead_of_wearing_them_1576() -> No
     rule = re.search(r"\.nm-atlas \.atl-cast-star \{([^}]*)\}", css)
     assert rule and "opacity: 0" in rule.group(1) and "transform-box: fill-box" in rule.group(1) and "fill: white" in rule.group(1)
     assert re.search(r'html\[data-motion="reduced"\][^{]*\.atl-cast-star[^{]*\{ display: none', css)
+
+
+def test_the_size_handle_is_reachable_in_every_pose_1624() -> None:
+    # The owner: "it is hard to resize the companion when it is hanging from
+    # the top bar". Hanging, the handle stood 8px up under the bar, half off
+    # screen at the right edge, and a pull moved the size 6 times as fast as
+    # standing (the hang point is 29px from the handle, the soles 107px).
+    grip = CSS08[CSS08.index("#nm-buddy .nmb-size-grip {") :]
+    grip = grip[: grip.index("}")]
+    assert "right: 2px;" in grip and "right: -" not in grip
+    assert '#nm-buddy[data-pose="hang"] .nmb-size-grip { top: 8px; }' in CSS08
+    # A pull sizes at one rate: the reference length is never under 100px.
+    assert "Math.max(from, 100)" in frontend_text("avatars.js")

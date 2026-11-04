@@ -5321,7 +5321,7 @@ body .chip.item-label,
    is being sized, drawn the same size whatever its size. */
 #nm-buddy .nmb-size-grip {
   position: absolute;
-  right: -3px;
+  right: 2px;
   top: -3px;
   width: 12px;
   height: 12px;
@@ -5346,6 +5346,10 @@ body .chip.item-label,
   visibility: visible;
   transition-delay: 0s;
 }
+/* INBOX 1624: hanging, the corner is the top bar's own strip; the handle
+   drops below it, and sits inside the figure's width so a companion at
+   the window's right edge keeps all of it on screen. */
+#nm-buddy[data-pose="hang"] .nmb-size-grip { top: 8px; }
 @media (hover: none) {
   #nm-buddy .nmb-size-grip { display: none; }
 }
