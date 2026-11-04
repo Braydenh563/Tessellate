@@ -155,6 +155,7 @@ def test_a_next_frame_ask_arms_the_high_resolution_timer_and_a_slow_one_uses_set
         assert wait_for(lambda: fake.pace_delays)
         assert 0.0 < fake.pace_delays[-1] <= 0.017 and host_mod.TIMER_ID not in fake.timers or fake.timers.get(1) == round(fake.pace_delays[-1] * 1000)
         assert "SetTimer" not in fake.names()
+        host.monotonic = lambda: time.monotonic() + 1.0  # the clock has reached the due time
         fake.fire_pace()  # the timer's thread posts WM_PACE; the window procedure answers with a tick
         assert wait_for(lambda: ticks)
         host.wake(250)
@@ -165,6 +166,25 @@ def test_a_next_frame_ask_arms_the_high_resolution_timer_and_a_slow_one_uses_set
         host.stop()
     assert "CloseHandle" in fake.names()
     assert threading.active_count() >= 1
+
+
+def test_a_pace_post_from_before_a_re_arm_is_dropped_and_the_real_one_ticks() -> None:
+    # the wait ended and posted, but the main thread re-armed first: that post is early, so no short step
+    fake = FakeWin32()
+    host, ticks = host_with(fake)
+    clock = [100.0]
+    host.monotonic = lambda: clock[0]
+    try:
+        host.wake(16)
+        assert wait_for(lambda: fake.pace_delays)
+        fake.fire_pace()  # stale: the clock is still at the arm time, the frame is due 16 ms on
+        time.sleep(0.1)
+        assert not ticks
+        clock[0] += 0.017
+        fake.fire_pace()
+        assert wait_for(lambda: ticks)
+    finally:
+        host.stop()
 
 
 def test_without_a_high_resolution_timer_the_host_keeps_settimer() -> None:

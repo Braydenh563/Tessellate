@@ -48,6 +48,8 @@ WM_PACE = k.WM_APP + 2
 TIMER_ID = 1
 #: A timer shorter than this is a busy loop (Windows rounds to about 15.6 ms anyway).
 MIN_WAKE_MS = 10
+#: A pace post this much before its due time is a stale one (timer wake-ups are never early).
+PACE_EARLY_S = 0.003
 
 #: window procedures in use, by host: kept alive for as long as Windows may call them.
 _CALLBACKS: list[Any] = []
@@ -69,6 +71,8 @@ class PaceTimer:
         if not self.handle:  # Windows before 10 1803 has no high-resolution flag: the caller keeps SetTimer
             raise OSError(f"no high-resolution timer (error {k.last_error()})")
         self.armed = False
+        #: When the armed wait is due, on the host's clock; `_on_pace` drops a post that comes before it.
+        self.due = 0.0
         self._stopped = False
         self._thread: threading.Thread | None = None
 
@@ -359,6 +363,8 @@ class OverlayHost:
         pace = self._pace
         if pace is None or not pace.armed:  # a frame posted before the timer was re-armed or cancelled
             return 0
+        if self.monotonic() < pace.due - PACE_EARLY_S:  # a post from the wait before a re-arm: the real one follows
+            return 0
         pace.armed = False
         return self._answered("tick")
 
@@ -420,7 +426,9 @@ class OverlayHost:
                 self.w.user32.KillTimer(self.hwnd, TIMER_ID)
                 self._timer_set = False
             now = self.monotonic()
-            pace.arm(max(0.0, self.pacer.next(now, ms) - now))
+            delay = max(0.0, self.pacer.next(now, ms) - now)
+            pace.arm(delay)
+            pace.due = now + delay
             return
         self.pacer.reset()
         if pace is not None:
