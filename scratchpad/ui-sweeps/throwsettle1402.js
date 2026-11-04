@@ -95,8 +95,7 @@ async function one(page, flick, from) {
     for (const kind of KINDS) {
       const { browser, page } = await boot({ viewport: { width: w, height: h } });
       await page.evaluate((k) => {
-        localStorage.removeItem('nm-buddy-spots');
-        const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true }));
+        localStorage.removeItem('nm-buddy-spots'); prefs.set('avatar-buddy', k); syncNameMarkBuddy();
       }, kind);
       for (const tab of TABS) {
         await page.evaluate((t) => revealTab(t), tab);

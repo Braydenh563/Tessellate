@@ -47,7 +47,7 @@ def test_bat_desktop_double_click_focuses_the_window_not_a_tab():
 def test_bat_keeps_crlf_and_no_em_dash():
     raw = (ROOT / "start.bat").read_bytes()
     assert b"\r\n" in raw and b"\n" not in raw.replace(b"\r\n", b"")
-    assert "—" not in BAT and "—" not in SH
+    assert "-" not in BAT and "—" not in SH
 
 
 def test_sh_waits_for_its_own_copy_and_asks_before_stopping():
