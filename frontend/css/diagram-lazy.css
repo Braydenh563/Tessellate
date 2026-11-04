@@ -508,8 +508,8 @@
   display: none;
 }
 
-/* Over another block's middle a drop connects, and its Connect to… shows its words to say so. */
-.dgm-block[aria-selected="true"] > .dgm-card .dgm-connect .ph-text,
+/* Over another block's middle a drop connects, and its Connect to… shows its words to say so. The chosen row alone does not
+   (blind test: its 105 px of words cut the name to "S.."); a row that is pointed at or focused does. */
 .dgm-card:is(:hover, :focus-within, .dgm-connecting) .dgm-connect .ph-text {
   display: inline;
 }

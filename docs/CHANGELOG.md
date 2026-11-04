@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Diagram builder blind-test fixes (R11): Shift, Ctrl or Cmd+click on the picture picks several blocks, the hint says the picture lays itself out, the chosen row keeps its name beside Connect to…, and the document help names diagrams; the rest is in DOCUMENTS_PLAN 22.4.
 - Diagram export and Copy as picture (INBOX 1621, R10): the editor menu, a diagram card in the Library and the Documents page menu can save a diagram as SVG or PNG (twice its size) and copy it as a picture to paste into a note, a document or a chat; where the browser will not copy a picture it saves a PNG and says so.
 - A board diagram can follow a Library diagram (INBOX 1621, R9b): the board stores the diagram's id beside its picture, redraws from the Library when the source differs, and keeps its last picture and says so if that diagram is deleted; a number that is not a whole number from 1, or a row that is not a diagram, is refused, and saving a board item to the library leaves the link out.
 - Diagram cards are objects (INBOX 1621, R9a): a diagram card in the Library can be carried or copied like a note, and dropped in a note, a document or a board it writes `![[Title]]`, which draws the diagram there; the tray holds it and attaches it to the chat as a document.

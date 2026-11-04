@@ -105,7 +105,7 @@
     reconcile(S.tree, rows);
     S.empty.classList.toggle("hidden", Boolean(layout.length));
     S.next.classList.toggle("hidden", !layout.length);
-    const next = S.m.nodes.length < 2 ? "Add a second block, then press Connect to… on one to draw an arrow." : S.m.edges.length ? "Drag a grip to move or nest a block. Double-click a name to rename it." : "Press Connect to… on a block, or drag its grip onto another block, to draw an arrow.";
+    const next = S.m.nodes.length < 2 ? "Add a second block, then press Connect to… on one to draw an arrow." : S.m.edges.length ? "Drag a grip to move or nest a block (the picture lays itself out). Double-click a name to rename it." : "Press Connect to… on a block, or drag its grip onto another block, to draw an arrow.";
     if (S.next.textContent !== next) S.next.textContent = next;
     //: An empty pane is the one stop, so N and G work before there is a block to focus.
     S.pane.tabIndex = layout.length ? -1 : 0;
@@ -612,7 +612,10 @@
     });
     S.fig.addEventListener("click", (event) => {
       const id = diagramModel.picture.pick(S, event);
-      if (id && diagramOps.node(S.m, id)) select(S, diagramOps.key("n", id), true);
+      if (!id || !diagramOps.node(S.m, id)) return;
+      const key = diagramOps.key("n", id);
+      if ((event.shiftKey || event.ctrlKey || event.metaKey) && S.pickAt) return S.pickAt(key, event.shiftKey && !(event.ctrlKey || event.metaKey));
+      select(S, key, true);
     });
     S.pane.addEventListener("keydown", (event) => {
       if (event.target !== S.pane || !/^[nNgG]$|^Insert$/.test(event.key)) return;

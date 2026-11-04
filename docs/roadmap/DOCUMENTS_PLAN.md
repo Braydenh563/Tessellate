@@ -1553,6 +1553,8 @@ Each row is one Sonnet-high agent session, ships alone, and is gated with target
 - **R9c (1621) Chat chip and Save to Library.** The chip, the cap read from the chat code, and D4's menu items. Check: a reference redraws after the source is edited in the builder (fake transport); the swap offer replaces a fence with `![[Title]]`.
 - **R10 (1621):** built 2026-11-04, moved to HISTORY ("Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R10)").
 
+- **R11 (blind test, 2026-11-04) left:** `/diagram` and Insert open a starter, not an existing diagram (add a "pick an existing diagram" row); Done creates a document silently; first paint blank about 1 s; 27 Tab stops to the first block; 390 px: tap scrolls the toolbar under the header and targets (tabs 28, grips 14x19, swatches 24, Connect 44x40) are under 44 px; chat chip says "Document" and the list "17 words" for a diagram; export items missing from the document's own menu; Boards empty state links only New mind map.
+
 Order: R1 to R4, then R5, R6, R7; R8a after R2 and R5, then R8b, R8c; R9a any time, then R9b; R9c after R9a and R7; R10 after R7.
 
 Mapping: 1613 = R1; 1614 = R2; 1615 (a)(b) = R5, (c)(d) = R4 and R6, (e) = R3, (f) = section 1 and R4; 1621 = R7 to R10.
