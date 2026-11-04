@@ -29,6 +29,7 @@ DOCK_MENU_WORDS = {
     "doc-extract": "Extract notes",
     "doc-map-headings": "Map the headings",
     "doc-export-md": ".md",
+    "doc-export-svg": ".svg",
     "doc-export-picture": ".png",
     "doc-copy-picture": "Copy as picture",
     "doc-export-html": ".html",

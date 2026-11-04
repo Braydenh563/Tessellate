@@ -28,7 +28,12 @@ def test_a_diagram_marks_the_documents_tab_and_the_prose_chrome_goes_with_the_ma
         assert gone in rule, gone
     assert "display: none;" in rule
     # The phone's proxy rows for those buttons go too, so the menu offers nothing that presses a hidden button.
-    assert "#tab-documents.doc-is-diagram .doc-dock-menu-item[data-click-proxy]" in CSS
+    # Intent moved (review of 1679): the rule named every proxy row, which also took "AI edit" and "About these controls" off a phone's menu
+    # while the desktop keeps both, so it now names only the rows that press a hidden button.
+    assert "#tab-documents.doc-is-diagram .doc-dock-menu-item:is(" in CSS
+    for proxy in ("doc-code-format", "doc-code-assist-open", "doc-code-snippets-open", "doc-focus-toggle"):
+        assert f'[data-click-proxy="{proxy}"]' in CSS, proxy
+    assert 'data-click-proxy="doc-ai"' not in CSS.split("doc-is-diagram .doc-dock-menu-item:is(")[1].split("{")[0]
 
 
 def test_the_preview_is_not_a_tab_stop_for_a_diagram_and_is_again_for_a_document():

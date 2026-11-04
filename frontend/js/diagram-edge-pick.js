@@ -132,7 +132,8 @@
     fig.addEventListener("contextmenu", (event) => {
       //: Decided before the module call can answer: the browser's own menu is cancelled for a box or an arrow only.
       if (nodeAt(event.clientX, event.clientY) || arrowAt(event.clientX, event.clientY)) event.preventDefault();
-      menu(event, event.clientX, event.clientY);
+      //: A long press on a phone sends this too, after `wireLongPress` has opened the menu: the finger's is that one.
+      if (event.pointerType !== "touch") menu(event, event.clientX, event.clientY);
     });
     wireLongPress(fig, (event, point) => menu(event, point.x, point.y));
 
@@ -173,8 +174,16 @@
       });
       dot.addEventListener("pointercancel", drop);
     }
-    //: Escape in the middle of a drag puts the end back and leaves the arrow picked.
-    window.addEventListener("keydown", (event) => event.key === "Escape" && drag && drop());
+    //: Escape in the middle of a drag puts the end back and leaves the arrow picked. Captured and stopped, so the builder's own
+    //: Escape (close without keeping) never sees it, and the release that follows finds no drag to commit. It goes with the picture.
+    const escape = (event) => {
+      if (!fig.isConnected) return window.removeEventListener("keydown", escape, true);
+      if (event.key !== "Escape" || !drag) return;
+      event.stopPropagation();
+      event.preventDefault();
+      drop();
+    };
+    window.addEventListener("keydown", escape, true);
 
     fig.addEventListener("keydown", (event) => {
       const edge = picked && edgeOf(picked);

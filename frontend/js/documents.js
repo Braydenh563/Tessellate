@@ -239,7 +239,7 @@ function syncDocFileType({ prose = true } = {}) {
   //: A diagram's page is its own (INBOX 1679): the prose editor's Format, Assistant, Snippets, How to edit and Focus go (library-lazy.css), and the
   //: preview, which holds the builder, is no tab stop of its own, so Tab runs title, the seg, About, More, Add box, first block.
   $("tab-documents")?.classList.toggle("doc-is-diagram", type.ext === "mmd");
-  $("doc-preview").tabIndex = type.ext === "mmd" ? -1 : 0;
+  if ($("doc-preview")) $("doc-preview").tabIndex = type.ext === "mmd" ? -1 : 0;
   //: The code panel (INBOX 788) comes back with a code file if it was open,
   //: and the sections tab with a prose document (INBOX 904 B18); its words
   //: and way in follow the type either way.

@@ -534,6 +534,12 @@
   padding-block: var(--space-1);
   background: var(--surface-1);
 }
+/* On a phone the pane is a short strip and the sticky hint sat over the row under it, taking its taps (measured at 390: elementFromPoint on a row's menu button was the hint), so it scrolls with the rows there. */
+@media (max-width: 599.98px) {
+  .dgm-next {
+    position: static;
+  }
+}
 
 /* A group's blocks sit in it, one step in, behind a rule. */
 .dgm-kids {

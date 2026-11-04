@@ -8211,17 +8211,25 @@ input[type="color"].wb-mixed {
   #tab-documents #doc-crumbs {
     display: none;
   }
-  #tab-documents #doc-view-seg > button {
+  #tab-documents :is(#doc-view-seg, #doc-diagram-seg) > button {
     padding-inline: var(--space-3);
     font-size: 0;
   }
-  #tab-documents #doc-view-seg > button > .ph {
+  #tab-documents :is(#doc-view-seg, #doc-diagram-seg) > button > .ph {
     margin: 0;
     font-size: var(--text-lg);
   }
   #tab-documents .doc-dock-identity > .doc-title-input {
     flex: 1 1 0;
     min-width: 0;
+  }
+  /* A diagram's three views keep their row to themselves: beside them the title was 21px wide on a new diagram, no room to read or name it (measured at 390), so the back and the title take a row under the toggle and the views. */
+  #tab-documents.doc-is-diagram .doc-dock {
+    flex-wrap: wrap;
+  }
+  #tab-documents.doc-is-diagram .doc-dock > .doc-dock-identity {
+    flex: 1 0 100%;
+    order: 1;
   }
   #tab-documents #doc-preview {
     border: 0;
@@ -8486,7 +8494,7 @@ input[type="color"].wb-mixed {
 /* A diagram's page is its own (INBOX 1679): the prose editor's Format, Assistant, Snippets, How to edit and Focus mode, and the phone menu's rows that press them, are not there. */
 #tab-documents.doc-is-diagram .doc-actions > :is(#doc-code-format, #doc-code-assist-open, #doc-code-snippets-open, #doc-focus-toggle),
 #tab-documents.doc-is-diagram .doc-view-cluster > .doc-view-menu,
-#tab-documents.doc-is-diagram .doc-dock-menu-item[data-click-proxy] {
+#tab-documents.doc-is-diagram .doc-dock-menu-item:is([data-click-proxy="doc-code-format"], [data-click-proxy="doc-code-assist-open"], [data-click-proxy="doc-code-snippets-open"], [data-click-proxy="doc-focus-toggle"], [data-click-proxy^="#doc-view-menu"]) {
   display: none;
 }
 /* And the builder takes the page's room: the rendered-document gutter above it is 24px, a document's margin and not a drawing's. */
