@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7774, frontend ids 2642, CSS sections 522, backend routes 644, backend modules 8689, test files 2027, tests 17092, plan headings 999, app scripts 28, boot scripts 37, script files 252.
+Counts: frontend functions 7774, frontend ids 2642, CSS sections 522, backend routes 644, backend modules 8689, test files 2028, tests 17094, plan headings 999, app scripts 28, boot scripts 37, script files 252.
 
 ## Frontend functions (7774)
 
@@ -6129,16 +6129,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `objCardAt` | frontend/js/obj-ref.js:74 |
 | `objCardTitle` | frontend/js/obj-ref.js:66 |
 | `objDefaultTitle` | frontend/js/obj-ref.js:37 |
-| `objDestinationAt` | frontend/js/obj-ref.js:110 |
+| `objDestinationAt` | frontend/js/obj-ref.js:112 |
 | `objInField` | frontend/js/obj-ref.js:19 |
-| `objInsertText` | frontend/js/obj-ref.js:152 |
+| `objInsertText` | frontend/js/obj-ref.js:159 |
 | `objKey` | frontend/js/obj-ref.js:51 |
 | `objLinkText` | frontend/js/obj-ref.js:91 |
 | `objNoteTitle` | frontend/js/obj-ref.js:61 |
 | `objParseKey` | frontend/js/obj-ref.js:56 |
 | `objRef` | frontend/js/obj-ref.js:44 |
 | `objRefFromCard` | frontend/js/obj-ref.js:84 |
-| `objRender` | frontend/js/obj-ref.js:168 |
+| `objRender` | frontend/js/obj-ref.js:175 |
 
 ### frontend/js/obj-reorder.js (21)
 
@@ -23867,7 +23867,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17092)
+## Tests (17094)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24405,6 +24405,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_library_1594.py | 7 |
 | tests/test_diagram_model.py | 12 |
 | tests/test_diagram_multi_r5.py | 17 |
+| tests/test_diagram_object_kind.py | 2 |
 | tests/test_diagram_r6.py | 13 |
 | tests/test_diagram_r7.py | 5 |
 | tests/test_diagram_r8a.py | 5 |
