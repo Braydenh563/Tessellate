@@ -3390,13 +3390,15 @@ const nmb = {
   //: since that frame (`pageAt`, the views observer) or inside
   //: `uiSettlingUntil`, it waits one frame more, six at most.
   pageAt: 0,
-  afterClean(fn, tries = 6) {
+  //: `snap` runs instead of `fn` when the page is still being written after the last try: a hand-over
+  //: makes its change without reading rather than read a dirty page.
+  afterClean(fn, tries = 6, snap = fn) {
     afterFrames(() => {
       const frame = performance.now();
       setTimeout(() => {
         const dirty = nmb.pageAt > frame || performance.now() < (window.uiSettlingUntil || 0);
-        if (dirty && tries > 1) nmb.afterClean(fn, tries - 1);
-        else fn();
+        if (dirty && tries > 1) nmb.afterClean(fn, tries - 1, snap);
+        else (dirty ? snap : fn)();
       });
     }, 1);
   },
@@ -7786,14 +7788,18 @@ function nameMarkBuddyAct(act, ms) {
   const face = { lie: "sleepy", facepalm: "unimpressed" }[act];
   if (face) nameMarkBuddyExpress(face, spec?.ms || 2000);
   if (spec?.cool) nmb.cool[act] = Date.now() + spec.cool;
-  nmb.timer = setTimeout(() => {
+  //: **The next act starts on a page a frame has drawn** (INBOX 1667: `avatars.js:7792` up to 84ms of forced
+  //: layout at 4x): ending an act hands its parts over (`nameMarkBuddyBlend` reads them), and the timer lands
+  //: between the page's writes and its frame. Still the same act a frame on, or it was already replaced.
+  nmb.timer = setTimeout(() => nmb.afterClean(() => {
+    if (nmb.act !== act) return;
     const next = act === "land" && nmb.afterLand ? "look" : nmb.mind?.after(buddy, act) || "";
     if (act === "land") nmb.afterLand = false;
     nameMarkBuddyAct(next);
     //: Held a while, it shakes itself off once it has landed (INBOX 1581).
     if (act === "land" && nmb.carriedMs >= 2500) setTimeout(() => nameMarkBuddyReact("carried"), 250);
     if (act === "land") nmb.carriedMs = 0;
-  }, (ms || spec?.ms || 1200) * (act === "land" ? 1 : 1 + Math.random() * 0.3));
+  }), (ms || spec?.ms || 1200) * (act === "land" ? 1 : 1 + Math.random() * 0.3));
 }
 
 //: Room to lie down: standing (not tucked, not peeking) on a flat place,

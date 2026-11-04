@@ -382,13 +382,20 @@ for (const button of document.querySelectorAll("#tab-bar button")) {
 //: arrival (Chat's composer) keeps that. From the keyboard (`detail` 0) the
 //: focus stays in the strip, where its arrows are expected.
 //: Found two frames on (INBOX 1446): `switchTab` reveals after an await.
+//: **On a page a frame has drawn** (INBOX 1667: `phone-shell.js:399` 116ms of forced layout at 4x on
+//: Graph): the walk reads `scrollHeight` of the page's elements, and the second frame's callback runs
+//: before that frame's own layout; one timer on (`nmb.afterClean`) the page is clean.
 function focusTabPage(button) {
   afterFrames(() => {
-    if (document.activeElement !== button) return;
-    const target = tabPageScroller(button.dataset.tab);
-    if (!target) return;
-    if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) target.tabIndex = -1;
-    target.focus({ preventScroll: true });
+    const focus = () => {
+      if (document.activeElement !== button) return;
+      const target = tabPageScroller(button.dataset.tab);
+      if (!target) return;
+      if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) target.tabIndex = -1;
+      target.focus({ preventScroll: true });
+    };
+    if (typeof nmb === "object") nmb.afterClean(focus);
+    else focus();
   });
 }
 

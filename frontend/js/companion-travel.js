@@ -102,8 +102,13 @@ function companionTravelEnd(buddy, anim) {
   nameMarkBuddyTravel(buddy, "");
 }
 
+//: **On a page a frame has drawn** (INBOX 1667: `companion-travel.js:106` 30ms of forced layout at 4x): a
+//: step's `nameMarkBuddyBlend` reads the parts it moves, and a timer lands between the page's writes and
+//: its frame. The step runs a frame on (`nmb.afterClean`), unless the move ended or was cut meanwhile
+//: (the list it was filed in is gone).
 function companionTravelAt(ms, fn) {
-  nmb.travelTimers.push(setTimeout(fn, ms));
+  const list = nmb.travelTimers;
+  list.push(setTimeout(() => nmb.afterClean(() => nmb.travelTimers === list && fn()), ms));
 }
 
 //: Its legs walking from `ms` for `len` ms.

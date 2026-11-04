@@ -351,15 +351,36 @@ window.addEventListener("pointerdown", objDragArm, true);
     window.addEventListener("scroll", hide, { capture: true, passive: true });
   }
 
-  document.addEventListener("pointerover", (event) => {
-    if (event.pointerType === "touch") return;
-    if (event.target === grip || grip?.contains(event.target)) return clearTimeout(timer);
-    const next = movable(event.target);
+  //: **One look a frame, not one per `pointerover`** (INBOX 1667: `#document.onpointerover` 14 to 40ms of
+  //: forced layout, 59 calls in a 6s wheel at 4x): a scroll under a resting pointer sends one for every
+  //: card that passes it, and `show` reads the card's box, the grip's size and what is on top there.
+  //: The last target of the frame is the one looked at.
+  let over = null;
+  let overFrame = 0;
+  const look = () => {
+    overFrame = 0;
+    const target = over;
+    over = null;
+    if (!target?.isConnected) return;
+    const next = movable(target);
     if (next) return show(next);
     if (card) {
       clearTimeout(timer);
       timer = setTimeout(settle, 160);
     }
+  };
+  //: Not for a card that scrolled under a resting pointer (INBOX 1667: 59 calls in a wheel, 1.5s of forced
+  //: layout at 4x; a scroll lays the page out again after every frame, so any read pays for it).
+  let scrolledAt = 0;
+  window.addEventListener("scroll", () => { scrolledAt = performance.now(); }, { capture: true, passive: true });
+  document.addEventListener("pointerover", (event) => {
+    if (event.pointerType === "touch" || performance.now() - scrolledAt < 200) return;
+    if (event.target === grip || grip?.contains(event.target)) {
+      over = null;
+      return clearTimeout(timer);
+    }
+    over = event.target;
+    if (!overFrame) overFrame = requestAnimationFrame(look);
   }, true);
   document.addEventListener("focusin", (event) => {
     const next = movable(event.target);

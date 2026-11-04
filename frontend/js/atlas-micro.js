@@ -279,7 +279,10 @@ function atlasMicroTick() {
     sinceCast: now - atlasMicroState.castAt, now, rareAt: atlasMicroState.rareAt, rareOff: nameMarkBuddyActOff("habits") || document.documentElement.dataset.motion === "reduced", pointer: !!nmb.pointer,
   }, atlasMicroState.last);
   atlasMicroState.last = kind;
-  atlasMicroDo(kind, box);
+  //: **On a page a frame has drawn** (INBOX 1667: `atlas-micro.js:272` 118ms of forced layout at 4x; a glance
+  //: reads the focused field's box, a blink the mood's, a cast the hand's): the tick's timer lands between
+  //: the page's writes and its frame. Still allowed a frame on, or it is dropped.
+  nmb.afterClean(() => atlasMicroMay(box) && atlasMicroDo(kind, box));
 }
 function atlasMicroStart() {
   if (!atlasMicroState.timer) atlasMicroState.timer = setTimeout(atlasMicroTick, 2500 + Math.random() * 2500);
