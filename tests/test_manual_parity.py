@@ -305,24 +305,28 @@ def test_check_what_it_learned_is_in_the_guide_the_panel_help_and_the_skill():
     assert any(item["name"] == "Check what it learned" for item in skills.BUILTIN_SKILLS)
 
 
-def test_the_desktop_companion_row_is_named_as_a_desktop_app_setting():
-    """INBOX 1530 (b): the row (Settings, About) shows only when the server runs
-    with TESSELLATE_DESKTOP=1, so every place that names it says "in the desktop
-    app", and a browser tab's About pane says where the setting lives."""
+def test_the_desktop_companion_row_is_named_as_a_this_computer_setting():
+    """INBOX 1631 (the owner: "the atlas desktop comnpanion toggle is gone??"), which
+    moves 1530 (b): the row shows on the computer Tessellate runs on, in the desktop
+    window or a browser tab, and takes effect while the desktop app runs; another device
+    has none. Every place that names it says so."""
     from tessellate.ai import help_chat
 
     named = [t for t in help_chat.HELP_TOPICS if "Show the companion on the desktop" in t["body"]]
     assert named, "no Guide topic names the row any more"
     for topic in named:
         meta = help_chat.TOPIC_META.get(topic["id"], {})
-        assert "in the desktop app" in topic["body"].lower(), f"{topic['id']} names the row without saying it is in the desktop app"
-        assert meta.get("path", "").startswith("In the desktop app"), f"{topic['id']}'s path does not start with the desktop app"
+        body = topic["body"].lower()
+        assert "on the computer tessellate runs on" in body and "while the desktop app runs" in body, topic["id"]
+        assert meta.get("path", "").startswith("On the computer Tessellate runs on"), topic["id"]
     html = (FRONTEND / "index.html").read_text(encoding="utf-8")
     popover = html.split('id="desktop-companion-help"', 1)[1].split("</div>", 1)[0]
-    assert "In the desktop app" in popover
+    assert "While the desktop app runs" in popover
     settings = (FRONTEND / "js" / "settings.js").read_text(encoding="utf-8")
-    note = settings.split('let companionNote = document.getElementById("desktop-companion-note");', 1)[1][:900]
-    assert "setting of the desktop app" in note and "not shown in a browser tab" in note
+    assert 'const onThisComputer = isDesktop || (await healthFacts())?.this_computer !== false;' in settings
+    assert '$("desktop-companion-row")?.classList.toggle("hidden", !onThisComputer);' in settings
+    note = settings.split('let companionNote = document.getElementById("desktop-companion-note");', 1)[1][:600]
+    assert "while the desktop app runs" in note
 
 
 def test_the_diagram_blocks_keys_menu_and_views_are_in_the_guide() -> None:
