@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7747, frontend ids 2636, CSS sections 522, backend routes 641, backend modules 8594, test files 1987, tests 16635, plan headings 994, app scripts 28, boot scripts 37, script files 245.
+Counts: frontend functions 7747, frontend ids 2636, CSS sections 522, backend routes 641, backend modules 8594, test files 1987, tests 16638, plan headings 994, app scripts 28, boot scripts 37, script files 245.
 
 ## Frontend functions (7747)
 
@@ -21046,25 +21046,25 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `DeskApi` | src/tessellate/core/desk_companion.py:286 |
-| `DeskCompanion` | src/tessellate/core/desk_companion.py:319 |
+| `DeskApi` | src/tessellate/core/desk_companion.py:303 |
+| `DeskCompanion` | src/tessellate/core/desk_companion.py:336 |
 | `_config` | src/tessellate/core/desk_companion.py:64 |
-| `_follow` | src/tessellate/core/desk_companion.py:508 |
+| `_follow` | src/tessellate/core/desk_companion.py:535 |
 | `_pref` | src/tessellate/core/desk_companion.py:77 |
 | `_screen_area` | src/tessellate/core/desk_companion.py:160 |
 | `_set_pref` | src/tessellate/core/desk_companion.py:89 |
-| `attach` | src/tessellate/core/desk_companion.py:483 |
+| `attach` | src/tessellate/core/desk_companion.py:510 |
 | `clamp_corner` | src/tessellate/core/desk_companion.py:176 |
-| `clean_size` | src/tessellate/core/desk_companion.py:251 |
+| `clean_size` | src/tessellate/core/desk_companion.py:268 |
 | `companion_ex_style` | src/tessellate/core/desk_companion.py:193 |
 | `enabled` | src/tessellate/core/desk_companion.py:85 |
-| `hit_script` | src/tessellate/core/desk_companion.py:263 |
+| `hit_script` | src/tessellate/core/desk_companion.py:280 |
 | `monitor_areas` | src/tessellate/core/desk_companion.py:115 |
 | `pick_area` | src/tessellate/core/desk_companion.py:148 |
-| `raise_on_desktop` | src/tessellate/core/desk_companion.py:215 |
-| `shutdown` | src/tessellate/core/desk_companion.py:525 |
-| `tray_menu_item` | src/tessellate/core/desk_companion.py:533 |
-| `window_handle` | src/tessellate/core/desk_companion.py:206 |
+| `raise_on_desktop` | src/tessellate/core/desk_companion.py:223 |
+| `shutdown` | src/tessellate/core/desk_companion.py:552 |
+| `tray_menu_item` | src/tessellate/core/desk_companion.py:560 |
+| `window_handle` | src/tessellate/core/desk_companion.py:212 |
 | `work_area` | src/tessellate/core/desk_companion.py:96 |
 
 ### src/tessellate/core/desktop_dialog.py (2)
@@ -23661,7 +23661,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16635)
+## Tests (16638)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24168,7 +24168,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_density_height.py | 4 |
 | tests/test_dependency_audit.py | 3 |
 | tests/test_derived_facts.py | 14 |
-| tests/test_desk_companion.py | 44 |
+| tests/test_desk_companion.py | 47 |
 | tests/test_desk_counts_63.py | 5 |
 | tests/test_desktop_fullscreen.py | 5 |
 | tests/test_desktop_launcher.py | 17 |
@@ -26357,7 +26357,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1309 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:161 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:165 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4188 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |

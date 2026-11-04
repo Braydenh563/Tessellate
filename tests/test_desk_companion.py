@@ -505,3 +505,55 @@ def test_the_companions_menu_has_the_desktop_row_only_in_the_desktop_app():
     assert "if (isDesktopShell === true)" in menu
     assert "Hide from desktop" in menu and "Show on desktop" in menu
     assert 'setPreference("desktop_companion", !onDesktop)' in menu
+
+
+def test_raise_on_desktop_never_rebuilds_the_form_or_waits_on_its_thread():
+    """The owner, 2026-11-04: the companion "not responding" on the taskbar and
+    the tray icon frozen. `ShowInTaskbar` set from the worker re-made the form's
+    handle on a thread with no message loop; every later show waited on it while
+    holding the lock the tray's toggle needs."""
+    import inspect
+
+    body = inspect.getsource(dc.raise_on_desktop)
+    code = "\n".join(line for line in body.split("\n") if not line.strip().startswith(("#", '"')))
+    assert "ShowInTaskbar =" not in code
+    assert "ShowWindowAsync" in code and "user32.ShowWindow(" not in code
+    assert dc.SWP_FLAGS & 0x4000  # SWP_ASYNCWINDOWPOS
+
+
+def test_a_stuck_show_never_holds_the_tray_or_the_way_out(made, prefs, monkeypatch):
+    import threading
+
+    monkeypatch.setattr(dc, "LOCK_WAIT", 0.05)
+    prefs[dc.PREF] = True
+    held, let_go = threading.Event(), threading.Event()
+
+    def stuck():  # a show that never comes back, holding the lock
+        with dc._lock:  # noqa: SLF001
+            held.set()
+            let_go.wait(5)
+
+    holder = threading.Thread(target=stuck)
+    holder.start()
+    held.wait(5)
+    try:
+        made.main_window.hide()  # sync gives up rather than waiting for good
+        assert made.webview.made == []
+        made.close()  # and the way out does not hang either
+        assert made.closing
+    finally:
+        let_go.set()
+        holder.join(5)
+
+
+def test_the_tray_toggle_runs_the_show_on_a_worker(made, prefs):
+    ran = []
+    made._dispatch = lambda name, fn: ran.append(name)  # noqa: SLF001
+
+    class Item:
+        def __init__(self, text, action, checked=None):
+            self.text, self.action, self.checked = text, action, checked
+
+    item = dc.tray_menu_item(SimpleNamespace(MenuItem=Item))
+    item.action(SimpleNamespace(notify=lambda *a: None), item)
+    assert ran == ["desk-companion"]

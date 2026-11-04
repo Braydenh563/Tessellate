@@ -197,14 +197,22 @@ def companion_ex_style(style: int) -> int:
 
 
 #: SetWindowPos: HWND_TOPMOST, and the flags that move nothing, resize nothing,
-#: take no focus and show the window.
+#: take no focus, show the window and do not wait for its thread
+#: (SWP_ASYNCWINDOWPOS; see `raise_on_desktop`).
 HWND_TOPMOST = -1
-SWP_FLAGS = 0x0001 | 0x0002 | 0x0010 | 0x0040  # NOSIZE | NOMOVE | NOACTIVATE | SHOWWINDOW
+SWP_FLAGS = 0x0001 | 0x0002 | 0x0010 | 0x0040 | 0x4000  # NOSIZE | NOMOVE | NOACTIVATE | SHOWWINDOW | ASYNCWINDOWPOS
+SW_HIDE = 0
+SW_RESTORE = 9
 SW_SHOWNOACTIVATE = 4
+#: How long a show or hide waits for another one before it gives up (seconds):
+#: a stuck window never holds the tray's menu with it.
+LOCK_WAIT = 5.0
 
 
 def window_handle(window: Any) -> int | None:
-    """The native handle of a pywebview window on Windows (its WinForms form), or None."""
+    """The native handle of a pywebview window on Windows (its WinForms form), or None.
+    Read only once the window is shown, so the handle already exists: reading it
+    earlier would make the form on this (worker) thread."""
     try:
         return int(window.native.Handle.ToInt64())
     except Exception as exc:  # noqa: BLE001 - not WinForms, or not built yet
@@ -220,7 +228,15 @@ def raise_on_desktop(window: Any) -> bool:
     Wallpaper Engine and similar tools parent their wallpaper under the desktop's
     WorkerW layer, and a window that is minimised, off every monitor, or not
     topmost when the wallpaper window is re-stacked can end up behind it. Called
-    after every show, so the order is reasserted each time it is due."""
+    after every show, so the order is reasserted each time it is due.
+
+    **Only Win32 calls that do not wait** (the owner, 2026-11-04: the companion
+    "not responding" on the taskbar and the tray icon frozen). This runs on a
+    worker thread. Setting WinForms' `ShowInTaskbar` here re-made the form's
+    handle on that thread, which runs no message loop: the window hung, and the
+    next show waited on it for good while holding the lock the tray's toggle
+    needs. The taskbar button goes with the extended style instead (hidden,
+    restyled, shown again), and every call is the async kind."""
     if sys.platform != "win32":
         return False
     handle = window_handle(window)
@@ -229,18 +245,19 @@ def raise_on_desktop(window: Any) -> bool:
     try:
         import ctypes
 
-        try:
-            window.native.ShowInTaskbar = False  # WinForms: no taskbar button
-        except Exception:  # noqa: BLE001
-            logger.debug("could not clear ShowInTaskbar", exc_info=True)
         user32 = ctypes.windll.user32
         get_style, set_style = user32.GetWindowLongPtrW, user32.SetWindowLongPtrW
         get_style.restype = set_style.restype = ctypes.c_ssize_t
         gwl_exstyle = -20
-        set_style(handle, gwl_exstyle, companion_ex_style(get_style(handle, gwl_exstyle)))
+        was = get_style(handle, gwl_exstyle)
+        want = companion_ex_style(was)
+        if want != was:
+            #: A taskbar button follows the style only from the next show.
+            user32.ShowWindowAsync(handle, SW_HIDE)
+            set_style(handle, gwl_exstyle, want)
         if user32.IsIconic(handle):
-            user32.ShowWindow(handle, 9)  # SW_RESTORE
-        user32.ShowWindow(handle, SW_SHOWNOACTIVATE)
+            user32.ShowWindowAsync(handle, SW_RESTORE)
+        user32.ShowWindowAsync(handle, SW_SHOWNOACTIVATE)
         user32.SetWindowPos(handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_FLAGS)
         return True
     except Exception:  # noqa: BLE001
@@ -427,7 +444,10 @@ class DeskCompanion:
 
     def sync(self) -> None:
         """Show it when it is due (on, and the main window in the tray), else hide it."""
-        with _lock:
+        if not _lock.acquire(timeout=LOCK_WAIT):
+            logger.warning("the desktop companion is still busy with its last show or hide; this one is skipped")
+            return
+        try:
             due = enabled() and self.main_hidden and not self.closing
             try:
                 if due and self.window is None:
@@ -447,6 +467,8 @@ class DeskCompanion:
                     raise_on_desktop(self.window)
             except Exception:  # noqa: BLE001 - a companion that fails never takes the app with it
                 logger.warning("the desktop companion window failed", exc_info=True)
+        finally:
+            _lock.release()
 
     def set_main_hidden(self, hidden: bool) -> None:
         self.main_hidden = hidden
@@ -463,16 +485,21 @@ class DeskCompanion:
     def turn_off(self) -> bool:
         """Its own Hide: off until the tray item or Settings turns it on again."""
         _set_pref(PREF, False)
-        self.sync()
+        self._dispatch("desk-companion", self.sync)
         return True
 
     def close(self) -> None:
         """Gone for good (the app is quitting): a hidden window would keep the
-        web view's loop from ending."""
-        with _lock:
+        web view's loop from ending. Never waits on a stuck show for long: the
+        app's way out must not hang behind it."""
+        got = _lock.acquire(timeout=LOCK_WAIT)
+        try:
             self.closing = True
             window, self.window = self.window, None
             self.shown = False
+        finally:
+            if got:
+                _lock.release()
         if window is not None:
             try:
                 window.destroy()
@@ -538,8 +565,9 @@ def tray_menu_item(pystray: Any) -> Any:
         _set_pref(PREF, on)
         with _lock:
             companion = _active
+        #: On a worker, never the tray's own thread: a slow window must not freeze its menu.
         if companion is not None:
-            companion.sync()
+            companion._dispatch("desk-companion", companion.sync)  # noqa: SLF001
         if on:
             try:
                 icon.notify("It sits in the corner while the window is in the tray.", "Tessellate")

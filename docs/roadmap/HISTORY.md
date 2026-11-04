@@ -52221,3 +52221,5 @@ From DOCUMENTS_PLAN.md and WHITEBOARD_PLAN.md "Placed from INBOX, 2026-11-03", b
 
 1632. **Owner, 2026-11-04 (two screenshots):** "the companion is hidden while the settings is minimised in the bottom right corner". Cause: the cover check counted the minimised Settings overlay (still not `.hidden`, marked `data-panel-min`) as a modal. Fix: a minimised panel is not a cover, and minimise and restore queue the check.
 
+1635. **Owner, 2026-11-04:** "it says the companion is not responding on the task bar and I can no longer right click the desktop tray icon, I think it is frozen (I closed the app without shutting it down so it is still running)". Cause: `raise_on_desktop` set WinForms `ShowInTaskbar` on a worker thread, which re-made the form's handle on a thread with no message loop; the next show waited on it holding the lock the tray toggle takes. Fix: no `ShowInTaskbar` (the extended style removes the button), async Win32 calls only, a timed lock, the tray toggle and Hide run on a worker.
+

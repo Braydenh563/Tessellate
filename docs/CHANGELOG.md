@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Desktop companion: it no longer hangs ("not responding") on its first show or freezes the tray icon; no WinForms property is set off the window's own thread (INBOX 1635).
 - The companion stays on screen while a panel such as Settings is minimised to the tray (INBOX 1632).
 - Quick nav gains `w` New note, `f` Find anything and `k` Calculator (INBOX 1604); the companion's placement cache folds into `nmb` (one shared name fewer).
 - Board menus (INBOX 1627): Edit's three special pastes are one "Paste in other ways" submenu, Insert has Diagram and Shapes and icons submenus, Board has Workshop and Share and save submenus (the Arrange pattern; every row keeps its keys). Measured at 1440x900: Edit 785px with a scrollbar to 707px without, Board 785px with a scrollbar to 576px, Insert 631px to 551px; View fits (427px), so it stays as it was. Help names the new paths.
