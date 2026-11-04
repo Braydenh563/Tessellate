@@ -3232,12 +3232,67 @@ def _gists(members: list, facts: list[Fact]) -> list[Fact]:  # noqa: ANN001
     return out
 
 
+#: A line that already says when ("on Monday", "yesterday", "last week").
+_SAYS_WHEN = re.compile(r"\b(?:(?:on )?(?:mon|tues|wednes|thurs|fri|satur|sun)day|yesterday|today|tonight|last (?:week|month|night|weekend)|this (?:week|morning)|\w+ ago)\b|^(?:back )?in \w+,", re.I)
+#: A past-tense line that is not an event: a taste or a report ("you liked
+#: pasta", "you mentioned that ...").
+_NOT_AN_EVENT = re.compile(
+    r"\b(?:liked|loved|enjoyed|wanted|needed|preferred|hated|wished|hoped|mentioned|noted|wrote|said|saved|thought|believed)\b", re.I)
+
+
+_COMMON = {"that", "this", "with", "your", "have", "were", "from", "about", "then", "they", "them", "there", "back", "also", "still", "after", "before", "into", "over", "when", "what", "went", "told", "said", "note"}
+
+
+def _one_activity(lines: list[str]) -> bool:
+    """Two event lines share a word of their own ("golf", "run")."""
+    words = [set(re.findall(r"[a-z]{4,}", x.lower())) - _COMMON for x in lines]
+    return any(a & b for i, a in enumerate(words) for b in words[i + 1:])
+
+
+def _is_event(line: str) -> bool:
+    return recogniser.told_as_past(line) and not _NOT_AN_EVENT.search(line)
+
+
+def _event_lines(out: _Out, members) -> list[tuple[int, object]]:  # noqa: ANN001
+    """(line index, note) for each told line that is one note's event on a
+    day of its own; empty unless two or more notes, on two or more days."""
+    by_id = {v.note.get("source_id", v.id): v for v in members}
+    told = [(at, by_id.get(row["note_id"])) for at, row in enumerate(out.rows, start=1)]
+    events = [(at, v) for at, v in told if v and v.written and at < len(out.lines) and _is_event(out.lines[at])]
+    separate = len({v.id for _a, v in events}) >= 2 and len({v.written for _a, v in events}) >= 2
+    separate = separate and _one_activity([out.lines[a] for a, _v in events])
+    return events if separate and len(out.lines) == len(out.rows) + 1 else []
+
+
+def _each_says_its_day(out: _Out, members, today: date) -> None:  # noqa: ANN001
+    """**Separate events of one activity each say their own day** (INBOX
+    1668, the narrow exception to 1441: "the how it went part is kinda
+    innaccurate as they are completely separate events and time periods").
+    An answer that tells two or more notes, each as something that happened
+    on a different day, leads each with its day, relative ("last month", "on
+    Monday"), so they read as separate occasions; a line that says its day
+    already is left. Every other answer keeps 1441: no day unasked."""
+    events = [] if _TIMED.get() else _event_lines(out, members)
+    held = _REGISTER.set("casual")
+    try:
+        for at, view in events:
+            line = out.lines[at]
+            if not _SAYS_WHEN.search(line):
+                out.lines[at] = _lead_day(view.written, today) + line[:1].lower() + line[1:]
+                #: The citation's words are the line's (grounding finds them in the text).
+                out.rows[at - 1]["sentence"] = out.lines[at].rstrip(".")
+    finally:
+        _REGISTER.reset(held)
+
+
 def _told_lines(out: _Out, members, facts, today: date, kind: str, moved: str) -> None:  # noqa: ANN001
     told: set = set()
     if not moved:
         for view in members:
             told |= _narrate(out, view, facts, today)
     _lines(out, facts, LINES[kind] - (len(out.lines) - 1), skip=told, by_day=today, more=kind == "overview", weave=True)
+    if kind == "overview" and not moved:
+        _each_says_its_day(out, members, today)
 
 
 def _overview_opening(out: _Out, question: str, members, facts, today: date, kind: str, counted=None) -> tuple[str, list[Fact]]:  # noqa: ANN001
