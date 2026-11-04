@@ -1136,9 +1136,7 @@ MORE_TOPICS: list[dict] = [
             "board's text, Chat or Ask, which opens it on the Equation tab over "
             "that box. Sum takes a sum typed or keyed (12 * (3 + 4), 15% of "
             "80, 5 km to miles), shows a preview as you type and says how it "
-            "read it; Enter or = keeps it in History. The sum is drawn as maths "
-            "under the box and shows no error while a sign or bracket is "
-            "still open. Scientific adds trig, logs, powers, roots, a "
+            "read it; Enter or = keeps it in History. Scientific adds trig, logs, powers, roots, a "
             "factorial, pi and e, Degrees or Radians and a memory (MC, MR, "
             "M+, M-), worked out with no model. "
             "Each answer has Copy, and each tab has a History under "
@@ -1154,11 +1152,14 @@ MORE_TOPICS: list[dict] = [
             "arrow keys move around it. Units picks a kind (length, "
             "weight, currency and more), an amount and two units, with a swap "
             "button; currency rates are set by hand and dated, not today's rate. "
+            "Time zone takes a time and two places (09:00, London, Tokyo), "
+            "offline. "
             "The Equation tab is the equation editor (see Equation editor): when "
             "an equation is made of numbers, its value is shown under it, as in "
             "Sum. The arrow keys, Home and End move "
             "between the tabs. The Dashboard's Calculator widget draws "
-            "Sum and Units on the page, with Copy but no Insert."
+            "Sum and Units on the page, with Copy but no Insert; Convert is "
+            "Units alone."
         ),
         "badge": {"label": "Chat", "tab": "chat"},
     },
