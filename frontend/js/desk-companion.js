@@ -361,6 +361,38 @@
   //: each time it shows this window, and the first time it opens on the menu.
   if (overlay) {
     window.addEventListener("desk-open", (event) => openMenu(event.detail === "context" ? "context" : "menu"));
-    openMenu("menu");
+    //: The first open: Python holds which click made this window, asked once
+    //: when the bridge is ready; the quick menu if it never answers.
+    let opened = false;
+    const firstOpen = async () => {
+      if (opened) return;
+      opened = true;
+      let kind = "menu";
+      try {
+        kind = (await ask("panel_kind")) === "context" ? "context" : "menu";
+      } catch {
+        kind = "menu";
+      }
+      openMenu(kind);
+    };
+    if (host()) firstOpen();
+    else window.addEventListener("pywebviewready", firstOpen, { once: true });
+    setTimeout(() => {
+      if (!opened) {
+        opened = true;
+        openMenu("menu");
+      }
+    }, 2000);
+    //: Click-away: the window reports losing focus to something else, but only
+    //: after it has had focus (a window that opens unfocused is not "away").
+    let focused = false;
+    window.addEventListener("focus", () => {
+      focused = true;
+    });
+    window.addEventListener("blur", () => {
+      if (!focused) return;
+      focused = false;
+      ask("panel_blur");
+    });
   }
 })();

@@ -69,6 +69,7 @@ class OverlayRunner:
         self.visible = False
         self.busy = False
         self.paused = False
+        self._stopped = False
         self._resume = False
         self._last_key: tuple[str, int, bool] | None = None
         self._last_pos: tuple[int, int] | None = None
@@ -93,6 +94,8 @@ class OverlayRunner:
 
     def _exited(self) -> None:
         """The overlay thread ended without a `stop` (no polling: the thread says so)."""
+        if self._stopped:
+            return
         self.visible = False
         logger.warning("overlay: the window thread ended on its own")
         self._hand_off("overlay-died", lambda: self.on_died and self.on_died())
@@ -110,6 +113,7 @@ class OverlayRunner:
             self.host.hide()
 
     def stop(self) -> None:
+        self._stopped = True
         if self.host:
             self.host.stop()
         self.host = None

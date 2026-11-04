@@ -720,3 +720,12 @@ def test_a_panel_resize_goes_to_the_window_in_physical_pixels_where_it_can(made,
     assert dc.place_on_screen(window, (0, 0, 1, 1)) is True  # patched
     monkeypatch.undo()
     assert dc.place_on_screen(window, (0, 0, 1, 1)) is False  # off Windows
+
+
+def test_the_overlay_page_reports_a_blur_and_asks_for_the_first_menu():
+    """Both ends of the bridge: Python's `panel_blur` and `panel_kind` are only
+    worth having if the page calls them."""
+    js = (ROOT / "frontend" / "js" / "desk-companion.js").read_text(encoding="utf-8")
+    assert 'ask("panel_kind")' in js and 'ask("panel_blur")' in js
+    assert 'addEventListener("blur"' in js and "if (!focused) return;" in js
+    assert "pywebviewready" in js
