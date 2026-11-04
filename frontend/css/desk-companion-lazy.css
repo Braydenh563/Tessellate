@@ -125,6 +125,10 @@ html:has(> .desk-page) {
   -webkit-user-select: none;
   user-select: none;
 }
+/* The overlay's quick panel: the figure is the overlay's own, not this page's. */
+.desk-overlay .desk-pet {
+  display: none;
+}
 .desk-card .desk-pet {
   background: var(--surface-2);
 }

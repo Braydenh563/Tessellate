@@ -55,6 +55,15 @@ MIN_SIZE = (96, 96)
 MAX_SIZE = (480, 560)
 #: Clear of the screen's edge and of the taskbar's.
 MARGIN = 12
+#: The overlay's saved place: its top-left in physical pixels (the card's POS_PREF
+#: is a logical bottom-right corner, a different thing).
+OVERLAY_POS_PREF = "desktop_companion_overlay_pos"
+#: The quick panel opened by a click on the overlay figure, and its gap to it.
+PANEL_SIZE = (208, 312)
+PANEL_GAP = 8
+LOOK_WAIT = 1.5
+#: Asks the app window which Atlas look it draws; empty when it cannot say.
+LOOK_SCRIPT = "(function(){try{return typeof atlasLook==='function'?atlasLook():''}catch(e){return ''}})()"
 
 _KIND = re.compile(r"[a-z]{1,16}")
 _lock = threading.RLock()
@@ -222,6 +231,19 @@ def clamp_corner(corner: tuple[int, int], size: tuple[int, int], area: tuple[int
     x = min(max(int(corner[0]), left + size[0]), right)
     y = min(max(int(corner[1]), top + size[1]), bottom)
     return x, y
+
+
+def panel_corner(
+    pet: tuple[int, int, int, int], size: tuple[int, int], area: tuple[int, int, int, int]
+) -> tuple[int, int]:
+    """The bottom-right corner for a `size` panel beside the figure `pet`
+    (x, y, width, height, logical pixels): to its left when that fits inside
+    `area`, else to its right, bottoms level; held inside `area` either way."""
+    x, y, w, h = pet
+    right = x - PANEL_GAP
+    if right - size[0] < area[0]:
+        right = x + w + PANEL_GAP + size[0]
+    return clamp_corner((right, y + h), size, area)
 
 
 #: Win32 extended window styles. A tool window has no taskbar button and no
@@ -461,6 +483,9 @@ class DeskApi:
     def hide_companion(self) -> bool:
         return self._owner.turn_off()
 
+    def hide_panel(self) -> bool:
+        return self._owner.hide_panel()
+
 
 class DeskCompanion:
     """The second window and when it is shown (see the module's docstring)."""
@@ -474,6 +499,7 @@ class DeskCompanion:
         *,
         transparent: bool = False,
         dispatch: Callable[[str, Callable[[], None]], Any] | None = None,
+        overlay_factory: Callable[..., Any] | None = None,
     ) -> None:
         self.webview = webview
         self.main = main_window
@@ -495,6 +521,18 @@ class DeskCompanion:
         #: last rebuild (INBOX 1642: hidden from its own menu, still ticked).
         self.on_change: Callable[[], Any] | None = None
         self._ticked: bool | None = None
+        #: The see-through figure that walks the desktop (`core/overlay`; Windows).
+        #: None means the card window only. A failure to start it is final for the
+        #: session: the card is used and a warning says why.
+        self._overlay_factory = overlay_factory
+        self.runner: Any = None
+        self.overlay_failed = False
+        self.look = "masculine"
+        #: The figure's rectangle (logical pixels) at the last click, and whether
+        #: `window` is the quick panel beside it rather than the card.
+        self.pet_rect: tuple[int, int, int, int] | None = None
+        self.panel = False
+        self.panel_shown = False
 
     # --- where it is -----------------------------------------------------------
 
@@ -519,7 +557,10 @@ class DeskCompanion:
         with _lock:
             self.size = (width, height)
             corner = self.corner or self._home()
-            self.corner = clamp_corner(corner, self.size, _screen_area(self.webview, corner))
+            if self.panel and self.pet_rect is not None:
+                self.corner = panel_corner(self.pet_rect, self.size, _screen_area(self.webview, corner))
+            else:
+                self.corner = clamp_corner(corner, self.size, _screen_area(self.webview, corner))
             if self.window is not None:
                 self._place()
             return self.size
@@ -545,9 +586,9 @@ class DeskCompanion:
 
     def _make(self) -> Any:
         """The window, hidden, made the first time it is due."""
-        url = self._url() + ("" if self.transparent else "?card=1")
-        self.size = REST_SIZE
-        self.corner = self._home()
+        url = self._url() + ("?card=1&overlay=1" if self.panel else "" if self.transparent else "?card=1")
+        self.size = PANEL_SIZE if self.panel else REST_SIZE
+        self.corner = self.corner if self.panel and self.corner else self._home()
         x, y = self.top_left()
         options: dict[str, Any] = {
             "url": url,
@@ -564,7 +605,7 @@ class DeskCompanion:
             "js_api": DeskApi(self),
             # Does not take focus when shown; the taskbar button is removed in
             # `raise_on_desktop` (pywebview has no option for it).
-            "focus": False,
+            "focus": self.panel,
             # pywebview's default minimum is 200 by 100: wider than the resting
             # 112, so the form grew to a card with the character in its right
             # half (the owner's screenshot at 200%, INBOX 1633).
@@ -578,6 +619,143 @@ class DeskCompanion:
             for name in ("hidden", "easy_drag", "transparent", "focus", "min_size"):
                 options.pop(name, None)
             return self.webview.create_window("Tessellate companion", **options)
+
+    # --- the overlay (Windows) ---------------------------------------------------
+
+    def _read_look(self) -> str:
+        """Which Atlas look the app window draws, asked of it (its choice lives in
+        that window's storage). Bounded: a hidden window may not answer, and then
+        the last look stands."""
+        found: list[Any] = []
+
+        def ask() -> None:
+            try:
+                found.append(self.main.evaluate_js(LOOK_SCRIPT))
+            except Exception:  # noqa: BLE001 - the last look stands
+                logger.debug("desk companion: could not ask the app window for its look", exc_info=True)
+
+        worker = threading.Thread(target=ask, name="desk-look", daemon=True)
+        worker.start()
+        worker.join(LOOK_WAIT)
+        if found and found[0] in ("masculine", "feminine"):
+            return found[0]
+        logger.info("desk companion: the app window gave no look, keeping %s", self.look)
+        return self.look
+
+    def _overlay_home(self) -> tuple[int, int] | None:
+        saved = _pref(OVERLAY_POS_PREF, None)
+        if isinstance(saved, (list, tuple)) and len(saved) == 2 and all(isinstance(v, int) for v in saved):
+            return int(saved[0]), int(saved[1])
+        return None
+
+    def _start_overlay(self) -> bool:
+        """The runner for the look in force, made when first due and again if the
+        look changed; False (a warning logged) when it cannot start."""
+        look = self._read_look()
+        if self.runner is not None and self.look == look:
+            return True
+        self.look = look
+        self._stop_runner()
+        try:
+            runner = self._overlay_factory(  # type: ignore[misc]
+                look=look, home=self._overlay_home(), on_click=self._overlay_click, on_settle=self._overlay_settle
+            )
+            started = runner.start()
+        except Exception:  # noqa: BLE001 - any failure means the card window instead
+            logger.warning("desk companion: the overlay failed to build", exc_info=True)
+            started = False
+        if not started:
+            self.overlay_failed = True
+            logger.warning("desk companion: the overlay could not start, using the card window instead")
+            return False
+        self.runner = runner
+        logger.info("desk companion: overlay started, look=%s", look)
+        return True
+
+    def _stop_runner(self) -> None:
+        runner, self.runner = self.runner, None
+        if runner is not None:
+            try:
+                runner.stop()
+            except Exception:  # noqa: BLE001 - a stuck overlay never blocks the rest
+                logger.warning("desk companion: the overlay did not stop cleanly", exc_info=True)
+
+    def _sync_overlay(self, due: bool) -> bool:
+        """The overlay's half of `sync` (lock held). True when the overlay handled
+        it; False sends `sync` on to the card window."""
+        if self._overlay_factory is None or self.overlay_failed:
+            return False
+        if due:
+            if not self._start_overlay():
+                return False
+            if self.shown:
+                return True
+            self.runner.show()
+            self.shown = True
+            logger.info("desk companion: overlay shown")
+            return True
+        if self.runner is not None and self.shown:
+            self.runner.hide()
+            self._hide_panel_window()
+            self.shown = False
+            logger.info("desk companion: overlay hidden")
+        return self.runner is not None
+
+    def _hide_panel_window(self) -> None:
+        if self.window is not None and self.panel_shown:
+            self.window.hide()
+            self.panel_shown = False
+
+    def hide_panel(self) -> bool:
+        with _lock:
+            try:
+                self._hide_panel_window()
+            except Exception:  # noqa: BLE001
+                logger.warning("desk companion: the quick panel did not hide", exc_info=True)
+                return False
+        return True
+
+    def _overlay_settle(self, x: int, y: int) -> None:
+        _set_pref(OVERLAY_POS_PREF, [int(x), int(y)])
+
+    def _overlay_click(self, kind: str, rect: tuple[int, int, int, int], dpi: int) -> None:
+        """A click (left: the menu; right: settings and Hide) on the figure, on a
+        worker. The quick panel is the card window, made the first time, shown
+        beside the figure and taking the keyboard like any window."""
+        if kind not in ("left", "right"):
+            return
+        if not _lock.acquire(timeout=LOCK_WAIT):
+            logger.warning("desk companion: busy, a click on the figure is skipped")
+            return
+        try:
+            if self.closing:
+                return
+            if self.panel_shown and kind == "left":
+                self._hide_panel_window()
+                return
+            self.pet_rect = to_logical(rect, dpi)
+            area = _screen_area(self.webview, (self.pet_rect[0], self.pet_rect[1] + self.pet_rect[3]))
+            self.panel = True
+            self.size = PANEL_SIZE
+            self.corner = panel_corner(self.pet_rect, self.size, area)
+            fresh = self.window is None
+            if fresh:
+                self.window = self._make()
+                logger.info("desk companion: quick panel made beside the figure at %s", self.top_left())
+            else:
+                self._place()
+            self.window.show()
+            self.panel_shown = True
+            self._place()
+            if not fresh:
+                self.window.evaluate_js(
+                    "window.dispatchEvent(new CustomEvent('desk-open',{detail:%s}))" % json.dumps("context" if kind == "right" else "menu")
+                )
+            logger.info("desk companion: quick panel shown (%s)", kind)
+        except Exception:  # noqa: BLE001 - a panel that fails leaves the figure walking
+            logger.warning("desk companion: the quick panel failed", exc_info=True)
+        finally:
+            _lock.release()
 
     def sync(self) -> None:
         """Show it when it is due (on, and the main window minimised or in the tray), else hide it."""
@@ -593,31 +771,36 @@ class DeskCompanion:
             #: One line a step (INBOX 1633: the owner could not see it; the log says where it stopped).
             logger.info("desk companion: due=%s (on=%s, window away=%s, shown=%s)", due, enabled(), self.main_hidden, self.shown)
             try:
-                if due and self.window is None:
-                    self.window = self._make()
-                    logger.info(
-                        "desk companion: window made at %s, size %s, in %s (logical pixels)",
-                        self.top_left(), self.size, _screen_area(self.webview, self.corner),
-                    )
-                if self.window is None or due == self.shown:
-                    return
-                (self.window.show if due else self.window.hide)()
-                self.shown = due
-                logger.info("desk companion: %s", "shown" if due else "hidden")
-                if due:
-                    # Back onto a monitor that is there (one may have gone while it
-                    # was hidden), then a tool window above the desktop layer.
-                    corner = self.corner or self._home()
-                    fixed = clamp_corner(corner, self.size, _screen_area(self.webview, corner))
-                    if fixed != self.corner:
-                        self.corner = fixed
-                        self.window.move(*self.top_left())
-                    rect = (*self.top_left(), *self.size)
-                    logger.info("desk companion: raised above the desktop at %s: %s", rect, raise_on_desktop(self.window, rect))
+                if not self._sync_overlay(due):
+                    self._sync_card(due)
             except Exception:  # noqa: BLE001 - a companion that fails never takes the app with it
                 logger.warning("the desktop companion window failed", exc_info=True)
         finally:
             _lock.release()
+
+    def _sync_card(self, due: bool) -> None:
+        """The card window's half of `sync` (lock held)."""
+        if due and self.window is None:
+            self.window = self._make()
+            logger.info(
+                "desk companion: window made at %s, size %s, in %s (logical pixels)",
+                self.top_left(), self.size, _screen_area(self.webview, self.corner),
+            )
+        if self.window is None or due == self.shown:
+            return
+        (self.window.show if due else self.window.hide)()
+        self.shown = due
+        logger.info("desk companion: %s", "shown" if due else "hidden")
+        if due:
+            # Back onto a monitor that is there (one may have gone while it
+            # was hidden), then a tool window above the desktop layer.
+            corner = self.corner or self._home()
+            fixed = clamp_corner(corner, self.size, _screen_area(self.webview, corner))
+            if fixed != self.corner:
+                self.corner = fixed
+                self.window.move(*self.top_left())
+            rect = (*self.top_left(), *self.size)
+            logger.info("desk companion: raised above the desktop at %s: %s", rect, raise_on_desktop(self.window, rect))
 
     def set_main_hidden(self, hidden: bool) -> None:
         self.main_hidden = hidden
@@ -668,11 +851,22 @@ class DeskCompanion:
         finally:
             if got:
                 _lock.release()
+        self._stop_runner()
         if window is not None:
             try:
                 window.destroy()
             except Exception:  # noqa: BLE001
                 logger.debug("could not destroy the companion window", exc_info=True)
+
+
+def _default_overlay_factory() -> Callable[..., Any] | None:
+    """The see-through figure is the Windows default; elsewhere the card window
+    (or the see-through web window) stays."""
+    if sys.platform != "win32":
+        return None
+    from tessellate.core.overlay.runner import OverlayRunner
+
+    return OverlayRunner
 
 
 def attach(
@@ -683,6 +877,7 @@ def attach(
     *,
     transparent: bool | None = None,
     on_change: Callable[[], Any] | None = None,
+    overlay_factory: Any = "auto",
 ) -> DeskCompanion:
     """Make the companion for `main_window` and follow it into and out of the
     tray. `transparent` defaults to every platform but Windows, where a frameless
@@ -694,6 +889,7 @@ def attach(
         open_main,
         url,
         transparent=(sys.platform != "win32") if transparent is None else transparent,
+        overlay_factory=_default_overlay_factory() if overlay_factory == "auto" else overlay_factory,
     )
     companion.on_change = on_change
     followed = _follow(main_window, companion)
