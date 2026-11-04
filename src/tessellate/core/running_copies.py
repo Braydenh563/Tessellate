@@ -27,24 +27,13 @@ second server (`tests/test_running_copies_1641.py`). Light imports only.
 
 from __future__ import annotations
 
-import json
 import os
-import sys
 import time
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
-from pathlib import Path
 
-from tessellate.core import instance_lock
-
-
-@dataclass(frozen=True)
-class Record:
-    pid: int
-    port: int
-    token: str
-    started: float
-    data_dir: str = ""
+from tessellate.core import instance_lock, run_records
+from tessellate.core.run_records import Record
 
 
 @dataclass(frozen=True)
@@ -60,58 +49,6 @@ class Copy:
         return asdict(self)
 
 
-def run_dir() -> Path:
-    override = os.environ.get("TESSELLATE_RUN_DIR")
-    if override:
-        return Path(override)
-    if sys.platform == "win32":
-        base = os.environ.get("LOCALAPPDATA") or str(Path.home() / "AppData" / "Local")
-        return Path(base) / "Tessellate" / "run"
-    state = os.environ.get("XDG_STATE_HOME") or str(Path.home() / ".local" / "state")
-    return Path(state) / "tessellate" / "run"
-
-
-def _path(pid: int) -> Path:
-    return run_dir() / f"{int(pid)}.json"
-
-
-def register(record: Record) -> None:
-    from tessellate.core.atomic_io import atomic_write_text
-
-    folder = run_dir()
-    folder.mkdir(parents=True, exist_ok=True)
-    if sys.platform != "win32":
-        os.chmod(folder, 0o700)  # the files are 0600 already; the listing is private too
-    atomic_write_text(_path(record.pid), json.dumps(asdict(record)))
-
-
-def unregister(pid: int, token: str) -> None:
-    """Remove a record, and only if it is still the one with this token."""
-    current = _read(_path(pid))
-    if current is not None and current.token == token:
-        try:
-            _path(pid).unlink()
-        except OSError:
-            pass
-
-
-def _read(path: Path) -> Record | None:
-    try:
-        raw = json.loads(path.read_text(encoding="utf-8"))
-        rec = Record(
-            pid=int(raw["pid"]),
-            port=int(raw["port"]),
-            token=str(raw["token"]),
-            started=float(raw["started"]),
-            data_dir=str(raw.get("data_dir", "")),
-        )
-    except (OSError, ValueError, TypeError, KeyError, OverflowError):
-        return None
-    if not 1 <= rec.port <= 65535 or not rec.token or rec.pid <= 0:
-        return None
-    return rec
-
-
 def _records(
     *,
     answers_fn: Callable[[int], bool] | None = None,
@@ -124,11 +61,11 @@ def _records(
     when = time.time() if now is None else now
     kept: list[Record] = []
     try:
-        files = sorted(run_dir().glob("*.json"))
+        files = sorted(run_records.run_dir().glob("*.json"))
     except OSError:
         return kept
     for path in files:
-        rec = _read(path)
+        rec = run_records.read(path)
         if rec is None:
             continue  # not ours to delete: junk reads as no record
         state = instance_lock.classify(
@@ -141,7 +78,7 @@ def _records(
             try:
                 path.unlink()
             except OSError:
-                pass
+                pass  # another listing removed it first, or it is locked: tried again next time
             continue
         kept.append(rec)
     return kept
@@ -183,7 +120,7 @@ def shutdown(
     me = os.getpid() if own_pid is None else own_pid
     if pid == me:
         return "this-copy"
-    rec = _read(_path(pid))
+    rec = run_records.read(run_records.path_for(pid))
     if rec is None:
         return "unknown"
     if (ask_fn or ask_to_stop)(rec.port, rec.token):

@@ -142,7 +142,7 @@ def repo_tree():
 @pytest.fixture(autouse=True)
 def _own_run_folder(tmp_path, monkeypatch):
     """A test that starts a server claim writes a running-copies record
-    (core/running_copies.py); it goes to the test's folder, never the
+    (core/run_records.py); it goes to the test's folder, never the
     developer's own per-user one."""
     monkeypatch.setenv("TESSELLATE_RUN_DIR", str(tmp_path / "_run"))
 

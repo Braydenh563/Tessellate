@@ -11,6 +11,7 @@ import sys
 import pytest
 
 from tessellate.core import instance_lock as il
+from tessellate.core import run_records
 from tessellate.core import running_copies as rc
 
 NOW = 1_000_000.0
@@ -24,7 +25,7 @@ def run_dir(tmp_path, monkeypatch):
 
 
 def _record(run_dir, pid, port, *, started=NOW - 500, data_dir="/d", token="t" * 12):
-    rc.register(rc.Record(pid=pid, port=port, token=token, started=started, data_dir=data_dir))
+    run_records.register(run_records.Record(pid=pid, port=port, token=token, started=started, data_dir=data_dir))
 
 
 def test_a_claim_registers_and_a_release_removes_the_record(run_dir, tmp_path):
@@ -104,7 +105,7 @@ def test_a_damaged_record_reads_as_none(run_dir):
     # Review of 1641: `int(1e999)` raised OverflowError and broke the listing.
     run_dir.mkdir(parents=True, exist_ok=True)
     (run_dir / "77.json").write_text('{"pid": 77, "port": 1e999, "token": "t", "started": 1}', encoding="utf-8")
-    assert rc._read(run_dir / "77.json") is None
+    assert run_records.read(run_dir / "77.json") is None
 
 
 def test_a_record_is_ignored_when_junk(run_dir):

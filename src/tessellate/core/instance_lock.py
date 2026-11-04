@@ -310,15 +310,15 @@ def claim(data_dir: str | os.PathLike[str], port: int) -> LockInfo:
 
 def _register_copy(info: LockInfo, data_dir: str | os.PathLike[str]) -> None:
     """Also list this server for Settings, Running copies (core/
-    running_copies.py). A failure there never stops the notebook opening."""
+    run_records.py). A failure there never stops the notebook opening."""
     try:
-        from tessellate.core import running_copies
+        from tessellate.core import run_records
 
-        running_copies.register(
-            running_copies.Record(info.pid, info.port, info.token, info.started, str(data_dir))
+        run_records.register(
+            run_records.Record(info.pid, info.port, info.token, info.started, str(data_dir))
         )
     except Exception:  # noqa: BLE001 - the list is a convenience
-        pass
+        pass  # Settings then just does not list this copy
 
 
 def release() -> None:
@@ -330,11 +330,11 @@ def release() -> None:
     path, info = _claimed
     _claimed = None
     try:
-        from tessellate.core import running_copies
+        from tessellate.core import run_records
 
-        running_copies.unregister(info.pid, info.token)
+        run_records.unregister(info.pid, info.token)
     except Exception:  # noqa: BLE001
-        pass
+        pass  # a stale record is pruned by the next listing
     current = read_lock(path)
     if current is not None and current.token == info.token:
         try:

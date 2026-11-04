@@ -22350,21 +22350,26 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `issue` | src/tessellate/core/reset_code.py:85 |
 | `stderr_is_terminal` | src/tessellate/core/reset_code.py:77 |
 
-### src/tessellate/core/running_copies.py (11)
+### src/tessellate/core/run_records.py (6)
 
 | Name | File:line |
 |---|---|
-| `Copy` | src/tessellate/core/running_copies.py:51 |
-| `Record` | src/tessellate/core/running_copies.py:42 |
-| `_path` | src/tessellate/core/running_copies.py:74 |
-| `_read` | src/tessellate/core/running_copies.py:98 |
-| `_records` | src/tessellate/core/running_copies.py:115 |
-| `ask_to_stop` | src/tessellate/core/running_copies.py:164 |
-| `list_copies` | src/tessellate/core/running_copies.py:150 |
-| `register` | src/tessellate/core/running_copies.py:78 |
-| `run_dir` | src/tessellate/core/running_copies.py:63 |
-| `shutdown` | src/tessellate/core/running_copies.py:169 |
-| `unregister` | src/tessellate/core/running_copies.py:88 |
+| `Record` | src/tessellate/core/run_records.py:20 |
+| `path_for` | src/tessellate/core/run_records.py:39 |
+| `read` | src/tessellate/core/run_records.py:63 |
+| `register` | src/tessellate/core/run_records.py:43 |
+| `run_dir` | src/tessellate/core/run_records.py:28 |
+| `unregister` | src/tessellate/core/run_records.py:53 |
+
+### src/tessellate/core/running_copies.py (5)
+
+| Name | File:line |
+|---|---|
+| `Copy` | src/tessellate/core/running_copies.py:40 |
+| `_records` | src/tessellate/core/running_copies.py:52 |
+| `ask_to_stop` | src/tessellate/core/running_copies.py:101 |
+| `list_copies` | src/tessellate/core/running_copies.py:87 |
+| `shutdown` | src/tessellate/core/running_copies.py:106 |
 
 ### src/tessellate/core/security.py (25)
 
