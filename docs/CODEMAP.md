@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7756, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8694, test files 2026, tests 17047, plan headings 1000, app scripts 28, boot scripts 37, script files 248.
+Counts: frontend functions 7756, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8695, test files 2027, tests 17051, plan headings 1000, app scripts 28, boot scripts 37, script files 248.
 
 ## Frontend functions (7756)
 
@@ -12900,7 +12900,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8694)
+## Backend modules (8695)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -13571,44 +13571,45 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `asks_now` | src/tessellate/ai/composer_answer.py:354 |
 | `figures_of` | src/tessellate/ai/composer_answer.py:344 |
 
-### src/tessellate/ai/composer_ask.py (34)
+### src/tessellate/ai/composer_ask.py (35)
 
 | Name | File:line |
 |---|---|
 | `_after_suffix` | src/tessellate/ai/composer_ask.py:343 |
 | `_alternatives` | src/tessellate/ai/composer_ask.py:411 |
-| `_bare_side` | src/tessellate/ai/composer_ask.py:553 |
+| `_bare_side` | src/tessellate/ai/composer_ask.py:581 |
 | `_build_synonyms` | src/tessellate/ai/composer_ask.py:401 |
-| `_clean_split` | src/tessellate/ai/composer_ask.py:578 |
+| `_clean_split` | src/tessellate/ai/composer_ask.py:606 |
 | `_guessing_recent` | src/tessellate/ai/composer_ask.py:194 |
 | `_holds` | src/tessellate/ai/composer_ask.py:424 |
+| `_is_clause_start` | src/tessellate/ai/composer_ask.py:464 |
 | `_keyed_synonyms` | src/tessellate/ai/composer_ask.py:417 |
-| `_numbered_sides` | src/tessellate/ai/composer_ask.py:605 |
+| `_numbered_sides` | src/tessellate/ai/composer_ask.py:633 |
 | `_one_syllable_cvc` | src/tessellate/ai/composer_ask.py:276 |
 | `_overview` | src/tessellate/ai/composer_ask.py:287 |
-| `_past_filler` | src/tessellate/ai/composer_ask.py:479 |
-| `_raw_sides` | src/tessellate/ai/composer_ask.py:591 |
+| `_past_filler` | src/tessellate/ai/composer_ask.py:507 |
+| `_raw_sides` | src/tessellate/ai/composer_ask.py:619 |
 | `_respell` | src/tessellate/ai/composer_ask.py:202 |
 | `_stem` | src/tessellate/ai/composer_ask.py:296 |
 | `_stem_plain` | src/tessellate/ai/composer_ask.py:322 |
 | `_still_recent` | src/tessellate/ai/composer_ask.py:182 |
 | `_strip_suffix` | src/tessellate/ai/composer_ask.py:355 |
 | `_suffix_fits` | src/tessellate/ai/composer_ask.py:335 |
-| `_without_bin` | src/tessellate/ai/composer_ask.py:491 |
-| `_without_command` | src/tessellate/ai/composer_ask.py:464 |
+| `_without_bin` | src/tessellate/ai/composer_ask.py:519 |
+| `_without_command` | src/tessellate/ai/composer_ask.py:476 |
 | `_words` | src/tessellate/ai/composer_ask.py:438 |
 | `_words_of` | src/tessellate/ai/composer_ask.py:434 |
-| `asks_time` | src/tessellate/ai/composer_ask.py:665 |
-| `asks_written_when` | src/tessellate/ai/composer_ask.py:671 |
+| `asks_time` | src/tessellate/ai/composer_ask.py:693 |
+| `asks_written_when` | src/tessellate/ai/composer_ask.py:699 |
 | `classify` | src/tessellate/ai/composer_ask.py:243 |
-| `compare_sides` | src/tessellate/ai/composer_ask.py:615 |
+| `compare_sides` | src/tessellate/ai/composer_ask.py:643 |
 | `month_name` | src/tessellate/ai/composer_ask.py:41 |
 | `rephrase` | src/tessellate/ai/composer_ask.py:220 |
-| `subject_terms` | src/tessellate/ai/composer_ask.py:498 |
+| `subject_terms` | src/tessellate/ai/composer_ask.py:526 |
 | `user_now` | src/tessellate/ai/composer_ask.py:23 |
 | `user_today` | src/tessellate/ai/composer_ask.py:34 |
 | `what_is` | src/tessellate/ai/composer_ask.py:215 |
-| `when_terms` | src/tessellate/ai/composer_ask.py:660 |
+| `when_terms` | src/tessellate/ai/composer_ask.py:688 |
 
 ### src/tessellate/ai/composer_aware.py (15)
 
@@ -15045,16 +15046,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_frame_stems` | src/tessellate/ai/composer_unfound.py:123 |
-| `_is_unfound` | src/tessellate/ai/composer_unfound.py:128 |
-| `_missing` | src/tessellate/ai/composer_unfound.py:151 |
+| `_frame_stems` | src/tessellate/ai/composer_unfound.py:140 |
+| `_is_unfound` | src/tessellate/ai/composer_unfound.py:147 |
+| `_missing` | src/tessellate/ai/composer_unfound.py:170 |
 | `_one_edit` | src/tessellate/ai/composer_unfound.py:26 |
 | `_quoted_words` | src/tessellate/ai/composer_unfound.py:73 |
 | `_said_by_shape` | src/tessellate/ai/composer_unfound.py:91 |
 | `_says_every` | src/tessellate/ai/composer_unfound.py:85 |
 | `_seen` | src/tessellate/ai/composer_unfound.py:38 |
 | `_shape_stems` | src/tessellate/ai/composer_unfound.py:81 |
-| `_unfound_terms` | src/tessellate/ai/composer_unfound.py:138 |
+| `_unfound_terms` | src/tessellate/ai/composer_unfound.py:157 |
 
 ### src/tessellate/ai/composer_unplaced.py (12)
 
@@ -23838,7 +23839,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17047)
+## Tests (17051)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24177,6 +24178,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_classes_1026e.py | 5 |
 | tests/test_composer_classes_1026f.py | 7 |
 | tests/test_composer_classes_1357.py | 1 |
+| tests/test_composer_clauses_shape_1104.py | 4 |
 | tests/test_composer_commands.py | 14 |
 | tests/test_composer_compare_1029.py | 2 |
 | tests/test_composer_compare_e16.py | 2 |
