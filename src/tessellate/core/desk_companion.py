@@ -287,7 +287,8 @@ def _linux_areas() -> list[tuple[int, int, int, int]]:
 
         conn = x11.load()
         try:
-            dpi = x11.monitors(conn)[0][1] if x11.monitors(conn) else 96
+            mons = x11.monitors(conn)
+            dpi = mons[0][1] if mons else 96
             return [to_logical(a, dpi) for a in x11.work_areas(conn)]
         finally:
             conn.close()
@@ -1040,7 +1041,7 @@ class DeskCompanion:
             runner = self.runner
             still = bool(getattr(runner, "reduced", False)) if runner is not None else False
             reason = getattr(runner, "reduced_reason", "") if still else ""
-        note = self.overlay_note or ("The see-through figure could not start here, so the companion stays in the app." if self.overlay_failed and sys.platform != "win32" else "")
+        note = self.overlay_note or ("The see-through figure could not start here, so the companion stays in the app." if self.overlay_failed else "")
         out: dict[str, Any] = {"still": still, "reason": str(reason or ""), "roam": bool(_pref(ROAM_PREF, True))}
         if note:
             out["note"] = note

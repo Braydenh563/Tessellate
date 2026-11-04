@@ -605,3 +605,29 @@ def test_the_runner_and_engine_behave_the_same_on_both_hosts(side) -> None:
     host = r.host
     r.stop()
     assert not host.alive
+
+
+def test_linux_areas_reads_the_monitors_once(monkeypatch) -> None:
+    from tessellate.core import desk_companion as dc
+
+    calls = []
+
+    class Conn:
+        def close(self) -> None:
+            pass
+
+    monkeypatch.setattr(dc, "overlay_support", lambda: (True, ""))
+    monkeypatch.setattr(x11, "load", lambda: Conn())
+    monkeypatch.setattr(x11, "monitors", lambda conn: calls.append(1) or [((0, 0, 100, 100), 96)])
+    monkeypatch.setattr(x11, "work_areas", lambda conn: [(0, 0, 100, 90)])
+    assert dc._linux_areas() == [(0, 0, 100, 90)] and len(calls) == 1
+
+
+def test_a_failed_overlay_start_shows_the_note_on_every_platform(monkeypatch, prefs) -> None:  # noqa: F811
+    from tessellate.core import desk_companion as dc
+    from tests.test_desk_companion import FakeWebview, FakeWindow
+
+    monkeypatch.setattr(dc.sys, "platform", "win32")
+    c = dc.attach(FakeWebview(), FakeWindow(), lambda *_a: None, lambda: "http://x", transparent=None, overlay_factory=None)
+    c.overlay_failed = True
+    assert "could not start" in dc.DeskApi(c).panel_motion()["note"]

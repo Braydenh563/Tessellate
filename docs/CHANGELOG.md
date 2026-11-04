@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+
+- Desktop companion on Linux no longer exits the app when a scanned window closes (X error handler), and its shape cache cannot collide.
 - Desktop companion on Linux (INBOX 1670, row D): the see-through figure now runs on an X11 desktop with the same engine and runner as Windows: an override-redirect ARGB window whose input shape is cut to the figure (click-through everywhere else), raised again when the window stack changes, work area from the panels' struts or `_NET_WORKAREA`, window tops from `_NET_CLIENT_LIST_STACKING`, hidden for a `_NET_WM_STATE_FULLSCREEN` window, idle time from the screensaver extension, all over ctypes (no new dependency). Wayland keeps the in-app companion with a one-line note in its menu (`TESSELLATE_OVERLAY_X11=1` tries XWayland). Measured on Xvfb: drawn, shaped, moved, clicked and dragged.
 - Guide: "put my notes in my own order", "reorder my notes" and other asks to order a list now lead with Moving, copying and carrying cards, not Tags and categories; filing a note and arranging the Dashboard keep their own topics.
 - Documents editor split (audit 160 D23, 161 D24): `docCmTheme` is its own file (documents-cm-theme.js, 1,075 lines; documents-cm.js 2,823 to 1,748), and the document editor's paste and drop target answer (`docFileDropBox`) moved from settings-wiring.js to documents-embeds.js; docLivePlugin split stays open in DOCUMENTS_PLAN.
