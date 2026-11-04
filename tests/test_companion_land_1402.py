@@ -50,6 +50,8 @@ def _land(calls: str):
             # The float's hit shape as drawn: head, body to its feet, Atlas's tail.
             "function nameMarkBuddyHits(x, y, pose, obs) { const parts = [[x + 5, y, x + 59, y + 46], [x + 8, y + 43, x + 56, y + 90], [x + 30, y + 50, x + 82, y + 94]]; "
             + "return parts.some(([l, t, r, b]) => obs.some((o) => r > o.left - 4 && l < o.right + 4 && b > o.top - 4 && t < o.bottom + 4)); }",
+            # The drop from a point of open air: a perch there (INBOX 1640), a stand on the spot's own line.
+            "function nameMarkBuddyDrop(x, y) { return { kind: 'dock', pose: 'stand', legs: '', x, y }; }",
             _const("NMB_LAND_NEAR"),
             _const("NMB_LAND_STEP"),
             _fn("nameMarkBuddyLandNear"),
@@ -69,7 +71,9 @@ def test_a_landing_over_the_bars_buttons_settles_beside_where_it_came_down():
     for (x, y), spot in zip([(27, 594), (1000, 594)], got["out"]):
         moved = ((spot["x"] - x) ** 2 + (spot["y"] - y) ** 2) ** 0.5
         assert moved <= 24, (x, spot)
-        assert spot["pose"] == "float" and spot["kind"] == "yours"
+        # INBOX 1640 (the owner reversed "open air near it"): the open air found is only
+        # where to look, and the perch the drop makes there is what it takes.
+        assert spot["pose"] == "stand" and spot["kind"] == "dock"
         # Clear of every button: its tail's foot above the bar's buttons.
         assert spot["y"] + 94 + 4 <= 688 or spot["x"] + 82 + 4 <= 47, spot
 
@@ -156,3 +160,14 @@ def test_a_drop_over_the_bars_buttons_floats_just_above_them():
     for spot in spots:
         assert spot["y"] + 94 + 4 <= 868 or spot["pose"] == "stand", spot
         assert spot["y"] + 92 <= 863.2 + 3, spot
+
+
+# --- INBOX 1640: it always ends on a perch.
+def test_a_drop_and_a_restored_open_air_spot_end_on_a_perch_not_a_float():
+    drop = _fn("nameMarkBuddyDrop")
+    # The open-air path asks the chooser first; the float below it is for a tab with no perch at all.
+    assert drop.index("nameMarkBuddyChoose(tab, obstacles, [x, y], 4)") < drop.index('pose: "float"')
+    land = _fn("nameMarkBuddyLandNear")
+    assert "nameMarkBuddyDrop(px, py)" in land and 'pose: "float"' not in land
+    nxt = _fn("nameMarkBuddyNextSpot")
+    assert nxt.count('.pose === "float"') == 2 and nxt.count("nameMarkBuddyDrop(") == 2

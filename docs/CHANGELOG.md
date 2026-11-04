@@ -11,6 +11,7 @@ below). Versioning is `0.x` while the app stabilises.
 - Launcher: when another program holds the port, it starts on the next free one and says so, and logs which program held it (INBOX 1641).
 - Desktop companion: Hide from its own menu clears the tray's tick at once, and a panel's resize or a drag is set in physical pixels like the first show (INBOX 1642, 1633).
 - Diagram builder: the picture and the blocks pane share one height, and the picture zooms (bar, Ctrl+wheel, pinch, + - 0, arrows, drag to pan) (INBOX 1614).
+- Companion: it always ends on a perch. A let-go or throw in open air falls to the first top edge under it, else to the nearest perch (never over words), and a saved open-air place is dropped onto one on return, so it no longer rests floating over a widget's words or its canvas (INBOX 1640).
 - Desktop companion: asks for a minimum no bigger than itself, so pywebview's 200 by 100 default no longer widens it into a dark card with the character in its right half (INBOX 1633).
 - Desktop companion: placed at its exact size and corner after every show, so a 200% display no longer doubles it off the screen's edge (INBOX 1633).
 - Desktop companion: placed in logical pixels at each monitor's own scale, so on a scaled display (125%, 150%) it sits in the corner instead of past the screen's edge (INBOX 1633).
