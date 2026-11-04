@@ -17,8 +17,8 @@ from tests.test_desk_companion import FakeWebview, FakeWindow, prefs  # noqa: F4
 class FakeRunner:
     started: list["FakeRunner"] = []
 
-    def __init__(self, *, look, home, on_click, on_settle, ok=True):
-        self.look, self.home, self.on_click, self.on_settle = look, home, on_click, on_settle
+    def __init__(self, *, look, home, on_click, on_settle, on_died=None, ok=True):
+        self.look, self.home, self.on_click, self.on_settle, self.on_died = look, home, on_click, on_settle, on_died
         self.ok = ok
         self.calls: list[str] = []
         FakeRunner.started.append(self)
@@ -157,3 +157,93 @@ def test_a_click_after_close_does_nothing(over):
 def test_off_windows_there_is_no_overlay_by_default(monkeypatch):
     monkeypatch.setattr(dc.sys, "platform", "linux")
     assert dc._default_overlay_factory() is None  # noqa: SLF001
+
+
+def _open(over, kind="left"):
+    over.set_main_hidden(True)
+    runner = FakeRunner.started[0]
+    runner.on_click(kind, (1000, 800, 200, 240), 96)
+    return runner, over.webview.made[0]
+
+
+def test_item1_losing_focus_to_something_else_closes_the_panel(over):
+    _runner, panel = _open(over)
+    assert dc.DeskApi(over).panel_blur() is True
+    assert not over.panel_shown and ("hide",) in panel.calls
+
+
+def test_item1_a_blur_caused_by_the_click_on_the_figure_does_not_reopen_it(over):
+    runner, panel = _open(over)
+    over._now = lambda: 10.0  # noqa: SLF001
+    dc.DeskApi(over).panel_blur()
+    over._now = lambda: 10.2  # noqa: SLF001
+    runner.on_click("left", (1000, 800, 200, 240), 96)  # the same press that blurred it
+    assert not over.panel_shown
+    over._now = lambda: 20.0  # noqa: SLF001
+    runner.on_click("left", (1000, 800, 200, 240), 96)  # a later, separate click opens it
+    assert over.panel_shown
+
+
+def test_item1_a_blur_with_no_panel_up_is_harmless(over):
+    over.set_main_hidden(True)
+    assert dc.DeskApi(over).panel_blur() is True
+
+
+def test_item2_a_runner_that_died_brings_the_card_window_back(over, caplog):
+    over.set_main_hidden(True)
+    runner = FakeRunner.started[0]
+    runner.on_click("left", (1000, 800, 200, 240), 96)
+    panel = over.webview.made[0]
+    runner.on_died()
+    assert over.overlay_failed and over.runner is None
+    assert ("destroy",) in panel.calls
+    card = over.webview.made[-1]
+    assert card is not panel and card.options["url"].endswith("?card=1") and ("show",) in card.calls
+    assert over.shown and not over.panel_shown and not over.panel
+    assert any("overlay stopped" in r.getMessage() for r in caplog.records)
+    over.set_main_hidden(True)
+    assert len(FakeRunner.started) == 1
+
+
+def test_item2_a_death_while_the_companion_is_not_due_makes_no_card(over):
+    over.set_main_hidden(True)
+    runner = FakeRunner.started[0]
+    over.set_main_hidden(False)
+    runner.on_died()
+    assert over.overlay_failed and over.window is None
+
+
+def test_item2_a_death_after_close_or_from_a_replaced_runner_is_ignored(over):
+    over.set_main_hidden(True)
+    runner = FakeRunner.started[0]
+    over.close()
+    runner.on_died()
+    assert not over.webview.made
+
+
+def test_item3_a_drop_while_the_panel_is_open_moves_it_beside_the_figure(over):
+    runner, panel = _open(over)
+    before = over.corner
+    runner.on_settle(300, 200)
+    assert over.pet_rect[:2] == (300, 200) and over.corner != before
+    assert over.corner == dc.panel_corner(over.pet_rect, over.size, (0, 0, 1920, 1040))
+    assert ("move", *over.top_left()) in panel.calls or any(c[0] in ("move", "resize") for c in panel.calls[-3:])
+
+
+def test_item3_a_drop_with_no_panel_only_saves_the_place(over, prefs):  # noqa: F811
+    over.set_main_hidden(True)
+    FakeRunner.started[0].on_settle(300, 200)
+    assert prefs[dc.OVERLAY_POS_PREF] == [300, 200] and over.window is None
+
+
+def test_item4_a_right_click_on_a_first_open_is_remembered_for_the_page_to_ask(over):
+    _runner, panel = _open(over, "right")
+    assert panel.options["url"].endswith("?card=1&overlay=1")
+    api = dc.DeskApi(over)
+    assert api.panel_kind() == "context"
+    assert api.panel_kind() == "menu"  # asked once; a later load opens the menu
+
+
+def test_item4_a_left_click_first_open_asks_for_the_menu(over):
+    _open(over, "left")
+    assert dc.DeskApi(over).panel_kind() == "menu"

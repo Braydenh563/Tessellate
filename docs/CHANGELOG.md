@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Desktop companion: the quick panel beside the walking figure closes when you click elsewhere, follows the figure when you drop it, opens on the settings menu after a first right click, and a window thread that dies brings the card window back; tested through fakes only, not run on Windows (overlay-1104).
 - Graph: every frame the map asks for by itself (a hover ease, a fade, a glide, a fade-in, a composed hover frame) now counts toward one 300-frame bound, which an outside request restarts; idle was already 0 calls a second after the layout settled at 36 and 336 notes, and the stuck state did not reproduce (INBOX 1643).
 - Chat: a request to do something in the app ("I want to edit a note", "can I pin a note", "help me make a mind map", any app verb and request frame) is the Guide's how-to, not a search of notes that share its words, and the edit answer names Edit in the note menu and F2; a quoted line never ends on "and" or another dangling word; "your only note on it" is said only for a topic, never for a request (INBOX 1649).
 - Settings, About, Running copies lists the other copies of Tessellate on this computer, each with Shut down, which asks that copy to quit with its own token and never ends a process by pid (INBOX 1641).

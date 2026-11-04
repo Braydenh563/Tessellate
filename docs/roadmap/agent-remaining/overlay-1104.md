@@ -9,14 +9,17 @@ Nothing here ran on Windows.
 - Frames: 2 looks x 16 frames, 436 KB (limit 1.5 MB), 205x241 and 179x249 px at 2x.
 - Tests: 152 pass (host 24, sprites 11, engine ~35, runner 11, wiring 12, card window 66 plus the page-API whitelist gained `hide_panel`).
 
+## Built since (unverified on Windows, tests through the fakes only)
+
+- Click-away: the panel page reports a blur (armed after its first focus) to `panel_blur`; a left click within `BLUR_GRACE` of that is the press that blurred it and does not reopen.
+- A thread that ends without `stop` calls `OverlayHost.on_exit`, then the runner's `on_died`, then the card window replaces the overlay (no polling).
+- A drop while the panel is open re-places it through `panel_corner` (figure size and dpi from the last click).
+- First-open right click: Python holds the intended menu, the page asks `panel_kind` once its API is ready.
+
 ## Remaining
 
 - O5 owner check on Windows: shown, transparent, walks, panel opens, no focus stolen, CPU under 2 percent walking.
-- The quick panel stays until Escape, a close button or an action: no click-away dismissal yet.
-- A right click when the panel page is still loading (first open) opens the menu, not the settings menu (the event is sent before the page listens).
-- A runner thread that dies after a good start is not noticed: the card is not brought back.
 - The look is read from the app window once per show (`evaluate_js` with a 1.5 s limit, last look kept); unverified on a hidden WebView2.
-- A pet dragged while the panel is open leaves the panel where it was.
 - Mixed-DPI panel placement uses the figure's dpi only.
 
 ## Unverified (all of it, on Windows)

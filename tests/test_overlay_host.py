@@ -302,3 +302,20 @@ def test_the_owner_hears_ready_once_on_the_overlay_thread_and_a_failure_there_fa
     bad = host_mod.OverlayHost(FakeWin32(), on_event=boom)
     assert bad.start() is False and "no frames" in (bad._error or "")
     assert bad.stop()
+
+
+def test_a_loop_that_ends_on_its_own_tells_the_owner_but_a_stop_does_not() -> None:
+    gone: list[int] = []
+    fake = FakeWin32()
+    host = host_mod.OverlayHost(fake, on_exit=lambda: gone.append(1))
+    assert host.start()
+    fake.post(k.WM_QUIT)
+    assert wait_for(lambda: gone)
+    assert not host.alive
+    fake2 = FakeWin32()
+    quiet: list[int] = []
+    host2 = host_mod.OverlayHost(fake2, on_exit=lambda: quiet.append(1))
+    assert host2.start()
+    host2.stop()
+    time.sleep(0.05)
+    assert not quiet
