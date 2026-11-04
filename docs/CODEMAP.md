@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7751, frontend ids 2637, CSS sections 522, backend routes 641, backend modules 8604, test files 1997, tests 16716, plan headings 999, app scripts 28, boot scripts 37, script files 246.
+Counts: frontend functions 7751, frontend ids 2637, CSS sections 522, backend routes 641, backend modules 8604, test files 1997, tests 16716, plan headings 998, app scripts 28, boot scripts 37, script files 246.
 
 ## Frontend functions (7751)
 
@@ -25685,7 +25685,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_zoom_frame_1508.py | 3 |
 | tests/test_zoom_wheel_delta.py | 3 |
 
-## Plan headings (999)
+## Plan headings (998)
 
 Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, except the HISTORY.md archive. Sorted by heading.
 
@@ -26502,7 +26502,6 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-11-02 (the owner: the calculator, equations, insert panels and a diagram builder) | docs/roadmap/DOCUMENTS_PLAN.md:344 |
 | Placed from INBOX, 2026-11-03 | docs/roadmap/UI_MODERNISATION_PLAN.md:1557 |
 | Placed from INBOX, 2026-11-03 (chat; CHAT_PLAN is at its cap) | docs/roadmap/BACKLOG.md:4448 |
-| Placed from INBOX, 2026-11-03 (the composer's captions and quotes) | docs/roadmap/CHAT_PLAN.md:1893 |
 | Placed from INBOX, 2026-11-03b | docs/roadmap/BACKLOG.md:4458 |
 | Placed from INBOX, 2026-11-04 | docs/roadmap/MINDMAP_PLAN.md:1902 |
 | Placed from INBOX, 2026-11-04 | docs/roadmap/WHITEBOARD_PLAN.md:1728 |
