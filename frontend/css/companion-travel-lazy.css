@@ -107,7 +107,7 @@
 /* Poses 1681 */
 /* **More ways to be somewhere** (INBOX 1681, the owner: "positions like how atlas and regular
    companions look sitting or crouching down, lying down, floating, walking, gliding, lounging,
-   climbing, hanging, resting"). Each is an act (avatars.js `NMB_POSE_ACTS`) with three variants
+   climbing, hanging, resting"). Each is an act (avatars.js `NAME_MARK_BUDDY_ACTS`) with three variants
    (`data-variant`), posed on the body and the limbs the base pose already eases (the transitions are
    the base rules': a class added or taken away eases, nothing snaps). Atlas's arms read the same rules
    (the rig takes the target from them) and its lower body has a pose of its own (atlas-life.js). The

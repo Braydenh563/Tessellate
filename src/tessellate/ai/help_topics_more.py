@@ -49,15 +49,15 @@ MORE_TOPICS: list[dict] = [
             "Rub it with the pointer and it leans in; shake it while you carry "
             "it and it turns upside down (each has a switch under What it does "
             "on its own). It also crouches, lounges, rests, drifts, glides and "
-            "climbs, three ways each. Rest the pointer on anything it wears for what it is. "
+            "climbs, three ways each. Rest the pointer on anything it wears for what and why. "
             "Its large view (double-click it) has a "
             "row of things to ask of it: wave, cheer, hop, stretch, shrug or "
             "wiggle, and Atlas also juggles stars, reads its map and "
             "meditates. Right-click it, or press Shift+F10 on it, for its "
             "menu: Say hello, Enlarge, Stay here on every page, Let it choose "
             "its spot here, a size, Call back and reset its place, and Hide. "
-            "Ctrl+Shift+Y shows or hides it from anywhere, and the command "
-            "palette and Find anything have Show or hide the companion. If it "
+            "Ctrl+Shift+Y, the command palette and Find anything show or hide "
+            "it from anywhere. If it "
             "is ever out of reach, Call back (in the setting, its menu or the palette) brings it back."
         ),
         "badge": {"label": "Corner companion", "section": "appearance", "target": "avatar-buddy-row"},
