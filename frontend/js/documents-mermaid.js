@@ -496,7 +496,7 @@
         source: "flowchart TD",
         title: "Diagram builder",
         onDone: async (next) => {
-          const made = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title: "Diagram", content: next, file_type: "mmd" }) }).catch(() => null);
+          const made = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title: "Diagram", content: next, file_type: "mmd" }) }).catch(() => (toast("The diagram was not saved. Try Done again.", "info"), null));
           if (!made) return;
           switchTab("documents");
           await loadDocuments(made.id);
@@ -511,8 +511,8 @@
       //: A stamp in the title keeps `![[Title]]` pointing at this row and not at an earlier "Diagram".
       onDone: async (next) => {
         const title = `Diagram ${new Date().toISOString().slice(0, 16).replace("T", " ")}`;
-        const made = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title, content: next, file_type: "mmd" }) }).catch(() => null);
-        if (!made) return toast("The diagram was not saved. Try Done again.", "info");
+        const made = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title, content: next, file_type: "mmd" }) }).catch(() => (toast("The diagram was not saved. Try Done again.", "info"), null));
+        if (!made) return;
         box.focus?.();
         editorBlock(box, `![[${made.title || title}]]`, "", "");
       },
