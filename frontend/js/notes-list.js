@@ -3416,7 +3416,10 @@ function noteTopicChip(entry) {
     await switchTab("graph");
     showTopicInGraph(entry.id);
   });
-  mark.title = `In the topic ${topic.name}, ${nounCount(topic.size, "note")}. Open it on the graph`;
+  //: Why it is there: the topic is the cluster of notes this one is linked into,
+  //: named by the words most of them share (INBOX 1620).
+  const why = (topic.terms || []).length ? ` Named from the words ${topic.terms.join(", ")}, shared by the notes linked to this one.` : "";
+  mark.title = `In the topic ${topic.name}, ${nounCount(topic.size, "note")}.${why} Open it on the graph, where it can be renamed`;
   return mark;
 }
 

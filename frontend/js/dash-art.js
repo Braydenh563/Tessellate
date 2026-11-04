@@ -692,6 +692,12 @@
         p.resizeCanvas(width, height);
         glide = null;
         particles = buildArtParticles(p, categories, total, width, height);
+        //: **Paint the new size at once.** `resizeCanvas` clears the canvas and
+        //: p5's own redraw goes through `draw`, which returns early when the
+        //: sketch is resting (after the attend window) or scrolled out of view,
+        //: so a resize then left an empty box with the legend under it (INBOX
+        //: 1620, measured: 0 star pixels after a window resize at rest).
+        scene(reduceMotion ? 0 : artDriftMs() * 0.0003);
       };
       const observer = new ResizeObserver(resync);
       observer.observe(holder);

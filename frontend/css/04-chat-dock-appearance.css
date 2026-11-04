@@ -6007,14 +6007,17 @@ button.ghost.tour-row:is(:focus-visible, :has(:focus-visible)) {
   border-color: transparent;
 }
 
-.manage-cat-list {
+.manage-cat-scroll {
   flex: 1 1 auto;
   min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.manage-cat-list {
   margin: 0;
   padding: var(--space-1) 0;
   list-style: none;
-  overflow-y: auto;
-  overscroll-behavior: contain;
 }
 
 .manage-cat-row {

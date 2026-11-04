@@ -1898,3 +1898,7 @@ Exists (no work): fold or unfold one branch (C), show N levels (Alt+1 to 9, Alt+
 The three taken first (drag to reorder siblings, copy or export one branch, dim all but the selected branch) are built: HISTORY.md, "Moved from the plans, 2026-10-25 (wb2)".
 
 Left: search inside topics' notes (10-19 item 13), rainbow every level (item 10), a legend (item 11), audio notes (item 4), Gantt (item 3).
+
+## Placed from INBOX, 2026-11-04
+
+1626. **Owner, 2026-11-04 (screenshot, the radial menu's More open as a menu):** "also if I click a button like on the mindmap radial and a popup menu shows, if I click that button again, I expect the popup menu to close". Recommendation: fix the class: every button that opens a menu or popover toggles it (a second press closes it and keeps focus on the button), the radial's More first; a lint finds openers that only open.

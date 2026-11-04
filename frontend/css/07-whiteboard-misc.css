@@ -11553,7 +11553,8 @@ button.finder-row:is(:focus-visible, :has(:focus-visible)) {
 .entry-list input.note-edit-title {
   width: 100%;
   height: auto;
-  padding: var(--space-4) var(--space-4) var(--space-2);
+  /* Top: the card's own gap, not a second band inside the frame (INBOX 1619). */
+  padding: var(--space-2) var(--space-4) var(--space-1);
   font-size: var(--text-h3);
   font-weight: 600;
 }

@@ -1434,6 +1434,9 @@ def graph_topics_of(
         topic = by_id.get(found["topic_of"].get(str(note)))
         if topic is not None:
             row = {"id": topic["id"], "name": topic["name"], "size": topic["size"]}
+            #: The words that named it, for the chip's hover (INBOX 1620: "idk
+            #: how this note got in the topic of conversation").
+            row["terms"] = [t["term"] for t in (topic.get("terms") or [])[:3]]
             #: A note's panel renames its topic, which is stored by the notes.
             if members:
                 row["ids"] = topic["ids"]

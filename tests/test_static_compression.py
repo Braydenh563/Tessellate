@@ -131,7 +131,10 @@ PIECE_CAP = 32_000
 #: 2026-11-03 later, +40: a card over the open tray is carried, not reordered (the
 #: owner could not drop on it), the grip stays off popups, and an upward popover's
 #: caret no longer scrolls it; same OPEN.md win-back item.
-TOTAL_CAP = 260_440
+#: Then +80 (INBOX 1619, 1620): the tag popover closes when its card is redrawn,
+#: the constellation repaints after a resize, the Manage panels scroll as one and
+#: the topic chip names its words; same win-back item.
+TOTAL_CAP = 260_520
 
 
 def _served_gzip_size(client, name: str) -> int:
