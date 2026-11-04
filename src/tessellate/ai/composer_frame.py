@@ -243,7 +243,16 @@ _CLAUSE_BREAK = lazy_compile(r"\s+(?:so|but|because|then|and then|which|and)\s+"
 #: "My uni days this week are Tuesday and Thursday": a sentence about
 #: something is named by its subject, "the note on your uni days this week".
 _SUBJECT_VERB = lazy_compile(r"^((?:[\w'-]+\s+){0,5}?[\w'-]+)\s+(?:is|are|was|were|means|refers to)\b", re.I)
-_EMOTICON_END = lazy_compile(r"\s*(?:[:;=][-']?[()DPpOo/|\\]+|<3)\s*$")
+#: Searched on right-stripped text with no leading `\s*`: `\s*(face)\s*$`
+#: re-scanned every whitespace run from each start, quadratic on a line of
+#: tabs (CodeQL, polynomial regex). One helper for every reader.
+_EMOTICON_END = lazy_compile(r"(?:[:;=][-']?[()DPpOo/|\\]+|<3)$")
+
+
+def strip_end_emoticon(text: str) -> str:
+    """`text` without a closing emoticon and the space before it ("done :)")."""
+    face = _EMOTICON_END.search(text.rstrip())
+    return text[: face.start()].rstrip() if face else text
 #: The longest first clause a name may quote whole.
 _NAME_WORDS = 7
 _QUOTE_WORDS = 12
@@ -539,7 +548,7 @@ def _first_line(content: str) -> str:
     first = _plain(content.splitlines()[0]).rstrip(".") if content else ""
     #: A heading's own marks are not part of its name: "the # Trains" (1324).
     first = re.sub(r"^#{1,6}\s+", "", first)
-    return _EMOTICON_END.sub("", first).rstrip(".")
+    return strip_end_emoticon(first).rstrip(".")
 
 
 def _named_by_subject(body: str, lower) -> str:  # noqa: ANN001

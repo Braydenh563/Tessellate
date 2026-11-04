@@ -339,3 +339,21 @@ def test_i_b_a_stored_wrong_day_is_read_again(session, golf):
     assert redate._reread(session, golf[1]) is True
     session.commit()
     assert session.query(EntryDate).filter(EntryDate.entry_id == golf[1].id).one().at.date().isoformat() == "2026-11-02"
+
+
+def test_the_end_emoticon_strip_is_linear_on_many_tabs() -> None:
+    """CodeQL, polynomial regex: `\\s*(face)\\s*$` re-scanned every run of
+    whitespace from each start, so a title of tabs took quadratic time. One
+    helper serves the title reader and the first-line namer."""
+    import time
+
+    from tessellate.ai import composer_frame
+
+    title = "Uni is done" + "\t" * 50_000 + "x"
+    started = time.perf_counter()
+    assert composer_frame.strip_end_emoticon(title) == title
+    assert composer_frame.strip_end_emoticon("\t" * 50_000) == "\t" * 50_000
+    assert time.perf_counter() - started < 0.5
+    assert composer_frame.strip_end_emoticon("Uni is done :)  ") == "Uni is done"
+    assert composer_frame.strip_end_emoticon("Trains <3") == "Trains"
+    assert composer_frame.strip_end_emoticon("Trains") == "Trains"

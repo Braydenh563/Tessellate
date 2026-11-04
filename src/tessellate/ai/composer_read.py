@@ -502,7 +502,6 @@ def _open_item(view: NoteView, line: str, line_start: int, before: int) -> tuple
 _SAYS = re.compile(r"\b(?:is|are|was|were|am|has|have|had)\b|[!?]\s*$", re.I)
 #: A body that leans on a word the title gives ("... but it's done").
 _LEANS = re.compile(r"\b(?:it|that|this)(?:'s|\u2019s| is| was)\b", re.I)
-_TITLE_EMOTICON = re.compile(r"\s*(?:[:;=][-']?[()DPpOo/|\\]+|<3)\s*$")
 
 
 def title_is_content(title: str, body: str) -> bool:
@@ -520,7 +519,7 @@ def _title_unit(view: NoteView, content: str, line_start: int, line: str) -> Non
     lead = _HEADING_LEAD.match(line)
     start = line_start + (lead.end() if lead else 0)
     raw = line[(lead.end() if lead else 0):].rstrip("\r\n")
-    raw = _TITLE_EMOTICON.sub("", raw)
+    raw = composer_frame.strip_end_emoticon(raw)
     unit = _unit(view, content, start, start + len(raw), "prose", None)
     if unit:
         view.sentences.append(unit)
