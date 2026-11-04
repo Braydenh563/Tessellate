@@ -144,130 +144,134 @@ function atlasTailShape(rest, bend, stretch) {
 //: `t` alone, once per look (`spec.tailMemo`), and every side is a multiply
 //: and an add on those. The numbers and their order are `atlasStem`'s, so
 //: the path text is the same byte for byte.
-const ATLAS_TAIL_SAMPLES = 1;
-function atlasTailMemo(spec, count) {
-  const kept = spec.tailMemo?.[count];
-  if (kept) return kept;
-  const w = spec.tailWidth;
-  const at = (fn) => Array.from({ length: count }, (_, i) => fn(i / (count - 1)));
-  const wide = at(w);
-  const memo = {
-    body: wide,
-    stream: at((t) => w(t) * 0.26),
-    streamShift: at((t) => w(t) * 0.22 * Math.sin(Math.PI * 2.6 * t)),
-    silk: at((t) => w(t) * 0.24),
-    silkShift: at((t) => -w(t) * 0.3 * Math.sin(Math.PI * 2.6 * t + 1.1)),
-    filaments: (spec.tailFilaments || []).map((k) => at((t) => (w(t) / 2) * k)),
-    buf: Array.from({ length: 4 }, () => new Float64Array(count)),
-    run: Array.from({ length: 2 }, () => new Float64Array(count)),
-  };
-  (spec.tailMemo ||= {})[count] = memo;
-  return memo;
-}
-//: The centreline's points and unit normals (`atlasStemSides`' `at`).
-function atlasTailCentre(segs, c, samples) {
-  const n = segs.length;
-  const total = n * samples;
-  for (let i = 0; i <= total; i += 1) {
-    const k = Math.min(n - 1, Math.floor(i / samples));
-    const s = segs[k];
-    const t = (i - k * samples) / samples;
-    const u = 1 - t;
-    const dx = 3 * u * u * (s[2] - s[0]) + 6 * u * t * (s[4] - s[2]) + 3 * t * t * (s[6] - s[4]);
-    const dy = 3 * u * u * (s[3] - s[1]) + 6 * u * t * (s[5] - s[3]) + 3 * t * t * (s[7] - s[5]);
-    const len = Math.hypot(dx, dy) || 1;
-    c.x[i] = u * u * u * s[0] + 3 * u * u * t * s[2] + 3 * u * t * t * s[4] + t * t * t * s[6];
-    c.y[i] = u * u * u * s[1] + 3 * u * u * t * s[3] + 3 * u * t * t * s[5] + t * t * t * s[7];
-    c.nx[i] = dy / len;
-    c.ny[i] = dx / len;
+//: One closure, one shared name (the global-names ratchet).
+const atlasTailKit = (() => {
+  const ATLAS_TAIL_SAMPLES = 1;
+  function atlasTailMemo(spec, count) {
+    const kept = spec.tailMemo?.[count];
+    if (kept) return kept;
+    const w = spec.tailWidth;
+    const at = (fn) => Array.from({ length: count }, (_, i) => fn(i / (count - 1)));
+    const wide = at(w);
+    const memo = {
+      body: wide,
+      stream: at((t) => w(t) * 0.26),
+      streamShift: at((t) => w(t) * 0.22 * Math.sin(Math.PI * 2.6 * t)),
+      silk: at((t) => w(t) * 0.24),
+      silkShift: at((t) => -w(t) * 0.3 * Math.sin(Math.PI * 2.6 * t + 1.1)),
+      filaments: (spec.tailFilaments || []).map((k) => at((t) => (w(t) / 2) * k)),
+      buf: Array.from({ length: 4 }, () => new Float64Array(count)),
+      run: Array.from({ length: 2 }, () => new Float64Array(count)),
+    };
+    (spec.tailMemo ||= {})[count] = memo;
+    return memo;
   }
-}
-//: `atlasFix` as text, without the double-to-string conversion that was
-//: 1.3 ms of the 1.6 a draw at 4x CPU for the ~2,700 numbers of a tail (the
-//: same two decimals, no trailing zeros; checked against `atlasFix` over
-//: two million values).
-function atlasTailNum(v) {
-  const n = Math.round(v * 100);
-  const a = n < 0 ? -n : n;
-  const fr = a % 100;
-  if (fr === 0) return "" + n / 100;
-  return (n < 0 ? "-" : "") + (a - fr) / 100 + "." + (fr % 10 === 0 ? "" + fr / 10 : fr < 10 ? "0" + fr : "" + fr);
-}
-//: `atlasSmooth` over the run `from`..`to` of two coordinate arrays, in
-//: either direction.
-function atlasTailSmooth(xs, ys, from, to) {
-  const f = atlasTailNum;
-  const step = to > from ? 1 : -1;
-  const last = Math.max(from, to);
-  const first = Math.min(from, to);
-  let d = "";
-  for (let i = from; i !== to; i += step) {
-    const a = Math.max(first, Math.min(last, i - step));
-    const b = Math.max(first, Math.min(last, i + 2 * step));
-    const j = i + step;
-    d += `C${f(xs[i] + (xs[j] - xs[a]) / 6)} ${f(ys[i] + (ys[j] - ys[a]) / 6)} ${f(xs[j] - (xs[b] - xs[i]) / 6)} ${f(ys[j] - (ys[b] - ys[i]) / 6)} ${f(xs[j])} ${f(ys[j])}`;
-  }
-  return d;
-}
-//: One stem (`atlasStem`): its two sides offset from the centreline by half
-//: the widths `wt`, moved sideways by `sh`, closed with a cap or a half
-//: circle at either end.
-function atlasTailStem(c, wt, sh, round, memo) {
-  const [lx, ly, rx, ry] = memo.buf;
-  const f = atlasTailNum;
-  const m = wt.length - 1;
-  for (let i = 0; i <= m; i += 1) {
-    const hw = wt[i] / 2;
-    const s = sh ? sh[i] : 0;
-    const cx = c.x[i] - c.nx[i] * s;
-    const cy = c.y[i] + c.ny[i] * s;
-    lx[i] = cx - c.nx[i] * hw;
-    ly[i] = cy + c.ny[i] * hw;
-    rx[i] = cx + c.nx[i] * hw;
-    ry[i] = cy - c.ny[i] * hw;
-  }
-  const r = Math.hypot(lx[m] - rx[m], ly[m] - ry[m]) / 2;
-  const end = round || r > 0.05 ? `A${f(r)} ${f(r)} 0 0 0 ${f(rx[m])} ${f(ry[m])}` : `L${f(rx[m])} ${f(ry[m])}`;
-  let back = "";
-  if (round) {
-    const r0 = Math.hypot(lx[0] - rx[0], ly[0] - ry[0]) / 2;
-    back = `A${f(r0)} ${f(r0)} 0 0 0 ${f(lx[0])} ${f(ly[0])}`;
-  }
-  return `M${f(lx[0])} ${f(ly[0])}${atlasTailSmooth(lx, ly, 0, m)}${end}${atlasTailSmooth(rx, ry, m, 0)}${back}Z`;
-}
-function atlasTailCentreOf(spec, segs, samples) {
-  const count = segs.length * samples + 1;
-  const memo = atlasTailMemo(spec, count);
-  const c = memo.centre || (memo.centre = { x: new Float64Array(count), y: new Float64Array(count), nx: new Float64Array(count), ny: new Float64Array(count) });
-  atlasTailCentre(segs, c, samples);
-  return { memo, c, count };
-}
-//: The stems take one sample a curve (the shape's own 32 curves already go
-//: through its points; a second, between each pair, moved the outline by
-//: under 0.05 of a unit and doubled the numbers written); the filaments
-//: keep two, as their run is cut at a fraction of the samples.
-function atlasTailPaths(spec, segs, samples = ATLAS_TAIL_SAMPLES) {
-  const { memo, c } = atlasTailCentreOf(spec, segs, samples);
-  const out = {
-    body: atlasTailStem(c, memo.body, null, !!spec.tailRound, memo),
-    stream: atlasTailStem(c, memo.stream, memo.streamShift, false, memo),
-    silk: atlasTailStem(c, memo.silk, memo.silkShift, false, memo),
-    filaments: "",
-  };
-  if (!memo.filaments.length) return out;
-  const fine = atlasTailCentreOf(spec, segs, 2);
-  const [fx, fy] = fine.memo.run;
-  out.filaments = fine.memo.filaments.map((wt) => {
-    for (let i = 0; i < fine.count; i += 1) {
-      fx[i] = fine.c.x[i] - fine.c.nx[i] * wt[i];
-      fy[i] = fine.c.y[i] + fine.c.ny[i] * wt[i];
+  //: The centreline's points and unit normals (`atlasStemSides`' `at`).
+  function atlasTailCentre(segs, c, samples) {
+    const n = segs.length;
+    const total = n * samples;
+    for (let i = 0; i <= total; i += 1) {
+      const k = Math.min(n - 1, Math.floor(i / samples));
+      const s = segs[k];
+      const t = (i - k * samples) / samples;
+      const u = 1 - t;
+      const dx = 3 * u * u * (s[2] - s[0]) + 6 * u * t * (s[4] - s[2]) + 3 * t * t * (s[6] - s[4]);
+      const dy = 3 * u * u * (s[3] - s[1]) + 6 * u * t * (s[5] - s[3]) + 3 * t * t * (s[7] - s[5]);
+      const len = Math.hypot(dx, dy) || 1;
+      c.x[i] = u * u * u * s[0] + 3 * u * u * t * s[2] + 3 * u * t * t * s[4] + t * t * t * s[6];
+      c.y[i] = u * u * u * s[1] + 3 * u * u * t * s[3] + 3 * u * t * t * s[5] + t * t * t * s[7];
+      c.nx[i] = dy / len;
+      c.ny[i] = dx / len;
     }
-    const from = Math.round(fine.count * 0.18);
-    const to = Math.round(fine.count * 0.92) - 1;
-    return `M${atlasTailNum(fx[from])} ${atlasTailNum(fy[from])}${atlasTailSmooth(fx, fy, from, to)}`;
-  }).join("");
-  return out;
-}
+  }
+  //: `atlasFix` as text, without the double-to-string conversion that was
+  //: 1.3 ms of the 1.6 a draw at 4x CPU for the ~2,700 numbers of a tail (the
+  //: same two decimals, no trailing zeros; checked against `atlasFix` over
+  //: two million values).
+  function atlasTailNum(v) {
+    const n = Math.round(v * 100);
+    const a = n < 0 ? -n : n;
+    const fr = a % 100;
+    if (fr === 0) return "" + n / 100;
+    return (n < 0 ? "-" : "") + (a - fr) / 100 + "." + (fr % 10 === 0 ? "" + fr / 10 : fr < 10 ? "0" + fr : "" + fr);
+  }
+  //: `atlasSmooth` over the run `from`..`to` of two coordinate arrays, in
+  //: either direction.
+  function atlasTailSmooth(xs, ys, from, to) {
+    const f = atlasTailNum;
+    const step = to > from ? 1 : -1;
+    const last = Math.max(from, to);
+    const first = Math.min(from, to);
+    let d = "";
+    for (let i = from; i !== to; i += step) {
+      const a = Math.max(first, Math.min(last, i - step));
+      const b = Math.max(first, Math.min(last, i + 2 * step));
+      const j = i + step;
+      d += `C${f(xs[i] + (xs[j] - xs[a]) / 6)} ${f(ys[i] + (ys[j] - ys[a]) / 6)} ${f(xs[j] - (xs[b] - xs[i]) / 6)} ${f(ys[j] - (ys[b] - ys[i]) / 6)} ${f(xs[j])} ${f(ys[j])}`;
+    }
+    return d;
+  }
+  //: One stem (`atlasStem`): its two sides offset from the centreline by half
+  //: the widths `wt`, moved sideways by `sh`, closed with a cap or a half
+  //: circle at either end.
+  function atlasTailStem(c, wt, sh, round, memo) {
+    const [lx, ly, rx, ry] = memo.buf;
+    const f = atlasTailNum;
+    const m = wt.length - 1;
+    for (let i = 0; i <= m; i += 1) {
+      const hw = wt[i] / 2;
+      const s = sh ? sh[i] : 0;
+      const cx = c.x[i] - c.nx[i] * s;
+      const cy = c.y[i] + c.ny[i] * s;
+      lx[i] = cx - c.nx[i] * hw;
+      ly[i] = cy + c.ny[i] * hw;
+      rx[i] = cx + c.nx[i] * hw;
+      ry[i] = cy - c.ny[i] * hw;
+    }
+    const r = Math.hypot(lx[m] - rx[m], ly[m] - ry[m]) / 2;
+    const end = round || r > 0.05 ? `A${f(r)} ${f(r)} 0 0 0 ${f(rx[m])} ${f(ry[m])}` : `L${f(rx[m])} ${f(ry[m])}`;
+    let back = "";
+    if (round) {
+      const r0 = Math.hypot(lx[0] - rx[0], ly[0] - ry[0]) / 2;
+      back = `A${f(r0)} ${f(r0)} 0 0 0 ${f(lx[0])} ${f(ly[0])}`;
+    }
+    return `M${f(lx[0])} ${f(ly[0])}${atlasTailSmooth(lx, ly, 0, m)}${end}${atlasTailSmooth(rx, ry, m, 0)}${back}Z`;
+  }
+  function atlasTailCentreOf(spec, segs, samples) {
+    const count = segs.length * samples + 1;
+    const memo = atlasTailMemo(spec, count);
+    const c = memo.centre || (memo.centre = { x: new Float64Array(count), y: new Float64Array(count), nx: new Float64Array(count), ny: new Float64Array(count) });
+    atlasTailCentre(segs, c, samples);
+    return { memo, c, count };
+  }
+  //: The stems take one sample a curve (the shape's own 32 curves already go
+  //: through its points; a second, between each pair, moved the outline by
+  //: under 0.05 of a unit and doubled the numbers written); the filaments
+  //: keep two, as their run is cut at a fraction of the samples.
+  function atlasTailPaths(spec, segs, samples = ATLAS_TAIL_SAMPLES) {
+    const { memo, c } = atlasTailCentreOf(spec, segs, samples);
+    const out = {
+      body: atlasTailStem(c, memo.body, null, !!spec.tailRound, memo),
+      stream: atlasTailStem(c, memo.stream, memo.streamShift, false, memo),
+      silk: atlasTailStem(c, memo.silk, memo.silkShift, false, memo),
+      filaments: "",
+    };
+    if (!memo.filaments.length) return out;
+    const fine = atlasTailCentreOf(spec, segs, 2);
+    const [fx, fy] = fine.memo.run;
+    out.filaments = fine.memo.filaments.map((wt) => {
+      for (let i = 0; i < fine.count; i += 1) {
+        fx[i] = fine.c.x[i] - fine.c.nx[i] * wt[i];
+        fy[i] = fine.c.y[i] + fine.c.ny[i] * wt[i];
+      }
+      const from = Math.round(fine.count * 0.18);
+      const to = Math.round(fine.count * 0.92) - 1;
+      return `M${atlasTailNum(fx[from])} ${atlasTailNum(fy[from])}${atlasTailSmooth(fx, fy, from, to)}`;
+    }).join("");
+    return out;
+  }
+  return { paths: atlasTailPaths, num: atlasTailNum };
+})();
 function atlasTailAttach(box) {
   const spec = ATLAS_LOOKS[box.dataset.atlasLook];
   const svg = box.querySelector("svg.atl-layer-tail:not(.atl-layer-tail-tip)");
@@ -564,14 +568,14 @@ function atlasTailUnrest(tail) {
 }
 function atlasTailDraw(tail, bend, stretch) {
   const { pts, turn, segs } = atlasTailShape(tail.rest, bend, stretch);
-  const d = atlasTailPaths(tail.spec, segs);
+  const d = atlasTailKit.paths(tail.spec, segs);
   const { paths } = tail;
   paths.edge?.setAttribute("d", d.body);
   for (const el of paths.body) el.setAttribute("d", d.body);
   paths.silk?.setAttribute("d", d.silk);
   paths.stream?.setAttribute("d", d.stream);
   if (paths.filaments) paths.filaments.setAttribute("d", d.filaments);
-  const f = atlasTailNum;
+  const f = atlasTailKit.num;
   //: Each star rides the sample nearest it, turned with it.
   if (tail.specks) {
     tail.specks.setAttribute("d", tail.stars.map(({ x, y, r, i }) => {

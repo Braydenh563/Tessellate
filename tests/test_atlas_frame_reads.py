@@ -205,16 +205,19 @@ def test_lag_1657_character_jobs_run_one_task_each():
     assert "for (const fn of waiting)" not in body
 
 
-TAIL_FNS = ("atlasTailNum", "atlasTailMemo", "atlasTailCentre", "atlasTailSmooth", "atlasTailStem", "atlasTailCentreOf", "atlasTailPaths")
+def _tail_kit(src: str) -> str:
+    """The tail's path helpers, one closure exporting `paths` and `num`."""
+    match = re.search(r"^const atlasTailKit = \(\(\) => \{$.*?^\}\)\(\);$", src, re.S | re.M)
+    assert match, "atlasTailKit"
+    return match.group(0) + "\nconst { paths: atlasTailPaths, num: atlasTailNum } = atlasTailKit;"
 ATLAS_JS = (JS / "atlas.js").read_text(encoding="utf-8")
 
 
 def _tail_script(body: str) -> str:
     parts = [
         "const atlasFix = (v) => Math.round(v * 100) / 100;",
-        "const ATLAS_TAIL_SAMPLES = 1;",
         *(_fn(ATLAS_JS, n) for n in ("atlasStemSides", "atlasSmooth", "atlasStem")),
-        *(_fn(LIFE, n) for n in TAIL_FNS),
+        _tail_kit(LIFE),
         body,
     ]
     return "\n".join(parts)
