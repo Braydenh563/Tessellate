@@ -22,8 +22,8 @@
   //: The window's sizes, in the units pywebview takes: [width, height].
   const SIZES = {
     rest: [112, 152],
-    menu: [208, 312],
-    context: [208, 268],
+    menu: [248, 312],
+    context: [248, 268],
     note: [320, 376],
     search: [340, 440],
   };
@@ -160,7 +160,7 @@
   function item(label, icon, onClick) {
     const button = document.createElement("button");
     button.type = "button";
-    button.className = "ghost desk-item";
+    button.className = "menu-item desk-item";
     button.setAttribute("role", "menuitem");
     const mark = document.createElement("i");
     mark.className = `ph ph-${icon}`;
@@ -170,51 +170,97 @@
     return button;
   }
 
+  //: A hairline between two groups of rows (the menu recipe's `.menu-sep`).
+  const separator = () => {
+    const rule = document.createElement("hr");
+    rule.className = "menu-sep";
+    rule.setAttribute("role", "separator");
+    return rule;
+  };
+  const note = (text) => {
+    const p = document.createElement("p");
+    p.className = "muted desk-note";
+    p.textContent = text;
+    return p;
+  };
+  //: Asks the walking figure for something; the menu closes either way.
+  const figure = (label, icon, name, motion) => {
+    const row = item(label, icon, () => leave(() => ask("figure_do", name)));
+    if (motion?.still) {
+      row.disabled = true;
+      row.title = "Standing still: movement is off";
+    }
+    return row;
+  };
+  //: A switch row: says which way it is (a checked menu item) and flips it.
+  const toggle = (label, on, call) => {
+    const row = item(label, on ? "check-square" : "square", call);
+    row.setAttribute("role", "menuitemcheckbox");
+    row.setAttribute("aria-checked", String(on));
+    return row;
+  };
+  //: Rows in groups, a separator wherever the group changes; an empty group draws nothing.
+  const groups = (...lists) => lists.filter((list) => list.length).flatMap((list, at) => (at ? [separator(), ...list] : list));
+
+  //: The figure's own rows (overlay only): things to ask of it, from `panel_motion`'s answer.
+  function companionRows(motion) {
+    if (!overlay || !motion?.figure) return [];
+    const stays = motion.stay === true;
+    const rows = [
+      figure("Wave", "hand-waving", "wave", null),
+      figure("Come here", "arrow-fat-lines-left", "come", motion),
+      figure("Go somewhere else", "compass", "wander", motion),
+      motion.asleep ? figure("Wake up", "sun-horizon", "wake", null) : figure("Take a nap", "moon-stars", "nap", null),
+    ];
+    const perch = figure("Sit on a window", "app-window", "perch", motion);
+    if (motion.roam === false || stays) {
+      perch.disabled = true;
+      perch.title = stays ? "Choose Roam first" : "Roam over windows is off";
+    }
+    rows.push(perch);
+    return rows;
+  }
+  const hideRow = () => item("Hide for 10 minutes", "timer", () => leave(() => ask("snooze")));
+
   async function openMenu(kind) {
     await probe();
     const menu = $("desk-menu");
-    const rows = [];
+    let rows = [];
+    const motion = overlay || kind === "context" ? await Promise.resolve(ask("panel_motion")).catch(() => null) : null;
     if (kind === "context") {
-      const motion = await Promise.resolve(ask("panel_motion")).catch(() => null);
-      if (!overlay && motion?.note) {
-        const why = document.createElement("p");
-        why.className = "muted desk-note";
-        why.textContent = motion.note;
-        rows.push(why);
+      const notes = [];
+      if (!overlay && motion?.note) notes.push(note(motion.note));
+      if (motion?.still) notes.push(note(`Standing still: ${STILL_WHY[motion.reason] || "movement is off"}.`));
+      const look = [];
+      if (overlay) look.push(item("Companion", "user-switch", openCompanion));
+      look.push(item("Settings", "gear", () => leave(() => ask("open_app", "settings"))));
+      const motionRows = [];
+      if (overlay && !locked && motion?.still && motion.reason !== "avatar") motionRows.push(item("Let it walk", "person-simple-walk", () => leave(() => ask("let_it_walk"))));
+      if (overlay && motion && typeof motion.stay === "boolean" && !motion.still) {
+        motionRows.push(motion.stay ? item("Roam", "person-simple-walk", () => leave(() => ask("set_stay", false))) : item("Stay here", "push-pin", () => leave(() => ask("set_stay", true))));
       }
-      if (motion?.still) {
-        const why = document.createElement("p");
-        why.className = "muted desk-note";
-        why.textContent = `Standing still: ${STILL_WHY[motion.reason] || "movement is off"}.`;
-        rows.push(why);
-      }
-      if (overlay) rows.push(item("Companion", "user-switch", openCompanion));
-      rows.push(item("Settings", "gear", () => leave(() => ask("open_app", "settings"))));
-      if (overlay && !locked && motion?.still && motion.reason !== "avatar") rows.push(item("Let it walk", "person-simple-walk", () => leave(() => ask("let_it_walk"))));
-      //: Roam over windows: a switch, not a one-way action, so it says which way it is
-      //: (a checked menu item) and flips it.
-      if (overlay && motion && typeof motion.roam === "boolean") {
-        const roam = item("Roam over windows", motion.roam ? "check-square" : "square", () => leave(() => ask("set_roam", !motion.roam)));
-        roam.setAttribute("role", "menuitemcheckbox");
-        roam.setAttribute("aria-checked", String(motion.roam));
-        rows.push(roam);
-      }
-      rows.push(item("Hide", "eye-slash", () => (overlay ? leave(() => ask("hide_companion")) : ask("hide_companion"))));
-    } else if (locked) {
-      const note = document.createElement("p");
-      note.className = "muted desk-note";
-      note.textContent = "Tessellate is locked. Open it to unlock.";
-      rows.push(note, item("Open Tessellate", "arrow-square-out", () => leave(() => ask("open_app"))));
+      //: Roam over windows: a switch, not a one-way action.
+      if (overlay && motion && typeof motion.roam === "boolean") motionRows.push(toggle("Roam over windows", motion.roam, () => leave(() => ask("set_roam", !motion.roam))));
+      const away = [hideRow()];
+      away.push(item("Turn off", "power", () => (overlay ? leave(() => ask("hide_companion")) : ask("hide_companion"))));
+      rows = [...notes, ...groups(look, motionRows, away)];
     } else {
-      rows.push(
-        item("Quick note", "note-pencil", () => openPanel("note")),
-        item("Quick search", "magnifying-glass", () => openPanel("search")),
-        item("Open Tessellate", "arrow-square-out", () => leave(() => ask("open_app")))
-      );
+      const capture = locked
+        ? [note("Tessellate is locked. Open it to unlock.")]
+        : [
+            item("Quick note", "note-pencil", () => openPanel("note")),
+            item("Quick search", "magnifying-glass", () => openPanel("search")),
+            item("New reminder", "bell-ringing", () => leave(() => ask("open_app", "reminder"))),
+          ];
+      const open = locked ? [] : [item("Open today", "sun", () => leave(() => ask("open_app", "today")))];
+      open.push(item("Open Tessellate", "arrow-square-out", () => leave(() => ask("open_app"))));
+      const withFigure = companionRows(motion);
+      withFigure.push(hideRow());
+      rows = groups(capture, open, withFigure);
     }
     menu.replaceChildren(...rows);
     show(kind);
-    rows.find((row) => row.tagName === "BUTTON")?.focus();
+    rows.find((row) => row.tagName === "BUTTON" && !row.disabled)?.focus();
   }
 
   //: The right-click menu's "Companion": every choice the app's Appearance offers
@@ -225,12 +271,6 @@
   async function openCompanion() {
     const got = await Promise.resolve(ask("companion_choices")).catch(() => null);
     const rows = [item("Back", "caret-left", () => openMenu("context"))];
-    const note = (text) => {
-      const p = document.createElement("p");
-      p.className = "muted desk-note";
-      p.textContent = text;
-      return p;
-    };
     if (got?.locked) rows.push(note("Tessellate is locked. Open it to unlock, then choose."));
     else if (!got?.options?.length) rows.push(note("Tessellate did not answer. Open it and try again."));
     let group = "";
@@ -335,27 +375,39 @@
     const row = document.createElement("li");
     const button = document.createElement("button");
     button.type = "button";
-    button.className = "ghost desk-hit";
+    button.className = "menu-item desk-hit";
     const title = document.createElement("span");
     title.className = "desk-hit-title";
     title.textContent = plain(hit.title) || "Untitled";
-    const kind = document.createElement("span");
-    kind.className = "muted desk-hit-kind";
-    kind.textContent = hit.kind;
-    button.append(title, kind);
+    button.append(title);
     //: A snippet opens with the title as often as not: only what it says
-    //: beyond the title is shown, and nothing when there is none.
+    //: beyond the title is shown, and nothing when there is none. The kind leads the same line.
     const said = plain(hit.snippet).slice(0, 140);
     const words = said.startsWith(title.textContent) ? said.slice(title.textContent.length).replace(/^[\s:.,;·-]+/, "") : said;
-    if (words) {
-      const snippet = document.createElement("span");
-      snippet.className = "muted desk-hit-snippet";
-      snippet.textContent = words;
-      button.append(snippet);
-    }
+    const meta = document.createElement("span");
+    meta.className = "muted desk-hit-meta";
+    const kind = document.createElement("span");
+    kind.className = "desk-hit-kind";
+    kind.textContent = hit.kind;
+    meta.append(kind, document.createTextNode(words));
+    button.append(meta);
     button.addEventListener("click", () => leave(() => ask("open_hit", hit.kind, hit.id)));
     row.append(button);
     return row;
+  }
+
+  //: The empty state under the field: what to do before a word is typed, and what to do when
+  //: nothing matched; hidden while there are hits.
+  function searchEmpty(kind, q = "") {
+    const box = $("desk-search-empty");
+    box.classList.toggle("hidden", kind === "hits");
+    if (kind === "none") {
+      $("desk-search-empty-title").textContent = "Nothing found";
+      $("desk-search-empty-hint").textContent = `No match for “${q.slice(0, 40)}”. Try fewer or different words.`;
+    } else {
+      $("desk-search-empty-title").textContent = "Search your notes";
+      $("desk-search-empty-hint").textContent = "Enter opens the first match.";
+    }
   }
 
   async function runSearch() {
@@ -365,6 +417,7 @@
     if (!q) {
       list.replaceChildren();
       $("desk-search-status").textContent = "";
+      searchEmpty("idle");
       if (overlay) fit();
       return;
     }
@@ -379,7 +432,8 @@
       if (!response.ok) throw new Error("Search is not available right now.");
       const body = await response.json();
       list.replaceChildren(...(body.hits || []).map(hitRow));
-      $("desk-search-status").textContent = body.hits?.length ? "" : "Nothing found.";
+      $("desk-search-status").textContent = "";
+      searchEmpty(body.hits?.length ? "hits" : "none", q);
       if (overlay) fit();
     } catch (error) {
       if (mine === searchSeq) $("desk-search-status").textContent = error.message || "Search is not available right now.";
@@ -452,14 +506,35 @@
   });
   $("desk-search-text").addEventListener("input", () => {
     clearTimeout(searchTimer);
-    searchTimer = setTimeout(runSearch, 220);
-  });
-  $("desk-search-text").addEventListener("keydown", (event) => {
-    if (event.key === "ArrowDown") $("desk-search-hits").querySelector("button")?.focus();
-    if (event.key === "Enter") {
-      clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      searchTimer = 0;
       runSearch();
+    }, 220);
+  });
+  //: Enter in the field: a pending search runs now; with the results in, it opens the first match.
+  $("desk-search-text").addEventListener("keydown", (event) => {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      $("desk-search-hits").querySelector("button")?.focus();
     }
+    if (event.key === "Enter" && !event.isComposing) {
+      event.preventDefault();
+      if (searchTimer) {
+        clearTimeout(searchTimer);
+        searchTimer = 0;
+        runSearch();
+      } else $("desk-search-hits").querySelector("button")?.click();
+    }
+  });
+  //: The results are walked with the arrows; Up from the first goes back to the field.
+  $("desk-search-hits").addEventListener("keydown", (event) => {
+    const rows = [...$("desk-search-hits").querySelectorAll("button")];
+    const at = rows.indexOf(document.activeElement);
+    const to = { ArrowDown: at + 1, ArrowUp: at - 1, Home: 0, End: rows.length - 1 }[event.key];
+    if (to === undefined || at < 0) return;
+    event.preventDefault();
+    if (to < 0) $("desk-search-text").focus();
+    else rows[Math.min(to, rows.length - 1)].focus();
   });
 
   //: Drawn at once as Atlas (the answer with no storage), then as who the

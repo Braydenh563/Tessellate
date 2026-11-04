@@ -18,14 +18,15 @@ class FakeRunner:
     started: list["FakeRunner"] = []
 
     def __init__(
-        self, *, look, home, on_click, on_settle, on_died=None, on_card=None, roam_windows=True, ok=True, reduced=None,
-        reduced_reason="",
+        self, *, look, home, on_click, on_settle, on_died=None, on_card=None, roam_windows=True, stay=False, ok=True,
+        reduced=None, reduced_reason="",
     ):
         self.look, self.home, self.on_click, self.on_settle, self.on_died = look, home, on_click, on_settle, on_died
         self.on_card, self.roam_windows = on_card, roam_windows
         self.monitors: list = []
         self.cards: list = []
         self.roam_calls: list = []
+        self.stay, self.stay_calls, self.commands = stay, [], []
         self.reduced, self.reduced_reason = reduced, reduced_reason
         self.ok = ok
         self.calls: list[str] = []
@@ -49,6 +50,13 @@ class FakeRunner:
 
     def set_roam(self, on):
         self.roam_calls.append(on)
+
+    def set_stay(self, on):
+        self.stay_calls.append(on)
+
+    def command(self, name):
+        self.commands.append(name)
+        return True
 
 
 @pytest.fixture()
@@ -281,14 +289,14 @@ def test_the_overlay_follows_the_apps_resolved_motion_and_logs_it(over, caplog):
     runner = FakeRunner.started[0]
     assert runner.reduced is True and runner.reduced_reason == "app"
     assert any("overlay started" in r.getMessage() and "motion=still (app)" in r.getMessage() for r in caplog.records)
-    assert dc.DeskApi(over).panel_motion() == {"still": True, "reason": "app", "roam": True}
+    assert dc.DeskApi(over).panel_motion() == {"still": True, "reason": "app", "roam": True, "stay": False, "asleep": False, "figure": True}
 
 
 def test_a_full_answer_moves_and_no_answer_leaves_it_to_the_windows_flag(over):
     over.main_window.evaluate_js = _says(mode="full")
     over.set_main_hidden(True)
     assert FakeRunner.started[0].reduced is False
-    assert dc.DeskApi(over).panel_motion() == {"still": False, "reason": "", "roam": True}
+    assert dc.DeskApi(over).panel_motion() == {"still": False, "reason": "", "roam": True, "stay": False, "asleep": False, "figure": True}
     over.set_main_hidden(False)
     over.close()
     over.closing = False

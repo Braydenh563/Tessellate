@@ -82,6 +82,7 @@ class OverlayRunner:
         on_died: Callable[[], Any] | None = None,
         on_card: Callable[[Any], Any] | None = None,
         roam_windows: bool = True,
+        stay: bool = False,
         backend: Any = None,
         w: Any = None,
         clock: Callable[[], float] = time.monotonic,
@@ -101,6 +102,7 @@ class OverlayRunner:
         self.on_died = on_died
         self.on_card = on_card
         self.roam_windows = roam_windows
+        self.stay = stay
         self.w = w
         self.clock = clock
         self.clock_hour: int | None = None
@@ -126,6 +128,9 @@ class OverlayRunner:
         self._next_busy_check = 0.0
         self._next_scan = 0.0
         self._cards: collections.deque[Any] = collections.deque()
+        self._commands: collections.deque[str] = collections.deque()
+        #: The result of the last menu request the engine took, for the tests and the log.
+        self.last_command: tuple[str, bool] | None = None
         self._scan_failed = False
 
     # --- life (any thread) ------------------------------------------------------------
@@ -165,6 +170,21 @@ class OverlayRunner:
         self._cards.append(token)
         if self.host:
             self.host.wake(1)
+
+    def command(self, name: str) -> bool:
+        """A choice from the companion's menu (any thread): the engine acts on it on its next
+        tick, on its own thread. False for a name the engine does not know."""
+        if name not in eng.Engine.COMMANDS:
+            return False
+        self._commands.append(name)
+        if self.host:
+            self.host.wake(1)
+        return True
+
+    def set_stay(self, on: bool) -> None:
+        """"Stay here" (any thread): the engine stops wandering until told to roam."""
+        self.stay = bool(on)
+        self.command("stay" if on else "roam")
 
     def set_roam(self, on: bool) -> None:
         """The "Roam over windows" switch: takes effect on the next tick."""
@@ -231,10 +251,21 @@ class OverlayRunner:
                 return hold
             while self._cards:
                 engine.bring_card(self._cards.popleft(), now)
+            self._run_commands(engine, now)
             self._scan(now)
         if kind not in ("tick", "display"):
             return None
         return self._apply(engine.update(now, pointer))
+
+    def _run_commands(self, engine: eng.Engine, now: float) -> None:
+        """The menu's requests, in order. "Sit on a window" reads the window list first, since
+        the usual scan is only wanted when a climb is near."""
+        while self._commands:
+            name = self._commands.popleft()
+            if name == "perch":
+                self._scan(now, force=True)
+            self.last_command = (name, engine.command(name, now))
+            logger.info("overlay: menu request %s, done=%s", *self.last_command)
 
     # --- other windows' tops ------------------------------------------------------------
 
@@ -247,7 +278,7 @@ class OverlayRunner:
             return True  # carried: a title bar under it may be taken hold of
         return e.state in ("stand", "walk", "drift", "act", "crouch") and now >= e.trip_ready - SCAN_SLACK
 
-    def _scan(self, now: float) -> None:
+    def _scan(self, now: float, force: bool = False) -> None:
         engine = self.engine
         assert engine is not None
         engine.roam_windows = self.roam_windows
@@ -255,7 +286,7 @@ class OverlayRunner:
             if engine.windows or engine.perch is not None:
                 engine.set_windows([], now)
             return
-        if now < self._next_scan or not self._wants_scan(now):
+        if not force and (now < self._next_scan or not self._wants_scan(now)):
             return
         self._next_scan = now + SCAN_EVERY
         try:
@@ -340,7 +371,7 @@ class OverlayRunner:
         first = self.monitors[0]
         self.dpi = first.dpi
         self.engine = eng.Engine(
-            spr.size(first.dpi), self.monitors, home=self.home, reduced=reduced, roam_windows=self.roam_windows, gait=spr.gait, hang_top=spr.top_share("hang"), idle_frames=sprites.IDLE_COUNT, now=self.clock(),
+            spr.size(first.dpi), self.monitors, home=self.home, reduced=reduced, roam=not self.stay, roam_windows=self.roam_windows, gait=spr.gait, hang_top=spr.top_share("hang"), idle_frames=sprites.IDLE_COUNT, now=self.clock(),
         )
         self.engine.set_metrics(spr.metrics(first.dpi))
         out = self.engine.update(self.clock())

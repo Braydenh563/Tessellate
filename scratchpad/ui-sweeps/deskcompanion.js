@@ -8,7 +8,7 @@
 const { chromium } = require('/opt/node22/lib/node_modules/playwright');
 const BASE = process.env.BASE || 'http://127.0.0.1:8806';
 const PW = 'testpassword123';
-const SIZES = { rest: [112, 152], menu: [208, 312], context: [208, 268], note: [320, 376], search: [340, 440] };
+const SIZES = { rest: [112, 152], menu: [248, 312], context: [248, 268], note: [320, 376], search: [340, 440] };
 const out = [];
 const say = (k, v) => { out.push(`${k}: ${JSON.stringify(v)}`); };
 (async () => {

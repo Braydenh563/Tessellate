@@ -61,6 +61,11 @@ MARGIN = 12
 OVERLAY_POS_PREF = "desktop_companion_overlay_pos"
 #: "Roam over windows" (right-click menu): on by default, a pref the person can turn off.
 ROAM_PREF = "desktop_companion_roam"
+#: "Stay here" (menu): it stands where it is and does not wander until "Roam" is chosen.
+STAY_PREF = "desktop_companion_stay"
+#: "Hide for 10 minutes" (menu): minutes, and the menu requests the figure takes.
+SNOOZE_MINUTES = 10
+FIGURE_COMMANDS = ("wave", "come", "wander", "nap", "wake", "perch")
 #: The look and motion a readable (unlocked) app window last gave. A locked
 #: window has not read its prefs and answers the default look, so these stand
 #: until it is unlocked (INBOX 1670: masculine until unlocked).
@@ -76,7 +81,7 @@ REMINDERS_SCRIPT = (
 #: The size the panel window is made and shown at, by the click that opened it: the
 #: page then measures its own menu and asks for the exact height (`menuHeight` in
 #: desk-companion.js), so this only has to be close, never the other menu's size.
-PANEL_SIZES = {"menu": (208, 168), "context": (208, 124)}
+PANEL_SIZES = {"menu": (248, 168), "context": (248, 124)}
 PANEL_GAP = 8
 LOOK_WAIT = 1.5
 #: A click on the figure this soon after the panel closed itself on losing focus
@@ -696,6 +701,19 @@ SETTINGS_SCRIPT = (
 )
 
 
+#: New reminder and Open today: the Reminders tab with its quick field focused, and the dashboard,
+#: both only past the lock screen like Settings.
+NEW_REMINDER_SCRIPT = (
+    "if (document.getElementById('lock-overlay')?.classList.contains('hidden')"
+    " && typeof switchTab === 'function') { switchTab('reminders');"
+    " setTimeout(() => document.getElementById('reminder-magic')?.focus(), 400); }"
+)
+TODAY_SCRIPT = (
+    "if (document.getElementById('lock-overlay')?.classList.contains('hidden')"
+    " && typeof switchTab === 'function') { switchTab('dashboard'); }"
+)
+
+
 class DeskApi:
     """What the companion's page may ask of its window. Only public methods
     are exposed to the page (pywebview), and each validates what it is given:
@@ -705,7 +723,8 @@ class DeskApi:
         self._owner = owner
 
     def open_app(self, where: str = "") -> bool:
-        return self._owner.open_main(SETTINGS_SCRIPT if where == "settings" else "")
+        scripts = {"settings": SETTINGS_SCRIPT, "reminder": NEW_REMINDER_SCRIPT, "today": TODAY_SCRIPT}
+        return self._owner.open_main(scripts.get(where, "") if isinstance(where, str) else "")
 
     def open_hit(self, kind: Any, ident: Any) -> bool:
         return self._owner.open_main(hit_script(kind, ident))
@@ -746,6 +765,15 @@ class DeskApi:
     def set_roam(self, on: Any) -> bool:
         return self._owner.set_roam(on is True)
 
+    def figure_do(self, name: Any) -> bool:
+        return self._owner.figure_do(name if isinstance(name, str) else "")
+
+    def set_stay(self, on: Any) -> bool:
+        return self._owner.set_stay(on is True)
+
+    def snooze(self) -> bool:
+        return self._owner.snooze()
+
     def companion_choices(self) -> dict[str, Any]:
         return self._owner.companion_choices()
 
@@ -783,6 +811,9 @@ class DeskCompanion:
         self.size = REST_SIZE
         self.corner: tuple[int, int] | None = None
         self.shown = False
+        #: Hidden by "Hide for 10 minutes" until this time on `_now`'s clock.
+        self.snooze_until = -1e9
+        self._snooze_timer: Any = None
         #: The tray's own refresh (pystray `Icon.update_menu`): its menu is
         #: built once on Windows, so a tick it shows is only as fresh as the
         #: last rebuild (INBOX 1642: hidden from its own menu, still ticked).
@@ -1010,6 +1041,7 @@ class DeskCompanion:
                 on_died=self._overlay_died,
                 on_card=self._overlay_card,
                 roam_windows=bool(_pref(ROAM_PREF, True)),
+                stay=bool(_pref(STAY_PREF, False)),
                 **kw,
             )
             started = runner.start()
@@ -1042,7 +1074,11 @@ class DeskCompanion:
             still = bool(getattr(runner, "reduced", False)) if runner is not None else False
             reason = getattr(runner, "reduced_reason", "") if still else ""
         note = self.overlay_note or ("The see-through figure could not start here, so the companion stays in the app." if self.overlay_failed else "")
-        out: dict[str, Any] = {"still": still, "reason": str(reason or ""), "roam": bool(_pref(ROAM_PREF, True))}
+        engine = getattr(runner, "engine", None)
+        out: dict[str, Any] = {
+            "still": still, "reason": str(reason or ""), "roam": bool(_pref(ROAM_PREF, True)), "stay": bool(_pref(STAY_PREF, False)),
+            "asleep": getattr(engine, "state", "") == "sleep", "figure": runner is not None and hasattr(runner, "command"),
+        }
         if note:
             out["note"] = note
         return out
@@ -1053,6 +1089,36 @@ class DeskCompanion:
         runner = self.runner
         if runner is not None and hasattr(runner, "set_roam"):
             runner.set_roam(bool(on))
+        return True
+
+    def figure_do(self, name: str) -> bool:
+        """A request from the menu to the walking figure (wave, come here, go somewhere else, nap,
+        wake, sit on a window). False when there is no figure to ask or the name is not one of them."""
+        runner = self.runner
+        if name not in FIGURE_COMMANDS or runner is None or not self.shown or not hasattr(runner, "command"):
+            return False
+        return bool(runner.command(name))
+
+    def set_stay(self, on: bool) -> bool:
+        """"Stay here" or "Roam": saved, and the running figure follows."""
+        _set_pref(STAY_PREF, bool(on))
+        runner = self.runner
+        if runner is not None and hasattr(runner, "set_stay"):
+            runner.set_stay(bool(on))
+        return True
+
+    def snooze(self) -> bool:
+        """"Hide for 10 minutes": the figure goes now and comes back by itself, as long as it is
+        still turned on and the app window is still away. The clock is the injected one."""
+        self.snooze_until = self._now() + SNOOZE_MINUTES * 60
+        timer = threading.Timer(SNOOZE_MINUTES * 60 + 1, lambda: self._dispatch("desk-companion", self.sync))
+        timer.daemon = True
+        with _lock:
+            old, self._snooze_timer = self._snooze_timer, timer
+        if old is not None:
+            old.cancel()
+        timer.start()
+        self._dispatch("desk-companion", self.sync)
         return True
 
     def carry_reminder(self, token: Any) -> bool:
@@ -1344,7 +1410,7 @@ class DeskCompanion:
             if on != self._ticked:
                 self._ticked = on
                 self._refresh_tray()
-            due = on and self.main_hidden and not self.closing
+            due = on and self.main_hidden and not self.closing and self._now() >= self.snooze_until
             #: One line a step (INBOX 1633: the owner could not see it; the log says where it stopped).
             logger.info("desk companion: due=%s (on=%s, window away=%s, shown=%s)", due, enabled(), self.main_hidden, self.shown)
             try:
@@ -1425,11 +1491,14 @@ class DeskCompanion:
         got = _lock.acquire(timeout=LOCK_WAIT)
         try:
             self.closing = True
+            timer, self._snooze_timer = self._snooze_timer, None
             window, self.window = self.window, None
             self.shown = False
         finally:
             if got:
                 _lock.release()
+        if timer is not None:
+            timer.cancel()
         self._stop_runner()
         if window is not None:
             try:
