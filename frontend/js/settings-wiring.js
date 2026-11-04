@@ -1230,6 +1230,11 @@ const CHORD_ACTIONS = {
   o: { label: "OCR workspace", icon: "ph:scan", group: "go", run: () => revealFeature("page-reader") },
   //: The tray had no key (INBOX 1603); its button opens the phone's sheet too.
   y: { label: "Tray", icon: "ph:tray", run: () => $("status-tray")?.click() },
+  //: Three more the owner asked might belong here ("should more stuff be added to the quick nav
+  //: menu?", INBOX 1604): the app's three most-used acts, on letters the sheet left free.
+  w: { label: "New note", icon: "ph:note-pencil", run: () => startNewNote() },
+  f: { label: "Find anything", icon: "ph:magnifying-glass", run: () => revealFeature("finder") },
+  k: { label: "Calculator", icon: "ph:calculator", run: () => popupToolMaths() },
 };
 let tabJumpArmedAt = 0;
 

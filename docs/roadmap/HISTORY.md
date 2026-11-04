@@ -52217,3 +52217,5 @@ From DOCUMENTS_PLAN.md and WHITEBOARD_PLAN.md "Placed from INBOX, 2026-11-03", b
 
 1597. **Owner, 2026-11-03 (screenshot):** "these suggested tags still look wierd". A suggested tag chip reads as two boxes: "+ study" in one bordered box and the dismiss cross in a second bordered segment beside it. Recommendation: one chip recipe, the add and dismiss parts inside a single border, as the applied tag chips draw. Checked in the running app 2026-11-04 (12 chips, light and dark): one dashed 1px outline on the chip, the take and the dismiss halves have no border, no fill and a transparent outline at rest, 24px tall; nothing divides it.
 
+1604. **Owner, 2026-11-03 (screenshot, the "t then a key" sheet):** "should more stuff be added to the quick nav menu? idk". Go to has 8 rows, Do has 5. Recommendation (taken): Do gains New note (`w`), Find anything (`f`), Tray (`y`, the tray shortcut 1603 asks for) and Calculator (`k`), each only if its letter is free in the sheet; about 16 rows at most so it stays one glance; the shortcuts sheet, the Guide and Help move with it (standing order 13).
+

@@ -134,7 +134,10 @@ PIECE_CAP = 32_000
 #: Then +80 (INBOX 1619, 1620): the tag popover closes when its card is redrawn,
 #: the constellation repaints after a resize, the Manage panels scroll as one and
 #: the topic chip names its words; same win-back item.
-TOTAL_CAP = 260_520
+#: 2026-11-04, +100 (INBOX 1604, lag 1560): three quick-nav chords (New note, Find
+#: anything, Calculator) and the companion's one-read placement cache, which
+#: took two whole-page layouts out of every placement; same win-back item.
+TOTAL_CAP = 260_620
 
 
 def _served_gzip_size(client, name: str) -> int:

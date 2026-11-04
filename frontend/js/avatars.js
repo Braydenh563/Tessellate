@@ -3545,7 +3545,7 @@ function nameMarkBuddyTab() {
 
 function nameMarkBuddyShown(el) {
   if (!el) return null;
-  const box = nmbPlace.rect(el);
+  const box = nmb.place.rect(el);
   return box.width > 0 && box.height > 0 && box.bottom > 0 && box.top < innerHeight && box.right > 0 && box.left < innerWidth ? box : null;
 }
 
@@ -4784,7 +4784,7 @@ function nameMarkBuddyRideBox(x = nmb.x, y = nmb.y, fresh = false, pose = undefi
   const r = nmb.ride;
   const band = document.getElementById("nm-buddy-band");
   if (!r || !band) return;
-  const box = nmbPlace.rect(r.el);
+  const box = nmb.place.rect(r.el);
   let lines = null;
   if (fresh || r.insetTop === undefined) {
     const { lo, hi } = nameMarkBuddyBand(r.el, nmb.glue?.el);
@@ -4892,12 +4892,12 @@ function nameMarkBuddyBand(scroller, el = null) {
   const { top, bottom } = nameMarkBuddyLedges();
   let lo = top ? top.bottom : 0;
   let hi = bottom ? bottom.top : innerHeight;
-  const box = scroller ? nmbPlace.rect(scroller) : undefined;
+  const box = scroller ? nmb.place.rect(scroller) : undefined;
   if (box && box.height) {
     lo = Math.max(lo, box.top);
     hi = Math.min(hi, box.bottom);
   }
-  const mine = el ? nmbPlace.rect(el) : undefined;
+  const mine = el ? nmb.place.rect(el) : undefined;
   for (let node = el; mine && node && node !== scroller && node !== document.body; node = node.parentElement) {
     for (let sib = node.previousElementSibling, n = 0; sib && n < 12; sib = sib.previousElementSibling, n += 1) {
       const cs = getComputedStyle(sib);
@@ -4914,10 +4914,10 @@ function nameMarkBuddyBand(scroller, el = null) {
 //: 2249ms, 2167 of it forced layout). `nameMarkBuddyMoveTo` set the figure's size, put it and
 //: toggled the band, and only then did `nameMarkBuddyGlue` and `nameMarkBuddyRideBox` read the
 //: panel's and its scroller's rects, so each paid for a whole page layout the writes had dirtied
-//: (two of 130 to 150ms at 4x CPU a placement). `nmbPlace.read` takes them first, and
+//: (two of 130 to 150ms at 4x CPU a placement). `nmb.place.read` takes them first, and
 //: the readers below answer from it until the placement's stack unwinds (the panel itself does
 //: not move in a placement: only the figure and its band do).
-const nmbPlace = {
+nmb.place = {
   boxes: null,
   rect(el) {
     return this.boxes?.get(el) || el.getBoundingClientRect();
@@ -4954,8 +4954,8 @@ const nmbPlace = {
 //: nothing: they do not move.
 function nameMarkBuddyGlue(spot, x, y) {
   //: A drop carries its edge rather than an anchor; the bars hold nothing.
-  const el = nmbPlace.glueEl(spot);
-  const box = el?.isConnected ? nmbPlace.rect(el) : null;
+  const el = nmb.place.glueEl(spot);
+  const box = el?.isConnected ? nmb.place.rect(el) : null;
   if (!box || (!box.width && !box.height)) {
     nmb.glue = null;
     nameMarkBuddyRide(null, x, y);
@@ -5650,7 +5650,7 @@ function nameMarkBuddyMoveTo(buddy, spot, instant = false) {
   //: The board's box is a layout read: before the writes below, not after
   //: them, where it paid for the restyle they caused (a landing, 20 to 30ms).
   const board = nameMarkBuddyCanvasAt(spot, x, y);
-  nmbPlace.read(spot);
+  nmb.place.read(spot);
   nmb.liftAnim?.cancel();
   nmb.glideAnim?.cancel();
   nmb.glideAnim = null;

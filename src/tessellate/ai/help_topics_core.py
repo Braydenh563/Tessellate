@@ -3587,7 +3587,7 @@ HELP_TOPICS.extend(
                 "Keyboard shortcuts rebinds. Press t (or m) then a letter to jump: d (Dashboard), n "
                 "(Notes), c (Chat), g (Graph), l (Library), i (Timeline), r "
                 "(Reminders), o (OCR workspace); or to act: s (Settings), q (Quick sketch), v (Record "
-                "a meeting), a (Guide), p (Popup agent), y (Tray). A second t, m or Esc closes the panel. "
+                "a meeting), a (Guide), p (Popup agent), y (Tray), w (New note), f (Find anything), k (Calculator). A second t, m or Esc closes the panel. "
                 "Ctrl+Shift+A opens the agent over any tab, Ctrl+Shift+H asks Atlas "
                 "about the app, Ctrl+J writes at the cursor, Ctrl+Shift+E acts on "
                 "selected text (so does a right-click on the selection), Ctrl+Shift+K opens the quick sketch pad, and "

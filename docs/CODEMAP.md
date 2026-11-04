@@ -1205,52 +1205,52 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `_isChatComposer` | frontend/js/settings-wiring.js:1938 |
+| `_isChatComposer` | frontend/js/settings-wiring.js:1943 |
 | `activeOverlay` | frontend/js/settings-wiring.js:944 |
-| `captureCountText` | frontend/js/settings-wiring.js:1699 |
-| `captureShortcutKey` | frontend/js/settings-wiring.js:1447 |
-| `clearStagedImages` | frontend/js/settings-wiring.js:2105 |
-| `closeOverlaysForChord` | frontend/js/settings-wiring.js:1242 |
-| `closeShortcuts` | frontend/js/settings-wiring.js:1477 |
-| `comboFromEvent` | frontend/js/settings-wiring.js:1278 |
-| `commitCaptureImages` | frontend/js/settings-wiring.js:2090 |
-| `fileDropBox` | frontend/js/settings-wiring.js:1947 |
+| `captureCountText` | frontend/js/settings-wiring.js:1704 |
+| `captureShortcutKey` | frontend/js/settings-wiring.js:1452 |
+| `clearStagedImages` | frontend/js/settings-wiring.js:2110 |
+| `closeOverlaysForChord` | frontend/js/settings-wiring.js:1247 |
+| `closeShortcuts` | frontend/js/settings-wiring.js:1482 |
+| `comboFromEvent` | frontend/js/settings-wiring.js:1283 |
+| `commitCaptureImages` | frontend/js/settings-wiring.js:2095 |
+| `fileDropBox` | frontend/js/settings-wiring.js:1952 |
 | `flashSaved` | frontend/js/settings-wiring.js:496 |
-| `handleFileUpload` | frontend/js/settings-wiring.js:2137 |
-| `hideChordGuide` | frontend/js/settings-wiring.js:1260 |
+| `handleFileUpload` | frontend/js/settings-wiring.js:2142 |
+| `hideChordGuide` | frontend/js/settings-wiring.js:1265 |
 | `inEditable` | frontend/js/settings-wiring.js:942 |
-| `loadForgottenOrder` | frontend/js/settings-wiring.js:1558 |
+| `loadForgottenOrder` | frontend/js/settings-wiring.js:1563 |
 | `loadShortcuts` | frontend/js/settings-wiring.js:1113 |
 | `localizeStaticChords` | frontend/js/settings-wiring.js:1156 |
 | `lockFail` | frontend/js/settings-wiring.js:269 |
 | `lockFailed` | frontend/js/settings-wiring.js:281 |
 | `lockRequest` | frontend/js/settings-wiring.js:375 |
 | `mapEditorShown` | frontend/js/settings-wiring.js:939 |
-| `matchesShortcut` | frontend/js/settings-wiring.js:1296 |
+| `matchesShortcut` | frontend/js/settings-wiring.js:1301 |
 | `maybeShowOnboarding` | frontend/js/settings-wiring.js:965 |
 | `notebookLocked` | frontend/js/settings-wiring.js:481 |
 | `persistSavedSearches` | frontend/js/settings-wiring.js:53 |
-| `renderCaptureFiles` | frontend/js/settings-wiring.js:1664 |
-| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1631 |
-| `renderInstallRow` | frontend/js/settings-wiring.js:1866 |
+| `renderCaptureFiles` | frontend/js/settings-wiring.js:1669 |
+| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1636 |
+| `renderInstallRow` | frontend/js/settings-wiring.js:1871 |
 | `renderSavedSearches` | frontend/js/settings-wiring.js:17 |
-| `resetShortcuts` | frontend/js/settings-wiring.js:1414 |
+| `resetShortcuts` | frontend/js/settings-wiring.js:1419 |
 | `restampShortcutHints` | frontend/js/settings-wiring.js:1166 |
-| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2078 |
-| `runShortcut` | frontend/js/settings-wiring.js:1305 |
+| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2083 |
+| `runShortcut` | frontend/js/settings-wiring.js:1310 |
 | `saveCurrentSearch` | frontend/js/settings-wiring.js:61 |
-| `saveShortcutOverrides` | frontend/js/settings-wiring.js:1266 |
+| `saveShortcutOverrides` | frontend/js/settings-wiring.js:1271 |
 | `saveWhatIsInFront` | frontend/js/settings-wiring.js:559 |
 | `savedSearches` | frontend/js/settings-wiring.js:13 |
-| `setShortcutStatus` | frontend/js/settings-wiring.js:1431 |
-| `setShortcutStatusError` | frontend/js/settings-wiring.js:1438 |
-| `singleKeysOn` | frontend/js/settings-wiring.js:2276 |
-| `stagedImageUrl` | frontend/js/settings-wiring.js:2055 |
+| `setShortcutStatus` | frontend/js/settings-wiring.js:1436 |
+| `setShortcutStatusError` | frontend/js/settings-wiring.js:1443 |
+| `singleKeysOn` | frontend/js/settings-wiring.js:2281 |
+| `stagedImageUrl` | frontend/js/settings-wiring.js:2060 |
 | `stampShortcutTitles` | frontend/js/settings-wiring.js:1142 |
 | `submitLockForm` | frontend/js/settings-wiring.js:305 |
-| `textCounts` | frontend/js/settings-wiring.js:1689 |
-| `uploadStagedFiles` | frontend/js/settings-wiring.js:2114 |
-| `wordCount` | frontend/js/settings-wiring.js:1684 |
+| `textCounts` | frontend/js/settings-wiring.js:1694 |
+| `uploadStagedFiles` | frontend/js/settings-wiring.js:2119 |
+| `wordCount` | frontend/js/settings-wiring.js:1689 |
 
 ### frontend/js/spaces-find.js (25)
 
@@ -26356,7 +26356,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1309 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:163 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:161 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4188 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
