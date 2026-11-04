@@ -1087,6 +1087,30 @@ class Engine:
             self.sink = 0.0
             self._enter("wave" if not self.reduced else "sit", now)
 
+    def _hit_ceiling(self, m: Monitor, uy0: float, now: float) -> bool:
+        """A thrown figure that reaches the top of an open work area takes hold and hangs."""
+        top, scale = m.area[1], self._scale()
+        if self.vy >= 0 or not self._open_side(m, "top"):
+            return False
+        self.y = max(self.y, uy0)  # a step may carry it past the top: the drawn box stops at the edge
+        if self.y > max(top - self._lift(), uy0):
+            return False
+        hang_y, drawn = top - self._lift(), self.y + self._dy("held")
+        self.vx = self.vy = self.angle = 0.0
+        if abs(drawn - hang_y) > 4.0 * scale:  # caught above where the hands go: reach up to it
+            self._rise((self.x, hang_y), "hang", now, drawn_from=drawn)
+        else:
+            self.y = hang_y
+            self._enter("hang", now)
+        return True
+
+    def _track_rest(self, speed: float, dt: float) -> None:
+        """Count how long a thrown figure has been slow. Once it has been long enough it is laid
+        down for good (a floater's pull back to its hover can creep its speed over the line again,
+        and the tumble must not start up on the way to rest) until the next throw."""
+        if self.slow_for < FLY_REST_DWELL:
+            self.slow_for = self.slow_for + dt if speed < FLY_SPIN_MIN * self._scale() else 0.0
+
     def _do_fly(self, now: float, dt: float) -> None:
         """Thrown: ballistic (gravity for a walker; for a floater air drag and a gentle
         pull to its hover height). Bounces off the outer walls, hangs from the ceiling."""
@@ -1103,10 +1127,7 @@ class Engine:
         self.x += self.vx * dt
         self.y += self.vy * dt
         speed = math.hypot(self.vx, self.vy)
-        if self.slow_for >= FLY_REST_DWELL:
-            pass  # laid down: a floater's pull back to its hover can creep its speed over the line again, so it stays down until the next throw
-        else:
-            self.slow_for = self.slow_for + dt if speed < FLY_SPIN_MIN * scale else 0.0
+        self._track_rest(speed, dt)
         self.angle += self.spin_dir * SPIN_RATE * min(1.0, speed / (THROW_MAX * 0.4 * scale)) * dt
         # the walls are of what is drawn: the tumble's widest frame, not the window around it
         ux0, ux1, uy0, uy1 = self._ride_limits("fly")
@@ -1116,16 +1137,7 @@ class Engine:
         elif self.x > ux1 and self._open_side(m, "right"):
             self.x, self.vx = ux1, -abs(self.vx) * BOUNCE_DAMP
             self.bonk_until = now + BONK_FOR
-        if self.vy < 0 and self.y < uy0 and self._open_side(m, "top"):
-            self.y = uy0  # a step may carry it past the top: the drawn box stops at the edge
-        if self.vy < 0 and self.y <= max(top - self._lift(), uy0) and self._open_side(m, "top"):
-            hang_y, drawn = top - self._lift(), self.y + self._dy("held")
-            self.vx = self.vy = self.angle = 0.0
-            if abs(drawn - hang_y) > 4.0 * scale:  # caught above where the hands go: reach up to it
-                self._rise((self.x, hang_y), "hang", now, drawn_from=drawn)
-            else:
-                self.y = hang_y
-                self._enter("hang", now)
+        if self._hit_ceiling(m, uy0, now):
             return
         floor = min(self.floor_y(m), uy1) if self._open_side(m, "bottom") else self.floor_y(m)
         if floater:
@@ -1447,6 +1459,15 @@ class Engine:
             return TICK_WALK_MS
         if s in ("sleep", "sit"):
             return POLL_QUIET_MS
+        due = self._due(now)
+        soonest = min(due)
+        if soonest == math.inf:
+            return None
+        return max(MIN_WAKE_MS, int(math.ceil((soonest - now) * 1000)) + 1)
+
+    def _due(self, now: float) -> list[float]:
+        """The times a calm state next needs a redraw: its end, an ambient act, a bob step, an idle frame."""
+        s = self.state
         due = [self.state_until] if s != "stand" or (self.roam and not self.reduced) else []
         if s == "stand":
             due += [self.flash[1]] if self.flash else [self.next_ambient]
@@ -1455,10 +1476,7 @@ class Engine:
             due.append(now + BOB_TICK)
         if self._idling():  # the next idle frame: a redraw only when the index changes
             due.append((math.floor(now * IDLE_FPS + 1e-6) + 1) / IDLE_FPS)
-        soonest = min(due)
-        if soonest == math.inf:
-            return None
-        return max(MIN_WAKE_MS, int(math.ceil((soonest - now) * 1000)) + 1)
+        return due
 
     def _bobbing(self) -> bool:
         """A floater out in the air, standing or drifting, with motion allowed: it bobs
