@@ -1411,7 +1411,13 @@ if defined MM_PORT_BUSY (
 )
 set "TESSELLATE_PORT=!MM_PORT!"
 call set "MM_URL=%%MM_URL::!MM_PORT_WAS!=:!MM_PORT!%%"
-echo  !ESC![1;38;5;73m[..]!ESC![0m Port !MM_PORT_WAS! is in use by another program, so this time Tessellate uses port !MM_PORT!.
+call :port_pid_is_ours
+if defined MM_PORT_OURS (
+  echo  !ESC![1;38;5;73m[..]!ESC![0m Port !MM_PORT_WAS! is held by another copy of Tessellate, so this time it uses port !MM_PORT!.
+  echo       To close the other copy, open Settings, About, Running copies.
+) else (
+  echo  !ESC![1;38;5;73m[..]!ESC![0m Port !MM_PORT_WAS! is in use by another program, so this time Tessellate uses port !MM_PORT!.
+)
 call :log "port !MM_PORT_WAS! busy, using !MM_PORT!"
 exit /b 0
 

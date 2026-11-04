@@ -53,7 +53,6 @@ api/routes_import.py::export_notebook_folder::request-task::1
 api/routes_settings.py::export_backup::request-task::1
 api/routes_settings.py::restart_app::request-task::1
 api/routes_settings.py::set_console_mode::request-task::1
-api/routes_tasks.py::shutdown::timer::1
 api/routes_update.py::apply_update::thread::1
 api/routes_update.py::apply_update::thread::2
 core/embedmodels.py::_spawn_download::thread::1

@@ -14812,6 +14812,32 @@ Link to another note with [[its first few words]]."></textarea>
                  About is for. Filled in by `renderHealthBlock` in
                  settings.js; every value starts as an em dash rather than
                  blank so a slow first fetch never reads as missing rows. -->
+            <!-- INBOX 1641: the other copies of Tessellate running on this
+                 computer, each with Shut down. Filled by
+                 `renderRunningCopies` (settings-health.js) when this pane
+                 opens; hidden on a device that is not this computer. -->
+            <div class="settings-group hidden" id="running-copies-group">
+              <h3>Running copies</h3>
+              <div class="row help-head">
+                <span class="muted" id="running-copies-note">Other copies of Tessellate running on this computer.</span>
+                <button type="button" class="icon-only ghost small graph-help-toggle"
+                  data-help-for="running-copies-help" aria-controls="running-copies-help" aria-expanded="false"
+                  title="About running copies" aria-label="About running copies">
+                  <i class="ph ph-question" aria-hidden="true"></i>
+                </button>
+              </div>
+              <div class="help-body hidden" id="running-copies-help" role="dialog" aria-label="About running copies">
+                <p>
+                  Closing the window can leave a copy running in the background,
+                  and a second start then takes the next free port. Shut down
+                  asks that copy to quit, the same as its own Quit button, so
+                  it saves and stops its background work first. This copy has
+                  no Shut down here; use Quit for it.
+                </p>
+              </div>
+              <div id="running-copies-list" aria-live="polite"></div>
+            </div>
+
             <div class="settings-group" id="health-group">
               <h3>Health</h3>
               <p class="muted" id="health-checked">How the notebook is, each line with when it was true.</p>

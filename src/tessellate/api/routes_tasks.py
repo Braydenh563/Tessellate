@@ -27,7 +27,7 @@ import json
 import logging
 import time
 
-from fastapi import APIRouter, Depends, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
@@ -887,20 +887,53 @@ def shutdown() -> dict:
       by the code that already knows how. A hard exit would skip all of that
       and leave the orphan it was trying to avoid.
     """
+    stop_process_soon()
+    return {"stopping": True}
+
+
+def stop_process_soon() -> None:
+    """Quit this process after a beat, the way `POST /shutdown` always did
+    (also what another copy's Settings asks for at `POST /instance/shutdown`)."""
     import os
     import signal
-    import threading
+    import time
 
-    from tessellate.core import quit_hook
+    from tessellate.core import jobs, quit_hook
 
     def _stop() -> None:
+        time.sleep(0.15)  # long enough for this reply to leave
         # The desktop window registers its own close (see quit_hook's
         # docstring for why SIGINT alone did nothing there).
         if quit_hook.request_quit():
             return
         os.kill(os.getpid(), signal.SIGINT)
 
-    threading.Timer(0.15, _stop).start()  # long enough for this reply to leave
+    jobs.thread("quit", _stop)
+
+
+@router.get("/running-copies", dependencies=[Depends(this_computer_only)])
+def running_copies_list() -> dict:
+    """Settings, Running copies (INBOX 1641): the copies of this app on this
+    computer, this one marked. Stale records are pruned as it reads."""
+    from tessellate.core import running_copies
+
+    copies = sorted(running_copies.list_copies(), key=lambda c: c.started)
+    return {"copies": [c.public() for c in copies]}
+
+
+@router.post("/running-copies/{pid}/shutdown", dependencies=[Depends(this_computer_only)])
+def running_copies_shutdown(pid: int) -> dict:
+    """Shut another copy down. Never this one (that is Quit), never a pid that
+    is not in this user's records."""
+    from tessellate.core import running_copies
+
+    result = running_copies.shutdown(pid)
+    if result == "this-copy":
+        raise HTTPException(status_code=409, detail="That is this copy. Use Quit to close it.")
+    if result == "unknown":
+        raise HTTPException(status_code=404, detail="No such copy is running.")
+    if result == "failed":
+        raise HTTPException(status_code=502, detail="That copy did not answer, so it was left running.")
     return {"stopping": True}
 
 

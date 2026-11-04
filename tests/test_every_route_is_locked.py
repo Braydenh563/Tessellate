@@ -65,6 +65,9 @@ OPEN = {
     # `instance.lock` in the data directory instead, and a wrong or missing
     # token is a 403 (`tests/test_instance_lock.py`).
     "/instance/focus",
+    # Another copy's Settings, Running copies asking this one to quit
+    # (INBOX 1641): the same token and loopback guard, a 403 without it.
+    "/instance/shutdown",
     # The browser's own crash reports, which have to reach the log *before*
     # unlock, because that is when the failure they describe happens
     # (`routes_settings.open_router`).

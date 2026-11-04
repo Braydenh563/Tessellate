@@ -140,6 +140,14 @@ def repo_tree():
 
 
 @pytest.fixture(autouse=True)
+def _own_run_folder(tmp_path, monkeypatch):
+    """A test that starts a server claim writes a running-copies record
+    (core/running_copies.py); it goes to the test's folder, never the
+    developer's own per-user one."""
+    monkeypatch.setenv("TESSELLATE_RUN_DIR", str(tmp_path / "_run"))
+
+
+@pytest.fixture(autouse=True)
 def _no_repo_data_folder():
     """A test that builds the app's config without `app_state` falls back to
     `./data`, which is the repo's own folder when pytest runs from the root
