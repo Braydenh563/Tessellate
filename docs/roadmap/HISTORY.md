@@ -52699,3 +52699,12 @@ Built: R9b (1621), tests in `tests/test_diagram_r9b.py`. Row text: `data.diagram
 - **Measured** (Playwright on `serve.sh` port 8858, 1440 and 390, light and dark): a row edited elsewhere, the board reopened: `data.mermaid` equal to the row's text in all four runs; row deleted and the board reopened from another board: title set, snapshot image drawn, box 320 by 200 and image 320 by 200 at both widths. The only console errors are the 404 of the deleted row's own fetch.
 - **Help:** `make-a-diagram` Guide topic names the link and the deleted case.
 - **Not verified:** nothing creates a link in the UI yet (R9c's Save to Library); the tests and sweep made the object through the API. A private note's id is just a number among documents, so no leak path exists; the test checks the response.
+
+## Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R10)
+
+Built: R10 (1621), tests in `tests/test_diagram_r10.py`. Row text: Export from the page head and the shelf menu: PNG (`pngOf`, diagram-embed.js:28), SVG (`svgOf`), .mmd (library.js:1061-1070); the builder already offers them. Copy as picture per D7(b). Check: the SVG parses; the PNG is twice the SVG viewBox (`Math.ceil(box[2]) * 2`); the .mmd round-trips byte for byte.
+
+- **What it does:** `diagram-embed.js` `out("picture")` puts the PNG on the clipboard as a promise (a download with a toast where the browser will not); `outDoc(id, how)` exports a saved diagram by id. The builder's ... menu gains Copy as picture; a diagram card's Library menu gains Save as SVG, Save as PNG and Copy as picture (beside Download .mmd); the Documents page's ... menu gains Download as .png and Copy as picture for a diagram only (`doc-export-picture`, `doc-copy-picture`; the editor's own text, so an unsaved change is in the picture).
+- **Measured** (Playwright on `serve.sh` port 8860, 1440 and 390, light and dark, stub clipboard): the clipboard PNG is 336 by 456 for a viewBox of 168 wide (twice, four runs); the download is `<title>.png`; both rows are 185 by 35 at 1440 and 228 by 44 at 390, and 0 by 0 on a prose document; no console or page errors. `test_the_mmd_export_round_trips_byte_for_byte` compares the exported bytes with the stored text.
+- **Help:** the `diagram-elsewhere` Guide topic, the Documents ... menu popover, `DOCK_MENU_WORDS`.
+- **Not verified:** the Library card's menu rows were built and read, not clicked in a browser; the real clipboard write (a stub took it). The plan's page head is the ... menu (the builder dock's Export is the existing one); no separate Export button was added.

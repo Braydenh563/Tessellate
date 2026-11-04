@@ -43,7 +43,23 @@
     }
   }
 
-  //: `how`: "svg" and "png" save a file, "mermaid" and "svgtext" copy.
+  //: The PNG on the clipboard, handed over as a promise so the click's permission is not spent while it draws. Where the
+  //: browser will not copy a picture it is saved as a file, and the toast says so.
+  async function copyPicture(svg, file) {
+    const png = pngOf(svg);
+    try {
+      if (!navigator.clipboard?.write || typeof ClipboardItem === "undefined") throw 0;
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": png.then((blob) => blob || Promise.reject(0)) })]);
+      toast("Copied the picture. Paste it into a note, a document or a chat.");
+    } catch {
+      const blob = await png.catch(() => null);
+      if (!blob) return toast("This diagram could not be copied as a picture. Save it as SVG.", "info");
+      await saveFile(`${file}.png`, blob);
+      toast("This browser would not copy a picture, so it was saved as a PNG instead.");
+    }
+  }
+
+  //: `how`: "svg" and "png" save a file, "picture", "mermaid" and "svgtext" copy.
   async function out(how, source, name = "diagram") {
     const text = String(source || "").trim();
     if (!text) return toast("Add a block first. There is nothing to export yet.");
@@ -51,11 +67,19 @@
     if (how === "mermaid") return void (await copyToClipboard(source));
     const svg = await svgOf(source);
     if (!svg) return;
+    if (how === "picture") return void (await copyPicture(svg, file));
     if (how === "svgtext") return void (await copyToClipboard(svg));
     if (how === "svg") return void (await saveFile(`${file}.svg`, new Blob([svg], { type: "image/svg+xml" })));
     const png = await pngOf(svg).catch(() => null);
     if (!png) return toast("This diagram could not be saved as a picture. Save it as SVG.", "info");
     await saveFile(`${file}.png`, png);
+  }
+
+  //: A saved diagram by its document id (the shelf's menu), exported as `out` does.
+  async function outDoc(id, how) {
+    const doc = await apiJson(`/documents/${id}`).catch(() => null);
+    if (!doc) return toast("This diagram could not be opened.", "info");
+    return out(how, doc.content, doc.title);
   }
 
   // --- the dialog (D6) ----------------------------------------------------------------
@@ -180,5 +204,5 @@
     return dialog;
   }
 
-  diagramModel.embed = { open, out };
+  diagramModel.embed = { open, out, outDoc };
 })();

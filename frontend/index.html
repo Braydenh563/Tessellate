@@ -5199,7 +5199,7 @@ Link to another note with [[its first few words]]."></textarea>
               <p>The type button in the foot (Markdown, Python and so on) opens the list of file types, Documents, Data and Code, with a filter field; Markdown is the rich text editor. The ⋯ menu holds Connections, History, Replace in
                 every document, Copy app link, Paste special, Model for this feature, Extract
                 notes and Map the headings; the downloads (.md, .html, with images,
-                .docx, PDF); the page width, text size, line spacing, toolbar row and code switches (wrap,
+                .docx, PDF; a diagram adds .png and Copy as picture); the page width, text size, line spacing, toolbar row and code switches (wrap,
                 whitespace, minimap); Dim all but this paragraph, Keep this line
                 centred, Margin reader and Serif for reading; Autocorrect, Suggest
                 words and Suggest changes (with Review the next change, Accept all
@@ -5265,6 +5265,11 @@ Link to another note with [[its first few words]]."></textarea>
                   title="Make a new mind map from this document's headings, with a topic that leads back here"><i class="ph ph-tree-structure ph-lead" aria-hidden="true"></i> Map the headings</button>
                 <button id="doc-export-md" class="menu-item doc-dock-menu-item" type="button"
                   title="Download as a .md file"><i class="ph ph-download-simple ph-lead" aria-hidden="true"></i> Download as .md</button>
+                <!-- A diagram's picture (DOCUMENTS_PLAN 22, R10): shown for a diagram only, drawn by the lazy export file. -->
+                <button id="doc-export-picture" class="menu-item doc-dock-menu-item hidden" type="button"
+                  title="Download the diagram as a PNG picture"><i class="ph ph-file-png ph-lead" aria-hidden="true"></i> Download as .png</button>
+                <button id="doc-copy-picture" class="menu-item doc-dock-menu-item hidden" type="button"
+                  title="Copy the diagram as a picture to paste into a note, a document or a chat"><i class="ph ph-image ph-lead" aria-hidden="true"></i> Copy as picture</button>
                 <!-- **One HTML file that needs nothing else**
                      (DOCUMENTS_PLAN Phase 7). Rendered in the browser from the
                      pane that is already rendered, with its images as data

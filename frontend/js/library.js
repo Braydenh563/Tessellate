@@ -1069,6 +1069,9 @@ function libraryActions(item) {
       makeMenuItem(`ph:download-simple Download .${item.kind === "diagram" ? "mmd" : "md"}`, item.kind === "diagram" ? "Save a copy as a Mermaid file" : "Save a copy as a markdown file", () => {
         downloadFromApi(`/documents/${item.id}/export.md`, item.kind === "diagram" ? "document.mmd" : "document.md");
       }),
+      //: A diagram's picture (DOCUMENTS_PLAN 22, R10): drawn in the frame on the press, by the lazy export file.
+      ...(item.kind === "diagram" ? [["ph:file-svg Save as SVG", "svg"], ["ph:file-png Save as PNG", "png"], ["ph:image Copy as picture", "picture"]].map(([label, how]) =>
+        makeMenuItem(label, "", () => ensureModule("diagramEmbed").then((ok) => ok && diagramModel.embed.outDoc(item.id, how)))) : []),
       //: The shared "act on this" rows (INBOX 393): every object can be taken
       //: to the chat that answers about it.
       makeMenuItem("ph:graph Show in graph", "Open the graph centred on this document", () =>

@@ -257,6 +257,7 @@ function syncDocFileType({ prose = true } = {}) {
   // markup puts in front of the words.
   setLabel($("doc-export-md"), `ph:download-simple Download as .${type.ext}`);
   $("doc-export-md").title = `Download as a .${type.ext} file`;
+  for (const id of ["doc-export-picture", "doc-copy-picture"]) $(id)?.classList.toggle("hidden", type.ext !== "mmd");
 
   //: **The prose check depends on the type, so a type change has to re-run
   //: it.** `openDocument` gets this through `renderDocTools`; changing the
@@ -451,7 +452,7 @@ window.addEventListener(
 //: ninth row, behind the layout switches. The rows keep their markup order;
 //: the group is moved, so ids and handlers are untouched.
 const docDownloadGroup = foldDocMenuGroup("ph:download-simple Download or print", [
-  "doc-export-md", "doc-export-html", "doc-export-zip", "doc-export-docx", "doc-export-pdf",
+  "doc-export-md", "doc-export-picture", "doc-copy-picture", "doc-export-html", "doc-export-zip", "doc-export-docx", "doc-export-pdf",
 ]);
 docDownloadGroup?.parentElement?.prepend(docDownloadGroup);
 foldDocMenuGroup("ph:layout Editor and layout", [
@@ -9780,6 +9781,13 @@ $("doc-copy-link").addEventListener("click", () => {
 });
 $("doc-export-md").addEventListener("click", exportDocumentMarkdown);
 $("doc-export-html").addEventListener("click", exportDocumentHtml);
+//: A diagram's picture from the open page (R10): the editor's own text, so an unsaved change is in it.
+for (const [id, how] of [["doc-export-picture", "png"], ["doc-copy-picture", "picture"]]) {
+  $(id).addEventListener("click", async () => {
+    $("doc-dock-menu")?.removeAttribute("open");
+    if (await ensureModule("diagramEmbed")) diagramModel.embed.out(how, docText(), currentDoc?.title);
+  });
+}
 $("doc-export-zip").addEventListener("click", exportDocumentBundle);
 $("doc-export-docx").addEventListener("click", exportDocumentDocx);
 $("doc-export-pdf").addEventListener("click", exportDocumentPdf);

@@ -503,7 +503,7 @@
   //: The ... menu (1546 D7): what the host adds (`io.menu`, the dialog's Turn into shapes), then the
   //: exports. They run from diagram-embed.js, fetched on the first press.
   function more(S) {
-    const rows = [["ph:file-svg Save as SVG", "svg"], ["ph:file-png Save as PNG", "png"], ["ph:copy Copy as Mermaid", "mermaid"], ["ph:code Copy as SVG", "svgtext"]];
+    const rows = [["ph:file-svg Save as SVG", "svg"], ["ph:file-png Save as PNG", "png"], ["ph:image Copy as picture", "picture"], ["ph:copy Copy as Mermaid", "mermaid"], ["ph:code Copy as SVG", "svgtext"]];
     //: Where the four direction buttons do not fit (a phone, a touch screen) they fold into this menu: a dock folds by width.
     const fold = S.dirs && matchMedia(COMPACT).matches ? [{ label: "ph:compass Direction", items: DIRS.map(([dir, arrow, name]) => ({ label: `${arrow} ${name}`, run: () => S.dirs.querySelector(`[data-dir="${dir}"]`).click() })), group: "view" }] : [];
     //: With the direction, Suggest folds in here too: Add, Undo, Redo and this menu are one row at 320 (INBOX 1596 d).
