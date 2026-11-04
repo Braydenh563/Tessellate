@@ -91,10 +91,75 @@ WALK_SCRIPT = (
     "(function(){try{prefs.set('avatar-buddy-motion','always');"
     "if(typeof nameMarkBuddyMotionApply==='function')nameMarkBuddyMotionApply();return true}catch(e){return false}})()"
 )
+#: What the right-click "Companion" panel needs of the app window: whether it is locked
+#: and the choices the app's own menu and Appearance keep (`avatar-buddy`: off, me,
+#: persona, atlas, custom; `atlas-look`; the saved companions in `avatar-buddy-presets`).
+COMPANION_LOCK = (
+    "const lk=document.getElementById('lock-overlay');"
+    "if(lk&&!lk.classList.contains('hidden'))return 'locked';"
+)
+COMPANION_SCRIPT = (
+    "(function(){try{const lk=document.getElementById('lock-overlay');"
+    "const locked=!!(lk&&!lk.classList.contains('hidden'));let presets=[];"
+    "try{const l=prefs.json('avatar-buddy-presets',[]);if(Array.isArray(l))presets=l.map(function(p){"
+    "const v=(p&&p.values)||{};return {name:String((p&&p.name)||'').slice(0,30),who:String(v['avatar-buddy']||''),look:String(v['atlas-look']||'')}})}catch(e){}"
+    "return JSON.stringify({locked:locked,who:prefs.get('avatar-buddy',null)||'off',"
+    "look:typeof appearancePref==='function'?appearancePref('atlas-look'):'auto',presets:presets})}catch(e){return ''}})()"
+)
+#: Writes the app's own prefs for an Atlas choice, as its Companion menu does (the select's
+#: change handlers: `avatar-buddy`, then the custom row, the corner companion and the size row
+#: follow; `atlas-look` repaints), and says "ok". A locked app is refused.
+COMPANION_ATLAS = (
+    "(function(){try{" + COMPANION_LOCK + "prefs.set('avatar-buddy','atlas');prefs.set('atlas-look',%s);"
+    "if(typeof mountBuddyCustom==='function')mountBuddyCustom();"
+    "if(typeof atlasRepaint==='function')atlasRepaint();"
+    "if(typeof syncNameMarkBuddy==='function')syncNameMarkBuddy();"
+    "if(typeof nameMarkBuddySizeSelect==='function')nameMarkBuddySizeSelect();return 'ok'}catch(e){return 'error'}})()"
+)
+#: A saved companion applied by its own function when the app has loaded it; else its two
+#: prefs the overlay shows are written at once and the rest follows when the module loads.
+COMPANION_PRESET = (
+    "(function(){try{" + COMPANION_LOCK + "const p=(prefs.json('avatar-buddy-presets',[])||[])[%d];"
+    "if(!p||p.name!==%s)return 'gone';const v=p.values||{};"
+    "if(typeof nameMarkBuddyApplyPreset==='function'){nameMarkBuddyApplyPreset(p);return 'ok'}"
+    "prefs.set('avatar-buddy',v['avatar-buddy']||'off');"
+    "if(v['atlas-look'])prefs.set('atlas-look',v['atlas-look']);else prefs.remove('atlas-look');"
+    "if(typeof syncNameMarkBuddy==='function')syncNameMarkBuddy();"
+    "if(typeof ensureModule==='function')ensureModule('companionMenu').then(function(){"
+    "if(typeof nameMarkBuddyApplyPreset==='function')nameMarkBuddyApplyPreset(p)});return 'ok'}catch(e){return 'error'}})()"
+)
+_CHOICE_KEY = re.compile(r"atlas:(masculine|feminine|auto)|preset:\d{1,2}")
 MOTION_MODES = ("full", "fades", "still")
 MOTION_REASONS = ("", "os", "app", "setting", "avatar", "perf-ignored", "app-ignored", "os-ignored")
 
 _KIND = re.compile(r"[a-z]{1,16}")
+
+
+def companion_options(data: Any) -> list[dict[str, Any]]:
+    """The right-click "Companion" panel's rows from what the app window said (`COMPANION_SCRIPT`):
+    every choice the app offers, the current one marked. The overlay draws Atlas, so only Atlas
+    rows (and a saved companion that is Atlas) can be chosen; the others are listed as
+    "shows in the app only" until frames for them can be made (overlay-1104.md, Remaining)."""
+    if not isinstance(data, dict):
+        return []
+    who, look = str(data.get("who") or "off"), str(data.get("look") or "auto")
+    rows: list[dict[str, Any]] = [
+        {"key": f"atlas:{name}", "label": label, "group": "Atlas", "current": who == "atlas" and look == name, "enabled": True}
+        for name, label in (("masculine", "Atlas, masculine"), ("feminine", "Atlas, feminine"), ("auto", "Atlas, match your faces"))
+    ]
+    for kind, label in (("me", "You, from your name"), ("persona", "The chat's persona"), ("custom", "Your own character")):
+        rows.append({"key": kind, "label": label, "group": "Shows in the app only", "current": who == kind, "enabled": False})
+    presets = data.get("presets")
+    for index, preset in enumerate(presets[:12] if isinstance(presets, list) else []):
+        name = str(preset.get("name") or "")[:30] if isinstance(preset, dict) else ""
+        if not name:
+            continue
+        atlas = preset.get("who") == "atlas"
+        rows.append({
+            "key": f"preset:{index}", "label": name, "group": "Saved companions" if atlas else "Shows in the app only",
+            "current": False, "enabled": atlas,
+        })
+    return rows
 _lock = threading.RLock()
 _active: DeskCompanion | None = None
 
@@ -604,6 +669,12 @@ class DeskApi:
     def set_roam(self, on: Any) -> bool:
         return self._owner.set_roam(on is True)
 
+    def companion_choices(self) -> dict[str, Any]:
+        return self._owner.companion_choices()
+
+    def choose_companion(self, key: Any) -> str:
+        return self._owner.choose_companion(key if isinstance(key, str) else "")
+
 
 class DeskCompanion:
     """The second window and when it is shown (see the module's docstring)."""
@@ -653,6 +724,9 @@ class DeskCompanion:
         #: "Let it walk" when the app window could not be written to: the choice
         #: stands for the session.
         self._walk_forced = False
+        #: The saved companions' names the "Companion" panel last listed, by key: a choice
+        #: names its saved companion by place, and is refused if the name there changed.
+        self._choice_names: dict[str, str] = {}
         #: The figure's rectangle (logical pixels) at the last click, and whether
         #: `window` is the quick panel beside it rather than the card.
         self.pet_rect: tuple[int, int, int, int] | None = None
@@ -909,11 +983,17 @@ class DeskCompanion:
         """The menu's "Let it walk": the app's Companion movement set to Always
         (through its own window), and the figure restarted moving."""
         done = self._ask_main(WALK_SCRIPT, "the walk setting") is True
+        return self._restart_shown("let it walk", walk_forced=not done)
+
+    def _restart_shown(self, what: str, walk_forced: bool | None = None) -> bool:
+        """The runner restarted for whatever the app window now says (look, motion), where
+        it stood, and shown again when it was; a failed start falls back to the card."""
         if not _lock.acquire(timeout=LOCK_WAIT):
-            logger.warning("desk companion: busy, let it walk was skipped")
+            logger.warning("desk companion: busy, %s was skipped", what)
             return False
         try:
-            self._walk_forced = not done
+            if walk_forced is not None:
+                self._walk_forced = walk_forced
             if self.closing or self.runner is None:
                 return False
             before = self.runner
@@ -923,13 +1003,51 @@ class DeskCompanion:
                 return False
             if self.runner is not before and self.shown:
                 self.runner.show()
-            logger.info("desk companion: let it walk (setting written: %s)", done)
+            logger.info("desk companion: %s, restarted", what)
             return True
         except Exception:  # noqa: BLE001 - the figure stays as it was
-            logger.warning("desk companion: let it walk failed", exc_info=True)
+            logger.warning("desk companion: %s failed", what, exc_info=True)
             return False
         finally:
             _lock.release()
+
+    def companion_choices(self) -> dict[str, Any]:
+        """The right-click "Companion" panel: `{"locked": bool, "options": [...]}`. Nothing
+        is listed while the app is locked or does not answer."""
+        answer = self._ask_main(COMPANION_SCRIPT, "the companion choices")
+        try:
+            data = json.loads(answer) if isinstance(answer, str) and answer.startswith("{") else None
+        except ValueError:
+            data = None
+        if not isinstance(data, dict):
+            self._choice_names = {}
+            return {"locked": False, "options": []}
+        if data.get("locked") is True:
+            self._choice_names = {}
+            return {"locked": True, "options": []}
+        options = companion_options(data)
+        self._choice_names = {o["key"]: o["label"] for o in options if o["key"].startswith("preset:")}
+        return {"locked": False, "options": options}
+
+    def choose_companion(self, key: str) -> str:
+        """A choice from that panel, written to the app's own prefs through its window (as
+        `let_it_walk` writes its setting), then the figure restarts with the new look.
+        "ok", "locked" (refused while the app is locked), "gone" (a saved companion that is
+        no longer there), "unknown" or "error"."""
+        if not _CHOICE_KEY.fullmatch(key):
+            return "unknown"
+        if key.startswith("atlas:"):
+            script = COMPANION_ATLAS % json.dumps(key.split(":", 1)[1])
+        else:
+            name = self._choice_names.get(key)
+            if name is None:
+                return "gone"
+            script = COMPANION_PRESET % (int(key.split(":", 1)[1]), json.dumps(name))
+        answer = self._ask_main(script, "the companion choice")
+        if answer != "ok":
+            logger.info("desk companion: the companion choice was not applied (%s)", answer)
+            return answer if answer in ("locked", "gone") else "error"
+        return "ok" if self._restart_shown("companion choice") else "error"
 
     def _stop_runner(self) -> None:
         runner, self.runner = self.runner, None

@@ -1431,8 +1431,8 @@ MORE_TOPICS: list[dict] = [
             "It is the figure alone: Atlas floats like a wind spirit "
             "over the whole screen (other companions walk along the bottom above the taskbar), sits and "
             "then sleeps when you have been away, can be picked up and thrown "
-            "(it bounces off the screen edges), hangs from the top now and then, and peeks up from behind the "
-            "taskbar or a screen edge (click it to bring it out). Now and then it climbs onto the top of a "
+            "hangs from the top now and then, and peeks up from behind the "
+            "taskbar. Now and then it climbs onto the top of a "
             "window and walks along it (Roam over windows in its right-click menu turns that off); it never "
             "moves or touches a window, and when a reminder falls due it brings you a card to click. It steps "
             "aside for full screen, and follows Companion movement in Appearance: it "
@@ -1446,9 +1446,9 @@ MORE_TOPICS: list[dict] = [
             "the desktop app runs; another device has no such row. It is "
             "whoever you chose in Appearance. Click it for "
             "Quick note, Quick search or Open Tessellate, in a panel beside it; a note saved there is filed "
-            "like any other. Right-click it for "
-            "Settings or Hide (Hide turns the setting off). Drag it to move it; it "
-            "remembers where you left it. While Tessellate is locked it shows only the "
+            "like any other. Right-click it for Companion (Atlas masculine or feminine, or a saved Atlas "
+            "companion; the rest show in the app only), Settings or Hide (Hide turns the setting off). Drag it; it "
+            "remembers the spot. While Tessellate is locked it shows only the "
             "companion and Open Tessellate, never a note or a result."
         ),
         "badge": {"label": "Desktop companion", "section": "appearance", "target": "desktop-companion-row"},

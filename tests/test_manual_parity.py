@@ -329,13 +329,16 @@ def test_the_desktop_companion_row_is_named_as_a_this_computer_setting():
     # hangs from the top and peeks from behind the taskbar, in both places.
     # The roam request of the same day: window tops, the switch and a reminder's card.
     for words in ("floats like a wind spirit", "sleeps", "thrown", "hangs from the top", "peeks up from behind the taskbar", "animation effects",
-                  "climbs onto the top of a window", "Roam over windows", "a card when a reminder falls due"):
+                  "climbs onto the top of a window", "Roam over windows", "a card when a reminder falls due",
+                  "right-click for Companion (Atlas masculine or feminine, or a saved Atlas companion)"):
         assert words in " ".join(popover.split()), words
     for topic in named:
         flat = " ".join(topic["body"].split())
         for words in ("floats like a wind spirit", "thrown", "hangs from the top", "peeks up from behind the taskbar", "animation effects",
-                      "climbs onto the top of a window", "Roam over windows", "a card to click"):
+                      "climbs onto the top of a window", "Roam over windows", "a card to click",
+                      "Right-click it for Companion (Atlas masculine or feminine, or a saved Atlas companion; the rest show in the app only)"):
             assert words in flat, (topic["id"], words)
+            assert len(topic["body"]) < 1900, topic["id"]
     settings = (FRONTEND / "js" / "settings.js").read_text(encoding="utf-8")
     assert 'const onThisComputer = isDesktop || (await healthFacts())?.this_computer !== false;' in settings
     assert '$("desktop-companion-row")?.classList.toggle("hidden", !onThisComputer);' in settings
