@@ -2,9 +2,9 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7756, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8689, test files 2023, tests 17039, plan headings 1000, app scripts 28, boot scripts 37, script files 248.
+Counts: frontend functions 7757, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8689, test files 2024, tests 17043, plan headings 1000, app scripts 28, boot scripts 37, script files 248.
 
-## Frontend functions (7756)
+## Frontend functions (7757)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -695,60 +695,61 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `syncSkillVerifyRow` | frontend/js/skills.js:155 |
 | `updateBatchCount` | frontend/js/skills.js:1035 |
 
-### frontend/js/shell-reminders.js (50)
+### frontend/js/shell-reminders.js (51)
 
 | Name | File:line |
 |---|---|
-| `addReminder` | frontend/js/shell-reminders.js:1516 |
+| `addReminder` | frontend/js/shell-reminders.js:1553 |
 | `armMinuteTick` | frontend/js/shell-reminders.js:41 |
-| `clearDoneReminders` | frontend/js/shell-reminders.js:1055 |
-| `clipText` | frontend/js/shell-reminders.js:824 |
-| `curtainShell` | frontend/js/shell-reminders.js:1656 |
-| `defaultDueValue` | frontend/js/shell-reminders.js:1567 |
-| `edgeFadeWire` | frontend/js/shell-reminders.js:434 |
+| `clearDoneReminders` | frontend/js/shell-reminders.js:1092 |
+| `clipText` | frontend/js/shell-reminders.js:861 |
+| `curtainShell` | frontend/js/shell-reminders.js:1693 |
+| `defaultDueValue` | frontend/js/shell-reminders.js:1604 |
+| `edgeFadeWire` | frontend/js/shell-reminders.js:438 |
+| `fitStatusBar` | frontend/js/shell-reminders.js:468 |
 | `glideStrip` | frontend/js/shell-reminders.js:309 |
-| `liftLockScreen` | frontend/js/shell-reminders.js:1679 |
-| `loadReminders` | frontend/js/shell-reminders.js:910 |
-| `markScrollEdge` | frontend/js/shell-reminders.js:503 |
-| `markTabBarRecede` | frontend/js/shell-reminders.js:578 |
-| `notePreviewText` | frontend/js/shell-reminders.js:859 |
-| `nudgeDue` | frontend/js/shell-reminders.js:1462 |
-| `onScrollEdge` | frontend/js/shell-reminders.js:610 |
-| `openCalendarPage` | frontend/js/shell-reminders.js:1295 |
-| `paginateDoneReminders` | frontend/js/shell-reminders.js:1006 |
-| `presetDate` | frontend/js/shell-reminders.js:1351 |
-| `previewBlocks` | frontend/js/shell-reminders.js:851 |
-| `refreshMediaSession` | frontend/js/shell-reminders.js:1620 |
-| `refreshReminderDefaults` | frontend/js/shell-reminders.js:1483 |
-| `relativeWhen` | frontend/js/shell-reminders.js:1331 |
-| `reminderComposeIsPristine` | frontend/js/shell-reminders.js:1471 |
-| `reminderItem` | frontend/js/shell-reminders.js:1096 |
-| `reminderMadeUndo` | frontend/js/shell-reminders.js:1507 |
-| `reminderPutUndoably` | frontend/js/shell-reminders.js:1495 |
-| `reminderTarget` | frontend/js/shell-reminders.js:1312 |
+| `liftLockScreen` | frontend/js/shell-reminders.js:1716 |
+| `loadReminders` | frontend/js/shell-reminders.js:947 |
+| `markScrollEdge` | frontend/js/shell-reminders.js:540 |
+| `markTabBarRecede` | frontend/js/shell-reminders.js:615 |
+| `notePreviewText` | frontend/js/shell-reminders.js:896 |
+| `nudgeDue` | frontend/js/shell-reminders.js:1499 |
+| `onScrollEdge` | frontend/js/shell-reminders.js:647 |
+| `openCalendarPage` | frontend/js/shell-reminders.js:1332 |
+| `paginateDoneReminders` | frontend/js/shell-reminders.js:1043 |
+| `presetDate` | frontend/js/shell-reminders.js:1388 |
+| `previewBlocks` | frontend/js/shell-reminders.js:888 |
+| `refreshMediaSession` | frontend/js/shell-reminders.js:1657 |
+| `refreshReminderDefaults` | frontend/js/shell-reminders.js:1520 |
+| `relativeWhen` | frontend/js/shell-reminders.js:1368 |
+| `reminderComposeIsPristine` | frontend/js/shell-reminders.js:1508 |
+| `reminderItem` | frontend/js/shell-reminders.js:1133 |
+| `reminderMadeUndo` | frontend/js/shell-reminders.js:1544 |
+| `reminderPutUndoably` | frontend/js/shell-reminders.js:1532 |
+| `reminderTarget` | frontend/js/shell-reminders.js:1349 |
 | `revealActiveTab` | frontend/js/shell-reminders.js:269 |
-| `safeMdSlice` | frontend/js/shell-reminders.js:738 |
-| `setDue` | frontend/js/shell-reminders.js:1400 |
+| `safeMdSlice` | frontend/js/shell-reminders.js:775 |
+| `setDue` | frontend/js/shell-reminders.js:1437 |
 | `startClockTicker` | frontend/js/shell-reminders.js:77 |
 | `startMinuteTicker` | frontend/js/shell-reminders.js:60 |
 | `stopClockTicker` | frontend/js/shell-reminders.js:81 |
-| `stripFrontmatter` | frontend/js/shell-reminders.js:834 |
-| `syncDueFromParts` | frontend/js/shell-reminders.js:1414 |
+| `stripFrontmatter` | frontend/js/shell-reminders.js:871 |
+| `syncDueFromParts` | frontend/js/shell-reminders.js:1451 |
 | `syncEdgeFade` | frontend/js/shell-reminders.js:413 |
-| `syncPartsFromDue` | frontend/js/shell-reminders.js:1406 |
-| `syncScrollEdges` | frontend/js/shell-reminders.js:663 |
+| `syncPartsFromDue` | frontend/js/shell-reminders.js:1443 |
+| `syncScrollEdges` | frontend/js/shell-reminders.js:700 |
 | `syncTabOverflowFade` | frontend/js/shell-reminders.js:232 |
 | `tabBarMode` | frontend/js/shell-reminders.js:226 |
 | `tabCentreSpace` | frontend/js/shell-reminders.js:163 |
 | `tabContentWidth` | frontend/js/shell-reminders.js:203 |
 | `tabRowSpace` | frontend/js/shell-reminders.js:138 |
 | `tickClocks` | frontend/js/shell-reminders.js:12 |
-| `toLocalInputValue` | frontend/js/shell-reminders.js:1344 |
-| `updateDueReadout` | frontend/js/shell-reminders.js:1426 |
-| `updateReminderBadge` | frontend/js/shell-reminders.js:1025 |
-| `wikiLinkLabel` | frontend/js/shell-reminders.js:785 |
-| `wikiLinkShown` | frontend/js/shell-reminders.js:811 |
-| `wikiLinkTarget` | frontend/js/shell-reminders.js:802 |
+| `toLocalInputValue` | frontend/js/shell-reminders.js:1381 |
+| `updateDueReadout` | frontend/js/shell-reminders.js:1463 |
+| `updateReminderBadge` | frontend/js/shell-reminders.js:1062 |
+| `wikiLinkLabel` | frontend/js/shell-reminders.js:822 |
+| `wikiLinkShown` | frontend/js/shell-reminders.js:848 |
+| `wikiLinkTarget` | frontend/js/shell-reminders.js:839 |
 
 ### frontend/js/markdown.js (34)
 
@@ -12185,7 +12186,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/07-whiteboard-misc.css | 11854 |
 | frontend/css/08-consistency.css | 10874 |
 | frontend/css/09-editor.css | 1108 |
-| frontend/css/10-responsive.css | 2709 |
+| frontend/css/10-responsive.css | 2714 |
 | frontend/css/appearance-panel-lazy.css | 323 |
 | frontend/css/appearance-panel-own-lazy.css | 86 |
 | frontend/css/ask-compose-lazy.css | 263 |
@@ -23828,7 +23829,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17039)
+## Tests (17043)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25510,6 +25511,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_stats_interactive_1319.py | 8 |
 | tests/test_stats_router_subject.py | 2 |
 | tests/test_status_bar_fit.py | 4 |
+| tests/test_status_bar_fit_1672.py | 4 |
 | tests/test_status_bar_grammar.py | 5 |
 | tests/test_stop_discards_write.py | 5 |
 | tests/test_stop_reaches_the_model.py | 3 |
@@ -26565,7 +26567,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:175 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:177 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4178 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |

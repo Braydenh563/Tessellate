@@ -2707,3 +2707,8 @@ header#top-bar[data-scrolled="1"],
     min-height: var(--target-min);
   }
 }
+/* INBOX 1672: an optional status item shed by `fitStatusBar`
+   (shell-reminders.js) because the bar would otherwise run past its edge. */
+#status-bar .status-item.status-shed {
+  display: none;
+}

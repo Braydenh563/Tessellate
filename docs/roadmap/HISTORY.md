@@ -52562,6 +52562,8 @@ From DOCUMENTS_PLAN.md and WHITEBOARD_PLAN.md "Placed from INBOX, 2026-11-03", b
 
 1664. **Owner, 2026-11-04 09:55Z (screenshot: the equation editor, a big circled-times operator with an empty box above and below it):** "I cnat delete these in the equations". Recommendation (taken): reproduce in the math editor (math-editor.js, the MathLive field): a big operator or any template with empty boxes must go with Backspace or Delete from its box or after it, and a selected template with Delete; test each tile kind.
 
+1672. **Owner, 2026-11-04 10:47Z (two screenshots: the status bar at about 680 wide, Redo gone and a lighter band behind Undo):** "on this window size it looks like it is faded out on the right but it isnt scrollable??" Fixed: below 820 every status item is a 44px target, so the bar needed 649px with nothing optional and about 750 with the clock, unscrollable (the AI popup is positioned inside it), and the edge fade was put on anyway. Now only a strip that scrolls is faded (`syncEdgeFade`, every `.edge-fade`), and the status bar sheds the clock, the LAN dot, then the inbox tray until the rest fit (`fitStatusBar`). Measured 600 to 820 with and without the clock: Redo ends 8px inside the bar, no fade.
+
 ## Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R1 and R2)
 
 Built: R1 in 324f174 (merge be41265), R2 in 4d3afd9 and 455d3c5 (merge 606730c); numbers in `agent-remaining/diagram-r1-1104.md` and `diagram-r2-1104.md`.
