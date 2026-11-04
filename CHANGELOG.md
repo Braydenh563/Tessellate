@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Labels with an icon end in an ellipsis where they are cut (the tray's items first), and a tray row's remove button is a minus so it no longer looks like the tray's close (INBOX 1646, 1647).
 - Launcher: when another program holds the port, it starts on the next free one and says so, and logs which program held it (INBOX 1641).
 - Desktop companion: Hide from its own menu clears the tray's tick at once, and a panel's resize or a drag is set in physical pixels like the first show (INBOX 1642, 1633).
 - Diagram builder: the picture and the blocks pane share one height, and the picture zooms (bar, Ctrl+wheel, pinch, + - 0, arrows, drag to pan) (INBOX 1614).

@@ -52391,6 +52391,10 @@ From DOCUMENTS_PLAN.md and WHITEBOARD_PLAN.md "Placed from INBOX, 2026-11-03", b
 
 1642. **Owner, 2026-11-04 (screenshot: the tray menu, "Show desktop companion" still ticked after hiding the companion from its own menu):** "also if I hide the desktop companion, it should update in the system tray as well". Recommendation (taken): the tray item's `checked` reads the preference each time the menu opens, and Hide from the companion's menu writes that preference.
 
+1646. **Owner, 2026-11-04 12:32 local (screenshot: the bottom bar's Tray popover, an item "Played a game of golf for 18 holes at Windar" cut flat at the edge):** "the tray items dont have an elipsis at the cutoff". Recommendation (taken): the class, not the case: `setLabel`'s `span.ph-text` carries the ellipsis itself in every control that does not wrap.
+
+1647. **Owner, 2026-11-04 (screenshot: the Tray popover, a row's x beside the popover's close x):** "i feel like the x's for each teay item may be confuxed with the x button to close the tray?". Recommendation (taken): a row's remove button is a minus (`ph:minus-circle`, as Questions' Drop), the x stays the popover's close.
+
 ## Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R1 and R2)
 
 Built: R1 in 324f174 (merge be41265), R2 in 4d3afd9 and 455d3c5 (merge 606730c); numbers in `agent-remaining/diagram-r1-1104.md` and `diagram-r2-1104.md`.

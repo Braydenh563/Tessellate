@@ -162,7 +162,10 @@ function objTrayRow(ref) {
   use.title = `${ref.title}: paste where you were typing, or drag it out`;
   use.setAttribute("aria-label", `${OBJ_NOUN[ref.kind]}: ${ref.title}`);
   use.addEventListener("click", () => objTrayPaste(ref));
-  const remove = smallButton("ph:x", `Take ${ref.title} out of the tray`, () => objTrayRemove(objKey(ref)));
+  //: A minus, not an x (INBOX 1647, the owner: "the x's for each tray item
+  //: may be confused with the x button to close the tray"): the x is the
+  //: popover's close, a row's own button takes the item out.
+  const remove = smallButton("ph:minus-circle", `Take ${ref.title} out of the tray`, () => objTrayRemove(objKey(ref)));
   li.append(use, remove);
   return li;
 }

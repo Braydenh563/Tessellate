@@ -10864,3 +10864,11 @@ header#top-bar button.space-switcher-btn:focus-visible {
   align-self: stretch;
   color: inherit;
 }
+
+/* **A label cut short ends in an ellipsis wherever it is cut** (INBOX 1646,
+   the owner: "the tray items dont have an elipsis at the cutoff"). `setLabel`
+   puts an icon's label in `span.ph-text`, a flex item of its button, so a
+   control's own `text-overflow: ellipsis` never reached the words: it was
+   cut flat at the edge. The span shrinks and carries the ellipsis itself;
+   it truncates only where the control already does not wrap. */
+.ph-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }

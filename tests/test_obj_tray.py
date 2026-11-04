@@ -4,6 +4,7 @@ obj-tray.js, the mode hand-over in obj-drag.js)."""
 from __future__ import annotations
 
 from tests._objmove_node import JS, needs_node, run
+from pathlib import Path
 
 FILES = ["obj-ref.js", "obj-clip.js", "obj-drag.js", "obj-reorder.js", "obj-carry.js", "obj-tray.js"]
 STUBS = """
@@ -175,3 +176,15 @@ def test_a_remembered_box_that_is_no_longer_on_screen_is_not_pasted_into() -> No
     __out({ shown, hidden: objTrayDestination() });
     """)
     assert out == {"shown": "chat", "hidden": None}
+
+
+def test_a_row_takes_its_item_out_with_a_minus_not_the_close_x():
+    # INBOX 1647: the row's x read as the popover's close.
+    src = (Path(__file__).resolve().parents[1] / "frontend/js/obj-tray.js").read_text(encoding="utf-8")
+    assert 'smallButton("ph:minus-circle", `Take ${ref.title} out of the tray`' in src
+
+
+def test_an_icon_label_carries_its_own_ellipsis():
+    # INBOX 1646: setLabel's span.ph-text is a flex item, so a control's ellipsis never reached it.
+    css = (Path(__file__).resolve().parents[1] / "frontend/css/08-consistency.css").read_text(encoding="utf-8")
+    assert ".ph-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }" in css
