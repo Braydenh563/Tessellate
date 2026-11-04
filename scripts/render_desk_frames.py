@@ -66,6 +66,14 @@ def with_stream(body: Image.Image, neb: Image.Image) -> Image.Image:
     return Image.alpha_composite(veil, solid)
 
 
+def touches_edge(im: Image.Image) -> bool:
+    """True when a drawn pixel (alpha at the floor or more) is on the image's left, right or bottom edge."""
+    box = im.getchannel("A").point(lambda a: 255 if a >= sprites.ALPHA_FLOOR else 0).getbbox()
+    if not box:
+        return False
+    return box[0] <= 0 or box[2] >= im.width or box[3] >= im.height
+
+
 def crop_box(images: list[Image.Image]) -> tuple[int, int, int, int]:
     left = top = 10**9
     right = bottom = 0
@@ -95,6 +103,11 @@ def main() -> int:
             blank = [n for n, im in captured.items() if sum(im.getchannel("A").histogram()[128:]) < 1000]
             if blank:
                 raise SystemExit(f"{look}: blank captures {blank}; run it again")
+            #: A capture whose drawn pixels reach the clip's edge was cut by the clip (INBOX
+            #: 1663: half an Atlas shipped): widen `BOX` in the script, never crop around it.
+            cut = [n for n, im in captured.items() if touches_edge(im)]
+            if cut:
+                raise SystemExit(f"{look}: captures {cut} touch the clip edge; widen BOX in render_desk_frames.js")
             box = crop_box(list(images.values()))
             target = out / look
             if target.exists():

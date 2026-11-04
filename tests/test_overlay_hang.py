@@ -168,3 +168,18 @@ def test_it_never_hangs_where_no_edge_is_under_the_hands() -> None:
             t += 8
             e.update(t)
     assert hung > 100
+
+
+def test_a_hang_holds_still_x_never_changes_while_hanging() -> None:
+    """INBOX 1663: "slides a little from side to side while hanging"."""
+    for seed in range(1, 6):
+        e = make(seed)
+        e._perform("hang", 1.0)
+        t, xs, ys = 1.0, set(), set()
+        for _ in range(1500):
+            t += 0.033
+            o = e.update(t)
+            if e.state == "hang":
+                xs.add(o.x)
+                ys.add(o.y)
+        assert len(xs) == 1 and len(ys) == 1, (seed, xs, ys)

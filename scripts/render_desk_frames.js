@@ -48,8 +48,11 @@ const FRAMES = [
 const IDLE_N = 12;
 FRAMES.push(...Array.from({ length: IDLE_N }, (_, i) => ({ name: `idle${i}`, pose: "stand", classes: [], idle: i / IDLE_N })));
 const LOOKS = (process.env.LOOKS || "masculine,feminine").split(",");
-//: The capture box around the figure, in CSS pixels: roomy, cropped later.
-const BOX = { width: 220, height: 260, left: 120, top: 60 };
+//: The capture box around the figure, in CSS pixels: roomy, cropped later. INBOX 1663: at
+//: 220 wide the feminine look's hang, hop, land, tumble and idle frames (the figure sits
+//: further right in them) were cut by the clip itself and shipped with a straight edge;
+//: `render_desk_frames.py` now refuses a capture that touches the clip's edge.
+const BOX = { width: 400, height: 300, left: 120, top: 60 };
 
 (async () => {
   const out = process.argv[2];
@@ -103,7 +106,15 @@ const BOX = { width: 220, height: 260, left: 120, top: 60 };
       //: mask and clip painting nothing (no torso below the head, the irises
       //: clipped away to blank white eyes), so they are made visible themselves.
       for (const el of document.querySelectorAll("mask, clipPath")) put(el, { visibility: "visible" });
-      put(clone, { transform: "translate(" + (box.left + 78) + "px, " + (box.top + 80) + "px)", visibility: "visible" });
+      window.__pin = "translate(" + (box.left + 78) + "px, " + (box.top + 80) + "px)";
+      put(clone, { transform: window.__pin, visibility: "visible" });
+      //: Then nothing else may move it: the page's own timers write the figure's transform
+      //: (home corner walks, drift) at any moment, even between the pin and the screenshot.
+      const realSet = CSSStyleDeclaration.prototype.setProperty;
+      window.__setProp = (el, k, v, pr) => realSet.call(el.style, k, v, pr);
+      Object.defineProperty(clone.style, "transform", { get: () => window.__pin, set: () => {}, configurable: true });
+      clone.style.setProperty = function (k, v, pr) { if (k !== "transform") realSet.call(this, k, v, pr); };
+      clone.style.removeProperty = function (k) { return k === "transform" ? "" : CSSStyleDeclaration.prototype.removeProperty.call(this, k); };
       //: The companion in the app may be tucked behind a bar (`data-legs="peek"`
       //: clips it): keep only the gait, and set the pose per frame.
       for (const name of clone.getAttributeNames()) if (name.startsWith("data-") && !["data-gait", "data-atlas-variant"].includes(name)) clone.removeAttribute(name);
@@ -119,6 +130,11 @@ const BOX = { width: 220, height: 260, left: 120, top: 60 };
         //: otherwise make it drowsy (`data-feel`, a nightcap) part-way through.
         for (const name of b.getAttributeNames()) if (name.startsWith("data-") && !["data-gait", "data-seed", "data-atlas-variant"].includes(name)) b.removeAttribute(name);
         for (const el of b.querySelectorAll(".nm-buddy-char, .atl-lw-tail, .atl-lw-lower, .nm-atlas.atl-layer-lower")) { el.style.removeProperty("transform"); el.style.removeProperty("transform-origin"); }
+        //: The page's own timers write `style.transform` (a plain write replaces the important
+        //: one) and walk the figure to its home corner part-way through the run: every frame
+        //: pins it again, or the later poses land elsewhere and the clip cuts or misses them
+        //: (INBOX 1663: the feminine hang, hop, land, tumble and idle frames shipped half drawn).
+        window.__setProp(b, "transform", window.__pin, "important");
         b.className = frame.classes.join(" ");
         b.dataset.pose = frame.pose;
         b.dataset.feel = "calm";
@@ -173,6 +189,8 @@ const BOX = { width: 220, height: 260, left: 120, top: 60 };
         }
       }, f);
       await page.waitForTimeout(40);
+      const at = await page.evaluate(() => { const q = document.getElementById("nm-buddy").getBoundingClientRect(); return [Math.round(q.x), Math.round(q.y)]; });
+      if (at[0] !== BOX.left + 78 || at[1] !== BOX.top + 80) throw new Error(`${look}/${f.name}: the figure moved to ${at} while it was captured`);
       const clip = { x: BOX.left, y: BOX.top, width: BOX.width, height: BOX.height };
       await page.screenshot({ path: path.join(out, look, `${f.name}.png`), omitBackground: true, clip });
       //: The same frame with the nebula stream drawn, its animations held where they start.

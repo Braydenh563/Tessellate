@@ -331,7 +331,7 @@ def panel_corner(
     pet: tuple[int, int, int, int], size: tuple[int, int], area: tuple[int, int, int, int]
 ) -> tuple[int, int]:
     """The bottom-right corner for a `size` panel beside the figure `pet`
-    (x, y, width, height, logical pixels): to its left when that fits inside
+    (x, y, width, height, logical pixels: the drawn pixels' box, not the window): to its left when that fits inside
     `area`, else to its right, bottoms level; held inside `area` either way."""
     x, y, w, h = pet
     right = x - PANEL_GAP
@@ -1155,13 +1155,18 @@ class DeskCompanion:
                 return
             width, height, dpi = self._pet_phys
             ask, spr = getattr(self.runner, "dpi_at", None), getattr(self.runner, "sprites", None)
+            drawn = getattr(self.runner, "drawn_rect", None)
             if callable(ask) and spr is not None:  # dropped on a monitor of another scale
                 landed = ask(int(x) + width // 2, int(y) + height // 2)
                 if landed and landed != dpi:
                     (width, height), dpi = spr.size(landed), int(landed)
-                    self._pet_phys = (width, height, dpi)
-            self._pet_box = (int(x), int(y), width, height)
-            self.pet_rect = to_logical((int(x), int(y), width, height), dpi)
+            if callable(drawn) and spr is not None:  # the figure's drawn box, not the window around it (INBOX 1663)
+                _bx, _by, width, height = box = drawn(int(x), int(y), dpi=dpi)
+            else:
+                box = (int(x), int(y), width, height)
+            self._pet_phys = (width, height, dpi)
+            self._pet_box = box
+            self.pet_rect = to_logical(box, dpi)
             area = _screen_area(self.webview, (self.pet_rect[0], self.pet_rect[1] + self.pet_rect[3]))
             self.corner = panel_corner(self.pet_rect, self.size, area)
             self._update_panel_box()
