@@ -469,11 +469,12 @@ details[open] > .about-whats-new::before,
 .help-accordion > details > :not(summary) {
   margin-left: var(--space-7);
 }
-/* The "Related:" row under a topic separates metadata from the paragraph
-   above it, which is the divider tier's job - it was drawing `--border`, the
-   edge tier, so it read heavier than the lines separating whole topics. */
-.help-accordion p.help-topic-links {
-  border-top-color: var(--divider);
+/* The "Where" row (1612) ends its own fold: the body's left edge, one token
+   below, no rule of its own (it sat 0px above the next topic's rule). */
+.help-accordion > details > p.help-topic-links {
+  margin: 0 0 0 var(--space-7);
+  padding: 0 0 var(--space-3);
+  border-top: 0;
 }
 /* ---------------------------------------------------------------------------
    3. A dock is one bar, and its controls belong to it

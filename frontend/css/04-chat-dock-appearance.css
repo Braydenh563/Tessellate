@@ -2370,16 +2370,6 @@ label.setting-check,
   font-size: var(--text-lg);
 }
 
-/* The "Related:" row under a topic, quick navigation to the settings
-   screen it describes (asked for directly). font-size matches the rest of
-   `.help-accordion p`; only the top border marks it as metadata about the
-   paragraph above rather than more of it. */
-.help-accordion p.help-topic-links {
-  margin: 0.5rem 0 0;
-  padding-top: 0.4rem;
-  border-top: 1px solid var(--border);
-}
-
 /* --- help mini AI chat (item 40's second half) ---------------------------
    **One idea of what a message looks like** (INBOX 270, the owner:
    "improve/redesign the ui and layout of the guide popup panel"). This is the

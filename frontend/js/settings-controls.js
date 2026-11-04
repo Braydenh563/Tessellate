@@ -4079,6 +4079,21 @@ for (const id of ["log-list", "log-terminal"]) {
   });
 }
 
+//: Reading up draws the next window of older records at once (INBOX 1608); they are held in
+//: memory for the session, so the list never has to ask for them twice.
+$("log-list").addEventListener("scroll", (event) => {
+  const list = event.currentTarget;
+  if (list.scrollTop < 80) list.querySelector(":scope > li:first-child > button")?.click();
+});
+//: Re-reads the server's records now: for when Follow is off, or the stream is reconnecting.
+$("logs-refresh").addEventListener("click", async () => {
+  const button = $("logs-refresh");
+  setBusy(button, true);
+  await renderLogs();
+  setBusy(button, false);
+  toast("Log refreshed.");
+});
+
 for (const button of document.querySelectorAll("#log-view-toggle button")) {
   button.addEventListener("click", () => {
     logView = button.dataset.view;

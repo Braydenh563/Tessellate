@@ -5573,7 +5573,10 @@ def test_a_changed_setting_is_marked_by_the_rows_recipe():
     #: 2026-10-11: an inset bar on the text edge clashed with the label).
     rule = re.search(r"#settings-modal \.setting-modified::before \{([^}]*)\}", css)
     assert rule and "background: var(--accent-text)" in rule.group(1)
-    assert "inset-inline-start: calc(-1 * var(--space-3))" in rule.group(1) and "border:" not in rule.group(1)
+    #: Two gutters from a plain row's text edge; a padded row (switch, check)
+    #: is one padding nearer, so every recipe's bar lands on one x (INBOX
+    #: 1610, tests/test_settings_row_bar.py).
+    assert "inset-inline-start: calc(-2 * var(--space-3))" in rule.group(1) and "border:" not in rule.group(1)
 
 
 def test_one_calendar_grid_of_dom_cells() -> None:

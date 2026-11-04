@@ -324,8 +324,20 @@ window.addEventListener("pointerdown", objDragArm, true);
     }
     const box = next.getBoundingClientRect();
     //: Half out of the card's left edge, level with the middle of a short card or the first line of a tall one.
-    const left = Math.max(2, box.left - grip.offsetWidth / 2);
-    const top = Math.max(2, box.top + Math.min(box.height, 56) / 2 - grip.offsetHeight / 2);
+    let left = Math.max(2, box.left - grip.offsetWidth / 2);
+    let top = Math.max(2, box.top + Math.min(box.height, 56) / 2 - grip.offsetHeight / 2);
+    //: A card with its own tick in that corner (INBOX 1605, the owner: "the drag popup and the
+    //: selection boxes clash"): the tick keeps the corner and the grip steps wholly outside the
+    //: card, or under the tick where the card is at the screen's edge. Any checkbox, so every card.
+    const tick = [...next.querySelectorAll('input[type="checkbox"]')].find((t) => {
+      const r = t.getBoundingClientRect();
+      return r.width && r.left < left + grip.offsetWidth && r.right > left && r.top < top + grip.offsetHeight && r.bottom > top;
+    });
+    if (tick) {
+      left = Math.max(2, box.left - grip.offsetWidth - 2);
+      const r = tick.getBoundingClientRect();
+      if (left + grip.offsetWidth > r.left) top = r.bottom + 4;
+    }
     //: Only where the card's own column is on top: a popup over the card's edge (the
     //: activity panel, a dialog) keeps the grip off it (owner, 2026-11-03: "the drag icon
     //: button shows ... in front of popup windows"). The grip is a body layer above them all.

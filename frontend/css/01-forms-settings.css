@@ -5199,7 +5199,7 @@ select {
    `+` started matching, and 8px appeared out of nowhere the moment you asked
    for help. A margin that does not depend on what is or is not between two
    elements cannot do that. */
-#settings-modal .settings-section .row {
+#settings-modal .settings-section .row:not(.setting-control) {
   margin-top: var(--space-3);
 }
 #settings-modal .settings-section .row:first-child {
@@ -6099,7 +6099,7 @@ select {
   content: "";
   position: absolute;
   inset-block: var(--space-2);
-  inset-inline-start: calc(-1 * var(--space-3));
+  inset-inline-start: calc(-2 * var(--space-3));
   width: 2px;
   border-radius: var(--radius-pill);
   background: var(--accent-text);
