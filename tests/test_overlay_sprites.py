@@ -83,7 +83,9 @@ def test_clear_faint_alpha_zeroes_colour_with_it() -> None:
 def test_mirror_is_a_true_left_right_flip_and_size_scales_with_dpi() -> None:
     spr = sprites.SpriteSet("feminine", DIR)
     plain, flipped = spr.frame("stand", 192), spr.frame("stand", 192, True)
-    assert (plain.width, plain.height) == spr.size(192) == Image.open(DIR / "feminine" / "stand.png").size
+    with Image.open(DIR / "feminine" / "stand.png") as drawn:
+        drawn_size = drawn.size
+    assert (plain.width, plain.height) == spr.size(192) == drawn_size
     a = Image.frombytes("RGBA", (plain.width, plain.height), plain.bgra, "raw", "BGRa")
     b = Image.frombytes("RGBA", (flipped.width, flipped.height), flipped.bgra, "raw", "BGRa")
     from PIL import ImageOps

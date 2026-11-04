@@ -130,7 +130,7 @@ class FakeWin32:
         return 1
 
     def _GetMonitorInfoW(self, hmon: Any, ref: Any) -> int:
-        (left, top, right, bottom), _dpi = self.monitor_list[int(hmon) - 100]
+        left, top, right, bottom = self.monitor_list[int(hmon) - 100][0]
         work = ref._obj.rcWork
         work.left, work.top, work.right, work.bottom = left, top, right, bottom
         return 1

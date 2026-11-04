@@ -17,8 +17,10 @@ from __future__ import annotations
 import ctypes
 import logging
 import sys
-from ctypes import wintypes
+import ctypes.wintypes
 from typing import Any
+
+wintypes = ctypes.wintypes
 
 logger = logging.getLogger(__name__)
 
