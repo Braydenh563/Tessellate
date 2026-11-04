@@ -45,6 +45,7 @@ class OverlayRunner:
         home: tuple[int, int] | None = None,
         on_click: Callable[[str, tuple[int, int, int, int], int], Any] | None = None,
         on_settle: Callable[[int, int], Any] | None = None,
+        on_died: Callable[[], Any] | None = None,
         w: Any = None,
         clock: Callable[[], float] = time.monotonic,
         frames: Path | None = None,
@@ -55,6 +56,7 @@ class OverlayRunner:
         self.home = home
         self.on_click = on_click
         self.on_settle = on_settle
+        self.on_died = on_died
         self.w = w
         self.clock = clock
         self.frames = frames
@@ -67,6 +69,7 @@ class OverlayRunner:
         self.visible = False
         self.busy = False
         self.paused = False
+        self._stopped = False
         self._resume = False
         self._last_key: tuple[str, int, bool] | None = None
         self._last_pos: tuple[int, int] | None = None
@@ -80,7 +83,7 @@ class OverlayRunner:
         try:
             if self.w is None:
                 self.w = k.load()
-            self.host = host_mod.OverlayHost(self.w, on_event=self._on_event)
+            self.host = host_mod.OverlayHost(self.w, on_event=self._on_event, on_exit=self._exited)
             ok = self.host.start(timeout)
         except Exception:  # noqa: BLE001 - any failure means the card window instead
             logger.warning("overlay: could not start", exc_info=True)
@@ -88,6 +91,14 @@ class OverlayRunner:
         if not ok:
             self.stop()
         return ok
+
+    def _exited(self) -> None:
+        """The overlay thread ended without a `stop` (no polling: the thread says so)."""
+        if self._stopped:
+            return
+        self.visible = False
+        logger.warning("overlay: the window thread ended on its own")
+        self._hand_off("overlay-died", lambda: self.on_died and self.on_died())
 
     def show(self) -> None:
         self.visible = True
@@ -102,6 +113,7 @@ class OverlayRunner:
             self.host.hide()
 
     def stop(self) -> None:
+        self._stopped = True
         if self.host:
             self.host.stop()
         self.host = None

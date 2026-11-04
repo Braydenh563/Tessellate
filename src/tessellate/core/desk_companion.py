@@ -63,6 +63,9 @@ OVERLAY_POS_PREF = "desktop_companion_overlay_pos"
 PANEL_SIZE = (208, 312)
 PANEL_GAP = 8
 LOOK_WAIT = 1.5
+#: A click on the figure this soon after the panel closed itself on losing focus
+#: is the press that took the focus: it closes the panel, it does not reopen it.
+BLUR_GRACE = 0.6
 #: Asks the app window which Atlas look it draws; empty when it cannot say.
 LOOK_SCRIPT = "(function(){try{return typeof atlasLook==='function'?atlasLook():''}catch(e){return ''}})()"
 
@@ -492,6 +495,12 @@ class DeskApi:
     def hide_panel(self) -> bool:
         return self._owner.hide_panel()
 
+    def panel_blur(self) -> bool:
+        return self._owner.panel_blur()
+
+    def panel_kind(self) -> str:
+        return self._owner.panel_kind()
+
 
 class DeskCompanion:
     """The second window and when it is shown (see the module's docstring)."""
@@ -506,6 +515,7 @@ class DeskCompanion:
         transparent: bool = False,
         dispatch: Callable[[str, Callable[[], None]], Any] | None = None,
         overlay_factory: Callable[..., Any] | None = None,
+        now: Callable[[], float] = time.monotonic,
     ) -> None:
         self.webview = webview
         self.main = main_window
@@ -539,6 +549,13 @@ class DeskCompanion:
         self.pet_rect: tuple[int, int, int, int] | None = None
         self.panel = False
         self.panel_shown = False
+        self._now = now
+        self._blurred_at = -1e9
+        #: Which menu the panel page opens on when it first asks (a right click
+        #: on a new page cannot be sent: the page is not listening yet).
+        self._pending_kind = "menu"
+        #: The figure's size in physical pixels and dpi at the last click.
+        self._pet_phys: tuple[int, int, int] | None = None
 
     # --- where it is -----------------------------------------------------------
 
@@ -663,7 +680,11 @@ class DeskCompanion:
         self._stop_runner()
         try:
             runner = self._overlay_factory(  # type: ignore[misc]
-                look=look, home=self._overlay_home(), on_click=self._overlay_click, on_settle=self._overlay_settle
+                look=look,
+                home=self._overlay_home(),
+                on_click=self._overlay_click,
+                on_settle=self._overlay_settle,
+                on_died=self._overlay_died,
             )
             started = runner.start()
         except Exception:  # noqa: BLE001 - any failure means the card window instead
@@ -721,7 +742,69 @@ class DeskCompanion:
         return True
 
     def _overlay_settle(self, x: int, y: int) -> None:
+        """A drop: saved, and an open panel follows the figure."""
         _set_pref(OVERLAY_POS_PREF, [int(x), int(y)])
+        if not self.panel_shown or self._pet_phys is None:
+            return
+        if not _lock.acquire(timeout=LOCK_WAIT):
+            return
+        try:
+            if self.closing or self.window is None or not self.panel_shown:
+                return
+            width, height, dpi = self._pet_phys
+            self.pet_rect = to_logical((int(x), int(y), width, height), dpi)
+            area = _screen_area(self.webview, (self.pet_rect[0], self.pet_rect[1] + self.pet_rect[3]))
+            self.corner = panel_corner(self.pet_rect, self.size, area)
+            self._place()
+        except Exception:  # noqa: BLE001 - the panel stays where it was
+            logger.warning("desk companion: the quick panel did not follow the figure", exc_info=True)
+        finally:
+            _lock.release()
+
+    def _overlay_died(self) -> None:
+        """The overlay's thread ended after a good start (on a worker): the card
+        window takes over, as it does when the overlay cannot start."""
+        if not _lock.acquire(timeout=LOCK_WAIT):
+            logger.warning("desk companion: busy, the overlay's end was not handled")
+            return
+        try:
+            if self.closing or self.runner is None:
+                return
+            logger.warning("desk companion: the overlay stopped, using the card window instead")
+            self._stop_runner()
+            self.overlay_failed = True
+            window, self.window = self.window, None
+            self.panel = self.panel_shown = self.shown = False
+            self.corner = None
+            self.size = REST_SIZE
+            if window is not None:
+                try:
+                    window.destroy()
+                except Exception:  # noqa: BLE001
+                    logger.debug("could not destroy the quick panel", exc_info=True)
+            self._sync_card(enabled() and self.main_hidden)
+        except Exception:  # noqa: BLE001 - never takes the app with it
+            logger.warning("desk companion: the card window did not come back", exc_info=True)
+        finally:
+            _lock.release()
+
+    def panel_blur(self) -> bool:
+        """The panel page lost focus to something else: close it."""
+        with _lock:
+            if self.panel_shown:
+                self._blurred_at = self._now()
+                try:
+                    self._hide_panel_window()
+                except Exception:  # noqa: BLE001
+                    logger.warning("desk companion: the quick panel did not hide", exc_info=True)
+                    return False
+        return True
+
+    def panel_kind(self) -> str:
+        """Which menu a new panel page opens on; asked once when it is ready."""
+        with _lock:
+            kind, self._pending_kind = self._pending_kind, "menu"
+        return kind
 
     def _overlay_click(self, kind: str, rect: tuple[int, int, int, int], dpi: int) -> None:
         """A click (left: the menu; right: settings and Hide) on the figure, on a
@@ -738,7 +821,11 @@ class DeskCompanion:
             if self.panel_shown and kind == "left":
                 self._hide_panel_window()
                 return
+            if kind == "left" and self._now() - self._blurred_at < BLUR_GRACE:
+                return
             self.pet_rect = to_logical(rect, dpi)
+            self._pet_phys = (rect[2], rect[3], int(dpi) if isinstance(dpi, (int, float)) and dpi > 0 else 96)
+            self._pending_kind = "context" if kind == "right" else "menu"
             area = _screen_area(self.webview, (self.pet_rect[0], self.pet_rect[1] + self.pet_rect[3]))
             self.panel = True
             self.size = PANEL_SIZE

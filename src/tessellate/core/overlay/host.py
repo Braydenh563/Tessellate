@@ -58,9 +58,13 @@ def premultiplied_dib_bytes(width: int, height: int) -> int:
 
 
 class OverlayHost:
-    def __init__(self, w: Any, on_event: EventHandler | None = None) -> None:
+    def __init__(self, w: Any, on_event: EventHandler | None = None, on_exit: Callable[[], Any] | None = None) -> None:
         self.w = w
         self.on_event = on_event
+        #: Called once, on the overlay thread, when its loop ends without `stop`
+        #: having been asked for (the thread died after a good start).
+        self.on_exit = on_exit
+        self._stopping = False
         self._thread: threading.Thread | None = None
         self._ready = threading.Event()
         self._error: str | None = None
@@ -105,6 +109,7 @@ class OverlayHost:
         thread = self._thread
         if thread is None:
             return True
+        self._stopping = True
         if self.hwnd:
             self.w.user32.PostMessageW(self.hwnd, k.WM_CLOSE, 0, 0)
         thread.join(timeout)
@@ -164,6 +169,11 @@ class OverlayHost:
             logger.warning("overlay: the message loop failed", exc_info=True)
         finally:
             self._teardown()
+        if self.on_exit is not None and not self._stopping:
+            try:
+                self.on_exit()
+            except Exception:  # noqa: BLE001 - the thread is ending anyway
+                logger.warning("overlay: the exit callback failed", exc_info=True)
 
     def _setup(self) -> None:
         u = self.w.user32

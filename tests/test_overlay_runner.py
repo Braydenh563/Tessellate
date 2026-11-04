@@ -193,3 +193,27 @@ def test_hide_and_stop() -> None:
     host = r.host
     r.stop()
     assert r.host is None and not host.alive
+
+
+def test_a_thread_that_dies_after_a_good_start_is_reported_once_and_a_stop_is_not() -> None:
+    died: list[int] = []
+    r, fake, *_ = make(on_died=lambda: died.append(1))
+    assert r.start()
+    fake.post(k.WM_QUIT)
+    assert wait_for(lambda: died)
+    assert died == [1]
+    r.stop()
+    r2, _fake2, *_ = make(on_died=lambda: died.append(2))
+    assert r2.start()
+    r2.stop()
+    time.sleep(0.05)
+    assert died == [1]
+
+
+def test_a_stop_before_the_thread_reports_its_end_is_never_a_death() -> None:
+    died: list[int] = []
+    r, *_ = make(on_died=lambda: died.append(1))
+    r.stop()
+    r._exited()
+    time.sleep(0.05)
+    assert died == []
