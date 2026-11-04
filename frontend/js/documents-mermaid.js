@@ -219,6 +219,12 @@
     return rows;
   }
 
+  //: 1661 B: a block's colour is `n.fill`, a hex hue. It is written as the one `style` line below (the hue mixed
+  //: a quarter with white, so the dark text reads on both themes), and only that exact line is lifted back; any
+  //: other `style` stays a kept line, byte for byte.
+  const dgmTint = (hue) => "#" + [1, 3, 5].map((i) => Math.round(parseInt(hue.slice(i, i + 2), 16) * 0.25 + 191.25).toString(16).padStart(2, "0")).join("");
+  const DGM_STYLE = /^style\s+([\w-]+)\s+fill:(#[0-9a-f]{6}),stroke:(#[0-9a-f]{6}),color:#1a1a1a$/;
+
   function dgmPrint(m) {
     const kept = (m.kept || []).map((k, i) => ({ ...k, i })).sort((a, b) => a.at - b.at || a.i - b.i);
     const out = [...(m.front || []), `flowchart ${m.dir || "TD"}`];
@@ -233,6 +239,7 @@
       out.push(indent(row.depth) + row.line);
     }
     flush(Infinity, 0);
+    for (const n of m.nodes) if (/^#[0-9a-f]{6}$/.test(n.fill || "")) out.push(`${indent(0)}style ${n.id} fill:${dgmTint(n.fill)},stroke:${n.fill},color:#1a1a1a`);
     return out.join("\n") + "\n";
   }
 
@@ -296,6 +303,12 @@
     const seen = (u, snap) => (u.t === "n" ? born.get(m.nodes[u.i].id) < snap.n : u.t === "e" ? u.i < snap.e : u.i < snap.s);
     snaps.forEach((snap, k) => {
       m.kept[k].at = rows.filter((r) => seen(r.unit, snap)).length;
+    });
+    m.kept = m.kept.filter((k) => {
+      const hit = DGM_STYLE.exec(k.line);
+      const node = hit && dgmTint(hit[3]) === hit[2] && m.nodes.find((n) => n.id === hit[1]);
+      if (node) node.fill = hit[3];
+      return !node;
     });
     return m;
   }
@@ -529,5 +542,5 @@
   //: The block pane (1546 P2) is a bundle of its own, fetched when a diagram is first shown (the kinds, 1546 P4, when a mind map, timeline or sequence diagram is):
   //: every caller is in this bundle or opens a document first, so no stand-in is needed, and
   //: neither app.js nor lazy-entries.js (both at their caps) carries the row.
-  Object.assign(LAZY_MODULES, { diagramBuilder: ["/css/diagram-lazy.css", "/js/diagram-builder.js"], diagramEmbed: ["/js/diagram-embed.js"], diagramTouch: ["/js/diagram-touch.js"], diagramView: ["/js/diagram-view.js"], diagramOverlay: ["/js/diagram-overlay.js"], diagramCanvas: ["/js/diagram-canvas.js"], diagramEdges: ["/js/diagram-edges.js"], diagramSplit: ["/js/diagram-split.js"], diagramMulti: ["/js/diagram-multi.js"], diagramSteps: ["/js/diagram-steps.js"], diagramSuggest: ["/js/diagram-suggest.js"], diagramKinds: ["/js/diagram-kinds.js"], diagramJoins: ["/js/diagram-joins.js"] });
+  Object.assign(LAZY_MODULES, { diagramBuilder: ["/css/diagram-lazy.css", "/js/diagram-builder.js"], diagramEmbed: ["/js/diagram-embed.js"], diagramTouch: ["/js/diagram-touch.js"], diagramView: ["/js/diagram-view.js"], diagramOverlay: ["/js/diagram-overlay.js"], diagramCanvas: ["/js/diagram-canvas.js"], diagramEdges: ["/js/diagram-edges.js"], diagramSplit: ["/js/diagram-split.js"], diagramMulti: ["/js/diagram-multi.js"], diagramBar: ["/js/diagram-bar.js"], diagramSteps: ["/js/diagram-steps.js"], diagramSuggest: ["/js/diagram-suggest.js"], diagramKinds: ["/js/diagram-kinds.js"], diagramJoins: ["/js/diagram-joins.js"], diagramStyle: ["/js/diagram-style.js"] });
 })();

@@ -226,7 +226,9 @@ def test_the_builder_builds_its_dom_without_markup_strings_and_exports_one_name(
 
 def test_the_pane_is_one_tree_of_cards_with_the_dock_recipe_and_kebab_menus():
     code = BUILDER.read_text(encoding="utf-8")
-    assert 'dataset.dockName = "diagram"' in code and 'el("div", "dock dgm-dock")' in code
+    #: The dock is built by diagram-bar.js since 1661 D2; the recipe (the dock class and name) is unchanged.
+    bar = (BUILDER.parent / "diagram-bar.js").read_text(encoding="utf-8")
+    assert 'dataset.dockName = "diagram"' in bar and 'el("div", "dock dgm-dock")' in bar
     assert "kebabMenu(blockItems(S, key)" in code and "openMenuAtPoint" in code and "wireLongPress(S.tree" in code
     # Relabel in place is the board's pattern: plaintext-only, Enter commits, Escape reverts.
     assert '"contenteditable", "plaintext-only"' in code and 'event.key !== "Enter" && event.key !== "Escape"' in code

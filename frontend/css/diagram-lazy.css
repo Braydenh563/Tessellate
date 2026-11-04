@@ -594,18 +594,51 @@
   color: var(--accent-text);
 }
 
-/* The word over the four direction arrows: the group stacks the caption on its arrows. */
-.dock-group:has(> .dgm-dirs-caption) {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0;
+/* The flowchart's toolbar (diagram-bar.js, 1661 D2): ONE row at every width. Add is a split (the last shape, then a
+   caret), Direction one button that turns the diagram; the dock never wraps, so a narrow host drops words, not rows. */
+.dgm-dock {
+  flex-wrap: nowrap;
+  align-items: center;
+  min-inline-size: 0;
 }
 
-.dgm-dirs-caption {
-  display: block;
-  margin-bottom: var(--space-1);
-  font-size: var(--text-xs);
-  color: var(--muted);
+.dgm-addsplit {
+  display: inline-flex;
+  flex: none;
+}
+
+.dgm-addmain {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
+}
+
+.dgm-addcaret {
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+  border-inline-start: 0;
+}
+
+.dgm-dirs {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* The flowchart's dock stays one row on a phone: the actions follow Add and Direction (the kinds' docks lead with them), and
+   the gaps shrink so Add, caret, Direction, Undo, Redo and the menu fit 298 px at 44 px each. */
+.dgm-dock:has(> .dgm-addsplit) {
+  column-gap: var(--space-1);
+
+  .dock-actions {
+    order: 0;
+    flex-wrap: nowrap;
+    gap: var(--space-1);
+    margin-left: auto;
+  }
 }
 
 /* The empty pane: three numbered lines, each with its button (1615 f). */
@@ -840,6 +873,12 @@
     min-block-size: 10rem;
   }
 
+  /* An empty diagram has nothing to draw: its picture shrinks so the three steps and both example buttons fit above the foot (390: they sat below it). */
+  .dgm-picture.dgm-picture-empty,
+  .dgm-stage:has(> .dgm-picture-empty) {
+    block-size: 6rem;
+  }
+
   /* A diagram the blocks do not draw: its picture first, the line why under it, so a short pane shows the picture. */
   .dgm-plain .dgm-hint {
     order: 1;
@@ -852,11 +891,12 @@
 
   /* Suggest, Undo and Redo keep their icon and lose their word, like the tiles. */
   .dgm-hist .ph-text,
+  .dgm-addname,
+  .dgm-dirword,
   .dgm-suggest .ph-text {
     display: none;
   }
 
-  .dgm-dirs button,
   .dgm-dock .dock-actions button:not(.dgm-add) {
     inline-size: 2.25rem;
     min-inline-size: 0;
@@ -1073,9 +1113,13 @@
 
 /* A touch screen's controls are 44 px (R6.10); the narrow rule above makes them 36. */
 @media (pointer: coarse) {
-  .dgm-dirs button,
+  .dgm-dirs,
+  .dgm-addmain,
+  .dgm-addcaret,
   .dgm-dock .dock-actions button:not(.dgm-add) {
-    inline-size: 2.75rem;
+    min-block-size: 2.75rem;
+    min-inline-size: 2.75rem;
+    inline-size: auto;
   }
 }
 
@@ -1184,4 +1228,58 @@
   box-sizing: border-box;
   inline-size: 120px;
   pointer-events: auto;
+}
+
+/* The shortcuts sheet (diagram-style.js) borrows the whiteboard help rows; this sets the one column width they read. */
+.dgm-keys {
+  --wb-help-keys-w: 9rem;
+  columns: 1;
+  max-height: 60dvh;
+}
+
+/* A menu row with a shortcut (kebabMenu `keys`): the name on the left, the key on the right. */
+.action-menu .menu-item:has(> .menu-keys) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+}
+
+.menu-keys {
+  color: var(--muted);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 400;
+}
+
+/* The blocks list hidden (the toolbar's list button): the picture takes the room, keys still work from it. On a phone the
+   list is stacked under the picture and its button leaves the toolbar, so the seven 44 px controls fit one row (390: 338 in 306). */
+.dgm-no-outline .dgm-pane,
+.dgm-no-outline .dgm-split-handle {
+  display: none;
+}
+
+@media (max-width: 599.98px) {
+  .dgm-dock .dgm-outline-toggle {
+    display: none;
+  }
+
+  .dgm-no-outline .dgm-pane {
+    display: block;
+  }
+}
+
+.dgm-no-outline .dgm-body,
+.dgm-no-outline .dgm-body.dgm-split {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* Targets are 44 px on a touch screen and on a phone-width window (the swatch, Connect and the connector rows measured 24, 40 and 40). */
+@media (pointer: coarse), (max-width: 599.98px) {
+  .dgm-swatch,
+  .dgm-card > button.dgm-connect,
+  .dgm-join {
+    min-block-size: 2.75rem;
+    min-inline-size: 2.75rem;
+  }
 }

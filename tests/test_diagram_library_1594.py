@@ -38,7 +38,7 @@ def test_the_add_library_is_grouped_by_meaning_and_every_tile_has_a_hint():
     # The hint of the pointed-at tile shows under the strip, and is also in the tile's name for a screen reader.
     assert 'strip.addEventListener("pointerover", say)' in library and 'strip.addEventListener("focusin", say)' in library
     assert "tile.setAttribute(\"aria-label\", t.label)" in library and "label: `Add a ${name.toLowerCase()}. ${hint}`" in library
-    assert "strip.hint = hint" in library and "shapes.hint" in _read("diagram-builder.js")
+    assert "strip.hint = hint" in library and "tiles.hint" in _read("diagram-kinds.js")  # 1661 D2: the flowchart has the Add menu, not the strip
     # Wrapping, so the last tile is never cut off; the hint line is not shown on a phone, where the sheet carries the hints.
     assert ".dgm-lib-tiles {\n  display: flex;\n  flex-wrap: wrap;" in CSS and ".dgm-palette {\n  flex-wrap: wrap;" in CSS
     assert ".dgm-compact :is(.dgm-palette, .dgm-lib-hint" in CSS
@@ -95,11 +95,12 @@ def test_the_empty_list_and_the_space_under_the_blocks_say_what_to_do_next():
     assert ".dgm-next {" in CSS
 
 
-def test_the_phone_dock_is_one_row_because_the_direction_folds_into_the_more_menu():
+def test_the_dock_is_one_row_at_every_width_because_direction_is_one_button_and_suggest_folds_on_a_phone():
+    # 1661 D2 (was: the four direction buttons fold into the more menu on a phone): Direction is one button now, so only Suggest folds.
     builder = _read("diagram-builder.js")
     more = builder.split("function more(S) {", 1)[1].split("\n  }\n", 1)[0]
-    assert "matchMedia(COMPACT).matches" in more and '"ph:compass Direction"' in more
-    assert ".dock-group:has(> .dgm-dirs)" in CSS
+    assert "matchMedia(COMPACT).matches" in more and '"ph:compass Direction"' not in more and "Suggest…" in more
+    assert "flex-wrap: nowrap" in CSS.split(".dgm-dock {", 1)[1].split("}", 1)[0]
     assert "gap: var(--space-1);" in CSS.split(".dgm-compact .dock-actions {", 1)[1].split("}", 1)[0]
 
 

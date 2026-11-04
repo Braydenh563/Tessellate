@@ -2,9 +2,9 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7791, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8791, test files 2053, tests 17337, plan headings 1001, app scripts 28, boot scripts 37, script files 253.
+Counts: frontend functions 7806, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8791, test files 2055, tests 17351, plan headings 1001, app scripts 28, boot scripts 37, script files 255.
 
-## Frontend functions (7791)
+## Frontend functions (7806)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -581,57 +581,57 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `aiNameNow` | frontend/js/sheets-selects.js:2332 |
+| `aiNameNow` | frontend/js/sheets-selects.js:2339 |
 | `annotateSliders` | frontend/js/sheets-selects.js:1049 |
 | `applySidebarSheetMode` | frontend/js/sheets-selects.js:219 |
 | `applySidebarWidth` | frontend/js/sheets-selects.js:100 |
 | `applyWebPanelWidth` | frontend/js/sheets-selects.js:529 |
-| `builtinPersonas` | frontend/js/sheets-selects.js:2431 |
-| `builtinThinkingWords` | frontend/js/sheets-selects.js:2381 |
-| `clampToolbarMenu` | frontend/js/sheets-selects.js:1521 |
+| `builtinPersonas` | frontend/js/sheets-selects.js:2438 |
+| `builtinThinkingWords` | frontend/js/sheets-selects.js:2388 |
+| `clampToolbarMenu` | frontend/js/sheets-selects.js:1528 |
 | `dateFieldFace` | frontend/js/sheets-selects.js:1078 |
 | `eachSidebar` | frontend/js/sheets-selects.js:196 |
-| `editedMarker` | frontend/js/sheets-selects.js:2019 |
+| `editedMarker` | frontend/js/sheets-selects.js:2026 |
 | `enhanceAllSelects` | frontend/js/sheets-selects.js:1060 |
 | `enhanceDateField` | frontend/js/sheets-selects.js:1088 |
 | `enhanceSelect` | frontend/js/sheets-selects.js:736 |
-| `focusBackTo` | frontend/js/sheets-selects.js:2457 |
-| `focusFirstIn` | frontend/js/sheets-selects.js:2469 |
+| `focusBackTo` | frontend/js/sheets-selects.js:2464 |
+| `focusFirstIn` | frontend/js/sheets-selects.js:2476 |
 | `focusSelect` | frontend/js/sheets-selects.js:1151 |
-| `formatTokens` | frontend/js/sheets-selects.js:1749 |
+| `formatTokens` | frontend/js/sheets-selects.js:1756 |
 | `initResizableSidebars` | frontend/js/sheets-selects.js:477 |
 | `initSidebarSheetDismissal` | frontend/js/sheets-selects.js:282 |
 | `kebabMenu` | frontend/js/sheets-selects.js:1372 |
 | `labelledMenu` | frontend/js/sheets-selects.js:643 |
 | `layoutIsStacked` | frontend/js/sheets-selects.js:42 |
 | `layoutIsTablet` | frontend/js/sheets-selects.js:79 |
-| `lightboxReadingsFor` | frontend/js/sheets-selects.js:1720 |
+| `lightboxReadingsFor` | frontend/js/sheets-selects.js:1727 |
 | `listFilter` | frontend/js/sheets-selects.js:1284 |
-| `loadChatSuggestions` | frontend/js/sheets-selects.js:2259 |
-| `loadConversationList` | frontend/js/sheets-selects.js:1825 |
+| `loadChatSuggestions` | frontend/js/sheets-selects.js:2266 |
+| `loadConversationList` | frontend/js/sheets-selects.js:1832 |
 | `makeMenuItem` | frontend/js/sheets-selects.js:623 |
 | `makeSidebarResizable` | frontend/js/sheets-selects.js:338 |
 | `makeWebPanelResizable` | frontend/js/sheets-selects.js:566 |
 | `menuRowFits` | frontend/js/sheets-selects.js:1351 |
-| `openConversation` | frontend/js/sheets-selects.js:2027 |
+| `openConversation` | frontend/js/sheets-selects.js:2034 |
 | `openKebabSheet` | frontend/js/sheets-selects.js:1199 |
-| `parseServerTime` | frontend/js/sheets-selects.js:1758 |
-| `personaDisplayName` | frontend/js/sheets-selects.js:2338 |
-| `relativeTime` | frontend/js/sheets-selects.js:1768 |
-| `replaceOpenToolbarMenus` | frontend/js/sheets-selects.js:1629 |
+| `parseServerTime` | frontend/js/sheets-selects.js:1765 |
+| `personaDisplayName` | frontend/js/sheets-selects.js:2345 |
+| `relativeTime` | frontend/js/sheets-selects.js:1775 |
+| `replaceOpenToolbarMenus` | frontend/js/sheets-selects.js:1636 |
 | `resetWebPanelWidth` | frontend/js/sheets-selects.js:547 |
 | `rowActions` | frontend/js/sheets-selects.js:1259 |
 | `selectFaceText` | frontend/js/sheets-selects.js:727 |
 | `setSidebarSheet` | frontend/js/sheets-selects.js:213 |
-| `shortModelName` | frontend/js/sheets-selects.js:1675 |
+| `shortModelName` | frontend/js/sheets-selects.js:1682 |
 | `sidebarDefault` | frontend/js/sheets-selects.js:23 |
 | `sidebarFittedWidth` | frontend/js/sheets-selects.js:86 |
 | `sidebarWidth` | frontend/js/sheets-selects.js:25 |
-| `sortConversations` | frontend/js/sheets-selects.js:1805 |
+| `sortConversations` | frontend/js/sheets-selects.js:1812 |
 | `syncSidebarInert` | frontend/js/sheets-selects.js:209 |
-| `thinkingWordsFor` | frontend/js/sheets-selects.js:2397 |
+| `thinkingWordsFor` | frontend/js/sheets-selects.js:2404 |
 | `trackSeparatorValue` | frontend/js/sheets-selects.js:317 |
-| `wantsThinkingWords` | frontend/js/sheets-selects.js:2418 |
+| `wantsThinkingWords` | frontend/js/sheets-selects.js:2425 |
 | `watchForSelects` | frontend/js/sheets-selects.js:1163 |
 | `webPanelIsNarrow` | frontend/js/sheets-selects.js:513 |
 | `webPanelMaxWidth` | frontend/js/sheets-selects.js:523 |
@@ -3108,48 +3108,63 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `diagSections` | frontend/js/diag-report.js:106 |
 | `diagTable` | frontend/js/diag-report.js:96 |
 
-### frontend/js/diagram-builder.js (39)
+### frontend/js/diagram-bar.js (9)
 
 | Name | File:line |
 |---|---|
-| `addBlock` | frontend/js/diagram-builder.js:340 |
-| `beginEdit` | frontend/js/diagram-builder.js:370 |
+| `build` | frontend/js/diagram-bar.js:47 |
+| `hintOf` | frontend/js/diagram-bar.js:17 |
+| `key` | frontend/js/diagram-bar.js:121 |
+| `last` | frontend/js/diagram-bar.js:18 |
+| `nameOf` | frontend/js/diagram-bar.js:23 |
+| `optionsOf` | frontend/js/diagram-bar.js:22 |
+| `paintOutline` | frontend/js/diagram-bar.js:26 |
+| `rootKey` | frontend/js/diagram-bar.js:131 |
+| `sync` | frontend/js/diagram-bar.js:33 |
+
+### frontend/js/diagram-builder.js (40)
+
+| Name | File:line |
+|---|---|
+| `addBlock` | frontend/js/diagram-builder.js:338 |
+| `beginEdit` | frontend/js/diagram-builder.js:368 |
 | `blockEl` | frontend/js/diagram-builder.js:42 |
-| `blockItems` | frontend/js/diagram-builder.js:300 |
-| `blockKeys` | frontend/js/diagram-builder.js:140 |
-| `buildBlock` | frontend/js/diagram-builder.js:204 |
-| `buildPalette` | frontend/js/diagram-builder.js:516 |
-| `buildRow` | frontend/js/diagram-builder.js:215 |
+| `blockItems` | frontend/js/diagram-builder.js:297 |
+| `blockKeys` | frontend/js/diagram-builder.js:137 |
+| `buildBlock` | frontend/js/diagram-builder.js:201 |
+| `buildPalette` | frontend/js/diagram-builder.js:526 |
+| `buildRow` | frontend/js/diagram-builder.js:212 |
 | `commit` | frontend/js/diagram-builder.js:47 |
 | `drawPicture` | frontend/js/diagram-builder.js:62 |
 | `el` | frontend/js/diagram-builder.js:26 |
-| `groupGlyph` | frontend/js/diagram-builder.js:276 |
-| `joinChip` | frontend/js/diagram-builder.js:283 |
-| `joinPick` | frontend/js/diagram-builder.js:493 |
-| `joins` | frontend/js/diagram-builder.js:489 |
-| `kindOf` | frontend/js/diagram-builder.js:656 |
-| `menuAt` | frontend/js/diagram-builder.js:473 |
-| `more` | frontend/js/diagram-builder.js:505 |
-| `mount` | frontend/js/diagram-builder.js:562 |
+| `groupGlyph` | frontend/js/diagram-builder.js:273 |
+| `joinChip` | frontend/js/diagram-builder.js:280 |
+| `joinPick` | frontend/js/diagram-builder.js:498 |
+| `joins` | frontend/js/diagram-builder.js:494 |
+| `kindOf` | frontend/js/diagram-builder.js:623 |
+| `menuAt` | frontend/js/diagram-builder.js:478 |
+| `more` | frontend/js/diagram-builder.js:515 |
+| `mount` | frontend/js/diagram-builder.js:528 |
 | `nameOf` | frontend/js/diagram-builder.js:40 |
-| `nestBlock` | frontend/js/diagram-builder.js:412 |
-| `onKey` | frontend/js/diagram-builder.js:434 |
-| `reconcile` | frontend/js/diagram-builder.js:132 |
-| `relabel` | frontend/js/diagram-builder.js:358 |
-| `removeBlock` | frontend/js/diagram-builder.js:420 |
+| `nestBlock` | frontend/js/diagram-builder.js:410 |
+| `onKey` | frontend/js/diagram-builder.js:432 |
+| `reconcile` | frontend/js/diagram-builder.js:129 |
+| `relabel` | frontend/js/diagram-builder.js:356 |
+| `removeBlock` | frontend/js/diagram-builder.js:418 |
 | `render` | frontend/js/diagram-builder.js:91 |
 | `say` | frontend/js/diagram-builder.js:33 |
-| `select` | frontend/js/diagram-builder.js:326 |
-| `shapeButton` | frontend/js/diagram-builder.js:183 |
-| `shapeGlyph` | frontend/js/diagram-builder.js:142 |
-| `shapeItems` | frontend/js/diagram-builder.js:150 |
-| `shapeRow` | frontend/js/diagram-builder.js:163 |
-| `show` | frontend/js/diagram-builder.js:666 |
-| `stepBlock` | frontend/js/diagram-builder.js:406 |
-| `stops` | frontend/js/diagram-builder.js:122 |
-| `suggest` | frontend/js/diagram-builder.js:483 |
-| `suggestMenu` | frontend/js/diagram-builder.js:496 |
-| `sync` | frontend/js/diagram-builder.js:631 |
+| `select` | frontend/js/diagram-builder.js:324 |
+| `shapeButton` | frontend/js/diagram-builder.js:180 |
+| `shapeGlyph` | frontend/js/diagram-builder.js:139 |
+| `shapeItems` | frontend/js/diagram-builder.js:147 |
+| `shapeRow` | frontend/js/diagram-builder.js:160 |
+| `show` | frontend/js/diagram-builder.js:633 |
+| `stepBlock` | frontend/js/diagram-builder.js:404 |
+| `stops` | frontend/js/diagram-builder.js:119 |
+| `styleDo` | frontend/js/diagram-builder.js:500 |
+| `suggest` | frontend/js/diagram-builder.js:488 |
+| `suggestMenu` | frontend/js/diagram-builder.js:506 |
+| `sync` | frontend/js/diagram-builder.js:598 |
 | `titleOf` | frontend/js/diagram-builder.js:39 |
 
 ### frontend/js/diagram-canvas.js (7)
@@ -3342,6 +3357,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `build` | frontend/js/diagram-steps.js:10 |
+
+### frontend/js/diagram-style.js (4)
+
+| Name | File:line |
+|---|---|
+| `colour` | frontend/js/diagram-style.js:26 |
+| `shapeRows` | frontend/js/diagram-style.js:18 |
+| `shortcuts` | frontend/js/diagram-style.js:49 |
+| `targets` | frontend/js/diagram-style.js:24 |
 
 ### frontend/js/diagram-suggest.js (17)
 
@@ -3803,30 +3827,31 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docMathTokens` | frontend/js/documents-math.js:97 |
 | `docMathTree` | frontend/js/documents-math.js:418 |
 
-### frontend/js/documents-mermaid.js (20)
+### frontend/js/documents-mermaid.js (21)
 
 | Name | File:line |
 |---|---|
 | `dgmChain` | frontend/js/documents-mermaid.js:150 |
 | `dgmDecode` | frontend/js/documents-mermaid.js:65 |
 | `dgmEscape` | frontend/js/documents-mermaid.js:70 |
-| `dgmFence` | frontend/js/documents-mermaid.js:306 |
-| `dgmFront` | frontend/js/documents-mermaid.js:240 |
+| `dgmFence` | frontend/js/documents-mermaid.js:319 |
+| `dgmFront` | frontend/js/documents-mermaid.js:247 |
 | `dgmLink` | frontend/js/documents-mermaid.js:134 |
-| `dgmParse` | frontend/js/documents-mermaid.js:247 |
-| `dgmPrint` | frontend/js/documents-mermaid.js:222 |
+| `dgmParse` | frontend/js/documents-mermaid.js:254 |
+| `dgmPrint` | frontend/js/documents-mermaid.js:228 |
 | `dgmRef` | frontend/js/documents-mermaid.js:117 |
 | `dgmRows` | frontend/js/documents-mermaid.js:191 |
 | `dgmShapeText` | frontend/js/documents-mermaid.js:102 |
 | `dgmStatements` | frontend/js/documents-mermaid.js:81 |
 | `dgmSubgraph` | frontend/js/documents-mermaid.js:182 |
+| `dgmTint` | frontend/js/documents-mermaid.js:225 |
 | `dgmUnquote` | frontend/js/documents-mermaid.js:74 |
-| `diagramDoor` | frontend/js/documents-mermaid.js:484 |
-| `docMermaidBlocks` | frontend/js/documents-mermaid.js:344 |
-| `docMermaidField` | frontend/js/documents-mermaid.js:353 |
-| `docMermaidWhenDrawn` | frontend/js/documents-mermaid.js:334 |
-| `docRenderMermaidIn` | frontend/js/documents-mermaid.js:326 |
-| `openDiagramBuilder` | frontend/js/documents-mermaid.js:473 |
+| `diagramDoor` | frontend/js/documents-mermaid.js:497 |
+| `docMermaidBlocks` | frontend/js/documents-mermaid.js:357 |
+| `docMermaidField` | frontend/js/documents-mermaid.js:366 |
+| `docMermaidWhenDrawn` | frontend/js/documents-mermaid.js:347 |
+| `docRenderMermaidIn` | frontend/js/documents-mermaid.js:339 |
+| `openDiagramBuilder` | frontend/js/documents-mermaid.js:486 |
 
 ### frontend/js/documents-outline.js (12)
 
@@ -12263,7 +12288,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 226 |
-| frontend/css/diagram-lazy.css | 1187 |
+| frontend/css/diagram-lazy.css | 1285 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 140 |
 | frontend/css/forced-colors-lazy.css | 28 |
@@ -15767,8 +15792,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3369 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3497 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3368 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3496 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -24023,7 +24048,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17337)
+## Tests (17351)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24556,6 +24581,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diag_report.py | 13 |
 | tests/test_diagnostics_1430.py | 9 |
 | tests/test_diagram_1596.py | 4 |
+| tests/test_diagram_1661a.py | 6 |
+| tests/test_diagram_1661b.py | 8 |
 | tests/test_diagram_blind_fixes.py | 4 |
 | tests/test_diagram_builder.py | 20 |
 | tests/test_diagram_d3.py | 2 |
@@ -26273,7 +26300,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 22.3 Where the design is below standard (measured or seen, 2026-09-27) | docs/roadmap/WORLD_CLASS_PLAN.md:2372 |
 | 22.4 Phased rows | docs/roadmap/DOCUMENTS_PLAN.md:1537 |
 | 22.4 The devibecode programme: one surface at a time, every skill | docs/roadmap/WORLD_CLASS_PLAN.md:2387 |
-| 22.5 Risks and out of scope | docs/roadmap/DOCUMENTS_PLAN.md:1564 |
+| 22.5 Risks and out of scope | docs/roadmap/DOCUMENTS_PLAN.md:1571 |
 | 22.5 Where the app goes next (release path) | docs/roadmap/WORLD_CLASS_PLAN.md:2416 |
 | 23. Filing and the taxonomy: candidates, a decision, an explanation (2026-10-10; Brief 39b) | docs/roadmap/WORLD_CLASS_PLAN.md:1452 |
 | 23. Organisation: manual grouping and multi-category notes | docs/roadmap/BACKLOG.md:1614 |
