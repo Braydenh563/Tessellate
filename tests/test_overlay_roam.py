@@ -58,7 +58,7 @@ def test_it_walks_along_the_top_and_hops_or_falls_off_its_end() -> None:
             break
     assert seen_y == {WIN.top - SIZE[1]}  # level while on it
     assert e.state == "fall" and e.perch is None
-    t = to_state(e, t, "land", 5.0)
+    to_state(e, t, "land", 5.0)
     assert e.y == FLOOR
 
 
@@ -258,7 +258,7 @@ def test_reminders_queue_and_come_one_at_a_time() -> None:
     px, py = int(e.x + 50), int(e.y + 60)
     e.update(t + 0.1, (px, py), ("down", px, py))
     assert e.update(t + 0.2, (px, py), ("up", px, py)).card == "a"
-    t = to_state_p(e, t + 0.2, "card", (500, 600))
+    to_state_p(e, t + 0.2, "card", (500, 600))
     assert e.card == "b" and e.card_queue == []
 
 
@@ -290,5 +290,5 @@ def test_a_walker_on_a_window_comes_down_for_a_reminder() -> None:
     e.perch_until = math.inf
     e.update(t + 0.5, (300, 800))
     e.bring_card("r7", t + 0.5)
-    t = to_state_p(e, t + 0.5, "card", (300, 800))
+    to_state_p(e, t + 0.5, "card", (300, 800))
     assert e.perch is None and e.y == FLOOR

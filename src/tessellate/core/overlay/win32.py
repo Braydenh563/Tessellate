@@ -377,8 +377,7 @@ def _read_window(w: Any, hwnd: Any, own_pid: int, ignore: Any, monitors_: list[t
     w.user32.GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
     full = any(rect[0] <= a[0] and rect[2] >= a[2] and rect[1] <= a[1] and rect[3] >= a[3] for a in monitors_)
     skip = ex & WS_EX_TOOLWINDOW or int(pid.value) == own_pid or w.user32.IsZoomed(hwnd) or full
-    perch = not (skip or not w.user32.GetWindowTextLengthW(hwnd))
-    return WinInfo(int(hwnd), rect, bool(perch))
+    return WinInfo(int(hwnd), rect, not skip and bool(w.user32.GetWindowTextLengthW(hwnd)))
 
 
 def windows(w: Any, own_pid: int, ignore: int | None, monitors_: list[tuple[int, int, int, int]]) -> list[WinInfo]:

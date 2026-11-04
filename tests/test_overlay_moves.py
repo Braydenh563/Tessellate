@@ -261,7 +261,7 @@ def test_a_peek_asks_for_ticks_while_it_moves_and_a_click_brings_it_out() -> Non
     e._go((e.x, e.floor_y()), "peek_bottom", 1.0)
     t, outs = step(e, 1.0, 1.5, 0.033)
     assert e.state == "peek" and outs[-1].wake_ms == eng.TICK_WALK_MS
-    out = e.update(t + 0.01, event=("down", 850, 1030))
+    e.update(t + 0.01, event=("down", 850, 1030))
     out = e.update(t + 0.05, event=("up", 850, 1030))
     assert out.click == "left" and e.state == "emerge"
     t2, outs = step(e, t + 0.05, 1.0, 0.033)
