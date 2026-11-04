@@ -21,6 +21,7 @@ from datetime import date, datetime, timedelta
 from tessellate.ai import composer_done, recognise, study
 from tessellate.ai import when as when_words
 from tessellate.ai import composer_compose as compose
+from tessellate.ai import note_rank
 from tessellate.ai.composer_study import Ctx, Reply, pick
 
 _SENTENCE = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9*\"“(\[])")
@@ -585,6 +586,11 @@ def _until(ctx: Ctx, subject: str) -> Reply | None:
     today = ctx.now.date()
     far = today + timedelta(days=900)
     found, _o = events(ctx, today, far)
+    #: The shared ranker orders the events by their note (audit 1029 rank 18):
+    #: the note titled as the subject, then the one that defines it, keep
+    #: their place; reminders and the rest stay in date order.
+    by_id = {n.get("id"): n for n in ctx.notes}
+    found = note_rank.lead_by(found, subject, lambda e: by_id.get(e.note_id) or {"content": ""})
     ev = _event_counting_down_to(found, wanted, today)
     if ev is None:
         return None
