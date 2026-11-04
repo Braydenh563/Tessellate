@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7755, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8693, test files 2023, tests 17036, plan headings 999, app scripts 28, boot scripts 37, script files 248.
+Counts: frontend functions 7755, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8694, test files 2025, tests 17045, plan headings 1000, app scripts 28, boot scripts 37, script files 248.
 
 ## Frontend functions (7755)
 
@@ -12899,7 +12899,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8693)
+## Backend modules (8694)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14585,59 +14585,59 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Event` | src/tessellate/ai/composer_plan.py:96 |
-| `_add_months` | src/tessellate/ai/composer_plan.py:140 |
-| `_anchor` | src/tessellate/ai/composer_plan.py:257 |
-| `_asks_due` | src/tessellate/ai/composer_plan.py:771 |
-| `_bounded` | src/tessellate/ai/composer_plan.py:162 |
-| `_busiest` | src/tessellate/ai/composer_plan.py:494 |
-| `_chip_title` | src/tessellate/ai/composer_plan.py:437 |
-| `_dated_lines` | src/tessellate/ai/composer_plan.py:285 |
-| `_dated_phrase` | src/tessellate/ai/composer_plan.py:180 |
-| `_days_away` | src/tessellate/ai/composer_plan.py:365 |
-| `_due` | src/tessellate/ai/composer_plan.py:402 |
-| `_due_reply` | src/tessellate/ai/composer_plan.py:624 |
-| `_event_counting_down_to` | src/tessellate/ai/composer_plan.py:567 |
-| `_grouped` | src/tessellate/ai/composer_plan.py:377 |
-| `_item_chips` | src/tessellate/ai/composer_plan.py:424 |
-| `_left` | src/tessellate/ai/composer_plan.py:700 |
-| `_long` | src/tessellate/ai/composer_plan.py:132 |
-| `_merge` | src/tessellate/ai/composer_plan.py:342 |
-| `_name` | src/tessellate/ai/composer_plan.py:124 |
-| `_next_reminder` | src/tessellate/ai/composer_plan.py:465 |
-| `_not_done_later` | src/tessellate/ai/composer_plan.py:672 |
-| `_note_days` | src/tessellate/ai/composer_plan.py:299 |
-| `_note_events_of` | src/tessellate/ai/composer_plan.py:324 |
-| `_nothing_due` | src/tessellate/ai/composer_plan.py:457 |
-| `_open_reminders` | src/tessellate/ai/composer_plan.py:689 |
-| `_open_tasks` | src/tessellate/ai/composer_plan.py:663 |
-| `_overdue` | src/tessellate/ai/composer_plan.py:444 |
-| `_plain` | src/tessellate/ai/composer_plan.py:264 |
-| `_plan` | src/tessellate/ai/composer_plan.py:546 |
-| `_plan_window` | src/tessellate/ai/composer_plan.py:599 |
-| `_range_words` | src/tessellate/ai/composer_plan.py:394 |
-| `_reminder_events` | src/tessellate/ai/composer_plan.py:235 |
-| `_reminder_line` | src/tessellate/ai/composer_plan.py:694 |
-| `_sentence_day` | src/tessellate/ai/composer_plan.py:268 |
-| `_short` | src/tessellate/ai/composer_plan.py:136 |
-| `_spread_line` | src/tessellate/ai/composer_plan.py:521 |
-| `_stems` | src/tessellate/ai/composer_plan.py:338 |
-| `_task_groups` | src/tessellate/ai/composer_plan.py:502 |
-| `_task_lines` | src/tessellate/ai/composer_plan.py:538 |
-| `_tasks` | src/tessellate/ai/composer_plan.py:479 |
-| `_unit_span` | src/tessellate/ai/composer_plan.py:147 |
-| `_units` | src/tessellate/ai/composer_plan.py:511 |
-| `_until` | src/tessellate/ai/composer_plan.py:581 |
-| `_until_source` | src/tessellate/ai/composer_plan.py:575 |
-| `_when_is` | src/tessellate/ai/composer_plan.py:718 |
-| `_when_reply` | src/tessellate/ai/composer_plan.py:742 |
-| `_written_from` | src/tessellate/ai/composer_plan.py:750 |
-| `ahead_default` | src/tessellate/ai/composer_plan.py:619 |
-| `answer` | src/tessellate/ai/composer_plan.py:782 |
-| `events` | src/tessellate/ai/composer_plan.py:358 |
-| `lookback` | src/tessellate/ai/composer_plan.py:226 |
-| `note_events` | src/tessellate/ai/composer_plan.py:329 |
-| `window` | src/tessellate/ai/composer_plan.py:198 |
+| `Event` | src/tessellate/ai/composer_plan.py:97 |
+| `_add_months` | src/tessellate/ai/composer_plan.py:141 |
+| `_anchor` | src/tessellate/ai/composer_plan.py:258 |
+| `_asks_due` | src/tessellate/ai/composer_plan.py:777 |
+| `_bounded` | src/tessellate/ai/composer_plan.py:163 |
+| `_busiest` | src/tessellate/ai/composer_plan.py:495 |
+| `_chip_title` | src/tessellate/ai/composer_plan.py:438 |
+| `_dated_lines` | src/tessellate/ai/composer_plan.py:286 |
+| `_dated_phrase` | src/tessellate/ai/composer_plan.py:181 |
+| `_days_away` | src/tessellate/ai/composer_plan.py:366 |
+| `_due` | src/tessellate/ai/composer_plan.py:403 |
+| `_due_reply` | src/tessellate/ai/composer_plan.py:630 |
+| `_event_counting_down_to` | src/tessellate/ai/composer_plan.py:568 |
+| `_grouped` | src/tessellate/ai/composer_plan.py:378 |
+| `_item_chips` | src/tessellate/ai/composer_plan.py:425 |
+| `_left` | src/tessellate/ai/composer_plan.py:706 |
+| `_long` | src/tessellate/ai/composer_plan.py:133 |
+| `_merge` | src/tessellate/ai/composer_plan.py:343 |
+| `_name` | src/tessellate/ai/composer_plan.py:125 |
+| `_next_reminder` | src/tessellate/ai/composer_plan.py:466 |
+| `_not_done_later` | src/tessellate/ai/composer_plan.py:678 |
+| `_note_days` | src/tessellate/ai/composer_plan.py:300 |
+| `_note_events_of` | src/tessellate/ai/composer_plan.py:325 |
+| `_nothing_due` | src/tessellate/ai/composer_plan.py:458 |
+| `_open_reminders` | src/tessellate/ai/composer_plan.py:695 |
+| `_open_tasks` | src/tessellate/ai/composer_plan.py:669 |
+| `_overdue` | src/tessellate/ai/composer_plan.py:445 |
+| `_plain` | src/tessellate/ai/composer_plan.py:265 |
+| `_plan` | src/tessellate/ai/composer_plan.py:547 |
+| `_plan_window` | src/tessellate/ai/composer_plan.py:605 |
+| `_range_words` | src/tessellate/ai/composer_plan.py:395 |
+| `_reminder_events` | src/tessellate/ai/composer_plan.py:236 |
+| `_reminder_line` | src/tessellate/ai/composer_plan.py:700 |
+| `_sentence_day` | src/tessellate/ai/composer_plan.py:269 |
+| `_short` | src/tessellate/ai/composer_plan.py:137 |
+| `_spread_line` | src/tessellate/ai/composer_plan.py:522 |
+| `_stems` | src/tessellate/ai/composer_plan.py:339 |
+| `_task_groups` | src/tessellate/ai/composer_plan.py:503 |
+| `_task_lines` | src/tessellate/ai/composer_plan.py:539 |
+| `_tasks` | src/tessellate/ai/composer_plan.py:480 |
+| `_unit_span` | src/tessellate/ai/composer_plan.py:148 |
+| `_units` | src/tessellate/ai/composer_plan.py:512 |
+| `_until` | src/tessellate/ai/composer_plan.py:582 |
+| `_until_source` | src/tessellate/ai/composer_plan.py:576 |
+| `_when_is` | src/tessellate/ai/composer_plan.py:724 |
+| `_when_reply` | src/tessellate/ai/composer_plan.py:748 |
+| `_written_from` | src/tessellate/ai/composer_plan.py:756 |
+| `ahead_default` | src/tessellate/ai/composer_plan.py:625 |
+| `answer` | src/tessellate/ai/composer_plan.py:788 |
+| `events` | src/tessellate/ai/composer_plan.py:359 |
+| `lookback` | src/tessellate/ai/composer_plan.py:227 |
+| `note_events` | src/tessellate/ai/composer_plan.py:330 |
+| `window` | src/tessellate/ai/composer_plan.py:199 |
 
 ### src/tessellate/ai/composer_quote.py (21)
 
@@ -16200,7 +16200,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `read` | src/tessellate/ai/note_order.py:45 |
 | `say` | src/tessellate/ai/note_order.py:94 |
 
-### src/tessellate/ai/note_rank.py (8)
+### src/tessellate/ai/note_rank.py (9)
 
 | Name | File:line |
 |---|---|
@@ -16209,7 +16209,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_stems` | src/tessellate/ai/note_rank.py:58 |
 | `_written` | src/tessellate/ai/note_rank.py:99 |
 | `key` | src/tessellate/ai/note_rank.py:82 |
-| `lead` | src/tessellate/ai/note_rank.py:115 |
+| `lead` | src/tessellate/ai/note_rank.py:129 |
+| `lead_by` | src/tessellate/ai/note_rank.py:115 |
 | `stems_of` | src/tessellate/ai/note_rank.py:53 |
 | `subject` | src/tessellate/ai/note_rank.py:41 |
 
@@ -21098,39 +21099,39 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `DeskApi` | src/tessellate/core/desk_companion.py:622 |
-| `DeskCompanion` | src/tessellate/core/desk_companion.py:679 |
-| `_config` | src/tessellate/core/desk_companion.py:167 |
-| `_default_overlay_factory` | src/tessellate/core/desk_companion.py:1372 |
-| `_follow` | src/tessellate/core/desk_companion.py:1413 |
-| `_log_placed` | src/tessellate/core/desk_companion.py:569 |
-| `_pref` | src/tessellate/core/desk_companion.py:180 |
-| `_read_back` | src/tessellate/core/desk_companion.py:558 |
-| `_screen_area` | src/tessellate/core/desk_companion.py:305 |
-| `_set_pref` | src/tessellate/core/desk_companion.py:192 |
-| `_system_dpi` | src/tessellate/core/desk_companion.py:218 |
-| `attach` | src/tessellate/core/desk_companion.py:1382 |
-| `carry_due` | src/tessellate/core/desk_companion.py:1450 |
-| `clamp_corner` | src/tessellate/core/desk_companion.py:321 |
-| `clean_size` | src/tessellate/core/desk_companion.py:587 |
-| `companion_ex_style` | src/tessellate/core/desk_companion.py:395 |
-| `companion_options` | src/tessellate/core/desk_companion.py:138 |
-| `enabled` | src/tessellate/core/desk_companion.py:188 |
-| `hit_script` | src/tessellate/core/desk_companion.py:599 |
-| `monitor_areas` | src/tessellate/core/desk_companion.py:247 |
-| `monitor_for` | src/tessellate/core/desk_companion.py:343 |
-| `panel_corner` | src/tessellate/core/desk_companion.py:330 |
-| `panel_placement` | src/tessellate/core/desk_companion.py:355 |
-| `physical_rect` | src/tessellate/core/desk_companion.py:430 |
-| `pick_area` | src/tessellate/core/desk_companion.py:293 |
-| `place_on_screen` | src/tessellate/core/desk_companion.py:507 |
-| `place_physical` | src/tessellate/core/desk_companion.py:533 |
-| `raise_on_desktop` | src/tessellate/core/desk_companion.py:447 |
-| `shutdown` | src/tessellate/core/desk_companion.py:1471 |
-| `to_logical` | src/tessellate/core/desk_companion.py:199 |
-| `tray_menu_item` | src/tessellate/core/desk_companion.py:1479 |
-| `window_handle` | src/tessellate/core/desk_companion.py:414 |
-| `work_area` | src/tessellate/core/desk_companion.py:228 |
+| `DeskApi` | src/tessellate/core/desk_companion.py:628 |
+| `DeskCompanion` | src/tessellate/core/desk_companion.py:685 |
+| `_config` | src/tessellate/core/desk_companion.py:173 |
+| `_default_overlay_factory` | src/tessellate/core/desk_companion.py:1389 |
+| `_follow` | src/tessellate/core/desk_companion.py:1430 |
+| `_log_placed` | src/tessellate/core/desk_companion.py:575 |
+| `_pref` | src/tessellate/core/desk_companion.py:186 |
+| `_read_back` | src/tessellate/core/desk_companion.py:564 |
+| `_screen_area` | src/tessellate/core/desk_companion.py:311 |
+| `_set_pref` | src/tessellate/core/desk_companion.py:198 |
+| `_system_dpi` | src/tessellate/core/desk_companion.py:224 |
+| `attach` | src/tessellate/core/desk_companion.py:1399 |
+| `carry_due` | src/tessellate/core/desk_companion.py:1467 |
+| `clamp_corner` | src/tessellate/core/desk_companion.py:327 |
+| `clean_size` | src/tessellate/core/desk_companion.py:593 |
+| `companion_ex_style` | src/tessellate/core/desk_companion.py:401 |
+| `companion_options` | src/tessellate/core/desk_companion.py:144 |
+| `enabled` | src/tessellate/core/desk_companion.py:194 |
+| `hit_script` | src/tessellate/core/desk_companion.py:605 |
+| `monitor_areas` | src/tessellate/core/desk_companion.py:253 |
+| `monitor_for` | src/tessellate/core/desk_companion.py:349 |
+| `panel_corner` | src/tessellate/core/desk_companion.py:336 |
+| `panel_placement` | src/tessellate/core/desk_companion.py:361 |
+| `physical_rect` | src/tessellate/core/desk_companion.py:436 |
+| `pick_area` | src/tessellate/core/desk_companion.py:299 |
+| `place_on_screen` | src/tessellate/core/desk_companion.py:513 |
+| `place_physical` | src/tessellate/core/desk_companion.py:539 |
+| `raise_on_desktop` | src/tessellate/core/desk_companion.py:453 |
+| `shutdown` | src/tessellate/core/desk_companion.py:1488 |
+| `to_logical` | src/tessellate/core/desk_companion.py:205 |
+| `tray_menu_item` | src/tessellate/core/desk_companion.py:1496 |
+| `window_handle` | src/tessellate/core/desk_companion.py:420 |
+| `work_area` | src/tessellate/core/desk_companion.py:234 |
 
 ### src/tessellate/core/desktop_dialog.py (2)
 
@@ -22138,7 +22139,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `OverlayRunner` | src/tessellate/core/overlay/runner.py:60 |
+| `OverlayRunner` | src/tessellate/core/overlay/runner.py:61 |
 
 ### src/tessellate/core/overlay/sprites.py (8)
 
@@ -23836,7 +23837,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17036)
+## Tests (17045)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24355,6 +24356,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_derived_facts.py | 14 |
 | tests/test_desk_companion.py | 63 |
 | tests/test_desk_counts_63.py | 5 |
+| tests/test_desk_look_locked_1670.py | 5 |
 | tests/test_desk_overlay_companion.py | 10 |
 | tests/test_desk_overlay_roam.py | 15 |
 | tests/test_desk_overlay_wiring.py | 36 |
@@ -25169,11 +25171,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_float.py | 6 |
 | tests/test_overlay_hang.py | 11 |
 | tests/test_overlay_host.py | 25 |
-| tests/test_overlay_idle.py | 8 |
+| tests/test_overlay_idle.py | 9 |
 | tests/test_overlay_moves.py | 26 |
 | tests/test_overlay_roam.py | 19 |
 | tests/test_overlay_roam_runner.py | 10 |
-| tests/test_overlay_runner.py | 21 |
+| tests/test_overlay_runner.py | 22 |
 | tests/test_overlay_sprites.py | 16 |
 | tests/test_overview_counts_1524.py | 3 |
 | tests/test_owner_typos.py | 21 |
@@ -25660,6 +25662,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_unsaved_work_guard.py | 7 |
 | tests/test_unslop_1103.py | 26 |
 | tests/test_untagged_filter.py | 5 |
+| tests/test_until_rank_1104.py | 2 |
 | tests/test_unwatched_answer.py | 4 |
 | tests/test_update.py | 39 |
 | tests/test_update_ask_once.py | 10 |
@@ -25866,7 +25869,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_zoom_frame_1508.py | 3 |
 | tests/test_zoom_wheel_delta.py | 3 |
 
-## Plan headings (999)
+## Plan headings (1000)
 
 Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, except the HISTORY.md archive. Sorted by heading.
 
@@ -26573,7 +26576,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:179 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:177 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4178 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
@@ -26685,6 +26688,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-11-03 (chat; CHAT_PLAN is at its cap) | docs/roadmap/BACKLOG.md:4435 |
 | Placed from INBOX, 2026-11-03b | docs/roadmap/BACKLOG.md:4445 |
 | Placed from INBOX, 2026-11-04 | docs/roadmap/MINDMAP_PLAN.md:1902 |
+| Placed from INBOX, 2026-11-04 | docs/roadmap/PLAN.md:318 |
 | Placed from INBOX, 2026-11-04 | docs/roadmap/WHITEBOARD_PLAN.md:1728 |
 | Placed from INBOX, 2026-11-04 (1657, what the two lag rounds left) | docs/roadmap/UI_MODERNISATION_PLAN.md:1560 |
 | Placed from INBOX, built (pointers) | docs/roadmap/UI_MODERNISATION_PLAN.md:1062 |

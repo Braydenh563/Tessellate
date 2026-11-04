@@ -14,7 +14,7 @@ import contextvars
 import re
 from datetime import date
 
-from tessellate.ai import composer_frame, composer_versus, question_noise, recognise as rec, utilities, when as when_words
+from tessellate.ai import composer_frame, composer_versus, note_rank, question_noise, recognise as rec, utilities, when as when_words
 from tessellate.ai.composer_answer import _Answer
 from tessellate.ai.composer_ask import _holds, _overview, _stem, _words, subject_terms
 from tessellate.ai.composer_quote import _ENDED, _joined, _list_block, _lowered, _pick, _quotes, _said_before, _sentence_case, _unlike_before, _with_context, decap
@@ -879,7 +879,7 @@ def _until_note(out: _Answer, question: str, views: list[NoteView], today: date)
     wanted = {_stem(w) for w in _words(asked[1]) if len(w) > 2} - {_stem(w) for w in _NOTE_NOUNS}
     #: The note titled as the subject first (note_rank's order), so "the
     #: dentist" is the Dentist note and not a to-do that says "call the dentist".
-    for view in sorted(views, key=lambda v: (v.title_words != wanted, not wanted <= v.title_words, v.rank)):
+    for view in note_rank.lead_by(sorted(views, key=lambda v: v.rank), asked[1], lambda v: v.note):
         if not wanted or not wanted & {_stem(w) for w in _words(str(view.note.get("content") or ""))}:
             continue
         dated = _days_named(view, today, asked[0])
