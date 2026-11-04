@@ -54,16 +54,20 @@
     if (cl && h.ops.group(S.m, cl)) {
       const held = key && S.picked?.size > 1 && S.picked.has(key) ? [...S.picked] : key ? [key] : [];
       if (held.some((p) => p[0] === "g" && h.ops.inside(S.m, cl, p.slice(2)))) return null;
-      return { canvas: true, op: "into", key: h.ops.key("g", cl), group: cl, before: null, card: groupBox(S, cl) };
+      return { canvas: true, op: "into", key: h.ops.key("g", cl), group: cl, before: null, card: groupBox(S, cl), word: `Into ${h.ops.group(S.m, cl).title}` };
     }
-    if (!id || !h.ops.node(S.m, id)) return { canvas: true, op: "into", group: null, before: null, card: layer };
+    if (!id || !h.ops.node(S.m, id)) {
+      //: Empty space: a palette tile adds there, a group lifts to the top level, a box is not moved by a drop that names nowhere (1679 slice 12).
+      if (key?.[0] === "n" && !g.tile) return null;
+      return { canvas: true, op: "into", group: null, before: null, card: layer, word: g.tile ? "Add here" : "To the top level" };
+    }
     const target = h.ops.key("n", id);
     const set = key && S.picked?.size > 1 && S.picked.has(key) ? [...S.picked] : key ? [key] : [];
     const group = h.ops.node(S.m, id)?.group;
     if (set.some((p) => p === target || (p[0] === "g" && h.ops.inside(S.m, group, p.slice(2))))) return null;
     const sis = h.ops.sisters(S.m, target);
     const before = sis.keys.slice(sis.keys.indexOf(target) + 1).find((k) => k[0] !== "k") || null;
-    return { canvas: true, op: "after", key: target, group: sis.parent, before, card: boxOf(S, id), ...(g.tile && g.tile.dataset.shape !== "group" ? { from: id } : {}) };
+    return { canvas: true, op: "after", key: target, group: sis.parent, before, card: boxOf(S, id), word: `After ${h.ops.node(S.m, id).text}`, ...(g.tile && g.tile.dataset.shape !== "group" ? { from: id } : {}) };
   }
 
   function wire(S, h) {

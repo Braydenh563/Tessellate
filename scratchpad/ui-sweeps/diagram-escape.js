@@ -422,4 +422,88 @@ const W = Number(process.argv[3] || 1440), touch = W < 600;
 })();
 
 };
+modes["drag-word"] = () => {
+const W = Number(process.argv[3] || 1440);
+(async () => {
+  const { browser, page } = await boot({ viewport: { width: W, height: 900 } });
+  const out = { W };
+  const src = "flowchart TD\n  subgraph G [Team]\n    X[Inner]\n  end\n  A[One] --> B[Two]\n";
+  await page.evaluate(async (c) => {
+    const r = await api("/documents", { method: "POST", body: JSON.stringify({ title: "Drag " + Date.now() + ".mmd", content: c, file_type: "mmd" }) });
+    const doc = await r.json();
+    switchTab("documents");
+    await openDocument(doc.id);
+    setDocView("canvas", { persist: false });
+  }, src);
+  await page.waitForSelector(".dgm-picture .md-mermaid-img", { timeout: 15000 });
+  await page.waitForTimeout(2200);
+  const source = () => page.evaluate(() => docText());
+  const rect = (sel) => page.evaluate((s) => { const e = document.querySelector(s); if (!e) return null; const r = e.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, l: r.left, t: r.top, r: r.right, b: r.bottom }; }, sel);
+  out.boxes = await page.evaluate(() => [...document.querySelectorAll(".dgm-overlay .dgm-box")].map((b) => b.dataset.node || "g:" + b.dataset.group));
+  const a = await rect('.dgm-overlay .dgm-box[data-node="A"]');
+  let b = null, g = null;
+  const stage = await rect(".dgm-stage");
+  const before = await source();
+  // 1) a box dragged to empty space: no change, snaps back
+  const empty = { x: stage.r - 30, y: stage.b - 30 };
+  await page.mouse.move(a.x, a.y);
+  await page.mouse.down();
+  await page.mouse.move(a.x + 20, a.y + 20, { steps: 3 });
+  await page.mouse.move(empty.x, empty.y, { steps: 8 });
+  out.emptyWord = await page.evaluate(() => { const t = document.querySelector(".dgm-drop-word"); return t && !t.classList.contains("hidden") ? t.textContent : null; });
+  out.emptyRing = await page.evaluate(() => document.querySelectorAll(".dgm-target").length);
+  await page.mouse.up();
+  await page.waitForTimeout(900);
+  out.emptyChanged = (await source()) !== before;
+  out.wordGone = await page.evaluate(() => { const t = document.querySelector(".dgm-drop-word"); return !t || t.classList.contains("hidden"); });
+  out.liftedLeft = await page.evaluate(() => document.querySelectorAll(".dgm-lifted").length);
+  // 2) over a box: the caption within 50 ms, and its look
+  await page.evaluate(() => {
+    window.__t = { move: 0, shown: 0 };
+    document.addEventListener("pointermove", () => { const t = document.querySelector(".dgm-drop-word"); if (!t || t.classList.contains("hidden")) { window.__t.move = performance.now(); window.__t.shown = 0; } }, true);
+    new MutationObserver(() => { const t = document.querySelector(".dgm-drop-word"); if (t && !t.classList.contains("hidden") && !window.__t.shown) window.__t.shown = performance.now(); }).observe(document.body, { subtree: true, attributes: true, childList: true, characterData: true });
+  });
+  // The picture refits after a drag: the targets are read again, not carried over.
+  b = await rect('.dgm-overlay .dgm-box[data-node="B"]');
+  g = await rect('.dgm-overlay .dgm-box.dgm-cluster');
+  const a2 = await rect('.dgm-overlay .dgm-box[data-node="A"]');
+  await page.mouse.move(a2.x, a2.y);
+  await page.mouse.down();
+  await page.mouse.move(a2.x + 10, a2.y + 10, { steps: 2 });
+  await page.mouse.move(b.x, b.y, { steps: 6 });
+  await page.mouse.move(b.x + 2, b.y + 1, { steps: 2 });
+  await page.waitForTimeout(150);
+  out.geo = await page.evaluate((pt) => { const e = document.elementFromPoint(pt.x, pt.y); return { b: pt, hit: e && (e.tagName + "." + String(e.className).slice(0, 40)), vh: innerHeight }; }, b);
+  out.state = await page.evaluate(() => { const t = document.querySelector(".dgm-drop-word"); return { tagClass: t?.className, targets: [...document.querySelectorAll(".dgm-target")].map((e) => e.className.slice(0, 40)), lifted: document.querySelectorAll(".dgm-lifted").length, tagRect: t && JSON.stringify(t.getBoundingClientRect()) }; });
+  out.boxWord = await page.evaluate(() => ({ text: document.querySelector(".dgm-drop-word")?.textContent, latencyMs: Math.round(window.__t.shown - window.__t.move) }));
+  out.look = await page.evaluate(() => { const t = document.querySelector(".dgm-drop-word"); const cs = getComputedStyle(t); const r = t.getBoundingClientRect(); return { size: cs.fontSize, bg: cs.backgroundColor, color: cs.color, rect: [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)], inView: r.right <= innerWidth && r.bottom <= innerHeight && r.left >= 0 && r.top >= 0, token: getComputedStyle(document.documentElement).getPropertyValue("--text-xs").trim() }; });
+  // 3) over a group
+  await page.mouse.move(g.x, g.t + 6, { steps: 6 });
+  await page.waitForTimeout(150);
+  out.groupWord = await page.evaluate(() => document.querySelector(".dgm-drop-word")?.textContent);
+  await page.keyboard.press("Escape");
+  await page.mouse.up();
+  await page.waitForTimeout(600);
+  // 4) a palette tile dropped on empty space still adds
+  await page.evaluate(() => document.querySelector(".dgm-addcaret")?.click());
+  await page.waitForTimeout(700);
+  const tile = await rect(".dgm-tile");
+  out.tile = Boolean(tile);
+  if (tile) {
+    const n0 = (await source()).split("\n").length;
+    await page.mouse.move(tile.x, tile.y);
+    await page.mouse.down();
+    await page.mouse.move(tile.x + 15, tile.y - 15, { steps: 3 });
+    await page.mouse.move(empty.x, empty.y, { steps: 8 });
+    out.tileWord = await page.evaluate(() => { const t = document.querySelector(".dgm-drop-word"); return t && !t.classList.contains("hidden") ? t.textContent : null; });
+    await page.mouse.up();
+    await page.waitForTimeout(1200);
+    out.tileAdded = (await source()).split("\n").length - n0;
+  }
+  out.finalSource = (await source()).split("\n").slice(0, 12);
+  console.log(JSON.stringify(out));
+  await browser.close();
+})();
+
+};
 (modes[process.argv[2]] || (() => { console.log("modes: " + Object.keys(modes).join(", ")); process.exit(2); }))();

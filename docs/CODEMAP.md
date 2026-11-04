@@ -2,9 +2,9 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7820, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8797, test files 2068, tests 17473, plan headings 1003, app scripts 28, boot scripts 37, script files 257.
+Counts: frontend functions 7822, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8797, test files 2068, tests 17475, plan headings 1003, app scripts 28, boot scripts 37, script files 257.
 
-## Frontend functions (7820)
+## Frontend functions (7822)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3177,7 +3177,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `node` | frontend/js/diagram-canvas.js:32 |
 | `over` | frontend/js/diagram-canvas.js:44 |
 | `overlay` | frontend/js/diagram-canvas.js:10 |
-| `wire` | frontend/js/diagram-canvas.js:69 |
+| `wire` | frontend/js/diagram-canvas.js:73 |
 
 ### frontend/js/diagram-edge-pick.js (1)
 
@@ -3358,12 +3358,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `extras` | frontend/js/diagram-picture.js:47 |
 | `pick` | frontend/js/diagram-picture.js:73 |
 
-### frontend/js/diagram-pointer.js (2)
+### frontend/js/diagram-pointer.js (4)
 
 | Name | File:line |
 |---|---|
-| `dropMark` | frontend/js/diagram-pointer.js:10 |
-| `make` | frontend/js/diagram-pointer.js:35 |
+| `dropMark` | frontend/js/diagram-pointer.js:28 |
+| `make` | frontend/js/diagram-pointer.js:59 |
+| `mark` | frontend/js/diagram-pointer.js:34 |
+| `word` | frontend/js/diagram-pointer.js:12 |
 
 ### frontend/js/diagram-split.js (1)
 
@@ -12312,7 +12314,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 226 |
-| frontend/css/diagram-lazy.css | 1516 |
+| frontend/css/diagram-lazy.css | 1534 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 140 |
 | frontend/css/forced-colors-lazy.css | 28 |
@@ -24083,7 +24085,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17473)
+## Tests (17475)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24640,7 +24642,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_r6.py | 13 |
 | tests/test_diagram_r7.py | 5 |
 | tests/test_diagram_r8a.py | 5 |
-| tests/test_diagram_r8b.py | 9 |
+| tests/test_diagram_r8b.py | 11 |
 | tests/test_diagram_r8c.py | 11 |
 | tests/test_diagram_r9b.py | 9 |
 | tests/test_diagram_r9c.py | 9 |
