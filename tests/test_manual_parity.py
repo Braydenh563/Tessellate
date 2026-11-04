@@ -323,11 +323,13 @@ def test_the_desktop_companion_row_is_named_as_a_this_computer_setting():
     popover = html.split('id="desktop-companion-help"', 1)[1].split("</div>", 1)[0]
     assert "While the desktop app runs" in popover
     # BACKLOG 16 O4: the see-through figure that walks, and the words for it, in both places.
-    for words in ("walks along the bottom", "sleeps", "picked up and dropped", "reduce motion"):
+    # Windows' own setting is named ("animation effects"): "reduce motion" was the app's old
+    # switch, which test_motion_resolved keeps out of the pages.
+    for words in ("walks along the bottom", "sleeps", "picked up and dropped", "animation effects"):
         assert words in popover.replace("\n", " ").replace("  ", " ") or words in " ".join(popover.split()), words
     for topic in named:
         flat = " ".join(topic["body"].split())
-        assert "walks along the bottom" in flat and "picked up and dropped" in flat and "reduce motion" in flat, topic["id"]
+        assert "walks along the bottom" in flat and "picked up and dropped" in flat and "animation effects" in flat, topic["id"]
     settings = (FRONTEND / "js" / "settings.js").read_text(encoding="utf-8")
     assert 'const onThisComputer = isDesktop || (await healthFacts())?.this_computer !== false;' in settings
     assert '$("desktop-companion-row")?.classList.toggle("hidden", !onThisComputer);' in settings

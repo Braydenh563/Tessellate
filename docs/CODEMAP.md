@@ -25788,7 +25788,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 0. Performance and "not device heavy" (cross-cutting, first) | docs/roadmap/PLAN.md:26 |
 | 0. The diagnosis in one page | docs/roadmap/WORLD_CLASS_PLAN.md:25 |
 | 0. The operating protocol (read every session, it is short) | docs/roadmap/SESSION_BRIEFS.md:17 |
-| 0.6.01 bug-document pass (2026-10-22, branch claude/project-thread-ol5yuv) | docs/roadmap/HANDOVER.md:43 |
+| 0.6.01 bug-document pass (2026-10-22, branch claude/project-thread-ol5yuv) | docs/roadmap/HANDOVER.md:41 |
 | 1. Format panel, Style tab | docs/roadmap/WHITEBOARD_PLAN.md:978 |
 | 1. Live log console (started, not finished) | docs/roadmap/BACKLOG.md:31 |
 | 1. Research read, 2026-10-10, and what each changes here | docs/roadmap/CHAT_PLAN.md:1553 |
@@ -25952,7 +25952,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 20. A model per feature (asked for directly, 2026-09-21) | docs/roadmap/WORLD_CLASS_PLAN.md:2213 |
 | 20. Backend | docs/roadmap/BACKLOG.md:1309 |
 | 20. The 2026-10-05 feature audit: decisions | docs/roadmap/DOCUMENTS_PLAN.md:956 |
-| 2026-09-08, the third night: read this block first, whoever you are | docs/roadmap/HANDOVER.md:90 |
+| 2026-09-08, the third night: read this block first, whoever you are | docs/roadmap/HANDOVER.md:88 |
 | 21. Every failure names its way out (INBOX 272 part 1, 2026-09-21) | docs/roadmap/WORLD_CLASS_PLAN.md:2283 |
 | 21. Skills: rebuilt; what is left | docs/roadmap/BACKLOG.md:1445 |
 | 21. The code editor against VS Code, and writing checks everywhere (INBOX 646) | docs/roadmap/DOCUMENTS_PLAN.md:299 |
@@ -26362,8 +26362,8 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E2 · The complexity of the AI path is where the next bug will be, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:653 |
 | E3 · Model calls are scattered across request handlers, background threads and module singletons, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:666 |
 | E4 · The honest positives, so the section is not one-sided (read) | docs/roadmap/MODERNISATION_AUDIT.md:676 |
-| Earlier morning summary (2026-10-30) | docs/roadmap/HANDOVER.md:32 |
-| Earlier morning summary (away run 2026-10-18b, branch claude/magical-feynman-7bgj7j, PR 192, 0.6.0) | docs/roadmap/HANDOVER.md:51 |
+| Earlier morning summary (2026-10-30) | docs/roadmap/HANDOVER.md:30 |
+| Earlier morning summary (away run 2026-10-18b, branch claude/magical-feynman-7bgj7j, PR 192, 0.6.0) | docs/roadmap/HANDOVER.md:49 |
 | Earlier sessions | docs/roadmap/HANDOVER.md:587 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4272 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
@@ -26371,7 +26371,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | F1 · Boot is ~1 s and tab switches are ~10–50 ms. The app is not slow; it is *heavy*: Medium | docs/roadmap/MODERNISATION_AUDIT.md:687 |
 | F2 · Fourteen requests in sixty idle seconds, from three separate timers, High | docs/roadmap/MODERNISATION_AUDIT.md:708 |
 | F3 · List rendering is solved; list *fetching* is not, Medium | docs/roadmap/MODERNISATION_AUDIT.md:733 |
-| Fable's working notes for Opus (2026-09-09 05:10 UTC) | docs/roadmap/HANDOVER.md:242 |
+| Fable's working notes for Opus (2026-09-09 05:10 UTC) | docs/roadmap/HANDOVER.md:240 |
 | Found by an agent while measuring something else (2026-09-08, graph) | docs/roadmap/CHAT_PLAN.md:578 |
 | G. Mobile and responsive | docs/roadmap/MODERNISATION_AUDIT.md:743 |
 | G. Test-suite gaps | docs/roadmap/AUDIT.md:123 |
@@ -26398,7 +26398,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Harness robustness, 2026-10-04 (INBOX 527) | docs/roadmap/AGENT_SKILLS_REFORM.md:202 |
 | Harper (Automattic) | docs/roadmap/ANALYSIS.md:1783 |
 | Headroom: evaluated, not adopted | docs/roadmap/BACKLOG.md:729 |
-| How far each plan actually is (honest, as of 2026-10-03) | docs/roadmap/HANDOVER.md:378 |
+| How far each plan actually is (honest, as of 2026-10-03) | docs/roadmap/HANDOVER.md:376 |
 | How to proceed after PR 149 (written 2026-09-14; the live order is CLAUDE.md standing order 1 and HANDOVER's Now line) | docs/ROADMAP.md:295 |
 | How to read the evidence in here | docs/roadmap/MODERNISATION_AUDIT.md:23 |
 | How to work on this repo | docs/ROADMAP.md:364 |
@@ -26416,7 +26416,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/CHAT_PLAN.md:912 |
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1389 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3117 |
-| If Opus is the orchestrator (no Fable available) | docs/roadmap/HANDOVER.md:100 |
+| If Opus is the orchestrator (no Fable available) | docs/roadmap/HANDOVER.md:98 |
 | Image notes and the Library, against photocraft and lightcraft | docs/roadmap/ANALYSIS.md:3955 |
 | Is its backend better designed? No: and it says so about itself | docs/roadmap/ANALYSIS.md:810 |
 | KnowNote (MrSibe) | docs/roadmap/ANALYSIS.md:1932 |
@@ -26440,7 +26440,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1360 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4387 |
 | PDF viewer and OCR workspace, against pdfcraft | docs/roadmap/ANALYSIS.md:3922 |
-| PR 144 is done when (the owner's checklist, 2026-09-09 05:30 UTC) | docs/roadmap/HANDOVER.md:139 |
+| PR 144 is done when (the owner's checklist, 2026-09-09 05:30 UTC) | docs/roadmap/HANDOVER.md:137 |
 | Parity matrix, 2026-10-10 | docs/roadmap/ANALYSIS.md:3703 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:679 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:561 |
@@ -26660,9 +26660,9 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Six repositories read for Tessellate, 2026-09-20 | docs/roadmap/ANALYSIS.md:1760 |
 | Sources | docs/roadmap/MINDMAP_PLAN.md:280 |
 | Speech, four projects read by name, and what this app already does | docs/roadmap/ANALYSIS.md:3102 |
-| Standing orders for this session (whoever the model is) | docs/roadmap/HANDOVER.md:314 |
+| Standing orders for this session (whoever the model is) | docs/roadmap/HANDOVER.md:312 |
 | Start of the next PR (the owner, 2026-10-12, "log everything I've mentioned") | docs/roadmap/BACKLOG.md:4312 |
-| State of the branch (`claude/notes-flow-rebuild`, PR #162) | docs/roadmap/HANDOVER.md:398 |
+| State of the branch (`claude/notes-flow-rebuild`, PR #162) | docs/roadmap/HANDOVER.md:396 |
 | Steps | docs/roadmap/UI_MODERNISATION_PLAN.md:1048 |
 | Steps | docs/roadmap/WORLD_CLASS_PLAN.md:1524 |
 | Still open | docs/roadmap/WORLD_CLASS_PLAN.md:2260 |
