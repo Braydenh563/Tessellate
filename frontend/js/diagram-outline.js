@@ -22,14 +22,16 @@
       if (seen.has(item.id)) return;
       seen.add(item.id);
       out.push(depth ? { ...item, depth: Math.min(depth, MAX_DEPTH) } : item);
-      for (const to of next.get(item.id) || []) walk(by.get(to), depth + 1);
+      //: A lone target stays flush; only a branch indents.
+      const targets = [...new Set(next.get(item.id) || [])];
+      for (const to of targets) walk(by.get(to), targets.length > 1 ? depth + 1 : depth);
     };
     run.filter((item) => !into.has(item.id)).forEach((item) => walk(item, 0));
     run.forEach((item) => walk(item, 0));
     return out;
   }
 
-  //: `items` is `diagramOps.layout(m)` or a group's `kids`; the result has the same shape, reordered.
+  //: `items` is `diagramModel.ops.layout(m)` or a group's `kids`; the result has the same shape, reordered.
   function order(m, items) {
     const out = [];
     let run = [];
@@ -67,5 +69,12 @@
     S.sideways.classList.remove("hidden");
   }
 
-  diagramModel.outline = { order, offer };
+  //: True when Alt+Up or Down would move the source but leave the drawn list as it is (an invisible move).
+  function stuck(m, key, dir) {
+    const ids = (items) => items.flatMap((x) => [x.type + x.id, ...(x.kids ? ids(x.kids) : [])]).join();
+    const trial = structuredClone(m);
+    return diagramModel.ops.step(trial, key, dir) && ids(order(trial, diagramModel.ops.layout(trial))) === ids(order(m, diagramModel.ops.layout(m)));
+  }
+
+  diagramModel.outline = { order, offer, stuck };
 })();

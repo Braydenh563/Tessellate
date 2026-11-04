@@ -27,7 +27,7 @@ ORG = (
 
 def _run(expr: str):
     script = (
-        "const vm=require('vm');const ctx={diagramModel:{}};vm.createContext(ctx);"
+        "const vm=require('vm');const ctx={diagramModel:{},structuredClone};vm.createContext(ctx);"
         f"for (const f of ['diagram-ops.js','diagram-outline.js']) vm.runInContext(require('fs').readFileSync({json.dumps(str(JS))}+'/'+f,'utf8'),ctx);"
         f"const ops=ctx.diagramModel.ops;const o=ctx.diagramModel.outline;const m={ORG};"
         f"process.stdout.write(JSON.stringify({expr}));"
@@ -55,12 +55,13 @@ def test_a_cycle_is_cut_at_the_first_repeat_and_a_group_keeps_its_place():
         "(() => { const c = {nodes:[{id:'A',text:'A'},{id:'B',text:'B'}], subgraphs: [], kept: [], edges:[{from:'A',to:'B'},{from:'B',to:'A'}]};"
         " return o.order(c, ops.layout(c)).map((i) => i.id + ':' + (i.depth || 0)); })()"
     )
-    assert cyc == ["A:0", "B:1"]
+    # Intent moved (review of 1679 slice 6): depth now marks a branch, so a lone target stays flush with its parent.
+    assert cyc == ["A:0", "B:0"]
     grouped = _run(
         "(() => { const c = {nodes:[{id:'A',text:'A'},{id:'B',text:'B',group:'g'},{id:'C',text:'C',group:'g'}], subgraphs:[{id:'g',title:'G',parent:null}], kept: [], edges:[{from:'B',to:'C'}]};"
         " return o.order(c, ops.layout(c)).map((i) => i.type + i.id + ':' + (i.kids || []).map((k) => k.id + (k.depth || 0)).join(',')); })()"
     )
-    assert grouped == ["gg:B0,C1", "nA:"]
+    assert grouped == ["gg:B0,C0", "nA:"]  # same intent move as above: a lone target stays flush
 
 
 def test_the_outline_is_lazy_wired_into_render_and_indents_by_depth():
@@ -82,3 +83,21 @@ def test_a_connector_row_is_one_short_line():
     assert 'el("span", "dgm-join-to", to)' in chip
     row = CSS.split(".dgm-join {", 1)[1].split("}", 1)[0]
     assert "min-height: var(--control-h-dense)" in row
+
+
+@needs_node
+def test_a_straight_run_of_steps_stays_flush_and_only_a_branch_indents():
+    chain = _run(
+        "(() => { const ids = Array.from({length: 12}, (_, i) => 'n' + i); const c = {nodes: ids.map((id) => ({id, text: id})), subgraphs: [], kept: [],"
+        " edges: ids.slice(1).map((to, i) => ({from: ids[i], to}))}; return o.order(c, ops.layout(c)).map((i) => i.depth || 0); })()"
+    )
+    assert chain == [0] * 12
+
+
+@needs_node
+def test_alt_up_down_is_stuck_when_the_drawn_list_would_not_change_and_free_when_it_would():
+    # Review of 1679: Design above Sales in the source changed nothing in the flow-ordered list, then the next move hit another block.
+    assert _run("o.stuck(m, 'n:Design', -1)") is True
+    assert _run("o.stuck(m, 'n:CEO', -1)") is False
+    plain = "(() => { const c = {nodes:[{id:'A',text:'A'},{id:'B',text:'B'}], subgraphs: [], kept: [], edges:[]}; return o.stuck(c, 'n:B', -1); })()"
+    assert _run(plain) is False

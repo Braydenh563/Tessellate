@@ -407,6 +407,7 @@
 
   function stepBlock(S, key, dir) {
     if (key[0] === "k") return;
+    if (diagramModel.outline?.stuck(S.m, key, dir)) return say(S, `${nameOf(S, key)} follows its arrows. Drag its grip.`);
     if (!diagramOps.step(S.m, key, dir)) return say(S, `${nameOf(S, key)} is already ${dir < 0 ? "first" : "last"}.`);
     commit(S, `Moved ${nameOf(S, key)} ${dir < 0 ? "up" : "down"}.`);
   }

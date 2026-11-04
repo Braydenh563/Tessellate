@@ -2,9 +2,9 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7815, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8797, test files 2068, tests 17466, plan headings 1003, app scripts 28, boot scripts 37, script files 257.
+Counts: frontend functions 7816, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8797, test files 2068, tests 17468, plan headings 1003, app scripts 28, boot scripts 37, script files 257.
 
-## Frontend functions (7815)
+## Frontend functions (7816)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -1100,66 +1100,66 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `buildSettingsJumpList` | frontend/js/phone-shell.js:1790 |
-| `clearAppCache` | frontend/js/phone-shell.js:2259 |
+| `buildSettingsJumpList` | frontend/js/phone-shell.js:1791 |
+| `clearAppCache` | frontend/js/phone-shell.js:2260 |
 | `closeNotePageIfGone` | frontend/js/phone-shell.js:1109 |
-| `dockArrangeLabel` | frontend/js/phone-shell.js:1953 |
-| `dockArrangeSlot` | frontend/js/phone-shell.js:1942 |
+| `dockArrangeLabel` | frontend/js/phone-shell.js:1954 |
+| `dockArrangeSlot` | frontend/js/phone-shell.js:1943 |
 | `dockChatAttachments` | frontend/js/phone-shell.js:1241 |
 | `dockChatTools` | frontend/js/phone-shell.js:1299 |
 | `dockPhoneStatus` | frontend/js/phone-shell.js:804 |
-| `dockShown` | frontend/js/phone-shell.js:2032 |
+| `dockShown` | frontend/js/phone-shell.js:2033 |
 | `dockTabBar` | frontend/js/phone-shell.js:643 |
-| `dockTight` | frontend/js/phone-shell.js:2039 |
+| `dockTight` | frontend/js/phone-shell.js:2040 |
 | `dropRepeatedTitle` | frontend/js/phone-shell.js:1037 |
-| `echoSettingsPaneTitle` | frontend/js/phone-shell.js:1782 |
+| `echoSettingsPaneTitle` | frontend/js/phone-shell.js:1783 |
 | `emblemArt` | frontend/js/phone-shell.js:86 |
 | `emblemHsl` | frontend/js/phone-shell.js:36 |
 | `emblemPalette` | frontend/js/phone-shell.js:57 |
 | `emblemSetBusy` | frontend/js/phone-shell.js:134 |
-| `fitDock` | frontend/js/phone-shell.js:2159 |
-| `floatPrimaryActions` | frontend/js/phone-shell.js:1880 |
+| `fitDock` | frontend/js/phone-shell.js:2160 |
+| `floatPrimaryActions` | frontend/js/phone-shell.js:1881 |
 | `focusTabPage` | frontend/js/phone-shell.js:388 |
-| `foldDockActions` | frontend/js/phone-shell.js:2105 |
-| `foldDockArrange` | frontend/js/phone-shell.js:2050 |
-| `foldSiblingsIntoMenu` | frontend/js/phone-shell.js:1997 |
-| `foldZoneIntoMenu` | frontend/js/phone-shell.js:1965 |
-| `forceReloadApp` | frontend/js/phone-shell.js:2274 |
+| `foldDockActions` | frontend/js/phone-shell.js:2106 |
+| `foldDockArrange` | frontend/js/phone-shell.js:2051 |
+| `foldSiblingsIntoMenu` | frontend/js/phone-shell.js:1998 |
+| `foldZoneIntoMenu` | frontend/js/phone-shell.js:1966 |
+| `forceReloadApp` | frontend/js/phone-shell.js:2275 |
 | `initBottomTabBar` | frontend/js/phone-shell.js:674 |
-| `initDockFolding` | frontend/js/phone-shell.js:2172 |
+| `initDockFolding` | frontend/js/phone-shell.js:2173 |
 | `initHeaderHeightToken` | frontend/js/phone-shell.js:555 |
-| `initKeyboardInset` | frontend/js/phone-shell.js:1703 |
+| `initKeyboardInset` | frontend/js/phone-shell.js:1704 |
 | `initNotePage` | frontend/js/phone-shell.js:1114 |
 | `initNotesSubtabHeightToken` | frontend/js/phone-shell.js:589 |
 | `initOcrPhonePage` | frontend/js/phone-shell.js:1201 |
 | `initPhoneChatRow` | frontend/js/phone-shell.js:1354 |
 | `initPhoneHeaderMore` | frontend/js/phone-shell.js:718 |
 | `initPhoneStatus` | frontend/js/phone-shell.js:840 |
-| `initPrimaryFab` | frontend/js/phone-shell.js:1906 |
+| `initPrimaryFab` | frontend/js/phone-shell.js:1907 |
 | `initRowSwipe` | frontend/js/phone-shell.js:935 |
 | `mountPhoneSidebarOpeners` | frontend/js/phone-shell.js:874 |
-| `nameFoldedButton` | frontend/js/phone-shell.js:1985 |
+| `nameFoldedButton` | frontend/js/phone-shell.js:1986 |
 | `ocrPhonePage` | frontend/js/phone-shell.js:1165 |
 | `openNotePage` | frontend/js/phone-shell.js:1047 |
 | `openSheet` | frontend/js/phone-shell.js:1394 |
-| `phoneMoreDueCount` | frontend/js/phone-shell.js:1656 |
-| `phoneMoreRunCount` | frontend/js/phone-shell.js:1621 |
+| `phoneMoreDueCount` | frontend/js/phone-shell.js:1657 |
+| `phoneMoreRunCount` | frontend/js/phone-shell.js:1622 |
 | `phoneSheetDialogs` | frontend/js/phone-shell.js:1220 |
-| `quitApp` | frontend/js/phone-shell.js:2226 |
+| `quitApp` | frontend/js/phone-shell.js:2227 |
 | `refreshNotePage` | frontend/js/phone-shell.js:1095 |
 | `releaseDetachedEmblems` | frontend/js/phone-shell.js:170 |
 | `releaseEmblem` | frontend/js/phone-shell.js:153 |
 | `renderBrandLogo` | frontend/js/phone-shell.js:220 |
 | `renderEmblem` | frontend/js/phone-shell.js:176 |
 | `renderEmblemWhenShown` | frontend/js/phone-shell.js:257 |
-| `renderExportsList` | frontend/js/phone-shell.js:2285 |
-| `sheetRow` | frontend/js/phone-shell.js:1595 |
+| `renderExportsList` | frontend/js/phone-shell.js:2286 |
+| `sheetRow` | frontend/js/phone-shell.js:1596 |
 | `syncEmblemBusy` | frontend/js/phone-shell.js:122 |
-| `syncPhoneMoreButton` | frontend/js/phone-shell.js:1665 |
-| `syncPhoneMoreRuns` | frontend/js/phone-shell.js:1630 |
+| `syncPhoneMoreButton` | frontend/js/phone-shell.js:1666 |
+| `syncPhoneMoreRuns` | frontend/js/phone-shell.js:1631 |
 | `tabFromTop` | frontend/js/phone-shell.js:489 |
 | `tabPageScroller` | frontend/js/phone-shell.js:404 |
-| `toggleAutonomousPanel` | frontend/js/phone-shell.js:2321 |
+| `toggleAutonomousPanel` | frontend/js/phone-shell.js:2322 |
 | `watchEmblemVisibility` | frontend/js/phone-shell.js:16 |
 | `watchStatusBarIdle` | frontend/js/phone-shell.js:786 |
 
@@ -3132,25 +3132,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `blockItems` | frontend/js/diagram-builder.js:300 |
 | `blockKeys` | frontend/js/diagram-builder.js:137 |
 | `buildBlock` | frontend/js/diagram-builder.js:201 |
-| `buildPalette` | frontend/js/diagram-builder.js:530 |
+| `buildPalette` | frontend/js/diagram-builder.js:531 |
 | `buildRow` | frontend/js/diagram-builder.js:214 |
 | `commit` | frontend/js/diagram-builder.js:47 |
 | `drawPicture` | frontend/js/diagram-builder.js:62 |
 | `el` | frontend/js/diagram-builder.js:26 |
 | `groupGlyph` | frontend/js/diagram-builder.js:276 |
 | `joinChip` | frontend/js/diagram-builder.js:283 |
-| `joinPick` | frontend/js/diagram-builder.js:502 |
-| `joins` | frontend/js/diagram-builder.js:498 |
-| `kindOf` | frontend/js/diagram-builder.js:627 |
-| `menuAt` | frontend/js/diagram-builder.js:482 |
-| `more` | frontend/js/diagram-builder.js:519 |
-| `mount` | frontend/js/diagram-builder.js:532 |
+| `joinPick` | frontend/js/diagram-builder.js:503 |
+| `joins` | frontend/js/diagram-builder.js:499 |
+| `kindOf` | frontend/js/diagram-builder.js:628 |
+| `menuAt` | frontend/js/diagram-builder.js:483 |
+| `more` | frontend/js/diagram-builder.js:520 |
+| `mount` | frontend/js/diagram-builder.js:533 |
 | `nameOf` | frontend/js/diagram-builder.js:40 |
-| `nestBlock` | frontend/js/diagram-builder.js:414 |
-| `onKey` | frontend/js/diagram-builder.js:436 |
+| `nestBlock` | frontend/js/diagram-builder.js:415 |
+| `onKey` | frontend/js/diagram-builder.js:437 |
 | `reconcile` | frontend/js/diagram-builder.js:129 |
 | `relabel` | frontend/js/diagram-builder.js:359 |
-| `removeBlock` | frontend/js/diagram-builder.js:422 |
+| `removeBlock` | frontend/js/diagram-builder.js:423 |
 | `render` | frontend/js/diagram-builder.js:91 |
 | `say` | frontend/js/diagram-builder.js:33 |
 | `select` | frontend/js/diagram-builder.js:327 |
@@ -3158,13 +3158,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `shapeGlyph` | frontend/js/diagram-builder.js:139 |
 | `shapeItems` | frontend/js/diagram-builder.js:147 |
 | `shapeRow` | frontend/js/diagram-builder.js:160 |
-| `show` | frontend/js/diagram-builder.js:637 |
+| `show` | frontend/js/diagram-builder.js:638 |
 | `stepBlock` | frontend/js/diagram-builder.js:408 |
 | `stops` | frontend/js/diagram-builder.js:119 |
-| `styleDo` | frontend/js/diagram-builder.js:504 |
-| `suggest` | frontend/js/diagram-builder.js:492 |
-| `suggestMenu` | frontend/js/diagram-builder.js:510 |
-| `sync` | frontend/js/diagram-builder.js:602 |
+| `styleDo` | frontend/js/diagram-builder.js:505 |
+| `suggest` | frontend/js/diagram-builder.js:493 |
+| `suggestMenu` | frontend/js/diagram-builder.js:511 |
+| `sync` | frontend/js/diagram-builder.js:603 |
 | `titleOf` | frontend/js/diagram-builder.js:39 |
 
 ### frontend/js/diagram-canvas.js (7)
@@ -3334,13 +3334,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dgbUnjoin` | frontend/js/diagram-ops.js:184 |
 | `dgbWrap` | frontend/js/diagram-ops.js:311 |
 
-### frontend/js/diagram-outline.js (3)
+### frontend/js/diagram-outline.js (4)
 
 | Name | File:line |
 |---|---|
 | `flow` | frontend/js/diagram-outline.js:9 |
-| `offer` | frontend/js/diagram-outline.js:53 |
-| `order` | frontend/js/diagram-outline.js:33 |
+| `offer` | frontend/js/diagram-outline.js:55 |
+| `order` | frontend/js/diagram-outline.js:35 |
+| `stuck` | frontend/js/diagram-outline.js:73 |
 
 ### frontend/js/diagram-overlay.js (1)
 
@@ -24078,7 +24079,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17466)
+## Tests (17468)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24629,7 +24630,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_model.py | 12 |
 | tests/test_diagram_multi_r5.py | 17 |
 | tests/test_diagram_object_kind.py | 2 |
-| tests/test_diagram_outline_1679.py | 6 |
+| tests/test_diagram_outline_1679.py | 8 |
 | tests/test_diagram_page_1679.py | 7 |
 | tests/test_diagram_r10.py | 6 |
 | tests/test_diagram_r6.py | 13 |

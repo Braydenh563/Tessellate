@@ -63,7 +63,8 @@ def test_the_divider_sets_a_column_variable_and_is_gone_on_a_phone():
 def test_the_direction_button_names_its_state_in_words():
     # 1661 D2 replaced the caption over four arrows with one cycling button that shows the arrow and the word.
     bar = (JS / "diagram-bar.js").read_text(encoding="utf-8")
-    assert "Direction: ${WORD[dir]}. Press to turn it." in bar and "dgm-dirword" in bar
+    # Intent moved (1679 slice 7): Direction is a menu of four now, so the button names its state and says it is a choice.
+    assert "Direction: ${WORD[dir]}. Choose a direction." in bar and "dgm-dirword" in bar
     assert ".dgm-dirs-caption" not in CSS
 
 

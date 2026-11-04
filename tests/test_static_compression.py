@@ -143,7 +143,10 @@ PIECE_CAP = 32_000
 #: 2026-11-04, +40 (R9c): a Library diagram has its own chat card and kind through
 #: attach and send, and the board hands the builder its link target; the save and
 #: link code is in the lazy diagram-embed.js; same win-back item.
-TOTAL_CAP = 260_800
+#: 2026-11-04, +20 (INBOX 1679 review): a dialog opened over a sheet (the diagram's Connect
+#: to… picker over the Blocks list) takes the Escape, so one Escape no longer closes both;
+#: one test in phone-shell.js's sheet handler; same win-back item.
+TOTAL_CAP = 260_820
 
 
 def _served_gzip_size(client, name: str) -> int:
