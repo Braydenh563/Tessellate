@@ -682,16 +682,8 @@ def test_a_first_show_that_did_not_hold_is_placed_once_more(monkeypatch):
         def SetWindowPos(self, *args):
             calls.append(args)
 
-    class Timer:
-        def __init__(self, delay, fn, args):
-            calls.append(("timer", args))
-            self.daemon = False
-
-        def start(self):
-            pass
-
     monkeypatch.setattr(ctypes, "windll", type("W", (), {"user32": User32()})(), raising=False)
-    monkeypatch.setattr(dc.threading, "Timer", Timer)
+    monkeypatch.setattr(dc, "_read_back", lambda *args, **kw: calls.append(("timer", args)))
     want = (880, 512, 224, 304)
     dc._log_placed(7, want, 192, True)
     places = [c for c in calls if c[0] != "timer"]

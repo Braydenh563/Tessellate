@@ -34,6 +34,7 @@ import logging
 import re
 import sys
 import threading
+import time
 from typing import Any, Callable
 
 from tessellate.core import jobs
@@ -359,9 +360,7 @@ def raise_on_desktop(window: Any, rect: tuple[int, int, int, int] | None = None)
             #: The first show can land as a smaller square (WinForms rescales
             #: the new form after the move; INBOX 1650), so a show that did not
             #: hold is placed once more.
-            timer = threading.Timer(0.5, _log_placed, (handle, (x, y, width, height), dpi, True))
-            timer.daemon = True
-            timer.start()
+            _read_back(handle, (x, y, width, height), dpi, again=True)
         return True
     except Exception:  # noqa: BLE001
         logger.debug("could not raise the companion window", exc_info=True)
@@ -387,13 +386,22 @@ def place_on_screen(window: Any, rect: tuple[int, int, int, int]) -> bool:
         x, y, width, height = physical_rect(rect, dpi)
         swp_nozorder = 0x0004
         user32.SetWindowPos(handle, 0, x, y, width, height, (SWP_PLACE & ~0x0040) | swp_nozorder)
-        timer = threading.Timer(0.5, _log_placed, (handle, (x, y, width, height), dpi))
-        timer.daemon = True
-        timer.start()
+        _read_back(handle, (x, y, width, height), dpi)
         return True
     except Exception:  # noqa: BLE001
         logger.debug("could not place the companion window", exc_info=True)
         return False
+
+
+def _read_back(handle: int, want: tuple[int, int, int, int], dpi: int, again: bool = False) -> None:
+    """Read the window's place back half a second on, on a listed thread (the
+    move is posted, so it lands a moment later)."""
+
+    def later() -> None:
+        time.sleep(0.5)
+        _log_placed(handle, want, dpi, again)
+
+    jobs.thread("desk-placed", later)
 
 
 def _log_placed(handle: int, want: tuple[int, int, int, int], dpi: int, again: bool = False) -> None:
@@ -409,9 +417,7 @@ def _log_placed(handle: int, want: tuple[int, int, int, int], dpi: int, again: b
         logger.info("desk companion: placed at %s, asked %s, dpi %s, held: %s", got, want, dpi, got == want)
         if again and got != want:
             ctypes.windll.user32.SetWindowPos(handle, 0, *want, (SWP_PLACE & ~0x0040) | 0x0004)
-            timer = threading.Timer(0.5, _log_placed, (handle, want, dpi))
-            timer.daemon = True
-            timer.start()
+            _read_back(handle, want, dpi)
     except Exception:  # noqa: BLE001 - a log line, never worth a failure
         logger.debug("could not read the companion's place back", exc_info=True)
 
@@ -634,8 +640,7 @@ class DeskCompanion:
             except Exception:  # noqa: BLE001 - the last look stands
                 logger.debug("desk companion: could not ask the app window for its look", exc_info=True)
 
-        worker = threading.Thread(target=ask, name="desk-look", daemon=True)
-        worker.start()
+        worker = jobs.thread("desk-look", ask)
         worker.join(LOOK_WAIT)
         if found and found[0] in ("masculine", "feminine"):
             return found[0]

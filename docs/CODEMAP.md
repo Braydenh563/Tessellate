@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7751, frontend ids 2637, CSS sections 522, backend routes 641, backend modules 8636, test files 2002, tests 16807, plan headings 998, app scripts 28, boot scripts 37, script files 246.
+Counts: frontend functions 7751, frontend ids 2637, CSS sections 522, backend routes 641, backend modules 8637, test files 2002, tests 16807, plan headings 998, app scripts 28, boot scripts 37, script files 246.
 
 ## Frontend functions (7751)
 
@@ -12878,7 +12878,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8636)
+## Backend modules (8637)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -21057,37 +21057,38 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `reset_app_state` | src/tessellate/core/deps.py:267 |
 | `store_quietly` | src/tessellate/core/deps.py:587 |
 
-### src/tessellate/core/desk_companion.py (27)
+### src/tessellate/core/desk_companion.py (28)
 
 | Name | File:line |
 |---|---|
-| `DeskApi` | src/tessellate/core/desk_companion.py:454 |
-| `DeskCompanion` | src/tessellate/core/desk_companion.py:490 |
-| `_config` | src/tessellate/core/desk_companion.py:73 |
-| `_default_overlay_factory` | src/tessellate/core/desk_companion.py:862 |
-| `_follow` | src/tessellate/core/desk_companion.py:903 |
-| `_log_placed` | src/tessellate/core/desk_companion.py:399 |
-| `_pref` | src/tessellate/core/desk_companion.py:86 |
-| `_screen_area` | src/tessellate/core/desk_companion.py:211 |
-| `_set_pref` | src/tessellate/core/desk_companion.py:98 |
-| `_system_dpi` | src/tessellate/core/desk_companion.py:124 |
-| `attach` | src/tessellate/core/desk_companion.py:872 |
-| `clamp_corner` | src/tessellate/core/desk_companion.py:227 |
-| `clean_size` | src/tessellate/core/desk_companion.py:419 |
-| `companion_ex_style` | src/tessellate/core/desk_companion.py:257 |
-| `enabled` | src/tessellate/core/desk_companion.py:94 |
-| `hit_script` | src/tessellate/core/desk_companion.py:431 |
-| `monitor_areas` | src/tessellate/core/desk_companion.py:153 |
-| `panel_corner` | src/tessellate/core/desk_companion.py:236 |
-| `physical_rect` | src/tessellate/core/desk_companion.py:292 |
-| `pick_area` | src/tessellate/core/desk_companion.py:199 |
-| `place_on_screen` | src/tessellate/core/desk_companion.py:371 |
-| `raise_on_desktop` | src/tessellate/core/desk_companion.py:309 |
-| `shutdown` | src/tessellate/core/desk_companion.py:940 |
-| `to_logical` | src/tessellate/core/desk_companion.py:105 |
-| `tray_menu_item` | src/tessellate/core/desk_companion.py:948 |
-| `window_handle` | src/tessellate/core/desk_companion.py:276 |
-| `work_area` | src/tessellate/core/desk_companion.py:134 |
+| `DeskApi` | src/tessellate/core/desk_companion.py:460 |
+| `DeskCompanion` | src/tessellate/core/desk_companion.py:496 |
+| `_config` | src/tessellate/core/desk_companion.py:74 |
+| `_default_overlay_factory` | src/tessellate/core/desk_companion.py:867 |
+| `_follow` | src/tessellate/core/desk_companion.py:908 |
+| `_log_placed` | src/tessellate/core/desk_companion.py:407 |
+| `_pref` | src/tessellate/core/desk_companion.py:87 |
+| `_read_back` | src/tessellate/core/desk_companion.py:396 |
+| `_screen_area` | src/tessellate/core/desk_companion.py:212 |
+| `_set_pref` | src/tessellate/core/desk_companion.py:99 |
+| `_system_dpi` | src/tessellate/core/desk_companion.py:125 |
+| `attach` | src/tessellate/core/desk_companion.py:877 |
+| `clamp_corner` | src/tessellate/core/desk_companion.py:228 |
+| `clean_size` | src/tessellate/core/desk_companion.py:425 |
+| `companion_ex_style` | src/tessellate/core/desk_companion.py:258 |
+| `enabled` | src/tessellate/core/desk_companion.py:95 |
+| `hit_script` | src/tessellate/core/desk_companion.py:437 |
+| `monitor_areas` | src/tessellate/core/desk_companion.py:154 |
+| `panel_corner` | src/tessellate/core/desk_companion.py:237 |
+| `physical_rect` | src/tessellate/core/desk_companion.py:293 |
+| `pick_area` | src/tessellate/core/desk_companion.py:200 |
+| `place_on_screen` | src/tessellate/core/desk_companion.py:370 |
+| `raise_on_desktop` | src/tessellate/core/desk_companion.py:310 |
+| `shutdown` | src/tessellate/core/desk_companion.py:945 |
+| `to_logical` | src/tessellate/core/desk_companion.py:106 |
+| `tray_menu_item` | src/tessellate/core/desk_companion.py:953 |
+| `window_handle` | src/tessellate/core/desk_companion.py:277 |
+| `work_area` | src/tessellate/core/desk_companion.py:135 |
 
 ### src/tessellate/core/desktop_dialog.py (2)
 
@@ -22076,8 +22077,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `OverlayHost` | src/tessellate/core/overlay/host.py:59 |
-| `premultiplied_dib_bytes` | src/tessellate/core/overlay/host.py:54 |
+| `OverlayHost` | src/tessellate/core/overlay/host.py:60 |
+| `premultiplied_dib_bytes` | src/tessellate/core/overlay/host.py:55 |
 
 ### src/tessellate/core/overlay/runner.py (1)
 
@@ -26333,7 +26334,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E4 · The honest positives, so the section is not one-sided (read) | docs/roadmap/MODERNISATION_AUDIT.md:676 |
 | Earlier morning summary (2026-10-30) | docs/roadmap/HANDOVER.md:32 |
 | Earlier morning summary (away run 2026-10-18b, branch claude/magical-feynman-7bgj7j, PR 192, 0.6.0) | docs/roadmap/HANDOVER.md:51 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:597 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:587 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4272 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |

@@ -52428,3 +52428,17 @@ Built here, not yet run on Windows (the sandbox has none); the owner's check is 
   - O4 wiring: `desk_companion.py` picks the overlay on Windows, the card as fallback with a warning; a click opens the quick panel window beside the pet; tray tick and Hide as now; fullscreen (`SHQueryUserNotificationState`) hides it. Help, Settings copy and `tests/test_manual_parity.py` move with it.
 
 Measured: 2 looks x 16 frames = 436 KB (limit 1.5 MB), 205x241 and 179x249 px at 2x; 152 tests across host, sprites, engine, runner, wiring and the card window.
+
+## Moved from HANDOVER, 2026-11-04 (HANDOVER past 600 lines)
+
+**Now (2026-10-07, main, 0.4.1 complete):** everything since PR 167 is on main
+and folded into CHANGELOG 0.4.1 (composer voice and vocabulary, background
+progress, auto-install refusal and rollback, composer brief for a running
+model). The owner re-tags `v0.4.1` at main's head. Next PR, in order: the
+composer's `voice="help"` and the Guide through it, Chat's missing follow-up
+chips, composer follow-ups while a model runs
+(`agent-remaining/composer-voice-1006.md`); then `wip/composer-acts`
+(`composer-acts-1006.md`), the composer-everywhere screens
+(`composer-everywhere-1006.md`), `composer-model-1006.md`,
+`bgprogress-1006.md` (autonomous pass with no model, night pairing speed),
+`autoinstall-1006.md`; then WHITEBOARD_PLAN "Placed from INBOX, 2026-10-07" (edge arrows on rotate, resize and drag; template connectors following their shapes; Reset style), DOCUMENTS_PLAN's live code blocks with completion, the Windows installer's frozen optional-packages step (`windows-packaging-1005.md`), then INBOX 727 to 745.

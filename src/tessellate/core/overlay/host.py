@@ -33,6 +33,7 @@ import queue
 import threading
 from typing import Any, Callable
 
+from tessellate.core import jobs
 from tessellate.core.overlay import win32 as k
 
 logger = logging.getLogger(__name__)
@@ -86,8 +87,7 @@ class OverlayHost:
         """Make the window on its own thread; True once it exists."""
         if self._thread is not None:
             return self.alive
-        self._thread = threading.Thread(target=self._run, name="tessellate-overlay", daemon=True)
-        self._thread.start()
+        self._thread = jobs.thread("tessellate-overlay", self._run)
         if not self._ready.wait(timeout):
             logger.warning("overlay: the window thread did not start within %.1f s", timeout)
             return False

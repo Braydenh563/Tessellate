@@ -517,18 +517,6 @@ Before pushing a batch, run `gate.sh --changed` (the tests that name the
 changed files) or the ratchet files above by hand; the lint gate alone is
 not a merge gate for a batch.
 
-**Now (2026-10-07, main, 0.4.1 complete):** everything since PR 167 is on main
-and folded into CHANGELOG 0.4.1 (composer voice and vocabulary, background
-progress, auto-install refusal and rollback, composer brief for a running
-model). The owner re-tags `v0.4.1` at main's head. Next PR, in order: the
-composer's `voice="help"` and the Guide through it, Chat's missing follow-up
-chips, composer follow-ups while a model runs
-(`agent-remaining/composer-voice-1006.md`); then `wip/composer-acts`
-(`composer-acts-1006.md`), the composer-everywhere screens
-(`composer-everywhere-1006.md`), `composer-model-1006.md`,
-`bgprogress-1006.md` (autonomous pass with no model, night pairing speed),
-`autoinstall-1006.md`; then WHITEBOARD_PLAN "Placed from INBOX, 2026-10-07" (edge arrows on rotate, resize and drag; template connectors following their shapes; Reset style), DOCUMENTS_PLAN's live code blocks with completion, the Windows installer's frozen optional-packages step (`windows-packaging-1005.md`), then INBOX 727 to 745.
-
 **Before that (2026-10-03 night, PR 162):** merged since evening: Library pages and
 whiteboard/mind map audits (445), job last-run status (438), note making
 (434: Quick note Alt+N, offline outbox, paste/drop, `#tags`), mind map undo
