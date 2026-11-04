@@ -35,6 +35,7 @@ opens, and the import cost there is measured (see `_run_server`'s docstring).
 from __future__ import annotations
 
 import json
+import logging
 import os
 import secrets
 import sys
@@ -317,8 +318,10 @@ def _register_copy(info: LockInfo, data_dir: str | os.PathLike[str]) -> None:
         run_records.register(
             run_records.Record(info.pid, info.port, info.token, info.started, str(data_dir))
         )
-    except Exception:  # noqa: BLE001 - the list is a convenience
-        pass  # Settings then just does not list this copy
+    except Exception as exc:  # noqa: BLE001 - the list is a convenience
+        logging.getLogger(__name__).info(
+            "running copies: this copy is not listed in Settings (%s); restart to try again", exc
+        )
 
 
 def release() -> None:
@@ -333,8 +336,10 @@ def release() -> None:
         from tessellate.core import run_records
 
         run_records.unregister(info.pid, info.token)
-    except Exception:  # noqa: BLE001
-        pass  # a stale record is pruned by the next listing
+    except Exception as exc:  # noqa: BLE001
+        logging.getLogger(__name__).info(
+            "running copies: record not removed (%s); the next listing prunes it", exc
+        )
     current = read_lock(path)
     if current is not None and current.token == info.token:
         try:

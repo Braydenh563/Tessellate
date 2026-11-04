@@ -21569,28 +21569,28 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `LockInfo` | src/tessellate/core/instance_lock.py:57 |
-| `_opener` | src/tessellate/core/instance_lock.py:196 |
-| `_register_copy` | src/tessellate/core/instance_lock.py:311 |
-| `answers` | src/tessellate/core/instance_lock.py:209 |
-| `claim` | src/tessellate/core/instance_lock.py:298 |
-| `classify` | src/tessellate/core/instance_lock.py:106 |
-| `current_token` | src/tessellate/core/instance_lock.py:346 |
-| `data_dir_id` | src/tessellate/core/instance_lock.py:164 |
-| `decide` | src/tessellate/core/instance_lock.py:117 |
-| `find_running` | src/tessellate/core/instance_lock.py:219 |
-| `focus` | src/tessellate/core/instance_lock.py:355 |
-| `lock_path` | src/tessellate/core/instance_lock.py:64 |
-| `new_lock` | src/tessellate/core/instance_lock.py:68 |
-| `pid_alive` | src/tessellate/core/instance_lock.py:126 |
-| `read_lock` | src/tessellate/core/instance_lock.py:77 |
-| `release` | src/tessellate/core/instance_lock.py:324 |
-| `request_focus` | src/tessellate/core/instance_lock.py:250 |
-| `request_shutdown` | src/tessellate/core/instance_lock.py:269 |
-| `served_data_dir_id` | src/tessellate/core/instance_lock.py:182 |
-| `set_focus_handler` | src/tessellate/core/instance_lock.py:350 |
-| `wait_until_answering` | src/tessellate/core/instance_lock.py:241 |
-| `write_lock` | src/tessellate/core/instance_lock.py:98 |
+| `LockInfo` | src/tessellate/core/instance_lock.py:58 |
+| `_opener` | src/tessellate/core/instance_lock.py:197 |
+| `_register_copy` | src/tessellate/core/instance_lock.py:312 |
+| `answers` | src/tessellate/core/instance_lock.py:210 |
+| `claim` | src/tessellate/core/instance_lock.py:299 |
+| `classify` | src/tessellate/core/instance_lock.py:107 |
+| `current_token` | src/tessellate/core/instance_lock.py:351 |
+| `data_dir_id` | src/tessellate/core/instance_lock.py:165 |
+| `decide` | src/tessellate/core/instance_lock.py:118 |
+| `find_running` | src/tessellate/core/instance_lock.py:220 |
+| `focus` | src/tessellate/core/instance_lock.py:360 |
+| `lock_path` | src/tessellate/core/instance_lock.py:65 |
+| `new_lock` | src/tessellate/core/instance_lock.py:69 |
+| `pid_alive` | src/tessellate/core/instance_lock.py:127 |
+| `read_lock` | src/tessellate/core/instance_lock.py:78 |
+| `release` | src/tessellate/core/instance_lock.py:327 |
+| `request_focus` | src/tessellate/core/instance_lock.py:251 |
+| `request_shutdown` | src/tessellate/core/instance_lock.py:270 |
+| `served_data_dir_id` | src/tessellate/core/instance_lock.py:183 |
+| `set_focus_handler` | src/tessellate/core/instance_lock.py:355 |
+| `wait_until_answering` | src/tessellate/core/instance_lock.py:242 |
+| `write_lock` | src/tessellate/core/instance_lock.py:99 |
 
 ### src/tessellate/core/jobruns.py (33)
 
