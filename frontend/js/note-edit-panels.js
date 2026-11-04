@@ -694,6 +694,7 @@ async function offerKeptNoteEdit() {
     //: After the open, which clears any draft for a different note.
     noteFormDraft = { id: kept.id, title: kept.title, content: kept.content, tags: kept.tags, category: kept.category };
     keepNoteEditLocally(noteFormDraft);
+    entryItem.live = null; // the one redraw that must build the form again, from the draft
     renderEntries();
   });
 }
