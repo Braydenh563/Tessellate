@@ -69,6 +69,7 @@ const factory = new Function(
   let docSpellCache = new Map();
   let docGrammarCache = { text: null, findings: [] };
   const docProseIgnored = new Set();
+  const docProse = { langOf: () => "en" };
   const prefsCache = __env.prefs;
   const currentDoc = null;
   const docDictionary = () => __env.dictionary;

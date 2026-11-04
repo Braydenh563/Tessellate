@@ -11616,8 +11616,10 @@ function docProseFindings(text) {
   const word = /[A-Za-z']+/g;
   const dictionary = docDictionary();
   const variants = docVariantLookup();
+  //: Off for a document whose `lang` is not English (`docProse.langOf`): see `docProse.langNote`.
+  const checkWords = docProse.langOf(text) === "en";
   let hit;
-  while ((hit = word.exec(text)) !== null) {
+  while (checkWords && (hit = word.exec(text)) !== null) {
     if (skipped(hit.index)) continue;
     const lower = hit[0].toLowerCase();
     //: A word in the dictionary is a word. This is the whole point of having
@@ -11849,6 +11851,22 @@ let docProseFound = [];
 //: offsets). Every other caller (a key, a dismissal, a setting) runs afresh.
 //: A method here rather than a function of its own: the shared scope is capped.
 const docProse = {
+  //: **The document's language** (audit 1028 D30). The `lang` (or `language`) key of a
+  //: leading frontmatter block, reduced to its primary subtag: "en-GB" is "en". Absent
+  //: means English, the one list this app ships. Pure, so it is tested alone. A method
+  //: here rather than a global (the scope ratchet).
+  langOf(text) {
+    const block = /^---\r?\n([\s\S]*?)\r?\n---/.exec(text || "");
+    if (!block) return "en";
+    const key = /^lang(?:uage)?:[ \t]*["']?([A-Za-z]{2,3})/m.exec(block[1]);
+    return key ? key[1].toLowerCase() : "en";
+  },
+  //: Why the checker is quiet for a non-English document: the English list would
+  //: flag every word, and no other pack is installed yet (a30h-1102 step 4).
+  langNote(text) {
+    const lang = this.langOf(text);
+    return lang === "en" ? "" : `Spelling is off for this document: its language is set to ${lang}, and only the English list is installed.`;
+  },
   hidden: false,
   panelView: "list",
   win: null,
@@ -12382,6 +12400,13 @@ function renderDocProsePanel() {
     what.className = "muted";
     what.textContent = `Checked for spelling, ${docGrammarEnabled() ? "grammar, " : ""}spacing, sentence length and accessibility; these read the text, not its meaning.`;
     empty.append(mark, said, what);
+    const langNote = docProse.langNote(docText());
+    if (langNote) {
+      const note = document.createElement("p");
+      note.className = "muted";
+      note.textContent = langNote;
+      empty.appendChild(note);
+    }
     panel.appendChild(empty);
     return;
   }

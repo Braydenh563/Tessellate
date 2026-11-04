@@ -3232,7 +3232,9 @@ HELP_TOPICS.extend(
                 "document's properties panel does the same: with type: Meeting "
                 "in its properties, the type's fields it has not written yet "
                 "show as empty rows, and a value you enter is written as one "
-                "line. The notes filter asks about them: type:meeting, prop:status=open "
+                "line. A lang property such as fr turns the spelling check off for a "
+                "document, because only the English list is installed. "
+                "The notes filter asks about them: type:meeting, prop:status=open "
                 '(a value with a space in quotes: prop:status="in progress") '
                 "(or prop:effort>2), links:[[Kiln plan]], rel:supports, "
                 'entity:"Sam Lee", with - before any of them to leave those out; '
