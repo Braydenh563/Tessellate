@@ -8,6 +8,7 @@ from tessellate.api.schemas import SpaceResponse, SpaceCreate, SpaceUpdate
 from tessellate.core import deps, paths
 from tessellate.core.database import Base, Category, Entry, Space, workspace_scoped_models
 from tessellate.core.deps import get_session, impersonate_workspace
+from tessellate.repo import spaces as space_repo
 from tessellate.entry.cleantext import clean_name, is_blank, name_key
 from sqlalchemy import delete as sa_delete
 from sqlalchemy import select as sa_select
@@ -33,7 +34,7 @@ def _generate_space_id(name: str, session: Session) -> str:
     reserved-sentinel and charset rules a client id would need are exactly
     the rules a generated-and-deduped slug satisfies for free."""
     base = paths.slug(name, 49, ascii_only=True, fallback="space")
-    existing = {row[0] for row in session.query(Space.id).all()}
+    existing = space_repo.ids(session)
     candidate = base
     n = 2
     while candidate in RESERVED_SPACE_IDS or candidate in existing:
@@ -69,28 +70,21 @@ def _refuse_duplicate_name(session: Session, name: str, own_id: str | None = Non
     """Two spaces with the same name (case and spacing aside) cannot be told
     apart in the picker or the "In <space>" chips (sweep 1028b W12)."""
     wanted = name_key(name)
-    for other in session.query(Space).all():
+    for other in space_repo.all_spaces(session):
         if other.id != own_id and name_key(other.name) == wanted:
             raise HTTPException(409, f"A space called \u201c{other.name}\u201d already exists.")
 
 
 @router.get("/spaces", response_model=list[SpaceResponse])
 def get_spaces(session: Session = Depends(get_session)):
-    return session.query(Space).all()
+    return space_repo.all_spaces(session)
 
 
 @router.get("/spaces/{space_id}/counts")
 def space_counts(space_id: str, session: Session = Depends(get_session)):
     """What deleting this space would take with it, for the confirm dialog."""
-    from sqlalchemy import func
-
-    from tessellate.core.database import Document
-
     deps.get_or_404(session, Space, space_id, "That space could not be found.")
-    with impersonate_workspace(session, "all"):
-        notes = session.query(func.count(Entry.id)).filter(Entry.workspace_id == space_id).scalar() or 0
-        documents = session.query(func.count(Document.id)).filter(Document.workspace_id == space_id).scalar() or 0
-    return {"notes": notes, "documents": documents}
+    return space_repo.counts(session, space_id)
 
 
 @router.post("/spaces", response_model=SpaceResponse)
@@ -216,7 +210,7 @@ def restore_space(body: SpaceRestore, session: Session = Depends(get_session)):
     sid = body.space.id
     if sid in RESERVED_SPACE_IDS:
         raise HTTPException(400, "The default spaces cannot be made again.")
-    if session.get(Space, sid) is not None:
+    if space_repo.find(session, sid) is not None:
         raise HTTPException(409, "A space with that id already exists.")
     #: Checked, but stored as it was: an undo never renames the space.
     _validate_name(body.space.name, restoring=True)
@@ -261,7 +255,7 @@ def restore_space(body: SpaceRestore, session: Session = Depends(get_session)):
         # Moved back by statement, so the filing corpus must forget too.
         lexical_filing.forget_corpus()
     session.commit()
-    return session.get(Space, sid)
+    return space_repo.find(session, sid)
 
 
 def _detach_references(session: Session, table, ids: list, depth: int = 0) -> None:  # noqa: ANN001
