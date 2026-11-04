@@ -1,7 +1,7 @@
 """The Linux half of the overlay: the same figure, on an X11 desktop.
 
 `OverlayRunner` takes a backend that offers `load`, `monitors`, `windows`,
-`last_input_age`, `notification_state`, `animations_enabled`, `dpi_at_point` and a
+`last_input_age`, `caret_rect`, `text_zone`, `notification_state`, `animations_enabled`, `dpi_at_point` and a
 `Host`; `win32` is one and this is the other. The engine is not touched: it gets
 the same monitors, window tops and pointer events.
 
@@ -43,7 +43,7 @@ import time
 from typing import Any, Callable
 
 from tessellate.core import jobs
-from tessellate.core.overlay import xlib
+from tessellate.core.overlay import pacing, xlib
 from tessellate.core.overlay.win32 import WinInfo
 
 logger = logging.getLogger(__name__)
@@ -184,6 +184,16 @@ def last_input_age(w: Any) -> float | None:
     return None if ms is None else ms / 1000.0
 
 
+def caret_rect(_w: Any) -> None:
+    """X11 offers no text caret to other apps (AT-SPI would, but it is not asked): the engine's
+    text-zone stand-in is not used here either, so the figure only keeps its home by an edge."""
+    return None
+
+
+def text_zone(_w: Any) -> None:
+    return None
+
+
 def animations_enabled(w: Any) -> bool:
     """GNOME's `enable-animations`; true where it cannot be asked (KDE and the rest do not
     switch the figure to still: the Companion movement setting does)."""
@@ -313,6 +323,7 @@ class X11Host:
         self.hwnd: int | None = None
         self._tid: int | None = None
         self._deadline: float | None = None
+        self.pacer = pacing.Pacer()  # a moving figure wakes on a 60 Hz grid, as on Windows (pacing.py)
         self._reraise_at: float | None = None
         self._done = False
         self._grabbed = False
@@ -504,7 +515,11 @@ class X11Host:
             self._set_timer(wake)
 
     def _set_timer(self, ms: int) -> None:
-        self._deadline = time.monotonic() + max(10, int(ms)) / 1000.0
+        now = time.monotonic()
+        # `select` already holds a millisecond, so the grid is all this side needs
+        self._deadline = self.pacer.next(now, ms) if self.pacer.paced(ms) else now + max(10, int(ms)) / 1000.0
+        if not self.pacer.paced(ms):
+            self.pacer.reset()
 
     # --- commands, on the window's thread ----------------------------------------------------
 

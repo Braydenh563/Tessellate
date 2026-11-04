@@ -25,24 +25,30 @@ from typing import Any, NamedTuple
 logger = logging.getLogger(__name__)
 
 LOOKS = ("masculine", "feminine")
-#: The idle cycle a standing figure draws at 8 a second (`engine.IDLE_FRAMES` of them):
-#: tail beat and breath sampled from the live rig by `scripts/render_desk_frames.js`.
-IDLE_COUNT = 12
+#: The idle cycle a standing figure draws (`engine.IDLE_FRAMES` of them, at `engine.IDLE_FPS`):
+#: tail beat and breath sampled from the live rig by `scripts/render_desk_frames.js`. 24 in-betweens
+#: (was 12, INBOX 1670: "very framey"); a shipped set of 12 still runs (see `SpriteSet.idle_count`).
+IDLE_COUNT = 24
+OLD_IDLE_COUNT = 12
 IDLE_FRAMES = tuple(f"idle{i}" for i in range(IDLE_COUNT))
+#: The float or walk cycle: 12 frames (was 6) so a cycle of travel changes the picture every 3.5 px
+#: of it, not every 7. A shipped set of 6 still runs (`SpriteSet.walk_count`).
+WALK_COUNT = 12
+OLD_WALK_COUNT = 6
 #: Every frame of a look, in the order they are rendered. Walking is `walk0` to
-#: `walk5`; the others are what the engine's states draw. `card0` and `card1` are the
+#: `walk11`; the others are what the engine's states draw. `card0` and `card1` are the
 #: figure holding a reminder's card (`scripts/render_card_frames.py`, Pillow, from
 #: `stand` and `wave`).
 FRAME_NAMES = (
     "stand", "blink", "look",
-    "walk0", "walk1", "walk2", "walk3", "walk4", "walk5",
+    *(f"walk{i}" for i in range(WALK_COUNT)),
     "sit", "sleep", "wave", "held", "fall", "land", "hop", "hang", "tumble",
     "card0", "card1",
     *IDLE_FRAMES,
 )
 #: Drawn by `scripts/render_card_frames.py`, not captured from the app.
 CARD_FRAMES = ("card0", "card1")
-WALK_FRAMES = tuple(f"walk{i}" for i in range(6))
+WALK_FRAMES = tuple(f"walk{i}" for i in range(WALK_COUNT))
 #: Rotated copies of the "tumble" frame, for a thrown figure: `spin0` to `spin7`
 #: are 45 degree steps. Built once per dpi (and flip) with Pillow, then cached.
 SPIN_STEPS = 8
@@ -50,9 +56,6 @@ SPIN_FRAMES = tuple(f"spin{i}" for i in range(SPIN_STEPS))
 SPIN_BASE = "tumble"
 #: "float" (Atlas, a wisp for a lower body: hovers and drifts) or "walk".
 GAITS = {"masculine": "float", "feminine": "float"}
-#: Frames that share one nebula veil (the standing family and its moves); the poses that change
-#: the body's shape (sit, sleep, hang, held, fall, tumble, cards) keep their own.
-STREAM_FAMILY = ("stand", "blink", "look", "wave", "hop", "land", *WALK_FRAMES, *IDLE_FRAMES)
 #: Pixels around the solid body that stay the frame's own (its soft edge), at the shipped scale.
 CORE_GROW = 5
 #: Posed frames kept (a pose is a squash, a lean, a lag): the least recently used go.
@@ -142,11 +145,25 @@ class SpriteSet:
         self.directory = (directory or frames_dir()) / self.look
         self._source: dict[str, Any] = {}
         self._cache: dict[tuple[str, int, bool], Frame] = {}
-        self._veil: Any = None
         self._posed: dict[tuple[str, int, bool, tuple[float, ...]], Frame] = {}
 
+    def _has(self, name: str) -> bool:
+        return (self.directory / f"{name}.png").is_file()
+
     def missing(self) -> list[str]:
-        return [n for n in FRAME_NAMES if not (self.directory / f"{n}.png").is_file()]
+        """What a look must have to run: the frames an older, shorter set also had."""
+        extra = {*WALK_FRAMES[OLD_WALK_COUNT:], *IDLE_FRAMES[OLD_IDLE_COUNT:]}
+        return [n for n in FRAME_NAMES if n not in extra and not self._has(n)]
+
+    def walk_count(self) -> int:
+        """How many frames of the walk cycle are shipped (6 or 12), for the engine's stride."""
+        return WALK_COUNT if all(self._has(n) for n in WALK_FRAMES) else OLD_WALK_COUNT
+
+    def idle_count(self) -> int:
+        return IDLE_COUNT if all(self._has(n) for n in IDLE_FRAMES) else OLD_IDLE_COUNT
+
+    def available(self) -> list[str]:
+        return [n for n in FRAME_NAMES if self._has(n)]
 
     def _load(self, name: str) -> Any:
         if name not in self._source:
@@ -154,31 +171,10 @@ class SpriteSet:
 
             with Image.open(self.directory / f"{name}.png") as im:
                 loaded = im.convert("RGBA")
-            self._source[name] = self._steadied(name, loaded)
+            # as shipped: the standing family already carries one shared nebula stream (render_desk_frames.py
+            # `shared_stream`); a loader-side veil swap cut it away under the body and added a step (INBOX 1670)
+            self._source[name] = loaded
         return self._source[name]
-
-    def _steadied(self, name: str, image: Any) -> Any:
-        """One nebula stream for the whole standing family (INBOX 1670: "the nebular flow keeps
-        flickering in and out"). Each frame was captured at a different moment of the live
-        nebula, so its soft veil outside the body differed by up to a fifth of its pixels from the
-        next frame's, and the idle cycle played those differences eight times a second. The body
-        (and a hand's breadth of its own soft edge) is kept per frame; the veil beyond it is
-        the `stand` frame's, the same in every frame of the family."""
-        if name not in STREAM_FAMILY:
-            return image
-        from PIL import Image, ImageChops
-
-        if self._veil is None:
-            base = self._raw("stand")
-            gone = ImageChops.invert(self._core(base))
-            veil = base.copy()
-            veil.putalpha(ImageChops.multiply(base.getchannel("A"), gone))
-            self._veil = veil
-        if name == "stand":
-            return image
-        body = image.copy()
-        body.putalpha(ImageChops.multiply(image.getchannel("A"), self._core(image)))
-        return Image.alpha_composite(self._veil, body)
 
     def _raw(self, name: str) -> Any:
         from PIL import Image
@@ -292,7 +288,7 @@ class SpriteSet:
         where the window is placed (`out.x`, `out.y`), so a rotated frame's pad is taken off.
         The engine plants feet and keeps a ride inside the work area from these (INBOX 1670)."""
         found = {}
-        for name in (*FRAME_NAMES, *SPIN_FRAMES):
+        for name in (*self.available(), *SPIN_FRAMES):
             for flip in (False, True):
                 f = self.frame(name, dpi, flip)
                 left, top, right, bottom = f.box
@@ -322,6 +318,25 @@ FADE_CLEAR = 0.06
 PORTAL_RING = (150, 110, 255)
 PORTAL_RIM = (210, 190, 255)
 PUFF_SMOKE = (236, 238, 244)
+
+
+def mix(a: Frame, b: Frame, u: float) -> Frame | None:
+    """A dissolve from `a` to `b`, `u` of the way (INBOX 1670: a pose change blends, it does not cut): both
+    frames' premultiplied pixels interpolated, so a pixel solid in both stays solid (no see-through dip) and
+    one only in `b` comes up as `u`. None when the two are not on the same canvas (a spin, a clipped
+    frame): the caller cuts. The halo guard applies to the mix as to any frame. One C-speed Pillow blend."""
+    if (a.width, a.height, a.pad_x, a.pad_y) != (b.width, b.height, b.pad_x, b.pad_y):
+        return None
+    from PIL import Image
+
+    size = (a.width, a.height)
+    ia = Image.frombytes("RGBA", size, a.bgra, "raw", "BGRA")
+    ib = Image.frombytes("RGBA", size, b.bgra, "raw", "BGRA")
+    out = Image.blend(ia, ib, max(0.0, min(1.0, u)))
+    live = out.getchannel("A").point(lambda v: 255 if v >= ALPHA_FLOOR else 0)
+    out = Image.composite(out, Image.new("RGBA", size, (0, 0, 0, 0)), live)
+    box = live.getbbox() or (0, 0, a.width, a.height)
+    return Frame(a.width, a.height, out.tobytes("raw", "BGRA"), a.pad_x, a.pad_y, box=box)
 
 
 def effect(frame: Frame, fx: tuple[str, float, int] | None, alpha: float) -> Frame:

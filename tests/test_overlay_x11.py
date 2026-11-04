@@ -48,7 +48,7 @@ def test_support_says_why_wayland_and_a_missing_display_keep_the_in_app_companio
     assert not ok and "X11 display" in none_note
     assert not x11.support({"DISPLAY": ":0"}, lambda: False)[0]
     for text in (none_note, note):
-        assert "—" not in text and "!" not in text
+        assert "\u2014" not in text and "!" not in text
 
 
 # --- work area, from the panels' struts or _NET_WORKAREA -----------------------------------------------
@@ -454,11 +454,17 @@ def _connect(display: str, seconds: float = 15.0) -> Any:
 def _server() -> Any:
     """(process, connection): a server started again when two runs of this test (a gate beside a
     test run) raced for the same display number and one of them lost its socket."""
+    proc, conn, _display = _server_at()
+    return proc, conn
+
+
+def _server_at() -> Any:
+    """(process, connection, display name), with `_server`'s retry."""
     last: Exception | None = None
     for _ in range(3):
         proc, display = _xvfb()
         try:
-            return proc, _connect(display)
+            return proc, _connect(display), display
         except OSError as exc:
             last = exc
             proc.kill()
@@ -503,11 +509,11 @@ def test_on_a_real_server_a_destroyed_window_is_an_error_value_not_a_process_exi
         "assert c.errors and c.errors[0][0] == 3\n"
         "print('survived')\n"
     )
-    proc, display = _xvfb()
+    # A server this process could reach (with _server's retry), so the child does not lose a race
+    # for the display with another real-server test running beside it (-n).
+    proc, conn, display = _server_at()
     try:
-        # -displayfd names the display before its socket takes connections: wait as _server does,
-        # or the child loses the race when this runs straight after another real-server test.
-        _connect(display).close()
+        conn.close()
         env = dict(os.environ, PYTHONPATH=os.pathsep.join(sys.path))
         out = subprocess.run([sys.executable, "-c", code, display], capture_output=True, text=True, timeout=30, env=env)
         assert "survived" in out.stdout, (out.returncode, out.stderr)

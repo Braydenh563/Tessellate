@@ -28,7 +28,7 @@ from tessellate.core.overlay import sprites  # noqa: E402
 sys.path.insert(0, str(ROOT / "scripts"))
 import render_card_frames  # noqa: E402
 
-PAD = 2
+PAD = 4
 #: Fewer colours with their alpha kept: a quarter of the bytes for frames that are soft gradients.
 COLOURS = 256
 #: The figure's glass, glow and wisp fades come out of the capture as soft
