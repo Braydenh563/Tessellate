@@ -108,7 +108,7 @@ async function layoutRun(width, theme) {
   try {
     const cold = await openDoc(page, "L1", SEED);
     await page.waitForTimeout(1200);
-    const out = { width, theme, cold, ...measure() };
+    const out = { width, theme, cold, ...(await page.evaluate(measure)) };
     out.tab = await tabStops(page);
     await page.evaluate(() => switchTab("documents"));
     out.warm = await openDoc(page, "L2", SEED);
@@ -125,6 +125,8 @@ const count = (page) => page.evaluate(() => ({ p: __n.p, k: __n.k, s: __n.s }));
 async function counter(page) {
   await page.evaluate(() => {
     window.__n = { p: 0, k: 0, s: 0 };
+    if (window.__nOn) return;
+    window.__nOn = true;
     document.addEventListener("pointerdown", (e) => e.isPrimary && __n.p++, true);
     document.addEventListener("keydown", (e) => (e.key.length === 1 && !e.ctrlKey && !e.metaKey ? __n.k++ : ["Enter", "Escape", "Tab", "Delete"].includes(e.key) && __n.s++), true);
   });
@@ -218,7 +220,8 @@ async function tasksRun() {
       await page.locator(`.rich-picker-row[title="${target}"]`).click();
       await page.waitForTimeout(700);
       listTrace.push((await state(page)).src.split("\n").length);
-      if (process.env.DEBUG) console.error("modal", target, await page.evaluate(() => document.querySelector(".confirm-overlay")?.innerText.replace(/\n/g, " | ")), await page.evaluate(() => docText()));
+      //: A second branch off a decision asks for its words at once (a prompt); the first one is labelled through its chip.
+      if (await page.locator(".prompt-card input").count()) { listTrace.push("auto prompt"); await typeIn(page, word); continue; }
       await page.locator(".dgm-join", { hasText: `Ok? to ${target}` }).first().click();
       await page.waitForTimeout(300);
       await menuItem(page, "Label").click();
@@ -232,7 +235,8 @@ async function tasksRun() {
     await fresh(page, "T2", SEED);
     const before = await page.evaluate(() => ({ chips: [...document.querySelectorAll(".dgm-join")].map((c) => c.textContent.trim()), chipH: Math.round(document.querySelector(".dgm-join").getBoundingClientRect().height), boxes: document.querySelectorAll(".dgm-box").length }));
     // How a connection is shown. One click on an arrow of the picture: does anything open or select?
-    const mid = await edgeMid(page, "B", "C");
+    //: The straight Start to Ok? arrow: a branch's midpoint is diagonal and cannot be read off the boxes.
+    const mid = await edgeMid(page, "A", "B");
     const c0 = await count(page);
     await page.mouse.click(mid[0], mid[1]);
     await page.waitForTimeout(500);
@@ -245,7 +249,7 @@ async function tasksRun() {
     await page.waitForTimeout(500);
     const opened = (await state(page)).rename;
     if (opened) await typeIn(page, "go on");
-    out.relabelEdge_picture = { ...(await count(page)), opened, labels: labels((await state(page)).src) };
+    out.relabelEdge_picture = { ...(await count(page)), opened, src: (await state(page)).src.split("\n").filter((l) => /-->/.test(l)).join(" / ") };
     // T2b in the list: chip, Label, type, Enter.
     await counter(page);
     await page.locator(".dgm-join", { hasText: "Ok? to Stop" }).first().click();
