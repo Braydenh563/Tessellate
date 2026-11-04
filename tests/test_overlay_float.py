@@ -37,16 +37,31 @@ def follow(e: Engine, seconds: float):
     return changed / max(1, ticks), max(xs) - min(xs), ticks
 
 
-def test_the_floater_changes_frame_or_place_on_over_90_percent_of_ticks() -> None:
+def test_the_floater_is_never_still_for_more_than_a_second() -> None:
+    # Intent kept, measure moved: "it just floats there" (1658) was a floater that did not look
+    # alive. It used to be tested as 90 percent of wakes changing something, which only held with
+    # a 16 Hz bob; the wakes now come when something would change (a pixel of bob, a frame of the
+    # idle cycle, a step of a pose), so the bar is the longest stretch with nothing new drawn.
     for seed in range(1, 9):
-        share, _extent, ticks = follow(make(seed), 60.0)
-        assert ticks > 100 and share > 0.9, (seed, share)
+        e = make(seed)
+        t, out = 0.0, e.update(0.0)
+        last, since, worst = (out.frame, out.x, out.y, out.pose), 0.0, 0.0
+        while out.wake_ms is not None and t < 120.0:
+            t += out.wake_ms / 1000.0
+            out = e.update(t)
+            now = (out.frame, out.x, out.y, out.pose)
+            if now != last or e.state == "act":
+                last, since = now, t  # an act (a held look, a nap) is life, not a freeze
+            worst = max(worst, t - since)
+        assert worst <= 1.0, (seed, worst)
 
 
-def test_the_floater_covers_over_40_percent_of_the_work_area_width_in_60_seconds() -> None:
+def test_the_floater_stays_by_its_home_and_does_not_cross_the_screen_in_a_minute() -> None:
+    # Intent moved (INBOX 1670, 11:02Z "a buddy, not a nuisance"): it was 40 percent of the width
+    # in 60 s (1658, "it just floats there"). Now it lives by its home spot; a trip is rare.
     for seed in range(1, 9):
         _share, extent, _ticks = follow(make(seed), 60.0)
-        assert extent > 0.4 * WIDTH, (seed, extent)
+        assert extent <= 2 * eng.STROLL + 2 * eng.FLOAT_SWAY + 4, (seed, extent)
 
 
 def test_a_resting_floater_still_bobs_and_sways_and_plays_the_idle_cycle() -> None:
@@ -59,8 +74,8 @@ def test_a_resting_floater_still_bobs_and_sways_and_plays_the_idle_cycle() -> No
         o = e.update(t)
         seen.add((o.x, o.y))
         frames.add(o.frame)
-    # 4 px at 0.22 Hz (the owner asked for slow and graceful, INBOX 1670) is five whole-pixel rows
-    assert len({y for _x, y in seen}) >= 4 and len({x for x, _y in seen}) >= 6
+    # 2 px of bob and sway over a 4 s breath: a few distinct places, not a flutter
+    assert len({y for _x, y in seen}) >= 2 and len({x for x, _y in seen}) >= 2
     assert any(f.startswith("idle") for f in frames)
 
 

@@ -153,14 +153,20 @@ def test_a_floater_drifts_across_the_width_and_a_band_above_its_rest_line_not_th
         ys.append(o.y), xs.append(o.x), frames.add(o.frame)
         assert 0 <= o.x <= 1920 - 100 and 0 <= o.y <= FLOOR
     # INBOX 1663 ("wayyy to high"): the height it uses is about its own, no more.
-    assert 40 < max(ys) - min(ys) <= eng.FLOAT_BAND * e.size[1] + eng.HOVER[1] + eng.BOB + 2 and max(xs) - min(xs) > 500
-    assert {"walk0", "walk3"} <= frames
+    # Intent moved (INBOX 1670, a buddy): it stays near home on the rest line, in a band no higher
+    # than its own, and walks a few steps, not across the width.
+    assert max(ys) - min(ys) <= eng.FLOAT_BAND * e.size[1] + eng.HOVER[1] + eng.BOB + 2
+    assert 20 < max(xs) - min(xs) <= 2 * eng.STROLL + 20
+    assert {"walk0", "walk3"} & frames
 
 
 def test_a_floater_curves_and_never_walks_on_a_floor() -> None:
     e = make(gait="float", seed=5)
     e.big_ready = math.inf
+    e.goal, e.then, e.trip = (1500.0, e.y - 80.0), "stand", True
     e._enter("drift", 0.0)
+    e.goal, e.trip, e.state_until = (1500.0, e.y - 80.0), True, 1e9
+    e.heading = 2.2  # pointing away from the goal: it must turn round in a curve
     heads, t = [], 0.0
     for _ in range(300):
         t += 0.033
@@ -228,7 +234,7 @@ def test_a_walker_climbs_to_the_top_hangs_still_and_falls_back() -> None:
 def test_a_floater_floats_up_to_hang_from_the_top_edge() -> None:
     e = make(gait="float", seed=2)
     e._perform("hang", 1.0)
-    assert e.state == "drift"
+    assert e.state in ("crouch", "drift")  # a long trip starts with a short crouch
     t, outs = step(e, 1.0, 60.0, 0.033)
     assert any(e.state == "hang" or o.frame == "hang" for o in outs)
     assert min(o.y for o in outs) == 0
@@ -309,9 +315,9 @@ def run_acts(e: Engine, minutes: float):
 
 
 def test_big_acts_are_minutes_apart_and_all_the_acts_are_in_one_table() -> None:
-    assert set(eng.ACTS) == {"move", "rest", "wave", "sit", "stand", "sleep", "hang", "peek", "climb"}
+    assert set(eng.ACTS) == {"idle", "stroll", "trip", "sleep", "hang", "peek"}
     for gait in ("walk", "float"):
-        acts = run_acts(make(seed=4, gait=gait), 40)
+        acts = run_acts(make(seed=4, gait=gait), 180)
         assert len(acts) >= 3, acts
         gaps = [b[0] - a[0] for a, b in zip(acts, acts[1:])]
         assert min(gaps) >= eng.BIG_EVERY[0] - 1, gaps
