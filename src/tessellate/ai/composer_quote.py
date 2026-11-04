@@ -13,7 +13,7 @@ import hashlib
 import re
 from datetime import date
 
-from tessellate.ai import composer_done, composer_tables, composer_tree
+from tessellate.ai import composer_done, composer_tables, composer_threads, composer_tree
 from tessellate.ai.composer_answer import _Answer, _SESSION
 from tessellate.ai.composer_phrases import PHRASES
 from tessellate.ai.composer_read import NoteView, Sentence
@@ -123,13 +123,19 @@ def _picture_said(out: _Answer, sentences: list[Sentence], i: int, terms: list[s
     out.t("picture_in").name(out.views[s.note_id])
     reads = run
     if s.kind == "picture":
-        out.t("picture_shows").q(s, terms, s.text.rstrip(".") if len(run) > 1 else None)
+        #: A caption with its own verb is quoted whole, never spliced after
+        #: "shows" (INBOX 1599); a noun phrase follows it, article lowered.
+        whole, said = composer_threads.caption_form(s.text)
+        if whole:
+            out.t("picture_called", "open_quote").q(s, terms, said).t("close_quote")
+        else:
+            out.t("picture_shows").q(s, terms, said)
         reads = run[1:]
         out.t(*(("ov_reads",) if reads else ()))
     else:
         out.t("picture_reads")
     _quoted_lines(out, reads, terms)
-    if reads or not _ENDED.search(s.text):
+    if reads or s.kind == "picture" or not _ENDED.search(s.text):
         out.t("stop")
 
 

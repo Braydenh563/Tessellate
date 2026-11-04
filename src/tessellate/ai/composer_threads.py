@@ -165,6 +165,45 @@ def caption_said(caption: str) -> str:
     return text[:1].lower() + text[1:] if first.lower() in _LEADING else text
 
 
+#: Where a noun phrase's own verb could no longer be: a preposition or a
+#: relative word opens a modifier ("a lamp that shows the time").
+_MODIFIER_OPENERS = frozenset(
+    "with in on of by that which who whom whose at under near from for and or to beside behind over as while where into onto "
+    "against along around between through above below across inside outside".split()
+)
+#: Verbs a captioner gives a scene's subject (a closed list: no tagger here).
+_CAPTION_VERBS = frozenset(
+    "is are was were has have had does do can will depicts depict shows show contains contain features feature displays display "
+    "captures capture portrays portray sits sit stands stand lies lie rests rest appears appear looks look floats float "
+    "walks walk runs run flies fly sleeps sleep holds hold wears wear plays play gathers gather swims swim hangs hang "
+    "fills fill covers cover surrounds surround stretches stretch glows glow rises rise falls fall flows flow grows grow "
+    "wanders wander poses pose smiles smile waits wait lounges lounge perches perch crouches crouch leans lean".split()
+)
+_SENTENCE_BREAK = re.compile(r"[.!?][\"”’)]?\s+[A-Z]")
+
+
+def caption_form(caption: str) -> tuple[bool, str]:
+    """(whole, said): a caption that is a sentence of its own (a subject with
+    its own verb, or several sentences) is `whole` and said as it stands, with
+    no final full stop; a noun phrase is said lowered after "shows" like
+    `caption_said` (INBOX 1599: "shows a vibrant forest scene depicts several
+    creatures" spliced a sentence after a verb)."""
+    text = " ".join(str(caption or "").split())
+    bare = text.rstrip(".")
+    said = caption_said(text)
+    if said.lower() != bare.lower():
+        return False, said
+    bare = bare[:1].upper() + bare[1:]
+    if _SENTENCE_BREAK.search(bare):
+        return True, bare
+    for n, word in enumerate(w.strip(",;:\"'()").lower() for w in bare.split()):
+        if word in _MODIFIER_OPENERS:
+            break
+        if n and word in _CAPTION_VERBS:
+            return True, bare
+    return False, said
+
+
 #: A picture line says itself whole: no frame of writing goes round it
 #: ("You wrote that the picture in ...", "Your note says “The picture ...”").
 PICTURE_LEADS = ("the picture in ", "its picture ", "your picture ")

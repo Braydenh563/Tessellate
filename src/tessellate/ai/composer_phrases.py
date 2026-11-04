@@ -127,6 +127,7 @@ PHRASES: dict[str, str] = {
     "disagree_check": " These may disagree, so it is worth checking which is current.",
     "picture_in": "The picture in ",
     "picture_shows": " shows ",
+    "picture_called": " is described as ",
     "picture_reads": " has these words in it: ",
     "timeline": "In the order you wrote them:",
     # A comparison.
