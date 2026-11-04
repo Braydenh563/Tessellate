@@ -468,6 +468,11 @@ button.stats-tile.is-link:is(:focus-visible, :has(:focus-visible)) {
   overflow-y: auto;
 }
 
+/* INBOX 1651: the card is anchored to the foot, so laps that grew the row lifted the Lap button each press. A stopwatch's list holds its full height from the first lap. */
+.clock-laps-held {
+  min-height: min(6rem, 20dvh);
+}
+
 /* Above the status bar, not over it: the corner sheet's card sits flush with
    the window's foot, and the Clock is a panel that stays up while the app is
    used, so it must not cover the bar's chips (the timer chip is one). */
