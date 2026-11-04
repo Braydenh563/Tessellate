@@ -2339,6 +2339,9 @@ const gcUnframed = (s) => s.canvas?.style.opacity === "0" && !s.fittedOnce;
 //: from the scene layers (`gcDrawComposed`); anything else repaints them.
 function gcRequestDraw(s = gcTab, cheap = false) {
   if (!s.drawAsking) s.selfFrames = 0;
+  //: Anything but the label fade's own next frame means the picture under the
+  //: names may have changed (`gcDrawLabels.frame`).
+  if (!s.labelAsking) s.labelFrame = null;
   if (!cheap) s.sceneStale = true;
   if (s.drawQueued || !s.ctx || gcTabHidden(s) || gcUnframed(s)) return;
   s.drawQueued = true;
@@ -2739,6 +2742,67 @@ function gcDrawLight(s) {
   ctx.globalAlpha = 1;
 }
 
+//: A copy of the visible canvas as it is now, for `gcDrawLabels.frame`.
+gcDrawLabels.keep = function (s) {
+  const base = s.labelBaseCanvas || (s.labelBaseCanvas = document.createElement("canvas"));
+  if (base.width !== s.canvas.width) base.width = s.canvas.width;
+  if (base.height !== s.canvas.height) base.height = s.canvas.height;
+  const ctx = base.getContext("2d");
+  ctx.globalCompositeOperation = "copy";
+  ctx.drawImage(s.canvas, 0, 0);
+  ctx.globalCompositeOperation = "source-over";
+  return base;
+};
+
+//: **A name fading in or out repaints the names, not the map** (PF10, audit
+//: 1031: the label fades asked for a whole frame per display frame, 6 to 29 a
+//: second at 6 to 28 ms each). The whole frame that starts a label-only fade
+//: keeps the canvas as it stood before the names (`s.labelFrame.base`, taken
+//: in `gcDraw` between the names' update and their paint); each frame after it
+//: copies that back and paints the names alone. Every other request for a draw
+//: drops the copy (`gcRequestDraw`), and a camera, size, theme or hover change
+//: is refused here, so the copy is never shown for a map that has moved on.
+gcDrawLabels.frame = function (s) {
+  const f = s.labelFrame;
+  const t = s.transform || d3.zoomIdentity;
+  if (
+    !f || !s.ctx || s.ctx.canvas !== s.canvas || s.hoveredId != null || s.dragNode || s.layoutRunning ||
+    f.k !== t.k || f.x !== t.x || f.y !== t.y || f.w !== s.dims.w || f.h !== s.dims.h || f.dpr !== s.dpr ||
+    f.tokens !== gcTokens || (s.selfFrames || 0) + 1 >= gcRequestDraw.selfCap
+  ) {
+    return false;
+  }
+  const started = performance.now();
+  const ctx = s.ctx;
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalAlpha = 1;
+  ctx.globalCompositeOperation = "copy";
+  ctx.drawImage(f.base, 0, 0);
+  ctx.globalCompositeOperation = "source-over";
+  ctx.setTransform(s.dpr, 0, 0, s.dpr, 0, 0);
+  ctx.save();
+  ctx.translate(t.x, t.y);
+  ctx.scale(t.k, t.k);
+  const fading = gcDrawLabels(ctx, s, f.placed, gcFadeStep(s, gcStill()), t.k);
+  ctx.restore();
+  s.timing.lastFrame = performance.now() - started;
+  s.timing.frames += 1;
+  if (!fading) {
+    s.labelFrame = null;
+    s.selfFrames = 0;
+    s.sceneStale = false;
+    return true;
+  }
+  s.selfFrames = 1 + (s.selfFrames || 0);
+  s.labelAsking = true;
+  try {
+    gcRequestDraw(s, true);
+  } finally {
+    s.labelAsking = false;
+  }
+  return true;
+};
+
 //: **A moving map strokes its thin links as hairlines** (GR1 and GR2 1101).
 //: A link is 1.3 CSS px wide at every zoom, and a stroke wider than one
 //: device pixel is outlined before it is filled: one bucket of 1,879 curved
@@ -2765,6 +2829,7 @@ function gcDraw(s = gcTab) {
   const cam = s.transform || d3.zoomIdentity;
   s.drawnCamera = { x: cam.x, y: cam.y, k: cam.k };
   if (gcLightFrame(s)) return gcDrawLight(s);
+  if (!s.paintMode && gcDrawLabels.frame(s)) return;
   if (!s.paintMode && gcDrawComposed(s)) return;
   s.strokeMoving = Boolean(s.layoutRunning || s.dragNode);
   //: `paintMode` (`gcDrawComposed`): null paints the frame whole; "rest" and
@@ -3457,7 +3522,13 @@ function gcDraw(s = gcTab) {
     book.labelBoxes = placed;
     book.labelsDrawn = placed.length;
   }
-  if (s.paintMode !== "dim" && gcDrawLabels(ctx, s, placedLabels, fadeStep, k)) fading = true;
+  //: A whole frame, on the visible canvas, whose only fade is the names: the
+  //: canvas as it stands before them is kept for the label frames
+  //: (`gcDrawLabels.frame`).
+  const othersFading = fading;
+  const keepable = !s.paintMode && s.ctx.canvas === s.canvas;
+  let labelBase = null;
+  if (s.paintMode !== "dim" && gcDrawLabels(ctx, s, placedLabels, fadeStep, k, keepable && !othersFading ? () => (labelBase = gcDrawLabels.keep(s)) : null)) fading = true;
   if (!over && s.fitCheck > 0) {
     const left = s.fitCheck - 1;
     s.fitCheck = 0;
@@ -3547,6 +3618,12 @@ function gcDraw(s = gcTab) {
   //: costs no frames at all.
   s.pathsStale = gliding && Boolean(s.glideMs);
   const busy = fading || gliding || s.bornPending;
+  const namesOnly =
+    labelBase && !othersFading && !gliding && !s.bornPending && !easing && !s.pillGhost && !s.simScoreLabels.length &&
+    s.hoveredId == null && !s.layoutRunning && !s.dragNode;
+  s.labelFrame = namesOnly
+    ? { base: labelBase, placed: placedLabels, k, x: t.x, y: t.y, w: s.dims.w, h: s.dims.h, dpr: s.dpr, tokens: gcTokens }
+    : null;
   if (!s.paintMode) {
     //: Nothing but the hover is left moving: the next frame can be composed,
     //: from the hover this one showed.
@@ -3585,8 +3662,13 @@ function gcDraw(s = gcTab) {
   s.drawAsking = true;
   try {
     if (cheap && (easing || busy)) gcRequestDraw(s, true);
-    else if (easing || fading || gliding || s.bornPending) gcRequestDraw(s);
+    else if (namesOnly) {
+      //: Its own next frame, so the kept canvas stays (`gcRequestDraw`).
+      s.labelAsking = true;
+      gcRequestDraw(s, true);
+    } else if (easing || fading || gliding || s.bornPending) gcRequestDraw(s);
   } finally {
+    s.labelAsking = false;
     s.drawAsking = false;
   }
 }
@@ -3765,7 +3847,7 @@ function gcDrawPill(ctx, pill, k, alpha) {
 //: ghost of its old self fading out. The collision pass only ever sees this
 //: frame's labels: a name on its way out holds no space. Says whether
 //: anything is still mid-fade.
-function gcDrawLabels(ctx, s, placed, fadeStep, k) {
+function gcDrawLabels(ctx, s, placed, fadeStep, k, beforePaint = null) {
   const lit = s.labelLit || new Map();
   if (!s.labelGhosts) s.labelGhosts = [];
   const next = new Map();
@@ -3810,6 +3892,7 @@ function gcDrawLabels(ctx, s, placed, fadeStep, k) {
     return true;
   });
   s.labelLit = next;
+  if (fading && beforePaint) beforePaint();
   if (!draws.length && !leaving.length) return fading;
   ctx.font = `500 ${12 / k}px ${gcTokens.font}`;
   ctx.textBaseline = "middle";
