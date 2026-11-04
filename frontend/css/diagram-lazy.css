@@ -1190,13 +1190,24 @@
   border-block-start-width: 4px;
 }
 
-.dgm-link[data-arrow="true"]::after {
+.dgm-link[data-arrow="true"]::after,
+.dgm-link[data-arrow="both"]::after {
   content: "";
   position: absolute;
   inset-inline-end: -1px;
   inset-block-start: -5px;
   border-block: 4px solid transparent;
   border-inline-start: 6px solid currentColor;
+}
+
+/* Both ways: a head at the start as well (1679 slice 10). */
+.dgm-link[data-arrow="both"]::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: -1px;
+  inset-block-start: -5px;
+  border-block: 4px solid transparent;
+  border-inline-end: 6px solid currentColor;
 }
 
 .dgm-example {

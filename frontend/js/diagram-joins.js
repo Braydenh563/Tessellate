@@ -15,11 +15,13 @@
     return keys[at] ?? null;
   }
 
-  //: The six link kinds, as the connector row's menu words them.
+  //: The link kinds, as the connector row's menu words them; the fourth field is Both ways (`<-->`, 1679 slice 10).
   const LINKS = [
     ["solid", true, "Arrow"], ["solid", false, "Line"], ["dotted", true, "Dotted arrow"],
     ["dotted", false, "Dotted line"], ["thick", true, "Thick arrow"], ["thick", false, "Thick line"],
+    ["solid", true, "Both ways", true],
   ];
+  const isKind = (edge, [style, arrow, , both]) => edge.style === style && edge.arrow === arrow && Boolean(edge.both) === Boolean(both);
   //: A shape's icon and word in the picker (R6.9): every block was one square and "Block".
   const SHAPES = { rect: ["ph:square", "Box"], round: ["ph:rectangle", "Rounded"], stadium: ["ph:pill", "Pill"], circle: ["ph:circle", "Circle"], diamond: ["ph:diamond", "Decision"], hexagon: ["ph:hexagon", "Hexagon"] };
   //: The picker's value for "a new block"; a block id never holds a plus.
@@ -29,16 +31,24 @@
 
   function items(S, edge, h) {
     const to = titleOf(h, S, edge.to);
-    const links = LINKS.map(([style, arrow, name]) => ({
-      label: `${edge.style === style && edge.arrow === arrow ? "ph:check" : "ph:arrow-right"} ${name}`,
+    const links = LINKS.map((kind) => ({
+      label: `${isKind(edge, kind) ? "ph:check" : kind[3] ? "ph:arrows-left-right" : "ph:arrow-right"} ${kind[2]}`,
       run: () => {
+        const [style, arrow, name, both] = kind;
         Object.assign(edge, { style, arrow });
+        if (both) edge.both = true;
+        else delete edge.both;
         h.commit(S, `The connector to ${to} is now a ${name.toLowerCase()}.`);
       },
       group: "kind",
     }));
     return [
       ...links,
+      {
+        label: "ph:palette Colour…",
+        run: async () => (await ensureModule("diagramStyle")) && diagramModel.style.edge(S, h, edge),
+        group: "edit",
+      },
       {
         label: "ph:text-t Label",
         run: async () => {
@@ -62,7 +72,7 @@
     const open = document.querySelector(".action-menu:not(.hidden):not(.submenu)");
     open?.querySelectorAll(":scope > .menu-item").forEach((row, i) => {
       if (i >= LINKS.length) return;
-      const [style, arrow, name] = LINKS[i];
+      const [style, arrow, name, both] = LINKS[i];
       const made = document.createElement("button");
       made.type = "button";
       made.className = "menu-item dgm-shape-row";
@@ -70,10 +80,10 @@
       const glyph = document.createElement("span");
       glyph.className = "dgm-link";
       glyph.dataset.style = style;
-      glyph.dataset.arrow = String(arrow);
+      glyph.dataset.arrow = both ? "both" : String(arrow);
       glyph.setAttribute("aria-hidden", "true");
       made.append(glyph, Object.assign(document.createElement("span"), { className: "menu-item-words", textContent: name }));
-      if (edge.style === style && edge.arrow === arrow) {
+      if (isKind(edge, LINKS[i])) {
         made.setAttribute("aria-current", "true");
         made.append(Object.assign(document.createElement("i"), { className: "ph ph-check dgm-shape-check" }));
       }
@@ -156,5 +166,5 @@
     }
   }
 
-  diagramModel.joins = { items, menu, pick };
+  diagramModel.joins = { items, menu, pick, ask };
 })();

@@ -57,6 +57,8 @@
   const DGM_LINKS = [
     ["-.->", "dotted", true], ["==>", "thick", true], ["-->", "solid", true],
     ["-.-", "dotted", false], ["===", "thick", false], ["---", "solid", false],
+    //: Both ways (R14, 1679 slice 10): the fourth field. No other token starts with `<`, so its place in the list is free.
+    ["<-.->", "dotted", true, true], ["<==>", "thick", true, true], ["<-->", "solid", true, true],
   ];
   const DGM_WORDED = /^(--|-\.|==)\s*("[^"]*"|[^-.=|>"\s][^|>]*?)\s*(-->|\.->|==>|---|-\.-|===)/;
   const DGM_ENTITY = { quot: '"', lt: "<", gt: ">", amp: "&" };
@@ -142,7 +144,7 @@
     const hit = DGM_LINKS.find(([token]) => rest.startsWith(token));
     if (!hit) return null;
     const piped = /^\s*\|("[^"]*"|[^|]*)\|/.exec(src.slice(at + hit[0].length));
-    return { style: hit[1], arrow: hit[2], label: piped ? dgmDecode(dgmUnquote(piped[1])) : "", end: at + hit[0].length + (piped ? piped[0].length : 0) };
+    return { style: hit[1], arrow: hit[2], ...(hit[3] ? { both: true } : {}), label: piped ? dgmDecode(dgmUnquote(piped[1])) : "", end: at + hit[0].length + (piped ? piped[0].length : 0) };
   }
 
   //: A node-and-link statement (chains `a --> b --> c`, fans `a & b --> c`) as
@@ -168,7 +170,7 @@
         at++;
         continue;
       }
-      if (pending) for (const from of pending.from) for (const to of group) links.push({ from, to, label: pending.label, style: pending.style, arrow: pending.arrow });
+      if (pending) for (const from of pending.from) for (const to of group) links.push({ from, to, label: pending.label, style: pending.style, arrow: pending.arrow, ...(pending.both ? { both: true } : {}) });
       if (at >= src.length) return { refs, links };
       const link = dgmLink(src, at);
       if (!link) return null;
@@ -212,7 +214,7 @@
     };
     emit(null, 0);
     m.edges.forEach((e, i) => {
-      const token = (DGM_LINKS.find(([, style, arrow]) => style === e.style && arrow === e.arrow) || DGM_LINKS[2])[0];
+      const token = (DGM_LINKS.find(([, style, arrow, both]) => style === e.style && arrow === e.arrow && Boolean(both) === Boolean(e.both)) || DGM_LINKS[2])[0];
       const label = e.label ? `|"${dgmEscape(e.label, true)}"|` : "";
       rows.push({ depth: 0, line: `${e.from} ${token}${label} ${e.to}`, unit: { t: "e", i } });
     });
@@ -224,6 +226,8 @@
   //: other `style` stays a kept line, byte for byte.
   const dgmTint = (hue) => "#" + [1, 3, 5].map((i) => Math.round(parseInt(hue.slice(i, i + 2), 16) * 0.25 + 191.25).toString(16).padStart(2, "0")).join("");
   const DGM_STYLE = /^style\s+([\w-]+)\s+fill:(#[0-9a-f]{6}),stroke:(#[0-9a-f]{6}),color:#1a1a1a$/;
+
+  const DGM_LINKSTYLE = /^linkStyle\s+(\d+)\s+stroke:(#[0-9a-f]{6}),stroke-width:2px$/;
 
   function dgmPrint(m) {
     const kept = (m.kept || []).map((k, i) => ({ ...k, i })).sort((a, b) => a.at - b.at || a.i - b.i);
@@ -240,6 +244,8 @@
     }
     flush(Infinity, 0);
     for (const n of m.nodes) if (/^#[0-9a-f]{6}$/.test(n.fill || "")) out.push(`${indent(0)}style ${n.id} fill:${dgmTint(n.fill)},stroke:${n.fill},color:#1a1a1a`);
+    //: An arrow's colour (1679 slice 10): `linkStyle N`, N the edge's place in the canonical order, which is `m.edges`' own.
+    m.edges.forEach((e, i) => /^#[0-9a-f]{6}$/.test(e.colour || "") && out.push(`${indent(0)}linkStyle ${i} stroke:${e.colour},stroke-width:2px`));
     return out.join("\n") + "\n";
   }
 
@@ -304,13 +310,21 @@
     snaps.forEach((snap, k) => {
       m.kept[k].at = rows.filter((r) => seen(r.unit, snap)).length;
     });
+    dgmLift(m);
+    return m;
+  }
+
+  //: The builder's own `style` and `linkStyle` lines become `fill` and `colour`; every other one stays a kept line.
+  function dgmLift(m) {
     m.kept = m.kept.filter((k) => {
       const hit = DGM_STYLE.exec(k.line);
       const node = hit && dgmTint(hit[3]) === hit[2] && m.nodes.find((n) => n.id === hit[1]);
       if (node) node.fill = hit[3];
-      return !node;
+      const arrow = DGM_LINKSTYLE.exec(k.line);
+      const edge = arrow && m.edges[Number(arrow[1])];
+      if (edge) edge.colour = arrow[2];
+      return !node && !edge;
     });
-    return m;
   }
 
   //: The source range of the ```mermaid fence in `text` whose source is `source` (the one nearest `near`

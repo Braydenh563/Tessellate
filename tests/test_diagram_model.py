@@ -294,3 +294,34 @@ def test_the_old_readers_are_gone_and_the_board_reads_the_model():
     assert "function wbMermaidParse" not in interchange and "function wbMermaidText" not in interchange
     assert "diagramModel.parse(source)" in interchange
     assert re.search(r"Object\.assign\(window, \{[^}]*\bdiagramModel\b", mermaid)
+
+
+def test_a_coloured_arrow_and_a_both_ways_arrow_round_trip_and_other_link_styles_stay_kept():
+    """1679 slice 10: `linkStyle N stroke:#hex,stroke-width:2px` is the builder's own line (lifted to `colour` in edge order);
+    `<-->`, `<-.->` and `<==>` read as `both`; any other linkStyle line stays a kept line, byte for byte."""
+    src = (
+        "flowchart TD\n  A --> B\n  B <--> C\n  C <-.-> D\n  D <==> A\n"
+        "  linkStyle 1 stroke:#387fe3,stroke-width:2px\n  linkStyle 0 stroke:#f00\n"
+    )
+    got = _run(
+        f"const m = diagramModel.parse({json.dumps(src)}); const once = diagramModel.print(m);"
+        "const back = diagramModel.parse(once);"
+        "console.log(JSON.stringify({ edges: m.edges.map((e) => [e.style, e.arrow, Boolean(e.both), e.colour || null]),"
+        " kept: m.kept.map((k) => k.line), once, again: diagramModel.print(back) === once,"
+        " colours: back.edges.map((e) => e.colour || null) }));"
+    )
+    assert got["edges"] == [["solid", True, False, None], ["solid", True, True, "#387fe3"], ["dotted", True, True, None], ["thick", True, True, None]]
+    assert got["kept"] == ["linkStyle 0 stroke:#f00"]
+    assert "  B <--> C\n" in got["once"] and "  C <-.-> D\n" in got["once"] and "  D <==> A\n" in got["once"]
+    assert got["once"].count("linkStyle 1 stroke:#387fe3,stroke-width:2px") == 1
+    assert got["again"] is True and got["colours"] == [None, "#387fe3", None, None]
+
+
+def test_removing_an_arrow_renumbers_the_colour_lines_and_a_plain_arrow_prints_no_linkstyle():
+    got = _run(
+        "const m = diagramModel.parse('flowchart TD\\n  A --> B\\n  B --> C\\n'); m.edges[1].colour = '#da5252'; const a = diagramModel.print(m);"
+        "m.edges.shift(); const b = diagramModel.print(m);"
+        "console.log(JSON.stringify({ a, b, plain: diagramModel.print(diagramModel.parse('flowchart TD\\n  A --> B\\n')) }));"
+    )
+    assert "linkStyle 1 stroke:#da5252" in got["a"] and "linkStyle 0 stroke:#da5252" in got["b"]
+    assert "linkStyle" not in got["plain"]

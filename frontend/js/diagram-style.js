@@ -46,6 +46,26 @@
     });
   }
 
+  //: An arrow's colour (1679 slice 10): `link.colour`, one hex hue written as a `linkStyle` line (documents-mermaid.js).
+  function edge(S, h, link) {
+    const to = h.ops.node(S.m, link.to)?.text ?? h.ops.group(S.m, link.to)?.title ?? link.to;
+    const keyOf = (hue) => Object.keys(CATEGORY_PALETTE).find((k) => CATEGORY_PALETTE[k] === hue) || null;
+    const apply = (key) => {
+      if (key) link.colour = CATEGORY_PALETTE[key];
+      else delete link.colour;
+      h.commit(S, key ? `Coloured the arrow to ${to} ${key}.` : `Cleared the colour of the arrow to ${to}.`);
+    };
+    openSheet({
+      label: `Colour for the arrow to ${to}`,
+      sub: "Draws the arrow on the picture. Automatic clears it.",
+      name: "diagram-colour",
+      build: (card, close) => {
+        card.classList.add("swatch-card");
+        card.append(swatchPicker({ label: "Colour", value: keyOf(link.colour), onChange: () => {}, onChoose: (key) => (close(), apply(key)), none: "Automatic" }));
+      },
+    });
+  }
+
   function shortcuts(S, h) {
     const rows = [...shapeRows(h), ...OTHER];
     openSheet({
@@ -87,5 +107,5 @@
     });
   }
 
-  diagramModel.style = { colour, shortcuts };
+  diagramModel.style = { colour, edge, shortcuts };
 })();

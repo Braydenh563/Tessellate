@@ -1,6 +1,6 @@
 // INBOX 1679 diagram sweeps in one file (the scratchpad count is capped): node diagram-escape.js <mode> [width], BASE=http://127.0.0.1:PORT.
 // Modes: escape (Escape mid-drag, slice 4), keys (Alt+Up in the flow-ordered list), sheet-escape (390: the Connect picker and the Blocks sheet),
-// phone-picture (390 picture share, slice 11), fit-floor (Fit floor, slice 7), open-new (New diagram dialog), templates (slice 9).
+// phone-picture (390 picture share, slice 11), fit-floor (Fit floor, slice 7), open-new (New diagram dialog), templates (slice 9), edge-colour (slice 10).
 process.env.BASE ||= "http://127.0.0.1:8781";
 process.env.SCRATCH ||= require("os").tmpdir();
 const { boot } = require("./lib.js");
@@ -308,6 +308,115 @@ const W = Number(process.argv[3] || 1440), touch = W < 600;
       return { id: t.id, nodes: m.nodes.length, drawn: boxes, same: diagramModel.print(m) === t.source };
     }, t));
   }
+  console.log(JSON.stringify(out));
+  await browser.close();
+})();
+
+};
+modes["edge-colour"] = () => {
+const W = Number(process.argv[3] || 1440), touch = W < 600;
+(async () => {
+  const { browser, page } = await boot({ viewport: { width: W, height: touch ? 844 : 900 }, ...(touch ? { hasTouch: true, isMobile: true } : {}) });
+  const out = { W };
+  const src = "flowchart TD\n  A[One] --> B[Two]\n  C[Three]\n";
+  await page.evaluate(async (c) => {
+    const r = await api("/documents", { method: "POST", body: JSON.stringify({ title: "Colour " + Date.now() + ".mmd", content: c, file_type: "mmd" }) });
+    const doc = await r.json();
+    switchTab("documents");
+    await openDocument(doc.id);
+    setDocView("canvas", { persist: false });
+  }, src);
+  await page.waitForSelector(".dgm-picture .md-mermaid-img", { timeout: 15000 });
+  await page.waitForTimeout(1800);
+  const source = () => page.evaluate(() => docText());
+  const mid = () => page.evaluate(() => {
+    const img = document.querySelector(".dgm-picture .md-mermaid-img");
+    const svg = img.mermaidSvg;
+    const vb = /viewBox="\s*([-\d.e]+)[ ,]+([-\d.e]+)[ ,]+([\d.e]+)[ ,]+([\d.e]+)/.exec(svg).slice(1).map(Number);
+    const d = /<path[^>]*class="[^"]*flowchart-link[^"]*"[^>]*\sd="([^"]+)"/.exec(svg)?.[1] || /<path[^>]*\sd="([^"]+)"[^>]*class="[^"]*flowchart-link/.exec(svg)?.[1];
+    const n = d.match(/-?\d+(\.\d+)?/g).map(Number);
+    const pts = [];
+    for (let i = 0; i + 1 < n.length; i += 2) pts.push([n[i], n[i + 1]]);
+    const p = pts[Math.floor(pts.length / 2)];
+    const r = img.getBoundingClientRect();
+    return { x: r.left + ((p[0] - vb[0]) / vb[2]) * r.width, y: r.top + ((p[1] - vb[1]) / vb[3]) * r.height };
+  });
+  const menu = async () => {
+    // A picked arrow keeps its end handles over a short arrow's midpoint: drop the pick first.
+    await page.keyboard.press("Escape");
+    await page.mouse.click(5, 300);
+    await page.waitForTimeout(300);
+    const m = await mid();
+    if (touch) { await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, clientX: x, clientY: y, button: 2 })), m); }
+    else await page.mouse.click(m.x, m.y, { button: "right" });
+    await page.waitForTimeout(500);
+  };
+  await menu();
+  out.menu = await page.evaluate(() => [...document.querySelectorAll(".action-menu:not(.hidden) .menu-item")].map((b) => b.textContent.trim().replace(/\s+/g, " ")));
+  const click = async (re) => page.evaluate((s) => { const b = [...document.querySelectorAll(".action-menu:not(.hidden) .menu-item, .sheet .swatch-option, .swatch-card .swatch-option")].find((x) => new RegExp(s, "i").test(x.getAttribute("aria-label") || x.textContent)); b?.click(); return Boolean(b); }, re);
+  out.colourClicked = await click("^\\s*Colour");
+  await page.waitForTimeout(600);
+  out.swatches = await page.evaluate(() => document.querySelectorAll(".swatch-card .swatch-option").length);
+  out.swatchSize = await page.evaluate(() => { const r = document.querySelector(".swatch-card .swatch-option")?.getBoundingClientRect(); return r && [Math.round(r.width), Math.round(r.height)]; });
+  await click("^Blue$");
+  await page.waitForTimeout(1500);
+  out.afterColour = (await source()).split("\n").filter((l) => /linkStyle/.test(l));
+  out.drawn = await page.evaluate(() => /#387fe3/i.test(document.querySelector(".dgm-picture .md-mermaid-img").mermaidSvg));
+  // contrast of each hue (as the stroke) against the picture's ground
+  out.contrast = await page.evaluate(() => {
+    const lum = (rgb) => { const c = rgb.map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+    const parse = (s) => s.match(/[\d.]+/g).slice(0, 3).map(Number);
+    let el = document.querySelector(".dgm-picture"); let bg = [0, 0, 0, 0];
+    for (; el; el = el.parentElement) { const c = getComputedStyle(el).backgroundColor; const a = c.match(/[\d.]+/g); if (a && (a.length < 4 || Number(a[3]) > 0.9)) { bg = parse(c); break; } }
+    const lb = lum(bg);
+    const out = {};
+    for (const [k, hex] of Object.entries(CATEGORY_PALETTE)) { const l = lum([1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16))); out[k] = Math.round(((Math.max(l, lb) + 0.05) / (Math.min(l, lb) + 0.05)) * 100) / 100; }
+    return { ground: bg, min: Math.min(...Object.values(out)), hues: out };
+  });
+  await menu();
+  out.menu2 = await page.evaluate(() => [...document.querySelectorAll(".action-menu:not(.hidden) .menu-item")].map((b) => b.textContent.trim()));
+  out.at = await mid();
+  out.hit = await page.evaluate(({ x, y }) => { const e = document.elementFromPoint(x, y); return e && (e.tagName + "." + String(e.className).slice(0, 60)); }, out.at);
+  out.overlay = await page.evaluate(() => document.querySelectorAll(".sheet, .modal-overlay:not(.hidden), [role=dialog]:not(.hidden)").length);
+  out.both = await click("Both ways");
+  await page.waitForTimeout(1500);
+  out.afterBoth = (await source()).split("\n").filter((l) => /<-->|linkStyle/.test(l));
+  out.headAtStart = await page.evaluate(() => /marker-start/.test(document.querySelector(".dgm-picture .md-mermaid-img").mermaidSvg));
+  await menu();
+  out.menuAgain = await page.evaluate(() => [...document.querySelectorAll(".action-menu:not(.hidden) .menu-item")].map((b) => ({ t: b.textContent.trim(), cur: b.getAttribute("aria-current") })).filter((x) => x.cur));
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(300);
+  // one undo takes the last change back
+  await page.keyboard.press("Control+z");
+  await page.waitForTimeout(1200);
+  out.afterUndo = (await source()).split("\n").filter((l) => /<-->|linkStyle|-->/.test(l));
+  // reload keeps the colour
+  out.saved = await page.evaluate(async () => { await saveDocument?.(); return currentDoc?.id; });
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await page.waitForTimeout(1500);
+  await page.evaluate(async (id) => { switchTab("documents"); await openDocument(id); setDocView("canvas", { persist: false }); }, out.saved);
+  await page.waitForTimeout(2500);
+  out.reloaded = (await source()).split("\n").filter((l) => /linkStyle|-->/.test(l));
+  // the selection bar
+  // A phone has no Ctrl+click: the Blocks list opens as a sheet and Shift+Down extends the pick (slice 11's keys).
+  if (touch) await page.click('[aria-label="Blocks list"]');
+  await page.waitForSelector(".dgm-block", { timeout: 8000 });
+  const blocks = await page.$$(".dgm-block");
+  await blocks[0].click({ position: { x: 20, y: 8 } });
+  if (touch) await page.keyboard.press("Shift+ArrowDown");
+  else await blocks[blocks.length - 1].click({ position: { x: 20, y: 8 }, modifiers: ["Control"] });
+  await page.waitForTimeout(500);
+  out.bar = await page.evaluate(() => { const b = document.querySelector(".dgm-selectbar:not(.hidden)"); return b && [...b.querySelectorAll("button")].map((x) => { const r = x.getBoundingClientRect(); return [x.getAttribute("aria-label") || x.textContent.trim(), Math.round(r.width), Math.round(r.height)]; }); });
+  out.barFits = await page.evaluate(() => { const b = document.querySelector(".dgm-selectbar:not(.hidden)"); const r = b?.getBoundingClientRect(); return r && { right: Math.round(r.right), scrollW: b.scrollWidth, clientW: b.clientWidth, vw: innerWidth }; });
+  out.smallTargets = (out.bar || []).filter(([, w, h]) => touch && (w < 44 || h < 44)).length;
+  const before = await source();
+  await page.evaluate(() => [...document.querySelectorAll(".dgm-selectbar button")].find((x) => x.getAttribute("aria-label") === "Connect")?.click());
+  await page.waitForTimeout(1200);
+  out.connected = (await source()).split("\n").filter((l) => /-->/.test(l));
+  out.connectChanged = (await source()) !== before;
+  await page.evaluate(() => [...document.querySelectorAll(".dgm-selectbar button")].find((x) => x.getAttribute("aria-label") === "Colour")?.click());
+  await page.waitForTimeout(800);
+  out.barColour = await page.evaluate(() => document.querySelectorAll(".swatch-card .swatch-option").length);
   console.log(JSON.stringify(out));
   await browser.close();
 })();
