@@ -461,6 +461,38 @@ def _not_prose(line: str, stripped: str) -> bool:
     return _heading_text(line) is not None or bold_line(line) is not None or stripped.startswith(("![", "|"))
 
 
+def _wrap_item(view: NoteView, content: str, line_start: int, line: str, item_open: tuple[int, int, str, bool | None]) -> bool:
+    """A list item wrapped onto an indented line ("- hub-finish-ui and" /
+    "  O47-merge-wip are in main") is one item, not an item and a sentence cut
+    at the wrap (INBOX 1602). True when `line` was taken into the item."""
+    if not _CONTINUES.match(line) or _ITEM.match(line):
+        return False
+    at, first, kind, done = item_open
+    joined = _unit(view, content, first, line_start + len(line.rstrip("\r\n")), kind, done)
+    if joined and at < len(view.sentences):
+        joined.depth = view.sentences[at].depth
+        view.sentences[at] = joined
+    return True
+
+
+def _read_line(view: NoteView, content: str, line_start: int, line: str, item_open: tuple[int, int, str, bool | None] | None) -> tuple[int, int, str, bool | None] | None:
+    """One body line: taken into the list item above it when it wraps that
+    item, else read as units; returns the list item it leaves open, if any."""
+    if item_open and _wrap_item(view, content, line_start, line, item_open):
+        return item_open
+    before = len(view.sentences)
+    _line_units(view, content, line_start, line)
+    return _open_item(view, line, line_start, before)
+
+
+def _open_item(view: NoteView, line: str, line_start: int, before: int) -> tuple[int, int, str, bool | None] | None:
+    """The list item `line` just made, as `_wrap_item` needs it; None when the line made none."""
+    item = _ITEM.match(line)
+    if not item or len(view.sentences) != before + 1 or view.sentences[-1].kind not in ("item", "task"):
+        return None
+    return before, line_start + item.end(), view.sentences[-1].kind, view.sentences[-1].done
+
+
 def read_note(note: dict, rank: int) -> NoteView | None:
     """A note as its units: prose split into sentences, each list item one."""
     content = str(note.get("content") or "")
@@ -509,23 +541,7 @@ def read_note(note: dict, rank: int) -> NoteView | None:
         if in_fence or not stripped or _not_prose(line, stripped):
             item_open = None
             continue
-        line_end = line_start + len(line.rstrip("\r\n"))
-        if item_open and _CONTINUES.match(line) and not _ITEM.match(line):
-            #: A list item wrapped onto an indented line ("- hub-finish-ui and"
-            #: / "  O47-merge-wip are in main") is one item, not an item and a
-            #: sentence cut at the wrap (INBOX 1602).
-            at, first, kind, done = item_open
-            joined = _unit(view, content, first, line_end, kind, done)
-            if joined and at < len(view.sentences):
-                joined.depth = view.sentences[at].depth
-                view.sentences[at] = joined
-            continue
-        before = len(view.sentences)
-        _line_units(view, content, line_start, line)
-        item = _ITEM.match(line)
-        item_open = None
-        if item and len(view.sentences) == before + 1 and view.sentences[-1].kind in ("item", "task"):
-            item_open = (before, line_start + item.end(), view.sentences[-1].kind, view.sentences[-1].done)
+        item_open = _read_line(view, content, line_start, line, item_open)
     for i, sentence in enumerate(view.sentences):
         sentence.order = i
     return view
