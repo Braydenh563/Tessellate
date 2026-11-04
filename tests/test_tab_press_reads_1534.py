@@ -43,7 +43,9 @@ def test_the_notes_scroller_is_found_once_not_per_render():
 
 def test_a_strip_is_measured_by_its_observer_not_where_it_is_wired():
     wire = _body(frontend_text("shell-reminders.js"), "function edgeFadeWire(")
-    assert "new ResizeObserver(() => syncEdgeFade(bar)).observe(bar)" in wire
+    #: 1672 widened the observer to the status bar's zones; the bar is still one of the boxes it observes.
+    assert "const seen = new ResizeObserver(() => syncEdgeFade(bar));" in wire
+    assert "for (const box of [bar, " in wire and "seen.observe(box)" in wire
     assert "  syncEdgeFade(bar);\n  bar.addEventListener" not in wire
 
 
