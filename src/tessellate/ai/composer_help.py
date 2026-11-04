@@ -121,8 +121,9 @@ _HELP_DOING: dict[str, frozenset[str]] = {
     word: group - {word}
     for group in (
         frozenset({"make", "create", "add", "new", "set", "start", "type"}),
-        frozenset({"delete", "remove", "bin", "trash", "clear"}),
-        frozenset({"change", "switch", "pick", "choose", "edit"}),
+        frozenset({"delete", "remove", "bin", "trash", "clear", "erase", "discard", "throw", "toss"}),
+        frozenset({"move", "relocate", "shift", "transfer", "file", "refile"}),
+        frozenset({"change", "switch", "pick", "choose", "edit", "rename", "retitle"}),
         frozenset({"find", "search", "look", "open"}),
         frozenset({"stop", "disable", "pause", "off", "hide"}),
         frozenset({"see", "view", "show", "list", "read"}),
@@ -165,7 +166,27 @@ def _help_ask(question: str, topic: dict) -> dict:
     verb = _help_verb(question)
     named = set(_words(str(topic.get("id", "")).replace("-", " "))) - {verb}
     doing = {verb, *_HELP_DOING.get(verb, ())} if verb else set()
-    return {"wanted": wanted, "named": named, "pairs": _help_pairs(question), "doing": doing, "asked_exception": bool(_EXCEPTION_ASKED.search(question))}
+    if _RETITLING.search(question):
+        doing |= {"rename", "retitle"}
+        wanted = (wanted - {"title", "name", "titles", "names"}) | {"rename"}
+    if _RESTORING.search(question) and not re.search(r"\bback ?ups?\b", question, re.I):
+        doing |= {"delete", "bin"}
+    return {"wanted": wanted, "named": named, "pairs": _help_pairs(question), "doing": doing, "asked_exception": bool(_EXCEPTION_ASKED.search(question)), "listed": bool(_EXCEPTION_LISTED.search(question)), "emptying": bool(_EMPTYING.search(question)), "direct": _direct_object(question, verb)}
+
+
+#: Where the thing a doing is done to ends: "remove a tag from a note" is about
+#: the tag, and the note only says where.
+_PLACE_WORD = re.compile(r"\b(?:from|in|on|to|into|onto|of|out|off|for|at|about|by|with|between)\b")
+
+
+def _direct_object(question: str, verb: str) -> set[str]:
+    """The content words between the doing and the first place word, or empty
+    when the doing is not found (the whole ask then counts)."""
+    lowered = (question or "").lower()
+    at = lowered.find(verb) if verb else -1
+    if at < 0:
+        return set()
+    return set(_words(_PLACE_WORD.split(lowered[at + len(verb):], maxsplit=1)[0]))
 
 
 def _help_have(line: str, doing: set[str]) -> set[str]:
@@ -203,7 +224,9 @@ def _help_best(lines: list[str], ask: dict, doing: float = 0.0) -> str:
     asked, which picks among the clauses of one sentence."""
     def score(line: str) -> float:
         verb = bool(ask["doing"]) and any(_stem(d) in _help_have(line, set()) for d in ask["doing"])
-        return _help_shared(line, ask) + (doing if verb else 0.0) - 0.05 * lines.index(line)
+        #: A listing of what cannot be done leads for the ask that wants it.
+        listed = 3.0 if ask.get("listed") and _NO_UNDO.search(line) else 0.0
+        return _help_shared(line, ask) + (doing if verb else 0.0) + listed - 0.05 * lines.index(line)
 
     return max(lines, key=lambda line: (score(line), -lines.index(line)))
 
@@ -218,9 +241,9 @@ _HELP_ACTS: dict[str, tuple[str, ...]] = {
     "import": ("import", "bring"),
     "print": ("print", "pdf"),
     "share": ("share", "publish", "send"),
-    "delete": ("delete", "remove", "trash", "bin"),
+    "delete": ("delete", "remove", "trash", "bin", "erase", "discard", "throw", "toss"),
     "restore": ("restore", "recover", "undelete"),
-    "move": ("move", "drag", "reorder"),
+    "move": ("move", "drag", "reorder", "relocate", "shift"),
     "rename": ("rename", "retitle"),
     "attach": ("attach", "upload"),
     "pin": ("pin", "unpin", "star", "favourite", "favorite"),
@@ -235,8 +258,23 @@ def _help_act_stems() -> dict[str, frozenset[str]]:
     return {act: frozenset(_stem(w) for w in words) for act, words in _HELP_ACTS.items()}
 
 
+#: "change a note's title": a rename said without its verb.
+_RETITLING = re.compile(r"\b(?:change|edit|set|update|fix)\b.{0,20}\b(?:title|name)s?\b", re.I)
+
+#: "get a note back", "bring it back": a restore said without its verb.
+_BACK_PHRASE = re.compile(
+    r"\b(?:get|bring|put|have|take)\b(?:\s+\w+){0,4}\s+back\b|\b(?:out of|from) (?:the |my )?(?:bin|trash|recycle bin)\b", re.I
+)
+
+#: Asked as a restore of something deleted (not of a backup): the bin sentence
+#: is the one whose subject says it ("A deleted note ... goes to the bin").
+_RESTORING = re.compile(r"\b(?:restor\w*|recover\w*|undelet\w*|retriev\w*)\b|" + _BACK_PHRASE.pattern, re.I)
+
+
 def _help_act(question: str) -> str:
     """The act a how-to names (the first one typed), or ""."""
+    if _BACK_PHRASE.search(question or ""):
+        return "restore"
     for word in re.findall(r"[a-z]+", (question or "").lower()):
         stem = _stem(word)
         for act, stems in _help_act_stems().items():
@@ -254,7 +292,11 @@ def _act_score(line: str, at: int, ask: set, stems: set[str], topic: dict, place
     named = 2.0 if stems & {_stem(w) for w in str(topic.get("id", "")).split("-")} else 0.0
     early = 1.5 if at < 5 else 0.75 if at < 12 else 0.0
     long = 1.0 if len(line.split()) > _HELP_LEAD_WORDS else 0.0
-    return _help_shared(line, ask) + named + early - long - 0.15 * place[0] - 0.05 * place[1] + _subject_fit(line, ask)
+    #: "Say it in Chat" is the generated pointer to an act, not the Guide's own
+    #: step: a topic that says the act itself leads over it ("how do I delete a
+    #: note" is the bin sentence), and it answers when nothing else does.
+    pointer = 4.0 if str(topic.get("id", "")).startswith("act-") else 0.0
+    return _help_shared(line, ask) + named + early - long - pointer - 0.15 * place[0] - 0.05 * place[1] + _subject_fit(line, ask)
 
 
 #: A sentence that lists what the thing cannot do, not how to do it.
@@ -263,8 +305,26 @@ _EXCEPTION = re.compile(r"\b(?:no undo|except|cannot|can't|never|nothing)\b", re
 #: The ask is about the exception itself ("why is there no undo", "permanently").
 _EXCEPTION_ASKED = re.compile(r"\b(?:no undo|except\w*|cannot|can't|never|for good|permanent\w*|empty|why)\b", re.I)
 
-#: Where a sentence's subject ends: its first verb or clause break.
-_SUBJECT_END = re.compile(r"\s(?:goes|go|is|are|has|have|keeps|makes|lets|shows|says|covers|opens)\b|[,;:]")
+_NO_UNDO = re.compile(r"\bno undo\b", re.I)
+
+#: The sentence about emptying the bin, and the ask that wants it: it answers
+#: "how do I empty the bin" and nothing about deleting one thing.
+_EMPTYING_LINE = re.compile(r"\bempty the bin\b", re.I)
+_EMPTYING = re.compile(r"\b(?:empt\w*|clear\w*|purge\w*|wipe\w*)\b", re.I)
+
+#: The ask is for the list itself, not a word that merely touches it: "what
+#: can't I undo", "what cannot be undone", "which things have no undo". The
+#: list leads for these (a negated doing is a class, not a question).
+_EXCEPTION_LISTED = re.compile(
+    r"\b(?:can'?t|cannot|can not|couldn'?t|won'?t|never|no|not)\b.{0,15}\b(?:undo|undone|recover\w*|restor\w*|reversed?)\b|\bno undo\b|\birreversible\b", re.I
+)
+
+#: Where a sentence's subject ends: its first verb or clause break. A comma
+#: inside a list is not one: "A deleted note, board, document, reminder goes
+#: to the bin" has a subject of four things, and the ask names any of them.
+_SUBJECT_END = re.compile(r"\s(?:goes|go|is|are|has|have|keeps|makes|lets|shows|says|covers|opens|adds|removes|moves|finds|takes|asks|puts|sets|clears|deletes|gives|needs|offers|lists|reads|saves)\b|[,;:]")
+#: A comma inside a list of single words ("note, board, document or reminder").
+_LIST_COMMA = re.compile(r"(?<=\w), (?=\w+(?:,| or | and ))")
 
 
 def _subject_fit(line: str, ask: dict) -> float:
@@ -272,14 +332,16 @@ def _subject_fit(line: str, ask: dict) -> float:
     sentence whose subject carries the asked doing ("A deleted note ... goes to
     the bin") and the asked object leads; a list of exceptions ("Four things
     have no Undo") ranks below it unless the ask is about the exception."""
-    head = _SUBJECT_END.split(line, maxsplit=1)[0]
+    head = _SUBJECT_END.split(_LIST_COMMA.sub(" ", line), maxsplit=1)[0]
     words = re.findall(r"[a-z]+", head.lower())
     #: delete, deleted and deleting are one doing here (`_help_one`).
     said = any(_help_one(d, w) for d in ask["doing"] for w in words)
     subject = {_stem(w) for w in words}
-    objects = {_stem(w) for w in ask["wanted"] if w not in ask["doing"]}
+    objects = {_stem(w) for w in (ask["direct"] or ask["wanted"]) if w not in ask["doing"]}
     bonus = 2.5 if said and objects & subject else 0.0
-    return bonus - (1.5 if _EXCEPTION.search(line) and not ask["asked_exception"] else 0.0)
+    listing = _EXCEPTION.search(line)
+    emptying = _EMPTYING_LINE.search(line) and not ask["emptying"]
+    return bonus - (1.5 if listing and not ask["asked_exception"] else 0.0) - (3.0 if emptying else 0.0) + (3.0 if _NO_UNDO.search(line) and ask["listed"] else 0.0)
 
 
 def _act_lead(lead: str, stems: set[str], question: str, topic_id: str) -> str:
