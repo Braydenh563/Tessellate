@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Graph perf audit (rank 36) re-checked: the map posts exactly one worker init per open (first, reload, return; 300 notes), so the suspected second init was a sweep artefact; hover p50 stays open on the owner's card-refill decision.
 - Security (CodeQL, polynomial regex): a note title or first line ending in thousands of tabs no longer takes quadratic time to read; the closing-emoticon strip is one linear helper, `composer_frame.strip_end_emoticon`, for the title reader and the first-line namer.
 - Tests keep only a failing test's temp folder (pytest.ini `tmp_path_retention_policy = failed`): a full run left 7GB of per-test data folders, filled the CI runner's disk, and the last thousand tests failed with `disk I/O error`. The status bar's shedding now rides the edge fade's own observer and the `hidden` attribute (no new global, observer or CSS), and gives back what it shed once the bar scrolls.
 - The status bar no longer runs past the window's edge from 600 to 820 wide: it drops the clock, the LAN dot and then the inbox tray until the rest fit, and a strip that cannot scroll is never faded as if it could (INBOX 1672).
