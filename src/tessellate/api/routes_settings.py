@@ -1116,6 +1116,24 @@ def _validated_preference(key: str, value):  # noqa: ANN001, ANN202
     return check(value) if check else value
 
 
+def checked_restored_preferences(incoming: dict) -> tuple[dict, list[str]]:
+    """A restored zip's settings, each one through what `PUT /preferences` does.
+
+    A value that fails is dropped and the rest kept; only the key names come
+    back, never the values (a skill's instructions are the owner's text).
+    """
+    kept: dict = {}
+    dropped: list[str] = []
+    for key, value in incoming.items():
+        try:
+            if key in PreferencesBody.model_fields:
+                PreferencesBody.model_validate({key: value})
+            kept[key] = _validated_preference(key, value)
+        except (ValueError, HTTPException):
+            dropped.append(str(key))
+    return kept, dropped
+
+
 def _apply_preference(config, session: Session, key: str, value) -> None:
     """One validated preference written, with the side effects its key carries."""
     value = _validated_preference(key, value)

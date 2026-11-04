@@ -213,3 +213,30 @@ def test_a_restored_zip_cannot_move_this_computer_only_settings(client, tmp_path
         if key != "theme":
             assert prefs.get(key) == before.get(key), key
     assert prefs.get("theme") == "dark"
+
+
+def test_a_restored_zip_runs_every_setting_through_the_settings_checks(client, caplog):
+    """SEC-A1: a skill the editor would refuse cannot arrive inside a zip; the
+    rest of the file still lands and only the key names are logged."""
+    import json
+
+    _seed(client)
+    good = client.get("/export/backup").content
+    evil = io.BytesIO()
+    with zipfile.ZipFile(io.BytesIO(good)) as source, zipfile.ZipFile(evil, "w") as zf:
+        for name in source.namelist():
+            if name != backup_bundle.PREFERENCES_MEMBER:
+                zf.writestr(name, source.read(name))
+        zf.writestr(
+            backup_bundle.PREFERENCES_MEMBER,
+            json.dumps({"skills": [{"name": "x", "tools": ["no_such_tool_zz"], "instructions": "SECRET-VALUE"}],
+                        "custom_templates": "not a list", "theme": "dark"}),
+        )
+    with caplog.at_level("WARNING"):
+        reply = client.post("/backups/bundle/restore", files={"file": ("x.zip", evil.getvalue())})
+    assert reply.status_code == 200, reply.text
+    prefs = deps.get_config().all_preferences()
+    assert not any(s.get("name") == "x" for s in prefs.get("skills") or [])
+    assert prefs.get("custom_templates") != "not a list"
+    assert prefs.get("theme") == "dark"
+    assert "skills" in caplog.text and "SECRET-VALUE" not in caplog.text
