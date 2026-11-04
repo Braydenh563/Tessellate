@@ -6584,7 +6584,7 @@ body .chip.item-label,
   --atl-br-y: 0px;
   --atl-bl-r: 0deg;
   --atl-br-r: 0deg;
-  --atl-lid: 0.1;
+  --atl-lid: 0;
   --atl-lid-r: 0deg;
   --atl-low: 0;
   --atl-eye-s: 1;
@@ -7377,14 +7377,13 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .nm-atlas .atl-eye-r { --atl-side: -1; }
 .nm-atlas .atl-eye { transform: scale(var(--atl-eye-s)); }
 /* Round 9 (the owner, of the masculine look: "it still looks like a fnaf
-   character"): softer eyes, a size smaller, the upper lid resting a little
-   lower so the look is relaxed rather than a wide stare. Individual
+   character"): softer eyes, a size smaller (the lid rests out of sight, INBOX 1607). Individual
    properties, so every mood's own scale and lid still apply over them. */
 .nm-atlas[data-atlas-look="masculine"] .atl-eye { scale: 0.84; }
 /* INBOX 563: softer eyes in the narrower face, a little smaller and less
    wide open at rest (`--atl-lid`, the calm face), so they do not stare. */
 .nm-atlas[data-atlas-look="feminine"] .atl-eye { scale: 0.9; }
-.nm-atlas[data-atlas-look="masculine"] .atl-lid { translate: 0 0.8px; }
+.nm-atlas[data-atlas-look="masculine"] .atl-lid { translate: 0 0; }
 .nm-atlas .atl-pupil { transform: translate(calc(var(--atl-px) + var(--atl-lean-dir) * 0.8px), var(--atl-py)) scale(var(--atl-ps)); }
 .nm-atlas .atl-lid { transform: rotate(calc(var(--atl-lid-r) * var(--atl-side))) translateY(calc(var(--atl-lid) * 11px)); }
 .nm-atlas .atl-lid-low { transform: translateY(calc(var(--atl-low) * -10px)); }
@@ -7771,10 +7770,9 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
   --atl-m-smile: 1; --atl-m-tinyo: 0; --atl-cheek: 0.4; --atl-fx-sparkle: 1;
   --atl-tilt: -10deg; --atl-sx: 0.98; --atl-sy: 1.02;
 }
-/* Curious is the reference grids' Inspired (Intrigued) and Winking cells:
-   one eye closed happily, a sparkle, a small smile. The right eye reads
-   its own open and happy values. */
-.nm-atlas[data-atlas-mood="curious"] .atl-eye-r { --atl-open: 0; --atl-happy: 1; }
+/* Curious keeps both eyes open (INBOX 1607, the owner: "only atlas's right
+   eye blinks"): the one-eyed wink it once had left one eye shut for good
+   while the other blinked. A sparkle and a small smile carry it. */
 .nm-atlas[data-atlas-mood="surprised"] {
   --atl-tail: -24deg; --atl-star: 1.2;
   --atl-crest: -10deg;
@@ -7785,7 +7783,7 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
 .nm-atlas[data-atlas-mood="confused"] {
   --atl-tail: 8deg; --atl-star: 0.9;
   --atl-crest: 5deg;
-  --atl-bl-y: -2.6px; --atl-br-y: 1px; --atl-bl-r: -8deg; --atl-br-r: -10deg; --atl-lid: 0.1;
+  --atl-bl-y: -2.6px; --atl-br-y: 1px; --atl-bl-r: -8deg; --atl-br-r: -10deg; --atl-lid: 0;
   --atl-px: -1px; --atl-ps: 0.9;
   --atl-m-smile: 0; --atl-m-wavy: 1; --atl-cheek: 0.2;
   --atl-tilt: -8deg; --atl-fx-q: 1;
@@ -7801,7 +7799,7 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
 .nm-atlas[data-atlas-mood="sad"] {
   --atl-tail: 22deg; --atl-star: 0.5;
   --atl-crest: 12deg;
-  --atl-brow-y: 0.6px; --atl-knit: -12deg; --atl-lid: 0.04; --atl-lid-r: -8deg;
+  --atl-brow-y: 0.6px; --atl-knit: -12deg; --atl-lid: 0; --atl-lid-r: -8deg;
   --atl-py: 1.3px; --atl-ps: 1.1;
   --atl-m-smile: 0; --atl-m-frown: 1; --atl-cheek: 0.15;
   --atl-tilt: 5deg; --atl-head-y: 1px; --atl-sx: 1.03; --atl-sy: 0.96;
@@ -7818,7 +7816,7 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
 .nm-atlas[data-atlas-mood="shy"] {
   --atl-tail: 16deg; --atl-star: 0.9;
   --atl-crest: 3deg;
-  --atl-brow-y: -0.6px; --atl-knit: -8deg; --atl-lid: 0.06; --atl-low: 0.12; --atl-px: -1.8px; --atl-py: 1.5px;
+  --atl-brow-y: -0.6px; --atl-knit: -8deg; --atl-lid: 0; --atl-low: 0.12; --atl-px: -1.8px; --atl-py: 1.5px;
   --atl-m-smile: 0; --atl-m-cat: 1; --atl-cheek: 1;
   --atl-tilt: 10deg; --atl-sx: 0.97; --atl-sy: 1.01;
 }
@@ -7956,8 +7954,8 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
   --atl-m-wavy: 0; --atl-m-frown: 0; --atl-m-smug: 0; --atl-m-cat: 0; --atl-m-set: 0; --atl-m-tinyo: 0; --atl-m-rest: 1;
   --atl-cheek: 0.3;
 }
-#nm-buddy.nmb-night .nm-atlas { --atl-crest: 8deg; --atl-lid: 0.1; --atl-low: 0.08; }
-#nm-buddy.nmb-reading .nm-atlas { --atl-py: 1.4px; --atl-lid: 0.1; --atl-brow-y: -0.6px; }
+#nm-buddy.nmb-night .nm-atlas { --atl-crest: 8deg; --atl-lid: 0; --atl-low: 0.08; }
+#nm-buddy.nmb-reading .nm-atlas { --atl-py: 1.4px; --atl-lid: 0; --atl-brow-y: -0.6px; }
 #nm-buddy.nmb-offline .nm-atlas { --atl-knit: -11deg; --atl-brow-y: -1px; --atl-ps: 0.86; }
 #nm-buddy.nmb-act-bell .nm-atlas { --atl-eye-s: 1.08; --atl-brow-y: -2px; --atl-crest: -8deg; }
 /* The classic globe as the companion (atlas.js, `atlasClassicFigure`): a
