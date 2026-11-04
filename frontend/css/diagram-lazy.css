@@ -681,6 +681,17 @@
   font-weight: 600;
 }
 
+/* A step done: the number gives way to a tick, and the words quiet down. */
+.dgm-step.dgm-done .dgm-step-text {
+  color: var(--muted);
+}
+
+/* The example and the template button are for an empty page; the list stays, ticked, until the first arrow. */
+.dgm-empty.dgm-started .dgm-example,
+.dgm-empty.dgm-started > button.accent {
+  display: none;
+}
+
 .dgm-step-text {
   flex: 1 1 auto;
   min-width: 0;

@@ -3230,7 +3230,7 @@ MORE_TOPICS.extend([
             "the block it leaves as Start to Next and its label. The shape swatch "
             "picks it. A divider sizes the blocks and the picture (drag, or "
             "arrows; Shift for more). Direction (one button) turns the flow. An empty one lists "
-            "three steps: Add a shape, Name it, Connect it, or Start from an example. "
+            "three steps: Add a shape, Name it, Connect it, ticked as you go, or Start from an example. "
             "The corner bar zooms (Zoom in, Zoom out, Fit), as do Ctrl+wheel "
             "and a pinch; its last button reads the zoom now, and 100% is the drawing's own size; arrow keys pan. "
             "Shift+click picks a range, Ctrl+click adds one; a bar offers Delete, "

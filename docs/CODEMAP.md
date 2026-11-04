@@ -2,9 +2,9 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7806, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8796, test files 2058, tests 17379, plan headings 1003, app scripts 28, boot scripts 37, script files 255.
+Counts: frontend functions 7807, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8796, test files 2058, tests 17380, plan headings 1003, app scripts 28, boot scripts 37, script files 255.
 
-## Frontend functions (7806)
+## Frontend functions (7807)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3352,11 +3352,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `wire` | frontend/js/diagram-split.js:23 |
 
-### frontend/js/diagram-steps.js (1)
+### frontend/js/diagram-steps.js (2)
 
 | Name | File:line |
 |---|---|
-| `build` | frontend/js/diagram-steps.js:10 |
+| `build` | frontend/js/diagram-steps.js:14 |
+| `sync` | frontend/js/diagram-steps.js:45 |
 
 ### frontend/js/diagram-style.js (4)
 
@@ -12288,7 +12289,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 226 |
-| frontend/css/diagram-lazy.css | 1319 |
+| frontend/css/diagram-lazy.css | 1330 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 140 |
 | frontend/css/forced-colors-lazy.css | 28 |
@@ -24058,7 +24059,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17379)
+## Tests (17380)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24595,7 +24596,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_1596.py | 4 |
 | tests/test_diagram_1661a.py | 6 |
 | tests/test_diagram_1661b.py | 8 |
-| tests/test_diagram_blind_fixes.py | 4 |
+| tests/test_diagram_blind_fixes.py | 5 |
 | tests/test_diagram_builder.py | 20 |
 | tests/test_diagram_d3.py | 2 |
 | tests/test_diagram_deep_1588.py | 5 |

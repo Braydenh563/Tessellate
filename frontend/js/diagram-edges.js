@@ -119,7 +119,8 @@
       const key = h.ops.key("n", id);
       const node = h.ops.node(S.m, id);
       if (!at || !node) return false;
-      open(at, node.text, (text) => text && text !== node.text && h.ops.relabel(S.m, key, text) && h.commit(S, `Renamed to ${text}.`), at.w);
+      //: A name kept as it was draws nothing, so what is asked next (an arrow's words) is asked now.
+      open(at, node.text, (text) => (text && text !== node.text && h.ops.relabel(S.m, key, text) && h.commit(S, `Renamed to ${text}.`)) || queueMicrotask(ask), at.w);
       return true;
     };
     const renameGroup = (id) => {
@@ -254,6 +255,8 @@
       showHandle();
       h.say(S, "Click the block to connect to, or empty space for a new one. Escape cancels.");
     }
+    //: The walkthrough's third step (diagram-steps.js) arms the handle on the right of the picked block, as pressing it would.
+    S.arm = (from) => arm(from, "right");
     const disarm = () => {
       armed = "";
       for (const handle of handles) handle.removeAttribute("aria-pressed");
