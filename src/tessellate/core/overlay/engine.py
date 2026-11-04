@@ -107,11 +107,21 @@ THROW_MAX = 3200.0
 BOUNCE_DAMP = 0.55
 BONK_FOR = 0.3
 #: Radians per second of spin at full throw speed, and the angles the frames come in.
+#: Slower than this (px per second at 96 dpi) a thrown figure stops tumbling.
+FLY_SPIN_MIN = 60.0
 SPIN_RATE = 9.0
 SPIN_STEPS = 8
 #: A floater: hover height range above the floor, speed, turn rate, air drag,
 #: and the pull back to its hover height (per second squared per pixel).
-HOVER = (24.0, 80.0)
+#: Its rest line: a hand's breadth above the work area's bottom, so the feet are on the
+#: taskbar (INBOX 1670: "it still sits like 20px above the bottom bar"). The bob lifts it
+#: from there; it never sinks below. Was (24, 80), a figure's height up.
+HOVER = (1.0, 2.0)
+#: How fast the bob and sway fade in and out (share of full per second), so a state that
+#: ends the bob eases it away and never snaps the figure by its height (INBOX 1670: "jolting").
+BOB_EASE = 3.0
+#: How far below the work area's top a released figure's head may be and still take hold.
+HANG_REACH = 0.3
 FLOAT_SPEED = 130.0
 FLOAT_TURN = 1.8
 FLOAT_DRAG = 3.0
@@ -130,7 +140,7 @@ BOB = 7.0
 BOB_HZ = 0.55
 FLOAT_SWAY = 5.0
 FLOAT_SWAY_HZ = 0.37
-BOB_TICK = 0.05
+BOB_TICK = 0.06
 #: Hang from the top edge, and the climb up to it. The window holds still while it hangs
 #: (INBOX 1663: "slides a little from side to side"): any life is in the frames.
 HANG_FOR = (8.0, 16.0)
@@ -307,6 +317,10 @@ class Engine:
         self.card_until = 0.0
         self.card_clicked: Any = None
         self.sink = 0.0
+        #: The drawn box of every frame, `(name, mirrored) -> (left, top, right, bottom)` in px
+        #: from where the window is placed (`SpriteSet.metrics`); empty means "the whole window".
+        self.metrics: dict[tuple[str, bool], tuple[float, float, float, float]] = {}
+        self.bob_gain = 0.0
         self.sink_max = PEEK_HEAD
         self.peek_edge: str | None = None
         self.peek_started = now
@@ -320,6 +334,49 @@ class Engine:
         self._enter("stand" if not reduced else "sit", now)
 
     # --- geometry ------------------------------------------------------------------
+
+    def set_metrics(self, metrics: dict[tuple[str, bool], tuple[float, float, float, float]]) -> None:
+        self.metrics = dict(metrics)
+
+    def _box(self, frame: str, flip: bool | None = None) -> tuple[float, float, float, float]:
+        flip = self.facing < 0 if flip is None else flip
+        return self.metrics.get((frame, flip)) or (0.0, 0.0, float(self.size[0]), float(self.size[1]))
+
+    def _dy(self, frame: str) -> float:
+        """How far a frame is drawn below the window's rest line so its lowest drawn row is on
+        the floor: every frame is registered to one box, and the margin below the feet varies by
+        pose (INBOX 1670). A hang is held by its hands, not stood on; a tumble keeps a held pose's."""
+        if not self.metrics or frame == "hang":
+            return 0.0
+        if frame.startswith("spin"):
+            frame = "held"
+        return max(0.0, self.size[1] - self._box(frame, False)[3])
+
+    def _fly_frame(self) -> str:
+        """What a thrown figure shows: the tumble while it has speed, a limp upright pose
+        (the held one, same foot offset) once it drifts to rest, so the settle is no step."""
+        if math.hypot(self.vx, self.vy) < FLY_SPIN_MIN * self._scale():
+            return "held"
+        return f"spin{int(round(self.angle / (2 * math.pi / SPIN_STEPS))) % SPIN_STEPS}"
+
+    def _flip_dx(self, frame: str, flip: bool) -> float:
+        """The sideways shift that keeps a mirrored figure where it stood (the frames are not
+        symmetric about the window's middle, so turning would otherwise jump it a few px)."""
+        if not flip or not self.metrics or frame.startswith("spin"):
+            return 0.0
+        left, _t, right, _b = self._box("stand", False)
+        return left + right - self.size[0]
+
+    def _ride_box(self, frame: str) -> tuple[float, float, float, float]:
+        """The drawn box of a frame (or all the tumble's frames) from the engine's x and y."""
+        if frame.startswith("spin"):
+            boxes = [self._box(f"spin{i}", fl) for i in range(SPIN_STEPS) for fl in (False, True)]
+            left, top = min(b[0] for b in boxes), min(b[1] for b in boxes)
+            right, bottom = max(b[2] for b in boxes), max(b[3] for b in boxes)
+        else:
+            left, top, right, bottom = self._box(frame)
+        dx, dy = self._flip_dx(frame, self.facing < 0), self._dy(frame)
+        return left + dx, top + dy, right + dx, bottom + dy
 
     def _default_home(self) -> tuple[int, int]:
         m = self.monitors[0]
@@ -430,15 +487,16 @@ class Engine:
             self.heading = self.rng.uniform(0, 2 * math.pi)
 
     def _on_hang(self, now: float) -> None:
+        self.bob_gain = 0.0  # hands on an edge hold still
         self.state_until = now + self.rng.uniform(*HANG_FOR)
         self.phase_started = now
 
     def _on_rise(self, now: float) -> None:
         self.state_until = now + RISE_FOR
-        self.phase_from = (self.x, self.y)
         self.phase_started = now
 
     def _on_peek(self, now: float) -> None:
+        self.bob_gain = 0.0  # the hidden strip must lie exactly past the edge
         self.peek_started, self.peek_turned = now, False
         self.state_until = now + PEEK_PLAN[-1][0]
 
@@ -476,7 +534,14 @@ class Engine:
             self._input(event, now)
         if self.state not in ("held", "pressed"):
             self._advance(now, dt, pointer)
+        self._ease_bob(dt)
         return self._output(now)
+
+    def _ease_bob(self, dt: float) -> None:
+        """The bob's strength follows whether it should bob, at `BOB_EASE` a second."""
+        want = 1.0 if self._bobbing() else 0.0
+        step = BOB_EASE * dt
+        self.bob_gain = min(want, self.bob_gain + step) if want > self.bob_gain else max(want, self.bob_gain - step)
 
     def _advance(self, now: float, dt: float, pointer: tuple[int, int] | None) -> None:
         handler = getattr(self, f"_do_{self.state}")
@@ -820,10 +885,15 @@ class Engine:
         self.trip = True
         self.state_until = math.inf
 
-    def _rise(self, to: tuple[float, float], then: str, now: float) -> None:
+    def _rise(self, to: tuple[float, float], then: str, now: float, drawn_from: float | None = None) -> None:
+        """Move smoothly to a point. The path is of where it is drawn, so the swap of frames
+        (each with its own foot offset) never shows as a step."""
         self.then = then
+        if drawn_from is None:
+            drawn_from = self.y + self._dy(self._frame(now))
         self._enter("rise", now)
         self.phase_to = to
+        self.phase_from = (self.x, drawn_from)
 
     def _arrive(self, now: float) -> None:
         """At the goal of a trip: what it came for."""
@@ -954,11 +1024,17 @@ class Engine:
         step = min(want, room)
         return self.x + step if go_right else self.x - step
 
+    def _rise_drawn(self, now: float) -> float:
+        """Where a rise draws the window's top at `now`: the path is of what is drawn."""
+        t = min(1.0, (now - self.phase_started) / RISE_FOR)
+        t = t * t * (3 - 2 * t)
+        return self.phase_from[1] + (self.phase_to[1] - self.phase_from[1]) * t
+
     def _do_rise(self, now: float, dt: float) -> None:
         t = min(1.0, (now - self.phase_started) / RISE_FOR)
         t = t * t * (3 - 2 * t)
         self.x = self.phase_from[0] + (self.phase_to[0] - self.phase_from[0]) * t
-        self.y = self.phase_from[1] + (self.phase_to[1] - self.phase_from[1]) * t
+        self.y = self._rise_drawn(now) - self._dy(self._frame(now))
         if now >= self.state_until:
             self._arrive(now)
 
@@ -1015,18 +1091,20 @@ class Engine:
         self.y += self.vy * dt
         speed = math.hypot(self.vx, self.vy)
         self.angle += self.spin_dir * SPIN_RATE * min(1.0, speed / (THROW_MAX * 0.4 * scale)) * dt
-        if self.x < left and self._open_side(m, "left"):
-            self.x, self.vx = left, abs(self.vx) * BOUNCE_DAMP
+        # the walls are of what is drawn: the tumble's widest frame, not the window around it
+        ux0, ux1, uy0, uy1 = self._ride_limits(self._fly_frame())
+        if self.x < ux0 and self._open_side(m, "left"):
+            self.x, self.vx = ux0, abs(self.vx) * BOUNCE_DAMP
             self.bonk_until = now + BONK_FOR
-        elif self.x > right - self.size[0] and self._open_side(m, "right"):
-            self.x, self.vx = right - self.size[0], -abs(self.vx) * BOUNCE_DAMP
+        elif self.x > ux1 and self._open_side(m, "right"):
+            self.x, self.vx = ux1, -abs(self.vx) * BOUNCE_DAMP
             self.bonk_until = now + BONK_FOR
-        if self.y <= top - self._lift() and self._open_side(m, "top"):
+        if self.y <= max(top - self._lift(), uy0) and self._open_side(m, "top"):
             self.y, self.vx, self.vy = top - self._lift(), 0.0, 0.0
             self.angle = 0.0
             self._enter("hang", now)
             return
-        floor = self.floor_y(m)
+        floor = min(self.floor_y(m), uy1) if self._open_side(m, "bottom") else self.floor_y(m)
         if floater:
             self.y = min(self.y, floor)
             if speed < 25 * scale and abs(self.ground_y(m) - self.y) < 4 * scale:
@@ -1035,7 +1113,7 @@ class Engine:
                 self.settled_now = True
                 self._enter("stand", now)
         elif self.y >= floor:
-            self.y, self.vy, self.vx = floor, 0.0, 0.0
+            self.y, self.vy, self.vx = self.floor_y(m), 0.0, 0.0
             self.settled_now = True
             self._enter("land", now)
 
@@ -1100,10 +1178,12 @@ class Engine:
             self._start_fly(vx, vy)
             return
         self.vx, self.vy = vx, vy
+        self.y += self._dy(self._frame(self.now)) - self._dy("fall")  # drawn where it was
         self._enter("fall", self.now)
 
     def _start_fly(self, vx: float, vy: float) -> None:
         self.vx, self.vy = vx, vy
+        self.y += self._dy(self._frame(self.now)) - self._dy("spin0")  # drawn where it was
         self.spin_dir = 1 if vx >= 0 else -1
         if abs(vx) > 1:
             self.facing = 1 if vx > 0 else -1
@@ -1133,7 +1213,10 @@ class Engine:
         kind, px, py = event
         if kind == "down":
             self.press = (px, py)
-            self.grab = (px - self.x, py - self.y)
+            frame = self._frame(now)
+            drawn_x, drawn_y, _clip = self._display(frame)
+            #: Held by where it is drawn: the pointer keeps its place on the figure.
+            self.grab = (px - drawn_x, py - drawn_y)
             self.carrying = False
             self.trail = [(now, px, py)]
             self.pre_press = self.state
@@ -1157,16 +1240,32 @@ class Engine:
             self.sink, self.peek_edge, self.goal = 0.0, None, None
             self.perch = self.target = None
         if self.carrying:
-            self.x, self.y = px - self.grab[0], py - self.grab[1]
+            self.x = px - self.grab[0] - self._flip_dx("held", self.facing < 0)
+            self.y = py - self.grab[1] - self._dy("held")
             self._keep_on_screen()
             self.trail.append((self.now, px, py))
             del self.trail[:-16]
 
-    def _keep_on_screen(self) -> None:
+    def _ride_limits(self, frame: str) -> tuple[float, float, float, float]:
+        """Where the engine's x and y may go (x low, x high, y low, y high) so the drawn box of
+        `frame` stays inside the work area on every side that is a real screen edge (INBOX 1670:
+        "cut off a little on the ride"); a side another monitor adjoins lets it through, as far as
+        its middle."""
         m = self.current_monitor()
         left, top, right, bottom = m.area
-        self.x = min(max(self.x, left - self.size[0] / 2), right - self.size[0] / 2)
-        self.y = min(max(self.y, top), bottom - self.size[1] / 2)
+        bl, bt, br, bb = self._ride_box(frame)
+        w, h = self.size
+        return (
+            left - bl if self._open_side(m, "left") else left - w / 2,
+            right - br if self._open_side(m, "right") else right - w / 2,
+            top - bt if self._open_side(m, "top") else top,
+            bottom - bb if self._open_side(m, "bottom") else bottom - h / 2,
+        )
+
+    def _keep_on_screen(self) -> None:
+        x0, x1, y0, y1 = self._ride_limits("held")
+        self.x = min(max(self.x, x0), x1)
+        self.y = min(max(self.y, y0), y1)
 
     def _release(self, px: int, py: int, now: float) -> None:
         self.press = None
@@ -1175,12 +1274,47 @@ class Engine:
             self._clicked(now)
             return
         self.carrying = False
-        self.x = min(max(self.x, self.current_monitor().area[0]), self.current_monitor().area[2] - self.size[0])
+        m = self.current_monitor()
+        x0, x1, _y0, _y1 = self._ride_limits("held")
+        self.x = min(max(self.x, max(x0, m.area[0] - self._ride_box("held")[0])), min(x1, m.area[2] - self._ride_box("held")[2]))
+        if self._grab_edge(now):
+            return
         velocity = None if self.reduced else self._throw_velocity(now, px, py)
         if velocity is not None:
             self._start_fly(*velocity)
         else:
             self._drop(now)
+
+    def _grab_edge(self, now: float) -> bool:
+        """Let go with the head near the work area's top, or near the bottom edge of a window's
+        title bar under the middle of the figure: it takes hold and hangs there (INBOX 1670: "I
+        cant drag the companion to hang on another section of the top of my screen, it always
+        falls"). The nearer edge wins; anywhere else it is dropped or thrown as before."""
+        if self.reduced or not self.roam:
+            return False
+        m = self.current_monitor()
+        top, k, w = m.area[1], self._scale(), self.size[0]
+        reach = HANG_REACH * self.size[1]
+        head = self.y + self._ride_box("held")[1]
+        centre = self.x + w / 2
+        best: tuple[float, Perch | None, float] | None = None
+        if self._open_side(m, "top") and head - top <= reach:
+            best = (head - top, None, top)
+        if self.roam_windows:
+            for p in self.windows:
+                edge = p.top + TITLE_BAR * k
+                near = abs(head - edge)
+                if (
+                    p.top >= top and near <= reach and p.left + HANG_HANDS * w <= centre <= p.right - HANG_HANDS * w
+                    and (best is None or near < best[0])
+                ):
+                    best = (near, p, edge)
+        if best is None:
+            return False
+        _gap, hold, edge = best
+        self._rise((self.x, edge - self._lift()), "hang", now, drawn_from=self.y + self._dy("held"))
+        self.hang_on = hold
+        return True
 
     def _clicked(self, now: float) -> None:
         """A press that was never a drag: open a card, bring a peeker out, let a hanger go, or wave."""
@@ -1245,9 +1379,7 @@ class Engine:
         if s in FRAME_OF:
             return FRAME_OF[s]
         if s == "fly":
-            if now < self.bonk_until:
-                return "hop"
-            return f"spin{int(round(self.angle / (2 * math.pi / SPIN_STEPS))) % SPIN_STEPS}"
+            return "hop" if now < self.bonk_until else self._fly_frame()
         if s in ("rise", "peek"):
             return self._edge_frame(now)
         if s == "stand":
@@ -1256,7 +1388,10 @@ class Engine:
 
     def _edge_frame(self, now: float) -> str:
         if self.state == "rise":
-            return "hop" if self.gait == "walk" else f"walk{int((now - self.phase_started) / 0.125) % 6}"
+            frame = "hop" if self.gait == "walk" else f"walk{int((now - self.phase_started) / 0.125) % 6}"
+            if self.then == "hang" and self._rise_drawn(now) + self._box(frame)[1] < self.current_monitor().area[1]:
+                return "hang"  # its head would pass the top of the screen: hands up, in the pose that fits
+            return frame
         return "stand" if self.sink < self.sink_max * 0.5 or now - self.peek_started < 0.8 else "look"
 
     def _stand_frame(self, now: float) -> str:
@@ -1284,13 +1419,15 @@ class Engine:
             return TICK_FALL_MS
         if s == "pressed":
             return None
+        if self.bob_gain > 0 and not self._bobbing():  # the bob is easing away: keep drawing it
+            return TICK_WALK_MS
         if s in ("sleep", "sit"):
             return POLL_QUIET_MS
         due = [self.state_until] if s != "stand" or (self.roam and not self.reduced) else []
         if s == "stand":
             due += [self.flash[1]] if self.flash else [self.next_ambient]
             due.append(self.last_active + IDLE_SIT)
-        if self._bobbing():  # the next bob step
+        if self._bobbing() or self.bob_gain > 0:  # the next bob step (or the end of one)
             due.append(now + BOB_TICK)
         if self._idling():  # the next idle frame: a redraw only when the index changes
             due.append((math.floor(now * IDLE_FPS + 1e-6) + 1) / IDLE_FPS)
@@ -1305,32 +1442,37 @@ class Engine:
         but still bobbing, INBOX 1670)."""
         return (
             self.gait == "float" and self.state in ("stand", "drift") and not self.reduced
-            and self.perch is None and self.sink <= 0
+            and self.perch is None and self.sink <= 0 and not (self.trip and self.then.split("_")[0] in ("hang", "peek"))
         )
 
-    def _display(self) -> tuple[float, float, tuple[int, int, int, int] | None]:
+    def _display(self, frame: str) -> tuple[float, float, tuple[int, int, int, int] | None]:
         """Where the window is drawn and which part of the frame shows: the rest
         position, less the sink behind an edge, plus the bob and sway of a floater."""
         w, h = self.size
         x, y = self.x, self.y
-        if self._bobbing():
+        if self.bob_gain > 0:
             m, k = self.current_monitor(), self._scale()
-            tau = 2 * math.pi * self.now
-            y = max(m.area[1], y - BOB * k * (0.5 + 0.5 * math.sin(tau * BOB_HZ)))
-            x = min(max(x + FLOAT_SWAY * k * math.sin(tau * FLOAT_SWAY_HZ + 1.3), m.area[0]), m.area[2] - w)
+            tau, g = 2 * math.pi * self.now, self.bob_gain
+            y = max(m.area[1], y - g * BOB * k * (0.5 + 0.5 * math.sin(tau * BOB_HZ)))
+            x = min(max(x + g * FLOAT_SWAY * k * math.sin(tau * FLOAT_SWAY_HZ + 1.3), m.area[0]), m.area[2] - w)
+        # a bonk shows the startle frame in mid-air: no foot offset of its own
+        y += self._dy("held" if self.state == "fly" else frame)
+        x += self._flip_dx(frame, self.facing < 0)
         if self.sink <= 0 or self.peek_edge is None:
             return x, y, None
         if self.peek_edge == "bottom":
             hidden = round(self.sink * h)
-            return x, y + hidden, (0, 0, w, h - hidden)
+            # cut where the work area ends, not where the (lower) window does
+            return x, y + hidden, (0, 0, w, max(0, h - hidden - round(self._dy(frame))))
         hidden = round(self.sink * w)
         if self.peek_edge == "left":
             return x - hidden, y, (hidden, 0, w, h)
         return x + hidden, y, (0, 0, w - hidden, h)
 
     def _output(self, now: float) -> Output:
-        x, y, clip = self._display()
+        frame = self._frame(now)
+        x, y, clip = self._display(frame)
         return Output(
-            self._frame(now), int(round(x)), int(round(y)), self.facing < 0, self._wake(now),
+            frame, int(round(x)), int(round(y)), self.facing < 0, self._wake(now),
             self.click_now, self.settled_now, clip, self.card_clicked,
         )

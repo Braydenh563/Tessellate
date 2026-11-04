@@ -190,6 +190,18 @@ class SpriteSet:
         self._cache[key] = built
         return built
 
+    def metrics(self, dpi: int = 96) -> dict[tuple[str, bool], tuple[int, int, int, int]]:
+        """The drawn box of every frame, both mirrors, in the engine's own coordinates: from
+        where the window is placed (`out.x`, `out.y`), so a rotated frame's pad is taken off.
+        The engine plants feet and keeps a ride inside the work area from these (INBOX 1670)."""
+        found = {}
+        for name in (*FRAME_NAMES, *SPIN_FRAMES):
+            for flip in (False, True):
+                f = self.frame(name, dpi, flip)
+                left, top, right, bottom = f.box
+                found[(name, flip)] = (left - f.pad_x, top - f.pad_y, right - f.pad_x, bottom - f.pad_y)
+        return found
+
     def _spun(self, image: Any, step: int, width: int, height: int) -> Frame:
         """The picture turned by `step` x 45 degrees on a square canvas big enough
         for any angle (the diagonal), so no corner is cut; the pad tells the window

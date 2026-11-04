@@ -317,7 +317,7 @@ def test_a_thrown_figure_is_drawn_rotated_on_a_bigger_canvas_and_a_peek_is_drawn
     w, h = r.sprites.size(96)
     engine.y = 100.0
     engine._enter("fly", clock.t)
-    engine.vx = engine.vy = 0.0
+    engine.vx, engine.vy = 300.0, 0.0  # INBOX 1670: a figure under FLY_SPIN_MIN stops tumbling, so it needs some speed
     engine.angle = 1.0
     r._apply(engine.update(clock.t + 0.01))
     side = r.sprites.frame("spin1", 96)
@@ -329,7 +329,8 @@ def test_a_thrown_figure_is_drawn_rotated_on_a_bigger_canvas_and_a_peek_is_drawn
     engine.y = engine.floor_y()
     out = engine.update(clock.t + 0.02)
     r._apply(out)
-    assert out.clip == (0, 0, w, h - round(0.65 * h)) and r._last_key[3] == out.clip
+    # the window is drawn its foot offset lower (INBOX 1670), so the cut is that much higher
+    assert out.clip == (0, 0, w, h - round(0.65 * h) - round(engine._dy(out.frame))) and r._last_key[3] == out.clip
     r.stop()
 
 
