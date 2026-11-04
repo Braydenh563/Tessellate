@@ -16,7 +16,7 @@
 (() => {
   async function attachmentPeek(item, door, open, keyboard) {
     let entry = item.entry;
-    if (item.kind === "document") {
+    if (item.kind === "document" || item.kind === "diagram") {
       const doc = await apiJson(`/documents/${item.id}`).catch(() => null);
       entry = { content: doc?.content || "", category: "Document", created_at: doc?.updated_at || doc?.created_at };
     }

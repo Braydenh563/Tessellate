@@ -517,7 +517,7 @@ def _media_cards(session: Session, ids: set) -> dict:
 def _document_cards(session: Session, ids: set) -> dict:
     from tessellate.repo import documents
 
-    return {d.id: {"id": d.id, "kind": "document", "name": d.title} for d in documents.by_ids(session, ids)}
+    return {d.id: {"id": d.id, "kind": "diagram" if d.file_type == "mmd" else "document", "name": d.title} for d in documents.by_ids(session, ids)}
 
 
 def _file_cards(session: Session, ids: set) -> dict:

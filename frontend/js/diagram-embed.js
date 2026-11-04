@@ -58,14 +58,53 @@
     await saveFile(`${file}.png`, png);
   }
 
+  // --- Save to Library (R9c, 1621 D4) ---------------------------------------------------
+  //: The whole fence round the lines `diagramModel.fence` found: from its opening mark to the end of its closing line.
+  function swapRange(text, at) {
+    const end = text.indexOf("\n", at.to + 1);
+    return { from: text.lastIndexOf("\n", at.from - 2) + 1, to: end < 0 ? text.length : end };
+  }
+
+  //: Makes the `.mmd` row; the toast button runs `offer` to link its source. The random tail keeps `![[Title]]` unique.
+  async function save(source, offer = null) {
+    if (offer?.fence) {
+      const [view, fenceSource, near] = offer.fence;
+      offer = { label: "Link the fence", run: (row) => {
+        const text = docStr(view.state.doc);
+        const at = diagramModel.fence(text, fenceSource, Math.min(near, text.length));
+        if (!at) return toast("That diagram is no longer in the document.", "info");
+        view.dispatch({ changes: { ...swapRange(text, at), insert: `![[${row.title}]]` }, userEvent: "input.diagram" });
+      } };
+    }
+    const text = String(source || "").trim();
+    if (!text) return toast("Add a block first.");
+    const title = `Diagram ${new Date().toISOString().slice(0, 16).replace("T", " ")} ${Math.random().toString(36).slice(2, 6)}`;
+    const made = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title, content: `${text}\n`, file_type: "mmd" }) }).catch(() => null);
+    if (!made) return toast("Not saved. Try again.", "info");
+    const said = `Saved “${made.title || title}” to the Library.`;
+    if (offer) toastAction(said, offer.label, () => offer.run(made), { ms: 12000 });
+    else toast(said);
+    return made;
+  }
+
+  //: A board object gains the row's id: one Undo step.
+  async function link(d, row, source) {
+    wbPushUndo({ action: "move", kind: "object", id: d.id, before: WB_KIND_INFO.object.payload(d) });
+    d.data = { ...d.data, mermaid: String(source).trim(), diagram_id: row.id };
+    delete d._wbGone;
+    await wbSaveObject(d);
+    wbScheduleRender();
+    wbAnnounce("Diagram linked.");
+  }
+
   // --- the dialog (D6) ----------------------------------------------------------------
   const STARTS = { flowchart: "flowchart TD", mindmap: "mindmap\n  root((Topic))", timeline: "timeline\n  title Timeline", sequence: "sequenceDiagram" };
 
   //: `{source, kind, title, shapes, onDone(source, changed)}`. `kind` names the blank diagram to start
   //: when there is no source. `shapes` is a function that receives the source and makes board shapes
-  //: of it (Turn into shapes). Done calls `onDone` once; Cancel, Escape and the X call nothing, after
+  //: of it (Turn into shapes). `offer` is what Save may link. Done calls `onDone` once; Cancel, Escape and the X call nothing, after
   //: asking when there are changes.
-  async function open({ source = "", kind = "flowchart", title = "Edit diagram", shapes = null, onDone = null } = {}) {
+  async function open({ source = "", kind = "flowchart", title = "Edit diagram", shapes = null, offer = null, onDone = null } = {}) {
     if (!(await ensureModule("diagramBuilder"))) return toast("The block editor did not load. Try again.", "info");
     const first = String(source || "").trim() ? String(source) : STARTS[kind] || STARTS.flowchart;
     const history = [first];
@@ -95,7 +134,10 @@
       },
       undo: () => at > 0 && (at -= 1, apply()),
       redo: () => at < history.length - 1 && (at += 1, apply()),
-      menu: [...(shapes ? [makeMenuItem("ph:shapes Turn into shapes", "Replace it with shapes and connectors you can move one by one", () => (leave(), shapes(history[at])))] : [])],
+      menu: [
+        ...(shapes ? [makeMenuItem("ph:shapes Turn into shapes", "Replace it with shapes and connectors you can move one by one", () => (leave(), shapes(history[at])))] : []),
+        makeMenuItem("ph:books Save to Library", "Keep it in the Library to show it with ![[name]]", () => save(history[at], offer?.link ? { label: "Link this diagram", run: (row) => link(offer.link, row, history[at]) } : offer)),
+      ],
     };
     const apply = () => {
       field.value = history[at];
@@ -180,5 +222,5 @@
     return dialog;
   }
 
-  diagramModel.embed = { open, out };
+  diagramModel.embed = { open, out, save, swapRange, link };
 })();

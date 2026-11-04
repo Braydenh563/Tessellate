@@ -486,14 +486,14 @@ function renderBoardAttachments() {
 //: document), or the four-attachment ceiling already reached. The caller
 //: decides what to do about it, `docAiReview` falls back to pasting, because
 //: silently asking a question about nothing is the worse failure.
-function attachDocumentToChat(id, name) {
+function attachDocumentToChat(id, name, kind) {
   if (!id) return false;
   if (attachedDocuments.some((d) => d.id === id)) {
     renderDocumentAttachments();
     return true; // already staged: the badge the caller wanted is on screen
   }
   if (attachedDocuments.length >= MAX_CHAT_DOCUMENTS) return false;
-  attachedDocuments.push({ id, name: name || "Document" });
+  attachedDocuments.push({ id, name: name || "Document", kind });
   renderDocumentAttachments();
   announce(`Attached “${name || "document"}”. ${attachedDocuments.length} document(s) attached.`);
   return true;
@@ -506,7 +506,7 @@ function renderDocumentAttachments() {
   box.classList.toggle("hidden", attachedDocuments.length === 0);
   for (const document_ of attachedDocuments) {
     box.appendChild(
-      notebookCard({ kind: "document", id: document_.id, name: document_.name }, {
+      notebookCard({ kind: document_.kind || "document", id: document_.id, name: document_.name }, {
         removeTitle: `Don't send “${document_.name}” with this message`,
         onRemove: () => {
           attachedDocuments = attachedDocuments.filter((d) => d.id !== document_.id);

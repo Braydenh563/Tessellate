@@ -137,7 +137,10 @@ PIECE_CAP = 32_000
 #: 2026-11-04, +100 (INBOX 1604, lag 1560): three quick-nav chords (New note, Find
 #: anything, Calculator) and the companion's one-read placement cache, which
 #: took two whole-page layouts out of every placement; same win-back item.
-TOTAL_CAP = 260_620
+#: 2026-11-04, +40 (R9c): a Library diagram has its own chat card and kind through
+#: attach and send, and the board hands the builder its link target; the save and
+#: link code is in the lazy diagram-embed.js; same win-back item.
+TOTAL_CAP = 260_660
 
 
 def _served_gzip_size(client, name: str) -> int:

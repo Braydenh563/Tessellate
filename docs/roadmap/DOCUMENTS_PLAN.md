@@ -1550,7 +1550,7 @@ Each row is one Sonnet-high agent session, ships alone, and is gated with target
 - **R8c (1621):** built 2026-11-04, moved to HISTORY ("Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R8c)").
 - **R9a (1621):** built 2026-11-04, moved to HISTORY ("Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R9a)"). Left: a diagram has no tray "Open" row (no `ROUTE_OBJECTS` row: the 260,620 byte script cap had no room); the tray offers Attach to the chat.
 - **R9b (1621):** built 2026-11-04, moved to HISTORY ("Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R9b)").
-- **R9c (1621) Chat chip and Save to Library.** The chip, the cap read from the chat code, and D4's menu items. Check: a reference redraws after the source is edited in the builder (fake transport); the swap offer replaces a fence with `![[Title]]`.
+- **R9c (1621):** built 2026-11-04, moved to HISTORY ("Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R9c)").
 - **R10 (1621) Export and Copy as picture.** Export from the page head and the shelf menu: PNG (`pngOf`, diagram-embed.js:28), SVG (`svgOf`), .mmd (library.js:1061-1070); the builder already offers them (diagram-builder.js:466-468). Copy as picture per D7(b). Check: the SVG parses; the PNG is twice the SVG viewBox (`Math.ceil(box[2]) * 2`, test_diagram_embed.py:117); the .mmd round-trips byte for byte.
 
 Order: R1 to R4, then R5, R6, R7; R8a after R2 and R5, then R8b, R8c; R9a any time, then R9b; R9c after R9a and R7; R10 after R7.

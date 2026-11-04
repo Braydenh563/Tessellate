@@ -3302,7 +3302,11 @@ MORE_TOPICS.extend([
             "(twice its size), Copy as Mermaid and Copy as SVG. Source, beside Cancel, shows "
             "the text with the picture; a diagram the blocks cannot draw, or one over 120 blocks, opens there. "
             "On a phone the shapes are one Add button that opens a sheet of them; pinch the picture to "
-            "zoom, drag it to move, and double tap to fit it again."
+            "zoom, drag it to move, and double tap to fit it again. Save to Library, in the ... menu "
+            "and on a diagram's corner beside Edit as blocks, keeps a copy as a diagram in the Library; "
+            "a notice then offers to replace the fence with a link, or to link a board's diagram to it, "
+            "and nothing changes until you press that. Attach a Library diagram to Chat and the model "
+            "reads its source; its card opens the diagram."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },

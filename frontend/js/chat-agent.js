@@ -209,6 +209,8 @@ const NOTEBOOK_KINDS = {
     },
   },
 };
+//: A diagram is an `mmd` document.
+NOTEBOOK_KINDS.diagram = { ...NOTEBOOK_KINDS.document, icon: "ph-flow-arrow", word: "Diagram" };
 
 function notebookCard(item, extra = {}) {
   const kind = NOTEBOOK_KINDS[item.kind] || NOTEBOOK_KINDS.document;

@@ -405,6 +405,7 @@
           openDiagramBuilder({
             source: this.source,
             title: "Edit diagram",
+            offer: { fence: [view, this.source, near] },
             onDone: (next, changed) => {
               if (!changed) return;
               const at = diagramModel.fence(docStr(view.state.doc), this.source, near);
@@ -414,9 +415,10 @@
             },
           });
         });
-        edit.classList.add("md-mermaid-edit", "icon-only");
-        edit.addEventListener("mousedown", (event) => event.stopPropagation());
-        wrap.append(figure, edit);
+        //: Save to Library (R9c), beside Edit.
+        const keep = smallButton("ph:books", "Save to Library", async () => (await ensureModule("diagramEmbed")) && diagramModel.embed.save(this.source, { fence: [view, this.source, view.posAtDOM(figure)] }));
+        for (const b of [edit, keep]) (b.classList.add("md-mermaid-edit", "icon-only"), b.addEventListener("mousedown", (event) => event.stopPropagation()));
+        wrap.append(figure, edit, keep);
         return wrap;
       }
     }

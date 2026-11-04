@@ -2,9 +2,9 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7775, frontend ids 2642, CSS sections 522, backend routes 644, backend modules 8690, test files 2031, tests 17112, plan headings 1000, app scripts 28, boot scripts 37, script files 252.
+Counts: frontend functions 7778, frontend ids 2642, CSS sections 522, backend routes 644, backend modules 8690, test files 2032, tests 17121, plan headings 1000, app scripts 28, boot scripts 37, script files 252.
 
-## Frontend functions (7775)
+## Frontend functions (7778)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -473,49 +473,49 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `assistantAvatar` | frontend/js/chat-agent.js:346 |
-| `cancelDraft` | frontend/js/chat-agent.js:1067 |
-| `cardTextPreview` | frontend/js/chat-agent.js:671 |
-| `changeDiff` | frontend/js/chat-agent.js:478 |
-| `changeRow` | frontend/js/chat-agent.js:390 |
-| `chatHeadIsAtlas` | frontend/js/chat-agent.js:320 |
-| `chatHeadKey` | frontend/js/chat-agent.js:325 |
+| `assistantAvatar` | frontend/js/chat-agent.js:348 |
+| `cancelDraft` | frontend/js/chat-agent.js:1069 |
+| `cardTextPreview` | frontend/js/chat-agent.js:673 |
+| `changeDiff` | frontend/js/chat-agent.js:480 |
+| `changeRow` | frontend/js/chat-agent.js:392 |
+| `chatHeadIsAtlas` | frontend/js/chat-agent.js:322 |
+| `chatHeadKey` | frontend/js/chat-agent.js:327 |
 | `chatPositions` | frontend/js/chat-agent.js:99 |
-| `clearDraftTarget` | frontend/js/chat-agent.js:958 |
-| `draftTranslateKind` | frontend/js/chat-agent.js:854 |
-| `dropChatBubble` | frontend/js/chat-agent.js:269 |
+| `clearDraftTarget` | frontend/js/chat-agent.js:960 |
+| `draftTranslateKind` | frontend/js/chat-agent.js:856 |
+| `dropChatBubble` | frontend/js/chat-agent.js:271 |
 | `followBottom` | frontend/js/chat-agent.js:39 |
 | `followReleased` | frontend/js/chat-agent.js:28 |
-| `isImageCardUrl` | frontend/js/chat-agent.js:663 |
+| `isImageCardUrl` | frontend/js/chat-agent.js:665 |
 | `keepAtBottom` | frontend/js/chat-agent.js:123 |
 | `nestedTakesWheelUp` | frontend/js/chat-agent.js:33 |
 | `noteChatPosition` | frontend/js/chat-agent.js:104 |
-| `notebookCard` | frontend/js/chat-agent.js:213 |
-| `paintAssistantAvatar` | frontend/js/chat-agent.js:366 |
-| `paintAssistantHeads` | frontend/js/chat-agent.js:380 |
-| `paintUserMarks` | frontend/js/chat-agent.js:251 |
-| `paneWordCount` | frontend/js/chat-agent.js:974 |
-| `pushDraftUndo` | frontend/js/chat-agent.js:998 |
-| `putDraftBack` | frontend/js/chat-agent.js:1023 |
-| `rememberDraftVersion` | frontend/js/chat-agent.js:925 |
-| `renderDraftSources` | frontend/js/chat-agent.js:864 |
-| `renderDraftTarget` | frontend/js/chat-agent.js:945 |
-| `renderDraftVersions` | frontend/js/chat-agent.js:896 |
-| `repaintAssistantAvatars` | frontend/js/chat-agent.js:373 |
-| `restoreDraftLocally` | frontend/js/chat-agent.js:801 |
-| `saveDraftLocally` | frontend/js/chat-agent.js:779 |
-| `setDraftStatus` | frontend/js/chat-agent.js:966 |
-| `showWaiting` | frontend/js/chat-agent.js:683 |
-| `sourceHost` | frontend/js/chat-agent.js:748 |
+| `notebookCard` | frontend/js/chat-agent.js:215 |
+| `paintAssistantAvatar` | frontend/js/chat-agent.js:368 |
+| `paintAssistantHeads` | frontend/js/chat-agent.js:382 |
+| `paintUserMarks` | frontend/js/chat-agent.js:253 |
+| `paneWordCount` | frontend/js/chat-agent.js:976 |
+| `pushDraftUndo` | frontend/js/chat-agent.js:1000 |
+| `putDraftBack` | frontend/js/chat-agent.js:1025 |
+| `rememberDraftVersion` | frontend/js/chat-agent.js:927 |
+| `renderDraftSources` | frontend/js/chat-agent.js:866 |
+| `renderDraftTarget` | frontend/js/chat-agent.js:947 |
+| `renderDraftVersions` | frontend/js/chat-agent.js:898 |
+| `repaintAssistantAvatars` | frontend/js/chat-agent.js:375 |
+| `restoreDraftLocally` | frontend/js/chat-agent.js:803 |
+| `saveDraftLocally` | frontend/js/chat-agent.js:781 |
+| `setDraftStatus` | frontend/js/chat-agent.js:968 |
+| `showWaiting` | frontend/js/chat-agent.js:685 |
+| `sourceHost` | frontend/js/chat-agent.js:750 |
 | `syncChatJumpLatest` | frontend/js/chat-agent.js:145 |
-| `thinkingFold` | frontend/js/chat-agent.js:275 |
-| `thinkingFoldIn` | frontend/js/chat-agent.js:295 |
-| `thinkingPaint` | frontend/js/chat-agent.js:289 |
-| `translateNoteInDesk` | frontend/js/chat-agent.js:838 |
-| `undoDraft` | frontend/js/chat-agent.js:1047 |
-| `updateDraftCount` | frontend/js/chat-agent.js:980 |
-| `updateDraftUndoButton` | frontend/js/chat-agent.js:1034 |
-| `userMarkSeed` | frontend/js/chat-agent.js:240 |
+| `thinkingFold` | frontend/js/chat-agent.js:277 |
+| `thinkingFoldIn` | frontend/js/chat-agent.js:297 |
+| `thinkingPaint` | frontend/js/chat-agent.js:291 |
+| `translateNoteInDesk` | frontend/js/chat-agent.js:840 |
+| `undoDraft` | frontend/js/chat-agent.js:1049 |
+| `updateDraftCount` | frontend/js/chat-agent.js:982 |
+| `updateDraftUndoButton` | frontend/js/chat-agent.js:1036 |
+| `userMarkSeed` | frontend/js/chat-agent.js:242 |
 
 ### frontend/js/chat-attach.js (55)
 
@@ -3161,15 +3161,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `overlay` | frontend/js/diagram-edges.js:12 |
 | `wire` | frontend/js/diagram-edges.js:30 |
 
-### frontend/js/diagram-embed.js (5)
+### frontend/js/diagram-embed.js (8)
 
 | Name | File:line |
 |---|---|
 | `el` | frontend/js/diagram-embed.js:10 |
-| `open` | frontend/js/diagram-embed.js:68 |
+| `link` | frontend/js/diagram-embed.js:91 |
+| `open` | frontend/js/diagram-embed.js:107 |
 | `out` | frontend/js/diagram-embed.js:47 |
 | `pngOf` | frontend/js/diagram-embed.js:28 |
+| `save` | frontend/js/diagram-embed.js:69 |
 | `svgOf` | frontend/js/diagram-embed.js:19 |
+| `swapRange` | frontend/js/diagram-embed.js:63 |
 
 ### frontend/js/diagram-joins.js (6)
 
@@ -3800,12 +3803,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dgmStatements` | frontend/js/documents-mermaid.js:81 |
 | `dgmSubgraph` | frontend/js/documents-mermaid.js:182 |
 | `dgmUnquote` | frontend/js/documents-mermaid.js:74 |
-| `diagramDoor` | frontend/js/documents-mermaid.js:482 |
+| `diagramDoor` | frontend/js/documents-mermaid.js:484 |
 | `docMermaidBlocks` | frontend/js/documents-mermaid.js:344 |
 | `docMermaidField` | frontend/js/documents-mermaid.js:353 |
 | `docMermaidWhenDrawn` | frontend/js/documents-mermaid.js:334 |
 | `docRenderMermaidIn` | frontend/js/documents-mermaid.js:326 |
-| `openDiagramBuilder` | frontend/js/documents-mermaid.js:471 |
+| `openDiagramBuilder` | frontend/js/documents-mermaid.js:473 |
 
 ### frontend/js/documents-outline.js (12)
 
@@ -7796,7 +7799,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbDiagramFillShare` | frontend/js/whiteboard-interchange.js:1294 |
 | `wbDiagramLook` | frontend/js/whiteboard-interchange.js:1277 |
 | `wbDiagramSize` | frontend/js/whiteboard-interchange.js:1349 |
-| `wbDiagramToShapes` | frontend/js/whiteboard-interchange.js:1401 |
+| `wbDiagramToShapes` | frontend/js/whiteboard-interchange.js:1403 |
 | `wbDrawioBox` | frontend/js/whiteboard-interchange.js:1049 |
 | `wbDrawioCells` | frontend/js/whiteboard-interchange.js:1001 |
 | `wbDrawioLook` | frontend/js/whiteboard-interchange.js:505 |
@@ -7829,7 +7832,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbMermaidStateParse` | frontend/js/whiteboard-interchange.js:289 |
 | `wbOpenImportDialog` | frontend/js/whiteboard-interchange.js:986 |
 | `wbPaintDiagram` | frontend/js/whiteboard-interchange.js:1314 |
-| `wbSaveDiagram` | frontend/js/whiteboard-interchange.js:1381 |
+| `wbSaveDiagram` | frontend/js/whiteboard-interchange.js:1383 |
 | `wbThumbBoardId` | frontend/js/whiteboard-interchange.js:1196 |
 | `wbThumbFlush` | frontend/js/whiteboard-interchange.js:1206 |
 | `wbThumbMark` | frontend/js/whiteboard-interchange.js:1200 |
@@ -12258,7 +12261,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/math-editor-lazy.css | 169 |
 | frontend/css/math-field-lazy.css | 72 |
 | frontend/css/meetings-lazy.css | 566 |
-| frontend/css/mermaid-lazy.css | 124 |
+| frontend/css/mermaid-lazy.css | 129 |
 | frontend/css/model-menu-lazy.css | 96 |
 | frontend/css/motion-still.css | 75 |
 | frontend/css/nav-history-lazy.css | 169 |
@@ -15725,8 +15728,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3371 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3499 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3375 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3503 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -23869,7 +23872,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17112)
+## Tests (17121)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24415,6 +24418,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_r8b.py | 9 |
 | tests/test_diagram_r8c.py | 10 |
 | tests/test_diagram_r9b.py | 9 |
+| tests/test_diagram_r9c.py | 9 |
 | tests/test_diagram_split_r3_r4.py | 8 |
 | tests/test_diagram_suggest.py | 21 |
 | tests/test_diagram_touch.py | 4 |

@@ -98,6 +98,11 @@
   opacity: 0;
 }
 
+/* Save to Library sits one control to the left of Edit as blocks. */
+.md-mermaid-edit + .md-mermaid-edit {
+  inset-inline-end: calc(var(--space-2) * 2 + var(--control-h));
+}
+
 .cm-md-mermaid-wrap:is(:hover, :focus-within) .md-mermaid-edit {
   opacity: 1;
 }

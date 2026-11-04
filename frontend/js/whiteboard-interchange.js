@@ -1373,6 +1373,8 @@ function wbEditDiagram(d = null) {
     source: d?.data?.mermaid || diagramModel.starter,
     title: d ? "Edit diagram" : "Diagram builder",
     shapes: d ? (source) => (wbMermaidKind(source) ? wbDiagramToShapes(d, source) : toast("Shapes cover flowchart, state, class and sequence diagrams.")) : null,
+    //: Save to Library (R9c).
+    offer: d && { link: d },
     onDone: (source, changed) => wbSaveDiagram(d, source, changed),
   });
 }
