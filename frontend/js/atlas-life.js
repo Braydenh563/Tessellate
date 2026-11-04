@@ -801,13 +801,23 @@ const ATLAS_LOWER_STATES = {
   //: up"): the lower body curls and droops, a slow ease, shorter and wider
   //: than a lie, the tail wrapped round (a turn well past a lie's).
   curl: { ms: 1600, ease: "cubic-bezier(0.45, 0, 0.35, 1)", v: [[4, 1.1, 0.74, -6, 38], [-3, 1.12, 0.72, 6, -34], [3.5, 1.08, 0.76, -5, 44]] },
+  //: INBOX 1681 (the owner: "crouching down ... lounging ... gliding ... hanging"): a squat folds the
+  //: lower body short and wide, a lounge lays it out to one side, a glide trails it long and thin behind
+  //: the lean, a drift lets it hang loose and slow, a hang lets it swing from the hips. The act's own
+  //: variant (`data-variant`) picks the row, so the body and the lower body agree; the turn stays
+  //: within 4 degrees (INBOX 615 and 619) and the lean, the tail and the stretch do the posing.
+  crouch: { ms: 700, ease: "cubic-bezier(0.34, 1.15, 0.6, 1)", v: [[2, 1.14, 0.7, -3, -16], [-3, 1.1, 0.74, 4, 12], [1.5, 1.18, 0.66, -2, -22]] },
+  lounge: { ms: 900, ease: "cubic-bezier(0.4, 1.1, 0.6, 1)", v: [[3.5, 1.06, 0.84, -4, 26], [-2, 1.1, 0.8, 2, -20], [2, 1.04, 0.88, -3, 16]] },
+  glide: { ms: 800, ease: "cubic-bezier(0.3, 0.9, 0.5, 1)", v: [[-3.5, 0.9, 1.14, 8, -34], [-2, 0.88, 1.18, 6, -42], [-3.8, 0.92, 1.12, 10, -28]] },
+  drift: { ms: 1400, ease: "cubic-bezier(0.45, 0, 0.35, 1)", v: [[2, 1.02, 1.04, -4, 18], [-3, 1.08, 0.88, 3, -24], [3.8, 1, 1.08, -6, 32]] },
+  hang: { ms: 700, ease: "cubic-bezier(0.34, 1.2, 0.6, 1)", v: [[1.5, 0.96, 1.08, -2, 10], [-2, 0.95, 1.1, 3, -14], [2.5, 0.97, 1.06, -3, 18]] },
 };
 //: The hair's turn about the crown and the nebula stream's [turn, width,
 //: height] about the figure's middle, per state (INBOX 575, the owner:
 //: "both atlas avatars have a tail as well, same with the hair, and the
 //: nebular stream ... dynamically animated and changed"), a variant each
 //: as the lower body's; a walk's turn takes the way it goes.
-const ATLAS_HAIR_STATES = { idle: [0, 1.6, -1.4, 0.8], walk: [-5, -4, -6], sit: [2, 1, 3], lie: [4, 5, 3], gesture: [-3, -2, -4], think: [2.5, 1.5, 3.5], happy: [-3.5, -2.5, -4], sad: [4, 5, 6], startle: [-6, -7, -5], curl: [6, 8, 7] };
+const ATLAS_HAIR_STATES = { idle: [0, 1.6, -1.4, 0.8], walk: [-5, -4, -6], sit: [2, 1, 3], lie: [4, 5, 3], gesture: [-3, -2, -4], think: [2.5, 1.5, 3.5], happy: [-3.5, -2.5, -4], sad: [4, 5, 6], startle: [-6, -7, -5], curl: [6, 8, 7], crouch: [3, 1, 4], lounge: [4, 2, 5], glide: [-7, -9, -6], drift: [3, 5, 2], hang: [2, -2, 3] };
 const ATLAS_NEB_STATES = {
   idle: [[0, 1, 1], [2, 1.02, 0.98], [-2, 0.98, 1.02], [1, 1.01, 1]],
   walk: [[-4, 1.05, 0.95], [-3, 1.06, 0.94], [-5, 1.04, 0.96]],
@@ -819,6 +829,11 @@ const ATLAS_NEB_STATES = {
   sad: [[2, 0.97, 0.94], [-1, 0.96, 0.95], [1, 0.95, 0.96]],
   startle: [[-6, 1.08, 1.08], [-5, 1.1, 1.06], [-7, 1.07, 1.09]],
   curl: [[8, 1.05, 0.82], [-6, 1.07, 0.8], [10, 1.04, 0.83]],
+  crouch: [[3, 1.06, 0.88], [-3, 1.05, 0.9], [2, 1.08, 0.86]],
+  lounge: [[5, 1.05, 0.9], [-4, 1.06, 0.88], [3, 1.04, 0.92]],
+  glide: [[-6, 1.04, 1.06], [-8, 1.03, 1.08], [-5, 1.05, 1.05]],
+  drift: [[3, 1.02, 1.03], [-4, 1.03, 1.02], [5, 1.01, 1.04]],
+  hang: [[2, 1, 1.03], [-2, 1.01, 1.02], [3, 0.99, 1.04]],
 };
 //: The rig's lower body (atlas.js, `atlasRigAttach`, which makes the rest of
 //: the rig at once): the boxes the state's pose turns, attached when this
@@ -863,6 +878,9 @@ function atlasRigLower(rig, now, live, buddy) {
     const last = low.last[state] ?? -1;
     low.variant = live && spec.v.length > 1 && pick === last ? (pick + 1 + Math.floor(Math.random() * (spec.v.length - 1))) % spec.v.length : pick;
     low.last[state] = low.variant;
+    //: An act's state takes the act's drawn variant (INBOX 1681), so the figure and its lower body agree.
+    const posed = atlasRigLower.acts.includes(state) ? Number(buddy?.dataset.variant) : NaN;
+    if (Number.isInteger(posed) && posed >= 0 && posed < spec.v.length) low.variant = low.last[state] = posed;
     low.state = state;
     low.at = now + 8000 + Math.random() * 6000;
   }
@@ -904,6 +922,8 @@ function atlasRigLower(rig, now, live, buddy) {
   for (const el of low.neb) go(el, `rotate(${atlasFix(neb * way)}deg) scale(${nsx}, ${nsy})`, 120);
 }
 //: The states that rest: a new variant every 8 to 14 s (INBOX 1680: only standing did, so a sat or sleeping figure held one pose for minutes).
-atlasRigLower.rests = new Set(["idle", "sit", "lie", "curl", "think", "sad"]);
+atlasRigLower.rests = new Set(["idle", "sit", "lie", "curl", "think", "sad", "hang"]);
+//: The states an act poses (INBOX 1681): the act's drawn variant picks the row, so the figure and its lower body agree. They last one act, so none re-rolls on the rest timer.
+atlasRigLower.acts = ["crouch", "lounge", "glide", "drift"];
 //: Asleep: the sleeping class, a nap, or a lying or curled pose (a property, not a global: `tests/test_global_scope_ratchet.py`).
 atlasRigLower.asleep = (buddy) => !!buddy && (buddy.classList.contains("nmb-sleep") || buddy.classList.contains("nmb-act-nap") || /^(lie|curl)/.test(buddy.dataset.pose || ""));

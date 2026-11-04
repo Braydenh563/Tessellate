@@ -3120,7 +3120,7 @@ const NAME_MARK_BUDDY_ACTS = {
 //: The sudden or large acts the calm budget holds back
 //: (`nameMarkBuddyCalmAllows`), and the acts with no face of their own
 //: (`nameMarkBuddyAct` eases a face back only after the others).
-const NMB_LOUD_ACTS = ["hop", "wave", "cheer", "startle", "wiggle", "kick", "swing", "stretch", "facepalm", "shrug", "scratch", "peekdown", "onehand", "feet", "carry", "lantern"];
+const NMB_LOUD_ACTS = ["glide", "climb", "hop", "wave", "cheer", "startle", "wiggle", "kick", "swing", "stretch", "facepalm", "shrug", "scratch", "peekdown", "onehand", "feet", "carry", "lantern"];
 const NMB_LOUD_GAP_MS = 75000;
 const NMB_FACELESS_ACTS = ["blink", "look", "glance", "turn", "land", "shift", "emerge", "shake", "groom", "sniff", "sigh"];
 
@@ -3154,12 +3154,32 @@ const NMB_ATLAS_ACTS = {
   meditate: { ms: 12000, w: 0.8, cool: 180000, poses: ["float"], atlas: true },
 };
 Object.assign(NAME_MARK_BUDDY_ACTS, NMB_ATLAS_ACTS);
+//: **More ways to be somewhere** (INBOX 1681, the owner: "positions like how
+//: atlas and regular companions look sitting or crouching down, lying down,
+//: floating, walking, gliding, lounging, climbing, hanging, resting"). Each is
+//: an act of the decide pick above, in the poses it suits, with three drawn
+//: variants (`NMB_VARIANTS`, `data-variant`, never the last): a crouch (a squat,
+//: weight on one foot, arms round the knees), a lounge on a seat (propped on a
+//: hand, a knee up, chin on a hand), a rest (weight shifted, arms behind the
+//: head, hands behind the back), a glide and a drift in the air (streamlined,
+//: arms out, banking; legs crossed, knees tucked, on its back) and a climb
+//: while hanging (a reach, the other reach, a pull-up). In the lazy sheet
+//: that comes with companion-travel.js (`lazy`); the CSS poses its limbs and
+//: Atlas's lower body takes a pose of its own (`ATLAS_LOWER_STATES`).
+Object.assign(NAME_MARK_BUDDY_ACTS, {
+  crouch: { ms: 8000, w: 1.2, cool: 60000, poses: ["stand"], lazy: true },
+  lounge: { ms: 14000, w: 1.6, cool: 70000, poses: ["sit"], lazy: true },
+  rest: { ms: 11000, w: 1.6, cool: 50000, poses: ["sit", "stand", "lean"], lazy: true },
+  glide: { ms: 6000, w: 1.4, cool: 50000, poses: ["float"], lazy: true },
+  drift: { ms: 12000, w: 1.4, cool: 60000, poses: ["float"], lazy: true },
+  climb: { ms: 5200, w: 1.5, cool: 40000, poses: ["hang"], lazy: true },
+});
 
 //: **Reduce actions** (INBOX 430): Off keeps it to blinks, looks and its
 //: stances, Fewer (the default) makes the unprompted gestures a third as
 //: likely, Normal as they were. What you start (a poke, a cheer at a
 //: streak, a reaction) is never reduced: those have no weight here.
-const NMB_QUIET_ACTS = ["blink", "look", "glance", "turn", "yawn", "nap", "dangle", "shift", "tilt", ...Object.keys(NMB_STANCES)];
+const NMB_QUIET_ACTS = ["blink", "look", "glance", "turn", "yawn", "nap", "dangle", "shift", "tilt", "lounge", "rest", "drift", ...Object.keys(NMB_STANCES)];
 //: **Each of its doings can be turned off** (the owner, 2026-09-27: "Every
 //: companion feature must be togglable in Settings"). Appearance >
 //: Companion > What it does (`mountBuddyActivities`): one switch a row, kept
@@ -3175,6 +3195,8 @@ const NMB_ACTIVITIES = [
   ["legs", "Swing its legs over an edge", ["dangle", "kick"]],
   ["hang", "Hanging tricks", ["swing", "sloth", "onehand", "feet"]],
   ["stances", "Stances at rest", Object.keys(NMB_STANCES)],
+  ["poses", "Settle into other poses (crouch, lounge, rest, drift)", ["crouch", "lounge", "rest", "drift"]],
+  ["glide", "Glide through the air and climb while hanging", ["glide", "climb"]],
   ["atlas", "Atlas juggles stars, reads its map and meditates", [...Object.keys(NMB_ATLAS_ACTS), "toss"]],
   ["think", "Stop to think, or sigh", ["ponder", "sigh"]],
   ["lie", "Lie down for a nap", ["lie"]],
@@ -5404,7 +5426,7 @@ const NMB_TEMPO_MS = 50;
 const NMB_HOLD_SHOWN = '[data-pose="hang"], [data-travel="climb"], .nm-buddy-dragging, .nmb-act-stretch, .nmb-act-yawn, .nmb-act-cheer, .nmb-act-wake, .nmb-act-startle';
 //: The long, still acts are rest, and paced as rest: a stance, a nap, a
 //: book, a seat. Full rate is for the short ones, where it is moving.
-const NMB_RESTING_ACTS = new Set(["lie", "read", "beanbag", "chair", "nap", "peek", "peekdown", "meditate", ...Object.keys(NMB_STANCES)]);
+const NMB_RESTING_ACTS = new Set(["lie", "read", "beanbag", "chair", "nap", "peek", "peekdown", "meditate", "crouch", "lounge", "rest", "drift", ...Object.keys(NMB_STANCES)]);
 const nmbTempo = { held: true, timer: 0, anims: [], at: 0, seen: 0, clock: new WeakMap(), slow: new WeakSet(), gap: new WeakMap(), ticks: 0, stride: 1 };
 //: **A prop's slow loop is stepped slowly** (audit 1101, row 17's pacer
 //: leftover). Each step of an animation inside the drawing restyles the whole
@@ -7832,7 +7854,7 @@ function nameMarkBuddyLieRoom() {
 }
 
 //: How many ways each act can go, and the pick: any but the last one.
-const NMB_VARIANTS = { wave: 3, hop: 3, stretch: 2, nap: 3, lie: 2, shrug: 2, facepalm: 2, tilt: 2, read: 2, wiggle: 2, cheer: 2 };
+const NMB_VARIANTS = { wave: 3, hop: 3, stretch: 2, nap: 3, lie: 3, crouch: 3, lounge: 3, rest: 3, glide: 3, drift: 3, climb: 3, shrug: 2, facepalm: 2, tilt: 2, read: 2, wiggle: 2, cheer: 2 };
 function nameMarkBuddyPickVariant(n, last, roll = Math.random()) {
   if (n <= 1) return 0;
   let i = Math.floor(roll * (n - 1));

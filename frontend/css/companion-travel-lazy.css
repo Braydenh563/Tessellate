@@ -104,3 +104,143 @@
   62% { scale: 1.04 1.06; translate: 0 -2px; }
   90% { scale: 0.98 0.97; translate: 0 1px; }
 }
+/* Poses 1681 */
+/* **More ways to be somewhere** (INBOX 1681, the owner: "positions like how atlas and regular
+   companions look sitting or crouching down, lying down, floating, walking, gliding, lounging,
+   climbing, hanging, resting"). Each is an act (avatars.js `NMB_POSE_ACTS`) with three variants
+   (`data-variant`), posed on the body and the limbs the base pose already eases (the transitions are
+   the base rules': a class added or taken away eases, nothing snaps). Atlas's arms read the same rules
+   (the rig takes the target from them) and its lower body has a pose of its own (atlas-life.js). The
+   `[data-pose]` is a specificity bump, so a pose rule here wins over the base pose's (the Atlas legs'
+   `.atl-figure.nmb-leg-l` is one class heavier). Transforms only; nothing here is read per frame. */
+#nm-buddy .nm-buddy-char { transition: transform var(--motion-slow) var(--ease-out), rotate calc(var(--motion-slow) * 2) var(--ease-in-out), translate calc(var(--motion-slow) * 2) var(--ease-in-out); }
+#nm-buddy.nmb-act-crouch[data-variant="0"][data-pose] .nm-buddy-char { transform: translateY(8px) scale(1.03, 0.9); }
+#nm-buddy.nmb-act-crouch[data-variant="0"][data-pose] .nmb-leg-l { transform: rotate(38deg) scaleY(0.66); }
+#nm-buddy.nmb-act-crouch[data-variant="0"][data-pose] .nmb-leg-r { transform: rotate(-38deg) scaleY(0.66); }
+#nm-buddy.nmb-act-crouch[data-variant="0"][data-pose] .nmb-arm-l { transform: rotate(22deg); }
+#nm-buddy.nmb-act-crouch[data-variant="0"][data-pose] .nmb-arm-r { transform: rotate(-22deg); }
+#nm-buddy.nmb-act-crouch[data-variant="0"][data-pose] .nm-char .nm-buddy-head { rotate: 0deg; }
+#nm-buddy.nmb-act-crouch[data-variant="0"][data-pose] .nm-atlas { --atl-tilt: 0deg; --atl-head-y: 0px; }
+#nm-buddy.nmb-act-crouch[data-variant="1"][data-pose] .nm-buddy-char { transform: translate(2px, 7px) rotate(-3deg) scale(1.02, 0.92); }
+#nm-buddy.nmb-act-crouch[data-variant="1"][data-pose] .nmb-leg-l { transform: rotate(46deg) scaleY(0.6); }
+#nm-buddy.nmb-act-crouch[data-variant="1"][data-pose] .nmb-leg-r { transform: rotate(-14deg) scaleY(0.82); }
+#nm-buddy.nmb-act-crouch[data-variant="1"][data-pose] .nmb-arm-l { transform: rotate(30deg); }
+#nm-buddy.nmb-act-crouch[data-variant="1"][data-pose] .nmb-arm-r { transform: rotate(-8deg); }
+#nm-buddy.nmb-act-crouch[data-variant="1"][data-pose] .nm-char .nm-buddy-head { rotate: 4deg; }
+#nm-buddy.nmb-act-crouch[data-variant="1"][data-pose] .nm-atlas { --atl-tilt: 4deg; --atl-head-y: 1px; }
+#nm-buddy.nmb-act-crouch[data-variant="2"][data-pose] .nm-buddy-char { transform: translateY(10px) scale(1.04, 0.86); }
+#nm-buddy.nmb-act-crouch[data-variant="2"][data-pose] .nmb-leg-l { transform: rotate(52deg) scaleY(0.58); }
+#nm-buddy.nmb-act-crouch[data-variant="2"][data-pose] .nmb-leg-r { transform: rotate(-52deg) scaleY(0.58); }
+#nm-buddy.nmb-act-crouch[data-variant="2"][data-pose] .nmb-arm-l { transform: rotate(58deg); }
+#nm-buddy.nmb-act-crouch[data-variant="2"][data-pose] .nmb-arm-r { transform: rotate(-58deg); }
+#nm-buddy.nmb-act-crouch[data-variant="2"][data-pose] .nm-char .nm-buddy-head { rotate: -5deg; }
+#nm-buddy.nmb-act-crouch[data-variant="2"][data-pose] .nm-atlas { --atl-tilt: -5deg; --atl-head-y: 1px; }
+#nm-buddy.nmb-act-lounge[data-variant="0"][data-pose] .nm-buddy-char { transform: translateX(-3px) rotate(-7deg); }
+#nm-buddy.nmb-act-lounge[data-variant="0"][data-pose] .nmb-leg-l { transform: rotate(14deg) scaleY(0.88); }
+#nm-buddy.nmb-act-lounge[data-variant="0"][data-pose] .nmb-leg-r { transform: rotate(-26deg) scaleY(0.8); }
+#nm-buddy.nmb-act-lounge[data-variant="0"][data-pose] .nmb-arm-l { transform: rotate(34deg); }
+#nm-buddy.nmb-act-lounge[data-variant="0"][data-pose] .nmb-arm-r { transform: rotate(-6deg); }
+#nm-buddy.nmb-act-lounge[data-variant="0"][data-pose] .nm-char .nm-buddy-head { rotate: 3deg; }
+#nm-buddy.nmb-act-lounge[data-variant="0"][data-pose] .nm-atlas { --atl-tilt: 3deg; --atl-head-y: 0px; }
+#nm-buddy.nmb-act-lounge[data-variant="1"][data-pose] .nm-buddy-char { transform: translateY(1px) rotate(2deg); }
+#nm-buddy.nmb-act-lounge[data-variant="1"][data-pose] .nmb-leg-l { transform: rotate(30deg) scaleY(0.66); }
+#nm-buddy.nmb-act-lounge[data-variant="1"][data-pose] .nmb-leg-r { transform: rotate(-5deg) scaleY(0.92); }
+#nm-buddy.nmb-act-lounge[data-variant="1"][data-pose] .nmb-arm-l { transform: rotate(66deg); }
+#nm-buddy.nmb-act-lounge[data-variant="1"][data-pose] .nmb-arm-r { transform: rotate(-18deg); }
+#nm-buddy.nmb-act-lounge[data-variant="1"][data-pose] .nm-char .nm-buddy-head { rotate: -2deg; }
+#nm-buddy.nmb-act-lounge[data-variant="1"][data-pose] .nm-atlas { --atl-tilt: -2deg; --atl-head-y: 0px; }
+#nm-buddy.nmb-act-lounge[data-variant="2"][data-pose] .nm-buddy-char { transform: translateY(2px) rotate(3deg); }
+#nm-buddy.nmb-act-lounge[data-variant="2"][data-pose] .nmb-leg-l { transform: rotate(8deg) scaleY(0.9); }
+#nm-buddy.nmb-act-lounge[data-variant="2"][data-pose] .nmb-leg-r { transform: rotate(-8deg) scaleY(0.9); }
+#nm-buddy.nmb-act-lounge[data-variant="2"][data-pose] .nmb-arm-l { transform: rotate(20deg); }
+#nm-buddy.nmb-act-lounge[data-variant="2"][data-pose] .nmb-arm-r { transform: rotate(-132deg); }
+#nm-buddy.nmb-act-lounge[data-variant="2"][data-pose] .nm-char .nm-buddy-head { rotate: -6deg; }
+#nm-buddy.nmb-act-lounge[data-variant="2"][data-pose] .nm-atlas { --atl-tilt: -6deg; --atl-head-y: 0px; }
+#nm-buddy.nmb-act-rest[data-variant="0"][data-pose] .nm-buddy-char { transform: translateX(2.5px) rotate(-2.5deg); }
+#nm-buddy.nmb-act-rest[data-variant="0"][data-pose] .nmb-leg-l { transform: rotate(2deg); }
+#nm-buddy.nmb-act-rest[data-variant="0"][data-pose] .nmb-leg-r { transform: rotate(-18deg) scaleY(0.94); }
+#nm-buddy.nmb-act-rest[data-variant="0"][data-pose] .nmb-arm-l { transform: rotate(14deg); }
+#nm-buddy.nmb-act-rest[data-variant="0"][data-pose] .nmb-arm-r { transform: rotate(-22deg); }
+#nm-buddy.nmb-act-rest[data-variant="0"][data-pose] .nm-char .nm-buddy-head { rotate: 2deg; }
+#nm-buddy.nmb-act-rest[data-variant="0"][data-pose] .nm-atlas { --atl-tilt: 2deg; --atl-head-y: 1px; }
+#nm-buddy.nmb-act-rest[data-variant="1"][data-pose] .nm-buddy-char { transform: rotate(-1deg); }
+#nm-buddy.nmb-act-rest[data-variant="1"][data-pose] .nmb-arm-l { transform: rotate(156deg); }
+#nm-buddy.nmb-act-rest[data-variant="1"][data-pose] .nmb-arm-r { transform: rotate(-156deg); }
+#nm-buddy.nmb-act-rest[data-variant="1"][data-pose] .nm-char .nm-buddy-head { rotate: -4deg; }
+#nm-buddy.nmb-act-rest[data-variant="1"][data-pose] .nm-atlas { --atl-tilt: -4deg; --atl-head-y: 1px; }
+#nm-buddy.nmb-act-rest[data-variant="2"][data-pose] .nm-buddy-char { transform: translateY(-1px) rotate(1.5deg); }
+#nm-buddy.nmb-act-rest[data-variant="2"][data-pose] .nmb-arm-l { transform: rotate(5deg); }
+#nm-buddy.nmb-act-rest[data-variant="2"][data-pose] .nmb-arm-r { transform: rotate(-5deg); }
+#nm-buddy.nmb-act-rest[data-variant="2"][data-pose] .nm-char .nm-buddy-head { rotate: 5deg; }
+#nm-buddy.nmb-act-rest[data-variant="2"][data-pose] .nm-atlas { --atl-tilt: 5deg; --atl-head-y: 1px; }
+#nm-buddy.nmb-act-glide[data-variant="0"][data-pose] .nm-buddy-char { rotate: -10deg; translate: 0 -3px; }
+#nm-buddy.nmb-act-glide[data-variant="0"][data-pose] .nmb-leg-l { transform: rotate(-22deg) scaleY(1.04); }
+#nm-buddy.nmb-act-glide[data-variant="0"][data-pose] .nmb-leg-r { transform: rotate(-16deg) scaleY(1.04); }
+#nm-buddy.nmb-act-glide[data-variant="0"][data-pose] .nmb-arm-l { transform: rotate(10deg); }
+#nm-buddy.nmb-act-glide[data-variant="0"][data-pose] .nmb-arm-r { transform: rotate(-10deg); }
+#nm-buddy.nmb-act-glide[data-variant="0"][data-pose] .nm-char .nm-buddy-head { rotate: -3deg; }
+#nm-buddy.nmb-act-glide[data-variant="0"][data-pose] .nm-atlas { --atl-tilt: -3deg; --atl-head-y: 0px; }
+#nm-buddy.nmb-act-glide[data-variant="1"][data-pose] .nm-buddy-char { rotate: -4deg; translate: 0 -4px; }
+#nm-buddy.nmb-act-glide[data-variant="1"][data-pose] .nmb-leg-l { transform: rotate(10deg); }
+#nm-buddy.nmb-act-glide[data-variant="1"][data-pose] .nmb-leg-r { transform: rotate(-10deg); }
+#nm-buddy.nmb-act-glide[data-variant="1"][data-pose] .nmb-arm-l { transform: rotate(84deg); }
+#nm-buddy.nmb-act-glide[data-variant="1"][data-pose] .nmb-arm-r { transform: rotate(-84deg); }
+#nm-buddy.nmb-act-glide[data-variant="1"][data-pose] .nm-char .nm-buddy-head { rotate: 2deg; }
+#nm-buddy.nmb-act-glide[data-variant="1"][data-pose] .nm-atlas { --atl-tilt: 2deg; --atl-head-y: 0px; }
+#nm-buddy.nmb-act-glide[data-variant="2"][data-pose] .nm-buddy-char { rotate: 9deg; translate: 0 -3px; }
+#nm-buddy.nmb-act-glide[data-variant="2"][data-pose] .nmb-leg-l { transform: rotate(-6deg); }
+#nm-buddy.nmb-act-glide[data-variant="2"][data-pose] .nmb-leg-r { transform: rotate(12deg); }
+#nm-buddy.nmb-act-glide[data-variant="2"][data-pose] .nmb-arm-l { transform: rotate(118deg); }
+#nm-buddy.nmb-act-glide[data-variant="2"][data-pose] .nmb-arm-r { transform: rotate(-20deg); }
+#nm-buddy.nmb-act-glide[data-variant="2"][data-pose] .nm-char .nm-buddy-head { rotate: 4deg; }
+#nm-buddy.nmb-act-glide[data-variant="2"][data-pose] .nm-atlas { --atl-tilt: 4deg; --atl-head-y: 0px; }
+#nm-buddy.nmb-act-drift[data-variant="0"][data-pose] .nm-buddy-char { rotate: 0deg; translate: 0 -4px; }
+#nm-buddy.nmb-act-drift[data-variant="0"][data-pose] .nmb-leg-l { transform: rotate(-10deg); }
+#nm-buddy.nmb-act-drift[data-variant="0"][data-pose] .nmb-leg-r { transform: rotate(10deg); }
+#nm-buddy.nmb-act-drift[data-variant="0"][data-pose] .nmb-arm-l { transform: rotate(40deg); }
+#nm-buddy.nmb-act-drift[data-variant="0"][data-pose] .nmb-arm-r { transform: rotate(-40deg); }
+#nm-buddy.nmb-act-drift[data-variant="0"][data-pose] .nm-char .nm-buddy-head { rotate: 0deg; }
+#nm-buddy.nmb-act-drift[data-variant="0"][data-pose] .nm-atlas { --atl-tilt: 0deg; --atl-head-y: 0px; }
+#nm-buddy.nmb-act-drift[data-variant="1"][data-pose] .nm-buddy-char { rotate: 0deg; translate: 0 -3px; }
+#nm-buddy.nmb-act-drift[data-variant="1"][data-pose] .nmb-leg-l { transform: rotate(50deg) scaleY(0.6); }
+#nm-buddy.nmb-act-drift[data-variant="1"][data-pose] .nmb-leg-r { transform: rotate(-50deg) scaleY(0.6); }
+#nm-buddy.nmb-act-drift[data-variant="1"][data-pose] .nmb-arm-l { transform: rotate(56deg); }
+#nm-buddy.nmb-act-drift[data-variant="1"][data-pose] .nmb-arm-r { transform: rotate(-56deg); }
+#nm-buddy.nmb-act-drift[data-variant="1"][data-pose] .nm-char .nm-buddy-head { rotate: 3deg; }
+#nm-buddy.nmb-act-drift[data-variant="1"][data-pose] .nm-atlas { --atl-tilt: 3deg; --atl-head-y: 0px; }
+#nm-buddy.nmb-act-drift[data-variant="2"][data-pose] .nm-buddy-char { rotate: -14deg; translate: 0 -6px; }
+#nm-buddy.nmb-act-drift[data-variant="2"][data-pose] .nmb-leg-l { transform: rotate(12deg); }
+#nm-buddy.nmb-act-drift[data-variant="2"][data-pose] .nmb-leg-r { transform: rotate(-4deg); }
+#nm-buddy.nmb-act-drift[data-variant="2"][data-pose] .nmb-arm-l { transform: rotate(150deg); }
+#nm-buddy.nmb-act-drift[data-variant="2"][data-pose] .nmb-arm-r { transform: rotate(-150deg); }
+#nm-buddy.nmb-act-drift[data-variant="2"][data-pose] .nm-char .nm-buddy-head { rotate: -4deg; }
+#nm-buddy.nmb-act-drift[data-variant="2"][data-pose] .nm-atlas { --atl-tilt: -4deg; --atl-head-y: 0px; }
+
+/* The lie-down's third way (a knee up) and second (the other leg bent, an arm behind the head). */
+#nm-buddy.nmb-act-lie[data-variant="1"][data-pose] .nmb-leg-l { transform: rotate(26deg) scaleY(0.8); }
+#nm-buddy.nmb-act-lie[data-variant="1"][data-pose] .nmb-arm-l { transform: rotate(150deg); }
+#nm-buddy.nmb-act-lie[data-variant="2"][data-pose] .nmb-leg-r { transform: rotate(-58deg) scaleY(0.72); }
+#nm-buddy.nmb-act-lie[data-variant="2"][data-pose] .nmb-arm-r { transform: rotate(-24deg); }
+
+/* A climb while hanging: a reach with the left hand, with the right, and a pull-up with both. The legs
+   step as they do on a wall. Under the motion gates; with them off the hang stays as it is. */
+#nm-buddy.nmb-act-climb[data-variant="0"][data-pose] .nm-buddy-char { transform: translateY(-3px) rotate(-2deg); }
+#nm-buddy.nmb-act-climb[data-variant="1"][data-pose] .nm-buddy-char { transform: translateY(-3px) rotate(2deg); }
+#nm-buddy.nmb-act-climb[data-variant="2"][data-pose] .nm-buddy-char { transform: translateY(-2px) rotate(0deg); }
+@media all {
+  :root:not([data-avatar-motion="off"]):is(:not([data-motion="reduced"]), [data-buddy-motion="full"]) #nm-buddy {
+    &.nmb-act-climb[data-variant="0"] .nmb-hold-l { animation: nmb-reach 0.9s ease-in-out infinite alternate; }
+    &.nmb-act-climb[data-variant="1"] .nmb-hold-r { animation: nmb-reach 0.9s ease-in-out infinite alternate; }
+    &.nmb-act-climb[data-variant="2"] :is(.nmb-hold-l, .nmb-hold-r) { animation: nmb-reach 1.3s ease-in-out infinite alternate; }
+    &.nmb-act-climb[data-variant="2"] .nm-buddy-char { animation: nmb-pull 1.3s ease-in-out infinite alternate; }
+    &.nmb-act-climb .nmb-leg-l { animation: nmb-step 0.62s ease-in-out infinite alternate; }
+    &.nmb-act-climb .nmb-leg-r { animation: nmb-step 0.62s ease-in-out -0.62s infinite alternate; }
+    &.nmb-act-glide :is(.nmb-leg-l, .nmb-leg-r) { animation: nmb-trail 1.9s ease-in-out infinite alternate; }
+    &.nmb-act-glide .nmb-leg-r { animation-delay: -0.95s; }
+    &.nmb-act-drift :is(.nmb-leg-l, .nmb-leg-r) { animation: nmb-trail 4.6s ease-in-out infinite alternate; }
+    &.nmb-act-drift .nmb-leg-r { animation-delay: -2.3s; }
+  }
+}
+@keyframes nmb-pull { from { transform: translateY(1px); } to { transform: translateY(-5px); } }
+@keyframes nmb-trail { from { rotate: -4deg; } to { rotate: 4deg; } }
+/* End poses 1681 */
