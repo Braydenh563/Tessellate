@@ -27,19 +27,21 @@ def test_the_engine_and_the_frames_agree_on_the_cycle() -> None:
     assert all(n in sprites.FRAME_NAMES for n in sprites.IDLE_FRAMES)
 
 
-def test_standing_cycles_through_every_idle_frame_at_about_eight_a_second() -> None:
+def test_standing_cycles_through_every_idle_frame_at_about_three_a_second() -> None:
     e = make()
     seen, t = [], 0.0
     out = e.update(t)
-    while t < 1.6:
+    # Intent moved (INBOX 1670: "bobs up and down quite fast ... more slow and graceful"): the
+    # cycle plays at IDLE_FPS = 3 a second (a 4 s breath), no longer 8.
+    while t < 4.3:
         seen.append(out.frame)
-        assert out.wake_ms is not None and out.wake_ms <= 126
+        assert out.wake_ms is not None and out.wake_ms <= 340
         t += out.wake_ms / 1000.0
         e.flash = None  # blinks have their own test
         out = e.update(t)
     idles = [f for f in seen if f.startswith("idle")]
     assert set(idles) == set(sprites.IDLE_FRAMES)
-    assert 11 <= len(idles) <= 14  # one cycle is 1.5 s, so about twelve frames in 1.6 s
+    assert 11 <= len(idles) <= 14  # one cycle is 4 s, so about twelve frames in 4.3 s
 
 
 def test_a_wake_lands_on_a_new_frame_not_the_same_one_again() -> None:
