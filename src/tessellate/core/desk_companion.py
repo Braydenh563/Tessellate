@@ -149,7 +149,9 @@ def monitor_areas() -> list[tuple[int, int, int, int]]:
         return []
     try:
         import ctypes
-        import ctypes.wintypes as wt
+        import ctypes.wintypes
+
+        wt = ctypes.wintypes
 
         class _MonitorInfo(ctypes.Structure):
             _fields_ = [("cbSize", wt.DWORD), ("rcMonitor", wt.RECT), ("rcWork", wt.RECT), ("dwFlags", wt.DWORD)]
@@ -373,9 +375,9 @@ def _log_placed(handle: int, want: tuple[int, int, int, int], dpi: int) -> None:
     """Log the window's real rectangle against the one asked for (physical pixels)."""
     try:
         import ctypes
-        from ctypes import wintypes
+        import ctypes.wintypes
 
-        box = wintypes.RECT()
+        box = ctypes.wintypes.RECT()
         ctypes.windll.user32.GetWindowRect(handle, ctypes.byref(box))
         got = (box.left, box.top, box.right - box.left, box.bottom - box.top)
         logger.info("desk companion: placed at %s, asked %s, dpi %s, held: %s", got, want, dpi, got == want)

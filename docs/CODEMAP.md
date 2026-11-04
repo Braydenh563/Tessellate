@@ -21056,30 +21056,30 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `DeskApi` | src/tessellate/core/desk_companion.py:421 |
-| `DeskCompanion` | src/tessellate/core/desk_companion.py:454 |
+| `DeskApi` | src/tessellate/core/desk_companion.py:423 |
+| `DeskCompanion` | src/tessellate/core/desk_companion.py:456 |
 | `_config` | src/tessellate/core/desk_companion.py:64 |
-| `_follow` | src/tessellate/core/desk_companion.py:696 |
-| `_log_placed` | src/tessellate/core/desk_companion.py:372 |
+| `_follow` | src/tessellate/core/desk_companion.py:698 |
+| `_log_placed` | src/tessellate/core/desk_companion.py:374 |
 | `_pref` | src/tessellate/core/desk_companion.py:77 |
-| `_screen_area` | src/tessellate/core/desk_companion.py:200 |
+| `_screen_area` | src/tessellate/core/desk_companion.py:202 |
 | `_set_pref` | src/tessellate/core/desk_companion.py:89 |
 | `_system_dpi` | src/tessellate/core/desk_companion.py:115 |
-| `attach` | src/tessellate/core/desk_companion.py:667 |
-| `clamp_corner` | src/tessellate/core/desk_companion.py:216 |
-| `clean_size` | src/tessellate/core/desk_companion.py:386 |
-| `companion_ex_style` | src/tessellate/core/desk_companion.py:233 |
+| `attach` | src/tessellate/core/desk_companion.py:669 |
+| `clamp_corner` | src/tessellate/core/desk_companion.py:218 |
+| `clean_size` | src/tessellate/core/desk_companion.py:388 |
+| `companion_ex_style` | src/tessellate/core/desk_companion.py:235 |
 | `enabled` | src/tessellate/core/desk_companion.py:85 |
-| `hit_script` | src/tessellate/core/desk_companion.py:398 |
+| `hit_script` | src/tessellate/core/desk_companion.py:400 |
 | `monitor_areas` | src/tessellate/core/desk_companion.py:144 |
-| `physical_rect` | src/tessellate/core/desk_companion.py:268 |
-| `pick_area` | src/tessellate/core/desk_companion.py:188 |
-| `place_on_screen` | src/tessellate/core/desk_companion.py:344 |
-| `raise_on_desktop` | src/tessellate/core/desk_companion.py:285 |
-| `shutdown` | src/tessellate/core/desk_companion.py:733 |
+| `physical_rect` | src/tessellate/core/desk_companion.py:270 |
+| `pick_area` | src/tessellate/core/desk_companion.py:190 |
+| `place_on_screen` | src/tessellate/core/desk_companion.py:346 |
+| `raise_on_desktop` | src/tessellate/core/desk_companion.py:287 |
+| `shutdown` | src/tessellate/core/desk_companion.py:735 |
 | `to_logical` | src/tessellate/core/desk_companion.py:96 |
-| `tray_menu_item` | src/tessellate/core/desk_companion.py:741 |
-| `window_handle` | src/tessellate/core/desk_companion.py:252 |
+| `tray_menu_item` | src/tessellate/core/desk_companion.py:743 |
+| `window_handle` | src/tessellate/core/desk_companion.py:254 |
 | `work_area` | src/tessellate/core/desk_companion.py:125 |
 
 ### src/tessellate/core/desktop_dialog.py (2)
