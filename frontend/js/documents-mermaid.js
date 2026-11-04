@@ -490,7 +490,8 @@
     //: the last document and no builder. Cancel makes nothing.
     if (!box) {
       return openDiagramBuilder({
-        source: diagramModel.starter,
+        //: Empty, so the walkthrough shows (R6.8); its "Start from an example" button loads the starter.
+        source: "flowchart TD",
         title: "Diagram builder",
         onDone: async (next) => {
           const made = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title: "Diagram", content: next, file_type: "mmd" }) }).catch(() => null);
@@ -520,5 +521,5 @@
   //: The block pane (1546 P2) is a bundle of its own, fetched when a diagram is first shown (the kinds, 1546 P4, when a mind map, timeline or sequence diagram is):
   //: every caller is in this bundle or opens a document first, so no stand-in is needed, and
   //: neither app.js nor lazy-entries.js (both at their caps) carries the row.
-  Object.assign(LAZY_MODULES, { diagramBuilder: ["/css/diagram-lazy.css", "/js/diagram-builder.js"], diagramEmbed: ["/js/diagram-embed.js"], diagramTouch: ["/js/diagram-touch.js"], diagramView: ["/js/diagram-view.js"], diagramSplit: ["/js/diagram-split.js"], diagramSteps: ["/js/diagram-steps.js"], diagramSuggest: ["/js/diagram-suggest.js"], diagramKinds: ["/js/diagram-kinds.js"], diagramJoins: ["/js/diagram-joins.js"] });
+  Object.assign(LAZY_MODULES, { diagramBuilder: ["/css/diagram-lazy.css", "/js/diagram-builder.js"], diagramEmbed: ["/js/diagram-embed.js"], diagramTouch: ["/js/diagram-touch.js"], diagramView: ["/js/diagram-view.js"], diagramSplit: ["/js/diagram-split.js"], diagramMulti: ["/js/diagram-multi.js"], diagramSteps: ["/js/diagram-steps.js"], diagramSuggest: ["/js/diagram-suggest.js"], diagramKinds: ["/js/diagram-kinds.js"], diagramJoins: ["/js/diagram-joins.js"] });
 })();

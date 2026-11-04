@@ -476,3 +476,16 @@ def test_the_diagram_divider_direction_caption_and_walkthrough_are_in_the_guide_
     for label in ('"Add a shape"', '"Name it"', '"Connect it"'):
         assert label in steps, label
     assert "Resize the blocks list" in (js / "diagram-split.js").read_text(encoding="utf-8")
+
+
+def test_the_diagram_multiselect_is_in_the_guide_in_the_controls_words() -> None:
+    """DOCUMENTS_PLAN 22.4 R5: Shift and Ctrl click, the bar's actions and the grip that carries the picked blocks."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
+    assert len(body) < 1900
+    for words in ("Shift+click picks a range", "Ctrl+click adds one", "Duplicate", "Group into a box", "any picked grip moves all"):
+        assert words in body, words
+    multi = (FRONTEND / "js" / "diagram-multi.js").read_text(encoding="utf-8")
+    for label in ('"ph:trash Delete"', '"ph:copy Duplicate"', '"ph:diamond Shape"', '"ph:stack Group into a box"', '"Done"'):
+        assert label in multi, label

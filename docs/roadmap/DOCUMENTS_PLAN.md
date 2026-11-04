@@ -1540,24 +1540,9 @@ Each row is one Sonnet-high agent session, ships alone, and is gated with target
 
 - **R1 (1613), R2 (1614):** built 2026-11-04, moved to HISTORY ("Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R1 and R2)").
 - **R3 (1615 e), R4 (1615 c, d, f) minus the tester:** built 2026-11-04, moved to HISTORY ("Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R3 and R4)").
-- **R4 left: the blind-tester pass (1615 c, d).** The `blind-tester` runs "make a flowchart with a decision and two branches, then rearrange it"; its list goes to INBOX in order and R6 takes it. Check: the tester's list exists, each item placed in a row or INBOX.
-- **R5 (1615 a, b) Multiselect and group drag.**
-  - Work: `S.sel` stays the one primary key, because diagram-kinds.js (8 places), diagram-suggest.js (4), diagram-joins.js, diagram-pointer.js and `kit.select` read it. A new ordered `S.picked` set holds the rest. The bar as in section 3; the grip of any selected row carries all of them. New pure functions in `diagramOps`: group-move, duplicate (fresh ids, inner edges kept) and wrap (group into a box).
-  - Check: `tests/test_diagram_builder.py` cases (order kept, a node under a selected group not moved twice, no drop into itself, `DGB_MAX` 120 respected, diagram-ops.js:15, duplicate keeps inner edges only); the kinds panes' tests still pass; a Playwright pass: Shift+click three rows, drag one grip, the source line order matches.
-- **R6 (R4's list, 2026-11-04) What the tester finds.** Present already (section 0): rename, undo and redo, keyboard reorder, row-to-row connect. Expected left: a search over blocks and edge labels edited in place. Check: one test per item in R4's list.
-  - R6.1: At 390 px the picture pane is about 220 px tall at 48% zoom and the Fit/zoom bar covers the lower node; node text is about 6 px.
-  - R6.2: Dragging a row in the list reorders the list only; the picture does not change, and dragging a node in the picture only smears a text selection (R8b covers the move).
-  - R6.3: Connecting Ready? to "Fix it" makes an unlabelled arrow; labelling needs the connector row menu, Label. Offer a label prompt after a second branch from a decision.
-  - R6.4: At 1280 px the connector menu opens at x=8 to 208, about 76 px left of its row (x=84 to 398) and left of the dialog (x=32); Line, Dotted and Thick share one arrow icon.
-  - R6.5: Opening the builder from Create leaves focus on the Create button behind the dialog; first Tab reaches Close.
-  - R6.6: Arrow keys do nothing in the Create dialog (outside the builder); Enter then made "New note".
-  - R6.7: The empty Library text, "Make a document, a board or a map, or upload a file.", omits diagrams.
-  - R6.8: The builder opens on a starter (Start, Ready?, Ship it), so the new walkthrough never shows from Create; decide whether the starter or the walkthrough wins.
-  - R6.9: The Connect picker shows one square icon and "Block" for every block, and on a phone it focuses the search field at once.
-  - R6.10: On a phone only the selected row shows "Connect to…"; icon-only buttons are 36 px wide, under 44 px.
-  - R6.11: The phone "Add a block" sheet label indents differ: Box text at x=57, Decision 54, Group 56.
-  - R6.12: The embedded editor in a document clips the "Drag a grip…" hint, and the Library row says "8 lines" where the status bar says "7 lines".
-  - R6.13: N adds a block with the shape of the selected one (a decision after a decision); confirm it is intended.
+- **R4 left (the blind-tester pass):** taken by R6.
+- **R5 (1615 a, b):** built 2026-11-04, moved to HISTORY ("Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R5)").
+- **R6 (R4's list, R6.1 to R6.13):** built 2026-11-04, moved to HISTORY ("Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R6)").
 - **R7 (1621 D5, D6) The diagram page.** The diagram layout of the Documents mount, the Canvas | Blocks | Source seg in both mounts, the door's Done inserting `![[Title]]`, the HISTORY retraction of 1546 D9. Check: Create, Open, edit, reload gives the same source; existing `mmd` rows open unchanged (fixture test); the dialog path still passes its tests; `tests/test_static_compression.py` shows zero boot bytes; a real-browser check that the frame draws on the page (a CSP refusal is silent).
 - **R8a (1621) Overlay and select.** The stage wrapper, the overlay from `boxes`, click and hover select kept in step with `S.sel`. Needs R2 (zoom mapping) and R5 (`S.picked`). Check: overlay boxes match `boxes()` within 1 px at three zoom levels.
 - **R8b (1621) Palette drop and move.** `canvasTarget`, tile drop, node move, marquee. Flowchart only; mind map, timeline and sequence (`diagram-kinds.js`, 1118 lines) stay blocks-first. Check: a drag keeps overlay updates at 30 fps with no `mermaidRequest` (mermaid-draw.js:403) call before the drop, counted; the printed source matches.
