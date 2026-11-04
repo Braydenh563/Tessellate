@@ -160,7 +160,13 @@ _GENERIC_THING = (
     r"(?:(?:on|in|to|with|into)\s+)?(?:(?:a|an|some|two|another|new|the|my|this)\s+){0,2}(?:new\s+)?(?:notes?|documents?|docs?|tags?|mind ?maps?|white ?boards?"
     r"|reminders?|categor(?:y|ies)|folders?)\b"
 )
-_NOT_NAMED = r"(?!\s+(?:about|on|for|from|with|that|in|called|named|titled|of|regarding)\b)(?!\s+\w+\s+(?:note|document|doc)\b)"
+#: The request must end on the generic thing (optionally "to/in a note"), so a
+#: relative clause, a purpose or a named target ("I wrote on Rome", "to plan a
+#: trip", "to the pasta note", "to Rome") keeps it a notes question.
+_NOT_NAMED = (
+    r"(?:\s+(?:to|on|in|into|with)\s+(?:(?:a|an|this|the|my|another|new)\s+){1,2}"
+    r"(?:notes?|documents?|docs?|mind ?maps?|white ?boards?|folders?)\b)?(?:\s+(?:for me|please|now))?\s*[.?!]*$"
+)
 _APP_VERBS = (
     "add|set|make|create|use|remove|delete|edit|rename|merge|draw|start|open|change|write|move|share|export|copy|duplicate|format"
     "|lock|unlock|hide|unhide|archive|unarchive|sort|undo|restore|pin|unpin|link|unlink|star|unstar|colou?r|tag|untag|split|print"
@@ -169,7 +175,7 @@ _APP_VERBS = (
 _APP_FIRST = re.compile(
     rf"^{_REQUEST_FRAME} (?:export|import|back ?up|sync|install|print|restore|encrypt)\b(?!\s+(?:the |my |a )?\w+ note\b)"
     rf"|^{_REQUEST_FRAME} (?:un)?tag\b(?!\s+(?:the|my) \w+ note)"
-    rf"|^{_REQUEST_FRAME} (?:{_APP_VERBS}) {_GENERIC_THING}(?:\s+(?:for me|please|now))?{_NOT_NAMED}"
+    rf"|^{_REQUEST_FRAME} (?:{_APP_VERBS}) {_GENERIC_THING}{_NOT_NAMED}"
     r"|^why (?:is|does) (?:the )?(?:app|chat|search|graph|atlas|tessellate|this|it) (?:so |really |very )?(?:slow|laggy|sluggish|lag)\b"
 )
 _FRAME_RE = re.compile(rf"^{_REQUEST_FRAME}\s+", re.IGNORECASE)

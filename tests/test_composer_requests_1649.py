@@ -33,6 +33,8 @@ def test_a_request_for_the_app_is_the_guides(frame, thing):
         "I want to edit my pasta note", "open my pasta note", "delete the note about pasta",
         "I need to delete the note about pasta", "can I see my pasta note", "I want to read the note on pasta",
         "how do I find the note about pasta", "I would like to edit the note called pasta",
+        "I want to use the note I wrote on Rome", "can I use my notes to plan a trip",
+        "I want to add a tag to the pasta note", "I want to move the note to Rome",
     ],
 )
 def test_a_specific_note_stays_with_the_notes(text):

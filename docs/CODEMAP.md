@@ -15733,20 +15733,20 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_about_app_first` | src/tessellate/ai/intent.py:188 |
-| `_classify` | src/tessellate/ai/intent.py:245 |
-| `_is_act` | src/tessellate/ai/intent.py:218 |
-| `_laughs` | src/tessellate/ai/intent.py:296 |
-| `_mash_word` | src/tessellate/ai/intent.py:313 |
+| `_about_app_first` | src/tessellate/ai/intent.py:194 |
+| `_classify` | src/tessellate/ai/intent.py:251 |
+| `_is_act` | src/tessellate/ai/intent.py:224 |
+| `_laughs` | src/tessellate/ai/intent.py:302 |
+| `_mash_word` | src/tessellate/ai/intent.py:319 |
 | `_matches_any` | src/tessellate/ai/intent.py:129 |
 | `_normalise` | src/tessellate/ai/intent.py:117 |
-| `_reads_as_app_question` | src/tessellate/ai/intent.py:235 |
+| `_reads_as_app_question` | src/tessellate/ai/intent.py:241 |
 | `_social_run` | src/tessellate/ai/intent.py:136 |
-| `classify` | src/tessellate/ai/intent.py:194 |
-| `is_mash` | src/tessellate/ai/intent.py:335 |
-| `is_test` | src/tessellate/ai/intent.py:360 |
-| `needs_retrieval` | src/tessellate/ai/intent.py:372 |
-| `request_core` | src/tessellate/ai/intent.py:178 |
+| `classify` | src/tessellate/ai/intent.py:200 |
+| `is_mash` | src/tessellate/ai/intent.py:341 |
+| `is_test` | src/tessellate/ai/intent.py:366 |
+| `needs_retrieval` | src/tessellate/ai/intent.py:378 |
+| `request_core` | src/tessellate/ai/intent.py:184 |
 
 ### src/tessellate/ai/janitor.py (30)
 
