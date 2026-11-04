@@ -76,7 +76,9 @@ def test_the_reply_to_pin_a_note_pins_it_with_undo(notebook, reply):
 @pytest.mark.parametrize("reply", REPLIES[:4])
 def test_every_pin_act_fills_its_slot(notebook, first, done, reply):
     _asked, events = notebook(first, reply)
-    assert done in _said(events), _said(events)
+    #: Any case: the confirmation's phrasing (`act_done`) is picked per reply, and
+    #: "Done: {what}." or "I have {what}." carries the label lower-cased.
+    assert done.lower() in _said(events).lower(), _said(events)
 
 
 @pytest.mark.parametrize("reply", REPLIES[:4])

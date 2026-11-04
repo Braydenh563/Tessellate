@@ -245,11 +245,11 @@ def _by_subject(body: str) -> list[str]:
     a turn ("Now", "Later") or sharing no content word with the group so far
     starts a new group. Sentences come from the composer's splitter and stay
     as written; a short or single-subject paragraph comes back whole."""
-    from tessellate.ai import composer_write
+    from tessellate.ai import composer_tidy
 
     if "\n" in body.strip() or _count(body) < SUBJECT_WORDS:
         return [body]
-    sentences = composer_write.sentences(body)
+    sentences = composer_tidy.sentences(body)
     if len(sentences) < SUBJECT_SENTENCES:
         return [body]
     groups = [[sentences[0]]]

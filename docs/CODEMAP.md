@@ -14959,7 +14959,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `voiced` | src/tessellate/ai/composer_threads.py:115 |
 | `with_article` | src/tessellate/ai/composer_threads.py:105 |
 
-### src/tessellate/ai/composer_tidy.py (13)
+### src/tessellate/ai/composer_tidy.py (14)
 
 | Name | File:line |
 |---|---|
@@ -14975,6 +14975,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `fixed` | src/tessellate/ai/composer_tidy.py:178 |
 | `formally` | src/tessellate/ai/composer_tidy.py:194 |
 | `same` | src/tessellate/ai/composer_tidy.py:121 |
+| `sentences` | src/tessellate/ai/composer_tidy.py:224 |
 | `tidy` | src/tessellate/ai/composer_tidy.py:185 |
 
 ### src/tessellate/ai/composer_tone.py (3)
@@ -15109,59 +15110,58 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `url_in` | src/tessellate/ai/composer_web.py:34 |
 | `web_off` | src/tessellate/ai/composer_web.py:63 |
 
-### src/tessellate/ai/composer_write.py (49)
+### src/tessellate/ai/composer_write.py (48)
 
 | Name | File:line |
 |---|---|
-| `Pass` | src/tessellate/ai/composer_write.py:150 |
+| `Pass` | src/tessellate/ai/composer_write.py:148 |
 | `_Line` | src/tessellate/ai/composer_write.py:123 |
-| `_block_sentences` | src/tessellate/ai/composer_write.py:445 |
-| `_blocks` | src/tessellate/ai/composer_write.py:178 |
-| `_bullet_items` | src/tessellate/ai/composer_write.py:260 |
-| `_by_kind` | src/tessellate/ai/composer_write.py:623 |
-| `_by_mode` | src/tessellate/ai/composer_write.py:685 |
-| `_centrality` | src/tessellate/ai/composer_write.py:355 |
-| `_cleaned` | src/tessellate/ai/composer_write.py:377 |
-| `_cut_to` | src/tessellate/ai/composer_write.py:388 |
-| `_day_heading` | src/tessellate/ai/composer_write.py:555 |
-| `_decap` | src/tessellate/ai/composer_write.py:205 |
-| `_done` | src/tessellate/ai/composer_write.py:642 |
-| `_each_joined` | src/tessellate/ai/composer_write.py:312 |
-| `_ended` | src/tessellate/ai/composer_write.py:221 |
-| `_hedge` | src/tessellate/ai/composer_write.py:372 |
-| `_kept` | src/tessellate/ai/composer_write.py:366 |
-| `_key_words` | src/tessellate/ai/composer_write.py:436 |
-| `_list_prose` | src/tessellate/ai/composer_write.py:291 |
-| `_named_by` | src/tessellate/ai/composer_write.py:498 |
-| `_note_block` | src/tessellate/ai/composer_write.py:594 |
-| `_note_blocks` | src/tessellate/ai/composer_write.py:578 |
-| `_note_points` | src/tessellate/ai/composer_write.py:505 |
-| `_relist` | src/tessellate/ai/composer_write.py:349 |
-| `_same` | src/tessellate/ai/composer_write.py:196 |
-| `_split_long` | src/tessellate/ai/composer_write.py:231 |
-| `_then_steps` | src/tessellate/ai/composer_write.py:323 |
-| `_tidy` | src/tessellate/ai/composer_write.py:467 |
-| `_toned` | src/tessellate/ai/composer_write.py:716 |
-| `_unchanged` | src/tessellate/ai/composer_write.py:677 |
-| `_user_today` | src/tessellate/ai/composer_write.py:670 |
-| `_when` | src/tessellate/ai/composer_write.py:542 |
-| `_words` | src/tessellate/ai/composer_write.py:192 |
-| `_write_up_name` | src/tessellate/ai/composer_write.py:489 |
-| `_write_up_pass` | src/tessellate/ai/composer_write.py:706 |
-| `_write_up_title` | src/tessellate/ai/composer_write.py:525 |
-| `compose` | src/tessellate/ai/composer_write.py:650 |
-| `note_name` | src/tessellate/ai/composer_write.py:481 |
-| `plain` | src/tessellate/ai/composer_write.py:226 |
-| `plainly` | src/tessellate/ai/composer_write.py:335 |
-| `refine_kind` | src/tessellate/ai/composer_write.py:615 |
-| `sentences` | src/tessellate/ai/composer_write.py:161 |
-| `shorter` | src/tessellate/ai/composer_write.py:398 |
-| `summary_of` | src/tessellate/ai/composer_write.py:421 |
-| `to_bullets` | src/tessellate/ai/composer_write.py:275 |
-| `to_prose` | src/tessellate/ai/composer_write.py:327 |
-| `trim` | src/tessellate/ai/composer_write.py:213 |
-| `with_summary` | src/tessellate/ai/composer_write.py:451 |
-| `write_up` | src/tessellate/ai/composer_write.py:563 |
+| `_block_sentences` | src/tessellate/ai/composer_write.py:426 |
+| `_blocks` | src/tessellate/ai/composer_write.py:159 |
+| `_bullet_items` | src/tessellate/ai/composer_write.py:241 |
+| `_by_kind` | src/tessellate/ai/composer_write.py:604 |
+| `_by_mode` | src/tessellate/ai/composer_write.py:666 |
+| `_centrality` | src/tessellate/ai/composer_write.py:336 |
+| `_cleaned` | src/tessellate/ai/composer_write.py:358 |
+| `_cut_to` | src/tessellate/ai/composer_write.py:369 |
+| `_day_heading` | src/tessellate/ai/composer_write.py:536 |
+| `_decap` | src/tessellate/ai/composer_write.py:186 |
+| `_done` | src/tessellate/ai/composer_write.py:623 |
+| `_each_joined` | src/tessellate/ai/composer_write.py:293 |
+| `_ended` | src/tessellate/ai/composer_write.py:202 |
+| `_hedge` | src/tessellate/ai/composer_write.py:353 |
+| `_kept` | src/tessellate/ai/composer_write.py:347 |
+| `_key_words` | src/tessellate/ai/composer_write.py:417 |
+| `_list_prose` | src/tessellate/ai/composer_write.py:272 |
+| `_named_by` | src/tessellate/ai/composer_write.py:479 |
+| `_note_block` | src/tessellate/ai/composer_write.py:575 |
+| `_note_blocks` | src/tessellate/ai/composer_write.py:559 |
+| `_note_points` | src/tessellate/ai/composer_write.py:486 |
+| `_relist` | src/tessellate/ai/composer_write.py:330 |
+| `_same` | src/tessellate/ai/composer_write.py:177 |
+| `_split_long` | src/tessellate/ai/composer_write.py:212 |
+| `_then_steps` | src/tessellate/ai/composer_write.py:304 |
+| `_tidy` | src/tessellate/ai/composer_write.py:448 |
+| `_toned` | src/tessellate/ai/composer_write.py:697 |
+| `_unchanged` | src/tessellate/ai/composer_write.py:658 |
+| `_user_today` | src/tessellate/ai/composer_write.py:651 |
+| `_when` | src/tessellate/ai/composer_write.py:523 |
+| `_words` | src/tessellate/ai/composer_write.py:173 |
+| `_write_up_name` | src/tessellate/ai/composer_write.py:470 |
+| `_write_up_pass` | src/tessellate/ai/composer_write.py:687 |
+| `_write_up_title` | src/tessellate/ai/composer_write.py:506 |
+| `compose` | src/tessellate/ai/composer_write.py:631 |
+| `note_name` | src/tessellate/ai/composer_write.py:462 |
+| `plain` | src/tessellate/ai/composer_write.py:207 |
+| `plainly` | src/tessellate/ai/composer_write.py:316 |
+| `refine_kind` | src/tessellate/ai/composer_write.py:596 |
+| `shorter` | src/tessellate/ai/composer_write.py:379 |
+| `summary_of` | src/tessellate/ai/composer_write.py:402 |
+| `to_bullets` | src/tessellate/ai/composer_write.py:256 |
+| `to_prose` | src/tessellate/ai/composer_write.py:308 |
+| `trim` | src/tessellate/ai/composer_write.py:194 |
+| `with_summary` | src/tessellate/ai/composer_write.py:432 |
+| `write_up` | src/tessellate/ai/composer_write.py:544 |
 
 ### src/tessellate/ai/context.py (6)
 
@@ -21046,24 +21046,24 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `DeskApi` | src/tessellate/core/desk_companion.py:285 |
-| `DeskCompanion` | src/tessellate/core/desk_companion.py:318 |
+| `DeskApi` | src/tessellate/core/desk_companion.py:286 |
+| `DeskCompanion` | src/tessellate/core/desk_companion.py:319 |
 | `_config` | src/tessellate/core/desk_companion.py:64 |
-| `_follow` | src/tessellate/core/desk_companion.py:507 |
+| `_follow` | src/tessellate/core/desk_companion.py:508 |
 | `_pref` | src/tessellate/core/desk_companion.py:77 |
 | `_screen_area` | src/tessellate/core/desk_companion.py:160 |
 | `_set_pref` | src/tessellate/core/desk_companion.py:89 |
-| `attach` | src/tessellate/core/desk_companion.py:482 |
+| `attach` | src/tessellate/core/desk_companion.py:483 |
 | `clamp_corner` | src/tessellate/core/desk_companion.py:176 |
-| `clean_size` | src/tessellate/core/desk_companion.py:250 |
+| `clean_size` | src/tessellate/core/desk_companion.py:251 |
 | `companion_ex_style` | src/tessellate/core/desk_companion.py:193 |
 | `enabled` | src/tessellate/core/desk_companion.py:85 |
-| `hit_script` | src/tessellate/core/desk_companion.py:262 |
+| `hit_script` | src/tessellate/core/desk_companion.py:263 |
 | `monitor_areas` | src/tessellate/core/desk_companion.py:115 |
 | `pick_area` | src/tessellate/core/desk_companion.py:148 |
-| `raise_on_desktop` | src/tessellate/core/desk_companion.py:214 |
-| `shutdown` | src/tessellate/core/desk_companion.py:524 |
-| `tray_menu_item` | src/tessellate/core/desk_companion.py:532 |
+| `raise_on_desktop` | src/tessellate/core/desk_companion.py:215 |
+| `shutdown` | src/tessellate/core/desk_companion.py:525 |
+| `tray_menu_item` | src/tessellate/core/desk_companion.py:533 |
 | `window_handle` | src/tessellate/core/desk_companion.py:206 |
 | `work_area` | src/tessellate/core/desk_companion.py:96 |
 

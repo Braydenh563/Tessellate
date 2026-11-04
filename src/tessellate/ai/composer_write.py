@@ -35,7 +35,7 @@ from dataclasses import dataclass
 from datetime import date
 
 from tessellate.ai import composer_tidy
-from tessellate.ai.composer_tidy import _FILLERS, _cap, _matched_case, concise
+from tessellate.ai.composer_tidy import _FILLERS, _cap, _matched_case, concise, sentences
 
 #: A sentence longer than this many words is split at its middle joint.
 LONG_WORDS = 24
@@ -137,8 +137,6 @@ class _Line:
 
 _HEADING = _Line(r"^\s{0,3}(#{1,6})\s+(\S.*)$")
 _ITEM = _Line(r"^(\s*)(?:([-*+])|(\d{1,3})[.)])\s+(?:\[[ xX]\]\s+)?(\S.*)$")
-#: A full stop that is not a sentence's end: a title, an initial, "e.g.".
-_ABBREVIATIONS = ("e.g.", "i.e.", "etc.", "vs.", "mr.", "mrs.", "ms.", "dr.", "st.", "approx.")
 _STOP = frozenset(
     "the a an and or but of to in on at for with from by is are was were be been it its this that these those "
     "i we you he she they my our your their me us them as so if then than there here not no do does did have has had "
@@ -156,23 +154,6 @@ class Pass:
 
 
 # --- reading -------------------------------------------------------------------
-
-
-def sentences(text: str) -> list[str]:
-    """The sentences of a run of prose, in order, as written."""
-    folded = " ".join((text or "").split())
-    if not folded:
-        return []
-    out: list[str] = []
-    buf = ""
-    for piece in re.split(r"(?<=[.!?])\s+", folded):
-        buf = f"{buf} {piece}".strip() if buf else piece
-        if buf.split()[-1].lower() not in _ABBREVIATIONS and not re.search(r"\b[A-Z]\.$", buf):
-            out.append(buf)
-            buf = ""
-    if buf:
-        out.append(buf)
-    return [s for s in out if s.strip()]
 
 
 def _blocks(text: str) -> list[tuple[str, list[str]]]:

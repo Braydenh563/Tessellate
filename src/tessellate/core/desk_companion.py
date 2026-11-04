@@ -207,7 +207,8 @@ def window_handle(window: Any) -> int | None:
     """The native handle of a pywebview window on Windows (its WinForms form), or None."""
     try:
         return int(window.native.Handle.ToInt64())
-    except Exception:  # noqa: BLE001 - not WinForms, or not built yet
+    except Exception as exc:  # noqa: BLE001 - not WinForms, or not built yet
+        logger.debug("desk companion: no native handle (%s); the window stays an ordinary one", exc)
         return None
 
 

@@ -7389,7 +7389,7 @@ def test_no_settings_field_height_reaches_a_search_fields_input() -> None:
     offenders = []
     for path in CSS:
         text = path.read_text(encoding="utf-8")
-        for m in re.finditer(r"([^{}]+)\{([^{}]*)\}", text):
+        for m in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", text):
             if not re.search(r"(^|[;\s])(height|min-height)\s*:", m.group(2)):
                 continue
             for sel in m.group(1).split(","):
