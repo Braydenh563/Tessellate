@@ -306,11 +306,11 @@ def test_the_app_tells_it_what_happened() -> None:
 
 def test_first_readers_wait_for_an_arriving_page() -> None:
     frame = _fn(MOTION, "atlasRigFrame")
-    assert "const settling = !!rig.reads && now < (globalThis.uiSettlingUntil || 0);" in frame
+    assert "const settling = !!rig.reads && (now < (globalThis.uiSettlingUntil || 0) || (!!buddy && nameMarkBuddyBehindCover()));" in frame  # INBOX 1667: a dialog over the figure holds the rig the same way
     assert "const look = (rig.dirty || !rig.reads) && !settling;" in frame
     assert "rig.still = busy || (settling && rig.dirty) ? 0" in frame, "it stays awake until it has read again"
     mood = _fn(ATLAS, "setAtlasMood")
-    assert "window.uiSettlingUntil" in mood and "setTimeout(() => nameMarkBuddyBlend(boxes, apply, 700), settling + 20)" in mood
+    assert "window.uiSettlingUntil" in mood and "setTimeout(() => nmb.afterClean(() => nameMarkBuddyBlend(boxes, apply, 700), 6, apply), Math.max(0, settling + 20))" in mood  # INBOX 1667: a frame on as well, and a dirty page snaps
     # The follow frame holds only while it is glued to a panel (1575's hold). One
     # harness (1575's nine-tab series at 4x, 500 seeded notes, three runs each),
     # reads and forced ms under the follow frame: glue-only 155 and 2.65 s, no hold

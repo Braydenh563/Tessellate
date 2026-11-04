@@ -25,8 +25,10 @@ def test_the_lite_set_changes_mood_without_the_hand_over() -> None:
     mood = _mood()
     lite = mood.index('const lite = document.documentElement.hasAttribute("data-atlas-lite");')
     blends = [i for i in range(len(mood)) if mood.startswith("nameMarkBuddyBlend(boxes", i)]
-    assert len(blends) == 2, "the settling timer and the direct call"
+    #: INBOX 1667: the settling timer and the direct call became one hand-over, a frame on (`nmb.afterClean`);
+    #: the intent (lite never hands over, the change is still made) is unchanged.
+    assert len(blends) == 1, "one deferred hand-over"
     assert lite < min(blends), "asked before either"
     tail = mood[lite : mood.index("if (next === ", lite)]
-    assert tail.count("!lite") == 2, "both hand-overs wait out the lite set"
+    assert tail.count("!lite") == 1, "the hand-over waits out the lite set"
     assert tail.rstrip().endswith("else apply();"), "the change is still made"

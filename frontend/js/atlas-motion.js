@@ -454,7 +454,9 @@ function atlasRigFrame(rig, now) {
   //: a read here paid the whole arriving page's restyle, 71 to 262ms at 4x.
   //: It works from what it read until the page has settled, and stays awake
   //: until it has read again.
-  const settling = !!rig.reads && now < (globalThis.uiSettlingUntil || 0);
+  //: Nor behind a dialog (INBOX 1667: 30 reads, 858ms forced across six Settings presses at 4x): the
+  //: corner figure is drawn at opacity 0 under it, and its read paid for the open dialog's restyles.
+  const settling = !!rig.reads && (now < (globalThis.uiSettlingUntil || 0) || (!!buddy && nameMarkBuddyBehindCover()));
   const look = (rig.dirty || !rig.reads) && !settling;
   const reads = look ? rig.arms.map((arm) => ({ ...atlasRigRead(arm), anim: live && arm.running.size > 0 })) : rig.reads;
   const turnMatrix = !look ? rig.turnMatrix : rig.pose && rig.heads.length ? /matrix\(([^)]+)\)/.exec(getComputedStyle(rig.pose).transform) : null;
