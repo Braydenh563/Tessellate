@@ -31,9 +31,25 @@ test("a new notebook starts in three steps, and the sample notebook comes and go
 
   // The sample's door is in the card's menu since D2 (it was a row of buttons
   // that changed the card's height).
-  const firstStepsMenu = async (name) => {
-    await steps.locator('button[aria-label="More about the first steps"]').click();
-    return page.locator(".action-menu:not(.hidden) [role=menuitem]", { hasText: name });
+  //: CI only (runs 41741228993, 41751277617; three local passes each): the item
+  //: was found and never visible for a minute. The menu is opened again until
+  //: the item shows, and what the page had is logged for the next reading.
+  const opener = steps.locator('button[aria-label="More about the first steps"]');
+  const firstStepsMenu = async (name, { present = true } = {}) => {
+    const item = page.locator(".action-menu:not(.hidden) [role=menuitem]", { hasText: name });
+    await opener.click();
+    if (!present) return item;
+    await expect(async () => {
+      if (await item.isVisible()) return;
+      console.log("first steps menu not shown:", await page.evaluate(() => [...document.querySelectorAll(".action-menu:not(.hidden)")].map((m) => {
+        const r = m.getBoundingClientRect();
+        return { items: m.textContent.trim().slice(0, 80), rect: [r.x, r.y, r.width, r.height].map(Math.round), connected: m.isConnected, display: getComputedStyle(m).display, visibility: getComputedStyle(m).visibility, expanded: document.querySelector(".first-steps .kebab-opener")?.getAttribute("aria-expanded") };
+      })));
+      await page.keyboard.press("Escape");
+      await opener.click();
+      await expect(item).toBeVisible({ timeout: 2_000 });
+    }).toPass({ timeout: 30_000 });
+    return item;
   };
   await (await firstStepsMenu("Try a sample notebook")).click();
   // Eight saves, the first loading the search model: allowed a minute.
@@ -53,7 +69,7 @@ test("a new notebook starts in three steps, and the sample notebook comes and go
   await (await firstStepsMenu("Remove the sample notes")).click();
   await expect.poll(async () => (await api(page, "/help/sample-notebook")).live).toBe(0);
   // Offered once: not again on this notebook.
-  await expect(await firstStepsMenu("Try a sample notebook")).toHaveCount(0);
+  await expect(await firstStepsMenu("Try a sample notebook", { present: false })).toHaveCount(0);
   await page.keyboard.press("Escape");
   const categories = (await api(page, "/categories")).map((c) => c.name);
   expect(categories, "the sample's categories went with it").not.toContain("Recipes");
