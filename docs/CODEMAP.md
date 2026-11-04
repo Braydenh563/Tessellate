@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7756, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8689, test files 2024, tests 17051, plan headings 1000, app scripts 28, boot scripts 37, script files 248.
+Counts: frontend functions 7756, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8689, test files 2024, tests 17055, plan headings 1000, app scripts 28, boot scripts 37, script files 248.
 
 ## Frontend functions (7756)
 
@@ -22115,11 +22115,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Engine` | src/tessellate/core/overlay/engine.py:252 |
-| `Monitor` | src/tessellate/core/overlay/engine.py:216 |
-| `Output` | src/tessellate/core/overlay/engine.py:223 |
-| `Perch` | src/tessellate/core/overlay/engine.py:207 |
-| `_adjoins` | src/tessellate/core/overlay/engine.py:241 |
+| `Engine` | src/tessellate/core/overlay/engine.py:256 |
+| `Monitor` | src/tessellate/core/overlay/engine.py:220 |
+| `Output` | src/tessellate/core/overlay/engine.py:227 |
+| `Perch` | src/tessellate/core/overlay/engine.py:211 |
+| `_adjoins` | src/tessellate/core/overlay/engine.py:245 |
 
 ### src/tessellate/core/overlay/host.py (2)
 
@@ -23828,7 +23828,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17051)
+## Tests (17055)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25164,7 +25164,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_host.py | 25 |
 | tests/test_overlay_idle.py | 9 |
 | tests/test_overlay_moves.py | 26 |
-| tests/test_overlay_ride_1670.py | 12 |
+| tests/test_overlay_ride_1670.py | 16 |
 | tests/test_overlay_roam.py | 19 |
 | tests/test_overlay_roam_runner.py | 10 |
 | tests/test_overlay_runner.py | 22 |
