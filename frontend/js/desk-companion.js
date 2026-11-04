@@ -107,7 +107,7 @@
     if (overlay && next === "rest") return;
     let height = SIZES[next][1] - (overlay ? OVERLAY_TRIM : 0);
     if (overlay && (next === "menu" || next === "context")) height = menuHeight(height);
-    ask("set_size", SIZES[next][0], height);
+    ask("set_size", SIZES[next][0], height, next);
   }
 
   //: The menu's own height in CSS pixels: its rows plus its padding and border,

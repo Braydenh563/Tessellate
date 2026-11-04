@@ -84,7 +84,9 @@ def test_when_due_the_overlay_is_shown_and_no_card_window_is_made(over):
     over.set_main_hidden(True)
     runner = FakeRunner.started[0]
     assert runner.calls == ["start", "show"] and runner.look == "masculine"
-    assert over.window is None and over.shown
+    # The quick panel is made ahead, hidden (INBOX 1658); there is no card window.
+    assert over.window is not None and "overlay=1" in over.webview.made[0].options["url"] and not over.panel_shown and over.shown
+    assert over.webview.made[0].options["hidden"] is True and ("show",) not in over.window.calls
     over.set_main_hidden(False)
     assert runner.calls[-1] == "hide" and not over.shown
 
@@ -123,7 +125,7 @@ def test_a_click_opens_the_quick_panel_beside_the_figure_and_a_second_click_clos
     panel = over.webview.made[0]
     assert panel.options["url"].endswith("?card=1&overlay=1") and panel.options["focus"] is True
     assert ("show",) in panel.calls and over.panel_shown
-    assert not any(c[0] == "js" for c in panel.calls)  # a new page opens its own menu
+    assert any(c[0] == "js" and "menu" in c[1] for c in panel.calls)  # the kept page is told which menu
     runner.on_click("right", (1000, 800, 200, 240), 96)
     assert any(c[0] == "js" and "context" in c[1] for c in panel.calls)
     runner.on_click("left", (1000, 800, 200, 240), 96)
@@ -165,7 +167,7 @@ def test_a_click_after_close_does_nothing(over):
     runner = FakeRunner.started[0]
     over.close()
     runner.on_click("left", (0, 0, 10, 10), 96)
-    assert not over.webview.made
+    assert len(over.webview.made) == 1 and ("show",) not in over.webview.made[0].calls
 
 
 def test_off_windows_there_is_no_overlay_by_default(monkeypatch):
@@ -232,7 +234,7 @@ def test_item2_a_death_after_close_or_from_a_replaced_runner_is_ignored(over):
     runner = FakeRunner.started[0]
     over.close()
     runner.on_died()
-    assert not over.webview.made
+    assert len(over.webview.made) == 1
 
 
 def test_item3_a_drop_while_the_panel_is_open_moves_it_beside_the_figure(over):
@@ -247,7 +249,7 @@ def test_item3_a_drop_while_the_panel_is_open_moves_it_beside_the_figure(over):
 def test_item3_a_drop_with_no_panel_only_saves_the_place(over, prefs):  # noqa: F811
     over.set_main_hidden(True)
     FakeRunner.started[0].on_settle(300, 200)
-    assert prefs[dc.OVERLAY_POS_PREF] == [300, 200] and over.window is None
+    assert prefs[dc.OVERLAY_POS_PREF] == [300, 200] and not over.panel_shown
 
 
 def test_item4_a_right_click_on_a_first_open_is_remembered_for_the_page_to_ask(over):
@@ -348,7 +350,6 @@ def test_a_right_click_makes_and_shows_the_panel_at_the_context_size_not_the_men
     over.set_main_hidden(True)
     FakeRunner.started[0].on_click("right", (1000, 800, 200, 240), 96)
     panel = over.webview.made[0]
-    assert (panel.options["width"], panel.options["height"]) == dc.PANEL_SIZES["context"]
     assert dc.PANEL_SIZES["context"][1] < dc.PANEL_SIZES["menu"][1]
     assert all(c[1:] == dc.PANEL_SIZES["context"] for c in panel.calls if c[0] == "resize")
 
@@ -405,3 +406,49 @@ def test_the_menu_height_is_capped_and_walk_is_not_offered_when_locked():
     js = (Path(__file__).resolve().parent.parent / "frontend" / "js" / "desk-companion.js").read_text(encoding="utf-8")
     assert "screen.availHeight" in js.split("function menuHeight(")[1].split("\n  }\n")[0]
     assert "!locked && motion?.still" in js
+
+
+# --- INBOX 1658: one writer for the panel's height, made once, no resize after show -------------
+
+
+def _count(panel, name):
+    return sum(1 for c in panel.calls if c[0] == name)
+
+
+def test_1658_the_panel_is_made_once_ahead_and_a_click_shows_it_with_one_placement(over):
+    over.set_main_hidden(True)
+    panel = over.webview.made[0]
+    assert len(over.webview.made) == 1 and panel.calls == []
+    runner = FakeRunner.started[0]
+    runner.on_click("left", (1000, 800, 200, 240), 96)
+    assert len(over.webview.made) == 1
+    assert _count(panel, "show") == 1 and _count(panel, "resize") == 1 and _count(panel, "move") == 1
+    assert panel.calls.index(("show",)) > max(i for i, c in enumerate(panel.calls) if c[0] in ("resize", "move"))
+
+
+def test_1658_the_pages_height_report_after_show_places_nothing_and_is_kept_for_next_time(over):
+    over.set_main_hidden(True)
+    runner = FakeRunner.started[0]
+    panel = over.webview.made[0]
+    runner.on_click("left", (1000, 800, 200, 240), 96)
+    placed = list(panel.calls)
+    api = dc.DeskApi(over)
+    for _ in range(10):  # the owner's log: ten alternating placements in two seconds
+        api.set_size(208, 154, "menu")
+    assert panel.calls == placed and over.size == dc.PANEL_SIZES["menu"]
+    runner.on_click("left", (1000, 800, 200, 240), 96)  # closes
+    panel.calls.clear()
+    runner.on_click("left", (1000, 800, 200, 240), 96)
+    assert [c[1:] for c in panel.calls if c[0] == "resize"] == [(208, 154)]
+    assert _count(panel, "show") == 1 and _count(panel, "resize") == 1
+
+
+def test_1658_a_note_opened_from_the_menu_is_still_a_real_resize_and_back(over):
+    over.set_main_hidden(True)
+    FakeRunner.started[0].on_click("left", (1000, 800, 200, 240), 96)
+    panel = over.webview.made[0]
+    api = dc.DeskApi(over)
+    api.set_size(320, 376, "note")
+    assert panel.calls[-2][1:] == (320, 376)
+    api.set_size(208, 154, "menu")
+    assert panel.calls[-2][1:] == (208, 154)

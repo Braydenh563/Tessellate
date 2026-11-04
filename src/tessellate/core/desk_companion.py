@@ -633,8 +633,8 @@ class DeskApi:
     def open_hit(self, kind: Any, ident: Any) -> bool:
         return self._owner.open_main(hit_script(kind, ident))
 
-    def set_size(self, width: Any, height: Any) -> list[int]:
-        return list(self._owner.resize(*clean_size(width, height)))
+    def set_size(self, width: Any, height: Any, state: Any = "") -> list[int]:
+        return list(self._owner.resize(*clean_size(width, height), state=state if isinstance(state, str) else ""))
 
     def drag_start(self) -> list[int]:
         return list(self._owner.top_left())
@@ -737,6 +737,13 @@ class DeskCompanion:
         #: Which menu the panel page opens on when it first asks (a right click
         #: on a new page cannot be sent: the page is not listening yet).
         self._pending_kind = "menu"
+        #: The one source of the menu panel's height (INBOX 1658: the click and the page
+        #: each asked a height, 336 and 308 physical, and the window flipped between
+        #: them ten times in two seconds). Python places the panel before it is shown, at
+        #: `panel_size(kind)`; the page only reports what it measured, which is kept here
+        #: for the next open. `_panel_state` is the page's panel now showing.
+        self._panel_heights: dict[str, int] = {}
+        self._panel_state = ""
         #: The figure's size in physical pixels and dpi at the last click.
         self._pet_phys: tuple[int, int, int] | None = None
         #: The figure's physical rectangle at the last click or drop, and where the
@@ -761,10 +768,26 @@ class DeskCompanion:
         corner = self.corner or self._home()
         return corner[0] - self.size[0], corner[1] - self.size[1]
 
-    def resize(self, width: int, height: int) -> tuple[int, int]:
+    def panel_size(self, kind: str) -> tuple[int, int]:
+        """The quick panel's size for a menu kind: the page's last measured height
+        when there is one, else the starting guess."""
+        width, height = PANEL_SIZES[kind]
+        return width, self._panel_heights.get(kind, height)
+
+    def resize(self, width: int, height: int, state: str = "") -> tuple[int, int]:
         """Resize about the bottom-right corner, so a panel opens up and to the
-        left of the companion rather than off the screen's edge."""
+        left of the companion rather than off the screen's edge. The overlay panel's
+        menu and context heights are only learned while that menu is the open panel
+        (see `_panel_heights`): the window was placed at that size before it was
+        shown. It moves again only for a panel the person opens from it (note,
+        search) or back from one."""
         with _lock:
+            if self.panel and state in PANEL_SIZES:
+                self._panel_heights[state] = height
+                if self._panel_state in PANEL_SIZES or not self._panel_state:
+                    return self.size
+            if self.panel and state:
+                self._panel_state = state
             self.size = (width, height)
             corner = self.corner or self._home()
             if self.panel and self.pet_rect is not None:
@@ -1070,6 +1093,7 @@ class DeskCompanion:
             self.runner.show()
             self.shown = True
             logger.info("desk companion: overlay shown")
+            self._make_panel()
             return True
         if self.runner is not None and self.shown:
             self.runner.hide()
@@ -1077,6 +1101,22 @@ class DeskCompanion:
             self.shown = False
             logger.info("desk companion: overlay hidden")
         return self.runner is not None
+
+    def _make_panel(self) -> None:
+        """The quick panel's window, made once and kept hidden, so a click only
+        places and shows it (INBOX 1658: it was made at click time and the figure
+        lagged). A failure leaves it to the first click."""
+        if self.window is not None:
+            return
+        try:
+            self.panel = True
+            self.size = self.panel_size("menu")
+            self.window = self._make()
+            logger.info("desk companion: quick panel made hidden")
+        except Exception:  # noqa: BLE001 - the first click tries again
+            logger.warning("desk companion: the quick panel could not be made ahead", exc_info=True)
+            self.panel = False
+            self.window = None
 
     def _hide_panel_window(self) -> None:
         if self.window is not None and self.panel_shown:
@@ -1199,22 +1239,21 @@ class DeskCompanion:
             self._pending_kind = "context" if kind == "right" else "menu"
             area = _screen_area(self.webview, (self.pet_rect[0], self.pet_rect[1] + self.pet_rect[3]))
             self.panel = True
-            self.size = PANEL_SIZES[self._pending_kind]
+            self._panel_state = self._pending_kind
+            self.size = self.panel_size(self._pending_kind)
             self.corner = panel_corner(self.pet_rect, self.size, area)
             self._update_panel_box()
-            fresh = self.window is None
-            if fresh:
+            if self.window is None:
                 self.window = self._make()
                 logger.info("desk companion: quick panel made beside the figure at %s", self.top_left())
-            else:
-                self._place()
+            # The one placement of the click, before the window is shown; nothing
+            # resizes or moves it after (the page's own height report is only kept).
+            self._place()
             self.window.show()
             self.panel_shown = True
-            self._place()
-            if not fresh:
-                self.window.evaluate_js(
-                    "window.dispatchEvent(new CustomEvent('desk-open',{detail:%s}))" % json.dumps("context" if kind == "right" else "menu")
-                )
+            self.window.evaluate_js(
+                "window.dispatchEvent(new CustomEvent('desk-open',{detail:%s}))" % json.dumps("context" if kind == "right" else "menu")
+            )
             logger.info("desk companion: quick panel shown (%s)", kind)
         except Exception:  # noqa: BLE001 - a panel that fails leaves the figure walking
             logger.warning("desk companion: the quick panel failed", exc_info=True)
