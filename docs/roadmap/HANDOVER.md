@@ -20,12 +20,13 @@
 
 ## Morning summary
 
-Away run 2026-11-04 (owner golfing; weekly 75% to 76%, tier pro), branch claude/next-queue-1102, PR 212 (not merged; the owner merges).
+Away run 2026-11-04, second half (lean-workflow away; weekly 76%, tier pro), branch claude/next-queue-1102, PR 212 (not merged; the owner merges), head pushed past 35863d4.
 
-- Done: perch 1640, composer 1599 and 1602, overlay O1 to O4 (1645), stopwatch 1651, diagram zoom readout 1652, first-show re-place 1650, Atlas blink both eyes 1644 plus the editor-keys E2E fix, Settings Running copies 1641 (58a1836: Shut down only asks the copy with its token; the reviewer's kill-by-pid fallback was removed, pid reuse made it unsafe).
-- Owner checks on Windows: overlay O5 (1645), the 1650 re-place (log line "held: True" after a first show), Running copies Shut down.
-- Stopped at the context line (278k per turn, past 200k); a fresh session takes the queue.
-- Next (`.claude/work-order.md`): 1649 composer act wording, 1643 graph redraw at rest plus the 03:08Z lag lines, routes_whiteboard.py re-exports (CodeQL notes), overlay gaps, 1634, diagram R3. conftest changed this session (autouse TESSELLATE_RUN_DIR): run the full suite first.
+- Done: Running copies 1641 (Shut down only asks, with its token), composer requests 1649 (app-verb requests get the how-to; edit answer names the row pencil and F2), graph 1643 frame bound (stuck state not reproduced), overlay gaps (click-away, runner death brings the card back, panel follows a drop, first-open right click), CI and CodeQL fixes, first-run E2E retry.
+- Owner checks on Windows: overlay O5 and the gaps above (fakes only), 1650 "held: True", Running copies Shut down.
+- Owner choice open: goose-like roaming (1) and a carried note card (3) were offered; nothing queued until picked.
+- Stopped at the context line (255k per turn); a fresh session takes the queue.
+- Next (`.claude/work-order.md`): diagram R3 to R5 (DOCUMENTS_PLAN 22), composer 1653 and the "Also:" cut, routes_whiteboard.py re-exports, 1634, mixed-DPI panel placement. conftest changed (autouse TESSELLATE_RUN_DIR): CI covers the full suite; run it locally first in the next session if CI is red.
 
 ## Earlier morning summary (2026-10-30)
 
