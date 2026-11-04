@@ -380,7 +380,7 @@ const replyCalc = { units: null, opened: 0, tabs: [["work", "Sum"], ["convert", 
 const REPLY_CALC_HELP = [
   "Worked out by the app, with no model.",
   "Sum: type or key a sum, a percentage or a conversion (12 * (3 + 4), 15% of 80, 5 km to miles). It is drawn as maths under the box as you type, and a preview shows once it is a whole sum; Enter or = keeps it. Scientific adds sine, cosine, tangent and their inverses, logs, powers, roots, a factorial, pi and e, with Degrees or Radians and a memory (MC, MR, M+, M-).",
-  "Units: pick a kind, an amount and two units. Currency rates are set by hand and dated, not today's rate.",
+  "Units: pick a kind, an amount and two units. Currency rates are set by hand and dated, not today's rate. Time zone takes a time of day and two places (09:00, London, Tokyo) and reads each place's clock from this computer, so it works offline.",
   "Equation: click a dotted box to fill it; a box you empty again comes back. / makes a fraction, ^ and _ a power or a subscript, and LaTeX such as \\frac or \\alpha turns into the symbol as you type it. Pick a structure or a symbol from the palette; a selection goes into the first box. The row of groups jumps to one; Pin makes a tile a favourite, and Recent shows the last ones used. Inline sits in a sentence, Display on its own line. Click a drawn equation in a note, or open this with the cursor inside one, to edit it.",
   "History: each tab keeps its last twenty answers on this device. Open History under the keypad, press a row to put it back in the fields, or use Copy, Edit (the next keep replaces that row) and Remove; Clear empties it, and Undo brings it back. Every answer has a Copy button beside it.",
   "Insert writes into the text box you opened this from (Alt+= in a box, or Ctrl+K over one). With none open, Copy is the way out. Ctrl+Enter inserts an equation.",
@@ -399,7 +399,7 @@ const REPLY_CALC_KEYS = [
 const REPLY_CALC_PAIRS = {
   length: ["kilometres", "miles"], mass: ["kilograms", "pounds"], volume: ["litres", "US gallons"],
   temperature: ["°C", "°F"], speed: ["kilometres an hour", "miles an hour"], area: ["square metres", "square feet"],
-  time: ["hours", "minutes"], data: ["gigabytes", "megabytes"], currency: ["USD", "EUR"],
+  time: ["hours", "minutes"], data: ["gigabytes", "megabytes"], currency: ["USD", "EUR"], timezone: ["London", "Tokyo"],
 };
 
 const REPLY_CALC_NAMES = { clear: "Clear", "/": "Divide", "*": "Times", "-": "Minus", "+": "Plus", "%": "Percent", equals: "Work it out", ".": "Point" };
@@ -454,15 +454,17 @@ function openCalculator(input = "", mode = "work", { target = null } = {}) {
 }
 
 //: A dashboard widget's body (INBOX 1558): the Sum and Units tabs drawn into it through the dialog's own build, with no Insert and no focus taken.
-openCalculator.inline = (host, mode = "work") => replyCalcBuild(host, "", mode, { inline: true });
+//: `only` draws that one tab with no strip (the Convert widget, INBOX 1617).
+openCalculator.inline = (host, mode = "work", { only = false } = {}) => replyCalcBuild(host, "", mode, { inline: true, only });
 
-function replyCalcBuild(card, input, mode = "work", { target = null, close = () => {}, inline = false } = {}) {
+function replyCalcBuild(card, input, mode = "work", { target = null, close = () => {}, inline = false, only = false } = {}) {
   //: One height for all three tabs, the strip and the action row pinned and the panes between them scrolling (INBOX 1530 g M2: on a bottom-anchored sheet the strip moved 188 px between tabs and 4 to 40 px on a result).
   card.classList.add("calc-card");
   if (inline) card.classList.add("calc-inline");
   //: An inline calculator has no Equation tab (the field needs its own bundle and a box to write into).
-  const kinds = inline ? replyCalc.tabs.filter(([key]) => key !== "equation") : replyCalc.tabs;
+  let kinds = inline ? replyCalc.tabs.filter(([key]) => key !== "equation") : replyCalc.tabs;
   if (!kinds.some(([key]) => key === mode)) mode = "work";
+  if (only) kinds = kinds.filter(([key]) => key === mode);
   //: A tab strip, not a pill (DESIGN.md, "A popup that chooses a kind").
   const modes = document.createElement("div");
   modes.className = "tabs-line popup-kinds calc-modes";
@@ -470,7 +472,8 @@ function replyCalcBuild(card, input, mode = "work", { target = null, close = () 
   modes.setAttribute("aria-label", "Calculator mode");
   const actions = replyCalcActions(target, close, inline);
   const equation = inline ? null : replyCalcEquation(target, close, actions);
-  const panes = { work: replyCalcWorkPane(input, actions), convert: replyCalcConvertPane(actions), ...(equation ? { equation: equation.pane } : {}) };
+  const made = { work: () => replyCalcWorkPane(input, actions), convert: () => replyCalcConvertPane(actions), equation: () => equation.pane };
+  const panes = Object.fromEntries(kinds.map(([key]) => [key, made[key]()]));
   //: Where focus goes when a tab is chosen with a press; an arrow keeps it on the strip (INBOX 1530 g M4: the first arrow onto Equation put the caret in the math field, so the next arrow moved inside the equation instead of on to the tab after it).
   const focusIn = {
     work: () => panes.work.querySelector(".calc-input")?.focus(),
@@ -522,7 +525,7 @@ function replyCalcBuild(card, input, mode = "work", { target = null, close = () 
   });
   modes.append(...tabs);
   wrap.append(...Object.values(panes));
-  card.append(modes, wrap, actions.el);
+  card.append(...(only ? [] : [modes]), wrap, actions.el);
   //: **The head's '?'** (DESIGN.md, a dialog's head; INBOX 1530 g M6): what each tab does and where Insert writes, behind the title as every dialog's is. It replaces the sub line (a sentence the dialog carried at all times, 32 px of the card) and the Equation tab's own '?'.
   const head = card.querySelector(".sheet-head");
   if (head) {
@@ -1541,12 +1544,19 @@ function replyCalcConvertPane(actions) {
     actions.sync();
   };
   const fillKind = () => {
+    //: A time zone takes a time of day, not a number; the type follows the kind and the figure starts at a morning.
+    const zone = kind.value === "timezone";
+    if (zone !== (amount.type === "time")) {
+      amount.type = zone ? "time" : "number";
+      amount.value = zone ? "09:00" : "1";
+      amount.setAttribute("aria-label", zone ? "Time of day" : "Amount");
+    }
     const names = replyCalc.units?.[kind.value] || [];
     const [one, two] = REPLY_CALC_PAIRS[kind.value] || [];
     fill(from, names, one);
     fill(to, names, two || names[1]);
     const dated = new Date(`${replyCalc.units?.rates_date}T12:00`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
-    note.textContent = kind.value === "currency" ? `Rates from ${dated}, set by hand: not today's rate.` : "";
+    note.textContent = kind.value === "currency" ? `Rates from ${dated}, set by hand: not today's rate.` : zone ? "Today's date, read from this computer's clock." : "";
   };
   const pickKind = () => {
     fillKind();
@@ -1566,7 +1576,7 @@ function replyCalcConvertPane(actions) {
     .then((units) => {
       replyCalc.units = units;
       const kinds = Object.keys(units).filter((key) => Array.isArray(units[key]));
-      kind.replaceChildren(...kinds.map((key) => new Option(key[0].toUpperCase() + key.slice(1), key)));
+      kind.replaceChildren(...kinds.map((key) => new Option(key === "timezone" ? "Time zone" : key[0].toUpperCase() + key.slice(1), key)));
       kind.value = kinds.includes("length") ? "length" : kinds[0];
       pickKind();
     })

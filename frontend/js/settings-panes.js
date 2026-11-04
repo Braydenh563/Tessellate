@@ -1130,7 +1130,7 @@ const POPUP_TOOLS = [
     guide: "calculator", open: (t) => ensureModule("appPalette").then(() => popupToolMaths({ target: t || null })),
   },
   {
-    id: "convert", name: "Convert units", icon: "ph:ruler", group: "Ask & chat", widget: "calculator",
+    id: "convert", name: "Convert units", icon: "ph:ruler", group: "Ask & chat", widget: "convert",
     keywords: "convert conversion unit units miles km kg pounds celsius fahrenheit litres currency",
     about: "Length, weight, temperature, volume and currency, with no model; the second tab of Calculator and equations.",
     keys: "/calc", where: "Convert units, in Calculator and equations",
@@ -1144,14 +1144,14 @@ const POPUP_TOOLS = [
     guide: "timer", open: () => ensureModule("utilities").then(() => openClockPanel("timer")),
   },
   {
-    id: "stopwatch", name: "Start a stopwatch", icon: "ph:timer", group: "Plan & focus", widget: "clock",
+    id: "stopwatch", name: "Start a stopwatch", icon: "ph:timer", group: "Plan & focus", widget: "stopwatch",
     keywords: "stopwatch count up",
     about: "Opens the Clock.",
     keys: "Ctrl+K", where: "Start a stopwatch",
     guide: "timer", open: () => ensureModule("utilities").then(() => openClockPanel("stopwatch")),
   },
   {
-    id: "alarm", name: "Set an alarm", icon: "ph:alarm", group: "Plan & focus", widget: "clock",
+    id: "alarm", name: "Set an alarm", icon: "ph:alarm", group: "Plan & focus", widget: "alarm",
     keywords: "alarm",
     about: "Opens the Clock.",
     keys: "Ctrl+K", where: "Set an alarm",

@@ -24,10 +24,10 @@ def test_a_ring_with_the_time_large():
 
 
 def test_presets_are_a_segmented_control_with_a_stepper():
-    assert "const FOCUS_PRESETS = [5, 15, 25, 50];" in JS
+    assert "const FOCUS_PRESETS = [5, 15, 25, 50, 60];" in JS
     assert 'seg.className = "seg focus-presets-seg";' in WIDGET
     assert 'aria-pressed' in JS.split("function paintFocusTimer(")[1].split("\n}\n")[0]
-    assert "focusStep(-5)" in WIDGET and "focusStep(5)" in WIDGET
+    assert "focusStep(-1)" in WIDGET and "focusStep(1)" in WIDGET
 
 
 def test_one_primary_that_starts_and_pauses():
@@ -45,3 +45,41 @@ def test_the_end_chimes_notifies_and_may_start_a_break():
 def test_today_s_focused_minutes_are_kept_per_day():
     assert "function focusTodaySeconds(" in JS and 'prefs.set("focusToday"' in JS
     assert 'id = "focus-today"' in WIDGET.replace("today.id", "id")
+
+
+def _step_walk(start: int, dir: int, count: int) -> list[int]:
+    """Runs the widget's own `focusStep` in node against a stub timer."""
+    import json
+    import shutil
+    import subprocess
+
+    import pytest
+
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node is not installed")
+    fn = "function focusStep(" + JS.split("function focusStep(")[1].split("\n}\n")[0] + "\n}"
+    script = (
+        f"const focusTimer = {{ focusTotal: {start} * 60 }};\n"
+        "const seen = [];\n"
+        "function setFocusTimer(m) { focusTimer.focusTotal = m * 60; seen.push(m); }\n"
+        f"{fn}\n"
+        f"for (let i = 0; i < {count}; i++) focusStep({dir});\n"
+        "console.log(JSON.stringify(seen));"
+    )
+    out = subprocess.run([node, "-e", script], capture_output=True, text=True, check=True).stdout
+    return json.loads(out)
+
+
+def test_steps_are_one_minute_below_ten_and_five_above():
+    assert _step_walk(1, 1, 12) == [2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 25]
+    assert _step_walk(25, -1, 18) == [20, 15, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 1, 1, 1, 1, 1, 1]
+    assert _step_walk(12, 1, 1) == [15] and _step_walk(12, -1, 1) == [10]
+    assert _step_walk(178, 1, 3) == [180, 180, 180]
+
+
+def test_the_minutes_are_typeable_and_the_presets_reach_an_hour():
+    assert 'value.type = "number"' in WIDGET and 'value.max = "180"' in WIDGET
+    assert 'value.addEventListener("change", typed)' in WIDGET
+    # A repaint never overwrites the figure being typed.
+    assert "document.activeElement !== step" in JS.split("function paintFocusTimer(")[1].split("\n}\n")[0]

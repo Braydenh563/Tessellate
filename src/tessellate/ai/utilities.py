@@ -579,6 +579,15 @@ _CLOCK_IN = lazy_compile(
 )
 
 
+#: The places the Units tab offers for a time-zone conversion; each is read by `zone_for` (tests/test_convert_zones_1617.py).
+CONVERT_PLACES = (
+    "London", "Dublin", "Lisbon", "Paris", "Berlin", "Madrid", "Rome", "Athens", "Cairo", "Lagos", "Nairobi",
+    "Johannesburg", "Dubai", "Mumbai", "Bangkok", "Singapore", "Hong Kong", "Beijing", "Seoul", "Tokyo",
+    "Perth", "Sydney", "Auckland", "Honolulu", "Los Angeles", "Denver", "Chicago", "New York", "Toronto",
+    "Mexico City", "Sao Paulo", "Reykjavik",
+)
+
+
 @functools.lru_cache(maxsize=1)
 def _zone_cities() -> dict[str, str]:
     """The zone database's own city names ("new york") to their zones; read

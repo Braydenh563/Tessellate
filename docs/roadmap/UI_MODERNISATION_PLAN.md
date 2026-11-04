@@ -1556,6 +1556,3 @@ Rows: T3 (learnaudit); T1, T2 and T4 are built (HISTORY.md, "Moved from the plan
 
 ## Placed from INBOX, 2026-11-03
 
-1617. **Owner, 2026-11-03 (screenshot, the Focus timer widget):** "I feel like the focus timer widget needs an upgrade, like maybe additional alarm and stopwatch widgets?? how about widgets for the conversion etc?? also for the timer, can the user do custom ones and can there be lower options like 2 minutes and higher ones like an hour??" Today: presets 5, 15, 25, 50 and a minus and plus in 5-minute steps, 1 to 180 minutes (dashboard.js `FOCUS_PRESETS`, `focusStep`); 2 minutes is not reachable (5 then 1). Recommendation (taken): the minutes value is typeable (any 1 to 180), the steps are 1 minute below 10 and 5 above, the presets 5, 15, 25, 50, 60; a Stopwatch (laps) and an Alarm (a time of day, a label, the reminder sound and notification) as two more widgets on the same clock recipe; a Convert widget on the Calculator's converter (units, currency only if offline rates exist, time zones). Guide, Help and the widget list move with them.
-
-**1565** (app-wide quiet motion, the hover card's fade): built 9ba5bda, 6d7b9b6, moved to HISTORY.md ("Moved from the plans, 2026-11-03 (a31k-1103: 1565 quiet motion)"); leftovers in `agent-remaining/a31k-1103.md`.

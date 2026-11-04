@@ -593,9 +593,10 @@ async function insertTemplate(template, caught) {
   }
 
   //: Draws the Clock into `card` (the popup's card, or a widget's body when `inline`). Ids carry the view's number so two can be on screen.
-  function clockPanelBuild(card, tab, { inline = false } = {}) {
+  //: `only` draws one tab's pane with no strip (the Stopwatch and Alarm widgets, INBOX 1617); a stopwatch's list holds stopwatches only, an alarm's none (an alarm is a reminder).
+  function clockPanelBuild(card, tab, { inline = false, only = false } = {}) {
     const n = ++clockPanel.made;
-    const view = { select: null, list: null, empty: null, rows: new Map(), wasHere: false };
+    const view = { select: null, list: null, empty: null, rows: new Map(), wasHere: false, kinds: only ? (tab === "stopwatch" ? ["stopwatch"] : []) : null };
     clockMounts.add(view);
     if (inline) card.classList.add("clock-inline");
     else {
@@ -605,8 +606,9 @@ async function insertTemplate(template, caught) {
     const strip = clockEl("div", "tabs-line popup-kinds clock-tabs");
     strip.setAttribute("role", "tablist");
     strip.setAttribute("aria-label", "Clock tools");
-    const panes = { timer: clockTimerPane(), stopwatch: clockStopwatchPane(), alarm: clockAlarmPane() };
-    const tabs = CLOCK_TABS.map(([key, words]) => {
+    const made = { timer: clockTimerPane, stopwatch: clockStopwatchPane, alarm: clockAlarmPane };
+    const panes = Object.fromEntries(Object.entries(made).filter(([key]) => !only || key === tab).map(([key, build]) => [key, build()]));
+    const tabs = CLOCK_TABS.filter(([key]) => !only || key === tab).map(([key, words]) => {
       const button = clockEl("button", "", words);
       button.type = "button";
       button.setAttribute("role", "tab");
@@ -640,13 +642,20 @@ async function insertTemplate(template, caught) {
       tabs[to].focus();
     });
     strip.append(...tabs);
+    if (only) {
+      card.classList.add("clock-only");
+      const pane = panes[tab];
+      pane.removeAttribute("aria-labelledby");
+      pane.setAttribute("role", "group");
+      pane.setAttribute("aria-label", tab === "alarm" ? "Alarm" : "Stopwatch");
+    }
     const running = clockEl("div", "clock-running");
     const heading = clockEl("h3", "muted clock-heading", "Running");
-    view.empty = clockEl("p", "muted clock-empty", "Nothing is running. Start a timer or a stopwatch above.");
+    view.empty = clockEl("p", "muted clock-empty", only ? "No stopwatch is running. Press Start above." : "Nothing is running. Start a timer or a stopwatch above.");
     view.list = clockEl("ul", "clock-list");
     view.list.setAttribute("aria-label", "Running clocks");
     running.append(heading, view.empty, view.list);
-    card.append(strip, ...Object.values(panes), running);
+    card.append(...(only ? [] : [strip]), ...Object.values(panes), ...(only && tab === "alarm" ? [] : [running]));
     select(tab, { focus: false });
     paintClockPanel();
     //: A widget is drawn with the page and takes no focus. The popup does, after `openSheet` has attached the card and made its own focus pass (a microtask, not a frame).
@@ -751,6 +760,7 @@ async function insertTemplate(template, caught) {
       const seen = new Set();
       let stopwatches = 0;
       for (const clock of utilityClocks) {
+        if (view.kinds && !view.kinds.includes(clock.kind)) continue;
         let row = view.rows.get(clock.id);
         if (!row) {
           row = clockRow(clock.id);
@@ -766,12 +776,12 @@ async function insertTemplate(template, caught) {
         row.el.remove();
         view.rows.delete(id);
       }
-      view.empty.classList.toggle("hidden", utilityClocks.length > 0);
+      view.empty.classList.toggle("hidden", seen.size > 0);
     }
   }
 
   //: A dashboard widget's body (INBOX 1558): the same Clock drawn into it, inline, through the popup's own build.
-  openClockPanel.inline = (tab, host) => clockPanelBuild(host, tab, { inline: true });
+  openClockPanel.inline = (tab, host, { only = false } = {}) => clockPanelBuild(host, tab, { inline: true, only });
   window.openClockPanel = openClockPanel;
   utilityTick.panel = paintClockPanel;
 })();

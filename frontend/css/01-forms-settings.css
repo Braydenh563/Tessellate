@@ -4088,10 +4088,17 @@ html.modal-open body {
   align-items: center;
   gap: var(--space-1);
 }
-.focus-step-value {
-  min-width: 3.5em;
+.focus-presets .focus-step-value {
+  flex: 0 0 5.5em;
+  width: 5.5em;
+  min-width: 0;
+  padding-inline: var(--space-2);
+  margin: 0;
   text-align: center;
   font-variant-numeric: tabular-nums;
+  font-size: var(--text-sm);
+}
+.focus-step-unit {
   font-size: var(--text-sm);
 }
 .focus-today {

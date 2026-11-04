@@ -145,7 +145,7 @@ function featureCatalog() {
     { group: "Plan & focus", items: [
       { name: "Reminders", desc: "Due dates with priority, repeats, snooze and notifications.", tab: "reminders" },
       { name: "Magic add", desc: "Type “call mum tomorrow evening” and Atlas schedules it.", reveal: "reminder-magic" },
-      { name: "Focus timer", desc: "A ring timer with 5 to 50 minute lengths, optional breaks, a chime at the end and today's focused minutes.", reveal: "widget-focus" },
+      { name: "Focus timer", desc: "A ring timer with 5 to 60 minute presets or any length from 1 to 180, optional breaks, a chime at the end and today's focused minutes.", reveal: "widget-focus" },
       { name: "Digest", desc: "Your day from the notes with no AI, and an AI recap of the week on request.", reveal: "widget-digest" },
       { name: "Tensions", desc: "Find where your notes contradict each other, a decision reversed, a date that moved.", reveal: "tensions" },
       // Resurfacing had shipped on two surfaces (the sort and the widget) and

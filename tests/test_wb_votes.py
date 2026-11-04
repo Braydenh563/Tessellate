@@ -59,7 +59,8 @@ def test_every_command_is_in_the_table_and_the_edit_menu() -> None:
     board = board[: board.index("</nav>") if "</nav>" in board else 20000]
     for command in ("vote", "clear-votes", "timer"):
         assert f'data-wb-cmd="{command}"' in board, command
-    assert 'aria-label="Workshop"' in board
+    #: Since INBOX 1627 the Workshop rows are a submenu (`wbFoldMenuSubmenus`) named Workshop.
+    assert 'data-wb-submenu="ph:users-three Workshop"' in board
 
 
 def test_the_dots_paint_from_the_items_own_data() -> None:

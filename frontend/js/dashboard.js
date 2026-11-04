@@ -168,6 +168,10 @@ const DASH_OPT_IN = ["activity", "night", "week"];
 {
   const POPUP_WIDGETS = {
     clock: { title: "ph:timer Clock", description: "Timers, a stopwatch and an alarm, drawn here. They keep running when you leave the page.", module: "utilities", mount: (body) => openClockPanel.inline("timer", body) },
+    //: One tab each, with no strip (INBOX 1617): a Stopwatch and an Alarm of their own beside the Clock, over the same running clocks and the same reminders.
+    stopwatch: { title: "ph:timer Stopwatch", description: "A stopwatch with Start, Pause, Lap and Reset, and the laps listed. It keeps running when you leave the page.", module: "utilities", mount: (body) => openClockPanel.inline("stopwatch", body, { only: true }) },
+    alarm: { title: "ph:bell-ringing Alarm", description: "A time of day and a label. It is an ordinary reminder, so it rings with the reminder sound and notification and is kept.", module: "utilities", mount: (body) => openClockPanel.inline("alarm", body, { only: true }) },
+    convert: { title: "ph:ruler Convert", description: "Units, currency and time zones: an amount and two units, or a time and two places, worked out here with no model.", module: "replyKit", mount: (body) => openCalculator.inline(body, "convert", { only: true }) },
     calculator: { title: "ph:calculator Calculator", description: "Sums, percentages and unit conversions, worked out here with no model.", module: "replyKit", mount: (body) => openCalculator.inline(body, "work") },
   };
   for (const [id, kind] of Object.entries(POPUP_WIDGETS)) {
@@ -3284,7 +3288,7 @@ async function renderTagCloudWidget(body) {
 //: `unsaved`: seconds focused since the last save to today's count, written
 //: on every pause and end rather than every second.
 let focusTimer = { remaining: 0, total: 25 * 60, running: false, handle: null, mode: "focus", focusTotal: 25 * 60, unsaved: 0 };
-const FOCUS_PRESETS = [5, 15, 25, 50];
+const FOCUS_PRESETS = [5, 15, 25, 50, 60];
 const FOCUS_BREAK_MIN = 5;
 const FOCUS_SVG = "http://www.w3.org/2000/svg";
 const FOCUS_RING_R = 52;
@@ -3351,8 +3355,9 @@ function paintFocusTimer(root = document) {
     button.setAttribute("aria-pressed", String(chosen));
     button.classList.toggle("active", chosen);
   }
+  //: Not while it is being typed in: a repaint would put the old figure back under the caret.
   const step = $("focus-step-value");
-  if (step) step.textContent = `${Math.round(focusTimer.focusTotal / 60)} min`;
+  if (step && document.activeElement !== step) step.value = String(Math.round(focusTimer.focusTotal / 60));
   const today = $("focus-today");
   if (today) {
     const seconds = focusTodaySeconds() + focusTimer.unsaved;
@@ -3445,10 +3450,14 @@ function setFocusTimer(minutes) {
   paintFocusTimer();
 }
 
-//: The stepper: five minutes at a time, from 5 to 180.
-function focusStep(by) {
+//: The stepper: one minute at a time below 10, five at a time from there, 1 to 180.
+//: `dir` is 1 for longer, -1 for shorter; from 12, shorter is 10 and longer is 15.
+function focusStep(dir) {
   const now = Math.round(focusTimer.focusTotal / 60);
-  setFocusTimer(Math.max(5, Math.min(180, (by > 0 ? Math.floor(now / 5) : Math.ceil(now / 5)) * 5 + by)));
+  let next;
+  if (dir > 0) next = now < 10 ? now + 1 : (Math.floor(now / 5) + 1) * 5;
+  else next = now <= 10 ? now - 1 : (Math.ceil(now / 5) - 1) * 5;
+  setFocusTimer(Math.max(1, Math.min(180, next)));
 }
 
 // async to match the widget contract in renderDashboard (render() must
@@ -3489,13 +3498,34 @@ async function renderFocusTimerWidget(body) {
   stepper.className = "focus-stepper";
   stepper.setAttribute("role", "group");
   stepper.setAttribute("aria-label", "Any length");
-  const value = document.createElement("span");
+  const value = document.createElement("input");
   value.id = "focus-step-value";
+  value.type = "number";
+  value.min = "1";
+  value.max = "180";
+  value.step = "1";
+  value.inputMode = "numeric";
   value.className = "focus-step-value";
+  value.setAttribute("aria-label", "Minutes, 1 to 180");
+  value.title = "Type any length from 1 to 180 minutes";
+  //: Typed minutes (any 1 to 180): a figure that is not one puts the current length back.
+  const typed = () => {
+    if (value.value.trim() === "" || !Number.isFinite(Number(value.value))) return paintFocusTimer();
+    setFocusTimer(Number(value.value));
+    value.value = String(Math.round(focusTimer.focusTotal / 60));
+  };
+  value.addEventListener("change", typed);
+  value.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") typed();
+  });
+  const unit = document.createElement("span");
+  unit.className = "muted focus-step-unit";
+  unit.textContent = "min";
   stepper.append(
-    smallButton("ph:minus", "Five minutes shorter", () => focusStep(-5)),
+    smallButton("ph:minus", "Shorter: one minute below 10, else five", () => focusStep(-1)),
     value,
-    smallButton("ph:plus", "Five minutes longer", () => focusStep(5))
+    unit,
+    smallButton("ph:plus", "Longer: one minute below 10, else five", () => focusStep(1))
   );
   presets.append(seg, stepper);
   body.appendChild(presets);

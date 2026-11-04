@@ -36,4 +36,6 @@ def units() -> dict:
             names.append(said)
     grouped = {dimension: sorted(names, key=str.lower) for dimension, names in grouped.items()}
     grouped["currency"] = sorted(utilities.RATES)
+    #: Places whose clocks the Convert widget and the Units tab read ("09:00 London to Tokyo"); the zone database is the machine's own, so it works offline.
+    grouped["timezone"] = list(utilities.CONVERT_PLACES)
     return {**grouped, "rates_date": utilities.RATES_DATE.isoformat()}
