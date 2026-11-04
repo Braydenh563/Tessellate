@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Diagram builder: each shape in the shape menu draws itself with a check on the chosen one, and the row's shape swatch is a button that opens it (INBOX 1613, DOCUMENTS_PLAN 22 R1).
 - Dashboard digest: the generated week has a "This week" label, its source line is a footnote, and the card scrolls to it, so it no longer looks like one line (INBOX 1639).
 - Launcher: a Tessellate that holds the port without answering (closing, or hung) is waited for and offered for stopping, not called another program; the desktop app's second double-click brings its window forward (INBOX 1637).
 - Companion: an act's leave rides inside its enter's one blend change, so a wave to hop forces 4 layouts instead of 6 (INBOX 1560).

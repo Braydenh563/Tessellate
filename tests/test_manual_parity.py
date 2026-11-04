@@ -340,7 +340,7 @@ def test_the_diagram_blocks_keys_menu_and_views_are_in_the_guide() -> None:
     body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
     for words in ("Blocks", "Source and Split", "Ctrl+Z", "drag it into the blocks", "joins them", "inside",
                   "Enter renames", "N adds", "G adds a group", "J joins", "Delete removes", "Alt+Up and Alt+Down",
-                  "Alt+Right nests", "Alt+Left lifts", "long press"):
+                  "Alt+Right nests", "Alt+Left lifts", "long press", "shape swatch"):
         assert words in body, words
     assert "diagram-blocks" in TOPIC_META
     assert "diagram-blocks" in dict(HELP_GROUPS)["Documents and code"]
