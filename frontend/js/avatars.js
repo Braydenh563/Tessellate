@@ -6590,7 +6590,8 @@ function nameMarkBuddyCoverCheck() {
   const buddy = document.getElementById("nm-buddy");
   if (!buddy) return;
   const lock = document.querySelector("#lock-overlay:not(.hidden)");
-  const cover = lock ? "lock" : document.querySelector("dialog[open]:modal, .modal-overlay:not(.hidden), .lock-overlay:not(.hidden)") ? "modal" : "";
+  //: A minimised panel (`data-panel-min`, panel-movable.js) is a pill in the tray, not a cover (the owner, 2026-11-04).
+  const cover = lock ? "lock" : document.querySelector("dialog[open]:modal:not([data-panel-min]), .modal-overlay:not(.hidden):not([data-panel-min]), .lock-overlay:not(.hidden)") ? "modal" : "";
   if (cover) buddy.dataset.cover = cover;
   else delete buddy.dataset.cover;
 }
@@ -9580,7 +9581,7 @@ function nameMarkBuddyBuild() {
       if (records.some((r) => r.type === "attributes" && r.target === document.body)) queueNameMarkBuddyCheck();
       nameMarkBuddyCoverWatch(records);
     });
-    nmb.coverObserver.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ["class", "open"] });
+    nmb.coverObserver.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ["class", "open", "data-panel-min"] });
   }
   nameMarkBuddyCoverCheck();
   if (typeof IntersectionObserver === "function") {

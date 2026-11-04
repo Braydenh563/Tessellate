@@ -52219,3 +52219,5 @@ From DOCUMENTS_PLAN.md and WHITEBOARD_PLAN.md "Placed from INBOX, 2026-11-03", b
 
 1604. **Owner, 2026-11-03 (screenshot, the "t then a key" sheet):** "should more stuff be added to the quick nav menu? idk". Go to has 8 rows, Do has 5. Recommendation (taken): Do gains New note (`w`), Find anything (`f`), Tray (`y`, the tray shortcut 1603 asks for) and Calculator (`k`), each only if its letter is free in the sheet; about 16 rows at most so it stays one glance; the shortcuts sheet, the Guide and Help move with it (standing order 13).
 
+1632. **Owner, 2026-11-04 (two screenshots):** "the companion is hidden while the settings is minimised in the bottom right corner". Cause: the cover check counted the minimised Settings overlay (still not `.hidden`, marked `data-panel-min`) as a modal. Fix: a minimised panel is not a cover, and minimise and restore queue the check.
+
