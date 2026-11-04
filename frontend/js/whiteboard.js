@@ -5669,10 +5669,13 @@ let wbNudgeBurst = null; // { key, entry, items: [{kind, item}], timer }
 //: (agent mode there, Ungroup here).
 function wbOwnsChord(e) {
   const view = document.getElementById("library-view-whiteboard");
-  if (!view || view.classList.contains("hidden") || view.offsetParent === null) return false;
+  //: **Read from the markup, never from the layout** (a box or style read; INBOX 1662: the document keydown
+  //: was 143ms, 137 of it forced layout, because this ran right after a click had dirtied the page): a view
+  //: is shown when it and every ancestor lack `.hidden` (tabs hide that way), and a focused element is in the page.
+  if (!view || view.closest(".hidden")) return false;
   const field = document.activeElement;
-  const typing = field && field.offsetParent !== null
-    && (["INPUT", "TEXTAREA"].includes(field.tagName) || field.isContentEditable);
+  const typing = field && (["INPUT", "TEXTAREA"].includes(field.tagName)
+    || field.closest("[contenteditable]:not([contenteditable=false])"));
   if (typing) return false;
   //: Every printable key while a new map topic is on its way: it is the
   //: topic's text (`wbMapTypeahead`), not a shortcut.
