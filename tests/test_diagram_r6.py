@@ -25,7 +25,7 @@ LIBRARY = (JS / "library.js").read_text(encoding="utf-8")
 
 def _rule(selector: str) -> str:
     """The body of the first rule whose selector list contains `selector` (outside any at-rule is not required)."""
-    for match in re.finditer(r"([^{}]+)\{([^{}]*)\}", re.sub(r"/\*.*?\*/", "", CSS, flags=re.S)):
+    for match in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", re.sub(r"/\*.*?\*/", "", CSS, flags=re.S)):
         if selector in [s.strip() for s in match.group(1).split(",")]:
             return match.group(2)
     raise AssertionError(f"no rule for {selector}")

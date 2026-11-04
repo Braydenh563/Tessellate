@@ -170,6 +170,29 @@ function docTypeSync(type) {
   row.append(check);
 }
 
+//: A diagram's Canvas, Blocks and Source (R7) are made the first time a diagram opens, not shipped in
+//: the page (the boot element cap); the stashed title and the click are what the page-load loop gives the others.
+function docDiagramSeg(seg) {
+  if (!seg || seg.firstElementChild) return;
+  for (const [mode, icon, label, title] of [
+    ["canvas", "graph", "Canvas", "The picture, with the blocks beside it"],
+    ["blocks", "squares-four", "Blocks", "The diagram as blocks with its picture, without the source"],
+    ["source", "code", "Source", "The diagram as text, with its picture"],
+  ]) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.dataset.docView = mode;
+    button.title = title;
+    button.dataset.docTitle = title;
+    const glyph = document.createElement("i");
+    glyph.className = `ph ph-${icon} ph-lead`;
+    glyph.setAttribute("aria-hidden", "true");
+    button.append(glyph, ` ${label}`);
+    button.addEventListener("click", () => setDocView(mode));
+    seg.append(button);
+  }
+}
+
 // Everything about the editor that depends on the type, applied in one place
 // so a type change and opening a document of that type cannot diverge.
 //: `prose: false` from `openDocument`, whose deferred `renderDocTools` runs
@@ -184,6 +207,7 @@ function syncDocFileType({ prose = true } = {}) {
   // disabled rather than hidden (hidden controls that come and go make a
   // toolbar feel unstable), and a document already in one of them is moved
   // back to Source rather than left looking at nothing.
+  if (type.ext === "mmd") docDiagramSeg($("doc-diagram-seg"));
   for (const button of document.querySelectorAll("#doc-view-seg [data-doc-view], #doc-diagram-seg [data-doc-view], #doc-view-menu [data-doc-view]")) {
     // The Edit group button is never disabled: setDocView maps it to Source
     // for a file with no rendered form, which is the mode it must reach.

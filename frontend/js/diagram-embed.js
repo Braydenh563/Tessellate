@@ -103,8 +103,9 @@
     const text = String(source || "").trim();
     if (!text) return toast("Add a block first.");
     const title = `Diagram ${new Date().toISOString().slice(0, 16).replace("T", " ")} ${Math.random().toString(36).slice(2, 6)}`;
-    const made = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title, content: `${text}\n`, file_type: "mmd" }) }).catch(() => null);
-    if (!made) return toast("Not saved. Try again.", "info");
+    const made = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title, content: `${text}\n`, file_type: "mmd" }) }).catch(() => (toast("Not saved. Try again.", "info"), null));
+    if (!made) return;
+    offerCreateUndo(made);
     const said = `Saved “${made.title || title}” to the Library.`;
     if (offer) toastAction(said, offer.label, () => offer.run(made), { ms: 12000 });
     else toast(said);

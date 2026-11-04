@@ -15,7 +15,9 @@ DOCS = Path(__file__).resolve().parents[1] / "frontend" / "js" / "documents.js"
 
 def test_the_live_rule_keeps_a_full_line_height() -> None:
     js = documents_text()
-    rule = re.search(r'"\.cm-md-rule": \{(.*?)\n      \},', js, re.S)
+    #: Ends at the rule's own closing brace (eight spaces), not at the end of the whole block: the
+    #: rules and comments after it (the gap note names `height`) are not this rule's body.
+    rule = re.search(r'"\.cm-md-rule": \{(.*?)\n        \},', js, re.S)
     assert rule, ".cm-md-rule moved"
     body = rule.group(1)
     assert "height" not in body and "margin" not in body, "a shorter box than the number puts line numbers on top of each other"

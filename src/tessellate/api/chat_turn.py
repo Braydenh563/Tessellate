@@ -28,6 +28,7 @@ from tessellate.api.chat_extra import _turn_label
 from tessellate.api.chat_request import ChatRequest, _StreamRequest, _Turn, _event, _in_full
 from tessellate.api.chat_said import MODEL_STOPPED_NOTE, _app_answers, _asks_capability, _in_notes
 from tessellate.core import deps, private_turn
+from datetime import datetime
 from tessellate.core.database import Entry, like_escape, LIKE_ESCAPE
 from tessellate.core.logbuffer import safe_value
 from tessellate.entry import manager
@@ -36,6 +37,15 @@ from tessellate.search import chunks as search_chunks
 
 def _detect_intent(question: str, force_notes_intent: bool, *attachments: list) -> str:
     detected = intent.classify(question)
+    #: "i wanna make a note" is the Guide's how-to for a bare question, but in
+    #: the chat it is the act with nothing to say yet, and the reply asks what
+    #: the note says (INBOX 1507; INBOX 1649 had taken it as a how-to).
+    if detected == intent.ABOUT_APP:
+        from tessellate.ai import commands
+
+        bare = commands.read(question, datetime.now())
+        if bare and bare.get("intent") in ("new_note", "reminder") and (bare.get("no_subject") or not bare.get("text", bare.get("content"))):
+            return intent.ACT
     # `body.answering_agent` (Tier 1 section 4): a reply to the agent's own
     # question is about the notebook by construction, however smalltalk-shaped
     # the reply itself reads ("yes", "ok"). Attaching a note (or a document) is
