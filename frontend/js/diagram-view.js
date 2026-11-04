@@ -171,7 +171,8 @@
     });
     fig.addEventListener("pointermove", (event) => {
       const last = points.get(event.pointerId);
-      if (!last) return;
+      //: A node being moved (obj-drag.js) is not a pan.
+      if (!last || document.documentElement.classList.contains("obj-dragging")) return;
       points.set(event.pointerId, { x: event.clientX, y: event.clientY });
       if (points.size === 2 && start) {
         const now = span();

@@ -687,6 +687,8 @@
     if (S && !S.k && (await ensureModule("diagramOverlay"))) diagramModel.overlay.wire(S);
     //: Several blocks at once (diagram-multi.js, 1615 a).
     if (S && !S.k && (await ensureModule("diagramMulti"))) diagramModel.multi.wire(S, helpers);
+    //: Drop a tile or a node on the picture, and the marquee (diagram-canvas.js, R8b).
+    if (S && !S.k && (await ensureModule("diagramCanvas"))) diagramModel.canvas.wire(S, helpers);
     //: The divider between the blocks and the picture (diagram-split.js, 1615 e).
     if (S && (await ensureModule("diagramSplit"))) diagramModel.split.wire(S);
     if (told && S) say(S, told);

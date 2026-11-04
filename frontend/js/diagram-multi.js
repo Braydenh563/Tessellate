@@ -62,6 +62,7 @@
       h.stops(S, h.blockEl(S, primary));
       if (list.length > 1) say(`${list.length} blocks selected.`);
     }
+    S.pick = show;
     //: A render prunes the pick to the blocks that are still there.
     S.rendered = (live) => {
       for (const k of S.picked) if (!live.includes(k)) S.picked.delete(k);

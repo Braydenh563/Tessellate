@@ -14,6 +14,8 @@
     const line = S.drop;
     line.classList.add("hidden");
     if (!target) return;
+    //: Over the picture the target is a box (or the whole overlay) the canvas draws; nothing is redrawn until the drop.
+    if (target.canvas) return target.card?.classList.add("dgm-target"), (S.hot = target.card);
     if (target.card && (target.op === "into" || target.op === "join")) {
       S.hot = target.card;
       //: Over a block's middle the drop connects, and the card says so.
@@ -39,6 +41,13 @@
       const target = event.target;
       const tile = target.closest?.(".dgm-tile");
       const block = target.closest?.(".dgm-card")?.closest(".dgm-block");
+      //: A press on a drawn node takes it, as the grip of its row does (a finger holds first).
+      const drawn = !tile && !block && diagramModel.canvas?.node(event, h);
+      if (drawn) {
+        const at = `n:${drawn.id}`;
+        const many = carried(drawn.S, at)?.length;
+        return { card: drawn.box, ref: { kind: "block", id: at, title: many ? `${many} blocks` : h.name(drawn.S, at) }, grip: event.pointerType !== "touch", S: drawn.S, key: at, tile: null };
+      }
       const root = (tile || block)?.closest(".dgm");
       const S = root && h.panes.get(root);
       if (!S || target.closest(".menu-wrap, .dgm-join, .dgm-connect, [contenteditable]") || (block?.classList.contains("dgm-kept") && !tile)) return null;
@@ -58,7 +67,7 @@
       const { S, key } = g;
       const set = carried(S, key);
       const at = document.elementFromPoint(g.x, g.y);
-      if (!at || !S.pane.contains(at)) return null;
+      if (!at || !S.pane.contains(at)) return diagramModel.canvas?.over(g, h) || null;
       const block = at.closest(".dgm-block");
       if (!block) return { op: "into", group: null, before: null };
       const over = block.dataset.key;
@@ -82,7 +91,7 @@
       if (g.tile) {
         const group = g.tile.dataset.shape === "group";
         if (target.op === "join") return;
-        return h.add(S, { shape: group ? S.shape : g.tile.dataset.shape, text: g.tile.dataset.text, group, after: null, into: null, before: target.before ?? null, edit: false, ...(target.group ? { into: h.ops.key("g", target.group) } : {}) });
+        return h.add(S, { shape: group ? S.shape : g.tile.dataset.shape, text: g.tile.dataset.text, group, after: null, into: null, before: target.before ?? null, edit: false, ...(target.group ? { into: h.ops.key("g", target.group) } : {}), ...(target.from ? { from: target.from } : {}) });
       }
       const set = carried(S, g.key);
       if (set) {
@@ -110,6 +119,7 @@
         g.scroller = g.S.pane;
         g.dragEls = g.tile ? [] : (carried(g.S, g.key) || [g.key]).map((k) => h.blockEl(g.S, k));
         g.dragEls.forEach((b) => b?.classList.add("dgm-lifted"));
+        if (g.card.classList.contains("dgm-box")) g.card.classList.add("dgm-lifted");
       },
       update(g) {
         g.target = dropAt(g);
@@ -118,11 +128,13 @@
       drop(g) {
         dropMark(g, null);
         g.dragEls?.forEach((b) => b?.classList.remove("dgm-lifted"));
+        g.card.classList.remove("dgm-lifted");
         if (g.target) dropApply(g, g.target);
       },
       cancel(g) {
         dropMark(g, null);
         g.dragEls?.forEach((b) => b?.classList.remove("dgm-lifted"));
+        g.card.classList.remove("dgm-lifted");
       },
     };
     return mode;

@@ -2,9 +2,9 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7764, frontend ids 2642, CSS sections 522, backend routes 644, backend modules 8684, test files 2024, tests 17059, plan headings 999, app scripts 28, boot scripts 37, script files 250.
+Counts: frontend functions 7770, frontend ids 2642, CSS sections 522, backend routes 644, backend modules 8684, test files 2025, tests 17069, plan headings 999, app scripts 28, boot scripts 37, script files 251.
 
-## Frontend functions (7764)
+## Frontend functions (7770)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3141,6 +3141,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `sync` | frontend/js/diagram-builder.js:628 |
 | `titleOf` | frontend/js/diagram-builder.js:39 |
 
+### frontend/js/diagram-canvas.js (6)
+
+| Name | File:line |
+|---|---|
+| `boxOf` | frontend/js/diagram-canvas.js:27 |
+| `imageOf` | frontend/js/diagram-canvas.js:26 |
+| `node` | frontend/js/diagram-canvas.js:30 |
+| `over` | frontend/js/diagram-canvas.js:42 |
+| `overlay` | frontend/js/diagram-canvas.js:10 |
+| `wire` | frontend/js/diagram-canvas.js:60 |
+
 ### frontend/js/diagram-embed.js (5)
 
 | Name | File:line |
@@ -3293,7 +3304,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `dropMark` | frontend/js/diagram-pointer.js:10 |
-| `make` | frontend/js/diagram-pointer.js:33 |
+| `make` | frontend/js/diagram-pointer.js:35 |
 
 ### frontend/js/diagram-split.js (1)
 
@@ -12219,7 +12230,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 154 |
-| frontend/css/diagram-lazy.css | 1101 |
+| frontend/css/diagram-lazy.css | 1125 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 140 |
 | frontend/css/forced-colors-lazy.css | 28 |
@@ -15704,8 +15715,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3364 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3492 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3366 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3494 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -23842,7 +23853,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17059)
+## Tests (17069)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24383,6 +24394,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_r6.py | 13 |
 | tests/test_diagram_r7.py | 5 |
 | tests/test_diagram_r8a.py | 5 |
+| tests/test_diagram_r8b.py | 9 |
 | tests/test_diagram_split_r3_r4.py | 8 |
 | tests/test_diagram_suggest.py | 21 |
 | tests/test_diagram_touch.py | 4 |
@@ -25650,7 +25662,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_typo_routing.py | 4 |
 | tests/test_ui_1017b.py | 7 |
 | tests/test_ui_batch_726.py | 13 |
-| tests/test_ui_recipes.py | 268 |
+| tests/test_ui_recipes.py | 269 |
 | tests/test_ui_signatures.py | 2 |
 | tests/test_ui_state.py | 6 |
 | tests/test_ui_targets_1029b.py | 9 |

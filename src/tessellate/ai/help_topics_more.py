@@ -3207,7 +3207,9 @@ MORE_TOPICS.extend([
             "[[Title]] after a !, which draws the diagram. Over a board or a mind map, Insert, Diagram, Diagram builder adds a diagram object "
             "to double-click later. Anywhere else, and in the Library's Create, New, Diagram, it "
             "opens the builder empty, and Done saves it as a new diagram file. Cancel changes nothing. "
-            "On a flowchart, the picture outlines the block you point at and the ones picked."
+            "On a flowchart, the picture outlines the block you point at and the ones picked. "
+            "You can drag a shape from the Add strip onto the picture (onto a block to add it after that block and connect them), "
+            "drag a block on the picture to move it, and hold Shift and drag on empty space to pick the blocks you touch."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },

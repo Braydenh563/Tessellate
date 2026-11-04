@@ -1099,3 +1099,27 @@
     block-size: auto;
   }
 }
+
+/* The canvas (diagram-canvas.js): the drop target is an overlay box (or the whole overlay), the marquee a tinted rectangle. */
+.dgm-box.dgm-target,
+.dgm-box.swept {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.dgm-box.dgm-lifted {
+  opacity: 0.4;
+}
+
+.dgm-overlay.dgm-target {
+  outline-offset: -2px;
+  background: transparent;
+}
+
+.dgm-marquee {
+  position: absolute;
+  box-sizing: border-box;
+  border: 1px solid var(--accent);
+  background: var(--accent-soft);
+  pointer-events: none;
+}
