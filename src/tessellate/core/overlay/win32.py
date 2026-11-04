@@ -18,7 +18,7 @@ import ctypes
 import logging
 import sys
 import ctypes.wintypes
-from typing import Any
+from typing import Any, NamedTuple
 
 wintypes = ctypes.wintypes
 
@@ -73,6 +73,14 @@ SPI_SETWORKAREA = 0x002F
 SPI_GETCLIENTAREAANIMATION = 0x1042
 MDT_EFFECTIVE_DPI = 0
 IDC_ARROW = 32512
+GWL_EXSTYLE = -20
+WS_EX_TRANSPARENT = 0x00000020
+#: MonitorFromPoint: the nearest monitor when the point is on none.
+MONITOR_DEFAULTTONEAREST = 2
+#: DwmGetWindowAttribute: the visible frame (no invisible resize border) and cloaking
+#: (a window on another virtual desktop, or a suspended app, is "visible" but not drawn).
+DWMWA_EXTENDED_FRAME_BOUNDS = 9
+DWMWA_CLOAKED = 14
 #: DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2
 DPI_PER_MONITOR_V2 = -4
 #: SHQueryUserNotificationState: busy, a fullscreen Direct3D game, a presentation.
@@ -88,6 +96,7 @@ if sys.platform == "win32":
 else:  # the module imports everywhere so the tests run on any platform
     _FUNC = ctypes.CFUNCTYPE
 WNDPROC = _FUNC(LRESULT, wintypes.HWND, wintypes.UINT, WPARAM, LPARAM)
+WNDENUMPROC = _FUNC(wintypes.BOOL, wintypes.HWND, LPARAM)
 MONITORENUMPROC = _FUNC(wintypes.BOOL, wintypes.HANDLE, wintypes.HDC, ctypes.POINTER(wintypes.RECT), LPARAM)
 
 
@@ -181,6 +190,17 @@ def signatures() -> dict[str, dict[str, tuple[Any, list[Any]]]]:
             "GetMonitorInfoW": (B, [H, P(MONITORINFO)]),
             "SetThreadDpiAwarenessContext": (ctypes.c_void_p, [ctypes.c_void_p]),
             "SystemParametersInfoW": (B, [U, U, ctypes.c_void_p, U]),
+            "EnumWindows": (B, [WNDENUMPROC, LPARAM]),
+            "IsWindowVisible": (B, [H]),
+            "IsIconic": (B, [H]),
+            "IsZoomed": (B, [H]),
+            "GetWindowLongW": (ctypes.c_long, [H, INT]),
+            "GetWindowTextLengthW": (INT, [H]),
+            "GetWindowThreadProcessId": (wintypes.DWORD, [H, P(wintypes.DWORD)]),
+            "MonitorFromPoint": (H, [POINT, wintypes.DWORD]),
+        },
+        "dwmapi": {
+            "DwmGetWindowAttribute": (ctypes.c_long, [H, wintypes.DWORD, ctypes.c_void_p, wintypes.DWORD]),
         },
         "gdi32": {
             "CreateCompatibleDC": (H, [H]),
@@ -203,11 +223,11 @@ def signatures() -> dict[str, dict[str, tuple[Any, list[Any]]]]:
 
 
 #: Functions an older Windows may lack: left unset (the caller checks `hasattr`).
-OPTIONAL = frozenset({"SetThreadDpiAwarenessContext", "GetDpiForMonitor", "SHQueryUserNotificationState"})
+OPTIONAL = frozenset({"SetThreadDpiAwarenessContext", "GetDpiForMonitor", "SHQueryUserNotificationState", "DwmGetWindowAttribute"})
 
 
 class Win32:
-    """The typed private DLLs: `.user32`, `.gdi32`, `.kernel32`, `.shcore`, `.shell32`."""
+    """The typed private DLLs: `.user32`, `.gdi32`, `.kernel32`, `.shcore`, `.shell32`, `.dwmapi`."""
 
     def __init__(self, dlls: dict[str, Any]) -> None:
         for name, dll in dlls.items():
@@ -241,11 +261,11 @@ def load() -> Win32:
     if sys.platform != "win32":
         raise OSError("the overlay needs Windows")
     dlls: dict[str, Any] = {}
-    for name in ("user32", "gdi32", "kernel32", "shcore", "shell32"):
+    for name in ("user32", "gdi32", "kernel32", "shcore", "shell32", "dwmapi"):
         try:
             dlls[name] = ctypes.WinDLL(name, use_last_error=True)  # type: ignore[attr-defined]
         except OSError:
-            if name not in ("shcore", "shell32"):
+            if name not in ("shcore", "shell32", "dwmapi"):
                 raise
             logger.info("overlay: %s is not available; its calls are skipped", name)
     missing = apply_signatures(dlls)
@@ -288,6 +308,99 @@ def _monitor_dpi(w: Any, hmon: Any) -> int:
     except Exception:  # noqa: BLE001
         logger.debug("overlay: dpi of a monitor unknown", exc_info=True)
     return 96
+
+
+def dpi_at_point(w: Any, x: int, y: int) -> int | None:
+    """The effective dpi of the monitor under a physical point (MonitorFromPoint,
+    nearest when none holds it, then GetDpiForMonitor); None when it cannot be read."""
+    fn = getattr(getattr(w, "user32", None), "MonitorFromPoint", None)
+    if fn is None or getattr(getattr(w, "shcore", None), "GetDpiForMonitor", None) is None:
+        return None
+    try:
+        hmon = fn(POINT(int(x), int(y)), MONITOR_DEFAULTTONEAREST)
+        return _monitor_dpi(w, hmon) if hmon else None
+    except Exception:  # noqa: BLE001
+        logger.debug("overlay: dpi at a point unknown", exc_info=True)
+        return None
+
+
+class WinInfo(NamedTuple):
+    """One visible top-level window, in z-order from the top: its frame in physical
+    pixels, and whether its top edge is a place to stand (`perch`)."""
+
+    key: int
+    rect: tuple[int, int, int, int]
+    perch: bool
+
+
+def _frame_rect(w: Any, hwnd: Any) -> tuple[int, int, int, int] | None:
+    """The visible frame (DWMWA_EXTENDED_FRAME_BOUNDS), else the window rectangle."""
+    r = wintypes.RECT()
+    dwm = getattr(getattr(w, "dwmapi", None), "DwmGetWindowAttribute", None)
+    try:
+        if dwm is not None and dwm(hwnd, DWMWA_EXTENDED_FRAME_BOUNDS, ctypes.byref(r), ctypes.sizeof(r)) == 0:
+            return r.left, r.top, r.right, r.bottom
+        if w.user32.GetWindowRect(hwnd, ctypes.byref(r)):
+            return r.left, r.top, r.right, r.bottom
+    except Exception:  # noqa: BLE001
+        logger.debug("overlay: a window's frame could not be read", exc_info=True)
+    return None
+
+
+def _cloaked(w: Any, hwnd: Any) -> bool:
+    dwm = getattr(getattr(w, "dwmapi", None), "DwmGetWindowAttribute", None)
+    if dwm is None:
+        return False
+    flag = wintypes.DWORD(0)
+    try:
+        return dwm(hwnd, DWMWA_CLOAKED, ctypes.byref(flag), ctypes.sizeof(flag)) == 0 and bool(flag.value)
+    except Exception:  # noqa: BLE001
+        return False
+
+
+def _listed(w: Any, hwnd: Any, ignore: Any) -> bool:
+    """Visible, not minimised, not cloaked (another desktop, a store app's shell), not our own overlay."""
+    return not (hwnd == ignore or not w.user32.IsWindowVisible(hwnd) or w.user32.IsIconic(hwnd) or _cloaked(w, hwnd))
+
+
+def _read_window(w: Any, hwnd: Any, own_pid: int, ignore: Any, monitors_: list[tuple[int, int, int, int]]) -> "WinInfo | None":
+    """One window as a WinInfo, or None when it is not listed, click-through or has no frame."""
+    if not _listed(w, hwnd, ignore):
+        return None
+    ex = int(w.user32.GetWindowLongW(hwnd, GWL_EXSTYLE))
+    rect = _frame_rect(w, hwnd)
+    if ex & WS_EX_TRANSPARENT and ex & WS_EX_LAYERED:  # click-through: another overlay
+        return None
+    if rect is None or rect[2] <= rect[0] or rect[3] <= rect[1]:
+        return None
+    pid = wintypes.DWORD(0)
+    w.user32.GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
+    full = any(rect[0] <= a[0] and rect[2] >= a[2] and rect[1] <= a[1] and rect[3] >= a[3] for a in monitors_)
+    skip = ex & WS_EX_TOOLWINDOW or int(pid.value) == own_pid or w.user32.IsZoomed(hwnd) or full
+    perch = not (skip or not w.user32.GetWindowTextLengthW(hwnd))
+    return WinInfo(int(hwnd), rect, bool(perch))
+
+
+def windows(w: Any, own_pid: int, ignore: int | None, monitors_: list[tuple[int, int, int, int]]) -> list[WinInfo]:
+    """Visible, un-minimised, un-cloaked top-level windows, topmost first. Read only:
+    nothing here moves, focuses or messages a window. `perch` is False for a tool
+    window, a window with no title, this process's own windows (the app's, the
+    panel), a maximised one, and one that fills a monitor's work area (full screen).
+    `ignore` is the overlay's own window (never in the list)."""
+    found: list[WinInfo] = []
+
+    def each(hwnd: Any, _data: Any) -> int:
+        try:
+            info = _read_window(w, hwnd, own_pid, ignore, monitors_)
+            if info is not None:
+                found.append(info)
+        except Exception:  # noqa: BLE001 - one odd window never ends the walk
+            logger.debug("overlay: a window could not be read", exc_info=True)
+        return 1
+
+    callback = WNDENUMPROC(each)
+    w.user32.EnumWindows(callback, 0)
+    return found
 
 
 def cursor_pos(w: Any) -> tuple[int, int]:

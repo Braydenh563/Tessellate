@@ -25,6 +25,9 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 from tessellate.core.overlay import sprites  # noqa: E402
 
+sys.path.insert(0, str(ROOT / "scripts"))
+import render_card_frames  # noqa: E402
+
 PAD = 2
 #: Fewer colours with their alpha kept: a quarter of the bytes for frames that are soft gradients.
 COLOURS = 256
@@ -62,7 +65,7 @@ def main() -> int:
         subprocess.run(["node", str(ROOT / "scripts" / "render_desk_frames.js"), raw], check=True, env=env, cwd=ROOT)
         total = 0
         for look in sprites.LOOKS:
-            images = {name: Image.open(Path(raw) / look / f"{name}.png").convert("RGBA") for name in sprites.FRAME_NAMES}
+            images = {name: Image.open(Path(raw) / look / f"{name}.png").convert("RGBA") for name in sprites.FRAME_NAMES if name not in sprites.CARD_FRAMES}
             box = crop_box(list(images.values()))
             target = out / look
             if target.exists():
@@ -75,6 +78,7 @@ def main() -> int:
                 small = im.quantize(colors=COLOURS, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE)
                 small.save(target / f"{name}.png", optimize=True)
                 total += (target / f"{name}.png").stat().st_size
+            render_card_frames.render_look(look)
             print(f"{look}: {len(images)} frames, {box[2] - box[0]}x{box[3] - box[1]} px")
         print(f"total {total / 1024:.0f} KB")
     return 0

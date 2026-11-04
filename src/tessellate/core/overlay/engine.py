@@ -32,6 +32,17 @@ so the figure's hidden rows are clear and take no clicks). A click on a peeking
 figure brings it out. Nothing but standing happens while `quiet` (typing,
 presenting). All of it is states in this one machine.
 
+**Roam and carry** (owner, 2026-11-04: "does it only walk along the top of my
+taskbar", "carry a reminder"). Given the top edges of other apps' windows
+(`set_windows`; read by the runner, never moved or touched) a walker now and
+then walks to one, leaps up onto it, walks along it and hops or falls off at its
+end, or when that window moves, minimises or closes; a floater (Atlas) floats
+down to rest on it. At most one climb every few minutes (`CLIMB_EVERY`), never
+while `quiet`, reduced or asleep. `bring_card(token)` makes it fetch a reminder:
+it goes to the floor beside the pointer's monitor holding a card (`card0` and
+`card1`), waits `CARD_FOR`, and a click on it reports `Output.card` (the token);
+ignored, it sets the card down. One at a time, the rest queue.
+
 Reduced motion: no walking, no noticing, no blinking; it sits at its place, can
 still be clicked and carried, and a drop lands on the floor of its monitor at
 once (a figure that cannot fall must not hang in mid-air; owner, 2026-11-04).
@@ -41,7 +52,7 @@ from __future__ import annotations
 
 import math
 import random
-from typing import NamedTuple
+from typing import Any, NamedTuple
 
 #: Seconds.
 MAX_DT = 0.1
@@ -79,7 +90,7 @@ HOLD_RANGES = {"stand": STAND_FOR, "sit": SIT_FOR}
 HOLD_FIXED = {"wave": WAVE_FOR, "land": LAND_FOR, "hop": HOP_FOR, "notice": NOTICE_FOR, "startle": STARTLE_FOR}
 
 #: States drawn with a frame of another name.
-FRAME_OF = {"pressed": "stand", "notice": "look", "startle": "hop", "hop": "hop", "held": "held", "hang": "hang", "emerge": "stand"}
+FRAME_OF = {"pressed": "stand", "leap": "hop", "notice": "look", "startle": "hop", "hop": "hop", "held": "held", "hang": "hang", "emerge": "stand"}
 
 #: Throw: the pointer's last THROW_WINDOW seconds decide the velocity. Logical
 #: px per second (scaled by dpi): slower than THROW_MIN is a plain drop.
@@ -122,8 +133,28 @@ REST_FOR = (8.0, 20.0)
 ACTS = {
     "move": (55, False), "rest": (12, False), "wave": (6, False), "sit": (10, False),
     "stand": (6, False), "sleep": (2, False), "hang": (5, True), "peek": (6, True),
+    "climb": (8, False),
 }
 SLEEP_AFTER = 60.0
+
+#: Window tops (roam): the first climb comes after `CLIMB_FIRST`, then one every
+#: `CLIMB_EVERY` seconds at most; it stays on one window `PERCH_FOR`; a top must be
+#: `PERCH_MIN_RISE` logical px above the floor to be worth the leap; a window top
+#: that moves more than `PERCH_MOVED` physical px has moved.
+CLIMB_FIRST = 40.0
+CLIMB_EVERY = (180.0, 420.0)
+PERCH_FOR = (25.0, 70.0)
+PERCH_MIN_RISE = 48.0
+PERCH_MOVED = 3.0
+LEAP_BASE = 0.45
+LEAP_SPEED = 1800.0
+#: Hopping down off a window: the push (logical px per second).
+HOP_OFF_V = 380.0
+#: A reminder's card: waits this long (seconds); the pair of frames swaps this often.
+CARD_FOR = 120.0
+CARD_SWAP = 0.9
+CARD_WALK_SWAP = 0.25
+CARD_STAND = ("stand", "walk", "drift", "sit", "sleep", "land", "wave", "notice", "startle", "card")
 
 TICK_WALK_MS = 33
 TICK_FALL_MS = 16
@@ -132,6 +163,15 @@ POLL_QUIET_MS = 2000
 MIN_WAKE_MS = 30
 
 Rect = tuple[int, int, int, int]
+
+
+class Perch(NamedTuple):
+    """The top edge of another app's window: a surface to stand on (physical px)."""
+
+    key: int
+    left: int
+    top: int
+    right: int
 
 
 class Monitor(NamedTuple):
@@ -155,6 +195,8 @@ class Output(NamedTuple):
     #: Visible part of the frame (left, top, right, bottom) in its own pixels,
     #: or None for all of it. The rest is drawn clear: it takes no clicks.
     clip: tuple[int, int, int, int] | None = None
+    #: The token of the reminder whose card was just clicked (None otherwise).
+    card: Any = None
 
 
 def _adjoins(a: Rect, b: Rect, side: str) -> bool:
@@ -177,6 +219,7 @@ class Engine:
         home: tuple[int, int] | None = None,
         roam: bool = True,
         reduced: bool = False,
+        roam_windows: bool = True,
         gait: str = "walk",
         rng: random.Random | None = None,
         now: float = 0.0,
@@ -216,6 +259,18 @@ class Engine:
         self.trip = False
         self.hover = self.rng.uniform(*HOVER)
         self.big_ready = now + self.rng.uniform(*BIG_FIRST)
+        self.roam_windows = roam_windows
+        self.windows: list[Perch] = []
+        self.perch: Perch | None = None
+        self.target: Perch | None = None
+        self.perch_until = 0.0
+        self.climb_ready = now + CLIMB_FIRST
+        self.pointer: tuple[int, int] | None = None
+        self.card: Any = None
+        self.card_queue: list[Any] = []
+        self.card_settled = False
+        self.card_until = 0.0
+        self.card_clicked: Any = None
         self.sink = 0.0
         self.sink_max = PEEK_HEAD
         self.peek_edge: str | None = None
@@ -252,6 +307,9 @@ class Engine:
         return self.monitor_at(self.x + self.size[0] / 2, self.y + self.size[1] / 2)
 
     def floor_y(self, m: Monitor | None = None) -> float:
+        """What it stands on: a window's top while it is on one, else the monitor's floor."""
+        if self.perch is not None:
+            return self.perch.top - self.size[1]
         return (m or self.current_monitor()).area[3] - self.size[1]
 
     def _scale(self) -> float:
@@ -260,7 +318,8 @@ class Engine:
     def ground_y(self, m: Monitor | None = None) -> float:
         """Where it rests: the floor for a walker, its hover height above it for a floater."""
         m = m or self.current_monitor()
-        return self.floor_y(m) - (self.hover * m.dpi / 96.0 if self.gait == "float" else 0.0)
+        hover = self.hover * m.dpi / 96.0 if self.gait == "float" and self.perch is None else 0.0
+        return self.floor_y(m) - hover
 
     def _place_on_floor(self) -> None:
         m = self.current_monitor()
@@ -281,10 +340,10 @@ class Engine:
         left, top, right, bottom = m.area
         self.x = min(max(self.x, left), right - self.size[0])
         self.y = min(max(self.y, top), bottom - self.size[1])
-        moving = ("held", "fall", "hop", "fly", "hang", "rise", "peek", "emerge", "drift", "walk")
+        moving = ("held", "fall", "hop", "fly", "hang", "rise", "peek", "emerge", "leap", "drift", "walk")
         if self.gait == "float" and self.state in moving:
             self.y = min(max(self.y, top), self.floor_y(m))
-        elif self.state not in moving[:8]:
+        elif self.state not in moving[:9]:
             self._place_on_floor()
 
     def home(self) -> tuple[int, int]:
@@ -343,6 +402,17 @@ class Engine:
         self.peek_started, self.peek_turned = now, False
         self.state_until = now + PEEK_PLAN[-1][0]
 
+    def _on_leap(self, now: float) -> None:
+        assert self.target is not None
+        height = max(0.0, self.y - (self.target.top - self.size[1]))
+        self.phase_from = (self.x, self.y)
+        self.phase_to = (self.x, self.target.top - self.size[1])
+        self.state_until = now + LEAP_BASE + height / (LEAP_SPEED * self._scale())
+        self.phase_started = now
+
+    def _on_card(self, now: float) -> None:
+        self.state_until = self.card_until
+
     def _on_emerge(self, now: float) -> None:
         self.state_until = now + EMERGE_FOR
         self.phase_from, self.phase_started = (self.sink, 0.0), now
@@ -359,6 +429,9 @@ class Engine:
         self.now = now
         self.click_now = None
         self.settled_now = False
+        self.card_clicked = None
+        if pointer is not None:
+            self.pointer = pointer
         if event is not None:
             self._input(event, now)
         if self.state not in ("held", "pressed"):
@@ -368,6 +441,8 @@ class Engine:
     def _advance(self, now: float, dt: float, pointer: tuple[int, int] | None) -> None:
         handler = getattr(self, f"_do_{self.state}")
         handler(now, dt)
+        if self.card is not None or self.card_queue:
+            self._card_step(now)
         if pointer is not None and not self.reduced:
             self._notice(now, pointer)
 
@@ -386,12 +461,20 @@ class Engine:
 
     def _after_stand(self, now: float) -> None:
         idle = now - self.last_active
+        if self.card is not None and self.card_settled:  # carried off its place: it waits again
+            self._enter("card", now) if now < self.card_until else self._put_card_down(now)
+            return
         if self.reduced or not self.roam:
             if idle >= IDLE_SIT:
                 self._enter("sit", now)
             return
         if idle >= IDLE_SIT:
-            self._enter("sit", now)
+            if self.perch is not None:  # never sleeps on a window
+                self._leave_perch(now, hop=False)
+            else:
+                self._enter("sit", now)
+        elif self.perch is not None and now >= self.perch_until and self.gait == "walk":
+            self._leave_perch(now, hop=self.rng.random() < 0.5)
         elif now >= self.state_until:
             if self.quiet:
                 self.state_until = now + QUIET_RECHECK
@@ -401,9 +484,12 @@ class Engine:
     def _pick_act(self, now: float, idle: float) -> str:
         """One weighted choice from `ACTS`: a big act only when `big_ready` has passed,
         sleep only after a while untouched."""
+        up = self.perch is not None
+        climb = self._can_climb(now)
         table = [
             (act, w) for act, (w, big) in ACTS.items()
-            if not (big and now < self.big_ready) and not (act == "sleep" and idle < SLEEP_AFTER)
+            if not (big and (now < self.big_ready or up)) and not (act == "sleep" and (idle < SLEEP_AFTER or up))
+            and not (act == "climb" and not climb)
         ]
         roll = self.rng.random() * sum(w for _a, w in table)
         for act, w in table:
@@ -413,6 +499,8 @@ class Engine:
         return "stand"
 
     def _perform(self, act: str, now: float) -> None:
+        if self.perch is not None and self.gait == "float":
+            self.perch = None  # a floater rests on a window, it does not stay on it
         if act in ("hang", "peek"):
             self.big_ready = now + self.rng.uniform(*BIG_EVERY)
         if act == "move":
@@ -423,8 +511,162 @@ class Engine:
             self._hang(now)
         elif act == "peek":
             self._peek(now)
+        elif act == "climb":
+            self._climb(now)
         else:  # wave, sit, stand, sleep
             self._enter(act, now)
+
+    # --- window tops (roam) ------------------------------------------------------------
+
+    def set_windows(self, windows: list[Perch], now: float) -> None:
+        """The top edges the runner last read. A figure on one follows it: it falls
+        (or floats down) when that window is gone or no longer under it, and
+        keeps up when it moves."""
+        self.windows = list(windows)
+        if self.perch is None:
+            return
+        cur = next((p for p in self.windows if p.key == self.perch.key), None)
+        cx = self.x + self.size[0] / 2
+        if cur is None or not self.roam_windows or not cur.left <= cx < cur.right:
+            self._leave_perch(now, hop=False)
+        elif abs(cur.top - self.perch.top) > PERCH_MOVED:
+            lower = cur.top > self.perch.top
+            if self.gait == "float":  # it drifts to the new resting height
+                self.perch = cur
+                self._start_fly(0.0, 0.0)
+            elif lower:
+                self.perch = None
+                self._start_fall(0.0)
+            else:
+                self.perch = cur
+                if self.state in ("stand", "walk", "wave", "notice", "startle", "land"):
+                    self.hop_from = self.y
+                    self._enter("hop", now)
+        else:
+            self.perch = cur
+
+    def _can_climb(self, now: float) -> bool:
+        return (
+            self.roam_windows and self.roam and not self.reduced and not self.quiet and self.perch is None
+            and now >= self.climb_ready and bool(self._candidates())
+        )
+
+    def _candidates(self) -> list[Perch]:
+        """Window tops on this monitor worth the trip: they fit on screen with the
+        figure above them, sit well above the floor, and are wide enough to stand on."""
+        m = self.current_monitor()
+        left, top, right, _bottom = m.area
+        scale = m.dpi / 96.0
+        w, h = self.size
+        found = []
+        for p in self.windows:
+            lo, hi = max(p.left, left), min(p.right, right)
+            if hi - lo < w + 20 * scale or p.top - h < top:
+                continue
+            if p.top - h > self.floor_y(m) - PERCH_MIN_RISE * scale:
+                continue
+            found.append(p)
+        return found
+
+    def _climb(self, now: float) -> None:
+        cand = self._candidates()
+        if not cand:
+            self._enter("stand", now)
+            return
+        p = self.rng.choice(cand)
+        self.climb_ready = now + self.rng.uniform(*CLIMB_EVERY)
+        self.target = p
+        m = self.current_monitor()
+        lo, hi = max(p.left, m.area[0]), min(p.right, m.area[2])
+        x = self.rng.uniform(lo, hi - self.size[0])
+        if self.gait == "float":
+            self._go((x, p.top - self.size[1]), "perch", now)
+        else:
+            self._go((x, self.floor_y(m)), "climb", now)
+
+    def _target_here(self) -> Perch | None:
+        """The window being climbed to, as the last scan has it (None: it is gone)."""
+        t = self.target
+        return next((p for p in self.windows if t is not None and p.key == t.key), None)
+
+    def _stand_on(self, p: Perch, now: float) -> None:
+        self.perch, self.target = p, None
+        self.perch_until = now + self.rng.uniform(*PERCH_FOR)
+        self.x = min(max(self.x, p.left), p.right - self.size[0])
+        self.y = p.top - self.size[1]
+        self._enter("land", now)
+
+    def _leave_perch(self, now: float, hop: bool) -> None:
+        """Off a window: a walker hops or falls to the floor, a floater drifts down."""
+        self.perch, self.target = None, None
+        if self.gait == "float":
+            self._start_fly(0.0, 0.0)
+            return
+        scale = self._scale()
+        vx = self.facing * WALK_SPEED * scale * (1.6 if hop else 0.5)
+        self._start_fall(vx, -HOP_OFF_V * scale if hop else 0.0)
+
+    # --- a reminder's card -----------------------------------------------------------------
+
+    def bring_card(self, token: Any, now: float) -> None:
+        """A reminder fell due: fetch it. One at a time; the rest wait their turn."""
+        self.card_queue.append(token)
+        self.now = max(self.now, now)
+
+    def _card_step(self, now: float) -> None:
+        if self.card is None:
+            if not self.card_queue or self.state not in CARD_STAND:
+                return
+            self.card, self.card_settled, self.card_until = self.card_queue.pop(0), False, math.inf
+        if self.card_settled or self.state not in CARD_STAND[:-1]:
+            return
+        if self.state in ("walk", "drift") and self.trip and self.then == "card":
+            return
+        if self.perch is not None:
+            self._leave_perch(now, hop=False)
+            return
+        self._go_card(now)
+
+    def _go_card(self, now: float) -> None:
+        """To the floor beside the pointer, on the pointer's own monitor."""
+        if self.reduced or not self.roam or self.pointer is None:
+            self._arrive_card(now)
+            return
+        px, py = self.pointer
+        m = self.monitor_at(px, py)
+        left, _top, right, _bottom = m.area
+        w = self.size[0]
+        if m is not self.current_monitor():  # no walkable way between: it comes in at the near side
+            self.x = left if abs(self.x - left) < abs(self.x - (right - w)) else right - w
+            self.y = self.ground_y(m)
+        side = 1 if px < (left + right) / 2 else -1
+        gx = min(max(px + side * w * 1.2 - w / 2, left), right - w)
+        self._go((gx, self.ground_y(m)), "card", now)
+
+    def _arrive_card(self, now: float) -> None:
+        self.card_settled = True
+        self.card_until = now + CARD_FOR
+        self.goal = None
+        self._enter("card", now)
+
+    def _put_card_down(self, now: float) -> None:
+        self.card, self.card_settled = None, False
+        self._enter("stand", now)
+
+    def _do_card(self, now: float, dt: float) -> None:
+        if now >= self.state_until:
+            self._put_card_down(now)
+
+    def _do_leap(self, now: float, dt: float) -> None:
+        t = min(1.0, (now - self.phase_started) / max(1e-6, self.state_until - self.phase_started))
+        self.y = self.phase_from[1] + (self.phase_to[1] - self.phase_from[1]) * t - math.sin(t * math.pi) * 24 * self._scale()
+        if now >= self.state_until:
+            p = self._target_here()
+            if p is None:
+                self.target = None
+                self._start_fall(0.0)
+            else:
+                self._stand_on(p, now)
 
     def _rest(self, now: float) -> None:
         if self.gait == "walk":
@@ -481,7 +723,26 @@ class Engine:
         """At the goal of a trip: what it came for."""
         then, self.goal = self.then, None
         m = self.current_monitor()
-        if then == "hang":
+        if then == "card":
+            self._arrive_card(now)
+        elif then == "climb":
+            if self._target_here() is None:
+                self.target = None
+                self._enter("stand", now)
+            else:
+                self.target = self._target_here()
+                self._enter("leap", now)
+        elif then == "perch":
+            p = self._target_here()
+            if p is None:
+                self.target = None
+                self._enter("stand", now)
+            else:
+                self._stand_on(p, now)
+                self.perch_until = now + self.rng.uniform(*REST_FOR)
+                self._enter("stand", now)
+                self.state_until = self.perch_until
+        elif then == "hang":
             self.y = m.area[1]
             self._enter("hang", now)
         elif then.startswith("peek_"):
@@ -679,8 +940,12 @@ class Engine:
         bounds = self._reach(nx)
         if bounds is None:  # the end of the walkable floor: turn around
             if self.goal is not None:  # a trip that cannot be made is dropped
+                dropped = self.then
                 self.goal = None
-                self._enter("stand", now)
+                self._arrive_card(now) if dropped == "card" else self._enter("stand", now)
+                return
+            if self.perch is not None:  # the end of the window: hop or fall off it
+                self._leave_perch(now, hop=self.rng.random() < 0.5)
                 return
             self.facing = -self.facing
         else:
@@ -698,6 +963,8 @@ class Engine:
         """The monitor the figure may stand on at `nx`, or None past the last one:
         one whose width holds the figure's middle and whose height overlaps its own."""
         cx = nx + self.size[0] / 2
+        if self.perch is not None and not self.perch.left <= cx < self.perch.right:
+            return None
         if nx < min(m.area[0] for m in self.monitors) or nx + self.size[0] > max(m.area[2] for m in self.monitors):
             return None
         for m in self.monitors:
@@ -706,11 +973,11 @@ class Engine:
                 return m
         return None
 
-    def _start_fall(self, vx: float) -> None:
+    def _start_fall(self, vx: float, vy: float = 0.0) -> None:
         if self.gait == "float":
-            self._start_fly(vx, 0.0)
+            self._start_fly(vx, vy)
             return
-        self.vx, self.vy = vx, 0.0
+        self.vx, self.vy = vx, vy
         self._enter("fall", self.now)
 
     def _start_fly(self, vx: float, vy: float) -> None:
@@ -767,6 +1034,7 @@ class Engine:
             self.carrying = True
             self.state = "held"
             self.sink, self.peek_edge, self.goal = 0.0, None, None
+            self.perch = self.target = None
         if self.carrying:
             self.x, self.y = px - self.grab[0], py - self.grab[1]
             self._keep_on_screen()
@@ -783,20 +1051,35 @@ class Engine:
         self.press = None
         self._touched(now)
         if not self.carrying:
-            self.click_now = "left"
-            if self.pre_press in ("peek", "emerge") and self.peek_edge and not self.reduced:
-                self._enter("emerge", now)  # a click brings a peeking figure out
-            elif self.pre_press == "hang" and not self.reduced:
-                self._let_go()
-            else:
-                self._enter("wave", now) if not self.reduced else self._enter("sit", now)
+            self._clicked(now)
             return
         self.carrying = False
         self.x = min(max(self.x, self.current_monitor().area[0]), self.current_monitor().area[2] - self.size[0])
         velocity = None if self.reduced else self._throw_velocity(now, px, py)
         if velocity is not None:
             self._start_fly(*velocity)
-        elif self.reduced:
+        else:
+            self._drop(now)
+
+    def _clicked(self, now: float) -> None:
+        """A press that was never a drag: open a card, bring a peeker out, let a hanger go, or wave."""
+        reply = "sit" if self.reduced else "wave"
+        if self.pre_press == "card" and self.card is not None:
+            self.card_clicked = self.card  # the reminder opens; the card is set down
+            self._put_card_down(now)
+            self._enter(reply, now)
+            return
+        self.click_now = "left"
+        if self.pre_press in ("peek", "emerge") and self.peek_edge and not self.reduced:
+            self._enter("emerge", now)  # a click brings a peeking figure out
+        elif self.pre_press == "hang" and not self.reduced:
+            self._let_go()
+        else:
+            self._enter(reply, now)
+
+    def _drop(self, now: float) -> None:
+        """Let go without a throw: sit at once when reduced, land when on the floor, else fall."""
+        if self.reduced:
             # On the floor at once, without a fall: it would otherwise hang
             # where it was let go, in mid-air, with nothing to bring it down.
             self._place_on_floor()
@@ -832,6 +1115,10 @@ class Engine:
 
     def _frame(self, now: float) -> str:
         s = self.state
+        if self.card is not None and s in ("walk", "drift"):
+            return f"card{int((now - self.walk_started) / CARD_WALK_SWAP) % 2}"
+        if s == "card":
+            return f"card{int(now / CARD_SWAP) % 2}"
         if s in ("walk", "drift"):
             return f"walk{int((now - self.walk_started) / 0.125) % 6}"
         if s in FRAME_OF:
@@ -850,11 +1137,13 @@ class Engine:
 
     def _wake(self, now: float) -> int | None:
         s = self.state
+        if s == "card":  # waiting with a card, even when still: it swaps and it runs out
+            return max(MIN_WAKE_MS, min(int(CARD_SWAP * 1000), int(math.ceil((self.state_until - now) * 1000))))
         if self.reduced:
             return None
         if s in ("walk", "held", "drift", "hang", "rise", "peek", "emerge"):
             return TICK_WALK_MS
-        if s in ("fall", "hop", "fly"):
+        if s in ("fall", "hop", "fly", "leap"):
             return TICK_FALL_MS
         if s == "pressed":
             return None
@@ -894,5 +1183,5 @@ class Engine:
         x, y, clip = self._display()
         return Output(
             self._frame(now), int(round(x)), int(round(y)), self.facing < 0, self._wake(now),
-            self.click_now, self.settled_now, clip,
+            self.click_now, self.settled_now, clip, self.card_clicked,
         )

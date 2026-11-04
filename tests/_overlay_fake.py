@@ -44,7 +44,10 @@ class FakeWin32:
         self.animations = 1
         #: (GetTickCount, last input tick); None answers "unknown" like a failed call.
         self.last_input: tuple[int, int] | None = None
-        for name in ("user32", "gdi32", "kernel32", "shcore", "shell32"):
+        #: Visible windows, topmost first, as the shell reports them:
+        #: {hwnd: {"rect", "title", "pid", "ex", "iconic", "zoomed", "cloaked", "visible"}}.
+        self.window_list: dict[int, dict[str, Any]] = {}
+        for name in ("user32", "gdi32", "kernel32", "shcore", "shell32", "dwmapi"):
             setattr(self, name, FakeDll(self, name))
 
     def names(self, dll: str | None = None) -> list[str]:
@@ -140,6 +143,53 @@ class FakeWin32:
     def _GetDpiForMonitor(self, hmon: Any, _kind: int, x_ref: Any, y_ref: Any) -> int:
         x_ref._obj.value = y_ref._obj.value = self.monitor_list[int(hmon) - 100][1]
         return 0
+
+    # --- windows and monitors under a point ---------------------------------------------------
+    def _EnumWindows(self, callback: Any, _data: Any) -> int:
+        for hwnd in list(self.window_list):
+            callback(hwnd, 0)
+        return 1
+
+    def _win(self, hwnd: Any) -> dict[str, Any]:
+        return self.window_list[int(hwnd)]
+
+    def _IsWindowVisible(self, hwnd: Any) -> int:
+        return int(self._win(hwnd).get("visible", True))
+
+    def _IsIconic(self, hwnd: Any) -> int:
+        return int(self._win(hwnd).get("iconic", False))
+
+    def _IsZoomed(self, hwnd: Any) -> int:
+        return int(self._win(hwnd).get("zoomed", False))
+
+    def _GetWindowLongW(self, hwnd: Any, _index: int) -> int:
+        return int(self._win(hwnd).get("ex", 0))
+
+    def _GetWindowTextLengthW(self, hwnd: Any) -> int:
+        return len(self._win(hwnd).get("title", "x"))
+
+    def _GetWindowThreadProcessId(self, hwnd: Any, pid_ref: Any) -> int:
+        pid_ref._obj.value = self._win(hwnd).get("pid", 4242)
+        return 1
+
+    def _DwmGetWindowAttribute(self, hwnd: Any, attr: int, ref: Any, _size: int) -> int:
+        win = self._win(hwnd)
+        if attr == k.DWMWA_CLOAKED:
+            ref._obj.value = int(win.get("cloaked", False))
+        else:
+            r = ref._obj
+            r.left, r.top, r.right, r.bottom = win["rect"]
+        return 0
+
+    def _MonitorFromPoint(self, pt: Any, _flags: int) -> int:
+        best, best_d = 100, None
+        for index, (area, _dpi) in enumerate(self.monitor_list):
+            dx = max(area[0] - pt.x, 0, pt.x - area[2] + 1)
+            dy = max(area[1] - pt.y, 0, pt.y - area[3] + 1)
+            d = dx * dx + dy * dy
+            if best_d is None or d < best_d:
+                best, best_d = 100 + index, d
+        return best
 
     def _GetLastInputInfo(self, ref: Any) -> int:
         if self.last_input is None:

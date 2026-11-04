@@ -16,7 +16,7 @@ from tessellate.core.overlay import win32 as k
 from tests._overlay_fake import FakeWin32
 
 PKG = Path(k.__file__).parent
-DLL_CALL = re.compile(r"\b(user32|kernel32|gdi32|shcore|shell32)\.([A-Za-z0-9_]+)")
+DLL_CALL = re.compile(r"\b(user32|kernel32|gdi32|shcore|shell32|dwmapi)\.([A-Za-z0-9_]+)")
 
 
 def wait_for(cond: Any, timeout: float = 2.0) -> bool:
@@ -86,6 +86,7 @@ def test_old_windows_may_lack_only_the_optional_functions() -> None:
         dlls[name] = d
     assert set(k.apply_signatures(dlls)) == {
         "user32.SetThreadDpiAwarenessContext", "shcore.GetDpiForMonitor", "shell32.SHQueryUserNotificationState",
+        "dwmapi.DwmGetWindowAttribute",
     }
     del dlls["user32"].CreateWindowExW
     with pytest.raises(AttributeError):

@@ -26,12 +26,17 @@ logger = logging.getLogger(__name__)
 
 LOOKS = ("masculine", "feminine")
 #: Every frame of a look, in the order they are rendered. Walking is `walk0` to
-#: `walk5`; the others are what the engine's states draw.
+#: `walk5`; the others are what the engine's states draw. `card0` and `card1` are the
+#: figure holding a reminder's card (`scripts/render_card_frames.py`, Pillow, from
+#: `stand` and `wave`).
 FRAME_NAMES = (
     "stand", "blink", "look",
     "walk0", "walk1", "walk2", "walk3", "walk4", "walk5",
     "sit", "sleep", "wave", "held", "fall", "land", "hop", "hang", "tumble",
+    "card0", "card1",
 )
+#: Drawn by `scripts/render_card_frames.py`, not captured from the app.
+CARD_FRAMES = ("card0", "card1")
 WALK_FRAMES = tuple(f"walk{i}" for i in range(6))
 #: Rotated copies of the "tumble" frame, for a thrown figure: `spin0` to `spin7`
 #: are 45 degree steps. Built once per dpi (and flip) with Pillow, then cached.

@@ -307,7 +307,7 @@ def run_acts(e: Engine, minutes: float):
 
 
 def test_big_acts_are_minutes_apart_and_all_the_acts_are_in_one_table() -> None:
-    assert set(eng.ACTS) == {"move", "rest", "wave", "sit", "stand", "sleep", "hang", "peek"}
+    assert set(eng.ACTS) == {"move", "rest", "wave", "sit", "stand", "sleep", "hang", "peek", "climb"}
     for gait in ("walk", "float"):
         acts = run_acts(make(seed=4, gait=gait), 40)
         assert len(acts) >= 3, acts
