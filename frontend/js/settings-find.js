@@ -62,23 +62,10 @@ function settingRows() {
 //: **A pane is scanned again only when it changed** (INBOX 1620: `settingRowsScan` 452ms over six
 //: keys at 4x CPU, a clone of every label in every pane on each letter). A pane's rows are kept
 //: until a mutation inside it (not its own hidden flip, which the search makes on every key)
-//: marks it stale; the observer is wired by the first scan.
+//: marks it stale (the observer is `settingsSectionText`'s, in settings.js).
 function settingRowsScan() {
-  const modal = $("settings-modal");
-  if (modal && !settingRowsScan.watch) {
-    settingRowsScan.watch = new MutationObserver((records) => {
-      for (const rec of records) {
-        const pane = rec.target.nodeType === 1 ? rec.target : rec.target.parentElement;
-        if (rec.type === "attributes" && pane?.classList.contains("settings-section")) continue;
-        const owner = pane?.closest(".settings-section");
-        if (owner) settingRowsScan.panes.delete(owner);
-      }
-    });
-    settingRowsScan.watch.observe(modal, {
-      childList: true, subtree: true, characterData: true, attributes: true,
-      attributeFilter: ["class", "hidden", "open", "title", "aria-label", "aria-hidden", "data-keys", "data-find", "data-synonyms"],
-    });
-  }
+  //: Asked for its side effect: the observer that marks a pane stale (settings.js).
+  settingsSectionText(null);
   const rows = [];
   for (const pane of document.querySelectorAll("#settings-modal .settings-section")) {
     let part = settingRowsScan.panes.get(pane);

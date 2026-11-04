@@ -582,19 +582,33 @@ function settingsSectionText(section) {
   if (!settingsTextObserver) {
     const modal = $("settings-modal");
     if (modal) {
-      settingsTextObserver = new MutationObserver(() => {
+      settingsTextObserver = new MutationObserver((records) => {
         // One flag rather than a per-section diff: working out which
         // sections a mutation touched costs more than re-reading the one
         // section the next search actually asks about.
-        settingsTextCacheStale = true;
+        //: A pane's findable rows (settings-find.js `settingRowsScan`, INBOX 1620) go stale with the
+        //: pane, by the same records; a pane's own hidden flip, which every search makes, is neither.
+        for (const rec of records) {
+          const at = rec.target.nodeType === 1 ? rec.target : rec.target.parentElement;
+          if (rec.type === "attributes") {
+            if (at?.classList.contains("settings-section")) continue;
+          } else {
+            settingsTextCacheStale = true;
+          }
+          const pane = at?.closest(".settings-section");
+          if (pane) window.settingRowsScan?.panes.delete(pane);
+        }
       });
       settingsTextObserver.observe(modal, {
         childList: true,
         subtree: true,
         characterData: true,
+        attributes: true,
+        attributeFilter: ["class", "hidden", "open", "title", "aria-label", "aria-hidden", "data-keys", "data-find", "data-synonyms"],
       });
     }
   }
+  if (!section) return "";
   if (settingsTextCacheStale) {
     settingsTextCache = new WeakMap();
     settingsTextCacheStale = false;
