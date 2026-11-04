@@ -5089,12 +5089,8 @@ Link to another note with [[its first few words]]."></textarea>
               <button type="button" data-doc-view="rendered"
                 title="The finished document on its own, full width, with no editor"><i class="ph ph-book-open ph-lead" aria-hidden="true"></i> Read</button>
                           </div>
-            <!-- A diagram's three views (R7): shown instead of Edit and Read, by [data-diagram] on this seg's sibling. -->
-            <div class="seg" id="doc-diagram-seg" hidden role="group" aria-label="How to view this diagram">
-              <button type="button" data-doc-view="canvas" title="The picture, with the blocks beside it"><i class="ph ph-graph ph-lead" aria-hidden="true"></i> Canvas</button>
-              <button type="button" data-doc-view="blocks" title="The diagram as blocks with its picture, without the source"><i class="ph ph-squares-four ph-lead" aria-hidden="true"></i> Blocks</button>
-              <button type="button" data-doc-view="source" title="The diagram as text, with its picture"><i class="ph ph-code ph-lead" aria-hidden="true"></i> Source</button>
-            </div>
+            <!-- A diagram's three views (R7): shown instead of Edit and Read; its three buttons are made on the first diagram (documents.js docDiagramSeg), not shipped in the page. -->
+            <div class="seg" id="doc-diagram-seg" hidden role="group" aria-label="How to view this diagram"></div>
             <details class="doc-dock-menu dock-menu doc-view-menu" id="doc-view-menu">
               <summary class="ghost small icon-only doc-dock-menu-btn" aria-label="How to edit"
                 title="Rendered as you write, the markdown itself, or both side by side"><i class="ph ph-caret-down" aria-hidden="true"></i></summary>
