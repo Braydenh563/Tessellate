@@ -174,10 +174,6 @@
   border-radius: var(--radius-pill);
   background: var(--accent-text);
 }
-/* One bar x per recipe (1610): a padded row's box is a padding left of its text. */
-#appearance-panel :is(.check-row, .setting-check, .checkbox-label).setting-modified::before {
-  inset-inline-start: calc(-1 * var(--space-3));
-}
 #appearance-panel .setting-scope,
 #appearance-panel .setting-reset {
   flex: none;
@@ -317,4 +313,11 @@
 }
 :root:not([data-contrast="on"]) :is(#appearance-panel, #appearance-panel) :is(.settings-section, .settings-group, .settings-pane-title, .dialog-head) button.ghost:not(.icon-only, .icon-button, .danger, .linklike, .quiet, .edged, .split-button-main):is(:hover, :focus-visible, :has(:focus-visible)) {
   background: var(--ghost-btn-bg);
+}
+#appearance-panel :is(.check-row, .setting-check, .checkbox-label).setting-modified::before {
+  inset-inline-start: calc(-1 * var(--space-3));
+}
+#appearance-panel .settings-group > .selectbar {
+  margin-inline: calc(-1rem - 1px);
+  padding-inline: calc(1rem + 1px);
 }
