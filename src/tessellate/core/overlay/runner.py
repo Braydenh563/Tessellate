@@ -20,7 +20,7 @@ a figure that is sitting, asleep, typing-quiet, still, or switched off reads
 nothing. `bring_card(token)` (any thread) queues a reminder for the engine; a
 click on the card comes back as `on_card(token)` on a worker.
 
-Fullscreen and "do not disturb" (`SHQueryUserNotificationState`: busy, a
+Fullscreen and "do not disturb" (`SHQueryUserNotificationState`: a
 fullscreen Direct3D game, a presentation) hide the window and stop it moving;
 asked every 2 s while it runs, and while it is hidden for that.
 

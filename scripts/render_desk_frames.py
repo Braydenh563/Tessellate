@@ -54,16 +54,36 @@ STREAM_LO = 10
 STREAM_SOFT = 0.85
 
 
-def with_stream(body: Image.Image, neb: Image.Image) -> Image.Image:
-    """`body` (the capture without the nebula) solidified, with the stream the `neb`
-    capture adds under it. Both are RGBA captures of the same frame."""
+def stream_of(body: Image.Image, neb: Image.Image) -> Image.Image:
+    """The alpha the `neb` capture adds to `body`: the nebula stream, soft, with the faint dropped."""
     extra = ImageChops.subtract(neb.getchannel("A"), body.getchannel("A"))
-    extra = extra.point(lambda a: 0 if a < STREAM_LO else min(255, round(a * STREAM_SOFT)))
-    veil = neb.copy()
+    return extra.point(lambda a: 0 if a < STREAM_LO else min(255, round(a * STREAM_SOFT)))
+
+
+def with_stream(body: Image.Image, neb: Image.Image, stream: tuple[Image.Image, Image.Image] | None = None) -> Image.Image:
+    """`body` (the capture without the nebula) solidified, with the stream the `neb`
+    capture adds under it. Both are RGBA captures of the same frame. `stream` is a shared
+    (colours, alpha) pair to use instead of this frame's own: the idle and drift frames all
+    take one, so the stream cannot step from frame to frame (INBOX 1670: "the nebular flow
+    keeps blinking in and out", the stream's mass varied up to 3x between captures)."""
+    veil, extra = (neb.copy(), stream_of(body, neb)) if stream is None else (stream[0].copy(), stream[1])
     veil.putalpha(extra)
     solid = body.copy()
     solid.putalpha(body.getchannel("A").point(solidify))
     return Image.alpha_composite(veil, solid)
+
+
+def shared_stream(captured: dict[str, Image.Image], nebs: dict[str, Image.Image], names: list[str]) -> tuple[Image.Image, Image.Image]:
+    """The stream of the frame among `names` whose stream mass is the median: the one every
+    frame of the set then shows."""
+    streams = {n: stream_of(captured[n], nebs[n]) for n in names}
+    mass = {n: sum(i * c for i, c in enumerate(streams[n].histogram())) for n in names}
+    pick = sorted(names, key=lambda n: mass[n])[len(names) // 2]
+    return nebs[pick], streams[pick]
+
+
+#: Frames that stand or drift in place, each showing the same stream.
+STREAM_SHARED = tuple(sprites.IDLE_FRAMES) + tuple(sprites.WALK_FRAMES) + ("stand", "blink", "look")
 
 
 def touches_edge(im: Image.Image) -> bool:
@@ -97,7 +117,9 @@ def main() -> int:
         total = 0
         for look in sprites.LOOKS:
             captured = {name: Image.open(Path(raw) / look / f"{name}.png").convert("RGBA") for name in sprites.FRAME_NAMES if name not in sprites.CARD_FRAMES}
-            images = {name: with_stream(im, Image.open(Path(raw) / look / f"{name}.neb.png").convert("RGBA")) for name, im in captured.items()}
+            nebs = {name: Image.open(Path(raw) / look / f"{name}.neb.png").convert("RGBA") for name in captured}
+            shared = shared_stream(captured, nebs, [n for n in STREAM_SHARED if n in captured])
+            images = {name: with_stream(im, nebs[name], shared if name in STREAM_SHARED else None) for name, im in captured.items()}
             #: A capture can come out blank (seen once on a cold page: eight idle frames
             #: of one look): refuse to ship it rather than a figure that vanishes.
             blank = [n for n, im in captured.items() if sum(im.getchannel("A").histogram()[128:]) < 1000]

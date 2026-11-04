@@ -121,6 +121,22 @@ def test_a_drop_reports_where_it_settled() -> None:
     r.stop()
 
 
+def test_busy_state_alone_does_not_hide_it() -> None:
+    """INBOX 1670 (12:17Z log): a maximised browser reports QUNS_BUSY (2) and the figure
+    blinked out for 2 s every 30 s. Only a Direct3D game or a presentation hides it."""
+    r, fake, clock, *_ = make()
+    assert r.start()
+    r.show()
+    assert wait_for(lambda: r.host.visible)
+    fake.notification = k.QUNS_BUSY
+    for _ in range(3):
+        clock.t += 5
+        fake.post(k.WM_TIMER)
+    time.sleep(0.2)
+    assert not r.busy and r.host.visible
+    r.stop()
+
+
 def test_fullscreen_hides_it_and_leaving_shows_it_again(caplog) -> None:
     caplog.set_level("INFO", logger=runner_mod.logger.name)
     r, fake, clock, *_ = make()
@@ -374,8 +390,10 @@ def test_the_click_rect_is_the_figures_drawn_box_not_the_window() -> None:
         assert (w, h) == (f.box[2] - f.box[0], f.box[3] - f.box[1])
         assert (x - 1000, y - 500) == (f.box[0], f.box[1])
         assert w < cell[0] * 0.75 and x + w <= 1000 + cell[0]
-    left = r.drawn_rect(1000, 500, "stand", False)[0] - 1000
-    right = r.drawn_rect(1000, 500, "stand", True)[0] - 1000
+    # `held`, not `stand`: the re-rendered stand frame (one shared stream, INBOX 1670) is centred in its
+    # cell to the pixel, so it no longer shows the swing; `held` has its arm out to one side.
+    left = r.drawn_rect(1000, 500, "held", False)[0] - 1000
+    right = r.drawn_rect(1000, 500, "held", True)[0] - 1000
     assert left != right  # the margin really swings with the mirror
     r.stop()
 
