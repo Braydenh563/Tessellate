@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7755, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8684, test files 2020, tests 17018, plan headings 999, app scripts 28, boot scripts 37, script files 248.
+Counts: frontend functions 7755, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8688, test files 2021, tests 17021, plan headings 999, app scripts 28, boot scripts 37, script files 248.
 
 ## Frontend functions (7755)
 
@@ -12689,13 +12689,13 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/sketches/{sketch_id}` | PUT | `update_sketch` | src/tessellate/api/wb_items.py:166 |
 | `/skills` | GET | `list_skills` | src/tessellate/api/routes_settings.py:1529 |
 | `/source-status` | GET | `source_update_status` | src/tessellate/api/routes_update.py:723 |
-| `/spaces` | GET | `get_spaces` | src/tessellate/api/routes_spaces.py:77 |
-| `/spaces` | POST | `create_space` | src/tessellate/api/routes_spaces.py:96 |
-| `/spaces/restore` | POST | `restore_space` | src/tessellate/api/routes_spaces.py:209 |
-| `/spaces/{space_id}` | DELETE | `delete_space` | src/tessellate/api/routes_spaces.py:491 |
-| `/spaces/{space_id}` | PUT | `update_space` | src/tessellate/api/routes_spaces.py:110 |
-| `/spaces/{space_id}/counts` | GET | `space_counts` | src/tessellate/api/routes_spaces.py:82 |
-| `/spaces/{space_id}/move-notes` | POST | `move_notes_to_space` | src/tessellate/api/routes_spaces.py:517 |
+| `/spaces` | GET | `get_spaces` | src/tessellate/api/routes_spaces.py:78 |
+| `/spaces` | POST | `create_space` | src/tessellate/api/routes_spaces.py:90 |
+| `/spaces/restore` | POST | `restore_space` | src/tessellate/api/routes_spaces.py:203 |
+| `/spaces/{space_id}` | DELETE | `delete_space` | src/tessellate/api/routes_spaces.py:485 |
+| `/spaces/{space_id}` | PUT | `update_space` | src/tessellate/api/routes_spaces.py:104 |
+| `/spaces/{space_id}/counts` | GET | `space_counts` | src/tessellate/api/routes_spaces.py:83 |
+| `/spaces/{space_id}/move-notes` | POST | `move_notes_to_space` | src/tessellate/api/routes_spaces.py:511 |
 | `/spec` | GET | `model_spec` | src/tessellate/api/routes_models.py:684 |
 | `/start` | POST | `start` | src/tessellate/api/routes_captions.py:96 |
 | `/statistics` | GET | `statistics` | src/tessellate/api/routes_statistics.py:25 |
@@ -12899,7 +12899,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8684)
+## Backend modules (8688)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -20243,31 +20243,31 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `MoveNotesBody` | src/tessellate/api/routes_spaces.py:513 |
-| `SpaceDeleted` | src/tessellate/api/routes_spaces.py:297 |
-| `SpaceRestore` | src/tessellate/api/routes_spaces.py:200 |
-| `_delete_space_moving` | src/tessellate/api/routes_spaces.py:303 |
-| `_detach_references` | src/tessellate/api/routes_spaces.py:267 |
-| `_generate_space_id` | src/tessellate/api/routes_spaces.py:30 |
-| `_move_space_contents` | src/tessellate/api/routes_spaces.py:136 |
-| `_purge_collect` | src/tessellate/api/routes_spaces.py:333 |
-| `_purge_forget_index` | src/tessellate/api/routes_spaces.py:361 |
-| `_purge_ids` | src/tessellate/api/routes_spaces.py:328 |
-| `_purge_rows` | src/tessellate/api/routes_spaces.py:414 |
-| `_purge_side_tables` | src/tessellate/api/routes_spaces.py:378 |
-| `_purge_space` | src/tessellate/api/routes_spaces.py:454 |
-| `_refuse_duplicate_name` | src/tessellate/api/routes_spaces.py:68 |
-| `_space_has_rows` | src/tessellate/api/routes_spaces.py:192 |
-| `_space_rows` | src/tessellate/api/routes_spaces.py:324 |
-| `_validate_icon` | src/tessellate/api/routes_spaces.py:46 |
-| `_validate_name` | src/tessellate/api/routes_spaces.py:55 |
-| `create_space` | src/tessellate/api/routes_spaces.py:97 |
-| `delete_space` | src/tessellate/api/routes_spaces.py:492 |
-| `get_spaces` | src/tessellate/api/routes_spaces.py:78 |
-| `move_notes_to_space` | src/tessellate/api/routes_spaces.py:518 |
-| `restore_space` | src/tessellate/api/routes_spaces.py:210 |
-| `space_counts` | src/tessellate/api/routes_spaces.py:83 |
-| `update_space` | src/tessellate/api/routes_spaces.py:111 |
+| `MoveNotesBody` | src/tessellate/api/routes_spaces.py:507 |
+| `SpaceDeleted` | src/tessellate/api/routes_spaces.py:291 |
+| `SpaceRestore` | src/tessellate/api/routes_spaces.py:194 |
+| `_delete_space_moving` | src/tessellate/api/routes_spaces.py:297 |
+| `_detach_references` | src/tessellate/api/routes_spaces.py:261 |
+| `_generate_space_id` | src/tessellate/api/routes_spaces.py:31 |
+| `_move_space_contents` | src/tessellate/api/routes_spaces.py:130 |
+| `_purge_collect` | src/tessellate/api/routes_spaces.py:327 |
+| `_purge_forget_index` | src/tessellate/api/routes_spaces.py:355 |
+| `_purge_ids` | src/tessellate/api/routes_spaces.py:322 |
+| `_purge_rows` | src/tessellate/api/routes_spaces.py:408 |
+| `_purge_side_tables` | src/tessellate/api/routes_spaces.py:372 |
+| `_purge_space` | src/tessellate/api/routes_spaces.py:448 |
+| `_refuse_duplicate_name` | src/tessellate/api/routes_spaces.py:69 |
+| `_space_has_rows` | src/tessellate/api/routes_spaces.py:186 |
+| `_space_rows` | src/tessellate/api/routes_spaces.py:318 |
+| `_validate_icon` | src/tessellate/api/routes_spaces.py:47 |
+| `_validate_name` | src/tessellate/api/routes_spaces.py:56 |
+| `create_space` | src/tessellate/api/routes_spaces.py:91 |
+| `delete_space` | src/tessellate/api/routes_spaces.py:486 |
+| `get_spaces` | src/tessellate/api/routes_spaces.py:79 |
+| `move_notes_to_space` | src/tessellate/api/routes_spaces.py:512 |
+| `restore_space` | src/tessellate/api/routes_spaces.py:204 |
+| `space_counts` | src/tessellate/api/routes_spaces.py:84 |
+| `update_space` | src/tessellate/api/routes_spaces.py:105 |
 
 ### src/tessellate/api/routes_statistics.py (3)
 
@@ -23405,6 +23405,15 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `snooze` | src/tessellate/repo/reminders.py:193 |
 | `twin` | src/tessellate/repo/reminders.py:130 |
 
+### src/tessellate/repo/spaces.py (4)
+
+| Name | File:line |
+|---|---|
+| `all_spaces` | src/tessellate/repo/spaces.py:20 |
+| `counts` | src/tessellate/repo/spaces.py:28 |
+| `find` | src/tessellate/repo/spaces.py:24 |
+| `ids` | src/tessellate/repo/spaces.py:16 |
+
 ### src/tessellate/repo/tags.py (17)
 
 | Name | File:line |
@@ -23822,7 +23831,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17018)
+## Tests (17021)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25334,6 +25343,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_repo_relation_types.py | 5 |
 | tests/test_repo_relations.py | 7 |
 | tests/test_repo_reminders.py | 8 |
+| tests/test_repo_spaces.py | 3 |
 | tests/test_repo_tags.py | 8 |
 | tests/test_reset_code.py | 16 |
 | tests/test_restart_everywhere.py | 7 |
@@ -26435,7 +26445,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E4 · The honest positives, so the section is not one-sided (read) | docs/roadmap/MODERNISATION_AUDIT.md:676 |
 | Earlier morning summary (2026-10-30) | docs/roadmap/HANDOVER.md:35 |
 | Earlier morning summary (away run 2026-10-18b) | docs/roadmap/HANDOVER.md:54 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:486 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:488 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4272 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |
@@ -26556,7 +26566,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:170 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:178 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4178 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
