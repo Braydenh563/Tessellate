@@ -2105,24 +2105,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `atlasBreathFrame` | frontend/js/atlas-life.js:745 |
-| `atlasFrameBudget` | frontend/js/atlas-life.js:412 |
-| `atlasPropLoops` | frontend/js/atlas-life.js:670 |
-| `atlasPropsFrame` | frontend/js/atlas-life.js:698 |
-| `atlasRigLower` | frontend/js/atlas-life.js:843 |
-| `atlasRigLowerAttach` | frontend/js/atlas-life.js:819 |
+| `atlasBreathFrame` | frontend/js/atlas-life.js:747 |
+| `atlasFrameBudget` | frontend/js/atlas-life.js:413 |
+| `atlasPropLoops` | frontend/js/atlas-life.js:672 |
+| `atlasPropsFrame` | frontend/js/atlas-life.js:700 |
+| `atlasRigLower` | frontend/js/atlas-life.js:845 |
+| `atlasRigLowerAttach` | frontend/js/atlas-life.js:821 |
 | `atlasRingLoops` | frontend/js/atlas-life.js:20 |
-| `atlasTailAttach` | frontend/js/atlas-life.js:302 |
+| `atlasTailAttach` | frontend/js/atlas-life.js:303 |
 | `atlasTailBend` | frontend/js/atlas-life.js:105 |
 | `atlasTailCalm` | frontend/js/atlas-life.js:540 |
-| `atlasTailDraw` | frontend/js/atlas-life.js:597 |
-| `atlasTailFollow` | frontend/js/atlas-life.js:116 |
-| `atlasTailFrame` | frontend/js/atlas-life.js:438 |
-| `atlasTailKit` | frontend/js/atlas-life.js:175 |
-| `atlasTailPick` | frontend/js/atlas-life.js:376 |
-| `atlasTailRest` | frontend/js/atlas-life.js:560 |
-| `atlasTailShape` | frontend/js/atlas-life.js:142 |
-| `atlasTailUnrest` | frontend/js/atlas-life.js:575 |
+| `atlasTailDraw` | frontend/js/atlas-life.js:599 |
+| `atlasTailFollow` | frontend/js/atlas-life.js:115 |
+| `atlasTailFrame` | frontend/js/atlas-life.js:439 |
+| `atlasTailKit` | frontend/js/atlas-life.js:176 |
+| `atlasTailPick` | frontend/js/atlas-life.js:377 |
+| `atlasTailRest` | frontend/js/atlas-life.js:562 |
+| `atlasTailShape` | frontend/js/atlas-life.js:143 |
+| `atlasTailUnrest` | frontend/js/atlas-life.js:577 |
 
 ### frontend/js/atlas-micro.js (8)
 

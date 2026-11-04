@@ -112,7 +112,6 @@ function atlasTailBend(s, p, ph, ph2, drift, ph3 = 0, follow = 0) {
 //: round a turn, and settles. Its last link (px) becomes a bend (radians) added to the curl,
 //: which the tail's own acts ride on. Same constants as the desktop companion's `Trail`
 //: (`core/overlay/behaviour.py`). At rest it is exactly 0 and costs a few multiplies a draw.
-const ATLAS_FOLLOW = { links: 3, stiff: 90, damp: 9, kick: 0.8, max: 26, bend: 0.55 };
 function atlasTailFollow(tail, dt, x) {
   const f = (tail.follow ||= { pos: [0, 0, 0], vel: [0, 0, 0], x, v: 0 });
   if (!Number.isFinite(x) || dt <= 0) return 0;
@@ -122,7 +121,7 @@ function atlasTailFollow(tail, dt, x) {
   f.v = v;
   const n = Math.max(1, Math.ceil(dt / 0.02));
   const h = dt / n;
-  const A = ATLAS_FOLLOW;
+  const A = atlasTailFollow.springs;
   for (let k = 0; k < n; k += 1) {
     let prev = 0;
     for (let i = 0; i < A.links; i += 1) {
@@ -133,6 +132,8 @@ function atlasTailFollow(tail, dt, x) {
   }
   return (f.pos[A.links - 1] / A.max) * A.bend;
 }
+//: On the function, not the shared scope (test_global_scope_ratchet): only it reads them.
+atlasTailFollow.springs = { links: 3, stiff: 90, damp: 9, kick: 0.8, max: 26, bend: 0.55 };
 //: The tail's centreline bent as `bend(s)` says, as a run of cubics
 //: through the bent points (Catmull-Rom), each an equal share of the
 //: length as `atlasStemSides` samples them; and each sample's turn, for
@@ -535,11 +536,12 @@ function atlasTailFrame(tail, now) {
   } else if (live) tail.raf = requestAnimationFrame((t) => atlasTailFrame(tail, t));
   else tail.at = 0;
 }
-const ATLAS_TAIL_CALM = new Set(["idle", "sit", "lie", "think", "sad"]);
 const ATLAS_TAIL_CALM_MS = 66;
 function atlasTailCalm(tail, box) {
-  return ATLAS_TAIL_CALM.has(tail.state) && !!box.closest("#nm-buddy") && !box.closest(".nm-viewer-figure");
+  return atlasTailCalm.states.has(tail.state) && !!box.closest("#nm-buddy") && !box.closest(".nm-viewer-figure");
 }
+//: On the function, not the shared scope (test_global_scope_ratchet): only it reads them.
+atlasTailCalm.states = new Set(["idle", "sit", "lie", "think", "sad"]);
 //: **At rest the tail goes to the compositor** (Brief 34 continues, step 2;
 //: decision 7, under 1ms a minute beyond the face): fifteen path draws a
 //: second were about 770 layouts and 2s of script a minute at rest in the
