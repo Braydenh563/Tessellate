@@ -71,7 +71,7 @@ def test_r6_4_the_connector_menu_hangs_from_its_row_and_each_line_has_its_own_gl
 
 
 def test_r6_5_the_dialog_takes_focus_when_it_opens():
-    after = EMBED[EMBED.index("view(\"blocks\");") :]
+    after = EMBED[EMBED.index("view(\"canvas\");") :]
     assert "await show();" in after and ".dgm-steps button" in after and "dialog).focus" in after
 
 

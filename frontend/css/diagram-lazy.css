@@ -1052,3 +1052,24 @@
     inline-size: 2.75rem;
   }
 }
+
+/* The two layouts of the one view (R7, 1621 D6). Blocks is the list at its old width with the picture beside it. Canvas
+   gives the picture the room: a narrower list, and on a phone a taller picture (on the page, not in the dialog, whose body has no room for it). */
+[data-dgm-layout="canvas"] .dgm-body.dgm-split {
+  --dgm-list: 16rem;
+}
+
+[data-dgm-layout="blocks"] .dgm-body.dgm-split {
+  --dgm-list: 22rem;
+}
+
+@container (max-width: 599.98px) {
+  [data-dgm-layout="canvas"]:not(.dgm-host) .dgm-picture,
+  [data-dgm-layout="canvas"]:not(.dgm-host) .dgm-stage {
+    block-size: 60dvh;
+  }
+
+  [data-dgm-layout="canvas"]:not(.dgm-host) .dgm-stage > .dgm-picture {
+    block-size: auto;
+  }
+}

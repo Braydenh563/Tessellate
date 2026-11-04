@@ -52498,3 +52498,14 @@ Built: R6.1 to R6.13, one test each in `tests/test_diagram_r6.py`. Decisions tak
 - **Help:** the `diagram-blocks` topic names the example button, the decision's words, N and Shift+N (1893 characters); `diagram-builder` says Create opens empty.
 - **Not verified:** a real phone's keyboard behaviour in the picker (a touch-emulated context only); dragging a node in the picture (R8b).
 
+
+## Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R7)
+
+Built: R7 (1621 D5, D6), tests in `tests/test_diagram_r7.py`. **Retraction:** 1546 D9 ("the block pane is a tree, not a canvas") and the dialog-only part of D6 are superseded by 1621. The diagram is now a Canvas | Blocks | Source view; the canvas is still a picture beside the blocks until R8 puts the overlay and gestures on it.
+
+- **The seg.** A diagram's Documents dock shows its own well, `#doc-diagram-seg` (Canvas, Blocks, Source), in place of Edit and Read (`[data-diagram]`, set in `syncDocFileType`). A separate well because the pill-well recipe allows three. Canvas and Blocks are two layouts of the one rendered view (`docViewState.layout`; `setDocView("canvas" | "blocks")` maps to `rendered`), stamped on the preview as `data-dgm-layout`. A diagram opens in Canvas. The dialog's seg is the same three words (`diagram-embed.js`), `data-dgm-layout` on its host.
+- **Layouts.** Canvas gives the picture the room: list 16rem (Blocks 22rem), and at 390 on the page a 60dvh picture (Blocks 38dvh). Not in the dialog, whose body has no room for it.
+- **The door.** From inside an editor, Done now makes the `.mmd` row (title "Diagram" and a minute stamp, so `![[Title]]` names this row) and writes `![[Title]]` at the caret; the slash menu's starter fence is unchanged.
+- **Measured** (Playwright against `serve.sh` on port 8853): 1440 light, canvas list 256 px and picture 755 px wide, Blocks list 352 and picture 659; 390 dark, canvas picture 506 px tall, Blocks 321, no sideways scroll (scrollWidth 390); the frame draws on the page (`IMG` 168x377 at 1440, `complete`); Create, edit, reload gives the same source (`same: true`); the door made the row and wrote `![[Diagram 2026-11-04 08:34]]` in the note (the editor rendered it as the title); no console or page errors in any run. Boot bytes: `tests/test_static_compression.py` passes.
+- **Help:** `diagram-blocks` opens with Canvas, Blocks and Source (1896 characters); `diagram-builder` says Done writes a link to a saved diagram file.
+- **Not verified:** 1440 dark and 390 light were not run (colour is not touched); a real phone.

@@ -103,12 +103,13 @@
     };
     const show = () =>
       diagramModel.builder.show(host, io, history[at]).then((S) => {
-        seg.querySelector('[data-view="blocks"]').disabled = Boolean(S?.plain);
+        for (const name of ["canvas", "blocks"]) seg.querySelector(`[data-view="${name}"]`).disabled = Boolean(S?.plain);
         if (S?.plain && dialog.dataset.view !== "source") view("source");
         return S;
       });
     const view = (name) => {
       dialog.dataset.view = name;
+      if (name !== "source") host.dataset.dgmLayout = name;
       for (const b of seg.children) {
         b.classList.toggle("active", b.dataset.view === name);
         b.setAttribute("aria-pressed", String(b.dataset.view === name));
@@ -118,8 +119,8 @@
     const seg = el("div", "seg dgm-views");
     seg.setAttribute("role", "group");
     seg.setAttribute("aria-label", "Diagram view");
-    for (const [name, label] of [["blocks", "Blocks"], ["source", "Source"]]) {
-      const b = smallButton(label, name === "blocks" ? "The diagram as blocks" : "The diagram as text, with its picture", () => view(name));
+    for (const [name, label] of [["canvas", "Canvas"], ["blocks", "Blocks"], ["source", "Source"]]) {
+      const b = smallButton(label, { canvas: "The picture, with the blocks beside it", blocks: "The diagram as blocks", source: "The diagram as text, with its picture" }[name], () => view(name));
       b.dataset.view = name;
       seg.append(b);
     }
@@ -172,7 +173,7 @@
     });
     overlay.append(dialog);
     document.body.append(overlay);
-    view("blocks");
+    view("canvas");
     await show();
     //: Focus goes into the dialog, to the first step or block (R6.5): it stayed on the button behind, and the first Tab reached Close.
     (host.querySelector(".dgm-steps button, .dgm-block[tabindex='0']") || dialog.querySelector(".dgm-pane") || dialog).focus?.({ preventScroll: true });

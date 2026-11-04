@@ -362,7 +362,7 @@ def test_the_diagram_blocks_keys_menu_and_views_are_in_the_guide() -> None:
     for key in ("Insert", "Delete", "Backspace", "ContextMenu"):
         assert key in builder, key
     docs = (FRONTEND / "js" / "documents.js").read_text(encoding="utf-8")
-    assert '"Blocks"' in docs and "A diagram has Blocks, Split and Source." in docs
+    assert "Canvas" in docs and "A diagram has Canvas, Blocks, Split and Source." in docs
 
 
 def test_the_diagram_add_library_and_connect_to_are_in_the_guide_in_the_controls_words() -> None:

@@ -3203,8 +3203,8 @@ MORE_TOPICS.extend([
             "blocks. Mermaid is only its file format (.mmd). Every door is the same row, "
             "Diagram builder, with the same icon. Ctrl+K, Diagram builder, and Find anything, Tools "
             "and features and Quick access list it too. Over a note, a document or a Chat box, "
-            "Insert (or / then diagram) opens the builder and Done writes the diagram there as a "
-            "code block. Over a board or a mind map, Insert, Diagram, Diagram builder adds a diagram object "
+            "Insert (or / then diagram) opens the builder and Done saves a diagram file and writes a link to it, "
+            "[[Title]] after a !, which draws the diagram. Over a board or a mind map, Insert, Diagram, Diagram builder adds a diagram object "
             "to double-click later. Anywhere else, and in the Library's Create, New, Diagram, it "
             "opens the builder empty, and Done saves it as a new diagram file. Cancel changes nothing."
         ),
@@ -3218,9 +3218,10 @@ MORE_TOPICS.extend([
             "diagram keyboard", "mmd", "diagram file",
         ),
         "body": (
-            "A diagram is a Mermaid document. It opens in Blocks: the "
-            "pieces on the left, the live picture beside them (above on a "
-            "phone). Source and Split show it as text; Ctrl+Z undoes "
+            "A diagram is a Mermaid document. Canvas opens first: the "
+            "blocks on the left, the picture beside them (above on a "
+            "phone). Blocks gives the list room; "
+            "Source and Split show text; Ctrl+Z undoes "
             "either. Add holds the shapes by meaning (Steps, Decisions, Start and end, Notes "
             "and groups): point at one for its hint, press it, or drag it into the blocks, to "
             "add one (on a phone, Add opens the same list). Connect to... on a block draws an "
@@ -3231,11 +3232,11 @@ MORE_TOPICS.extend([
             "picks it. A divider sizes the blocks and the picture (drag, or "
             "arrows; Shift for more). Direction sets the flow. An empty one lists "
             "three steps: Add a shape, Name it, Connect it, or Start from an example. "
-            "The picture's corner bar zooms (Zoom in, Zoom out, Fit), as do Ctrl+wheel "
+            "The corner bar zooms (Zoom in, Zoom out, Fit), as do Ctrl+wheel "
             "and a pinch; its last button reads the zoom now, and 100% is the drawing's own size; arrow keys pan. "
             "Shift+click picks a range, Ctrl+click adds one; a bar offers Delete, "
             "Duplicate, Group into a box, Done, and any picked grip moves all. "
-            "A block's ... menu (long press on a phone) has the same actions. Keys on "
+            "A block's ... menu (long press on a phone) does the same. Keys on "
             "a block: arrows walk, Enter renames, N adds a Box (Shift+N repeats a shape), G adds a group, C or J joins, "
             "Delete removes, Alt+Up and Alt+Down reorder, Alt+Right nests, Alt+Left lifts out. "
             "Suggest (in the ... menu on a phone) starts a diagram: "

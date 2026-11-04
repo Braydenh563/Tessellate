@@ -184,7 +184,7 @@ function syncDocFileType({ prose = true } = {}) {
   // disabled rather than hidden (hidden controls that come and go make a
   // toolbar feel unstable), and a document already in one of them is moved
   // back to Source rather than left looking at nothing.
-  for (const button of document.querySelectorAll("#doc-view-seg [data-doc-view], #doc-view-menu [data-doc-view]")) {
+  for (const button of document.querySelectorAll("#doc-view-seg [data-doc-view], #doc-diagram-seg [data-doc-view], #doc-view-menu [data-doc-view]")) {
     // The Edit group button is never disabled: setDocView maps it to Source
     // for a file with no rendered form, which is the mode it must reach.
     if (button.dataset.docViewGroup) continue;
@@ -193,23 +193,15 @@ function syncDocFileType({ prose = true } = {}) {
     //: want on a `.csv` or a `.php` the bundle has no mode for.
     button.disabled = !docViewState.allows(type, button.dataset.docView);
     button.title = button.disabled
-      ? type.ext === "mmd" ? "A diagram has Blocks, Split and Source." : `A .${type.ext} file has no rendered form, this is for markdown.`
+      ? type.ext === "mmd" ? "A diagram has Canvas, Blocks, Split and Source." : `A .${type.ext} file has no rendered form, this is for markdown.`
       : button.dataset.docTitle || button.title;
   }
-  //: A diagram's Read button is Blocks (its pane with the picture beside it, no source).
-  const read = document.querySelector('#doc-view-seg [data-doc-view="rendered"]');
-  if (read) {
-    read.dataset.readWords ??= read.textContent.trim();
-    read.dataset.readTitle ??= read.title;
-    const blocks = type.ext === "mmd";
-    read.lastChild.textContent = ` ${blocks ? "Blocks" : read.dataset.readWords}`;
-    read.querySelector("i").className = `ph ${blocks ? "ph-squares-four" : "ph-book-open"} ph-lead`;
-    read.title = blocks ? "The diagram as blocks with its picture, without the source" : read.dataset.readTitle;
-  }
+  //: A diagram's seg is Canvas, Blocks and Source (R7): the Edit and Read well gives way to it.
+  if ($("doc-diagram-seg")) ($("doc-diagram-seg").hidden = type.ext !== "mmd", $("doc-view-seg").hidden = type.ext === "mmd");
   //: A diagram opens in Blocks the first time its type is synced after another type.
   const toDiagram = type.ext === "mmd" && docViewState.type !== "mmd";
   docViewState.type = type.ext;
-  if (!docViewState.allows(type, docView) || toDiagram) setDocView(type.ext === "mmd" ? "rendered" : "source");
+  if (!docViewState.allows(type, docView) || toDiagram) setDocView(type.ext === "mmd" ? "canvas" : "source");
   //: And back: a markdown type again, and Source was only the code file's.
   else if (type.previewable && docViewState.held) setDocView(docDefaultView());
   //: The engine's own language and wrapping, where it is mounted.
@@ -505,10 +497,12 @@ let docView = "source";
 //: synced, so a diagram opens in Blocks.
 const docViewState = {
   held: false,
+  //: A diagram's rendered view has two layouts, Canvas (the default) and Blocks (R7, 1621 D6).
+  layout: "canvas",
   tableGrips: null,
   blockHandle: null,
   type: "md",
-  allows: (type, mode) => type.previewable || DOC_VIEWS_UNRENDERED.includes(mode) || (type.ext === "mmd" && (mode === "split" || mode === "rendered")),
+  allows: (type, mode) => type.previewable || DOC_VIEWS_UNRENDERED.includes(mode) || (type.ext === "mmd" && ["split", "rendered", "canvas", "blocks"].includes(mode)),
 };
 
 //: One-time reset (owner, 2026-10-25: Live should be the default, but their
@@ -936,6 +930,7 @@ function asSurface(box) {
 
 function setDocView(mode, { persist = true } = {}) {
   const type = docFileType();
+  if (type.ext === "mmd" && (mode === "canvas" || mode === "blocks")) [docViewState.layout, mode] = [mode, "rendered"];
   // A code file has no rendered form, so it can only be one of the two views
   // that do not need one. Asked for any other, that is the honest answer
   // rather than an empty pane.
@@ -986,10 +981,11 @@ function setDocView(mode, { persist = true } = {}) {
   $("doc-toolbar")?.classList.toggle("hidden", docView === "rendered" || !type.previewable);
 
   if (docView !== "rendered" && !docViewState.held) lastEditView = docView;
-  for (const button of document.querySelectorAll("#doc-view-seg [data-doc-view], #doc-view-menu [data-doc-view]")) {
+  for (const button of document.querySelectorAll("#doc-view-seg [data-doc-view], #doc-diagram-seg [data-doc-view], #doc-view-menu [data-doc-view]")) {
     // Edit is on for every mode that is not Read; the menu items behind
     // it mark the one editing mode in use.
-    const on = button.dataset.docViewGroup === "edit" ? docView !== "rendered" : button.dataset.docView === docView;
+    const mode = button.dataset.docView;
+    const on = button.dataset.docViewGroup === "edit" ? docView !== "rendered" : mode === "canvas" || mode === "blocks" ? docView === "rendered" && docViewState.layout === mode : mode === docView;
     button.classList.toggle("active", on);
     button.setAttribute("aria-pressed", String(on));
   }
@@ -4047,6 +4043,7 @@ function renderDocPreview() {
   //: Each block gesture hands its printed source to `set` (one history step each: `docUndoBreak`);
   //: a typed edit or an undo comes back through here. Inline, not a named function: one global less.
   if (docFileType().ext === "mmd") {
+    preview.dataset.dgmLayout = docViewState.layout;
     const text = docText();
     const io = { name: $("doc-title").value, set: (next) => (docUndoBreak(), (docSurface().text = next)), undo: () => docUndo(), redo: () => docRedo() };
     ensureModule("diagramBuilder").then((ok) => {
@@ -9031,7 +9028,7 @@ $("doc-word-goal-submit").addEventListener("click", () => {
   renderDocStats();
   $("doc-word-goal-dialog").close();
 });
-for (const button of document.querySelectorAll("#doc-view-seg [data-doc-view], #doc-view-menu [data-doc-view]")) {
+for (const button of document.querySelectorAll("#doc-view-seg [data-doc-view], #doc-diagram-seg [data-doc-view], #doc-view-menu [data-doc-view]")) {
   // The unmodified title is stashed before syncDocFileType ever overwrites it
   // with the "no rendered form" explanation, so switching back to a markdown
   // document restores the real one rather than leaving the disabled text.
