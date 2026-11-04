@@ -177,16 +177,23 @@ function panelClipBox(panel, vw, vh) {
 //: The window minus the top bar, the status bar, a side tab rail, a sidebar
 //: and the panels docked to a side, read when a drag starts or a dock is
 //: fitted, never per move. `except` is the panel being placed; what it draws
-//: above (`panelAbove`) is not taken off the free area.
-function panelSafe(vw, vh, except, ignore = "") {
+//: above (`panelAbove`) is not taken off the free area, except the two bars
+//: when `bars` is set: a dock zone never covers them, whatever the panel
+//: draws above (INBOX 1648, the owner: "if a panel is docked, it shouldnt
+//: cover the top or bottom bar"; a modal panel docked left had filled over both).
+function panelSafe(vw, vh, except, ignore = "", bars = false) {
   const safe = except ? panelClipBox(except, vw, vh) : { left: 0, top: 0, right: vw, bottom: vh };
   const blocks = (el) => !except || !panelAbove(except, el);
   const seen = (id) => {
     const el = document.getElementById(id);
     return el && el.getClientRects().length && blocks(el) ? el.getBoundingClientRect() : null;
   };
-  const bar = seen("top-bar");
-  const foot = seen("status-bar");
+  const barBox = (id) => {
+    const el = document.getElementById(id);
+    return el && el.getClientRects().length ? el.getBoundingClientRect() : null;
+  };
+  const bar = bars ? barBox("top-bar") : seen("top-bar");
+  const foot = bars ? barBox("status-bar") : seen("status-bar");
   const tabs = seen("tab-bar");
   if (bar) safe.top = Math.max(safe.top, Math.round(bar.bottom));
   if (foot) safe.bottom = Math.min(safe.bottom, Math.round(foot.top));
@@ -450,7 +457,7 @@ function panelShowZone(r) {
 //: Fill the dock zone: size first, then one rect read to learn where the
 //: centred layout put it, and translate the difference.
 function panelFit(panel, st) {
-  const z = panelZoneRect(st.dock, window.innerWidth, window.innerHeight, panelInset(), panelSafe(window.innerWidth, window.innerHeight, panel, panelPushOn() ? panelPushSide(panel, st.dock) : ""));
+  const z = panelZoneRect(st.dock, window.innerWidth, window.innerHeight, panelInset(), panelSafe(window.innerWidth, window.innerHeight, panel, panelPushOn() ? panelPushSide(panel, st.dock) : "", true));
   if (!z) {
     st.dock = "";
     return;
@@ -679,7 +686,8 @@ function panelHeadDown(e) {
   //: With the push on, a side dock is laid against the window's own edge: the
   //: sidebar and the rail beside it are pushed over with the rest of the app.
   const pushing = panelPushOn() && panelPinned(panel);
-  const sideSafe = { left: pushing ? panelSafe(vw, vh, panel, "left") : safe, right: pushing ? panelSafe(vw, vh, panel, "right") : safe };
+  const dockSafe = panelSafe(vw, vh, panel, "", true);
+  const sideSafe = { left: panelSafe(vw, vh, panel, pushing ? "left" : "", true), right: panelSafe(vw, vh, panel, pushing ? "right" : "", true) };
   let moved = 0;
   let x0 = e.clientX;
   let y0 = e.clientY;
@@ -720,7 +728,7 @@ function panelHeadDown(e) {
     const z = panelZoneFor(panel, panelSnapZone(ev.clientX, ev.clientY, vw, vh));
     if (z !== zone) {
       zone = z;
-      panelShowZone(z ? panelZoneRect(z, vw, vh, inset, sideSafe[z] || safe) : null);
+      panelShowZone(z ? panelZoneRect(z, vw, vh, inset, sideSafe[z] || dockSafe) : null);
     }
   };
   const done = (ev) => {

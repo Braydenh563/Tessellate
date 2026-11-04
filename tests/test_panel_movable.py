@@ -480,3 +480,14 @@ def test_a_focus_brought_by_a_press_adopts_after_the_press_ends():
     assert "if (p && press.down) press.wait.add(p);" in focus
     assert 'window.addEventListener("pointerup", adoptWaiting, true);' in text
     assert "setTimeout(() => panels.forEach(panelAdopt), 0);" in text
+
+
+def test_a_dock_zone_keeps_clear_of_both_bars_whatever_the_panel_draws_above():
+    # INBOX 1648: a modal panel docked left filled over the top and status bars
+    # (measured 8 to 892 against bars at 44 and 863; now 52 to 855).
+    src = (Path(__file__).resolve().parents[1] / "frontend/js/panel-movable.js").read_text(encoding="utf-8")
+    assert 'function panelSafe(vw, vh, except, ignore = "", bars = false)' in src
+    assert 'const bar = bars ? barBox("top-bar") : seen("top-bar");' in src
+    assert 'const foot = bars ? barBox("status-bar") : seen("status-bar");' in src
+    assert 'panelPushSide(panel, st.dock) : "", true));' in src  # panelFit
+    assert "sideSafe[z] || dockSafe" in src  # the zone shown while dragging

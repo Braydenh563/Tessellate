@@ -52395,6 +52395,8 @@ From DOCUMENTS_PLAN.md and WHITEBOARD_PLAN.md "Placed from INBOX, 2026-11-03", b
 
 1647. **Owner, 2026-11-04 (screenshot: the Tray popover, a row's x beside the popover's close x):** "i feel like the x's for each teay item may be confuxed with the x button to close the tray?". Recommendation (taken): a row's remove button is a minus (`ph:minus-circle`, as Questions' Drop), the x stays the popover's close.
 
+1648. **Owner, 2026-11-04 12:34 local (screenshot: the Create panel docked at the left, its foot covering the bottom bar's left end and its top over the top bar):** "if a panel is docked, it shouldnt cover the top or bottom bar". Recommendation (taken): a docked panel's box runs from the top bar's bottom to the bottom bar's top (the same insets the docked chat and side panels use), at every width.
+
 ## Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R1 and R2)
 
 Built: R1 in 324f174 (merge be41265), R2 in 4d3afd9 and 455d3c5 (merge 606730c); numbers in `agent-remaining/diagram-r1-1104.md` and `diagram-r2-1104.md`.

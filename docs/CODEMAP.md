@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7751, frontend ids 2637, CSS sections 522, backend routes 641, backend modules 8599, test files 1995, tests 16705, plan headings 999, app scripts 28, boot scripts 37, script files 246.
+Counts: frontend functions 7751, frontend ids 2637, CSS sections 522, backend routes 641, backend modules 8599, test files 1995, tests 16706, plan headings 999, app scripts 28, boot scripts 37, script files 246.
 
 ## Frontend functions (7751)
 
@@ -6183,68 +6183,68 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `panelAbove` | frontend/js/panel-movable.js:134 |
 | `panelAboveBy` | frontend/js/panel-movable.js:102 |
-| `panelAdopt` | frontend/js/panel-movable.js:557 |
-| `panelApply` | frontend/js/panel-movable.js:349 |
-| `panelChip` | frontend/js/panel-movable.js:975 |
-| `panelClamp` | frontend/js/panel-movable.js:385 |
+| `panelAdopt` | frontend/js/panel-movable.js:564 |
+| `panelApply` | frontend/js/panel-movable.js:356 |
+| `panelChip` | frontend/js/panel-movable.js:983 |
+| `panelClamp` | frontend/js/panel-movable.js:392 |
 | `panelClampMove` | frontend/js/panel-movable.js:53 |
 | `panelClampSize` | frontend/js/panel-movable.js:59 |
 | `panelClipBox` | frontend/js/panel-movable.js:155 |
-| `panelCloseBtn` | frontend/js/panel-movable.js:933 |
+| `panelCloseBtn` | frontend/js/panel-movable.js:941 |
 | `panelContains` | frontend/js/panel-movable.js:152 |
-| `panelDock` | frontend/js/panel-movable.js:467 |
-| `panelFit` | frontend/js/panel-movable.js:452 |
-| `panelFull` | frontend/js/panel-movable.js:503 |
-| `panelGripDown` | frontend/js/panel-movable.js:798 |
-| `panelGripKey` | frontend/js/panel-movable.js:856 |
-| `panelGripRoom` | frontend/js/panel-movable.js:657 |
-| `panelHeadDown` | frontend/js/panel-movable.js:666 |
-| `panelHeadOf` | frontend/js/panel-movable.js:381 |
-| `panelHeadSettle` | frontend/js/panel-movable.js:916 |
-| `panelId` | frontend/js/panel-movable.js:334 |
-| `panelInset` | frontend/js/panel-movable.js:431 |
-| `panelKeyDelta` | frontend/js/panel-movable.js:259 |
-| `panelLayout` | frontend/js/panel-movable.js:308 |
+| `panelDock` | frontend/js/panel-movable.js:474 |
+| `panelFit` | frontend/js/panel-movable.js:459 |
+| `panelFull` | frontend/js/panel-movable.js:510 |
+| `panelGripDown` | frontend/js/panel-movable.js:806 |
+| `panelGripKey` | frontend/js/panel-movable.js:864 |
+| `panelGripRoom` | frontend/js/panel-movable.js:664 |
+| `panelHeadDown` | frontend/js/panel-movable.js:673 |
+| `panelHeadOf` | frontend/js/panel-movable.js:388 |
+| `panelHeadSettle` | frontend/js/panel-movable.js:924 |
+| `panelId` | frontend/js/panel-movable.js:341 |
+| `panelInset` | frontend/js/panel-movable.js:438 |
+| `panelKeyDelta` | frontend/js/panel-movable.js:266 |
+| `panelLayout` | frontend/js/panel-movable.js:315 |
 | `panelMakesContext` | frontend/js/panel-movable.js:115 |
-| `panelMinHost` | frontend/js/panel-movable.js:902 |
-| `panelMinKey` | frontend/js/panel-movable.js:1048 |
-| `panelMinPlace` | frontend/js/panel-movable.js:962 |
-| `panelMinTray` | frontend/js/panel-movable.js:948 |
-| `panelMinimise` | frontend/js/panel-movable.js:1002 |
-| `panelMovableOn` | frontend/js/panel-movable.js:313 |
-| `panelOf` | frontend/js/panel-movable.js:323 |
-| `panelPinned` | frontend/js/panel-movable.js:219 |
-| `panelPreviewEl` | frontend/js/panel-movable.js:421 |
-| `panelPushOn` | frontend/js/panel-movable.js:216 |
-| `panelPushSide` | frontend/js/panel-movable.js:228 |
-| `panelPushSync` | frontend/js/panel-movable.js:231 |
-| `panelPushToggle` | frontend/js/panel-movable.js:1058 |
-| `panelReopen` | frontend/js/panel-movable.js:937 |
-| `panelReset` | frontend/js/panel-movable.js:507 |
-| `panelResetSize` | frontend/js/panel-movable.js:520 |
-| `panelRestore` | frontend/js/panel-movable.js:1018 |
-| `panelRestoreOn` | frontend/js/panel-movable.js:256 |
-| `panelSafe` | frontend/js/panel-movable.js:181 |
-| `panelSave` | frontend/js/panel-movable.js:532 |
-| `panelScrimLift` | frontend/js/panel-movable.js:375 |
-| `panelScrimOf` | frontend/js/panel-movable.js:372 |
-| `panelShowZone` | frontend/js/panel-movable.js:434 |
-| `panelShown` | frontend/js/panel-movable.js:225 |
+| `panelMinHost` | frontend/js/panel-movable.js:910 |
+| `panelMinKey` | frontend/js/panel-movable.js:1056 |
+| `panelMinPlace` | frontend/js/panel-movable.js:970 |
+| `panelMinTray` | frontend/js/panel-movable.js:956 |
+| `panelMinimise` | frontend/js/panel-movable.js:1010 |
+| `panelMovableOn` | frontend/js/panel-movable.js:320 |
+| `panelOf` | frontend/js/panel-movable.js:330 |
+| `panelPinned` | frontend/js/panel-movable.js:226 |
+| `panelPreviewEl` | frontend/js/panel-movable.js:428 |
+| `panelPushOn` | frontend/js/panel-movable.js:223 |
+| `panelPushSide` | frontend/js/panel-movable.js:235 |
+| `panelPushSync` | frontend/js/panel-movable.js:238 |
+| `panelPushToggle` | frontend/js/panel-movable.js:1066 |
+| `panelReopen` | frontend/js/panel-movable.js:945 |
+| `panelReset` | frontend/js/panel-movable.js:514 |
+| `panelResetSize` | frontend/js/panel-movable.js:527 |
+| `panelRestore` | frontend/js/panel-movable.js:1026 |
+| `panelRestoreOn` | frontend/js/panel-movable.js:263 |
+| `panelSafe` | frontend/js/panel-movable.js:184 |
+| `panelSave` | frontend/js/panel-movable.js:539 |
+| `panelScrimLift` | frontend/js/panel-movable.js:382 |
+| `panelScrimOf` | frontend/js/panel-movable.js:379 |
+| `panelShowZone` | frontend/js/panel-movable.js:441 |
+| `panelShown` | frontend/js/panel-movable.js:232 |
 | `panelSnapZone` | frontend/js/panel-movable.js:68 |
-| `panelSt` | frontend/js/panel-movable.js:341 |
+| `panelSt` | frontend/js/panel-movable.js:348 |
 | `panelStackBranch` | frontend/js/panel-movable.js:124 |
 | `panelStackZ` | frontend/js/panel-movable.js:129 |
-| `panelStoreFits` | frontend/js/panel-movable.js:301 |
-| `panelStoreParse` | frontend/js/panel-movable.js:265 |
-| `panelStoreRead` | frontend/js/panel-movable.js:276 |
-| `panelStoreWrite` | frontend/js/panel-movable.js:284 |
-| `panelSync` | frontend/js/panel-movable.js:479 |
-| `panelTitle` | frontend/js/panel-movable.js:905 |
+| `panelStoreFits` | frontend/js/panel-movable.js:308 |
+| `panelStoreParse` | frontend/js/panel-movable.js:272 |
+| `panelStoreRead` | frontend/js/panel-movable.js:283 |
+| `panelStoreWrite` | frontend/js/panel-movable.js:291 |
+| `panelSync` | frontend/js/panel-movable.js:486 |
+| `panelTitle` | frontend/js/panel-movable.js:913 |
 | `panelTopLayer` | frontend/js/panel-movable.js:105 |
-| `panelUnsnap` | frontend/js/panel-movable.js:472 |
-| `panelWatchOpen` | frontend/js/panel-movable.js:486 |
-| `panelWindowResized` | frontend/js/panel-movable.js:1070 |
-| `panelZoneFor` | frontend/js/panel-movable.js:252 |
+| `panelUnsnap` | frontend/js/panel-movable.js:479 |
+| `panelWatchOpen` | frontend/js/panel-movable.js:493 |
+| `panelWindowResized` | frontend/js/panel-movable.js:1078 |
+| `panelZoneFor` | frontend/js/panel-movable.js:259 |
 | `panelZoneRect` | frontend/js/panel-movable.js:80 |
 
 ### frontend/js/personas-pane.js (4)
@@ -23676,7 +23676,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16705)
+## Tests (16706)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25007,7 +25007,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_palette_head_gap.py | 2 |
 | tests/test_palette_synonyms.py | 5 |
 | tests/test_panel_corner_1552.py | 2 |
-| tests/test_panel_movable.py | 25 |
+| tests/test_panel_movable.py | 26 |
 | tests/test_panel_movable_whole_1448.py | 1 |
 | tests/test_panel_rim_1536.py | 3 |
 | tests/test_panel_scrim_lift_1029.py | 3 |
