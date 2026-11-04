@@ -289,12 +289,27 @@ function nameMarkBuddyCallBack() {
   }
   nameMarkBuddyKeepSpots({});
   nmb.pinned = false;
+  //: Hidden with its page, out for a while or on its way in: it is here now, whatever its mind had in hand (the asked-for button must always bring it).
+  const wasAway = nmb.away || nmb.absent || !!nmb.afield;
+  clearTimeout(nmb.appearTimer);
+  nmb.appearTimer = 0;
+  nmb.leaving = false;
+  nmb.afield = null;
+  nmb.owed = "";
+  if (wasAway) {
+    nmb.away = false;
+    nmb.absent = false;
+    buddy.classList.remove("nmb-away");
+    nmb.lonely = 0;
+    nmb.lonelyTouch(false);
+    if (nameMarkBuddyAsleep(buddy)) nameMarkBuddyWake(true);
+  }
   nmb.anim?.cancel();
   nmb.hopAnim?.cancel();
   buddy.style.translate = "";
   buddy.classList.remove("nm-buddy-dragging", "nmb-poofing", "nmb-walking");
   const box = buddy.getBoundingClientRect();
-  const seen = !nmb.outOfSight && box.right > 0 && box.left < innerWidth && box.bottom > 0 && box.top < innerHeight;
+  const seen = !wasAway && !nmb.outOfSight && box.right > 0 && box.left < innerWidth && box.bottom > 0 && box.top < innerHeight;
   nameMarkBuddyIndexReset();
   placeNameMarkBuddy(buddy, !seen);
   //: Out of sight, it comes in the way it would to a tab (`nameMarkBuddyEnter`).

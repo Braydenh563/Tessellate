@@ -198,10 +198,12 @@ out([MIND.move(o, 0).kind, MIND.move({ ...o, afield: { until: NOW - 1 } }, 0).ki
 @needs_node
 def test_the_walk_in_is_paced_and_clamped() -> None:
     r = _run("""
-out([MIND.walkMs(100, 0.5), MIND.walkMs(5000, 0.5), MIND.walkMs(600, 0), MIND.walkMs(600, 1)]);
+out([MIND.walkMs(100, 0.5), MIND.walkMs(5000, 0.5), MIND.walkMs(600, 0), MIND.walkMs(600, 1), MIND.walkMs(922, 0.5)]);
 """)
-    assert r[0] == 1200 and r[1] == 6000
+    assert r[0] == 1200 and r[1] == 12000
     assert 600 * 6 <= r[2] <= r[3] <= 600 * 11
+    #: A 922px walk keeps the 90 to 170 px a second pace (the cap once cut it to 6 s).
+    assert 922 * 6 <= r[4] <= 922 * 11
 
 
 def test_the_two_switches_and_the_guide_say_what_the_cat_does() -> None:
@@ -214,3 +216,43 @@ def test_the_two_switches_and_the_guide_say_what_the_cat_does() -> None:
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert "Fewer also stops it going out for a while" in html and "stays when you switch pages" in html
     assert not re.search(r"\u2014", topics + html[html.index("Fewer also stops") - 200 : html.index("Fewer also stops") + 200])
+
+
+SETTINGS = (JS / "companion-settings.js").read_text(encoding="utf-8")
+
+
+def test_call_back_unhides_a_cat_hidden_with_its_page() -> None:
+    #: The reviewer's finding 1: Call back left `nmb-away` on, so the one button for a lost cat did nothing.
+    body = SETTINGS[SETTINGS.index("function nameMarkBuddyCallBack") :]
+    body = body[: body.index("\n}\n")]
+    for part in ("nmb.away = false", "nmb.absent = false", 'classList.remove("nmb-away")', "nmb.afield = null", "nmb.leaving = false", "clearTimeout(nmb.appearTimer)"):
+        assert part in body, part
+    assert body.index("nmb.away = false") < body.index("placeNameMarkBuddy(")
+    assert "!wasAway && " in body
+
+
+def test_a_still_cat_hidden_with_its_page_still_comes() -> None:
+    fn = AV[AV.index("  fadeComes() {") :]
+    fn = fn[: fn.index("\n  },")]
+    assert '!== "full"' in fn and '=== "fades"' not in fn
+    walk = AV[AV.index("function nameMarkBuddyWalkEnter") :]
+    walk = walk[: walk.index("\n}\n")]
+    assert 'mode === "still"' in walk
+
+
+def test_the_mind_is_asked_for_where_a_hidden_cat_needs_it() -> None:
+    mind = AV[AV.index("function nameMarkBuddyMind") :]
+    mind = mind[: mind.index("\n}\n")]
+    assert 'ensureModule("companionMenu")' in mind
+    tab = AV[AV.index("nmb.cameFrom = nameMarkBuddyTabSide") - 400 : AV.index("nmb.cameFrom = nameMarkBuddyTabSide")]
+    assert 'ensureModule("companionMenu")' in tab
+    touch = AV[AV.index("  lonelyTouch(unseen) {") :]
+    touch = touch[: touch.index("\n  },")]
+    assert touch.index("nmb.mind?.lonelyStep") < touch.index("nmb.lonelyAt = now")
+
+
+def test_a_refused_stroll_is_not_counted() -> None:
+    mind = AV[AV.index("function nameMarkBuddyMind") :]
+    mind = mind[: mind.index("\n}\n")]
+    stroll = mind[mind.index('decided.kind === "stroll"') :]
+    assert stroll.index("nameMarkBuddyWander(now, true)") < stroll.index("nmb.moves = ")

@@ -3283,15 +3283,18 @@ const nmb = {
   //: when it comes into or out of sight, and at the tick.
   lonelyTouch(unseen) {
     const now = Date.now();
-    const dt = Math.max(0, now - (nmb.lonelyAt || now));
-    nmb.lonelyAt = now;
-    if (nmb.mind?.lonelyStep) nmb.lonely = nmb.mind.lonelyStep(nmb.lonely, dt, !nmb.unseenSince, nmb.mood?.sociability ?? 0.7);
+    //: Without its mind (lazy) the time is not spent: it is integrated once the mind is here.
+    if (nmb.mind?.lonelyStep) {
+      const dt = Math.max(0, now - (nmb.lonelyAt || now));
+      nmb.lonelyAt = now;
+      nmb.lonely = nmb.mind.lonelyStep(nmb.lonely, dt, !nmb.unseenSince, nmb.mood?.sociability ?? 0.7);
+    }
     if (unseen === true) nmb.unseenSince = nmb.unseenSince || now;
     else if (unseen === false) nmb.unseenSince = 0;
   },
-  //: Fades only, and hidden with its page: the one case a still companion still has a tick for (`nameMarkBuddyMind`).
+  //: Fades only or still, and hidden with its page (else it would stay hidden on every other page): the one case a still companion still has a tick for (`nameMarkBuddyMind`).
   fadeComes() {
-    return nmb.absent && nameMarkBuddyMotion().mode === "fades";
+    return nmb.absent && nameMarkBuddyMotion().mode !== "full";
   },
   //: Far moves (companion-travel.js, lazy): the player it sets, the last move, a move to force, and what a move has out.
   travelPlay: null, travelLast: "", travelForce: "", travelFx: [], travelTimers: [],
@@ -7020,6 +7023,7 @@ function nameMarkBuddyTabChanged() {
     nameMarkBuddyFollow();
     return;
   }
+  if (!nmb.mind) ensureModule("companionMenu");
   nmb.lonelyTouch(true);
   nmb.away = true;
   nmb.absent = true;
@@ -7118,7 +7122,7 @@ function nameMarkBuddyAppear(buddy, walk = false) {
 //: motion to draw (reduced motion), one 400ms crossfade where it stands.
 function nameMarkBuddyWalkEnter(buddy, spot) {
   nmb.unlockDrop = false;
-  if (typeof buddy.animate !== "function") return "";
+  if (typeof buddy.animate !== "function" || nameMarkBuddyMotion().mode === "still") return "";
   if (nameMarkBuddyNoTravel()) {
     nmb.anim?.cancel();
     nmb.anim = buddy.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 400, easing: "ease-out" });
@@ -7134,7 +7138,12 @@ function nameMarkBuddyWalkEnter(buddy, spot) {
 //: that reads the page waits for a decision. Never in the middle of anything.
 function nameMarkBuddyMind(buddy) {
   const mind = nmb.mind;
-  if (!mind?.move || !Number.isFinite(nmb.x)) return false;
+  if (!mind?.move) {
+    //: Lazy: asked for here too, since a cat hidden with its page never reaches the call at the end of the tick.
+    ensureModule("companionMenu");
+    return false;
+  }
+  if (!Number.isFinite(nmb.x)) return false;
   const now = Date.now();
   const away = nmb.away;
   const blocked = nmb.pinned || nmb.visit || nmb.flight || nmb.grabbed || nmb.perch === "errand" || nmb.readingErrand || nmb.leaving
@@ -7157,6 +7166,13 @@ function nameMarkBuddyMind(buddy) {
     afieldOn: !nameMarkBuddyActOff("afield"), comeOn: !nameMarkBuddyActOff("come"), lastAfield: nmb.lastAfield || 0, afield: nmb.afield,
   }, Math.random());
   if (decided.kind === "none") return false;
+  //: A stroll the board's or the activity switch refuses has not moved it: no count, a new roll next tick.
+  if (decided.kind === "stroll") {
+    if (!nameMarkBuddyWander(now, true)) return false;
+    nmb.moveWhy = decided.why;
+    nmb.moves = (nmb.moves || 0) + 1;
+    return true;
+  }
   nmb.moveWhy = decided.why;
   nmb.moves = (nmb.moves || 0) + 1;
   //: A cat asleep in a room you are not in, that misses you, wakes before it comes (nothing else would: a sleeper has no tick).
@@ -7188,7 +7204,7 @@ function nameMarkBuddyMind(buddy) {
     mind.afield(buddy);
     return true;
   }
-  return nameMarkBuddyWander(now, true);
+  return false;
 }
 
 //: **Its place, once the page has stopped moving under it.** A tab (or the

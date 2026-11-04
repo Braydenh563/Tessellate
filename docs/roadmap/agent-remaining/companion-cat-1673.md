@@ -16,3 +16,8 @@ Left, one line each:
 - Probes (d) 15 min steady user, (e) perch removed, (f) reduced motion, (c) 12 min idle are not run in a browser (real-time, long); the pure rules are covered by `tests/test_companion_cat_1673.py` with a fixed clock.
 - Not probed: real GPU timing, Windows, phone width, Library sub-tab flicking, the chat-streaming errand, "showy entrances" on.
 - Fades-only (reduced) motion: the tick runs for a hidden cat only (`nmb.fadeComes`), floor doubled; present cats do nothing on their own there, as before.
+
+Review fixes (second pass): Call back unhides (probe: away/hidden before, visible opacity 1 at 0.5 s after); still mode comes by mind (forced inputs, 25 s); mind fetched at hide; refused stroll uncounted; walkMs cap 12 s; companionpin.js sweep updated.
+Decisions logged: Come off means the cat stays on its own page (Call back and Stay here are the ways to see it); Fewer (the default) never goes out and settles 1.5x longer, by the existing Reduce actions rule.
+Rejected: finding 3 (opacity 0 on a hang perch): 4 further Dashboard boots, all opacity 1 at 14 s on the same hang, enter-down route; not reproduced, so no change.
+Still unverified: wheel run with the cat present, document-scroll glue.held, real 5 to 15 minute come, afield, perch removal, reduced motion, GPU, phone, Windows.

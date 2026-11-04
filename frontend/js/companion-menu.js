@@ -828,8 +828,8 @@ const NMB_MIND = {
   },
   //: How long it stays out when it goes out: 90 seconds to 4 minutes, a tired cat longer.
   awayFor: (energy, jitter) => Math.round(90000 + (1 - Math.max(0, Math.min(1, energy))) * 150000 + jitter * 20000),
-  //: A walk in or out of `px` at 6 to 11 ms a pixel (90 to 170 px/s), never under 1.2 s or over 6.
-  walkMs: (px, roll) => Math.round(Math.max(1200, Math.min(6000, px * (6 + 5 * roll)))),
+  //: A walk in or out of `px` at 6 to 11 ms a pixel (90 to 170 px/s), never under 1.2 s or over 12 (a wide window is still walked at its pace).
+  walkMs: (px, roll) => Math.round(Math.max(1200, Math.min(12000, px * (6 + 5 * roll)))),
   //: **Out for a while** (INBOX 1673, "a house cat ... has a mind of its own").
   //: Only with Reduce actions on Normal, full motion, and you away from the
   //: keys for 3 minutes. A moment's look at the way out, then on foot off the
