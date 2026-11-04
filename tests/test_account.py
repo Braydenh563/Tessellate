@@ -368,3 +368,30 @@ def test_full_auth_flow(client):
     # Locking kills that token.
     client.post("/auth/lock", headers={"X-Auth-Token": token2})
     assert client.get("/entries", headers={"X-Auth-Token": token2}).status_code == 401
+
+
+def test_the_jobs_stream_route_ends_when_its_header_session_is_signed_out(client, monkeypatch):
+    """SEC-A6, through the real route. The panel opens the stream with `fetch`
+    and the `X-Auth-Token` header (EventSource cannot send one, so none is
+    used), the same source `require_unlock` reads; the per-tick check reads it
+    too. The session is signed out once the stream has passed its opening check."""
+    import time
+
+    from tessellate.api import routes_auth, routes_tasks
+
+    monkeypatch.setattr(routes_tasks, "_STREAM_POLL_SECONDS", 0.02)
+    headers = _setup(client)
+    real = routes_tasks.list_tasks
+
+    def list_then_sign_out() -> dict:
+        body = real()
+        routes_auth._active_tokens.clear()
+        return body
+
+    monkeypatch.setattr(routes_tasks, "list_tasks", list_then_sign_out)
+    started = time.monotonic()
+    with client.stream("GET", "/jobs/stream?seconds=30", headers=headers) as reply:
+        assert reply.status_code == 200
+        body = "".join(reply.iter_text())
+    assert "event: jobs" in body
+    assert time.monotonic() - started < 10
