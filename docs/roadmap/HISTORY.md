@@ -52413,6 +52413,8 @@ From DOCUMENTS_PLAN.md and WHITEBOARD_PLAN.md "Placed from INBOX, 2026-11-03", b
 
 1649. **Owner, 2026-11-04 12:36 local (screenshot: chat, Agent mode, model off; asked "I want to edit a note", the answer quoted a checklist document: "Row More button. Expect: menu with Use, Copy, Edit, ... from your document test-checklist", an "Also:" list of its steps with one cut mid-sentence ("... hub-finish-ui and"), "So far this is your only note on it"):** "can this be better worded?". Recommendation: the class, not the case (standing order of 2026-10-26): a request to do something in the app ("I want to edit a note", "how do I ...") is an act or a how-to, answered with the way to do it (which note, with the open and edit steps or the act's own button), never a retrieval of notes that merely share its words; a quoted line is never cut mid-sentence; "So far this is your only note on it" only where the subject is a topic. Goes to the composer queue (CHAT_PLAN decision 75, model on and off alike).
 
+1653. **Found while merging 1649, 2026-11-04:** "how do I delete a note" and "I need to delete a note" reach the undo-bin Guide topic but `composer_help._help_best` picks its "Four things have no Undo" sentence instead of "A deleted note ... goes to the bin, not gone for good". Recommendation (taken): the sentence picker weighs the asked verb against the sentence's subject (a deleted note) above a shared word in a list of exceptions; test with delete, remove and restore asks.
+
 ## Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R1 and R2)
 
 Built: R1 in 324f174 (merge be41265), R2 in 4d3afd9 and 455d3c5 (merge 606730c); numbers in `agent-remaining/diagram-r1-1104.md` and `diagram-r2-1104.md`.
