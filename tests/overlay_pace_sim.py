@@ -15,7 +15,8 @@ import statistics
 from typing import Callable
 
 from tessellate.core.overlay import engine as eng
-from tests.test_overlay_ride_1670 import AREA, make
+from tessellate.core.overlay import pacing
+from tests.test_overlay_ride_1670 import make
 
 #: Windows' timer tick: what `SetTimer` rounds a wake up to.
 SYSTEM_TICK = 1.0 / 64.0
@@ -25,6 +26,19 @@ Timer = Callable[[float, int], float]
 def settimer(now: float, wake_ms: int) -> float:
     """`SetTimer` as Windows runs it: the next 15.625 ms system tick at or after the ask."""
     return math.ceil((now + wake_ms / 1000.0) / SYSTEM_TICK - 1e-9) * SYSTEM_TICK
+
+
+def paced_host() -> Timer:
+    """The host as it is now: a next-frame ask on the 60 Hz grid, anything else on `SetTimer`."""
+    pacer = pacing.Pacer()
+
+    def timer(now: float, wake_ms: int) -> float:
+        if pacer.paced(wake_ms):
+            return pacer.next(now, wake_ms)
+        pacer.reset()
+        return settimer(now, wake_ms)
+
+    return timer
 
 
 def stats(values: list[float]) -> dict[str, float]:
@@ -53,7 +67,7 @@ def walking(timer: Timer, seed: int = 3, look: str = "masculine") -> tuple[eng.E
     e.x = 100.0
     e._place_on_floor()
     e.update(0.0)
-    e._go((float(AREA[2] - e.size[0] - 100), e.y), "stand", 0.0, plain=True)
+    e._go((e.x + 380.0, e.y), "stand", 0.0, plain=True)  # under DASH_OVER: a walk, not a run
     return e, drive(e, timer, 0.0, lambda en: en.state == "stand")
 
 
@@ -63,7 +77,7 @@ def floating(timer: Timer, seed: int = 3, look: str = "masculine") -> tuple[eng.
     e.x = 100.0
     e._place_on_floor()
     e.update(0.0)
-    e._go((float(AREA[2] - e.size[0] - 100), e.y - 120.0), "stand", 0.0, plain=True)
+    e._go((e.x + 380.0, e.y - 120.0), "stand", 0.0, plain=True)
     return e, drive(e, timer, 0.0, lambda en: en.state == "stand")
 
 
@@ -95,7 +109,24 @@ def intervals(rec: list[tuple], states: tuple[str, ...]) -> list[float]:
 
 def steps(rec: list[tuple], states: tuple[str, ...]) -> list[float]:
     """The window's move in px between consecutive ticks in `states`."""
-    return [math.hypot(b[2] - a[2], b[3] - a[3]) for a, b in zip(rec, rec[1:]) if a[1] in states and b[1] in states]
+    return [math.hypot(b[2] - a[2], b[3] - a[3]) for a, b in zip(rec, rec[1:]) if a[1] in states and b[1] in states and a[5][1] == b[5][1]]
+
+
+def figure_steps(e: eng.Engine, rec: list[tuple], states: tuple[str, ...]) -> list[float]:
+    """What a person sees move: the drawn figure's left edge and feet line, not the window. The window also
+    shifts when the frame changes, by the difference of the frames' margins, so that the feet stay planted
+    and the figure stays put; that is not motion."""
+
+    def place(r: tuple) -> tuple[float, float]:
+        left, _top, _right, bottom = e.metrics.get((r[4], r[5][1]), (0.0, 0.0, 0.0, 0.0))
+        return r[2] + left, r[3] + bottom
+
+    out = []
+    for a, b in zip(rec, rec[1:]):
+        if a[1] in states and b[1] in states and a[5][1] == b[5][1]:  # not the tick a turn mirrors the frame on (a sliver, 12% wide)
+            (ax, ay), (bx, by) = place(a), place(b)
+            out.append(math.hypot(bx - ax, by - ay))
+    return out
 
 
 def draw_counts(rec: list[tuple], states: tuple[str, ...]) -> dict[str, float]:

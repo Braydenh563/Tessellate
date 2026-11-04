@@ -48,6 +48,12 @@ from tessellate.core.overlay import win32
 logger = logging.getLogger(__name__)
 
 #: How often to ask whether something fullscreen is in the way (seconds).
+#: A pose change dissolves over this long, in this many steps (one a display frame at 60 Hz), among these
+#: picture families (INBOX 1670, 14:14Z: "framey and not seamless").
+BLEND_S = 0.12
+BLEND_STEPS = 7
+BLEND_TICK_MS = 16
+BLENDED = ("stand", "walk", "idle", "sit", "sleep", "wave", "land", "hang")
 BUSY_EVERY = 2.0
 #: Input this recent means the person is typing or working: no acts, only standing.
 TYPING_AGE = 2.5
@@ -123,6 +129,10 @@ class OverlayRunner:
         self._resume = False
         self._last_key: tuple | None = None
         self._last_pos: tuple[int, int] | None = None
+        #: The frame last asked for, the dissolve from the one before (frame, started at), and which step it drew.
+        self._target: sprites.Frame | None = None
+        self._blend: tuple[sprites.Frame | None, float] | None = None
+        self._blend_step = -1
         self._next_busy_check = 0.0
         self._next_scan = 0.0
         self._cards: collections.deque[Any] = collections.deque()
@@ -353,7 +363,7 @@ class OverlayRunner:
         first = self.monitors[0]
         self.dpi = first.dpi
         self.engine = eng.Engine(
-            spr.size(first.dpi), self.monitors, home=self.home, reduced=reduced, roam_windows=self.roam_windows, gait=spr.gait, hang_top=spr.top_share("hang"), idle_frames=sprites.IDLE_COUNT, now=self.clock(),
+            spr.size(first.dpi), self.monitors, home=self.home, reduced=reduced, roam_windows=self.roam_windows, gait=spr.gait, hang_top=spr.top_share("hang"), idle_frames=spr.idle_count(), walk_frames=spr.walk_count(), now=self.clock(),
         )
         self.engine.set_metrics(spr.metrics(first.dpi))
         out = self.engine.update(self.clock())
@@ -372,14 +382,19 @@ class OverlayRunner:
             self.dpi = dpi
             engine.set_monitors(self.monitors, spr.size(dpi))
             engine.set_metrics(spr.metrics(dpi))
-            self._last_key = None
+            self._last_key, self._blend, self._target = None, None, None
         engine.hour = time.localtime().tm_hour if self.clock_hour is None else self.clock_hour
         key = (out.frame, self.dpi, out.flip, out.clip, out.pose, out.fx, out.alpha)
+        blending = False
         if key != self._last_key:
             posed = spr.posed(out.frame, self.dpi, out.flip, out.pose) if out.pose else spr.frame(out.frame, self.dpi, out.flip)
             frame = sprites.effect(sprites.clipped(posed, out.clip), out.fx, out.alpha)
-            host.present(frame.bgra, frame.width, frame.height, out.x - frame.pad_x, out.y - frame.pad_y)
-            self._last_key, self._last_pos = key, (out.x, out.y)
+            self._blend = (self._target, self.clock()) if self._blends(self._last_key, key, self._target, frame) else None
+            self._target, self._blend_step = frame, -1
+            self._last_key = key
+            blending = self._show(frame, out, True)
+        elif self._blend is not None:
+            blending = self._show(self._target, out, False)
         elif (out.x, out.y) != self._last_pos:
             pad = spr.frame(out.frame, self.dpi, out.flip)
             host.move(out.x - pad.pad_x, out.y - pad.pad_y)
@@ -393,7 +408,46 @@ class OverlayRunner:
         if out.card is not None:
             token = out.card
             self._hand_off("overlay-card", lambda: self.on_card and self.on_card(token))
-        return self._cap_wake(self._scan_wake(out.wake_ms))
+        wake = self._cap_wake(self._scan_wake(out.wake_ms))
+        if blending:  # the dissolve is a move: one step a display frame
+            wake = BLEND_TICK_MS if wake is None else min(wake, BLEND_TICK_MS)
+        return wake
+
+    def _blends(self, before: tuple | None, after: tuple, prev: sprites.Frame | None, frame: sprites.Frame) -> bool:
+        """A pose change dissolves (INBOX 1670: "framey"): standing to walking, sitting up, a wave, a landing.
+        Not the cycle's own in-betweens, not a blink or a look (quick on purpose), not a reaction to the person
+        (held, thrown, falling), not a vanish or a peek, and never in reduced motion."""
+        if prev is None or before is None or self.reduced or self.engine is None:
+            return False
+        if after[3] is not None or after[5] is not None or before[3] is not None or before[5] is not None:
+            return False
+        a, b = before[0].rstrip("0123456789"), after[0].rstrip("0123456789")
+        return a != b and a in BLENDED and b in BLENDED and (prev.width, prev.height) == (frame.width, frame.height)
+
+    def _show(self, frame: sprites.Frame, out: eng.Output, changed: bool) -> bool:
+        """Present `frame`, or while a dissolve runs the mix of the old picture and it, one step a display
+        frame (`BLEND_STEPS` of them over `BLEND_S`). True while there is more to come."""
+        host = self.host
+        assert host is not None
+        shown, more = frame, False
+        if self._blend is not None:
+            prev, t0 = self._blend
+            u = (self.clock() - t0) / BLEND_S
+            if u >= 1.0:
+                self._blend = None
+            else:
+                step = int(u * BLEND_STEPS)
+                if not changed and step == self._blend_step:
+                    return True
+                self._blend_step = step
+                mixed = sprites.mix(prev, frame, (step + 1) / (BLEND_STEPS + 1)) if prev is not None else None
+                if mixed is None:
+                    self._blend = None
+                else:
+                    shown, more = mixed, True
+        host.present(shown.bgra, shown.width, shown.height, out.x - shown.pad_x, out.y - shown.pad_y)
+        self._last_pos = (out.x, out.y)
+        return more
 
     def drawn_rect(self, x: int, y: int, frame: str | None = None, flip: bool | None = None, dpi: int | None = None) -> tuple[int, int, int, int]:
         """The figure's drawn box (x, y, width, height, physical pixels) for a window at

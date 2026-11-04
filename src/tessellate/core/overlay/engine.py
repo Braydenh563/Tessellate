@@ -88,8 +88,10 @@ IDLE_SLEEP = 1200.0
 #: The idle cycle (`idle0` to `idle11`, one tail beat and one breath): a standing
 #: figure draws these at `IDLE_FPS` so the parts move; reduced or typing-quiet it
 #: is the one `stand` frame and costs no wake.
-IDLE_FRAMES = 12
-IDLE_FPS = 3.0
+IDLE_FRAMES = 24
+#: 24 frames at 6 a second keep the cycle at 4 s (one tail beat, one breath) with twice the in-betweens.
+#: Faster would be the energetic child the owner does not want (INBOX 1670, 14:10Z).
+IDLE_FPS = 6.0
 
 #: Logical pixels (scaled by the monitor's dpi).
 WALK_SPEED = 55.0
@@ -119,7 +121,9 @@ LEAN_MAX = 0.07
 POSE_RATE = 14.0
 POSE_OFF = ("held", "pressed", "fly", "fall", "rise", "peek", "emerge", "leap", "hop", "card")
 #: Logical px of travel per walk frame (six frames a stride).
-STRIDE = 7.0
+#: Travel (logical px) per frame of the walk cycle at the shipped 12 frames: 42 px a cycle, as with 6.
+STRIDE = 3.5
+WALK_FRAMES = 12
 TAIL_TICK_MS = 50
 GRAVITY = 2200.0
 NOTICE_NEAR = 120.0
@@ -248,8 +252,13 @@ CARD_SWAP = 0.9
 CARD_WALK_SWAP = 0.25
 CARD_STAND = ("stand", "walk", "drift", "sit", "sleep", "land", "wave", "notice", "startle", "card")
 
-TICK_WALK_MS = 33
+#: The wake of anything that moves the window: one display frame at 60 Hz. The host puts a wake this
+#: short on a fixed 60 Hz grid (`pacing.py`); at 33 ms `SetTimer` made it 31 or 47 (INBOX 1670, 14:14Z,
+#: "very framey"). The position is read from the clock on every tick, so a late tick lands where the
+#: figure should be and never stutters. Slow things (a hanging swing, the tail's settle) keep their own.
+TICK_WALK_MS = 16
 TICK_FALL_MS = 16
+HANG_TICK_MS = 50
 #: A visit to a window is not a rest spot: the first leg to a window top stays under a minute.
 #: Sitting and sleeping look at the pointer this often (a wake each).
 POLL_QUIET_MS = 2000
@@ -324,11 +333,13 @@ class Engine:
         gait: str = "walk",
         hang_top: float = 0.0,
         idle_frames: int = IDLE_FRAMES,
+        walk_frames: int = WALK_FRAMES,
         rng: random.Random | None = None,
         now: float = 0.0,
     ) -> None:
         self.size = size
         self.idle_frames = max(0, int(idle_frames))
+        self.walk_frames = max(1, int(walk_frames))
         self.monitors = list(monitors) or [Monitor((0, 0, 1920, 1040))]
         self.roam = roam
         self.reduced = reduced
@@ -749,7 +760,7 @@ class Engine:
             speed = min(1.0, abs(self.vx_px) / (WALK_SPEED * self._scale() * 1.2))
             lean = LEAN_MAX * speed * (1 if self.vx_px > 0 else -1) * (1.6 if self.mode == "dash" else 1.0)
             if self.gait == "walk":  # a ground companion bounces with its steps
-                sy = 1.0 + 0.012 * math.sin(self.travel / self._scale() * 2 * math.pi / STRIDE)
+                sy = 1.0 + 0.012 * math.sin(self.travel / self._scale() * 2 * math.pi / (STRIDE * 2))
         elif s_ == "stand":
             mood = self.mind.mood(now, self.hour)
             sy = {"sleepy": 0.975, "proud": 1.035, "bored": 0.985, "startled": 1.05}.get(mood, 1.0)
@@ -792,7 +803,7 @@ class Engine:
             if roll < LOOK_SHARE:
                 self.flash = ("look", now + LOOK_FOR)
             elif roll < LOOK_SHARE + 0.12 and self.idle_frames > 0:  # one tail beat and breath, then still
-                self.burst_start, self.burst_until = now, now + self.idle_frames / IDLE_FPS
+                self.burst_start, self.burst_until = now, now + self.idle_frames / self._idle_fps()
             else:
                 self.flash = ("blink", now + BLINK_FOR)
             self.next_ambient = now + self.rng.uniform(*AMBIENT_EVERY)
@@ -2159,7 +2170,7 @@ class Engine:
         if s == "crouch":
             return "land"
         if s == "warp" and self.warp is not None and self.warp["kind"] == "edge":
-            return f"walk{int((now - self.warp['t0']) / 0.125) % 6}"
+            return f"walk{int((now - self.warp['t0']) / (0.75 / self.walk_frames)) % self.walk_frames}"
         if s in FRAME_OF:
             return FRAME_OF[s]
         if s == "fly":
@@ -2175,11 +2186,11 @@ class Engine:
             return f"card{int(now / CARD_SWAP) % 2}"
         if self.card is not None:
             return f"card{int((now - self.walk_started) / CARD_WALK_SWAP) % 2}"
-        return f"walk{int(self.travel / (STRIDE * self._scale())) % 6}"
+        return f"walk{int(self.travel / (STRIDE * WALK_FRAMES / self.walk_frames * self._scale())) % self.walk_frames}"
 
     def _edge_frame(self, now: float) -> str:
         if self.state == "rise":
-            frame = "hop" if self.gait == "walk" else f"walk{int((now - self.phase_started) / 0.125) % 6}"
+            frame = "hop" if self.gait == "walk" else f"walk{int((now - self.phase_started) / (0.75 / self.walk_frames)) % self.walk_frames}"
             if self.then == "hang" and self._rise_drawn(now) + self._box(frame)[1] < self.current_monitor().area[1]:
                 return "hang"  # its head would pass the top of the screen: hands up, in the pose that fits
             return frame
@@ -2195,8 +2206,12 @@ class Engine:
         place, not lifeless (INBOX 1670: "it is also not animated")."""
         return self.state == "stand" and not self.reduced and self.idle_frames > 0 and self.now < self.burst_until
 
+    def _idle_fps(self) -> float:
+        """Frames a second: a shipped set of fewer frames plays slower, so the cycle stays 4 s."""
+        return IDLE_FPS * max(1, self.idle_frames) / IDLE_FRAMES
+
     def _idle_index(self, now: float) -> int:
-        return int((now - self.burst_start) * IDLE_FPS + 1e-6) % self.idle_frames
+        return int((now - self.burst_start) * self._idle_fps() + 1e-6) % self.idle_frames
 
     def _wake(self, now: float) -> int | None:
         s = self.state
@@ -2209,10 +2224,10 @@ class Engine:
         if s == "act":
             soonest = min(self.state_until, self._next_pose_change(now, 0.5))
             return max(MIN_WAKE_MS, int(math.ceil((soonest - now) * 1000)) + 1)
+        if s in ("fall", "hop", "fly", "leap"):  # before the tail: it swings through a fall, and the window moves fastest here
+            return TICK_FALL_MS
         if self._follow_moving():  # the tail still swings, or the body is easing to its pose
             return TAIL_TICK_MS
-        if s in ("fall", "hop", "fly", "leap"):
-            return TICK_FALL_MS
         if s == "pressed":
             return None
         if self.bob_gain > 0 and not self._bobbing():  # the bob is easing away: keep drawing it
@@ -2231,8 +2246,8 @@ class Engine:
         return max(MIN_WAKE_MS, int(math.ceil((soonest - now) * 1000)) + 1)
 
     def _moving_wake(self, s: str) -> int:
-        if s in ("walk", "drift") and not self.turn_to and self.card is None:  # a redraw per pixel or so
-            return TICK_WALK_MS if abs(self.vx_px) < 15 else int(min(100, max(TICK_WALK_MS, 1500.0 / abs(self.vx_px))))
+        if s == "hang" and not self.turn_to:  # the picture swings from the grip; the window does not move
+            return HANG_TICK_MS
         return TICK_WALK_MS
 
     def _follow_moving(self) -> bool:
@@ -2250,7 +2265,7 @@ class Engine:
         if self._bobbing() or self.bob_gain > 0:  # the next bob step (or the end of one)
             due.append(self._next_bob_step(now))
         if self._idling():  # the next idle frame: a redraw only when the index changes
-            due.append(min(self.burst_until, self.burst_start + (math.floor((now - self.burst_start) * IDLE_FPS + 1e-6) + 1) / IDLE_FPS))
+            due.append(min(self.burst_until, self.burst_start + (math.floor((now - self.burst_start) * self._idle_fps() + 1e-6) + 1) / self._idle_fps()))
         return due
 
     def _bobbing(self) -> bool:

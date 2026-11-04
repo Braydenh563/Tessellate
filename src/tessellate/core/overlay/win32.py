@@ -66,6 +66,10 @@ WM_DISPLAYCHANGE = 0x007E
 WM_DPICHANGED = 0x02E0
 WM_POWERBROADCAST = 0x0218
 WM_APP = 0x8000
+#: A high-resolution waitable timer (Windows 10 1803 and later) and what waiting on it answers.
+CREATE_WAITABLE_TIMER_HIGH_RESOLUTION = 0x00000002
+TIMER_ALL_ACCESS = 0x1F0003
+WAIT_OBJECT_0 = 0
 MA_NOACTIVATE = 3
 PBT_APMSUSPEND = 0x0004
 PBT_APMRESUMEAUTOMATIC = 0x0012
@@ -225,6 +229,11 @@ def signatures() -> dict[str, dict[str, tuple[Any, list[Any]]]]:
         "kernel32": {
             "GetModuleHandleW": (H, [wintypes.LPCWSTR]),
             "GetTickCount": (wintypes.DWORD, []),
+            "CreateWaitableTimerExW": (ctypes.c_void_p, [ctypes.c_void_p, wintypes.LPCWSTR, wintypes.DWORD, wintypes.DWORD]),
+            "SetWaitableTimer": (B, [ctypes.c_void_p, P(ctypes.c_longlong), ctypes.c_long, ctypes.c_void_p, ctypes.c_void_p, B]),
+            "CancelWaitableTimer": (B, [ctypes.c_void_p]),
+            "WaitForSingleObject": (wintypes.DWORD, [ctypes.c_void_p, wintypes.DWORD]),
+            "CloseHandle": (B, [ctypes.c_void_p]),
         },
         "shcore": {
             "GetDpiForMonitor": (ctypes.c_long, [H, INT, P(U), P(U)]),

@@ -43,7 +43,7 @@ import time
 from typing import Any, Callable
 
 from tessellate.core import jobs
-from tessellate.core.overlay import xlib
+from tessellate.core.overlay import pacing, xlib
 from tessellate.core.overlay.win32 import WinInfo
 
 logger = logging.getLogger(__name__)
@@ -298,6 +298,7 @@ class X11Host:
         self.hwnd: int | None = None
         self._tid: int | None = None
         self._deadline: float | None = None
+        self.pacer = pacing.Pacer()  # a moving figure wakes on a 60 Hz grid, as on Windows (pacing.py)
         self._reraise_at: float | None = None
         self._done = False
         self._grabbed = False
@@ -489,7 +490,11 @@ class X11Host:
             self._set_timer(wake)
 
     def _set_timer(self, ms: int) -> None:
-        self._deadline = time.monotonic() + max(10, int(ms)) / 1000.0
+        now = time.monotonic()
+        # `select` already holds a millisecond, so the grid is all this side needs
+        self._deadline = self.pacer.next(now, ms) if self.pacer.paced(ms) else now + max(10, int(ms)) / 1000.0
+        if not self.pacer.paced(ms):
+            self.pacer.reset()
 
     # --- commands, on the window's thread ----------------------------------------------------
 

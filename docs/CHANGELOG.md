@@ -6,6 +6,9 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+
+- Desktop companion moves smoothly (INBOX 1670, "framey, not seamless"): a moving figure now ticks at 60 Hz (a high-resolution timer on Windows; SetTimer rounded 16 ms to 31), the walk has 12 frames and the idle 24, and a change of pose dissolves over 120 ms unless motion is reduced. At rest it still sleeps.
+
 - Desktop companion (INBOX 1670, "cant sit still", "a buddy not a nucance", "it is floating", "bortaling or vanishing in a puff or gliding"): it now sits still. No bob or sway at rest (a bob only while it travels, easing out over a second), a settled spell of 200 to 520 s, at most two fidgets an hour, no shake-off after a landing, and a hang that lasts 30 to 200 s with a pendulum swing and a glance, ending in a climb onto the window top or a drop. Trips go by portal, puff of smoke, glide, jump between window tops, climb up a window side, or a walk off one screen edge and in at the other; never across the middle third, home and rest spots are edges and the taskbar line, and it steps out of the way of the text caret within a second and starts no trip while you type (the caret is read at 0.5 Hz). Reduced motion is a plain fade. Measured on a seeded hour: feet travel at rest 39 px a minute to 0.04, starts per ten minutes 133 to 2, median settled spell 0.2 s to 270 s, moving 5 percent to 0.5 percent. Not run on real Windows.
 
 - Desktop companion on Linux no longer exits the app when a scanned window closes (X error handler), and its shape cache cannot collide.
