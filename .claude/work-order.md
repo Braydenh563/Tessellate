@@ -1,10 +1,10 @@
 mode: continue
-status: stopped (context)
+status: running
 pr: 212
 max-continues: 40
 max-idle-minutes: 60
 finish-up: 85%
-started: 2026-11-04 03:40Z
+started: 2026-11-04 04:30Z
 tier: pro (weekly 75%: one agent, Sonnet or Haiku, targeted tests); never Fable; owner away golfing about 2 hours, 2026-11-04
 
 ## 2026-11-04b away queue (HANDOVER Now 2026-11-04c)
