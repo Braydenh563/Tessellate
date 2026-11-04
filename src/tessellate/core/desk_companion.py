@@ -201,6 +201,50 @@ def _set_pref(key: str, value: Any) -> None:
     except Exception:  # noqa: BLE001 - remembering is a nicety, the window still works
         logger.warning("could not save %s", key, exc_info=True)
 
+def _look_answer(answer: Any) -> dict[str, Any] | None:
+    """The app window's answer to LOOK_SCRIPT as a dict, or None when it gave
+    none (a bare look string is the older answer)."""
+    if isinstance(answer, str) and answer.startswith("{"):
+        try:
+            data = json.loads(answer)
+        except ValueError:
+            return None
+        return data if isinstance(data, dict) else None
+    if answer in ("masculine", "feminine"):
+        return {"look": answer}
+    return None
+
+
+def _motion_of(mode: Any, reason: Any) -> tuple[bool, str] | None:
+    """(reduced, reason) for a motion mode, or None for an unknown mode."""
+    if mode not in MOTION_MODES:
+        return None
+    return (mode != "full", str(reason) if reason in MOTION_REASONS else "")
+
+
+def _look_in_force(data: dict[str, Any], look: str) -> tuple[str, tuple[bool, str] | None]:
+    """The look and motion an answer stands for. A locked app window has not
+    read its prefs and answers the default look (INBOX 1670), so the last
+    look and motion an unlocked one gave stand instead, and an unlocked answer
+    is remembered. No motion block hands the motion back to the Windows flag."""
+    if data.get("look") in ("masculine", "feminine"):
+        look = data["look"]
+    m = data.get("motion")
+    motion = _motion_of(m.get("mode"), m.get("reason")) if isinstance(m, dict) else None
+    saved_look = _pref(LOOK_PREF, None)
+    if data.get("locked") is True:
+        if saved_look in ("masculine", "feminine"):
+            look = saved_look
+            saved = _pref(MOTION_PREF, None)
+            if isinstance(saved, (list, tuple)) and len(saved) == 2 and saved[0] in MOTION_MODES:
+                motion = _motion_of(saved[0], saved[1])
+        return look, motion
+    _set_pref(LOOK_PREF, look)
+    if motion is not None and isinstance(m, dict):
+        _set_pref(MOTION_PREF, [m["mode"], motion[1]])
+    return look, motion
+
+
 
 def to_logical(area: tuple[int, int, int, int], dpi: Any) -> tuple[int, int, int, int]:
     """A Win32 rectangle (physical pixels: pywebview makes the process DPI aware)
@@ -900,37 +944,12 @@ class DeskCompanion:
         move, asked of it in one round trip (the choices live in that window's
         storage). Bounded; no answer keeps the last look and leaves the motion
         to the last motion answer (the Windows flag before any)."""
-        answer = self._ask_main(LOOK_SCRIPT, "its look and motion")
+        data = _look_answer(self._ask_main(LOOK_SCRIPT, "its look and motion"))
         look, motion = self.look, self.motion
-        data: Any = None
-        if isinstance(answer, str) and answer.startswith("{"):
-            try:
-                data = json.loads(answer)
-            except ValueError:
-                data = None
-        elif answer in ("masculine", "feminine"):
-            data = {"look": answer}
-        if isinstance(data, dict):
-            motion = None  # an answer without a motion block hands it back to the Windows flag
-            if data.get("look") in ("masculine", "feminine"):
-                look = data["look"]
-            m = data.get("motion")
-            if isinstance(m, dict) and m.get("mode") in MOTION_MODES:
-                reason = m.get("reason") if m.get("reason") in MOTION_REASONS else ""
-                motion = (m["mode"] != "full", str(reason))
-            saved_look = _pref(LOOK_PREF, None)
-            if data.get("locked") is True and saved_look in ("masculine", "feminine"):
-                look = saved_look
-                saved_motion = _pref(MOTION_PREF, None)
-                if isinstance(saved_motion, (list, tuple)) and len(saved_motion) == 2 and saved_motion[0] in MOTION_MODES:
-                    reason = saved_motion[1] if saved_motion[1] in MOTION_REASONS else ""
-                    motion = (saved_motion[0] != "full", str(reason))
-            elif data.get("locked") is not True:
-                _set_pref(LOOK_PREF, look)
-                if isinstance(m, dict) and m.get("mode") in MOTION_MODES:
-                    _set_pref(MOTION_PREF, [m["mode"], motion[1] if motion else ""])
-        else:
+        if data is None:
             logger.info("desk companion: the app window gave no look, keeping %s", self.look)
+        else:
+            look, motion = _look_in_force(data, look)
         if self._walk_forced and (motion is None or motion[0]):
             motion = (False, "")
         return look, motion
