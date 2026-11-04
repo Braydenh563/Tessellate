@@ -59,7 +59,8 @@ def test_a_resting_floater_still_bobs_and_sways_and_plays_the_idle_cycle() -> No
         o = e.update(t)
         seen.add((o.x, o.y))
         frames.add(o.frame)
-    assert len({y for _x, y in seen}) >= 6 and len({x for x, _y in seen}) >= 6
+    # 4 px at 0.22 Hz (the owner asked for slow and graceful, INBOX 1670) is five whole-pixel rows
+    assert len({y for _x, y in seen}) >= 4 and len({x for x, _y in seen}) >= 6
     assert any(f.startswith("idle") for f in frames)
 
 

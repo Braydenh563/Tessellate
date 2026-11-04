@@ -54,6 +54,32 @@ const LOOKS = (process.env.LOOKS || "masculine,feminine").split(",");
 //: `render_desk_frames.py` now refuses a capture that touches the clip's edge.
 const BOX = { width: 400, height: 300, left: 120, top: 60 };
 
+//: A fingerprint of the arms' drawing; the same three times running, 120 ms apart, is settled.
+async function settleArms(page) {
+  const sig = () => page.evaluate(() => [...document.querySelectorAll("#nm-buddy .nmb-arm-left, #nm-buddy .nmb-arm-right")].map((e) => e.outerHTML).join("|"));
+  let last = await sig(), same = 0;
+  for (let i = 0; i < 40 && same < 3; i++) {
+    await page.waitForTimeout(120);
+    const now = await sig();
+    same = now === last ? same + 1 : 0;
+    last = now;
+  }
+}
+
+//: A screenshot that two takes agree on. The page is frozen, so a take that differs from the next
+//: was caught half painted (seen: a third of a look's idle frames with half the figure missing).
+async function steadyShot(page, file, clip) {
+  let last = await page.screenshot({ omitBackground: true, clip });
+  for (let i = 0; i < 8; i++) {
+    await page.waitForTimeout(100);
+    const now = await page.screenshot({ omitBackground: true, clip });
+    //: Equal, or within 1.5% in size (a ring still turning on the page): a half-painted take is far off that.
+    if (now.equals(last) || Math.abs(now.length - last.length) <= 0.015 * Math.max(now.length, last.length)) { fs.writeFileSync(file, now); return; }
+    last = now;
+  }
+  throw new Error(`${file}: never held still`);
+}
+
 (async () => {
   const out = process.argv[2];
   if (!out) throw new Error("usage: node render_desk_frames.js <out dir>");
@@ -118,6 +144,16 @@ const BOX = { width: 400, height: 300, left: 120, top: 60 };
       //: The companion in the app may be tucked behind a bar (`data-legs="peek"`
       //: clips it): keep only the gait, and set the pose per frame.
       for (const name of clone.getAttributeNames()) if (name.startsWith("data-") && !["data-gait", "data-atlas-variant"].includes(name)) clone.removeAttribute(name);
+      //: The page's own placement (it re-perches the figure on a bar, sitting, legs peeking) rewrote
+      //: the pose between a frame being set and shot: a third of a look's idle frames came out as a
+      //: half-hidden sit (INBOX 1670: the "blinking" at 8 a second). Anything but the frame's pose is put back at once.
+      window.__want = "stand";
+      //: And its face: a page expression (hearts, a blush) came and went over four idle frames in a row.
+      if (typeof setAtlasMood === "function") { setAtlasMood("calm", 0); window.setAtlasMood = () => {}; }
+      new MutationObserver(() => {
+        for (const n of ["data-perch", "data-legs", "data-side"]) if (clone.hasAttribute(n)) clone.removeAttribute(n);
+        if (clone.dataset.pose !== window.__want) clone.dataset.pose = window.__want;
+      }).observe(clone, { attributes: true, attributeFilter: ["data-pose", "data-perch", "data-legs", "data-side"] });
       return { look: atlasLook(), rect: JSON.stringify(clone.getBoundingClientRect()) };
     }, BOX);
     report[look] = got;
@@ -136,10 +172,15 @@ const BOX = { width: 400, height: 300, left: 120, top: 60 };
         //: (INBOX 1663: the feminine hang, hop, land, tumble and idle frames shipped half drawn).
         window.__setProp(b, "transform", window.__pin, "important");
         b.className = frame.classes.join(" ");
+        window.__want = frame.pose;
         b.dataset.pose = frame.pose;
         b.dataset.feel = "calm";
       }, f);
       await page.waitForTimeout(60);
+      //: The arms are eased toward their pose by the page's own loop, so the frame after a
+      //: hang or a wave was caught with the arms still coming down (INBOX 1670: a third of the
+      //: idle frames of a look had them up, a flicker at 8 a second). Wait until they stop moving.
+      await settleArms(page);
       await page.evaluate((frame) => {
         //: Only the CSS animations the frame's class started are moved to the
         //: frame's moment; the page's own (WAAPI eyes, drift) are frozen where
@@ -151,6 +192,7 @@ const BOX = { width: 400, height: 300, left: 120, top: 60 };
           //: A transition is finished instead, so the frame shows where it went.
           if (a.transitionProperty) { a.finish(); continue; }
           a.pause();
+          if (a.animationName && /neb|wisp|glint/.test(a.animationName)) { a.currentTime = 0; continue; } // the same moment in every frame and in the stream pass
           if (!a.animationName || (frame.phase === undefined && frame.at === undefined)) continue;
           const t = a.effect.getComputedTiming();
           const cycle = (t.duration || 0) * (String(t.direction).startsWith("alternate") ? 2 : 1);
@@ -176,13 +218,14 @@ const BOX = { width: 400, height: 300, left: 120, top: 60 };
           atlasTailDraw(tail, (s) => atlasTailBend(s, p, w, w, 0, 2 * w), () => 1 + 0.03 * Math.cos(2 * w));
           const k = (1 - Math.cos(w)) / 2;
           for (const el of box.querySelectorAll(".atl-layer-body .nmb-torso")) el.style.setProperty("scale", `${(1 + ATLAS_BREATH_SWELL[0] * k).toFixed(4)} ${(1 + ATLAS_BREATH_SWELL[1] * k).toFixed(4)}`);
-          put(char, `translateY(${(-1.5 * k).toFixed(2)}px)`, "50% 90%");
           const lower = b.querySelectorAll(".nm-atlas.atl-layer-lower").length ? ".nm-atlas.atl-layer-lower" : ".atl-lw-lower";
           for (const low of b.querySelectorAll(lower)) put(low, `skewX(${(3 * Math.sin(w - 1.5)).toFixed(2)}deg)`, "50% 55%");
         }
         if (frame.float !== undefined) {
           const w = frame.float * 2 * Math.PI;
-          put(char, `translateY(${(-6 * Math.sin(w)).toFixed(2)}px) rotate(4deg)`, "50% 90%");
+          //: No translateY: the engine's slow bob (BOB_HZ) is the only vertical motion. This one
+          //: baked 9.7 px at 1.33 Hz into the drift frames (INBOX 1670: "bobbing really fast").
+          put(char, "rotate(4deg)", "50% 90%");
           for (const tail of b.querySelectorAll(".atl-lw-tail")) put(tail, `rotate(${(11 * Math.sin(w - 1.0)).toFixed(2)}deg)`, "40% 35%");
           const lower = b.querySelectorAll(".nm-atlas.atl-layer-lower").length ? ".nm-atlas.atl-layer-lower" : ".atl-lw-lower";
           for (const low of b.querySelectorAll(lower)) put(low, `skewX(${(9 * Math.sin(w - 2.0)).toFixed(2)}deg)`, "50% 55%");
@@ -192,14 +235,22 @@ const BOX = { width: 400, height: 300, left: 120, top: 60 };
       const at = await page.evaluate(() => { const q = document.getElementById("nm-buddy").getBoundingClientRect(); return [Math.round(q.x), Math.round(q.y)]; });
       if (at[0] !== BOX.left + 78 || at[1] !== BOX.top + 80) throw new Error(`${look}/${f.name}: the figure moved to ${at} while it was captured`);
       const clip = { x: BOX.left, y: BOX.top, width: BOX.width, height: BOX.height };
-      await page.screenshot({ path: path.join(out, look, `${f.name}.png`), omitBackground: true, clip });
+      await steadyShot(page, path.join(out, look, `${f.name}.png`), clip);
       //: The same frame with the nebula stream drawn, its animations held where they start.
       await page.evaluate(() => {
         document.documentElement.classList.remove("nm-no-neb");
       });
       await page.waitForTimeout(60);
-      await page.evaluate(() => { for (const a of document.getAnimations()) { if (a.transitionProperty) a.finish(); else a.pause(); } });
-      await page.screenshot({ path: path.join(out, look, `${f.name}.neb.png`), omitBackground: true, clip });
+      //: The stream's own animations start when it is un-hidden, 60 ms or more ago: pinned to
+      //: the start of their cycle so every frame has the same stream (INBOX 1670: "blinking").
+      await page.evaluate(() => {
+        for (const a of document.getAnimations()) {
+          if (a.transitionProperty) { a.finish(); continue; }
+          a.pause();
+          if (a.animationName && /neb|wisp|glint/.test(a.animationName)) a.currentTime = 0;
+        }
+      });
+      await steadyShot(page, path.join(out, look, `${f.name}.neb.png`), clip);
       await page.evaluate(() => document.documentElement.classList.add("nm-no-neb"));
     }
   }

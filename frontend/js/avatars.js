@@ -7824,6 +7824,14 @@ function nameMarkBuddyHalt(buddy) {
   for (const t of nmb.poseSteps || []) clearTimeout(t);
   nmb.poseSteps = [];
   if (/^(lie|curl)/.test(buddy.dataset.pose || "")) buddy.dataset.pose = nmb.pose;
+  //: Taken off a ledge it was hanging from, it hangs no more: arms down in the hand and through
+  //: the throw. The hang pose rode the whole flight, and a landing that was not a perch left it
+  //: in the arms-up pose in mid-air (INBOX 1670: "I threw it down and now it is stuck like this").
+  if (buddy.dataset.pose === "hang") {
+    buddy.dataset.pose = nmb.pose = "float";
+    buddy.dataset.legs = nmb.legs = "";
+    buddy.classList.remove("nmb-climb", "nmb-slip");
+  }
   delete buddy.dataset.turn;
   if (buddy.dataset.legs === "peek") buddy.dataset.legs = nmb.legs = "";
 }

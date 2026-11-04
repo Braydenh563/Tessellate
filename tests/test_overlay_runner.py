@@ -390,8 +390,10 @@ def test_the_click_rect_is_the_figures_drawn_box_not_the_window() -> None:
         assert (w, h) == (f.box[2] - f.box[0], f.box[3] - f.box[1])
         assert (x - 1000, y - 500) == (f.box[0], f.box[1])
         assert w < cell[0] * 0.75 and x + w <= 1000 + cell[0]
-    left = r.drawn_rect(1000, 500, "stand", False)[0] - 1000
-    right = r.drawn_rect(1000, 500, "stand", True)[0] - 1000
+    # `held`, not `stand`: the re-rendered stand frame (one shared stream, INBOX 1670) is centred in its
+    # cell to the pixel, so it no longer shows the swing; `held` has its arm out to one side.
+    left = r.drawn_rect(1000, 500, "held", False)[0] - 1000
+    right = r.drawn_rect(1000, 500, "held", True)[0] - 1000
     assert left != right  # the margin really swings with the mirror
     r.stop()
 

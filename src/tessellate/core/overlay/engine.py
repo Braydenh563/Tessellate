@@ -141,11 +141,14 @@ FLOAT_STAND_FOR = (0.8, 2.0)
 #: "floats wayyy to high"); only a trip to a window or an edge goes higher.
 FLOAT_BAND = 1.0
 FLOAT_MOVE_WEIGHT = 150
-BOB = 7.0
-BOB_HZ = 0.55
+#: The bob is the only vertical float: 4 px at 0.22 Hz (INBOX 1670: "bobbing really fast"; it was
+#: 7 px at 0.55 Hz on top of 9.7 px at 1.33 Hz baked into the drift frames and 1.6 px at 0.67 Hz
+#: in the idle ones, all of them in step).
+BOB = 4.0
+BOB_HZ = 0.22
 FLOAT_SWAY = 5.0
 FLOAT_SWAY_HZ = 0.37
-BOB_TICK = 0.06
+BOB_TICK = 0.125
 #: Hang from the top edge, and the climb up to it. The window holds still while it hangs
 #: (INBOX 1663: "slides a little from side to side"): any life is in the frames.
 HANG_FOR = (8.0, 16.0)
@@ -1141,7 +1144,9 @@ class Engine:
         floor = min(self.floor_y(m), uy1) if self._open_side(m, "bottom") else self.floor_y(m)
         if floater:
             self.y = min(self.y, floor)
-            if speed < 25 * scale and abs(self.ground_y(m) - self.y) < 4 * scale:
+            # at the drawn-box limit counts as down: the tumble's box is taller than the figure, so the
+            # limit can sit above the rest line, and it hung there in the limp pose (INBOX 1670)
+            if speed < 25 * scale and (abs(self.ground_y(m) - self.y) < 4 * scale or self.y >= floor - 0.5):
                 self.vx = self.vy = 0.0
                 self.y = self.ground_y(m)
                 self.settled_now = True
