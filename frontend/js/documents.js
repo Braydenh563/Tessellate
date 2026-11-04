@@ -11011,6 +11011,7 @@ function scheduleDocFacts() {
 const DOC_PROSE_RULES = [
   {
     id: "repeat",
+    english: true,
     //: The classic, and the one nobody catches by re-reading: the eye supplies
     //: the missing word. Case-insensitive, and only for words worth repeating
     //: by accident: `\b(\w+)\s+\1\b` alone flags "had had" and "that that",
@@ -11059,6 +11060,7 @@ const DOC_PROSE_RULES = [
   },
   {
     id: "confusion",
+    english: true,
     //: your/you're, the one confusion Harper let through on the fixture
     //: (`tests/grammar_fixture_1026.json`): "Your going to love it", "your
     //: not late", "your welcome". Only the forms that cannot be possessive
@@ -11590,8 +11592,11 @@ function docProseFindings(text) {
   //: rather than every character of it: a rule whose match straddles the end
   //: of a code fence is about the code, not the prose after it.
   const skipped = (at) => skip[at] === 1;
+  const english = docProse.langOf(text) === "en";
   for (const rule of DOC_PROSE_RULES) {
     if (!rule.test) continue;
+    //: English word lists (repeat, confusion) would misfire on another language.
+    if (rule.english && !english) continue;
     //: A fresh regex per pass: these carry `g`, and `lastIndex` survives
     //: between calls on a shared object, which silently skips half the
     //: document on every second run.
@@ -11617,7 +11622,7 @@ function docProseFindings(text) {
   const dictionary = docDictionary();
   const variants = docVariantLookup();
   //: Off for a document whose `lang` is not English (`docProse.langOf`): see `docProse.langNote`.
-  const checkWords = docProse.langOf(text) === "en";
+  const checkWords = english;
   let hit;
   while (checkWords && (hit = word.exec(text)) !== null) {
     if (skipped(hit.index)) continue;
@@ -11865,7 +11870,7 @@ const docProse = {
   //: flag every word, and no other pack is installed yet (a30h-1102 step 4).
   langNote(text) {
     const lang = this.langOf(text);
-    return lang === "en" ? "" : `Spelling is off for this document: its language is set to ${lang}, and only the English list is installed.`;
+    return lang === "en" ? "" : `Spelling and grammar are off for this document: its language is set to ${lang}, and only the English checks are installed.`;
   },
   hidden: false,
   panelView: "list",

@@ -55,6 +55,11 @@ const NAMES = options.names || [
   ...(options.extraNames || []),
 ];
 const body = NAMES.map(declaration).join("\n\n");
+// The shipped `docProse.langOf`, so a non-English document is seen as one.
+const LANG_OF = (() => {
+  const i = SOURCES[0].indexOf("  langOf(text) {");
+  return SOURCES[0].slice(i, SOURCES[0].indexOf("\n  },", i) + 5).replace(/,\s*$/, "");
+})();
 
 const wordlist = new Set(
   fs.readFileSync(path.join(root, "frontend", "vendor", "wordlist", "en.txt"), "utf8").split("\n").map((w) => w.trim()).filter(Boolean)
@@ -69,7 +74,7 @@ const factory = new Function(
   let docSpellCache = new Map();
   let docGrammarCache = { text: null, findings: [] };
   const docProseIgnored = new Set();
-  const docProse = { langOf: () => "en" };
+  const docProse = { ${LANG_OF} };
   const prefsCache = __env.prefs;
   const currentDoc = null;
   const docDictionary = () => __env.dictionary;

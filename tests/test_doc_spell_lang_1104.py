@@ -48,8 +48,28 @@ def test_lang_key_is_read_from_leading_frontmatter_only(text: str, want: str) ->
     assert _lang(text) == want
 
 
-def test_non_english_skips_the_word_loop_and_the_panel_says_so() -> None:
-    prose = _block("function docProseFindings(")
-    assert 'docProse.langOf(text) === "en"' in prose
-    assert "checkWords" in prose
-    assert "docProse.langNote(" in SOURCE
+BAD = "The the cat. Your going to love it. Thier dog is here."
+
+
+def _findings(text: str) -> list[str]:
+    import tempfile
+
+    root = Path(__file__).resolve().parent.parent
+    with tempfile.TemporaryDirectory() as tmp:
+        fixture = Path(tmp) / "f.json"
+        fixture.write_text(json.dumps({"clean": [{"tag": "t", "text": text}], "planted": []}), encoding="utf-8")
+        out = subprocess.run(
+            ["node", str(root / "tests" / "_grammar_harness.js"), str(root), str(fixture)],
+            capture_output=True, text=True, timeout=180, check=True,
+        )
+    return [f["rule"] for f in json.loads(out.stdout)["clean"][0]["findings"]]
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
+def test_english_document_is_checked_and_a_french_one_is_not() -> None:
+    assert {"repeat", "confusion", "spelling"} <= set(_findings(BAD))
+    assert _findings("---\nlang: fr\n---\n" + BAD) == []
+
+
+def test_panel_note_names_spelling_and_grammar() -> None:
+    assert "Spelling and grammar are off" in SOURCE

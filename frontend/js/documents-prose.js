@@ -456,7 +456,7 @@ function docLinkOfferCurrent(text) {
 //: dictionary and an "always correct" behind it.
 function docProseExtras(text, found) {
   const extra = [];
-  if (docGrammarEnabled()) {
+  if (docGrammarEnabled() && docProse.langOf(text) === "en") {
     docGrammarRequest(text);
     if (docGrammarCache.text !== null) {
       extra.push(...docProseRemap(docGrammarCache.findings, docGrammarCache.text, text));
