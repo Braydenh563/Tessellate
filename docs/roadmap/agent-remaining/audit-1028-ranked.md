@@ -163,8 +163,8 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 157 | U20 | med | code file open long task of 305 ms | not reproduced as one task 1102 a30g: a 2,000-line .py file opens with the cost split across tasks (outline 51 ms, tools 15 ms, indent-mix scan 30 ms); splitting `docAfterFirstPaint` is in a30g-1102.md | M |
 | 158 | B6 | med | 319 addEventListener vs 7 remove; re-init double-fires handlers | fixed | M |
 | 159 | B15 | med | four overlapping drag mechanisms plus synthetic MouseEvent bridge | new | L |
-| 160 | D23 | med | hot-spot functions and 255 shared lets in one file | new | L |
-| 161 | D24 | med | document paste upload lives in settings-wiring.js | new | S |
+| 160 | D23 | med | hot-spot functions and 255 shared lets in one file | partial 483b6a6 (theme split) | L |
+| 161 | D24 | med | document paste upload lives in settings-wiring.js | fixed 483b6a6 | S |
 | 162 | D25 | med | document styles scattered across 11 CSS files | new | M |
 | 163 | K24 | med | god modules, whiteboard router 6,123 lines | new | L |
 | 164 | K25 | med | 18 functions over 150 lines, _start_tray at 346 | new | L |
