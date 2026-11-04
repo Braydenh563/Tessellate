@@ -12552,7 +12552,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/instance` | GET | `instance` | src/tessellate/api/app.py:1639 |
 | `/instance/focus` | POST | `instance_focus` | src/tessellate/api/app.py:1653 |
 | `/instance/shutdown` | POST | `instance_shutdown` | src/tessellate/api/app.py:1673 |
-| `/items/save-many` | PUT | `save_items` | src/tessellate/api/wb_items.py:351 |
+| `/items/save-many` | PUT | `save_items` | src/tessellate/api/wb_items.py:352 |
 | `/jobs` | GET | `list_jobs` | src/tessellate/api/routes_tasks.py:613 |
 | `/jobs/cancel` | POST | `cancel_job` | src/tessellate/api/routes_models.py:1225 |
 | `/jobs/last-runs` | GET | `jobs_last_runs` | src/tessellate/api/routes_tasks.py:576 |
@@ -12641,16 +12641,16 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/most-opened` | GET | `most_opened` | src/tessellate/api/routes_vision.py:113 |
 | `/move` | POST | `move_notes` | src/tessellate/api/routes_categories.py:162 |
 | `/near/{entry_id}` | GET | `near` | src/tessellate/api/routes_resurface.py:136 |
-| `/nodes` | POST | `create_node` | src/tessellate/api/wb_items.py:33 |
-| `/nodes/{node_id}` | DELETE | `delete_node` | src/tessellate/api/wb_items.py:115 |
-| `/nodes/{node_id}` | PUT | `update_node` | src/tessellate/api/wb_items.py:78 |
+| `/nodes` | POST | `create_node` | src/tessellate/api/wb_items.py:34 |
+| `/nodes/{node_id}` | DELETE | `delete_node` | src/tessellate/api/wb_items.py:116 |
+| `/nodes/{node_id}` | PUT | `update_node` | src/tessellate/api/wb_items.py:79 |
 | `/note-types` | GET | `list_note_types` | src/tessellate/api/routes_properties.py:133 |
 | `/note-types` | POST | `create_note_type` | src/tessellate/api/routes_properties.py:145 |
 | `/note-types/{type_id}` | DELETE | `delete_note_type` | src/tessellate/api/routes_properties.py:189 |
 | `/note-types/{type_id}` | PATCH | `patch_note_type` | src/tessellate/api/routes_properties.py:167 |
-| `/objects` | POST | `create_object` | src/tessellate/api/wb_items.py:237 |
-| `/objects/{object_id}` | DELETE | `delete_object` | src/tessellate/api/wb_items.py:385 |
-| `/objects/{object_id}` | PUT | `update_object` | src/tessellate/api/wb_items.py:282 |
+| `/objects` | POST | `create_object` | src/tessellate/api/wb_items.py:238 |
+| `/objects/{object_id}` | DELETE | `delete_object` | src/tessellate/api/wb_items.py:386 |
+| `/objects/{object_id}` | PUT | `update_object` | src/tessellate/api/wb_items.py:283 |
 | `/ocr-model` | POST | `set_ocr_model` | src/tessellate/api/routes_models.py:1071 |
 | `/ocr-readers` | GET | `ocr_readers` | src/tessellate/api/routes_files.py:3329 |
 | `/ocr/language` | POST | `set_ocr_language` | src/tessellate/api/routes_files.py:3378 |
@@ -12737,9 +12737,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/seed-examples` | POST | `seed_example_entries` | src/tessellate/api/routes_entries.py:2736 |
 | `/setup` | POST | `setup` | src/tessellate/api/routes_auth.py:843 |
 | `/shutdown` | POST | `shutdown` | src/tessellate/api/routes_tasks.py:872 |
-| `/sketches` | POST | `create_sketch` | src/tessellate/api/wb_items.py:136 |
-| `/sketches/{sketch_id}` | DELETE | `delete_sketch` | src/tessellate/api/wb_items.py:196 |
-| `/sketches/{sketch_id}` | PUT | `update_sketch` | src/tessellate/api/wb_items.py:166 |
+| `/sketches` | POST | `create_sketch` | src/tessellate/api/wb_items.py:137 |
+| `/sketches/{sketch_id}` | DELETE | `delete_sketch` | src/tessellate/api/wb_items.py:197 |
+| `/sketches/{sketch_id}` | PUT | `update_sketch` | src/tessellate/api/wb_items.py:167 |
 | `/skills` | GET | `list_skills` | src/tessellate/api/routes_settings.py:1529 |
 | `/source-status` | GET | `source_update_status` | src/tessellate/api/routes_update.py:723 |
 | `/spaces` | GET | `get_spaces` | src/tessellate/api/routes_spaces.py:78 |
@@ -20755,28 +20755,28 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `ItemsSaveMany` | src/tessellate/api/wb_items.py:334 |
-| `SaveManyNode` | src/tessellate/api/wb_items.py:322 |
-| `SaveManyObject` | src/tessellate/api/wb_items.py:330 |
-| `SaveManySketch` | src/tessellate/api/wb_items.py:326 |
-| `_apply_comments` | src/tessellate/api/wb_items.py:26 |
-| `_delete_one_object` | src/tessellate/api/wb_items.py:463 |
-| `_require_diagram_row` | src/tessellate/api/wb_items.py:225 |
-| `_rows_by_id` | src/tessellate/api/wb_items.py:342 |
-| `_save_node` | src/tessellate/api/wb_items.py:92 |
-| `_save_object` | src/tessellate/api/wb_items.py:297 |
-| `_save_sketch` | src/tessellate/api/wb_items.py:179 |
-| `_subtree` | src/tessellate/api/wb_items.py:432 |
-| `create_node` | src/tessellate/api/wb_items.py:35 |
-| `create_object` | src/tessellate/api/wb_items.py:239 |
-| `create_sketch` | src/tessellate/api/wb_items.py:138 |
-| `delete_node` | src/tessellate/api/wb_items.py:117 |
-| `delete_object` | src/tessellate/api/wb_items.py:387 |
-| `delete_sketch` | src/tessellate/api/wb_items.py:198 |
-| `save_items` | src/tessellate/api/wb_items.py:353 |
-| `update_node` | src/tessellate/api/wb_items.py:80 |
-| `update_object` | src/tessellate/api/wb_items.py:284 |
-| `update_sketch` | src/tessellate/api/wb_items.py:168 |
+| `ItemsSaveMany` | src/tessellate/api/wb_items.py:335 |
+| `SaveManyNode` | src/tessellate/api/wb_items.py:323 |
+| `SaveManyObject` | src/tessellate/api/wb_items.py:331 |
+| `SaveManySketch` | src/tessellate/api/wb_items.py:327 |
+| `_apply_comments` | src/tessellate/api/wb_items.py:27 |
+| `_delete_one_object` | src/tessellate/api/wb_items.py:464 |
+| `_require_diagram_row` | src/tessellate/api/wb_items.py:226 |
+| `_rows_by_id` | src/tessellate/api/wb_items.py:343 |
+| `_save_node` | src/tessellate/api/wb_items.py:93 |
+| `_save_object` | src/tessellate/api/wb_items.py:298 |
+| `_save_sketch` | src/tessellate/api/wb_items.py:180 |
+| `_subtree` | src/tessellate/api/wb_items.py:433 |
+| `create_node` | src/tessellate/api/wb_items.py:36 |
+| `create_object` | src/tessellate/api/wb_items.py:240 |
+| `create_sketch` | src/tessellate/api/wb_items.py:139 |
+| `delete_node` | src/tessellate/api/wb_items.py:118 |
+| `delete_object` | src/tessellate/api/wb_items.py:388 |
+| `delete_sketch` | src/tessellate/api/wb_items.py:199 |
+| `save_items` | src/tessellate/api/wb_items.py:354 |
+| `update_node` | src/tessellate/api/wb_items.py:81 |
+| `update_object` | src/tessellate/api/wb_items.py:285 |
+| `update_sketch` | src/tessellate/api/wb_items.py:169 |
 
 ### src/tessellate/api/wb_make.py (10)
 
