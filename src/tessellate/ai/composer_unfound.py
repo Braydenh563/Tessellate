@@ -119,9 +119,28 @@ _FRAME_WORDS = frozenset(
 )
 
 
+#: The shape an order asks the answer to take, read from the sentence: "as a
+#: table", "in two snippets", "the top three memos", and after an order verb
+#: "in a haiku", "with a timeline". No list of formats: the position names it
+#: (audit 1029 C37; a bare "in a hotel" with no order verb stays a topic).
+_SHAPE_ASKED = re.compile(
+    r"\bas (?:a |an |the )?(\w+)"
+    r"|\bin (?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|a few|a couple of) (\w+)"
+    r"|\b(?:top|first|last|best|worst|latest|newest|oldest)\s+(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten)\s+(\w+)",
+    re.I,
+)
+_ORDER_SHAPE = re.compile(
+    r"^\s*(?:please\s+|(?:can|could|would) you\s+(?:please\s+)?)?(?:summari[sz]e|give|write|draft|explain|describe|show|tell|list|put|format|turn|sum)\b"
+    r"(?:(?!\b(?:what|which|who|where|when|how|about|my|our)\b).)*?\b(?:in|with) (?:a|an) (\w+)",
+    re.I,
+)
+
+
 @functools.lru_cache(maxsize=256)
 def _frame_stems(question: str) -> frozenset[str]:
     said = {w for m in _FRAME_SHAPES.finditer(question or "") for w in m.groups() if w}
+    said |= {w for m in _SHAPE_ASKED.finditer(question or "") for w in m.groups() if w}
+    said |= {w for m in _ORDER_SHAPE.finditer(question or "") for w in m.groups() if w}
     return frozenset(_stem(w) for w in said) | _FRAME_WORDS
 
 

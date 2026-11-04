@@ -11016,6 +11016,7 @@ function scheduleDocFacts() {
 const DOC_PROSE_RULES = [
   {
     id: "repeat",
+    english: true,
     //: The classic, and the one nobody catches by re-reading: the eye supplies
     //: the missing word. Case-insensitive, and only for words worth repeating
     //: by accident: `\b(\w+)\s+\1\b` alone flags "had had" and "that that",
@@ -11064,6 +11065,7 @@ const DOC_PROSE_RULES = [
   },
   {
     id: "confusion",
+    english: true,
     //: your/you're, the one confusion Harper let through on the fixture
     //: (`tests/grammar_fixture_1026.json`): "Your going to love it", "your
     //: not late", "your welcome". Only the forms that cannot be possessive
@@ -11595,8 +11597,11 @@ function docProseFindings(text) {
   //: rather than every character of it: a rule whose match straddles the end
   //: of a code fence is about the code, not the prose after it.
   const skipped = (at) => skip[at] === 1;
+  const english = docProse.langOf(text) === "en";
   for (const rule of DOC_PROSE_RULES) {
     if (!rule.test) continue;
+    //: English word lists (repeat, confusion) would misfire on another language.
+    if (rule.english && !english) continue;
     //: A fresh regex per pass: these carry `g`, and `lastIndex` survives
     //: between calls on a shared object, which silently skips half the
     //: document on every second run.
@@ -11621,8 +11626,10 @@ function docProseFindings(text) {
   const word = /[A-Za-z']+/g;
   const dictionary = docDictionary();
   const variants = docVariantLookup();
+  //: Off for a document whose `lang` is not English (`docProse.langOf`): see `docProse.langNote`.
+  const checkWords = english;
   let hit;
-  while ((hit = word.exec(text)) !== null) {
+  while (checkWords && (hit = word.exec(text)) !== null) {
     if (skipped(hit.index)) continue;
     const lower = hit[0].toLowerCase();
     //: A word in the dictionary is a word. This is the whole point of having
@@ -11854,6 +11861,22 @@ let docProseFound = [];
 //: offsets). Every other caller (a key, a dismissal, a setting) runs afresh.
 //: A method here rather than a function of its own: the shared scope is capped.
 const docProse = {
+  //: **The document's language** (audit 1028 D30). The `lang` (or `language`) key of a
+  //: leading frontmatter block, reduced to its primary subtag: "en-GB" is "en". Absent
+  //: means English, the one list this app ships. Pure, so it is tested alone. A method
+  //: here rather than a global (the scope ratchet).
+  langOf(text) {
+    const block = /^---\r?\n([\s\S]*?)\r?\n---/.exec(text || "");
+    if (!block) return "en";
+    const key = /^lang(?:uage)?:[ \t]*["']?([A-Za-z]{2,3})/m.exec(block[1]);
+    return key ? key[1].toLowerCase() : "en";
+  },
+  //: Why the checker is quiet for a non-English document: the English list would
+  //: flag every word, and no other pack is installed yet (a30h-1102 step 4).
+  langNote(text) {
+    const lang = this.langOf(text);
+    return lang === "en" ? "" : `Spelling and grammar are off for this document: its language is set to ${lang}, and only the English checks are installed.`;
+  },
   hidden: false,
   panelView: "list",
   win: null,
@@ -12387,6 +12410,13 @@ function renderDocProsePanel() {
     what.className = "muted";
     what.textContent = `Checked for spelling, ${docGrammarEnabled() ? "grammar, " : ""}spacing, sentence length and accessibility; these read the text, not its meaning.`;
     empty.append(mark, said, what);
+    const langNote = docProse.langNote(docText());
+    if (langNote) {
+      const note = document.createElement("p");
+      note.className = "muted";
+      note.textContent = langNote;
+      empty.appendChild(note);
+    }
     panel.appendChild(empty);
     return;
   }
