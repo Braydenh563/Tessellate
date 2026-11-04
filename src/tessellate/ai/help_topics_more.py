@@ -750,7 +750,9 @@ MORE_TOPICS: list[dict] = [
         "body": (
             "Settings, Logs shows what happened, for when something did not "
             "work: filter by source and level, follow new lines, copy or clear "
-            "them. The ? beside the three dots in its bar says what each control "
+            "them. A filter only hides records, never deletes them: Show them clears "
+            "the filters, scrolling up draws older ones and the circular arrow "
+            "reads the log again now. The ? beside the three dots in its bar says what each control "
             "does. The support bundle collects the logs and the app's state; "
             "Email it opens a message to support with the bundle to attach. "
             "To send the logs for something slow or broken, open the three dots in "

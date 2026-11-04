@@ -50,3 +50,15 @@ def test_a_selection_bar_keeps_a_gap_to_its_list_and_takes_the_pane_heads_box():
 def test_the_drag_grip_steps_off_a_cards_own_tick():
     js = (CSS.parent / "js" / "obj-drag.js").read_text(encoding="utf-8")
     assert 'next.querySelectorAll(\'input[type="checkbox"]\')' in js
+
+
+def test_the_log_view_shows_what_a_filter_hid_and_loads_older_records_on_scroll():
+    """INBOX 1608: the owner's Errors-only filter hid the rest and read as deleted."""
+    root = CSS.parent
+    settings = (root / "js" / "settings.js").read_text(encoding="utf-8")
+    controls = (root / "js" / "settings-controls.js").read_text(encoding="utf-8")
+    assert '"Show them", "Clear the filters"' in settings
+    assert "hidden by the filters above, not deleted" in settings
+    assert 'id="logs-refresh"' in (root / "index.html").read_text(encoding="utf-8")
+    assert '$("logs-refresh").addEventListener("click"' in controls
+    assert 'if (list.scrollTop < 80)' in controls

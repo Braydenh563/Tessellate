@@ -924,12 +924,14 @@ function renderLogSharedUI(visibleCount) {
       ? "Records appear here as the app runs."
       : settingsLook.logFilterFromRun
         ? "Only runs since the app last started write lines here. Clear the filters to see every record."
-        : "Nothing fits the filters above.";
+        : `${nounCount(hiddenCount, "record")} hidden by the filters above, not deleted.`;
+    setLabel($("logs-empty-clear"), "ph:eye Show them");
     $("logs-empty-clear").classList.toggle("hidden", nothing);
   }
   const filtered = $("logs-filtered-out");
   if (hiddenCount > 0 && !none) {
-    filtered.textContent = `${hiddenCount.toLocaleString()} record${hiddenCount === 1 ? "" : "s"} hidden by the filters above.`;
+    const show = smallButton("Show them", "Clear the filters", () => $("logs-empty-clear").click());
+    filtered.replaceChildren(`${hiddenCount.toLocaleString()} record${hiddenCount === 1 ? "" : "s"} hidden by the filters above. `, show);
     filtered.classList.remove("hidden");
   } else {
     filtered.classList.add("hidden");
