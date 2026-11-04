@@ -160,7 +160,11 @@ def test_the_nebula_veil_is_the_same_in_every_frame_of_the_idle_cycle(look: str)
         return total / len(ims)
 
     before, after = change(raw), change(new)
-    assert after < before * 0.5, (before, after)  # what is left is the figure's own moving parts
+    # Intent moved 2026-11-04: the shipped frames are now re-rendered from one nebula, so the raw
+    # frames are already steady (about 115 against 830 to 1220 for the old capture) and the loader's
+    # veil can no longer halve them. The bound is the old capture's change divided by six, and the
+    # loader must not undo what the frames already have.
+    assert after < 200 and after <= before * 1.25, (before, after)
 
 
 # --- poses on the sprites -----------------------------------------------------------------------
