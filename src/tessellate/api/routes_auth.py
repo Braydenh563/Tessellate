@@ -366,6 +366,16 @@ def _token_valid(token: str | None, idle_ttl: int) -> bool:
         entry[1] = time.time()
         return True
 
+def session_still_open(request: Request, token: str | None) -> bool:
+    """For a stream that outlives its opening check (`/jobs/stream`, SEC-A6):
+    whether this session is still signed in, asked without keeping it alive.
+    True when no password exists, as `require_unlock` does."""
+    if _no_password_yet_now(request):
+        return True
+    with _token_lock:
+        return bool(token) and token in _active_tokens
+
+
 # Brute-force throttle for unlock attempts. The app binds 127.0.0.1, but a
 # server log showed a public client address arriving through a proxy header,
 # people do put this behind tunnels to reach it from a phone. bcrypt makes
