@@ -85,6 +85,19 @@ KEPT_ON_RESTORE = frozenset(
         "update_check_enabled",
         "auto_update_enabled",
         "autonomous_tasks_enabled",
+        # SEC-A1: this computer's own folder, model download, update and window settings.
+        "backup_copy_dir",
+        "voice_model",
+        "tools_enabled",
+        "update_channel",
+        "update_beta",
+        "semantic_auto_install",
+        "desktop_companion",
+        "show_console_on_startup",
+        "close_to_tray",
+        "new_window_on_launch",
+        "searxng_autostart",
+        "session_idle_ttl_minutes",
     }
 )
 
