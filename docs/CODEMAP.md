@@ -2,9 +2,9 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7816, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8797, test files 2068, tests 17468, plan headings 1003, app scripts 28, boot scripts 37, script files 257.
+Counts: frontend functions 7822, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8797, test files 2068, tests 17477, plan headings 1003, app scripts 28, boot scripts 37, script files 257.
 
-## Frontend functions (7816)
+## Frontend functions (7822)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3177,7 +3177,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `node` | frontend/js/diagram-canvas.js:32 |
 | `over` | frontend/js/diagram-canvas.js:44 |
 | `overlay` | frontend/js/diagram-canvas.js:10 |
-| `wire` | frontend/js/diagram-canvas.js:69 |
+| `wire` | frontend/js/diagram-canvas.js:73 |
 
 ### frontend/js/diagram-edge-pick.js (1)
 
@@ -3207,18 +3207,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `svgOf` | frontend/js/diagram-embed.js:19 |
 | `swapRange` | frontend/js/diagram-embed.js:87 |
 
-### frontend/js/diagram-joins.js (8)
+### frontend/js/diagram-joins.js (9)
 
 | Name | File:line |
 |---|---|
-| `ask` | frontend/js/diagram-joins.js:102 |
-| `items` | frontend/js/diagram-joins.js:30 |
+| `ask` | frontend/js/diagram-joins.js:112 |
+| `isKind` | frontend/js/diagram-joins.js:24 |
+| `items` | frontend/js/diagram-joins.js:32 |
 | `lastTarget` | frontend/js/diagram-joins.js:11 |
-| `menu` | frontend/js/diagram-joins.js:58 |
-| `nameOf` | frontend/js/diagram-joins.js:28 |
-| `pick` | frontend/js/diagram-joins.js:110 |
-| `titleOf` | frontend/js/diagram-joins.js:27 |
-| `words` | frontend/js/diagram-joins.js:91 |
+| `menu` | frontend/js/diagram-joins.js:68 |
+| `nameOf` | frontend/js/diagram-joins.js:30 |
+| `pick` | frontend/js/diagram-joins.js:120 |
+| `titleOf` | frontend/js/diagram-joins.js:29 |
+| `words` | frontend/js/diagram-joins.js:101 |
 
 ### frontend/js/diagram-kinds.js (62)
 
@@ -3357,12 +3358,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `extras` | frontend/js/diagram-picture.js:47 |
 | `pick` | frontend/js/diagram-picture.js:73 |
 
-### frontend/js/diagram-pointer.js (2)
+### frontend/js/diagram-pointer.js (4)
 
 | Name | File:line |
 |---|---|
-| `dropMark` | frontend/js/diagram-pointer.js:10 |
-| `make` | frontend/js/diagram-pointer.js:35 |
+| `dropMark` | frontend/js/diagram-pointer.js:30 |
+| `make` | frontend/js/diagram-pointer.js:61 |
+| `mark` | frontend/js/diagram-pointer.js:36 |
+| `word` | frontend/js/diagram-pointer.js:12 |
 
 ### frontend/js/diagram-split.js (1)
 
@@ -3377,22 +3380,23 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `build` | frontend/js/diagram-steps.js:14 |
 | `sync` | frontend/js/diagram-steps.js:45 |
 
-### frontend/js/diagram-style.js (4)
+### frontend/js/diagram-style.js (5)
 
 | Name | File:line |
 |---|---|
 | `colour` | frontend/js/diagram-style.js:26 |
+| `edge` | frontend/js/diagram-style.js:50 |
 | `shapeRows` | frontend/js/diagram-style.js:18 |
-| `shortcuts` | frontend/js/diagram-style.js:49 |
+| `shortcuts` | frontend/js/diagram-style.js:69 |
 | `targets` | frontend/js/diagram-style.js:24 |
 
 ### frontend/js/diagram-suggest.js (17)
 
 | Name | File:line |
 |---|---|
-| `compose` | frontend/js/diagram-suggest.js:433 |
+| `compose` | frontend/js/diagram-suggest.js:437 |
 | `count` | frontend/js/diagram-suggest.js:72 |
-| `describe` | frontend/js/diagram-suggest.js:461 |
+| `describe` | frontend/js/diagram-suggest.js:465 |
 | `dgsMerge` | frontend/js/diagram-suggest.js:25 |
 | `dgsSubtree` | frontend/js/diagram-suggest.js:62 |
 | `firstKey` | frontend/js/diagram-suggest.js:82 |
@@ -3401,8 +3405,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `isEmpty` | frontend/js/diagram-suggest.js:77 |
 | `items` | frontend/js/diagram-suggest.js:286 |
 | `loadTemplates` | frontend/js/diagram-suggest.js:307 |
-| `notes` | frontend/js/diagram-suggest.js:448 |
-| `outlineOf` | frontend/js/diagram-suggest.js:421 |
+| `notes` | frontend/js/diagram-suggest.js:452 |
+| `outlineOf` | frontend/js/diagram-suggest.js:425 |
 | `paneBlank` | frontend/js/diagram-suggest.js:79 |
 | `reason` | frontend/js/diagram-suggest.js:143 |
 | `receive` | frontend/js/diagram-suggest.js:97 |
@@ -3847,31 +3851,33 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docMathTokens` | frontend/js/documents-math.js:97 |
 | `docMathTree` | frontend/js/documents-math.js:418 |
 
-### frontend/js/documents-mermaid.js (21)
+### frontend/js/documents-mermaid.js (23)
 
 | Name | File:line |
 |---|---|
-| `dgmChain` | frontend/js/documents-mermaid.js:150 |
-| `dgmDecode` | frontend/js/documents-mermaid.js:65 |
-| `dgmEscape` | frontend/js/documents-mermaid.js:70 |
-| `dgmFence` | frontend/js/documents-mermaid.js:319 |
-| `dgmFront` | frontend/js/documents-mermaid.js:247 |
-| `dgmLink` | frontend/js/documents-mermaid.js:134 |
-| `dgmParse` | frontend/js/documents-mermaid.js:254 |
-| `dgmPrint` | frontend/js/documents-mermaid.js:228 |
-| `dgmRef` | frontend/js/documents-mermaid.js:117 |
-| `dgmRows` | frontend/js/documents-mermaid.js:191 |
-| `dgmShapeText` | frontend/js/documents-mermaid.js:102 |
-| `dgmStatements` | frontend/js/documents-mermaid.js:81 |
-| `dgmSubgraph` | frontend/js/documents-mermaid.js:182 |
-| `dgmTint` | frontend/js/documents-mermaid.js:225 |
-| `dgmUnquote` | frontend/js/documents-mermaid.js:74 |
-| `diagramDoor` | frontend/js/documents-mermaid.js:497 |
-| `docMermaidBlocks` | frontend/js/documents-mermaid.js:357 |
-| `docMermaidField` | frontend/js/documents-mermaid.js:366 |
-| `docMermaidWhenDrawn` | frontend/js/documents-mermaid.js:347 |
-| `docRenderMermaidIn` | frontend/js/documents-mermaid.js:339 |
-| `openDiagramBuilder` | frontend/js/documents-mermaid.js:486 |
+| `dgmChain` | frontend/js/documents-mermaid.js:152 |
+| `dgmDecode` | frontend/js/documents-mermaid.js:67 |
+| `dgmEscape` | frontend/js/documents-mermaid.js:72 |
+| `dgmFence` | frontend/js/documents-mermaid.js:333 |
+| `dgmFront` | frontend/js/documents-mermaid.js:253 |
+| `dgmLift` | frontend/js/documents-mermaid.js:318 |
+| `dgmLink` | frontend/js/documents-mermaid.js:136 |
+| `dgmParse` | frontend/js/documents-mermaid.js:260 |
+| `dgmPrint` | frontend/js/documents-mermaid.js:232 |
+| `dgmRef` | frontend/js/documents-mermaid.js:119 |
+| `dgmRows` | frontend/js/documents-mermaid.js:193 |
+| `dgmShapeText` | frontend/js/documents-mermaid.js:104 |
+| `dgmStatements` | frontend/js/documents-mermaid.js:83 |
+| `dgmSubgraph` | frontend/js/documents-mermaid.js:184 |
+| `dgmTint` | frontend/js/documents-mermaid.js:227 |
+| `dgmUnquote` | frontend/js/documents-mermaid.js:76 |
+| `diagramDoor` | frontend/js/documents-mermaid.js:526 |
+| `docMermaidBlocks` | frontend/js/documents-mermaid.js:371 |
+| `docMermaidField` | frontend/js/documents-mermaid.js:380 |
+| `docMermaidWhenDrawn` | frontend/js/documents-mermaid.js:361 |
+| `docRenderMermaidIn` | frontend/js/documents-mermaid.js:353 |
+| `openDiagramBuilder` | frontend/js/documents-mermaid.js:500 |
+| `pickExistingDiagram` | frontend/js/documents-mermaid.js:512 |
 
 ### frontend/js/documents-outline.js (12)
 
@@ -12308,7 +12314,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 226 |
-| frontend/css/diagram-lazy.css | 1497 |
+| frontend/css/diagram-lazy.css | 1534 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 140 |
 | frontend/css/forced-colors-lazy.css | 28 |
@@ -15812,8 +15818,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3387 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3515 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3388 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3516 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -24079,7 +24085,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17468)
+## Tests (17477)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24615,7 +24621,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagnostics_1430.py | 9 |
 | tests/test_diagram_1596.py | 4 |
 | tests/test_diagram_1661a.py | 6 |
-| tests/test_diagram_1661b.py | 8 |
+| tests/test_diagram_1661b.py | 9 |
 | tests/test_diagram_blind_fixes.py | 6 |
 | tests/test_diagram_builder.py | 20 |
 | tests/test_diagram_d3.py | 2 |
@@ -24624,11 +24630,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_door_panel.py | 2 |
 | tests/test_diagram_doors_1588.py | 5 |
 | tests/test_diagram_edge_pick.py | 12 |
-| tests/test_diagram_embed.py | 10 |
+| tests/test_diagram_embed.py | 11 |
 | tests/test_diagram_kinds.py | 30 |
 | tests/test_diagram_library_1594.py | 8 |
-| tests/test_diagram_model.py | 12 |
-| tests/test_diagram_multi_r5.py | 17 |
+| tests/test_diagram_model.py | 14 |
+| tests/test_diagram_multi_r5.py | 18 |
 | tests/test_diagram_object_kind.py | 2 |
 | tests/test_diagram_outline_1679.py | 8 |
 | tests/test_diagram_page_1679.py | 7 |
@@ -24636,13 +24642,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_r6.py | 13 |
 | tests/test_diagram_r7.py | 5 |
 | tests/test_diagram_r8a.py | 5 |
-| tests/test_diagram_r8b.py | 9 |
+| tests/test_diagram_r8b.py | 12 |
 | tests/test_diagram_r8c.py | 11 |
 | tests/test_diagram_r9b.py | 9 |
 | tests/test_diagram_r9c.py | 9 |
 | tests/test_diagram_review_1679.py | 4 |
 | tests/test_diagram_split_r3_r4.py | 8 |
-| tests/test_diagram_suggest.py | 21 |
+| tests/test_diagram_suggest.py | 22 |
 | tests/test_diagram_touch.py | 7 |
 | tests/test_diagram_view_1614.py | 10 |
 | tests/test_dialogue_b8.py | 1 |

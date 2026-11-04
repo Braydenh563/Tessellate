@@ -3,6 +3,18 @@
  "version": 1,
  "templates": [
   {
+   "id": "org-chart",
+   "name": "Org chart",
+   "hint": "One head, three teams, and who reports to whom.",
+   "source": "flowchart TD\n  A[\"Chief executive\"]\n  B[\"Engineering\"]\n  C[\"Design\"]\n  D[\"Sales\"]\n  E[\"Backend\"]\n  F[\"Frontend\"]\n  G[\"Account managers\"]\n  A --> B\n  A --> C\n  A --> D\n  B --> E\n  B --> F\n  D --> G\n"
+  },
+  {
+   "id": "architecture",
+   "name": "System architecture",
+   "hint": "Three layers, left to right, with the data underneath.",
+   "source": "flowchart LR\n  subgraph G1 [\"Clients\"]\n    A([\"Web app\"])\n    B([\"Mobile app\"])\n  end\n  subgraph G2 [\"Services\"]\n    C[\"API gateway\"]\n    D[\"Accounts\"]\n    E[\"Orders\"]\n  end\n  subgraph G3 [\"Data\"]\n    F[\"Database\"]\n    G[\"Queue\"]\n  end\n  A --> C\n  B --> C\n  C --> D\n  C --> E\n  D --> F\n  E --> F\n  E --> G\n"
+  },
+  {
    "id": "process",
    "name": "Process",
    "hint": "Steps in a row, start to done.",
@@ -43,6 +55,30 @@
    "name": "Swimlanes",
    "hint": "Who does what, one lane for each team.",
    "source": "flowchart TD\n  subgraph G1 [\"Customer\"]\n    A([\"Place an order\"])\n    F([\"Order arrives\"])\n  end\n  subgraph G2 [\"Warehouse\"]\n    B[\"Receive the order\"]\n    C{\"In stock?\"}\n    D[\"Pack and ship\"]\n  end\n  subgraph G3 [\"Support\"]\n    E[\"Tell the customer\"]\n  end\n  A --> B\n  B --> C\n  C -->|\"Yes\"| D\n  C -->|\"No\"| E\n  D --> F\n"
+  },
+  {
+   "id": "state-lifecycle",
+   "name": "State lifecycle",
+   "hint": "An item from draft to archived, with a way back.",
+   "source": "flowchart LR\n  A([\"Draft\"])\n  B(\"In review\")\n  C(\"Approved\")\n  D(\"Published\")\n  E([\"Archived\"])\n  A --> B\n  B -->|\"Accept\"| C\n  B -.->|\"Reject\"| A\n  C --> D\n  D --> E\n  D -.->|\"Edit\"| A\n"
+  },
+  {
+   "id": "checklist-flow",
+   "name": "Checklist flow",
+   "hint": "Check each item in turn and stop at the first miss.",
+   "source": "flowchart TD\n  A([\"Start the check\"])\n  B{\"Is the plan agreed?\"}\n  C{\"Is the budget approved?\"}\n  D{\"Is the team free?\"}\n  E([\"All clear\"])\n  F[\"Fix the gap\"]\n  A --> B\n  B -->|\"Yes\"| C\n  B -->|\"No\"| F\n  C -->|\"Yes\"| D\n  C -->|\"No\"| F\n  D -->|\"Yes\"| E\n  D -->|\"No\"| F\n  F -.-> B\n"
+  },
+  {
+   "id": "swimlanes-sideways",
+   "name": "Swimlanes sideways",
+   "hint": "Lanes read left to right, which fits a wide screen.",
+   "source": "flowchart LR\n  subgraph G1 [\"Customer\"]\n    A([\"Place an order\"])\n    F([\"Order arrives\"])\n  end\n  subgraph G2 [\"Warehouse\"]\n    B[\"Receive the order\"]\n    C{\"In stock?\"}\n    D[\"Pack and ship\"]\n  end\n  subgraph G3 [\"Support\"]\n    E[\"Tell the customer\"]\n  end\n  A --> B\n  B --> C\n  C -->|\"Yes\"| D\n  C -->|\"No\"| E\n  D --> F\n"
+  },
+  {
+   "id": "request-loop",
+   "name": "Request and approval with a loop",
+   "hint": "Ask, review, and go round again until it is approved.",
+   "source": "flowchart TD\n  A([\"Send a request\"])\n  B[\"Review it\"]\n  C{\"Approved?\"}\n  D[\"Ask for changes\"]\n  E([\"Done\"])\n  A --> B\n  B --> C\n  C -->|\"Yes\"| E\n  C -->|\"No\"| D\n  D --> B\n"
   },
   {
    "id": "blank",

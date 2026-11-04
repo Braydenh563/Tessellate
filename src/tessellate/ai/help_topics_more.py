@@ -3202,13 +3202,13 @@ MORE_TOPICS.extend([
             "Insert (or / then diagram) opens the builder and Done saves a diagram file and writes a link to it, "
             "[[Title]] after a !, which draws the diagram. Over a board or a mind map, Insert, Diagram, Diagram builder adds a diagram object "
             "to double-click later. Anywhere else, and in the Library's Create, New, Diagram, it "
-            "opens the builder empty, and Done saves it as a new diagram file. Cancel changes nothing. "
+            "opens the builder empty, and Done saves it as a new diagram file; Open an existing diagram there lists yours. Cancel changes nothing. "
             "On a flowchart, the picture outlines the block you point at and the ones picked. "
             "You can drag a shape from the Add strip onto the picture (onto a block to add it after that block and connect them), "
-            "drag a block on the picture to move it, and hold Shift and drag on empty space to pick the blocks you touch. "
+            "drag a block on the picture to move it (a caption says where it lands), and hold Shift and drag on empty space to pick the blocks you touch. "
             "Drop onto a group's box to add or move into it. Pick or point at a block and its four round handles show: drag the round handle on any side to another block "
             "or a group to connect them, or to empty space for a new connected block (press the handle, then click, if you cannot drag; Escape cancels). "
-            "Double-click a block, an arrow or a group's title to rename it where it sits. Right-click a block or an arrow (long press on a phone) for its menu; click an arrow to pick it, then Enter changes its words and Delete removes it, and drag a dot at either end of it onto another block to move that end there (Escape cancels). Picking an arrow on the picture is for a pointer; from the keyboard, Enter on a connector row in the list opens the same menu."
+            "Double-click a block, an arrow or a group's title to rename it where it sits. Right-click a block or an arrow (long press on a phone) for its menu; click an arrow to pick it, then Enter changes its words and Delete removes it, and drag a dot at either end of it onto another block to move that end there (Escape cancels). From the keyboard, Enter on a connector row opens the same menu."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },
@@ -3261,7 +3261,8 @@ MORE_TOPICS.extend([
             "Reading a diagram. The blocks list is drawn in flow order: a block sits under the one that points at it, "
             "indented where it branches (a straight run of steps stays flush), and a block made by Connect to... lands under its siblings, so an org chart reads like the chart. "
             "The printed source keeps its own order, and Alt+Up and Alt+Down move a block among its siblings in the source, and say so when the list would not change; drag a grip to move it in the list. "
-            "A block's arrows share one line under it, each as an arrow to the block it reaches and its words; press one for its menu. "
+            "A block's arrows share one line under it, each as an arrow to the block it reaches and its words; press one for its menu. The menu changes the line (an arrow, a line, dotted, thick, or Both ways with a head at each end) and has Colour…, which draws that arrow in one of twelve hues. "
+            "With two or more blocks picked, the bar also has Colour (K) and Connect, which draws an arrow from the first picked to the second. "
             "Fit stops at readable text (11 px) and the picture scrolls past it. A tall chart in a wide pane offers Turn it sideways once; Direction is a menu of Down, Right, Up and Left, and Shift turns it back one step. "
             "On a phone, once there is an arrow the picture takes the page and the Blocks list button opens the blocks as a sheet; Connect to... then puts the cursor in the search."
         ),

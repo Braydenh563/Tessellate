@@ -624,6 +624,24 @@
   background: var(--accent-soft);
 }
 
+/* What the drop will do, in words under the target ("After Save", "Into Frontend", "Connect to Save"; 1679 slice 12). */
+.dgm-drop-word {
+  position: fixed;
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  color: var(--text);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.dgm-drop-word.hidden {
+  display: none;
+}
+
 /* Suggest (1546 P3): a worded button in the dock, quiet like the bar around it: no edge,
    no fill at rest, the tint under the pointer, the sparkle the one cue of colour. */
 .dgm-suggest {
@@ -875,6 +893,14 @@
 }
 
 /* The template dialog is the documents' own (doc-template-*): only its preview is a picture. */
+.dgm-template-column {
+  min-width: 0;
+}
+
+.dgm-template-column .list-filter {
+  margin-top: var(--space-4);
+}
+
 .dgm-template-figure {
   margin: 0;
   padding: var(--space-3);
@@ -1182,13 +1208,24 @@
   border-block-start-width: 4px;
 }
 
-.dgm-link[data-arrow="true"]::after {
+.dgm-link[data-arrow="true"]::after,
+.dgm-link[data-arrow="both"]::after {
   content: "";
   position: absolute;
   inset-inline-end: -1px;
   inset-block-start: -5px;
   border-block: 4px solid transparent;
   border-inline-start: 6px solid currentColor;
+}
+
+/* Both ways: a head at the start as well (1679 slice 10). */
+.dgm-link[data-arrow="both"]::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: -1px;
+  inset-block-start: -5px;
+  border-block: 4px solid transparent;
+  border-inline-end: 6px solid currentColor;
 }
 
 .dgm-example {

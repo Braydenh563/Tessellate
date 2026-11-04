@@ -36,12 +36,17 @@
       openMenuAtPoint(ops.SHAPES.map((shape) => ({ label: SHAPES[shape], run: () => shapeAll(shape) })), "Shape of the selected blocks", r.left, r.bottom, shapeBtn);
     });
     shapeBtn.setAttribute("aria-haspopup", "menu");
+    //: Colour (K) is the lazy style sheet over the picked boxes; Connect joins the first picked to the second (1679 slice 10).
+    const colourBtn = tool("ph:palette Colour", "Colour the selected boxes (K)", async () => (await ensureModule("diagramStyle")) ? diagramModel.style.colour(S, h) : say("That did not load."));
+    const connectBtn = tool("ph:arrow-bend-down-right Connect", "Draw an arrow from the first selected block to the second", () => connectTwo());
     end.append(tool("ph:arrow-counter-clockwise Undo", "Undo", () => S.io.undo()), tool("Done", "Stop selecting", () => show([], S.sel)));
     bar.append(
       count,
       tool("ph:trash Delete", "Delete the selected blocks", () => removeAll()),
       tool("ph:copy Duplicate", "Copy the selected blocks, keeping the connectors between them", () => copyAll()),
       shapeBtn,
+      colourBtn,
+      connectBtn,
       tool("ph:stack Group into a box", "Put the selected blocks in a new group", () => wrapAll()),
       end
     );
@@ -111,6 +116,14 @@
       }
       if (n) h.commit(S, `${n} blocks are now ${SHAPES[shape].toLowerCase()}.`);
       else say("Only boxes take a shape.");
+    }
+    async function connectTwo() {
+      const [from, to] = [...S.picked].map((k) => ops.split(k)[1]);
+      const edge = ops.join(S.m, from, to);
+      if (!edge) return say("Those two are already connected.");
+      const title = (id) => ops.node(S.m, id)?.text ?? ops.group(S.m, id)?.title ?? id;
+      h.commit(S, `Connected ${title(from)} to ${title(to)}.`);
+      if (await ensureModule("diagramJoins")) diagramModel.joins.ask(S, edge, h);
     }
     function wrapAll() {
       const id = ops.wrap(S.m, [...S.picked]);

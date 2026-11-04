@@ -7,7 +7,33 @@
 // another block, a connector. `make(h)` is the mode (`h` is the builder's helpers); `dropMark` is shared with the
 // other kinds' panes, which draw the same line and the same target.
 (() => {
+  //: The caption that says what a drop will do (1679 slice 12): one element for the page, fixed under the target, moved with it.
+  let tag = null;
+  function word(text, r, host) {
+    if (!text || !r) return tag?.classList.add("hidden");
+    if (!tag) {
+      tag = document.createElement("span");
+      tag.className = "dgm-drop-word hidden";
+      tag.setAttribute("aria-hidden", "true");
+    }
+    //: Inside the open dialog's overlay when the drag is in one (that overlay is a z-index 1010 layer, so a caption on the body is under it); last child paints over the dialog.
+    const home = host?.closest?.(".modal-overlay") || document.body;
+    if (tag.parentElement !== home || tag !== home.lastElementChild) home.append(tag);
+    tag.textContent = text;
+    tag.classList.remove("hidden");
+    const below = r.bottom + 28 < innerHeight;
+    tag.style.top = `${below ? r.bottom + 4 : Math.max(4, r.top - 28)}px`;
+    tag.style.left = `${Math.max(8, Math.min(r.left, innerWidth - 168))}px`;
+  }
+
+  //: The rectangle is read before the marks change, so the caption costs no layout after a write.
   function dropMark(g, target) {
+    const r = target?.word && target.card ? target.card.getBoundingClientRect() : null;
+    mark(g, target);
+    word(target?.word, r, target?.card);
+  }
+
+  function mark(g, target) {
     const { S } = g;
     S.hot?.classList.remove("dgm-target", "dgm-connecting");
     S.hot = null;
@@ -76,13 +102,14 @@
       const r = card.getBoundingClientRect();
       const f = (g.y - r.top) / r.height;
       const sis = h.ops.sisters(S.m, over);
-      if (over[0] === "g") return f < 0.25 ? { op: "before", key: over, group: sis.parent, before: over, card } : { op: "into", key: over, group: over.slice(2), before: null, card };
+      const said = h.name(S, over);
+      if (over[0] === "g") return f < 0.25 ? { op: "before", key: over, group: sis.parent, before: over, card, word: `Before ${said}` } : { op: "into", key: over, group: over.slice(2), before: null, card, word: `Into ${said}` };
       const nextKey = sis.keys.slice(sis.keys.indexOf(over) + 1).find((k) => k[0] !== "k") || null;
       //: A palette tile has no join to make: its top half is before, its bottom half after.
       const [lo, hi] = key ? [0.3, 0.7] : [0.5, 0.5];
-      if (f <= lo) return { op: "before", key: over, group: sis.parent, before: over, card };
-      if (f >= hi) return { op: "after", key: over, group: sis.parent, before: nextKey, card, below: true };
-      return { op: "join", key: over, card };
+      if (f <= lo) return { op: "before", key: over, group: sis.parent, before: over, card, word: `Before ${said}` };
+      if (f >= hi) return { op: "after", key: over, group: sis.parent, before: nextKey, card, below: true, word: `After ${said}` };
+      return { op: "join", key: over, card, word: `Connect to ${said}` };
     }
 
     function dropApply(g, target) {
