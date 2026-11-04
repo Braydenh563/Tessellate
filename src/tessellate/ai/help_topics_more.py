@@ -1406,7 +1406,7 @@ MORE_TOPICS: list[dict] = [
             "In the desktop app on Windows the companion can sit in the bottom-right "
             "corner of your screen, above the taskbar, while the Tessellate window is "
             "in the tray, and go away when the window is open. It is off until you turn "
-            "it on, on the computer Tessellate runs on: Settings, About, Show the companion on the desktop "
+            "it on, on the computer Tessellate runs on: Settings, Appearance, Corner companion, Show the companion on the desktop "
             "while the window is in the tray, or Show desktop companion in the tray icon's "
             "menu, or Show on desktop in the companion's own right-click menu (it reads Hide from "
             "desktop once it is on). The Settings row works from a browser tab on that computer too, and takes effect while "
@@ -1420,7 +1420,7 @@ MORE_TOPICS: list[dict] = [
             "remembers where you left it. While Tessellate is locked it shows only the "
             "companion and Open Tessellate, never a note or a result."
         ),
-        "badge": {"label": "Desktop companion", "section": "about", "target": "desktop-companion-row"},
+        "badge": {"label": "Desktop companion", "section": "appearance", "target": "desktop-companion-row"},
     },
 ]
 
@@ -2667,7 +2667,7 @@ TOPIC_META: dict[str, dict] = {
     "companion-travel": {"title": "How the companion moves", "path": "Settings, Appearance, Atlas and faces, Corner companion"},
     "companion-remarks": {"title": "What the companion says", "path": "Settings, Appearance, Atlas and faces, Corner companion"},
     "companion-habits": {"title": "The companion's habits and reactions", "path": "Settings, Appearance, Atlas and faces, Corner companion"},
-    "desktop-companion": {"title": "The companion on the desktop", "path": "On the computer Tessellate runs on, Settings, About, Show the companion on the desktop"},
+    "desktop-companion": {"title": "The companion on the desktop", "path": "On the computer Tessellate runs on, Settings, Appearance, Corner companion, Show the companion on the desktop"},
     "what-is-atlas": {"title": "What Atlas does", "path": "The Chat tab, or Ctrl+Shift+A over any tab"},
     "atlas-look": {"title": "How Atlas looks", "path": "Settings, Appearance, Atlas and faces, Atlas style and Atlas look"},
     "faces": {"title": "Generated faces", "path": "Settings, Appearance, Atlas and faces"},

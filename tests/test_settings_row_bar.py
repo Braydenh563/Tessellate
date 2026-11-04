@@ -62,3 +62,14 @@ def test_the_log_view_shows_what_a_filter_hid_and_loads_older_records_on_scroll(
     assert 'id="logs-refresh"' in (root / "index.html").read_text(encoding="utf-8")
     assert '$("logs-refresh").addEventListener("click"' in controls
     assert 'if (list.scrollTop < 80)' in controls
+
+
+def test_the_desktop_companion_switch_is_in_appearance_beside_the_corner_companion():
+    """INBOX 1611: the owner looked for it under Corner companion, not About."""
+    html = (CSS.parent / "index.html").read_text(encoding="utf-8")
+    appearance = html.split('id="settings-appearance"', 1)[1].split('id="settings-extras"', 1)[0]
+    assert 'id="desktop-companion-row"' in appearance and 'id="desktop-companion-help"' in appearance
+    about = html.split('id="settings-about"', 1)[1]
+    assert 'id="desktop-companion-row"' not in about
+    topics = (CSS.parents[2] / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+    assert "Settings, Appearance, Corner companion, Show the companion on the desktop" in topics
