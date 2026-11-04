@@ -389,7 +389,8 @@ def test_the_diagram_add_library_and_connect_to_are_in_the_guide_in_the_controls
     joins = (js / "diagram-joins.js").read_text(encoding="utf-8")
     for label in ("Steps", "Decisions", "Start and end", "Notes and groups"):
         assert f'["{label}", [' in library, label
-    assert "Connect to…" in builder and "`${from} to ${to}`" in builder and "A new block" in joins
+    # 1679 slice 6: the row shows "to Next" under its block; the full "from to" sentence is its aria-label.
+    assert "Connect to…" in builder and "Connector from ${from} to ${to}" in builder and "A new block" in joins
     assert 'c: () => key[0] !== "k" && joinPick(S, key)' in builder
 
 
@@ -478,7 +479,7 @@ def test_the_diagram_divider_direction_caption_and_walkthrough_are_in_the_guide_
 
     body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
     assert len(body) < 1900
-    for words in ("A divider sizes the blocks and the picture", "Shift for more", "Direction (one button) turns the flow", "Add a shape, Name it, Connect it"):
+    for words in ("A divider sizes the blocks and the picture", "Shift for more", "Direction (a menu) turns the flow", "Add a shape, Name it, Connect it"):
         assert words in body, words
     js = FRONTEND / "js"
     # 1661 D2: the caption over four arrows became one button that says "Direction: Down" (diagram-bar.js).

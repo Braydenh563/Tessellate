@@ -46,6 +46,8 @@
     const m = S.m;
     S.empty.classList.toggle("hidden", m.edges.length > 0);
     S.empty.classList.toggle("dgm-started", Boolean(blocks));
+    //: A phone with an arrow keeps the picture and gets the list as a sheet (diagram-touch.js); before that the steps stay in the page.
+    S.root.classList.toggle("dgm-listless", m.edges.length > 0);
     const done = [m.nodes.length > 0, m.nodes.some((n) => n.text !== DEFAULT_NAMES[n.shape]), m.edges.length > 0];
     S.steps?.querySelectorAll(".dgm-step").forEach((item, i) => {
       if (item.classList.contains("dgm-done") === done[i]) return;

@@ -57,3 +57,25 @@ def test_a_drag_scrolls_the_pane_and_the_page_around_it_at_the_edge_of_what_is_o
     assert "OBJ_MODES[g.mode].ancestors" in tick and "el.scrollTop + el.clientHeight >= el.scrollHeight - 1" in tick
     assert "ancestors: true" in (JS / "diagram-pointer.js").read_text(encoding="utf-8") and "ancestors: true" in KINDS
 
+
+
+def test_a_phone_keeps_the_picture_and_opens_the_blocks_list_as_a_sheet_once_there_is_an_arrow():
+    # 1679 slice 11: the list moves into an openSheet card and back; the empty walkthrough stays in the page until the first arrow.
+    assert 'label: "Blocks"' in TOUCH and 'name: "diagram-blocks"' in TOUCH and "card.append(S.pane)" in TOUCH
+    assert "home.insertBefore(S.pane, before)" in TOUCH and "dgm-listbtn" in TOUCH and "dgm-phonelist" in TOUCH
+    steps = (JS / "diagram-steps.js").read_text(encoding="utf-8")
+    assert 'S.root.classList.toggle("dgm-listless", m.edges.length > 0)' in steps
+    rule = CSS[CSS.index(".dgm-phonelist.dgm-listless .dgm-body > .dgm-pane") :].split("}", 1)[0]
+    assert "display: none" in rule
+    assert ".dgm-phonelist.dgm-listless .dgm-body {" in CSS and "grid-template-rows: minmax(0, 1fr)" in CSS and ".sheet-card > .dgm-pane" in CSS
+
+
+def test_grips_are_44_pixels_on_a_touch_screen():
+    coarse = CSS[CSS.index("@media (pointer: coarse), (max-width: 599.98px) {") :].split("\n}\n", 1)[0]
+    assert ".dgm-grip" in coarse and "min-inline-size: 2.75rem" in coarse and "min-block-size: 2.75rem" in coarse
+
+
+def test_a_tap_on_connect_to_puts_the_cursor_in_the_search_field_and_the_keyboard_path_keeps_the_card():
+    joins = (JS / "diagram-joins.js").read_text(encoding="utf-8")
+    assert "S.tapped" in joins and "shell.search.focus(" in joins and "shell.card.focus(" in joins
+    assert "S.tapped = event.detail > 0" in BUILDER

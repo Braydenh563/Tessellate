@@ -176,6 +176,19 @@
   font-size: var(--text-sm);
 }
 
+/* The sideways offer (diagram-outline.js): one line under the toolbar, gone once answered. */
+.dgm-sideways {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.dgm-sideways.hidden {
+  display: none;
+}
+
 /* The two panes: the blocks, then the picture. */
 .dgm-body {
   flex: 1 1 auto;
@@ -423,8 +436,8 @@
    (solid, dashed or thick). It is not a pill, so it never looks like a block (1594). */
 .dgm-joins {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+  flex-wrap: wrap;
+  gap: 0 var(--space-3);
   padding-inline-start: var(--space-8);
 }
 
@@ -476,11 +489,32 @@
 }
 
 .dgm-join-label::before {
-  content: "“";
+  content: "· ";
 }
 
-.dgm-join-label::after {
-  content: "”";
+/* A block a flow step under the one that points at it is indented a step (diagram-outline.js, 1679 slice 6). */
+.dgm-block[data-depth="1"] {
+  margin-inline-start: calc(1 * var(--space-4));
+}
+
+.dgm-block[data-depth="2"] {
+  margin-inline-start: calc(2 * var(--space-4));
+}
+
+.dgm-block[data-depth="3"] {
+  margin-inline-start: calc(3 * var(--space-4));
+}
+
+.dgm-block[data-depth="4"] {
+  margin-inline-start: calc(4 * var(--space-4));
+}
+
+.dgm-block[data-depth="5"] {
+  margin-inline-start: calc(5 * var(--space-4));
+}
+
+.dgm-block[data-depth="6"] {
+  margin-inline-start: calc(6 * var(--space-4));
 }
 
 /* Connect to… is on every row: the arrow always, its words on the chosen row, the pointed-at row and the focused one. */
@@ -900,6 +934,29 @@
     min-block-size: 10rem;
   }
 
+  /* With an arrow drawn the list is a sheet (diagram-touch.js) and the picture takes the page. */
+  .dgm-phonelist.dgm-listless .dgm-body > .dgm-pane {
+    display: none;
+  }
+
+  .dgm-phonelist.dgm-listless .dgm-body {
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .dgm.dgm-phonelist.dgm-listless :is(.dgm-picture, .dgm-stage) {
+    block-size: auto;
+    min-block-size: 0;
+  }
+
+  /* Basis 0: the drawing's own height must not set the picture's, or the stage outgrows the body (measured 506 in 375). */
+  .dgm.dgm-phonelist.dgm-listless .dgm-stage > .dgm-picture {
+    flex: 1 1 0;
+  }
+
+  .dgm-phonelist.dgm-listless .dgm-stage > .dgm-picture {
+    block-size: auto;
+  }
+
   /* An empty diagram has nothing to draw: its picture shrinks so the three steps and both example buttons fit above the foot (390: they sat below it). */
   .dgm-picture.dgm-picture-empty,
   .dgm-stage:has(> .dgm-picture-empty) {
@@ -1171,6 +1228,14 @@
   }
 }
 
+/* The list is a sheet, so the page gives the picture its height: the preview is tall enough that the stage fills the body
+   (1679, slice 11: at 390 the stage was 60dvh in a 375 px body and lay over the Documents list). */
+@media (max-width: 599.98px) {
+  #doc-preview:has(> .dgm-phonelist.dgm-listless) {
+    min-block-size: 80dvh;
+  }
+}
+
 /* The canvas (diagram-canvas.js): the drop target is an overlay box (or the whole overlay), the marquee a tinted rectangle. */
 .dgm-box.dgm-target,
 .dgm-box.swept {
@@ -1327,6 +1392,13 @@
 
 /* Targets are 44 px on a touch screen and on a phone-width window (the swatch, Connect and the connector rows measured 24, 40 and 40). */
 @media (pointer: coarse), (max-width: 599.98px) {
+  .dgm-grip {
+    display: inline-grid;
+    place-items: center;
+    min-inline-size: 2.75rem;
+    min-block-size: 2.75rem;
+  }
+
   .dgm-swatch,
   .dgm-card > button.dgm-connect,
   .dgm-join {
@@ -1380,4 +1452,46 @@
     block-size: 44px;
     margin: -22px 0 0 -22px;
   }
+
+  /* Held: a 12 px dot under the finger, so the block it is aimed at stays in view. */
+  .dgm-end.dgm-held {
+    inline-size: 12px;
+    block-size: 12px;
+    margin: -6px 0 0 -6px;
+  }
+}
+
+/* A mouse can aim at a dense row: the list is one 28 px line a block and one line of arrows under it, so ten blocks and
+   their arrows fit the pane without a scroll (1679, slice 6). A touch screen keeps its 44 px rows. */
+@media (pointer: fine) {
+  .dgm-tree {
+    gap: var(--space-1);
+  }
+
+  .dgm-tree .dgm-card {
+    min-height: var(--control-h-dense);
+  }
+
+  .dgm-tree .dgm-block {
+    gap: 0;
+  }
+
+  .dgm-tree .dgm-join {
+    min-height: calc(var(--control-h-dense) - var(--space-1));
+  }
+}
+
+/* The blocks list inside its sheet: the pane's own frame goes, the card is the frame. */
+.sheet-card > .dgm-pane {
+  max-block-size: 60dvh;
+  border: 0;
+  background: transparent;
+}
+
+.dgm-listbtn {
+  display: none;
+}
+
+.dgm-phonelist .dgm-listbtn {
+  display: inline-flex;
 }

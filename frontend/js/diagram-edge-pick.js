@@ -35,6 +35,15 @@
       }
       return best;
     },
+    //: How far to push two handle centres from each other so they sit at least `gap` apart: a short arrow on a phone would stack its two
+    //: 44 px handles (1679, slice 4 review). Along the line between them, or sideways when they coincide. Two `[dx, dy]` offsets.
+    apart: (a, b, gap) => {
+      const d = Math.hypot(b[0] - a[0], b[1] - a[1]);
+      if (d >= gap) return [[0, 0], [0, 0]];
+      const [ux, uy] = d ? [(b[0] - a[0]) / d, (b[1] - a[1]) / d] : [1, 0];
+      const k = (gap - d) / 2;
+      return [[-ux * k, -uy * k], [ux * k, uy * k]];
+    },
     //: Moves one end (`"from"` or `"to"`) of an arrow to the block or group `to`, keeping its words, line and arrow. The new arrow is
     //: joined before the old one is taken out, so a refusal leaves the old one where it was. The new arrow, or why not.
     reconnect: (ops, m, edge, end, to) => {
@@ -90,8 +99,11 @@
       const [vx, vy, vw, vh] = S.hit.vb;
       const sx = r.width / vw;
       const sy = r.height / vh;
-      const at = (pt) => `translate(${r.left - home.left + (pt[0] - vx) * sx}px, ${r.top - home.top + (pt[1] - vy) * sy}px)`;
-      ends.forEach((dot, i) => ((dot.style.transform = at(mine.pts[i ? mine.pts.length - 1 : 0])), dot.classList.remove("hidden")));
+      const spot = (pt) => [r.left - home.left + (pt[0] - vx) * sx, r.top - home.top + (pt[1] - vy) * sy];
+      const here = [mine.pts[0], mine.pts[mine.pts.length - 1]].map(spot);
+      //: A touch handle is 44 px: two ends closer than that are pushed apart so each can be taken.
+      const off = math.apart(here[0], here[1], matchMedia("(pointer: coarse)").matches ? 48 : 0);
+      ends.forEach((dot, i) => ((dot.style.transform = `translate(${here[i][0] + off[i][0]}px, ${here[i][1] + off[i][1]}px)`), dot.classList.remove("hidden")));
       line.setAttribute("d", mine.d);
       line.setAttribute("transform", `matrix(${sx} 0 0 ${sy} ${r.left - home.left - vx * sx} ${r.top - home.top - vy * sy})`);
     };
@@ -143,13 +155,17 @@
     const mark = (id) => {
       for (const box of layer.querySelectorAll(".dgm-box")) box.classList.toggle("dgm-target", Boolean(id) && (box.dataset.node || box.dataset.group) === id);
     };
-    const drop = () => ((drag = null), mark(""), draw());
+    //: A function of its own, so the loop below holds no write that its move handler's reads would follow (test_css_invalidation).
+    const hold = (dot, on) => dot.classList.toggle("dgm-held", on);
+    const drop = () => ((drag = null), mark(""), ends.forEach((dot) => hold(dot, false)), draw());
     for (const dot of ends) {
       dot.addEventListener("pointerdown", (event) => {
         if (event.button) return;
         event.preventDefault();
         dot.setPointerCapture?.(event.pointerId);
         drag = { end: dot.dataset.end, id: event.pointerId };
+        //: Held, the handle shrinks to its 12 px dot (the finger covers the 44 px one over the block it aims at).
+        hold(dot, true);
       });
       dot.addEventListener("pointermove", (event) => {
         if (!drag || event.pointerId !== drag.id) return;

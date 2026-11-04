@@ -14,6 +14,8 @@
   const STEP = 1.25;
   const MARGIN = 8;
   const PAN = 48;
+  //: 16 px text x 0.69 = 11 px: Fit stops shrinking there and the figure scrolls (1679, slice 7; Swimlanes fitted to 0.48, 7.7 px).
+  const FLOOR = 0.69;
 
   //: The pure half (tested under node). `fit` is px per drawing unit.
   const math = {
@@ -21,7 +23,10 @@
     MAX,
     STEP,
     MARGIN,
-    fitScale: (w, h, pw, ph) => Math.max(0.01, Math.min(1, (pw - 2 * MARGIN) / w, (ph - 2 * MARGIN) / h)),
+    FLOOR,
+    fitScale: (w, h, pw, ph) => Math.max(0.01, Math.min(1, Math.max(FLOOR, Math.min((pw - 2 * MARGIN) / w, (ph - 2 * MARGIN) / h)))),
+    //: A tall drawing (over 1.6 times its width) in a stage wider than tall, flowing down or up: worth offering a turn.
+    sideways: (d, box, dir) => (dir === "TD" || dir === "BT") && d.h > 1.6 * d.w && box.width > box.height,
     clamp: (scale, fit) => Math.min(MAX * fit, Math.max(MIN * fit, scale)),
     //: The drawing's size from its viewBox (the <img> may not have decoded yet).
     size: (svg) => {
@@ -74,6 +79,7 @@
       //: The box less its border, not `clientWidth`: that is rounded and loses a scrollbar's width, so Fit would move with the zoom.
       const box = fig.getBoundingClientRect();
       f = math.fitScale(d.w, d.h, box.width - 2 * fig.clientLeft, box.height - 2 * fig.clientTop);
+      diagramModel.outline?.offer(S, math.sideways(d, box, S.m?.dir));
       if (state.fit) state.scale = f;
       else state.scale = math.clamp(state.scale, f);
       img.draggable = false;

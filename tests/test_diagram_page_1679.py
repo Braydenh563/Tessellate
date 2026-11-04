@@ -80,3 +80,15 @@ def test_diagram_is_a_button_beside_new_not_only_a_row_behind_the_chevron():
     assert '$("doc-new-diagram")?.addEventListener("click", () => diagramModel.door({ doc: true }));' in DOCS
     # About this list names it.
     assert "diagram button" in HTML[HTML.index('id="doc-list-help"') : HTML.index('id="doc-list-help"') + 1200]
+
+
+def test_the_library_document_list_offers_new_diagram_in_its_head_and_on_an_empty_install():
+    # 1679 review item: the Library's list showed no New diagram on an empty install or at 390. Two buttons, one door.
+    lib = (ROOT / "frontend" / "js" / "library.js").read_text(encoding="utf-8")
+    mount = lib[lib.index("function libraryDocsNewMount() {") :][:2600]
+    assert 'b.id = "library-docs-new-diagram"' in mount and 'b.id = "library-docs-empty-diagram"' in mount
+    assert "head.after(b)" in mount and "empty.append(b)" in mount
+    assert mount.index("library-docs-new-diagram") < mount.index('const slot = $("library-docs-new-slot")')  # before the caret's early return
+    assert "await diagramModel.door({ doc: true });" in mount
+    # The head's copy steps aside with New document while the empty state shows its own.
+    assert '$("library-docs-new-diagram")?.classList.toggle("hidden", !docs.length && !isFilteredEmpty);' in lib

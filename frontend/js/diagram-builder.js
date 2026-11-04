@@ -90,7 +90,7 @@
   // --- the tree -------------------------------------------------------------------
   function render(S) {
     const had = S.tree.contains(document.activeElement);
-    const layout = diagramOps.layout(S.m);
+    const layout = diagramModel.outline ? diagramModel.outline.order(S.m, diagramOps.layout(S.m)) : diagramOps.layout(S.m);
     const edgesFrom = new Map();
     S.m.edges.forEach((e, i) => edgesFrom.set(e.from, [...(edgesFrom.get(e.from) || []), { e, i }]));
     const live = blockKeys(layout);
@@ -198,7 +198,9 @@
   }
 
   //: A row is rebuilt only when its `sig` (everything below that it reads) changed since the last render.
-  function buildBlock(S, item, level, edgesFrom, fresh) {
+  function buildBlock(S, item, base, edgesFrom, fresh) {
+    //: The flow depth (diagram-outline.js) reads as level, so a target sits one level under the block that points at it.
+    const level = base + (item.depth || 0);
     const id = item.type === "k" ? `k:${item.index}` : diagramOps.key(item.type, item.id);
     const kids = (item.kids || []).map((k) => buildBlock(S, k, level + 1, edgesFrom, fresh));
     const own = item.type === "k" ? item.line : [item.type === "g" ? diagramOps.group(S.m, item.id).title : `${diagramOps.node(S.m, item.id).text}\n${diagramOps.node(S.m, item.id).shape}`, ...(edgesFrom.get(item.id) || []).map(({ e, i }) => `${i}:${titleOf(S, e.from)}>${titleOf(S, e.to)}:${e.label || ""}:${e.style}:${e.arrow}`)].join("\n");
@@ -232,6 +234,7 @@
     block.setAttribute("role", "treeitem");
     block.setAttribute("aria-level", String(level));
     const joins = edgesFrom.get(item.id) || [];
+    if (item.depth) block.dataset.depth = String(item.depth);
     block.setAttribute("aria-label", `${text}, ${isGroup ? "group" : SHAPE_LABEL[data.shape].toLowerCase()}${joins.length ? `, ${joins.length} ${joins.length === 1 ? "connector" : "connectors"}` : ""}`);
     if (isGroup) {
       block.classList.add("dgm-group");
@@ -247,7 +250,7 @@
     const label = el("span", "dgm-label", text);
     card.append(grip, isGroup ? groupGlyph() : shapeButton(S, key, data.shape, text), label);
     //: The arrow is on every row, its words on the chosen one.
-    const connect = smallButton("ph:arrow-bend-down-right Connect to…", "Draw an arrow from this block to another", () => joinPick(S, key));
+    const connect = smallButton("ph:arrow-bend-down-right Connect to…", "Draw an arrow from this block to another", (event) => ((S.tapped = event.detail > 0), joinPick(S, key)));
     connect.classList.add("dgm-connect");
     connect.setAttribute("aria-label", `Connect to…, from ${text}`);
     card.append(connect);
@@ -284,7 +287,7 @@
     const arrow = el("i", `ph ${edge.arrow ? "ph-arrow-right" : "ph-minus"}`);
     arrow.setAttribute("aria-hidden", "true");
     chip.dataset.style = edge.style;
-    chip.append(arrow, el("span", "dgm-join-to", `${from} to ${to}`));
+    chip.append(arrow, el("span", "dgm-join-to", to));
     if (edge.label) chip.append(el("span", "dgm-join-label muted", edge.label));
     chip.title = "Change this connector: its line, its label, or remove it";
     chip.setAttribute("aria-label", `Connector from ${from} to ${to}${edge.label ? `, labelled ${edge.label}` : ""}. Opens its menu.`);
@@ -404,6 +407,7 @@
 
   function stepBlock(S, key, dir) {
     if (key[0] === "k") return;
+    if (diagramModel.outline?.stuck(S.m, key, dir)) return say(S, `${nameOf(S, key)} follows its arrows. Drag its grip.`);
     if (!diagramOps.step(S.m, key, dir)) return say(S, `${nameOf(S, key)} is already ${dir < 0 ? "first" : "last"}.`);
     commit(S, `Moved ${nameOf(S, key)} ${dir < 0 ? "up" : "down"}.`);
   }
@@ -635,7 +639,7 @@
     //: The picture's renderer and the flowchart's toolbar start fetching with the first batch, not after it (R11: cold start).
     const kind = kindOf(text);
     ensureModule("mermaid");
-    const early = kind === "flowchart" ? Promise.all([ensureModule("diagramBar"), ensureModule("diagramSteps")]) : Promise.resolve([true]);
+    const early = kind === "flowchart" ? Promise.all([ensureModule("diagramBar"), ensureModule("diagramSteps"), ensureModule("diagramOutline")]) : Promise.resolve([true]);
     await Promise.all(["/css/objmove-lazy.css", "/js/obj-ref.js", "/js/obj-drag.js", "/js/diagram-picture.js", "/js/diagram-library.js", "/js/diagram-pointer.js", "/js/diagram-ops.js"].map((file) => lazyScript(file)));
     diagramOps = helpers.ops = diagramModel.ops;
     if (typeof OBJ_MODES === "object" && !OBJ_MODES.diagram) OBJ_MODES.diagram = diagramModel.pointer.make(helpers);

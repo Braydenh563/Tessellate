@@ -29,9 +29,11 @@ def test_add_is_a_split_whose_main_half_is_the_last_used_shape_saved_in_prefs():
     assert "dgm-addmain" in BAR and "dgm-addcaret" in BAR and 'aria-haspopup", "menu"' in BAR
 
 
-def test_direction_is_one_cycling_button_that_shift_reverses():
-    assert "DIRS.length - 1 : 1" in BAR
-    assert "Direction: ${WORD[dir]}. Press to turn it." in BAR
+def test_direction_is_a_menu_of_the_four_and_shift_still_cycles_back():
+    # 1679 slice 7 (was: one cycling button, "Press to turn it"): a press opens the four with their arrows; Shift keeps the cycle.
+    assert "event.shiftKey) return S.turn(DIRS[(at + DIRS.length - 1) % DIRS.length][0])" in BAR
+    assert "Direction: ${WORD[dir]}. Choose a direction." in BAR
+    assert "openMenuAtPoint(DIRS.map(" in BAR and 'S.dirs.setAttribute("aria-haspopup", "menu")' in BAR and "S.turn = " in BAR
     assert 'const WORD = { TD: "Down", LR: "Right", BT: "Up", RL: "Left" }' in BAR
 
 

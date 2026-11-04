@@ -105,3 +105,30 @@ def test_the_corner_readout_names_the_true_zoom_after_every_path_1652():
     assert _math("m.percent(1)") == 100 and _math("m.percent(1.25)") == 125 and _math("m.percent(0.333)") == 33
     assert "buttons.actual.textContent = now" in VIEW and "math.percent(state.scale)" in VIEW
     assert VIEW.index("buttons.actual.textContent = now") < VIEW.index("buttons.out.disabled =")
+
+
+@needs_node
+def test_fit_never_shrinks_the_text_below_eleven_pixels_and_the_figure_scrolls_past_it():
+    # 1679 slice 7: a 220 by 1300 drawing in a 755 by 482 stage fitted to 0.35 (5.6 px text); the floor is 0.69 (16 px x 0.69 = 11 px).
+    assert _math("m.FLOOR") == pytest.approx(0.69)
+    assert _math("m.fitScale(220, 1300, 755, 482)") == pytest.approx(0.69)
+    # A drawing that fits above the floor is fitted as before, and a small one still stays at its drawn size.
+    assert _math("m.fitScale(200, 400, 800, 300)") == pytest.approx(284 / 400)
+    assert _math("m.fitScale(100, 50, 800, 600)") == 1
+
+
+@needs_node
+def test_a_tall_drawing_in_a_wide_stage_offers_to_turn_sideways_once_and_not_for_a_sideways_one():
+    offer = "m.sideways"
+    assert _math(f"{offer}({{w: 220, h: 464}}, {{width: 755, height: 482}}, 'TD')") is True
+    assert _math(f"{offer}({{w: 220, h: 464}}, {{width: 755, height: 482}}, 'LR')") is False
+    assert _math(f"{offer}({{w: 220, h: 300}}, {{width: 755, height: 482}}, 'TD')") is False
+    assert _math(f"{offer}({{w: 220, h: 464}}, {{width: 300, height: 600}}, 'TD')") is False
+    assert _math(f"{offer}({{w: 220, h: 464}}, {{width: 755, height: 482}}, 'BT')") is True
+
+
+def test_the_offer_is_one_line_under_the_toolbar_with_two_buttons_and_one_commit():
+    view = (JS / "diagram-outline.js").read_text(encoding="utf-8")
+    assert "dgm-sideways" in view and "Turn it sideways" in view and 'S.turn("LR")' in view
+    assert "diagramModel.outline?.offer(S, math.sideways(" in (JS / "diagram-view.js").read_text(encoding="utf-8")
+    assert "dgm-sideways" in (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")

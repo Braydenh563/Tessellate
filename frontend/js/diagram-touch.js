@@ -43,6 +43,19 @@
     });
   }
 
+  //: The blocks list on a phone (1679, slice 11): the pane moves into a sheet and home again, so the picture keeps the page once the diagram has an arrow.
+  function listSheet(S, opener) {
+    const home = S.pane.parentElement;
+    const before = S.pane.nextSibling;
+    openSheet({
+      label: "Blocks",
+      name: "diagram-blocks",
+      returnFocus: opener,
+      build: (card) => card.append(S.pane),
+      onClose: () => home.insertBefore(S.pane, before),
+    });
+  }
+
   //: Wires one pane, once. `root` is `.dgm`, `fig` the picture; the kinds' panes have the same two.
   function wire(S) {
     if (!S?.root || S.root.dataset.touch) return;
@@ -50,6 +63,13 @@
     S.root.classList.add("dgm-compact");
     const actions = S.root.querySelector(".dgm-dock .dock-actions");
     //: The flowchart's toolbar has its own Add split (diagram-bar.js); the kinds' palettes still open this sheet.
+    if (S.steps && S.pane && actions && matchMedia("(max-width: 599.98px)").matches) {
+      const list = smallButton("ph:list-bullets", "Blocks list", () => listSheet(S, list));
+      list.classList.add("dgm-listbtn");
+      list.setAttribute("aria-haspopup", "dialog");
+      actions.prepend(list);
+      S.root.classList.add("dgm-phonelist");
+    }
     if (actions && !S.root.querySelector(".dgm-addsplit")) {
       const add = smallButton("ph:plus Add", "Choose a shape to add as a block", () => addSheet(S.root, add), false);
       add.classList.add("dgm-add");

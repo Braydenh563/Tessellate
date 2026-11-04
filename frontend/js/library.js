@@ -3492,6 +3492,36 @@ async function libraryNewDocument(fileType = null) {
 //: The caret beside New document: the Documents list's own type picker, built
 //: once the table is in (renderLibraryDocuments loads it).
 function libraryDocsNewMount() {
+  //: New diagram beside New document (1679, open item: the list offered none on an empty install or at 390). Built here, not in
+  //: index.html, which is capped at a fixed element count; the same door as the Create menu's (`diagramModel.door`, documents-mermaid.js).
+  {
+    const open = async () => {
+      await ensureModule("library");
+      await diagramModel.door({ doc: true });
+    };
+    const head = $("library-docs-new")?.closest(".split-button");
+    if (head && !$("library-docs-new-diagram")) {
+      const b = document.createElement("button");
+      b.id = "library-docs-new-diagram";
+      b.type = "button";
+      b.className = "ghost small icon-only";
+      b.title = "New diagram";
+      setLabel(b, "ph:flow-arrow");
+      b.setAttribute("aria-label", "New diagram");
+      b.addEventListener("click", open);
+      head.after(b);
+    }
+    const empty = $("library-docs-empty");
+    if (empty && !$("library-docs-empty-diagram")) {
+      const b = document.createElement("button");
+      b.id = "library-docs-empty-diagram";
+      b.type = "button";
+      b.className = "ghost small";
+      setLabel(b, "ph:flow-arrow New diagram");
+      b.addEventListener("click", open);
+      empty.append(b);
+    }
+  }
   const slot = $("library-docs-new-slot");
   if (!slot || slot.firstChild || !docFileTypes.length) return;
   const { wrap, opener } = docTypeMenu((ext) => libraryNewDocument(ext), "Start a document of another type");
@@ -3570,6 +3600,7 @@ async function renderLibraryDocuments() {
   //: One New document at a time: the empty state's own button is the action
   //: while there is nothing, so the head's copy steps aside (audit 1028 U29).
   document.getElementById("library-docs-new")?.closest(".split-button")?.classList.toggle("hidden", !docs.length && !isFilteredEmpty);
+  $("library-docs-new-diagram")?.classList.toggle("hidden", !docs.length && !isFilteredEmpty);
   noMatch?.classList.toggle("hidden", !isFilteredEmpty);
   if (noMatch && isFilteredEmpty) {
     //: Which of the two narrowings came up empty, said by name: "no documents
