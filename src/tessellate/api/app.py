@@ -1677,9 +1677,9 @@ def _add_system_routes(app: FastAPI, locked: list) -> None:
         """Another copy's Settings, Running copies asking this one to quit
         (INBOX 1641). Guarded like `/instance/focus` by the token in this
         copy's `instance.lock` and per-user record (nothing a web page can
-        send or read), and loopback only. A POST with a custom header is
-        never a simple cross-site request, and this app answers no CORS
-        preflight, so a page in the browser cannot reach it either way."""
+        send or read), and loopback only. The token is the real guard: a
+        DNS-rebound page reaches the loopback port as a same-origin request,
+        but it can never read the token."""
         from tessellate.api import routes_tasks
         from tessellate.api.this_computer import is_another_device
         from tessellate.core import instance_lock

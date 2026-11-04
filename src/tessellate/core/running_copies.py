@@ -17,10 +17,9 @@ and the same random token the copy's `/instance/focus` already takes.
 - **Shut down** asks the other copy over its own loopback route
   (`POST /instance/shutdown`, carrying the token). Nothing a web page can send
   carries the token, and the folder is private to this user, so another user's
-  copy is never reachable. Only if that route does not answer (a build from
-  before it existed, a hung server) is the pid ended, and only once it is
-  verified to be this app: the port answers as Tessellate and the process's
-  command line names it.
+  copy is never reachable. A copy that does not answer is never killed: a
+  dead copy's pid can be reused by another program, so it is reported as
+  not answering instead.
 
 Pure functions with the probes passed in, so the rules are tested without a
 second server (`tests/test_running_copies_1641.py`). Light imports only.
@@ -30,7 +29,6 @@ from __future__ import annotations
 
 import json
 import os
-import subprocess
 import sys
 import time
 from collections.abc import Callable
@@ -107,7 +105,7 @@ def _read(path: Path) -> Record | None:
             started=float(raw["started"]),
             data_dir=str(raw.get("data_dir", "")),
         )
-    except (OSError, ValueError, TypeError, KeyError):
+    except (OSError, ValueError, TypeError, KeyError, OverflowError):
         return None
     if not 1 <= rec.port <= 65535 or not rec.token or rec.pid <= 0:
         return None
@@ -168,54 +166,20 @@ def ask_to_stop(port: int, token: str) -> bool:
     return instance_lock.request_shutdown(port, token)
 
 
-def _command_line(pid: int) -> str:
-    try:
-        if sys.platform == "win32":
-            out = subprocess.run(
-                ["powershell", "-NoProfile", "-Command",
-                 f"(Get-CimInstance Win32_Process -Filter ProcessId={int(pid)}).CommandLine"],
-                capture_output=True, text=True, timeout=10, check=False,
-            ).stdout
-            return out
-        proc = Path(f"/proc/{int(pid)}/cmdline")
-        if proc.exists():
-            return proc.read_bytes().replace(b"\0", b" ").decode("utf-8", "replace")
-        return subprocess.run(
-            ["ps", "-p", str(int(pid)), "-o", "command="],
-            capture_output=True, text=True, timeout=5, check=False,
-        ).stdout
-    except (OSError, subprocess.SubprocessError):
-        return ""
-
-
-def verify_is_this_app(pid: int, port: int) -> bool:
-    """The pid is Tessellate: its port answers as Tessellate and its command
-    line names the app. Either alone is not enough (a pid can be reused; a
-    port can be anything)."""
-    if not instance_lock.answers(port):
-        return False
-    line = _command_line(pid).lower()
-    return "tessellate" in line or "memorymap" in line  # brand: keep
-
-
-def terminate(pid: int) -> None:
-    if sys.platform == "win32":
-        subprocess.run(["taskkill", "/PID", str(int(pid)), "/T", "/F"], capture_output=True, check=False)
-        return
-    import signal
-
-    os.kill(int(pid), signal.SIGTERM)
-
-
 def shutdown(
     pid: int,
     *,
     own_pid: int | None = None,
     ask_fn: Callable[[int, str], bool] | None = None,
-    verify_fn: Callable[[int, int], bool] | None = None,
-    kill_fn: Callable[[int], None] | None = None,
 ) -> str:
-    """"stopping", "this-copy", "unknown" or "failed"."""
+    """"stopping", "this-copy", "unknown" or "failed".
+
+    Only ever asks: the copy is told to quit over its own route, with the
+    token from its record, and nothing is killed. A kill fallback was built
+    and taken out on review: a dead copy's pid can be reused by another
+    program while a different copy holds its port, so no check from here
+    ties a pid to the server answering (INBOX 1641). A copy that cannot be
+    asked is reported as not answering."""
     me = os.getpid() if own_pid is None else own_pid
     if pid == me:
         return "this-copy"
@@ -223,11 +187,5 @@ def shutdown(
     if rec is None:
         return "unknown"
     if (ask_fn or ask_to_stop)(rec.port, rec.token):
-        return "stopping"
-    if (verify_fn or verify_is_this_app)(rec.pid, rec.port):
-        try:
-            (kill_fn or terminate)(rec.pid)
-        except OSError:
-            return "failed"
         return "stopping"
     return "failed"

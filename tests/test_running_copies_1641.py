@@ -82,30 +82,29 @@ def test_shutdown_asks_the_other_copy_with_its_token(run_dir):
     result = rc.shutdown(
         888, own_pid=1,
         ask_fn=lambda port, token: asked.append((port, token)) or True,
-        kill_fn=lambda pid: pytest.fail("no kill when the route answered"),
     )
     assert result == "stopping" and asked == [(8809, "tok-888")]
 
 
 def test_shutdown_refuses_this_copy_and_unknown_pids(run_dir):
     _record(run_dir, 999, 8810)
-    assert rc.shutdown(999, own_pid=999, ask_fn=lambda *a: True, kill_fn=lambda p: True) == "this-copy"
-    assert rc.shutdown(12345, own_pid=1, ask_fn=lambda *a: True, kill_fn=lambda p: True) == "unknown"
+    assert rc.shutdown(999, own_pid=999, ask_fn=lambda *a: True) == "this-copy"
+    assert rc.shutdown(12345, own_pid=1, ask_fn=lambda *a: True) == "unknown"
 
 
-def test_the_fallback_ends_the_pid_only_when_verified_as_this_app(run_dir):
+def test_a_copy_that_does_not_agree_to_stop_is_never_killed(run_dir):
+    # Review of 1641: a recorded pid can be reused by another program while a
+    # different copy answers on the port, so Shut down only ever asks.
     _record(run_dir, 1010, 8811)
-    killed = []
-    refused = rc.shutdown(
-        1010, own_pid=1, ask_fn=lambda *a: False,
-        verify_fn=lambda pid, port: False, kill_fn=killed.append,
-    )
-    assert refused == "failed" and killed == []
-    done = rc.shutdown(
-        1010, own_pid=1, ask_fn=lambda *a: False,
-        verify_fn=lambda pid, port: True, kill_fn=killed.append,
-    )
-    assert done == "stopping" and killed == [1010]
+    assert rc.shutdown(1010, own_pid=1, ask_fn=lambda *a: False) == "failed"
+    assert not hasattr(rc, "terminate") and not hasattr(rc, "verify_is_this_app")
+
+
+def test_a_damaged_record_reads_as_none(run_dir):
+    # Review of 1641: `int(1e999)` raised OverflowError and broke the listing.
+    run_dir.mkdir(parents=True, exist_ok=True)
+    (run_dir / "77.json").write_text('{"pid": 77, "port": 1e999, "token": "t", "started": 1}', encoding="utf-8")
+    assert rc._read(run_dir / "77.json") is None
 
 
 def test_a_record_is_ignored_when_junk(run_dir):
@@ -144,10 +143,9 @@ def test_the_shutdown_route_stops_with_the_right_token(client, monkeypatch):
         instance_lock.release()
 
 
-def test_settings_routes_list_and_refuse_other_devices(client, run_dir):
-    import time
-
-    _record(run_dir, os.getpid(), 8814, started=time.time())  # booting: inside the grace
+def test_settings_routes_list_and_refuse_other_devices(client, run_dir, monkeypatch):
+    monkeypatch.setattr(il, "answers", lambda *a, **k: True)
+    _record(run_dir, os.getpid(), 8814, started=NOW)
     body = client.get("/running-copies").json()
     assert body["copies"] and all("token" not in c for c in body["copies"])
     unknown = client.post("/running-copies/424242/shutdown")

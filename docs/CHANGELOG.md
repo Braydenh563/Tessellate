@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Settings, About, Running copies lists the other copies of Tessellate on this computer, each with Shut down, which asks that copy to quit with its own token and never ends a process by pid (INBOX 1641).
 - Atlas blinks with both eyes in the idle blink, in both looks (INBOX 1644).
 - Stopwatch: the Lap button stays under the pointer while laps are added (the laps area holds its height from the first lap), and the diagram picture's zoom label shows the true scale after every zoom (INBOX 1651, 1652).
 - Desktop companion: a first show that Windows rescaled to a smaller square is placed once more at its real size (INBOX 1650).

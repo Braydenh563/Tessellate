@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7751, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8656, test files 2004, tests 16823, plan headings 998, app scripts 28, boot scripts 37, script files 246.
+Counts: frontend functions 7751, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8653, test files 2004, tests 16824, plan headings 998, app scripts 28, boot scripts 37, script files 246.
 
 ## Frontend functions (7751)
 
@@ -12885,7 +12885,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8656)
+## Backend modules (8653)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -22113,24 +22113,24 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `BITMAPINFO` | src/tessellate/core/overlay/win32.py:132 |
-| `BITMAPINFOHEADER` | src/tessellate/core/overlay/win32.py:123 |
-| `BLENDFUNCTION` | src/tessellate/core/overlay/win32.py:116 |
-| `MONITORINFO` | src/tessellate/core/overlay/win32.py:136 |
-| `MSG` | src/tessellate/core/overlay/win32.py:100 |
-| `POINT` | src/tessellate/core/overlay/win32.py:92 |
-| `SIZE` | src/tessellate/core/overlay/win32.py:96 |
-| `WNDCLASSEXW` | src/tessellate/core/overlay/win32.py:107 |
-| `Win32` | src/tessellate/core/overlay/win32.py:201 |
-| `_monitor_dpi` | src/tessellate/core/overlay/win32.py:272 |
-| `animations_enabled` | src/tessellate/core/overlay/win32.py:304 |
-| `apply_signatures` | src/tessellate/core/overlay/win32.py:209 |
-| `cursor_pos` | src/tessellate/core/overlay/win32.py:285 |
-| `last_error` | src/tessellate/core/overlay/win32.py:315 |
-| `load` | src/tessellate/core/overlay/win32.py:231 |
-| `monitors` | src/tessellate/core/overlay/win32.py:251 |
-| `notification_state` | src/tessellate/core/overlay/win32.py:291 |
-| `signatures` | src/tessellate/core/overlay/win32.py:142 |
+| `BITMAPINFO` | src/tessellate/core/overlay/win32.py:134 |
+| `BITMAPINFOHEADER` | src/tessellate/core/overlay/win32.py:125 |
+| `BLENDFUNCTION` | src/tessellate/core/overlay/win32.py:118 |
+| `MONITORINFO` | src/tessellate/core/overlay/win32.py:138 |
+| `MSG` | src/tessellate/core/overlay/win32.py:102 |
+| `POINT` | src/tessellate/core/overlay/win32.py:94 |
+| `SIZE` | src/tessellate/core/overlay/win32.py:98 |
+| `WNDCLASSEXW` | src/tessellate/core/overlay/win32.py:109 |
+| `Win32` | src/tessellate/core/overlay/win32.py:203 |
+| `_monitor_dpi` | src/tessellate/core/overlay/win32.py:274 |
+| `animations_enabled` | src/tessellate/core/overlay/win32.py:306 |
+| `apply_signatures` | src/tessellate/core/overlay/win32.py:211 |
+| `cursor_pos` | src/tessellate/core/overlay/win32.py:287 |
+| `last_error` | src/tessellate/core/overlay/win32.py:317 |
+| `load` | src/tessellate/core/overlay/win32.py:233 |
+| `monitors` | src/tessellate/core/overlay/win32.py:253 |
+| `notification_state` | src/tessellate/core/overlay/win32.py:293 |
+| `signatures` | src/tessellate/core/overlay/win32.py:144 |
 
 ### src/tessellate/core/passes.py (21)
 
@@ -22350,24 +22350,21 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `issue` | src/tessellate/core/reset_code.py:85 |
 | `stderr_is_terminal` | src/tessellate/core/reset_code.py:77 |
 
-### src/tessellate/core/running_copies.py (14)
+### src/tessellate/core/running_copies.py (11)
 
 | Name | File:line |
 |---|---|
-| `Copy` | src/tessellate/core/running_copies.py:53 |
-| `Record` | src/tessellate/core/running_copies.py:44 |
-| `_command_line` | src/tessellate/core/running_copies.py:171 |
-| `_path` | src/tessellate/core/running_copies.py:76 |
-| `_read` | src/tessellate/core/running_copies.py:100 |
-| `_records` | src/tessellate/core/running_copies.py:117 |
-| `ask_to_stop` | src/tessellate/core/running_copies.py:166 |
-| `list_copies` | src/tessellate/core/running_copies.py:152 |
-| `register` | src/tessellate/core/running_copies.py:80 |
-| `run_dir` | src/tessellate/core/running_copies.py:65 |
-| `shutdown` | src/tessellate/core/running_copies.py:210 |
-| `terminate` | src/tessellate/core/running_copies.py:201 |
-| `unregister` | src/tessellate/core/running_copies.py:90 |
-| `verify_is_this_app` | src/tessellate/core/running_copies.py:191 |
+| `Copy` | src/tessellate/core/running_copies.py:51 |
+| `Record` | src/tessellate/core/running_copies.py:42 |
+| `_path` | src/tessellate/core/running_copies.py:74 |
+| `_read` | src/tessellate/core/running_copies.py:98 |
+| `_records` | src/tessellate/core/running_copies.py:115 |
+| `ask_to_stop` | src/tessellate/core/running_copies.py:164 |
+| `list_copies` | src/tessellate/core/running_copies.py:150 |
+| `register` | src/tessellate/core/running_copies.py:78 |
+| `run_dir` | src/tessellate/core/running_copies.py:63 |
+| `shutdown` | src/tessellate/core/running_copies.py:169 |
+| `unregister` | src/tessellate/core/running_copies.py:88 |
 
 ### src/tessellate/core/security.py (25)
 
@@ -23770,7 +23767,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16823)
+## Tests (16824)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25293,7 +25290,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_run_sandbox.py | 17 |
 | tests/test_run_skill.py | 41 |
 | tests/test_run_stop_mid_call.py | 4 |
-| tests/test_running_copies_1641.py | 13 |
+| tests/test_running_copies_1641.py | 14 |
 | tests/test_sample_notebook.py | 3 |
 | tests/test_sampling.py | 17 |
 | tests/test_save_cost_flat.py | 4 |
@@ -26488,7 +26485,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:172 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:170 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4178 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
